@@ -1,0 +1,93 @@
+#!/bin/bash
+# SZARP: SCADA software 
+# 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+# $Id: install_vim 6639 2009-04-14 14:51:35Z pawel $
+#
+# Installing SZARP syntax files for Vim editor..
+#
+
+export LC_ALL=C
+
+# Print error message, exit with code 1
+function Error () {
+	echo -e "install_vim: $1"
+	exit 1
+}
+
+# Print info
+function Message () {
+	echo -e "install_vim: $1"
+}
+
+# Check for vim existence.
+# Set VIM_PATH variable to vim executable path. 
+# Return 0 if vim was found.
+function FindVim () {
+	VIM_PATH=`which vim 2> /dev/null`
+	return $?
+}
+
+# Find location of vimrc.
+# Sets VIM_RC variable.
+# Uses VIM_PATH variable.
+function GetVimRc () {
+	VIM_RC=`$VIM_PATH --version 2>&1 | grep "system vimrc file" | \
+		sed 's/^[ ]*system vimrc file: "\([^"]\+\)".*$/\1/'`
+	echo $VIM_RC | grep "\$VIM" &> /dev/null && {
+		if [ "x$VIM" = x ] ; then {
+			VIM=`$VIM_PATH --version 2>&1 | \
+				grep "fall-back for \$VIM" \
+	| sed 's/^[ ]*fall-back for \$VIM: "\([^"]\+\)".*$/\1/'`
+		[ "x$VIM" = "x" ] && Error \
+			"Default value for \$VIM variable not found"
+		} fi
+		AFTER=`echo "$VIM_RC" | sed 's/\$VIM\([^\n]\+\)$/\1/'`
+		VIM_RC=`echo "$VIM$AFTER"`
+	}
+}
+
+
+# Check if syntax files are already installed.
+# Uses VIM_RC variable.
+# Return 0 if files are installed, 1 otherwise.
+function CheckVim () {
+	grep "so /opt/szarp/resources/szarp.vim" "$VIM_RC" &> /dev/null
+	return $?
+}
+
+# Syntax installation.
+# Uses VIM_RC variable.
+function InstallVim () {
+	CheckVim && {
+		Message "Syntax files already installed"
+		return
+	}
+	echo "so /opt/szarp/resources/szarp.vim" >> $VIM_RC || \
+			Error "Installation error"
+	Message "Files successfully installed"
+}
+
+
+FindVim || {
+	Error "Vim editor not found. You can install this SZARP syntax files manually
+	by putting 'so /opt/szarp/resources/szarp.vim' in your vim configuration file."
+}
+GetVimRc
+Message "vimrc file found at $VIM_RC"
+InstallVim
+

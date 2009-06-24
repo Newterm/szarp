@@ -1,0 +1,71 @@
+#!/bin/bash
+# SZARP: SCADA software 
+# 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+#  2003 Pawe³ Pa³ucha PRATERM S.A pawel@praterm.com.pl
+
+# $Id: ipk_check_dtd 4393 2007-09-13 16:37:10Z reksio $
+
+# Skrypt sprawdza zgodno¶æ ze schematem RelaxNG pliku IPK podanego jako parametr lub
+# wczytanego ze standardowego wej¶cia.
+# Parametr: nazwa pliku wej¶ciowego
+
+. `dirname $0`/ipk_config
+
+function Usage () {
+	echo -e "\
+Usage:\n\
+ ipk_check_dtd [ <config_file> ]\n\
+or\n\
+ ipk_check_dtd -h | --help\n\
+Checks if configurations validates against IPK RelaxNG Schema.\n\
+\n\
+	-h, --help	print help and exit\n\
+	<config_file>	configuration file, standard input is used if none\n\
+			given\n\
+\n\
+Return code is 0 on success and 1 if document is not valid."
+	exit 1
+}
+
+if [ "x$1" = "x-h" -o "x$1" = "x--help" ] ; then
+	Usage
+fi
+
+[ $# -gt 1 ] && Usage
+
+function CheckXML() {
+	xmllint $XMLLINT_VALID_ARGS --noout "$1" || {
+		echo "Errors while validating document $1 - please correct them"
+		exit 1
+	}
+	echo "IPK document OK"
+	exit 0
+}
+
+
+if [ $# -eq 0 ] ; then
+	INPUT="-"
+else
+	INPUT="$1"
+fi
+
+SZARP_DIR=/opt/szarp
+TEMPLATES_DIR=$SZARP_DIR/resources/xslt
+
+CheckXML "$INPUT"
+

@@ -1,0 +1,1519 @@
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook V3.1//EN"[
+<!ENTITY praterm-info SYSTEM "../common/szarp-info.sgml">
+<!ENTITY praterm-wdrozenia SYSTEM "../common/praterm-wdrozenia.sgml">
+]>
+
+<!-- $Id: oszarpie.sgml 6724 2009-05-18 08:37:03Z reksio $ -->
+
+<article lang="pl" id="oszarpie" class="techreport">
+
+<artheader>
+&praterm-info;
+<title>System zbierania, archiwizacji i prezentacji danych w miejskich
+systemach ciep³owniczych</title>
+<authorgroup>
+<author>
+ <firstname>Pawe³</firstname><surname>Pa³ucha</surname>
+</author>
+<author>
+ <firstname>Lucjan</firstname><surname>Przykorski</surname>
+</author>
+<author>
+ <firstname>Micha³</firstname><surname>Rój</surname>
+</author>
+<author>
+ <firstname>Stanis³aw</firstname><surname>Sawa</surname>
+</author>
+</authorgroup>
+<abstract>
+<para>
+Niniejszy dokument stanowi ogólny opis systemu SZARP, jego cechy,
+funkcjonalno¶æ i budowê.
+</para>
+<para>
+$Id: oszarpie.sgml 6724 2009-05-18 08:37:03Z reksio $
+</para>
+</abstract>
+</artheader>
+
+<section id="wstep">
+<title>Wstêp</title>
+
+
+<para>
+Ka¿dy, nawet niewielki system ciep³owniczy (ciep³ownia o mocy zainstalowanej
+rzêdu 10MW, kilka wêz³ów grupowych) rozpatrywany jako ca³o¶æ, jest niezwykle
+skomplikowanym obiektem o ogromnej ilo¶ci opisuj±cych go parametrów.
+Temperatura spalin kot³a,
+przep³yw wody przez wymiennik C.O. na wê¼le, poziom wody w kolumnie
+odgazowywacza -  to tylko niektóre z setek wielko¶ci charakteryzuj±cych pracê
+systemu ciep³owniczego. Ich mnogo¶æ w po³±czeniu z rozproszeniem wystêpowania
+(bior±c pod uwagê wêz³y cieplne - jest to obszar o promieniu liczonym w
+kilometrach) sprawia, ¿e niemo¿liwe jest ich ¶ledzenie, a tym bardziej analiza
+bez komputerowych narzêdzi wspomagaj±cych.
+
+
+<figure id="wyglad-pulpitu">
+<title>Wygl±d pulpitu operatora systemu komputerowego - na pierwszym planie jeden z programów systemu SZARP</title>
+<mediaobject>
+ <imageobject>
+  <imagedata fileref="pics/wyglad-pulpitu.png" scale=70>
+ </imageobject>
+</mediaobject>
+</figure>
+
+</para>
+<para>
+
+Firma PRATERM ju¿ od 1992 roku
+instaluje w zautomatyzowanych przez siebie ciep³owniach systemy komputerowe do
+zbierania, archiwizacji i prezentacji parametrów pracy SZARP (por. <xref linkend="wyglad-pulpitu">) . 
+Lata do¶wiadczeñ eksploatacyjnych doprowadzi³y do opracowania modelu takiego
+systemu przeznaczonego do efektywnej i niezawodnej pracy w polskich przedsiêbiorstwach ciep³owniczych.
+Schemat systemu pokazuje <xref linkend="struktura-systemu">. 
+
+<figure id="struktura-systemu">
+<title>Struktura komputerowego systemu zbierania, archiwizacji i prezentacji danych</title>
+<mediaobject>
+ <imageobject>
+  <imagedata fileref="pics/komputer.png" scale=55>
+ </imageobject>
+</mediaobject>
+</figure>
+
+</para>
+
+<para>
+System SZARP sk³ada siê z nastêpuj±cych elementów: 
+
+<itemizedlist>
+<listitem><para>
+komputera centralnego, zwanego tu serwerem SZARP-a (warstwa 2)
+</para></listitem>
+
+<listitem><para>
+sterowników i czujników na ciep³owni i na wêz³ach cieplnych, z którymi komunikuje siê serwer SZARP-a (warstwa 1)
+</para></listitem>
+
+<listitem><para>
+terminali graficznych, które wy¶wietlaj± w przystêpnej formie dane otrzymane z serwera SZARP-a (warstwa 3)
+</para></listitem>
+</itemizedlist>
+
+</para>
+
+</section> <!-- wstep -->
+
+<section id="elastycznosc">
+<title>Elastyczno¶æ</title>
+<para>
+Oczywistym jest fakt, i¿ nie jest mo¿liwe okre¶lenie sztywnego modelu systemu
+kontroli i monitoringu procesów przemys³owych towarzysz±cych produkcji i
+dystrybucji ciep³a, który pasowa³by zarówno do systemu ciep³owniczego o
+obci±¿eniu rzêdu kilku, kilkunastu MW jak i do systemu wyposa¿onego w kot³y WP
+o mocy kilkudziesiêciu MW ka¿dy. B³êdem by³oby jednak indywidualne tworzenie
+specyficznych implementacji dla poszczególnych odbiorców - takie rozwi±zanie
+nie do¶æ, ¿e znakomicie podra¿a koszty pojedynczego wdro¿enia, dodatkowo
+uniemo¿liwia wzajemn± wymianê do¶wiadczeñ miêdzy u¿ytkownikami. Z tych w³a¶nie
+powodów firma PRATERM opracowa³a uniwersalny model o wydzielonych,
+niezale¿nych warstwach, komunikuj±cych siê miêdzy sob± w ¶ci¶le okre¶lony
+sposób. Implementacje tego modelu ró¿ni±ce siê ze wzglêdu na wielko¶æ obiektu
+jak i na finansowe zaanga¿owanie inwestorów od kilku lat funkcjonuj± z
+powodzeniem w systemach ciep³owniczych o ró¿nych charakterystykach.
+</para><para>
+Poszczególne warstwy modelu od strony sprzêtowej stanowi±:
+<orderedlist numeration="upperroman">
+<listitem>
+ <para>
+ <emphasis>Sterowniki przemys³owe i panele pomiarowe.</emphasis> S± to
+ urz±dzenia automatyki montowane w bezpo¶redniej blisko¶ci sterowanych
+ urz±dzeñ: kot³ów, wêz³ów cieplnych itp.. Z zastosowania tego typu rozwi±zania
+ p³ynie szereg korzy¶ci:
+ <itemizedlist>
+  <listitem><para>
+  przewody pomiarowe s± znacznie krótsze ni¿ w przypadku stosowanych czasami
+  komputerów wyposa¿onych w karty przetworników analogowo-cyfrowych, które
+  znajduj± siê czêsto w znacznej odleg³o¶ci od przyrz±dów pomiarowych -
+  d³ugie przewody to nie tylko wzrost kosztów monta¿u, ale tak¿e zmniejszenie
+  niezawodno¶ci i odporno¶ci na zak³ócenia
+  </para></listitem>
+  <listitem><para>
+  wizualizacja parametrów pracy i nastaw sterowania monitorowanych obiektów
+  bezpo¶rednio przy nich znakomicie u³atwia obs³ugê
+  </para></listitem>
+  <listitem><para>
+  sterowniki wyposa¿one s± we w³asne algorytmy sterowania, które pozwalaj± im
+  skutecznie pracowaæ nawet w przypadku awarii sprzêtu (warto zwróciæ tu uwagê
+  na to, ¿e przy tych za³o¿eniach same komputery jako takie nie s± niezbêdnie
+  potrzebne do prawid³owego sterowania procesami technologicznymi, jednak maj±
+  ogromny wp³yw na podniesienie efektywno¶ci tego sterowania)
+  </para></listitem>
+ </itemizedlist> <!-- korzy¶ci ... -->
+ </para><para>
+ Oferowane przez firmê PRATERM sterowniki przemys³owe produkowane przez firmê
+ Z-elektronik s± w odró¿nieniu od wielu produktów konkurencyjnych urz±dzeniami
+ wyposa¿onymi w program steruj±cy przez samego dostawcê, st±d rola u¿ytkownika
+ sprowadza siê do zadania nastaw kluczowych parametrów pracy - nie s± to
+ regulatory swobodnie programowalne. Popularna u niektórych producentów
+ reklama mo¿liwo¶ci zaprogramowania praktycznie wszystkiego, w rzeczywisto¶ci
+ sprowadza siê do tego, ¿e na u¿ytkowniku spoczywa nie tylko naturalny w tym
+ przypadku obowi±zek znajomo¶ci procesów technologicznych, ale tak¿e obowi±zek
+ znajomo¶ci zasad programowania, który wydaje siê zupe³nie nieuzasadniony i w
+ praktyce oznacza znaczne podro¿enie tego typu automatyki.
+
+<figure id="panel-sterownika">
+<title> Wygl±d panela regulatora firmy Z-elektronik</title>
+<mediaobject>
+<imageobject>
+ <imagedata fileref="pics/sterowni.png" scale=50>
+</imageobject>
+</mediaobject>
+</figure>
+
+ </para>
+ 
+ <para>
+
+ Sterowniki Z-elektronik maj± trzy wy¶wietlacze numeryczne (<xref linkend="panel-sterownika">). Czteropozycyjny
+ prawy pokazuje w sposób ci±g³y warto¶æ kluczow± dla procesu sterowania,
+ natomiast dwa lewe tworz± parê, w której lewy dwupozycyjny wy¶wietla kod, a
+ prawy czteropozycyjny warto¶æ parametru wybranego przez u¿ytkownika za pomoc±
+ klawiatury. Mo¿liwe jest dodanie modu³u z dodatkowymi 4 wy¶wietlaczami
+ czteropozycyjnymi. £±czno¶æ ze ¶wiatem zewnêtrznym zapewnia 8 optoizolowanych
+ wej¶æ logicznych, 12 konfigurowalnych wej¶æ analogowych (m.in. 0÷20mA, 0÷24V,
+ PT100 zakresy -30÷70°C, 0÷200°C, 0÷400°C), 16 wyj¶æ logicznych, 3 wyj¶cia
+ pr±dowe 0÷20mA (mo¿liwe jest dodanie elementu rozszerzaj±cego wyposa¿onego w
+ dalszych 56 wej¶æ logicznych i 16 wej¶æ analogowych lub 4 wyj¶cia pr±dowe) i
+ dwa prze³±czane z³±cza RS mog±ce pracowaæ w trybie RS-232 lub RS-485. Jedno z
+ tych ³±cz mo¿e byæ przeznaczone do komunikacji z innym sterownikiem, za¶
+ drugie jest zwykle wykorzystywane do po³±czenia z komputerem centralnym -
+ drug± warstw± modelu uniwersalnego.
+ </para>
+ <para>
+ Do sterowania wêz³ami ciep³owniczymi firma Praterm wprowadza sterowniki serii
+ SK-2000 i SK-4000 produkowane przez firmê 
+ <ulink url="http://www.sterkom.com.pl">Sterkom</ulink>. S± to nowoczesne, a
+ przy tym tanie, projektowane i produkowane w ca³o¶ci w Polsce urz±dzenia.
+ </para>
+</listitem> <!-- sterowniki --> 
+<listitem>
+ <para>
+ <emphasis>Komputer centralny.</emphasis> Komputer, do którego sp³ywaj±
+ informacje z jednostek ni¿szej warstwy jest sercem systemu
+ zbierania, archiwizacji i prezentacji danych SZARP (zwany serwerem SZARP-a). 
+ Zwykle w systemie wystêpuje
+ tylko jedna taka maszyna, co z powodzeniem pokrywa zapotrzebowanie na moc
+ obliczeniow±, aczkolwiek w kilku implementacjach firma PRATERM u¿y³a
+ wiêcej ni¿ jednego serwera. Regu³± jest, i¿ sterowniki i panele znajduj±ce
+ siê w odleg³o¶ci nie wiêkszej ni¿ 100m od serwera (czyli praktycznie
+ wszystkie jednostki na ciep³owni) po³±czone s± w sposób 1-do-1 przez RS-232
+ przy pomocy terminala wieloportowego, natomiast jednostki odleg³e
+ (rozmieszczone na wêz³ach cieplnych) w sposób 1-do-wielu: w przypadku ³±cz
+ dzier¿awionych, przez RS-485, za¶ w przypadku wydzielonego pasma przez modemy
+ radiowe. Poniewa¿ zapewnienie komunikacji na d³ugich dystansach jest
+ stosunkowo drogie i k³opotliwe (w przypadku ³±cz dzier¿awionych przeszkod±
+ jest nienajlepszy, czasami wrêcz skandaliczny stan przewodów
+ telekomunikacyjnych, przy komunikacji radiowej konieczna jest kontrola
+ synchronizacji nadajników i odbiorników oraz takie umiejscowienie anten, aby
+ nie tylko zapewnia³y one prawid³ow± transmisjê, ale tak¿e by³y niedostêpne
+ dla z³odziei czy zwyk³ych chuliganów), firma PRATERM udostêpnia te¿ opcjê
+ wolnej, jednostronnej (od serwera do sterowników) ale za to relatywnie taniej
+ i niezawodnej ³±czno¶ci z wykorzystaniem magistrali ciep³owniczej.
+ </para>
+ <para>System jest te¿ otwarty na inne technologie. Mo¿liwe jest
+ wykorzystanie do komunikacji z wêz³ami dzier¿awionych i publicznych linii
+ telefonicznych zarówno analogowych jak i ISDN, sieci bezprzewodowych WLAN,
+ modemów GSM/GPRS czy dowolnego ³±cza do Internetu.
+ </para>
+ <para>
+ Takie podej¶cie daje odbiorcy mo¿liwo¶æ doboru praktycznie dowolnej
+ konfiguracji sterowników, z którymi komunikuje siê komputer centralny.
+ Jedynym (górnym) ograniczeniem jest ilo¶æ portów wej¶ciowych serwera, która
+ nie mo¿e przekroczyæ 128, co w praktyce oznacza pod³±czenie maksimum 128
+ sterowników i paneli do jednego serwera w sposób 1-do-1 i oczywi¶cie
+ znakomicie wiêksz± ilo¶æ w sposób 1-do-wiele.
+ </para><para>
+ Sterowniki mikroprocesorowe i panele przemys³owe dostarczane przez firmê
+ PRATERM s± wyposa¿one w protoko³y komunikacyjne przystosowane do wspó³pracy z
+ systemem komputerowym. Nie oznacza to jednak bynajmniej, i¿ system
+ komputerowy firmy PRATERM mo¿e komunikowaæ siê tylko z jednostkami
+ oferowanymi przez tê firmê - wrêcz przeciwnie. Opracowanie hierarchicznej
+ struktury programów z wydzielon± warstw± odpowiedzialn± za komunikacjê z
+ urz±dzeniami peryferyjnymi umo¿liwi³o zaimplementowanie i wdro¿enie obs³ugi
+ protoko³ów transmisji danych ze sterowników innych firm.
+ </para>
+ <para>
+ Dostêpne
+ s± w tej chwili sterowniki miêdzy innymi do liczników energii Alstom M301 i
+ DataPaf,sumatorów KWMS, przeliczników FP-2001, ciep³omierzy Kamstrup Multical, 
+ wiatromierzy LB-746. W razie potrzeby mo¿liwe jest napisanie sterownika dla
+ praktycznie dowolnego urz±dzenia pomiarowego udostêpniaj±cego dane w postaci
+ cyfrowej.
+ </para>
+ 
+ <para>
+ Podobnie jak modularyzacja w sferze zastosowanego sprzêtu, hierarchiczna
+ budowa oprogramowania umo¿liwia dostosowanie systemu komputerowego do potrzeb
+ indywidualnego odbiorcy bez opracowywania specyficznych implementacji. System
+ zbierania, archiwizacji i prezentacji danych stanowi±:
+ <orderedlist numeration="arabic">
+  <listitem><para>
+  <link linkend="p01">Demony linii</link> odpowiedzialne za bezb³êdn±
+  transmisjê w obrêbie jednego kana³u komunikacyjnego. W zale¿no¶ci od typu
+  kana³u (1-do-1 lub 1-do-wiele) nadzoruj± one pojedyncze urz±dzenie lub grupê
+  jednostek podrzêdnych (sterowników i paneli).
+  </para></listitem>
+  <listitem><para>
+  <link linkend="p02">Program koncentruj±cy</link> dane z demonów linii,
+  u¶redniaj±cy, filtruj±cy, wyliczaj±cy parametry po¶rednie i udostêpniaj±cy
+  tak przetworzone dane aplikacjom u¿ytkowym w postaci wspó³dzielonej tablicy.
+  </para></listitem>
+  <listitem><para>
+  <link linkend="p03">Program u¶redniaj±cy</link>, odczytuj±cy ¶rednie 10-cio
+  minutowe przez mechanizm dzielonej pamiêci i zapisuj±cy je do bazy danych.
+  </para></listitem>
+  <listitem><para>
+  <link linkend="p04">Programy do edycji</link>, wizualizacji i wydruku
+  raportów o stanie nadzorowanego systemu.
+  </para></listitem>
+  <listitem><para>
+  <link linkend="p05">Program przegl±daj±cy</link>, prezentuj±cy w postaci
+  wykresów wszystkie zebrane dane.
+  </para></listitem>
+  <listitem><para>
+  <link linkend="p06">Program sygnalizacji przekroczeñ</link> dozwolonych
+  zakresów parametrów.
+  </para></listitem>
+  <listitem><para>
+  Programy analityczne s³u¿±ce do wykonywania specyficznych obliczeñ na
+  podstawie danych zawartych w bazie, dziel±ce siê na:
+  <itemizedlist>
+   <listitem><para>
+   <link linkend="p07a">Programy analizuj±ce I</link> (zale¿no¶ci f(t)).
+   </para></listitem>
+   <listitem><para>
+   <link linkend="p07b">Programy analizuj±ce II</link> (zale¿no¶ci y(x)).
+   </para></listitem>
+  </itemizedlist>
+  </para></listitem>
+  <listitem><para>
+  <link linkend="p08">Program ekstraktor</link> odczytuj±cy wybrane dane z
+  bazy i zapisuj±cy je w formacie akceptowalnym przez arkusze kalkulacyjne.
+  </para></listitem>
+  <listitem><para>
+  <link linkend="p09">Program wizualizacji</link> schematu technologicznego
+  systemu ciep³owniczego z prezentacj± monitorowanych parametrów (odpowiednik
+  tablicy synoptycznej).
+  </para></listitem>
+  <listitem><para>
+  <link linkend="p10">Program backup'uj±cy</link> na ta¶mê streamer'a lub inne
+  medium wymienialne dane zapisane w bazie.
+  </para></listitem>
+  <listitem><para>
+  <link linkend="p11">Programy optymalizacji</link> (sterowania nadrzêdnego)
+  pracy systemu.
+  </para></listitem>
+  <listitem><para>
+  Specyficzne programy pomocnicze (np. <link linkend="p12a">program do
+  rejestracji analiz wêgla i ¿u¿la</link>, <link linkend="p12b">program do
+  wyliczania bilansu energetycznego</link> kot³a bêd±cy implementacj±
+  algorytmu opracowanego przez dr. Rusinowskiego z Politechniki ¦l±skiej w
+  Gliwicach).
+  </para></listitem>
+ </orderedlist> <!-- sk³adniki SZARP'a -->
+ </para><para>
+ Podstawa systemu, tzw. szkielet, sk³ada siê z programów 1, 2, 3, 4 i 5, gdzie
+ trzy pierwsze jako procesy pracuj±ce w tle stanowi± j±dro niewidoczne dla
+ u¿ytkownika (s± bezobs³ugowymi procesami nie prowadz±cymi dialogu z
+ u¿ytkownikiem), za¶ dwa ostatnie s± podstawowymi narzêdziami komunikacji z
+ systemem. W zalecanym przez firmê PRATERM trybie wdra¿ania przez odbiorcê
+ systemu komputerowego, w pierwszej kolejno¶ci powinien on zainstalowaæ
+ wspomniany szkielet oprogramowania, za¶ w miarê wzrostu zapotrzebowania i
+ bieg³o¶ci obs³ugi (charakteryzuj± siê one podobnym, intuicyjnym interfejsem)
+ rozbudowywaæ swój system o kolejne komponenty.
+ </para><para>
+<!--
+<mediaobject><imageobject>
+ <imagedata fileref="pics/novell.png">
+</imageobject></mediaobject>
+-->
+<!--
+<BR><IMG SRC="novell.gif" WIDTH=255 HEIGHT=186 ALIGN=right>
+-->
+ Ten model (zbiór niezale¿nych programów pracuj±cych wspó³bie¿nie i
+ komunikuj±cych siê ze sob± na tej samej maszynie) wymusi³ wybór systemu
+ operacyjnego charakteryzuj±cego siê prawdziw± wielozadaniowo¶ci±,
+ wielodostêpno¶ci± jak i standardowymi mechanizmami komunikacji
+ miêdzyprocesowej. Od 1997 roku firma PRATERM w swoim systemie komputerowym
+ stosuje opracowywany przez tysi±ce programistów na ca³ym ¶wiecie system
+ operacyjny z otwartym kodem ¼ród³owym (<emphasis>Open Source</emphasis>)
+ Linux. Jego architektura nale¿y do najbardziej rozbudowanych i elastycznych
+ na rynku: obs³uguje wiêkszo¶æ dostêpnego na rynku urz±dzeñ peryferyjnych,
+ oferuje wysokie bezpieczeñstwo. Wsparcie ze strony takich firm jak HP,
+ Novell czy IBM zapewnia przysz³o¶æ tego systemu.
+ </para><para>
+<!-- XXX: s/scologo/tuxlogo/
+<mediaobject><imageobject>
+ <imagedata fileref="pics/scologo.png">
+</imageobject></mediaobject>
+-->
+<!--
+<BR><IMG SRC="scologo.gif" WIDTH=216 HEIGHT=141 ALIGN=right>
+-->
+ Oczywi¶cie z punktu widzenia odbiorcy istotniejszymi cechami systemu s± jego
+ przyjazno¶æ, ³atwo¶æ obs³ugi. Trendy ¶wiatowe i do¶wiadczenia u¿ytkowników
+ wskazuj± na celowo¶æ stosowania robi±cego od kilku lat furorê graficznego
+ interfejsu u¿ytkownika, znanego przede wszystkim z bezapelacyjnego przeboju
+ rynkowego firmy Microsoft - systemu Windows.  Interfejsem graficznym
+ zastosowanym w Linux jest osadzony na platformie XWindows. Aplikacje
+ wykorzystuj± dzia³aj±ce na jego bazie biblioteki graficzne Motiff i
+ wxWidgets. Interfejsy budowane z ich pomoc± mog± byæ obs³ugiwane tylko
+ myszk±, co znakomicie usprawnia proces szkolenia pracowników obs³ugi -
+ klawiatura jest na tyle zbêdna, i¿ niektórzy u¿ytkownicy dobrowolnie z
+ w³asnej inicjatywy zrezygnowali w ogóle z jej u¿ywania (choæ z drugiej strony
+ dla u¿ytkowników do¶wiadczonych mo¿liwe jest podej¶cie zupe³nie odwrotne,
+ tzn. operowanie systemem tylko przy pomocy klawiszy, co jest 
+ trudniejsze, lecz za to szybsze).
+ </para>
+</listitem> <!-- komputer centralny --> 
+<listitem>
+ <para>
+ <emphasis>Terminale graficzne.</emphasis> Ka¿de przedsiêbiorstwo energetyki
+ cieplnej posiada szereg dzia³ów zazwyczaj znajduj±cych siê w ró¿nych
+ budynkach.  Poczynaj±c od pracowników bezpo¶redniej obs³ugi przez nadzór
+ techniczny a¿ do dyrektora - wszyscy s± zainteresowani tym, co dzieje siê w
+ systemie ciep³owniczym. Naturalnym wiêc jest, ¿e istnienie jednego tylko
+ komputera centralnego, na którym dostêpne s± wszystkie dane o monitorowanych
+ procesach technologicznych jest niewystarczaj±ce - powstaje konieczno¶æ
+ umo¿liwienia pe³nego dostêpu do komputerowego systemu zbierania, archiwizacji
+ i prezentacji danych. Najlepszym rozwi±zaniem okaza³a siê sieæ lokalna typu
+ Ethernet ³±cz±ca komputery spe³niaj±ce rolê terminali graficznych
+ pod³±czonych do komputera centralnego. S± to klasyczne komputery klasy PC
+ wyposa¿one w specjalne oprogramowanie emuluj±ce Xterminal (wspó³pracuj±ce z
+ systemem XWindows). Jest to znacznie lepsze rozwi±zanie ni¿ zastosowanie
+ sprzêtowych Xterminali, które co prawda czêsto s± tañsze i nieco szybsze,
+ lecz jako urz±dzenia specyficzne maj± ma³y obszar zastosowania, a poza tym
+ u¿ytkownik komputera PC mo¿e prócz korzystania z systemu zbierania danych
+ wykonywaæ na swojej maszynie tak¿e inne prace (np. zwi±zane z ksiêgowo¶ci±),
+ której to mo¿liwo¶ci jest pozbawiony w przypadku Xterminala sprzêtowego.
+ </para><para>
+<!-- XXX: s/xtreme/labtam+cygwin/
+<mediaobject><imageobject>
+ <imagedata fileref="pics/xtreme.png">
+</imageobject></mediaobject>
+-->
+<!--
+<BR><IMG SRC="xtreme.gif" WIDTH=320 HEIGHT=104 ALIGN=right>
+-->
+ Standardowo komputery dostosowywane przez firmê PRATERM do funkcji terminali
+ graficznych wyposa¿ane s± w oprogramowanie XFree86/Cygwin rozwijane przez
+ programistów z ca³ego ¶wiata, które charakteryzuje siê ma³ymi wymaganiami
+ sprzêtowymi, du¿± wydajno¶ci± dzia³ania i wreszcie tym, ¿e jego obs³uga jest
+ identyczna z obs³ug± systemu operacyjnego dzia³aj±cego na komputerze
+ centralnym - u¿ytkownik praktycznie nie mo¿e odró¿niæ, czy siedzi przy
+ serwerze z systemem Linux, czy przy terminalu z XFree86/Cygwin.
+ </para>
+<!-- nie rozumiem o co chodzi w tym akapicie
+ <para>
+ Konieczno¶æ dostêpu do systemu komputerowego nie sprowadza siê tylko do
+ obrêbu zak³adu. Bardzo ³atwo jest sobie wyobraziæ sytuacjê, kiedy po¿±dana
+ jest mo¿liwo¶æ zdalnego dostêpu np. w celu kontroli stanu zasobów dyskowych.
+ W zwi±zku z popularyzacj± us³ug dostêpu do internetu w naszym kraju firma
+ PRATERM poleca to medium jako metodê zdalnego dostêpu. Prócz tego oferujemy
+ wykorzystanie jako mediów transmisyjnych modemów telefonicznych V.34+ przez
+ ³±cza komutowane, sieci cyfrowej telefonii ISDN, sieci bezprzewodowej w
+ standardzie 802.11.
+ </para>
+-->
+ <para>
+ Unikaln± mo¿liwo¶ci± jest dostêp do danych historycznych dowolnej ilo¶ci
+ instalacji systemu SZARP za pomoc± komputera PC pod³±czonego do Internetu,
+ tak¿e w trybie off-line - u¿ytkownik ³±czy siê tylko na czas ¶ci±gniêcia
+ danych które zmieni³y siê od czasu ostatniego po³±czenia. Funkcjonalno¶æ taka
+ jest chêtnie wykorzystywana przez cz³onków kadry zarz±dzaj±cej ciep³owni,
+ którzy mog± kontrolowaæ pracê swojego obiektu i porównywaæ z innymi
+ ciep³owniami tak¿e za pomoc± komputera domowego czy notebooka.
+ </para>
+ </listitem> <!-- terminale graficzne -->
+</orderedlist> <!-- warstwy -->
+</para><para>
+W komputerowym systemie zbierania, archiwizacji i prezentacji danych
+oferowanym przez firmê PRATERM przy zastosowaniu identycznego szkieletu
+oprogramowania mo¿liwe jest stworzenie systemu z 3 serwerami, 6 terminalami
+oraz kilkudziesiêcioma sterownikami i panelami, jak równie¿ systemu z jednym
+serwerem i dwoma sterownikami, a obs³uga programów z punktu widzenia
+u¿ytkownika jest w obu tych przypadkach identyczna.
+</para>
+</section> <!-- elastycznosc -->
+
+<section id="niezawodnosc">
+<title>Niezawodno¶æ</title>
+<para>
+Nawet najnowocze¶niejsze systemy charakteryzuj±ce siê najwiêkszymi
+mo¿liwo¶ciami przetwarzania informacji, najlepszymi wska¼nikami wydajno¶ci,
+intuicyjnymi narzêdziami obs³ugi prostymi w opanowaniu przez u¿ytkownika,
+mo¿liwo¶ci± ³atwej rozbudowy i wieloma innymi atrakcyjnymi cechami, s±
+praktycznie bezu¿yteczne, je¿eli nie s± w zadowalaj±cym stopniu niezawodne.
+Najlepszy nawet system, który uleg³ awarii, jest gorszy od ka¿dego innego,
+który pracuje. Specyficzne warunki panuj±ce w ciep³owniach (wysokie zapylenie,
+niestabilno¶æ i zaniki napiêcia zasilaj±cego, silne pola elektromagnetyczne)
+narzucaj± na montowane tam urz±dzenia automatyki wysokie wymagania co do
+odporno¶ci na szkodliwe czynniki zewnêtrzne. Firma PRATERM prowadzi
+kompleksow± automatyzacjê miejskich systemów ciep³owniczych wdra¿aj±c
+sterowniki firmy Z-elektronik ju¿ od 1989 roku. Liczne do¶wiadczenia pozwoli³y
+na wypracowanie standardu urz±dzenia, które jest znakomicie przystosowane do
+pracy w polskich ciep³owniach. Dodatkowymi zabezpieczeniami - o ile zdecyduje
+siê na nie odbiorca, gdy¿ oczywi¶cie podwy¿szaj± one cenê instalacji - s±
+optoizolacje torów pomiarowych sterowników i paneli, stosowanie bateryjnego
+podtrzymywania napiêcia przy pomocy urz±dzeñ typu UPS, które dodatkowo pe³ni±
+rolê filtrów przeciwzak³óceniowych. Wartym podkre¶lenia jest fakt, i¿
+urz±dzenia firmy Z-elektronik, je¶li ulegaj± uszkodzeniom, to tylko w wyniku
+wadliwej obs³ugi (omy³kowe zwarcie czy podanie zbyt wysokiego napiêcia na
+wej¶ciu pomiarowym). S± takie instalacje, gdzie poprzednie modele tych
+sterowników pracuj± nieprzerwanie od ponad 6 lat!
+</para><para>
+Wybór systemu operacyjnego komputera centralnego by³ tak¿e powodowany
+wzglêdami niezawodno¶ci. Linux jako system w pe³ni wielozadaniowy nie tylko
+chroni poszczególne procesy przed dzia³aniem innych (zawieszenie jednego
+programu nie powoduje blokady ca³ego systemu), ale tak¿e czyni system odpornym
+na - zwykle bezwiedne - szkodliwe dzia³ania obs³ugi. O ile problem wadliwie
+dzia³aj±cych programów praktycznie nie istnieje - aplikacje stanowi±ce system
+zbierania, archiwizacji i prezentacji danych s± od lat udoskonalane - o tyle
+"problem ludzki" jest i zawsze bêdzie. W³a¶ciwym rozwi±zaniem nie jest tu
+maksymalne odgrodzenie u¿ytkownika od systemu, któr± to ideê lansuj± niektórzy
+producenci (w skrajnym przypadku sprowadza siê to nawet do obs³ugi programów
+jedynie przez wysokokwalifikowanego specjalistê firmy instaluj±cej taki
+system, co nie ma ¿adnego uzasadnienia ani ekonomicznego ani u¿ytkowego dla
+odbiorcy). Nale¿y po prostu uodporniæ system na nieprawid³owe dzia³ania
+operatora, do czego jednak potrzebne jest do¶wiadczenie, które zdobywa siê
+latami. W systemach firmy PRATERM nawet odciêcie napiêcia zasilaj±cego nie
+powoduje awarii, gdy¿ standardowo komputer centralny wyposa¿ony jest w UPS,
+który w przypadku ca³kowitego roz³adowania baterii poprzez specjalne
+oprogramowanie prowadzi do ³agodnego zamkniêcia systemu, co w efekcie sprawia,
+¿e maszyna w³±czy siê automatycznie po ponownym w³±czeniu zasilania (przerwa w
+zasilaniu terminala graficznego nie poci±ga za sob± ¿adnych negatywnych
+konsekwencji dla systemu).
+</para>
+<para>
+Standardowo klientom udostêpniana jest mo¿liwo¶æ tworzenia na bie¿±co kopii
+zapasowej danych technologicznych na serwerze firmy Praterm w Warszawie
+(transmisja danych przez sta³e ³±cze internetowe lub modem). W takiej sytuacji
+nawet w wypadku ca³kowite zniszczenia serwera SZARP np. w wyniku po¿aru
+mo¿liwe jest szybkie odtworzenie konfiguracji i danych historycznych do stanu
+przed awari±.
+</para>
+</section> <!-- niezawodnosc -->
+
+<section id="ekonomicznosc">
+<title>Ekonomiczno¶æ</title>
+<para>
+W ¶wiecie gospodarki wolnorynkowej ka¿d± inwestycjê oprócz jej celowo¶ci, tzn.
+zastosowania nowatorskich rozwi±zañ, u³atwienia pracy obs³udze, nale¿y
+rozpatrywaæ pod k±tem op³acalno¶ci - po jakim okresie inwestuj±cy odzyska
+swoje pieni±dze. W polskich warunkach trzeba dodatkowo szczególnie zwróciæ
+uwagê na to, ile pieniêdzy mo¿na w ogóle wydaæ na taki cel. St±d rodzi siê
+pytanie: kupiæ system dobry czy tani?. Czy jednak te
+dwie cechy na pewno wzajemnie siê wykluczaj±?
+</para><para>
+Specjali¶ci firmy PRATERM opracowuj±c opisywany tu system komputerowy od samego pocz±tku 
+mieli na uwadze wzglêdy ekonomiczne. Powód pierwotny by³ do¶æ banalny: pierwsze 
+implementacje, jako obiekty eksperymentalne instalowane by³y na koszt twórców. To jednak, 
+co zrodzi³o siê z przypadku okaza³o siê ogromnym atutem. Oto argumenty ekonomiczne 
+przemawiaj±ce za tym systemem:
+<itemizedlist>
+ <listitem><para>
+ zastosowanie komputerów klasy PC zapewnia mo¿liwo¶æ wyboru z szerokiego
+ zasobu konkurencyjnych cenowo ofert - u¿ytkownik nie jest zdany na jednego
+ producenta specjalistycznego sprzêtu komputerowego
+ </para></listitem>
+ <listitem><para>
+ wraz z up³ywem czasu - udoskonaleniem technologii podzespo³ów
+ elektronicznych i zwi±zanym z tym spadkiem cen - komputer z procesorem
+ Intela stosowany dot±d jako serwer, mo¿e byæ z powodzeniem zast±piony nowsz±,
+ bardziej wydajn± maszyn±, a sam mo¿e pe³niæ rolê dodatkowego terminala
+ </para></listitem>
+ <listitem><para>
+ komputery PC pe³ni±ce rolê terminali graficznych mog± tak¿e s³u¿yæ do innych
+ prac, zwi±zanych np. z ksiêgowo¶ci± czy zarz±dzaniem przedsiêbiorstwem
+ </para></listitem>
+ <listitem><para>
+ odbiorca mo¿e sam dokonaæ zakupu sprzêtu komputerowego  
+ (wskazana jest jedynie konsultacja ze
+ specjalistami firmy PRATERM co do wymagañ systemowych)
+ </para></listitem>
+ <listitem><para>
+ stosowane przez firmê PRATERM oprogramowanie w wiêkszo¶ci nale¿y do kategorii
+ Open Source, klient nie ponosi wiêc dodatkowych kosztów zakupów licencji na
+ system operacyjny czy inne programy
+ </para></listitem>
+ <listitem><para>
+ sterowniki firm Z-elektronik czy Sterkom dostarczane przez firmê PRATERM nie maj± swoich
+ odpowiedników funkcjonalnych, które by³yby oferowane w równie atrakcyjnej
+ cenie
+ </para></listitem>
+ <listitem><para>
+ modularno¶æ zarówno sprzêtowa jak i programowa pozwala inwestycjê roz³o¿yæ w
+ czasie, przy czym rozruch jest mo¿liwy ju¿ po zakupie pierwszych sterowników,
+ komputera centralnego i szkieletu oprogramowania, a terminale graficzne,
+ dodatkowe oprogramowanie, jak i kolejne sterowniki przemys³owe mo¿na
+ sukcesywnie nabywaæ
+ </para></listitem>
+ <listitem><para>
+ zdalny dostêp przez modem telefoniczny i internet stanowi unikaln± mo¿liwo¶æ
+ natychmiastowego serwisu przy relatywnie niewielkich kosztach (bez
+ konieczno¶ci przyjazdu specjalisty)
+ </para></listitem>
+ <listitem><para>
+ istnieje w pe³ni funkcjonalna wersja minimalna pozbawiona terminala
+ wieloportowego, obs³uguj±ca maksymalnie dwa kana³y ³±czno¶ci szeregowej
+ </para></listitem>
+</itemizedlist> <!-- argumenty ... -->
+</para>
+</section> <!-- ekonomicznosc -->
+
+<section id="instalacje">
+<title>Zrealizowane instalacje</title>
+<para>
+U¿yteczno¶æ zaprojektowanego i wdro¿onego przez firmê PRATERM komputerowego
+systemu zbierania, archiwizacji i prezentacji danych doceni³a Politechnika
+¦l±ska w Gliwicach, której pracownicy naukowi prowadzili badania nad prac±
+kot³a typu WR-5 w Ciep³owni Centrum Pyskowice. Zainstalowane tam
+oprogramowanie firmy PRATERM wydatnie pomog³o w realizacji pomiarów. Dodatkowo
+na sugestiê pracowników Politechniki ¦l±skiej system oprogramowania
+wzbogacono o wspomniany program wyliczania bilansu energetycznego kot³a oparty
+na algorytmie autorstwa dr. Rusinowskiego.
+</para>
+
+<para>
+Poni¿sza tabela nie uwzglêdnia znacznej liczby instalacji, gdzie znajduj± siê
+tylko sterowniki i panele dostarczone i zainstalowane przez firmê PRATERM, nie
+obejmuje te¿ instalacji systemu na wêz³ach cieplnych.
+
+&praterm-wdrozenia;
+
+</para>
+
+<para>
+U¿ytkownicy systemów firmy PRATERM uzyskuj± pomoc w fazie instalacji i
+uruchamiania systemu. Cykl szkoleñ obejmuje obs³ugê elementów podrzêdnych
+systemu (sterowników i paneli przemys³owych), zaznajomienie z graficznym
+¶rodowiskiem systemu Linux i praktyczne u¿ytkowanie programów. W trosce o
+u¿ytkowników istniej±cych systemów firma PRATERM udostêpnia serwis
+telefoniczny. Specjali¶ci firmy gotowi s± odpowiedzieæ na wszelkie pytania
+dotycz±ce jej produktów, jak te¿ aspektów wprowadzania komputerowych systemów
+zbierania, archiwizacji i prezentacji danych w ciep³ownictwie.
+</para>
+</section> <!-- instalacje -->
+
+<section id="programy">
+<title>Opis programów</title>
+<para>
+<mediaobject><imageobject>
+ <imagedata fileref="pics/hierar.png" scale=80>
+</imageobject></mediaobject>
+</para>
+<section id="p01">
+<title>Demon linii</title>
+<para>
+<!--
+<mediaobject><imageobject>
+ <imagedata fileref="pics/hierar01.png">
+</imageobject></mediaobject>
+-->
+<!--
+<BR><IMG SRC="hierar01.gif" WIDTH=509 HEIGHT=314 ALIGN=right>
+-->
+<table>
+<title>Demon linii</title>
+<tgroup cols="2" align="justify">
+<tbody valign="top">
+<row>
+ <entry>Nazwa</entry>
+ <entry>Proces obs³ugi kana³u komunikacyjnego Demon Linii</entry>
+</row>
+<row>
+ <entry>Lokalizacja</entry>
+ <entry>Proces warstwy komunikacyjnej komputera centralnego.</entry>
+</row>
+<row>
+ <entry>Przeznaczenie</entry>
+ <entry>Odpowiada za bezb³êdn± dwustronn± transmisjê danych w obrêbie
+ pojedynczego kana³u komunikacyjnego. Po¶redniczy w wymianie danych pomiêdzy
+ grup± urz±dzeñ przypisanych do kana³u komunikacyjnego a <link
+ linkend="p02">procesem koncentruj±cym</link>. Odczytuje parametry z urz±dzeñ,
+ odrzuca warto¶ci przek³amane, dokonuje wstêpnego u¶rednienia, eliminuje
+ chwilowe przerwy w komunikacji, udostêpnia poprawne dane <link
+ linkend="p02">centralnemu procesowi koncentruj±co-u¶redniaj±cemu
+ parcook</link>. Przesy³a parametry steruj±ce z wy¿szych warstw systemu do
+ kontrolowanych urz±dzeñ.</entry>
+</row>
+<row>
+ <entry>Przeznaczenie</entry>
+ <entry>Odpowiada za bezb³êdn± dwustronn± transmisjê danych w obrêbie
+ pojedynczego kana³u komunikacyjnego. Po¶redniczy w wymianie danych pomiêdzy
+ grup± urz±dzeñ przypisanych do kana³u komunikacyjnego a <link
+ linkend="p02">procesem koncentruj±cym</link>. Odczytuje parametry z urz±dzeñ,
+ odrzuca warto¶ci przek³amane, dokonuje wstêpnego u¶rednienia, eliminuje
+ chwilowe przerwy w komunikacji, udostêpnia poprawne dane <link
+ linkend="p02">centralnemu procesowi koncentruj±co-u¶redniaj±cemu
+ parcook</link>. Przesy³a parametry steruj±ce z wy¿szych warstw systemu do
+ kontrolowanych urz±dzeñ.</entry>
+</row>
+<row>
+ <entry>Wizualizacja</entry>
+ <entry>Proces warstwy komunikacyjnej nie prowadz±cy dialogu z
+ u¿ytkownikiem.</entry>
+</row>
+<row>
+ <entry morerows=5>Wersje</entry>
+ <entry><emphasis>RS232-1</emphasis> Dla pojedynczego urz±dzenia Z-elektronik
+ pod³±czonego za pomoc± interfejsu RS232 z komunikacj± jednostronn± (tylko
+ zbieranie danych), zasiêg max. 200m, prêdko¶æ transmisji 9600 lub 2400
+ bps</entry>
+</row>
+<row>
+ <entry><emphasis>RS232-2</emphasis> Dla pojedynczego urz±dzenia Z-elektronik
+ pod³±czonego za pomoc± interfejsu RS232 z komunikacj± dwustronn± (zbieranie
+ danych i zdalne przesy³anie nastaw), zasiêg max. 200m, prêdko¶æ transmisji
+ 9600 lub 2400 bps</entry>
+</row>
+<row>
+ <entry><emphasis>RS485-1</emphasis> Dla grupy urz±dzeñ Z-elektronik
+ pod³±czonej za pomoc± interfejsu RS485 z komunikacj± jednostronn± (tylko
+ zbieranie danych), zasiêg zale¿ny od konfiguracji sieci (przy po³±czeniu
+ 1-do-1 do 10km), prêdko¶æ transmisji 9600 bps</entry>
+</row>
+<row>
+ <entry><emphasis>RS485-2</emphasis> Dla grupy urz±dzeñ Z-elektronik
+ pod³±czonej za pomoc± interfejsu RS485 z komunikacj± dwustronn± (zbieranie
+ danych i zdalne przesy³anie nastaw), zasiêg zale¿ny od konfiguracji sieci
+ (przy po³±czeniu 1-do-1 do 10km), prêdko¶æ transmisji 9600 bps</entry>
+</row>
+<row>
+ <entry><emphasis>Waga</emphasis> Dla mikroprocesorowej wagi
+ ta¶moci±gowej</entry>
+</row>
+<row>
+ <entry><emphasis>Inne</emphasis> Na zamówienie dla dowolnego protoko³u
+ transmisji szeregowej po dostarczeniu dokumentacji technicznej przez
+ kontrahenta</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</para>
+</section> <!-- demon linii (p01) -->
+
+<section id="p02">
+<title>Parcook</title>
+<para>
+<!--
+<mediaobject><imageobject>
+ <imagedata fileref="pics/hierar02.png">
+</imageobject></mediaobject>
+-->
+<!--
+<BR><IMG SRC="hierar02.gif" WIDTH=509 HEIGHT=314 ALIGN=right>
+-->
+<table>
+<title>Parcook</title>
+<tgroup cols="2" align="justify">
+<tbody valign="top">
+<row>
+ <entry>Nazwa</entry>
+ <entry>Centralny proces koncentruj±co-u¶redniaj±cy Parcook [czyt.
+ parkuk].</entry>
+</row>
+<row>
+ <entry>Lokalizacja</entry>
+ <entry>Proces komputera centralnego.</entry>
+</row>
+<row>
+ <entry>Przeznaczenie</entry>
+ <entry>Pobiera dane od <link linkend="p01">demonów linii</link>, dokonuje
+ u¶rednieñ, wylicza parametry pochodne w oparciu o dane zawarte w plikach
+ konfiguracyjnych. Udostêpnia aplikacjom warstwy u¿ytkowej dane obrazuj±ce
+ kompletny stan nadzorowanego systemu. Dane dostêpne s± w piêciu kategoriach:
+ próbki tj. dane bezpo¶rednio odebrane z <link linkend="p01">demonów
+ linii</link>, b±d¼ wyliczone na ich podstawie parametry pochodne, ¶rednie
+ minutowe, ¶rednie 10-cio minutowe, ¶rednie godzinne, ¶rednie dobowe.
+ Dodatkowo parcook powo³uje do ¿ycia i nadzoruje kolejki parametrów
+ steruj±cych, po¶rednicz±ce w wymianie danych pomiêdzy <link
+ linkend="p11">procesami steruj±cymi</link> a urz±dzeniami podrzêdnymi
+ (sterowniki, panele).</entry>
+</row>
+<row>
+ <entry>Wizualizacja</entry>
+ <entry>Proces warstwy us³ugowej nie prowadz±cy dialogu z u¿ytkownikiem.</entry>
+</row>
+<row>
+ <entry>Wersje</entry>
+ <entry>Proces parcook w swych podstawowych funkcjach nie jest zale¿ny od
+ konkretnej konfiguracji systemu zbierania danych. Do wykonywania obliczeñ
+ parametrów po¶rednich parcook korzysta z modu³u funkcji matematycznych. Modu³
+ ten mo¿e byæ na ¿yczenie u¿ytkownika wzbogacony o funkcje specjalne (np.
+ tablice konwersji parametrów).</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</para>
+</section> <!-- parcook (p02) -->
+
+<section id="p03">
+<title>Meaner</title>
+<para>
+<!--
+<mediaobject><imageobject>
+ <imagedata fileref="pics/hierar03.png">
+</imageobject></mediaobject>
+-->
+<!--
+<BR><IMG SRC="hierar03.gif" WIDTH=509 HEIGHT=314 ALIGN=right>
+-->
+<table>
+<title>Meaner</title>
+<tgroup cols="2" align="justify">
+<tbody valign="top">
+<row>
+ <entry>Nazwa</entry>
+ <entry>Proces  u¶redniaj±cy i zapisuj±cy do bazy parametry Meaner [czyt.
+ miner].</entry>
+</row>
+<row>
+ <entry>Lokalizacja</entry>
+ <entry>Proces komputera centralnego.</entry>
+</row>
+<row>
+ <entry>Przeznaczenie</entry>
+ <entry>Odczytuje warto¶ci ¶rednich 10-cio minutowych dostarczanych przez
+ <link linkend="p02">parcooka</link>, wylicza ¶rednie d³ugoterminowe:
+ o¶miogodzinne, dobowe, tygodniowe i miesiêczne, oraz zapisuje je do
+ specjalizowanego systemu bazy danych. Meaner kontroluje dostêp do bazy przez
+ inne programy u¿ytkowe. W systemie, w którym istnieje <link
+ linkend="p10">program backup'uj±cy</link>, meaner jest procesem inicjuj±cym
+ archiwizacjê po utworzeniu ka¿dego nastêpnego pliku bazy (zapisanie oko³o
+ 4000 rekordów).</entry>
+</row>
+<row>
+ <entry>Wizualizacja</entry>
+ <entry>Proces warstwy us³ugowej nie prowadz±cy dialogu z
+ u¿ytkownikiem.</entry>
+</row>
+<row>
+ <entry>Wersje</entry>
+ <entry>Proces meaner w swych podstawowych funkcjach nie jest zale¿ny od
+ konkretnej konfiguracji systemu zbierania danych.</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</para>
+</section> <!-- meaner (p03) -->
+
+<section id="p04">
+<title>Raporter</title>
+<para>
+<!--
+<mediaobject><imageobject>
+ <imagedata fileref="pics/hierar04.png">
+</imageobject></mediaobject>
+-->
+<!--
+<BR><IMG SRC="hierar04.gif" WIDTH=509 HEIGHT=314 ALIGN=right>
+-->
+<table>
+<title>Raporter</title>
+<tgroup cols="2" align="justify">
+<tbody valign="top">
+<row>
+ <entry>Nazwa</entry>
+ <entry>Program obs³ugi raportów Raporter.</entry>
+</row>
+<row>
+ <entry>Lokalizacja</entry>
+ <entry>Proces warstwy u¿ytkowej uruchamiany na komputerze centralnym,
+ dostêpny z poziomu u¿ytkownika w lokalnej sieci Xterminali, a tak¿e zdalnie
+ za pomoc± ³±cza modemowego w oparciu o publiczn± komutowan± sieæ
+ telefoniczn±.</entry>
+</row>
+<row>
+ <entry>Przeznaczenie</entry>
+ <entry>S³u¿y do tekstowej wizualizacji, drukowania i archiwizacji
+ definiowanych przez u¿ytkownika raportów z pracy monitorowanego systemu.
+ Dowolnie wybrane parametry pracy systemu mog± byæ cyklicznie wy¶wietlane wraz
+ ze skrótow± nazw± parametru oraz stosownym komentarzem. U¿ytkownik ma do
+ wyboru zastosowanie predefiniowanych skrótów oraz nazw parametrów, mo¿e je
+ równie¿ zdefiniowaæ sam. Postaæ nowego raportu mo¿na zachowaæ w pliku wzorca
+ raportu do pó¼niejszego wykorzystania. Okres cyklu powtarzania jak równie¿
+ kategoria wy¶wietlanych parametrów zale¿± od decyzji u¿ytkownika. Raporty z
+ pracy systemu mog± byæ na ¿yczenie u¿ytkownika lub cyklicznie zapisywane do
+ plików archiwalnych w celu pó¼niejszej analizy b±d¼ wydruku.</entry>
+</row>
+<row>
+ <entry>Wizualizacja</entry>
+ <entry>Raporter komunikuje siê z u¿ytkownikiem w ¶rodowisku graficznym. W
+ przypadku korzystania z gotowych wzorców raportów lub stosowania
+ predefiniowanych nazw skrótów i parametrów do obs³ugi programu wystarcza
+ mysz. Pe³ne mo¿liwo¶ci edycyjne programu wykorzystuje siê u¿ywaj±c klawiatury
+ i myszy. Za³±czony rysunek przedstawia widok g³ównego okna programu Raporter
+ wraz z opisem elementów interfejsu graficznego oraz strukturê przyk³adowego
+ raportu.</entry>
+</row>
+<row>
+ <entry>Wersje</entry>
+ <entry>Wraz z programem dostarczany jest zestaw predefiniowanych wzorców
+ raportów odpowiadaj±cych raportom poszczególnych urz±dzeñ podrzêdnych
+ (sterowników lub paneli przemys³owych) oraz tworz±cych raporty bilansowe
+ bazuj±ce na danych z wielu ¼róde³ (przyk³adowo rozk³ad mocy ciep³owni na
+ poszczególne kot³y). Istnieje mo¿liwo¶æ dostarczenia indywidualnych wzorców
+ raportów wed³ug specyfikacji u¿ytkownika.</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</para>
+</section> <!-- raporter (p04) -->
+
+<section id="p05">
+<title>Program Przegl±daj±cy</title>
+<para>
+<!--
+<mediaobject><imageobject>
+ <imagedata fileref="pics/hierar05.png">
+</imageobject></mediaobject>
+-->
+<mediaobject><imageobject>
+ <imagedata fileref="pics/przeglad.png" scale=65>
+</imageobject></mediaobject>
+<!--
+<BR><IMG SRC="hierar05.gif" WIDTH=509 HEIGHT=314 ALIGN=right>
+<CENTER><IMG SRC="przeglad.gif" WIDTH=752 HEIGHT=599><BR></CENTER>
+-->
+<table>
+<title>Program przegl±daj±cy</title>
+<tgroup cols="2" align="justify">
+<tbody valign="top">
+ <row>
+ <entry>Nazwa</entry>
+ <entry>Program wizualizacji danych zarejestrowanych w bazie w postaci
+ wykresów.</entry>
+</row>
+<row>
+ <entry>Lokalizacja</entry>
+ <entry>Proces warstwy u¿ytkowej uruchamiany na komputerze centralnym,
+ dostêpny z poziomu u¿ytkownika w lokalnej sieci Xterminali, a tak¿e zdalnie
+ za pomoc± ³±cza modemowego w oparciu o publiczn± komutowan± sieæ
+ telefoniczn±.</entry>
+</row>
+<row>
+ <entry>Przeznaczenie</entry>
+ <entry>Jest to podstawowe narzêdzie analityczne umo¿liwiaj±ce przegl±d danych
+ o pracy systemu ciep³owniczego z dowolnego okresu czasu. Dane przedstawiane
+ s± w formie wykresów zgrupowanych w tzw. oknach. U¿ytkownik ma mo¿liwo¶æ
+ wyliczania warto¶ci ¶redniej, maksymalnej i minimalnej z dowolnego okresu
+ czasu, wyliczania danych sumarycznych dla wybranych parametrów (np. ilo¶æ
+ spalonego wêgla), analiz dla sezonów o ustalonych granicach, dopisywania
+ komentarzy, przesuwania wykresów w czasie (np. w celu porównania danej
+ wielko¶ci dla dwóch kolejnych sezonów grzewczych), filtrowania wykresów w
+ celu odrzucenia chwilowych zak³óceñ, drukowania na dowolnej drukarce, i wiele
+ innych. Program wyposa¿ony jest w kontekstowy system pomocy.</entry>
+</row>
+<row>
+ <entry>Wizualizacja</entry>
+ <entry>Program przegl±daj±cy komunikuje siê z u¿ytkownikiem w ¶rodowisku
+ graficznym. Do obs³ugi programu wystarcza jedynie mysz, choæ dla
+ zaawansowanych u¿ytkowników istnieje mo¿liwo¶æ szybszej obs³ugi przy pomocy
+ klawiatury.</entry>
+</row>
+<row>
+ <entry>Wersje</entry>
+ <entry>Program jest standardowo dostarczany ze zbiorem definicji okien
+ obejmuj±cym wszystkie monitorowane parametry. Dla u¿ytkownika przeznaczone s±
+ tzw. okna definiowalne, w których mo¿na umieszczaæ dowolne wykresy z innych
+ okien. </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</para>
+</section> <!-- program przegl±daj±cy (p05) -->
+
+<section id="p06">
+<title>Kontroler</title>
+<para>
+<!--
+<mediaobject><imageobject>
+ <imagedata fileref="pics/hierar06.png">
+</imageobject></mediaobject>
+-->
+<mediaobject><imageobject>
+ <imagedata fileref="pics/konmain.png" scale=80>
+</imageobject></mediaobject>
+<!--
+<BR><IMG SRC="hierar06.gif" WIDTH=509 HEIGHT=314 ALIGN=right>
+<CENTER><IMG SRC="konmain.gif" WIDTH=606 HEIGHT=341><BR></CENTER>
+-->
+<table>
+<title>Kontroler</title>
+<tgroup cols="2" align="justify">
+<tbody valign="top">
+<row>
+ <entry>Nazwa</entry>
+ <entry>Program sygnalizacji przekroczeñ dozwolonych zakresów parametrów
+ Kontroler.</entry>
+</row>
+<row>
+ <entry>Lokalizacja</entry>
+ <entry>Proces warstwy u¿ytkowej uruchamiany na komputerze centralnym,
+ dostêpny z poziomu u¿ytkownika w lokalnej sieci Xterminali, a tak¿e zdalnie
+ za pomoc± ³±cza modemowego w oparciu o publiczn± komutowan± sieæ
+ telefoniczn±.</entry>
+</row>
+<row>
+ <entry>Przeznaczenie</entry>
+ <entry>S³u¿y do sygnalizacji przekroczeñ warto¶ci wybranych przez u¿ytkownika
+ parametrów pracy systemu; umo¿liwia równie¿ sygnalizacjê zaniku transmisji.
+ Kontrola warto¶ci zadanych parametrów nastêpuje cyklicznie. Wszystkie
+ przekroczenia s± zapisywane do pliku, mog± byæ równie¿ wy¶wietlane na ekranie
+ monitora. Zdefiniowan± listê kontrolowanych parametrów mo¿na zachowaæ w pliku
+ do pó¼niejszego wykorzystania. U¿ytkownik mo¿e okre¶laæ zarówno czas pomiêdzy
+ kolejnymi sprawdzeniami warto¶ci parametrów (od 10 sekund do godziny), jak i
+ maksymaln± d³ugo¶æ plików zawieraj±cych przekroczenia zakresu (od 100 do 5000
+ linii). Zawarto¶æ tych plików mo¿e byæ przegl±dana oraz drukowana.</entry>
+</row>
+<row>
+ <entry>Wizualizacja</entry>
+ <entry>Kontroler komunikuje siê z u¿ytkownikiem w ¶rodowisku graficznym. W
+ przypadku korzystania z uprzednio zdefiniowanej listy kontrolowanych
+ parametrów do obs³ugi programu wystarcza mysz. Pe³ne mo¿liwo¶ci edycyjne
+ programu wykorzystuje siê u¿ywaj±c klawiatury i myszy. Rysunek przedstawia
+ widok g³ównego okna programu Kontroler wraz z opisem elementów interfejsu
+ graficznego.</entry>
+</row>
+<row>
+ <entry>Wersje</entry>
+ <entry>Program jest w pe³ni konfigurowalny przez u¿ytkownika.</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</para>
+</section> <!-- kontroler (p06) -->
+
+<section id="p07">
+<title>Analiza</title>
+<section id="p07a">
+<title>Analiza I</title>
+<para>
+<!--
+<mediaobject><imageobject>
+ <imagedata fileref="pics/hierar07.png">
+</imageobject></mediaobject>
+-->
+<mediaobject><imageobject>
+ <imagedata fileref="pics/tdbmt1.png" scale=70>
+</imageobject></mediaobject>
+<!--
+<BR><IMG SRC="hierar07.gif" WIDTH=509 HEIGHT=314 ALIGN=right>
+<CENTER><IMG SRC="tdbmt1.gif" WIDTH=616 HEIGHT=445><BR></CENTER>
+-->
+<table>
+<title>Program Analizuj±cy I (zale¿no¶ci typu f(t))</title>
+<tgroup cols="2" align="justify">
+<tbody valign="top">
+<row>
+ <entry>Nazwa</entry>
+ <entry>Program analizuj±cy zmiany warto¶ci parametrów w zadanym przedziale
+ czasowym.</entry>
+</row>
+<row>
+ <entry>Lokalizacja</entry>
+ <entry>Proces warstwy u¿ytkowej uruchamiany na komputerze centralnym,
+ dostêpny z poziomu u¿ytkownika w lokalnej sieci Xterminali, a tak¿e zdalnie
+ za pomoc± ³±cza modemowego w oparciu o publiczn± komutowan± sieæ
+ telefoniczn±.</entry>
+</row>
+<row>
+ <entry>Przeznaczenie</entry>
+ <entry>S³u¿y do przeprowadzania analiz dotycz±cych zmian warto¶ci parametrów
+ w zadanym przedziale czasu przy u¿yciu metod statystycznych. Obliczany
+ wspó³czynnik nachylenia prostej aproksymuj±cej wskazuje na intensywno¶æ
+ zjawisk przebiegaj±cych w systemie (np. brudzenia siê kot³a). Dodatkowo
+ wy¶wietlane s± dwie informacje: wspó³czynnik korelacji i liczba punktów
+ pomiarowych. Wspó³czynnik korelacji jest miernikiem jako¶ci przybli¿enia
+ przebiegu zmian funkcji dp(t) przez prost± - im wiêksza jest jego warto¶æ,
+ tym dok³adniejsze jest przybli¿enie. U¿ytkownik ma mo¿liwo¶æ okre¶lania
+ przedzia³ów dopuszczalnych warto¶ci parametrów maj±cych po¶redni wp³yw na
+ badane warto¶ci, dziêki czemu zwiêksza siê dok³adno¶æ obliczeñ. Otrzymane
+ wykresy mog± byæ w razie potrzeby powiêkszane lub zmniejszane.</entry>
+</row>
+<row>
+ <entry>Wizualizacja</entry>
+ <entry>Program komunikuje siê z u¿ytkownikiem w ¶rodowisku graficznym.
+ Obs³uga programu odbywa siê w przewa¿aj±cym stopniu za pomoc± myszy. Rysunek
+ przedstawia widok g³ównego okna programu wraz z opisem elementów interfejsu
+ graficznego.</entry>
+</row>
+<row>
+ <entry morerows=2>Wersje</entry>
+ <entry>Program analizuj±cy stopieñ zabrudzenia kot³ów po stronie wodnej.
+ Program ten jest narzêdziem pozwalaj±cym na ocenê szybko¶ci narastania
+ zabrudzenia kot³a po stronie wodnej na podstawie danych dotycz±cych wybranego
+ kot³a w dowolnym okresie czasu. Analizowane s± warto¶ci spadku ci¶nienia na
+ kotle; wyliczany wspó³czynnik nachylenia prostej (wyra¿ony w kPa/miesi±c) ma
+ tym wiêksz± warto¶æ, im szybciej postêpuje proces narastania zabrudzenia.
+ U¿ytkownik mo¿e okre¶liæ trzy ró¿ne przedzia³y warto¶ci przep³ywów, dla
+ których bêdzie przeprowadzona analiza. Jedn± z funkcji programu jest ponadto
+ automatyczne wyznaczanie wspó³czynnika nachylenia prostej dla ró¿nych
+ przedzia³ów warto¶ci przep³ywów.</entry>
+</row>
+<row>
+ <entry>Program analizuj±cy stopieñ zabrudzenia kot³ów po stronie spalin.
+ Program ten jest narzêdziem pozwalaj±cym na ocenê szybko¶ci narastania
+ zabrudzenia kot³a po stronie spalin (oddzielnie dla lewej i prawej strony
+ kot³a w przypadku kot³ów dwurusztowych) na podstawie danych dotycz±cych
+ wybranego kot³a w dowolnym okresie czasu.  Analizowana jest temperatura
+ spalin; wyliczany wspó³czynnik nachylenia prostej (wyra¿ony w °C/miesi±c)
+ jest miernikiem szybko¶ci procesu narastania zabrudzenia. U¿ytkownik ma
+ równie¿ mo¿liwo¶æ okre¶lania przedzia³ów dopuszczalnych warto¶ci dla takich
+ parametrów pomocniczych, jak np. wydajno¶æ kot³a czy temperatura wody
+ wej¶ciowej  w rurach. Za pomoc± tego programu mo¿na równie¿ oceniaæ szybko¶æ
+ brudzenia siê podgrzewacza poprzez analizê zmian spadku temperatury spalin na
+ podgrzewaczu.</entry>
+</row>
+<row>
+ <entry>Inne - na zamówienie dla dowolnych parametrów rejestrowanych w bazie
+ danych.</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</para>
+</section> <!-- analiza I (p07a) -->
+
+<section id="p07b">
+<title>Analiza II</title>
+<para>
+<!--
+<mediaobject><imageobject>
+ <imagedata fileref="pics/hierar07.png">
+</imageobject></mediaobject>
+-->
+<mediaobject><imageobject>
+ <imagedata fileref="pics/tdbxmpos.png" scale=70>
+</imageobject></mediaobject>
+<!--
+<BR><IMG SRC="hierar07.gif" WIDTH=509 HEIGHT=314 ALIGN=right>
+<CENTER><IMG SRC="tdbxmpos.gif" WIDTH=616 HEIGHT=408><BR></CENTER>
+-->
+<table>
+<title>Program Analizuj±cy II (zale¿no¶ci typu y(x))</title>
+<tgroup cols="2" align="justify">
+<tbody valign="top">
+<row>
+ <entry>Nazwa</entry>
+ <entry>Program analizuj±cy zmiany zale¿no¶ci parametrów w zadanym przedziale
+ czasowym.</entry>
+</row>
+<row>
+ <entry>Lokalizacja</entry>
+ <entry>Proces warstwy u¿ytkowej uruchamiany na komputerze centralnym,
+ dostêpny z poziomu u¿ytkownika w lokalnej sieci Xterminali, a tak¿e zdalnie
+ za pomoc± ³±cza modemowego w oparciu o publiczn± komutowan± sieæ
+ telefoniczn±.</entry>
+</row>
+<row>
+ <entry>Przeznaczenie</entry>
+ <entry>S³u¿y do przeprowadzania analiz dotycz±cych zmian zale¿no¶ci
+ parametrów w zadanym przedziale czasu przy u¿yciu metod statystycznych.
+ Obliczany wspó³czynnik nachylenia prostej aproksymuj±cej jest miernikiem
+ przebiegania zjawisk przebiegaj±cych w systemie (np. wzrostu lub spadku
+ sprawno¶ci kot³a w zale¿no¶ci od prêdko¶ci posuwu rusztu lub stosunku
+ powietrze/wêgiel). Dodatkowo wy¶wietlane s± dwie informacje: wspó³czynnik
+ korelacji i liczba punktów pomiarowych. Wspó³czynnik korelacji jest
+ miernikiem jako¶ci przybli¿enia przebiegu zmian funkcji y(x) przez prost± -
+ im wiêksza jest jego warto¶æ, tym dok³adniejsze jest przybli¿enie. U¿ytkownik
+ ma mo¿liwo¶æ okre¶lania przedzia³ów dopuszczalnych warto¶ci parametrów
+ maj±cych po¶redni wp³yw na badane warto¶ci, dziêki czemu zwiêksza siê
+ dok³adno¶æ obliczeñ. Otrzymane wykresy mog± byæ w razie potrzeby powiêkszane
+ lub zmniejszane.</entry>
+</row>
+<row>
+ <entry>Wizualizacja</entry>
+ <entry>Program komunikuje siê z u¿ytkownikiem w ¶rodowisku graficznym.
+ Obs³uga programu odbywa siê w przewa¿aj±cym stopniu za pomoc± myszy. Rysunki
+ przedstawiaj± widok g³ównego okna programu wraz z opisem elementów interfejsu
+ graficznego.</entry>
+</row>
+<row>
+ <entry morerows=2>Wersje</entry>
+ <entry>Program analizuj±cy zale¿no¶æ sprawno¶ci kot³a od prêdko¶ci posuwu
+ rusztu. Program ten jest narzêdziem pozwalaj±cym na ocenê zale¿no¶ci
+ sprawno¶ci kot³a od prêdko¶ci posuwu rusztu. Wyliczany wspó³czynnik
+ nachylenia prostej (wyra¿ony w %/m/h) wskazuje, czy dla okre¶lonego
+ przedzia³u wydajno¶ci i stosunku powietrze/wêgiel zwiêkszanie prêdko¶ci
+ posuwu rusztu podnosi, czy obni¿a sprawno¶æ kot³a. Jedn± z funkcji programu
+ jest ponadto automatyczne wyznaczanie wspó³czynnika nachylenia prostej dla
+ ró¿nych przedzia³ów warto¶ci wydajno¶ci lub stosunku powietrze /
+ wêgiel.</entry>
+</row>
+<row>
+ <entry>Program analizuj±cy zale¿no¶æ sprawno¶ci kot³a od stosunku powietrze /
+ wêgiel. Program ten jest narzêdziem pozwalaj±cym na ocenê zale¿no¶ci
+ sprawno¶ci kot³a od stosunku powietrze / wêgiel. Wyliczany wspó³czynnik
+ nachylenia prostej (wyra¿ony w %/%) wskazuje, czy dla okre¶lonego przedzia³u
+ wydajno¶ci i prêdko¶ci posuwu rusztu zwiêkszanie stosunku powietrze / wêgiel
+ podnosi, czy obni¿a sprawno¶æ kot³a. Jedn± z funkcji programu jest ponadto
+ automatyczne wyznaczanie wspó³czynnika nachylenia prostej dla ró¿nych
+ przedzia³ów warto¶ci wydajno¶ci lub prêdko¶ci posuwu rusztu.</entry>
+</row>
+<row>
+ <entry>Inne - na zamówienie dla dowolnych parametrów rejestrowanych w bazie
+ danych.</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</para>
+</section> <!-- analiza II (p07b) -->
+</section> <!-- (p07) -->
+
+<section id="p08">
+<title>Ekstraktor</title>
+<para>
+<!--
+<mediaobject><imageobject>
+ <imagedata fileref="pics/hierar08.png">
+</imageobject></mediaobject>
+-->
+<mediaobject><imageobject>
+ <imagedata fileref="pics/extrmai4.png" scale=70>
+</imageobject></mediaobject>
+<!--
+<BR><IMG SRC="hierar08.gif" WIDTH=509 HEIGHT=314 ALIGN=right>
+<CENTER><IMG SRC="extrmai4.gif" WIDTH=616 HEIGHT=512><BR></CENTER>
+-->
+<table>
+<title>Ekstraktor</title>
+<tgroup cols="2" align="justify">
+<tbody valign="top">
+<row>
+ <entry>Nazwa</entry>
+ <entry>Program do odczytywania wybranych danych z bazy Ekstraktor.</entry>
+</row>
+<row>
+ <entry>Lokalizacja</entry>
+ <entry>Proces warstwy u¿ytkowej uruchamiany na komputerze centralnym,
+ dostêpny z poziomu u¿ytkownika w lokalnej sieci Xterminali, a tak¿e zdalnie
+ za pomoc± ³±cza modemowego w oparciu o publiczn± komutowan± sieæ
+ telefoniczn±.</entry>
+</row>
+<row>
+ <entry>Przeznaczenie</entry>
+ <entry>S³u¿y do odczytania z bazy danych warto¶ci wybranych przez u¿ytkownika
+ parametrów i zapisania ich do pliku w formacie akceptowalnym przez arkusze
+ kalkulacyjne (np. Microsoft Excel). U¿ytkownik mo¿e okre¶laæ nie tylko
+ przedzia³ czasu,  którego maj± dotyczyæ dane, ale równie¿ odczytywaæ dane
+ tylko z okre¶lonych dni tygodnia oraz ustalaæ format pliku wynikowego (zapis
+ w rzêdach lub kolumnach, mo¿liwo¶æ minimalizacji rozmiaru pliku wyj¶ciowego
+ lub wybór sposobu zapisu liczb (czê¶æ dziesiêtna oddzielona kropk± lub
+ przecinkiem).</entry>
+</row>
+<row>
+ <entry>Wizualizacja</entry>
+ <entry>Ekstraktor komunikuje siê z u¿ytkownikiem w ¶rodowisku graficznym.
+ Obs³uga programu odbywa siê przede wszystkim za pomoc± myszy, a w mniejszym
+ stopniu przy u¿yciu klawiatury. Rysunek przedstawia widok g³ównego okna
+ programu wraz z opisem elementów interfejsu graficznego.</entry>
+</row>
+<row>
+ <entry>Wersje</entry>
+ <entry>Program nie posiada szczególnych implementacji.</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</para>
+</section> <!-- ekstraktor (p08) -->
+
+<section id="p09">
+<title>Schemat</title>
+<para>
+<!--
+<mediaobject><imageobject>
+ <imagedata fileref="pics/hierar09.png">
+</imageobject></mediaobject>
+-->
+
+<figure id="schemat-mapa">
+<title>Program Schemat</title>
+<mediaobject><imageobject>
+ <imagedata fileref="pics/mapa.png" scale=60>
+</imageobject></mediaobject>
+</figure>
+
+<!--
+<figure id="mapa-isl">
+<title>Program ISL</title>
+<mediaobject><imageobject>
+ <imagedata fileref="pics/mapa-isl.png" scale=60>
+</imageobject></mediaobject>
+</figure>
+-->
+
+<!--
+<BR><IMG SRC="hierar09.gif" WIDTH=509 HEIGHT=314 ALIGN=right>
+<CENTER><IMG SRC="mapa.gif" WIDTH=730 HEIGHT=483><BR></CENTER>
+-->
+<table>
+<title>Programy Schemat i ISL</title>
+<tgroup cols="2" align="justify">
+<tbody valign="top">
+<row>
+ <entry>Nazwa</entry>
+ <entry>Program do wizualizacji schematu technologicznego systemu
+ ciep³owniczego.</entry>
+</row>
+<row>
+ <entry>Lokalizacja</entry>
+ <entry>Proces warstwy u¿ytkowej uruchamiany na komputerze centralnym,
+ dostêpny z poziomu u¿ytkownika w lokalnej sieci Xterminali, a tak¿e zdalnie
+ za pomoc± ³±cza modemowego w oparciu o publiczn± komutowan± sieæ
+ telefoniczn±.</entry>
+</row>
+<row>
+ <entry>Przeznaczenie</entry>
+ <entry>Jest to odpowiednik tablicy synoptycznej. Funkcjonalnie spe³nia czê¶æ
+ zadañ <link linkend="p04">raportera</link>, ograniczaj±c u¿ytkownika jedynie
+ do obserwacji parametrów pracy. Program ten jest najprostszym w obs³udze
+ spo¶ród wszystkich elementów systemu komputerowego. £atwo¶æ obs³ugi jest na
+ tyle du¿a, ¿e jest on dostarczany bez instrukcji u¿ytkownika, co nie wzbudza
+ zastrze¿eñ odbiorców.</entry>
+</row>
+<row>
+ <entry>Wizualizacja</entry>
+ <entry>Schemat komunikuje siê z u¿ytkownikiem w ¶rodowisku graficznym.
+ </entry>
+</row>
+<row>
+ <entry>Wersje</entry>
+ <entry>Program Schemat nie jest ju¿ rozwijany. Nowy program, o nazwie ISL,
+ pozwala na dostêp do schematów z poziomu przegl±darki internetowej.
+ </entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</para>
+</section> <!-- schemat (p09) -->
+
+<section id="p10">
+<title>Backup</title>
+<para>
+<!--
+<mediaobject><imageobject>
+ <imagedata fileref="pics/hierar10.png">
+</imageobject></mediaobject>
+-->
+<!--
+<BR><IMG SRC="hierar10.gif" WIDTH=509 HEIGHT=314 ALIGN=right>
+-->
+<table>
+<title>Backup</title>
+<tgroup cols="2" align="justify">
+<tbody valign="top">
+<row>
+ <entry>Nazwa</entry>
+ <entry>Program archiwizuj±cy dane.</entry>
+</row>
+<row>
+ <entry>Lokalizacja</entry>
+ <entry>Proces komputera centralnego.</entry>
+</row>
+<row>
+ <entry>Przeznaczenie</entry>
+ <entry>Nadzorowany przez <link linkend="p03">meanera</link> program zapisuje
+ uprzednio skompresowany ka¿dy kolejny plik z danymi zarejestrowanymi w
+ systemie zabezpieczaj±c je przed przypadkowym uszkodzeniem (np. awaria dysku
+ twardego).</entry>
+</row>
+<row>
+ <entry>Wizualizacja</entry>
+ <entry>Proces warstwy us³ugowej nie prowadz±cy dialogu z u¿ytkownikiem.</entry>
+</row>
+<row>
+ <entry>Wersje</entry>
+ <entry>Program ró¿ni siê w zale¿no¶ci od u¿ytego do archiwizacji medium.
+ Najczê¶ciej jest to ta¶ma streamer'a SCSI.</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</para>
+</section> <!-- backup (p10) -->
+
+<section id="p11">
+<title>Sterowanie</title>
+<para>
+<!--
+<mediaobject><imageobject>
+ <imagedata fileref="pics/hierar11.png">
+</imageobject></mediaobject>
+-->
+<!--
+<BR><IMG SRC="hierar11.gif" WIDTH=509 HEIGHT=314 ALIGN=right>
+-->
+<table>
+<title>Programy Steruj±ce</title>
+<tgroup cols="2" align="justify">
+<tbody valign="top">
+<row>
+ <entry>Nazwa</entry>
+ <entry>Programy nadrzêdnego sterowania systemem.</entry>
+</row>
+<row>
+ <entry>Lokalizacja</entry>
+ <entry>Procesy komputera centralnego.</entry>
+</row>
+<row>
+ <entry>Przeznaczenie</entry>
+ <entry>Wysy³anie poprzez <link linkend="p01">demony linii</link> parametrów
+ pracy do sterowników mikroprocesorowych. Programy steruj±ce pracuj±ce na
+ komputerze centralnym s± rozwiniêciem algorytmów sterowania
+ zaimplementowanych w sterownikach, wzbogacone o mo¿liwo¶æ analizy
+ d³ugoterminowej i kontroli wszystkich parametrów w systemie. W celu
+ podwy¿szenia niezawodno¶ci programy w sterownikach s± przygotowane na
+ ewentualno¶æ zaniku komunikacji z komputerem, oznaczaj±c± w tym momencie brak
+ podawania nowych nastaw.</entry>
+</row>
+<row>
+ <entry>Wizualizacja</entry>
+ <entry>Procesy warstwy us³ugowej nie prowadz±ce dialogu z
+ u¿ytkownikiem.</entry>
+</row>
+<row>
+ <entry>Wersje</entry>
+ <entry>Zale¿ne od charakterystyki obiektu (obci±¿enie, pojemno¶æ z³adu
+ itp.)</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</para>
+</section> <!-- sterowanie (p11) -->
+
+<section id="p12">
+<title>Pomocnicze</title>
+<section id="p12a">
+<title>Rejestracja</title>
+<para>
+<!--
+<mediaobject><imageobject>
+ <imagedata fileref="pics/hierar12.png">
+</imageobject></mediaobject>
+-->
+<mediaobject><imageobject>
+ <imagedata fileref="pics/labm3.png" scale=70>
+</imageobject></mediaobject>
+<!-- XXX
+<BR><IMG SRC="hierar12.gif" WIDTH=509 HEIGHT=314 ALIGN=right>
+<CENTER><IMG SRC="labm3.gif" WIDTH=716 HEIGHT=563><BR></CENTER>
+-->
+<table>
+<title>Program do rejestracji analiz wêgla i ¿u¿la</title>
+<tgroup cols="2" align="justify">
+<tbody valign="top">
+<row>
+ <entry>Nazwa</entry>
+ <entry>Program do rejestracji analiz wêgla i ¿u¿la.</entry>
+</row>
+<row>
+ <entry>Lokalizacja</entry>
+ <entry>Proces warstwy u¿ytkowej uruchamiany na komputerze centralnym,
+ dostêpny z poziomu u¿ytkownika w lokalnej sieci Xterminali, a tak¿e zdalnie
+ za pomoc± ³±cza modemowego w oparciu o publiczn± komutowan± sieæ
+ telefoniczn±.</entry>
+</row>
+<row>
+ <entry>Przeznaczenie</entry>
+ <entry>S³u¿y do rejestracji analiz laboratoryjnych dotycz±cych sk³adu i
+ warto¶ci opa³owej wêgla i ¿u¿la. Umo¿liwia na podstawie wprowadzonych danych
+ pomiarowych wyliczenie ró¿nych parametrów, np. warto¶ci opa³owej wêgla, oraz
+ dokonywanie przeliczeñ tej warto¶ci na ró¿ne stany. U¿ytkownik ma mo¿liwo¶æ
+ zarówno przegl±dania oraz drukowania kart i wyników analizy, jak i
+ zapamiêtania wprowadzonych danych do pliku w celu ich pó¼niejszego
+ wykorzystania.</entry>
+</row>
+<row>
+ <entry>Wizualizacja</entry>
+ <entry>Program komunikuje siê z u¿ytkownikiem w ¶rodowisku graficznym.
+ Wprowadzanie danych odbywa siê g³ównie przy u¿yciu klawiatury, a pozosta³a
+ obs³uga przede wszystkim za pomoc± myszy. Rysunek przedstawia widok g³ównego
+ okna programu wraz z opisem elementów interfejsu graficznego.</entry>
+</row>
+<row>
+ <entry>Wersje</entry>
+ <entry>Program nie posiada szczególnych implementacji.</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</para>
+</section> <!-- rejestracja (p12a) -->
+
+<section id="p12b">
+<title>Bilans</title>
+<para>
+<!--
+<mediaobject><imageobject>
+ <imagedata fileref="pics/hierar12.png">
+</imageobject></mediaobject>
+-->
+<mediaobject><imageobject>
+ <imagedata fileref="pics/fortm.png" scale=70>
+</imageobject></mediaobject>
+<!-- XXX
+<BR><IMG SRC="hierar12.gif" WIDTH=509 HEIGHT=314 ALIGN=right>
+<CENTER><IMG SRC="fortm.gif" WIDTH=776 HEIGHT=532><BR></CENTER>
+-->
+<table>
+<title>Bilans energetyczny kot³a</title>
+<tgroup cols="2" align="justify">
+<tbody valign="top">
+<row>
+ <entry>Nazwa</entry>
+ <entry>Program do obliczania bilansu energetycznego kot³a (implementacja
+ algorytmu opracowanego przez dr Rusinowskiego z Politechniki ¦l±skiej w
+ Gliwicach).</entry>
+</row>
+<row>
+ <entry>Lokalizacja</entry>
+ <entry>Proces warstwy u¿ytkowej uruchamiany na komputerze centralnym, dostêpny z poziomu u¿ytkownika w lokalnej sieci Xterminali, a tak¿e zdalnie za pomoc± ³±cza modemowego w oparciu o publiczn± komutowan± sieæ telefoniczn±.</entry>
+</row>
+<row>
+ <entry>Przeznaczenie</entry>
+ <entry>S³u¿y do obliczania bilansu energetycznego kot³a na podstawie wprowadzonych danych pomiarowych. Umo¿liwia wyliczanie takich parametrów, jak sprawno¶æ kot³a, entalpia spalin, ¿u¿la i py³u, czy strat ciep³a do otoczenia. Warto¶ci ¶rednie w zadanym okresie czasu tych parametrów, które s± rejestrowane w bazie danych, mog± zostaæ automatycznie wstawione w odpowiednie pola formularza obliczeniowego. Program umo¿liwia przegl±danie i drukowanie wyników obliczeñ i informacji o b³êdach pomiarowych. Raz wprowadzone dane mog± byæ zapisane do pliku do pó¼niejszego wykorzystania.</entry>
+</row>
+<row>
+ <entry>Wizualizacja</entry>
+ <entry>Program komunikuje siê z u¿ytkownikiem w ¶rodowisku graficznym. Wprowadzanie danych odbywa siê g³ównie przy u¿yciu klawiatury, a pozosta³a obs³uga przede wszystkim za pomoc± myszy. Rysunek przedstawia widok g³ównego okna programu wraz z opisem elementów interfejsu graficznego.</entry>
+</row>
+<row>
+ <entry>Wersje</entry>
+ <entry>Program nie posiada szczególnych implementacji.</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</para>
+</section> <!-- bilans (p12b) -->
+</section> <!-- (p12) -->
+
+</section> <!-- opisy programów -->
+
+</article>
+
+<!--
+ vim:ft=sgml:
+-->

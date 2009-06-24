@@ -1,0 +1,77 @@
+
+# wxGtk valgrind suppressions,
+# use this file as argument for valgrind --suppressions=<file> options
+
+# Pawe³ Pa³ucha <pawel@praterm.com.pl>
+
+# $Id: szarp-wx.supp 1642 2004-08-06 12:48:23Z pawel $
+
+# Format of this file is:
+# {
+#     name_of_suppression
+#     tool_name:supp_kind
+#     (optional extra info for some suppression types)
+#     caller0 name, or /name/of/so/file.so
+#     caller1 name, or ditto
+#     (optionally: caller2 name)
+#     (optionally: caller3 name)
+#  }
+#
+# For memcheck, the supp_kinds are:
+#
+#     Param Value1 Value2 Value4 Value8 Value16
+#     Free Addr1 Addr2 Addr4 Addr8 Addr16
+#     Cond (previously known as Value0)
+#
+# and the optional extra info is:
+#     if Param: name of system call param
+#     if Free: name of free-ing fn)
+
+# Resulting from R H 8.0
+
+{
+	libc/X11 write error 1
+	Memcheck:Param
+	write(buf)
+	fun:write
+	obj:/usr/X11R6/lib/libX11.so.6.2
+	fun:_X11TransWrite
+	obj:/usr/X11R6/lib/libX11.so.6.2
+}
+
+{
+	
+	libc/X11 writev(vector[...])
+	Memcheck:Param
+	writev(vector[...])
+	obj:/lib/tls/libc-2.3.2.so
+}
+
+{
+	gtk_widget_event cond jump
+	Memcheck:Cond
+	fun:gtk_widget_event
+	fun:_ZN8wxWindow18GtkSendPaintEventsEv
+	fun:_ZN8wxWindow9GtkUpdateEv
+	obj:/usr/lib/libwx_gtk-2.4.so.0.1.1
+}
+
+{
+	gtk_widget_event cond jump 2
+	Memcheck:Cond
+	fun:gtk_widget_event
+	obj:/usr/lib/libgtk-1.2.so.0.9.1
+	fun:gtk_marshal_BOOL__POINTER
+	obj:/usr/lib/libgtk-1.2.so.0.9.1
+}
+		  
+{
+	gtk_widget_event cond jump 3
+	Memcheck:Cond
+	fun:gtk_widget_event
+	fun:_ZN8wxWindow18GtkSendPaintEventsEv
+	fun:_ZN8wxWindow9GtkUpdateEv
+	fun:_ZN8wxWindow14OnInternalIdleEv
+}
+		  
+

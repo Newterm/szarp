@@ -1,0 +1,8 @@
+$Id$
+
+2009-06-24	Pawel Palucha <pawel@praterm.com.pl>
+	* szarp/configure.in: major version incremented to 3.1.
+	* szarp/*: importing SZARP sources into sf.net repository, new
+	Changelog, some non-revelant files removed.
+
+# vim:noexpandtab:

@@ -1,0 +1,158 @@
+#!/bin/bash
+# SZARP: SCADA software 
+# 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+#  2003 Pawe³ Pa³ucha PRATERM S.A pawel@praterm.com.pl
+
+# $Id: ipk_add_template 4393 2007-09-13 16:37:10Z reksio $
+
+# Skrypt dodaje szablon IPK do konfiguracji.
+# Parametry:
+#	- nazwa pliku z szablonem
+#	- tekst, na który maj± zostaæ zamienione tekst 'XXXXX' w szablonie
+#	- nazwa pliku z konfiguracj±, je¶li parametr nie zostanie podany,
+#	zostanie utworzona nowa konfiguracja.
+# Nowa konfiguracja jest wypisywana na standardowe wyj¶cie.
+#
+# Przyk³ad u¿ycia: ipk_add_template template.xml 'Kocio³ WR5' params.xml > new.xml
+
+. `dirname $0`/ipk_config
+
+function Usage() {
+	echo -e "\
+Usage: 
+ ipk_add_template [ -s <from> <to > ] ... <template> <string> [ <config_file> ]\n\
+or\n\
+ ipk_add_template -h | --help\n\
+Add IPK template to configuration.\n\
+\n\
+	-h, --help	print help and exit\n\
+	-s <from> <to>	replace all <from> strings to <to> in configuration\n\
+			(sed is used)\n\
+	<template>	path to IPK template\n\
+	<string>	all XXXXX strings in template are replaced with \n\
+			given string\n\
+	<config_file>	configuration file, if none is given a new 
+			configuration is created\n\
+\n\
+All string arguments must be ISO-8859-2 encoded and musn't contain '/' \n\
+characters. New configuration is printed on standard output. Substitutions\n\
+requested by '-s' options are executed after all other processing. Return code
+is 0 on success or 1 on error. Usage example:\n\
+\n\
+# ipk_add_template template.xml 'Kocio³ WR5' params.xml > new.xml"
+	exit 1;
+}
+
+[ $# -lt 1 ] && Usage
+
+if [ "x$1" = "x-h" -o "x$1" = "x--help" ] ; then
+	Usage
+fi
+
+# Tablice dla podstawien z opcji '-s'
+SUBS=0
+declare FROM
+declare TO
+
+while [ "x$1" = "x-s" ] ; do
+	shift
+	[ $# -lt 2 ] && Usage
+	FROM[$SUBS]=$1
+	shift
+	TO[$SUBS]=$1
+	shift
+	SUBS=$(($SUBS+1))
+done
+	
+[ $# -lt 2 ] && Usage
+
+TEMPLATES_DIR=$SZARP_DIR/resources/xslt
+
+SUB="$2"
+TEMPLATE="$1"
+CONFIG="$3"
+
+TMP_1=/tmp/.ipk.tmp.1
+TMP_2=/tmp/.ipk.tmp.2
+
+# Sprawdzenie poprawnosci konfiguracji
+function CheckXML() {
+	xmllint $XMLLINT_VALID_ARGS --noout "$1" || {
+		echo "Errors while validating document $1 - please correct them"
+		exit 1
+	}
+}
+
+# Sprawdzamy poprawno¶æ szablonu.
+CheckXML "$TEMPLATE"
+
+# Najpierw ustalamy najwiêkszy dotychczasowy indeks w bazie
+
+if [ "x$CONFIG" = "x" ] ; then
+	MAX_BASE_IND=-1
+else
+	CheckXML "$CONFIG"
+	MAX_BASE_IND=`xsltproc $TEMPLATES_DIR/sort_base.xsl "$CONFIG" \
+	| xsltproc $TEMPLATES_DIR/first_base.xsl - \
+	| tail -n 1`
+fi
+
+if [ "x$MAX_BASE_IND" = "x" ] ; then
+	MAX_BASE_IND=-1
+fi
+	
+# Tworzymy listê referencyjn± parametrów z szablonu do przydzielenia indeksów w
+# bazie.
+
+xsltproc --stringparam start "$MAX_BASE_IND" $TEMPLATES_DIR/list_tobase.xsl \
+	"$TEMPLATE" > $TMP_1
+
+# Nadajemy kolejne indeksy w bazie
+
+xsltproc --stringparam list "$TMP_1" $TEMPLATES_DIR/set_base.xsl \
+	$TEMPLATE | xmllint --encode ISO-8859-2 - | xmllint - > $TMP_2
+
+# Zmieniamy nazwy parametrów i inne takie.
+
+sed "s/XXXXX/$SUB/" $TMP_2 > $TMP_1
+
+# Je¶li nie podano konfiguracji, wypluwamy wynik do pliku, w p.p. musimy 
+# jeszcze po³±czyæ z konfiguracj±.
+
+if [ "x$CONFIG" = "x" ] ; then
+	cat $TMP_1 > $TMP_2
+else
+	xsltproc --stringparam add "$TMP_1" $TEMPLATES_DIR/merge.xsl \
+	"$CONFIG" | xmllint --encode ISO-8859-2 - | xmllint --format - > $TMP_2
+fi
+
+# Teraz wykonujemy podstawienia
+I=0
+while [ $I -lt $SUBS ] ; do
+	sed "s/${FROM[$I]}/${TO[$I]}/g" $TMP_2 > $TMP_1
+	mv -f $TMP_1 $TMP_2
+	I=$(($I+1))
+done
+	
+# Wypluwamy wynik
+cat $TMP_2
+rm -f $TMP_1
+rm -f $TMP_2
+
+exit 0
+

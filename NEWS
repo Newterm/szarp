@@ -1,0 +1,50 @@
+$Id: NEWS 901 2003-09-20 00:39:37Z pawel $
+
+Zmiany, zmiany, zmiany - du¿o zmian.
+
+Po pierwsze zmieni³ siê sposób przygotowania do konfiguracji - 'autoconf' ju¿
+nie wystarczy. Potrzebny jeszcze automake, a co gorsza oba w do¶æ nowych
+wersjach. Mo¿na sobie ¶ci±gn±c z praterm.com.pl - katalogu /usr/work/autoconf i
+/usr/work/automake. Instalacja jest banalna - rozpakowujemy a potem:
+
+# ./configure
+# make
+# make install
+
+A potem mo¿emy zabieraæ siê za SZARP'a. Dok³adnie jest top opisane w pliku
+INSTALL, a w skrócie:
+
+# ./autogen.sh
+# ./configure
+# make
+# make install
+
+Nale¿y zwróciæ uwagê, ¿e domy¶lna konfiguracja zawiera te¿ wxWindows - je¶li
+kto¶ nie ma, to trzeba wy³±czyæ. Poza tym zmieni³y siê nazwy opcji na
+standardowe GNU. Zamiast '--with-no-wx' mamy wiêc '--without-wx', podobnie
+'--without-xml', '--without-wx', '--without-cb', '--without-motif'. Te trzy
+ostatnie nie by³y jeszcze zbyt testowane i przez jaki¶ czas nie bêd± pewnie
+dzia³aæ.
+
+W pliku INSTALL jest te¿ opisany sposób instalacji na kompach bez nowego
+autoconf'a / automake'a - z wykorzystaniem 'make dist'. 
+
+Na razie te¿ jeszcze nie dzia³a, ale byæ mo¿e ju¿ nied³ugo zacznie te¿ dzia³aæ
+opcja '--host=i586-pc-mingw32', pozwalaj±ca na kompilacjê czê¶ci programów dla
+Windows. Wymaga to skonfigurowania ¶rodowiska mingw32 - opis w Praterm News
+2003.08.16.
+
+Je¶li chodzi o dodawanie nowych programow, to polecam dokumentacjê automake'a,
+branie przyk³adu z istniejacych plików Makefile.am, trochê komentarzy na ten
+temat jest te¿ w pliku configure.in (szukaæ stringu 'FOR DEVELOPERS').
+
+Przy dodawaniu nowych plików i wszelkich zmianach w Makefile'ach nale¿y
+koniecznie sprawdziæ czy dzia³a te¿ tworzenie dystrybucji oraz kompilacja w
+innym katalogu (nie ze ¼ród³ami). Najpro¶ciej zrobiæ to przez wywo³anie 
+'make distcheck' w g³ównym katalogu.
+
+Dobrze by³oby tak¿e nie za¶miecaæ niepotrzebnie g³ównego Makefile'a - rzeczy
+nale¿±ce do jakiego¶ podkatalogu lepiej umieszczaæ w tym podkatalogu, w g³ównym
+Makefile'u dodaj±c ewentualne 'przekierowanie' (tak jak np. dla 'make doc').
+
+

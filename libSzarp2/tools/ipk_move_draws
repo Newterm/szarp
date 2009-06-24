@@ -1,0 +1,80 @@
+#!/bin/bash
+# SZARP: SCADA software 
+# 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+#  2003 Pawe³ Pa³ucha PRATERM S.A pawel@praterm.com.pl
+
+# $Id: ipk_move_draws 4393 2007-09-13 16:37:10Z reksio $
+
+# Skrypt dodaje podan± warto¶æ do atrybutów 'prior' wybranych
+# elementów 'draw'.
+# Parametry:
+#	- podci±g nazw parametrów, np: 'Kocio³ 1', których ma dotyczyæ zmiana
+#	- o ile zwiêkszyæ atrybuty
+#	- nazwa pliku z konfiguracj±
+
+. `dirname $0`/ipk_config
+
+function Usage() {
+	echo -e "\
+Usage:\n\
+ ipk_move_draws <substring> <offset> [ <config_file> ]\n\
+or\n\
+ ipk_move_draws -h | --help \n\
+Change prior attributes of IPK 'draw' elements (as a result draws are moved\n\
+within 'SzarpDraw' windows).\n\
+\n\
+	-h, --help	print help and exit\n\
+	<substring>	string used for selecting parameters (if empty, all\n\
+			draw elements are modified); string must be in\n\
+			ISO-8859-2 encoding and '/' characters must be escaped\n\
+			by double '\\'\n\
+	<offset>	number by which prior attributes are increased, if\n\
+			negative attributes are decreased\n\
+	<config_file>	path to configuration file, standard input is used if\n\
+			none is given\n\
+\n\
+Return code is 0 on success and 1 on error (if configuration doesn't validate\n\
+against IPK RelaxNG schema). Example:\n\
+ # ipk_move_draws 'Kocio³ WR5' 7 params.xml > new.xml"
+	exit 1;
+}
+
+if [ "x$1" = "x-h" -o "x$1" = "x--help" ] ; then
+	Usage
+fi
+
+[ $# -ne 3 -a $# -ne 2 ] && Usage
+
+TEMPLATES_DIR=$SZARP_DIR/resources/xslt
+RNG=$SZARP_DIR/resources/dtd/ipk-params.rng
+
+# xsltproc wymaga parametrów zakodowanych w UTF-8
+SUB_ISO=$1
+SUB=`echo $SUB_ISO | iconv -f latin2 -t utf-8`
+if [ "x$3" = "x" ] ; then
+	CONFIG="-"
+else
+	CONFIG=$3
+fi
+
+xmllint --relaxng $RNG $CONFIG \
+| xsltproc --stringparam title "$SUB" --stringparam num $2 \
+	$TEMPLATES_DIR/move_draw.xsl - \
+| xmllint --format --encode ISO-8859-2 - \
+| xmllint - 
+

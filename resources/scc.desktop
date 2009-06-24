@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=SCC
+Terminal=false
+Comment=Szarp Control Center
+Exec=/opt/szarp/bin/scc
+Icon=/opt/szarp/resources/wx/icons/praterm16g.png
+X-GNOME-Autostart-Phase=Applications

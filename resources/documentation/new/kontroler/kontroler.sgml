@@ -1,0 +1,1078 @@
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook V3.1//EN"[
+<!ENTITY praterm-info SYSTEM "../common/szarp-info.sgml">
+]>
+
+<!--
+        $Id: kontroler.sgml 6724 2009-05-18 08:37:03Z reksio $
+ -->
+
+<article lang="pl" id="kontroler" class="techreport">
+
+<artheader>
+
+&praterm-info;
+
+<title>Kontroler</title>
+
+<subtitle>SZARP v2.1</subtitle>
+<authorgroup>
+<author>
+	<firstname>Lucjan</firstname><surname>Przykorski</surname>
+</author>
+<author>
+	<firstname>Micha³</firstname><surname>Rój</surname>
+</author>
+</authorgroup>
+
+<abstract>
+<para>
+Kontroler s³u¿y do sprawdzania przekroczeñ zakresów zadanych parametrów 
+monitorowanego systemu. 
+U¿ytkownik okre¶la nazwê, warto¶æ minimaln± i maksymaln±, rodzaj, 
+stopieñ wa¿no¶ci i podgrupê dla ka¿dego sprawdzanego parametru. 
+Je¿eli podczas pracy systemu zdarzy siê, ¿e dany parametr przybierze 
+warto¶æ mniejsz± od minimalnej lub wiêksz± od maksymalnej, program 
+wy¶wietli stosowne ostrze¿enie na ekranie i zapisze informacjê o 
+przekroczeniu warto¶ci do pliku.
+
+</para>
+<para>
+$Id: kontroler.sgml 6724 2009-05-18 08:37:03Z reksio $
+</para>
+</abstract>
+
+</artheader>
+
+
+<section id="kontroler-uruchamianie">
+<title>Uruchamianie programu</title>
+<para>
+
+Program Kontroler jest zwykle uruchamiany z poziomu menad¿era okien (KDE, Gnome) lub za pomoc±
+<ulink url="../../../scc/html/scc.html">programu SCC</ulink>. Mo¿na go równie¿ 
+uruchomiæ przez podanie nastêpuj±cej komendy z poziomu xterminala: 
+<programlisting>
+kon&amp; 
+</programlisting>
+i potwierdzeniu jej ENTER-em. 
+</para>
+<para>   
+Po uruchomieniu Kontroler jest gotowy do sprawdzania warto¶ci parametrów 
+zadanych przez u¿ytkownika. Domy¶lnie lista kontrolowanych parametrów 
+jest wczytywana z pliku <filename>./kon.kon</filename>.
+W celu sprawdzania listy parametrów zapisanych w innym pliku nale¿y 
+wywo³aæ opcjê <quote>Odczyt z pliku</quote>.
+</para>
+</section>
+
+
+
+<section id="kontroler-okno-glowne">
+<title>G³ówne okno</title>
+<para>
+
+G³ówne okno Kontrolera (<xref linkend="kontroler-okno-glowne-fig">) dzieli siê na trzy czê¶ci. Górn± czê¶æ zajmuje 
+menu g³ówne, s³u¿±ce do wyboru i ustawiania opcji programu.
+Czê¶æ ¶rodkowa okienka stanowi pole robocze, w którym wy¶wietlana jest 
+lista kontrolowanych parametrów. Je¿eli lista ta zawiera wiêcej 
+raportów ni¿ mo¿e byæ jednocze¶nie wy¶wietlone w polu roboczym, 
+u¿ytkownik ma mo¿liwo¶æ przewijania zawarto¶ci bufora za pomoc± belki 
+lub strza³ek z prawej strony pola roboczego.
+
+<figure id="kontroler-okno-glowne-fig"><title>
+Okno g³ówne programu kontroler</title>
+<mediaobject>
+<imageobject><imagedata scale="60" fileref="pics/kontroler-okno-glowne.png"></imageobject>
+</mediaobject>
+</figure>
+
+
+
+</para>
+</section>
+
+
+
+<section id="kontroler-glowne-menu">
+<title>G³ówne menu</title>
+<para>
+
+Znajduj±ce siê w górnej czê¶ci g³ównego okienka menu ma postaæ poziomego 
+paska podzielonego na trzy grupy opcji. 
+Naci¶niêcie lewego klawisza myszy na jednej z grup powoduje rozwiniêcie 
+odpowiedniego podmenu. Podmenu mo¿e byæ równie¿ wywo³ane z klawiatury 
+przez kombinacjê klawisza Alt i podkre¶lonej litery z nazwy grupy.
+Wybór opcji z rozwiniêtego podmenu odbywa siê prawym klawiszem myszy 
+albo z klawiatury podkre¶lon± liter± nazwy opcji lub klawiszami kursora 
+z akceptacj± klawiszem Enter.
+W kolejnych rozdzia³ach przedstawiono opis opcji w poszczególnych 
+grupach:
+
+<itemizedlist>
+
+<listitem><para>
+Parametry
+</para></listitem>
+
+<listitem><para>
+Raporty-Opcje
+</para></listitem>
+
+<listitem><para>
+Pomoc
+</para></listitem>
+
+</itemizedlist>
+
+</para>
+
+
+<section id="menu-parametry"><title>Parametry</title> <!-- parametry -->
+<para>
+Poszczególne opcje tej grupy s³u¿± do:
+
+<itemizedlist>
+
+<listitem><para>
+ <emphasis>Rozmiar</emphasis>: zmiany rozmiaru g³ównego okienka
+</para></listitem>
+
+<listitem><para>
+ <emphasis>Odczyt z pliku</emphasis>: odczytu z pliku listy kontrolowanych parametrów
+</para></listitem>
+
+<listitem><para>
+ <emphasis>Zapis do pliku</emphasis>: zapisu do pliku listy kontrolowanych parametrów
+</para></listitem>
+
+<listitem><para>
+ <emphasis>Dodanie</emphasis>: dodania parametru do listy kontrolowanych parametrów
+</para></listitem>
+
+<listitem><para>
+ <emphasis>Zmiana</emphasis>: zmiany parametru, znajduj±cego siê na li¶cie kontrolowanych parametrów
+</para></listitem>
+
+<listitem><para>
+ <emphasis>Usuniêcie</emphasis>: usuniêcia parametru z listy kontrolowanych parametrów
+</para></listitem>
+
+<listitem><para>
+ <emphasis>Lista</emphasis>: wy¶wietlenia listy kontrolowanych parametrów
+</para></listitem>
+
+<listitem><para>
+ <emphasis>Koniec</emphasis>: zakoñczenia pracy programu Kontroler
+</para></listitem>
+
+</itemizedlist>
+
+</para>
+
+
+<section id="menu-rozmiar"><title>Rozmiar</title>
+<para>
+
+Opcja ta s³u¿y do zmiany rozmiaru g³ównego okienka programu Kontroler na 
+domy¶lny (przybierany w chwili uruchomienia programu). 
+<!--Je¶li u¿ytkownikowi
+zale¿y na jak najmniejszym rozmiarze g³ównego okienka Kontrolera, powinien 
+nacisn±æ przycisk <quote>Zmniejsz</quote>.
+-->
+
+</para>
+</section>
+
+
+<section id="menu-odczyt"> <title>Odczyt z pliku</title>
+<para>
+Opcja ta s³u¿y do wczytania listy kontrolowanych parametrów z pliku. 
+Wybór nazwy pliku dokonywany jest w dodatkowym okienku.
+W polu <quote>Filtr</quote> u¿ytkownik podaje maskê poszukiwanego pliku. Standardow± 
+mask± jest bie¿±cy katalog i plik o rozszerzeniu <filename>.kon</filename>.
+
+Naci¶niêcie przycisku <quote>Filtruj</quote> powoduje wy¶wietlenie w polu 
+<quote>Pliki</quote> listy plików pasuj±cych do podanej w polu <quote>Filtr</quote> maski. 
+Wyboru maski mo¿na równie¿ dokonaæ z listy widocznej w polu Katalogi.
+Podobnie z listy pola <quote>Pliki</quote> wybiera siê nazwê pliku, z którego ma
+zostaæ wczytana lista parametrów. Edycji nazwy pliku mo¿na dokonywaæ 
+w polu <quote>Wybrano</quote>.
+
+Naci¶niêcie przycisku OK powoduje próbê wczytania listy parametrów 
+z pliku o nazwie podanej w polu <quote>Wybrano</quote>. Je¿eli plik o wybranej nazwie 
+nie mo¿e byæ odczytany, pojawia siê odpowiednie ostrze¿enie.
+Przycisk <quote>Zaniechaj</quote> zamyka okno wyboru nazwy pliku bez wczytania nowej 
+listy kontrolowanych parametrów.
+
+Naci¶niêcie przycisku <quote>Pomoc</quote> wywo³uje ten tekst.
+
+</para>
+</section>
+
+
+<section id="menu-zapis"> <title>Zapis do pliku</title>
+
+<para>
+Opcja ta s³u¿y do zapisu listy kontrolowanych parametrów do pliku 
+wskazanego przez u¿ytkownika. 
+
+Wybór nazwy pliku dokonywany jest w dodatkowym okienku.
+W polu <quote>Filtr</quote> u¿ytkownik podaje maskê poszukiwanego pliku. Standardow± 
+mask± jest bie¿±cy katalog i plik o rozszerzeniu <filename>.kon</filename>.
+
+Naci¶niêcie przycisku <quote>Filtruj</quote> powoduje wy¶wietlenie w polu 
+<quote>Pliki</quote> listy plików pasuj±cych do podanej w polu <quote>Filtr</quote> maski.
+Wyboru maski mo¿na równie¿ dokonaæ z listy widocznej w polu Katalogi. 
+Podobnie z listy pola <quote>Pliki</quote> wybiera siê nazwê pliku, w którym ma zostaæ 
+zapisana lista parametrów.
+
+Edycji nazwy pliku mo¿na dokonywaæ w polu <quote>Wybrano</quote>.
+Naci¶niêcie przycisku <quote>OK</quote> powoduje próbê zapisu listy parametrów do 
+pliku o nazwie podanej w polu <quote>Wybrano</quote>. 
+
+Je¿eli zapis do pliku o podanej nazwie nie jest mo¿liwy, pojawia siê 
+odpowiednie ostrze¿enie.
+
+Przycisk <quote>Zaniechaj</quote> zamyka okno wyboru nazwy pliku bez zapisu aktualnej 
+listy kontrolowanych parametrów.
+
+Naci¶niêcie przycisku <quote>Pomoc</quote> wywo³uje ten tekst.
+
+</para>
+</section>
+
+<section id="menu-dodanie"><title>Dodanie</title>
+<para>
+Opcja ta s³u¿y do dodania nowego parametru do listy kontrolowanych 
+parametrów. 
+
+W tym celu nale¿y wype³niæ nastêpuj±ce pola odpowiednimi danymi:
+
+<itemizedlist>
+
+<listitem><para>
+Nazwa parametru
+</para></listitem>
+
+<listitem><para>
+Minimum (warto¶æ minimalna)
+</para></listitem>
+
+<listitem><para>
+Maksimum (warto¶æ maksymalna)
+</para></listitem>
+
+<listitem><para>
+Rodzaj parametru
+</para></listitem>
+
+<listitem><para>
+Stopieñ wa¿no¶ci
+</para></listitem>
+
+<listitem><para>
+Podgrupa
+</para></listitem>
+
+<listitem><para>
+Nazwa alternatywna (to pole mo¿e zostaæ nie wype³nione)
+</para></listitem>
+
+</itemizedlist>
+
+</para>
+
+<para>
+<emphasis> 
+	UWAGA! 
+</emphasis> 
+	Istnieje mo¿liwo¶æ sygnalizowania braku danych.
+        W tym celu nale¿y wcisn±æ prze³±cznik
+        Sprawdzanie tylko poprawno¶ci transmisji.
+        Nie jest wówczas potrzebne okre¶lanie ani warto¶ci
+        minimalnej, ani warto¶ci maksymalnej.
+</para>
+
+<para>
+<emphasis> 
+	UWAGA! 
+</emphasis> 
+	W celu wype³nienia pola <quote>Nazwa parametru</quote> 
+	nale¿y nacisn±æ jeden z dwóch przycisków:
+
+	<itemizedlist>
+	<listitem><para>
+	Parametr: je¶li maj± byæ sprawdzane przekroczenia zakresu pojedynczego parametru. 
+	Po naci¶niêciu tego przycisku pojawi siê okno wyboru parametru.
+	</para></listitem>
+
+	<listitem><para>
+	Formu³a:  je¶li maj± byæ sprawdzane przekroczenia zakresu
+                dla wyra¿enia arytmetycznego zawieraj±cego 
+                warto¶ci parametrów. 
+
+	Po naci¶niêciu tego przycisku pojawi siê okno formu³y.
+	Po wprowadzeniu wyra¿enia u¿ytkownik mo¿e ustawiæ liczbê cyfr
+	po kropce (czyli miejsc po przecinku dziesiêtnym) dla warto¶ci 
+	minimalnej i maksymalnej za pomoc± przycisków strza³kowych 
+	znajduj±cych siê na prawo od przycisku <quote>Formu³a</quote>, w linii poni¿ej.  
+	</para></listitem>
+	</itemizedlist>
+</para>
+
+<para>
+Po wype³nieniu pól danymi nale¿y nacisn±æ OK, co spowoduje do³±czenie 
+zdefiniowanego parametru do listy kontrolowanych parametrów.
+Naci¶niêcie Zaniechaj powoduje powrót do menu, przy czym operacja 
+dodania parametru nie zostanie  wykonana.
+Naci¶niêcie przycisku <quote>Pomoc</quote> wywo³uje ten tekst.
+</para>
+
+</section>
+
+<section id="menu-zmiana"><title>Zmiana</title>
+<para>
+
+Opcja ta s³u¿y do zmiany definicji wybranego parametru, znajduj±cego 
+siê na li¶cie kontrolowanych parametrów. 
+W tym celu nale¿y zmieniæ zawarto¶æ jednego lub wielu z nastêpuj±cych 
+pól:
+
+<itemizedlist>
+<listitem><para>
+Nazwa parametru
+</para></listitem>
+
+<listitem><para>
+Minimum (warto¶æ minimalna)
+</para></listitem>
+
+<listitem><para>
+Maksimum (warto¶æ maksymalna)
+</para></listitem>
+
+<listitem><para>
+Rodzaj parametru
+</para></listitem>
+
+<listitem><para>
+Stopieñ wa¿no¶ci
+</para></listitem>
+
+<listitem><para>
+Podgrupa
+</para></listitem>
+
+<listitem><para>
+Nazwa Alternatywna - to pole mo¿e zostaæ nie wype³nione.
+</para></listitem>
+</itemizedlist>
+
+</para>
+
+<para>
+<emphasis>UWAGA!</emphasis> 
+Istnieje mo¿liwo¶æ sygnalizowania braku danych.
+        W tym celu nale¿y wcisn±æ prze³±cznik
+        <quote>Sprawdzanie</quote> tylko poprawno¶ci transmisji.
+        Nie jest wówczas potrzebne okre¶lanie ani warto¶ci
+        minimalnej, ani warto¶ci maksymalnej. 
+
+<emphasis>UWAGA!</emphasis> 
+	W celu wype³nienia pola <quote>Nazwa parametru</quote> nale¿y nacisn±æ
+        jeden z dwóch przycisków:
+
+	<itemizedlist>
+	<listitem><para>
+	Parametr: je¶li maj± byæ sprawdzane przekroczenia zakresu
+                pojedynczego parametru. 
+	</para><para>
+	Po naci¶niêciu tego przycisku pojawi siê okno wyboru parametru.
+	</para></listitem>
+
+	<listitem><para>
+	Formu³a: je¶li maj± byæ sprawdzane przekroczenia zakresu
+                dla wyra¿enia arytmetycznego zawieraj±cego 
+                warto¶ci parametrów. 
+	</para><para>
+	Po naci¶niêciu tego przycisku pojawi siê okno formu³y.    
+	Po wprowadzeniu wyra¿enia u¿ytkownik mo¿e ustawiæ liczbê cyfr
+	po kropce (czyli miejsc po przecinku dziesiêtnym) dla warto¶ci 
+	minimalnej i maksymalnej za pomoc± przycisków strza³kowych 
+	znajduj±cych siê na prawo od przycisku Formu³a, w linii poni¿ej.  
+	</para></listitem>
+	</itemizedlist>
+</para>
+
+<para> 
+Po wype³nieniu pól danymi nale¿y nacisn±æ OK, co spowoduje zmianê 
+definicji parametru w li¶cie kontrolowanych parametrów.
+Naci¶niêcie Zaniechaj powoduje powrót do menu, przy czym operacja 
+zmiany parametru nie zostanie  wykonana.
+Naci¶niêcie przycisku Pomoc wywo³uje ten tekst.
+</para>
+</section>
+
+<section id="menu-usuniecie"><title>Usuniêcie</title>
+<para>
+
+Opcja ta s³u¿y do usuniêcia wybranego parametru z listy kontrolowanych 
+parametrów. 
+Program wymaga potwierdzenia poprzez naci¶niêcie przycisku Tak w 
+okienku z pytaniem o usuniêcie. 
+Naci¶niêcie przycisku Nie spowoduje rezygnacjê z próby usuniêcia 
+parametru.
+</para>
+
+<para>
+<emphasis>UWAGA!</emphasis> Operacja usuniêcia jest nieodwracalna. 
+W razie potrzeby nale¿y wprowadziæ parametr na nowo wykorzystuj±c 
+opcjê Parametry:Dodanie.
+
+</para>
+</section>
+
+<section id="menu-lista"><title>Lista</title>
+<para>
+Opcja ta s³u¿y do wy¶wietlenia w ¶rodkowej czê¶ci g³ównego okienka 
+programu aktualnej listy sprawdzanych parametrów.
+Je¶li lista zawiera wiêcej pozycji, ni¿ mo¿e byæ wy¶wietlone na ekranie, 
+u¿ytkownik ma mo¿liwo¶æ przewijania jej zawarto¶ci za pomoc± belki lub 
+strza³ek z prawej strony pola roboczego.
+
+</para>
+</section>
+
+<section id="menu-koniec"><title>Koniec</title>
+<para>
+Opcja ta s³u¿y do zakoñczenia pracy programu Kontroler. Po jej 
+wybraniu zostaje zaprzestane sprawdzanie przekroczeñ zakresu 
+parametrów, znajduj±cych siê w aktualnej li¶cie kontrolowanych 
+parametrów.
+
+Program nie mo¿e zostaæ zakoñczony, je¿eli na ekranie monitora 
+jest widoczne czerwone lub ¿ó³te okno, zawieraj±ce nie potwierdzone 
+przekroczenia zakresów.
+
+W takim przypadku próba wybrania omawianej opcji spowoduje tylko 
+wy¶wietlenie odpowiedniego komunikatu.
+
+<emphasis>UWAGA!</emphasis> Polecenie zakoñczenia pracy wymaga potwierdzenia 
+         przez u¿ytkownika. W tym celu wy¶wietlane jest okno
+         zawieraj±ce pytanie <quote>Czy zakoñczyæ pracê programu?</quote>
+         oraz trzy przyciski:
+
+	<itemizedlist>
+	<listitem><para>
+	Tak: do zakoñczenia dzia³ania programu
+	</para></listitem>
+
+	<listitem><para>
+	Nie: do powrotu do g³ównego okienka programu
+	</para></listitem>
+
+	<listitem><para>
+	Pomoc: do wy¶wietlenia tego tekstu
+	</para></listitem>
+	</itemizedlist>
+
+</para>
+</section>
+
+</section> <!-- parametry -->
+
+
+<section id="menu-raporty-opcje"><title>Raporty-Opcje</title> <!-- Raporty-Opcje -->
+
+<para>
+Kolejne polecenia tej grupy s³u¿± do:
+
+<itemizedlist>
+<listitem><para>
+   Grupa 5: wy¶wietlenia zapisów z Grupy 5 
+</para></listitem>
+
+<listitem><para>
+   Grupa 4: wy¶wietlenia zapisów z Grupy 4
+</para></listitem>
+
+<listitem><para>
+   Grupa 3: wy¶wietlenia zapisów z Grupy 3
+</para></listitem>
+
+<listitem><para>
+   Grupa 2: wy¶wietlenia zapisów z Grupy 2
+</para></listitem>
+
+<listitem><para>
+   Grupa 1: wy¶wietlenia zapisów z Grupy 1
+</para></listitem>
+
+<listitem><para>
+   Opcje dodatkowe: zmiany czêstotliwo¶ci kontroli i d³ugo¶ci plików 
+</para></listitem>
+</itemizedlist>
+
+Numer grupy odpowiada numerowi stopnia wa¿no¶ci kontrolowanego parametru.
+</para>
+
+
+<section id="menu-gr5"><title>Grupa 5</title>
+<para>
+
+Opcja ta s³u¿y do wy¶wietlenia na ekranie okienka raportu, zawieraj±cego 
+ostatnie przekroczenia zakresu parametrów stopnia wa¿no¶ci ALARM 5, 
+potwierdzone przez operatora.
+
+Informacja o wyst±pieniu przekroczenia zakresu zawiera:
+
+<itemizedlist>
+<listitem><para>
+   numer parametru na li¶cie kontrolowanych parametrów
+</para></listitem>
+
+<listitem><para>
+   nazwê parametru
+</para></listitem>
+
+<listitem><para>
+   warto¶æ parametru w chwili przekroczenia zakresu
+</para></listitem>
+
+<listitem><para>
+   datê i godzinê wyst±pienia przekroczenia
+</para></listitem>
+
+<listitem><para>
+   rodzaj potwierdzenia
+</para></listitem>
+
+<listitem><para>
+   datê i godzinê potwierdzenia przekroczenia przez operatora
+</para></listitem>
+</itemizedlist>
+        
+</para>
+</section>
+                       
+<section id="menu-gr4"><title>Grupa 4</title>
+<para>
+
+Opcja ta s³u¿y do wy¶wietlenia na ekranie okienka raportu, zawieraj±cego 
+ostatnie przekroczenia zakresu parametrów stopnia wa¿no¶ci ALARM 4, 
+potwierdzone przez operatora.
+
+Informacja o wyst±pieniu przekroczenia zakresu zawiera:
+
+<itemizedlist>
+<listitem><para>
+   numer parametru na li¶cie kontrolowanych parametrów
+</para></listitem>
+
+<listitem><para>
+   nazwê parametru
+</para></listitem>
+
+<listitem><para>
+   warto¶æ parametru w chwili przekroczenia zakresu
+</para></listitem>
+
+<listitem><para>
+   datê i godzinê wyst±pienia przekroczenia
+</para></listitem>
+
+<listitem><para>
+   rodzaj potwierdzenia
+</para></listitem>
+
+<listitem><para>
+   datê i godzinê potwierdzenia przekroczenia przez operatora
+</para></listitem>
+</itemizedlist>
+
+</para>
+</section>
+
+<section id="menu-gr3"><title>Grupa 3</title>
+<para>
+Opcja ta s³u¿y do wy¶wietlenia na ekranie okienka raportu, zawieraj±cego 
+ostatnie przekroczenia zakresu parametrów stopnia wa¿no¶ci ALARM 3.
+
+Informacja o wyst±pieniu przekroczenia zakresu zawiera:
+
+<itemizedlist>
+<listitem><para>
+   numer parametru na li¶cie kontrolowanych parametrów
+</para></listitem>
+
+<listitem><para>
+   nazwê parametru
+</para></listitem>
+
+<listitem><para>
+   warto¶æ parametru w chwili przekroczenia zakresu
+</para></listitem>
+
+<listitem><para>
+   datê i godzinê wyst±pienia przekroczenia
+</para></listitem>
+</itemizedlist>
+
+</para>
+</section>
+
+<section id="menu-gr2"><title>Grupa 2</title>
+<para>
+Opcja ta s³u¿y do wy¶wietlenia na ekranie okienka raportu, zawieraj±cego 
+ostatnie przekroczenia zakresu parametrów stopnia wa¿no¶ci ALARM 2.
+
+Informacja o wyst±pieniu przekroczenia zakresu zawiera:
+
+<itemizedlist>
+<listitem><para>
+   numer parametru na li¶cie kontrolowanych parametrów
+</para></listitem>
+
+<listitem><para>
+   nazwê parametru
+</para></listitem>
+
+<listitem><para>
+   warto¶æ parametru w chwili przekroczenia zakresu
+</para></listitem>
+
+<listitem><para>
+   datê i godzinê wyst±pienia przekroczenia
+</para></listitem>
+</itemizedlist>
+
+</para>
+</section>
+
+<section id="menu-gr1"><title>Grupa 1</title>
+<para>
+
+Opcja ta s³u¿y do wy¶wietlenia na ekranie okienka raportu, zawieraj±cego 
+ostatnie przekroczenia zakresu parametrów stopnia wa¿no¶ci ALARM 1.
+
+Informacja o wyst±pieniu przekroczenia zakresu zawiera:
+
+<itemizedlist>
+<listitem><para>
+   numer parametru na li¶cie kontrolowanych parametrów
+</para></listitem>
+
+<listitem><para>
+   nazwê parametru
+</para></listitem>
+
+<listitem><para>
+   warto¶æ parametru w chwili przekroczenia zakresu
+</para></listitem>
+
+<listitem><para>
+   datê i godzinê wyst±pienia przekroczenia
+</para></listitem>
+</itemizedlist>
+
+</para>
+</section>
+
+<section id="menu-opcje-dodatkowe"><title>Opcje dodatkowe</title>
+<para>
+Okno to umo¿liwia:
+
+<itemizedlist>
+<listitem><para>
+  zmianê odstêpu czasu pomiêdzy poszczególnymi sprawdzeniami
+  przez program warto¶ci kontrolowanych parametrów. Nowy odstêp
+  bêdzie mierzony od nastêpnego sprawdzenia
+</para></listitem>
+
+<listitem><para>
+  zmianê d³ugo¶ci plików raportowych (w liniach)
+</para></listitem>
+</itemizedlist>
+
+Zmianê wymienionych warto¶ci dokonuje siê za pomoc± suwaków
+z wy¶wietlonymi aktualnymi warto¶ciami.
+Naci¶niêcie przycisku OK zatwierdza dokonane zmiany, natomiast 
+naci¶niêcie Zaniechaj powoduje pozostawienie poprzednich warto¶ci.
+Przycisk Pomoc s³u¿y do wy¶wietlenia tego tekstu.
+
+</para>
+</section>
+
+</section> <!-- Raporty-Opcje -->
+
+
+<section id="menu-pomoc"><title>Pomoc</title> <!-- Pomoc -->
+<para>
+
+Ta grupa opcji oferuje u¿ytkownikowi dostêp do podsystemu pomocy 
+dotycz±cej Kontrolera oraz innych programów. 
+
+<quote>Spis Tre¶ci</quote>, jak wskazuje nazwa, prowadzi do wy¶wietlenia spisu 
+tre¶ci tekstów pomocy do Kontrolera.
+
+Opcja <quote>Help Desk</quote> otwiera okno z ikonami programów, których teksty 
+pomocy s± zarejestrowane w systemie operacyjnym. 
+Wybór ikony powoduje wy¶wietlenie na dole okienka krótkiego opisu 
+programu. Podwójne naci¶niêcie lewego klawisza myszy na ikonie 
+powoduje otwarcie tekstu pomocy dla wybranego programu.
+W wy¶wietlonym tek¶cie pomocy niektóre s³owa maj± szczególne 
+znaczenie. S³owa wy¶wietlone innym kolorem prowadz± do innych 
+stron tekstu pomocy. S³owa podkre¶lone s± natomiast zdefiniowane 
+w s³owniku do³±czonym do tekstu pomocy. 
+</para>
+<para>
+Wyboru wyró¿nionych s³ów dokonuje siê klawiszami kursora.
+
+</para>
+</section> <!-- </section> -->
+
+</section> <!-- Parametry -->
+
+
+<section id="okno-alarmowe"><title>Okno alarmowe</title> <!-- Okno alarmowe -->
+<para>
+Okno alarmowe s³u¿y do sygnalizowania przekroczeñ zakresu parametrów 
+stopnia wa¿no¶ci ALARM 5 (t³o czerwone) i ALARM 4 (t³o ¿ó³te).
+</para>
+
+<para>
+W ¶rodkowej czê¶ci znajduje siê lista nie potwierdzonych przez 
+operatora przekroczeñ zakresu. Pe³na nazwa ostatniego parametru 
+jest wy¶wietlana na bia³ym tle ponad list±.
+W dolnej czê¶ci okienka znajduj± siê nastêpuj±ce przyciski:
+
+<itemizedlist>
+
+<listitem><para>
+  Potwierd¼: s³u¿y do jednorazowego potwierdzenia przekroczenia 
+    zakresu wy¶wietlonego na bia³ym tle,
+</para></listitem>
+
+<listitem><para>
+  Potwierd¼ i ignoruj dalsze: s³u¿y do generalnego potwierdzenia 
+               przekroczenia zakresu dla danego parametru,
+</para></listitem>
+
+<listitem><para>
+  Pomoc: s³u¿y do wy¶wietlenia tego tekstu.
+</para></listitem>
+
+</itemizedlist>
+
+Po potwierdzeniu ostatniego przekroczenia okno jest automatycznie
+usuwane z ekranu.
+
+</para>
+</section>
+
+
+<section id="okno-raportu"><title>Okno raportu</title>
+<para>
+Okno raportu s³u¿y do przegl±dania plików, zawieraj±cych informacje 
+na temat ostatnich przekroczeñ zakresu parametrów odpowiedniego 
+stopnia wa¿no¶ci i odpowiedniej podgrupy.
+</para>
+<para>
+W górnej czê¶ci ekranu znajduj± siê przyciski strza³kowe umo¿liwiaj±ce 
+okre¶lenie numeru ¿±danej podgrupy (numer ten mo¿na wpisaæ bezpo¶rednio
+w pole tekstowe; jest on liczb± od 1 do 99). Po ustawieniu numeru podgrupy
+nale¿y nacisn±æ przycisk <quote>Wczytaj plik</quote>.
+</para>
+<para>
+
+Poni¿ej znajduj± siê informacje dotycz±ce wy¶wietlanego pliku:
+
+<itemizedlist>
+<listitem><para>
+   numer grupy/numer podgrupy,
+</para></listitem>
+
+<listitem><para>
+  liczba wszystkich linii pliku,
+</para></listitem>
+
+<listitem><para>
+   numer pierwszej i ostatniej linii pliku wy¶wietlanej na ekranie,
+</para></listitem>
+
+<listitem><para>
+   informacja o doj¶ciu do pocz±tku lub koñca pliku.
+</para></listitem>
+</itemizedlist>
+
+</para>
+
+<para>
+W ¶rodkowej czê¶ci okienka znajduje siê przewijalna lista zawieraj±ca 
+informacje o przekroczeniach zakresu. D³ugo¶æ listy jest ograniczona do 100 linii.
+</para>
+<para>
+W dolnej czê¶ci ekranu znajduj± siê nastêpuj±ce przyciski:
+
+<itemizedlist>
+
+<listitem><para>
+ OK: s³u¿y do zakoñczenia przegl±dania raportu,
+</para></listitem>
+
+<listitem><para>
+ Góra: s³u¿y do wczytania poprzednich 100 linii raportu,
+</para></listitem>
+
+<listitem><para>
+ Dó³: s³u¿y do wczytania nastêpnych 100 linii raportu,
+</para></listitem>
+
+<listitem><para>
+ Drukuj: s³u¿y do wydrukowania zawarto¶ci pliku,
+</para></listitem>
+
+<listitem><para>
+ Pomoc: s³u¿y do wy¶wietlenia tego tekstu.
+</para></listitem>
+
+</itemizedlist>
+
+<emphasis>UWAGA!</emphasis> Przed wydaniem polecenia Drukuj nale¿y siê upewniæ, czy 
+       drukowanie poprzedniego pliku z przekroczeniami zakresu 
+       zosta³o zakoñczone - je¿eli nie, to nale¿y poczekaæ do
+       koñca tej operacji.
+</para>
+
+<para>
+       Polecenie to powoduje,¿e na drukarkê zostanie wys³any:
+
+<itemizedlist>
+<listitem><para>
+        zaznaczony fragment pliku 
+</para></listitem>
+
+<listitem><para>
+       ca³y plik, je¿eli ¿aden fragment nie zostanie zaznaczony. 
+</para></listitem>
+</itemizedlist>
+
+</para>
+</section>
+
+<section id="okno-formuly"><title>Okno formu³y</title>
+<para>
+Okno formu³y s³u¿y do zapisu formu³ (wyra¿eñ) zawieraj±cych 
+nastêpuj±ce elementy:
+
+<itemizedlist>
+
+<listitem><para>
+  warto¶ci parametrów,
+</para></listitem>
+
+<listitem><para>
+  funkcje arytmetyczne,
+</para></listitem>
+
+<listitem><para>
+  liczby (np. sta³e, wspó³czynniki)
+</para></listitem>
+
+<listitem><para>
+  operatory dzia³añ (dodawanie, odejmowanie, mno¿enie, dzielenie),
+</para></listitem>
+
+<listitem><para>
+  nawiasy okre¶laj±ce kolejno¶æ dzia³añ.
+</para></listitem>
+
+</itemizedlist>
+
+W okienku znajduj± siê nastêpuj±ce przyciski:
+
+<itemizedlist>
+
+<listitem><para>
+ czerwony oznaczony strza³k± - skasowanie ostatniego elementu,
+</para></listitem>
+
+<listitem><para>
+ czerwony oznaczony AC       - skasowanie ca³ej formu³y,
+</para></listitem>
+
+<listitem><para>
+<![CDATA[
+ - <+>,<->,<*>,</>             
+]]>
+				- dodanie do formu³y operatora
+                                 dodawania, odejmowania, mno¿enia, dzielenia
+</para></listitem>
+
+<listitem><para>
+<![CDATA[
+ <(>, <)>                   
+]]>
+				 - dodanie do formu³y nawiasu 
+                                 lewostronnego lub prawostronnego
+</para></listitem>
+
+<listitem><para>
+ Parametr                    - wywo³anie okienka wyboru parametru
+</para></listitem>
+
+<listitem><para>
+ Funkcja                     - wywo³anie okienka wyboru funkcji
+</para></listitem>
+
+<listitem><para>
+ - Liczba                      - wywo³anie okienka wyboru liczby
+</para></listitem>
+
+<listitem><para>
+ - OK                          - zatwierdzenie edytowanej formu³y,
+</para></listitem>
+
+<listitem><para>
+ - Zaniechaj                   - rezygnacja z edycji formu³y,
+</para></listitem>
+
+<listitem><para>
+ - Pomoc                       - wy¶wietlenie tego tekstu.
+</para></listitem>
+  
+</itemizedlist>
+
+</para>
+
+<section><title>Okno wyboru parametru</title>
+<para>
+
+Okno wyboru parametru s³u¿y do wyboru parametru, którego warto¶æ bêdzie 
+kontrolowana (bezpo¶rednio lub jako jeden z elementów formu³y).
+</para>
+<para>
+Wyboru parametru mo¿na dokonaæ:
+
+<itemizedlist>
+
+<listitem><para>
+  przez zaznaczenie jednego z elementów listy 
+</para></listitem>
+
+<listitem><para>
+  przez wpisanie w bia³e pole oznaczone Wzorzec fragmentu
+   nazwy parametru, a nastêpnie naci¶niêcie przycisku 
+   <quote>Szukaj-Góra</quote> lub <quote>Szukaj-Dó³</quote>
+</para></listitem>
+</itemizedlist>
+
+Nazwa wybranego parametru jest wy¶wietlana w ¿ó³tym polu.
+</para>
+
+<para>
+Oprócz wymienionych wy¿ej elementów, okno zawiera jeszcze przyciski:
+
+<itemizedlist>
+
+<listitem><para>
+  OK        - do potwierdzenia wybranego parametru,
+</para></listitem>
+
+<listitem><para>
+  Zaniechaj - do rezygnacji z wyboru parametru,
+</para></listitem>
+
+<listitem><para>
+  Pomoc     - do wy¶wietlenia tego tekstu.
+</para></listitem>
+
+</itemizedlist>
+
+</para>
+</section>
+
+<section id="okno-wyboru-funkcji"><title>Okno wyboru funkcji</title>
+<para>
+Okno wyboru funkcji s³u¿y do wyboru funkcji arytmetycznej 
+spo¶ród nastêpuj±cych:
+
+<itemizedlist>
+
+<listitem><para>
+ ABS - warto¶æ bezwzglêdna (modu³)
+</para></listitem>
+
+<listitem><para>
+ NEG - negacja
+</para></listitem>
+
+</itemizedlist>
+
+Funkcje te s± jednoargumentowe - pobieraj± jeden argument 
+(np. nastêpuj±cy po nich parametr lub wyra¿enie w nawiasach), a nastêpnie
+zwracaj± liczbê dodatni± (ABS) lub liczbê o przeciwnym znaku (NEG).
+</para>
+
+<para>
+Wyboru funkcji mo¿na dokonaæ przez zaznaczenie jednego z elementów listy.
+Nazwa wybranej funkcji jest wy¶wietlana w polu obok listy.
+</para>
+
+<para>
+Oprócz wymienionych wy¿ej elementów, okno zawiera jeszcze przyciski:
+
+<itemizedlist>
+
+<listitem><para>
+  OK        - do potwierdzenia wybranej funkcji,
+</para></listitem>
+
+<listitem><para>
+  Zaniechaj - do rezygnacji z wyboru funkcji,
+</para></listitem>
+
+<listitem><para>
+  Pomoc     - do wy¶wietlenia tego tekstu.
+</para></listitem>
+
+</itemizedlist>
+
+</para>
+</section>
+
+<section id="okno-wyboru-liczby"><title>Okno wyboru liczby</title>
+<para>
+Okno wyboru liczby umo¿liwia wpisanie (w pole znajduj±ce 
+siê w ¶rodku okienka) liczby, która bêdzie jednym z 
+elementów edytowanej formu³y (np. jako sta³a lub wspó³czynnik).
+Liczba mo¿e zawieraæ czê¶æ dziesiêtn± oddzielon± kropk±.
+</para>
+
+<para>
+Okno zawiera tak¿e przyciski:
+
+<itemizedlist>
+
+<listitem><para>
+  OK        - do potwierdzenia wybranej funkcji,
+</para></listitem>
+
+<listitem><para>
+  Zaniechaj - do rezygnacji z wyboru funkcji,
+</para></listitem>
+
+<listitem><para>
+  Pomoc     - do wy¶wietlenia tego tekstu.
+</para></listitem>
+
+</itemizedlist>
+
+</para>
+
+</section> 
+
+</section> <!-- Okno alarmowe -->
+
+</article>
+

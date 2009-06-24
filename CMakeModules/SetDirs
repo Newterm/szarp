@@ -1,0 +1,17 @@
+
+SET(Flex_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules" )
+
+SET(Bison_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules" )
+
+SET(libSzarp_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules" )
+
+SET(libSzarp2_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules" )
+
+SET(wxcommon_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules" )
+
+SET(wxscintilla_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules" )
+
+
+SET(CMAKE_FIND_LIBRARY_PREFIXES "lib")
+
+SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")

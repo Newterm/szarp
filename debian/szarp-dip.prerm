@@ -1,0 +1,10 @@
+#! /bin/sh
+# $Id: szarp-dip.prerm 2846 2005-11-17 18:41:46Z pawel $
+#
+
+[ -e /etc/cron.d/szarp-dip ] && rm /etc/cron.d/szarp-dip;
+
+#DEBHELPER#
+
+exit 0
+

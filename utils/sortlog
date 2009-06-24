@@ -1,0 +1,177 @@
+#!/usr/bin/perl
+#
+###############################################################
+#
+# Autor:     Adam Krzemienowski
+# Zawartosc: Skrypt sortujacy logi programow technologicznych
+#            sterownikow firmy Praterm
+# Plik:      sortlog
+# $Id: sortlog 2137 2005-01-31 13:41:59Z pawel $
+#
+##############################################################
+
+################## Zmienne globalne ########################## 
+ 
+$log;           # sortowany log
+%cmts;          # Bufor zawierajacy wpisy logu
+
+####################### Wyswietla blad ####################### 
+
+sub Error
+{
+    local($txt) = shift(@_);
+    print STDERR "$txt\n";
+    exit(1);
+}
+
+
+###### Funkcja sprawdza czy wymagane jest posortowanie #####
+
+sub IsSorted
+{
+    local(*LOG);
+	# Otworz log do odczytu
+    open(LOG, "<$log")
+	|| &Error("Niemozliwosc otwarcia pliku $log");
+	# Sprawdz czy nie zawiera wstawki CVS <<<<<<<
+    while(<LOG>) {
+       if(/<{7}/) {
+	   close(LOG);
+	   return 0;
+       }
+    }
+    close(LOG);
+    return 1;
+}
+
+### Funkcja koryguje zawartosc logu (konwersja CR UNIX -> CRLF DOS) ##
+
+sub CorrectLog
+{
+	# Otworz log do odczytu
+    local(*LOG);
+    open(LOG, "<$log") 
+	|| &Error("Niemozliwosc otwarcia pliku $log");
+	# Otworz plik tymczasowy do zapisu
+    local(*TMP);
+    open(TMP, ">log.tmp") 
+	|| &Error("Niemozliwosc otwarcia pliku $log.tmp");        
+    local($cvsMarked) = 0;
+	# Przepisz log do pliku tymczasowego wprowadzajac
+	# konwersje znakow konca linii dla oznaczen CVS
+    while(<LOG>) {
+	$cvsMarked = 1 if(/<{7}/);
+	if(!$cvsMarked) {
+	    print TMP;
+	} else {        
+	    s/\r/\n/g;
+	    s/(.)(>{7})/$1\n$2/g;
+	    s/(.)(={7})/$1\n$2/g;
+	    print TMP;
+	}
+    }    
+    close LOG;
+    close TMP;
+    system "rm $log" ;
+    system "mv log.tmp $log";
+}
+
+################ Sortuje zawartosc bufora ##################
+
+sub SortBuf
+{
+    local(%buf);          # bufor
+    local($key);          # klucz
+    local($val);          # wartosc
+    local($cmt);          # wpis logu
+    local($cmtNum) = 0;   # liczba wpisow
+	# Zbuduj tablice asocjacyjna indeksowana datami kompilacji
+    foreach $cmt (@cmts) {
+	$val = $cmt;
+	$cmt =~ /(\d{4}\.\d{2}.\d{2} \d{2}\:\d{2}\:\d{2})/;
+	$key = $1;
+	next if($buf{$key} eq $val);
+	if($buf{$key} eq "") {
+	    $buf{$key} = $val;
+	    $cmtNum++;
+	}
+	$buf{$key} .= $val if($buf{$key} ne $val);
+    }
+	# Posortuj bufor wzgledem kluczy i wynik wstaw do
+	# tablicy komentarzy
+    undef(@cmts);
+    local($i) = 1;
+    foreach $val (sort(keys %buf)) {
+	   # Z ostatniego komentarza usun znak nowej linii
+	$buf{$val} =~ s/(.*)\n$/$1/ if($i == $cmtNum);
+	push(@cmts, $buf{$val});
+	$i++;
+    }
+}
+
+############ Sortuje zawartosc podanego logu ###############
+
+sub Sort
+{
+    if(!&IsSorted) {
+	    # Skoryguj log
+	&CorrectLog;
+	    # Otworz log do odczytu
+	local(*LOG);
+	open(LOG, "<$log")
+	    || &Error("Niemozliwosc otwarcia pliku $log");
+	    # Otworz plik tymczasowy do zapisu
+	local(*TMP);
+	open(TMP, ">log.tmp") 
+	    || &Error("Niemozliwosc otwarcia pliku $log.tmp");        
+	local($cvsMarked) = 0;
+	local($mtLnCmt);
+	undef(@cmts);
+	    # Przepisz fragmenty logu nie wymagajace sortowania do pliku 
+	    # tymczasowego, pozostale przenies do bufora        
+	while(<LOG>) {
+	    $cvsMarked = 1 if(/<{7}/);
+	    if(!$cvsMarked) {
+		print TMP;
+	    } else {        
+		next if(/<{7}/ || /={7}/ || />{7}/);
+		if(/\#.*\#\s*$/) {
+		    $mtLnCmt .= $_;
+		} else {
+		    if($mtLnCmt eq "") {
+		       push(@cmts, $_);
+		    } else {
+		       $mtLnCmt .= $_;
+		       push(@cmts, $mtLnCmt);
+		       $mtLnCmt = "";
+		    }
+		}
+	    }
+	}    
+	close LOG;
+	   # Posortuj bufor
+	&SortBuf;
+	   # Zapisz bufor do pliku tymczasowego
+	print TMP @cmts;        
+	close TMP;
+	system "mv -f log.tmp $log";
+        print "Posortowalem plik $log" ;
+    }
+    else {
+      print "Nie znalazlem pozycji do sortowania w pliku $log" ;
+    }
+}
+
+########################### Main ################################### 
+
+# Sortuj logi 
+local(*LOGS);
+open(LOGS, "ls *.log |");
+# Wyswietl wszystkie znalezione pliki o rozszerzeniu log
+print "W biezacym katalogu znalazlem nastepujace pliki z logami:\n" ;
+system "ls *.log";
+
+&Sort while($log = <LOGS>) ;
+
+close(LOGS);
+

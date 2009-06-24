@@ -1,0 +1,43 @@
+/* XPM */
+static const char * rap_xpm[] = {
+/* width height ncolors chars_per_pixel */
+"32 32 4 1",
+/* colors */
+". 	s None	c None",
+"X	c #A800A400A900",
+"o	c #E7009E007900",
+"i	c #100010001000",
+/* pixels */
+"................................",
+"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",
+"ioooooiooooooooooooooooooioooooi",
+"ioooooiooooooooooooooooooioooooi",
+"iooiiiiiiiiiiiiiiiiiiiiiiiiiiooi",
+"iooiooioooooooooooooooiooiooiooi",
+"iooiooioooooooooooooooiooiooiooi",
+"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXiiiiXXXiiiiiiiiiiiiiiiXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXXiiiXXXiiiiiiiiiiiiiXXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXXiiiXXXiiiiiiiXXXXXXXXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXiiiiXXXiiiiiiiiiiiiiiXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXiiiiXXXiiiiiiiiiiiiiiXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iiiiXXXXXXXXXXXXXXXXXXXXXXXXiiii",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiiiiiiiiiiiiiiiiiiiiiiiiiiooi",
+"ioooooiooooooooooooooooooioooooi",
+"ioooooiooooooooooooooooooioooooi",
+"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",
+"................................"
+};

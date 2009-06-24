@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# $Id$
+#  <pawel@praterm.com.pl>
+#
+# included by IPK tools
+
+SZARP_DIR=@prefix@
+
+XMLLINT_VALID_ARGS="--relaxng @prefix@/resources/dtd/ipk-params.rng"
+

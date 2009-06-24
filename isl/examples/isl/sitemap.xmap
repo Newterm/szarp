@@ -1,0 +1,255 @@
+<?xml version="1.0"?>
+
+<!-- 
+	ISL Cocoon configuration file
+	(C) 2002 Pawel Palucha
+	$Id: sitemap.xmap 2046 2004-12-29 16:25:03Z pawel $
+ -->
+	
+<map:sitemap xmlns:map="http://apache.org/cocoon/sitemap/1.0">
+
+<!-- =========================== Components ================================ -->
+
+ <map:components>
+
+  <map:generators default="file">
+  </map:generators>
+
+  <map:transformers default="xslt">
+	  <use-request-parameters>false</use-request-parameters>
+  </map:transformers>
+
+  <map:readers default="resource">
+  </map:readers>
+  
+  <map:serializers default="html">
+	  <map:serializer name="adobe_svg" mime-type="image/svg+xml"
+		  src="org.apache.cocoon.serialization.XMLSerializer"/>
+  </map:serializers>
+  
+  <map:selectors default="browser">
+  </map:selectors>
+
+  <map:matchers default="wildcard">
+  </map:matchers>
+
+
+ </map:components>
+
+<!-- ========================== Action sets ================================ -->
+
+
+<!-- =========================== Pipelines ================================= -->
+
+ <map:pipelines>
+  <map:pipeline>
+
+  <!-- default file -->
+
+  <map:match pattern="">
+	  <map:redirect-to uri="main/index.html"/>
+  </map:match>
+  
+  <map:match pattern="*">
+	  <map:redirect-to uri="{1}/index.html"/>
+  </map:match>
+
+  <map:match pattern="*/">
+	  <map:redirect-to uri="{1}/index.html"/>
+  </map:match>
+
+  <!-- image resources -->
+  <map:match pattern="**/images/**.**">
+	  <map:read src="resources/images/{2}.{3}"/>
+  </map:match>
+
+  <!-- HTML common resources -->
+  <map:match pattern="resources/**.html">
+	  <map:generate src="resources/{1}.html"/>
+	  <map:serialize type="html"/>
+  </map:match>
+
+  <!-- common PNG images -->
+  <map:match pattern="resources/**.png">
+	  <map:generate src="resources/{1}.png"/>
+	  <map:serialize type="png"/>
+  </map:match>
+
+  <!-- object-specific HTML resources -->
+  <map:match pattern="**/resources/**.html">
+	  <map:generate src="{1}/resources/{2}.html"/>
+	  <map:serialize/>
+  </map:match>
+
+  <!-- object-specific PNG images -->
+  <map:match pattern="**/resources/**.png">
+	  <map:generate src="{1}/resources/{2}.png"/>
+	  <map:serialize type="png"/>
+  </map:match>
+  <!--
+  <map:match pattern="*/menu.xml">
+	  <map:generate src="{1}/menu.xml"/>
+	  <map:serialize type="xml"/>
+  </map:match> -->
+  
+  <!-- isl sources -->
+  <map:match pattern="**/isl/**.isl">
+	  <map:generate src="{1}/docs/{2}.isl"/>
+	  <map:serialize type="xml"/>
+  </map:match>
+
+  <!-- static svg, version for IE + Adobe SVG -->
+  <map:match pattern="iesvg/*/svg/**.isl">
+	  <map:generate src="{1}/docs/{2}.isl"/>
+	  <map:transform src="stylesheets/isl2svg.xsl"/>
+	  <map:serialize type="adobe_svg"/>
+  </map:match>
+  
+  <!-- static svg -->
+  <map:match pattern="**/svg/**.isl">
+	  <map:generate src="{1}/docs/{2}.isl"/>
+	  <map:transform src="stylesheets/isl2svg.xsl"/>
+	  <map:serialize type="adobe_svg"/>
+  </map:match>
+  
+  <!-- static svg with svg suffix and image/xml+svg mime type (Adobe SVG 
+  viewer doesn't recognize image/xml-svg mime type - it uses image/xml+svg)
+  Version for IE + Adobe SVG
+  -->
+  <map:match pattern="iesvg/*/svg/**.svg">
+	  <map:generate src="{1}/docs/{2}.isl"/>
+	  <map:transform src="stylesheets/isl2svg.xsl"/>
+	  <map:serialize type="adobe_svg"/>
+  </map:match>
+  
+  <!-- static svg with svg suffix and image/xml+svg mime type (Adobe SVG 
+  viewer doesn't recognize image/xml-svg mime type - it uses image/xml+svg)
+  -->
+  <map:match pattern="**/svg/**.svg">
+	  <map:generate src="{1}/docs/{2}.isl"/>
+	  <map:transform src="stylesheets/isl2svg.xsl"/>
+	  <map:serialize type="adobe_svg"/>
+  </map:match>
+  
+ <!-- 
+	SVG definitions for use with dynamic, scripted SVG.
+	"Cache breaking" version.
+ -->
+  <map:match pattern="**/defs/reload/*/**.svg">
+	  <map:generate src="{1}/docs/{3}.isl"/>
+	  <map:transform src="stylesheets/isl2defs.xsl"/>
+	  <map:transform src="stylesheets/isl2svg.xsl"/>
+	  <map:serialize type="adobe_svg"/>
+  </map:match>
+
+  <!-- 
+	SVG definitions for use with dynamic, scripted SVG.
+  -->
+  <map:match pattern="**/defs/**.svg">
+	  <map:generate src="{1}/docs/{2}.isl"/>
+	  <map:transform src="stylesheets/isl2defs.xsl"/>
+	  <map:transform src="stylesheets/isl2svg.xsl"/>
+	  <map:serialize type="adobe_svg"/>
+  </map:match>
+
+ <!-- Dynamic, scripted SVG. Currently works only with Batik-1.5 viewer. -->
+ 
+  <map:match pattern="**/dsvg/**.svg">
+	  <map:generate src="{1}/docs/{2}.isl"/>
+	  <map:transform src="stylesheets/isl2dsvg.xsl">
+		  <map:parameter name="use-request-parameters" value="true"/>
+		  <map:parameter name="docpath" value="{1}"/>
+		  <map:parameter name="docname" value="{2}"/>
+	  </map:transform>
+	  <map:serialize type="adobe_svg"/>
+  </map:match>
+
+  <!-- Dynamic, scripted SVG. Currently works only with Batik-1.5 viewer.
+   Version with '.isl' suffix. -->
+  
+  <map:match pattern="**/dsvg/**.isl">
+	  <map:generate src="{1}/docs/{2}.isl"/>
+	  <map:transform src="stylesheets/isl2dsvg.xsl">
+		  <map:parameter name="use-request-parameters" value="true"/>
+		  <map:parameter name="docpath" value="{1}"/>
+		  <map:parameter name="docname" value="{2}"/>
+	  </map:transform>
+	  <map:serialize type="adobe_svg"/>
+  </map:match>
+ 
+  <!-- static png image created from isl source -->
+  <map:match pattern="**/png/**.isl">
+	  <map:generate src="{1}/docs/{2}.isl"/>
+	  <map:transform src="stylesheets/isl2svg.xsl"/>
+	  <map:serialize type="svg2png"/>
+  </map:match>
+
+  <!-- html-like sources, with embeded ISL images, version
+  for Internet Explorer with Adobe SVG Viewer (problems with "object"
+  tag -->
+  <map:match pattern="iesvg/*/**.html">
+	  <map:generate src="{1}/docs/{2}.html"/>
+	  <!-- create embed SVG or map object -->
+	  <map:transform src="stylesheets/embed_isl2doc_iesvg.xsl"/>
+	  <!-- page layout -->
+	  <map:transform src="stylesheets/doc2html.xsl">
+		  <map:parameter name="object" value="{1}"/>
+	  </map:transform>
+	  <map:serialize/>
+  </map:match>
+
+  <!-- html-like sources, with embeded ISL images, version
+  for Internet Explorer with Adobe SVG Viewer (problems with "object"
+  tag; version with '.isl suffix' -->
+  <map:match pattern="iesvg/*/**.isl">
+	  <map:generate src="{1}/docs/{2}.html"/>
+	  <!-- create embed SVG or map object -->
+	  <map:transform src="stylesheets/embed_isl2doc_iesvg.xsl"/>
+	  <!-- page layout -->
+	  <map:transform src="stylesheets/doc2html.xsl">
+		  <map:parameter name="object" value="{1}"/>
+	  </map:transform>
+	  <map:serialize/>
+  </map:match>
+
+  <!-- html-like sources, with embeded ISL images -->
+  <map:match pattern="**/**.html">
+	  <map:generate src="{1}/docs/{2}.html"/>
+	  <!-- create embed SVG or map object -->
+	  <map:transform src="stylesheets/embed_isl2doc.xsl">
+		  <map:parameter name="name" value="{1}/{2}.html"/>
+	  </map:transform>
+	  <!-- page layout -->
+	  <map:transform src="stylesheets/doc2html.xsl">
+		  <map:parameter name="object" value="{1}"/>
+	  </map:transform>
+	  <map:serialize/>
+  </map:match>
+
+  <!-- html-like sources, with embeded ISL images;
+       version with '.isl' suffix -->
+  <map:match pattern="**/**.isl">
+	  <map:generate src="{1}/docs/{2}.html"/>
+	  <!-- create embed SVG or map object -->
+	  <map:transform src="stylesheets/embed_isl2doc.xsl">
+		  <map:parameter name="name" value="{1}/{2}.html"/>
+	  </map:transform>
+	  <!-- page layout -->
+	  <map:transform src="stylesheets/doc2html.xsl">
+		  <map:parameter name="object" value="{1}"/>
+	  </map:transform>
+	  <map:serialize/>
+  </map:match>
+
+   <map:handle-errors>
+    <map:transform src="stylesheets/error2doc.xsl"/>
+    <map:transform src="stylesheets/doc2html.xsl"/>
+    <map:serialize status-code="500"/>
+   </map:handle-errors>
+
+  </map:pipeline>
+ </map:pipelines>
+
+</map:sitemap>
+
+<!-- end of file -->

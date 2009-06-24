@@ -1,0 +1,12 @@
+To do
+=====
+- testing
+- the external lexer is still not integrated
+
+
+Future enhancements
+===================
+- none
+
+
+O. Wyss

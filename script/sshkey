@@ -1,0 +1,104 @@
+#!/bin/bash
+# SZARP: SCADA software 
+# 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+###############################################################################
+# 	$Id: sshkey 4393 2007-09-13 16:37:10Z reksio $
+#
+#	Pawe³ Pa³ucha 12.05.2001
+#
+#	Interakcyjny skrypt do generowania i kopiowania kluczy RSA na zdalne
+#	konto celem umo¿liwienia logowania siê przez ssh bez podawania has³a.
+#
+#	Opcja '-2' - dla protoko³u w wersji 2
+#
+###############################################################################
+
+[ "x$1" = "x-h" -o "x$1" = "x--help" ] && {
+	echo "Interakcyjny skrypt do wymiany kluczy ssh."
+	echo "U¿ycie: sshkey [opcje]"
+	echo "Opcje:"
+	echo "	-h, --help   - wypisuje tekst pomocy"
+	echo "	-2           - u¿ywa protoko³u SSH w wersji 2"
+	echo ""          
+	exit 0
+}
+
+if [ "x$1" = "x-2" ] ; then {
+	PUBKEY="id_rsa"
+} else {
+	PUBKEY="identity"
+} fi
+
+echo -ne "\n\
+Ten  skrypt  ustawia  klucze  na  zdalnym  komputerze, umo¿liwiaj±c  logowanie\n\
+siê  na nim  przez SSH bez  podawania has³a. Wci¶nij\\033[1;36m ENTER \\033[0;39m aby kontynowaæ lub\n\
+\\033[1;36mCtrl-C \\033[0;39m aby  przerwaæ.\n"
+
+read
+
+[ -f $HOME/.ssh/$PUBKEY ] || {
+	echo -ne "\n\
+Nie znaleziono klucza publicznego w katalogu $HOME/.ssh - generuje nowy\n\n"
+	[ -d $HOME/.ssh ] || mkdir $HOME/.ssh
+	if [ "x$1" = "x-2" ] ; then {
+	  ssh-keygen -q -t rsa -f $HOME/.ssh/$PUBKEY -N ""  || \
+	  { 	
+		echo "Generowanie klucza nie powiod³o siê" ; 
+		exit 1 
+	  }
+	} else {
+	  ssh-keygen -q -f $HOME/.ssh/$PUBKEY -N ""  || \
+	  { 	
+		echo "Generowanie klucza nie powiod³o siê - spróbuj opcji '-2'" ; 
+		exit 1 
+	  }
+	} fi
+}
+
+echo -ne \
+"\\033[1;36mPodaj nazwê u¿ytkownika \\033[0;39m na zdalnym komputerze, na konto którego chcesz siê\n\
+logowaæ: "
+
+read USER_NAME
+
+echo -ne \
+"\\033[1;36mPodaj nazwê lub numer IP komputera\\033[0;39m: "
+
+read HOST_NAME
+
+echo -ne \
+"\nKopiujê plik z kluczem publicznym na konto \\033[1;36m$USER_NAME@$HOST_NAME\\033[0;39m\n"
+
+scp $HOME/.ssh/$PUBKEY.pub $USER_NAME@$HOST_NAME:identity.tmp~
+
+echo -ne \
+"\nDodajê klucz publiczny do pliku \\033[1;36m.ssh/authorized_keys\\033[0;39m\n"
+
+ssh $USER_NAME@$HOST_NAME "\
+	[ -d .ssh ] || mkdir .ssh; \
+	chmod 700 .ssh; \
+	cat identity.tmp~ >> .ssh/authorized_keys; \
+	cat identity.tmp~ >> .ssh/authorized_keys2; \
+	chmod 644 .ssh/authorized_keys; \
+	chmod 644 .ssh/authorized_keys2; \
+	rm identity.tmp~"
+
+echo -ne \
+"\nDodawanie klucza zakoñczone. Sprawd¼ ssh \\033[1;36m$USER_NAME@$HOST_NAME\\033[0;39m\n\n"
+
+

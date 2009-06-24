@@ -1,0 +1,329 @@
+# 
+# Szablon pliku konfiguracyjnego szarp.cfg.
+# Zawiera domy¶lne warto¶ci opcji, które mog± byæ nadpisywane przez
+# w³a¶ciwy plik szarp.cfg. Szablon powinien byæ w³±czony do pliku
+# szarp.cfg za pomoc± dyrektywy $include, po ustaleniu prefiksu.
+#
+ <pawel@praterm.com.pl>
+#
+# $Id: SZARP_IN_CFG_TEMPLATE 6789 2009-05-29 12:03:33Z pawel $
+
+#
+# __INSTALL_DIR__ - to sciezka instalacyjna - domyslnie /opt/szarp
+# __PREFIX__ - to prefix bazy danych - np. mosc
+#
+
+# Zak³adamy, ¿e zmienna $prefix$ ma ustalon± warto¶æ.
+
+
+# SEKCJA GLOBALNA
+# ta sekcja jest przeszukiwana tak¿e je¶li program nie poda³ specyficznej sekcji do 
+# przeszukania lub nie znaleziono w niej ¿±danego parametru
+:global
+
+# g³ówny katalog SZARP'a
+$szarp_root$:="__INSTALL_DIR__"
+szarp_data_root=$szarp_root$
+
+#nazwa prefixu konfiguracji
+config_prefix=$prefix$
+
+#komenda sluzaca do uzyskania praw superusera
+$su_command$:="kdesu"
+su_command=$su_command$
+
+# katalog z programami
+$szarp_bin$:="$szarp_root$/bin"
+
+# katalog z konfiguracj±
+$config_root$:="$szarp_root$/$prefix$/config"
+
+# katalog z baz± w formacie codebase
+$db_root$:="$szarp_root$/$prefix$/baza"
+
+# katalog z zasobami dla programów
+$resources_root$:="$szarp_root$/resources"
+
+# ¶cie¿ka do pliku PTT,act
+PTT=$config_root$/PTT.act
+
+# NIEU¯YWANE - do wywalenia
+#PTTOLD=$config_root$/PTT.old
+
+# scie¿ka do pliku IPK
+IPK=$config_root$/params.xml
+
+# plik wykorzystywany do tworzenia identyfikatorów IPC
+parcook_path=$config_root$/PTT.act
+
+# scie¿ka do parcook.cfg
+parcook_cfg=$config_root$/parcook.cfg
+
+# katalog g³ówny konfiguracji
+prefix=$db_root$/$prefix$
+
+# ¶cie¿ka do programu meaner u¿ywana do tworzenia identyfikatorów IPC
+meaner_path=$szarp_bin$/meaner
+
+# NIEU¯YWANE - do wywalenia
+#save_path=$szarp_bin$/save
+
+# katalog z plikami lineX.cfg, zmienna u¿ywana przez parcooka i demony
+linex_cfg=$config_root$
+
+# napis formatuj±cy do tworzenia nazw plików bazy codebase
+$if $prefix$="sun"
+data_entries_format=%04x
+$else
+data_entries_format=%03x
+$end
+
+# g³ówny katalog z baz± w formacie szbase
+$datadir$:="$szarp_root$/$prefix$/szbase"
+datadir=$datadir$
+
+base_format=szarpbase
+
+# poziom logowania
+$if $debug$<>""
+log_level=$debug$
+$else
+log_level=2
+$end
+
+# sposób wy¶wietlania pomocy, obecnie u¿ywane praktycznie tylko 'command'
+helpmethod=command
+
+# komenda u¿ywana do uruchomienia przegl±darki pomocy, ustawiana przez configure
+helpcommand=__HELPCOMMAND__ %s &
+
+
+:sender
+
+# ¶cie¿ka do pliku konfiguracyjnego programu sender
+cfgfile=$config_root$/sender.cfg
+
+
+:datapaf
+
+# ¶cie¿ka do pliku konfiguracyjnego demona linii DataPaf
+cfgfile=$config_root$/datapaf.cfg
+
+
+:fp2001
+
+# ¶cie¿ka do pliku konfiguracyjnego demona linii FP2001
+cfgfile=$config_root$/fp2001.cfg
+
+
+:netpard
+
+# numer portu na którym ma nas³uchiwaæ netpard
+port=2930
+
+
+:netpar
+
+# adres komputera, z którym ma siê ³±czyæ netpar
+$if $netpar_host$=""
+$netpar_host$:=$prefix$
+$end
+host=$netpar_host$
+
+# numer portu z którym ma siê ³±czyæ netpar
+port=2930
+
+# czas oczekiwania na odpowied¼ z portu (w sekundach)
+poll_delay=9
+
+# plik z logiem
+log=__INSTALL_DIR__/logs/netpar.log
+
+
+:meaner
+
+# ¶cie¿ka do pliku z logiem meanera
+$history$:="__INSTALL_DIR__/logs/meaner.log"
+history=$history$
+
+
+:execute
+
+# domy¶lne opcje dla programu rsync
+$rsync_options$:="-az --rsh=ssh --exclude='.*' --exclude='nohup.out' --delete --force"
+
+# dodatkowe opcje dla rsynca do wysy³ania baz szbase
+$szbase_extra$:=" --include=`date +%Y%m.szb` --include=`date +%Y%m -d '1 month ago'`.szb --exclude='*.szb'"
+
+# plik z stdout komand wywo³ywanych komend
+execute_stdout=$szarp_root$/logs/execute_stdout.log
+
+# plik z stderr komand wywo³ywanych komend
+execute_stderr=$szarp_root$/logs/execute_stderr.log
+
+
+:meaner3
+
+# ¶cie¿ka do pliku z logiem programu meaner3
+log=__INSTALL_DIR__/logs/meaner3.log
+
+:szbwriter
+# mo¿liwo¶æ ustawienia dowolnego pliku z logami
+$if "$log$" <> ""
+log=$log$
+$else
+log=/opt/szarp/logs/szbwriter
+$end
+
+:paramd
+
+# lista serwerów do uruchomienia
+servers=local_paramd remote_paramd paramd_for_raporter
+
+:local_paramd
+
+# numer portu na którym dzia³a serwer
+port=8081
+
+# lista adresów z których mo¿na siê ³±czyæ z serwerem
+allowed_ip=127.0.0.1
+
+:remote_paramd
+
+# numer portu
+port=8082
+
+# czy u¿ywaæ https?
+ssl=yes
+
+# czy autoryzacja w³±czona?
+auth=yes
+
+# fraza dla kluczy
+keypass=paramd
+
+# ¶cie¿ka do pliku opisuj±cego prawa dostêpu do parametrów
+access=$szarp_root$/resources/paramd_access.conf
+
+# ¶cie¿ka do pliku z kluczem SSL serwera paramd
+key=$szarp_root$/resources/server.pem
+
+# ¶cie¿ka do pliku z certyfikatem SSL serwera paramd
+cert=$szarp_root$/resources/server.ca
+
+:paramd_for_raporter
+
+# numer portu
+port=8083
+
+# lista adresów z których mo¿na siê ³±czyæ z serwerem
+allowed_ip=@(192.168.*.*|172.*.*.*|127.0.0.1)
+
+:scc
+# domy¶lnie:
+# konfiguracja dla obiektu oraz program przegl±daj±cy dla pozosta³ych baz 
+# zlokalizowanych w systemie
+$dont_group_string$:="ciep³ownia\",\"Wêz([eê]³|³y)\",\"^(MP|Z|P)?EC$\",\"^ZC$\",\"Po³udnie\",\"komora\",\"Samsony?\",\"Praterm\",\"dane\",\"Kompaktu?\",\
+\"przeno¶ny\",\"ZOZ\",\"centrum\",\"zbiorcza\",\"security\",\"miejsk?\",\"centrala"
+menu= CONFIG("$prefix$"), \
+	SEPARATOR, \
+	DRAWS(".*"), \
+	SEPARATOR, \
+	DOC, ICON("$resources_root$/wx/icons/szarp16.xpm"), \
+	DONTGROUPBY("$dont_group_string$")
+
+# prefiks ¶cie¿ki plików z klatkami animacji, domy¶lnie 
+# '/opt/szarp/resources/wx/anim/praterm'
+images_prefix=$resources_root$/wx/anim/praterm
+
+# suffix plików z klatkami animacji, domy¶lnie '.png'
+#images_suffix=.png
+
+# Ustala czy w menu tworzonym przez dyrektywê DRAWS maj± siê pojawiaæ konfiguracje
+# stanowi±ce sk³adowe konfiguracji zagregowanych. Dotyczy sytuacji, w których 
+# konfiguracje agreguj±ce znajduj± siê w menu. Domy¶lnie nie pojawiaj± siê.
+#hide_aggregated=yes
+
+#wartosc tej opcji ma znaczenie gdy hide_aggregated jest ustawiona na "yes"
+#opcja ta wskazuje konfiguracje, ktore nie powinny byc traktowane jako konfiguracje 
+#zagregowane
+#dont_aggregate=ptmX,zamX
+dont_aggregate=ptmX
+
+#komenda do update bazy/paczek, jezeli plik nie istnieje scc nie wyswietli 
+#tej opcji w menu
+update_command=__INSTALL_DIR__/bin/update_script.sh
+
+#programy uzywane przy tworzeniu elementow DRAW i CONFIG
+$raporter3$:="yes"
+$draw3$:=""
+$ekstraktor3$:=""
+$if platform("")="windows"
+$draw3$:="yes"
+$ekstraktor3$:="yes"
+$else
+$draw3$:="yes"
+$ekstraktor3$:="no"
+$end
+
+#czy uzywac raportera3 w elementach CONFIG
+use_raporter3=$raporter3$
+#czy uzywac draw3 w elementach DRAW
+use_draw3=$draw3$
+#czy uzywac ekstraktor3 w elementach CONFIG
+use_ekstraktor3=$ekstraktor3$
+
+:sss
+#sciezka do klucza prywatnego
+key_file=/etc/szarp/sss_key.pem
+#sciezka do pliku z certyfikatem
+ca_file=/etc/szarp/sss_ca.pem
+#uztywkonik, z uprawnieniami ktorego program ma dzialac
+user=nobody
+#port na ktorym nasluchuje serwer
+port=23
+#baza z uzytkownikami
+userdbfile=/etc/szarp/sss_users.xml
+
+:psetd
+#sciezka do klucza prywatnego
+key_file=/etc/szarp/sss_key.pem
+#sciezka do pliku z certyfikatem
+ca_file=/etc/szarp/sss_ca.pem
+#port na ktorym nasluchuje serwer
+port=8899
+#adres serwera ldap
+ldap_server_address=chrno.praterm.com.pl
+#number portu na ktorym nasluchuje serwer ldap - polaczenie musi byc szyforwane
+ldap_server_port=636
+#DN rekordu pod ktorym znajduja sie informacje o uzytkownikach
+ldap_users_dn=ou=People,dc=praterm,dc=pl
+#DN rekordu pod ktorym znajduja sie informacje o grupach 
+ldap_group_dn=ou=Group,dc=praterm,dc=pl
+
+:koper
+#nazwa parametru, który wy¶wietlamy
+param=Sieæ:Sterownik:Finansowa strata sumaryczna R
+
+#kiedy resetujemy date pierwsza, format a'la cron (minuta, godzina, dzien, miesiac)
+1st_date_reset=0 0 1 1,7
+
+#kiedy resetujemy date druga
+2nd_date_reset=0 0 * *
+
+#plik z teksturka na tekst
+texfile=$resources_root$/wx/koper/terra.png
+
+#plik z teksturka na tlo
+backfile=$resources_root$/wx/koper/starfield.png
+
+#plik z teksturka na "strzalke"
+conefile=$resources_root$/wx/koper/redcube.png
+
+#plik z fontem
+fontfile=/usr/share/fonts/truetype/msttcorefonts/Arial_Bold.ttf
+
+# NIE USUWAÆ PONI¯SZEJ LINII I NIE UMIESZCZAÆ PONI¯EJ ¯ADNYCH SEKCJI !
+:global
+
+# vim:set ft=libpar:

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="ISO-8859-2"?>
+<!--
+	gramatyka do słownika do programu unifier
+	<param name="Sieć:Sterownik:Temperatura zewnętrzna" short_name="Tzew" draw_name="Temp. zewn"/>
+	...
+	<param name="Sieć:Sterownik:przepływ">
+		<alt name="Sieć:Sterownik:Przepływ systemu"/>
+	</param>
+	...
+	<param name="Sieć:Sterownik:zakodowany stan wejść logicznych" />
+	...
+	<param name="Temperatury sieciowe"/>
+	...
+	<param name="Wydajności ciepłowni">
+		<alt name="Wydajności osiedlowe"/>
+	</param>
+	...
+	<report name="RAPORT TESTOWY">
+		<alt name="test"/>
+	</param>
+-->
+
+<grammar 
+	xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" 
+	xmlns="http://relaxng.org/ns/structure/1.0">
+
+<define name="params">
+	<element name="params" 
+		ns="http://www.praterm.com.pl/SZARP/unifier">
+		<ref name="attlist.params"/>
+		<zeroOrMore>
+			<ref name="draw"/>
+		</zeroOrMore>	
+		<zeroOrMore>
+			<ref name="param"/>
+		</zeroOrMore>
+		<zeroOrMore>
+			<ref name="report"/>
+		</zeroOrMore>
+	</element>
+</define>
+
+<define name="attlist.params" combine="interleave">
+	<empty/>
+</define>
+
+<define name="param">
+	<element name="param"
+		ns="http://www.praterm.com.pl/SZARP/unifier">
+		<ref name="attlist.param"/>
+		<zeroOrMore>
+			<ref name="alt-param"/>
+		</zeroOrMore>
+	</element>
+</define>
+
+<define name="attlist.param" combine="interleave">
+	<attribute name="name"/>
+	<optional>
+		<attribute name="draw_name"/>
+	</optional>
+		<attribute name="short_name"/>
+</define>
+
+<define name="draw">
+	<element name="draw"
+		ns="http://www.praterm.com.pl/SZARP/unifier">
+		<ref name="attlist.draw"/>
+		<zeroOrMore>
+			<ref name="alt-draw"/>
+		</zeroOrMore>
+	</element>
+</define>
+
+<define name="attlist.draw" combine="interleave">
+	<attribute name="title"/>
+</define>
+
+<define name="report">
+	<element name="report"
+		ns="http://www.praterm.com.pl/SZARP/unifier">
+		<ref name="attlist.report"/>
+		<zeroOrMore>
+			<ref name="alt-report"/>
+		</zeroOrMore>
+	</element>
+</define>
+
+<define name="attlist.report" combine="interleave">
+	<attribute name="title"/>
+</define>
+
+<define name="alt-param">
+	<element name="alt"
+		ns="http://www.praterm.com.pl/SZARP/unifier">
+		<attribute name="name"/>
+	</element>
+</define>
+
+<define name="alt-draw">
+	<element name="alt"
+		ns="http://www.praterm.com.pl/SZARP/unifier">
+		<attribute name="title"/>
+	</element>
+</define>
+
+<define name="alt-report">
+	<element name="alt"
+		ns="http://www.praterm.com.pl/SZARP/unifier">
+		<attribute name="title"/>
+	</element>
+</define>
+
+<start>
+  <choice>
+    <ref name="params"/>
+   </choice>
+</start>
+</grammar>

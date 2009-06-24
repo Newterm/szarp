@@ -1,0 +1,132 @@
+<chapter id="help">
+<title>Korzystanie z Pomocy</title>
+
+<section id="help-toc">
+<title>Spis tre¶ci</title>
+<para></para>
+</section> <!-- help-toc -->
+
+<section id="help-info">
+<title>Uruchamianie pomocy</title>
+<para>
+Zazwyczaj aby uruchomiæ Pomoc musisz nacisn±æ klawisz <guibutton>F1</guibutton>. Pomoc Kontekstow± uruchamiasz kombinacj± klawiszy "Shift+F1". Ponadto pomoc kontekstowa mo¿e te¿ byæ uruchamiana przez przycisk 'Pomoc' z czê¶ci okienek dialogowych.
+</para>
+<para>
+System Pomocy zosta³ zbudowany na podobieñstwo biblioteki. Pomoc mo¿e zawieraæ jedn± lub
+wiêcej ksi±¿ek, z czego ka¿da ksi±¿ka zawiera kilka/kilkana¶cie rozdzia³ów. U¿ywaj±c Pomocy 
+bêdziesz przemieszcza³ siê pomiêdzy poszczególnymi rozdzia³ami lub ksi±¿kami.
+</para>
+</section>
+
+
+<section id="help-main">
+<title>Nawigacja</title>
+
+<para>
+Rysunek poni¿ej zawiera przedstawia g³ówne okno Pomocy oraz ponumerowane przyciski. Jest ono podzielone na dwie czê¶ci: Panel Nawigacyjny i Okno Przegl±darki. 
+
+
+<mediaobject>
+<imageobject><imagedata align="center" fileref="../../common/help-main.png"></imageobject>
+</mediaobject>
+
+<para>
+<itemizedlist>
+
+<listitem><para>
+Je¶li chcesz schowaæ Panel Nawigacyjny, naci¶nij przycisk nr 1.
+</para></listitem>
+<listitem><para>
+Je¶li chcesz przej¶æ do nastêpnej strony, naci¶nij przycisk nr 6.
+</para></listitem>
+<listitem><para>
+Je¶li chcesz przej¶æ do poprzedniej strony, naci¶nij przycisk nr 5.
+</para></listitem>
+<listitem><para>
+Je¶li chcesz cofn±æ siê do poprzednio ogl±danej strony, naci¶nij przycisk nr 2.
+</para></listitem>
+<listitem><para>
+Je¶li chcesz i¶æ w przód, naci¶nij przycisk nr 3.
+</para></listitem>
+<listitem><para>
+Je¶li chcesz cofn±æ siê do spisu tre¶ci lub jeden poziom wy¿ej, naci¶nij przycisk nr 4.
+</para></listitem>
+<listitem><para>
+Je¶li chcesz co¶ wydrukowaæ (stronê albo rozdzia³), naci¶nij przycisk nr 7.
+</para></listitem>
+<listitem><para>
+Je¶li chcesz zmieniæ rozmiar/rodzaj czcionki w Oknie Przegl±daj±cym, naci¶nij przycisk 8.
+</para></listitem>
+<listitem><para>
+Poza tym mo¿esz poruszaæ siê po pomocy jak po zwyk³ym drzewku, naciskaj±c na interesuj±cy Ciê tytu³. (Drzewko jest opisane nr 12). Po wszystkich opisanych wy¿ej operacjach zobaczysz interesuj±c± Ciê stronê w Oknie Przegl±darki(nr 13).
+</para></listitem>
+<listitem><para>
+Elementy nr 9,10,11 s³u¿± do obs³ugi zak³adek i s± opisane w <xref linkend="help-bookmarks">
+</para></listitem>
+</itemizedlist>
+</para>
+
+</section><!-- help-main -->
+<section id="help-index">
+<title>Korzystanie z indeksu</title>
+<para>
+Rysunek poni¿ej przestawia okno wyszukiwania s³ów w spisie tre¶ci.
+</para>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="../../common/help-index.png"></imageobject>
+</mediaobject>
+
+<para>
+
+Je¶li chcesz znale¼æ jak±¶ stronê szukaj±c tylko w spisie tre¶ci, wpisz do elementu nr 3 szukan± frazê, nastêpnie naci¶nij przycisk nr 1. Wyniki zobaczysz w okienku nr 2. Je¶li nie znalaz³e¶ szukanej strony, mo¿esz nacisn±æ przycisk nr 4 (zostanie wy¶wietlony spis tre¶ci) i rozpocz±æ szukanie rêczne.
+</para>
+
+
+</section><!-- help-index -->
+<section id="help-search">
+<title>Wyszukiwanie w pomocy</title>
+<para>
+Rysunek poni¿ej przedstawia okno wyszukiwania s³ów.
+
+</para>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="../../common/help-search.png"></imageobject>
+</mediaobject>
+
+<para>
+Je¶li chcesz znale¼æ jak±¶ stronê zawieraj±c± dane s³owo/zdanie, wpisz szukan± frazê do okienka nr 3 i naci¶nij przycisk nr 5. Je¶li chcesz, aby podczas wyszukiwania wa¿na by³a wielko¶æ s³ów, wci¶nij przycisk 1. Aby wyszukiwanie dopasowywa³o tylko ca³e s³owa, wci¶nij przycisk nr 2. Je¶li chcesz szukaæ tylko w wybranej ksi±¿ce, wybierz j± z listy opisanej numerkiem 4.
+</para>
+
+
+
+</section><!-- help-search -->
+<section id="help-bookmarks">
+<title>Korzystanie z zak³adek</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="../../common/help-bookmarks.png"></imageobject>
+</mediaobject>
+
+<para>
+Je¶li chcesz dodaæ ogl±dana stronê do zak³adek, naci¶nij przycisk nr 10. 
+</para>
+<para>
+Je¶li chcesz usun±æ ogl±dan± stronê z zak³adek, naci¶nij przycisk nr 11.
+</para>
+<para>
+Je¶li chcesz otworzyæ stronê umieszczon± w zak³adkach, wybierz j± z listy opisanej nr 9.
+</para>
+
+</section><!-- help-bookmarks-->
+<section id="help-context">
+<title>Korzystanie z Pomocy Kontekstowej</title>
+<para>
+Je¶li chcesz wy¶wietliæ stronê w pomocy dotycz±c± którego¶ elementu, uruchom pomoc kontekstow± (kombinacja klawiszy Shift+F1) i najed¼ znakiem zapytania na interesuj±cy Ciê element. Otworzysz pomoc na stronie opisuj±c± dany element.
+Np.
+</para>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="../../common/help-context.png"></imageobject>
+</mediaobject>
+
+</section><!-- help-context-->
+
+</chapter><!-- help -->

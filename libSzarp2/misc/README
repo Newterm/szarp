@@ -1,0 +1,13 @@
+
+$Id: README 2744 2005-10-10 12:13:53Z kg $
+
+Pawe³ Pa³ucha <pawel@praterm.com.pl>
+
+Files mingw32_missing.h and mingw32_missing.c are based on GNU glibc code so
+they are distributed under the condition of GNU Lesser General Public Licence.
+Full text of the licence is available in file lgpl.txt. According to section 7
+of licence uncombined versions of these files are available at
+http://www.szarp.com.pl/mingw32_missing.tgz.
+
+mingw32_missing library containts few functions from GNU glibc that are not
+available in mingw32 libc library.

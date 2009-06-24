@@ -1,0 +1,145 @@
+
+# Pawe³ Pa³ucha pawel@praterm.com.pl
+#
+# $Id: Makefile.am 6842 2009-06-19 09:58:13Z reksio $
+
+# No subdirectories
+SUBDIRS =
+
+# Additional files for deleting on 'make maintainer-clean'
+MAINTAINERCLEANFILES = Makefile.in
+
+# Compilations flags
+INCLUDES = @WX_CXXFLAGS@ @XML_CFLAGS@ @LUA_CFLAGS@ @SSL_CFLAGS@ @BOOST_CPPFLAGS@ \
+	   @GDK_CFLAGS@ @GTK_CFLAGS@ @SQLITE3_CFLAGS@ @GSTREAMER_CFLAGS@ @VMIME_CFLAGS@ @FREETYPE_CFLAGS@ @XMLRPC_EPI_CFLAGS@ \
+	   -I@srcdir@/../../libSzarp/include \
+	   -I@srcdir@/../../libSzarp2/include \
+	   -I@srcdir@/../../include \
+	   -I@srcdir@/../common \
+	   -I@srcdir@/../../extern/wxscintilla/include \
+	   -DPREFIX=\"@prefix@\"
+	
+LIBSZARP=../../libSzarp/libSzarp.a
+LIBSZARP2=../../libSzarp2/libSzarp2.a
+LIBWXCOMMON=../common/libwxcommon.a
+LIBWXSCINTILLA=../../extern/wxscintilla/lib/libwxscintilla.a
+GUIDIR=@srcdir@/GUI/
+GUIFILES=xrc
+TMP_GETTEXT=XRC_gettext_file
+
+# Program to create
+
+bin_PROGRAMS = draw3
+
+WIN_APP_NAME = Draw3
+
+draw3_SOURCES = \
+                draw3.cpp \
+                dbmgr.cpp dbmgr.h \
+		database.h database.cpp \
+		disptime.cpp disptime.h \
+		drawpnl.cpp drawpnl.h \
+                drawswdg.cpp drawswdg.h \
+                drawapp.cpp drawapp.h \
+                draw.cpp draw.h \
+		coobs.h coobs.cpp \
+		cfgmgr.cpp cfgmgr.h \
+		ids.h \
+		infowdg.cpp infowdg.h \
+		drawview.h drawview.cpp \
+                seldraw.cpp seldraw.h \
+                selset.cpp selset.h \
+                timewdg.cpp timewdg.h \
+		drawtb.cpp drawtb.h \
+		incsearch.cpp incsearch.h \
+		drawobs.h drawobs.cpp \
+		summwin.h summwin.cpp \
+		drawfrm.h drawfrm.cpp \
+		frmmgr.h frmmgr.cpp \
+		timeformat.h timeformat.cpp \
+		defcfg.h defcfg.cpp \
+		drawpick.h drawpick.cpp \
+		drawprint.h drawprint.cpp \
+		piewin.cpp piewin.h \
+		relwin.cpp relwin.h \
+		xydiag.cpp xydiag.h \
+		xygraph.cpp xygraph.h \
+		dbinquirer.cpp dbinquirer.h \
+		statdiag.h statdiag.cpp \
+		drawdnd.h drawdnd.cpp \
+		progfrm.h progfrm.cpp \
+		remarks.h remarks.cpp \
+		splashscreen.cpp splashscreen.h \
+		drawipc.cpp drawipc.h \
+		drawurl.cpp drawurl.h \
+		errfrm.h errfrm.cpp \
+		paramslist.cpp paramslist.h \
+		paredit.cpp paredit.h \
+		codeeditor.cpp codeeditor.h \
+		drawpsc.h drawpsc.cpp \
+		wxgraphs.h wxgraphs.cpp \
+		glgraphs.h glgraphs.cpp \
+		GUI/resource.cpp
+
+draw3_DEPENDENCIES = $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) $(LIBWXSCINTILLA)
+draw3_LDADD = $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) $(LIBWXSCINTILLA) @SSL_LIBS@ @XML_LIBS@ @WX_LIBS@ @LUA_LIBS@ @GDK_LIBS@ @SQLITE3_LIBS@ @GSTREAMER_LIBS@ @VMIME_LIBS@ @BOOST_FILESYSTEM_LIB@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @FTGL_LIBS@  @WXGL_LIBS@ @XMLRPC_EPI_LIBS@
+draw3_LOCALES_TMP = @srcdir@/draw3.tpo
+
+CLEANFILES = fr/draw3.mo pl/draw3.mo de/draw3.mo $(draw3_LOCALES_TMP)
+EXTRA_DIST = fr/draw3.po pl/draw3.po de/draw3.po
+
+# Rule to create mo files
+%.mo: %.po
+	@MSGFMT@ -o $@ $<
+
+all: draw3$(EXEEXT) fr/draw3.mo pl/draw3.mo de/draw3.po
+
+if MINGW32_OPT
+$(LIBWXSCINTILLA):
+	make -C ../../extern/wxscintilla/build release CXX=i586-mingw32msvc-g++ WXCONFIG=/usr/local/i586-mingw32msvc/lib/wx/config/i586-mingw32msvc-msw-unicode-release-2.8
+	i586-mingw32msvc-ranlib $(LIBWXSCINTILLA)
+else
+$(LIBWXSCINTILLA):
+	make -C ../../extern/wxscintilla/build release
+endif
+
+
+# Install locales and GUIs
+install-data-local: fr/draw3.mo pl/draw3.mo de/draw3.mo
+	$(INSTALL) -d $(DESTDIR)@prefix@/resources/locales/pl_PL/LC_MESSAGES
+	$(INSTALL) -d $(DESTDIR)@prefix@/resources/locales/fr_FR/LC_MESSAGES
+	$(INSTALL) -d $(DESTDIR)@prefix@/resources/locales/de_DE/LC_MESSAGES
+	$(INSTALL) pl/draw3.mo \
+                $(DESTDIR)@prefix@/resources/locales/pl_PL/LC_MESSAGES
+	$(INSTALL) fr/draw3.mo \
+                $(DESTDIR)@prefix@/resources/locales/fr_FR/LC_MESSAGES
+	$(INSTALL) de/draw3.mo \
+                $(DESTDIR)@prefix@/resources/locales/de_DE/LC_MESSAGES
+	$(INSTALL) -d $(DESTDIR)$(bindir)/$(GUIDIR)
+	$(INSTALL) $(GUIDIR)*.$(GUIFILES)  $(DESTDIR)$(bindir)/$(GUIDIR)
+               
+
+@srcdir@/GUI/resource.cpp: @srcdir@/GUI/*xrc
+	wxrc -c -o @srcdir@/GUI/resource.cpp @srcdir@/GUI/*xrc
+
+# Target to update po files from sources
+update-po:
+	@WXRC@ -g @srcdir@/$(GUIDIR)*.$(GUIFILES) > @srcdir@/$(TMP_GETTEXT).h
+	@XGETTEXT@ -o $(draw3_LOCALES_TMP) -L C++ --keyword=_  @srcdir@/*.cpp @srcdir@/*h
+	@MSGMERGE@ -U pl/draw3.po $(draw3_LOCALES_TMP)
+	@MSGMERGE@ -U fr/draw3.po $(draw3_LOCALES_TMP)
+	@MSGMERGE@ -U de/draw3.po $(draw3_LOCALES_TMP)
+	rm -f $(draw3_LOCALES_TMP)
+	rm @srcdir@/$(TMP_GETTEXT).h
+
+winsetup: ${WIN_APP_NAME}Setup.exe
+
+${WIN_APP_NAME}Setup.exe: draw3$(EXEEXT) pl/draw3.mo fr/draw3.mo de/draw3.mo
+	@srcdir@/../../script/nsis/winsetup.sh ${WIN_APP_NAME} draw3$(EXEEXT) \
+		-d resources/locales/pl_PL/LC_MESSAGES \
+		pl/draw3.mo \
+		-d resources/locales/fr_FR/LC_MESSAGES \
+		fr/draw3.mo \
+		-d resources/locales/de_DE/LC_MESSAGES \
+		de/draw3.mo
+

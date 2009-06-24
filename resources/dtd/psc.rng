@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="ISO-8859-2"?>
+
+<!--
+  RelaxNG schema for SZARP Parameter Setting Connections
+  $Id: psc.rng 4137 2007-06-29 17:18:16Z maciek $
+-->
+
+<!--
+Example draw3->psted:
+
+<?xml version="1.0" encoding="ISO-8859-2"?>
+
+<message type="set_packs_type">
+	<device path="/dev/ttyS0" speed="19200"/>
+	<credentials username="a" password="b"/>
+	<packs type="WEEK|DAY">
+		<pack day="1" hour="3" minute="5">
+			<param number="3" value="5"/>
+			<param number="4" value="4"/>
+		</pack>
+		<pack day="1" hour="3" minute="5">
+			<param number="3" value="5"/>
+			<param number="4" value="4"/>
+		</pack>
+	</packs>
+</message>
+
+
+
+Example psted->draw3:
+
+<?xml version="1.0" encoding="ISO-8859-2"?>
+
+<message type="regulator_settings">
+	<constants>
+		<param number="3" value="5"/>
+		<param number="4" value="4"/>
+	</constants>
+	<packs type="WEEK|DAY">
+		<pack day="1" hour="3" minute="5">
+			<param number="3" value="5"/>
+			<param number="4" value="4"/>
+		</pack>
+		<pack day="1" hour="3" minute="5">
+			<param number="3" value="5"/>
+			<param number="4" value="4"/>
+		</pack>
+	</packs>
+</message>
+
+-->
+
+<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+<define name="message">
+	<element name="message">
+		<choice>
+			<ref name="error"/>
+			<ref name="settings"/>
+			<ref name="settype"/>
+			<ref name="reset"/>
+			<ref name="getval"/>
+			<ref name="setconst"/>
+			<ref name="setpacks"/>
+		</choice>
+	</element>
+</define>
+  
+<define name="settype">
+	<attribute name="type">
+		<value type="string">set_packs_type</value>
+	</attribute>
+	<ref name="cred"/>
+	<element name="packs">
+		<attribute name="type">
+			<choice>
+				<value type="string">WEEK</value>
+				<value type="string">DAY</value>
+			</choice>
+		</attribute>
+	</element>
+</define>
+
+<define name="reset">
+	<attribute name="type">
+		<value type="string">reset_packs</value>
+	</attribute>
+	<ref name="cred"/>
+</define>
+
+<define name="setconst">
+	<attribute name="type">
+		<value type="string">set_constants</value>
+	</attribute>
+	<ref name="cred"/>
+	<ref name="constants"/>
+</define>
+
+<define name="setpacks">
+	<attribute name="type">
+		<value type="string">set_packs</value>
+	</attribute>
+	<ref name="cred"/>
+	<ref name="packs"/>
+</define>
+
+
+<define name="getval">
+	<attribute name="type">
+		<value type="string">get_values</value>
+	</attribute>
+	<ref name="cred"/>
+</define>
+
+<define name="cred">
+	<element name="device">
+	    <attribute name="path">
+		    <data type="string"/>
+	    </attribute>
+	    <attribute name="speed">
+		    <data type="integer"/>
+	    </attribute>
+    </element>
+    <element name="credentials">
+	    <attribute name="username">
+		    <data type="string"/>
+	    </attribute>
+	    <attribute name="password">
+		    <data type="integer"/>
+	    </attribute>
+    </element>
+</define>
+
+<define name="error">
+	<attribute name="type"/>
+	<element name="reason">
+		<text/>
+	</element>
+</define>
+
+<define name="settings">
+	<attribute name="type">
+		<value type="string">regulator_settings</value>
+	</attribute>
+	<ref name="constants"/>
+	<ref name="packs"/>
+</define>
+
+  
+<define name="constants">
+	<element name="constants">
+		<zeroOrMore>
+			<ref name="param"/>
+		</zeroOrMore>
+	</element>
+</define>
+  
+<define name="packs">
+	<element name="packs">
+		<attribute name="type">
+			<choice>
+				<value type="string">WEEK</value>
+				<value type="string">DAY</value>
+			</choice>
+		</attribute>
+		<zeroOrMore>
+			<ref name="pack"/>
+		</zeroOrMore>
+	</element>
+</define>
+
+<define name="pack">
+	<element name="pack">
+		<optional>
+			<attribute name="day">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		
+		<attribute name="hour">
+			<data type="integer"/>
+		</attribute>
+		
+		<attribute name="minute">
+			<data type="integer"/>
+		</attribute>
+		
+		<zeroOrMore>
+			<ref name="param"/>
+		</zeroOrMore>
+	</element>
+</define>
+  
+<define name="param">
+	<element name="param">
+		<attribute name="number">
+			<data type="integer"/>
+		</attribute>
+
+		<attribute name="value">
+			<data type="float"/>
+		</attribute>
+	</element>
+</define>
+
+<!-- Główny tag dokumentu -->
+  
+<start>
+	<ref name="message"/>
+</start>
+  
+</grammar>

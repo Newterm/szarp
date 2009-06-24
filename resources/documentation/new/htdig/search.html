@@ -1,0 +1,45 @@
+<html>
+<head>
+<title>ht://Dig WWW Search</title>
+</head>
+<body bgcolor="#eef7ff">
+<h1>
+<a href="http://www.htdig.org"><IMG SRC="/htdig/htdig.gif" align="bottom" alt="ht://Dig" border="0"></a>
+WWW Site Search</h1>
+<hr noshade size="4">
+This search will allow you to search the contents of
+all the publicly available WWW documents at this site.
+<br>
+<p>
+<form method="post" action="/cgi-bin/htsearch">
+<font size="-1">
+Match: <select name="method">
+<option value="and">All
+<option value="or">Any
+<option value="boolean">Boolean
+</select>
+Format: <select name="format">
+<option value="builtin-long">Long
+<option value="builtin-short">Short
+</select>
+Sort by: <select name="sort">
+<option value="score">Score
+<option value="time">Time
+<option value="title">Title
+<option value="revscore">Reverse Score
+<option value="revtime">Reverse Time
+<option value="revtitle">Reverse Title
+</select>
+</font>
+<input type="hidden" name="config" value="htdig">
+<input type="hidden" name="restrict" value="">
+<input type="hidden" name="exclude" value="">
+<br>
+Search:
+<input type="text" size="30" name="words" value="">
+<input type="submit" value="Search">
+</form>
+<hr noshade size="4">
+</body>
+</html>
+

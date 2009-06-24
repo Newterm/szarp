@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# $Id$
+
+# Ten brzydki skrypt wyszukuje pliki sysinfo. Pozwala na wypisanie ich listy
+# a tak¿e na wypisanie podanego tagu ze wszystkich lub z jednego podanego pliku.
+
+[ "x$1" = "x-h" -o "x$1" = "x--help" ] && {
+	echo "Usage:"
+	echo "  $0              - print list of all sysinfo files found"
+	echo "  $0 -h | --help  - print this info"
+	echo "  $0 -t | --tags  - list all available tags"
+	echo "  $0 <tag>        - print given tag from all files"
+	echo  " $0 <tag> <file> - print tag from file"
+	exit 0
+}
+
+if [ "x$1" = "x-t" -o "x$1" = "x--tags" ] ; then
+	instate=2
+	tmp=/tmp/szarpinfo.tmp
+	echo "" > $tmp
+else
+	instate=0
+fi
+
+for i in @prefix@/* ; do
+	[ -d $i ] || continue
+	for j in $i/sysinfo* ; do
+		[ -f $j ] || continue
+		[ "x$1" = "x" ] && {
+			echo $j
+			continue
+		}
+		[ "x$2" != "x" -a "x$2" != "x$j" ] && continue
+		state=$instate
+		cat $j | while read line ; do
+			case $state in
+				0) echo "$line" | grep -q "^\\[$1\\]" \
+					&& echo "$j: $1" && state=1 ;;
+				1) if echo "$line" | grep -q "^\\[" ; then
+					state=0; echo
+				   else
+					echo $line | grep -v "^\$"
+				   fi;;
+				2) echo "$line" | grep -o "^\\[[^]]*\\]" \
+					>> $tmp
+			esac
+		done	
+	done
+done
+
+if [ "x$instate" = "x2" ] ; then
+	cat $tmp | sort | uniq | grep -v "^\$"
+	rm -f $tmp
+fi
+	

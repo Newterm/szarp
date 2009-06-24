@@ -1,0 +1,35 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Error in Boolean search for '$&(WORDS)'</title></head>
+<body bgcolor="#eef7ff">
+<h1><img src="/htdig/htdig.gif" alt="ht://Dig">
+Error in Boolean search for '$&(LOGICAL_WORDS)'</h1>
+<hr noshade size="4">
+Boolean expressions need to be 'correct' in order for the search
+system to use them.
+The expression you entered has errors in it.<p>
+Examples of correct expressions are: <strong>cat and dog</strong>, <strong>cat
+not dog</strong>, <strong>cat or (dog not nose)</strong>.<br>Note that
+the operator <strong>not</strong> has the meaning of 'without'.
+<blockquote><strong>
+$(SYNTAXERROR)
+</strong></blockquote>
+<hr noshade size="4">
+<form method="get" action="$(CGI)">
+<font size="-1">
+<input type="hidden" name="config" value="$&(CONFIG)">
+<input type="hidden" name="restrict" value="$&(RESTRICT)">
+<input type="hidden" name="exclude" value="$&(EXCLUDE)">
+Match: $(METHOD)
+Format: $(FORMAT)
+Sort: $(SORT)
+<br>
+Refine search:
+<input type="text" size="30" name="words" value="$&(WORDS)">
+<input type="submit" value="Search">
+</font>
+</form>
+<hr noshade size="4">
+<a href="http://www.htdig.org/">
+<img src="/htdig/htdig.gif" border="0" alt="">ht://Dig $(VERSION)</a>
+</body></html>
+

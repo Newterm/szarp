@@ -1,0 +1,78 @@
+szarp-nagios is a plugin for nagios3 monitoring system that allows
+to monitor network of remote SZARP servers, that rsync data to central
+server; nagios is installed on this central server.
+
+There are three main components:
+
+* sn-fam.py daemon, that monitors SZARP params.xml files and database 
+directories for all SZARP configurations found on server. These include
+local SZARP configuration and all configurations synchronized to server
+from remote SZARP servers. 
+
+When params.xml file changes, configuration for that server is reloaded. When 
+data directory for meaner3 status file is changed, daemon checks for time
+of last data available for main status parameter and test parameters. Test
+parameters are parameters that are included in SZARP system raport test.
+
+Nagios is notified using external commands file - commands written to that
+file creates so called "passive" nagios notifications.
+
+If data is more then 20 minutes old, state of service becomes Warning, if
+it's older then 30 minutes, state becomes Critical.
+
+* update-nagios.py script, that scans SZARP configurations and creates hosts
+and services definition for nagios. Output from script is saved to
+/etc/nagios3/conf.d/szarp-hosts.cfg by default.
+
+* nagios html documents customized for presentation of SZARP reports; if
+nagios is available at path http://server/nagios3/, SZARP reports are 
+available at http://server/nagios3/szarp.html.
+
+INSTALLATION:
+
+* Install nagios3 and enable external commands in configuration file - see
+comments in this file (on Debian it's /etc/nagios3/nagios.cfg). Check if 
+nagios is up and running, and you can access reports from WWW browser.
+
+* Install szarp-nagios plugin.
+
+* Create configuration for nagios by running /opt/szarp/bin/updata-nagios.py. 
+If your SZARP servers are connected by OpenVPN network, you can use '-v' 
+option to get real IP addresses and connectivity checking. See '--help' for
+usage instructions.
+
+* Reload nagios.
+
+* Go to nagios web page and add szarp.html to the URL - SZARP custom menu 
+should be available.
+
+ADITIONAL CONFIGURATION:
+
+* File /etc/szarp/szarp-nagios.cfg is read both by sn-fam.py and 
+update-nagios.py. In section [Main] there's one parameter - 'ignored'. It can
+contain list of space-separated SZARP configurations prefixes that should be
+excluded from monitoring. Shell globs can be used. For example, if you want
+to exclude configurations from directories /opt/szarp/fake, /opt/szarp/xxx1 
+and /opt/szarp/xxx2, use following entry:
+
+[Main]
+ignored=fake xxx?
+
+If you change 'ignored' parameter, you have to reload sn-fam.py 
+(/etc/init.d/szarp-nagios reload), recreate nagios config 
+(/opt/szarp/bin/update-nagios.py [-v]), and reload nagios 
+(/etc/init.d/nagios3 reload).
+
+If some of your remote servers need more tolerancy about time of last data,
+add section with name of that server and max_delay parameter, specifing
+maximum data delay in minutes, for example:
+
+[srv1]
+max_delay=60
+
+* File /etc/nagios3/conf.d/szarp-admins.cfg contains list of admins, that
+are notified about problems with SZARP hosts. Place aditional contacts in
+this file. See nagios documentation for more informations. See  
+/etc/nagios3/conf.d/szarp-templates.cfg file for basic szarp-nagios 
+definitions; however you should not edit directly this file, because it can
+change in feature versions of plugin.

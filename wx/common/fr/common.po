@@ -1,0 +1,651 @@
+# POLISH MESSAGES FOR SZARP WX COMMON LIBRARY.
+# Darek Marcinkiewicz <darek@praterm.com.pl>, 2005.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: WX-Common\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-05-18 20:36+0200\n"
+"PO-Revision-Date: 2008-06-11 14:39+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../../../wx/common/datechooser.cpp:90
+#: ../../../wx/common/XRC_gettext_file.h:16
+msgid "Hour:"
+msgstr "Heure:"
+
+#: ../../../wx/common/datechooser.cpp:99
+#: ../../../wx/common/XRC_gettext_file.h:17
+msgid "Minute:"
+msgstr "Minute:"
+
+#: ../../../wx/common/datechooser.cpp:113 ../../../wx/common/htmlabout.cpp:74
+#: ../../../wx/common/aboutdlg.cpp:103 ../../../wx/common/authdiag.cpp:72
+#: ../../../wx/common/cfgdlg.cpp:117
+msgid "OK"
+msgstr "OK"
+
+#: ../../../wx/common/datechooser.cpp:114 ../../../wx/common/serverdlg.cpp:84
+#: ../../../wx/common/authdiag.cpp:75 ../../../wx/common/cfgdlg.cpp:118
+msgid "Cancel"
+msgstr "Supprimer"
+
+#: ../../../wx/common/datechooser.cpp:147
+msgid "Invalid (too large/small) date"
+msgstr ""
+
+#: ../../../wx/common/datechooser.cpp:147
+msgid "Error!"
+msgstr "Erreur!"
+
+#: ../../../wx/common/datechooser.cpp:158
+msgid "Please choose the date from between: "
+msgstr "Choisir la date entre "
+
+#: ../../../wx/common/datechooser.cpp:160
+msgid "and"
+msgstr "et"
+
+#: ../../../wx/common/datechooser.cpp:162
+msgid "Incorrect date range"
+msgstr "Champ incorrect"
+
+#: ../../../wx/common/datechooser.h:113
+msgid "Choose date"
+msgstr "Choisir la date"
+
+#: ../../../wx/common/fetchparams.cc:116 ../../../wx/common/fetchparams.cc:186
+#, c-format
+msgid " DEBUG: TRYING TO REGISTER '%ls'\n"
+msgstr "Debug : essai d'enregistrement '%ls'\n"
+
+#: ../../../wx/common/fonts.cpp:172
+msgid "Default font"
+msgstr "Défaut dans police de caractère"
+
+#: ../../../wx/common/fonts.cpp:197
+msgid "Font configuration"
+msgstr "Configuration des polices de caractère"
+
+#: ../../../wx/common/fonts.cpp:200
+msgid ""
+"You have to restart program to apply\n"
+"new fonts settings."
+msgstr ""
+"Pour prendre en compte le changement de la police, redémarrer le programme "
+"voulu"
+
+#: ../../../wx/common/fonts.cpp:202 ../../../wx/common/parselect.cpp:185
+#: ../../../wx/common/XRC_gettext_file.h:25
+msgid "Close"
+msgstr "Fermer"
+
+#: ../../../wx/common/fonts.cpp:219 ../../../wx/common/fonts.cpp:232
+msgid "Configure"
+msgstr "Configurer"
+
+#: ../../../wx/common/fonts.cpp:220 ../../../wx/common/fonts.cpp:238
+msgid "Reset to default"
+msgstr "Réinitialiser par défaut"
+
+#: ../../../wx/common/htmlabout.cpp:54
+msgid "About"
+msgstr "A propos"
+
+#: ../../../wx/common/htmlview.cpp:103
+msgid "Quit"
+msgstr "Quitter"
+
+#: ../../../wx/common/htmlview.cpp:103
+msgid "Close window"
+msgstr "Fermer la fenêtre"
+
+#: ../../../wx/common/htmlview.cpp:105
+msgid "Back"
+msgstr "Retour"
+
+#: ../../../wx/common/htmlview.cpp:105
+msgid "Go back"
+msgstr "Aller à la page précédente"
+
+#: ../../../wx/common/htmlview.cpp:106
+msgid "Forward"
+msgstr "Avancer"
+
+#: ../../../wx/common/htmlview.cpp:106
+msgid "Go forward"
+msgstr "Aller à la page suivante"
+
+#: ../../../wx/common/htmlview.cpp:112
+#, c-format
+msgid "SZARP help: %s"
+msgstr "SZARP aide: %s"
+
+#: ../../../wx/common/parlist.cpp:121
+msgid "No RelaxNG schema"
+msgstr "Pas de schéma RelaxNG"
+
+#: ../../../wx/common/parlist.cpp:178
+msgid ""
+"Current parameters list is not saved.\n"
+"Continue anyway?"
+msgstr ""
+"La liste des paramètres actuels n'a pas été sauvegardée.\n"
+"Continuer quand même?"
+
+#: ../../../wx/common/parlist.cpp:178
+msgid "Parameters list modified"
+msgstr "Liste des paramètres modifiée"
+
+#: ../../../wx/common/parlist.cpp:183 ../../../wx/common/parlist.cpp:246
+msgid "Choose a file"
+msgstr "Choisir un fichier"
+
+#: ../../../wx/common/parlist.cpp:184 ../../../wx/common/parlist.cpp:247
+msgid "SZARP parameters list (*.xpl)|*.xpl|All files (*.*)|*.*"
+msgstr "Liste des paramètres SZARP (*.xlp)|*.xlp|Tous les fichiers (*.*)|*.*"
+
+#: ../../../wx/common/parlist.cpp:196
+#, c-format
+msgid ""
+"Cannot open file %s\n"
+"Error %d (%s)"
+msgstr ""
+"Impossible d'ouvrir le fichier %s\n"
+" Erreur %d (%s)"
+
+#: ../../../wx/common/parlist.cpp:199 ../../../wx/common/parlist.cpp:203
+#: ../../../wx/common/aboutdlg.cpp:126 ../../../wx/common/pscgui.cpp:481
+msgid "Error"
+msgstr "Erreur"
+
+#: ../../../wx/common/parlist.cpp:201
+#, c-format
+msgid "Document %s not well-formed"
+msgstr "Le document %s a été mal saisi"
+
+#: ../../../wx/common/parlist.cpp:218
+msgid "Failed to compile IPK schema!"
+msgstr "Défaut dans compilation du schéma IPK!"
+
+#: ../../../wx/common/parlist.cpp:222
+msgid "XML document doesn't validate against IPK schema!"
+msgstr "Le document XML non valide par rapport au schéma IPK!"
+
+#: ../../../wx/common/parlist.cpp:265
+#, c-format
+msgid ""
+"Error saving document %s\n"
+"Error %d: %s"
+msgstr ""
+"Erreur de sauvegarde du document %s\n"
+" Erreur %d : %s"
+
+#: ../../../wx/common/parlist.cpp:516
+#, c-format
+msgid "Could not load RelaxNG schema from file %s"
+msgstr "Impossible de télécharger le schéma RelaxNG à partir du fichier %s"
+
+#: ../../../wx/common/parlist.cpp:669
+msgid "Print preview"
+msgstr "Aperçu avant impression"
+
+#: ../../../wx/common/parselect.cpp:129
+msgid "Parameter"
+msgstr "Paramètre"
+
+#: ../../../wx/common/parselect.cpp:136
+msgid "Show like in draw program"
+msgstr "Lecture d' après noms des fenêtres du programme de revue"
+
+#: ../../../wx/common/parselect.cpp:153
+msgid "Shortcut"
+msgstr "Raccourci"
+
+#: ../../../wx/common/parselect.cpp:168 ../../../wx/common/pscgui.cpp:131
+#: ../../../wx/common/pscgui.cpp:143
+msgid "Description"
+msgstr "Description"
+
+#: ../../../wx/common/parselect.cpp:183
+#: ../../../wx/common/XRC_gettext_file.h:2
+msgid "Add"
+msgstr "Rajouter"
+
+#: ../../../wx/common/parselect.cpp:210
+msgid "Help"
+msgstr "Aide"
+
+#: ../../../wx/common/serverdlg.cpp:58
+msgid ": choose server"
+msgstr ": choisir serveur"
+
+#: ../../../wx/common/serverdlg.cpp:61
+msgid ""
+"Enter server address and port\n"
+"for example '192.168.1.1:8081'"
+msgstr ""
+"Entrer l'adresse du serveur et le numéro de port\n"
+"par exemple : '192.168.1.1:8081'"
+
+#: ../../../wx/common/serverdlg.cpp:71
+msgid "Save server address as default"
+msgstr "Enregistrer l'adresse du serveur par défaut"
+
+#: ../../../wx/common/serverdlg.cpp:79
+msgid "Apply"
+msgstr "Appliquer"
+
+#: ../../../wx/common/serverdlg.cpp:121 ../../../wx/common/serverdlg.cpp:162
+msgid "Connecting to server"
+msgstr "Connecter au serveur"
+
+#: ../../../wx/common/serverdlg.cpp:122 ../../../wx/common/serverdlg.cpp:163
+msgid "Trying to connect to server "
+msgstr "Essai de connection au serveur "
+
+#: ../../../wx/common/serverdlg.cpp:122 ../../../wx/common/serverdlg.cpp:163
+msgid ""
+".\n"
+"Please wait."
+msgstr ""
+".\n"
+"Attendre svp"
+
+#: ../../../wx/common/serverdlg.cpp:143 ../../../wx/common/serverdlg.cpp:209
+msgid "Unable to connect to server "
+msgstr "Impossibilité de connection au serveur "
+
+#: ../../../wx/common/serverdlg.cpp:144 ../../../wx/common/serverdlg.cpp:210
+msgid ".\n"
+msgstr ".\n"
+
+#: ../../../wx/common/serverdlg.cpp:146
+msgid ""
+"\n"
+"IPK is not available.\n"
+msgstr ""
+"\n"
+"IPK non disponible.\n"
+
+#: ../../../wx/common/serverdlg.cpp:147 ../../../wx/common/serverdlg.cpp:213
+msgid "Connect error"
+msgstr "Erreur de connection"
+
+#: ../../../wx/common/serverdlg.cpp:183
+msgid "Invalid document."
+msgstr "Document non valide"
+
+#: ../../../wx/common/serverdlg.cpp:212
+msgid ""
+"\n"
+"Reports are not available.\n"
+msgstr ""
+"\n"
+"Rapports non disponibles.\n"
+
+#: ../../../wx/common/aboutdlg.cpp:33
+msgid "SZARP About"
+msgstr "A propos de SZARP"
+
+#: ../../../wx/common/aboutdlg.cpp:44
+#, fuzzy
+msgid " SZARP Scada"
+msgstr "SZARP Choisir la base de données"
+
+#: ../../../wx/common/aboutdlg.cpp:48
+msgid " version: "
+msgstr " version: "
+
+#: ../../../wx/common/aboutdlg.cpp:50
+msgid "Version: "
+msgstr "Version: "
+
+#: ../../../wx/common/aboutdlg.cpp:78
+msgid "This program is distributed under terms of GPLv2."
+msgstr "Ce programme est distribué sous les conditions de GPLv2"
+
+#: ../../../wx/common/aboutdlg.cpp:83
+msgid "http://www.gnu.org/licenses/gpl-2.0.html#TOC1"
+msgstr ""
+
+#: ../../../wx/common/aboutdlg.cpp:91
+msgid "Authors:"
+msgstr "Auteurs:"
+
+#: ../../../wx/common/aboutdlg.cpp:126
+msgid "I was not able to start default browser"
+msgstr "Impossible de démarrer le navigateur"
+
+#: ../../../wx/common/szapp.cpp:103
+msgid "Cannot access Szarp directory, cannot procees!"
+msgstr "Impossible d'accéder au répertoire de SZARP. Traitement impossible!"
+
+#: ../../../wx/common/szapp.cpp:107 ../../../wx/common/szapp.cpp:116
+msgid "SzarpDir: "
+msgstr "SZARPDir: "
+
+#: ../../../wx/common/szapp.cpp:212
+msgid "Default locale cannot be loaded. Exiting"
+msgstr ""
+
+#: ../../../wx/common/szapp.cpp:212 ../../../wx/common/szapp.cpp:216
+msgid "Information."
+msgstr ""
+
+#: ../../../wx/common/szapp.cpp:219
+msgid "No locale for this system`s language."
+msgstr "Pas de paramètres pour le language de ce système."
+
+#: ../../../wx/common/szapp.cpp:299
+msgid " (Ideas)"
+msgstr ""
+
+#: ../../../wx/common/szapp.cpp:300 ../../../wx/common/szapp.cpp:301
+msgid " (French translations)"
+msgstr ""
+
+#: ../../../wx/common/szapp.cpp:302
+msgid " (logo)"
+msgstr ""
+
+#: ../../../wx/common/szhlpctrl.cpp:37
+msgid "SZARP Help"
+msgstr "SZARP Aide"
+
+#: ../../../wx/common/authdiag.cpp:23
+msgid "Authentication data:"
+msgstr ""
+
+#: ../../../wx/common/authdiag.cpp:39
+msgid "Enter your username and password:"
+msgstr ""
+
+#: ../../../wx/common/authdiag.cpp:50
+msgid "Username:"
+msgstr ""
+
+#: ../../../wx/common/authdiag.cpp:57
+msgid "Password:"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:79 ../../../wx/common/XRC_gettext_file.h:9
+msgid "Monday"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:81 ../../../wx/common/XRC_gettext_file.h:10
+msgid "Tuesday"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:83 ../../../wx/common/XRC_gettext_file.h:11
+msgid "Wednesday"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:85 ../../../wx/common/XRC_gettext_file.h:12
+msgid "Thursday"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:87 ../../../wx/common/XRC_gettext_file.h:13
+msgid "Friday"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:89 ../../../wx/common/XRC_gettext_file.h:14
+msgid "Saturday"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:91 ../../../wx/common/XRC_gettext_file.h:15
+msgid "Sunday"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:128 ../../../wx/common/pscgui.cpp:142
+msgid "Number"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:129 ../../../wx/common/pscgui.cpp:437
+msgid "Value"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:174 ../../../wx/common/pscgui.cpp:175
+#: ../../../wx/common/pscgui.cpp:185
+msgid "WEEK"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:174 ../../../wx/common/pscgui.cpp:175
+msgid "DAY"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:177
+msgid ""
+"Choose type of packs\n"
+"(All packs values will be reset)"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:178
+msgid "Choose packs' type"
+msgstr "Choisir la date"
+
+#: ../../../wx/common/pscgui.cpp:250
+msgid "Packs type:"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:253
+msgid "weekly"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:255
+msgid "daily"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:269
+msgid "Regulator communication error."
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:270
+msgid "Failed to communicate with daemon - is SZARP running?"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:271
+msgid ""
+"Failed to stop daemon - this is potentially serious error. Please contact "
+"PRATERM IT department asap!"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:272
+msgid "Failed to open port - hardware or configuration error."
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:273
+msgid "Regulator does not respond to queries."
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:274
+msgid "Bad username or password."
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:275
+msgid "You are not permitted to change parameters for this object."
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:276
+msgid "Cannot read settings from regulator."
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:318
+msgid "Value must be a number."
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:318
+msgid "Illegal value."
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:323
+msgid "Value must be no greater than: "
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:323 ../../../wx/common/pscgui.cpp:325
+#: ../../../wx/common/pscgui.cpp:595 ../../../wx/common/pscgui.cpp:597
+msgid "Out of range"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:325
+msgid "Value must be no less than: "
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:372
+msgid "Awaiting response."
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:435
+msgid "Beginning"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:480
+msgid "At least one pack must be defined."
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:489
+msgid "Do you really want to remove this pack?"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:490
+msgid "Pack removal"
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:593
+msgid "Value must be number."
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:593
+msgid "Must be number."
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:595
+msgid "Value must be not greater than: "
+msgstr ""
+
+#: ../../../wx/common/pscgui.cpp:597
+msgid "Value must be not less than: "
+msgstr ""
+
+#: ../../../wx/common/cfgdlg.cpp:68
+#, fuzzy
+msgid "Choose configuration to load:"
+msgstr "Configuration des polices de caractère"
+
+#: ../../../wx/common/cfgdlg.cpp:80
+#, fuzzy
+msgid "Select configuration to load:"
+msgstr "Configuration des polices de caractère"
+
+#: ../../../wx/common/cfgdlg.cpp:95
+msgid "Search:"
+msgstr ""
+
+#: ../../../wx/common/XRC_gettext_file.h:1
+msgid "Context"
+msgstr ""
+
+#: ../../../wx/common/XRC_gettext_file.h:3
+msgid "Remove"
+msgstr ""
+
+#: ../../../wx/common/XRC_gettext_file.h:4
+msgid "Edit"
+msgstr ""
+
+#: ../../../wx/common/XRC_gettext_file.h:5
+msgid "PackEdit"
+msgstr ""
+
+#: ../../../wx/common/XRC_gettext_file.h:6
+msgid "Edit pack"
+msgstr ""
+
+#: ../../../wx/common/XRC_gettext_file.h:7
+msgid "Time:"
+msgstr ""
+
+#: ../../../wx/common/XRC_gettext_file.h:8
+msgid "Day:"
+msgstr ""
+
+#: ../../../wx/common/XRC_gettext_file.h:18
+#: ../../../wx/common/XRC_gettext_file.h:19
+msgid "Value:"
+msgstr ""
+
+#: ../../../wx/common/XRC_gettext_file.h:20
+msgid "Minimum value:"
+msgstr ""
+
+#: ../../../wx/common/XRC_gettext_file.h:21
+msgid "Maximum value:"
+msgstr ""
+
+#: ../../../wx/common/XRC_gettext_file.h:22
+#, fuzzy
+msgid "Parameter Setter"
+msgstr "Paramètre"
+
+#: ../../../wx/common/XRC_gettext_file.h:23
+msgid "Connection"
+msgstr "Connection"
+
+#: ../../../wx/common/XRC_gettext_file.h:24
+msgid "Settings"
+msgstr ""
+
+#: ../../../wx/common/XRC_gettext_file.h:26
+msgid "Operations"
+msgstr ""
+
+#: ../../../wx/common/XRC_gettext_file.h:27
+msgid "Fetch(refresh) values"
+msgstr ""
+
+#: ../../../wx/common/XRC_gettext_file.h:28
+msgid "Set Constants"
+msgstr ""
+
+#: ../../../wx/common/XRC_gettext_file.h:29
+msgid "Set Packs Type"
+msgstr ""
+
+#: ../../../wx/common/XRC_gettext_file.h:30
+msgid "Set Packs"
+msgstr ""
+
+#: ../../../wx/common/XRC_gettext_file.h:31
+msgid "Reset settings"
+msgstr ""
+
+#: ../../../wx/common/XRC_gettext_file.h:32
+msgid "Constans"
+msgstr ""
+
+#: ../../../wx/common/XRC_gettext_file.h:33
+#, fuzzy
+msgid "Packs"
+msgstr "Retour"
+
+#~ msgid " Praterm S.A."
+#~ msgstr "Praterm S.A."
+
+#~ msgid "Could not initialize locale."
+#~ msgstr "Impossible d'initialiser la paramètres."
+
+#~ msgid "http://www.praterm.pl"
+#~ msgstr "http://www.praterm.pl"
+
+#~ msgid "This application is part of SZARP system"
+#~ msgstr "Cette application fait partie du système SZARP"
+
+#~ msgid "http://www.szarp.com.pl"
+#~ msgstr "http://www.szarp.com.pl"
+
+#~ msgid "Select database..."
+#~ msgstr "Choisir la base de données...."

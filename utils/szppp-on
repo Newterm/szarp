@@ -1,0 +1,128 @@
+#!/bin/bash
+# SZARP: SCADA software 
+# 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+# $Id: szppp-on 4393 2007-09-13 16:37:10Z reksio $
+# SZARP
+# Pawe³ Pa³ucha 26.03.2001
+#
+# To jest skrypt, który otwiera po³±czenie ppp.
+#
+# Sposób u¿ycia:
+#
+#	szppp-on opcje <numer_telefonu> <uzytkownik> [<haslo>] [<ilosc_prób>]
+#
+# Dozwolone opcje:
+#	-l	: oczekuj na "login" zamiast na "username"
+#	-n	: logowanie bez hasla
+#	-p	: oczekiwanie na "haslo" zamiast na "password"
+#	--exp_login <LOGIN>
+#		: oczekuje na <LOGIN> zamiast "username"
+#	--exp_pass <PASS>
+#		: oczekuje na <PASS> zamiast "password"
+#
+# Opcje pozniejsze nadpisuja wczesniejsze. 
+# Kody wyj¶cia:
+#	0 - OK
+#	1 - z³e parametry
+#	2 - nie uda³o siê nawi±zaæ po³±czenia
+
+[ $# -le 2 ] && echo "Wrong parameters" && exit 1
+
+EXPECT=sername
+NOPASSWD=no
+EXP_PASS=assword
+
+while [ -n "$1" ]; do
+  case "$1" in
+    -l)
+      EXPECT=ogin
+      shift
+      ;;
+    -n)	
+      NOPASSWD=yes
+      shift
+      ;;
+    -p)
+      EXP_PASS=aslo
+      shift
+      ;;
+    --exp_login)
+      shift
+      EXPECT=$1
+      shift
+      ;;
+    --exp_pass)
+      shift
+      EXP_PASS=$1
+      shift
+      ;;
+    *)
+      break
+      ;;
+  esac ;
+done
+
+
+TELEPHONE=$1		# Numer telefonu
+shift
+ACCOUNT=$1		# Nazwa konta
+shift
+[ "$NOPASSWD" = "yes" ] || {
+	PASSWORD=$1		# HAS£O
+	shift
+}
+RETRY=0			# Ilo¶æ powtórzeñ
+[ $# -eq 1 ] &&	RETRY=$1
+
+LOCAL_IP=0.0.0.0	# Local IP address if known. Dynamic = 0.0.0.0
+REMOTE_IP=0.0.0.0	# Remote IP address if desired. Normally 0.0.0.0
+NETMASK=255.255.255.0	# The proper netmask if needed
+
+export TELEPHONE ACCOUNT PASSWORD RETRY EXPECT NOPASSWD EXP_PASS
+
+DIALER_SCRIPT=`dirname $0`/szredialer
+
+#exec /usr/sbin/pppd noauth debug lock modem crtscts /dev/modem 57600 \
+#	asyncmap 20A0000 escape FF kdebug 24 $LOCAL_IP:$REMOTE_IP \
+#	noipdefault netmask $NETMASK defaultroute connect $DIALER_SCRIPT
+
+# Uruchamiam w tle i co sekunde sprawdzam, czy nie nawi±zano po³±czenia
+# lub te¿ czy skrypt dzwoni±cy nie zakoñczy³ dzia³ania.
+      /usr/sbin/pppd $LOCAL_IP:$REMOTE_IP \
+      connect $DIALER_SCRIPT &> /dev/null &
+
+# Nie czekam d³u¿ej ni¿ 3 minuty
+I=1
+while  [ 180 -gt $I ] ; do {
+    I=$(($I+1))    
+    sleep 1s
+    echo `/sbin/ifconfig` | grep "ppp0" &> /dev/null \
+	&& echo "Connect OK" && exit 0 
+    C=`ps ax | grep "pppd" | grep -v -c  "grep"`
+    [ $C -eq 0 ] && {
+    	[ $RETRY -eq 0 ] && echo "Cannot connect" && exit 2 
+    	RETRY=$(($RETRY-1))
+	# ¯eby modem mial czas sie zresetowaæ
+	sleep 5
+    }
+}; done
+
+# Na wszelki wypadek zabijam pppd
+killall /usr/sbin/pppd
+# I jeszcze wywo³uje szppp-off zeby skasowac ewentualne lock'i
+`dirname $0`/szppp-off

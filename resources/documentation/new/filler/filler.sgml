@@ -1,0 +1,758 @@
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V3.1//EN"[
+<!ENTITY praterm-info SYSTEM "../common/szarp-info.sgml">
+<!ENTITY help SYSTEM "../common/help.sgml">
+]>
+
+
+<book lang="pl" id="filler">
+
+<bookinfo>
+
+&praterm-info;
+
+<title>Filler - dokumentacja</title>
+
+<abstract>
+<para>
+</para>
+<para>
+</para>
+</abstract>
+
+</bookinfo>
+
+<chapter id="filler-info">
+<title>Pomoc programu Filler</title>
+
+<section id="filler-info-main">
+	<title>Witamy w programie Filler</title>
+	<para>
+		Program Filler pozwala na zapisywanie danych (np. warto¶ci
+		opa³owej wêgla) z wsteczn± dat±.
+	</para>
+	<para>
+		Dowiedz siê wiêcej o:
+		<itemizedlist>
+			<listitem><para>
+				podstawach korzystania z programu 
+				- <xref linkend="filler-base">,
+			</para></listitem>
+			
+			<listitem><para>
+				najczê¶ciej zadawanych pytaniach (FAQ) -
+				<xref linkend="filler-faq">,
+			</para></listitem>
+
+			<listitem><para>
+				zagadnieniach zaawansowanych -
+				<xref linkend="filler-advanced">.
+			</para> </listitem>
+		</itemizedlist>
+		Lub przejd¼ do spisu tre¶ci - <xref linkend="filler">.
+	</para>
+	<para>
+		Mo¿esz tak¿e wybieraæ odno¶nik <quote>Nastêpny</quote>,
+		aby zapoznaæ siê po kolei z funkcjami programu.
+	</para>
+</section> <!-- filler-info-main -->
+</chapter> <!-- filler-info -->
+
+
+
+<chapter id="filler-base">
+<title>Podstawy korzystania z programu</title>
+
+<section id="filler-base-toc">
+	<title>Spis tre¶ci rozdzia³u</title>
+	<para></para>
+</section>  <!-- filler-base-toc -->
+
+<section id="filler-base-main">
+	<title>Zaczynamy!</title>
+	<para>
+		Ten rozdzia³ opisuje:
+		<itemizedlist>
+			<listitem><para>
+				g³ówne okno programu - 
+				<xref linkend="filler-base-frame">,
+			</para></listitem>
+
+			<listitem><para>
+				jak wybraæ parametry do zmian -
+				<xref linkend="filler-base-params">,
+			</para></listitem>
+
+			<listitem><para>
+				sposób wyboru zakresu czasowego zmian
+				<xref linkend="filler-base-range">,
+			</para></listitem>
+
+			<listitem><para>
+				sposób wyboru nowej warto¶ci
+				<xref linkend="filler-base-value">,
+			</para></listitem>
+
+			<listitem><para>
+				jak anulowaæ wybór parametrów
+				<xref linkend="filler-base-list">,
+			</para></listitem>
+
+			<listitem><para>
+				jak zapisaæ wybrane zmiany w bazie
+				<xref linkend="filler-base-write">.
+			</para></listitem>
+			<listitem><para>
+				obs³ugê programu za pomoc± klawiatury
+				<xref linkend="filler-base-keyboard">.
+			</para></listitem>
+		</itemizedlist>
+	</para>
+	<para>
+		Aby zapisaæ dane z wsteczn± dat± do bazy musisz najpierw
+		wybraæ odpowiednie parametry i ustaliæ ich warto¶ci
+		(<xref linkend="filler-base-params">), a nastêpnie
+		zapisaæ zmiany w bazie (<xref linkend="filler-base-write">).
+		Wszystkie te operacje s± dok³adnie opisane w kolejnych
+		rozdzia³ach.
+	</para>
+</section> <!-- filler-base-frame -->
+
+<section id="filler-base-frame">
+	<title>G³ówne okno programu</title>
+	<para>
+		G³ówne okno programu stanowi podstawowy interfejs do
+		wybierania parametrów i zmieniania ich warto¶ci wstecz.
+		Mo¿esz w nim znale¼æ:
+		<itemizedlist>
+			<listitem><para>
+				listê paramentów do wyboru:
+				<xref linkend="filler-base-params">
+			</para></listitem>
+
+			<listitem><para>
+				przyciski wyboru dat:
+				<xref linkend="filler-base-range">
+			</para></listitem>
+
+			<listitem><para>
+				pole nowej warto¶ci parametr:u
+				<xref linkend="filler-base-value">
+			</para></listitem>
+
+			<listitem><para>
+				przycisk dodaj±cy parametr do zmiany:
+				<xref linkend="filler-base-params">
+			</para></listitem>
+
+			<listitem><para>
+				listê dodanych parametrów:
+				<xref linkend="filler-base-list">
+			</para></listitem>
+		</itemizedlist>
+		<figure>
+			<title>G³ówne okno</title>
+			<mediaobject><imageobject>
+				<imagedata align="center" scale="50" fileref="pics/filler-frame.png">
+			</imageobject></mediaobject>
+		</figure>
+	</para>
+</section> <!-- filler-base-frame -->
+
+
+<section id="filler-base-params">
+	<title>Wybór parametrów do zmian</title>
+	<para>
+		Podstawow± czynno¶ci± od której musisz zacz±æ pracê z
+		programem Filler jest wybór parametru którego warto¶æ
+		chcesz zapisaæ z wsteczn± dat±. S³u¿y do tego lista
+		parametrów znajduj±ca siê w lewym górnym rogu g³ównego
+		okna.
+		<figure>
+			<title>Lista parametrów</title>
+			<mediaobject><imageobject>
+				<imagedata align="center" scale="65" fileref="pics/filler-params.png">
+			</imageobject></mediaobject>
+		</figure>
+	</para>
+	<para>
+		Po wyborze parametru mo¿esz przyst±piæ do okre¶lenie
+		zakresu czasowego w jakim zostanie on zapisany w bazie.
+		Jest to szczegó³owo opisane tu:
+		<xref linkend="filler-base-range">
+	</para>
+	<para>
+		<important> <para>
+		Pamiêtaj, ¿e je¶li u¿ywasz jednego parametru wiêcej ni¿
+		jeden raz, to wybrane zakresy czasowe nie mog± mieæ czê¶ci
+		wspólnych </para> </important>
+	</para>
+	<para>
+		Teraz nie pozosta³o Ci nic innego poza wpisaniem warto¶ci
+		w przeznaczonym do tego polu. Je¶li chcesz poznaæ wiêcej
+		szczegó³ów tej czynno¶ci przeczytaj ten rozdzia³:
+		<xref linkend="filler-base-value">
+	</para>
+	<para>
+		<important>
+			<para>
+				Pamiêtaj o sprawdzeniu czy poda³e¶ prawid³owe
+				dane.
+			</para>
+		</important>
+		Gdy zakres czasowy i nowa warto¶æ s± ju¿ ustawione
+		mo¿esz zaakceptowaæ swój wybór klikaj±c na przycisk
+		<guibutton>Dodaj</guibutton> oznaczony ikon±
+		przedstawiaj±c± plus. Spowoduje to dodanie
+		parametru wraz z wybranymi warto¶ciami do listy
+		znajduj±cej siê w dolnej czê¶ci g³ównego okna.
+	</para>
+	<para>
+		Je¶li chcesz zapisaæ warto¶ci innych parametrów z wsteczn±
+		dat± powiniene¶ powtórzyæ opisane tu czynno¶ci (ale
+		pamiêtaj, ¿e wybrane przez Ciebie zakresy czasowe zmian
+		nie mogê na siebie zachodziæ). Je¶li skoñczy³e¶ ju¿ dodawanie
+		parametrów zapisz dane do bazy zgodnie z opisem:
+		<xref linkend="filler-base-write">
+	</para>
+</section> <!-- filler-base-params -->
+
+<section id="filler-base-range">
+	<title>Ustalanie zakresu czasowego zmian</title>
+	
+	<para>
+		Ta sekcja opisuje sposób wyboru zakresu czasowego zmian.
+		Sprowadza siê on do wyboru dwóch dat: pocz±tkowej i
+		koñcowej - okre¶laj± one od kiedy do kiedy parametr ma
+		przyjmowaæ ustalon± przez Ciebie warto¶æ.
+	</para>
+	<para>
+		Aby zmieniæ datê musisz klikn±æ na jednym z przycisków:
+		<figure>
+			<title>Wpisywanie warto¶ci</title>
+			<mediaobject><imageobject>
+			<imagedata align="center" scale="55" fileref="pics/filler-batony-before.png">
+			</imageobject></mediaobject>
+		</figure>
+		A nastêpnie postêpowaæ zgodnie z zaleceniami opisanymi w:
+		<xref linkend="filler-base-range-dd">.
+	</para>
+
+<section id="filler-base-range-dd">
+	<title>Wybór daty</title>
+	<para>
+		Po klikniêciu na przycisk daty poka¿e siê okno wyboru daty:
+		<figure>
+			<title>Wpisywanie warto¶ci</title>
+			<mediaobject><imageobject>
+				<imagedata align="center" scale="60" fileref="pics/filler-date.png">
+			</imageobject></mediaobject>
+		</figure>
+
+		Po lewej stronie okna pojawi siê kalendarz pozwalaj±cy
+		wybraæ datê.  Dok³adny czas mo¿na wybraæ przy pomocy pól
+		(znajduj±cych siê po prawej stronie) okre¶laj±cych
+		godzinê i minutê.  Po dokonaniu wyboru powiniene¶ klikn±æ
+		przycisk <guibutton>OK</guibutton>.
+	</para>
+	<para> 
+		Daty zapisywane s± w formacie <quote> ROK-MIESI¡C-DZIEÑ
+		GODZINA:MINUTA</quote>. Oznacza to ¿e np. piêtnasta 
+		czterdzie¶ci osiemnastego grudnia dwutysiêcznego pi±tego
+		roku bêdzie zapisana jako <quote>2005-12-18 15:40</quote>
+	</para>
+	<para> 
+		Wszystkie warto¶ci zostan± zaokr±glone do 10 minut.  Wiêc
+		je¶li wybra³e¶ np. <quote>2006-01-17 13:24</quote> program
+		zaokr±gli to do <quote>2006-01-17 13:10</quote>. Je¶li
+		wybrana zosta³a godzina np. <quote>15:58</quote> zostanie
+		zaokr±glona do <quote>16:00</quote>. 
+	</para>
+	<para>
+		Na wybór dat na³o¿one s± ograniczenia opisane w:
+		<xref linkend="filler-base-range-rest">.
+	</para>
+</section> <!-- filler-base-range-dd -->
+
+
+<section id="filler-base-range-rest">
+	<title>Ograniczenia wyboru</title>
+	
+	<para> 
+		Na wybór dat na³o¿one s± nastêpuj±ce ograniczenia:
+		<itemizedlist> 
+			<listitem><para>
+				Data pocz±tkowa musi byæ mniejsza od koñcowej
+			</para></listitem>
+			
+			<listitem><para>
+				¯adna data nie mo¿e pochodziæ z przysz³o¶ci
+			</para></listitem>
+
+			<listitem><para>
+				¯adna data nie mo¿e byæ starsza od daty
+				granicznej (ustalanej indywidualnie dla
+				ka¿dego parametru). Je¶li warunek ten nie
+				zosta³ spe³niony zostaniesz o tym
+				poinformowany specjalnym oknem dialogowym.
+			</para></listitem>
+		</itemizedlist> 
+	</para>
+</section> <!-- filler-base-range-rest -->
+</section> <!--filler-base-range -->
+
+<section id="filler-base-value">
+	<title>Ustalanie nowej warto¶ci</title>
+	<para>
+		Now± warto¶æ parametru powiniene¶ wprowadziæ w przeznaczonym 
+		do tego polu:
+		<figure>
+			<title>Wpisywanie warto¶ci</title>
+			<mediaobject><imageobject>
+				<imagedata align="center" scale="55" fileref="pics/filler-value.png">
+			</imageobject></mediaobject>
+		</figure>
+	</para>
+	<para>
+		Warto¶æ wpisywana w tym polu musi byæ liczb± mieszcz±c±
+		siê w zakresie ustalanym indywidualnie dla ka¿dego
+		parametru.  Je¶li wprowadzona przez Ciebie warto¶æ nie
+		mie¶ci siê w nim, zostaniesz o tym poinformowany
+		specjalnym oknem dialogowym.
+	</para>
+</section> <!--filler-base-value -->
+
+<section id="filler-base-list">
+	<title>Lista parametrów</title>
+	<para>
+		Jak ju¿ zapewne wiesz parametry przeznaczone do zapisu do
+		bazy danych, wraz ich nowymi warto¶ciami oraz zakresami
+		czasowymi, widoczne s± w li¶cie znajduj±cej siê w dolnej
+		czê¶ci ekranu.
+		<figure>
+			<title>Lista parametrów</title>
+			<mediaobject><imageobject>
+				<imagedata align="center" scale="55" fileref="pics/filler-grid.png">
+			</imageobject></mediaobject>
+		</figure>
+	</para>
+	<para>
+		Aby zaznaczyæ jaki¶ parametr musisz klikn±æ lewym
+		przyciskiem myszy na nim.
+		<figure>
+			<title>Wybór parametrów</title>
+			<mediaobject><imageobject>
+			<imagedata align="center" scale="55" fileref="pics/filler-grid-selected.png">
+			</imageobject></mediaobject>
+		</figure>
+		Je¶li chcesz zaznaczyæ wiêcej ni¿ jeden parametr musisz
+		podczas klikania przytrzymaæ klawisz
+		<keycode>Ctrl</keycode> na klawiaturze, a nastêpnie
+		(ci±gle trzymaj±c wci¶niêty <keycode>Ctrl</keycode>)
+		klikn±æ na kolejnym parametrze.
+	</para>
+	<para>
+		Opis anulowania wyboru parametru opisany jest tu:
+		<xref linkend="filler-base-list-del">.
+	</para>
+	
+<section id="filler-base-list-del">
+	<title> Anulowanie wyboru parametrów </title>
+	<para> 
+		Aby zrezygnowaæ z zapisu do bazy jakiego¶ parametru,
+		powiniene¶ zaznaczyæ go w li¶cie, a nastêpnie klikn±æ
+		na nim prawym przyciskiem myszy. Powinno pojawiæ siê menu
+		kontekstowe, musisz wybraæ z niego opcjê
+		<guimenuitem>Usuñ</guimenuitem>.
+	</para>
+	<para> 
+		Je¶li chcesz zrezygnowaæ z zapisu wszystkich wybranych
+		dotychczas parametrów musisz wybraæ z menu 
+		<guimenuitem> Plik </guimenuitem> a nastêpnie 
+		<guimenuitem> Wyczy¶æ </guimenuitem>. Mo¿esz równie¿
+		klikn±æ na ikonkê <guimenu>Wyczy¶æ</guimenu>
+	</para>
+	<para>
+		Je¶li w li¶cie znajduj± siê jakie¶ parametry, zostaniesz
+		zapytany czy jeste¶ pewien, ¿e chcesz je usun±æ.
+	</para>
+</section> <!-- filler-base-list-del -->
+</section> <!--filler-base-list -->
+
+<section id="filler-base-write">
+	<title>Zapis parametrów do bazy</title>
+	
+	<procedure>
+		<para>
+			Aby zapisaæ parametry do bazy danych z wsteczn± dat±
+			musisz:
+		</para>
+
+		<step><para>
+			wybraæ parametr do zmiany: 
+			<xref linkend="filler-base-params">,
+		</para></step>
+
+		<step><para> 
+			ustaliæ jego zakres czasowy: 
+			<xref linkend="filler-base-range">,
+		</para></step>
+
+		<step><para>
+			wpisaæ jego now± warto¶æ:
+			<xref linkend="filler-base-value">.
+		</para></step>
+	</procedure>
+	
+	<para>
+		Te operacje trzeba powtarzaæ dla ka¿dego parametru, 
+		który chcesz dodaæ.
+	</para>
+	
+	<para>
+		<important><para>
+		Po dodaniu wszystkich parametrów powiniene¶ sprawdziæ czy
+		wszystkie wprowadzone dane s± poprawne, a je¶li nie s± 
+		usun±æ wadliwy parametr 
+		<xref linkend="filler-base-list-del"> i dodaæ go ponownie z
+		poprawnymi danymi.
+		</para></important>
+	</para>
+	
+	<para>
+		Gdy upewni³e¶ siê ju¿, ¿e wszystkie parametry, ich warto¶ci i
+		zakresy czasowe s± poprawne, wybierz z menu
+		<guimenuitem>Plik</guimenuitem> a nastêpnie
+		<guimenuitem>Zapisz</guimenuitem>.  Mo¿esz równie¿
+		klikn±æ na ikonkê <guimenu>Zapisz</guimenu>
+	</para> 
+</section> <!--filler-base-write -->
+
+<section id="filler-base-keyboard">
+	<title>Obs³uga przy pomocy klawiatury</title>
+	<para>
+		Wszystkie opcje w menu maj± swoje skróty klawiszowe, s±
+		to odpowiednio:
+		<itemizedlist>
+			<listitem>
+				<para>Zapisz - Ctrl + W </para>
+			</listitem>
+			<listitem>
+				<para>Wyczy¶æ - Ctrl + C </para>
+			</listitem>
+			<listitem>
+				<para>Wyjd¼ - Ctrl + Q </para>
+			</listitem>
+			<listitem>
+				<para>Spis tre¶ci pomocy - F1 </para>
+			</listitem>
+			<listitem>
+				<para>Pomoc kontekstowa - Shift + F1 </para>
+			</listitem>
+		</itemizedlist>
+		Oznacza to np. ¿e w dowolnym momencie naci¶niêcie klawisza
+		<keycode>W</keycode> i trzymanym klawiszem
+		<keycode>Ctrl</keycode> jest równoznaczne z wybraniem
+		opcji <guimenuitem>Zapisz</guimenuitem>
+	</para>
+	<para>
+		Drug± mo¿liwo¶ci± obs³ugi menu przez klawiaturê jest
+		naci¶niêcie kombinacji <keycode>Alt+P</keycode> lub
+		<keycode>Alt+M</keycode>. Mo¿esz wtedy wybraæ odpowiedni±
+		opcjê nawiguj±c strza³kami i zatwierdziæ wybór naciskaj±c
+		<keycode>Enter</keycode>
+	</para>
+	<para>
+		Aby przej¶æ do wybranej kontrolki nale¿y naciskaæ
+		<keycode>Tab</keycode> a¿ do momentu, kiedy uzyska uzyska
+		ona focus, wtedy mo¿na j± wybraæ naciskaj±c spacjê.
+	</para>
+	<para>
+		Naci¶niêcie <keycode>Enter</keycode>a jest równoznaczne z
+		klikniêciem przycisku <guibutton>Dodaj</guibutton>.
+	</para>
+	<para>
+		Podczas poruszania siê po li¶cie wybranych parametrów
+		naci¶niêcie <keycode>del</keycode> jest równoznaczne z
+		wybraniem opcji <guimenuitem>Usuñ</guimenuitem> z menu
+		kontekstowego.
+	</para>
+</section> <!--filler-base-keyboard -->
+	
+</chapter> <!-- filler-base-->
+
+
+<chapter id="filler-faq">
+<title>Najczê¶ciej zadawane pytania</title>
+
+<section id="filler-faq-toc">
+	<title>Spis tre¶ci rozdzia³u</title>
+	<para></para>
+</section>  <!-- filler-faq-toc -->
+
+<section id="filler-faq-noway">
+	<title>Nie mogê uruchomiæ programu, co robiæ?</title>
+	<para>
+		Przy próbie uruchomienia programu, powinno pokazaæ siê
+		okno dialogowe informuj±ce o przyczynie takiego
+		zachowania.
+	</para>
+	<para>
+		Nale¿y przeczytaæ informacjê podan± w oknie dialogowym i
+		poinformowaæ osobê odpowiedzialn± za konfiguracjê systemu
+		SZARP.
+	</para>
+	<para>
+		Program Filler odmawia wspó³pracy gdy w konfiguracja
+		(pliku params.xml) jest nieprawid³owa lub niemo¿liwa do
+		odczytania.
+	</para>
+	<para>
+		Opis dok³adnej przyczyny niepowodzenia znajduje siê w
+		informacji okna dialogowego.
+	</para>
+</section>  <!-- filler-faq-noway -->
+
+<section id="filler-faq-prefix">
+	<title>Jak mo¿na zmieniæ prefiks?</title>
+	<para>
+		Tak jak w wszystkich innych programach systemu SZARP,
+		podaj±c opcjê z linii poleceñ:
+		<quote>-Dprefix=PREFIX</quote> gdzie PREFIX to nazwa nowej
+		lokalizacji.
+	</para>
+</section> <!-- filler-faq-prefix -->
+
+<section id="filler-faq-Dx">
+	<title>Czy program Filler przyjmuje argumenty z linii poleceñ?</title>
+	<para>
+		Tak, ale tylko argumenty typu <quote>-Dx=y</quote>, s± one
+		bezpo¶rednio przekazywane programom wczytuj±cym
+		konfiguracjê (<command>lpparser</command>) i zapisuj±cym
+		dane do bazy (<command>szbwriter</command>).
+	</para>
+	<para>
+		Wszystkie inne argumenty s± ignorowane.
+	</para>
+</section> <!-- filler-faq-Dx -->
+
+</chapter> <!-- filler-faq -->
+
+
+<chapter id="filler-advanced">
+<title>Zagadnienia zaawansowane</title>
+
+<section id="filler-advanced-toc">
+	<title>Spis tre¶ci rozdzia³u</title>
+	<para></para>
+</section>  <!-- filler-advanced-toc -->
+
+<section id="filler-advanced-who">
+	<title>Do kogo skierowany jest ten rozdzia³?</title>
+	<para>
+		Informacje zawarte w tym rozdziale powinny zainteresowaæ
+		jedynie osoby zajmuj±ce siê instalacj± i konserwacj±
+		systemu SZARP.
+	</para>
+	<para>
+		Przeciêtny u¿ytkownik <emphasis>nie musi</emphasis> siê
+		zapoznawaæ z tre¶ci± tego rozdzia³u, aby móc w pe³ni
+		korzystaæ z mo¿liwo¶ci programu Filler.
+	</para>
+</section>  <!-- filler-advanced-who -->
+
+<section id="filler-advanced-conf">
+	<title>Konfiguracja</title>
+	<para>
+		Aby skonfigurowaæ system tak, ¿eby zapisywanie wstecz by³o
+		mo¿liwe musisz odpowiednio zmodyfikowaæ plik
+		<filename>params.xml</filename>.
+	</para>
+	<para>
+		Wyszukaj wszystkie parametry, które
+		filler ma modyfikowaæ (np.
+		<quote>*:*:warto¶æ opa³owa</quote>).
+		A nastêpnie dla ka¿dego z nich:
+		<itemizedlist>
+			<listitem><para>
+			Dodaæ analogiczny parametr <quote>defined</quote>
+			(np. <quote>Kocio³ 1:Waga:wpisywana warto¶æ opa³owa
+			</quote>) okre¶lony pust± formu³± przez element
+			<quote>define</quote> w postaci: <quote>&lt;define
+			type="RPN" formula="NULL"/&gt;</quote>. Konieczny jest
+			równie¿ element <quote>editable</quote> (dok³adnie 
+			opisany tu: <xref linkend="filler-advanced-editable">).
+			</para>
+			<para>
+			Przyk³adowy wpis:
+			<programlisting>
+				&lt;param name="Kocio³ 1:Sterownik:wpisywana warto¶æ opa³owa" 
+				short_name="Cs" draw_name="Warto¶æ opa³owa" unit="kJ/g" prec="2"
+			base_ind="auto"&gt;
+	       
+				&lt;define type="RPN" formula="NULL"/&gt;
+				&lt;editable xmlns="http://www.praterm.com.pl/SZARP/ipk-extra"
+				min="0" max="100" time="12"/&gt;
+				
+				&lt;/param&gt;
+			</programlisting>
+			</para>
+	
+	</listitem>
+
+			<listitem><para>
+			Dodaæ analogiczny parametr <quote>drawdefinable</quote>
+			(np. 
+			<quote>Kocio³ 1:Waga:w³a¶ciwa warto¶æ opa³owa</quote>)
+			który ma przyjmowaæ warto¶æ parametru z programu
+			<command>filler</command> je¶li ta istnieje, a w
+			przeciwnym przypadku, warto¶æ z sterownika.
+			Musi, wiêc mieæ element <quote>define</quote>
+			np. : <quote>&lt;define type="DRAWDEFINABLE"
+			formula=" (Kocio³ 1:Waga:wpisywana warto¶æ opa³owa)
+			(Kocio³ 1:Waga:warto¶æ opa³owa) N"/&gt;</quote>.
+			Aby parametr by³ widoczny na wykresie musi mieæ
+			równie¿ element draw.
+			</para>
+			<para>
+			Przyk³adowy wpis:
+			<programlisting>
+			&lt;param name="Kocio³ 1:Sterownik:w³a¶ciwa warto¶æ opa³owa" short_name="K1" 
+			draw_name="Warto¶æ opa³owa - Kocio³ 1" unit="kJ/g" prec="2"&gt;
+
+			&lt;define type="DRAWDEFINABLE" formula="(Kocio³ 1:Sterownik:wpisywana warto¶æ opa³owa)
+			(Kocio³ 1:Sterownik:warto¶æ opa³owa)  N"/&gt;
+
+			&lt;draw title="Warto¶æ opa³owa" order="1" color="cyan" min="0" max="200"/&gt;
+			&lt;/param&gt;
+			</programlisting>
+			</para>
+			</listitem>
+			
+		</itemizedlist>
+
+	</para>
+</section>  <!-- filler-advanced-conf -->
+
+<section id="filler-advanced-editable">
+	<title>Element editable</title>
+	<para>
+		Program Filler pozwala na zapis z wsteczn± dat± tylko
+		tych parametrów, które w pliku
+		<filename>params.xml</filename> zosta³y oznaczone
+		elementem <quote>editable</quote>. Przedstawiamy tu kilka
+		u¿ytecznych informacji na jego temat.
+	</para>
+	<para> Element <quote>editable</quote>:</para>
+<itemizedlist>
+<listitem>
+	<para>
+		pochodzi z przestrzeni nazw
+		<quote>http://www.praterm.com.pl/SZARP/ipk-extra</quote>,
+	</para>
+</listitem>
+<listitem>
+	<para>
+		jest podelementem, elementu <quote>param</quote>,
+	</para>
+</listitem>
+<listitem>
+	<para>
+		<emphasis>Musi</emphasis> zawieraæ nastêpuj±ce atrybuty:
+		<variablelist>
+			<varlistentry>
+				<term>min</term>
+				<listitem><para> [ min >= 0 && min < max ]
+					</para><para>
+
+					Okre¶la minimaln± warto¶æ jak±
+					mo¿e przyj±æ parametr zapisywany z
+					wsteczn± dat±
+				</para></listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>max</term>
+				<listitem><para>
+					[ max >= 0 && max > min ] 
+					</para><para>
+					
+					Okre¶la maksymaln± warto¶æ jak±
+					mo¿e przyj±æ parametr zapisywany z
+					wsteczn± dat±
+				</para></listitem>
+			</varlistentry>
+			
+			<varlistentry>
+				<term>time</term>
+				<listitem><para>
+					[ time > 0 ] 
+					</para><para>
+					
+					Okre¶la przedzia³ czasowy w jakim
+					mo¿na zapisywaæ parametr wstecz;
+					np. warto¶æ 2 oznacza, ¿e parametr
+					mo¿na zmieniæ do 2 miesiêcy
+					wstecz.
+				</para></listitem>
+			</varlistentry>
+		</variablelist>
+	</para>
+</listitem>
+<listitem>
+	<para>
+		<emphasis>Mo¿e</emphasis> zawieraæ atrybut:
+		<variablelist>
+			<varlistentry>
+				<term>unit</term>
+				<listitem><para>
+					Zmienia domy¶ln± jednostkê
+					(miesi±c) parametru
+					<varname>time</varname>.
+					Mo¿e przyjmowaæ jedn± z warto¶ci:
+					<itemizedlist>
+						<listitem><para>
+							hours
+						</para></listitem>
+						<listitem><para>
+							days
+						</para></listitem>
+						<listitem><para>
+							months [domy¶lne]
+						</para></listitem>
+						<listitem><para>
+							years
+						</para></listitem>
+					</itemizedlist>
+
+				</para></listitem>
+			</varlistentry>
+		</variablelist>
+	</para>
+</listitem>
+
+</itemizedlist>
+</section>  <!-- filler-advanced-editable -->
+
+<section id="filler-advanced-what">
+	<title>Co w³a¶ciwie program Filler robi?</title>
+	<para>
+		Filler generuje plik z danymi o parametrach dla programu
+		<command>szbwriter</command>, który zapisuje je do bazy
+		danych. Plik ten zawiera nazwy parametrów, ich nowe
+		warto¶ci oraz daty pod jakimi maj± byæ zapisane (z skokiem
+		10 minut).
+	</para>
+	<para>
+		Istotn± funkcj± programu Filler jest weryfikacja
+		podawanych przez u¿ytkownika danych z ograniczeniami
+		narzuconymi przez konfiguracjê systemu.
+	</para>
+</section>  <!-- filler-advanced-what -->
+
+</chapter> <!-- filler-advanced -->
+
+
+</book> <!-- filler -->
+
+<!--
+-->

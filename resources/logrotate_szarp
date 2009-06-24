@@ -1,0 +1,12 @@
+
+# logrotate entry for SZARP logs, place this file in /etc/logrotate.d
+
+/opt/szarp/logs/*.log /opt/szarp/logs/execute_stdout /opt/szarp/logs/execute_stderr /opt/szarp/logs/*dmn {
+	compress
+	delaycompress
+	rotate 5
+	daily 
+	missingok
+	nocreate
+	size 10M
+}

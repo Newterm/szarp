@@ -1,0 +1,73 @@
+#!/bin/bash
+# SZARP: SCADA software 
+# 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+#  2003 Pawe³ Pa³ucha PRATERM S.A pawel@praterm.com.pl
+
+# $Id: ipk_get_base 4393 2007-09-13 16:37:10Z reksio $
+
+# Skrypt wypisuje na standardowe wyj¶cie indeks w bazie parametru
+# o podanej nazwie. Konfiguracja jest czytana z podanego pliku
+# lub ze standardowego wej¶cia.
+# 
+
+. `dirname $0`/ipk_config
+
+function Usage () {
+	echo -e "\
+Usage:\n\
+ ipk_get_base <param_name> [ <config_file> ]\n\
+or\n\
+ ipk_base_max -h | --help\n\
+Prints base index of parameter.\n\
+\n\
+	-h, --help	print help and exit\n\
+	<param_name>	name of parameter
+	<config_file>	configuration file, standard input is used if none\n\
+			is given\n\
+\n\
+Base indexes start from 0. Return code is 0 on success and 1 on error."
+	exit 1
+}
+
+if [ "x$1" = "x-h" -o "x$1" = "x--help" ] ; then
+	Usage
+fi
+
+[ $# -lt 1 -o $# -gt 2 ] && Usage
+
+if [ $# -eq 1 ] ; then
+	INPUT="-"
+else
+	INPUT="$2"
+fi
+
+TEMPLATES_DIR=$SZARP_DIR/resources/xslt
+
+# xsltproc wymaga parametrów zakodowanych w UTF-8
+NAME_ISO=$1
+NAME=`echo $NAME_ISO | iconv -f latin2 -t utf-8`
+
+# kolejno:
+# - sprawdzamy poprawno¶æ XML-a
+# - sortujemy elementy 'param' zstêpuj±co po warto¶ci 'base_ind'
+# - wypisujemy warto¶æ atrybutu 'base_ind' pierwszego
+# - bierzemy drug± liniê (bo pierwsza zawiera deklaracjê XML)
+xmllint $XMLLINT_VALID_ARGS "$INPUT" \
+| xsltproc --stringparam search "$NAME" $TEMPLATES_DIR/get_base.xsl - \
+| tail -n 1
+

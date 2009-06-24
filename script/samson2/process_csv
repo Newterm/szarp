@@ -1,0 +1,104 @@
+#!/usr/bin/perl
+# SZARP: SCADA software 
+# 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+#
+# $Id: process_csv 4393 2007-09-13 16:37:10Z reksio $
+#
+# 2003 Praterm 
+# pawel@praterm.com.pl
+# 
+# Skrypt parsuje plik CSV z danymi z Samsona/Mikroba i wypluwa dane w postaci:
+# "Grupa:Jednostka:Nazwa [jednostka]" rok miesiac dzien godzina minuty wartosc
+
+# Parametry: nazwa pliku i nazwa grupy jednostek
+# Opcjonalne parametry: separator danych (domy¶lnie przecinek), oznaczenie
+# braku danych (domy¶lnie pusty napis).
+
+use File::Basename;
+
+if (@ARGV < 2) {
+	print "process_csv: za ma³o argumentów";
+	exit 1;
+}
+
+$path = $ARGV[0];
+$group = $ARGV[1];
+if (@ARGV >= 3) {
+	$delim = $ARGV[2];
+} else {
+	$delim = ",";
+}
+if (@ARGV >= 4) {
+	$nodata = $ARGV[3];
+} else {
+	$nodata = "";
+}
+
+# Otwieramy plik
+open(IFILE, $path) or die "Nie mogê otworzyæ pliku $path";
+my @filelines = <IFILE>;
+	
+# Usuñ DOS-owe koñce linii.
+$filelines[0] =~ s/\r//;
+$filelines[0] =~ s/\n//;
+my @header = split(/$delim/,$filelines[0]);
+
+my @units;
+my @names;
+for (my $j = 2; my $param = $header[$j]; $j++) {
+	if ($header[$j] =~ /_/) {
+		($units[$j] = $header[$j]) =~ s/_.*//;
+	} else {
+		$units[$j] = $pathunit;
+	}
+	($names[$j] = $header[$j]) =~ s/[^_]*_//;
+	$names[$j] =~ s/}//;
+}
+
+($pathunit = basename($path, '.csv')) =~ s/_.*//;
+	
+# Przetwarzaj poszczególne linie pliku.
+for (my $i = 1; my $line = $filelines[$i]; $i++) {
+	$line =~ s/\r//;
+	$line =~ s/\n//;
+	my @linearr = split(/$delim/,$line);
+	my $date = $linearr[0];
+	my $time = $linearr[1];
+	my @timearr = split(/:/,$time);
+	$datestr = "20" . substr($date,6,2) . " " .
+		substr($date,0,2) . " " .
+		substr($date,3,2) . " " .
+		$timearr[0] . " " . $timearr[1];
+	
+	# Przetwarzaj kolejne pola linii
+	LOOP2: for (my $j = 2; my $param = $header[$j]; $j++) {
+		my $field = $linearr[$j];
+		my $unit;
+		my $name;
+		
+		# Opu¶æ niezapisywane parametry.
+		if ($field eq $nodata) {
+			next LOOP2;
+		}
+
+		print "\"$group:$units[$j]:$names[$j]\" ";
+		print "$datestr $field\n";
+	}
+}
+close(IFILE);
+

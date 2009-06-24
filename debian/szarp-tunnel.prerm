@@ -1,0 +1,10 @@
+#! /bin/sh
+# $Id: szarp-tunnel.prerm 2846 2005-11-17 18:41:46Z pawel $
+#
+
+[ -e /etc/cron.d/szarp-tunnel ] && rm /etc/cron.d/szarp-tunnel;
+
+#DEBHELPER#
+
+exit 0
+

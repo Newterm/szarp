@@ -1,0 +1,727 @@
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V3.1//EN"[
+<!ENTITY szarp-info SYSTEM "../common/szarp-info.sgml">
+]>
+
+
+<book lang="pl" id="raporter">
+
+
+<bookinfo>
+
+&szarp-info;
+
+<title>Raporter - dokumentacja u¿ytkownika</title>
+
+<subtitle>SZARP v2.1</subtitle>
+
+
+
+<Abstract>
+
+<Para>
+Raporter s³u¿y do wy¶wietlania, drukowania i archiwizacji definiowanych
+przez u¿ytkownika <link linkend="Raport-dict">raportów</link> z pracy monitorowanego
+systemu. Dowolnie wybrane parametry pracy systemu mog± byæ cyklicznie wy¶wietlane
+wraz ze stosownym komentarzem. <link linkend="Okres-wyswietlania">Okres
+cyklu</link> powtarzania jak równie¿ <link linkend="Okno-usredniania">okno
+u¶redniania</link> warto¶ci parametrów zale¿± od decyzji u¿ytkownika.
+
+</Para>
+
+<para>
+Program mo¿e byæ uruchomiony bezpo¶rednio na komputerze pe³ni±cym rolê serwera
+systemu SZARP lub te¿ czerpaæ informacjê o warto¶ciach parametrów przez siec
+komputerow±.
+</para>
+
+
+<para>
+<link linkend="Glowne-okno">G³ówne okno</link> Raportera zawiera menu z którego
+dostêpne s± nastêpuj±ce grupy opcji:
+</para>
+
+<para>
+<ItemizedList>
+<ListItem>
+<para>
+<link linkend="Raporty">Raporty</link>
+</para>
+</ListItem>
+
+<ListItem>
+<para>
+
+<link linkend="Wzorce">Wzorce</link>
+</para>
+</ListItem>
+
+<ListItem>
+<para>
+
+<link linkend="Opcje">Opcje</link>
+</para>
+</ListItem>
+
+<ListItem>
+<para>
+
+<link linkend="Pomoc">Pomoc</link>
+</para>
+</ListItem>
+</ItemizedList>
+</para>
+
+<para>
+$Id: raporter.sgml 6724 2009-05-18 08:37:03Z reksio $
+</para>
+</Abstract>
+
+</bookinfo>
+
+
+<chapter id="Uruchamianie-programu" >
+<Title>Uruchamianie programu</Title>
+
+
+
+<Para>
+Uruchomienie Raportera mo¿e nast±piæ w jeden z trzech nastêpuj±cych
+sposobów:
+</Para>
+
+
+<OrderedList>
+<ListItem><Para>
+Przez wybór raportu z g³ównego menu systemu SZARP (dostêpnego b±d¼ z menu KDE, b±d¼
+te¿ po klikniêciu mysz± na ikonie aplikacji SCC).
+</Para></ListItem>
+
+<ListItem>
+<Para>
+Przez podwójne naci¶niêcie lewego klawisza myszy na ikonie Raportera lub
+ikonie predefiniowanego raportu w podstawowym oknie u¿ytkownika. Start
+z ikony powoduje automatyczne wczytanie <Link linkend="Wzorce">wzorca raportu</Link>
+predefiniowanego lub raportu standardowego w przypadku ikony Raportera.
+</Para>
+</ListItem>
+
+
+<ListItem><Para>
+Przez podanie komendy z poziomu xterminala. Po znaku zachêty $ nale¿y wprowadziæ
+z klawiatury komendê rap a po niej ewentualn± nazwê pliku wzorca predefiniowanego
+raportu i nacisn±æ Enter. Je¿eli nazwa pliku nie zostanie podana Raporter
+wczyta standardowy wzorzec raportu.
+</Para></ListItem>
+</OrderedList>
+
+
+<Para>
+Po uruchomieniu Raporter jest gotowy do prezentacji parametrów zgodnie
+z odno¶nym wzorcem. Wy¶wietlane bêd± <Link linkend="Okres-wyswietlania">próbki</Link>
+z <Link linkend="Okres-wyswietlania">okresem cyklu</Link> równym 10 sekund.
+<Link linkend="Bufor">Bufor</Link> za¶ bêdzie w stanie zmie¶ciæ 10 kolejnych raportów.
+</Para>
+</chapter>
+
+
+<chapter id="Glowne-okno" >
+<Title>G³ówne okno</Title>
+
+
+<Para>G³ówne okno Raportera dzieli siê na trzy czê¶ci. Górn± czê¶æ zajmuje
+<Link linkend="Glowne-menu">g³ówne menu</Link> s³u¿±ce do wyboru i ustawiania opcji
+programu. Czê¶æ ¶rodkow± okna stanowi pole robocze, na którym wy¶wietlane
+s± <Link linkend="Raporty">raporty.</Link>
+</Para>
+<Para>W przypadku, gdy bufor Raportera zawiera wiêcej raportów ni¿ mo¿e byæ
+jednocze¶nie wy¶wietlone w polu roboczym, u¿ytkownik ma mo¿liwo¶æ przewijania
+zawarto¶ci bufora za pomoc± belki lub strza³ek z prawej strony pola roboczego.
+</Para>
+
+<Para>W dolnej czê¶ci okna znajduje siê przycisk s³u¿±cy do startowania i
+zatrzymywania automatycznego uaktualniania raportów.
+</Para>
+
+<Para>Pole robocze w pierwszej linii 
+zawiera nazwê raportu, a po nim typ odczytywanych warto¶ci.
+Mog± to byæ:
+<itemizedlist>
+
+<listitem><para>
+<emphasis>Próbki</emphasis> - wy¶wietlane bêd± warto¶ci próbek parametrów, 
+uaktualnianych co 10 sekund.
+</para></listitem>
+
+<listitem><para>
+<emphasis>¦rednie minutowe</emphasis> - wy¶wietlane bêd± ¶rednie minutowe warto¶ci
+parametrów.
+</para></listitem>
+
+<listitem><para>
+<emphasis>¦rednie 10 Minutowe</emphasis> - wy¶wietlane bêd± ¶rednie warto¶ci
+parametrów z ostatnich 10 minut.
+</para></listitem>
+
+<listitem><para>
+<emphasis>¦rednie Godzinne</emphasis> - wy¶wietlane bêd± ¶rednie warto¶ci parametrów
+z ostatniej godziny.
+</para></listitem>
+
+<listitem><para>
+<emphasis>¦rednie Dobowe</emphasis> - wy¶wietlane bêd± ¶rednie dobowe warto¶ci
+parametrów.
+</para></listitem>
+
+</itemizedlist>
+</para>
+
+<para>
+Druga linia zawiera aktualn± datê i czas otrzymany z serwera SZARP.
+</para>
+
+<para>W kolejnych liniach wy¶wietlane s± informacje o warto¶ci parametrów - najpierw
+skrót nazwy parametru, potem jego warto¶æ, opis, a na koñcu jednostka w jakiej
+prezentowana jest warto¶æ. Zamiast warto¶ci parametru mo¿e pojawiæ siê informacja
+<emphasis>brak danych</emphasis>, oznaczaj±ca ¿e system SZARP nie móg³ odczytaæ
+warto¶ci parametru ze sterownika. 
+</para>
+<para>
+Zamiast warto¶ci i nazwy parametru mo¿e te¿ pojawiæ siê napis <emphasis>brak 
+komunikacji z serwerem</emphasis>. Oznacza on brak mo¿liwo¶ci odczytu danych z serwera
+SZARP, spowodowany na przyk³ad awari± sieci komputerowej lub czasowym wy³±czeniem
+systemu z powodu konserwacji czy zmiany konfiguracji.
+</para>
+<para>
+Napis <emphasis>nieskonfigurowany parametr</emphasis> mo¿e siê pojawiæ w programie
+dzia³aj±cym na terminalu po³±czonym do serwera SZARP przez sieæ je¿eli dokonano
+zmian konfiguracji i nie zosta³y one jeszcze przegrane na terminal. 
+Konfiguracja w przypadku zmian jest przegrywana na terminale automatycznie co 10 
+minut, komunikat taki powinien wiêc zostaæ zast±piony prawid³ow± warto¶ci± parametru
+nie pó¼niej ni¿ w ci±gu 10 minut.
+</para>
+
+<Para>Ramka okna Raportera zawiera, oprócz nazwy programu, nazwê aktualnego
+pliku <Link linkend="Wzorce">wzorca raportu</Link> oraz okre¶lenie <Link linkend="Okno-usredniania">klasy
+parametrów</Link>
+</Para>
+
+<Para>
+<figure>
+<title>Przyk³adowy wygl±d okna g³ównego</title>
+<mediaobject>
+<!--<imageobject><imagedata fileref="pics/main" format="gif"></imageobject>-->
+<imageobject><imagedata scale="60" fileref="pics/main.png"></imageobject>
+</mediaobject></figure>
+</Para>
+
+</chapter>
+
+<chapter id="Glowne-menu" >
+<Title>G³ówne menu</Title>
+
+
+
+<Para>Znajduj±ce siê w górnej czê¶ci <Link linkend="Glowne-okno">g³ównego okna</Link>
+menu ma postaæ poziomego paska podzielonego na cztery grupy opcji.
+</Para>
+
+<Para>Naci¶niêcie lewego klawisza myszy na jednej z grup powoduje rozwiniêcie
+odpowiedniego podmenu. Podmenu mo¿e byæ równie¿ wywo³ane z klawiatury przez
+kombinacjê klawisza Alt i podkre¶lonej litery z nazwy grupy. Wybór opcji
+z rozwiniêtego podmenu odbywa siê prawym klawiszem myszy albo z klawiatury
+podkre¶lon± liter± nazwy opcji lub klawiszami kursora z akceptacj± klawiszem
+Enter.
+</Para>
+
+<Para>W kolejnych rozdzia³ach przedstawiono opis opcji w poszczególnych grupach:
+</Para>
+
+<Para><ItemizedList>
+<ListItem><Para>
+<Link linkend="Raporty">Raporty</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="Wzorce">Wzorce</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="Opcje">Opcje</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="Pomoc">Pomoc</Link></Para></ListItem>
+</ItemizedList></Para>
+
+<Section id="Raporty" >
+<Title>Raporty</Title>
+
+
+<Para>Ta grupa opcji dotyczy bie¿±cej zawarto¶ci <Link linkend="Bufor">bufora raportów</Link>.
+Wszystkie opcje grupy Raporty dotycz± ca³ej zawarto¶ci bufora. Poszczególne opcje 
+tej grupy s³u¿± do:
+</Para>
+<Para><ItemizedList>
+<ListItem><Para>
+<Link linkend="Raporty-Zapis">Zapis</Link> zapisu bufora do pliku archiwalnego</Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="Raporty-Odczyt">Odczyt</Link> odczytu bufora z pliku archiwalnego</Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="Kasuj">Kasuj</Link> kasowania bufora raportów</Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="Drukuj">Drukuj</Link> wydruk bufora raportów</Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="Koniec">Koniec</Link> zakoñczenia pracy programu</Para></ListItem>
+</ItemizedList></Para>
+
+<Section id="Raporty-Zapis" >
+<Title>Zapis</Title>
+
+
+<Para>Opcja ta s³u¿y do zapisu bufora raportów do pliku wskazanego przez u¿ytkownika.
+Wybór nazwy pliku dokonywany jest w dodatkowym oknie.
+
+Nazwê pliku nale¿y wprowadziæ do pola <token>Nazwa pliku</token>, lub wybraæ ju¿ 
+istniej±cy plik ze znajduj±cej siê wy¿ej listy.
+</Para>
+<Para>Pliki oznaczane s± bia³ymi ikonami natomiast katalogi ¿ó³tymi.
+</Para>
+<Para>Wyboru dokonuje siê poprzez klikniêcie lewym przyciskiem myszy na nazwie pliku. 
+"Wej¶æ" do katalogu mo¿na klikaj±c lewym przyciskiem myszy jego nazwê, wyj¶cie z katalogu
+mo¿liwe jest przez naci¶niêcie przycisku w prawym górnym rogu okna. 
+</Para>
+<Para>Domy¶lnie wy¶wietlane s± tylko pliki z rozszerzeniami okre¶lonymi w polu <token>Pliki typu</token>
+</Para>
+<Para>Naci¶niêcie przycisku <token>Zapisz</token> powoduje próbê zapisu bufora raportów
+do pliku o nazwie podanej w polu <token>Nazwa pliku</token>. Je¿eli zapis do pliku
+o podanej nazwie nie jest mo¿liwy pojawia siê odpowiednie ostrze¿enie.
+</Para>
+<Para>Przycisk <token>Anuluj</token> zamyka okno wyboru nazwy pliku bez zapisu
+bufora raportów.
+</Para>
+<Para>
+<figure>
+<title>Zapis bufora raportów</title>
+<mediaobject>
+<!--<imageobject><imagedata fileref="pics/zapis" format="gif"></imageobject>-->
+<imageobject><imagedata scale="60" fileref="pics/zapis.png"></imageobject>
+</mediaobject></figure>
+</Para>
+
+</Section>
+
+<Section id="Raporty-Odczyt" >
+<Title>Odczyt</Title>
+
+
+<Para>Opcja ta s³u¿y do wczytania archiwalnych raportów z pliku do bufora
+raportów. Wybór nazwy pliku dokonywany jest w dodatkowym oknie.
+
+Nazwê pliku nale¿y wprowadziæ do pola <token>Nazwa pliku</token>, lub wybraæ ju¿ 
+istniej±cy plik ze znajduj±cej siê wy¿ej listy.
+</Para>
+<Para>Pliki oznaczane s± bia³ymi ikonami natomiast katalogi ¿ó³tymi.
+</Para>
+<Para>Wyboru dokonuje siê poprzez klikniêcie lewym przyciskiem myszy na nazwie pliku. 
+"Wej¶æ" do katalogu mo¿na klikaj±c lewym przyciskiem myszy jego nazwê, wyj¶cie z katalogu
+mo¿liwe jest przez naci¶niêcie przycisku w prawym górnym rogu okna. 
+</Para>
+<Para>Domy¶lnie wy¶wietlane s± tylko pliki z rozszerzeniami okre¶lonymi w polu <token>Pliki typu</token>
+</Para>
+<Para>Naci¶niêcie przycisku <token>Otwórz</token> powoduje próbê odczytania pliku raportów 
+o nazwie podanej w polu <token>Nazwa pliku</token> do bufora raportów. Je¿eli odczyt z pliku
+o podanej nazwie nie jest mo¿liwy pojawia siê odpowiednie ostrze¿enie.
+</Para>
+<Para>Przycisk <token>Anuluj</token> zamyka okno wyboru nazwy pliku bez odczytu pliku do 
+bufora raportów.
+</Para>
+<Para>
+<figure>
+<title>Odczyt bufora raportów</title>
+<mediaobject>
+<!--<imageobject><imagedata fileref="pics/odczyt" format="gif"></imageobject>-->
+<imageobject><imagedata scale="60" fileref="pics/odczyt.png"></imageobject>
+</mediaobject></figure>
+</Para>
+</Section>
+
+<Section id="Kasuj" >
+<Title>Kasuj</Title>
+
+<Para>Wybór tej opcji powoduje skasowanie bie¿±cej zawarto¶ci bufora raportów.
+Wszystkie bie¿±ce opcje programu jak: wzorzec raportu, okno u¶redniania,
+pojemno¶æ bufora czy te¿ okres cyklu powtarzania pozostaj± bez zmian.
+</Para>
+</Section>
+
+<Section id="Drukuj" >
+<Title>Drukuj</Title>
+
+
+
+<Para>W wyniku wyboru tej opcji Raporter dokonuje próby wydruku bie¿±cej zawarto¶ci
+bufora raportów. Je¿eli wydruk nie mo¿e byæ zrealizowany zawarto¶æ bufora
+zostaje zapamiêtana do wydruku. W ci±gu jednej sesji pracy Raportera mo¿na
+zapamiêtaæ dowoln± ilo¶æ wydruków. W momencie zakoñczenia pracy programu
+wszystkie niezrealizowane ¿±dania wydruków s± kasowane.
+</Para>
+</Section>
+
+<Section id="Koniec" >
+<Title>Koniec</Title>
+
+
+<Para>Wybranie tej opcji powoduje natychmiastowe zakoñczenie pracy Raportera.
+Oprócz utraty bie¿±cej zawarto¶ci bufora raportów, zakoñczenie pracy programu
+powoduje skasowanie wszystkich niezrealizowanych ¿±dañ wydruków oraz utratê
+bie¿±cego wzorca raportów o ile w czasie sesji zdefiniowano <Link linkend="Nowy">
+nowy wzorzec</Link> i nie zapisano go do pliku.
+</Para>
+</Section>
+
+</Section>
+
+<Section id="Wzorce" >
+<Title>Wzorce</Title>
+
+
+<Para>Wzorzec raportu definiuje elementy sk³adowe raportu. Zawiera on tytu³
+raportu oraz okre¶lenia kolejnych parametrów, z³o¿one z symboli i opisu
+parametrów.
+</Para>
+<Para>Wraz z Raporterem dostarczane s± predefiniowane wzorce raportów zapisane
+w plikach o rozszerzeniu rap. Dziêki opcjom z tej grupy u¿ytkownik mo¿e
+wczytywaæ gotowe wzorce raportów jak równie¿ definiowaæ nowe wzorce a nastêpnie
+zapisywaæ je do plików.
+</Para>
+<Para>Kolejne opcje tej grupy s³u¿± do:
+</Para>
+<Para><ItemizedList>
+<ListItem><Para>
+<Link linkend="Wzorce-Zapis">Zapis</Link> zapisu aktualnego wzorca do pliku</Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="Wzorce-Odczyt">Odczyt</Link> wczytywania wzorca raportu z pliku</Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="Nowy">Nowy</Link> tworzenia nowego wzorca raportu</Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="Edycja">Edycja</Link> edycji aktualnego wzorca raportu</Para></ListItem>
+</ItemizedList></Para>
+
+
+<Section id="Wzorce-Zapis" >
+<Title>Zapis</Title>
+
+
+<Para>Opcja ta s³u¿y do zapisu wzorca raportu do pliku wskazanego przez u¿ytkownika.
+Wybór nazwy pliku dokonywany jest w dodatkowym oknie.
+
+Nazwê pliku nale¿y wprowadziæ do pola <token>Nazwa pliku</token>, lub wybraæ ju¿ 
+istniej±cy plik ze znajduj±cej siê wy¿ej listy.
+</Para>
+<Para>Pliki oznaczane s± bia³ymi ikonami natomiast katalogi ¿ó³tymi.
+</Para>
+<Para>Wyboru dokonuje siê poprzez klikniêcie lewym przyciskiem myszy na nazwie pliku. 
+"Wej¶æ" do katalogu mo¿na klikaj±c lewym przyciskiem myszy jego nazwê, wyj¶cie z katalogu
+mo¿liwe jest przez naci¶niêcie przycisku w prawym górnym rogu okna. 
+</Para>
+<Para>Domy¶lnie wy¶wietlane s± tylko pliki z rozszerzeniami okre¶lonymi w polu <token>Pliki typu</token>
+</Para>
+<Para>Naci¶niêcie przycisku <token>Zapisz</token> powoduje próbê zapisu wzorca do pliku 
+o nazwie podanej w polu <token>Nazwa pliku</token>. Je¿eli zapis do pliku
+o podanej nazwie nie jest mo¿liwy pojawia siê odpowiednie ostrze¿enie.
+</Para>
+<Para>Przycisk <token>Anuluj</token> zamyka okno wyboru nazwy pliku bez zapisu wzorca do 
+pliku.
+</Para>
+
+
+<Para>
+
+<figure>
+<title>Zapis wzorca raportu</title>
+<mediaobject>
+<!--<imageobject><imagedata fileref="pics/zapiswz" format="gif"></imageobject>-->
+<imageobject><imagedata scale="60" fileref="pics/zapiswz.png"></imageobject>
+</mediaobject></figure>
+</Para>
+</Section>
+
+<Section id="Wzorce-Odczyt" >
+<Title>Odczyt</Title>
+
+
+<Para>Opcja ta s³u¿y do wczytywania wzorców raportów z pliku. Wybór nazwy
+pliku dokonywany jest w dodatkowym oknie.
+</Para>
+<Para>Nazwê pliku nale¿y wprowadziæ do pola <token>Nazwa pliku</token>, lub wybraæ ju¿ 
+istniej±cy plik ze znajduj±cej siê wy¿ej listy.
+</Para>
+<Para>Pliki oznaczane s± bia³ymi ikonami natomiast katalogi ¿ó³tymi.
+</Para>
+<Para>Wyboru dokonuje siê poprzez klikniêcie lewym przyciskiem myszy na nazwie pliku. 
+"Wej¶æ" do katalogu mo¿na klikaj±c lewym przyciskiem myszy jego nazwê, wyj¶cie z katalogu
+mo¿liwe jest przez naci¶niêcie przycisku w prawym górnym rogu okna. 
+</Para>
+<Para>Domy¶lnie wy¶wietlane s± tylko pliki z rozszerzeniami okre¶lonymi w polu <token>Pliki typu</token>
+</Para>
+<Para>Naci¶niêcie przycisku <token>Otwórz</token> powoduje próbê odczytu wzorca z pliku 
+o nazwie podanej w polu <token>Nazwa pliku</token>. Je¿eli odczyt z pliku
+o podanej nazwie nie jest mo¿liwy pojawia siê odpowiednie ostrze¿enie.
+</Para>
+<Para>Przycisk <token>Anuluj</token> zamyka okno wyboru nazwy pliku bez odczytu wzorca z 
+pliku.
+</Para>
+<Para>
+<figure>
+<title>Odczyt wzorca raportu</title>
+<mediaobject>
+<!--<imageobject><imagedata fileref="pics/odczytwz" format="gif"></imageobject>-->
+<imageobject><imagedata scale="60" fileref="pics/odczytwz.png"></imageobject>
+</mediaobject></figure>
+</Para>
+</Section>
+
+<Section id="Nowy" >
+<Title>Nowy</Title>
+
+
+
+<Para>Za pomoc± tej opcji u¿ytkownik mo¿e definiowaæ nowe wzorce raportów.
+Pojawia siê okno edycji wzorca zawieraj±ce pusty wzorzec nowego raportu.
+</Para>
+<Para>Edycjê wzorca raportu opisuje kolejny rozdzia³.
+</Para>
+<Para>
+<figure>
+<title>Okno nowych wzorców raportów</title>
+<mediaobject>
+<!--<imageobject><imagedata fileref="pics/nowy" format="gif"></imageobject>-->
+<imageobject><imagedata scale="60" fileref="pics/nowy.png"></imageobject>
+</mediaobject></figure>
+</Para>
+
+</Section>
+
+<Section id="Edycja" >
+<Title>Edycja</Title>
+
+
+<Para>Wybranie tej opcji powoduje pojawienie siê okna edycji wzorca raportu.
+G³ówn± czê¶æ tego okna zajmuje pole zawieraj±ce wzorzec raportu. Powy¿ej
+znajduje siê pole edycji tytu³u raportu, a poni¿ej grupa przycisków wyboru
+opcji.
+</Para>
+<Para>W obrêbie wzorca raportu mo¿na zaznaczyæ jedn± liniê poprzez wskazanie mysz± 
+i naci¶niêcie lewego przycisku. Zaznaczona linia wy¶wietlana jest na niebieskim
+ tle. Zmiany linii aktywnej dokonuje siê przez wskazanie mysz± i naci¶niêcie
+lewego przycisku.
+</Para>
+<Para>Linie wzorca raportu zawieraj± definicje parametrów raportu.
+Pierwsz± kolumnê zajmuje symbol parametru zakoñczony dwukropkiem. W drugiej
+kolumnie znajduje siê maska wskazuj±ca zakres i pozycjê kropki dziesiêtnej
+dla warto¶ci wy¶wietlanego parametru. Trzecia i ostatnia kolumna zawiera
+komentarz do wy¶wietlanej warto¶ci.
+
+<Link linkend="Dodaj">Dodawanie</Link> nowych definicji parametrów do
+wzorca raportu nastêpuje zawsze na koniec listy wzorca i zostanie szczegó³owo
+ opisane w nastêpnym rozdziale.
+</Para>
+<Para>Dowolna wybrana linia definicji parametrów raportu mo¿e zostaæ usuniêta ze 
+wzorca przez zaznaczenie jej i naci¶niêcie przycisku <token>Usuñ</token>.
+</Para>
+<Para>Potwierdzenie zmian dokonanych we wzorcu raportu nastêpuje przez wybór
+opcji <token>Ok</token>. Okno edycji wzorca zostaje zamkniête, a nowo stworzony
+wzorzec staje siê obowi±zuj±cy przy wy¶wietlaniu kolejnych raportów. Naci¶niêcie
+przycisku <token>Zaniechaj</token> powoduje zapomnienie wszystkich wprowadzonych
+zmian, zamkniêcie okna edycji wzorca i kontynuacjê pracy <token>Raportera</token>
+w oparciu o poprzednio u¿ywany wzorzec.
+</Para>
+<Para>Przycisk <token>Pomoc</token> wywo³uje ten tekst.
+</Para>
+
+<Section id="Dodaj" >
+<Title>Dodaj</Title>
+
+
+<Para>Wyboru parametru do dodania do wzorca raportu dokonuje siê w oddzielnym
+oknie.
+</Para>
+<Para>Ka¿dy parametr w <token>Systemie Zbierania Danych</token> definiowany jest przez
+trójcz³onow± nazwê, w której sk³ad wchodz±: nazwa grupy jednostek zbierania
+danych, nazwa jednostki w obrêbie grupy i nazwa parametru. Grupê stanowi
+wydzielony segment procesu technologicznego jak np. kocio³ czy wêze³ cieplny.
+Jednostka to sterownik, panel b±d¼ koncentrator danych.
+</Para>
+<Para>Stosownie do powy¿szego opisu okno dodawania parametru zawiera trzy
+przyciski opisane odpowiednio: <token>Grupa</token>, <token>Jednostka</token>, <token>Parametr</token>.
+Poni¿ej ka¿dego z nich znajduje siê pole z aktualnie wybranym odpowiednim
+cz³onem nazwy. Obok po prawej stronie znajduje siê lista s³u¿±ca do wyboru
+czê¶ci nazwy parametru.
+</Para>
+<Para>Procedura wyboru nazwy parametru przebiega nastêpuj±co. Naci¶niêcie
+przycisku <token>Grupa</token> powoduje wylistowanie wszystkich grup jednostek
+dostêpnych w Systemie. Po wybraniu jednej z grup i naci¶niêciu przycisku
+Jednostka pojawia siê lista jednostek dostêpnych w ramach wybranej grupy.
+</Para>
+<Para>Analogicznie naci¶niêcie przycisku <token>Parametr</token> przy ustalonych nazwach
+grupy i jednostki przywo³uje listê parametrów zbieranych z danej jednostki.
+</Para>
+<Para>Wybór konkretnego parametru powoduje wype³nienie pól <token>Skrót</token> i
+<token>Opis</token> warto¶ciami standardowymi. Oba pola mog± podlegaæ edycji u¿ytkownika,
+który mo¿e nadaæ wybranemu parametrowi dowolny symbol i nazwê w ramach
+definiowanego wzorca raportu.
+</Para>
+<Para>Naci¶niêcie przycisku <token>Dodaj</token> dodaje utworzon± definicjê parametru
+do zmienianego wzorca raportu.
+</Para>
+<Para>Opcja <token>Koniec</token> oznacza rezygnacjê z dodania nowej definicji
+parametru do wzorca raportu.
+</Para>
+<Para>Przycisk <token>Pomoc</token> przywo³uje ten tekst.
+</Para>
+<Para>
+<figure>
+<title>Dodawanie parametru do wzorca</title>
+<mediaobject>
+<!--<imageobject><imagedata fileref="pics/dodaj" format="gif"></imageobject>-->
+<imageobject><imagedata scale="60" fileref="pics/dodaj.png"></imageobject>
+</mediaobject></figure>
+</Para>
+
+</Section>
+</Section>
+</Section>
+
+<Section id="Opcje" >
+<Title>Opcje</Title>
+
+
+<Para>Grupa ta pozwala na ustawianie ró¿norodnych opcji Raportera. Do grupy
+tej nale¿±:
+</Para>
+<Para><ItemizedList>
+<ListItem><Para>
+<Link linkend="Okres">Okres</Link> ustawianie okna u¶redniania i okresu powtarzania</Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="Bufor">Bufor</Link> ustawianie d³ugo¶ci bufora raportów</Para></ListItem>
+
+</ItemizedList></Para>
+
+<Section id="Okres" >
+<Title>Okres</Title>
+
+<Para>Wybór tej opcji prowadzi do wy¶wietlenia dodatkowego okna. Lew± stronê
+okna zajmuj± przyciski s³u¿±ce do wyboru okna u¶redniania. Odpowiadaj±
+one klasom parametrów dostêpnym w <token>Systemie Zbierania Danych</token>.
+</Para>
+<Para>W prawej kolumnie znajduj± siê trzy suwaki s³u¿±ce do wyboru okresu
+powtarzania raportów. Mo¿liwe jest ustawienie okresu powtarzania w zakresie
+od 1 sekundy do 24 godzin niezale¿nie od wybranego okna u¶redniania. Umo¿liwia
+to przyk³adowo ¶ledzenie zmian ¶redniej dobowej co godzinê.
+</Para>
+<Para>Naci¶niêcie przycisku <token>Ok</token> akceptuje bie¿±ce nastawy, natomiast
+przycisk <token>Zaniechaj</token> anuluje wszystkie dokonane zmiany, przywracaj±c
+poprzedni stan nastaw.
+</Para>
+<Para>Przycisk <token>Pomoc</token> przywo³uje powy¿szy tekst.
+</Para>
+<Para><figure>
+<title>Okres raportu</title>
+<mediaobject>
+<!--<imageobject><imagedata fileref="pics/okres" format="gif"></imageobject>-->
+<imageobject><imagedata scale="60" fileref="pics/okres.png"></imageobject>
+</mediaobject></figure>
+</Para>
+
+</Section>
+
+<Section id="Bufor" >
+<Title>Bufor</Title>
+
+<Para>Dodatkowe okno pojawiaj±ce siê po wybraniu tej opcji zawiera pojedynczy
+suwak s³u¿±cy do ustawiania zadanej pojemno¶ci bufora raportów. Bufor raportów
+mo¿e mieæ pojemno¶æ od 1 do 100 raportów.
+</Para>
+<Para>
+<figure>
+<title>Pojemno¶æ bufora raportów</title>
+<mediaobject>
+<!--<imageobject><imagedata fileref="pics/bufor" format="gif"></imageobject>-->
+<imageobject><imagedata scale="60" fileref="pics/bufor.png"></imageobject>
+</mediaobject></figure>
+</Para>
+
+</Section>
+
+</Section>
+
+<Section id="Pomoc" >
+<Title>Pomoc</Title>
+
+
+<Para>Ta grupa opcji oferuje u¿ytkownikowi dostêp do podsystemu pomocy dotycz±cej
+<token>Raportera</token> jak równie¿ innych programów. Wybór opcji <token>Raporter</token>
+powoduje wy¶wietlenie pierwszej strony niniejszego tekstu pomocy.
+</Para>
+
+</Section>
+
+<Section id="Slowniczek" >
+<Title>S³owniczek</Title>
+<para>
+<variableList>
+<varListEntry><term>Raport</term>
+<listitem>
+<para>
+<anchor id="Raport-dict">
+Raport sk³ada siê z nag³ówka raportu oraz zestawu parametrów w postaci
+linii o zawarto¶ci: symbol parametru, warto¶æ parametru, opis parametru.
+Nag³ówek raportu zawiera: tytu³ raportu, rodzaj parametrów, oraz datê i
+czas sporz±dzenia raportu.
+</para>
+</listitem>
+</varListEntry>
+
+
+<varListEntry><term>Okres wy¶wietlania</term>
+<listitem>
+<para>
+<anchor id="Okres-wyswietlania">
+Raporter uaktualnia automatycznie raporty co zadany okres czasu. Okres
+wy¶wietlania mo¿e byæ ustawiany w zakresie od 1 sekundy do 24 godzin.
+</para>
+</listitem>
+</varListEntry>
+
+<varListEntry><term>Okno u¶redniania</term>
+<listitem>
+<para>
+<anchor id="Okno-usredniania">
+System Zbierania Danych Ciep³owni dostarcza 5 rodzajów parametrów o
+ró¿nym stopniu u¶rednienia (próbki, ¶rednie: minutowe, 10-minutowe, godzinne,
+dobowe). Okno u¶redniania okre¶la jakiego rodzaju parametry wchodz± w sk³ad
+raportu.
+</para>
+</listitem>
+</varListEntry>
+</variableList>
+
+
+
+
+</para>
+</Section>
+
+</chapter>
+
+</book>
+
+<!--
+ vim:ft=sgml
+-->
+

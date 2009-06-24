@@ -1,0 +1,768 @@
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V3.1//EN"[
+<!ENTITY szarp-info SYSTEM "../common/szarp-info.sgml">
+<!ENTITY help SYSTEM "../common/help.sgml">
+]>
+
+
+<book lang="pl" id="ekstraktor3">
+
+<bookinfo>
+
+&szarp-info;
+
+<title>Ekstraktor 3 - dokumentacja</title>
+
+<!--
+Jest to pierwsza dokumentacja programu z serii '3.0'. Stara³em siê, ¿eby by³a
+bardziej u¿yteczna dla uzytkownika ni¿ te z dotychczasowych programów i
+dopasowana do wspó³pracy z systemem pomocy kontekstowej. Wa¿ne jest tak¿e
+zachowanie spójno¶ci w obrêbie tworzonej dokumentacji, dlatego te¿ zebra³em
+kilka zasad, przestrzeganie których ma t± spójno¶æ umo¿liwiæ:
+
+* piszemy w SGML/XML, tzn. ma³e litery i zamykane tagi
+
+* koniec sekcji / rozdzialu opatrujemy komentarzem z identyfikatorem sekcji:
+<section id="ID">
+...
+</section> <!-\- ID -\-> (oczywiscie komentarz normalny, ale tu nie moglem)
+
+* identyfikatory nadajemy w ten sposób, ¿e ka¿dy zawiera w sobie identyfikatory
+sekcji i rozdzia³ów nadrzêdnych, czyli nie np. 'section1' ale
+'doc-chapter3-section1', gdzie identyfikatory nadrzêdne to 'doc-chapter3' i
+'doc'
+
+* dzielenie na pliki odbywa siê na poziomie 2 (sekcji), nale¿y staraæ siê, ¿eby
+te sekcje nie by³y du¿o wiêksze ni¿ to, co jest widoczne na ekranie
+
+* nale¿y wstawiaæ linki do poruszanych tematów, ¿eby nie zmuszaæ u¿ytkownika
+do szukanie w spisie tre¶ci
+
+* przy opisywaniu elementów interfejsu nale¿y daæ screenshota
+
+* nale¿y wyró¿niæ jedn± sekcjê jako 'startow±' dla help'a
+
+* proponowany podzia³ na rozdzia³y to 'Wstêp', 'Podstawy korzystania z programu',
+'Zagadnienia zaawansowane' i 'FAQ'; 'Wstêp' powinien mieæ identyfikator
+'<id_dok>-intro' i mieæ sekcjê o identyfikatorze '<id_dok>-intro-main', która
+jest punktem startowym dla menu
+
+* o sobie piszemy 'my' (autorzy), do u¿ytkownika zwracamy siê na 'Ty' (a wiêc
+nie 'trzeba klikn±æ' tylko 'musisz klikn±æ')
+
+* pierwszy rozdzia³ powinien zostaæ pusty (¿eby by³ tylko spis tre¶ci)
+
+-->
+
+<abstract>
+<para>
+</para>
+<para>
+Wersja pliku: $Id: ekstraktor3.sgml 6792 2009-05-29 12:14:33Z pawel $
+</para>
+</abstract>
+
+</bookinfo>
+
+<chapter id="ekstraktor3-info">
+<title>Pomoc programu Ekstraktor</title>
+<section id="ekstraktor3-info-main">
+<title>Witamy w programie Ekstraktor 3</title>
+<para>
+Program Ekstraktor jest elementem systemu SZARP, dziêki któremu mo¿esz odczytaæ
+dane historyczne z bazy systemu SZARP i zapisaæ je w formacie
+akceptowanym przez arkusz kalkulacyjny. 
+</para>
+<para>
+Dowiedz siê wiêcej:
+<itemizedlist>
+<listitem>
+<para>O podstawach pracy z programem - <xref linkend="ekstraktor3-base-main">.</para>
+</listitem>
+<listitem>
+<para>O obs³ugiwanych formatach plików - <xref linkend="ekstraktor3-ext-formats">.</para>
+</listitem>
+<listitem>
+<para>O przenoszeniu danych miêdzy Linuksem a Windows - 
+<xref linkend="ekstraktor3-ext-lin2win">.</para>
+</listitem>
+<listitem>
+<para>O korzystaniu z systemu pomocy - <xref linkend="help">.</para>
+</listitem>
+</itemizedlist>
+Lub przejd¼ do spisu tre¶ci - <xref linkend="ekstraktor3">.
+Mo¿esz tak¿e wybieraæ odno¶nik <quote>Nastêpny</quote>, aby zapoznaæ siê po
+kolei z podstawowymi funkcjami programu.
+</para>
+</section> <!-- ekstraktor3-info-main -->
+</chapter> <!-- ekstraktor3-info -->
+
+<chapter id="ekstraktor3-base">
+<title>Podstawy korzystania z programu</title>
+
+<section id="ekstraktor3-base-toc">
+<title>Spis tre¶ci rozdzia³u</title>
+<para></para>
+</section>  <!-- ekstraktor3-base-toc -->
+
+<section id="ekstraktor3-base-main">
+<title>Zaczynamy!</title>
+<para>
+Ten rozdzia³ opisuje:
+<itemizedlist>
+<listitem><para>Jak uruchomiæ program - <xref linkend="ekstraktor3-base-run">.</para></listitem>
+<listitem><para>Jak wybraæ parametry - <xref linkend="ekstraktor3-base-select">.</para></listitem>
+<listitem><para>Jak zapisaæ i odczytaæ listê parametrów - 
+<xref linkend="ekstraktor3-base-listrw">.</para></listitem>
+<listitem><para>Jak zapisaæ dane do pliku - <xref linkend="ekstraktor3-base-write">.</para></listitem>
+</itemizedlist>
+</para>
+</section> <!-- ekstraktor3-base-main -->
+
+<section id="ekstraktor3-base-run">
+<title>Uruchamianie programu</title>
+<para>
+Program bêdziesz zwykle uruchamiaæ pos³uguj±c siê programem Centrum Sterowania
+Szarp (scc).
+<figure> <title>Centrum Sterowania Szarp</title>
+<mediaobject>
+<imageobject><imagedata fileref="pics/extr3-scc.png"></imageobject>
+</mediaobject></figure>
+<note>
+<para>Oczywi¶cie, musisz byæ zalogowany do systemu - albo pracuj±c
+bezpo¶rednio na komputerze z Linuksem, albo loguj±c siê z Windows za pomoc±
+emulatora X-terminala, takiego jak Pexus X-Deep/32 czy Cygwin.</para>
+</note>
+</para>
+<para>
+Po uruchomieniu program zacznie analizowaæ pliki bazy danych, aby ustaliæ
+daty pocz±tku i koñca danych w bazie. W tym czasie wy¶wietli okienko z paskiem
+postêpu:
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/extr3-progress.png"></imageobject>
+</mediaobject>
+</para>
+<para>
+Czas analizowania informacji zale¿y od wielko¶ci bazy danych i szybko¶ci
+komputera. Po zakoñczeniu program wy¶wietli g³ówne okno - przejd¼ do 
+<xref linkend="ekstraktor3-base-win">, aby zapoznaæ siê z jego elementami.
+<note><para>
+Zobacz tak¿e <xref linkend="ekstraktor3-ext-cmd">, aby dowiedzieæ siê, jak uruchamiaæ
+program z linii komend.</para></note>
+Aby zakoñczyæ program, zamknij okno programu lub wybierz opcjê
+<guimenuitem>Wyj¶cie</guimenuitem> z menu <guimenu>Plik</guimenu>.
+</para>
+</section> <!-- ekstraktor3-base-run -->
+
+<section id="ekstraktor3-base-win">
+<title>G³ówne okno programu</title>
+<para>
+Rysunek poni¿ej przedstawia g³ówne okno programu. G³ówn± jego czê¶æ zajmuje
+lista wybranych parametrów (bezpo¶rednio po uruchomieniu jest pusta).
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/extr3-win.png"></imageobject>
+</mediaobject>
+</para>
+<para>
+Zobacz tak¿e:
+<itemizedlist>
+<listitem><para>Wybór parametrów - <xref linkend="ekstraktor3-base-select">.</para></listitem>
+<listitem><para>Ustalanie zakresu dat - <xref linkend="ekstraktor3-base-date">.</para></listitem>
+<listitem><para>Ustalania rodzaju ¶rednich - <xref linkend="ekstraktor3-base-avg">.</para></listitem>
+<listitem><para>Zapis danych - <xref linkend="ekstraktor3-base-write">.</para></listitem>
+<listitem><para>Opcje menu - <xref linkend="ekstraktor3-base-menu">.</para></listitem>
+<listitem><para>Typ separatora - <xref linkend="ekstraktor3-ext-delim">.</para></listitem>
+</itemizedlist>
+</para>
+</section> <!-- ekstraktor3-base-win -->
+
+<section id="ekstraktor3-base-select">
+<title>Wybór parametrów</title>
+<para>
+Jedn± z pierwszych czynno¶ci po uruchomieniu programu bêdzie wybór parametrów
+których warto¶ci bêdziesz chcia³ zapisaæ. Lista aktualnie wybranych parametrów
+jest ca³y czas widoczna na ekranie. Aby dodaæ nowy parametr, kliknij na
+przycisk <guibutton>Dodaj parametr</guibutton>. Spowoduje to otwarcie okienka
+wyboru parametrów:
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/extr3-select.png"></imageobject>
+</mediaobject>
+</para>
+<para>
+Parametry przedstawione s± w postaci dwóch rodzajów drzew. Domy¶lnie drzewo
+pokazuje parametry tak, jak w programie przegl±daj±cym, a gdy odznaczysz
+opcjê <guibutton>Pokazuj wed³ug nazw okien programu przegl±daj±cego</guibutton> 
+zmienisz sposób wy¶wietlanie parametrów na <quote>wy¶wietlanie wed³ug pe³nych nazw parametrów</quote>.
+Przy prze³±czaniu rodzaju drzewka, aktualnie pod¶wietlony parametr jest zapamiêtywany.
+Poszczególne ga³êzie mo¿esz zwijaæ
+i rozwijaæ klikaj±c na znaki <quote>plus</quote> i <quote>minus</quote>. Aby
+dodaæ parametr do listy, musisz wybraæ go w drzewie za pomoc± myszy, po czym
+u¿yæ przycisku <guibutton>Dodaj</guibutton>.
+<note><para>
+Mo¿esz zaznaczyæ wiêcej ni¿ jeden parametr na raz, przytrzymuj±c klawisz
+<keycap>Ctrl</keycap> lub zaznaczyæ ca³y fragment, przytrzymuj±c klawisz
+<keycap>Shift</keycap>.
+</para></note>
+Po wybraniu wszystkich parametrów zamknij okno wyboru parametrów za
+pomoc± przycisku <guibutton>Zamknij</guibutton>. Parametry mo¿esz te¿ kasowaæ z
+listy - w g³ównym wybierz parametr do usuniêcia na li¶cie i u¿yj przycisku
+<guibutton>Usuñ parametr</guibutton>.
+</para>
+<para>
+Wybran± listê parametrów mo¿esz zapisaæ do pliku na dysku - zobacz 
+<xref linkend="ekstraktor3-base-listrw">.
+</para>
+</section> <!-- ekstraktor3-base-select -->
+
+<section id="ekstraktor3-base-listrw">
+<title>Wczytywanie i zapisywanie listy parametrów</title>
+<para>
+Utworzon± listê parametrów mo¿na zapisaæ do pliku na dysku do pó¼niejszego
+wykorzystania. W tym celu u¿yj opcji <guimenuitem>Zapisz listê
+parametrów</guimenuitem> w menu <guimenu>Plik</guimenu>. Pojawi siê okienko
+pozwalaj±ce wybraæ katalog i nazwê pliku.
+</para>
+<para>
+Zapisan± listê parametrów mo¿esz pó¼niej odczytaæ z pliku u¿ywaj±c opcji
+<guimenuitem>Odczytaj listê parametrów</guimenuitem> w menu
+<guimenu>Plik</guimenu>.
+<note><para>W czasie odczytywania listy parametrów z pliku mo¿esz zobaczyæ
+komunikat o nieprawid³owych parametrach - zobacz 
+<xref linkend="ekstraktor3-ext-loaderrors">.</para></note>
+Je¿eli wprowadzimy zmiany w li¶cie, to program przed za³adowaniem nowej listy
+lub zakoñczeniem pracy spyta siê czy na pewno chcemy kontynuowaæ, trac±c
+niezapisane zmiany.
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/extr3-msg-continue.png"></imageobject>
+</mediaobject>
+</para>
+</section> <!-- ekstraktor3-base-listrw -->
+
+<section id="ekstraktor3-base-date">
+<title>Ustalanie zakresu dat</title>
+<para>
+Kolejn± istotn± rzecz±, któr± trzeba ustaliæ, to zakres czasowy interesuj±cych
+nas danych. Na górze g³ównego okna znajduje siê informacja o tym, z jakiego
+okresu dane s± obecne w bazie oraz jaki jest aktualnie wybrany zakres
+czasowy ekstrakcji.
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/extr3-date-change.png"></imageobject>
+</mediaobject>
+</para>
+<para>
+Aby zmieniæ datê pocz±tkow± lub koñcow±, u¿yj przycisków
+<guibutton>Zmiana daty pocz±tkowej</guibutton> lub <guibutton>Zmiana daty
+koñcowej</guibutton>. Wy¶wietlone zostanie okienko s³u¿±ce do wyboru daty.
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/extr3-date-sel.png"></imageobject>
+</mediaobject>
+</para>
+<para>
+Program nie pozwoli wybraæ daty spoza zakresu obecnego w bazie. Wybrana data
+bêdzie obowi±zywaæ do zmiany. 
+<note><para>Okres dla jakiego bêdziesz przeprowadzaæ ekstrakcjê danych ma
+bardzo du¿y wp³yw na wielko¶æ tworzonego pliku wyj¶ciowego i czas ekstrakcji.
+Zobacz te¿ Ustalanie typu ¶rednich - 
+<xref linkend="ekstraktor3-base-avg">.</para></note>
+</para>
+</section> <!-- ekstraktor3-base-date -->
+
+<section id="ekstraktor3-base-avg">
+<title>Ustalanie rodzaju ¶rednich</title>
+<para>
+W bazie systemu SZARP zapisywane s± ¶rednie 10-minutowe warto¶ci zbieranych
+parametrów. Oczywi¶cie, nie zawsze chcemy a¿ takiej dok³adno¶ci. Panel po
+prawej stronie g³ównego okna programu pozwala na wybór rodzaju ¶redniej.
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/extr3-avg-sel.png"></imageobject>
+</mediaobject>
+</para>
+<para>
+<note><para>Im krótszy okres ¶redniej, tym wiêcej danych bêdzie zapisanych do
+pliku wynikowego i tym d³u¿ej bêdzie trwa³a ekstrakcja. Lepiej wiêc nie
+wybieraæ dok³adno¶ci wiêkszej, ni¿ jest nam potrzebna zw³aszcza, je¿eli
+chcemy zapisaæ dane z d³u¿szego okresu.</para></note>
+Zwróæ tak¿e uwagê, ¿e je¿eli np. wybierzemy ¶rednie miesiêczne, to do ich
+liczenia brane bêd± próbki z ca³ych miesiêcy obejmowanych przez wybrany 
+zakres dat. Nawet je¿eli datê pocz±tkow± ustalili¶my na 15 stycznia, to i tak
+¶rednia bêdzie obejmowa³a wszystkie dostêpne dane z ca³ego stycznia. Zobacz
+te¿ <xref linkend="ekstraktor3-base-date"> - ustalanie dat.
+</para>
+</section> <!-- ekstraktor3-base-avg -->
+
+<section id="ekstraktor3-base-write">
+<title>Zapis danych</title>
+<para>
+Po wybraniu parametrów (<xref linkend="ekstraktor3-base-select">), okresu czasu 
+(<xref linkend="ekstraktor3-base-date">) i rodzaju ¶rednich 
+(<xref linkend="ekstraktor3-base-avg">) mo¿esz przyst±piæ do ekstrakcji, czyli
+zapisania danych w pliku, który bêdzie móg³ byæ odczytany przez inny program,
+np. arkusz kalkulacyjny.
+</para>
+<para>
+Ekstrakcjê mo¿na uruchomiæ albo z menu (<guimenu>Plik</guimenu> /
+<guimenuitem>Zapisz dane</guimenuitem>), albo za pomoc± przycisku
+<guibutton>Zapisz dane</guibutton> na dole g³ównego okna. Otworzy siê okienko,
+w którym, poza nazw± pliku, bêdziesz móg³ wybraæ rodzaj pliku wyj¶ciowego.
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/extr3-save.png"></imageobject>
+</mediaobject>
+Domy¶lnie wybrany jest typ plików CSV (warto¶ci oddzielone przecinkami, format
+akceptowany przez praktycznie wszystkie arkusz kalkulacyjne, w tym Microsoft
+Excel),
+mo¿esz tak¿e wybraæ zapisanie jako dokument program OpenOffice Calc lub jako
+plik w formacie XML.
+<note><para>
+Zobacz tak¿e Formaty danych wyj¶ciowych - <xref linkend="ekstraktor3-ext-formats"> i
+wybór separatora - <xref linkend="ekstraktor3-ext-delim">
+.</para></note>
+Program wy¶wietli okienko, w którym bêdzie informowa³ o postêpie procesu
+ekstrakcji i przewidywanym czasie.
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/extr3-extr.png"></imageobject>
+</mediaobject>
+</para>
+<para>
+Za pomoc± przycisku <guibutton>Anuluj</guibutton> mo¿esz w ka¿dym momencie przerwaæ
+proces.
+</para>
+</section> <!-- ekstraktor3-base-write -->
+
+<section id="ekstraktor3-base-menu">
+<title>Menu programu</title>
+<para>
+Czê¶æ opcji menu opisali¶my ju¿ w poprzednich rozdzia³ach. Dla porz±dku
+przypominamy wszystkie:
+<itemizedlist>
+<listitem><para>
+<guimenu>Plik</guimenu>/<guimenuitem>Zapisz dane</guimenuitem> - 
+ekstrakcja parametrów i zapis do pliku (<xref linkend="ekstraktor3-base-write">).
+</para></listitem>
+<listitem><para>
+<guimenu>Plik</guimenu>/<guimenu>Wczytaj listê parametrów</guimenu>
+- ³adowanie przygotowanej wcze¶niej listy parametrów 
+(<xref linkend="ekstraktor3-base-listrw">).
+</para></listitem>
+<listitem><para>
+<guimenu>Plik</guimenu>/<guimenu>Zapisz listê parametrów</guimenu>
+- zapis listy parametrów do pliku
+(<xref linkend="ekstraktor3-base-listrw">).
+</para></listitem>
+<listitem><para>
+<guimenu>Plik</guimenu>/<guimenu>Drukuj listê parametrów</guimenu>
+- komenda pozwala na wydrukowanie aktualnej listy parametrów. Opis drukowania
+znajdziesz w <xref linkend="ekstraktor3-ext-print">.
+</para></listitem>
+<!--
+<listitem><para>
+<guimenu>Opcje</guimenu>/<guimenu>Czcionki</guimenu> - pozawala na
+konfiguracjê u¿ywanych przez program czcionek Opis w 
+<xref linkend="ekstraktor3-ext-fonts">.
+</para></listitem>
+-->
+<listitem><para>
+<guimenu>Pomoc</guimenu>/<guimenu>Spis tre¶ci</guimenu>
+- otwiera okienko z tekstem pomocy.
+</para></listitem>
+<listitem><para>
+<guimenu>Pomoc</guimenu>/<guimenu>O programie...</guimenu>
+- wy¶wietla informacjê o wersji programu i autorach.
+</para></listitem>
+</itemizedlist>
+Opcje menu, które nie s± aktualnie dostêpne (bo np. lista parametrów jest
+pusta) s± nieaktywne.
+</para>
+<para>
+Ten rozdzia³ koñczy opis podstawowych funkcji programu. Je¿eli chcesz
+dowiedzieæ siê wiêcej o programie, przejd¼ do 
+<xref linkend="ekstraktor3-ext">.
+</para>
+</section> <!-- ekstraktor3-base-menu -->
+
+</chapter> <!-- ekstraktor3-base -->
+
+
+<chapter id="ekstraktor3-ext">
+<title>Zagadnienia zaawansowane</title>
+
+<section id="ekstraktor3-ext-toc">
+<title>Spis tre¶ci</title>
+
+<para></para>
+</section> <!-- ekstraktor3-base-toc -->
+
+<section id="ekstraktor3-ext-formats">
+<title>Formaty plików wyj¶ciowych</title>
+<para>
+Program umo¿liwia zapisywanie danych wyj¶ciowych w 3 formatach:
+<itemizedlist>
+<listitem><para><emphasis>Format CSV</emphasis>, czyli plik tekstowy z
+warto¶ciami oddzielonymi przecinkami (CSV - Comma Separated Values). Pierwsza
+linia takiego pliku zawiera nazwy parametrów, w kolejnych umieszczona jest
+data i warto¶ci parametrów. Plik taki powinien byæ poprawnie wczytany przez
+ka¿dy arkusz kalkulacyjny, zarówno pod Windows, jak i pod Linuksem. 
+<note><para>Zobacz
+tak¿e rozdzia³ <xref linkend="ekstraktor3-ext-delim">, aby dowiedzieæ siê wiêcej o
+wyborze separatora dziesiêtnego.</para></note>
+</para></listitem>
+<listitem><para><emphasis>Open Document Spreadsheet (*.ods)</emphasis>, czyli dokument
+arkusza kalkulacyjnego z pakietu OpenOffice. OpenOffice jest darmowym pakietem
+programów biurowych, o funkcjonalno¶ci odpowiadaj±cej Microsoft Office. Jest
+dostêpny za darmo dla wiêkszo¶ci popularnych systemów operacyjnych. Format
+plików OpenOffice jest otwartym standardem (zatwierdzonym przez ISO jako norma ISO/IEC 26300), 
+dlatego te¿ mo¿liwe by³o
+wbudowanie w program zapisu plików w tym formacie. Format Open Document jest
+te¿ obs³ugiwany przez inne pakiety biurowe, takie jak KOffice, Lotus Notes, a tak¿e
+Microsoft Office 2007 Service Pack 2. Dla innych wersji Microsoft Office dostêpne
+s± wtyczki.
+</para></listitem>
+<listitem><para><emphasis>Format XML</emphasis>. XML jest powszechnie
+akceptowanym formatem do wymiany danych ró¿nego typu. Tworzony przez program
+plik jest zgodny z formalnym opisem (schematem dokumentu). Prawdopodobnie nie
+znajdziesz bezpo¶redniego zastosowania dla tego formatu, ale ten typ pliku
+mo¿e byæ chêtnie widziany np. przez programistê umieszczaj±cego dane z pliku
+na stronie WWW czy importuj±cego dane do innego systemu. 
+</para></listitem>
+</itemizedlist>
+<note><para>Zobacz te¿ rozdzia³ o przycisku
+<guibutton>Minimalizacja</guibutton> - <xref linkend="ekstraktor3-ext-mini">.
+</para></note>
+</para>
+</section> <!-- ekstraktor3-ext-formats -->
+
+<section id="ekstraktor3-ext-delim">
+<title>Typ separatora</title>
+<para>
+Na górze po prawej stronie g³ównego okna programu znajduj± siê dwa przyciski
+umo¿liwiaj±ce wybór u¿ywanego w tworzonych plikach separatora dziesiêtnego.
+Mo¿esz go ustawiæ albo na kropkê (i jest to warto¶æ domy¶lna), albo na
+przecinek.
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/extr3-delim.png"></imageobject>
+</mediaobject>
+</para>
+<para>
+Dodatkowo, je¿eli zapisujesz dane w formacie CSV, zmiana separatora
+dziesiêtnego spowoduje te¿ zmianê separatora pól (kolejnych warto¶ci). Je¿eli
+separator dziesiêtny jest ustawiony na kropkê, to separatorem pól bêdzie
+przecinek, natomiast je¿eli separator dziesiêtny ustawisz na przecinek, to
+pola bêd± oddzielane ¶rednikami.
+<note><para>Zmiana u¿ywanego separatora jest konieczna, je¿eli program u¿ywany
+do wczytywania plików CSV nie potrafi poprawnie zinterpretowaæ liczb, np.
+wymaga, aby separator dziesiêtny by³ przecinkiem.</para></note>
+</para>
+</section> <!-- ekstraktor3-ext-delim -->
+
+<section id="ekstraktor3-ext-mini">
+<title>Przycisk minimalizacji</title>
+<para>
+Poni¿ej pola do wyboru separatora w g³ównym oknie programu znajduje siê
+przycisk o nazwie <guibutton>Minimalizacja</guibutton>.
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/extr3-mini.png"></imageobject>
+</mediaobject>
+</para>
+<para>
+Domy¶lnie jest on zaznaczony, co oznacza, ¿e w pliku wyj¶ciowym nie znajd± siê
+linie zawieraj±ce same puste pola. Je¿eli dla jakiej¶ daty nie by³o w ogóle
+danych dla ¿adnego parametru, to nie zostanie ona umieszczona w pliku.
+Odznaczenie tego przycisku spowoduje, ¿e w pliku znajd± siê wszystkie linie z
+zadanego zakresu czasowego, tak¿e te nie zawieraj±ce ¿adnych danych.
+</para>
+</section> <!-- ekstraktor3-ext-mini -->
+
+<section id="ekstraktor3-ext-accel">
+<title>Skróty klawiszowe programu</title>
+<para>
+Program udostêpnia mo¿liwo¶æ wykonania czê¶ci operacji za pomoc± klawiatury. W
+szczególno¶ci dostêp do opcji w menu mo¿na uzyskaæ przez u¿ycie kombinacji
+<keycode>Alt</keycode> i podkre¶lona litera, np. <keycode>Alt-P</keycode> aby
+otworzyæ menu <guimenu>Plik</guimenu>. Poza tym czê¶æ opcji w menu posiada
+w³asne skróty dostêpne z ka¿dego miejsca programu. Skróty te s± wymienione w
+menu po nazwie opcji, np. <keycode>Ctrl-Q</keycode> jest równoznaczne z
+wybraniem z menu <guimenu>Plik</guimenu> polecenia <guimenu>Wyj¶cie</guimenu>.
+</para>
+</section>
+
+<section id="ekstraktor3-ext-lin2win">
+<title>Przenoszenie danych miêdzy Linuksem a Windows</title>
+<para>
+Dane wynikowe programu ekstraktor pracuj±cego pod kontrol± systemu
+Linux mo¿emy chcieæ przenie¶æ na inny
+komputer, pracuj±cy pod kontrol± systemu Microsoft Windows. Taka sytuacja
+zachodzi, je¿eli korzystasz z komputera z Windows i emulatora X-terminala -
+wtedy tak naprawdê pracujesz na serwerze linuksowym i dane z niego chcesz
+przenie¶æ na <quote>swój</quote> komputer - ten, przy którym siedzisz.
+</para>
+<para>
+Istnieje kilka sposobów na przeniesienie pliku miêdzy Linuksem a Windows.
+Zacznij po prostu od zapisania pliku w swoim katalogu domowym (zapisywanie
+danych z programu opisuje rozdzia³ <xref linkend="ekstraktor3-base-write">).
+</para>
+<para>
+Je¿eli pracujesz rzeczywi¶cie na komputerze z systemem Linux (i do systemu
+Windows prze³±czasz siê restartuj±c komputer), to aby przenie¶æ utworzony plik
+na dysk z Windows, masz do dyspozycji kilka metod:
+<note><para>Istnieje potencjalnie bardzo du¿a ilo¶æ sposobów, w jaki
+skonfigurowany mo¿e byæ system Linux i jego ¶rodowisko graficzne. Poni¿sze
+opisy zak³adaj±, ¿e korzystasz z domy¶lnie skonfigurowanego
+¶rodowiska KDE i wspó³czesnej dystrybucji Debian.
+Je¿eli skonfigurowa³e¶ swój system w inny sposób, to zak³adamy, ¿e
+potrafisz z niego korzystaæ.</para></note>
+<itemizedlist>
+<listitem><para>Mo¿esz skorzystaæ z zewnêtrznego no¶nika danych - takiego jak
+dyskietka, pendrive czy dysk CD. Dostêp do dyskietki uzyskasz np. otwieraj±c
+katalog domowy (musisz klikn±æ na ikonê z domkiem) i w lewym panelu 
+wybieraj±c <guimenu>Urz±dzenia</guimenu> a nastêpnie
+<guimenu>Dyskietka</guimenu>. Utworzony za pomoc± programu plik przeci±gnij po
+prostu na ikonê dyskietki. Przed wyjêciem dyskietki ze stacji nie zapomnij jej
+<emphasis>odmontowaæ</emphasis> - kliknij prawym przyciskiem myszki na
+dyskietce i wybierz z menu opcjê <guimenu>Odmontuj</guimenu>.
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/extr3-floppy.png"></imageobject>
+</mediaobject>
+<note><para>W systemie Linux ka¿dy no¶nik danych musi byæ
+<emphasis>zamontowany</emphasis>, czyli umieszczony gdzie¶ w systemie plików,
+w jakim¶ katalogu. Dotyczy to partycji dysków (montowanie jest wykonywane
+przez system automatycznie przy starcie), a tak¿e no¶ników wymiennych. Je¿eli
+korzystasz z KDE, no¶nik bêdzie automatycznie montowany przy próbie dostêpu do
+niego (np. po klikniêciu na ikonê p³yty CD). Przed wyjêciem no¶nika trzeba go
+odmontowaæ - usun±æ z systemu. P³yty CD bez odmontowania nie da siê nawet
+wyj±æ z napêdu. Dyskietkê da siê wyj±æ, ale je¿eli zrobimy to bez
+odmontowania, to ryzykujemy niezapisanie lub nawet uszkodzenie danych na niej.
+Nie da siê odmontowaæ no¶nika, z którego korzysta jaki¶ program - je¿eli
+chcesz np. odmontowaæ dyskietkê, to nie mo¿esz mieæ w Konquerorze otwartego
+podgl±du jej zawarto¶ci - musisz zmieniæ katalog na inny.</para></note>
+</para></listitem>
+<listitem><para>
+Mo¿esz zapisaæ tak¿e plik bezpo¶rednio na dysk u¿ywany przez system Windows.
+Linux potrafi zapisywaæ na dyskach w formacie Windows. Je¿eli partycja systemu 
+Windows nie zosta³a automatycznie
+zainstalowana przy starcie systemu, mo¿esz spróbowaæ j± zamontowaæ korzystaj±c
+z zak³adki <guimenu>Urz±dzenia</guimenu> w Konquerorze.
+</para></listitem>
+<listitem><para>
+Je¿eli plik wyj¶ciowy jest du¿y, a posiadasz nagrywarkê CD, mo¿esz go wypaliæ na 
+p³ytce CD-R lub CD-RW.
+U¿yj do tego jednego z dostêpnych pod Linuksa programów, np.
+<application>K3b</application> (po zainstalowaniu, znajdziesz go w menu KDE w
+zak³adce <guimenu>Multimedia</guimenu>).
+</para></listitem>
+</itemizedlist>
+</para>
+<para>
+Je¿eli pracujesz korzystaj±c z emulatora X-terminala, to najpro¶ciej przes³aæ
+dane korzystaj±c z sieci lokalnej. Uruchom Konquerora (np. otwieraj±c
+<guiicon>Katalog domowy</guiicon>) i w pasku adresu wpisz
+<emphasis>smb:/</emphasis> (zastêpuj±c dotychczas wpisany adres). Po chwili
+powinien siê pojawiæ spis grup roboczych w Twojej sieci lokalnej. Wystarczy
+tylko znale¼æ teraz swój komputer (musisz oczywi¶cie udostêpniæ do zapisu
+jaki¶ katalog) i przeci±gn±æ do niego utworzony plik z danymi.
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/extr3-samba.png"></imageobject>
+</mediaobject>
+</para>
+</section> <!-- ekstraktor3-ext-lin2win -->
+
+<section id="ekstraktor3-ext-print">
+<title>Drukowanie listy parametrów</title>
+<para>
+Aktualnie u¿ywan± listê parametrów mo¿esz wydrukowaæ na drukarce. W tym celu
+wybierz z menu <guimenu>Plik</guimenu> opcjê <guimenu>Drukuj listê
+parametrów</guimenu>. Pojawi siê okienko pozwalaj±ce na wybór drukarki. W
+systemie Linux mo¿esz te¿ wybraæ generacjê dokumentu PDF lub pliku
+PostScript. Dostêpny jest te¿ podgl±d wydruku oraz opcje do konfiguracji
+drukarki, ustalenia marginesów, rozmiaru papieru itp.
+<note><para>
+Informacje dotycz±ce konfigurowania drukarki pod Linuksem mo¿esz znale¼æ w
+dokumencie SZARP HOWTO, dostêpnym zarówno lokalnie jako czê¶æ pomocy SZARP, jak
+i w internecie, na stronie 
+<ulink url="http://www.szarp.com.pl">www.szarp.com.pl</ulink>.
+</para></note>
+</para>
+</section> <!-- ekstraktor3-ext-print -->
+
+<section id="ekstraktor3-ext-fonts">
+<title>Konfigurowanie czcionek programu</title>
+<para>Rozmiar czcionki u¿ywanej przez program mo¿esz zmieniæ korzystaj±c z
+programu Centrum Sterowania SZARP, czyli niewielkiej aplikacji wy¶wietlanej
+w postaci ikony firmy Praterm, s³u¿±cej do uruchamiania poszczególnych
+elementów systemu SZARP. Opcja <guimenu>Czcionki SZARP</guimenu> jest dostêpna
+po klikniêciu na ikonê programu ¶rodkowym przyciskiem myszy. Je¿eli Twoja mysz
+nie jest wyposa¿ona w trzy przyciski, kliknij na ikonie lewym i prawym
+przyciskiem na raz.</para>
+<para>Wprowadzone zmiany bêd± widoczne tylko w nowo uruchamianych programach i
+dotycz± wszystkich elementów systemu SZARP. Wiêcej informacji znajdziesz w
+pomocy programu Centrum Sterowania SZARP.
+<note><para>Opcja dostêpna jest tylko pod systemem Linux. W systemie Windows
+mo¿esz zmieniæ rozmiar czcionek dla wszystkich programów w ustawieniach
+systemu.</para></note>
+</para>
+
+<!--
+<para>
+Program umo¿liwia zmianê czcionki u¿ywanej do wy¶wietlania elementów
+interfejsu. Mo¿e to byæ przydatne np. je¿eli u¿ywasz monitora o du¿ej
+rozdzielczo¶ci, na którym domy¶lnie u¿ywane czcionki s± zbyt ma³e aby by³y
+czytelne.
+</para>
+<para>
+Aby zmieniæ u¿ywan± czcionkê, wybierz <guimenu>Czcionki</guimenu> 
+z menu <guimenu>Opcje</guimenu>. Pojawi siê okienko daj±ce mo¿liwo¶æ zmiany
+u¿ywanej czcionki lub te¿ przywrócenia czcionki domy¶lnej.
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/extr3-fonts.png"></imageobject>
+</mediaobject>
+</para>
+<para>
+Przycisk <guibutton>Przywróæ domy¶ln±</guibutton> kasuje wszystkie poprzednie
+efekty ustawienia czcionki. Aby wybraæ konkretn± czcionkê, u¿yj przycisku
+<guimenu>Ustaw czcionkê</guimenu>. Pojawi siê okienko wyboru czcionki.
+<warning><para>Wa¿ne aby wybraæ odpowiednie kodowanie czcionki - na li¶cie
+<guimenu>Styl</guimenu> nale¿y wybraæ styl z kodowaniem
+iso8859-2.</para></warning>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/extr3-choosefont.png"></imageobject>
+</mediaobject>
+</para>
+<para>
+Zgodnie z opisem na dole okienka do konfiguracji czcionek, aby nowo wybrane
+czcionki zosta³y poprawnie zastosowane w ca³ym programie, musisz wy³±czyæ i
+ponownie uruchomiæ program.
+<note><para>
+Zale¿nie od zainstalowanych w systemie wersji bibliotek, czê¶æ elementów
+interfejsu mo¿e nie uwzglêdniaæ ustawionych czcionek i niezale¿nie od
+wybranych opcji zawsze bêdzie u¿ywa³a domy¶lnej czcionki systemu.
+</para></note>
+</para>
+-->
+</section>
+
+<section id="ekstraktor3-ext-list">
+<title>Format listy parametrów</title>
+<para>
+Program zapisuje listy parametrów w postaci plików z domy¶lnym rozszerzeniem
+<emphasis>xpl</emphasis>. Stosowany format plików jest oparty na standardzie
+XML, dziêki czemu mo¿e byæ w prosty sposób importowany do innych programów.
+Mo¿esz tak¿e przegl±daæ i edytowaæ plik w zwyk³ym edytorze tekstowym - jednak,
+aby nie popsuæ pliku, wymagana jest pewna wiedza o formacie XML.
+</para>
+<para>
+Ten sam format plików jest lub bêdzie u¿ywany do zapisu listy parametrów we
+wszystkich programach systemu SZARP oznaczonych numerkiem wersji
+<emphasis>3</emphasis>, a wiêc w nowych wersjach programów
+<application>Raporter</application> i <application>Kontroler</application>.
+Dziêki temu listê interesuj±cych Ciê parametrów, utworzon± w jednym z tych
+programów, mo¿esz wczytaæ w dowolnym innym.
+</para>
+<para>
+Format pliku umo¿liwia umieszczanie na li¶cie parametrów pochodz±cych z
+ró¿nych baz. Nie ka¿dy z programów bêdzie jednak potrafi³ z tego korzystaæ -
+Ekstraktor pozwala jedynie na operacjê na parametrach z jednej bazy. Zobacz
+tak¿e informacje w nastêpnym rozdziale - <xref linkend="ekstraktor3-ext-loaderrors">.
+</para>
+</section> <!-- ekstraktor3-ext-list -->
+
+<section id="ekstraktor3-ext-loaderrors">
+<title>B³êdy przy ³adowaniu listy parametrów</title>
+<para>
+Przy próbie otwarcia zapisanej wcze¶niej do pliku listy parametrów mo¿esz
+zobaczyæ nastêpuj±cy komunikat:
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/extr3-msg-params.png"></imageobject>
+</mediaobject>
+Je¿eli wybierzesz <guimenu>Ok</guimenu>, to zapisane na li¶cie parametry z baz
+innych ni¿ aktualna zostan± z listy usuniête (oczywi¶cie dopóki nie zapiszesz
+listy, to zawarto¶æ pliku na dysku nie ulegnie zmianie). Je¿eli przez
+przypadek otworzy³e¶ plik powsta³y podczas pracy programu z inn± baz±, wybierz
+<guimenu>Anuluj</guimenu> i za³aduj w³a¶ciwy plik.
+</para>
+</section> <!-- ekstraktor3-ext-loaderrors -->
+
+<section id="ekstraktor3-ext-cmd">
+<title>Uruchamianie programu z linii poleceñ</title>
+<para>
+Program przyjmuje z linii poleceñ kilka parametrów. Ich opis mo¿na obejrzeæ
+uruchamiaj±c program z opcj± <emphasis>-h</emphasis>.
+<note><para>
+Aby uruchomiæ dowolny program <quote>z linii poleceñ</quote>, musisz uruchomiæ
+<emphasis>pow³okê</emphasis> (ang. shell) pozwalaj±c± na wpisywanie poleceñ.
+Mo¿esz to zrobiæ uruchamiaj±c na przyk³ad program o nazwie
+<application>Terminal</application> lub <application>Konsola</application> -
+znajdziesz go w menu KDE w podmenu <guimenu>System</guimenu>.</para>
+<para>Po uruchomieniu pow³oki zobaczysz znak zachêty zawieraj±cy np. Twoj±
+nazwê u¿ytkownika, nazwê komputera i aktualny katalog. Po znaku zachêty mo¿esz
+wpisywaæ polecenia lub nazwy programów do uruchomienia. Opcje programu
+podajemy po jego nazwie oddzielaj±c je dowoln± ilo¶ci± spacji. Je¿eli program
+nie znajduje siê w domy¶lnej lokalizacji dla programów (a tak jest np. w
+przypadku programów systemu SZARP), to musisz podaæ przed nazw± pe³n± ¶cie¿kê
+do programu, oddzielaj±c poszczególne katalogi znakiem <emphasis>/</emphasis>.
+Np. pe³na ¶cie¿ka do programu Ekstraktor ma postaæ
+<filename>/opt/szarp/bin/ekstraktor3</filename>.
+</para></note>
+</para>
+<para>
+Najistotniejszy podawany z linii komend parametr pozwala na wybór bazy
+parametrów, z jakiej ma korzystaæ program. Nazwa bazy jest zwykle
+czteroliterowym skrótem, to¿samym z nazw± podkatalogu zawieraj±cego bazê w
+katalogu <filename>/opt/szarp</filename>. Przyk³adowo baza z Przasnysza ma
+skrót <emphasis>prza</emphasis> i jest przechowywana w katalogu
+<filename>/opt/szarp/prza</filename>. Nazwê bazy dla programu Ekstraktor
+(podobnie jak dla innych programów systemu SZARP) podajemy dodaj±c do
+wywo³anie programu opcjê <emphasis>-base=&lt;nazwa&gt;</emphasis>, gdzie
+<emphasis>&lt;nazwa&gt;</emphasis> zastêpujemy oczywi¶cie nazw± bazy.
+Przyk³adowo, aby uruchomiæ program korzystaj±c z bazy z Przasnysza, musisz
+wpisaæ komendê:
+<programlisting>
+/opt/szarp/bin/ekstraktor3 -base=prza
+</programlisting>
+</para>
+</section> <!-- ekstraktor3-ext-cmd -->
+
+</chapter> <!-- ekstraktor3-ext -->
+
+
+&help;
+
+<chapter id="ekstraktor3-faq">
+<title>Najczê¶ciej zadawane pytania</title>
+
+<section id="ekstraktor3-faq-toc">
+<title>Spis tre¶ci</title>
+<para></para>
+</section> <!-- ekstraktor3-faq-toc -->
+
+<section id="ekstraktor3-faq-excel">
+<title>Czemu nie ma mo¿liwo¶ci zapisu plików w formacie Excela?</title>
+<para>Pakiet OpenOffice korzysta do zapisu plików z otwartego standardu jakim jest XML,
+dziêki czemu mo¿liwe by³o do¶æ proste wbudowanie w program tworzenia danych w
+tym formacie. Format plików u¿ywany przez Excela nie jest udostêpniany
+publicznie przez firmê Microsoft, jest to format binarny (nieczytelny dla
+cz³owieka) i zamkniêty. W tej sytuacji nie jest mo¿liwe zaimplementowanie w
+programie tworzenia danych bezpo¶rednio w tym formacie. Aby przenie¶æ dane do
+Excela, musisz korzystaæ z formatu CSV.</para>
+</section>
+
+<section id="ekstraktor3-faq-bug">
+<title>Znalaz³em b³±d w programie, co mam zrobiæ?</title>
+<para>
+Upewnij siê, ¿e rzeczywi¶cie obserwowane przez Ciebie zachowanie programu jest
+b³êdem, a wiêc np. jest niezgodne z opisem w dokumentacji. W szczególno¶ci
+powa¿nym b³êdem jest ka¿de niespodziewane zakoñczenie pracy programu. B³±d
+mo¿esz zg³osiæ bezpo¶rednio do firmy Praterm, albo na przyk³ad pisz±c maila na
+adres <emphasis>coders@praterm.com.pl</emphasis>. Do poprawienia b³êdu
+bêdziemy potrzebowali dok³adnego opisu b³êdu oraz przepisu na jego powtórzenie - 
+a wiêc
+powiniene¶ opisaæ sekwencjê czynno¶ci, których wykonanie prowadzi do b³êdu.
+Je¿eli korzystasz z konkretnej listy parametrów, zapisz j± do pliku i
+do³±cz ten plik do raportu o b³êdzie. Mo¿esz tak¿e uruchomiæ program z konsoli
+(zobacz <xref linkend="ekstraktor3-ext-cmd">) i zobaczyæ, czy program nie wypisuje
+na konsoli jaki¶ dodatkowych komunikatów.
+</para>
+</section>
+
+</chapter> <!-- ekstraktor3-faq -->
+
+</book> <!-- ekstraktor3 -->
+
+<!--
+-->

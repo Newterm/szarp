@@ -1,0 +1,31 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Rezultat wyszukiwañ dla '$&(WORDS)'</title></head>
+<body bgcolor="#eef7ff">
+<h2>
+Rezultat wyszukiwañ dla '$&(LOGICAL_WORDS)'</h2>
+<hr noshade size="4">
+<form method="get" action="$(CGI)">
+<font size="-1">
+<input type="hidden" name="config" value="$&(CONFIG)">
+<input type="hidden" name="restrict" value="$&(RESTRICT)">
+<input type="hidden" name="exclude" value="$&(EXCLUDE)">
+<!--Match: $(METHOD)
+Format: $(FORMAT)
+Sort by: $(SORT)-->
+<br>
+
+<input type="text" size="30" name="words" value="$&(WORDS)">
+<input type="submit" value="Search">
+</font>
+</form>
+<hr noshade size="1">
+<strong>Wy¶wietlono dokumenty od $(FIRSTDISPLAYED) do $(LASTDISPLAYED) 
+z $(MATCHES) trafieñ.
+Im wiêcej gwiazdek (<img src="/htdig/star.gif" alt="*">) tym lepsze trafienie.
+</strong>
+<hr noshade size="1">
+$(HTSEARCH_RESULTS)
+$(PAGEHEADER)
+$(PREVPAGE) $(PAGELIST) $(NEXTPAGE)
+<hr noshade size="4">
+</body></html>

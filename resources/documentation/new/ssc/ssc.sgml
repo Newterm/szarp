@@ -1,0 +1,281 @@
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V3.1//EN"[
+<!ENTITY praterm-info SYSTEM "../common/szarp-info.sgml">
+<!ENTITY help SYSTEM "../common/help.sgml">
+]>
+
+<book lang="pl" id="ssc">
+
+<bookinfo>
+
+&praterm-info;
+
+<title>Synchronizator plików (SSC) - dokumentacja</title>
+
+<abstract>
+<para>
+</para>
+<para>
+Wersja pliku: $Id: ssc.sgml 4420 2007-09-18 11:19:02Z schylek$
+</para>
+</abstract>
+</bookinfo>
+
+<chapter id="ssc-info">
+<title>Witamy w programie SSC</title>
+<para>
+Synchronizator plików (SZARP Sync Client, SSC) to prosta aplikacja 
+s³u¿±ca do pobierania danych historycznych na lokalny komputer.
+Umo¿liwia to ich przegl±danie za pomoc± programu SzarpDraw 
+lub np. konwersjê do innych formatów za pomoc± programu Ekstraktor3.
+</para>
+<para>
+Program pracuje pod systemami Windows oraz Linux. Przedstawione w dokumentacji
+zrzuty ekranu pochodz± z wersji dla Windows.
+</chapter> 
+
+<chapter id="ssc-installation">
+<title>Instalacja programu</title>
+<note>
+<para>
+SZARPa musisz zainstalowaæ na partycji z systemem plików NTFS. 
+SZARP nie bêdzie poprawnie funkcjonowa³, gdy zostanie zainstalowany
+na partycji FAT.
+<para>
+</note>
+<para>
+Instalacjê programu rozpoczynasz dwukrotnie klikaj±c lewym klawiszem
+myszy na plik <filename>SzarpSetup.exe</filename>. Instalator zadaje tylko jedno
+pytanie - o nazwê katalogu, w którym program ma zostaæ zainstalowany.  Mo¿esz 
+nacisn±æ przycisk "Nastêpny".
+</para>
+<para>
+Po zainstalowaniu, program jest dostêpny pod przyciskiem <guibutton>Start</guibutton>
+w menu <guibutton>Programy</guibutton>, podmenu <guibutton>SZARP</guibutton>. Zobacz rozdzia³ "Pierwsze uruchomienie" - 
+<xref linkend="ssc-first-run">.
+</para>
+</chapter> <!-- ssc-installation -->
+
+<chapter id="ssc-first-run">
+<title>Pierwsze uruchomienie</title>
+<para>
+Przed rozpoczêciem korzystania z programu musisz go wstêpnie skonfigurowaæ.
+Podczas pierwszego uruchomienia pojawi siê narzêdzie, maj±ce postaæ tzw.
+<emphasis>kreatora</emphasis>, które poprosi Ciê o podanie Twojej nazwy
+u¿ytkownika, has³a oraz adresu serwera. Je¿eli nie znasz tych danych, skontaktuj siê
+z administratorem serwera, który udostêpnia Ci dane.
+</para>
+<para>
+<figure> <title>Pierwsze uruchomienie programu</title>
+<mediaobject><imageobject><imagedata align="center" scale="60" fileref="pics/firstrun.png"></imageobject>
+</mediaobject></figure>
+</para>
+<para>
+Po zakoñczeniu procesu konfiguracji na Twoim pasku zadañ pojawi siê ikona
+programu. Kliknij na ni±, wy¶wietli siê menu zawieraj±ce nastêpuj±ce opcje:
+"Synchronizuj", "Konfiguracja", "Pomoc" oraz "Zamknij aplikacjê".  Wybierz
+opcjê "Synchronizuj" - spowoduje to pobranie danych. Za pierwszym razem proces
+pobierania danych mo¿e byæ dosyæ czasoch³onny. Je¿eli podczas tej operacji
+wyst±pi± b³êdy, pojawi siê okienko informuj±ce o wyst±pieniu b³êdu oraz jego
+rodzaju - zobacz rozdzia³ <xref linkend="ssc-errors">. Je¿eli operacja zakoñczy³a siê pomy¶lnie,
+przejd¼ do rozdzia³u - <xref linkend="ssc-run-mode">.
+</para>
+</chapter> <!-- ssc-run-mode -->
+<chapter id="ssc-run-mode">
+<title>Wybór trybu pracy</title>
+<para>
+Program domy¶lnie bêdzie pobiera³ dane tylko wtedy, gdy wybierzesz opcjê
+"Synchronizuj".  Je¿eli zamierzasz czêsto aktualizowaæ dane rêczne, uruchamianie
+synchronizacji mo¿e byæ uci±¿liwe. Gdy posiadasz sta³e ³±cze do internetu,
+mo¿esz przestawiæ program w tryb automatycznego pobierania danych.  W tym celu
+kliknij na ikonê programu i wybierz opcjê "Konfiguracja", nastêpnie zaznacz
+opcjê "Automatyczna aktualizacja danych". Mo¿esz tak¿e wybraæ czêsto¶æ z jak±
+program ma pobieraæ nowe dane za pomoc± opcji "Czêsto¶æ aktualizacji". By
+dowiedzieæ siê wiêcej o opcjach konfiguracyjnych programu, zobacz 
+<xref linkend="ssc-config">.
+</para>
+</chapter> <!-- ssc-run-mode -->
+<chapter id="ssc-using">
+<title>Korzystanie z programu</title>
+<para>
+Program ma postaæ ikony, która po uruchomieniu pojawia siê na pasku zadañ (w
+systemie Windows zlokalizowany jest on w prawym dolnym rogu ekranu).  Po
+klikniêciu w ikonê pojawia siê menu programu. Menu zawiera nastêpuj±ce
+elementy:
+</para>
+<para>
+<figure> <title>Menu programu</title>
+<mediaobject><imageobject><imagedata align="center" scale="60" fileref="pics/menu.png"></imageobject>
+</mediaobject></figure>
+</para>
+<para>
+<itemizedlist>
+<listitem>
+<para><emphasis>Synchronizuj</emphasis> - gdy wybierzesz tê opcjê, program
+rozpocznie synchronizacjê danych. Pojawi siê okienko dialogowe, w którym
+pokazywany jest postêp procesu aktualizacji. Je¿eli posiadasz sta³e ³±cze do
+internetu (np. neostradê, SDI, ...), mo¿esz skonfigurowaæ program tak, by
+samodzielnie aktualizowa³ dane co zadany okresu czasu - zobacz <xref linkend="ssc-run-mode">.  
+Po zakoñczeniu synchronizacji wy¶wietli siê okienko z informacj±
+o pomy¶lnym jej zakoñczeniu. Je¿eli pojawi siê
+informacja o b³êdzie, zobacz <xref linkend="ssc-errors">.
+</para>
+<para>
+<figure> <title>Okno postêpu</title>
+<mediaobject><imageobject><imagedata align="center" scale="60" fileref="pics/postep.png"></imageobject>
+</mediaobject></figure>
+Synchronizacjê mo¿esz w ka¿dej chwili przerwaæ wciskaj±c przycisk "Anuluj". 
+</para>
+</listitem>
+
+<listitem>
+<para>
+<emphasis>Synchronizuj wybrane bazy</emphasis> - opcja ta pozwala synchronizowaæ
+nie wszystkie, a jedynie wskazane bazy. Masz wybór spo¶ród baz, które ju¿
+poprzednio by³y pobrane na lokalny komputer. Opcja ta mo¿e byæ w szczególno¶ci przydatna, gdy
+nie dysponujesz sta³ym ³±czem do internetu i pobranie wszystkich dostêpnych baz wymaga³oby sporo czasu.
+</para>
+<para>
+Dostêpna jest opcja "Usuñ lokalne pliki nieobecne na serwerze". Powoduje ona usuniêcie 
+z lokalnego komputera plików, których nie ma na serwerze, zwalniaj±c w ten sposób 
+przestrzeñ dyskow±. Zaznaczenie tej opcji wi±¿e siê z d³ugim czasem trwania procesu 
+synchronizacji. Zaznaczanie jej ma sens jedynie dla baz, dla których wiemy, ¿e 
+ich zawarto¶æ by³a modyfikowana (w szczególno¶ci zmieniane by³y nazwy parametrów).
+</para>
+<para>
+Po wybraniu tej opcji pojawia siê okno z wyborem dostêpnych baz. Wybierz ¿±dane bazy, a nastêpnie
+kliknij klawisz "OK". Spowoduje to wy¶wietlenie siê takiego samego okna postêpu synchronizacji jak w
+przypadku opcji <emphasis>Synchronizuj</emphasis>.
+</para>
+<para>
+<figure>
+<title>Wybór baz do synchronizacji</title>
+<mediaobject><imageobject><imagedata align="center" scale="60" fileref="pics/wyborbaz.png"></imageobject></mediaobject>
+</figure>
+</para>
+</listitem>
+
+<listitem>
+<para>
+<emphasis>Konfiguracja</emphasis> - ta opcja umo¿liwia zmianê konfiguracji
+programu. Po jej wybraniu pojawi siê okno, w którym mo¿esz dokonaæ
+zmian w ustawieniach SSC. Opcje konfiguracji zosta³y opisane
+w rozdziale Konfiguracja - <xref linkend="ssc-config">.
+</para>
+<listitem><para>
+<emphasis>Pomoc</emphasis> - wy¶wietla okno z tekstem pomocy dla programu. Po
+systemie pomocy mo¿esz poruszaæ siê w sposób analogiczny jak w przegl±darce
+internetowej, wybieraj±c za pomoc± wska¼nika myszki odpowiednie odno¶niki.
+Na górze okna znajduj± siê przyciski, umo¿liwiaj±ce odpowiednio: zamkniêcie
+okna pomocy, cofniêcie siê i przej¶cie o jedn± pozycjê w przód w historii
+ogl±danych odno¶ników.
+</para></listitem>
+
+<listitem><para>
+<emphasis>Zakoñcz program</emphasis> - wybranie tej opcji powoduje
+zakoñczenie pracy programu.
+</para></listitem>
+</itemizedlist>
+</para>
+</chapter> <!-- ssc-using -->
+<chapter id="ssc-config">
+<title>Konfiguracja</title>
+<para>
+Zmiany ustawieñ mo¿esz dokonaæ wybieraj±c opcjê "Konfiguracja" z menu.
+Po jej wybraniu pojawia siê okno zawieraj±ce aktualne parametry pracy
+programu. Na dole okna widoczne s± przyciski <emphasis>OK</emphasis>
+oraz <emphasis>Anuluj</emphasis>. Gdy wybierzesz pierwszy z nich,
+okno zostanie zamkniête, a program zapamiêta wprowadzone przez Ciebie zmiany. 
+Klikniêcie w przycisk <emphasis>Anuluj</emphasis> spowoduje zamkniêcie okna
+i anulowanie wprowadzonych zmian.
+</para>
+<itemizedlist>
+<listitem><para>
+<emphasis>Adres serwera</emphasis> - adres serwera, z którego program pobiera
+dane.
+</para></listitem>
+
+<listitem><para>
+<emphasis>Nazwa u¿ytkownika</emphasis> - identyfikator konta u¿ytkownika 
+wykorzystywany do autoryzacji na serwerze. 
+</para></listitem>
+
+<listitem><para>
+<emphasis>Has³o</emphasis> - has³o dla podanego konta (zamiast w³a¶ciwego has³a 
+w oknie pokazywane s± gwiazdki). 
+</para></listitem>
+
+<listitem><para>
+<emphasis>Automatyczna synchronizacja</emphasis> - gdy zaznaczysz tê opcjê
+spowodujesz, ¿e program samoczynnie, co zadany okres czasu, bêdzie pobiera³ dane
+z serwera.
+</para></listitem>
+
+<listitem><para>
+<emphasis>Czêsto¶æ aktualizacji</emphasis> - za pomoc± tej opcji mo¿esz
+okre¶liæ jak czêsto program ma synchronizowaæ dane. 
+Warto¶æ ta ma znaczenie tylko, gdy zaznaczy³e¶ opcjê 
+<emphasis>'Automatyczna synchronizacja'</emphasis>.
+</para></listitem>
+
+<listitem><para>
+<emphasis>Powiadamiaj o zakoñczeniu</emphasis> - je¿eli zaznaczysz t± opcjê, to
+po ka¿dym zakoñczonym procesie synchronizacji zostanie wy¶wietlona,
+w prawym dolnym rogu ekranu, 'notka' informuj±ca o tym fakcie (ta opcja dostêpna
+jest jedynie w wersji programu w systemie Windows).
+</para></listitem>
+</itemizedlist>
+<para>
+<figure> <title>Okno konfiguracji</title>
+<mediaobject><imageobject><imagedata align="center" scale="60" fileref="pics/konfiguracja.png"></imageobject>
+</mediaobject></figure>
+</para>
+<para>
+</chapter> <!-- ssc-config-->
+<chapter id="ssc-errors"> 
+<title>Komunikaty b³êdów</title>
+<para>
+Program mo¿e nie byæ w stanie pobieraæ danych z kilku powodów, poni¿ej opisali¶my
+komunikaty b³êdów zg³aszanych przez program:
+</para>
+<itemizedlist>
+<listitem><para>
+<emphasis>Konfiguracja nie jest kompletna</emphasis> - ten komunikat oznacza, ¿e
+obecna konfiguracja programu nie zawiera informacji o adresie serwera, nazwie u¿ytkownika
+lub ha¶le. Musisz ustawiæ tê opcjê w konfiguracji programu - <xref linkend="ssc-config">.
+</para>
+</listitem>
+<listitem><para>
+<emphasis>Nie uda³o siê pobraæ listy plików b³êdna nazwa u¿ytkownika lub has³o</emphasis> - 
+podana przez Ciebie nazwa u¿ytkownika lub has³o nie s± prawid³owe. Spróbuj jeszcze raz
+wpisaæ nazwê u¿ytkownika i has³o w konfiguracji programu - <xref linkend="ssc-config">. 
+Je¿eli problem siê powtarza, skontaktuj siê z firm± <emphasis>PRATERM S.A.</emphasis> Dane kontaktowe 
+podane s± w rozdziale "SSC pierwsze uruchomienie" - <xref linkend="ssc-first-run">.
+</para>
+</listitem>
+<listitem><para>
+<emphasis>Nie uda³o siê po³±czyæ z serwerem</emphasis> - program
+nie by³ w stanie nawi±zaæ po³±czenia z serwerem. B³±d ten mo¿e wystêpowaæ z kilku powodów. Zazwyczaj
+pojawia siê w wyniku problemów z po³±czeniem internetowym. Sprawd¼ konfiguracjê swojego po³±czenia 
+internetowego, mo¿esz te¿ sprawdziæ czy za pomoc± przegl±darki WWW da siê otworzyæ stronê z adresem
+serwera oraz ew. pod³±czyæ siê do serwera za pomoc± programu telnet.
+</para>
+</listitem>
+</itemizedlist>
+<para>
+Pozosta³e komunikaty mog± wynikaæ z problemów z konfiguracj± lub byæ spowodowane przez b³êdy w samej
+aplikacji - w takim wypadku nale¿y zg³osiæ je autorom programu.
+</chapter> <!-- ssc-errors -->
+
+<chapter id="ssc-version">
+<title>Wersja Oprogramowania</title>
+<para>
+Aby poznaæ numer wersji Synchronizatora Plików (SSC), a tym samym najczê¶ciej numer wersji zainstalowanego oprogramowania, nale¿y nacisn±æ lewym lub prawym przyciskiem myszy na ikonkê Synchronizatora Plików i wybraæ z listy <quote>O programie</quote>.
+</para>
+</chapter>
+
+</book>
+
+<!--
+ 
+-->
+

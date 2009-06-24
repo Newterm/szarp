@@ -1,0 +1,70 @@
+#define for48_format 1
+#define for48_width 48
+#define for48_height 48
+#define for48_ncolors 9
+#define for48_chars_per_pixel 1
+
+static char *for48_colors[] = {
+" " , "#210021002100",                     /* czarny */
+"." , "#000000000000",
+"x" , "#600060006000",                     /* ciemnoszary */ 
+"o" , "#DB00DB00BA00",                     /* jasnoszary  */
+"i" , "#FF00FF00FF00",                     /* bia¬y       */
+"r" , "#FF0000000000",                     /* czerwony    */ 
+"g" , "#0000FF000000",                     /* zielony     */
+"c" , "#0000FF00FF00",                     /* b¬ekitny    */
+"y" , "#FF00FF000000"                      /* ±®¬ty       */
+} ;
+static char *for48_pixels[] = {
+
+"yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",     /* 01 */
+"yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",     /* 02 */
+"yy                                            yy",     /* 03 */
+"yy                                            yy",     /* 04 */
+"yy                                            yy",     /* 05 */
+"yy      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx      yy",     /* 06 */
+"yy      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx      yy",     /* 07 */
+"yy      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx      yy",     /* 08 */
+"yy      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx      yy",     /* 09 */
+"yy      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx      yy",     /* 10 */
+"yy      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx      yy",     /* 11 */
+"yy      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx      yy",     /* 12 */
+"yy      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx      yy",     /* 13 */
+"yy      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx      yy",     /* 14 */
+"yy      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx      yy",     /* 15 */
+"yy      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx      yy",     /* 16 */
+"yy                                            yy",     /* 17 */
+"yy                                            yy",     /* 18 */
+
+"yy                    i  i                    yy",     /* 19 */
+"yy                    iiii                    yy",     /* 20 */
+"yy                    iiii                    yy",     /* 21 */
+"yy                    iiii                    yy",     /* 22 */
+"yy                    iiii                    yy",     /* 23 */
+"yy                    iiii                    yy",     /* 24 */
+"yy                    iiii                    yy",     /* 25 */
+"yy                    iiii                    yy",     /* 26 */
+"yy                    iiii                    yy",     /* 27 */
+"yy                    iiii                    yy",     /* 28 */
+"yy                    iiii                    yy",     /* 29 */
+"yy                  iiiiiiii                  yy",     /* 30 */
+"yy                   iiiiii                   yy",     /* 31 */
+"yy                    iiii                    yy",     /* 32 */
+"yy                     ii                     yy",     /* 33 */
+"yy                                            yy",     /* 34 */
+"yy                                            yy",     /* 35 */
+"yy                                            yy",     /* 36 */
+"yy              cgcrycigcycgcrc               yy",     /* 37 */
+"yy             rcrgrccgrrircrggr              yy",     /* 38 */
+"yy             gcygcrgrgrcyrycgc              yy",     /* 39 */
+"yy             ccryciyrcciccyyrc              yy",     /* 40 */
+"yy              gcrgrcyrgrgyryg               yy",     /* 41 */
+"yy                                            yy",     /* 42 */ 
+"yy                                            yy",     /* 43 */
+"yy                                            yy",     /* 44 */
+"yy                                            yy",     /* 45 */
+"yy                                            yy",     /* 46 */
+"yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",     /* 47 */
+"yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",     /* 48 */
+};
+ 

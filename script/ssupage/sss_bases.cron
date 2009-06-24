@@ -1,0 +1,10 @@
+# /etc/cron.d/sss_bases - generates base lists for sss
+# Praterm S.A (c) 2007
+# nameless@praterm.com.pl
+# $Id: sss_bases.cron 3768 2007-02-20 16:17:27Z nameless $
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+0 10 * * *  root /opt/szarp/bin/sss_bases.pl
+
+# EOF

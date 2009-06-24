@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="ISO-8859-2"?>
+<!-- 
+ Przykładowa konfiguracja dla parametrów ze statusem zapisywanych automatycznie przez meaner3. 
+ Należy wkleić do konfiguracji element 'defined'. 
+ 
+ Paweł Pałucha <pawel@praterm.com.pl>
+
+ $Id: status-params.xml 1437 2004-04-28 15:31:42Z pawel $
+
+ -->
+<params xmlns="http://www.praterm.com.pl/SZARP/ipk" version="1.0" read_freq="10" send_freq="10" 
+title="Status">
+  <defined>
+    <!-- Nie wolno zmieniać nazw parametrów -->
+    <param name="Status:Meaner3:program uruchomiony" short_name="srun" draw_name="Status programu" 
+    unit="-" prec="0" base_ind="auto">
+      <!-- Wartość jeden jeśli program jest uruchomiony -->
+      <define type="RPN" formula="null "/>
+      <draw title="Status - meaner3" min="0" max="2"/>
+    </param>
+    <param name="Status:Meaner3:ilość parametrów" short_name="spar" draw_name="Ilość parametrów" 
+    unit="-" prec="0" base_ind="auto">
+      <define type="RPN" formula="null "/>
+      <draw title="Status - meaner3" min="0" max="500"/>
+    </param>
+    <param name="Status:Meaner3:ilość parametrów ze sterowników" short_name="sdvp" 
+    draw_name="Ze sterowników" unit="-" prec="0" base_ind="auto">
+      <define type="RPN" formula="null "/>
+      <draw title="Status - meaner3" min="0" max="500"/>
+    </param>
+    <param name="Status:Meaner3:ilość parametrów definiowalnych" short_name="sdfp" 
+    draw_name="Definiowalne" unit="-" prec="0" base_ind="auto">
+      <define type="RPN" formula="null "/>
+      <draw title="Status - meaner3" min="0" max="500"/>
+    </param>
+    <param name="Status:Meaner3:ilość parametrów definiowalnych przeglądającego" 
+    short_name="sddp" draw_name="Drawdefinable" unit="-" prec="0" base_ind="auto">
+      <define type="RPN" formula="null "/>
+      <draw title="Status - meaner3" min="0" max="500"/>
+    </param>
+    <param name="Status:Meaner3:ilość parametrów zapisywanych do bazy" 
+    short_name="sbp" draw_name="Parametry zapisywane" unit="-" prec="0" base_ind="auto">
+      <define type="RPN" formula="null "/>
+      <draw title="Status - meaner3" min="0" max="500"/>
+    </param>
+    <param name="Status:Meaner3:ilość parametrów zapisywanych niepustych" 
+    short_name="snnp" draw_name="Zapisywane niepuste" unit="-" prec="0" base_ind="auto">
+      <define type="RPN" formula="null "/>
+      <draw title="Status - meaner3" min="0" max="500"/>
+    </param>
+    <param name="Status:Meaner3:ilość parametrów poprawnie zapisanych" 
+    short_name="sokp" draw_name="Poprawnie zapisane" unit="-" prec="0" base_ind="auto">
+      <define type="RPN" formula="null "/>
+      <draw title="Status - meaner3" min="0" max="500"/>
+    </param>
+    <param name="Status:Meaner3:ilość parametrów zapisanych z błędem" 
+    short_name="serp" draw_name="Zapisane z błędem" unit="-" prec="0" base_ind="auto">
+      <define type="RPN" formula="null "/>
+      <draw title="Status - meaner3" min="0" max="500"/>
+    </param>
+    <param name="Status:Execute:ilość skonfigurowanych sekcji" 
+    short_name="sess" draw_name="Skonfigurowane sekcje" unit="-" prec="0" base_ind="auto">
+      <define type="RPN" formula="null "/>
+      <draw title="Status - bodas" min="0" max="10"/>
+    </param>
+    <param name="Status:Execute:ilość sekcji do uruchomienia w cyklu" 
+    short_name="sets" draw_name="Sekcje do uruchomienia" unit="-" prec="0" base_ind="auto">
+      <define type="RPN" formula="null "/>
+      <draw title="Status - bodas" min="0" max="10"/>
+    </param>
+    <param name="Status:Execute:ilość sekcji uruchomionych w cyklu" 
+    short_name="sers" draw_name="Sekcje uruchomione" unit="-" prec="0" base_ind="auto">
+      <define type="RPN" formula="null "/>
+      <draw title="Status - bodas" min="0" max="10"/>
+    </param>
+    <param name="Status:Execute:ilość sekcji zakończonych z sukcesem" 
+    short_name="seok" draw_name="Wykonane poprawnie" unit="-" prec="0" base_ind="auto">
+      <define type="RPN" formula="null "/>
+      <draw title="Status - bodas" min="0" max="10"/>
+    </param>
+    <param name="Status:Execute:ilość sekcji zakończonych z błędem" 
+    short_name="sees" draw_name="Zakończone z błędem" unit="-" prec="0" base_ind="auto">
+      <define type="RPN" formula="null "/>
+      <draw title="Status - bodas" min="0" max="10"/>
+    </param>
+    <param name="Status:Execute:ilość sekcji przerwanych" 
+    short_name="seis" draw_name="Przekroczone limity" unit="-" prec="0" base_ind="auto">
+      <define type="RPN" formula="null "/>
+      <draw title="Status - bodas" min="0" max="10"/>
+    </param>
+  </defined>
+</params>
+

@@ -1,0 +1,296 @@
+# PO file for Raporter 3 program.
+# Copyright 
+# This file is distributed under the same license as the raporter3 package.
+# Stanis³aw Sawa <ecto@praterm.com.pl>, 2004.
+#
+# $Id$
+msgid ""
+msgstr ""
+"Project-Id-Version: raporter3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-09-15 15:42+0200\n"
+"PO-Revision-Date: 2008-09-15 15:43+0100\n"
+"Last-Translator: Pawe³ Pa³ucha <pawel@praterm.com.pl>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-2\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: \n"
+
+#: rap.cc:58
+msgid "Raporter 3"
+msgstr "Raporter 3"
+
+#: rap.cc:60
+msgid "2004-2008"
+msgstr "2004-2008"
+
+#: rap.cc:84
+msgid "Szarp Raporter version 3.00 (in-progress)."
+msgstr "Szarp Raporter wersja 3.00 (alpha)"
+
+#: rap.cc:85
+msgid "print usage info"
+msgstr "informacja o sposobie u¿ycia"
+
+#: raporter.cc:97
+msgid "Raporter"
+msgstr "Raporter"
+
+#: raporter.cc:117
+msgid "&Start\tSpace"
+msgstr "&Start\tSpace"
+
+#: raporter.cc:118
+msgid "&File dump"
+msgstr "&Zrzut do pliku"
+
+#: raporter.cc:120
+msgid "E&xit\tAlt-X"
+msgstr "&Zakoñcz\tAlt-X"
+
+#: raporter.cc:124
+msgid "&Save\tCtrl-S"
+msgstr "&Zapisz\tCtrl-S"
+
+#: raporter.cc:125
+msgid "&Load\tCtrl-O"
+msgstr "&Otwórz\tCtrl-O"
+
+#: raporter.cc:126
+msgid "&New\tCtrl-N"
+msgstr "&Nowy\tCtrl-N"
+
+#: raporter.cc:127
+msgid "&Edit\tCtrl-E"
+msgstr "&Edycja\tCtrl-E"
+
+#: raporter.cc:129
+msgid "S&ystem"
+msgstr "S&ystem"
+
+#: raporter.cc:132
+msgid "&Server"
+msgstr "&Serwer"
+
+#: raporter.cc:133
+msgid "&Period"
+msgstr "O&kres"
+
+#: raporter.cc:135
+msgid "&Increase font\t+"
+msgstr "Z&wiêksz czcionkê\t+"
+
+#: raporter.cc:136
+msgid "&Decrease font\t-"
+msgstr "Z&mniejsz czcionkê\t-"
+
+#: raporter.cc:138
+msgid "&Raporter"
+msgstr "&Raporter"
+
+#: raporter.cc:139
+msgid "&About"
+msgstr "&O autorach"
+
+#: raporter.cc:142
+msgid "&Raports"
+msgstr "&Raporty"
+
+#: raporter.cc:143
+msgid "&Templates"
+msgstr "&Wzorce"
+
+#: raporter.cc:144
+msgid "&Options"
+msgstr "&Opcje"
+
+#: raporter.cc:145
+msgid "&Help"
+msgstr "&Pomoc"
+
+#: raporter.cc:198
+#: raporter.cc:658
+msgid "Param"
+msgstr "Parametr"
+
+#: raporter.cc:199
+#: raporter.cc:663
+msgid "Value"
+msgstr "Warto¶æ"
+
+#: raporter.cc:200
+#: raporteredit.cc:49
+#: raporteredit.cc:87
+msgid "Description"
+msgstr "Opis"
+
+#: raporter.cc:213
+msgid "test report"
+msgstr "raport testowy"
+
+#: raporter.cc:221
+msgid "Choose report template"
+msgstr "Wybierz wzorzec raportu"
+
+#: raporter.cc:384
+#: raporter.cc:415
+msgid "Raporter->Editor"
+msgstr "Raport->Edycja"
+
+#: raporter.cc:470
+msgid "Raporter->Period"
+msgstr "Raport->Okres"
+
+#: raporter.cc:490
+msgid "Raporter->Buffer"
+msgstr "Raport->Bufor"
+
+#: raporter.cc:550
+msgid "Start\tSpace"
+msgstr "Start\tSpace"
+
+#: raporter.cc:566
+msgid "Stop\tSpace"
+msgstr "Stop\tSpace"
+
+#: raporter.cc:596
+msgid "System"
+msgstr "System"
+
+#: raporter.cc:596
+msgid "Custom"
+msgstr "W³asny"
+
+#: raporter.cc:638
+msgid "no data"
+msgstr "brak danych"
+
+#: raporterbuf.cc:49
+msgid "Capacity of report buffer"
+msgstr "Pojemno¶æ bufora"
+
+#: raporterbuf.cc:70
+#: raporterperiod.cc:107
+msgid "Raporter - help"
+msgstr "Raport - pomoc"
+
+#: raporterperiod.cc:66
+msgid "Period length"
+msgstr "D³ugo¶æ okresu"
+
+#: raporterperiod.cc:81
+msgid "Seconds:"
+msgstr "Sekundy:"
+
+#: raporteredit.cc:52
+msgid "User report"
+msgstr "Raport u¿ytkownika"
+
+#: raporteredit.cc:58
+msgid "Contents"
+msgstr "Zawarto¶æ"
+
+#: raporteredit.cc:71
+msgid "Add"
+msgstr "Dodaj"
+
+#: raporteredit.cc:73
+msgid "Delete"
+msgstr "Usuñ"
+
+#: raporteredit.cc:84
+msgid "Raporter->Editor->Add"
+msgstr "Raport->Edycja->Dodaj"
+
+#: raporteredit.cc:86
+msgid "Shortcut"
+msgstr "Skrót"
+
+#: filedump.cc:35
+msgid "File dump options"
+msgstr "Zrzut do pliku"
+
+#: filedump.cc:39
+msgid "Destination dir:"
+msgstr "Katalog docelowy:"
+
+#: filedump.cc:41
+msgid "Select a folder"
+msgstr "Wybierz katalog"
+
+#: filedump.cc:46
+msgid "Maximum file size (in MB):"
+msgstr "Maksymalny rozmiar pliku (w MB):"
+
+#: filedump.cc:53
+msgid "Enable dump to a file"
+msgstr "W³±cz zrzut warto¶ci do pliku"
+
+#: filedump.cc:62
+msgid "OK"
+msgstr "OK"
+
+#: filedump.cc:65
+msgid "Cancel"
+msgstr "Anuluj"
+
+#: filedump.cc:122
+msgid "No report name"
+msgstr "Brak nazwy raportu"
+
+#~ msgid "&Buffer"
+#~ msgstr "&Bufor"
+#~ msgid "Connecting to server"
+#~ msgstr "£±czenie z serwerem"
+#~ msgid "Trying to connect to server "
+#~ msgstr "Próba ³±czenia z serwerem "
+#~ msgid ""
+#~ ".\n"
+#~ "Please wait."
+#~ msgstr ""
+#~ ".\n"
+#~ "Proszê czekaæ."
+#~ msgid "Unable to connect to server "
+#~ msgstr "Nie mo¿na po³±czyæ siê z serwerem "
+#~ msgid ""
+#~ "\n"
+#~ "Reports are not available.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Raporty nie bêd± dostêpne.\n"
+#~ msgid "Connect error"
+#~ msgstr "B³±d po³±czenia"
+#~ msgid "&Load"
+#~ msgstr "&Odczyt"
+#~ msgid "&Delete"
+#~ msgstr "&Kasuj"
+#~ msgid "&Print"
+#~ msgstr "&Drukuj"
+#~ msgid "&New"
+#~ msgstr "&Nowy"
+#~ msgid "&Edit"
+#~ msgstr "&Edycja"
+#~ msgid "Save report: choose a file"
+#~ msgstr "Raport->Zapis"
+#~ msgid "Load report: choose a file"
+#~ msgstr "Raport->Odczyt"
+#~ msgid "Save template: choose a file"
+#~ msgstr "Szablon->Zapis"
+#~ msgid "Load template: choose a file"
+#~ msgstr "Szablon->Odczyt"
+#~ msgid "Actual"
+#~ msgstr "Aktualne"
+#~ msgid "Minutes"
+#~ msgstr "Minutowe"
+#~ msgid "10 Minutes"
+#~ msgstr "10 Minutowe"
+#~ msgid "Hours"
+#~ msgstr "Godzinne"
+#~ msgid "Day"
+#~ msgstr "Dzienne"
+#~ msgid "Data type"
+#~ msgstr "Typ danych"
+#~ msgid "Hours:"
+#~ msgstr "Godziny:"
+#~ msgid "Minutes:"
+#~ msgstr "Minuty:"

@@ -1,0 +1,111 @@
+# Plik konfiguracyjny Szarp
+#
+
+# $Id: SZARP_CFG_TEMPLATE 3692 2007-01-26 12:14:32Z reksio $
+
+# __INSTALL_DIR__ - to sciezka instalacyjna - domyslnie /opt/szarp
+# __PREFIX__ - to prefix bazy danych - np. mosc
+
+# Ustalenie prefiksu
+$if $prefix$=""
+# $prefix$:="__PREFIX__"
+$prefix$:=exec("hostname -s")
+$end
+
+
+# £ADOWANIE DOMY¦LNYCH WARTO¦CI OPCJI
+$include "__INSTALL_DIR__/resources/szarp_in.cfg"
+
+
+
+## Konfiguracja BODAS "push"
+##
+## Przyk³ad
+#
+## Sekcja g³ówna EXECUTE
+#:execute
+
+#
+## Dowolna ilo¶æ sekcji "execute" - bêd± wykonywane w tej kolejno¶ci w jakiej
+## zostan± wpisane.
+#execute_sections=local_backup praterm_push 
+#
+## Sekcje o odpowiednich nazwach - jak wy¿ej
+## Przyk³adowa sekcja dla lokalnego backup'u co 10 minut
+#:local_backup
+#command_line=/opt/szarp/bin/szbpush \
+#	ip_terminala $prefix$
+#time=* * * * *
+#
+#:praterm_push
+#time=* * * * *
+#command_line=/opt/szarp/bin/szbpush $prefix$@praterm $prefix$
+#
+#
+# Przykladowa sekcja dla lacznosci przez modem:
+#:praterm_push
+## Ile razy powtarzaæ nieudan± próbê
+#retry=1
+##Wykonuj w ka¿dy dzieñ tygodnia o godzinie 00:00
+#time=* * * 0 5
+## Linia komend do wykonania, wazne zeby zwrocic odpowiedni kod bledu (
+## z nieudanego ³±czenia lub z rsynca).
+#command_line=$szarp_bin$/szppp-on 0w202122 ppp ppp 5 && \
+#	/bin/ping -q -c 1 praterm &> /dev/null; \
+#	if [ $? -eq 0 ]; then \
+#		/opt/szarp/bin/szbpush $prefix$@praterm $prefix$ \
+#		CODE=$?; \
+#		/etc/init.d/ntp-server stop; \
+#		ntpdate -t 3 -s praterm ;  \
+#		/etc/init.d/ntp-server start; \
+#		$szarp_bin$/szppp-off; \
+#		exit $CODE; \
+#	fi; \
+#	/opt/szarp/bin/szppp-off
+#
+
+
+#############################################################
+# SZARP Control Center
+
+:scc
+
+# Opis konfiguracji do wy¶wietlenia, np
+#
+# menu= CONFIG("$prefix$"), \
+	SEPARATOR, \
+	DOC, ICON("/opt/szarp/resources/wx/icons/praterm16.xpm")
+# 
+# Inny przyk³ad:
+# menu= EXEC("program1"), ICON("icons/program1.png"), \
+	SEPARATOR, \
+	MENU("SZARP", \
+		DRAW("Przegl±daj±cy Legionowo", "leg1"),ICON("/opt/szarp/resources/wx/icons/draw16.xpm"),\
+		DRAW("Przegl±daj±cy Katowice", "kato"),ICON("/opt/szarp/resources/wx/icons/draw16.xpm"),\
+		DRAW("Przegl±daj±cy Bytów", "byto"),ICON("/opt/szarp/resources/wx/icons/draw16.xpm") \
+	) 
+# Mo¿liwe funkcje to:
+# CONFIG("prefix") - wy¶wietla ca³± konfiguracjê o podanym prefiksie, o ile jest
+# zgodna z IPK
+# MENU("nazwa", ...) - tworzy podmenu o podanej nazwie i zawarto¶ci
+# DOC - dokumentacja SZARP'a
+# EXEC("nazwa", "komenda") - wykonuje dowoln± komendê
+# DRAW("nazwa", "prefix") - przegl±daj±cy podanej bazy
+# DRAWS("wyra¿enie regularne") - tworzy listê elementów DRAW, dla baz których prefixy pasuj± 
+#	do podanego wyra¿enia regularnego
+# DONTGROUPBY(lista wyra¿eñ regularnych) - istotne jedynie gdy w konfiguracji wystêpuje
+#	DRAWS - zakazuje grupowania elementów DRAW generowanych przez DRAWS po tych s³owach
+#	w tytu³ach konfiguracji, które pasuj± do podanych wyra¿eñ regularnych
+# ICON("¶cie¿ka") - ustawia ikonê ostatniemu elementowi typu DOC, EXEC lub DRAW
+# Uwaga! Ikony powinny mieæ rozmiar 16x16 lub niedu¿o wiêkszy...
+# SEPARATOR - pozioma kreska
+# Mo¿na podaæ wiele, odzielonych przecinkami.
+
+#menu=
+
+:sss
+
+#opcjonalne haslo do klucza prywatnego
+#passphrase=
+
+# vim:ft=libpar:

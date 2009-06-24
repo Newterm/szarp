@@ -1,0 +1,65 @@
+#!/bin/bash
+# SZARP: SCADA software 
+# 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+# $Id: convert_names 4393 2007-09-13 16:37:10Z reksio $
+# 2004 Praterm S.A.
+# Pawe³ Pa³ucha <pawel@praterm.com.pl>
+#
+# Konwersja nazw okien programu przegl±daj±cego na potrzeby przegrywania
+# danych z regulatorów Samsona.
+
+# Dwa parametry - nazwa pliku z konfiguracj± i nazwa pliku z opisem konwersji.
+# Opcjonalnie - tytu³ konfiguracji (domy¶lnie 'Samsony').
+# Plik z opisem konwersji ma postaæ:
+# <nazwa stara>-<nazwa nowa>
+# ....
+#
+# Przyk³ad:
+#
+# W112-Pr±dzyñskiego 8
+# W115-Cicha 8
+# Cicha 8-Cicha 8a
+#
+# W przyk³adzie powy¿ej wystêpuje podwója konwersja.
+
+[ $# -lt 2 ] && exit 1
+
+TMP=/tmp/convert_names.tmp
+touch $TMP
+
+[ ! -f $1 ] && exit 2
+[ ! -f $2 ] && exit 3
+[ ! -f $TMP ] && exit 4
+TITLE=$3
+[ -z "$TITLE" ] && TITLE="Samsony"
+
+cat $2 | while read LINE ; do 
+	OLD=`echo $LINE | cut -d '-' -f 1`
+	NEW=`echo $LINE | cut -d '-' -f 2-`
+	[ -z "$OLD" ] && continue
+	[ -z "$NEW" ] && continue
+	
+	OLD=`echo $OLD | tr -d '/"'`
+	NEW=`echo $NEW | tr -d '/"' | cut -c 1-30`
+	
+	REGEXP="s/title=\"$TITLE:$OLD\( ([0-9]\+)\)\?\"/title=\"$TITLE:$NEW\1\"/"
+
+	sed "$REGEXP" $1 > $TMP
+	mv $TMP $1
+done
+

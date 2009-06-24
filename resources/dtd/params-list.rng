@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="ISO-8859-2"?>
+
+<!--
+  SZARP (C) 2005 Paweł Pałucha
+  pawel@praterm.com.pl
+  
+  RelaxNG schema for SZARP parameters list format.
+  
+  $Id: params-list.rng 2155 2005-02-07 15:04:02Z pawel $
+-->
+
+<!--
+
+<?xml version="1.0" encoding="ISO-8859-2"?>
+
+<parameters xmlns="http://www.praterm.com.pl/SZARP/list"
+        xmlns:kontr="http://www.praterm.com.pl/SZARP/kontroler"
+        xmlns:rap="http://www.praterm.com.pl/SZARP/report"
+        source="Ciepłownia Łajski Legionowo"
+        rap:title="Tytuł raportu">
+        <param name="Kocioł 1:Sterownik:temperatura zadana"/>
+        <param name="Kocioł 1:Sterownik:temperatura za kotłem">
+		<kontr:info>Dodatkowy element</kontr:info>
+	</param>
+        <param name="Kocioł 1:Sterownik:temperatura zadana"
+                source="Gliwice WP"
+                kontr:alarm_max="100"/>
+</parameters>
+
+
+-->
+
+<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+
+  <define name="parameters">
+    <element name="parameters" ns="http://www.praterm.com.pl/SZARP/list">
+      <ref name="attlist.parameters"/>
+      <zeroOrMore>
+        <ref name="param"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  
+  <define name="attlist.parameters" combine="interleave">
+    <attribute name="source"/>
+    <zeroOrMore>
+      <ref name="extra-attribute"/>
+    </zeroOrMore>
+  </define>
+
+  <define name="param">
+    <element name="param" ns="http://www.praterm.com.pl/SZARP/list">
+      <ref name="attlist.param"/>
+      <zeroOrMore>
+        <ref name="extra"/>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="attlist.param" combine="interleave">
+    <attribute name="name"/>
+    <optional>
+      <attribute name="source"/>
+    </optional>
+    <zeroOrMore>
+      <ref name="extra-attribute"/>
+    </zeroOrMore>
+  </define>
+
+  <!-- Dodatkowe elementy i atrybuty z innych przestrzeni nazw. -->
+  
+  <define name="extra">
+    <element ns="http://wwww.praterm.com.pl/SZARP/list">
+      <anyName>
+        <except>
+	  <nsName/>
+	  <nsName ns=""/>
+	</except>
+      </anyName>
+        <zeroOrMore>
+      	  <choice>
+	    <attribute>
+	      <anyName/>
+	    </attribute>
+	    <text/>
+	    <ref name="extra"/>
+	  </choice>
+        </zeroOrMore>
+    </element>
+  </define>
+  
+  <define name="extra-attribute">
+    <attribute>
+      <anyName>
+        <except>
+	  <nsName/>
+	  <nsName ns=""/>
+	</except>
+      </anyName>
+    </attribute>
+  </define>
+  
+  <!-- Główny tag dokumentu -->
+  
+  <start>
+    <choice>
+      <ref name="parameters"/>
+    </choice>
+  </start>
+  
+</grammar>
+

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE menu [
+<!ELEMENT menu (item|group)*>
+<!ELEMENT group (item)*>
+<!ATTLIST group link  CDATA #REQUIRED
+                title CDATA #REQUIRED>
+<!ELEMENT item EMPTY>
+<!ATTLIST item link  CDATA #REQUIRED
+               title CDATA #REQUIRED>
+]>
+
+<menu>
+	<item link="../main/index.html" title="Strona główna"/>
+	<item link="schemat.html" title="Schemat ciepłowni"/>
+	<item link="kociol1.html" title="Kocioł 1"/>
+	<item link="kociol2.html" title="Kocioł 2"/>
+</menu>

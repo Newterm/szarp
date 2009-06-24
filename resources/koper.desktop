@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=KOPER
+Comment=Szarp Premimum Kalulatur
+TryExec=/opt/szarp/bin/koper
+Exec=/opt/szarp/bin/koper
+Icon=/opt/szarp/resources/wx/icons/praterm16.png

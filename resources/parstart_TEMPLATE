@@ -1,0 +1,203 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          SZARP
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Starts SZARP deamons.
+# Description:       Starts SZARP parcook server/terminal daemons (depending on SZARP system configuration).
+#### END INIT INFO
+# $Id: parstart_TEMPLATE 6713 2009-05-02 12:39:34Z reksio $
+. /lib/lsb/init-functions
+
+# Check for szarp config file.
+if [ -f /etc/szarp/parstart.cfg ]; then
+       	. /etc/szarp/parstart.cfg
+else
+	log_failure_msg "Configuration file /etc/szarp/parstart.cfg is missing"
+	exit 1
+fi
+
+# Check for SZARP dir
+[ -d __INSTALL_DIR__ ] || {
+	log_failure_msg "No such directory: __INSTALL_DIR__"
+	exit 1
+}
+
+szlog() {
+	log_daemon_msg "Starting SZARP" $DAEMON
+}
+
+stlog() {
+	log_daemon_msg "Stopping SZARP" $DAEMON
+}
+
+case "$1" in
+    start)
+	if [ x$PARCOOK = x1 ]; then
+	    DAEMON=__INSTALL_DIR__bin/parcook 
+	    szlog
+	    start_daemon $DAEMON
+	    log_end_msg $?
+	fi
+	
+	if [ x$MEANER3 = x1 ]; then
+	    DAEMON=__INSTALL_DIR__bin/meaner3
+	    szlog
+	    start_daemon $DAEMON
+	    log_end_msg $?
+	fi
+	
+	if [ x$PARAMD = x1 ]; then
+	    DAEMON=__INSTALL_DIR__bin/paramd 
+	    szlog
+	    start_daemon $DAEMON
+	    log_end_msg $?
+	fi
+
+	if [ x$XSLTD = x1 ]; then
+	    log_daemon_msg "Updating xsltd link"
+	    ln -sf "__INSTALL_DIR__$HOST" /etc/szarp/default
+	    log_end_msg $?
+	fi
+
+	if [ x$SENDER = x1 ]; then
+	    DAEMON=__INSTALL_DIR__bin/sender
+	    szlog
+	    start_daemon $DAEMON
+	    log_end_msg $?
+	fi
+
+	if [ x$ANALIZA = x1 ]; then
+	    DAEMON=__INSTALL_DIR__bin/analiza
+	    szlog
+	    start_daemon $DAEMON
+	    log_end_msg $?
+	fi
+
+	if [ x$SSS = x1 ]; then
+	    DAEMON=__INSTALL_DIR__bin/sss
+	    szlog
+	    start_daemon $DAEMON
+	    log_end_msg $?
+	fi
+
+	if [ x$PSETD = x1 ]; then
+	    DAEMON=__INSTALL_DIR__bin/psetd
+	    szlog
+	    start_daemon $DAEMON
+	    log_end_msg $?
+	fi
+
+	if [ x$STAMPD = x1 ]; then
+	    DAEMON=__INSTALL_DIR__bin/stampd
+	    szlog
+	    start_daemon $DAEMON
+	    log_end_msg $?
+	fi
+
+	if [ x$SSCONF = x1 ]; then
+	    DAEMON=__INSTALL_DIR__bin/ssconf.py
+	    szlog
+	    start_daemon $DAEMON
+	    log_end_msg $?
+	fi
+	;;
+
+  stop)
+	if [ x$SSS = x1 ]; then
+	    DAEMON=__INSTALL_DIR__bin/sss
+	    stlog
+	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
+	    log_end_msg $?
+	fi
+
+	if [ x$PSETD = x1 ]; then
+	    DAEMON=__INSTALL_DIR__bin/psetd
+	    stlog
+	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
+	    log_end_msg $?
+	fi
+
+	if [ x$STAMPD = x1 ]; then
+	    DAEMON=__INSTALL_DIR__bin/stampd
+	    stlog
+	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
+	    log_end_msg $?
+	fi
+
+	if [ x$SSCONF = x1 ]; then
+	    DAEMON=__INSTALL_DIR__bin/ssconf.py
+	    stlog
+	    # we cannot use --exec here because ssconf is run by python interpter
+	    PIDFILE=/var/run/ssconf.pid
+	    pidof -x $DAEMON > $PIDFILE
+	    /sbin/start-stop-daemon --stop --quiet --oknodo --pidfile $PIDFILE
+	    log_end_msg $?
+	fi
+
+	if [ x$ANALIZA = x1 ]; then
+	    DAEMON=__INSTALL_DIR__bin/analiza
+	    stlog
+	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
+	    log_end_msg $?
+	fi
+
+	if [ x$SENDER = x1 ]; then
+	    DAEMON=__INSTALL_DIR__bin/sender
+	    stlog
+	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
+	    log_end_msg $?
+	fi
+
+	if [ x$MEANER3 = x1 ]; then
+	    DAEMON=__INSTALL_DIR__bin/meaner3
+	    stlog
+	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
+    	    # sometimes meaner3 needs more time
+    	    sleep 1
+	    log_end_msg $?
+	fi
+
+	if [ x$PARAMD = x1 ]; then
+	    DAEMON=__INSTALL_DIR__bin/paramd 
+	    stlog
+	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
+	    log_end_msg $?
+	fi
+
+	if [ x$PARCOOK = x1 ]; then
+	    DAEMON=__INSTALL_DIR__bin/parcook 
+	    stlog
+	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
+	    log_end_msg $?
+	fi
+
+	echo -n "(SZARP) Oczekiwanie"
+	for i in 1 2 3 ; do {
+		echo -n "."
+		sleep 1
+	}; done
+	
+	log_daemon_msg "Cleaning IPC resources"
+	__INSTALL_DIR__bin/ipcclean
+	log_end_msg $?
+
+	;;
+  restart|reload)
+	$0 stop
+	$0 start
+	;;
+  status)
+	echo "SZARP programs run: "
+	ps axw | grep -v 'grep' | grep "__INSTALL_DIR__bin" \
+		| cut -d ':' -f '2-' | cut -b '4-'
+	;;
+  *)
+	echo "Usage: parstart {start|stop|restart|reload|status}"
+	exit 1
+	;;
+esac
+
+exit 0

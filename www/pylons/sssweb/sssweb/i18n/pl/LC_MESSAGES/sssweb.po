@@ -1,0 +1,262 @@
+# Polish translations for sssweb.
+# Copyright (C) 2009 ORGANIZATION
+# This file is distributed under the same license as the sssweb project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2009.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: sssweb 0.0.0\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2009-03-17 10:22+0100\n"
+"PO-Revision-Date: 2009-04-09 15:08+0200\n"
+"Last-Translator: Paweł Pałucha <pawel@praterm.com.pl>\n"
+"Language-Team: pl <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && "
+"(n%100<10 || n%100>=20) ? 1 : 2)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.4\n"
+
+#: sssweb/controllers/error.py:22
+msgid "An error has occured. Please inform server administrator."
+msgstr "Wystąpił błąd. Proszę skontaktować się z administratorem serwera."
+
+#: sssweb/controllers/login.py:26
+msgid "Invalid user/password"
+msgstr "Nieprawidłowy login lub hasło"
+
+#: sssweb/controllers/login.py:79
+#, python-format
+msgid ""
+"You (or someone else) requested change of forgotten password to SZARP "
+"Synchronization Server.\n"
+"\n"
+"If you did not request password change, just ignore this e-mail.\n"
+"If you want to reset your SZARP synchronization password, click (or paste"
+" to your WWW browser) following link: \n"
+"%s\n"
+"Link is valid to the end of current day.\n"
+"\n"
+"SZARP Synchronization Server\n"
+msgstr ""
+"Ty (albo ktoś inny) zażądał zmiany zapomianego hasła do Serwera "
+"Synchronizacji SZARP.\n"
+"\n"
+"Jeśli nie żądałeś zmiany hasła, po prostu zignoruj ten list.\n"
+"Jeśli natomiast chcesz zmienić swoje hasło synchronizatora SZARP, kliknij"
+" (bądź wklej do paska adresu przeglądarki WWW) ten odnośnik: \n"
+"%s\n"
+"Odnośnik aktywacyjny jest ważny do końca dnia.\n"
+"\n"
+"Serwer Synchronizacji SZARP\n"
+
+#: sssweb/controllers/login.py:80
+msgid "SZARP sync password reset"
+msgstr "SZARP synchronizator zmiana hasła"
+
+#: sssweb/controllers/login.py:84
+msgid ""
+"Check your e-mail for password activation link. Link is valid to the end "
+"of current day."
+msgstr ""
+"Na swoją skrzynkę pocztową powinieneś otrzymać odnośnik aktywacyjny. "
+"Odnośnik jest ważny do końca dnia."
+
+#: sssweb/controllers/login.py:96
+msgid "Link is incorrect or outdated!"
+msgstr "Odnośnik jest nieprawidłowy lub przeterminował się!"
+
+#: sssweb/controllers/login.py:98
+#, python-format
+msgid ""
+"Your password for SZARP Synchronization Server has been reset.\n"
+"Your login is '%s', your new password is '%s'.\n"
+"\n"
+"SZARP Synchronization Server\n"
+msgstr ""
+"Twoje hasło do Serwera Synchronizacji SZARP zostało zmienione.\n"
+"Twój login to '%s', Twoje nowe hasło to '%s'.\n"
+"\n"
+"Serwer Synchronizacji SZARP\n"
+
+#: sssweb/controllers/login.py:99 sssweb/controllers/ssconf.py:120
+msgid "SZARP sync new password"
+msgstr "SZARP synchronizator nowe hasło"
+
+#: sssweb/controllers/login.py:100
+msgid "Your password has been reset. New password has been sent to you by e-mail."
+msgstr ""
+"Twoje hasło zostało zmienione. Nowe hasło zostało wysłane na Twoją "
+"skrzynkę pocztową."
+
+#: sssweb/controllers/ssconf.py:84
+#, python-format
+msgid ""
+"Your SZARP Synchronization account has been created.\n"
+"\n"
+"Your login: %s\n"
+"Your password: %s\n"
+"Visist %s to change your password and view your settings.\n"
+"\n"
+"SZARP Synchronization Server\n"
+msgstr ""
+"Zostało utworzone Twoje konto na Serwerze Synchronizacji SZARP.\n"
+"\n"
+"Twój login: %s\n"
+"Twoje hasło: %s\n"
+"Odwiedź %s aby zmienić hasło i przejrzeć ustawienia Twojego konta.\n"
+"\n"
+"Serwer Synchronizacji SZARP\n"
+
+#: sssweb/controllers/ssconf.py:85
+msgid "SZARP sync new account"
+msgstr "SZARP synchronizator nowe konto"
+
+#: sssweb/controllers/ssconf.py:119
+#, python-format
+msgid ""
+"Your password for SZARP Synchronization Server has been reset by "
+"administrator.\n"
+"Your login is '%s', your new password is '%s'.\n"
+"\n"
+"SZARP Synchronization Server\n"
+msgstr ""
+"Twoje hasło do Serwera Synchronizacji SZARP zostało zresetowane przez "
+"administratora.\n"
+"Twój login to '%s', Twoje nowe hasło to '%s'.\n"
+"\n"
+"Serwer Synchronizacji SZARP\n"
+
+#: sssweb/controllers/user.py:33
+msgid "Incorrect current password!"
+msgstr "Nieprawidłowe aktualne hasło"
+
+#: sssweb/controllers/user.py:38
+msgid "Passwords do not match!"
+msgstr "Nieprawidłowo powtórzone nowe hasło!"
+
+#: sssweb/controllers/user.py:50
+msgid "Password set succesfully"
+msgstr "Hasło zmienione"
+
+#: sssweb/templates/base.mako:3
+msgid "SZARP Synchroniser"
+msgstr "Synchronizator SZARP"
+
+#: sssweb/templates/base.mako:7
+msgid "SZARP Synchroniser Web Admin"
+msgstr "Synchronizator SZARP Administracja"
+
+#: sssweb/templates/baseuser.mako:7
+msgid "Welcome"
+msgstr "Witaj,"
+
+#: sssweb/templates/baseuser.mako:8
+msgid "Logout"
+msgstr "Wyloguj"
+
+#: sssweb/templates/confirm.mako:6
+msgid "Yes"
+msgstr "Tak"
+
+#: sssweb/templates/confirm.mako:10
+msgid "No"
+msgstr "Nie"
+
+#: sssweb/templates/info.mako:8
+msgid "Ok"
+msgstr "Ok"
+
+#: sssweb/templates/login.mako:5 sssweb/templates/remind.mako:5
+msgid "Login"
+msgstr "Login"
+
+#: sssweb/templates/login.mako:6
+msgid "Password"
+msgstr "Hasło"
+
+#: sssweb/templates/login.mako:7
+msgid "Forgot password?"
+msgstr "Zapomniane hasło?"
+
+#: sssweb/templates/login.mako:8
+msgid "Log in"
+msgstr "Zaloguj"
+
+#: sssweb/templates/remind.mako:4
+msgid ""
+"Enter you login name and click Remind button. Link to activate new "
+"password will be sent to your registered e-mail account."
+msgstr ""
+"Podaj swój login i kliknij przycisk Przypomnij. Odnośnik do aktywacji "
+"nowego hasła zostanie wysłany na Twoje zarejestowane konto pocztowe."
+
+#: sssweb/templates/remind.mako:6
+msgid "Remind"
+msgstr "Przypomnij"
+
+#: sssweb/templates/u_password.mako:4
+msgid "Current password"
+msgstr "Bieżące hasło"
+
+#: sssweb/templates/u_password.mako:5
+msgid "New password"
+msgstr "Nowe hasło"
+
+#: sssweb/templates/u_password.mako:6
+msgid "Re-enter new password"
+msgstr "Powtórz nowe hasło"
+
+#: sssweb/templates/u_password.mako:7
+msgid "Submit"
+msgstr "Wyślij"
+
+#: sssweb/templates/u_user.mako:3
+msgid "Your account status"
+msgstr "Status Twojego konta"
+
+#: sssweb/templates/u_user.mako:5
+msgid "Your hardware key status is"
+msgstr "Status klucza sprzętowego"
+
+#: sssweb/templates/u_user.mako:6
+msgid "Your account"
+msgstr "Twoje konta"
+
+#: sssweb/templates/u_user.mako:7
+msgid "List of bases for synchronization"
+msgstr "Lista synchronizowanych baz"
+
+#: sssweb/templates/u_user.mako:8
+msgid "Change password"
+msgstr "Zmień hasło"
+
+#: sssweb/templates/u_user.mako:12
+msgid "Disabled. Contact with administrator to activate key."
+msgstr "Nieaktywny. Skontaktuj się z administratorem aby uaktywnić klucz."
+
+#: sssweb/templates/u_user.mako:14
+msgid "Turned off. You should be able to synchronize data from any computer."
+msgstr "Wyłączony. Możesz synchronizować dane z dowolnego komputera."
+
+#: sssweb/templates/u_user.mako:16
+msgid "Waiting. Key will be activated after first synchronization."
+msgstr "Oczekujący. Klucz zostanie aktywowany przy pierwszej synchronizacji."
+
+#: sssweb/templates/u_user.mako:18
+msgid "Active. You should be able to synchronize data from registered computer."
+msgstr "Aktywny. Możesz synchronizować dane z zarejestrowanego komputera."
+
+#: sssweb/templates/u_user.mako:24
+msgid "is active."
+msgstr "jest aktywne."
+
+#: sssweb/templates/u_user.mako:31
+msgid "has expired. Contact administrator to enable account."
+msgstr "wygasło. Skontaktuje się z administratorem aby aktywować konto."
+
+#: sssweb/templates/u_user.mako:33
+msgid "is active and will expire on"
+msgstr "jest aktywne i wygaśnie"
+

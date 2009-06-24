@@ -1,0 +1,1446 @@
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V3.1//EN"[
+<!ENTITY szarp-info SYSTEM "../common/szarp-info.sgml">
+<!ENTITY help SYSTEM "../common/help.sgml">
+]>
+
+<book lang="pl" id="draw3">
+<bookinfo>
+
+
+&szarp-info;
+
+<title>Draw 3 - dokumentacja</title>
+
+<abstract>
+<para>
+</para>
+<para>
+</para>
+</abstract>
+
+</bookinfo>
+
+<chapter id="draw3-info">
+<title>Pomoc programu Draw 3</title>
+<section id="draw3-info-main">
+<title>Witamy w programie Draw 3</title>
+<para>
+Program przegl±daj±cy Draw 3 s³u¿y do graficznej prezentacji (wizualizacji) zebranych i zarchiwizowanych danych technologicznych. Dane s± przedstawiane w postaci wykresów. Szereg mo¿liwo¶ci dodatkowych czyni z programu przegl±daj±cego silne narzêdzie przydatne w analizie danych ciep³owniczych. 
+</para>
+<para>
+Dowiedz siê wiêcej:
+<itemizedlist>
+<listitem>
+<para>o podstawach pracy z programem - <xref linkend="draw3-base-main"></para>
+<para>o poruszaniu siê po wykresach - <xref linkend="draw3-base-graphsnavigation"></para>
+<para>o definiowaniu w³asnych zestawów wykresów - <xref linkend="draw3-ext-chartset"></para>
+<para>o skrótach klawiaturowych - <xref linkend="draw3-ext-shortcuts"></para>
+</listitem>
+</itemizedlist>
+Mo¿esz przej¶æ do spisu tre¶ci - <xref linkend="draw3"> lub wybraæ odno¶nik <quote>Nastêpny</quote>, aby zapoznaæ siê po kolei z podstawowymi funkcjami programu.
+</para>
+</section><!-- draw3-info-main -->
+</chapter><!-- draw3-info -->
+
+<chapter id="draw3-base">
+<title>Podstawy korzystania z programu</title>
+
+<section id="draw3-base-toc">
+<title>Spis tre¶ci rozdzia³u</title>
+<para></para>
+</section> <!-- draw3-base-toc -->
+
+<section id="draw3-base-main">
+<title>Zaczynamy!</title>
+<para>
+Ten rozdzia³ opisuje:
+<itemizedlist>
+<listitem><para>jak uruchomiæ programu Draw 3 - <xref linkend="draw3-base-run"></para></listitem>
+<listitem><para>co jest widoczne w g³ównym oknie programu przegl±daj±cego - <xref linkend="draw3-base-win"></para></listitem>
+<listitem><para>jak wybraæ interesuj±cy Ciê zestaw wykresów - <xref linkend="draw3-base-charts"></para></listitem>
+<listitem><para>jak zmieniæ zakres ¶rednich - <xref linkend="draw3-base-range"></para></listitem>
+<listitem><para>jak poruszaæ siê po wykresach - <xref linkend="draw3-base-graphsnavigation"></para></listitem>
+<listitem><para>jak korzystaæ z zak³adek i okien - <xref linkend="draw3-base-tabs"></para></listitem>
+<listitem><para>jak wydrukowaæ interesuj±ce Ciê wykresy - <xref linkend="draw3-base-prints"></para></listitem>
+</itemizedlist>
+</para>
+</section> <!-- draw3-base-main -->
+
+<section id="draw3-base-run">
+<title>Uruchomienie programu</title>
+<para>
+Program bêdziesz zwykle uruchamiaæ pos³uguj±c siê programem Centrum Sterowania Szarp (SCC). Wystarczy klikn±æ lewym przyciskiem myszki na ikonê SCC i wybraæ interesuj±c± nas ciep³owniê lub wêze³ cieplny (wiêcej informacji o SCC mo¿esz znale¼æ w dokumencie <ulink url="http://szarp.com.pl/howto/scc/html/scc.html">Centrum Sterowania SZARP</ulink> [<ulink url="http://szarp.com.pl/howto/_pdf/scc.pdf">pdf</ulink>]). Proces uruchomienia (tutaj na systemie Linux) jest widoczny poni¿ej:
+<figure> <title>Centrum Sterowania Szarp - uruchomienie programu przegl±daj±cego (pod Linuksem)</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-scc.png"></imageobject>
+</mediaobject></figure>
+<note>
+<para>
+¯eby uruchomiæ program przegl±daj±cy, musisz mieæ dostêp do danych, które bêd± w nim wy¶wietlane. Mo¿esz albo ¶ci±gn±æ dane na dysk poprzez synchronizator danych (wiêcej o synchronizacji w dokumencie <ulink url="http://szarp.com.pl/howto/ssc/html/ssc.html">Synchronizator plików</ulink>), albo zalogowaæ siê do systemu, który takie dane przechowuje. Do systemu mo¿esz siê zalogowaæ bezpo¶rednio (pracuj±c pod Linuksem) lub (w przypadku systemu Windows) za pomoc± emulatora X-terminala (np. Cygwin). Program SCC automatycznie wy¶wietla nazwy wszystkich ciep³owni (lub innych obiektów), dla których dostêpne s± dane.
+</para>
+</note>
+</para>
+<para>
+W czasie startu Draw 3 odczyta konfiguracjê, uruchomi mechanizm odpytywania bazy danych oraz wy¶wietli swoje g³ówne okno. W tym czasie wy¶wietli okienko z paskiem postêpu:
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-progress.png"></imageobject>
+</mediaobject>
+</para>
+<para>
+Aby zapoznaæ siê z obs³ug± podstawowych funkcji programu, przejd¼ do <xref linkend="draw3-base-win">.
+<note><para>
+Zobacz tak¿e <xref linkend="draw3-ext-cmd">, aby dowiedzieæ siê, jak uruchamiaæ
+program z linii komend.</para></note>
+Aby zakoñczyæ program, zamknij okno programu, wybierz opcjê
+<guimenuitem>Wyj¶cie</guimenuitem> z menu <guimenu>Plik</guimenu> lub kliknij na ikonê z drzwiami umieszczon± na dole okna programu.
+</para>
+
+</section> <!-- draw3-base-run -->
+
+<section id="draw3-base-win">
+<title>G³ówne okno programu</title>
+<para>
+Rysunek poni¿ej przedstawia g³ówne okno programu: 
+<figure> <title>G³ówne okno programu</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-win.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+
+<para>
+G³ówn± czê¶æ okna zajmuje Okno graficzne z wykresami parametrów (wiêcej: <xref linkend="draw3-base-graphsnavigation">). Wykresy te s± opisane i oznaczone kolorem po prawej stronie okna (pod bie¿±c± dat± i godzin±). Poni¿ej listy parametrów znajduje siê pole wyboru rodzaju ¶rednich (zobacz: <xref linkend="draw3-base-range">) oraz zestawu wykresów .
+</para>
+<para>
+Pod oknem graficznym umieszczone s± informacje o warto¶ciach parametru, na którym aktualnie znajduje siê kursor:
+<itemizedlist>
+<listitem><para>warto¶æ próbki lub ¶redniej</para></listitem>
+<listitem><para>data zapisania próbki/¶redniej</para></listitem>
+<listitem><para>minimalna, ¶rednia i maksymalna warto¶æ parametru w okresie czasu widocznym na ekranie</para></listitem>
+<listitem><para>procent wystêpowania próbek dla danego wykresu</para>
+	<note><para>System SZARP zapisuje dane do bazy co 10 minut. Ogl±daj±c wykres warto¶ci parametru z ca³ego roku, widzimy tylko ¶rednie miesiêczne. Je¿eli np. w wyniku awarii w jednym z miesiêcy zapisana zostanie w bazie tylko 1 próbka, to program poka¿e ¶redni± miesiêczn± równ± warto¶ci tej próbki, ale niekoniecznie musi byæ ona reprezentatywna dla ca³ego miesi±ca. Warto¶æ procentowa wystêpowania próbek istotnie mniejsza ni¿ wizualnie wynikaj±ca z d³ugo¶ci wykresu w oknie sugeruje, ¿e mo¿esz mieæ do czynienia z tak± w³a¶nie sytuacj±, czyli wyliczone warto¶ci ¶rednich nale¿y traktowaæ z ostro¿no¶ci±.</para></note>
+</listitem>
+</itemizedlist>
+oraz ikony skrótów:
+<itemizedlist>
+<listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-about_icon.png"></imageobject></inlinemediaobject> - O programie - informacje o programie przegl±daj±cym</para></listitem>
+<listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-find_icon.png"></imageobject></inlinemediaobject> - Wyszukaj - wyszukiwanie zestawów wykresów - wiêcej <xref linkend="draw3-base-charts"></para></listitem>
+<listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-plus_icon.png"></imageobject></inlinemediaobject> - Warto¶ci sumaryczne - wiêcej <xref linkend="draw3-ext-summaryvalues"></para></listitem>
+<listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-split_icon.png"></imageobject></inlinemediaobject> - Rozdwojony kursor - wiêcej <xref linkend="draw3-ext-doublecursor"></para></listitem>
+<listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-filtericon.png"></imageobject></inlinemediaobject> - Filtr - wiêcej <xref linkend="draw3-ext-filter"></para></listitem>
+<listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-refresh_icon.png"></imageobject></inlinemediaobject> - Od¶wie¿  - wiêcej <xref linkend="draw3-ext-refresh"></para></listitem>
+<listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-flag_pl_icon.png"></imageobject></inlinemediaobject> - Zmieñ jêzyk programu - wiêcej <xref linkend="draw3-ext-languages"></para></listitem>
+<listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-exit_icon.png"></imageobject></inlinemediaobject> - Wyjd¼ - wyj¶cie z programu</para></listitem>
+</itemizedlist>
+</para>
+<para>
+Mo¿liwe jest wy¶wietlanie okna w trybie pe³noekranowym. ¯eby uruchomiæ ten tryb, wybierz z menu <guimenu>Narzêdzia</guimenu> i <guimenu>Pe³ny ekran</guimenu> lub u¿yj klawisza funkcyjnego <keycode>F11</keycode>. W ten sam sposób mo¿esz wy³±czyæ tryb pe³noekranowy.
+</para>
+</section><!-- draw3-base-win -->
+
+<section id="draw3-base-charts">
+<title>Wybór zestawu wykresów</title>
+<para>
+Wykresy parametrów w programie podzielone s± na zestawy, obejmuj±ce parametry powi±zane 
+tematycznie i wy¶wietlane w zwi±zku z tym razem na ekranie. Nazwa aktualnie wy¶wietlanego 
+zestawu jest widoczna nad górze okna wykresów, obok skróconych nazw wykresów. Poza tym w prawym dolnym rogu okna programu znajduje siê pole wyboru zestawu - wy¶wietla nazwê aktualnie 
+wy¶wietlanego zestawu oraz pozwala na jego zmianê - po klikniêciu myszk± rozwijana jest lista 
+wszystkich dostêpnych zestawów.
+</para>
+<para>
+Mo¿esz tak¿e skorzystaæ z mo¿liwo¶ci wybrania zestawu wykresów za pomoc± mechanizmu 
+wyszukuj±cego, dostêpnego po naci¶niêciu klawiszy <keycode>Alt + Z</keycode>.
+Otworzysz tym samym okno widoczne poni¿ej:
+<figure><title>Wyszukiwanie zestawu wykresów</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-charts.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+<para>
+Je¶li znasz przynajmniej czê¶æ nazwy interesuj±cego Ciê zestawu wykresów, mo¿esz wpisaæ j± w 
+pole znajduj±ce siê ponad list± parametrów. Dziêki temu lista automatycznie skróci siê 
+pokazuj±c jedynie zestawy posiadaj±ce w nazwie wpisany przez Ciebie ci±g znaków. Suwakiem 
+umieszczonym po prawej stronie mo¿esz przewijaæ listê wykresów. 
+Przyciskiem <guibutton>Wyczy¶æ</guibutton> usuwasz wpisany ci±g znaków.
+</para>
+<para>
+Po wybraniu zestawu kliknij <guibutton>Ok</guibutton>.
+</para>
+</section> <!-- draw3-base-charts -->
+
+<section id="draw3-base-find-parameter">
+<title>Wyszukiwanie wykresów parametrów</title>
+<para>
+Poza wyszukiwaniem zestawu wykresów (wiêcej <xref linkend="draw3-base-charts">) mo¿esz równie¿ znale¼æ wykres pojedynczych parametrów. W tym celu z menu wybierz <guimenu>Narzêdzia</guimenu> i <guimenu>Wyszukaj</guimenu> (mo¿esz te¿ u¿yæ skrótu klawiaturowego <keycode>Ctrl + F</keycode>). W nowym oknie pojawi siê lista wszystkich parametrów, odpowiadaj±ce im zestawy wykresów oraz pole do filtrowania wyników nazw:
+</para> 
+<para>
+<figure><title>Wyszukiwanie wykresu wybranego parametru</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-find_parameter.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+<para>
+Po wybraniu poszukiwanego parametru program wy¶wietli odpowiedni zestaw wykresów.
+</para>
+</section> <!-- draw3-base-find-parameter -->
+
+<section id="draw3-base-range">
+<title>Wybór rodzaju ¶rednich</title>
+<para>
+Dane w oknie graficznym s± wy¶wietlane w jednym z trybów:
+<itemizedlist>
+<listitem><para><emphasis>ROK</emphasis> - pokazuje ¶rednie miesiêczne - na ekranie widoczne s± ¶rednie z ca³ego roku</para></listitem>
+<listitem><para><emphasis>MIESI¡C</emphasis> - pokazuje ¶rednie dobowe - na ekranie widoczne s± ¶rednie z ca³ego miesi±ca</para></listitem>
+<listitem><para><emphasis>TYDZIEÑ</emphasis> - pokazuje ¶rednie o¶miogodzinne (po 3 na ka¿dy dzieñ) - na ekranie widoczne s± ¶rednie z ca³ego tygodnia</para></listitem>
+<listitem><para><emphasis>DZIEÑ</emphasis> - pokazuje ¶rednie 10-minutowe, na ekranie 
+widoczne s± ¶rednie z ca³ego dnia. W tym trybie mo¿liwe jest przesuwanie kursora o 6 próbek 
+(czyli o godzinê), je¶li razem ze strza³k± wci¶niesz klawisz <keycode>Shift</keycode> 
+(inne skróty klawiaturowe znajdziesz w <xref linkend="draw3-ext-shortcuts">).
+</para></listitem>
+<listitem><para><emphasis>SEZON</emphasis> - pokazuje ¶rednie tygodniowe  - na ekranie widoczne s± ¶rednie z ca³ego sezonu</para></listitem>
+</itemizedlist>
+Wszystkie tryby, poza dziennym, pokazuj± granice sezonów (czerwona - pocz±tek sezonu letniego, niebieska - pocz±tek sezonu letniego).
+Mo¿esz prze³±czyæ miêdzy rodzajami ¶rednich:
+<itemizedlist>
+<listitem><para>klikaj±c myszk± na odpowiedni tryb</para></listitem>
+<listitem><para>wykorzystuj±c skrót klawiaturowy: <keycode>Alt</keycode> + pierwsza rodzaju
+¶redniej (np. <keycode>Alt+M</keycode> dla miesi±ca)</para></listitem>
+<listitem><para>wybieraj±c z menu: <guimenu>Narzêdzia</guimenu> i potem z rozwijalnego podmenu 
+<guimenu>Rodzaj ¶rednich</guimenu> odpowiedni± pozycjê</para></listitem>
+</itemizedlist>
+
+</para>
+</section> <!-- draw3-base-range -->
+
+<section id="draw3-base-graphsnavigation">
+<title>Nawigacja po wykresach</title>
+<para>
+Po wykresach mo¿esz siê poruszaæ u¿ywaj±c myszki (przez klikniêcie na konkretnych wykresie) lub przy u¿yciu klawiatury. Aktualna pozycja jest zaznaczona przez kursor - bia³y kwadrat. 
+Strza³kami "prawo" i "lewo" przesuniesz kursor po bie¿±cym wykresie, z kolei wci¶niêcie 
+klawiszy ze strza³kami "góra" i "dó³" powoduje zmianê bie¿±cego wykresu na nastêpny/poprzedni 
+w ramach zestawu. Klawiszami <keycode>PgUp</keycode> oraz <keycode>PgDown</keycode> 
+mo¿esz przesuwaæ siê po wykresie o d³ugo¶æ jednego ekranu w lewo i w prawo.
+</para>
+<para>
+Mo¿esz tak¿e wykorzystaæ myszkê do szybszego przewijania wykresów. Klikaj±c jednokrotnie na brzegu okna graficznego przesuwasz kursor o jedn± pozycjê w prawo lub w lewo. Za pomoc± dwukliku przesuniesz kursor o d³ugo¶æ ekranu.
+</para>
+<para>
+W celu sprawniejszego przechodzenia do interesuj±cych Ciê dat mo¿esz skorzystaæ z mo¿liwo¶ci skoku pod wybran± datê. W tym celu z menu wybierz <guimenu>Narzêdzia</guimenu> i <guimenu>Skok pod datê</guimenu> lub u¿yj skrótu klawiaturowego <keycode>Ctrl + J</keycode>. W ten sposób wy¶wietlisz okienko:
+<figure> <title>Nawigacja - skok pod datê</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-jump2date.png"></imageobject>
+</mediaobject>
+</figure>
+Pozwoli Ci ono na szybsze przemieszczenie kursora pod interesuj±c± datê.
+</para>
+<para>
+Je¶li wiesz, ¿e za chwilê bêdziesz wracaæ do konkretnego miejsca wykresu, mo¿esz u¿yæ kopiowania lokalizacji. Pozwoli Ci wróciæ w krótkim czasie w zapamiêtane miejsce. W tym celu z menu wybierz <guimenu>Narzêdzia</guimenu> i <guimenu>Kopiuj lokalizacjê</guimenu> albo u¿yj skrótu klawiszowego <keycode>Ctrl + C</keycode>. ¯eby powróciæ do tego miejsca z menu wybierz <guimenu>Narzêdzia</guimenu> i <guimenu>Wklej lokalizacjê</guimenu> albo u¿yj skrótu klawiszowego <keycode>Ctrl + V</keycode>.
+</para>
+<note>
+<para>
+Skopiowan± lokalizacjê mo¿na u¿yæ tak¿e poza programem przegl±daj±cym. Przyk³adowo mo¿na j± wkleiæ do tre¶ci e-maila tak, ¿eby pokazaæ innej osobie interesuj±ce miejsce na wykresie parametrów.
+</para>
+</note>
+<para>
+Ka¿dy z wykresów mo¿esz wydrukowaæ, o czym przeczytasz w rozdziale <xref linkend="draw3-base-prints">.
+</para>
+</section> <!-- draw3-base-graphsnavigation -->
+
+<section id="draw3-base-hidegraphs">
+<title>Wygaszanie i wy¶wietlanie wykresów</title>
+<para>
+Wykres mo¿esz wygasiæ wy³±czaj±c jego wy¶wietlanie - w tym celu kliknij na pole wyboru 
+umieszczone obok numeru i tytu³u wykresu. Po klikniêciu wykres zniknie z okna graficznego,
+powtórne klikniêcie przywróci wy¶wietlanie wykresu. Nie jest mo¿liwe wygaszenie wykresu, 
+na którym aktualnie znajduje siê kursor.
+</para>
+<para>
+Wygaszanie wykresów mo¿esz wykorzystaæ do zwiêkszenia czytelno¶ci prezentowanych danych,
+poza tym podczas drukowania z programu drukowane s± tylko niewygaszone wykresy
+(wiêcej o wydrukach <xref linkend="draw3-base-prints">).
+</para>
+<para>
+Wygaszenie wykresów jest pamiêtane po zmianie zestawu wykresów - po powrocie do zestawu
+wykresów zaznaczone przez Ciebie wykresy nadal pozostan± wygaszone. 
+</para>
+</section> <!-- draw3-base-hidegraphs -->
+
+<section id="draw3-base-prints">
+<title>Wydruki</title>
+<para>
+Zestaw wykresów w Draw 3 mo¿esz wydrukowaæ przez u¿ycie kombinacji <keycode>Ctrl + P</keycode> 
+lub wybranie z menu <guimenu>Plik</guimenu> i <guimenu>Drukuj</guimenu>. 
+Na wydruku znajdzie siê zakres czasu widoczny w danym momencie w oknie Draw 3.
+</para>
+<para>
+Wszystkie wykresy na wydruku maj± swoje pionowe osie Y, razem z opisanymi jednostkami. Pod 
+wykresem znajduj± siê informacje dotycz±ce parametrów (warto¶ci: maksymalna, minimalna i 
+¶rednia) i samego wykresu (nazwa wêz³a, nazwa zestawu parametrów, wybrany okres danych oraz 
+rodzaj wy¶wietlanych ¶rednich, czyli np. miesi±c).
+</para>
+<para>
+W opcjach wydruku mo¿esz wybraæ ilo¶æ drukowanych osi Y - z menu wybierz 
+<guimenu>Narzêdzia</guimenu>, <guimenu>Ustawienia</guimenu> i 
+<guimenu>Ilo¶æ drukowanych osi</guimenu> lub u¿yj skrótu <keycode>Ctrl + X</keycode>.
+</para>
+<note>
+<para>
+Na wydruku nie s± umieszczane wygaszone wykresy (o wygaszaniu wykresów - <xref linkend="draw3-base-hidegraphs">).
+</para>
+</note>
+<para>
+Przed wykonaniem wydruku mo¿esz obejrzeæ jego podgl±d - z menu wybierz <guimenu>Plik</guimenu> 
+i potem <guimenu>Podgl±d wydruku</guimenu>.
+</para>
+</section> <!-- draw3-base-prints -->
+
+<section id="draw3-base-tabs">
+<title>Zak³adki i okna</title>
+<para>
+Pracuj±c mo¿esz wy¶wietlaæ dane w kilku oknach i/lub kilku zak³adkach. Dziêki temu mo¿esz 
+obejrzeæ interesuj±ce Ciê dane i porównaæ wykresy bez potrzeby wielokrotnego wybierania zestawu.
+Zak³adki, na wzór przegl±darek internetowych, s± otwarte równolegle, w ramach jednego okna 
+programu Draw 3. 
+</para>
+<para>
+Nowe okno mo¿esz otworzyæ albo przez skrót klawiszowy <keycode>Ctrl + N</keycode>, albo 
+wybieraj±c z menu <guimenu>Plik</guimenu> polecenie <guimenu>Otwórz nowe okno</guimenu>. 
+Now± zak³adkê mo¿esz otworzyæ przez skrót klawiszowy <keycode>Ctrl + T</keycode> albo 
+wybieraj±c z menu <guimenu>Plik</guimenu> polecenie <guimenu>Otwórz now± zak³adkê</guimenu>.
+</para>
+<para>
+Przy otwieraniu nowego okna lub zak³adki zostaniesz proszony o wybór konfiguracji do 
+za³adowania. 
+</para>
+<para>
+<figure> <title>Otwieranie nowej zak³adki</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-tabs1.png"></imageobject>
+</mediaobject></figure>
+</para>
+<para>
+Po otwarciu wiêcej ni¿ jednej zak³adki pod menu pojawi siê pasek zak³adek oraz (po prawej 
+stronie, nad nazwami parametrów) pole prze³±cznika pomiêdzy zak³adkami. 
+Gdy utworzysz wiele zak³adek, pojawi± siê równie¿ strza³ki do przesuwania paska z zak³adkami.
+<figure> <title>Zak³adki w menu</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-tabs2.png"></imageobject>
+</mediaobject></figure>
+</para>
+<para>
+Do prze³±czenia aktualnie wy¶wietlanej zak³adki mo¿esz u¿yæ wspomnianego wy¿ej pola, kombinacji
+klawiszy <keycode>Ctrl + PgUp</keycode> i <keycode>Ctrl + PgDown</keycode> 
+albo klikniêcia na tytule wybranej zak³adki.
+</para>
+<para>
+W celu zamkniêcia aktualnie widocznej zak³adki kliknij na krzy¿yk widoczny po prawej od 
+nazwy zak³adki, u¿yj skrótu klawiszowego <keycode>Ctrl + W</keycode> lub wybierz z menu 
+<guimenu>Plik</guimenu> i potem <guimenu>Zamknij zak³adkê</guimenu>. Z kolei bie¿±ce okno 
+Draw 3 mo¿esz zamkn±æ u¿ywaj±c kombinacji klawiszy <keycode>Ctrl + Q</keycode>, klikaj±c na 
+krzy¿yk zamykaj±cy okno lub wybieraj±c z menu <guimenu>Plik</guimenu> i potem 
+<guimenu>Zamknij okno</guimenu>. Po potwierdzeniu okno zostanie zamkniête.
+</para>
+</section> <!-- draw3-base-tabs -->
+
+<section id="draw3-base-help">
+<title>Pomoc i pomoc kontekstowa w Draw3</title>
+<para>
+Program przegl±daj±cy oferuje 2 sposoby u¿ywania dokumentacji: zwyk³y (tj. poprzez
+w³±czenie osobnego okna z wy¶wietleniem niniejszej dokumentacji) oraz tzw. pomoc
+kontekstow±. ¯eby przeczytaæ dokumentacjê programu Draw3, wybierz z menu
+<guimenu>Pomoc</guimenu> i <guimenu>Pomoc</guimenu> lub u¿yj skrótu <keycode>F1</keycode>.
+
+<figure>
+<title>Pomoc w programie Draw3</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-help.png"></imageobject>
+</mediaobject></figure>
+</para><para>
+Pomoc kontekstowa umo¿liwia wy¶wietlenie opisu dla wybranego elemetu programu Draw3 i otworzyæ
+dokumentacjê w odpowiednim miejscu. Je¶li chcesz zobaczyæ opis wyboru rodzaju ¶rednich,
+z menu wybierz <guimenu>Pomoc</guimenu> i <guimenu>Pomoc kontekstowa</guimenu> lub u¿yj
+skrótu <keycode>Shift + F1</keycode> (kursor zmieni swój wygl±d). Nastêpnie kliknij na
+miejsce s³u¿±ce wyborowi ¶rednich, czym otworzysz dokumentacjê w oczekiwanym miejscu.
+<figure>
+<title>Pomoc kontekstowa programu Draw3</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-help2.png"></imageobject>
+</mediaobject></figure>
+
+</para>
+</section> <!-- draw3-base-help -->
+
+<section id="draw3-base-about">
+<title>O programie</title>
+<para>
+W celu wy¶wietlenia informacji o programie przegl±daj±cym (wersja, autorzy, licencja), 
+kliknij ikonê <inlinemediaobject><imageobject><imagedata
+			fileref="pics/draw3-about_icon.png"></imageobject></inlinemediaobject>
+	na pasku narzêdziowym, lub wybierz z menu <guimenu>Pomoc</guimenu>,
+	<guimenu>O programie</guimenu>.
+</para>
+</section> <!-- draw3-base-about -->
+
+</chapter> <!-- draw3-base -->
+
+<chapter id="draw3-ext">
+<title>Zagadnienia zaawansowane</title>
+
+<section id="draw3-ext-toc">
+<title>Spis tre¶ci</title>
+
+<para></para>
+</section> <!-- draw3-ext-toc -->
+
+<section id="draw3-ext-refresh">
+<title>Od¶wie¿anie wykresów</title>
+<para>
+Program przegl±daj±cy potrafi samodzielnie doczytaæ zmieniaj±ce siê wykresy (np. w przypadku pojawienia siê nowych danych) i wy¶wietliæ je w oknie wykresów. Je¶li jednak z jakiego¶ powodu zechcesz od¶wie¿yæ rysowane wykresy, wybierz z menu <guimenu>Narzêdzia</guimenu> i <guimenu>Od¶wie¿</guimenu>, skorzystaj ze skrótu klawiaturowego <keycode>Ctrl + R</keycode> lub kliknij ikonê <inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-refresh_icon.png"></imageobject></inlinemediaobject> na pasku narzêdziowym na dole ekranu.
+</para>
+</section> <!-- draw3-ext-refresh -->
+
+<section id="draw3-ext-blockgraphs">
+<title>Blokowanie wykresów</title>
+<para>
+Je¶li chcesz porównaæ warto¶ci parametrów z ró¿nych okresów czasowych (np. temperaturê steruj±c± z marca z temperatur± odniesienia z kwietnia), wykorzystaj funkcjê blokowania wykresu. Kliknij prawym klawiszem na tytu³ wykresu i wybierz <quote>Wykres zablokowany</quote>. Na pokazanym poni¿ej zestawie wykresów zablokowany zosta³ wykres "Temp. steruj±ca":
+<figure><title>Blokowanie wykresu</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-blockgraph.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+<para>
+Do zablokowania wykresu mo¿esz równie¿ u¿yæ skrótu klawiszowego <keycode>Ctrl + B</keycode>.
+</para>
+<para>
+Po przesuniêciu czasu na marzec, wykres "Temp. steruj±ca" (oznaczony kolorem ¿ó³tym) nie zmieni³ swojego po³o¿enia (zwróæ uwagê, ¿e przy nazwie zablokowanego wykresu pojawi³ siê dopisek <emphasis>[B]</emphasis>):
+<figure><title>Zablokowany wykres</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-blockgraph2.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+<para>
+Je¶li zablokujesz kilka wykresów i bêdziesz przesuwa³ kursor po niezablokowanym wykresie,
+wszystkie zablokowane wykresy nie bêd± siê przesuwaæ. Podczas przesuwania kursora po 
+zablokowanym wykresie pozosta³e wykresy, w tym inne zablokowane, nie przesuwaj± siê.
+</para>
+<para>
+Blokowanie wykresów mo¿esz wykorzystaæ równie¿ do porównania warto¶ci tego samego wykresu w 
+ró¿nych okresach czasowych. Wystarczy, ¿e stworzysz swój w³asny zestaw parametrów 
+(wiêcej o tworzeniu w³asnego zestawu: <xref linkend="draw3-ext-chartset">) i dodasz do niego 
+dwa razy ten sam parametr.
+</para>
+</section> <!-- draw3-ext-blockgraphs -->
+
+<section id="draw3-ext-doublecursor">
+<title>Rozdwojony kursor</title>
+<para>
+Tryb rozdwojonego kursora pozwala na zaznaczenie fragmentu wykresu. Wszystkie prezentowane
+przez program dane - takie jak minimum, maksimum, ¶rednia i warto¶æ sumaryczna - bêd± dotyczy³y
+tylko zaznaczonego fragmentu wykresu.
+</para>
+<para>
+W celu uruchomienia podwójnego kursora ustaw siê kursorem na pocz±tku interesuj±cego Ciê okresu.
+Nastêpnie w³±cz podwójny kursor - u¿yj skrótu <keycode>Backspace</keycode>, wybierz z 
+menu <guimenu>Narzêdzia</guimenu> i <guimenu>Rozdwojony kursor</guimenu> lub kliknij na ikonê
+<inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-split_icon.png"></imageobject></inlinemediaobject>na pasku narzêdzi.
+W trybie rozdwojonego kursora bie¿±cy wykres zostanie pogrubiony oraz poni¿ej okna z wykresami pojawi siê nowy wiersz z danymi dotycz±cymi koñca zaznaczonego okresu:
+<figure>
+<title>Rozdwojony kursor</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-doublecursor.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+<para>
+Klawiszami strza³ek góra, dó³ mo¿esz zmieniaæ wykres, na którym dzia³a rozdwojony kursor.
+</para>
+<para>
+Z trybu rozdwojonego kursora mo¿esz wyj¶æ ponownie u¿ywaj±c jednej z mo¿liwo¶ci uruchomienia go
+(czyli wybieraj±c z menu <guimenu>Narzêdzia</guimenu> i <guimenu>Rozdwojony kursor</guimenu>,
+klikaj±c na ikonê na pasku narzêdzi lub u¿ywaj±c skrótu klawiszowego 
+<keycode>Backspace</keycode>).
+Tak¿e zmiana rodzaju ¶redniej spowoduje wyj¶cie z trybu rozdwojonego kursora.
+</para>
+</section> <!-- draw3-ext-doublecursor -->
+
+<section id="draw3-ext-summaryvalues">
+<title>Warto¶ci sumaryczne</title>
+<para>
+Program przegl±daj±cy umo¿liwia obejrzenie sumy warto¶ci parametrów dla wybranego zakresu czasu.
+Sumowanie jest aktywne tylko dla niektórych parametrów - tam, gdzie ma to sens fizyczny i jest 
+realizowane jako dyskretne ca³kowanie wykresu. Przyk³adowo, je¶li mamy wykres mocy kot³a
+(czyli energia/czas), to sumowanie poka¿e nam ilo¶æ wyprodukowanej energii.
+</para>
+<para>Okno sumowania dla wybranego zestawu wykresów w³±czasz wybieraj±c z menu 
+<guimenu>Widok</guimenu> i <guimenu>Warto¶ci sumaryczne</guimenu>, klikaj±c 
+ikonê <inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-plus_icon.png"></imageobject></inlinemediaobject> 
+na pasku narzêdziowym lub korzystaj±c ze skrótu klawiszowego <keycode>Ctrl + G</keycode>. Pojawi siê okno z wyliczonymi warto¶ciami sumarycznymi, np:
+</para>
+<para>
+<figure>
+<title>Warto¶ci sumaryczne</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-summary_values.png"></imageobject>
+</mediaobject></figure>
+W oknie widoczne s± skrócona nazwa parametru oraz warto¶æ sumaryczna za wy¶wietlany okres. 
+Warto¶ci sumaryczne wyliczane s± na bie¿±co na podstawie warto¶ci parametrów widocznych na 
+ekranie. Dlatego s± ponownie obliczane, gdy zmienisz zakres ¶rednich (np. z miesi±ca na 
+tydzieñ) albo przesuniesz wykres. Aby zsumowaæ warto¶ci tylko z fragmentu wykresu, mo¿esz
+u¿yæ trybu podwójnego kursora - zobacz <xref linkend="draw3-ext-doublecursor">.
+</para>
+<para>
+Po najechaniu myszk± na wybrany parametr w oknie sumowania pojawi siê informacja o pe³nej 
+nazwie parametru, okresie sumowania parametru oraz procencie próbek zawieraj±cych dane.
+<figure>
+<title>Warto¶ci sumaryczne - dodatkowe informacje</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-summary_values2.png"></imageobject>
+</mediaobject></figure>
+</para>
+<note>
+<para>
+Poniewa¿ sumowane s± warto¶ci dla okresu czasu, zmianie podlegaj± jednostki sumowanych warto¶ci. Przyk³adowo zamiast <quote>kW</quote> wyst±pi <quote>kWh</quote>, w miejsce <quote>z³/h</quote> - <quote>z³</quote>, <quote>MW</quote> - <quote>GJ</quote>, <quote>mg/m3</quote> - <quote>mg/m3*h</quote>.
+</para>
+</note>
+<para>
+Je¶li bie¿±cy zestaw nie ma wykresów, dla których mo¿e byæ policzona warto¶æ sumaryczna, zostanie wy¶wietlony komunikat: <quote>To okno nie zawiera wykresów, dla których liczone s± warto¶ci sumaryczne</quote>.
+</para>
+</section> <!-- draw3-ext-summaryvalues -->
+
+<section id="draw3-percentagedistribution">
+<title>Rozk³ad procentowy</title>
+<para>
+Program przegl±daj±cy umo¿liwia obejrzenie wykresu z rozk³adem procentowym parametrów. Jest on wyliczany na podstawie rozk³adu warto¶ci parametrów dla wybranego rodzaju ¶redniej (np. ¶redniej tygodniowej). Aby obejrzeæ wykres z rozk³adem procentowym, wybierz z menu <guimenu>Widok</guimenu> i <guimenu>¦rednie procentowe</guimenu> (lub skorzystaj ze skrótu klawiaturowego <keycode>Ctrl + Alt + S</keycode>). W przypadku, w którym dla wybranego zestawu wykresów nie mo¿e byæ wy¶wietlony procentowy rozk³ad parametrów, pojawi siê okno z odpowiedni± informacj±.
+<figure>
+<title>Rozk³ad procentowy</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-piechart.png"></imageobject>
+</mediaobject></figure>
+</para>
+</section> <!-- draw3-percentagedistribution -->
+
+<section id="draw3-ext-valuesratio"> 
+<title>Stosunek warto¶ci</title>
+<para>
+Kilka zestawów wykresów pozwala na wyliczenie stosunku warto¶ci wykresów. Wyliczenie mo¿esz uruchomiæ wybieraj±c z menu <guimenu>Narzêdzia</guimenu> i <guimenu>Stosunek warto¶ci</guimenu>. Dla zestawów oferuj±cych obliczanie stosunku warto¶ci zostanie wy¶wietlone dodatkowe okno, jak widaæ na poni¿szym obrazie:
+<figure> <title>Stosunek warto¶ci</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-valuesratio.png"></imageobject>
+</mediaobject></figure>
+</para>
+<para>
+Stosunek warto¶ci obliczany jest dla wszystkich próbek widocznych w oknie wykresów. W celu uzyskania stosunku warto¶ci dla innego zakresu danych nale¿y u¿yæ rozdwojonego kursora (wiêcej o rozdwojonym kursorze - <xref linkend="draw3-ext-doublecursor">).
+</para>
+<para>
+Stosunek warto¶ci jest obliczany na podstawie próbek wybranej ¶redniej czasowej (np. miesi±c). Mo¿esz prze³±czaæ pomiêdzy ¶rednimi czasowymi, pamiêtaj jednak, ¿e spowoduje to opuszczenie trybu rozdwojonego kursora.
+</para>
+</section> <!-- draw3-ext-valuesratio -->
+
+<section id="draw3-ext-meanvalues">
+<title>Warto¶ci ¶rednie parametrów</title>
+<para>
+W Draw 3 mo¿esz uzyskaæ informacjê o podstawowych warto¶ciach statystycznych parametru. S³u¿y 
+do tego zestawienie "Warto¶ci ¶rednie". Pokazuje ono warto¶æ ¶redni±, minimaln±, maksymaln± i 
+(o ile dla wybranego parametru ma to sens) warto¶æ sumaryczn± za podany okres czasu.
+</para>
+<para>
+¯eby otworzyæ okno z warto¶ciami ¶rednimi, wybierz <guimenu>Plik</guimenu> i <guimenu>Warto¶ci 
+¶rednie</guimenu>. Nastêpnie wybierz nazwê parametru, czas brany pod uwagê przy obliczeniach, 
+rodzaj ¶rednich i kliknij <guibutton>OK</guibutton>. W sekcji <emphasis>Warto¶ci</emphasis> 
+pojawi± siê wyliczone warto¶ci dla danego parametru.
+</para>
+<para>
+<figure> <title>Wykres warto¶ci ¶redniej</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-mean_values.png"></imageobject>
+</mediaobject></figure>
+</para>
+<para>
+
+</para>
+</section> <!-- draw3-ext-meanvalues -->
+
+<section id="draw3-ext-chartxy">
+<title>Zale¿no¶ci pomiêdzy parametrami - wykres X/Y</title>
+<para>
+W Draw 3 mo¿esz okre¶liæ korelacjê warto¶ci wybranych parametrów. S³u¿± do tego wykresy X/Y. 
+Mo¿esz je utworzyæ wybieraj±c z menu <guimenu>Plik</guimenu> oraz <guimenu>Wykres X/Y</guimenu>.
+Nastêpnie musisz wybraæ wykresy wy¶wietlane na osiach X i Y, zakres czasowy oraz rodzaj 
+¶rednich. 
+<figure>
+<title>Tworzenie wykresu X/Y</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-xy1.png"></imageobject>
+</mediaobject></figure>
+W oknie obok wykresu X/Y, po prawej jego stronie, umieszczone s± dok³adniejsze informacje dotycz±ce parametrów pokazanych na wykresie: 
+<itemizedlist>
+<listitem><para>warto¶æ w wybranym punkcie wykresu</para></listitem>
+<listitem><para>warto¶æ minimaln±, ¶redni± i maksymaln± w wybranym okresie czasu</para></listitem>
+<listitem><para>odchylenie standardowe</para></listitem>
+<listitem><para>korelacja X/Y</para></listitem>
+<listitem><para>korelacja rangowa X/Y</para></listitem>
+<listitem><para>zakres dat, dla których tworzony jest wykres X/Y</para></listitem>
+<listitem><para>ilo¶æ próbek, które s± wy¶wietlane w wybranym miejscu na wykresie</para></listitem>
+<listitem><para>listê powy¿ej wymienionych próbek</para></listitem>
+</itemizedlist>
+Za pomoc± myszki lub klawiszy strza³ek mo¿esz przemieszczaæ siê pomiêdzy kolejnymi punktami
+wykresu. 
+</para>
+<para>
+<figure> 
+<title>Wykres X/Y</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-xy2.png"></imageobject>
+</mediaobject></figure>
+</para>
+<para>
+W przypadku, gdy podczas definiowania wykresu X/Y wybierzesz u¶rednienie warto¶ci, uzyskasz wykres podobny do poni¿szego:
+</para>
+<para>
+<figure> <title>Wykres X/Y - u¶rednione warto¶ci</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-xy3.png"></imageobject>
+</mediaobject></figure>
+</para>
+<para>
+<emphasis>Uwaga!</emphasis> Je¶li wybierzesz z³y okres czasowy (np. bêdziesz chcia³ wykres danych dla przysz³ego miesi±ca), program poinformuje Ciê o b³êdzie komunikatem: <quote>Brak wspólnych danych dla wybranych wykresów w zadanym okresie czasu</quote>.
+</para>
+<para>
+Parametry wykresu X/Y mo¿na zmieniæ wybieraj±c z menu <guimenu>Wykres</guimenu> a nastêpnie 
+<guimenu>Zmieñ parametry wykresu</guimenu>. Mo¿esz tak¿e w szybki sposób stworzyæ zestaw 
+sk³adaj±cy siê z wykresów tworz±cych wykres X/Y u¿ywaj±c przycisku 
+<guibutton>Id¼ do wykresu</guibutton>. Zestaw mo¿esz zapisaæ i edytowaæ 
+jako zestaw parametrów u¿ytkownika (wiêcej w <xref linkend="draw3-ext-chartset">). 
+</para>
+<para>
+Mo¿liwe jest zwiêkszenie i zmniejszenie skali wykresu. W tym celu, na oknie wykresu X/Y, trzymaj±c prawy klawisz myszy zaznacz interesuj±cy Ciê obszar i zwolnij klawisz:
+<para>
+<figure> <title>Wykres X/Y - skalowanie wykresu</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-xy4.png"></imageobject>
+</mediaobject></figure>
+</para>
+<para>
+W celu powrócenia do pierwotnej skali wybierz z menu <guimenu>Wykres</guimenu> i <guimenu>Oddal wykres</guimenu> lub u¿yj skrótu klawiszowego <keycode>Ctrl + -</keycode>.
+</para>
+<para>
+Wykresy X/Y mo¿esz wydrukowaæ wybieraj±c z menu <guimenu>Plik</guimenu> i 
+<guimenu>Drukuj</guimenu> lub u¿ywaj±c skrótu klawiaturowego <keycode>Ctrl + P</keycode> 
+(wiêcej o samych wydrukach mo¿esz przeczytaæ w rozdziale <xref linkend="draw3-base-prints">). 
+Na wydruku, oprócz samego wykresu, opisane s± równie¿ warto¶ci parametrów opisuj±cych wykres.
+</para>
+<para>
+Opcjê <guimenu>U¶redniaj warto¶ci</guimenu> wprowadzono dla zachowania zgodno¶ci z poprzedni±
+wersj± programu przegl±daj±cego. Powoduje ona podzia³ zakresu warto¶ci 
+wykresu poziomego (z osi X) na maksymalnie 24 obszary, w których warto¶ci Y s± u¶redniane. 
+</para>
+</section> <!-- draw3-ext-chartxy -->
+
+<section id="draw3-ext-filter">
+<title>Filtr</title>
+<para>
+Program przegl±daj±cy umo¿liwia u¶rednianie warto¶ci s±siaduj±cych próbek -
+funkcja filtru. Filtr s³u¿y do wyg³adzania wykresów w celu ³atwiejszego wyznaczenia 
+tendencji wykresów przez wyeliminowanie chwilowych znacznych zmian warto¶ci (tzw. pików). 
+</para>
+<para>
+U¶rednianie jest wyliczane dla ka¿dej próbki oddzielnie i opisane jest wzorem:
+<programlisting>
+warto¶æ po u¿yciu filtra = ( warto¶æ bie¿±cej próbki + suma warto¶ci n próbek przed i n próbek po bie¿±cej próbce) / (2 * n + 1),
+</programlisting>
+gdzie n to stopieñ filtru (z zakresu od 0 do 5).  
+</para>
+<para>
+Z powy¿szego wzoru wynika, ¿e np. dla filtru stopnia pierwszego, warto¶æ bie¿±cej próbki to ¶rednia arytmetyczna tej próbki oraz jednej próbki poprzedzaj±cej i jednej wystêpuj±cej po bie¿±cej próbce. 
+</para>
+<para>
+Domy¶lnym stopniem dla filtrowania jest 0, czyli warto¶æ samej próbki.
+</para>
+<para>
+W celu zmiany stopnia filtra z menu wybierz <guimenu>Narzêdzia</guimenu>, 
+<guimenu>Ustawienia</guimenu>, <guimenu>Filtr</guimenu> a nastêpnie stopieñ filtra. 
+Ustawienie filtra mo¿na te¿ wykonaæ za pomoc± klawiszy <keycode>A</keycode>, <keycode>B</keycode>, <keycode>C</keycode>, <keycode>D</keycode>, <keycode>E</keycode> i <keycode>F</keycode>, które ustawiaj± stopieñ filtra, odpowiednio, od 0 do 5.
+Mo¿liwe jest tak¿e zmiana ustawieñ filtra za pomoc± ikony 
+<inlinemediaobject><imageobject><imagedata
+			fileref="pics/draw3-filtericon.png"></imageobject></inlinemediaobject>
+	na pasku narzêdziowym.
+<figure>
+<title>Wybór stopnia filtrowania próbek</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-filter.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+<para>
+W celu wy³±czenia filtru, ustaw stopieñ filtru na warto¶æ <quote>0</quote>.
+</para>
+</section> <!-- draw3-ext-filter -->
+
+<section id="draw3-parameter-documentation">
+<title>Dokumentacja parametrów</title>
+<para>
+Program przegl±daj±cy udostêpnia mo¿liwo¶æ obejrzenia dokumentacji technicznej do zdefiniowanych parametrów i ich wykresów. Dokumentacja ta zawiera wyja¶nienie czego dotyczy wybrany parametr oraz w jaki sposób jest on wyliczany (dla parametrów zale¿nych od warto¶ci innych parametrów).
+</para>
+<para>
+W celu obejrzenia dokumentacji technicznej parametru, skorzystaj ze skrótu klawiszowego <keycode>Ctrl + H</keycode> lub kliknij prawym klawiszem na tytu³ wykresu (po prawej stronie okna programu) i wybierz <quote>Dokumentacja parametru</quote>, jak to jest widoczne poni¿ej:
+<figure><title>Dokumentacja parametru</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-blockgraph.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+<para>
+Efektem wywo³ania dokumentacji parametru bêdzie otworzenie, w domy¶lnej przegl±darce, strony internetowej, na której umieszczony jest opis parametru.
+</para>
+</section> <!-- draw3-parameter-documentation -->
+
+<section id="draw3-ext-languages">
+<title>Zmiana jêzyka programu Draw3</title>
+<para>
+Program Draw3 pozwala na zmianê jêzyka, w którym wy¶wietlane s± tak komunikaty i menu
+programu, jak i nazwy parametrów. Nazwy parametrów s± t³umaczone dynamicznie na podstawie specjalnego s³ownika (je¶li nazwa parametru nie wystêpuje w s³owniku, wy¶wietlana jest nieprzet³umaczona nazwa parametru).</para>
+<para>
+W celu zmiany jêzyka z menu wybierz <guimenu>Narzêdzia</guimenu>,
+<guimenu>Ustawienia</guimenu> i <guimenu>jêzyk</guimenu>.  Pojawi siê okno, w którym mo¿esz zmieniæ jêzyk u¿ywany w
+programie.
+<figure>
+<title>Zmiana jêzyka w programie Draw3</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-language.png"></imageobject>
+</mediaobject></figure>
+</para>
+<para>
+¯eby zmieniæ jêzyk programu, mo¿esz równie¿ klikn±æ ikonê z flag± 
+<inlinemediaobject><imageobject><imagedata align="center" 
+fileref="pics/draw3-flag_pl_icon.png"></imageobject></inlinemediaobject> widoczn± na dole
+g³ównego okna programu i wybraæ odpowiedni jêzyk.
+<figure>
+<title>Zmiana jêzyka programu Draw3</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-language2.png"></imageobject>
+</mediaobject></figure>
+</para>
+<para>
+Po ka¿dej zmianie jêzyka musisz ponownie uruchomiæ program przegl±daj±cy.
+</para>
+</section> <!-- draw3-ext-languages -->
+
+<section id="draw3-ext-chartset">
+<title>W³asne zestawy wykresów</title>
+<para>
+W programie przegl±daj±cym mo¿esz stworzyæ w³asny zestaw wykresów. W tym celu z menu wybierz <guimenu>Zestawy</guimenu> i <guimenu>Nowy zestaw</guimenu> lub wci¶nij <keycode>Ctrl + A</keycode>. Pojawi siê poni¿sze okno:
+<figure> <title>Edycja zestawu wykresów</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-chart_set.png"></imageobject>
+</mediaobject></figure>
+</para>
+<para>
+Na górze okna wpisz tytu³ nowego zestawu. Po wci¶niêciu <guibutton>Wstaw wykres</guibutton> mo¿esz wstawiæ wykres do swojego zestawu wykresów. Pojawi siê poni¿sze okno:
+<figure> <title>Wybór wykresu</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-chart_set2.png"></imageobject>
+</mediaobject></figure>
+</para>
+<para>
+Je¶li znasz nazwê wykresu, którego szukasz, mo¿esz wpisaæ j± w pole znajduj±ce siê ponad list± 
+parametrów. Dziêki temu lista automatycznie skróci siê pokazuj±c jedynie parametry posiadaj±ce 
+w nazwie wpisany przez Ciebie ci±g znaków.
+</para>
+<para>
+Po wybraniu wykresu kliknij <guibutton>Ok</guibutton>, by zakoñczyæ wyszukiwanie wykresu i 
+dodaæ go do w³asnego zestawu.
+</para>
+<para>
+Mo¿esz równie¿ wybraæ jeden ze zdefiniowanych przez siebie parametrów (dodawanie i edycja
+parametrów - czytaj <xref linkend="draw3-ext-parametersset">). W tym celu w oknie 
+<quote>Edycja zestawu parametrów</quote> kliknij <guibutton>Dodaj parametr</guibutton>. 
+Otworzy siê okno <quote>Lista parametrów u¿ytkownika</quote> ze zdefiniowanymi przez Ciebie 
+parametrami. Je¶li ¿adne parametry nie zosta³y przez Ciebie utworzone, lista bêdzie pusta. 
+W przypadku d³u¿szej listy parametrów, mo¿esz u³atwiæ sobie wyszukiwanie poprzez wpisanie 
+poszukiwanego ci±gu znaków w pole <quote>Szukaj</quote>. Okno ze zdefiniowanymi parametrami 
+mo¿e wygl±daæ podobnie jak na poni¿szym zrzucie ekranu:
+<figure> <title>Lista parametrów u¿ytkownika</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-chart_set2_1.png"></imageobject>
+</mediaobject></figure>
+</para>
+<!-- SUBSECTION dodawanie wykresu do w³asnej listy wykresów -->
+<para>
+Je¶li wybierzesz jeden ze zdefiniowanych przez siebie parametrów, kliknij <guibutton>Ok</guibutton> (lub dwukrotnie kliknij na jego nazwie), by dodaæ go do w³asnego zestawu wykresów. Nastêpnie podaj jego nazwê skrócon±, warto¶æ minimaln± i maksymaln±, zastanów siê czy warto¶æ parametru ma byæ sumowana godzinowo (je¶li tak, to zaznacz odpowiednie pole na dole okna) oraz wybierz kolor wy¶wietlania wykresu poprzez klikniêcie na <guibutton>Wybierz kolor</guibutton>. 
+</para>
+<!-- SUBSECTION zmiana kolejno¶ci wy¶wietlania wykresów -->
+<para>
+Po dodaniu kilku wykresów do w³asnego zestawu mo¿esz ustawiæ ich kolejno¶æ. Mo¿esz to zrobiæ na
+dwa sposoby: kliknij na odpowiedni± strza³kê (w górê lub w dó³) umieszczon± w oknie obok 
+przycisku <guibutton>Wstaw wykres</guibutton> lub kliknij prawym klawiszem na wiersz z 
+wybranym parametrem i wybierz kierunek przesuniêcia wykresu. 
+</para>
+<para>
+Po klikniêciu prawym klawiszem na wiersz z wybranym parametrem mo¿esz tak¿e usun±æ wy¶wietlanie
+parametru z zestawu wykresów, edytowaæ ustawienia wykresu (kolor, zakres warto¶ci) lub edytowaæ 
+sam parametr u¿ytkownika:
+<figure> <title>Edycja w³asnego zestawu parametrów</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-chart_set6.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+</section> <!-- draw3-ext-chartset -->
+
+<section id="draw3-ext-parametersset">
+<title>Definiowanie w³asnych parametrów</title>
+<para>
+Program Draw 3 pozwala u¿ytkownikowi na definiowanie w³asnych parametrów za pomoc± formu³
+jêzyka LUA. Utworzone przez siebie
+parametry mo¿esz dodaæ do swoich zestawów wykresów 
+(patrz: <xref linkend="draw3-ext-chartset">).
+</para>
+<para>
+W celu zdefiniowania w³asnego parametru wybierz z menu <guimenu>Narzêdzia</guimenu> a nastêpnie <guimenu>Parametry u¿ytkownika</guimenu> (mo¿esz te¿ skorzystaæ ze skrótu klawiszowego <keycode>Ctrl + U</keycode>). Pojawi siê poni¿sze nowe okno:
+<figure>
+<title>Pocz±tek tworzenie formu³y parametru</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-parameters_set.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+<para>
+Przyciski <guibutton>Nowy</guibutton>, <guibutton>Edytuj</guibutton> i <guibutton>Usuñ</guibutton> 
+s³u¿± do tworzenia nowego, edycji lub usuwania istniej±cego parametru. Tworz±c lub edytuj±c 
+parametr musisz okre¶liæ:
+<itemizedlist>
+<listitem><para>
+Nazwê parametru - dowolny ci±g znaków identyfikuj±cy parametr.
+</para></listitem>
+<listitem><para>
+Sposób liczenia ¶redniej - czy najpierw liczymy formu³ê dla wszystkich próbek i pó¼niej 
+wyci±gamy ¶redni± z tych próbek, czy te¿ formu³ê stosujemy do wyliczonych ¶rednich.
+</para></listitem>
+<listitem><para>
+Precyzjê wy¶wietlania parametru (ilo¶æ miejsc po przecinku).
+</para></listitem>
+<listitem><para>
+Symbol jednostki parametru.
+</para></listitem>
+<listitem><para>
+Opcjonalnie - datê startow± parametru - jest to wskazówka dla programu kiedy ma skoñczyæ szukaæ
+wstecz warto¶ci parametru. Przyk³adowo, dla parametru o sta³ej warto¶ci liczbowej nie mo¿na
+w prosty sposób stwierdziæ, w jakim zakresie dat parametr jest okre¶lony - tak naprawdê
+okre¶lony jest dla wszystkich dat. Podaj±c datê startow± podpowiadamy programowi, ¿eby nie
+szuka³ warto¶ci parametru przed podan± dat±.
+</para></listitem>
+<listitem><para>
+Konfiguracjê bazow± dla parametru - konfiguracja ta okre¶la np. zakres dat w których bêdzie 
+liczony parametr.
+</para></listitem>
+</itemizedlist>
+<para>
+Sam± formu³ê wstawiamy w okienko formu³y, piszemy j± w jêzyku skryptowym LUA - mo¿esz u¿ywaæ wyra¿eñ arytmetycznych, odwo³ywaæ siê do 
+warto¶ci innych parametrów. Wiêcej na ten temat znajdziesz w rozdziale 
+<xref linkend="draw3-ext-luamath"> oraz w 
+<ulink url="http://www.szarp.com.pl/howto/ipk/html/draw-definable-lua.html">dokumentacji
+technicznej systemu SZARP</ulink>.
+</para>
+<para>
+Przy tworzeniu formu³y przydatne s± umieszczone pod okienkiem formu³y przyciski:
+<itemizedlist>
+<listitem><para>
+<guibutton>&lt;</guibutton> cofa ostatni± zmianê formu³y.
+</para></listitem>
+<listitem><para>
+<guibutton>&gt;</guibutton> powtarza ostatni± zmianê formu³y.
+</para></listitem>
+<listitem><para>
+<guibutton>+</guibutton>, <guibutton>-</guibutton>, <guibutton>*</guibutton>,
+<guibutton>/</guibutton> - wstawiaj± operatory arytmetyczne.
+</para></listitem>
+<listitem><para>
+<guibutton>&lt;W&gt;</guibutton> wstawia odwo³anie do warto¶ci innego wykresu.
+</para></listitem>
+<listitem><para>
+<guibutton>&lt;P&gt;</guibutton> wstawia odwo³anie do warto¶ci innego parametru
+u¿ytkownika.
+</para></listitem>
+</itemizedlist>
+<para>
+Na poni¿szym zrzucie ekranu pokazane jest dodanie nowego parametru wyliczaj±cego
+¶redni± arytmetyczn± <quote>temperatury wody powrotnej z sieci c.o.</quote> oraz
+<quote>temperatury wody wyj¶ciowej do sieci c.o.</quote>.
+<figure>
+<title>Tworzenie w³asnych parametrów - wynik tworzenia formu³y</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-parameters_set3.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+<para>
+
+</para>
+</section> <!-- draw3-ext-parametersset -->
+
+<section id="draw3-ext-errorwindow">
+<title>Okno komunikatów</title>
+<para>
+W przypadku b³êdnie zdefiniowanych formu³ w parametrach
+u¿ytkownika program wy¶wietla okno komunikatów. Znajduje siê w nim informacja 
+o nieprawid³owej formule. Samo okno wygl±da nastêpuj±co:
+<figure>
+<title>Okno komunikatów</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-error_window.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+<para>
+Domy¶lnie okno pojawia siê w sytuacji wyst±pienia b³êdu. Mo¿esz to zmieniæ (co jest niezalecane) odznaczaj±c opcjê <quote>Pokazuj okno automatycznie</quote>.
+</para>
+<para>
+Za pomoc± przycisku <guibutton>Wyczy¶æ</guibutton> mo¿esz wyczy¶ciæ listê
+komunikatów, przyciskiem <guibutton>Schowaj</guibutton> zamkniesz okno.
+</para>
+</section> <!-- draw3-ext-errorwindow -->
+
+<!--
+<section id="draw3-ext-remarks">
+<title>Komentarze do wykresów</title>
+<para>
+W niedalekiej przysz³o¶ci program przegl±daj±cy zostanie wzbogacony o mo¿liwo¶æ dodawania (przez uprawnionych u¿ytkowników) uwag do poszczególnych wykresów oraz ich odczyt (dla wszystkich). Pozwoli to na zwrócenie szczególnej uwagi na bardziej interesuj±ce fragmenty wykresów parametrów.
+</para>
+<para>
+Okno uwag mo¿esz uruchomiæ wybieraj±c z menu <guimenu>Narzêdzia</guimenu> i <guimenu>Uwagi</guimenu>. Tymczasowo okno nie umo¿liwia wstawiania uwag.
+</para>
+</section> -->
+<!-- draw3-ext-remarks -->
+
+<section id="draw3-ext-reloadconfiguration">
+<title>Prze³adowanie konfiguracji</title>
+<para>
+Program Draw 3 prze³adowanie konfiguracji parametrów. Jest to jednak mo¿liwo¶æ, któr± powinno 
+siê wykonaæ na wyra¼n± pro¶bê pracowników dzia³u informatycznego firmy Praterm S.A., 
+poniewa¿ program przegl±daj±cy sam wykrywa zmianê konfiguracji 
+i wczytuje j± samodzielnie, bez interakcji z u¿ytkownikiem.
+</para>
+<para>
+W celu prze³adowania konfiguracji wybierz z menu <guimenu>Narzêdzia</guimenu> i <guimenu>Prze³aduj konfiguracjê</guimenu>.
+</para>
+</section> <!-- draw3-ext-reloadconfiguration -->
+
+<section id="draw3-ext-importdefinable">
+<title>Import okien definiowalnych z poprzedniej wersji programu</title>
+<para>
+Dla osób u¿ywaj±cych poprzedniej wersji programu przegl±daj±cego Draw 3 umo¿liwia import 
+zdefiniowanych zestawów wykresów (nazywanych w poprzedniej wersji programu
+<quote>Oknami definiowalnymi</quote>). Je¶li chcesz skorzystaæ z tej mo¿liwo¶ci, 
+wybierz z menu <guimenu>Narzêdzia</guimenu> i 
+<guimenu>Importuj okna definiowalne z wcze¶niejszej wersji programu</guimenu> lub u¿yj skrótu
+klawiszowego <keycode>Ctrl + I</keycode>.
+Otworzy siê okno, w którym nale¿y wybraæ plik z zapisan± konfiguracj± - zwykle jest zapisany 
+w katalogu domowym u¿ytkownika pod nazw± zaczynaj±c± siê od <filename>ekrn</filename>, 
+potem jest nazwa konfiguracji (np. byto dla Bytowa) i z rozszerzeniem <filename>def</filename>:
+<figure>
+<title>Import okien definiowalnych</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-importdefinable.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+</section> <!-- draw3-ext-importdefinable -->
+
+<section id="draw3-ext-remoteparametersset">
+<title>Zdalne zmienianie ustawieñ parametrów</title>
+<para>
+Program przegl±daj±cy daje wybranym u¿ytkownikom mo¿liwo¶æ zdalnego zadania
+parametrów regulatorów ZET stosowanych w ciep³owniach Pratermu. Dostêp do tej
+funkcjonalno¶ci wymaga konta na serwerze Pratermu oraz odpowiednich uprawnieñ do
+dostêpu do parametrów poszczególnych ciep³owni.
+</para>
+<para>
+Je¶li posiadasz odpowiednie uprawnienia, z menu wybierz <guimenu>Narzêdzia</guimenu>
+ i <guimenu>Ustaw parametry</guimenu> lub u¿yj skrótu klawiaturowego <keycode>Ctrl + O</keycode>. Otworzysz okno potwierdzaj±ce twoje uprawnienia do zmian parametrów:
+<figure>
+<title>Zdalne zmienianie parametrów - autoryzacja</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-parameters_remote_set3.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+<para>
+Po pomy¶lnym przebiegu autoryzacji program przegl±daj±cy po³±czy siê z serwerem i poka¿e Ci okno:
+<figure>
+<title>Zdalne zmienianie parametrów - sta³ych</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-parameters_remote_set.png"></imageobject>
+</mediaobject>
+</figure>
+Po³o¿ona na górze okna lista pozwala Ci wybraæ urz±dzenie, którego parametry pracy chcesz modyfikowaæ 
+(w tym wypadku jest to sterownik kot³a nr 5). Program pozwala Ci modyfikowaæ warto¶æ sta³ych oraz tzw.
+paczek czasowych. Ka¿dy z tych typów warto¶ci znajduje siê w osobnej zak³adce.
+</para>
+<para>
+W zak³adce 'Sta³e' mo¿esz zmieniæ warto¶ci parametrów sta³ych. Aby to zrobiæ, kliknij na pole warto¶ci a nastêpnie 
+wpisz now± warto¶æ. Parametry sta³e maj± dopuszczalne przedzia³y warto¶ci, w których musz± siê zawieraæ.
+Je¿eli wprowadzona przez Ciebie warto¶æ wychodzi poza dopuszczalny przedzia³, zostaniesz o tym
+poinformowany.
+<figure>
+<title>Zdalne zmienianie parametrów - przekroczenie zakresu</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-parameters_remote_set4.png"></imageobject>
+</mediaobject>
+</figure>
+Aby wprowadzone przez Ciebie zmiany zosta³y wys³ane na urz±dzenie (a tym samym odnios³y skutek), wybierz z menu <guimenu>Operacje</guimenu> opcjê
+<guimenu>Ustaw sta³e</guimenu>.
+</para>
+<para>
+W zak³adce 'Paczki' znajdziesz listê paczek aktualnie wybranego regulatora. Gdy klikniesz w numer lub opis paczki, pojawi siê
+okienko zawieraj±ce listê. Na li¶cie znajduj± siê kolejne chwile czasowe, w których paczka zmienia swoj± warto¶æ. W oknie tym
+mo¿esz dodawaæ nowe warto¶ci (wybieraj±c przycisk <guimenu>Dodaj</guimenu>), edytowaæ ju¿ istniej±ce (klikaj±c prawym przyciskiem
+myszy na warto¶ci, nastêpnie wybieraj±c <guimenu>Edytuj</guimenu> z menu, które siê pojawi³o). Warto¶ci mo¿esz te¿ usuwaæ (przycisk
+<guimenu>Usuñ</guimenu>).
+<note><para>
+Program stara siê byæ "inteligentny" w tym sensie, ¿e wszystkie bezpo¶rednio nastêpuj±ce po sobie identyczne warto¶ci s± scalane razem.
+Nie zdziw siê, je¿eli np. maj±c ostatni± warto¶æ ustawion± na godzinê 10 wynosz±c± np. 10Pa, dodasz now± warto¶æ wynosz±c± te¿
+10Pa na godzinê 11, nie zobaczysz nowego wpisu - pierwsza warto¶æ "po³knie" warto¶æ nowo dodan±
+</para></note>
+<figure>
+<title>Zdalne zmienianie parametrów - paczek</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-parameters_remote_set5.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+<para>
+Z poziomu programu mo¿esz tak¿e wybraæ rodzaj paczek czasowych regulatora. W tym celu z menu wybierz 
+<guimenu>Operacje</guimenu> a nastêpnie  <guimenu>Ustaw rodzaj paczek</guimenu>. Pojawi Ci siê okno, 
+w którym bêdziesz móg³ dokonaæ wyboru:
+<figure>
+<title>Zdalne zmienianie parametrów - wybór rodzaju paczek</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-parameters_remote_set2.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+<para>
+Z pomoc± opcji menu mo¿esz równie¿:
+<itemizedlist>
+<listitem><para>od¶wie¿yæ warto¶ci parametrów aktualnego regulatora - wybierz <guimenu>Operacje</guimenu>, a nastêpnie <guimenu>Pobierz (od¶wie¿) warto¶ci</guimenu></para></listitem>
+<listitem><para>zresetowaæ ustawienia paczek oraz sta³ych do warto¶ci domy¶lnych - wybierz <guimenu>Operacje</guimenu> a nastêpnie <guimenu>Zresetuj warto¶ci</guimenu></para></listitem>
+</itemizedlist>
+</para>
+</section> <!-- draw3-ext-remoteparametersset -->
+
+<section id="draw3-ext-cmd">
+<title>Uruchamianie Draw 3 z linii komend</title>
+<note><para>
+Linia komend jest dostêpna albo bezpo¶rednio (pracuj±c pod Linuksem), albo (w przypadku systemu Windows) za pomoc± emulatora X-terminala (np. Cygwin).
+</para>
+<para>
+Aby uruchomiæ dowolny program <quote>z linii poleceñ</quote>, musisz uruchomiæ
+<emphasis>pow³okê</emphasis> (ang. shell) pozwalaj±c± na wpisywanie poleceñ.
+Mo¿esz to zrobiæ uruchamiaj±c na przyk³ad program o nazwie
+<application>Terminal</application> lub <application>Konsola</application> -
+znajdziesz go w menu KDE w podmenu <guimenu>System</guimenu>.</para>
+<para>Po uruchomieniu pow³oki zobaczysz znak zachêty zawieraj±cy np. Twoj±
+nazwê u¿ytkownika, nazwê komputera i aktualny katalog. Po znaku zachêty mo¿esz
+wpisywaæ polecenia lub nazwy programów do uruchomienia. Opcje programu
+podajemy po jego nazwie oddzielaj±c je dowoln± ilo¶ci± spacji. Je¿eli program
+nie znajduje siê w domy¶lnej lokalizacji dla programów (a tak jest np. w
+przypadku programów systemu SZARP), to musisz podaæ przed nazw± pe³n± ¶cie¿kê
+do programu, oddzielaj±c poszczególne katalogi znakiem <emphasis>/</emphasis>.
+Np. pe³na ¶cie¿ka do programu Draw 3 ma postaæ
+<filename>/opt/szarp/bin/draw3</filename>.
+</para></note>
+<para>
+Draw 3 mo¿na uruchomiæ z linii komend. Wpisuj±c: 
+<programlisting>
+/opt/szarp/bin/draw3 -h
+</programlisting>
+uzyska siê listê opcji programu. ¯eby uruchomiæ Draw 3 dla konkretnej bazy, u¿ywamy opcji <emphasis>-Dprefix=&lt;nazwa&gt;</emphasis>, gdzie <emphasis>&lt;nazwa&gt;</emphasis> zastêpujemy oczywi¶cie nazw± wybranej bazy. Przyk³adowo dla bazy w Sztumie wpisujemy:
+<programlisting>
+/opt/szarp/bin/draw3 -Dprefix=sztu
+</programlisting>
+</para>
+<para>
+W przypadku systemu Windows mo¿esz równie¿ uruchomiæ program przegl±daj±cy na komputerze lokalnym (po jego zainstalowaniu), tak¿e z linii poleceñ. Liniê poleceñ uruchom na jeden z 3 sposobów:
+<itemizedlist>
+<listitem><para>z menu wybierz <guimenu>Start</guimenu>-><guimenu>Wszystkie Programy</guimenu>-><guimenu>Akcesoria</guimenu>-><guimenu>Wiersz polecenia</guimenu></para></listitem>
+<listitem><para>z menu wybierz <guimenu>Start</guimenu>-><guimenu>Uruchom...</guimenu>, wpisz <emphasis>cmd</emphasis> i wci¶nij Enter</para></listitem>
+<listitem><para>u¿yj skrótu <keycode>Win</keycode> (klawisz z logo Windows)<keycode> + R</keycode>, wpisz <emphasis>cmd</emphasis> i wci¶nij Enter.</para></listitem>
+</itemizedlist>
+</para>
+<para>
+<figure>
+<title>Uruchomienie wiersza poleceñ</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-command_line.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+<para>
+<figure>
+<title>Wiersz poleceñ</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-command_line2.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+<para>
+Nastêpnie w wierszu polecenia uruchom program przegl±daj±cy (przyk³ad dotyczy katalogu podanego przy domy¶lnych opcjach instalacji):
+<programlisting>
+"c:\Program Files\SZARP\bin\draw.exe" /base:nazwa_bazy
+</programlisting>
+</para>
+</section> <!-- draw3-ext-cmd -->
+
+<section id="draw3-ext-luamath">
+<title>Funkcje matematyczne Lua</title>
+<note><para>
+Przy definiowaniu w³asnych parametrów (zobacz: <xref linkend="draw3-ext-parametersset">) mo¿esz, obok podstawowych dzia³añ arytmetycznych, u¿yæ bardziej z³o¿onych funkcji matematycznych. Wykorzystuje siê do tego bibliotekê <emphasis>math</emphasis>, w której funkcje s± zdefiniowane. 
+</para></note>
+<para>
+Poni¿ej znajdziesz listê funkcji, których mo¿esz u¿yæ podczas definiowania. ¯eby ich u¿yæ, musisz poprzedziæ ich nazwê odwo³aniem do biblioteki <emphasis>math</emphasis>, czyli korzystaj±c z funkcji <quote>sqrt</quote> (wyliczenie pierwiastka) musisz wpisaæ:
+<programlisting>
+math.sqrt(100)
+</programlisting>
+</para>
+<para>
+<table frame="all"><title>Funkcje Lua do tworzenia w³asnych parametrów</title>
+<tgroup cols="3" align="left" colsep="1" rowsep="1">
+<colspec colname="col1" align="left" colwidth="1*"> <!-- Identyfikatory kolumn -->
+<colspec colname="col2" align="left" colwidth="2*">
+<colspec colname="col3" align="left" colwidth="1*">
+<thead>
+<row>
+<entry align="center">Funkcja</entry>
+<entry align="center">Wynik dzia³ania funkcji</entry>
+<entry align="left">Przyk³ad u¿ycia</entry>
+</row>
+</thead>
+<tbody>
+
+<row>
+<entry align="left">abs(x)</entry>
+<entry align="left">&nbsp;warto¶æ absolutna argumentu x</entry>
+<entry><programlisting>math.abs(4)</programlisting></entry>
+</row>
+
+<row>
+<entry>sin(x), cos(x), tan(x)</entry>
+<entry>&nbsp;sinus, cosinus, tangens k±ta x podanego w radianach</entry>
+<entry><programlisting>math.sin(0)</programlisting></entry>
+</row>
+
+<row>
+<entry>asin(x), acos(x), atan(x)</entry>
+<entry>&nbsp;arcus sinus, arcus cosinus, arcus tangens warto¶ci x</entry>
+<entry><programlisting>math.asin(1)</programlisting></entry>
+</row>
+
+<row>
+<entry>sinh(x), cosh(x), tanh(x)</entry>
+<entry>&nbsp;sinus hiperboliczny, cosinus hiperboliczny, tangens hiperboliczny warto¶ci x</entry>
+<entry><programlisting>math.sinh()</programlisting></entry>
+</row>
+
+<row>
+<entry>ceil(x), floor(x)</entry>
+<entry>&nbsp;funkcje zaokr±glaj±ce liczbê x do najbli¿szej warto¶ci ca³kowitej, odpowiednio, w górê i w dó³</entry>
+<entry><programlisting>math.ceil(4.5)</programlisting></entry>
+</row>
+
+<row>
+<entry>deg(x), rad(x)</entry>
+<entry>&nbsp;Zamiana z radianów na stopnie (deg) oraz ze stopni na radiany (rad)</entry>
+<entry><programlisting>math.rad(90)</programlisting></entry>
+</row>
+
+<row>
+<entry>exp(x)</entry>
+<entry>&nbsp;podniesienie e do potêgi x</entry>
+<entry><programlisting>math.exp(3)</programlisting></entry>
+</row>
+
+<row>
+<entry>log(x)</entry>
+<entry>&nbsp;logarytm naturalny z x</entry>
+<entry><programlisting>math.log(10)</programlisting></entry>
+</row>
+
+<row>
+<entry>log10(x)</entry>
+<entry>&nbsp;logarytm o podstawie 10 z x</entry>
+<entry><programlisting>math.log10(100)</programlisting></entry>
+</row>
+
+<row>
+<entry>pow(x,y)</entry>
+<entry>&nbsp;x podniesione do potêgi y (mo¿na te¿ u¿yæ x^y)</entry>
+<entry><programlisting>math.pow(2,3)</programlisting></entry>
+</row>
+
+<row>
+<entry>sqrt(x)</entry>
+<entry>&nbsp;pierwiastek z x</entry>
+<entry><programlisting>math.sqrt(9)</programlisting></entry>
+</row>
+
+<row>
+<entry>min(x,y,z)</entry>
+<entry>&nbsp;warto¶æ minimalna z podanej listy argumentów</entry>
+<entry><programlisting>math.min(7,4,12)</programlisting></entry>
+</row>
+
+<row>
+<entry>max(x,y,z)</entry>
+<entry>&nbsp;warto¶æ maksymalna z podanej listy argumentów</entry>
+<entry><programlisting>math.max(3,4.5,1)</programlisting></entry>
+</row>
+
+<row>
+<entry>modf(x)</entry>
+<entry>&nbsp;dwa argumenty - warto¶æ ca³kowita x oraz warto¶æ po przecinku</entry>
+<entry><programlisting>math.modf(5.3)</programlisting></entry>
+</row>
+
+<row>
+<entry>random([x],[y])</entry>
+<entry>&nbsp;warto¶æ losowa z zakresu: (0;1), gdy uruchomiona bez argumentu, (0;x) - podany jeden argument, (x;y) - podane dwa argumenty</entry>
+<entry><programlisting>math.random(23,80)</programlisting></entry>
+</row>
+
+<row>
+<entry>huge</entry>
+<entry>&nbsp;nieskoñczono¶æ (czasem mo¿e byæ przydatna w po³±czeniu z funkcjami trygonometrycznymi)</entry>
+<entry><programlisting>math.huge</programlisting></entry>
+</row>
+
+<row>
+<entry>pi</entry>
+<entry>&nbsp;warto¶æ sta³ej pi</entry>
+<entry><programlisting>math.pi</programlisting></entry>
+</row>
+
+</tbody>
+</tgroup>
+</table>
+</para>
+<para>
+Wiêcej o pisaniu w³asnych funkcji mo¿esz przeczytaæ w rozdziale <ulink url="http://www.szarp.com.pl/howto/ipk/html/draw-definable-lua.html">Parametry definiowalne LUA</ulink> dokumentu <ulink url="http://www.szarp.com.pl/howto/ipk/html/szarp.html">System SZARP - dokumentacja techniczna</ulink>.
+</para>
+
+</section> <!-- draw3-ext-luamath -->
+
+<section id="draw3-ext-draw2draw3comparison">
+<title>Porównanie Draw 3 z poprzedni± wersj± programu</title>
+<para>
+Program przegl±daj±cy w trzeciej wersji zachowa³ wiêkszo¶æ funkcji poprzednich wersji 
+dodaj±c tak¿e now± funkcjonalno¶æ. Zmianie uleg³a terminologia - zamiast terminu
+<quote>Okno</quote> i <quote>Okno definiowalne</quote> u¿ywane s± terminy
+<quote>Zestaw wykresów</quote> i <quote>Zestaw u¿ytkownika</quote>.
+<para>
+Zmiany funkcjonalno¶ci w porównaniu z poprzedni± wersj± umieszczone s± w poni¿szej tabeli:
+<table frame="all"><title>Zmiany funkcjonalno¶ci pojawiaj±ce siê w trzeciej wersji programu przegl±daj±cego</title>
+<tgroup cols="4" align="left" colsep="1" rowsep="1">
+<colspec colname="col1" align="left" colwidth="1*"> <!-- Identyfikatory kolumn -->
+<colspec colname="col2" align="left" colwidth="2*">
+<colspec colname="col3" align="left" colwidth="2*">
+<colspec colname="col4" align="left" colwidth="2*">
+<thead>
+<row>
+<entry>czego dotyczy zmiana</entry>
+<entry align="center">Draw 2</entry>
+<entry align="center">Draw 3</entry>
+<entry>odno¶nik do dokumentacji</entry>
+</row>
+</thead>
+<tbody>
+
+<row>
+<entry align="left">Filtr</entry>
+<entry align="left">
+u¿ycie ograniczone do ¶rednich dziennych, wyklucza u¿ycie rozdwojonego kursora, klawiszami liter od <keycode>a</keycode> do <keycode>f</keycode> mo¿liwe by³o prze³±czanie stopnia filtra
+</entry>
+<entry align="left">
+dzia³a dla wszystkich rodzajów ¶redniej, mo¿e byæ u¿yty razem z rozdwojonym kursorem
+</entry>
+<entry align="left"><xref linkend="draw3-ext-filter"></entry>
+</row>
+
+<row>
+<entry align="left">Wersja dla systemu Windows</entry>
+<entry>brak</entry>
+<entry>tworzona razem z wersj± dla systemu Linux (technologia WxWidgets)</entry>
+<entry align="left"></entry>
+</row>
+
+<row>
+<entry align="left">okna i zak³adki do ³atwiejszego przegl±dania zestawów wykresów</entry>
+<entry>brak</entry>
+<entry>nowa funkcja</entry>
+<entry align="left"><xref linkend="draw3-base-tabs"></entry>
+</row>
+
+<row>
+<entry align="left">U³atwienie wyszukiwania zestawów wykresów</entry>
+<entry>brak</entry>
+<entry>nowa funkcja</entry>
+<entry align="left"><xref linkend="draw3-base-charts"></entry>
+</row>
+
+<row>
+<entry align="left">Wyszukiwanie parametrów</entry>
+<entry>brak</entry>
+<entry>nowa funkcja</entry>
+<entry align="left"><xref linkend="draw3-base-find-parameter"></entry>
+</row>
+
+<row>
+<entry align="left">Definiowanie w³asnych zestawów wykresów</entry>
+<entry>brak</entry>
+<entry>nowa funkcja</entry>
+<entry align="left"><xref linkend="draw3-ext-chartset"></entry>
+</row>
+
+<row>
+<entry align="left">Wielojêzyczno¶æ</entry>
+<entry>brak</entry>
+<entry>nowa funkcja - mo¿liwo¶æ ogl±dania interfejsu programu oraz nazw parametrów w ró¿nych jêzykach</entry>
+<entry align="left"><xref linkend="draw3-ext-languages"></entry>
+</row>
+
+<row>
+<entry align="left">Definiowanie w³asnych parametrów</entry>
+<entry>brak</entry>
+<entry>nowa funkcja</entry>
+<entry align="left"><xref linkend="draw3-ext-parametersset"></entry>
+</row>
+
+<row>
+<entry align="left">Obliczanie korelacji parametrów</entry>
+<entry>brak</entry>
+<entry>nowa funkcja</entry>
+<entry align="left"><xref linkend="draw3-ext-chartxy"></entry>
+</row>
+
+<row>
+<entry align="left">Informacja o zapisanej (procentowej) ilo¶ci próbek parametru na wykresie</entry>
+<entry>brak</entry>
+<entry>nowa funkcja</entry>
+<entry align="left"><xref linkend="draw3-base-win"></entry>
+</row>
+
+<row>
+<entry align="left">Dynamiczne (wielow±tkowe) ³adowanie parametrów</entry>
+<entry>brak</entry>
+<entry>nowa funkcja</entry>
+<entry align="left"></entry>
+</row>
+
+<row>
+<entry align="left">Obs³uga natywnego mechanizmu drukowania</entry>
+<entry>brak</entry>
+<entry>nowa funkcja</entry>
+<entry align="left"><xref linkend="draw3-base-prints"></entry>
+</row>
+
+</tbody>
+</tgroup>
+</table>
+</para>
+
+</section> <!-- draw3-ext-draw2draw3comparison -->
+
+<section id="draw3-ext-shortcuts">
+<title>Skróty klawiaturowe</title>
+<para>
+Zmiana trybu wy¶wietlania ¶rednich:
+<itemizedlist>
+<listitem><para>zmiana trybu wy¶wietlania na roczny - <keycode>Alt + R</keycode></para></listitem>
+<listitem><para>zmiana trybu wy¶wietlania na miesiêczny - <keycode>Alt + M</keycode></para></listitem>
+<listitem><para>zmiana trybu wy¶wietlania na tygodniowy - <keycode>Alt + T</keycode></para></listitem>
+<listitem><para>zmiana trybu wy¶wietlania na dobowy - <keycode>Alt + D</keycode></para></listitem>
+<listitem><para>zmiana trybu wy¶wietlania na sezonowy - <keycode>Alt + S</keycode></para></listitem>
+</itemizedlist>
+</para>
+<para>
+Nawigacja:
+<itemizedlist>
+<listitem><para>przesuniêcie o 6 próbek (w oknie ze ¶rednimi 10-cio minutowymi) - <keycode>Shift + (klawisz strza³ki w prawo lub w lewo)</keycode></para></listitem>
+<listitem><para>przesuwanie o d³ugo¶æ jednego ekranu w lewo po wykresie - <keycode>PgUp</keycode></para></listitem>
+<listitem><para>przesuwanie o d³ugo¶æ jednego ekranu w prawo po wykresie - <keycode>PgDown</keycode></para></listitem>
+<listitem><para>skok pod datê - <keycode>Ctrl + J</keycode></para></listitem>
+<listitem><para>kopiowanie lokalizacji - <keycode>Ctrl + C</keycode></para></listitem>
+<listitem><para>wklejanie lokalizacji - <keycode>Ctrl + V</keycode></para></listitem>
+<listitem><para>blokowanie wykresu - <keycode>Ctrl + B</keycode></para></listitem>
+</itemizedlist>
+</para>
+<para>
+Wykresy pomocnicze:
+<itemizedlist>
+<listitem><para>Warto¶ci sumaryczne - <keycode>Ctrl + G</keycode></para></listitem>
+<listitem><para>¦rednie procentowe - <keycode>Ctrl + Alt + S</keycode></para></listitem>
+<listitem><para>Stosunek warto¶ci - <keycode>Shift + Ctrl + S</keycode></para></listitem>
+</itemizedlist>
+</para>
+<para>
+Wyszukiwanie:
+<itemizedlist>
+<listitem><para>wyszukanie wykresów parametrów- <keycode>Ctrl + F</keycode></para></listitem>
+<listitem><para>wyszukanie zestawu wykresów - <keycode>Ctrl + Z</keycode></para></listitem>
+</itemizedlist>
+</para>
+<para>
+Filtr - u¶rednianie warto¶ci s±siaduj±cych próbek
+<itemizedlist>
+<listitem><para>zmiana poziomu u¶redniania (od 0 do 5) - od <keycode>A</keycode> do <keycode>F</keycode></para></listitem></itemizedlist>
+</para>
+<para>
+Wydruki i ustawienia wydruków:
+<itemizedlist>
+<listitem><para>zmiana ilo¶ci drukowanych osi - <keycode>Ctrl + X</keycode></para></listitem>
+<listitem><para>drukowanie wykresów - <keycode>Ctrl + P</keycode></para></listitem>
+</itemizedlist>
+</para>
+<para>
+Okna i zak³adki:
+<itemizedlist>
+<listitem><para>wy¶wietlanie okna w trybie pe³noekranowym - <keycode>F11</keycode></para></listitem>
+<listitem><para>otwarcie nowego okna - <keycode>Ctrl + N</keycode></para></listitem>
+<listitem><para>otwarcie nowej zak³adki - <keycode>Ctrl + T</keycode></para></listitem>
+<listitem><para>przej¶cie do nastêpnej zak³adki - <keycode>Ctrl + PgDown</keycode></para></listitem>
+<listitem><para>przej¶cie do poprzedniej zak³adki - <keycode>Ctrl + PgUp</keycode></para></listitem>
+<listitem><para>zamkniêcie bie¿±cej zak³adki - <keycode>Ctrl + W</keycode></para></listitem>
+<listitem><para>zamkniêcie bie¿±cego okna - <keycode>Ctrl + Q</keycode></para></listitem>
+</itemizedlist>
+</para>
+<para>
+W³asne parametry i zestawy wykresów:
+<itemizedlist>
+<listitem><para>stworzenie w³asnego zestawu wykresów - <keycode>Ctrl + A</keycode></para></listitem>
+<listitem><para>edycja w³asnego zestawu wykresów - <keycode>Ctrl + E</keycode></para></listitem>
+<listitem><para>zdefiniowanie w³asnego parametru - <keycode>Ctrl + U</keycode></para></listitem>
+</itemizedlist>
+</para>
+<para>
+Pomoc:
+<itemizedlist>
+<listitem><para>wy¶wietlenie pomocy - <keycode>F1</keycode></para></listitem>
+<listitem><para>wy¶wietlenie pomocy kontekstowej - <keycode>Shift + F1</keycode></para></listitem>
+<listitem><para>wy¶wietlenie dokumentacji wy¶wietlanego parametru - <keycode>Ctrl + H</keycode></para></listitem>
+</itemizedlist>
+</para>
+<para>
+Inne:
+<itemizedlist>
+<listitem><para>od¶wie¿enie warto¶ci parametrów - <keycode>Ctrl + R</keycode></para></listitem>
+<listitem><para>uruchomienie/zamkniêcie trybu rozdwojonego kursora - <keycode>Backspace</keycode></para></listitem>
+<listitem><para>import okien definiowalnych z poprzedniej wersji programu - <keycode>Ctrl + I</keycode></para></listitem>
+<listitem><para>zdalne zmienianie ustawieñ parametrów - <keycode>Ctrl + O</keycode></para></listitem>
+</itemizedlist>
+</para>
+</section> <!-- draw3-ext-shortcuts -->
+
+</chapter> <!-- draw3-ext -->

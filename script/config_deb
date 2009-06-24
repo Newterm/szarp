@@ -1,0 +1,107 @@
+#!/bin/sh
+# SZARP: SCADA software 
+# 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+# $Id: config_deb 4393 2007-09-13 16:37:10Z reksio $
+# Skrypt wykonujacy konfiguracje SZARP'a
+
+SZARPDIR="/opt/szarp"
+ANSWER=""
+RESDIR=$SZARPDIR/resources
+
+
+konfiguracja() {
+	DIR=$1;
+	PREFIX=$2;
+
+	[ -d $DIR ] || install -d $DIR;
+
+	if [ ! -e $DIR/szarp.cfg ]; then
+		#"fix" the old configuration style and handle case when package configuration
+		#is not in sync with real configuration
+		if [ -e /etc/szarp/szarp.cfg ]; then
+			cp /etc/szarp/szarp.cfg $DIR;
+			return;
+		else
+			sed -e s?__INSTALL_DIR__?`echo $SZARPDIR | sed s/'\/'/'\\\\\/'/g`?g  \
+			    -e s?__HELPCOMMAND__?$SZARPDIR/bin/wxhelp?g \
+			    -e s?__PREFIX__?$PREFIX?g \
+				< $RESDIR/SZARP_CFG_TEMPLATE \
+				> /tmp/szarp.cfg.tmp;
+		fi
+	else
+		return	
+	fi;
+
+
+	if [ -n "$PREFIX" ]; then
+		#uncomment the line with fixed prefix and comment line with prefix set by hostname
+		sed -e 's/\# \(\$prefix\$.*$\)/\1/g' \
+		    -e 's/\(\$prefix\$.*hostname.*\)/#\1/g' \
+		    < /tmp/szarp.cfg.tmp \
+		    > $DIR/szarp.cfg
+	       	
+	    	rm /tmp/szarp.cfg.tmp;
+    	else
+		mv /tmp/szarp.cfg.tmp $DIR/szarp.cfg;
+	fi;
+}
+
+parstart() {
+	DIR=$1;
+	PREFIX=$2;
+
+	[ -d $DIR ] || install -d $DIR;
+
+	if [ ! -e $DIR/parstart.cfg ]; then
+		#"fix" the old configuration style and handle case when package configuration
+		#is not in sync with real configuration
+		if [ -e /etc/szarp/parstart.cfg ]; then
+			cp /etc/szarp/parstart.cfg $DIR;
+		else	
+			sed -e s/__INSTALL_DIR__/`echo $SZARPDIR | sed s/'\/'/'\\\\\/'/g`/g \
+			    -e s/__PREFIX__/$PREFIX/g \
+			    < $RESDIR/parstart_cfg_TEMPLATE \
+			    > $DIR/parstart.cfg 
+		fi
+
+	fi	
+
+	ln -sf $DIR/parstart.cfg /etc/szarp
+
+}
+
+[ -d $SZARPDIR ] || install -d $SZARPDIR;
+[ -d /etc/szarp ] || install -d /etc/szarp;
+
+COMMAND=$1;
+shift;
+
+case $COMMAND in 
+		Konfiguracja)
+			konfiguracja "$@"
+		;;
+		Parstart)
+			parstart "$@"
+		;;
+		*)
+			exit 1;
+		;;
+esac
+
+exit 0;
+

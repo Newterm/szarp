@@ -1,0 +1,1802 @@
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V3.1//EN"[
+<!ENTITY praterm-info SYSTEM "../common/szarp-info.sgml">
+]>
+
+<book lang="pl" id="draw">
+
+<bookinfo>
+
+&praterm-info;
+
+<title>SzarpDraw - dokumentacja u¿ytkownika</title>
+
+<subtitle>SZARP v2.1</subtitle>
+
+
+<Abstract>
+<Para>
+Program przegl±daj±cy (<emphasis>SzarpDraw</emphasis>) jest tym elementem
+systemu SZARP, który s³u¿y do graficznej prezentacji (wizualizacji) 
+zebranych i zarchiwizowanych danych. Dane s± przedstawiane w postaci wykresów.
+Szereg mo¿liwo¶ci dodatkowych czyni z programu przegl±daj±cego silne
+narzêdzie przydatne w analizie danych ciep³owniczych.
+</para>
+<para>
+$Id: draw.sgml 6724 2009-05-18 08:37:03Z reksio $
+</para>
+</Abstract>
+</bookinfo>
+
+
+
+<part id="Podstawy">
+<title>Podstawy</title>
+<partintro><para>
+W niniejszym rozdziale podane s± podstawowe informacje o programie przegl±daj±cym:
+wygl±d i interfejs programu, metody komunikacji u¿ytkownika z programem,
+oraz okno g³ówne programu.
+</para></partintro>
+<chapter id="keys-Sygnaly-z-klawiatury" >
+<title>Sygna³y z klawiatury</title>
+
+<Para>W programie przegl±daj±cym sygna³y z klawiatury mog± byæ odbierane przez
+ró¿ne obiekty - przyciski, listy, suwaki. Wybór obiektu, do którego wysy³ane
+s± sygna³y z klawiatury nastêpuje na jeden z dwóch sposobów:
+
+<OrderedList>
+<ListItem><Para>
+Za pomoc± klawisza <emphasis>Tab</emphasis> (tabulator, szary klawisz z lewej strony 
+klawiatury z dwiema
+poziomymi strza³kami) lub klawisza <emphasis>Tab</emphasis> wraz z naci¶niêtym 
+klawiszem <emphasis>Shift</emphasis> -
+wybór kolejnych obiektów nastêpuje wówczas w odwrotnej kolejno¶ci.</Para></ListItem>
+
+<ListItem><Para>
+Za pomoc± myszki - dla okna graficznego nale¿y przesun±æ kursor myszki w obrêb
+okna, a je¶li ju¿ siê tam on znajduje, przesun±æ go poza obrêb okna i z
+powrotem do jego ¶rodka; dla pozosta³ych obiektów - naci¶niêcie lewego
+klawisza myszki gdy jej kursor znajduje siê w obrêbie tego obiektu powoduje,
+¿e tam bêd± wysy³ane sygna³y z klawiatury.</Para></ListItem>
+</OrderedList></Para>
+
+<section id="keys-Podwojne-nacisniecie">
+<title>Podwójne naci¶niêcie</title>
+
+<Para>Termin "podwójne naci¶niêcie" oznacza dwa szybkie naci¶niêcia klawisza
+myszki - w czasie ok. 0.2 sekundy.
+</Para>
+</section>
+
+<section id="keys-Potrojne-nacisniecie">
+<title>Potrójne naci¶niêcie</title>
+
+
+<Para>Termin "potrójne naci¶niêcie" oznacza trzy szybkie naci¶niêcia klawisza
+myszki - w czasie ok. 0.3 sekundy.
+</Para>
+</section>
+
+<section id="keys-Zaznaczanie-tekstu">
+<title>Zaznaczanie tekstu</title>
+
+<Para>Zaznaczony tekst jest wy¶wietlany w odwrotnym kolorem w stosunku do
+tekstu niezaznaczonego, czyli jasnymi literami na ciemnym tle (zamiast
+ciemnymi literami na jasnym tle). Tekst w mo¿e byæ zaznaczony przez jedn±
+z metod:
+
+<OrderedList>
+<ListItem><Para>
+Okre¶lanie obszaru zaznaczonego tekstu klawiszami kursora przy naci¶niêtym
+klawiszu 'Shift'.</Para></ListItem>
+
+<ListItem><Para>
+Okre¶lanie obszaru zaznaczonego tekstu kursorem myszki przy naci¶niêtym
+lewym klawiszu myszki.</Para></ListItem>
+
+<ListItem><Para>
+Podwójne naci¶niêcie lewego klawisza myszki w celu zaznaczenia pojedynczego
+s³owa i potrójne naci¶niêcie lewego klawisza myszki w celu zaznaczenia
+ca³ego wiersza.</Para></ListItem>
+</OrderedList></Para>
+</section>
+
+<section id="keys-Kursor-tekstowy">
+<title>Kursor tekstowy</title>
+
+<Para>Kursor tekstowy wskazuje, w którym miejscu bêd± wstawiane znaki z klawiatury.
+Ma on postaæ pionowej mrugaj±cej kreski.
+</Para>
+</section>
+
+<section id="keys-Kursor-wstawiania-tekstu">
+<title>Kursor wstawiania tekstu</title>
+
+<Para>Kursor wstawiania tekstu wskazuje, w którym miejscu bêdzie wstawiany
+tekst przy operacji powielenia. Kursor ten jest zazwyczaj niewidoczny,
+poniewa¿ pokrywa siê z kursorem tekstowym, jednak po przesuniêciu kursora
+tekstowego przy u¿yciu klawiszy kursora staje siê on widoczny - jako niewielki
+czarny grot strza³ki skierowanej pionowo do góry.
+</Para>
+</section>
+
+
+</chapter>
+
+<chapter id="help-Przegladanie" >
+<title>Przegl±danie</title>
+
+<Para>
+G³ówne okno programu przedstawia <xref linkend="main-fig">. Jest ono 
+podzielone na piêæ czê¶ci:
+<OrderedList>
+<ListItem><Para>
+<Link linkend="Okno-graficzne">Okno graficzne</Link> zajmuj±ce g³ówn± czê¶æ okna programu.
+Rysowane s± tu wykresy prezentuj±ce warto¶ci zbieranych danych. Bezpo¶rednio
+pod tym oknem podane s± parametry pierwszego i drugiego kursora (patrz
+tryb <Link linkend="pasek-Rozdwojony-kursor">rozdwojonego kursora</Link>) oraz
+warto¶ci: minimalna, ¶rednia i maksymalna z okre¶lonego wykresu.</Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="checks-Lista-wykresow">Listê wykresów</Link> umieszczon± w prawym
+górnym rogu okna programu tu¿ pod zegarkiem wskazuj±cym bie¿±cy czas. Pokazuje
+ona jakie wykresy s± wy¶wietlane w <Link linkend="Okno-graficzne">oknie graficznym</Link>.</Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="radios-Wyznacznik-okresu-czasu">Wyznacznik okresu czasu</Link>
+znajduj±cy siê pod <Link linkend="checks-Lista-wykresow">list± wykresów</Link>
+wskazuj±cy jaki okres czasu jest aktualnie wy¶wietlany w <Link linkend="Okno-graficzne">oknie
+graficznym</Link>.</Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="panel-Panel-uslugowy">Panel us³ugowy</Link> umieszczony pod
+<Link linkend="radios-Wyznacznik-okresu-czasu">wyznacznikiem okresu czasu</Link>,
+w którym znajduje siê 6 przycisków uruchamiaj±cych ró¿ne us³ugi.</Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="pasek-Pasek-narzedziowy">Pasek narzêdziowy</Link> znajduj±cy
+siê pod <Link linkend="Okno-graficzne">oknem graficznym</Link> zawieraj±cy grupê przycisków
+oznaczonych symbolami graficznymi, które s³u¿± do uruchamiania mniej skomplikowanych
+us³ug ni¿ w przypadku <Link linkend="panel-Panel-uslugowy">Panelu us³ugowego</Link>.</Para></ListItem>
+</OrderedList>
+
+<figure id="main-fig"><title>
+Okno programu przegl±daj±cego</title>
+<mediaobject>
+<!--<imageobject><imagedata fileref="pics/main" format="gif"></imageobject>
+<imageobject><imagedata fileref="pics/main" format="png"></imageobject>-->
+<imageobject><imagedata scale=60 fileref="pics/main.png"></imageobject>
+</mediaobject></figure>
+
+</Para>
+</chapter>
+
+<chapter id="datepopup-Zmiana-daty" >
+<title>Zmiana daty</title>
+
+<Para>Okienko zmiany daty jest wykorzystywane w kilku us³ugach. S³u¿y ono
+do ustalenia daty w sposób wykluczaj±cy pomy³kê (np. rok 1896 czy miesi±c
+13). Wszystkie elementy daty - rok, miesi±c, dzieñ, tydzieñ, dzieñ tygodnia,
+godzina i minuty - okre¶la siê przez naci¶niêcie odpowiednich klawiszy
+ze strza³kami. Klawisz ze strza³k± w górê zmniejsza dany element, klawisz
+ze strza³k± w dó³ - zwiêksza. Ka¿da zmiana elementu daty powoduje jej uaktualnienie
+w ca³o¶ci, np. przej¶cie z Soboty na Niedzielê w polu dnia tygodnia powoduje
+zmianê odpowiednio pól: Tydzieñ (z numerem tygodnia), Dzieñ (z dniem miesi±ca),
+ewentualnie Miesi±c i Rok (je¶li Sobota by³a Sylwestrem).
+
+</Para>
+<Para>Zmiana roku powoduje zmianê dnia miesi±ca na 1 (i odpowiednie zmiany
+pozosta³ych pól).
+
+</Para>
+<Para>Zmiany daty mo¿na dokonaæ przez jedn± z metod:
+<ItemizedList>
+<ListItem><Para>
+Naci¶niêcie lewego klawisza myszki na przyciskach ze strza³kami - tyle
+razy ile jest to potrzebne aby ustaliæ po¿±dan± datê - a nastêpnie naci¶niêcie
+przycisku "OK".</Para></ListItem>
+
+<ListItem><Para>
+Odpowiedni± ilo¶æ naci¶niêæ klawisza 'Space' gdy -&gt; <Link linkend="keys-Sygnaly-z-klawiatury">sygna³y
+z klawiatury</Link> kierowane s± do grupy przycisków ze strza³kami i przycisk,
+przy pomocy którego ma byæ zmieniona data, otoczony jest czarn± ramk±,
+któr± mo¿na przesuwaæ przy pomocy klawiszy kursora. Naci¶niêcie klawisza
+'Enter' zatwierdza wybór.</Para></ListItem>
+</ItemizedList></Para>
+
+</chapter>
+
+<chapter id="removeddrawspopup-Usuniete-wykresy">
+<title>Usuniête wykresy</title>
+
+<Para>Zmiana konfiguracji systemu mo¿e spowodowaæ, ¿e dane dla niektórych wykresów stan± siê niedostêpne. 
+Gdy taka sytuacja ma miejsce, program przegl±daj±cy po uruchomieniu wy¶wietla okno dialogowe zawieraj±ce
+listê takich wykresów. Zostan± one usuniête z <Link linkend="Okno-graficzne">okna graficznego</Link>. 
+Naci¶niêcie przycisku OK powoduje zamkniêcie okna dialogowego i rozpoczêcie w³a¶ciwej pracy z programem.
+</Para>
+
+</chapter>
+	
+</part>
+
+<part id="Funkcje-programu">
+<title>Funkcje programu</title>
+<partintro><para>
+Ten rozdzia³ opisuje szczegó³o funkcjonalno¶æ programu: okna dialogowe, 
+mo¿liwo¶ci i tryby pracy. Dodatkowo opisano wszystkie wystêpuj±ce
+w programie symbole graficzne (ikony).
+</para></partintro>
+<chapter id="Okno-graficzne" >
+<title>Okno graficzne</title>
+
+
+<Para>Okno graficzne zawiera wykresy, pokazuj±ce zmiany warto¶ci poszczególnych
+danych w czasie. Pozioma o¶ umieszczona w dolnej czê¶ci okna opisuje jednostki
+czasu. W zale¿no¶ci od tego, co wskazuje <Link linkend="radios-Wyznacznik-okresu-czasu">wyznacznik
+okresu czasu</Link> s± to:
+<ItemizedList>
+<ListItem><Para>
+przy <Link linkend="radios-ROK">ROKU</Link> - miesi±ce (wykresy ze ¶rednimi
+miesiêcznymi)</Para></ListItem>
+
+<ListItem><Para>
+przy <Link linkend="radios-MIESIAC">MIESI¡CU</Link> - dni miesi±ca (wykresy
+ze ¶rednimi dobowymi)</Para></ListItem>
+
+<ListItem><Para>
+przy <Link linkend="radios-TYDZIEN">TYGODNIU</Link> - dni tygodnia (wykresy
+ze ¶rednimi 8-mio godzinnymi)</Para></ListItem>
+
+<ListItem><Para>
+przy <Link linkend="radios-DZIEN">DNIU</Link> - godziny (wykresy ze ¶rednimi
+10-cio minutowymi)</Para></ListItem>
+
+<ListItem><Para>
+przy <Link linkend="radios-SEZON">SEZONIE</Link> - numery tygodni w roku (wykresy
+ze ¶rednimi tygodniowymi).</Para></ListItem>
+</ItemizedList>
+
+Wyj±tkiem jest tryb <Link linkend="panel-Wykres-Y-X">wykresu Y(X)</Link>,
+kiedy to o¶ X jest opisana przez jednostkê fizyczn± parametru X podan±
+przy grocie, a sam wykres rysowany w oknie graficznym jest zale¿no¶ci±
+parametru Y w funkcji parametru X.
+
+</Para>
+
+<Para>Je¶li w zestawie wykresów do wy¶wietlania w oknie graficznym nie ma
+¿adnych danych, na ¶rodku okna pojawia siê napis "Brak danych". Jedynymi
+dostêpnymi wówczas us³ugami z <Link linkend="panel-Panel-uslugowy">panelu
+us³ugowego</Link> i <Link linkend="pasek-Pasek-narzedziowy">paska narzêdziowego</Link>
+s±: <Link linkend="panel-Zmiana-okna">Zmiana okna</Link>, <Link linkend="panel-Komentarz">Komentarz</Link>,
+<Link linkend="panel-Okno-dodatkowe">Okno dodatkowe</Link>, <Link linkend="panel-Granice-sezonow">Granice
+sezonów</Link>, <Link linkend="panel-Wykres-Y-X">Wykres Y(X)</Link>, <Link linkend="pasek-Wyjscie-z-programu">Wyj¶cie
+z programu</Link> i <Link linkend="pasek-Pomoc">Pomoc</Link>.
+
+</Para>
+<Para>O¶ pionowa umieszczona z lewej strony okna opisuje warto¶ci i jednostki
+danych z wykresów. Poniewa¿ ka¿dy wykres mo¿e opisywaæ inn± wielko¶æ, o¶
+ta jest zmieniana w zale¿no¶ci od tego, na którym wykresie znajduje siê
+kursor graficzny, reprezentowany w oknie przez niewielki bia³y kwadrat.
+W przypadku, gdy warto¶æ rysowanego wykresu przekracza zakres podany na
+osi pionowej, jest on rysowany w jednym ze skrajnych po³o¿eñ - odpowiednio:
+na samej górze (przekroczony górny zakres osi) albo na samym dole (przekroczony
+dolny zakres osi) okna graficznego.
+<note>
+<para>
+W wersjach programu przegl±daj±cego pocz±wszy od sierpnia 2005 roku
+zaimplementowana zosta³a dodatkowa funkcja, polegaj±ca na automatycznym
+przeskalowywaniu zakresu osi, dla której przynajmniej na jednym z wykresów
+przekroczona zosta³a maksymalna warto¶æ. Przeskalowywanie odbywa siê tylko
+przy pierwszym wy¶wietleniu danego okna i uwzglêdnia tylko warto¶ci wy¶wietlone
+na ekranie w momencie zmiany okna. Co wiêcej, przeliczanie warto¶ci jest
+aktywowane tylko je¿eli zmiana okna odby³a siê przy ogl±daniu ¶rednich
+miesiêcznych (na poziomie roku). Przeskalowywanie domy¶lnie jest wy³±czone,
+mo¿na je w³±czyæ przez ustawienie zmiennej <emphasis>maxval_recalc</emphasis>
+w pliku <filename>szarp.cfg</filename> na <emphasis>yes</emphasis> lub podanie
+do programu opcji <emphasis>-Drecalc=yes</emphasis>.
+</para>
+</note>
+
+</Para>
+<Para>Do dok³adnego odczytu warto¶ci na danym wykresie z danej chwili czasowej
+b±d¼ danej warto¶ci osi X w trybie <Link linkend="panel-Wykres-Y-X">wykresu
+Y(X)</Link> s³u¿y kursor graficzny (przybli¿on± warto¶æ mo¿na odczytaæ z pionowej
+osi). Po³o¿enie kursora jest opisane w linii tekstu znajduj±cej siê bezpo¶rednio
+pod oknem graficznym. Warto¶æ danej wskazywanej przez kursor jest napisana
+kolorem wykresu, za¶ opisuj±ca j± data (b±d¼ w trybie <Link linkend="panel-Wykres-Y-X">wykresu
+Y(X)</Link> warto¶æ osi X) - kolorem czarnym. W trybie <Link linkend="pasek-Rozdwojony-kursor">rozdwojonego
+kursora</Link> tu¿ pod t± lini± tekstu wy¶wietlana jest druga analogiczna
+linia zawieraj±ca parametry drugiego kursora. W trybie pojedynczego kursora
+linia ta nie jest wy¶wietlana. Pod tymi danym znajduje siê linia tekstu
+opisuj±ca warto¶ci: minimaln±, ¶redni± i maksymaln±. W trybie pojedynczego
+kursora warto¶ci te s± wyznaczone dla wykresu, na którym znajduje siê kursor
+graficzny, z przedzia³u obejmowanego przez ca³e okno. W trybie <Link linkend="pasek-Rozdwojony-kursor">rozdwojonego
+kursora</Link> warto¶ci te dotycz± przedzia³u pomiêdzy pierwszym a drugim
+kursorem znajduj±cymi siê na danym wykresie.
+
+</Para>
+<Para>Tytu³ zbioru wykresów wy¶wietlanych w oknie graficznym napisany jest
+bia³ym kolorem w górnej czê¶ci okna przy grocie pionowej osi. Za nim, kolorami
+poszczególnych wykresów wy¶wietlanych w danym momencie w oknie wymienione
+s± wszystkie ich skrótowe nazwy - pe³ne nazwy znajduj± siê w <Link linkend="checks-Lista-wykresow">li¶cie
+wykresów</Link>.
+
+</Para>
+<Para>Je¶li wy¶wietlanym okresem czasu jest <Link linkend="radios-SEZON">SEZON</Link>,
+w prawym górnym rogu okna graficznego znajduje siê napisany bia³ym kolorem
+opis tego sezonu.
+
+</Para>
+<Para>W obrêbie okna graficznego dostêpne s± nastêpuj±ce funkcje:
+<orderedlist>
+<ListItem><Para>
+Funkcje dosêpne przy u¿yciu klawiatury (je¿eli okno graficzne nie reaguje na klawisze,
+nale¿y odpowiednio skierowaæ tam -&gt; <Link linkend="keys-Sygnaly-z-klawiatury">sygna³y
+z klawiatury</Link>):
+<ItemizedList>
+<ListItem><Para>
+Klawisze kursorów umo¿liwiaj± przesuwanie kursora graficznego po wykresach.
+Klawisze z kursorami {strza³ka w lewo} i {strza³ka w prawo} s³u¿± do przesuwania
+kursora graficznego odpowiednio w lewo lub w prawo. Je¿eli kursor jest
+przesuwany poza obrêb okna - np. przy pozycji kursora na pierwszej widocznej
+danej z okre¶lonego wykresu, po naci¶niêciu klawisza {strza³ka w lewo}
+- zawarto¶æ okna graficznego jest zmieniana (przesuwana w prawo) aby pokazaæ
+dan±, na któr± zosta³ przesuniêty kursor. W oknie <Link linkend="radios-DZIEN">DNIA</Link>,
+je¿eli przy naci¶niêciu klawisza {strza³ka w lewo} lub {strza³ka w prawo}
+naci¶niêty jest klawisz 'Shift', przesuniêcie kursora graficznego nast±pi
+nie o jedn± dan± (10 minut), ale o 6 danych (godzina). Klawisze z kursorami
+{strza³ka w górê} i {strza³ka w dó³} s³u¿± do przesuwania kursora graficznego
+z jednego wykresu na drugi wed³ug kolejno¶ci z <Link linkend="checks-Lista-wykresow">listy
+wykresów</Link>. Kursor przesuwany jest w obiegu zamkniêtym, tzn. je¿eli np.
+kursor znajduje siê na pierwszym wykresie i naci¶niêty zostanie klawisz
+{strza³ka w górê}, to kursor przesuwany jest na ostatni z <Link linkend="checks-Lista-wykresow">listy
+wykresów</Link> wykres wy¶wietlany w oknie graficznym. Przesuniêcie kursora
+graficznego z wykresu na wykres nastêpuje w obrêbie tej samej daty. W przypadku,
+gdy dla danej daty kursor jest przesuwany z jednego wykresu na drugi, przy
+czym dla drugiego wykresu nie ma danej z tej daty, kursor jest ustawiany
+na najbli¿szej napotkanej danej dla tego wykresu - nawet, je¶li w tym celu
+nale¿y zmieniæ zawarto¶æ okna graficznego.</Para>
+
+<Para>W przypadku próby wyj¶cia poza dostêpny obszar danych np. gdy kursor
+znajduje siê na ostatniej danej dla danego wykresu, próba przesuniêcia
+go dalej w prawo przy u¿yciu klawisza {strza³ka w prawo} spowoduje, ¿e
+pozycja kursora pozostanie niezmieniona i wygenerowany zostanie sygna³
+d¼wiêkowy.
+
+</Para>
+<Para>W trybie <Link linkend="pasek-Rozdwojony-kursor">rozdwojonego kursora</Link>
+niemo¿liwe jest przesuwanie kursora z jednego wykresu na drugi.
+</Para>
+</ListItem>
+
+<ListItem><Para>
+Klawisze 'Home' i 'End' s³u¿± do przesuwania kursora graficznego odpowiednio
+na pocz±tek lub na koniec wykresu w obrêbie danego okna.</Para></ListItem>
+ 
+<ListItem><Para>
+Klawisze 'Page Up' i 'Page Down' s³u¿± podobnie jak klawisze {strza³ka
+w lewo} i {strza³ka w prawo} do przesuwania kursora po danym wykresie odpowiednio
+wstecz lub naprzód, o okres czasu wskazywany przez <Link linkend="radios-Wyznacznik-okresu-czasu">wyznacznik
+okresu czasu</Link>.</Para></ListItem>
+ 
+<ListItem><Para>
+Klawisz 'Backspace' (nad klawiszem 'Enter' z rysunkiem strza³ki w lewo)
+s³u¿y do prze³±czania miêdzy trybem pojedynczego kursora a trybem <Link linkend="pasek-Rozdwojony-kursor">rozdwojonego
+kursora</Link>.</Para></ListItem>
+ 
+<ListItem><Para>
+Klawisze numeryczne umo¿liwiaj± wy¶wietlanie/wygaszanie poszczególnych
+wykresów. W <Link linkend="checks-Lista-wykresow">li¶cie wykresów</Link> pe³na
+nazwa ka¿dego wykresu poprzedzona jest numerem. Podanie tego numeru przez
+naci¶niêcie odpowiednich klawiszy numerycznych i potwierdzenie tego naci¶niêciem
+klawisza 'Enter', spowoduje wy¶wietlenie/wygaszenie odpowiedniego wykresu.
+Odwo³anie wprowadzonego ju¿ numeru (np. przy pomy³ce) nastêpuje przez naci¶niêcie
+klawisza 'Esc' lub wywo³anie przy u¿yciu klawiatury b±d¼ myszki jakiejkolwiek
+innej funkcji dostêpnej w oknie graficznym.</Para></ListItem>
+ 
+<ListItem><Para>
+Klawisze z literami od 'a' do 'f' umo¿liwiaj± w³±czenie <Link linkend="pasek-Filtr">filtru</Link>.
+Klawisz z liter± 'a' odpowiada oryginalnemu wykresowi, klawisze od 'b'
+do 'f' w³±czaj± coraz to silniejszy <Link linkend="pasek-Filtr">filtr</Link>.</Para></ListItem>
+ 
+<ListItem><Para>
+Klawisz 'w' uruchamia <Link linkend="pasek-Wydruk">wydruk</Link> zawarto¶ci
+aktualnie wy¶wietlanego okna graficznego.</Para></ListItem>
+ 
+<ListItem><Para>
+Klawisz 's' <Link linkend="pasek-Synchronizacja">synchronizuje</Link> przesuniête
+w czasie wykresy w <Link linkend="panel-Okno-definiowalne">oknie definiowalnym</Link>.</Para></ListItem>
+ 
+<ListItem><Para>
+Klawisze '?' oraz 'F1' wywo³uj± ten system pomocy.</Para></ListItem>
+ 
+<ListItem><Para>
+Kombinacja klawiszy 'Alt'-'litera' umo¿liwia uruchomienie us³ug z innych
+czê¶ci programu. 'litera' jest wyró¿nion± (przez podkre¶lenie) liter± w
+<Link linkend="checks-Lista-wykresow">li¶cie wykresów</Link> lub w <Link linkend="panel-Panel-uslugowy">panelu
+us³ugowym</Link>. Mo¿na w ten sposób:
+ 
+<ItemizedList>
+<ListItem><Para>
+'Alt'-'r' - wej¶æ do <Link linkend="radios-ROK">ROKU</Link></Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'m' - wej¶æ do <Link linkend="radios-MIESIAC">MIESI¡CA</Link></Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'t' - wej¶æ do <Link linkend="radios-TYDZIEN">TYGODNIA</Link></Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'d' - wej¶æ do <Link linkend="radios-DZIEN">DNIA</Link></Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'s' - wej¶æ/wyj¶æ do/z <Link linkend="radios-SEZON">SEZONU</Link></Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'z' - uruchomiæ us³ugê <Link linkend="panel-Zmiana-okna">Zmiana okna</Link></Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'o' - uruchomiæ us³ugê <Link linkend="panel-Skok-pod-date">Skok pod
+datê</Link></Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'e' - uruchomiæ us³ugê <Link linkend="panel-Srednia-za-okres">¦rednia
+za okres</Link></Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'k' - uruchomiæ us³ugê <Link linkend="panel-Komentarz">Komentarz</Link></Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'n' - uruchomiæ us³ugê <Link linkend="panel-Okno-dodatkowe">Okno dodatkowe</Link></Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'g' - uruchomiæ us³ugê <Link linkend="panel-Granice-sezonow">Granice
+sezonów</Link></Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'w' - uruchomiæ us³ugê <Link linkend="panel-Wykres-Y-X">Wykres Y(X)</Link></Para></ListItem>
+</ItemizedList>
+</para></ListItem>
+</ItemizedList>
+
+</para></ListItem>
+
+<ListItem><Para>
+Funkcje dostêpne przy u¿yciu myszki:
+<ItemizedList>
+<ListItem><Para>
+Naci¶niêcie lewego klawisza myszki przy kursorze myszki ustawionym w pobli¿u
+pewnej danej na wykresie w oknie graficznym, powoduje ustawienie kursora
+graficznego na tym wykresie i tej danej. Termin "w pobli¿u" oznacza, ¿e
+kursor myszki powinien siê znajdowaæ w obszarze: w poziomie - dok³adnie
+w dacie tej danej (w trybie <Link linkend="panel-Wykres-Y-X">wykresu Y(X)</Link>
+dok³adnie na okre¶lonej warto¶ci osi X); w pionie - w odleg³o¶ci nie wiêkszej
+ni¿ wysoko¶æ kursora graficznego od tej danej. Je¿eli dla danej daty w
+jednym miejscu - na tej samej wysoko¶ci - znajduje siê kilka wykresów,
+kolejne naci¶niêcia lewego klawisza myszki przy kursorze myszki ustawionym
+w pobli¿u takiej "wi±zki" wykresów powoduje przesuwanie kursora graficznego
+z wykresu na wykres w tej "wi±zce", podobnie jak przy naciskaniu klawisza
+kursora {strza³ka w dó³}. Mo¿liwo¶æ takiego przesuwania kursora jest zablokowana
+w trybie <Link linkend="pasek-Rozdwojony-kursor">rozdwojonego kursora</Link>.
+Naci¶niêcie lewego klawisza myszki przy kursorze myszki nie ustawionym
+w pobli¿u ¿adnej danej lub w trybie <Link linkend="pasek-Rozdwojony-kursor">rozdwojonego
+kursora</Link> powoduje, ¿e kursor graficzny jest ustawiany w dacie (w trybie
+<Link linkend="panel-Wykres-Y-X">wykresu Y(X)</Link> na okre¶lonej warto¶ci
+osi X), któr± wskazuje kursor myszki, na wykresie, na którym aktualnie
+siê on znajduje. Je¿eli tej danej nie ma lub kursor jest ju¿ ustawiony
+w tym miejscu, generowany jest sygna³ d¼wiêkowy.</Para>
+
+
+<Para>Naci¶niêcie lewego klawisza myszki przy kursorze myszki ustawionym w
+obrêbie okna graficznego poza obszarem, w którym rysowane s± wykresy, powoduje
+odpowiednio: je¿eli kursor myszki by³ ustawiony na lewo od osi pionowej
+- kursor graficzny zachowa siê identycznie, jak przy naci¶niêciu klawisza
+{strza³ka w lewo}; je¿eli kursor myszki by³ ustawiony na prawo od ostatniej
+kolumny, w której wy¶wietlane s± dane - kursor graficzny zachowa siê identycznie,
+jak przy naci¶niêciu klawisza {strza³ka w prawo}.
+</Para>
+</listItem>
+<ListItem><Para>
+-&gt; <Link linkend="keys-Podwojne-nacisniecie">Podwójne naci¶niêcie</Link> lewego
+klawisza myszki ma dzia³anie identyczne do klawiszy 'Page Up' i 'Page Down'
+- pod warunkiem, ¿e ma miejsce przy kursorze myszki ustawionym w obrêbie
+okna graficznego poza obszarem, w którym rysowane s± wykresy. Operacja
+ta powoduje odpowiednio: je¿eli kursor myszki by³ ustawiony na lewo od
+osi pionowej - kursor graficzny zachowa siê identycznie, jak przy naci¶niêciu
+klawisza 'Page Up'; je¿eli kursor myszki by³ ustawiony na prawo od ostatniej
+kolumny, w której wy¶wietlane s± dane - kursor graficzny zachowa siê identycznie,
+jak przy naci¶niêciu klawisza 'Page Down'. Podwójne naci¶niêcie lewego
+klawisza myszki przy kursorze myszki ustawionym w obszarze, w którym rysowane
+s± wykresy, traktowane jest jako dwa pojedyñcze naci¶niêcia.</Para></ListItem>
+</ItemizedList>
+</para></ListItem>
+</orderedlist>
+</Para>
+
+</chapter>
+
+<chapter id="checks-Lista-wykresow" >
+<title>Lista wykresów</title>
+
+<Para>Lista wykresów zawiera pe³ne nazwy wykresów umieszczonych w <Link linkend="Okno-graficzne">oknie
+graficznym</Link>. Kolor t³a ka¿dej nazwy jest zarazem kolorem wykresu. Kwadratowy
+przycisk po lewej stronie nazwy ka¿dego wykresu okre¶la, czy jest on wy¶wietlany
+czy te¿ nie: je¿eli jest on wci¶niêty - wykres jest wy¶wietlany; je¿eli
+jest wyci¶niêty - wykres jest wygaszony.
+
+</Para><Para>Je¿eli nazwa wykresu jest napisana kolorem czarnym oznacza to, ¿e wykres
+mo¿e byæ wy¶wietlony; je¿eli nazwa jest przydymiona, wykresu nie mo¿na
+w ogóle wy¶wietliæ, poniewa¿ nie ma ¿adnej danej tego typu.
+
+</Para><Para>Wykresy mo¿na wy¶wietlaæ/wygaszaæ przez:
+<ItemizedList>
+<ListItem><Para>
+Naci¶niêcie lewego klawisza myszki przy kursorze myszki umiejscowionym
+na nazwie wy¶wietlanego/wygaszanego wykresu lub na kwadratowym przycisku
+po lewej stronie nazwy.</Para></ListItem>
+
+<ListItem><Para>
+Podanie numeru wykresu i zatwierdzenie wyboru naci¶niêciem klawisza 'Enter',
+gdy -&gt; <Link linkend="keys-Sygnaly-z-klawiatury">sygna³y z klawiatury</Link>
+kierowane s± do <Link linkend="Okno-graficzne">okna graficznego</Link>.</Para></ListItem>
+
+<ListItem><Para>
+Naci¶niêciu klawisza 'Space' lub 'Enter', gdy -&gt; <Link linkend="keys-Sygnaly-z-klawiatury">sygna³y
+z klawiatury</Link> kierowane s± do listy wykresów i nazwa wykresu, który
+ma byæ wy¶wietlony/wygaszony jest otoczona czarn± ramk±, któr± mo¿na przesuwaæ
+z nazwy na nazwê przy pomocy klawiszy kursora.</Para></ListItem>
+</ItemizedList>
+Niemo¿liwe jest wygaszenie wykresu, na którym w danej chwili w <Link linkend="Okno-graficzne">oknie
+graficznym</Link> znajduje siê kursor graficzny.
+
+</Para><Para>Niemo¿liwe jest te¿ wy¶wietlenie/wygaszenie jakiegokolwiek wykresu w
+trybie <Link linkend="pasek-Rozdwojony-kursor">rozdwojonego kursora</Link>.
+
+
+</Para>
+</chapter>
+
+<chapter id="radios-Wyznacznik-okresu-czasu" >
+<title>Wyznacznik okresu czasu</title>
+
+<Section id="radios-wyznacznik-okresu-czasu-ogolne">
+<title>Informacje ogólne</title>
+
+<Para>Wyznacznik okresu czasu pokazuje, z jakiego okresu czasu wy¶wietlane
+s± wykresy w <Link linkend="Okno-graficzne">oknie graficznym</Link> (o ile oczywi¶cie
+nie jest to <Link linkend="panel-Wykres-Y-X">wykres Y(X)</Link>). Okres ten
+jest wyró¿niony przez wci¶niêcie przycisku w kszta³cie rombu po lewej stronie
+jego nazwy. Dostêpne s± nastêpuj±ce okresy:
+<ItemizedList>
+<ListItem><Para>
+ <Link linkend="radios-ROK">ROK</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="radios-MIESIAC"> MIESI¡C</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="radios-TYDZIEN"> TYDZIEÑ</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="radios-DZIEN"> DZIEÑ</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="radios-SEZON"> SEZON</Link></Para></ListItem>
+</ItemizedList>
+Nie do ka¿dego okresu czasu mo¿na przej¶æ z okresu wyró¿nionego w danej
+chwili. Nazwy okresów niedostêpnych s± przydymione.
+
+</Para><Para>Okres czasu mo¿na zmieniaæ przez:
+<ItemizedList>
+<ListItem><Para>
+ Naci¶niêcie lewego klawisza myszki przy kursorze myszki umiejscowionym
+na nazwie okresu czasu lub na przycisku w kszta³cie rombu po lewej stronie
+nazwy.</Para></ListItem>
+
+<ListItem><Para>
+ Naci¶niêcie odpowiedniej kombinacji klawiszy 'Alt'-'litera', je¶li
+-&gt; <Link linkend="keys-Sygnaly-z-klawiatury">sygna³y z klawiatury</Link> kierowane
+s± do <Link linkend="Okno-graficzne">okna graficznego</Link>.</Para></ListItem>
+
+<ListItem><Para>
+Naci¶niêcie klawisza 'Space' lub 'Enter', gdy -&gt; <Link linkend="keys-Sygnaly-z-klawiatury">sygna³y
+z klawiatury</Link> kierowane s± do wyznacznika okresu czasu i nazwa okresu
+czasu, do którego ma nast±piæ przej¶cie jest otoczona czarn± ramk±, któr±
+mo¿na przesuwaæ z nazwy na nazwê przy pomocy klawiszy kursora.</Para></ListItem>
+</ItemizedList>
+Niemo¿liwa jest zmiana okresu czasu w trybie <Link linkend="pasek-Rozdwojony-kursor">rozdwojonego
+kursora</Link>.
+</Para>
+</Section>
+
+<Section id="radios-ROK" >
+<title>ROK</title>
+
+<Para>W ROKU w <Link linkend="Okno-graficzne">oknie graficznym</Link> wy¶wietlane s± ¶rednie
+miesiêczne. Pionowe kolorowe kreski oznaczaj±: niebieska - pocz±tek <Link linkend="panel-Granice-sezonow">sezonu
+letniego</Link>, czerwona - pocz±tek <Link linkend="panel-Granice-sezonow">sezonu
+zimowego</Link>. Przy kreskach napisane s± dok³adne daty rozpoczêcia sezonów.
+</Para>
+</Section>
+
+
+<Section id="radios-MIESIAC" >
+<title>MIESI¡C</title>
+
+<Para>W MIESI¡CU w <Link linkend="Okno-graficzne">oknie graficznym</Link> wy¶wietlane s±
+¶rednie dobowe. Nale¿y pamiêtaæ, ¿e poniewa¿ <Link linkend="Okno-graficzne">okno graficzne</Link>
+jest w tym przypadku podzielone na 31 dni, przesuniêcie kursora graficznego
+przy pomocy klawiszy 'Page Up' lub 'Page Down' (patrz opis <Link linkend="Okno-graficzne">okna
+graficznego</Link>) spowoduje przesuniêcie nie o miesi±c, ale o 31 dni. Widoczne
+(nie zawsze) pionowe kolorowe kreski w <Link linkend="Okno-graficzne">oknie graficznym</Link>
+oznaczaj±: niebieska - pocz±tek <Link linkend="panel-Granice-sezonow">sezonu
+letniego</Link>, czerwona - pocz±tek <Link linkend="panel-Granice-sezonow">sezonu
+zimowego</Link>.
+</Para>
+</Section>
+
+
+<Section id="radios-TYDZIEN" >
+<title>TYDZIEÑ</title>
+
+<Para>W TYGODNIU w <Link linkend="Okno-graficzne">oknie graficznym</Link> wy¶wietlane s±
+¶rednie 8-mio godzinne -  dla ka¿dego dnia po 3 ¶rednie: od godz.
+0:00 do godz. 7:50, od godz. 8:00 do godz. 15:50 i od godz. 16:00 do godz.
+23:50. Pionowe kolorowe kreski, które mog± byæ widoczne w <Link linkend="Okno-graficzne">oknie
+graficznym</Link> oznaczaj±: niebieska - pocz±tek <Link linkend="panel-Granice-sezonow">sezonu
+letniego</Link>, czerwona - pocz±tek <Link linkend="panel-Granice-sezonow">sezonu
+zimowego</Link>.
+</Para>
+</Section>
+
+
+<Section id="radios-DZIEN" >
+<title>DZIEÑ</title>
+
+<Para>W DNIU w <Link linkend="Okno-graficzne">oknie graficznym</Link> wy¶wietlane s± ¶rednie
+10-cio minutowe. Jedynie w tym okresie czasu mo¿na u¿ywaæ <Link linkend="pasek-Filtr">filtru</Link>,
+oraz przesuwaæ kursor graficzny nie o jedn± dan±, ale o 6 (czyli nie o
+10 minut, lecz o godzinê) przez naciskanie klawiszy kursorów (gdy -&gt; <Link linkend="keys-Sygnaly-z-klawiatury">sygna³y
+z klawiatury</Link> wysy³ane s± do <Link linkend="Okno-graficzne">okna graficznego</Link>)
+przy przyci¶niêtym klawiszu 'Shift'. Efekt ten nie jest mo¿liwy do uzyskania
+przez operacje myszk±.
+</Para>
+</Section>
+
+
+<Section id="radios-SEZON" >
+<title>SEZON</title>
+
+<Para>W SEZONIE w <Link linkend="Okno-graficzne">oknie graficznym</Link> wy¶wietlane s±
+¶rednie tygodniowe. W tym okresie czasowym kursor graficzny jest ograniczony
+do <Link linkend="Okno-graficzne">okna graficznego</Link> - kursora nie mo¿na "wyprowadziæ"
+poza obrêb okna, tak jak to mo¿e mieæ miejsce w innych okresach czasu (próba
+takiej operacji spowoduje wygenerowanie sygna³u d¼wiêkowego).
+
+</Para><Para>W zale¿no¶ci od tego, jaki sezon jest przedstawiony w <Link linkend="Okno-graficzne">oknie
+graficznym</Link> (co jest opisane w jego prawym górnym rogu) zmienia siê
+tre¶æ napisu przycisku SEZON: je¶li przedstawiany jest sezon zimowy - przycisk
+jest opisywany napisem "SEZON LETNI"; je¶li przedstawiany jest sezon letni
+- przycisk opisywany jest napisem "SEZON ZIMOWY". W obydwu przypadkach
+chodzi o wej¶cie do drugiego sezonu roku, przy czym z sezonu letniego wchodzi
+siê do zaczynaj±cego siê po nim sezonu zimowego, natomiast z sezonu zimowego
+wchodzi siê do sezonu letniego z roku wyznaczonym przez datê okre¶lon±
+kursorem graficznym.
+
+</Para><Para>Po wej¶ciu do drugiego sezonu, napis przycisku SEZON zmienia siê na
+"SEZON - POWRÓT" - ponowna próba wej¶cia do sezonu spowoduje powrót do
+stanu <Link linkend="Okno-graficzne">okna graficznego</Link> sprzed pierwszego wej¶cia
+do sezonu. Ten powrót mo¿e te¿ nast±piæ wcze¶niej - ju¿ po drugiej próbie
+- gdy dla sezonu, do którego program usi³owa³ wej¶æ nie ma ¿adnych danych.
+</Para>
+</Section>
+
+</chapter>
+
+
+<chapter id="panel-Panel-uslugowy" >
+<title>Panel us³ugowy</title>
+
+<Para>Panel us³ugowy zawiera 7 przycisków udostêpniaj±cych ró¿ne us³ugi:
+<ItemizedList>
+<ListItem><Para>
+<Link linkend="panel-Zmiana-okna">Zmiana okna</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="panel-Skok-pod-date">Skok pod datê</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="panel-Srednia-za-okres">¦rednia za okres</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="panel-Komentarz">Komentarz</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="panel-Okno-dodatkowe">Okno dodatkowe</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="panel-Granice-sezonow">Granice sezonów</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="panel-Wykres-Y-X">Wykres Y(X)</Link></Para></ListItem>
+</ItemizedList>
+Nie wszystkie z nich s± zawsze dostêpne (patrz opis poszczególnych us³ug).
+Nazwy niedostêpnych us³ug s± przydymione.
+
+</Para><Para>Us³ugi mo¿na wywo³ywaæ przez:
+<ItemizedList>
+<ListItem><Para>
+Naci¶niêcie lewego klawisza myszki przy kursorze myszki umiejscowionym
+na przycisku danej us³ugi.</Para></ListItem>
+
+<ListItem><Para>
+Naci¶niêcie odpowiedniej kombinacji klawiszy 'Alt'-'litera', je¶li -&gt; <Link linkend="keys-Sygnaly-z-klawiatury">sygna³y
+z klawiatury</Link> kierowane s± do <Link linkend="Okno-graficzne">okna graficznego</Link>.</Para></ListItem>
+
+<ListItem><Para>
+Naci¶niêcie klawisza 'Space' lub 'Enter' gdy -&gt; <Link linkend="keys-Sygnaly-z-klawiatury">sygna³y
+z klawiatury</Link> kierowane s± do panelu us³ugowego i przycisk us³ugi, która
+ma byæ wywo³ana jest otoczony czarn± ramk±, któr± mo¿na przesuwaæ z przycisku
+na przycisk przy pomocy klawiszy kursora.</Para></ListItem>
+</ItemizedList></Para>
+
+<Section id="panel-Zmiana-okna" >
+<title>Zmiana okna</title>
+
+
+<Para>Zmiana okna polega na wybraniu tytu³u zbioru wykresów, który bêdzie
+wy¶wietlany w <Link linkend="Okno-graficzne">oknie graficznym</Link>. Tytu³y s± zgrupowane
+w formie listy "Dostêpne okna" w górnej czê¶ci okienka (przyk³adow± procedurê
+zmiany okna pokazuje <xref linkend="zmiana-fig">). 
+
+<figure id="zmiana-fig">
+<title>Zmiana okna</title>
+<mediaobject>
+<!--<imageobject><imagedata fileref="pics/zmiana" format="gif"></imageobject>
+<imageobject><imagedata fileref="pics/zmiana" format="png"></imageobject>-->
+<imageobject><imagedata scale=60 fileref="pics/zmiana.png"></imageobject>
+</mediaobject>
+</figure>
+Wybór nastêpuje
+przez jedn± z metod:
+
+<ItemizedList>
+<ListItem><Para>
+-&gt; <Link linkend="keys-Podwojne-nacisniecie">Podwójne naci¶niêcie</Link> lewego
+klawisza myszki na wybranym tytule.</Para></ListItem>
+
+<ListItem><Para>
+Naci¶niêcie lewego klawisza myszki na wybranym tytule a nastêpnie naci¶niêcie
+przycisku "OK".</Para></ListItem>
+
+<ListItem><Para>
+Skierowanie do listy tytu³ów -&gt; <Link linkend="keys-Sygnaly-z-klawiatury">sygna³ów
+z klawiatury</Link>, wybranie tytu³u przy pomocy klawiszy kursorów, "Page
+Up" i "Page Down" oraz naci¶niêcie klawisza 'Enter', lub podwójne naci¶niêcie
+klawisza 'Space'.</Para></ListItem>
+</ItemizedList>
+W dwóch pierwszych metodach nale¿y przesuwaæ listê wykresów przez ci±gniêcie
+pionowego suwaka na prawo od listy przy pomocy lewego klawisza myszki.
+
+</Para><Para>Z operacji zmiany okna mo¿na siê wycofaæ przez naci¶niêcie przycisku
+"Porzuæ" albo naci¶niêcie klawisza 'Esc' w dowolnym miejscu okienka.
+
+</Para><Para>Tytu³y zbiorów wykresów poprzedzone znakiem gwiazdki (*) dotycz± <Link linkend="panel-Okno-definiowalne">okien
+definiowalnych</Link>. Wybranie <Link linkend="panel-Okno-definiowalne">okna definiowalnego</Link>
+z listy tytu³ów powoduje, ¿e zawarto¶æ <Link linkend="Okno-graficzne">okna graficznego</Link>
+nie zmienia siê od razu lecz przedtem pojawia siê kolejne okienko.
+
+</Para><Para>Us³uga zmiany okna
+jest niedostêpna w trybie 
+<Link linkend="pasek-Rozdwojony-kursor">rozdwojonego kursora</Link>.
+
+</Para>
+
+
+<Section id="panel-Okno-definiowalne" >
+<title>Okno definiowalne</title>
+
+
+<Para>Okienko okna definiowalnego s³u¿y do skompletowania zbioru wykresów
+z innych grup wykresów - wymienionych w li¶cie "Dostêpne okna" w okienku
+<Link linkend="panel-Zmiana-okna">zmiany okna</Link> - i ustalenia odpowiedniego tytu³u
+w celu zdefiniowania w ten sposób nowego okna.
+
+</Para><Para>Okienko jest podzielone na szereg wierszy. W pierwszym z nich mo¿na
+zmieniæ tytu³ wybieranego okna definiowalnego - s³u¿y do tego okienko edycji.
+Aby zmieniæ tytu³ nale¿y do tego okienka skierowaæ -&gt; <Link linkend="keys-Sygnaly-z-klawiatury">sygna³y
+z klawiatury</Link> (jest ono wówczas otoczone czarn± ramk±).
+
+</Para><Para>Poszczególne klawisze maj± w okienku edycji nastêpuj±ce znaczenie:
+
+</Para><Para>Wszystkie klawisze literowe, znakowe (oprócz '*' - próba wprowadzenia
+tego znaku koñczy siê niepowodzeniem i generuje sygna³ d¼wiêkowy) i numeryczne
+pe³ni± w okienku edycyjnym rolê wstawiania tekstu, tzn. np. naci¶niêcie
+klawisza 'a' spowoduje napisanie litery a w okienku edycyjnym w miejscu,
+gdzie znajduje siê -&gt; <Link linkend="keys-Kursor-tekstowy">kursor tekstowy</Link>.
+Pewne klawisze pe³ni± te¿ funkcje specjalne:
+<ItemizedList>
+<ListItem><Para>
+Klawisze kursorów s³u¿± do przesuwania -&gt; <Link linkend="keys-Kursor-tekstowy">kursora
+tekstowego</Link> po edytowanym tek¶cie zgodnie z kierunkami strza³ek odpowiednio
+o jeden znak - klawisze {strza³ka w lewo} i  {strza³ka w prawo}. Klawisze
+{strza³ka w górê} i  {strza³ka w dó³} nie s± wykorzystywane. Przesuwanie
+-&gt; <Link linkend="keys-Kursor-tekstowy">kursora tekstowego</Link> klawiszami
+kursorów powoduje jego oddzielenie od -&gt; <Link linkend="keys-Kursor-wstawiania-tekstu">kursora
+wstawiania tekstu</Link>.</Para></ListItem>
+
+<ListItem><Para>
+Klawisze kursorów przy naci¶niêtym klawiszu 'Shift' s³u¿± do -&gt; <Link linkend="keys-Zaznaczanie-tekstu">zaznaczania
+tekstu</Link>.</Para></ListItem>
+
+<ListItem><Para>
+Kombinacje klawiszy 'Ctrl'-{strza³ka w lewo} i 'Ctrl'-{strza³ka w prawo}
+s³u¿± odpowiednio do przesuniêcia -&gt; <Link linkend="keys-Kursor-tekstowy">kursora
+tekstowego</Link> o jedno s³owo w lewo lub w prawo. Termin "s³owo" oznacza
+tu ci±g znaków oddzielonych odstêpami, st±d te¿ np. tekst:
+<token>"wyraz abc+def"</token>
+zawiera dwa s³owa.
+</Para></ListItem>
+
+<ListItem><Para>
+Klawisze 'Home' i 'End' s³u¿± do przesuwania -&gt; <Link linkend="keys-Kursor-tekstowy">kursora
+tekstowego</Link> odpowiednio na pocz±tek lub na koniec edytowanego tekstu.</Para></ListItem>
+
+<ListItem><Para>
+Klawisz 'Backspace' (nad klawiszem 'Enter' z rysunkiem strza³ki w lewo)
+s³u¿y do wycierania znaku znajduj±cego siê tu¿ przed -&gt; <Link linkend="keys-Kursor-tekstowy">kursorem
+tekstowym</Link>. Naci¶niêcie klawisza 'Backspace' przy -&gt; <Link linkend="keys-Zaznaczanie-tekstu">zaznaczonym
+tek¶cie</Link> powoduje usuniêcie tej porcji tekstu - identyczny skutek ma
+w tym przypadku naci¶niêcie klawisza 'Delete'.</Para></ListItem>
+
+<ListItem><Para>
+Kombinacja klawiszy 'Ctrl'-'Insert' powoduje skopiowanie -&gt; <Link linkend="keys-Zaznaczanie-tekstu">zaznaczonego
+tekstu</Link> (o ile taki wystêpuje) w celu pó¼niejszego powielenia go przez
+kombinacjê klawiszy 'Shift'-'Insert'.</Para></ListItem>
+
+<ListItem><Para>
+Kombinacja klawiszy 'Shift'-'Insert' powoduje powielenie w miejscu okre¶lonym
+przez -&gt; <Link linkend="keys-Kursor-wstawiania-tekstu">kursor wstawiania
+tekstu</Link> fragmentu tekstu wcze¶niej skopiowanego przez kombinacjê klawiszy
+'Ctrl'-'Insert' (o ile takowy istnieje).</Para></ListItem>
+
+<ListItem><Para>
+Kombinacja klawiszy 'Alt'-'litera' pozwala na uzyskanie polskich znaków
+diakrytycznych w okienku edycji. Poszczególnym literom odpowiadaj± kombinacje:</Para>
+
+<Para><ItemizedList>
+<ListItem><Para>
+'Alt'-'a' - ±</Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'c' - æ</Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'e' - ê</Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'l' - ³</Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'n' - ñ</Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'o' - ó</Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'s' - ¶</Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'x' - ¼</Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'z' - ¿</Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'Shift'-'a' - ¡</Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'Shift'-'c' - Æ</Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'Shift'-'e' - Ê</Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'Shift'-'l' - £</Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'Shift'-'n' - Ñ</Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'Shift'-'o' - Ó</Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'Shift'-'s' - ¦</Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'Shift'-'x' - ¬</Para></ListItem>
+
+<ListItem><Para>
+'Alt'-'Shift'-'z' - ¯</Para></ListItem>
+</ItemizedList></Para>
+</ListItem>
+</ItemizedList></Para>
+
+<Para>
+Naci¶niêcie niedozwolonej kombinacji klawiszy (np. 'Alt'-'d' czy '*') jak
+te¿ próba wpisania tytu³u d³u¿szego ni¿ d³ugo¶æ okienka edycyjnego koñczy
+siê niepowodzeniem i generuje sygna³ d¼wiêkowy.
+
+</Para><Para>Przy u¿yciu myszki mo¿na w okienku edycji zrealizowaæ nastêpuj±ce funkcje:
+<ItemizedList>
+<ListItem><Para>
+Naci¶niêcie lewego klawisza myszki s³u¿y do ustawienia -&gt; <Link linkend="keys-Kursor-tekstowy">kursora
+tekstowego</Link> w miejscu wskazywanym przez kursor myszki.</Para></ListItem>
+
+<ListItem><Para>
+Ci±gniêcie kursora myszki po okienku edycyjnym przy naci¶niêtym lewym klawiszu
+powoduje odpowiednie -&gt; <Link linkend="keys-Zaznaczanie-tekstu">zaznaczanie
+tekstu</Link>.</Para></ListItem>
+
+<ListItem><Para>
+-&gt; <Link linkend="keys-Podwojne-nacisniecie">Podwójne</Link> i -&gt; <Link linkend="keys-Potrojne-nacisniecie">potrójne</Link>
+naci¶niêcie lewego klawisza myszki powoduje odpowiednie -&gt; <Link linkend="keys-Zaznaczanie-tekstu">zaznaczanie
+tekstu</Link>.</Para></ListItem>
+</ItemizedList>
+Ni¿ej znajduj± siê wiersze, z których ka¿dy odpowiada kolejnemu wykresowi.
+Na pierwszym miejscu w ka¿dym wierszu znajduje siê przycisk z 
+<Link linkend="panel-Wybor-okna">nazw±
+okna</Link>, z którego wziêty jest dany wykres. Pozioma kreska zamiast nazwy
+oznacza, ¿e okno definiowalne nie bêdzie mia³o tego wykresu. Dalej znajduje
+siê przycisk z <Link linkend="panel-Wybor-wykresu-do-osi-X-Y">nazw± wykresu</Link> - lub z poziom±
+kresk± w przypadku jego braku. Nazwa jest nazw± skrótow± - t±, która jest
+wymieniana w lewym górnym rogu <Link linkend="Okno-graficzne">okna graficznego</Link>
+za tytu³em zbioru wy¶wietlanych wykresów. Aby wybraæ wykres do okna definiowalnego
+nale¿y nacisn±æ odpowiednie przyciski z <Link linkend="panel-Wybor-okna">nazw± okna</Link>
+b±d¼ <Link linkend="panel-Wybor-wykresu-do-osi-X-Y">nazw± wykresu</Link>, a nastêpnie w wy¶wietlonym
+okienku - analogicznym do okienka <Link linkend="panel-Zmiana-okna">zmiany okna</Link>
+- wybraæ odpowiedni± nazwê.
+
+</Para><Para>Dalej znajduje siê data i przycisk <Link linkend="datepopup-Zmiana-daty">zmiany
+daty</Link> przesuniêcia czasowego. W oknie definiowalnym mo¿liwe jest jednoczesne
+przegl±danie danych z ró¿nych okresów czasu - np. wykresu <Link linkend="radios-DZIEN">DNIA</Link>
+pewnej danej z 1993.01.01 i 1994.01.01 w tym samym <Link linkend="Okno-graficzne">oknie
+graficznym</Link>. To przesuniêcie czasowe wyznaczaj± podane w okienku okna
+definiowalnego daty. Ró¿nica czasowa miêdzy datami dla poszczególnych wykresów
+okre¶la ich przesuniêcie czasowe wzglêdem siebie. Do zmiany takiej daty
+s³u¿y odpowiedni przycisk <Link linkend="datepopup-Zmiana-daty">Zmiana daty</Link>.
+Nie mo¿na zmieniæ daty pierwszego wykresu, poniewa¿ jest ona punktem odniesienia
+wszystkich przesuniêæ (patrz te¿ <Link linkend="pasek-Blokowanie-wykresow">Blokowanie
+wykresów</Link>).
+
+</Para><Para>Z operacji ustalania wykresów mo¿na siê wycofaæ przez naci¶niêcie przycisku
+"Porzuæ" albo naci¶niêcie klawisza 'Esc' w dowolnym miejscu okienka. Wycofanie
+siê spowoduje wy¶wietlenie w <Link linkend="Okno-graficzne">oknie graficznym</Link> zbioru
+wykresów opisanego przez okienko okna definiowalnego w momencie jego pojawienia
+siê na ekranie (ewentualne zmiany konfiguracji wykresów i tytu³u okna s±
+ignorowane).
+
+</Para><Para>Wybrane wykresy musz± tworzyæ zwarty ci±g od numeru pierwszego tzn.
+nie jest mo¿liwe ustalenie takiego okna definiowalnego, w którym np. by³yby
+wykresy nr 1, 2, 4 i 5 a nie by³o wykresu nr 3.
+</Para>
+
+
+<Section id="panel-Wybor-okna" >
+<title>Wybór okna</title>
+
+
+<Para>Wybór okna jest analogiczny do <Link linkend="panel-Zmiana-okna">zmiany okna</Link>,
+z tym, ¿e wybierany tytu³ zbioru wykresów jest wy¶wietlany w przycisku
+okienka <Link linkend="panel-Okno-definiowalne">okna definiowalnego</Link>, po naci¶niêciu
+którego wywo³ane zosta³o to okienko. Tytu³y s± zgrupowane w formie listy
+"Dostêpne okna" w górnej czê¶ci okienka. Aby na danej pozycji nie by³ wy¶wietlany
+w <Link linkend="panel-Okno-definiowalne">oknie definiowalnym</Link> ¿aden wykres, nale¿y
+wybraæ ma³± poziom± kreskê z koñca listy.
+</Para>
+</Section>
+
+
+<Section id="panel-Wybor-wykresu" >
+<title>Wybór wykresu</title>
+
+<Para>Wybór wykresu jest analogiczny do <Link linkend="panel-Wybor-okna">wyboru okna</Link>
+z tym, ¿e w okienku wyboru wykresu zamiast listy tytu³ów okien znajduje
+siê lista pe³nych nazw wykresów z okna, którego tytu³ jest wy¶wietlany
+w przycisku okienka <Link linkend="panel-Okno-definiowalne">okna definiowalnego</Link>
+z tego samego wiersza co przycisk, którego naci¶niêcie wywo³a³o to okienko.
+</Para>
+</Section>
+</Section>
+</Section>
+
+
+<Section id="panel-Skok-pod-date" >
+<title>Skok pod datê</title>
+
+<Para>Okienko skoku pod datê (<xref linkend="skok-fig">) umo¿liwia przesuniêcie zawarto¶ci 
+<Link linkend="Okno-graficzne">okna
+graficznego</Link> do dowolnego okresu czasu, w którym zbierane by³y dane.
+<figure id="skok-fig">
+<title>Skok pod datê</title>
+<mediaobject>
+<!--<imageobject><imagedata fileref="pics/skok" format="gif"></imageobject>
+<imageobject><imagedata fileref="pics/skok" format="png"></imageobject>-->
+<imageobject><imagedata scale=60 fileref="pics/skok.png"></imageobject>
+</mediaobject>
+</figure>
+Przycisk <Link linkend="datepopup-Zmiana-daty">zmiany daty</Link> s³u¿y do
+wyznaczenia daty, natomiast znajduj±ce siê ni¿ej przyciski umo¿liwiaj±
+wybór okresu czasu danych, które bêd± wy¶wietlane w <Link linkend="Okno-graficzne">oknie
+graficznym</Link> - analogicznie jak przy u¿yciu <Link linkend="radios-Wyznacznik-okresu-czasu">wyznacznika
+okresu czasu</Link>. W zale¿no¶ci od wybranego okresu czasu pewne elementy
+wyznaczonej daty mog± zostaæ zaniedbane - np. przy wybraniu roku nieistotna
+jest godzina ustalona przy pomocy przycisku <Link linkend="datepopup-Zmiana-daty">Zmiana
+daty</Link>. Skok do <Link linkend="radios-SEZON">sezonu</Link> jest niemo¿liwy.
+
+</Para><Para>Skok nastêpuje przez jedn± z metod:
+<ItemizedList>
+<ListItem><Para>
+Naci¶niêcie lewego klawisza myszki przy kursorze myszki umiejscowionym
+na przycisku <Link linkend="datepopup-Zmiana-daty">zmiany daty</Link>, ustalenie
+daty, do której ma nast±piæ skok (patrz <Link linkend="datepopup-Zmiana-daty">Zmiana
+daty</Link>), naci¶niêcie lewego klawisza myszki przy kursorze myszki umiejscowionym
+na nazwie lub na przycisku w kszta³cie rombu po lewej stronie nazwy okresu
+czasu, jaki ma byæ wy¶wietlany w <Link linkend="Okno-graficzne">oknie graficznym</Link>,
+a nastêpnie naci¶niêcie przycisku "OK".</Para></ListItem>
+</ItemizedList>
+
+<ItemizedList>
+<ListItem><Para>
+Skierowanie -&gt; <Link linkend="keys-Sygnaly-z-klawiatury">sygna³ów z klawiatury</Link>
+do przycisku <Link linkend="datepopup-Zmiana-daty">zmiany daty</Link>, naci¶niêcie
+klawisza 'Space' i ustalenie daty, do której ma nast±piæ skok (patrz <Link linkend="datepopup-Zmiana-daty">Zmiana
+daty</Link>), skierowanie -&gt; <Link linkend="keys-Sygnaly-z-klawiatury">sygna³ów
+z klawiatury</Link> do przycisków okre¶laj±cych okres czasu, naci¶niêcie klawisza
+'Space' gdy nazwa okresu czasu, do którego ma nast±piæ skok otoczona jest
+czarn± ramk±, któr± mo¿na przesuwaæ przy pomocy klawiszy kursora i wreszcie
+naci¶niêcie klawisza 'Enter'.</Para></ListItem>
+</ItemizedList>
+Z operacji skoku pod datê mo¿na siê wycofaæ przez naci¶niêcie przycisku
+"Porzuæ" albo naci¶niêcie klawisza 'Esc' w dowolnym miejscu okienka.
+
+</Para><Para>Us³uga skoku pod datê jest niedostêpna w trybie 
+<Link linkend="pasek-Rozdwojony-kursor">rozdwojonego kursora</Link> 
+i w <Link linkend="panel-Wykres-Y-X">wykresie Y(X)</Link>.
+
+</Para>
+</Section>
+
+
+
+<Section id="panel-Srednia-za-okres" >
+<title>¦rednia za okres</title>
+
+<Para>Okienko ¶redniej za okres pozwala na wyznaczenie warto¶ci: minimalnej,
+¶redniej i maksymalnej dla danego wykresu, na którym znajduje siê kursor
+graficzny - analogicznie do linii tekstu znajduj±cej siê pod <Link linkend="Okno-graficzne">oknem
+graficznym</Link>. W ostatnim przypadku warto¶ci te dotycz± okresu
+czasu obejmowanego przez <Link linkend="Okno-graficzne">okno graficzne</Link> - w trybie
+pojedynczego kursora - lub okresu ograniczonego dwoma kursorami - w trybie
+<link linkend="pasek-Rozdwojony-kursor">rozdwojonego kursora</Link>. 
+Przyk³ad okna ¶redniej za okres pokazuje <xref linkend="srednia-fig">.
+
+<figure id="srednia-fig">
+<title>¦rednia za okres</title>
+<mediaobject>
+<!--<imageobject><imagedata fileref="pics/srednia" format="gif"></imageobject>
+<imageobject><imagedata fileref="pics/srednia" format="png"></imageobject>-->
+<imageobject><imagedata scale=60 fileref="pics/srednia.png"></imageobject>
+</mediaobject>
+</figure>
+
+Do ustalenia
+krañcowych dat w okienku ¶redniej za okres s³u¿± dwa przyciski <Link linkend="datepopup-Zmiana-daty">zmiana
+daty</Link> (kolejno¶æ dat tzn. która z nich jest wcze¶niejsza a która pó¼niejsza
+- jest obojêtna). Kolumna przycisków okre¶laj±cych okres czasu z jakiego
+bêd± liczone wspomniane warto¶ci ma identyczne znaczenie i funkcje jak
+w okienku <Link linkend="panel-Skok-pod-date">skoku pod datê</Link> (niemo¿liwe jest
+operowanie na ¶rednich tygodniowych - okresie <Link linkend="radios-SEZON">SEZONU</Link>).
+W odró¿nieniu od innych okienek przycisk OK w dolnej czê¶ci okienka nie
+powoduje jego znikniêcia, a tylko uaktualnienie warto¶ci minimalnej, ¶redniej
+i maksymalnej w ramce pod przyciskami wyboru okresu czasu. Aby usun±æ okienko
+z ekranu nale¿y nacisn±æ przycisk Porzuæ znajduj±cy siê w jego dolnej czê¶ci.
+
+</Para><Para>Obs³uga wyznaczenia ¶redniej za okres jest identyczna jak w okienku
+<Link linkend="panel-Skok-pod-date">skoku pod datê</Link> z dok³adno¶ci± do tego, ¿e
+w okienku ¶redniej za okres s± dwie daty do ustawienia.
+
+</Para><Para>Us³uga ¶redniej za okres jest niedostêpna w trybie <Link linkend="pasek-Rozdwojony-kursor">rozdwojonego
+kursora</Link> i w <Link linkend="panel-Wykres-Y-X">wykresie Y(X)</Link>.
+
+</Para>
+</Section>
+
+
+<Section id="panel-Komentarz" >
+<title>Komentarz</title>
+
+<Para>Naci¶niêcie tego przycisku wywo³uje edytor komentarzy (wyposa¿ony we
+w³asny system pomocy). Komentarz dotyczy czasu okre¶lonego przez po³o¿enie
+kursora graficznego w <Link linkend="Okno-graficzne">oknie graficznym</Link> i <Link linkend="radios-Wyznacznik-okresu-czasu">wyznacznik
+okresu czasu</Link>. Je¿eli np. w <Link linkend="Okno-graficzne">oknie graficznym</Link>
+wy¶wietlany jest miesi±c, a kursor graficzny znajduje siê na dacie 
+<emphasis>1993, Grudzieñ, 22, tydz. 52 ,¦roda</emphasis>,
+to edytowany komentarz bêdzie dotyczy³ miesi±ca grudnia roku 1993. Nazwa
+edytowanego komentarza (pliku), okre¶la datê którego dotyczy, w nastêpuj±cy
+sposób:
+<ItemizedList>
+<listItem>
+<Para>
+<token>YYYY</token> - rok YYYY
+</Para>
+</listItem>
+<listItem>
+<Para>
+<token>YYYY.MM</token> - miesi±c MM roku YYYY
+</Para>
+</listItem>
+<listItem>
+<Para>
+<token>YYYY.t.WW</token> - tydzieñ WW roku YYYY
+</Para>
+</listItem>
+<listItem>
+<Para>
+<token>YYYY.MM.DD</token> - dzieñ DD miesi±ca MM roku YYYY
+</Para>
+</listItem>
+<listItem>
+<Para><token>YYYY.s.LET</token> - sezon letni roku YYYY
+</Para>
+</listItem>
+<listItem>
+<Para><token>YYY1-YYY2.s.ZIM</token> - sezon zimowy z prze³omu lat YYY1 - YYY2.
+</Para>
+</listItem>
+</ItemizedList>
+Je¿eli w jakim¶ czasie - np. w ci±gu ca³ego <Link linkend="radios-DZIEN">DNIA</Link>
+- nie ma ¿adnych danych (nie mo¿na ustawiæ kursora graficznego tak, aby
+znajdowa³ siê na jakimkolwiek wykresie w tym <Link linkend="radios-DZIEN">DNIU</Link>),
+to aby zapisaæ komentarz do tego <Link linkend="radios-DZIEN">DNIA</Link> zgodnie
+z wy¿ej podan± konwencj±, nale¿y wywo³aæ edytor z dowolnej innej daty,
+napisaæ odpowiedni komentarz i przy zapisie odpowiednio do podanej konwencji
+zmieniæ nazwê pliku (patrz te¿ system pomocy edytora).
+
+</Para><Para>Aby uzyskaæ przegl±d zapisanych komentarzy (komentarz doskonale s³u¿y
+jako dokument np. awarii systemu) nale¿y przy przegl±daniu zawarto¶ci katalogu
+z plikami komentarzy zmieniæ maskê filtru katalogu (patrz te¿ system pomocy
+edytora) - i tak przyk³adowo:
+
+</Para><Para><token>*</token> - filtruje wszystkie komentarze (pliki)
+
+</Para><Para><token>1994.03.*</token> - filtruje wszystkie komentarze z <Link linkend="radios-DZIEN">DNI</Link>
+marca 1994.
+</Para>
+</Section>
+
+
+<Section id="panel-Okno-dodatkowe" >
+<title>Okno dodatkowe</title>
+
+<Para>Okno dodatkowe (<xref linkend="oknod-fig">) jest u¿yteczne przy niektórych 
+zbiorach wykresów i przy
+<Link linkend="radios-SEZON">SEZONIE</Link>.
+
+<figure id="oknod-fig">
+<title>Okno dodatkowe</title>
+<mediaobject>
+<!--<imageobject><imagedata fileref="pics/oknod" format="gif"></imageobject>
+<imageobject><imagedata fileref="pics/oknod" format="png"></imageobject>-->
+<imageobject><imagedata scale=50 fileref="pics/oknod.png"></imageobject>
+</mediaobject>
+</figure>
+
+</Para><Para>Dla zbiorów wykresów, w których po¿±dany jest ¶redni rozk³ad procentowy
+- np. wydajno¶ci ciep³owni - okno dodatkowe zawiera wykres tortowy opisuj±cy
+procentowy udzia³ warto¶ci poszczególnych wykresów w wykresie sumarycznym
+(dla wydajno¶ci ciep³owni s± to odpowiednio: wydajno¶ci kot³ów i wydajno¶æ
+ciep³owni jako takiej) przy czym suma warto¶ci wykresów sk³adowych wcale
+nie musi byæ równa warto¶ci wykresu sumarycznego. W trybie pojedynczego
+kursora wykres tortowy dotyczy daty wskazywanej przez kursor graficzny,
+natomiast w trybie <Link linkend="pasek-Rozdwojony-kursor">rozdwojonego
+kursora</Link> dotyczy on przedzia³u czasu pomiêdzy pierwszym a drugim kursorem.
+
+</Para><Para>Dla zbiorów wykresów, w których po¿±dana jest znajomo¶æ sumy warto¶ci
+z pewnego okresu czasu (np. dostarczony wêgiel w zbiorze wykresów opisuj±cych
+wagê kot³a), okno dodatkowe wy¶wietla odpowiednio kolorami poszczególnych
+wykresów te warto¶ci sumaryczne. W trybie pojedynczego kursora okresem,
+z którego liczone s± warto¶ci sumaryczne jest okres obejmowany przez ca³e
+<Link linkend="Okno-graficzne">okno graficzne</Link>. W trybie <Link linkend="pasek-Rozdwojony-kursor">rozdwojonego
+kursora</Link> okres ten jest wyznaczony przez pierwszy i drugi kursor. Wykresy,
+dla których okre¶la siê warto¶ci sumaryczne przedstawiaj± dane liczone
+w jednostkach na godzinê (np. t/h, m3/h). St±d warto¶æ sumaryczna z danego
+okresu jest sum± iloczynów warto¶ci z poszczególnych momentów czasowych
+z tego okresu i d³ugo¶ci (w godzinach) tych momentów. Przyk³adowo: w trybie
+pojedynczego kursora dla <Link linkend="Okno-graficzne">okna graficznego</Link> przedstawiaj±cego
+<Link linkend="radios-MIESIAC">MIESI¡C</Link> od 1993.11.01 do 1993.12.01 (31
+dni) warto¶ci sumaryczne podane s± jako:
+
+<ItemizedList>
+<ListItem><Para>
+<token>31 (dni) * 24 (godziny) * (¶rednie warto¶ci z poszczególnych dni)</token>
+</Para></listItem>
+</itemizedlist>
+a dla <Link linkend="Okno-graficzne">okna graficznego</Link> z wykresami <Link linkend="radios-DZIEN">DNIA</Link>
+w trybie <Link linkend="pasek-Rozdwojony-kursor">rozdwojonego kursora</Link>
+z pierwszym kursorem w dacie 1993.12.15 7:20 i drugim kursorem w dacie
+1993.12.15 13:30 warto¶ci sumaryczne podane s± jako:
+<ItemizedList>
+<ListItem><Para>
+<token>38 (próbek 10-cio min) * 1/6 (godziny) * (warto¶ci poszczególnych
+próbek)</token>
+</Para></listItem>
+</itemizedlist>
+Nale¿y pamiêtaæ, ¿e warto¶ci sumaryczne liczone w ten sposób mog± byæ przek³amane,
+je¶li s± liczone z okresów innych ni¿ z <Link linkend="radios-DZIEN">DNIA</Link>.
+Wynika to z faktu, i¿ w przypadku braku danych z pewnego okresu, ¶rednie
+liczone dla d³u¿szych okresów czasu nie uwzglêdniaj± nieistniej±cych danych,
+a przy sumie zak³ada siê, ¿e dana ¶rednia jest prawdziwa dla ca³ego reprezentowanego
+przez ni± okresu czasu. Skrajnym przyk³adem mo¿e byæ przypadek, gdzie w
+pewnym miesi±cu dane z wagi kot³a by³y zbierane tylko przez kilka dni -
+kiedy kocio³ pracowa³ - a potem sterownik uleg³ awarii przez resztê miesi±ca,
+gdy kocio³ sta³. Na wykresie <Link linkend="radios-ROK">ROCZNYM</Link> jednak,
+przedstawiona bêdzie ¶rednia z tych dni, gdy kocio³ pracowa³ (by³a utrzymywana
+komunikacja) a warto¶æ sumaryczna liczona z tego miesi±ca bêdzie przedstawiona
+tak, jakby kocio³ pracowa³ przez ca³y ten miesi±c z parametrami takimi
+jak w dniach, w których zebrano dane.
+
+</Para><Para>W <Link linkend="radios-SEZON">SEZONIE</Link> w oknie dodatkowym przedstawione
+s± warto¶ci minimalna, ¶rednia i maksymalna dla wszystkich wykresów z <Link linkend="Okno-graficzne">okna
+graficznego</Link> oraz ewentualnie warto¶ci sumaryczne dla wykresów, dla
+których jest to wymagane (patrz wy¿ej). W trybie <Link linkend="pasek-Rozdwojony-kursor">rozdwojonego
+kursora</Link> o ile jest potrzeba liczenia warto¶ci sumarycznych - podawane
+s± tylko te warto¶ci, w przeciwnym wypadku zawarto¶æ okna nie zmienia siê.
+
+</Para><Para>Okno dodatkowe mo¿na dowolnie przesuwaæ po ca³ym ekranie. Jego usuniêcie
+jest mo¿liwe przy pomocy menu sustemowego lub przez powtórne naci¶niêcie
+przycisku okna dodatkowego w <Link linkend="panel-Panel-uslugowy">panelu us³ugowym</Link>.
+
+</Para>
+</Section>
+
+
+<Section id="panel-Granice-sezonow" >
+<title>Granice sezonów</title>
+
+<Para>Okienko granic sezonów s³u¿y do ustalania tych granic przy pomocy dwóch
+przycisków <Link linkend="datepopup-Zmiana-daty">zmiany daty</Link>. 
+Przyk³ad tego okna pokazuje <xref linkend="granice-fig">.
+
+<figure id="granice-fig">
+<title>Granice sezonów</title>
+<mediaobject>
+<!--<imageobject><imagedata fileref="pics/granice" format="gif"> </imageobject>
+<imageobject><imagedata fileref="pics/granice" format="png"> </imageobject>-->
+<imageobject><imagedata scale=60 fileref="pics/granice.png"> </imageobject>
+</mediaobject>
+</figure>
+
+
+Granice
+mo¿na zmieniaæ dowolnie przy zachowaniu nastêpuj±cyh regu³:
+<ItemizedList>
+<ListItem><Para>
+sezon letni musi siê zaczynaæ przed sezonem zimowym danego roku</Para></ListItem>
+
+<ListItem><Para>
+mo¿na zmieniaæ granice sezonów z przedzia³u lat 1980-2030.</Para></ListItem>
+</ItemizedList>
+Dodatkowo je¶li na skutek zmiany jeden z sezonów bêdzie trwaæ d³u¿ej ni¿
+34 tygodnie (tyle ile wynosi maksymalna liczba wy¶wietlanych danych w oknie
+<Link linkend="radios-SEZON">SEZONU</Link>) wypisany zostanie odpowiedni komunikat
+ostrzegaj±cy, ale nie zostanie to potraktowane jako b³±d.
+
+</Para><Para>Zmiana granicy sezonu odbywa siê analogicznie do zmiany daty w okienku
+<Link linkend="panel-Skok-pod-date">skoku pod datê</Link> czy okienku <Link linkend="panel-Srednia-za-okres">¶redniej
+za okres</Link> - z dok³adno¶ci± do tego, ¿e w okienku granic sezonów nie
+ma przycisków wyznaczaj±cych okres czasu jak to ma miejsce we wspomnianych
+okienkach.
+
+</Para>
+</Section>
+
+
+<Section id="panel-Wykres-Y-X" >
+<title>Wykres Y(X)</title>
+
+<Para>Us³uga wykresu Y(X) umo¿liwia wy¶wietlenie w <Link linkend="Okno-graficzne">oknie
+graficznym</Link> nie wykresów zebranych danych w funkcji czasu, ale zale¿no¶ci
+jednej wielko¶ci (reprezentowanej przez etykietê "O¶ Y") od drugiej (reprezentowanej
+przez etykietê "O¶ X"). Poniewa¿ wszystkie dane dostêpne w <Link linkend="help-Przegladanie">programie
+przegl±daj±cym</Link> uszeregowane s± wed³ug dat, z jakich one pochodz±, przy
+tworzeniu wykresu Y(X) konieczne jest okre¶lenie przedzia³u czasu, z jakiego
+ma zostaæ dokonana analiza. Przy konstruowaniu wykresu mo¿e siê zdarzyæ,
+¿e dla podanego przedzia³u czasu, z jakiego za¿±dano analizy nie ma ¿adnych
+danych, chocia¿ zarówno dana X jak i dana Y wystêpuj± w tym przedziale
+- jest to spowodowane tym, ¿e nie wyst±pi³ ani jeden moment, gdy dostêpne
+s± jednocze¶nie dana X i dana Y.
+
+</Para><Para>Jako parametry X i Y mo¿na dobraæ dowolne wykresy.
+
+</Para><Para>Po przej¶ciu w tryb wykresu Y(X) nie jest mo¿liwe "wyprowadzenie" kursora
+graficznego poza obrêb <Link linkend="Okno-graficzne">okna graficznego</Link>, tak jak
+to ma miejsce w wiêkszo¶ci <Link linkend="radios-Wyznacznik-okresu-czasu">okresów
+czasu</Link> - poza <Link linkend="radios-SEZON">SEZONEM</Link>.
+
+</Para><Para>Okienko tworzenia wykresu Y(X), które pokazuje <xref linkend="wykresxy-fig">,
+jest podzielone na trzy czê¶ci.
+
+<figure id="wykresxy-fig">
+<title>Okienko konfiguracji wykresu Y(X)</title>
+<mediaobject>
+<!--<imageobject><imagedata fileref="pics/wykresxy" format="gif"></imageobject>
+<imageobject><imagedata fileref="pics/wykresxy" format="png"></imageobject>-->
+<imageobject><imagedata scale=60 fileref="pics/wykresxy.png"></imageobject>
+</mediaobject>
+</figure>
+
+W pierwszej z nich dokonywany
+jest wybór wykresów X i Y odpowiednio w pierwszym i drugim wierszu. Wyboru
+dokonuje siê na analogicznych zasadach jak w <Link linkend="panel-Okno-definiowalne">oknie
+definiowalnym</Link>. Wiêkszy przycisk na pocz±tku ka¿dego z wierszy s³u¿y
+do <Link linkend="panel-wybor-okna-na-osi-X-Y">wyboru nazwy okna</Link>, z którego wziêty
+bêdzie dany wykres. Nastêpny, mniejszy przycisk s³u¿y do <Link linkend="panel-wybor-wykresu-do-osi-X-Y">wyboru
+nazwy wykresu</Link>. Nazwa jest nazw± skrótow±. W celu wybrania wykresów
+X i Y nale¿y nacisn±æ odpowiednie przyciski, a nastêpnie w wy¶wietlonym
+okienku - b±d¼ <Link linkend="panel-wybor-okna-na-osi-X-Y">wyboru okna do osi X/Y</Link>
+b±d¼ <Link linkend="panel-wybor-wykresu-do-osi-X-Y">wyboru wykresu do osi X/Y</Link>
+- wybraæ odpowiedni± nazwê.
+
+</Para><Para>W drugiej czê¶ci, poni¿ej wcze¶niej opisanej znajduj± siê dwa przyciski
+<Link linkend="datepopup-Zmiana-daty">zmiany daty</Link> s³u¿±ce do okre¶lenia
+granic przedzia³u, z którego przeprowadzana bêdzie analiza. Kolejno¶æ dat,
+tzn. która z nich jest wcze¶niejsza, a która pó¼niejsza - jest obojêtna.
+
+</Para><Para>Najni¿ej, tu¿ nad przyciskami operacyjnymi okienka, znajduje siê trzecia
+czê¶æ, zawieraj±ca kolumnê przycisków okre¶laj±cych okres czasu, z jakiego
+bêdzie przeprowadzana analiza. Przyciski te maj± identyczne znaczenie i
+funkcje jak w okienkach <Link linkend="panel-Skok-pod-date">skoku pod datê</Link> i <Link linkend="panel-Srednia-za-okres">¶redniej
+za okres</Link> (niemo¿liwa jest analiza ¶rednich tygodniowych - z okresu
+<Link linkend="radios-SEZON">SEZONU</Link>).
+
+</Para><Para>Obs³uga poszczególnych przycisków jest identyczna jak w przypadku innych,
+wspomnianych wcze¶niej okienek: w czê¶ci pierwszej - jak w <Link linkend="panel-Okno-definiowalne">oknie
+definiowalnym</Link>, w czê¶ci drugiej - jak w <Link linkend="panel-Okno-definiowalne">oknie
+definiowalnym</Link>, oknie <Link linkend="panel-Skok-pod-date">skoku pod datê</Link> i
+<Link linkend="panel-Srednia-za-okres">¶redniej za okres</Link>, w czê¶ci trzeciej -
+jak w oknie <Link linkend="panel-Skok-pod-date">skoku pod datê</Link> i <Link linkend="panel-Srednia-za-okres">¶redniej
+za okres</Link>.
+
+</Para><Para>Z operacji ustalania wykresu Y(X) mo¿na siê wycofaæ przez naci¶niêcie
+przycisku "Porzuæ" albo naci¶niêcie klawisza 'Esc' w dowolnym miejscu okienka.
+
+</Para><Para>Us³uga wykresu Y(X) jest niedostêpna w trybie 
+<Link linkend="pasek-Rozdwojony-kursor">rozdwojonego kursora</Link>.
+
+Przyk³adowy wykres Y(X) pokazuje <xref linkend="wykresxymain-fig">.
+
+<figure id="wykresxymain-fig">
+<title>Program przegl±daj±cy - wykres Y(X)</title>
+<mediaobject>
+<!--<imageobject><imagedata fileref="pics/wykresxymain" format="gif"></imageobject>
+<imageobject><imagedata fileref="pics/wykresxymain" format="png"></imageobject>-->
+<imageobject><imagedata scale=60 fileref="pics/wykresxymain.png"></imageobject>
+</mediaobject>
+</figure>
+</Para>
+
+<Section id="panel-Wybor-okna-na-osi-X-Y" >
+<title>Wybór okna na osi X/Y</title>
+
+
+<Para>Wybór okna do osi X/Y jest analogiczny do <Link linkend="panel-Wybor-okna">wyboru
+okna</Link> w <Link linkend="panel-Okno-definiowalne">oknie definiowalnym</Link>, z tym,
+¿e wybierany tytu³ zbioru wykresów wy¶wietlany jest w przycisku okienka
+<Link linkend="panel-Wykres-Y-X">wykresu Y(X)</Link>, po naci¶niêciu którego wywo³ane
+zosta³o to okienko. W odró¿nieniu od okienka <Link linkend="panel-Wybor-okna">wyboru
+okna</Link> w li¶cie "Dostêpne okna" w okienku wyboru okna do osi X/Y nie
+ma ma³ej poziomej kreski - w <Link linkend="panel-Wykres-Y-X">wykresie Y(X)</Link> musz±
+byæ okre¶lone obydwa parametry.
+</Para>
+</Section>
+
+
+<Section id="panel-Wybor-wykresu-do-osi-X-Y" >
+<title>Wybór wykresu do osi X/Y</title>
+
+
+<Para>Wybór wykresu do osi X/Y jest analogiczny do <Link linkend="panel-Wybor-wykresu-do-osi-X-Y">wyboru
+wykresu</Link> w <Link linkend="panel-Okno-definiowalne">oknie definiowalnym</Link>.
+</Para>
+
+</Section>
+</Section>
+
+</chapter>
+
+
+<chapter id="pasek-Pasek-narzedziowy" >
+<title>Pasek narzêdziowy</title>
+
+<Section><Title>Informacje ogólne</Title>
+<Para>Pasek narzêdziowy zawiera 15 przycisków udostêpniaj±cych ró¿ne us³ugi:
+<ItemizedList>
+<ListItem><Para>
+<Link linkend="pasek-Wyjscie-z-programu">Wyj¶cie z programu</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="pasek-Rozdwojony-kursor">Rozdwojony kursor</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="pasek-Synchronizacja">Synchronizacja</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="pasek-Blokowanie-wykresow">Blokowanie wykresów (ilo¶æ przycisków równa maksymalnej
+ilo¶ci wy¶wietlanych wykresów)</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="pasek-Wydruk">Wydruk</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="pasek-Filtr">Filtr</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="pasek-Pomoc">Pomoc</Link></Para></ListItem>
+
+<ListItem><Para>
+<Link linkend="pasek-Informacja">Informacja</Link></Para></ListItem>
+</ItemizedList>
+
+Nie wszystkie z nich s± zawsze dostêpne (patrz opis poszczególnych us³ug).
+Symbole niedostêpnych us³ug s± przydymione.
+
+</Para><Para>Us³ugi mo¿na wywo³ywaæ przez:
+
+<ItemizedList>
+<ListItem><Para>
+Naci¶niêcie lewego klawisza myszki przy kursorze myszki umiejscowionym
+na przycisku danej us³ugi.</Para></ListItem>
+
+<ListItem><Para>
+Naci¶niêcie odpowiedniego klawisza, je¶li -&gt; <Link linkend="keys-Sygnaly-z-klawiatury">sygna³y
+z klawiatury</Link> kierowane s± do okna graficznego i dana us³uga mo¿e byæ
+wywo³ana w ten sposób (patrz opis poszczególnych us³ug).</Para></ListItem>
+
+<ListItem><Para>
+Naci¶niêcie klawisza 'Space' lub 'Enter' gdy -&gt; <Link linkend="keys-Sygnaly-z-klawiatury">sygna³y
+z klawiatury</Link> kierowane s± do paska narzêdziowego i przycisk us³ugi,
+która ma byæ wywo³ana jest otoczony czarn± ramk±, któr± mo¿na przesuwaæ
+z przycisku na przycisk przy pomocy klawiszy kursora.</Para></ListItem>
+</ItemizedList></Para>
+</Section>
+
+<Section id="pasek-Wyjscie-z-programu" >
+<title>Wyj¶cie z programu</title>
+<Para>Ikona: 
+<inlinemediaobject>
+<!--<imageobject> <imagedata fileref="pics/exit" format="gif"> </imageobject>
+<imageobject> <imagedata fileref="pics/exit" format="png"> </imageobject>-->
+<imageobject> <imagedata scale="80" fileref="pics/exit.png"> </imageobject>
+</inlinemediaobject>
+</Para>
+
+<Para>Okienko wyj¶cia z programu zawiera ostatnie pytanie zadawane przed opuszczeniem
+<Link linkend="help-Przegladanie">programu przegl±daj±cego</Link>. Jest ono wywo³ywane na
+wypadek, gdyby u¿ytkownik niechc±cy nacisn±³ ma³y przycisk wyj¶cia z programu.
+Po wyj¶ciu zapamiêtywana jest konfiguracja <Link linkend="panel-Okno-definiowalne">okien
+definiowalnych</Link> - przy nastêpnym wywo³aniu <Link linkend="help-Przegladanie">programu
+przegl±daj±cego</Link> bêdzie ona identyczna.
+</Para>
+</Section>
+<Section id="pasek-Rozdwojony-kursor" >
+<title>Rozdwojony kursor</title>
+
+<Para>Ikona:
+<inlinemediaobject>
+<!--<imageobject> <imagedata fileref="pics/dblcur" format="gif"> </imageobject>
+<imageobject> <imagedata fileref="pics/dblcur" format="png"> </imageobject>-->
+<imageobject> <imagedata scale="80" fileref="pics/dblcur.png"> </imageobject>
+</inlinemediaobject>
+</Para>
+
+<Para>Naci¶niêcie tego przycisku 
+powoduje efekt analogiczny do naci¶niêcia
+klawisza 'Backspace' w <Link linkend="Okno-graficzne">oknie graficznym</Link> 
+- przej¶cie z/do trybu rozdwojonego kursora. Podczas normalnej pracy w 
+<Link linkend="Okno-graficzne">oknie
+graficznym</Link> znajduje siê jeden kursor graficzny. Wyznaczone przez niego
+data i warto¶æ danej z wykresu s± wypisane tu¿ pod <Link linkend="Okno-graficzne">oknem
+graficznym</Link>. W trybie rozdwojonego kursora wykres, na którym znajduje
+siê kursor graficzny zostaje pogrubiony (du¿a czê¶æ opcji jest w tym trybie
+niedostêpna - min. przesuniêcie kursora graficznego na inny wykres w oknie),
+a czê¶æ wykresu pomiêdzy pierwszym a drugim kursorem wy¶wietlana jest kolorem
+bia³ym. Pierwsza linia tekstu pod <Link linkend="Okno-graficzne">oknem graficznym</Link>
+opisuj±ca kursor pozostaje od tego momentu bez zmian (do czasu powrotu
+do trybu pojedynczego kursora), a nowe po³o¿enie kursora graficznego jest
+opisywane w ni¿szej linii - jest to drugi kursor. Odt±d przesuwanie kursora
+graficznego dotyczy wy³±cznie drugiego kursora. Linia tekstu pod <Link linkend="Okno-graficzne">oknem
+graficznym</Link> opisuj±ca warto¶ci minimaln±, ¶redni± i maksymaln±, opisuje
+teraz okresu czasu pomiêdzy dwoma kursorami. To samo dotyczy warto¶ci wy¶wietlanych
+w <Link linkend="panel-Okno-dodatkowe">oknie dodatkowym</Link>. Kolejno¶æ kursorów
+w czasie jest obojêtna. Kursory mog± siê tak¿e pokrywaæ.
+
+</Para>
+</Section>
+
+
+<Section id="pasek-Synchronizacja" >
+<title>Synchronizacja</title>
+
+<Para>Ikona:
+<inlinemediaobject>
+<!--<imageobject> <imagedata fileref="pics/synchro" format="gif"> </imageobject>
+<imageobject> <imagedata fileref="pics/synchro" format="png"> </imageobject>-->
+<imageobject> <imagedata scale="80" fileref="pics/synchro.png"> </imageobject>
+</inlinemediaobject>
+</Para>
+
+<Para>W <Link linkend="panel-Okno-definiowalne">oknie definiowalnym</Link> mo¿liwe
+jest przesuwanie wykresów wzglêdem siebie w czasie. Mo¿na tego dokonaæ
+przez odpowiednie ustawienie dat przy ustalaniu zawarto¶ci 
+<Link linkend="panel-Okno-definiowalne">okna definiowalnego</Link>, 
+b±d¼ pó¼niej przez <Link linkend="pasek-Blokowanie-wykresow">blokowanie
+wykresów</Link> i przesuwanie kursorem graficznym zawarto¶ci 
+<Link linkend="Okno-graficzne">okna
+graficznego</Link>. Aby zsynchronizowaæ wykresy w czasie wzglêdem wykresu,
+na którym w danej chwili znajduje siê kursor graficzny, wystarczy nacisn±æ 
+ten przycisk.
+Synchronizacja zmienia przesuniêcia czasowe wykresów wzglêdem
+siebie (redukuje je do zera), ale nie zmienia <Link linkend="pasek-Blokowanie-wykresow">zablokowañ</Link>.
+Identyczny efekt mo¿na uzyskaæ przez naci¶niêcie klawisza 's' w <Link linkend="Okno-graficzne">oknie
+graficznym</Link>.
+</Para>
+</Section>
+<Section id="pasek-Blokowanie-wykresow" >
+<title>Blokowanie wykresów</title>
+
+
+<Para>Ikony:
+<inlinemediaobject>
+<!--<imageobject> <imagedata fileref="pics/frozen01" format="gif"> </imageobject>
+<imageobject> <imagedata fileref="pics/frozen01" format="png"> </imageobject>-->
+<imageobject> <imagedata scale="80" fileref="pics/frozen01.png"> </imageobject>
+</inlinemediaobject>,
+<inlinemediaobject>
+<!--<imageobject> <imagedata fileref="pics/frozen02" format="gif"> </imageobject>
+<imageobject> <imagedata fileref="pics/frozen02" format="png"> </imageobject>-->
+<imageobject> <imagedata scale="80" fileref="pics/frozen02.png"> </imageobject>
+</inlinemediaobject>
+a¿ do
+<inlinemediaobject>
+<!--<imageobject> <imagedata fileref="pics/frozen12" format="gif"> </imageobject>
+<imageobject> <imagedata fileref="pics/frozen12" format="png"> </imageobject>-->
+<imageobject> <imagedata scale="80" fileref="pics/frozen12.png"> </imageobject>
+</inlinemediaobject>
+</Para>
+
+<Para>Ka¿dy przycisk blokowania wykresów posiada numer, okre¶laj±cy którego
+wykresu dotyczy (odpowiednik numeru z <Link linkend="checks-Lista-wykresow">listy
+wykresów</Link>). W <Link linkend="Okno-graficzne">oknie graficznym</Link> mo¿na blokowaæ
+w czasie wykresy - wszystkie oprócz pierwszego (nie zmniejsza to funkcjonalno¶ci
+programu, poniewa¿ blokowanie w czasie wykresów ma sens tylko wtedy, gdy
+choæ jeden wykres jest niezablokowany - w tym przypadku musi byæ nim wykres
+pierwszy). Blokowanie w czasie polega na tym, ¿e zmiana zawarto¶ci <Link linkend="Okno-graficzne">okna
+graficznego</Link> przez przesuwanie kursora graficznego poza jego obrêb powoduje,
+¿e nie wszystkie wykresy przesuwaj± siê razem z zawarto¶ci± <Link linkend="Okno-graficzne">okna
+graficznego</Link>. Przesuwaj± siê zawsze wykresy niezablokowane, natomiast
+wykresy zablokowane przesuwaj± siê wtedy, gdy kursor graficzny wychodz±c
+poza obrêb <Link linkend="Okno-graficzne">okna graficznego</Link> znajdowa³ siê na jednym
+z zablokowanych wykresów. To samo dotyczy zmiany zawarto¶ci <Link linkend="Okno-graficzne">okna
+graficznego</Link> przy pomocy <Link linkend="panel-Skok-pod-date">skoku pod
+datê</Link>. Blokowanie wykresów jest niezale¿ne od przesuniêcia czasowego
+wykresów ustalonego przy <Link linkend="panel-Okno-definiowalne">definiowaniu
+okna</Link>, aczkolwiek we wspomniany wy¿ej sposób to przesuniêcie czasowe
+jest zmieniane. Do zgrania wykresów w czasie wzglêdem wykresu, na którym
+znajduje siê kursor graficzny s³u¿y us³uga <Link linkend="pasek-Synchronizacja">synchronizacji</Link>.
+Nale¿y pamiêtaæ, i¿ przy przesuniêciu czasowym wykresów pozioma o¶ <Link linkend="Okno-graficzne">okna
+graficznego</Link> nie musi poprawnie opisywaæ wszystkich wykresów - w przypadku
+przesuniêcia czasowego, czêsto jest to niemo¿liwe. Dlatego do dok³adnego
+okre¶lenia czasu, z którego wy¶wietlane s± dane z wykresów, najlepiej jest
+u¿ywaæ kursora graficznego.
+</Para>
+</Section>
+
+<Section id="pasek-odswiez">
+<title>Od¶wie¿anie ekranu</title>
+<Para>
+Ikona:
+<inlinemediaobject>
+<!--<imageobject> <imagedata fileref="pics/reload" format="gif"> </imageobject>
+<imageobject> <imagedata fileref="pics/reload" format="png"> </imageobject>-->
+<imageobject> <imagedata scale="80" fileref="pics/reload.png"> </imageobject>
+</inlinemediaobject>
+</Para>
+
+<Para>
+Przycik ten wymusza to na programie przegl±daj±cym przeczytanie naj¶wie¿szych danych
+z bazy danych i pokazanie ich na wykresie. 
+Wprawdzie program przegl±daj±cy robi tê czynno¶æ
+automatycznie co 10 minut, lecz czasem nowe dane pojawiaj± siê w trakcie 
+dziesiêciominutowego kwantu. Wówczas mo¿liwo¶æ rêcznego ponaglenia
+programu jest nie do przecenienia.
+</Para>
+</Section>
+
+<Section id="pasek-Wydruk" >
+<title>Wydruk</title>
+
+<Para>
+Ikona:
+<inlinemediaobject>
+<!--<imageobject> <imagedata fileref="pics/print" format="gif"> </imageobject>
+<imageobject> <imagedata fileref="pics/print" format="png"> </imageobject>-->
+<imageobject> <imagedata scale="80" fileref="pics/print.png"> </imageobject>
+</inlinemediaobject>
+</Para>
+<Para>
+Opcja drukowania s³u¿y do sporz±dzenia pliku, opisuj±cego aktualnie wy¶wietlane
+<Link linkend="Okno-graficzne">okno graficzne</Link>. 
+Opis ten zawiera obraz samego <Link linkend="Okno-graficzne">okna
+graficznego</Link>, nazwê obiektu, z którego pochodz± dane, tytu³ drukowanego
+<Link linkend="Okno-graficzne">okna graficznego</Link>, przedzia³ i <Link linkend="radios-Wyznacznik-okresu-czasu">okres
+czasu</Link> drukowanych danych (w przypadku <Link linkend="Okno-graficzne">wykresu Y(X)</Link>
+przedzia³ i okres czasu dotycz± przeprowadzonej analizy) oraz listê wykresów
+z podaniem warto¶ci minimalnej, ¶redniej, maksymalnej i ewentualnie sumarycznej
+(o ile warto¶æ ta jest podawana dla danego wykresu w <Link linkend="panel-Okno-dodatkowe">oknie
+dodatkowym</Link>) z drukowanego przedzia³u czasu (dla <Link linkend="Okno-graficzne">wykresu
+Y(X)</Link> podawane warto¶ci dotycz± zakresu osi X, natomiast warto¶æ sumaryczna
+nigdy nie jest podawana). 
+Ze wzglêdu
+na zachowanie jak najwiêkszej czytelno¶ci wydruku, je¶li w aktualnie wy¶wietlanym
+<Link linkend="Okno-graficzne">oknie graficznym</Link> wystêpuje wiêcej ni¿ jedna o¶
+pionowa (zgromadzone w nim wykresy opisuj± ró¿ne wielko¶ci fizyczne), drukowane
+s± tylko dwie pierwsze osie - co nie przeszkadza w poprawnym drukowaniu
+pozosta³ych wykresów. Opisy przy osiach pionowych nie s± jednostkami (jednostki
+s± opisane przy warto¶ciach poszczególnych wykresów), ale skrótowymi nazwami
+wykresów - tymi samymi, które s± wy¶wietlane w górnej czê¶ci <Link linkend="Okno-graficzne">okna
+graficznego</Link>. Te same skrótowe nazwy podane s± w pobli¿u poszczególnych
+wykresów na wydruku umo¿liwiaj±c ich identyfikacjê. Us³ugê wydruku mo¿na
+tak¿e wywo³aæ przez naci¶niêcie klawisza 'w' przy -&gt; <Link linkend="keys-Sygnaly-z-klawiatury">sygna³ach
+z klawiatury</Link> skierowanych do <Link linkend="Okno-graficzne">okna graficznego</Link>.
+
+</Para>
+<para>
+Po wybraniu ikony wydruku pojawia siê na ekranie okno, pozwalaj±ce na wybranie jednej
+z zainstalowanych w systemie drukarek, a tak¿e ewentualnych opcji dotycz±cych wydruku.
+<note>
+<para>
+Pod adresem <ulink url="http://www.szarp.com.pl/howto/ipk/html/draw.html#DRAW-PRINT">
+http://www.szarp.com.pl/howto/ipk/html/draw.html#DRAW-PRINT</ulink> znajduje siê opis
+konfiguracji drukowania w programie przegl±daj±cym. Dokumentacja pod adresem
+<ulink url="http://www.szarp.com.pl/howto/howto/html/cups-kdeprint.html">
+http://www.szarp.com.pl/howto/howto/html/cups-kdeprint.html</ulink> opisuje sposób
+konfiguracji nowej drukarki pod Linuksem.
+</para>
+</note>
+</para>
+
+</Section>
+<Section id="pasek-Filtr" >
+<title>Filtr</title>
+
+<Para>
+Ikony:
+<inlinemediaobject>
+<!--<imageobject> <imagedata fileref="pics/filter0" format="gif"> </imageobject>
+<imageobject> <imagedata fileref="pics/filter0" format="png"> </imageobject>-->
+<imageobject> <imagedata scale="80" fileref="pics/filter0.png"> </imageobject>
+</inlinemediaobject>,
+<inlinemediaobject>
+<!--<imageobject> <imagedata fileref="pics/filter1" format="gif"> </imageobject>
+<imageobject> <imagedata fileref="pics/filter1" format="png"> </imageobject>-->
+<imageobject> <imagedata scale="80" fileref="pics/filter1.png"> </imageobject>
+</inlinemediaobject>,
+<inlinemediaobject>
+<!--<imageobject> <imagedata fileref="pics/filter2" format="gif"> </imageobject>
+<imageobject> <imagedata fileref="pics/filter2" format="png"> </imageobject>-->
+<imageobject> <imagedata scale="80" fileref="pics/filter2.png"> </imageobject>
+</inlinemediaobject>,
+<inlinemediaobject>
+<!--<imageobject> <imagedata fileref="pics/filter3" format="gif"> </imageobject>
+<imageobject> <imagedata fileref="pics/filter3" format="png"> </imageobject>-->
+<imageobject> <imagedata scale="80" fileref="pics/filter3.png"> </imageobject>
+</inlinemediaobject>,
+<inlinemediaobject>
+<!--<imageobject> <imagedata fileref="pics/filter4" format="gif"> </imageobject>
+<imageobject> <imagedata fileref="pics/filter4" format="png"> </imageobject>-->
+<imageobject> <imagedata scale="80" fileref="pics/filter4.png"> </imageobject>
+</inlinemediaobject>
+lub 
+<inlinemediaobject>
+<!--<imageobject> <imagedata fileref="pics/filter5" format="gif"> </imageobject>
+<imageobject> <imagedata fileref="pics/filter5" format="png"> </imageobject>-->
+<imageobject> <imagedata scale="80" fileref="pics/filter5.png"> </imageobject>
+</inlinemediaobject>
+</Para>
+
+<Para>W okienku filtru mo¿na okre¶liæ stopieñ u¶rednienia wy¶wietlanych wykresów.
+Opcja ta jest dostêpna tylko przy okresie <Link linkend="radios-DZIEN">DNIA</Link>
+wy¶wietlanym w <Link linkend="Okno-graficzne">oknie graficznym</Link>. Rysunek i cyfra
+na przycisku wywo³uj±cym okienko filtru okre¶laj±, jaki - i czy w ogóle
+- filtr jest u¿yty. Cyfra 0 odpowiada wykresowi oryginalnemu, za¶ cyfra
+5 - najsilniejszemu filtrowi. Wybór filtru w okienku odbywa siê przy u¿yciu
+przesuwalnego suwaka. Cyfra nad suwakiem okre¶la u¿yty filtr. Filtr s³u¿y
+do wyg³adzania wykresów w celu ³atwiejszego wyznaczenia tendencji wykresów
+przez wyeliminowanie chwilowych pików. Ustawienie stopnia filtru mo¿na
+przeprowadziæ przez jedn± z metod:
+<ItemizedList>
+<ListItem><Para>
+Przesuniêcie suwaka przy pomocy lewego klawisza myszki tak, aby cyfra nad
+suwakiem by³a taka jaki jest po¿±dany stopieñ filtru, a nastêpnie naci¶niêcie
+przycisku "OK".</Para></ListItem>
+
+<ListItem><Para>
+Skierowanie -&gt; <Link linkend="keys-Sygnaly-z-klawiatury">sygna³ów z klawiatury</Link>
+do suwaka, przesuniêcie go przy pomocy klawiszy kursora tak, aby cyfra
+nad suwakiem by³a taka, jaki jest po¿±dany stopieñ filtru i naci¶niêcie
+klawisza 'Enter'.</Para></ListItem>
+
+<ListItem><Para>
+Naci¶niêcie jednego z klawiszy od 'a' do 'f' w <Link linkend="Okno-graficzne">oknie
+graficznym</Link>.</Para></ListItem>
+</ItemizedList>
+Filtr jest automatycznie wy³±czany przy zmianie okresu czasu wy¶wietlanych
+wykresów na inny ni¿ <Link linkend="radios-DZIEN">DZIEÑ</Link>. Us³uga filtru
+jest niedostêpna w trybie <Link linkend="pasek-Rozdwojony-kursor">rozdwojonego
+kursora</Link> i na odwrót - us³ugi te wykluczaj± siê wzajemnie. Z operacji
+ustawiania filtru mo¿na siê wycofaæ (wykresy pozostan± wówczas u¶rednione
+w takim stopniu jak przed wywo³aniem tej us³ugi) przez naci¶niêcie przycisku
+"Porzuæ" albo naci¶niêcie klawisza 'Esc' w dowolnym miejscu okienka.
+</Para>
+</Section>
+<Section id="pasek-Pomoc" >
+<title>Pomoc</title>
+
+<Para>Ikona:
+<inlinemediaobject>
+<!--<imageobject> <imagedata fileref="pics/help" format="gif"> </imageobject>
+<imageobject> <imagedata fileref="pics/help" format="png"> </imageobject>-->
+<imageobject> <imagedata scale="80" fileref="pics/help.png"> </imageobject>
+</inlinemediaobject>
+</Para>
+
+<Para>Przycisk pomocy 
+s³u¿y do wywo³ania systemu podpowiedzi <Link linkend="help-Przegladanie">programu
+przegl±daj±cego</Link>. Opuszczenie tego systemu nastêpuje przez naci¶niêcie
+klawisza 'Esc'. Przesuwanie zawarto¶ci ka¿dego okna z informacjami nastêpuje
+za pomoc± ci±gniêcia pionowego suwaka z prawej strony okna przy pomocy
+lewego klawisza myszki. Okna z podpowiedziami mo¿na przywo³ywaæ na ekran
+przez naci¶niêcie jednego z wielu przycisków "Pomoc" umieszczonych w ró¿nych
+punktach programu lub przez naci¶niêcie prawego klawisza myszki przy kursorze
+myszki umiejscowionym na obiekcie, o którym chce siê zasiêgn±æ informacji
+(dotyczy to <Link linkend="Okno-graficzne">okna graficznego</Link>, przycisków <Link linkend="panel-Panel-uslugowy">panela
+us³ugowego</Link> i <Link linkend="pasek-Pasek-narzedziowy">paska narzêdziowego</Link>).
+</Para>
+</Section>
+<Section id="pasek-Informacja" >
+<title>Informacja</title>
+
+<Para>Ikona:
+<inlinemediaobject>
+<!--<imageobject> <imagedata fileref="pics/info" format="gif"> </imageobject>
+<imageobject> <imagedata fileref="pics/info" format="png"> </imageobject>-->
+<imageobject> <imagedata scale="80" fileref="pics/info.png"> </imageobject>
+</inlinemediaobject>
+</Para>
+
+<Para>Przycisk informacji 
+wywo³uje okienko z danymi dotycz±cymi konkretnej wersji 
+i instalacji <Link linkend="help-Przegladanie">programu przegl±daj±cego</Link>.
+</Para>
+</Section>
+
+
+</chapter>
+
+</part>
+
+</book>
+
+<!--
+ vim:ft=docbk:
+-->

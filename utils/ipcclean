@@ -1,0 +1,63 @@
+#!/bin/bash
+
+# $Id: ipcclean 596 2003-01-24 21:28:04Z pawel $
+#
+# Praterm S.A. 2003 Pawe³ Pa³ucha pawel@praterm.com.pl
+#
+# Skrypt do usuwania pozostawionych przez SZARP'a zasobow IPC.
+# Parsuje wyjscie programu ipcinfo.
+# Argumenty przekazuje do programu ipcinfo (chodzi glownie o prefix
+# konfiguracji).
+# Zwraca 1 w przypadku bledu (nieznalezienie programu ipcinfo), 0 wpp.
+# Bledem jest takze uruchomienie programu jezeli uruchomiony jest program
+# parcook lub meaner.
+
+IPCINFO="/opt/szarp/bin/ipcinfo"
+
+# Sprawdzamy obecnosc programu ipcinfo
+[ -x "$IPCINFO" ] || {
+	echo "ipcinfo program not found"  1>&2
+	exit 1
+}
+
+# Upewniamy sie ze SZARP nie dziala
+ps axw | grep "/opt/szarp/bin/meaner" | grep -v "grep" &> /dev/null && {
+	echo "meaner is runing!" 1>&2
+	exit 1
+}
+
+ps axw | grep "/opt/szarp/bin/parcook" | grep -v "grep" &> /dev/null && {
+	echo "parcook is runing!" 1>&2
+	exit 1
+}
+
+# Pobieramy informacje o zasobach IPC potencjalnie tworzonych przez SZARP'a
+IPCS=`$IPCINFO $* | tr '\t' ' '`
+
+echo "$IPCS" | while read i ; do {
+	# Klucz zasobu
+	KEY=`echo $i | cut -d ' ' -f 2`
+	# Usuwamy pamiec dzielona
+	if echo $i | grep "SHM_" &> /dev/null ; then {
+		ID=`ipcs -m | grep "0x$KEY" | tr '\t' ' ' | cut -d ' ' -f 2`
+		if [ "x$ID" != "x" ] ; then
+			ipcrm shm $ID &> /dev/null
+		fi
+	} fi
+	# Usuwamy semafory
+	if echo $i | grep "SEM_" &> /dev/null ; then {
+		ID=`ipcs -s | grep "0x$KEY" | tr '\t' ' ' | cut -d ' ' -f 2`
+		if [ "x$ID" != "x" ] ; then 
+			ipcrm sem $ID &> /dev/null
+		fi
+	} fi
+	# Usuwamy kolejki komunikatow
+	if echo $i | grep "MSG_" &> /dev/null ; then {
+		ID=`ipcs -q | grep "0x$KEY" | tr '\t' ' ' | cut -d ' ' -f 2`
+		if [ "x$ID" != "x" ] ; then 
+			ipcrm msg $ID &> /dev/null
+		fi
+	} fi
+} done
+
+

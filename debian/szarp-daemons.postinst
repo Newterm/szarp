@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -e;
+
+. /usr/share/debconf/confmodule;
+
+case "$1" in
+    configure)
+    chmod 0640 /etc/szarp/ssconf.cfg
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0

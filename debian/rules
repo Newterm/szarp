@@ -1,0 +1,207 @@
+#!/usr/bin/make -f
+# $Id: rules 6846 2009-06-23 15:40:30Z pawel $
+# Makefile for debian packages building
+# execute: 
+# fakeroot debian/rules binary to build all packages 
+# fakeroot debian/rules source to create source package
+# fakeroot debian/rules all to build everything
+# note: presence of all libraries that SZARP depends on is mandatory, otherwise you'll end up
+# with incomplete packages
+#
+# How to add files to existing packages:
+#  If the file is installed during make install you need just to add proper "Files" directive to
+#  package's entry in packs.files file.
+#  Few things to note:
+#  * each Files directive is treated as glob expression
+#  * if you provide wrong path (i.e. poiting to non-existing file) 
+#    the build process will continue as usual just a warning will be issued
+#  * it is illegal for two packages to contain the same file unless 
+#    they are marked as conflicting or replacing each other 
+#  If the file is not installed during make install you have to modify
+#  debian/rules file so that the file is placed in package's directory. Files
+#  for szarp-doc-html are retrived directly from SZARP's source
+#  tree so these packages may serve as example of how it can be done.
+#   
+# How to add packages:
+#  * add entry for package to debian/control file
+#  * modify value of NO_CB_PACK_OPTS, but if packages contents is not installed 
+#    during make install you will have to perform further modifications 
+#    to debian/rules file (you may want to take a look at process of building 
+#    szarp-doc-html package in that case)
+#
+# Recommended reading:
+#  * this whole file from bottom to top :)
+#  * Debian New Maintainers' Guide (http://www.debian.org/doc/manuals/maint-guide/index.en.html)
+#  * Debian Policy Manual (http://www.debian.org/doc/debian-policy)
+#  * man debhelper
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+export DH_OPTIONS
+
+DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+
+SZARP_MAJOR_VERSION := $(shell awk -F'[ ,]' '/AC_INIT/ {print $$3}' configure.in)
+SZARP_MINOR_VERSION := $(shell awk -F' ' '/\Id:/ {print $$3}' ChangeLog)
+SZARP_VERSION := $(SZARP_MAJOR_VERSION).$(SZARP_MINOR_VERSION)
+
+PREFIX = opt/szarp/
+
+INSTALL_DIR = debian/tmp
+
+NO_CB_PACK_OPTS ?= \
+		-pszarp-base \
+		-pszarp-daemons \
+		-pszarp-filler \
+		-pszarp-isledit \
+		-pszarp-koper \
+		-pszarp-nagios \
+		-pszarp-paramd \
+		-pszarp-scripts \
+		-pszarp-server \
+		-pszarp-server-complete \
+		-pszarp-sss \
+		-pszarp-sssweb \
+		-pszarp-terminal \
+		-pszarp-updater \
+		-pszarp-utils \
+		-pszarp-wx \
+		-pszarp-viewer \
+		-pszarp-xsltd 
+
+DOC_PACKAGES ?= \
+		-pszarp-doc-html \
+		-pszarp-doc-pdf \
+		-pszarp-doc-html \
+		-pszarp-doc-pdf-chrno
+		 
+CFLAGS = -Wall -I/usr/include/gtk-2.0
+
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O0
+else
+	CFLAGS += -O2
+endif
+
+configure: 
+	./autogen.sh
+
+debian/config-status-no-cb: configure
+	# Add here commands to configure the package.
+	@if [ -e debian/config-status-cb ]; then \
+		$(MAKE) clean; \
+		rm debian/config-status-cb; \
+	fi;
+	./configure CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" --prefix=/$(PREFIX) \
+		--host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) \
+		--enable-deb-build 
+	@touch $@
+
+debian/build-no-cb-stamp: debian/config-status-no-cb
+	$(MAKE)
+	@touch $@
+
+clean: sanity_check
+	-rm debian/*install
+	-rm debian/*stamp
+	-rm debian/config-status*
+	-rm debian/build*
+	-rm debian/*parstart.init
+	-rm -rf doxy
+	-$(MAKE) maintainer-clean
+	dh_clean -a
+	dh_clean -i
+
+#empty build target to confrom to Debian Policy
+build:
+
+install: 
+	dh_testroot
+	$(MAKE) install DESTDIR=$(CURDIR)/$(INSTALL_DIR)
+	dh_installdirs 
+	@(cd $(INSTALL_DIR); ../install_gen $(DH_OPTIONS));
+	dh_install -X.svn --sourcedir=$(INSTALL_DIR)
+
+binary-no-cb: debian/build-no-cb-stamp 
+	$(MAKE) -f debian/rules DH_OPTIONS="$(NO_CB_PACK_OPTS)" install
+	cp $(INSTALL_DIR)/etc/init.d/parstart debian/szarp-server.parstart.init
+	cp $(INSTALL_DIR)/etc/init.d/parstart debian/szarp-terminal.parstart.init
+	$(MAKE) -f debian/rules DH_OPTIONS="$(NO_CB_PACK_OPTS)" binary-arch-common
+
+
+binary-arch: binary-no-cb
+
+# Must not depend on anything. This is to be called by
+# in another 'make' thread.
+binary-arch-common: 
+	dh_testroot
+	dh_link
+	dh_strip
+	dh_compress 
+	dh_makeshlibs
+	dh_installinit -udefaults\ 98 --name=parstart
+	dh_installinit -i
+	dh_installdocs
+	dh_installcron
+	dh_installdeb
+	dh_shlibdeps
+	dh_perl
+	dh_installdebconf 
+	dh_gencontrol -- -DVersion=$(SZARP_VERSION)
+	dh_md5sums
+	dh_builddeb
+
+debian/build-doc-pdf:
+	$(MAKE) -C resources/documentation/new pdf
+	touch $@
+
+debian/build-doc-html:
+	$(MAKE) -C resources/documentation/new html
+	touch $@
+
+binary-arch: binary-no-cb
+
+build-indep: debian/build-doc-pdf debian/build-doc-html
+
+install-doc-pdf:
+	dh_install -p szarp-doc-pdf resources/documentation/new/_pdf/* \
+		$(PREFIX)resources/documentation/new/pdf
+
+install-doc-pdf-chrno:
+	$(MAKE) DESTDIR=$(CURDIR)/$(INSTALL_DIR) -C resources/documentation/new install_on_server
+	dh_install --sourcedir=$(INSTALL_DIR) -p szarp-doc-pdf-chrno var/www/htdocs/serv/howto/_pdf/* \
+		var/www/htdocs/serv/howto/_pdf
+
+install-doc-html:
+	@for i in `find resources/documentation/new/ -type d -name html`; do \
+		dh_install -X.svn -p szarp-doc-html $$i $(PREFIX)`(dirname $$i)`; \
+	done
+	dh_install -X.svn -p szarp-doc-html resources/documentation/new/common \
+		$(PREFIX)/resources/documentation/new
+	dh_install -p szarp-doc-html resources/documentation/new/style.css \
+		$(PREFIX)/resources/documentation/new
+
+install-indep: install-doc-pdf install-doc-pdf-chrno install-doc-html
+
+create-indep: DH_OPTIONS=$(DOC_PACKAGES)
+create-indep: 
+	dh_gencontrol -- -DVersion=$(SZARP_VERSION)
+	dh_md5sums 
+	dh_builddeb 
+
+binary-indep: build-indep install-indep create-indep
+
+sanity_check:
+	dh_testroot
+	dh_testdir
+
+binary: sanity_check configure binary-arch binary-indep
+	
+source: sanity_check clean
+	@(cd ..; dpkg-source -b -DVersion=$(SZARP_VERSION) szarp)
+
+all: source binary
+
+.PHONY: build clean binary install-indep source indstall-doc-html install-doc-pdf build-indep binary-arch binary-arch-common binary-no-cb binary-cb all sanity_check create-indep

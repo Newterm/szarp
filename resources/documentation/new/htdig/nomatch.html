@@ -1,0 +1,33 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Zero trafieñ dla '$&(LOGICAL_WORDS)'</title></head>
+Wynik poszukiwañ</h1>
+<hr noshade size="4">
+<h2>Nie znaleziono ¿adnych wyst±pieñ dla '$&(LOGICAL_WORDS)'</h2>
+<!--<p>
+Check the spelling of the search word(s) you used.
+If the spelling is correct and you only used one word,
+try using one or more similar search words with "<strong>Any</strong>."
+</p><p>
+If the spelling is correct and you used more than one
+word with "<strong>Any</strong>," try using one or more similar search
+words with "<strong>Any</strong>."</p><p>
+If the spelling is correct and you used more than one
+word with "<strong>All</strong>," try using one or more of the same words
+with "<strong>Any</strong>."</p>-->
+<hr noshade size="4">
+<form method="get" action="$(CGI)">
+<font size="-1">
+<input type="hidden" name="config" value="$&(CONFIG)">
+<input type="hidden" name="restrict" value="$&(RESTRICT)">
+<input type="hidden" name="exclude" value="$&(EXCLUDE)">
+<!--Match: $(METHOD)
+Format: $(FORMAT)
+Sort by: $(SORT)-->
+<br>
+Kolejne wyszukiwanie:
+<input type="text" size="30" name="words" value="$&(WORDS)">
+<input type="submit" value="Znajd¼">
+</font>
+</form>
+<hr noshade size="4">
+</body></html>

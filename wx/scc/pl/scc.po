@@ -1,0 +1,291 @@
+# PO file for scc program.
+# Copyright 
+# This file is distributed under the same license as the scc package.
+# Darek Marcinkiewicz <reksio@praterm.com.pl>, 2005.
+# $Id$
+msgid ""
+msgstr ""
+"Project-Id-Version: SZARP Control Center\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-10-03 09:44+0200\n"
+"PO-Revision-Date: 2005-10-20 22:09+0200\n"
+"Last-Translator: Pawe³ Pa³ucha <pawel@praterm.com.pl>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-2\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: sccapp.cpp:53 sccapp.cpp:146
+msgid "SCC"
+msgstr "SCC"
+
+#: sccapp.cpp:117
+msgid ""
+"SCC program is not accessible.\n"
+"Most probably, you are seeing this message because you have logged in more "
+"than once."
+msgstr ""
+"Program nie jest dostêpny. Najprawdopodobniej widzisz ten komunikat,\n"
+"poniewa¿ jeste¶ zalogowany na kilku terminalach jednocze¶nie."
+
+#: sccapp.cpp:120
+msgid "SCC - program already run"
+msgstr "SCC - program ju¿ uruchomiony"
+
+#: sccapp.cpp:159
+msgid ""
+"Left click to lanch SZARP application\n"
+"Right click to drag icon"
+msgstr ""
+"Lewy przycisk - uruchomienie programów SZARP\n"
+"Prawy przycisk - przesuniêcie ikony"
+
+#: sccapp.cpp:214
+msgid "Update data"
+msgstr "Aktualizuj dane"
+
+#: sccframe.cpp:140
+msgid "&Help"
+msgstr "&Pomoc"
+
+#: sccframe.cpp:141
+msgid "&About"
+msgstr "&O programie"
+
+#: sccframe.cpp:143
+msgid "&Support tunnel"
+msgstr "Tunel pomocy technicznej"
+
+#: sccframe.cpp:144
+msgid "SZARP &fonts"
+msgstr "Czcionki SZARP"
+
+#: sccframe.cpp:146
+msgid "SZARP data directory"
+msgstr "Ustaw katalog z danymi historycznymi"
+
+#: sccframe.cpp:148
+msgid "E&xit"
+msgstr "&Wyj¶cie"
+
+#: sccframe.cpp:256
+msgid "Do you really want to activate 'IT support tunnel'?"
+msgstr "Czy na pewno chcesz uruchomiæ tunel pomocy technicznej?"
+
+#: sccframe.cpp:256
+msgid "IT support tunnel"
+msgstr "Tunel pomocy technicznej"
+
+#: sccframe.cpp:268
+msgid ""
+"This option allows you to change directory where SZARP stores its historical "
+"data. Changing this setting may cause  unavailability of already "
+"synchronized data. You must also choose directory that you have write access "
+"to."
+msgstr ""
+"Ta opcja pozwoli Ci zmieniæ lokalizacjê katalogu, w którym katalog SZARP "
+"przechowuje swoje bazy danych. Zmiana tego ustawienia spowoduje, ¿e "
+"poprzednio zsynchronizowane dane stan± siê niedostêpne. By SZARP dzia³a³ "
+"poprawnie, musisz mieæ prawo zapisu do katalogu, który wska¿esz."
+
+#: sccframe.cpp:270
+msgid "Warning"
+msgstr "Ostrze¿enie"
+
+#: sccframe.cpp:278
+msgid "Choose directory"
+msgstr "Wybierz katalog"
+
+#: sccframe.cpp:288
+msgid ""
+"SZARP data dir has been changed. You must restart all SZARP applications for "
+"this action to take effect"
+msgstr ""
+"Zosta³ zmieniony katalog z lokalizacj± baz systemu SZARP. Musisz "
+"zrestartowaæ wszystkie programy SZARPa, by ta zmiana odnios³a efekt."
+
+#: sccframe.cpp:289
+msgid "Information"
+msgstr "Informacja"
+
+#: sccmenu.cpp:143
+msgid "Draw program"
+msgstr "Program przegl±daj±cy"
+
+#: scctunnelframe.cpp:37
+msgid "Support tunnel"
+msgstr "Tunel pomocy technicznej"
+
+#: scctunnelframe.cpp:41
+msgid "User:"
+msgstr "U¿ytkownik:"
+
+#: scctunnelframe.cpp:47
+msgid "Password:"
+msgstr "Has³o:"
+
+#: scctunnelframe.cpp:54
+msgid "Port number:"
+msgstr "Numer portu:"
+
+#: scctunnelframe.cpp:61
+msgid "Connect"
+msgstr "Po³±cz"
+
+#: scctunnelframe.cpp:63
+msgid "Close"
+msgstr "Zamknij"
+
+#: scctunnelframe.cpp:119
+msgid "Unable to connect"
+msgstr "Nie uda³o siê po³±czyæ"
+
+#: scctunnelframe.cpp:119 scctunnelframe.cpp:129 scctunnelframe.cpp:136
+#: scctunnelframe.cpp:268 szarpfonts.cpp:46
+msgid "Error"
+msgstr "B³±d"
+
+#: scctunnelframe.cpp:129
+msgid "Port number must be within range 1024-65535"
+msgstr "Numer portu musi byæ liczb± ca³kowit± z przedzia³u 1024-65535"
+
+#: scctunnelframe.cpp:136
+msgid "Unable to start ssh command"
+msgstr "Nie uda³o siê uruchomiæ programu ssh"
+
+#: scctunnelframe.cpp:145
+msgid "Connecting to: "
+msgstr "£±czenie z: "
+
+#: scctunnelframe.cpp:195
+msgid ""
+"Bind to remote port succeeded\n"
+"Connection successful to: "
+msgstr ""
+"Otwarto zdalny port\n"
+"Po³±czenie nawi±zane z: "
+
+#: scctunnelframe.cpp:200
+msgid ""
+"Failed to bind to remote port\n"
+"Try another port number\n"
+msgstr ""
+"Nie uda³o siê otworzyæ portu na zdalnym komputerze\n"
+"Spróbuj inny numer portu\n"
+
+#: scctunnelframe.cpp:205
+msgid "Network is unreachable\n"
+msgstr "Sieæ niedostêpna\n"
+
+#: scctunnelframe.cpp:210
+msgid "No route to host\n"
+msgstr "Komputer docelowy niedostêpny\n"
+
+#: scctunnelframe.cpp:214
+msgid "New connection via channel\n"
+msgstr "Nawi±zane po³±czenia przez tunel\n"
+
+#: scctunnelframe.cpp:217
+msgid "Closed channel connection\n"
+msgstr "Po³±czenie tunelowane zamkniête\n"
+
+#: scctunnelframe.cpp:220
+msgid "Connected\n"
+msgstr "Po³±czony\n"
+
+#: scctunnelframe.cpp:223
+msgid "Unexpected close of the connection\n"
+msgstr "Niespodziewane zamkniêcie po³±czenia\n"
+
+#: scctunnelframe.cpp:228
+msgid "Address not found\n"
+msgstr "Nie znaleziono adresu komputera docelowego\n"
+
+#: scctunnelframe.cpp:232
+msgid "Address not found"
+msgstr "Nie znaleziono adresu komputera docelowego"
+
+#: scctunnelframe.cpp:233
+msgid "Possible problem with network configuration\n"
+msgstr "Prawdopodobnie problem z konfiguracj± sieci\n"
+
+#: scctunnelframe.cpp:238
+msgid "Authentication failure"
+msgstr "B³±d autoryzacji"
+
+#: scctunnelframe.cpp:243
+msgid "Connection refused\n"
+msgstr "Po³±czenie odrzucone\n"
+
+#: scctunnelframe.cpp:248
+msgid "Timeout\n"
+msgstr "Serwer nie odpowiada\n"
+
+#: szarpfonts.cpp:49
+msgid "Setting default font size"
+msgstr "Konfiguracja czcionek"
+
+#: szarpfonts.cpp:59
+msgid "Default font size for SZARP"
+msgstr "Domy¶lna wielko¶æ czcionek SZARP"
+
+#: szarpfonts.cpp:86
+msgid "Apply"
+msgstr "Zastosuj"
+
+#: szarpfonts.cpp:90
+msgid "Cancel"
+msgstr "Anuluj"
+
+#: szarpfonts.cpp:133
+msgid ""
+"Changes will have effect only \n"
+"in newly started programs."
+msgstr ""
+"Zmiany bed± uwzglêdnione tylko \n"
+"przez nowo uruchamiane programy."
+
+#: szarpfonts.cpp:134
+msgid "Message"
+msgstr ""
+
+#: szarpfonts.cpp:144
+msgid "Cannot get HOME environment variable"
+msgstr "Nie mo¿na pobraæ zmiennej ¶rodowiskowej HOME"
+
+#: szarpfonts.cpp:148
+#, c-format
+msgid "Your home directory (%s) does not exists!"
+msgstr "Twój katalog domowy (%s) nie istnieje!"
+
+#: szarpfonts.cpp:158
+#, c-format
+msgid ""
+"Cannot create directory %s - errno %d\n"
+"%s"
+msgstr ""
+"Nie mogê utworzyæ katalogu %s\n"
+"B³±d %d - %s"
+
+#: szarpfonts.cpp:171 szarpfonts.cpp:205 szarpfonts.cpp:239
+#, c-format
+msgid ""
+"Cannot create file %s - errno %d\n"
+"%s"
+msgstr ""
+"Nie mogê utworzyæ pliku %s\n"
+"B³±d %d - %s"
+
+#: szarpfonts.cpp:192 szarpfonts.cpp:220 szarpfonts.cpp:296
+#, c-format
+msgid ""
+"Error writing to file %s - errno %d\n"
+"%s"
+msgstr ""
+"B³±d podczas zapisywania pliku %s\n"
+"B³±d %d - %s"
+
+#~ msgid "Szarp Control Centre Version: "
+#~ msgstr "Centrum Sterowania Szarp wersja: "
+
+#~ msgid "About"
+#~ msgstr "O programie"

@@ -1,0 +1,773 @@
+<?xml version="1.0" encoding="ISO-8859-2"?>
+
+<!--
+  SZARP (C) 2002 Paweł Pałucha
+  pawel@praterm.com.pl
+  
+  DTD for SZARP params configuration file.
+  
+  $Id: ipk-params.rng 6723 2009-05-15 13:52:04Z reksio $
+-->
+
+
+<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+
+<!--
+  Głównym elementem jest element 'param', zawiera on całą strukturę
+  konfiguracji parametrów dla danego obiektu.
+  Musi on zawierać co najmniej jeden element 'device' oraz może zawierać
+  jeden element 'defined' oraz jeden element 'drawdefinable'.
+  Atrybuty:
+  	version - wymagany, wersja formatu pliku, obecnie obsługiwana
+  	to "1.0",
+  	read_freq - domyślnie 10, częstotliwość odczytu danych ze
+  	sterowników w sekundach,
+  	write_freq - domyślnie 10, częstotliwość zapisu danych do
+  	sterowników (zadawania parametrów) w sekundach,
+  	title - wymagany, nazwa obiektu którego dotyczy konfiguracja,
+	ps_address - opcjonalny, adres serwera ustawiającego parametry
+	ps_port - opcjonalny, porst serwera ustawiającego parametry
+-->
+
+  <define name="params">
+    <element name="params" ns="http://www.praterm.com.pl/SZARP/ipk">
+      <ref name="attlist.params"/>
+      <oneOrMore>
+        <ref name="device"/>
+      </oneOrMore>
+      <optional>
+        <ref name="defined"/>
+      </optional>
+      <optional>
+        <ref name="drawdefinable"/>
+      </optional>
+      <optional>
+        <ref name="boilers"/>
+      </optional>
+      <optional>
+        <ref name="seasons"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="extra"/>
+      </zeroOrMore>
+
+    </element>
+  </define>
+  <define name="attlist.params" combine="interleave">
+    <attribute name="version"/>
+    <optional>
+      <attribute name="read_freq" a:defaultValue="10"/>
+    </optional>
+    <optional>
+      <attribute name="send_freq" a:defaultValue="10"/>
+    </optional>
+    <optional>
+      <attribute name="title"/>
+    </optional>
+    <optional>
+      <attribute name="documentation_base_url"/>
+    </optional>
+    <optional>
+      <attribute name="ps_address"/>
+    </optional>
+    <optional>
+      <attribute name="ps_port"/>
+    </optional>
+    <zeroOrMore>
+      <ref name="extra-attribute"/>
+    </zeroOrMore>
+  </define>
+  
+  <!--
+    Element 'device' zawiera opis grupy parametrów obsługiwanej przez
+    jednego demona linii. Musi zawierać co najmniej jeden element 'radio'
+    albo co najmniej jeden element 'unit'. Może też zawierać elementy (na
+    początku) i atrybuty z innych przestrzeni nazw.
+    Atrybuty:
+    	daemon - ścieżka do demona linii odpowiedzialnego za 
+    	obsługę opisywanej linii komunikacyjnej,
+    	path - ścieżka do urządzenia związanego z linią
+    	(najczęściej odpowiedniego portu szeregowego),
+    	speed - prędkość portu szeregowego w bodach,
+    	stop - ilość bitów stopu - 1 lub 2,
+    	protocol - wersja protokołu (obecnie 0 lub 1), parametr ma
+    	znaczenie dla niektórych demonów linii,
+    	special - specjalna wartość dla niektórych linii (w starej
+    	konfiguracji pierwsza linia w pliku line<x>.cfg), np. dla
+    	uproszczonego protokołu RS232 bez adresowania linii (liczba).
+  -->
+  
+  <define name="device">
+    <element name="device" ns="http://www.praterm.com.pl/SZARP/ipk">
+      <ref name="attlist.device"/>
+      <zeroOrMore>
+        <ref name="extra"/>
+      </zeroOrMore>
+      <choice>
+        <oneOrMore>
+          <ref name="radio"/>
+        </oneOrMore>
+        <oneOrMore>
+          <ref name="unit"/>
+        </oneOrMore>
+      </choice>
+    </element>
+  </define>
+  <define name="attlist.device" combine="interleave">
+    <optional>
+      <attribute name="daemon"/>
+    </optional>
+    <optional>
+      <attribute name="path"/>
+    </optional>
+    <optional>
+      <attribute name="speed"/>
+    </optional>
+    <optional>
+      <attribute name="stop">
+        <choice>
+          <value>1</value>
+          <value>2</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="protocol"/>
+    </optional>
+    <optional>
+      <attribute name="special"/>
+    </optional>
+    <optional>
+      <attribute name="options"/>
+    </optional>
+    <zeroOrMore>
+      <ref name="extra-attribute"/>
+    </zeroOrMore>
+  </define>
+  
+  <!--
+    Element 'radio' zawiera opis pojedynczej linii radiowej (modemu
+    radiowego). Musi zawierać co najmniej jeden element 'unit'.
+    Atrybuty:
+    	id - wymagany, identyfikator używany przez modem radiowy.
+  -->
+  
+  <define name="radio">
+    <element name="radio" ns="http://www.praterm.com.pl/SZARP/ipk">
+      <ref name="attlist.radio"/>
+      <oneOrMore>
+        <ref name="unit"/>
+      </oneOrMore>
+    </element>
+  </define>
+  <define name="attlist.radio" combine="interleave">
+    <attribute name="id"/>
+  </define>
+  
+  <!--
+    Element 'unit' opisuje jednostkę komunikacji. Zawiera co najmniej jeden
+    elemen 'param' lub 'send'.
+    Atrybuty:
+    	id - wymagany, identyfikator jednostki - pojedynczy znak ASCII
+    	unikalny w obrębie linii komunikacyjnej,
+    	type - wymagany, typ raportu - wartość interpretowana przez
+    	sterownik (liczba),
+    	subtype - wymagany, podtyp raportu, wartość interpetowana przez
+    	sterownik (liczba),
+    	bufsize - wielkość bufora uśredniania dla parametrów w bajtach.
+  -->
+  
+  <define name="unit">
+    <element name="unit" ns="http://www.praterm.com.pl/SZARP/ipk">
+      <ref name="attlist.unit"/>
+      <oneOrMore>
+        <choice>
+          <ref name="param"/>
+          <ref name="send"/>
+        </choice>
+      </oneOrMore>
+      <zeroOrMore>
+        <ref name="extra"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="attlist.unit" combine="interleave">
+    <attribute name="id"/>
+    <attribute name="type"/>
+    <attribute name="subtype"/>
+    <attribute name="bufsize"/>
+    <zeroOrMore>
+      <ref name="extra-attribute"/>
+    </zeroOrMore>
+  </define>
+  
+  <!--
+    Element 'param' opisuje konkretny parametr. Moze zawierac jeden element
+    'define' oraz elementy 'value', 'raport', 'draw', 'analysis'. Może też zawierać
+    elementy (na ostatniej pozycji) i atrybuty z innych przestrzeni nazw.
+    Atrybuty:
+    	name - wymagany, pełna tekstowa nazwa parametru, powinna
+    	zawierać trzy człony oddzielone dwukropkami, poza dwukropkami
+    	może zawierać dowolne znaki, zaleca się jednak ograniczyć do
+    	liter (mogą być polskie) i cyfr, nazwa MUSI być unikalna w
+    	obrębie całej konfiguracji,
+    	short_name - wymagany, nazwa skrócona (do 4 znaków), dowolna
+    	draw_name - nazwa krótka używana jako nazwa wykresu, powinna
+    	mieć do 20 znaków, jeżeli jest pusta będzie używana nazwa
+    	pełna,
+    	unit - wymagana, nazwa jednostki, domyślnie '-' (brak jednostki),
+    	base_ind - indeks w bazie, liczba nieujemna dla starego formatu
+    	bazy, "auto" dla nowego formatu bazy, jeśli nie występuje,
+    	oznacza to że parametr nie jest zapisywany do bazy,
+    	prec - dla parametrów liczbowych - ilość miejsc po przecinku,
+    	tobase - atrybut nie powinien występować w konfiguracjach, ale
+	jest obecny w szablonach, więc został uwzględniony w DTD
+  -->
+  
+  <define name="param">
+    <element name="param" ns="http://www.praterm.com.pl/SZARP/ipk">
+      <ref name="attlist.param"/>
+      <zeroOrMore>
+        <ref name="value"/>
+      </zeroOrMore>
+      <optional>
+        <ref name="define"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="raport"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="draw"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="analysis"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="extra"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="attlist.param" combine="interleave">
+    <attribute name="name"/>
+    <attribute name="short_name"/>
+    <optional>
+      <attribute name="draw_name"/>
+    </optional>
+    <optional>
+      <attribute name="unit" a:defaultValue="-"/>
+    </optional>
+    <optional>
+      <attribute name="base_ind"/>
+    </optional>
+    <optional>
+      <attribute name="prec"/>
+    </optional>
+    <optional>
+      <attribute name="tobase"/>
+    </optional>
+    <optional>
+      <attribute name="sum_unit"/>
+    </optional>
+    <optional>
+      <attribute name="sum_divisor" a:defaultValue="6"/>
+    </optional>
+    <zeroOrMore>
+      <ref name="extra-attribute"/>
+    </zeroOrMore>
+  </define>
+  <!--
+    Element 'define' występujący w parametrze oznacza, że dany parametr
+    jest parametrem definiowalnym, wyliczanym na podstawie innych.
+    Atrybuty:
+    	type - wymagany, określa typ formuły, obecnie dostępne są
+    	dwa typy:
+    	"RPN" - standardowa formuła SZARP'a 2.1 w odwrotnej notacji
+    	polskiej, z liczbami zapisywanymi normalnie, a odwołania do
+    	wartości parametrów mają postać pełnej nazwy parametru w 
+    	nawiasie, przy czym zamiast członu nazwy może wystąpić '*',
+    	oznaczająca skopiowanie członu nazwy z parametru macierzystego,
+    	jest wyliczany przez parcook'a i dostępny z pamięci dzielonej,
+    	"DRAWDEFINABLE" - parametr wyliczany przez przeglądającego,
+    	nieobecny w pamięci dzielonej ani w bazie, formula także w
+    	postaci ONP, ale z trochę innym zestawem operatorów, w SZARP
+    	2.1 opisany w pliku definable.cfg, parametry tego typu mogą
+    	występować tylko wewnątrz elementu 'drawdefinable'
+    	formula - domyślnie "null" - formuła do wyliczania wartości
+    	parametru.
+	lua_formula - określa sposób w jaki ma być liczona wartość średnia
+		parametru zapisnego w LUA:
+		"va" - oznacza ze wartość średnia jest liczona na podstaiwe
+		wartości średnich parametrów od których formuła zeleży
+		(tak zachowywały się tzw. 'stare definiowalne')
+		"av" - oznacza że wartośc średnia jest liczona jako 
+		uśrednie wartości formuły dla wszystkich
+		próbek z zadanego przedziału czasu ('nowe definiowalne')
+	new_def - opcjonalny, jesli ustawiony na 'yes' parametr DRAWDEFINABLE
+	    powinien być liczony w nowy sposób, brak atrubutu odczytywane
+	    jest jako 'no'
+    Przykład parametru definiowalnego:
+    
+    <param name="Kocioł 1:Waga:stosunek energia / masa"
+    	short_name="Km" draw_name="Stos. energia/masa" unit="MWh/t" prec="3"
+    	base_ind="40">
+        <define type="RPN" formula="(*:*:stosunek energia /objętość;) 1000 * (*:*:masa nasypowa
+           w&#x119;gla) / "/>
+    </param>
+    
+  -->
+  
+  <define name="define">
+    <element name="define" ns="http://www.praterm.com.pl/SZARP/ipk">
+      <ref name="attlist.define"/>
+      <optional>
+        <ref name="script"/>
+      </optional>
+    </element>
+  </define>
+  <define name="attlist.define" combine="interleave">
+    <optional>
+      <attribute name="type" a:defaultValue="RPN">
+        <choice>
+          <value>RPN</value>
+          <value>DRAWDEFINABLE</value>
+          <value>LUA</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="formula" a:defaultValue="null "/>
+    </optional>
+    <optional>
+      <attribute name="lua_formula">
+        <choice>
+          <value>VA</value>
+          <value>AV</value>
+          <value>IPC</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="lua_start_offset"/>
+    </optional>
+    <optional>
+      <attribute name="lua_end_offset"/>
+    </optional>
+    <optional>
+      <attribute name="new_def" a:defaultValue="no">
+        <choice>
+          <value>no</value>
+          <value>yes</value>
+        </choice>
+      </attribute>
+    </optional>
+  </define>
+  
+  <define name="script"> 
+    <element name="script" ns="http://www.praterm.com.pl/SZARP/ipk">
+      <text/>
+    </element> 
+  </define>
+
+  <!--
+    Element 'value' opisuje dostępne wartości dla parametrów
+    nieliczbowych i odpowiadające im wartości liczbowe (np "Tak" - 1, "Nie
+    - 0). Pojedyczny element opisuje jedną wartość.
+    Atrybuty:
+    	int - wymagany, wartość liczbowa (w bazie lub pamięci
+    	dzielonej),
+    	name - opis wartości widoczny np. w raportach.
+  -->
+  
+  <define name="value">
+    <element name="value" ns="http://www.praterm.com.pl/SZARP/ipk">
+      <ref name="attlist.value"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="attlist.value" combine="interleave">
+    <attribute name="int"/>
+    <attribute name="name"/>
+  </define>
+  
+  <!--
+    Element 'raport' opisuje wystąpienie parametru w raporcie. Jeden
+    parametr może mieć wiele elementów 'raport', będzie więc widoczny w
+    wielu raportach.
+    Atrybuty:
+    	title - wymagany, tytuł raportu, jest jednocześnie
+    	identyfikatorem raportu, więc różne raporty muszą mieć różne
+    	tytuły,
+    	descr - opis parametru w raporcie, jeżeli nie występuje, to
+    	jako opis używana jest ostatnia część nazwy parametru,
+    	order - liczba rzeczywista, określa kolejność parametru w 
+    	raporcie, im mniejsza tym wyżej w raporcie znajdzie się
+    	parametr, parametry bez tego atrybutu są ustawiane za tymi
+    	z priorytetem,
+    	filename - nazwa pliku z raportem, jeżeli jej nie ma, to użyty
+    	będzie tytuł, atrybut ten w przyszłości może zostać usunięty.
+  -->
+  
+  <define name="raport">
+    <element name="raport" ns="http://www.praterm.com.pl/SZARP/ipk">
+      <ref name="attlist.raport"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="attlist.raport" combine="interleave">
+    <attribute name="title"/>
+    <optional>
+      <attribute name="description"/>
+    </optional>
+    <optional>
+      <attribute name="order"/>
+    </optional>
+    <optional>
+      <attribute name="filename"/>
+    </optional>
+  </define>
+  
+  <!--
+    Opis wykresu. Podobnie jak z raportami parametr może występować w wielu
+    wykresach.
+    Atrybuty:
+    	title - wymagany, nazwa okna z wykresami (grupy wykresów),
+    	max - maksymalna wartość parametru (górny zakres osi), liczba
+    	rzeczywista, obecnie wymagana,
+    	min - minimalna wartość parametru (dolny zakres osi), liczba
+    	rzeczywista, obecnie wymagana,
+    	scale - parametr określający jaka część wykresu ma być
+    	przeskalowana do zakresu podanego przez następne atrybuty,
+    	jeżeli jest równy 0 lub nieobecny, przeskalowanie nie
+    	występuje, podawany w procentach,
+    	minscale, maxscale - dolny i górny zakres wartości ulegających
+    	przeskalowaniu (liczby rzeczywiste),
+    	color - kolor wykresu, podany jako stała tekstowa lub wartość
+    	RGB w postaci szesnastkowej, np. 'Red' lub '#FF1123', jeżeli
+    	jest nieobecny kolor zostanie dobrany automatycznie
+    	special - atrybut specjalny, domyślnie 'none', inne to:
+    		piedraw - parametr jest liczony do wykresu kołowego
+    		hoursum - parametr jest liczony do sumowania
+    		godzinowego
+    		valve - zawory, atrybut dla kompatybilności wstecz
+    		rel - jeśli w oknie są dwa wykresy, to w oknie
+    		dodatkowym pojawi się wyliczenie stosunku wartości
+    		parametrów z wykresów
+    		diff - w oknie dodatkowym pojawia się różnica wartości
+    		końcowej i początkowej dla wykresu.
+    	Dokładny opis znaczenia atrybutów specjalnych znajduje się w
+    	pliku resources/dcoumentation/draw.ekran.README.html.
+    	prior - priorytet okna zawierającego wykres - liczba
+    	zmiennoprzecinkowa dodatnia, im mniejsza tym wyżej będzie okno
+    	na liście w programie przeglądającym
+    	order - jak prior, ale dotyczy kolejności wykresu w oknie
+  -->
+  
+  <define name="draw">
+    <element name="draw" ns="http://www.praterm.com.pl/SZARP/ipk">
+      <ref name="attlist.draw"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="attlist.draw" combine="interleave">
+    <attribute name="title"/>
+    <optional>
+      <attribute name="max"/>
+    </optional>
+    <optional>
+      <attribute name="min"/>
+    </optional>
+    <optional>
+      <attribute name="scale"/>
+    </optional>
+    <optional>
+      <attribute name="minscale"/>
+    </optional>
+    <optional>
+      <attribute name="maxscale"/>
+    </optional>
+    <optional>
+      <attribute name="color"/>
+    </optional>
+    <optional>
+      <attribute name="prior"/>
+    </optional>
+    <optional>
+      <attribute name="order"/>
+    </optional>
+    <optional>
+      <attribute name="special" a:defaultValue="none">
+        <choice>
+          <value>piedraw</value>
+          <value>hoursum</value>
+          <value>valve</value>
+          <value>rel</value>
+          <value>diff</value>
+          <value>none</value>
+        </choice>
+      </attribute>
+    </optional>
+  </define>
+  
+  <!--
+    Element 'send' opisuje parametr wysyłany do sterownika. Może zawierać
+    elementy i atrybuty z przestrzeni innych przestrzeni nazw.
+    Atrybuty:
+    	param - nazwa parametru, którego wartość ma być wysyłana, musi
+    	istnieć parametr o takie nazwie, wymagany,
+    	type - rodzaj wysyłanych danych - próbka (domyślnie) lub
+    	średnia podanego rodzaju,
+    	repeat - ilość powtórzeń jeżeli sterownik nie potwierdził
+    	przyjęcia parametru.
+    	send_no_data - jeśli atrybut jest obecny, to sender wysyła do
+    	sterownika NO_DATA, jeśli nie, to w przypadku braku danych nic
+    	nie wysyła
+  -->
+  
+  <define name="send">
+    <element name="send" ns="http://www.praterm.com.pl/SZARP/ipk">
+      <ref name="attlist.send"/>
+      <zeroOrMore>
+        <ref name="extra"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="attlist.send" combine="interleave">
+    <optional>
+      <choice>
+        <attribute name="param"/>
+        <attribute name="value"/>
+      </choice>
+    </optional>
+    <optional>
+      <attribute name="type" a:defaultValue="probe">
+        <choice>
+          <value>probe</value>
+          <value>min</value>
+          <value>min10</value>
+          <value>hour</value>
+          <value>day</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="repeat" a:defaultValue="1"/>
+    </optional>
+    <optional>
+      <attribute name="send_no_data"/>
+    </optional>
+    <zeroOrMore>
+      <ref name="extra-attribute"/>
+    </zeroOrMore>
+  </define>
+  
+  <!-- element defined zawiera definicje parametrów definiowalnych parcooka -->
+  
+  <define name="defined">
+    <element name="defined" ns="http://www.praterm.com.pl/SZARP/ipk">
+      <ref name="attlist.defined"/>
+      <zeroOrMore>
+        <ref name="param"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="attlist.defined" combine="interleave">
+    <empty/>
+  </define>
+  
+  <!-- element drawdefinable zawiera definicje parametrów definiowalnych 
+  przeglądającego -->
+  
+  <define name="drawdefinable" ns="http://www.praterm.com.pl/SZARP/ipk">
+    <element name="drawdefinable">
+      <ref name="attlist.drawdefinable"/>
+      <zeroOrMore>
+        <ref name="param"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="attlist.drawdefinable" combine="interleave">
+    <empty/>
+  </define>
+
+  <!-- Konfiguracja programu analiza -->
+  
+  <!-- Obecnosc elementu 'analysis' w elemencie 'param' oznacza,
+    ze dane zawarte w tym paramaterze podlegaja analizie.
+    Zawiera dwa obowiazkowe atrybuty:
+    boiler_no - numer kotła
+    param_type - typ parametru
+  	analisys_enable	- zezwolenie od regularora kotła na analize
+	regulator_work_time - czas pracy regulatora kotła w pracy automatycznej
+	coal_volume aktualna - objętość wchodzącego do kotła węgla
+	energy_coal_volume_ratio - aktualna wartosc stosunku energia / objetosc wegla
+	air_stream - strumień powietrza
+	left_grate_speed - prędkość posuwu lewego rusztu
+	right_grate_speed - prędkość posuwu prawego rusztu
+	max_air_stream - gorna granica powietrza w analizie
+	min_air_stream - dolna granica powietrza w analizia
+        left_coal_gate_height - wysokość lewej warstwownicy
+        right_coal_gate_height - wysokość pracwej warstwownicy
+	analisys_status - status analizy
+	air_stream_coal_volume_ratio_result  - rezultat analizy - wartość strumienia powietrza
+  -->
+
+  <define name="analysis" combine="interleave">
+    <element name="analysis" ns="http://www.praterm.com.pl/SZARP/ipk">
+      <ref name="attlist.analysis"/>
+      <empty/>
+    </element>
+  </define>
+
+  <define name="attlist.analysis">
+      <attribute name="boiler_no"/>
+      <attribute name="param_type">
+        <choice>
+          <value>analysis_enable</value>
+          <value>regulator_work_time</value>
+          <value>coal_volume</value>
+          <value>energy_coal_volume_ratio</value>
+          <value>air_stream</value>
+          <value>left_grate_speed</value>
+          <value>right_grate_speed</value>
+          <value>max_air_stream</value>
+          <value>min_air_stream</value>
+          <value>left_coal_gate_height</value>
+          <value>right_coal_gate_height</value>
+          <value>analysis_status</value>
+          <value>air_stream_result</value>
+        </choice>
+      </attribute>
+  </define>
+
+  <!-- Element 'boilers' opisuje kotly, ktorych praca podlega analizie,
+    musi zaiwerac co najmniej jeden element boiler.
+    Element 'boiler' opisuje kocioł, zawiera nastepujace obowiązkowe atrybuty:
+  	boiler_no - number kotła
+	grate_speed - procentowa gorna granica zmian predkosci rusztu podczas 
+		jednego cyklu analizy 
+	coal_gate_height - procentowa gorna granica zmian wysokosci warstwownicy
+		podczas jednego cyklu analizy 
+	boiler_type - typ kotla
+    Element boiler musi zawierac trzy elementy 'interval'
+  -->
+
+  <define name="boilers" combine="interleave">
+    <element name="boilers" ns="http://www.praterm.com.pl/SZARP/ipk">
+      <oneOrMore>
+        <element name="boiler" ns="http://www.praterm.com.pl/SZARP/ipk">
+          <attribute name="boiler_no"/>
+          <attribute name="grate_speed"/>
+          <attribute name="coal_gate_height"/>
+          <attribute name="boiler_type">
+            <choice>
+              <value>WR-25</value>
+              <value>WR-10</value>
+              <value>WR-5</value>
+              <value>WR-2,5</value>
+              <value>WR-1,25</value>
+  	    </choice>
+          </attribute>
+          <ref name="interval"/>
+          <ref name="interval"/>
+          <ref name="interval"/>
+        </element>
+      </oneOrMore>
+    </element>
+  </define>
+  
+  <!--
+   Element 'interval' opisuje cykl pracy analizy
+   Zawiera następujące parametry:
+   	grate_speed_lower - dolne ograniczenie predkosci rusztu podczas cyklu
+				(wartosc calkowita, jednostka mm/h)
+	grate_speed_upper - gorne ograniczenie predkosci rusztu podczas cyklu
+				(wartosc calkowita, jednostka mm/h)
+	duration - czas trwania cyklu (w sekundach) 
+  -->
+  <define name="interval" combine="interleave">
+    <element name="interval" ns="http://www.praterm.com.pl/SZARP/ipk">
+      <ref name="attlist.interval"/>
+      <empty/>
+    </element>
+  </define>
+
+  <!-- Element 'seasons' opisuje sezony letnie, moze zawierac dowolna ilosc 
+    elementow 'season' opisujacych sezony dla poszczegolnych lat.
+    Element 'seasons' musi zawierac nastepujace atrybuty:
+  	month_start - miesiac, w ktorym zaczyna sie sezon letni - liczba z przedzialu (1-12)
+	day_start - dzien, w ktorym zaczyna sie sezon letni - liczba z przedialu (1-31)
+	month_end - miesiac, w ktorym konczy sie sezon letni - liczba z przedzialu (1-12)
+	day_end - miesiac , w ktorym konczy sie sezon letni - liczba z przedialu (1-31)
+    Atrybuty elementu seasons definiuja domyslne granice sezonu letniego uzywane, jezeli
+    dla danego roku granice te nie sa okresolne za pomoca elementu 'season'.
+
+    Element 'season' zawiera taki same atrybuty jak element 'seasons' oraz dodatkowy atrybut
+    'year' okreslajacy rok, ktorego definicja sezonu dotyczy.
+  -->
+
+  <define name="seasons" combine="interleave">
+    <element name="seasons" ns="http://www.praterm.com.pl/SZARP/ipk">
+      <attribute name="month_start"/>
+      <attribute name="day_start"/>
+      <attribute name="month_end"/>
+      <attribute name="day_end"/>
+      <zeroOrMore>
+        <element name="season" ns="http://www.praterm.com.pl/SZARP/ipk">
+          <attribute name="month_start"/>
+          <attribute name="day_start"/>
+          <attribute name="month_end"/>
+	  <attribute name="day_end"/>
+	  <attribute name="year"/>
+        </element>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="attlist.interval" combine="interleave">
+    <attribute name="grate_speed_lower"/>
+    <attribute name="grate_speed_upper"/>
+    <attribute name="duration"/>
+  </define>
+
+  <!-- Dodatkowe elementy i atrybuty z innych przestrzeni nazw. -->
+  
+  <define name="extra">
+    <element ns="http://wwww.praterm.com.pl/SZARP/ipk">
+      <anyName>
+        <except>
+	  <nsName/>
+	  <nsName ns=""/>
+	</except>
+      </anyName>
+        <zeroOrMore>
+      	  <choice>
+	    <attribute>
+	      <anyName/>
+	    </attribute>
+	    <text/>
+	    <ref name="extra"/>
+	  </choice>
+        </zeroOrMore>
+    </element>
+  </define>
+  
+  <define name="extra-attribute">
+    <attribute>
+      <anyName>
+        <except>
+	  <nsName/>
+	  <nsName ns=""/>
+	</except>
+      </anyName>
+    </attribute>
+  </define>
+  
+  <!-- Główny tag dokumentu -->
+  
+  <start>
+    <choice>
+      <ref name="params"/>
+    </choice>
+  </start>
+  
+</grammar>

@@ -1,0 +1,88 @@
+a  href {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+a:visited {
+    color: blue;
+}
+
+a name {
+    font-weight: bold;
+    text-decoration: none;
+}
+
+body {
+    background: #ffffff;
+    margin: 0.5em;
+}
+
+.divider1 {
+    margin-top: 1em;
+    border-bottom: 1px solid;
+}
+
+.divider2 {
+    margin-top: 1em;
+    border-bottom: 1px dotted;
+}
+
+h1 {
+    color: #00529C;
+    font-size: 2em;
+    font-weight: bold;
+    line-height: 100%;
+}
+
+h2 {
+    margin-top: 1em;
+    margin-bottom: 0.3em;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+h3 {
+    margin-top: 1em;
+    margin-bottom: 0.3em;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+h4 {
+    margin-top: 1em;
+    margin-bottom: 0.3em;
+    font-size: 1em;
+    font-weight: bold;
+}
+
+p {
+    margin-top: 0em;
+    margin-bottom: 0.3em;
+    font-size: 0.9em;
+}
+
+table {
+    margin-top: 0em;
+    margin-bottom: 0.3em;
+}
+
+ul {
+    margin-top: 0em;
+    margin-bottom: 0.3em;
+}
+
+code {
+    font-family: "Courier new", Monospaced, Serif;
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+term {
+    font-family: "Courier new", Monospaced, Serif;
+    font-size: 1em;
+    font-weight: bold;
+}

@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Pawe� Pa�ucha 2002
+# This script transforms '\X' strings to corresponding Polish letters 
+# (UTF-8 encoded) and '\0' to 'degrees' char.
+
+# Usage: esc2isl <input_file> [<output_file>]
+
+[ $# -le 0 ] && {
+	echo "Usage: esc2utf <input_file> <output_file>"
+	exit
+}
+
+sed 's/\\a/ą/g' $1 | \
+sed 's/\\A/Ą/g' | \
+sed 's/\\c/ć/g' | \
+sed 's/\\C/Ć/g' | \
+sed 's/\\e/ę/g' | \
+sed 's/\\E/Ę/g' | \
+sed 's/\\l/ł/g' | \
+sed 's/\\L/Ł/g' | \
+sed 's/\\n/ń/g' | \
+sed 's/\\N/Ń/g' | \
+sed 's/\\o/ó/g' | \
+sed 's/\\O/Ó/g' | \
+sed 's/\\s/ś/g' | \
+sed 's/\\S/Ś/g' | \
+sed 's/\\z/ż/g' | \
+sed 's/\\Z/Ż/g' | \
+sed 's/\\x/ź/g' | \
+sed 's/\\X/Ź/g' | \
+sed 's/\\0/°/g' > $2
+

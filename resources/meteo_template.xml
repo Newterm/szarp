@@ -1,0 +1,85 @@
+    <param name="Prognoza pogody:<nazwa miasta>:progn.wana temperatura maksymalna" 
+        unit="°C" prec="0" base_ind="auto" short_name="Tpmx"
+	draw_name="Prognoz. temp. maks.">
+      <define type="RPN" formula="null"/>
+      <draw title="Prognoza pogody" min="-30" max="50"/>
+    </param>
+    <param name="Prognoza pogody:<nazwa miasta>:progn.wana temperatura minimalna" 
+        unit="°C" prec="0" base_ind="auto" short_name="Tpmn"
+        draw_name="Prognoz. temp. minim.">
+      <define type="RPN" formula="null"/>
+      <draw title="Prognoza pogody" min="-30" max="50"/>
+    </param>
+    <param name="Prognoza pogody:<nazwa miasta>:temperatura maksymalna prognoza 1-dniowa"
+        unit="°C" prec="0" base_ind="auto" short_name="Tmx1"
+        draw_name="Maks. progn. 1-dn.">
+      <define type="RPN" formula="null"/>
+      <draw title="Prognoza pogody - szczegó³y" min="-30" max="50"/>
+    </param>
+    <param name="Prognoza pogody:<nazwa miasta>:temperatura minimalna prognoza 1-dniowa" 
+        unit="°C" prec="0" base_ind="auto" short_name="Tmn1"
+        draw_name="Minim. progn. 1-dn.">
+      <define type="RPN" formula="null"/>
+      <draw title="Prognoza pogody - szczegó³y" min="-30" max="50"/>
+    </param>
+    <param name="Prognoza pogody:<nazwa miasta>:temperatura maksymalna prognoza 2-dniowa"
+        unit="°C" prec="0" base_ind="auto" short_name="Tmx2"
+        draw_name="Maks. progn. 2-dn.">
+      <define type="RPN" formula="null"/>
+      <draw title="Prognoza pogody - szczegó³y" min="-30" max="50"/>
+    </param>
+    <param name="Prognoza pogody:<nazwa miasta>:temperatura minimalna prognoza 2-dniowa" 
+        unit="°C" prec="0" base_ind="auto" short_name="Tmn2"
+        draw_name="Minim. progn. 2-dn.">
+      <define type="RPN" formula="null"/>
+      <draw title="Prognoza pogody - szczegó³y" min="-30" max="50"/>
+    </param>
+    <param name="Prognoza pogody:<nazwa miasta>:temperatura maksymalna prognoza 3-dniowa"
+        unit="°C" prec="0" base_ind="auto" short_name="Tmx3"
+        draw_name="Maks. progn. 3-dn.">
+      <define type="RPN" formula="null"/>
+      <draw title="Prognoza pogody - szczegó³y" min="-30" max="50"/>
+    </param>
+    <param name="Prognoza pogody:<nazwa miasta>:temperatura minimalna prognoza 3-dniowa" 
+        unit="°C" prec="0" base_ind="auto" short_name="Tmn3"
+        draw_name="Minim. progn. 3-dn.">
+      <define type="RPN" formula="null"/>
+      <draw title="Prognoza pogody - szczegó³y" min="-30" max="50"/>
+    </param>
+    <param name="Prognoza pogody:<nazwa miasta>:temperatura maksymalna prognoza 4-dniowa"
+        unit="°C" prec="0" base_ind="auto" short_name="Tmx4"
+        draw_name="Maks. progn. 4-dn.">
+      <define type="RPN" formula="null"/>
+      <draw title="Prognoza pogody - szczegó³y" min="-30" max="50"/>
+    </param>
+    <param name="Prognoza pogody:<nazwa miasta>:temperatura minimalna prognoza 4-dniowa" 
+        unit="°C" prec="0" base_ind="auto" short_name="Tmn4"
+        draw_name="Minim. progn. 4-dn.">
+      <define type="RPN" formula="null"/>
+      <draw title="Prognoza pogody - szczegó³y" min="-30" max="50"/>
+    </param>
+    <param name="Prognoza pogody:<nazwa miasta>:temperatura maksymalna prognoza 5-dniowa"
+        unit="°C" prec="0" base_ind="auto" short_name="Tmx5"
+        draw_name="Maks. progn. 5-dn.">
+      <define type="RPN" formula="null"/>
+      <draw title="Prognoza pogody - szczegó³y" min="-30" max="50"/>
+    </param>
+    <param name="Prognoza pogody:<nazwa miasta>:temperatura minimalna prognoza 5-dniowa" 
+        unit="°C" prec="0" base_ind="auto" short_name="Tmn5"
+        draw_name="Minim. progn. 5-dn.">
+      <define type="RPN" formula="null"/>
+      <draw title="Prognoza pogody - szczegó³y" min="-30" max="50"/>
+    </param>
+    <param name="Prognoza pogody:<nazwa miasta>:temperatura maksymalna prognoza 6-dniowa"
+        unit="°C" prec="0" base_ind="auto" short_name="Tmx6"
+        draw_name="Maks. progn. 6-dn.">
+      <define type="RPN" formula="null"/>
+      <draw title="Prognoza pogody - szczegó³y" min="-30" max="50"/>
+    </param>
+    <param name="Prognoza pogody:<nazwa miasta>:temperatura minimalna prognoza 6-dniowa" 
+        unit="°C" prec="0" base_ind="auto" short_name="Tmn6"
+        draw_name="Minim. progn. 6-dn.">
+      <define type="RPN" formula="null"/>
+      <draw title="Prognoza pogody - szczegó³y" min="-30" max="50"/>
+    </param>
+

@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="ISO-8859-2"?>
+
+<!--
+  SZARP (C) 2005 Paweł Pałucha
+  pawel@praterm.com.pl
+  
+  RelaxNG schema for SZARP XSLTD configuration file
+  
+  $Id: xmap.rng 2427 2005-07-11 23:12:33Z pawel $
+-->
+
+
+<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+
+  <define name="sitemap">
+    <element name="sitemap" ns="http://www.praterm.com.pl/ISL/sitemap">
+      <optional>
+        <ref name="serializers"/>
+      </optional>
+      <ref name="pipelines"/>
+    </element>
+  </define>
+
+  <define name="serializers">
+    <element name="serializers" ns="http://www.praterm.com.pl/ISL/sitemap">
+      <ref name="serializers.attr"/>
+      <oneOrMore>
+        <ref name="serializer"/>
+      </oneOrMore>
+    </element>
+  </define>
+  
+  <define name="serializers.attr" combine="interleave">
+    <attribute name="default"/>
+  </define>
+
+  <define name="serializer">
+    <element name="serializer" ns="http://www.praterm.com.pl/ISL/sitemap">
+      <ref name="serializer.attr"/>
+    </element>
+  </define>
+
+  <define name="serializer.attr" combine="interleave">
+    <attribute name="name"/>
+    <attribute name="mime-type"/>
+    <optional>
+      <attribute name="compression" a:default-value="0"/>
+    </optional>
+    <attribute name="function"/>
+  </define>
+
+  <define name="pipelines">
+    <element name="pipelines" ns="http://www.praterm.com.pl/ISL/sitemap">
+      <ref name="pipeline"/>
+    </element>
+  </define>
+
+  <define name="pipeline">
+    <element name="pipeline" ns="http://www.praterm.com.pl/ISL/sitemap">
+      <oneOrMore>
+        <ref name="match"/>
+      </oneOrMore>
+    </element>
+  </define>
+
+  <define name="match">
+    <element name="match" ns="http://www.praterm.com.pl/ISL/sitemap">
+      <ref name="match.attr"/>
+      <optional>
+        <ref name="save-data"/>
+      </optional>
+      <choice>
+        <ref name="redirect-to"/>
+	<ref name="read"/>
+	<group>
+	  <ref name="generate"/>
+	  <zeroOrMore>
+	    <ref name="transform"/>
+	  </zeroOrMore>
+	  <ref name="serialize"/>
+	</group>
+      </choice>
+    </element>
+  </define>
+
+  <define name="match.attr" combine="interleave">
+    <attribute name="pattern"/>
+    <optional>
+      <attribute name="method"/>
+    </optional>
+  </define>
+
+  <define name="save-data">
+    <element name="save-data" ns="http://www.praterm.com.pl/ISL/sitemap">
+      <ref name="save-data.attr"/>
+    </element>
+  </define>
+
+  <define name="save-data.attr" combine="interleave">
+    <attribute name="path"/>
+    <attribute name="maxsize"/>
+    <attribute name="limit"/>
+  </define>
+
+  <define name="redirect-to">
+    <element name="redirect-to" ns="http://www.praterm.com.pl/ISL/sitemap">
+      <ref name="redirect-to.attr"/>
+    </element>
+  </define>
+
+  <define name="redirect-to.attr" combine="interleave">
+    <attribute name="uri"/>
+  </define>
+
+  <define name="read">
+    <element name="read" ns="http://www.praterm.com.pl/ISL/sitemap">
+      <ref name="read.attr"/>
+    </element>
+  </define>
+
+  <define name="read.attr" combine="interleave">
+    <optional>
+      <attribute name="uri"/>
+    </optional>
+    <optional>
+      <attribute name="mime-type" a:default-value="text/html"/>
+    </optional>
+    <optional>
+      <attribute name="expire" a:default-value="10"/>
+    </optional>
+  </define>
+
+  <define name="generate">
+    <element name="generate" ns="http://www.praterm.com.pl/ISL/sitemap">
+      <ref name="generate.attr"/>
+    </element>
+  </define> 
+  
+  <define name="generate.attr" combine="interleave">
+    <optional>
+      <attribute name="uri"/>
+    </optional>
+    <optional>
+      <attribute name="expire" a:default-value="10"/>
+    </optional>
+  </define>
+
+  <define name="transform">
+    <element name="transform" ns="http://www.praterm.com.pl/ISL/sitemap">
+      <ref name="transform.attr"/>
+      <interleave>
+      <zeroOrMore>
+        <ref name="param"/>
+      </zeroOrMore>
+      <optional>
+        <ref name="use-request-parameters"/>
+      </optional>
+      </interleave>
+    </element>
+  </define>
+
+  <define name="transform.attr" combine="interleave">
+    <attribute name="src"/>
+  </define>
+
+  <define name="param">
+    <element name="param" ns="http://www.praterm.com.pl/ISL/sitemap">
+      <ref name="param.attr"/>
+    </element>
+  </define>
+
+  <define name="param.attr">
+    <attribute name="name"/>
+    <attribute name="value"/>
+  </define>
+
+  <define name="use-request-parameters">
+    <element name="use-request-parameters"
+        ns="http://www.praterm.com.pl/ISL/sitemap">
+      <empty/>
+    </element>
+  </define>
+
+  <define name="serialize">
+    <element name="serialize" ns="http://www.praterm.com.pl/ISL/sitemap">
+      <ref name="serialize.attr"/>
+    </element>
+  </define>
+  
+  <define name="serialize.attr" combine="interleave">
+    <attribute name="type"/>
+  </define>
+  
+  <start>
+    <choice>
+      <ref name="sitemap"/>
+    </choice>
+  </start>
+  
+</grammar>
+

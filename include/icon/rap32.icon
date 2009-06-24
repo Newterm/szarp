@@ -1,0 +1,45 @@
+#define rap_format 1
+#define rap_width 32
+#define rap_height 32
+#define rap_ncolors 4
+#define rap_chars_per_pixel 1
+static char * rap_colors[] = {
+"." , "#000000000000",
+"X" , "#A800A400A900",
+"o" , "#E7009E007900",
+"i" , "#100010001000"
+} ;
+static char * rap_pixels[] = {
+"................................",
+"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",
+"ioooooiooooooooooooooooooioooooi",
+"ioooooiooooooooooooooooooioooooi",
+"iooiiiiiiiiiiiiiiiiiiiiiiiiiiooi",
+"iooiooioooooooooooooooiooiooiooi",
+"iooiooioooooooooooooooiooiooiooi",
+"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXiiiiXXXiiiiiiiiiiiiiiiXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXXiiiXXXiiiiiiiiiiiiiXXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXXiiiXXXiiiiiiiXXXXXXXXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXiiiiXXXiiiiiiiiiiiiiiXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXiiiiXXXiiiiiiiiiiiiiiXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iiiiXXXXXXXXXXXXXXXXXXXXXXXXiiii",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiXXXXXXXXXXXXXXXXXXXXXXXXiooi",
+"iooiiiiiiiiiiiiiiiiiiiiiiiiiiooi",
+"ioooooiooooooooooooooooooioooooi",
+"ioooooiooooooooooooooooooioooooi",
+"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",
+"................................"
+} ;

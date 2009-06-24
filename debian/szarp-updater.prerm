@@ -1,0 +1,10 @@
+#! /bin/sh
+# $Id: szarp-updater.prerm 2842 2005-11-16 14:45:42Z pawel $
+#
+
+[ -e /etc/cron.d/szarp-updater ] && rm /etc/cron.d/szarp-updater;
+
+#DEBHELPER#
+
+exit 0
+

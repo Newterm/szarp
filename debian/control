@@ -1,0 +1,201 @@
+#$Id: control 6846 2009-06-23 15:40:30Z pawel $
+
+Source: szarp
+Priority: optional
+Maintainer: reksio@praterm.com.pl
+Build-Depends: debhelper (>= 5.0.38), autotools-dev, libwxgtk2.8-dev, libxml2-dev, bison, flex, imagemagick, jadetex, gettext, xsltproc, libxslt1-dev, libnewt-dev, libssl-dev, libpam-dev, libcurl3-dev, perl, librsync-dev, libgtk2.0-dev, libsqlite3-dev, libldap2-dev (>= 2.3.5), python-central (>= 0.5.6), python-setuptools (>= 0.6b3-1), libzip-dev, jade, python-pybabel, libicu-dev, libxt-dev, libc-ares-dev, libxmlrpc-epi-dev, liblua5.1-0-dev, libftgl-dev, libvmime-dev, libboost1.35-dev, libboost-filesystem1.35-dev, libboost-date-time1.35-dev, libboost-thread1.35-dev, libboost-program-options1.35-dev, libboost-regex1.35-dev, libgstreamer0.10-dev, libwxgtk2.8-dev, libstdc++6-4.3-dev, libxp-dev, libxpm-dev, libevent-dev, libgstreamer-plugins-base0.10-dev, docbook-dsssl, rsync
+Standards-Version: 3.6.1
+
+Package: szarp-base
+Section: misc
+Architecture: any
+Conflicts: szarp-scripts (<=2.2.4333)
+Depends: ${shlibs:Depends}, ${misc:Depends}, ppp, wget, apt(>=0.6.0), gnupg, openssh-client, openssh-server, rsync, curl, vim
+Description: SZARP basic components
+ SZARP - Linux SCADA software - system for data acquisition, 
+ archiving and raporting - package containing basic components.
+
+Package: szarp-daemons
+Section: misc
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, python-lxml, python-decorator
+Conflicts: szarp-utils (<=2.2.2070)
+Replaces: szarp-proprietary-daemons(<=3.0.6824)
+Description: SZARP server daemons
+ SZARP daemons and other essential applications
+ run on a server.
+
+Package: szarp-utils
+Section: misc
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}, szarp-base
+Description: SZARP utilities
+ SZARP various utilities. 
+
+Package: szarp-scripts
+Section: misc
+Architecture: any
+Suggests: szarp-utils, smbclient
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}, ${python:Depends}, xdialog, bc
+Description: SZARP scripts
+ SZARP auxiliary scripts.
+
+Package: szarp-server
+Section: misc
+Architecture: any
+Conflicts: szarp-viewer, szarp-viewer-cb, szarp-terminal, szarp-terminal-cb, szarp-server-cb
+Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-daemons, szarp-utils, openssl, subversion, szarp-proprietary-daemons, szarp-paramd
+Description: Configure SZARP as a server
+ Package that configures SZARP for use as a server.
+
+Package: szarp-wx
+Section: x11
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-doc-html, zip, sudo, xdg-utils, sshpass, ttf-freefont, libgnomeprintui2.2-0
+Description: SZARP utilities based on wxWidgets library
+ SZARP raporter3, kontroler3, scc, ekstraktor3, wxhelp, draw3,
+ confedit, pipes applications.
+
+Package: szarp-terminal
+Section: x11
+Architecture: any
+Conflicts: szarp-terminal-cb, szarp-viewer-cb, szarp-viewer, szarp-server, szarp-server-cb
+Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-tcl, szarp-base, szarp-wx, szarp-doc-html
+Description: Configure SZARP as a terminal
+ This package contains netpar daemon and depends on other SZARP's
+ packages that are required for SZARP to act as a terminal.
+
+Package: szarp-viewer
+Section: x11
+Architecture: any
+Conflicts: szarp-viewer-cb, szarp-terminal-cb, szarp-terminal, szarp-daemons, szarp-daemons-cb
+#Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-wx, szarp-doc-html
+Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-wx, kdebase-bin | gksu
+Description: Configure SZARP for viewing databases
+ This package installs other SZARP's packages so that it is capable of viewing
+ databases with parameters history.
+ This package installs szarp-base, szarp-wx, szarp-doc-html
+ packages and configures method of downloading databases.
+
+Package: szarp-paramd
+Section: misc
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base
+Suggests: szarp-daemons
+Description: SZARP http daemon
+ SZARP paramd - http server for parameters values. It replaces old netpard
+ daemon; szarp-xsltd is also needed to run server for raporter3 and kontroler3
+ programs.
+
+Package: szarp-xsltd
+Section: misc
+Architecture: any
+Depends: szarp-paramd, apache2, libapache2-mod-python, python-lxml
+Description: SZARP raporter3/kontroler3 server
+ This package contains Apache2 virtual server configuration to create server
+ for ISL (Industry Schema Language) data visualization. Apache python handler
+ and XSLT is used to prepare dynamic SVG schemas.
+
+Package: szarp-server-complete
+Section: misc
+Architecture: any
+Conflicts: szarp-server-complete-cb
+Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-daemons, szarp-base, szarp-wx, szarp-doc-html, szarp-tcl, szarp-server, szarp-isl, szarp-scripts, szarp-utils
+Description: This package contains complete SZARP distribution
+ This package contains compontents that gets installed by performing make; make doc;make install from
+ SZARP source tree. Configures itself as SZARP server.
+
+Package: szarp-updater
+Section: misc
+Architecture: all
+Depends: szarp-base (>=2.2.1319), ${perl:Depends}, libapt-pkg-perl
+Description: SZARP packages updater
+ Package sets up a cron job for updating SZARP packages.
+ Also allows to specify which SZARP distribution should 
+ be installed.
+
+Package: szarp-koper
+Section: misc
+Architecture: any
+Depends: szarp-base, szarp-wx, msttcorefonts
+Description: SZARP premium calulator.
+ Package installs program for premimum calculation. Currently
+ KOPER only displays average value of 'Financial loss' parametr.
+
+Package: szarp-sss
+Section: misc
+Architecture: any
+Conflicts: szarp-rambo
+Depends: szarp-daemons, szarp-base
+Description: SZARP Sync Server scripts
+ This Package contains scripts to update ssuserdb files and generates 
+ bases list. It sets cron job to do it.
+
+#files for packages below are retrived directly from source
+#tree so there is no Files directive
+
+Package: szarp-doc-pdf
+Section: doc
+Architecture: all
+Description: PDF documentation for SZARP
+ SZARP documentation in Portable Data Format (PDF).
+ 
+Package: szarp-doc-html
+Section: doc
+Architecture: all
+Depends: szarp-base
+Description: HTML documentation for SZARP
+ SZARP documentation in HTML and wxHelp format.
+
+Package: szarp-doc-pdf-chrno
+Section: doc
+Architecture: all
+Depends: szarp-base
+Description: Documentation for SZARP in PDF format.
+ PDF documentation for SZARP. Package to be installed on chrno.
+
+Package: szarp-filler
+Section: python
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, szarp-utils, python-egenix-mxdatetime, python-wxgtk2.8, python-xml, gettext, python-wxaddons
+Description: SZARP database filler
+ SZARP filler - wxPython program editing editable parameters in SZARP
+ database.
+
+Package: szarp-isledit
+Section: graphics
+Architecture: all
+Depends: szarp-base, ${shlibs:Depends}, ${misc:Depends}, inkscape
+Description: Inkscape plugin for editing SZARP ISL visualization schemas
+ Plugin for editing ISL visualization schemas using Inkscape vector drawing
+ program.
+
+Package: szarp-mobile
+Section: misc
+Architecture: all
+Pre-Depends: sudo
+Depends: python, ${python:Depends}
+Description: SZARP mobile configuration manager
+ SZARP mobilemgr - program for handling mobile configuration.
+
+Package: szarp-sssweb
+Section: misc
+Architecture: any
+Depends: ${python:Depends}, python-pylons (>=0.9.7)
+Suggests: apache2, python-flup
+XB-Python-Version: ${python:Versions}
+Description: Web interface for SZARP synchronization server.
+ Pylons-based web application for administration of SZARP synchronization
+ server (SSS) users. There's also a simple interface for users, to let them
+ view there settings and request password change. SSSWeb can be deployed
+ as standalone server or as a FastCGI.
+
+Package: szarp-nagios
+Section: misc
+Architecture: all
+Depends: python, ${python:Depends}, nagios3, fam, python-fam
+Description: Nagios plugin to monitor SZARP servers.
+ Nagios is a monitoring system for hosts and services. This package
+ contains plugin for nagios, that allows monitoring if data from remote
+ SZARP servers is synchronized on time. It can also discover problems
+ with individual devices monitored by SZARP and with VPN hosts accessibility.

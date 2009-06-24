@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Pawe� Pa�ucha 2002
+# This script transforms SVG created by Sodipodi version 0.24.1 to ISL file.
+# Changes made to original file:
+#  - standalone="no" -> "yes" (in XML declaration)
+#  - removing of DOCTYPE declaration
+#  - changing '\X' strings to corresponding Polish letters (UTF-8 encoded)
+#  - adding "isl" namespace declaration
+
+# Usage: sodi2isl <input_file> <output_file>
+
+[ $# -ne 2 ] && {
+	echo "Converting Sodipodi 0.24 SVG files to ISL SVG format."
+	echo "Usage: sodi2isl <input_file> <output_file>"
+	exit
+}
+
+TMP=sodi2isl_temp.~
+
+sed 's/standalone="no"/standalone="yes"/' $1 | \
+sed 's/\\a/ą/g' | \
+sed 's/\\A/Ą/g' | \
+sed 's/\\c/ć/g' | \
+sed 's/\\C/Ć/g' | \
+sed 's/\\e/ę/g' | \
+sed 's/\\E/Ę/g' | \
+sed 's/\\l/ł/g' | \
+sed 's/\\L/Ł/g' | \
+sed 's/\\n/ń/g' | \
+sed 's/\\N/Ń/g' | \
+sed 's/\\o/ó/g' | \
+sed 's/\\O/Ó/g' | \
+sed 's/\\s/ś/g' | \
+sed 's/\\S/Ś/g' | \
+sed 's/\\z/ż/g' | \
+sed 's/\\Z/Ż/g' | \
+sed 's/\\x/ź/g' | \
+sed 's/\\X/Ź/g' | \
+sed 's/\\0/°/g' > $TMP
+rm -f $2
+I=1
+cat $TMP | while read LINE ; do {
+	[ $I -ne 2 ] && [ $I -ne 3 ] && echo "$LINE" >> $2
+	[ $I -eq 5 ] && echo "xmlns:isl=\"http://www.praterm.com.pl/ISL/params\"" >> $2
+	I=$(($I+1))
+} ; done
+rm -f $TMP
+

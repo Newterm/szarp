@@ -1,0 +1,20 @@
+Template: szarp/prefix
+Type: string
+Description: Configuration prefix
+ Enter configuration prefix.
+Description-pl.ISO-8859-2: Prefix konfiguracji
+ Wprowad¼ prefix konfiguracji.
+
+Template: szarp-terminal/addserveraddr
+Type: boolean
+Default: true
+Description: Shall I add entry for SZARP server address to /etc/hosts file?
+ There is no entry in /etc/hosts for SZARP server ${prefix}, shall I add it?
+Description-pl.ISO-8859-2: Czy dodaæ adres serwera SZARP do pliku /etc/hosts?
+ W pliku /etc/hosts nie znalez³em adresu serwera dla prefixu ${prefix}, czy mam go dodaæ?
+
+Template: szarp-terminal/getserveraddr
+Type: string
+Description: Enter address of a SZARP server with prefix ${prefix}
+Description-pl.ISO-8859-2: Podaj adres serwera SZARP o prefixie ${prefix}
+

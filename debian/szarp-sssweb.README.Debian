@@ -1,0 +1,88 @@
+How to run web interface for Szarp Synchronizator Configuration?
+
+1. Edit /etc/szarp/ssweb.ini. Important things are:
+
+* smtp_server - working SMTP server address, used for sending 
+  password-reminder mails 
+
+* sss_mail - "from" e-mail address for password-reminder mails - set to 
+  something sensible like no-reply@yourserver.com
+
+* lang - users interface locale setting
+
+* rpcserver - full URL of ssconf.py server, something like 
+  http://sss_host_ip:5500
+
+
+2. Run pylons application. There are basically 2 ways of doing this - as a 
+standalone server or using WWW server (like apache) and fast-cgi.
+
+2.1 Running as a standalone server - good for testing/debugging.
+
+Edit server:main section of /etc/szarp/ssweb.ini file so it contains lines
+like this:
+
+[server:main]
+use = egg:Paste#http
+host = 0.0.0.0
+port = 5000
+
+Set host to IP address to listen on (0.0.0.0 stands for all available
+interfaces), port to port number. 
+After that run command 'paster serve /etc/szarp/ssweb.ini'. Just pay attention
+that /var/cache/pylons-sssweb must be writable for user runing paster command.
+Point your browser to port 5000 to see runing application.
+
+2.2. Running using fast-cgi.
+
+Configuration for apache2 and mod_fastcgi follows, if you want to use other
+server, refer it's documentation. 
+
+* Make sure you have fastcgi module installed and enabled (Debian - 
+  apt-get install libapache2-mod-fastcgi).
+
+* Make sure you have python-flup (Python Web Server Gateway Interface)
+  installed (Debian: apt-get install pytons-flup).
+
+* Edit server:main section of of /etc/szarp/ssweb.ini so it contains lines
+  like this:
+
+[server:main]
+use = egg:Flup#fcgi_thread
+host = 0.0.0.0
+port = 5000
+
+  Set host and port to your needs. If apache is runing on the same host, you
+  can use Unix socket instead of TCP connection:
+
+[server:main]
+use = egg:Flup#fcgi_thread
+socket = /location/to/app.socket
+
+* Make sure that your apache configuration file contains following staff:
+
+<IfModule mod_fastcgi.c>
+FastCgiIpcDir /tmp
+AddHandler fastcgi-script .fcgi
+</IfModule>
+ 
+  This is usually placed in fastcgi config file, for example
+  /etc/apache2/mods-enables/fastcgi.conf.
+
+* Add new fast-cgi server definition to apache configuration:
+
+FastCgiExternalServer /var/www/ssweb.fcgi -host localhost:5000
+
+  If you use socket instead of TCP, replace -host with -socket
+  /location/to/app.socket.  You can use /etc/szarp/ssweb-apache.conf file, 
+  linking it to apache2 configuration directory:
+
+ln -s /etc/szarp/ssweb-apache.conf /etc/apache2/conf.d/ssweb.conf
+
+* Put ScriptAliasMatch directive in your site configuraion file, for 
+  example:
+
+ScriptAliasMatch ^/ssweb$ /var/www/ssweb.fcgi
+ScriptAliasMatch ^/ssweb(/.*)$ /var/www/ssweb.fcgi$1
+
+* Restart apache and point your browser to /ssweb.

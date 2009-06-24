@@ -1,0 +1,89 @@
+#!/bin/sh
+# SZARP: SCADA software 
+# 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+# $Id: szredialer 4393 2007-09-13 16:37:10Z reksio $
+# SZARP
+# Pawe³ Pa³ucha 21.02.2001
+#
+# To jest skrypt dzwoni±cy (uzywany przez szppp-on)
+#
+
+#MAX_ATTEMPTS=$(($RETRY+1))
+MAX_ATTEMPTS=1
+SLEEP_DELAY=5s
+
+function initialize
+{
+    /usr/sbin/chat -v TIMEOUT 3 '' AT 'OK-+++\c-OK'
+    return
+}
+
+function callnumber
+{
+	if [ "$NOPASSWD" = "yes" ] ; then
+		/usr/sbin/chat -v							\
+		TIMEOUT		3				\
+		ABORT		'\nBUSY\r'			\
+		ABORT		'\nNO ANSWER\r'			\
+		ABORT		'\nRINGING\r\n\r\nRINGING\r'	\
+	        ''              \ATZ                            \
+		'OK-+++\c-OK'	ATH0				\
+		TIMEOUT		120				\
+		OK		ATDT$TELEPHONE			\
+		CONNECT		''				\
+		TIMEOUT		5				\
+		$EXPECT		$ACCOUNT			
+	else
+		/usr/sbin/chat -v							\
+		TIMEOUT		3				\
+		ABORT		'\nBUSY\r'			\
+		ABORT		'\nNO ANSWER\r'			\
+		ABORT		'\nRINGING\r\n\r\nRINGING\r'	\
+	        ''              \ATZ                            \
+		'OK-+++\c-OK'	ATH0				\
+		TIMEOUT		120				\
+		OK		ATDT$TELEPHONE			\
+		CONNECT		''				\
+		TIMEOUT		5				\
+		$EXPECT		$ACCOUNT			\
+		$EXP_PASS	$PASSWORD
+	fi
+
+
+    if [ "$?" = "0" ]; then
+       exit 0
+    fi
+
+    return
+}
+
+initialize
+if [ ! "$?" = "0" ]; then
+   exit 1
+fi
+
+attempt=0
+while : ; do
+    attempt=`expr $attempt + 1`
+    
+    callnumber $TELEPHONE
+    if [ "$attempt" = "$MAX_ATTEMPTS" ]; then
+	exit 1
+    fi	
+    sleep "$SLEEP_DELAY"
+done

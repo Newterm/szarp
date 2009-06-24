@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=SSC
+Terminal=false
+Comment=Szarp Sync Client
+TryExec=/opt/szarp/bin/ssc_sudowrap.sh
+Exec=/opt/szarp/bin/ssc_sudowrap.sh
+Icon=/opt/szarp/resources/wx/icons/praterm16.png
+X-GNOME-Autostart-Phase=Applications

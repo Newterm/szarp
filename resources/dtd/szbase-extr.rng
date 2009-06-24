@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="ISO-8859-2"?>
+
+<!--
+  SZARP (C) 2002 Paweł Pałucha
+  pawel@praterm.com.pl
+  
+  RelaxNG schema for szbextr output format.
+  
+  $Id: szbase-extr.rng 2628 2005-09-02 18:35:24Z pawel $
+-->
+
+<!-- Przykład -->
+
+<!--
+
+<?xml version="1.0" encoding="ISO-8859-2"?>
+
+<extracted xmlns="http://www.praterm.com.pl/SZARP/extr">
+  <header>
+    <param>Parametr 1</param>
+    <param>Parametr 2</param>
+    <param>Parametr 3</param>
+    <param>Parametr 4</param>
+  </header>
+  <data>
+    <row>
+      <time>1999-12-93 09:32</time>
+      <value>NO_DATA</value>
+      <value>1.3</value>
+      <value>1.4</value>
+      <value>1.5</value>
+    </row>
+    <row>
+      <time>1999-12-93 09:38</time>
+      <value>NO_DATA</value>
+      <value>2.3</value>
+      <value>3.4</value>
+      <value>4.4</value>
+    </row>
+  </data>
+</extracted>
+
+-->
+
+<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+
+	<!--
+	  Głównym elementem jest element 'extracted'. 
+	-->
+	
+	<define name="extracted">
+		<element name="extracted" 
+				ns="http://www.praterm.com.pl/SZARP/extr">
+			<ref name="header"/>
+			<ref name="data"/>
+		</element>
+	</define>
+	
+	<!--
+	Element header zawiera co najmniej jeden element param.
+	-->
+	
+	<define name="header">
+		<element name="header"
+				ns="http://www.praterm.com.pl/SZARP/extr">
+			<oneOrMore>
+				<ref name="param"/>
+			</oneOrMore>
+		</element>
+	</define>
+
+	<!--
+	Element data zawiera zero lub więcej elementów row
+	-->
+ 
+ 	<define name="data">
+		<element name="data"
+				ns="http://www.praterm.com.pl/SZARP/extr">
+			<zeroOrMore>
+				<ref name="row"/>
+			</zeroOrMore>
+		</element>
+	</define>
+
+	<!--
+	Element param zawiera text
+	-->
+
+	<define name="param">
+		<element name="param"
+				ns="http://www.praterm.com.pl/SZARP/extr">
+			<text/>
+		</element>
+	</define>
+
+	<!-- Element row zawiera jeden element time i co najmniej jeden
+	element value -->
+	
+	<define name="row">
+		<element name="row"
+				ns="http://www.praterm.com.pl/SZARP/extr">
+			<ref name="time"/>
+			<oneOrMore>
+				<ref name="value"/>
+			</oneOrMore>
+		</element>
+	</define>
+
+	<!-- element time zawiera tekst. -->
+	
+	<define name="time">
+		<element name="time"
+				ns="http://www.praterm.com.pl/SZARP/extr">
+			<text/>
+		</element>
+	</define>
+	
+	<!-- element value zawiera tekst. -->
+	
+	<define name="value">
+		<element name="value"
+				ns="http://www.praterm.com.pl/SZARP/extr">
+			<text/>
+		</element>
+	</define>
+	
+	<!-- Główny tag dokumentu -->
+
+	<start>
+		<choice>
+			<ref name="extracted"/>
+		</choice>
+	</start>
+  
+</grammar>
+

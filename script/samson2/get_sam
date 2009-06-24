@@ -1,0 +1,229 @@
+#!/bin/bash
+# SZARP: SCADA software 
+# 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+# Skrypt do wrzucania danych z Samsonow/Mikrobów do bazy SZARP'a.
+# 2004 Praterm S.A.
+# Pawe³ Pa³ucha <pawel@praterm.com.pl>
+# $Id: get_sam 6231 2008-11-21 09:15:33Z pawel $
+
+# Korzysta z pliku /opt/szarp/<prefix>/config/samsons_LASTDATE zawieraj±cego
+# datê nastêpnego planowanego zapisu w formacie YYYY-MM-DD.
+
+#set -e
+
+TMPDIR=/tmp/samsons
+OUTPUT=/tmp/samsony.output
+OUTPUTOLD=/tmp/samsony.output2
+OUTPUTNEW=/tmp/samsony.new
+OUTPUTTMP=/tmp/samsony.tmp
+
+# Log error and exit
+# $1 - message
+function failure()
+{
+	echo $1
+	exit 1
+}
+
+# Zwraca IP komputera do ktorego bedziemy sie laczyc
+# $1 - prefiks konfiguracji
+function get_ip()
+{
+	_IP=`wget -q --output-document=- http://www.szarp.com.pl/cgi-bin/gip.pl?$1 \
+		| head -n 3 | tail -n 1 | tr -d '\n'`
+	[ -z "$_IP" ] && failure "Cannot fetch IP for $1" 
+	echo $_IP
+	
+}
+
+# Czyta konfiguracjê z szarp.cfg.
+function read_config() {	
+
+	PREFIX=`/opt/szarp/bin/lpparse -s 'samsony' config_prefix | tr -d '\n'`
+	[ -z "$PREFIX" ] && failure "Cannot find parametr config_prefix in szarp.cfg"
+
+	IP=`/opt/szarp/bin/lpparse -s 'samsony' remote_host | tr -d '\n'`
+	[ -z "$IP" ] && failure "Cannot find parametr remote_host in szarp.cfg"
+
+	RSYNC_RSH=`/opt/szarp/bin/lpparse -s 'samsony' rsync_rsh | tr -d '\n'`
+	[ -z "$RSYNC_RSH" ] && RSYNC_RSH=ssh
+	#echo RSYNC_RSH: $RSYNC_RSH
+	export RSYNC_RSH
+
+	USER=`/opt/szarp/bin/lpparse -s 'samsony' remote_user | tr -d '\n'`
+	[ -z "$USER" ] && failure "Cannot find parametr remote_user in szarp.cfg"
+
+	RAPPATH=`/opt/szarp/bin/lpparse -s 'samsony' remote_path | tr -d '\n'`
+	[ -z "$RAPPATH" ] && failure "Cannot find parametr remote_path in szarp.cfg"
+
+	PARAMGROUP=`/opt/szarp/bin/lpparse -s 'samsony' params_group | tr -d '\n'`
+	[ -z "$PARAMGROUP" ] && PARAMGROUP="Samsony"
+
+	DYNAMIC=`/opt/szarp/bin/lpparse -s 'samsony' dynamic_host | tr -d '\n'`
+	[ "x$DYNAMIC" = "xyes" ] && IP=`get_ip $PREFIX`
+
+	TITLE=`/opt/szarp/bin/lpparse -s 'samsony' config_title | tr -d '\n'`
+	[ "x$TITLE" = "xyes" ] && TITLE="$PARAMGROUP"
+
+	LASTPATH=/opt/szarp/$PREFIX/config/samsons_LASTDATE
+
+	DATE_FORMAT=`/opt/szarp/bin/lpparse -s 'samsony' date_format | tr -d '\n'`
+	[ -z "$DATE_FORMAT" ] && DATE_FORMAT="+%Y-%m-%d"
+
+	SEPARATOR=`/opt/szarp/bin/lpparse -s 'samsony' separator | tr -d '\n'`
+	[ -z "$SEPARATOR" ] && SEPARATOR=","
+
+	NODATA_STR=`/opt/szarp/bin/lpparse -s 'samsony' nodata_str | tr -d '\n'`
+	[ -z "$NODATA_STR" ] && NODATA_STR=""
+	
+}
+
+# Parametry
+# $1 - plik z konfiguracj±
+# $2 - plik z opisem konwersji
+function convert_names()
+{
+	_TMPICONV=$2.iconv
+	iconv -f cp1250 -t latin2 < $2 > $_TMPICONV && \
+		`dirname $0`/convert_names $1 $_TMPICONV $PARAMGROUP
+	rm -f $2 $_TMPICONV
+}
+
+# Parametry:
+# $1 - prefix
+function get_files() 
+{
+	_NOWDAY=`date "+%Y%j"`
+	_NOWDATE=`date "+%Y-%m-%d"`
+	if [ -f "$LASTPATH" ] ; then
+		_LASTDATE=`cat $LASTPATH`
+		_LASTDATE=`date -d "$_LASTDATE -1 day" "+%Y-%m-%d"`
+	else
+		_LASTDATE=`date -d yesterday "+%Y-%m-%d"`
+	fi
+	_LASTDAY=`date -d "$_LASTDATE" "+%Y%j"`
+
+	rm -rf $TMPDIR || failure "Cannot remove $TMPDIR"
+	mkdir -p $TMPDIR || failure "Cannot create $TMPDIR"
+	rm -rf $OUTPUT || failure "Cannot remove $OUTPUT"
+	rm -rf $OUTPUTNEW || failure "Cannot remove $OUTPUTNEW"
+	touch $OUTPUTNEW || failure "Cannot create $OUTPUTNEW"
+	touch $OUTPUT || failure "Cannot create $OUTPUT"
+	
+	_IP=$IP
+	_OK=0
+	
+	# Pêtla po dniach
+	while [ $_LASTDAY -le $_NOWDAY ] ; do
+		rsync -az \
+		$USER@$_IP:$RAPPATH/*_`date -d "$_LASTDATE" "$DATE_FORMAT"`.csv \
+		$TMPDIR	&& _OK=1
+
+		# funny: "2008-11-26 +1 day" on some systems returns "2008-11-26" (daylight
+		# saving time change)
+		_LASTDATE=`date -d "$_LASTDATE + 26 hours" "+%Y-%m-%d"`
+		_LASTDAY=`date -d "$_LASTDATE" "+%Y%j"`
+	done
+
+	[ $_OK = 0 ] && failure "Could not get any file"
+
+	_FILES=0
+	# Parsowanie plików konfiguracyjnych
+	for i in $TMPDIR/*.csv ; do
+		_FILES=$(($_FILES+1))
+		`dirname $0`/process_csv "$i" "$PARAMGROUP" "$SEPARATOR" \
+			"$NODATA_STR" >> $OUTPUT 
+	done
+	# Wypisanie sztucznych parametrów informacyjnych
+	_STATUS_DATE=`date "+%Y %m %d %H %M"`
+	echo "\"Status:Meaner3:program uruchomiony\" $_STATUS_DATE 0" >> \
+		$OUTPUT
+	echo "\"Status:Meaner3:ilo¶æ parametrów\" $_STATUS_DATE $_FILES" >> \
+		$OUTPUT
+	echo "\"Status:Meaner3:ilo¶æ parametrów ze sterowników\"" $_STATUS_DATE 0 >> \
+		$OUTPUT
+	echo "\"Status:Meaner3:ilo¶æ parametrów definiowanych\"" $_STATUS_DATE 0 >> \
+		$OUTPUT
+	echo "\"Status:Meaner3:ilo¶æ parametrów definiowalnych przegl±daj±cego\"" $_STATUS_DATE 0 >> \
+		$OUTPUT
+	echo "\"Status:Meaner3:ilo¶æ parametrów zapisywanych do bazy\"" $_STATUS_DATE 0 >> \
+		$OUTPUT
+	echo "\"Status:Meaner3:ilo¶æ parametrów zapisywanych niepustych\"" $_STATUS_DATE 0 >> \
+		$OUTPUT
+	echo "\"Status:Meaner3:ilo¶æ parametrów poprawnie zapisanych\"" $_STATUS_DATE 0 >> \
+		$OUTPUT
+	echo "\"Status:Meaner3:ilo¶æ parametrów zapisanych z b³êdem\"" $_STATUS_DATE 0 >> \
+		$OUTPUT
+	echo "\"Status:Execute:ilo¶æ skonfigurowanych sekcji\"" $_STATUS_DATE 0 >> \
+		$OUTPUT
+	echo "\"Status:Execute:ilo¶æ sekcji do uruchomienia w cyklu\"" $_STATUS_DATE 0 >> \
+		$OUTPUT
+	echo "\"Status:Execute:ilo¶æ sekcji uruchomionych w cyklu\"" $_STATUS_DATE 0 >> \
+		$OUTPUT
+	echo "\"Status:Execute:ilo¶æ sekcji zakoñczonych z sukcesem\"" $_STATUS_DATE 0 >> \
+		$OUTPUT
+	echo "\"Status:Execute:ilo¶æ sekcji zakoñczonych z b³êdem\"" $_STATUS_DATE 0 >> \
+		$OUTPUT
+	echo "\"Status:Execute:ilo¶æ sekcji przerwanych\"" $_STATUS_DATE 0 >> \
+		$OUTPUT
+
+	# Posortuj plik wynikowy
+	mv -f $OUTPUT $OUTPUTTMP
+	sort $OUTPUTTMP > $OUTPUT
+	rm -f $OUTPUTTMP
+	
+	# Upewnij sie ze "stary" plik istnieje
+	touch $OUTPUTOLD
+
+	# Wypisz nowe linie
+	comm -2 -3 $OUTPUT $OUTPUTOLD > $OUTPUTNEW
+	
+
+	# Zapis danych do bazy
+	/opt/szarp/bin/szbwriter -Dprefix=$PREFIX "$TITLE" < $OUTPUTNEW
+	if [ $? != 0 ] ; then
+		echo "Error runing szbwriter"
+		return
+	fi
+
+	# Konwersja nazw okien
+	rsync -az $USER@$_IP:$RAPPATH/nazwy.txt $TMPDIR
+	[ -f $TMPDIR/nazwy.txt ] && convert_names \
+		/opt/szarp/$PREFIX/config/params.xml \
+		$TMPDIR/nazwy.txt
+
+	# Konfiguracja (params.xml) mog³a zostaæ zmodyfikowana (dodanie 
+	# nowych parametrów).
+	cd /opt/szarp/$PREFIX/config && /opt/szarp/bin/ipk2szarp -f -p $PREFIX
+	
+	# Zapisz czas ostatniej nastêpnej operacji.
+	echo $_NOWDATE > $LASTPATH
+	
+	# Skopiuj obecne pliki
+	cp -f $OUTPUT $OUTPUTOLD
+	
+}
+
+function main()
+{
+	read_config
+
+	get_files $PREFIX
+}
+
+main

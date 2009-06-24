@@ -1,0 +1,242 @@
+#!/bin/bash
+# SZARP: SCADA software 
+# 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+# $Id: szrsync 6758 2009-05-22 14:06:19Z pawel $
+#
+# 2005 Pawe³ Pa³ucha <pawel@praterm.com.pl>
+#
+# Script for fetching bases from central server - minimalizes amount of data
+# to transfer for szbase format.
+# Parameters - prefixes of bases to fetch, they are expanded by shell, for example:
+#
+# /opt/szarp/bin/szrsync {gcwp,gcie,gliw,glw*} or
+# /opt/szarp/bin/szrsync gcwp gcie gliw glw*
+#
+# To expand prefix, directory must already exist locally.
+# Timestamp of /opt/szarp/<prefix>/szbase_stamp is checked, if it is different then
+# locally available, full rsync is done - otherwise only last month.
+# Run script without options to get detailed usage instruction.
+#
+# Exit code is 1 in case of incorrect parameters, otherwise it returns return code
+# from first unsuccesfull rsync or 0 on success.
+
+DEFAULT_SERVER=praterm
+ADDRESS=
+DELETE="--delete --force"
+USE_SSH=
+
+ME=`basename $0`
+
+LOG='/opt/szarp/logs/szrsync.log'
+ARGS=$@
+
+if [ -w $LOG ]; then
+    LOG_TARGET="$LOG"
+else
+    LOG_TARGET="/dev/stderr"
+fi
+
+function log {
+	echo "`date '+%Y %X'`: szrsync[$$]: $@" >> $LOG_TARGET
+}
+
+function usage {
+	echo "Usage: $ME [-a <ADDRESS>] [-u <USER>] [-n] [-s] <BASE> ..."
+	echo "    -a <ADDRESS> address for rsync to connect"
+	echo "    -u <USER> user for rsync to connect to server, ignored if -a given"
+	echo "    -n do not delete files"
+	echo "    -s use ssh for getting szbase_stamp date (default curl if -a not given)"
+	echo
+}
+
+
+# wczytaj opcje
+OPTS=`getopt -q -o a:u:hns -n $ME -- "$@"`
+
+if [ $? != 0 ]; then
+	usage
+	exit 1
+fi
+
+eval set -- "$OPTS"
+
+while true; do
+    case "$1" in
+	-a)
+	    ADDRESS=$2
+	    shift 2
+	    ;;
+	-u)
+	    SZRSYNC_USER=$2
+	    shift 2
+	    ;;
+	-n)
+	    DELETE=
+	    shift
+	    ;;
+	-s)
+	    USE_SSH=yes
+	    shift
+	    ;;
+	-h)
+	    usage
+	    exit
+	    ;;
+	--)
+	    shift
+	    break
+	    ;;
+	*)
+	    usage
+	    exit 1
+	    ;;
+    esac
+done
+
+log "start with args: $ARGS"
+
+if [ $# -lt 1 -o "x$1" = x ] ; then
+	echo "You must specify at least one base id"
+	exit 1;
+fi
+
+if [ -z "$ADDRESS" ]; then 
+	if [ ! -z "$SZRSYNC_USER" ]; then
+		ADDRESS=$SZRSYNC_USER"@"$DEFAULT_SERVER;
+	else
+		echo "Assuming username: $(hostname -s)";
+		ADDRESS="$(hostname -s)@"$DEFAULT_SERVER;
+	fi
+else
+	USE_SSH=yes
+fi
+
+CODE=0
+
+EXC=
+INC=
+
+# sprawdza sposób wywo³ania i ustawia poziom gadatliwo¶ci wyj¶cia
+function get_verbose_level () {
+	SZRSYNC_VERBOSE="-vP" # domy¶lnie tryb gadatliwy
+
+	m_pid=`/bin/pidof meaner3`
+	
+	if  [[ $PPID -eq $m_pid ]]; then
+		SZRSYNC_VERBOSE="" # wywo³anie z meanera - tryb cichy
+	fi
+}
+
+function get_last () {
+	ls $1/szbase/Status/Meaner3/program_uruchomiony/*.szb \
+	| sort | tail -n 1 2> /dev/null
+}
+
+function get_local_stamp {
+	RET=-1
+	RESULT=`stat --format=%Y $1/szbase_stamp 2>/dev/null`
+	if [ $? -eq 0 ]; then
+		RET=$RESULT
+	fi
+	echo $RET
+}
+
+function get_remote_stamp {
+	RET=-1;
+	id=`basename $1`
+
+	if [ -z $USE_SSH ]; then
+		RESULT=`curl -A "szrsync/0.1 ($(hostname -s))" --fail --silent "http://${DEFAULT_SERVER}:81/sync.cgi?id=${id}"`
+		SRET=$?
+	else
+		RESULT=`ssh -o StrictHostKeyChecking=no $ADDRESS "stat --format=%Y $1/szbase_stamp" 2>/dev/null`
+		#connection failed
+		SRET=$?
+		if [ $SRET -eq 255 ]; then
+			log "Unable to connect to remote host"
+			echo "Unable to connect to remote host"
+			return 2
+		fi
+	fi
+	
+	[ $SRET -eq 0 ] && RET=$RESULT
+
+	echo $RET;
+	log "get_remote_stamp: $id $RET (ssh: $USE_SSH)"
+	return 0;
+}
+	
+
+
+function get_include () {
+	INC=
+	EXC=
+	[ -d "$1" ] || return 0
+	[ -d "$1/szbase" ] || return 0
+	[ -d "$1/szbase/Status/Meaner3/program_uruchomiony" ] || return 0
+
+	RMT=`get_remote_stamp $1`
+	[ $? -eq 0 ] || return 2;
+
+	LMT=`get_local_stamp $1`
+
+	log "get_include: RMT=$RMT LMT=$LMT"
+
+	if [ "$RMT" -ne -1 -a "$RMT" -ne "$LMT" ]; then
+		return 0;
+	fi	
+
+	LAST=`get_last $1`
+	[ -f "$LAST" ] || return 0
+	DATE=`date +%Y-%m-%d -r "$LAST"`
+	DATESTR=`date +%Y%m -d "$DATE"`
+	NOWSTR=`date +%Y%m`
+	OUT=""
+	while [ $DATESTR -le $NOWSTR ] ; do
+		OUT=`echo -n "$OUT --include=$DATESTR.szb"`
+		DATE=`date +%Y-%m-%d -d "$DATE + 1 month"`
+		DATESTR=`date +%Y%m -d "$DATE"`
+	done
+
+	EXC="--exclude=*.szb --exclude=szbase_stamp"
+	INC="$OUT"
+	return 0;
+}
+
+function do_rsync () {
+	get_include $i
+
+	[ $? -eq 0 ] || return
+
+	rsync -az $SZRSYNC_VERBOSE --rsh="ssh -o StrictHostKeyChecking=no" --exclude='.*' --exclude='nohup.out' $DELETE $INC $EXC $ADDRESS:$i /opt/szarp
+	LAST=$?
+	if [ $LAST -ne 0 -a $CODE -eq 0 ] ; then
+		CODE=$LAST
+	fi
+}
+
+get_verbose_level
+
+for ARG in $@ ; do
+	for i in /opt/szarp/$ARG ; do
+		log "do_rsync start $i"
+		do_rsync $i
+		log "do_rsync end $i (LAST: $LAST)"
+	done
+done
+exit $CODE

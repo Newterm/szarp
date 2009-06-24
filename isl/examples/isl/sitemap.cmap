@@ -1,0 +1,141 @@
+<?xml version="1.0"?>
+<map:sitemap xmlns:map="http://www.praterm.com.pl/ISL/sitemap">
+	
+<!--
+
+ $Id: sitemap.cmap 2046 2004-12-29 16:25:03Z pawel $
+
+ This is a configuration file for ISL xsltd HTTP server.
+ -->
+
+<!-- =========================== Components ================================ -->
+
+  <map:serializers default="html">
+    <map:serializer name="svgz" mime-type="image/svg+xml" compression="6"
+      function="xml"/>
+    <map:serializer name="svg" mime-type="image/svg+xml"
+      function="xml"/>
+    <map:serializer name="xml" mime-type="text/xml" 
+      function="xml"/>
+    <map:serializer name="html" mime-type="text/html; charset=UTF-8"
+      function="xml"/>
+    <map:serializer name="sodipng" mime-type="image/png"
+      function="sodipng"/>
+  </map:serializers>
+	
+<!-- =========================== Pipelines ================================= -->
+
+  <map:pipelines>
+    <map:pipeline>
+      
+      <!-- default file -->
+      <map:match pattern="^$">
+        <map:redirect-to uri="main/index.html"/>
+      </map:match>
+
+      <!-- main targets -->
+      <map:match pattern="^\([^/.]*\)[/]\?$">
+        <map:redirect-to uri="\1/index.html"/>
+      </map:match>
+
+      <!-- image resources -->
+      <map:match pattern="^\(iesvg/\)\?[^./]\+/images/\([^/.]\+\)\.\([^./]\+\)$">
+        <map:read uri="resources/images/\2.\3" mime-type="image/\3" 
+	    expire="3600"/>
+      </map:match>
+
+      <!-- HTML common resources -->
+      <map:match pattern="^resources/\([^\.]\+\)\.html$">
+	 <map:read uri="resources/\1.html"/>
+      </map:match>
+
+      <!-- isl sources -->
+      <map:match pattern="^\([^./]\+\)/isl/\([^./]\+\)\.isl$">
+        <map:read uri="\1/docs/\2.isl" mime-type="text/xml"/>
+      </map:match>
+
+      <!-- static svg -->
+      <map:match pattern="^\(iesvg/\)\?\([^/.]\+\)/svg/\([^/.]\+\)\.\(isl\|svg\)$">
+        <map:generate uri="\2/docs/\3.isl"/>
+        <map:transform src="stylesheets/isl2svg.xsl"/>
+	<map:serialize type="svgz"/>
+      </map:match>
+  
+      <!-- 
+	SVG definitions for use with dynamic, scripted SVG.
+	"Cache breaking" version.
+       -->
+      <map:match pattern="^\(iesvg/\)\?\([^./]\+\)/defs/reload/[0-9]\+/\([^./]\+\)\.svg$">
+          <map:generate uri="\2/docs/\3.isl"/>
+	  <map:transform src="stylesheets/isl2defs.xsl"/>
+	  <map:transform src="stylesheets/isl2svg.xsl"/>
+	  <map:serialize type="svg"/>
+        </map:match>
+
+        <!-- 
+   	  SVG definitions for use with dynamic, scripted SVG.
+         -->
+	 <map:match pattern="^\(iesvg/\)\?\([^./]\+\)/\(dsvg/../\)\?defs/\([^./]\+\)\.svg$">
+	  <map:generate uri="\2/docs/\4.isl" expire="10"/>
+	  <map:transform src="stylesheets/isl2defs.xsl"/>
+	  <map:transform src="stylesheets/isl2svg.xsl"/>
+	  <map:serialize type="svg"/>
+        </map:match>
+
+	<!-- 
+	  Dynamic, scripted SVG. Currently works only with Batik-1.5 viewer. 
+	-->
+	<map:match pattern="^\(iesvg/\)\?\([^/.]\+\)/dsvg/\([^/.]\+\)\.\(isl\|svg\)$">
+          <map:generate uri="\2/docs/\3\.isl" expire="10"/>
+	  <map:transform src="stylesheets/isl2dsvg.xsl">
+	    <map:param name="docpath" value="\2"/>
+	    <map:param name="docname" value="\3"/>
+	  </map:transform>
+	  <map:serialize type="svg"/>
+        </map:match>
+ 
+  <!-- static png image created from isl source -->
+
+        <map:match
+		pattern="^\(iesvg/\)\?\([^./]\+\)/png/\([^./]\+\)\.\(isl\|svg\|png\)$">
+          <map:generate uri="\2/docs/\3.isl"/>
+	  <map:transform src="stylesheets/isl2svg.xsl"/>
+	  <map:serialize type="sodipng"/>
+        </map:match>
+  
+        <!-- 
+	  html-like sources, with embeded ISL images, version
+          for Internet Explorer with Adobe SVG Viewer (problems with 
+	  "object" tag 
+	-->
+	<map:match pattern="iesvg/\([^./]\+\)/\([^./]\+\)\.\(html\|isl\)">
+	  <map:generate uri="\1/docs/\2.html"/>
+	  <!-- create embed SVG or map object -->
+	  <map:transform src="stylesheets/embed_isl2doc_iesvg.xsl"/>
+	  <!-- page layout -->
+	  <map:transform src="stylesheets/doc2html.xsl">
+	    <map:param name="object" value="\1"/>
+	  </map:transform>
+	  <map:serialize type="html"/>
+        </map:match>
+
+  <!-- html-like sources, with embeded ISL images -->
+  <map:match pattern="\([^./]\+\)/\([^./]\+\)\.\(html\|isl\)">
+	  <map:generate uri="\1/docs/\2.html"/>
+	  <!-- create embed SVG or map object -->
+	  <map:transform src="stylesheets/embed_isl2doc.xsl">
+	    <map:param name="name" value="\1/\2.html"/>
+	  </map:transform>
+	  <!-- page layout -->
+	  <map:transform src="stylesheets/doc2html.xsl">
+	    <map:param name="object" value="\1"/>
+	  </map:transform>
+	  <map:serialize type="html"/>
+        </map:match>
+  
+  </map:pipeline>
+ </map:pipelines>
+
+</map:sitemap>
+
+<!-- end of file -->

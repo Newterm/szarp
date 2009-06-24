@@ -1,0 +1,53 @@
+#!/bin/sh
+# $Id: sn-fam 6639 2009-04-14 14:51:35Z pawel $
+### BEGIN INIT INFO
+# Provides:          sn-fam
+# Required-Start:    $remote_fs $syslog nagios3
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Starts SZARP notification daemon for nagios.
+# Description:       Starts daemon that watches changes in SZARP configuration and data and sends passive notifications to nagios3 monitoring system.
+#### END INIT INFO
+
+. /lib/lsb/init-functions
+
+PIDFILE=/var/run/sn-fam.pid
+DAEMON=/opt/szarp/bin/sn-fam.py
+LOG=/var/log/sn-fam.log
+CMDFILE=/var/lib/nagios3/rw/nagios.cmd
+
+case "$1" in
+    start)
+    	log_daemon_msg "Starting SZARP-nagios notification daemon"
+	start_daemon -- $DAEMON -p $PIDFILE -c $CMDFILE -l $LOG
+	log_end_msg $?
+	
+	;;
+
+  stop)
+    	log_daemon_msg "Stopping SZARP-nagios notification daemon"
+
+	/sbin/start-stop-daemon --stop --quiet --oknodo --pidfile $PIDFILE
+	log_end_msg $?
+
+	;;
+  restart)
+	$0 stop
+	$0 start
+	;;
+  reload)
+	log_daemon_msg "Sending SIGHUP signal to SZARP-nagios notification daemon"
+	killproc -p $PIDFILE $DAEMON 1
+	log_end_msg $?
+	;;
+  status)
+  	status_of_proc -p $PIDFILE sn-fam.py sn-fam
+	;;
+  *)
+	echo "Usage: szarp-nagios {start|stop|restart|reload|status}"
+	exit 1
+	;;
+esac
+
+exit 0

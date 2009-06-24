@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="ISO-8859-2"?>
+
+<!--
+  RelaxNG schema for SZARP draw3 user defined window.
+-->
+
+<!--
+Example:
+
+<?xml version="1.0" encoding="ISO-8859-2"?>
+
+
+<windows xmlns="http://www.praterm.com.pl/SZARP/draw3">
+	<window title="Okno definiowane">
+		<param name="Kocioł 1:Sterownik:temperatura zadana"
+			source="byto" draw="Kocioł 1 - temperatury"
+			hoursum="false" >
+			<draw short="TZ" title="temperatura zadana" color="red"
+				min="0" max="100"/>
+			<shift years="2" months="-4" days="6" hours="-8"
+				minutes="10"/>
+		</param>
+	</window>
+</windows>
+-->
+
+<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+  <define name="window">
+    <element name="window" ns="http://www.praterm.com.pl/SZARP/draw3">
+      <ref name="attlist.window"/>
+      <oneOrMore>
+        <ref name="param"/>
+      </oneOrMore>
+    </element>
+  </define>
+  
+  <define name="attlist.window">
+    <attribute name="title"/>
+  </define>
+
+  <define name="param">
+    <element name="param" ns="http://www.praterm.com.pl/SZARP/draw3">
+      <ref name="attlist.param"/>
+      <optional>
+        <ref name="draw"/>
+      </optional>
+      <optional>
+        <ref name="shift"/>
+      </optional>
+    </element>
+  </define>
+
+  <define name="attlist.param">
+    <attribute name="name"/>
+    <attribute name="source"/>
+    <attribute name="draw"/>
+    <optional>
+	    <attribute name="hoursum"> 
+		    <choice>
+			    <value type="string">true</value>
+			    <value type="string">false</value>
+		    </choice>
+	    </attribute>
+    </optional>
+  </define>
+  
+  <define name="draw">
+    <element name="draw" ns="http://www.praterm.com.pl/SZARP/draw3">
+	    <ref name="attlist.draw"/>
+    </element>
+  </define>
+
+  <define name="attlist.draw" combine="interleave">
+    <optional>
+      <attribute name="short"/>
+    </optional>
+    <optional>
+      <attribute name="title"/>
+    </optional>
+    <optional>
+      <attribute name="color"/>
+    </optional>
+    <optional>
+	<attribute name="min">
+		    <data type="integer"/>
+	</attribute>
+    </optional>
+    <optional>
+	<attribute name="max">
+		    <data type="integer"/>
+	</attribute>
+    </optional>
+  </define>
+  
+  <define name="shift">
+    <element name="shift" ns="http://www.praterm.com.pl/SZARP/draw3">
+	    <ref name="attlist.shift"/>
+    </element>
+  </define>
+
+  <define name="attlist.shift" combine="interleave">
+    <optional>
+	<attribute name="years">
+		    <data type="integer"/>
+	</attribute>
+    </optional>
+    <optional>
+	<attribute name="months">
+		    <data type="integer"/>
+	</attribute>
+    </optional>
+    <optional>
+	<attribute name="days">
+		    <data type="integer"/>
+	</attribute>
+    </optional>
+    <optional>
+	<attribute name="hours">
+		    <data type="integer"/>
+	</attribute>
+    </optional>
+    <optional>
+	<attribute name="minutes">
+		    <data type="integer"/>
+	</attribute>
+    </optional>
+  </define>
+  
+  <!-- Główny tag dokumentu -->
+  
+  <start>
+    <element name="windows" ns="http://www.praterm.com.pl/SZARP/draw3">
+      <oneOrMore>
+      	<ref name="window"/>
+      </oneOrMore>
+    </element>
+  </start>
+  
+</grammar>

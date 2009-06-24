@@ -1,0 +1,20 @@
+# Szablonowy plik konfiguracyjny rejestratora DataPaf
+# Predkosc transmisji
+BaudRate=50
+# Numer seryjny urzadzenia
+SerialNumber=2413
+# Numer portu rs w rejestratorze ( 0 lub 1 )
+RSNumber=0
+# Odczyt energii (1 - tak , 0 - nie)
+Energy=1
+#Dzielnik energii ( przez ile ma byc podzielona energia)
+EnergyDivBy=10
+# Odczyt mocy (1 - tak, 0 - nie)
+Power=1
+# Numery stref czasowych( dotycza tylko energii), energia sumaryczna zawsze znajduje sie w strefie nr 8
+Zones=0, 1, 2, 8
+# Numery kanalow ( dla energii i mocy )
+Channels=1, 3
+
+
+

@@ -1,0 +1,200 @@
+# POLISH MESSAGES FOR STANDARD WX DIALOGS.
+# Copyright 
+# Paweł Pałucha <pawel@praterm.com.pl>, 2005.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: WX-Standard\n"
+"Report-Msgid-Bugs-To: pawel@praterm.com.pl\n"
+"POT-Creation-Date: 2005-03-11 02:03+0100\n"
+"PO-Revision-Date: 2008-06-11 14:59+0100\n"
+"Last-Translator: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: \n"
+
+msgid "Yes"
+msgstr "Oui"
+
+msgid "No"
+msgstr "Non"
+
+msgid "Show hidden files"
+msgstr "Montrer les fichiers cachés"
+
+msgid "Go to parent directory"
+msgstr "Retour au dossier parent"
+
+msgid "Go to home directory"
+msgstr "Retour à la page d'accueil"
+
+msgid "Create new directory"
+msgstr "Créer nouveau dossier"
+
+msgid "View files as a list view"
+msgstr "Voir les documents sous forme de liste"
+
+msgid "View files as a detailed view"
+msgstr "Voir les documents avec détails"
+
+msgid "Estimated time : "
+msgstr "Temps estimé : "
+
+msgid "Remaining time : "
+msgstr "Temps restant : "
+
+msgid "unknown"
+msgstr "Inconnu"
+
+msgid "Search"
+msgstr "Recherche"
+
+msgid "Print this page"
+msgstr "Imprimer cette page"
+
+msgid "Next page"
+msgstr "Page suivante"
+
+msgid "Previous page"
+msgstr "Page suivante"
+
+msgid "Go one level up in document hierarchy"
+msgstr "Aller un niveau supérieur dans la hiérarchie documentaire"
+
+msgid "Index"
+msgstr "Index"
+
+msgid "Context help"
+msgstr "Aide"
+
+msgid "Contents"
+msgstr "Contenu"
+
+msgid "bookmarks"
+msgstr "Signet"
+
+msgid "Add current page to bookmarks"
+msgstr "Rajouter cette page dans le signet"
+
+msgid "Remove current page from bookmarks"
+msgstr "Effacer cette page du signet"
+
+msgid "Find"
+msgstr "Recherche"
+
+msgid "Show all"
+msgstr "Montrer tout"
+
+msgid "Search in all books"
+msgstr "Rechercher dans tous les documents"
+
+msgid "Show/hide navigation panel"
+msgstr "Montrer/Cacher le panneau de navigation"
+
+msgid "Display all index items that contain given substring. Search is case insensitive."
+msgstr "Indiquer toutes les rubriques comprenant le mot/l'expression recherchée. La recherche ne tient pas compte de la taille de la police"
+
+msgid "Show all items in index"
+msgstr "Montrer tous les mots dans l'indexe"
+
+msgid "Case sensitive"
+msgstr "Sensible à la taille de police"
+
+msgid "Whole words only"
+msgstr "Mots entiers uniquement"
+
+msgid "Search contents of help book(s) for all occurences of the text you typed above"
+msgstr "Rechercher tous les extraits comprenant le mot/la phrase indiquée ci-dessus"
+
+msgid "All"
+msgstr "Tous"
+
+msgid "Print"
+msgstr "Imprimer"
+
+msgid "Print to File"
+msgstr "Imprimer vers le fichier"
+
+msgid "Printer options"
+msgstr "Options de l'imprimante"
+
+msgid "Setup..."
+msgstr "Réglage..."
+
+msgid "Pages"
+msgstr "Pages"
+
+msgid "From:"
+msgstr "De:"
+
+msgid "To:"
+msgstr "Vers:"
+
+msgid "Copies:"
+msgstr "Copies:"
+
+msgid "Print Range"
+msgstr "Périmètre d'impression"
+
+msgid "Paper size"
+msgstr "Taille de la page"
+
+msgid "Orientation"
+msgstr "Orientation"
+
+msgid "Print Setup"
+msgstr "Réglage de l'impression"
+
+msgid "Landscape"
+msgstr "Paysage"
+
+msgid "Portrait"
+msgstr "Portrait"
+
+msgid "Print in colour"
+msgstr "Impression couleur"
+
+msgid "Print spooling"
+msgstr "Réglage de l'imprimante"
+
+msgid "Printer command:"
+msgstr "Commande de l'impression"
+
+msgid "Printer options:"
+msgstr "Options de l'imprimante"
+
+msgid "Options"
+msgstr "Options"
+
+msgid "Display options dialog"
+msgstr "Options du moteur de recherche (taille de police...)"
+
+msgid "Help Browser Options"
+msgstr "Aide Options du moteur de recherche"
+
+msgid "Normal font:"
+msgstr "Police normale:"
+
+msgid "Fixed font:"
+msgstr "Police fixe:"
+
+msgid "Font size:"
+msgstr "Taille de police:"
+
+msgid "Preview:"
+msgstr "Aperçu"
+
+msgid "(bookmarks)"
+msgstr "(Signets)"
+
+msgid "Default"
+msgstr "Par défaut"
+
+msgid "File"
+msgstr "Fichier"
+
+msgid "Custom"
+msgstr "Local"
+
+

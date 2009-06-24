@@ -1,0 +1,212 @@
+# Makefile.am for SZARP
+
+# Pawe³ Pa³ucha <pawel@praterm.com.pl>
+#
+# $Id: Makefile.am 6725 2009-05-18 09:16:48Z reksio $
+
+SUBDIRS = documentation
+
+MAINTAINERCLEANFILES = Makefile.in 
+CLEANFILES = szarp.cfg szarp_in.cfg parstart parstart.cfg 
+
+helpcommand = @HELPCOMMAND@
+
+RESOURCES = \
+       @srcdir@/cor.vim \
+       @srcdir@/definable.vim \
+       @srcdir@/documentation \
+       @srcdir@/dsc.vim \
+       @srcdir@/dtd \
+       @srcdir@/elog.vim \
+       @srcdir@/KDE \
+       @srcdir@/libpar.vim \
+       @srcdir@/logrotate_szarp \
+       @srcdir@/meteo_template.xml \
+       @srcdir@/paramd_access.conf \
+       @srcdir@/parcook.vim \
+       @srcdir@/ptt.vim \
+       @srcdir@/rap.vim \
+       @srcdir@/szablon.vim \
+       @srcdir@/szarp.vim \
+       @srcdir@/wx \
+       @srcdir@/xsltd \
+       @srcdir@/szarp_in.cfg \
+       @srcdir@/parstart_TEMPLATE \
+       @srcdir@/parstart_cfg_TEMPLATE \
+       @srcdir@/SZARP_CFG_TEMPLATE \
+       @srcdir@/ssc.desktop \
+       @srcdir@/scc.desktop \
+       @srcdir@/koper.desktop
+
+EXTRA_DIST = \
+      $(RESOURCES) \
+      @srcdir@/DATAPAF_CFG_TEMPLATE \
+      @srcdir@/FP2001_CFG_TEMPLATE \
+      @srcdir@/SZARP_IN_CFG_TEMPLATE \
+      @srcdir@/cor.vim \
+      @srcdir@/definable.vim \
+      @srcdir@/dsc.vim \
+      @srcdir@/elog.vim \
+      @srcdir@/libpar.vim \
+      @srcdir@/parcook.vim \
+      @srcdir@/ptt.vim \
+      @srcdir@/rap.vim \
+      @srcdir@/szablon.vim \
+      @srcdir@/szarp.vim \
+      @srcdir@/paramd_access.conf 
+
+DISTRO=@distro@
+INIT_D=@init_d@
+
+@srcdir@/szarp_in.cfg: @srcdir@/SZARP_IN_CFG_TEMPLATE
+	@cat @srcdir@/SZARP_IN_CFG_TEMPLATE | \
+	sed s/__INSTALL_DIR__/`echo @prefix@ | sed s/'\/'/'\\\\\/'/g`/g | \
+	sed s+__HELPCOMMAND__+$(helpcommand)+g \
+	> @srcdir@/szarp_in.cfg
+	
+
+szarp_cfg: DATABASE_PREFIX
+	@cat SZARP_CFG_TEMPLATE | \
+         sed s/__INSTALL_DIR__/`echo @prefix@ | sed s/'\/'/'\\\\\/'/g`/g | \
+	 sed s/__PREFIX__/`cat DATABASE_PREFIX`/g | \
+	 sed s+__HELPCOMMAND__+$(helpcommand)+g \
+         > szarp.cfg
+	$(INSTALL) -m 644 szarp.cfg @prefix@/`cat @srcdir@/DATABASE_PREFIX`/szarp.cfg
+	mkdir -p /etc/szarp/
+	ln -sf @prefix@/`cat DATABASE_PREFIX`/szarp.cfg /etc/szarp/szarp.cfg
+
+parstart_:
+	@cat @srcdir@/parstart_TEMPLATE | \
+         sed s+__INSTALL_DIR__+`echo @prefix@`+g | \
+	 sed s+__LOCK_DIR__+@lockdir@+g \
+         > parstart
+	@chmod +x parstart
+	
+	@( if [ $(DISTRO) = 'debian' ] ; then $(INSTALL) -d $(DESTDIR)@lockdir@ ; fi )
+	@( if [ ! -d $(DESTDIR)/etc/szarp ] ; then $(INSTALL) -d $(DESTDIR)/etc/szarp ; fi ) 
+	@( if [ ! -f $(DESTDIR)$(INIT_D)/parstart ] ; then \
+		if [ ! -e $(DESTDIR)$(INIT_D) ] ; then \
+			$(INSTALL) -d $(DESTDIR)$(INIT_D); \
+		fi; \
+		$(INSTALL) -m 755 parstart $(DESTDIR)$(INIT_D) ; \
+	elif [ -f /etc/szarp/parstart.cfg ] ; then \
+		$(INSTALL) -m 755 parstart $(DESTDIR)$(INIT_D) ; \
+	fi ) 
+
+parstart_cfg: parstart_ DATABASE_PREFIX
+	cat parstart_cfg_TEMPLATE | \
+         sed s+__INSTALL_DIR__+`@prefix@+ | \
+	 sed s+__PREFIX__+`cat DATABASE_PREFIX`+g \
+         > parstart.cfg
+	[ ! -f /etc/szarp/parstart.cfg ] && ( \
+		$(INSTALL) -m 644 parstart.cfg @prefix@/`cat DATABASE_PREFIX` ; \
+		ln -sf @prefix@/`cat DATABASE_PREFIX`/parstart.cfg \
+                             /etc/szarp/parstart.cfg \
+	) 
+	
+update_rc_d:
+	@( if [ $(DISTRO) = 'redhat' ] ; then \
+		ln -fs ../init.d/parstart /etc/rc.d/rc5.d/S99parstart ; \
+		ln -fs ../init.d/parstart /etc/rc.d/rc5.d/K02parstart ; \
+	elif [ $(DISTRO) = 'fedora' ] ; then \
+		ln -fs ../init.d/parstart /etc/rc.d/rc5.d/S99parstart ; \
+		ln -fs ../init.d/parstart /etc/rc.d/rc5.d/K02parstart ; \
+	elif [ $(DISTRO) = 'debian' ] ; then \
+		update-rc.d parstart defaults 98 ; \
+	fi )
+
+if !DEB_BUILD
+icons:
+	@[ -d /usr/share/icons ] && \
+	echo "Installing SZARP icons in /usr/share/icons directory..." ; \
+	cp -f @prefix@/resources/KDE/icons/*.xpm /usr/share/icons
+	cp -f @prefix@/resources/wx/icons/*.xpm /usr/share/icons
+
+vim:
+	pwd
+	@srcdir@/../script/install_vim
+
+else DEB_BUILD
+icons:
+	$(INSTALL) -d $(DESTDIR)/usr/share/icons
+	cp -f $(DESTDIR)@prefix@/resources/KDE/icons/*.xpm $(DESTDIR)/usr/share/icons
+	cp -f $(DESTDIR)@prefix@/resources/wx/icons/*.xpm $(DESTDIR)/usr/share/icons
+
+vim: 
+	cp -f @srcdir@/../script/install_vim $(DESTDIR)@prefix@/resources
+
+endif
+	
+paramd_access:
+	$(INSTALL) -m 644 @srcdir@/paramd_access.conf \
+		$(DESTDIR)@prefix@/resources/paramd_access.conf
+
+copyfiles: $(RESOURCES)
+	@echo "Copying resources"
+	@$(INSTALL) -d $(DESTDIR)@prefix@/resources
+	@cp -ad $(RESOURCES) $(DESTDIR)@prefix@/resources
+	ls @abs_builddir@
+	@cp @srcdir@/szarp_in.cfg $(DESTDIR)@prefix@/resources
+
+logrotate:
+	$(INSTALL) -d $(DESTDIR)/etc/logrotate.d
+	$(INSTALL)  @srcdir@/logrotate_szarp $(DESTDIR)/etc/logrotate.d/szarp
+
+regulators_defs:
+	$(INSTALL) -d $(DESTDIR)@prefix@/resources/regulators
+	$(INSTALL) regulators/*xml $(DESTDIR)@prefix@/resources/regulators
+
+dictionary:
+	$(INSTALL) -d $(DESTDIR)@prefix@/resources
+	$(INSTALL) dictionary.xml $(DESTDIR)@prefix@/resources
+
+
+if !DEB_BUILD
+
+apache2:
+	[ -d /etc/apache2/sites-available ] && \
+		$(LN_S) -f @prefix@/resources/xsltd/apache2-szarp \
+		/etc/apache2/sites-available/szarp
+	[ -x "`which a2ensite`" ] && a2ensite szarp || true;
+	[ -x "`which a2enmod`" ] && { \
+		a2enmod modxslt || true; \
+		a2enmod expires || true; \
+		a2enmod rewrite || true; \
+	} || true
+
+uninstall-apache2:
+	[ -x "`which a2dissite`" ] && a2dissite szarp
+	[ -d /etc/apache2/sites-available ] && \
+		rm -f /etc/apache2/sites-available/szarp
+
+else DEB_BUILD
+
+apache2:
+
+uninstall-apache2:
+
+endif
+
+links:
+	install -d $(DESTDIR)/usr/share/autostart;
+	install -d $(DESTDIR)/etc/xdg/autostart;
+	ln -sf @prefix@/resources/koper.desktop $(DESTDIR)/usr/share/autostart/koper.desktop 
+	ln -sf @prefix@/resources/koper.desktop $(DESTDIR)/etc/xdg/autostart/koper.desktop 
+	ln -sf @prefix@/resources/scc.desktop $(DESTDIR)/usr/share/autostart/scc.desktop 
+	ln -sf @prefix@/resources/scc.desktop $(DESTDIR)/etc/xdg/autostart/scc.desktop 
+
+if !DEB_BUILD
+
+install-data-local: copyfiles
+
+else DEB_BUILD
+
+install-data-local: copyfiles links
+
+endif
+
+install-data-hook: icons vim paramd_access parstart_ logrotate apache2 regulators_defs dictionary
+
+uninstall-local: uninstall-apache2
+	rm -rf @prefix@/resources/* /etc/apache2/sites-available/szarp
+        

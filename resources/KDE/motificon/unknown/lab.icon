@@ -1,0 +1,53 @@
+#define lab32_format 1
+#define lab32_width 32 
+#define lab32_height 32 
+#define lab32_ncolors 9
+#define lab32_chars_per_pixel 1
+
+static char *lab32_colors[] = {
+" " , "#210021002100",                     /* czarny */
+"." , "#000000000000",
+"x" , "#600060006000",                     /* ciemnoszary */ 
+"o" , "#DB00DB00BA00",                     /* jasnoszary  */
+"i" , "#FF00FF00FF00",                     /* bia¬y       */
+"r" , "#FF0000000000",                     /* czerwony    */ 
+"g" , "#0000FF000000",                     /* zielony     */
+"c" , "#0000FF00FF00",                     /* b¬ekitny    */
+"y" , "#FF00FF000000"                      /* ±®¬ty       */
+} ;
+static char *lab32_pixels[] = {
+
+"yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",     /* 01 */
+"yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",     /* 02 */
+"yy                            yy",     /* 03 */
+"yy             o              yy",     /* 04 */
+"yy           xoooxx       oo  yy",     /* 05 */
+"yy          xoiiioxxxxxxxxxx  yy",     /* 06 */
+"yy          xoooxxxxxxxxxxxx  yy",     /* 07 */
+"yy            xxx             yy",     /* 08 */
+"yy            xxx             yy",     /* 09 */
+"yy             o              yy",     /* 10 */
+"yy            o o             yy",     /* 11 */
+"yy             o              yy",     /* 12 */
+"yy            xxx             yy",     /* 13 */
+"yy           x x x            yy",     /* 14 */
+"yy          x  x  x           yy",     /* 15 */
+"yy         x   x   x          yy",     /* 16 */
+"yy        x    x    x         yy",     /* 17 */
+"yy       x     x     x        yy",     /* 18 */
+"yy      x      x      x       yy",     /* 19 */
+"yy     x       x       x      yy",     /* 20 */
+"yy    x        x        x     yy",     /* 21 */
+"yy   x         x         x    yy",     /* 22 */
+"yy  x          x          x   yy",     /* 23 */
+"yy  o    gccyrgcrgcygc    o   yy",     /* 24 */
+"yy o o  gccyryrcrygcrcy  o o  yy",     /* 25 */
+"yy  o  ycrcycrcogcycygyci o   yy",     /* 26 */
+"yy xxxxxxxxxxxoxxxxxxxxxxx    yy",     /* 27 */
+"yy   xxxxxxxoooioooxxxxxx     yy",     /* 28 */
+"yy     xxxxxxxxoxxxxxxx       yy",     /* 29 */ 
+"yy                            yy",     /* 30 */
+"yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",     /* 31 */
+"yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",     /* 32 */
+};
+ 

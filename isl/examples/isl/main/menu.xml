@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE menu [
+<!ELEMENT menu (item|group)*>
+<!ELEMENT group (item)*>
+<!ATTLIST group link  CDATA #REQUIRED
+                title CDATA #REQUIRED>
+<!ELEMENT item EMPTY>
+<!ATTLIST item link  CDATA #REQUIRED
+               title CDATA #REQUIRED>
+]>
+
+<menu>
+	<item link="../main/index.html" title="Strona główna"/>
+	<item link="../main/browsers.html" title="O przeglądarkach"/>
+	<item link="../test/index.html" title="Przykłady"/>
+	<item link="../elk/index.html" title="Ciepłownia w Ełku"/>
+	<item link="../byto/index.html" title="Ciepłownia w Bytowie"/>
+</menu>

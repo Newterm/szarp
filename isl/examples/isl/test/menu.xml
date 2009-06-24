@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE menu [
+<!ELEMENT menu (item|group)*>
+<!ELEMENT group (item)*>
+<!ATTLIST group link  CDATA #REQUIRED
+                title CDATA #REQUIRED>
+<!ELEMENT item EMPTY>
+<!ATTLIST item link  CDATA #REQUIRED
+               title CDATA #REQUIRED>
+]>
+
+<menu>
+	<item link="../main/index.html" title="Strona główna"/>
+	<item link="cieplownie_praterm.html" title="Mapa ciepłowni"/>
+	<item link="termometr.html" title="Temperatura w Pasłęku"/>
+	<item link="kociol.html" title="Kocioł 1 w Ełku"/>
+</menu>

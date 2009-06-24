@@ -1,0 +1,138 @@
+# PO file for SZARP Szast program.
+# Copyright 
+# This file is distributed under the same license as the szast package.
+# Darek Marcinkiewicz <darek@praterm.com.pl>, 2008.
+#
+# $Id$
+msgid ""
+msgstr ""
+"Project-Id-Version: 0.0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-05-27 19:08+0200\n"
+"PO-Revision-Date: 2003-08-14 11:22+0200\n"
+"Last-Translator: Pawe³ Pa³ucha <pawel@praterm.com.pl>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-2\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: szastapp.cpp:75
+msgid "SZAST"
+msgstr ""
+
+#: szastapp.cpp:95
+#, c-format
+msgid ""
+"User %s is not a member of 'dialout' group. This probably means that you "
+"won't have access to a serial port.\n"
+"Would you like to add to user %s to a a 'dialout' group? (You'll have to "
+"type administrator password)"
+msgstr ""
+"U¿ytkownik %s nie nale¿y do grupy 'dialout'. To prawodpodbnie oznacza ¿e nie "
+"bêdziesz mia³ dostêpu do portu szeregowego.\n"
+"Czy chcesz dodaæ u¿ytkownika %s do groupy 'dialout'? (Bêdziesz musia³ podaæ "
+"has³o administratora)."
+
+#: szastapp.cpp:97 szastframe.cpp:82 szastframe.cpp:219
+msgid "Question."
+msgstr "Pytanie."
+
+#: szastapp.cpp:115
+#, c-format
+msgid ""
+"User %s was added to dialout group. You must run application again for this "
+"change to take effect"
+msgstr ""
+"U¿ytkownik %s zosta³ dodany do grupy dialout. Musisz uruchomiæ aplikacjê "
+"ponownie by ta zmianazosta³a wprowadzona."
+
+#: szastapp.cpp:116
+msgid "Information."
+msgstr "Informacja."
+
+#: szastapp.cpp:119
+#, c-format
+msgid "User %s was not added to dialout group"
+msgstr "U¿ytkownik %s nie zosta³ dodany do grupy dialout."
+
+#: szastapp.cpp:119
+msgid "Error."
+msgstr "B³±d."
+
+#: szastapp.cpp:132
+msgid "SZAST version 1.0."
+msgstr ""
+
+#: szastapp.cpp:134
+msgid "X windows geometry specification"
+msgstr ""
+
+#: szastapp.cpp:136
+msgid "libparnt value initialization"
+msgstr ""
+
+#: szastapp.cpp:137
+msgid "print usage info"
+msgstr ""
+
+#: szastapp.cpp:138
+msgid "config file"
+msgstr ""
+
+#: szastframe.cpp:82 szastframe.cpp:219
+msgid "Do you want to close the application?"
+msgstr "Czy chcesz zamkn±æ program?"
+
+#: szastframe.cpp:158 szastframe.cpp:159
+msgid "Regulator communiation error. Invalid response format."
+msgstr "Blad komunikacji z regulatorem. Blêdny format odpowiedzi."
+
+#: szastframe.cpp:158 szastframe.cpp:166 szastframe.cpp:192
+msgid "Error"
+msgstr "B³ad."
+
+#: szastframe.cpp:166 szastframe.cpp:167
+msgid "Error while performing operation:"
+msgstr "B³±d podczas wykonywania operacji:"
+
+#: szastframe.cpp:190
+#, c-format
+msgid ""
+"Unable to find file with definition of regulator with settings: eprom %s, "
+"program %s, library: %s.\n"
+" Unable to continue."
+msgstr ""
+"Nie uda³o siê znale¿æ pliku z definicjami regulatora o parametrach: eprom %"
+"s, program %s, library: %s.\n"
+" Ustawianie parametrów nie jest mo¿liwe."
+
+#: XRC_gettext_file.h:1
+msgid "Settings"
+msgstr "Ustawienia"
+
+#: XRC_gettext_file.h:2
+msgid "Port settings:"
+msgstr "Ustawienia portu:"
+
+#: XRC_gettext_file.h:3
+msgid "Device path:"
+msgstr "¦cie¿ka urz±dzenia:"
+
+#: XRC_gettext_file.h:4
+msgid "/dev/ttyS1"
+msgstr ""
+
+#: XRC_gettext_file.h:5
+msgid "Port speed:"
+msgstr "Prêdko¶æ portu:"
+
+#: XRC_gettext_file.h:6
+msgid "9600"
+msgstr ""
+
+#: XRC_gettext_file.h:7
+msgid "19200"
+msgstr ""
+
+#: XRC_gettext_file.h:8
+msgid "Device id:"
+msgstr "Identyfikator urz±dzenia:"

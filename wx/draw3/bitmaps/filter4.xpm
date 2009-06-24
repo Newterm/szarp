@@ -1,0 +1,28 @@
+/* XPM */
+static const char*filter4_xpm[]={
+"16 16 7 1",
+"b c #ff00ff",
+". c #000000",
+"c c #ff8000",
+"e c #6e6e6e",
+"d c #f9f400",
+"# c None",
+"a c #ff0000",
+"............####",
+".##########.####",
+".##########.####",
+".aaaaaaaaaa.####",
+".aaaaaaaaaa.####",
+".bbbbbbbbbb.####",
+".bbbbbbbbbb.####",
+".cccccc.........",
+".cccccc.ddddddd.",
+".dddddd.dddd.dd.",
+".dddddd.ddde.dd.",
+"........dded.dd.",
+"#######.dd...dd.",
+"#######.dddd.dd.",
+"#######.ddddddd.",
+"#######........."
+};
+

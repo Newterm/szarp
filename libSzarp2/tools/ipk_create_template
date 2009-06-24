@@ -1,0 +1,88 @@
+#!/bin/bash
+# SZARP: SCADA software 
+# 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+#  2003 Pawe³ Pa³ucha PRATERM S.A pawel@praterm.com.pl
+
+# $Id: ipk_create_template 4393 2007-09-13 16:37:10Z reksio $
+
+# Skrypt tworzy szablon IPK z podzbioru podanej konfiguracji.
+# Parametry:
+#	- podci±g nazw poszukiwanych parametrów, np: 'Kocio³ 1:'
+#	- nazwa pliku z konfiguracj±
+# Przyk³ad u¿ycia: ipk_create_template 'Kocio³ WR5' params.xml > template.xml
+
+. `dirname $0`/ipk_config
+
+function Usage() {
+	echo -e "\
+Usage: \n\
+ ipk_create_template <substring> [ <config_file> ]\n\
+or\n\
+ ipk_create_template -h | --help\n\
+Create IPK template from IPK config file.
+\n\
+	-h, --help	print help and exit\n\
+	<substring>	substring of parameters names, parameters with names\n\
+			containing this substring are included in template; \n\
+			occurencies of this substring will are replaced with\n\
+			'XXXXX' string; substring must be ISO-8859-2 encoded\n\
+		 	and '/' characters must be escaped with double '\\'.\n\
+	<config_file>	configuration file, standard input will be used if\n\
+			none is given\n\
+\n\
+Resulting template is printed on standard output. Return code is 0 on success\n\
+and 1 on error (for example if configuration doesn't validate against IPK\n\
+RelaxNG schema).\
+"
+	exit 1;
+}
+
+if [ "x$1" = "x-h" -o "x$1" = "x--help" ] ; then
+	Usage
+fi
+
+[ $# -lt 1 -o $# -gt 2 ] && Usage
+
+TEMPLATES_DIR=$SZARP_DIR/resources/xslt
+
+# xsltproc wymaga parametrów zakodowanych w UTF-8
+SUB_ISO=$1
+SUB=`echo $SUB_ISO | iconv -f latin2 -t utf-8`
+
+if [ "x$2" = "x" ] ; then
+	CONFIG="-"
+else
+	CONFIG=$2
+fi
+
+# kolejno:
+# - sprawdzamy poprawno¶æ konfiguracji
+# - wybieramy parametry zawieraj±ce podci±g w zawarto¶ciach atrybutów
+# - usuwamy puste elementy 
+# - usuwamy indeksy bazy i wstawiamy na ich miejsce atrybuty 'tobase'
+# - dodajemy informacje o kodowaniu, któr± nam xsltproc zgubi³
+# - ³adnie formatujemy
+# - zamieniamy podci±g w ca³ym dokumencie na ci±g piêciu X-ów
+xmllint $XMLLINT_VALID_ARGS "$CONFIG" \
+| xsltproc --stringparam search "$SUB" "$TEMPLATES_DIR/select_with_name.xsl" - \
+| xsltproc "$TEMPLATES_DIR/remove_empty.xsl" - \
+| xsltproc "$TEMPLATES_DIR/remove_base.xsl" - \
+| xmllint --format --encode ISO-8859-2 - \
+| xmllint - \
+| sed "s/$SUB_ISO/XXXXX/g" 
+

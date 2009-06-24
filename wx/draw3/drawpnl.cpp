@@ -1,0 +1,1066 @@
+/*
+  SZARP: SCADA software
+  
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+*/
+/* * draw3
+ * SZARP
+
+ * Pawe³ Pa³ucha pawel@praterm.com.pl
+ *
+ * $Id$
+ * Single panel for all program widgets.
+ */
+
+#include "drawpnl.h"
+#include "ids.h"
+
+#include "summwin.h"
+#include "cfgmgr.h"
+#include "disptime.h"
+#include "drawswdg.h"
+#include "infowdg.h"
+#include "seldraw.h"
+#include "selset.h"
+#include "timewdg.h"
+#include "drawtb.h"
+#include "incsearch.h"
+#include "pscgui.h"
+#include "dbmgr.h"
+#include "drawpick.h"
+#include "defcfg.h"
+#include "piewin.h"
+#include "relwin.h"
+#include "wxgraphs.h"
+#include "glgraphs.h"
+#include "drawfrm.h"
+
+#include <wx/xrc/xmlres.h>
+
+#ifndef MINGW32
+#include <gtk/gtk.h>
+#endif
+
+/**
+ * Handler for keyboard event. It is added to all widgets in panel with
+ * PushEventHandler method.
+ */
+class DrawPanelKeyboardHandler : public wxEvtHandler {
+      public:
+	/* @param panel 'parent' panel
+	 * @param id identifier for debugging purposes
+	 */
+	DrawPanelKeyboardHandler(DrawPanel * panel, wxString id = _T("no_id"));
+	~DrawPanelKeyboardHandler();
+	/** Event handler - handles keyboard events. */
+	void OnChar(wxKeyEvent & event);
+	void OnKeyUp(wxKeyEvent & event);
+	bool OnKeyDown(wxKeyEvent & event);
+	virtual bool ProcessEvent(wxEvent &event) {
+		bool handled = false;
+		if (event.GetEventType() == wxEVT_KEY_DOWN) {
+			handled = OnKeyDown((wxKeyEvent&)event);
+		}
+		return (handled || wxEvtHandler::ProcessEvent(event));
+	}
+
+      protected:
+	 DECLARE_EVENT_TABLE()
+	 DrawPanel *panel;	/**< pointer to panel */
+	 wxString id;		/**< debug identifier */
+};
+
+BEGIN_EVENT_TABLE(DrawPanelKeyboardHandler, wxEvtHandler)
+    EVT_CHAR(DrawPanelKeyboardHandler::OnChar)
+    //EVT_KEY_DOWN(DrawPanelKeyboardHandler::OnKeyDown)
+    EVT_KEY_UP(DrawPanelKeyboardHandler::OnKeyUp)
+END_EVENT_TABLE()
+
+    DrawPanelKeyboardHandler::DrawPanelKeyboardHandler(DrawPanel * panel,
+						       wxString id)
+:  wxEvtHandler()
+{
+	this->id = id;
+	assert(panel != NULL);
+	this->panel = panel;
+}
+
+DrawPanelKeyboardHandler::~DrawPanelKeyboardHandler()
+{
+}
+
+void DrawPanelKeyboardHandler::OnChar(wxKeyEvent & event)
+{
+    wxLogInfo(_T("DEBUG: DrawPanelKeyboardEvent::OnChar [%s] key code %d"),
+	    id.c_str(), event.GetKeyCode());
+
+    switch (event.GetKeyCode()) {
+	case WXK_DOWN :
+	    panel->dw->SelectNextDraw();
+	    break;
+	case WXK_UP :
+	    panel->dw->SelectPreviousDraw();
+	    break;
+	default :
+	    event.Skip();
+	    break;
+    }
+}
+
+void DrawPanelKeyboardHandler::OnKeyUp(wxKeyEvent & event)
+{
+	wxLogInfo(_T("DEBUG: DrawPanelKeyboardEvent::OnKeyUp [%s] key code %d"),
+		  id.c_str(), event.GetKeyCode());
+
+	switch (event.GetKeyCode()) {
+	case WXK_LEFT:
+	case WXK_RIGHT:
+	case WXK_HOME:
+	case WXK_END:
+	case WXK_PRIOR:
+	case WXK_NEXT:
+		panel->dw->SetKeyboardAction(NONE);
+		break;
+	case '?':
+		panel->dg->StopDrawingParamName();
+		break;
+	case '/':
+		if (event.ShiftDown())
+			panel->dg->StopDrawingParamName();
+		else
+			event.Skip();
+	default:
+		event.Skip();
+		break;
+	}
+}
+
+bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
+{
+	wxLogInfo(_T
+		  ("DEBUG: DrawPanelKeyboardEvent::OnKeyDown [%s] key code %d"),
+		  id.c_str(), event.GetKeyCode());
+	switch (event.GetKeyCode()) {
+	case WXK_LEFT:
+		if(event.ShiftDown() && panel->tw->GetSelection() == 3)
+			panel->dw->SetKeyboardAction(CURSOR_LONG_LEFT_KB);
+		else
+			panel->dw->SetKeyboardAction(CURSOR_LEFT_KB);
+		break;
+	case WXK_RIGHT:
+		if (event.ShiftDown() && panel->tw->GetSelection() == 3)
+			panel->dw->SetKeyboardAction(CURSOR_LONG_RIGHT_KB);
+		else
+			panel->dw->SetKeyboardAction(CURSOR_RIGHT_KB);
+		break;
+	case WXK_HOME:
+		panel->dw->SetKeyboardAction(CURSOR_HOME_KB);
+		break;
+	case WXK_END:
+		panel->dw->SetKeyboardAction(CURSOR_END_KB);
+		break;
+	case WXK_PRIOR:
+		if (event.ControlDown())
+			panel->df->SelectPreviousTab();
+		else
+			panel->dw->SetKeyboardAction(SCREEN_LEFT_KB);
+		break;
+	case WXK_NEXT:
+		if (event.ControlDown())
+			panel->df->SelectNextTab();
+		else
+			panel->dw->SetKeyboardAction(SCREEN_RIGHT_KB);
+		break;
+	// enable/disable split cursor
+	case WXK_BACK: {
+		wxCommandEvent e;
+		panel->ToggleSplitCursor(e);
+		break;
+	}
+	case 'Z':
+		if(event.AltDown())
+			panel->StartSetSearch();
+#ifndef NO_GSTREAMER
+#if 0
+		if (event.ControlDown())
+			panel->dw->Dance();
+#endif
+#endif
+		break;
+	case 'C':
+		if (event.ControlDown())
+			panel->dw->CopyToClipboard();
+		break;
+	case 'V':
+		if (event.ControlDown())
+			panel->dw->PasteFromClipboard();
+		break;
+	case 'O':
+		if(event.AltDown())
+			panel->OnJumpToDate();
+		break;
+	case 'W':
+		panel->Print(false);
+		break;
+	case 'B':
+		if (event.ControlDown())
+			panel->dw->SwitchCurrentDrawBlock();
+		else
+			return false;
+		break;
+	case 'H':
+		if (event.ControlDown())
+			panel->sw->OpenParameterDoc();
+		else
+			return false;
+		break;
+	case '/':
+		if (event.ShiftDown())
+			panel->dg->StartDrawingParamName();
+		else
+			return false;
+		break;
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+	case '0':
+		if (event.AltDown()) {
+			size_t idx = event.GetKeyCode() - '1';
+			size_t curr = panel->dw->GetSelectedDrawIndex();
+			if (curr == idx) { // cannot disable current draw
+				wxBell();
+				break;
+			}
+			if (panel->dw->IsDrawEnabled(idx)) {
+				if (panel->dw->SetDrawDisable(idx));
+					panel->sw->SetChecked(idx, false);
+			} else  {
+				panel->dw->SetDrawEnable(idx);
+				panel->sw->SetChecked(idx, true);
+			}
+		} else {
+			return false;
+		}
+		break;
+	case '[':
+		{
+			int index = panel->dw->GetSelectedDrawIndex();
+			if (panel->dw->IsNoData() == false && index >= 0) {
+				for (int i = 0; i < MAX_DRAWS_COUNT; i++) {
+					if (i == index)
+						continue;
+					if (panel->dw->SetDrawDisable(i));
+						panel->sw->SetChecked(i, false);
+				}
+			}
+		}
+		break;
+	case ']':
+		{
+			if (!panel->dw->IsNoData())
+				for (int i = 0; i < MAX_DRAWS_COUNT; i++) {
+					panel->dw->SetDrawEnable(i);
+					if (panel->dw->IsDrawEnabled(i))
+						panel->sw->SetChecked(i, true);
+				}
+		}
+		break;
+	case WXK_F1:
+		if (event.ShiftDown()) {
+					printf("IKE!\n");
+		}
+		break;
+	default:
+		event.Skip();
+		return false;
+		break;
+	}
+	return true;
+}
+
+DrawPanel::DrawPanel(DatabaseManager* _db_mgr, ConfigManager * _cfg,
+		wxString _defid, DrawSet *set, PeriodType pt,  time_t time,
+		wxWindow * parent, wxWindowID id, DrawFrame *_df, int selected_draw)
+	:  wxPanel(parent, id, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS),
+	df(_df), iw(NULL), dw(NULL), dtw(NULL), ssw(NULL), sw(NULL), tw(NULL),
+	dinc(NULL), sinc(NULL), db_mgr(_db_mgr), cfg(_cfg),
+	defid(_defid), smw(NULL), pw(NULL), m_realized(false)
+{
+#ifdef WXAUI_IN_PANEL
+	am.SetManagedWindow(this);
+#endif
+	cfg->RegisterConfigObserver(this);
+
+	CreateChildren(set, pt, time, selected_draw);
+
+	rw_show = pw_show = smw_show = false;
+
+}
+
+void DrawPanel::CreateChildren(DrawSet *set, PeriodType pt, time_t time, int selected_draw)
+{
+	if (m_realized)
+		return;
+
+	m_realized = true;
+	menu_bar = (wxMenuBar*) wxXmlResource::Get()->LoadObject(this,_T("menubar"),_T("wxMenuBar"));
+
+	filter_popup_menu = ((wxMenuBar*) wxXmlResource::Get()->LoadObject(this,_T("filter_context"),_T("wxMenuBar")))->GetMenu(0);
+
+#ifdef WXAUI_IN_PANEL
+	hpanel = new wxPanel(this);
+	wxBoxSizer *hsizer = new wxBoxSizer(wxHORIZONTAL);
+
+	wxPanel *vpanel = new wxPanel(this);
+#endif
+
+	wxBoxSizer *vsizer = new wxBoxSizer(wxVERTICAL);
+
+	/* calculate right panel size */
+	wxClientDC dc(this);
+	dc.SetFont(GetFont());
+	int y, width;
+	dc.GetTextExtent(_T("012345678901234567890123456789012345"), &width,
+			 &y);
+
+	/* create widgets */
+	iw = new InfoWidget(
+#ifdef WXAUI_IN_PANEL
+			hpanel
+#else
+			this
+#endif
+			);
+
+	smw = new SummaryWindow(this, this, menu_bar->FindItem(XRCID("Summary")));
+	pw = new PieWindow(this, this, menu_bar->FindItem(XRCID("Pie")));
+	rw = new RelWindow(this, this, menu_bar->FindItem(XRCID("Ratio")));
+
+#ifndef MINGW32
+	gtk_window_set_accept_focus(GTK_WINDOW(smw->GetHandle()), 0);
+	gtk_window_set_accept_focus(GTK_WINDOW(pw->GetHandle()), 0);
+	gtk_window_set_accept_focus(GTK_WINDOW(rw->GetHandle()), 0);
+#endif
+
+	wxString style = wxConfig::Get()->Read(_T("GRAPHS_VIEW"), _("Classic"));
+#ifdef HAVE_GLCANVAS
+#ifdef HAVE_FTGL
+	if (style != _("Classic") && wxGetApp().GLWorks()) {
+		if (GLGraphs::_context == NULL) {
+			wxGLCanvas *tcanvas  = new wxGLCanvas(this, wxID_ANY
+					, wxGetApp().GLContextAttribs());
+			GLGraphs::_context = new wxGLContext(tcanvas);
+			tcanvas->Destroy();
+
+		}
+
+		dg = new GLGraphs(this, cfg);
+		GLGraphs *glg = new GLGraphs(this, cfg);
+		dg = glg;
+	}
+	else
+#endif
+#endif
+		dg = new WxGraphs(this, cfg);
+
+	dw = new DrawsWidget(this, cfg, db_mgr, dg, smw, pw, rw, -1, iw, pt, time, selected_draw);
+
+	dg->SetDrawsWidget(dw);
+
+	dtw = new DisplayTimeWidget(
+#ifdef WXAUI_IN_PANEL
+			vpanel
+#else
+			this
+#endif
+			);
+	/* connect widget for updating time events; dtw used to
+	 * have it's own timer but it is broken under Windows
+	 * version, so we have to use only one timer */
+	dw->SetDisplayTimeWidget(dtw);
+	ssw = new SelectSetWidget(cfg, defid,
+#ifdef WXAUI_IN_PANEL
+			hpanel,
+#else
+			this,
+#endif
+			drawID_SELSET,
+			set,
+			width);
+
+	sw = new SelectDrawWidget(cfg, db_mgr, defid, ssw, dw,
+#ifdef WXAUI_IN_PANEL
+			vpanel,
+#else
+			this,
+#endif
+			drawID_SELDRAW);
+
+        tw = new TimeWidget(
+#ifdef WXAUI_IN_PANEL
+			vpanel,
+#else
+			this,
+#endif
+			dw,
+			pt);
+
+	dw->SetSelWidgets(sw, ssw, tw);
+	if (cfg->IsPSC(cfg->GetConfig(defid)->GetPrefix()))
+		menu_bar->FindItem(XRCID("SetParams"))->Enable(true);
+	else
+		menu_bar->FindItem(XRCID("SetParams"))->Enable(false);
+
+	tb = new DrawToolBar(this);
+
+	/* add keyboard event handlers */
+	DrawPanelKeyboardHandler *eh;
+	eh = new DrawPanelKeyboardHandler(this, _T("dg"));
+	(dynamic_cast<wxWindow*>(dg))->PushEventHandler(eh);
+/*
+	eh = new DrawPanelKeyboardHandler(this, _T("iw"));
+	iw->PushEventHandler(eh);
+	eh = new DrawPanelKeyboardHandler(this, _T("dtw"));
+	dtw->PushEventHandler(eh);
+	eh = new DrawPanelKeyboardHandler(this, _T("ssw"));
+	ssw->PushEventHandler(eh);
+	eh = new DrawPanelKeyboardHandler(this, _T("sw"));
+	sw->PushEventHandler(eh);
+	eh = new DrawPanelKeyboardHandler(this, _T("tw"));
+	tw->PushEventHandler(eh);
+	eh = new DrawPanelKeyboardHandler(this, _T("smw"));
+	smw->PushEventHandler(eh);
+	*/
+	eh = new DrawPanelKeyboardHandler(this, _T("pw"));
+	pw->PushEventHandler(eh);
+	/*
+	eh = new DrawPanelKeyboardHandler(this, _T("rw"));
+	rw->PushEventHandler(eh);
+	eh = new DrawPanelKeyboardHandler(this, _T("panel"));
+	PushEventHandler(eh);
+*/
+#ifdef WXAUI_IN_PANEL
+	hsizer->Add(iw, 1, wxALL | wxEXPAND, 10);
+	hsizer->Add(ssw, 0, wxALL | wxALIGN_RIGHT, 10);
+	hpanel->SetSizer(hsizer);
+	hsizer->SetSizeHints(hpanel);
+#endif
+
+	vsizer->Add(dtw, 0, wxALL | wxEXPAND);
+	vsizer->Add(sw, 0, wxALL | wxEXPAND, 10);
+	vsizer->Add(tw, 0, wxALL | wxEXPAND, 2);
+
+#ifdef WXAUI_IN_PANEL
+	vpanel->SetSizer(vsizer);
+	vsizer->SetSizeHints(vpanel);
+
+	wxSize size1 = hsizer->CalcMin();
+	size1.SetWidth(-1);
+
+
+	wxSize size2 = vsizer->CalcMin();
+	size2.SetHeight(-1);
+	am.AddPane(dg, wxAuiPaneInfo().Centre().CentrePane());
+	am.AddPane(vpanel, wxAuiPaneInfo().Right().Layer(1).Resizable().MinSize(size2).CloseButton(false));
+	am.AddPane(hpanel, wxAuiPaneInfo().Bottom().Layer(8).Resizable().MinSize(size1).CloseButton(false).BottomDockable().TopDockable().PaneBorder(false).Gripper(true).CaptionVisible(false));
+	am.AddPane(tb, wxAuiPaneInfo().Bottom().Layer(9).ToolbarPane());
+
+	am.Update();
+#else
+	wxSizer *sizer_1_1 = new wxBoxSizer(wxHORIZONTAL);
+
+	sizer_1_1->Add(dynamic_cast<wxWindow*>(dg), 1, wxEXPAND);
+	sizer_1_1->Add(vsizer, 0, wxEXPAND);
+
+	wxSizer *sizer_1_2 = new wxBoxSizer(wxHORIZONTAL);
+	sizer_1_2->Add(iw, 1, wxEXPAND, 10);
+	sizer_1_2->Add(ssw, 0, wxALIGN_RIGHT, 10);
+
+	wxSizer *sizer_1 = new wxBoxSizer(wxVERTICAL);
+	sizer_1->Add(sizer_1_1, 1, wxEXPAND);
+	sizer_1->Add(sizer_1_2, 0, wxEXPAND | wxALL, 10);
+	sizer_1->Add(tb, 0, wxEXPAND);
+
+	SetSizer(sizer_1);
+	sizer_1->SetSizeHints(this);
+#endif
+
+	//dg->SetFocus();
+
+	sw->SetChanged();
+	SetChanged();
+
+}
+
+void DrawPanel::OnJumpToDate()
+{
+	return dw->OnJumpToDate();
+}
+
+void DrawPanel::SetFocus() {
+	dg->SetFocus();
+}
+
+DrawPanel::~DrawPanel()
+{
+	cfg->DeregisterConfigObserver(this);
+
+	/* Remove event handlers */
+	dynamic_cast<wxWindow*>(dg)->PopEventHandler(TRUE);
+	/*
+	iw->PopEventHandler(TRUE);
+	dtw->PopEventHandler(TRUE);
+	ssw->PopEventHandler(TRUE);
+	sw->PopEventHandler(TRUE);
+	tw->PopEventHandler(TRUE);
+	smw->PopEventHandler(TRUE);
+	pw->PopEventHandler(TRUE);
+	rw->PopEventHandler(TRUE);
+	PopEventHandler(TRUE);
+	*/
+#ifdef WXAUI_IN_PANEL
+	am.UnInit();
+#endif
+
+	if (dinc != NULL)
+		dinc->Destroy();
+	if (sinc != NULL)
+		sinc->Destroy();
+	smw->Destroy();
+	rw->Destroy();
+	pw->Destroy();
+
+	delete dw;
+
+	cfg->DeregisterConfigObserver(this);
+}
+
+void DrawPanel::OnRefresh(wxCommandEvent & evt) {
+	dw->RefreshData(false);
+}
+
+void DrawPanel::ClearCache() {
+	dw->ClearCache();
+	dw->RefreshData(false);
+}
+
+void DrawPanel::OnFind(wxCommandEvent & evt) {
+	StartDrawSearch();
+}
+
+void DrawPanel::StartDrawSearch()
+{
+	assert(cfg != NULL);
+	assert(defid != wxEmptyString);
+
+	wxWindow *tlw = GetParent();
+	while (!tlw->IsTopLevel())
+		tlw = tlw->GetParent();
+
+	if (dinc == NULL) {
+		wxWindow *parent = GetParent();
+		wxFrame *frame = NULL;
+
+		while (parent && (frame = wxDynamicCast(parent, wxFrame)) == NULL)
+			parent = parent->GetParent();
+
+		dinc = new IncSearch(cfg, defid, (wxFrame *) tlw, incsearch_DIALOG, _("Find"), false, true, false);
+	}
+
+	DrawInfo* di = dw->GetCurrentDrawInfo();
+	if (di)
+		dinc->StartWith(GetPrefix(), di->GetSetName(), di->GetName());
+	int ret = dinc->ShowModal();
+	if (ret != wxID_OK)
+		return;
+
+	long int prev = -1;
+	di = dinc->GetDrawInfo(&prev);
+	if (di == NULL)
+		return;
+
+	for (unsigned int i = 0; i < ssw->GetCount(); i++) {
+		DrawSet *s = (DrawSet*) ssw->GetClientData(i);
+		if (s->GetName() == di->GetSetName()) {
+			ssw->Select(i);
+			dw->SwitchToDrawInfoUponSetChange(di);
+			break;
+		}
+	}
+	sw->SetChanged();
+	SetChanged();
+}
+
+void DrawPanel::StartSetSearch() {
+	assert(cfg != NULL);
+	assert(defid != wxEmptyString);
+	
+	wxWindow *tlw = GetParent();
+	while (!tlw->IsTopLevel())
+		tlw = tlw->GetParent();
+
+	if (sinc == NULL) {
+		wxWindow *parent = GetParent();
+		wxFrame *frame = NULL;
+
+		while (parent && (frame = wxDynamicCast(parent, wxFrame)) == NULL)
+			parent = parent->GetParent();
+
+		sinc = new IncSearch(cfg, defid, (wxFrame *) tlw, incsearch_DIALOG, _("Find"), true, true, false);
+	}
+
+	sinc->StartWith(GetPrefix(), ssw->GetSelected()->GetName(), wxEmptyString);
+	int ret = sinc->ShowModal();
+	if (ret != wxID_OK)
+		return;
+
+	wxString name = sinc->GetSelectedSet();
+
+	for (unsigned int i = 0; i < ssw->GetCount(); i++) {
+		DrawSet *s = (DrawSet*) ssw->GetClientData(i);
+		if (s->GetName() == name) {
+			ssw->Select(i);
+			break;
+		}
+	}
+        sw->SetChanged();
+	SetChanged();
+}
+
+void DrawPanel::StartPSC()
+{
+	cfg->EditPSC(cfg->GetConfig(defid)->GetPrefix());
+}
+
+void DrawPanel::Start()
+{
+	dw->SetDrawApply();
+}
+
+void DrawPanel::ShowSummaryWindow(bool show) {
+#ifndef MINGW32
+	smw->Show(show);
+	if (show) {
+		smw->Raise();
+		smw_show = true;
+	} else
+		smw_show = false;
+#else
+	if (show) {
+	    smw->Show(show);
+	    this->GetParent()->Raise();
+		smw_show = true;
+	} else {
+		smw_show = false;
+		smw->Show(show);
+	}
+#endif
+
+}
+
+void DrawPanel::OnSummaryWindow(wxCommandEvent & event)
+{
+	wxMenuItem *item = menu_bar->FindItem(XRCID("Summary"));
+	item->Check(!smw->IsShown());
+	ShowSummaryWindow(!smw->IsShown());
+}
+
+void DrawPanel::ShowPieWindow(bool show) {
+#ifndef MINGW32
+	pw->Show(show);
+	if (show) {
+		pw->Raise();
+		pw_show = true;
+	} else
+		pw_show = false;
+#else
+	if (show) {
+	    pw->Show(show);
+	    this->GetParent()->Raise();
+		pw_show = true;
+	} else {
+		pw_show = false;
+		pw->Show(show);
+	}
+#endif
+}
+
+
+void DrawPanel::ShowRelWindow(bool show) {
+#ifndef MINGW32
+	rw->Show(show);
+	if (show) {
+		rw->Raise();
+		rw_show = true;
+	} else
+		rw_show = false;
+#else
+	if (show) {
+	    rw->Show(show);
+	    this->GetParent()->Raise();
+		rw_show = true;
+	} else {
+		rw_show = false;
+		rw->Show(show);
+	}
+#endif
+}
+
+
+
+
+wxString DrawPanel::GetPrefix()
+{
+	return cfg->GetConfig(defid)->GetPrefix();
+}
+
+wxString DrawPanel::GetConfigName()
+{
+	return cfg->GetConfig(defid)->GetID();
+}
+
+void DrawPanel::SetConfigName(wxString id) {
+	if (defid != id) {
+		defid = id;
+		df->UpdatePanelName(this);
+	}
+}
+
+SummaryWindow *DrawPanel::GetSummaryWindow()
+{
+	return smw;
+}
+
+wxMenuBar *DrawPanel::GetMenuBar()
+{
+	return menu_bar;
+}
+
+void DrawPanel::ToggleSplitCursor(wxCommandEvent& WXUNUSED(event)) {
+	bool is_double = dw->ToggleSplitCursor();
+
+	menu_bar->Check(XRCID("SplitCursor"), is_double);
+	if (is_double)
+		tb->DoubleCursorToolCheck();
+	else
+		tb->DoubleCursorToolUncheck();
+
+	GetSizer()->Layout();
+
+#ifdef WXAUI_IN_PANEL
+	wxAuiPaneInfo& info = am.GetPane(hpanel);
+	wxSize size = hpanel->GetSizer()->CalcMin();
+
+	size.SetWidth(-1);
+	info.MinSize(size);
+	if (!is_double) {
+		info.MaxSize(size);
+		info.MinSize(size);
+	}
+	am.Update();
+#endif
+}
+
+void DrawPanel::UncheckSplitCursor() {
+	tb->DoubleCursorToolUncheck();
+	menu_bar->Check(XRCID("SplitCursor"), false);
+}
+
+void DrawPanel::SetRenamed(wxString prefix, wxString from, wxString to, DrawSet* set) {
+	if (prefix != GetPrefix())
+		return;
+
+	int old = ssw->FindString(from);
+	if (wxNOT_FOUND == old)
+		ssw->Append(to, set);
+	else
+	{
+		ssw->SetString(old, to); // change name
+		ssw->SetClientData(old, set); // update draws
+		if (ssw->GetSelection() == old)
+			sw->SetChanged();
+	}
+}
+
+
+void DrawPanel::SetRemoved(wxString prefix, wxString name) {
+	if (prefix != GetPrefix())
+		return;
+
+	int old = ssw->FindString(name);
+	int sel = ssw->GetSelection();
+
+	ssw->Delete(old); // delete
+	if (ssw->GetCount() == 0) {
+		df->RemovePanel(this);
+	} else if (sel == old) {
+		ssw->SetSelection(0); // select first
+		ssw->SetChanged();
+	} else {
+		if (sel < old)
+			ssw->SelectWithoutEvent(sel);
+		else
+			ssw->SelectWithoutEvent(sel - 1);
+	}
+}
+
+void DrawPanel::SetModified(wxString prefix, wxString name, DrawSet *set) {
+	if (prefix != GetPrefix())
+		return;
+
+	int old = ssw->FindString(name);
+	if (wxNOT_FOUND == old)
+		ssw->Append(name, set);
+	else
+		ssw->SetClientData(old, set); // update draws
+	sw->SetChanged();
+}
+
+void DrawPanel::SelectSet(DrawSet *set) {
+	ssw->SelectSet(set);
+}
+
+void DrawPanel::SetAdded(wxString prefix, wxString name, DrawSet* set) {
+	if (prefix != GetPrefix())
+		return;
+
+	ssw->Append(name, set);
+}
+
+void DrawPanel::Print(bool preview) {
+	dw->Print(preview);
+}
+
+void DrawPanel::OnFilterChange(wxCommandEvent &event) {
+	if (event.GetId() == wxID_ANY)
+		return;
+
+	int id = event.GetId();
+	int filter = 0;
+	wxMenuItem *main_menu_item;
+	wxMenuItem *popup_menu_item;
+
+	if(id==XRCID("F0") || id==XRCID("ContextF0"))
+	{
+		filter=0;
+        	main_menu_item = menu_bar->FindItem(XRCID("F0"));
+		popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF0"));
+	}
+	else if(id==XRCID("F1") || id==XRCID("ContextF1"))
+	{
+		filter=1;
+        	main_menu_item = menu_bar->FindItem(XRCID("F1"));
+		popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF1"));
+	}
+	else if(id==XRCID("F2") || id==XRCID("ContextF2"))
+	{
+		filter=2;
+        	main_menu_item = menu_bar->FindItem(XRCID("F2"));
+		popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF2"));
+	}
+	else if(id==XRCID("F3") || id==XRCID("ContextF3"))
+	{
+		filter=3;
+        	main_menu_item = menu_bar->FindItem(XRCID("F3"));
+		popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF3"));
+	}
+	else if(id==XRCID("F4") || id==XRCID("ContextF4"))
+	{
+		filter=4;
+        	main_menu_item = menu_bar->FindItem(XRCID("F4"));
+		popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF4"));
+	}
+	else if(id==XRCID("F5") || id==XRCID("ContextF5"))
+	{
+		filter=5;
+        	main_menu_item = menu_bar->FindItem(XRCID("F5"));
+		popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF5"));
+	}
+	else
+		assert(false);
+
+	dw->SetFilter(filter);
+	tb->SetFilterToolIcon(filter);
+
+	assert(main_menu_item);
+	main_menu_item->Check(true);
+
+	assert(popup_menu_item);
+	popup_menu_item->Check(true);
+
+}
+
+bool DrawPanel::IsUserDefined() {
+	DrawSet *sset = ssw->GetSelected();
+	return dynamic_cast<DefinedDrawSet*>(sset) != NULL;
+}
+
+void DrawPanel::SetChanged() {
+	menu_bar->Enable(XRCID("EditSet"),  IsUserDefined());
+	menu_bar->Enable(XRCID("DelSet"),  IsUserDefined());
+}
+
+void DrawPanel::OnToolFilterMenu(wxCommandEvent &event) {
+	PopupMenu(filter_popup_menu);
+}
+
+DrawSet* DrawPanel::GetSelectedSet() {
+	return ssw->GetSelected();
+}
+
+void DrawPanel::SelectSet(wxString title) {
+	int idx = ssw->FindString(title);
+	if (idx == wxNOT_FOUND)
+		return;
+
+	ssw->Select(idx);
+	sw->SetChanged();
+	SetChanged();
+}
+
+void DrawPanel::ConfigurationIsAboutToReload(wxString prefix) {
+	if (prefix != GetPrefix())
+		csn = _T("");
+	else  {
+		if (dw->IsDoubleCursor()) {
+			wxCommandEvent ev;
+			ToggleSplitCursor(ev);
+		}
+		csn = ssw->GetSelected()->GetName();
+	}
+}
+
+void DrawPanel::ConfigurationWasReloaded(wxString prefix) {
+	ssw->SetConfig();
+
+	if (csn.IsEmpty())
+		return;
+
+	bool found = false;
+	for (unsigned i = 0; i < ssw->GetCount(); ++i) {
+		DrawSet *set = (DrawSet*) ssw->GetClientData(i);
+		if (csn == set->GetName()) {
+			ssw->SetSelection(i);
+			found = true;
+			break;
+		}
+	}
+
+	if (!found)
+		ssw->SetSelection(0);
+
+	ssw->SetChanged();
+}
+
+void DrawPanel::Copy() {
+	dw->CopyToClipboard();
+}
+
+void DrawPanel::Paste() {
+	dw->PasteFromClipboard();
+}
+
+size_t DrawPanel::GetNumberOfUnits() {
+	return dw->GetNumberOfUnits();
+}
+
+void DrawPanel::SetNumberOfUnits(size_t number_of_units) {
+	return dw->SetNumberOfUnits(number_of_units);
+}
+
+PeriodType DrawPanel::GetPeriod() {
+	return (PeriodType)tw->GetSelection();
+}
+
+PeriodType DrawPanel::SetPeriod(PeriodType pt) {
+	switch (pt) {
+		case PERIOD_T_YEAR:
+			tw->Select(0);
+			return PERIOD_T_YEAR;
+		case PERIOD_T_MONTH:
+			tw->Select(1);
+			return PERIOD_T_MONTH;
+		case PERIOD_T_WEEK:
+			tw->Select(2);
+			return PERIOD_T_WEEK;
+		case PERIOD_T_DAY:
+			tw->Select(3);
+			return PERIOD_T_DAY;
+		case PERIOD_T_SEASON:
+			if (tw->GetSelection() == 4)
+				return (PeriodType)tw->SelectPrev();
+			else {
+				tw->Select(4);
+				return PERIOD_T_SEASON;
+			}
+		default:
+			return pt;
+	}
+}
+
+void DrawPanel::SetActive(bool active) {
+	if (active) {
+		if (smw_show) {
+			smw->Show(true);
+			smw->Raise();
+		}
+
+		if (rw_show) {
+			rw->Show(true);
+			rw->Raise();
+		}
+
+		if (pw_show) {
+			pw->Show(true);
+			pw->Raise();
+		}
+	} else {
+		if (smw && smw->IsShown())
+			smw->Show(false);
+
+		if (rw && rw->IsShown())
+			rw->Show(false);
+
+		if (pw && pw->IsShown())
+			pw->Show(false);
+	}
+
+}
+
+wxString
+DrawPanel::GetUrl(bool with_infinity) {
+	return dw != NULL ? dw->GetUrl(with_infinity) : _T("");
+};
+
+BEGIN_EVENT_TABLE(DrawPanel, wxPanel)
+    EVT_MENU(drawTB_REFRESH, DrawPanel::OnRefresh)
+    EVT_MENU(drawTB_FIND, DrawPanel::OnFind)
+    EVT_MENU(drawTB_SUMWIN, DrawPanel::OnSummaryWindow)
+    EVT_MENU(XRCID("ContextF0"), DrawPanel::OnFilterChange)
+    EVT_MENU(XRCID("ContextF1"), DrawPanel::OnFilterChange)
+    EVT_MENU(XRCID("ContextF2"), DrawPanel::OnFilterChange)
+    EVT_MENU(XRCID("ContextF3"), DrawPanel::OnFilterChange)
+    EVT_MENU(XRCID("ContextF4"), DrawPanel::OnFilterChange)
+    EVT_MENU(XRCID("ContextF5"), DrawPanel::OnFilterChange)
+    EVT_MENU(drawTB_SPLTCRS, DrawPanel::ToggleSplitCursor)
+    EVT_MENU(drawTB_FILTER, DrawPanel::OnToolFilterMenu)
+END_EVENT_TABLE()

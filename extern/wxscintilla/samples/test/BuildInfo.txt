@@ -1,0 +1,30 @@
+Requirements
+============
+To build successfully you need at least wxWidgets 2.6.1 (stable).
+
+
+Generel building rules
+======================
+First build or get the wxWidgets libraries however this is done on your platform.
+If the libraries don't use the standard development paths you _have_ to set the
+$WXSTABLE environment variable to point to the base directory of wxWidgets (i.e.
+"/usr/src/wxWidgets" then "WXSTABLE=/usr/src/wxWidgets").
+
+
+Building on Unix (wxGTK, wxUniv)
+================================
+wxGTK: Use "make" for the release version, "make debug" for the debug version,
+"make univdebug" for the univ debug version.
+
+
+Building on Windows (wxMSW, wxUniv)
+===================================
+There is a VC++ project file which requires the environment variable WXSTABLE
+pointing to the correct locations (i.e. "C:\Devel\wxWidgets" then
+"WXSTABLE=C:\Devel\wxWidgets").
+
+
+Building on other ports
+=======================
+There is currently no support to build on other ports. If you are able to deduct
+how to build on your platform it would be nice if you submit them to the project.

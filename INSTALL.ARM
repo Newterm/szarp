@@ -1,0 +1,120 @@
+$Id: INSTALL.ARM 4375 2007-09-13 13:00:45Z pawel $
+
+INSTALL.arm
+
+Pawe³ Pa³ucha <pawel@praterm.com.pl>
+
+Ten plik opisuje sposób konfiguracji czê¶ci serwerowej systemu SZARP dla platformy ARM/XScale,
+a konkretnie dla urz±dzenia Moxa UC7410/7520. 
+
+Moxa UC7410/7420 wyposa¿ona jest w:
+- procesor Intel XScale IXP-422 266 MHz
+- 128 MB RAM, 32 MB FLASH ROM
+- 8 portów RS-232/422/485
+- dwa porty Ethernet 10/100Mb
+- gniazda PCMCIA i Compact Flash (tylko model 7420)
+- wy¶wietlacz LCM i klawiatura (5 przycisków)
+Urz±dzenie u¿ywa loadera Redboot 1.92, j±dra MontaVista embedded Linux 2.4.18; dostêpny
+jest serwer apache+php, ftp, telnet, NFS, snmp, ssh, openvpn; shell bash, edytor vi, klient 
+ftp, telnet, ssh i scp; obs³ugiwane systemy plików to JFFS2 (kompresowany system plików dla pamiêci
+Flash), VFAT, Ext2, NFS. Karta CF mo¿e mieæ do 4 GB, system plików FAT32 lub ext2.
+Do³±czone oprogramowanie zawiera cross-kompilator - gcc 3.3.2, gdb, glibc 2.2.5.
+(Uwaga! Moxa sugeruje u¿ycie nowszego oprogramowania, do³±czanego do urz±dzenia ThinkCore DA-660,
+ale nie testowa³em go.)
+Domy¶lnie timezone ustawiony jest na Taiwan - mo¿na to zmieniæ w /etc/sysconfig/clock. Konfiguracja 
+sieci w /etc/network/interfaces.
+
+Po kolei:
+
+1. Instalujemy cross-kompilator.
+
+Pakiet xmscaleb w formacie RPM znajduje siê na do³±czonej p³ycie, w katalogu /software. Otwieramy
+go np. w mc i zgrywamy jest zawarto¶æ - katalog /usr/local/mxscaleb - do katalogu /usr/local/mxscaleb.
+
+2. Kompilacja libiconv
+
+¦ci±gamy ¼ród³a libiconv z http://www.gnu.org/software/libiconv/, rozpakowujemy, wchodzimy
+do katalogu i kompilujemy:
+
+# env PATH=/usr/local/mxscaleb/bin:$PATH ./configure --host=xscale-linux --target=xscale-linux prefix=/usr/local/mxscaleb
+# env PATH=/usr/local/mxscaleb/bin:$PATH make
+# env PATH=/usr/local/mxscaleb/bin:$PATH make install
+
+Nastêpnie kopiujemy biblioteki libiconv.so* z /usr/local/mxscaleb/lib do katalogu /usr/local/lib
+na UC.
+
+2. Kompilacja libxml2
+
+¦ci±gany ¼ród³a libxml2 ze xmlsoft.org, rozpakowujemy, wchodzimy do katalogu i kompilujemy:
+
+# env PATH=/usr/local/mxscaleb/bin:$PATH \
+./configure --host=xscale-linux --target=xscale-linux prefix=/usr/local/mxscaleb \
+--enable-ipv6=no --without-python --without-debug --without-ftp \
+--with-iconv=/usr/local/mxscaleb --disable-static
+# env PATH=/usr/local/mxscaleb/bin:$PATH make
+# env PATH=/usr/local/mxscaleb/bin:$PATH make install-strip
+
+Uwaga! - tu jest babol - skompilowany w ten sposób libxml2 nie obs³uguje jednak iconv'a, w zwi±zku 
+z tym pliki params.xml dla szarpa musz± byæ zapisywane w kodowaniu UTF-8.
+
+3. Kompilacja libxslt
+
+¦ci±gany ¼ród³a libxslt ze xmlsoft.org, rozpakowujemy, wchodzimy do katalogu i kompilujemy:
+
+# env PATH=/usr/local/mxscaleb/bin:$PATH \
+./configure --host=xscale-linux --target=xscale-linux \
+--with-xml-prefix=/usr/local/mxscaleb --prefix=/usr/local/mxscale \
+--without-crypto --without-python
+# env PATH=/usr/local/mxscaleb/bin:$PATH make
+# env PATH=/usr/local/mxscaleb/bin:$PATH make install-strip
+
+4. Kompilacja SZARP'a
+
+# env PATH=/usr/local/mxscaleb/bin:$PATH \
+./configure --target=xscale-linux --host=xscale-linux \
+--without-x --without-newt --without-tcltk \
+--with-xml-prefix=/usr/local/mxscaleb \
+--with-xslt-prefix=/usr/local/mxscaleb \
+--with-pam-prefix=/usr/local/mxscaleb/armv5b-linux \
+--with-ssl-prefix=/usr/local/mxscaleb/armv5b-linux \
+LDFLAGS=-L/usr/local/mxscaleb/lib
+
+Poni¿sza uwaga mo¿e nie dotyczyæ wersji softu dla DA-660:
+Przed sam± kompilacj± musimy jeszcze podmieniæ wersjê pliku FlexLexer.h - nowsz± wersjê
+z katalogu /usr/include trzeba skopiowaæ do katalogu /usr/local/mxbase/armv5b-linux/include.
+Podobnie w pliku /usr/local/mxscaleb/include/c++/3.3.2/armv5b-linux/bits/atomicity.h zamieniamy liniê
+41 z:
+  extern __gthread_mutex_t _Atomic_add_mutex=__GTHREAD_MUTEX_INIT;
+na:
+  extern __gthread_mutex_t _Atomic_add_mutex;
+
+Kompilujemy:
+
+# env PATH=/usr/local/mxscaleb/bin:$PATH make
+
+Instalujemy - proponujê wcze¶niej wyczy¶ciæ katalog /opt/szarp.
+# env PATH=/usr/local/mxscaleb/bin/$PATH make install-strip
+
+Otrzymujemy katalog /opt/szarp - pliki z niego mo¿emy skopiowaæ na UC.
+
+5. Kompilacja RSYNC'a
+
+Do transmisji danych potrzebujemy rsync'a - ¶ci±gamy ¼ród³a z http://samba.anu.edu.au/ftp/rsync/,
+rozpakowujemy i kompilujemy:
+
+# env PATH=$PATH:/usr/local/mxscaleb/bin \
+./configure --host=xscale-linux --target=xscale-linux \
+--disable-ipv6 --disable-debug --disable-largefile \
+--disable-locale --with-included-popt LDFLAGS=-L/usr/local/mxscaleb/lib
+# env PATH=$PATH:/usr/local/mxscaleb/bin make
+
+Otrzymujemy binarkê rsync, któr± mo¿emy zestripowaæ programem xscale-linux-strip i skopiowaæ
+na UC, np. do /usr/local/bin. 
+Bêdziemy musieli tak¿e przegraæ biblioteki (proponujê do /usr/local/lib) i dodaæ je do 
+przeszukiwanej ¶cie¿ki - do pliku /etc/profile nale¿y dodaæ linie:
+PATH=$PATH:/usr/local/lib
+LD_LIBRARY_PATH=/usr/local/lib
+export LD_LIBRARY_PATH PATH
+
+
+

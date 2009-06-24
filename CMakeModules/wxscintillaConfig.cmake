@@ -1,0 +1,26 @@
+# - Try to find wxscintilla
+# Once done this will define
+#
+
+INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/SzarpDirs)
+
+IF(NOT SZARP_ROOT_DIR)
+     MESSAGE(FATAL_ERROR "SZARP_ROOT_DIR not defined!")
+ENDIF(NOT SZARP_ROOT_DIR)
+
+SET(WXSCINTILLA_FOUND True)
+SET(WXSCINTILLA_LIBRARIES "wxscintilla")
+SET(WXSCINTILLA_LIBRARY_DIRS "${SZARP_ROOT_DIR}/extern/wxscintilla/lib")
+SET(WXSCINTILLA_INCLUDE_DIRS "${SZARP_ROOT_DIR}/extern/wxscintilla/include")
+
+
+IF(WXSCINTILLA_FOUND)
+   IF(NOT wxscintilla_FIND_QUIETLY)
+     MESSAGE(STATUS "Found wxscintilla: ${WXSCINTILLA_INCLUDE_DIR}")
+   ENDIF(NOT wxscintilla_FIND_QUIETLY)
+ELSE(WXSCINTILLA_FOUND)
+   IF(wxscintilla_FIND_REQUIRED)
+     MESSAGE(FATAL_ERROR "Could not find wxscintilla")
+   ENDIF(wxscintilla_FIND_REQUIRED)
+ENDIF(WXSCINTILLA_FOUND)
+

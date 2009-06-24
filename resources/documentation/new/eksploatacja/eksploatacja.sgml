@@ -1,0 +1,721 @@
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V4.1//EN" [
+<!ENTITY szarp-info SYSTEM "../common/szarp-info.sgml">
+]>
+
+<!--
+	$Id: eksploatacja.sgml 6724 2009-05-18 08:37:03Z reksio $
+ -->
+
+<book lang="pl" id="eksploatacja">
+
+<bookinfo>
+
+&szarp-info;
+
+<title>System SZARP - instrukcja eksploatacji</title>
+
+<subtitle>SZARP v3.0</subtitle>
+<authorgroup>
+<author><firstname>Pawe³</firstname><surname>Pa³ucha</surname></author>
+<author><firstname>Krzysztof</firstname><surname>O³owski</surname></author>
+</authorgroup>
+<copyright>
+<year>2005-2008</year>
+<holder>Praterm S.A.</holder>
+</copyright>
+
+<abstract>
+
+<para>
+Instrukcja ta zawiera podstawowe informacje, przeznaczone dla u¿ytkowników
+systemu komputerowego SZARP w spó³kach ciep³owniczych grupy Praterm S.A.
+Powinny siê z ni± zapoznaæ osoby nadzoruj±ce prace u¿ytkowników systemu, w
+szczególno¶ci za¶ zg³aszaj±ce problemy dzia³owi informatycznemu w centrali
+firmy. Stosowanie siê do zaleceñ instrukcji powinno skutkowaæ zmniejszeniem
+ilo¶ci awarii, u³atwi tak¿e dzia³owi informatycznemu usuwanie ewentualnych
+usterek.
+</para>
+<para>
+Najnowsza wersja instrukcji dostêpna jest zawsze na stronach WWW, pod adresem
+<ulink url="http://www.szarp.com.pl/howto/eksploatacja/html/eksploatacja.html">
+http://www.szarp.com.pl/howto/eksploatacja/html/eksploatacja.html</ulink>. Z
+tej strony mo¿na te¿ pobraæ instrukcjê w formacie PDF, przygotowan± do druku.
+Informacje o wa¿niejszych zmianach bêd± tak¿e umieszczane w biuletynie
+informacyjnym Praterm News.
+</para>
+
+<para>
+Wersja: $Id: eksploatacja.sgml 6724 2009-05-18 08:37:03Z reksio $
+</para>
+<para>
+<trademark class="copyright">2005 Praterm S.A.</trademark>
+</para>
+</abstract>
+
+</bookinfo>
+
+<glossary>
+<title>Podstawowe pojêcia</title>
+<abstract>
+<para>
+Ten rozdzia³ opisuje podstawowe pojêcia zwi±zane z systemem SZARP, wyja¶nia
+nazwy programów i elementów sprzêtowych.
+</para>
+</abstract>
+
+<glossdiv id="glossary-szarp">
+<title>SZARP</title>
+
+<glossentry>
+<glossterm>SZARP</glossterm>
+<glossdef><para>
+Popularna nazwa ca³o¶ci systemu u¿ywanego do monitoringu danych na 
+ciep³owniach i wêz³ach cieplnych w firmie Praterm. SZARP jest niby-skrótem od
+nazwy <emphasis>System Zbierania ARchiwizacji i Prezentacji danych</emphasis>.
+</para></glossdef>
+</glossentry>
+
+<glossentry id="gloss-draw">
+<glossterm>Program przegl±daj±cy
+<foreignphrase>Szarp Draw</foreignphrase></glossterm>
+<glossdef><para>
+Program wy¶wietlaj±cy warto¶ci parametrów w postaci wykresów ze ¶rednimi
+10-minutowymi lub d³u¿szymi.
+</para></glossdef>
+</glossentry>
+
+<glossentry>
+<glossterm>Okno definiowalne</glossterm>
+<glossdef><para>
+Ustalony przez u¿ytkownika i zapisany zestaw najczê¶ciej ogl±danych 
+wykresów w Programie Przegl±daj±cym. 
+</para></glossdef>
+</glossentry>
+
+
+<glossentry id="gloss-raporter">
+<glossterm>Raporter</glossterm>
+<glossdef><para>
+Program wy¶wietlaj±cy aktualne warto¶ci parametrów technologicznych w postaci
+aktualizowanej co 10 sekund listy. Zwykle uruchomionych bêdzie kilka kopii
+programu, wy¶wietlaj±cych ró¿ne raporty (ró¿ny zestaw parametrów).
+</para></glossdef>
+</glossentry>
+
+
+<glossentry id="gloss-scc">
+<glossterm>Centrum Sterowania SZARP <foreignphrase>SCC</foreignphrase></glossterm>
+<glossdef><para>
+Program s³u¿±cy do uruchamiania innych programów systemu SZARP - g³ównie
+Programu Przegl±daj±cego i Raportera. Ma postaæ ikony loga systemu SZARP.
+</para></glossdef>
+</glossentry>
+
+
+<glossentry id="gloss-ekstraktor">
+<glossterm>Ekstraktor</glossterm>
+<glossdef><para>
+Program pozwalaj±cy na zapisanie warto¶ci parametrów w celu ich wczytania do
+arkusza kalkulacyjnego, np. Microsoft Excel czy OpenOffice Calc. Nie zawsze
+jest dostêpny.
+</para></glossdef>
+</glossentry>
+
+</glossdiv>
+
+<glossdiv id="glossary-hw">
+<title>Sprzêt</title>
+
+<glossentry>
+<glossterm>Serwer SZARP</glossterm>
+<glossdef><para>
+G³ówny komputer zbieraj±cy dane ze sterowników przemys³owych, zapisuj±cy je i
+wysy³aj±cy do serwera centralnego w Warszawie. Do serwera pod³±czona jest
+karta Moxa. Na ciep³owni jest tylko jeden serwer.
+</para></glossdef>
+</glossentry>
+
+<glossentry id="gloss-terminal">
+<glossterm>Terminal (linuksowy)</glossterm>
+<glossdef><para>
+Oddzielny komputer, przeznaczony do ogl±dania danych zbieranych przez jeden lub wiêcej Serwerów
+SZARP. Na wiêkszych ciep³owniach mo¿e byæ wiêcej ni¿ jeden terminal. Czasami,
+np. na wêz³ach cieplnych, jest tylko jeden komputer, pe³ni±cy jednocze¶nie
+rolê Serwera SZARP i Terminala.
+</para></glossdef>
+</glossentry>
+
+<glossentry>
+<glossterm>Terminal z Windows</glossterm>
+<glossdef><para>
+Komputer biurowy, z zainstalowanym oprogramowaniem pozwalaj±cym na pod³±czenie
+do serwera SZARP i ogl±danie danych.
+</para></glossdef>
+</glossentry>
+
+<glossentry>
+<glossterm>Moxa</glossterm>
+<glossdef><para>
+Karta wieloportowa, do której pod³±czone s± kable prowadz±ce od regulatorów.
+Po³±czona jest grubym kablem z Serwerem SZARP, ma postaæ kilku modu³ów z
+szarego plastiku - na pierwszym znajduj± siê dwa przyciski i wy¶wietlacz
+kontrolny, kolejne zawieraj± po 8 portów szeregowych do pod³±czania
+regulatorów. Na wêz³ach cieplnych nie jest u¿ywana - regulatory pod³±czane s±
+bezpo¶rednio do portów szeregowych w komputerze.
+</para></glossdef>
+</glossentry>
+
+<glossentry>
+<glossterm>Zasilacz awaryjny <foreignphrase>UPS</foreignphrase></glossterm>
+<glossdef><para>
+Urz±dzenie zawieraj±ce baterie, pozwalaj±ce na zasilanie komputera w przypadku
+chwilowego braku pr±du. Zabezpiecza tak¿e komputer przed wahaniami napiêcia i
+przepiêciami w sieci energetycznej.
+</para></glossdef>
+</glossentry>
+
+<glossentry>
+<glossterm>Sieæ Ethernet</glossterm>
+<glossdef><para>
+Najpopularniejszy obecnie rodzaj lokalnej sieci komputerowej. Sieæ prowadzona
+jest 8-¿y³owymi kablami, zakoñczonymi wtyczkami typu RJ-45 - podobne do
+wtyczek telefonicznych (RJ-11), ale wê¿sze. Kable ³±cz± karty sieciowe w
+komputerach z prze³±cznikiem sieciowym, spinaj±cym ca³± sieæ.
+</para></glossdef>
+</glossentry>
+
+<glossentry>
+<glossterm>Prze³±cznik sieciowy <foreignphrase>Switch</foreignphrase></glossterm>
+<glossdef><para>
+Element Sieci Ethernet - urz±dzenie pozwalaj±ce na po³±czenie ze sob± wielu
+komputerów. Ma postaæ pude³ka, zawieraj±cego zwykle 8 lub wiêcej portów RJ-45
+do pod³±czania komputerów lub kolejnych prze³±czników. Ka¿demu portowi
+przyporz±dkowana jest dioda - jej ¶wiecenie oznacza poprawne po³±czenie danego
+portu z komputerem, zwykle transmisja danych jest oznaczana miganiem diody.
+</para></glossdef>
+</glossentry>
+
+<glossentry>
+<glossterm>Sieæ bezprzewodowa <foreignphrase>WLAN</foreignphrase></glossterm>
+<glossdef><para>
+Odpowiednik Sieci Ethernet, ale wykorzystuj±cy ³±cze radiowe zamiast kabli.
+Wymaga specjalnych kart w komputerach a tak¿e tzw. punktu dostêpowego
+(<foreignphrase>Access Point</foreignphrase>), spe³niaj±cego rolê prze³±cznika
+sieciowego. Mo¿e mieæ wiêkszy zasiêg (do kilku kilometrów), umo¿liwiaj±c
+pod³±czenie i monitorowanie wêz³a cieplnego.
+</para></glossdef>
+</glossentry>
+
+<glossentry>
+<glossterm>Modem DSL/ADSL</glossterm>
+<glossdef><para>
+DSL i ADSL to nazwa technologii pozwalaj±cych na sta³e pod³±czenie do internetu
+za pomoc± linii telefonicznej. ADSL oferowany przez TP S.A. ma nazwê handlow±
+<emphasis>Neostrada</emphasis>. Miêdzy komputerem a sieci± telefoniczn± musi
+znajdowaæ siê specjalne urz±dzenie, czyli w³a¶nie modem. Wiêkszo¶æ modemów
+wyposa¿ona jest w diody sygnalizuj±ce stan pracy - w tym dioda podpisana jako
+<emphasis>ADSL</emphasis> (lub <emphasis>DSL</emphasis>), której ¶wiecenie
+sygnalizuje poprawne po³±czenie do internetu. Niektórym modemom zdarza siê
+zawieszanie - mo¿na wtedy zrestartowaæ modem przez od³±czenie go na kilka sekund
+od zasilania.
+</para></glossdef>
+</glossentry>
+
+</glossdiv>
+
+<glossdiv id="glossary-linux">
+<title>Linux</title>
+
+<glossentry>
+<glossterm>Linux</glossterm>
+<glossdef><para>
+System operacyjny, czyli podstawowe oprogramowanie do zarz±dzania komputerem,
+pod kontrol± którego dzia³a System SZARP. Inne systemy operacyjne to np. DOS
+czy Microsoft Windows. Pod Linuksem nie da siê bezpo¶rednio uruchomiæ
+programów przeznaczonych dla Windows - program musi byæ specjalnie napisany
+do dzia³ania pod Linuksem. Linux jest niewra¿liwy na wirusy, robaki i inne
+programy zagra¿aj±ce u¿ytkownikom Windows. Linux jest zupe³nie darmowy,
+ka¿dy mo¿e legalnie kopiowaæ go i u¿ywaæ bez ponoszenia ¿adnych op³at.
+</para></glossdef>
+</glossentry>
+
+<glossentry>
+<glossterm>Debian</glossterm>
+<glossdef><para>
+Jedna z odmian (tzw. dystrybucji) systemu Linux, u¿ywana na serwerach i
+terminalach systemu SZARP.
+</para></glossdef>
+</glossentry>
+
+<glossentry id="gloss-kde">
+<glossterm>KDE</glossterm>
+<glossdef><para>
+Jedno ze ¶rodowisk graficznych dostêpnych w Linuksie. Linux umo¿liwia
+stosowanie wielu ¶rodowisk graficznych. Serwery i terminale systemu SZARP
+wykorzystuj± w³a¶nie KDE.
+</para></glossdef>
+</glossentry>
+
+<glossentry id="gloss-menukde">
+<glossterm>Menu KDE</glossterm>
+<glossdef><para>
+Menu dostêpne domy¶lnie w lewym dolnym roku ekranu komputera z uruchomionym
+KDE. Oznaczone jest du¿± liter± <emphasis>K</emphasis> i pe³ni funkcjê podobn±
+jak menu <emphasis>Start</emphasis> w systemie Windows - pozwala na
+uruchamianie programów.
+</para></glossdef>
+</glossentry>
+
+<glossentry>
+<glossterm>Logowanie</glossterm>
+<glossdef><para>
+Po uruchomieniu komputera z Linuksem konieczne jest podanie nazwy u¿ytkownika
+(i ewentualnie has³a), który chce pracowaæ na komputerze - nazywa siê to
+w³a¶nie logowanie. Terminale systemu SZARP s± zwykle ustawione w taki sposób,
+¿e po w³±czeniu nastêpuje automatyczne zalogowanie domy¶lnego u¿ytkownika.
+Logowanie nie jest konieczne do pracy serwera systemu SZARP - bêdzie on
+zbiera³ dane tak¿e bez zalogowanego u¿ytkownika.
+</para></glossdef>
+</glossentry>
+
+<glossentry>
+<glossterm>U¿ytkownik</glossterm>
+<glossdef><para>
+Nazwa która podano przy logowaniu do systemu Linux. Ka¿dy u¿ytkownik ma w³asny
+zestaw ustawieñ, jego ustawienia nie wp³ywaj± na pracê innych u¿ytkowników.
+</para></glossdef>
+</glossentry>
+
+<glossentry>
+<glossterm>Wylogowanie</glossterm>
+<glossdef><para>
+Zakoñczenie pracy przez aktualnego u¿ytkownika - pozwala na zalogowanie siê
+jako inny u¿ytkownik (z inn± nazw±).
+</para></glossdef>
+</glossentry>
+
+</glossdiv>
+
+</glossary> <!-- glossary -->
+
+<chapter id="base">
+<title>Podstawy pracy z systemem</title>
+
+<section id="base-start">
+<title>Rozpoczêcie pracy z systemem</title>
+
+<para>
+Praca operatora odbywa siê na wydzielonym komputerze, zwanym terminalem 
+(<xref linkend="gloss-terminal">).
+Terminal skonfigurowany jest w ten sposób, ¿e po uruchomieniu automatycznie
+nastêpuje zalogowanie jako domy¶lny u¿ytkownik, nie wymagane jest podawanie
+¿adnych hase³.
+</para>
+<para>
+Po za³adowaniu systemu i uruchomieniu ¶rodowiska graficznego 
+<xref linkend="gloss-kde"> na ekranie widoczna jest animowana ikona z logo
+systemu SZARP. Po klikniêciu na niej lewym przyciskiem myszy ukazuje siê menu
+daj±ce dostêp do pogl±du danych - raportów bie¿±cych i danych historycznych
+(programu przegl±daj±cego).
+</para>
+<para>
+</para>
+
+</section> <!-- base-start -->
+
+<section id="base-software">
+<title>Dostêpne programy</title>
+<para>
+Najwa¿niejsze programy dostêpne dla u¿ytkownika to:
+<itemizedlist>
+
+<listitem><para>
+<xref linkend="gloss-scc"> - pozwala na uruchamianie innych programów SZARP.
+<mediaobject>
+<imageobject><imagedata fileref="pics/scc.png"></imageobject>
+</mediaobject>
+</para></listitem>
+
+<listitem><para>
+<xref linkend="gloss-draw"> - uruchamia siê go z menu programu 
+<xref linkend="gloss-scc">. Dane z lokalnej ciep³owni dostêpne s± pod pozycj±
+menu <emphasis>Program przegl±daj±cy</emphasis>, dane z innych obiektów
+opisane s± po prostu nazw± miasta lub ciep³owni.
+<mediaobject>
+<imageobject><imagedata fileref="pics/draw.png"></imageobject>
+</mediaobject>
+</para></listitem>
+
+<listitem><para>
+<xref linkend="gloss-raporter"> - uruchamia siê go z menu programu 
+<xref linkend="gloss-scc">. Raporty z poszczególnych regulatorów pogrupowane
+s± wed³ug urz±dzeñ (np. raporty z kot³a 1).
+<mediaobject>
+<imageobject><imagedata fileref="pics/raporter.png"></imageobject>
+</mediaobject>
+</para></listitem>
+
+<listitem><para>
+<xref linkend="gloss-ekstraktor"> - uruchamia siê go z menu programu 
+<xref linkend="gloss-scc">. Jest to program opcjonalny, nie zawsze musi byæ
+dostêpny.
+<mediaobject>
+<imageobject><imagedata fileref="pics/ekstraktor.png"></imageobject>
+</mediaobject>
+</para></listitem>
+
+</itemizedlist>
+</para>
+</section> <!-- base-software -->
+
+<section id="base-help">
+<title>Korzystanie z dokumentacji</title>
+<para>
+Wszystkie programy SZARP posiadaj± kompletn± dokumentacjê, opisuj±c± wszystkie
+funkcje programów. W programach <xref linkend="gloss-raporter"> i 
+<xref linkend="gloss-ekstraktor"> pomoc dostêpna jest z
+menu Pomoc. W programie <xref linkend="gloss-scc"> pomoc dostêpna jest z menu 
+otwieraj±cego siê po
+klikniêciu ¶rodkowym przyciskiem na ikonie programu (zamiast ¶rodkowego
+przycisku mo¿na te¿ jednocze¶nie klikn±æ prawym i lewym przyciskiem). W
+programie <xref linkend="gloss-draw"> pomoc dostêpna jest albo przez klikniêcie ikony z
+czerwonym znakiem zapytania w dolnej czê¶ci programu, albo przez klikniêcie
+prawym przyciskiem myszy na wybranym elemencie okna programu.
+</para>
+<para>
+Dodatkowo, dokumentacja dla wszystkich programów a tak¿e wiele innych
+informacji o SZARP'ie i Linuksie dostêpna jest zwykle jako ostatnia pozycja w
+menu programu <xref linkend="gloss-scc">.
+</para>
+</section> <!-- base-help -->
+
+</chapter> <!-- base -->
+
+<chapter id="rules">
+<title>Najwa¿niejsze zasady</title>
+
+<para>
+<orderedlist>
+
+<listitem><para>
+Wszystkie urz±dzenia, zarówno komputery (serwer, terminale), jak i wszelkie urz±dzenia
+automatyki przemys³owej (regulatory itp.) powinny byæ ca³y czas w³±czone,
+tak¿e poza sezonem, nawet je¶li np. dany kocio³ nie pracuje.
+</para></listitem>
+
+<listitem><para>
+Poza szczególnymi sytuacjami (np. awaria terminala), praca operatora powinna
+odbywaæ siê tylko na terminalu - nie nale¿y pracowaæ na serwerze. Monitor
+serwera mo¿e byæ po prostu wy³±czony. Do pracy serwera (zbierania danych) nie
+jest potrzebne logowanie siê jakiegokolwiek u¿ytkownika.
+</para></listitem>
+
+<listitem><para>
+Nie nale¿y resetowaæ terminali linuksowych ani, tym bardziej, serwera. System
+Linux nie ma tendencji do <quote>zamulania siê</quote>, co jest typowe dla
+komputerów z Windows - mo¿e pracowaæ bez resetu przez praktycznie dowolnie
+d³ugi czas, co oznacza tak¿e, ¿e zwykle reset nie rozwi±zuje ¿adnego problemu.
+Resetowanie komputera mo¿e siê odbywaæ na wyra¼ne polecenie
+pracowników dzia³u informatycznego Pratermu. Je¿eli zdarzy siê zawieszenie
+komputera, a ze wzglêdu np. na porê nie mo¿na zg³osiæ problemu, mo¿na
+jednokrotnie spróbowaæ zresetowaæ zawieszony komputer. Niezale¿nie od tego,
+czy operacja ta odnios³a po¿±dany skutek, prosimy o poinformowanie dzia³u
+informatycznego, ¿e taka sytuacja mia³a miejsce.
+</para></listitem>
+
+</orderedlist>
+</para>
+</chapter> <!-- rules -->
+
+<chapter id="maintance">
+<title>Czynno¶ci okresowe do wykonania</title>
+
+<para>
+Na ka¿dej z ciep³owni powinna byæ wyznaczona 1 osoba, odpowiedzialna za
+wykonywanie czynno¶ci okresowych przy komputerach. Dobrze, ¿eby by³a to osoba
+posiadaj±ca jakie¶ do¶wiadczenie w sk³adaniu czy przynajmniej pod³±czaniu
+sprzêtu komputerowego.
+</para>
+
+<para>
+<orderedlist>
+
+<listitem><para>
+Otoczenie komputera, sam± obudowê, monitor, mysz i klawiaturê nale¿y
+utrzymywaæ w czysto¶ci, wycieraj±c w razie potrzeby lekko wilgotn± szmatk±.
+Nie stosujemy ¿adnych ¶rodków chemicznych, alkoholu itp.
+</para></listitem>
+
+<listitem><para>
+<emphasis>1 raz w miesi±cu</emphasis> - czyszczenie filtrów w obudowach
+przemys³owych Advantech IPC 510/610. Filtr dostêpny jest po otwarciu klapki z
+przodu obudowy, po lewej stronie. W obudowach typu 610 umieszczony jest w
+plastikowym koszyczku, w obudowach typu 510 jest po prostu wsuniêty w otwór.
+Po wyjêciu filtr nale¿y wyp³ukaæ w bie¿±cej wodzie, wysuszyæ (np. na
+kaloryferze) i za³o¿yæ z powrotem. Nie nale¿y nadmiernie przed³u¿aæ pracy
+komputera bez filtra. Czyszczenie filtra nie wymaga wy³±czania komputera.
+</para>
+<para>
+Czêstotliwo¶æ czyszczenia filtra mo¿na zwiêkszyæ, je¶li stopieñ jego
+zabrudzenia wskazuje na tak± konieczno¶æ.
+</para></listitem>
+
+<listitem><para>
+<emphasis>Co 3 miesi±ce</emphasis> - odkurzanie wnêtrza komputerów z kurzu i
+py³u wêglowego. Przed czyszczeniem konieczne jest wy³±czenie komputera (opcja
+<quote>Wyloguj</quote> a potem <quote>Wy³±cz komputer</quote> w <xref linkend="gloss-menukde">) 
+i od³±czenie od zasilania. Je¶li
+czyszczenia nie da siê wykonaæ w miejscu, w którym stoi komputer, nale¿y
+od³±czyæ wszystkie kable (zapamiêtuj±c lub zapisuj±c sposób ich pod³±czenia!)
+i przenie¶æ komputer w odpowiednie miejsce. 
+</para>
+<para>
+Nale¿y otworzyæ obudowê komputera - w obudowach przemys³owych typu 610 trzeba
+w tym celu odkrêciæ cztery czarne wkrêty, znajduj±ce siê po dwa po obu
+stronach obudowy, na górze listwy. W obudowach typu 510 dwa du¿e wkrêty
+znajduj± siê z ty³u obudowy na górze. W obudowach typu biurowego nale¿y
+odkrêciæ wkrêty z ty³u obudowy, przytrzymuj±ce lew± (patrz±c od przodu
+komputera) ¶ciankê obudowy.
+</para>
+<para>
+Samo odkurzanie polega na przedmuchaniu wnêtrza komputera (tak¿e wentylatorów,
+zasilacza) za pomoc± sprê¿onego powietrza w aerozolu, dostêpnego w sklepach z
+akcesoriami komputerowymi. Celem jest usuniêcie kurzu i ewentualnie
+zalegaj±cego na p³ycie py³u wêglowego. Nie nale¿y stosowaæ odkurzaczy ani sprê¿arek -
+silny pr±d powietrza i mo¿liwe zanieczyszczenia mog± spowodowaæ uszkodzenie
+komputera. Ta¶my do dysków, napêdy, zasilacz i wnêtrze samej obudowy mo¿na
+przetrzeæ delikatnie wilgotn± szmatk±.
+</para>
+<para>
+Przy okazji odkurzania prosimy o wizualn± kontrolê stanu p³yty g³ównej
+komputera - czy nie ma widocznych uszkodzeñ. W szczególno¶ci nale¿y zwróciæ
+uwagê, czy kondensatory na p³ycie (zw³aszcza wokó³ procesora) nie s±
+spuchniête.
+</para>
+<para>
+Ze wzglêdu na konieczno¶æ wy³±czenia komputera prosimy o informacjê poczt±
+elektroniczn± na dzieñ czy dwa przed planowanym czyszczeniem komputerów na
+ciep³owni. Czyszczenie komputerów na wêz³ach cieplnych, ze wzglêdu na brak
+py³u wêglowego, mo¿e odbywaæ siê rzadziej - np. raz na pó³ roku.
+</para></listitem>
+
+</orderedlist>
+</para>
+</chapter> <!-- maintance -->
+
+<chapter id="problems">
+<title>Rozwi±zywanie problemów</title>
+
+<section id="problems-support">
+<title>Zg³aszanie problemów</title>
+
+<para>
+Problemy dotycz±ce funkcjonowania systemu SZARP nale¿y zg³aszaæ pracownikom
+dzia³u informatycznego firmy Praterm. Na stronie
+<ulink url="http://www.szarp.com.pl/?q=pl/wsparcie">http://www.szarp.com.pl/?q=pl/wsparcie
+</ulink> znajduje siê:
+<itemizedlist>
+<listitem><para>
+Spis informacji, o których podanie mo¿e byæ proszona osoba zg³aszaj±ca
+problem.
+</para></listitem>
+<listitem><para>
+Telefon stacjonarny do dzia³u informatycznego.
+</para></listitem>
+<listitem><para>
+Na bie¿±co umieszczane np. informacje o urlopach
+pracowników.
+</para></listitem>
+</itemizedlist>
+Przy zg³aszaniu mniej pilnych problemów prosimy o rozwa¿enie pos³u¿enia siê
+e-mailem zamiast telefonu - jest to dla nas czêsto du¿o wygodniejszy sposób.
+Chêtnie odpowiemy tak¿e e-mailem na pytania dotycz±ce systemu SZARP czy Linuksa.
+</para>
+
+</section> <!-- problems-support -->
+
+<section id="problems-faq">
+<title>Najczê¶ciej spotykane problemy</title>
+
+<section id="problems-faq-noscc">
+<title>Brak widocznego programu <xref linkend="gloss-scc"></title>
+
+<para>
+Je¿eli na ekranie nie ma widocznej ikony programu <xref linkend="gloss-scc">:
+<itemizedlist>
+<listitem><para>
+Sprawd¼ czy na pasku zadañ na dole ekranu jest wymieniony program
+<emphasis>SZARP</emphasis>. Je¶li nazwa programu na pasku zadañ jest 
+<quote>wyszarzona</quote>, oznacza to, ¿e program zosta³ zminimalizowany -
+kliknij na nazwê programu na pasku zadañ, aby go przywróciæ.
+</para></listitem>
+
+<listitem><para>
+Byæ mo¿e program jest dostêpny na innym pulpicie (<xref linkend="gloss-kde">
+pozwala na u¿ycie kilku pulpitów). Spróbuj siê prze³±czyæ na inny pulpit
+klikaj±c obrazek pulpitu z numerkiem, widoczny na lewo od paska zadañ na dole
+ekranu. Aby program SCC by³ widoczny na wszystkich pulpitach, kliknij nazwê
+programu na pasku zadañ prawym przyciskiem myszy i wybierz z menu <guimenu>Na
+pulpit</guimenu> -> <guimenu>Wszystkie</guimenu>.
+</para></listitem>
+
+<listitem><para>
+Je¶li nadal nie widaæ ikony programu, wyloguj siê i zaloguj ponownie (opcja
+<guimenu>Wyloguj</guimenu>, bez resetowania komputera) i zwróæ uwagê czy ikona
+SCC jest widoczna przy starcie KDE. Je¶li jest widoczna, ale potem
+<quote>ucieka</quote>, spróbuj podczas uruchamiania KDE przytrzymaæ ikonê na
+miejscu za pomoc± prawego przycisku myszy.
+</para></listitem>
+
+<listitem><para>
+Je¶li to nie pomaga, zg³o¶ problem do dzia³u informatycznego firmy Praterm.
+</para></listitem>
+
+</itemizedlist>
+</para>
+</section> <!-- problems-faq-scc -->
+
+<section id="problems-faq-movescc">
+<title>Jak przesun±æ ikonê programu SCC</title>
+
+<para>
+Po³o¿enie ikony programu <xref linkend="gloss-scc"> mo¿na zmieniæ przesuwaj±c
+j± za pomoc± prawego przycisku myszy.
+</para>
+</section> <!-- problems-faq-movescc -->
+
+<section id="problems-faq-fonts">
+<title>Czcionki na ekranie w programach SZARP s± za ma³e</title>
+
+<para>
+Wielko¶æ czcionek programów w systemie SZARP mo¿na zmieniæ, wywo³uj±c menu
+dostêpne po klikniêciu ¶rodkowym przyciskiem myszy na ikonie programu 
+<xref linkend="gloss-scc"> i wybieraj±c opcjê <guimenu>Czcionki
+SZARP</guimenu>. Zmiana bêdzie widoczna tylko w nowo uruchomionych programach,
+w szczególno¶ci, aby zmieni³ siê rozmiar czcionki w menu programu SCC, nale¿y
+siê wylogowaæ i zalogowaæ ponownie. Czcionka jest zmieniana tylko dla
+aktualnego u¿ytkownika - ka¿dy u¿ytkownik mo¿e wiêc mieæ inny rozmiar
+czcionki.
+</para>
+<para>
+Aby zmieniæ rozmiar czcionki w innych programach i elementach ¶rodowiska 
+<xref linkend="gloss-kde">, wybierz z <xref linkend="gloss-menukde"> 
+opcjê <guimenu>Centrum
+Sterowania</guimenu>, <guimenu>Wygl±d i zachowanie</guimenu>,
+<guimenu>Czcionki</guimenu>.
+</para>
+</section> <!-- problems-faq-fonts -->
+
+<section id="problems-faq-terminal">
+<title>Jak uruchomiæ konsolê (terminal)</title>
+
+<para>
+Do wykonania niektórych czynno¶ci konieczne jest wpisanie odpowiednich komend
+w tzw. terminalu lub inaczej konsoli. O wpisanie tych komend mo¿e np. poprosiæ
+pracownik dzia³u informatycznego Praterm w celu rozwi±zania jakiego¶ problemu.
+</para>
+<para>
+Konsola dostêpna jest w <xref linkend="gloss-menukde">, opcja
+<guimenu>System</guimenu> a nastêpnie <guimenu>Program terminala
+(konsola)</guimenu>.
+</para>
+<para>
+Po uruchomieniu konsoli widoczny jest tzw. znak zachêty, sk³adaj±cy siê miêdzy
+innymi z nazwy u¿ytkownika, nazwy komputera i aktualnego katalogu, np.:
+<programlisting>
+palacz@pasl-t1:~$ 
+</programlisting>
+Po znaku zachêty mo¿emy wpisywaæ komendy, koñczymy je zawsze naci¶niêciem
+Enter.
+</para>
+</section> <!-- problems-faq-terminal -->
+
+<section id="problems-faq-hostname">
+<title>Jak sprawdziæ nazwê komputera</title>
+
+<para>
+Nazwa komputera mo¿e byæ potrzebna np. je¶li zg³aszamy problem z terminalem
+linuksowym (<xref linkend="gloss-terminal">) na ciep³owni, na której jest
+wiêcej ni¿ jeden terminal. Mo¿na j± sprawdziæ na wiele sposobów, np.:
+<itemizedlist>
+<listitem><para>
+Nazwa komputera widoczna jest na ekranie logowania - mo¿emy siê wylogowaæ,
+powinni¶my wtedy zobaczyæ napis postaci: <emphasis>Witamy w SZARP 2.2 na
+swid-t4</emphasis> - nazwa komputera to w³a¶nie <emphasis>swid-t4</emphasis>.
+</para></listitem>
+<listitem><para>
+Mo¿na te¿ uruchomiæ konsolê (<xref linkend="problems-faq-terminal">) i wpisaæ
+komendê <command>hostname</command>.
+</para></listitem>
+</itemizedlist>
+</para>
+
+</section> <!-- problems-faq-hostname -->
+
+<section id="problems-faq-ifconfig">
+<title>Jak sprawdziæ adres IP komputera</title>
+
+<para>
+Adres IP sprawdzamy uruchamiaj±c konsolê 
+(<xref linkend="problems-faq-terminal">) i wydaj±c komendê
+<command>/sbin/ifconfig</command>.
+</para>
+</section> <!-- problems-faq-ifconfig -->
+
+<section id="problems-faq-version">
+<title>Jak sprawdziæ wersjê SZARP</title>
+
+<para>
+Wersjê aktualnie u¿ywanego oprogramowania mo¿emy sprawdziæ w kilku miejscach:
+<itemizedlist>
+<listitem><para>
+Centrum Sterowania Szarp - musimy klikn±æ ¶rodkowym przyciskiem myszki (lub lewym i prawym jednocze¶nie) i wybraæ z listy pozycjê <quote>O programie</quote>.
+</para></listitem>
+
+<listitem><para>
+Synchronizator plików (SSC) - musimy klikn±æ lewym lub prawym przyciskiem myszki i wybraæ z listy pozycjê <quote>O programie</quote>.
+</para></listitem>
+
+<listitem><para>
+Program Przegl±daj±cy - musimy wybraæ z menu <quote>Pomoc</quote> a nastêpnie <quote>O programie</quote>. Innym sposobem jest klikniêcie w ikonkê ze znakiem zapytania na pasku narzêdzi pod wykresami. 
+</para></listitem>
+
+
+</itemizedlist>
+
+</para>
+</section> <!-- problems-faq-version -->
+
+</section> <!-- problems-faq -->
+
+<section id="problems-ultravnc">
+<title>Pomoc zdalna na terminalach z Windows</title>
+<para>
+W wypadku problemów z terminalami windowsowymi, których samodzielne rozwi±zanie nie powiod³o siê,
+mo¿na skorzystaæ z aplikacji do pomocy zdalnej. Konieczne jest ustalenie z pracownikami dzia³u
+informatycznego terminu uruchomienia serwera pomocy. W ustalonym terminie nale¿y pobraæ i uruchomiæ
+plik <command>pomoc.exe</command> spod adresu: 
+<ulink url="http://www.szarp.com.pl/pub/pomoc.exe">http://www.szarp.com.pl/pub/pomoc.exe</ulink>.
+</para>
+<para>
+System Windows XP bêdzie ostrzega³, ¿e nie zna pochodzenia programu. Nale¿y wybraæ "Uruchom".
+</para>
+<para>
+Po uruchomieniu pojawi siê okno z informacjami i mo¿liwo¶ci± wyboru serwera pomocy,
+z którym ma ustanowiæ po³±czenie. Nale¿y odczekaæ kilka sekund, aby zosta³ wybrany
+domy¶lny serwer. Na pasku zadañ obok zegara pojawi siê ikona i dymek z komunikatem
+o stanie programu. Aby zakoñczyæ korzystanie z pomocy, nale¿y klikn±æ prawym przyciskiem
+na ikonie i wybraæ <guimenu>Close</guimenu>. Zakoñczenie pracy nast±pi równie¿, gdy
+serwer pomocy zostanie wy³±czony.
+</para>
+<para>
+W czasie gdy program jest uruchomiony, nie nale¿y korzystaæ z klawiatury i myszy,
+gdy¿ bêdzie to powodowa³o konflikt z akcjami wykonywanymi przez pracownika udzielaj±cego
+pomocy. Na ekranie bêdzie mo¿na obserwowaæ dzia³ania wykonywane przez serwisanta.
+</para>
+</section> <!-- problems-ultravnc -->
+
+</chapter> <!-- problems -->
+
+</book>
+

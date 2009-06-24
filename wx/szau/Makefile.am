@@ -1,0 +1,69 @@
+
+# Pawe³ Pa³ucha pawel@praterm.com.pl
+#
+# $Id: Makefile.am 5372 2008-03-26 13:15:02Z schylek $
+
+# No subdirectories
+SUBDIRS =
+
+# Additional files for deleting on 'make maintainer-clean'
+MAINTAINERCLEANFILES = Makefile.in
+
+# Compilations flags
+INCLUDES = @WX_CXXFLAGS@ @CURL_CFLAGS@ @SSL_CFLAGS@ @BOOST_CPPFLAGS@ \
+	-I@srcdir@/../../libSzarp/include \
+        -I@srcdir@/../../include \
+	-I@srcdir@/../common \
+	-DPREFIX=\"@prefix@\"
+
+LIBSZARP=../../libSzarp/libSzarp.a
+LIBSZARP2=../../libSzarp2/libSzarp2.a
+LIBWXCOMMON=../common/libwxcommon.a
+
+DISTRO=@distro@
+
+WIN_APP_NAME=SZAU
+
+szau_LOCALES = @srcdir@/szau.mo
+szau_LOCALES_SRC = pl/szau.po
+szau_LOCALES_TMP = pl/szau.pot
+
+CLEANFILES = $(szau_LOCALES)
+
+EXTRA_DIST = $(szau_LOCALES_SRC) $(szau_LOCALES)
+
+# Program to create
+
+bin_PROGRAMS = szau
+
+szau_SOURCES = \
+        @srcdir@/szauapp.cpp @srcdir@/szauapp.h \
+        @srcdir@/downloader.cpp @srcdir@/downloader.h \
+        @srcdir@/updater.cpp @srcdir@/updater.h \
+        @srcdir@/szautaskbaritem.cpp @srcdir@/szautaskbaritem.h 
+
+szau_DEPENDENCIES = $(LIBWXCOMMON) 
+szau_LDADD = $(LIBWXCOMMON) $(LIBSZARP) @WX_LIBS@ @CURL_LIBS@ @BOOST_LDFLAGS@ @BOOST_FILESYSTEM_LIB@ @BOOST_THREAD_LIB@ @SSL_LIBS@ $(LIBSZARP2) @XML_LIBS@
+# Rule to create mo files
+$(szau_LOCALES): $(szau_LOCALES_SRC)
+	@MSGFMT@ -o $@ $<
+
+all: szau$(EXEEXT) $(szau_LOCALES)
+
+
+# Install locales
+install-data-local: $(szau_LOCALES)
+	$(INSTALL) -d $(DESTDIR)@prefix@/resources/locales/pl_PL/LC_MESSAGES
+	$(INSTALL) $(szau_LOCALES) \
+                $(DESTDIR)@prefix@/resources/locales/pl_PL/LC_MESSAGES
+
+winsetup: ${WIN_APP_NAME}Setup.exe
+
+${WIN_APP_NAME}Setup.exe: szau$(EXEEXT) $(szau_LOCALES)
+	@srcdir@/../../script/nsis/winsetup.sh ${WIN_APP_NAME} szau$(EXEEXT) \
+		-d resources/locales/pl_PL/LC_MESSAGES \
+		$(szau_LOCALES) 
+        
+update-po:
+	@XGETTEXT@ -o $(szau_LOCALES_TMP) -L C++ --keyword=_ $(szau_SOURCES)
+	@MSGMERGE@ -U $(szau_LOCALES_SRC) $(szau_LOCALES_TMP)

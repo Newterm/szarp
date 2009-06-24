@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<map:sitemap xmlns:map="http://www.praterm.com.pl/ISL/sitemap">
+	
+<!--
+
+ SZARP 
+ Pawel Palucha <pawel@praterm.com.pl>
+ $Id: sitemap.xmap 2525 2005-08-07 00:25:55Z pawel $
+
+ This is a configuration file for xsltd HTTP server.
+ -->
+
+<!-- =========================== Components ================================ -->
+
+  <map:serializers default="html">
+    <map:serializer name="svgz" mime-type="image/svg+xml" compression="6"
+      function="xml"/>
+    <map:serializer name="svg" mime-type="image/svg+xml"
+      function="xml"/>
+    <map:serializer name="xml" mime-type="text/xml" 
+      function="xml"/>
+    <map:serializer name="html" mime-type="text/html; charset=UTF-8"
+      function="xml"/>
+    <map:serializer name="latin2" mime-type="text/html; charset=ISO-8859-2"
+      function="xml"/>
+  </map:serializers>
+	
+<!-- =========================== Pipelines ================================= -->
+
+  <map:pipelines>
+    <map:pipeline>
+      
+      <!-- default file -->
+      <map:match pattern="^$">
+        <map:redirect-to uri="params.xml"/>
+      </map:match>
+
+      <!-- config information -->
+      <map:match pattern="^params.xml$">
+        <map:read mime-type="text/xml"/>
+      </map:match>
+
+      <!-- raports:xml -->
+      <map:match pattern="xraports">
+         <map:generate uri="http://localhost:8083/params.xml"/>
+	 <map:transform src="stylesheets/raport_xml.xsl">
+	   <map:use-request-parameters/>
+	   <map:param name="uri" value="http://localhost:8083/probes/"/>
+	 </map:transform>
+	 <map:serialize type="xml"/>
+      </map:match>
+
+      <!-- big_raport:xml -->
+      <map:match pattern="xraport_all">
+         <map:generate uri="http://localhost:8083/params.xml"/>
+	 <map:transform src="stylesheets/raport_xml_all.xsl">
+	   <map:use-request-parameters/>
+	   <map:param name="uri" value="http://localhost:8083/probes/"/>
+	 </map:transform>
+	 <map:serialize type="xml"/>
+      </map:match>
+
+      <!-- raports:html -->
+      <map:match pattern="raports">
+         <map:generate uri="http://localhost:8083/params.xml"/>
+	 <map:transform src="stylesheets/raport_html.xsl">
+	   <map:use-request-parameters/>
+	   <map:param name="uri" value="http://localhost:8083/probes/"/>
+	 </map:transform>
+	 <map:serialize type="latin2"/>
+      </map:match>
+
+      <!-- session creation -->
+      <map:match pattern="custom/\([A-Z0-9]\+\)$" method="PUT">
+	 <map:save-data path="/var/xsltd/sessions/custom-raport-\1.xml" 
+	   	maxsize="10000"	limit="100"/>
+         <map:read mime-type="text/xml" 
+	 	src="/var/xsltd/sessions/custom-raport-\1.xml"/>
+      </map:match>
+
+      <!-- session access -->
+      <map:match pattern="custom/\([A-Z1-9]\+\)$">
+        <map:generate uri="/var/xsltd/sessions/custom-raport-\1.xml"/>
+	<map:transform src="stylesheets/list_raport.xsl">
+	  <map:param name="uri" value="http://localhost:8083/probes/"/>
+	   <map:use-request-parameters/> <!-- title -->
+	</map:transform>
+	<map:serialize type="xml"/>
+      </map:match>
+
+      <!-- param values -->
+      <map:match pattern="probes/\(.*\)">
+        <map:generate uri="http://localhost:8081/\1@value"/>
+	<map:serialize type="xml"/>
+      </map:match>
+  
+  </map:pipeline>
+ </map:pipelines>
+
+</map:sitemap>
+
+<!-- end of file -->

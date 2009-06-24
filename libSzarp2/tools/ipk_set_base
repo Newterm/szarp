@@ -1,0 +1,96 @@
+#!/bin/bash
+# SZARP: SCADA software 
+# 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+#  2003 Pawe³ Pa³ucha PRATERM S.A pawel@praterm.com.pl
+
+# $Id: ipk_set_base 4393 2007-09-13 16:37:10Z reksio $
+
+# Skrypt ustawia parametrom z atrybutem 'tobase' odpowiednie (kolejne) indeksy
+# w bazie.
+# Parametry:
+#	- nazwa pliku z konfiguracj±, je¶li parametr nie zostanie podany,
+#	bedzie czytany ze standardowego wej¶cia
+# Nowa konfiguracja jest wypisywana na standardowe wyj¶cie.
+#
+
+. `dirname $0`/ipk_config
+
+function Usage () {
+	echo -e "\
+Usage:\n\
+ ipk_set_base [ <config_file> ]\n\
+or\n\
+ ipk_set_base -h | --help\n\
+Replace 'tobase' attributes of IPK 'param' elements with correct 'base_ind'\n\
+attributes.\n\
+\n\
+	-h, --help	print help and exit\n\
+	<config_file>	configuration file, standard input is used if none\n\
+			is given\n\
+\n\
+Base indexes are set starting from next after greatest found in configuration\n\
+or from 0. Result is printed on standard output. Return code is 0 on success\n\
+and 1 on error."
+	exit 1
+}
+
+if [ "x$1" = "x-h" -o "x$1" = "x--help" ] ; then
+	Usage
+fi
+
+[ $# -gt 1 ] && Usage
+
+
+if [ $# -eq 0 ] ; then
+	INPUT="-"
+else
+	INPUT=$1
+fi
+
+TEMPLATES_DIR=$SZARP_DIR/resources/xslt
+
+TMP_1=/tmp/.ipk.tmp.1
+
+# Najpierw ustalamy najwiêkszy dotychczasowy indeks w bazie
+
+xmllint $XMLLINT_VALID_ARGS --noout "$INPUT" || {
+	echo "Document doesn't validate against IPK schema!"
+	exit 1
+}
+
+MAX_BASE_IND=`xsltproc $TEMPLATES_DIR/sort_base.xsl $INPUT \
+	| xsltproc $TEMPLATES_DIR/first_base.xsl - \
+	| tail -n 1`
+
+if [ "x$MAX_BASE_IND" = "x" ] ; then
+	MAX_BASE_IND=-1
+fi
+	
+# Tworzymy listê referencyjn± indeksów w bazie.
+
+xsltproc --stringparam start "$MAX_BASE_IND" $TEMPLATES_DIR/list_tobase.xsl \
+	"$INPUT" > $TMP_1
+
+# Nadajemy kolejne indeksy w bazie
+
+xsltproc --stringparam list "$TMP_1" $TEMPLATES_DIR/set_base.xsl \
+	"$INPUT" | xmllint --encode ISO-8859-2 - | xmllint - 
+	
+rm -f $TMP_1
+
+

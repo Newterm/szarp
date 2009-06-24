@@ -1,0 +1,417 @@
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook V3.1//EN"[
+<!ENTITY praterm-info SYSTEM "../common/szarp-info.sgml">
+]>
+
+<!--
+	$Id: scc.sgml 6724 2009-05-18 08:37:03Z reksio $
+ -->
+
+<article lang="pl" id="scc" class="techreport">
+
+<artheader>
+
+&praterm-info;
+
+<title>Centrum Sterowania SZARP</title>
+
+<subtitle>SZARP v2.1</subtitle>
+<authorgroup>
+<author><firstname>Pawe³</><surname>Pa³ucha</></author>
+<author><firstname>Darek</><surname>Marcinkiewicz</></author>
+</authorgroup>
+
+<abstract>
+
+<para>
+Centrum Sterowania SZARP (SZARP Control Center, SCC) jest niewielkim
+programem, który wy¶wietla menu pozwalaj±ce na uruchamianie innych programów
+wchodz±cych w sk³ad systemu SZARP.
+</para>
+<para>
+Tradycyjnie programy sk³adowe systemu SZARP by³y uruchamiane z menu menad¿era
+okien. Powodowa³o to problemy przy zmianie wersji systemu czy u¿ywanego
+menad¿era okien, zarówno ze wzglêdu na przyzwyczajenia u¿ytkowników, jak i
+problemy z konfiguracj±. Za¶ SCC wygl±da i zachowuje siê tak samo niezale¿nie
+od ¶rodowiska, w którym zosta³ uruchomiony, a poza tym jest bardzo ³atwy w
+konfiguracji.
+</para>
+<para>
+$Id: scc.sgml 6724 2009-05-18 08:37:03Z reksio $
+</para>
+
+</abstract>
+
+</artheader>
+
+<section id="using">
+<title>Korzystanie z programu</title>
+
+<para>
+Program ma postaæ ikony (opcjonalnie animowanej), która standardowo po
+uruchomieniu pojawia siê w lewym dolnym rogu ekranu. Obs³uga programu odbywa
+siê za pomoc± myszki i jest bardzo prosta:
+<itemizedlist>
+<listitem><para>
+Klikniêcie lewym przyciskiem myszy wy¶wietla menu, z dostêpnymi programami
+wchodz±cymi w sk³ad danej konfiguracji systemu SZARP, w szczególno¶ci dostêpne
+s± raporty oraz program przegl±daj±cy. Wybranie pozycji z menu i klikniêcie na
+niej dowolnym przyciskiem pozwala na uruchomienie wybranego programu.
+</para>
+<para>
+Ewentualne menu podrzêdne otwieraj± siê po najechaniu na nie wska¼nikiem
+myszy. Aby wybraæ pozycjê z menu podrzêdnego, nale¿y przesun±æ wska¼nik myszy na
+¿±dan± pozycjê tak, aby nie wybraæ innego menu podrzêdnego.
+</para></listitem>
+
+<listitem><para>
+Wci¶niêcie i przytrzymanie prawego przycisku myszy pozwala na przesuniêcie
+ikony programu w dowolne miejsce pulpitu.
+</para></listitem>
+
+<listitem><para>
+Klikniêcie ¶rodkowym przyciskiem (a w razie jego braku jednoczesne wci¶niêcie
+obu przycisków myszki) otwiera menu podrêczne programu. Dostêpne s± w nim
+nastêpuj±ce opcje:
+<itemizedlist>
+<listitem><para>
+<emphasis>Pomoc</emphasis> - wy¶wietla okno z tekstem pomocy dla programu. Po
+systemie pomocy mo¿na poruszaæ siê w sposób analogiczny jak w przegl±darce
+internetowej, wybieraj±c za pomoc± wska¼nika myszki odpowiednie odno¶niki.
+Na górze okna znajduj± siê przyciski, umo¿liwiaj±ce odpowiednio: zamkniêcie
+okna pomocy, cofniêcie siê i przej¶cie o jedn± pozycjê w przód w historii
+ogl±danych odno¶ników.
+</para></listitem>
+
+<listitem><para>
+<emphasis>O programie</emphasis> - wy¶wietla okno zawieraj±ce informacjê o
+programie i autorze. Okno mo¿na zamkn±æ klikaj±c przycisk
+<emphasis>OK</emphasis>. Do czasu zamkniêcia okna inne funkcje programu s±
+niedostêpne.
+</para></listitem>
+
+<listitem><para>
+<emphasis>Tunel pomocy technicznej</emphasis> - ta opcja pozwala na
+zdalne logowanie na komputer z uruchomionym SCC. Komunikacja odbywa siê przez
+tunel SSH.  Po wybraniu tej opcji pojawi siê okienko, z pro¶b± o potwierdzenie
+¿±dania utworzenia tunelu. W nastêpnym oknie mo¿na podaæ numer portu, na którym 
+zostanie otwarty koniec tunelu na zdalnym komputerze. Przycisk <emphasis>Po³±cz</emphasis>
+powoduje otwarcie tunelu. Przycisk <emphasis>Zamknij</emphasis> zamyka okno i ew.
+tunel, je¿eli jest on otwarty.
+</para></listitem>
+
+<listitem><para>
+<emphasis>Czcionki SZARP</emphasis> - wy¶wietla okienko pozwalaj±ce na wybór
+domy¶lnej wielko¶ci czcionki dla wszystkich programów SZARP. Akceptacja
+wybranej warto¶ci nastêpuje po klikniêciu przycisku
+<guibutton>Zastosuj</guibutton>. Zmiany w wielko¶ci czcionki bêd± widoczne
+tylko w nowo uruchamianych programach - np. zmiana wielko¶ci czcionki w menu
+SCC bêdzie widoczna dopiero po powtórnym zalogowaniu siê. Opcja aktywna jest
+tylko w wersji programu dla systemu Linux.
+<note><para>Efektem dzia³ania opcji jest utworzenie w katalogu domowym
+u¿ytkownika podkatalogu <filename>.szarp</filename>, w którym umieszczane s±
+pliki konfiguracyjne dla poszczególnych typów programów (Tcl/Tk, Motif,
+wx/gtk).</para></note>
+</para></listitem>
+
+<listitem><para>
+<emphasis>Wyj¶cie</emphasis> - koñczy dzia³anie programu.
+<emphasis>UWAGA!</emphasis> Zamkniêcie programu
+mo¿e spowodowaæ niemo¿no¶æ dostêpu do innych programów wchodz±cych w sk³ad
+systemu SZARP!
+</para></listitem>
+
+</itemizedlist>
+</para></listitem>
+
+</itemizedlist>
+</para>
+
+</section>
+
+<section id="config">
+<title>Konfiguracja programu</title>
+
+<para>
+<emphasis>Uwaga!</emphasis>
+Konfiguracja programu wymaga uprawnieñ administratora systemu i wiedzy na temat
+konfiguracji systemu SZARP!
+</para>
+
+<para>
+Program uruchamia siê komend±:
+<programlisting>
+/opt/szarp/bin/scc
+</programlisting>
+Powinien byæ uruchamiany przy starcie mened¿era okien. Mo¿na to osi±gn±æ b±d¼ w
+sposób specyficzny dla danego mened¿era okien (grupa Autostart itp.), 
+b±d¼ te¿ w sposób ogólny. W dystrybucjach RedHat i pochodnych
+w katalogu <filename>/etc/X11/xinit/xinitrc.d</filename> nale¿y stworzyæ
+pliku o nazwie np. <filename>scc</filename> i nastêpuj±cej zawarto¶ci:
+<programlisting>
+<![CDATA[
+#! /bin/sh
+
+if [ -x /opt/szarp/bin/scc ] ; then
+    export LANG=pl_PL
+    /opt/szarp/bin/scc -geometry +0-30 &
+fi
+]]>
+</programlisting>
+W dystrybucjach Debian plik ten nale¿y umie¶ciæ w katalogu 
+<filename>/etc/X11/Xsession.d</filename>.
+W obu przypadkach nale¿y nadaæ mu prawa do wykonywania siê, przez wywo³anie 
+komend, odpowiednio:
+<programlisting>
+chmod +x /etc/X11/xinit/xinitrc.d/scc
+</programlisting>
+lub
+<programlisting>
+chmod +x /etc/X11/Xsession.d/scc
+</programlisting>
+Wszystkie te dzia³ania s± domy¶lnie wykonywane przy instalacji SZARP'a.
+</para>
+<para>
+SCC pozwala na uruchomienie tylko jednej swojej kopii dla ka¿dego u¿ytkownika 
+(ma to znaczenie dla serwerów, do których ³±czy siê kilka X-terminali).
+</para>
+<para>
+Parametr geometry s³u¿y do ustalenia pozycji ikony programu na pulpicie. W
+powy¿szym przyk³adzie pozycja program znajdzie siê przy lewym brzegu ekranu, 30
+punktów powy¿ej dolnej krawêdzi ekranu. Dok³adny opis opcji mo¿na uzyskaæ
+uruchamiaj±c SCC z opcj± -h lub --help. Opis parametrów opcji -geometry mo¿na
+uzyskaæ wydaj±c komendê:
+<programlisting>
+# man X
+</programlisting>
+SCC ignoruje wielko¶æ okna aplikacji podan± w opcji -geometry.
+</para>
+<para>
+W KDE mo¿na programowi ustawiæ opcje tak, aby by³ obecny na wszystkich
+pulpitach i zawsze na wierzchu. Po ustawieniu opcji nale¿y wylogowaæ siê
+zapisuj±c ustawienia sesji - w ten sposób przy nastêpnych uruchomieniach ikona
+programu bêdzie zawsze widoczna.
+</para>
+
+<para>
+SCC korzysta z biblioteki libparnt, a wiêc czyta opcje z pliku
+<filename>/etc/szarp/szarp.cfg</filename>, przy czym jest mo¿liwo¶æ wp³ywania
+na te opcje z linii komend, za pomoc± opcji typu '-Dprefix=byto'.
+</para>
+
+<para>
+SCC wywo³any z opcj± <emphasis>-reload_menu</emphasis> powiadamia ju¿
+dzia³aj±c± instancjê aplikacji, by ponownie wczyta³a plik konfiguracyjny
+<filename>/etc/szarp/szarp.cfg</filename>. Spowoduje to zbudowanie od nowa
+g³ównego menu. Program SCC wywo³any z powy¿sz± opcj± po przekazaniu komunikatu koñczy
+dzia³anie.
+</para>
+
+
+<para>
+Sekcja w pliku <filename>/etc/szarp/szarp.cfg</filename> dotycz±ca programu
+nazywa siê <emphasis>scc</emphasis> i mo¿e zawieraæ nastêpuj±ce parametry:
+<itemizedlist>
+<listitem><para>
+<emphasis>animate</emphasis> - parametr okre¶la, czy ikona programu ma byæ
+animowana. Warto¶æ <emphasis>no</emphasis> (wielko¶æ liter nierozró¿niana) 
+oznacza brak animacji, ka¿da inna - w³±czenie animacji. Warto¶æ domy¶lna to
+<emphasis>yes</emphasis>.
+</para></listitem>
+
+<listitem><para>
+<emphasis>images_prefix</emphasis> i <emphasis>images_suffix</emphasis> -
+okre¶laj± po³o¿enie plików wykorzystywanych jako klatki animacji. £adowane s±
+pliki, których nazwy s± konstruowane przez wstawienie miêdzy oba ci±gi liczb od
+'01' do najwiêkszej znalezionej w katalogu. Domy¶lne warto¶ci dla parametrów to
+<filename>/opt/szarp/resources/wx/anim/praterm</filename> i
+<filename>.png</filename>, co oznacza, ¿e bêd± ³adowane pliki o nazwach
+<filename>/opt/szarp/resources/wx/anim/praterm01.png</filename> i kolejne.
+Je¿eli animacja jest wy³±czona, wy¶wietlana bêdzie pierwsza klatka.
+</para></listitem>
+
+<listitem><para>
+<emphasis>tunnel_endpoint</emphasis> - warto¶ci± tego parametru jest
+lista adresów, z którymi program bêdzie siê stara³ po³±czyæ tworz±c
+<emphasis>Tunel pomocy technicznej</emphasis>, adresy powinny byæ
+oddzielone znakiem <emphasis>,</emphasis>(przecinek).
+</para></listitem>
+
+<listitem><para>
+<emphasis>hide_aggregated</emphasis> - parametr okre¶la, czy w menu
+tworzonym przez dyrektywê <emphasis>DRAWS</emphasis> nie powinny pojawiæ
+siê sk³adowe konfiguracji agregowanych, je¿eli konfiguracje agregowane 
+s± w menu obecne. Dopuszczalne warto¶ci parametru to <emphasis>yes</emphasis>
+i <emphasis>no</emphasis>. Domy¶lnie <emphasis>yes</emphasis>.
+</para></listitem>
+
+<listitem><para>
+<emphasis>update_command</emphasis> - ¶cie¿ka do komendy s³u¿±cej 
+do aktualizacji danych, je¿eli plik istnieje, w menu programu SCC 
+pojawi siê opcja "Aktualizuj dane", po wybraniu której uruchomiona
+zostanie podana komenda.
+</para></listitem>
+
+<listitem><para>
+<emphasis>su_command</emphasis> - je¿eli program SCC nie dzia³a z UID
+0, przed uruchomieniem programu podanego w opcji 
+<emphasis>update_command</emphasis> zostanie uruchomiony program,
+którego ¶cie¿kê zawiera parametr <emphasis>su_command</emphasis>,
+w celu zdobycia uprawnieñ super-u¿ytkownika.
+</para></listitem>
+
+<listitem><para>
+<emphasis>use_raporter3</emphasis> - je¿eli warto¶æ tej opcji
+wynosi "yes", element <emphasis>CONFIG</emphasis>, zamiast listy
+raportów zbudowanych na podstawie aktualnej konfiguracji, stworzy
+jedn± pozycjê menu, pozwalaj±c± uruchomiæ u¿ytkownikowi program
+raporter3. Domy¶lna warto¶æ tego parametru dla systemu Linux wynosi
+"no", dla Windows "yes" (i jest to jedyna dopuszczalna warto¶æ pod 
+tym systemem).
+</para></listitem>
+
+<listitem><para>
+<emphasis>use_draw3</emphasis> - ustawienie tego parametru na "yes"
+powoduje, ¿e element <emphasis>DRAW</emphasis> uruchamia program
+przegl±daj±cy w wersji 3. W przeciwnym wypadku bêdzie u¿ywana
+wersja 2 tego programu. Domy¶lna warto¶æ tego parametru dla systemu 
+Linux wynosi "no", pod Windows "yes" (jest to jedyna dopuszczalna 
+warto¶æ pod tym systemem).
+</para></listitem>
+
+<listitem><para>
+<emphasis>menu</emphasis> - parametr opisuje zawarto¶æ g³ównego menu programu.
+Opis ma postaæ listy warto¶ci oddzielonych przecinkami, bia³e znaki s±
+ignorowane. Ka¿da z warto¶ci mo¿e
+byæ postaci:
+<itemizedlist>
+<listitem><para>
+<emphasis>EXEC("tytu³", "komenda")</emphasis> - tytu³ oznacza opis pozycji w
+menu, po jej wybraniu wykonywana jest podana komenda.
+</para></listitem>
+
+<listitem><para>
+<emphasis>DRAW("nazwa", "prefix")</emphasis> - uruchomienie programu
+przegl±daj±cego z podanym prefiksem konfiguracji.
+</para></listitem>
+
+<listitem><para>
+<emphasis>DRAWS("wyra¿enie_regularne")</emphasis> - generuje w miejscu wyst±pienia
+listê elementów DRAW, dla konfiguracji, których prefixy pasuj± do zadanego wyra¿enia
+regularnego. Nazwa tworzonych elementów DRAW to tytu³ konfiguracji. Stworzone elementy
+DRAW s± pogrupowane. Grupowanie odbywa siê na podstawie tytu³ów konfiguracji, tj.
+konfiguracje, których tytu³y dziel± ze sob± s³owo nie pasuj±ce do wyra¿eñ regularnych
+zawartych w dyrektywie DONTGROUPBY, s± uznawane za nale¿±ce do tej samej grupy 
+i zostaj± umieszczone w osobnym podmenu. Je¿eli w menu istnieje ju¿ element DRAW
+odwo³uj±cy siê do danej konfiguracji, nie zostanie on przez DRAWS dodany.
+</para></listitem>
+
+<listitem><para>
+<emphasis>DONTGROUPBY("wyra¿enie_regularne",...)</emphasis> - specyfikuje
+listê wyra¿eñ regularnych u¿ywanych przy grupowaniu elementów DRAW generowanych 
+przez dyrektywê DRAWS. Podczas dopasowywania wyra¿eñ regularnych uwzglêdniana jest
+wielko¶æ liter.
+</para></listitem>
+
+<listitem><para>
+<emphasis>DOC</emphasis> - tworzy pozycjê menu o nazwie "Dokumentacja SZARP",
+uruchamiaj±c± program <application>wxhelp</application> wy¶wietlaj±cy
+dokumentacjê SZARP'a.
+</para></listitem>
+
+<listitem><para>
+<emphasis>ICON("ikona")</emphasis> - dodanie do poprzedniej pozycji menu 
+ikony (obrazka), ³adowanego z pliku o podanej
+¶cie¿ce. Ikona mo¿e byæ w dowolnym formacie obs³ugiwanym przez bibliotekê
+wxWindows, w praktyce powinien to byæ plik typu 'XPM', z ikon± o wielko¶ci 16
+na 16 punktów, z palet± 3 bajtow± (opisy kolorów bez przezroczysto¶ci).
+</para></listitem>
+
+<listitem><para>
+<emphasis>MENU("nazwa", ...)</emphasis> - wstawia menu podrzêdne o podanej
+nazwie, zawieraj±ce elementy z podanej po nazwie listy elementów.
+</para></listitem>
+
+<listitem><para>
+<emphasis>CONFIG("prefix")</emphasis> - jest równowa¿ny li¶cie elementów,
+zawieraj±cych wszystkie raporty oraz program przegl±daj±cy dla konfiguracji o
+danym prefiksie. Informacja o strukturze raportów jest wczytywana
+automatycznie pod warunkiem, ¿e konfiguracja jest zgodna z formatem IPK. Je¿eli
+w katalogu <filename>config</filename> konfiguracji istnieje plik
+<filename>params.xml</filename>, to zostan± odczytane informacje z niego.
+Je¿eli nie, to podjêta bêdzie próba odczytania konfiguracji z plików w formacie
+SZARP 2.1.
+</para></listitem>
+
+<listitem><para>
+<emphasis>SEPARATOR</emphasis> - pozioma linia oddzielaj±ca pozycje menu.
+</para></listitem>
+
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+Wielko¶æ liter w nazwach elementów nie ma znaczenia.
+</para>
+<para>
+Jak zaznaczono w powy¿szym opisie, wszystkie ci±gi tekstowe podawane jako
+parametry musz± byæ w podwójnych cudzys³owach. Znak '\' jest znakiem
+specjalnym, kolejny znak po nim jest bezwzglêdnie traktowany jak czê¶æ napisu,
+wobec tego mo¿na u¿yæ cudzys³owu przez '\"', za¶ sam backslash wstawimy przez
+'\\'.
+</para>
+<para>
+Dla u³atwienia wykrywania b³êdów program wypisuje na standardowe wyj¶cie
+wykonywane komendy, wobec tego mo¿na uruchomiæ go w terminalu i obserwowaæ,
+jakie komendy s± wywo³ywane.
+</para>
+<para>
+Domy¶ln± warto¶æ parametru <emphasis>menu</emphasis> jest nastêpuj±ca:
+<programlisting>
+menu = CONFIG("$prefix$"), SEPARATOR, DOC, \
+	ICON("/opt/szarp/resources/wx/icons/praterm16.xpm")
+</programlisting>
+Tak wiêc, o ile konfiguracja jest zgodna z IPK, nie podanie ¿adnej warto¶ci
+powoduje stworzenie menu z wszystkimi raportami i programem przegl±daj±cym dla
+konfiguracji (oraz dokumentacj± SZARP).
+</para>
+
+<para>
+Przyk³adowa konfiguracja mo¿e wygl±daæ tak:
+<programlisting>
+<![CDATA[
+:scc
+animate=yes
+menu= 	CONFIG("kato"), \
+	EXEC("Dyspozytor", "/opt/szarp/bin/dyspwx \
+		-Dprefix=kato /opt/szarp/kato/config/t.dsc"), \
+	ICON("/opt/szarp/resources/wx/icons/dysp16.xpm"), \
+	SEPARATOR, \
+	MENU("Inne ciep³ownie", \
+		DRAW("Bytów", "byto"), \
+		ICON("/opt/szarp/resources/wx/icons/draw16.xpm"), \
+		DRAW("¦widnik", "swid"), \
+		ICON("/opt/szarp/resources/wx/icons/draw16.xpm"), \
+		DRAWS(".*") \
+	), \
+	SEPARATOR, \
+	DOC, \
+	ICON("/opt/szarp/resources/wx/icons/praterm16.xpm"), \
+	DONTGROUPBY("Ciep³ownia", "Wêze³", ".*EC$")
+
+]]>
+</programlisting>
+</para>
+
+</section>
+<section id="scc-version">
+<title>Informacja o wersji Centrum Sterowania Szarp</title>
+<para>
+Aby poznaæ numer wersji Centrum Sterowania SZARP, a tym samym najczê¶ciej numer wersji zainstalowanego oprogramowania, nale¿y nacisn±æ ¶rodkowym przyciskiem myszy na Centrum Sterowania Szarp i wybraæ z listy <quote>O programie</quote>.
+</para>
+</section>
+
+</article>
+
+<!--
+ 
+-->
+

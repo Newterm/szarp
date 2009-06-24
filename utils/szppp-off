@@ -1,0 +1,52 @@
+#!/bin/sh
+# SZARP: SCADA software 
+# 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+# SZARP
+# Pawe³ Pa³ucha 21.02.2001
+#
+# To jest skrypt, który zamyka po³±czenie ppp.
+
+if [ "$1" = "" ]; then
+	DEVICE=ppp0
+else
+	DEVICE=$1
+fi
+
+
+if [ -r /var/run/$DEVICE.pid ]; then
+        kill -INT `cat /var/run/$DEVICE.pid`
+
+        if [ ! "$?" = "0" ]; then
+                rm -f /var/run/$DEVICE.pid
+                echo "ERROR: Removed stale pid file"
+                exit 1
+        fi
+
+        echo "PPP link to $DEVICE terminated."
+        exit 0
+fi
+
+echo "ERROR: PPP link is not active on $DEVICE"
+
+# Ale na wszelki wypadek zabijam pppd (sytuacja przydatna w przypadku 
+# gdy siê jeszcze nigdzie nie zd±¿yli¶my po³±czyæ wiêæ nie ma pliku
+# /var/run/$DEVICE.pid)
+
+killall /usr/sbin/pppd
+ 
+exit 1

@@ -1,0 +1,255 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<HTML>
+<HEAD>
+<META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+<TITLE>Nagios SZARP plugin menu</TITLE>
+
+<STYLE type="text/css">
+
+<!--
+
+	TABLE.NavBarTitle { font-family: verdana,arial,serif; border: thin solid black; padding: 1; background-color: #DEFFFF; }
+	TD.NavBarTitle { font-family: verdana,arial,serif; color: black; font-size: 10pt; font-weight: bold; text-decoration: none; }
+	.NavBarItem { font-family: verdana,arial,serif; color: black; font-size: 8pt; font-weight: bold; text-decoration: none; }
+	.NavBarSearchItem { font-family: verdana,arial,serif; color: black; font-size: 8pt; }
+	INPUT.NavBarSearchItem { font-family: verdana,arial,serif; background-color: white; color: black; font-size: 8pt; }
+	BODY.navbar { font-family: verdana,arial,serif; }
+
+-->
+	
+</STYLE>
+
+</HEAD>
+
+<BODY CLASS='navbar'>
+
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+
+if(parseInt(navigator.appVersion.substring(0,1))>=3){
+  doton = new Image(13,14);
+  doton.src = "images/orangedot.gif";
+  dotoff = new Image(13,14);
+  dotoff.src = "images/greendot.gif";
+  }
+
+function switchdot(name,on){
+  if(parseInt(navigator.appVersion.substring(0,1))>=3){
+    image = eval("" + (on == 1 ? "doton.src" : "dotoff.src"));
+    document[name].src=image;
+    }
+  }
+
+//-->
+</SCRIPT>
+
+<table width="150">
+  <tr>
+    <td>
+      <table width="100%" class="NavBarTitle" cellspacing="0">
+        <tr>
+  	  <td class="NavBarTitle">General</td>
+	</tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<table width=150 border="0" cellpadding=0 cellspacing=0>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="home-dot"></td>
+    <td nowrap width=134><a href="index.html" target="_top" onMouseOver="switchdot('home-dot',1)" onMouseOut="switchdot('home-dot',0)" class="NavBarItem">Home</a></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="szarphome-dot"></td>
+    <td nowrap width=134><a href="szarp.html" target="_top" onMouseOver="switchdot('szarphome-dot',1)" onMouseOut="switchdot('szarphome-dot',0)" class="NavBarItem">SZARP Home</a></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="docs-dot"></td>
+    <td nowrap><a href="docs/index.html" target="main" onMouseOver="switchdot('docs-dot',1)" onMouseOut="switchdot('docs-dot',0)" class="NavBarItem">Documentation</a></td>
+  </tr>
+  <tr>
+    <td colspan="2" height="10"></td>
+  </tr>
+</table>
+
+<table width="150">
+  <tr>
+    <td>
+      <table width="100%" class="NavBarTitle" cellspacing="0">
+        <tr>
+  	  <td class="NavBarTitle">Monitoring</td>
+	</tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<table width="150" border="0" cellpadding=0 cellspacing=0>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="tac-dot"></td>
+    <td nowrap width=134><a href="/cgi-bin/nagios3/tac.cgi" target="main" onMouseOver="switchdot('tac-dot',1)" onMouseOut="switchdot('tac-dot',0)" class="NavBarItem">Tactical Overview</a></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="status-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/config.cgi?type=hosts" target="main" onMouseOver="switchdot('status-dot',1)" onMouseOut="switchdot('status-dot',0)" class="NavBarItem">Servers list</a></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="current-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/status.cgi?servicegroup=szarp-current&style=detail" target="main" onMouseOver="switchdot('current-dot',1)" onMouseOut="switchdot('current-dot',0)" class="NavBarItem">Current data</a></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="devices-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/status.cgi?servicegroup=szarp-services&style=detail" target="main" onMouseOver="switchdot('devices-dot',1)" onMouseOut="switchdot('devices-dot',0)" class="NavBarItem">Devices</a></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="hoststatus-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/status.cgi?hostgroup=szarp-hosts&style=hostdetail" target="main" onMouseOver="switchdot('hoststatus-dot',1)" onMouseOut="switchdot('hoststatus-dot',0)" class="NavBarItem">VPN Status</a></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="hgstatus3-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/status.cgi?hostgroup=szarp-hosts&style=grid" target="main" onMouseOver="switchdot('hgstatus3-dot',1)" onMouseOut="switchdot('hgstatus3-dot',0)" class="NavBarItem">Overview</a></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="hgstatus2-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/status.cgi?hostgroup=all&style=summary" target="main" onMouseOver="switchdot('hgstatus2-dot',1)" onMouseOut="switchdot('hgstatus2-dot',0)" class="NavBarItem">Servers Summary</a></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="sgstatus2-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/status.cgi?servicegroup=all&style=summary" target="main" onMouseOver="switchdot('sgstatus2-dot',1)" onMouseOut="switchdot('sgstatus2-dot',0)" class="NavBarItem">Services Summary</a></td>
+  </tr>
+  <tr> 
+    <td colspan="2" height="10"></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="svcproblems-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/status.cgi?host=all&servicestatustypes=28" target="main" onMouseOver="switchdot('svcproblems-dot',1)" onMouseOut="switchdot('svcproblems-dot',0)" class="NavBarItem">Service Problems</a></td>
+  </tr>
+  <tr> 
+    <td width=13></td>
+    <td nowrap><img src="images/greendot.gif" width="13" height="14" name="svcproblemsu-dot" align="absmiddle"><a href="/cgi-bin/nagios3/status.cgi?host=all&type=detail&hoststatustypes=3&serviceprops=10&servicestatustypes=28" target="main" onMouseOver="switchdot('svcproblemsu-dot',1)" onMouseOut="switchdot('svcproblemsu-dot',0)" class="NavBarItem">Unhandled</a></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="hostproblems-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/status.cgi?hostgroup=all&style=hostdetail&hoststatustypes=12" target="main" onMouseOver="switchdot('hostproblems-dot',1)" onMouseOut="switchdot('hostproblems-dot',0)" class="NavBarItem">Host Problems</a></td>
+  </tr>
+  <tr> 
+    <td width=13></td>
+    <td nowrap><img src="images/greendot.gif" width="13" height="14" name="hostproblemsu-dot" align="absmiddle"><a href="/cgi-bin/nagios3/status.cgi?hostgroup=all&style=hostdetail&hoststatustypes=12&hostprops=42" target="main" onMouseOver="switchdot('hostproblemsu-dot',1)" onMouseOut="switchdot('hostproblemsu-dot',0)" class="NavBarItem">Unhandled</a></td>
+  </tr>
+  <tr> 
+    <td colspan="2" height="10"></td>
+  </tr>
+  <tr> 
+    <td width=13></td>
+    <td nowrap class="NavBarSearchItem">Show Host:</td>
+  </tr>
+  <tr> 
+    <td width=13></td>
+    <td nowrap>
+	<form method="get" action="/cgi-bin/nagios3/status.cgi" target="main">
+	<input type='hidden' name='navbarsearch' value='1'>
+	<input type='text' name='host' size='15' class="NavBarSearchItem">
+	</form>
+    </td>
+  </tr>
+  <tr> 
+    <td colspan="2" height="10"></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="comment-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/extinfo.cgi?&type=3" target="main" onMouseOver="switchdot('comment-dot',1)" onMouseOut="switchdot('comment-dot',0)" class="NavBarItem">Comments</a></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="downtime-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/extinfo.cgi?&type=6" target="main" onMouseOver="switchdot('downtime-dot',1)" onMouseOut="switchdot('downtime-dot',0)" class="NavBarItem">Downtime</a></td>
+  </tr>
+  <tr> 
+    <td colspan="2" height="10"></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="processinfo-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/extinfo.cgi?&type=0" target="main" onMouseOver="switchdot('processinfo-dot',1)" onMouseOut="switchdot('processinfo-dot',0)" class="NavBarItem">Process Info</a></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="performance-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/extinfo.cgi?&type=4" target="main" onMouseOver="switchdot('performance-dot',1)" onMouseOut="switchdot('performance-dot',0)" class="NavBarItem">Performance Info</a></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="queue-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/extinfo.cgi?&type=7" target="main" onMouseOver="switchdot('queue-dot',1)" onMouseOut="switchdot('queue-dot',0)" class="NavBarItem">Scheduling Queue</a></td>
+  </tr>
+  <tr>
+    <td colspan="2" height="10"></td>
+  </tr>
+</table>
+
+<table width="150">
+  <tr>
+    <td>
+      <table width="100%" class="NavBarTitle" cellspacing="0">
+        <tr>
+  	  <td class="NavBarTitle">Reporting</td>
+	</tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<table width="150" border="0" cellpadding=0 cellspacing=0>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="trends-dot"></td>
+    <td nowrap width=134><a href="/cgi-bin/nagios3/trends.cgi" target="main" onMouseOver="switchdot('trends-dot',1)" onMouseOut="switchdot('trends-dot',0)" class="NavBarItem">Trends</a></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="avail-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/avail.cgi" target="main" onMouseOver="switchdot('avail-dot',1)" onMouseOut="switchdot('avail-dot',0)" class="NavBarItem">Availability</a></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="histogram-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/histogram.cgi" target="main" onMouseOver="switchdot('histogram-dot',1)" onMouseOut="switchdot('histogram-dot',0)" class="NavBarItem">Alert Histogram</a></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="history-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/history.cgi?host=all" target="main" onMouseOver="switchdot('history-dot',1)" onMouseOut="switchdot('history-dot',0)" class="NavBarItem">Alert History</a></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="summary-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/summary.cgi" target="main" onMouseOver="switchdot('summary-dot',1)" onMouseOut="switchdot('summary-dot',0)" class="NavBarItem">Alert Summary</a></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="notifications-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/notifications.cgi?contact=all" target="main" onMouseOver="switchdot('notifications-dot',1)" onMouseOut="switchdot('notifications-dot',0)" class="NavBarItem">Notifications</a></td>
+  </tr>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="logfile-dot"></td>
+    <td nowrap><a href="/cgi-bin/nagios3/showlog.cgi" target="main" onMouseOver="switchdot('logfile-dot',1)" onMouseOut="switchdot('logfile-dot',0)" class="NavBarItem">Event Log</a></td>
+  </tr>
+  <tr>
+    <td colspan="2" height="10"></td>
+  </tr>
+</table>
+
+
+<table width="150">
+  <tr>
+    <td>
+      <table width="100%" class="NavBarTitle" cellspacing="0">
+        <tr>
+  	  <td class="NavBarTitle">Configuration</td>
+	</tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<table width="150" border="0" cellpadding=0 cellspacing=0>
+  <tr> 
+    <td width=13><img src="images/greendot.gif" width="13" height="14" name="config-dot"></td>
+    <td nowrap width=134><a href="/cgi-bin/nagios3/config.cgi" target="main" onMouseOver="switchdot('config-dot',1)" onMouseOut="switchdot('config-dot',0)" class="NavBarItem">View Config</a></td>
+  </tr>
+</table>
+
+</BODY>
+</HTML>

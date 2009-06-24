@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="ISO-8859-2"?>
+<!--
+  SZARP (C) 2006
+  
+  DTD for SZARP sync server configuration file.
+  
+  $Id: sync-users.rng 6599 2009-04-08 13:25:23Z pawel $
+
+  Przykład dokumentu:
+  <?xml version="1.0" encoding="ISO-8859-2"?>
+  <users xmlns="http://www.praterm.com.pl/SZARP/sync-users">
+    <user name="testuser" password="e16b2ab8d12314bf4efbd6203906ea6c" basedir="/opt/szarp" sync="(zmw.*|zamo|zamX|atex) hwkey="" expired="-1" server="prat" email="testuser@praterm.pl"/>
+  </users>
+-->
+
+
+
+<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+	<!--
+	  Głównym elementem dokumentu jest element 'users', zawiera on listę
+	  użytkowników.
+	-->
+	<define name="users">
+		<element name="users" ns="http://www.praterm.com.pl/SZARP/sync-users">
+			<zeroOrMore>
+				<ref name="user"/>
+			</zeroOrMore>
+			<zeroOrMore>
+				<ref name="server"/>
+			</zeroOrMore>
+
+		</element>
+	</define>
+
+	<!--
+	Element user opisuje pojedyńczego użytkownika, atrybuty:
+		name - nazwa użytkownika
+		password - hasło
+		basedir - katalog, z którego mają być wybierane katalogi do synchronizacji
+		sync - wyrażenie regularne definujące katalogi, które użytkownik synchronizuje
+		hwkey - klucz sprzetowy, jesli pusty jest akceptowany kazdy
+		expired - do kiedy wazne konto, format yyyymmdd
+		server - nazwa serwera (hostname -s)
+		email - adres email uzytkownika
+		comment - komentarz na temat użytkownika, opcjonalny
+	-->
+
+	<define name="user">
+		<element name="user" ns="http://www.praterm.com.pl/SZARP/sync-users">
+			<ref name="attlist.user"/>
+		</element>
+	</define>
+
+	<define name="attlist.user" combine="interleave">
+		<attribute name="name"/>
+		<attribute name="password"/>
+		<attribute name="basedir"/>
+		<attribute name="sync"/>
+		<attribute name="hwkey"/>
+		<attribute name="expired"/>
+		<attribute name="server"/>
+		<attribute name="email"/>
+		<optional>
+			<attribute name="comment"/>
+		</optional>
+	</define>
+	
+	<!--
+	Element server opisuje pojedynczy serwer sss. atrybuty(wszystkie sa wymagane):
+		name - nazwa konfiguracji serwera najczesciej hostname -s
+		ip - adres ip serwera
+	-->
+	
+	<define name="server">
+		<element name="server" ns="http://www.praterm.com.pl/SZARP/sync-users">
+			<ref name="attlist.server"/>
+		</element>
+	</define>
+
+	<define name="attlist.server" combine="interleave">
+		<attribute name="name"/>
+		<attribute name="ip"/>
+	</define>
+
+	<start>
+		<choice>
+			<ref name="users"/>
+		</choice>
+	</start>
+
+</grammar>

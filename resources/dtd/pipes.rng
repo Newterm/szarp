@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="ISO-8859-2"?>
+
+<!--
+  SZARP 
+  Paweł Pałucha <pawel@praterm.com.pl>
+  
+  RelaxNG schema for heating system description file.
+  
+  $Id: pipes.rng 2820 2005-11-03 11:27:53Z pawel $
+-->
+
+
+<grammar 
+	xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" 
+	xmlns:xml="http://www.w3.org/XML/1998/namespace" 
+	xmlns="http://relaxng.org/ns/structure/1.0"
+	datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+  <define name="system">
+    <element name="system" ns="http://www.praterm.com.pl/SZARP/pipes">
+      <ref name="system.attr"/>
+      <interleave>
+      <optional>
+        <ref name="comment"/>
+      </optional>
+      <optional>
+        <ref name="nodes"/>
+      </optional>
+      <optional>
+        <ref name="pipes"/>
+      </optional>
+      </interleave>
+    </element>
+  </define>
+
+  <define name="system.attr" combine="interleave">
+    <optional>
+      <attribute name="title">
+        <text/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="temperature">
+        <data type="integer"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="standard-length">
+        <data type="IDREF"/>
+      </attribute>
+    </optional>
+  </define>
+
+  <define name="comment">
+    <element name="comment" ns="http://www.praterm.com.pl/SZARP/pipes">
+      <text/>
+    </element>
+  </define>
+
+  <define name="nodes">
+    <element name="nodes" ns="http://www.praterm.com.pl/SZARP/pipes">
+      <zeroOrMore>
+        <ref name="node"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  
+  <define name="node">
+    <element name="node" ns="http://www.praterm.com.pl/SZARP/pipes">
+      <ref name="node.attr"/>
+      <optional>
+        <ref name="comment"/>
+      </optional>
+    </element>
+  </define>
+
+  <define name="node.attr" combine="interleave">
+    <attribute name="xml:id">
+      <data type="ID"/>
+    </attribute>
+    
+    <choice>
+    
+    	<group>
+	  <attribute name="type">
+	    <value>start</value>
+	  </attribute>
+	  <attribute name="press_disp">
+	    <data type="nonNegativeInteger"/>
+	  </attribute>
+          <attribute name="temperature">
+            <data type="integer"/>
+          </attribute>
+	</group>
+
+	<group>
+	  <attribute name="type">
+	    <value>joint</value>
+	  </attribute>
+	</group>
+
+	<group>
+	  <attribute name="type">
+	    <value>exchanger</value>
+	  </attribute>
+          <attribute name="power">
+            <data type="nonNegativeInteger"/>
+           </attribute>
+           <attribute name="pressure_dec">
+             <data type="nonNegativeInteger"/>
+           </attribute>
+	</group>
+	
+    </choice>
+    
+    <attribute name="x">
+      <data type="double"/>
+    </attribute>
+    <attribute name="y">
+      <data type="double"/>
+    </attribute>
+  </define>
+  
+  <define name="pipes">
+    <element name="pipes" ns="http://www.praterm.com.pl/SZARP/pipes">
+      <zeroOrMore>
+        <ref name="pipe"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  
+  <define name="pipe">
+    <element name="pipe" ns="http://www.praterm.com.pl/SZARP/pipes">
+      <ref name="pipe.attr"/>
+      <optional>
+        <ref name="comment"/>
+      </optional>
+    </element>
+  </define>
+  
+  <define name="pipe.attr" combine="interleave">
+    <attribute name="xml:id">
+      <data type="ID"/>
+    </attribute>
+    <attribute name="start">
+      <data type="IDREF"/>
+    </attribute>
+    <attribute name="end">
+      <data type="IDREF"/>
+    </attribute>
+    <attribute name="diameter">
+      <data type="positiveInteger"/>
+    </attribute>
+    <attribute name="isolation">
+      <choice>
+        <value>traditional</value>
+	<value>pre-isolated</value>
+      </choice>
+    </attribute>
+    <optional>
+      <attribute name="length">
+        <data type="positiveInteger"/>
+      </attribute>
+    </optional>
+  </define>
+  
+  <start>
+    <choice>
+      <ref name="system"/>
+    </choice>
+  </start>
+  
+</grammar>
+

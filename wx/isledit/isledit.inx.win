@@ -1,0 +1,14 @@
+<inkscape-extension>
+    <_name>ISL Editor</_name>
+    <id>pl.com.praterm.isledit</id>
+    <!-- Modify location in case szarp is installed somewhere else -->
+    <dependency type="executable" location="absolute">C:\Program Files\SZARP\bin\isledit.exe</dependency>
+	<param name="file" _gui-text="Path to SZARP configuration" type="string">/opt/szarp/.../config/params.xml</param>
+    <effect>
+        <object-type>all</object-type>
+    </effect>
+    <script>
+    <!-- Modify command in case szarp is installed somewhere else -->
+        <command reldir="extensions">C:\Program Files\SZARP\bin\isledit.exe</command>
+    </script>
+</inkscape-extension>

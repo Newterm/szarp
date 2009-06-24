@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="ISO-8859-2"?>
+<!--
+	(C) 2002 Paweł Pałucha
+	This is a DTD for paramd output.
+
+	$Id: params.dtd 2045 2004-12-29 16:18:17Z pawel $
+-->
+
+<!ELEMENT params 	(attribute|node+|param)>
+<!ATTLIST params
+	all		CDATA	#IMPLIED
+	inbase		CDATA	#IMPLIED>
+<!ELEMENT attribute	(#PCDATA)>
+<!ATTLIST attribute
+	name		CDATA #REQUIRED>
+<!ELEMENT node		(node+|param+)>
+<!ATTLIST node
+	name	CDATA	#REQUIRED>
+<!ELEMENT param		EMPTY>
+<!ATTLIST param
+	name		CDATA	#REQUIRED
+	full_name	CDATA	#REQUIRED
+	short_name	CDATA	#REQUIRED
+	value		CDATA	#REQUIRED
+	unit		CDATA	#REQUIRED
+	ipc_ind		CDATA	#REQUIRED
+	prec		CDATA	#REQUIRED>
+	
+	

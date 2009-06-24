@@ -1,0 +1,58 @@
+/* 
+  SZARP documentation CSS stylesheet.
+ */
+
+body {
+	text-align: justify;
+	font-family: Verdana, Arial, Sans-Serif;
+}
+
+table { 
+        background: white;
+        border-width: 2;
+        border-color: black;
+        }
+th { 
+     color: white;
+     background: gray;
+     }
+td { /* Table data */ 
+     background: white;
+     }
+
+div.NAVHEADER th {
+	background: #00731c;
+	padding: 0.2em;
+}
+
+td.DESCRIPTION { 
+                 background: white;
+                 text-align: center;
+                 }
+td.URL {
+         background: white;
+         text-align: left;
+         }
+
+pre.PROGRAMLISTING { 
+  background: #E8E8E8;
+  padding-left: 15px;
+  border-style: solid;
+  border-width: 0px;
+}
+
+div.WARNING table {
+	border: 0px;
+	border-collapse: collapse;
+}
+div.WARNING b {
+	color: red;
+}
+div.WARNING td {
+	background: #fdd;
+	padding: 0.5em;
+}
+div.NOTE {
+	background: #ded;
+}
+
