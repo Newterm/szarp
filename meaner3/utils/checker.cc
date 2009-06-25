@@ -1,6 +1,6 @@
 /* 
   SZARP: SCADA software 
-  
+  Copyright (C) 1994-2007  PRATERM S.A.
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 */
 /*
  * $Id$
-
+ * 2007 Praterm S.A.
  * Pawe³ Kolega <pkolega@praterm.com.pl>
  * 
  * Checker [--start-date <data>|-s <data> && --stop-date <data>|-t <data>]|[--period <data>|-p <data>] [--verbose|-v] [--param <data>|-r <data>] [--log|-l] [--apath|-l] [--nostdout|-n]\n");
@@ -1025,11 +1025,10 @@ int CluaRegister::GetDataFromParam(time_t StartDate, time_t StopDate, char *PNam
 	i = 0;
 	*PSize = 0;
 	ActualDate = StartDate;
-
+	
 	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"", new NullMutex());
 	Szbase::Init(SC::A2S(PREFIX), NULL);
 	buf = szb_create_buffer(Szbase::GetObject(), SC::A2S(dir), 1, ipk);
-
 	while(ActualDate < StopDate){
 		data = szb_get_data(buf, p, ActualDate);
 		PData[i] = (int)p->ToIPCValue(data); 
@@ -1037,8 +1036,10 @@ int CluaRegister::GetDataFromParam(time_t StartDate, time_t StopDate, char *PNam
 		i++;	
 	}
 	//
-	//
+	//	
 	szb_free_buffer(buf);
+	Szbase::Destroy();
+	IPKContainer::Destroy();
 	*PSize = i;	
 	free (dir);
 	free (path);

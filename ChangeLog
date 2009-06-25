@@ -1,5 +1,10 @@
 $Id$
 
+2009-06-23	Pawel Kolega <pawel@praterm.com.pl>
+	* meaner3/checker.cc: added 2 methods 
+	IPKContainer::Destroy(); Szbase::Destroy(); 
+	to release used database structures.
+
 2009-06-24	Pawel Palucha <pawel@praterm.com.pl>
 	* szarp/configure.in: major version incremented to 3.1.
 	* szarp/*: importing SZARP sources into sf.net repository, new
