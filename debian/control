@@ -3,7 +3,8 @@
 Source: szarp
 Priority: optional
 Maintainer: reksio@praterm.com.pl
-Build-Depends: debhelper (>= 5.0.38), autotools-dev, libwxgtk2.8-dev, libxml2-dev, bison, flex, imagemagick, jadetex, gettext, xsltproc, libxslt1-dev, libnewt-dev, libssl-dev, libpam-dev, libcurl3-dev, perl, librsync-dev, libgtk2.0-dev, libsqlite3-dev, libldap2-dev (>= 2.3.5), python-central (>= 0.5.6), python-setuptools (>= 0.6b3-1), libzip-dev, jade, python-pybabel, libicu-dev, libxt-dev, libc-ares-dev, libxmlrpc-epi-dev, liblua5.1-0-dev, libftgl-dev, libvmime-dev, libboost1.35-dev, libboost-filesystem1.35-dev, libboost-date-time1.35-dev, libboost-thread1.35-dev, libboost-program-options1.35-dev, libboost-regex1.35-dev, libgstreamer0.10-dev, libwxgtk2.8-dev, libstdc++6-4.3-dev, libxp-dev, libxpm-dev, libevent-dev, libgstreamer-plugins-base0.10-dev, docbook-dsssl, rsync
+Section: misc
+Build-Depends: debhelper (>= 5.0.38), autotools-dev, automake, autoconf, libwxgtk2.8-dev, libxml2-dev, bison, flex, imagemagick, jadetex, gettext, xsltproc, libxslt1-dev, libnewt-dev, libssl-dev, libpam-dev, libcurl3-dev, perl, librsync-dev, libgtk2.0-dev, libsqlite3-dev, libldap2-dev (>= 2.3.5), python-central (>= 0.5.6), python-setuptools (>= 0.6b3-1), libzip-dev, jade, python-pybabel, libicu-dev, libxt-dev, libc-ares-dev, libxmlrpc-epi-dev, liblua5.1-0-dev, libftgl-dev, libvmime-dev, libboost1.35-dev | libboost1.38-dev, libboost-filesystem1.35-dev | libboost-filesystem1.38-dev, libboost-date-time1.35-dev | libboost-date-time1.38-dev, libboost-thread1.35-dev | libboost-thread1.38-dev, libboost-program-options1.35-dev | libboost-program-options1.38-dev, libboost-regex1.35-dev | libboost-regex1.38-dev, libgstreamer0.10-dev, libwxgtk2.8-dev, libstdc++6-4.3-dev, libxp-dev, libxpm-dev, libevent-dev, libgstreamer-plugins-base0.10-dev, docbook-dsssl, rsync
 Standards-Version: 3.6.1
 
 Package: szarp-base

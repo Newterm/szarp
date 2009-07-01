@@ -1,6 +1,7 @@
 $Id$
 
 2009-06-24	Pawel Palucha <pawel@praterm.com.pl>
+	* debian/control: build-dependencies fixed.
 	* resources/parstart_TEMPLATE: fix - re-added
 	slash after install directory path.
 
