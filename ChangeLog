@@ -1,5 +1,9 @@
 $Id$
 
+2009-06-24	Pawel Palucha <pawel@praterm.com.pl>
+	* resources/parstart_TEMPLATE: fix - re-added
+	slash after install directory path.
+
 2009-06-23	Pawel Kolega <pawel@praterm.com.pl>
 	* meaner3/checker.cc: added 2 methods 
 	IPKContainer::Destroy(); Szbase::Destroy(); 

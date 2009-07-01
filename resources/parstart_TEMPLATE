@@ -20,8 +20,8 @@ else
 fi
 
 # Check for SZARP dir
-[ -d __INSTALL_DIR__ ] || {
-	log_failure_msg "No such directory: __INSTALL_DIR__"
+[ -d __INSTALL_DIR__/ ] || {
+	log_failure_msg "No such directory: __INSTALL_DIR__/"
 	exit 1
 }
 
@@ -36,21 +36,21 @@ stlog() {
 case "$1" in
     start)
 	if [ x$PARCOOK = x1 ]; then
-	    DAEMON=__INSTALL_DIR__bin/parcook 
+	    DAEMON=__INSTALL_DIR__/bin/parcook 
 	    szlog
 	    start_daemon $DAEMON
 	    log_end_msg $?
 	fi
 	
 	if [ x$MEANER3 = x1 ]; then
-	    DAEMON=__INSTALL_DIR__bin/meaner3
+	    DAEMON=__INSTALL_DIR__/bin/meaner3
 	    szlog
 	    start_daemon $DAEMON
 	    log_end_msg $?
 	fi
 	
 	if [ x$PARAMD = x1 ]; then
-	    DAEMON=__INSTALL_DIR__bin/paramd 
+	    DAEMON=__INSTALL_DIR__/bin/paramd 
 	    szlog
 	    start_daemon $DAEMON
 	    log_end_msg $?
@@ -58,47 +58,47 @@ case "$1" in
 
 	if [ x$XSLTD = x1 ]; then
 	    log_daemon_msg "Updating xsltd link"
-	    ln -sf "__INSTALL_DIR__$HOST" /etc/szarp/default
+	    ln -sf "__INSTALL_DIR__/$HOST" /etc/szarp/default
 	    log_end_msg $?
 	fi
 
 	if [ x$SENDER = x1 ]; then
-	    DAEMON=__INSTALL_DIR__bin/sender
+	    DAEMON=__INSTALL_DIR__/bin/sender
 	    szlog
 	    start_daemon $DAEMON
 	    log_end_msg $?
 	fi
 
 	if [ x$ANALIZA = x1 ]; then
-	    DAEMON=__INSTALL_DIR__bin/analiza
+	    DAEMON=__INSTALL_DIR__/bin/analiza
 	    szlog
 	    start_daemon $DAEMON
 	    log_end_msg $?
 	fi
 
 	if [ x$SSS = x1 ]; then
-	    DAEMON=__INSTALL_DIR__bin/sss
+	    DAEMON=__INSTALL_DIR__/bin/sss
 	    szlog
 	    start_daemon $DAEMON
 	    log_end_msg $?
 	fi
 
 	if [ x$PSETD = x1 ]; then
-	    DAEMON=__INSTALL_DIR__bin/psetd
+	    DAEMON=__INSTALL_DIR__/bin/psetd
 	    szlog
 	    start_daemon $DAEMON
 	    log_end_msg $?
 	fi
 
 	if [ x$STAMPD = x1 ]; then
-	    DAEMON=__INSTALL_DIR__bin/stampd
+	    DAEMON=__INSTALL_DIR__/bin/stampd
 	    szlog
 	    start_daemon $DAEMON
 	    log_end_msg $?
 	fi
 
 	if [ x$SSCONF = x1 ]; then
-	    DAEMON=__INSTALL_DIR__bin/ssconf.py
+	    DAEMON=__INSTALL_DIR__/bin/ssconf.py
 	    szlog
 	    start_daemon $DAEMON
 	    log_end_msg $?
@@ -107,28 +107,28 @@ case "$1" in
 
   stop)
 	if [ x$SSS = x1 ]; then
-	    DAEMON=__INSTALL_DIR__bin/sss
+	    DAEMON=__INSTALL_DIR__/bin/sss
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
 	    log_end_msg $?
 	fi
 
 	if [ x$PSETD = x1 ]; then
-	    DAEMON=__INSTALL_DIR__bin/psetd
+	    DAEMON=__INSTALL_DIR__/bin/psetd
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
 	    log_end_msg $?
 	fi
 
 	if [ x$STAMPD = x1 ]; then
-	    DAEMON=__INSTALL_DIR__bin/stampd
+	    DAEMON=__INSTALL_DIR__/bin/stampd
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
 	    log_end_msg $?
 	fi
 
 	if [ x$SSCONF = x1 ]; then
-	    DAEMON=__INSTALL_DIR__bin/ssconf.py
+	    DAEMON=__INSTALL_DIR__/bin/ssconf.py
 	    stlog
 	    # we cannot use --exec here because ssconf is run by python interpter
 	    PIDFILE=/var/run/ssconf.pid
@@ -138,21 +138,21 @@ case "$1" in
 	fi
 
 	if [ x$ANALIZA = x1 ]; then
-	    DAEMON=__INSTALL_DIR__bin/analiza
+	    DAEMON=__INSTALL_DIR__/bin/analiza
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
 	    log_end_msg $?
 	fi
 
 	if [ x$SENDER = x1 ]; then
-	    DAEMON=__INSTALL_DIR__bin/sender
+	    DAEMON=__INSTALL_DIR__/bin/sender
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
 	    log_end_msg $?
 	fi
 
 	if [ x$MEANER3 = x1 ]; then
-	    DAEMON=__INSTALL_DIR__bin/meaner3
+	    DAEMON=__INSTALL_DIR__/bin/meaner3
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
     	    # sometimes meaner3 needs more time
@@ -161,14 +161,14 @@ case "$1" in
 	fi
 
 	if [ x$PARAMD = x1 ]; then
-	    DAEMON=__INSTALL_DIR__bin/paramd 
+	    DAEMON=__INSTALL_DIR__/bin/paramd 
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
 	    log_end_msg $?
 	fi
 
 	if [ x$PARCOOK = x1 ]; then
-	    DAEMON=__INSTALL_DIR__bin/parcook 
+	    DAEMON=__INSTALL_DIR__/bin/parcook 
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
 	    log_end_msg $?
@@ -181,7 +181,7 @@ case "$1" in
 	}; done
 	
 	log_daemon_msg "Cleaning IPC resources"
-	__INSTALL_DIR__bin/ipcclean
+	__INSTALL_DIR__/bin/ipcclean
 	log_end_msg $?
 
 	;;
@@ -191,7 +191,7 @@ case "$1" in
 	;;
   status)
 	echo "SZARP programs run: "
-	ps axw | grep -v 'grep' | grep "__INSTALL_DIR__bin" \
+	ps axw | grep -v 'grep' | grep "__INSTALL_DIR__/bin" \
 		| cut -d ':' -f '2-' | cut -b '4-'
 	;;
   *)
