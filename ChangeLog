@@ -1,11 +1,14 @@
 $Id$
 
-2009-06-24	Pawel Palucha <pawel@praterm.com.pl>
+2009-07-02	Pawel Palucha <pawel@praterm.com.pl>
+	* debian/changelog: version incremented - testing build system.
+
+2009-07-01	Pawel Palucha <pawel@praterm.com.pl>
 	* debian/control: build-dependencies fixed.
 	* resources/parstart_TEMPLATE: fix - re-added
 	slash after install directory path.
 
-2009-06-23	Pawel Kolega <pawel@praterm.com.pl>
+2009-06-25	Pawel Kolega <pkolega@praterm.com.pl>
 	* meaner3/checker.cc: added 2 methods 
 	IPKContainer::Destroy(); Szbase::Destroy(); 
 	to release used database structures.
