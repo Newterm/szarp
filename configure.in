@@ -958,13 +958,11 @@ CXXFLAGS="$CXXFLAGS -Wall"
 #  bin_PROGRAMS = @OPTIONAL_PROGRAM@
 #  EXTRA_PROGRAMS = optional_program
 
-
 # Add subdirs
 SUBDIRS=""
 
-
 # Always included
-SUBDIRS="$SUBDIRS include libSzarp libSzarp2"
+SUBDIRS="$SUBDIRS libSzarp libSzarp2"
 
 # Included under linux
 if test x$with_mingw32 != xyes ; then
@@ -1088,8 +1086,6 @@ AC_SUBST(SUBDIRS)
 
 AC_OUTPUT( \
 	Makefile \
-	include/Makefile \
-	include/icon/Makefile \
 	isl/Makefile \
 	isl/server/Makefile \
 	isl/paramd/Makefile \

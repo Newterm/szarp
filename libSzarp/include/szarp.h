@@ -23,13 +23,8 @@
 
 #include "szdefines.h"
 
-#ifndef WITH_NO_X
-#include "libXs.h"
-#endif
-
 #include "date.h"
 #include "execute.h"
-#include "help.h"
 #include "libpar.h"
 #include "msgerror.h"
 #include "msgtools.h"

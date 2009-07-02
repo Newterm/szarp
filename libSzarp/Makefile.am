@@ -29,8 +29,6 @@ libSzarp_a_SOURCES = \
                       msgtools.cc \
                       daemon.cc \
                       execute.cc \
-                      help.cc \
-                      passwd.cc \
 		      mbrtu.cc \
 		      conversion.cc \
 		      ipctools.cc \
@@ -42,13 +40,10 @@ noinst_HEADERS = \
                  $(INCLUDE_DIR)/libparnt.parse.h \
                  $(INCLUDE_DIR)/liblog.h \
                  $(INCLUDE_DIR)/date.h \
-                 $(INCLUDE_DIR)/libXs.h \
-                 $(INCLUDE_DIR)/help.h \
                  $(INCLUDE_DIR)/msgerror.h \
                  $(INCLUDE_DIR)/msgtools.h \
                  $(INCLUDE_DIR)/daemon.h \
                  $(INCLUDE_DIR)/execute.h \
-                 $(INCLUDE_DIR)/passwd.h \
 		 $(INCLUDE_DIR)/mbrtu.h \
 		 $(INCLUDE_DIR)/modbus.h \
 		 $(INCLUDE_DIR)/ipctools.h \

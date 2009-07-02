@@ -1,228 +1,147 @@
 # 
-# Szablon pliku konfiguracyjnego szarp.cfg.
-# Zawiera domy¶lne warto¶ci opcji, które mog± byæ nadpisywane przez
-# w³a¶ciwy plik szarp.cfg. Szablon powinien byæ w³±czony do pliku
-# szarp.cfg za pomoc± dyrektywy $include, po ustaleniu prefiksu.
+# /etc/szarp/szarp.cfg template file
 #
- <pawel@praterm.com.pl>
+# This template should be included by szarp.cfg file using $include
+# directive, after setting value of $prefix$ variable.
+# Settings in szarp.cfg may overrride settings from template
 #
 # $Id: SZARP_IN_CFG_TEMPLATE 6789 2009-05-29 12:03:33Z pawel $
 
 #
-# __INSTALL_DIR__ - to sciezka instalacyjna - domyslnie /opt/szarp
-# __PREFIX__ - to prefix bazy danych - np. mosc
+# __INSTALL_DIR__ - installation prefix - default is /opt/szarp
 #
 
-# Zak³adamy, ¿e zmienna $prefix$ ma ustalon± warto¶æ.
+# $prefix$ variable must be set
 
 
-# SEKCJA GLOBALNA
-# ta sekcja jest przeszukiwana tak¿e je¶li program nie poda³ specyficznej sekcji do 
-# przeszukania lub nie znaleziono w niej ¿±danego parametru
+# GLOBAL SECTION
+# if parameter is not found in specified sections, it is searched in global
 :global
 
-# g³ówny katalog SZARP'a
+# main SZARP directory
 $szarp_root$:="__INSTALL_DIR__"
 szarp_data_root=$szarp_root$
 
-#nazwa prefixu konfiguracji
+# configuration name (aka 'prefix')
 config_prefix=$prefix$
 
-#komenda sluzaca do uzyskania praw superusera
+# graphical frontend for sudo
 $su_command$:="kdesu"
 su_command=$su_command$
 
-# katalog z programami
+# SZARP programs directory
 $szarp_bin$:="$szarp_root$/bin"
 
-# katalog z konfiguracj±
+# SZARP configuration directory
 $config_root$:="$szarp_root$/$prefix$/config"
 
-# katalog z baz± w formacie codebase
-$db_root$:="$szarp_root$/$prefix$/baza"
-
-# katalog z zasobami dla programów
+# SZARP resources directory
 $resources_root$:="$szarp_root$/resources"
 
-# ¶cie¿ka do pliku PTT,act
+# path to PTT.act file
+# TODO: use some other path, this one is obsolete
 PTT=$config_root$/PTT.act
 
-# NIEU¯YWANE - do wywalenia
-#PTTOLD=$config_root$/PTT.old
-
-# scie¿ka do pliku IPK
+# IPK configuration file path
 IPK=$config_root$/params.xml
 
-# plik wykorzystywany do tworzenia identyfikatorów IPC
+# path used for IPC identifiers
 parcook_path=$config_root$/PTT.act
 
-# scie¿ka do parcook.cfg
+# path to parcook.cfg file
+# TODO: obsolete file, some other path should be used
 parcook_cfg=$config_root$/parcook.cfg
 
-# katalog g³ówny konfiguracji
+# main configuration directory
 prefix=$db_root$/$prefix$
 
-# ¶cie¿ka do programu meaner u¿ywana do tworzenia identyfikatorów IPC
-meaner_path=$szarp_bin$/meaner
-
-# NIEU¯YWANE - do wywalenia
-#save_path=$szarp_bin$/save
-
-# katalog z plikami lineX.cfg, zmienna u¿ywana przez parcooka i demony
+# directory with lineX.cfg used for IPC identifiers
+# TODO: obsolete files, some other path should be used
 linex_cfg=$config_root$
 
-# napis formatuj±cy do tworzenia nazw plików bazy codebase
-$if $prefix$="sun"
-data_entries_format=%04x
-$else
-data_entries_format=%03x
-$end
-
-# g³ówny katalog z baz± w formacie szbase
+# main szbase directory
 $datadir$:="$szarp_root$/$prefix$/szbase"
 datadir=$datadir$
 
+# base format, only szarpbase currently
 base_format=szarpbase
 
-# poziom logowania
+# log level, default is 2
 $if $debug$<>""
 log_level=$debug$
 $else
 log_level=2
 $end
 
-# sposób wy¶wietlania pomocy, obecnie u¿ywane praktycznie tylko 'command'
-helpmethod=command
-
-# komenda u¿ywana do uruchomienia przegl±darki pomocy, ustawiana przez configure
-helpcommand=__HELPCOMMAND__ %s &
-
-
-:sender
-
-# ¶cie¿ka do pliku konfiguracyjnego programu sender
-cfgfile=$config_root$/sender.cfg
-
 
 :datapaf
 
-# ¶cie¿ka do pliku konfiguracyjnego demona linii DataPaf
+# path to DataPaf driver config file
 cfgfile=$config_root$/datapaf.cfg
 
 
 :fp2001
 
-# ¶cie¿ka do pliku konfiguracyjnego demona linii FP2001
+# path to FP2001 driver config file
 cfgfile=$config_root$/fp2001.cfg
-
-
-:netpard
-
-# numer portu na którym ma nas³uchiwaæ netpard
-port=2930
-
-
-:netpar
-
-# adres komputera, z którym ma siê ³±czyæ netpar
-$if $netpar_host$=""
-$netpar_host$:=$prefix$
-$end
-host=$netpar_host$
-
-# numer portu z którym ma siê ³±czyæ netpar
-port=2930
-
-# czas oczekiwania na odpowied¼ z portu (w sekundach)
-poll_delay=9
-
-# plik z logiem
-log=__INSTALL_DIR__/logs/netpar.log
-
-
-:meaner
-
-# ¶cie¿ka do pliku z logiem meanera
-$history$:="__INSTALL_DIR__/logs/meaner.log"
-history=$history$
 
 
 :execute
 
-# domy¶lne opcje dla programu rsync
+# default rsync options
 $rsync_options$:="-az --rsh=ssh --exclude='.*' --exclude='nohup.out' --delete --force"
 
-# dodatkowe opcje dla rsynca do wysy³ania baz szbase
+# additional rsync options for szbase database 
 $szbase_extra$:=" --include=`date +%Y%m.szb` --include=`date +%Y%m -d '1 month ago'`.szb --exclude='*.szb'"
 
-# plik z stdout komand wywo³ywanych komend
+# log file for executed commands' stdout
 execute_stdout=$szarp_root$/logs/execute_stdout.log
 
-# plik z stderr komand wywo³ywanych komend
+# log file for executed commands' stderr
 execute_stderr=$szarp_root$/logs/execute_stderr.log
 
 
 :meaner3
 
-# ¶cie¿ka do pliku z logiem programu meaner3
+# meaner3 log file
 log=__INSTALL_DIR__/logs/meaner3.log
 
 :szbwriter
-# mo¿liwo¶æ ustawienia dowolnego pliku z logami
+# szbwriter log file
 $if "$log$" <> ""
 log=$log$
 $else
 log=/opt/szarp/logs/szbwriter
 $end
 
+
 :paramd
 
-# lista serwerów do uruchomienia
+# list of servers to run
 servers=local_paramd remote_paramd paramd_for_raporter
 
 :local_paramd
 
-# numer portu na którym dzia³a serwer
 port=8081
-
-# lista adresów z których mo¿na siê ³±czyæ z serwerem
 allowed_ip=127.0.0.1
 
 :remote_paramd
 
-# numer portu
 port=8082
-
-# czy u¿ywaæ https?
 ssl=yes
-
-# czy autoryzacja w³±czona?
 auth=yes
-
-# fraza dla kluczy
 keypass=paramd
-
-# ¶cie¿ka do pliku opisuj±cego prawa dostêpu do parametrów
 access=$szarp_root$/resources/paramd_access.conf
-
-# ¶cie¿ka do pliku z kluczem SSL serwera paramd
 key=$szarp_root$/resources/server.pem
-
-# ¶cie¿ka do pliku z certyfikatem SSL serwera paramd
 cert=$szarp_root$/resources/server.ca
 
 :paramd_for_raporter
 
-# numer portu
 port=8083
-
-# lista adresów z których mo¿na siê ³±czyæ z serwerem
 allowed_ip=@(192.168.*.*|172.*.*.*|127.0.0.1)
 
 :scc
-# domy¶lnie:
-# konfiguracja dla obiektu oraz program przegl±daj±cy dla pozosta³ych baz 
-# zlokalizowanych w systemie
+# default menu configuration for SZARP command center:
 $dont_group_string$:="ciep³ownia\",\"Wêz([eê]³|³y)\",\"^(MP|Z|P)?EC$\",\"^ZC$\",\"Po³udnie\",\"komora\",\"Samsony?\",\"Praterm\",\"dane\",\"Kompaktu?\",\
 \"przeno¶ny\",\"ZOZ\",\"centrum\",\"zbiorcza\",\"security\",\"miejsk?\",\"centrala"
 menu= CONFIG("$prefix$"), \
@@ -232,98 +151,93 @@ menu= CONFIG("$prefix$"), \
 	DOC, ICON("$resources_root$/wx/icons/szarp16.xpm"), \
 	DONTGROUPBY("$dont_group_string$")
 
-# prefiks ¶cie¿ki plików z klatkami animacji, domy¶lnie 
-# '/opt/szarp/resources/wx/anim/praterm'
+# animation files prefix
 images_prefix=$resources_root$/wx/anim/praterm
 
-# suffix plików z klatkami animacji, domy¶lnie '.png'
+# animations file suffix, default is '.png'
 #images_suffix=.png
 
-# Ustala czy w menu tworzonym przez dyrektywê DRAWS maj± siê pojawiaæ konfiguracje
-# stanowi±ce sk³adowe konfiguracji zagregowanych. Dotyczy sytuacji, w których 
-# konfiguracje agreguj±ce znajduj± siê w menu. Domy¶lnie nie pojawiaj± siê.
+# should we hide configurations that are parts of 'aggregated' configurations 
+# already available in menu?
+# default is to exclude them from menu.
 #hide_aggregated=yes
 
-#wartosc tej opcji ma znaczenie gdy hide_aggregated jest ustawiona na "yes"
-#opcja ta wskazuje konfiguracje, ktore nie powinny byc traktowane jako konfiguracje 
-#zagregowane
+# prefixes that are not treaded as aggregated when 'hide_aggregated' is set to 'yes'
 #dont_aggregate=ptmX,zamX
 dont_aggregate=ptmX
 
-#komenda do update bazy/paczek, jezeli plik nie istnieje scc nie wyswietli 
-#tej opcji w menu
+# 'update command', if not exists, scc won't show this option in menu
 update_command=__INSTALL_DIR__/bin/update_script.sh
 
-#programy uzywane przy tworzeniu elementow DRAW i CONFIG
-$raporter3$:="yes"
-$draw3$:=""
-$ekstraktor3$:=""
+# which program to use for DRAW and CONFIG elements
 $if platform("")="windows"
-$draw3$:="yes"
 $ekstraktor3$:="yes"
 $else
-$draw3$:="yes"
 $ekstraktor3$:="no"
 $end
 
-#czy uzywac raportera3 w elementach CONFIG
-use_raporter3=$raporter3$
-#czy uzywac draw3 w elementach DRAW
-use_draw3=$draw3$
-#czy uzywac ekstraktor3 w elementach CONFIG
+# should we use raporter3 in CONFIG
+use_raporter3=yes
+# should we use DRAW3
+use_draw3=yes
+# should we use ekstraktor3 in CONFIG
 use_ekstraktor3=$ekstraktor3$
 
+
 :sss
-#sciezka do klucza prywatnego
+# path to private key
 key_file=/etc/szarp/sss_key.pem
-#sciezka do pliku z certyfikatem
+# path to certificate
 ca_file=/etc/szarp/sss_ca.pem
-#uztywkonik, z uprawnieniami ktorego program ma dzialac
+# user to run as
 user=nobody
-#port na ktorym nasluchuje serwer
+# server port
 port=23
-#baza z uzytkownikami
+# users database file
 userdbfile=/etc/szarp/sss_users.xml
 
+
 :psetd
-#sciezka do klucza prywatnego
+# path to private key
 key_file=/etc/szarp/sss_key.pem
-#sciezka do pliku z certyfikatem
+# path to certificate
 ca_file=/etc/szarp/sss_ca.pem
-#port na ktorym nasluchuje serwer
+# server port
 port=8899
-#adres serwera ldap
-ldap_server_address=chrno.praterm.com.pl
-#number portu na ktorym nasluchuje serwer ldap - polaczenie musi byc szyforwane
+# ldap server for user authentication
+# ldap_server_address=
+# LDAP port number (for SSL connections)
 ldap_server_port=636
-#DN rekordu pod ktorym znajduja sie informacje o uzytkownikach
-ldap_users_dn=ou=People,dc=praterm,dc=pl
-#DN rekordu pod ktorym znajduja sie informacje o grupach 
-ldap_group_dn=ou=Group,dc=praterm,dc=pl
+# DN of users records 
+# ldap_users_dn=ou=People,dc=praterm,dc=pl
+# DN of groups recors
+# ldap_group_dn=ou=Group,dc=praterm,dc=pl
+
 
 :koper
-#nazwa parametru, który wy¶wietlamy
+# name of parameter displayed
 param=Sieæ:Sterownik:Finansowa strata sumaryczna R
 
-#kiedy resetujemy date pierwsza, format a'la cron (minuta, godzina, dzien, miesiac)
+# when to reset date, crontab format (minute, hour, day, month)
 1st_date_reset=0 0 1 1,7
 
-#kiedy resetujemy date druga
+# when to reset short-time date
 2nd_date_reset=0 0 * *
 
-#plik z teksturka na tekst
+# font texture
 texfile=$resources_root$/wx/koper/terra.png
 
-#plik z teksturka na tlo
+# background texture
 backfile=$resources_root$/wx/koper/starfield.png
 
-#plik z teksturka na "strzalke"
+# arrow texture
 conefile=$resources_root$/wx/koper/redcube.png
 
-#plik z fontem
+# font file
 fontfile=/usr/share/fonts/truetype/msttcorefonts/Arial_Bold.ttf
 
-# NIE USUWAÆ PONI¯SZEJ LINII I NIE UMIESZCZAÆ PONI¯EJ ¯ADNYCH SEKCJI !
+
+# DO NOT REMOVE THIS LINE AND DO NOT PLACE ANY OTHER SECTIONS AFTER IT
 :global
 
 # vim:set ft=libpar:

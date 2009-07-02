@@ -1,6 +1,10 @@
 $Id$
 
 2009-07-02	Pawel Palucha <pawel@praterm.com.pl>
+	* include: removed obsolete directory.
+	* libSzarp/*: removed obsolete files.
+	* resources/SZARP_IN_CFG_TEMPLATE: header fix, translation to English,
+	removed unncessary sections and parameters.
 	* debian/changelog: version incremented - testing build system.
 
 2009-07-01	Pawel Palucha <pawel@praterm.com.pl>
