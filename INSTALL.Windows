@@ -418,7 +418,8 @@ Running configure:
    LIBS="-liconv -lexpat" \
    CPPFLAGS=-I/usr/local/i586-mingw32msvc/include \
    CFLAGS=-DCURL_STATICLIB \
-   CXXFLAGS=-DCURL_STATICLIB 
+   CXXFLAGS=-DCURL_STATICLIB \
+   PKG_CONFIG_PATH=/usr/local/i586-mingw32msvc/lib/pkgconfig
 
 Output should end with something like:
 
@@ -455,7 +456,7 @@ Configured with zip                yes
 Configured for .deb build:         no
 Source directory:             ..
 Install prefix:               /opt/szarp
-Subdirs to include:           libSzarp libSzarp2 extern wx utils www resources script
+Subdirs to include:           libSzarp libSzarp2 extern wx utils resources script
 
 Compilation:
 
