@@ -135,7 +135,7 @@ pafdmn_SOURCES = pafdmn.cc
 pafdmn_LDADD = $(LIBSZARP)
 
 pafdmnr_SOURCES = pafdmnr.cc
-pafdmnr_LDADD = $(LIBSZARP)
+pafdmnr_LDADD = $(LIBSZARP2) $(LIBSZARP) $(LDADD)
 
 polludmn_SOURCES = polludmn.cc
 polludmn_LDADD = $(LIBSZARP2) $(LIBSZARP) $(LDADD)

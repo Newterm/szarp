@@ -23,30 +23,32 @@
  * z Rawicza
  */
 
-#define _IPCTOOLS_H_
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
-#include<sys/types.h>
-#include<sys/stat.h>
-#include<sys/uio.h>
-#include<sys/time.h>
-#include<sys/ipc.h>
-#include<sys/shm.h>
-#include<sys/sem.h>
-#include<sys/msg.h>
-#include<fcntl.h>
-#include<time.h>
-#include<termio.h>
-#include<unistd.h>
-#include<signal.h>
-#include<string.h>
-#include<errno.h>
-#include<stdio.h>
-#include<stdlib.h>
-#include<libgen.h>
-#include<math.h>
-#include "libpar.h"
-#include "msgerror.h"
-#include "ipcdefines.h"
+#include <sys/shm.h>
+#include <sys/sem.h>
+#include <sys/msg.h>
+#include <errno.h>
+#include <assert.h>
+#include <libxml/tree.h>
+#include <termio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include "conversion.h"
+
+
+#define _IPCTOOLS_H_
+#define _HELP_H_
+#define _ICON_ICON_
+#include "szarp.h"
+#include "msgtypes.h"
+
+#include "ipchandler.h"
+#include "liblog.h"
 
 // #define WRITE_MESSAGE_SIZE 7
 #define WRITE_MESSAGE_SIZE 11
@@ -58,123 +60,83 @@
 // offset danych
 #define OF -1
 
-/*
- * 1 + 1 + 4 + 3 + 4 + 1 + 1
- */
-
-static int      LineDes;
-
-static int      LineNum;
-
-static int      SemDes;
-
-static int      ShmDes;
-
-static unsigned char Diagno = 0;
-
-static unsigned char Simple = 0;
-
-static int      VTlen;
-
-static short   *ValTab;
-
-static struct sembuf Sem[2];
-
-static char     parcookpat[81];
-
-static char     linedmnpat[81];
+#if 0
+void
+Usage(char *name)
+{
+    printf
+	("Pafal 2EC8 driver; can be used on both COM and Specialix ports\n");
+    printf("Usage:\n");
+    printf("      %s [s|d] <n> <port>\n", name);
+    printf("Where:\n");
+    printf("[s|d] - optional simple (s) or diagnostic (d) modes\n");
+    printf("<n> - line number (necessary to read line<n>.cfg file)\n");
+    printf("<port> - full port name, eg. /dev/term/01 or /dev/term/a12\n");
+    printf("Comments:\n");
+    printf("No parameters are taken from line<n>.cfg (base period = 1)\n");
+    printf
+	("Port parameters: 300 baud, 7E1; signals required: TxD, RxD, GND\n");
+    exit(1);
+}
+#endif
 
 #define SIZE_OF_BUF 8
-
-// unsigned char outbuf[WRITE_MESSAGE_SIZE] = { '?' , '/', '?', '!', '\r', 
-// '\n', '?'} ;
 unsigned char   outbuf[WRITE_MESSAGE_SIZE] =
     { '/', '?', '!', '\r', '\n', 6, '1', '0', 'A', '\r', '\n' };
 
 int             buf[5];
 
-void
-Initialize(unsigned char linenum)
+class DaemonClass{
+	
+	
+	public:
+		int Simple; /** m_signle flag */
+		int Diagno; /** m_diagno flag */
+		int LineDes;
+		int m_paramscount; /** m_paramscount flag */
+    		int vals[NUMBER_OF_VALS];
+
+	       	char *path_to_device;/** path to device e.g. /dev/ttyS0 */	
+		DaemonClass(int _m_single, int _m_diagno, \
+		int _m_paramscount, char *_path_to_device)\
+		{Simple = _m_single; Diagno = _m_diagno; \
+		if (Simple) Diagno=1; m_paramscount = _m_paramscount;\
+		path_to_device=(char *)malloc(sizeof(char));\
+		memcpy(&path_to_device,&_path_to_device,\
+		strlen(_path_to_device));assert(path_to_device!=NULL);\
+		LineDes=0;};
+		void ReadData();
+		int ReadOutput(int *buf, unsigned short *size);
+		void OpenLine();		
+		void CloseLine(){close(LineDes);};		
+		
+		~DaemonClass(){free (path_to_device);};
+	
+	private:
+		void PartitionMessage(unsigned char *inbuf, unsigned short lenght, int *buf, unsigned short *size);
+};
+
+void DaemonClass::OpenLine()
 {
-    libpar_init();
-    libpar_readpar("", "parcook_path", parcookpat, sizeof(parcookpat), 1);
-    libpar_readpar("", "linex_cfg", linedmnpat, sizeof(linedmnpat), 1);
-    libpar_done();
-
-    VTlen = NUMBER_OF_VALS;
-    if (Diagno)
-	printf("Cooking deamon for line %d - Pafal 2EC8 deamon\n",
-	       linenum);
-    if (Diagno)
-	printf
-	    ("Unit 1: no code/rapid/subid, parameters: in=2, no out, period=1\n");
-    if (Simple)
-	return;
-    if ((ShmDes =
-	 shmget(ftok(linedmnpat, linenum - 1), sizeof(short) * VTlen,
-		00600)) < 0)
-	ErrMessage(3, "linedmn");
-    if ((SemDes =
-	 semget(ftok(parcookpat, SEM_PARCOOK), SEM_LINE + 2 * linenum, 00600)) < 0)
-	ErrMessage(5, "parcook sem");
-}
-
-
-static int
-OpenLine(char *line)
-{
-    int             linedes;
     int 	    serial;
     struct termios   rsconf;
-   linedes = open(line, O_RDWR | O_NDELAY | O_NONBLOCK);
-
-    if (linedes < 0)
-	return (-1);
-
-    	tcgetattr(linedes, &rsconf);
-	rsconf.c_cflag = B300 | CS7 | CLOCAL | CREAD | CSTOPB | PARENB;
-	rsconf.c_iflag = 0;
-	rsconf.c_oflag = 0;
-	rsconf.c_lflag = 0;
-	rsconf.c_cc[VMIN] = 10;
-	rsconf.c_cc[VTIME] = 0;
-	tcsetattr(linedes, TCSANOW, &rsconf);
-	ioctl(linedes, TIOCMGET, &serial);
-	serial |= TIOCM_DTR; //DTR is LOW
-	serial |= TIOCM_RTS; //RTS is LOW
-	ioctl(linedes, TIOCMSET, &serial);
-    return (linedes);
+    LineDes = open(path_to_device, O_RDWR | O_NDELAY | O_NONBLOCK);
+    assert(LineDes >= 0);
+    tcgetattr(LineDes, &rsconf);
+    rsconf.c_cflag = B300 | CS7 | CLOCAL | CREAD | CSTOPB | PARENB;
+    rsconf.c_iflag = 0;
+    rsconf.c_oflag = 0;
+    rsconf.c_lflag = 0;
+    rsconf.c_cc[VMIN] = 10;
+    rsconf.c_cc[VTIME] = 0;
+    tcsetattr(LineDes, TCSANOW, &rsconf);
+    ioctl(LineDes, TIOCMGET, &serial);
+    serial |= TIOCM_DTR; //DTR is HIGH TO SUPPLY OPTO 
+    serial |= TIOCM_RTS; //RTS is HIGH TO SUPPLY OPTO
+    ioctl(LineDes, TIOCMSET, &serial);
 }
 
-/*
- * Ustawia zawartosc wiadomosci wysylanej do licznika
- */
-/*
- * buf - bufor z 
- */
-unsigned char
-Suma(unsigned char *tab, int count)
-{
-
-    int             i;
-    unsigned char   sum;
-    sum = 0;
-    for (i = 0; i < count; i++) {
-
-	sum += tab[i];
-    }
-    sum = sum % 256;
-    if (sum < 0x20)
-	sum += 0x20;
-    return sum;
-}
-
-/*
- * Umieszczenie w buforze buf danych z licznika energii zawartych w
- * komunikacie inbuf
- */
-void
-PartitionMessage(unsigned char *inbuf, unsigned short lenght, int *buf,
+void DaemonClass::PartitionMessage(unsigned char *inbuf, unsigned short lenght, int *buf,
 		 unsigned short *size)
 {
 
@@ -434,11 +396,8 @@ PartitionMessage(unsigned char *inbuf, unsigned short lenght, int *buf,
     *size = 8;
 }
 
- /*
-  * zwraca dlugosc wczytanej komendy 
-  */
-int
-ReadOutput(int sock, int *buf, unsigned short *size)
+
+int DaemonClass::ReadOutput(int *buf, unsigned short *size)
 {
     int             i,
                     k,
@@ -460,9 +419,9 @@ ReadOutput(int sock, int *buf, unsigned short *size)
     /*
      * wys³anie komunikatu do urz±dzenia 
      */
-    i = write(sock, outbuf, WRITE_MESSAGE_SIZE);
+    i = write(LineDes, outbuf, WRITE_MESSAGE_SIZE);
     if (Diagno)
-	printf("frame %x%x%x%x%x%x%x%x%x%x%x was sended \n", outbuf[0],
+	printf("frame %x%x%x%x%x%x%x%x%x%x%x was sent \n", outbuf[0],
 	       outbuf[1], outbuf[2], outbuf[3], outbuf[4], outbuf[5],
 	       outbuf[6], outbuf[7], outbuf[8], outbuf[9], outbuf[10]);
     if (i < 0)
@@ -474,15 +433,16 @@ ReadOutput(int sock, int *buf, unsigned short *size)
     /*
      * odczyt odpowiedzi urz±dzenia 
      */
-	usleep (10*1000);
+    //usleep (30000);
+    sleep(2);
     k = 0;
     i = 0;
     
     FD_ZERO(&rfds);
-    FD_SET(sock, &rfds);
+    FD_SET(LineDes, &rfds);
     tv.tv_sec = 30;
     tv.tv_usec = 0;
-    retval = select(sock+1, &rfds, NULL, NULL, &tv);
+    retval = select(LineDes+1, &rfds, NULL, NULL, &tv);
   
     if (retval == -1){
 	  perror("select()");
@@ -490,9 +450,8 @@ ReadOutput(int sock, int *buf, unsigned short *size)
     }
  	else
     if (retval) {
-//	    i = read(sock, inbuf, 20);	 
-	   for (i = 0; read(sock, &inbuf[i], 1) == 1; i++) {
-		   usleep(14*1000);
+	   for (i = 0; read(LineDes, &inbuf[i], 1) == 1; i++) {
+		   usleep(10000);
 	   }
 	   i--;
 
@@ -510,22 +469,20 @@ ReadOutput(int sock, int *buf, unsigned short *size)
 	    printf(" %c", inbuf[j]);
     if (Diagno)
 	printf(" was received \n");
-	usleep(100000);
 	sleep(2) ; 
 
 	
 	
-    i = write(sock, test, 6);
+    i = write(LineDes, test, 6);
     if (i < 0)
 	return -1;
     if (Diagno)
-	printf("frame %d%c%c%c%c%c was sended \n", test[0], test[1],
+	printf("frame %d%c%c%c%c%c was sent \n", test[0], test[1],
 	       test[2], test[3], test[4], test[5]);
     k = 0;
     i = 0;
-//  sleep(15);
-    sleep(6);
-    retval = select(sock+1, &rfds, NULL, NULL, &tv);
+    sleep(10);
+    retval = select(LineDes+1, &rfds, NULL, NULL, &tv);
   
     if (retval == -1){
 	  perror("select()");
@@ -533,11 +490,9 @@ ReadOutput(int sock, int *buf, unsigned short *size)
     }
  	else
     if (retval){
-	   for (i = 1; read(sock, &inbuf[i], 1) == 1; i++) {
-		   usleep(14*1000);
+	   for (i = 1; read(LineDes, &inbuf[i], 1) == 1; i++) {
+		   usleep(10000);
 	   }
-	
-//	    i = read(sock, inbuf, lenght);
 	if (Diagno){	    
 	    printf("Received data size :%d; Actual Data size: %d\n",i,lenght);
 	}
@@ -546,8 +501,6 @@ ReadOutput(int sock, int *buf, unsigned short *size)
 	      i = 0;
       }
    
-  //  i = read(sock, inbuf, lenght);
-
     for (j = 0; j <= i; j++)
 	if (Diagno)
 	    printf("%c", inbuf[j]);
@@ -559,17 +512,14 @@ ReadOutput(int sock, int *buf, unsigned short *size)
 	return -1;
     }
     PartitionMessage(inbuf, i, buf, size);
-    // if (errno) return -1;
     return i;
 }
 
 
-void
-ReadData(char *linedev)
+void DaemonClass::ReadData()
 {
-    int             vals[NUMBER_OF_VALS];
     unsigned short           size;
-    int             i,
+    int             
                     j,
                     res;
 
@@ -580,7 +530,7 @@ ReadData(char *linedev)
 
     while (j < 5 && res < 0) {
 
-	if (ReadOutput(LineDes, vals, &size) > 0)
+	if (this->ReadOutput(vals, &size) > 0)
 	{
 	    res = 1;
 	    if (Diagno)
@@ -602,94 +552,56 @@ ReadData(char *linedev)
 	sleep(2);
 	j++;
     }
-
-
-
-    /*
-     * UWAGA - usrednianie 
-     */
-    /*
-     * oryginalnie wszystko fajnie pod warunkiem, ze sterownik nie
-     * przesyla dla jakiegokolwiek parametru wartosci SZARP_NO_DATA - jesli tak, 
-     * to trzeba trzymac takze tablice SumCnt dla kazdego parametru 
-     */
-    if (Simple)
-	return;
-    Sem[0].sem_num = SEM_LINE + 2 * (LineNum - 1) + 1;
-    Sem[0].sem_op = 1;
-    Sem[1].sem_num = SEM_LINE + 2 * (LineNum - 1);
-    Sem[1].sem_op = 0;
-    Sem[0].sem_flg = Sem[1].sem_flg = SEM_UNDO;
-    semop(SemDes, Sem, 2);
-    for (i = 0; i < VTlen; i++)
-	ValTab[i] = (short) vals[i];
-    Sem[0].sem_num = SEM_LINE + 2 * (LineNum - 1) + 1;
-    Sem[0].sem_op = -1;
-    Sem[0].sem_flg = SEM_UNDO;
-    semop(SemDes, Sem, 1);
 }
 
-void
-Usage(char *name)
+int main(int argc, char *argv[])
 {
-    printf
-	("Pafal 2EC8 driver; can be used on both COM and Specialix ports\n");
-    printf("Usage:\n");
-    printf("      %s [s|d] <n> <port>\n", name);
-    printf("Where:\n");
-    printf("[s|d] - optional simple (s) or diagnostic (d) modes\n");
-    printf("<n> - line number (necessary to read line<n>.cfg file)\n");
-    printf("<port> - full port name, eg. /dev/term/01 or /dev/term/a12\n");
-    printf("Comments:\n");
-    printf("No parameters are taken from line<n>.cfg (base period = 1)\n");
-    printf
-	("Port parameters: 300 baud, 7E1; signals required: TxD, RxD, GND\n");
-    exit(1);
-}
+	
+	int i;
+	DaemonConfig *cfg = new DaemonConfig("pafdmnr");
+	IPCHandler   *ipc;
+	DaemonClass  *pafdmninfo;
 
+	cfg->SetUsageHeader("Pafal 2EC8 driver; can be used on both COM and Specialix ports\nPort parameters: 300 baud, 7E1; signals required: TxD, RxD, GND\n");
 
-int
-main(int argc, char *argv[])
-{
-    unsigned char   parind;
-    char            linedev[30];
+	if (cfg->Load(&argc, argv))
+		return 1;
+	pafdmninfo = new DaemonClass((int)cfg->GetSingle(), (int)cfg->GetDiagno(), (int)cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->GetParamsCount(), (char *) SC::S2A(cfg->GetDevice()->GetPath()).c_str());
 
-    libpar_read_cmdline(&argc, argv);
-    if (argc < 3)
-	Usage(argv[0]);
-    Diagno = (argv[1][0] == 'd');
-    Simple = (argv[1][0] == 's');
-    if (Simple)
-	Diagno = 1;
-    if (Diagno)
-	parind = 2;
-    else
-	parind = 1;
-    if (argc < (int) parind + 2)
-	Usage(argv[0]);
-    LineNum = atoi(argv[parind]);
-    strcpy(linedev, argv[parind + 1]);
-    Initialize(LineNum);
-    LineNum--;
-    if (!Simple) {
-	if ((ValTab =
-	     (short *) shmat(ShmDes, (void *) 0, 0)) == (void *) -1) {
-	    printf("Can not attach shared segment\n");
-	    exit(-1);
+	if (pafdmninfo->m_paramscount != NUMBER_OF_VALS){
+		sz_log(0, "amount of params must be %d",NUMBER_OF_VALS);
+		delete pafdmninfo;
+		return 1;
 	}
-    }
 
-    while (1) {
-    	if ((LineDes = OpenLine(linedev)) < 0) {
-		ErrMessage(2, linedev);
-		perror("");
-		exit(1);
+	if (cfg->GetSingle()) {
+		printf("\
+line number: %d\n\
+device: %ls\n\
+params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), pafdmninfo->m_paramscount);
+	}
+	
+	ipc = new IPCHandler(cfg);
+	if (!cfg->GetSingle()) {
+		if (ipc->Init())
+			return 1;
+	}
+
+	for (i=0;i<pafdmninfo->m_paramscount;i++){
+		ipc->m_read[i] = SZARP_NO_DATA;
+	}
+
+	while (1) {
+		pafdmninfo->OpenLine();
+		pafdmninfo->ReadData();
+		for (i=0;i<pafdmninfo->m_paramscount;i++)
+			ipc->m_read[i] = pafdmninfo->vals[i]; 
+		ipc->GoParcook();
+		sleep(5);
+        	pafdmninfo->CloseLine();	
     	}
-	ReadData(linedev);
-	sleep(5);
-        close(LineDes);	
-    }
 
-    return 0;
+	delete pafdmninfo;
+	return 0;
 }
 
