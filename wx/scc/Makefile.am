@@ -25,7 +25,7 @@ DISTRO=@distro@
 
 WIN_APP_NAME=SCC
 
-scc_LOCALES = @srcdir@/scc.mo
+scc_LOCALES = pl/scc.mo
 scc_LOCALES_SRC = pl/scc.po
 scc_LOCALES_TMP = pl/scc.pot
 
@@ -49,8 +49,10 @@ scc_SOURCES = \
 
 scc_DEPENDENCIES = $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2)
 scc_LDADD = $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) @WX_LIBS@ @XML_LIBS@ @LUA_LIBS@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_FILESYSTEM_LIB@
+
 # Rule to create mo files
-$(scc_LOCALES): $(scc_LOCALES_SRC)
+%.mo: %.po
+	mkdir -p `dirname $@`
 	@MSGFMT@ -o $@ $<
 
 all: scc$(EXEEXT) $(scc_LOCALES)

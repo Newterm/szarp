@@ -477,151 +477,6 @@ IMPLEMENT_APP(A)
 	AC_SUBST(WXGL_LIBS)
 ])
 
-
-#################################################################################################
-
-# MOTIF and X macros
-
-dnl AC_PATH_MOTIF([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND])
-dnl Checks for Motif headers. Adds '--with-motif-prefix' option. Sets 
-dnl MOTIF_CFLAGS and MOTIF_LIBS.
-AC_DEFUN([AC_PATH_MOTIF], [
-       AC_ARG_WITH([motif-prefix],
-                AC_HELP_STRING([--with-motif-prefix=PREFIX], 
-                        [Prefix where Motif is installed (optional)]),
-                motif_config_prefix="$withval", )
-        no_motif=""
-
-        if test x$motif_config_prefix != x ; then
-                motif_config_args_l="-L $motif_config_prefix/lib"
-                motif_config_args_i="-I$motif_config_prefix/include"
-        else
-                motif_config_args_l=""
-                motif_config_args_i=""
-        fi
-
-        AC_CHECK_LIB(Xm, XmStringFree, ac_cv_lib_motif=yes, ac_cv_lib_motif=no, 
-                [$motif_config_args_l $X_LIBS])
-        
-        if test "x$ac_cv_lib_motif" != "xyes" ; then
-                ifelse([$2], , :, [$2])
-        else
-                MOTIF_LIBS="$motif_config_args_l $MOTIF_LIBS -lXm"
-                dnl This is for systems, that have link from /usr/include/X11
-                dnl to actual X11 headers location, but don't have similar link
-                dnl for Motif headers...
-                if test -z "$motif_config_args_i"; then
-                        if test -z $x_includes ; then
-                                ac_x_includes=/usr/include
-                        else
-                                ac_x_includes=$x_includes;
-                        fi
-                        if test -d "$ac_x_includes/X11/../Xm/.." ; then
-                                motif_config_args_i=`cd -P $ac_x_includes/X11/../Xm/..; pwd`
-                                motif_config_args_i="-I$motif_config_args_i"
-                        fi
-                fi
-                ac_save_cflags=$CFLAGS
-                ac_save_cppflags=$CPPFLAGS
-                CFLAGS="$CFLAGS $motif_config_args_i $X_CFLAGS"
-                CPPFLAGS="$CPPFLAGS $motif_config_args_i $X_CFLAGS"
-                AC_CHECK_HEADER([Xm/Xm.h], ac_cv_inc_motif=yes,
-                            ac_cv_inc_motif=no)
-                CFLAGS=$ac_save_cflags
-                CPPFLAGS=$ac_save_cppflags
-                if test x$ac_cv_inc_motif != xyes ; then
-                        ifelse([$2], , :, [$2])
-                else
-                        MOTIF_CFLAGS="$MOTIF_CFLAGS $motif_config_args_i"
-                        ifelse([$1], , :, [$1])
-                fi
-         fi
-         
-         AC_SUBST(MOTIF_CFLAGS)
-         AC_SUBST(MOTIF_LIBS)
-])
-
-
-#############################################################################################
-
-dnl 
-dnl Maciej Mochol
-dnl
-dnl AC_CHECK_SHORTSEMCTL
-dnl  - czy mozna stosowac krotkie semctl (3-y arg.)
-dnl AC_CHECK_SHORTXDRAWARC
-dnl  - krotkie XDrawArc...
-dnl AC_CHECK_SHORTXFILLARC
-dnl  - krotkie XFillArc...
-AC_DEFUN([AC_CHECK_SHORTSEMCTL],
-[
-AC_MSG_CHECKING([for short semctl])
-AC_CACHE_VAL(ac_cv_func_shortsemctl,
-[
-AC_TRY_COMPILE([
-#include <sys/sem.h>
-],
-[
-semctl(0,0,0) 
-],
-ac_cv_func_shortsemctl=yes,
-ac_cv_func_shortsemctl=no)
-])
-AC_MSG_RESULT($ac_cv_func_shortsemctl)
-if test x$ac_cv_func_shortsemctl = xyes ; then
-        ifelse([$1], , :, [$1])
-else
-        ifelse([$2], , :, [$2])                
-fi
-])
-
-
-AC_DEFUN([AC_CHECK_SHORTXDRAWARC],
-[
-AC_MSG_CHECKING([for short XDrawArc])
-AC_CACHE_VAL(ac_cv_func_shortxdrawarc,
-[
-ac_save_CFLAGS="$CFLAGS"
-CFLAGS="$CFLAGS -I$x_includes"
-AC_TRY_COMPILE([
-#include <X11/Xlib.h>
-],
-[
-XDrawArc(0,0,0,0,0, 0,0) 
-],
-[CFLAGS="$ac_save_CFLAGS" ac_cv_func_shortxdrawarc=yes],
-[CFLAGS="$ac_save_CFLAGS" ac_cv_func_shortxdrawarc=no])
-])
-AC_MSG_RESULT($ac_cv_func_shortxdrawarc)
-if eval "test \"`echo `$ac_cv_func_shortxdrawarc\" = yes"; then
-  AC_DEFINE(HAVE_SHORTXDRAWARC, 1, [Define to 1 if short form of XDrawArc() is available])
-fi
-])
-
-AC_DEFUN([AC_CHECK_SHORTXFILLARC],
-[
-AC_MSG_CHECKING([for short XFillArc])
-AC_CACHE_VAL(ac_cv_func_shortxfillarc,
-[
-ac_save_CFLAGS="$CFLAGS"
-CFLAGS="$CFLAGS -I$x_includes"
-AC_TRY_COMPILE([
-#include <X11/Xlib.h>
-],
-[
-XFillArc(0,0,0,0,0, 0,0) 
-],
-[CFLAGS="$ac_save_CFLAGS" ac_cv_func_shortxfillarc=yes],
-[CFLAGS="$ac_save_CFLAGS" ac_cv_func_shortxfillarc=no])
-])
-AC_MSG_RESULT($ac_cv_func_shortxfillarc)
-if test "x$ac_cv_func_shortxfillarc" = "xyes"; then
-  AC_DEFINE(HAVE_SHORTXFILLARC, 1, 
-        [Define to 1 if short form of XFillArc() is available])
-fi
-])
-
-
 dnl Checks for xsltproc program, with given xslt library version (default is
 dnl 10010). Sets XSLTPROC and XSLT_VERSION variable.
 dnl AC_PROG_XSLTPROC([VERSION [, ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
@@ -662,64 +517,6 @@ AC_DEFUN([AC_PROG_XSLTPROC], [
         fi
 ])
 
-
-dnl Checks for Tcl/Tk programs (wish and tclsh). Sets TCL_LIBS to directory
-dnl with Tcl library, also TK_LIBS and TCL_VERSION.
-dnl AC_CHECK_TCLTK([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]])
-dnl
-AC_DEFUN([AC_CHECK_TCLTK],[
-       AC_MSG_CHECKING([for Tcl/Tk])
-       echo
-       AC_CHECK_PROG([WISH], [wish], [wish], [])
-       AC_CHECK_PROG([TCLSH], [tclsh], [tclsh], [])
-       ac_tcl_ok=no
-       if test "x$TCLSH" = xtclsh ; then
-               TCL_VERSION=`echo 'puts $tcl_version' | $TCLSH`
-               TCL_LIBS=`echo 'puts $tcl_library' | $TCLSH`
-       fi
-
-       if test "x$WISH" = xwish -a "x$TCLSH" = xtclsh ; then 
-               TCL_VERSION_I=`echo $TCL_VERSION | sed 's#\.##'`
-               if test $TCL_VERSION_I -lt 84 ; then
-                        AC_CHECK_PROG([WISHX], [wishx], [wishx], [])
-                        if test "x$WISHX" = xwishx ; then
-                                ac_tcl_ok=yes
-                        fi
-               else
-                        ac_tcl_ok=yes
-               fi
-       fi
-
-       if test $ac_tcl_ok = yes ; then
-		AC_ARG_WITH(tcl-prefix,
-	            [  --with-tcl-prefix=PATH  Path to Tcl library directory (optional)],
-               TCL_LIBS="$withval", )
-               if test ! -d "$TCL_LIBS" ; then
-                       AC_MSG_WARN([Tcl library directory ($TCL_LIBS) not found]) 
-                       ac_tcl_ok=no
-               fi
-       fi
-       if test $ac_tcl_ok = yes ; then
-               TK_LIBS=`cd $TCL_LIBS/../tk$TCL_VERSION; pwd`
-	       AC_ARG_WITH(tk-prefix,
-	            [  --with-tk-prefix=PATH   Path to Tk library directory (optional)],
-               TK_LIBS="$withval", )
-               if test ! -d "$TK_LIBS" ; then
-                       AC_MSG_WARN([Tk library directory ($TK_LIBS) not found]) 
-                       ac_tcl_ok=no
-               fi
-       fi
-       AC_SUBST(TCL_LIBS)
-       AC_SUBST(TK_LIBS)
-       AC_SUBST(TCL_VERSION)
-       if test $ac_tcl_ok = yes ; then
-               AC_MSG_CHECKING([for Tcl/Tk version])
-	       AC_MSG_RESULT([$TCL_VERSION]) 
-               ifelse([$1], , :, [$1])
-       else
-               ifelse([$2], , :, [$2])
-       fi
-])
 
 # This macro check if flex function yylex_destroy is available. This function
 # is generated by flex, so we have just to check flex version - 2.5.9 is
@@ -853,8 +650,8 @@ AC_DEFUN([AC_PATH_SSL], [
 		if test x$ssl_dll_config_name != x; then
 			ssl_name=$ssl_dll_config_name
 		else
-			if test -f "$ssl_config_prefix/lib/libssl32.dll"; then
-				ssl_name="libssl32"
+			if test -f "$ssl_config_prefix/lib/libssl32.dll" -o -f "$ssl_config_prefix/lib/libssl32.a"; then
+				ssl_name="ssl32"
 			else
 				ssl_name="ssleay32-0.9.8"
 			fi
@@ -878,8 +675,8 @@ AC_DEFUN([AC_PATH_SSL], [
 			if test x$ssl_dll_eay_config_name != x; then
 				ssl_eay_lib=$ssl_dll_eay_config_name
 			else
-				if test "$ssl_name" = "libssl32"; then
-					ssl_eay_lib="libeay32"
+				if test "$ssl_name" = "ssl32"; then
+					ssl_eay_lib="eay32"
 				else
 					ssl_eay_lib="cryptoeay32-0.9.8"
 				fi
@@ -1599,7 +1396,7 @@ AC_DEFUN([AX_BOOST_THREAD],
 
 				if test "x$build_os" = "xsolaris" ; then
 					CXXFLAGS="-pthreads $CXXFLAGS"
-				elif test "x$build_os" = "xming32" ; then
+				elif test "x$build_os" = "xmingw32" ; then
 					CXXFLAGS="-mthreads $CXXFLAGS"
 				else
                                 	CXXFLAGS="-pthread $CXXFLAGS"
@@ -1619,7 +1416,7 @@ AC_DEFUN([AX_BOOST_THREAD],
                 if test "x$ax_cv_boost_thread" = "xyes"; then
 			if test "x$build_os" = "xsolaris" ; then
 				BOOST_CPPFLAGS="-pthreads $BOOST_CPPFLAGS"
-			elif test "x$build_os" = "xming32" ; then
+			elif test "x$build_os" = "xmingw32" ; then
 				BOOST_CPPFLAGS="-mthreads $BOOST_CPPFLAGS"
 			else
 				BOOST_CPPFLAGS="-pthread $BOOST_CPPFLAGS"

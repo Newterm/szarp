@@ -1,5 +1,29 @@
 $Id$
 
+2009-07-10	Pawel Palucha <pawel@praterm.com.pl>
+	* debian/pack.files: removed unsed /var/lock/subsys directory.
+	* www/pylons/sssweb/sssweb.egg-info: content of this directory is
+	regenerated during build - removed from repository.
+	* www/pylons/sssweb/Makefile.am: fix for configure in non-src
+	directory.
+	* libSzarp/conversion.cc: ifdef for old mingw version of iconv
+	removed.
+	* parcook/parcook.cc: short_semctl -> sem_ctl.
+	* wx/draw3/Makefile.am: scintilla build fix.
+	* wx/*/Makefile.am: changed location of .mo files - fixes building
+	in non-src directory.
+	* Makefile.am: fix for building docs in non-src directory.
+	* wx/ekstraktor3/pl/ekstraktor3.po: fix: sxc -> ods.
+	* NEWS: NEWS file was not so new...
+	* configure.in, acinclude.m4: removed obsolete stuff (Motif and so
+	on), new Makefiles for scintilla; fix in openssl detection.
+	* INSTALL.Windows: new description of Windows build.
+	* extern/wxscintilla/*: automake Makefiles for scintilla, unnecessary
+	directories removed.
+	* script/windist.sh: unused, removed.
+	* script/nsis/*.dll: removed, these DLL are also incompatible with
+	currnet NSIS version.
+
 2009-07-02	Pawel Palucha <pawel@praterm.com.pl>
 	* include: removed obsolete directory.
 	* libSzarp/*: removed obsolete files.

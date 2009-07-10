@@ -22,7 +22,7 @@ INCLUDES = @WX_CXXFLAGS@ @XML_CFLAGS@ @LUA_CFLAGS@ @SSL_CFLAGS@ @BOOST_CPPFLAGS@
 LIBSZARP=../../libSzarp/libSzarp.a
 LIBSZARP2=../../libSzarp2/libSzarp2.a
 LIBWXCOMMON=../common/libwxcommon.a
-LIBWXSCINTILLA=../../extern/wxscintilla/lib/libwxscintilla.a
+LIBWXSCINTILLA=../../extern/wxscintilla/libwxscintilla.a
 GUIDIR=@srcdir@/GUI/
 GUIFILES=xrc
 TMP_GETTEXT=XRC_gettext_file
@@ -90,19 +90,10 @@ EXTRA_DIST = fr/draw3.po pl/draw3.po de/draw3.po
 
 # Rule to create mo files
 %.mo: %.po
+	mkdir -p `dirname $@`
 	@MSGFMT@ -o $@ $<
 
 all: draw3$(EXEEXT) fr/draw3.mo pl/draw3.mo de/draw3.po
-
-if MINGW32_OPT
-$(LIBWXSCINTILLA):
-	make -C ../../extern/wxscintilla/build release CXX=i586-mingw32msvc-g++ WXCONFIG=/usr/local/i586-mingw32msvc/lib/wx/config/i586-mingw32msvc-msw-unicode-release-2.8
-	i586-mingw32msvc-ranlib $(LIBWXSCINTILLA)
-else
-$(LIBWXSCINTILLA):
-	make -C ../../extern/wxscintilla/build release
-endif
-
 
 # Install locales and GUIs
 install-data-local: fr/draw3.mo pl/draw3.mo de/draw3.mo

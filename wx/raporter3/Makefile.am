@@ -48,7 +48,7 @@ raporter3_DEPENDENCIES = $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2)
 raporter3_LDADD = $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) \
 	@XML_LIBS@ @WX_LIBS@ @CURL_LIBS@ @LUA_LIBS@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_FILESYSTEM_LIB@
 
-raporter3_LOCALES = @srcdir@/raporter3.mo
+raporter3_LOCALES = pl/raporter3.mo
 raporter3_LOCALES_SRC = pl/raporter3.po
 raporter3_LOCALES_TMP = pl/raporter3.pot
 
@@ -60,7 +60,8 @@ CLEANFILES = $(raporter3_LOCALES) ${WIN_APP_NAME}Setup.exe
 EXTRA_DIST = $(raporter3_LOCALES_SRC) $(raporter3_LOCALES)
 
 # Rule to create mo files
-$(raporter3_LOCALES): $(raporter3_LOCALES_SRC)
+%.mo: %.po
+	mkdir -p `dirname $@`
 	@MSGFMT@ -o $@ $<
 
 all: raporter3$(EXEEXT) $(raporter3_LOCALES)

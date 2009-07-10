@@ -24,7 +24,7 @@ DISTRO=@distro@
 
 WIN_APP_NAME=SZAU
 
-szau_LOCALES = @srcdir@/szau.mo
+szau_LOCALES = pl/szau.mo
 szau_LOCALES_SRC = pl/szau.po
 szau_LOCALES_TMP = pl/szau.pot
 
@@ -44,8 +44,10 @@ szau_SOURCES = \
 
 szau_DEPENDENCIES = $(LIBWXCOMMON) 
 szau_LDADD = $(LIBWXCOMMON) $(LIBSZARP) @WX_LIBS@ @CURL_LIBS@ @BOOST_LDFLAGS@ @BOOST_FILESYSTEM_LIB@ @BOOST_THREAD_LIB@ @SSL_LIBS@ $(LIBSZARP2) @XML_LIBS@
+
 # Rule to create mo files
-$(szau_LOCALES): $(szau_LOCALES_SRC)
+%.mo: %.po
+	mkdir -p `dirname $@`
 	@MSGFMT@ -o $@ $<
 
 all: szau$(EXEEXT) $(szau_LOCALES)

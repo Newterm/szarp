@@ -44,20 +44,20 @@ winsetup:
 		@srcdir@/../resources/wx/images/*.png \
 		@srcdir@/../resources/wx/images/*.bmp \
 		-d resources/locales/pl_PL/LC_MESSAGES \
-		-f draw3.mo @srcdir@/../wx/draw3/pl/draw3.mo \
-		-f ekstraktor3.mo @srcdir@/../wx/ekstraktor3/ekstraktor3.mo \
-		-f raporter3.mo @srcdir@/../wx/raporter3/raporter3.mo \
-		-f scc.mo @srcdir@/../wx/scc/scc.mo \
-		-f ssc.mo @srcdir@/../wx/sync/ssc.mo \
-		-f szau.mo @srcdir@/../wx/szau/szau.mo \
-		-f szast.mo @srcdir@/../wx/szast/szast.mo \
-		-f common.mo @srcdir@/../wx/common/pl/common.mo \
-		-f wx.mo @srcdir@/../wx/common/pl/wx.mo \
-		-f isledit.po @srcdir@/../wx/isledit/isledit.mo \
+		-f draw3.mo draw3/pl/draw3.mo \
+		-f ekstraktor3.mo ekstraktor3/pl/ekstraktor3.mo \
+		-f raporter3.mo raporter3/pl/raporter3.mo \
+		-f scc.mo scc/pl/scc.mo \
+		-f ssc.mo sync/pl/ssc.mo \
+		-f szau.mo szau/pl/szau.mo \
+		-f szast.mo szast/pl/szast.mo \
+		-f common.mo common/pl/common.mo \
+		-f wx.mo common/pl/wx.mo \
+		-f isledit.po isledit/pl/isledit.mo \
 		-d resources/locales/fr_FR/LC_MESSAGES \
-		-f draw3.mo @srcdir@/../wx/draw3/fr/draw3.mo \
-		-f common.mo @srcdir@/../wx/common/fr/common.mo \
-		-f wx.mo @srcdir@/../wx/common/fr/wx.mo \
+		-f draw3.mo draw3/fr/draw3.mo \
+		-f common.mo common/fr/common.mo \
+		-f wx.mo common/fr/wx.mo \
 		-d resources/wx/html/ \
 		-f raporterabout.html @srcdir@/../resources/wx/html/raporterabout.html \
 		-f ekstraktorabout.html @srcdir@/../resources/wx/html/ekstraktorabout.html \

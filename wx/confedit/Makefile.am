@@ -34,7 +34,7 @@ ipkedit_SOURCES = \
 
 ipkedit_LDADD = $(LIBWXCOMMON) @WX_LIBS@ @XML_LIBS@ $(LIBSZARP2) $(LIBSZARP) @BOOST_THREAD_LIB@ @BOOST_FILESYSTEM_LIB@
 
-ipkedit_LOCALES = @srcdir@/ipkedit.mo
+ipkedit_LOCALES = pl/ipkedit.mo
 ipkedit_LOCALES_SRC = pl/ipkedit.po
 ipkedit_LOCALES_TMP = pl/ipkedit.pot
 
@@ -47,7 +47,8 @@ EXTRA_DIST = $(ipkedit_LOCALES_SRC) $(ipkedit_LOCALES)
 MAINTAINERCLEANFILES = Makefile.in
 
 # Rule to create mo files
-$(ipkedit_LOCALES): $(ipkedit_LOCALES_SRC)
+%.mo: %.po
+	mkdir -p `dirname $@`
 	@MSGFMT@ -o $@ $<
 
 # Install locales

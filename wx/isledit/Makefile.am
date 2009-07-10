@@ -31,7 +31,7 @@ isledit_DEPENDENCIES = $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2)
 isledit_LDADD = $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) \
 	@XML_LIBS@ @WX_LIBS@ @CURL_LIBS@ @LUA_LIBS@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_FILESYSTEM_LIB@
 
-isledit_LOCALES = @srcdir@/isledit.mo
+isledit_LOCALES = pl/isledit.mo
 isledit_LOCALES_SRC = pl/isledit.po
 isledit_LOCALES_TMP = pl/isledit.pot
 
@@ -43,7 +43,8 @@ CLEANFILES = $(isledit_LOCALES) ${WIN_APP_NAME}Setup.exe
 EXTRA_DIST = $(isledit_LOCALES_SRC) $(isledit_LOCALES)
 
 # Rule to create mo files
-$(isledit_LOCALES): $(isledit_LOCALES_SRC)
+%.mo: %.po
+	mkdir -p `dirname $@`
 	@MSGFMT@ -o $@ $<
 
 all: isledit$(EXEEXT) $(isledit_LOCALES)

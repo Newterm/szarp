@@ -32,7 +32,7 @@ ssweb_PYTHON=$(shell find -name '*.py')
 clean:
 	rm -rf build
 	rm -f build-*
-	python setup.py clean
+	python @srcdir@/setup.py clean
 	find . -name *\.py[co] -exec rm -f {} \;
 	rm -rf data/sessions/*
 	rm -rf data/templates/*

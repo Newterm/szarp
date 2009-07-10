@@ -40,7 +40,7 @@ szast_SOURCES = \
 
 szast_LDADD = $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) $(LIBWXSCINTILLA) @SSL_LIBS@ @XML_LIBS@ @WX_LIBS@ @LUA_LIBS@ @BOOST_LDFLAGS@ @BOOST_FILESYSTEM_LIB@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@
 
-szast_LOCALES = @srcdir@/szast.mo
+szast_LOCALES = pl/szast.mo
 szast_LOCALES_SRC = pl/szast.po
 szast_LOCALES_TMP = pl/szast.pot
 
@@ -58,7 +58,8 @@ EXTRA_DIST = $(szast_LOCALES_SRC) $(szast_LOCALES)
 MAINTAINERCLEANFILES = Makefile.in
 
 # Rule to create mo files
-$(szast_LOCALES): $(szast_LOCALES_SRC)
+%.mo: %.po
+	mkdir -p `dirname $@`
 	@MSGFMT@ -o $@ $<
 
 # Install locales
@@ -84,6 +85,6 @@ ${WIN_APP_NAME}Setup.exe: szau$(EXEEXT) $(szau_LOCALES)
 	
 all: szast$(EXEEXT) $(szau_LOCALES)
 
-@srcdir@/GUI/resource.cpp: GUI/*xrc
+@srcdir@/GUI/resource.cpp: @srcdir@/GUI/*xrc
 	wxrc -c -o @srcdir@/GUI/resource.cpp @srcdir@/GUI/*xrc
 

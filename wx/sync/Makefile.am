@@ -29,7 +29,7 @@ sss_LDADD = @RSYNC_LIBS@ @SSL_LIBS@ @PAM_LIBS@ @XML_LIBS@ @LUA_LIBS@ @BOOST_LDFL
 
 ssc_CXXFLAGS= -DUSE_WX $(AM_FLAGS)
 
-ssc_LOCALES = @srcdir@/ssc.mo
+ssc_LOCALES = pl/ssc.mo
 ssc_LOCALES_SRC = pl/ssc.po
 ssc_LOCALES_TMP = pl/ssc.pot
 
@@ -43,7 +43,8 @@ endif
 WIN_APP_NAME=SSC
 
 # Rule to create mo files
-$(ssc_LOCALES): $(ssc_LOCALES_SRC)
+%.mo: %.po
+	mkdir -p `dirname $@`
 	@MSGFMT@ -o $@ $<
 
 ssc_SOURCES = \

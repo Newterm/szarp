@@ -4,60 +4,66 @@ INSTALL.Windows
 
 Pawe³ Pa³ucha <pawel@praterm.com.pl>
 
-Ten plik opisuje sposób przygotowania, kompilacji i instalacji programu
-SzarpDraw (przegl±daj±cego) w wersji 3.0 w ¶rodowisku MS Windows. 
+This file describes how to prepare SZARP installation package for Windows.
 
 
-0. Spis tre¶ci.
+0. Content.
 
-1. Wstêp.
-2. Instalacja kompilatora mingw32.
-  2.1. Instalacja z paczek.
-  2.2. Testowanie kompilatora.
-3. Instalacja bibliotek.
-  3.1. Biblioteka wxWidgets.
-   3.1.1. Sposób tradycyjny.
-   3.1.2. Sposób 'debianowy'.
-  3.2. Biblioteka iconv.
-  3.3. Biblioteka libxml2.
-  3.4. Biblioteka libxslt.
-  3.5. Biblioteka curl.
-  3.6. Biblioteka zlib.
-  3.7. Biblioteka OpenSSL.
-  3.8. Biblioteka librsync.
-  3.9. Biblioteka lua.
-4. Kompilacja SZARP'a.
-5. Instalacja programów.
-
-
-1. Wstêp.
-
-Niniejszy dokument opisuje sposób konfiguracji ¶rodowiska pozwalaj±cego na
-kompilacjê programów szarpa pod Windows z u¿yciem cross-kompilatora i
-¶rodowiska mingw32.
+1. Introduction.
+2. Installing cross-compiler.
+2.1. Installation.
+2.2. Preparing of directories.
+2.3. Testing compiler.
+3. Installing libraries.
+3.1. iconv library.
+3.2. expat library.
+3.3. zlib library.
+3.4. zip library.
+3.5. wxWidgets library.
+3.6. libxml2 library.
+3.7. libxslt library.
+3.8. OpenSSL library.
+3.9. curl library.
+3.10 librsync library.
+3.11. Lua (LuaJIT) library.
+3.12. c-ares library.
+3.13. xmlrpc-epi library.
+3.14. boost libraries.
+3.15. sqlite library.
+4. Compiling SZARP.
+5. Installation package.
 
 
-2. Instalacja kompilatora mingw32.
+1. Introduction.
 
-2.1. Instalacja z paczek
+This document describes how to compile SZARP for Windows, using mingw 
+cross-compiler on Debian.
 
-Jako root wydajemy komendê:
+
+2. Installing cross-compiler.
+
+2.1. Installation.
 
 # apt-get install mingw32 mingw32-binutils mingw32-runtime
 
-UWAGA: je¶li katalog /usr/local/i586-mingw32msvc nie istnieje nale¿y
-go utworzyæ, wraz z podkatalogami bin, lib oraz include.
+2.2. Preparing of directories.
+
+Now create directories for libraries, headers and tools:
 
 # mkdir -p /usr/local/i586-mingw32msvc/bin
 # mkdir  /usr/local/i586-mingw32msvc/lib
-# mkdir  /usr/local/i586-mingw32msvc/includ
+# mkdir  /usr/local/i586-mingw32msvc/include
 
-# cp /usr/share/doc/mingw32-runtime/mingwm10.dll /usr/local/i586-mingw32msvc/bin
+Copy mingw DLL library to bin directory, so it's easier for programs to find 
+it:
 
-2.2 Testowanie kompilatora.
+# cp /usr/share/doc/mingw32-runtime/mingwm10.dll.gz /usr/local/i586-mingw32msvc/bin
+# gunzip /usr/local/i586-mingw32msvc/bin/mingwm10.dll
 
-Sprawdzamy, czy nasz kompilator zosta³ poprawnie zainstalowany. Tworzymy w tym
-celu plik hello.c o zawarto¶ci:
+2.3. Testing compiler.
+
+If you want to check if cross-compiler is working ok, create file named hello.c 
+with following content:
 
 #include <stdio.h>
 int main(void)
@@ -65,19 +71,19 @@ int main(void)
 	printf("Hello world!\n");
 }
 
-Kompilujemy go:
+Compile it:
 
 # i586-mingw32msvc-gcc hello.c -o hello.exe
 
-Powstaje plik hello.exe. Sprawdzenie jego typu:
+File hello.exe should be created. Check type of this file:
 
 # file hello.exe
 
-powinno daæ komunikat:
+The output should be something like:
 
-  hello.exe:MS Windows PE Intel 80386 console executable not relocatable
+  hello.exe: PE32 executable for MS Windows (console) Intel 80386 32-bit
 
-Podobny program pod Windows - plik hellowin.c:
+Now we create GUI program - hellowin.c with content:
 
 #include <windows.h>
 int main(int argc, char *argv[])
@@ -86,413 +92,202 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-Kompilacja jest podobna:
+Compilation:
 
 # i586-mingw32msvc-gcc hellowin.c -o hellowin.exe
 
-sprawdzenie typu pliku hellowin.exe:
+Checking file type:
 
 # file hellowin.exe
 
-da rezultat:
+You should see:
 
-  hellowin.exe:MS Windows PE Intel 80386 console executable not relocatable
+  hellowin.exe: PE32 executable for MS Windows (console) Intel 80386 32-bit
 
-¯eby przetestowaæ te programy nale¿y zainstalowaæ emulator wine. Pode Debianem
-ogranicza siê to oczywi¶cie do:
+To run this program install wine - it is nececcary also for runing configure
+later:
 
 # apt-get install wine
 
-I teraz ju¿ wpisujemy:
+Now you can run programs:
 
 # wine hello.exe
 # wine hellowin.exe
 
-Ten drugi trzeba odpalaæ pod X-ami, za pierwszym razem trochê to trwa (wine 
-przygotowuje sobie fonty), ale kolejnym razem jest ju¿ szybciej. 
 
-UWAGA! Program wine nale¿y zainstalowaæ, przyda on siê tak¿e pó¼niej (jest
-wykorzystywany przez skrypty configure).
+3. Installing libraries.
+
+Versions of libraries can change, of course.
 
 
-3. Instalacja bibliotek.
+3.1. iconv library.
 
-Kolejnym krokiem jest przygotowanie za pomoc± naszego kompilatora potrzebnych
-bibliotek, najlepiej w podanej ni¿ej kolejno¶ci. Je¶li istnieje mo¿liwo¶æ
-pobrania gotowych plików binarnych, to nale¿y z niej skorzystaæ, wtedy
-samodzielna (cross)kompilacja nie jest ju¿ potrzebna.
 
-3.1. Biblioteka wxWidgets.
+wget http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.13.1.tar.gz
+tar xzvf libiconv-1.13.1.tar.gz
+cd libiconv-1.13.1
+./configure --host=i586-mingw32msvc --target=i586-mingw32msvc \
+        --prefix=/usr/local/i586-mingw32msvc
+make
+make install
+cp lib/.libs/libiconv-2.dll /usr/local/i586-mingw32msvc/lib/
 
-3.1.1. Sposób tradycyjny (w tej chwili jedyny dostêpny w przypadku wx2.8):
+Now test it:
 
-Ze strony http://www.wxwidgets.org ¶ci±gamy ¼ród³a biblioteki wxWindows pod
-Windows w postaci pliku ZIP, np. dla wersji 2.8.4 jest to plik
-wxMSW-2.8.4.zip. Rozpakowujemy go:
+wine /usr/local/i586-mingw32msvc/bin/iconv.exe --help
 
-# unzip wxMSW-2.8.4.zip
-# cd wxMSW-2.8.4
+You should see iconv usage instructions.
 
-Nastêpnie wydajemy komendê:
 
-# CFLAGS=-DCOMPILED_FROM_DSP \ 
-	./configure --host=i586-mingw32msvc \
+3.2. expat library.
+
+wget http://sourceforge.net/projects/expat/files/expat/expat-2.0.1.tar.gz
+tar xzvf expat-2.0.1.tar.gz
+cd expat-2.0.1
+./configure --host=i586-mingw32msvc --target=i586-mingw32msvc \
+        --prefix=/usr/local/i586-mingw32msvc \
+        CPPFLAGS=-I/usr/local/i586-mingw32msvc/include
+make
+make install
+cp .libs/libexpat-1.dll /usr/local/i586-mingw32msvc/lib/
+
+
+3.3. zlib library.
+
+wget http://www.zlib.net/zlib-1.2.3.tar.gz
+tar xzvf zlib-1.2.3.tar.gz
+cd zlib-1.2.3
+CC=/usr/bin/i586-mingw32msvc-gcc \
+	AR="/usr/bin/i586-mingw32msvc-ar -r" \
+	RANLIB=/usr/bin/i586-mingw32msvc-ranlib  \
+	./configure --prefix=/usr/local/i586-mingw32msvc
+make
+make install
+
+
+3.4. zip library.
+
+wget http://nih.at/libzip/libzip-0.9.tar.bz2
+tar xvfj libzip-0.9.tar.bz2
+cd libzip-0.9
+./configure --host=i586-mingw32msvc --target=i586-mingw32msvc \
+        --prefix=/usr/local/i586-mingw32msvc \
+	--with-zlib=/usr/local/i586-mingw32msvc \
+	LDFLAGS=-L/usr/local/i586-mingw32msvc/lib
+make
+make install
+
+
+3.5. wxWidgets library.
+
+wget http://prdownloads.sourceforge.net/wxwindows/wxMSW-2.8.10.zip
+unzip wxMSW-2.8.10.zip
+cd wxMSW-2.8.10
+./configure --host=i586-mingw32msvc \
 	--target=i586-mingw32msvc \
 	--enable-shared \
 	--enable-intl \
+	--enable-unicode \
 	--with-msw \
 	--with-libpng \
-	--with-expat \
-	--disable-unicode \
-	--prefix=/usr/local/i586-mingw32msvc 
-
-Powinni¶my otrzymaæ co¶ w stylu:
-Configured wxWidgets 2.8.4 for `i586-pc-mingw32msvc'
-
-  Which GUI toolkit should wxWidgets use?                 msw
-  Should wxWidgets be compiled into single library?       no
-  Should wxWidgets be compiled in debug mode?             no
-  Should wxWidgets be linked as a shared library?         yes
-  Should wxWidgets be compiled in Unicode mode?           no
-  What level of wxWidgets compatibility should be enabled?
-                                       wxWidgets 2.4      no
-                                       wxWidgets 2.6      yes
-  Which libraries should wxWidgets use?
-                                       jpeg               builtin
-                                       png                builtin
-                                       regex              builtin
-                                       tiff               builtin
-                                       zlib               builtin
-                                       odbc               no
-                                       expat              builtin
-                                       libmspack          no
-                                       sdl                no
+	--with-expat=sys \
+	--with-zlib=sys \
+	--with-opengl \
+	--prefix=/usr/local/i586-mingw32msvc \
+	CPPFLAGS=-I/usr/local/i586-mingw32msvc/include \
+	LDFLAGS=-L/usr/local/i586-mingw32msvc/lib
+make
+make install
 
 
+3.6. libxml2 library.
 
-Nastêpnie wydajemy komendy:
-# make
-# make install
-
-Nalezy jeszcze pozbyc sie dosowych znakow konca linii z pliku:
-/usr/local/i586-mingw32msvc/lib/wx/config/i586-mingw32msvc-msw-ansi-release-2.8
-
-2.1.2. ¦ci±gamy ¼ród³a:
-
-% apt-get source wxwidgets2.6
-% cd wxwindows2.6-<vers>
-
-kompilujemy i budujemy pakiety
-
-% fakeroot ./debian/rules binary-cross
-
-Powstaj± trzy pakiety, instalujemy je (jako root):
-
-# dpkg -i \
-   ../libwxmsw2.6-dev_<vers>_i386.deb \
-   ../wx2.6-headers-msw_<vers>_i386.deb \
-   ../libwxmsw2.6-dbg_<vers>_i386.deb
-
-
-3.2. Biblioteka iconv.
-
-a) Pobranie gotowych plików binarnych
-
-Pobieramy spakowan± bibliotekê z ftp://ftp.zlatkovic.com/pub/libxml a
-nastêpnie rozpakowujemy:
-
-% wget ftp://ftp.zlatkovic.com/pub/libxml/iconv-1.9.2.win32.zip
-
-	UWAGA: je¶li wget nie jest zainstalowany mo¿na go doinstalowaæ:
-	# apt-get install wget
-	albo u¿yæ innego programu do pobierania plików np. przegl±darki
-	internegowej
-
-	uwaga: wersja biblioteki mo¿e siê zmieniæ
-
-% unzip iconv-1.9.2.win32.zip
-% cd iconv-1.9.2.win32
-
-Jako root kopiujemy zawarto¶æ podkatalogów do /usr/local/i586-mingw32msvc:
-
-# cp bin/* /usr/local/i586-mingw32msvc/bin
-# cp include/* /usr/local/i586-mingw32msvc/include
-# cp lib/* /usr/local/i586-mingw32msvc/lib
-
-
-Je¶li po wydaniu komendy
-
-# wine /usr/local/i586-mingw32msvc/bin/iconv.exe --help
-
-wy¶wietli siê pomoc programu iconv to instalacja zakoñczy³a siê sukcesem i
-mo¿emy (pomijaj±c punkt b) przej¶æ do instalacji kolejnych bibliotek.
-
-b) Samodzielna (cross)kompilacja
-
-¦ci±gamy ¼ród³a biblioteki libiconv z http://www.gnu.org/software/libiconv i
-rozpakowujemy: 
-
-% tar xzf libiconv-1.9.2.tar.gz
-% cd libiconv-1.9.2
-
-potem kompilujemy:
-
-% ./configure --host=i586-mingw32msvc --target=i586-mingw32msvc \
-	--prefix=/usr/local/i586-mingw32msvc
-% make
-# make install
-
-W³a¶ciwie biblioteki DLL zosta³y skopiowane do katalogu
-/usr/local/i586-mingw32msvc/bin. Poprawno¶æ kompilacji sprawdzamy przez
-podanie komendy:
-
-# wine /usr/local/i586-mingw32msvc/bin/iconv --help
-
-Powinna siê wy¶wietliæ pomoc programu iconv.
-
-
-3.3. Biblioteka libxml2.
-
-a) Pobranie gotowych plików binarnych
-
-Pobieramy spakowan± bibliotekê z ftp://ftp.zlatkovic.com/pub/libxml a
-nastêpnie rozpakowujemy:
-
-% wget ftp://ftp.zlatkovic.com/pub/libxml/libxml2-2.6.27.win32.zip
-	
-	UWAGA: wersja biblioteki mo¿e siê zmieniæ
-
-% unzip libxml2-2.6.27.win32.zip 
-% cd libxml2-2.6.27.win32
-
-Jako root kopiujemy zawarto¶æ podkatalogów do /usr/local/i586-mingw32msvc:
-
-# cp bin/* /usr/local/i586-mingw32msvc/bin
-# cp -a include/* /usr/local/i586-mingw32msvc/include
-# cp lib/* /usr/local/i586-mingw32msvc/lib
-
-Je¶li po wydaniu komendy (i uprzednim zainstalowaniu biblioteki zlib,
-patrz punkt 3.6!)
-
-# wine /usr/local/i586-mingw32msvc/bin/xmllint.exe --version
-
-wy¶wietli siê wersja programu xmllint.exe to instalacja zakoñczy³a siê
-sukcesem i mo¿emy (pomijaj±c punkt b) przej¶æ do instalacji kolejnych bibliotek.
-
-b) Samodzielna (cross)kompilacja
-
-Rozpoczynamy od ¶ci±gniêcia ¼róde³ biblioteki z http://www.xmlsoft.org.
-Proponujê najnowsz± dostêpn± wersjê, je¶li pojawiaj± siê b³êdy podczas
-kompilacji, mo¿na spróbowaæ wersjê cvs-snapshot lub nieco starsz±.
-
-¬ród³a rozpakowujemy i kompilujemy:
-
-% tar xzf libxml2-2.6.26.tar.gz
-% cd libxml2-2.6.26
-% ./configure --prefix=/usr/local/i586-mingw32msvc \
-	--host=i586-mingw32msvc --with-gnu-ld \
-	--enable-ipv6=no --without-debug \
-	--without-python --without-ftp \
+wget ftp://xmlsoft.org/libxml2/libxml2-2.7.3.tar.gz
+tar xzvf libxml2-2.7.3.tar.gz
+cd libxml2-2.7.3
+./configure --host=i586-mingw32msvc \
+	--prefix=/usr/local/i586-mingw32msvc \
+        --target=i586-mingw32msvc \
+	--enable-ipv6=no \
 	--with-iconv=/usr/local/i586-mingw32msvc \
-	CPPFLAGS="-D__MINGW32__ -D_WIN32"
-% make
-# make install
+	--with-zlib=/usr/local/i586-mingw32msvc \
+	--without-python
+make
+make install
+cp .libs/libxml2-2.dll /usr/local/i586-mingw32msvc/lib
 
-¯eby sprawdziæ czy wszystko dzia³a poprawnie, najlepiej uruchomiæ utworzony 
-program xmllint.exe, tak¿e z katalogu z /usr/local/i586-mingw32msvc/bin.
+Testing:
+
+wine /usr/local/i586-mingw32msvc/bin/xmllint.exe --version
 
 
-3.4. Biblioteka libxslt.
+3.7. libxslt library.
 
-a) Pobranie gotowych plików binarnych
-
-Pobieramy spakowan± bibliotekê z ftp://ftp.zlatkovic.com/pub/libxml a
-nastêpnie rozpakowujemy:
-
-% wget ftp://ftp.zlatkovic.com/pub/libxml/libxslt-1.1.19.win32.zip
-	
-	UWAGA: wersja biblioteki mo¿e siê zmieniæ
-
-% unzip libxslt-1.1.19.win32.zip
-% cd libxslt-1.1.19.win32
-
-Jako root kopiujemy zawarto¶æ podkatalogów do /usr/local/i586-mingw32msvc:
-
-# cp bin/* /usr/local/i586-mingw32msvc/bin
-# cp -a include/* /usr/local/i586-mingw32msvc/include
-# cp lib/* /usr/local/i586-mingw32msvc/lib
-
-Je¶li po wydaniu komendy (i uprzednim zainstalowaniu bilbioteki zlib,
-patrz punkt 3.6!)
-
-# wine /usr/local/i586-mingw32msvc/bin/xsltproc.exe --version
-
-wy¶wietli siê wersja programu xsltproc.exe to instalacja zakoñczy³a siê
-sukcesem i mo¿emy (pomijaj±c punkt b) przej¶æ do instalacji kolejnych bibliotek.
-
-b) Samodzielna (cross)kompilacja
-
-¦ci±gamy najnowsz± wersjê z http://www.xmlsoft.org, rozpakowujemy i kompilujemy:
-
-% tar xzf libxslt-1.1.17.tar.gz
-% cd libxslt-1.1.17
-% ./configure --prefix=/usr/local/i586-mingw32msvc \
-	--host=i586-mingw32msvc --with-gnu-ld \
+wget ftp://xmlsoft.org/libxml2/libxslt-1.1.24.tar.gz
+tar xzvf libxslt-1.1.24.tar.gz
+cd libxslt-1.1.24
+./configure --host=i586-mingw32msvc \
+        --prefix=/usr/local/i586-mingw32msvc \
+        --target=i586-mingw32msvc \
 	--with-libxml-prefix=/usr/local/i586-mingw32msvc \
 	--without-python \
-	--without-crypto \
-	CPPFLAGS="-D__MINGW32__ -D_WIN32"
-% make
-# make install
+	--without-crypto
 
-Testujemy przez sprawdzenie, czy dzia³a program 
-/usr/local/i586-mingw32msvc/bin/xsltproc.exe.
+Testing:
+
+wine /usr/local/i586-mingw32msvc/bin/xsltproc.exe --version
 
 
-3.5. Biblioteka curl.
+3.8. OpenSSL library.
 
-a) Pobranie gotowych plików binarnych
+You will need 7zip:
 
-Pobieramy spakowan± bibliotekê z http://curl.haxx.se/download.html a
-nastêpnie rozpakowujemy:
+apt-get install p7zip
 
-% wget http://curl.haxx.se/download/libcurl-7.16.0-win32-ssl.zip
-	
-	UWAGA: wersja biblioteki mo¿e siê zmieniæ
+then:
 
-% unzip libcurl-7.16.0-win32-ssl.zip
-% cd libcurl-7.16.0
+wget http://curl.haxx.se/download/openssl_mingw32-0.9.8g.7z
+7zr x openssl_mingw32-0.9.8g.7z
+cd openssl_mingw32-0.9.8g
+cp bin/* /usr/local/i586-mingw32msvc/bin
+cp -a outinc/* /usr/local/i586-mingw32msvc/include
+cp out/* /usr/local/i586-mingw32msvc/lib
+cp bin/*.dll /usr/local/i586-mingw32msvc/lib
 
-Jako root kopiujemy zawarto¶æ podkatalogów (z wyj±tkiem docs) do
-/usr/local/i586-mingw32msvc:
+Testing:
 
-# cp bin/* /usr/local/i586-mingw32msvc/bin
-# cp -a include/* /usr/local/i586-mingw32msvc/include
-# cp lib/* /usr/local/i586-mingw32msvc/lib
-
-b) Samodzielna (cross)kompilacja
-
-¦ci±gamy najnowsz± wersjê z http://curl.haxx.se/download.html, rozpakowujemy i
-kompilujemy:
-
-% tar xjf curl-7.15.4.tar.bz2
-% cd curl-7.15.4
-% ./configure --prefix=/usr/local/i586-mingw32msvc \
-	--exec-prefix=/usr/local/i586-mingw32msvc \
-	--host=i586-mingw32msvc --with-gnu-ld
-% make
-# make install
-
-Testujemy przez sprawdzenie, czy dzia³a program
-/usr/local/i586-mingw32msvc/curl.exe.
-
-3.6 Biblioteka zlib.
-
-a) Pobranie gotowych plików binarnych
-
-Pobieramy spakowan± bibliotekê z ftp://ftp.zlatkovic.com/pub/libxml a
-nastêpnie rozpakowujemy:
-
-% wget ftp://ftp.zlatkovic.com/pub/libxml/zlib-1.2.3.win32.zip
-
-	UWAGA: wersja biblioteki mo¿e siê zmieniæ
-
-% unzip zlib-1.2.3.win32.zip
-% cd zlib-1.2.3.win32
-
-Jako root kopiujemy zawarto¶æ podkatalogów do /usr/local/i586-mingw32msvc:
-
-# cp bin/* /usr/local/i586-mingw32msvc/bin
-# cp include/* /usr/local/i586-mingw32msvc/include
-# cp lib/* /usr/local/i586-mingw32msvc/lib
-
-b) Samodzielna (cross)kompilacja
-
-¦ci±gamy najnowsz± wersjê z http://zlib.net, rozpakowujemy i
-kompilujemy:
-
-% tar xzf zlib-1.2.3.tar.gz
-% cd zlib-1.2.3
-% sed -e 's/dllwrap /i586-mingw32msvc-dllwrap /g' win32/Makefile.gcc > Makefile
-% make CC=i586-mingw32msvc-gcc AR=i586-mingw32msvc-ar \
-RC=i586-mingw32msvc-windres STATICLIB=libz-static.a IMPLIB=libz.a 
-
-Sprawdzamy uruchamiaj±c program "example" znajduj±cy siê w g³ównym katalogu ¼róde³.
-
-Instalujemy:
-
-# install -m 644 zlib.h zconf.h /usr/local/i586-mingw32msvc/include
-# install -m 644 zlib1.dll /usr/local/i586-mingw32msvc/lib
-
-3.7 Biblioteka OpenSSL.
-
-Samodzielna (cross)kompilacja
-#@michal Uwaga! nie udalo mi sie uruchomic ssc z openssl-0.9.8b, a nawet skapilowac po usunieciu starych biblotek openssl'a (libssl32.dll libeay.dll). z kolei openssl-0.9.8a ma bug w swithing thread i nic sie z tym nie da zrobic. Mi sie udalo na SNAP-20060419.
-
-¦ci±gamy najnowsz± wersjê biblioteki z http://www.openssl.org.
-Uwaga: Sposób konfiguracji OpenSSL dla Mingw pod Linuksem zmienia siê obecnie
-z praktycznie ka¿d± wersj± biblioteki - poni¿szy sposób dzia³a dla wersji
-0.9.8b:
-
-Bibliotekê rozpakowywujemy:
-% tar xzf openssl-0.9.8b.tar.gz
-
-Nastêpnie wchodzimy do katalogu z bibliotek±:
-% cd openssl-0.9.8b
-
-Konfigurujemy:
-./Configure shared no-hw -D_WINDLL -D_DLL -L/usr/i586-mingw32msvc/lib \
---prefix=/usr/local/i586-mingw32msvc \
- --openssldir=/usr/local/i586-mingw32msvc mingw
-
-OpenSSL nie jest w tej chwili przygotowany do cross-kompilacji i musimy
-rêcznie wymusiæ korzystanie z odpowiednich wersji narzêdzi:
-
-% mv Makefile Makefile.xxx
-% sed -e 's/RANLIB= true/RANLIB= \/usr\/bin\/i586-mingw32msvc-ranlib/' \
-< Makefile.xxx > Makefile
-# ln -s /usr/bin/i586-mingw32msvc-gcc /usr/i586-mingw32msvc/bin/gcc
-# ln -s /usr/bin/i586-mingw32msvc-cc /usr/i586-mingw32msvc/bin/cc
-% env PATH=/usr/i586-mingw32msvc/bin:$PATH make
-
-Instalujemy:
-# mkdir /usr/local/i586-mingw32msvc/include/openssl
-# install -m 644 include/openssl/*.h /usr/local/i586-mingw32msvc/include/openssl
-# install -m 644 cryptoeay32-0.9.8.dll ssleay32-0.9.8.dll \
-	/usr/local/i586-mingw32msvc/lib/
-
-#@michal dzialajacy sposob
-
-% tar xzf openssl-*.tar.gz
-
-Nastêpnie wchodzimy do katalogu z bibliotek±:
-% cd openssl-*
-
-Konfigurujemy:
-% ./Configure dist
-
-£atamy:
-% wget http://www.szarp.com.pl/pub/ssl.patch
-% patch -p0 < ssl.patch
-
-Kompilujemy:
-% ./cross enable-zlib-dynamic -I/usr/local/i586-mingw32msvc/include -L/usr/local/i586-mingw32msvc/lib
-
-Instalujemy:
-# mkdir /usr/local/i586-mingw32msvc/include/openssl
-# install -m 644 outinc/openssl/*h /usr/local/i586-mingw32msvc/include/openssl
-# install -m 644 libeay32.dll libssl32.dll /usr/local/i586-mingw32msvc/lib
+wine /usr/local/i586-mingw32msvc/bin/openssl.exe --help
 
 
+3.9. curl library.
 
-3.8 Biblioteka librsync.
+wget http://curl.haxx.se/download/curl-7.19.5.tar.gz
+tar xzvf curl-7.19.5.tar.gz
+cd curl-7.19.5
+./configure --host=i586-mingw32msvc \
+        --prefix=/usr/local/i586-mingw32msvc \
+        --target=i586-mingw32msvc \
+	--with-zlib=/usr/local/i586-mingw32msvc \
+	--with-openssl=/usr/local/i586-mingw32msvc
+./configure --host=i586-mingw32msvc \
+	--prefix=/usr/local/i586-mingw32msvc \
+	--target=i586-mingw32msvc \
+	--with-zlib=/usr/local/i586-mingw32msvc \
+	--with-ssl=/usr/local/i586-mingw32msvc \
+	--enable-ares \
+	--without-random
+make
+make install
 
-¦ci±gamy najnowsz± wersjê z http://librsync.sourceforge.net, rozpakowujemy,
-patch'ujemy i  kompilujemy:
-% wget http://downloads.sourceforge.net/librsync/librsync-0.9.7.tar.gz
-% tar xzf librsync-0.9.7.tar.gz
-% cd librsync-0.9.7
-% patch -p0 <<EOF
+
+3.10 librsync library.
+
+We need to patch sources before compiling:
+
+wget http://downloads.sourceforge.net/librsync/librsync-0.9.7.tar.gz
+tar xzf librsync-0.9.7.tar.gz
+cd librsync-0.9.7
+patch -p0 <<EOF
 diff -ur ../../librsync-0.9.7/configure.ac ./configure.ac
 --- configure.ac        2006-02-09 15:59:41.000000000 +0100
 +++ configure.ac        2006-02-09 14:59:53.000000000 +0100
@@ -518,181 +313,177 @@ diff -ur ../../librsync-0.9.7/Makefile.am ./Makefile.am
  LDADD = librsync.la
 EOF
 
-% ./autogen.sh
-% ./configure --prefix=/usr/local/i586-mingw32msvc \
+./autogen.sh
+./configure --prefix=/usr/local/i586-mingw32msvc \
 	--enable-shared --host=i586-mingw32msvc \
 	--with-gnu-ld
-% make
-# make install
+make
+make install
+cp .libs/librsync-1.dll /usr/local/i586-mingw32msvc/lib/
 
-Uwaga - biblioteka librsync-1.dll zostanie zainstalowana w katalogu
-/usr/local/i586-mingw32msvs/bin
 
-3.9. Biblioteka lua.
+3.11. Lua (LuaJIT) library.
 
-Bibliotekê lua mo¿na pobraæ spod adresu http://www.lua.org/ftp/lua-5.1.tar.gz.
-Po rozpakowaniu nale¿y poprawiæ zawarto¶æ pliku src/Makefile:
+wget http://luajit.org/download/LuaJIT-1.1.5.tar.gz
+tar xzvf LuaJIT-1.1.5.tar.gz
+cd LuaJIT-1.1.5
 
-* zmiennej CC nadaæ warto¶æ i586-mingw32msvc-gcc
+Now edit src/Makefile and set values:
+
 CC= i586-mingw32msvc-gcc
-
-* zmiennej RANLIB nadaæ warto¶æ i586-mingw32msvc-ranlib
 RANLIB= i586-mingw32msvc-ranlib
+(RANLIB is set in mingw target section)
 
-Nastêpnie w katalogu src wydaæ polecenie:
-# make mingw
+Compile and copy files:
 
-Nastêpnie nale¿y w dowolnym katalogu utworzyæ dwa podkatalogi:
-include i lib. 
+make mingw
+cp src/*.h etc/lua.hpp /usr/local/i586-mingw32msvc/include/
+cp src/lua51.dll /usr/local/i586-mingw32msvc/lib/liblua.dll
+cp src/lua51.dll /usr/local/i586-mingw32msvc/lib/lua51.dll
 
-Nastêpnie skopiowaæ do nich pliki:
-include:    src/lua.h src/luaconf.h src/lualib.h src/lauxlib.h etc/lua.hpp
-    lib:    src/liblua.a
 
-Podczas kompilacji SZARP`a nale¿y do polecenia ./configure dodaæ opcjê:
---with-lua-prefix=<¶cie¿ka do katalogu z katalogami include i lib>
+3.12. c-ares library.
 
-3.10 Biblioteka c-ares.
+apt-get source libc-ares-dev
+cd c-ares-1.6.0
+./configure --host=i586-mingw32msvc --target=i586-mingw32msvc --enable-shared \
+ --prefix=/usr/local/i586-mingw32msvc/ --without-random
+make
+make install
+cp .libs/libcares-2.dll /usr/local/i586-mingw32msvc/lib/
 
-Biblioteke mozna pobrac z repozytorium debiana. 
 
-% apt-get source libc-ares-dev
+3.13. xmlrpc-epi library.
 
-% cd c-ares-x.x.x
+wget http://sourceforge.net/projects/xmlrpc-epi/files/xmlrpc-epi-base/xmlrpc-epi-0.54.tar.gz
+tar xzvf xmlrpc-epi-0.54.tar.gz
+cd xmlrpc-epi-0.54
+./autogen.sh
+./configure --host=i586-mingw32msvc --target=i586-mingw32msvc \
+	--prefix=/usr/local/i586-mingw32msvc \
+	--with-expat=/usr/local/i586-mingw32msvc \
+	CPPFLAGS="-I/usr/local/i586-mingw32msvc/include -D_MSC_VER" \
+	LDFLAGS=-L/usr/local/i586-mingw32msvc/lib \
+	LIBS="-liconv"
 
-% ./configure --host=i586-mingw32msvc --target=i586-mingw32msvc --enable-shared 
---prefix=/usr/local/i586-mingw32msvc/ --without-random
 
-# make install
+3.14. boost libraries.
 
-4. Kompilacja SZARP'a.
+Well, there's a problem - boost uses own building tool, called 'bjam'. And it
+doesn't support cross-compilation - we were not able to build for example 
+boost thread library for Mingw using Linux. So, we just built boost on Windows
+using Mingw tools. We asume you place boost libraries under /usr/local/boost.
 
-Je¶li przy instalacji korzystali¶my z gotowych plików dll, to nale¿y
-jeszcze zadbaæ o odpowiednie skrypty *-config wskazuj±ce miejsce
-zainstalowania bibliotek:
-kopiujemy skrypty do katalogu /usr/local/i586-mingw32msvc/bin
-# cd <katalog z ¼ród³ami SZARPa>
-# cp script/config/*-config /usr/local/i586-mingw32msvc/bin
-UWAGA: je¶li (wbrew zaleceniom) instalowali¶my biblioteki do innego katalogu
-ni¿ /usr/local/i586-mingw32msvc to nale¿y zmieniæ warto¶æ zmiennych
-prefix, we wszystkich skryptach, na odpowiedni± warto¶æ (katalog do
-którego biblioteki zosta³y zainstalowane).
+You need at least filesystem, date_time, program_options, regex and thread 
+libraries.
 
-W katalogu ze ¼ród³ami SZARP'a rozpoczynamy jak zwykle:
 
-% ./autogen.sh
+3.15. sqlite library.
 
-(katalog musi byæ wyczyszczony, je¶li potrzeba nale¿y wcze¶niej u¿yæ komendy
-'make distclean').
+wget http://www.sqlite.org/sqlite-amalgamation-3.6.16.tar.gz
+tar xzvf sqlite-amalgamation-3.6.16.tar.gz
+cd sqlite-3.6.16
+./configure --host=i586-mingw32msvc --target=i586-mingw32msvc \
+        --prefix=/usr/local/i586-mingw32msvc 
+make
+make install
 
-Nastêpnie tworzymy nowy katalog i wchodzimy do niego:
 
-% mkdir winbuild
-% cd winbuild
+4. Compiling SZARP.
 
-Uruchamiamy configure:
+In SZARP source directory run:
 
-% ../configure --host=i586-mingw32msvc --target=i586-mingw32msvc \
+./autogen.sh
+
+Source directory must be cleaned, if it is not - use 'fakeroot make distclean' first.
+Create build catalog and enter it:
+
+mkdir winbuild
+cd winbuild
+
+Running configure:
+
+../configure --host=i586-mingw32msvc --target=i586-mingw32msvc \
     --with-xml-prefix=/usr/local/i586-mingw32msvc \
     --with-xslt-prefix=/usr/local/i586-mingw32msvc \
     --with-curl-prefix=/usr/local/i586-mingw32msvc \
-    --with-wx-config=/usr/local/i586-mingw32msvc/lib/wx/config/i586-mingw32msvc-msw-ansi-release-2.8 \
-    --with-ssl-prefix=/usr/local/i586-mingw32msvc \
-    --with-c-ares-prefix=/usr/local/i586-mingw32msvc \
-    --with-rsync-prefix=/usr/local/i586-mingw32msvc 
-
-Dla wersji unicode odpowiednia komenda mo¿e mieæ postaæ:
-
-% ../configure --host=i586-mingw32msvc --target=i586-mingw32msvc\
- --with-xml-prefix=/usr/local/i586-mingw32msvc\
- --with-xslt-prefix=/usr/local/i586-mingw32msvc\
- --with-curl-prefix=/usr/local/i586-mingw32msvc\
- --with-wx-config=/usr/local/i586-mingw32msvc/lib/wx/config/i586-mingw32msvc-msw-unicode-release-2.8\
- --with-ssl-prefix=/usr/local/i586-mingw32msvc\
- --with-rsync-prefix=/usr/local/i586-mingw32msvc\
- --with-lua-prefix=/usr/local/lua-mingw\
- --with-boost=/usr/local/boost\
- --with-boost-thread=boost_thread-mt\
- --with-c-ares-prefix=/usr/local/i586-mingw32msvc
-
-
-UWAGA: je¶li pliki biblioteki OpenSSL ró¿ni± siê od standardowych
-(libssl32.dll lub ssleay32-0.9.8.dll i libeay32.dll lub
-cryptoeay32-0.9.8.dll) nale¿y podaæ je przez parametry --with do skryptu
-./configure
-Je¶li np. nasze pliki dll biblioteki OpenSSL nazywaj± siê my-ssl.dll i
-my-eay.dll to wywo³anie ./configure powinno wygl±daæ tak (proszê zwróciæ
-uwagê na dwa ostanie argumenty):
-
-% ../configure --host=i586-mingw32msvc --target=i586-mingw32msvc \
-    --with-xml-prefix=/usr/local/i586-mingw32msvc \
-    --with-xslt-prefix=/usr/local/i586-mingw32msvc \
-    --with-curl-prefix=/usr/local/i586-mingw32msvc \
-    --with-wx-prefix=/usr/i586-mingw32msvc \
-    --with-wx-exec-prefix=/usr/i586-mingw32msvc \
-    --with-wx-config=/usr/lib/wx/config/i586-mingw32msvc-msw-ansi-release-2.6 \
+    --with-wx-config=/usr/local/i586-mingw32msvc/lib/wx/config/i586-mingw32msvc-msw-unicode-release-2.8 \
     --with-ssl-prefix=/usr/local/i586-mingw32msvc \
     --with-rsync-prefix=/usr/local/i586-mingw32msvc \
-    --with-c-ares-prefix=/usr/local/i586-mingw32msvc \
-    --with-ssl-dll-name=my-ssl \
-    --with-ssl-dll-eay-name=my-eay
+    --with-boost=/usr/local/boost \
+    --with-boost-thread=boost_thread-mt \
+    --with-xmprpc-epi-prefix=/usr/local/i586-mingw32msvc \
+    --with-lua-prefix=/usr/local/i586-mingw32msvc \
+   LDFLAGS=-L/usr/local/i586-mingw32msvc/lib \
+   LIBS="-liconv -lexpat" \
+   CPPFLAGS=-I/usr/local/i586-mingw32msvc/include \
+   CFLAGS=-DCURL_STATICLIB \
+   CXXFLAGS=-DCURL_STATICLIB 
 
-Istotne jest aby nazwy plików bibliotek podawaæ bez rozszerzenia .dll tzn.
-piszemy "--with-ssl-dll-name=my-ssl" a NIE "--with-ssl-dll-name=my-ssl.dll"
+Output should end with something like:
 
-
-Powinni¶my otrzymaæ co¶ w stylu:
-
-SZARP 2.2 configured.
+SZARP 3.1 configured.
 Build host type:              i686-pc-linux-gnu
 Configured for host type:     i586-pc-mingw32msvc
-Configured with X windows:    no
-Configured with TclTk:        no
-Configured with Motif:        no
-Build old Motif programs:     no
-Configured with wxWidgets:    yes
-Configured with codebase:     no
-Configured with newt:         no
-Configured with OpenSSL:      yes
-Configured with PAM:          no
-Configured with curl:         yes
-Configured with rsync:        yes
-Configured for .deb build:    no
+Configured with ICU:               yes           
+Configured with X windows:         no            
+Configured with wxWidgets:         yes           
+Configured with newt:              no            
+Configured with OpenSSL:           yes           
+Configured with xmlrpc-epi:        yes           
+Configured with PAM:               no            
+Configured with curl:              yes           
+Configured with rsync:             yes
+Configured with lua:               yes
+Configured with FTGL:              no
+Configured with GDK-2.0:           no
+Configured with python 2.4         yes
+Configured with ldap               no
+Configured with lber               no
+Configured with sqlite3            yes
+Configured with gstreamer          no
+Configured with vmime              no
+Configured with libevent           yes
+Configured with c-ares             yes
+Configured with boost              yes
+Configured with boost filesystem   yes
+Configured with boost date time    yes
+Configured with boost regex        yes
+Configured with boost thread       yes
+Configured with boost program opts yes
+Configured with zip                yes
+Configured for .deb build:         no
 Source directory:             ..
 Install prefix:               /opt/szarp
-Subdirs to include:           include libSzarp libSzarp2 wx utils resources script
+Subdirs to include:           libSzarp libSzarp2 extern wx utils www resources script
 
-Type 'make' to build SZARP
+Compilation:
 
----------
+make
 
-Wpisujemy wiêc:
+In wx subdirectories we should get *.exe files. We need also to generate
+documentation:
 
-% make
-
-W katalogu 'wx/draw3' otrzymujemy plik draw3.exe, podobnie z programami
-pipes.exe itp.
+make doc
 
 
-5. Instalacja programów.
+5. Installation package.
 
-Aby wygenerowaæ dokumentacjê nale¿y wej¶æ do katalogu g³ównego:
-% cd ..
-i wydaæ polecenie:
-% ./configure
-a nastêpnie:
-% make doc
-po wygenerowaniu dokumentacji wracamy do katalogu winbuild:
-% cd winbuild
+SZARP must be compiled according to previous instructions.
+We use NSIS to create installation package, so we need to install it:
 
-Tworzenie wersji instalacyjnych programów wymaga zainstalowania pakietu nsis
-(NullSoft Scriptable Install System). Mo¿emy teraz wykonaæ nastêpuj±c±
-komendê:
+apt-get install nsis
 
-% make winsetup
+Debian version of nsis does not include some required plugins, so we need
+to download KillProc plugin separately:
 
-Spowoduje ona utworzenie w podkatalogu wx/common instalatora z bibliotekami
-Szarpa, a w podkatalogach poszczególnych programów instalatorów dla tych
-programów. Nazwy tworzonych instalatorów koñcz± siê na 'Setup.exe'.
-Wa¿ne jest, aby najpierw zainstalowaæ biblioteki (instalator sam
-zreszt± tego pilnuje).
+wget http://mulder.dummwiedeutsch.de/pub/downloads/testing/NSIS-KillProc-Plugin.2006-12-16.zip
+unzip NSIS-KillProc-Plugin.2006-12-16.zip
+cp KillProc.dll /usr/share/nsis/Plugins
+
+Then:
+
+make winsetup
+
+It should create SzarpSetup.exe in wx subdirectory.
+That's all, folks!

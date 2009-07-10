@@ -46,7 +46,7 @@ function RmTmp() {
 function Error() {
 	_STR=$1
 	echo "winsetup error: $_STR"
-	RmTmp
+	#RmTmp
 	exit 1
 }
 
@@ -169,14 +169,13 @@ function CopyDlls()
 	/usr/local/i586-mingw32msvc/lib/wxmsw28u_*.dll \
 	/usr/local/i586-mingw32msvc/lib/*eay32*.dll \
 	/usr/local/i586-mingw32msvc/lib/*ssl*.dll \
-	/usr/local/i586-mingw32msvc/lib/*cares*.dll \
-	/usr/local/i586-mingw32msvc/lib/*freetype*.dll \
-	/usr/local/i586-mingw32msvc/*/zlib1.dll \
+	/usr/local/i586-mingw32msvc/*/zlib*.dll \
 	/usr/local/i586-mingw32msvc/bin/*iconv*.dll \
 	/usr/local/i586-mingw32msvc/bin/libxml2*.dll \
-	/usr/local/i586-mingw32msvc/*/libcurl-*.dll \
-	/usr/local/i586-mingw32msvc/lib/librsync-1.dll \
-	/usr/local/i586-mingw32msvc/bin/libzip-1.dll \
+	/usr/local/i586-mingw32msvc/lib/librsync*.dll \
+	/usr/local/i586-mingw32msvc/bin/libcares*.dll \
+	/usr/local/i586-mingw32msvc/bin/libexpat*.dll \
+	/usr/local/i586-mingw32msvc/*/lua*.dll \
 	$MINGW"
 	
 	cat >> "`GetTmp`/FileList.nsh" <<EOF
@@ -185,7 +184,7 @@ EOF
 
 	for i in $DDLS ; do
 		if [ ! -f $i ] ; then
-			error "Can't find DLL $i"
+			Error "Can't find DLL $i"
 		fi
 		AddFile "bin/`basename "$i" .gz`"
 		cp $i "$_DIR/bin"

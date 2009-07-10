@@ -37,7 +37,7 @@ ekstraktor3_LDADD = $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) @XML_LIBS@ @WX_LIBS@
 		    @XSLT_LIBS@ @LUA_LIBS@ @ZIP_LIBS@ \
 		    @BOOST_LDFLAGS@ @BOOST_FILESYSTEM_LIB@ @BOOST_THREAD_LIB@ @BOOST_DATE_TIME_LIB@
 
-ekstraktor3_LOCALES = @srcdir@/ekstraktor3.mo
+ekstraktor3_LOCALES = pl/ekstraktor3.mo
 ekstraktor3_LOCALES_SRC = pl/ekstraktor3.po
 ekstraktor3_LOCALES_TMP = pl/ekstraktor3.pot
 
@@ -46,7 +46,8 @@ CLEANFILES = $(ekstraktor3_LOCALES)
 EXTRA_DIST = $(ekstraktor3_LOCALES_SRC) $(ekstraktor3_LOCALES)
 
 # Rule to create mo files
-$(ekstraktor3_LOCALES): $(ekstraktor3_LOCALES_SRC)
+%.mo: %.po
+	mkdir -p `dirname $@`
 	@MSGFMT@ -o $@ $<
 
 all: ekstraktor3$(EXEEXT) $(ekstraktor3_LOCALES)

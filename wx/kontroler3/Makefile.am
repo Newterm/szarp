@@ -29,7 +29,7 @@ kontroler3_SOURCES = \
 kontroler3_DEPENDENCIES =
 kontroler3_LDADD = $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) @XML_LIBS@ @WX_LIBS@ @LUA_LIBS@ @CURL_LIBS@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_FILESYSTEM_LIB@
 
-kontroler3_LOCALES = @srcdir@/kontroler3.mo
+kontroler3_LOCALES = pl/kontroler3.mo
 kontroler3_LOCALES_SRC = pl/kontroler3.po
 kontroler3_LOCALES_TMP = pl/kontroler3.pot
 
@@ -41,8 +41,10 @@ CLEANFILES = $(kontroler3_LOCALES)
 EXTRA_DIST = $(kontroler3_LOCALES_SRC) $(kontroler3_LOCALES)
 
 # Rule to create mo files
-$(kontroler3_LOCALES): $(kontroler3_LOCALES_SRC)
+%.mo: %.po
+	mkdir -p `dirname $@`
 	@MSGFMT@ -o $@ $<
+
 
 all: kontroler3$(EXEEXT) $(kontroler3_LOCALES)
 

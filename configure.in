@@ -150,9 +150,6 @@ if test "$host_cpu" = "xscale" ; then
 	AC_DEFINE(ARM_ATOMICITY_BUG, 1, [Define to 1 if arm/xscale glibc bug is detected])
 fi
 
-# posix thread switches
-ACX_PTHREAD
-
 if test "$build_os" != "linux-gnu" ; then
         AC_MSG_WARN([
                        The only supported and tested build platform is
@@ -183,39 +180,11 @@ fi
 
 AM_CONDITIONAL(MINGW32_OPT, test "x$with_mingw32" = "xyes")
 
-# Check for type of Linux distribiution and set 'distro' to redhat,
-# fedora, debian or unknown (or mingw32).
-if test "x$target_alias" = "x" ; then
-	distro="unknown"; init_d="/etc/init.d" distro_file="/dev/null" lockdir="/var/lock/subsys"
-	AC_CHECK_FILE([/etc/debian_version], [distro="debian"; init_d="/etc/init.d"; distro_file="/etc/debian_version"], )
-	if test "$distro" = "unknown" ; then
-		AC_CHECK_FILE([/etc/fedora-release], [distro="fedora"; init_d="/etc/rc.d/init.d"; distro_file="/etc/fedora-release"], )
-	fi
-	if test "$distro" = "unknown" ; then
-		AC_CHECK_FILE([/etc/redhat-release], [distro="redhat"; init_d="/etc/rc.d/init.d"; distro_file="/etc/redhat-release"], )
-	fi
-	AC_MSG_CHECKING([for type of Linux distribution])
-	AC_MSG_RESULT([$distro($init_d)])
-else
-	distro="$host_os"
-	init_d="/etc/init.d"
-	distro_file="/dev/null"
-	lockdir="/var/lock"
+# posix thread switches
+if test "$with_mingw32" != "yes" ; then
+	ACX_PTHREAD
 fi
-AC_SUBST(distro)
-AC_SUBST(init_d)
-AC_SUBST(distro_file)
-AC_SUBST(lockdir)
 
-if test "$distro" = "debian" ; then
-AC_CHECK_PROG([DH_TESTROOT], [dh_testroot], [dh_testroot], [])
-if test "x$DH_TESTROOT" = "x" ; then
-        AC_MSG_WARN([
-                      debhelper not found - you wan't be able to create Debian
-		      packages
-                     ])
-fi
-fi
 # Check for Python
 no_python=""
 AC_ARG_WITH([python], AC_HELP_STRING([--without-python], [do not use python]),
@@ -329,44 +298,6 @@ if test x$no_x != xyes ; then
 	X_CFLAGS="$XPM_CFLAGS $X_CFLAGS"
 fi
 
-if test "x$no_x" != "xyes" ; then
-	AC_CHECK_SHORTXDRAWARC
-	AC_CHECK_SHORTXFILLARC
-	AH_VERBATIM([short_xdrawarc],
-[#ifndef HAVE_SHORTXDRAWARC
-#define short_XDrawArc(display, d, gc, x, y, w, h) \
-         XDrawArc((display), (d), (gc), (x), (y), (w), (h), 0, 360*64)
-#else
-#define short_XDrawArc XDrawArc
-#endif])
-
-	AH_VERBATIM([short_xfillarc],
-[#ifndef HAVE_SHORTXFILLARC
-#define short_XFillArc(display, d, gc, x, y, w, h) \
-         XFillArc((display), (d), (gc), (x), (y), (w), (h), 0, 360*64)
-#else
-#define short_XFillArc XFillArc
-#endif])
-fi
-
-# Short semctl test
-if test "$with_mingw32" != "yes" ; then
-        AC_CHECK_SHORTSEMCTL([short_semctl=yes],
-                             [short_semctl=no])
-        if test x$short_semctl = xyes ; then
-                AC_DEFINE([HAVE_SHORTSEMTCL], [1],
-                          [Define to 1 if 3-args semctl is available])
-        fi
-        AH_VERBATIM([short_semctl],
-                    [/* 3 or 4 args semctl */
-#ifndef HAVE_SHORTSEMCTL
-#define short_semctl(a,b,c) semctl((a), 0, (b), (c))
-#else
-#define short_semctl semctl
-#endif])
-fi
-
-
 AH_VERBATIM([_GNU_SOURCE],
 [/* Enable GNU extensions on systems that have them.  */
 #ifndef _GNU_SOURCE
@@ -459,9 +390,10 @@ if test "$no_wx" != "yes" ; then
 	        AM_WX_GLCANVAS(no_wxglcanvas=no, no_wxglcanvas=yes)
 	        if test "x$no_wxglcanvas" = "xyes" ; then
         	        AC_MSG_WARN([
-                              wxWidgets is configured without OpenGL support.
+                              wxWidgets is configured without OpenGL support, disabling wx support.
                               ])
 			AC_DEFINE(HAVE_GLCANVAS, 0, [Define to 1 when wxWidgets is compiled with GL support])
+			no_wx=yes
 		else
 			AC_DEFINE(HAVE_GLCANVAS, 1, [Define to 1 when wxWidgets is compiled with GL support])
 	        fi
@@ -564,26 +496,13 @@ if test "x$no_ssl" = "xyes" ; then
 fi
 
 # Check for c-ares library
-no_cares=""
-AC_ARG_WITH([c-ares], AC_HELP_STRING([--without-c-ares], [do not use c-ares library]),
-[
-	if test "$withval" = "no" ; then
-		no_cares="yes"
-	else
-		no_cares=""
-	fi
-],)
-if test "$no_cares" != "yes" ; then
-	AC_PATH_CARES( [], [no_cares=yes] )
-		if test x$no_cares = xyes ; then
-                AC_MSG_WARN([
+no_cares="yes"
+PKG_CHECK_MODULES(CARES, libcares, no_cares="no", [AC_MSG_RESULT([
 			c-ares library not found on your system, check if
 			c-ares development package is installed;
 			configuring without
 		])
-        fi
-fi
-
+])
 if test "x$no_cares" = "xyes" ; then
         AC_DEFINE(NO_CARES, 1, [Define to 1 if c-ares library is not available])
 fi
@@ -852,17 +771,13 @@ if test "x$with_mingw32" != "xyes"; then
 	PKG_CHECK_MODULES(GTK, gtk+-2.0, no_gtk20="no", [AC_MSG_RESULT(no)])
 fi
 
-
-#Check for sqllite library
+#Check for sqlite library
 no_sqlite="yes";
-if test "x$with_mingw32" != "xyes"; then
-	PKG_CHECK_MODULES(SQLITE3, sqlite3, no_sqlite="no", [AC_MSG_RESULT([
-				sqllite3 library not found on your system,
-				configuring without
-			])
-	])
-fi
-
+PKG_CHECK_MODULES(SQLITE3, sqlite3, no_sqlite="no", [AC_MSG_RESULT([
+			sqllite3 library not found on your system,
+			configuring without
+		])
+])
 if test "x$no_sqlite" = "xyes"; then
 	AC_DEFINE(NO_SQLITE3, 1, [ Define to 1 if sqlite3 is not available ])
 fi
@@ -1000,7 +915,7 @@ AC_SUBST(SZBEDIT)
 
 # WX programs needs wxWidgets
 if test x$no_wx != xyes ; then
-        SUBDIRS="$SUBDIRS wx"
+        SUBDIRS="$SUBDIRS extern wx"
         DRAW3=draw3
         if test x$host_os != xmingw32 ; then
                 IPKEDIT=ipkedit
@@ -1070,7 +985,7 @@ if test x$no_ssl != xyes -a x$no_rsync != xyes ; then
 fi
 
 # Python/pylons
-if test x$no_python != xyes -a "x$PYBABEL" != "x"; then
+if test x$no_python != xyes -a "x$PYBABEL" != "x" -a x$with_mingw32 != xyes; then
 	SUBDIRS="$SUBDIRS www"
 fi
 
@@ -1086,6 +1001,8 @@ AC_SUBST(SUBDIRS)
 
 AC_OUTPUT( \
 	Makefile \
+	extern/Makefile \
+	extern/wxscintilla/Makefile \
 	isl/Makefile \
 	isl/server/Makefile \
 	isl/paramd/Makefile \
@@ -1256,7 +1173,7 @@ else
 fi
 
 echo -n "Configured with libevent           "
-if test "x$no_libevent " != "xyes" ; then
+if test "x$no_libevent" != "xyes" ; then
         echo "yes"
 else
         echo "no"

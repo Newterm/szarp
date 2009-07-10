@@ -395,9 +395,9 @@ void Rmipc()
 	    "parcook: removing 'alert' shared memory segment, shmctl() returned %d errno %d",
 	    i, errno);
 
-	i = short_semctl(SemDes, IPC_RMID, 0);
+	i = semctl(SemDes, IPC_RMID, 0);
 	sz_log((i < 0 ? 1 : 10),
-	    "parcook: removing semaphores, short_semctl() returned %d errno %d",
+	    "parcook: removing semaphores, semctl() returned %d errno %d",
 	    i, errno);
 
 	i = msgctl(MsgSetDes, IPC_RMID, NULL);

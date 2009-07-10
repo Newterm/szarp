@@ -17,7 +17,7 @@ cleanconfig: maintainer-clean
 
 # Create documentation
 doc documentation:
-	${MAKE} -C $(srcdir)/resources/documentation/new doc
+	${MAKE} -C resources/documentation/new doc
 
 # Make version info
 version: 
@@ -41,9 +41,6 @@ endif
 sysinfo:
 	$(SHELL) script/sysinfo
 
-get_sysinfo:
-	$(SHELL) utils/aupdater.sh -s
-	
 doxy:
 	cd @srcdir@ && doxygen
 

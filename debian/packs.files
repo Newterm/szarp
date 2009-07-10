@@ -4,7 +4,6 @@ Files: opt/szarp/bin/{szrsync,szbpush,ssh_tunel.sh,szppp-off,szppp-on,szredialer
 Files: opt/szarp/bin/{isdn-*-sh,ipcclean,ipcinfo,lpparse,szarp_scripter}
 Files: opt/szarp/resources/{xslt,version.info,dictionary.xml}
 Files: opt/szarp/logs
-Files: var/lock/subsys
 
 Package: szarp-daemons
 Files: opt/szarp/bin/{parcook,sender,analiza,meaner3,sss,checker,psetd,stampd,ssconf.py}

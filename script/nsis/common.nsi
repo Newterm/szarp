@@ -46,7 +46,7 @@ Var PROCESS
 oprogramowania SZARP"
 !define MUI_WELCOMEPAGE_TEXT \
 "Ten kreator pomo¿e Ci zainstalowaæ oprogramowanie\r\n\
-SZARP 3.0.\r\n\
+SZARP 3.1.\r\n\
 \r\n\
 Zalecane jest zamkniêcie wszystkich uruchomionych\r\n\
 programów przed rozpoczêciem instalacji.\r\n\
@@ -137,19 +137,21 @@ FunctionEnd
 
 Function Kill
   
-  KillProcDLL::KillProc $PROCESS
+  StrCpy $0 $PROCESS
+  KillProc::KillProcesses
 
   ;TODO: if not ($RO==0 || $R0==603)
   ;     MsgBox ...
   IntCmp $R0 0 killing_ok
   IntCmp $R0 603 killing_ok
-  messagebox mb_ok|mb_iconexclamation "zabicie procesu $process by³o niemo¿liwe"
+  messagebox mb_ok|mb_iconexclamation "cannot kill process $process"
   killing_ok:
 FunctionEnd
 
 Function un.Kill
   
-  KillProcDLL::KillProc $PROCESS
+  StrCpy $0 $PROCESS
+  KillProc::KillProcesses
 
   ;TODO: if not ($RO==0 || $R0==603)
   ;     MsgBox ...

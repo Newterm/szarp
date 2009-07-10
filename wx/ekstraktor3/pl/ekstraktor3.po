@@ -296,7 +296,7 @@ msgid ""
 "format (*.xml)|*.xml|All files (*.*)|*.*"
 msgstr ""
 "Warto¶ci oddzielone przecinkami (*.csv)|*.csv|OpenOffice arkusz (*.ods)|*."
-"sxc|Format XML (*.xml)|*.xml|Wszystkie pliki (*.*)|(*.*)"
+"ods|Format XML (*.xml)|*.xml|Wszystkie pliki (*.*)|(*.*)"
 
 #: EkstraktorMainWindow.cpp:508
 msgid "Please wait"

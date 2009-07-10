@@ -55,8 +55,7 @@ EXTRA_DIST = \
       @srcdir@/szarp.vim \
       @srcdir@/paramd_access.conf 
 
-DISTRO=@distro@
-INIT_D=@init_d@
+INIT_D="/etc/init.d"
 
 @srcdir@/szarp_in.cfg: @srcdir@/SZARP_IN_CFG_TEMPLATE
 	@cat @srcdir@/SZARP_IN_CFG_TEMPLATE | \
@@ -82,7 +81,6 @@ parstart_:
          > parstart
 	@chmod +x parstart
 	
-	@( if [ $(DISTRO) = 'debian' ] ; then $(INSTALL) -d $(DESTDIR)@lockdir@ ; fi )
 	@( if [ ! -d $(DESTDIR)/etc/szarp ] ; then $(INSTALL) -d $(DESTDIR)/etc/szarp ; fi ) 
 	@( if [ ! -f $(DESTDIR)$(INIT_D)/parstart ] ; then \
 		if [ ! -e $(DESTDIR)$(INIT_D) ] ; then \
@@ -104,17 +102,6 @@ parstart_cfg: parstart_ DATABASE_PREFIX
                              /etc/szarp/parstart.cfg \
 	) 
 	
-update_rc_d:
-	@( if [ $(DISTRO) = 'redhat' ] ; then \
-		ln -fs ../init.d/parstart /etc/rc.d/rc5.d/S99parstart ; \
-		ln -fs ../init.d/parstart /etc/rc.d/rc5.d/K02parstart ; \
-	elif [ $(DISTRO) = 'fedora' ] ; then \
-		ln -fs ../init.d/parstart /etc/rc.d/rc5.d/S99parstart ; \
-		ln -fs ../init.d/parstart /etc/rc.d/rc5.d/K02parstart ; \
-	elif [ $(DISTRO) = 'debian' ] ; then \
-		update-rc.d parstart defaults 98 ; \
-	fi )
-
 if !DEB_BUILD
 icons:
 	@[ -d /usr/share/icons ] && \

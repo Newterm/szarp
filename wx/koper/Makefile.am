@@ -25,7 +25,7 @@ DISTRO=@distro@
 
 WIN_APP_NAME=KOPER
 
-koper_LOCALES = @srcdir@/koper.mo
+koper_LOCALES = pl/koper.mo
 koper_LOCALES_SRC = pl/koper.po
 koper_LOCALES_TMP = pl/koper.pot
 
@@ -53,7 +53,8 @@ koper_DEPENDENCIES = $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2)
 koper_LDADD = $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) @WX_LIBS@ @XML_LIBS@ @LUA_LIBS@ @FTGL_LIBS@ @WXGL_LIBS@ @BOOST_LDFLAGS@ @BOOST_FILESYSTEM_LIB@ @BOOST_THREAD_LIB@ @BOOST_DATE_TIME_LIB@
 
 # Rule to create mo files
-$(koper_LOCALES): $(koper_LOCALES_SRC)
+%.mo: %.po
+	mkdir -p `dirname $@`
 	@MSGFMT@ -o $@ $<
 
 all: koper$(EXEEXT) $(koper_LOCALES)
