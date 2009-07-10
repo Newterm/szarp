@@ -1,6 +1,10 @@
 $Id$
 
 2009-07-10	Pawel Palucha <pawel@praterm.com.pl>
+	* extern/*: added forgotten Makefile.am files.
+	* INSTALL.Windows: fixes after installation on fresh machine.
+
+2009-07-10	Pawel Palucha <pawel@praterm.com.pl>
 	* debian/pack.files: removed unsed /var/lock/subsys directory.
 	* www/pylons/sssweb/sssweb.egg-info: content of this directory is
 	regenerated during build - removed from repository.

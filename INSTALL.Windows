@@ -122,7 +122,6 @@ Versions of libraries can change, of course.
 
 3.1. iconv library.
 
-
 wget http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.13.1.tar.gz
 tar xzvf libiconv-1.13.1.tar.gz
 cd libiconv-1.13.1
@@ -163,7 +162,8 @@ CC=/usr/bin/i586-mingw32msvc-gcc \
 	./configure --prefix=/usr/local/i586-mingw32msvc
 make
 make install
-
+i586-mingw32msvc-gcc -Wall -shared adler32.o compress.o crc32.o gzio.o uncompr.o deflate.o trees.o zutil.o inflate.o infback.o inftrees.o inffast.o  -o libz.dll
+cp libz.dll /usr/local/i586-mingw32msvc/lib
 
 3.4. zip library.
 
@@ -232,6 +232,8 @@ cd libxslt-1.1.24
 	--with-libxml-prefix=/usr/local/i586-mingw32msvc \
 	--without-python \
 	--without-crypto
+make
+make install
 
 Testing:
 
@@ -264,11 +266,6 @@ wine /usr/local/i586-mingw32msvc/bin/openssl.exe --help
 wget http://curl.haxx.se/download/curl-7.19.5.tar.gz
 tar xzvf curl-7.19.5.tar.gz
 cd curl-7.19.5
-./configure --host=i586-mingw32msvc \
-        --prefix=/usr/local/i586-mingw32msvc \
-        --target=i586-mingw32msvc \
-	--with-zlib=/usr/local/i586-mingw32msvc \
-	--with-openssl=/usr/local/i586-mingw32msvc
 ./configure --host=i586-mingw32msvc \
 	--prefix=/usr/local/i586-mingw32msvc \
 	--target=i586-mingw32msvc \
@@ -331,7 +328,7 @@ cd LuaJIT-1.1.5
 Now edit src/Makefile and set values:
 
 CC= i586-mingw32msvc-gcc
-RANLIB= i586-mingw32msvc-ranlib
+RANLIB= i586-mingw32msvc-strip
 (RANLIB is set in mingw target section)
 
 Compile and copy files:
@@ -344,7 +341,8 @@ cp src/lua51.dll /usr/local/i586-mingw32msvc/lib/lua51.dll
 
 3.12. c-ares library.
 
-apt-get source libc-ares-dev
+wget http://c-ares.haxx.se/c-ares-1.6.0.tar.gz
+tar xzvf c-ares-1.6.0.tar.gz
 cd c-ares-1.6.0
 ./configure --host=i586-mingw32msvc --target=i586-mingw32msvc --enable-shared \
  --prefix=/usr/local/i586-mingw32msvc/ --without-random
@@ -365,6 +363,8 @@ cd xmlrpc-epi-0.54
 	CPPFLAGS="-I/usr/local/i586-mingw32msvc/include -D_MSC_VER" \
 	LDFLAGS=-L/usr/local/i586-mingw32msvc/lib \
 	LIBS="-liconv"
+make
+make install
 
 
 3.14. boost libraries.
