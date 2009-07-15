@@ -1,6 +1,12 @@
-szarp (3.1.11) unstable; urgency=low
+szarp (3.1.13) unstable; urgency=low
 
-  * upstream version 3.1.11
+  * upstream version 3.1.13
+
+ -- Darek Marcinkiewicz <reksio@praterm.pl>  Wed, 15 Jul 2009 16:14:36 +0200
+
+szarp (3.1.12) unstable; urgency=low
+
+  * upstream version 3.1.12
 
  -- Darek Marcinkiewicz <reksio@praterm.pl>  Wed, 15 Jul 2009 11:20:36 +0200
 
