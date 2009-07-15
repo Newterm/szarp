@@ -382,6 +382,8 @@ msgid ""
 "Remarks sending not configured, You should set username, password, and "
 "remarks server adddress"
 msgstr ""
+"Us³uga komentarzy nie zosta³a skonfigurowana. Musisz podaæ nazwê u¿ytkownika "
+"has³o i adres serwera by móc korzystaæ z komentarzy."
 
 #: drawfrm.cpp:904 drawfrm.cpp:942
 msgid "Remarks not configured."
@@ -1366,7 +1368,7 @@ msgstr "Has³o:"
 
 #: XRC_gettext_file.h:34
 msgid "Server:"
-msgstr "Server:"
+msgstr "Serwer:"
 
 #: XRC_gettext_file.h:35
 msgid "Automatically fetch"

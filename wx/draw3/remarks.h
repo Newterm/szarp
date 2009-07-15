@@ -131,6 +131,8 @@ public:
 
 	void OnSocketEvent(wxSocketEvent& e);
 
+	void SetIPAddress(wxIPV4address &ip);
+
 	~XMLRPCConnection();
 
 	DECLARE_EVENT_TABLE()
@@ -184,6 +186,7 @@ public:
 	bool Busy();
 	void SetRemarkAddDialog(RemarkViewDialog *add_dialog);
 	void OnXMLRPCResponse(XMLRPCResponseEvent &event);
+	void SetIPAddress(wxIPV4address &ip);
 	void SetUsernamePassword(wxString username, wxString password);
 	void SetRemarksAddDialog(RemarkViewDialog *dialog);
 	void FetchNewRemarks(bool notify_about_success = true);
@@ -417,8 +420,6 @@ class RemarksFetcher : public wxEvtHandler, public DrawObserver {
 	RemarksHandler *m_remarks_handler;
 
 	Draw *m_current_draw;
-
-	bool m_active;
 
 	void Fetch(Draw *d);
 

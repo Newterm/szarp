@@ -52,7 +52,6 @@ RemarksHandler::RemarksHandler() {
 
 	wxConfigBase* config = wxConfig::Get();
 
-
 	config->Read(_T("REMARKS_SERVER_ADDRESS"), &m_server);
 	config->Read(_T("REMARKS_SERVER_USERNAME"), &m_username);
 	config->Read(_T("REMARKS_SERVER_PASSWORD"), &m_password);
@@ -141,12 +140,17 @@ void RemarksHandler::GetConfiguration(wxString& username, wxString& password, wx
 void RemarksHandler::SetConfiguration(wxString username, wxString password, wxString server, bool autofetch) {
 	m_username = username;
 	m_password = password;
+	m_server = server;
 	bool ok = m_address.Hostname(server);
 
 	m_configured = ok && !m_username.IsEmpty() && !m_password.IsEmpty();
 
+	if (m_connection)
+		m_connection->SetIPAddress(m_address);
+
 	if (!m_auto_fetch && autofetch)
 		m_timer.Start(1000 * 60 * 10);
+
 
 	m_auto_fetch = autofetch;
 
@@ -209,6 +213,10 @@ XMLRPCConnection::XMLRPCConnection(wxIPV4address& address, wxEvtHandler *event_h
 	m_socket = new SSLSocketConnection(address, this);
 }
 
+void XMLRPCConnection::SetIPAddress(wxIPV4address &ip) {
+	m_socket->SetIPAddress(ip);
+}
+
 void XMLRPCConnection::ReturnError(std::wstring error) {
 	XMLRPC_REQUEST request = XMLRPC_RequestNew();
 	XMLRPC_VALUE fault = XMLRPC_UtilityCreateFault(0, (const char *)SC::S2U(error).c_str());
@@ -218,13 +226,12 @@ void XMLRPCConnection::ReturnError(std::wstring error) {
 
 	XMLRPCResponseEvent rev(request);
 	wxPostEvent(m_handler, rev);
-
 }
 
 void XMLRPCConnection::ReturnResponse() {
 	XMLRPC_REQUEST request = XMLRPC_REQUEST_FromXML(m_read_buf + m_read_buf_read_pos, m_read_buf_write_pos - m_read_buf_read_pos, NULL);
 
-	fprintf(stdout, "%.*s\n", m_read_buf_write_pos - m_read_buf_read_pos,  m_read_buf + m_read_buf_read_pos);
+	//fprintf(stdout, "%.*s\n", m_read_buf_write_pos - m_read_buf_read_pos,  m_read_buf + m_read_buf_read_pos);
 
 	XMLRPCResponseEvent rev(request);
 	wxPostEvent(m_handler, rev);
@@ -393,10 +400,11 @@ void XMLRPCConnection::ReadData() {
 		ssize_t ret = m_socket->Read(m_read_buf + m_read_buf_write_pos, m_read_buf_size - m_read_buf_write_pos);
 
 		if (ret <= 0) {
-			if (m_socket->LastError() != wxSOCKET_WOULDBLOCK)
-				break;
-			else
+			if (m_socket->LastError() != wxSOCKET_WOULDBLOCK) {
+				m_socket->Disconnect();
+				m_read_state = CLOSED;
 				ReturnError(L"Server communication error");
+			}
 			break;
 		}
 
@@ -418,11 +426,10 @@ void XMLRPCConnection::OnSocketEvent(wxSocketEvent &event) {
 			break;
 
 		case wxSOCKET_LOST:
-			if (m_read_state != READING_CONTENT || m_content_length != (m_read_buf_write_pos - m_read_buf_read_pos)) {
+			if (m_read_state != CLOSED) {
 				m_socket->Disconnect();
 				ReturnError(L"Server connection failure");
 			}
-			m_read_state = CLOSED;
 			break;
 		case wxSOCKET_INPUT:
 			ReadData();
@@ -473,7 +480,7 @@ std::string XMLRPCConnection::CreateHTTPRequest(XMLRPC_REQUEST request) {
 	ss << "\r\n";
 	ss << request_string;
 
-	printf("%s\n", ss.str().c_str());
+	//printf("%s\n", ss.str().c_str());
 
 	free(request_string);
 
@@ -504,6 +511,10 @@ RemarksConnection::RemarksConnection(wxIPV4address &address, RemarksHandler *han
 
 bool RemarksConnection::Busy() {
 	return m_current_action == NONE;
+}
+
+void RemarksConnection::SetIPAddress(wxIPV4address &ip) {
+	m_xmlrpc_connection->SetIPAddress(ip);
 }
 
 void RemarksConnection::SetRemarkAddDialog(RemarkViewDialog *dialog) {
@@ -1475,17 +1486,15 @@ RemarksFetcher::RemarksFetcher(RemarksHandler *handler, DrawToolBar* tool_bar, w
 	m_tool_bar = tool_bar;
 	m_toplevel_window = top_level_window;
 
-	m_active = handler->Configured();
+	tool_bar->PushEventHandler(this);
 
 	handler->AddRemarkFetcher(this);
-
-	if (m_active)
-		m_tool_bar->PushEventHandler(this);
 
 }
 
 void RemarksFetcher::Fetch(Draw *d) {
-	assert(m_active);
+	if (!m_remarks_handler->Configured())
+		return;
 
 	wxDateTime start = d->GetTimeOfIndex(0);
 	if (!start.IsValid())
@@ -1509,9 +1518,6 @@ void RemarksFetcher::Fetch(Draw *d) {
 
 
 void RemarksFetcher::Attach(Draw *d) {
-
-	if (m_active == false)
-		return;
 
 	d->AttachObserver(this);
 
@@ -1570,7 +1576,7 @@ void RemarksFetcher::OnRemarksResponse(RemarksResponseEvent &e) {
 }
 
 void RemarksFetcher::ScreenMoved(Draw* draw, const wxDateTime &start_time) {
-	if (m_active == false)
+	if (!m_remarks_handler->Configured())
 		return;
 	Fetch(draw);
 }
