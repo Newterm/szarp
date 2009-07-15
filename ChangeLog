@@ -1,5 +1,13 @@
 $Id$
 
+2009-07-15	Darek Marcinkiewcz <reksio@praterm.pl>
+	* wx/common: fix in SSL sockets handling code
+	* wx/draw3: initial (but still - complete and usable)
+	support for remarks
+	* wx/draw3/GUI: all resources merged into one file
+	- I've never remembered which resource each file has
+	* utils/remarks_server: application serving remarks,
+	initial version - handling one client at the time
 2009-07-10	Pawel Palucha <pawel@praterm.com.pl>
 	* INSTALL.Windows: fixes, PKG_CONFIG_PATH added. 
 

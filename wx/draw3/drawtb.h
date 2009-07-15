@@ -69,6 +69,9 @@ public:
 	/**Set's icon representing given filter level*/
 	void SetFilterToolIcon(int i);
 
+	/***/
+	void ShowRemarksIcon(bool show);
+
 };
 /** 
  * Class creates Show/Hide MenuBar for Draw3 with small toolbar (only one button) to 
@@ -93,9 +96,6 @@ protected:
 	
 	DECLARE_EVENT_TABLE();
 };
-
-
-
 
 #endif
 

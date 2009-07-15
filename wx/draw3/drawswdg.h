@@ -67,6 +67,7 @@ class DatabaseManager;
 class ConfigManager;
 class TimeWidget;
 class DrawsWidget;
+class RemarksFetcher;
 
 WX_DEFINE_ARRAY(DrawInfo*, DrawInfoPtrArray);
 WX_DEFINE_ARRAY(Draw*, DrawPtrArray);
@@ -115,7 +116,7 @@ public:
 	 * @param id windows identifier
 	 * @param info widget for printing info about param, may be NULL
 	 */
-        DrawsWidget(DrawPanel* parent, ConfigManager *cfgmgr, DatabaseManager* dbmgr, DrawGraphs *graphs, SummaryWindow* swin, PieWindow *pw, RelWindow *rw, wxWindowID id, InfoWidget *info, PeriodType pt, time_t time, int selected_draw = -1);
+        DrawsWidget(DrawPanel* parent, ConfigManager *cfgmgr, DatabaseManager* dbmgr, DrawGraphs *graphs, SummaryWindow* swin, PieWindow *pw, RelWindow *rw, RemarksFetcher *rf, wxWindowID id, InfoWidget *info, PeriodType pt, time_t time, int selected_draw = -1);
 
 	virtual ~DrawsWidget();
 
@@ -329,6 +330,8 @@ public:
 
 	size_t GetNumberOfUnits();
 protected:
+	bool DoubleCursorSet(bool enable);
+
 	/**Changes current period
 	 * @param period period to change*/
         void SwitchToPeriod(PeriodType period, const wxDateTime& current_time);
@@ -415,6 +418,9 @@ protected:
 
 	/**Window displaying values ratio*/
 	RelWindow* m_rel_win;
+
+	/***/
+	RemarksFetcher* m_remarks_fetcher;
 
 	/**@see SelectDrawWidget*/
 	SelectDrawWidget* m_seldraw;

@@ -171,7 +171,7 @@ public:
 
 	QueryExecutor(DatabaseQueryQueue *_queue, wxEvtHandler *_response_receiver, Szbase *_szbase);
 	/**Thread entry point. Executes queries*/
-	void* Entry();
+	virtual void* Entry();
 };
 
 typedef std::list<DatabaseQuery*>::iterator QueryCollectionIterator;

@@ -62,6 +62,9 @@ class DrawToolBar;
 class DrawFrame;
 class DrawGraphs;
 class DrawSet;
+class DrawInfo;
+class RemarksFetcher;
+class RemarksHandler;
 
 #include "coobs.h"
 
@@ -78,7 +81,7 @@ class DrawPanel : public wxPanel, public ConfigObserver {
 	 * @param parent parent window
 	 * @param id widget identifier
 	 */
-	DrawPanel(DatabaseManager *_db_mgr, ConfigManager *cfg, wxString defid, DrawSet *set, PeriodType pt, time_t time, 
+	DrawPanel(DatabaseManager *_db_mgr, ConfigManager *cfg, RemarksHandler *rh, wxString defid, DrawSet *set, PeriodType pt, time_t time, 
 		wxWindow *parent, wxWindowID id, DrawFrame *_df, int selected_draw=-1);
 	virtual ~DrawPanel();
 
@@ -184,6 +187,9 @@ class DrawPanel : public wxPanel, public ConfigObserver {
 	/**Split cursor uncheck*/
 	void UncheckSplitCursor();
 
+	/**Split cursor check*/
+	void CheckSplitCursor();
+
 	/**Handles priting request.
 	 * @param preview if true print previev dialog, if false a print dialog will be shown*/
 	void Print(bool preview);
@@ -233,6 +239,8 @@ class DrawPanel : public wxPanel, public ConfigObserver {
 
 	size_t GetNumberOfStripes();
 
+	void GetDisplayedDrawInfo(DrawInfo **di, wxDateTime& time);
+
 	protected:
 	/** @see DrawFrame */
 	DrawFrame *df;
@@ -278,6 +286,10 @@ class DrawPanel : public wxPanel, public ConfigObserver {
 
 	/**Window dispalying summary values, @see SummaryWindow*/
 	SummaryWindow *smw;
+
+	RemarksHandler *rh;
+
+	RemarksFetcher *rmf;
 
 	/**Indicates if summary window shall be shown while panel is activaed*/
 	bool smw_show;

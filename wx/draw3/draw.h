@@ -103,6 +103,9 @@ struct ValueInfo {
 	/**Actual number of probes composing this value*/
 	int count_probes;
 
+	/**Denotes if there is a remark associated with time this value refers to*/
+	bool m_remark;
+
 	/**@return true if this struct holds value received from database and it is not SZB_NODATA*/
 	bool IsData() const;
 
@@ -732,6 +735,8 @@ public:
 	void DoubleCursorStopped();
 
 	bool IsTheNewestValue();
+
+	void SetRemarksTimes(std::vector<wxDateTime>& times);
 };
 
 #endif

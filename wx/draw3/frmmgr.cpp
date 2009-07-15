@@ -22,6 +22,7 @@
 
 #include "config.h"
 
+#include "ids.h"
 #include "remarks.h"
 #include "ids.h"
 #include "drawpick.h"
@@ -38,9 +39,10 @@ BEGIN_EVENT_TABLE(FrameManager, wxEvtHandler)
 	EVT_CLOSE(FrameManager::OnClose)
 END_EVENT_TABLE()
 
-FrameManager::FrameManager(DatabaseManager *dmgr, ConfigManager *cfgmgr) :
+FrameManager::FrameManager(DatabaseManager *dmgr, ConfigManager *cfgmgr, RemarksHandler *rhandle) :
 	database_manager(dmgr),
 	config_manager(cfgmgr),
+	remarks_handler(rhandle),
 	remarks_frame(NULL),
 	free_frame_number(first_frame_id)
 {
@@ -68,7 +70,7 @@ bool FrameManager::CreateFrame(const wxString &prefix, const wxString& window, P
 }
 
 bool FrameManager::CreateFrame(const wxString &prefix, DrawSet *set, PeriodType pt, time_t time, const wxSize& size, const wxPoint &position, int selected_draw, bool try_load_layout) {
-	DrawFrame *frame = new DrawFrame(this, database_manager, config_manager, NULL, free_frame_number, _T(""), prefix);
+	DrawFrame *frame = new DrawFrame(this, database_manager, config_manager, remarks_handler, NULL, free_frame_number, _T(""), prefix);
 
 	if(!(try_load_layout && frame->LoadLayout())) {
 		if (!frame->AddDrawPanel(prefix, set, pt, time, selected_draw)) {

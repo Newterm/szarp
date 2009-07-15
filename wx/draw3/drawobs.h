@@ -61,6 +61,8 @@ class DrawObserver {
 	virtual void PeriodChanged(Draw *draw, PeriodType period) {};
 	/**Informs object that current @see Draw has changed it's enabled attribute*/
 	virtual void EnableChanged(Draw *draw) {};
+	/**Informs object that current @see Draw has changed it's enabled attribute*/
+	virtual void NewRemarks(Draw *draw) {};
 
 	virtual ~DrawObserver() = 0;
 };

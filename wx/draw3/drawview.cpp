@@ -34,6 +34,7 @@
 #include "cconv.h"
 #include "draw.h"
 #include "wxgraphs.h"
+#include "bitmaps/remark_flag.xpm"
 
 using std::max;
 using std::min;
@@ -130,7 +131,9 @@ void View::GetPointPosition(wxDC* dc, int i, int *x, int *y) const {
 
 BackgroundView::BackgroundView(WxGraphs *graphs, ConfigManager *cfg) : 
 		m_graphs(graphs), m_dc(NULL), m_bmp(NULL), m_cfg_mgr(cfg)
-{}
+{
+	m_remark_flag_bitmap = wxBitmap(remark_flag_xpm);
+}
 
 void BackgroundView::Attach(Draw *draw) {
 	m_draw = draw;
@@ -153,6 +156,11 @@ void BackgroundView::ScreenMoved(Draw *draw, const wxDateTime &start_date) {
 	DoDraw(m_dc);
 	m_graphs->Refresh();
 }
+
+void BackgroundView::NewRemarks(Draw *draw) {
+	DoDraw(m_dc);
+	m_graphs->Refresh();
+};
 
 void BackgroundView::SetSize(int w, int h) {
 	delete m_dc;
@@ -333,6 +341,15 @@ void BackgroundView::DrawSeasonLimits(wxDC *dc) {
 	}
 }
 
+void BackgroundView::DrawRemarksFlags(wxDC *dc) {
+	const ValuesTable& vt = m_draw->GetValuesTable();
+	for (size_t i = 0; i < m_draw->GetValuesTable().size(); i++)
+		if (vt.at(i).m_remark) { 
+			int x = GetX(dc, i);
+			dc->DrawBitmap(m_remark_flag_bitmap, x - 6, m_topmargin - 5, true);
+		}
+}
+
 void BackgroundView::DoDraw(wxDC *dc) {
 
 	dc->Clear();
@@ -348,6 +365,8 @@ void BackgroundView::DoDraw(wxDC *dc) {
 	DrawUnit(dc, 6, 8);
 
     	DrawYAxisVals(dc, 4);
+
+	DrawRemarksFlags(dc);
 }
 
 wxFont BackgroundView::GetFont() const {

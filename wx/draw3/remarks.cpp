@@ -1,6 +1,5 @@
 /* 
   SZARP: SCADA software 
-  
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -16,1110 +15,867 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-#include <sstream>
+
+/* Remarks handling code 
+ *
+ * $Id$
+ */
 
 #include <wx/config.h>
-#include <wx/statline.h>
+#include <wx/filename.h>
+#include <libxml/tree.h>
+#include <wx/xrc/xmlres.h>
+
+#include <vector>
+#include <sstream>
+#include <iostream>
+#include <functional>
+#include <ios>
 #include <wx/file.h>
 #include <wx/dir.h>
-#include <wx/xrc/xmlres.h>
 #include <wx/config.h>
 
+#include "ids.h"
+#include "xmlutils.h"
 #include "cconv.h"
-
 #include "remarks.h"
-#include "cfgmgr.h"
-#include "biowxsock.h"
-#include "authdiag.h"
+#include "version.h"
+#include "drawtb.h"
+#include "draw.h"
+#include "errfrm.h"
 
-#include <wx/listimpl.cpp>
+#include "timeformat.h"
 
-#ifndef NO_SQLITE3
-#ifndef NO_VMIME
+const int REMARKS_SERVER_PORT = 7999;
 
-WX_DEFINE_LIST(NNTPTaskQueue)
+RemarksHandler::RemarksHandler() {
 
-NNTPStatus::NNTPStatus() {
-	m_x = m_y = m_z = 0;
+	wxConfigBase* config = wxConfig::Get();
+
+
+	config->Read(_T("REMARKS_SERVER_ADDRESS"), &m_server);
+	config->Read(_T("REMARKS_SERVER_USERNAME"), &m_username);
+	config->Read(_T("REMARKS_SERVER_PASSWORD"), &m_password);
+	config->Read(_T("REMARKS_SERVER_AUTOFETCH"), &m_auto_fetch, false);
+
+	bool address_ok = m_address.Hostname(m_server);
+	m_address.Service(REMARKS_SERVER_PORT);
+
+	m_configured = address_ok && !m_username.IsEmpty() && !m_password.IsEmpty();
+
+	m_timer.SetOwner(this);
+	if (m_auto_fetch)
+		m_timer.Start(1000 * 60 * 10);
+
+	m_storage = new RemarksStorage();
+
+	m_connection = NULL;
+
 }
 
-NNTPStatus::TYPE NNTPStatus::GetType() const {
-	return (TYPE)m_x;
+bool RemarksHandler::Configured() {
+	return m_configured;
 }
 
-int NNTPStatus::GetValue() const {
-	return m_x * 100 + m_y * 10 + m_z;
+void RemarksHandler::OnTimer(wxTimerEvent &event) {
+	if (m_configured && m_auto_fetch)
+		m_connection->FetchNewRemarks(false);
+	else
+		m_timer.Stop();
 }
 
-namespace {
+void RemarksHandler::AddRemarkFetcher(RemarksFetcher* fetcher) {
+	m_fetchers.push_back(fetcher);
+}
 
-struct status_code {
-	const int value;
-	const wxChar* const text;
-};
+void RemarksHandler::RemoveRemarkFetcher(RemarksFetcher* fetcher) {
+	std::vector<RemarksFetcher*>::iterator i = std::remove(m_fetchers.begin(), m_fetchers.end(), fetcher);
+	m_fetchers.erase(i, m_fetchers.end());
+}
 
-const status_code status_codes[] = {
-	{ 0, _T("unrecognized response from server") },
-	{ 100, _T("help text") },
-	{ 199, _T("debug output") },
+void RemarksHandler::NewRemarks(std::vector<Remark>& remarks) {
+	m_storage->StoreRemarks(remarks);
 
-	{ 200, _T("server ready - posting allowed") },
-	{ 201, _T("server ready - no posting allowed") },
-	{ 202, _T("slave status noted") },
-	{ 205, _T("closing connection - goodbye!") },
-	{ 211, _T("group selected") },
-	{ 215, _T("list of newsgroups follows") },
-	{ 220, _T("article retrieved - head and body follow") },
-	{ 221, _T("article retrieved - head follows") },
-	{ 222, _T("article retrieved - body follows") },
-	{ 223, _T("article retrieved - request text separately") },
-	{ 230, _T("list of new articles by message-id follows") },
-	{ 231, _T("list of new newsgroups follows") },
-	{ 235, _T("article transferred ok") },
-	{ 240, _T("article posted ok")  },
+	for (std::vector<RemarksFetcher*>::iterator i = m_fetchers.begin();
+			i != m_fetchers.end();
+			i++)
+		(*i)->RemarksReceived(remarks);
 
-	{ 335, _T("send article to be transferred.") },
-	{ 340, _T("send article to be posted.") },
+}
 
-	{ 400, _T("service discontinued") },
-	{ 411, _T("no such news group") },
-	{ 412, _T("no newsgroup has been selected") },
-	{ 420, _T("no current article has been selected") },
-	{ 421, _T("no next article in this group") },
-	{ 422, _T("no previous article in this group") },
-	{ 423, _T("no such article number in this group") },
-	{ 430, _T("no such article found") },
-	{ 435, _T("article not wanted - do not send it") },
-	{ 436, _T("transfer failed - try again later") },
-	{ 437, _T("article rejected - do not try again.") },
-	{ 440, _T("posting not allowed") },
-	{ 441, _T("posting failed") },
+void RemarksHandler::Start() {
+	m_storage->Create();
+	m_storage->SetPriority(WXTHREAD_MAX_PRIORITY);
+	m_storage->Run();
+}
 
-	{ 500, _T("command not recognized") },
-	{ 501, _T("command syntax error") },
-	{ 502, _T("access restriction or permission denied") },
-	{ 503, _T("program fault - command not performed") },
+void RemarksHandler::Stop() {
+	m_storage->Finish();
+	m_storage->Wait();
+}
+
+RemarksConnection* RemarksHandler::GetConnection() {
+	if (!Configured())
+		return NULL;
+
+	if (m_connection == NULL) {
+		m_connection = new RemarksConnection(m_address, this);
+		m_connection->SetUsernamePassword(m_username, m_password);
+	}
+
+	return m_connection;
+
+}
+
+RemarksStorage* RemarksHandler::GetStorage() {
+	return m_storage;
+}
+
+void RemarksHandler::GetConfiguration(wxString& username, wxString& password, wxString &server, bool& autofetch) {
+	username = m_username;
+	password = m_password;
+	server = m_server;
+	autofetch = m_auto_fetch;
+}
+
+void RemarksHandler::SetConfiguration(wxString username, wxString password, wxString server, bool autofetch) {
+	m_username = username;
+	m_password = password;
+	bool ok = m_address.Hostname(server);
+
+	m_configured = ok && !m_username.IsEmpty() && !m_password.IsEmpty();
+
+	if (!m_auto_fetch && autofetch)
+		m_timer.Start(1000 * 60 * 10);
+
+	m_auto_fetch = autofetch;
+
+	wxConfigBase* config = wxConfig::Get();
+
+	config->Write(_T("REMARKS_SERVER_ADDRESS"), m_server);
+	config->Write(_T("REMARKS_SERVER_USERNAME"), m_username);
+	config->Write(_T("REMARKS_SERVER_PASSWORD"), m_password);
+	config->Write(_T("REMARKS_SERVER_AUTOFETCH"), m_auto_fetch);
+
+	config->Flush();
+}
+
+std::set<std::wstring> RemarksHandler::GetPrefixes() {
+	return m_storage->GetPrefixes();
+}
+
+BEGIN_EVENT_TABLE(RemarksHandler, wxEvtHandler) 
+	EVT_TIMER(wxID_ANY, RemarksHandler::OnTimer)
+END_EVENT_TABLE()
+
+DECLARE_EVENT_TYPE(XMLRPCREQUEST_EVENT, -1)
+DEFINE_EVENT_TYPE(XMLRPCREQUEST_EVENT)
+
+typedef void (wxEvtHandler::*XMLRPCRequestEventFunction)(XMLRPCResponseEvent&);
+
+#define EVT_XMLRPCREQUEST(id, fn) \
+    DECLARE_EVENT_TABLE_ENTRY( XMLRPCREQUEST_EVENT, id, -1, \
+    (wxObjectEventFunction) (wxEventFunction) (wxCommandEventFunction) \
+    wxStaticCastEvent( XMLRPCRequestEventFunction, & fn ), (wxObject *) NULL ),
+
+
+XMLRPCResponseEvent::XMLRPCResponseEvent(XMLRPC_REQUEST request) : wxCommandEvent(XMLRPCREQUEST_EVENT, wxID_ANY) {
+	m_request = boost::shared_ptr<_xmlrpc_request>(request, std::bind2nd(std::ptr_fun(XMLRPC_RequestFree), 1));
+}
+
+boost::shared_ptr<_xmlrpc_request> XMLRPCResponseEvent::GetRequest() {
+	return m_request;
+}
+
+wxEvent* XMLRPCResponseEvent::Clone() const {
+	return new XMLRPCResponseEvent(*this);
+}
+
+XMLRPCConnection::XMLRPCConnection(wxIPV4address& address, wxEvtHandler *event_handler) {
+	m_read_state = CLOSED;
+
+	m_socket = NULL;
+
+	m_read_buf = 0;
+
+	m_read_buf_read_pos = 0;
+
+	m_read_buf_write_pos = 0;
+
+	m_read_buf_size = 0;
 	
-};
+	m_handler = event_handler;
 
-};
-
-const wxChar* NNTPStatus::GetDescription() const {
-	int value = GetValue();
-	for (size_t i = 0; i < sizeof(status_codes) / sizeof(status_code); ++i) {
-		if (status_codes[i].value == value)
-			return status_codes[i].text;
-	}
-
-	return _T("Unknown status code");
+	m_socket = new SSLSocketConnection(address, this);
 }
 
-bool NNTPStatus::Parse(const std::string& str) {
-	if (str.size() < 3)
-		return false;
+void XMLRPCConnection::ReturnError(std::wstring error) {
+	XMLRPC_REQUEST request = XMLRPC_RequestNew();
+	XMLRPC_VALUE fault = XMLRPC_UtilityCreateFault(0, (const char *)SC::S2U(error).c_str());
+	XMLRPC_RequestSetData(request, fault); 
 
-	int x, y, z;
-	x = str[0] - '0';
-	y = str[1] - '0';
-	z = str[2] - '0';
+	XMLRPC_RequestSetRequestType(request, xmlrpc_request_response);
 
-	if (9 >= x && x >= 0 
-			&& 9 >= y && y >= 0 
-			&& 9 >= z && z >= 0)
-		return false;
+	XMLRPCResponseEvent rev(request);
+	wxPostEvent(m_handler, rev);
 
-	m_x = x;
-	m_y = y;
-	m_z = z;
-
-	return true;
 }
 
-const int NNTPSSLConnection::input_buffer_size = 1024;
+void XMLRPCConnection::ReturnResponse() {
+	XMLRPC_REQUEST request = XMLRPC_REQUEST_FromXML(m_read_buf + m_read_buf_read_pos, m_read_buf_write_pos - m_read_buf_read_pos, NULL);
 
-NNTPSSLConnection::NNTPSSLConnection(wxEvtHandler *handler) :
-	m_socket(NULL),	
-	m_ssl(NULL),
-	m_ssl_ctx(NULL),
-	m_output_buffer(NULL),
-	m_output_buffer_size(0),
-	m_output_buffer_len(0),
-	m_input_buffer((char*)malloc(input_buffer_size)),
-	m_input_buffer_size(input_buffer_size),
-	m_input_buffer_len(0),
-	m_handler(NULL),
-	m_state(NOT_CONNECTED)
-{
+	fprintf(stdout, "%.*s\n", m_read_buf_write_pos - m_read_buf_read_pos,  m_read_buf + m_read_buf_read_pos);
+
+	XMLRPCResponseEvent rev(request);
+	wxPostEvent(m_handler, rev);
+
 }
 
-bool NNTPSSLConnection::IsConnected() const {
-	return m_state != NOT_CONNECTED;
-}
+void XMLRPCConnection::WriteData() {
+	while (m_write_buf_pos < m_write_buf.size()) {
+		ssize_t written = m_socket->Write(const_cast<char*>(m_write_buf.c_str() + m_write_buf_pos),
+					m_write_buf.size() - m_write_buf_pos);
 
-bool NNTPSSLConnection::Connect(wxIPV4address address) {
-	if (m_state != NOT_CONNECTED)
-		return false;
+		if (written == 0)
+			break;
 
-	assert(m_socket == NULL);
-
-	m_socket = new wxSocketClient(wxSOCKET_NOWAIT);
-	m_socket->SetNotify(wxSOCKET_INPUT_FLAG |
-			wxSOCKET_OUTPUT_FLAG |
-			wxSOCKET_CONNECTION_FLAG |
-			wxSOCKET_LOST_FLAG);
-	m_socket->SetEventHandler(*this);
-	m_socket->Notify(true);
-
-	m_state = CONNECTING;
-
-	bool ret = m_socket->Connect(address);
-	if (ret == true) {
-		ConnectSSL();
-		return true;
-	}
-
-	if (m_socket->Error()
-		&& m_socket->LastError() != wxSOCKET_WOULDBLOCK) 
-		return true;
-
-	Cleanup();
-
-	return false;
-}
-
-void NNTPSSLConnection::ConnectionTerminated() {
-	Cleanup();
-	NNTPConnectionEvent event(NNTPConnectionEvent::CONNECTION_LOST);	
-	m_handler->ProcessEvent(event);
-}
-
-void NNTPSSLConnection::SocketConnected() {
-	m_state = IDLE;
-	NNTPConnectionEvent event(NNTPConnectionEvent::CONNECTION_READY);
-	m_handler->ProcessEvent(event);
-}
-
-void NNTPSSLConnection::ConnectSSL() {
-
-	if (m_state != CONNECTING_SSL) {
-		assert(m_ssl == NULL);
-		assert(m_ssl_ctx == NULL);	
-
-		m_ssl_ctx = SSL_CTX_new(SSLv23_client_method());
-
-		m_ssl = SSL_new(m_ssl_ctx);	
-		BIO *bio = BIOSocketClientNew(m_socket);
-		SSL_set_bio(m_ssl, bio, bio);
-
-		m_state = CONNECTING_SSL;
-	}
-
-	while (true) {
-		int ret = SSL_connect(m_ssl);
-		if (ret == 1) {
-			SocketConnected();
+		if (written < 0) {
+			if (m_socket->LastError() != wxSOCKET_WOULDBLOCK) {
+				m_socket->Disconnect();
+				m_read_state = CLOSED;
+				ReturnError(L"Server connection failure");
+			}
 			break;
 		}
 
-		int error = SSL_get_error(m_ssl, ret);
+		m_write_buf_pos += written;
+	}
 
-		switch (error) {
-			case SSL_ERROR_SYSCALL:
-				if (ret == 0) {
-					ConnectionTerminated();
-					return;
-				} else if (errno == EINTR)
-					continue;
-				else {
-					Error(strerror(errno));
-					return;
-				}
-			default:
-				Error(ERR_error_string(error, NULL));
-				return;
-			case SSL_ERROR_WANT_READ:
-			case SSL_ERROR_WANT_WRITE:
-				return;
+}
+
+bool XMLRPCConnection::GetLine(std::string& line) {
+
+	for (size_t i = m_read_buf_read_pos; i < m_read_buf_write_pos; i++) {
+		if (m_read_buf[i] == '\r'
+				&& (i + 1) < m_read_buf_write_pos
+				&& m_read_buf[i + 1] == '\n') {
+			m_read_buf[i] = '\0';
+
+			line = m_read_buf + m_read_buf_read_pos;
+			m_read_buf_read_pos = i + 2;
+
+			return true;
 		}
+
+	}
+
+	return false;
+
+}
+
+void XMLRPCConnection::ReadFirstLine(bool& more_data) {
+	std::string line;
+
+	more_data = false;
+
+	if (!GetLine(line)) {
+		more_data = true;
+		return;
+	}
+
+	try { 
+		std::istringstream iss(line);
+		iss.exceptions(std::ios_base::failbit | std::ios_base::badbit | std::ios_base::eofbit);
+		iss.ignore(1000, ' ');
+
+		int status_code;
+		iss >> status_code;
+		if (status_code != 200) {
+			m_read_state = CLOSED;
+			m_socket->Disconnect();
+
+			ReturnError(L"Invalid response from server");
+		} else {
+			m_read_state = READING_HEADERS;
+		}
+	} catch (std::ios_base::failure) {
+		m_read_state = CLOSED;
+		m_socket->Disconnect();
+
+		ReturnError(L"Invalid response from server");
+		more_data = false;
 	}
 }
 
-void NNTPSSLConnection::SocketEvent(wxSocketEvent &event) {
+void XMLRPCConnection::ReadHeaders(bool& more_data) {
+	std::string line;
 
+	try {
+
+		while (GetLine(line)) {
+			if (line == "") {
+				m_read_state = READING_CONTENT; 
+				more_data = false;
+				return ;
+			}
+
+			std::istringstream iss(line);
+			iss.exceptions(std::ios_base::failbit | std::ios_base::badbit);
+			std::string field_name;
+			iss >> field_name;
+			if (!strcasecmp(field_name.c_str(), "Content-length:"))
+				iss >> m_content_length;
+		}
+
+	} catch (std::ios_base::failure) {
+		m_read_state = CLOSED;
+		m_socket->Disconnect();
+
+		ReturnError(L"Invalid response from server");
+
+		more_data = false;
+		return;
+	}
+
+	more_data = true;
+
+}
+
+void XMLRPCConnection::ReadContent(bool& more_data) {
+	if (m_read_buf_write_pos - m_read_buf_read_pos == m_content_length) {
+		ReturnResponse();
+
+		m_read_state = CLOSED;
+		m_socket->Disconnect();
+		more_data = false;
+	} else {
+		more_data = true;
+	}
+
+}
+	
+void XMLRPCConnection::ProcessReadData() {
+	if (m_read_state == CLOSED)
+		return;
+
+	bool more_data_needed;
+	std::string line;
+	do {
+		switch (m_read_state) {
+			case READING_FIRST_LINE:
+				ReadFirstLine(more_data_needed);
+				break;
+			case READING_HEADERS:
+				ReadHeaders(more_data_needed);
+				break;
+			case READING_CONTENT:
+				ReadContent(more_data_needed);
+				break;
+			case CLOSED:
+				return;
+		}
+	} while (!more_data_needed);
+
+}
+
+void XMLRPCConnection::ReadData() {
+
+	while (m_read_state != CLOSED) {
+		if (m_read_buf_write_pos == m_read_buf_size) {
+			if (m_read_buf_size) 
+				m_read_buf_size *= 2;
+			else 
+				m_read_buf_size = 500;
+
+			m_read_buf = (char*) realloc(m_read_buf, m_read_buf_size);
+		}
+
+		ssize_t ret = m_socket->Read(m_read_buf + m_read_buf_write_pos, m_read_buf_size - m_read_buf_write_pos);
+
+		if (ret <= 0) {
+			if (m_socket->LastError() != wxSOCKET_WOULDBLOCK)
+				break;
+			else
+				ReturnError(L"Server communication error");
+			break;
+		}
+
+		m_read_buf_write_pos += ret;
+
+		ProcessReadData();
+
+	}
+
+}
+
+void XMLRPCConnection::OnSocketEvent(wxSocketEvent &event) {
 	wxSocketNotify type = event.GetSocketEvent();
 
 	switch (type) {
-		case wxSOCKET_LOST:
-			ConnectionTerminated();
-			break;
 		case wxSOCKET_CONNECTION:
-			assert(m_state == CONNECTING);
-			SocketConnected();
+			m_read_state = READING_FIRST_LINE;
+			WriteData();
+			break;
+
+		case wxSOCKET_LOST:
+			if (m_read_state != READING_CONTENT || m_content_length != (m_read_buf_write_pos - m_read_buf_read_pos)) {
+				m_socket->Disconnect();
+				ReturnError(L"Server connection failure");
+			}
+			m_read_state = CLOSED;
 			break;
 		case wxSOCKET_INPUT:
-			switch (m_state) {
-				case CONNECTING_SSL:
-					ConnectSSL();
-					break;
-				case WRITE_BLOCKED_ON_READ:
-					WriteData();
-					break;
-				case IDLE:
-					ReadData();
-					break;
-				default:
-					break;
-
-			}
+			ReadData();
 			break;
 		case wxSOCKET_OUTPUT:
-			switch (m_state) {
-				case CONNECTING_SSL:
-					ConnectSSL();
-					break;
-				case READ_BLOCKED_ON_WRITE:
-					ReadData();
-					break;
-				case IDLE:
-					WriteData();
-					break;
-				default:
-					break;
-			}
-			break;
-	}
-}
-
-void NNTPSSLConnection::WriteData() {
-
-	while (m_output_buffer_len) {
-		int ret = SSL_write(m_ssl, 
-				m_output_buffer, 
-				m_output_buffer_len);
-
-		if (ret <= 0) {
-			int error = SSL_get_error(m_ssl, ret);
-			switch (error) {
-				case SSL_ERROR_SYSCALL:
-					if (ret == 0)
-						ConnectionTerminated();
-					else if (errno == EINTR)
-						continue;
-					else
-						Error(strerror(errno));
-					break;
-				default:
-					Error(ERR_error_string(error, NULL));
-					break;
-				case SSL_ERROR_WANT_READ:
-					m_state = WRITE_BLOCKED_ON_READ;
-					return;
-				case SSL_ERROR_WANT_WRITE:
-					return;
-			}
-		}
-
-		m_output_buffer_len -= ret;
-		memmove(m_output_buffer, m_output_buffer + ret, m_output_buffer_len);
-
-		if (m_output_buffer_len == 0) {
-			NNTPConnectionEvent event(NNTPConnectionEvent::DATA_WRITTEN);
-			m_handler->ProcessEvent(event);
-		}
-
-	}
-
-}
-
-bool NNTPSSLConnection::Query(const std::string& query) {
-	switch (m_state) {
-		case NOT_CONNECTED:
-		case CONNECTING_SSL:
-		case CONNECTING:
-			return false;
-		default:
+			WriteData();
 			break;
 	}
 
-	int len = m_output_buffer_len;
-
-	m_output_buffer_len += query.size();
-	if (m_input_buffer_len > m_input_buffer_size) {
-		m_output_buffer_size = m_input_buffer_len;
-		m_output_buffer = (char*)realloc(m_output_buffer, m_input_buffer_size);
-	}
-
-	memcpy(m_output_buffer + len, query.c_str(), query.size());
-
-	if (m_state == IDLE)
-		WriteData();
-
-	return true;
 }
 
-void NNTPSSLConnection::PostReadData() {
-	if (m_input_buffer_len == 0)
-		return;
+void XMLRPCConnection::PostRequest(XMLRPC_REQUEST request) {
+	assert(m_read_state == CLOSED);
 
-	char *line = m_input_buffer;
-	char *eol;
-	while ((eol = (char*) memchr(line, '\n', m_input_buffer_len - (line - m_input_buffer)))) {
-		int eol_position = eol - m_input_buffer;
-		if (eol_position < 2 
-				|| m_input_buffer[eol_position - 1] != '\r') {
-			int followup = eol_position + 1;
-			if (followup >= m_input_buffer_len)
-				break;
-			line = m_input_buffer + followup;
-			continue;
-		}
+	m_write_buf_pos = 0;
+	m_write_buf = CreateHTTPRequest(request);
 
-		int line_length = eol_position - 1;
+	free(m_read_buf);
+	m_read_buf = NULL;
+	m_read_buf_write_pos 
+		= m_read_buf_read_pos 
+		= m_read_buf_size = 0;
 
-		NNTPConnectionEvent event(NNTPConnectionEvent::DATA_READ, 
-				std::string(m_input_buffer, line_length));
-		m_handler->ProcessEvent(event);
-
-		char *next_line = eol + 1;
-		m_input_buffer_len -= next_line - m_input_buffer;
-		memmove(m_input_buffer, next_line, m_input_buffer_len);
-		line = m_input_buffer;
-	}
-
+	m_socket->Connect();
 }
 
-void NNTPSSLConnection::Error(const std::string& cause) {
-	Cleanup();
-	NNTPConnectionEvent ev(NNTPConnectionEvent::CONNECTION_FAILED, cause);
-	wxPostEvent(m_handler, ev);
-}
-
-void NNTPSSLConnection::ReadData() {
-
-	while (true) {
-		int ret = SSL_read(m_ssl, 
-				m_input_buffer + m_input_buffer_len, 
-				m_input_buffer_size - m_output_buffer_len - 1);
-
-		if (ret <= 0) {
-			PostReadData();
-			int error = SSL_get_error(m_ssl, ret);
-			switch (error) {
-				case SSL_ERROR_SYSCALL:
-					if (ret == 0)
-						ConnectionTerminated();
-					else if (errno == EINTR)
-						continue;
-					else
-						Error(strerror(errno));
-					return;
-				case SSL_ERROR_WANT_WRITE:
-					m_state = READ_BLOCKED_ON_WRITE;
-					return;
-				case SSL_ERROR_WANT_READ:
-					return;
-				default:
-					Error(ERR_error_string(error, NULL));
-					break;
-			}
-		}
-
-		m_output_buffer_len += ret;
-
-		if (m_output_buffer_len == m_output_buffer_size - 1) 
-			PostReadData();
-
-	}
-
-}
-
-
-void NNTPSSLConnection::Cleanup() {
-	if (m_socket) {
-		m_socket->Destroy();
-		m_socket = NULL;
-	}
-
-	if (m_ssl) {
-		SSL_free(m_ssl);
-		m_ssl = NULL;
-	}
-
-	if (m_ssl_ctx) {
-		SSL_CTX_free(m_ssl_ctx);
-		m_ssl_ctx = NULL;
-	}
-
-	free(m_output_buffer);
-	m_output_buffer = NULL;
-
-	m_input_buffer_len = 0;
-	m_output_buffer_size = 0;
-	m_output_buffer_len = 0;
-}
-
-NNTPSSLConnection::~NNTPSSLConnection() {
-	Cleanup();
-	free(m_input_buffer);
-}
-
-BEGIN_EVENT_TABLE(NNTPSSLConnection, wxEvtHandler)
-    EVT_SOCKET(wxID_ANY, NNTPSSLConnection::SocketEvent)
+BEGIN_EVENT_TABLE(XMLRPCConnection, wxEvtHandler)
+	EVT_SOCKET(wxID_ANY, XMLRPCConnection::OnSocketEvent)
 END_EVENT_TABLE()
 
 
-DECLARE_EVENT_TYPE(NNTP_CONN_EVENT, -1)
-DEFINE_EVENT_TYPE(NNTP_CONN_EVENT)
+XMLRPCConnection::~XMLRPCConnection() {
+	free(m_read_buf);
 
-typedef void (wxEvtHandler::*NNTPConnectionEventFunction)(NNTPConnectionEvent&);
-
-#define EVT_NNTP_CONN(id, fn) \
-    DECLARE_EVENT_TABLE_ENTRY( NNTP_CONN_EVENT, id, -1, \
-    (wxObjectEventFunction) (wxEventFunction) (wxCommandEventFunction) \
-    wxStaticCastEvent( NNTPConnectionEventFunction, & fn ), (wxObject *) NULL ),
-
-NNTPConnectionEvent::NNTPConnectionEvent(Type type, const std::string& data) : m_type(type), m_data(data) {}
-
-wxEvent* NNTPConnectionEvent::Clone() const {
-	return new NNTPConnectionEvent(*this);
+	delete m_socket;
 }
 
-NNTPConnectionEvent::Type NNTPConnectionEvent::GetEventType() const {
-	return m_type;
+std::string XMLRPCConnection::CreateHTTPRequest(XMLRPC_REQUEST request) {
+	int len;
+	char *request_string = XMLRPC_REQUEST_ToXML(request, &len);
+
+	std::stringstream ss;
+	ss << "POST /REMARKS HTTP/1.0\r\n";
+	ss << "User Agent: DRAW3/" << SZARP_VERSION << "\r\n";
+	ss << "Host: DRAW3(" << SZARP_VERSION << ")\r\n";
+	ss << "Content-Type: text/xml\r\n";
+	ss << "Content-Length: " << len << "\r\n";
+	ss << "\r\n";
+	ss << request_string;
+
+	printf("%s\n", ss.str().c_str());
+
+	free(request_string);
+
+	return ss.str();
+
 }
 
-const std::string& NNTPConnectionEvent::GetData() const {
-	return m_data;
+RemarksConnection::RemarksConnection(wxIPV4address &address, RemarksHandler *handler) {
+	m_remarks_handler = handler;
+
+	m_address = address;
+
+	m_pending_remarks_fetch = false;
+
+	m_pending_remark_post = false;
+
+	m_inform_about_successful_fetch = false;
+
+	m_current_action = NONE;
+
+	m_xmlrpc_connection = new XMLRPCConnection(address, this);
+
+	m_remark_add_dialog = NULL;
+
+	m_token = -1;
+
 }
 
-
-void GetGroupsTask::SetGroups(const std::vector<std::string>& groups) {
-	m_groups = groups;
+bool RemarksConnection::Busy() {
+	return m_current_action == NONE;
 }
 
-PostMessageTask::PostMessageTask(vmime::ref<vmime::message> msg, const std::string& group)  : m_msg(msg), m_group(group)
-{}
-
-vm::ref<vm::message> PostMessageTask::GetMessage() const {
-	return m_msg;
+void RemarksConnection::SetRemarkAddDialog(RemarkViewDialog *dialog) {
+	m_remark_add_dialog = dialog;
 }
 
-const std::string& PostMessageTask::GetGroup() const {
-	return m_group;
-}
-
-PostMessageTask::~PostMessageTask() {
-}
-
-FetchMessageTask::FetchMessageTask(const std::string& msg_id) 
-	: m_msg_id(msg_id) {}
-
-const std::string& FetchMessageTask::GetMsgId() const {
-	return m_msg_id;
-}
-
-void FetchMessageTask::SetArticle(vm::ref<vm::message> article) {
-	m_article = article;
-}
-
-vm::ref<vm::message> FetchMessageTask::GetArticle() {
-	return m_article;
-}
-
-FetchNewMessagesTask::FetchNewMessagesTask(time_t start_time, const std::string& group) : 
-	m_start_time(start_time),
-	m_group(group)
-{}
-
-void FetchNewMessagesTask::SetIds(const std::vector<std::string> &ids) {
-	m_ids = ids;
-}
-
-const std::string& FetchNewMessagesTask::GetGroup() const {
-	return m_group;
-}
-
-time_t FetchNewMessagesTask::GetStartTime() const {
-	return m_start_time;
-}
-
-NNTPTaskExecutor::NNTPTaskExecutor(NNTPConnectionData &data, NNTPClient *client) : 
-		m_connection_data(data),
-		m_client(client),
-		m_connection(this), 
-		m_queue() {
-
-	m_states[_T("NNTPConnecting")] 
-		= new NNTPConnecting(m_connection_data, m_queue, m_connection, *this);
-	m_states[_T("NNTPAuthenticating")] 
-		= new NNTPAuthenticating(m_connection_data, m_queue, m_connection, *this);
-	m_states[_T("NNTPReady")] 
-		= new NNTPReady(m_connection_data, m_queue, m_connection, *this);
-	m_states[_T("NNTPPostingArticle")] 
-		= new NNTPPostingArticle(m_connection_data, m_queue, m_connection, *this);
-	m_states[_T("NNTPFetchingArticle")] 
-		= new NNTPFetchingArticle(m_connection_data, m_queue, m_connection, *this);
-	m_states[_T("NNTPFetchingGroups")] 
-		= new NNTPFetchingArticle(m_connection_data, m_queue, m_connection, *this);
-	m_states[_T("NNTPFetchingNewMessages")] 
-		= new NNTPFetchingNewMessages(m_connection_data, m_queue, m_connection, *this);
-
-	EnterState(_T("NNTPReady"));
-}
-
-bool NNTPTaskExecutor::CheckStatusCode(const NNTPConnectionEvent &event, NNTPStatus::TYPE type) {
-	bool ret = false;
-
-	NNTPStatus sc;
-	if (!sc.Parse(event.GetData()) || sc.GetType() != type) {
-		HandleNNTPError(sc);
-		ret = false;
-	} else
-		ret = true;
-
-	return ret;
-}
-
-void NNTPTaskExecutor::TaskCompleted(NNTPTaskCompleted *completed) {
-	m_client->TaskCompleted(completed);
-}
-
-void NNTPTaskExecutor::HandleNNTPError(NNTPStatus &sc) {
-	NNTPTaskCompleted* tc = new NNTPTaskCompleted();
-
-	tc->m_task = m_queue.GetFirst()->GetData();
-	tc->m_is_error = true;
-	tc->m_error.SetNNTPError(sc);
-	m_queue.Erase(0);
-
-	TaskCompleted(tc);
-	EnterState(_T("NNTPReady"));
-}
-
-void NNTPTaskExecutor::OnConnectionEvent(NNTPConnectionEvent &event) {
-	m_state->HandleConnectionEvent(event);
-}
-
-void NNTPTaskExecutor::EnterState(const wxString& state) {
-	StatesHash::iterator i = m_states.find(state);
-
-	if (i == m_states.end()) {
-		wxLogError(_T("State %s not found"), state.c_str());
-		assert(false);
-	}
-	
-	m_state = i->second;
-	m_state->Enter();
-}
-
-void NNTPTaskExecutor::ExecuteTask(NNTPTask *task) {
-	m_queue.Append(task);
-}
-
-NNTPTaskExecutor::~NNTPTaskExecutor() {
-	for (StatesHash::iterator i = m_states.begin();
-			i != m_states.end();
-			i++)
-		delete i->second;
-}
-
-BEGIN_EVENT_TABLE(NNTPTaskExecutor, wxEvtHandler)
-	EVT_NNTP_CONN(wxID_ANY, NNTPTaskExecutor::OnConnectionEvent)
-END_EVENT_TABLE()
-
-NNTPTaskExecutorState::NNTPTaskExecutorState(NNTPConnectionData &data,
-			NNTPTaskQueue &queue,
-			NNTPSSLConnection &connection,
-			NNTPTaskExecutor& client) : 
-		m_connection_data(data),
-		m_queue(queue),
-		m_connection(connection),
-		m_executor(client) 
-{}
-
-void NNTPTaskExecutorState::TaskReceived() {
-}
-
-void NNTPTaskExecutorState::Enter() {
-	if (m_connection.IsConnected() == false) {
-		m_executor.EnterState((_T("NNTPConnecting")));
-		return;
-	}
-	StateEntered();
-}
-
-void NNTPTaskExecutorState::HandleConnectionEvent(const NNTPConnectionEvent &event) {
-	switch (event.GetEventType()) {
-		case NNTPConnectionEvent::DATA_READ:
-			break;
-		case NNTPConnectionEvent::CONNECTION_FAILED:
-		case NNTPConnectionEvent::CONNECTION_LOST:
-			m_executor.EnterState(_T("NNTPConnecting"));
-		default:
+void RemarksConnection::FetchNewRemarks(bool notify_about_success) {
+	switch (m_current_action) {
+		case FETCHING_REMARKS:
 			return;
+		case POSTING_REMARK:
+			m_pending_remarks_fetch = true;
+			break;
+		case NONE:
+			m_current_action = FETCHING_REMARKS;
+
+			m_retrieval_time = wxDateTime::Now().GetTicks();
+
+			if (m_token == -1)
+				PostRequest(CreateLoginRequest());
+			else
+				PostRequest(CreateGetRemarksRequest());
 			break;
 	}
 
-	const std::string& line = event.GetData();
-	if (m_awaiting_status) {
-		NNTPStatus status;
-		status.Parse(line);
-		StatusRead(status, line);
-	} else 
-		LineRead(line);
+	m_inform_about_successful_fetch = notify_about_success;
+}
+
+void RemarksConnection::PostRequest(XMLRPC_REQUEST request) {
+	m_xmlrpc_connection->PostRequest(request);
+}
+
+void RemarksConnection::PostRemark(Remark& remark) {
+	switch (m_current_action) {
+		case FETCHING_REMARKS:
+			m_pending_remark_post = true;
+			m_remark_to_send = remark;
+			break;
+		case NONE:
+			m_current_action = POSTING_REMARK;
+
+			m_remark_to_send = remark;
+
+			if (m_token == -1)
+				PostRequest(CreateLoginRequest());
+			else
+				PostRequest(CreatePostRemarkRequest());
+			break;
+		case POSTING_REMARK:
+			//this shouldn't happen
+			assert(false);
+	}
 
 }
 
-NNTPTaskExecutorState::~NNTPTaskExecutorState() {}
+
+XMLRPC_REQUEST RemarksConnection::CreateMethodCallRequest(const char* method_name) {
+	XMLRPC_REQUEST request = XMLRPC_RequestNew();
+	XMLRPC_RequestSetMethodName(request, method_name);
+	XMLRPC_RequestSetRequestType(request, xmlrpc_request_call);
+
+	XMLRPC_RequestSetData(request, XMLRPC_CreateVector(NULL, xmlrpc_vector_array));
+
+	return request;
+}
+
+XMLRPC_REQUEST RemarksConnection::CreateLoginRequest() {
+	XMLRPC_REQUEST request = CreateMethodCallRequest("login");
+	XMLRPC_VALUE v = XMLRPC_RequestGetData(request);
+
+	XMLRPC_VectorAppendString(v, NULL, (const char*) SC::S2U(m_username).c_str(), 0);
+	XMLRPC_VectorAppendString(v, NULL, (const char*) SC::S2U(m_password).c_str(), 0);
+
+	return request;
+}
+
+XMLRPC_REQUEST RemarksConnection::CreateGetRemarksRequest() {
+
+	long lt = 0;
+	wxConfig::Get()->Read(_T("RemarksLatestRetrieval"), &lt);
+
+	m_retrieval_time = time(NULL);
+
+	XMLRPC_REQUEST request = CreateMethodCallRequest("get_remarks");
+	XMLRPC_VALUE v = XMLRPC_RequestGetData(request);
 	
-NNTPConnecting::NNTPConnecting(NNTPConnectionData &connection_data, 
-			NNTPTaskQueue &queue, 
-			NNTPSSLConnection &connection,
-			NNTPTaskExecutor& client)
-	: NNTPTaskExecutorState(connection_data, queue, connection, client),
-	m_failed_connects(0)
-{}
+	XMLRPC_VectorAppendInt(v, NULL, m_token);
+	XMLRPC_VectorAppendDateTime(v, NULL, lt);
+	
+	XMLRPC_VALUE vp = XMLRPC_CreateVector(NULL, xmlrpc_vector_array);
 
-void NNTPConnecting::StateEntered() {
-}
+	std::set<std::wstring> prefixes = m_remarks_handler->GetPrefixes();
+	for (std::set<std::wstring>::iterator i = prefixes.begin();
+			i != prefixes.end();
+			i++)
+		XMLRPC_VectorAppendString(vp, NULL, (const char*) SC::S2U(*i).c_str(), 0);
 
-void NNTPConnecting::StatusRead(NNTPStatus &status, const std::string &line) {
-}
+	XMLRPC_AddValueToVector(v, vp);
 
-void NNTPConnecting::Enter() {
-	m_failed_connects = 0;
-	m_connection.Connect(m_connection_data.address);
-}
-
-void NNTPConnecting::LineRead(const std::string &line) 
-{}
-
-void NNTPConnecting::HandleConnectionEvent(const NNTPConnectionEvent &event) {
-	switch (event.GetEventType()) {
-		case NNTPConnectionEvent::CONNECTION_FAILED:
-		case NNTPConnectionEvent::CONNECTION_LOST:
-			m_failed_connects++;
-			if (m_failed_connects < 4) 
-				m_connection.Connect(m_connection_data.address);
-			else {
-
-				NNTPTaskCompleted* tc = new NNTPTaskCompleted();
-
-				tc->m_task = m_queue.GetFirst()->GetData();
-				tc->m_is_error = true;
-				tc->m_error.SetNetworkError(_("Failed to connect to remarks server"));
-				m_queue.Erase(0);
-
-				m_executor.TaskCompleted(tc);
-				m_executor.EnterState(_T("NNTPReady"));
-			}
-			break;
-		case NNTPConnectionEvent::CONNECTION_READY:
-			m_failed_connects = 0;
-			break;
-		case NNTPConnectionEvent::DATA_READ: {
-			NNTPStatus sc;
-			if (m_executor.CheckStatusCode(event, NNTPStatus::COMMAND_OK)) 
-				m_executor.EnterState(_T("NNTPAuthenticating"));
-			break;
-			}
-		default:
-			break;
-	}
-}
-
-
-size_t NNTPTask::free_task_id = 0;
-
-NNTPTask::NNTPTask() {
-	m_task_id = free_task_id++;
-}
-
-size_t NNTPTask::GetTaskId() {
-	return m_task_id;
-}
-NNTPAuthenticating::NNTPAuthenticating(NNTPConnectionData &connection_data, 
-			NNTPTaskQueue &queue, 
-			NNTPSSLConnection &connection,
-			NNTPTaskExecutor& client)
-	: NNTPTaskExecutorState(connection_data, queue, connection, client)
-{
-}
-
-void NNTPAuthenticating::StateEntered() {
-	std::string line = std::string("authinfo user ") 
-		+ m_connection_data.username 
-		+ "\r\n";
-	m_awaiting_status = true;
-	m_connection.Query(line);
+	return request;
 
 }
 
-void NNTPAuthenticating::StatusRead(NNTPStatus &status, const std::string &line) {
-	std::string query;
-	NNTPStatus sc;
-	sc.Parse(line);
-	switch (sc.GetType()) {
-		case NNTPStatus::COMMAND_OK_CONTINUE:
-			query = std::string("authinfo pass ") 
-				+ m_connection_data.password
-				+ "\r\n";
-			m_connection.Query(query);
-			break;
-		case NNTPStatus::COMMAND_OK:
-			m_executor.EnterState(_T("NNTPReady"));
-			break;
-		default:
-			m_executor.HandleNNTPError(sc);
-	}
+XMLRPC_REQUEST RemarksConnection::CreatePostRemarkRequest() {
+	XMLRPC_REQUEST request = CreateMethodCallRequest("post_remark");
+	XMLRPC_VALUE v = XMLRPC_RequestGetData(request);
+
+	XMLRPC_VectorAppendInt(v, NULL, m_token);
+
+	xmlChar* dumped;
+	int size;
+	xmlDocDumpMemory(m_remark_to_send.GetXML(), &dumped, &size);
+	XMLRPC_VectorAppendBase64(v, NULL, (const char*) dumped, size);
+	xmlFree(dumped);
+	return request;
+
 }
 
-void NNTPAuthenticating::LineRead(const std::string& line) {
-}
+void RemarksConnection::HandleRemarksResponse(XMLRPC_REQUEST response) {
 
-NNTPReady::NNTPReady(NNTPConnectionData &connection_data, 
-			NNTPTaskQueue &queue, 
-			NNTPSSLConnection &connection,
-			NNTPTaskExecutor& client)
-	: NNTPTaskExecutorState(connection_data, queue, connection, client)
-{}
+	std::vector<Remark> rms;
 
-void NNTPReady::DispatchTask() {
-	if (m_queue.GetCount() == 0)
-		return;
-
-	NNTPTask* task = m_queue.GetFirst()->GetData();
-
-	if (dynamic_cast<PostMessageTask*>(task))
-		m_executor.EnterState(_T("NNTPPostingArticle"));
-	else if (dynamic_cast<FetchMessageTask*>(task))
-		m_executor.EnterState(_T("NNTPFetchingArticle"));
-	else if (dynamic_cast<FetchNewMessagesTask*>(task))
-		m_executor.EnterState(_T("NNTPFetchingNewMessages"));
-	else if (dynamic_cast<GetGroupsTask*>(task))
-		m_executor.EnterState(_T("NNTPFetchingGroups"));
-	else 
-		assert(false);
-	return;
-}
-
-void NNTPReady::StateEntered() {
-	DispatchTask();
-}
-
-void NNTPReady::LineRead(const std::string &line) {
-}
-
-void NNTPReady::StatusRead(NNTPStatus &status, const std::string &line) {
-}
-
-void NNTPReady::TaskReceived() {
-	DispatchTask();
-}
-
-NNTPFetchingArticle::NNTPFetchingArticle(NNTPConnectionData &connection_data, 
-			NNTPTaskQueue &queue, 
-			NNTPSSLConnection& connection,
-			NNTPTaskExecutor& client)
-	: NNTPTaskExecutorState(connection_data, queue, connection, client)
-{}
-
-void NNTPFetchingArticle::StateEntered() {
-	FetchMessageTask* task = dynamic_cast<FetchMessageTask*>(m_queue.GetFirst()->GetData());
-
-	m_awaiting_status = true;
-	std::string command = "ARTICLE " + task->GetMsgId() + "\r\n";
-	m_connection.Query(command);
-}
-
-void NNTPFetchingArticle::StatusRead(NNTPStatus &status, const std::string &line) {
-	m_awaiting_status = false;
-}
-
-void NNTPFetchingArticle::LineRead(const std::string &line) {
-
-	if (line != ".\r\n") {
-		m_article += line;
-		return;
-	} else {
-		vm::ref<vm::message> msg = vm::create<vm::message>();
-		msg->parse(m_article);
-
-		FetchMessageTask* tsk = dynamic_cast<FetchMessageTask*>(m_queue.GetFirst()->GetData());
-		tsk->SetArticle(msg);
-		
-		NNTPTaskCompleted *tc = new NNTPTaskCompleted();
-		tc->m_task = tsk;
-		tc->m_is_error = false;
-
-		m_queue.Erase(0);
-		m_article.clear();
-		m_executor.EnterState(_T("NNTPReady"));
-	}
-}
-
-NNTPPostingArticle::NNTPPostingArticle(NNTPConnectionData &connection_data, 
-			NNTPTaskQueue &queue, 
-			NNTPSSLConnection &connection,
-			NNTPTaskExecutor& client)
-	: NNTPTaskExecutorState(connection_data, queue, connection, client)
-{}
-
-void NNTPPostingArticle::StateEntered() {
-
-	PostMessageTask* task = dynamic_cast<PostMessageTask*>(m_queue.GetFirst()->GetData());
-
-	m_substate = CHANGING_GROUP;
-	m_awaiting_status = true;
-
-	std::string query = "GROUP " + task->GetGroup() + "\r\n";
-	m_connection.Query(query);
-}
-
-void NNTPPostingArticle::StatusRead(NNTPStatus &status, const std::string &line) {
-	PostMessageTask* task = dynamic_cast<PostMessageTask*>(m_queue.GetFirst()->GetData());
-
-	switch (m_substate) {
-		case CHANGING_GROUP:
-			if (status.GetType() == NNTPStatus::COMMAND_OK) {
-				m_substate = REQUESTING_POST;
-				m_connection.Query("POST");
-			} else
-				m_executor.HandleNNTPError(status);
-
-			m_substate = REQUESTING_POST;
-			break;
-		case REQUESTING_POST:
-			if (status.GetType() == NNTPStatus::COMMAND_OK_CONTINUE) {
-				m_substate = POSTING;
-				m_connection.Query(task->GetMessage()->generate());
-				m_connection.Query(".\r\n");
-			} else
-				m_executor.HandleNNTPError(status);
-
-			m_substate = POSTING;
-			break;
-		case POSTING:
-			if (status.GetType() == NNTPStatus::COMMAND_OK) {
-				delete m_queue.GetFirst()->GetData();
-				m_queue.Erase(0);
-				m_executor.EnterState(_T("NNTPReady"));
-			} else 
-				m_executor.HandleNNTPError(status);
-			break;
+	for (XMLRPC_VALUE i = XMLRPC_VectorRewind(XMLRPC_RequestGetData(response)); 
+			i; 
+			i = XMLRPC_VectorNext(XMLRPC_RequestGetData(response))) {
+		const char *doc_text = XMLRPC_GetValueBase64(i);
+		xmlDocPtr remark_doc = xmlParseDoc(BAD_CAST doc_text);
+		rms.push_back(Remark(remark_doc));
 	}
 
-}
+	m_remarks_handler->NewRemarks(rms);
 
-void NNTPPostingArticle::LineRead(const std::string &line) {
-}
-
-NNTPFetchingGroups::NNTPFetchingGroups(NNTPConnectionData &connection_data, 
-			NNTPTaskQueue &queue, 
-			NNTPSSLConnection &connection,
-			NNTPTaskExecutor& client)
-	: NNTPTaskExecutorState(connection_data, queue, connection, client)
-{}
-
-void NNTPFetchingGroups::StateEntered() {
-	m_awaiting_status = true;
-	m_groups.clear();
-	std::string s = "LIST\r\n";
-	m_connection.Query(s);
-
-}
-
-void NNTPFetchingGroups::StatusRead(NNTPStatus &status, const std::string &line) {
-	if (status.GetType() != NNTPStatus::COMMAND_OK)
-		m_executor.HandleNNTPError(status);
-
-	m_awaiting_status = false;
-}
-
-void NNTPFetchingGroups::LineRead(const std::string& line) {
-	if (line == ".\r\n") {
-		GetGroupsTask* tsk = dynamic_cast<GetGroupsTask*>(m_queue.GetFirst()->GetData());
-		tsk->SetGroups(m_groups);
-
-		NNTPTaskCompleted *tc = new NNTPTaskCompleted();
-		tc->m_task = tsk;
-		tc->m_is_error = false;
-
-		m_executor.TaskCompleted(tc);
-
-		m_queue.Erase(0);
-
-		m_executor.EnterState(_T("NNTPReady"));
-	} else {
-		std::string group;
-		std::istringstream is(line);
-		is >> group;
-		m_groups.push_back(group);
-	}
-}
-
-NNTPFetchingNewMessages::NNTPFetchingNewMessages(NNTPConnectionData &connection_data, 
-			NNTPTaskQueue &queue, 
-			NNTPSSLConnection &connection,
-			NNTPTaskExecutor& client)
-	: NNTPTaskExecutorState(connection_data, queue, connection, client)
-{}
-
-void NNTPFetchingNewMessages::StateEntered() {
-	FetchNewMessagesTask* task = dynamic_cast<FetchNewMessagesTask*>(m_queue.GetFirst()->GetData());
-
-	struct tm _tm;
-	time_t st = task->GetStartTime();
-	gmtime_r(&st, &_tm);
-
-	std::ostringstream os;
-	os << "NEWNEWS " 
-		<< task->GetGroup() << " " 
-		<< (_tm.tm_year + 1900) << (_tm.tm_mon + 1) << _tm.tm_mday << " "
-		<< _tm.tm_hour << _tm.tm_min << _tm.tm_sec << " GMT";
-
-	m_connection.Query(os.str());
-
-	m_awaiting_status = true;
-
-}
-
-void NNTPFetchingNewMessages::StatusRead(NNTPStatus &status, const std::string &line) {
-	if (status.GetType() != NNTPStatus::COMMAND_OK) 
-		m_executor.HandleNNTPError(status);
-	m_awaiting_status = false;
-}
-
-void NNTPFetchingNewMessages::LineRead(const std::string &line) {
-	if (line != ".\r\n") {
-		std::string id = line.substr(0, line.length() - 2);	
-		m_ids.push_back(id);
-	} else {
-		FetchNewMessagesTask *tsk = dynamic_cast<FetchNewMessagesTask*>(m_queue.GetFirst()->GetData());
-		tsk->SetIds(m_ids);
-		assert(tsk);
-
-		NNTPTaskCompleted* tc = new NNTPTaskCompleted();
-		tc->m_is_error = false;
-		tc->m_task = tsk;
-
-		m_executor.TaskCompleted(tc);
-
-		m_queue.Erase(0);
-		m_executor.EnterState(_T("NNTPReady"));
-		return;
-	}
-}
-
-void NNTPTaskError::SetNNTPError(const NNTPStatus& nntp_error) {
-	m_is_nntp_error = true;
-	m_nntp_error = nntp_error;
-}
-
-void NNTPTaskError::SetNetworkError(wxString error) {
-	m_is_nntp_error = false;
-	m_network_error = error;
-}
-
-RemarksStorage* RemarksStorage::_instance = NULL;
-
-RemarksStorage::RemarksStorage() {
-	m_sqlite = NULL;
-	m_fetch_remark_info = NULL;
-	m_has_remark = NULL;
-}
-
-RemarksStorage::~RemarksStorage() {
-	if (m_fetch_remark_info)
-		sqlite3_finalize(m_fetch_remark_info);
-	if (m_has_remark)
-		sqlite3_finalize(m_has_remark);
-	if (m_sqlite)
-		sqlite3_close(m_sqlite);
-}
-
-void RemarksStorage::Destroy() {
-	delete _instance;
-}
-
-bool RemarksStorage::GetStorage(RemarksStorage **storage, wxString &error) {
-	if (_instance) {
-		*storage = _instance;
-		return 0;
-	}
-
-	_instance = new RemarksStorage();
-	if (_instance->Init(error)) {
-		delete _instance;
-		_instance = NULL;
-		return 1;
-	}
-		
-	*storage = _instance;
-	return 0;
-} 
-namespace {
-
-bool create_dir(const wxString& path, wxString &error) {
-
-	if (!wxDir::Exists(path)) {
-		int ret = mkdir(SC::S2A(path).c_str()
-#ifdef __WXGTK__
-				, 0644
-#endif
-				);
-
-		if (ret) {
-			error = _("Failed to create dir: ") 
-				+ path 
-				+ _T(" (")
-				+ SC::A2S(strerror(errno)) + _T(")");
-			return false;
+	if (rms.size()) {
+		wxConfig::Get()->Write(_T("RemarksLatestRetrieval"), long(m_retrieval_time));
+		wxConfig::Get()->Flush();
+		if (m_inform_about_successful_fetch) {
+			wxMessageBox(_("New remarks received"), _("New remarks"), wxICON_INFORMATION);
+			m_inform_about_successful_fetch = false;
+		}
+	} else 
+		if (m_inform_about_successful_fetch) {
+			wxMessageBox(_("No new remarks"), _("Remarks"), wxICON_INFORMATION);
+			m_inform_about_successful_fetch = false;
 		}
 
-	}
-
-	return true;
 }
 
+void RemarksConnection::HandleLoginResponse(XMLRPC_REQUEST response) {
+	XMLRPC_VALUE i = XMLRPC_RequestGetData(response);
+	m_token = XMLRPC_GetValueInt(i);
+	//fprintf(stdout, "token: %ld value_type:%d\n", m_token, XMLRPC_GetValueType(i));
 }
 
-bool RemarksStorage::CreateTable() {
+void RemarksConnection::HandlePostMessageResponse(XMLRPC_REQUEST response) {
+	m_remark_to_send = NULL;
+	m_current_action = NONE;
 
-	const char* create_commands[]  = {
-			"CREATE TABLE remark ("
-			"	prefix TEXT,"
-			"	window TEXT,"
-			"	graph TEXT,"
-			"	ref_time INTEGER,"
-			"	title TEXT,"
-			"	from TEXT,"
-			"	send_time TEXT,"
-			"	title TEXT,"
-			"	id TEXT"
-			"	);",
-			"CREATE TABLE group ("
-			"	name TEXT,"
-			"	can_read INTEGER,"
-			"	can_post INTEGER,"
-			"	last_fetch_time INTEGER,"
-			"	);",
-			"CREATE INDEX index1 ON remark (base);",
-			"CREATE INDEX index2 ON remark (window);",
-			"CREATE INDEX index3 ON remark (graph);",
-			"CREATE INDEX index4 ON remark (time);",
-		};
-	for (size_t i = 0; i < sizeof(create_commands) / sizeof(create_commands[0]); ++i) {
-		int ret = sqlite3_exec(m_sqlite, 
-				create_commands[i],
-				NULL,
-				NULL,
-				NULL);
-		if (ret != SQLITE_OK) 
-			return false;
+	m_remark_add_dialog->RemarkSent(true);
+}
+
+wxString translate_error_message(wxString str) {
+
+	if (str == _T("Server connection failure"))
+		return _("Server connection failure");
+
+	if (str == _T("Server communication error"))
+		return _("Server communication error");
+
+	if (str == _T("User is not allowed to send remarks for this base"))
+		return _("User is not allowed to send remarks for this base");
+
+	if (str == _T("Invalid response from server"))
+		return _("Invalid response from server");
+
+	if (str == _T("Incorrect username and password"))
+		return _("Incorrect username and password");
+	return str;
+}
+
+bool RemarksConnection::HandleFault(XMLRPC_REQUEST response) {
+	if (XMLRPC_ResponseIsFault(response)) {
+		std::wstring fault_string;
+
+		const char *_fault_string = XMLRPC_GetResponseFaultString(response);
+		if (_fault_string)
+			fault_string = SC::U2S((const unsigned char*) _fault_string);
+
+		if (fault_string == L"Incorrect session token") {
+			m_token = -1;
+
+			XMLRPC_REQUEST request = CreateLoginRequest();
+			PostRequest(request);
+			return true;
+		} else {
+			if (m_current_action == POSTING_REMARK || m_pending_remark_post)
+				m_remark_add_dialog->RemarkSent(false, translate_error_message(fault_string));
+			else if (m_inform_about_successful_fetch)
+				wxMessageBox(wxString::Format(_("Failed to fetch remarks: %s"), translate_error_message(fault_string).c_str()), _("Error"), wxICON_ERROR);
+			else
+				ErrorFrame::NotifyError(wxString::Format(_("Failed to fetch remarks: %s"), translate_error_message(fault_string).c_str()));
+
+			m_pending_remark_post = false;
+			m_pending_remarks_fetch = false;
+			m_inform_about_successful_fetch = false;
+
+			m_current_action = NONE;
+
+			return true;
+		}
+	} else
+		return false;
+
+
+}
+
+void RemarksConnection::OnXMLRPCResponse(XMLRPCResponseEvent &event) {
+
+	XMLRPC_REQUEST response = event.GetRequest().get();
+
+	if (HandleFault(response))
+		return;
+
+	if (m_token == -1) {
+		HandleLoginResponse(response);
+
+		XMLRPC_REQUEST request;
+
+		switch (m_current_action) {
+			case FETCHING_REMARKS:
+				request = CreateGetRemarksRequest();
+				break;
+			case POSTING_REMARK:
+				request = CreatePostRemarkRequest();
+				break;
+			case NONE:
+				assert(false);
+		}
+
+		PostRequest(request);
+	} else {
+		switch (m_current_action) {
+			case FETCHING_REMARKS:
+				HandleRemarksResponse(response);
+				m_pending_remarks_fetch = false;
+
+				if (m_pending_remark_post) {
+					PostRequest(CreatePostRemarkRequest());
+					m_current_action = POSTING_REMARK;
+				} else {
+					m_current_action = NONE;
+				}
+				break;
+			case POSTING_REMARK:
+				HandlePostMessageResponse(response);
+				m_pending_remark_post = false;
+
+				PostRequest(CreateGetRemarksRequest());
+				m_retrieval_time = wxDateTime::Now().GetTicks();
+				m_current_action = FETCHING_REMARKS;
+				break;
+			case NONE:
+				assert(false);
+		}
+	}
+}
+
+void RemarksConnection::SetUsernamePassword(wxString username, wxString password) {
+	m_username = username;
+	m_password = password;
+}
+
+RemarksConnection::~RemarksConnection() {
+	delete m_xmlrpc_connection;
+}
+
+BEGIN_EVENT_TABLE(RemarksConnection, wxEvtHandler) 
+	EVT_XMLRPCREQUEST(wxID_ANY, RemarksConnection::OnXMLRPCResponse)
+END_EVENT_TABLE()
+
+DEFINE_EVENT_TYPE(REMARKSRESPONSE_EVENT)
+
+typedef void (wxEvtHandler::*RemarksResponseEventFunction)(RemarksResponseEvent&);
+
+#define EVT_REMARKS_RESPONSE(id, fn) \
+    DECLARE_EVENT_TABLE_ENTRY( REMARKSRESPONSE_EVENT, id, -1, \
+    (wxObjectEventFunction) (wxEventFunction) (wxCommandEventFunction) \
+    wxStaticCastEvent( RemarksResponseEventFunction, & fn ), (wxObject *) NULL ),
+
+RemarksResponseEvent::RemarksResponseEvent(std::vector<Remark> remarks) : wxCommandEvent(REMARKSRESPONSE_EVENT, wxID_ANY) {
+	m_remarks = remarks;
+}
+
+std::vector<Remark>& RemarksResponseEvent::GetRemarks() {
+	return m_remarks;
+}
+
+wxEvent* RemarksResponseEvent::Clone() const {
+	return new RemarksResponseEvent(*this);
+}
+
+
+RemarksStorage::Query::Query(RemarksStorage* storage) : m_storage(storage) {}
+
+RemarksStorage::StoreRemarksQuery::StoreRemarksQuery(RemarksStorage *storage, std::vector<Remark> &remarks) : Query(storage), m_remarks(remarks) {}
+
+void RemarksStorage::StoreRemarksQuery::Execute() {
+	m_storage->ExecuteStoreRemarks(m_remarks);
+}
+
+RemarksStorage::FetchRemarksQuery::FetchRemarksQuery(RemarksStorage *storage, 
+		std::wstring prefix,
+		std::wstring set, 
+		time_t from_time,
+		time_t to_time,
+		wxEvtHandler *receiver) : Query(storage), m_prefix(prefix), m_set(set), m_from_time(from_time), m_to_time(to_time), m_receiver(receiver)
+{}
+
+void RemarksStorage::FetchRemarksQuery::Execute() {
+	std::vector<Remark> remarks = m_storage->ExecuteGetRemarks(m_prefix, m_set, m_from_time, m_to_time);
+
+	RemarksResponseEvent e(remarks);
+	wxPostEvent(m_receiver, e);
+}
+
+RemarksStorage::FinishQuery::FinishQuery(RemarksStorage *storage) : Query(storage) {}
+
+void RemarksStorage::FinishQuery::Execute() {
+	m_storage->m_done = true;
+}
+
+RemarksStorage::RemarksStorage() : m_sqlite(NULL), m_fetch_remarks_query(NULL), m_fetch_prefixes_query(NULL), m_add_prefix_query(NULL) {
+	wxFileName szarp_dir(wxGetHomeDir(), wxEmptyString);
+	szarp_dir.AppendDir(_T(".szarp"));
+
+	wxFileName db_path(szarp_dir.GetFullPath(), _T("remarks.db"));
+
+	m_done = false;
+
+	bool fresh_base = false;
+
+	if (!db_path.FileExists()) {
+		if (szarp_dir.DirExists() == false)
+			if (szarp_dir.Mkdir() == false)
+				return;
+
+		fresh_base = true;
 	}
 
-	return true;
+	int ret = sqlite3_open((const char*)SC::S2U(db_path.GetFullPath()).c_str(), &m_sqlite);
+	if (ret) {
+		m_sqlite = NULL;
+		return;
+	}
+
+	if (fresh_base) {
+		bool ok = CreateTable();
+		if (ok == false) {
+			sqlite3_close(m_sqlite);
+			m_sqlite = NULL;
+			return;
+		}
+	}
+
+	PrepareQuery();
+
+	 if (!fresh_base) {
+		while ((ret = sqlite3_step(m_fetch_prefixes_query)) == SQLITE_ROW) {
+			m_prefixes.insert(SC::U2S((unsigned const char*) sqlite3_column_text(m_fetch_prefixes_query, 0)));
+		}
+		sqlite3_reset(m_fetch_prefixes_query);
+	}
+
 }
 
 void RemarksStorage::PrepareQuery() {
@@ -1127,380 +883,729 @@ void RemarksStorage::PrepareQuery() {
 
 	ret = sqlite3_prepare_v2(
 			m_sqlite, 
-			"SELECT id, title, author, send_time FROM remark"
-			"	WHERE prefix = ?1 "
-			"		AND window = ?2 "
-			"		AND graph = ?3 "
-			"		AND time BETWEEN ?4 AND ?5;",
+			"SELECT content FROM remark "
+			"	WHERE prefix_id = (SELECT id FROM prefix WHERE name = ?1) "
+			"		AND (set_name = ?2 OR set_name ISNULL) "
+			"		AND time >= ?3 AND time < ?4;",
 			-1,
-			&m_fetch_remark_info,
+			&m_fetch_remarks_query,
 			NULL);
 	assert(ret == SQLITE_OK);
 
 	ret = sqlite3_prepare_v2(
 			m_sqlite, 
-			"SELECT COUNT(*) FROM remark "
-			"	WHERE prefix = ?1 "
-			"		AND window = ?2 "
-			"		AND graph = ?3 "
-			"		AND time BETWEEN ?4 AND ?5;",
+			"INSERT INTO remark (id, prefix_id, set_name, time, content) "
+			"	VALUES (?1, (SELECT id FROM prefix WHERE name = ?2), ?3, ?4, ?5);",
 			-1,
-			&m_has_remark,
+			&m_store_remark_query,
 			NULL);
 	assert(ret == SQLITE_OK);
-}
-
-std::vector<GroupInfo> RemarksStorage::GetGroups() {
-	std::vector<GroupInfo> result;
-
-	sqlite3_stmt *stmt;
-	int ret = sqlite3_prepare_v2(
-			m_sqlite, 
-			"SELECT name, can_read, can_post, last_fetch_time FROM group",
-			-1,
-			&stmt,
-			NULL);
-	assert(ret == SQLITE_OK);
-
-	while ((ret = sqlite3_step(stmt)) == SQLITE_ROW) {
-		GroupInfo gi;
-		gi.name = (wxChar*) sqlite3_column_text16(stmt, 1);
-		gi.can_read = bool(sqlite3_column_int(stmt, 2));
-		gi.can_post = bool(sqlite3_column_int(stmt, 3));
-		gi.last_fetch = time_t(sqlite3_column_int(stmt, 4));
-
-		result.push_back(gi);
-	}
-	assert(ret == SQLITE_DONE);
-	sqlite3_finalize(stmt);
-
-	return result;
-}
-
-void RemarksStorage::AddGroup(std::string group) {
-
-	sqlite3_stmt *stmt;
-	int ret = sqlite3_prepare_v2(
-			m_sqlite, 
-			"DELETE FROM group where name = ?",
-			-1,
-			&stmt,
-			NULL);
-	assert(ret == SQLITE_OK);
-
-	ret = sqlite3_bind_text(stmt, 1, group.c_str(), -1, NULL);
-	assert(ret == SQLITE_OK);
-	ret = sqlite3_step(stmt);
-	assert(ret == SQLITE_DONE);
-	sqlite3_finalize(stmt);
 	
 	ret = sqlite3_prepare_v2(
 			m_sqlite, 
-			"INSERT INTO group VALUES (?, ?, ?, ?)",
+			"SELECT name FROM prefix;",
 			-1,
-			&stmt,
+			&m_fetch_prefixes_query,
 			NULL);
 	assert(ret == SQLITE_OK);
-	ret = sqlite3_bind_text(stmt, 1, group.c_str(), -1, NULL);
-	assert(ret == SQLITE_OK);
-	ret = sqlite3_bind_int(stmt, 2, 1);
-	assert(ret == SQLITE_OK);
-	ret = sqlite3_bind_int(stmt, 3, 1);
-	assert(ret == SQLITE_OK);
-	ret = sqlite3_bind_int(stmt, 4, -1);
 
-	ret = sqlite3_step(stmt);
-	assert(ret == SQLITE_DONE);
-
-	sqlite3_finalize(stmt);
-}
-
-bool RemarksStorage::Init(wxString &error) {
-
-	bool first_run = false;
-	wxString db_path = wxGetHomeDir() + _T("/.szarp/remarks/remarks.db");
-	wxString articles_path = wxGetHomeDir() + _T("/.szarp/remarks/articles");
-
-	if (!wxFile::Exists(db_path)) {
-
-		wxString path = wxGetHomeDir() + _T("./szarp");
-		if (!create_dir(path, error))
-			return false;
-
-		path += _T("/remarks");
-		if (!create_dir(path, error))
-			return false;
-
-		path += _T("/articles");
-		if (!create_dir(path, error))
-			return false;
-
-		first_run = true;
-
-	}
-
-	m_maildir_session = vm::create<vm::net::session>();
-	m_maildir_store = m_maildir_session->getStore(vm::utility::url(std::string("maildir://localhost") + SC::S2A(articles_path)));
-	
-	int ret = sqlite3_open16((void*)db_path.c_str(), &m_sqlite);
-	if (ret) {
-		m_sqlite = NULL;
-		error = _("Unable to open database");
-		return 1;
-	}
-
-	if (!CreateTable()) {
-		error = _("Failed to initialize database");
-		sqlite3_close(m_sqlite); m_sqlite = NULL;
-		return false;
-	}
-
-	vm::ref<vm::net::folder> folder = m_maildir_store->getDefaultFolder();
-	if (!folder->exists())
-		folder->create(1);
-
-	return true;
-}
-
-
-void RemarksStorage::StoreRemark(vm::ref<vm::message> msg) {
-	struct tm _tm;
-	time_t tref, tsent;
-
-	vm::ref<vm::header> hdr = msg->getHeader();
-
-	vm::charset u8 = vm::charset("utf-8");
-
-	const std::string& graph = hdr->getField("X-DRAW3-REMARK-GRAPH")->getValue().dynamicCast<vmime::text>()->getConvertedText(u8);
-	const std::string& window = hdr->getField("X-DRAW3-REMARK-WINDOW")->getValue().dynamicCast<vmime::text>()->getConvertedText(u8);
-	const std::string& prefix = hdr->getField("X-DRAW3-REMARK-PREFIX")->getValue().dynamicCast<vmime::text>()->getConvertedText(u8);
-	const std::string& msgid = hdr->MessageId()->getValue().dynamicCast<vmime::text>()->getConvertedText(u8);
-	const std::string& from = hdr->getField("From")->getValue().dynamicCast<vmime::text>()->getConvertedText(u8);
-
-	const std::string& time_str = hdr->getField("X-DRAW3-REMARK-TIME")->getValue().dynamicCast<vmime::text>()->getConvertedText(u8);
-	strptime(time_str.c_str(), "%Y-%m-%d %H:%M:%s", &_tm);
-	tref = timegm(&_tm);
-
-	vm::ref<vm::datetime> date = hdr->Date().dynamicCast<vmime::datetime>();
-	_tm.tm_year = date->getYear();
-	_tm.tm_mon = date->getMonth();
-	_tm.tm_mday = date->getDay();
-	_tm.tm_hour = date->getHour();
-	_tm.tm_min = date->getMinute() / 10 * 10;
-	_tm.tm_sec = 0;
-
-	tsent = timegm(&_tm);
-
-	sqlite3_stmt *stmt;
-	int ret = sqlite3_prepare_v2(
+	ret = sqlite3_prepare_v2(
 			m_sqlite, 
-			"INSERT INTO remark (graph, window, prefix, msgid, ref_time, from, send_time, title, is_read) "
-			"	VALUES ( ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);",
+			"INSERT INTO prefix (name) VALUES (?1);",
 			-1,
-			&stmt,
+			&m_add_prefix_query,
 			NULL);
 	assert(ret == SQLITE_OK);
-
-	ret = sqlite3_bind_text(stmt, 1, graph.c_str(), -1, NULL);
-	assert(ret == 0);
-	ret = sqlite3_bind_text(stmt, 2, window.c_str(), -1, NULL);
-	assert(ret == 0);
-	ret = sqlite3_bind_text(stmt, 3, prefix.c_str(), -1, NULL);
-	assert(ret == 0);
-	ret = sqlite3_bind_text(stmt, 4, msgid.c_str(), -1, NULL);
-	assert(ret == 0);
-	ret = sqlite3_bind_int(stmt, 5, tref);
-	assert(ret == 0);
-	ret = sqlite3_bind_text(stmt, 6, from.c_str(), -1, NULL);
-	assert(ret == 0);
-	ret = sqlite3_bind_int(stmt, 7, tsent);
-	assert(ret == 0);
-	ret = sqlite3_bind_int(stmt, 8, 0);
-	assert(ret == 0);
-	ret = sqlite3_step(stmt);
-	assert(ret == SQLITE_DONE);
-	sqlite3_finalize(stmt);
-
-	vm::ref<vm::net::folder> folder = m_maildir_store->getDefaultFolder();
-	folder->open(vm::net::folder::MODE_READ_WRITE);
-	folder->addMessage(msg);
-	folder->close(true);
-
 }
 
-bool RemarksStorage::HasRemarks(const wxString &prefix,
-		const wxString &window,
-		const wxString &graph,
-		const wxDateTime &start_date,
-		const wxDateTime &end_date) {
-
-	int ret;
-	ret = sqlite3_bind_text16(m_has_remark, 1, static_cast<const void*>(prefix.c_str()), -1, NULL);
-	assert(ret == 0);
-	ret = sqlite3_bind_text16(m_has_remark, 2, static_cast<const void*>(window.c_str()), -1, NULL);
-	assert(ret == 0);
-	ret = sqlite3_bind_text16(m_has_remark, 3, static_cast<const void*>(graph.c_str()), -1, NULL);
-	assert(ret == 0);
-	ret = sqlite3_bind_int(m_has_remark, 4, start_date.GetTicks());
-	assert(ret == 0);
-	ret = sqlite3_bind_int(m_has_remark, 5, end_date.GetTicks());
-	assert(ret == 0);
-	ret = sqlite3_step(m_has_remark);
-	assert(ret == SQLITE_ROW);
-	ret = sqlite3_reset(m_has_remark);
-	assert(ret == SQLITE_OK);
-
-	bool result = sqlite3_column_int(m_fetch_remark_info, 1) > 0;
-
-	sqlite3_clear_bindings(m_has_remark);
-
-	return result;
-}
-
-std::vector<RemarkInfo> RemarksStorage::GetRemarks(const wxString &prefix,
-		const wxString &window,
-		const wxString &graph,
-		const wxDateTime &start_date,
-		const wxDateTime &end_date) {
-
-	std::vector<RemarkInfo> result;
-
-	int ret;
-	ret = sqlite3_bind_text16(m_fetch_remark_info, 1, static_cast<const void*>(prefix.c_str()), -1, NULL);
-	assert(ret == 0);
-	ret = sqlite3_bind_text16(m_fetch_remark_info, 2, static_cast<const void*>(window.c_str()), -1, NULL);
-	assert(ret == 0);
-	ret = sqlite3_bind_text16(m_fetch_remark_info, 3, static_cast<const void*>(graph.c_str()), -1, NULL);
-	assert(ret == 0);
-	ret = sqlite3_bind_int(m_fetch_remark_info, 4, start_date.GetTicks());
-	assert(ret == 0);
-	ret = sqlite3_bind_int(m_fetch_remark_info, 5, end_date.GetTicks());
-	assert(ret == 0);
-
-	while ((ret = sqlite3_step(m_fetch_remark_info)) == SQLITE_ROW) {
-		RemarkInfo r;
-		r.id = (wxChar*) sqlite3_column_text16(m_fetch_remark_info, 1);
-		r.title = (wxChar*) sqlite3_column_text16(m_fetch_remark_info, 2);
-		r.from = (wxChar*) sqlite3_column_text16(m_fetch_remark_info, 3);
-		r.send_time = sqlite3_column_int(m_fetch_remark_info, 4);
-		r.is_read = sqlite3_column_int(m_fetch_remark_info, 5) == 1;
-		result.push_back(r);
+bool RemarksStorage::CreateTable() {
+	const char* create_commands[]  = {
+			"CREATE TABLE prefix ("
+				"id INTEGER PRIMARY KEY AUTOINCREMENT,"
+				"name TEXT"
+				");",
+			"CREATE TABLE remark ("
+			"	id INTEGER PRIMARY KEY,"
+			"	prefix_id INTEGER,"
+			"	set_name TEXT,"
+			"	time INTEGER,"
+			"	content TEXT"
+			"	);",
+			"CREATE INDEX index1 ON remark (prefix_id);",
+			"CREATE INDEX index2 ON remark (set_name);",
+			"CREATE INDEX index3 ON remark (time);" };
+	for (size_t i = 0; i < sizeof(create_commands) / sizeof(create_commands[0]); ++i) {
+		int ret = sqlite3_exec(m_sqlite, 
+				create_commands[i],
+				NULL,
+				NULL,
+				NULL);
+		assert (ret == SQLITE_OK);
 	}
-	assert(ret == SQLITE_DONE);
-	ret = sqlite3_reset(m_fetch_remark_info);
-	assert(ret == SQLITE_OK);
-	sqlite3_clear_bindings(m_fetch_remark_info);
-	return result;
-}
-
-RemarksFrame::RemarksFrame(ConfigManager *config_manager) : 
-		m_auth_dialog(NULL), 
-		m_cfg_manager(config_manager) {
-
-	wxXmlResource::Get()->LoadFrame(this, NULL, _T("Remarks"));
-	SetSize(700, 500);
-	SetIcon(szFrame::default_icon);
-
-	wxConfigBase *cfg = wxConfig::Get();
-	wxString address, port;
-	address = cfg->Read(_T("NNTPServerAddres"), _T("www.szarp.com.pl"));
-	port = cfg->Read(_T("NNTPServerPort"), _T("563"));
-
-	m_connection_data.address.Hostname(address);
-	m_connection_data.address.Service(port);
-}
-
-void RemarksFrame::OnClose(wxCloseEvent &event) {
-
-	if (event.CanVeto() == false) {
-		event.Veto();
-		Hide();
-	} else 
-		Destroy();
-}
-
-void RemarksFrame::OnFetch(wxCommandEvent &event) {
-	if (m_connection_data.username.empty())  {
-		if (GetUsernamePassword() == false)
-			return;
-	}
-}
-
-bool RemarksFrame::GetUsernamePassword() {
-
-	if (m_auth_dialog == NULL) 
-		m_auth_dialog = new AuthInfoDialog(this);
-
-	int ret = m_auth_dialog->ShowModal();
-	if (ret != wxID_OK)
-		return false;
-
-	m_connection_data.username = SC::S2A(m_auth_dialog->GetUsername());
-	m_connection_data.password = SC::S2A(m_auth_dialog->GetPassword());
 
 	return true;
-}
-
-void RemarksFrame::OnRefetchGroupList(wxCommandEvent &event) {
-	if (m_connection_data.username.empty())
-		return;
-
-	if (GetUsernamePassword() == false)
-		return;
 
 }
 
-void NNTPClient::TaskCompleted(NNTPTaskCompleted *tc) {
-	bool handled = false;
-	for (std::vector<TaskCreator*>::iterator i = m_task_creators.begin();
-			i != m_task_creators.end();
-			i++) 
-		if ((*i)->WaitingForCompletion(tc->m_task->GetTaskId())) {
-			handled = true;
-			(*i)->TaskCompleted(tc);
-			break;
+std::set<std::wstring> RemarksStorage::GetPrefixes() {
+	wxMutexLocker lock(m_prefixes_mutex);
+	return m_prefixes;
+}
+
+void RemarksStorage::AddPrefix(std::wstring prefix) {
+	int ret;
+
+	ret = sqlite3_bind_text(m_add_prefix_query,
+			1,
+			(const char*) SC::S2U(prefix).c_str(),
+			-1,
+			SQLITE_TRANSIENT);
+	assert(ret == SQLITE_OK);
+
+	ret = sqlite3_step(m_add_prefix_query);
+	assert(ret == SQLITE_DONE);
+
+	sqlite3_reset(m_add_prefix_query);
+	sqlite3_clear_bindings(m_add_prefix_query);
+
+}
+
+void RemarksStorage::ExecuteStoreRemarks(std::vector<Remark>& remarks) {
+	int ret;
+
+	if (remarks.size() == 0)
+		return;
+
+	wxMutexLocker lock(m_prefixes_mutex);
+
+	for (std::vector<Remark>::iterator i = remarks.begin();
+			i != remarks.end();
+			i++) {
+		std::wstring prefix = i->GetPrefix();
+
+		if (m_prefixes.find(prefix) == m_prefixes.end()) {
+			AddPrefix(prefix);
+			m_prefixes.insert(prefix);
 		}
 
-	if (!handled) {
-		delete tc->m_task;
-		delete tc;
+		ret = sqlite3_bind_int(m_store_remark_query, 1, i->GetId());
+		assert(ret == SQLITE_OK);
+		
+		ret = sqlite3_bind_text(m_store_remark_query, 
+				2, 
+				(const char*) SC::S2U(prefix).c_str(),
+				-1,
+				SQLITE_TRANSIENT);
+		assert(ret == SQLITE_OK);
+
+		std::wstring set = i->GetSet();
+		if (!set.empty()) {
+			ret = sqlite3_bind_text(m_store_remark_query, 
+					3, 
+					(const char*) SC::S2U(i->GetSet()).c_str(),
+					-1,
+					SQLITE_TRANSIENT);
+		} else {
+			ret = sqlite3_bind_null(m_store_remark_query, 3);
+		}
+		assert(ret == SQLITE_OK);
+		ret = sqlite3_bind_int(m_store_remark_query, 4, i->GetTime());
+		assert(ret == SQLITE_OK);
+		
+		xmlChar *doc;
+		int len;
+		xmlDocDumpMemory(i->GetXML(), &doc, &len);
+
+		ret = sqlite3_bind_text(m_store_remark_query, 
+				5, 
+				(const char*) doc,
+				-1,
+				xmlFree);
+		assert(ret == SQLITE_OK);
+
+
+		ret = sqlite3_step(m_store_remark_query);
+		assert(ret == SQLITE_DONE || ret == SQLITE_CONSTRAINT);
+
+		sqlite3_reset(m_store_remark_query);
+		sqlite3_clear_bindings(m_store_remark_query);
+	}
+
+}
+
+void RemarksStorage::GetRemarks(const wxString& prefix,
+			const wxString& set,
+			const wxDateTime &start_date,
+			const wxDateTime &end_date, wxEvtHandler *receiver) {
+
+	wxMutexLocker lock(m_queue_mutex);
+
+	m_queries.push_back(new FetchRemarksQuery(this,
+				prefix.c_str(),
+				set.c_str(),
+				start_date.GetTicks(),
+				end_date.GetTicks(),
+				receiver));
+	m_semaphore.Post();
+}
+
+void RemarksStorage::StoreRemarks(std::vector<Remark>& remarks) { 
+	wxMutexLocker lock(m_queue_mutex);
+
+	m_queries.push_back(new StoreRemarksQuery(this, remarks));
+
+	m_semaphore.Post();
+}
+
+void RemarksStorage::Finish() {
+	wxMutexLocker lock(m_queue_mutex);
+
+	m_queries.push_back(new FinishQuery(this));
+
+	m_semaphore.Post();
+}
+
+std::vector<Remark> RemarksStorage::ExecuteGetRemarks(const std::wstring& prefix,
+			const std::wstring& set,
+			const time_t &start_date,
+			const time_t &end_date) {
+
+	std::vector<Remark> v;
+
+	int ret;
+	ret = sqlite3_bind_text(m_fetch_remarks_query, 
+			1, 
+			(const char*) SC::S2U(prefix).c_str(),
+			-1,
+			SQLITE_TRANSIENT);
+	assert (ret == SQLITE_OK);
+
+	ret = sqlite3_bind_text(m_fetch_remarks_query, 
+			2, 
+			(const char*) SC::S2U(set).c_str(),
+			-1,
+			SQLITE_TRANSIENT);
+	assert(ret == SQLITE_OK);
+	ret = sqlite3_bind_int(m_fetch_remarks_query, 
+			3,
+			start_date);
+	assert(ret == SQLITE_OK);
+	ret = sqlite3_bind_int(m_fetch_remarks_query, 
+			4,
+			end_date);
+	assert(ret == SQLITE_OK);
+
+	while ((ret = sqlite3_step(m_fetch_remarks_query)) == SQLITE_ROW) {
+		const char* remark_doc = (const char*) sqlite3_column_text(m_fetch_remarks_query, 0);
+		assert(remark_doc);
+		//printf("from db:%s\n", remark_doc);
+		xmlDocPtr r = xmlParseMemory(remark_doc, strlen(remark_doc));
+		if (r)
+			v.push_back(Remark(r));
+	}
+
+	sqlite3_reset(m_fetch_remarks_query);
+	sqlite3_clear_bindings(m_fetch_remarks_query);
+
+	return v;
+}
+
+void* RemarksStorage::Entry() {
+
+	while (!m_done) {
+		m_semaphore.Wait();
+
+		wxMutexLocker lock(m_queue_mutex);
+
+		Query *q = m_queries.front();
+
+		q->Execute();
+
+		delete q;
+		m_queries.pop_front();
+	}
+
+	return NULL;
+}
+
+
+RemarksStorage::~RemarksStorage() {
+	if (m_fetch_remarks_query)
+		sqlite3_finalize(m_fetch_remarks_query);
+	if (m_store_remark_query)
+		sqlite3_finalize(m_store_remark_query);
+	if (m_add_prefix_query)
+		sqlite3_finalize(m_add_prefix_query);
+	if (m_sqlite)
+		sqlite3_close(m_sqlite);
+}
+
+Remark::Remark() {
+	m_doc = boost::shared_ptr<xmlDoc>(xmlNewDoc(BAD_CAST "1.0"), xmlFreeDoc);
+
+	m_doc->children = xmlNewDocNode(m_doc.get(), NULL, BAD_CAST "remark", NULL);
+	xmlNewChild(m_doc->children, NULL, BAD_CAST "content", NULL);
+}
+
+Remark::Remark(xmlDocPtr doc) {
+	m_doc = boost::shared_ptr<xmlDoc>(doc, xmlFreeDoc);
+}
+
+xmlDocPtr Remark::GetXML() {
+	return m_doc.get();
+}
+
+void Remark::SetPrefix(std::wstring prefix) {
+	xmlSetProp(m_doc->children, BAD_CAST "prefix", SC::S2U(prefix).c_str());
+}
+
+void Remark::SetBaseName(std::wstring base_name) {
+	xmlSetProp(m_doc->children, BAD_CAST "base_name", SC::S2U(base_name).c_str());
+}
+
+void Remark::SetTitle(std::wstring title) {
+	xmlSetProp(m_doc->children, BAD_CAST "title", SC::S2U(title).c_str());
+}
+
+void Remark::SetSet(std::wstring set) {
+	if (!set.empty()) {
+		xmlSetProp(m_doc->children, BAD_CAST "set", SC::S2U(set).c_str());
+	} else {
+		xmlAttrPtr attr = xmlHasProp(m_doc->children, BAD_CAST "set");
+		if (attr)
+			xmlRemoveProp(attr);
+	}
+
+}
+
+void Remark::SetContent(std::wstring content_s) {
+	xmlXPathContextPtr xpath_ctx = xmlXPathNewContext(m_doc.get());
+	xmlNodePtr content = uxmlXPathGetNode(BAD_CAST "/remark/content", xpath_ctx);
+	xmlNodePtr cdata = content->children;
+
+	if (cdata) {
+		xmlUnlinkNode(cdata);
+		xmlFreeNode(cdata);
+	}
+
+	std::basic_string<unsigned char> cu8 = SC::S2U(content_s);
+
+	cdata = xmlNewCDataBlock(m_doc.get(), cu8.c_str(), cu8.size());
+	xmlAddChild(content, cdata);
+
+	xmlXPathFreeContext(xpath_ctx);
+}
+
+void Remark::SetTime(time_t time) {
+	std::wstringstream ss;
+	ss << time;
+
+	xmlSetProp(m_doc->children, BAD_CAST "time", SC::S2U(ss.str()).c_str());
+}
+
+namespace {
+std::wstring get_property(xmlDocPtr doc, const char* prop) {
+	xmlChar* pv = xmlGetProp(doc->children, BAD_CAST prop);
+
+	std::wstring ret;
+
+	if (pv)
+		ret = SC::U2S(pv);
+	xmlFree(pv);
+
+	return ret;
+}
+
+}
+
+std::wstring Remark::GetPrefix() {
+	return get_property(m_doc.get(), "prefix");
+}
+
+std::wstring Remark::GetBaseName() {
+	return get_property(m_doc.get(), "base_name");
+}
+
+std::wstring Remark::GetTitle() {
+	return get_property(m_doc.get(), "title");
+}
+
+std::wstring Remark::GetAuthor() {
+	return get_property(m_doc.get(), "author");
+}
+
+int Remark::GetId() {
+	int id = 0;
+	std::wstringstream oss(get_property(m_doc.get(), "id"));
+
+	oss >> id;
+	return id;
+}
+
+std::wstring Remark::GetContent() {
+	xmlXPathContextPtr xpath_ctx = xmlXPathNewContext(m_doc.get());
+
+	xmlNodePtr content = uxmlXPathGetNode(BAD_CAST "/remark/content", xpath_ctx);
+	assert(content);
+
+	xmlNodePtr cdata = content->children;
+
+	std::wstring ret;
+	if (cdata) {
+	    xmlChar* c = xmlNodeListGetString(m_doc.get(), cdata, 1);
+	    if (c)
+		    ret = SC::U2S(c);
+	    xmlFree(c);
+	}
+
+	xmlXPathFreeContext(xpath_ctx);
+
+	return ret;
+}
+
+std::wstring Remark::GetSet() {
+	return get_property(m_doc.get(), "set");
+}
+
+time_t Remark::GetTime() {
+	std::wstringstream wss;
+	wss << get_property(m_doc.get(), "time");
+
+	time_t t = -1;
+	wss >> t;
+
+	return t;
+}
+
+Remark::~Remark() {
+}
+
+RemarkViewDialog::RemarkViewDialog(wxWindow *parent, RemarksHandler *remarks_handler) {
+	bool loaded = wxXmlResource::Get()->LoadDialog(this, parent, _T("ViewRemarkFrame"));
+
+	m_remarks_handler = remarks_handler;
+	assert(loaded);
+}
+
+void RemarkViewDialog::SetEditingMode(bool editing_mode) {
+	XRCCTRL(*this, "RemarkTitleTextCtrl", wxTextCtrl)->SetEditable(editing_mode);
+	XRCCTRL(*this, "RemarkContentTextCtrl", wxTextCtrl)->SetEditable(editing_mode);
+
+	GetSizer()->Show(FindWindowById(wxID_CLOSE), !editing_mode, true);
+	//GetSizer()->Show(FindWindowById(wxID_ADD)->GetSizer(), editing_mode, true);
+	//GetSizer()->Show(FindWindowById(wxID_CANCEL)->GetSizer(), editing_mode, true);
+
+	GetSizer()->Show(FindWindowById(wxID_ADD), editing_mode, true);
+	GetSizer()->Show(FindWindowById(wxID_CANCEL), editing_mode, true);
+	GetSizer()->Show(FindWindowById(XRCID("AuthorStaticCtrl"))->GetContainingSizer(), !editing_mode, true);
+
+	GetSizer()->Layout();
+}
+
+int RemarkViewDialog::NewRemark(wxString prefix, wxString db_name, wxString set_name, wxDateTime time) {
+
+	m_prefix = prefix;
+	m_set_name = set_name;
+	m_time = time;
+
+	XRCCTRL(*this, "BaseNameStaticCtrl", wxStaticText)->SetLabel(db_name);
+	if (!set_name.empty())
+		XRCCTRL(*this, "SetStaticCtrl", wxStaticText)->SetLabel(set_name);
+	else
+		GetSizer()->Show(XRCCTRL(*this, "SetStaticCtrl", wxStaticText)->GetContainingSizer(), false, true);
+
+	XRCCTRL(*this, "TimeStaticCtrl", wxStaticText)->SetLabel(FormatTime(time, PERIOD_T_DAY));
+
+	SetEditingMode(true);
+
+	return ShowModal();
+
+}
+
+void RemarkViewDialog::ShowRemark(wxString db_name,
+			wxString set_name,
+			wxString author,
+			wxDateTime time,
+			wxString title,
+			wxString content) {
+
+	XRCCTRL(*this, "BaseNameStaticCtrl", wxStaticText)->SetLabel(db_name);
+	
+	if (!set_name.empty())
+		XRCCTRL(*this, "SetStaticCtrl", wxStaticText)->SetLabel(set_name);
+	else
+		GetSizer()->Show(XRCCTRL(*this, "SetStaticCtrl", wxStaticText)->GetContainingSizer(), false, true);
+
+	XRCCTRL(*this, "AuthorStaticCtrl", wxStaticText)->SetLabel(author);
+	XRCCTRL(*this, "TimeStaticCtrl", wxStaticText)->SetLabel(FormatTime(time, PERIOD_T_DAY));
+
+	XRCCTRL(*this, "RemarkTitleTextCtrl", wxTextCtrl)->SetValue(title);
+	XRCCTRL(*this, "RemarkContentTextCtrl", wxTextCtrl)->SetValue(content);
+
+	SetEditingMode(false);
+
+	ShowModal();
+	return;
+}
+
+void RemarkViewDialog::OnCloseButton(wxCommandEvent &event) {
+	EndModal(wxID_CLOSE);
+}
+
+void RemarkViewDialog::OnCancelButton(wxCommandEvent &event) {
+	EndModal(wxID_CANCEL);
+}
+
+wxString RemarkViewDialog::GetRemarkTitle() {
+	return XRCCTRL(*this, "RemarkTitleTextCtrl", wxTextCtrl)->GetValue();
+}
+
+wxString RemarkViewDialog::GetRemarkContent() {
+	return XRCCTRL(*this, "RemarkContentTextCtrl", wxTextCtrl)->GetValue();
+}
+
+void RemarkViewDialog::OnAddButton(wxCommandEvent &event) {
+
+	m_remark_connection = m_remarks_handler->GetConnection();
+
+	Remark r;
+	r.SetPrefix(m_prefix.c_str());
+	r.SetTime(m_time.GetTicks());
+	r.SetSet(m_set_name.c_str());
+	r.SetTitle(GetRemarkTitle().c_str());
+	r.SetContent(GetRemarkContent().c_str());
+
+	m_remark_connection->SetRemarkAddDialog(this);
+
+	m_remark_connection->PostRemark(r);
+
+	Disable();
+
+}
+
+void RemarkViewDialog::RemarkSent(bool ok, wxString error) {
+	Enable();
+
+	if (ok) {
+		wxMessageBox(_("Remark sent successfully."), _("Remark sent."));
+		EndModal(wxID_OK);
+	} else {
+		wxMessageBox(wxString::Format(_("There was an error sending remark:'%s'."), error.c_str()), _("Error."));
 	}
 }
 
-TaskCreator::TaskCreator(NNTPClient *client) : m_client(client) {}
-
-bool TaskCreator::WaitingForCompletion(size_t task_id) {
-	for (std::vector<size_t>::iterator i = m_pending_tasks.begin();
-			i != m_pending_tasks.end();
-			++i) 
-		if ((*i) == task_id)
-			return true;
-
-	return false;
-}
-
-void TaskCreator::EnqueTask(NNTPTask *task) {
-	m_pending_tasks.push_back(task->GetTaskId());
-
-}
-
-void TaskCreator::TaskCompleted(NNTPTaskCompleted *tc) {
-	size_t id = tc->m_task->GetTaskId();
-	std::vector<size_t>::iterator i = std::remove(m_pending_tasks.begin(),
-			m_pending_tasks.end(), 
-			id);
-
-	m_pending_tasks.erase(i, m_pending_tasks.end());
-
-	HandleCompletedTask(tc);
-}
-
-BEGIN_EVENT_TABLE(RemarksFrame, szFrame)
-	EVT_CLOSE(RemarksFrame::OnClose)
-	EVT_MENU(XRCID("FETCH_REMARKS_MENU"), RemarksFrame::OnFetch)
-	EVT_MENU(XRCID("REFETCH_GROUP_LIST"), RemarksFrame::OnRefetchGroupList)
+BEGIN_EVENT_TABLE(RemarkViewDialog, wxDialog)
+	EVT_BUTTON(wxID_CLOSE, RemarkViewDialog::OnCloseButton)
+	EVT_BUTTON(wxID_CANCEL, RemarkViewDialog::OnCancelButton)
+	EVT_BUTTON(wxID_ADD, RemarkViewDialog::OnAddButton)
 END_EVENT_TABLE()
 
-#endif
-#endif
+RemarksListDialog::RemarksListDialog(wxWindow* parent, RemarksHandler *remarks_handler) {
+	m_remarks_handler = remarks_handler;
 
+	bool loaded = wxXmlResource::Get()->LoadDialog(this, parent, _T("RemarksListDialog"));
+	assert(loaded);
+
+	m_list_ctrl = XRCCTRL(*this, "RemarksListCtrl", wxListCtrl);
+	assert(m_list_ctrl);
+
+	m_list_ctrl->InsertColumn(0, _("Date"), wxLIST_FORMAT_LEFT, -1);
+	m_list_ctrl->InsertColumn(1, _("Title"), wxLIST_FORMAT_LEFT, -1);
+
+}
+
+void RemarksListDialog::SetViewedRemarks(std::vector<Remark> &remarks) {
+	m_displayed_remarks = remarks;
+
+	m_list_ctrl->Freeze();
+	m_list_ctrl->DeleteAllItems();
+
+	for (size_t i = 0; i < remarks.size(); i++) {
+		Remark& r = remarks[i];
+
+		m_list_ctrl->InsertItem(i, wxDateTime(r.GetTime()).Format(_T("%Y-%m-%d %H:%M")));
+		m_list_ctrl->SetItem(i, 1, r.GetTitle());
+
+	}
+
+	m_list_ctrl->SetColumnWidth(0, -1);
+	m_list_ctrl->SetColumnWidth(1, -1);
+
+	m_list_ctrl->Thaw();
+}
+
+void RemarksListDialog::OnCloseButton(wxCommandEvent &event) {
+	EndModal(wxID_CLOSE);
+}
+
+void RemarksListDialog::OnOpenButton(wxCommandEvent &event) {
+
+	long i = -1;
+	
+	i = m_list_ctrl->GetNextItem(i, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+	if (i == -1)
+		return;
+
+	Remark& r = m_displayed_remarks[i];
+
+	RemarkViewDialog* d = new RemarkViewDialog(this, m_remarks_handler);
+	d->ShowRemark(r.GetBaseName(),
+			r.GetSet(),
+			r.GetAuthor(),
+			r.GetTime(),
+			r.GetTitle(),
+			r.GetContent());
+	d->Destroy();
+}
+
+
+void RemarksListDialog::OnClose(wxCloseEvent& event) {
+	EndModal(wxID_CLOSE);
+}
+
+BEGIN_EVENT_TABLE(RemarksListDialog, wxDialog)
+	EVT_BUTTON(wxID_OPEN, RemarksListDialog::OnOpenButton)
+	EVT_BUTTON(wxID_CLOSE, RemarksListDialog::OnCloseButton)
+	EVT_CLOSE(RemarksListDialog::OnClose)
+END_EVENT_TABLE()
+
+
+RemarksFetcher::RemarksFetcher(RemarksHandler *handler, DrawToolBar* tool_bar, wxWindow *top_level_window) {
+	m_remarks_handler = handler;
+	m_tool_bar = tool_bar;
+	m_toplevel_window = top_level_window;
+
+	m_active = handler->Configured();
+
+	handler->AddRemarkFetcher(this);
+
+	if (m_active)
+		m_tool_bar->PushEventHandler(this);
+
+}
+
+void RemarksFetcher::Fetch(Draw *d) {
+	assert(m_active);
+
+	wxDateTime start = d->GetTimeOfIndex(0);
+	if (!start.IsValid())
+		return;
+
+	m_remarks.clear();
+
+	UpdateRemarksIcon();
+
+	wxDateTime end = d->GetTimeOfIndex(d->GetValuesTable().size());
+	DrawInfo *di = d->GetDrawInfo();
+
+	m_remarks_handler->GetStorage()->GetRemarks(
+				di->GetBasePrefix(),
+				di->GetSetName(),
+				start.GetTicks(),
+				end.GetTicks(),
+				this);
+
+}
+
+
+void RemarksFetcher::Attach(Draw *d) {
+
+	if (m_active == false)
+		return;
+
+	d->AttachObserver(this);
+
+	m_current_draw = d;
+
+	Fetch(m_current_draw);
+	
+}
+
+void RemarksFetcher::Detach(Draw *d) {
+	m_remarks.clear();
+
+	UpdateRemarksIcon();
+
+	d->DetachObserver(this);
+
+}
+
+void RemarksFetcher::RemarksReceived(std::vector<Remark>& remarks) {
+	DrawInfo* di = m_current_draw->GetDrawInfo();
+
+	wxDateTime start = m_current_draw->GetTimeOfIndex(0);
+	wxDateTime end = m_current_draw->GetTimeOfIndex(m_current_draw->GetValuesTable().size());
+
+	wxString prefix = di->GetBasePrefix();
+	wxString set = di->GetSetName();
+	wxString base_name = di->GetDrawsSets()->GetID();
+
+	std::vector<wxDateTime> remarks_times;
+
+	for (std::vector<Remark>::iterator i = remarks.begin(); i != remarks.end(); i++) {
+		wxDateTime rt = i->GetTime();
+
+		std::wstring rset = i->GetSet();
+
+		if (prefix != i->GetPrefix()
+				|| (!rset.empty() && set != rset)
+				|| rt < start
+				|| rt >= end)
+			continue;
+
+		remarks_times.push_back(rt);
+		i->SetBaseName(base_name.c_str());
+		m_remarks[i->GetId()] = *i;
+
+	}
+
+	if (remarks_times.size()) {
+		m_current_draw->SetRemarksTimes(remarks_times);
+		UpdateRemarksIcon();
+	}
+}
+
+void RemarksFetcher::OnRemarksResponse(RemarksResponseEvent &e) {
+	RemarksReceived(e.GetRemarks());
+}
+
+void RemarksFetcher::ScreenMoved(Draw* draw, const wxDateTime &start_time) {
+	if (m_active == false)
+		return;
+	Fetch(draw);
+}
+
+void RemarksFetcher::UpdateRemarksIcon() {
+	m_tool_bar->ShowRemarksIcon(m_remarks.size() > 0);
+}
+
+void RemarksFetcher::OnShowRemarks(wxCommandEvent &e) {
+	std::vector<Remark> remarks;
+
+	for (std::map<int, Remark>::iterator i = m_remarks.begin();
+			i != m_remarks.end();
+			i++)
+		remarks.push_back(i->second);
+
+
+	RemarksListDialog *d = new RemarksListDialog(m_toplevel_window, m_remarks_handler);
+	d->SetViewedRemarks(remarks);
+	d->ShowModal();
+	d->Destroy();
+
+}
+
+void RemarksFetcher::DrawInfoChanged(Draw *d) {
+	Fetch(d);
+}
+
+RemarksFetcher::~RemarksFetcher() {
+	m_remarks_handler->RemoveRemarkFetcher(this);
+
+	m_tool_bar->PopEventHandler();
+}
+
+BEGIN_EVENT_TABLE(RemarksFetcher, wxEvtHandler)
+	EVT_REMARKS_RESPONSE(wxID_ANY, RemarksFetcher::OnRemarksResponse)
+	EVT_MENU(drawTB_REMARK, RemarksFetcher::OnShowRemarks)
+END_EVENT_TABLE()

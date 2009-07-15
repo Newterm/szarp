@@ -143,13 +143,7 @@ void SSLInitializer::Initialize() {
 
 SSLSocketConnection::SSLSocketConnection(const wxIPV4address& ip, wxEvtHandler *receiver) : m_ip(ip), m_receiver(receiver) {
 
-	m_socket = new wxSocketClient(wxSOCKET_NOWAIT);
-	m_socket->SetNotify(wxSOCKET_INPUT_FLAG |
-			wxSOCKET_OUTPUT_FLAG |
-			wxSOCKET_CONNECTION_FLAG |
-			wxSOCKET_LOST_FLAG);
-	m_socket->SetEventHandler(*this);
-	m_socket->Notify(true);
+	m_socket = NULL;
 
 	m_write_blocked_on_read = false;
 	m_read_blocked_on_write = false;
@@ -170,13 +164,6 @@ void SSLSocketConnection::Cleanup() {
 		SSL_free(m_ssl);
 		m_ssl = NULL;
 	}
-
-	if (m_ssl_ctx) {
-		SSL_CTX_free(m_ssl_ctx);
-		m_ssl_ctx = NULL;
-	}
-
-
 }
 
 void SSLSocketConnection::ConnectSSL() {
@@ -223,7 +210,21 @@ void SSLSocketConnection::ConnectSSL() {
 	}
 }
 
+void SSLSocketConnection::SetIPAddress(wxIPV4address &ip) {
+	m_ip = ip;
+}
+
 bool SSLSocketConnection::DoConnect() {
+	if (m_socket == NULL) {
+		m_socket = new wxSocketClient(wxSOCKET_NOWAIT);
+		m_socket->SetNotify(wxSOCKET_INPUT_FLAG |
+				wxSOCKET_OUTPUT_FLAG |
+				wxSOCKET_CONNECTION_FLAG |
+				wxSOCKET_LOST_FLAG);
+		m_socket->SetEventHandler(*this);
+		m_socket->Notify(true);
+	}
+
 
 	if (m_socket->Connect(m_ip, false) == true)
 		return true;
@@ -256,7 +257,7 @@ void SSLSocketConnection::OnTimer(wxTimerEvent &event) {
 
 	wxPostEvent(m_receiver, ev);
 
-	Cleanup();
+	Disconnect();
 }
 
 void SSLSocketConnection::Connect() {
@@ -264,6 +265,12 @@ void SSLSocketConnection::Connect() {
 		m_state = CONNECTING_SSL;
 		ConnectSSL();
 	}
+}
+
+void SSLSocketConnection::Disconnect() {
+	Cleanup();
+	m_socket->Destroy();
+	m_socket = NULL;
 }
 
 wxSocketError SSLSocketConnection::LastError() {
@@ -342,7 +349,7 @@ ssize_t SSLSocketConnection::Write(char* buffer, size_t size) {
 void SSLSocketConnection::OnSocketEvent(wxSocketEvent& event) {
 	wxSocketNotify type = event.GetSocketEvent();
 	if (type == wxSOCKET_LOST) {
-		Cleanup();
+		Disconnect();
 		wxPostEvent(m_receiver, event);
 		m_state = NOT_CONNECTED;
 		return;
@@ -382,6 +389,11 @@ void SSLSocketConnection::Destroy() {
 SSLSocketConnection::~SSLSocketConnection() {
 	Cleanup();
 
+	if (m_ssl_ctx) {
+		SSL_CTX_free(m_ssl_ctx);
+		m_ssl_ctx = NULL;
+	}
+
 	if (m_socket) {
 		m_socket->Destroy();
 		m_socket = NULL;
@@ -390,5 +402,6 @@ SSLSocketConnection::~SSLSocketConnection() {
 
 BEGIN_EVENT_TABLE(SSLSocketConnection, wxEvtHandler)
     EVT_SOCKET(wxID_ANY, SSLSocketConnection::OnSocketEvent)
+    EVT_TIMER(wxID_ANY, SSLSocketConnection::OnTimer)
 END_EVENT_TABLE()
 

@@ -33,6 +33,7 @@
 #include "drawurl.h"
 #include "errfrm.h"
 #include "paramslist.h"
+#include "remarks.h"
 
 #include "bitmaps/flag_de.xpm"
 #include "bitmaps/flag_pl.xpm"
@@ -44,11 +45,11 @@
 
 
 
-DrawFrame::DrawFrame(FrameManager * fm, DatabaseManager* dm, ConfigManager* cm, wxWindow * parent,
+DrawFrame::DrawFrame(FrameManager * fm, DatabaseManager* dm, ConfigManager* cm, RemarksHandler *remarks, wxWindow * parent,
 		     wxWindowID id, const wxString & title, const wxString & name, const wxPoint & pos,
 		     const wxSize & size, long style)
 :szFrame(parent, id, title, pos, size, style | wxFRAME_FLOAT_ON_PARENT, name), m_name(name), frame_manager(fm), config_manager(cm),
-database_manager(dm), m_notebook(NULL), draw_panel(NULL)
+database_manager(dm), m_notebook(NULL), draw_panel(NULL), remarks_handler(remarks)
 {
 
 	wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
@@ -311,6 +312,7 @@ bool DrawFrame::AddDrawPanel(const wxString & prefix, DrawSet *set, PeriodType p
 
 	DrawPanel *new_panel = new DrawPanel(database_manager,
 			config_manager,
+			remarks_handler,
 			config->GetID(),
 			set,
 			pt,
@@ -882,6 +884,126 @@ void DrawFrame::OnGraphsView(wxCommandEvent &e) {
 
 }
 
+class RemarkTypeDialog : public wxDialog {
+public:
+	RemarkTypeDialog(wxWindow *parent);
+	int GetSelection();
+};
+
+RemarkTypeDialog::RemarkTypeDialog(wxWindow *parent) {
+	bool loaded = wxXmlResource::Get()->LoadDialog(this, parent, _T("RemarkTypeDialog"));
+	assert(loaded);
+}
+
+int RemarkTypeDialog::GetSelection() {
+	return XRCCTRL(*this, "RadioBox", wxRadioBox)->GetSelection();
+}
+
+void DrawFrame::OnAddRemark(wxCommandEvent &event) {
+	if (!remarks_handler->Configured()) {
+		wxMessageBox(_("Remarks sending not configured, You should set username, password, and remarks server adddress"), _("Remarks not configured."), wxICON_HAND);
+	} else { 
+		RemarkViewDialog* d = new RemarkViewDialog(this, remarks_handler);
+
+		DrawInfo *di;
+		wxDateTime time;
+		draw_panel->GetDisplayedDrawInfo(&di, time);
+
+		RemarkTypeDialog dialog(this);
+
+		if (dialog.ShowModal() != wxID_OK)
+			return;
+
+		wxString set;
+		switch (dialog.GetSelection()) {
+			case 0:
+				set = di->GetSetName();
+				break;
+			case 1:
+				set = wxEmptyString;
+				break;
+			default:
+				assert(false);
+		}
+
+		d->NewRemark(di->GetBasePrefix(),
+				config_manager->GetConfigTitles()[di->GetBasePrefix()],
+				set,
+				time);
+
+		delete d;
+
+	}
+
+}
+
+void DrawFrame::OnFetchRemarks(wxCommandEvent &event) {
+	if (!remarks_handler->Configured()) {
+		wxMessageBox(_("Remarks sending not configured, You should set username, password, and remarks server adddress"), _("Remarks not configured."), wxICON_HAND);
+	} else {
+		RemarksConnection* connection = remarks_handler->GetConnection();
+		connection->FetchNewRemarks();
+	}
+}
+
+class RemarksConfigurationDialog : public wxDialog {
+	wxString& m_username;
+	wxString& m_password;
+	wxString& m_server;
+	bool &m_auto_fetch;	
+public:
+	RemarksConfigurationDialog(wxWindow *parent, wxString &username, wxString &password, wxString &server, bool &auto_fetch);
+	void OnOK(wxCommandEvent &event);
+	DECLARE_EVENT_TABLE();
+};
+
+RemarksConfigurationDialog::RemarksConfigurationDialog(wxWindow *parent, wxString &username, wxString &password, wxString &server, bool &auto_fetch) : 
+		m_username(username),
+		m_password(password), 
+		m_server(server),
+		m_auto_fetch(auto_fetch) {
+
+	bool loaded = wxXmlResource::Get()->LoadDialog(this, parent, _T("RemarksSettings"));
+	assert(loaded);
+
+	XRCCTRL(*this, "UsernameTextCtrl", wxTextCtrl)->SetValue(m_username);
+	XRCCTRL(*this, "PasswordTextCtrl", wxTextCtrl)->SetValue(m_password);
+	XRCCTRL(*this, "ServerTextCtrl", wxTextCtrl)->SetValue(m_server);
+	XRCCTRL(*this, "AutoFetchCheckbox", wxCheckBox)->SetValue(m_auto_fetch);
+
+}
+
+void RemarksConfigurationDialog::OnOK(wxCommandEvent &event) {
+
+	m_username = XRCCTRL(*this, "UsernameTextCtrl", wxTextCtrl)->GetValue();
+	m_password = XRCCTRL(*this, "PasswordTextCtrl", wxTextCtrl)->GetValue();
+	m_server = XRCCTRL(*this, "ServerTextCtrl", wxTextCtrl)->GetValue();
+	m_auto_fetch = XRCCTRL(*this, "AutoFetchCheckbox", wxCheckBox)->GetValue();
+
+	EndModal(wxID_OK);
+
+}
+
+BEGIN_EVENT_TABLE(RemarksConfigurationDialog, wxDialog)
+	EVT_BUTTON(wxID_OK, RemarksConfigurationDialog::OnOK)
+END_EVENT_TABLE()
+
+void DrawFrame::OnConfigureRemarks(wxCommandEvent &event) {
+
+	wxString username, password, server;
+	bool autofetch;
+	
+	remarks_handler->GetConfiguration(username, password, server, autofetch);
+
+	RemarksConfigurationDialog d(this, username, password, server, autofetch);
+
+	if (d.ShowModal() == wxID_OK) {
+		remarks_handler->SetConfiguration(username, password, server, autofetch);
+		return;
+	}
+	
+}
+
 void DrawFrame::OnLanguageChangeTool(wxCommandEvent &event) {
 	wxMenu *menu = new wxMenu();
 
@@ -1063,6 +1185,9 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("Refresh"), DrawFrame::OnRefresh)
     EVT_MENU(XRCID("ContextHelp"), DrawFrame::OnContextHelp)
     EVT_MENU(XRCID("NumberOfPoints"), DrawFrame::OnNumberOfUnits)
+    EVT_MENU(XRCID("AddRemark"), DrawFrame::OnAddRemark)
+    EVT_MENU(XRCID("FetchRemarks"), DrawFrame::OnFetchRemarks)
+    EVT_MENU(XRCID("RemarksConfiguration"), DrawFrame::OnConfigureRemarks)
     EVT_MENU(drawTB_EXIT, DrawFrame::OnExit)
     EVT_MENU(drawTB_ABOUT, DrawFrame::OnAbout)
     EVT_MENU(langID_pl, DrawFrame::OnLanguageChangeMenuItem)

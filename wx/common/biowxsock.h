@@ -86,11 +86,15 @@ public:
 
 	void Connect();
 
+	void SetIPAddress(wxIPV4address &ip);
+
 	ssize_t Write(char* buffer, size_t size);
 
 	ssize_t Read(char* buffer, size_t size);
 
 	void Destroy();
+
+	void Disconnect();
 
 	virtual ~SSLSocketConnection();
 

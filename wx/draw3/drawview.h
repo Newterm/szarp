@@ -239,6 +239,11 @@ class BackgroundView : public BackgroundDrawer, public DrawObserver {
 	/**@see ConfigManager*/
 	ConfigManager *m_cfg_mgr;
 
+	/**remark flag bitmap*/
+	wxBitmap m_remark_flag_bitmap;
+
+	/**daws flags at point where remarks are located*/
+	void DrawRemarksFlags(wxDC *dc);
 public:
 	BackgroundView(WxGraphs *widget, ConfigManager *cfg_mgr);
 
@@ -250,6 +255,9 @@ public:
 
 	/**Redraws view*/
 	virtual void DrawInfoChanged(Draw *draw);
+
+	/**Redraws view*/
+	virtual void NewRemarks(Draw *draw);
 
 	/**Redraws view*/
 	virtual void PeriodChanged(Draw *draw, PeriodType period);

@@ -390,7 +390,7 @@ void SelectDrawWidget::OpenParameterDoc(int i) {
 	if (link.IsEmpty())
 		link = _T("https://www.szarp.com.pl");
 
-	link += _T("/cgi-bin/param_docs2.py?");
+	link += _T("/cgi-bin/param_docs.py?");
 	link << _T("prefix=") << d->GetBasePrefix().c_str();
 
 	link << _T("&param=") << encode_string(p->GetName().c_str());

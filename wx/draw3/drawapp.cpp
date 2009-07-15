@@ -71,6 +71,7 @@
 #include "errfrm.h"
 #include "splashscreen.h"
 #include "szframe.h"
+#include "remarks.h"
 
 #include "../../resources/wx/icons/draw64.xpm"
 
@@ -157,6 +158,7 @@ bool DrawApp::OnInit() {
 	m_server = NULL;
 	m_db_queue = NULL;
 	m_executor = NULL;
+	m_remarks_handler = NULL;
 
 #ifdef __WXGTK__
 	libpar_init();
@@ -269,19 +271,19 @@ bool DrawApp::OnInit() {
 	if (!m_url.IsEmpty()) {
 		if (!decode_url(m_url, prefix, window, pt, time, selected_draw)) {
 			wxLogError(_T("Invalid URL"));
-			StopDbThread();
+			StopThreads();
 			return FALSE;
 		}
 	} else if (!m_base.IsEmpty()) {
 		if ((config = m_cfg_mgr->LoadConfig(m_base)) == NULL) {
 			wxLogError(_("Error occurred while loading default configuration. Check your szarp.cfg file."));
-			StopDbThread();
+			StopThreads();
 			return FALSE;
 		}
 		prefix = m_base;
 	} else {
 		wxLogError(_("Missing starting base specification."));
-		StopDbThread();
+		StopThreads();
 		return FALSE;
 	}
 
@@ -299,15 +301,19 @@ bool DrawApp::OnInit() {
 	szHelpControllerHelpProvider* provider = new szHelpControllerHelpProvider;
 	wxHelpProvider::Set(provider);
 	provider->SetHelpController(m_help);
+
+	splash->PushStatusText(_("Initizalizing remarks..."));
 	
+	m_remarks_handler = new RemarksHandler();
+	m_remarks_handler->Start();
 	
 	splash->PushStatusText(_("Creating Frame Manager..."));
 
-	FrameManager *fm = new FrameManager(dbmgr, m_cfg_mgr);
+	FrameManager *fm = new FrameManager(dbmgr, m_cfg_mgr, m_remarks_handler);
 
 	/*@michal  */
 	if (!fm->CreateFrame(prefix, window, pt, time, wxSize(width, height), wxPoint(x, y), selected_draw, m_url.IsEmpty())) {
-		StopDbThread();
+		StopThreads();
 		wxLogError(_T("Unable to load base: %s"), prefix.c_str());
 		return FALSE;
 	}
@@ -407,19 +413,24 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 	return true;
 }
 
-void DrawApp::StopDbThread() {
+void DrawApp::StopThreads() {
 	if (m_executor && m_db_queue) {
 		m_db_queue->Add(NULL);
 		m_executor->Wait();
 	}
+	if (m_remarks_handler)
+		m_remarks_handler->Stop();
 	delete m_db_queue;
+#if 0
+	delete m_remarks_handler;
+#endif
 }
 
 int DrawApp::OnExit() {
 	delete m_instance;
 	delete m_server;
 
-	StopDbThread();
+	StopThreads();
 
 	m_cfg_mgr->SaveDefinedDrawsSets();
 

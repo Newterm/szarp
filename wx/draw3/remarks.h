@@ -15,485 +15,432 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
+
 /* Remarks handling code 
  *
  * $Id$
  */
 
-#ifndef __REMARKS_H__
-#define __REMARKS_H__
-
-#include "config.h"
-
-#ifndef NO_SQLITE3
-#ifndef NO_VMIME
-
-#include <vmime/vmime.hpp>
-
 // For compilers that support precompilation, includes "wx/wx.h".
 #include <wx/wxprec.h>
 #ifndef WX_PRECOMP
 #include <wx/wx.h>
-#include <wx/list.h>
+#include <wx/thread.h>
 #include <wx/socket.h>
 #endif
-#include <string>
-#include <vector>
-#include <map>
 
+#include <vector>
+#include <list>
+#include <map>
+#include <set>
 #include <openssl/ssl.h>
 #include <sqlite3.h>
+#include <xmlrpc-epi/xmlrpc.h>
+#include <libxml/tree.h>
 
-#include "szframe.h"
+#include <boost/shared_ptr.hpp>
 
-namespace vm = vmime;
+#include "biowxsock.h"
+#include "drawobs.h"
 
-class ConfigManager;
-class NNTPTaskExecutorState;
-class NNTPClient;
+class RemarkViewDialog;
 
-struct NNTPConnectionData {
-	std::string username;
-	std::string password;
-	wxIPV4address address;
+class Remark {
+	boost::shared_ptr<xmlDoc> m_doc;
+public:
+	Remark(xmlDocPtr doc);
+	Remark();
+
+	void SetPrefix(std::wstring prefix);
+	void SetBaseName(std::wstring base_name);
+	void SetSet(std::wstring set);
+	void SetTitle(std::wstring title);
+	void SetContent(std::wstring content);
+	void SetTime(time_t time);
+
+	std::wstring GetPrefix();
+	std::wstring GetBaseName();
+	std::wstring GetTitle();
+	std::wstring GetContent();
+	std::wstring GetSet();
+	std::wstring GetAuthor();
+	time_t GetTime();
+
+	int GetId();
+
+	xmlDocPtr GetXML();
+
+	~Remark();
 };
 
-class NNTPStatus {
-	int m_x;
-	int m_y;
-	int m_z;
 
-	public:
-	enum TYPE {
-		INFORMATIVE = 1,
-		COMMAND_OK = 2,
-		COMMAND_OK_CONTINUE = 3,
-		COMMAND_COULD_NOT_BE_PERFORMED = 4,
-		COMMAND_INCORRECT = 5,
-	};
+class XMLRPCResponseEvent : public wxCommandEvent {
+	boost::shared_ptr<_xmlrpc_request> m_request;
+public:
+	XMLRPCResponseEvent(XMLRPC_REQUEST request);
+	boost::shared_ptr<_xmlrpc_request> GetRequest();
+	wxEvent* Clone() const;
 
-	NNTPStatus();
-
-	const wxChar* GetDescription() const;
-
-	TYPE GetType() const;
-	int GetValue() const;
-
-	bool Parse(const std::string& response);
 };
 
-class NNTPSSLConnection : public wxEvtHandler {
-	static const int input_buffer_size;
+class XMLRPCConnection : public wxEvtHandler {
 
-	wxSocketClient *m_socket;
-	SSL *m_ssl;
-	SSL_CTX *m_ssl_ctx;
-
-	char* m_output_buffer;
-	int m_output_buffer_size;
-	int m_output_buffer_len;
-
-	char* m_input_buffer;
-	int m_input_buffer_size;
-	int m_input_buffer_len;
+	SSLSocketConnection *m_socket;
 
 	wxEvtHandler *m_handler;
 
-	enum STATE {
-		NOT_CONNECTED,
-		CONNECTING,
-		CONNECTING_SSL,
-		READ_BLOCKED_ON_WRITE,
-		WRITE_BLOCKED_ON_READ,
-		IDLE
-	} m_state;
+	enum READ_STATE {
+		CLOSED,
+		READING_FIRST_LINE,
+		READING_HEADERS,
+		READING_CONTENT } m_read_state;
 
-	void SocketEvent(wxSocketEvent &event);
-	void ConnectionTerminated();
-	void Cleanup();
-	void Error(const std::string& cause);
-	void SocketConnected();
-	void WriteData();
+
+	std::string m_write_buf;
+	size_t m_write_buf_pos;
+
+	char* m_read_buf;
+	size_t m_read_buf_read_pos;
+	size_t m_read_buf_write_pos;	
+	size_t m_read_buf_size;	
+	size_t m_content_length;
+
+	std::string CreateHTTPRequest(XMLRPC_REQUEST request);
+
+	bool GetLine(std::string& line);
+
+	void ReturnError(std::wstring error);
+
+	void ReturnResponse();
+
+	void ReadFirstLine(bool& more_data);
+
+	void ReadHeaders(bool& more_data);
+
+	void ReadContent(bool& more_data);
+
+	void ProcessReadData();
+
 	void ReadData();
-	void PostReadData();
-	void ConnectSSL();
+
+	void WriteData();
 public:
-	NNTPSSLConnection(wxEvtHandler *handler);
-	bool IsConnected() const;
-	bool Connect(wxIPV4address address);
-	bool Query(const std::string &query);
-	~NNTPSSLConnection();
+	XMLRPCConnection(wxIPV4address& address, wxEvtHandler *event_handler);
+
+	void PostRequest(XMLRPC_REQUEST request);
+
+	void OnSocketEvent(wxSocketEvent& e);
+
+	~XMLRPCConnection();
 
 	DECLARE_EVENT_TABLE()
+};
+
+class RemarksHandler;
+class RemarksConnection : public wxEvtHandler {
+	long m_token;
+
+	wxString m_username;
+	wxString m_password;
+
+	XMLRPCConnection *m_xmlrpc_connection;
+
+	wxIPV4address m_address;
+
+	enum {
+		NONE, 
+		FETCHING_REMARKS,
+		POSTING_REMARK } m_current_action;
+
+	bool m_pending_remarks_fetch;
+
+	bool m_pending_remark_post;
+
+	bool m_inform_about_successful_fetch;
+
+	time_t m_retrieval_time;
+
+	Remark m_remark_to_send;
+
+	RemarkViewDialog *m_remark_add_dialog;
+
+	RemarksHandler *m_remarks_handler;
+
+	XMLRPC_REQUEST CreateMethodCallRequest(const char* method_name);
+
+	XMLRPC_REQUEST CreateLoginRequest();
+	XMLRPC_REQUEST CreateGetRemarksRequest();
+	XMLRPC_REQUEST CreatePostRemarkRequest();
+
+	void HandleRemarksResponse(XMLRPC_REQUEST response);
+	void HandleLoginResponse(XMLRPC_REQUEST response);
+	void HandlePostMessageResponse(XMLRPC_REQUEST response);
+	bool HandleFault(XMLRPC_REQUEST response);
+
+	void PostRequest(XMLRPC_REQUEST request);
+
+public:
+	RemarksConnection(wxIPV4address &address, RemarksHandler *handler);
+	bool Busy();
+	void SetRemarkAddDialog(RemarkViewDialog *add_dialog);
+	void OnXMLRPCResponse(XMLRPCResponseEvent &event);
+	void SetUsernamePassword(wxString username, wxString password);
+	void SetRemarksAddDialog(RemarkViewDialog *dialog);
+	void FetchNewRemarks(bool notify_about_success = true);
+	void PostRemark(Remark &remark);
+
+	~RemarksConnection();
+
+	DECLARE_EVENT_TABLE()
+};
+
+class RemarksResponseEvent : public wxCommandEvent {
+	std::vector<Remark> m_remarks;
+public:
+	RemarksResponseEvent(std::vector<Remark> remarks);
+	std::vector<Remark>& GetRemarks();
+	wxEvent* Clone() const;
 
 };
 
-class NNTPConnectionEvent : public wxCommandEvent {
-public:
-	enum Type {
-		CONNECTION_LOST,
-		CONNECTION_FAILED,
-		CONNECTION_READY,
-		DATA_WRITTEN,
-		DATA_READ
+DECLARE_EVENT_TYPE(REMARKSRESPONSE_EVENT, -1)
+
+
+class RemarksStorage : public wxThread {
+	class Query {
+	protected:
+		RemarksStorage *m_storage;
+	public:
+		Query(RemarksStorage* storage);
+		virtual void Execute() = 0;
+		virtual ~Query() {};
 	};
-private:
-	Type m_type;
 
-	std::string m_data;
-public:
-	NNTPConnectionEvent(Type, const std::string& data = "");
+	class StoreRemarksQuery : public Query {
+		std::vector<Remark> m_remarks;
+	public:
+		StoreRemarksQuery(RemarksStorage* storage, std::vector<Remark> &remarks);
+		virtual void Execute();
+		virtual ~StoreRemarksQuery() {};
+	};
 
-	virtual wxEvent* Clone() const;
+	class FetchRemarksQuery : public Query {
+		std::wstring m_prefix;
+		std::wstring m_set;
+		time_t m_from_time;
+		time_t m_to_time;
+		wxEvtHandler *m_receiver;
+	public:
+		FetchRemarksQuery(RemarksStorage* storage, std::wstring prefix, std::wstring set, time_t from_time, time_t to_time, wxEvtHandler *receiver);
+		virtual void Execute();
+		virtual ~FetchRemarksQuery() {};
+	};
 
-	Type GetEventType() const;
+	class FinishQuery : public Query {
+	public:
+		FinishQuery(RemarksStorage* storage);
+		virtual void Execute();
+		virtual ~FinishQuery() {};
+	};
 
-	const std::string& GetData() const;
-};
+	friend class StoreRemarksQuery;
+	friend class FetchRemarksQuery;
+	friend class FinishQuery;
 
-class NNTPTask {
-	static size_t free_task_id;
-private:
-	size_t m_task_id;
-public:
-	NNTPTask();
-	size_t GetTaskId();
-	virtual ~NNTPTask() {}
-};
-
-WX_DECLARE_LIST(NNTPTask, NNTPTaskQueue);
-
-class NNTPTaskError {
-	NNTPStatus m_nntp_error;
-	wxString m_network_error;
-	bool m_is_nntp_error;
-public:
-	void SetNetworkError(wxString error);
-	void SetNNTPError(const NNTPStatus& m_nntp_error);
-
-};
-
-struct NNTPTaskCompleted {
-	NNTPTask* m_task;
-	NNTPTaskError m_error;
-	bool m_is_error;
-};
-
-struct RemarkInfo {
-	wxString id;
-	wxString title;
-	wxString from;
-	bool is_read;
-	time_t send_time;
-};
-
-struct GroupInfo {
-	wxString name;
-	wxString config;
-	bool can_read;
-	bool can_post;
-	time_t last_fetch;
-};
-
-class PostMessageTask : public NNTPTask {
-	vm::ref<vm::message> m_msg;
-	std::string m_group;
-public:
-	PostMessageTask(vm::ref<vm::message> msg, const std::string& group);
-	vm::ref<vm::message> GetMessage() const;
-	const std::string& GetGroup() const;
-	virtual ~PostMessageTask();
-};
-
-class FetchMessageTask : public NNTPTask {
-	std::string m_msg_id;
-	vm::ref<vm::message> m_article;
-public:
-	FetchMessageTask(const std::string& msg_id);
-	const std::string& GetMsgId() const;
-	void SetArticle(vm::ref<vm::message> article);
-	vm::ref<vm::message> GetArticle();
-};
-
-class FetchNewMessagesTask : public NNTPTask {
-	time_t m_start_time;
-	std::string m_group;
-	std::vector<std::string> m_ids;
-public:
-	FetchNewMessagesTask(time_t start_time, const std::string &group);
-	const std::string& GetGroup() const;
-	void SetIds(const std::vector<std::string>& ids);
-	time_t GetStartTime() const;
-
-};
-
-class GetGroupsTask : public NNTPTask {
-	std::vector<std::string> m_groups;
-public:
-	void SetGroups(const std::vector<std::string>& groups);
-	const std::vector<std::string>& GetGroups();
-};
-
-class NNTPTaskExecutor : public wxEvtHandler {
-	NNTPConnectionData m_connection_data;
-	NNTPClient *m_client;
-	NNTPSSLConnection m_connection;
-	NNTPTaskQueue m_queue;
-	WX_DECLARE_STRING_HASH_MAP(NNTPTaskExecutorState* , StatesHash);
-	StatesHash m_states;
-	NNTPTaskExecutorState *m_state;	
-	void OnConnectionEvent(NNTPConnectionEvent &event);
-
-public:
-	NNTPTaskExecutor(NNTPConnectionData &conn_data, NNTPClient *client);
-
-	bool CheckStatusCode(const NNTPConnectionEvent &event, NNTPStatus::TYPE type);
-
-	void HandleNNTPError(NNTPStatus& status);
-
-	void SetConnData(NNTPConnectionData &conn_data);
-
-	void EnterState(const wxString& state);
-
-	void TaskCompleted(NNTPTaskCompleted *nntp_completed);
-
-	void ExecuteTask(NNTPTask *task);
-
-	~NNTPTaskExecutor();
-
-	DECLARE_EVENT_TABLE();
-};
-
-class NNTPTaskExecutorState { 
-protected:
-	bool m_awaiting_status;
-
-	NNTPConnectionData &m_connection_data;
-	NNTPTaskQueue &m_queue; 
-	NNTPSSLConnection &m_connection;
-	NNTPTaskExecutor &m_executor;
-
-	void DefaultEventHandler(const NNTPConnectionEvent &event);
-
-	virtual void StatusRead(NNTPStatus &stats, const std::string &line) = 0;
-
-	virtual void LineRead(const std::string& line) = 0;
-
-	virtual void StateEntered() = 0;
-
-public:
-	NNTPTaskExecutorState(NNTPConnectionData &data,
-			NNTPTaskQueue &queue,
-			NNTPSSLConnection &m_connection,
-			NNTPTaskExecutor& client);
-
-	virtual void HandleConnectionEvent(const NNTPConnectionEvent &event);
-	virtual void Enter();
-	virtual void TaskReceived();
-
-	virtual ~NNTPTaskExecutorState();
-};
-
-class NNTPConnecting : public NNTPTaskExecutorState {
-	int m_failed_connects;
-
-	virtual void LineRead(const std::string &line);
-	virtual void StatusRead(NNTPStatus &stats, const std::string &line);
-	virtual void StateEntered();
-			
-public:
-	NNTPConnecting(NNTPConnectionData &data,
-			NNTPTaskQueue &queue,
-			NNTPSSLConnection &m_connection,
-			NNTPTaskExecutor& client);
-
-	virtual void HandleConnectionEvent(const NNTPConnectionEvent &event);
-	virtual void Enter();
-};
-
-class NNTPAuthenticating : public NNTPTaskExecutorState {
-protected:
-	virtual void LineRead(const std::string &line);
-	virtual void StatusRead(NNTPStatus &stats, const std::string &line);
-	virtual void StateEntered();
-public:
-	NNTPAuthenticating(NNTPConnectionData &data,
-			NNTPTaskQueue &queue,
-			NNTPSSLConnection &m_connection,
-			NNTPTaskExecutor& client);
-
-};
-
-class NNTPReady : public NNTPTaskExecutorState {
-protected:
-	virtual void LineRead(const std::string &line);
-	virtual void StatusRead(NNTPStatus &stats, const std::string &line);
-	virtual void StateEntered();
-	void DispatchTask();
-public:
-	NNTPReady(NNTPConnectionData & data,
-			NNTPTaskQueue &queue,
-			NNTPSSLConnection &m_connection,
-			NNTPTaskExecutor& client);
-
-	virtual void TaskReceived();
-
-};
-
-class NNTPFetchingArticle : public NNTPTaskExecutorState {
-	std::string m_article;
-protected:
-	virtual void LineRead(const std::string &line);
-	virtual void StatusRead(NNTPStatus &stats, const std::string &line);
-	virtual void StateEntered();
-public:
-	NNTPFetchingArticle(NNTPConnectionData & data,
-			NNTPTaskQueue &queue,
-			NNTPSSLConnection &m_connection,
-			NNTPTaskExecutor& client);
-
-};
-
-class NNTPPostingArticle : public NNTPTaskExecutorState {
-	enum { CHANGING_GROUP,
-		REQUESTING_POST,
-		POSTING } m_substate;	
-				
-	std::vector<std::string> m_ids;
-protected:
-	virtual void LineRead(const std::string &line);
-	virtual void StatusRead(NNTPStatus &stats, const std::string &line);
-	virtual void StateEntered();
-public:
-	NNTPPostingArticle(NNTPConnectionData & data,
-			NNTPTaskQueue &queue,
-			NNTPSSLConnection &m_connection,
-			NNTPTaskExecutor& client);
-};
-
-class NNTPFetchingGroups : public NNTPTaskExecutorState {
-	std::vector<std::string> m_groups;
-protected:
-	virtual void LineRead(const std::string &line);
-	virtual void StatusRead(NNTPStatus &stats, const std::string &line);
-	virtual void StateEntered();
-public:
-	NNTPFetchingGroups(NNTPConnectionData & data,
-			NNTPTaskQueue &queue,
-			NNTPSSLConnection &m_connection,
-			NNTPTaskExecutor& client);
-
-};
-
-class NNTPFetchingNewMessages : public NNTPTaskExecutorState {
-	std::vector<std::string> m_ids;
-protected:
-	virtual void LineRead(const std::string &line);
-	virtual void StatusRead(NNTPStatus &stats, const std::string &line);
-	virtual void StateEntered();
-public:
-	NNTPFetchingNewMessages(NNTPConnectionData & data,
-			NNTPTaskQueue &queue,
-			NNTPSSLConnection &m_connection,
-			NNTPTaskExecutor& client);
-
-};
-
-class NNTPClient;
-
-class TaskCreator {
-	NNTPClient *m_client;
-	std::vector<size_t> m_pending_tasks;
-protected:
-	void EnqueTask(NNTPTask *task);
-public:
-	TaskCreator(NNTPClient *client);
-
-	bool WaitingForCompletion(size_t task_id);
-
-	void TaskCompleted(NNTPTaskCompleted* task);
-
-	virtual void HandleCompletedTask(NNTPTaskCompleted *task) = 0;
-
-	virtual ~TaskCreator() {}
-};
-
-class RemarksFrame;
-
-class NNTPClient {
-	NNTPTaskExecutor *m_executor;
-	RemarksFrame *m_frame;
-	wxArrayString m_prefixes;
-	NNTPConnectionData m_data;
-	std::vector<TaskCreator*> m_task_creators;
-	bool m_initialized;
-public:
-	void TaskCompleted(NNTPTaskCompleted *task);
-	void RegisterTaskCreator(TaskCreator *tc);
-	void DeregisterTaskCreator(TaskCreator *tc);
-	void PerformTask(NNTPTask *task);
-};
-
-class RemarksStorage {
 	sqlite3* m_sqlite;
-	sqlite3_stmt* m_fetch_remark_info;
-	sqlite3_stmt* m_has_remark;
+	sqlite3_stmt* m_fetch_remarks_query;
+	sqlite3_stmt* m_fetch_prefixes_query;
+	sqlite3_stmt* m_store_remark_query;
+	sqlite3_stmt* m_add_prefix_query;
 	
+	/**Semaphore counting number of elements in the queue*/
+	wxSemaphore m_semaphore;
+
+	/**Mutex guarding access to a queue*/
+	wxMutex m_queue_mutex;
+
+	/**Mutex guarding access to a prefixes list*/
+	wxMutex m_prefixes_mutex;
+
+	std::set<std::wstring> m_prefixes;
+
+	std::list<Query*> m_queries;
+
+	bool m_done;
+
 	bool Init(wxString &error);
 	bool CreateTable();
 	void PrepareQuery();
 
+	void AddPrefix(std::wstring prefix);
+	void ExecuteStoreRemarks(std::vector<Remark>& remarks);
+	std::vector<Remark> ExecuteGetRemarks(const std::wstring& prefix, const std::wstring& set, const time_t& start_date, const time_t &end_date);
+public:
 	RemarksStorage();
+
 	~RemarksStorage();
 
-	vm::ref<vm::net::store> m_maildir_store;
-	vm::ref<vm::net::session> m_maildir_session;
+	virtual void* Entry();
 
-	static RemarksStorage *_instance;
-public:
-	void StoreRemark(vm::ref<vm::message> msg);
+	void Finish();
 
-	std::vector<RemarkInfo> GetRemarks(const wxString& prefix,
-			const wxString& window,
-			const wxString& graph,
+	std::set<std::wstring> GetPrefixes();
+
+	void StoreRemarks(std::vector<Remark>& remarks);
+
+	void GetRemarks(const wxString& prefix,
+			const wxString& set,
 			const wxDateTime &start_date,
-			const wxDateTime &end_date);
-
-	bool HasRemarks(const wxString& prefix,
-			const wxString& window,
-			const wxString& graph,
-			const wxDateTime &start_date,
-			const wxDateTime &end_date);
-
-	std::vector<GroupInfo> GetGroups();
-
-	void AddGroup(std::string group);
-
-	vm::ref<vm::message> GetRemark(const wxString& msg_id);
-
-	static bool GetStorage(RemarksStorage **storage, wxString &error);
-
-	static void Destroy();
+			const wxDateTime &end_date,
+			wxEvtHandler *handler);
 };
 
-class AuthInfoDialog;
 
-class RemarksFrame : public wxFrame {
-	AuthInfoDialog* m_auth_dialog;
-	ConfigManager *m_cfg_manager;
-	RemarksStorage *m_storage;
-	NNTPConnectionData m_connection_data;
-	void OnFetch(wxCommandEvent &event);
-	void OnClose(wxCloseEvent &event);
-	bool GetUsernamePassword();
-	void OnRefetchGroupList(wxCommandEvent &event);
-public:	
-	RemarksFrame(ConfigManager *manager);
+class RemarksFetcher;
+class RemarksHandler : public wxEvtHandler {
+
+	bool m_configured;
+
+	wxIPV4address m_address;
+	wxString m_username;
+	wxString m_password;
+	wxString m_server;
+	bool m_auto_fetch;
+
+	RemarksConnection* m_connection;
+	RemarksStorage* m_storage;
+
+	std::vector<RemarksFetcher*> m_fetchers;
+
+	wxTimer m_timer;
+public:
+	RemarksHandler();
+
+	void AddRemarkFetcher(RemarksFetcher* fetcher);
+
+	void RemoveRemarkFetcher(RemarksFetcher* fetcher);
+
+	void NewRemarks(std::vector<Remark>& remarks);
+
+	void Start();
+
+	void Stop();
+
+	std::set<std::wstring> GetPrefixes();
+
+	bool Configured();
+
+	void GetConfiguration(wxString& username, wxString& password, wxString &server, bool& autofetch);
+
+	void SetConfiguration(wxString username, wxString password, wxString server, bool autofetch);
+
+	RemarksConnection *GetConnection();
+
+	RemarksStorage *GetStorage();
+
+	void OnTimer(wxTimerEvent &event);
+
+	DECLARE_EVENT_TABLE();
+};
+
+
+class RemarkViewDialog : public wxDialog {
+
+	wxString m_prefix;
+	wxString m_set_name;
+	wxDateTime m_time;
+
+	void SetEditingMode(bool editing_mode);
+
+	RemarksHandler *m_remarks_handler;
+
+	RemarksConnection *m_remark_connection;
+public:
+	RemarkViewDialog(wxWindow *parent, RemarksHandler *remarks_handler);
+	int NewRemark(wxString prefix, 
+			wxString db_name,
+			wxString set_name,
+			wxDateTime time);
+
+	wxString GetRemarkTitle();
+
+	wxString GetRemarkContent();
+
+	void ShowRemark(wxString db_name,
+			wxString set_name,
+			wxString author,
+			wxDateTime time,
+			wxString title,
+			wxString content);
+
+	void RemarkSent(bool ok, wxString error = _T(""));
+
+	void OnAddButton(wxCommandEvent &event);
+
+	void OnCancelButton(wxCommandEvent &event);
+
+	void OnCloseButton(wxCommandEvent &event);
+
 	DECLARE_EVENT_TABLE()
 };
 
 
-#endif
-#endif
+class RemarksListDialog : public wxDialog {
+	wxListCtrl* m_list_ctrl;
 
-#endif
+	RemarksHandler* m_remarks_handler;
+
+	std::vector<Remark> m_displayed_remarks;
+public:
+	RemarksListDialog(wxWindow* parent, RemarksHandler *handler);
+
+	void SetViewedRemarks(std::vector<Remark> &remarks);
+
+	void OnClose(wxCloseEvent& event);
+
+	void OnCloseButton(wxCommandEvent& event);
+
+	void OnOpenButton(wxCommandEvent& event);
+
+	DECLARE_EVENT_TABLE()
+};
+
+class DrawToolBar;
+class DrawInfo;
+class RemarksFetcher : public wxEvtHandler, public DrawObserver {
+	std::map<int, Remark > m_remarks;
+
+	DrawToolBar *m_tool_bar;
+
+	wxWindow *m_toplevel_window;
+
+	RemarksHandler *m_remarks_handler;
+
+	Draw *m_current_draw;
+
+	bool m_active;
+
+	void Fetch(Draw *d);
+
+	void UpdateRemarksIcon();
+public:
+	RemarksFetcher(RemarksHandler *remarks_handler, DrawToolBar *tool_bar, wxWindow* top_level_window);
+
+	virtual void ScreenMoved(Draw* draw, const wxDateTime &start_time);
+
+	virtual void DrawInfoChanged(Draw *draw);
+
+	virtual void Attach(Draw *d);
+
+	virtual void Detach(Draw *d);
+
+	void OnShowRemarks(wxCommandEvent &e);
+
+	void RemarksReceived(std::vector<Remark>& remarks);
+
+	void OnRemarksResponse(RemarksResponseEvent &e);
+
+	virtual ~RemarksFetcher();
+
+	DECLARE_EVENT_TABLE()
+};

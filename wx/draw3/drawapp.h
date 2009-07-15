@@ -47,6 +47,7 @@ class FrameManager;
 class QueryExecutor;
 class DatabaseQueryQueue;
 class ConfigManager;
+class RemarksHandler;
 
 class DrawGLApp : public wxGLApp, private szAppImpl {
 public:
@@ -124,7 +125,7 @@ protected:
 
 	void InitGL();
 	
-	virtual void StopDbThread();
+	virtual void StopThreads();
 
 	/**Start IPC server that communicates with other m_instances of this application*/
 	void StartInstanceServer(FrameManager *frmmgr, ConfigManager *cfgmgr);
@@ -153,6 +154,9 @@ protected:
 
 			/**Queries queue*/
 	DatabaseQueryQueue* m_db_queue;
+
+			/**Remarks handling object*/
+	RemarksHandler* m_remarks_handler;
 
 	ConfigManager *m_cfg_mgr;
 

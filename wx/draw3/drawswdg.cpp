@@ -57,6 +57,7 @@
 #include "selset.h"
 #include "drawfrm.h"
 #include "drawurl.h"
+#include "remarks.h"
 
 #define DISPLAY_TIMER_ID 1001
 #define KEYBOARD_TIMER_ID 1002
@@ -79,8 +80,8 @@ END_EVENT_TABLE()
 
 const size_t DrawsWidget::default_units_count[PERIOD_T_LAST] = { 12, 31, 7, 24, 40 };
 
-DrawsWidget::DrawsWidget(DrawPanel * parent, ConfigManager *cfg, DatabaseManager* dm, DrawGraphs* graphs, SummaryWindow *smw, PieWindow *pw, RelWindow *rw, wxWindowID id, InfoWidget * info, PeriodType pt, time_t time, int selected_draw) : 
-	DBInquirer(dm), m_graphs(graphs), m_cfg(cfg), m_parent(parent), m_action(NONE), m_summ_win(smw), m_pie_win(pw), m_rel_win(rw), m_switch_selected_draw(selected_draw)
+DrawsWidget::DrawsWidget(DrawPanel * parent, ConfigManager *cfg, DatabaseManager* dm, DrawGraphs* graphs, SummaryWindow *smw, PieWindow *pw, RelWindow *rw, RemarksFetcher *rf, wxWindowID id, InfoWidget * info, PeriodType pt, time_t time, int selected_draw) : 
+	DBInquirer(dm), m_graphs(graphs), m_cfg(cfg), m_parent(parent), m_action(NONE), m_summ_win(smw), m_pie_win(pw), m_rel_win(rw), m_remarks_fetcher(rf), m_switch_selected_draw(selected_draw)
 {
 	m_units_count[PERIOD_T_YEAR] = default_units_count[PERIOD_T_YEAR];
 	m_units_count[PERIOD_T_MONTH] = default_units_count[PERIOD_T_MONTH];
@@ -253,12 +254,8 @@ void DrawsWidget::SwitchToPeriod(PeriodType period, const wxDateTime& current_ti
 	this->period = period;
 
 	Draw* draw = GetSelectedDraw();
-	if (draw && draw->IsDoubleCursor()) {
-		draw->StopDoubleCursor();
-		m_parent->UncheckSplitCursor();
-
-		info->DoubleCursorMode(false);
-	}
+	if (draw) 
+		DoubleCursorSet(false);	
 
 	if (m_draws.GetCount() >= 0) for (size_t i = 0; i <= m_draws.GetCount(); ++i) {
 		if ((int)i == m_selected_draw)
@@ -451,7 +448,6 @@ void DrawsWidget::SetDrawApply()
 		m_summ_win->Detach(m_draws[i]);
 		m_pie_win->Detach(m_draws[i]);
 		m_rel_win->Detach(m_draws[i]);
-
 	}
 
 	for (size_t i = 0; i < std::min(pc, m_draws_proposed.GetCount()); i++) {
@@ -463,15 +459,8 @@ void DrawsWidget::SetDrawApply()
 		m_draws[i]->SetDraw(m_draws_proposed[i]);
 	}
 
-	if ((m_draws.GetCount() > 0)
-	    && ((m_selected_draw < 0)
-		|| (m_selected_draw >= (int)m_draws_proposed.GetCount())))
+	if ((m_draws.GetCount() > 0) && ((m_selected_draw < 0) || (m_selected_draw >= (int)m_draws_proposed.GetCount())))
 		m_selected_draw = 0;
-
-	if (previous != -1) {
-		m_draws[previous]->Deselect();
-		DetachObservers(previous);
-	}
 
 	for (size_t i = m_draws_proposed.GetCount(); i < pc; i++)
 		delete m_draws[i];
@@ -483,75 +472,73 @@ void DrawsWidget::SetDrawApply()
 
 	m_graphs->SetDrawsChanged(m_draws);
 
-	if (m_selected_draw >= 0) {
-		if (m_switch_selected_draw_info != NULL) for (size_t i = 0; i < m_draws_proposed.GetCount(); i++)
-			if (m_draws_proposed[i] == m_switch_selected_draw_info) {
-				m_switch_selected_draw = i;
-				break;
-			}
-		m_switch_selected_draw_info = NULL;
-		
-		if (m_switch_selected_draw >= 0) {
-			if (m_switch_selected_draw >= (int)m_draws_proposed.GetCount())
-				m_selected_draw = 0;
-			else
-				m_selected_draw = m_switch_selected_draw;
-			m_switch_selected_draw = -1;
+	if (m_switch_selected_draw_info != NULL) for (size_t i = 0; i < m_draws_proposed.GetCount(); i++)
+		if (m_draws_proposed[i] == m_switch_selected_draw_info) {
+			m_switch_selected_draw = i;
+			break;
 		}
+	m_switch_selected_draw_info = NULL;
 
-		if (m_switch_date.IsValid()) {
-			t = m_switch_date;
-			m_switch_date = wxInvalidDateTime;
-		}
-
-		if (m_switch_period != PERIOD_T_OTHER) {
-			SwitchToPeriod(m_switch_period, t);
-			m_switch_period = PERIOD_T_OTHER;
-		}
-
-		int sel = m_selected_draw;
-		m_selected_draw = -1;
-
-		for (size_t i = 0; i < m_draws.GetCount(); i++) {
-			DrawInfo *di = m_draws[i]->GetDrawInfo();
-			if (m_disabled_draws.find(std::make_pair(di->GetSetName(), std::make_pair(di->GetName(), i))) 
-					!= m_disabled_draws.end()) {
-				m_seldraw->SetChecked(i, false);
-				m_draws[i]->SetEnable(false);
-			}
-		}
-
-		if (sel >= 0) {
-
-			if (m_draws[sel]->GetEnable() == false)	{
-				bool is_enabled = false;
-				for (size_t i = 0; i < m_draws.GetCount(); i++) {
-					if ((int) i == sel)
-						continue;
-					if (m_draws[i]->GetEnable()) {
-						sel = i;
-						is_enabled = true;
-						break;
-					}
-				}
-
-				if (is_enabled == false) {
-					m_seldraw->SetChecked(sel, true);
-					m_draws[sel]->SetEnable(true);
-				}
-			}
-			m_selected_draw = sel;
-		} 
-
-		if (previous != -1 && (size_t) previous < m_draws.GetCount())
-			m_draws[previous]->Deselect();
-
-		m_draws[m_selected_draw]->Select(t);
-
+	if (m_switch_selected_draw >= 0) {
+		if (m_switch_selected_draw >= (int)m_draws_proposed.GetCount())
+			m_selected_draw = 0;
+		else
+			m_selected_draw = m_switch_selected_draw;
+		m_switch_selected_draw = -1;
 	}
 
-	if (m_selected_draw != -1)
+	if (m_switch_date.IsValid()) {
+		t = m_switch_date;
+		m_switch_date = wxInvalidDateTime;
+	}
+
+	if (m_switch_period != PERIOD_T_OTHER) {
+		SwitchToPeriod(m_switch_period, t);
+		m_switch_period = PERIOD_T_OTHER;
+	}
+
+	int sel = m_selected_draw;
+	m_selected_draw = -1;
+
+	for (size_t i = 0; i < m_draws.GetCount(); i++) {
+		DrawInfo *di = m_draws[i]->GetDrawInfo();
+		if (m_disabled_draws.find(std::make_pair(di->GetSetName(), std::make_pair(di->GetName(), i))) 
+				!= m_disabled_draws.end()) {
+			m_seldraw->SetChecked(i, false);
+			m_draws[i]->SetEnable(false);
+		}
+	}
+
+	if (sel >= 0) {
+
+		if (m_draws[sel]->GetEnable() == false)	{
+			bool is_enabled = false;
+			for (size_t i = 0; i < m_draws.GetCount(); i++) {
+				if ((int) i == sel)
+					continue;
+				if (m_draws[i]->GetEnable()) {
+					sel = i;
+					is_enabled = true;
+					break;
+				}
+			}
+
+			if (is_enabled == false) {
+				m_seldraw->SetChecked(sel, true);
+				m_draws[sel]->SetEnable(true);
+			}
+		}
+		m_selected_draw = sel;
+	} 
+
+	if (previous != m_selected_draw) {
+		if (previous != -1 && (size_t) previous < m_draws.GetCount()) {
+			m_draws[previous]->Deselect();
+			DetachObservers(previous);
+		}
+		m_draws[m_selected_draw]->Select(t);
 		AttachObservers(m_selected_draw);
+	}
 
 	StartAllDraws();
 
@@ -861,11 +848,14 @@ void DrawsWidget::MoveCursorEnd()
 
 void DrawsWidget::AttachObservers(int i) {
 	info->Attach(m_draws[i]);
+	m_remarks_fetcher->Attach(m_draws[i]);
 	m_graphs->Selected(i);
+		
 }
 
 void DrawsWidget::DetachObservers(int i) {
 	info->Detach(m_draws[i]);
+	m_remarks_fetcher->Detach(m_draws[i]);
 	m_graphs->Deselected(i);
 }
 	
@@ -917,9 +907,37 @@ void DrawsWidget::OnJumpToDate() {
 
 }
 
-bool DrawsWidget::ToggleSplitCursor() {
+bool DrawsWidget::DoubleCursorSet(bool enable) {
 	Draw* draw = GetSelectedDraw();
+	assert(draw);
 
+	if (enable) {
+		if (draw->IsDoubleCursor())
+			return true;
+		if (draw->StartDoubleCursor() == false)
+			return false;
+		info->DoubleCursorMode(true);
+		m_parent->CheckSplitCursor();
+		return true;
+	} else {
+		if (!draw->IsDoubleCursor())
+			return false;
+
+		draw->StopDoubleCursor();
+		m_parent->UncheckSplitCursor();
+		info->DoubleCursorMode(false);
+		return  false;
+	}
+
+}
+
+bool DrawsWidget::ToggleSplitCursor() {
+	if (m_nodata == true) {
+		wxBell();
+		return false;
+	}
+
+	Draw* draw = GetSelectedDraw();
 	if (draw == NULL) {
 		wxBell();
 		return false;
@@ -927,22 +945,17 @@ bool DrawsWidget::ToggleSplitCursor() {
 
 	bool is_double = draw->IsDoubleCursor();
 
-	bool ret;
 
 	if (is_double) {
-		draw->StopDoubleCursor();
-		info->DoubleCursorMode(false);
-		ret = false;
+		return DoubleCursorSet(false);
 	} else {
-		ret = draw->StartDoubleCursor();
-		if (ret == false) {
+		if (DoubleCursorSet(true) == false) {
 			wxBell();
-			return ret;
-		}
-		info->DoubleCursorMode(true);
+			return false;
+		} else
+			return true;
 	}
 
-	return ret;
 }
 
 bool DrawsWidget::IsNoData() {

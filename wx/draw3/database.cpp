@@ -409,14 +409,14 @@ void DatabaseQueryQueue::Add(std::list<DatabaseQuery*> &qlist){
 		querylist.push_back(entry);
 	}
 
-	if(needsort) {
+	if (needsort) {
 		querylist.sort(QueryCmp);
 	}
 
 	wxMutexLocker lock(mutex);
 	unsigned int size = querylist.size();
 	queue.merge(querylist, QueryCmp);
-	for(unsigned int x = 0; x < size; x++)
+	for (unsigned int x = 0; x < size; x++)
 		semaphore.Post();
 }
 

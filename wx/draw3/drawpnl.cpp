@@ -47,6 +47,7 @@
 #include "wxgraphs.h"
 #include "glgraphs.h"
 #include "drawfrm.h"
+#include "remarks.h"
 
 #include <wx/xrc/xmlres.h>
 
@@ -297,13 +298,13 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 	return true;
 }
 
-DrawPanel::DrawPanel(DatabaseManager* _db_mgr, ConfigManager * _cfg,
+DrawPanel::DrawPanel(DatabaseManager* _db_mgr, ConfigManager * _cfg, RemarksHandler * _rh,
 		wxString _defid, DrawSet *set, PeriodType pt,  time_t time,
 		wxWindow * parent, wxWindowID id, DrawFrame *_df, int selected_draw)
 	:  wxPanel(parent, id, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS),
 	df(_df), iw(NULL), dw(NULL), dtw(NULL), ssw(NULL), sw(NULL), tw(NULL),
 	dinc(NULL), sinc(NULL), db_mgr(_db_mgr), cfg(_cfg),
-	defid(_defid), smw(NULL), pw(NULL), m_realized(false)
+	defid(_defid), smw(NULL), rh(_rh), rmf(NULL), pw(NULL), m_realized(false)
 {
 #ifdef WXAUI_IN_PANEL
 	am.SetManagedWindow(this);
@@ -351,6 +352,7 @@ void DrawPanel::CreateChildren(DrawSet *set, PeriodType pt, time_t time, int sel
 #endif
 			);
 
+
 	smw = new SummaryWindow(this, this, menu_bar->FindItem(XRCID("Summary")));
 	pw = new PieWindow(this, this, menu_bar->FindItem(XRCID("Pie")));
 	rw = new RelWindow(this, this, menu_bar->FindItem(XRCID("Ratio")));
@@ -382,7 +384,11 @@ void DrawPanel::CreateChildren(DrawSet *set, PeriodType pt, time_t time, int sel
 #endif
 		dg = new WxGraphs(this, cfg);
 
-	dw = new DrawsWidget(this, cfg, db_mgr, dg, smw, pw, rw, -1, iw, pt, time, selected_draw);
+	tb = new DrawToolBar(this);
+
+	rmf = new RemarksFetcher(rh, tb, this);
+
+	dw = new DrawsWidget(this, cfg, db_mgr, dg, smw, pw, rw, rmf, -1, iw, pt, time, selected_draw);
 
 	dg->SetDrawsWidget(dw);
 
@@ -429,8 +435,6 @@ void DrawPanel::CreateChildren(DrawSet *set, PeriodType pt, time_t time, int sel
 		menu_bar->FindItem(XRCID("SetParams"))->Enable(true);
 	else
 		menu_bar->FindItem(XRCID("SetParams"))->Enable(false);
-
-	tb = new DrawToolBar(this);
 
 	/* add keyboard event handlers */
 	DrawPanelKeyboardHandler *eh;
@@ -524,6 +528,8 @@ DrawPanel::~DrawPanel()
 {
 	cfg->DeregisterConfigObserver(this);
 
+	delete rmf;
+
 	/* Remove event handlers */
 	dynamic_cast<wxWindow*>(dg)->PopEventHandler(TRUE);
 	/*
@@ -551,7 +557,6 @@ DrawPanel::~DrawPanel()
 
 	delete dw;
 
-	cfg->DeregisterConfigObserver(this);
 }
 
 void DrawPanel::OnRefresh(wxCommandEvent & evt) {
@@ -565,6 +570,11 @@ void DrawPanel::ClearCache() {
 
 void DrawPanel::OnFind(wxCommandEvent & evt) {
 	StartDrawSearch();
+}
+
+void DrawPanel::GetDisplayedDrawInfo(DrawInfo **di, wxDateTime& time) {
+	*di = dw->GetCurrentDrawInfo();
+	time = wxDateTime(dw->GetCurrentTime());
 }
 
 void DrawPanel::StartDrawSearch()
@@ -756,13 +766,10 @@ wxMenuBar *DrawPanel::GetMenuBar()
 }
 
 void DrawPanel::ToggleSplitCursor(wxCommandEvent& WXUNUSED(event)) {
-	bool is_double = dw->ToggleSplitCursor();
-
-	menu_bar->Check(XRCID("SplitCursor"), is_double);
-	if (is_double)
-		tb->DoubleCursorToolCheck();
-	else
-		tb->DoubleCursorToolUncheck();
+#ifdef WXAUI_IN_PANEL
+	bool is_double = 
+#endif
+		dw->ToggleSplitCursor();
 
 	GetSizer()->Layout();
 
@@ -784,6 +791,12 @@ void DrawPanel::UncheckSplitCursor() {
 	tb->DoubleCursorToolUncheck();
 	menu_bar->Check(XRCID("SplitCursor"), false);
 }
+
+void DrawPanel::CheckSplitCursor() {
+	tb->DoubleCursorToolCheck();
+	menu_bar->Check(XRCID("SplitCursor"), true);
+}
+
 
 void DrawPanel::SetRenamed(wxString prefix, wxString from, wxString to, DrawSet* set) {
 	if (prefix != GetPrefix())

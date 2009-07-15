@@ -49,6 +49,7 @@ class StatDialog;
 class DrawPicker;
 class DrawPanel;
 class RemarksFrame;
+class RemarksHandler;
 
 /**class responsible for creating and managing @see DrawFrame objects*/
 class FrameManager : public wxEvtHandler {
@@ -63,6 +64,9 @@ class FrameManager : public wxEvtHandler {
 	/**@see ConfigManager*/
 	ConfigManager *config_manager;
 
+	/**@see RemarksHandler*/
+	RemarksHandler *remarks_handler;
+
 	/**@see StatDialog*/
 	StatDialog *stat_dialog;
 
@@ -73,7 +77,7 @@ class FrameManager : public wxEvtHandler {
 	int free_frame_number;
 
 	public:
-	FrameManager(DatabaseManager *pmgr, ConfigManager *cfgmgr);
+	FrameManager(DatabaseManager *pmgr, ConfigManager *cfgmgr, RemarksHandler* rhandle);
 	/**creates new frame with given config
 	 * @param prefix of base to use
 	 * @param set @see DrawSet to start with, NULL if first set shall be used

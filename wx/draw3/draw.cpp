@@ -48,6 +48,7 @@ ValueInfo::ValueInfo() {
 	max_probes = -1;
 	count_probes = 0;
 	n_count = 0;
+	m_remark = false;
 }
 
 bool ValueInfo::IsData() const {
@@ -1251,6 +1252,29 @@ bool Draw::IsTheNewestValue() {
 
 	return szb_round_time(newest,PeriodToProbeType(m_period), 0) 
 		== szb_round_time(m_current_time.GetTime().GetTicks(), PeriodToProbeType(m_period), 0);
+}
+
+void Draw::SetRemarksTimes(std::vector<wxDateTime>& times) {
+	bool new_added = false;
+	for (std::vector<wxDateTime>::iterator i = times.begin();
+			i != times.end();
+			i++) {
+
+		DTime dt(m_period, *i);
+
+		int idx = GetIndex(dt);
+		if (idx >= 0) {
+			ValueInfo& vi = m_values.at(idx);
+			if (vi.m_remark == false) {
+				vi.m_remark = true;
+				new_added = true;
+			}
+		}
+	}
+	for (std::vector<DrawObserver*>::iterator i = m_observers.begin();
+			i != m_observers.end();
+			++i)
+		(*i)->NewRemarks(this);
 }
 
 DTime::DTime(const PeriodType& period, const wxDateTime& time) : m_period(period), m_time(time)

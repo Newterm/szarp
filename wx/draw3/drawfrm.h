@@ -51,6 +51,7 @@ class ConfigDialog;
 class ConfigManager;
 class FrameManager;
 class ParamsListDialog;
+class RemarksHandler;
 
 /**
  * Draw Frame class. It's responsible for remember frame size and positions.
@@ -64,6 +65,7 @@ public:
 	DrawFrame(FrameManager *fm, 
 			DatabaseManager *dm, 
 			ConfigManager *cm, 
+			RemarksHandler *remarks,
 			wxWindow* parent, 
 			wxWindowID id, 
 			const wxString& title,
@@ -174,6 +176,12 @@ public:
 	void OnContextHelp(wxCommandEvent &event);
 
 	void OnNumberOfUnits(wxCommandEvent &event);
+
+	void OnAddRemark(wxCommandEvent &event);
+
+	void OnFetchRemarks(wxCommandEvent &event);
+		
+	void OnConfigureRemarks(wxCommandEvent &event);
 
 	/**Schedules removal of a panel (at next Idle event)*/
 	void RemovePanel(DrawPanel *panel);
@@ -291,6 +299,8 @@ protected:
 
 	/** Current open draw panel*/
 	DrawPanel *draw_panel;
+
+	RemarksHandler *remarks_handler;
 
 	/** panels pending for removal at idle event handler*/
 	std::vector<DrawPanel*> panels_to_remove;

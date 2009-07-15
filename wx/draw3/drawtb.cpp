@@ -50,6 +50,7 @@
 #include "bitmaps/flag_sr.xpm"
 #include "bitmaps/flag_hu.xpm"
 #include "bitmaps/flag_it.xpm"
+#include "bitmaps/remark.xpm"
 
 DrawToolBar::DrawToolBar(wxWindow *parent) :
 	wxToolBar(parent,-1)
@@ -127,3 +128,23 @@ void DrawToolBar::SetFilterToolIcon(int i) {
 	Realize();
 }
 
+void DrawToolBar::ShowRemarksIcon(bool show) {
+	int index = GetToolPos(drawTB_REMARK);
+	if (show) {
+		if (index != wxNOT_FOUND)
+			return;
+
+		int exit_index = GetToolPos(drawTB_EXIT);
+		assert(exit_index != wxNOT_FOUND);
+
+		InsertTool(exit_index, drawTB_REMARK, remark_xpm, wxNullBitmap, false, NULL, _T(""), _("Remarks"));
+		Realize();
+
+	} else {
+		if (index == wxNOT_FOUND)
+			return;
+		DeleteTool(drawTB_REMARK);
+		Realize();
+	}
+
+}
