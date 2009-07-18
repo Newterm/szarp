@@ -225,6 +225,8 @@ void szParSelect::LoadParamsLikeInDraw()
 	std::map<std::wstring,wxTreeItemId>::iterator draws_iter;
 
 	for (TParam *p = ipk->GetFirstParam(); p; p = ipk->GetNextParam(p)) {
+		if (m_filter && m_filter(p))
+			continue;
 		for (TDraw *d = p->GetDraws(); d; d = d->GetNext()) {
 
 			wxTreeItemId draw_id;

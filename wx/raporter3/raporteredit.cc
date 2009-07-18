@@ -37,6 +37,19 @@
 #include "parselect.h"
 #include "cconv.h"
 
+int param_filter(TParam *p) {
+	TParam::FormulaType ft = p->GetFormulaType();
+
+	int ret = 1;
+
+	if (ft == TParam::NONE 
+			|| ft == TParam::RPN
+			|| ft == TParam::LUA_IPC
+			|| (ft == TParam::DEFINABLE && p->GetType() == TParam::P_COMBINED))
+		ret = 0;
+
+	return ret;
+}
 
 szRaporterEdit::szRaporterEdit(TSzarpConfig *_ipk,
 		wxWindow* parent, wxWindowID id, const wxString& title) :
@@ -84,7 +97,7 @@ szRaporterEdit::szRaporterEdit(TSzarpConfig *_ipk,
 	
 	this->SetSizer(top_sizer);  
 	
-	ps = new szParSelect(this->ipk, this, wxID_ANY, _("Raporter->Editor->Add"), false, false, false,true,true);
+	ps = new szParSelect(this->ipk, this, wxID_ANY, _("Raporter->Editor->Add"), false, false, false,true,true, param_filter);
 	
 }
 
@@ -120,6 +133,7 @@ void szRaporterEdit::RefreshList()
 	
 
 	for (size_t i = 0; i < g_data.m_raplist.Count(); i++) {
+		assert(g_data.m_raplist.GetParam(i));
 		wxString scut = g_data.m_raplist.GetParam(i)->GetShortName();
 		rcont_listc->InsertItem(i, scut);
 

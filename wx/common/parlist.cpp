@@ -62,6 +62,13 @@ szParList::szParList(const szParList& list)
 	is_modified = list.is_modified;
 	ipks = list.ipks;
 	LoadSchema();
+
+	for (size_t i = 0; i < list.Count(); i++) {
+		xmlNodePtr onode = list.GetXMLNode(i);
+		xmlNodePtr nnode = GetXMLNode(i);
+
+		nnode->_private = onode->_private;
+	}
 }
 
 szParList::szParList(const xmlDocPtr doc)
@@ -88,6 +95,13 @@ szParList& szParList::operator=(const szParList& list)
 		last_path = list.last_path;
 		is_modified = list.is_modified;
 		ipks = list.ipks;
+
+		for (size_t i = 0; i < list.Count(); i++) {
+			xmlNodePtr onode = list.GetXMLNode(i);
+			xmlNodePtr nnode = GetXMLNode(i);
+
+			nnode->_private = onode->_private;
+		}
 	}
 	return *this;
 }
@@ -286,7 +300,7 @@ void szParList::Clear()
 	}
 }
 
-size_t szParList::Count()
+size_t szParList::Count() const
 {
 	int c = 0;
 	if (xml == NULL)
@@ -317,7 +331,7 @@ wxString szParList::GetName(size_t index)
 	return ret;
 }
 	
-xmlNodePtr szParList::GetXMLNode(size_t index)
+xmlNodePtr szParList::GetXMLNode(size_t index) const
 {
 	size_t i = 0;
 	if (xml == NULL)

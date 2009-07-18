@@ -1,5 +1,19 @@
 $Id$
 
+2009-07-18	Darek Marcinkiewcz <reksio@praterm.pl>
+	* wx/common/parlist.cpp: fix - copy constructor and assignment
+	operator preserve references to TParam pointers in xml doc
+	* wx/common/parselect.cpp: filter operation is also applied
+	when params are grouped by draws' sets
+	* wx/raporter3: fix - dialog for params selction does not display
+	params that are not served by paramd, i.e. params 
+	from drawdefinable section (except for combined params)
+	* wx/draw3: flags indicating presence of remarks reffering to
+	a given time slice are now cliackable, when clicked, a dialog
+	with list of remarks associated with that time slice is shown
+	* wx/draw3: 'remarks envelope' is always present on the toolbar,
+	even if there are no remarks reffering to currently shown draws'
+	set and time span
 2009-07-15	Darek Marcinkiewcz <reksio@praterm.pl>
 	* wx/draw3: few minor fixes for remarks handling,
 	translation update

@@ -394,6 +394,8 @@ class RemarksListDialog : public wxDialog {
 	RemarksHandler* m_remarks_handler;
 
 	std::vector<Remark> m_displayed_remarks;
+
+	void ShowRemark(int index);
 public:
 	RemarksListDialog(wxWindow* parent, RemarksHandler *handler);
 
@@ -404,6 +406,8 @@ public:
 	void OnCloseButton(wxCommandEvent& event);
 
 	void OnOpenButton(wxCommandEvent& event);
+
+	void OnRemarkItemActivated(wxListEvent &event);
 
 	DECLARE_EVENT_TABLE()
 };
@@ -423,7 +427,6 @@ class RemarksFetcher : public wxEvtHandler, public DrawObserver {
 
 	void Fetch(Draw *d);
 
-	void UpdateRemarksIcon();
 public:
 	RemarksFetcher(RemarksHandler *remarks_handler, DrawToolBar *tool_bar, wxWindow* top_level_window);
 
@@ -436,6 +439,8 @@ public:
 	virtual void Detach(Draw *d);
 
 	void OnShowRemarks(wxCommandEvent &e);
+
+	void ShowRemarks(const wxDateTime &from_time, const wxDateTime &to_time);
 
 	void RemarksReceived(std::vector<Remark>& remarks);
 

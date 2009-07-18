@@ -120,12 +120,11 @@ public:
 
         /** Get X coordinate coresponding to current date and with respect
          * to period time set. 
-         * @param dc pointer to current device context
          * @param date selected date (GMT)
          * @return absolute X coordinate within View, can be negative or
          * greater then widget width if date is outside period shown.
          */
-	long int GetX(wxDC* dc, int i) const;
+	long int GetX(int i) const;
 
         /** Get Y coordinate coresponding to given value.
          * @param value value for which Y coordinate is caclulaed 
@@ -281,6 +280,8 @@ public:
 	void DoDraw(wxDC *dc);
 
 	void SetMargins(int left, int right, int top, int bottom) { m_leftmargin = left, m_rightmargin = right, m_topmargin = top, m_bottommargin = bottom; }
+
+	int GetRemarkClickedIndex(int x, int y);
 
 	virtual ~BackgroundView();
 

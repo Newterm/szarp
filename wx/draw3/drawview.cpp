@@ -58,7 +58,7 @@ void View::ClearDC(wxMemoryDC *dc,wxBitmap *bitmap, int w, int h) {
 	dc->SetBrush(*wxTRANSPARENT_BRUSH);
 }
 
-long int View::GetX(wxDC* dc, int i) const
+long int View::GetX(int i) const
 {
 	int w, h;
 	GetSize(&w, &h);
@@ -123,7 +123,7 @@ long int View::GetY(double value) const {
 
 
 void View::GetPointPosition(wxDC* dc, int i, int *x, int *y) const {
-	*x = GetX(dc, i);
+	*x = GetX(i);
 
 	double value = m_draw->GetValuesTable().at(i).val;
 	*y = GetY(value);
@@ -192,8 +192,8 @@ void BackgroundView::DrawSeasonLimitInfo(wxDC *dc, int i, int month, int day, bo
 
 	const int stripe_width = 2; 
 
-	long int x1 = GetX(dc, i);
-	long int x2 = GetX(dc, i + 1);
+	long int x1 = GetX(i);
+	long int x2 = GetX(i + 1);
 
 	long int x = (x1 + x2) / 2;
 
@@ -345,8 +345,8 @@ void BackgroundView::DrawRemarksFlags(wxDC *dc) {
 	const ValuesTable& vt = m_draw->GetValuesTable();
 	for (size_t i = 0; i < m_draw->GetValuesTable().size(); i++)
 		if (vt.at(i).m_remark) { 
-			int x = GetX(dc, i);
-			dc->DrawBitmap(m_remark_flag_bitmap, x - 6, m_topmargin - 5, true);
+			int x = GetX(i);
+			dc->DrawBitmap(m_remark_flag_bitmap, x, m_topmargin - 7, true);
 		}
 }
 
@@ -461,11 +461,11 @@ void BackgroundDrawer::DrawBackground(wxDC *dc) {
 
 	size_t i = 0;
 	while (i < pc) {
-		int x1 = GetX(dc, i);
+		int x1 = GetX(i);
 
 		i += Draw::PeriodMult[m_draw->GetPeriod()];
 	
-		int x2 = GetX(dc, i);
+		int x2 = GetX(i);
 
 		if (c > 0)
 			dc->SetBrush(wxBrush(GetBackCol1(), wxSOLID));
@@ -530,7 +530,7 @@ void BackgroundDrawer::DrawTimeAxis(wxDC *dc, int arrow_width, int arrow_height,
 	int size = m_draw->GetValuesTable().size();
     
 	while (i < size) {
-		int x = GetX(dc, i);
+		int x = GetX(i);
 		dc->DrawLine(x, h - m_bottommargin + tick_height / 2, x, h - m_bottommargin - tick_height / 2);
 
 		wxDateTime date = m_draw->GetTimeOfIndex(i);
@@ -604,6 +604,34 @@ const wxColour& BackgroundView::GetBackCol2() {
 
 void BackgroundView::GetSize(int *w, int *h) const {
 	m_dc->GetSize(w, h);
+}
+
+int BackgroundView::GetRemarkClickedIndex(int x, int y) {
+	if (y > m_topmargin || y < m_topmargin - 7)
+		return -1;
+
+	int sri = -1;
+	int sdx = -1;
+
+	const ValuesTable& vt = m_draw->GetValuesTable();
+
+	for (size_t i = 0; i < vt.size(); i++)
+		if (vt.at(i).m_remark) { 
+			int rx = GetX(i);
+
+			if (rx > x)
+				break;
+			int d = x - rx;
+
+			if (d < m_remark_flag_bitmap.GetWidth()) {	//width of flag bitmap
+				if (sri == -1 || sdx > d) {
+					sri = i;
+					sdx = d;
+				}
+			}
+		}
+
+	return sri;
 }
 
 BackgroundView::~BackgroundView() {

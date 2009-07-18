@@ -1008,6 +1008,7 @@ void Draw::SetDraw(DrawInfo *info) {
 	for (size_t i = 0; i < m_values.len(); ++i) {
 		m_values.Get(i).state = ValueInfo::EMPTY;
 		m_values.Get(i).n_count = 0;
+		m_values.Get(i).m_remark = false;
 	}
 	m_values.RecalculateStats();
 

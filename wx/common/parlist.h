@@ -124,7 +124,7 @@ public:
 	/** @return TRUE if list is empty */
 	bool IsEmpty();
 	/** @return number of parameters on list */
-	size_t Count();
+	size_t Count() const;
 	/**
 	 * Returns name of parameter with given index.
 	 * @param index index of param on list
@@ -137,7 +137,7 @@ public:
 	 * @return pointer to XML node in tree corresponding to element with
 	 * given index; NULL if not found
 	 */
-	xmlNodePtr GetXMLNode(size_t index);
+	xmlNodePtr GetXMLNode(size_t index) const;
 	/**
 	 * Returns pointer to root XML node.
 	 * @return pointer to root XML node in tree

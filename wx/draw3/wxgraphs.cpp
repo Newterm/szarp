@@ -409,6 +409,12 @@ void WxGraphs::OnMouseLeftDown(wxMouseEvent & event)
 	int x = event.GetX();
 	int y = event.GetY();
 
+	int remark_idx = m_bg_view->GetRemarkClickedIndex(x, y);
+	if (remark_idx != -1) {
+		m_draws_wdg->ShowRemarks(remark_idx);
+		return;
+	}
+
 	for (size_t i = 0; i < m_graphs.GetCount(); ++i) {
 
 		VoteInfo & in = infos[i];

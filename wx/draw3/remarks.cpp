@@ -77,9 +77,9 @@ bool RemarksHandler::Configured() {
 }
 
 void RemarksHandler::OnTimer(wxTimerEvent &event) {
-	if (m_configured && m_auto_fetch)
-		m_connection->FetchNewRemarks(false);
-	else
+	if (m_configured && m_auto_fetch) {
+		GetConnection()->FetchNewRemarks(false);
+	} else
 		m_timer.Stop();
 }
 
@@ -1439,25 +1439,27 @@ void RemarksListDialog::SetViewedRemarks(std::vector<Remark> &remarks) {
 
 	}
 
-	m_list_ctrl->SetColumnWidth(0, -1);
-	m_list_ctrl->SetColumnWidth(1, -1);
+	int col_width = -1; //auto width, equal to maximum width of element in the column
+
+	if (remarks.size() == 0)
+		col_width = -2;		//auto width, eqal to width of column title
+
+	m_list_ctrl->SetColumnWidth(0, col_width);
+	m_list_ctrl->SetColumnWidth(1, col_width);
 
 	m_list_ctrl->Thaw();
+
+	m_list_ctrl->SetItemState(0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
+
+	m_list_ctrl->SetFocus();
 }
 
 void RemarksListDialog::OnCloseButton(wxCommandEvent &event) {
 	EndModal(wxID_CLOSE);
 }
 
-void RemarksListDialog::OnOpenButton(wxCommandEvent &event) {
-
-	long i = -1;
-	
-	i = m_list_ctrl->GetNextItem(i, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-	if (i == -1)
-		return;
-
-	Remark& r = m_displayed_remarks[i];
+void RemarksListDialog::ShowRemark(int index) {
+	Remark& r = m_displayed_remarks.at(index);
 
 	RemarkViewDialog* d = new RemarkViewDialog(this, m_remarks_handler);
 	d->ShowRemark(r.GetBaseName(),
@@ -1470,6 +1472,21 @@ void RemarksListDialog::OnOpenButton(wxCommandEvent &event) {
 }
 
 
+void RemarksListDialog::OnOpenButton(wxCommandEvent &event) {
+
+	long i = -1;
+	
+	i = m_list_ctrl->GetNextItem(i, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+	if (i == -1)
+		return;
+
+	ShowRemark(i);
+}
+
+void RemarksListDialog::OnRemarkItemActivated(wxListEvent &event) {
+	ShowRemark(event.GetIndex());
+}
+
 void RemarksListDialog::OnClose(wxCloseEvent& event) {
 	EndModal(wxID_CLOSE);
 }
@@ -1478,6 +1495,7 @@ BEGIN_EVENT_TABLE(RemarksListDialog, wxDialog)
 	EVT_BUTTON(wxID_OPEN, RemarksListDialog::OnOpenButton)
 	EVT_BUTTON(wxID_CLOSE, RemarksListDialog::OnCloseButton)
 	EVT_CLOSE(RemarksListDialog::OnClose)
+	EVT_LIST_ITEM_ACTIVATED(XRCID("RemarksListCtrl"), RemarksListDialog::OnRemarkItemActivated)
 END_EVENT_TABLE()
 
 
@@ -1500,10 +1518,6 @@ void RemarksFetcher::Fetch(Draw *d) {
 	if (!start.IsValid())
 		return;
 
-	m_remarks.clear();
-
-	UpdateRemarksIcon();
-
 	wxDateTime end = d->GetTimeOfIndex(d->GetValuesTable().size());
 	DrawInfo *di = d->GetDrawInfo();
 
@@ -1523,14 +1537,14 @@ void RemarksFetcher::Attach(Draw *d) {
 
 	m_current_draw = d;
 
+	m_remarks.clear();
+
 	Fetch(m_current_draw);
 	
 }
 
 void RemarksFetcher::Detach(Draw *d) {
 	m_remarks.clear();
-
-	UpdateRemarksIcon();
 
 	d->DetachObserver(this);
 
@@ -1567,7 +1581,6 @@ void RemarksFetcher::RemarksReceived(std::vector<Remark>& remarks) {
 
 	if (remarks_times.size()) {
 		m_current_draw->SetRemarksTimes(remarks_times);
-		UpdateRemarksIcon();
 	}
 }
 
@@ -1578,30 +1591,53 @@ void RemarksFetcher::OnRemarksResponse(RemarksResponseEvent &e) {
 void RemarksFetcher::ScreenMoved(Draw* draw, const wxDateTime &start_time) {
 	if (!m_remarks_handler->Configured())
 		return;
+
+	wxDateTime end_time = draw->GetTimeOfIndex(draw->GetValuesTable().size());
+
+	std::vector<int> to_remove;
+	for (std::map<int, Remark>::iterator i = m_remarks.begin();
+			i != m_remarks.end();
+			i++) {
+		wxDateTime rt = i->second.GetTime();
+		if (rt < start_time || rt >= end_time)
+			to_remove.push_back(i->first);
+
+	}
+
+	for (std::vector<int>::iterator i = to_remove.begin();
+			i != to_remove.end();
+			i++)
+		m_remarks.erase(*i);
+
 	Fetch(draw);
 }
 
-void RemarksFetcher::UpdateRemarksIcon() {
-	m_tool_bar->ShowRemarksIcon(m_remarks.size() > 0);
-}
-
-void RemarksFetcher::OnShowRemarks(wxCommandEvent &e) {
+void RemarksFetcher::ShowRemarks(const wxDateTime& from_time, const wxDateTime &to_time) {
 	std::vector<Remark> remarks;
 
 	for (std::map<int, Remark>::iterator i = m_remarks.begin();
 			i != m_remarks.end();
-			i++)
-		remarks.push_back(i->second);
-
+			i++) {
+		wxDateTime dt = i->second.GetTime();
+		if (dt >= from_time && dt < to_time)
+			remarks.push_back(i->second);
+	}
 
 	RemarksListDialog *d = new RemarksListDialog(m_toplevel_window, m_remarks_handler);
 	d->SetViewedRemarks(remarks);
 	d->ShowModal();
 	d->Destroy();
 
+
+}
+
+void RemarksFetcher::OnShowRemarks(wxCommandEvent &e) {
+	ShowRemarks(m_current_draw->GetTimeOfIndex(0), m_current_draw->GetTimeOfIndex(m_current_draw->GetValuesTable().size()));
 }
 
 void RemarksFetcher::DrawInfoChanged(Draw *d) {
+	m_remarks.clear();
+
 	Fetch(d);
 }
 

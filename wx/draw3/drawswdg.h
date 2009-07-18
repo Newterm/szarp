@@ -226,6 +226,8 @@ public:
 	 * @param action type of action requested */
 	void SetKeyboardAction(ActionKeyboardType action);
 
+	void ShowRemarks(int index);
+
 	/**@return current dispaled time of current draw*/
 	virtual time_t GetCurrentTime();
 
@@ -457,4 +459,3 @@ protected:
 };
 
 #endif
-

@@ -625,7 +625,7 @@ void szRaporter::RefreshReport(bool force)
 		}
 		stat_sb->SetStatusText(wxString::Format(_T("%d s"),this->m_per_per), 2);
 		stat_sb->SetStatusText(wxDateTime::Now().FormatTime(), 3);
-		if(m_get_raplist_form_server || m_raplist.Count() != m_pfetcher->GetParams().Count() ) {
+		if (m_get_raplist_form_server || m_raplist.Count() != m_pfetcher->GetParams().Count() ) {
 			m_raplist = m_pfetcher->GetParams();
 			m_get_raplist_form_server = false;
 		}

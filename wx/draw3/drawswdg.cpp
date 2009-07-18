@@ -1371,3 +1371,10 @@ bool DrawsWidget::IsDrawEnabled(size_t idx) {
 
 	return m_draws[idx]->GetEnable();
 }
+
+void DrawsWidget::ShowRemarks(int idx) {
+	wxDateTime fromtime = m_draws[m_selected_draw]->GetTimeOfIndex(idx);		
+	wxDateTime totime = m_draws[m_selected_draw]->GetTimeOfIndex(idx + 1);
+
+	m_remarks_fetcher->ShowRemarks(fromtime, totime);
+}

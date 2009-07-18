@@ -83,6 +83,7 @@ DrawToolBar::DrawToolBar(wxWindow *parent) :
 		lang_icon = flag_fr;
 
 	AddTool(drawTB_LANGUAGE, _T(""), lang_icon, _("Language"));
+	AddTool(drawTB_REMARK, remark_xpm, wxNullBitmap, false, NULL, _T(""), _("Remarks"));
 	AddTool(drawTB_EXIT, _T(""),exit_xpm, _("Quit"));
 	Realize();
 }
@@ -128,23 +129,3 @@ void DrawToolBar::SetFilterToolIcon(int i) {
 	Realize();
 }
 
-void DrawToolBar::ShowRemarksIcon(bool show) {
-	int index = GetToolPos(drawTB_REMARK);
-	if (show) {
-		if (index != wxNOT_FOUND)
-			return;
-
-		int exit_index = GetToolPos(drawTB_EXIT);
-		assert(exit_index != wxNOT_FOUND);
-
-		InsertTool(exit_index, drawTB_REMARK, remark_xpm, wxNullBitmap, false, NULL, _T(""), _("Remarks"));
-		Realize();
-
-	} else {
-		if (index == wxNOT_FOUND)
-			return;
-		DeleteTool(drawTB_REMARK);
-		Realize();
-	}
-
-}
