@@ -94,7 +94,7 @@ protected:
 
 
 szRaporter::szRaporter(wxWindow *parent, wxString server, wxString title) 
-	: wxFrame(parent, wxID_ANY, _("Raporter")), m_get_raplist_form_server(false)
+	: wxFrame(parent, wxID_ANY, _("Raporter"))
 {
 #ifdef MINGW32
 	m_skip_onsize = true;
@@ -278,13 +278,13 @@ bool szRaporter::LoadReportIPK(const wxString &rname)
 		return false;
 	}
 	m_menu_template->Enable(ID_M_TEMPLATE_SAVE, false);
+	m_menu_template->Enable(ID_M_TEMPLATE_EDIT, false);
 	m_raplist.Clear();
 	m_pfetcher->SetReportName(rname);
 	m_report_name = rname;
 	SetTitle(_T("Raporter: ") + m_report_name);
 	SetIsTestRaport(m_report_name);
 	m_report_ipk = true;
-	m_get_raplist_form_server = true;
 	RefreshReport();
 	SetFitSize();
 	return m_pfetcher->IsValid();
@@ -293,6 +293,14 @@ bool szRaporter::LoadReportIPK(const wxString &rname)
 void szRaporter::LoadReportFile(const wxString &fname) 
 {
 	szParList parlist;
+
+	if (this->ipk == NULL) {
+		this->ipk = szServerDlg::GetIPK(m_server, m_http);
+		if(this->ipk == NULL)
+			return;
+	}
+
+	parlist.RegisterIPK(this->ipk);
 	if (parlist.LoadFile(fname) <= 0) {
 		return;
 	}
@@ -381,13 +389,15 @@ void szRaporter::OnTemplateSave(wxCommandEvent &ev)
 
 void szRaporter::OnTemplateLoad(wxCommandEvent &ev) 
 {
-      LoadReportFile(wxEmptyString);
+	LoadReportFile(wxEmptyString);
 }
 
 void szRaporter::OnTemplateNew(wxCommandEvent &ev) 
 {
-	if(this->ipk == NULL)
+	if(this->ipk == NULL) {
 		this->ipk = szServerDlg::GetIPK(m_server, m_http);
+		m_raplist.RegisterIPK(ipk);
+	}
 
 	if(this->ipk == NULL)
 		return;
@@ -418,11 +428,12 @@ void szRaporter::OnTemplateNew(wxCommandEvent &ev)
 
 void szRaporter::OnTemplateEdit(wxCommandEvent &ev) 
 {
-	if(this->ipk == NULL)
+	if(this->ipk == NULL) {
 		this->ipk = szServerDlg::GetIPK(m_server, m_http);
-
-	if(this->ipk == NULL)
-		return;
+		if(this->ipk == NULL)
+			return;
+		m_raplist.RegisterIPK(ipk);
+	}
 
 	szRaporterEdit ed(this->ipk, this, wxID_ANY, _("Raporter->Editor"));
 	
@@ -453,7 +464,7 @@ void szRaporter::OnOptFileDump(wxCommandEvent &ev)
 void szRaporter::OnOptServer(wxCommandEvent &ev)
 {
 	wxString server = szServerDlg::GetServer(m_server, _T("Raporter"), true );
-	if (server.IsEmpty() || !server.Cmp(_T("Cancel")) || !server.Cmp(m_server)) {
+	if (server.IsEmpty() || !server.Cmp(_("Cancel")) || !server.Cmp(m_server)) {
 		return;
 	}
 	if (m_running) {
@@ -594,50 +605,48 @@ void szRaporter::RefreshReport(bool force)
 	
 	m_pfetcher->Lock();
 	if (m_pfetcher->IsValid()) {
-		for (size_t i = 0; i < m_pfetcher->GetParams().Count(); i++) {
-			wxString scut = m_pfetcher->GetParams().GetExtraProp(i, 
-					SZ_REPORTS_NS_URI, _T("short_name"));
-			wxString desc = m_pfetcher->GetParams().GetExtraProp(i, 
-					SZ_REPORTS_NS_URI, _T("description"));
-			if (desc.IsEmpty()) {
-				desc = m_pfetcher->GetParams().GetName(i);
-				desc = desc.AfterLast(':');
+		if (m_report_ipk || m_raplist.Count() == m_pfetcher->GetParams().Count()) {
+			for (size_t i = 0; i < m_pfetcher->GetParams().Count(); i++) {
+				wxString scut = m_pfetcher->GetParams().GetExtraProp(i, SZ_REPORTS_NS_URI, _T("short_name"));
+
+				wxString desc;
+				if (m_report_ipk)
+					desc = m_pfetcher->GetParams().GetExtraProp(i, SZ_REPORTS_NS_URI, _T("description"));
+				else 
+					desc = m_raplist.GetExtraProp(i, SZ_REPORTS_NS_URI, _T("description"));
+
+				if (desc.IsEmpty()) {
+					desc = m_raplist.GetName(i);
+					desc = desc.AfterLast(':');
+				}
+
+				wxString unit = m_pfetcher->GetParams().GetExtraProp(i, SZ_REPORTS_NS_URI, _T("unit"));
+				wxString val = m_pfetcher->GetParams().GetExtraProp(i, SZ_REPORTS_NS_URI, _T("value"));
+	
+				if (m_test_window == false) {	
+					//TODO sorting by order
+					params_listc->InsertItem(i, scut);
+					params_listc->SetItem(i, 1, val);
+					params_listc->SetItem(i, 2, desc + _T(" [") +
+					      (unit.IsEmpty() ? _T("-") : unit ) + _T("]"));
+				} else {
+					params_listc->InsertItem(i, _T("-"));
+					if (val.CmpNoCase(_T("unknown")) != 0)
+						params_listc->SetItem(i,1, _T("ok"));
+					else
+						params_listc->SetItem(i,1, _("no data"));
+					params_listc->SetItem(i, 2, desc);
+				}
 			}
-			wxString unit = m_pfetcher->GetParams().GetExtraProp(i, 
-					SZ_REPORTS_NS_URI, _T("unit"));
-			wxString val = m_pfetcher->GetParams().GetExtraProp(i, 
-					SZ_REPORTS_NS_URI, _T("value"));
-
-			if (m_test_window == false) {	
-				//TODO sorting by order
-				params_listc->InsertItem(i, scut);
-				params_listc->SetItem(i, 1, val);
-				params_listc->SetItem(i, 2, desc + _T(" [") +
-				      (unit.IsEmpty() ? _T("-") : unit ) + _T("]"));
-			} else {
-				params_listc->InsertItem(i, _T("-"));
-				if (val.CmpNoCase(_T("unknown")) != 0)
-					params_listc->SetItem(i,1, _T("ok"));
-				else
-					params_listc->SetItem(i,1, _("no data"));
-				params_listc->SetItem(i, 2, desc);
-			}
+			stat_sb->SetStatusText(wxString::Format(_T("%d s"),this->m_per_per), 2);
+			stat_sb->SetStatusText(wxDateTime::Now().FormatTime(), 3);
+			params_listc->SetColumnWidth(0, -2);
+			params_listc->SetColumnWidth(1, -2);
+			params_listc->SetColumnWidth(2, -1);
+	
+			if(m_pfetcher->GetParams().Count() > 0)
+				FileDump::DumpValues(&m_pfetcher->GetParams(),m_report_name);
 		}
-		stat_sb->SetStatusText(wxString::Format(_T("%d s"),this->m_per_per), 2);
-		stat_sb->SetStatusText(wxDateTime::Now().FormatTime(), 3);
-		if (m_get_raplist_form_server || m_raplist.Count() != m_pfetcher->GetParams().Count() ) {
-			m_raplist = m_pfetcher->GetParams();
-			m_get_raplist_form_server = false;
-		}
-
-		params_listc->SetColumnWidth(0, -2);
-		params_listc->SetColumnWidth(1, -2);
-		params_listc->SetColumnWidth(2, -1);
-
-		m_menu_template->Enable(ID_M_TEMPLATE_SAVE, true);
-		m_menu_template->Enable(ID_M_TEMPLATE_EDIT, true);
-		if(m_pfetcher->GetParams().Count() > 0)
-			FileDump::DumpValues(&m_pfetcher->GetParams(),m_report_name);
 	}
 	m_pfetcher->Unlock();
 	params_listc->Thaw();

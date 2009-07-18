@@ -119,72 +119,10 @@ int szParList::LoadXML(const xmlDocPtr doc)
 	}
 	xml = (xmlDocPtr) doc;
 
-#if 0 
-	xmlRelaxNGValidCtxtPtr ctxt;
-
-	if(list_rng != NULL) {
-		int ret;
-		ctxt = xmlRelaxNGNewValidCtxt(list_rng);
-		ret = xmlRelaxNGValidateDoc(ctxt, xml);
-		xmlRelaxNGFreeValidCtxt(ctxt);
-		if (ret != 0) {
-			xmlFreeDoc(xml);
-			xml = NULL;
-		}
-	} else
-		wxLogWarning(_("No RelaxNG schema"));
-	if (construct_from_xml) {
-		DoConstructFromXML();
-	else 
-#endif
 	BindAll();
 
 	return Count();
 }
-
-#if 0
-void szParList::DoConstructFromXML() {
-	Clear();
-
-	xmlNodePtr n;
-	xmlChar* def;
-	if (xml == NULL)
-		return;
-	def = xmlGetProp(xml->children, BAD_CAST"source");
-	for (n = xml->children->children; n; n = n->next) {
-		if (n->_private || n->type != XML_ELEMENT_NODE)
-			continue;
-		xmlChar *cur = xmlGetProp(n, BAD_CAST"source");
-		if (cur == NULL)
-			cur = xmlStrdup(def);
-
-		std::wstring ctitle = SC::U2S(cur);
-		TSzarpConfig *cfg = NULL;
-		for (unsigned int i = 0; i < ipks.Count(); i++) {
-			TSzarpConfig *_cfg = ipks.Item(i);
-			if (_cfg->GetTitle() == ctitle) {
-				cfg = _cfg;
-				break;	
-			}
-		}
-		if (cfg == NULL)
-			continue;
-	
-		xmlChar *name = xmlGetProp(n, BAD_CAST"name");
-		assert(name);
-		TParam *tp = ipk->getParamByName(SC::U2S(name));
-		if (tp) {
-			n->_private = tp;
-		}
-
-
-		xmlFree(name);
-		xmlFree(cur);
-	}
-	xmlFree(def);
-
-}
-#endif
 
 int szParList::LoadFile(wxString path, bool showErrors)
 {

@@ -104,7 +104,8 @@ szParSelect::szParSelect(TSzarpConfig * _ipk,
 		bool showShort, 
 		bool showDescr,
 		bool _single,
-		szParFilter *filter)
+		szParFilter *filter,
+		bool description_is_param_name)
 	: wxDialog(parent, id, title)
 {
     this->ipk = _ipk;
@@ -121,6 +122,7 @@ szParSelect::szParSelect(TSzarpConfig * _ipk,
 
     m_is_multiple = multiple;
     m_filter = filter;
+    this->description_is_param_name = description_is_param_name;
 
     wxBoxSizer * top_sizer = new wxBoxSizer(wxVERTICAL);
     par_sizer =
@@ -364,7 +366,10 @@ szParSelect::OnParSelect(wxTreeEvent & ev)
 		scut_txtc->SetValue(wxString(g_data.m_param->GetShortName()));
 	}
 	if (desc_txtc) {
-		desc_txtc->SetValue(wxString(g_data.m_param->GetDrawName()));
+		if (description_is_param_name)
+			desc_txtc->SetValue(wxString(g_data.m_param->GetName()).AfterLast(L':'));
+		else
+			desc_txtc->SetValue(wxString(g_data.m_param->GetDrawName()));
 	}
     }
 }

@@ -135,6 +135,8 @@ public:
    * ignored if multiple is TRUE
    * @param showDescr TRUE if we should display description (draw name) of selected 
    * @param filter parameter filter - only parameters for which function
+   * @param description_is_param_name - if set to true as descrption is treated
+   * last parm of long param name, otherwise it is draw name
    * returns 0 are loaded to tree, default is NULL - all parameters are
    * accepted
    * parameter ignored if multiple is TRUE
@@ -146,7 +148,8 @@ public:
       bool showShort = TRUE, 
       bool showDescr = TRUE,
       bool _single = FALSE,
-      szParFilter *filter = NULL);
+      szParFilter *filter = NULL,
+      bool descriptionIsParmName = false);
   /** dane - ustalane po powrocie z metody Show() lub ShowModal(), o ile
    * zwróci³y wxID_OK */
   struct {
@@ -169,6 +172,7 @@ public:
   void SetHelp(const wxString& page);
 
 private:
+  bool description_is_param_name;
   wxButton *help_button; /**< Help button. */	
   szHelpController *main_help; /**< Pointer on help from main program. */
   wxBoxSizer *button_sizer; /**< Pointer on all buttons, later added help_button.*/

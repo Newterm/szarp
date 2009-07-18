@@ -76,8 +76,7 @@ szRaporterEdit::szRaporterEdit(TSzarpConfig *_ipk,
 			wxLC_REPORT|wxLC_SINGLE_SEL/*|wxLC_EDIT_LABELS*/);
 	
 	rcont_listc->InsertColumn(0, _("Shortcut"), wxLIST_FORMAT_LEFT, -2);
-	rcont_listc->InsertColumn(1, _("Name"), wxLIST_FORMAT_LEFT, -2);
-	rcont_listc->InsertColumn(2, _("Description"), wxLIST_FORMAT_LEFT, -2);
+	rcont_listc->InsertColumn(1, _("Description"), wxLIST_FORMAT_LEFT, -2);
 	
 	rcont_sizer->Add(rcont_listc, 1, wxEXPAND, 0);
 	
@@ -97,7 +96,7 @@ szRaporterEdit::szRaporterEdit(TSzarpConfig *_ipk,
 	
 	this->SetSizer(top_sizer);  
 	
-	ps = new szParSelect(this->ipk, this, wxID_ANY, _("Raporter->Editor->Add"), false, false, false,true,true, param_filter);
+	ps = new szParSelect(this->ipk, this, wxID_ANY, _("Raporter->Editor->Add"), false, false, false,true,true, param_filter, true);
 	
 }
 
@@ -137,18 +136,13 @@ void szRaporterEdit::RefreshList()
 		wxString scut = g_data.m_raplist.GetParam(i)->GetShortName();
 		rcont_listc->InsertItem(i, scut);
 
-		wxString name = g_data.m_raplist.GetName(i).AfterLast(L':');
-		rcont_listc->SetItem(i, 1, name);
-
 		wxString desc = g_data.m_raplist.GetExtraProp(i, SZ_REPORTS_NS_URI, _T("description"));
-		if (desc != name)
-			rcont_listc->SetItem(i, 2, desc);
+		rcont_listc->SetItem(i, 1, desc);
 	}
 
 	if (g_data.m_raplist.Count()) {
 		rcont_listc->SetColumnWidth(0, -2);
 		rcont_listc->SetColumnWidth(1, -1);
-		rcont_listc->SetColumnWidth(2, -1);
 	}
 	
 	rcont_listc->Thaw();

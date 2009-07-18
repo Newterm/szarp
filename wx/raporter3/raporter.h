@@ -238,7 +238,6 @@ protected:
 				/**< array of bitmaps drawn on main button */
 	int m_cur_bmp;		/**< index of currenlty displayed bitmap */
 	time_t m_last_data;	/**< time of last successfull fetch, reset on start */
-	bool m_get_raplist_form_server; /**< flag for updating m_raplist from server */
 #ifdef MINGW32
 	bool m_skip_onsize;	/**< windows hack - skip OnSize event handler because
 				were are not ready for it... */
