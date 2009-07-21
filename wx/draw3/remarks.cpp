@@ -46,7 +46,7 @@
 
 #include "timeformat.h"
 
-const int REMARKS_SERVER_PORT = 7999;
+const int REMARKS_SERVER_PORT = 7998;
 
 RemarksHandler::RemarksHandler() {
 
@@ -145,12 +145,13 @@ void RemarksHandler::SetConfiguration(wxString username, wxString password, wxSt
 
 	m_configured = ok && !m_username.IsEmpty() && !m_password.IsEmpty();
 
-	if (m_connection)
+	if (m_configured && m_connection) {
 		m_connection->SetIPAddress(m_address);
+		m_connection->SetUsernamePassword(m_username, m_password);
+	}
 
 	if (!m_auto_fetch && autofetch)
 		m_timer.Start(1000 * 60 * 10);
-
 
 	m_auto_fetch = autofetch;
 
@@ -421,13 +422,13 @@ void XMLRPCConnection::OnSocketEvent(wxSocketEvent &event) {
 
 	switch (type) {
 		case wxSOCKET_CONNECTION:
-			m_read_state = READING_FIRST_LINE;
 			WriteData();
 			break;
 
 		case wxSOCKET_LOST:
 			if (m_read_state != CLOSED) {
 				m_socket->Disconnect();
+				m_read_state = CLOSED;
 				ReturnError(L"Server connection failure");
 			}
 			break;
@@ -452,6 +453,8 @@ void XMLRPCConnection::PostRequest(XMLRPC_REQUEST request) {
 	m_read_buf_write_pos 
 		= m_read_buf_read_pos 
 		= m_read_buf_size = 0;
+
+	m_read_state = READING_FIRST_LINE;
 
 	m_socket->Connect();
 }
@@ -595,6 +598,9 @@ XMLRPC_REQUEST RemarksConnection::CreateGetRemarksRequest() {
 
 	long lt = 0;
 	wxConfig::Get()->Read(_T("RemarksLatestRetrieval"), &lt);
+
+	if (lt)
+		lt -= 3600;
 
 	m_retrieval_time = time(NULL);
 

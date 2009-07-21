@@ -24,5 +24,6 @@ if [ `hostname -s` = $HOST ] ; then
 	SSS=0
 	SSCONF=0
 	STAMPD=0
+	REMARKS_SERVER=0
 fi
 

@@ -244,6 +244,7 @@ bool SSLSocketConnection::DoConnect() {
 
 	assert(m_connect_timer == NULL);
 	m_connect_timer = new wxTimer(this, wxID_ANY);
+	m_connect_timer->SetOwner(this);
 	m_connect_timer->Start(1000 * 20, true);
 
 	return false;
@@ -269,8 +270,11 @@ void SSLSocketConnection::Connect() {
 
 void SSLSocketConnection::Disconnect() {
 	Cleanup();
-	m_socket->Destroy();
-	m_socket = NULL;
+
+	if (m_socket) {
+		m_socket->Destroy();
+		m_socket = NULL;
+	}
 }
 
 wxSocketError SSLSocketConnection::LastError() {
