@@ -1,9 +1,25 @@
 $Id$
 
-2009-07-22	Pawel Palucha <pawel@praterm.pl>
+2009-07-22	Darek Marcinkiewcz <reksio@praterm.pl>
+	* wx/draw3: when user clicks remarks envelope, draw
+	shows all remarks referring to current base (so far 
+	only remarks reffering to currently viewed time span
+	were displayed)
+2009-07-22	Pawel Palucha <pawel@praterm.com.pl>
 	* resources/documentation/new/oszarpie/oszarpie.sgml: fix - scripts
 	creating wx-help files like to have title element in one line
+2009-07-21	Darek Marcinkiewcz <reksio@praterm.pl>
+	* resources/parstart*: starting/stoping of remarks server added
+	* wx/{common,draw3}: fixes in connection errors handling
+	* utils/remarks_server/remarks_server.py: rewritten to support 
+	multiple connections simultaneously
 2009-07-18	Darek Marcinkiewcz <reksio@praterm.pl>
+	* wx/common/parselect.cpp: new flag added to param
+	selecting dialog, flag denotes whether draw name or last component of 
+	full param name is displayed in "descption" field;
+	some minor cleaning up
+	* wx/raporter3: fix in custom parameter description handling in user's
+	report also some dead code removal
 	* wx/common/parlist.cpp: fix - copy constructor and assignment
 	operator preserve references to TParam pointers in xml doc
 	* wx/common/parselect.cpp: filter operation is also applied
@@ -12,7 +28,7 @@ $Id$
 	params that are not served by paramd, i.e. params 
 	from drawdefinable section (except for combined params)
 	* wx/draw3: flags indicating presence of remarks reffering to
-	a given time slice are now cliackable, when clicked, a dialog
+	a given time slice are now clickable, when clicked, a dialog
 	with list of remarks associated with that time slice is shown
 	* wx/draw3: 'remarks envelope' is always present on the toolbar,
 	even if there are no remarks reffering to currently shown draws'

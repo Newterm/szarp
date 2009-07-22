@@ -809,12 +809,17 @@ typedef void (wxEvtHandler::*RemarksResponseEventFunction)(RemarksResponseEvent&
     (wxObjectEventFunction) (wxEventFunction) (wxCommandEventFunction) \
     wxStaticCastEvent( RemarksResponseEventFunction, & fn ), (wxObject *) NULL ),
 
-RemarksResponseEvent::RemarksResponseEvent(std::vector<Remark> remarks) : wxCommandEvent(REMARKSRESPONSE_EVENT, wxID_ANY) {
+RemarksResponseEvent::RemarksResponseEvent(std::vector<Remark> remarks, RESPONSE_TYPE response_type) : wxCommandEvent(REMARKSRESPONSE_EVENT, wxID_ANY) {
 	m_remarks = remarks;
+	m_response_type = response_type;
 }
 
 std::vector<Remark>& RemarksResponseEvent::GetRemarks() {
 	return m_remarks;
+}
+
+RemarksResponseEvent::RESPONSE_TYPE RemarksResponseEvent::GetResponseType() {
+	return m_response_type;
 }
 
 wxEvent* RemarksResponseEvent::Clone() const {
@@ -830,6 +835,18 @@ void RemarksStorage::StoreRemarksQuery::Execute() {
 	m_storage->ExecuteStoreRemarks(m_remarks);
 }
 
+RemarksStorage::FetchAllRemarksQuery::FetchAllRemarksQuery(RemarksStorage *storage, std::wstring prefix, wxEvtHandler *receiver) :
+	Query(storage), m_prefix(prefix), m_receiver(receiver)
+{}
+
+void RemarksStorage::FetchAllRemarksQuery::Execute() {
+	std::vector<Remark> remarks = m_storage->ExecuteGetAllRemarks(m_prefix);
+
+	RemarksResponseEvent e(remarks, RemarksResponseEvent::BASE_RESPONSE);
+	wxPostEvent(m_receiver, e);
+}
+
+
 RemarksStorage::FetchRemarksQuery::FetchRemarksQuery(RemarksStorage *storage, 
 		std::wstring prefix,
 		std::wstring set, 
@@ -841,7 +858,7 @@ RemarksStorage::FetchRemarksQuery::FetchRemarksQuery(RemarksStorage *storage,
 void RemarksStorage::FetchRemarksQuery::Execute() {
 	std::vector<Remark> remarks = m_storage->ExecuteGetRemarks(m_prefix, m_set, m_from_time, m_to_time);
 
-	RemarksResponseEvent e(remarks);
+	RemarksResponseEvent e(remarks, RemarksResponseEvent::RANGE_RESPONE);
 	wxPostEvent(m_receiver, e);
 }
 
@@ -851,7 +868,13 @@ void RemarksStorage::FinishQuery::Execute() {
 	m_storage->m_done = true;
 }
 
-RemarksStorage::RemarksStorage() : m_sqlite(NULL), m_fetch_remarks_query(NULL), m_fetch_prefixes_query(NULL), m_add_prefix_query(NULL) {
+RemarksStorage::RemarksStorage() :
+		m_sqlite(NULL),
+		m_fetch_remarks_query(NULL),
+		m_fetch_prefixes_query(NULL),
+		m_add_prefix_query(NULL),
+		m_fetch_all_remarks_query(NULL) {
+
 	wxFileName szarp_dir(wxGetHomeDir(), wxEmptyString);
 	szarp_dir.AppendDir(_T(".szarp"));
 
@@ -931,6 +954,26 @@ void RemarksStorage::PrepareQuery() {
 			"INSERT INTO prefix (name) VALUES (?1);",
 			-1,
 			&m_add_prefix_query,
+			NULL);
+	assert(ret == SQLITE_OK);
+
+	ret = sqlite3_prepare_v2(
+			m_sqlite, 
+			"SELECT" 
+			"	content "
+			"FROM "
+			"	remark "
+			"WHERE "
+			"	prefix_id = ( "
+			"			SELECT "
+			"				id "
+			"			FROM "
+			"				prefix "
+			"			WHERE "
+			"				name = ?1 "
+			"			)",
+			-1,
+			&m_fetch_all_remarks_query,
 			NULL);
 	assert(ret == SQLITE_OK);
 }
@@ -1066,6 +1109,16 @@ void RemarksStorage::GetRemarks(const wxString& prefix,
 	m_semaphore.Post();
 }
 
+void RemarksStorage::GetAllRemarks(const wxString& prefix, wxEvtHandler *handler) {
+	wxMutexLocker lock(m_queue_mutex);
+
+	m_queries.push_back(new FetchAllRemarksQuery(this,
+				prefix.c_str(),
+				handler));
+
+	m_semaphore.Post();
+}
+
 void RemarksStorage::StoreRemarks(std::vector<Remark>& remarks) { 
 	wxMutexLocker lock(m_queue_mutex);
 
@@ -1127,6 +1180,32 @@ std::vector<Remark> RemarksStorage::ExecuteGetRemarks(const std::wstring& prefix
 	return v;
 }
 
+std::vector<Remark> RemarksStorage::ExecuteGetAllRemarks(const std::wstring& prefix) {
+
+	std::vector<Remark> v;
+
+	int ret;
+	ret = sqlite3_bind_text(m_fetch_all_remarks_query, 
+			1, 
+			(const char*) SC::S2U(prefix).c_str(),
+			-1,
+			SQLITE_TRANSIENT);
+	assert (ret == SQLITE_OK);
+
+	while ((ret = sqlite3_step(m_fetch_all_remarks_query)) == SQLITE_ROW) {
+		const char* remark_doc = (const char*) sqlite3_column_text(m_fetch_all_remarks_query, 0);
+		assert(remark_doc);
+		xmlDocPtr r = xmlParseMemory(remark_doc, strlen(remark_doc));
+		if (r)
+			v.push_back(Remark(r));
+	}
+
+	sqlite3_reset(m_fetch_all_remarks_query);
+	sqlite3_clear_bindings(m_fetch_all_remarks_query);
+
+	return v;
+}
+
 void* RemarksStorage::Entry() {
 
 	while (!m_done) {
@@ -1153,6 +1232,8 @@ RemarksStorage::~RemarksStorage() {
 		sqlite3_finalize(m_store_remark_query);
 	if (m_add_prefix_query)
 		sqlite3_finalize(m_add_prefix_query);
+	if (m_fetch_all_remarks_query)
+		sqlite3_finalize(m_fetch_all_remarks_query);
 	if (m_sqlite)
 		sqlite3_close(m_sqlite);
 }
@@ -1509,6 +1590,7 @@ RemarksFetcher::RemarksFetcher(RemarksHandler *handler, DrawToolBar* tool_bar, w
 	m_remarks_handler = handler;
 	m_tool_bar = tool_bar;
 	m_toplevel_window = top_level_window;
+	m_awaiting_for_whole_base = false;
 
 	tool_bar->PushEventHandler(this);
 
@@ -1557,6 +1639,7 @@ void RemarksFetcher::Detach(Draw *d) {
 }
 
 void RemarksFetcher::RemarksReceived(std::vector<Remark>& remarks) {
+
 	DrawInfo* di = m_current_draw->GetDrawInfo();
 
 	wxDateTime start = m_current_draw->GetTimeOfIndex(0);
@@ -1591,7 +1674,18 @@ void RemarksFetcher::RemarksReceived(std::vector<Remark>& remarks) {
 }
 
 void RemarksFetcher::OnRemarksResponse(RemarksResponseEvent &e) {
-	RemarksReceived(e.GetRemarks());
+	if (e.GetResponseType() == RemarksResponseEvent::BASE_RESPONSE) {
+		if (!m_awaiting_for_whole_base)
+			return;
+		m_awaiting_for_whole_base = false;
+
+
+		RemarksListDialog *d = new RemarksListDialog(m_toplevel_window, m_remarks_handler);
+		d->SetViewedRemarks(e.GetRemarks());
+		d->ShowModal();
+		d->Destroy();
+	} else 
+		RemarksReceived(e.GetRemarks());
 }
 
 void RemarksFetcher::ScreenMoved(Draw* draw, const wxDateTime &start_time) {
@@ -1638,7 +1732,10 @@ void RemarksFetcher::ShowRemarks(const wxDateTime& from_time, const wxDateTime &
 }
 
 void RemarksFetcher::OnShowRemarks(wxCommandEvent &e) {
-	ShowRemarks(m_current_draw->GetTimeOfIndex(0), m_current_draw->GetTimeOfIndex(m_current_draw->GetValuesTable().size()));
+	if (!m_remarks_handler->Configured())
+		return;
+	m_awaiting_for_whole_base = true;
+	m_remarks_handler->GetStorage()->GetAllRemarks(m_current_draw->GetDrawInfo()->GetBasePrefix(), this);
 }
 
 void RemarksFetcher::DrawInfoChanged(Draw *d) {

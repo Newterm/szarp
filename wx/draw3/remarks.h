@@ -198,10 +198,18 @@ public:
 };
 
 class RemarksResponseEvent : public wxCommandEvent {
-	std::vector<Remark> m_remarks;
 public:
-	RemarksResponseEvent(std::vector<Remark> remarks);
+	enum RESPONSE_TYPE {
+		RANGE_RESPONE,
+		BASE_RESPONSE };
+
+private:
+	std::vector<Remark> m_remarks;
+	RESPONSE_TYPE m_response_type;
+public:
+	RemarksResponseEvent(std::vector<Remark> remarks, RESPONSE_TYPE response_type);
 	std::vector<Remark>& GetRemarks();
+	RESPONSE_TYPE GetResponseType();
 	wxEvent* Clone() const;
 
 };
@@ -239,6 +247,15 @@ class RemarksStorage : public wxThread {
 		virtual ~FetchRemarksQuery() {};
 	};
 
+	class FetchAllRemarksQuery : public Query {
+		std::wstring m_prefix;
+		wxEvtHandler *m_receiver;
+	public:
+		FetchAllRemarksQuery(RemarksStorage* storage, std::wstring prefix, wxEvtHandler *receiver);
+		virtual void Execute();
+		virtual ~FetchAllRemarksQuery() {};
+	};
+
 	class FinishQuery : public Query {
 	public:
 		FinishQuery(RemarksStorage* storage);
@@ -255,6 +272,7 @@ class RemarksStorage : public wxThread {
 	sqlite3_stmt* m_fetch_prefixes_query;
 	sqlite3_stmt* m_store_remark_query;
 	sqlite3_stmt* m_add_prefix_query;
+	sqlite3_stmt* m_fetch_all_remarks_query;
 	
 	/**Semaphore counting number of elements in the queue*/
 	wxSemaphore m_semaphore;
@@ -278,6 +296,7 @@ class RemarksStorage : public wxThread {
 	void AddPrefix(std::wstring prefix);
 	void ExecuteStoreRemarks(std::vector<Remark>& remarks);
 	std::vector<Remark> ExecuteGetRemarks(const std::wstring& prefix, const std::wstring& set, const time_t& start_date, const time_t &end_date);
+	std::vector<Remark> ExecuteGetAllRemarks(const std::wstring& prefix);
 public:
 	RemarksStorage();
 
@@ -296,6 +315,8 @@ public:
 			const wxDateTime &start_date,
 			const wxDateTime &end_date,
 			wxEvtHandler *handler);
+
+	void GetAllRemarks(const wxString& prefix, wxEvtHandler *handler);
 };
 
 
@@ -424,6 +445,8 @@ class RemarksFetcher : public wxEvtHandler, public DrawObserver {
 	RemarksHandler *m_remarks_handler;
 
 	Draw *m_current_draw;
+
+	bool m_awaiting_for_whole_base;
 
 	void Fetch(Draw *d);
 
