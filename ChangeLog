@@ -1,6 +1,9 @@
 $Id$
 
 2009-07-22	Darek Marcinkiewcz <reksio@praterm.pl>
+	* wx/draw3: OpenGL version of graphs widget also draws clickable
+	remarks 'indicators' - triangles in this case
+2009-07-22	Darek Marcinkiewcz <reksio@praterm.pl>
 	* wx/draw3: missing header inclusion (fixes windows build)
 2009-07-22	Pawel Palucha <pawel@praterm.com.pl>
 	* INSTALL.Windows: fixed location of xmlrpc-epi headers to xmlrpc-epi

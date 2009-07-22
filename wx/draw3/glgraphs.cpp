@@ -134,25 +134,30 @@ GLGraphs::GLGraphs(wxWindow *parent, ConfigManager *cfg) : wxGLCanvas(parent, wx
 	m_recalulate_margins = false;
 	m_draw_current_draw_name = false;
 	m_refresh = false;
+	m_widget_initialized = false;
 
-	Init();
-}
-
-void GLGraphs::Init() {
 	SetInfoDropTarget* dt = new SetInfoDropTarget(this);
 	SetDropTarget(dt);
-
-	m_screen_margins.leftmargin = 36;
-	m_screen_margins.rightmargin = 10;
-	m_screen_margins.topmargin = 24;
-	m_screen_margins.bottommargin = 16;
-	m_screen_margins.infotopmargin = 7;
 
 	/* Set minimal size of widget. */
 	SetSizeHints(300, 200);
 
 	m_timer = new wxTimer(this, wxID_ANY);
 
+
+}
+
+void GLGraphs::Init() {
+	if (m_widget_initialized == false) {
+		m_screen_margins.leftmargin = 36;
+		m_screen_margins.rightmargin = 10;
+		m_screen_margins.infotopmargin = 7;
+
+		m_screen_margins.bottommargin = GetFont().GetPointSize() + 4 + 4;
+		m_screen_margins.topmargin = GetFont().GetPointSize() + 4 + 3 + 6;
+
+		m_widget_initialized = true;
+	}
 }
 
 void GLGraphs::OnIdle(wxIdleEvent & event)
@@ -676,6 +681,31 @@ void GLGraphs::GenerateLineList() {
 	glEndList();
 
 }
+
+void GLGraphs::DrawRemarksTriangles() {
+	Draw *d = m_draws_wdg->GetSelectedDraw();
+	const Draw::VT& vt = d->GetValuesTable();
+
+	glBindTexture(GL_TEXTURE_2D, _line1_tex);
+
+	glBegin(GL_TRIANGLES);
+
+	float white[] = { 1, 1, 1, 1};
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white); glMaterialfv(GL_FRONT, GL_SPECULAR, white);
+
+	for (size_t i = 0; i < vt.size(); i++)
+		if (vt.at(i).m_remark) { 
+			int x = GetX(i, vt.size());
+			glTexCoord2f(.5, 1);
+			glVertex3f(x, m_size.GetHeight() - m_screen_margins.topmargin, 0);
+			glTexCoord2f(1, 0);
+			glVertex3f(x + 5, m_size.GetHeight() - m_screen_margins.topmargin + 10, 0);
+			glTexCoord2f(0, 0);
+			glVertex3f(x - 5, m_size.GetHeight() - m_screen_margins.topmargin + 10, 0);
+		}
+	glEnd();
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
 	
 void GLGraphs::OnPaint(wxPaintEvent & WXUNUSED(event))
 {
@@ -724,6 +754,8 @@ void GLGraphs::DoPaint() {
 
 	InitGL();
 
+	Init();
+
 	RecalculateMargins();
 
 	GeneratePaneDisplayList();
@@ -749,15 +781,18 @@ void GLGraphs::DoPaint() {
 				DrawUnit(d);
 			}
 			DrawShortNames();
+			DrawRemarksTriangles();
 			DrawSeasonLimits();
 		}
 		glPopMatrix();
 
 		glPushMatrix();
+		{
 			glTranslatef(0, 0, -100);
 			DrawGraphs();
 			if (m_draw_current_draw_name) 
 				DrawCurrentParamName();
+		}
 		glPopMatrix();
 	}
 	glPopMatrix();
@@ -910,15 +945,44 @@ void GLGraphs::OnMouseLeftDown(wxMouseEvent & event) {
 	if (!ct.IsValid())
 		return;
 
+	int x = event.GetX();
+	int y = m_size.GetHeight() - event.GetY();
+
+	int sri = -1;
+
+	if (y >= m_size.GetHeight() - m_screen_margins.topmargin && y <= m_size.GetHeight() - m_screen_margins.topmargin + 10) {
+		int sdx = -1;
+
+		const ValuesTable& vt = m_draws_wdg->GetSelectedDraw()->GetValuesTable();
+
+		for (size_t i = 0; i < vt.size(); i++)
+			if (vt.at(i).m_remark) {
+				int rx = GetX(i, vt.size());
+
+				if (rx > x + 5)
+					break;
+				int d = std::abs(x - rx);
+
+				if (d <= 5) {
+					if (sri == -1 || sdx > d) {
+						sri = i;
+						sdx = d;
+					}
+				}
+			}
+	}
+
+	if (sri >= 0) {
+		m_draws_wdg->ShowRemarks(sri);
+		return;
+	}
+
 	struct VoteInfo {
 		double dist;
 		wxDateTime time;
 	};
 
 	VoteInfo infos[m_draws.GetCount()];
-
-	int x = event.GetX();
-	int y = m_size.GetHeight() - event.GetY();
 
 	for (size_t i = 0; i < m_draws.GetCount(); ++i) {
 
@@ -1038,9 +1102,6 @@ void GLGraphs::InitGL() {
 		_font = new FTGLTextureFont(const_cast<char*>(SC::S2A(font_file).c_str()));
 		_font->FaceSize(GetFont().GetPointSize() + 4);
 		_font->CharMap(ft_encoding_unicode);
-
-		m_screen_margins.bottommargin = GetFont().GetPointSize() + 4 + 4;
-		m_screen_margins.topmargin = GetFont().GetPointSize() + 4 + 3;
 
                 wxImage img;
 		wxString b1_texture_file = wxGetApp().GetSzarpDir();
@@ -1295,7 +1356,7 @@ void GLGraphs::DrawShortNames() {
 
 	glPushMatrix(); 
 	{
-		glTranslatef(m_screen_margins.leftmargin + 10, m_size.GetHeight() - m_screen_margins.topmargin + 3, 0);
+		glTranslatef(m_screen_margins.leftmargin + 10, m_size.GetHeight() - m_screen_margins.topmargin + 9, 0);
 
 		float x = 0;
 
@@ -1550,6 +1611,10 @@ void GLGraphs::StartDrawingParamName() {
 
 void GLGraphs::StopDrawingParamName() {
 	m_draw_current_draw_name = false;
+	Refresh();
+}
+
+void GLGraphs::NewRemarks(Draw *d) {
 	Refresh();
 }
 

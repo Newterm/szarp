@@ -72,6 +72,8 @@ class GLGraphs : public wxGLCanvas, public DrawGraphs, public SetInfoDropReceive
 
 	static bool _gl_ready;
 
+	bool m_widget_initialized;
+
 	bool m_lists_compiled;
 
 	GLuint m_back_pane_list;
@@ -164,6 +166,8 @@ class GLGraphs : public wxGLCanvas, public DrawGraphs, public SetInfoDropReceive
 
 	void GenerateLineList();
 
+	void DrawRemarksTriangles();
+
 	void Init();
 
 	void DrawCurrentParamName();
@@ -240,6 +244,8 @@ public:
 	virtual void PeriodChanged(Draw *draw, PeriodType period);
 
 	virtual void EnableChanged(Draw *draw);
+
+	virtual void NewRemarks(Draw *draw);
 
 	virtual ~GLGraphs();
 
