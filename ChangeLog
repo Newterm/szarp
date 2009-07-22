@@ -1,5 +1,8 @@
 $Id$
 
+2009-07-22	Pawel Palucha <pawel@praterm.pl>
+	* resources/documentation/new/oszarpie/oszarpie.sgml: fix - scripts
+	creating wx-help files like to have title element in one line
 2009-07-18	Darek Marcinkiewcz <reksio@praterm.pl>
 	* wx/common/parlist.cpp: fix - copy constructor and assignment
 	operator preserve references to TParam pointers in xml doc
