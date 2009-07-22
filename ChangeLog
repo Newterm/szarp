@@ -1,5 +1,8 @@
 $Id$
 
+2009-07-22	Pawel Palucha <pawel@praterm.com.pl>
+	* INSTALL.Windows: fixed location of xmlrpc-epi headers to xmlrpc-epi
+	subdirectory, similar to Debian.
 2009-07-22	Darek Marcinkiewcz <reksio@praterm.pl>
 	* wx/draw3: when user clicks remarks envelope, draw
 	shows all remarks referring to current base (so far 

@@ -275,6 +275,7 @@ cd curl-7.19.5
 	--without-random
 make
 make install
+cp bin/curl
 
 
 3.10 librsync library.
@@ -359,6 +360,7 @@ cd xmlrpc-epi-0.54
 ./autogen.sh
 ./configure --host=i586-mingw32msvc --target=i586-mingw32msvc \
 	--prefix=/usr/local/i586-mingw32msvc \
+	--includedir=/usr/local/i586-mingw32msvc/include/xmlrpc-epi \
 	--with-expat=/usr/local/i586-mingw32msvc \
 	CPPFLAGS="-I/usr/local/i586-mingw32msvc/include -D_MSC_VER" \
 	LDFLAGS=-L/usr/local/i586-mingw32msvc/lib \
