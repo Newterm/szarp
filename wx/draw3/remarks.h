@@ -26,6 +26,7 @@
 #ifndef WX_PRECOMP
 #include <wx/wx.h>
 #include <wx/thread.h>
+#include <wx/listctrl.h>
 #include <wx/socket.h>
 #endif
 
