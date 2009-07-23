@@ -607,7 +607,7 @@ void BackgroundView::GetSize(int *w, int *h) const {
 }
 
 int BackgroundView::GetRemarkClickedIndex(int x, int y) {
-	if (y > m_topmargin || y < m_topmargin - 7)
+	if (y > m_topmargin - 7 + m_remark_flag_bitmap.GetHeight() || y < m_topmargin - 7)
 		return -1;
 
 	int sri = -1;

@@ -1,6 +1,7 @@
 $Id$
 
 2009-07-23	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/draw/drawview.cpp: fixed 'clickability' of remark icons.
 	* wx/draw3/bitmaps/remark.xpm, remark_flag.xpm: (experimental) new 
 	icons for remarks.
 2009-07-23	Pawel Palucha <pawel@praterm.com.pl>
