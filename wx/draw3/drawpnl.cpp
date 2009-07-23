@@ -363,10 +363,10 @@ void DrawPanel::CreateChildren(DrawSet *set, PeriodType pt, time_t time, int sel
 	gtk_window_set_accept_focus(GTK_WINDOW(rw->GetHandle()), 0);
 #endif
 
-	wxString style = wxConfig::Get()->Read(_T("GRAPHS_VIEW"), _("Classic"));
+	wxString style = wxConfig::Get()->Read(_T("GRAPHS_VIEW"), _T("Classic"));
 #ifdef HAVE_GLCANVAS
 #ifdef HAVE_FTGL
-	if (style != _("Classic") && wxGetApp().GLWorks()) {
+	if (style == _T("3D") && wxGetApp().GLWorks()) {
 		if (GLGraphs::_context == NULL) {
 			wxGLCanvas *tcanvas  = new wxGLCanvas(this, wxID_ANY
 					, wxGetApp().GLContextAttribs());

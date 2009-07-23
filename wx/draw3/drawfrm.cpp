@@ -866,7 +866,7 @@ void DrawFrame::OnLanguageChange(wxCommandEvent &e) {
 }
 
 void DrawFrame::OnGraphsView(wxCommandEvent &e) {
-	wxString style = wxConfig::Get()->Read(_T("GRAPHS_VIEW"), _("Classic"));
+	wxString style = wxConfig::Get()->Read(_T("GRAPHS_VIEW"), _T("Classic"));
 	wxArrayString choices;
 	choices.push_back(_("Classic"));
 	choices.push_back(_("'3D'"));
@@ -876,9 +876,9 @@ void DrawFrame::OnGraphsView(wxCommandEvent &e) {
 		return;
 
 	if (ret == 0)
-		style = _("Classic");
+		style = _T("Classic");
 	else
-		style = _("'3D'");
+		style = _T("3D");
 
 	wxConfig::Get()->Write(_T("GRAPHS_VIEW"), style);
 

@@ -118,7 +118,7 @@ void DrawApp::InitGL() {
 #endif
 	wxConfig::Get()->Flush();
 	if (!gl_init_failed && 	// draw3 died during initialization of OpenGL
-			wxConfig::Get()->Read(_T("GRAPHS_VIEW"), _("Classic")) != _("Classic") ) {
+			wxConfig::Get()->Read(_T("GRAPHS_VIEW"), _T("Classic")) == _T("3D") ) {
 		if (InitGLVisual(GL_ATTRIBUTES)) {
 			m_gl_context_attribs = GL_ATTRIBUTES;
 			m_gl_works = true;
