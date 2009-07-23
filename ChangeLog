@@ -1,5 +1,7 @@
 $Id$
 
+2009-07-23	Pawel Palucha <pawel@praterm.com.pl>
+	* script/nsis/winsetup.sh: fixed path to zlib DLL.
 2009-07-22	Darek Marcinkiewcz <reksio@praterm.pl>
 	* wx/draw3: OpenGL version of graphs widget also draws clickable
 	remarks 'indicators' - triangles in this case

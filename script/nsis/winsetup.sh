@@ -169,7 +169,7 @@ function CopyDlls()
 	/usr/local/i586-mingw32msvc/lib/wxmsw28u_*.dll \
 	/usr/local/i586-mingw32msvc/lib/*eay32*.dll \
 	/usr/local/i586-mingw32msvc/lib/*ssl*.dll \
-	/usr/local/i586-mingw32msvc/*/zlib*.dll \
+	/usr/local/i586-mingw32msvc/*/libz*.dll \
 	/usr/local/i586-mingw32msvc/bin/*iconv*.dll \
 	/usr/local/i586-mingw32msvc/bin/libxml2*.dll \
 	/usr/local/i586-mingw32msvc/lib/librsync*.dll \
