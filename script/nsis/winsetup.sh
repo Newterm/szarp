@@ -175,6 +175,7 @@ function CopyDlls()
 	/usr/local/i586-mingw32msvc/lib/librsync*.dll \
 	/usr/local/i586-mingw32msvc/bin/libcares*.dll \
 	/usr/local/i586-mingw32msvc/bin/libexpat*.dll \
+	/usr/local/i586-mingw32msvc/bin/libsqlite*.dll \
 	/usr/local/i586-mingw32msvc/*/lua*.dll \
 	$MINGW"
 	
