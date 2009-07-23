@@ -451,7 +451,7 @@ void EkstraktorMainWindow::onWriteResults(wxCommandEvent &event)
 			wxString(directory),
 			_T(""),
 
-			_("Comma Separated Values (*.csv)|*.csv|OpenOffice format (*.ods)|*.ods|XML format (*.xml)|*.xml|All files (*.*)|*.*"), wxSAVE);
+			_("Comma Separated Values (*.csv)|*.csv|OpenOffice format (*.ods)|*.ods|XML format (*.xml)|*.xml|All files (*.*)|*.*"), wxSAVE | wxOVERWRITE_PROMPT);
 	file->SetFilterIndex(3);
 
 	if (file->ShowModal() == wxID_OK) {

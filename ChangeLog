@@ -1,6 +1,13 @@
 $Id$
 
 2009-07-23	Pawel Palucha <pawel@praterm.com.pl>
+	* libSzarp2/szbextr/extractor.cc: fix - program hanged when ODS file
+	already existed - we are now deleting file instead of trying to empty
+	ZIP archive; output date format modified to include year number for
+	week and month period types.
+	* wx/esktraktor3/EkstraktorMainWindow.cpp: added wxOVERWRITE_PROMPT to
+	file saving dialog.
+2009-07-23	Pawel Palucha <pawel@praterm.com.pl>
 	* script/nsis/winsetup.sh: fixed path to zlib DLL.
 	* script/nsis/winsetup.sh: added sqlite DLL.
 2009-07-22	Darek Marcinkiewcz <reksio@praterm.pl>

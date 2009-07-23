@@ -26,6 +26,10 @@
 #include "szbextr/extr.h"
 
 #ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
@@ -126,6 +130,29 @@ void SzbExtractor::SetDecDelim(wchar_t dec_sep)
 	this->dec_sep = dec_sep;
 }
 
+const char* SzbExtractor::SetFormat(int period_type)
+{
+       	switch (period_type) {
+		case PT_CUSTOM :
+		case PT_MIN10 :
+		case PT_HOUR :
+		case PT_HOUR8 :
+	    		return "%Y-%m-%d %H:%M";
+	    		break;
+		case PT_DAY :
+	    		return "%Y-%m-%d";
+	    		break;
+		case PT_WEEK :
+	    		return "%Y Week %W";
+	    		break;
+		case PT_MONTH :
+	    		return "%Y %B";
+	    		break;
+		default:
+	    		assert (0);
+    	}
+}
+
 SzbExtractor::ErrorCode 
 SzbExtractor::ExtractToCSV(FILE *output, const std::wstring& delimiter)
 {
@@ -160,26 +187,7 @@ SzbExtractor::ExtractToCSV(FILE *output, const std::wstring& delimiter)
     CHECK_RC
 	
     // set time format
-    const char *format;
-    switch (period_type) {
-	case PT_CUSTOM :
-	case PT_MIN10 :
-	case PT_HOUR :
-	case PT_HOUR8 :
-	    format = "%Y-%m-%d %H:%M";
-	    break;
-	case PT_DAY :
-	    format = "%Y-%m-%d";
-	    break;
-	case PT_WEEK :
-	    format = "Tydzieñ %W";
-	    break;
-	case PT_MONTH :
-	    format = "%B";
-	    break;
-	default:
-	    assert (0);
-    }
+    const char *format = SetFormat(period_type);
     
     // buffer for date
 #define BUF_SIZE 100
@@ -502,26 +510,7 @@ SzbExtractor::ExtractToOOXML(FILE* output)
 	}
 	
 	/* set time format */
-	char const *format;
-	switch (period_type) {
-		case PT_CUSTOM :
-		case PT_MIN10 :
-		case PT_HOUR :
-		case PT_HOUR8 :
-			format = "%Y-%m-%d %H:%M";
-			break;
-		case PT_DAY :
-			format = "%Y-%m-%d";
-			break;
-		case PT_WEEK :
-			format = "Tydzieñ %W";
-			break;
-		case PT_MONTH :
-			format = "%B";
-			break;
-		default:
-			assert (0);
-	}
+    	const char *format = SetFormat(period_type);
 	/* buffer for date */
 #define BUF_SIZE 100
 	int dif = (end - start) / 100;
@@ -617,13 +606,23 @@ SzbExtractor::ExtractToOpenOffice(const std::wstring& path)
 		progress_watcher(102, watcher_data);
 	
 	int errorp;
-	struct zip *ods = zip_open(SC::U2A(SC::S2U(path)).c_str(), ZIP_CREATE, &errorp);
+	struct zip *ods = zip_open(SC::U2A(SC::S2U(path)).c_str(), ZIP_CREATE | ZIP_EXCL, &errorp);
+	if (ods == NULL) {
+		if (errorp == ZIP_ER_EXISTS) {
+			/* file already exists, try to remove it; another aproach it to
+			 * empty zip archive, but it halts the program under Windows... */
+			if (unlink(SC::U2A(SC::S2U(path)).c_str()) != 0) {
+				fclose(tmp);
+				return ERR_ZIPCREATE;
+			}
+			/* re-try creating file */
+			ods = zip_open(SC::U2A(SC::S2U(path)).c_str(), ZIP_CREATE | ZIP_EXCL, &errorp);
+		}
+	}
 	if (ods == NULL) {
 		fclose(tmp);
 		return ERR_ZIPCREATE;
 	}
-	/* empty file */
-	do { } while (zip_delete(ods, 0) == 0);
 	struct zip_source *s;
 	s = zip_source_filep(ods, tmp, 0 /* start offset */, -1 /* all file */);
 	if (zip_add(ods, "content.xml", s) < 0) {
@@ -831,26 +830,7 @@ SzbExtractor::ExtractToXMLWriter(xmlTextWriterPtr writer, const std::wstring& en
     CHECK_RC;
     
     /* set time format */
-    const char *format;
-    switch (period_type) {
-	case PT_CUSTOM :
-	case PT_MIN10 :
-	case PT_HOUR :
-	case PT_HOUR8 :
-	    format = "%Y-%m-%d %H:%M";
-	    break;
-	case PT_DAY :
-	    format = "%Y-%m-%d";
-	    break;
-	case PT_WEEK :
-	    format = "Tydzieñ %W";
-	    break;
-	case PT_MONTH :
-	    format = "%B";
-	    break;
-	default:
-	    assert (0);
-    }
+    const char *format = SetFormat(period_type);
     /* buffer for date */
 #define BUF_SIZE 100
     char datebuf[BUF_SIZE];

@@ -97,6 +97,12 @@ class SzbExtractor {
 		void SetPeriod(SZARP_PROBE_TYPE period_type, 
 				time_t start, time_t end, 
 				int custom_period = 0);
+		/**
+		 * Return date format string for given period type.
+		 * @param period_type type of period
+		 * @return date format string
+		 */
+		const char *SetFormat(int period_type);
 		/** Set period of time to given month.
 		 * @param period_type @see SetPeriod
 		 * @param year year, must be greater then 1970
