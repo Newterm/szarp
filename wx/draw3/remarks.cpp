@@ -41,6 +41,8 @@
 #include "remarks.h"
 #include "version.h"
 #include "drawtb.h"
+#include "drawfrm.h"
+#include "drawpnl.h"
 #include "draw.h"
 #include "errfrm.h"
 
@@ -1389,12 +1391,12 @@ void RemarkViewDialog::SetEditingMode(bool editing_mode) {
 	XRCCTRL(*this, "RemarkTitleTextCtrl", wxTextCtrl)->SetEditable(editing_mode);
 	XRCCTRL(*this, "RemarkContentTextCtrl", wxTextCtrl)->SetEditable(editing_mode);
 
-	GetSizer()->Show(FindWindowById(wxID_CLOSE), !editing_mode, true);
-	//GetSizer()->Show(FindWindowById(wxID_ADD)->GetSizer(), editing_mode, true);
-	//GetSizer()->Show(FindWindowById(wxID_CANCEL)->GetSizer(), editing_mode, true);
+	GetSizer()->Show(FindWindowById(wxID_CLOSE)->GetContainingSizer(), !editing_mode, true);
 
-	GetSizer()->Show(FindWindowById(wxID_ADD), editing_mode, true);
-	GetSizer()->Show(FindWindowById(wxID_CANCEL), editing_mode, true);
+	GetSizer()->Show(FindWindowById(wxID_ADD)->GetContainingSizer(), editing_mode, true);
+
+	GetSizer()->Show(FindWindowById(XRCID("REMARK_REFERRING_TO_LABEL"))->GetContainingSizer(), editing_mode, true);
+
 	GetSizer()->Show(FindWindowById(XRCID("AuthorStaticCtrl"))->GetContainingSizer(), !editing_mode, true);
 
 	GetSizer()->Layout();
@@ -1407,11 +1409,7 @@ int RemarkViewDialog::NewRemark(wxString prefix, wxString db_name, wxString set_
 	m_time = time;
 
 	XRCCTRL(*this, "BaseNameStaticCtrl", wxStaticText)->SetLabel(db_name);
-	if (!set_name.empty())
-		XRCCTRL(*this, "SetStaticCtrl", wxStaticText)->SetLabel(set_name);
-	else
-		GetSizer()->Show(XRCCTRL(*this, "SetStaticCtrl", wxStaticText)->GetContainingSizer(), false, true);
-
+	XRCCTRL(*this, "SetStaticCtrl", wxStaticText)->SetLabel(set_name);
 	XRCCTRL(*this, "TimeStaticCtrl", wxStaticText)->SetLabel(FormatTime(time, PERIOD_T_DAY));
 
 	SetEditingMode(true);
@@ -1420,7 +1418,7 @@ int RemarkViewDialog::NewRemark(wxString prefix, wxString db_name, wxString set_
 
 }
 
-void RemarkViewDialog::ShowRemark(wxString db_name,
+int RemarkViewDialog::ShowRemark(wxString db_name,
 			wxString set_name,
 			wxString author,
 			wxDateTime time,
@@ -1442,8 +1440,7 @@ void RemarkViewDialog::ShowRemark(wxString db_name,
 
 	SetEditingMode(false);
 
-	ShowModal();
-	return;
+	return ShowModal();
 }
 
 void RemarkViewDialog::OnCloseButton(wxCommandEvent &event) {
@@ -1452,6 +1449,10 @@ void RemarkViewDialog::OnCloseButton(wxCommandEvent &event) {
 
 void RemarkViewDialog::OnCancelButton(wxCommandEvent &event) {
 	EndModal(wxID_CANCEL);
+}
+
+void RemarkViewDialog::OnGoToButton(wxCommandEvent &event) {
+	EndModal(wxID_FIND);
 }
 
 wxString RemarkViewDialog::GetRemarkTitle() {
@@ -1469,7 +1470,9 @@ void RemarkViewDialog::OnAddButton(wxCommandEvent &event) {
 	Remark r;
 	r.SetPrefix(m_prefix.c_str());
 	r.SetTime(m_time.GetTicks());
-	r.SetSet(m_set_name.c_str());
+	if (XRCCTRL(*this, "CURRENT_WINDOW_RADIO", wxRadioButton)->GetValue())
+		r.SetSet(m_set_name.c_str());
+
 	r.SetTitle(GetRemarkTitle().c_str());
 	r.SetContent(GetRemarkContent().c_str());
 
@@ -1495,11 +1498,14 @@ void RemarkViewDialog::RemarkSent(bool ok, wxString error) {
 BEGIN_EVENT_TABLE(RemarkViewDialog, wxDialog)
 	EVT_BUTTON(wxID_CLOSE, RemarkViewDialog::OnCloseButton)
 	EVT_BUTTON(wxID_CANCEL, RemarkViewDialog::OnCancelButton)
+	EVT_BUTTON(XRCID("GOTO_BUTTON"), RemarkViewDialog::OnGoToButton)
 	EVT_BUTTON(wxID_ADD, RemarkViewDialog::OnAddButton)
 END_EVENT_TABLE()
 
-RemarksListDialog::RemarksListDialog(wxWindow* parent, RemarksHandler *remarks_handler) {
+RemarksListDialog::RemarksListDialog(DrawFrame* parent, RemarksHandler *remarks_handler) {
 	m_remarks_handler = remarks_handler;
+
+	m_draw_frame = parent;
 
 	bool loaded = wxXmlResource::Get()->LoadDialog(this, parent, _T("RemarksListDialog"));
 	assert(loaded);
@@ -1549,13 +1555,18 @@ void RemarksListDialog::ShowRemark(int index) {
 	Remark& r = m_displayed_remarks.at(index);
 
 	RemarkViewDialog* d = new RemarkViewDialog(this, m_remarks_handler);
-	d->ShowRemark(r.GetBaseName(),
+	int ret = d->ShowRemark(r.GetBaseName(),
 			r.GetSet(),
 			r.GetAuthor(),
 			r.GetTime(),
 			r.GetTitle(),
 			r.GetContent());
 	d->Destroy();
+
+	if (ret == wxID_FIND) {
+		m_draw_frame->GetCurrentPanel()->Switch(r.GetSet(), r.GetPrefix(), r.GetTime());
+		EndModal(wxID_CLOSE);
+	}
 }
 
 
@@ -1586,10 +1597,10 @@ BEGIN_EVENT_TABLE(RemarksListDialog, wxDialog)
 END_EVENT_TABLE()
 
 
-RemarksFetcher::RemarksFetcher(RemarksHandler *handler, DrawToolBar* tool_bar, wxWindow *top_level_window) {
+RemarksFetcher::RemarksFetcher(RemarksHandler *handler, DrawToolBar* tool_bar, DrawFrame *draw_frame) {
 	m_remarks_handler = handler;
 	m_tool_bar = tool_bar;
-	m_toplevel_window = top_level_window;
+	m_draw_frame = draw_frame;
 	m_awaiting_for_whole_base = false;
 
 	tool_bar->PushEventHandler(this);
@@ -1647,8 +1658,6 @@ void RemarksFetcher::RemarksReceived(std::vector<Remark>& remarks) {
 
 	wxString prefix = di->GetBasePrefix();
 	wxString set = di->GetSetName();
-	wxString base_name = di->GetDrawsSets()->GetID();
-
 	std::vector<wxDateTime> remarks_times;
 
 	for (std::vector<Remark>::iterator i = remarks.begin(); i != remarks.end(); i++) {
@@ -1663,7 +1672,6 @@ void RemarksFetcher::RemarksReceived(std::vector<Remark>& remarks) {
 			continue;
 
 		remarks_times.push_back(rt);
-		i->SetBaseName(base_name.c_str());
 		m_remarks[i->GetId()] = *i;
 
 	}
@@ -1674,18 +1682,27 @@ void RemarksFetcher::RemarksReceived(std::vector<Remark>& remarks) {
 }
 
 void RemarksFetcher::OnRemarksResponse(RemarksResponseEvent &e) {
+	std::vector<Remark>& remarks = e.GetRemarks();
+
+	wxString base_name = m_current_draw->GetDrawInfo()->GetDrawsSets()->GetID();
+
+	for (std::vector<Remark>::iterator i = remarks.begin();
+			i != remarks.end();
+			i++)
+		i->SetBaseName(base_name.c_str());
+
 	if (e.GetResponseType() == RemarksResponseEvent::BASE_RESPONSE) {
 		if (!m_awaiting_for_whole_base)
 			return;
 		m_awaiting_for_whole_base = false;
 
 
-		RemarksListDialog *d = new RemarksListDialog(m_toplevel_window, m_remarks_handler);
-		d->SetViewedRemarks(e.GetRemarks());
+		RemarksListDialog *d = new RemarksListDialog(m_draw_frame, m_remarks_handler);
+		d->SetViewedRemarks(remarks);
 		d->ShowModal();
 		d->Destroy();
 	} else 
-		RemarksReceived(e.GetRemarks());
+		RemarksReceived(remarks);
 }
 
 void RemarksFetcher::ScreenMoved(Draw* draw, const wxDateTime &start_time) {
@@ -1723,7 +1740,7 @@ void RemarksFetcher::ShowRemarks(const wxDateTime& from_time, const wxDateTime &
 			remarks.push_back(i->second);
 	}
 
-	RemarksListDialog *d = new RemarksListDialog(m_toplevel_window, m_remarks_handler);
+	RemarksListDialog *d = new RemarksListDialog(m_draw_frame, m_remarks_handler);
 	d->SetViewedRemarks(remarks);
 	d->ShowModal();
 	d->Destroy();
@@ -1731,11 +1748,15 @@ void RemarksFetcher::ShowRemarks(const wxDateTime& from_time, const wxDateTime &
 
 }
 
-void RemarksFetcher::OnShowRemarks(wxCommandEvent &e) {
+void RemarksFetcher::ShowRemarks() {
 	if (!m_remarks_handler->Configured())
 		return;
 	m_awaiting_for_whole_base = true;
 	m_remarks_handler->GetStorage()->GetAllRemarks(m_current_draw->GetDrawInfo()->GetBasePrefix(), this);
+}
+
+void RemarksFetcher::OnShowRemarks(wxCommandEvent &e) {
+	ShowRemarks();
 }
 
 void RemarksFetcher::DrawInfoChanged(Draw *d) {

@@ -123,6 +123,14 @@ public:
 	/**Delivers response to requesting param*/
 	virtual void DatabaseResponse(DatabaseQuery *query);
 
+	/**Switches window
+	 * @param set set name to switch to
+	 * @param prefix configuration prefix to switch to
+	 * @param time to move to
+	 * @param pt period to switch*/
+	bool Switch(wxString set, wxString prefix, time_t time, PeriodType pt, int selected_draw);
+
+
 	/**Queryies database*/
 	void QueryDatabase(DatabaseQuery *query);
 
@@ -360,13 +368,6 @@ protected:
 	void MoveCursorBegin();
 
 	void MoveCursorEnd();
-
-	/**Switches window
-	 * @param set set name to switch to
-	 * @param prefix configuration prefix to switch to
-	 * @param time to move to
-	 * @param pt period to switch*/
-	bool Switch(wxString set, wxString prefix, time_t time, PeriodType pt, int selected_draw);
 
 	/**This metod intentionally does nothing. Common wisdom says that this reduces flickering during repaint...*/
 	void OnEraseBackground(wxEraseEvent& WXUNUSED(event));

@@ -197,6 +197,7 @@ public:
 
 	~DrawFrame();
 
+	DrawPanel *GetCurrentPanel();
 private:
 	/** Help system. */
 	szHelpController *m_help; 

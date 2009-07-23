@@ -346,7 +346,7 @@ void BackgroundView::DrawRemarksFlags(wxDC *dc) {
 	for (size_t i = 0; i < m_draw->GetValuesTable().size(); i++)
 		if (vt.at(i).m_remark) { 
 			int x = GetX(i);
-			dc->DrawBitmap(m_remark_flag_bitmap, x, m_topmargin - 7, true);
+			dc->DrawBitmap(m_remark_flag_bitmap, x - m_remark_flag_bitmap.GetWidth() / 2, m_topmargin - 7, true);
 		}
 }
 
@@ -619,11 +619,9 @@ int BackgroundView::GetRemarkClickedIndex(int x, int y) {
 		if (vt.at(i).m_remark) { 
 			int rx = GetX(i);
 
-			if (rx > x)
-				break;
-			int d = x - rx;
+			int d = std::abs(x - rx);
 
-			if (d < m_remark_flag_bitmap.GetWidth()) {	//width of flag bitmap
+			if (d < m_remark_flag_bitmap.GetWidth() / 2) {	//width of flag bitmap
 				if (sri == -1 || sdx > d) {
 					sri = i;
 					sdx = d;

@@ -162,7 +162,7 @@ bool decode_url(wxString surl, wxString& prefix, wxString &window, PeriodType& p
 #else
 			rtime == std::numeric_limits<time_t>::max()
 #endif
-			|| dt.GetYear() > 1980 || dt.GetYear() > 2037)
+			|| dt.GetYear() < 1980 || dt.GetYear() > 2037)
 		time = wxDateTime::Now().GetTicks();
 	else
 		time = rtime;

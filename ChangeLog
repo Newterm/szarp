@@ -1,5 +1,16 @@
 $Id$
 
+2009-07-23	Darek Marcinkiewcz <reksio@praterm.pl>
+	* wx/draw3: remarks flag (star actually) is centered above points
+	with remarks; tooltip for remarks icon on the toolbar; 'show remarks'
+	menu item added (yields the same result as clicking on remarks toolbar
+	icon); keyboard shortcuts for all menu items that have something to
+	do with remarks; dialog box for choosing remark type removed, now
+	selection of remark type is done in dialog for editing remark;
+	new button in remarks preview dialog - 'go to', when clicked draw3
+	goes to the moment in time (and set) this remarks refers to; better
+	looking triangle indicating remarks presence; translation update
+	and maybe 2 or 3 other small things I already managed to forget about
 2009-07-23	Pawel Palucha <pawel@praterm.com.pl>
 	* wx/draw/drawview.cpp: fixed 'clickability' of remark icons.
 	* wx/draw3/bitmaps/remark.xpm, remark_flag.xpm: (experimental) new 

@@ -241,6 +241,10 @@ class DrawPanel : public wxPanel, public ConfigObserver {
 
 	void GetDisplayedDrawInfo(DrawInfo **di, wxDateTime& time);
 
+	bool Switch(wxString set, wxString prefix, time_t time, PeriodType pt = PERIOD_T_OTHER, int selected_draw = -1);
+
+	void ShowRemarks();
+
 	protected:
 	/** @see DrawFrame */
 	DrawFrame *df;

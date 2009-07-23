@@ -45,6 +45,7 @@
 #include "drawobs.h"
 
 class RemarkViewDialog;
+class DrawFrame;
 
 class Remark {
 	boost::shared_ptr<xmlDoc> m_doc;
@@ -391,7 +392,7 @@ public:
 
 	wxString GetRemarkContent();
 
-	void ShowRemark(wxString db_name,
+	int ShowRemark(wxString db_name,
 			wxString set_name,
 			wxString author,
 			wxDateTime time,
@@ -406,6 +407,8 @@ public:
 
 	void OnCloseButton(wxCommandEvent &event);
 
+	void OnGoToButton(wxCommandEvent &event);
+
 	DECLARE_EVENT_TABLE()
 };
 
@@ -418,8 +421,10 @@ class RemarksListDialog : public wxDialog {
 	std::vector<Remark> m_displayed_remarks;
 
 	void ShowRemark(int index);
+
+	DrawFrame* m_draw_frame;
 public:
-	RemarksListDialog(wxWindow* parent, RemarksHandler *handler);
+	RemarksListDialog(DrawFrame* parent, RemarksHandler *handler);
 
 	void SetViewedRemarks(std::vector<Remark> &remarks);
 
@@ -441,7 +446,7 @@ class RemarksFetcher : public wxEvtHandler, public DrawObserver {
 
 	DrawToolBar *m_tool_bar;
 
-	wxWindow *m_toplevel_window;
+	DrawFrame *m_draw_frame;
 
 	RemarksHandler *m_remarks_handler;
 
@@ -452,7 +457,7 @@ class RemarksFetcher : public wxEvtHandler, public DrawObserver {
 	void Fetch(Draw *d);
 
 public:
-	RemarksFetcher(RemarksHandler *remarks_handler, DrawToolBar *tool_bar, wxWindow* top_level_window);
+	RemarksFetcher(RemarksHandler *remarks_handler, DrawToolBar *tool_bar, DrawFrame* m_draw_frame);
 
 	virtual void ScreenMoved(Draw* draw, const wxDateTime &start_time);
 
@@ -461,6 +466,8 @@ public:
 	virtual void Attach(Draw *d);
 
 	virtual void Detach(Draw *d);
+
+	void ShowRemarks();
 
 	void OnShowRemarks(wxCommandEvent &e);
 

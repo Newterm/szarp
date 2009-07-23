@@ -686,25 +686,20 @@ void GLGraphs::DrawRemarksTriangles() {
 	Draw *d = m_draws_wdg->GetSelectedDraw();
 	const Draw::VT& vt = d->GetValuesTable();
 
-	glBindTexture(GL_TEXTURE_2D, _line1_tex);
-
 	glBegin(GL_TRIANGLES);
 
-	float white[] = { 1, 1, 1, 1};
-	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white); glMaterialfv(GL_FRONT, GL_SPECULAR, white);
+	float white[] = { 1, 0, 0, 1};
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, white);
 
 	for (size_t i = 0; i < vt.size(); i++)
 		if (vt.at(i).m_remark) { 
 			int x = GetX(i, vt.size());
-			glTexCoord2f(.5, 1);
 			glVertex3f(x, m_size.GetHeight() - m_screen_margins.topmargin, 0);
-			glTexCoord2f(1, 0);
-			glVertex3f(x + 5, m_size.GetHeight() - m_screen_margins.topmargin + 10, 0);
-			glTexCoord2f(0, 0);
-			glVertex3f(x - 5, m_size.GetHeight() - m_screen_margins.topmargin + 10, 0);
+			glVertex3f(x - 5, m_size.GetHeight() - m_screen_margins.topmargin + 5, 0);
+			glVertex3f(x + 5, m_size.GetHeight() - m_screen_margins.topmargin + 5, 0);
 		}
 	glEnd();
-	glBindTexture(GL_TEXTURE_2D, 0);
 }
 	
 void GLGraphs::OnPaint(wxPaintEvent & WXUNUSED(event))

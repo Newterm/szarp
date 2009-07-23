@@ -1266,7 +1266,7 @@ wxDragResult DrawsWidget::SetSetInfo(wxString window,
 	return Switch(window, prefix, time, pt,-1) ? def : wxDragError;
 }
 
-bool DrawsWidget::Switch(wxString window,
+bool DrawsWidget::Switch(wxString sset,
 		wxString prefix, 
 		time_t time,
 		PeriodType pt,
@@ -1277,33 +1277,58 @@ bool DrawsWidget::Switch(wxString window,
 		return false;
 
 	DrawSet *set = NULL;
-	for (DrawSetsHash::iterator i = ds->GetDrawsSets().begin();
-			i != ds->GetDrawsSets().end();
-			i++)
-		if (i->second->GetName() == window) {
-			set = i->second;
-			break;
-		}
-	if (set == NULL)
-		return false;
 
-	m_switch_date = time;
-	m_switch_period = pt;
-	m_switch_selected_draw = selected_draw;
+	if (!sset.IsEmpty()) for (DrawSetsHash::iterator i = ds->GetDrawsSets().begin();
+				i != ds->GetDrawsSets().end();
+				i++)
+			if (i->second->GetName() == sset) {
+				set = i->second;
+				break;
+			}
 
-	m_selset->SelectSet(ds->GetID(), set);
-	m_timewdg->Select(pt, false);
+	DrawSet *cset = m_selset->GetSelected();
 
-	wxWindow *parent = m_parent;
-	DrawFrame *frame = NULL;
-	while (((frame = dynamic_cast<DrawFrame*>(parent)) == NULL) && parent != NULL)
-		parent = parent->GetParent();
-	assert(frame);
-	frame->SetTitle(ds->GetID(), ds->GetPrefix());
-	m_parent->SetConfigName(ds->GetID());
-	m_graphs->Refresh();
+	if (sset.IsEmpty() || set == cset) {
+		if (cset == NULL)
+			return false;
 
-	return true;
+		StopAllDraws();
+
+		if (pt != PERIOD_T_OTHER) {
+			SwitchToPeriod(pt, wxDateTime(time));
+			if (selected_draw >= 0)
+				Select(selected_draw, true, wxDateTime(time));
+		} else if (selected_draw >= 0)
+			Select(selected_draw, true, wxDateTime(time));
+		else if (m_selected_draw >= 0)
+			m_draws[m_selected_draw]->Select(wxDateTime(time));
+
+		StartAllDraws();
+
+		return true;
+
+	} else {
+
+		m_switch_date = wxDateTime(time);
+
+		m_switch_period = pt;
+
+		m_switch_selected_draw = selected_draw;
+
+		m_selset->SelectSet(ds->GetID(), set);
+		m_timewdg->Select(pt, false);
+
+		wxWindow *parent = m_parent;
+		DrawFrame *frame = NULL;
+		while (((frame = dynamic_cast<DrawFrame*>(parent)) == NULL) && parent != NULL)
+			parent = parent->GetParent();
+		assert(frame);
+		frame->SetTitle(ds->GetID(), ds->GetPrefix());
+		m_parent->SetConfigName(ds->GetID());
+		m_graphs->Refresh();
+
+		return true;
+	}
 
 }
 

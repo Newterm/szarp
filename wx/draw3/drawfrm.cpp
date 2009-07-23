@@ -534,7 +534,7 @@ bool DrawFrame::Destroy()
 }
 
 void DrawFrame::OnRemarks(wxCommandEvent &event) {
-	frame_manager->ShowRemarksFrame();
+	draw_panel->ShowRemarks();
 }
 
 void DrawFrame::OnFullScreen(wxCommandEvent &event) {
@@ -884,66 +884,41 @@ void DrawFrame::OnGraphsView(wxCommandEvent &e) {
 
 }
 
-class RemarkTypeDialog : public wxDialog {
-public:
-	RemarkTypeDialog(wxWindow *parent);
-	int GetSelection();
-};
-
-RemarkTypeDialog::RemarkTypeDialog(wxWindow *parent) {
-	bool loaded = wxXmlResource::Get()->LoadDialog(this, parent, _T("RemarkTypeDialog"));
-	assert(loaded);
-}
-
-int RemarkTypeDialog::GetSelection() {
-	return XRCCTRL(*this, "RadioBox", wxRadioBox)->GetSelection();
-}
-
 void DrawFrame::OnAddRemark(wxCommandEvent &event) {
 	if (!remarks_handler->Configured()) {
 		wxMessageBox(_("Remarks sending not configured, You should set username, password, and remarks server adddress"), _("Remarks not configured."), wxICON_HAND);
-	} else { 
-		RemarkViewDialog* d = new RemarkViewDialog(this, remarks_handler);
-
-		DrawInfo *di;
-		wxDateTime time;
-		draw_panel->GetDisplayedDrawInfo(&di, time);
-
-		RemarkTypeDialog dialog(this);
-
-		if (dialog.ShowModal() != wxID_OK)
-			return;
-
-		wxString set;
-		switch (dialog.GetSelection()) {
-			case 0:
-				set = di->GetSetName();
-				break;
-			case 1:
-				set = wxEmptyString;
-				break;
-			default:
-				assert(false);
-		}
-
-		d->NewRemark(di->GetBasePrefix(),
-				config_manager->GetConfigTitles()[di->GetBasePrefix()],
-				set,
-				time);
-
-		delete d;
-
+		OnConfigureRemarks(event);
 	}
+
+	if (!remarks_handler->Configured())
+		return;
+
+	RemarkViewDialog* d = new RemarkViewDialog(this, remarks_handler);
+
+	DrawInfo *di;
+	wxDateTime time;
+	draw_panel->GetDisplayedDrawInfo(&di, time);
+
+	d->NewRemark(di->GetBasePrefix(),
+			config_manager->GetConfigTitles()[di->GetBasePrefix()],
+			di->GetSetName(),
+			time);
+
+	delete d;
 
 }
 
 void DrawFrame::OnFetchRemarks(wxCommandEvent &event) {
 	if (!remarks_handler->Configured()) {
 		wxMessageBox(_("Remarks sending not configured, You should set username, password, and remarks server adddress"), _("Remarks not configured."), wxICON_HAND);
-	} else {
-		RemarksConnection* connection = remarks_handler->GetConnection();
-		connection->FetchNewRemarks();
+		OnConfigureRemarks(event);
 	}
+
+	if (!remarks_handler->Configured())
+		return;
+
+	RemarksConnection* connection = remarks_handler->GetConnection();
+	connection->FetchNewRemarks();
 }
 
 class RemarksConfigurationDialog : public wxDialog {
@@ -1131,6 +1106,11 @@ void DrawFrame::OnLanguageChangeMenuItem(wxCommandEvent &event) {
 
 }
 
+DrawPanel* DrawFrame::GetCurrentPanel() {
+	return draw_panel;
+}
+
+
 /**
  * IMPORTANT: Declare Events which are share by DrawMenuBar and DrawToolBar
  * especialy when we started use more than one bases
@@ -1165,7 +1145,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("Pie"), DrawFrame::OnPieWin)
     EVT_MENU(XRCID("Ratio"), DrawFrame::OnRelWin)
     EVT_MENU(XRCID("XYGraph"), DrawFrame::OnXYDialog)
-    EVT_MENU(XRCID("Remarks"), DrawFrame::OnRemarks)
+    EVT_MENU(XRCID("ShowRemarks"), DrawFrame::OnRemarks)
     EVT_MENU(XRCID("StatsWin"), DrawFrame::OnStatDialog)
     EVT_MENU(XRCID("FullScreen"), DrawFrame::OnFullScreen)
     EVT_MENU(XRCID("SplitCursor"), DrawFrame::OnSplitCursor)

@@ -386,7 +386,7 @@ void DrawPanel::CreateChildren(DrawSet *set, PeriodType pt, time_t time, int sel
 
 	tb = new DrawToolBar(this);
 
-	rmf = new RemarksFetcher(rh, tb, this);
+	rmf = new RemarksFetcher(rh, tb, df);
 
 	dw = new DrawsWidget(this, cfg, db_mgr, dg, smw, pw, rw, rmf, -1, iw, pt, time, selected_draw);
 
@@ -1004,6 +1004,11 @@ PeriodType DrawPanel::GetPeriod() {
 	return (PeriodType)tw->GetSelection();
 }
 
+void DrawPanel::ShowRemarks() {
+	rmf->ShowRemarks();
+}
+
+
 PeriodType DrawPanel::SetPeriod(PeriodType pt) {
 	switch (pt) {
 		case PERIOD_T_YEAR:
@@ -1057,6 +1062,10 @@ void DrawPanel::SetActive(bool active) {
 			pw->Show(false);
 	}
 
+}
+
+bool DrawPanel::Switch(wxString set, wxString prefix, time_t time, PeriodType pt, int selected_draw) {
+	return dw->Switch(set, prefix, time, pt, selected_draw);
 }
 
 wxString

@@ -83,7 +83,7 @@ DrawToolBar::DrawToolBar(wxWindow *parent) :
 		lang_icon = flag_fr;
 
 	AddTool(drawTB_LANGUAGE, _T(""), lang_icon, _("Language"));
-	AddTool(drawTB_REMARK, remark_xpm, wxNullBitmap, false, NULL, _T(""), _("Remarks"));
+	AddTool(drawTB_REMARK, _T(""), remark_xpm, _("Remarks"));
 	AddTool(drawTB_EXIT, _T(""),exit_xpm, _("Quit"));
 	Realize();
 }
