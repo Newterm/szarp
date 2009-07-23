@@ -1,6 +1,9 @@
 $Id$
 
 2009-07-23	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/raporter3/raporter.cc: fix - szServerDlg::GetServer returned
+	_T("Cancel") and raporter expected _("Cancel").
+2009-07-23	Pawel Palucha <pawel@praterm.com.pl>
 	* libSzarp2/szbextr/extractor.cc: fix - program hanged when ODS file
 	already existed - we are now deleting file instead of trying to empty
 	ZIP archive; output date format modified to include year number for

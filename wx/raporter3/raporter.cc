@@ -464,7 +464,7 @@ void szRaporter::OnOptFileDump(wxCommandEvent &ev)
 void szRaporter::OnOptServer(wxCommandEvent &ev)
 {
 	wxString server = szServerDlg::GetServer(m_server, _T("Raporter"), true );
-	if (server.IsEmpty() || !server.Cmp(_("Cancel")) || !server.Cmp(m_server)) {
+	if (server.IsEmpty() || !server.Cmp(_T("Cancel")) || !server.Cmp(m_server)) {
 		return;
 	}
 	if (m_running) {
