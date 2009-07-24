@@ -603,6 +603,14 @@ fi
 
 # Check for lua library
 no_lua=""
+AC_ARG_WITH([luajit], AC_HELP_STRING([--without-luajit], [do not try to use LuaJIT]),
+[
+ 	if test "$withval" = "no"; then
+		no_luajit="yes"
+	else
+		no_luajit=""
+	fi
+],)
 AC_ARG_WITH([lua], AC_HELP_STRING([--without-lua], [do not use lua]),
 [
 	if test "$withval" = "no" ; then
@@ -611,7 +619,14 @@ AC_ARG_WITH([lua], AC_HELP_STRING([--without-lua], [do not use lua]),
 		no_lua=""
 	fi
 ],)
-if test "$no_lua" != "yes" ; then
+if test "$no_luajit" != "yes"; then
+	no_luajit="yes"
+	PKG_CHECK_MODULES(LUA, luajit, no_luajit="no", [AC_MSG_RESULT([
+			LuaJIT not found on your system, will search for liblua
+								      ])
+	])
+fi
+if test "$no_lua" != "yes" -a "$no_luajit" != "no"; then
 	AC_PATH_LUA( [], [no_lua=yes] )
 		if test x$no_lua = xyes ; then
                 AC_MSG_WARN([
@@ -620,7 +635,6 @@ if test "$no_lua" != "yes" ; then
 		])
         fi
 fi
-
 if test "x$no_lua" = "xyes" ; then
         AC_DEFINE(NO_LUA, 1, [Define to 1 if lua is not available])
 fi
@@ -1111,7 +1125,11 @@ fi
 
 echo -n "Configured with lua:               "
 if test "$no_lua" != "yes" ; then
-        echo "yes"
+	if test "$no_luajit" != "yes"; then
+		echo "yes (using LuaJIT)"
+	else
+		echo "yes (not using LuaJIT)"
+	fi
 else
         echo "no"
 fi
