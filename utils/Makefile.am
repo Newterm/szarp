@@ -91,7 +91,8 @@ bin_SCRIPTS = \
               szppp-on \
               szredialer \
 	      szrsync \
-	      szbpush 
+	      szbpush \
+              remarks_server/remarks_server.py
 
 raporterdir = @prefix@/bin/
 raporter_PYTHON = raporter.py

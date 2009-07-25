@@ -48,7 +48,11 @@ class RemarkViewDialog;
 class DrawFrame;
 
 class Remark {
+public:
+	typedef std::pair<int, int> ID;
+private:
 	boost::shared_ptr<xmlDoc> m_doc;
+	ID m_id;
 public:
 	Remark(xmlDocPtr doc);
 	Remark();
@@ -68,7 +72,8 @@ public:
 	std::wstring GetAuthor();
 	time_t GetTime();
 
-	int GetId();
+	ID GetId();
+	void SetId(ID id);
 
 	xmlDocPtr GetXML();
 
@@ -218,6 +223,15 @@ public:
 
 DECLARE_EVENT_TYPE(REMARKSRESPONSE_EVENT, -1)
 
+class RemarksStoredEvent : public wxCommandEvent {
+	std::vector<Remark> m_remarks;
+public:
+	RemarksStoredEvent(std::vector<Remark> remarks);
+	std::vector<Remark>& GetRemarks();
+	wxEvent* Clone() const;
+};
+
+DECLARE_EVENT_TYPE(REMARKSSTORED_EVENT, -1)
 
 class RemarksStorage : public wxThread {
 	class Query {
@@ -299,8 +313,10 @@ class RemarksStorage : public wxThread {
 	void ExecuteStoreRemarks(std::vector<Remark>& remarks);
 	std::vector<Remark> ExecuteGetRemarks(const std::wstring& prefix, const std::wstring& set, const time_t& start_date, const time_t &end_date);
 	std::vector<Remark> ExecuteGetAllRemarks(const std::wstring& prefix);
+
+	RemarksHandler *m_remarks_handler;
 public:
-	RemarksStorage();
+	RemarksStorage(RemarksHandler *remarks_handler);
 
 	~RemarksStorage();
 
@@ -365,6 +381,8 @@ public:
 	RemarksStorage *GetStorage();
 
 	void OnTimer(wxTimerEvent &event);
+
+	void OnRemarksStored(RemarksStoredEvent &event);
 
 	DECLARE_EVENT_TABLE();
 };
@@ -442,7 +460,7 @@ public:
 class DrawToolBar;
 class DrawInfo;
 class RemarksFetcher : public wxEvtHandler, public DrawObserver {
-	std::map<int, Remark > m_remarks;
+	std::map<Remark::ID, Remark> m_remarks;
 
 	DrawToolBar *m_tool_bar;
 

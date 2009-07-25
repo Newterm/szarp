@@ -105,7 +105,7 @@ case "$1" in
 	fi
 
 	if [ x$REMARKS_SERVER = x1 ]; then
-	    twistd -f /opt/szarp/bin/remarks_server.py -p /var/run/remarks_server.pid -l /opt/szarp/logs/remarks_server.log
+	    twistd -y /opt/szarp/bin/remarks_server.py -p /var/run/remarks_server.pid -l /opt/szarp/logs/remarks_server.log
 	    log_end_msg $?
 	fi
 	;;

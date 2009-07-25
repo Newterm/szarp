@@ -35,6 +35,8 @@
 #include <wx/dir.h>
 #include <wx/config.h>
 
+#include "base64.h"
+
 #include "ids.h"
 #include "xmlutils.h"
 #include "cconv.h"
@@ -48,6 +50,28 @@
 
 #include "timeformat.h"
 
+DEFINE_EVENT_TYPE(REMARKSSTORED_EVENT)
+
+typedef void (wxEvtHandler::*RemarksStoredEventFunction)(RemarksStoredEvent&);
+
+#define EVT_REMARKS_STORED(id, fn) \
+    DECLARE_EVENT_TABLE_ENTRY( REMARKSSTORED_EVENT, id, -1, \
+    (wxObjectEventFunction) (wxEventFunction) (wxCommandEventFunction) \
+    wxStaticCastEvent( RemarksStoredEventFunction, & fn ), (wxObject *) NULL ),
+
+RemarksStoredEvent::RemarksStoredEvent(std::vector<Remark> remarks) : wxCommandEvent(REMARKSSTORED_EVENT, wxID_ANY) {
+	m_remarks = remarks;
+}
+
+std::vector<Remark>& RemarksStoredEvent::GetRemarks() {
+	return m_remarks;
+}
+
+wxEvent* RemarksStoredEvent::Clone() const {
+	return new RemarksStoredEvent(*this);
+}
+
+
 const int REMARKS_SERVER_PORT = 7998;
 
 RemarksHandler::RemarksHandler() {
@@ -59,6 +83,8 @@ RemarksHandler::RemarksHandler() {
 	config->Read(_T("REMARKS_SERVER_PASSWORD"), &m_password);
 	config->Read(_T("REMARKS_SERVER_AUTOFETCH"), &m_auto_fetch, false);
 
+	m_password = m_password;
+
 	bool address_ok = m_address.Hostname(m_server);
 	m_address.Service(REMARKS_SERVER_PORT);
 
@@ -68,7 +94,7 @@ RemarksHandler::RemarksHandler() {
 	if (m_auto_fetch)
 		m_timer.Start(1000 * 60 * 10);
 
-	m_storage = new RemarksStorage();
+	m_storage = new RemarksStorage(this);
 
 	m_connection = NULL;
 
@@ -97,11 +123,15 @@ void RemarksHandler::RemoveRemarkFetcher(RemarksFetcher* fetcher) {
 void RemarksHandler::NewRemarks(std::vector<Remark>& remarks) {
 	m_storage->StoreRemarks(remarks);
 
+}
+
+void RemarksHandler::OnRemarksStored(RemarksStoredEvent &event) {
+	std::vector<Remark>& remarks = event.GetRemarks();
+
 	for (std::vector<RemarksFetcher*>::iterator i = m_fetchers.begin();
 			i != m_fetchers.end();
 			i++)
 		(*i)->RemarksReceived(remarks);
-
 }
 
 void RemarksHandler::Start() {
@@ -134,14 +164,14 @@ RemarksStorage* RemarksHandler::GetStorage() {
 
 void RemarksHandler::GetConfiguration(wxString& username, wxString& password, wxString &server, bool& autofetch) {
 	username = m_username;
-	password = m_password;
+	password = SC::U2S(base64_decode(SC::S2U(m_password)));
 	server = m_server;
 	autofetch = m_auto_fetch;
 }
 
 void RemarksHandler::SetConfiguration(wxString username, wxString password, wxString server, bool autofetch) {
 	m_username = username;
-	m_password = password;
+	m_password = SC::U2S(base64_encode(SC::S2U(password)));
 	m_server = server;
 	bool ok = m_address.Hostname(server);
 
@@ -173,6 +203,7 @@ std::set<std::wstring> RemarksHandler::GetPrefixes() {
 
 BEGIN_EVENT_TABLE(RemarksHandler, wxEvtHandler) 
 	EVT_TIMER(wxID_ANY, RemarksHandler::OnTimer)
+	EVT_REMARKS_STORED(wxID_ANY, RemarksHandler::OnRemarksStored)
 END_EVENT_TABLE()
 
 DECLARE_EVENT_TYPE(XMLRPCREQUEST_EVENT, -1)
@@ -648,9 +679,23 @@ void RemarksConnection::HandleRemarksResponse(XMLRPC_REQUEST response) {
 	for (XMLRPC_VALUE i = XMLRPC_VectorRewind(XMLRPC_RequestGetData(response)); 
 			i; 
 			i = XMLRPC_VectorNext(XMLRPC_RequestGetData(response))) {
-		const char *doc_text = XMLRPC_GetValueBase64(i);
+
+		XMLRPC_VALUE j = XMLRPC_VectorRewind(i);
+
+		const char *doc_text = XMLRPC_GetValueBase64(j);
 		xmlDocPtr remark_doc = xmlParseDoc(BAD_CAST doc_text);
-		rms.push_back(Remark(remark_doc));
+
+		Remark r(remark_doc);
+
+		j = XMLRPC_VectorNext(i);
+		int server_id = XMLRPC_GetValueInt(j);
+
+		j = XMLRPC_VectorNext(i);
+		int id = XMLRPC_GetValueInt(j);
+
+		r.SetId(Remark::ID(server_id, id));
+
+		rms.push_back(r);
 	}
 
 	m_remarks_handler->NewRemarks(rms);
@@ -811,6 +856,7 @@ typedef void (wxEvtHandler::*RemarksResponseEventFunction)(RemarksResponseEvent&
     (wxObjectEventFunction) (wxEventFunction) (wxCommandEventFunction) \
     wxStaticCastEvent( RemarksResponseEventFunction, & fn ), (wxObject *) NULL ),
 
+
 RemarksResponseEvent::RemarksResponseEvent(std::vector<Remark> remarks, RESPONSE_TYPE response_type) : wxCommandEvent(REMARKSRESPONSE_EVENT, wxID_ANY) {
 	m_remarks = remarks;
 	m_response_type = response_type;
@@ -827,7 +873,6 @@ RemarksResponseEvent::RESPONSE_TYPE RemarksResponseEvent::GetResponseType() {
 wxEvent* RemarksResponseEvent::Clone() const {
 	return new RemarksResponseEvent(*this);
 }
-
 
 RemarksStorage::Query::Query(RemarksStorage* storage) : m_storage(storage) {}
 
@@ -870,12 +915,14 @@ void RemarksStorage::FinishQuery::Execute() {
 	m_storage->m_done = true;
 }
 
-RemarksStorage::RemarksStorage() :
+RemarksStorage::RemarksStorage(RemarksHandler *remarks_handler) :
 		m_sqlite(NULL),
 		m_fetch_remarks_query(NULL),
 		m_fetch_prefixes_query(NULL),
 		m_add_prefix_query(NULL),
 		m_fetch_all_remarks_query(NULL) {
+
+	m_remarks_handler = remarks_handler;
 
 	wxFileName szarp_dir(wxGetHomeDir(), wxEmptyString);
 	szarp_dir.AppendDir(_T(".szarp"));
@@ -925,7 +972,7 @@ void RemarksStorage::PrepareQuery() {
 
 	ret = sqlite3_prepare_v2(
 			m_sqlite, 
-			"SELECT content FROM remark "
+			"SELECT content, server_id, id FROM remark "
 			"	WHERE prefix_id = (SELECT id FROM prefix WHERE name = ?1) "
 			"		AND (set_name = ?2 OR set_name ISNULL) "
 			"		AND time >= ?3 AND time < ?4;",
@@ -936,8 +983,8 @@ void RemarksStorage::PrepareQuery() {
 
 	ret = sqlite3_prepare_v2(
 			m_sqlite, 
-			"INSERT INTO remark (id, prefix_id, set_name, time, content) "
-			"	VALUES (?1, (SELECT id FROM prefix WHERE name = ?2), ?3, ?4, ?5);",
+			"INSERT INTO remark (server_id, id, prefix_id, set_name, time, content) "
+			"	VALUES (?1, ?2, (SELECT id FROM prefix WHERE name = ?3), ?4, ?5, ?6);",
 			-1,
 			&m_store_remark_query,
 			NULL);
@@ -962,7 +1009,7 @@ void RemarksStorage::PrepareQuery() {
 	ret = sqlite3_prepare_v2(
 			m_sqlite, 
 			"SELECT" 
-			"	content "
+			"	content, server_id, id "
 			"FROM "
 			"	remark "
 			"WHERE "
@@ -987,11 +1034,13 @@ bool RemarksStorage::CreateTable() {
 				"name TEXT"
 				");",
 			"CREATE TABLE remark ("
-			"	id INTEGER PRIMARY KEY,"
+			"	id INTEGER,"
+			"	server_id INTEGER,"
 			"	prefix_id INTEGER,"
 			"	set_name TEXT,"
 			"	time INTEGER,"
-			"	content TEXT"
+			"	content TEXT,"
+			"	PRIMARY KEY (server_id, id)"
 			"	);",
 			"CREATE INDEX index1 ON remark (prefix_id);",
 			"CREATE INDEX index2 ON remark (set_name);",
@@ -1040,6 +1089,8 @@ void RemarksStorage::ExecuteStoreRemarks(std::vector<Remark>& remarks) {
 
 	wxMutexLocker lock(m_prefixes_mutex);
 
+	std::vector<Remark> added_remarks;
+
 	for (std::vector<Remark>::iterator i = remarks.begin();
 			i != remarks.end();
 			i++) {
@@ -1050,11 +1101,20 @@ void RemarksStorage::ExecuteStoreRemarks(std::vector<Remark>& remarks) {
 			m_prefixes.insert(prefix);
 		}
 
-		ret = sqlite3_bind_int(m_store_remark_query, 1, i->GetId());
+		Remark::ID id = i->GetId();
+
+		ret = sqlite3_bind_int(m_store_remark_query, 
+				1,
+				id.first);
 		assert(ret == SQLITE_OK);
-		
+
+		ret = sqlite3_bind_int(m_store_remark_query, 
+				2,
+				id.second);
+		assert(ret == SQLITE_OK);
+
 		ret = sqlite3_bind_text(m_store_remark_query, 
-				2, 
+				3, 
 				(const char*) SC::S2U(prefix).c_str(),
 				-1,
 				SQLITE_TRANSIENT);
@@ -1063,15 +1123,15 @@ void RemarksStorage::ExecuteStoreRemarks(std::vector<Remark>& remarks) {
 		std::wstring set = i->GetSet();
 		if (!set.empty()) {
 			ret = sqlite3_bind_text(m_store_remark_query, 
-					3, 
+					4, 
 					(const char*) SC::S2U(i->GetSet()).c_str(),
 					-1,
 					SQLITE_TRANSIENT);
 		} else {
-			ret = sqlite3_bind_null(m_store_remark_query, 3);
+			ret = sqlite3_bind_null(m_store_remark_query, 4);
 		}
 		assert(ret == SQLITE_OK);
-		ret = sqlite3_bind_int(m_store_remark_query, 4, i->GetTime());
+		ret = sqlite3_bind_int(m_store_remark_query, 5, i->GetTime());
 		assert(ret == SQLITE_OK);
 		
 		xmlChar *doc;
@@ -1079,7 +1139,7 @@ void RemarksStorage::ExecuteStoreRemarks(std::vector<Remark>& remarks) {
 		xmlDocDumpMemory(i->GetXML(), &doc, &len);
 
 		ret = sqlite3_bind_text(m_store_remark_query, 
-				5, 
+				6, 
 				(const char*) doc,
 				-1,
 				xmlFree);
@@ -1093,6 +1153,8 @@ void RemarksStorage::ExecuteStoreRemarks(std::vector<Remark>& remarks) {
 		sqlite3_clear_bindings(m_store_remark_query);
 	}
 
+	RemarksStoredEvent event(remarks);
+	wxPostEvent(m_remarks_handler, event);
 }
 
 void RemarksStorage::GetRemarks(const wxString& prefix,
@@ -1170,10 +1232,18 @@ std::vector<Remark> RemarksStorage::ExecuteGetRemarks(const std::wstring& prefix
 	while ((ret = sqlite3_step(m_fetch_remarks_query)) == SQLITE_ROW) {
 		const char* remark_doc = (const char*) sqlite3_column_text(m_fetch_remarks_query, 0);
 		assert(remark_doc);
-		//printf("from db:%s\n", remark_doc);
-		xmlDocPtr r = xmlParseMemory(remark_doc, strlen(remark_doc));
-		if (r)
-			v.push_back(Remark(r));
+
+		xmlDocPtr dr = xmlParseMemory(remark_doc, strlen(remark_doc));
+		assert(dr);
+
+		Remark r(dr);
+
+		int server_id = sqlite3_column_int(m_fetch_remarks_query, 1);
+		int id = sqlite3_column_int(m_fetch_remarks_query, 2);
+
+		r.SetId(Remark::ID(server_id, id));
+
+		v.push_back(r);
 	}
 
 	sqlite3_reset(m_fetch_remarks_query);
@@ -1197,9 +1267,18 @@ std::vector<Remark> RemarksStorage::ExecuteGetAllRemarks(const std::wstring& pre
 	while ((ret = sqlite3_step(m_fetch_all_remarks_query)) == SQLITE_ROW) {
 		const char* remark_doc = (const char*) sqlite3_column_text(m_fetch_all_remarks_query, 0);
 		assert(remark_doc);
-		xmlDocPtr r = xmlParseMemory(remark_doc, strlen(remark_doc));
-		if (r)
-			v.push_back(Remark(r));
+
+		xmlDocPtr dr = xmlParseMemory(remark_doc, strlen(remark_doc));
+		assert(dr);
+
+		Remark r(dr);
+
+		int server_id = sqlite3_column_int(m_fetch_all_remarks_query, 1);
+		int id = sqlite3_column_int(m_fetch_all_remarks_query, 2);
+
+		r.SetId(Remark::ID(server_id, id));
+
+		v.push_back(r);
 	}
 
 	sqlite3_reset(m_fetch_all_remarks_query);
@@ -1245,10 +1324,13 @@ Remark::Remark() {
 
 	m_doc->children = xmlNewDocNode(m_doc.get(), NULL, BAD_CAST "remark", NULL);
 	xmlNewChild(m_doc->children, NULL, BAD_CAST "content", NULL);
+
+	m_id = ID(-1, -1);
 }
 
 Remark::Remark(xmlDocPtr doc) {
 	m_doc = boost::shared_ptr<xmlDoc>(doc, xmlFreeDoc);
+	m_id = ID(-1, -1);
 }
 
 xmlDocPtr Remark::GetXML() {
@@ -1303,6 +1385,10 @@ void Remark::SetTime(time_t time) {
 	xmlSetProp(m_doc->children, BAD_CAST "time", SC::S2U(ss.str()).c_str());
 }
 
+void Remark::SetId(Remark::ID id) {
+	m_id = id;
+}
+
 namespace {
 std::wstring get_property(xmlDocPtr doc, const char* prop) {
 	xmlChar* pv = xmlGetProp(doc->children, BAD_CAST prop);
@@ -1334,12 +1420,8 @@ std::wstring Remark::GetAuthor() {
 	return get_property(m_doc.get(), "author");
 }
 
-int Remark::GetId() {
-	int id = 0;
-	std::wstringstream oss(get_property(m_doc.get(), "id"));
-
-	oss >> id;
-	return id;
+Remark::ID Remark::GetId() {
+	return m_id;
 }
 
 std::wstring Remark::GetContent() {
@@ -1711,8 +1793,8 @@ void RemarksFetcher::ScreenMoved(Draw* draw, const wxDateTime &start_time) {
 
 	wxDateTime end_time = draw->GetTimeOfIndex(draw->GetValuesTable().size());
 
-	std::vector<int> to_remove;
-	for (std::map<int, Remark>::iterator i = m_remarks.begin();
+	std::vector<Remark::ID> to_remove;
+	for (std::map<Remark::ID, Remark>::iterator i = m_remarks.begin();
 			i != m_remarks.end();
 			i++) {
 		wxDateTime rt = i->second.GetTime();
@@ -1721,7 +1803,7 @@ void RemarksFetcher::ScreenMoved(Draw* draw, const wxDateTime &start_time) {
 
 	}
 
-	for (std::vector<int>::iterator i = to_remove.begin();
+	for (std::vector<Remark::ID>::iterator i = to_remove.begin();
 			i != to_remove.end();
 			i++)
 		m_remarks.erase(*i);
@@ -1732,7 +1814,7 @@ void RemarksFetcher::ScreenMoved(Draw* draw, const wxDateTime &start_time) {
 void RemarksFetcher::ShowRemarks(const wxDateTime& from_time, const wxDateTime &to_time) {
 	std::vector<Remark> remarks;
 
-	for (std::map<int, Remark>::iterator i = m_remarks.begin();
+	for (std::map<Remark::ID, Remark>::iterator i = m_remarks.begin();
 			i != m_remarks.end();
 			i++) {
 		wxDateTime dt = i->second.GetTime();

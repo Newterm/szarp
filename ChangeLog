@@ -1,5 +1,15 @@
 $Id$
 
+2009-07-25	Darek Marcinkiewcz <reksio@praterm.pl>
+	* libSzarp2: routines for base64 coding/decoding
+	* utils/remarks_server: adaptation to changed schema of remarks
+	database, intent of schema change is to ease (potential) cooperation
+	of multiple remarks servers
+	* wx/draw3: remarks password obfuscation by encoding it in base64,
+	adaptation to new schema of remarks database
+	* resources/parstrt_TEMPLATE: fix in command line arguments for twistd
+	* utils/Makefile.am: installation of remarks_server.py
+	* debian/packs.file: remarks_server.py to szap-daemons package
 2009-07-24	Pawel Palucha <pawel@praterm.com.pl>
 	* configure.in: using LuaJIT instead of Lua, if available
 	* debian/control: addred libluajit-dev to Build-Depends.

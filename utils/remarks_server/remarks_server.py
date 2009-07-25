@@ -170,8 +170,6 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
 			return defer
 
 		def get_next_remark_id_callback(id):
-			remark_node.attrib['id'] = id 
-
 			defer = self.service.db.put_remark_into_db_query(etree.tostring(tree),
 						id,
 						remark_node.attrib['prefix'])
@@ -188,17 +186,32 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
 		self.check_token(token)
 
 		defer = self.service.db.get_remarks_query(xmlrpc_time.value, prefixes, self.user_id)
-		defer.addCallback(lambda remarks : [ xmlrpc.Binary(remark) for remark in remarks] ) 
+		defer.addCallback(lambda rows : [ (xmlrpc.Binary(row[0]), row[1], row[2]) for row in rows] ) 
 		return defer
 
 
 class Database:
 
 	def __init__(self, config):
+		database = config.get("database", "name")
+		user = config.get("database", "user")
+		password = config.get("database", "password")
+		server_name = config.get("database", "server_name")
+
 		self.dbpool = adbapi.ConnectionPool("psycopg2",
-				database=config.get("database", "name"),
-				user=config.get("database", "user"),
-				password=config.get("database", "password"))
+				database=database,
+				user=user,
+				password=password)
+
+		connection = psycopg2.connect(database=database, user=user, password=password)
+		cursor = connection.cursor()
+
+		cursor.execute("SELECT id from server where name = %(name)s", { 'name' : server_name })
+		self.server_id = cursor.fetchall()[0][0]
+
+		cursor.close()
+		connection.close()
+		
 
 	def login_query(self, user, password):
 		def callback(result):
@@ -224,7 +237,7 @@ class Database:
 	
 		defer = self.dbpool.runQuery("""
 			SELECT 
-				content
+				content, server_id, id
 			FROM
 				remark
 			WHERE 
@@ -265,7 +278,6 @@ class Database:
 					)""",
 			{ 't' : time, 'id' : id, 'prefixes' : prefixes })
 
-		defer.addCallback(lambda result : [ row[0] for row in result ])
 		return defer
 
 	def can_post_remark_query(self, prefix, user_id):
@@ -290,13 +302,14 @@ class Database:
 		defer = self.dbpool.runOperation("""
 			INSERT INTO 
 				remark 
-					(content, post_time, id, prefix_id)
+					(content, post_time, id, prefix_id, server_id)
 				values
-					(%(content)s, %(time)s, %(id)s, (select id from prefix where prefix = %(prefix)s))""",
+					(%(content)s, %(time)s, %(id)s, (select id from prefix where prefix = %(prefix)s), %(server_id)s)""",
 				{ 'content' : remark,
 					'time' : psycopg2.TimestampFromTicks(time.time()),
 					'id': id,
-					'prefix' : prefix })
+					'prefix' : prefix,
+					'server_id' : self.server_id})
 
 		defer.addCallback(lambda x: True)
 		return defer
