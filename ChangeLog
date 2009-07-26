@@ -1,5 +1,8 @@
 $Id$
 
+2009-07-26	Darek Marcinkiewcz <reksio@praterm.pl>
+	* libSzarp2/misc/base64.cc: windows build fix - mingw does not accept
+	integer contstants in binary
 2009-07-25	Darek Marcinkiewcz <reksio@praterm.pl>
 	* libSzarp2: routines for base64 coding/decoding
 	* utils/remarks_server: adaptation to changed schema of remarks

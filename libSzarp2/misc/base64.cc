@@ -16,17 +16,17 @@ std::basic_string<unsigned char> base64_encode(const std::basic_string<unsigned 
 		switch (state) {
 			case 0:
 				ret += (unsigned char) base64_alphabet[c >> 2];
-				pv = (c & 0b11) << 4;
+				pv = (c & 0x3) << 4;
 				state = 1;
 				break;
 			case 1:
 				ret += (unsigned char) base64_alphabet[pv | (c >> 4)];
-				pv = (c & 0b1111) << 2;
+				pv = (c & 0xf) << 2;
 				state = 2;
 				break;
 			case 2:
 				ret += (unsigned char) base64_alphabet[pv | (c >> 6)];
-				ret += (unsigned char) base64_alphabet[c & 0b111111];
+				ret += (unsigned char) base64_alphabet[c & 0x3f];
 				state = 0;
 				break;
 		}
@@ -96,13 +96,13 @@ std::basic_string<unsigned char> base64_decode(const std::basic_string<unsigned 
 				case 1:
 					cv = base64_char_to_val(c);
 					ret += (unsigned char) (pv | (cv >> 4));
-					pv = (cv & 0b1111) << 4;
+					pv = (cv & 0xf) << 4;
 					state = 2;
 					break;
 				case 2:
 					cv = base64_char_to_val(c);
 					ret += (unsigned char) (pv | (cv >> 2));
-					pv = (cv & 0b11) << 6;
+					pv = (cv & 0x2) << 6;
 					state = 3;
 					break;
 				case 3:
