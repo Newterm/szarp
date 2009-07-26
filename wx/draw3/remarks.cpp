@@ -35,7 +35,7 @@
 #include <wx/dir.h>
 #include <wx/config.h>
 
-#include "base64.h"
+#include "szarpbase64.h"
 
 #include "ids.h"
 #include "xmlutils.h"

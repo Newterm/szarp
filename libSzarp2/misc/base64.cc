@@ -1,5 +1,5 @@
 #include <stdexcept>
-#include "base64.h"
+#include "szarpbase64.h"
 namespace base64 {
 
 namespace {
