@@ -40,7 +40,7 @@ test: szbtest
 noinst_HEADERS = \
                       $(INCLUDE_DIR)/dmncfg.h \
                       $(INCLUDE_DIR)/httpcl.h \
-                      $(INCLUDE_DIR)/base64.h \
+                      $(INCLUDE_DIR)/szarpbase64.h \
                       $(INCLUDE_DIR)/ipchandler.h \
                       $(INCLUDE_DIR)/insort.h \
                       $(INCLUDE_DIR)/szarp_config.h \
