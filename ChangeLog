@@ -1,5 +1,7 @@
 $Id$
 
+2009-07-26	Pawel Palucha <pawel@praterm.com.pl>
+	* INSTALL.Windows: fix - added copying pkg-config file for LuaJIT.
 2009-07-26	Darek Marcinkiewcz <reksio@praterm.pl>
 	* base64: there is probably a conflict of header names...
 	* libSzarp2/misc/base64: some library under in mingw build already

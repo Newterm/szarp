@@ -338,6 +338,8 @@ make mingw
 cp src/*.h etc/lua.hpp /usr/local/i586-mingw32msvc/include/
 cp src/lua51.dll /usr/local/i586-mingw32msvc/lib/liblua.dll
 cp src/lua51.dll /usr/local/i586-mingw32msvc/lib/lua51.dll
+mkdir -p /usr/local/i586-mingw32msvc/lib/pkgconfig/
+cp etc/*.pc /usr/local/i586-mingw32msvc/lib/pkgconfig/
 
 
 3.12. c-ares library.
