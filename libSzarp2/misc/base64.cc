@@ -1,11 +1,12 @@
 #include <stdexcept>
 #include "base64.h"
+namespace base64 {
 
 namespace {
 const char* base64_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 }
 
-std::basic_string<unsigned char> base64_encode(const std::basic_string<unsigned char>& input) {
+std::basic_string<unsigned char> encode(const std::basic_string<unsigned char>& input) {
 	std::basic_string<unsigned char> ret;
 
 	unsigned char pv;
@@ -75,7 +76,7 @@ unsigned char base64_char_to_val(unsigned char v) {
 
 }
 
-std::basic_string<unsigned char> base64_decode(const std::basic_string<unsigned char>& input) {
+std::basic_string<unsigned char> decode(const std::basic_string<unsigned char>& input) {
 	std::basic_string<unsigned char> ret;
 
 	unsigned char pv;
@@ -124,3 +125,4 @@ std::basic_string<unsigned char> base64_decode(const std::basic_string<unsigned 
 
 }
 
+}

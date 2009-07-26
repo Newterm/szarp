@@ -164,14 +164,14 @@ RemarksStorage* RemarksHandler::GetStorage() {
 
 void RemarksHandler::GetConfiguration(wxString& username, wxString& password, wxString &server, bool& autofetch) {
 	username = m_username;
-	password = SC::U2S(base64_decode(SC::S2U(m_password)));
+	password = SC::U2S(base64::decode(SC::S2U(m_password)));
 	server = m_server;
 	autofetch = m_auto_fetch;
 }
 
 void RemarksHandler::SetConfiguration(wxString username, wxString password, wxString server, bool autofetch) {
 	m_username = username;
-	m_password = SC::U2S(base64_encode(SC::S2U(password)));
+	m_password = SC::U2S(base64::encode(SC::S2U(password)));
 	m_server = server;
 	bool ok = m_address.Hostname(server);
 
