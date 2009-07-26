@@ -1,6 +1,7 @@
 $Id$
 
 2009-07-26	Darek Marcinkiewcz <reksio@praterm.pl>
+	* base64: there is probably a conflict of header names...
 	* libSzarp2/misc/base64: some library under in mingw build already
 	defines functions base64_decode/encode - our functions put into
 	separate namespace
