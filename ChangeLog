@@ -1,6 +1,8 @@
 $Id$
 
 2009-07-28	Pawel Palucha <pawel@praterm.com.pl>
+	* debian/control: szarp-server suggests non-free
+	szarp-proprietary-daemons package instead of depending on it.
 	* scripts/update_debs: added info about importing repository key,
 	updating 'praterm*' packages removed.
 	* scripts/sysinfo.in: removed non-debian sections, fixed szarp-updater
