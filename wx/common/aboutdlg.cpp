@@ -71,7 +71,7 @@ szAboutDlg::szAboutDlg(wxBitmap* bitmap, wxString programName, wxString version,
 
 	m_textCtrl->SetDefaultStyle(textAttr);
 
-	*m_textCtrl <<  _T("http://www.szarp.com.pl\n");
+	*m_textCtrl <<  _T("http://www.szarp.org\n");
 	textAttr.SetTextColour(*wxBLACK);
 	textAttr.SetAlignment(wxTEXT_ALIGNMENT_CENTER);
 	m_textCtrl->SetDefaultStyle(textAttr);
