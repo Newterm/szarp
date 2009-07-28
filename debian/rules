@@ -127,7 +127,6 @@ install:
 binary-no-cb: debian/build-no-cb-stamp 
 	$(MAKE) -f debian/rules DH_OPTIONS="$(NO_CB_PACK_OPTS)" install
 	cp $(INSTALL_DIR)/etc/init.d/parstart debian/szarp-server.parstart.init
-	cp $(INSTALL_DIR)/etc/init.d/parstart debian/szarp-terminal.parstart.init
 	$(MAKE) -f debian/rules DH_OPTIONS="$(NO_CB_PACK_OPTS)" binary-arch-common
 
 
