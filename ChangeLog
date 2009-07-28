@@ -1,5 +1,13 @@
 $Id$
 
+2009-07-28	Pawel Palucha <pawel@praterm.com.pl>
+	* scripts/update_debs: added info about importing repository key,
+	updating 'praterm*' packages removed.
+	* scripts/sysinfo.in: removed non-debian sections, fixed szarp-updater
+	release info, fixed XML header.
+	* debian/szarp-updater.cron.d: added cron.d file for szarp-updater.
+	* debian/szarp-updater.postinst: removed manual creating of cron.d
+	file.
 2009-07-26	Pawel Palucha <pawel@praterm.com.pl>
 	* INSTALL.Windows: fix - added copying pkg-config file for LuaJIT.
 2009-07-26	Darek Marcinkiewcz <reksio@praterm.pl>
