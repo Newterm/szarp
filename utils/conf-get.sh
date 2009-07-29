@@ -54,8 +54,8 @@ if [ ! -e /opt/szarp/$PREFIX/config/params.xml ]; then
 	exit 1;
 fi
 
-if [ $# -ne 1 ]; then
-	echo "Usage $0 [configuration prefix] username"
+if [ $# -ne 2 ]; then
+	Usage $0
 	exit 1;
 fi
 

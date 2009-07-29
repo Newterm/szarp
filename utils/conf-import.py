@@ -64,7 +64,6 @@ def get_login(realm, username, may_save ):
 	return True, Credentials.username, Credentials.password, Credentials.cache
 
 
-
 class Options:
 	"""Command line option parser"""
 	
@@ -96,13 +95,13 @@ searched for SZARP configuration.
 
 		parser.add_option('-i','--ignore-file', action='append',
 				dest='ignoredFiles', metavar='PATTERN',
-				default= [ '.*\.rap$', 'line.*\.cfg$','^definable.cfg$','^parcook.cfg$','^sender.cfg$', '^PTT\.act$', '^ekrnconfig.*cor$' ], 
-				help=_('ignore files matching PATTERN default: %default'))
+				default= [ '.*\.rap$', 'line.*\.cfg$','^definable.cfg$','^parcook.cfg$','^sender.cfg$', '^PTT\.act$', '^ekrn.*\.cor$', 'szbase_stamp', '.*\.log', 'sysinfo.*' ], 
+				help=_('ignore files matching PATTERN; default: %default'))
 		
 		parser.add_option('-e','--enable-file', action='append',
 				dest='enabledFiles', default=[],
 				metavar='PATTERN',
-				help=_('use ONLY files matching PATTERN default: %default'))
+				help=_('use ONLY files matching PATTERN [default: %default]'))
 		
 		parser.add_option('-s','--svn-repository', action='store',
 				dest='svnRepo', default=None,
@@ -111,7 +110,7 @@ searched for SZARP configuration.
 		parser.add_option('-u','--username', action='store',
 				dest='username',default='',
 				metavar='NAME',
-				help=_('NAME of user accesing repository'))
+				help=_('NAME of user accesing repository; -u, -p and -c options do not work with svn+ssh access'))
 		
 		parser.add_option('-p','--password', action='store',
 				dest='password',default='',
@@ -124,7 +123,7 @@ searched for SZARP configuration.
 
 		parser.add_option('-a','--ascii-only', action='store_true',
 				dest='ascii', default=False, 
-				help=_('use only file with ascii names [default: %default]'))
+				help=_('use only files with ascii names [default: %default]'))
 		# parsing
 		(opts, args) = parser.parse_args()
 
@@ -227,6 +226,7 @@ class Manager:
 	"""Configuration manager."""
 	
 	client = pysvn.Client()
+	client.set_auth_cache(Credentials.cache)
 	client.callback_get_login = get_login
 	options = Options()
 	fad = FileAndDirHelper()
