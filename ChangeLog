@@ -1,6 +1,7 @@
 $Id$
 
 2009-07-29	Pawel Palucha <pawel@praterm.com.pl>
+	* debian/changelog: version boost for unstable.
 	* utils/conf-get.sh: fix in command-line handling.
 	* utils/conf-import.py: fix in help strings; fixed list of ignored
 	filenames.
