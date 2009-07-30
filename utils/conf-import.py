@@ -430,7 +430,7 @@ class Manager:
 						# schedule to add file
 						self.client.add(f.path)
 			# add/remove/modify files
-			self.client.checkin(out, 'Modyfied date: '+stamp)
+			self.client.checkin(out, 'Modified date: '+stamp)
 
 		if tar_tmp != '':
 			os.system('rm -rf '+tar_tmp) # FIXME
@@ -440,7 +440,7 @@ class Manager:
 		repository"""
 
 		stamp_i = int(stamp)
-		pr = len('Modyfied date: ')
+		pr = len('Modified date: ')
 		# for all log messages of given file
 		for i in self.client.log(path):
 			try:
@@ -476,7 +476,7 @@ class Manager:
 				pass
 
 			# commit changes
-			self.client.checkin(out, 'Modyfied date: '+i[1])
+			self.client.checkin(out, 'Modified date: '+i[1])
 
 
 
