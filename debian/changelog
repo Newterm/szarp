@@ -1,3 +1,9 @@
+szarp (3.1.53) stable; urgency=low
+
+  * forcing build of stable version
+
+ -- Darek Marcinkiewicz <reksio@praterm.pl>  Mon, 03 Aug 2009 14:28:52 +0200
+
 szarp (3.1.50) unstable; urgency=low
 
   * upstream version 3.1.50
