@@ -251,11 +251,12 @@ bool DrawsWidget::IsDefaultNumberOfValues() {
 }
 
 void DrawsWidget::SwitchToPeriod(PeriodType period, const wxDateTime& current_time) {
-	this->period = period;
 
 	Draw* draw = GetSelectedDraw();
 	if (draw) 
 		DoubleCursorSet(false);	
+
+	this->period = period;
 
 	if (m_draws.GetCount() >= 0) for (size_t i = 0; i <= m_draws.GetCount(); ++i) {
 		if ((int)i == m_selected_draw)

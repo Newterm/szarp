@@ -782,8 +782,6 @@ DrawFrame::LoadLayout() {
 	if (idx > 1) {
 		m_notebook->SetSelection(selection % m_notebook->GetPageCount());
 		dynamic_cast<DrawPanel*>(m_notebook->GetPage(selection % m_notebook->GetPageCount()))->SetFocus();
-		draw_panel = dynamic_cast<DrawPanel*>(m_notebook->GetPage(selection & m_notebook->GetPageCount()));
-		draw_panel->SetFocus();
 	}
 
 	return requested_prefix_present;
