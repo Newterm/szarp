@@ -103,7 +103,7 @@ std::basic_string<unsigned char> decode(const std::basic_string<unsigned char>& 
 				case 2:
 					cv = base64_char_to_val(c);
 					ret += (unsigned char) (pv | (cv >> 2));
-					pv = (cv & 0x2) << 6;
+					pv = (cv & 0x3) << 6;
 					state = 3;
 					break;
 				case 3:

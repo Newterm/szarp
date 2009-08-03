@@ -50,6 +50,8 @@
 
 #include "timeformat.h"
 
+void debug_print_long(const wchar_t *l);
+
 DEFINE_EVENT_TYPE(REMARKSSTORED_EVENT)
 
 typedef void (wxEvtHandler::*RemarksStoredEventFunction)(RemarksStoredEvent&);
@@ -132,6 +134,10 @@ void RemarksHandler::OnRemarksStored(RemarksStoredEvent &event) {
 			i != m_fetchers.end();
 			i++)
 		(*i)->RemarksReceived(remarks);
+
+	m_connection->RemarksStored(remarks);
+
+
 }
 
 void RemarksHandler::Start() {
@@ -172,6 +178,7 @@ void RemarksHandler::GetConfiguration(wxString& username, wxString& password, wx
 void RemarksHandler::SetConfiguration(wxString username, wxString password, wxString server, bool autofetch) {
 	m_username = username;
 	m_password = SC::U2S(base64::encode(SC::S2U(password)));
+
 	m_server = server;
 	bool ok = m_address.Hostname(server);
 
@@ -234,7 +241,7 @@ XMLRPCConnection::XMLRPCConnection(wxIPV4address& address, wxEvtHandler *event_h
 
 	m_socket = NULL;
 
-	m_read_buf = 0;
+	m_read_buf = NULL;
 
 	m_read_buf_read_pos = 0;
 
@@ -277,10 +284,7 @@ void XMLRPCConnection::WriteData() {
 		ssize_t written = m_socket->Write(const_cast<char*>(m_write_buf.c_str() + m_write_buf_pos),
 					m_write_buf.size() - m_write_buf_pos);
 
-		if (written == 0)
-			break;
-
-		if (written < 0) {
+		if (written <= 0) {
 			if (m_socket->LastError() != wxSOCKET_WOULDBLOCK) {
 				m_socket->Disconnect();
 				m_read_state = CLOSED;
@@ -363,7 +367,7 @@ void XMLRPCConnection::ReadHeaders(bool& more_data) {
 			std::istringstream iss(line);
 			iss.exceptions(std::ios_base::failbit | std::ios_base::badbit);
 			std::string field_name;
-			iss >> field_name;
+			iss >> field_name; 
 			if (!strcasecmp(field_name.c_str(), "Content-length:"))
 				iss >> m_content_length;
 		}
@@ -426,7 +430,7 @@ void XMLRPCConnection::ReadData() {
 			if (m_read_buf_size) 
 				m_read_buf_size *= 2;
 			else 
-				m_read_buf_size = 500;
+				m_read_buf_size = 4096;
 
 			m_read_buf = (char*) realloc(m_read_buf, m_read_buf_size);
 		}
@@ -515,8 +519,6 @@ std::string XMLRPCConnection::CreateHTTPRequest(XMLRPC_REQUEST request) {
 	ss << "Content-Length: " << len << "\r\n";
 	ss << "\r\n";
 	ss << request_string;
-
-	//printf("%s\n", ss.str().c_str());
 
 	free(request_string);
 
@@ -700,6 +702,9 @@ void RemarksConnection::HandleRemarksResponse(XMLRPC_REQUEST response) {
 
 	m_remarks_handler->NewRemarks(rms);
 
+}
+
+void RemarksConnection::RemarksStored(const std::vector<Remark>& rms) {
 	if (rms.size()) {
 		wxConfig::Get()->Write(_T("RemarksLatestRetrieval"), long(m_retrieval_time));
 		wxConfig::Get()->Flush();
@@ -712,7 +717,6 @@ void RemarksConnection::HandleRemarksResponse(XMLRPC_REQUEST response) {
 			wxMessageBox(_("No new remarks"), _("Remarks"), wxICON_INFORMATION);
 			m_inform_about_successful_fetch = false;
 		}
-
 }
 
 void RemarksConnection::HandleLoginResponse(XMLRPC_REQUEST response) {
@@ -824,6 +828,7 @@ void RemarksConnection::OnXMLRPCResponse(XMLRPCResponseEvent &event) {
 				HandlePostMessageResponse(response);
 				m_pending_remark_post = false;
 
+				m_current_action = NONE;
 				PostRequest(CreateGetRemarksRequest());
 				m_retrieval_time = wxDateTime::Now().GetTicks();
 				m_current_action = FETCHING_REMARKS;
@@ -1084,9 +1089,6 @@ void RemarksStorage::AddPrefix(std::wstring prefix) {
 void RemarksStorage::ExecuteStoreRemarks(std::vector<Remark>& remarks) {
 	int ret;
 
-	if (remarks.size() == 0)
-		return;
-
 	wxMutexLocker lock(m_prefixes_mutex);
 
 	std::vector<Remark> added_remarks;
@@ -1147,13 +1149,21 @@ void RemarksStorage::ExecuteStoreRemarks(std::vector<Remark>& remarks) {
 
 
 		ret = sqlite3_step(m_store_remark_query);
-		assert(ret == SQLITE_DONE || ret == SQLITE_CONSTRAINT);
+		switch (ret) {
+			case SQLITE_DONE:
+				added_remarks.push_back(*i);
+				break;
+			case SQLITE_CONSTRAINT:
+				break;
+			default:
+				assert(false);
+		}
 
 		sqlite3_reset(m_store_remark_query);
 		sqlite3_clear_bindings(m_store_remark_query);
 	}
 
-	RemarksStoredEvent event(remarks);
+	RemarksStoredEvent event(added_remarks);
 	wxPostEvent(m_remarks_handler, event);
 }
 

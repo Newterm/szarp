@@ -56,7 +56,11 @@ namespace {
 			char *output_start = (char*) malloc(total_length);
 			char *output = output_start;
 
-			while (iconv(m_handle, &input, &input_length, &output, &remaining_length) == (size_t) -1) {
+			while (iconv(m_handle, 
+#ifdef MINGW32
+						(const char**)
+#endif
+							&input, &input_length, &output, &remaining_length) == (size_t) -1) {
 				if (errno == E2BIG) {
 					char *nb = (char*)realloc(output_start, 2 * total_length);
 
@@ -94,7 +98,9 @@ namespace {
 
 namespace SC {
 
+#ifndef MINGW32
 	IconvWrapper utf2szarp_iw("WCHAR_T", UTF8);
+#endif
 	std::wstring utf2szarp(const std::basic_string<unsigned char>& c) {
 #ifdef MINGW32
 		if (c.size() == 0)
@@ -114,7 +120,9 @@ namespace SC {
 #endif
 	}
 
+#ifndef MINGW32
 	IconvWrapper szarp2utf_iw(UTF8, "WCHAR_T");
+#endif
 	std::basic_string<unsigned char> szarp2utf(const std::wstring& c) {
 #ifdef MINGW32
 		if (c.size() == 0)
@@ -134,7 +142,9 @@ namespace SC {
 #endif
 	}
 
+#ifndef MINGW32
 	IconvWrapper ascii2szarp_iw("WCHAR_T", _locale_string);
+#endif
 	std::wstring ascii2szarp(const std::basic_string<char>& c) {
 #ifdef MINGW32
 		if (c.size() == 0)
@@ -153,7 +163,9 @@ namespace SC {
 #endif
 	}
 
+#ifndef MINGW32
 	IconvWrapper szarp2ascii_iw(_locale_string, "WCHAR_T");
+#endif
 	std::string szarp2ascii(const std::basic_string<wchar_t>& c) {
 #ifdef MINGW32
 		if (c.size() == 0)

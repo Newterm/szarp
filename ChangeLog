@@ -1,5 +1,12 @@
 $Id$
 
+2009-08-03	Darek Marcinkiewcz <reksio@praterm.pl>
+	* libSzarp/conversion.cc: msw compilation fix (under my
+	system at least)
+	* libSzarp2/misc/base64: typo fix
+	* wx/common/biowxsock.cpp: fixes after testing under msw
+	* wx/draw3/remarks: fixes for msw and few general fixes
+	here and there
 2009-07-30	Pawel Palucha <pawel@praterm.com.pl>
 	* utils/conf-import.py: fix - typo in commit log messages.
 2009-07-29	Pawel Palucha <pawel@praterm.com.pl>

@@ -198,6 +198,7 @@ public:
 	void SetRemarksAddDialog(RemarkViewDialog *dialog);
 	void FetchNewRemarks(bool notify_about_success = true);
 	void PostRemark(Remark &remark);
+	void RemarksStored(const std::vector<Remark>& rms);
 
 	~RemarksConnection();
 

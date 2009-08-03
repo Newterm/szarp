@@ -75,10 +75,9 @@ int SocketWrite(BIO* bio, const char *buffer, int len) {
 
 	socket->Write(buffer, len);
 	if (socket->Error()) {
-		if (socket->LastError() == wxSOCKET_WOULDBLOCK) {
-			BIO_clear_retry_flags(bio);
+		BIO_clear_retry_flags(bio);
+		if (socket->LastError() == wxSOCKET_WOULDBLOCK)
 			BIO_set_retry_write(bio);
-		}
 		return -1;
 	}
 
@@ -91,10 +90,9 @@ static int SocketRead(BIO* bio, char *buffer, int len) {
 
 	socket->Read(buffer, len);
 	if (socket->Error()) {
-		if (socket->LastError() == wxSOCKET_WOULDBLOCK) {
-			BIO_clear_retry_flags(bio);
+		BIO_clear_retry_flags(bio);
+		if (socket->LastError() == wxSOCKET_WOULDBLOCK)
 			BIO_set_retry_read(bio);
-		}
 		return -1;
 	}
 
@@ -164,6 +162,7 @@ void SSLSocketConnection::Cleanup() {
 		SSL_free(m_ssl);
 		m_ssl = NULL;
 	}
+
 }
 
 void SSLSocketConnection::ConnectSSL() {
@@ -288,7 +287,6 @@ wxSocketError SSLSocketConnection::LastError() {
 ssize_t SSLSocketConnection::Read(char* buffer, size_t size) {
 
 	do {
-
 		ssize_t ret = SSL_read(m_ssl, buffer, size);
 
 		if (ret <= 0) {
@@ -353,10 +351,19 @@ ssize_t SSLSocketConnection::Write(char* buffer, size_t size) {
 void SSLSocketConnection::OnSocketEvent(wxSocketEvent& event) {
 	wxSocketNotify type = event.GetSocketEvent();
 	if (type == wxSOCKET_LOST) {
-		Disconnect();
-		wxPostEvent(m_receiver, event);
-		m_state = NOT_CONNECTED;
-		return;
+		switch (m_state) {
+			case CONNECTING:
+			case CONNECTING_SSL:
+				Disconnect();
+				wxPostEvent(m_receiver, event);
+				m_state = NOT_CONNECTED;
+			case NOT_CONNECTED:
+				break;
+			case CONNECTED:
+				event.m_event = wxSOCKET_INPUT;
+				wxPostEvent(m_receiver, event);
+				break;
+		}
 	}
 
 	switch (m_state) {
