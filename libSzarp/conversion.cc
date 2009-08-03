@@ -56,11 +56,7 @@ namespace {
 			char *output_start = (char*) malloc(total_length);
 			char *output = output_start;
 
-			while (iconv(m_handle, 
-#ifdef MINGW32
-						(const char**)
-#endif
-							&input, &input_length, &output, &remaining_length) == (size_t) -1) {
+			while (iconv(m_handle, &input, &input_length, &output, &remaining_length) == (size_t) -1) {
 				if (errno == E2BIG) {
 					char *nb = (char*)realloc(output_start, 2 * total_length);
 

@@ -1,6 +1,8 @@
 $Id$
 
 2009-08-03	Darek Marcinkiewcz <reksio@praterm.pl>
+	* libSzarp/conversion.cc: remove last 'fix' for msw, my
+	version of iconv is simply too old...
 	* wx/draw3: two bugs fixed, one old and one quite recently
 	introduced...
 	* libSzarp/conversion.cc: msw compilation fix (under my
