@@ -1511,6 +1511,195 @@ zbierania, archiwizacji i prezentacji danych w ciep³ownictwie.
 
 </section> <!-- opisy programów -->
 
+<section id="historia-szarpa">
+<title>Historia systemu SZARP</title>
+
+<para>
+Wszystko zaczê³o siê w roku 1991. Inicjatorem by³ Witold Kowalewski, w³a¶ciciel
+firmy Praterm. Praterm od momentu powstania w 1983 roku zajmowa³ siê
+automatyzacj± ciep³ownictwa. Pocz±tkowo wykorzystywa³ urz±dzenia
+elektro-mechaniczne, od 1989 roku zacz±³ wykorzystywaæ mikroprocesorowe
+sterowniki przemys³owe firmy Z-Elektronik nale¿±cej do Krystiana Zasadziñskiego.
+Wkrótce okaza³o siê, ¿e dla przeprowadzenia analiz prowadzenia przez automatykê
+procesów technologicznych w ciep³ownictwie potrzebny jest system do
+rejestrowania danych charakteryzuj±cych te procesy: temperatur, ci¶nieñ itp.
+Zbieg³o siê to z pocz±tkiem ery komputerów PC. W 1991 roku Piotr Branecki
+stworzy³ pierwszy program w Turbo Pascalu pracuj±cy pod DOSem, który zbiera³
+dane ze sterowników pod³±czonych za pomoc± terminala wieloportowego firmy
+Specialix przez RS-y 232. Dane zapisane by³y w formacie binarnym specyficznym
+dla tego programu. W roku 1992 do prac nad rozwojem SZARPa do³±czy³
+Lucjan Przykorski. Oprogramowanie zosta³o podzielone na dwie czê¶ci:
+</para>
+
+<para>
+
+<itemizedlist>
+<listitem>
+
+<para>
+Serwer zbieraj±cy dane i prezentuj±cy je w formie raportów oraz
+wykresów z ostatniej doby.
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+Terminal z programem przegl±daj±cym do prezentacji w formie wykresów
+danych zarejestrowanych od pocz±tku pracy systemu.
+</para>
+</listitem>
+
+</itemizedlist>
+
+</para>
+
+<para>
+Wszystko pracowa³o w jednow±tkowym DOSie, st±d potrzeba dwóch komputerów,
+aby mo¿na by³o uruchomiæ w systemie wiêcej ni¿ jeden program. Sieæ pracowa³a na
+Novell NWLite 1.0, potem 1.1. Baza zapisywana by³a w systemie opartym na
+plikach dBaseIV: DBF + MDX, który to format zachowa³ siê a¿ do SZARP v2.1.
+W roku 1993 do zespo³u programistów do³±czy³ na chwilê Stanis³aw K³osiñski,
+autor innego programu klienckiego dedykowanego do pracy na terminalu, s³u¿±cego
+do specjalistycznej analizy zarejestrowanych danych.
+</para>
+<para>
+W tym samym roku 1993 Branecki i Przykorski przenie¶li SZARP na platformê
+Unix - by³ to USL Unix SVR4.2 firmy Consensys, którego ilo¶æ egzemplarzy
+sprzedana w Polsce da³a siê policzyæ na palcach. SZARP jako system pracuj±cy
+w ¶rodowisku wielozadaniowym zosta³ podzielony na szereg programów. Czê¶æ z nich
+dzia³a³a jako demony pracuj±ce w tle, interfejs u¿ytkownika stanowi³y za¶
+aplikacje klienckie wykorzystuj±ce Motif 1.1.1. W roku 1994 do zespo³u
+programistów do³±czy³ Marcin Anderson, twórca kilku programów zarówno w
+kategorii demonów jak i aplikacji u¿ytkowych.
+</para>
+<para>
+We wrze¶niu 1994 Branecki i Przykorski obronili na Wydziale Elektroniki
+i Technik Informatycznych Politechniki Warszawskiej pracê dyplomow±:
+"System zbierania danych i sterowania wolnozmiennych procesów technologicznych
+o rozproszonych punktach kontrolno-pomiarowych". Praca to dotyczy³a SZARPa i
+wspó³pracuj±cych z nim sterowników przemys³owych. Pomimo innowacyjnego
+charakteru pracy, kilku dzia³aj±cych w rzeczywisto¶ci instalacji i ewenementu
+w postaci filmu, który dyplomanci nakrêcili w ramach pracy, spotka³a siê z
+pe³n± ignorancj± ze strony uczelni.
+</para>
+<para>
+Jeszcze w roku 1994 SZARP doczeka³ siê nowego systemu operacyjnego:
+Novell UnixWare 1.1, który zosta³ przez Novella zakupiony od AT&amp;T. Nastêpn±
+platform± by³ Novell UnixWare 2.03, po której to wersji Novell sprzeda³ ze
+strat± UnixWare do SCO. Ta ostatnia wypu¶ci³a w 1995 roku SCO UnixWare 2.1,
+który nie licz±c kilku patchy by³ ostatnim z komercyjnych Unixów, na którym
+pracowa³ SZARP.
+</para>
+<para>
+W latach 1993-1995 jako terminale wykorzystywane by³y komputery pracuj±ce w
+DOSie z programem XAppeal firmy Xtreme charakteryzuj±cy siê bardzo ma³ymi
+wymaganiami sprzêtowymi i jeszcze mniejsz± list± obs³ugiwanego sprzêtu nie
+ró¿ni±c siê specjalnie w tym ostatnim od linii UnixWare. Od roku 1996 w swoich
+instalacjach Praterm zacz±³ wykorzystywaæ emulatory Xserwera pracuj±ce pod
+MS-Windows: Starnet X-Win, SCO XVision Eclipse 7.1, Labf.com X-Win Pro / WinaXe. Najwiêcej
+terminali zosta³o wykorzystanych w oparciu o ten ostatni, najtañszy, najl¿ejszy
+i najbardziej rozwijaj±cy siê produkt fiñskich programistów.
+</para>
+<para>
+W 1996 roku pozostaj±cy do tego momentu bezimiennym system zbierania,
+archiwizacji i prezentacji danych doczeka³ siê oficjalnej nazwy SZARP v2.0.
+Nazwa SZARP v1.0 mia³a dotyczyæ instalacji pod DOSem. SZARP v2.0 sk³ada³ siê z
+12 modu³ów, jego struktura pozwala³a na dowoln± rozbudowê o kolejne.
+W lecie roku 1996 od Pratermu odszed³ Piotr Branecki, na pocz±tku roku 1997
+firmê opu¶ci³ tak¿e Marcin Anderson. W roku 1997 w Legionowie dokonana zosta³a
+ostatnia instalacja SZARPa na SCO UnixWare. Pod koniec roku 1997 do zespo³u
+programistów do³±czyli Maciej Mochol i Jaros³aw Nowisz. To oni dokonali portu
+SZARP z UnixWare do Linuksa tworz±c w ten sposób SZARP v2.1. Oprócz samego
+przeniesienia wykonali szereg usprawnieñ i usunêli niezliczon± masê b³êdów. 
+W roku 1998 SZARP doczeka³ siê repozytorium CVS, na którym rezyduje do dnia 
+dzisiejszego. W tym samym roku Maciej Mochol zaadoptowa³ SZARPa do autoconfa i 
+stworzy³ z niego dystrybucjê (wcze¶niej by³a to lu¼no rozrzucona grupa programów).
+Od roku 1998 SZARP by³ instalowany ju¿ tylko na Linuxie, pocz±tkowo na dystrybucji
+Red Hat poczynaj±c od wersji 5.2.
+</para>
+<para>
+W roku 1999 do zespo³u programistów do³±czy³ Micha³ Rój. Na pocz±tku roku 2000 
+Maciej Mochol stworzy³ narzêdzie parconf, które pó¼niej wielokrotnie udoskonalane 
+znakomicie usprawni³o zmiany w konfiguracji poszczególnych serwerów, które to 
+zmiany wcze¶niej wymaga³y du¿ej ilo¶ci rêcznych operacji. W po³owie 2000 roku 
+zespó³ rozszerzy³ siê o Paw³a Pa³uchê. Pod koniec roku 2000 zrezygnowa³ z 
+pracy nad projektem Jaros³aw Nowisz. W po³owie kwietnia 2001 uruchomiona 
+zosta³a pierwsza instalacja BODASa - Bazy Ogólnopolskiej Danych Archiwalnych 
+SZARP. Czê¶æ systemów z SZARPem pod³±czonych do internetu przez sta³e ³±cze
+zrzuca aktualne dane co 10 minut, nieliczne ju¿ hosty z modemami ³±cz± siê raz na dobê 
+zgrywaj±c dane na serwer praterm.com.pl. Do centralnego serwera Pratermu 
+pod³±czane s± sukcesywnie kolejne hosty z SZARPem. W kwietniu 2001 do zespo³u 
+developerów SZARPa do³±czy³ Stanis³aw Sawa. Pod koniec roku 2001 Pawe³ Pa³ucha 
+doda³ do SZARPa pierwsz± od d³u¿szego czasu aplikacjê z graficznym interfejsem 
+u¿ytkownika - Dyspozytor. 
+</para>
+<para>
+Na pocz±tku 2002 zrezygnowa³ z pracy w zespole Maciej Mochol. We wrze¶niu 2002 
+roku Pawe³ Pa³ucha obroni³ na Wydziale Matematyki, Informatyki i Mechaniki 
+Uniwersytetu Warszawskiego kolejn± pracê magistersk± dotycz±c± SZARPa - <emphasis>Zdalne 
+sterowanie i kontrola procesu przemys³owego z wykorzystaniem technologii XML/SVG</emphasis>,
+tworz±c tym samym now± wersjê wizualizacyjnej czê¶ci systemu. Pod koniec roku 2002 ten 
+sam developer rozpocz±³ przenoszenie czê¶ci aplikacji u¿ytkowych SZARPa na platformê 
+MS-Windows, z wykorzystaniem biblioteki wxWindows/wxWidgets. 
+</para>
+<para>
+W roku 2003 SZARP by³ instalowany na pochodnych dystrybucji Red Hat - Aurox 9.x. 
+W tym samym roku, w zwi±zku z wycofaniem siê Red Hat z rozwijania dystrybucji 
+niekomercyjnych, SZARP zacz±³ byæ instalowany na Debianie, którego specjalizowan± 
+dystrybucjê przygotowa³ Stanis³aw Sawa. W tym samym roku terminale windowsowe 
+zaczê³y byæ wyposa¿ane w Xserwer Cygwin - w odró¿nieniu od WinaXe darmowy i 
+wyposa¿ony w wiele funkcji jak np. serwer sshd. Tak¿e w 2003 roku Pawe³ Pa³ucha 
+rozpocz±³ prace nad przeniesieniem konfiguracji do IPK - Idealnego Pliku 
+Konfiguracyjnego - w formacie XML.
+</para>
+<para>
+W roku 2004 do zespo³u "sterownikowego" firmy Praterm S.A. do³±czy³ Pawe³
+Kolega, tak¿e uczestnicz±cy w rozwoju oprogramowania. Pawe³ Pa³ucha
+zaprojektowa³ i zaimplementowa³ nowy, prostszy format bazy danych, co
+pozwoli³o na stopniowe wycofywanie siê z ostatniego komercyjnego elementu
+systemu - biblioteki Codebase do obs³ugi bazy dBase IV. Jako emulator
+X-terminala dla terminali z Windows, ze wzglêdu na prostotê instalacji, zacz±³
+byæ stosowany freeware'owy Pexus X/Deep32.
+</para>
+<para>
+06.12.2004 akcje Praterm SA zadebiutowa³y na GPW, co w praktyce oznacza³o szereg powa¿nych zmian dla SZARPa. Skoñczy³ siê etap pilnowania ka¿dej z³otówki przy pracach rozwojowych (rozpatrywanie ka¿dego tematu pod k±tem zwrotu w jak najkrótszym czasie), zamiast tego nale¿a³o po³o¿yæ nacisk na bezpieczeñstwo. 01.01.2005 Lucjan Przykorski oficjalnie przesta³ byæ aktywnym cz³onkiem zespo³u programistów (co sta³o siê faktem jaki¶ czas wcze¶niej), zajmuj±c siê w Pratermie sprawami technicznymi, informatyka za¶ pozosta³a jego hobby. Szefem dzia³u IT zosta³ Pawe³ Pa³ucha, który od tego momentu decydowa³ o przyjmowaniu nowych informatyków i szczegó³owych pracach nad SZARPem.
+</para>
+<para>
+Na prze³omie roku 2004/2005 wspó³pracê przy tworzeniu SZARP'a zakoñczy³ Micha³
+Rój, natomiast do³±czyli trzej nowi programi¶ci - Micha³ Blajerski, Dariusz
+Marcinkiewicz i Krzysztof Ga³±zka. Do dzia³u sterownikowego do³±czy³ Jarek
+Janik. Dokoñczono przenoszenie ca³o¶ci konfiguracji do formatu XML. Powsta³o
+wiele sterowników do nowych urz±dzeñ, oprogramowanie do importu danych z innych
+systemów telemetrycznych, zrealizowano instalacje wykorzystuj±ce ³±czno¶æ
+bezprzewodow± WLAN i komunikacjê GSM/GPRS.
+</para>
+<para>
+Pod koniec III-go kwarta³u 2005 z pracy w zespole programistów zrezygnowa³ Stanis³aw Sawa. Na wszystkich ciep³owniach Pratermu dokonano aktualizacji 
+systemów operacyjnych do Debiana, przeprowadzono konwersjê istniej±cych baz na
+nowy format. Dzia³ania te uda³o siê tak¿e podj±æ u wiêkszo¶ci klientów
+zewnêtrznych - mimo kilku nowo zakupionych przedsiêbiorstw 
+nadal oko³o po³owy instalacji to spó³ki spoza grupy Praterm.
+</para>
+<para>
+Rok 2006 to okres do¶æ intensywnego rozwoju aplikacji klienckich, w
+szczególno¶ci pierwszym u¿ytkownikom zaoferowano wersje programu
+przegl±daj±cego nowej generacji, pracuj±cego tak¿e pod kontrol± Windows.
+W po³owie roku do zespo³u programistów do³±czy³ Krzysztof O³owski.
+</para>
+<para>
+W 2007 roku do pracy nad SZARP'em do³±czy³o dwóch nowych programistów - Maciej Zbiñkowski (na oko³o rok) i S³awomir Chy³ek. Po wielu latach pracy na ukoñczeniu znalaz³a siê wersja 3.0 programu przegl±daj±cego dane historyczne - najwa¿niejszej i najbardziej z³o¿one aplikacji SZARP. 15 pa¼dziernika tego roku kod SZARP (ponad 200 tysiêcy linii kodu) zosta³ udostêpniony na licencji GPL.
+</para>
+<para>
+W 2008 roku w zespole programistów S³awomir Chy³ek wymieni³ siê z Adamem Smykiem. Ca³o¶æ programów klienckich
+ zosta³a przepisana na bibliotekê wxWidgets, co pozwoli³o na powstanie tak¿e wersji dla Windows.
+</para>
+<para>
+W roku 2009, rok po przejêciu firmy Praterm przez grupê Dalkia, czê¶æ zespo³u technicznego opu¶ci³a Praterm, rozwój systemu zacz±³ wiêc byæ prowadzony jednocze¶nie tak¿e przez firmê Newterm. Repozytorium projektu zosta³o przeniesione na portal SourceForge.net, kod zosta³ wyczyszczony z wiêkszo¶ci komercyjnych pozosta³o¶ci. Uruchomiono nowy portal projektu pod adresem <ulink url="http://www.szarp.org">www.szarp.org</ulink>.
+</para>
+
+</section> <!-- historia szarpa -->
+
 </article>
 
 <!--

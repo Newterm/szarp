@@ -40,7 +40,7 @@ Vooyeck
 
 <title>SZARP HOWTO</title>
 
-<subtitle>SZARP v2.2 + Debian/Red Hat</subtitle>
+<subtitle>SZARP + Debian/Red Hat</subtitle>
 <authorgroup>
 <author><firstname>Micha³</firstname><surname>Blajerski</surname></author>
 <author><firstname>Krzysztof</firstname><surname>Ga³±zka</surname></author>
@@ -299,7 +299,7 @@ SZARPa - wszêdzie znajdowa³ siê SZARP v2.1. W po³owie 2005 roku, ze wzglêdu na
 zmianê formatu konfiguracji i bazy danych, zapad³a decyzja o podwy¿szeniu
 numeru wersji do 2.2. Poni¿sze zestawienie wymienia w
 kolejno¶ci chronologicznej (pierwsza instalacja, nie upgrade) wszystkie
-przedsiêbiorstwa ciep³ownicze z SZARP v2.1/2.2:
+przedsiêbiorstwa ciep³ownicze z SZARP v2.1 - 3.1:
 </para>
 
 <para>
