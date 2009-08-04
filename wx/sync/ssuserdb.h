@@ -64,17 +64,22 @@ private:
 	/**xpath query context*/
 	xmlXPathContextPtr m_context;
 
-	XMLUserDB(xmlDocPtr doc, const char *prefix);
+	/**
+	 * @param rpc_address	address of RPC server for managing users configuration file
+	 */
+	XMLUserDB(xmlDocPtr doc, const char *prefix, const char *rpc_address);
 	/**Escapes provided string < is substistudted with ;lt and so on..
 	 * @param string string to escape
 	 * @return escaped string, freed by a caller*/
 	char *EscapeString(const char* string);
 	const char *hostname;/**<configuration_prefix or `hostname -s`*/
+	/**address of RPC server for managing users configuration file*/
+	const char *m_rpc;
 
 public:
 	/**Loads xml with user database and configuration prefix
 	 * @return pointer to XMLUserDB object or NULL if operation did not suceed*/
-	static XMLUserDB* LoadXML(const char *path, const char *prefix);
+	static XMLUserDB* LoadXML(const char *path, const char *prefix, const char *rpc);
 
 	virtual bool FindUser(const char* user, const char* passwd, char** basedir, char **sync);
 	virtual int CheckUser(int protocol,const char *user, const char *passwd, const char *key, char **msg);

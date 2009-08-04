@@ -832,7 +832,7 @@ RETSIGTYPE g_sigchild_handler(int sig) {
 
 void LoadUserDatabase() {
 
-	UserDB* userdatabase = XMLUserDB::LoadXML(g_userdatabasefile,prefix);
+	UserDB* userdatabase = XMLUserDB::LoadXML(g_userdatabasefile, prefix, g_rpc);
 	if (!userdatabase) {
 		sz_log(1, "Cannot open user database file(%s)", g_userdatabasefile);
 		if (!g_userdatabase) {
@@ -948,6 +948,10 @@ int main(int argc, char *argv[]) {
 	char* port = libpar_getpar("sss", "port", 1);
 	char* user = libpar_getpar("sss", "user", 1);
 	prefix = libpar_getpar("","config_prefix",1);
+	g_rpc = libpar_getpar("sss", "rcp_address", 0);
+	if (g_rpc == NULL) {
+		g_rpc = "http://localhost:5500/";
+	}
 	g_userdatabasefile = libpar_getpar("sss", "userdbfile", 1);
 
 	libpar_done();

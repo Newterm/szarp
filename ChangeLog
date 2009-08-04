@@ -1,5 +1,8 @@
 $Id$
 
+2009-08-04	Pawel Palucha <pawel@praterm.pl>
+	* wx/sync/*: fixed bug with ssconf.py access to /etc/szarp/ssconf.cfg
+	file when run by SSS - closing issue46.
 2009-08-03	Darek Marcinkiewcz <reksio@praterm.pl>
 	* libSzarp/conversion.cc: remove last 'fix' for msw, my
 	version of iconv is simply too old...

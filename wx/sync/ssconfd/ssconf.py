@@ -582,11 +582,9 @@ def test():
 	s.test()
 
 if __name__ == "__main__":
-	logging.basicConfig(filename="/opt/szarp/logs/ssconf.log", level=logging.INFO)
-
 	usage = """
 Server mode:\t\tssconf.py [ -n ]
-Change-key mode:\tssconf.py { -c | --changekey } KEY { -u | --user } USER
+Change-key mode:\tssconf.py [ -r | --rpc=RPC_ADDRESS] { -c | --changekey } KEY { -u | --user } USER
 Usage info:\t\tssconf.py { -h | --help }"""
 	parser = OptionParser(usage=usage)
 	parser.add_option("-n", "--no-fork", action="store_false", dest="fork", default=True,
@@ -597,6 +595,9 @@ Usage info:\t\tssconf.py { -h | --help }"""
 	parser.add_option("-u", "--user", dest="user", 
 				help="user name for --changekey option",
 				metavar="USER")
+	parser.add_option("-r", "--rpc", dest="rpc_address", 
+			help="RPC server address for --changekey option, default value is read from /etc/szarp/ssconf.cfg file, but you need root permissions to access this file; example value is http://localhost:5000/",
+				metavar="RPC_ADDRESS")
 
 	(options, args) = parser.parse_args()
 
@@ -604,11 +605,17 @@ Usage info:\t\tssconf.py { -h | --help }"""
 	if options.key or options.user:
 		if not (options.key and options.user):
 			parser.error("options -c and -u must be used together")
-		ssc = SSConf() # the easiest way to read config ;-)
-		server = xmlrpclib.ServerProxy("http://%s:%d/" % (ssc.address, ssc.port))
+		if options.rpc_address:
+			server = xmlrpclib.ServerProxy(options.rpc_address)
+		else:
+			ssc = SSConf() # the easiest way to read config ;-)
+			server = xmlrpclib.ServerProxy("http://%s:%d/" % (ssc.address, ssc.port))
 		server.set_key(ssc.admin, ssc.passhash, options.user, options.key)
 	else:
 		# Server mode
+		if options.rpc_address:
+			parser.error("option -r requires -c and -u")
+		logging.basicConfig(filename="/opt/szarp/logs/ssconf.log", level=logging.INFO)
 		# daemonize
 		if options.fork:
 			pid = os.fork()
