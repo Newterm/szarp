@@ -14,7 +14,7 @@
 
 <title>System SZARP - instrukcja eksploatacji</title>
 
-<subtitle>SZARP v3.0</subtitle>
+<subtitle>SZARP v3.1</subtitle>
 <authorgroup>
 <author><firstname>Pawe³</firstname><surname>Pa³ucha</surname></author>
 <author><firstname>Krzysztof</firstname><surname>O³owski</surname></author>
@@ -24,27 +24,21 @@
 
 <para>
 Instrukcja ta zawiera podstawowe informacje, przeznaczone dla u¿ytkowników
-systemu komputerowego SZARP w spó³kach ciep³owniczych grupy Praterm S.A.
+systemu komputerowego SZARP na systemach ciep³owniczych.
 Powinny siê z ni± zapoznaæ osoby nadzoruj±ce prace u¿ytkowników systemu, w
-szczególno¶ci za¶ zg³aszaj±ce problemy dzia³owi informatycznemu w centrali
-firmy. Stosowanie siê do zaleceñ instrukcji powinno skutkowaæ zmniejszeniem
-ilo¶ci awarii, u³atwi tak¿e dzia³owi informatycznemu usuwanie ewentualnych
-usterek.
+szczególno¶ci za¶ zg³aszaj±ce problemy osobom sprawuj±cym opiekê techniczn± nad systemem.
+Stosowanie siê do zaleceñ instrukcji powinno skutkowaæ zmniejszeniem
+ilo¶ci awarii, u³atwi tak¿e usuwanie ewentualnych usterek.
 </para>
 <para>
 Najnowsza wersja instrukcji dostêpna jest zawsze na stronach WWW, pod adresem
-<ulink url="http://www.szarp.com.pl/howto/eksploatacja/html/eksploatacja.html">
-http://www.szarp.com.pl/howto/eksploatacja/html/eksploatacja.html</ulink>. Z
+<ulink url="http://szarp.org/szarp/doc/eksploatacja/html/eksploatacja.html">
+http://szarp.org/szarp/doc/eksploatacja/html/eksploatacja.html</ulink>. Z
 tej strony mo¿na te¿ pobraæ instrukcjê w formacie PDF, przygotowan± do druku.
-Informacje o wa¿niejszych zmianach bêd± tak¿e umieszczane w biuletynie
-informacyjnym Praterm News.
 </para>
 
 <para>
 Wersja: $Id: eksploatacja.sgml 6724 2009-05-18 08:37:03Z reksio $
-</para>
-<para>
-<trademark class="copyright">2005 Praterm S.A.</trademark>
 </para>
 </abstract>
 
@@ -66,7 +60,7 @@ nazwy programów i elementów sprzêtowych.
 <glossterm>SZARP</glossterm>
 <glossdef><para>
 Popularna nazwa ca³o¶ci systemu u¿ywanego do monitoringu danych na 
-ciep³owniach i wêz³ach cieplnych w firmie Praterm. SZARP jest niby-skrótem od
+ciep³owniach i wêz³ach cieplnych. SZARP jest niby-skrótem od
 nazwy <emphasis>System Zbierania ARchiwizacji i Prezentacji danych</emphasis>.
 </para></glossdef>
 </glossentry>
@@ -81,10 +75,11 @@ Program wy¶wietlaj±cy warto¶ci parametrów w postaci wykresów ze ¶rednimi
 </glossentry>
 
 <glossentry>
-<glossterm>Okno definiowalne</glossterm>
+<glossterm>Zestaw definiowalny</glossterm>
 <glossdef><para>
 Ustalony przez u¿ytkownika i zapisany zestaw najczê¶ciej ogl±danych 
-wykresów w Programie Przegl±daj±cym. 
+wykresów w Programie Przegl±daj±cym. W starszych wersjach programu u¿ywana by³a
+te¿ nazwa <emphasis>Okno definiowalne</emphasis>.
 </para></glossdef>
 </glossentry>
 
@@ -103,7 +98,8 @@ programu, wy¶wietlaj±cych ró¿ne raporty (ró¿ny zestaw parametrów).
 <glossterm>Centrum Sterowania SZARP <foreignphrase>SCC</foreignphrase></glossterm>
 <glossdef><para>
 Program s³u¿±cy do uruchamiania innych programów systemu SZARP - g³ównie
-Programu Przegl±daj±cego i Raportera. Ma postaæ ikony loga systemu SZARP.
+Programu Przegl±daj±cego i Raportera. Ma postaæ ikony z logo systemu SZARP znajduj±cej
+siê zasobniku systemowym (zwykle prawy dolny róg ekranu).
 </para></glossdef>
 </glossentry>
 
@@ -126,8 +122,8 @@ jest dostêpny.
 <glossterm>Serwer SZARP</glossterm>
 <glossdef><para>
 G³ówny komputer zbieraj±cy dane ze sterowników przemys³owych, zapisuj±cy je i
-wysy³aj±cy do serwera centralnego w Warszawie. Do serwera pod³±czona jest
-karta Moxa. Na ciep³owni jest tylko jeden serwer.
+wysy³aj±cy przez Internet do serwera centralnego. Do serwera pod³±czona jest
+karta Moxa. Na ciep³owni zwykle jest tylko jeden serwer.
 </para></glossdef>
 </glossentry>
 
@@ -277,7 +273,7 @@ zbiera³ dane tak¿e bez zalogowanego u¿ytkownika.
 <glossentry>
 <glossterm>U¿ytkownik</glossterm>
 <glossdef><para>
-Nazwa która podano przy logowaniu do systemu Linux. Ka¿dy u¿ytkownik ma w³asny
+Nazwa, któr± podano przy logowaniu do systemu Linux. Ka¿dy u¿ytkownik ma w³asny
 zestaw ustawieñ, jego ustawienia nie wp³ywaj± na pracê innych u¿ytkowników.
 </para></glossdef>
 </glossentry>
@@ -309,8 +305,9 @@ nastêpuje zalogowanie jako domy¶lny u¿ytkownik, nie wymagane jest podawanie
 </para>
 <para>
 Po za³adowaniu systemu i uruchomieniu ¶rodowiska graficznego 
-<xref linkend="gloss-kde"> na ekranie widoczna jest animowana ikona z logo
-systemu SZARP. Po klikniêciu na niej lewym przyciskiem myszy ukazuje siê menu
+<xref linkend="gloss-kde"> w zasobniku systemowym widoczna jest ikona
+z logo systemu SZARP. Po klikniêciu na niej lewym przyciskiem myszy uruchamia siê
+Centrum Sterowania SZARP - ukazuje siê menu
 daj±ce dostêp do pogl±du danych - raportów bie¿±cych i danych historycznych
 (programu przegl±daj±cego).
 </para>
@@ -412,11 +409,11 @@ Linux nie ma tendencji do <quote>zamulania siê</quote>, co jest typowe dla
 komputerów z Windows - mo¿e pracowaæ bez resetu przez praktycznie dowolnie
 d³ugi czas, co oznacza tak¿e, ¿e zwykle reset nie rozwi±zuje ¿adnego problemu.
 Resetowanie komputera mo¿e siê odbywaæ na wyra¼ne polecenie
-pracowników dzia³u informatycznego Pratermu. Je¿eli zdarzy siê zawieszenie
+pracowników obs³ugi technicznej systemu. Je¿eli zdarzy siê zawieszenie
 komputera, a ze wzglêdu np. na porê nie mo¿na zg³osiæ problemu, mo¿na
 jednokrotnie spróbowaæ zresetowaæ zawieszony komputer. Niezale¿nie od tego,
-czy operacja ta odnios³a po¿±dany skutek, prosimy o poinformowanie dzia³u
-informatycznego, ¿e taka sytuacja mia³a miejsce.
+czy operacja ta odnios³a po¿±dany skutek, prosimy o poinformowanie obs³ugi
+technicznej systemu, ¿e taka sytuacja mia³a miejsce.
 </para></listitem>
 
 </orderedlist>
@@ -489,8 +486,8 @@ uwagê, czy kondensatory na p³ycie (zw³aszcza wokó³ procesora) nie s±
 spuchniête.
 </para>
 <para>
-Ze wzglêdu na konieczno¶æ wy³±czenia komputera prosimy o informacjê poczt±
-elektroniczn± na dzieñ czy dwa przed planowanym czyszczeniem komputerów na
+Ze wzglêdu na konieczno¶æ wy³±czenia komputera prosimy w miarê mo¿liwo¶ci 
+o wcze¶niejsz± informacjê np. poczt± elektroniczn± przed planowanym czyszczeniem komputerów na
 ciep³owni. Czyszczenie komputerów na wêz³ach cieplnych, ze wzglêdu na brak
 py³u wêglowego, mo¿e odbywaæ siê rzadziej - np. raz na pó³ roku.
 </para></listitem>
@@ -506,79 +503,53 @@ py³u wêglowego, mo¿e odbywaæ siê rzadziej - np. raz na pó³ roku.
 <title>Zg³aszanie problemów</title>
 
 <para>
-Problemy dotycz±ce funkcjonowania systemu SZARP nale¿y zg³aszaæ pracownikom
-dzia³u informatycznego firmy Praterm. Na stronie
-<ulink url="http://www.szarp.com.pl/?q=pl/wsparcie">http://www.szarp.com.pl/?q=pl/wsparcie
-</ulink> znajduje siê:
-<itemizedlist>
+Problemy dotycz±ce funkcjonowania systemu SZARP nale¿y 
+obs³udze technicznej systemu. Informacje które mog± byæ przydatne osobom rozwi±zuj±cym
+problem:
+</para>
+<orderedlist>
 <listitem><para>
-Spis informacji, o których podanie mo¿e byæ proszona osoba zg³aszaj±ca
-problem.
+Nazwa system ciep³owniczego, obiektu którego dotyczy problem.
 </para></listitem>
 <listitem><para>
-Telefon stacjonarny do dzia³u informatycznego.
+Imiê i nazwisko, telefon lub mail osoby do kontaktu.
 </para></listitem>
 <listitem><para>
-Na bie¿±co umieszczane np. informacje o urlopach
-pracowników.
+Komputer którego dotyczy problem - serwer, terminal linuksowy czy terminal z Windows?
+Je¿eli na obiekcie jest wiêcej ni¿ jeden terminal linuksowy, prosimy o podanie jego lokalizacji
+i nazwy - mo¿na j± sprawdziæ np. na ekranie logowania.
 </para></listitem>
-</itemizedlist>
+<listitem><para>
+Nazwa u¿ytkownika, na którego nastêpuje logowanie.
+</para></listitem>
+<listitem><para>
+Jakiego programu dotyczy problem - raportów, wykresów czy te¿ innego (np. Ekstraktor)?
+Na czym dok³adnie polega nieprawid³owe zachowanie (np. program siê nie uruchamia,
+brak danych z konkretnego raportu lub w konkretnym oknie programu przegl±daj±cego).
+</para></listitem>
+<listitem><para>
+Danych z jakiego obiektu dotyczy problem (je¿eli nie s± to dane 'lokalne')?
+</para></listitem>
+<listitem><para>
+Przed zg³oszeniem problemu zwi±zanego z transmisj± danych lokalnie (serwer - terminal)
+prosimy o sprawdzenie poprawno¶ci pod³±czenia kabli sieciowych (¶wiecenie diod na switchu
+ethernetowym).
+</para></listitem>
+<listitem><para>
+Przed zg³oszeniem problemu zwi±zanego z transmisj± danych z innego obiektu prosimy
+sprawdziæ czy dzia³a po³±czenie do internetu.
+</para></listitem>
+</orderedlist>
+
+<para>
 Przy zg³aszaniu mniej pilnych problemów prosimy o rozwa¿enie pos³u¿enia siê
-e-mailem zamiast telefonu - jest to dla nas czêsto du¿o wygodniejszy sposób.
-Chêtnie odpowiemy tak¿e e-mailem na pytania dotycz±ce systemu SZARP czy Linuksa.
+e-mailem zamiast telefonu.
 </para>
 
 </section> <!-- problems-support -->
 
 <section id="problems-faq">
 <title>Najczê¶ciej spotykane problemy</title>
-
-<section id="problems-faq-noscc">
-<title>Brak widocznego programu <xref linkend="gloss-scc"></title>
-
-<para>
-Je¿eli na ekranie nie ma widocznej ikony programu <xref linkend="gloss-scc">:
-<itemizedlist>
-<listitem><para>
-Sprawd¼ czy na pasku zadañ na dole ekranu jest wymieniony program
-<emphasis>SZARP</emphasis>. Je¶li nazwa programu na pasku zadañ jest 
-<quote>wyszarzona</quote>, oznacza to, ¿e program zosta³ zminimalizowany -
-kliknij na nazwê programu na pasku zadañ, aby go przywróciæ.
-</para></listitem>
-
-<listitem><para>
-Byæ mo¿e program jest dostêpny na innym pulpicie (<xref linkend="gloss-kde">
-pozwala na u¿ycie kilku pulpitów). Spróbuj siê prze³±czyæ na inny pulpit
-klikaj±c obrazek pulpitu z numerkiem, widoczny na lewo od paska zadañ na dole
-ekranu. Aby program SCC by³ widoczny na wszystkich pulpitach, kliknij nazwê
-programu na pasku zadañ prawym przyciskiem myszy i wybierz z menu <guimenu>Na
-pulpit</guimenu> -> <guimenu>Wszystkie</guimenu>.
-</para></listitem>
-
-<listitem><para>
-Je¶li nadal nie widaæ ikony programu, wyloguj siê i zaloguj ponownie (opcja
-<guimenu>Wyloguj</guimenu>, bez resetowania komputera) i zwróæ uwagê czy ikona
-SCC jest widoczna przy starcie KDE. Je¶li jest widoczna, ale potem
-<quote>ucieka</quote>, spróbuj podczas uruchamiania KDE przytrzymaæ ikonê na
-miejscu za pomoc± prawego przycisku myszy.
-</para></listitem>
-
-<listitem><para>
-Je¶li to nie pomaga, zg³o¶ problem do dzia³u informatycznego firmy Praterm.
-</para></listitem>
-
-</itemizedlist>
-</para>
-</section> <!-- problems-faq-scc -->
-
-<section id="problems-faq-movescc">
-<title>Jak przesun±æ ikonê programu SCC</title>
-
-<para>
-Po³o¿enie ikony programu <xref linkend="gloss-scc"> mo¿na zmieniæ przesuwaj±c
-j± za pomoc± prawego przycisku myszy.
-</para>
-</section> <!-- problems-faq-movescc -->
 
 <section id="problems-faq-fonts">
 <title>Czcionki na ekranie w programach SZARP s± za ma³e</title>
@@ -665,7 +636,7 @@ Adres IP sprawdzamy uruchamiaj±c konsolê
 Wersjê aktualnie u¿ywanego oprogramowania mo¿emy sprawdziæ w kilku miejscach:
 <itemizedlist>
 <listitem><para>
-Centrum Sterowania Szarp - musimy klikn±æ ¶rodkowym przyciskiem myszki (lub lewym i prawym jednocze¶nie) i wybraæ z listy pozycjê <quote>O programie</quote>.
+Centrum Sterowania Szarp - musimy prawym przyciskiem myszki na ikonie z logo SZARP i wybraæ z listy pozycjê <quote>O programie</quote>.
 </para></listitem>
 
 <listitem><para>
@@ -683,33 +654,6 @@ Program Przegl±daj±cy - musimy wybraæ z menu <quote>Pomoc</quote> a nastêpnie <q
 </section> <!-- problems-faq-version -->
 
 </section> <!-- problems-faq -->
-
-<section id="problems-ultravnc">
-<title>Pomoc zdalna na terminalach z Windows</title>
-<para>
-W wypadku problemów z terminalami windowsowymi, których samodzielne rozwi±zanie nie powiod³o siê,
-mo¿na skorzystaæ z aplikacji do pomocy zdalnej. Konieczne jest ustalenie z pracownikami dzia³u
-informatycznego terminu uruchomienia serwera pomocy. W ustalonym terminie nale¿y pobraæ i uruchomiæ
-plik <command>pomoc.exe</command> spod adresu: 
-<ulink url="http://www.szarp.com.pl/pub/pomoc.exe">http://www.szarp.com.pl/pub/pomoc.exe</ulink>.
-</para>
-<para>
-System Windows XP bêdzie ostrzega³, ¿e nie zna pochodzenia programu. Nale¿y wybraæ "Uruchom".
-</para>
-<para>
-Po uruchomieniu pojawi siê okno z informacjami i mo¿liwo¶ci± wyboru serwera pomocy,
-z którym ma ustanowiæ po³±czenie. Nale¿y odczekaæ kilka sekund, aby zosta³ wybrany
-domy¶lny serwer. Na pasku zadañ obok zegara pojawi siê ikona i dymek z komunikatem
-o stanie programu. Aby zakoñczyæ korzystanie z pomocy, nale¿y klikn±æ prawym przyciskiem
-na ikonie i wybraæ <guimenu>Close</guimenu>. Zakoñczenie pracy nast±pi równie¿, gdy
-serwer pomocy zostanie wy³±czony.
-</para>
-<para>
-W czasie gdy program jest uruchomiony, nie nale¿y korzystaæ z klawiatury i myszy,
-gdy¿ bêdzie to powodowa³o konflikt z akcjami wykonywanymi przez pracownika udzielaj±cego
-pomocy. Na ekranie bêdzie mo¿na obserwowaæ dzia³ania wykonywane przez serwisanta.
-</para>
-</section> <!-- problems-ultravnc -->
 
 </chapter> <!-- problems -->
 

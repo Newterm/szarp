@@ -1,5 +1,8 @@
 $Id$
 
+2009-08-05	Pawel Palucha <pawel@praterm.pl>
+	* resources/documentation/new/eksploatacja/*: upgraded to new version
+	of SCC, staff specific to Praterm systems removed.
 2009-08-04	Pawel Palucha <pawel@praterm.pl>
 	* resources/documentation/new/draw: documention of draw2 removed.
 	* resources/documentation/new/*: docs fixes - list of implementations,
