@@ -1,5 +1,7 @@
 $Id$
 
+2009-08-06	Darek Marcinkiewicz <reksio@praterm.pl>
+	* resources/documentation/new/draw3: added documentation of remarks
 2009-08-05	Pawel Palucha <pawel@praterm.pl>
 	* resources/documentation/new/eksploatacja/*: upgraded to new version
 	of SCC, staff specific to Praterm systems removed.

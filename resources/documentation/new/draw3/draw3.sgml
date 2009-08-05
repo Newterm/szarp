@@ -130,6 +130,7 @@ oraz ikony skrótów:
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-filtericon.png"></imageobject></inlinemediaobject> - Filtr - wiêcej <xref linkend="draw3-ext-filter"></para></listitem>
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-refresh_icon.png"></imageobject></inlinemediaobject> - Od¶wie¿  - wiêcej <xref linkend="draw3-ext-refresh"></para></listitem>
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-flag_pl_icon.png"></imageobject></inlinemediaobject> - Zmieñ jêzyk programu - wiêcej <xref linkend="draw3-ext-languages"></para></listitem>
+<listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-remark_icon.png"></imageobject></inlinemediaobject> - Poka¿ kometarze dla akutalnej konfiguracji - wiêcej <xref linkend="draw3-ext-remarks"></para></listitem>
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-exit_icon.png"></imageobject></inlinemediaobject> - Wyjd¼ - wyj¶cie z programu</para></listitem>
 </itemizedlist>
 </para>
@@ -904,16 +905,99 @@ komunikatów, przyciskiem <guibutton>Schowaj</guibutton> zamkniesz okno.
 </para>
 </section> <!-- draw3-ext-errorwindow -->
 
-<!--
 <section id="draw3-ext-remarks">
-<title>Komentarze do wykresów</title>
+<title>Komentarze</title>
 <para>
-W niedalekiej przysz³o¶ci program przegl±daj±cy zostanie wzbogacony o mo¿liwo¶æ dodawania (przez uprawnionych u¿ytkowników) uwag do poszczególnych wykresów oraz ich odczyt (dla wszystkich). Pozwoli to na zwrócenie szczególnej uwagi na bardziej interesuj±ce fragmenty wykresów parametrów.
+Za pomoc± programu przegl±daj±cego mo¿esz umieszczaæ oraz przegl±daæ komentarze - wiadomo¶ci tekstowe przypisane do okre¶lonej konfiguracji oraz chwili w czasie.
+Komentarze maj± charakter globalny, stworzone przez Ciebie komentarze bed± dostêpne dla wszystkich u¿ytkowników programu przegl±daj±cego, którzy równie¿ maj±
+skonifgurowan± obs³ugê komentarzy oraz nadane odpowiednie uprawnienia pozwalaj±ce im ogl±daæ komentarze dla danego systemu. Program przegl±daj±cy 
+odró¿nia dwa typy komentarzy: odnosz±ce siê do ca³ego systemu oraz odnosz±ce siê zestawu wykresów w ramach jednego systemu.
+</para>
+<section id="draw3-ext-remarks-configuration">
+<title>Konfiguracja komentarzy</title>
+<para>
+<note>
+<para>
+Je¿eli nie istalowa³e¶ systemu SZARP samodzielnie, ale u¿ywasz go na ciep³owni lub w innym miejscu, w którym program by³ konfigurowany przez obs³ugê, 
+przypuszczalnie masz ju¿ skonfigurowan± obs³ugê komentarzy - mo¿esz pomin±æ ten rozdzia³.
+</para>
+</note>
+Zanim bêdziesz móg³ korzystaæ z komentarzy musisz skonfigurowaæ program przegl±daj±cy do ich odbierania i wysy³ania. Do skonfigurowania komentarzy
+musisz znaæ: adres serwera komentarzy oraz swoj± nazwê u¿ytkownika i has³o na tym serwerze. W celu ich uzyskania skontaktuj siê z dzia³em IT.
+Nastêpnie w menu "Narzêdzia" w g³ównym oknie programu, w podmenu "Ustawienia" kliknij na "Komentarze". Pojawi siê nastêpuj±ce okno dialogowe w którym
+musisz wporwadziæ wy¿ej wymienione informacje:
+<figure> <title>Konfiguracja komentarzy</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-remarks_conf.png"></imageobject>
+</mediaobject></figure>
+Po wprowadzeniu ustawieñ, wybierz opcjê menu Komentarze->Pobierz komentarze (znajduj±cym siê w menu Narzêdzia), je¿eli poprawnie
+wprowadzi³e¶ wszystkie dane, program powinien pobraæ nowe komentarze i wy¶wietliæ komunikat: "Pobrano nowe komentarze" lub te¿
+"Brak nowych komentarzy" je¿eli nie ma jeszcze ¿adnych komentarzy. Ka¿dy z tych dwóch komunikatów oznacza, ¿e obs³uga komentarzy
+zosta³a poprawnie skonfigurowana. W przypadku jakiegokolwiek komunikatu b³êdu upewnij siê, ¿e na pewno poprawnie wprowadzi³e¶ 
+otrzymane dane.
+
+<note>
+<para>
+Je¿eli komunikacja ci±gle nie dzia³a, a jeste¶ pewien ¿e na pewno poprawnie wprowadzi³e¶ adres serwera, nazwê u¿ytkownika, has³o
+i Twój komputer ma ³±czno¶æ z internetem, sprawd¼ ustawienia swojego firewall'a. Serwer komentarzy korzysta z portu numer 7998, 
+firewall musi byæ tak skonfigurowany by zezwalaæ na po³±czenia wychodz±ce na ten port. Je¿eli i to zawiedzie - skontaktuj siê z dzia³em IT.
+</para>
+</note>
+
+W oknie konfiguracji komentarzy dostêpna jest te¿ opcja "Pobieraj automatycznie komentarze", po jej zaznaczeniu program automatycznie
+bêdzie siê ³±czy³ z serwerem i pobiera³ nowe komentarze, bez konieczno¶ci wybierania opcji "Pobierz komentarze".
+</para>
+</section>
+<section id="draw3-ext-remarks-browsing">
+<title>Przegl±danie komentarzy</title>
+<para>
+Listê komentarzy odnosz±cych siê do aktualnie ogl±danego przez Ciebie systemu uzyskasz po wybraniu opcji "Poka¿ komentarze", 
+z menu "Komentarze" (w menu "Narzêdzia"). Tê sam± listê otrzymasz klikaj±c na ikonce komentarzy
+<inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-remark_icon.png"></imageobject></inlinemediaobject>.
 </para>
 <para>
-Okno uwag mo¿esz uruchomiæ wybieraj±c z menu <guimenu>Narzêdzia</guimenu> i <guimenu>Uwagi</guimenu>. Tymczasowo okno nie umo¿liwia wstawiania uwag.
+Lista komentarzy zawiera dwie kolumny, w pierwszej znajduje siê chwila w czasie do której odnosi siê komentarz, a w drugiej
+tytu³ komentarza.
+<figure> <title>Lista komentarzy</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-remarks_list.png"></imageobject>
+</mediaobject></figure>
+Po wskazaniu komentarza i wybraniu opcji "Otwórz" (lub podwójnym klikniêciu na komentarz), pojawi siê kolejne
+okno zawieraj±c± w³a¶ciw± tre¶æ komentarza, tytu³, jego autora, itd. Okno prezentuj±ce komentarz zawiera przycisk "Id¼ do",
+gdy go naci¶niesz, program przegl±daj±cy ustawi siê na chwili w czasie (i ew. zestawie wykresów), do której ten komentarz
+siê odnosi.
+<figure> <title>Okno komentarza</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-remark_view.png"></imageobject>
+</mediaobject></figure>
 </para>
-</section> -->
+<para>
+Program przegl±daj±cy rysuje ikonkê gwiazdki nad przedzia³ami czasu na wykresach parametrów.
+Gwiazdka ta pojawia siê, gdy istnieje przynajmniej jeden komentarz odnosz±cy siê do danego przedzia³u czasu.
+Gdy klikniesz na gwiazdkê, otworzy siê takie samo okno jak w przypadku listy komentarzy, z t± ró¿nic±,
+¿e bêdzie ono zawiera³o jedynie komentarze odnosz±ce siê do wspomnianego przedzia³u. 
+<figure> <title>Gwiazdki wskazuj±ce obecno¶æ komentarzy odnosz±cych siê do kolejnych przedzia³ów czasu</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-remarks_stars.png"></imageobject>
+</mediaobject></figure>
+</para>
+</section>
+<section id="draw3-ext-remarks-editing">
+<title>Dodawanie komentarzy</title>
+<para>
+Program przegl±daj±cy pozwala tak¿e na tworzenie komentarzy. By dodaæ nowy komentarz, wybierz opcjê "Dodaj komentarz", 
+w menu "Komentarze", znajduj±cym siê w menu "Narzêdzia". Pojawi siê okno, w którym bêdziesz móg³ wpisaæ tytu³ komentarza,
+jego tre¶æ oraz wybraæ czy komentarz ma dotyczyæ ca³ego obiektu czy akutalnego zestawu wykresów. Czas, do którego
+odnosiæ siê bêdzie komenatrz, jest to czas akutalnie wskazywany przez kursor na wykresach czasowych.
+Po wpisaniu tytu³u i tre¶ci komentarza, naci¶nij przycisk 'Dodaj', spowoduje to wys³anie komentarza
+na serwer.
+<figure> <title>Dodawanie nowego komentarza</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-remark_add.png"></imageobject>
+</mediaobject></figure>
+</para>
+</section>
+</section> 
 <!-- draw3-ext-remarks -->
 
 <section id="draw3-ext-reloadconfiguration">
