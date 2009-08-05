@@ -62,6 +62,7 @@ public:
 	void SetSet(std::wstring set);
 	void SetTitle(std::wstring title);
 	void SetContent(std::wstring content);
+	void SetAttachedPrefix(std::wstring prefix);
 	void SetTime(time_t time);
 
 	std::wstring GetPrefix();
@@ -70,6 +71,7 @@ public:
 	std::wstring GetContent();
 	std::wstring GetSet();
 	std::wstring GetAuthor();
+	std::wstring GetAttachedPrefix();
 	time_t GetTime();
 
 	ID GetId();
@@ -428,6 +430,8 @@ public:
 
 	void OnGoToButton(wxCommandEvent &event);
 
+	void OnHelpButton(wxCommandEvent &event);
+
 	DECLARE_EVENT_TABLE()
 };
 
@@ -454,6 +458,8 @@ public:
 	void OnOpenButton(wxCommandEvent& event);
 
 	void OnRemarkItemActivated(wxListEvent &event);
+
+	void OnHelpButton(wxCommandEvent &event);
 
 	DECLARE_EVENT_TABLE()
 };

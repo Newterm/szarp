@@ -1,6 +1,11 @@
 $Id$
 
 2009-08-06	Darek Marcinkiewicz <reksio@praterm.pl>
+	* utils/remarks_server: simple support for aggregated configurations
+	* wx/draw3: help buttons in remarks related dialogs, support
+	for aggregated configurations (remarks)
+	* resources/parstart_CFG: correction of command line arguments
+	also printing info about starting/stopping remarks server
 	* resources/documentation/new/draw3: added documentation of remarks
 2009-08-05	Pawel Palucha <pawel@praterm.pl>
 	* resources/documentation/new/eksploatacja/*: upgraded to new version

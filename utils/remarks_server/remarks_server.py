@@ -89,17 +89,15 @@ class Sessions:
 	def clean_expired_tokens(self):
 		"""Purge all expired tokens.
 		"""
-		try:
-			while True:
-				token = self.otokens.pop()
+		tokens = deque()
+		for token in self.otokens:
+			if self.data.has_key(token):
 				(atime, errstr, user_id, user_name) = self.data[token]
 				if time.time() - atime > self.expir:
 					del self.data[token]
 				else:
-					self.otokens.appendleft(token)
-					return;
-		except IndexError:
-			return
+					tokens.append(token)
+		self.otokens = tokens
 
 
 	def new_token(self):
@@ -186,7 +184,7 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
 		self.check_token(token)
 
 		defer = self.service.db.get_remarks_query(xmlrpc_time.value, prefixes, self.user_id)
-		defer.addCallback(lambda rows : [ (xmlrpc.Binary(row[0]), row[1], row[2]) for row in rows] ) 
+		defer.addCallback(lambda rows : [ (xmlrpc.Binary(row[0]), row[1], row[2], row[3]) for row in rows] ) 
 		return defer
 
 
@@ -237,9 +235,13 @@ class Database:
 	
 		defer = self.dbpool.runQuery("""
 			SELECT 
-				content, server_id, id
+				remark.content, remark.server_id, prefix.prefix, remark.id
 			FROM
-				remark
+				remark 
+			JOIN
+				prefix
+			ON	
+				(remark.prefix_id = prefix.id)
 			WHERE 
 					(		
 						post_time >= %(t)s
@@ -291,7 +293,11 @@ class Database:
 			ON
 				(prefix.id = user_prefix_access.prefix_id)
 			WHERE
-				prefix.prefix = %(prefix)s AND user_prefix_access.user_id = %(user_id)s
+					prefix.prefix = %(prefix)s
+				AND
+					user_prefix_access.user_id = %(user_id)s
+				AND
+					user_prefix_access.write_access = 1
 
 			""",  { 'prefix' : prefix, 'user_id': user_id })
 

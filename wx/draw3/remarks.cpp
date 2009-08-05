@@ -124,7 +124,6 @@ void RemarksHandler::RemoveRemarkFetcher(RemarksFetcher* fetcher) {
 
 void RemarksHandler::NewRemarks(std::vector<Remark>& remarks) {
 	m_storage->StoreRemarks(remarks);
-
 }
 
 void RemarksHandler::OnRemarksStored(RemarksStoredEvent &event) {
@@ -693,9 +692,13 @@ void RemarksConnection::HandleRemarksResponse(XMLRPC_REQUEST response) {
 		int server_id = XMLRPC_GetValueInt(j);
 
 		j = XMLRPC_VectorNext(i);
+		std::wstring prefix = SC::U2S((const unsigned char*) XMLRPC_GetValueString(j));
+
+		j = XMLRPC_VectorNext(i);
 		int id = XMLRPC_GetValueInt(j);
 
 		r.SetId(Remark::ID(server_id, id));
+		r.SetAttachedPrefix(prefix);
 
 		rms.push_back(r);
 	}
@@ -1096,7 +1099,7 @@ void RemarksStorage::ExecuteStoreRemarks(std::vector<Remark>& remarks) {
 	for (std::vector<Remark>::iterator i = remarks.begin();
 			i != remarks.end();
 			i++) {
-		std::wstring prefix = i->GetPrefix();
+		std::wstring prefix = i->GetAttachedPrefix();
 
 		if (m_prefixes.find(prefix) == m_prefixes.end()) {
 			AddPrefix(prefix);
@@ -1351,6 +1354,10 @@ void Remark::SetPrefix(std::wstring prefix) {
 	xmlSetProp(m_doc->children, BAD_CAST "prefix", SC::S2U(prefix).c_str());
 }
 
+void Remark::SetAttachedPrefix(std::wstring prefix) {
+	xmlSetProp(m_doc->children, BAD_CAST "attached_prefix", SC::S2U(prefix).c_str());
+}
+
 void Remark::SetBaseName(std::wstring base_name) {
 	xmlSetProp(m_doc->children, BAD_CAST "base_name", SC::S2U(base_name).c_str());
 }
@@ -1416,6 +1423,15 @@ std::wstring get_property(xmlDocPtr doc, const char* prop) {
 
 std::wstring Remark::GetPrefix() {
 	return get_property(m_doc.get(), "prefix");
+}
+
+std::wstring Remark::GetAttachedPrefix() {
+	std::wstring prefix = get_property(m_doc.get(), "attached_prefix");
+	//for old remarks that do not have this property we use just 'prefix'
+	if (prefix.empty())
+		return GetPrefix();
+	else
+		return prefix;
 }
 
 std::wstring Remark::GetBaseName() {
@@ -1547,6 +1563,16 @@ void RemarkViewDialog::OnGoToButton(wxCommandEvent &event) {
 	EndModal(wxID_FIND);
 }
 
+void RemarkViewDialog::OnHelpButton(wxCommandEvent &event) {
+
+	if (XRCCTRL(*this, "RemarkTitleTextCtrl", wxTextCtrl)->IsEditable())
+		SetHelpText(_T("draw3-ext-remarks-editing"));
+	else
+		SetHelpText(_T("draw3-ext-remarks-browsing"));
+
+	wxHelpProvider::Get()->ShowHelp(this);
+}
+
 wxString RemarkViewDialog::GetRemarkTitle() {
 	return XRCCTRL(*this, "RemarkTitleTextCtrl", wxTextCtrl)->GetValue();
 }
@@ -1590,11 +1616,14 @@ void RemarkViewDialog::RemarkSent(bool ok, wxString error) {
 BEGIN_EVENT_TABLE(RemarkViewDialog, wxDialog)
 	EVT_BUTTON(wxID_CLOSE, RemarkViewDialog::OnCloseButton)
 	EVT_BUTTON(wxID_CANCEL, RemarkViewDialog::OnCancelButton)
+	EVT_BUTTON(wxID_HELP, RemarkViewDialog::OnHelpButton)
 	EVT_BUTTON(XRCID("GOTO_BUTTON"), RemarkViewDialog::OnGoToButton)
 	EVT_BUTTON(wxID_ADD, RemarkViewDialog::OnAddButton)
 END_EVENT_TABLE()
 
 RemarksListDialog::RemarksListDialog(DrawFrame* parent, RemarksHandler *remarks_handler) {
+	SetHelpText(_T("draw3-ext-remarks-browsing"));
+
 	m_remarks_handler = remarks_handler;
 
 	m_draw_frame = parent;
@@ -1656,7 +1685,7 @@ void RemarksListDialog::ShowRemark(int index) {
 	d->Destroy();
 
 	if (ret == wxID_FIND) {
-		m_draw_frame->GetCurrentPanel()->Switch(r.GetSet(), r.GetPrefix(), r.GetTime());
+		m_draw_frame->GetCurrentPanel()->Switch(r.GetSet(), r.GetAttachedPrefix(), r.GetTime());
 		EndModal(wxID_CLOSE);
 	}
 }
@@ -1681,9 +1710,14 @@ void RemarksListDialog::OnClose(wxCloseEvent& event) {
 	EndModal(wxID_CLOSE);
 }
 
+void RemarksListDialog::OnHelpButton(wxCommandEvent &event) {
+	wxHelpProvider::Get()->ShowHelp(this);
+}
+
 BEGIN_EVENT_TABLE(RemarksListDialog, wxDialog)
 	EVT_BUTTON(wxID_OPEN, RemarksListDialog::OnOpenButton)
 	EVT_BUTTON(wxID_CLOSE, RemarksListDialog::OnCloseButton)
+	EVT_BUTTON(wxID_HELP, RemarksListDialog::OnHelpButton)
 	EVT_CLOSE(RemarksListDialog::OnClose)
 	EVT_LIST_ITEM_ACTIVATED(XRCID("RemarksListCtrl"), RemarksListDialog::OnRemarkItemActivated)
 END_EVENT_TABLE()
@@ -1757,7 +1791,7 @@ void RemarksFetcher::RemarksReceived(std::vector<Remark>& remarks) {
 
 		std::wstring rset = i->GetSet();
 
-		if (prefix != i->GetPrefix()
+		if (prefix != i->GetAttachedPrefix()
 				|| (!rset.empty() && set != rset)
 				|| rt < start
 				|| rt >= end)
@@ -1776,12 +1810,15 @@ void RemarksFetcher::RemarksReceived(std::vector<Remark>& remarks) {
 void RemarksFetcher::OnRemarksResponse(RemarksResponseEvent &e) {
 	std::vector<Remark>& remarks = e.GetRemarks();
 
-	wxString base_name = m_current_draw->GetDrawInfo()->GetDrawsSets()->GetID();
-
+	ConfigNameHash& cnh = m_current_draw->GetDrawInfo()->GetDrawsSets()->GetParentManager()->GetConfigTitles();
 	for (std::vector<Remark>::iterator i = remarks.begin();
 			i != remarks.end();
-			i++)
-		i->SetBaseName(base_name.c_str());
+			i++) {
+		ConfigNameHash::iterator j = cnh.find(i->GetPrefix());
+
+		if (j != cnh.end())
+			i->SetBaseName(j->second.c_str());
+	}
 
 	if (e.GetResponseType() == RemarksResponseEvent::BASE_RESPONSE) {
 		if (!m_awaiting_for_whole_base)
