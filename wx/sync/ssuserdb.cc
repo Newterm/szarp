@@ -23,13 +23,12 @@
 
 UserDB::~UserDB() {}
 
-XMLUserDB::XMLUserDB(xmlDocPtr doc,const char *prefix, const char* rpc_address) {
+XMLUserDB::XMLUserDB(xmlDocPtr doc,const char *prefix) {
 	m_document = doc;
 	m_context = xmlXPathNewContext(m_document);
 	xmlXPathRegisterNs(m_context, BAD_CAST "s", 
 		BAD_CAST "http://www.praterm.com.pl/SZARP/sync-users");
 	hostname = prefix;
-	m_rpc = rpc_address;
 }
 
 char *XMLUserDB::EscapeString(const char* string) {
@@ -60,7 +59,7 @@ char *XMLUserDB::EscapeString(const char* string) {
 }
 
 
-XMLUserDB* XMLUserDB::LoadXML(const char *path,const char *prefix, const char *rpc_address) {
+XMLUserDB* XMLUserDB::LoadXML(const char *path,const char *prefix) {
 	XMLUserDB *result = NULL;
 	xmlDocPtr doc = xmlParseFile(path);
 
@@ -95,7 +94,7 @@ XMLUserDB* XMLUserDB::LoadXML(const char *path,const char *prefix, const char *r
 		return NULL;
 	}
 
-	result = new XMLUserDB(doc, prefix, rpc_address);
+	result = new XMLUserDB(doc,prefix);
 
 	return result;
 }
@@ -175,7 +174,7 @@ int XMLUserDB::CheckUser(int protocol,const char* user, const char* passwd, cons
 		return Message::INVALID_HWKEY;
 	}
 	if(strcmp(prop_key,key) && !strcmp(prop_key, "-1") && strcmp(key,SPECIAL_WINDOWS_KEY) && strcmp(key,SPECIAL_LINUX_KEY) != 0) {
-		asprintf(&cmd,"/opt/szarp/bin/ssconf.py -r '%s' -u '%s' -c '%s'", m_rpc, user, key);
+		asprintf(&cmd,"/opt/szarp/bin/ssconf.py -u '%s' -c '%s'",user,key);
 		int ret = system(cmd);
 		free(cmd);
 		if (ret) {

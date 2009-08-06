@@ -6,7 +6,11 @@ set -e;
 
 case "$1" in
     configure)
-    chmod 0640 /etc/szarp/ssconf.cfg
+    adduser --system --group --no-create-home sss
+    [ -f /etc/szarp/ssconf.cfg ] && {
+	    chmod 0640 /etc/szarp/ssconf.cfg
+	    chown root.sss /etc/szarp/ssconf.cfg
+    }
     ;;
 esac
 

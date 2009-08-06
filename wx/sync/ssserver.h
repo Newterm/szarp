@@ -301,9 +301,6 @@ const char *g_userdatabasefile = NULL;
 /**configuration prefix*/
 const char *prefix = NULL;
 
-/**address of RPC server managing users database file*/
-const char *g_rpc = NULL;
-
 /**load users database*/
 void LoadUserDatabase();
 

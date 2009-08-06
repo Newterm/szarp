@@ -190,7 +190,7 @@ key_file=/etc/szarp/sss_key.pem
 # path to certificate
 ca_file=/etc/szarp/sss_ca.pem
 # user to run as
-user=nobody
+user=sss
 # server port
 port=23
 # users database file

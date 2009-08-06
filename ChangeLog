@@ -1,6 +1,12 @@
 $Id$
 
 2009-08-06	Darek Marcinkiewicz <reksio@praterm.pl>
+	* resources/SZARP_IN_CFG_TEMPLATE: running sss as 'sss' user.
+	* wx/sync/*: reverting most of previous changes, problem with access
+	to ssconf.cfg file is (hopefully) resolved by creating special 'sss' 
+	group and user for running sss daemon.
+	* debian/szarp-daemons.*: creating system user and group 'sss'.
+	* debian/szarp-updater.prerm: removed unncessecary file.
 	* utils/remarks_server: simple support for aggregated configurations
 	* wx/draw3: help buttons in remarks related dialogs, support
 	for aggregated configurations (remarks)
