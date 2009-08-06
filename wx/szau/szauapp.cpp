@@ -34,6 +34,8 @@
 #include <wx/wxprec.h>
 #include <wx/process.h>
 
+#include <libxml/tree.h>
+
 #ifndef MINGW32
 #include <unistd.h>
 #include <sys/types.h>
@@ -52,9 +54,7 @@ bool SzauApp::OnInit() {
 	szApp::OnInit();
 	this->SetProgName(_("SZAU - Szarp Automatic Updater"));
 
-	char *version_url;
-	char *installer_url;
-	char *checksum_url;
+	char *rss_url;
 
 	app_instance = NULL;
 #ifndef MINGW32
@@ -67,6 +67,7 @@ bool SzauApp::OnInit() {
 	locale.Init(wxLANGUAGE_POLISH);
 #endif //__WXMSW_
 
+	xmlInitParser();
 
 	locale.AddCatalogLookupPathPrefix(GetSzarpDir() + _T("resources/locales"));
 
@@ -116,32 +117,27 @@ bool SzauApp::OnInit() {
 	}
 
 	// Read params from szarp.cfg.
-	version_url = libpar_getpar("szau", "version_url", 0);
-	if (!version_url)
-		version_url = strdup("http://szarp.com.pl/win/version.h");
-	installer_url = libpar_getpar("szau", "installer_url", 0);
-	if (!installer_url)
-		installer_url = strdup("http://szarp.com.pl/win/SzarpSetup.exe");
-
-	checksum_url = libpar_getpar("szau", "checksum_url", 0);
-	if (!checksum_url)
-		checksum_url = strdup("http://szarp.com.pl/win/SzarpSetup.exe.md5");
+	rss_url = libpar_getpar("szau", "rss_url", 0);
+	if (!rss_url)
+		rss_url = strdup("http://sourceforge.net/api/file/index/project-id/210338/rss?path=/Windows");
 
 	SetAppName(_("SZAU"));
 
-	m_downloader = new Downloader(version_url, installer_url, checksum_url, getInstallerLocalPath());
+	m_downloader = new Downloader(rss_url);
 
 	Updater * updater = new Updater(m_downloader);
+
+	fs::wpath current_installer = getInstallerLocalPath() / updater->VersionToInstallerName(SC::A2S(SZARP_VERSION)).c_str();
+	try {
+		fs::remove(current_installer);
+	} catch (fs::filesystem_error err) { }
 	
 	UpdaterStatus status = NEWEST_VERSION;
 	
-	if(updater->InstallFileReadyOnStartup()){
+	if (updater->InstallFileReadyOnStartup()) {
 		int answer = wxMessageBox(_("New SZARP version is ready to install. Start installation?"), _("SZARP"), wxYES_NO, NULL);
-		if (answer == wxYES) {
-			wxProcess *process = new wxProcess(this,wxID_ANY);
-			wxString command = wxString(wxGetApp().getInstallerLocalPath().string());
-			wxExecute(command, wxEXEC_ASYNC, process);
-		}
+		if (answer == wxYES)
+			updater->Install();
 		status = READY_TO_INSTALL;
 	}
 	
@@ -157,7 +153,6 @@ fs::wpath SzauApp::getInstallerLocalPath() {
 	ret /= L".szarp";
 	if (!fs::exists(ret))
 		create_directory(ret);
-	ret /= L"SzarpSetup.exe";
 
 	return ret;
 }

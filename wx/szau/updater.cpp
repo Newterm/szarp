@@ -32,6 +32,7 @@
 #include <fstream>
 
 #include "updater.h"
+#include "szauapp.h"
 
 #define MD5_READ_BLOCK_SIZE 8192
 
@@ -53,11 +54,13 @@ Updater::Updater(Downloader * downloader) {
 	setStatus(NEWEST_VERSION);
 }
 
+std::wstring Updater::VersionToInstallerName(std::wstring version) {
+	return std::wstring(L"szarp-") + version + L".exe";
+}
+
 void Updater::Start(){
 	boost::thread startthread(Runner(this));
 }
-
-
 
 UpdaterStatus Updater::getStatus(size_t& value) {
 	wxCriticalSectionLocker locker(m_internal_cs);
@@ -72,13 +75,13 @@ void Updater::setStatus(UpdaterStatus status) {
 	m_status = status;
 }
 
-bool Updater::needToDownloadFile(wxString newChecksum) {
+bool Updater::needToDownloadFile(wxString newChecksum, wxString version) {
 
 	if (newChecksum.IsEmpty()) {
 		return true;
 	}
 
-	fs::wpath file = m_downloader->getInstallerFilePath();
+	fs::wpath file = wxGetApp().getInstallerLocalPath() / VersionToInstallerName(version.c_str());
 
 	if (!fs::exists(file)) {
 		return true;
@@ -172,9 +175,11 @@ bool Updater::isVersionNewer(wxString version) {
 bool Updater::InstallFileReadyOnStartup(){
 	wxString version = m_downloader->getVersion();
 
-	if(isVersionNewer(version)) {
-		bool ret = needToDownloadFile(m_downloader->getChecksum());
-		if(ret){
+	if (isVersionNewer(version)) {
+		SetCurrentVersion(version.c_str());
+
+		bool ret = needToDownloadFile(m_downloader->getChecksum(), version);
+		if (ret) {
 			return false;
 		} else {
 			setStatus(READY_TO_INSTALL);
@@ -185,18 +190,47 @@ bool Updater::InstallFileReadyOnStartup(){
 	return false;
 }
 
+void Updater::SetCurrentVersion(std::wstring version) {
+	wxCriticalSectionLocker locker(m_version_cs);
+	m_version = version;
+}
+
+std::wstring Updater::GetCurrentVersion() {
+	wxCriticalSectionLocker locker(m_version_cs);
+	return m_version;
+}
+
+void Updater::Install() {
+	std::wstring version = GetCurrentVersion();
+	if (version.empty())
+		return;
+
+	wxString command = wxString((wxGetApp().getInstallerLocalPath() / VersionToInstallerName(version)).string());
+	wxExecute(command, wxEXEC_ASYNC);
+}
+
 void Updater::Run() {
 
 	do {
+		boost::xtime xt;
+		boost::xtime_get(&xt, boost::TIME_UTC);
+		xt.sec = xt.sec + 300;
+		boost::thread::sleep(xt);
+
 		wxString version = m_downloader->getVersion();
 
 		bool is_newer_available = isVersionNewer(version);
 
 		if (is_newer_available) {
-			if (needToDownloadFile(m_downloader->getChecksum())) {
+
+			SetCurrentVersion(version.c_str());
+
+			if (needToDownloadFile(m_downloader->getChecksum(), version)) {
 				setStatus(DOWNLOADING);
-				bool result = m_downloader->getInstallerFile();
-				if (result || !needToDownloadFile(m_downloader->getChecksum())) {
+
+				std::wstring installer_local_path = (wxGetApp().getInstallerLocalPath() / VersionToInstallerName(GetCurrentVersion())).string();
+				bool result = m_downloader->getInstallerFile(installer_local_path);
+				if (result || !needToDownloadFile(m_downloader->getChecksum(), version)) {
 					setStatus(READY_TO_INSTALL);
 				} else {
 					setStatus(UPDATE_ERROR);
@@ -205,11 +239,6 @@ void Updater::Run() {
 				setStatus(READY_TO_INSTALL);
 			}
 		}
-
-		boost::xtime xt;
-		boost::xtime_get(&xt, boost::TIME_UTC);
-		xt.sec = xt.sec + 300;
-		boost::thread::sleep(xt);
 
 	} while (1);
 

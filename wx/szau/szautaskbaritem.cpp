@@ -96,12 +96,7 @@ void SzauTaskBarItem::OnAbout(wxCommandEvent &event) {
 }
 
 void SzauTaskBarItem::OnInstall(wxCommandEvent &event) {
-
-	wxProcess *process = new wxProcess(this,wxID_ANY);
-
-	wxString command = wxString(wxGetApp().getInstallerLocalPath().string());
-
-	wxExecute(command, wxEXEC_ASYNC, process);
+	m_updater->Install();
 }
 
 void SzauTaskBarItem::OnLeftMouseDown(wxTaskBarIconEvent &event) {
@@ -128,14 +123,16 @@ void SzauTaskBarItem::OnTimer(wxTimerEvent& WXUNUSED(event)) {
 	}
 
 	if (status == READY_TO_INSTALL && m_prev_status != READY_TO_INSTALL) {
-		m_menu->Enable(ID_INSTALL_MENU, true);
+		if (m_menu)
+			m_menu->Enable(ID_INSTALL_MENU, true);
 #if defined(__WXMSW__) && defined(__HAS_BALLOON__)
 		ShowBalloon(_("Szarp Automatic Updater"), _("New version available"));
 #endif
 	}
 
 	if (status != READY_TO_INSTALL && m_prev_status == READY_TO_INSTALL) {
-		m_menu->Enable(ID_INSTALL_MENU, false);
+		if (m_menu)
+			m_menu->Enable(ID_INSTALL_MENU, false);
 	}
 
 	m_prev_status = status;

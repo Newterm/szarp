@@ -42,6 +42,7 @@
 #endif
 
 #include <curl/curl.h>
+#include <libxml/tree.h>
 #include <fstream>
 
 #include "boost/filesystem/path.hpp"
@@ -51,7 +52,6 @@
 namespace fs = boost::filesystem;
 
 class Downloader {
-
 	CURL* m_curl_handler;
 	bool m_curl_inilialized;
 	static size_t WriteFunction(void* ptr, size_t size, size_t nmemb, void *object);
@@ -65,30 +65,28 @@ class Downloader {
 
 	size_t m_buf_used;
 	size_t m_buf_len;
-	char* m_version_url;
-	char* m_installer_url;
-	char* m_checksum_url;
+	char* m_rss_url;
 	int m_error;
 	char* m_buf;
-	fs::wpath m_installer_file_path;
 	std::ofstream * m_installer_ofstream;
 	size_t m_current_download_percentage;
 	wxCriticalSection m_current_download_percentage_cs;
 	bool m_downloading;
 
-	wxString getTextFileAsString(const char* url);
+	wxString m_url;
+	wxString m_version;
+	wxString m_md5;
 
+	xmlDocPtr FetchRSS();
+	bool ParseRSS(xmlDocPtr doc);
+	bool GetRSS();
 public:
-	Downloader(char * version_url, char * installer_url, char * checksum_url, fs::wpath installer_file_path);
+	Downloader(char * rss_url);
 	~Downloader();
 	wxString getVersion();
 	wxString getChecksum();
-	bool getInstallerFile();
+	bool getInstallerFile(std::wstring installer_path);
 	size_t getCurrentDownloadPercentage();
-	fs::wpath getInstallerFilePath() {
-		return m_installer_file_path;
-	}
-	;
 };
 
 #endif

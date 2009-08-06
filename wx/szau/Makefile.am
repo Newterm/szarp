@@ -10,8 +10,9 @@ SUBDIRS =
 MAINTAINERCLEANFILES = Makefile.in
 
 # Compilations flags
-INCLUDES = @WX_CXXFLAGS@ @CURL_CFLAGS@ @SSL_CFLAGS@ @BOOST_CPPFLAGS@ \
+INCLUDES = @WX_CXXFLAGS@ @CURL_CFLAGS@ @SSL_CFLAGS@ @XML_CFLAGS@ @BOOST_CPPFLAGS@ \
 	-I@srcdir@/../../libSzarp/include \
+	-I@srcdir@/../../libSzarp2/include \
         -I@srcdir@/../../include \
 	-I@srcdir@/../common \
 	-DPREFIX=\"@prefix@\"

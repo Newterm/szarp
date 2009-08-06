@@ -65,15 +65,21 @@ class Updater {
 	UpdaterStatus m_status;
 	Downloader * m_downloader;
 	wxCriticalSection m_internal_cs;
+	wxCriticalSection m_version_cs;
 	void setStatus(UpdaterStatus status);
 	static bool isVersionNewer(wxString version);
-	bool needToDownloadFile(wxString newChecksum);
-	
+	bool needToDownloadFile(wxString newChecksum, wxString version);
+
+	std::wstring m_version;
+	void SetCurrentVersion(std::wstring version);
+	std::wstring GetCurrentVersion();
 public:
 	Updater(Downloader * downloader);
 	UpdaterStatus getStatus(size_t & value);
 	void Run();
+	void Install();
 	bool InstallFileReadyOnStartup();
+	std::wstring VersionToInstallerName(std::wstring version);
 	void Start();
 };
 
