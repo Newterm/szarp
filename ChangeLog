@@ -1,5 +1,8 @@
 $Id$
 
+2009-08-07	Pawel Palucha <pawel@praterm.com.pl>
+	* resources/logo/szarp-logo.svg: 'szarp inside' logo added.
+	* wx/draw3/pl/draw3.po: spelling fix.
 2009-08-06	Darek Marcinkiewicz <reksio@praterm.pl>
 	* wx/szau: szau uses sourceforge's rss feed to download
 	new versions of szarp installers for windows

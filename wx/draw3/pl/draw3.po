@@ -865,7 +865,7 @@ msgstr ""
 
 #: remarks.cpp:662
 msgid "New remarks received"
-msgstr "Odberano nowe komentarze"
+msgstr "Odebrano nowe komentarze"
 
 #: remarks.cpp:662
 msgid "New remarks"
