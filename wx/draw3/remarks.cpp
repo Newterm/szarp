@@ -800,7 +800,7 @@ void RemarksConnection::OnXMLRPCResponse(XMLRPCResponseEvent &event) {
 	if (m_token == -1) {
 		HandleLoginResponse(response);
 
-		XMLRPC_REQUEST request;
+		XMLRPC_REQUEST request = NULL;
 
 		switch (m_current_action) {
 			case FETCHING_REMARKS:

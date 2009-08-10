@@ -21,9 +21,8 @@
  * SZARP
 
  *
- * $Id$
+ * $Id: wxgraphs.h 1 2009-06-24 15:09:25Z isl $
  */
-
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include <wx/wxprec.h>
@@ -34,76 +33,31 @@
 #include <wx/wx.h>
 #endif
 
-#ifndef __WXGRAPHS_H__
-#define __WXGRAPHS_H__
+#ifndef __GCDCGRAPHS_H__
+#define __GCDCGRAPHS_H__
 
 #include "config.h"
 
 #include <wx/datetime.h>
 #include <wx/colour.h>
+#include <wx/graphics.h>
 #include <wx/dynarray.h>
-#include <wx/arrimpl.cpp>
-#include <wx/dc.h>
 
-#include "cfgmgr.h"
-#include "drawdnd.h"
 #include "drawswdg.h"
+#include "drawobs.h"
 
-#include "dbinquirer.h"
-
-#ifndef NO_GSTREAMER
-#include <gst/gst.h>
-#endif
-
-class GraphView;
-class ConfigManager;
-class BackgroundView;
-
-/** MUST BE ODD!! */
-#define CURSOR_RECTANGLE_SIZE 9
-
-class WxGraphs:public wxWindow, public DrawGraphs, public SetInfoDropReceiver {
-	WX_DEFINE_ARRAY(GraphView*, GraphViewPtrArray);
-
-	/** Internal array of @see GraphVIew objects . */
-	GraphViewPtrArray m_graphs;
-
-	/**View attached to currently selected to @see Draw, draws the background*/
-	BackgroundView *m_bg_view;
+class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver, public DrawObserver {
 
 	DrawPtrArray m_draws;
 
-#ifndef NO_GSTREAMER
-	/**Vector holding spectrum values of currently played songs.*/
-	std::vector<float> m_spectrum_vals;
-#endif
-
-#ifndef NO_GSTREAMER
-	/**If set true the slected draw is dancing*/
-	bool m_dancing;
-
-	/**gstreamer object responsible for playing music*/
-	GstElement *m_gstreamer_bin;
-
-	/**Starts graph dance*/
-	void StartDance();
-
-	/**Stops graph dance*/
-	void StopDance();
-
-	/**Draws one frame*/
-	void DrawDance(wxDC *dc);
-
-#endif
-	/**Region that shall be repainted upon reception of idle event*/
-	wxRegion m_invalid_region;
-
-	wxSize m_size; /**<size of the widget*/
-
-	bool m_draw_current_draw_name;
-
 	ConfigManager *m_cfg_mgr;
-       
+
+	bool m_draw_param_name;
+
+	bool m_refresh;
+
+	bool m_recalulate_margins;
+
 	struct {
 		int leftmargin;
 		int rightmargin;
@@ -112,35 +66,52 @@ class WxGraphs:public wxWindow, public DrawGraphs, public SetInfoDropReceiver {
 		int infotopmargin;
 	} m_screen_margins;
 
-	/** Draws window name and param's short names. But only if that part of widget was damaged
-	 * @param dc dc to draw this information onto
-	 * @param damaged region*/
-	void DrawWindowInfo(wxDC *dc, const wxRegion& region);
+	void DrawWindowInfo(wxGraphicsContext &dc, const wxRegion& region);
 
-	void SetMargins();
+	void DrawBackground(wxGraphicsContext &dc);
 
-	void DrawCurrentParamName(wxDC *dc);
+	void DrawYAxisVals(Draw *draw);
+
+	void DrawYAxis(wxGraphicsContext &dc);
+
+	void DrawYAxisVals(wxGraphicsContext &dc, Draw *draw);
+
+	void DrawXAxis(wxGraphicsContext &dc);
+
+	void DrawXAxisVals(wxGraphicsContext &dc, Draw *d);
+
+	void RecalculateMargins(wxGraphicsContext &dc);
+
+	void DrawGraphs(wxGraphicsContext &dc);
+
+	static const wxColour back1_col;
+
+	static const wxColour back2_col;
+
+	int GetX(int i);
+
+	int GetY(double val, DrawInfo *di);
+
+	void DrawGraph(wxGraphicsContext &dc, Draw* d);
+
+	void DrawCursor(wxGraphicsContext &dc, Draw* d);
+
 public:
-        WxGraphs(wxWindow* parent, ConfigManager *cfg);
+        GCDCGraphs(wxWindow* parent, ConfigManager *cfg);
 
-	/**Causes given region to be repainted upon reception of idle event
-	 * @param region region to be repainted*/
-	void UpdateArea(const wxRegion& region);
-
-	/** Switches window */
 	virtual wxDragResult SetSetInfo(wxCoord x, wxCoord y, wxString window, wxString prefix, time_t time, PeriodType pt, wxDragResult def);
 
 	virtual void SetDrawsChanged(DrawPtrArray draws);
 
-	virtual void Deselected(int i);
-
-	virtual void Selected(int i);
-
-	virtual void Refresh();
-
 	virtual void StartDrawingParamName();
 
 	virtual void StopDrawingParamName();
+
+	virtual void Selected(int i);
+
+	virtual void Deselected(int i);
+
+	virtual void Refresh();
 
 	virtual void FullRefresh();
 	
@@ -151,8 +122,8 @@ public:
 	/** Event handler - called when left mouse button is pressed.
 	 * Handles moving cursor and shifting screen.
 	 */
-
 	void OnMouseLeftDown(wxMouseEvent& event);
+
 	/** Event handler - called on left mouse button double-click.
 	 * Handles shifting screen.
 	 */
@@ -176,10 +147,28 @@ public:
 
 	void OnIdle(wxIdleEvent& event);
 
-	virtual ~WxGraphs();
+	virtual void ScreenMoved(Draw* draw, const wxDateTime &start_date) { Refresh(); }
+
+	virtual void NewData(Draw* draw, int idx) { Refresh(); }
+
+	virtual void StatsChanged(Draw *draw) { Refresh(); };
+
+	virtual void CurrentProbeChanged(Draw *draw, int pi, int ni, int d) { Refresh(); }
+
+	virtual void DrawInfoChanged(Draw *draw) { Refresh(); }
+
+	virtual void FilterChanged(Draw *draw) { Refresh(); }
+
+	virtual void PeriodChanged(Draw *draw, PeriodType period) { Refresh(); }
+
+	virtual void EnableChanged(Draw *draw) { Refresh(); }
+
+//	virtual void NewRemarks(Draw *draw);
+
+
+	virtual ~GCDCGraphs();
 
 	DECLARE_EVENT_TABLE()
 };
 
-
-#endif 
+#endif

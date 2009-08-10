@@ -46,6 +46,7 @@
 #include "relwin.h"
 #include "wxgraphs.h"
 #include "glgraphs.h"
+#include "gcdcgraphs.h"
 #include "drawfrm.h"
 #include "remarks.h"
 
@@ -382,6 +383,9 @@ void DrawPanel::CreateChildren(DrawSet *set, PeriodType pt, time_t time, int sel
 	else
 #endif
 #endif
+	if (style == _T("GCDC"))
+		dg = new GCDCGraphs(this, cfg);
+	else 
 		dg = new WxGraphs(this, cfg);
 
 	tb = new DrawToolBar(this);

@@ -79,6 +79,7 @@ draw3_SOURCES = \
 		drawpsc.h drawpsc.cpp \
 		wxgraphs.h wxgraphs.cpp \
 		glgraphs.h glgraphs.cpp \
+		gcdcgraphs.h gcdcgraphs.cpp \
 		GUI/resource.cpp
 
 draw3_DEPENDENCIES = $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) $(LIBWXSCINTILLA)
