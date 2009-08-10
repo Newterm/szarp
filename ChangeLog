@@ -1,5 +1,9 @@
 $Id$
 
+2009-08-09	Pawel Palucha <pawel@praterm.com.pl>
+	* debian/control: python-wxaddons removed from dependencies of
+	szarp-filler package - it does not exist in standard Debian
+	repositories.
 2009-08-07	Pawel Palucha <pawel@praterm.com.pl>
 	* resources/logo/szarp-logo.svg: 'szarp inside' logo added.
 	* wx/draw3/pl/draw3.po: spelling fix.
