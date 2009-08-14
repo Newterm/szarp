@@ -20,6 +20,7 @@ class SsconfController(BaseController):
 		c.server = g.rpcservice.get_server(session['user'], session['passhash'], id)
 		return render('/server.mako')
 
+
 	def save_server(self, id):
 		server = dict()
 		# for adding new user

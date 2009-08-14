@@ -1,5 +1,6 @@
 """The application's Globals object"""
 from pylons import config
+from sssweb.model import init_model
 import xmlrpclib
 
 class Globals(object):

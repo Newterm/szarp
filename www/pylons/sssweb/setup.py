@@ -21,6 +21,7 @@ setup(
             ('**.py', 'python', None),
             ('templates/**.mako', 'mako', None),
             ('public/**', 'ignore', None)]},
+    paster_plugins=['PasteScript', 'Pylons'],
     entry_points="""
     [paste.app_factory]
     main = sssweb.config.middleware:make_app

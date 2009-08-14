@@ -1,5 +1,8 @@
 $Id$
 
+2009-08-14	Darek Marcinkiewicz <reksio@praterm.pl>
+	* www/pylons/sssweb: sssweb can be used for remarks users
+	administration (so far only basic features are present)
 2009-08-14	Pawel Palucha <pawel@praterm.com.pl>
 	* wx/common/pl/common.po: missing space in translation in About dialog.
 	* utils/nagios/szarp-templates.cfg: re-notifications disabled.
