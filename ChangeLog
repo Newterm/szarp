@@ -1,6 +1,7 @@
 $Id$
 
 2009-08-14	Pawel Palucha <pawel@praterm.com.pl>
+	* utils/nagios/szarp-templates.cfg: re-notifications disabled.
 	* utils/szrsync: -H option added to set server to fetch from.
 2009-08-09	Darek Marcinkiewicz <reksio@praterm.pl>
 	* wx/draw3: an experiment - use of new wxGraphicsContext
