@@ -294,7 +294,7 @@ msgstr "SZARP O programie"
 
 #: ../../../wx/common/aboutdlg.cpp:44
 msgid " SZARP Scada"
-msgstr "System SZARP"
+msgstr " System SZARP"
 
 #: ../../../wx/common/aboutdlg.cpp:48
 msgid " version: "

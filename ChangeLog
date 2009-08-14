@@ -1,6 +1,7 @@
 $Id$
 
 2009-08-14	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/common/pl/common.po: missing space in translation in About dialog.
 	* utils/nagios/szarp-templates.cfg: re-notifications disabled.
 	* utils/szrsync: -H option added to set server to fetch from.
 2009-08-09	Darek Marcinkiewicz <reksio@praterm.pl>
