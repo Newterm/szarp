@@ -39,6 +39,7 @@ DEFAULT_SERVER=praterm
 ADDRESS=
 DELETE="--delete --force"
 USE_SSH=
+SERVER=$DEFAULT_SERVER
 
 ME=`basename $0`
 
@@ -56,17 +57,24 @@ function log {
 }
 
 function usage {
-	echo "Usage: $ME [-a <ADDRESS>] [-u <USER>] [-n] [-s] <BASE> ..."
-	echo "    -a <ADDRESS> address for rsync to connect"
-	echo "    -u <USER> user for rsync to connect to server, ignored if -a given"
-	echo "    -n do not delete files"
-	echo "    -s use ssh for getting szbase_stamp date (default curl if -a not given)"
+	echo "Tool for fetching SZARP bases from remote server."
+	echo "Usage: "
+	echo -e "\t$ME [-a <ADDRESS>] [-n] <BASE> ..."
+	echo -e "\t$ME [-u <USER>] [-H <HOST>] [-n] [-s] <BASE> ..."
+	echo -e "\t$ME -h"
+	echo
+	echo -e "\t-a <ADDRESS> address for rsync to connect (user@server)"
+	echo -e "\t-u <USER> user for rsync to connect to server, ignored if -a given"
+	echo -e "\t-H <HOST> server to connect to instead of default one ($DEFAULT_SERVER)"
+	echo -e "\t-n do not delete files"
+	echo -e "\t-s use ssh for getting szbase_stamp date (default curl if -a not given)"
+	echo -e "\t-h print this usage info"
 	echo
 }
 
 
-# wczytaj opcje
-OPTS=`getopt -q -o a:u:hns -n $ME -- "$@"`
+# parse options
+OPTS=`getopt -q -o a:u:H:hns -n $ME -- "$@"`
 
 if [ $? != 0 ]; then
 	usage
@@ -83,6 +91,10 @@ while true; do
 	    ;;
 	-u)
 	    SZRSYNC_USER=$2
+	    shift 2
+	    ;;
+	-H)
+	    SERVER=$2
 	    shift 2
 	    ;;
 	-n)
@@ -117,10 +129,10 @@ fi
 
 if [ -z "$ADDRESS" ]; then 
 	if [ ! -z "$SZRSYNC_USER" ]; then
-		ADDRESS=$SZRSYNC_USER"@"$DEFAULT_SERVER;
+		ADDRESS=$SZRSYNC_USER"@"$SERVER;
 	else
 		echo "Assuming username: $(hostname -s)";
-		ADDRESS="$(hostname -s)@"$DEFAULT_SERVER;
+		ADDRESS="$(hostname -s)@"$SERVER;
 	fi
 else
 	USE_SSH=yes
@@ -131,14 +143,14 @@ CODE=0
 EXC=
 INC=
 
-# sprawdza sposób wywo³ania i ustawia poziom gadatliwo¶ci wyj¶cia
+# if we are called by meaner3 process, decrease verbocity
 function get_verbose_level () {
-	SZRSYNC_VERBOSE="-vP" # domy¶lnie tryb gadatliwy
+	SZRSYNC_VERBOSE="-vP" # default is verbose mode on
 
 	m_pid=`/bin/pidof meaner3`
 	
 	if  [[ $PPID -eq $m_pid ]]; then
-		SZRSYNC_VERBOSE="" # wywo³anie z meanera - tryb cichy
+		SZRSYNC_VERBOSE="" # verbose mode off
 	fi
 }
 
@@ -161,15 +173,14 @@ function get_remote_stamp {
 	id=`basename $1`
 
 	if [ -z $USE_SSH ]; then
-		RESULT=`curl -A "szrsync/0.1 ($(hostname -s))" --fail --silent "http://${DEFAULT_SERVER}:81/sync.cgi?id=${id}"`
+		RESULT=`curl -A "szrsync/0.1 ($(hostname -s))" --fail --silent "http://${SERVER}:81/sync.cgi?id=${id}"`
 		SRET=$?
 	else
 		RESULT=`ssh -o StrictHostKeyChecking=no $ADDRESS "stat --format=%Y $1/szbase_stamp" 2>/dev/null`
-		#connection failed
+		# connection failed
 		SRET=$?
 		if [ $SRET -eq 255 ]; then
 			log "Unable to connect to remote host"
-			echo "Unable to connect to remote host"
 			return 2
 		fi
 	fi
@@ -181,8 +192,6 @@ function get_remote_stamp {
 	return 0;
 }
 	
-
-
 function get_include () {
 	INC=
 	EXC=
