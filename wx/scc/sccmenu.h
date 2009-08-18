@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 /*
  * scc - Szarp Control Center
  * SZARP
- 
+
  * Pawe³ Pa³ucha pawel@praterm.com.pl
  *
  * $Id$
@@ -44,7 +44,7 @@
 
 //following is needed before standard library headers inclusion
 //due to wxWidgets' messing with new operator
-#ifdef new 
+#ifdef new
 #undef new
 #endif
 #include <vector>
@@ -60,11 +60,11 @@ WX_DEFINE_ARRAY(SCCMenu*, ArrayOfMenu);
 
 /**
  * Class is an internal representation of SZARP menu. It holds information
- * about menu structure, menu items descriptions and corresponding 
+ * about menu structure, menu items descriptions and corresponding
  * commands to execute.
  * Usually menu is created by parsing config string with ParseMenu() method.
  * wxMenu object may be created from this information, using CreateWxMenu()
- * method. 
+ * method.
  */
 class SCCMenu
 {
@@ -80,8 +80,9 @@ public:
 	 * Builds and returns pointer to newly created wxMenu object,
 	 * corresponding to this object. This wxMenu object is not deleted on
 	 * SCCMenu object deleting.
+     * @param array string with names (prefixes) of databases to be hidden
 	 */
-	wxMenu* CreateWxMenu();
+	wxMenu* CreateWxMenu(wxArrayString);
 
 	/**Destroys provided hierachy of menus, note that SCCMenu destructor
 	 * is private so this is only possible way to destroy SCCMenu object*/
@@ -102,7 +103,7 @@ public:
 	 * @param bmp bitmap for item
 	 * @return pointer to newly created menu
 	 */
-	void AddCommand(wxString name, wxString exec = _T(""), 
+	void AddCommand(wxString name, wxString exec = _T(""),
 			wxBitmap* bmp = NULL);
 	/**
 	 * Appends separator to the menu.
@@ -153,7 +154,7 @@ private:
 	};
 
 	/**
-	 * @param hierarchy_data pointer to @see MenuHierarchyData 
+	 * @param hierarchy_data pointer to @see MenuHierarchyData
 	 * @param name name of menu (title, description)
 	 * @param exec command to execute on item selected
 	 */
@@ -176,10 +177,10 @@ private:
 	 */
 	enum { TOK_STRING = 0, TOK_ID, TOK_COMMA, TOK_LEFT, TOK_RIGHT, TOK_END,
 		TOK_ERROR };
-	/** Enumeration types for tokenizer states. 
+	/** Enumeration types for tokenizer states.
 	 * ST_WS - white space or other non significant
 	 * ST_NORMAL - identifier (alpha starting)
-	 * ST_STRING - string constant (in double collons) 
+	 * ST_STRING - string constant (in double collons)
 	 * ST_ESCAPE - escaped charachter within string */
 	enum { ST_WS, ST_NORMAL, ST_STRING, ST_ESCAPE };
 	/** Menu string tokenizer, divides string into tokens. */
@@ -192,8 +193,8 @@ private:
 		/**
 		 * Returns next token from string.
 		 * @param type retursns type of token (see token enumeration type)
-		 * @return token's string, if type is TOK_ERROR returns error 
-		 * description 
+		 * @return token's string, if type is TOK_ERROR returns error
+		 * description
 		 */
 		wxString GetNext(int* type);
 		private:
@@ -214,7 +215,7 @@ private:
 	static SCCMenu* ParseMenu(Tokenizer* t, wxString name,MenuHierarchyData *hierarchy_data);
 
 	/**
-	 * Appends draw menu item 
+	 * Appends draw menu item
 	 * @param title name of menu item
 	 * @param prefix configuration prefix
 	 * @param expanded denotes should be of type @see REMOVEABLE
@@ -226,7 +227,7 @@ private:
 	 * @param title name of menu item
 	 * @param prefix configuration prefix
 	 * @param hierarchy_data pointer to a @see MenuHierarchyData object
-	 * @param removeable if true menu_type is set to @see REMOVEABLE, 
+	 * @param removeable if true menu_type is set to @see REMOVEABLE,
 	 * if false menu_type is set to @see ORDINARY_ITEM
 	 * @return pointer to created  SCCMenu object
 	 */
@@ -238,7 +239,7 @@ private:
 	 */
 	SCCMenu* AddDraws(wxString expr);
 	/**
-	 * Appends raport item to menu. Submenus for raport groups are also 
+	 * Appends raport item to menu. Submenus for raport groups are also
 	 * created.
 	 * @param name name of param, needed for create submenu
 	 * @param title title of raport
@@ -251,11 +252,11 @@ private:
 			wxString prefix, int pos);
 	void AddRaport3Item(wxString param, wxString title, wxString prefix, int pos);
 	/**
-	 * Adds raporter3 item to the menu. Does it only if 
+	 * Adds raporter3 item to the menu. Does it only if
 	 * address of xlstd daemon is configured*/
 	void AddRaporter3(wxString prefix);
 	/**
-	 * Adds ekstraktor3 item to the menu.*/ 
+	 * Adds ekstraktor3 item to the menu.*/
 	void AddEkstraktor3();
 
 	/**
@@ -268,17 +269,17 @@ private:
 	int id;			/**< Uniq menu item ID */
 	wxString name;		/**< Menu item name (title) */
 	wxString exec;		/**< Command to execute, empty for submenus. */
-	ArrayOfMenu* children;	/**< List of pointers to children 
-				  (for submenu), NULL pointers are used for 
+	ArrayOfMenu* children;	/**< List of pointers to children
+				  (for submenu), NULL pointers are used for
 				  separators. */
 	wxBitmap bmp;		/**< Menu item icon. */
 
-	/** Menu type 
+	/** Menu type
 	 * ORDINARY_ITEM - an item from which wxMenuItem can directly be created
-	 * DRAWS_ITEM_STUB - an item which does not map directly to wxMenuItem  - requiers 
-	 * further processing i.e. should be expanded to draws items by @see ExplodeDraws 
+	 * DRAWS_ITEM_STUB - an item which does not map directly to wxMenuItem  - requiers
+	 * further processing i.e. should be expanded to draws items by @see ExplodeDraws
 	 * REMOVEABLE - a draw item which can be superseded by other draws*/
-	enum { ORDINARY_ITEM, DRAWS_ITEM_STUB, REMOVEABLE } menu_type; 
+	enum { ORDINARY_ITEM, DRAWS_ITEM_STUB, REMOVEABLE } menu_type;
 
 	/**Configuration prefix which draw menu item referes to
 	 * NULL if none or SCCMenu is not a draw item*/

@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 /*
  * scc - Szarp Control Center
  * SZARP
- 
+
  * Pawe³ Pa³ucha pawel@praterm.com.pl
  *
  * $Id$
@@ -48,6 +48,7 @@
 #include "scctunnelframe.h"
 #include "szhlpctrl.h"
 #include "sztaskbaritem.h"
+#include "scchideselectionframe.h"
 
 /**
  * Class represents main program frame. It's is a small window with animated
@@ -68,10 +69,10 @@ class SCCTaskBarItem : public szTaskBarItem
 		~SCCTaskBarItem();
 		/**
 		 * Event handler, called on left mouse button click, activates
-		 * SZARP popup menu. 
+		 * SZARP popup menu.
 		 */
 		void OnMouseDown(wxTaskBarIconEvent & event);
-		/** 
+		/**
 		 * Event handler, called on middle mouse button click. It
 		 * popups program 'system' menu.
 		 */
@@ -118,6 +119,11 @@ class SCCTaskBarItem : public szTaskBarItem
 		 */
 		void OnClose(wxCloseEvent& event);
 		/**
+		 * Event handler, called on 'SZARP hide databases' menu command execution.
+		 * Shows dialog for setting which SZARP databases will be shown or will be hidden.
+		 */
+    		void OnHideBases(wxCommandEvent& event);
+		/**
 		 * Replaces existing main menu
 		 * @param _menu menu the existing one should be replaced with
 		 */
@@ -129,27 +135,27 @@ class SCCTaskBarItem : public szTaskBarItem
 		 * @return pointer to newly created menu
 		 */
 		wxMenu* CreateSystemMenu();
-		
+
 		/**
 		 * Loads images for icon animation.
-		 * @param prefix prefix of image, files to load, program tries 
-		 * to load files with names <prefix><X><suffix>, where X are 
+		 * @param prefix prefix of image, files to load, program tries
+		 * to load files with names <prefix><X><suffix>, where X are
 		 * 0 padded numbers (from '01').
 		 * @param suffix @see prefix
 		 * @return pointer to newly created array of images, NULL
 		 * on error
-		 */	
+		 */
 		wxMenu*	system_menu;
 				/**< Program's 'system' menu, activated on
 				 * right mouse button click. */
 		SCCMenu* menu;	/**< Main menu structure */
 		SCCMenu* new_menu; /**<New menu that will be shown*/
 		wxMenu* wxmenu;	/**< Corresponding wxMenu object */
+		SCCSelectionFrame *m_sel_frame; /**< Pointer to frame with selection of databases to be hidden*/
 		SCCTunnelFrame* tunnel_frame;
 				/**< Pointer to tunnel frame*/
 		szHelpController *help; /**< Pointer to new help*/
 
-				
 		DECLARE_EVENT_TABLE()
 };
 

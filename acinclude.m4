@@ -470,7 +470,7 @@ IMPLEMENT_APP(A)
 
 
 	if test "$host_os" = "mingw32" -o "$host_os" = "mingw32msvc"; then
-		WXGL_LIBS="-lopengl32 -lglu32 $WXGL_LIBS"
+		WXGL_LIBS="-lglu32 -lopengl32 $WXGL_LIBS"
 	fi
 
 	AC_SUBST(WXGL_CFLAGS)
@@ -795,7 +795,7 @@ AC_DEFUN([AC_PATH_FTGL], [
 	if test "$host_os" = "mingw32" -o "$host_os" = "mingw32msvc"; then
 		AC_MSG_CHECKING(for ftgl library)
 
-		ftgl_gl_libs_l="-lopengl32 -lglu32"
+		ftgl_gl_libs_l="-lglu32 -lopengl32"
 		ftgl_lib_l="";
 		ftgl_headers_i="";
 		if test "x$ftgl_config_prefix" != "x"; then

@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 /*
  * scc - Szarp Control Center
  * SZARP
- 
+
  * Pawe³ Pa³ucha pawel@praterm.com.pl
  *
  * $Id$
@@ -41,7 +41,7 @@
 #define EKS_ICON_PATH	_T("resources/wx/icons/extr16.xpm")
 
 SCCMenu::SCCMenu(MenuHierarchyData *mhd, wxString _name, wxString _exec) :
-	hierarchy_data(mhd), id(mhd->id), name(_name), exec(_exec), children(NULL), 
+	hierarchy_data(mhd), id(mhd->id), name(_name), exec(_exec), children(NULL),
 	menu_type(SCCMenu::ORDINARY_ITEM), prefix(NULL)
 {
 	children = new ArrayOfMenu();
@@ -132,7 +132,7 @@ void SCCMenu::AddConfig(wxString prefix)
 		assert(prefix != wxEmptyString);
 		AddRaporters(prefix);
 	}
-	
+
 	bool ekstraktor3 = false;
 
 	char *use_ekstraktor3 = libpar_getpar("scc", "use_ekstraktor3", 0);
@@ -176,7 +176,7 @@ void SCCMenu::AddRaporter3(wxString prefix) {
 			sc->GetNextRaportTitle(c))
 		raports.push_back(c);
 	std::sort(raports.begin(), raports.end());
-	
+
 	for (unsigned int i = 0; i < raports.size(); i++) {
 		std::wstring c = raports[i];
 		TRaport* r = sc->GetFirstRaportItem(c);
@@ -189,7 +189,7 @@ void SCCMenu::AddRaporter3(wxString prefix) {
 	}
 	if (is_any)
 		AddSeparator();
-	
+
 }
 
 void SCCMenu::AddEkstraktor3() {
@@ -208,7 +208,7 @@ void SCCMenu::AddEkstraktor3() {
 	AddCommand(_T("Ekstraktor"), s, &b);
 }
 
-void SCCMenu::AddDraw(const wxString& title, const wxString &prefix, bool removable) 
+void SCCMenu::AddDraw(const wxString& title, const wxString &prefix, bool removable)
 {
 	children->Add(CreateDrawItem(title, prefix, hierarchy_data, removable));
 }
@@ -239,7 +239,7 @@ void SCCMenu::AddRaporters(wxString prefix) {
 	for (c = sc->GetFirstRaportTitle(); !c.empty(); c =
 			sc->GetNextRaportTitle(c))
 		raports.push_back(c);
-	
+
 	std::sort(raports.begin(), raports.end());
 
 	for (unsigned int i = 0; i < raports.size(); i++) {
@@ -247,14 +247,14 @@ void SCCMenu::AddRaporters(wxString prefix) {
 		TRaport* r = sc->GetFirstRaportItem(c);
 		if (r == NULL)
 			continue;
-		if (r->GetTitle() == L"RAPORT TESTOWY" 
+		if (r->GetTitle() == L"RAPORT TESTOWY"
 				|| r->GetFileName() == L"test.rap") {
 			is_test = 1;
 			test_name = wxString(r->GetFileName());
 			continue;
 		}
 		TParam *p = r->GetParam();
-		AddRaportItem(wxString(p->GetName()), wxString(r->GetTitle()), 
+		AddRaportItem(wxString(p->GetName()), wxString(r->GetTitle()),
 			wxString(r->GetFileName()), prefix, first_pos);
 		is_any = 1;
 	}
@@ -272,15 +272,15 @@ void SCCMenu::AddRaporters(wxString prefix) {
 }
 
 
-void SCCMenu::AddRaportItem(wxString param, wxString title, 
+void SCCMenu::AddRaportItem(wxString param, wxString title,
 		wxString file, wxString prefix, int pos)
 {
 	wxString group = param.BeforeFirst(':');
 	int found = 0;
 	unsigned int insert = 0;
 	SCCMenu* item = NULL;
-	
-	if (children) for (unsigned int i = pos; i < children->GetCount(); 
+
+	if (children) for (unsigned int i = pos; i < children->GetCount();
 			i++) {
 		item = children->Item(i);
 		if (item == NULL)
@@ -291,14 +291,14 @@ void SCCMenu::AddRaportItem(wxString param, wxString title,
 		}
 	}
 	if (found == 0) {
-		if (children) 
+		if (children)
 			for (insert = pos; ((insert < children->GetCount())
-				&& children->Item(insert) 
+				&& children->Item(insert)
 				&& (children->Item(insert)->name.Cmp(group) <
 				0)); insert++);
 		item = InsertMenu(group, insert);
 	}
-	group = wxGetApp().GetSzarpDir() + _T("/bin/rap '") + wxGetApp().GetSzarpDataDir() + _T("/") 
+	group = wxGetApp().GetSzarpDir() + _T("/bin/rap '") + wxGetApp().GetSzarpDataDir() + _T("/")
 		+ prefix + _T("/config/") +
 		file + _T("' -p -Dprefix=") + prefix;
 	wxImage img;
@@ -307,15 +307,15 @@ void SCCMenu::AddRaportItem(wxString param, wxString title,
 	item->AddCommand(title, group, &b);
 }
 
-void SCCMenu::AddRaport3Item(wxString param, wxString title, 
+void SCCMenu::AddRaport3Item(wxString param, wxString title,
 		wxString prefix, int pos)
 {
 	wxString group = param.BeforeFirst(':');
 	int found = 0;
 	unsigned int insert = 0;
 	SCCMenu* item = NULL;
-	
-	if (children) for (unsigned int i = pos; i < children->GetCount(); 
+
+	if (children) for (unsigned int i = pos; i < children->GetCount();
 			i++) {
 		item = children->Item(i);
 		if (item == NULL)
@@ -326,14 +326,14 @@ void SCCMenu::AddRaport3Item(wxString param, wxString title,
 		}
 	}
 	if (found == 0) {
-		if (children) 
+		if (children)
 			for (insert = pos; ((insert < children->GetCount())
-				&& children->Item(insert) 
+				&& children->Item(insert)
 				&& (children->Item(insert)->name.Cmp(group) <
 				0)); insert++);
 		item = InsertMenu(group, insert);
 	}
-	
+
 	char* port_c = libpar_getpar("paramd_for_raporter", "port", 0);
 	if (port_c == NULL)
 	{
@@ -341,7 +341,7 @@ void SCCMenu::AddRaport3Item(wxString param, wxString title,
 		return;
 	}
 	wxString port = wxString(SC::A2S(port_c));
-	
+
 	wxFileName filename(wxGetApp().GetSzarpDir(), wxEmptyString);
 	filename.AppendDir(_T("bin"));
 	filename.SetName(_T("raporter3"));
@@ -363,9 +363,9 @@ void SCCMenu::BuildMenu() {
 		SCCMenu* s = children->Item(i);
 		if (s == NULL)
 			continue;
-		if (s->menu_type == DRAWS_ITEM_STUB) 
+        if (s->menu_type == DRAWS_ITEM_STUB)
 			ExplodeDraws(s, i+1);
-		else 
+		else
 			s->BuildMenu();
 	}
 }
@@ -388,7 +388,7 @@ void SCCMenu::RemoveSuperseded() {
 			s->RemoveSuperseded();
 			if (children_count != s->children->GetCount()) {
 				switch (s->children->GetCount()) {
-					case 0:	/*if all children of an item 
+					case 0:	/*if all children of an item
 						  are removed remove the item as well*/
 						removed.push_back(i);
 						break;
@@ -414,24 +414,49 @@ void SCCMenu::RemoveSuperseded() {
 
 }
 
-wxMenu* SCCMenu::CreateWxMenu()
+wxMenu* SCCMenu::CreateWxMenu(wxArrayString unhidden_databases)
 {
 	wxMenu* m = new wxMenu();
+	bool hidden = FALSE;
 	for (unsigned int i = 0; i < children->GetCount(); i++) {
 		SCCMenu* s = children->Item(i);
 		if (s == NULL) {
 			m->AppendSeparator();
 			continue;
 		}
-		if (s->menu_type == DRAWS_ITEM_STUB) 
+		if (s->menu_type == DRAWS_ITEM_STUB)
 			continue;
 		wxMenuItem* mi;
+		if(s->prefix != NULL) 
+		{
+		    hidden = FALSE;
+        	    for(unsigned int j = 0; j < unhidden_databases.GetCount(); j++)
+		    {
+	                if(unhidden_databases[j] == (*(s->prefix))){
+                        hidden=TRUE;
+                        break;
+			}
+            	    }
+		}
+
+	        if(hidden == TRUE) 
+		{
+    		    hidden = FALSE;
+	            continue;
+	        }
+
 		if (s->children->GetCount() > 0) 
-			mi = new wxMenuItem(m, s->id, s->name, wxEmptyString, wxITEM_NORMAL, s->CreateWxMenu());
+		{
+			mi = new wxMenuItem(m, s->id, s->name, wxEmptyString, wxITEM_NORMAL, s->CreateWxMenu(unhidden_databases));
+			wxMenu *subMenu = mi->GetSubMenu();
+			if(subMenu->GetMenuItemCount() == 0) continue;
+		}
 		else
-			mi = new wxMenuItem(m, s->id, s->name); 
-		if (s->bmp.Ok()) 
+			mi = new wxMenuItem(m, s->id, s->name);
+
+		if (s->bmp.Ok())
 			mi->SetBitmap(s->bmp);
+
 		m->Append(mi);
 	}
 	return m;
@@ -442,7 +467,7 @@ void SCCMenu::ExplodeDraws(SCCMenu* draws_item, int pos)
 	typedef SzarpConfigs::ConfigList CL;
 	SzarpConfigs* szarp_configs = SzarpConfigs::GetInstance();
 
-	CL* config_groups = szarp_configs->GetConfigs(draws_item->name, hierarchy_data->exclude_expr); 
+	CL* config_groups = szarp_configs->GetConfigs(draws_item->name, hierarchy_data->exclude_expr);
 
 	if (!config_groups)
 		return;
@@ -461,7 +486,7 @@ void SCCMenu::ExplodeDraws(SCCMenu* draws_item, int pos)
 			submenu->Add(CreateDrawItem(
 						d_iter->title,
 						d_iter->prefix,
-						hierarchy_data, 
+						hierarchy_data,
 						true
 						)
 				);
@@ -483,7 +508,7 @@ void SCCMenu::ExplodeDraws(SCCMenu* draws_item, int pos)
 		}
 		children->Insert(item, pos++);
 	}
-	for (CL::iterator i = config_groups->begin();i != config_groups->end();++i) 
+	for (CL::iterator i = config_groups->begin();i != config_groups->end();++i)
 		delete *i;
 	delete config_groups;
 
@@ -494,14 +519,14 @@ SCCMenu* SCCMenu::ParseMenu(Tokenizer* t, wxString name,MenuHierarchyData *hiera
 {
 	int token;
 	wxString s, s1, s2;
-	
+
 #define HAVE_TOKEN(i)	\
 	if (token != i) { \
 		wxLogError(_T("Expected token %d, got %d ('%s')\n"), i, token, \
 			s.c_str()); \
 		return m; \
-	} 
-		
+	}
+
 	s = t->GetNext(&token);
 	SCCMenu* m = new SCCMenu(hierarchy_data, name);
 	do {
@@ -585,12 +610,12 @@ SCCMenu* SCCMenu::ParseMenu(Tokenizer* t, wxString name,MenuHierarchyData *hiera
 			int count = m->children->GetCount();
 			if (count) {
 				SCCMenu* item = m->children->Item(count - 1);
-				if (item != NULL) { 
+				if (item != NULL) {
 					wxImage img;
 					img.LoadFile(s1);
 					if (img.Ok())
 						item->bmp = wxBitmap(img);
-					else 
+					else
 						wxLogError(_T("Could not load icon %s"),
 							s1.c_str());
 				}
@@ -605,7 +630,7 @@ SCCMenu* SCCMenu::ParseMenu(Tokenizer* t, wxString name,MenuHierarchyData *hiera
 #endif
 
 			m->AddCommand(_T("Dokumentacja SZARP"),
-				filename.GetFullPath());	
+				filename.GetFullPath());
 		} else if (s.CmpNoCase(_T("DONTGROUPBY")) == 0) {
 			s = t->GetNext(&token);
 			HAVE_TOKEN(TOK_LEFT);
@@ -624,13 +649,13 @@ SCCMenu* SCCMenu::ParseMenu(Tokenizer* t, wxString name,MenuHierarchyData *hiera
 			HAVE_TOKEN(TOK_RIGHT);
 			s = t->GetNext(&token);
 		} else {
-		  
+
 			wxLogError(_T("Unexpected identifier '%s'"),
 				s.c_str());
 			s = t->GetNext(&token);
 		}
-				
-		if (token == TOK_RIGHT) 
+
+		if (token == TOK_RIGHT)
 			return m;
 		if (token == TOK_COMMA)
 			s = t->GetNext(&token);
@@ -642,10 +667,10 @@ SCCMenu* SCCMenu::ParseMenu(Tokenizer* t, wxString name,MenuHierarchyData *hiera
 	} while ((token != TOK_END) && (token != TOK_ERROR));
 	if (token == TOK_ERROR)
 		wxLogError(_T("Tokenizer error: %s"), s.c_str());
-	
+
 #undef HAVE_TOKEN
 	return m;
-	
+
 }
 
 SCCMenu* SCCMenu::ParseMenu(wxString menu)
@@ -653,12 +678,10 @@ SCCMenu* SCCMenu::ParseMenu(wxString menu)
 	MenuHierarchyData *mhd = new MenuHierarchyData;
 	int id = SCC_MENU_FIRST_ID;
 	mhd->id = id;
-	
 	Tokenizer t(menu);
 	SCCMenu* res =  ParseMenu(&t, _T("SZARP"), mhd);
 	res->BuildMenu();
 	res->RemoveSuperseded();
-
 	return res;
 
 }
@@ -666,7 +689,7 @@ SCCMenu* SCCMenu::ParseMenu(wxString menu)
 wxString SCCMenu::GetCommand(int id)
 {
 	SCCMenu* item = FindItem(id);
-	
+
 	if (item != NULL)
 		return item->exec;
 	return wxEmptyString;
@@ -753,8 +776,8 @@ wxString SCCMenu::Tokenizer::GetNext(int* type)
 					ret += c;
 					break;
 				}
-				if ((c == ')') || (c == '(') 
-					|| (c == '"') || 
+				if ((c == ')') || (c == '(')
+					|| (c == '"') ||
 					(c == ',')) {
 					pos--;
 				}
@@ -767,7 +790,7 @@ wxString SCCMenu::Tokenizer::GetNext(int* type)
 				_T("Error: string not closed (missing \")");
 					*type = TOK_ERROR;
 					return ret;
-					
+
 				}
 				if (c == '"') {
 					*type = TOK_STRING;
@@ -797,7 +820,7 @@ wxString SCCMenu::Tokenizer::GetNext(int* type)
 }
 
 SCCMenu* SCCMenu::CreateDrawItem(const wxString& title, const wxString& prefix, MenuHierarchyData *hierarchy_data, bool removable) {
-	char *use_draw3 = libpar_getpar("scc", "use_draw3", 0);	
+	char *use_draw3 = libpar_getpar("scc", "use_draw3", 0);
 	if (use_draw3 == NULL)
 		use_draw3 = strdup("no");
 	bool draw3 = !strcmp(use_draw3, "yes");
@@ -805,7 +828,7 @@ SCCMenu* SCCMenu::CreateDrawItem(const wxString& title, const wxString& prefix, 
 
 	wxFileName command_fn = wxFileName(wxGetApp().GetSzarpDir(), wxEmptyString);
 	command_fn.AppendDir(_T("bin"));
-		
+
 	if (draw3)
 		command_fn.SetName(_T("draw3"));
 	 else
@@ -815,11 +838,11 @@ SCCMenu* SCCMenu::CreateDrawItem(const wxString& title, const wxString& prefix, 
 	command_fn.SetExt(_T("exe"));
 #endif
 
-	wxString s = command_fn.GetFullPath() +  
+	wxString s = command_fn.GetFullPath() +
 #ifdef MINGW32
 		_T(" /base:")
 #else
-		_T(" -Dprefix=") 		
+		_T(" -Dprefix=")
 #endif
 		+ prefix;
 
@@ -831,7 +854,7 @@ SCCMenu* SCCMenu::CreateDrawItem(const wxString& title, const wxString& prefix, 
 		m->bmp = bmp;
 	}
 
-	m->menu_type = removable ? REMOVEABLE : ORDINARY_ITEM; 
+	m->menu_type = removable ? REMOVEABLE : ORDINARY_ITEM;
 
 	hierarchy_data->draws.push_back(prefix);
 

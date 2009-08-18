@@ -45,7 +45,8 @@ scc_SOURCES = \
         @srcdir@/sccmenu.cpp @srcdir@/sccmenu.h \
         @srcdir@/scctunnelframe.cpp @srcdir@/scctunnelframe.h \
         @srcdir@/szarpconfigs.cpp @srcdir@/szarpconfigs.h \
-        @srcdir@/szarpfonts.cpp @srcdir@/szarpfonts.h 
+        @srcdir@/szarpfonts.cpp @srcdir@/szarpfonts.h \
+	@srcdir@/scchideselectionframe.cpp @srcdir@/scchideselectionframe.h
 
 scc_DEPENDENCIES = $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2)
 scc_LDADD = $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) @WX_LIBS@ @XML_LIBS@ @LUA_LIBS@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_FILESYSTEM_LIB@

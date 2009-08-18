@@ -47,10 +47,10 @@ namespace {
 
 			boost::mutex::scoped_lock lock(m_mutex);
 
-			char *input_start = (char*)(str.c_str());
+            char *input_start = (char*)(str.c_str());
 			char *input = input_start;
 			size_t input_length = (str.length() + 1) * sizeof(F);
-	
+
 			size_t total_length  = sizeof(T) * (str.length() + 1);
 			size_t remaining_length = total_length;
 			char *output_start = (char*) malloc(total_length);
@@ -87,7 +87,7 @@ namespace {
 
 			return ret;
 		}
-	
+
 	};
 
 }
@@ -109,7 +109,7 @@ namespace SC {
 		if (res == 0) {
 			throw std::runtime_error("Incomplete multibyte sequence encountered in convertsion");
 		}
-		
+
 		return std::wstring(buff.get(), res);
 #else
 		return utf2szarp_iw.convert<wchar_t, unsigned char>(c);
@@ -131,7 +131,7 @@ namespace SC {
 		if (res == 0) {
 			throw std::runtime_error("Incomplete multibyte sequence encountered in convertsion");
 		}
-		
+
 		return std::basic_string<unsigned char>(buff.get(), res);
 #else
 		return szarp2utf_iw.convert<unsigned char, wchar_t>(c);
@@ -152,7 +152,7 @@ namespace SC {
 		if (res == 0) {
 			throw std::runtime_error("Incomplete multibyte sequence encountered in convertsion");
 		}
-		
+
 		return std::wstring(buff.get(), res);
 #else
 		return ascii2szarp_iw.convert<wchar_t, char>(c);
@@ -174,7 +174,7 @@ namespace SC {
 		if (res == 0) {
 			throw std::runtime_error("Incomplete multibyte sequence encountered in convertsion");
 		}
-		
+
 		return std::string(buff.get(), res);
 #else
 		return szarp2ascii_iw.convert<char, wchar_t>(c);

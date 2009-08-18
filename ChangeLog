@@ -1,5 +1,7 @@
 $Id$
 
+2009-08-19	Adam Smyk <asmyk@praterm.pl>
+	* wx/scc: database hiding has been added
 2009-08-16	Darek Marcinkiewicz <reksio@praterm.pl>
 	* utils/remarks_server: may also connect to database
 	via tcp/ip - database server and remarks server do not have

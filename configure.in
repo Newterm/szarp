@@ -406,7 +406,7 @@ AC_SUBST(MSGMERGE)
 if test "$with_mingw32" = "yes" ; then
         CFLAGS="$CFLAGS -D__GNUWIN32__ -D__WIN32_IE=0x400"
         CXXFLAGS="$CXXFLAGS -D__GNUWIN32__ -D__WIN32_IE=0x400"
-        WX_CXXFLAGS="$WX_CXXFLAGS -DwxUSE_OWNER_DRAWN=1"
+        WX_CXXFLAGS="$WX_CXXFLAGS -DwxUSE_OWNER_DRAWN=1 -DwxUSE_GRAPHICS_CONTEXT=1"
 	AC_DEFINE(MINGW32, 1, [Define to 1 when compiling under mingw32
 	enviroment])
 fi
