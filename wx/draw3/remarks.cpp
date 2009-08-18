@@ -26,9 +26,17 @@
 #include <libxml/tree.h>
 #include <wx/xrc/xmlres.h>
 
+#ifndef MINGW32
+#include <arpa/inet.h>
+#include <netdb.h>
+#else
+#include <winsock2.h>
+#include <sys/types.h>
+#include <shlwapi.h>
+#endif
+
 #include <ares.h>
 #include <ares_dns.h>
-#include <netdb.h>
 
 #include <vector>
 #include <sstream>
