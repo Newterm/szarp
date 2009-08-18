@@ -1,5 +1,5 @@
 import logging
-import base64
+import md5
 
 from pylons import request, response, session, tmpl_context as c
 from pylons.controllers.util import abort, redirect_to
@@ -22,7 +22,7 @@ class RemarksController(BaseController):
 
 		c.user = users_q.get(id)
 		c.bases_q = [ (p.id, p.prefix) for p in meta.Session.query(model.Prefix) ]
-		c.password = base64.b64decode(c.user.password)
+		c.password = ""
 		c.user_ids = [ p.prefix.id for p in c.user.base ]
 		return render('/remarks_user.mako')
 
@@ -35,7 +35,10 @@ class RemarksController(BaseController):
 		else:
 			user = users_q.get(id)
 		user.real_name = request.params['real_name']
-		user.password = base64.b64encode(request.params['password'])
+		if len(request.params['password']) > 0:
+			m = md5.new()
+			m.update(request.params['password'])
+			user.password = m.hexdigest()
 
 		if id == None:
 			meta.Session.add(user)

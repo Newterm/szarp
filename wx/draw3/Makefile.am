@@ -10,7 +10,7 @@ SUBDIRS =
 MAINTAINERCLEANFILES = Makefile.in
 
 # Compilations flags
-INCLUDES = @WX_CXXFLAGS@ @XML_CFLAGS@ @LUA_CFLAGS@ @SSL_CFLAGS@ @BOOST_CPPFLAGS@ \
+INCLUDES = @WX_CXXFLAGS@ @XML_CFLAGS@ @LUA_CFLAGS@ @SSL_CFLAGS@ @BOOST_CPPFLAGS@ @CARES_CFLAGS@ \
 	   @GDK_CFLAGS@ @GTK_CFLAGS@ @SQLITE3_CFLAGS@ @GSTREAMER_CFLAGS@ @VMIME_CFLAGS@ @FREETYPE_CFLAGS@ @XMLRPC_EPI_CFLAGS@ \
 	   -I@srcdir@/../../libSzarp/include \
 	   -I@srcdir@/../../libSzarp2/include \
@@ -23,7 +23,7 @@ LIBSZARP=../../libSzarp/libSzarp.a
 LIBSZARP2=../../libSzarp2/libSzarp2.a
 LIBWXCOMMON=../common/libwxcommon.a
 LIBWXSCINTILLA=../../extern/wxscintilla/libwxscintilla.a
-GUIDIR=@srcdir@/GUI/
+GUIDIR=GUI/
 GUIFILES=xrc
 TMP_GETTEXT=XRC_gettext_file
 
@@ -83,7 +83,7 @@ draw3_SOURCES = \
 		GUI/resource.cpp
 
 draw3_DEPENDENCIES = $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) $(LIBWXSCINTILLA)
-draw3_LDADD = $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) $(LIBWXSCINTILLA) @SSL_LIBS@ @XML_LIBS@ @WX_LIBS@ @LUA_LIBS@ @GDK_LIBS@ @SQLITE3_LIBS@ @GSTREAMER_LIBS@ @VMIME_LIBS@ @BOOST_FILESYSTEM_LIB@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @FTGL_LIBS@  @WXGL_LIBS@ @XMLRPC_EPI_LIBS@
+draw3_LDADD = $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) $(LIBWXSCINTILLA) @SSL_LIBS@ @XML_LIBS@ @WX_LIBS@ @LUA_LIBS@ @GDK_LIBS@ @SQLITE3_LIBS@ @GSTREAMER_LIBS@ @VMIME_LIBS@ @BOOST_FILESYSTEM_LIB@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @FTGL_LIBS@  @WXGL_LIBS@ @XMLRPC_EPI_LIBS@ @CARES_LIBS@
 draw3_LOCALES_TMP = @srcdir@/draw3.tpo
 
 CLEANFILES = fr/draw3.mo pl/draw3.mo de/draw3.mo $(draw3_LOCALES_TMP)
@@ -108,7 +108,6 @@ install-data-local: fr/draw3.mo pl/draw3.mo de/draw3.mo
 	$(INSTALL) de/draw3.mo \
                 $(DESTDIR)@prefix@/resources/locales/de_DE/LC_MESSAGES
 	$(INSTALL) -d $(DESTDIR)$(bindir)/$(GUIDIR)
-	$(INSTALL) $(GUIDIR)*.$(GUIFILES)  $(DESTDIR)$(bindir)/$(GUIDIR)
                
 
 @srcdir@/GUI/resource.cpp: @srcdir@/GUI/*xrc
@@ -118,9 +117,9 @@ install-data-local: fr/draw3.mo pl/draw3.mo de/draw3.mo
 update-po:
 	@WXRC@ -g @srcdir@/$(GUIDIR)*.$(GUIFILES) > @srcdir@/$(TMP_GETTEXT).h
 	@XGETTEXT@ -o $(draw3_LOCALES_TMP) -L C++ --keyword=_  @srcdir@/*.cpp @srcdir@/*h
-	@MSGMERGE@ -U pl/draw3.po $(draw3_LOCALES_TMP)
-	@MSGMERGE@ -U fr/draw3.po $(draw3_LOCALES_TMP)
-	@MSGMERGE@ -U de/draw3.po $(draw3_LOCALES_TMP)
+	@MSGMERGE@ -U @srcdir@/pl/draw3.po $(draw3_LOCALES_TMP)
+	@MSGMERGE@ -U @srcdir@/fr/draw3.po $(draw3_LOCALES_TMP)
+	@MSGMERGE@ -U @srcdir@/de/draw3.po $(draw3_LOCALES_TMP)
 	rm -f $(draw3_LOCALES_TMP)
 	rm @srcdir@/$(TMP_GETTEXT).h
 

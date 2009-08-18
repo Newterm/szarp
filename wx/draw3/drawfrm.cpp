@@ -927,6 +927,7 @@ class RemarksConfigurationDialog : public wxDialog {
 public:
 	RemarksConfigurationDialog(wxWindow *parent, wxString &username, wxString &password, wxString &server, bool &auto_fetch);
 	void OnOK(wxCommandEvent &event);
+	void OnChangePasswordButton(wxCommandEvent &event);
 	DECLARE_EVENT_TABLE();
 };
 
@@ -939,8 +940,9 @@ RemarksConfigurationDialog::RemarksConfigurationDialog(wxWindow *parent, wxStrin
 	bool loaded = wxXmlResource::Get()->LoadDialog(this, parent, _T("RemarksSettings"));
 	assert(loaded);
 
+	password = wxEmptyString;
+
 	XRCCTRL(*this, "UsernameTextCtrl", wxTextCtrl)->SetValue(m_username);
-	XRCCTRL(*this, "PasswordTextCtrl", wxTextCtrl)->SetValue(m_password);
 	XRCCTRL(*this, "ServerTextCtrl", wxTextCtrl)->SetValue(m_server);
 	XRCCTRL(*this, "AutoFetchCheckbox", wxCheckBox)->SetValue(m_auto_fetch);
 
@@ -949,7 +951,6 @@ RemarksConfigurationDialog::RemarksConfigurationDialog(wxWindow *parent, wxStrin
 void RemarksConfigurationDialog::OnOK(wxCommandEvent &event) {
 
 	m_username = XRCCTRL(*this, "UsernameTextCtrl", wxTextCtrl)->GetValue();
-	m_password = XRCCTRL(*this, "PasswordTextCtrl", wxTextCtrl)->GetValue();
 	m_server = XRCCTRL(*this, "ServerTextCtrl", wxTextCtrl)->GetValue();
 	m_auto_fetch = XRCCTRL(*this, "AutoFetchCheckbox", wxCheckBox)->GetValue();
 
@@ -957,8 +958,22 @@ void RemarksConfigurationDialog::OnOK(wxCommandEvent &event) {
 
 }
 
+void RemarksConfigurationDialog::OnChangePasswordButton(wxCommandEvent &event) {
+	wxString password = wxGetPasswordFromUser(
+			_("Enter password:"),
+			_("New password"),
+			_T(""),
+			this);
+
+	if (password.IsEmpty())
+		return;
+
+	m_password = password;
+}
+
 BEGIN_EVENT_TABLE(RemarksConfigurationDialog, wxDialog)
 	EVT_BUTTON(wxID_OK, RemarksConfigurationDialog::OnOK)
+	EVT_BUTTON(XRCID("ChangePasswordButton"), RemarksConfigurationDialog::OnChangePasswordButton)
 END_EVENT_TABLE()
 
 void DrawFrame::OnConfigureRemarks(wxCommandEvent &event) {

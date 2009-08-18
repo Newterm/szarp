@@ -34,10 +34,11 @@ GCDCGraphs::GCDCGraphs(wxWindow* parent, ConfigManager *cfg) : wxWindow(parent, 
 	m_screen_margins.rightmargin = 10;
 	m_screen_margins.topmargin = 10;
 	m_screen_margins.bottommargin = 12;
+	m_screen_margins.infotopmargin = 7;
 	m_refresh = true;
 }
 
-int GCDCGraphs::GetX(int i) {
+double GCDCGraphs::GetX(int i) {
 	int w, h;
 	GetClientSize(&w, &h);
 
@@ -47,10 +48,10 @@ int GCDCGraphs::GetX(int i) {
 
 	double ret = i * res + m_screen_margins.leftmargin + res / 2;
 
-	return int(ret);
+	return ret;
 }
 
-int GCDCGraphs::GetY(double value, DrawInfo *di) {
+double GCDCGraphs::GetY(double value, DrawInfo *di) {
 	int w, h;
 	GetClientSize(&w, &h);
 
@@ -88,7 +89,7 @@ int GCDCGraphs::GetY(double value, DrawInfo *di) {
 		wxMax(wxMin(dvalue - smin, smax - smin), 0) * k +
 		wxMax(wxMin(dvalue - dmin, smin), 0);
 
-	int ret = int(h - scaled * h / dif) + m_screen_margins.topmargin;
+	double ret = h - scaled * h / dif + m_screen_margins.topmargin;
 
 	if (ret < m_screen_margins.topmargin)
 		ret = m_screen_margins.topmargin;
@@ -115,14 +116,14 @@ void GCDCGraphs::DrawBackground(wxGraphicsContext &dc) {
 
 	size_t i = 0;
 	int c = 1;
-	int x = m_screen_margins.leftmargin + 1;
+	double x = m_screen_margins.leftmargin + 1;
 
 	while (i < pc) {
-		int x1 = GetX(i);
+		double x1 = GetX(i);
 
 		i += Draw::PeriodMult[pt];
 	
-		int x2 = GetX(i);
+		double x2 = GetX(i);
 
 		if (c > 0)
 			dc.SetBrush(wxBrush(back1_col, wxSOLID));
@@ -131,7 +132,7 @@ void GCDCGraphs::DrawBackground(wxGraphicsContext &dc) {
 	
 		c *= -1; 
 
-		int xn; 
+		double xn; 
 		if (i < pc)
 			xn = x + x2 - x1;
 		else
@@ -199,11 +200,9 @@ void GCDCGraphs::DrawYAxis(wxGraphicsContext& dc) {
 	int w, h;
 	GetClientSize(&w, &h);
 
-	dc.SetPen(wxPen(wxColour(255, 255, 255), 1, wxSOLID));
-
 	dc.StrokeLine(m_screen_margins.leftmargin, 0, m_screen_margins.leftmargin, h);
-	dc.StrokeLine(m_screen_margins.leftmargin- 7, 5, m_screen_margins.leftmargin, 0);
-	dc.StrokeLine(m_screen_margins.leftmargin, 0, m_screen_margins.leftmargin + 7, 5);
+	dc.StrokeLine(m_screen_margins.leftmargin - 5, 7, m_screen_margins.leftmargin, 0);
+	dc.StrokeLine(m_screen_margins.leftmargin, 0, m_screen_margins.leftmargin + 5, 7);
 }
 
 void GCDCGraphs::DrawXAxis(wxGraphicsContext &dc) {
@@ -213,14 +212,83 @@ void GCDCGraphs::DrawXAxis(wxGraphicsContext &dc) {
 	int w, h;
 	GetClientSize(&w, &h);
 
-	dc.SetPen(wxPen(wxColour(255, 255, 255), 1, wxSOLID));
-
-	dc.StrokeLine(0, h - m_screen_margins.bottommargin, w - m_screen_margins.rightmargin, h - m_screen_margins.bottommargin);
-	dc.StrokeLine(w - m_screen_margins.rightmargin - arrow_width, h - m_screen_margins.bottommargin - arrow_height,
-		w - m_screen_margins.rightmargin, h - m_screen_margins.bottommargin);
-	dc.StrokeLine(w - m_screen_margins.rightmargin - arrow_width, h - m_screen_margins.bottommargin + arrow_height,
-		w - m_screen_margins.rightmargin, h - m_screen_margins.bottommargin);
+	//dc.StrokeLine(0, h - m_screen_margins.bottommargin, w - m_screen_margins.rightmargin, h - m_screen_margins.bottommargin);
+	dc.StrokeLine(0, h - m_screen_margins.bottommargin, w, h - m_screen_margins.bottommargin);
+	dc.StrokeLine(w - arrow_width, h - m_screen_margins.bottommargin - arrow_height,
+		w, h - m_screen_margins.bottommargin);
+	dc.StrokeLine(w - arrow_width, h - m_screen_margins.bottommargin + arrow_height,
+		w, h - m_screen_margins.bottommargin);
     
+}
+
+void GCDCGraphs::DrawYAxisVals(wxGraphicsContext& dc) {
+	Draw* draw = m_draws_wdg->GetSelectedDraw();
+	if (draw == NULL) 
+		return;
+	DrawInfo *di = draw->GetDrawInfo();
+
+	double min = di->GetMin();
+	double max = di->GetMax();
+	double dif = max - min;
+
+	if (dif <= 0) {
+		wxLogInfo(_T("%s %f %f"), di->GetName().c_str(), min, max);
+		assert(false);
+	}
+
+	//procedure for calculating distance between marks stolen from SzarpDraw2
+	double x = dif;
+	double step;
+	int i = 0;
+
+	if (x < 1)
+		for (;x < 1; x *=10, --i);
+	else
+		for (;(int)x / 10; x /=10, ++i);
+
+	if (x <= 1.5)
+		step = .1;
+	else if (x <= 3.)
+		step = .2;
+	else if (x <= 7.5)
+		step = .5;
+	else
+		step = 1.;
+
+	double acc = 1;
+
+	int prec = di->GetPrec();
+				
+	for (int p = prec; p > 0; --p)
+		acc /= 10;
+
+	double factor  = (i > 0) ? 10 : .1;
+
+	for (;i; i -= i / abs(i))
+		step *= factor;
+
+	if (step < acc)
+		step = acc;
+
+    	dc.SetPen(wxPen(*wxWHITE, 1, wxSOLID));
+
+	int w, h;
+	GetClientSize(&w, &h);
+
+	h -= m_screen_margins.bottommargin + m_screen_margins.topmargin;
+
+	for (double val = max; (min - val) < acc; val -= step) {
+
+		int y = GetY(val, di);
+
+		dc.StrokeLine(m_screen_margins.leftmargin - 8, y, m_screen_margins.leftmargin, y);
+
+		wxString sval = di->GetValueStr(val, _T("- -"));
+		double textw, texth, textd, textel;
+		dc.GetTextExtent(sval, &textw, &texth, &textd, &textel);
+		dc.DrawText(sval, m_screen_margins.leftmargin - textw - 1, y + 2);
+	}
+
 }
 
 void GCDCGraphs::DrawGraphs(wxGraphicsContext &dc) {
@@ -263,26 +331,20 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 
 	bool prev_data = false;
 
-	float px = 0;
-	float py = 0;
-
 	for (size_t i = 0; i < pc; i++) {
 		if (!d->GetValuesTable().at(i).IsData()) {
 			prev_data = false;
 			continue;
 		}
 
-		float x = GetX(i);
-		float y = GetY(d->GetValuesTable().at(i).val, di);
+		double x = GetX(i);
+		double y = GetY(d->GetValuesTable().at(i).val, di);
 
 		if (prev_data)
 			path.AddLineToPoint(x, y);
 		else
 			path.MoveToPoint(x, y);
 		
-		px = x;
-		py = y;
-
 		prev_data = true;
 	}
 
@@ -300,8 +362,8 @@ void GCDCGraphs::DrawCursor(wxGraphicsContext &dc, Draw* d) {
 	dc.SetBrush(wxBrush(wxColour(0,0,0), wxTRANSPARENT));
 	dc.SetPen(wxPen(*wxWHITE, 1, wxSOLID));
 
-	int x = GetX(i);
-	int y = GetY(d->GetValuesTable().at(i).val, d->GetDrawInfo());
+	double x = GetX(i);
+	double y = GetY(d->GetValuesTable().at(i).val, d->GetDrawInfo());
 
 	dc.DrawRectangle(x - 4, y - 4, 9, 9);
 }
@@ -310,14 +372,55 @@ void GCDCGraphs::OnPaint(wxPaintEvent& e) {
 	wxBufferedPaintDC pdc(this);
 	wxGraphicsContext* dc = wxGraphicsContext::Create(pdc);
 
+	dc->SetFont(GetFont(), *wxWHITE);
+	
+	RecalculateMargins(*dc);
 	DrawBackground(*dc);
+
+	dc->SetBrush(*wxWHITE_BRUSH);
+	dc->SetPen(wxPen(wxColour(255, 255, 255, 255), 1, wxSOLID));
 	DrawXAxis(*dc);
+	//DrawXAxisVals(*dc);
 	DrawYAxis(*dc);
+	DrawYAxisVals(*dc);
 	DrawGraphs(*dc);
+
+	delete dc;
 }
 
 void GCDCGraphs::Refresh() {
 	m_refresh = true;
+}
+
+void GCDCGraphs::RecalculateMargins(wxGraphicsContext &dc) {
+	if (!m_recalulate_margins)
+		return;
+
+	double leftmargin = 36;
+	double bottommargin = 12;
+	double topmargin = 24;
+
+	for (size_t i = 0; i < m_draws.GetCount(); i++) {
+		double tw, th, td, tel;
+		DrawInfo *di = m_draws[i]->GetDrawInfo();
+		wxString sval = di->GetValueStr(di->GetMax(), _T(""));
+
+		dc.GetTextExtent(sval, &tw, &th, &td, &tel);
+		if (leftmargin < tw + 1)
+			leftmargin = tw + 1;
+		if (bottommargin < th + 1)
+			bottommargin = th + 1;
+
+		if (topmargin < th + m_screen_margins.infotopmargin)
+			topmargin = th + m_screen_margins.infotopmargin;
+
+	}
+
+	m_screen_margins.leftmargin = leftmargin;
+	m_screen_margins.bottommargin = bottommargin;
+	m_screen_margins.topmargin = topmargin;
+
+	m_recalulate_margins = false;
 }
 
 

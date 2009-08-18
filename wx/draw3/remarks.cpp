@@ -26,6 +26,10 @@
 #include <libxml/tree.h>
 #include <wx/xrc/xmlres.h>
 
+#include <ares.h>
+#include <ares_dns.h>
+#include <netdb.h>
+
 #include <vector>
 #include <sstream>
 #include <iostream>
@@ -34,8 +38,7 @@
 #include <wx/file.h>
 #include <wx/dir.h>
 #include <wx/config.h>
-
-#include "szarpbase64.h"
+#include <wx/tokenzr.h>
 
 #include "ids.h"
 #include "xmlutils.h"
@@ -47,6 +50,7 @@
 #include "drawpnl.h"
 #include "draw.h"
 #include "errfrm.h"
+#include "md5.h"
 
 #include "timeformat.h"
 
@@ -73,24 +77,34 @@ wxEvent* RemarksStoredEvent::Clone() const {
 	return new RemarksStoredEvent(*this);
 }
 
-
 const int REMARKS_SERVER_PORT = 7998;
 
 RemarksHandler::RemarksHandler() {
 
 	wxConfigBase* config = wxConfig::Get();
 
+	long first_run_with_remarks = 1L;
+
+	config->Read(_T("FIRST_RUN_WITH_REMARKS"), &first_run_with_remarks);
 	config->Read(_T("REMARKS_SERVER_ADDRESS"), &m_server);
 	config->Read(_T("REMARKS_SERVER_USERNAME"), &m_username);
 	config->Read(_T("REMARKS_SERVER_PASSWORD"), &m_password);
 	config->Read(_T("REMARKS_SERVER_AUTOFETCH"), &m_auto_fetch, false);
 
-	m_password = m_password;
+	m_configured = !m_server.IsEmpty() && !m_username.IsEmpty() && !m_password.IsEmpty();
 
-	bool address_ok = m_address.Hostname(m_server);
-	m_address.Service(REMARKS_SERVER_PORT);
+	if (!m_configured && first_run_with_remarks) {
+		GetConfigurationFromSSCConfig();
 
-	m_configured = address_ok && !m_username.IsEmpty() && !m_password.IsEmpty();
+		m_configured = !m_server.IsEmpty() && !m_username.IsEmpty() && !m_password.IsEmpty();
+
+		config->Write(_T("REMARKS_SERVER_ADDRESS"), m_server);
+		config->Write(_T("REMARKS_SERVER_USERNAME"), m_username);
+		config->Write(_T("REMARKS_SERVER_PASSWORD"), m_password);
+		config->Write(_T("FIRST_RUN_WITH_REMARKS"), 0L);
+
+		config->Flush();
+	}
 
 	m_timer.SetOwner(this);
 	if (m_auto_fetch)
@@ -99,6 +113,29 @@ RemarksHandler::RemarksHandler() {
 	m_storage = new RemarksStorage(this);
 
 	m_connection = NULL;
+
+}
+
+void RemarksHandler::GetConfigurationFromSSCConfig() {
+	wxConfig* ssc_config = new wxConfig(_T("ssc"));
+
+	wxString servers, server;
+
+	ssc_config->Read(_T("SERVERS"), &servers);
+
+	wxStringTokenizer tkz(servers, _T(";"), wxTOKEN_STRTOK);
+	if (!tkz.HasMoreTokens()) {
+		delete ssc_config;
+		return;
+	}
+
+	server = tkz.GetNextToken();
+
+	ssc_config->Read(server + _T("/USERNAME"), &m_username);
+	ssc_config->Read(server + _T("/PASSWORD"), &m_password);
+	m_server = server;
+
+	delete ssc_config;
 
 }
 
@@ -155,7 +192,7 @@ RemarksConnection* RemarksHandler::GetConnection() {
 		return NULL;
 
 	if (m_connection == NULL) {
-		m_connection = new RemarksConnection(m_address, this);
+		m_connection = new RemarksConnection(m_server, this);
 		m_connection->SetUsernamePassword(m_username, m_password);
 	}
 
@@ -169,22 +206,22 @@ RemarksStorage* RemarksHandler::GetStorage() {
 
 void RemarksHandler::GetConfiguration(wxString& username, wxString& password, wxString &server, bool& autofetch) {
 	username = m_username;
-	password = SC::U2S(base64::decode(SC::S2U(m_password)));
+	password = m_password;
 	server = m_server;
 	autofetch = m_auto_fetch;
 }
 
 void RemarksHandler::SetConfiguration(wxString username, wxString password, wxString server, bool autofetch) {
 	m_username = username;
-	m_password = SC::U2S(base64::encode(SC::S2U(password)));
+	if (password.IsEmpty() == false)
+		m_password = sz_md5(password);
 
 	m_server = server;
-	bool ok = m_address.Hostname(server);
 
-	m_configured = ok && !m_username.IsEmpty() && !m_password.IsEmpty();
+	m_configured = !m_server.IsEmpty() && !m_username.IsEmpty() && !m_password.IsEmpty();
 
 	if (m_configured && m_connection) {
-		m_connection->SetIPAddress(m_address);
+		m_connection->SetIPAddress(m_server);
 		m_connection->SetUsernamePassword(m_username, m_password);
 	}
 
@@ -235,7 +272,7 @@ wxEvent* XMLRPCResponseEvent::Clone() const {
 	return new XMLRPCResponseEvent(*this);
 }
 
-XMLRPCConnection::XMLRPCConnection(wxIPV4address& address, wxEvtHandler *event_handler) {
+XMLRPCConnection::XMLRPCConnection(wxString& address, wxEvtHandler *event_handler) {
 	m_read_state = CLOSED;
 
 	m_socket = NULL;
@@ -250,11 +287,19 @@ XMLRPCConnection::XMLRPCConnection(wxIPV4address& address, wxEvtHandler *event_h
 	
 	m_handler = event_handler;
 
-	m_socket = new SSLSocketConnection(address, this);
+	wxIPV4address ipaddress;
+	ipaddress.Service(REMARKS_SERVER_PORT);
+	ipaddress.Hostname(address);
+
+	m_socket = new SSLSocketConnection(ipaddress, this);
 }
 
-void XMLRPCConnection::SetIPAddress(wxIPV4address &ip) {
-	m_socket->SetIPAddress(ip);
+void XMLRPCConnection::SetIPAddress(wxString &ip) {
+
+	wxIPV4address address;
+	address.Service(REMARKS_SERVER_PORT);
+	address.Hostname(ip);
+	m_socket->SetIPAddress(address);
 }
 
 void XMLRPCConnection::ReturnError(std::wstring error) {
@@ -525,7 +570,170 @@ std::string XMLRPCConnection::CreateHTTPRequest(XMLRPC_REQUEST request) {
 
 }
 
-RemarksConnection::RemarksConnection(wxIPV4address &address, RemarksHandler *handler) {
+DEFINE_EVENT_TYPE(DNSRESPONSE_EVENT)
+
+DNSResponseEvent::DNSResponseEvent(std::wstring address) : wxCommandEvent(DNSRESPONSE_EVENT, wxID_ANY), m_address(address) {}
+
+std::wstring DNSResponseEvent::GetAddress() {
+	return m_address;
+}
+
+wxEvent* DNSResponseEvent::Clone() const {
+	return new DNSResponseEvent(*this);
+}
+
+
+typedef void (wxEvtHandler::*DNSResponseEventFunction)(DNSResponseEvent&);
+
+#define EVT_DNS_RESPONSE(id, fn) \
+    DECLARE_EVENT_TABLE_ENTRY( DNSRESPONSE_EVENT, id, -1, \
+    (wxObjectEventFunction) (wxEventFunction) (wxCommandEventFunction) \
+    wxStaticCastEvent( DNSResponseEventFunction, & fn ), (wxObject *) NULL ),
+
+
+DNSResolver::DNSResolver(wxEvtHandler *response_handler) : m_response_handler(response_handler),
+		m_finish(false),
+		m_mutex(), 
+		m_cmutex(),
+		m_work_condition(m_cmutex) {
+	m_cmutex.Lock();		
+}
+
+void DNSResolver::Resolve(wxString address) {
+	wxMutexLocker lock(m_mutex);
+	m_address = address.c_str();
+
+	m_work_condition.Signal();
+}
+
+void DNSResolver::Finish() {
+	wxMutexLocker lock(m_mutex);
+	m_finish = true;
+	m_work_condition.Signal();
+}
+
+namespace {
+void ares_cb(void *arg, int status, int timeouts, struct hostent *host) {
+	uint32_t *r = (uint32_t*)(arg);
+	if (status != ARES_SUCCESS) {
+		*r = 0;
+	} else {
+		assert(host->h_length == 4);
+		*r = *((uint32_t*)host->h_addr_list[0]);
+	}
+
+}
+}
+
+void DNSResolver::DoResolve() {
+
+	ares_channel channel;
+	int status = ares_init(&channel);
+	if (status != ARES_SUCCESS) {
+		DNSResponseEvent event(L"");
+		wxPostEvent(m_response_handler, event);
+		return;
+	}
+
+	uint32_t result = 0;
+	bool end = false;
+	ares_gethostbyname(channel, (const char*)SC::S2U(m_address).c_str(), AF_INET, ares_cb, &result);
+	do {
+		struct timeval tv;
+		tv.tv_sec = 0;
+		tv.tv_usec = 500000;
+
+		fd_set read_fds, write_fds
+#ifdef MINGW32
+		       , err_fds
+#endif
+				;
+
+		FD_ZERO(&read_fds);
+		FD_ZERO(&write_fds);
+#ifdef MINGW32
+		FD_ZERO(&err_fds);
+#endif
+		int nfds = ares_fds(channel, &read_fds, &write_fds);
+		if (nfds == 0)
+			break;
+
+		bool any_in = false;
+		bool any_out = false;
+		for (int i = 0; i < nfds + 1; i++) {
+			if (FD_ISSET(i, &read_fds)) {
+				any_in = true;
+#ifdef MINGW32
+				FD_SET(i, &err_fds);
+#endif
+			}
+			if (FD_ISSET(i, &write_fds)) {
+				any_out = true;
+#ifdef MINGW32
+				FD_SET(i, &err_fds);
+#endif
+			}
+		}
+
+		int i = select(nfds + 1, any_in ? &read_fds : NULL, any_out ? &write_fds : NULL, 
+#ifdef MINGW32
+				&err_fds, 
+#else
+				NULL,
+#endif
+				&tv);
+
+		if (i == 0)
+			break;
+
+#ifdef MINGW32
+		for (int i = 0; i < nfds + 1; i++)
+			if (FD_ISSET(i, &err_fds))
+				end = true;
+
+#endif
+		ares_process(channel, &read_fds, &write_fds);
+
+	} while (!end);
+
+	ares_destroy(channel);
+
+	if (result) {
+		uint32_t hresult= ntohl(result);
+
+		std::wstringstream oss;
+
+		oss << (hresult >> 24) << L".";
+		oss << ((hresult >> 16) && 0xffu) << L".";
+		oss << ((hresult >> 8) && 0xffu) << L".";
+		oss << (hresult && 0xffu);
+
+		DNSResponseEvent event(oss.str());
+		wxPostEvent(m_response_handler, event);
+	} else {
+		DNSResponseEvent event(L"");
+		wxPostEvent(m_response_handler, event);
+	}
+
+}
+
+bool DNSResolver::CheckFinish() {
+	wxMutexLocker lock(m_mutex);
+	return m_finish;
+}
+
+void* DNSResolver::Entry() {
+	while (true) {
+		m_work_condition.Wait();
+
+		if (CheckFinish())
+			return NULL;
+
+		DoResolve();
+	}
+}
+
+RemarksConnection::RemarksConnection(wxString &address, RemarksHandler *handler) : m_resolver(this) {
 	m_remarks_handler = handler;
 
 	m_address = address;
@@ -542,7 +750,12 @@ RemarksConnection::RemarksConnection(wxIPV4address &address, RemarksHandler *han
 
 	m_remark_add_dialog = NULL;
 
+	m_address_resolved = false;
+
 	m_token = -1;
+
+	m_resolver.Create();
+	m_resolver.Run();
 
 }
 
@@ -550,12 +763,47 @@ bool RemarksConnection::Busy() {
 	return m_current_action == NONE;
 }
 
-void RemarksConnection::SetIPAddress(wxIPV4address &ip) {
+void RemarksConnection::SetIPAddress(wxString &ip) {
+	m_address_resolved = false;
 	m_xmlrpc_connection->SetIPAddress(ip);
 }
 
 void RemarksConnection::SetRemarkAddDialog(RemarkViewDialog *dialog) {
 	m_remark_add_dialog = dialog;
+}
+
+void RemarksConnection::OnDNSResponse(DNSResponseEvent &event) {
+	if (event.GetAddress().empty()) {
+		if (m_inform_about_successful_fetch) {
+			wxMessageBox(wxString::Format(_("Failed to fetch remarks, failed to resolve address: %s"), m_address.c_str()), _("Error"), wxICON_ERROR);
+			m_inform_about_successful_fetch = false;
+		}
+		return;
+	}
+
+	m_address_resolved = true;
+
+	switch (m_current_action) {
+		case FETCHING_REMARKS:
+			m_retrieval_time = wxDateTime::Now().GetTicks();
+
+			if (m_token == -1)
+				PostRequest(CreateLoginRequest());
+			else
+				PostRequest(CreateGetRemarksRequest());
+
+			break;
+		case POSTING_REMARK:
+			if (m_token == -1)
+				PostRequest(CreateLoginRequest());
+			else
+				PostRequest(CreateGetRemarksRequest());
+
+			break;
+		case NONE:
+			break;
+	}
+
 }
 
 void RemarksConnection::FetchNewRemarks(bool notify_about_success) {
@@ -567,14 +815,14 @@ void RemarksConnection::FetchNewRemarks(bool notify_about_success) {
 			break;
 		case NONE:
 			m_current_action = FETCHING_REMARKS;
-
-			m_retrieval_time = wxDateTime::Now().GetTicks();
-
-			if (m_token == -1)
-				PostRequest(CreateLoginRequest());
-			else
-				PostRequest(CreateGetRemarksRequest());
-			break;
+			if (m_address_resolved) {
+				if (m_token == -1)
+					PostRequest(CreateLoginRequest());
+				else
+					PostRequest(CreateGetRemarksRequest());
+			} else {
+				m_resolver.Resolve(m_address);	
+			}
 	}
 
 	m_inform_about_successful_fetch = notify_about_success;
@@ -595,10 +843,14 @@ void RemarksConnection::PostRemark(Remark& remark) {
 
 			m_remark_to_send = remark;
 
-			if (m_token == -1)
-				PostRequest(CreateLoginRequest());
-			else
-				PostRequest(CreatePostRemarkRequest());
+			if (m_address_resolved) {
+				if (m_token == -1)
+					PostRequest(CreateLoginRequest());
+				else
+					PostRequest(CreatePostRemarkRequest());
+			} else {
+				m_resolver.Resolve(m_address);	
+			}
 			break;
 		case POSTING_REMARK:
 			//this shouldn't happen
@@ -848,11 +1100,15 @@ void RemarksConnection::SetUsernamePassword(wxString username, wxString password
 }
 
 RemarksConnection::~RemarksConnection() {
+	m_resolver.Finish();
+	m_resolver.Wait();
+
 	delete m_xmlrpc_connection;
 }
 
 BEGIN_EVENT_TABLE(RemarksConnection, wxEvtHandler) 
 	EVT_XMLRPCREQUEST(wxID_ANY, RemarksConnection::OnXMLRPCResponse)
+	EVT_DNS_RESPONSE(wxID_ANY, RemarksConnection::OnDNSResponse)
 END_EVENT_TABLE()
 
 DEFINE_EVENT_TYPE(REMARKSRESPONSE_EVENT)

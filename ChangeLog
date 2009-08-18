@@ -1,5 +1,15 @@
 $Id$
 
+2009-08-16	Darek Marcinkiewicz <reksio@praterm.pl>
+	* utils/remarks_server: may also connect to database
+	via tcp/ip - database server and remarks server do not have
+	to be located on the same machine anymore
+	* wx/draw3: draw3, when started for the first time 
+	with no remarks configuration, takes login, password
+	and server address from configuration from ssc; added
+	support for resolving DNS remarks server address; changed password
+	obfuscation method from base64 to md5
+	* www/pylons/sssweb: passwords are now hashed by md5
 2009-08-14	Darek Marcinkiewicz <reksio@praterm.pl>
 	* www/pylons/sssweb: sssweb can be used for remarks users
 	administration (so far only basic features are present)

@@ -134,21 +134,47 @@ class XMLRPCConnection : public wxEvtHandler {
 
 	void WriteData();
 public:
-	XMLRPCConnection(wxIPV4address& address, wxEvtHandler *event_handler);
+	XMLRPCConnection(wxString& address, wxEvtHandler *event_handler);
 
 	void PostRequest(XMLRPC_REQUEST request);
 
 	void OnSocketEvent(wxSocketEvent& e);
 
-	void SetIPAddress(wxIPV4address &ip);
+	void SetIPAddress(wxString &ip);
 
 	~XMLRPCConnection();
 
 	DECLARE_EVENT_TABLE()
 };
 
+class DNSResponseEvent : public wxCommandEvent {
+	std::wstring m_address;	
+public:
+	DNSResponseEvent(std::wstring address);
+	std::wstring GetAddress();
+	wxEvent* Clone() const;
+};
+
+
+class DNSResolver : public wxThread {
+	wxEvtHandler *m_response_handler;
+	bool m_finish;
+	wxMutex m_mutex, m_cmutex;
+	wxCondition m_work_condition;
+	std::wstring m_address;
+	void DoResolve();
+	bool CheckFinish();
+public:
+	DNSResolver(wxEvtHandler *event);	
+	void Resolve(wxString address);
+	virtual void* Entry();
+	void Finish();
+};
+
 class RemarksHandler;
 class RemarksConnection : public wxEvtHandler {
+	DNSResolver m_resolver;
+
 	long m_token;
 
 	wxString m_username;
@@ -156,7 +182,7 @@ class RemarksConnection : public wxEvtHandler {
 
 	XMLRPCConnection *m_xmlrpc_connection;
 
-	wxIPV4address m_address;
+	wxString m_address;
 
 	enum {
 		NONE, 
@@ -168,6 +194,8 @@ class RemarksConnection : public wxEvtHandler {
 	bool m_pending_remark_post;
 
 	bool m_inform_about_successful_fetch;
+
+	bool m_address_resolved;
 
 	time_t m_retrieval_time;
 
@@ -191,11 +219,12 @@ class RemarksConnection : public wxEvtHandler {
 	void PostRequest(XMLRPC_REQUEST request);
 
 public:
-	RemarksConnection(wxIPV4address &address, RemarksHandler *handler);
+	RemarksConnection(wxString &address, RemarksHandler *handler);
 	bool Busy();
 	void SetRemarkAddDialog(RemarkViewDialog *add_dialog);
 	void OnXMLRPCResponse(XMLRPCResponseEvent &event);
-	void SetIPAddress(wxIPV4address &ip);
+	void OnDNSResponse(DNSResponseEvent &event);
+	void SetIPAddress(wxString &ip);
 	void SetUsernamePassword(wxString username, wxString password);
 	void SetRemarksAddDialog(RemarkViewDialog *dialog);
 	void FetchNewRemarks(bool notify_about_success = true);
@@ -346,7 +375,6 @@ class RemarksHandler : public wxEvtHandler {
 
 	bool m_configured;
 
-	wxIPV4address m_address;
 	wxString m_username;
 	wxString m_password;
 	wxString m_server;
@@ -358,6 +386,8 @@ class RemarksHandler : public wxEvtHandler {
 	std::vector<RemarksFetcher*> m_fetchers;
 
 	wxTimer m_timer;
+
+	void GetConfigurationFromSSCConfig();
 public:
 	RemarksHandler();
 

@@ -59,11 +59,11 @@ class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver
 	bool m_recalulate_margins;
 
 	struct {
-		int leftmargin;
-		int rightmargin;
-		int topmargin;
-		int bottommargin;
-		int infotopmargin;
+		double leftmargin;
+		double rightmargin;
+		double topmargin;
+		double bottommargin;
+		double infotopmargin;
 	} m_screen_margins;
 
 	void DrawWindowInfo(wxGraphicsContext &dc, const wxRegion& region);
@@ -74,11 +74,11 @@ class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver
 
 	void DrawYAxis(wxGraphicsContext &dc);
 
-	void DrawYAxisVals(wxGraphicsContext &dc, Draw *draw);
+	void DrawYAxisVals(wxGraphicsContext &dc);
 
 	void DrawXAxis(wxGraphicsContext &dc);
 
-	void DrawXAxisVals(wxGraphicsContext &dc, Draw *d);
+	void DrawXAxisVals(wxGraphicsContext &dc);
 
 	void RecalculateMargins(wxGraphicsContext &dc);
 
@@ -88,9 +88,9 @@ class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver
 
 	static const wxColour back2_col;
 
-	int GetX(int i);
+	double GetX(int i);
 
-	int GetY(double val, DrawInfo *di);
+	double GetY(double val, DrawInfo *di);
 
 	void DrawGraph(wxGraphicsContext &dc, Draw* d);
 

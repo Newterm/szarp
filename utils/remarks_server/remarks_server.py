@@ -191,17 +191,19 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
 class Database:
 
 	def __init__(self, config):
-		database = config.get("database", "name")
-		user = config.get("database", "user")
-		password = config.get("database", "password")
+		db_args = {}
+		db_args['database'] = config.get("database", "name")
+		db_args['user'] = config.get("database", "user")
+		db_args['password'] = config.get("database", "password")
+
+		if config.has_option("database", "host"):
+			db_args['host'] = config.get("database", "host")
+
+
+		self.dbpool = adbapi.ConnectionPool("psycopg2", **db_args)
+
 		server_name = config.get("database", "server_name")
-
-		self.dbpool = adbapi.ConnectionPool("psycopg2",
-				database=database,
-				user=user,
-				password=password)
-
-		connection = psycopg2.connect(database=database, user=user, password=password)
+		connection = psycopg2.connect(**db_args)
 		cursor = connection.cursor()
 
 		cursor.execute("SELECT id from server where name = %(name)s", { 'name' : server_name })
