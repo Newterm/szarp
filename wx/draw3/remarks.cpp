@@ -580,6 +580,7 @@ std::string XMLRPCConnection::CreateHTTPRequest(XMLRPC_REQUEST request) {
 
 }
 
+DECLARE_EVENT_TYPE(DNSRESPONSE_EVENT, -1)
 DEFINE_EVENT_TYPE(DNSRESPONSE_EVENT)
 
 DNSResponseEvent::DNSResponseEvent(std::wstring address) : wxCommandEvent(DNSRESPONSE_EVENT, wxID_ANY), m_address(address) {}
@@ -606,7 +607,6 @@ DNSResolver::DNSResolver(wxEvtHandler *response_handler) : m_response_handler(re
 		m_mutex(), 
 		m_cmutex(),
 		m_work_condition(m_cmutex) {
-	m_cmutex.Lock();		
 }
 
 void DNSResolver::Resolve(wxString address) {
