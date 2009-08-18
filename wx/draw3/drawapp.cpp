@@ -52,6 +52,13 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/convenience.hpp> 
 
+#ifdef MINGW32
+#include <winsock2.h>
+#include <sys/types.h>
+#include <shlwapi.h>
+#endif
+
+
 #include "drawapp.h"
 #include "drawipc.h"
 #include "libpar.h"
@@ -170,6 +177,12 @@ bool DrawApp::OnInit() {
 		free(base);
 	}
 
+#endif
+
+#ifdef MINGW32
+	WORD wVersionRequested = MAKEWORD(2, 2);
+	WSADATA wsaData;
+	WSAStartup(wVersionRequested, &wsaData);
 #endif
 	/* Set logging to stderr. */
 	wxLog *logger = new wxLogStderr();
