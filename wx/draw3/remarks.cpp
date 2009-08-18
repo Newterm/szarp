@@ -21,6 +21,8 @@
  * $Id$
  */
 
+#include "config.h"
+
 #include <wx/config.h>
 #include <wx/filename.h>
 #include <libxml/tree.h>
