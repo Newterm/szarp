@@ -383,9 +383,11 @@ void DrawPanel::CreateChildren(DrawSet *set, PeriodType pt, time_t time, int sel
 	else
 #endif
 #endif
+#ifdef __WXGTK__
 	if (style == _T("GCDC"))
 		dg = new GCDCGraphs(this, cfg);
 	else 
+#endif
 		dg = new WxGraphs(this, cfg);
 
 	tb = new DrawToolBar(this);

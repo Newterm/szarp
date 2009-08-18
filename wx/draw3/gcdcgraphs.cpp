@@ -24,6 +24,8 @@
  * $Id: wxgraphs.h 1 2009-06-24 15:09:25Z isl $
  */
 
+#ifdef __WXGTK__
+
 #include <wx/dcbuffer.h>
 
 #include "gcdcgraphs.h"
@@ -470,3 +472,5 @@ BEGIN_EVENT_TABLE(GCDCGraphs, wxWindow)
 	EVT_SET_FOCUS(GCDCGraphs::OnSetFocus)
 	EVT_ERASE_BACKGROUND(GCDCGraphs::OnEraseBackground)
 END_EVENT_TABLE()
+
+#endif
