@@ -1,5 +1,10 @@
 $Id$
 
+2009-08-19	Pawel Palucha <pawel@praterm.com.pl>
+	* resources, debian/szarp-daemons.logrotate: logrotate in debian way.
+	* www/pylons/sssweb/Makefile.am: fixed building under automake 1.11 -
+	pythons files where installed twice - by setup.py and by automake.
+	* resources/KDE: removed unused directory.
 2009-08-19	Adam Smyk <asmyk@praterm.pl>
 	* wx/scc: database hiding has been added
 2009-08-16	Darek Marcinkiewicz <reksio@praterm.pl>

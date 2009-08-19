@@ -144,6 +144,7 @@ binary-arch-common:
 	dh_installinit -i
 	dh_installdocs
 	dh_installcron
+	dh_installlogrotate
 	dh_installdeb
 	dh_shlibdeps
 	dh_perl

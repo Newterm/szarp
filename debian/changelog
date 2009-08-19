@@ -1,3 +1,9 @@
+szarp (3.1.82) unstable; urgency=low
+
+  * upstream version 3.1.82.
+
+ -- Pawel Palucha <pawel@praterm.com.pl>  Wed, 19 Aug 2009 21:05:05 +0200
+
 szarp (3.1.73) unstable; urgency=low
 
   * unstable form upstream version 3.1.73

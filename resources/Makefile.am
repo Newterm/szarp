@@ -18,9 +18,7 @@ RESOURCES = \
        @srcdir@/dsc.vim \
        @srcdir@/dtd \
        @srcdir@/elog.vim \
-       @srcdir@/KDE \
        @srcdir@/libpar.vim \
-       @srcdir@/logrotate_szarp \
        @srcdir@/meteo_template.xml \
        @srcdir@/paramd_access.conf \
        @srcdir@/parcook.vim \
@@ -103,22 +101,11 @@ parstart_cfg: parstart_ DATABASE_PREFIX
 	) 
 	
 if !DEB_BUILD
-icons:
-	@[ -d /usr/share/icons ] && \
-	echo "Installing SZARP icons in /usr/share/icons directory..." ; \
-	cp -f @prefix@/resources/KDE/icons/*.xpm /usr/share/icons
-	cp -f @prefix@/resources/wx/icons/*.xpm /usr/share/icons
-
 vim:
 	pwd
 	@srcdir@/../script/install_vim
 
 else DEB_BUILD
-icons:
-	$(INSTALL) -d $(DESTDIR)/usr/share/icons
-	cp -f $(DESTDIR)@prefix@/resources/KDE/icons/*.xpm $(DESTDIR)/usr/share/icons
-	cp -f $(DESTDIR)@prefix@/resources/wx/icons/*.xpm $(DESTDIR)/usr/share/icons
-
 vim: 
 	cp -f @srcdir@/../script/install_vim $(DESTDIR)@prefix@/resources
 
@@ -134,10 +121,6 @@ copyfiles: $(RESOURCES)
 	@cp -ad $(RESOURCES) $(DESTDIR)@prefix@/resources
 	ls @abs_builddir@
 	@cp @srcdir@/szarp_in.cfg $(DESTDIR)@prefix@/resources
-
-logrotate:
-	$(INSTALL) -d $(DESTDIR)/etc/logrotate.d
-	$(INSTALL)  @srcdir@/logrotate_szarp $(DESTDIR)/etc/logrotate.d/szarp
 
 regulators_defs:
 	$(INSTALL) -d $(DESTDIR)@prefix@/resources/regulators
@@ -192,7 +175,7 @@ install-data-local: copyfiles links
 
 endif
 
-install-data-hook: icons vim paramd_access parstart_ logrotate apache2 regulators_defs dictionary
+install-data-hook: vim paramd_access parstart_ apache2 regulators_defs dictionary
 
 uninstall-local: uninstall-apache2
 	rm -rf @prefix@/resources/* /etc/apache2/sites-available/szarp

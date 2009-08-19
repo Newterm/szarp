@@ -10,7 +10,6 @@ Files: opt/szarp/bin/{parcook,sender,analiza,meaner3,sss,checker,psetd,stampd,ss
 Files: opt/szarp/bin/{calcdmn,dbdmn,endmn,execdmn,fp2kdmn,ifcl5dmn,lecmdmn,linedmn,mbrtudmn,mbtcpdmn}
 Files: opt/szarp/bin/{kamsdmn,eapnetdmn,aqtdmn,alstdmn,dpafdmn,lecdmn,lmldmn,mbusdmn,muksdmn,nrsdmn,pafdmn,pafdmnr,polludmn,ratedmn,rsdmn,tcpdmn,testdmn,wagadmn,dlmsdmn,sbusdmn,kwmsdmn,ddedmn,zmddmn,lbdmn,k601dmn,sre2dmn,melsdmn,pozytondmn,npozytondmn}
 Files: opt/szarp/bin/wlkdmn
-Files: etc/logrotate.d/szarp
 Files: etc/szarp/ssconf.cfg
 
 Package: szarp-utils
