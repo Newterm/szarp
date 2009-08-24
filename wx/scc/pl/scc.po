@@ -3,11 +3,13 @@
 # This file is distributed under the same license as the scc package.
 # Darek Marcinkiewicz <reksio@praterm.com.pl>, 2005.
 # $Id$
+#: scchideselectionframe.cpp:121 scchideselectionframe.cpp:129
+#: scchideselectionframe.cpp:137
 msgid ""
 msgstr ""
 "Project-Id-Version: SZARP Control Center\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-19 00:36+0200\n"
+"POT-Creation-Date: 2009-08-24 12:15+0200\n"
 "PO-Revision-Date: 2005-10-20 22:09+0200\n"
 "Last-Translator: Pawe³ Pa³ucha <pawel@praterm.com.pl>\n"
 "MIME-Version: 1.0\n"
@@ -63,15 +65,15 @@ msgstr "Ukrywanie baz SZARP"
 msgid "E&xit"
 msgstr "&Wyj¶cie"
 
-#: sccframe.cpp:161
+#: sccframe.cpp:160
 msgid "Do you really want to activate 'IT support tunnel'?"
 msgstr "Czy na pewno chcesz uruchomiæ tunel pomocy technicznej?"
 
-#: sccframe.cpp:161
+#: sccframe.cpp:160
 msgid "IT support tunnel"
 msgstr "Tunel pomocy technicznej"
 
-#: sccframe.cpp:173
+#: sccframe.cpp:172
 msgid ""
 "This option allows you to change directory where SZARP stores its historical "
 "data. Changing this setting may cause  unavailability of already "
@@ -83,15 +85,15 @@ msgstr ""
 "poprzednio zsynchronizowane dane stan± siê niedostêpne. By SZARP dzia³a³ "
 "poprawnie, musisz mieæ prawo zapisu do katalogu, który wska¿esz."
 
-#: sccframe.cpp:175
+#: sccframe.cpp:174
 msgid "Warning"
 msgstr "Ostrze¿enie"
 
-#: sccframe.cpp:183
+#: sccframe.cpp:182
 msgid "Choose directory"
 msgstr "Wybierz katalog"
 
-#: sccframe.cpp:193
+#: sccframe.cpp:192
 msgid ""
 "SZARP data dir has been changed. You must restart all SZARP applications for "
 "this action to take effect"
@@ -99,7 +101,7 @@ msgstr ""
 "Zosta³ zmieniony katalog z lokalizacj± baz systemu SZARP. Musisz "
 "zrestartowaæ wszystkie programy SZARPa, by ta zmiana odnios³a efekt."
 
-#: sccframe.cpp:194
+#: sccframe.cpp:193
 msgid "Information"
 msgstr "Informacja"
 
@@ -228,7 +230,7 @@ msgstr "Domy¶lna wielko¶æ czcionek SZARP"
 msgid "Apply"
 msgstr "Zastosuj"
 
-#: szarpfonts.cpp:90 scchideselectionframe.cpp:116
+#: szarpfonts.cpp:90 scchideselectionframe.cpp:83
 msgid "Cancel"
 msgstr "Anuluj"
 
@@ -280,18 +282,41 @@ msgstr ""
 "B³±d podczas zapisywania pliku %s\n"
 "B³±d %d - %s"
 
-#: scchideselectionframe.cpp:69
+#: scchideselectionframe.cpp:31
 msgid "Hiding SZARP databases"
 msgstr "Ukrywanie baz SZARP"
 
-#: scchideselectionframe.cpp:74
+#: scchideselectionframe.cpp:36
 msgid "Select databases to hide"
 msgstr "Zaznacz bazy do ukrycia"
 
-#: scchideselectionframe.cpp:113
+#: scchideselectionframe.cpp:69
+msgid "Databases hiding in draw3 is active"
+msgstr "Ukrywanie baz w draw3"
+
+#: scchideselectionframe.cpp:72
+msgid "Databases hiding in extractor is active"
+msgstr "Ukrywanie baz w ekstraktor3"
+
+#: scchideselectionframe.cpp:75
+msgid "Databases hiding in synchronizer is active"
+msgstr "Ukrywanie baz w synchronizatorze"
+
+#: scchideselectionframe.cpp:80
 msgid "OK"
 msgstr "OK"
 
+#: scchideselectionframe.cpp:117
+msgid "draw3"
+msgstr ""
+
+#: scchideselectionframe.cpp:125
+msgid "ekstraktor3"
+msgstr ""
+
+#: scchideselectionframe.cpp:133
+msgid "ssc"
+msgstr ""
 
 #~ msgid ""
 #~ "Left click to lanch SZARP application\n"

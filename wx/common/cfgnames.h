@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -37,6 +37,6 @@ WX_DECLARE_STRING_HASH_MAP(wxString, ConfigNameHash);
 /**@param szarp_dir main szarp directory
  * @return assoc. array of available configuration prefixes and their titles
  * (configuration prefixes are keys, titles are values)*/
-ConfigNameHash GetConfigTitles(const wxString &szarp_dir);
+ConfigNameHash GetConfigTitles(const wxString &szarp_dir, wxArrayString* hidden_databases = 0);
 
 #endif

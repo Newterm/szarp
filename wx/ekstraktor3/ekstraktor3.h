@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,9 +19,9 @@
 /*
  * ekstrakta3 program
  * SZARP
- 
+
  * vooyeck@praterm.com.pl
- 
+
  * $Id$
  */
 
@@ -43,9 +43,11 @@
 
 #include <wx/cmdline.h>
 #include <wx/filename.h>
+#include <wx/config.h>
+#include <wx/tokenzr.h>
 #include "libpar.h"
 
-// the application widget 
+// the application widget
 #include "EkstraktorWidget.h"
 #include "geometry.h"
 #include "cconv.h"
@@ -62,7 +64,7 @@ class EkstrApp: public szApp
 	wxLocale locale;
 
 protected:
-	virtual bool OnInit() 
+	virtual bool OnInit()
 	{
 	szApp::OnInit();
 	this->SetProgName(_("Ekstraktor 3"));
@@ -84,16 +86,16 @@ protected:
 #else
 	libpar_read_cmdline(&argc, argv);
 #endif
-	
+
 	// PARSE CMD LINE
 	wxCmdLineParser parser;
 	wxString *geometry = new wxString;
 
 	// SET CMD LINE INFO
         parser.SetLogo(_("Szarp Extractor version 3.00"));
-	parser.AddOption(_T("geometry"), wxEmptyString, 
+	parser.AddOption(_T("geometry"), wxEmptyString,
 		_("X windows geometry specification"), wxCMD_LINE_VAL_STRING);
-	parser.AddOption(_T("base"), wxEmptyString, 
+	parser.AddOption(_T("base"), wxEmptyString,
 		_("base name"), wxCMD_LINE_VAL_STRING);
 	parser.AddSwitch(_T("h"), _T("help"), _("print usage info"));
 	parser.SetCmdLine(argc, argv);
@@ -107,7 +109,7 @@ protected:
 		delete geometry;
 		geometry = NULL;
 	}
-		
+
 	// GET LIBPAR STUFF
 	#ifndef MINGW32
         libpar_init();
@@ -123,24 +125,39 @@ protected:
 		free(_xml_prefix);
 	}
 
+    wxArrayString hidden_databases;
+    wxString tmp;
+	wxConfigBase* config = wxConfigBase::Get(true);
+	if (config->Read(_T("HIDDEN_DATABASES"), &tmp))
+	{
+		wxStringTokenizer tkz(tmp, _T(","), wxTOKEN_STRTOK);
+		while (tkz.HasMoreTokens())
+		{
+			wxString token = tkz.GetNextToken();
+			token.Trim();
+			if (!token.IsEmpty())
+				hidden_databases.Add(token);
+		}
+	}
+
 	wxString base;
 	if(parser.Found(_T("base"), &base)) {
 		xml_prefix = base;
 	} else {
-		if (ConfigDialog::SelectDatabase(base)) {
+		if (ConfigDialog::SelectDatabase(base, &hidden_databases)) {
 			xml_prefix = base;
 		} else
 			exit(1);
 	}
 
 	libpar_done();
-	
+
 	xmlInitParser();
-	LIBXML_TEST_VERSION 
+	LIBXML_TEST_VERSION
 	xmlSubstituteEntitiesDefault(1);
 
-	// .. AND START THE MAIN WIDGET 
-	EkstraktorWidget *ew = 
+	// .. AND START THE MAIN WIDGET
+	EkstraktorWidget *ew =
 		new EkstraktorWidget(xml_prefix, geometry);
 
 	if(ew->IsConfigLoaded() == false) {
@@ -151,7 +168,7 @@ protected:
 		exit(1);
 	}
 
-	
+
 	return true;
 
 	} // onInit()

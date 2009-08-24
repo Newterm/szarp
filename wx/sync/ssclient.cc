@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ namespace fs = boost::filesystem;
 #endif
 
 IMPLEMENT_APP(SSCApp);
-CFileSyncer::Request::Request(CFileSyncer::Request::Type type, uint32_t num) : 
+CFileSyncer::Request::Request(CFileSyncer::Request::Type type, uint32_t num) :
 	m_type(type), m_num(num) {
 }
 
@@ -153,7 +153,7 @@ void store_servers_creditenials_config(std::map<wxString, std::pair<wxString, wx
 
 		config->Write(i->first + _T("/USERNAME"), i->second.first);
 		config->Write(i->first + _T("/PASSWORD"), i->second.second);
-		
+
 		first = false;
 
 	}
@@ -168,13 +168,13 @@ void store_servers_creditenials_config(std::map<wxString, std::pair<wxString, wx
 
 void CFileSyncer::RequestGenerator::MswFileIterator::ProceedToLink() {
 	while (m_iterator != m_map.end() &&
-		m_iterator->second.GetType() != TPath::TLINK) 
+		m_iterator->second.GetType() != TPath::TLINK)
 	m_iterator++;
 }
 
 void CFileSyncer::RequestGenerator::MswFileIterator::ProceedToNonLink() {
 	while (m_iterator != m_map.end() &&
-			m_iterator->second.GetType() == TPath::TLINK) 
+			m_iterator->second.GetType() == TPath::TLINK)
 		m_iterator++;
 }
 
@@ -186,7 +186,7 @@ CFileSyncer::RequestGenerator::MswFileIterator::MswFileIterator(MAP& map) :
 
 void CFileSyncer::RequestGenerator::MswFileIterator::operator++(int) {
 	m_iterator++;
-	if (m_link) 
+	if (m_link)
 		ProceedToLink();
 	else {
 		ProceedToNonLink();
@@ -211,13 +211,13 @@ void CFileSyncer::RequestGenerator::MswFileIterator::operator=(const MAPI& itera
 }
 #endif
 
-CFileSyncer::RequestGenerator::RequestGenerator(const TPath& local_dir, 
-	std::map<uint32_t, TPath>& file_list, 
-	std::vector<TPath>& files, 
+CFileSyncer::RequestGenerator::RequestGenerator(const TPath& local_dir,
+	std::map<uint32_t, TPath>& file_list,
+	std::vector<TPath>& files,
 	std::deque<Request>& requests,
 	PacketExchanger *exch,
 	Progress& progress)
-	: 
+	:
 	m_local_dir(local_dir),
 	m_file_list(file_list),
 #ifdef __WXMSW__
@@ -239,11 +239,11 @@ CFileSyncer::RequestGenerator::RequestGenerator(const TPath& local_dir,
 
 		TPath& path = files[i];
 		TPath localpath(local_dir.Concat(path).GetPath());
-		if (path.GetType() == TPath::TFILE 
+		if (path.GetType() == TPath::TFILE
 			&& localpath.GetType() == TPath::TFILE
 			&& path.GetSize() == localpath.GetSize()
-			&& path.GetModTime() == localpath.GetModTime()) 
-			continue; 
+			&& path.GetModTime() == localpath.GetModTime())
+			continue;
 
 		sz_log(7, "File %s is to be synced", path.GetPath());
 		/*wxLogWarning(_("File %s is to be synced %d %d %d %d"), csconv(path.GetPath()).c_str(),
@@ -274,7 +274,7 @@ bool CFileSyncer::RequestGenerator::Finished() {
 		return m_extra_requests_iterator == m_extra_requests.end();
 	else
 		return (m_current_file == m_file_list.end()) && m_extra_requests.size() == 0;
-	
+
 }
 
 void CFileSyncer::RequestGenerator::MoveForward() {
@@ -297,7 +297,7 @@ Packet* CFileSyncer::RequestGenerator::GivePacket() {
 	Packet *p = NULL;
 
 	do {
-		if (m_state == SIGNATUE_GENERATION) 
+		if (m_state == SIGNATUE_GENERATION)
 			 p = PatchReqPacket();
 		else if (Finished()) {
 			sz_log(7, "All request send");
@@ -310,18 +310,18 @@ Packet* CFileSyncer::RequestGenerator::GivePacket() {
 
 			m_exchanger->SetWriter(NULL);
 			return NULL;
-		} else 
+		} else
 			p = StartRequest();
-		
+
 	} while (p == NULL);
 
 	return p;
-		
+
 }
 
 void CFileSyncer::RequestGenerator::AddExtraRequest(uint32_t file_no) {
 
-	if (m_processing_extra_requests && 
+	if (m_processing_extra_requests &&
 			m_extra_requests_iterator == m_extra_requests.end()) {
 
 			m_extra_requests.clear();
@@ -358,11 +358,11 @@ Packet *CFileSyncer::RequestGenerator::StartRequest() {
 		return NewFileRequest(path);
 	}
 
-	if (local_path.GetType() == TPath::TFILE 
+	if (local_path.GetType() == TPath::TFILE
 		&& path.GetType() == TPath::TFILE) {
 		sz_log(7, "Requesting patch for file %s", local_path.GetPath());
 		return PatchReqPacket();
-	} 
+	}
 
 	return NewFileRequest(path);
 }
@@ -397,7 +397,7 @@ Packet* CFileSyncer::RequestGenerator::NewFileRequest(TPath& path) {
 }
 
 Packet* CFileSyncer::RequestGenerator::PatchReqPacket() {
-	
+
 	if (m_state == IDLE) {
 		TPath& path = FilePath();
 		TPath local_path = m_local_dir.Concat(path);
@@ -430,7 +430,7 @@ Packet* CFileSyncer::RequestGenerator::PatchReqPacket() {
 				const size_t msg_info_size = sizeof(uint16_t) + sizeof(uint32_t);
 				out_buffer = p->m_data + msg_info_size;
 				out_left = Packet::MAX_LENGTH - msg_info_size;
-				p->m_size = msg_info_size; 
+				p->m_size = msg_info_size;
 			} else {
 				out_buffer = p->m_data;
 				out_left = Packet::MAX_LENGTH;
@@ -441,12 +441,12 @@ Packet* CFileSyncer::RequestGenerator::PatchReqPacket() {
 		m_sigstate.m_iobuf.avail_out = out_left;
 
 		if (!m_sigstate.m_iobuf.avail_in) {
-			size_t r = ReadFully(m_sigstate.m_signed_file, 
-				m_sigstate.m_file_buffer, 
+			size_t r = ReadFully(m_sigstate.m_signed_file,
+				m_sigstate.m_file_buffer,
 				Packet::MAX_LENGTH);
 			m_sigstate.m_iobuf.next_in = (char*)m_sigstate.m_file_buffer;
 			m_sigstate.m_iobuf.avail_in = r;
-			if (r != Packet::MAX_LENGTH) 
+			if (r != Packet::MAX_LENGTH)
 				m_sigstate.m_iobuf.eof_in = 1;
 		}
 
@@ -485,9 +485,9 @@ Packet* CFileSyncer::RequestGenerator::PatchReqPacket() {
 
 	} while (true);
 }
-					
-CFileSyncer::ResponseReceiver::ResponseReceiver(const TPath& local_dir, 
-	std::map<uint32_t, TPath>& file_list, 
+
+CFileSyncer::ResponseReceiver::ResponseReceiver(const TPath& local_dir,
+	std::map<uint32_t, TPath>& file_list,
 	std::deque<Request>& requests,
 	PacketExchanger* exchanger,
 	Progress& progress)
@@ -503,7 +503,7 @@ CFileSyncer::ResponseReceiver::ResponseReceiver(const TPath& local_dir,
 	m_progress(progress),
 	m_synced_count(0),
 	m_all_requests_sent(false) {
-	
+
 	m_exchanger->SetReader(this);
 }
 
@@ -519,7 +519,7 @@ TPath CFileSyncer::ResponseReceiver::TempFileName() {
 	TPath& path = m_file_list[FileNo()];
 	TPath local_path = m_local_dir.Concat(path);
 	TPath dir = local_path.DirName();
-	return dir.Concat("ssc.tmp"); 
+	return dir.Concat("ssc.tmp");
 }
 
 uint32_t CFileSyncer::ResponseReceiver::FileNo() {
@@ -544,7 +544,7 @@ void CFileSyncer::ResponseReceiver::OpenTmpFile() {
 	path.DirName().CreateDir();
 	assert (m_dest == NULL);
 	m_dest = fopen(path.GetPath(), "wb");
-	if (!m_dest) 
+	if (!m_dest)
 		sz_log(6, "Failed to open temp file %s", path.GetPath());
 }
 
@@ -585,7 +585,7 @@ void CFileSyncer::ResponseReceiver::MoveTmpFile() {
 	if (ret != 0) {
 		sz_log(2, "Failed to rename %s %s", TempFileName().GetPath(), LocalFileName().GetPath());
 		RemoveTmpFile();
-	} 
+	}
 	SetFileModTime();
 }
 
@@ -598,7 +598,7 @@ void CFileSyncer::ResponseReceiver::ReadPacket(Packet *p) {
 
 	sz_log( 8, "Requests queue size %zu", m_requests.size());
 
-	if (p->m_type == Packet::ERROR_PACKET) 
+	if (p->m_type == Packet::ERROR_PACKET)
 		HandleErrorPacket(p);
 	else if (p->m_type == Packet::EOS_PACKET) {
 		m_all_requests_sent = true;
@@ -662,7 +662,7 @@ void CFileSyncer::ResponseReceiver::HandleLinkPacket(Packet *p) {
 	for (char *c = path; *c; ++c)
 		if (*c == '/')
 			*c = '\\';
-	
+
 	//reparse point must point to an absolute path so we have to do some
 	//extra "processing"
 	//
@@ -713,7 +713,7 @@ ssstring CFileSyncer::ResponseReceiver::DataBaseName() {
 #else
 	char *c = strchr(path, '/');
 #endif
-	
+
 	ssstring result;
 
 	if (c != NULL) {
@@ -729,14 +729,14 @@ ssstring CFileSyncer::ResponseReceiver::DataBaseName() {
 void CFileSyncer::ResponseReceiver::HandleNewFilePacket(Packet *p) {
 	if (m_state == IDLE) {
 		sz_log(8, "Begin reception of raw file");
-		m_progress.SetProgress(Progress::SYNCING, 
+		m_progress.SetProgress(Progress::SYNCING,
 				m_synced_count * 100 / m_file_list.size(),
 				DataBaseName());
 		OpenTmpFile();
 		m_state = COMPLETE_RECEPTION;
 	}
 
-	if (m_dest)  
+	if (m_dest)
 		WriteFully(m_dest, p->m_data, p->m_size);
 
 	if (p->m_type == Packet::LAST_PACKET) {
@@ -755,20 +755,20 @@ void CFileSyncer::ResponseReceiver::HandlePatchPacket(Packet *p) {
 	if (m_state == IDLE) {
 		OpenTmpFile();
 		OpenBaseFile();
-		if (m_base == NULL) { /*base file disappered - this may happen when link is converted to a directory 
+		if (m_base == NULL) { /*base file disappered - this may happen when link is converted to a directory
 				      - schedule refetch of this file*/
 			m_generator->AddExtraRequest(FileNo());
 			m_all_requests_sent = false;
 		}
 		m_patch_job = rs_patch_begin(rs_file_copy_cb, m_base);
 		sz_log(8, "Begin reception of patch for file %s", LocalFileName().GetPath());
-		m_progress.SetProgress(Progress::SYNCING, 
+		m_progress.SetProgress(Progress::SYNCING,
 				m_synced_count * 100 / m_file_list.size(),
 				DataBaseName());
 		m_state = PATCH_RECEPTION;
 	}
 
-	if (!m_dest || !m_base) { 
+	if (!m_dest || !m_base) {
 		if (p->m_type == Packet::LAST_PACKET) {
 			CloseBaseFile();
 			CloseTmpFile();
@@ -790,7 +790,7 @@ void CFileSyncer::ResponseReceiver::HandlePatchPacket(Packet *p) {
 	rsbuf.eof_in = p->m_type == Packet::LAST_PACKET;
 
 	do {
-		uint8_t buffer[4 * Packet::MAX_LENGTH];	//zupelnie arbitralnie wybrana wartosc 
+		uint8_t buffer[4 * Packet::MAX_LENGTH];	//zupelnie arbitralnie wybrana wartosc
 		rsbuf.next_out = (char*)buffer;
 		rsbuf.avail_out = sizeof(buffer);
 
@@ -840,13 +840,13 @@ void CFileSyncer::ResponseReceiver::SetRequestGenerator(RequestGenerator *genera
 }
 
 CFileSyncer::CFileSyncer (const TPath &local_dir, const TPath &sync_dir,
-	std::vector<TPath> &server_list, 
-	PacketExchanger* exchanger, 
+	std::vector<TPath> &server_list,
+	PacketExchanger* exchanger,
 	Progress& progress,
-	bool delete_option) 
+	bool delete_option)
 	:
 	m_sync_file_list(server_list),
-	m_request_queue(),	
+	m_request_queue(),
 	m_generator(local_dir, m_file_list, server_list, m_request_queue, exchanger, progress),
 	m_receiver(local_dir, m_file_list, m_request_queue, exchanger, progress),
 	m_progress(progress),
@@ -875,22 +875,22 @@ void CFileSyncer::Sync() {
 #if 0
 	wxLogDebug(_("synchronization completed"));
 #endif
-	
+
 	if (m_delete_option) {
-		
+
 #if 0
 		wxLogDebug(_("deleting files not present on the server - start"));
 #endif
-		
+
 		bool ok = true;
-		
+
 		fs::path dirpath(m_sync_dir.GetPath());
 		fs::path tmppath = dirpath;
-	
+
 		tmppath.remove_leaf();
-	
+
 		std::vector<fs::path> presentFiles(m_sync_file_list.size());
-			
+
 		try {
 			for(unsigned int i = 0; i < m_sync_file_list.size(); i++) {
 				presentFiles[i] = tmppath / fs::path(m_sync_file_list[i].GetPath());
@@ -905,46 +905,46 @@ void CFileSyncer::Sync() {
 #endif
 			ok = false;
 		}
-		
+
 		if (ok) {
 			try {
 				std::sort(presentFiles.begin(), presentFiles.end());
-			
+
 				for (fs::recursive_directory_iterator  itr( dirpath ); itr != fs::recursive_directory_iterator(); ++itr ) {
 					fs::path tmp = itr->path();
-		
+
 					TPath tmppath(tmp.string().c_str());
-		
+
 					if( tmppath.GetType() == TPath::TLINK) {
 						itr.no_push();
 						continue;
 					}
-		
+
 					if (fs::is_regular(itr->status())) {
-			
+
 						fs::path tmp_path = itr->path();
 #ifdef MINGW32
 						std::string tmpstring = stringToLower(itr->path().string());
 						tmp_path = fs::path(tmpstring);
 #endif
-	
+
 						try{
 							if(!std::binary_search(presentFiles.begin(), presentFiles.end(), tmp_path)) {
 								fs::remove(itr->path());
 							}
 						} catch(fs::filesystem_error &e) {
 #if 0
-								wxLogError(wxString(SC::A2S(itr->path().string().c_str())) 
+								wxLogError(wxString(SC::A2S(itr->path().string().c_str()))
 										+ _(" error while deleting file: ") + SC::A2S(e.what()));
 #endif
 								ok = false;
 						}
 					}
-					
+
 					if(!ok)
 						break;
 				}
-				
+
 			} catch(fs::filesystem_error &e) {
 #if 0
 					wxLogError(wxString(_("error while iterating through directories: ") + SC::A2S(e.what())));
@@ -952,7 +952,7 @@ void CFileSyncer::Sync() {
 					ok = false;
 			}
 		}
-		
+
 #if 0
 		wxLogDebug(_("deleting files not present on the server - end"));
 #endif
@@ -1013,8 +1013,8 @@ void *Client::Entry() {
 }
 
 
-Client::Client(Progress &progress) 
-		: 
+Client::Client(Progress &progress)
+		:
 		m_ctx(NULL),
 		m_addresses(NULL),
 		m_port(0),
@@ -1048,7 +1048,7 @@ void Client::SetOptions(char **addresses,
 		free(m_passwords[i]);
 	free(m_passwords);
 	m_passwords = passwords;
-	
+
 	m_servers_count = servers_count;
 
 	m_local_dir = local_dir;
@@ -1084,7 +1084,7 @@ bool Client::Synchronize()  {
 			} while (redirected);
 
 			SyncFiles();
-		
+
 		} catch (TerminationRequest &e) {
 			if (was_redirected)
 				free(m_current_address);
@@ -1174,9 +1174,9 @@ uint32_t Client::ResolveAddress() {
 				}
 			}
 
-			select(nfds + 1, any_in ? &read_fds : NULL, any_out ? &write_fds : NULL, 
+			select(nfds + 1, any_in ? &read_fds : NULL, any_out ? &write_fds : NULL,
 #ifdef MINGW32
-					&err_fds, 
+					&err_fds,
 #else
 					NULL,
 #endif
@@ -1220,7 +1220,7 @@ void Client::Connect() {
 	}
 
 	SSL *ssl = SSL_new(m_ctx);
-		
+
 	SSL_set_bio(ssl, sock_bio, sock_bio);
 	SSL_set_read_ahead(ssl, 1);
 
@@ -1233,7 +1233,7 @@ void Client::Connect() {
 				case SSL_ERROR_WANT_WRITE:
 				case SSL_ERROR_WANT_CONNECT:
 					write_blocked = true;
-					break;	
+					break;
 				case SSL_ERROR_WANT_READ:
 					write_blocked = false;
 					break;
@@ -1342,7 +1342,7 @@ char* Client::ExecuteScript(const char* b, const char* s) {
 	uint16_t pos, len;
 	char c;
 	size_t i = 0, j;
-	
+
 	char* result = strdup(b);
 	result = (char*) realloc(result, strlen(b) + strlen(s) + 1);
 
@@ -1353,12 +1353,12 @@ char* Client::ExecuteScript(const char* b, const char* s) {
 	t = s[i++] - 1;						\
 	VAL += t;						\
 }
-	
+
 	while ((c = s[i++]) == 1) {
 		GETVAL(pos);
 		pos = pos - 1;
 		GETVAL(len);
-		for (j = pos; j < pos + len; ++j) 
+		for (j = pos; j < pos + len; ++j)
 			result[j] = s[i++];
 	}
 
@@ -1367,7 +1367,7 @@ char* Client::ExecuteScript(const char* b, const char* s) {
 			break;
 		case 2:
 			j = strlen(result);
-			while ((c = s[i++])) 
+			while ((c = s[i++]))
 				result[j++] = c;
 			result[j] = '\0';
 			break;
@@ -1379,7 +1379,7 @@ char* Client::ExecuteScript(const char* b, const char* s) {
 			assert(false);
 			break;
 	}
-	
+
 	return (char*) realloc(result, strlen(result) + 1);
 #undef GETVAL
 }
@@ -1394,11 +1394,11 @@ void Client::Auth(bool &redirected) {
 	smsg.PutString(m_passwords[m_current_server]);
 	smsg.PutString(key.GetKey());
 	smsg.FinishMessage();
-	
+
 	MessageReceiver rmsg(m_exchanger);
 	uint16_t status = rmsg.GetUInt16();
 	uint16_t msg = Message::NULL_MESSAGE;
-	
+
 	if (status == Message::AUTH_REDIRECT) {
 		char * message = rmsg.GetString();
 		sz_log(9, "Redirected to %s", message);
@@ -1420,26 +1420,26 @@ void Client::Auth(bool &redirected) {
 	} else if (status == Message::AUTH_OK) {
 		msg = rmsg.GetUInt16();
 	}
-	
-	if (msg == Message::NEAR_ACCOUNT_EXPIRED) 
+
+	if (msg == Message::NEAR_ACCOUNT_EXPIRED)
 		m_progress.SetProgress(Progress::MESSAGE, 0,_("Your account is almost expired. Please contact with us."));
 	else if (msg == Message::OLD_VERSION)
 		m_progress.SetProgress(Progress::MESSAGE, 0,_("You are using old version of ssc/sss protocol. Please update to the newest version your ssc"));
-	
+
 	sz_log(5, "Auth ok");
-}	
-	
+}
+
 std::map<TPath, int, TPath::less> Client::GetDirList() {
 	std::map<TPath, int, TPath::less> result;
 	MessageReceiver rmsg(m_exchanger);
-	
+
 	uint32_t count = rmsg.GetUInt32();
-		
+
 	if (count == 0) {
 		m_exchanger->Disconnect();
 		throw Exception(_("Not able to obtain file list - server configuration error"));
 	}
-	
+
 	size_t dirCount = m_dirList.size();
 	for (uint32_t i = 0; i < count; ++i)  {
 		const char *dir_name = rmsg.GetString();
@@ -1532,7 +1532,7 @@ void Client::GetExInEpxression(TPath& dir, uint32_t dir_no, char*& exclude, char
 			found = true;
 		}
 		free(current);
-		
+
 		if (i++ > loop_guard) {
 			free(_include);
 			goto none;
@@ -1557,13 +1557,13 @@ none:
 	force_delete = true;
 
 }
-	
+
 
 std::vector<TPath> Client::GetFileList(const TPath &dir, uint32_t dir_no, bool &delete_option) {
 	sz_log(9, "Starting grab of file list");
 
-	m_progress.SetProgress(Progress::FETCHING_FILE_LIST, 1, 
-			csconv(strrchr(dir.GetPath(), 
+	m_progress.SetProgress(Progress::FETCHING_FILE_LIST, 1,
+			csconv(strrchr(dir.GetPath(),
 #ifndef MINGW32
 							'/'
 #else
@@ -1614,13 +1614,13 @@ std::vector<TPath> Client::GetFileList(const TPath &dir, uint32_t dir_no, bool &
 		}
 #ifdef MINGW32
 		for (char *p = path; *p; ++p)
-			if (*p == '/') 
+			if (*p == '/')
 				*p = '\\';
 #endif
-		
+
 		uint32_t size = rmsg.GetUInt32();
-		
-		struct tm t;	
+
+		struct tm t;
 		memset(&t, 0, sizeof(t));
 
 		t.tm_year = rmsg.GetUInt16();
@@ -1635,8 +1635,8 @@ std::vector<TPath> Client::GetFileList(const TPath &dir, uint32_t dir_no, bool &
 		sz_log(9, "Got file on list %s", path);
 
 		int progress = std::min(99, (int) (i * 100 / count) );
-		m_progress.SetProgress(Progress::FETCHING_FILE_LIST, progress, 
-			csconv(strrchr(dir.GetPath(), 
+		m_progress.SetProgress(Progress::FETCHING_FILE_LIST, progress,
+			csconv(strrchr(dir.GetPath(),
 #ifndef MINGW32
 							'/'
 #else
@@ -1654,9 +1654,9 @@ std::vector<TPath> Client::GetFileList(const TPath &dir, uint32_t dir_no, bool &
 }
 
 ProgressEvent::ProgressEvent(int value, Progress::Action action, ssstring description, std::map<std::string, std::string>* dir_map)
-	: 
-	wxCommandEvent(PROGRESS_EVENT, ID_PROGRESS_EVNT_ORIG), 
-	m_value(value), 
+	:
+	wxCommandEvent(PROGRESS_EVENT, ID_PROGRESS_EVNT_ORIG),
+	m_value(value),
 	m_action(action),
 	m_description(wcsdup(description.c_str()))
 {
@@ -1719,13 +1719,13 @@ ProgressEvent::~ProgressEvent() {
 		delete m_dir_server_map;
 	}
 }
-		
+
 Progress::Progress()
 	:
 	m_progress_handler(NULL),
 	m_last_update(time(NULL)),
 	m_last_term_check(time(NULL)),
-	m_term_request(false) 
+	m_term_request(false)
 {}
 
 void Progress::SetEventHandler(wxEvtHandler *progress_handler) {
@@ -1736,7 +1736,7 @@ void Progress::SetProgress(Action action, int progress, wxString extra_info, std
 
 	Check();
 
-	if (m_last_action == action 
+	if (m_last_action == action
 			&& m_last_progress == progress
 			&& m_last_extra_info == extra_info)
 		return;
@@ -1773,17 +1773,17 @@ void Progress::SetTerminationRequest(bool value) {
 DEFINE_EVENT_TYPE(PROGRESS_EVENT)
 
 #ifdef __WXMSW__
-ProgressFrame::ProgressFrame(Progress *progress, BallonTaskBar *ballon) 
+ProgressFrame::ProgressFrame(Progress *progress, BallonTaskBar *ballon)
 #else
-ProgressFrame::ProgressFrame(Progress *progress) 
+ProgressFrame::ProgressFrame(Progress *progress)
 #endif
-					: wxDialog(NULL, 
-					wxID_ANY, 
+					: wxDialog(NULL,
+					wxID_ANY,
 					_("SSC - synchronization"),
 					wxDefaultPosition,
 					wxDefaultSize,
 					wxFRAME_NO_TASKBAR | wxDEFAULT_DIALOG_STYLE | wxMINIMIZE_BOX
-					) 
+					)
 {
 
 	m_status_text = new wxStaticText(this, wxID_ANY, _T(""), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
@@ -1803,7 +1803,7 @@ ProgressFrame::ProgressFrame(Progress *progress)
 	SetSize(300, 140);
 
 	SetSizer(sizer);
-			
+
 	m_sync_in_progress = false;
 	Layout();
 
@@ -1900,8 +1900,8 @@ bool ProgressFrame::ShowIfRunning() {
 }
 
 void ProgressFrame::OnIconize(wxIconizeEvent& event) {
-	if (event.Iconized()) 
-		Show(false); 
+	if (event.Iconized())
+		Show(false);
 	else {
 		Show(true);
 		Raise();
@@ -1942,7 +1942,7 @@ void ProgressFrame::OnUpdate(ProgressEvent& event) {
 	Progress::Action action = event.GetAction();
 
 	wxString action_string;
-	
+
 	switch (action) {
 		case Progress::CONNECTING:
 			action_string = wxString(_("Connecting "));
@@ -1975,11 +1975,11 @@ void ProgressFrame::OnUpdate(ProgressEvent& event) {
 				e/=24;
 				int hours = e;
 
-				wxString msg = wxString::Format(_("Sychronization complete (elapsed %.2d:%.2d:%.2d)"), 
+				wxString msg = wxString::Format(_("Sychronization complete (elapsed %.2d:%.2d:%.2d)"),
 						hours,
 						minutes,
-						seconds);	
-						
+						seconds);
+
 				wxMessageBox(msg, _("SSC"), wxICON_INFORMATION);
 			}
 			m_status_text->SetLabel(_T(""));
@@ -2000,9 +2000,9 @@ void ProgressFrame::OnUpdate(ProgressEvent& event) {
 					BallonTaskBar::ICON_ERROR);
 #endif
 #if 0
-			if (IsShown()) 
-				wxMessageBox(wxString(_("Synchronization failed ")) + event.GetDescription(), 
-						_("Synchronization failed "), 
+			if (IsShown())
+				wxMessageBox(wxString(_("Synchronization failed ")) + event.GetDescription(),
+						_("Synchronization failed "),
 						wxICON_EXCLAMATION);
 #endif
 			Hide();
@@ -2016,7 +2016,7 @@ void ProgressFrame::OnUpdate(ProgressEvent& event) {
 	m_progress_bar->SetValue(event.GetValue());
 
 	Layout();
-}	
+}
 
 
 void ProgressFrame::OnCancel(wxCommandEvent& event) {
@@ -2024,15 +2024,15 @@ void ProgressFrame::OnCancel(wxCommandEvent& event) {
 }
 
 void ProgressFrame::TerminateSynchronization() {
-	int result = wxMessageBox(_("Do you really want to terminate synchronization?"), 
-			_T(""), 
-			wxYES|wxNO|wxICON_QUESTION, 
-			this); 
+	int result = wxMessageBox(_("Do you really want to terminate synchronization?"),
+			_T(""),
+			wxYES|wxNO|wxICON_QUESTION,
+			this);
 
 	if (result == wxYES && m_sync_in_progress) {
-		m_progress->SetTerminationRequest(true); 
+		m_progress->SetTerminationRequest(true);
 		Disable();
-	}	
+	}
 }
 
 void ProgressFrame::OnClose(wxCloseEvent &event) {
@@ -2044,13 +2044,13 @@ void ProgressFrame::OnClose(wxCloseEvent &event) {
 
 
 BEGIN_EVENT_TABLE(ProgressFrame, wxDialog)
-	EVT_PROGRESS(ID_PROGRESS_EVNT_ORIG, ProgressFrame::OnUpdate)	
+	EVT_PROGRESS(ID_PROGRESS_EVNT_ORIG, ProgressFrame::OnUpdate)
 	EVT_ICONIZE(ProgressFrame::OnIconize)
 	EVT_CLOSE(ProgressFrame::OnClose)
 	EVT_BUTTON(ID_CANCEL_BUTTON, ProgressFrame::OnCancel)
 END_EVENT_TABLE()
 
-SSCConfigFrame::SSCConfigFrame() : wxDialog(NULL, wxID_ANY, _("SZARP File synchronizer - configuration"), 
+SSCConfigFrame::SSCConfigFrame() : wxDialog(NULL, wxID_ANY, _("SZARP File synchronizer - configuration"),
 	wxDefaultPosition, wxSize(300,500), wxTAB_TRAVERSAL | wxFRAME_NO_TASKBAR | wxRESIZE_BORDER | wxCAPTION)
 {
 
@@ -2059,13 +2059,13 @@ SSCConfigFrame::SSCConfigFrame() : wxDialog(NULL, wxID_ANY, _("SZARP File synchr
 	main_sizer->Add(new wxStaticText(this, wxID_ANY, _("Configuration")), 0, wxALIGN_CENTER | wxALL, 20);
 	main_sizer->Add(new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize), 0, wxEXPAND);
 
-	main_sizer->Add(new wxStaticText(this, 
-				wxID_ANY, 
-				_("Servers:"), 
-				wxDefaultPosition, 
-				wxDefaultSize, 
+	main_sizer->Add(new wxStaticText(this,
+				wxID_ANY,
+				_("Servers:"),
+				wxDefaultPosition,
+				wxDefaultSize,
 				wxALIGN_CENTER),
-			0, 
+			0,
 			wxALIGN_CENTER | wxALL,
 			10);
 	main_sizer->Add(new wxStaticLine(this, wxID_ANY), 0, wxEXPAND | wxALL);
@@ -2081,26 +2081,26 @@ SSCConfigFrame::SSCConfigFrame() : wxDialog(NULL, wxID_ANY, _("SZARP File synchr
 	data_sizer->Add(m_server_text, 0, wxALIGN_CENTER | wxALL, 5);
 
 	wxBoxSizer *user_sizer = new wxBoxSizer(wxHORIZONTAL);
-	user_sizer->Add(new wxStaticText(this, 
-				wxID_ANY, 
-				_("User name:"), 
-				wxDefaultPosition, 
-				wxDefaultSize, 
+	user_sizer->Add(new wxStaticText(this,
+				wxID_ANY,
+				_("User name:"),
+				wxDefaultPosition,
+				wxDefaultSize,
 				wxALIGN_CENTER),
-			1, 
+			1,
 			wxALIGN_CENTER | wxALL);
 	m_user_ctrl = new wxTextCtrl(this, ID_CFG_FRAME_USER_CTRL, _T(""), wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 	user_sizer->Add(m_user_ctrl, 1, wxALIGN_CENTER | wxALL, 5);
 	data_sizer->Add(user_sizer, 0, wxEXPAND);
 
 	wxBoxSizer *password_sizer = new wxBoxSizer(wxHORIZONTAL);
-	password_sizer->Add(new wxStaticText(this, 
-				wxID_ANY, 
-				_("Password:"), 
-				wxDefaultPosition, 
-				wxDefaultSize, 
+	password_sizer->Add(new wxStaticText(this,
+				wxID_ANY,
+				_("Password:"),
+				wxDefaultPosition,
+				wxDefaultSize,
 				wxALIGN_CENTER),
-			1, 
+			1,
 			wxALIGN_CENTER | wxALL);
 	password_sizer->Add(new wxButton(this, ID_CFG_FRAME_CHANGE_PASSWORD_BUTTON, _("Change")), 1, wxALIGN_CENTER | wxALL, 5);
 
@@ -2179,7 +2179,7 @@ SSCConfigFrame::SSCConfigFrame() : wxDialog(NULL, wxID_ANY, _("SZARP File synchr
 
 void SSCConfigFrame::LoadConfiguration() {
 
-	wxConfigBase* config = wxConfigBase::Get(true); 
+	wxConfigBase* config = wxConfigBase::Get(true);
 
 	m_servers_box->Clear();
 
@@ -2196,7 +2196,7 @@ void SSCConfigFrame::LoadConfiguration() {
 
 	long freq = config->Read(_T("SYNC_FREQ"), 10L);
 
-	m_syncinterval_combo->SetValue(wxString::Format(_T("%ld"), freq)); 
+	m_syncinterval_combo->SetValue(wxString::Format(_T("%ld"), freq));
 
 #ifdef __WXMSW__
 	m_show_notification_box->SetValue(config->Read(_T("SHOW_NOTIFICATION"), 1L) == 1);
@@ -2212,7 +2212,7 @@ void SSCConfigFrame::StoreConfiguration() {
 
 	store_servers_creditenials_config(m_servers_creditenials_map);
 
-	wxConfigBase* config = wxConfigBase::Get(true); 
+	wxConfigBase* config = wxConfigBase::Get(true);
 
 	config->Write(_T("AUTO_SYNC"), m_autosync_box->GetValue());
 
@@ -2238,7 +2238,7 @@ void SSCConfigFrame::OnAutoSyncCheckBox(wxCommandEvent& WXUNUSED(event)) {
 
 void SSCConfigFrame::OnPasswordChange(wxCommandEvent& event) {
 	wxString password = wxGetPasswordFromUser(
-			wxString::Format(_("Enter password for server %s:"), m_current_server.c_str()), 
+			wxString::Format(_("Enter password for server %s:"), m_current_server.c_str()),
 			_("New password"),
 			_T(""),
 			this);
@@ -2248,7 +2248,7 @@ void SSCConfigFrame::OnPasswordChange(wxCommandEvent& event) {
 
 	wxString hashed_password = sz_md5(password);
 	m_servers_creditenials_map[m_current_server].second = hashed_password;
-				
+
 	return;
 }
 
@@ -2356,7 +2356,7 @@ void SSCConfigFrame::OnChangeServerNameButton(wxCommandEvent& event) {
 
 void SSCConfigFrame::OnServerSelected(wxCommandEvent& event) {
 	//if this event is triggered and current server is not present
-	//we should mess with server's list 
+	//we should mess with server's list
 	if (m_servers_creditenials_map.find(m_current_server) == m_servers_creditenials_map.end())
 		return;
 	ServerSelected(true);
@@ -2385,7 +2385,7 @@ BEGIN_EVENT_TABLE(SSCConfigFrame, wxDialog)
 	EVT_LISTBOX(ID_CFG_FRAME_SERVERS_BOX, SSCConfigFrame::OnServerSelected)
 END_EVENT_TABLE()
 
-SSCSelectionFrame::SSCSelectionFrame() : wxDialog(NULL, wxID_ANY, _("SZARP Select databases"), 
+SSCSelectionFrame::SSCSelectionFrame() : wxDialog(NULL, wxID_ANY, _("SZARP Select databases"),
 	wxDefaultPosition, wxSize(300,500), wxTAB_TRAVERSAL | wxFRAME_NO_TASKBAR | wxRESIZE_BORDER | wxCAPTION)
 {
 	wxSizer *main_sizer = new wxBoxSizer(wxVERTICAL);
@@ -2417,7 +2417,7 @@ SSCSelectionFrame::SSCSelectionFrame() : wxDialog(NULL, wxID_ANY, _("SZARP Selec
 				m_databases_list_box->Check(i);
 				break;
 			}
-		}		
+		}
 	}
 
 	main_sizer->Add(m_databases_list_box, 1, wxEXPAND);
@@ -2488,12 +2488,27 @@ void SSCSelectionFrame::LoadConfiguration() {
 			i++)
 		for (std::set<wxString>::iterator j = i->second.begin();
 				j != i->second.end();
-				j++) 
+				j++)
 			m_database_server_map[*j] = i->first;
 }
 
 void SSCSelectionFrame::LoadDatabases() {
-	m_config_titles = GetConfigTitles(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDataDir());
+    wxArrayString hidden_databases;
+    wxString tmp;
+	wxConfigBase* config = wxConfigBase::Get(true);
+	if (config->Read(_T("HIDDEN_DATABASES"), &tmp))
+	{
+		wxStringTokenizer tkz(tmp, _T(","), wxTOKEN_STRTOK);
+		while (tkz.HasMoreTokens())
+		{
+			wxString token = tkz.GetNextToken();
+			token.Trim();
+			if (!token.IsEmpty())
+				hidden_databases.Add(token);
+		}
+	}
+
+	m_config_titles = GetConfigTitles(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDataDir(), &hidden_databases);
 	for (ConfigNameHash::iterator i = m_config_titles.begin(); i != m_config_titles.end(); i++)
 		m_databases.Add(i->first);
 
@@ -2521,7 +2536,7 @@ END_EVENT_TABLE()
 SSCTaskBarItem::SSCTaskBarItem(wxString szarp_dir) {
 
 	m_log = new wxLogWindow(NULL, _("Log dialog"), false);;
-	
+
 	m_szarp_dir = szarp_dir;
 
 	m_help = new szHelpController;
@@ -2567,7 +2582,7 @@ void SSCTaskBarItem::OnCloseMenuEvent(wxCommandEvent &event) {
 	m_cfg_frame->Close(true);
 #ifdef MINGW32
 	RemoveIcon();
-#endif 
+#endif
 	wxExit();
 }
 
@@ -2619,7 +2634,7 @@ void SSCTaskBarItem::OnTimer(wxTimerEvent& WXUNUSED(event)) {
 
 	wxDateTime now = wxDateTime::Now();
 
-	if (m_last_sync_time == wxInvalidDateTime 
+	if (m_last_sync_time == wxInvalidDateTime
 			|| (now - m_last_sync_time).GetSeconds().ToLong() >= sync_freq * 60) {
 		m_last_sync_time = now;
 		m_progress_frame->StartSync(false);
@@ -2635,9 +2650,9 @@ void SSCTaskBarItem::OnMouseDown(wxTaskBarIconEvent &event) {
 
 
 #ifdef __WXMSW__
-BEGIN_EVENT_TABLE(SSCTaskBarItem, BallonTaskBar) 
+BEGIN_EVENT_TABLE(SSCTaskBarItem, BallonTaskBar)
 #else
-BEGIN_EVENT_TABLE(SSCTaskBarItem, szTaskBarItem) 
+BEGIN_EVENT_TABLE(SSCTaskBarItem, szTaskBarItem)
 #endif
 	EVT_MENU(ID_CLOSE_APP_MENU, SSCTaskBarItem::OnCloseMenuEvent)
 	EVT_MENU(ID_CONFIGURATION_MENU, SSCTaskBarItem::OnConfiguration)
@@ -2665,7 +2680,7 @@ void SSCWizardFrameCancelImpl::OnWizardCancel(wxWizardEvent &event) {
 BEGIN_EVENT_TABLE(SSCWizardFrameCancelImpl, wxWizardPageSimple)
 	EVT_WIZARD_CANCEL(wxID_ANY, SSCWizardFrameCancelImpl::OnWizardCancel)
 END_EVENT_TABLE();
-		
+
 SSCFirstWizardFrame::SSCFirstWizardFrame(wxWizard *parent) : SSCWizardFrameCancelImpl(parent) {
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 
@@ -2690,7 +2705,7 @@ SSCFirstWizardFrame::SSCFirstWizardFrame(wxWizard *parent) : SSCWizardFrameCance
 			wxDefaultPosition,
 			wxDefaultSize,
 			wxALIGN_CENTER);
-	
+
 	sizer->Add(text2, 0, wxALIGN_CENTER | wxALL);
 	SetSizer(sizer);
 	sizer->Fit(this);
@@ -2713,13 +2728,13 @@ SSCSecondWizardFrame::SSCSecondWizardFrame(wxWizard *parent) : SSCWizardFrameCan
 	main_sizer->Add(new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize), 0, wxEXPAND);
 
 	wxBoxSizer *user_sizer = new wxBoxSizer(wxHORIZONTAL);
-	user_sizer->Add(new wxStaticText(this, 
-				wxID_ANY, 
-				_("User name:"), 
-				wxDefaultPosition, 
-				wxDefaultSize, 
+	user_sizer->Add(new wxStaticText(this,
+				wxID_ANY,
+				_("User name:"),
+				wxDefaultPosition,
+				wxDefaultSize,
 				wxALIGN_RIGHT),
-			1, 
+			1,
 			wxALIGN_CENTER | wxRIGHT,
 			10);
 	m_user_ctrl = new wxTextCtrl(this, wxID_ANY, _T(""), wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
@@ -2727,16 +2742,16 @@ SSCSecondWizardFrame::SSCSecondWizardFrame(wxWizard *parent) : SSCWizardFrameCan
 	main_sizer->Add(user_sizer, 0, wxEXPAND | wxTOP | wxBOTTOM, 20);
 
 	wxBoxSizer *password_sizer = new wxBoxSizer(wxHORIZONTAL);
-	password_sizer->Add(new wxStaticText(this, 
-				wxID_ANY, 
-				_("Password:"), 
-				wxDefaultPosition, 
-				wxDefaultSize, 
+	password_sizer->Add(new wxStaticText(this,
+				wxID_ANY,
+				_("Password:"),
+				wxDefaultPosition,
+				wxDefaultSize,
 				wxALIGN_RIGHT),
-			1, 
+			1,
 			wxALIGN_CENTER | wxRIGHT,
 			10);
-	m_password_ctrl = new wxTextCtrl(this, wxID_ANY, _T(""), wxDefaultPosition, wxDefaultSize, 
+	m_password_ctrl = new wxTextCtrl(this, wxID_ANY, _T(""), wxDefaultPosition, wxDefaultSize,
 			wxTE_PASSWORD | wxTAB_TRAVERSAL);
 	password_sizer->Add(m_password_ctrl, 1, wxALIGN_CENTER | wxRIGHT, 50);
 	main_sizer->Add(password_sizer, 0, wxEXPAND | wxBOTTOM | wxTOP, 20);
@@ -2776,7 +2791,7 @@ BEGIN_EVENT_TABLE(SSCSecondWizardFrame, SSCWizardFrameCancelImpl)
 END_EVENT_TABLE()
 
 void SSCSecondWizardFrame::OnWizardPageChanging(wxWizardEvent& event) {
-	if (event.GetDirection()) { 
+	if (event.GetDirection()) {
 		if (m_password_ctrl->GetValue().Length() == 0 || m_user_ctrl->GetValue().Length() == 0
 				|| m_server_ctrl->GetValue().length() == 0) {
 
@@ -2793,7 +2808,7 @@ void SSCSecondWizardFrame::OnWizardPageChanging(wxWizardEvent& event) {
 		}
 	}
 }
-	
+
 
 SSCThirdWizardFrame::SSCThirdWizardFrame(wxWizard *parent) : SSCWizardFrameCancelImpl(parent) {
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -2812,7 +2827,7 @@ SSCThirdWizardFrame::SSCThirdWizardFrame(wxWizard *parent) : SSCWizardFrameCance
 			wxALIGN_CENTER);
 
 	sizer->Add(text, 1, wxEXPAND);
-	
+
 	SetSizer(sizer);
 	sizer->Fit(this);
 }
@@ -2856,7 +2871,7 @@ void SSCApp::InitLocale() {
 }
 
 void SSCApp::ConvertConfigToMultipleServers() {
-	wxConfigBase* config = wxConfigBase::Get(true); 
+	wxConfigBase* config = wxConfigBase::Get(true);
 
 	if (config->Read(_T("SERVER_ADDRESS"), _T("")) == _T(""))
 		return;
@@ -2869,7 +2884,23 @@ void SSCApp::ConvertConfigToMultipleServers() {
 	config->Write(server + _T("/PASSWORD"), password);
 	config->Write(server + _T("/USERNAME"), username);
 
-	ConfigNameHash ct = GetConfigTitles(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDataDir());
+
+    wxArrayString hidden_databases;
+    wxString tmp;
+	//config = wxConfigBase::Get(true);
+	if (config->Read(_T("HIDDEN_DATABASES"), &tmp))
+	{
+		wxStringTokenizer tkz(tmp, _T(","), wxTOKEN_STRTOK);
+		while (tkz.HasMoreTokens())
+		{
+			wxString token = tkz.GetNextToken();
+			token.Trim();
+			if (!token.IsEmpty())
+				hidden_databases.Add(token);
+		}
+	}
+
+	ConfigNameHash ct = GetConfigTitles(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDataDir(), &hidden_databases);
 
 	wxString bases;
 	bool first = true;
@@ -2919,7 +2950,7 @@ bool SSCApp::OnInit() {
 		return false;
 	}
 	wxConfigBase* config = wxConfigBase::Get(true);
-	if (config->Read(_T("FIRST_TIME_RUN"), 1L) == 1) { 
+	if (config->Read(_T("FIRST_TIME_RUN"), 1L) == 1) {
 		if (!RunWizard()) {
 			delete m_single_instance_check;
 			return false;
@@ -2984,7 +3015,7 @@ int SSCClient::SendReload()
 {
 	int result=0;
 	connection = Connect(); // connect
-	
+
 	// send if connected
 	if(connection != NULL)
 		connection->SendMsg(scc_ipc_messages::reload_menu_msg);

@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 /*
  * draw3
  * SZARP
- 
+
  * Pawe³ Pa³ucha pawel@praterm.com.pl
  *
  * $Id$
@@ -41,6 +41,7 @@
 #include <wx/file.h>
 #include <wx/dir.h>
 #include <wx/config.h>
+#include <wx/tokenzr.h>
 
 #include "ids.h"
 #include "cconv.h"
@@ -88,12 +89,12 @@ int DrawParam::GetPrec() {
 TParam* DrawParam::GetIPKParam() {
 	return m_param;
 }
-/** Converts hex digit character to its numerical value. */  	 
-int ctohex(int c) 	 
-{ 	 
-	if (c >= 'A') 	 
-		return c - 'A' + 10; 	 
-	return c - '0'; 	 
+/** Converts hex digit character to its numerical value. */
+int ctohex(int c)
+{
+	if (c >= 'A')
+		return c - 'A' + 10;
+	return c - '0';
 }
 
 DrawInfo::DrawInfo() {
@@ -106,40 +107,40 @@ DrawInfo::DrawInfo(TDraw *d, DrawParam *p)
 {
     assert (d != NULL);
     assert (p != NULL);
-    
+
     this->d = d;
     this->p = p;
     c = wxNullColour;
 
-    if (d->GetColor().empty()) 	 
-        return; 	 
+    if (d->GetColor().empty())
+        return;
 
-    wxString s = d->GetColor().c_str();     	 
-    if (s.GetChar(0) != '#') { 	 
-	c = wxColour(s); 	 
-	if (!c.Ok()) { 	 
-	    c = wxNullColour; 	 
-	} 	 
-	return; 	 
-    } 	 
-    if (s.Len() != 7) 	 
-	return; 	 
-    for (int i = 1; i < 7; i++) 	 
-	if (!isxdigit(s.GetChar(i))) 	 
-	    return; 	 
+    wxString s = d->GetColor().c_str();
+    if (s.GetChar(0) != '#') {
+	c = wxColour(s);
+	if (!c.Ok()) {
+	    c = wxNullColour;
+	}
+	return;
+    }
+    if (s.Len() != 7)
+	return;
+    for (int i = 1; i < 7; i++)
+	if (!isxdigit(s.GetChar(i)))
+	    return;
 
-    int r = ctohex(s.GetChar(1)) * 16 + ctohex(s.GetChar(2)); 	 
-    int g = ctohex(s.GetChar(3)) * 16 + ctohex(s.GetChar(4)); 	 
-    int b = ctohex(s.GetChar(5)) * 16 + ctohex(s.GetChar(6)); 	 
+    int r = ctohex(s.GetChar(1)) * 16 + ctohex(s.GetChar(2));
+    int g = ctohex(s.GetChar(3)) * 16 + ctohex(s.GetChar(4));
+    int b = ctohex(s.GetChar(5)) * 16 + ctohex(s.GetChar(6));
     c = wxColour(r, g, b);
 }
 
-bool 
+bool
 DrawInfo::CompareDraws(DrawInfo *first, DrawInfo *second)
 {
 	if (first->d->GetOrder() == second->d->GetOrder())
 		return false;
-    
+
 	if (first->d->GetOrder() > 0)
 		return first->d->GetOrder() < second->d->GetOrder();
 
@@ -166,18 +167,18 @@ DrawInfo::GetName()
     wxString name = p->GetDrawName().c_str();
     if (!name.IsEmpty())
 	    return name;
-   
+
     name = GetParamName();
 
     int cp = name.Find(wxChar(':'), true);
-    
+
     if (cp == -1)
 	    return name;
 
     return name.Mid(cp + 1);
 }
 
-wxString 
+wxString
 DrawInfo::GetParamName()
 {
     assert (p != NULL);
@@ -220,19 +221,19 @@ DrawInfo::GetScale() {
 	return d->GetScale();
 }
 
-double 
+double
 DrawInfo::GetScaleMin() {
 	assert (d != NULL);
 	return d->GetScaleMin();
 }
 
-double 
+double
 DrawInfo::GetScaleMax() {
 	assert (d != NULL);
 	return d->GetScaleMax();
 }
 
-TDraw::SPECIAL_TYPES 
+TDraw::SPECIAL_TYPES
 DrawInfo::GetSpecial() {
 	assert (d != NULL);
 	return d->GetSpecial();
@@ -250,13 +251,13 @@ DrawInfo::GetPrior()
     return (d->GetPrior());
 }
 
-void 
+void
 DrawInfo::SetDrawColor(wxColour color)
 {
     c = color;
 }
 
-int 
+int
 DrawInfo::GetPrec() {
 	return p->GetPrec();
 }
@@ -377,7 +378,7 @@ double
 DrawSet::GetPrior()
 {
     double prior = -1;
-    
+
     /* find smallest positive prior */
     for (size_t j = 0; j < m_draws->size(); j++) {
 	double current_prior = m_draws->at(j)->GetPrior();
@@ -395,7 +396,7 @@ DrawSet::GetName()
 {
     if (!m_name.IsEmpty())
 	return m_name;
-	
+
     if (m_draws->size() == 0) {
 	wxLogWarning(_T("Empty DrawSet"));
 	return m_name;
@@ -422,7 +423,7 @@ DrawSet::InitNullColors()
     /* check for used colors */
     for (int i = 0; i < MAX_DRAWS_COUNT; i++)
 	ex[i] = 0;
-    
+
     wxLogInfo(_T("InitNullColors: draws count: %zu"), m_draws->size());
 
     for (size_t i = 0; i < m_draws->size(); i++) {
@@ -433,7 +434,7 @@ DrawSet::InitNullColors()
 		break;
 	    }
     }
-    
+
     /* now assign null colors */
     for (size_t i = 0; i < m_draws->size(); i++) {
 	if (m_draws->at(i)->GetDrawColor() == wxNullColour) {
@@ -441,12 +442,12 @@ DrawSet::InitNullColors()
 	    while (ex[first_free]) {
 		first_free++;
 	    }
-	    
+
 	    assert (first_free < MAX_DRAWS_COUNT);
-	    
+
 	    /* set color */
 	    m_draws->at(i)->SetDrawColor(DefaultColors[first_free]);
-	    
+
 	    /* mark color as used */
 	    ex[first_free] = 1;
 	}
@@ -485,9 +486,9 @@ DrawSet::GetDrawColor(int index)
 {
     if (index >= (int) m_draws->size())
 	return DRAW3_BG_COLOR;
-    
+
     wxColour col = m_draws->at(index)->GetDrawColor();
-    
+
     if (col == wxNullColour) {
 	InitNullColors();
 	col = m_draws->at(index)->GetDrawColor();
@@ -558,13 +559,13 @@ ConfigManager::LoadConfig(const wxString& prefix, const wxString &config_path)
 		ipk = m_ipks->GetConfig(prefix.c_str());
 
 	DrawsSets* ret;
-	if (ipk == NULL) 
+	if (ipk == NULL)
 		ret = NULL;
 	else {
 		ret = AddConfig(ipk);
 		FinishConfigurationLoad(prefix);
 	}
-	
+
 	if (splashscreen != NULL) {
 		splashscreen->PopStatusText();
 	}
@@ -619,7 +620,7 @@ IPKConfig::GetPrefix()
 IPKConfig::IPKConfig(TSzarpConfig *c, ConfigManager *mgr) : DrawsSets(mgr), defined_attached(false)
 {
     assert (c != NULL);
-    
+
     m_sc = c;
 
     m_id = c->GetTranslatedTitle();
@@ -628,13 +629,13 @@ IPKConfig::IPKConfig(TSzarpConfig *c, ConfigManager *mgr) : DrawsSets(mgr), defi
     DrawSet *pds;
     DrawInfo *pdi;
     wxString name;
-    
+
     for (TParam *p = m_sc->GetFirstParam(); p; p = m_sc->GetNextParam(p)) {
 	for (TDraw *d = p->GetDraws(); d; d = d->GetNext()) {
 	    pdi = new IPKDrawInfo(d, p, this);
-	    
+
 	    name = d->GetTranslatedWindow().c_str();
-	    
+
 	    pds = drawSets[name];
 
 	    if (NULL == pds)
@@ -643,15 +644,15 @@ IPKConfig::IPKConfig(TSzarpConfig *c, ConfigManager *mgr) : DrawsSets(mgr), defi
 	    pds->Add(pdi);
 
 	    drawSets[name] = pds;
-		
+
 	}
     }
 
     /*init null colors*/
     DrawSetsHash::iterator it;
-    for (it = drawSets.begin(); it != drawSets.end(); ++it) 
+    for (it = drawSets.begin(); it != drawSets.end(); ++it)
 	    it->second->InitNullColors();
-    
+
     /* sort draws */
     for (it = drawSets.begin(); it != drawSets.end(); ++it) {
 	it->second->SortDraws();
@@ -696,15 +697,15 @@ IPKConfig::GetRawDrawsSets() {
 
     return drawSets;
 }
-	
+
 IPKConfig::~IPKConfig()
 {
-    
+
     DrawSetsHash::iterator it = baseDrawSets.begin();
     for (; it != baseDrawSets.end(); it++) {
 		delete it->second;
     }
-    
+
 }
 
 DrawsSets::DrawsSets(ConfigManager *cfg) : m_cfgmgr(cfg) {}
@@ -730,7 +731,7 @@ DrawsSets::GetParentManager()
 {
     return m_cfgmgr;
 }
-    
+
 DrawsSets*
 ConfigManager::AddConfig(TSzarpConfig *ipk)
 {
@@ -783,9 +784,24 @@ wxString ConfigManager::GetSzarpDir() {
 #endif
 
 ConfigNameHash& ConfigManager::GetConfigTitles() {
+    wxArrayString hidden_databases;
+    wxString tmp;
+	wxConfigBase* config = wxConfigBase::Get(true);
+	if (config->Read(_T("HIDDEN_DATABASES"), &tmp))
+	{
+		wxStringTokenizer tkz(tmp, _T(","), wxTOKEN_STRTOK);
+		while (tkz.HasMoreTokens())
+		{
+			wxString token = tkz.GetNextToken();
+			token.Trim();
+			if (!token.IsEmpty())
+				hidden_databases.Add(token);
+		}
+	}
+
 	if (m_config_names.empty()) {
-		m_config_names = ::GetConfigTitles(m_app->GetSzarpDataDir());
-		m_config_names[DefinedDrawsSets::DEF_PREFIX] 
+		m_config_names = ::GetConfigTitles(m_app->GetSzarpDataDir(), &hidden_databases);
+		m_config_names[DefinedDrawsSets::DEF_PREFIX]
 			= wxGetTranslation(DefinedDrawsSets::DEF_NAME);
 	}
 
@@ -800,8 +816,8 @@ wxArrayString ConfigManager::GetPrefixes() {
 	wxString path;
 
 	if (dir.GetFirst(&path, wxEmptyString, wxDIR_DIRS))
-		do 
-			if (wxFile::Exists(m_app->GetSzarpDataDir()+ path + _T("/config/params.xml"))) 
+		do
+			if (wxFile::Exists(m_app->GetSzarpDataDir()+ path + _T("/config/params.xml")))
 				result.Add(path);
 		while (dir.GetNext(&path));
 
@@ -816,7 +832,7 @@ void ConfigManager::RegisterConfigObserver(ConfigObserver *observer) {
 void ConfigManager::DeregisterConfigObserver(ConfigObserver *observer) {
 	std::vector<ConfigObserver*>::iterator i;
 	i = std::remove(m_observers.begin(),
-		m_observers.end(), 
+		m_observers.end(),
 		observer);
 	m_observers.erase(i, m_observers.end());
 }
@@ -879,7 +895,7 @@ bool ConfigManager::ReloadConfiguration(wxString prefix) {
 
 void ConfigManager::FinishConfigurationLoad(wxString prefix) {
 	std::set<wxString> configs_to_load;
-	
+
 	m_db_mgr->ConfigurationReloadFinished(prefix);
 	m_defined_sets->ConfigurationWasLoaded(prefix, &configs_to_load);
 
@@ -935,7 +951,7 @@ bool ConfigManager::SaveDefinedDrawsSets() {
 	if (!wxDirExists(sd.GetFullPath()))
 		if (sd.Mkdir() == false) {
 			wxMessageBox(wxString::Format(_("Failed to create directory %s. Defined draws cannot be saved"), sd.GetFullPath().c_str()),
-					_("Error"), 
+					_("Error"),
 					wxICON_ERROR);
 			return false;
 		}

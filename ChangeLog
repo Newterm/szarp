@@ -1,5 +1,10 @@
 $Id$
 
+2009-08-24	Adam Smyk <praterm@praterm.pl>
+	* wx/scc: implemetation of database hiding in draw3, ekstraktor3 and ssc
+	* wx/draw3: implementation of database hiding 
+	* wx/ekstraktor3: implementation of database hiding
+	* wx/synch: implementation of database hiding
 2009-08-24	Darek Marcinkiewicz <reksio@praterm.pl>
 	* /: a bunch of small fixes so that SZARP compiles with latest version
 	of g++

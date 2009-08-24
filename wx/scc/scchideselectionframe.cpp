@@ -64,8 +64,17 @@ SCCSelectionFrame::SCCSelectionFrame() : wxDialog(NULL, wxID_ANY, _("Hiding SZAR
 	}
 
 	main_sizer->Add(m_databases_list_box, 1, wxEXPAND);
-
 	main_sizer->Add(new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize), 0, wxEXPAND);
+
+    m_draw3_hidden_active = new wxCheckBox(this, wxID_ANY, _("Databases hiding in draw3 is active"));
+    m_ekstraktor_hidden_active = new wxCheckBox(this, wxID_ANY, _("Databases hiding in extractor is active"));
+    m_ssc_hidden_active = new wxCheckBox(this, wxID_ANY, _("Databases hiding in synchronizer is active"));
+
+    main_sizer->Add(m_draw3_hidden_active, 0, wxALIGN_LEFT);
+    main_sizer->Add(m_ekstraktor_hidden_active, 0, wxALIGN_LEFT);
+    main_sizer->Add(m_ssc_hidden_active, 0, wxALIGN_LEFT);
+
+    SetCheckBoxes();
 
 	wxBoxSizer *button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
@@ -103,14 +112,59 @@ void SCCSelectionFrame::StoreConfiguration() {
 		first = false;
 		storestr += (m_hidden_databases[i]);
 	}
-	config->Write(_T("SELECTED_DATABASES"), storestr);
+	config->Write(_T("HIDDEN_DATABASES"), storestr);
 	config->Flush();
+
+	wxConfig* config_draw3 = new wxConfig(_("draw3"));
+	if (m_draw3_hidden_active->IsChecked() == true)
+	{
+        config_draw3->Write(_T("HIDDEN_DATABASES"), storestr);
+        config->Write(_T("HIDDEN_DATABASES_IN_DRAW3"), 1);
+	}
+    else
+    {
+        config_draw3->Write(_T("HIDDEN_DATABASES"), _(""));
+        config->Write(_T("HIDDEN_DATABASES_IN_DRAW3"), 0);
+    }
+	config_draw3->Flush();
+	config->Flush();
+	delete config_draw3;
+
+	wxConfig* config_ekstraktor = new wxConfig(_("ekstraktor3"));
+	if (m_ekstraktor_hidden_active->IsChecked() == true)
+	{
+        config_ekstraktor->Write(_T("HIDDEN_DATABASES"), storestr);
+        config->Write(_T("HIDDEN_DATABASES_IN_EKSTRAKTOR3"), 1);
+	}
+    else
+    {
+        config_ekstraktor->Write(_T("HIDDEN_DATABASES"), _(""));
+        config->Write(_T("HIDDEN_DATABASES_IN_EKSTRAKTOR3"), 0);
+    }
+	config_ekstraktor->Flush();
+	config->Flush();
+	delete config_ekstraktor;
+
+    wxConfig* config_ssc = new wxConfig(_("ssc"));
+	if (m_ssc_hidden_active->IsChecked() == true)
+	{
+        config_ssc->Write(_T("HIDDEN_DATABASES"), storestr);
+        config->Write(_T("HIDDEN_DATABASES_IN_SSC"), 1);
+	}
+    else
+    {
+        config_ssc->Write(_T("HIDDEN_DATABASES"), _(""));
+        config->Write(_T("HIDDEN_DATABASES_IN_SSC"), 0);
+    }
+	config_ssc->Flush();
+	config->Flush();
+	delete config_ssc;
 }
 
 void SCCSelectionFrame::LoadConfiguration() {
 	wxString tmp;
 	wxConfigBase* config = wxConfigBase::Get(true);
-	if (config->Read(_T("SELECTED_DATABASES"), &tmp))
+	if (config->Read(_T("HIDDEN_DATABASES"), &tmp))
 	{
 		wxStringTokenizer tkz(tmp, _T(","), wxTOKEN_STRTOK);
 		while (tkz.HasMoreTokens())
@@ -121,6 +175,44 @@ void SCCSelectionFrame::LoadConfiguration() {
 				m_hidden_databases.Add(token);
 		}
 	}
+}
+
+void SCCSelectionFrame::SetCheckBoxes() {
+    wxString tmp;
+	wxConfigBase* config = wxConfigBase::Get(true);
+	long l;
+	if (config->Read(_T("HIDDEN_DATABASES_IN_DRAW3"), &tmp))
+	{
+        tmp.ToLong(&l);
+        if(l == 1)
+            m_draw3_hidden_active->SetValue(true);
+        else
+            m_draw3_hidden_active->SetValue(false);
+    }
+    else
+        m_draw3_hidden_active->SetValue(false);
+
+	if (config->Read(_T("HIDDEN_DATABASES_IN_EKSTRAKTOR3"), &tmp))
+	{
+        tmp.ToLong(&l);
+        if(l == 1)
+            m_ekstraktor_hidden_active->SetValue(true);
+        else
+            m_ekstraktor_hidden_active->SetValue(false);
+    }
+    else
+        m_ekstraktor_hidden_active->SetValue(false);
+
+	if (config->Read(_T("HIDDEN_DATABASES_IN_SSC"), &tmp))
+	{
+        tmp.ToLong(&l);
+        if(l == 1)
+            m_ssc_hidden_active->SetValue(true);
+        else
+            m_ssc_hidden_active->SetValue(false);
+    }
+    else
+        m_ssc_hidden_active->SetValue(false);
 }
 
 void SCCSelectionFrame::LoadDatabases() {
@@ -151,6 +243,7 @@ void SCCSelectionFrame::OnCancelButton(wxCommandEvent& event) {
 			}
 		}
 	}
+    SetCheckBoxes();
 	EndModal(wxID_CANCEL);
 }
 

@@ -1,5 +1,5 @@
-/* SZARP: SCADA software 
-  
+/* SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -62,37 +62,37 @@ BEGIN_EVENT_TABLE(ConfigDialogKeyboardHandler, wxEvtHandler)
 	EVT_CHAR(ConfigDialogKeyboardHandler::OnChar)
 END_EVENT_TABLE()
 
-ConfigDialog::ConfigDialog(wxWindow *parent, const ConfigNameHash& _cfgs, const wxString _userDefinedPrefix) : 
-	wxDialog(parent, 
-			wxID_ANY, 
+ConfigDialog::ConfigDialog(wxWindow *parent, const ConfigNameHash& _cfgs, const wxString _userDefinedPrefix) :
+	wxDialog(parent,
+			wxID_ANY,
 			_("Choose configuration to load:"),
 			wxDefaultPosition,
 			wxSize(400, 500),
 			wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER
-			), 
+			),
 	cfgs(_cfgs),
 	userDefinedPrefix(_userDefinedPrefix)
 {
 
 	wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(new wxStaticText(this, 
-				wxID_ANY, 
-				_("Select configuration to load:"), 
+	sizer->Add(new wxStaticText(this,
+				wxID_ANY,
+				_("Select configuration to load:"),
 				wxDefaultPosition,
 				wxDefaultSize,
 				wxALIGN_CENTER),
 			0, wxALIGN_CENTER | wxALL, 10);
 
-	sizer->Add(new wxStaticLine(this, 
-				wxID_ANY, 
-				wxDefaultPosition, 
-				wxDefaultSize), 
+	sizer->Add(new wxStaticLine(this,
+				wxID_ANY,
+				wxDefaultPosition,
+				wxDefaultSize),
 			0, wxEXPAND);
 
 	wxSizer *search_sizer = new wxBoxSizer(wxHORIZONTAL);
-	search_sizer->Add(new wxStaticText(this, 
-				wxID_ANY, 
-				_("Search:"), 
+	search_sizer->Add(new wxStaticText(this,
+				wxID_ANY,
+				_("Search:"),
 				wxDefaultPosition,
 				wxDefaultSize,
 				wxALIGN_CENTER),
@@ -102,14 +102,14 @@ ConfigDialog::ConfigDialog(wxWindow *parent, const ConfigNameHash& _cfgs, const 
 	search_sizer->Add(m_search, 1, wxALL, 5);
 
 	sizer->Add(search_sizer, 0, wxEXPAND, 5);
-	
+
 	m_cfg_list = new wxListBox(this, CFG_DLG_LIST);
 	sizer->Add(m_cfg_list, 1, wxEXPAND | wxLEFT | wxRIGHT, 5);
 
-	sizer->Add(new wxStaticLine(this, 
-				wxID_ANY, 
-				wxDefaultPosition, 
-				wxDefaultSize), 
+	sizer->Add(new wxStaticLine(this,
+				wxID_ANY,
+				wxDefaultPosition,
+				wxDefaultSize),
 			0, wxEXPAND);
 
 	wxSizer* button_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -147,9 +147,9 @@ namespace {
 	};
 }
 
-bool ConfigDialog::SelectDatabase(wxString &database)
+bool ConfigDialog::SelectDatabase(wxString &database, wxArrayString* hidden_databases)
 {
-	ConfigDialog *cfg_dlg = new ConfigDialog(NULL, GetConfigTitles(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDataDir()), _T(""));
+	ConfigDialog *cfg_dlg = new ConfigDialog(NULL, GetConfigTitles(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDataDir(), hidden_databases), _T(""));
 
 	cfg_dlg->ShowUserDefinedSets(false);
 
@@ -199,7 +199,7 @@ void ConfigDialog::UpdateList() {
 
 	m_cfg_list->Set(ids);
 
-	if (items.size()) 
+	if (items.size())
 		m_cfg_list->Select(0);
 
 }
@@ -216,7 +216,7 @@ void ConfigDialog::SelectCurrentConfig() {
 		EndModal(wxID_CANCEL);
 	else
 		EndModal(wxID_OK);
-	
+
 
 }
 
@@ -236,16 +236,16 @@ void ConfigDialog::OnCancel(wxCommandEvent &event) {
 }
 
 void ConfigDialog::OnSearchText(wxCommandEvent& event) {
-	UpdateList();			
+	UpdateList();
 }
 
 void ConfigDialog::OnClose(wxCloseEvent& event) {
 	if (event.CanVeto())  {
 		Show(false);
 		event.Veto();
-	} else 
+	} else
 		Destroy();
-}	
+}
 
 void ConfigDialog::ShowUserDefinedSets(bool show) {
 	m_show_user_defined_set = show;

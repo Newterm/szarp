@@ -93,6 +93,12 @@ class SCCSelectionFrame : public wxDialog
 	void OnCancelButton(wxCommandEvent& event);
 	/**CheckListBox for selecting database to hide*/
 	wxCheckListBox* m_databases_list_box;
+	/**CheckBox if database hiding will be activated in draw3*/
+	wxCheckBox* m_draw3_hidden_active;
+	/**CheckBox if database hiding will be activated in ekstraktor3*/
+	wxCheckBox* m_ekstraktor_hidden_active;
+    /**CheckBox if database hiding will be activated in synchronizator*/
+	wxCheckBox* m_ssc_hidden_active;
 	/**List of hiden databases*/
 	wxArrayString m_hidden_databases;
 	/**List of local databases*/
@@ -107,6 +113,8 @@ class SCCSelectionFrame : public wxDialog
 	void StoreConfiguration();
 	/**Gets list of local databases*/
 	void LoadDatabases();
+	/**Set values of checkboxes for draw3, ekstraktor3 and ssc applications*/
+	void SetCheckBoxes();
 public:
 	/**Gets list of hidden databases*/
 	wxArrayString GetHiddenDatabases();

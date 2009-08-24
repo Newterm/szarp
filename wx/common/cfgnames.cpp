@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 #include <libxml/xmlreader.h>
 #include "cconv.h"
 
-ConfigNameHash GetConfigTitles(const wxString &szarp_dir) { 
+ConfigNameHash GetConfigTitles(const wxString &szarp_dir, wxArrayString* hidden) {
 
 	ConfigNameHash result;
 
@@ -55,14 +55,17 @@ ConfigNameHash GetConfigTitles(const wxString &szarp_dir) {
 			long t;
 			_time.ToLong(&t);
 
-			ci[prefix] = std::make_pair(title, time_t(t));
+            if(hidden == 0 ||
+              (hidden != 0 && hidden->Index(prefix) != wxNOT_FOUND))//asm
+                    ci[prefix] = std::make_pair(title, time_t(t));
 		}
-
 	}
-
 	bool changed = false;
 
-	if (dir.GetFirst(&prefix, wxEmptyString, wxDIR_DIRS)) do {
+	if (dir.GetFirst(&prefix, wxEmptyString, wxDIR_DIRS))
+	do {
+	    if(hidden != 0 && hidden->Index(prefix) != wxNOT_FOUND) continue;//asm
+
 		wxString file_path = szarp_dir + prefix + _T("/config/params.xml");
 		if (!wxFile::Exists(file_path))
 			continue;
@@ -79,14 +82,14 @@ ConfigNameHash GetConfigTitles(const wxString &szarp_dir) {
 			}
 
 		}
-	
+
 		xmlTextReaderPtr reader = xmlNewTextReaderFilename(SC::S2A(file_path).c_str());
 		if (reader == NULL)
 			continue;
 
 		while (xmlTextReaderRead(reader) == 1) {
 			const xmlChar *name = xmlTextReaderConstName(reader);
-			if (name == NULL) 
+			if (name == NULL)
 				continue;
 
 			if (xmlStrcmp(name, BAD_CAST "params"))

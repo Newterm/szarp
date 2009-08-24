@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 */
 /* * draw3
  * SZARP
- 
+
  *
  * $Id$
  */
@@ -90,7 +90,7 @@ class ConfigDialog : public wxDialog {
 
 	void SelectCurrentConfig();
 
-	static bool SelectDatabase(wxString &database);
+	static bool SelectDatabase(wxString &database, wxArrayString* hidden_databases = 0);
 
 	DECLARE_EVENT_TABLE()
 
