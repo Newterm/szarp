@@ -1,6 +1,6 @@
-szarp (3.1.84) unstable; urgency=low
+szarp (3.1.86) stable; urgency=low
 
-  * building stable from 3.1.84
+  * building stable from 3.1.86
 
  -- Darek Marcinkiewicz <reksio@newterm.pl>  Mon, 24 Aug 2009 11:30:20 +0200
 
