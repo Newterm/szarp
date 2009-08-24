@@ -1624,7 +1624,7 @@ public:
 		RIGHT_COAL_GATE_HEIGHT,
 		AIR_STREAM,
 		ANALYSIS_STATUS,
-		AIR_STREAM_RESULT,
+		AIR_STREAM_RESULT
 	};
 	TAnalysis(int _boiler_no = -1, AnalysisParam _param = INVALID)
 		:

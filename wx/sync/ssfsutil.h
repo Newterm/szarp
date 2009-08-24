@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <errno.h>
+#include <stdint.h>
 #ifndef MINGW32
 #include <libgen.h>
 #endif

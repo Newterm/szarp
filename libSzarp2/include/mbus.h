@@ -9,6 +9,7 @@
 
 #ifndef MINGW32
 
+#include <stdint.h>
 #include <string>
 #include <iostream>
 #include <vector>

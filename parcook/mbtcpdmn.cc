@@ -1998,6 +1998,8 @@ int client_loop(ModbusTCP *mtcp, IPCHandler *ipc, DaemonConfig *cfg)
 		time(&last_time);
 	}
 
+	return 0;
+
 }
 
 int main(int argc, char *argv[])

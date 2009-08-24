@@ -1,5 +1,8 @@
 $Id$
 
+2009-08-24	Darek Marcinkiewicz <reksio@praterm.pl>
+	* /: a bunch of small fixes so that SZARP compiles with latest version
+	of g++
 2009-08-19	Pawel Palucha <pawel@praterm.com.pl>
 	* resources, debian/szarp-daemons.logrotate: logrotate in debian way.
 	* www/pylons/sssweb/Makefile.am: fixed building under automake 1.11 -
