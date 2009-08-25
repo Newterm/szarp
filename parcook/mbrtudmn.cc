@@ -241,6 +241,8 @@ class           ModbusUnit {
 				/**< array of params to read */
 	int             m_params_count;
 				/**< size of params array */
+	TUnit		*m_unit;
+				/**< pointer to IPK unit object */
 
 	short* m_sends_buffer;
 				/**< array of sent params values*/
@@ -270,20 +272,19 @@ class           ModbusUnit {
 	 * @param sends number of params to send (write)
 	 */
 	/* This is an orginal constructor */
-	ModbusUnit(int params, int sends) {
-		assert(params >= 0);
-		assert(sends >= 0);
-
-		m_params_count = params;
-		if (params > 0) {
-			m_params = new ParamInfo[params];
+	ModbusUnit(TUnit *unit): m_unit(unit)
+       	{
+		assert(m_unit != NULL);
+		m_params_count = m_unit->GetParamsCount();
+		if (m_params_count > 0) {
+			m_params = new ParamInfo[m_params_count];
 			assert(m_params != NULL);
 		} else
 			m_params = NULL;
 
-		m_sends_count = sends;
-		if (sends > 0) {
-			m_sends = new ParamInfo[sends];
+		m_sends_count = m_unit->GetSendParamsCount();
+		if (m_sends_count > 0) {
+			m_sends = new ParamInfo[m_sends_count];
 			assert(m_sends != NULL);
 		} else
 			m_sends = NULL;
@@ -759,8 +760,7 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 			m_params[params_found].extra = extra;
 			
 			TParam         *p =
-				cfg->GetDevice()->GetFirstRadio()->
-				GetFirstUnit()->GetFirstParam()->
+				m_unit->GetFirstParam()->
 				GetNthParam(params_found);
 			assert(p != NULL);
 			for (int i = 0; i < p->GetPrec(); i++)
@@ -776,8 +776,7 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 			m_sends[sends_found].type = type;
 			m_sends[sends_found].function = function;
 			TSendParam     *s =
-				cfg->GetDevice()->GetFirstRadio()->
-				GetFirstUnit()->GetFirstSendParam()->
+				m_unit->GetFirstSendParam()->
 				GetNthParam(sends_found);
 			assert(s != NULL);
 			std::wstring c = s->GetParamName();
@@ -1767,7 +1766,7 @@ bool ModbusLine::ParseConfig(DaemonConfig *cfg, IPCHandler *ipc) {
 
 		assert(node);
 
-		ModbusUnit *mbu = new ModbusUnit(unit->GetParamsCount(), unit->GetSendParamsCount());
+		ModbusUnit *mbu = new ModbusUnit(unit);
 
 		bool configured = mbu->Configure(read, 
 					send, 
