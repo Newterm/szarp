@@ -782,7 +782,7 @@ class Daemon {
 			if (is_open)
 				close(fd);
 
-			if ((fd = open(device, O_RDWR | O_NOCTTY, 0)) < 0) 
+			if ((fd = open(device, O_RDWR | O_NOCTTY, 0)) == -1) 
 				return false;
 	
 			struct termios ti;

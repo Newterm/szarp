@@ -1,6 +1,8 @@
 $Id$
 
 2009-08-25	Pawel Palucha <pawel@praterm.com.pl>
+	* parcook/mbrtudmn.cc, dprdmn.cc: fixed return value checking from 
+	open() function: -1 instead of < 1
 	* parcook/mbrtudmn.cc: fixed bug - on configuration parsing always first
 	unit was queried for parameters precisions.
 	* parcook/mbrtudmn.cc: restored sleep up to 10 seconds interval.

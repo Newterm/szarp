@@ -1867,18 +1867,18 @@ void ModbusLine::Go() {
 	m_fd = InitComm(SC::S2A(m_cfg->GetDevice()->GetPath()).c_str(),
 			     m_cfg->GetDevice()->GetSpeed(), 8, m_stop_bits, m_parity);
 
-	if (m_fd < 0) {
+	if (m_fd == -1) {
 		sz_log(0, "Failed to open port, exiting");
 		return;
 	}
 
 	time_t start = time(NULL);
 	do {
-		if (m_fd < 0) 
+		if (m_fd == -1) 
 			m_fd = InitComm(SC::S2A(m_cfg->GetDevice()->GetPath()).c_str(),
 				     m_cfg->GetDevice()->GetSpeed(), 8, m_stop_bits, m_parity);
 
-		if (m_fd < 0) {
+		if (m_fd == -1) {
 			sz_log(0, "Failed to init port, doing nothing");
 			goto finish_cycle;
 		}
@@ -1886,7 +1886,7 @@ void ModbusLine::Go() {
 		PerformCycle();
 
 finish_cycle:
-		if (m_always_init_port && m_fd >= 0) {
+		if (m_always_init_port && (m_fd != -1)) {
 			close(m_fd);
 			m_fd = -1;
 		}
