@@ -1,6 +1,7 @@
 $Id$
 
 2009-08-25	Pawel Palucha <pawel@praterm.com.pl>
+	* parcook/mbrtudmn.cc: restored sleep up to 10 seconds interval.
 	* parcook/mbrtudmn.cc: fixed bug - port was reopened with incorrect
 	even/parity parameters; removed sleep between master send/receive;
 	log level of configuration parsing warnings changed to 1 (WARN).

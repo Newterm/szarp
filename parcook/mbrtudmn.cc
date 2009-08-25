@@ -1873,9 +1873,7 @@ void ModbusLine::Go() {
 		return;
 	}
 
-#if 0
 	time_t start = time(NULL);
-#endif
 	do {
 		if (m_fd < 0) 
 			m_fd = InitComm(SC::S2A(m_cfg->GetDevice()->GetPath()).c_str(),
@@ -1894,8 +1892,6 @@ finish_cycle:
 			m_fd = -1;
 		}
 
-//don't care about 10 secs itervals...
-#if 0
 		time_t now = time(NULL);
 		int s = 10 - (now - start);
 		if (s < 0) 
@@ -1903,7 +1899,6 @@ finish_cycle:
 
 		if (s > 0)
 			while ((s = sleep(s)) > 0);
-#endif
 	} while (true);
 
 }
