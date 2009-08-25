@@ -461,11 +461,9 @@ int ModbusUnit::parseUnitConfig(xmlNodePtr unit_node, xmlNodePtr device_node)
 
 	GET_ATTRIBUTE("CheckCRC");
 	if (str == NULL) {
-		sz_log(0,
-		    "Warning! attribute modbus:CheckCRC not found in device element, line %ld",
+		sz_log(1, "attribute modbus:CheckCRC not found in device element, line %ld",
 		    xmlGetLineNo(unit_node));
 		CheckCRC = ENABLE;
-		//free (str) ;
 	} else if (strcmp(str, "enable") == 0)
 		CheckCRC = ENABLE;
 	else if (strcmp(str, "disable") == 0)
@@ -481,11 +479,9 @@ int ModbusUnit::parseUnitConfig(xmlNodePtr unit_node, xmlNodePtr device_node)
 
 	GET_ATTRIBUTE("zerond")
 	if (str == NULL) {
-		sz_log(0,
-		    "Warning! attribute modbus:zerond not found in device element, line %ld",
+		sz_log(1, "attribute modbus:zerond not found in device element, line %ld",
 		    xmlGetLineNo(unit_node));
 		zerond = NO;
-		/*free (str) ;*/
 	} else if (strcmp(str, "yes") == 0)
 		zerond = YES;
 	else if (strcmp(str, "no") == 0)
@@ -501,12 +497,9 @@ int ModbusUnit::parseUnitConfig(xmlNodePtr unit_node, xmlNodePtr device_node)
 
 	GET_ATTRIBUTE("FloatOrder")
 	if (str == NULL) {
-		sz_log(0,
-		    "Warning! attribute modbus:FloatOrder not found in device element, line %ld",
+		sz_log(1, "attribute modbus:FloatOrder not found in device element, line %ld",
 		    xmlGetLineNo(unit_node));
 		FloatOrder = MSBLSB;
-		
-		/*free (str) ;*/
 	} else if (strcmp(str, "msblsb") == 0)
 		FloatOrder = MSBLSB;
 	else if (strcmp(str, "lsbmsb") == 0)
@@ -521,12 +514,9 @@ int ModbusUnit::parseUnitConfig(xmlNodePtr unit_node, xmlNodePtr device_node)
 
 	GET_ATTRIBUTE("LongOrder")
 	if (str == NULL) {
-		sz_log(0,
-		    "Warning! attribute modbus:LongOrder not found in device element, line %ld",
+		sz_log(1, "attribute modbus:LongOrder not found in device element, line %ld",
 		    xmlGetLineNo(unit_node));
 		LongOrder = MSBLSB;
-		
-		/*free (str) ;*/
 	} else if (strcmp(str, "msblsb") == 0)
 		FloatOrder = MSBLSB;
 	else if (strcmp(str, "lsbmsb") == 0)
@@ -553,11 +543,9 @@ int ModbusUnit::parseUnitConfig(xmlNodePtr unit_node, xmlNodePtr device_node)
 
 	GET_ATTRIBUTE("DelayBetweenChars")
 	if (str == NULL) {
-		sz_log(0,
-		    "Warning! attribute modbus:DelayBetweenChars not found in device element, line %ld",
+		sz_log(1, "attribute modbus:DelayBetweenChars not found in device element, line %ld",
 		    xmlGetLineNo(unit_node));
 		DelayBetweenChars = DELAY_BETWEEN_CHARS ;
-		/*free(str);*/
 	} else{
 
 		DelayBetweenChars = strtol(str, &tmp, 0);
@@ -572,12 +560,9 @@ int ModbusUnit::parseUnitConfig(xmlNodePtr unit_node, xmlNodePtr device_node)
 
 	GET_ATTRIBUTE("ReceiveTimeout")
 	if (str == NULL) {
-		sz_log(0,
-		    "Warning! attribute modbus:ReceiveTimeout not found in device element, line %ld",
+		sz_log(1, "attribute modbus:ReceiveTimeout not found in device element, line %ld",
 		    xmlGetLineNo(unit_node));
 		ReceiveTimeout = RECEIVE_TIMEOUT ;
-		/*free(str);*/
-//		return 5;
 	}
 	else{
 		ReceiveTimeout = strtol(str, &tmp, 0);
@@ -593,8 +578,7 @@ int ModbusUnit::parseUnitConfig(xmlNodePtr unit_node, xmlNodePtr device_node)
 
 	GET_ATTRIBUTE("SendDelay")
 	if (str == NULL) {
-		sz_log(0,
-		    "Warning! attribute modbus:SendDelay not found in device element, line %ld",
+		sz_log(1, "attribute modbus:SendDelay not found in device element, line %ld",
 			xmlGetLineNo(unit_node));
 		SendDelay = SEND_DELAY ;
 	} else {
@@ -612,18 +596,15 @@ int ModbusUnit::parseUnitConfig(xmlNodePtr unit_node, xmlNodePtr device_node)
 
 	GET_ATTRIBUTE("WriteOneTime")
 	if (str == NULL) {
-		sz_log(0,
-		    "Warning! attribute modbus:WriteOneTime not found in device element, line %ld",
+		sz_log(1, "attribute modbus:WriteOneTime not found in device element, line %ld",
 		    xmlGetLineNo(unit_node));
 		WriteOneTime = DISABLE;
-		
-		/*free (str) ;*/
 	} else if (strcmp(str, "disable") == 0)
 		WriteOneTime = DISABLE;
 	else if (strcmp(str, "enable") == 0)
 		WriteOneTime = ENABLE;
 	else {
-		sz_log(0,
+		sz_log(1,
 		    "invalid modbus:WriteOneTime attribute (must be 'disable' or 'enable'), line %ld",
 		    xmlGetLineNo(unit_node));
 		return 6 ;
@@ -666,8 +647,7 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 						    BAD_CAST
 						    (IPKEXTRA_NAMESPACE_STRING));
 				if (str == NULL) {
-					sz_log(10,
-					    "Warning!: attribute modbus:extra not found (line %ld)",
+					sz_log(1, "attribute modbus:extra not found (line %ld)",
 					    xmlGetLineNo(node));
 			} else {
 				sz_log(10, "extra value: %s", str);
@@ -1855,7 +1835,6 @@ void ModbusLine::PerformSlaveCycle() {
 
 void ModbusLine::QuerySlaveUnit(ModbusUnit *unit) {
 	unit->MasterAsk(m_fd);
-	sleep(1);
 	unit->MasterGet(m_fd);
 }
 
@@ -1900,7 +1879,7 @@ void ModbusLine::Go() {
 	do {
 		if (m_fd < 0) 
 			m_fd = InitComm(SC::S2A(m_cfg->GetDevice()->GetPath()).c_str(),
-				     m_cfg->GetDevice()->GetSpeed(), 8, 1, NO_PARITY);
+				     m_cfg->GetDevice()->GetSpeed(), 8, m_stop_bits, m_parity);
 
 		if (m_fd < 0) {
 			sz_log(0, "Failed to init port, doing nothing");

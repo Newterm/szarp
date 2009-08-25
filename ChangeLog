@@ -1,6 +1,10 @@
 $Id$
 
-2009-08-24	Adam Smyk <praterm@praterm.pl>
+2009-08-25	Pawel Palucha <pawel@praterm.com.pl>
+	* parcook/mbrtudmn.cc: fixed bug - port was reopened with incorrect
+	even/parity parameters; removed sleep between master send/receive;
+	log level of configuration parsing warnings changed to 1 (WARN).
+2009-08-24	Adam Smyk <asmyk@praterm.pl>
 	* wx/scc: implemetation of database hiding in draw3, ekstraktor3 and ssc
 	* wx/draw3: implementation of database hiding 
 	* wx/ekstraktor3: implementation of database hiding
