@@ -626,7 +626,7 @@ void szRaporter::RefreshReport(bool force)
 				if (m_test_window == false) {	
 					//TODO sorting by order
 					params_listc->InsertItem(i, scut);
-					params_listc->SetItem(i, 1, val);
+					params_listc->SetItem(i, 1, val.CmpNoCase(_T("unknown"))? val : wxString(_("no data")));
 					params_listc->SetItem(i, 2, desc + _T(" [") +
 					      (unit.IsEmpty() ? _T("-") : unit ) + _T("]"));
 				} else {

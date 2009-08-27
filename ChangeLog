@@ -1,5 +1,8 @@
 $Id$
 
+2009-08-27	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/raporter/raporter.cc: reporter displays localized 'no data'
+	string in case of 'unknown' value.
 2009-08-25	Pawel Palucha <pawel@praterm.com.pl>
 	* parcook/mbrtudmn.cc, dprdmn.cc: fixed return value checking from 
 	open() function: -1 instead of < 1
