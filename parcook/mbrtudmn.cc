@@ -1893,8 +1893,8 @@ finish_cycle:
 
 		time_t now = time(NULL);
 		int s = 10 - (now - start);
-		if (s < 0) 
-			sz_log(0, "Cycle lasts longer than 10sec!!!");
+		if (s < 1) 
+			sz_log(3, "Cycle lasts longer than 10sec (%d)!!!", (now - start));
 
 		if (s > 0)
 			while ((s = sleep(s)) > 0);

@@ -1,6 +1,7 @@
 $Id$
 
 2009-08-27	Pawel Palucha <pawel@praterm.com.pl>
+	* parcook/mbrtudmn.cc: fixed warning about cycle length.
 	* wx/scc/sccframe.cpp: changing SZARP data dir disabled under Linux;
 	fixed compilation warning.
 	* wx/raporter/raporter.cc: reporter displays localized 'no data'
