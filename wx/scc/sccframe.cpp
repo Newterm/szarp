@@ -71,7 +71,7 @@ END_EVENT_TABLE()
 
 SCCTaskBarItem::SCCTaskBarItem(SCCMenu* _menu, wxString prefix,	wxString suffix) :
 	system_menu(NULL), menu(NULL), new_menu(_menu), wxmenu(NULL),
-	tunnel_frame(NULL), m_sel_frame(NULL)
+	m_sel_frame(NULL), tunnel_frame(NULL)
 
 {
 	wxLog *logger=new wxLogStderr();
@@ -112,7 +112,9 @@ wxMenu* SCCTaskBarItem::CreateSystemMenu()
 	m->Append(ID_SupportTunnel, _("&Support tunnel"));
 	m->Append(ID_Fonts, _("SZARP &fonts"));
 #endif
+#ifdef MINGW32
 	m->Append(ID_SzarpDataDir, _("SZARP data directory"));
+#endif
 	m->Append(ID_HideBases, _("Hide SZARP databases"));
 	m->AppendSeparator();
 	m->Append(ID_Quit, _("E&xit"));
