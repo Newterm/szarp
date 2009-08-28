@@ -249,7 +249,7 @@ protected :
 	 * @param buffer return buffer containing read data
 	 * @return 0 on success, 1 on error
 	 */
-	int Read(int size, char **buffer);
+	int Read(int size, unsigned char **buffer);
 	/** Creates response as an exception frame (PDU).
 	 * @param function code
 	 * @param code exception code
@@ -257,16 +257,16 @@ protected :
 	void CreateException(char function, char code);
 	/** Subroutine of CreateResponse. Parses READ HOLDING REGISTERS
 	 * frame and creates response. */
-	void ParseFunReadHoldingReg(char * frame, int size);
+	void ParseFunReadHoldingReg(unsigned char * frame, int size);
 	/** Subroutine of CreateResponse. Parses WRITE MULTIPLE REGISTER
 	 * frame and creates response. */
-	void ParseFunWriteMultReg(char * frame, int size);
+	void ParseFunWriteMultReg(unsigned char * frame, int size);
 
 	int SendReadMultReg(int from, int to, int timeout);
 
 	int SendWriteMultReg(int from, int to, int timeout);
 
-	int CheckServerResponseError(char *frame, int size);
+	int CheckServerResponseError(unsigned char *frame, int size);
 
 	/** Creates registers map using m_params and m_sends attributes.
 	 * Checks for validity of addresses.
@@ -381,7 +381,7 @@ protected :
 	char *m_send_message;	/**< Frame to send (if different then NULL) */
 	int m_send_message_size; /**< Size of frame to send. */
 
-	char *m_received_message;	/**< Received frame (if different then NULL) */
+	unsigned char *m_received_message;	/**< Received frame (if different then NULL) */
 	int m_received_message_size;	/**< Size of received frame. */
 
 	int16_t * m_registers;	/**< Array of modbus internal registers. 
@@ -1118,14 +1118,14 @@ int ModbusTCP::Accept(int timeout)
 	return 0;
 }
 
-int ModbusTCP::Read(int size, char **buffer)
+int ModbusTCP::Read(int size, unsigned char **buffer)
 {
 	int toread, c;
 	
 	assert (size > 0);
 	assert (m_socket >= 0);
 	
-	*buffer = (char *) calloc (size, sizeof(char));
+	*buffer = (unsigned char *) calloc (size, sizeof(unsigned char));
 	assert (*buffer != NULL);
 	toread = size;
 	while (toread > 0) {
@@ -1181,7 +1181,7 @@ void ModbusTCP::CreateException(char function, char code)
 			function, code);
 }
 
-void ModbusTCP::ParseFunReadHoldingReg(char *frame, int size)
+void ModbusTCP::ParseFunReadHoldingReg(unsigned char *frame, int size)
 {
 	int16_t start_address;
 	int16_t quantity;
@@ -1208,7 +1208,7 @@ void ModbusTCP::ParseFunReadHoldingReg(char *frame, int size)
 			quantity * 2);
 }
 
-int ModbusTCP::CheckServerResponseError(char *frame, int size) {
+int ModbusTCP::CheckServerResponseError(unsigned char *frame, int size) {
 	if (size < 3) {
 		sz_log(2, "Response from server too short %d", size);
 		return 1;
@@ -1282,24 +1282,39 @@ int ModbusTCP::SendReadMultReg(int from, int to, int timeout) {
 
 	time_t start_time;
 	time(&start_time);
-	if (SendMessage(timeout))
+	sz_log(10, "SendReadMultReg(): starting");
+	if (SendMessage(timeout)) {
+		sz_log(10, "SendReadMultReg(): SendMessage() failed");
 		return 1;
+	}
 
-	if (ReadMessage(timeout - (time(NULL) - start_time)))
+	if (ReadMessage(timeout - (time(NULL) - start_time))) {
+		sz_log(10, "SendReadMultReg(): ReadMessage() failed");
 		return 1;
+	}
 
 	int ret = 1;
-	if (CheckServerResponseError(m_received_message, m_received_message_size))
+	if (CheckServerResponseError(m_received_message, m_received_message_size)) {
+		sz_log(10, "SendReadMultReg(): CheckServerResponseError() failed");
 		goto end;
+	}
 
-	if (m_received_message_size != 3 + quantity * 2)
+	if (m_received_message_size != 3 + quantity * 2) {
+		sz_log(10, "SendReadMultReg(): m_received_message_size (%d) != 3 + quantity * 2 (%d)", 
+				m_received_message_size, 3 + quantity * 2);
 		goto end;
+	}
 
-	if (m_received_message[1] != MB_F_RHR)
+	if (m_received_message[1] != MB_F_RHR) {
+		sz_log(10, "SendReadMultReg(): m_received_message[1] != MB_F_RHR");
 		goto end;
+	}
 
-	if (m_received_message[2] != quantity * 2)
+	if (m_received_message[2] != quantity * 2) {
+		sz_log(10, "SendReadMultReg(): m_received_message[2] (%d) != quantity * 2 (%d)", 
+				m_received_message[2], quantity * 2);
 		goto end;
+	}
 
 	memcpy((char*)&m_registers[from], 
 			m_received_message + 3,
@@ -1408,7 +1423,7 @@ int ModbusTCP::SendWriteRegisters(int timeout) {
 	return 0;
 }
 
-void ModbusTCP::ParseFunWriteMultReg(char *frame, int size)
+void ModbusTCP::ParseFunWriteMultReg(unsigned char *frame, int size)
 {
 	int16_t start_address;
 	int16_t quantity;
@@ -1612,7 +1627,7 @@ int ModbusTCP::ReadMessage(int timeout)
 		} else {
 			sz_log(10, "Frame length: %d", buf[2]);
 		}
-		char *buffer;
+		unsigned char *buffer;
 		if (Read(buf[2], &buffer) == 0) {
 			m_unit_id = buffer[0];
 			m_received_message = buffer;
