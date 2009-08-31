@@ -1,5 +1,7 @@
 $Id$
 
+2009-08-31	Darek Marcinkiewcz <reksio@praterm.pl>
+	* isl/paramd : fix in combining two shorts into int
 2009-08-28	Pawel Palucha <pawel@praterm.com.pl>
 	* parcook/mbtcpdmn.cc: fix - modbus frame buffer type changed from 
 	char to unsigned char, so we can ask for more then 128 bytes.

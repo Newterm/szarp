@@ -295,16 +295,13 @@ std::wstring PTTParamProxy::getCombinedValue(int indmsw, int indlsw, int prec, P
 	if ((indmsw < 0) || (indmsw >= (int)values[probe_type].size()) || (indlsw < 0) || (indlsw >= (int)values[probe_type].size()))
 		return L"unknown";
 
-	im = values[probe_type][indmsw];
-	il = values[probe_type][indlsw];
+	short sm = values[probe_type][indmsw];
+	short sl = values[probe_type][indlsw];
 
-	if ((prec > 7) || (im == SZARP_NO_DATA) || (il == SZARP_NO_DATA))
+	if ((prec > 7) || (sm == SZARP_NO_DATA) || (sl == SZARP_NO_DATA))
 		return L"unknown";
 
-	int i = im;
-	i <<= 16;
-	i |= il;
-
+	int i = int(((unsigned int) sm << 16) | (unsigned short)(sl));
 	std::wstringstream wss;
 	for (j = 0, k = 1; j < prec; j++, k*=10) ;
 	if (k <= 1)
