@@ -1,3 +1,9 @@
+szarp (3.1.97) stable; urgency=low
+
+  * upstream version 3.1.97
+
+ -- Darek Marcinkiewicz <reksio@praterm.pl>  Mon, 31 Aug 2009 14:36:22 +0200
+
 szarp (3.1.96) stable; urgency=low
 
   * upstream version 3.1.96
@@ -181,3 +187,9 @@ szarp (3.1.0) unreleased; urgency=low
  -- Pawel Palucha <pawel@praterm.com.pl>  Wed, 24 Jun 2009 14:21:03 +0200
 
 
+szarp (3.1.96+nmu1) stable; urgency=low
+
+  * upstream version 3.1.96
+  * 
+
+ -- aloha aloha <isaac@ares>  Mon, 31 Aug 2009 14:36:22 +0200
