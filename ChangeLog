@@ -1,5 +1,7 @@
 $Id$
 
+2009-09-01	Adam Smyk <asmyk@praterm.pl>
+	* libSzarp/conversion.cc: const attribute added for windows compilation
 2009-08-31	Darek Marcinkiewcz <reksio@praterm.pl>
 	* isl/paramd : fix in combining two shorts into int
 2009-08-28	Pawel Palucha <pawel@praterm.com.pl>
