@@ -1,0 +1,51 @@
+# This is Polish translation of NEWS file.
+# Ten plik opisuje najwa¿niejsze zmiany w SZARP'ie w formacie czytelnym
+# dla u¿ytkowników, uaktualniany jest nie rzadziej ni¿ co miesi±c.
+# Linie zaczynaj±ce siê od '#' traktowane s± jako komentarze.
+# Linie zaczynaj±ce siê od ** (dwóch gwiazdek) zawieraj± numer opisywanej
+# wersji SZARP.
+# Pozosta³e linie zawieraj± opis zmian.
+# Puste linie s± ignorowane.
+# $Id$
+
+** 3.1.97
+# 31.08.2009
+
+* Poprawiono prezentacjê warto¶ci 32-bitowych (parametrów tzw. "sklejanych" - np. warto¶ci
+z liczników energii/wody) w programach paramd/raporter.
+* Driver do protoko³u ModbusTCP mo¿e obs³ugiwaæ wiêcej ni¿ 128 parametrów dla pojedynczego
+urz±dzenia.
+* Wy³±czono potencjalnie szkodliw± opcjê ustawienia scie¿ki do katalogu z danymi w systemie Linux w programie Centrum Sterowania SZARP - ¶cie¿ka ta dla systemu Linux nie powinna byæ zmieniana.
+* Poprawki w driverze do protoko³u Modbus RTU - poprawiona obs³uga portu szeregowego, czytanie konfiguracji, synchronizacja czasowa.
+* W przypadku braku danych Raporter wy¶wietla 'brak danych' (poprzednio 'unknown' - komunikat nie by³ lokalizowany).
+* Nowa funkcja w Centrum Sterowania SZARP - u¿ytkownik mo¿e wybraæ bazy, które nie bêd± pokazywane w programach SCC, Ekstraktor, Draw3.
+* Usprawnienia w obs³udze komentarzy w Programie Przegl±daj±cym Draw3 - nazwa serwera mo¿e byæ podana w postaci nazwy DNS a nie adresu IP, domy¶lne warto¶ci u¿ytkownika/has³a pobierane s± z Synchronizatora SZARP; podstawowa obs³uga konfiguracji zagregowanych.
+* Dodane dokumentacja funkcji 'komentarze' Programu Przegl±daj±cego.
+* Podstawowa administracja u¿ytkownikami komentarzy mo¿e byæ wykonywana za pomoc± interefejsu WWW programu ssweb.
+* Poprawiono rejestracjê kluczy nowych u¿ytkowników Synchronizatora SZARP (problem z uprawnieniami).
+* Eksperymentalne wsparcie dla nowego sposobu rysowania wykresów w Programie Przegl±daj±cym z u¿yciem API wxGraphicsContext.
+* Poprawione zale¿no¶ci dla programu Filler - umo¿liwia instalacjê na nowych wersjach Debiana.
+* Automatyczna aktualizacja SZARP dla Windows pobiera prawid³owo now± wersjê oprogramowania z portalu SourceForge.net.
+* Uaktualniono Instrukcjê Eksploatacji Systemu SZARP.
+
+** 3.1.53
+# 03.08.2009
+
+* Nowa funkcja komentarzy w programie przegl±daj±cym draw3. Komentarz to krótkie tekstowe informacje przyporz±dkowane do zestawu wykresów (lub wszystkich danych) i konkretnej daty/godziny. Mog± opisywaæ jakie¶ istotne zdarzenie (np. awariê jakiego¶ urz±dzenia) lub zawieraæ informacje dla obs³ugi. Komentarze s± trzymane na centralnym serwerze i dystrybuowane do u¿ytkowników ogl±daj±cych dane z konkretnej instalacji za pomoc± protoko³u typu RPC. U¿ytkownicy z odpowiednimi uprawnieniami mog± dodawaæ i edytowaæ komentarze.
+* Skrypty startowe dla komputerów pe³ni±cych role terminala zosta³y dostosowane do typowego dla wersji 3 systemu sposobu przekazywania warto¶ci chwilowych.
+* W programie ekstraktor3 poprawiono obs³ugê formatu Open Document Spreadsheet, istnieje obecnie mo¿liwo¶æ ekstrakcji danych do tego formatu tak¿e na platformie Windows.
+* Poprawiono i usprawniono definiowanie raportów u¿ytkownika w programie raporter3.
+* Parametry definiowalne u¿ytkownika teraz tak¿e pod systemem Windows korzystaj± z szybszej wersji interpretera jêzyka LUA wykorzystuj±cego mechanizm just-in-time compilation.
+* Opracowano i wdro¿ono nowe systemy budowania wersji systemu SZARP zarówno na platformê MS Windows jak i Linux. Te dwa nowe rozwi±zania korzystaj± z nowej lokalizacji ¼róde³ systemu SZARP - portalu sourceforge.net, g³ówne repozytorium pakietów Debiana zosta³o przeniesione na serwer http://szarp.org. Pakiety dla wersji stable i unstable maj± obecnie odpowiednie zale¿no¶ci binarne. 
+
+** 3.1.1
+# 24.07.2009
+
+Zmiana g³ównego numeru wersji: 3.0 => 3.1.
+
+Najwa¿niejszy powód zmiany to przeniesienie g³ównego repozytorium projektu
+na SourceForge. Przy okazji usuniêto trochê starego i nieu¿ywanego kodu, pozbyto
+siê tak¿e wszelkich zale¿no¶ci od kodu na niewolnych licencjach. Strona
+domowa projektu zosta³a przeniesiona na http://www.szarp.org.
+
+# vim: set filetype=cfg :

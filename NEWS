@@ -1,5 +1,46 @@
+# This file describes major changes in SZARP in human-readable format,
+# updated at least monthly.
+# Lines starting with hash are comments. 
+# Lines starting with ** (two stars) denotes described SZARP version.
+# Other lines describe changes.
+# Empty lines are ignored.
+# $Id$
+
+** 3.1.97
+# 31.08.2009
+
+* Fixed presentation of 32-bits ("combined") values in paramd/reporter program.
+* Driver for Modbus TCP can ask for more then 128 registers.
+* Disabled potentially harmfull SZARP Command Center option to change data directory under Linux.
+* No-data string in Reporter is localized now.
+* Fixes in Modbus RTU driver serial port handling, configuration parsing, time synchronization.
+* User can select databases that are not shown in SZARP Command Center, Extractor and Draw programs.
+* Improvements in Draw3 remarks handling - remarks server address can be resolved using DNS, default user and password is taken from SZARP Synchronizer, basic support for agregated configurations.
+* Added documentation of Draw3 'remarks' feature.
+* Basic administration of remarks server users can now be handled with ssweb.
+* Fixed permission problem with registering new users key by SZARP Synchronization Server.
+* Experimental surrport for drawing using wxGraphicsContext in Draw3 program.
+* Fixed dependencies of Filler program.
+* SZARP Automatic Updater uses SourceForge.net RSS feeds to obtain correct version number of SZARP.
+* Updated 'eksploatacja' documentation.
+
+** 3.1.53
+# 03.08.2009
+
+* New remarks functionality in draw3 program. Remarks are short text comments that are bound to some draws' set (or all data) at particular time. They can describe some event (for example device failure) or contain information for operators. Remarks are stored on central server and distributed using RPC-like protocol to all users viewing installation data. Users with appropiate privilges can add and edit remarks.
+* init.d scripts for terminals are now compliant with version 3 mechanism for tranmission of current parameter values.
+* Fix in ekstraktor3 Open Document Spreadsheet format handling, export to ODS should work on both Linux and Windows.
+* Fixes in creating user-defined reports in reporter3 program.
+* Windows build uses now faster Lua version - with just-in-time compiler.
+* New build system (for Linux ans Windows) using source repository from SourceForge.net, Debian repository has been moved to http://szarp.org. Stable and unstable versions of Debian packages have now binary dependencies appropiate for release. 
+
+** 3.1.1
+# 24.07.2009
+
 Major version change: 3.0 => 3.1.
 
 The main reason to increase version number was moving repository to
 SoureForge. It was an opportunity to remove some obsolete files and any
-dependencies on non-GPL code.
+dependencies on non-GPL code. Project home page moved to http://www.szarp.org.
+
+# vim: set filetype=cfg :
