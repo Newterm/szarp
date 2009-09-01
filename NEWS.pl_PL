@@ -15,13 +15,13 @@
 z liczników energii/wody) w programach paramd/raporter.
 * Driver do protoko³u ModbusTCP mo¿e obs³ugiwaæ wiêcej ni¿ 128 parametrów dla pojedynczego
 urz±dzenia.
-* Wy³±czono potencjalnie szkodliw± opcjê ustawienia scie¿ki do katalogu z danymi w systemie Linux w programie Centrum Sterowania SZARP - ¶cie¿ka ta dla systemu Linux nie powinna byæ zmieniana.
+* Wy³±czono potencjalnie szkodliw± opcjê ustawienia ¶cie¿ki do katalogu z danymi w systemie Linux w programie Centrum Sterowania SZARP - ¶cie¿ka ta dla systemu Linux nie powinna byæ zmieniana.
 * Poprawki w driverze do protoko³u Modbus RTU - poprawiona obs³uga portu szeregowego, czytanie konfiguracji, synchronizacja czasowa.
 * W przypadku braku danych Raporter wy¶wietla 'brak danych' (poprzednio 'unknown' - komunikat nie by³ lokalizowany).
 * Nowa funkcja w Centrum Sterowania SZARP - u¿ytkownik mo¿e wybraæ bazy, które nie bêd± pokazywane w programach SCC, Ekstraktor, Draw3.
 * Usprawnienia w obs³udze komentarzy w Programie Przegl±daj±cym Draw3 - nazwa serwera mo¿e byæ podana w postaci nazwy DNS a nie adresu IP, domy¶lne warto¶ci u¿ytkownika/has³a pobierane s± z Synchronizatora SZARP; podstawowa obs³uga konfiguracji zagregowanych.
 * Dodane dokumentacja funkcji 'komentarze' Programu Przegl±daj±cego.
-* Podstawowa administracja u¿ytkownikami komentarzy mo¿e byæ wykonywana za pomoc± interefejsu WWW programu ssweb.
+* Podstawowa administracja u¿ytkownikami komentarzy mo¿e byæ wykonywana za pomoc± interfejsu WWW programu ssweb.
 * Poprawiono rejestracjê kluczy nowych u¿ytkowników Synchronizatora SZARP (problem z uprawnieniami).
 * Eksperymentalne wsparcie dla nowego sposobu rysowania wykresów w Programie Przegl±daj±cym z u¿yciem API wxGraphicsContext.
 * Poprawione zale¿no¶ci dla programu Filler - umo¿liwia instalacjê na nowych wersjach Debiana.
