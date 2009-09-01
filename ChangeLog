@@ -1,5 +1,7 @@
 $Id$
 
+2009-09-02	Adam Smyk <asmyk@praterm.pl>
+	* wx/ekstraktor3/ekstraktor.h: small variable name correction
 2009-09-01	Adam Smyk <asmyk@praterm.pl>
 	* libSzarp/conversion.cc: const attribute added for windows compilation
 2009-08-31	Darek Marcinkiewcz <reksio@praterm.pl>

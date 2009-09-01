@@ -114,8 +114,8 @@ protected:
 	#ifndef MINGW32
         libpar_init();
 	#else
-	wxString config = GetSzarpDir() + wxFileName::GetPathSeparator() + _T("resources") + wxFileName::GetPathSeparator() +  _T("szarp.cfg");
-	libpar_init_with_filename(SC::S2A(config).c_str(), 1);
+	wxString config_str = GetSzarpDir() + wxFileName::GetPathSeparator() + _T("resources") + wxFileName::GetPathSeparator() +  _T("szarp.cfg");
+	libpar_init_with_filename(SC::S2A(config_str).c_str(), 1);
 	#endif
 
 	std::wstring xml_prefix;
