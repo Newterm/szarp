@@ -1,6 +1,8 @@
 $Id$
 
 2009-09-02	Adam Smyk <asmyk@praterm.pl>
+	* script/nsis/winsetup.sh: misprint correction
+2009-09-02	Adam Smyk <asmyk@praterm.pl>
 	* wx/ekstraktor3/ekstraktor.h: small variable name correction
 2009-09-01	Adam Smyk <asmyk@praterm.pl>
 	* libSzarp/conversion.cc: const attribute added for windows compilation
