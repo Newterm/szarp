@@ -138,7 +138,7 @@ cert=$szarp_root$/resources/server.ca
 :paramd_for_raporter
 
 port=8083
-allowed_ip=@(192.168.*.*|172.*.*.*|127.0.0.1)
+allowed_ip=@(192.168.*.*|172.*.*.*|127.*.*.*)
 
 :scc
 # default menu configuration for SZARP command center:

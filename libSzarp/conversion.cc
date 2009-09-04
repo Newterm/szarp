@@ -48,11 +48,7 @@ namespace {
 			boost::mutex::scoped_lock lock(m_mutex);
 
      		        char *input_start = (char*)(str.c_str());
-#ifdef MINGW32
-			const char *input = input_start;
-#else
 			char *input = input_start;
-#endif
 			size_t input_length = (str.length() + 1) * sizeof(F);
 
 			size_t total_length  = sizeof(T) * (str.length() + 1);

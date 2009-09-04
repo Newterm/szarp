@@ -1,5 +1,9 @@
 $Id$
 
+2009-09-04	Pawe³ Pa³ucha <pawel@praterm.com.pl>
+	* libSzarp/conversion.cc: reverted "fix" for mingw, again.
+	* resources/SZARP_IN_CFG_TEMPLATE: allowed connections to paramd from
+	all 127.*.*.* subnet.
 2009-09-02	Adam Smyk <asmyk@praterm.pl>
 	* script/nsis/winsetup.sh: misprint correction
 2009-09-02	Adam Smyk <asmyk@praterm.pl>
