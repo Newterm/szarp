@@ -8,114 +8,118 @@ msgid ""
 msgstr ""
 "Project-Id-Version: kontroler3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-12-17 11:35+0100\n"
+"POT-Creation-Date: 2009-09-11 17:42+0200\n"
 "PO-Revision-Date: 2004-08-31 00:19+0200\n"
 "Last-Translator:  <ecto@praterm.com.pl>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: kontr.cc:69
+#: kontr.cc:73
 msgid "Szarp Kontroler version 3.00 (in-progress)."
-msgstr ""
+msgstr "Szarp Kontroler wersja 3.00 (in-progress)."
 
-#: kontr.cc:70
+#: kontr.cc:74
 msgid "X windows geometry specification"
 msgstr ""
 
-#: kontr.cc:71
+#: kontr.cc:75
 msgid "libparnt value initialization"
 msgstr ""
 
-#: kontr.cc:72
+#: kontr.cc:76
 msgid "print usage info"
 msgstr ""
 
-#: kontroler.cc:49
-msgid "Kontroler"
+#: kontr.cc:77
+msgid "server url"
 msgstr ""
 
-#: kontroler.cc:51
+#: kontroler.cc:48
+msgid "Kontroler"
+msgstr "Kontroler"
+
+#: kontroler.cc:50
 msgid "YELLOW"
 msgstr ""
 
 #: kontroler.cc:80
-msgid "&Load"
-msgstr "&Odczyt"
-
-#: kontroler.cc:81
-msgid "&Save"
-msgstr "&Zapisz"
-
-#: kontroler.cc:83
-msgid "&Add"
-msgstr "&Dodaj"
-
-#: kontroler.cc:84
-msgid "&Change"
-msgstr "&Zmieñ"
-
-#: kontroler.cc:85
-msgid "&Delete"
-msgstr "&Usuñ"
-
-#: kontroler.cc:87
-msgid "&List"
-msgstr "&Lista"
-
-#: kontroler.cc:91
-msgid "Set &username and password"
-msgstr "Ustaw nazwê u¿ytkownika i has³o"
-
-#: kontroler.cc:94
-msgid "E&xit"
-msgstr "&Koniec"
-
-#: kontroler.cc:97
-msgid "Type &5 (red)"
-msgstr "Typ &5 (alarm czerwony)"
-
-#: kontroler.cc:98
-msgid "Type &4 (yellow)"
-msgstr "Typ &4 (alarm ¿ó³ty)"
-
-#: kontroler.cc:99
-msgid "Type &3"
-msgstr "Typ &3"
-
-#: kontroler.cc:100
-msgid "Type &2"
-msgstr "Typ &2"
-
-#: kontroler.cc:101
-msgid "Type &1"
-msgstr "Typ &1"
-
-#: kontroler.cc:103
-msgid "&Options"
-msgstr "&Opcje"
-
-#: kontroler.cc:104
 msgid "Ser&ver"
 msgstr "Ser&wer"
 
-#: kontroler.cc:110
+#: kontroler.cc:82
+msgid "&Load"
+msgstr "&Odczyt"
+
+#: kontroler.cc:83
+msgid "&Save"
+msgstr "&Zapisz"
+
+#: kontroler.cc:85
+msgid "&Add"
+msgstr "&Dodaj"
+
+#: kontroler.cc:86
+msgid "&Change"
+msgstr "&Zmieñ"
+
+#: kontroler.cc:87
+msgid "&Delete"
+msgstr "&Usuñ"
+
+#: kontroler.cc:89
+msgid "&List"
+msgstr "&Lista"
+
+#: kontroler.cc:93
+msgid "Set &username and password"
+msgstr "Ustaw nazwê u¿ytkownika i has³o"
+
+#: kontroler.cc:96
+msgid "E&xit"
+msgstr "&Koniec"
+
+#: kontroler.cc:99
+msgid "Type &5 (red)"
+msgstr "Typ &5 (alarm czerwony)"
+
+#: kontroler.cc:100
+msgid "Type &4 (yellow)"
+msgstr "Typ &4 (alarm ¿ó³ty)"
+
+#: kontroler.cc:101
+msgid "Type &3"
+msgstr "Typ &3"
+
+#: kontroler.cc:102
+msgid "Type &2"
+msgstr "Typ &2"
+
+#: kontroler.cc:103
+msgid "Type &1"
+msgstr "Typ &1"
+
+#: kontroler.cc:105
+msgid "&Options"
+msgstr "&Opcje"
+
+#: kontroler.cc:111
 msgid "&Kontroler"
 msgstr ""
 
-#: kontroler.cc:111
+#: kontroler.cc:112
 msgid "&About"
 msgstr "O &autorach"
 
-#: kontroler.cc:115
+#: kontroler.cc:116
 msgid "&Params"
 msgstr "&Parametry"
 
-#: kontroler.cc:116
+#: kontroler.cc:117
 msgid "&Report Options"
 msgstr "&Raport Opcje"
 
-#: kontroler.cc:117
+#: kontroler.cc:118
 msgid "&Help"
 msgstr "&Pomoc"
 
@@ -151,15 +155,15 @@ msgstr "Poziom"
 msgid "Group"
 msgstr "Grupa"
 
-#: kontroler.cc:166 kontroler.cc:617
+#: kontroler.cc:163 kontroler.cc:623
 msgid "Kontroler->AddParam"
 msgstr "Kontroler->Dodaj parametr"
 
-#: kontroler.cc:267
+#: kontroler.cc:269
 msgid "t"
 msgstr ""
 
-#: kontroler.cc:356
+#: kontroler.cc:360
 msgid ""
 "Failed to set control raport (server connection error or bad username/"
 "password)"
@@ -167,131 +171,131 @@ msgstr ""
 "Nie uda³o siê ustawiæ raportu kontrolnego\n"
 "(b³±d po³±czenia z serwerem lub z³a nazwa u¿ytkownika/has³o)"
 
-#: kontroler.cc:356
+#: kontroler.cc:360
 msgid "Error"
 msgstr "B³±d"
 
-#: kontroler.cc:383
+#: kontroler.cc:387
 msgid "Load params: choose a file"
 msgstr "Wczytawanie parametrów: wybierz plik"
 
-#: kontroler.cc:384 kontroler.cc:396
+#: kontroler.cc:388 kontroler.cc:400
 msgid "Kontorler params (*.xkon)|*.xkon|All files (*)|*"
 msgstr "Parametry kontrolera (*.xkon)|*.xkon|All files (*)|*"
 
-#: kontroler.cc:395
+#: kontroler.cc:399
 msgid "Save params: choose a file"
 msgstr "Zapis parametrów: wybierz plik"
 
-#: kontroler.cc:565 kontroler.cc:583
+#: kontroler.cc:569 kontroler.cc:587
 msgid "You really wan't end?"
 msgstr "Czy na pewno chcesz zakoñczyæ pracê programu?"
 
-#: kontroler.cc:565 kontroler.cc:583
+#: kontroler.cc:569 kontroler.cc:587
 msgid "Kontroler->End"
 msgstr "Kontroler->Koniec"
 
-#: kontroler.cc:623
+#: kontroler.cc:627
 msgid "Kontroler->Options"
 msgstr "Kontroler->Opcje"
 
-#: kontroler.cc:640
+#: kontroler.cc:644
 msgid "Raporter - help"
 msgstr "Raporter - pomoc"
 
-#: kontroler.cc:677
+#: kontroler.cc:681
 msgid "minute average"
 msgstr "minutowa"
 
-#: kontroler.cc:680
+#: kontroler.cc:684
 msgid "10-minutes average"
 msgstr "10-minutowa"
 
-#: kontroler.cc:683
+#: kontroler.cc:687
 msgid "hour average"
 msgstr "godzinowa"
 
-#: kontroler.cc:686
+#: kontroler.cc:690
 msgid "instantenous"
 msgstr "chwilowa"
 
-#: kontroler.cc:698
+#: kontroler.cc:702
 msgid "no data"
 msgstr "brak danych"
 
-#: kontradd.cc:53 kontradd.cc:64 parcalc.cc:39
+#: kontradd.cc:51 kontradd.cc:62 parcalc.cc:39
 msgid "Param"
 msgstr "Parametr"
 
-#: kontradd.cc:69
+#: kontradd.cc:67
 msgid "Formula"
 msgstr "Formu³a"
 
-#: kontradd.cc:78
+#: kontradd.cc:76
 msgid "Conditions"
 msgstr "Warunki"
 
-#: kontradd.cc:82
+#: kontradd.cc:80
 msgid "Only validate"
 msgstr "Brak danych"
 
-#: kontradd.cc:102
+#: kontradd.cc:100
 msgid "Monitored value:"
 msgstr "Warto¶æ monitorowana:"
 
-#: kontradd.cc:105
+#: kontradd.cc:103
 msgid "Actual"
 msgstr "Chwilowa"
 
-#: kontradd.cc:106
+#: kontradd.cc:104
 msgid "Minute average"
 msgstr "¦rednia minutowa"
 
-#: kontradd.cc:107
+#: kontradd.cc:105
 msgid "10 Minutes average"
 msgstr "¦rednia 10-minutowa"
 
-#: kontradd.cc:108
+#: kontradd.cc:106
 msgid "Hour average"
 msgstr "¦rednia godzinowa"
 
-#: kontradd.cc:128 kontralarm.cc:39
+#: kontradd.cc:126 kontralarm.cc:39
 msgid "Alarm"
 msgstr ""
 
-#: kontradd.cc:132
+#: kontradd.cc:130
 msgid "Alarm type:"
 msgstr "Typ alarmu:"
 
-#: kontradd.cc:136 parcalc.cc:64
-msgid "0"
-msgstr ""
-
-#: kontradd.cc:137 parcalc.cc:58
+#: kontradd.cc:134 parcalc.cc:58
 msgid "1"
 msgstr ""
 
-#: kontradd.cc:138 parcalc.cc:59
+#: kontradd.cc:135 parcalc.cc:59
 msgid "2"
 msgstr ""
 
-#: kontradd.cc:139 parcalc.cc:60
+#: kontradd.cc:136 parcalc.cc:60
 msgid "3"
 msgstr ""
 
-#: kontradd.cc:140
+#: kontradd.cc:137
 msgid "4 (yellow)"
 msgstr "4 (¿ó³ty)"
 
-#: kontradd.cc:141
+#: kontradd.cc:138
 msgid "5 (red)"
 msgstr "5 (czerwony)"
 
-#: kontradd.cc:180
+#: kontradd.cc:154
+msgid "Alternative name of parameter"
+msgstr "Alternatywna nazwa parametru"
+
+#: kontradd.cc:176
 msgid "Kontroler->Add->Param"
 msgstr "Kontroler->Dodaj->Parametr"
 
-#: kontradd.cc:183
+#: kontradd.cc:179
 msgid "Kontroler->Add->Formula"
 msgstr "Kontroler->Dodaj->Formu³a"
 
@@ -333,6 +337,10 @@ msgstr ""
 
 #: parcalc.cc:61
 msgid "*"
+msgstr ""
+
+#: parcalc.cc:64
+msgid "0"
 msgstr ""
 
 #: parcalc.cc:67
@@ -395,6 +403,10 @@ msgstr ""
 #: kontralarm.cc:91
 msgid "OK"
 msgstr ""
+
+#, fuzzy
+#~ msgid "Cancel"
+#~ msgstr "AAnuluj"
 
 #~ msgid "value "
 #~ msgstr "warto¶æ "

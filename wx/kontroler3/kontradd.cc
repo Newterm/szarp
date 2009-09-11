@@ -145,20 +145,21 @@ szKontrolerAddParam::szKontrolerAddParam(TSzarpConfig *_ipk,
         wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS | wxSP_WRAP,
         1, 99, 1),
       0, wxGROW | wxALL, 8);
-
 #endif
 
   alarm_sizer->Add(alarmt_sizer, 0, wxGROW | wxALL, 8);
   top_sizer->Add(alarm_sizer, 0, wxGROW | wxALL, 8);
 
-  //****
-  //text(alt_name) (val: g_data.m_probe.m_alt_name)
-  top_sizer->Add(new wxTextCtrl(this, wxID_ANY, wxEmptyString,
+  wxStaticBoxSizer *alt_param_sizer = new wxStaticBoxSizer(
+      new wxStaticBox(this, wxID_ANY, _("Alternative name of parameter")), wxVERTICAL);
+
+  alt_param_sizer->Add(new wxTextCtrl(this, wxID_ANY, wxEmptyString,
         wxDefaultPosition, wxDefaultSize, 0,
         wxTextValidator(wxFILTER_NONE, &g_data.m_probe.m_alt_name)),
-      0, wxGROW | wxALL, 8);
+      0, wxEXPAND | wxALL, 8);
+  top_sizer->Add(alt_param_sizer, 0, wxGROW | wxALL, 8);
 
-  //****
+
   wxBoxSizer *but_sizer = new wxBoxSizer(wxHORIZONTAL);
   but_sizer->Add(CreateButtonSizer(wxOK|wxCANCEL/*|wxHELP*/), 0,
       wxALL | wxALIGN_CENTER, 8);

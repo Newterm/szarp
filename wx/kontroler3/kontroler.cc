@@ -52,18 +52,20 @@ szKontroler::szKontroler(wxWindow *par, bool remote_mode, bool operator_mode, wx
   m_http = new szHTTPCurlClient();
 
   loaded = false;
+  bool ask_for_server=false;
   while (ipk == NULL) {
-	server = szServerDlg::GetServer(server, _T("Kontroler"), false);
-  	if (server.IsSameAs(_T("Cancel")))
-	   return;
-	this->ipk = szServerDlg::GetIPK(server, m_http);
+	server = szServerDlg::GetServer(server, _T("Kontroler"), ask_for_server);
+	if (server == wxEmptyString ||
+	    server.IsSameAs(_T("Cancel")))
+		exit(0);
+	ipk = szServerDlg::GetIPK(server, m_http);
+	if (ipk == NULL)
+		ask_for_server = true;
   }
 
   loaded = true;
- 
-  m_editing = false;  	
+  m_editing = false;
   m_server = server;
-
   m_period = 10;
   m_log_len = 100;
   m_pfetcher = NULL;
@@ -75,6 +77,8 @@ szKontroler::szKontroler(wxWindow *par, bool remote_mode, bool operator_mode, wx
   SetStatusBar(stat_sb);
 
   wxMenu *menu_param = new wxMenu();
+  menu_param->Append(ID_M_RAPOPT_SER, _("Ser&ver"));
+  menu_param->AppendSeparator();
   menu_param->Append(ID_M_PARAM_LOAD, _("&Load"));
   menu_param->Append(ID_M_PARAM_SAVE, _("&Save"));
   menu_param->AppendSeparator();
@@ -99,7 +103,6 @@ szKontroler::szKontroler(wxWindow *par, bool remote_mode, bool operator_mode, wx
   menu_rapopt->AppendCheckItem(ID_M_RAPOPT_GR1, _("Type &1"));
   menu_rapopt->AppendSeparator();
   menu_rapopt->Append(ID_M_RAPOPT_OPT, _("&Options"));
-  menu_rapopt->Append(ID_M_RAPOPT_SER, _("Ser&ver"));
 
   for (int i = ID_M_RAPOPT_GR1; i <= ID_M_RAPOPT_GR5; i++)
 	  menu_rapopt->Check(i, true);
@@ -596,17 +599,19 @@ void szKontroler::OnClose(wxCloseEvent &event) {
 
 
 void szKontroler::OnRapoptSer(wxCommandEvent &ev) {
-	wxString server = szServerDlg::GetServer(m_server, _T("Raporter"), true);
-	m_pfetcher->Pause();
+    wxString server;
+    TSzarpConfig* local_ipk = NULL;
+    while (local_ipk == NULL) {
+        server = szServerDlg::GetServer(m_server, _T("Kontroler"), true);
+        if (server == _T("Cancel")) return;
+        local_ipk = szServerDlg::GetIPK(server, m_http);
+    }
 
-	if (server.IsEmpty()) {
-		return;
-	}
+    this->ipk = local_ipk;
+    m_pfetcher->Pause();
+    m_pfetcher->ResetBase(m_server);
 
-	m_pfetcher->ResetBase(m_server);
-	ipk = szServerDlg::GetIPK(server,m_http);
-//	LoadIPK(server);
-        m_pfetcher = new szParamFetcher(server, this, m_http);
+    m_pfetcher = new szParamFetcher(server, this, m_http);
 
 	m_pfetcher->SetPeriod(m_period);
 	m_pfetcher->SetSource(m_probes,ipk);
@@ -616,8 +621,6 @@ void szKontroler::OnRapoptSer(wxCommandEvent &ev) {
 	params_listc->DeleteAllItems();
 	delete m_apd;
         m_apd = new szKontrolerAddParam(ipk, this, wxID_ANY, _("Kontroler->AddParam"));
-
-
 }
 
 void szKontroler::OnRapoptOpt(wxCommandEvent &ev) {
