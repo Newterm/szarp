@@ -16,65 +16,74 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
- * Demon Modbus TCP do komunikacji z systemem monitoringu spalin.
+ * Modbus TCP/IP driver
  * Pawe³ Pa³ucha <pawel@praterm.com.pl>
  * 
  * $Id$
  * 
- * Konfiguracja w params.xml (przyk³ad, atrybuty z przestrzeni nazw
- * 'modbus' s± wymagane, chyba ¿e napisano inaczej):
+ * Configuration example, all attributes from 'modbus' namespace not explicity
+ *  described as optional are required.
  * ...
  * <device 
  *      xmlns:modbus="http://www.praterm.com.pl/SZARP/ipk-extra"
  *      daemon="/opt/szarp/bin/mbtcpdmn" 
  *      path="/dev/ttyA11"
  *      modbus:tcp-mode="server"
- 		dopuszczalne tryby to 'server' i 'client'
+ 		allowe modes are 'server' and 'client'
  *      modbud:tcp-port="502"
+		TCP port we are listenning on/connecting to (server/client)
 		port TCP na którym mamy nas³uchiwaæ/do którego mamy siê ³±czyæ(zale¿nie od trybu)
  *      modbus:tcp-allowed="192.9.200.201 192.9.200.202"
- 		lista dozwolonych adresów IP, je¿eli atrybutu nie ma lub 
-		jest pusty, dozwolone s± wszystkie adresy (istotne tylko w trybie server'
- *      modbus:tcp-address="192.9.200.201 192.9.200.202"
- *      	adres do którego bêdziemy siê ³±czyæ (wymagane i istotne w trybie klient)
+		(optional) list of allowed clients IP addresses for server mode, if empty all
+		addresses are allowed
+ *      modbus:tcp-address="192.9.200.201"
+ 		server IP address (required in client mode)
  *      modbus:tcp-keepalive="yes"
- 		czy po³±czenie TCP powinno mieæ opcjê Keep-Alive; dopuszczalne
-		warto¶ci to "yes" i "no"
-	modbus:tcp-timeout="30"
-		czas nieaktywno¶ci, po jakim po³±czenie zostanie zamkniête, domy¶lna
-		warto¶æ pusta oznacza brak timeout'u
-	modbus:nodata-timeout="15"
-		czas w sekundach, po jakim ustawiamy 'NO_DATA' je¿eli dane nie 
-		przysz³y, opcjonalny - domy¶lnie 20 sekund
-	modbus:nodata-value="-1"
-		warto¶æ (typu float) jak± wysy³amy zamiast 'NO_DATA' dla
-		parametrów typu send, domy¶lnie wysy³amy 0
+ 		should we set TCP Keep-Alive options? "yes" or "no"
+ *	modbus:tcp-timeout="30"
+		(optional) connection timeout in seconds, after timeout expires, connection
+		is closed; default empty value means no timeout
+ *	modbus:nodata-timeout="15"
+		(optional) timeout (in seconds) to set data to 'NO_DATA' if data is not available,
+		default is 20 seconds
+ *	modbus:nodata-value="-1"
+ 		(optional) float value to send instead of 'NO_DATA', default is 0
+ *	modbus:FloatOrder="msblsb"
+ 		(optional) registers order for 4 bytes (2 registers) float order - "msblsb"
+		(default) or "lsbmsb"; values names are a little misleading, it shoud be 
+		msw/lsw (most/less significant word) not msb/lsb (most/less significant byte),
+		but it's left like this for compatibility with Modbus RTU driver configuration
+
  *      >
  *      <unit id="1">
  *              <param
+			Read value using ReadHoldingRegisters (0x03) Modbus function              
  *                      name="..."
  *                      ...
- *                      modbus:address="0x01"
- *                      	adresy rejestrów modbus, od 0
+ *                      modbus:address="0x03"
+ 	                      	modbus register number, starting from 0
  *                      modbus:val_type="integer">
- *                      	typ warto¶ci, integer zajmuje 2 bajty, float 4
+ 	                      	register value type, 'integer' (2 bytes, 1 register) or float (4 bytes,
+	                       	2 registers)
  *                      ...
  *              </param>
  *              <param
  *                      name="..."
  *                      ...
- *                      modbus:address="0x03"
+ *                      modbus:address="0x04"
  *                      modbus:val_type="float"
- 			modbus:val_op="LSW">
-				operator do konwersji danych do szarpa -
-				mo¿liwe to NONE (domyslny - kopiowanie) oraz
-				LSW i MSW - konwersja do 32bitowego integera
-				a potem pobranie mniej lub bardziej znaczacego
+ *			modbus:val_op="LSW">
+				(optional) operator for converting data from float to 2 bytes integer;
+				default is 'NONE' (simple conversion to short int), other values
+				are 'LSW' and 'MSW' - converting to 4 bytes long and getting less/more
+				significant word; in this case there should be 2 parameters with the
+				same register address and different val_op attributes - LSW and MSW.
 				s³owa
  *                      ...
  *              </param>
  *              ...
  *              <send 
+              		Sending value using WriteMultipleRegisters (0x10) Modbus function
  *                      param="..." 
  *                      type="min"
  *                      modbus:address="0x1f"
@@ -132,6 +141,9 @@
 #define MODBUS_DEFAULT_PORT 502
 
 #define MODBUS_ERROR_CODE 0x80
+
+#define FLOAT_ORDER_MSWLSW 0
+#define FLOAT_ORDER_LSWMSW 1
 
 /* uncomment it to turn on socket close on timeout */
 //#define SERVER_SOCKET_RESET
@@ -237,6 +249,9 @@ protected :
 	/** helper function for XML parsing 
 	 * @return 1 on error, 0 otherwise */
 	int XMLCheckNodataValue(xmlXPathContextPtr xp_ctx, int dev_num);
+	/** helper function for XML parsing 
+	 * @return 1 on error, 0 otherwise */
+	int XMLCheckFloatOrder(xmlXPathContextPtr xp_ctx, int dev_num);
 	/** helper function for XML parsing 
 	 * @return 1 on error, 0 otherwise */
 	int XMLLoadParams(xmlXPathContextPtr xp_ctx, int dev_num);
@@ -364,6 +379,7 @@ protected :
 	float m_nodata_value;	/**< value sended instead of NO_DATA */
 	int m_nodata_timeout;	/**< timeout for 'NO_DATA' */
 	int m_tcp_timeout;	/**< timeout for closing conection (0 - don't close) */
+	int m_float_order;	/**< 0 is MSW LSW, 1 is LSW MSW */
 	time_t m_last_tcp_event;
 				/**< time of last event on socket */
 	
@@ -432,6 +448,7 @@ ModbusTCP::ModbusTCP(int params, int sends)
 	m_tcp_timeout = 0;
 	m_last_tcp_event = time(NULL);
 	m_nodata_value = 0.0;
+	m_float_order = FLOAT_ORDER_MSWLSW;
 }
 
 ModbusTCP::~ModbusTCP() 
@@ -711,6 +728,37 @@ int ModbusTCP::XMLCheckNodataValue(xmlXPathContextPtr xp_ctx,
 	return 0;
 }
 
+int ModbusTCP::XMLCheckFloatOrder(xmlXPathContextPtr xp_ctx, int dev_num)
+{
+	char *e;
+	xmlChar *c;
+	
+	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@modbus:FloatOrder",
+			dev_num);
+	assert (e != NULL);
+	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
+	free(e);
+	if (c == NULL) {
+		m_float_order = FLOAT_ORDER_MSWLSW;
+		sz_log(5, "setting FloatOrder to MSWLSW as default value");
+		return 0;
+	}
+	if (!xmlStrcmp(c, BAD_CAST "msblsb")) {
+		m_float_order = FLOAT_ORDER_MSWLSW;
+		sz_log(5, "setting FloatOrder to MSWLSW");
+	} else if (!xmlStrcmp(c, BAD_CAST "lsbmsb")) {
+		m_float_order = FLOAT_ORDER_LSWMSW;
+		sz_log(5, "setting FloatOrder to LSWMSW");
+	} else {
+		sz_log(0, "FloatOrder=\"%s\" found, \"msblsb\" or \"lsbmsb\" exptected",
+				SC::U2A(c).c_str());
+		xmlFree(c);
+		return 1;
+	}
+	xmlFree(c);
+	return 0;
+}
+
 int ModbusTCP::XMLLoadParams(xmlXPathContextPtr xp_ctx, int dev_num)
 {
 	char *e;
@@ -861,6 +909,9 @@ int ModbusTCP::ParseConfig(DaemonConfig * cfg)
 		return 1;
 
 	if (XMLCheckNodataValue(xp_ctx, dev_num))
+		return 1;
+
+	if (XMLCheckFloatOrder(xp_ctx, dev_num))
 		return 1;
 
 	if (XMLLoadParams(xp_ctx, dev_num))
@@ -1813,8 +1864,15 @@ short int ModbusTCP::ReadRegister(int address, ModbusValType type,
 	}
 
 	int16_t d[2];
-	d[0] = ntohs(m_registers[address]);
-	d[1] = ntohs(m_registers[address + 1]);
+	
+	if (m_float_order == FLOAT_ORDER_MSWLSW) {
+		d[0] = ntohs(m_registers[address]);
+		d[1] = ntohs(m_registers[address + 1]);
+	} else {
+		d[0] = ntohs(m_registers[address + 1]);
+		d[1] = ntohs(m_registers[address]);
+	}
+	
 	memcpy(&f, d, sizeof(float));
 
 	if (op != ModbusTCP::NONE) {
@@ -1854,8 +1912,13 @@ void ModbusTCP::WriteRegister(int address, ModbusValType type,
 	sz_log(10, " as float (%g)\n", f);
 
 	memcpy(&m_registers[address], &f, sizeof(float));
-	m_registers[address] = htons(m_registers[address]);
-	m_registers[address + 1] = htons(m_registers[address + 1]);
+	if (m_float_order == FLOAT_ORDER_MSWLSW) {
+		m_registers[address] = htons(m_registers[address]);
+		m_registers[address + 1] = htons(m_registers[address + 1]);
+	} else {
+		m_registers[address] = htons(m_registers[address + 1]);
+		m_registers[address + 1] = htons(m_registers[address]);
+	}
 }
 
 int ModbusTCP::Stop()

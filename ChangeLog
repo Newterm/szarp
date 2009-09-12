@@ -1,8 +1,13 @@
 $Id$
 
+2009-09-11	Pawe³ Pa³ucha <asmyk@praterm.pl>
+	* parcook/mbtcpdmn.cc: added support for different float words order;
+	complete configuration description.
+	* parcook/mbrtudmn.cc: fixed LongOrder attribute parsing, fixed timer
+	initialization.
 2009-09-11	Adam Smyk <asmyk@praterm.pl>
-	* wx/kontroler3 - server chosing and alternative name description 
-	(in add param dialog) correction
+	* wx/kontroler3: server chosing and alternative name description (in 
+	add param dialog) correction
 2009-09-04	Pawe³ Pa³ucha <pawel@praterm.com.pl>
 	* libSzarp/conversion.cc: reverted "fix" for mingw, again.
 	* resources/SZARP_IN_CFG_TEMPLATE: allowed connections to paramd from

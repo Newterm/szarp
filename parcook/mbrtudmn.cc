@@ -519,9 +519,9 @@ int ModbusUnit::parseUnitConfig(xmlNodePtr unit_node, xmlNodePtr device_node)
 		    xmlGetLineNo(unit_node));
 		LongOrder = MSBLSB;
 	} else if (strcmp(str, "msblsb") == 0)
-		FloatOrder = MSBLSB;
+		LongOrder = MSBLSB;
 	else if (strcmp(str, "lsbmsb") == 0)
-		FloatOrder = LSBMSB;
+		LongOrder = LSBMSB;
 	else {
 		sz_log(0,
 		    "invalid modbus:LongOrder attribute (must be 'msblsb' or 'lsbmsb'), line %ld",
@@ -1872,8 +1872,8 @@ void ModbusLine::Go() {
 		return;
 	}
 
-	time_t start = time(NULL);
 	do {
+		time_t start = time(NULL);
 		if (m_fd == -1) 
 			m_fd = InitComm(SC::S2A(m_cfg->GetDevice()->GetPath()).c_str(),
 				     m_cfg->GetDevice()->GetSpeed(), 8, m_stop_bits, m_parity);
@@ -1894,7 +1894,7 @@ finish_cycle:
 		time_t now = time(NULL);
 		int s = 10 - (now - start);
 		if (s < 1) 
-			sz_log(3, "Cycle lasts longer than 10sec (%d)!!!", (now - start));
+			sz_log(3, "Cycle lasts longer than 10sec (%ld)!!!", (now - start));
 
 		if (s > 0)
 			while ((s = sleep(s)) > 0);
