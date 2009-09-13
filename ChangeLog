@@ -1,6 +1,12 @@
 $Id$
 
-2009-09-11	Pawe³ Pa³ucha <asmyk@praterm.pl>
+2009-09-12	Darek Marcinkiewicz <reksio@praterm.pl>
+	* configure.in, parcook: dlmsdmn compiled only when lber libarary
+	is present
+	* wx/draw3: implementation of graphs view based na antialiased
+	2D API 99% completed, started to isolate code that is common
+	for all graphs view into set of utility functions
+2009-09-11	Pawe³ Pa³ucha <pawel@praterm.com.pl>
 	* parcook/mbtcpdmn.cc: added support for different float words order;
 	complete configuration description.
 	* parcook/mbrtudmn.cc: fixed LongOrder attribute parsing, fixed timer

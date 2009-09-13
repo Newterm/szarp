@@ -22,8 +22,6 @@
 #include "config.h"
 #endif
 
-#if defined(HAVE_BOOST) && defined(HAVE_LIBLBER)
-
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -3046,13 +3044,3 @@ void dolog(int level, const char * fmt, ...) {
 
 } 
 
-#else
-
-#include <iostream>
-
-int main(int argc, char *argvp[]) {
-	std::cerr << "SZARP need to be compiled with boost and lber library for this porogram to work" << std::endl;
-	return 1;
-}
-
-#endif

@@ -980,6 +980,11 @@ if test "x$no_xmlrpc_epi" != "xyes" -a "x$no_curl" != "xyes"; then
 fi
 AC_SUBST(DDEDMN)
 
+if test "x$no_lber" != "xyes"; then
+	DLMSDMN=dlmsdmn;	
+fi
+AC_SUBST(DLMSDMN)
+
 #PSET needs ldap and ssl
 if test "x$no_ldap" != "xyes" -a "x$no_ssl" != "xyes"; then
 	PSETD=psetd;

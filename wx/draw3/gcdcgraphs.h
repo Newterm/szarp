@@ -50,15 +50,17 @@
 
 class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver, public DrawObserver {
 
+	bool m_draw_param_name;
+
 	DrawPtrArray m_draws;
 
 	ConfigManager *m_cfg_mgr;
 
-	bool m_draw_param_name;
-
 	bool m_refresh;
 
 	bool m_recalulate_margins;
+
+	wxBitmap m_remark_flag_bitmap;
 
 	struct {
 		double leftmargin;
@@ -68,9 +70,15 @@ class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver
 		double infotopmargin;
 	} m_screen_margins;
 
-	void DrawWindowInfo(wxGraphicsContext &dc, const wxRegion& region);
+	void DrawWindowInfo(wxGraphicsContext &dc);
 
 	void DrawBackground(wxGraphicsContext &dc);
+
+	void DrawSeasonsLimitsInfo(wxGraphicsContext &dc);
+
+	void DrawSeasonLimitInfo(wxGraphicsContext &dc, int i, int month, int day, bool summer);
+
+	void DrawRemarksBitmaps(wxGraphicsContext &dc);
 
 	void DrawYAxisVals(Draw *draw);
 
@@ -80,11 +88,17 @@ class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver
 
 	void DrawXAxis(wxGraphicsContext &dc);
 
+	void DrawUnit(wxGraphicsContext &dc);
+
 	void DrawXAxisVals(wxGraphicsContext &dc);
 
 	void RecalculateMargins(wxGraphicsContext &dc);
 
 	void DrawGraphs(wxGraphicsContext &dc);
+
+	int GetIndex(int x, size_t size) ;
+
+	void GetDistance(size_t draw_index, int x, int y, double &d, wxDateTime &time) ;
 
 	static const wxColour back1_col;
 
@@ -97,6 +111,8 @@ class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver
 	void DrawGraph(wxGraphicsContext &dc, Draw* d);
 
 	void DrawCursor(wxGraphicsContext &dc, Draw* d);
+
+	int GetRemarkClickedIndex(int x, int y);
 
 public:
         GCDCGraphs(wxWindow* parent, ConfigManager *cfg);
@@ -116,6 +132,8 @@ public:
 	virtual void Refresh();
 
 	virtual void FullRefresh();
+
+	virtual void NewRemarks(Draw *draw);
 	
 	virtual void SetFocus();
 

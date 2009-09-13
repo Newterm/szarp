@@ -868,17 +868,21 @@ void DrawFrame::OnGraphsView(wxCommandEvent &e) {
 	wxArrayString choices;
 	choices.push_back(_("Classic"));
 	choices.push_back(_("'3D'"));
+	choices.push_back(_("Antialiased"));
 
 	int ret = wxGetSingleChoiceIndex(_("Choose graphs window style"), style, choices, this);
 	if (ret == -1)
 		return;
 
-	if (ret == 0)
-		style = _T("Classic");
-	else
+	if (ret == 2)
+		style = _T("GCDC");
+	else if (ret == 1)
 		style = _T("3D");
+	else
+		style = _T("Classic");
 
 	wxConfig::Get()->Write(_T("GRAPHS_VIEW"), style);
+	wxConfig::Get()->Flush();
 
 }
 

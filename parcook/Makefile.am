@@ -56,7 +56,7 @@ bin_PROGRAMS = \
               wagadmn \
 	      mbusdmn \
 	      wlkdmn \
-	      dlmsdmn \
+	      @DLMSDMN@ \
 	      @UNITEDMN@ \
 	      sbusdmn \
 	      @PSETD@ \
@@ -74,7 +74,7 @@ bin_PROGRAMS = \
 	      sre2dmn \
               zmddmn 
 
-EXTRA_PROGRAMS = psetd ddedmn unitedmn
+EXTRA_PROGRAMS = psetd ddedmn unitedmn dlmsdmn
 
 dpafdmn_SOURCES = dpafdmn.cc
 dpafdmn_LDADD = $(LIBSZARP)
@@ -198,7 +198,7 @@ wlkdmn_SOURCES = wlkdmn.cc
 wlkdmn_LDADD = $(LIBSZARP2) $(LIBSZARP) $(LDADD) $(BOOST_LDFLAGS) $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_REGEX_LIB) $(BOOST_PROGRAM_OPTIONS_LIB)
 
 dlmsdmn_SOURCES = dlmsdmn.cc
-dlmsdmn_LDADD = $(LIBSZARP2) $(LIBSZARP) $(LDADD) $(BOOST_LDFLAGS)
+dlmsdmn_LDADD = $(LIBSZARP2) $(LIBSZARP) $(LDADD) $(BOOST_LDFLAGS) $(LBER_LIBS)
 
 melsdmn_SOURCES = melsdmn.cc mels-prop-plugin.h
 melsdmn_LDADD = $(LIBSZARP2) $(LIBSZARP) $(LDADD) $(BOOST_LDFLAGS)

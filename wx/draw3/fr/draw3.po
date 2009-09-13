@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-18 12:07+0200\n"
+"POT-Creation-Date: 2009-09-13 11:59+0200\n"
 "PO-Revision-Date: 2008-06-11 17:54+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -15,23 +15,23 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../../../wx/draw3/cfgmgr.cpp:551
+#: ../../../wx/draw3/cfgmgr.cpp:552
 msgid "Loading configuration: "
 msgstr "Télécharger la configuration"
 
-#: ../../../wx/draw3/cfgmgr.cpp:937
+#: ../../../wx/draw3/cfgmgr.cpp:953
 #, c-format
 msgid "Failed to create directory %s. Defined draws cannot be saved"
 msgstr ""
 "Echec de la création du répertoire %s. Les draws n'ont pas été sauvegardés"
 
-#: ../../../wx/draw3/cfgmgr.cpp:938 ../../../wx/draw3/drawfrm.cpp:649
+#: ../../../wx/draw3/cfgmgr.cpp:954 ../../../wx/draw3/drawfrm.cpp:649
 #: ../../../wx/draw3/drawpsc.cpp:419 ../../../wx/draw3/drawpsc.cpp:430
 #: ../../../wx/draw3/drawpsc.cpp:438 ../../../wx/draw3/drawpsc.cpp:447
 #: ../../../wx/draw3/drawswdg.cpp:1205 ../../../wx/draw3/frmmgr.cpp:250
 #: ../../../wx/draw3/paramslist.cpp:273 ../../../wx/draw3/paramslist.cpp:313
 #: ../../../wx/draw3/paramslist.cpp:330 ../../../wx/draw3/paredit.cpp:120
-#: ../../../wx/draw3/remarks.cpp:778 ../../../wx/draw3/remarks.cpp:1027
+#: ../../../wx/draw3/remarks.cpp:788 ../../../wx/draw3/remarks.cpp:1037
 #: ../../../wx/draw3/seldraw.cpp:418
 msgid "Error"
 msgstr "Echec"
@@ -111,62 +111,62 @@ msgid "Ok!"
 msgstr "Ok!"
 
 #: ../../../wx/draw3/disptime.cpp:74 ../../../wx/draw3/drawview.cpp:228
-#: ../../../wx/draw3/glgraphs.cpp:1436
+#: ../../../wx/draw3/gcdcgraphs.cpp:678 ../../../wx/draw3/glgraphs.cpp:1436
 msgid "january"
 msgstr "Janvier"
 
 #: ../../../wx/draw3/disptime.cpp:75 ../../../wx/draw3/drawview.cpp:231
-#: ../../../wx/draw3/glgraphs.cpp:1439
+#: ../../../wx/draw3/gcdcgraphs.cpp:681 ../../../wx/draw3/glgraphs.cpp:1439
 msgid "february"
 msgstr "Février"
 
 #: ../../../wx/draw3/disptime.cpp:76 ../../../wx/draw3/drawview.cpp:234
-#: ../../../wx/draw3/glgraphs.cpp:1442
+#: ../../../wx/draw3/gcdcgraphs.cpp:684 ../../../wx/draw3/glgraphs.cpp:1442
 msgid "march"
 msgstr "Mars"
 
 #: ../../../wx/draw3/disptime.cpp:77 ../../../wx/draw3/drawview.cpp:237
-#: ../../../wx/draw3/glgraphs.cpp:1445
+#: ../../../wx/draw3/gcdcgraphs.cpp:687 ../../../wx/draw3/glgraphs.cpp:1445
 msgid "april"
 msgstr "Avril"
 
 #: ../../../wx/draw3/disptime.cpp:78 ../../../wx/draw3/drawview.cpp:240
-#: ../../../wx/draw3/glgraphs.cpp:1448
+#: ../../../wx/draw3/gcdcgraphs.cpp:690 ../../../wx/draw3/glgraphs.cpp:1448
 msgid "may"
 msgstr "Mai"
 
 #: ../../../wx/draw3/disptime.cpp:79 ../../../wx/draw3/drawview.cpp:243
-#: ../../../wx/draw3/glgraphs.cpp:1451
+#: ../../../wx/draw3/gcdcgraphs.cpp:693 ../../../wx/draw3/glgraphs.cpp:1451
 msgid "june"
 msgstr "Juin"
 
 #: ../../../wx/draw3/disptime.cpp:80 ../../../wx/draw3/drawview.cpp:246
-#: ../../../wx/draw3/glgraphs.cpp:1454
+#: ../../../wx/draw3/gcdcgraphs.cpp:696 ../../../wx/draw3/glgraphs.cpp:1454
 msgid "july"
 msgstr "Juillet"
 
 #: ../../../wx/draw3/disptime.cpp:81 ../../../wx/draw3/drawview.cpp:249
-#: ../../../wx/draw3/glgraphs.cpp:1457
+#: ../../../wx/draw3/gcdcgraphs.cpp:699 ../../../wx/draw3/glgraphs.cpp:1457
 msgid "august"
 msgstr "Août"
 
 #: ../../../wx/draw3/disptime.cpp:82 ../../../wx/draw3/drawview.cpp:252
-#: ../../../wx/draw3/glgraphs.cpp:1460
+#: ../../../wx/draw3/gcdcgraphs.cpp:702 ../../../wx/draw3/glgraphs.cpp:1460
 msgid "septermber"
 msgstr "Septembre"
 
 #: ../../../wx/draw3/disptime.cpp:83 ../../../wx/draw3/drawview.cpp:255
-#: ../../../wx/draw3/glgraphs.cpp:1463
+#: ../../../wx/draw3/gcdcgraphs.cpp:705 ../../../wx/draw3/glgraphs.cpp:1463
 msgid "october"
 msgstr "Octobre"
 
 #: ../../../wx/draw3/disptime.cpp:84 ../../../wx/draw3/drawview.cpp:258
-#: ../../../wx/draw3/glgraphs.cpp:1466
+#: ../../../wx/draw3/gcdcgraphs.cpp:708 ../../../wx/draw3/glgraphs.cpp:1466
 msgid "november"
 msgstr "Novembre"
 
 #: ../../../wx/draw3/disptime.cpp:85 ../../../wx/draw3/drawview.cpp:261
-#: ../../../wx/draw3/glgraphs.cpp:1469
+#: ../../../wx/draw3/gcdcgraphs.cpp:711 ../../../wx/draw3/glgraphs.cpp:1469
 msgid "december"
 msgstr "Décembre"
 
@@ -178,35 +178,35 @@ msgstr " %Y%n heure %H : %M"
 msgid "%A, %d %B %Y%n time %H:%M"
 msgstr "%A, %d %B %Y%n temps %H : %M"
 
-#: ../../../wx/draw3/drawapp.cpp:218
+#: ../../../wx/draw3/drawapp.cpp:231
 msgid "Setting locale..."
 msgstr "Réglage local..."
 
-#: ../../../wx/draw3/drawapp.cpp:223
+#: ../../../wx/draw3/drawapp.cpp:236
 msgid "Reading params from szarp.cfg..."
 msgstr "Lecture des paramètres à partir de szarp.cfg..."
 
-#: ../../../wx/draw3/drawapp.cpp:225
+#: ../../../wx/draw3/drawapp.cpp:238
 msgid "Initializing IPKContainer..."
 msgstr "Initialiser container IPK..."
 
-#: ../../../wx/draw3/drawapp.cpp:234
+#: ../../../wx/draw3/drawapp.cpp:247
 msgid "Initializing szbase..."
 msgstr "Initialiser szbase..."
 
-#: ../../../wx/draw3/drawapp.cpp:236
+#: ../../../wx/draw3/drawapp.cpp:249
 msgid "Initializing XML Resources..."
 msgstr "Initialiser les ressources XML..."
 
-#: ../../../wx/draw3/drawapp.cpp:241
+#: ../../../wx/draw3/drawapp.cpp:254
 msgid "Starting database query mechanism..."
 msgstr "Ouverture du mécanisme de recherche dans la base..."
 
-#: ../../../wx/draw3/drawapp.cpp:264
+#: ../../../wx/draw3/drawapp.cpp:277
 msgid "Loading configuration..."
 msgstr "Charger la configuration... "
 
-#: ../../../wx/draw3/drawapp.cpp:279
+#: ../../../wx/draw3/drawapp.cpp:292
 msgid ""
 "Error occurred while loading default configuration. Check your szarp.cfg "
 "file."
@@ -214,40 +214,40 @@ msgstr ""
 "Erreur lors du chargement de la configuration par défaut. Vérifier le "
 "fichier szarp.cfg."
 
-#: ../../../wx/draw3/drawapp.cpp:285
+#: ../../../wx/draw3/drawapp.cpp:298
 msgid "Missing starting base specification."
 msgstr "Absence de spécification de base du démarrage."
 
-#: ../../../wx/draw3/drawapp.cpp:305
+#: ../../../wx/draw3/drawapp.cpp:318
 #, fuzzy
 msgid "Initizalizing remarks..."
 msgstr "Initialiser szbase..."
 
-#: ../../../wx/draw3/drawapp.cpp:310
+#: ../../../wx/draw3/drawapp.cpp:323
 msgid "Creating Frame Manager..."
 msgstr "Création du manager du cadrage..."
 
-#: ../../../wx/draw3/drawapp.cpp:342
+#: ../../../wx/draw3/drawapp.cpp:355
 msgid "Szarp Draw version 3.00."
 msgstr "Szarp Draw version 3.00."
 
-#: ../../../wx/draw3/drawapp.cpp:345
+#: ../../../wx/draw3/drawapp.cpp:358
 msgid "X windows geometry specification"
 msgstr "Spécification de la géométrie comme pour X windows"
 
-#: ../../../wx/draw3/drawapp.cpp:348
+#: ../../../wx/draw3/drawapp.cpp:361
 msgid "base name"
 msgstr "Nom de la base"
 
-#: ../../../wx/draw3/drawapp.cpp:353
+#: ../../../wx/draw3/drawapp.cpp:366
 msgid "verbose logging"
 msgstr "Loggin simple"
 
-#: ../../../wx/draw3/drawapp.cpp:357
+#: ../../../wx/draw3/drawapp.cpp:370
 msgid "libparnt value initialization"
 msgstr ""
 
-#: ../../../wx/draw3/drawapp.cpp:361
+#: ../../../wx/draw3/drawapp.cpp:374
 msgid "debug level"
 msgstr "Niveau du debug"
 
@@ -341,37 +341,37 @@ msgid ""
 msgstr ""
 
 #: ../../../wx/draw3/drawfrm.cpp:803 ../../../wx/draw3/drawfrm.cpp:815
-#: ../../../wx/draw3/drawfrm.cpp:1008 ../../../wx/draw3/drawfrm.cpp:1087
+#: ../../../wx/draw3/drawfrm.cpp:1011 ../../../wx/draw3/drawfrm.cpp:1090
 msgid "English"
 msgstr "Anglais"
 
 #: ../../../wx/draw3/drawfrm.cpp:804 ../../../wx/draw3/drawfrm.cpp:825
-#: ../../../wx/draw3/drawfrm.cpp:1014 ../../../wx/draw3/drawfrm.cpp:1107
+#: ../../../wx/draw3/drawfrm.cpp:1017 ../../../wx/draw3/drawfrm.cpp:1110
 msgid "French"
 msgstr "Français"
 
 #: ../../../wx/draw3/drawfrm.cpp:805 ../../../wx/draw3/drawfrm.cpp:817
-#: ../../../wx/draw3/drawfrm.cpp:1020 ../../../wx/draw3/drawfrm.cpp:1091
+#: ../../../wx/draw3/drawfrm.cpp:1023 ../../../wx/draw3/drawfrm.cpp:1094
 msgid "German"
 msgstr ""
 
 #: ../../../wx/draw3/drawfrm.cpp:806 ../../../wx/draw3/drawfrm.cpp:821
-#: ../../../wx/draw3/drawfrm.cpp:1026 ../../../wx/draw3/drawfrm.cpp:1095
+#: ../../../wx/draw3/drawfrm.cpp:1029 ../../../wx/draw3/drawfrm.cpp:1098
 msgid "Hungarian"
 msgstr ""
 
 #: ../../../wx/draw3/drawfrm.cpp:807 ../../../wx/draw3/drawfrm.cpp:823
-#: ../../../wx/draw3/drawfrm.cpp:1032 ../../../wx/draw3/drawfrm.cpp:1099
+#: ../../../wx/draw3/drawfrm.cpp:1035 ../../../wx/draw3/drawfrm.cpp:1102
 msgid "Italian"
 msgstr ""
 
 #: ../../../wx/draw3/drawfrm.cpp:808 ../../../wx/draw3/drawfrm.cpp:813
-#: ../../../wx/draw3/drawfrm.cpp:1038 ../../../wx/draw3/drawfrm.cpp:1083
+#: ../../../wx/draw3/drawfrm.cpp:1041 ../../../wx/draw3/drawfrm.cpp:1086
 msgid "Polish"
 msgstr "Polonais"
 
 #: ../../../wx/draw3/drawfrm.cpp:809 ../../../wx/draw3/drawfrm.cpp:819
-#: ../../../wx/draw3/drawfrm.cpp:1002 ../../../wx/draw3/drawfrm.cpp:1103
+#: ../../../wx/draw3/drawfrm.cpp:1005 ../../../wx/draw3/drawfrm.cpp:1106
 msgid "Serbian"
 msgstr ""
 
@@ -399,49 +399,53 @@ msgstr ""
 msgid "'3D'"
 msgstr ""
 
-#: ../../../wx/draw3/drawfrm.cpp:872
+#: ../../../wx/draw3/drawfrm.cpp:871
+msgid "Antialiased"
+msgstr ""
+
+#: ../../../wx/draw3/drawfrm.cpp:873
 #, fuzzy
 msgid "Choose graphs window style"
 msgstr "Choisir les paramètres des graphiques"
 
-#: ../../../wx/draw3/drawfrm.cpp:887 ../../../wx/draw3/drawfrm.cpp:911
+#: ../../../wx/draw3/drawfrm.cpp:890 ../../../wx/draw3/drawfrm.cpp:914
 msgid ""
 "Remarks sending not configured, You should set username, password, and "
 "remarks server adddress"
 msgstr ""
 
-#: ../../../wx/draw3/drawfrm.cpp:887 ../../../wx/draw3/drawfrm.cpp:911
+#: ../../../wx/draw3/drawfrm.cpp:890 ../../../wx/draw3/drawfrm.cpp:914
 msgid "Remarks not configured."
 msgstr ""
 
-#: ../../../wx/draw3/drawfrm.cpp:963
+#: ../../../wx/draw3/drawfrm.cpp:966
 #, fuzzy
 msgid "Enter password:"
 msgstr "Mot de passe"
 
-#: ../../../wx/draw3/drawfrm.cpp:964
+#: ../../../wx/draw3/drawfrm.cpp:967
 #, fuzzy
 msgid "New password"
 msgstr "Mot de passe"
 
-#: ../../../wx/draw3/drawfrm.cpp:1079
+#: ../../../wx/draw3/drawfrm.cpp:1082
 #, fuzzy
 msgid "Do you really want to swich current language to: "
 msgstr "Souhaitez-vous vraiment supprimer cette courbe?"
 
-#: ../../../wx/draw3/drawfrm.cpp:1113 ../../../wx/draw3/frmmgr.cpp:128
+#: ../../../wx/draw3/drawfrm.cpp:1116 ../../../wx/draw3/frmmgr.cpp:128
 #: ../../../wx/draw3/frmmgr.cpp:219
 msgid "Question"
 msgstr "Question"
 
-#: ../../../wx/draw3/drawfrm.cpp:1117
+#: ../../../wx/draw3/drawfrm.cpp:1120
 #, c-format
 msgid ""
 "Language changed to: %s. You need restart draw3 for this change to take "
 "effect."
 msgstr ""
 
-#: ../../../wx/draw3/drawfrm.cpp:1117
+#: ../../../wx/draw3/drawfrm.cpp:1120
 msgid "Language changed."
 msgstr "Langue modifiée."
 
@@ -574,7 +578,7 @@ msgid "No title"
 msgstr "Pas de titre"
 
 #: ../../../wx/draw3/drawpick.cpp:754 ../../../wx/draw3/drawpick.cpp:801
-#: ../../../wx/draw3/drawpnl.cpp:600 ../../../wx/draw3/drawpnl.cpp:642
+#: ../../../wx/draw3/drawpnl.cpp:602 ../../../wx/draw3/drawpnl.cpp:644
 #: ../../../wx/draw3/drawtb.cpp:61 ../../../wx/draw3/paredit.cpp:414
 msgid "Find"
 msgstr "Recherche"
@@ -729,7 +733,7 @@ msgstr "Rafraîchir"
 msgid "Language"
 msgstr "Langue"
 
-#: ../../../wx/draw3/drawtb.cpp:86 ../../../wx/draw3/remarks.cpp:972
+#: ../../../wx/draw3/drawtb.cpp:86 ../../../wx/draw3/remarks.cpp:982
 #: ../../../wx/draw3/XRC_gettext_file.h:32
 #: ../../../wx/draw3/XRC_gettext_file.h:70
 #: ../../../wx/draw3/XRC_gettext_file.h:88
@@ -742,39 +746,48 @@ msgstr "Remarques"
 msgid "Quit"
 msgstr "Quitter"
 
-#: ../../../wx/draw3/drawview.cpp:220 ../../../wx/draw3/glgraphs.cpp:1428
+#: ../../../wx/draw3/drawview.cpp:220 ../../../wx/draw3/gcdcgraphs.cpp:670
+#: ../../../wx/draw3/glgraphs.cpp:1428
 msgid "summer season"
 msgstr "Saison estivale"
 
-#: ../../../wx/draw3/drawview.cpp:222 ../../../wx/draw3/glgraphs.cpp:1430
+#: ../../../wx/draw3/drawview.cpp:222 ../../../wx/draw3/gcdcgraphs.cpp:672
+#: ../../../wx/draw3/glgraphs.cpp:1430
 msgid "winter season"
 msgstr "Saison hivernale"
 
-#: ../../../wx/draw3/drawview.cpp:580 ../../../wx/draw3/glgraphs.cpp:1389
+#: ../../../wx/draw3/drawview.cpp:580 ../../../wx/draw3/gcdcgraphs.cpp:323
+#: ../../../wx/draw3/glgraphs.cpp:1389
 msgid "Su"
 msgstr "Dimanche"
 
-#: ../../../wx/draw3/drawview.cpp:581 ../../../wx/draw3/glgraphs.cpp:1390
+#: ../../../wx/draw3/drawview.cpp:581 ../../../wx/draw3/gcdcgraphs.cpp:324
+#: ../../../wx/draw3/glgraphs.cpp:1390
 msgid "Mo"
 msgstr "Lundi"
 
-#: ../../../wx/draw3/drawview.cpp:582 ../../../wx/draw3/glgraphs.cpp:1391
+#: ../../../wx/draw3/drawview.cpp:582 ../../../wx/draw3/gcdcgraphs.cpp:325
+#: ../../../wx/draw3/glgraphs.cpp:1391
 msgid "Tu"
 msgstr "Mardi"
 
-#: ../../../wx/draw3/drawview.cpp:583 ../../../wx/draw3/glgraphs.cpp:1392
+#: ../../../wx/draw3/drawview.cpp:583 ../../../wx/draw3/gcdcgraphs.cpp:326
+#: ../../../wx/draw3/glgraphs.cpp:1392
 msgid "We"
 msgstr "Mercredi"
 
-#: ../../../wx/draw3/drawview.cpp:584 ../../../wx/draw3/glgraphs.cpp:1393
+#: ../../../wx/draw3/drawview.cpp:584 ../../../wx/draw3/gcdcgraphs.cpp:327
+#: ../../../wx/draw3/glgraphs.cpp:1393
 msgid "Th"
 msgstr "Jeudi"
 
-#: ../../../wx/draw3/drawview.cpp:585 ../../../wx/draw3/glgraphs.cpp:1394
+#: ../../../wx/draw3/drawview.cpp:585 ../../../wx/draw3/gcdcgraphs.cpp:328
+#: ../../../wx/draw3/glgraphs.cpp:1394
 msgid "Fr"
 msgstr "Vendredi"
 
-#: ../../../wx/draw3/drawview.cpp:586 ../../../wx/draw3/glgraphs.cpp:1395
+#: ../../../wx/draw3/drawview.cpp:586 ../../../wx/draw3/gcdcgraphs.cpp:329
+#: ../../../wx/draw3/glgraphs.cpp:1395
 msgid "Sa"
 msgstr "Samedi"
 
@@ -917,79 +930,79 @@ msgstr "Valeur ratio"
 msgid "There are no values ratio defined for these graphs"
 msgstr "Aucune valeur ratio définie pour ces graphiques"
 
-#: ../../../wx/draw3/remarks.cpp:778
+#: ../../../wx/draw3/remarks.cpp:788
 #, fuzzy, c-format
 msgid "Failed to fetch remarks, failed to resolve address: %s"
 msgstr "Impossibilité de connection avec le serveur"
 
-#: ../../../wx/draw3/remarks.cpp:967
+#: ../../../wx/draw3/remarks.cpp:977
 msgid "New remarks received"
 msgstr ""
 
-#: ../../../wx/draw3/remarks.cpp:967
+#: ../../../wx/draw3/remarks.cpp:977
 #, fuzzy
 msgid "New remarks"
 msgstr "Remarques"
 
-#: ../../../wx/draw3/remarks.cpp:972
+#: ../../../wx/draw3/remarks.cpp:982
 #, fuzzy
 msgid "No new remarks"
 msgstr "Remarques"
 
-#: ../../../wx/draw3/remarks.cpp:993
+#: ../../../wx/draw3/remarks.cpp:1003
 #, fuzzy
 msgid "Server connection failure"
 msgstr "Message d'erreur du régulateur"
 
-#: ../../../wx/draw3/remarks.cpp:996
+#: ../../../wx/draw3/remarks.cpp:1006
 #, fuzzy
 msgid "Server communication error"
 msgstr "Message d'erreur du régulateur"
 
-#: ../../../wx/draw3/remarks.cpp:999
+#: ../../../wx/draw3/remarks.cpp:1009
 msgid "User is not allowed to send remarks for this base"
 msgstr ""
 
-#: ../../../wx/draw3/remarks.cpp:1002
+#: ../../../wx/draw3/remarks.cpp:1012
 msgid "Invalid response from server"
 msgstr ""
 
-#: ../../../wx/draw3/remarks.cpp:1005
+#: ../../../wx/draw3/remarks.cpp:1015
 #, fuzzy
 msgid "Incorrect username and password"
 msgstr "Entrez votre compte et mot de passe"
 
-#: ../../../wx/draw3/remarks.cpp:1027 ../../../wx/draw3/remarks.cpp:1029
+#: ../../../wx/draw3/remarks.cpp:1037 ../../../wx/draw3/remarks.cpp:1039
 #, fuzzy, c-format
 msgid "Failed to fetch remarks: %s"
 msgstr "Impossibilité de connection avec le serveur"
 
-#: ../../../wx/draw3/remarks.cpp:1865
+#: ../../../wx/draw3/remarks.cpp:1875
 #, fuzzy
 msgid "Remark sent successfully."
 msgstr "Succès de l'importation de draws."
 
-#: ../../../wx/draw3/remarks.cpp:1865
+#: ../../../wx/draw3/remarks.cpp:1875
 #, fuzzy
 msgid "Remark sent."
 msgstr "Remarques"
 
-#: ../../../wx/draw3/remarks.cpp:1868
+#: ../../../wx/draw3/remarks.cpp:1878
 #, c-format
 msgid "There was an error sending remark:'%s'."
 msgstr ""
 
-#: ../../../wx/draw3/remarks.cpp:1868
+#: ../../../wx/draw3/remarks.cpp:1878
 #, fuzzy
 msgid "Error."
 msgstr "Echec"
 
-#: ../../../wx/draw3/remarks.cpp:1893
+#: ../../../wx/draw3/remarks.cpp:1903
 #, fuzzy
 msgid "Date"
 msgstr "Supprimer"
 
-#: ../../../wx/draw3/remarks.cpp:1894 ../../../wx/draw3/XRC_gettext_file.h:170
+#: ../../../wx/draw3/remarks.cpp:1904 ../../../wx/draw3/XRC_gettext_file.h:170
 msgid "Title"
 msgstr "Titre"
 
