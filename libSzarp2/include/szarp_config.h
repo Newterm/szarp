@@ -1770,7 +1770,7 @@ public:
 		WR2_5,
 		WR5,
 		WR10,
-		WR25,
+		WR25
 	};
 
 	TBoiler(int _boiler_no = -1,
