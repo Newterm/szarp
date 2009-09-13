@@ -969,10 +969,11 @@ void DrawPanel::ConfigurationIsAboutToReload(wxString prefix) {
 }
 
 void DrawPanel::ConfigurationWasReloaded(wxString prefix) {
-	ssw->SetConfig();
 
 	if (csn.IsEmpty())
 		return;
+
+	ssw->SetConfig();
 
 	bool found = false;
 	for (unsigned i = 0; i < ssw->GetCount(); ++i) {

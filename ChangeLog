@@ -1,6 +1,8 @@
 $Id$
 
 2009-09-12	Darek Marcinkiewicz <reksio@praterm.pl>
+	* wx/draw3: fix for failed assertion after conversion
+	reload
 	* configure.in, parcook: dlmsdmn compiled only when lber libarary
 	is present
 	* wx/draw3: implementation of graphs view based na antialiased
