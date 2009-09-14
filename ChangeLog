@@ -1,6 +1,9 @@
 $Id$
 
-2009-09-12	Darek Marcinkiewicz <reksio@praterm.pl>
+2009-09-14	Darek Marcinkiewicz <reksio@praterm.pl>
+	* libSzarp2/Makefile.am: libSzarp2 does not use
+	ICU, linking with this library removed
+2009-09-13	Darek Marcinkiewicz <reksio@praterm.pl>
 	* libSzarp2/include/szarp_config.h: new g++ does not like
 	commas at the end of enumerator list, hmm I have a strange
 	feeling that I have already fixed that
