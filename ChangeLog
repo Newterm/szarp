@@ -1,5 +1,7 @@
 $Id$
 
+2009-09-15	Adam Smyk <asmyk@praterm.pl>
+	* resources/documentation/new/kontroler - documentation update
 2009-09-14	Darek Marcinkiewicz <reksio@praterm.pl>
 	* libSzarp2/Makefile.am: libSzarp2 does not use
 	ICU, linking with this library removed

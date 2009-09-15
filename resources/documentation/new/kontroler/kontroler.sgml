@@ -22,18 +22,19 @@
 <author>
 	<firstname>Micha³</firstname><surname>Rój</surname>
 </author>
+<author>
+	<firstname>Adam</firstname><surname>Smyk</surname>
+</author>
+
 </authorgroup>
 
 <abstract>
 <para>
-Kontroler s³u¿y do sprawdzania przekroczeñ zakresów zadanych parametrów 
+Program Kontroler s³u¿y do sprawdzania przekroczeñ zakresów zadanych parametrów 
 monitorowanego systemu. 
-U¿ytkownik okre¶la nazwê, warto¶æ minimaln± i maksymaln±, rodzaj, 
-stopieñ wa¿no¶ci i podgrupê dla ka¿dego sprawdzanego parametru. 
+U¿ytkownik okre¶la nazwê paramteru, jego warto¶æ minimaln± i maksymaln±, rodzaj alarmu (stopieñ wa¿no¶ci) oraz (opcjonalnie) alternatywn± nazwê danego parametru. 
 Je¿eli podczas pracy systemu zdarzy siê, ¿e dany parametr przybierze 
-warto¶æ mniejsz± od minimalnej lub wiêksz± od maksymalnej, program 
-wy¶wietli stosowne ostrze¿enie na ekranie i zapisze informacjê o 
-przekroczeniu warto¶ci do pliku.
+warto¶æ spoza zdefiniowanego zakresu, program wy¶wietli stosowne ostrze¿enie na ekranie i zapisze informacjê o przekroczeniu warto¶ci do pliku.
 
 </para>
 <para>
@@ -50,37 +51,38 @@ $Id: kontroler.sgml 6724 2009-05-18 08:37:03Z reksio $
 
 Program Kontroler jest zwykle uruchamiany z poziomu menad¿era okien (KDE, Gnome) lub za pomoc±
 <ulink url="../../../scc/html/scc.html">programu SCC</ulink>. Mo¿na go równie¿ 
-uruchomiæ przez podanie nastêpuj±cej komendy z poziomu xterminala: 
+uruchomiæ przez podanie nastêpuj±cej komendy z poziomu xterminala (w systemie Linux): 
 <programlisting>
-kon&amp; 
+kontroler3 &amp; 
 </programlisting>
-i potwierdzeniu jej ENTER-em. 
+lub w systemie Windows:  
+<programlisting>
+kontroler3.exe 
+</programlisting> 
 </para>
 <para>   
-Po uruchomieniu Kontroler jest gotowy do sprawdzania warto¶ci parametrów 
-zadanych przez u¿ytkownika. Domy¶lnie lista kontrolowanych parametrów 
-jest wczytywana z pliku <filename>./kon.kon</filename>.
-W celu sprawdzania listy parametrów zapisanych w innym pliku nale¿y 
-wywo³aæ opcjê <quote>Odczyt z pliku</quote>.
+Je¿eli jest to pierwsze uruchomienie programu, zostaniemy poproszeni o nazwê lub adres serwera (w formacie <emphasis>[nazwa serwera]:[numer portu]</emphasis> lub <emphasis>[adres IP serwera]:[numer portu]</emphasis>), z którego pobierane bêd± warto¶ci kontrolowanych parametrów. 
+Je¿eli nazwa, adres serwera lub numer portu bêd± niepoprawne, aplikacja nie uruchomi siê. Je¿eli jeste¶my pewni, ¿e podawane przez nas dane s± poprawne, a mimo to nie mo¿emy uzyskaæ  po³±czenia, wówczas nale¿y sprawdziæ konfiguracjê systemu, a zw³aszcza ustawienia oprogramowania antywirusowego i/lub <emphasis>firewall</emphasis>.
+
+Po poprawnym uruchomieniu Kontroler jest gotowy do sprawdzania warto¶ci parametrów 
+zadanych przez u¿ytkownika. 
 </para>
 </section>
-
 
 
 <section id="kontroler-okno-glowne">
 <title>G³ówne okno</title>
 <para>
 
-G³ówne okno Kontrolera (<xref linkend="kontroler-okno-glowne-fig">) dzieli siê na trzy czê¶ci. Górn± czê¶æ zajmuje 
-menu g³ówne, s³u¿±ce do wyboru i ustawiania opcji programu.
+G³ówne okno Kontrolera (<xref linkend="kontroler-okno-glowne-fig">) zawiera  
+menu g³ówne, s³u¿±ce do wyboru parametrów i ustawiania opcji programu.
 Czê¶æ ¶rodkowa okienka stanowi pole robocze, w którym wy¶wietlana jest 
-lista kontrolowanych parametrów. Je¿eli lista ta zawiera wiêcej 
-raportów ni¿ mo¿e byæ jednocze¶nie wy¶wietlone w polu roboczym, 
+lista kontrolowanych parametrów, ich konfiguracja oraz informacje o zg³aszanych alarmach. Je¿eli lista ta zawiera wiêcej raportów ni¿ mo¿e byæ jednocze¶nie wy¶wietlone w polu roboczym, 
 u¿ytkownik ma mo¿liwo¶æ przewijania zawarto¶ci bufora za pomoc± belki 
 lub strza³ek z prawej strony pola roboczego.
-
+ 	
 <figure id="kontroler-okno-glowne-fig"><title>
-Okno g³ówne programu kontroler</title>
+Okno g³ówne programu kontroler (linux)</title>
 <mediaobject>
 <imageobject><imagedata scale="60" fileref="pics/kontroler-okno-glowne.png"></imageobject>
 </mediaobject>
@@ -115,7 +117,7 @@ Parametry
 </para></listitem>
 
 <listitem><para>
-Raporty-Opcje
+Opcje
 </para></listitem>
 
 <listitem><para>
@@ -134,7 +136,7 @@ Poszczególne opcje tej grupy s³u¿± do:
 <itemizedlist>
 
 <listitem><para>
- <emphasis>Rozmiar</emphasis>: zmiany rozmiaru g³ównego okienka
+ <emphasis>Serwer</emphasis>: zmiany serwera
 </para></listitem>
 
 <listitem><para>
@@ -150,15 +152,11 @@ Poszczególne opcje tej grupy s³u¿± do:
 </para></listitem>
 
 <listitem><para>
- <emphasis>Zmiana</emphasis>: zmiany parametru, znajduj±cego siê na li¶cie kontrolowanych parametrów
+ <emphasis>Zmiana</emphasis>: zmiany parametru, znajduj±cego siê na li¶cie kontrolowanych parametrów (dostêp do tej opcji mam równie¿ po dwukrotnym klikniêæu muszk± na zadanym parametrze) 
 </para></listitem>
 
 <listitem><para>
  <emphasis>Usuniêcie</emphasis>: usuniêcia parametru z listy kontrolowanych parametrów
-</para></listitem>
-
-<listitem><para>
- <emphasis>Lista</emphasis>: wy¶wietlenia listy kontrolowanych parametrów
 </para></listitem>
 
 <listitem><para>
@@ -170,16 +168,9 @@ Poszczególne opcje tej grupy s³u¿± do:
 </para>
 
 
-<section id="menu-rozmiar"><title>Rozmiar</title>
+<section id="menu-rozmiar"><title>Serwer</title>
 <para>
-
-Opcja ta s³u¿y do zmiany rozmiaru g³ównego okienka programu Kontroler na 
-domy¶lny (przybierany w chwili uruchomienia programu). 
-<!--Je¶li u¿ytkownikowi
-zale¿y na jak najmniejszym rozmiarze g³ównego okienka Kontrolera, powinien 
-nacisn±æ przycisk <quote>Zmniejsz</quote>.
--->
-
+Opcja ta s³u¿y do zmiany serwera, z którego pobierane bêd± parametry przeznaczone do kontroli.  Dane powinny zostaæ podane w formacie <emphasis>[nazwa serwera]:[numer portu]</emphasis> lub <emphasis>[adres IP serwera]:[numer portu]</emphasis>). 
 </para>
 </section>
 
@@ -187,25 +178,8 @@ nacisn±æ przycisk <quote>Zmniejsz</quote>.
 <section id="menu-odczyt"> <title>Odczyt z pliku</title>
 <para>
 Opcja ta s³u¿y do wczytania listy kontrolowanych parametrów z pliku. 
-Wybór nazwy pliku dokonywany jest w dodatkowym okienku.
-W polu <quote>Filtr</quote> u¿ytkownik podaje maskê poszukiwanego pliku. Standardow± 
-mask± jest bie¿±cy katalog i plik o rozszerzeniu <filename>.kon</filename>.
-
-Naci¶niêcie przycisku <quote>Filtruj</quote> powoduje wy¶wietlenie w polu 
-<quote>Pliki</quote> listy plików pasuj±cych do podanej w polu <quote>Filtr</quote> maski. 
-Wyboru maski mo¿na równie¿ dokonaæ z listy widocznej w polu Katalogi.
-Podobnie z listy pola <quote>Pliki</quote> wybiera siê nazwê pliku, z którego ma
-zostaæ wczytana lista parametrów. Edycji nazwy pliku mo¿na dokonywaæ 
-w polu <quote>Wybrano</quote>.
-
-Naci¶niêcie przycisku OK powoduje próbê wczytania listy parametrów 
-z pliku o nazwie podanej w polu <quote>Wybrano</quote>. Je¿eli plik o wybranej nazwie 
-nie mo¿e byæ odczytany, pojawia siê odpowiednie ostrze¿enie.
-Przycisk <quote>Zaniechaj</quote> zamyka okno wyboru nazwy pliku bez wczytania nowej 
-listy kontrolowanych parametrów.
-
-Naci¶niêcie przycisku <quote>Pomoc</quote> wywo³uje ten tekst.
-
+Wybór nazwy pliku dokonywany jest w dodatkowym okienku, którego wygl±d zale¿y od systemu w którym uruchamiamy nasz± aplikacjê. Pliki zawieraj±ce listê paramtrów maj± rozszerzenie  <filename>.xkon</filename>. Standardowe okna dialogowe umo¿liwiaj± zmianê bie¿±cego katalogu, zmianê rozszerzenia lub te¿ rêczne wpisanie nazwy pliku przeznaczonego do odczytu.
+Je¿eli wczytanie listy parametrów z pliku o podanej nazwie nie powiod³o siê, zostanie wy¶wietlone odpowiednie ostrze¿enie.
 </para>
 </section>
 
@@ -213,30 +187,9 @@ Naci¶niêcie przycisku <quote>Pomoc</quote> wywo³uje ten tekst.
 <section id="menu-zapis"> <title>Zapis do pliku</title>
 
 <para>
-Opcja ta s³u¿y do zapisu listy kontrolowanych parametrów do pliku 
-wskazanego przez u¿ytkownika. 
-
-Wybór nazwy pliku dokonywany jest w dodatkowym okienku.
-W polu <quote>Filtr</quote> u¿ytkownik podaje maskê poszukiwanego pliku. Standardow± 
-mask± jest bie¿±cy katalog i plik o rozszerzeniu <filename>.kon</filename>.
-
-Naci¶niêcie przycisku <quote>Filtruj</quote> powoduje wy¶wietlenie w polu 
-<quote>Pliki</quote> listy plików pasuj±cych do podanej w polu <quote>Filtr</quote> maski.
-Wyboru maski mo¿na równie¿ dokonaæ z listy widocznej w polu Katalogi. 
-Podobnie z listy pola <quote>Pliki</quote> wybiera siê nazwê pliku, w którym ma zostaæ 
-zapisana lista parametrów.
-
-Edycji nazwy pliku mo¿na dokonywaæ w polu <quote>Wybrano</quote>.
-Naci¶niêcie przycisku <quote>OK</quote> powoduje próbê zapisu listy parametrów do 
-pliku o nazwie podanej w polu <quote>Wybrano</quote>. 
-
-Je¿eli zapis do pliku o podanej nazwie nie jest mo¿liwy, pojawia siê 
-odpowiednie ostrze¿enie.
-
-Przycisk <quote>Zaniechaj</quote> zamyka okno wyboru nazwy pliku bez zapisu aktualnej 
-listy kontrolowanych parametrów.
-
-Naci¶niêcie przycisku <quote>Pomoc</quote> wywo³uje ten tekst.
+Opcja ta s³u¿y do zapisania listy kontrolowanych parametrów do pliku. 
+Wybór nazwy pliku dokonywany jest w dodatkowym okienku, którego wygl±d zale¿y od systemu w którym uruchamiamy nasz± aplikacjê. Pliki zawieraj±ce listê paramtrów powinny mieæ rozszerzenie  <filename>xkon</filename>. Standardowe okna dialogowe umo¿liwiaj± zmianê bie¿±cego katalogu, zmianê rozszerzenia lub te¿ rêczne wpisanie nazwy pliku przeznaczonego do zapisu.
+Je¿eli zapis listy parametrów do pliku o podanej nazwie nie powiod³o siê, zostanie wy¶wietlone odpowiednie ostrze¿enie.
 
 </para>
 </section>
@@ -246,12 +199,19 @@ Naci¶niêcie przycisku <quote>Pomoc</quote> wywo³uje ten tekst.
 Opcja ta s³u¿y do dodania nowego parametru do listy kontrolowanych 
 parametrów. 
 
+<figure id="kontroler-dodanie-parametrow-fig"><title>
+Okno dialogowe - dodawanie parametrów</title>
+<mediaobject>
+<imageobject><imagedata scale="60" fileref="pics/kontroler-dodanie-parametru.png"></imageobject>
+</mediaobject>
+</figure>
+
 W tym celu nale¿y wype³niæ nastêpuj±ce pola odpowiednimi danymi:
 
 <itemizedlist>
 
 <listitem><para>
-Nazwa parametru
+Parametr (nazwa parametru)
 </para></listitem>
 
 <listitem><para>
@@ -263,19 +223,15 @@ Maksimum (warto¶æ maksymalna)
 </para></listitem>
 
 <listitem><para>
-Rodzaj parametru
+Typ warto¶ci montorowanej (warto¶æ chwilowa, ¶rednia minutowa, ¶rednia 10 minutowa lub ¶rednia godzinowa)
 </para></listitem>
 
 <listitem><para>
-Stopieñ wa¿no¶ci
+Stopieñ wa¿no¶ci (typ alarmu)
 </para></listitem>
 
 <listitem><para>
-Podgrupa
-</para></listitem>
-
-<listitem><para>
-Nazwa alternatywna (to pole mo¿e zostaæ nie wype³nione)
+Alternatywna nazwa paramtru (opcjonalnie)
 </para></listitem>
 
 </itemizedlist>
@@ -286,46 +242,21 @@ Nazwa alternatywna (to pole mo¿e zostaæ nie wype³nione)
 <emphasis> 
 	UWAGA! 
 </emphasis> 
-	Istnieje mo¿liwo¶æ sygnalizowania braku danych.
-        W tym celu nale¿y wcisn±æ prze³±cznik
-        Sprawdzanie tylko poprawno¶ci transmisji.
-        Nie jest wówczas potrzebne okre¶lanie ani warto¶ci
-        minimalnej, ani warto¶ci maksymalnej.
+	Istnieje mo¿liwo¶æ sygnalizowania wy³±cznie braku danych. W tym celu nale¿y zaznaczyæ pole  <emphasis>Brak danych</emphasis>. W takim przypadku sprawdzana jest tylko poprawno¶ci transmisji i nie mo¿emy wówczas okre¶liæ zakresu kontrolowanych danych.
 </para>
 
 <para>
 <emphasis> 
 	UWAGA! 
 </emphasis> 
-	W celu wype³nienia pola <quote>Nazwa parametru</quote> 
-	nale¿y nacisn±æ jeden z dwóch przycisków:
-
-	<itemizedlist>
-	<listitem><para>
-	Parametr: je¶li maj± byæ sprawdzane przekroczenia zakresu pojedynczego parametru. 
-	Po naci¶niêciu tego przycisku pojawi siê okno wyboru parametru.
-	</para></listitem>
-
-	<listitem><para>
-	Formu³a:  je¶li maj± byæ sprawdzane przekroczenia zakresu
-                dla wyra¿enia arytmetycznego zawieraj±cego 
-                warto¶ci parametrów. 
-
-	Po naci¶niêciu tego przycisku pojawi siê okno formu³y.
-	Po wprowadzeniu wyra¿enia u¿ytkownik mo¿e ustawiæ liczbê cyfr
-	po kropce (czyli miejsc po przecinku dziesiêtnym) dla warto¶ci 
-	minimalnej i maksymalnej za pomoc± przycisków strza³kowych 
-	znajduj±cych siê na prawo od przycisku <quote>Formu³a</quote>, w linii poni¿ej.  
-	</para></listitem>
-	</itemizedlist>
+	W celu wype³nienia pola <quote>Parametr</quote> nale¿y nacisn±æ przycisk <quote>Wybierz parametr</quote>. Zostanie otwarte okno dialogowe, w którm bêdziemy mieli mo¿liwo¶æ wyboru parametru udostêpnianego przez wybrany serwer.
 </para>
 
 <para>
 Po wype³nieniu pól danymi nale¿y nacisn±æ OK, co spowoduje do³±czenie 
 zdefiniowanego parametru do listy kontrolowanych parametrów.
-Naci¶niêcie Zaniechaj powoduje powrót do menu, przy czym operacja 
-dodania parametru nie zostanie  wykonana.
-Naci¶niêcie przycisku <quote>Pomoc</quote> wywo³uje ten tekst.
+Naci¶niêcie Anuluj powoduje powrót do menu, przy czym operacja 
+dodania parametru nie zostanie wykonana.
 </para>
 
 </section>
@@ -334,82 +265,8 @@ Naci¶niêcie przycisku <quote>Pomoc</quote> wywo³uje ten tekst.
 <para>
 
 Opcja ta s³u¿y do zmiany definicji wybranego parametru, znajduj±cego 
-siê na li¶cie kontrolowanych parametrów. 
-W tym celu nale¿y zmieniæ zawarto¶æ jednego lub wielu z nastêpuj±cych 
-pól:
+siê na li¶cie kontrolowanych parametrów. W tym celu mo¿na zmieniæ ka¿dego pola, które wype³niali¶my przy dodawaniu nowego parametru. Po przeprowadzeniu odpowiednich zmian nale¿y nacisn±æ OK, co spowoduje zmianê definicji parametru w li¶cie kontrolowanych parametrów. Naci¶niêcie Anuluj powoduje powrót do menu, przy czym operacja zmiany parametru nie zostanie  wykonana.
 
-<itemizedlist>
-<listitem><para>
-Nazwa parametru
-</para></listitem>
-
-<listitem><para>
-Minimum (warto¶æ minimalna)
-</para></listitem>
-
-<listitem><para>
-Maksimum (warto¶æ maksymalna)
-</para></listitem>
-
-<listitem><para>
-Rodzaj parametru
-</para></listitem>
-
-<listitem><para>
-Stopieñ wa¿no¶ci
-</para></listitem>
-
-<listitem><para>
-Podgrupa
-</para></listitem>
-
-<listitem><para>
-Nazwa Alternatywna - to pole mo¿e zostaæ nie wype³nione.
-</para></listitem>
-</itemizedlist>
-
-</para>
-
-<para>
-<emphasis>UWAGA!</emphasis> 
-Istnieje mo¿liwo¶æ sygnalizowania braku danych.
-        W tym celu nale¿y wcisn±æ prze³±cznik
-        <quote>Sprawdzanie</quote> tylko poprawno¶ci transmisji.
-        Nie jest wówczas potrzebne okre¶lanie ani warto¶ci
-        minimalnej, ani warto¶ci maksymalnej. 
-
-<emphasis>UWAGA!</emphasis> 
-	W celu wype³nienia pola <quote>Nazwa parametru</quote> nale¿y nacisn±æ
-        jeden z dwóch przycisków:
-
-	<itemizedlist>
-	<listitem><para>
-	Parametr: je¶li maj± byæ sprawdzane przekroczenia zakresu
-                pojedynczego parametru. 
-	</para><para>
-	Po naci¶niêciu tego przycisku pojawi siê okno wyboru parametru.
-	</para></listitem>
-
-	<listitem><para>
-	Formu³a: je¶li maj± byæ sprawdzane przekroczenia zakresu
-                dla wyra¿enia arytmetycznego zawieraj±cego 
-                warto¶ci parametrów. 
-	</para><para>
-	Po naci¶niêciu tego przycisku pojawi siê okno formu³y.    
-	Po wprowadzeniu wyra¿enia u¿ytkownik mo¿e ustawiæ liczbê cyfr
-	po kropce (czyli miejsc po przecinku dziesiêtnym) dla warto¶ci 
-	minimalnej i maksymalnej za pomoc± przycisków strza³kowych 
-	znajduj±cych siê na prawo od przycisku Formu³a, w linii poni¿ej.  
-	</para></listitem>
-	</itemizedlist>
-</para>
-
-<para> 
-Po wype³nieniu pól danymi nale¿y nacisn±æ OK, co spowoduje zmianê 
-definicji parametru w li¶cie kontrolowanych parametrów.
-Naci¶niêcie Zaniechaj powoduje powrót do menu, przy czym operacja 
-zmiany parametru nie zostanie  wykonana.
-Naci¶niêcie przycisku Pomoc wywo³uje ten tekst.
 </para>
 </section>
 
@@ -427,18 +284,7 @@ parametru.
 <para>
 <emphasis>UWAGA!</emphasis> Operacja usuniêcia jest nieodwracalna. 
 W razie potrzeby nale¿y wprowadziæ parametr na nowo wykorzystuj±c 
-opcjê Parametry:Dodanie.
-
-</para>
-</section>
-
-<section id="menu-lista"><title>Lista</title>
-<para>
-Opcja ta s³u¿y do wy¶wietlenia w ¶rodkowej czê¶ci g³ównego okienka 
-programu aktualnej listy sprawdzanych parametrów.
-Je¶li lista zawiera wiêcej pozycji, ni¿ mo¿e byæ wy¶wietlone na ekranie, 
-u¿ytkownik ma mo¿liwo¶æ przewijania jej zawarto¶ci za pomoc± belki lub 
-strza³ek z prawej strony pola roboczego.
+opcjê Parametry->Dodanie.
 
 </para>
 </section>
@@ -460,7 +306,7 @@ wy¶wietlenie odpowiedniego komunikatu.
 <emphasis>UWAGA!</emphasis> Polecenie zakoñczenia pracy wymaga potwierdzenia 
          przez u¿ytkownika. W tym celu wy¶wietlane jest okno
          zawieraj±ce pytanie <quote>Czy zakoñczyæ pracê programu?</quote>
-         oraz trzy przyciski:
+         oraz dwa przyciski:
 
 	<itemizedlist>
 	<listitem><para>
@@ -471,9 +317,6 @@ wy¶wietlenie odpowiedniego komunikatu.
 	Nie: do powrotu do g³ównego okienka programu
 	</para></listitem>
 
-	<listitem><para>
-	Pomoc: do wy¶wietlenia tego tekstu
-	</para></listitem>
 	</itemizedlist>
 
 </para>
@@ -694,11 +537,18 @@ Okno to umo¿liwia:
 </para></listitem>
 </itemizedlist>
 
+<figure id="kontroler-opcje-dodatkowe-fig"><title>
+Okno dialogowe - dodatkowe opcje</title>
+<mediaobject>
+<imageobject><imagedata scale="60" fileref="pics/kontroler-opcje-dodatkowe.png"></imageobject>
+</mediaobject>
+</figure>
+
+
 Zmianê wymienionych warto¶ci dokonuje siê za pomoc± suwaków
 z wy¶wietlonymi aktualnymi warto¶ciami.
 Naci¶niêcie przycisku OK zatwierdza dokonane zmiany, natomiast 
-naci¶niêcie Zaniechaj powoduje pozostawienie poprzednich warto¶ci.
-Przycisk Pomoc s³u¿y do wy¶wietlenia tego tekstu.
+naci¶niêcie Anuluj powoduje pozostawienie poprzednich warto¶ci.
 
 </para>
 </section>
@@ -769,7 +619,6 @@ usuwane z ekranu.
 
 </para>
 </section>
-
 
 <section id="okno-raportu"><title>Okno raportu</title>
 <para>
