@@ -74,7 +74,7 @@ szAlarmWindow::szAlarmWindow(szKontroler *kontroler_frame, const double& val, sz
 	else
 		alarm_text = 
 			wxString::Format(_("Value of param %s is to great: %.*f%s, allowed range - (%.*f%s - %.*f%s)"), 
-					probe->m_parname.c_str(), 
+					probe->m_alt_name.IsEmpty() ? probe->m_parname.c_str() : probe->m_alt_name.c_str(), 
 					probe->m_param->GetPrec(), val, probe->m_param->GetUnit().c_str(),
 					probe->m_param->GetPrec(), probe->m_value_min, probe->m_param->GetUnit().c_str(),
 					probe->m_param->GetPrec(), probe->m_value_max, probe->m_param->GetUnit().c_str());
@@ -83,10 +83,6 @@ szAlarmWindow::szAlarmWindow(szKontroler *kontroler_frame, const double& val, sz
 	sizer->Add(new wxStaticLine(this, wxID_ANY), 0, wxEXPAND);
 
 	sizer->Add(new wxStaticLine(this, wxID_ANY), 0, wxEXPAND);
-	if (!probe->m_alt_name.IsEmpty()) {
-		sizer->Add(new wxStaticText(this, wxID_ANY, alarm_text, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER), 0, wxEXPAND | wxALL, 2);
-		sizer->Add(new wxStaticLine(this, wxID_ANY), 0, wxEXPAND);
-	}
 
 	wxButton *button = new wxButton(this, wxID_OK, _("OK"));
 

@@ -1,7 +1,11 @@
 $Id$
 
+2009-09-18	Pawe³ Pa³ucha <pawel@praterm.com.pl>
+	* wx/kontroler3/*: added playing sounds on alarms; fixed bug with
+	displaying two alarm rows if alternate name of param is set.
+	* resources/sounds: sounds for kontroler3 alarms.
 2009-09-15	Adam Smyk <asmyk@praterm.pl>
-	* resources/documentation/new/kontroler - documentation update
+	* resources/documentation/new/kontroler: documentation update
 2009-09-14	Darek Marcinkiewicz <reksio@praterm.pl>
 	* libSzarp2/Makefile.am: libSzarp2 does not use
 	ICU, linking with this library removed

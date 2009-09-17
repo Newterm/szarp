@@ -37,6 +37,7 @@
 #include <wx/statusbr.h>
 #include <wx/list.h>
 #include <wx/colour.h>
+#include <wx/sound.h>
 #include <szarp_config.h>
 #include <vector>
 
@@ -45,6 +46,10 @@
 
 #define SZ_CONTROL_NS_URI _T("http://www.praterm.com.pl/SZARP/control")
 #define SZ_REPORTS_NS_URI _T("http://www.praterm.com.pl/SZARP/reports")
+
+#define	SOUND_FILE_INFO _T("info.wav")
+#define	SOUND_FILE_WARN _T("warn.wav")
+#define	SOUND_FILE_ALARM _T("alarm.wav")
 
 class szKontrolerAddParam;
 class szAlarmWindow;
@@ -130,7 +135,6 @@ protected:
   szHTTPCurlClient *m_http;
   wxString m_server;
   wxColour * yellowcol;
-  bool LoadIPK(const wxString &ipk_fname);
   /** event: xsltd: fresh data  */
   void OnRapdata(wxCommandEvent &ev);
   void RefreshReport(bool complete = true);
@@ -139,6 +143,10 @@ protected:
   void SuckParListToProbes(szParList& parlist, bool values);
   void OnClose(wxCloseEvent &event);
   szParList GetParList();
+  /** array of sounds objects, indexed by alarm types */
+  wxSound m_sounds[5];
+  /** should we play sounds */
+  bool m_play_sounds;
 };
 
 /** identyfikatory kontrolek */

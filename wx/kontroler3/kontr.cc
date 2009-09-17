@@ -20,6 +20,7 @@
 
 #include "libpar.h"
 
+#include "kontr.h"
 #include "kontroler.h"
 #include "cconv.h"
 #include "szapp.h"
@@ -27,10 +28,7 @@
 /**
  * Main app class
  */
-class kontrApp: public szApp {
-  wxLocale locale;
-protected:
-  virtual bool OnInit() {
+bool kontrApp::OnInit() {
 
     wxLog *logger=new wxLogStderr();
     wxLog::SetActiveTarget(logger);
@@ -109,9 +107,7 @@ protected:
       delete kontroler;
       return false;
     }
-  }
-};
-
-DECLARE_APP(kontrApp)
+}
 
 IMPLEMENT_APP(kontrApp)
+	

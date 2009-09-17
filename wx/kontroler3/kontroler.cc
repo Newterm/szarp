@@ -31,10 +31,12 @@
 #include "kontradd.h"
 #include "kontropt.h"
 
+#include "kontr.h"
 #include "kontroler.h"
 #include "cconv.h"
 #include "kontralarm.h"
 #include "authdiag.h"
+#include "szapp.h"
 
 
 #include <wx/listimpl.cpp>
@@ -70,6 +72,7 @@ szKontroler::szKontroler(wxWindow *par, bool remote_mode, bool operator_mode, wx
   m_log_len = 100;
   m_pfetcher = NULL;
   m_apd = NULL;
+  m_play_sounds = true;
   stat_sb = new wxStatusBar(this, wxID_ANY);
   const int widths[] = { 50, -1, 75 };
   stat_sb->SetFieldsCount(3, widths);
@@ -166,6 +169,14 @@ szKontroler::szKontroler(wxWindow *par, bool remote_mode, bool operator_mode, wx
   SetSize(wxSize(900, 300));
   Show(true);
 
+  /* Load sounds */
+  wxString sound_dir = wxGetApp().GetSzarpDir() + _T("resources/sounds/");
+  for (int i = 0; i < 3; i++) {
+	  m_sounds[i].Create(sound_dir + SOUND_FILE_INFO);
+  }
+  m_sounds[3].Create(sound_dir + SOUND_FILE_WARN);
+  m_sounds[4].Create(sound_dir + SOUND_FILE_ALARM);
+
 }
 
 szKontroler::~szKontroler() {
@@ -200,6 +211,9 @@ void szKontroler::ProcessValue(double& val, szProbe *probe) {
 		szAlarmWindow* aw = new szAlarmWindow(this, val, probe);
 		m_alarms_windows[probe->m_parname] = aw;
 		aw->Show();
+		if (m_play_sounds && m_sounds[probe->m_alarm_type - 1].IsOk()) {
+			m_sounds[probe->m_alarm_type - 1].Play();
+		}
 
 		m_alarms[probe->m_parname] = RAISED;
 	} else {
@@ -231,18 +245,6 @@ void szKontroler::ConfirmAlarm(wxString param_name) {
 	if ((ai = m_alarms.find(param_name)) != m_alarms.end())
 		ai->second = CONFIRMED;
 
-}
-
-bool szKontroler::LoadIPK(const wxString &ipk_fname) {
-//  wxLogMessage(_T("kon: loading ipk (%s)"), ipk_fname.c_str());
-//  assert ( (ipk = new TSzarpConfig()) != NULL);
-//	delete m_pfetcher;
-//	ipk = szServerDlg::GetIPK(ipk_fname,m_http);
-
-//  if ( ipk->loadXML( szConv_wx2file(ipk_fname) ) )
-//    return false;
-	
-  return true;
 }
 
 szParList szKontroler::GetParList() {
