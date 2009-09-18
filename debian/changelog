@@ -1,3 +1,9 @@
+szarp (3.1.117) stable; urgency=low
+
+  * upstream version 3.1.117
+
+ -- Pawel Palucha <pawel@t60>  Fri, 18 Sep 2009 15:00:22 +0200
+
 szarp (3.1.113) unstable; urgency=low
 
   * unstable from upstream version 3.1.113

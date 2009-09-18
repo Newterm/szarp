@@ -28,6 +28,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <pthread.h>
+#include <assert.h>
 
 char            mbrtu_single;
 
@@ -305,6 +306,43 @@ float int2float(signed short iint, unsigned short prec)
 			break;
 	}
 	return 0;
+}
+
+unsigned short bcd2int(unsigned short val, int* ret_code)
+{
+	assert (ret_code != NULL);
+
+	unsigned short ret = 0;
+	*ret_code = 1;
+
+	for (int i = 3; i >= 0; i--) {
+		unsigned short tmp = (val >> (4 * i)) & 0xF;
+		if (tmp > 9) {
+			return 0;
+		}
+		ret = ret * 10 + tmp;
+	}
+	*ret_code = 0;
+	return ret;
+}
+
+unsigned short int2bcd(unsigned short val, int* ret_code)
+{
+	assert (ret_code != NULL);
+
+	unsigned short ret = 0;
+	if (val > 9999) {
+		*ret_code = 1;
+		return 0;
+	}
+	*ret_code = 0;
+
+	for (int i = 0; i < 4; i++) {
+		unsigned short tmp = val % 10;
+		ret = ret | (tmp << (4 * i));
+		val = val / 10;
+	}
+	return ret;
 }
 
 void CreateMasterPacket(tWMasterFrame MasterFrame, unsigned char *oPacket,

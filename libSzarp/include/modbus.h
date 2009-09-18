@@ -36,6 +36,7 @@
 /** Possible types of value types. */
 typedef enum {
 	MB_TYPE_ERR,		/**< undefined type (config error) */
+	MB_TYPE_BCD,		/**< unsigned integer value in BCD encoding, 2 bytes, range 0 - 9999 */
 	MB_TYPE_INT,		/**< integer type, 2 bytes */
 	MB_TYPE_FLOAT,		/**< float type, 4 bytes (2 registers) */
 	MB_TYPE_LONG,           /**< long integer type, 4 bytes (2 registers) */

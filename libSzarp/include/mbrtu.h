@@ -261,6 +261,22 @@ extern	char            mbrtu_single;
 	float           int2float(signed short iint, unsigned short prec);
 
 /**
+ * Converts short int to BCD format.
+ * @param val value to convert
+ * @param ret_code buffer for return code, 0 for success, 1 for error (may be not NULL)
+ * @return BCD representation of int, undefined in case of error
+ */
+unsigned short int2bcd(unsigned short val, int* ret_code);
+
+/**
+ * Converts from BCD format to short int.
+ * @param val value to convert
+ * @param ret_code buffer for return code, 0 for success, 1 for error (may be not NULL)
+ * @return integer value of converted val, undefined in case of error
+ */
+unsigned short bcd2int(unsigned short val, int* ret_code);
+
+/**
  * Funkcja tworzy ramke typu MASTER
  * @param MasterFrame Struktura definiujaca parametry ramki
  * @param oPacket Pakiet przygotowany do wys³ania

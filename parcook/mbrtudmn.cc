@@ -86,6 +86,7 @@
  *
  * Logi l±duj± domy¶lnie w /opt/szarp/log/mbrtudmn.
  * W trybie Master zostala dodana konwersja FLOAT-> parametr MSB i FLOAT-> PARAMETR LSB
+ * Nowy typ danych: BCD (modbus:type="bcd")
  */
 
 #ifdef HAVE_CONFIG_H
@@ -734,15 +735,17 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 			return 1;
 		}
 		sz_log(10, "Value type: %s", str);
-		if (!strcmp(str, "integer"))
+		if (!strcmp(str, "integer")) {
 			type = MB_TYPE_INT;
-		else if (!strcmp(str, "float"))
+		} else if (!strcmp(str, "float")) {
 			type = MB_TYPE_FLOAT;
-		else if (!strcmp(str, "long"))
+		} else if (!strcmp(str, "long")) {
 			type = MB_TYPE_LONG;
-		else {
+		} else if (!strcmp(str, "bcd")) {
+			type = MB_TYPE_BCD;
+		} else {
 			sz_log(0,
-			    "unknown value '%s' for attribute modbus:val_type - should be 'integer' or 'float' (line %ld)",
+			    "unknown value '%s' for attribute modbus:val_type - should be 'bcd', 'integer', 'long' or 'float' (line %ld)",
 			    str, xmlGetLineNo(node));
 			free(str);
 			return 1;
@@ -803,6 +806,7 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 	for (int i = 0; i < this->m_params_count; i++) {
 		switch (this->m_params[i].type) {
 			case MB_TYPE_INT:
+			case MB_TYPE_BCD:
 				MemRegistersPtr++;
 				break;
 			case MB_TYPE_FLOAT:
@@ -823,6 +827,7 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 	for (int i = 0; i < this->m_sends_count; i++) {
 		switch (this->m_sends[i].type) {
 			case MB_TYPE_INT:
+			case MB_TYPE_BCD:
 				MemRegistersPtr++;
 				break;
 			case MB_TYPE_FLOAT:
@@ -853,6 +858,7 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 
 		switch (this->m_sends[i].type) {
 			case MB_TYPE_INT:
+			case MB_TYPE_BCD:
 				MemRegisters[PSRegPtr].Address =
 					this->m_sends[i].addr;
 
@@ -893,6 +899,7 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 		MemRegisters[PSRegPtr].ValueType = m_params[i].type;
 		switch (this->m_params[i].type) {
 			case MB_TYPE_INT:
+			case MB_TYPE_BCD:
 				MemRegisters[PSRegPtr].Address =
 					this->m_params[i].addr;
 				PSRegPtr++;
@@ -1052,6 +1059,7 @@ int ModbusUnit::MasterAsk(int fd)
 			iMasterFrame.Address = m_params[ReqCycle].addr ;
 			switch (m_params[ReqCycle].type) {
 				case MB_TYPE_INT:
+				case MB_TYPE_BCD:
 					iMasterFrame.DataSize = 1 ; /* Tylko 1 */
 				break;
 				case MB_TYPE_FLOAT:
@@ -1077,7 +1085,16 @@ int ModbusUnit::MasterAsk(int fd)
 				case MB_TYPE_INT:
 					iMasterFrame.DataSize = 1 ; /* Tylko 1 */
 					iMasterFrame.Body[0] = (signed short) m_sends_buffer[SendsPtr];
-				break;
+					break;
+				case MB_TYPE_BCD:
+					iMasterFrame.DataSize = 1 ; /* Tylko 1 */
+					int err;
+					iMasterFrame.Body[0] = int2bcd(m_sends_buffer[SendsPtr], &err);
+					if (err) {
+						sz_log(1, "Error converting value %d to BCD",
+								m_sends_buffer[SendsPtr]);
+						return 1;
+					}
 				case MB_TYPE_FLOAT:
 					iMasterFrame.DataSize = 2 ; /* Tylko 2 */
 					float2bin(int2float (m_sends_buffer[SendsPtr], m_sends[SendsPtr].prec), &bMSB, &bLSB);
@@ -1157,7 +1174,19 @@ int ModbusUnit::MasterGet(int fd)
 				case MB_TYPE_INT:
 					bin2int(SlaveFrame.Body[0], &fi);
 					m_reads_buffer[ReqCycle] = fi ;
-				break;
+					break;
+				case MB_TYPE_BCD:
+					int err;
+					m_reads_buffer[ReqCycle] = bcd2int(SlaveFrame.Body[0], &err);
+					sz_log(0, "DEBUG: parsing BCD %d (%x) to %d",
+							SlaveFrame.Body[0], SlaveFrame.Body[0],
+							m_reads_buffer[ReqCycle]);
+					if (err) {
+						sz_log(1, "Error parsing BCD value %x", 
+								SlaveFrame.Body[0]);
+						m_reads_buffer[ReqCycle] = SZARP_NO_DATA;
+					}
+					break;
 				case MB_TYPE_FLOAT:
 					switch (FloatOrder){
 						case MSBLSB:
@@ -1351,6 +1380,20 @@ int ModbusUnit::SlaveReply(int fd)
 					}
 					Write1Data(SB, MemRegisters[j].Address);
 					break;
+				case MB_TYPE_BCD:
+					if (m_sends_buffer[i] != SZARP_NO_DATA) {
+						int err;
+						SB = int2bcd(m_sends_buffer[i], &err);
+						if (err) {
+							sz_log(1, "Error converting value %d to BCD",
+									m_sends_buffer[i]);
+							SB = 0;
+						}
+					} else {
+						SB = 0;
+					}
+					Write1Data(SB, MemRegisters[j].Address);
+					break;
 				case MB_TYPE_FLOAT:
 /*					fprintf(stderr,"m_send[%d] %d\n",i,ipc->m_send[i]);*/
 					if (m_sends_buffer[i] != SZARP_NO_DATA) {
@@ -1423,6 +1466,7 @@ int ModbusUnit::SlaveReply(int fd)
 				found = TRUE;
 				switch (this->MemRegisters[j].ValueType) {
 					case MB_TYPE_INT:
+					case MB_TYPE_BCD:
 						Read1Data(&SB, AddressPtr);
 						iSlaveFrame.Body[IndexData] = SB;
 						AddressPtr++;
@@ -1518,6 +1562,7 @@ int ModbusUnit::SlaveReply(int fd)
 				found = TRUE;
 				switch (MemRegisters[j].ValueType) {
 					case MB_TYPE_INT:
+					case MB_TYPE_BCD:
 						SB = oMasterFrame.
 							Body
 							[IndexData];
@@ -1608,6 +1653,18 @@ int ModbusUnit::SlaveReply(int fd)
 						  Address);
 					bin2int(SB, &fi);
 					m_reads_buffer[i] = fi;
+					break;
+				case MB_TYPE_BCD:
+					Read1Data(&SB,
+						  MemRegisters
+						  [j].
+						  Address);
+					int err;
+					m_reads_buffer[i] = bcd2int(SB, &err);
+					if (err) {
+						sz_log(1, "Error parsing BCD value %x", SB);
+						m_reads_buffer[i] = SZARP_NO_DATA;
+					}
 					break;
 				case MB_TYPE_FLOAT:
 					/* Tu juz nie trzeba swapa */
