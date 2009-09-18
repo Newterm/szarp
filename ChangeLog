@@ -1,6 +1,7 @@
 $Id$
 
 2009-09-19	Pawe³ Pa³ucha <pawel@praterm.com.pl>
+	* parcook/mbrudmn.cc: removed debug.
 	* parcook/mbrudmn.cc: added support for BCD encoded values; tested
 	only while reading registers in 'master' mode.
 	* libSzarp/mbrtu.cc: functions for BCD (de)coding.

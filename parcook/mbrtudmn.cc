@@ -1178,9 +1178,6 @@ int ModbusUnit::MasterGet(int fd)
 				case MB_TYPE_BCD:
 					int err;
 					m_reads_buffer[ReqCycle] = bcd2int(SlaveFrame.Body[0], &err);
-					sz_log(0, "DEBUG: parsing BCD %d (%x) to %d",
-							SlaveFrame.Body[0], SlaveFrame.Body[0],
-							m_reads_buffer[ReqCycle]);
 					if (err) {
 						sz_log(1, "Error parsing BCD value %x", 
 								SlaveFrame.Body[0]);
