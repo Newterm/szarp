@@ -23,7 +23,7 @@ LIBWXCOMMON=../common/libwxcommon.a
 bin_PROGRAMS = kontroler3
 
 kontroler3_SOURCES = \
-	kontr.cc kontroler.cc kontroler.h kontradd.cc kontradd.h \
+	kontr.cc kontr.h kontroler.cc kontroler.h kontradd.cc kontradd.h \
 	parcalc.cc parcalc.h kontropt.cc kontropt.h kontralarm.h kontralarm.cc
 
 kontroler3_DEPENDENCIES =

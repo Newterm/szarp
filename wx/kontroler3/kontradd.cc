@@ -48,7 +48,7 @@ szKontrolerAddParam::szKontrolerAddParam(TSzarpConfig *_ipk,
 
   //****
   wxStaticBoxSizer *param_sizer = new wxStaticBoxSizer(
-      new wxStaticBox(this, wxID_ANY, _("Param")), wxVERTICAL);
+      new wxStaticBox(this, wxID_ANY, _("Parameter")), wxVERTICAL);
 
   //text(param_name) (val: g_data.m_probe.m_parname)
   param_sizer->Add(new wxTextCtrl(this, ID_TC_PARNAME, _T(""),
@@ -59,7 +59,7 @@ szKontrolerAddParam::szKontrolerAddParam(TSzarpConfig *_ipk,
   wxBoxSizer *paramt_sizer = new wxBoxSizer(wxHORIZONTAL);
 
   //butt(param)
-  paramt_sizer->Add(new wxButton(this, ID_B_PARAM, _("Param")),
+  paramt_sizer->Add(new wxButton(this, ID_B_PARAM, _("Choose parameter")),
       0, wxALIGN_CENTER | wxALL, 8);
 
 #if 0
@@ -83,16 +83,22 @@ szKontrolerAddParam::szKontrolerAddParam(TSzarpConfig *_ipk,
       0, wxGROW | wxALL, 8);
 
   //text#num(min) (val: m_value_min)
-  conds_sizer->Add(new wxTextCtrl(this, ID_TC_VALMIN, wxEmptyString,
+  wxBoxSizer *min_sizer = new wxBoxSizer(wxHORIZONTAL);
+  min_sizer->Add(new wxStaticText(this, wxID_ANY, _("Minimal value:")), 1, wxALL | wxALIGN_CENTER_VERTICAL, 8);
+  min_sizer->Add(new wxTextCtrl(this, ID_TC_VALMIN, wxEmptyString,
         wxDefaultPosition, wxDefaultSize, 0,
         wxTextValidator(wxFILTER_NUMERIC, &m_value_min)),
       0, wxGROW | wxALL, 8);
+  conds_sizer->Add(min_sizer, 0, wxGROW | wxALL, 8);
 
   //text#num(max) (val: m_value_max)
-  conds_sizer->Add(new wxTextCtrl(this, ID_TC_VALMAX, wxEmptyString,
+  wxBoxSizer *max_sizer = new wxBoxSizer(wxHORIZONTAL);
+  max_sizer->Add(new wxStaticText(this, wxID_ANY, _("Maximal value:")), 1, wxALL | wxALIGN_CENTER_VERTICAL, 8);
+  max_sizer->Add(new wxTextCtrl(this, ID_TC_VALMAX, wxEmptyString,
         wxDefaultPosition, wxDefaultSize, 0,
         wxTextValidator(wxFILTER_NUMERIC, &m_value_max)),
       0, wxGROW | wxALL, 8);
+  conds_sizer->Add(max_sizer, 0, wxGROW | wxALL, 8);
 
   wxBoxSizer *condst_sizer = new wxBoxSizer(wxHORIZONTAL);
 
@@ -137,7 +143,9 @@ szKontrolerAddParam::szKontrolerAddParam(TSzarpConfig *_ipk,
     _("4 (yellow)"),
     _("5 (red)")
   };
-  alarmt_sizer->Add(new wxChoice(this, ID_CH_ALARM, wxDefaultPosition, wxDefaultSize, WXSIZEOF(alarms), alarms, 0), 1, wxALL | wxALIGN_CENTRE_VERTICAL, 8);
+  alarmt_sizer->Add(new wxChoice(this, ID_CH_ALARM, wxDefaultPosition, wxDefaultSize,
+    WXSIZEOF(alarms), alarms, 0, wxGenericValidator(&g_data.m_probe.m_alarm_type)),
+    1, wxALL | wxALIGN_CENTRE_VERTICAL, 8);
 
   //text#num-+(group)
 #if 0
@@ -213,13 +221,15 @@ bool szKontrolerAddParam::TransferDataToWindow() {
   wxStaticCast(FindWindowById(ID_SC_PREC),
       wxSpinCtrl)->SetValue(g_data.m_probe.m_precision);
 #endif
-  wxStaticCast(FindWindowById(ID_CH_ALARM), wxSpinCtrl)->SetValue(g_data.m_probe.m_alarm_type - 1);
+//  wxStaticCast(FindWindowById(ID_CH_ALARM), wxSpinCtrl)->SetValue(g_data.m_probe.m_alarm_type - 1);
   m_param = g_data.m_probe.m_param;
-
   m_value_min.Printf(_T("%.3f"), g_data.m_probe.m_value_min);
   m_value_max.Printf(_T("%.3f"), g_data.m_probe.m_value_max);
-
   wxDialog::TransferDataToWindow();
+  int indeks = g_data.m_probe.m_alarm_type - 1;
+  if ( indeks < 0 )
+	indeks = 0;
+  wxStaticCast(FindWindowById(ID_CH_ALARM), wxChoice)->Select(indeks);
 
   return true;
 }

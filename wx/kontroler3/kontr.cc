@@ -40,14 +40,16 @@ bool kontrApp::OnInit() {
 #endif //__WXMSW__
 
 #ifndef __WXMSW__
-    locale.AddCatalogLookupPathPrefix(_T("/opt/szarp/resources/locales"));
+    locale.AddCatalogLookupPathPrefix(wxGetApp().GetSzarpDir() + _T("resources/locales"));
 #else //__WXMSW__
-    locale.AddCatalogLookupPathPrefix(_T("."));
+    locale.AddCatalogLookupPathPrefix(wxGetApp().GetSzarpDir() + _T("."));
 #endif //__WXMSW__
 
-    locale.AddCatalog(_T("kontroler3"));
-    locale.AddCatalog(_T("wx"));
-    locale.AddCatalog(_T("common"));
+    wxArrayString catalogs;
+    catalogs.Add(_T("kontroler3"));
+    catalogs.Add(_T("common"));
+    catalogs.Add(_T("wx"));
+    this->InitializeLocale(catalogs, locale);
 
     if (!locale.IsOk()) {
       wxLogError(_T("Could not initialize locale."));

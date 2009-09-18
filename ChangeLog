@@ -1,5 +1,10 @@
 $Id$
 
+2009-09-18	Adam Smyk <asmyk@praterm.pl>
+	* wx/kontroler3/*: fixed bug with locale and with wxChoice on
+	Windows
+	* wx/Makefile.am: kontroler add to winsetup
+	* scripts/nsis: instalation script modified
 2009-09-18	Pawe³ Pa³ucha <pawel@praterm.com.pl>
 	* wx/kontroler3/*: added playing sounds on alarms; fixed bug with
 	displaying two alarm rows if alternate name of param is set.

@@ -641,15 +641,15 @@ void szKontroler::OnRapoptOpt(wxCommandEvent &ev) {
 }
 
 void szKontroler::OnHelpKon(wxCommandEvent &ev) {
-  HtmlViewerFrame *f = new HtmlViewerFrame(
-    _T("/opt/szarp/resources/documentation/new/kontroler/html/kontroler.html"),
-    this, _("Raporter - help"),
+  HtmlViewerFrame *f = new HtmlViewerFrame(wxGetApp().GetSzarpDir() +
+    _T("resources/documentation/new/kontroler/html/kontroler.html"),
+    this, _("Kontroler - help"),
     wxDefaultPosition, wxSize(600,600));
   f->Show();
 }
 
 void szKontroler::OnHelpAbout(wxCommandEvent &ev) {
-  HtmlAbout(this, _T("/opt/szarp/resources/wx/html/kontrolerabout.html"));
+  HtmlAbout(this, wxGetApp().GetSzarpDir() + _T("resources/wx/html/kontrolerabout.html"));
 }
 
 void szKontroler::OnRapdata(wxCommandEvent &ev) {

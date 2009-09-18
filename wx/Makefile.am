@@ -30,6 +30,7 @@ winsetup:
 		-f wxhelp.exe wxhelp/wxhelp.exe \
 		-f isledit.exe isledit/isledit.exe \
 		-f szast.exe szast/szast.exe \
+		-f kontroler3.exe kontroler3/kontroler3.exe \
 		-d resources \
 		@srcdir@/../resources/dictionary.xml \
 		-f isledit.inx @srcdir@/../wx/isledit/isledit.inx.win \
@@ -51,6 +52,7 @@ winsetup:
 		-f ssc.mo sync/pl/ssc.mo \
 		-f szau.mo szau/pl/szau.mo \
 		-f szast.mo szast/pl/szast.mo \
+		-f kontroler3.mo kontroler3/pl/kontroler3.mo \
 		-f common.mo common/pl/common.mo \
 		-f wx.mo common/pl/wx.mo \
 		-f isledit.po isledit/pl/isledit.mo \
@@ -58,9 +60,12 @@ winsetup:
 		-f draw3.mo draw3/fr/draw3.mo \
 		-f common.mo common/fr/common.mo \
 		-f wx.mo common/fr/wx.mo \
+		-d resources/sounds/ \
+		@srcdir@/../resources/sounds/*.wav \
 		-d resources/wx/html/ \
 		-f raporterabout.html @srcdir@/../resources/wx/html/raporterabout.html \
 		-f ekstraktorabout.html @srcdir@/../resources/wx/html/ekstraktorabout.html \
+		-f kontrolerabout.html @srcdir@/../resources/wx/html/kontrolerabout.html \
 		-f sccabout.html @srcdir@/../resources/wx/html/sccabout.html \
 		-d resources/documentation/new/common \
 		@srcdir@/../resources/documentation/new/common/*.png \
@@ -76,6 +81,12 @@ winsetup:
 		@srcdir@/../resources/documentation/new/ekstraktor3/html/*.map \
 		-d resources/documentation/new/ekstraktor3/html/pics \
 		@srcdir@/../resources/documentation/new/ekstraktor3/html/pics/*.* \
+		-d resources/documentation/new/kontroler/html \
+		@srcdir@/../resources/documentation/new/kontroler/html/*.h* \
+		-d resources/documentation/new/kontroler/html \
+		@srcdir@/../resources/documentation/new/kontroler/html/*.map \
+		-d resources/documentation/new/kontroler/html/pics \
+		@srcdir@/../resources/documentation/new/kontroler/html/pics/*.* \
 		-d resources/documentation/new/draw3/html \
 		@srcdir@/../resources/documentation/new/draw3/html/*.h* \
 		-d resources/documentation/new/draw3/html \

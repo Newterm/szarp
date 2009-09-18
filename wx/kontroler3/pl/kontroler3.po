@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: kontroler3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-09-11 17:42+0200\n"
+"POT-Creation-Date: 2009-09-17 13:05+0200\n"
 "PO-Revision-Date: 2004-08-31 00:19+0200\n"
 "Last-Translator:  <ecto@praterm.com.pl>\n"
 "MIME-Version: 1.0\n"
@@ -61,7 +61,7 @@ msgstr "&Dodaj"
 
 #: kontroler.cc:86
 msgid "&Change"
-msgstr "&Zmieñ"
+msgstr "Z&mieñ"
 
 #: kontroler.cc:87
 msgid "&Delete"
@@ -121,7 +121,7 @@ msgstr "&Raport Opcje"
 
 #: kontroler.cc:118
 msgid "&Help"
-msgstr "&Pomoc"
+msgstr "P&omoc"
 
 #: kontroler.cc:132
 msgid "#"
@@ -221,11 +221,15 @@ msgstr "chwilowa"
 
 #: kontroler.cc:702
 msgid "no data"
-msgstr "brak danych"
+msgstr "brak danych - tylko sprawdzanie transmisji"
 
-#: kontradd.cc:51 kontradd.cc:62 parcalc.cc:39
-msgid "Param"
-msgstr "Parametr"
+#: kontradd.cc:51
+msgid "Parameter"
+msgstr "Parametr monitorowany"
+
+#: kontradd.cc:62
+msgid "Choose parameter"
+msgstr "Wybierz parametr"
 
 #: kontradd.cc:67
 msgid "Formula"
@@ -237,67 +241,79 @@ msgstr "Warunki"
 
 #: kontradd.cc:80
 msgid "Only validate"
-msgstr "Brak danych"
+msgstr "Brak danych - tylko sprawdzenie transmisji"
 
-#: kontradd.cc:100
+#: kontradd.cc:87
+msgid "Minimal value:"
+msgstr "Warto¶æ minimalna:"
+
+#: kontradd.cc:96
+msgid "Maximal value:"
+msgstr "Warto¶æ maksymalna:"
+
+#: kontradd.cc:106
 msgid "Monitored value:"
 msgstr "Warto¶æ monitorowana:"
 
-#: kontradd.cc:103
+#: kontradd.cc:109
 msgid "Actual"
 msgstr "Chwilowa"
 
-#: kontradd.cc:104
+#: kontradd.cc:110
 msgid "Minute average"
 msgstr "¦rednia minutowa"
 
-#: kontradd.cc:105
+#: kontradd.cc:111
 msgid "10 Minutes average"
 msgstr "¦rednia 10-minutowa"
 
-#: kontradd.cc:106
+#: kontradd.cc:112
 msgid "Hour average"
 msgstr "¦rednia godzinowa"
 
-#: kontradd.cc:126 kontralarm.cc:39
+#: kontradd.cc:132 kontralarm.cc:39
 msgid "Alarm"
 msgstr ""
 
-#: kontradd.cc:130
+#: kontradd.cc:136
 msgid "Alarm type:"
 msgstr "Typ alarmu:"
 
-#: kontradd.cc:134 parcalc.cc:58
+#: kontradd.cc:140 parcalc.cc:58
 msgid "1"
 msgstr ""
 
-#: kontradd.cc:135 parcalc.cc:59
+#: kontradd.cc:141 parcalc.cc:59
 msgid "2"
 msgstr ""
 
-#: kontradd.cc:136 parcalc.cc:60
+#: kontradd.cc:142 parcalc.cc:60
 msgid "3"
 msgstr ""
 
-#: kontradd.cc:137
+#: kontradd.cc:143
 msgid "4 (yellow)"
 msgstr "4 (¿ó³ty)"
 
-#: kontradd.cc:138
+#: kontradd.cc:144
 msgid "5 (red)"
 msgstr "5 (czerwony)"
 
-#: kontradd.cc:154
+#: kontradd.cc:160
 msgid "Alternative name of parameter"
 msgstr "Alternatywna nazwa parametru"
 
-#: kontradd.cc:176
+#: kontradd.cc:182
 msgid "Kontroler->Add->Param"
 msgstr "Kontroler->Dodaj->Parametr"
 
-#: kontradd.cc:179
+#: kontradd.cc:185
 msgid "Kontroler->Add->Formula"
 msgstr "Kontroler->Dodaj->Formu³a"
+
+#: parcalc.cc:39
+msgid "Param"
+msgstr "Parametr"
 
 #: parcalc.cc:43
 msgid "C"
@@ -406,10 +422,7 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "Cancel"
-#~ msgstr "AAnuluj"
-
-#~ msgid "value "
-#~ msgstr "warto¶æ "
+#~ msgstr "Anuluj"
 
 #~ msgid "Group &3"
 #~ msgstr "Grupa &3"
