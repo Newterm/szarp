@@ -29,6 +29,7 @@ LDADD = @PTHREAD_CFLAGS@ @XML_LIBS@ @LUA_LIBS@ @BOOST_LDFLAGS@ @BOOST_FILESYSTEM
 
 bin_PROGRAMS = \
               alstdmn \
+	      calecdmn \
 	      dbdmn \
               fp2kdmn \
               endmn \
@@ -84,6 +85,9 @@ lbdmn_LDADD = $(LIBSZARP)
 
 alstdmn_SOURCES = alstdmn.cc
 alstdmn_LDADD = $(LIBSZARP)
+
+calecdmn_SOURCES = calecdmn.cc
+calecdmn_LDADD = $(LIBSZARP2) $(LIBSZARP) $(LDADD)
 
 dbdmn_SOURCES = dbdmn.cc
 dbdmn_LDADD =  $(LIBSZARP2) $(LIBSZARP) $(LDADD)
