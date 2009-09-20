@@ -83,33 +83,29 @@ FunctionEnd
 
 ; Delete Start Menu
 Function un.DeleteStartMenu
-	!insertmacro MUI_STARTMENU_GETFOLDER "Szarp" $R0
-	
-	Delete "$SMPFUNC_TEMPGRAMS\$R0\Centrum Sterowania.lnk"
-	Delete "$SMPFUNC_TEMPGRAMS\$R0\Synchronizator danych.lnk"
-	Delete "$SMPFUNC_TEMPGRAMS\$R0\Odinstaluj Szarp.lnk"
-	Delete "$SMPFUNC_TEMPGRAMS\$R0\Szau.lnk"
-	Delete "$SMPFUNC_TEMPGRAMS\$R0\Szast.lnk"
-	Delete "$SMPFUNC_TEMPGRAMS\$R0\desktop.ini"
+	ReadRegStr $1 HKCU "Software\SZARP" "Start_Menu_Folder"
 	Delete "$SMSTARTUP\Centrum Sterowania.lnk"
 	Delete "$SMSTARTUP\Synchronizator danych.lnk"
 	Delete "$SMSTARTUP\Szau.lnk"
-	
-	RMDir "$SMPFUNC_TEMPGRAMS\$RO"
+ 	Delete "$SMPROGRAMS\$1\Synchronizator danych.lnk"
+	Delete "$SMPROGRAMS\$1\Centrum Sterowania.lnk"
+	Delete "$SMPROGRAMS\$1\Szau.lnk" 
+	Delete "$SMPROGRAMS\$1\Szast.lnk"
+	Delete "$SMPROGRAMS\$1\Kontroler.lnk" 
+	RMDir  "$SMPROGRAMS\$1"	
 FunctionEnd
 
 Function DeleteStartMenu
-	!insertmacro MUI_STARTMENU_GETFOLDER "Szarp" $R0
-	
-	Delete "$SMPFUNC_TEMPGRAMS\$R0\Centrum Sterowania.lnk"
-	Delete "$SMPFUNC_TEMPGRAMS\$R0\Synchronizator danych.lnk"
-	Delete "$SMPFUNC_TEMPGRAMS\$R0\Odinstaluj Szarp.lnk"
-	Delete "$SMPFUNC_TEMPGRAMS\$R0\Szau.lnk"
-	Delete "$SMPFUNC_TEMPGRAMS\$R0\Szast.lnk"
-	Delete "$SMPFUNC_TEMPGRAMS\$R0\desktop.ini"
+	ReadRegStr $1 HKCU "Software\SZARP" "Start_Menu_Folder"
 	Delete "$SMSTARTUP\Centrum Sterowania.lnk"
 	Delete "$SMSTARTUP\Synchronizator danych.lnk"
 	Delete "$SMSTARTUP\Szau.lnk"
+ 	Delete "$SMPROGRAMS\$1\Synchronizator danych.lnk"
+	Delete "$SMPROGRAMS\$1\Centrum Sterowania.lnk"
+	Delete "$SMPROGRAMS\$1\Szau.lnk" 
+	Delete "$SMPROGRAMS\$1\Szast.lnk"
+	Delete "$SMPROGRAMS\$1\Kontroler.lnk" 
+	RMDir  "$SMPROGRAMS\$1"	
 FunctionEnd
 
 ; Delete animation icons
@@ -220,7 +216,7 @@ Var MUI_TEMP
 !define MUI_STARTMENUPAGE_DEFAULTFOLDER "SZARP"
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT "HKCU"
 !define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\SZARP"
-!define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "Start Menu Folder"
+!define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "Start_Menu_Folder"
 
 !define MUI_PAGE_CUSTOMFUNCTION_PRE CheckPrevInstall
 !insertmacro MUI_PAGE_STARTMENU "SZARP" $STARTMENU_FOLDER
@@ -336,6 +332,15 @@ Section "SZARP (required)" MainSection
 	"SW_SHOWNORMAL" \
 	"" \
 	"Ustawienia parametrów regulatorów"
+    CreateShortCut \
+    	"$SMPROGRAMS\$STARTMENU_FOLDER\Kontroler.lnk" \
+	"$INSTDIR\bin\KONTROLER3.EXE" \
+	"" \
+	"$INSTDIR\resources\icons\kontroler3.ico" \
+	0 \
+	"SW_SHOWNORMAL" \
+	"" \
+	"Kontrola parametrów"
     CreateShortCut \
     	"$SMSTARTUP\Synchronizator danych.lnk" \
 	"$INSTDIR\bin\SSC.EXE" \

@@ -100,7 +100,7 @@ FunctionEnd
 Function CheckSzarp
 	
 	ReadRegStr $INSTDIR HKLM "Software\SZARP" "Install_Dir"
-	ReadRegStr $STARTMENU_FOLDER HKCU "Software\SZARP" "Start Menu Folder"
+	ReadRegStr $STARTMENU_FOLDER HKCU "Software\SZARP" "Start_Menu_Folder"
 
 	StrCpy $PAGE_SUBH "Nie znaleziono bibliotek SZARP"
 	StrCmp $INSTDIR "" NoSzarp
@@ -116,8 +116,7 @@ Function CheckSzarp
 		Quit 
 	Ok:
 		WriteRegStr HKCU "Software\SZARP__NAME__" \
-			"Start Menu Folder" $STARTMENU_FOLDER
-
+			"Start_Menu_Folder" $STARTMENU_FOLDER
 	NoStartMenu:
 	
 FunctionEnd
@@ -348,7 +347,7 @@ Section "Uninstall"
   Delete $INSTDIR\uninstall__NAME__.exe
 
   ; Clean StartMenu
-  ReadRegStr $MUI_TEMP HKCU "Software\SZARP__NAME__" "Start Menu Folder"
+  ReadRegStr $MUI_TEMP HKCU "Software\SZARP__NAME__" "Start_Menu_Folder"
 
   StrCmp $MUI_TEMP "" startMenuDeleteLoopDone
   
@@ -359,7 +358,6 @@ Section "Uninstall"
   Delete "$SMPROGRAMS\$STARTMENU_FOLDER\SZAU.lnk" 
   Delete "$SMSTARTUP\SSC.lnk" 
   Delete "$SMSTARTUP\SCC.lnk" 
-  Delete "$SMPROGRAMS\$STARTMENU_FOLDER\SZAU.lnk" 
 !endif
 
 

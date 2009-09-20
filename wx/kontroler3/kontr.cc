@@ -30,6 +30,11 @@
  */
 bool kontrApp::OnInit() {
 
+    if (szApp::OnInit() == false)
+	    return false;
+
+    this->SetProgName(_("Kontroler"));
+
     wxLog *logger=new wxLogStderr();
     wxLog::SetActiveTarget(logger);
 

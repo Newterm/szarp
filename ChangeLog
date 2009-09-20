@@ -1,5 +1,12 @@
 $Id$
 
+2009-09-20	Adam Smyk <asmyk@praterm.pl>
+	* wx/kontroler3/kontr.cc: some modification for locale 
+	identification 
+	* resource/wx/icons: new icon for kontroler3
+	* script/nsis/*: kontroler3 in start menu on windows, bug in 
+	deinstaller fixed (shortcuts from start menu are correctly 
+	removed)  
 2009-09-19	Pawe³ Pa³ucha <pawel@praterm.com.pl>
 	* parcook/calecdmn.cc: daemon for Calec MCP-300 heatmeter - work in
 	progress.
