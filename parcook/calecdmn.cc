@@ -30,7 +30,7 @@
   R: ACK
   Q: <AD1,AD2> (register address in MCP format, see below)
   R: <data> (4 bytes)
-  R: <checksum> (1 byte - lower byte of arithmetic sum of 6 bytes, starting from AD1)
+  R: <checksum> (1 byte - lower byte of arithmetic sum of previous 6 bytes, starting from AD1)
 
   MCP address format, R is register address:
   AD2 = R & 0xFF
@@ -50,17 +50,17 @@
   mantisa M = 0.1mmmmmmmmmmmmmmmmmmmmmmmmm
   E = eeeeeeee : -127 << 127 (signed 7 bytes integer)
   value = M*2^E
-  If value is negative, 3 first bytes are inverted (byte by byte).
+  If value is negative, 3 first bytes are inverted (bit by bit).
 
   Available registers (value, address, number of bytes, coding, unit):
 
-  1	Energy meter		0x2000	4	fixedpoint	GJ
-  2	Volume meter		0x2040	4	fixedpoint	m3
+  1	Energy meter		0x2000	4	fixedpoint	10 * MWh
+  2	Volume meter		0x2040	4	fixedpoint	10 * t
   3	Output temperature	0x2080	4	floatingpoint	C degree
   4	Return temperature	0x2084	4	floatingpoint	C degree
   5	Temperature difference	0x2088	4	floatingpoint	C degree
-  6	Flow			0x2098	4	floatingpoint	liter/h
-  7	Power			0x209c	4	floatingpoint	W
+  6	Flow			0x2098	4	floatingpoint	kg/h
+  7	Power			0x209c	4	floatingpoint	kW
   8	Serial number		0x0100	16	ASCII
   9	Number of impulses	0x018c	4	floatingpoint	-
 
@@ -96,6 +96,7 @@
 #include <sys/time.h>
 #include <termio.h>
 #include <fcntl.h>
+#include <netinet/in.h>
 
 #include "ipchandler.h"
 #include "liblog.h"
@@ -158,10 +159,27 @@ protected :
 	 * @param address register address
 	 * @param size number of output parameters (1 or 2)
 	 * @param fixed register format, 1 for fixed point, 0 for floating point
+	 * @param precision value multiplier
 	 * @param output output buffer
-	 * @return 0 on success, 1 on error
+	 * @return 0 when we should continue with reading next registers, 1 if there was
+	 * a serious error and we should close port
 	 */
-	int ReadRegister(int address, int size, int fixed, short* output);
+	int ReadRegister(int address, int size, int fixed, int precision, short* output);
+	/** Convert address to MCP address format.
+	 * @param address register address to convert
+	 * @param buf 2 bytes buffer for conversion result
+	 */
+	void MCPAddress(int address, unsigned char buf[2]);
+	/** Decode MCP representation of fixed-point value.
+	 * @param buf 4 bytes returned by heatmeter
+	 * @param err pointer to error code, set to 1 on error, 0 otherwise
+	 * @return result value, unspecified on error
+	 */
+	unsigned long DecodeFixed(unsigned char buf[4], int* err);
+	/** Decode MCP representation of floating-point value.
+	 * @see DecodeFixed
+	 */
+	double DecodeFloating(unsigned char buf[4], int* err);
 };
 
 /**
@@ -289,8 +307,100 @@ int CalecDaemon::Read(unsigned char* buffer, int count)
 	}
 	return count;
 }
+	
+void CalecDaemon::MCPAddress(int address, unsigned char buf[2])
+{
+	address = htons(address);
+	memcpy(buf, &address, 2);
+	buf[0] = (buf[0] & 0x07) | ((buf[0] & 0x70) << 1);
+}
+	
+unsigned long CalecDaemon::DecodeFixed(unsigned char buf[4], int* err)
+{
+	*err = 1;
+	/*
 
-int CalecDaemon::ReadRegister(int address, int size, int fixed, short* output)
+	{ buf[0]}  { buf[1]}  { buf[2]}  { buf[3]}
+	1111 bbbb  bbbb bbbb  bbbb bbbb  0000 dddd
+	     { 6 digits: 0 - 999,999  }       { first digit 
+	                                         }
+	  */
+	if ((buf[0] & 0xF0) != 0xF0) {
+		if (m_single) {
+			printf("First 4 bits of fixed point value not set!\n");
+		}
+		return 0;
+	}
+	if ((buf[3] & 0xF0) != 0x00) {
+		if (m_single) {
+			printf("Bits 25 - 28 of fixed point value not set to 0!\n");
+		}
+		return 0;
+	}
+	*err = 0;
+	unsigned long val = ((((unsigned long)buf[3]) & 0x0F) * 1000000)
+		+ (unsigned long)buf[2]
+		+ (((unsigned long)buf[1]) << 8)
+		+ (((unsigned long)(buf[0] & 0x0F)) << 16);
+	if (m_single) {
+		printf("Got fixed point value: %0ld\n", val);
+	}
+	return val;
+}
+	
+double CalecDaemon::DecodeFloating(unsigned char buf[4], int* err)
+{
+	*err = 0;
+	double val;
+
+	/*
+
+	{ buf[0]}  { buf[1]}  { buf[2]}  { buf[3]}
+	s1mm mmmm  mmmm mmmm  mmmm mmmm  eeee eeee
+
+	s = sign, 0 - positive, 1 - negative, if 1, 3 first bytes are bit-inverted
+	M (mantisa) = 0.1mmmmmmmmmmmmmmmmmmmmmm (binary)
+	E (exponent) = eeeeeeee (signed, -127 - 128)
+
+	val = s * M * 2^E
+
+	  */
+
+	double sign = 1;
+	if (buf[0] & 0x80) {
+		/* negative value, we have to inverse 3 first bytes */
+		sign = -1;
+		buf[0] = ~buf[0];
+		buf[1] = ~buf[1];
+		buf[2] = ~buf[2];
+	}
+	if ((buf[0] | buf[1] | buf[2] | buf[3]) == 0x00) {
+		val = 0.0;
+	} else if ((buf[0] & 0x40) == 0) {
+		*err = 1;
+		if (m_single) {
+			printf("Second bit of floating point value should be 1!");
+		}
+		return 0;
+	} else {
+		/* treat mantisa as integer ... */
+		unsigned long mant = 
+			(unsigned long)buf[2] 
+			+ (((unsigned long)buf[1]) << 8) 
+			+ ((unsigned long)(buf[0] & 0x7F) << 16);
+		/* so we need to shift result by 23 bits */
+		long exp = 
+			(long)((signed char)buf[3]) - 23; 
+		val = (double)mant * pow(2.0, (double)exp) * sign;
+	}
+	if (m_single) {
+		printf("Got floating point value: %g\n", val);
+	}
+	return val;
+}
+
+
+int CalecDaemon::ReadRegister(int address, int size, int fixed, int precision, short* output)
 {
 	unsigned char buf[16];
 
@@ -368,8 +478,7 @@ int CalecDaemon::ReadRegister(int address, int size, int fixed, short* output)
 		printf("Got 'ACK'\n");
 	}
 
-	buf[0] = ((address >> 8) & 0x07) | ((address & 0x70) << 1);
-	buf[1] = (unsigned char) (address & 0xFF);
+	MCPAddress(address, buf);
 
 	int checksum = buf[0] + buf[1];
 
@@ -409,6 +518,30 @@ int CalecDaemon::ReadRegister(int address, int size, int fixed, short* output)
 	if (checksum != (int)buf[4]) {
 		return 1;
 	}
+	
+	long val;
+	if (fixed) {
+		int err;
+		val = DecodeFixed(buf, &err);
+		if (err != 0) {
+			sz_log(1, "Incorrect fixed point value format for register 0x%02x", address);
+		}
+		val *= precision;
+	} else {
+		int err;
+		double fval = DecodeFloating(buf, &err);
+		if (err != 0) {
+			sz_log(1, "Incorrect floating point value format for register 0x%02x", address);
+		}
+		fval *= precision;
+		val = (double)fval;
+	}
+	if (size == 2) {
+		output[0] = (short)((val >> 16) & 0xFFFF);
+		output[1] = (short)(val & 0xFFFF);
+	} else {
+		output[0] = (short)val;
+	}
 	return 0;
 }
 
@@ -417,6 +550,7 @@ int CalecDaemon::ReadData(IPCHandler *ipc)
 	int registers[CALEC_REGISTERS_COUNT] = { 0x2000, 0x2040, 0x2080, 0x2084, 0x2098, 0x209c };
 	int sizes[CALEC_REGISTERS_COUNT] = { 2, 2, 1, 1, 1, 1 };
 	int fixed[CALEC_REGISTERS_COUNT] = { 1, 1, 0, 0, 0, 0 };
+	int precisions[CALEC_REGISTERS_COUNT] = { 1, 1, 100, 100, 10, 10 };
 
 
 	for (int i = 0; i < m_params_count; i++) {
@@ -426,7 +560,8 @@ int CalecDaemon::ReadData(IPCHandler *ipc)
 
 	int param_num = 0;
 	for (int i = 0; i < CALEC_REGISTERS_COUNT; i++) {
-		if (ReadRegister(registers[i], sizes[i], fixed[i], ipc->m_read + param_num) != 0) {
+		if (ReadRegister(registers[i], sizes[i], fixed[i], precisions[i], 
+					ipc->m_read + param_num) != 0) {
 			return 1;
 		}
 		param_num += sizes[i];
@@ -484,6 +619,15 @@ int main(int argc, char *argv[])
 	}
 
 	ipc = new IPCHandler(cfg);
+	if (ipc->m_params_count != CALEC_PARAMS_COUNT) {
+		if (cfg->GetSingle()) {
+			printf("Params count %d != %d, exiting\n", ipc->m_params_count, 
+					CALEC_PARAMS_COUNT);
+		}
+		sz_log(0, "params count should be %d, found %d params", CALEC_PARAMS_COUNT,
+				ipc->m_params_count);
+		return 1;
+	}
 	if (!cfg->GetSingle()) {
 		if (ipc->Init())
 			return 1;

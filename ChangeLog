@@ -1,5 +1,7 @@
 $Id$
 
+2009-09-21	Pawe³ Pa³ucha <pawel@praterm.com.pl>
+	* parcook/calecdmn.cc: daemon for Calec MCP-300 heatmeter.
 2009-09-20	Adam Smyk <asmyk@praterm.pl>
 	* wx/kontroler3/*: kontroler works on a taskbar (works on linux
 	and windows)
