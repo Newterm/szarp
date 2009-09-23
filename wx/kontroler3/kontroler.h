@@ -101,8 +101,6 @@ public:
   virtual ~szKontroler();
 
   void ConfirmAlarm(wxString param_name);
-  /** true if window is already on screen */
-  bool m_on_screen;
 protected:
   void RegisterControlRaport(szParList &parlist);
   /** menu: param->load */

@@ -21,7 +21,6 @@
 #include "libpar.h"
 
 #include "kontr.h"
-#include "kontrtaskbaritem.h"
 #include "kontroler.h"
 #include "cconv.h"
 #include "szapp.h"
@@ -106,10 +105,15 @@ bool kontrApp::OnInit() {
     wxConfig::Get()->Read(_T("operator_mode"), &operator_mode);
     wxConfig::Get()->Flush();
 
-	SetAppName(_("Kontroler"));
-	KontrolerTaskBarItem* k = new KontrolerTaskBarItem(remote_mode, operator_mode, server);
+    szKontroler *kontroler = new szKontroler(NULL, remote_mode, operator_mode, server);
 
-    return true;
+    if (kontroler->loaded)  {
+      return true;
+    } else {
+      delete geometry;
+      delete kontroler;
+      return false;
+    }
 }
 
 IMPLEMENT_APP(kontrApp)

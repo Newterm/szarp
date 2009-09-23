@@ -30,7 +30,6 @@
 
 #include "kontradd.h"
 #include "kontropt.h"
-#include "kontrtaskbaritem.h"
 
 #include "kontr.h"
 #include "kontroler.h"
@@ -67,7 +66,6 @@ szKontroler::szKontroler(wxWindow *par, bool remote_mode, bool operator_mode, wx
   }
 
   loaded = true;
-  m_on_screen = false;
   m_editing = false;
   m_server = server;
   m_period = 10;
@@ -98,7 +96,7 @@ szKontroler::szKontroler(wxWindow *par, bool remote_mode, bool operator_mode, wx
   	menu_param->Append(ID_M_AUTH, _("Set &username and password"));
   }
   menu_param->AppendSeparator();
-  menu_param->Append(ID_M_PARAM_EXIT, _("&Hide window"));
+  menu_param->Append(ID_M_PARAM_EXIT, _("E&xit"));
   
   wxMenu *menu_rapopt = new wxMenu();
   menu_rapopt->AppendCheckItem(ID_M_RAPOPT_GR5, _("Type &5 (red)"));
@@ -169,7 +167,7 @@ szKontroler::szKontroler(wxWindow *par, bool remote_mode, bool operator_mode, wx
   
   SetSizer(top_sizer);
   SetSize(wxSize(900, 300));
-  SetIcon(wxIcon(kontroler3_xpm));
+  Show(true);
 
   /* Load sounds */
   wxString sound_dir = wxGetApp().GetSzarpDir() + _T("resources/sounds/");
@@ -570,9 +568,11 @@ void szKontroler::OnParamList(wxCommandEvent &ev) {
 }
 
 void szKontroler::OnExit(wxCommandEvent &ev) {
-  m_on_screen = false;
-  SaveKonFile(XKON_DEFAULT);
-  Show(false);
+  if (wxMessageBox(_("You really wan't end?"), _("Kontroler->End"),
+        wxOK | wxCANCEL, this) == wxOK) {
+    SaveKonFile(XKON_DEFAULT);
+    this->Destroy();
+  }
 }
 
 void szKontroler::OnRapoptGroup(wxCommandEvent &ev) {
@@ -590,13 +590,11 @@ void szKontroler::OnClose(wxCloseEvent &event) {
 			if (!m_remote_mode)
 				SaveKonFile(XKON_DEFAULT);
 			Destroy();
-			exit(0);
   		} else {
 			event.Veto();
 		}
 	} else {
 	    Destroy();
-	    exit(0);
 	}
 
 }
