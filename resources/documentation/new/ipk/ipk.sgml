@@ -5518,6 +5518,21 @@ poprzednie.
                 </listitem>
                 <listitem>
                     <para>
+			wystêpuje dodatkowy operator <emphasis>m</emphasis>, 
+			s³u¿±cy do szybkiego odfiltrowania b³êdnych (za ma³ych)
+			warto¶ci; je¶li drugi od góry element na stosie jest
+			mniejszy ni¿ pierwszy od góry, to na stosie wstawiana jest
+			warto¶æ NO_DATA; wpp. zostaje warto¶æ drugiego od góry
+			elementu.
+		     </para>
+		     <para>Przyk³adowo:
+			     <programlisting>(Sieæ:Sterownik:temperatura zasilania) 0 m</programlisting>
+			     powy¿sza formu³a spowoduje ¿e je¶li warto¶æ parametru bêdzie mniejsza
+			     od zera, to nie zostanie uwzglêdniona (pojawi siê warto¶æ brak danych).
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
                         nie s± dostêpne operatory <emphasis>^</emphasis>,
                         <emphasis>X</emphasis>, <emphasis>S</emphasis> oraz
                         <emphasis>:</emphasis>,

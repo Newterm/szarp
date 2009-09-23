@@ -1,5 +1,12 @@
 $Id$
 
+2009-09-23	Pawe³ Pa³ucha <pawel@praterm.com.pl>
+	* ipk.sgml: description of 'm' function.
+	* parcook/parcook.cc: added RPN 'm' function for fast filetring of
+	incorrect values.
+	* parcook/mbrtudmn.cc: fixed timing for configuration with more then 1
+	units per device.
+	* resources/Makefile.am: sounds directory installation fix.
 2009-09-23	Darek Marcinkiewicz <reksio@praterm.pl>
 	* wx/kontroler3: reverting (temporarily I hope) latest changes to kontroler,
 	they make application unusable

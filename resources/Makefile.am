@@ -24,6 +24,7 @@ RESOURCES = \
        @srcdir@/parcook.vim \
        @srcdir@/ptt.vim \
        @srcdir@/rap.vim \
+       @srcdir@/sounds \
        @srcdir@/szablon.vim \
        @srcdir@/szarp.vim \
        @srcdir@/wx \

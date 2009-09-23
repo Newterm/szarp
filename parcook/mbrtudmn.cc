@@ -1917,6 +1917,16 @@ void ModbusLine::PerformCycle() {
 }
 
 void ModbusLine::Go() {
+	int max_cycle = 0;
+	int current_cycle = 0;
+	vector<ModbusUnit*>::iterator i;
+
+	for (i = m_units.begin(); i != m_units.end(); ++i) {
+		int v = (*i)->m_params_count + (*i)->m_sends_count;
+		if (v > max_cycle) {
+			max_cycle = v;
+		}
+	}
 
 	m_fd = InitComm(SC::S2A(m_cfg->GetDevice()->GetPath()).c_str(),
 			     m_cfg->GetDevice()->GetSpeed(), 8, m_stop_bits, m_parity);
@@ -1938,6 +1948,7 @@ void ModbusLine::Go() {
 		}
 
 		PerformCycle();
+		current_cycle = (current_cycle + 1) % max_cycle;
 
 finish_cycle:
 		if (m_always_init_port && (m_fd != -1)) {
@@ -1945,13 +1956,15 @@ finish_cycle:
 			m_fd = -1;
 		}
 
-		time_t now = time(NULL);
-		int s = 10 - (now - start);
-		if (s < 1) 
-			sz_log(3, "Cycle lasts longer than 10sec (%ld)!!!", (now - start));
-
-		if (s > 0)
-			while ((s = sleep(s)) > 0);
+		if (current_cycle == 0) {
+			time_t now = time(NULL);
+			int s = 10 - (now - start);
+			if (s < 1) 
+				sz_log(3, "Cycle lasts longer than 10sec (%ld)!!!", (now - start));
+			
+			if (s > 0)
+				while ((s = sleep(s)) > 0);
+		}
 	} while (true);
 
 }
