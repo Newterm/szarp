@@ -28,10 +28,47 @@
 /**
  * Main app class
  */
+
+bool kontrApp::OnCmdLineError(wxCmdLineParser &parser) {
+	return true;
+}
+
+bool kontrApp::OnCmdLineHelp(wxCmdLineParser &parser) {
+	parser.Usage();
+	return false;
+}
+
+
+bool kontrApp::OnCmdLineParsed(wxCmdLineParser &parser) {
+	if (parser.GetParamCount() > 0)
+		server = parser.GetParam(0);
+	wxLogInfo(_T("server: %s"), server.c_str());
+
+	return true;
+}
+
+void kontrApp::OnInitCmdLine(wxCmdLineParser &parser) {
+	szApp::OnInitCmdLine(parser);
+
+	parser.SetLogo(_("Szarp Kontroler version 3.00 (in-progress)."));
+	parser.AddParam(_T("server"), wxCMD_LINE_VAL_STRING,
+			wxCMD_LINE_PARAM_OPTIONAL);
+	parser.AddOption(_T("D<name>=<str>"), wxEmptyString, _("libparnt value initialization"));
+	parser.AddSwitch(_T("h"), _("help"), _("show help"), wxCMD_LINE_OPTION_HELP);
+}
+
 bool kontrApp::OnInit() {
 
     if (szApp::OnInit() == false)
 	    return false;
+
+// To remove 
+#if wxUSE_UNICODE
+	libpar_read_cmdline_w(&argc, argv);
+#else //wxUSE_UNICODE
+	libpar_read_cmdline(&argc, argv);
+#endif //wxUSE_UNICODE
+
 
     this->SetProgName(_("Kontroler"));
 
@@ -61,39 +98,12 @@ bool kontrApp::OnInit() {
       return false;
     }
 
-// To remove 
-#if wxUSE_UNICODE
-    libpar_read_cmdline_w(&argc, argv);
-#else //wxUSE_UNICODE
-    libpar_read_cmdline(&argc, argv);
-#endif //wxUSE_UNICODE
-
     wxCmdLineParser parser;
 
     xmlInitParser();
     xmlSubstituteEntitiesDefault(1);
     szHTTPCurlClient::Init();
 
-    wxString *geometry = new wxString;
-    parser.SetLogo(_("Szarp Kontroler version 3.00 (in-progress)."));
-    parser.AddOption(_T("geometry"), wxEmptyString, _("X windows geometry specification"), wxCMD_LINE_VAL_STRING);
-    parser.AddSwitch(_T("D<name>=<str>"), wxEmptyString, _("libparnt value initialization"));
-    parser.AddSwitch(_T("h"), _T("help"), _("print usage info"));
-    parser.AddOption(_T("server"), wxEmptyString, _("server url"), wxCMD_LINE_VAL_STRING);
-    parser.SetCmdLine(argc, argv);
-    if (parser.Parse(false) || parser.Found(_T("h"))) {
-      parser.Usage();
-      return false;
-    }
-
-    if (!parser.Found(_T("geometry"), geometry)) {
-      delete geometry;
-      geometry = NULL;
-    }
-
-    wxString server;
-    parser.Found(_T("server"), &server);
-    wxLogError(_T("server: %s"), server.c_str());
 
 #if wxUSE_LIBPNG
     wxImage::AddHandler( new wxPNGHandler() );
@@ -110,7 +120,6 @@ bool kontrApp::OnInit() {
     if (kontroler->loaded)  {
       return true;
     } else {
-      delete geometry;
       delete kontroler;
       return false;
     }

@@ -56,7 +56,8 @@ szKontroler::szKontroler(wxWindow *par, bool remote_mode, bool operator_mode, wx
   loaded = false;
   bool ask_for_server=false;
   while (ipk == NULL) {
-	server = szServerDlg::GetServer(server, _T("Kontroler"), ask_for_server);
+	if (server.IsEmpty())
+		server = szServerDlg::GetServer(server, _T("Kontroler"), ask_for_server);
 	if (server == wxEmptyString ||
 	    server.IsSameAs(_T("Cancel")))
 		exit(0);

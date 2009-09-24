@@ -22,7 +22,12 @@
  */
 class kontrApp: public szApp {
   wxLocale locale;
+  wxString server;
 protected:
+  virtual bool OnCmdLineError(wxCmdLineParser &parser);
+  virtual bool OnCmdLineHelp(wxCmdLineParser &parser);
+  virtual bool OnCmdLineParsed(wxCmdLineParser &parser);
+  virtual void OnInitCmdLine(wxCmdLineParser &parser);
   virtual bool OnInit();
 };
 

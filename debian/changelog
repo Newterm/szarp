@@ -1,3 +1,9 @@
+szarp (3.1.127) stable; urgency=low
+
+  * upstream version 3.1.127
+
+ -- Darek Marcinkiewicz <reksio@praterm.pl>  Thu, 24 Sep 2009 14:35:05 +0200
+
 szarp (3.1.126) stable; urgency=low
 
   * upstream version 3.1.126

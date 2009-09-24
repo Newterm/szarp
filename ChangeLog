@@ -1,5 +1,7 @@
 $Id$
 
+2009-09-24	Darek Marcinkiewicz <reksio@praterm.pl>
+	* wx/kontroler3: fixed command line parsing
 2009-09-24	Pawe³ Pa³ucha <pawel@praterm.com.pl>
 	* parcook/calecdmn.cc: communication frequency changed to 30 seconds.
 	* debian/packs.files: resources/sounds added to szarp-wx package.
