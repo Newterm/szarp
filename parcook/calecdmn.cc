@@ -106,7 +106,7 @@
 #include <string>
 using std::string;
 
-#define DAEMON_INTERVAL 10
+#define DAEMON_INTERVAL 30
 #define	DAEMON_TIMEOUT	5
 #define CALEC_PARAMS_COUNT	8
 #define CALEC_REGISTERS_COUNT	6

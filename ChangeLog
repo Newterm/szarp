@@ -1,5 +1,8 @@
 $Id$
 
+2009-09-24	Pawe³ Pa³ucha <pawel@praterm.com.pl>
+	* parcook/calecdmn.cc: communication frequency changed to 30 seconds.
+	* debian/packs.files: resources/sounds added to szarp-wx package.
 2009-09-23	Pawe³ Pa³ucha <pawel@praterm.com.pl>
 	* ipk.sgml: description of 'm' function.
 	* parcook/parcook.cc: added RPN 'm' function for fast filetring of
