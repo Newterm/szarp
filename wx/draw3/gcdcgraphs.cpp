@@ -420,6 +420,24 @@ void GCDCGraphs::DrawYAxisVals(wxGraphicsContext& dc) {
 
 }
 
+void GCDCGraphs::DrawNoData(wxGraphicsContext &dc) {
+	wxFont font = GetFont();
+	font.SetPointSize(font.GetPointSize() + 8);
+	dc.SetFont(font, *wxWHITE);
+
+	int w, h;
+	GetClientSize(&w, &h);
+
+	w -= m_screen_margins.leftmargin - m_screen_margins.rightmargin;
+	h -= m_screen_margins.topmargin - m_screen_margins.bottommargin;
+
+	wxString sval = _("No data");
+	double textw, texth, textd, textel;
+	dc.GetTextExtent(sval, &textw, &texth, &textd, &textel);
+	dc.DrawText(sval, m_screen_margins.leftmargin + w / 2 - textw / 2 - 1, m_screen_margins.topmargin + h / 2 - texth / 2);
+
+}
+
 void GCDCGraphs::DrawGraphs(wxGraphicsContext &dc) {
 	dc.SetPen(wxPen(wxColour(255, 255, 255), 1, wxSOLID));
 
@@ -493,6 +511,8 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 			path->MoveToPoint(x, y);
 			if (d->GetPeriod() != PERIOD_T_DAY)
 				path->AddEllipse(x - 3, y - 3, 6, 6);
+			else if (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())
+				path->AddCircle(x - 1, y, 1);
 
 			switched_to_alternate = true;
 
@@ -502,12 +522,17 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 		if (i >= dce && switched_to_alternate && !switched_back) {
 			if (prev_data) 
 				path->AddLineToPoint(x, y);
-			if (d->GetPeriod() != PERIOD_T_DAY) {
-				if (i == dce)
-					path2.AddEllipse(x - 3, y - 3, 6, 6);
-				else
-					path1.AddEllipse(x - 3, y - 3, 6, 6);
-			}
+			wxGraphicsPath* p;
+			if (i == dce)
+				p = &path2;
+			else
+				p = &path1;
+
+			if (d->GetPeriod() != PERIOD_T_DAY)
+				p->AddEllipse(x - 3, y - 3, 6, 6);
+			else if (!prev_data && (i + 1) < pc && !d->GetValuesTable().at(i + 1).IsData())
+				p->AddCircle(x - 1, y, 1);
+
 
 			path = &path1;
 			path->MoveToPoint(x, y);
@@ -525,6 +550,8 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 
 			if (d->GetPeriod() != PERIOD_T_DAY)
 				path->AddEllipse(x - 3, y - 3, 6, 6);
+			else if (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())
+				path->AddCircle(x - 1, y, 1);
 		}
 		
 		prev_data = true;
@@ -572,7 +599,10 @@ void GCDCGraphs::OnPaint(wxPaintEvent& e) {
 	DrawUnit(*dc);
 	DrawWindowInfo(*dc);
 	DrawSeasonsLimitsInfo(*dc);
-	DrawGraphs(*dc);
+	if (m_draws_wdg->IsNoData() == true)
+		DrawNoData(*dc);
+	else
+		DrawGraphs(*dc);
 	DrawRemarksBitmaps(*dc);
 
 	delete dc;

@@ -228,26 +228,10 @@ void FrameManager::LoadConfig(DrawFrame *frame) {
 		}
 	}
 
-	frame->AddDrawPanel(prefix, NULL, PERIOD_T_OTHER, -1);
+	if (frame)
+		frame->AddDrawPanel(prefix, NULL, PERIOD_T_OTHER, -1);
+	else
+		CreateFrame(prefix, wxEmptyString, PERIOD_T_OTHER, time_t(-1), wxDefaultSize, wxDefaultPosition);
 	config_dialog->Destroy();
-}
-
-void FrameManager::ShowRemarksFrame() {
-#ifndef NO_VMIME
-#ifndef NO_SQLITE3
-	#define HAS_REMARKS
-#endif
-#endif
-
-#ifdef HAS_REMARKS
-#if 0
-	if (remarks_frame == NULL)
-		//remarks_frame = new RemarksFrame(config_manager);
-	remarks_frame->Show(true);
-	remarks_frame->Raise();
-#endif
-#else
-	wxMessageBox(_("Feature not supported"), _("Error"));
-#endif
 }
 

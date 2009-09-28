@@ -1,5 +1,16 @@
 $Id$
 
+2009-09-28	Darek Marcinkiewicz <reksio@praterm.pl>
+	* wx/draw3: a bunch of fixes and improvements:
+	- default colors are now correctly assigned
+	- X/Y graphs work again
+	- 'new window' menu item opens new window (instead of new tab)
+	- graphs are properly refreshed when a new point of data
+	is received when filter > 0
+	- information about currently selected graphs style added
+	to graphs' style selection dialog 
+	- in antialiased mode 'solitary' points in DAY period were not
+	painted - fixed
 2009-09-24	Darek Marcinkiewicz <reksio@praterm.pl>
 	* wx/kontroler3: fixed command line parsing
 2009-09-24	Pawe³ Pa³ucha <pawel@praterm.com.pl>

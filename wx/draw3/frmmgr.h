@@ -108,9 +108,6 @@ class FrameManager : public wxEvtHandler {
 	 * @param prefix initial configuration prefix*/
 	void ShowStatDialog(wxString prefix);
 
-	/**Displays frame showing remarks*/
-	void ShowRemarksFrame();
-
 	/**Find @see DrawFrame with given numer
 	 * @param number number of @see DrawFrame to find
 	 * @returns pointer to a frame with given numer or NULL if no such frame exists*/

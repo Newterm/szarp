@@ -94,6 +94,8 @@ class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver
 
 	void RecalculateMargins(wxGraphicsContext &dc);
 
+	void DrawNoData(wxGraphicsContext &dc);
+
 	void DrawGraphs(wxGraphicsContext &dc);
 
 	int GetIndex(int x, size_t size) ;

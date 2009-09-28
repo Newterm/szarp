@@ -648,15 +648,16 @@ IPKConfig::IPKConfig(TSzarpConfig *c, ConfigManager *mgr) : DrawsSets(mgr), defi
 	}
     }
 
-    /*init null colors*/
     DrawSetsHash::iterator it;
-    for (it = drawSets.begin(); it != drawSets.end(); ++it)
-	    it->second->InitNullColors();
-
     /* sort draws */
     for (it = drawSets.begin(); it != drawSets.end(); ++it) {
 	it->second->SortDraws();
     }
+
+    /*init null colors*/
+    for (it = drawSets.begin(); it != drawSets.end(); ++it)
+	    it->second->InitNullColors();
+
 
     baseDrawSets = drawSets;
 }

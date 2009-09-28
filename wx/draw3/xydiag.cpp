@@ -344,8 +344,8 @@ void DataMangler::Go() {
 void DataMangler::ProgressFetch() {
 	TimeIndex idx(m_period, /*FIXME*/100);
 
-	DatabaseQuery *q_x = CreateDataQuery(m_dx, m_period);
-	DatabaseQuery *q_y = CreateDataQuery(m_dx, m_period);
+	DatabaseQuery *q_x = CreateDataQuery(m_dx, m_period, 0);
+	DatabaseQuery *q_y = CreateDataQuery(m_dy, m_period, 1);
 
 	while (m_pending < 200 && m_current_time <= m_end_time) {
 		AddTimeToDataQuery(q_x, m_current_time.GetTime().GetTicks());

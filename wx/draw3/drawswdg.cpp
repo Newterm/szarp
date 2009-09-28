@@ -1027,7 +1027,7 @@ void DrawsWidget::RefreshData(bool auto_refresh)
 	for (size_t i = 0; i < m_draws.GetCount(); ++i) 
 		m_draws[i]->RefreshData(auto_refresh);
 
-	if (!auto_refresh) 
+	if (!auto_refresh || m_filter > 0) 
 		m_graphs->FullRefresh();
 }
 
