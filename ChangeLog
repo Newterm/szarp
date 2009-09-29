@@ -1,5 +1,9 @@
 $Id$
 
+2009-09-29	Darek Marcinkiewicz <reksio@praterm.pl>
+	* wx: few fixes so that wx apps compile with 
+	current combination (and mismatch) of glib and wxwidgets 
+	in debian unstable
 2009-09-28	Darek Marcinkiewicz <reksio@praterm.pl>
 	* wx/draw3: a bunch of fixes and improvements:
 	- default colors are now correctly assigned

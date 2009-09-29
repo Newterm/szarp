@@ -21,6 +21,7 @@
 #include "sztaskbaritem.h"
 
 #ifdef __WXGTK__
+#include <gtk/gtk.h>
 
 static void status_icon_on_left_click(GtkStatusIcon *status_icon, 
 		                        gpointer user_data) {
@@ -59,7 +60,7 @@ void szTaskBarItem::SetIcon(const wxIcon &icon, const wxString &tooltip) {
 	wxBitmap bmp;
 	bmp.CopyFromIcon(icon);
 
-	gtk_status_icon_set_from_pixbuf(m_status_icon, bmp.GetPixbuf());
+	gtk_status_icon_set_from_pixbuf((GtkStatusIcon*) m_status_icon, bmp.GetPixbuf());
 }
 
 void szTaskBarItem::PopupMenu(wxMenu *menu) {

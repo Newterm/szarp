@@ -53,7 +53,7 @@
 #include <wx/xrc/xmlres.h>
 
 #ifndef MINGW32
-#include <gtk/gtk.h>
+extern "C" void gtk_window_set_accept_focus(void *window, int setting);
 #endif
 
 /**
@@ -359,9 +359,9 @@ void DrawPanel::CreateChildren(DrawSet *set, PeriodType pt, time_t time, int sel
 	rw = new RelWindow(this, this, menu_bar->FindItem(XRCID("Ratio")));
 
 #ifndef MINGW32
-	gtk_window_set_accept_focus(GTK_WINDOW(smw->GetHandle()), 0);
-	gtk_window_set_accept_focus(GTK_WINDOW(pw->GetHandle()), 0);
-	gtk_window_set_accept_focus(GTK_WINDOW(rw->GetHandle()), 0);
+	gtk_window_set_accept_focus(smw->GetHandle(), 0);
+	gtk_window_set_accept_focus(pw->GetHandle(), 0);
+	gtk_window_set_accept_focus(rw->GetHandle(), 0);
 #endif
 
 	wxString style = wxConfig::Get()->Read(_T("GRAPHS_VIEW"), _T("Classic"));

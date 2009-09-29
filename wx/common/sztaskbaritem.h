@@ -33,12 +33,11 @@
 
 #ifdef __WXGTK__
 
-#include <gtk/gtk.h>
 
 class szTaskBarItem : public wxTopLevelWindow {
 	wxTopLevelWindow *m_toplevel;
 
-	GtkStatusIcon *m_status_icon;
+	void *m_status_icon;
 public:
 	szTaskBarItem();
 	void SetIcon(const wxIcon &icon, const wxString &tooltip = _T(""));
