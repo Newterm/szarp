@@ -6,6 +6,18 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.130
+# 30.09.2009
+
+* Bug fixes and improvements in kontroler3 program, added sound playing on alarm.
+* Multiple bug fixes in Modbus RTU driver (timing synchronization); added support for BCD encoded values.
+* Added support for different word order in float values in Modbus TCP driver.
+* Completed "antialiasing style" draws displaying; it is more suitable for high resolution displays; it also should have less memory usage, but can be slower on some computers.
+* New driver for Aquameter Calec MCP-300 heatmeter.
+* Added RPN 'm' function for fast filtering of values outside meaningful range.
+* Bug fixes in draw3: X/Y drawing, draws colors assigments, opening new window, drawing new points while filter > 0, info about currently selected graphs style.
+* Multiple build fixes for newest Debian unstable.
+
 ** 3.1.97
 # 31.08.2009
 

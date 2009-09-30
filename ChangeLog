@@ -1,5 +1,7 @@
 $Id$
 
+2009-09-30	Pawe³ Pa³ucha <pawel@praterm.com.pl>
+	* NEWS*: updated NEWS files.
 2009-09-29	Darek Marcinkiewicz <reksio@praterm.pl>
 	* wx: few fixes so that wx apps compile with 
 	current combination (and mismatch) of glib and wxwidgets 
@@ -70,7 +72,7 @@ $Id$
 	feeling that I have already fixed that
 	* wx/draw3: fix for failed assertion after conversion
 	reload
-	* configure.in, parcook: dlmsdmn compiled only when lber libarary
+	* configure.in, parcook: dlmsdmn compiled only when lber library
 	is present
 	* wx/draw3: implementation of graphs view based na antialiased
 	2D API 99% completed, started to isolate code that is common

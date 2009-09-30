@@ -8,6 +8,18 @@
 # Puste linie s± ignorowane.
 # $Id$
 
+** 3.1.130
+# 30.09.2009
+
+* Poprawki i nowe funkcje w programie kontroler3: odgrywanie d¼wiêku przy alarmie.
+* Poprawki w driverze Modbus RTU (synchronizacja czasowa); dodana obs³uga kodowania BCD.
+* Dodana obs³uga ró¿nych kolejno¶ci s³ów dla warto¶ci typu float w driverze Modbus TCP.
+* Ukoñczony nowy sposób rysowania wykresów w programie przegl±daj±cym "antyaliasowany" - bardziej odpowiedni dla monitorów o wysokich rozdzielczo¶ciach. Nowy sposób powinien zmniejszaæ te¿ zu¿ycie pamiêci, ale na niektórych konfiguracjach sprzêtowych mo¿e byæ wolniejszy.
+* Dodano driver dla ciep³omierza Calec MCP-300.
+* Dodana funkcja 'm' do funkcji RPN, pozwalaj±ca na szybkie odfiltrowanie warto¶ci spoza prawid³owego zakresu.
+* Poprawki w programie przegl±daj±cym: rysowanie wykresów X/Y, automatyczne przydzielanie kolorów wykresów, otwieranie nowego okna, dorysowywanie nowych punktów z w³±czonym filtrem, informacja o aktualnie wybranym stylu rysowania wykresów.
+* Poprawki w budowaniu SZARP dla najnowszej niestabilnej wersji Debiana.
+
 ** 3.1.97
 # 31.08.2009
 
