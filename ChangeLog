@@ -1,6 +1,9 @@
 $Id$
 
 2009-09-30	Pawe³ Pa³ucha <pawel@praterm.com.pl>
+	* scripts/meteoprog.py: script for fetching temperature forecast from
+	meteroprog.ua website.
+2009-09-30	Pawe³ Pa³ucha <pawel@praterm.com.pl>
 	* NEWS*: updated NEWS files.
 2009-09-29	Darek Marcinkiewicz <reksio@praterm.pl>
 	* wx: few fixes so that wx apps compile with 
