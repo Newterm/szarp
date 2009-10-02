@@ -1,3 +1,9 @@
+szarp (3.1.133) stable; urgency=low
+
+  * building stable
+
+ -- Darek Marcinkiewicz <reksio@praterm.pl>  Fri, 02 Oct 2009 16:24:39 +0200
+
 szarp (3.1.130) unstable; urgency=low
 
   * unstable from upstream version 3.1.130

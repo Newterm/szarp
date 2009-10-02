@@ -463,7 +463,10 @@ void GCDCGraphs::DrawGraphs(wxGraphicsContext &dc) {
 
 }
 
+
 void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
+	static const int ellipse_size = 5;
+
 	if (d->GetEnable() == false)
 		return;
 
@@ -510,9 +513,9 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 
 			path->MoveToPoint(x, y);
 			if (d->GetPeriod() != PERIOD_T_DAY)
-				path->AddEllipse(x - 3, y - 3, 6, 6);
+				path->AddEllipse(x - ellipse_size / 2, y - ellipse_size / 2, ellipse_size, ellipse_size);
 			else if (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())
-				path->AddCircle(x - 1, y, 1);
+				path->AddCircle(x, y, 1);
 
 			switched_to_alternate = true;
 
@@ -529,9 +532,9 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 				p = &path1;
 
 			if (d->GetPeriod() != PERIOD_T_DAY)
-				p->AddEllipse(x - 3, y - 3, 6, 6);
+				p->AddEllipse(x - ellipse_size / 2, y - ellipse_size / 2, ellipse_size, ellipse_size);
 			else if (!prev_data && (i + 1) < pc && !d->GetValuesTable().at(i + 1).IsData())
-				p->AddCircle(x - 1, y, 1);
+				p->AddCircle(x, y, 1);
 
 
 			path = &path1;
@@ -549,9 +552,9 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 				path->MoveToPoint(x, y);
 
 			if (d->GetPeriod() != PERIOD_T_DAY)
-				path->AddEllipse(x - 3, y - 3, 6, 6);
+				path->AddEllipse(x - ellipse_size / 2, y - ellipse_size / 2, ellipse_size, ellipse_size);
 			else if (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())
-				path->AddCircle(x - 1, y, 1);
+				path->AddCircle(x, y, 1);
 		}
 		
 		prev_data = true;
