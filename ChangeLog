@@ -1,5 +1,7 @@
 $Id$
 
+2009-10-05	Darek Marcinkiewicz <reksio@praterm.pl>
+	* scripts/meteoprog.py: fix in time boundaries of day parts
 2009-10-02	Darek Marcinkiewicz <reksio@praterm.pl>
 	* wx/draw3: fixed cursor position in antialiased mode
 2009-09-30	Pawe³ Pa³ucha <pawel@praterm.com.pl>

@@ -35,6 +35,13 @@ hours["morning"] = 5
 hours["day"] = 11
 hours["evening"] = 17
 
+shift = dict()
+shift["night"] = datetime.timedelta(hours=1)
+shift["morning"] = datetime.timedelta()
+shift["day"] = datetime.timedelta()
+shift["evening"] = datetime.timedelta()
+shift["last"] = datetime.timedelta(hours=1)
+
 # parsing config file
 config = SafeConfigParser()
 config.read(CONFIG)
@@ -61,13 +68,13 @@ for date in xml:
 	for time in date:
 		tmin = time.find('tmin')
 		tmax = time.find('tmax')
-		cache_min.append((int(tmin.text), datetime.datetime(int(year), int(month), int(day), hours[time.get('name')], 0)))
-		cache_max.append((int(tmax.text), datetime.datetime(int(year), int(month), int(day), hours[time.get('name')], 0)))
+		cache_min.append((int(tmin.text), datetime.datetime(int(year), int(month), int(day), hours[time.get('name')], 0) - shift[time.get('name')]))
+		cache_max.append((int(tmax.text), datetime.datetime(int(year), int(month), int(day), hours[time.get('name')], 0) - shift[time.get('name')]))
 	# add data for end of period
-	cache_min.append([int(tmin.text), datetime.datetime(int(year), int(month), int(day)) +
-		datetime.timedelta(days=1)])
-	cache_max.append([int(tmax.text), datetime.datetime(int(year), int(month), int(day)) +
-		datetime.timedelta(days=1)])
+	cache_min.append((int(tmin.text), datetime.datetime(int(year), int(month), int(day)) +
+		datetime.timedelta(days=1) - shift['last']))
+	cache_max.append((int(tmax.text), datetime.datetime(int(year), int(month), int(day)) +
+		datetime.timedelta(days=1) - shift['last']))
 	i += 1
 
 interval = datetime.timedelta(minutes=10)
