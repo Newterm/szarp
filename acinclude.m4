@@ -1242,15 +1242,18 @@ AC_DEFUN([AX_BOOST_DATE_TIME],
 			BN_BOOST_DATE_TIME_LIB=boost_date_time
 			BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
 			if test "x$ax_boost_user_date_time_lib" = "x"; then
-				for libextension in `ls $BOOSTLIBDIR/libboost_date_time*.{so,a}* | sed 's,.*/,,' | sed -e 's;^libboost_date_time\(.*\)\.so.*$;\1;' -e 's;^libboost_date_time\(.*\)\.a*$;\1;'` ; do
+				for libextension in `ls $BOOSTLIBDIR/libboost_date_time* | egrep "so|a|lib"$ | sed 's,.*/,,' | sed -e 's;^libboost_date_time\(.*\)\.so.*$;\1;' -e 's;^libboost_date_time\(.*\)\.a*$;\1;' -e 's;^libboost_date_time\(.*\)\.lib*$;\1;'` ; do
 					ax_lib=${BN_BOOST_DATE_TIME_LIB}${libextension}
 					AC_CHECK_LIB($ax_lib, exit,
 						[BOOST_DATE_TIME_LIB="-l$ax_lib"; AC_SUBST(BOOST_DATE_TIME_LIB) link_date_time="yes"; break],
 						[link_date_time="no"])
+					ax_lib=lib$ax_lib
+					AC_CHECK_LIB($ax_lib, exit,
+						[BOOST_DATE_TIME_LIB="-l$ax_lib"; AC_SUBST(BOOST_DATE_TIME_LIB) link_date_time="yes"; break],
+						[link_date_time="no"])
 				done
-
 			else
-				for ax_lib in $ax_boost_user_date_time_lib $BN_BOOST_DATE_TIME_LIB-$ax_boost_user_date_time_lib; do
+				for ax_lib in $ax_boost_user_date_time_lib lib$ax_boost_user_date_time_lib l$ax_boost_user_date_time_lib $BN_BOOST_DATE_TIME_LIB-$ax_boost_user_date_time_lib; do
 					AC_CHECK_LIB($ax_lib, main,
 						[BOOST_DATE_TIME_LIB="-l$ax_lib"; AC_SUBST(BOOST_DATE_TIME_LIB) link_date_time="yes"; break],
 						[link_date_time="no"])
@@ -1326,14 +1329,18 @@ AC_DEFUN([AX_BOOST_FILESYSTEM],
 			BN_BOOSTFILESYSTEM_LIB=boost_filesystem
 			BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
 			if test "x$ax_boost_user_filesystem_lib" = "x"; then
-		                for libextension in `ls $BOOSTLIBDIR/libboost_filesystem*.{so,a}* | sed 's,.*/,,' | sed -e 's;^libboost_filesystem\(.*\)\.so.*$;\1;' -e 's;^libboost_filesystem\(.*\)\.a*$;\1;'` ; do
+		                for libextension in `ls $BOOSTLIBDIR/libboost_filesystem* | egrep "so|a|lib"$ | sed 's,.*/,,' | sed -e 's;^libboost_filesystem\(.*\)\.so.*$;\1;' -e 's;^libboost_filesystem\(.*\)\.a*$;\1;' -e 's;^libboost_filesystem\(.*\)\.lib*$;\1;'` ; do
 					ax_lib=${BN_BOOSTFILESYSTEM_LIB}${libextension}
+					AC_CHECK_LIB($ax_lib, exit,
+						[BOOST_FILESYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_FILESYSTEM_LIB) link_filesystem="yes"; break],
+						[link_filesystem="no"])
+					ax_lib=lib${BN_BOOSTFILESYSTEM_LIB}${libextension}
 					AC_CHECK_LIB($ax_lib, exit,
 						[BOOST_FILESYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_FILESYSTEM_LIB) link_filesystem="yes"; break],
 						[link_filesystem="no"])
 				done
 			else
-				for ax_lib in $ax_boost_user_filesystem_lib $BN_BOOSTFILESYSTEM_LIB-$ax_boost_user_filesystem_lib; do
+				for ax_lib in $ax_boost_user_filesystem_lib lib$ax_boost_user_filesystem_lib l$ax_boost_user_filesystem_lib $BN_BOOSTFILESYSTEM_LIB-$ax_boost_user_filesystem_lib; do
 					AC_CHECK_LIB($ax_lib, exit,
 					[BOOST_FILESYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_FILESYSTEM_LIB) link_filesystem="yes"; break],
 					[link_filesystem="no"])
@@ -1436,7 +1443,7 @@ AC_DEFUN([AX_BOOST_THREAD],
 			if test "x$ax_boost_user_thread_lib" = "x"; then
 				for ax_lib in $BN $BN-$CC $BN-$CC-mt $BN-$CC-mt-s $BN-$CC-s \
 					lib$BN lib$BN-$CC lib$BN-$CC-mt lib$BN-$CC-mt-s lib$BN-$CC-s \
-					$BN-mt $BN-mgw $BN-mgw $BN-mgw-mt $BN-mgw-mt-s $BN-mgw-s ; do
+					$BN-mt $BN-mgw $BN-mgw $BN-mgw-mt $BN-mgw-mt-s $BN-mgw-s lib$BN-mgw44-mt-1_40 ; do
 					AC_CHECK_LIB(
 						$ax_lib, 
 						main, 
@@ -1450,7 +1457,8 @@ AC_DEFUN([AX_BOOST_THREAD],
 					)
                                 done
 			else
-				for ax_lib in $ax_boost_user_thread_lib $BN-$ax_boost_user_thread_lib; do
+				for ax_lib in $ax_boost_user_thread_lib $BN-$ax_boost_user_thread_lib \
+				    $BN-mgw44-mt-1_40 lib$BN-mgw44-mt-1_40 $BN-mgw44-mt-1_40.lib lib$BN-mgw44-mt-1_40.lib; do
 					AC_CHECK_LIB(
 						$ax_lib, 
 						main,
@@ -1481,6 +1489,90 @@ AC_DEFUN([AX_BOOST_THREAD],
                 fi
                 CPPFLAGS="$CPPFLAGS_SAVED"
 		LDFLAGS="$LDFLAGS_SAVED"
+        fi
+])
+
+
+
+dnl checks for boost system library
+AC_DEFUN([AX_BOOST_SYSTEM],
+[
+        AC_ARG_WITH([boost-system],
+        AS_HELP_STRING([--with-boost-system@<:@=special-lib@:>@],
+                   [use the System library from boost - it is possible to specify a certain library for the linker
+                        e.g. --with-boost-system=boost_system-gcc-mt-d-1_33_1 ]),
+        [
+        if test "$withval" = "no"; then
+                        want_boost="no"
+        elif test "$withval" = "yes"; then
+            want_boost="yes"
+            ax_boost_user_system_lib=""
+        else
+            want_boost="yes"
+            ax_boost_user_system_lib="$withval"
+        fi
+        ],
+        [want_boost="yes"]
+        )
+
+        if test "x$want_boost" = "xyes"; then
+        AC_REQUIRE([AC_PROG_CC])
+                CPPFLAGS_SAVED="$CPPFLAGS"
+                CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+                export CPPFLAGS
+
+                LDFLAGS_SAVED="$LDFLAGS"
+                LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
+                export LDFLAGS
+
+        AC_CACHE_CHECK(whether the Boost::System library is available,
+                                           ax_cv_boost_system,
+        [AC_LANG_PUSH([C++])
+                         AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[@%:@include <boost/system/system_error.hpp>
+                                                                                                ]],
+                                   [[boost::system::system_error o(boost::system::error_code()); return 0;]]),
+                   ax_cv_boost_system=yes, ax_cv_boost_system=no)
+         AC_LANG_POP([C++])
+                ])
+                if test "x$ax_cv_boost_system" = "xyes"; then
+                        AC_DEFINE(HAVE_BOOST_SYSTEM,,[define if the Boost::System library is available])
+                        BN_BOOST_SYSTEM=""
+        		BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
+			
+	                if test "x$ax_boost_user_system_lib" = "x"; then
+			    BN_BOOST_SYSTEM="boost_system"
+	                    for libraryext in `ls $BOOSTLIBDIR/libboost_system* | egrep "so|a|lib"$ | sed 's,.*/,,' | sed -e 's;^libboost_system\(.*\)\.so.*$;\1;' -e 's;^libboost_system\(.*\)\.a*$;\1;' -e 's;^libboost_system\(.*\)\.lib*$;\1;'`; do
+    	                        ax_lib=${BN_BOOST_SYSTEM}${libraryext}			
+                                AC_CHECK_LIB($ax_lib, exit,
+                                 [BOOST_SYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_SYSTEM_LIB) link_system="yes"; break],
+                                 [link_system="no"])
+				ax_lib=lib${BN_BOOST_SYSTEM}${libraryext}
+				AC_CHECK_LIB($ax_lib, exit,
+                                 [BOOST_SYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_SYSTEM_LIB) link_system="yes"; break],
+                                 [link_system="no"])
+                            done
+			else
+		    	    BN_BOOST_SYSTEM=$ax_boost_user_system_lib
+			    for ax_lib in $ax_boost_user_system_lib l$ax_boost_user_system_lib lib$ax_boost_user_system_lib $BN_BOOST_SYSTEM-$ax_boost_user_system_lib; do
+                                      AC_CHECK_LIB($ax_lib, main,
+                                   [BOOST_SYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_SYSTEM_LIB) link_system="yes"; break],
+                                   [link_system="no"])
+	                   done
+			fi
+                        if test "x$link_system" = "xno"; then
+                                AC_MSG_ERROR(Could not link against $ax_lib !)
+				ifelse([$2], , :, [$2])
+			else
+				ifelse([$1], , :, [$1])
+                        fi
+		else
+			ifelse([$2], , :, [$2])
+                fi
+                CPPFLAGS="$CPPFLAGS_SAVED"
+                LDFLAGS="$LDFLAGS_SAVED"
+	else
+		ifelse([$2], , :, [$2])
+
         fi
 ])
 
@@ -1527,21 +1619,25 @@ AC_DEFUN([AX_BOOST_REGEX],
                 if test "x$ax_cv_boost_regex" = "xyes"; then
                         AC_DEFINE(HAVE_BOOST_REGEX,,[define if the Boost::Regex library is available])
                         BN_BOOST_REGEX=boost_regex
-            BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
-            if test "x$ax_boost_user_regex_lib" = "x"; then
-                for libextension in `ls $BOOSTLIBDIR/libboost_regex*.{so,a}* | sed 's,.*/,,' | sed -e 's;^libboost_regex\(.*\)\.so.*$;\1;' -e 's;^libboost_regex\(.*\)\.a*$;\1;'` ; do
-                     ax_lib=${BN_BOOST_REGEX}${libextension}
-                                    AC_CHECK_LIB($ax_lib, exit,
-                                 [BOOST_REGEX_LIB="-l$ax_lib"; AC_SUBST(BOOST_REGEX_LIB) link_regex="yes"; break],
-                                 [link_regex="no"])
+                        BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
+                        if test "x$ax_boost_user_regex_lib" = "x"; then
+                        	for libextension in `ls $BOOSTLIBDIR/libboost_regex* | egrep "so|a|lib"$ | sed 's,.*/,,' | sed -e 's;^libboost_regex\(.*\)\.so.*$;\1;' -e 's;^libboost_regex\(.*\)\.a*$;\1;'  -e 's;^libboost_regex\(.*\)\.lib*$;\1;'` ; do
+                        		ax_lib=${BN_BOOST_REGEX}${libextension}
+                        		AC_CHECK_LIB($ax_lib, exit,
+                        		 [BOOST_REGEX_LIB="-l$ax_lib"; AC_SUBST(BOOST_REGEX_LIB) link_regex="yes"; break],
+                        		 [link_regex="no"])
+                        		ax_lib=lib${BN_BOOST_REGEX}${libextension}
+                        		AC_CHECK_LIB($ax_lib, exit,
+                        		 [BOOST_REGEX_LIB="-l$ax_lib"; AC_SUBST(BOOST_REGEX_LIB) link_regex="yes"; break],
+                        		 [link_regex="no"])
                                 done
-            else
-               for ax_lib in $ax_boost_user_regex_lib $BN_BOOST_REGEX-$ax_boost_user_regex_lib; do
-                                      AC_CHECK_LIB($ax_lib, main,
-                                   [BOOST_REGEX_LIB="-l$ax_lib"; AC_SUBST(BOOST_REGEX_LIB) link_regex="yes"; break],
-                                   [link_regex="no"])
-               done
-            fi
+                        else
+                        	for ax_lib in $ax_boost_user_regex_lib lib$ax_boost_user_regex_lib l$ax_boost_user_regex_lib $BN_BOOST_REGEX-$ax_boost_user_regex_lib; do
+                        		AC_CHECK_LIB($ax_lib, main,
+                        		 [BOOST_REGEX_LIB="-l$ax_lib"; AC_SUBST(BOOST_REGEX_LIB) link_regex="yes"; break],
+                        		 [link_regex="no"])
+                        done
+		fi
                         if test "x$link_regex" = "xno"; then
                                 AC_MSG_ERROR(Could not link against $ax_lib !)
 				ifelse([$2], , :, [$2])
@@ -1603,33 +1699,36 @@ AC_DEFUN([AX_BOOST_PROGRAM_OPTIONS],
                 if test "$ax_cv_boost_program_options" = yes; then
                                 AC_DEFINE(HAVE_BOOST_PROGRAM_OPTIONS,,[define if the Boost::PROGRAM_OPTIONS library is available])
                                   BN_BOOST_PROGRAM_OPTIONS_LIB=boost_program_options
-                  BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
-                if test "x$ax_boost_user_program_options_lib" = "x"; then
-                for libextension in `ls $BOOSTLIBDIR/libboost_program_options*.{so,a}* | sed 's,.*/,,' | sed -e 's;^libboost_program_options\(.*\)\.so.*$;\1;' -e 's;^libboost_program_options\(.*\)\.a*$;\1;'` ; do
-                     ax_lib=${BN_BOOST_PROGRAM_OPTIONS_LIB}${libextension}
-                                    AC_CHECK_LIB($ax_lib, exit,
-                                 [BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib"; AC_SUBST(BOOST_PROGRAM_OPTIONS_LIB) link_program_options="yes"; break],
-                                 [link_program_options="no"])
-                                done
-
-                else
-                  for ax_lib in $ax_boost_user_program_options_lib $BN_BOOST_PROGRAM_OPTIONS_LIB-$ax_boost_user_program_options_lib; do
-                                      AC_CHECK_LIB($ax_lib, main,
-                                   [BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib"; AC_SUBST(BOOST_PROGRAM_OPTIONS_LIB) link_program_options="yes"; break],
-                                   [link_program_options="no"])
-                  done
-                fi
-                                if test "x$link_program_options" = "xno"; then
+                                  BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
+                                  if test "x$ax_boost_user_program_options_lib" = "x"; then
+                                  	for libextension in `ls $BOOSTLIBDIR/libboost_program_options* | egrep "so|a|lib"$ | sed 's,.*/,,' | sed -e 's;^libboost_program_options\(.*\)\.so.*$;\1;' -e 's;^libboost_program_options\(.*\)\.a*$;\1;'  -e 's;^libboost_program_options\(.*\)\.lib*$;\1;'` ; do
+                                  		ax_lib=${BN_BOOST_PROGRAM_OPTIONS_LIB}${libextension}
+                                  		AC_CHECK_LIB($ax_lib, exit,
+                                  		[BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib"; AC_SUBST(BOOST_PROGRAM_OPTIONS_LIB) link_program_options="yes"; break],
+                                  		[link_program_options="no"])
+                                  		ax_lib=lib${ax_lib}
+                                  		AC_CHECK_LIB($ax_lib, exit,
+                                  		[BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib"; AC_SUBST(BOOST_PROGRAM_OPTIONS_LIB) link_program_options="yes"; break],
+                                  		[link_program_options="no"])
+                                  	done
+                                  else
+                                  	for ax_lib in $ax_boost_user_program_options_lib lib$ax_boost_user_program_options_lib l$ax_boost_user_program_options_lib $BN_BOOST_PROGRAM_OPTIONS_LIB-$ax_boost_user_program_options_lib; do
+                                  		AC_CHECK_LIB($ax_lib, main,
+                                  		[BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib"; AC_SUBST(BOOST_PROGRAM_OPTIONS_LIB) link_program_options="yes"; break],
+                                  		[link_program_options="no"])
+                                  	done
+                                  fi
+                                  if test "x$link_program_options" = "xno"; then
                                         AC_MSG_ERROR([Could not link against [$ax_lib] !])
-				ifelse([$2], , :, [$2])
-			else
-				ifelse([$1], , :, [$1])
-                        fi
+                                  	ifelse([$2], , :, [$2])
+                                  else
+                                  	ifelse([$1], , :, [$1])
+                                  fi
 		else
 			ifelse([$2], , :, [$2])
                 fi
                 CPPFLAGS="$CPPFLAGS_SAVED"
-        LDFLAGS="$LDFLAGS_SAVED"
+		LDFLAGS="$LDFLAGS_SAVED"
 	else
 		ifelse([$2], , :, [$2])
         fi

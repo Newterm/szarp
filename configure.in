@@ -726,6 +726,7 @@ no_boost_filesystem="yes"
 no_boost_datetime="yes"
 no_boost_regex="yes"
 no_boost_threads="yes"
+no_boost_system="yes"
 no_boost_program_options="yes"
 AX_BOOST_BASE([no_boost_base="no"], [no_boost_base="yes"])
 if test $no_boost_base = "no" ; then
@@ -733,6 +734,7 @@ if test $no_boost_base = "no" ; then
 	AX_BOOST_DATE_TIME([no_boost_datetime="no"], [no_boost_datetime="yes"])
 	AX_BOOST_REGEX([no_boost_regex="no"], [no_boost_regex="yes"])
 	AX_BOOST_THREAD([no_boost_threads="no"], [no_boost_threads="yes"])
+	AX_BOOST_SYSTEM([no_boost_system="no"], [no_boost_system="yes"])
 	AX_BOOST_PROGRAM_OPTIONS([no_boost_program_options="no"], [no_boost_program_options="yes"])
 fi
 
@@ -1240,6 +1242,14 @@ if test "x$no_boost_base" != "xyes" ; then
 	else
 		echo "no"
 	fi
+
+	echo -n "Configured with boost system       "
+	if test "x$no_boost_system" != "xyes" ; then
+	        echo "yes"
+	else
+		echo "no"
+	fi
+
 
 	echo -n "Configured with boost program opts "
 	if test "x$no_boost_program_options" != "xyes" ; then

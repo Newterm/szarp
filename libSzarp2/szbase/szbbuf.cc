@@ -62,16 +62,7 @@
 
 namespace fs = boost::filesystem;
 
-// DEBUG
-// #define DD
-// #define DDD
-// 
-
 #define szb_hfun szb_hfun2
-
-#ifdef MINGW32
-#define wfilesystem_error filesystem_error
-#endif
 
 #define uhashsize(n) ((ub4)1<<(n))
 #define hashmask(n) (uhashsize(n)-1)
@@ -129,7 +120,7 @@ template<typename OP> std::wstring find_one_param_file(const fs::wpath &paramPat
 	
 		}
 
-	} catch (fs::filesystem_error &e) {
+	} catch (fs::wfilesystem_error &e) {
 		file.clear();
 	}
 

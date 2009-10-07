@@ -31,9 +31,6 @@
 #include "mingw32_missing.h"
 #endif
 
-#ifdef MINGW32
-#define wfilesystem_error filesystem_error
-#endif
 
 #include <sstream>
 #include <iomanip>

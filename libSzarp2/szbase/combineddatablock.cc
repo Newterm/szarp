@@ -34,10 +34,6 @@
 #include "mingw32_missing.h"
 #endif
 
-#ifdef MINGW32
-#define wfilesystem_error filesystem_error
-#endif
-
 #include "include/szarp_config.h"
 
 #include <stdlib.h>

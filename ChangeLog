@@ -1,5 +1,8 @@
 $Id$
 
+2009-10-07	Adam Smyk <asmyk@praterm.pl>
+	* acinclude.m4, wx/*/Makefile.am, configure.in: migration to 
+	cross-compilation with boost 1.4 for Windows version
 2009-10-05	Darek Marcinkiewicz <reksio@praterm.pl>
 	* scripts/meteoprog.py: fix in time boundaries of day parts
 2009-10-02	Darek Marcinkiewicz <reksio@praterm.pl>

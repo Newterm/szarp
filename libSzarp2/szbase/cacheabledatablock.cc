@@ -42,10 +42,6 @@
 typedef short int               int16_t;
 #endif
 
-#ifdef MINGW32
-#define wfilesystem_error filesystem_error
-#endif
-
 #include "boost/filesystem/path.hpp"
 #include "boost/filesystem/convenience.hpp"
 #include "boost/filesystem/operations.hpp"

@@ -33,9 +33,6 @@
 #include "liblog.h"
 
 // #include "szarp_config.h"
-#ifdef MINGW32
-#define wfilesystem_error filesystem_error
-#endif
 
 #include "szbbuf.h"
 #include "szbname.h"
