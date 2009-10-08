@@ -1,5 +1,8 @@
 $Id$
 
+2009-10-08	Darek Marcinkiewicz <reksio@praterm.pl>
+	* parcook/parcook.cc: handling of large values in lua params
+	slightly changed
 2009-10-08	Adam Smyk <asmyk@praterm.pl>
 	* INSTALL.Windows: precise description of the boost compilation has 
 	been added

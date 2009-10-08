@@ -1131,11 +1131,18 @@ void execute_scripts(std::vector<LuaParamInfo*>& param_info) {
 			int prec = p->GetPrec();
 			if (prec < 5) for (int i = prec; i > 0; i--, result*= 10);
 
-			if (std::numeric_limits<short>::max() >= val
-				&& val <= std::numeric_limits<short>::min())
-				val = (short) result;
+			if (result > std::numeric_limits<short>::max())  {
+				unsigned int ushortmax = (((unsigned int)(std::numeric_limits<short>::max())) + 1) << 1;
+				if (result < ushortmax) {
+					unsigned short us = result;
+					val = *((short*) &us);
+				} else {
+					sz_log(1, "Param %ls, value overflow %f, setting no data", p->GetName().c_str(), result);
+				}
+			} else if (result < std::numeric_limits<short>::min())
+				sz_log(1, "Param %ls, value underflow %f, setting no data", p->GetName().c_str(), result);
 			else
-				sz_log(1, "Param %ls, value overflow %f, setting no data", p->GetName().c_str(), result);
+				val = (short) result;
 
 			sz_log(4, "Setting param %ls, val %hd", p->GetName().c_str(), val); 
 		}
