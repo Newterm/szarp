@@ -1,5 +1,8 @@
 $Id$
 
+2009-10-08	Adam Smyk <asmyk@praterm.pl>
+	* INSTALL.Windows: precise description of the boost compilation has 
+	been added
 2009-10-07	Adam Smyk <asmyk@praterm.pl>
 	* acinclude.m4, wx/*/Makefile.am, configure.in: migration to 
 	cross-compilation with boost 1.4 for Windows version
