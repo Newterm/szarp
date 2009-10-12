@@ -163,7 +163,10 @@ void ReadCfgFileFromParamXML(TSzarpConfig * ipk)
 		for (TRadio * r = d->GetFirstRadio(); r; r = d->GetNextRadio(r))
 			for (TUnit * u = r->GetFirstUnit(); u;
 			     u = r->GetNextUnit(u))
-				NumberOfPars += u->GetSendParamsCount();
+				for (sp = u->GetFirstSendParam(); sp;
+				     sp = u->GetNextSendParam(sp))
+					if (sp->IsConfigured())
+						NumberOfPars += 1;
 
 	if (NumberOfPars <= 0) {
 		sz_log(1, "Cannot find parameters to send");

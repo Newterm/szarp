@@ -1,5 +1,9 @@
 $Id$
 
+2009-10-12	Darek Marcinkiewicz <reksio@praterm.pl>
+	* sender/sender.cc: fix in calculation of number of params
+	to send. Empty <send/> tags were also counted in, what
+	resulted in incorrect behaviour of sender.
 2009-10-08	Darek Marcinkiewicz <reksio@praterm.pl>
 	* parcook/parcook.cc: handling of large values in lua params
 	slightly changed
