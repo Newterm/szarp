@@ -20,6 +20,7 @@ This file describes how to prepare SZARP installation package for Windows.
 3.3. zlib library.
 3.4. zip library.
 3.5. wxWidgets library.
+3.5.1 wxWidgets library with wxGraphicsContext
 3.6. libxml2 library.
 3.7. libxslt library.
 3.8. OpenSSL library.
@@ -198,6 +199,19 @@ cd wxMSW-2.8.10
 	LDFLAGS=-L/usr/local/i586-mingw32msvc/lib
 make
 make install
+
+
+3.5.1 wxWidgets library with wxGraphicsContext
+
+Compilation of the wxWidgets library with wxGraphicsContext feature 
+is much more complicated. It is because:
+- it needs a Gdiplus library;
+- some modifications of this library should be introduced;
+- some modifications of the source and configuration files of the wxWidgets 
+library should be done as well. 
+All modifications mentioned above will be done for you by INSTALL.wxWidgets.sh
+script. It should correctly work for the 2.8.10 version of the wxWidgets and also
+needs an unrar application.
 
 
 3.6. libxml2 library.

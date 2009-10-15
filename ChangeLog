@@ -1,5 +1,8 @@
 $Id$
 
+2009-10-16	Adam Smyk <asmyk@praterm.pl>
+	* INSTALL.Windows: precise description of the wxWidgets library
+        compilation with wxGraphicsContext feature has been added
 2009-10-12	Darek Marcinkiewicz <reksio@praterm.pl>
 	* sender/sender.cc: fix in calculation of number of params
 	to send. Empty <send/> tags were also counted in, what
