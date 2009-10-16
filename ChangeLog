@@ -1,6 +1,8 @@
 $Id$
 
 2009-10-16	Adam Smyk <asmyk@praterm.pl>
+	* INSTALL.wxWidgets.sh: simple correction of script
+2009-10-16	Adam Smyk <asmyk@praterm.pl>
 	* INSTALL.Windows: precise description of the wxWidgets library
         compilation with wxGraphicsContext feature has been added
 2009-10-12	Darek Marcinkiewicz <reksio@praterm.pl>

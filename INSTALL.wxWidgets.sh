@@ -7,25 +7,6 @@ wget http://dfn.dl.sourceforge.net/project/wxwindows/wxAll/2.8.10/wxWidgets-2.8.
 tar xzvf wxWidgets-2.8.10.tar.gz
 cd wxWidgets-2.8.10
 
-echo '--- configure	2009-03-06 13:00:45.000000000 +0100
-+++ configure	2009-10-13 16:51:16.000000000 +0200
-@@ -27805,10 +27805,10 @@
- 
-             case "${host}" in
- 	x86_64-*-mingw32* )
--                        LIBS="$LIBS -lwinspool -lwinmm -lshell32 -lcomctl32 -lcomdlg32 -lwctl3d32 -ladvapi32 -lwsock32 -lgdi32"
-+                        LIBS="$LIBS -lwinspool -lwinmm -lshell32 -lcomctl32 -lcomdlg32 -lwctl3d32 -ladvapi32 -lwsock32 -lgdi32 -lgdiplus"
-         ;;
-         * )
--            LIBS="$LIBS -lwinspool -lwinmm -lshell32 -lcomctl32 -lcomdlg32 -lctl3d32 -ladvapi32 -lwsock32 -lgdi32"
-+            LIBS="$LIBS -lwinspool -lwinmm -lshell32 -lcomctl32 -lcomdlg32 -lctl3d32 -ladvapi32 -lwsock32 -lgdi32 -lgdiplus"
-         ;;
-     esac
-     if test "$wxUSE_ACCESSIBILITY" = "yes" ; then
-' > configure.patch
-
-patch configure < configure.patch
-
 ./configure --host=i586-mingw32msvc \
         --target=i586-mingw32msvc \
         --enable-shared \
@@ -39,7 +20,7 @@ patch configure < configure.patch
         --with-opengl \
         --prefix=/usr/local/i586-mingw32msvc \
         CPPFLAGS=-I/usr/local/i586-mingw32msvc/include \
-        LDFLAGS=-L/usr/local/i586-mingw32msvc/lib
+        LDFLAGS="-L/usr/local/i586-mingw32msvc/lib -lgdiplus"
 
 echo '--- src/msw/renderer.cpp	2009-03-06 13:01:15.000000000 +0100
 +++ src/msw/renderer.cpp	2009-10-13 16:36:58.000000000 +0200
