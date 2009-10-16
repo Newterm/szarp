@@ -647,7 +647,12 @@ void DNSResolver::DoResolve() {
 
 	uint32_t result = 0;
 	bool end = false;
-	ares_gethostbyname(channel, (const char*)SC::S2U(m_address).c_str(), AF_INET, ares_cb, &result);
+
+	m_mutex.Lock();
+	std::wstring address = m_address;
+	m_mutex.Unlock();
+
+	ares_gethostbyname(channel, (const char*)SC::S2U(address).c_str(), AF_INET, ares_cb, &result);
 	do {
 		struct timeval tv;
 		tv.tv_sec = 0;

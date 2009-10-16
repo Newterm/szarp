@@ -1,5 +1,8 @@
 $Id$
 
+2009-10-16	Darek Marcinkiewicz <reksio@praterm.pl>
+	* wx/draw3/remarks.cpp: there was a possible race condition
+	in remarks server address resolution
 2009-10-16	Adam Smyk <asmyk@praterm.pl>
 	* INSTALL.wxWidgets.sh: simple correction of script
 2009-10-16	Adam Smyk <asmyk@praterm.pl>
