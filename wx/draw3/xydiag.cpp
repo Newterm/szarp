@@ -434,10 +434,10 @@ void DataMangler::AverageValues(XYGraph *graph) {
 	std::deque<int> counts(count, 0);
 	std::deque< std::vector<DTime> > ptimes(count);
 
-	for (size_t i = 0; i < graph->m_visible_points.size(); ++i) {
-		double& x = graph->ViewPoint(i).get<0>();
-		double& y = graph->ViewPoint(i).get<1>();
-		std::vector<DTime> &times = graph->ViewPoint(i).get<2>();
+	for (size_t i = 0; i < graph->m_points_values.size(); ++i) {
+		double& x = graph->m_points_values.at(i).get<0>();
+		double& y = graph->m_points_values.at(i).get<1>();
+		std::vector<DTime> &times = graph->m_points_values.at(i).get<2>();
 
 		int idx = int((x - graph->m_dxmin - slice / 2) * count / dif);
 		if (idx < 0)
