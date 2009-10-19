@@ -1,5 +1,8 @@
 $Id$
 
+2009-10-19	Darek Marcinkiewicz <reksio@praterm.pl>
+	* wx/draw3/remarks.cpp: yet another race in remarks
+	server resolving code
 2009-10-16	Darek Marcinkiewicz <reksio@praterm.pl>
 	* wx/draw3/xydiag.cpp: fix in data averaging for x and y
 	axes on x/y graph 

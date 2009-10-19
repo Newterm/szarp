@@ -605,21 +605,20 @@ typedef void (wxEvtHandler::*DNSResponseEventFunction)(DNSResponseEvent&);
 DNSResolver::DNSResolver(wxEvtHandler *response_handler) : m_response_handler(response_handler),
 		m_finish(false),
 		m_mutex(), 
-		m_cmutex(),
-		m_work_condition(m_cmutex) {
+		m_work_semaphore(0, 2) {
 }
 
 void DNSResolver::Resolve(wxString address) {
 	wxMutexLocker lock(m_mutex);
 	m_address = address.c_str();
 
-	m_work_condition.Signal();
+	m_work_semaphore.Post();
 }
 
 void DNSResolver::Finish() {
 	wxMutexLocker lock(m_mutex);
 	m_finish = true;
-	m_work_condition.Signal();
+	m_work_semaphore.Post();
 }
 
 namespace {
@@ -649,7 +648,7 @@ void DNSResolver::DoResolve() {
 	bool end = false;
 
 	m_mutex.Lock();
-	std::wstring address = m_address;
+	std::wstring address = m_address.c_str();
 	m_mutex.Unlock();
 
 	ares_gethostbyname(channel, (const char*)SC::S2U(address).c_str(), AF_INET, ares_cb, &result);
@@ -739,7 +738,7 @@ bool DNSResolver::CheckFinish() {
 
 void* DNSResolver::Entry() {
 	while (true) {
-		m_work_condition.Wait();
+		m_work_semaphore.Wait();
 
 		if (CheckFinish())
 			return NULL;

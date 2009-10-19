@@ -159,8 +159,8 @@ public:
 class DNSResolver : public wxThread {
 	wxEvtHandler *m_response_handler;
 	bool m_finish;
-	wxMutex m_mutex, m_cmutex;
-	wxCondition m_work_condition;
+	wxMutex m_mutex;
+	wxSemaphore m_work_semaphore;
 	std::wstring m_address;
 	void DoResolve();
 	bool CheckFinish();
