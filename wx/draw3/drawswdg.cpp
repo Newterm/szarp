@@ -539,6 +539,8 @@ void DrawsWidget::SetDrawApply()
 		}
 		m_draws[m_selected_draw]->Select(t);
 		AttachObservers(m_selected_draw);
+	} else {
+		m_draws[m_selected_draw]->Select(t);
 	}
 
 	StartAllDraws();
