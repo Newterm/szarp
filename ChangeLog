@@ -1,5 +1,8 @@
 $Id$
 
+2009-10-21	Pawel Palucha <pawel@praterm.com.pl>
+	* documentation/new/common/praterm-wdrozenia.sgml: info about new
+	SZARP implementations in ZEC Katowice.
 2009-10-20	Darek Marcinkiewicz <reksio@praterm.pl>
 	* wx/draw3: a small fix in positioning cursor
 	upon jump to set and time referred by remark
