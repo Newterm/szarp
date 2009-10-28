@@ -1,4 +1,5 @@
 <inkscape-extension>
+    <!-- see http://wiki.inkscape.org/wiki/index.php/MakingAnINX -->
     <_name>ISL Editor</_name>
     <id>pl.com.praterm.isledit</id>
     <dependency type="executable" location="absolute">/opt/szarp/bin/isledit</dependency>

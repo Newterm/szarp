@@ -1,6 +1,7 @@
 $Id$
 
 2009-10-28	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/isledit/isledit.inx: added link to info about INX files.
 	* wx/isledit/isledit.cc: fixed command line parsing.
 	* wx/kontroler3/kontr.cc: removed unnecesarry variable.
 2009-10-21	Pawel Palucha <pawel@praterm.com.pl>
