@@ -98,8 +98,6 @@ bool kontrApp::OnInit() {
       return false;
     }
 
-    wxCmdLineParser parser;
-
     xmlInitParser();
     xmlSubstituteEntitiesDefault(1);
     szHTTPCurlClient::Init();
