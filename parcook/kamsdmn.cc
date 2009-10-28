@@ -101,7 +101,9 @@ int main(int argc, char *argv[])
 		}
 		ReadData(cfg->GetDevicePath(), ipc->m_read, cfg->GetSingle());
 		ipc->GoParcook();
-
+		if (cfg->GetSingle())
+		sleep(1);
+		else
 		sleep(280);	/* for saving heatmeter battery */
 	}
 }
