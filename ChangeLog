@@ -1,6 +1,13 @@
 $Id$
 
 2009-10-28	Pawel Palucha <pawel@praterm.com.pl>
+	* isl/examples/isl/new: complex example of linked ISL documents.
+	* libSzarp2/szbase/szbname.cc: wchar2szb uses simple value instead of
+	reference, so it can be used in expresions.
+	* libSzarp2/include/szbase/szbname.h: wchar2szb argument type changed,
+	doc string fix - function does not modify argument in-place.
+	* wx/isledit/isledit.cpp: fix in selecting node to edit; various fixes in 
+	dialog behaviour; ascii-only URI's are created.
 	* acinclude.m4: required boost version changed from 1.20 to 1.35.
 	* wx/isledit/isledit.inx: added link to info about INX files.
 	* wx/isledit/isledit.cc: fixed command line parsing.

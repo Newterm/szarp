@@ -31,11 +31,11 @@
 
 
 /**
- * Converts parameter name to part of szbase file name.
- * @param name name of param to convert (it is converted 'in place')
- * @return pointer result string (name)
+ * Converts parameter name to part of szbase file name (ASCII only characters, no spaces).
+ * @param name name of param to convert
+ * @return result string
  */
 std::wstring
-wchar2szb(const std::wstring& name);
+wchar2szb(std::wstring name);
 
 #endif

@@ -22,13 +22,14 @@
 
 */
 
+#include "cconv.h"
 #include "isledit.h"
 #include "szapp.h"
 #include "szarp_config.h"
-#include "cconv.h"
+#include "szbase/szbname.h"
+#include "xmlutils.h"
 #include <wx/cmdline.h>
 #include <libxml/xpath.h>
-#include "xmlutils.h"
 
 #define szID_OK		wxID_HIGHEST
 #define szID_CANCEL	wxID_HIGHEST+1
@@ -50,7 +51,7 @@ int par_filter(TParam * p)
 	return 1;
 }
 
- ISLFrame::ISLFrame(wxWindow * parent, int id, const wxString & title, TSzarpConfig * ipk, xmlNodePtr _element, const wxPoint & pos, const wxSize & size, long style):
+ISLFrame::ISLFrame(wxWindow * parent, int id, const wxString & title, TSzarpConfig * ipk, xmlNodePtr _element, const wxPoint & pos, const wxSize & size, long style):
 wxFrame(parent, id, title, pos, size,
 	wxCAPTION | wxCLOSE_BOX | wxTAB_TRAVERSAL), element(_element)
 {
@@ -96,6 +97,7 @@ wxFrame(parent, id, title, pos, size,
 				     FALSE /* _single */ ,
 				     par_filter);
 
+	assert(element->type == XML_ELEMENT_NODE);
 	xmlChar *prop =
 	    xmlGetNsProp(element, (xmlChar *) "uri", (xmlChar *) ISL_URI);
 	if (prop) {
@@ -163,11 +165,13 @@ BEGIN_EVENT_TABLE(ISLFrame, wxFrame)
 void ISLFrame::doChoose(wxCommandEvent & event)
 {
 	event.Skip();
-	parsel_wdg->ShowModal();
+	if (parsel_wdg->ShowModal() != wxID_OK) {
+		return;
+	}
 	if (parsel_wdg->g_data.m_param) {
 		wxString name = wxString(parsel_wdg->g_data.m_param->GetName());
-		name.Replace(_T(":"), _T("/"), TRUE);
-		name = wxString(_T("http://localhost:8081/")) + name;
+		if (name.IsEmpty()) return;
+		name = wxString(_T("http://localhost:8081/")) + wxString(wchar2szb(std::wstring(name)));
 		if (v_u_cb->IsChecked()) {
 			name += _T("@v_u");
 		} else {
@@ -216,8 +220,9 @@ void ISLFrame::doOk(wxCommandEvent & event)
 				exit(1);
 			}
 		}
-		xmlSetNsProp(element, ns, (xmlChar *) "uri",
-			     (SC::S2U(parameter_txtctrl->GetValue())).c_str());
+		std::wstring uri = std::wstring(parameter_txtctrl->GetValue());
+		//uri = wchar2szb(uri);
+		xmlSetNsProp(element, ns, (xmlChar *) "uri", SC::S2U(uri).c_str());
 		if (content_rb->GetSelection() == 1) {
 			xmlSetNsProp(element, ns, (xmlChar *) "target",
 				     (SC::S2U(combo_box_1->GetValue())).
@@ -437,7 +442,7 @@ bool ISLEditor::OnInit()
 		exit(1);
 	}
 	/* inkscape adds tspan elements inside text elements */
-	if (!strcmp((char *)element->name, "text") && element->children) {
+	if (element->children && (element->children->type == XML_ELEMENT_NODE)) {
 		element = element->children;
 	}
 	wxString title =
