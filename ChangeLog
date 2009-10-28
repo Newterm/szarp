@@ -1,6 +1,7 @@
 $Id$
 
 2009-10-28	Pawel Palucha <pawel@praterm.com.pl>
+	* acinclude.m4: required boost version changed from 1.20 to 1.35.
 	* wx/isledit/isledit.inx: added link to info about INX files.
 	* wx/isledit/isledit.cc: fixed command line parsing.
 	* wx/kontroler3/kontr.cc: removed unnecesarry variable.
