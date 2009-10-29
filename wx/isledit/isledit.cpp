@@ -31,6 +31,10 @@
 #include <wx/cmdline.h>
 #include <libxml/xpath.h>
 
+#ifdef MINGW32
+#include <wx/filename.h>
+#endif
+
 #define szID_OK		wxID_HIGHEST
 #define szID_CANCEL	wxID_HIGHEST+1
 #define szID_RADIO	wxID_HIGHEST+2
@@ -55,6 +59,9 @@ ISLFrame::ISLFrame(wxWindow * parent, int id, const wxString & title, TSzarpConf
 wxFrame(parent, id, title, pos, size,
 	wxCAPTION | wxCLOSE_BOX | wxTAB_TRAVERSAL), element(_element)
 {
+#ifdef MINGW32
+       	SetBackgroundColour(wxColour(200,200,200));
+#endif
 	parameter_txtctrl =
 	    new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition,
 			   wxDefaultSize, wxTE_READONLY | wxTAB_TRAVERSAL);
@@ -371,6 +378,18 @@ class ISLEditor:public szApp {
 			return false;
 		}
 		m_input = parser.GetParam(0);
+#ifdef MINGW32
+		/* on Windows, Inkscape calls plugin with DOS-like path format, and libxml2
+		 * does not like this... */
+		path = wxFilePath(m_input);
+		if (!path.IsOk() or !path.FileExists()) {
+			fprintf(stderr, "%s\n",
+					SC::S2A(wxString(_("Invalid path to SVG file."))).c_str());
+			return false;
+		}
+		m_input = path.GetLongPath();
+#endif
+
 		parser.Found(_T("f"), &m_config);
 		if (!parser.Found(_T("i"), &m_id)) {
 			fprintf(stderr, "%s\n",
