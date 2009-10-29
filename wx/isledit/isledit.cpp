@@ -381,7 +381,7 @@ class ISLEditor:public szApp {
 #ifdef MINGW32
 		/* on Windows, Inkscape calls plugin with DOS-like path format, and libxml2
 		 * does not like this... */
-		wxFilePath path = m_input;
+		wxFileName path = m_input;
 		if (!path.IsOk() or !path.FileExists()) {
 			fprintf(stderr, "%s\n",
 					SC::S2A(wxString(_("Invalid path to SVG file."))).c_str());
