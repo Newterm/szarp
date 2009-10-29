@@ -60,7 +60,7 @@ wxFrame(parent, id, title, pos, size,
 	wxCAPTION | wxCLOSE_BOX | wxTAB_TRAVERSAL), element(_element)
 {
 #ifdef MINGW32
-       	SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BACKGROUND));
+       	SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));
 #endif
 	parameter_txtctrl =
 	    new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition,
