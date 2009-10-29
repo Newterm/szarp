@@ -60,7 +60,7 @@ wxFrame(parent, id, title, pos, size,
 	wxCAPTION | wxCLOSE_BOX | wxTAB_TRAVERSAL), element(_element)
 {
 #ifdef MINGW32
-       	SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));
+       	SetBackgroundColour(WIN_BACKGROUND_COLOR);
 #endif
 	parameter_txtctrl =
 	    new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition,
@@ -92,6 +92,17 @@ wxFrame(parent, id, title, pos, size,
 	ok_bt = new wxButton(this, szID_OK, _("Ok"));
 	cancel_bt = new wxButton(this, szID_CANCEL, _("Cancel"));
 	help_bt = new wxButton(this, szID_HELP, _("Help"));
+
+	m_help = new szHelpController();
+#ifndef MINGW32
+	m_help->AddBook(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDir() + L"/resources/documentation/new/ipk/html/ipk.hhp");
+#else
+	m_help->AddBook(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDir() + L"\\resources\\documentation\\new\\ipk\\html\\ipk.hhp");
+#endif
+
+	szHelpControllerHelpProvider* m_provider = new szHelpControllerHelpProvider;
+        wxHelpProvider::Set(m_provider);
+	m_provider->SetHelpController(m_help);
 
 	set_properties();
 	do_layout();
@@ -250,23 +261,19 @@ void ISLFrame::doOk(wxCommandEvent & event)
 void ISLFrame::doCancel(wxCommandEvent & event)
 {
 	event.Skip();
-	fprintf(stderr, "%s\n",
-		SC::S2A(wxString(_("Operation canceled by user"))).c_str());
-	exit(1);
+	exit(0);
 }
 
 void ISLFrame::doExit(wxCloseEvent & event)
 {
 	event.Skip();
-	fprintf(stderr, "%s\n",
-		SC::S2A(wxString(_("Operation canceled by user"))).c_str());
-	exit(1);
+	exit(0);
 }
 
 void ISLFrame::doHelp(wxCommandEvent & event)
 {
-	event.Skip();
-	printf("%s\n", "Event handler (ISLFrame::doHelp) not implemented yet");
+	SetHelpText(_T("isledit"));
+	wxHelpProvider::Get()->ShowHelp(this);
 }
 
 void ISLFrame::set_properties()

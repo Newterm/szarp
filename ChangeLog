@@ -1,5 +1,13 @@
 $Id$
 
+2009-10-29	Pawel Palucha <pawel@praterm.com.pl>
+	* isledit/isledit.inx.win: absolute path, required under Windows.
+	* isledit/isledit.*: added help; fixes in Windows paths handling.
+	* ipk.sgml: id for section about ISL editing.
+	* wx/common/szframe.*: all frames get default color - important for
+	Windows version.
+	* wx/draw3/errframe.cpp: background color set.
+	* wx/draw3/ids.h: windows background color fix.
 2009-10-28	Pawel Palucha <pawel@praterm.com.pl>
 	* isl/examples/isl/new: complex example of linked ISL documents.
 	* libSzarp2/szbase/szbname.cc: wchar2szb uses simple value instead of

@@ -1,5 +1,6 @@
 #include "errfrm.h"
 #include "szframe.h"
+#include "ids.h"
 
 #include <wx/checkbox.h>
 #include <wx/textctrl.h>
@@ -40,6 +41,7 @@ ErrorFrame::ErrorFrame() {
 
 	wxXmlResource::Get()->LoadFrame(this, NULL, _T("error_frame"));
 	SetIcon(szFrame::default_icon);
+	SetBackgroundColour(DRAW3_BG_COLOR);
 
 	m_rise_check = XRCCTRL(*this, "RISE_WINDOW_CHECK", wxCheckBox);
 	m_text = XRCCTRL(*this, "TEXT_CTRL", wxTextCtrl);

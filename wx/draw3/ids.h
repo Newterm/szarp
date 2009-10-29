@@ -204,7 +204,11 @@ enum ActionKeyboardType {
 	SCREEN_RIGHT_KB, /**< Move screen right. */
 };
 
+#ifdef MINGW32
+#define DRAW3_BG_COLOR WIN_BACKGROUND_COLOR
+#else
 #define DRAW3_BG_COLOR wxSystemSettings::GetColour(wxSYS_COLOUR_BACKGROUND) 
+#endif
 
 /** Number of draws per set */
 #define MAX_DRAWS_COUNT 12

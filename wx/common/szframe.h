@@ -34,6 +34,13 @@
 #include <wx/wx.h>
 #endif
 
+#ifdef MINGW32
+// Windows port sets strange default background for frames; there seems to be no
+// way to get some reasonable value from system setting or any other source;
+// these values are probed from probed from some Windows XP application
+#define WIN_BACKGROUND_COLOR	wxColour(236, 233, 216, 255)
+#endif
+
 /**
  * Parent class for all frames - sets application icon.
  * First, set default application icon:

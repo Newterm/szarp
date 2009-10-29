@@ -53,6 +53,7 @@ private:
 	void do_disable();
 
 protected:
+	szHelpController* 	m_help;
 	wxTextCtrl* parameter_txtctrl;	/**< textbox with selected parameter name */
 	wxButton* parameter_bt;		/**< button - opens dialog for selecting parameter */
 	wxRadioBox* content_rb;		/**< radiobutton - select editing of attribute or text

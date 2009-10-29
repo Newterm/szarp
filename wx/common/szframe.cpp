@@ -40,6 +40,12 @@ szFrame::szFrame(wxWindow* parent, wxWindowID id, const wxString& title,
 	} else {
 		SetIcon(wxIcon(szarp64_xpm));
 	}
+#ifdef MINGW32
+	SetBackgroundColour(WIN_BACKGROUND_COLOR);
+#else
+	SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BACKGROUND));
+#endif
+	
 }
 
 void szFrame::setDefaultIcon(wxIcon icon) {
