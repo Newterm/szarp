@@ -1,6 +1,7 @@
 $Id$
 
 2009-10-29	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/*: background colors fixes for Windows.
 	* isledit/isledit.inx.win: absolute path, required under Windows.
 	* isledit/isledit.*: added help; fixes in Windows paths handling.
 	* ipk.sgml: id for section about ISL editing.

@@ -42,6 +42,7 @@
 #include "config.h"
 #endif
 
+#include "szframe.h"
 
 /** Available widgets identifiers */
 enum { drawID_SELDRAW = wxID_HIGHEST, 
@@ -111,52 +112,6 @@ enum { drawID_SELDRAW = wxID_HIGHEST,
 	XY_ZOOM_OUT,
 	drawID_STAT_DIAG,
 
-//     myID_PROPERTIES,
-//     myID_INDENTINC,
-//     myID_INDENTRED,
-//     myID_BRACEMATCH,
-//     myID_PAGEACTIVE,
-//     myID_DISPLAYEOL,
-//     myID_INDENTGUIDE,
-//     myID_LINENUMBER,
-//     myID_LONGLINEON,
-//     myID_WHITESPACE,
-//     myID_FOLDTOGGLE,
-//     myID_OVERTYPE,
-//     myID_READONLY,
-//     myID_WRAPMODEON,
-//     myID_CHANGECASE,
-//     myID_CHANGELOWER,
-//     myID_CHANGEUPPER,
-//     myID_HILIGHTLANG,
-//     myID_HILIGHTFIRST,
-//     myID_HILIGHTLAST = myID_HILIGHTFIRST + 99,
-//     myID_CONVERTEOL,
-//     myID_CONVERTCR,
-//     myID_CONVERTCRLF,
-//     myID_CONVERTLF,
-//     myID_USECHARSET,
-//     myID_CHARSETANSI,
-//     myID_CHARSETMAC,
-//     myID_PAGEPREV,
-//     myID_PAGENEXT,
-//     myID_SELECTLINE,
-// 
-//     // other IDs
-//     myID_STATUSBAR,
-//     myID_TITLEBAR,
-//     myID_ABOUTTIMER,
-//     myID_UPDATETIMER,
-// 
-//     // dialog find IDs
-//     myID_DLG_FIND_TEXT,
-// 
-//     // preferences IDs
-//     myID_PREFS_LANGUAGE,
-//     myID_PREFS_STYLETYPE,
-//     myID_PREFS_KEYWORDS,
-
-
     codeEditorID_INDENTINC,
     codeEditorID_INDENTRED,
     codeEditorID_SELECTLINE,
@@ -206,10 +161,10 @@ enum ActionKeyboardType {
 };
 
 #ifdef MINGW32
-#include "szframe.h"
 #define DRAW3_BG_COLOR WIN_BACKGROUND_COLOR
 #else
-#define DRAW3_BG_COLOR wxSystemSettings::GetColour(wxSYS_COLOUR_BACKGROUND) 
+//#define DRAW3_BG_COLOR wxSystemSettings::GetColour(wxSYS_COLOUR_BACKGROUND) 
+#define DRAW3_BG_COLOR wxColour(255, 0, 0, 255) 
 #endif
 
 /** Number of draws per set */

@@ -27,6 +27,7 @@
 #include "szapp.h"
 #include "szarp_config.h"
 #include "szbase/szbname.h"
+#include "szframe.h"
 #include "xmlutils.h"
 #include <wx/cmdline.h>
 #include <libxml/xpath.h>

@@ -1,6 +1,6 @@
 #include "errfrm.h"
-#include "szframe.h"
 #include "ids.h"
+#include "szframe.h"
 
 #include <wx/checkbox.h>
 #include <wx/textctrl.h>
