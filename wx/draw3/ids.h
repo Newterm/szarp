@@ -42,6 +42,7 @@
 #include "config.h"
 #endif
 
+
 /** Available widgets identifiers */
 enum { drawID_SELDRAW = wxID_HIGHEST, 
 	drawID_SELSET, 
@@ -205,6 +206,7 @@ enum ActionKeyboardType {
 };
 
 #ifdef MINGW32
+#include "szframe.h"
 #define DRAW3_BG_COLOR WIN_BACKGROUND_COLOR
 #else
 #define DRAW3_BG_COLOR wxSystemSettings::GetColour(wxSYS_COLOUR_BACKGROUND) 
