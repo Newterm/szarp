@@ -9,6 +9,6 @@
     </effect>
     <script>
     <!-- Modify command in case szarp is installed somewhere else -->
-        <command reldir="extensions">C:\Program Files\SZARP\bin\isledit.exe</command>
+        <command reldir="absolute">C:\Program Files\SZARP\bin\isledit.exe</command>
     </script>
 </inkscape-extension>
