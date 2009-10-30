@@ -207,7 +207,8 @@ bool DrawApp::OnInit() {
 	SplashScreen *splash = NULL;
 	wxBitmap bitmap;
 
-	szFrame::setDefaultIcon(wxIcon(draw64_xpm));
+	// this loads draw64_xpm under Linux, or draw64 icon resource under Windows
+	szFrame::setDefaultIcon(wxICON(draw64));
 
 	wxString splashimage = GetSzarpDir();
 

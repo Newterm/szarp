@@ -87,12 +87,8 @@ Function un.DeleteStartMenu
 	Delete "$SMSTARTUP\Centrum Sterowania.lnk"
 	Delete "$SMSTARTUP\Synchronizator danych.lnk"
 	Delete "$SMSTARTUP\Szau.lnk"
- 	Delete "$SMPROGRAMS\$1\Synchronizator danych.lnk"
-	Delete "$SMPROGRAMS\$1\Centrum Sterowania.lnk"
-	Delete "$SMPROGRAMS\$1\Szau.lnk" 
-	Delete "$SMPROGRAMS\$1\Szast.lnk"
-	Delete "$SMPROGRAMS\$1\Kontroler.lnk" 
-	RMDir  "$SMPROGRAMS\$1"	
+	Delete "$SMSTARTUP\Automatyczna aktualizacja SZARP.lnk"
+ 	RMDir /r "$SMPROGRAMS\$1"	
 FunctionEnd
 
 Function DeleteStartMenu
@@ -100,12 +96,8 @@ Function DeleteStartMenu
 	Delete "$SMSTARTUP\Centrum Sterowania.lnk"
 	Delete "$SMSTARTUP\Synchronizator danych.lnk"
 	Delete "$SMSTARTUP\Szau.lnk"
- 	Delete "$SMPROGRAMS\$1\Synchronizator danych.lnk"
-	Delete "$SMPROGRAMS\$1\Centrum Sterowania.lnk"
-	Delete "$SMPROGRAMS\$1\Szau.lnk" 
-	Delete "$SMPROGRAMS\$1\Szast.lnk"
-	Delete "$SMPROGRAMS\$1\Kontroler.lnk" 
-	RMDir  "$SMPROGRAMS\$1"	
+	Delete "$SMSTARTUP\Automatyczna aktualizacja SZARP.lnk"
+ 	RMDir /r "$SMPROGRAMS\$1"	
 FunctionEnd
 
 ; Delete animation icons
@@ -313,9 +305,9 @@ Section "SZARP (required)" MainSection
 	0 \
 	"SW_SHOWNORMAL" \
 	"" \
-	"Wybór miasta"
+	"Uruchamianie aplikacji SZARP"
     CreateShortCut \
-    	"$SMPROGRAMS\$STARTMENU_FOLDER\Szau.lnk" \
+    	"$SMPROGRAMS\$STARTMENU_FOLDER\Automatyczna aktualizacja SZARP.lnk" \
 	"$INSTDIR\bin\SZAU.EXE" \
 	"" \
 	"$INSTDIR\resources\icons\szau.ico" \
@@ -324,7 +316,7 @@ Section "SZARP (required)" MainSection
 	"" \
 	"Automatyczna aktualizacja SZARP"
     CreateShortCut \
-    	"$SMPROGRAMS\$STARTMENU_FOLDER\Szast.lnk" \
+    	"$SMPROGRAMS\$STARTMENU_FOLDER\Konfigurator regulatora Z-Elektronik.lnk" \
 	"$INSTDIR\bin\SZAST.EXE" \
 	"" \
 	"$INSTDIR\resources\icons\szast.ico" \
@@ -358,9 +350,9 @@ Section "SZARP (required)" MainSection
 	0 \
 	"SW_SHOWNORMAL" \
 	"" \
-	"Wybór miasta"
+	"Uruchamianie aplikacji SZARP"
     CreateShortCut \
-    	"$SMSTARTUP\Szau.lnk" \
+    	"$SMSTARTUP\Automatyczna aktualizacja SZARP.lnk" \
 	"$INSTDIR\bin\SZAU.EXE" \
 	"" \
 	"$INSTDIR\resources\icons\szau.ico" \

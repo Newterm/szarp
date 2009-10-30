@@ -25,7 +25,6 @@ LIBWXCOMMON=../common/libwxcommon.a
 WIN_APP_NAME=SZAST
 
 bin_PROGRAMS = szast
-#EXTRA_PROGRAMS=szast
 
 szast_SOURCES = \
         szastapp.cpp \
@@ -38,7 +37,14 @@ szast_SOURCES = \
         settingsdialog.cpp \
 	GUI/resource.cpp	
 
-szast_LDADD = $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) $(LIBWXSCINTILLA) @SSL_LIBS@ @XML_LIBS@ @WX_LIBS@ @LUA_LIBS@ @BOOST_LDFLAGS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@
+if MINGW32_OPT
+RESOURCES = resources.o
+else
+RESOURCES = 
+endif
+
+szast_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP)
+szast_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) @SSL_LIBS@ @XML_LIBS@ @WX_LIBS@ @LUA_LIBS@ @BOOST_LDFLAGS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@
 
 szast_LOCALES = pl/szast.mo
 szast_LOCALES_SRC = pl/szast.po
@@ -56,6 +62,21 @@ EXTRA_DIST = $(szast_LOCALES_SRC) $(szast_LOCALES)
 
 # Additional files for deleting on 'make maintainer-clean'
 MAINTAINERCLEANFILES = Makefile.in
+
+# Creating resources file with icons for Windows
+ICON_SRC := ../../resources/wx/icons/szast.xpm
+ICON := $(shell basename $(ICON_SRC) .xpm)
+ICON_ICO := $(ICON).ico
+
+$(ICON_ICO): $(ICON_SRC)
+	@CONVERT@ $< $@
+
+resources.rc:
+	echo "$(ICON) ICON $(ICON_ICO)" > $@
+	echo "#include <wx/msw/wx.rc>" >> $@
+
+resources.o: resources.rc $(ICON_ICO)
+	@WINDRES@ $(shell for i in @WX_CPPFLAGS@; do echo $$i | grep '\(^-I\)\|\(-D\)' ; done) $< $@
 
 # Rule to create mo files
 %.mo: %.po

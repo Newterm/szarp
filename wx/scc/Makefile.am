@@ -48,8 +48,29 @@ scc_SOURCES = \
         @srcdir@/szarpfonts.cpp @srcdir@/szarpfonts.h \
 	@srcdir@/scchideselectionframe.cpp @srcdir@/scchideselectionframe.h
 
-scc_DEPENDENCIES = $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2)
-scc_LDADD = $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) @WX_LIBS@ @XML_LIBS@ @LUA_LIBS@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@
+if MINGW32_OPT
+RESOURCES = resources.o
+else
+RESOURCES = 
+endif
+
+scc_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2)
+scc_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) @WX_LIBS@ @XML_LIBS@ @LUA_LIBS@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@
+
+# Creating resources file with icons for Windows
+ICON_SRC := ../../resources/wx/icons/szarp64.xpm
+ICON := $(shell basename $(ICON_SRC) .xpm)
+ICON_ICO := $(ICON).ico
+
+$(ICON_ICO): $(ICON_SRC)
+	@CONVERT@ $< $@
+
+resources.rc:
+	echo "$(ICON) ICON $(ICON_ICO)" > $@
+	echo "#include <wx/msw/wx.rc>" >> $@
+
+resources.o: resources.rc $(ICON_ICO)
+	@WINDRES@ $(shell for i in @WX_CPPFLAGS@; do echo $$i | grep '\(^-I\)\|\(-D\)' ; done) $< $@
 
 # Rule to create mo files
 %.mo: %.po

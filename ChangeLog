@@ -1,10 +1,22 @@
 $Id$
 
+2009-10-30	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/*: added Windows resource files, all apps now have correct icons
+	under both Linux and Windows.
+	* script/nsis/common.nsi: improvements in Start Menu.
+	* resources/wx/icons/*: some icons changed/added.
+	* resources/logo/szarp-logo.svg: new graphics for szast, kontroler3
+	and wxhelp.
+	* configure.in: added check for windres under mingw32 (tool for
+	manipulating Windows resource files).
+	* wx/kontroler.cc: fixed bug with unfinished loop when user selected
+	incorrect server.
 2009-10-29	Pawel Palucha <pawel@praterm.com.pl>
 	* wx/*: background colors fixes for Windows.
 	* isledit/isledit.inx.win: absolute path, required under Windows.
 	* isledit/isledit.*: added help; fixes in Windows paths handling.
-	* ipk.sgml: id for section about ISL editing.
+	* ipk.sgml: id for section about ISL editing, removed 'environs'
+	section.
 	* wx/common/szframe.*: all frames get default color - important for
 	Windows version.
 	* wx/draw3/errframe.cpp: background color set.

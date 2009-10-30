@@ -36,6 +36,10 @@
 #include <wx/filename.h>
 #endif
 
+#ifndef MINGW32
+#include "../../resources/wx/icons/szarp64.xpm"
+#endif
+
 #define szID_OK		wxID_HIGHEST
 #define szID_CANCEL	wxID_HIGHEST+1
 #define szID_RADIO	wxID_HIGHEST+2
@@ -63,6 +67,7 @@ wxFrame(parent, id, title, pos, size,
 #ifdef MINGW32
        	SetBackgroundColour(WIN_BACKGROUND_COLOR);
 #endif
+	SetIcon(wxICON(szarp64));
 	parameter_txtctrl =
 	    new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition,
 			   wxDefaultSize, wxTE_READONLY | wxTAB_TRAVERSAL);

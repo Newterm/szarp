@@ -46,6 +46,11 @@
 #include "cconv.h"
 #include "libpar.h"
 #include "execute.h"
+#include "szframe.h"
+
+#ifndef MINGW32
+#include "../../resources/wx/icons/szau_16.xpm"
+#endif
 
 IMPLEMENT_APP(SzauApp)
 
@@ -82,6 +87,8 @@ bool SzauApp::OnInit() {
 #if wxUSE_LIBPNG
 	wxImage::AddHandler(new wxPNGHandler);
 #endif
+
+	szFrame::setDefaultIcon(wxICON(szau_16));
 
 #ifdef wxUSE_UNICODE
 	libpar_read_cmdline_w(&argc, (wchar_t**) argv);

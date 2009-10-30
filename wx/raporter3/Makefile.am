@@ -44,20 +44,38 @@ raporter3_SOURCES = \
 	filedump.cc raporteredit.h \
 	$(ICONS)
 
-raporter3_DEPENDENCIES = $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2)
-raporter3_LDADD = $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) \
+if MINGW32_OPT
+RESOURCES = resources.o
+else
+RESOURCES = 
+endif
+
+raporter3_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2)
+raporter3_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) \
 	@XML_LIBS@ @WX_LIBS@ @CURL_LIBS@ @LUA_LIBS@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@
 
 raporter3_LOCALES = pl/raporter3.mo
 raporter3_LOCALES_SRC = pl/raporter3.po
 raporter3_LOCALES_TMP = pl/raporter3.pot
 
-#.xrc.cc:
-#	wxrc -v -c $< -o $@
-
 CLEANFILES = $(raporter3_LOCALES) ${WIN_APP_NAME}Setup.exe
 
 EXTRA_DIST = $(raporter3_LOCALES_SRC) $(raporter3_LOCALES)
+
+# Creating resources file with icons for Windows
+ICON_SRC := ../../resources/wx/icons/rap16.xpm
+ICON := $(shell basename $(ICON_SRC) .xpm)
+ICON_ICO := $(ICON).ico
+
+$(ICON_ICO): $(ICON_SRC)
+	@CONVERT@ $< $@
+
+resources.rc:
+	echo "$(ICON) ICON $(ICON_ICO)" > $@
+	echo "#include <wx/msw/wx.rc>" >> $@
+
+resources.o: resources.rc $(ICON_ICO)
+	@WINDRES@ $(shell for i in @WX_CPPFLAGS@; do echo $$i | grep '\(^-I\)\|\(-D\)' ; done) $< $@
 
 # Rule to create mo files
 %.mo: %.po

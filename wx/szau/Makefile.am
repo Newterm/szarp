@@ -43,8 +43,29 @@ szau_SOURCES = \
         @srcdir@/updater.cpp @srcdir@/updater.h \
         @srcdir@/szautaskbaritem.cpp @srcdir@/szautaskbaritem.h 
 
-szau_DEPENDENCIES = $(LIBWXCOMMON) 
-szau_LDADD = $(LIBWXCOMMON) $(LIBSZARP) @WX_LIBS@ @CURL_LIBS@ @BOOST_LDFLAGS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_THREAD_LIB@ @SSL_LIBS@ $(LIBSZARP2) @XML_LIBS@
+if MINGW32_OPT
+RESOURCES = resources.o
+else
+RESOURCES = 
+endif
+
+szau_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2)
+szau_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) @WX_LIBS@ @CURL_LIBS@ @BOOST_LDFLAGS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_THREAD_LIB@ @SSL_LIBS@ $(LIBSZARP2) @XML_LIBS@
+
+# Creating resources file with icons for Windows
+ICON_SRC := ../../resources/wx/icons/szau_16.xpm
+ICON := $(shell basename $(ICON_SRC) .xpm)
+ICON_ICO := $(ICON).ico
+
+$(ICON_ICO): $(ICON_SRC)
+	@CONVERT@ $< $@
+
+resources.rc:
+	echo "$(ICON) ICON $(ICON_ICO)" > $@
+	echo "#include <wx/msw/wx.rc>" >> $@
+
+resources.o: resources.rc $(ICON_ICO)
+	@WINDRES@ $(shell for i in @WX_CPPFLAGS@; do echo $$i | grep '\(^-I\)\|\(-D\)' ; done) $< $@
 
 # Rule to create mo files
 %.mo: %.po

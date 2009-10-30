@@ -21,7 +21,8 @@
 #include "libpar.h"
 #include "ipc.h"
 #include "md5.h"
-#include "../../resources/wx/icons/ssc16.xpm"
+#include "szframe.h"
+#include "../../resources/wx/icons/ssc64.xpm"
 
 #ifdef MINGW32
 #undef int16_t
@@ -2541,8 +2542,10 @@ SSCTaskBarItem::SSCTaskBarItem(wxString szarp_dir) {
 
 	m_help = new szHelpController;
 
-	wxIcon icon(ssc16_xpm);
+	wxIcon icon(wxICON(ssc64));
 	SetIcon(icon);
+	szFrame::setDefaultIcon(icon);
+	m_log->GetFrame()->SetIcon(icon);
 
 	m_cfg_frame = new SSCConfigFrame();
 
@@ -2981,7 +2984,7 @@ bool SSCApp::OnInit() {
 bool SSCApp::RunWizard() {
 	wxWizard* wizard = new wxWizard(NULL, wxID_ANY,
 			_("SSC - intial configuration"),
-			wxBitmap(ssc16_xpm),
+			wxBitmap(ssc64_xpm),
 			wxDefaultPosition,
 			wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
 

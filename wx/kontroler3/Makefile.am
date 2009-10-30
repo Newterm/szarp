@@ -26,19 +26,39 @@ kontroler3_SOURCES = \
 	kontr.cc kontr.h kontroler.cc kontroler.h kontradd.cc kontradd.h \
 	parcalc.cc parcalc.h kontropt.cc kontropt.h kontralarm.h kontralarm.cc
 
-kontroler3_DEPENDENCIES =
-kontroler3_LDADD = $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) @XML_LIBS@ @WX_LIBS@ @LUA_LIBS@ @CURL_LIBS@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@
+if MINGW32_OPT
+RESOURCES = resources.o
+else
+RESOURCES = 
+endif
+
+kontroler3_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2)
+kontroler3_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) @XML_LIBS@ @WX_LIBS@ @LUA_LIBS@ @CURL_LIBS@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@
 
 kontroler3_LOCALES = pl/kontroler3.mo
 kontroler3_LOCALES_SRC = pl/kontroler3.po
 kontroler3_LOCALES_TMP = pl/kontroler3.pot
 
-#.xrc.cc:
-#	wxrc -v -c $< -o $@
-
 CLEANFILES = $(kontroler3_LOCALES)
 
 EXTRA_DIST = $(kontroler3_LOCALES_SRC) $(kontroler3_LOCALES)
+
+# Creating resources file with icons for Windows
+ICON_SRC := ../../resources/wx/icons/kontr64.xpm
+ICON := $(shell basename $(ICON_SRC) .xpm)
+ICON_ICO := $(ICON).ico
+
+$(ICON_ICO): $(ICON_SRC)
+	@CONVERT@ $< $@
+
+resources.rc:
+	echo "$(ICON) ICON $(ICON_ICO)" > $@
+	echo "#include <wx/msw/wx.rc>" >> $@
+
+resources.o: resources.rc $(ICON_ICO)
+	@WINDRES@ $(shell for i in @WX_CPPFLAGS@; do echo $$i | grep '\(^-I\)\|\(-D\)' ; done) $< $@
+
+
 
 # Rule to create mo files
 %.mo: %.po

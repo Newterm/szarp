@@ -81,7 +81,7 @@ SCCTaskBarItem::SCCTaskBarItem(SCCMenu* _menu, wxString prefix,	wxString suffix)
 
 	help = new szHelpController;
 
-	wxIcon icon(szarp16_xpm);
+	wxIcon icon(wxICON(szarp16));
 	if (icon.Ok())
 		SetIcon(icon);
 }

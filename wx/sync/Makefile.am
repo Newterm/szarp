@@ -6,9 +6,11 @@ SUBDIRS =
 if MINGW32_OPT
 #XXX - autoconf should handle this
 MINGW32_LIBS = -liconv -lwsock32 -lgdi32 -lshlwapi -liphlpapi -lws2_32
+RESOURCES := resources.o
 else
 MINGW32_LIBS =
 SSS_rule = sss$(EXEEXT)
+RESOURCES :=
 endif
 
 SSC_rule = ssc$(EXEEXT)
@@ -23,7 +25,10 @@ INCLUDES = @GDK_CFLAGS@ @GTK_CFLAGS@ @WX_CXXFLAGS@ @XML_CFLAGS@ @RSYNC_CFLAGS@ @
 
 LIBSZARP=../../libSzarp/libSzarp.a
 LIBSZARP2=../../libSzarp2/libSzarp2.a
-ssc_LDADD = $(LIBSZARP) $(LIBSZARP2) ../common/libwxcommon.a \
+LIBWXCOMMON=../common/libwxcommon.a
+
+ssc_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2)
+ssc_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) \
 	@WX_LIBS@ @RSYNC_LIBS@ @SSL_LIBS@ @LUA_LIBS@ @XML_LIBS@ $(MINGW32_LIBS) @BOOST_LDFLAGS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @CARES_LIBS@ @BOOST_THREAD_LIB@
 sss_LDADD = @RSYNC_LIBS@ @SSL_LIBS@ @PAM_LIBS@ @XML_LIBS@ @LUA_LIBS@ @BOOST_LDFLAGS@ @BOOST_THREAD_LIB@ $(LIBSZARP) $(LIBSZARP2)
 
@@ -41,6 +46,21 @@ bin_PROGRAMS = ssc sss
 endif
 
 WIN_APP_NAME=SSC
+
+# Creating resources file with icons for Windows
+ICON_SRC := ../../resources/wx/icons/ssc64.xpm
+ICON := $(shell basename $(ICON_SRC) .xpm)
+ICON_ICO := $(ICON).ico
+
+$(ICON_ICO): $(ICON_SRC)
+	@CONVERT@ $< $@
+
+resources.rc:
+	echo "$(ICON) ICON $(ICON_ICO)" > $@
+	echo "#include <wx/msw/wx.rc>" >> $@
+
+resources.o: resources.rc $(ICON_ICO)
+	@WINDRES@ $(shell for i in @WX_CPPFLAGS@; do echo $$i | grep '\(^-I\)\|\(-D\)' ; done) $< $@
 
 # Rule to create mo files
 %.mo: %.po

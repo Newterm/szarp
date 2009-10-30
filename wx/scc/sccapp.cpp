@@ -46,6 +46,11 @@
 #include "libpar.h"
 #include "execute.h"
 #include "ipc.h"
+#include "szframe.h"
+
+#ifndef MINGW32
+#include "../../resources/wx/icons/szarp64.xpm"
+#endif
 
 bool SCCApp::OnInit()
 {
@@ -112,6 +117,8 @@ bool SCCApp::OnInit()
 #else
 	libpar_read_cmdline(&argc, argv);
 #endif
+	
+	szFrame::setDefaultIcon(wxICON(szarp64));
 
 #ifndef MINGW32
 	libpar_init();

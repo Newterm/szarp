@@ -12,8 +12,10 @@ MAINTAINERCLEANFILES = Makefile.in
 if MINGW32_OPT
 #XXX - autoconf should handle this
 MINGW32_LIBS = -lwsock32 -lshlwapi -liphlpapi -lws2_32
+RESOURCES = resources.o
 else
 MINGW32_LIBS =
+RESOURCES = 
 endif
 
 # Compilations flags
@@ -90,12 +92,27 @@ draw3_SOURCES = \
 		graphsutils.h graphsutils.cpp \
 		GUI/resource.cpp
 
-draw3_DEPENDENCIES = $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) $(LIBWXSCINTILLA)
-draw3_LDADD = $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) $(LIBWXSCINTILLA) @SSL_LIBS@ @XML_LIBS@ @WX_LIBS@ @LUA_LIBS@ @GDK_LIBS@ @SQLITE3_LIBS@ @GSTREAMER_LIBS@ @VMIME_LIBS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @FTGL_LIBS@  @WXGL_LIBS@ @XMLRPC_EPI_LIBS@ @CARES_LIBS@ $(MINGW32_LIBS)
+draw3_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) $(LIBWXSCINTILLA)
+draw3_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) $(LIBWXSCINTILLA) @SSL_LIBS@ @XML_LIBS@ @WX_LIBS@ @LUA_LIBS@ @GDK_LIBS@ @SQLITE3_LIBS@ @GSTREAMER_LIBS@ @VMIME_LIBS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @FTGL_LIBS@  @WXGL_LIBS@ @XMLRPC_EPI_LIBS@ @CARES_LIBS@ $(MINGW32_LIBS)
 draw3_LOCALES_TMP = @srcdir@/draw3.tpo
 
 CLEANFILES = fr/draw3.mo pl/draw3.mo de/draw3.mo $(draw3_LOCALES_TMP)
 EXTRA_DIST = fr/draw3.po pl/draw3.po de/draw3.po
+
+# Creating resources file with icons for Windows
+ICON_SRC := ../../resources/wx/icons/draw64.xpm
+ICON := $(shell basename $(ICON_SRC) .xpm)
+ICON_ICO := $(ICON).ico
+
+$(ICON_ICO): $(ICON_SRC)
+	@CONVERT@ $< $@
+
+resources.rc:
+	echo "$(ICON) ICON $(ICON_ICO)" > $@
+	echo "#include <wx/msw/wx.rc>" >> $@
+
+resources.o: resources.rc $(ICON_ICO)
+	@WINDRES@ $(shell for i in @WX_CPPFLAGS@; do echo $$i | grep '\(^-I\)\|\(-D\)' ; done) $< $@
 
 # Rule to create mo files
 %.mo: %.po

@@ -31,6 +31,9 @@
 #include "whapp.h"
 #include "cconv.h"
 
+#ifndef MINGW32
+#include "../../resources/wx/icons/wxhelp.xpm"
+#endif
 
 bool WHApp::OnInit()
 {
@@ -77,6 +80,7 @@ bool WHApp::OnInit()
 			
 			SetAppName(_T("SZARP help viewer"));
 			SetTopWindow( frame );
+			frame->SetIcon(wxICON(wxhelp));
 			frame->Show( TRUE );
 			return TRUE;
 		}

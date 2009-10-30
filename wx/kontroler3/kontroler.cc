@@ -37,7 +37,11 @@
 #include "kontralarm.h"
 #include "authdiag.h"
 #include "szapp.h"
+#include "szframe.h"
 
+#ifndef MINGW32
+#include "../../resources/wx/icons/kontr64.xpm"
+#endif
 
 #include <wx/listimpl.cpp>
 WX_DEFINE_LIST(szProbeList);
@@ -56,11 +60,10 @@ szKontroler::szKontroler(wxWindow *par, bool remote_mode, bool operator_mode, wx
   loaded = false;
   bool ask_for_server=false;
   while (ipk == NULL) {
-	if (server.IsEmpty())
-		server = szServerDlg::GetServer(server, _T("Kontroler"), ask_for_server);
-	if (server == wxEmptyString ||
-	    server.IsSameAs(_T("Cancel")))
+	server = szServerDlg::GetServer(server, _T("Kontroler"), ask_for_server);
+	if (server.IsEmpty() or server.IsSameAs(_T("Cancel"))) {
 		exit(0);
+	}
 	ipk = szServerDlg::GetIPK(server, m_http);
 	if (ipk == NULL)
 		ask_for_server = true;
@@ -77,6 +80,10 @@ szKontroler::szKontroler(wxWindow *par, bool remote_mode, bool operator_mode, wx
   stat_sb = new wxStatusBar(this, wxID_ANY);
   const int widths[] = { 50, -1, 75 };
   stat_sb->SetFieldsCount(3, widths);
+
+  wxIcon icon(wxICON(kontr64));
+  SetIcon(icon);
+  szFrame::setDefaultIcon(icon);
 
   SetStatusBar(stat_sb);
 

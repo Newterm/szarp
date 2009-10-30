@@ -106,7 +106,7 @@ szRaporter::szRaporter(wxWindow *parent, wxString server, wxString title)
 	stat_sb->SetFieldsCount(4, widths);
 	m_fitsize = false;
 
-	wxIcon icon(rap16_xpm);
+	wxIcon icon(wxICON(rap16));
 	if (icon.Ok()) {
 		SetIcon(icon);
 	}

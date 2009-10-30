@@ -239,7 +239,7 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 	parlist = new szParList();
 	parlist->RegisterIPK(mainWidget->GetIpk());
 	
-	wxIcon icon(extr16);
+	wxIcon icon(wxICON(extr16));
 	if (icon.Ok())
 		SetIcon(icon);
 	TestEmpty();

@@ -32,8 +32,14 @@ ekstraktor3_SOURCES = \
                 EkstraktorMainWindow.cpp EkstraktorMainWindow.h \
 		extraction.cpp extraction.h 
 
-ekstraktor3_DEPENDENCIES = $(LIBWXCOMMON) $(LIBSZ) $(LIBSZARP2) $(LIBSZAR)
-ekstraktor3_LDADD = $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) @XML_LIBS@ @WX_LIBS@ \
+if MINGW32_OPT
+RESOURCES = resources.o
+else
+RESOURCES = 
+endif
+
+ekstraktor3_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZ) $(LIBSZARP2) $(LIBSZAR)
+ekstraktor3_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) @XML_LIBS@ @WX_LIBS@ \
 		    @XSLT_LIBS@ @LUA_LIBS@ @ZIP_LIBS@ \
 		    @BOOST_LDFLAGS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_THREAD_LIB@ @BOOST_DATE_TIME_LIB@
 
@@ -44,6 +50,22 @@ ekstraktor3_LOCALES_TMP = pl/ekstraktor3.pot
 CLEANFILES = $(ekstraktor3_LOCALES)
 
 EXTRA_DIST = $(ekstraktor3_LOCALES_SRC) $(ekstraktor3_LOCALES)
+
+# Creating resources file with icons for Windows
+ICON_SRC := ../../resources/wx/icons/extr16.xpm
+ICON := $(shell basename $(ICON_SRC) .xpm)
+ICON_ICO := $(ICON).ico
+
+$(ICON_ICO): $(ICON_SRC)
+	@CONVERT@ $< $@
+
+resources.rc:
+	echo "$(ICON) ICON $(ICON_ICO)" > $@
+	echo "#include <wx/msw/wx.rc>" >> $@
+
+resources.o: resources.rc $(ICON_ICO)
+	@WINDRES@ $(shell for i in @WX_CPPFLAGS@; do echo $$i | grep '\(^-I\)\|\(-D\)' ; done) $< $@
+
 
 # Rule to create mo files
 %.mo: %.po

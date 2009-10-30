@@ -27,8 +27,14 @@ bin_PROGRAMS = isledit
 isledit_SOURCES = \
 	isledit.cpp isledit.h
 
-isledit_DEPENDENCIES = $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2)
-isledit_LDADD = $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) \
+if MINGW32_OPT
+RESOURCES = resources.o
+else
+RESOURCES = 
+endif
+
+isledit_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2)
+isledit_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) \
 	@XML_LIBS@ @WX_LIBS@ @CURL_LIBS@ @LUA_LIBS@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@
 
 isledit_LOCALES = pl/isledit.mo
@@ -41,6 +47,21 @@ isledit_LOCALES_TMP = pl/isledit.pot
 CLEANFILES = $(isledit_LOCALES) ${WIN_APP_NAME}Setup.exe
 
 EXTRA_DIST = $(isledit_LOCALES_SRC) $(isledit_LOCALES)
+
+# Creating resources file with icons for Windows
+ICON_SRC := ../../resources/wx/icons/szarp64.xpm
+ICON := $(shell basename $(ICON_SRC) .xpm)
+ICON_ICO := $(ICON).ico
+
+$(ICON_ICO): $(ICON_SRC)
+	@CONVERT@ $< $@
+
+resources.rc:
+	echo "$(ICON) ICON $(ICON_ICO)" > $@
+	echo "#include <wx/msw/wx.rc>" >> $@
+
+resources.o: resources.rc $(ICON_ICO)
+	@WINDRES@ $(shell for i in @WX_CPPFLAGS@; do echo $$i | grep '\(^-I\)\|\(-D\)' ; done) $< $@
 
 # Rule to create mo files
 %.mo: %.po
