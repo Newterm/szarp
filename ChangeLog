@@ -1,6 +1,7 @@
 $Id$
 
 2009-10-31	Pawel Palucha <pawel@praterm.com.pl>
+	* debian/control: maintainer name format fix.
 	* debian/*: lintian bug 'not-using-po-debconf' fixed - templates
 	translated to .po files; this bug was marked as critical, so packages
 	failed to build on current unstable.
