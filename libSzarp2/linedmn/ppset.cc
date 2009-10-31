@@ -24,6 +24,7 @@
 #include <fstream>
 #include <sstream>
 #include <map>
+#include <time.h>
 #ifndef MINGW32
 #include <termios.h>
 #include <errno.h>

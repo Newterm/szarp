@@ -46,8 +46,6 @@
 #include "drawswdg.h"
 #include "drawobs.h"
 
-#ifdef __WXGTK__
-
 class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver, public DrawObserver {
 
 	bool m_draw_param_name;
@@ -192,6 +190,5 @@ public:
 
 	DECLARE_EVENT_TABLE()
 };
-#endif //__WXGTK__
 
 #endif

@@ -90,19 +90,7 @@ database_manager(dm), m_notebook(NULL), draw_panel(NULL), remarks_handler(remark
 
 	params_dialog = NULL;
 
-#ifdef __WXGTK__
-	m_help = new szHelpController;
-#ifndef MINGW32
-	m_help->AddBook(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDir() + _T("/resources/documentation/new/draw3/html/draw3.hhp"));
-#else
-	m_help->AddBook(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDir() + _T("\\resources\\documentation\\new\\draw3\\html\\draw3.hhp"));
-#endif
-	szHelpControllerHelpProvider* m_provider = new szHelpControllerHelpProvider;
-	wxHelpProvider::Set(m_provider);
-	m_provider->SetHelpController(m_help);
-#endif
-
-};
+}
 
 void DrawFrame::OnAbout(wxCommandEvent & event)
 {
@@ -111,7 +99,7 @@ void DrawFrame::OnAbout(wxCommandEvent & event)
 
 void DrawFrame::OnHelp(wxCommandEvent & event)
 {
-	m_help->DisplayContents();
+	wxGetApp().DisplayHelp();
 }
 
 class NumberOfUnitsDialog : public wxDialog {
@@ -861,7 +849,7 @@ void DrawFrame::OnLanguageChange(wxCommandEvent &e) {
 }
 
 void DrawFrame::OnGraphsView(wxCommandEvent &e) {
-	wxString style = wxConfig::Get()->Read(_T("GRAPHS_VIEW"), _T("Classic"));
+	wxString style = wxConfig::Get()->Read(_T("GRAPHS_VIEW"), _T("GCDC"));
 	wxArrayString choices;
 
 	choices.push_back(_("Classic"));

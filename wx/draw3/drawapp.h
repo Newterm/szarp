@@ -113,6 +113,8 @@ public:
 
 	DrawApp();
 
+	void DisplayHelp();
+
 	virtual bool OnCmdLineError(wxCmdLineParser &parser);
 	virtual bool OnCmdLineHelp(wxCmdLineParser &parser);
 	virtual bool OnCmdLineParsed(wxCmdLineParser &parser);

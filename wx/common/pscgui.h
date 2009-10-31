@@ -383,7 +383,7 @@ public:
 
 };
 
-DECLARE_EVENT_TYPE(PSETD_RESP, -1)
+DECLARE_EXPORTED_EVENT_TYPE(WXEXPORT, PSETD_RESP, -1)
 
 typedef void (wxEvtHandler::*PSetDResponseEventFunction)(PSetDResponse&);
 

@@ -29,6 +29,7 @@
 #include <config.h>
 #include "szhlpctrl.h"
 #include "cconv.h"
+#include "szapp.h"
 
 szHelpController::szHelpController(int style)
 {
@@ -43,12 +44,14 @@ wxHtmlHelpFrame* szHelpController::CreateHelpFrame(wxHtmlHelpData* data)
     wxHtmlHelpFrame* helpFrame = wxHtmlHelpController::CreateHelpFrame(data);
     helpFrame->SetController(this);
 
+#if 0
     wxIcon icon;
     icon.LoadFile(SC::A2S(PREFIX"/resources/wx/icons/szarp16.xpm").c_str());
+#endif
 	
     helpFrame->SetTitleFormat(m_titleFormat);
-    if (icon.Ok())
-	    helpFrame->SetIcon(icon);
+//    if (icon.Ok())
+//	    helpFrame->SetIcon(icon);
     helpFrame->Show(TRUE);
 	
     helpFrame->UseConfig(wxConfig::Get(), _T("Help"));

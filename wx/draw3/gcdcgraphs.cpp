@@ -24,8 +24,6 @@
  * $Id: wxgraphs.h 1 2009-06-24 15:09:25Z isl $
  */
 
-#ifdef __WXGTK__
-
 #include <wx/dcbuffer.h>
 
 #include "bitmaps/remark_flag.xpm"
@@ -494,6 +492,10 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 		dce = d->GetValuesTable().m_stats.End() - d->GetValuesTable().m_view.Start();
 	}
 
+	std::vector<std::pair<double,double> > p1circles;
+	std::vector<std::pair<double,double> > p2circles;
+	std::vector<std::pair<double,double> >* pcircles = &p1circles;
+
 	for (int i = 0; i < pc; i++) {
 		if (!d->GetValuesTable().at(i).IsData()) {
 			prev_data = false;
@@ -510,34 +512,33 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 				path->AddLineToPoint(x, y);
 
 			path = &path2;
+			pcircles = &p2circles;
+
+			if (d->GetPeriod() != PERIOD_T_DAY 
+					|| (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())) 
+				pcircles->push_back(std::make_pair(x, y));
 
 			path->MoveToPoint(x, y);
-			if (d->GetPeriod() != PERIOD_T_DAY)
-				path->AddEllipse(x - ellipse_size / 2, y - ellipse_size / 2, ellipse_size, ellipse_size);
-			else if (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())
-				path->AddCircle(x, y, 1);
-
 			switched_to_alternate = true;
-
 			drawn = true;
 		}
 
 		if (i >= dce && switched_to_alternate && !switched_back) {
-			if (prev_data) 
+			if (prev_data)
 				path->AddLineToPoint(x, y);
-			wxGraphicsPath* p;
+
+			std::vector<std::pair<double, double> > *p;
 			if (i == dce)
-				p = &path2;
+				p = &p2circles;
 			else
-				p = &path1;
+				p = &p1circles;
 
-			if (d->GetPeriod() != PERIOD_T_DAY)
-				p->AddEllipse(x - ellipse_size / 2, y - ellipse_size / 2, ellipse_size, ellipse_size);
-			else if (!prev_data && (i + 1) < pc && !d->GetValuesTable().at(i + 1).IsData())
-				p->AddCircle(x, y, 1);
-
+			if (d->GetPeriod() != PERIOD_T_DAY 
+					|| (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())) 
+				p->push_back(std::make_pair(x, y));
 
 			path = &path1;
+			pcircles = &p1circles;
 			path->MoveToPoint(x, y);
 
 			switched_back = true;
@@ -551,18 +552,33 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 			else
 				path->MoveToPoint(x, y);
 
-			if (d->GetPeriod() != PERIOD_T_DAY)
-				path->AddEllipse(x - ellipse_size / 2, y - ellipse_size / 2, ellipse_size, ellipse_size);
-			else if (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())
-				path->AddCircle(x, y, 1);
+			if (d->GetPeriod() != PERIOD_T_DAY 
+					|| (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())) 
+				pcircles->push_back(std::make_pair(x, y));
 		}
 		
 		prev_data = true;
 	}
 
+	for (std::vector<std::pair<double, double> >::iterator i = p1circles.begin();
+			i != p1circles.end();
+			i++)
+		if (d->GetPeriod() != PERIOD_T_DAY)
+			path1.AddEllipse(i->first - ellipse_size / 2, i->second - ellipse_size / 2, ellipse_size, ellipse_size);
+		else
+			path1.AddCircle(i->first, i->second, 1);
+
 	dc.StrokePath(path1);
+
 	if (double_cursor) {
 		dc.SetPen(wxPen(*wxWHITE, 4, wxSOLID));
+		for (std::vector<std::pair<double, double> >::iterator i = p2circles.begin();
+				i != p2circles.end();
+				i++)
+			if (d->GetPeriod() != PERIOD_T_DAY)
+				path2.AddEllipse(i->first - ellipse_size / 2, i->second - ellipse_size / 2, ellipse_size, ellipse_size);
+			else
+				path2.AddCircle(i->first, i->second, 1);
 		dc.StrokePath(path2);
 	}
 }
@@ -1016,4 +1032,3 @@ BEGIN_EVENT_TABLE(GCDCGraphs, wxWindow)
 	EVT_ERASE_BACKGROUND(GCDCGraphs::OnEraseBackground)
 END_EVENT_TABLE()
 
-#endif

@@ -1,5 +1,14 @@
 $Id$
 
+2009-10-31	Darek Marcinkiewicz <reksio@praterm.pl>
+	* /: small fixes here are there to make SZARP compile
+	with latest mingw 
+	* libSzarp2/szbase: extractor3 under msw works again
+	- msw still used code specific for boost1.34 since
+	the bug
+	* wx/draw3: help under msw works, antialiased graphs work
+	under linux and msw and are now default graphs drawing
+	method	
 2009-10-31	Pawel Palucha <pawel@praterm.com.pl>
 	* debian/pack.files: fix in icons list.
 	* debian/control: maintainer name format fix.

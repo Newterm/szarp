@@ -27,6 +27,7 @@
 #include <netinet/in.h>
 #else
 #include <winsock.h>
+#include <stdint.h>
 #endif
 
 #include <openssl/bio.h>

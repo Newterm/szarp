@@ -198,13 +198,7 @@ public:
 	~DrawFrame();
 
 	DrawPanel *GetCurrentPanel();
-private:
-	/** Help system. */
-	szHelpController *m_help; 
-	
-	/** Context help. */
-	szHelpControllerHelpProvider *m_provider; 
-	
+
 protected:
 
 	wxString m_name;

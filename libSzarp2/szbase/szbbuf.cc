@@ -72,9 +72,7 @@ namespace fs = boost::filesystem;
 namespace {
 
 template<typename OP> std::wstring find_one_param_file(const fs::wpath &paramPath, OP op) {
-	//wdirectory iterator should be used but currently (boost 1.34) it does not work*/
 
-#ifndef MINGW32
 	std::wstring file;
 	try {
 		for (fs::wdirectory_iterator i(paramPath); 
@@ -99,33 +97,6 @@ template<typename OP> std::wstring find_one_param_file(const fs::wpath &paramPat
 	}
 
 	return file;
-#else
-
-	std::wstring file;
-	try {
-		for (fs::directory_iterator i(SC::S2A(paramPath.string())); 
-				i != fs::directory_iterator(); 
-				i++) {
-			std::wstring l = SC::A2S(i->path().leaf());
-			if (is_szb_file_name(l) == false)
-				continue;
-
-			if (file.empty()) {
-				file = l;
-				continue;
-			}
-			
-			if (op(l, file))
-				file = l;
-	
-		}
-
-	} catch (fs::wfilesystem_error &e) {
-		file.clear();
-	}
-
-	return file;
-#endif
 }	
 
 }

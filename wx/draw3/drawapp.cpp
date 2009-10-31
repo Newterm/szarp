@@ -152,9 +152,7 @@ bool DrawApp::OnInit() {
 	libpar_read_cmdline(&argc, argv);
 #endif
 
-#ifdef __WXGTK__
 	boost::filesystem::wpath_traits::imbue(std::locale("C")); 	
-#endif
 
 	if (!DrawGLApp::OnInit())
 		return false;
@@ -471,6 +469,10 @@ void DrawApp::SendToRunningInstance(wxString topic, wxString msg) {
 	DrawClient *client = new DrawClient(service);
 	client->SendMsg(topic, msg);
 	delete client;
+}
+
+void DrawApp::DisplayHelp() {
+	m_help->DisplayContents();
 }
 
 DrawApp::~DrawApp() {

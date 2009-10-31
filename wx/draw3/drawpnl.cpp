@@ -364,7 +364,7 @@ void DrawPanel::CreateChildren(DrawSet *set, PeriodType pt, time_t time, int sel
 	gtk_window_set_accept_focus(rw->GetHandle(), 0);
 #endif
 
-	wxString style = wxConfig::Get()->Read(_T("GRAPHS_VIEW"), _T("Classic"));
+	wxString style = wxConfig::Get()->Read(_T("GRAPHS_VIEW"), _T("GCDC"));
 #ifdef HAVE_GLCANVAS
 #ifdef HAVE_FTGL
 	if (style == _T("3D") && wxGetApp().GLWorks()) {
@@ -383,11 +383,9 @@ void DrawPanel::CreateChildren(DrawSet *set, PeriodType pt, time_t time, int sel
 	else
 #endif
 #endif
-#ifdef __WXGTK__
 	if (style == _T("GCDC"))
 		dg = new GCDCGraphs(this, cfg);
 	else 
-#endif
 		dg = new WxGraphs(this, cfg);
 
 	tb = new DrawToolBar(this);
