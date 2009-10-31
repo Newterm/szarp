@@ -1,25 +1,12 @@
 Template: szarp/prefix
 Type: string
-Description: Configuration prefix
+_Description: Configuration prefix
  Enter configuration prefix.
-Description-pl.ISO-8859-2: Prefix konfiguracji
- Wprowad¼ prefix konfiguracji.
 
 Template: szarp-server/db_catalog
 Type: boolean
 Default: true
-Description: Shall I create szbase catalog?
+_Description: Shall I create szbase catalog?
  Choose yes if you want to create catalog for szbase data.
  (It is required for meaner3 to work).
-Description-pl.ISO-8859-2: Czy stworzyæ katalog szbase?
- Wybierz tak, je¿eli chcesz utworzyæ katalog szbase.
- (Jest on wymagany przez program meaner3).
-
-Template: szarp/parstart
-Type: boolean
-Default: true
-Description: Shall parstart be run at system startup?
- Choose yes, if you want to SZARP to start at the system startup.
-Description-pl.ISO-8859-2: Czy parstart powinieñ byæ uruchamiany podczas startu systemu?
- Wybierz tak, je¿eli chcesz uruchamiaæ system SZARP podczas startu sytemu.
 

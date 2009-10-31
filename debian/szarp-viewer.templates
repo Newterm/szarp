@@ -1,34 +1,20 @@
 Template: szarp-viewer/userid
 Type: string
-Description: Enter your user id.
+_Description: Enter your user id.
  Enter your user ID. If you don't know it leave this field blank and 
- contact PRATERM S.A. either via e-mail szarp@praterm.com.pl or 
- by phone +48 22 812 76 15 extension number 20. You can come back to this
+ contact administrators of your SZARP server. You can come back to this
  question by issuing: "dpkg-reconfigure ${package}" from command 
  prompt (you must be root).
-Description-pl.ISO-8859-2: Wprowad¼ identyfikator u¿ytkownika.
- Wpisz swój identyfikator u¿ytkownika. Je¿eli go nie znasz zostaw to 
- pole puste i skontaktuj siê z firm± PRATERM S.A. drog± e-mailow± 
- szarp@praterm.com.pl lub telefonicznie +48 22 812 76 15 wew. 20. 
- Mo¿esz powróciæ do tego pytania wykonuj±c komendê "dpkg-reconfigure ${package}"
- jako u¿ytkownik root.
 
 Template: szarp-viewer/update_method
 Type: select
 Default: automatic
-Choices: manual, automatic, SSC
-Choices-pl.ISO-8859-2: manualna, automatyczna, SSC
-Description: Choose data actualization method.
+_Choices: manual, automatic, SSC
+_Description: Choose data actualization method.
  Manual actualization means that you'll have to start 
  data actualization process by hand from SCC menu.
  Automatic means that data will be actualized every 
  10 minutes without your intervention. SSC - Szarp Sync Client
  will be used for data synchronization (it will be automatically
  run at X Windows system start).
-Description-pl.ISO-8859-2: Wybierz sposób aktualizacji danych.
- Je¿eli wybierzesz aktualizacjê manualn± dane bêd± uaktualniane tylko
- po wybraniu opcji "Aktualizuj dane" z menu programu SCC.
- W przypadku aktualizacji automatycznej dane bêda uaktualniane automatycznie
- co 10 minut. SSC - do aktualizacji danych zostanie u¿yty program Szarp Sync Client
- (Bêdzie on automatycznie uruchomiany podczas startu systemu X Windows).
  

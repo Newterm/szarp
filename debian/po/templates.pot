@@ -1,0 +1,132 @@
+# SZARP Debian package templates translations.
+# Copyright (C) 2009 SZARP coders
+# This file is distributed under the same license as the SZARP package.
+# Pawel Palucha <pawel@praterm.com.pl>, 2009.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: szarp 3.1\n"
+"Report-Msgid-Bugs-To: coders@szarp.org\n"
+"POT-Creation-Date: 2009-10-31 18:47+0100\n"
+"PO-Revision-Date: 2009-10-31 18:47+0100\n"
+"Last-Translator: Pawel Palucha <pawel@praterm.com.pl>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-2\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: string
+#. Description
+#: ../szarp-server.templates:1001 ../szarp-terminal.templates :1001
+msgid "Configuration prefix"
+msgstr "Prefix konfiguracji"
+
+#. Type: string
+#. Description
+#: ../szarp-server.templates:1001 ../szarp-terminal.templates :1001
+msgid "Enter configuration prefix."
+msgstr "Wprowad¼ prefix konfiguracji"
+
+#. Type: boolean
+#. Description
+#: ../szarp-server.templates:2001
+msgid "Shall I create szbase catalog?"
+msgstr "Czy stworzyæ katalog szbase?"
+
+#. Type: boolean
+#. Description
+#: ../szarp-server.templates:2001
+msgid ""
+"Choose yes if you want to create catalog for szbase data. (It is required "
+"for meaner3 to work)."
+msgstr "Wybierz tak, je¿eli chcesz utworzyæ katalog szbase."
+"(Jest on wymagany przez program meaner3)."
+
+#. Type: boolean
+#. Description
+#: ../szarp-terminal.templates :2001
+msgid "Shall I add entry for SZARP server address to /etc/hosts file?"
+msgstr "Czy dodaæ adres serwera SZARP do pliku /etc/hosts?"
+
+#. Type: boolean
+#. Description
+#: ../szarp-terminal.templates :2001
+msgid ""
+"There is no entry in /etc/hosts for SZARP server ${prefix}, shall I add it?"
+msgstr ""
+"W pliku /etc/hosts nie znalez³em adresu serwera dla prefixu ${prefix}, czy mam go dodaæ?"
+
+
+#. Type: string
+#. Description
+#: ../szarp-terminal.templates :3001
+msgid "Enter address of a SZARP server with prefix ${prefix}"
+msgstr "Podaj adres serwera SZARP o prefixie ${prefix}"
+
+#. Type: select
+#. Choices
+#: ../szarp-updater.templates :1001
+msgid "stable, testing, unstable, other"
+msgstr "stabilna, testowa, niestabilna, inna"
+
+#. Type: select
+#. Description
+#: ../szarp-updater.templates :1002
+msgid "Choose SZARP version."
+msgstr "Wybierz wersjê SZARP"
+
+#. Type: string
+#. Description
+#: ../szarp-updater.templates :2001
+msgid "Enter SZARP system version."
+msgstr "Wprowad¼ nazwê wersji SZARP"
+
+#. Type: string
+#. Description
+#: ../szarp-viewer.templates:1001
+msgid "Enter your user id."
+msgstr "Wprowad¼ swój identyfikator u¿ytkownika"
+
+#. Type: string
+#. Description
+#: ../szarp-viewer.templates:1001
+msgid ""
+"Enter your user ID. If you don't know it leave this field blank and  contact "
+"administrators of your SZARP server. You can come back to this question by "
+"issuing: \"dpkg-reconfigure ${package}\" from command  prompt (you must be "
+"root)."
+msgstr ""
+"Wpisz swój identyfikator u¿ytkownika. Je¿eli go nie znasz zostaw to "
+"pole puste i skontaktuj siê z administratorem Twojego serwera SZARP. "
+"Mo¿esz powróciæ do tego pytania wykonuj±c komendê \"dpkg-reconfigure ${package}\" "
+"(jako u¿ytkownik root.)"
+
+
+#. Type: select
+#. Choices
+#: ../szarp-viewer.templates:2001
+msgid "manual, automatic, SSC"
+msgstr "rêczna, automatyczna, SSC"
+
+#. Type: select
+#. Description
+#: ../szarp-viewer.templates:2002
+msgid "Choose data actualization method."
+msgstr "Wybierz metod± aktualizacji danych"
+
+#. Type: select
+#. Description
+#: ../szarp-viewer.templates:2002
+msgid ""
+"Manual actualization means that you'll have to start  data actualization "
+"process by hand from SCC menu. Automatic means that data will be actualized "
+"every  10 minutes without your intervention. SSC - Szarp Sync Client will be "
+"used for data synchronization (it will be automatically run at X Windows "
+"system start)."
+msgstr ""
+"Je¿eli wybierzesz aktualizacjê manualn± dane bêd± uaktualniane tylko "
+"po wybraniu opcji \"Aktualizuj dane\" z menu programu SCC. "
+"W przypadku aktualizacji automatycznej dane bêda uaktualniane automatycznie "
+"co 10 minut. SSC - do aktualizacji danych zostanie u¿yty program Szarp Sync Client "
+" (Bêdzie on automatycznie uruchomiany podczas startu systemu X Windows). "
+

@@ -1,12 +1,9 @@
 Template: szarp-updater/suite-choice
 Type: select
 Default: stable
-Choices: stable, testing, unstable, other
-Choices-pl.ISO-8859-2: stabilna, testowa, niestabilna, inna
-Description: Choose SZARP version.
-Description-pl.ISO-8859-2: Wybierz wersjê systemu SZARP.
+_Choices: stable, testing, unstable, other
+_Description: Choose SZARP version.
 
 Template: szarp-updater/suite
 Type: string
-Description: Enter SZARP system version.
-Description-pl.ISO-8859-2: Wprowad¼ wersjê systemu SZARP.
+_Description: Enter SZARP system version.

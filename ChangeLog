@@ -1,5 +1,11 @@
 $Id$
 
+2009-10-31	Pawel Palucha <pawel@praterm.com.pl>
+	* debian/*: lintian bug 'not-using-po-debconf' fixed - templates
+	translated to .po files; this bug was marked as critical, so packages
+	failed to build on current unstable.
+	* debian/control: lintian bug 'maintainer-name-missing' fixed - added
+	full maintainer name.
 2009-10-30	Pawel Palucha <pawel@praterm.com.pl>
 	* wx/*: added Windows resource files, all apps now have correct icons
 	under both Linux and Windows.

@@ -1,0 +1,4 @@
+[type: gettext/rfc822deb] szarp-server.templates
+[type: gettext/rfc822deb] szarp-terminal.templates 
+[type: gettext/rfc822deb] szarp-updater.templates 
+[type: gettext/rfc822deb] szarp-viewer.templates
