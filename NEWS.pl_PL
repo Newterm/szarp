@@ -8,6 +8,18 @@
 # Puste linie s± ignorowane.
 # $Id$
 
+** 3.1.163
+# 31.10.2009
+
+* Dodano skrypty do pobierania prognozy pogody ze strony meteoprog.ua; prognozowana temperatura mo¿e byæ pokazywana na wykresach.
+* Poprawki w programie przegl±daj±cym: umiejscowienie kursora w trybie "antyaliasowanym", pobieranie adresu serwera komentarzy, u¶rednianie danych na wykresie X/Y.
+* Tryb "antyaliasowany" jest teraz domy¶lnym trybem wy¶wietlania wykresów pod Linuksem i pod Windows.
+* Poprawka w programie sender - puste elementy <send/> w konfiguracji s± ignorowane.
+* Poprawki w kompilacji/budowaniu paczek - poprawki dla najnowszego mingw32, usuniêcie kodu specyficznego dla boost-1.34, usuniête "krytyczne" b³êdy lintiana.
+* Uaktualnienie programu isledit (wtyczki do programu graficznego Inkscape do tworzenia schematów wizualizacji w SVG); program dzia³a pod Linuksem i pod Windows.
+* Dodano wiêcej przyk³adów schematów wizualizacji - kompletny przyk³ad schematu ciep³owni z 4 kot³ami.
+* Poprawiono brak ikon programów pod Windows.
+
 ** 3.1.130
 # 30.09.2009
 

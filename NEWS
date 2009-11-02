@@ -6,6 +6,18 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.163
+# 31.10.2009
+
+* Added scripts for fetching weather forecast from meteoprog.ua website.
+* Draw3 fixes: cursor positioning in "antialiasing mode", race condition in remarks server address resolution, data averaging on x/y graphs.
+* Draw3: "antialiasing mode" is now default under both Linux and Windows.
+* Sender fix: it now ignores empty <send/> elements in configuration.
+* Fixes for latest mingw32, "critical" lintian bugs fixed.
+* Refreshing of isledit (Inkscape plugin for creating SVG visualisation schemas), it now works under both Linux and Windows.
+* More examples of ISL documents added.
+* All applications have now icons under Windows.
+
 ** 3.1.130
 # 30.09.2009
 
