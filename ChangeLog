@@ -1,5 +1,8 @@
 $Id$
 
+2009-11-02	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/draw3/ids.h: default widgets background color under Linux was set 
+	to red for debug purposes, fixed.
 2009-10-31	Darek Marcinkiewicz <reksio@praterm.pl>
 	* /: small fixes here are there to make SZARP compile
 	with latest mingw 

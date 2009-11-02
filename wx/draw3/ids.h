@@ -163,8 +163,7 @@ enum ActionKeyboardType {
 #ifdef MINGW32
 #define DRAW3_BG_COLOR WIN_BACKGROUND_COLOR
 #else
-//#define DRAW3_BG_COLOR wxSystemSettings::GetColour(wxSYS_COLOUR_BACKGROUND) 
-#define DRAW3_BG_COLOR wxColour(255, 0, 0, 255) 
+#define DRAW3_BG_COLOR wxSystemSettings::GetColour(wxSYS_COLOUR_BACKGROUND) 
 #endif
 
 /** Number of draws per set */
