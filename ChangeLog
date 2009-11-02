@@ -1,9 +1,11 @@
 $Id$
 
+2009-11-02	Darek Marcinkiewicz <reksio@praterm.pl>
+	* wx/scc/sccframe.cpp: wxICON(szarp16) -> wxICON(szarp64)
 2009-11-02	Pawel Palucha <pawel@praterm.com.pl>
 	* wx/draw3/ids.h: default widgets background color under Linux was set 
 	to red for debug purposes, fixed.
-2009-10-31	Darek Marcinkiewicz <reksio@praterm.pl>
+2009-10-31	
 	* /: small fixes here are there to make SZARP compile
 	with latest mingw 
 	* libSzarp2/szbase: extractor3 under msw works again

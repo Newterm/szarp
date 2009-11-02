@@ -37,7 +37,7 @@
 #include "szarpfonts.h"
 #include "version.h"
 
-#include "../../resources/wx/icons/szarp16.xpm"
+#include "../../resources/wx/icons/szarp64.xpm"
 
 /**
  * Program events' ids
@@ -81,7 +81,7 @@ SCCTaskBarItem::SCCTaskBarItem(SCCMenu* _menu, wxString prefix,	wxString suffix)
 
 	help = new szHelpController;
 
-	wxIcon icon(wxICON(szarp16));
+	wxIcon icon(wxICON(szarp64));
 	if (icon.Ok())
 		SetIcon(icon);
 }
