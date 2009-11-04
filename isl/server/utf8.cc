@@ -23,13 +23,8 @@
  * $Id$
  */
 
-#include <iconv.h>
+#include <ctype.h>
 #include <string.h>
-#include <errno.h>
-#include <libxml/parser.h>
-
-#include <liblog.h>
-
 #include "utf8.h"
 
 /**
@@ -44,11 +39,6 @@ void lat2a(char *c)
 		return;
 	for (i = 0; c[i]; i++)
 		switch (c[i]) {
-			case '/' :
-				c[i] = '_';
-			case ' ' :
-				c[i] = '_';
-				break;
 			case '±' :
 				c[i] = 'a';
 				break;
@@ -100,8 +90,9 @@ void lat2a(char *c)
 				c[i] = 'Z';
 				break;
 			default :
-				if ((unsigned char )c[i] > 127)
+				if (((unsigned char )c[i] > 127) || (!isalnum(c[i]))) {
 					c[i] = '_';
+				} 
 				break;
 		}
 }
@@ -120,12 +111,9 @@ void utf2a(unsigned char *str)
 	i = 0; j = 0;
 	while (str[i] != 0) {
 		if (str[i] < 128) {
-			if (str[i] == ' ')
+			if (!isalnum(str[i])) {
 				str[j] = '_';
-			else if (str[i] == '/')
-				str[j] = '_';
-			else
-				str[j] = str[i];
+			}
 			i++; j++;
 			continue;
 		}
@@ -239,9 +227,10 @@ void utf2a(unsigned char *str)
  * @return 0 if string are equal, +1 or -1 if not (don't expect this to be a
  * locale based comparison)
  */
+
 int cmpURI(const unsigned char *uri, const unsigned char *name)
 {
-	int i, j, k;
+	int i, j;
 	
 	if (!strcmp((char*)uri,(char*)name)) {
 		return 0;
@@ -252,10 +241,7 @@ int cmpURI(const unsigned char *uri, const unsigned char *name)
 			if (uri[i] == name[j]) {
 				i++; j++;
 				continue;
-			} else if ((uri[i] == ' ') && (name[j] == '_')) {
-				i++; j++;
-				continue;
-			} else if ((uri[i] == '/') && (name[j] == '_')) {
+			} else if ((name[j] == '_') && !isalnum(uri[i])) {
 				i++; j++;
 				continue;
 			}
