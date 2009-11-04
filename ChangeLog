@@ -1,5 +1,8 @@
 $Id$
 
+2009-11-04	Pawel Palucha <pawel@praterm.com.pl>
+	* script/editval.py: simple script for modyfing values in szarp-base
+	files.
 2009-11-02	Darek Marcinkiewicz <reksio@praterm.pl>
 	* wx/scc/sccframe.cpp: wxICON(szarp16) -> wxICON(szarp64)
 2009-11-02	Pawel Palucha <pawel@praterm.com.pl>
