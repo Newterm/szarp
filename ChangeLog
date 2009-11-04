@@ -1,6 +1,7 @@
 $Id$
 
 2009-11-04	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/wxhelp/whapp.cpp: fixed list of help books.
 	* script/nsis/common.nsi: fixed launching szau from Startup folder.
 	* isl/server/utf8.cc: fix in compURI(), lat2a and utf2a() functions 
 	- theyare now compatible with transformation made by wchar2szb() 

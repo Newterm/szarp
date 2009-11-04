@@ -93,19 +93,13 @@ bool WHApp::OnInit()
 		m_help -> DisplayContents();
 	} else {
 		m_help->AddBook(GetSzarpDir() + _T("resources/documentation/new/eksploatacja/html/eksploatacja.hhp"));
-#ifndef __WXMSW__
 		m_help->AddBook(GetSzarpDir() + _T("resources/documentation/new/ekstraktor3/html/ekstraktor3.hhp"));
 		m_help->AddBook(GetSzarpDir() + _T("resources/documentation/new/draw3/html/draw3.hhp"));
 		m_help->AddBook(GetSzarpDir() + _T("resources/documentation/new/raporter/html/raporter.hhp"));
 		m_help->AddBook(GetSzarpDir() + _T("resources/documentation/new/kontroler/html/kontroler.hhp"));
-#endif
 		m_help->AddBook(GetSzarpDir() + _T("resources/documentation/new/scc/html/scc.hhp"));
 		m_help->AddBook(GetSzarpDir() + _T("resources/documentation/new/ssc/html/ssc.hhp"));
-		m_help->AddBook(GetSzarpDir() + _T("resources/documentation/new/howto/html/howto.hhp"));
 		m_help->AddBook(GetSzarpDir() + _T("resources/documentation/new/ipk/html/ipk.hhp"));
-#ifndef __WXMSW__
-		m_help->AddBook(GetSzarpDir() + _T("resources/documentation/new/ipk/html/ipk.hhp"));
-#endif		
 		m_help -> DisplayContents();
 	}
 	
