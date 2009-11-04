@@ -108,7 +108,7 @@ FunctionEnd
 Function LaunchLink
   ExecShell "" "$SMSTARTUP\Centrum Sterowania.lnk"
   ExecShell "" "$SMSTARTUP\Synchronizator danych.lnk"
-  ExecShell "" "$SMSTARTUP\Szau.lnk"
+  ExecShell "" "$SMSTARTUP\Automatyczna aktualizacja SZARP.lnk"
 FunctionEnd
 
 ; Displays page with upgrade info.
