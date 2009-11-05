@@ -1002,7 +1002,7 @@ void *Client::Entry() {
 		try {
 			bool ok = Synchronize();
 			if (ok)
-				m_progress.SetProgress(Progress::FINISHED, 100, _(""), &m_dir_server_map);
+				m_progress.SetProgress(Progress::FINISHED, 100, _T(""), &m_dir_server_map);
 			else
 				m_progress.SetProgress(Progress::FAILED, 100);
 		} catch (TerminationRequest &e) {
@@ -2543,7 +2543,7 @@ SSCTaskBarItem::SSCTaskBarItem(wxString szarp_dir) {
 	m_help = new szHelpController;
 
 	wxIcon icon(wxICON(ssc64));
-	SetIcon(icon);
+	SetIcon(icon, _("Synchronize SZARP data"));
 	szFrame::setDefaultIcon(icon);
 	m_log->GetFrame()->SetIcon(icon);
 

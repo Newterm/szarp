@@ -82,11 +82,14 @@ Function CheckPrevInstall
 FunctionEnd
 
 ; Delete Start Menu
+; Delete all links ever created by any version of installer - important
+; for upgrades.
 Function un.DeleteStartMenu
 	ReadRegStr $1 HKCU "Software\SZARP" "Start_Menu_Folder"
 	Delete "$SMSTARTUP\Centrum Sterowania.lnk"
 	Delete "$SMSTARTUP\Synchronizator danych.lnk"
 	Delete "$SMSTARTUP\Szau.lnk"
+	Delete "$SMSTARTUP\Ekstraktor.lnk"
 	Delete "$SMSTARTUP\Automatyczna aktualizacja SZARP.lnk"
  	RMDir /r "$SMPROGRAMS\$1"	
 FunctionEnd
@@ -96,6 +99,7 @@ Function DeleteStartMenu
 	Delete "$SMSTARTUP\Centrum Sterowania.lnk"
 	Delete "$SMSTARTUP\Synchronizator danych.lnk"
 	Delete "$SMSTARTUP\Szau.lnk"
+	Delete "$SMSTARTUP\Ekstraktor.lnk"
 	Delete "$SMSTARTUP\Automatyczna aktualizacja SZARP.lnk"
  	RMDir /r "$SMPROGRAMS\$1"	
 FunctionEnd
@@ -307,6 +311,15 @@ Section "SZARP (required)" MainSection
 	"" \
 	"Uruchamianie aplikacji SZARP"
     CreateShortCut \
+    	"$SMPROGRAMS\$STARTMENU_FOLDER\Ekstraktor.lnk" \
+	"$INSTDIR\bin\SCC.EXE" \
+	"" \
+	"$INSTDIR\resources\icons\ekstaktor3.ico" \
+	0 \
+	"SW_SHOWNORMAL" \
+	"" \
+	"Eksport do arkusza kalkulacyjnego"
+    CreateShortCut \
     	"$SMPROGRAMS\$STARTMENU_FOLDER\Automatyczna aktualizacja SZARP.lnk" \
 	"$INSTDIR\bin\SZAU.EXE" \
 	"" \
@@ -333,6 +346,8 @@ Section "SZARP (required)" MainSection
 	"SW_SHOWNORMAL" \
 	"" \
 	"Kontrola parametrów"
+
+    ; add link to Startup
     CreateShortCut \
     	"$SMSTARTUP\Synchronizator danych.lnk" \
 	"$INSTDIR\bin\SSC.EXE" \
@@ -393,17 +408,6 @@ Section "Uninstall"
  
   DeleteRegKey /ifempty HKCU "Software\SZARP"
   RMDir $INSTDIR
-
-;  Delete "$SMPROGRAMS\$STARTMENU_FOLDER\SZARP.lnk
-;Delete empty start menu parent diretories
-;  StrCpy $MUI_TEMP "$SMPROGRAMS\$MUI_TEMP"
-;  startMenuDeleteLoop:
-;    ClearErrors
-;    GetFullPathName $MUI_TEMP "$MUI_TEMP\.."
-;    IfErrors startMenuDeleteLoopDone
-;    StrCmp $MUI_TEMP $SMPROGRAMS startMenuDeleteLoopDone startMenuDeleteLoop
-;  startMenuDeleteLoopDone:
-; Remove directories used
 
 
 SectionEnd

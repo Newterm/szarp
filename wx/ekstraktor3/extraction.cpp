@@ -93,7 +93,6 @@ int extract(struct extr_arguments arguments,
 
 	assert (!arguments.output.empty());
         if (!arguments.openoffice) {
-		std::cout << "Opening file: " << arguments.output << std::endl;
 		output = fopen(SC::S2A(arguments.output).c_str(), "w");
 		if (output == NULL) {
 			wxMessageBox(

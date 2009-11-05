@@ -37,7 +37,9 @@
 #include "szarpfonts.h"
 #include "version.h"
 
+#ifndef MINGW32
 #include "../../resources/wx/icons/szarp64.xpm"
+#endif
 
 /**
  * Program events' ids
@@ -83,7 +85,7 @@ SCCTaskBarItem::SCCTaskBarItem(SCCMenu* _menu, wxString prefix,	wxString suffix)
 
 	wxIcon icon(wxICON(szarp64));
 	if (icon.Ok())
-		SetIcon(icon);
+		SetIcon(icon, _("Start SZARP applications"));
 }
 
 void SCCTaskBarItem::ReplaceMenu(SCCMenu *_menu) {

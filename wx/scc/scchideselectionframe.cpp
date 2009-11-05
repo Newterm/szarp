@@ -29,12 +29,16 @@
 
 
 SCCSelectionFrame::SCCSelectionFrame() : wxDialog(NULL, wxID_ANY, _("Hiding SZARP databases"),
-	wxDefaultPosition, wxSize(300,400), wxTAB_TRAVERSAL | wxFRAME_NO_TASKBAR | wxRESIZE_BORDER | wxCAPTION)
+	wxDefaultPosition, 
+	wxSize(300,400), 
+	wxTAB_TRAVERSAL | wxFRAME_NO_TASKBAR | wxRESIZE_BORDER | wxCAPTION)
 {
 	wxSizer *main_sizer = new wxBoxSizer(wxVERTICAL);
 
-	main_sizer->Add(new wxStaticText(this, wxID_ANY, _("Select databases to hide")), 0, wxALIGN_CENTER | wxALL, 20);
-	main_sizer->Add(new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize), 0, wxEXPAND);
+	main_sizer->Add(new wxStaticText(this, wxID_ANY, _("Select databases to hide")), 
+			0, wxALIGN_CENTER | wxALL, 20);
+	main_sizer->Add(new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize), 
+			0, wxEXPAND);
 
 	LoadDatabases();
 	LoadConfiguration();
@@ -45,18 +49,18 @@ SCCSelectionFrame::SCCSelectionFrame() : wxDialog(NULL, wxID_ANY, _("Hiding SZAR
 		base = m_config_titles[m_databases[i]];
 
 		std::map<wxString, wxString>::iterator j = m_database_server_map.find(m_databases[i]);
-		if (j != m_database_server_map.end())
+		if (j != m_database_server_map.end()) {
 			base += _T(" (") + j->second + _T(")");
-
+		}
 		bases.Add(base);
 	}
 
-	m_databases_list_box = new wxCheckListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, bases);
+	m_databases_list_box = new wxCheckListBox(this, wxID_ANY, 
+			wxDefaultPosition, wxDefaultSize, bases);
 
 	for (unsigned int x = 0; x < m_hidden_databases.GetCount(); x++) {
 		for (unsigned int i = 0; i < m_databases.GetCount(); i++) {
-			if (!m_hidden_databases[x].Cmp(m_databases[i]))
-			{
+			if (!m_hidden_databases[x].Cmp(m_databases[i]))	{
 				m_databases_list_box->Check(i);
 				break;
 			}
@@ -65,32 +69,34 @@ SCCSelectionFrame::SCCSelectionFrame() : wxDialog(NULL, wxID_ANY, _("Hiding SZAR
 
 	main_sizer->Add(m_databases_list_box, 1, wxEXPAND);
 	main_sizer->Add(new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize), 0, wxEXPAND);
-
-    m_draw3_hidden_active = new wxCheckBox(this, wxID_ANY, _("Databases hiding in draw3 is active"));
-    m_ekstraktor_hidden_active = new wxCheckBox(this, wxID_ANY, _("Databases hiding in extractor is active"));
-    m_ssc_hidden_active = new wxCheckBox(this, wxID_ANY, _("Databases hiding in synchronizer is active"));
-
-    main_sizer->Add(m_draw3_hidden_active, 0, wxALIGN_LEFT);
-    main_sizer->Add(m_ekstraktor_hidden_active, 0, wxALIGN_LEFT);
-    main_sizer->Add(m_ssc_hidden_active, 0, wxALIGN_LEFT);
-
-    SetCheckBoxes();
+    
+	m_draw3_hidden_active = new wxCheckBox(this, wxID_ANY, _("Databases hiding in draw3 is active"));
+    	m_ekstraktor_hidden_active = new wxCheckBox(this, wxID_ANY, _("Databases hiding in extractor is active"));
+    	m_ssc_hidden_active = new wxCheckBox(this, wxID_ANY, _("Databases hiding in synchronizer is active"));
+    
+	main_sizer->Add(m_draw3_hidden_active, 0, wxALIGN_LEFT);
+    	main_sizer->Add(m_ekstraktor_hidden_active, 0, wxALIGN_LEFT);
+    	main_sizer->Add(m_ssc_hidden_active, 0, wxALIGN_LEFT);
+    
+	SetCheckBoxes();
 
 	wxBoxSizer *button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-	wxButton* button = new wxButton(this, ID_SELECTION_FRAME_OK_BUTTON, _("OK"), wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+	wxButton* button = new wxButton(this, ID_SELECTION_FRAME_OK_BUTTON, _("OK"), 
+			wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 	button_sizer->Add(button, 0, wxALL, 10);
 
-	button = new wxButton(this, ID_SELECTION_FRAME_CANCEL_BUTTON, _("Cancel"), wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+	button = new wxButton(this, ID_SELECTION_FRAME_CANCEL_BUTTON, _("Cancel"), 
+			wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 	button_sizer->Add(button, 0, wxALL, 10);
 
 	main_sizer->Add(button_sizer, 0, wxALL | wxALIGN_CENTER);
 
 	SetSizer(main_sizer);
-
 }
 
-void SCCSelectionFrame::StoreConfiguration() {
+void SCCSelectionFrame::StoreConfiguration() 
+{
 
 	wxConfigBase* config = wxConfigBase::Get(true);
 
@@ -99,73 +105,64 @@ void SCCSelectionFrame::StoreConfiguration() {
 
 	m_hidden_databases.Clear();
 
-	for (unsigned int i = 0; i < m_databases.GetCount(); i++)
-	{
-		if (m_databases_list_box->IsChecked(i))
+	for (unsigned int i = 0; i < m_databases.GetCount(); i++) {
+		if (m_databases_list_box->IsChecked(i)) {
 			m_hidden_databases.Add(m_databases[i]);
+		}
 	}
 
-	for (unsigned int i = 0; i < m_hidden_databases.GetCount(); i++)
-	{
-		if (!first)
+	for (unsigned int i = 0; i < m_hidden_databases.GetCount(); i++) {
+		if (!first) {
 			storestr.Append(_T(","));
+		}
 		first = false;
 		storestr += (m_hidden_databases[i]);
 	}
 	config->Write(_T("HIDDEN_DATABASES"), storestr);
 	config->Flush();
 
-	wxConfig* config_draw3 = new wxConfig(_("draw3"));
-	if (m_draw3_hidden_active->IsChecked() == true)
-	{
-        config_draw3->Write(_T("HIDDEN_DATABASES"), storestr);
-        config->Write(_T("HIDDEN_DATABASES_IN_DRAW3"), 1);
-	}
-    else
-    {
-        config_draw3->Write(_T("HIDDEN_DATABASES"), _(""));
-        config->Write(_T("HIDDEN_DATABASES_IN_DRAW3"), 0);
-    }
+	wxConfig* config_draw3 = new wxConfig(_T("draw3"));
+	if (m_draw3_hidden_active->IsChecked() == true)	{
+		config_draw3->Write(_T("HIDDEN_DATABASES"), storestr);
+		config->Write(_T("HIDDEN_DATABASES_IN_DRAW3"), 1);
+	} else {
+		config_draw3->Write(_T("HIDDEN_DATABASES"), _T(""));
+		config->Write(_T("HIDDEN_DATABASES_IN_DRAW3"), 0);
+    	}
 	config_draw3->Flush();
 	config->Flush();
 	delete config_draw3;
 
-	wxConfig* config_ekstraktor = new wxConfig(_("ekstraktor3"));
-	if (m_ekstraktor_hidden_active->IsChecked() == true)
-	{
-        config_ekstraktor->Write(_T("HIDDEN_DATABASES"), storestr);
-        config->Write(_T("HIDDEN_DATABASES_IN_EKSTRAKTOR3"), 1);
-	}
-    else
-    {
-        config_ekstraktor->Write(_T("HIDDEN_DATABASES"), _(""));
-        config->Write(_T("HIDDEN_DATABASES_IN_EKSTRAKTOR3"), 0);
-    }
+	wxConfig* config_ekstraktor = new wxConfig(_T("ekstraktor3"));
+	if (m_ekstraktor_hidden_active->IsChecked() == true) {
+		config_ekstraktor->Write(_T("HIDDEN_DATABASES"), storestr);
+		config->Write(_T("HIDDEN_DATABASES_IN_EKSTRAKTOR3"), 1);
+	} else {
+		config_ekstraktor->Write(_T("HIDDEN_DATABASES"), _T(""));
+		config->Write(_T("HIDDEN_DATABASES_IN_EKSTRAKTOR3"), 0);
+    	}
 	config_ekstraktor->Flush();
 	config->Flush();
 	delete config_ekstraktor;
-
-    wxConfig* config_ssc = new wxConfig(_("ssc"));
-	if (m_ssc_hidden_active->IsChecked() == true)
-	{
-        config_ssc->Write(_T("HIDDEN_DATABASES"), storestr);
-        config->Write(_T("HIDDEN_DATABASES_IN_SSC"), 1);
-	}
-    else
-    {
-        config_ssc->Write(_T("HIDDEN_DATABASES"), _(""));
-        config->Write(_T("HIDDEN_DATABASES_IN_SSC"), 0);
-    }
+    
+	wxConfig* config_ssc = new wxConfig(_T("ssc"));
+	if (m_ssc_hidden_active->IsChecked() == true) {
+		config_ssc->Write(_T("HIDDEN_DATABASES"), storestr);
+		config->Write(_T("HIDDEN_DATABASES_IN_SSC"), 1);
+	} else {
+		config_ssc->Write(_T("HIDDEN_DATABASES"), _T(""));
+		config->Write(_T("HIDDEN_DATABASES_IN_SSC"), 0);
+    	}
 	config_ssc->Flush();
 	config->Flush();
 	delete config_ssc;
 }
 
-void SCCSelectionFrame::LoadConfiguration() {
+void SCCSelectionFrame::LoadConfiguration() 
+{
 	wxString tmp;
 	wxConfigBase* config = wxConfigBase::Get(true);
-	if (config->Read(_T("HIDDEN_DATABASES"), &tmp))
-	{
+	if (config->Read(_T("HIDDEN_DATABASES"), &tmp))	{
 		wxStringTokenizer tkz(tmp, _T(","), wxTOKEN_STRTOK);
 		while (tkz.HasMoreTokens())
 		{
@@ -177,73 +174,76 @@ void SCCSelectionFrame::LoadConfiguration() {
 	}
 }
 
-void SCCSelectionFrame::SetCheckBoxes() {
-    wxString tmp;
-	wxConfigBase* config = wxConfigBase::Get(true);
+void SCCSelectionFrame::SetCheckBoxes() 
+{
+    	wxString tmp;	wxConfigBase* config = wxConfigBase::Get(true);
 	long l;
-	if (config->Read(_T("HIDDEN_DATABASES_IN_DRAW3"), &tmp))
-	{
-        tmp.ToLong(&l);
-        if(l == 1)
-            m_draw3_hidden_active->SetValue(true);
-        else
-            m_draw3_hidden_active->SetValue(false);
-    }
-    else
-        m_draw3_hidden_active->SetValue(false);
+	if (config->Read(_T("HIDDEN_DATABASES_IN_DRAW3"), &tmp)) {
+		tmp.ToLong(&l);
+		if(l == 1) {
+	    		m_draw3_hidden_active->SetValue(true);
+		} else {
+	    		m_draw3_hidden_active->SetValue(false);
+		}
+    	} else {
+		m_draw3_hidden_active->SetValue(false);
+	}
 
-	if (config->Read(_T("HIDDEN_DATABASES_IN_EKSTRAKTOR3"), &tmp))
-	{
-        tmp.ToLong(&l);
-        if(l == 1)
-            m_ekstraktor_hidden_active->SetValue(true);
-        else
-            m_ekstraktor_hidden_active->SetValue(false);
-    }
-    else
-        m_ekstraktor_hidden_active->SetValue(false);
+	if (config->Read(_T("HIDDEN_DATABASES_IN_EKSTRAKTOR3"), &tmp)) {
+		tmp.ToLong(&l);
+		if(l == 1) {
+	    		m_ekstraktor_hidden_active->SetValue(true);
+		} else {
+	    		m_ekstraktor_hidden_active->SetValue(false);
+		}
+    	} else {
+		m_ekstraktor_hidden_active->SetValue(false);
+	}
 
-	if (config->Read(_T("HIDDEN_DATABASES_IN_SSC"), &tmp))
-	{
-        tmp.ToLong(&l);
-        if(l == 1)
-            m_ssc_hidden_active->SetValue(true);
-        else
-            m_ssc_hidden_active->SetValue(false);
-    }
-    else
-        m_ssc_hidden_active->SetValue(false);
+	if (config->Read(_T("HIDDEN_DATABASES_IN_SSC"), &tmp)) {
+		tmp.ToLong(&l);
+		if(l == 1) {
+	    		m_ssc_hidden_active->SetValue(true);
+		} else {
+	    		m_ssc_hidden_active->SetValue(false);
+	    	}
+	} else {
+		m_ssc_hidden_active->SetValue(false);
+	}
 }
 
-void SCCSelectionFrame::LoadDatabases() {
+void SCCSelectionFrame::LoadDatabases() 
+{
 	m_config_titles = GetConfigTitles(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDataDir());
-	for (ConfigNameHash::iterator i = m_config_titles.begin(); i != m_config_titles.end(); i++)
+	for (ConfigNameHash::iterator i = m_config_titles.begin(); i != m_config_titles.end(); i++) {
 		m_databases.Add(i->first);
-
+	}
 	m_databases.Sort();
 }
 
-wxArrayString SCCSelectionFrame::GetHiddenDatabases() {
+wxArrayString SCCSelectionFrame::GetHiddenDatabases() 
+{
 	return wxArrayString(m_hidden_databases);
 }
 
-void SCCSelectionFrame::OnOKButton(wxCommandEvent& event) {
+void SCCSelectionFrame::OnOKButton(wxCommandEvent& event) 
+{
 	StoreConfiguration();
 	EndModal(wxID_OK);
 }
 
-void SCCSelectionFrame::OnCancelButton(wxCommandEvent& event) {
-    for (unsigned int i = 0; i < m_databases.GetCount(); i++) {
-        m_databases_list_box->Check(i, false);
-        for (unsigned int x = 0; x < m_hidden_databases.GetCount(); x++) {
-			if (!m_hidden_databases[x].Cmp(m_databases[i]))
-			{
+void SCCSelectionFrame::OnCancelButton(wxCommandEvent& event) 
+{
+    	for (unsigned int i = 0; i < m_databases.GetCount(); i++) {
+		m_databases_list_box->Check(i, false);
+		for (unsigned int x = 0; x < m_hidden_databases.GetCount(); x++) {
+			if (!m_hidden_databases[x].Cmp(m_databases[i]))	{
 				m_databases_list_box->Check(i);
 				break;
 			}
 		}
 	}
-    SetCheckBoxes();
+    	SetCheckBoxes();
 	EndModal(wxID_CANCEL);
 }
 

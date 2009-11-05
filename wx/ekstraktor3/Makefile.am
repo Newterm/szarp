@@ -52,7 +52,7 @@ CLEANFILES = $(ekstraktor3_LOCALES)
 EXTRA_DIST = $(ekstraktor3_LOCALES_SRC) $(ekstraktor3_LOCALES)
 
 # Creating resources file with icons for Windows
-ICON_SRC := ../../resources/wx/icons/extr16.xpm
+ICON_SRC := ../../resources/wx/icons/extr64.xpm
 ICON := $(shell basename $(ICON_SRC) .xpm)
 ICON_ICO := $(ICON).ico
 

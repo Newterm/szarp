@@ -19,6 +19,7 @@
 
 #include "cfgdlg.h"
 #include "szapp.h"
+#include "szframe.h"
 
 #include <libxml/xmlreader.h>
 
@@ -126,10 +127,12 @@ ConfigDialog::ConfigDialog(wxWindow *parent, const ConfigNameHash& _cfgs, const 
 
 	SetSizer(sizer);
 
+	if (szFrame::default_icon.IsOk()) {
+		SetIcon(szFrame::default_icon);
+	}
+
 	ConfigDialogKeyboardHandler *kh = new ConfigDialogKeyboardHandler(this);
 	m_search->PushEventHandler(kh);
-	//kh = new ConfigDialogKeyboardHandler(this);
-	//m_cfg_list->PushEventHandler(kh);
 
 	m_show_user_defined_set = true;
 

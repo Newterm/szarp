@@ -1,12 +1,31 @@
 $Id$
 
+2009-11-05	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/szau/pl/szau.po: missing translations.
+	* wx/common/parlist.cpp: fix in adding extension when saving 
+	parameter list.
+	* wx/common/cfgdlg.cpp: setting default application icon for dialog.
+	* wx/sync/pl/scc.po: tooltip translation.
+	* wx/scc/sccframe.cpp: tooltip added (tooltips on taskbar seem not to
+	work under Linux).
+	* wx/scc/scchideselectionframe.cpp: code reformated using indent;
+	_("") changed to _T("").
+	* wx/sync/ssclient.cc: code reformated using indent; _("") changed to 
+	_T(""); added tooltip.
+	* wx/sync/pl/ssc.po: tooltip translation.
+	* wx/ekstraktor3/*: extension is automatically added when saving
+	output file; icon set on startup dialogs; removed debug info printed
+	on stdout; code reformated using indent.
+	* script/nsis/common.nsi: Ekstraktor in Windows Start Menu.
+	* resources/wx/icons/*: new icons for Ekstraktor.
+	* resources/logo/szarp-logo.svg: new icons for Ekstraktor.
 2009-11-05	Darek Marcinkiewicz <reksio@praterm.pl>
 	* wx/common: two bugs in help system fixed: searching
 	does not cause an application to crash; when help
 	is opened from within modal dialog, the help window
 	is no longer frozen and incative. The fix was to
 	substitute existing wxhtml help implementation with
-	the one found 'on the ineternet'. The implementation
+	the one found 'on the internet'. The implementation
 	we have now uses wxWidgets' license and is written
 	by main wxWidgets contributor, so we should be fine ;)
 2009-11-04	Pawel Palucha <pawel@praterm.com.pl>

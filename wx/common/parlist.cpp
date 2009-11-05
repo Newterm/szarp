@@ -202,7 +202,7 @@ bool szParList::SaveFile(wxString path, bool showErrors)
 			if (dlg.ShowModal() != wxID_OK)
 				return FALSE;
 			path = dlg.GetPath();
-			if (path.Find('.') < 0) {
+			if (path.Right(4).Find('.') < 0) {
 				path += _T(".xpl");
 			}
 		}

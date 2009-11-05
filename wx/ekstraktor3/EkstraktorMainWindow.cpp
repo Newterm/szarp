@@ -61,7 +61,7 @@ DECLARE_APP(EkstrApp)
 
 #include <wx/app.h>
 
-#include "../../resources/wx/icons/extr16.xpm"
+#include "../../resources/wx/icons/extr64.xpm"
 
 #include <stdio.h>
 
@@ -239,7 +239,7 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 	parlist = new szParList();
 	parlist->RegisterIPK(mainWidget->GetIpk());
 	
-	wxIcon icon(wxICON(extr16));
+	wxIcon icon(wxICON(extr64));
 	if (icon.Ok())
 		SetIcon(icon);
 	TestEmpty();
@@ -486,31 +486,48 @@ void EkstraktorMainWindow::onWriteResults(wxCommandEvent &event)
 
 	int l = filename.size();
 	if ((format == 3) && (l > 4 )) {
-		std::wstring extension = filename.substr(filename.size() - 4);
+		std::wstring extension = filename.substr(l - 4);
 		boost::to_lower(extension);
-		if (extension == L".xml")
+		if (extension == L".xml") {
 			arguments.xml = 1; // XML
-		else if (extension == L".ods")
-			arguments.openoffice = 1; // SXC (OO)
-		else 
-			arguments.csv = 1; // CSV
+		} else if (extension == L".ods") {
+			arguments.openoffice = 1; // ODS
+		} else {
+			arguments.csv = 1; // CSV, default
+		}
 	} else {
 		switch (format) {
-			case 2: arguments.xml = 1;
+			case 2: 
+				arguments.xml = 1;
 				break;
-			case 1: arguments.openoffice = 1;
+			case 1: 
+				arguments.openoffice = 1;
 				break;
 			default:
 				arguments.csv = 1;
 				break;
 		}
 	}
+	if ((l <= 4) or filename.substr(l - 4, 1).compare(L".")) {
+		switch (format) {
+			case 2: 
+				arguments.output += L".xml";
+				break;
+			case 1: 
+				arguments.output += L".ods";
+				break;
+			default:
+				arguments.output += L".csv";
+				break;
+		}
+	}
+
         progressDialog = new wxProgressDialog(_("Please wait"),
 				_("Extraction in progress..."), 104,
 				this,
 				wxPD_AUTO_HIDE 
 #ifndef MINGW32
-// na Windows niepoprawnie się wyświetlają
+// this is broken under Windows
 				| wxPD_ESTIMATED_TIME | wxPD_REMAINING_TIME 
 #endif
 				| wxPD_CAN_ABORT
