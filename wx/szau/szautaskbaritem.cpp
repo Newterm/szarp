@@ -140,7 +140,7 @@ void SzauTaskBarItem::OnTimer(wxTimerEvent& WXUNUSED(event)) {
 }
 
 #if defined(__WXMSW__) && defined(__HAS_BALLOON__)
-BEGIN_EVENT_TABLE(SzauTaskBarItem, BallonTaskBar)
+BEGIN_EVENT_TABLE(SzauTaskBarItem, BalloonTaskBar)
 #else
 BEGIN_EVENT_TABLE(SzauTaskBarItem, wxTaskBarIcon)
 #endif

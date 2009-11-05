@@ -30,6 +30,7 @@
 
 #include <wx/wx.h>
 #include <wx/taskbar.h>
+#include "balloontaskbaritem.h"
 
 #ifdef __WXGTK__
 
@@ -47,7 +48,7 @@ public:
 
 #else
 
-typedef wxTaskBarIcon szTaskBarItem;
+typedef BalloonTaskBar szTaskBarItem;
 
 #endif
 

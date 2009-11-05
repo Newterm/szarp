@@ -40,7 +40,7 @@
 #include <wx/wx.h>
 #endif
 
-#include "ballontaskbaritem.h"
+#include "balloontaskbaritem.h"
 #include "updater.h"
 
 #include <vector>
@@ -48,7 +48,7 @@
 /**class displaying icon on a taskbar
  * and context menu upon mouse click*/
 #if defined(__WXMSW__) && defined(__HAS_BALLOON__)
-class SzauTaskBarItem : public BallonTaskBar {
+class SzauTaskBarItem : public BalloonTaskBar {
 #else
 class SzauTaskBarItem : public wxTaskBarIcon {
 #endif

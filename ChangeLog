@@ -1,6 +1,11 @@
 $Id$
 
 2009-11-05	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/*: classes and files names spelling fix: Ballon -> Balloon.
+	* wx/*: szTaskBarIcon uses BallonTaskBar under Windows.
+	* script/nsis/common.nsi: fixes in Ekstraktor Start Menu link.
+	* resources/wx/icons/szau_*.xpm: added 'const' - fixing compilation
+	warnings.
 	* wx/szau/pl/szau.po: missing translations.
 	* wx/common/parlist.cpp: fix in adding extension when saving 
 	parameter list.

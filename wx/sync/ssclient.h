@@ -84,7 +84,7 @@
 #endif
 
 #ifdef __WXMSW__
-#include "ballontaskbaritem.h"
+#include "balloontaskbaritem.h"
 #endif
 
 class Client;
@@ -590,7 +590,7 @@ class ProgressFrame : public wxDialog {
 
 #ifdef __WXMSW__
 	/**Pointer to taskbar. Used for balloons displaying*/
-	BallonTaskBar* m_ballon;
+	BalloonTaskBar* m_ballon;
 #endif
 	/**progress event handler*/
 	void OnUpdate(ProgressEvent& event); 
@@ -610,7 +610,7 @@ class ProgressFrame : public wxDialog {
 
 	public:
 #ifdef __WXMSW__
-	ProgressFrame(Progress *progress, BallonTaskBar *ballon);
+	ProgressFrame(Progress *progress, BalloonTaskBar *ballon);
 #else
 	ProgressFrame(Progress *progress);
 #endif
@@ -714,7 +714,7 @@ public:
 /**class displaying icon on a taskbar
  * and context menu upon mouse click*/
 #ifdef __WXMSW__
-class SSCTaskBarItem : public BallonTaskBar {
+class SSCTaskBarItem : public BalloonTaskBar {
 #else
 class SSCTaskBarItem : public szTaskBarItem {
 #endif

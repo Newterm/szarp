@@ -312,9 +312,9 @@ Section "SZARP (required)" MainSection
 	"Uruchamianie aplikacji SZARP"
     CreateShortCut \
     	"$SMPROGRAMS\$STARTMENU_FOLDER\Ekstraktor.lnk" \
-	"$INSTDIR\bin\SCC.EXE" \
+	"$INSTDIR\bin\EKSTRAKTOR3.EXE" \
 	"" \
-	"$INSTDIR\resources\icons\ekstaktor3.ico" \
+	"$INSTDIR\resources\icons\ekstraktor3.ico" \
 	0 \
 	"SW_SHOWNORMAL" \
 	"" \

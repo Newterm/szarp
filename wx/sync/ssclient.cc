@@ -1774,7 +1774,7 @@ void Progress::SetTerminationRequest(bool value) {
 DEFINE_EVENT_TYPE(PROGRESS_EVENT)
 
 #ifdef __WXMSW__
-ProgressFrame::ProgressFrame(Progress *progress, BallonTaskBar *ballon)
+ProgressFrame::ProgressFrame(Progress *progress, BalloonTaskBar *ballon)
 #else
 ProgressFrame::ProgressFrame(Progress *progress)
 #endif
@@ -1964,7 +1964,7 @@ void ProgressFrame::OnUpdate(ProgressEvent& event) {
 			m_sync_in_progress = false;
 #ifdef __WXMSW__
 			m_ballon->ShowBalloon(_("SSC"), wxString(_("Sync finished")),
-					BallonTaskBar::ICON_INFO);
+					BalloonTaskBar::ICON_INFO);
 #endif
 			if (IsShown()) {
 				wxTimeSpan elapsed = wxDateTime::Now() - m_sync_start_time;
@@ -1998,7 +1998,7 @@ void ProgressFrame::OnUpdate(ProgressEvent& event) {
 			m_sync_in_progress = false;
 #ifdef __WXMSW__
 			m_ballon->ShowBalloon(_("SSC"), wxString(_("Sync failed ")) + event.GetDescription(),
-					BallonTaskBar::ICON_ERROR);
+					BalloonTaskBar::ICON_ERROR);
 #endif
 #if 0
 			if (IsShown())
@@ -2653,7 +2653,7 @@ void SSCTaskBarItem::OnMouseDown(wxTaskBarIconEvent &event) {
 
 
 #ifdef __WXMSW__
-BEGIN_EVENT_TABLE(SSCTaskBarItem, BallonTaskBar)
+BEGIN_EVENT_TABLE(SSCTaskBarItem, BalloonTaskBar)
 #else
 BEGIN_EVENT_TABLE(SSCTaskBarItem, szTaskBarItem)
 #endif

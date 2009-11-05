@@ -48,7 +48,7 @@ libwxcommon_a_SOURCES = \
 		$(SOURCE_DIR)/szmutex.cpp $(SOURCE_DIR)/szmutex.h \
 		$(SOURCE_DIR)/ipc.cc $(SOURCE_DIR)/ipc.h \
 		$(SOURCE_DIR)/cfgnames.cpp $(SOURCE_DIR)/cfgnames.h \
-		$(SOURCE_DIR)/ballontaskbaritem.cpp $(SOURCE_DIR)/ballontaskbaritem.h \
+		$(SOURCE_DIR)/balloontaskbaritem.cpp $(SOURCE_DIR)/balloontaskbaritem.h \
 		$(SOURCE_DIR)/authdiag.cpp $(SOURCE_DIR)/authdiag.h \
 		$(SOURCE_DIR)/pscgui.cpp $(SOURCE_DIR)/pscgui.h \
 		$(SOURCE_DIR)/biowxsock.h $(SOURCE_DIR)/biowxsock.cpp \

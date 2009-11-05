@@ -1,5 +1,5 @@
 /* XPM */
-static char *szau_16_xpm[] = {
+static const char *szau_16_xpm[] = {
 /* columns rows colors chars-per-pixel */
 "16 16 128 2",
 "   c #DB001B",

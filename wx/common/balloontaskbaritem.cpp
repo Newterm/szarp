@@ -22,20 +22,20 @@
  * schylek@praterm.com.pl
  */
 
-#include "ballontaskbaritem.h"
+#include "balloontaskbaritem.h"
 
 #ifdef __WXMSW__
 
-const int BallonTaskBar::ICON_ERROR = NIIF_ERROR;
-const int BallonTaskBar::ICON_INFO = NIIF_INFO;
-const int BallonTaskBar::ICON_NONE = NIIF_NONE;
-const int BallonTaskBar::ICON_WARNING = NIIF_WARNING;
+const int BalloonTaskBar::ICON_ERROR = NIIF_ERROR;
+const int BalloonTaskBar::ICON_INFO = NIIF_INFO;
+const int BalloonTaskBar::ICON_NONE = NIIF_NONE;
+const int BalloonTaskBar::ICON_WARNING = NIIF_WARNING;
 
 #if _WIN32_IE>=0x0600
-const int BallonTaskBar::ICON_NOSOUND = NIIF_NOSOUND; // _WIN32_IE=0x0600
+const int BalloonTaskBar::ICON_NOSOUND = NIIF_NOSOUND; // _WIN32_IE=0x0600
 #endif
 
-void BallonTaskBar::ShowBalloon(wxString title, wxString msg, int
+void BalloonTaskBar::ShowBalloon(wxString title, wxString msg, int
 		    iconID, unsigned int timeout) {
 
 	wxConfigBase* config = wxConfigBase::Get(true);

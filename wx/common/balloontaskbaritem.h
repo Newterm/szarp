@@ -22,8 +22,8 @@
  * schylek@praterm.com.pl
  */
 
-#ifndef _BALLONTASKBARITEM_H__
-#define _BALLONTASKBARITEM_H__
+#ifndef _BALLOONTASKBARITEM_H__
+#define _BALLOONTASKBARITEM_H__
 
 #ifdef __WXMSW__
 
@@ -62,7 +62,7 @@ public:
 
 /**Taskbar icon that is able to display balloon tips.
  * Windows only*/
-class BallonTaskBar: public wxTaskBarIcon {
+class BalloonTaskBar: public wxTaskBarIcon {
 public:
 	static const int ICON_ERROR;
 	static const int ICON_INFO;
