@@ -31,48 +31,11 @@
 #include "cconv.h"
 #include "szapp.h"
 
-szHelpController::szHelpController(int style)
+szHelpController::szHelpController(int style) : wxHtmlHelpControllerEx(style)
 {
-    m_helpFrame = NULL;
-	m_begin_id = NULL;
-    m_titleFormat = wxString(_("SZARP Help")) + _T(": %s");
-    m_FrameStyle = style;
+    m_begin_id = NULL;
+    SetTitleFormat(wxString(_("SZARP Help")) + _T(": %s"));
 }
-
-wxHtmlHelpFrame* szHelpController::CreateHelpFrame(wxHtmlHelpData* data)
-{
-    wxHtmlHelpFrame* helpFrame = wxHtmlHelpController::CreateHelpFrame(data);
-    helpFrame->SetController(this);
-
-#if 0
-    wxIcon icon;
-    icon.LoadFile(SC::A2S(PREFIX"/resources/wx/icons/szarp16.xpm").c_str());
-#endif
-	
-    helpFrame->SetTitleFormat(m_titleFormat);
-//    if (icon.Ok())
-//	    helpFrame->SetIcon(icon);
-    helpFrame->Show(TRUE);
-	
-    helpFrame->UseConfig(wxConfig::Get(), _T("Help"));
-
-    helpFrame->SetSize(1000, 600);
-
-    return helpFrame;
-}
-
-	
-bool szHelpControllerHelpProvider::ShowHelp(wxWindowBase *window)
-{
-    wxString text = GetHelp(window);
-    if (!text.empty() && m_helpController)
-    {
-         return m_helpController->DisplaySection(text);
-    }
-
-    return FALSE;
-}
-
 
 bool szHelpController::DisplaySection(const wxString& section) {
 	int id;
@@ -82,12 +45,9 @@ bool szHelpController::DisplaySection(const wxString& section) {
 	else 
 		id = GetId(section);
 
-	CreateHelpWindow();
-	bool success = m_helpWindow->Display(id);
-	return success;
+	return wxHtmlHelpControllerEx::DisplaySection(id);
 
 }
-
 
 int szHelpController::GetId(const wxString& section)
 {
@@ -117,7 +77,7 @@ bool szHelpController::InitializeContext(const wxString& filepath)
 		map_file->Open(filepath);
 		for (tmp_str = map_file->GetFirstLine(); !map_file->Eof(); tmp_str = map_file->GetNextLine())
 		{
-    		tmp_id->id = wxAtoi(tmp_str);
+	    		tmp_id->id = wxAtoi(tmp_str);
 			tmp_id->section += tmp_str;
 			tmp_id->section.Remove(0,(tmp_id->section.Find(_T(" ")))+1);
 			tmp_id->next = new map_id;
@@ -136,10 +96,21 @@ bool szHelpController::InitializeContext(const wxString& filepath)
 
 bool szHelpController::AddBook(const wxString& book)
 {
-    bool retval = wxHtmlHelpController::AddBook(book); 
+    bool retval = wxHtmlHelpControllerEx::AddBook(book); 
 
     if (retval) 
 	return InitializeContext(book.BeforeLast('.') + _T(".map"));
     return FALSE;
 }
 	
+bool szHelpControllerHelpProvider::ShowHelp(wxWindowBase *window)
+{
+    wxString text = GetHelp(window);
+    if (!text.empty() && m_helpController)
+    {
+         return m_helpController->DisplaySection(text);
+    }
+
+    return false;
+}
+

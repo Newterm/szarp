@@ -56,7 +56,13 @@ libwxcommon_a_SOURCES = \
 		$(SOURCE_DIR)/szframe.h $(SOURCE_DIR)/szframe.cpp \
 		$(SOURCE_DIR)/sztaskbaritem.h $(SOURCE_DIR)/sztaskbaritem.cpp \
 		$(SOURCE_DIR)/md5.h $(SOURCE_DIR)/md5.cpp \
-		$(SOURCE_DIR)/GUI/resource.cpp
+		$(SOURCE_DIR)/GUI/resource.cpp \
+		$(SOURCE_DIR)/helpctrlex/helpctrlex.cpp $(SOURCE_DIR)/helpctrlex/helpctrlex.h \
+		$(SOURCE_DIR)/helpctrlex/helpdlgex.cpp $(SOURCE_DIR)/helpctrlex/helpdlgex.h \
+		$(SOURCE_DIR)/helpctrlex/helpfrmex.cpp $(SOURCE_DIR)/helpctrlex/helpfrmex.h \
+		$(SOURCE_DIR)/helpctrlex/helpwinex.cpp $(SOURCE_DIR)/helpctrlex/helpwinex.h
+
+
 
 # Additional files for deleting on 'make maintainer-clean'
 MAINTAINERCLEANFILES = Makefile.in

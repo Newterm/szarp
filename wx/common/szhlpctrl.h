@@ -39,11 +39,13 @@
 #include <wx/wx.h>
 #endif
 
+#include "helpctrlex/helpctrlex.h"
+
 /**
  * Sub-class of wxHtmlHelpController, needed for Szarp Context Help System, and 
  * new Szarp Help resting on HTML books.
  */
-class szHelpController: public wxHtmlHelpController
+class szHelpController: public wxHtmlHelpControllerEx
 {
 	public:
 		/**
@@ -53,7 +55,7 @@ class szHelpController: public wxHtmlHelpController
 		 * default style contain: wxHF_TOOLBAR | wxHF_CONTENTS | wxHF_INDEX |
 		 * wxHF_SEARCH | wxHF_BOOKMARKS | wxHF_PRINT
 		 */
-		szHelpController(int style = wxHF_DEFAULT_STYLE);
+		szHelpController(int style = wxHF_DEFAULT_STYLE | wxHF_FRAME);
 		/**
 		 * Display book page from hhc file if section is number or
 		 * use GetId to get to right number of page to display it.
@@ -65,7 +67,6 @@ class szHelpController: public wxHtmlHelpController
 		 */
 		bool AddBook(const wxString& book);
 	protected:
-		virtual wxHtmlHelpFrame* CreateHelpFrame(wxHtmlHelpData *data);
 		/**
 		 * Read map file and add the number of page and name of section 
 		 * to map_id structure.
