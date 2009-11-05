@@ -38,10 +38,8 @@
 
 class wxHtmlHelpControllerEx;
 
-class WXDLLEXPORT wxHtmlHelpFrameEx : public wxFrame
+class wxHtmlHelpFrameEx : public wxFrame
 {
-    DECLARE_DYNAMIC_CLASS(wxHtmlHelpFrameEx)
-
 public:
     wxHtmlHelpFrameEx(wxHtmlHelpData* data = NULL) { Init(data); }
     wxHtmlHelpFrameEx(wxWindow* parent, wxWindowID wxWindowID,

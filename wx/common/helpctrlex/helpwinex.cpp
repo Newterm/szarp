@@ -169,7 +169,6 @@ class wxHtmlHelpHtmlWindowEx : public wxHtmlWindow
     private:
         wxHtmlHelpWindowEx *m_Window;
 
-    DECLARE_NO_COPY_CLASS(wxHtmlHelpHtmlWindowEx)
     DECLARE_EVENT_TABLE()
 };
 
@@ -324,8 +323,6 @@ void wxHtmlHelpWindowEx::UpdateMergedIndex()
 }
 #endif    
 
-
-IMPLEMENT_DYNAMIC_CLASS(wxHtmlHelpWindowEx, wxWindow)
 
 wxHtmlHelpWindowEx::wxHtmlHelpWindowEx(wxWindow* parent, wxWindowID id,
                     const wxPoint& pos,
@@ -1496,7 +1493,6 @@ Normal face<br>(and <u>underlined</u>. <i>Italic face.</i> \
     }
 
     DECLARE_EVENT_TABLE()
-    DECLARE_NO_COPY_CLASS(wxHtmlHelpWindowExOptionsDialog)
 };
 
 BEGIN_EVENT_TABLE(wxHtmlHelpWindowExOptionsDialog, wxDialog)

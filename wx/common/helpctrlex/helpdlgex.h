@@ -38,10 +38,8 @@
 
 class wxHtmlHelpControllerEx;
 
-class WXDLLEXPORT wxHtmlHelpDialogEx : public wxDialog
+class wxHtmlHelpDialogEx : public wxDialog
 {
-    DECLARE_DYNAMIC_CLASS(wxHtmlHelpDialogEx)
-
 public:
     wxHtmlHelpDialogEx(wxHtmlHelpData* data = NULL) { Init(data); }
     wxHtmlHelpDialogEx(wxWindow* parent, wxWindowID wxWindowID,

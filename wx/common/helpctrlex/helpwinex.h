@@ -41,8 +41,8 @@
 #define WXHTML_253 1
 #endif
 
-class WXDLLEXPORT wxButton;
-class WXDLLEXPORT wxTextCtrl;
+class wxButton;
+class wxTextCtrl;
 
 #ifdef WXHTML_253
 struct wxHtmlHelpMergedIndexItemEx;
@@ -80,12 +80,10 @@ struct wxHtmlHelpFrameExCfg
 };
 
 
-class WXDLLEXPORT wxHtmlHelpControllerEx;
+class wxHtmlHelpControllerEx;
 
-class WXDLLEXPORT wxHtmlHelpWindowEx : public wxWindow
+class wxHtmlHelpWindowEx : public wxWindow
 {
-    DECLARE_DYNAMIC_CLASS(wxHtmlHelpWindowEx)
-
 public:
     wxHtmlHelpWindowEx(wxHtmlHelpData* data = NULL) { Init(data); }
     wxHtmlHelpWindowEx(wxWindow* parent, wxWindowID wxWindowID,

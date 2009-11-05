@@ -40,10 +40,8 @@
 
 #define wxID_HTML_WINDOW   (wxID_HIGHEST + 2)
 
-class WXDLLEXPORT wxHtmlHelpControllerEx : public wxHelpControllerBase
+class wxHtmlHelpControllerEx : public wxHelpControllerBase
 {
-    DECLARE_DYNAMIC_CLASS(wxHtmlHelpControllerEx)
-
 public:
     wxHtmlHelpControllerEx(int style = wxHF_DEFAULT_STYLE);
     virtual ~wxHtmlHelpControllerEx();
@@ -130,7 +128,6 @@ protected:
 
     // DECLARE_EVENT_TABLE()
 
-    DECLARE_NO_COPY_CLASS(wxHtmlHelpControllerEx)
 };
 
 /*

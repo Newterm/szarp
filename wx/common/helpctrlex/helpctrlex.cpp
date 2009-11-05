@@ -41,8 +41,6 @@
 #include "helpctrlex.h"
 #include "helpfrmex.h"
 
-IMPLEMENT_DYNAMIC_CLASS(wxHtmlHelpControllerEx, wxHelpControllerBase)
-
 wxHtmlHelpControllerEx::wxHtmlHelpControllerEx(int style)
 {
     m_helpWindow = NULL;

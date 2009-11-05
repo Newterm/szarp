@@ -53,8 +53,6 @@
 #undef Below
 #endif
 
-IMPLEMENT_DYNAMIC_CLASS(wxHtmlHelpDialogEx, wxDialog)
-
 wxHtmlHelpDialogEx::wxHtmlHelpDialogEx(wxWindow* parent, wxWindowID id, const wxString& title,
                                  int style, wxHtmlHelpData* data,
                                  wxConfigBase *config, const wxString& rootpath)
