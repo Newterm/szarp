@@ -1,12 +1,11 @@
 # $Id$
 # Dariusz Marcinkiewicz
 #
-#: ssclient.cc:1005
 msgid ""
 msgstr ""
 "Project-Id-Version: 1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-05 17:58+0100\n"
+"POT-Creation-Date: 2009-11-06 10:16+0100\n"
 "PO-Revision-Date: 2009-04-22 12:10+0100\n"
 "Last-Translator: Pawe³ Pa³ucha <pawel@praterm.com.pl>\n"
 "Language-Team: \n"
@@ -56,14 +55,6 @@ msgstr "b³±d podczas przegl±dania katalogów:"
 #: ssclient.cc:958
 msgid "deleting files not present on the server - end"
 msgstr "usuwanie plików nieobecnych na serwerze - koniec"
-
-#: ssclient.cc:1097
-msgid " ("
-msgstr ""
-
-#: ssclient.cc:1097
-msgid ")"
-msgstr ""
 
 #: ssclient.cc:1133 ssclient.cc:1189 ssclient.cc:1200 ssclient.cc:1289
 msgid "unable to connect to server "
@@ -296,9 +287,8 @@ msgid "Log dialog"
 msgstr "Dziennik"
 
 #: ssclient.cc:2546
-#, fuzzy
 msgid "Synchronize SZARP data"
-msgstr "Synchronizuj wybrane bazy"
+msgstr "Synchronizuj dane SZARP"
 
 #: ssclient.cc:2570
 msgid "Begin synchronization"
@@ -498,23 +488,3 @@ msgstr "B³±d podczas odczytu pliku "
 #: ssfsutil.cc:333
 msgid "Error while writing file "
 msgstr "B³±d podczas zapisu pliku "
-
-#~ msgid "Configuration is not complete"
-#~ msgstr "Konfiguracja nie jest kompletna"
-
-#~ msgid "ERROR"
-#~ msgstr "B³±d"
-
-#~ msgid "Connection setup:"
-#~ msgstr "Konfiguracja po³±czenia:"
-
-#~ msgid "Syncer Version: "
-#~ msgstr "Synchronizator wersja: "
-
-#~ msgid "Please check your email box to activate your account."
-#~ msgstr ""
-#~ "Sprawd¼ swoj± skrzynkê pocztow±. Znajdziesz tam list z linkiem "
-#~ "aktywuj±cym twoje konto."
-
-#~ msgid "Not able to obtain file list - wrong username/password"
-#~ msgstr "Nie uda³o siê pobraæ listy plików - z³e has³o lub nazwa u¿ytkownika"

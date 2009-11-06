@@ -1094,7 +1094,7 @@ bool Client::Synchronize()  {
 			m_exchanger = NULL;
 			throw;
 		} catch (Exception &e) {
-			m_progress.SetProgress(Progress::MESSAGE, 0, e.What() + _(" (") + csconv(m_addresses[m_current_server]) + _(")"));
+			m_progress.SetProgress(Progress::MESSAGE, 0, e.What() + _T(" (") + csconv(m_addresses[m_current_server]) + _T(")"));
 			ok = false;
 		}
 

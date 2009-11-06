@@ -1,5 +1,7 @@
 $Id$
 
+2009-11-06	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/sync/*: translation fixes.
 2009-11-05	Pawel Palucha <pawel@praterm.com.pl>
 	* wx/*: classes and files names spelling fix: Ballon -> Balloon.
 	* wx/*: szTaskBarIcon uses BallonTaskBar under Windows.
