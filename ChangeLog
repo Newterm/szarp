@@ -1,6 +1,7 @@
 $Id$
 
 2009-11-06	Pawel Palucha <pawel@praterm.com.pl>
+	* resources/wx/icons/extr16.xpm: we need this icon for SCC menu.
 	* ipk.sgml: docs update - removed obsolete sections (szarpvpn),
 	installation, data sync, szbextr sections update.
 	* wx/sync/*: translations fixes.
