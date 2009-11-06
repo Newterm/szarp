@@ -14,7 +14,7 @@
 
 <title>System SZARP - dokumentacja techniczna</title>
 
-<subtitle>SZARP v.3.0</subtitle>
+<subtitle>SZARP v.3.1</subtitle>
 <authorgroup>
 <author><firstname>Micha³</firstname><surname>Blajerski</surname></author>
 <author><firstname>S³awomir</firstname><surname>Chy³ek</surname></author>
@@ -46,17 +46,15 @@ $Id: ipk.sgml 6720 2009-05-13 14:18:44Z koder $
 <title>Instalacja systemu SZARP</title>
 
 <para>
-Instalacja systemu SZARP polega na instalacji i przygotowaniu systemu Linux
-wed³ug wskazówek zawartych w dokumencie 
-<ulink url="http://www.szarp.com.pl/howto/howto/html/howto.html">SZARP
-	HOWTO</ulink>. Jedyn± oficjalnie wspieran± dystrybucj± jest Debian (obecnie Lenny
-lub unstable), przystosowanie SZARP'a do dzia³ania pod inn± dystrybucj± jest oczywi¶cie mo¿liwe,
-ale mo¿e wymagaæ sporo pracy.
+Instalacja systemu SZARP wymaga instalacji i przygotowania systemu Linux. Wspierana dystrybucja
+to Debian GNU/Linux w wersji najnowszej stabilnej (Lenny) lub niestabilnej (Sid). Zainstalowany powinien byæ podstawowy system wraz ze ¶rodowiskiem graficznym KDE lub GNOME (ew. inne wspieraj±ce standard Freedesktop). Do prawid³owego dzia³ania czê¶ci programów zw³aszcza konsolowych wymagane jest ustawienie kodowania w systemie (locales) na pl_PL.ISO-8859-2 (a nie pl_PL.UTF-8). Prawdopodobnie bez wiêkszych problemów SZARP powinien dzia³aæ tak¿e na Ubuntu, choæ nie jest to regularnie testowane. Przystosowanie SZARP'a do dzia³ania pod inn± dystrybucj± jest oczywi¶cie mo¿liwe, ale mo¿e wymagaæ sporo pracy.
 </para>
 <para>
-Obecnie istniej± dwie metody instalacji systemu: kompilacja,
-instalacja oraz konfiguracja ze ¼róde³ lub instalacja pakietów binarnych DEB.
-¬ród³a dostêpne s± na stronie <ulink url="http://www.szarp.com.pl">www.szarp.com.pl</ulink>.
+Bezpo¶rednia kompilacja oprogramowania ze ¼róde³ jest oczywi¶cie mo¿liwa, ale podstawow± metod± instalacji jest instalacja z pakietów Debiana. W zwi±zku z tym standardowa instalacja ze ¼róde³ mo¿e wymagaæ rêcznych poprawek (zak³adanie u¿ytkowników, ustawianie uprawnieñ), które normalnie wykonywane s± poczas instalacji pakietów.
+</para>
+<para>
+Repozytorium SVN ze ¼ród³ami dostêpne jest na stronie SourceForge projektu - 
+<ulink url="http://sourceforge.net/projects/szarp">sourceforge.net/projects/szarp</ulink>.
 Programy klienckie dostêpne s± te¿ w wersji dla Windows - ze strony powy¿ej mo¿na ¶ci±gn±æ
 instalator.
 </para>
@@ -71,18 +69,10 @@ to u¿ytkownika z konieczno¶ci rêcznej instalacji wymaganych bibliotek.
 </para>
 <para>
 Wiêkszo¶æ wymaganych przez system bibliotek jest standardowo obecna we
-wspó³czesnych dystrybucjach Linuksa. SZARP by³ z powodzeniem kompilowany i 
-instalowany na ró¿nych wersjach dystrybucji RedHat (w tym Fedora), Mandrake,
-Aurox, Ubuntu oraz Debian - ten ostatni jest polecany, gdy¿ jest systemem u¿ywanym
-do rozwoju systemu i w produkcyjnym u¿yciu - na obiektach przemys³owych.
-</para>
-
-<para>
+wspó³czesnych dystrybucjach Linuksa. Spis wiêkszo¶ci wymaganych do kompilacji narzêdzi i biliotek
+znajduje siê w pliku <filename>debian/control</filename> w polu <emphasis>Build-Depends</emphasis>. 
 Lista wymaganych bibliotek i programów jest wypisywana przez skrypt <filename>./configure</filename> 
 w g³ównym katalogu ¼róde³ - skrypt informuje o tym czego mu brakuje.
-</para>
-
-<para>
 Do tworzenia dokumentacji potrzebne s± narzêdzia jade (lub openjade) wraz z
 zainstalowanym docbookiem, pdfjadetex i ImageMagic (convert).
 </para>
@@ -116,12 +106,12 @@ make install
 <section id="install-deb-preparation">
 <title>Przygotowanie systemu</title>
 <para>
-System SZARP dostêpny jest tak¿e w postaci pakietów deb. Instalacjê nale¿y
-rozpocz±æ od dodania nastêpuj±cych wpisów do pliku
+	System SZARP dostêpny jest tak¿e w postaci pakietów deb. 
+	Instalacjê nale¿y
+rozpocz±æ od dodania wpisów do pliku
 <filename>/etc/apt/sources.list</filename>:
 <programlisting>
-deb http://www.szarp.com.pl/debian stable main non-free
-deb http://www.szarp.com.pl/debian testing main non-free
+deb http://www.szarp.org/debian stable main non-free
 deb http://www.szarp.com.pl/debian unstable main non-free
 </programlisting>
 Oczywi¶cie, mo¿emy dodaæ tylko jedn± z w/w linii je¿eli zamierzamy korzystaæ
@@ -219,6 +209,13 @@ chcemy u¿ywaæ. Do wyboru s± trzy standardowe: <emphasis>stabilne</emphasis>,
 mo¿na wybraæ opcjê <emphasis>inne</emphasis>, wtedy samodzielnie musimy
 okre¶liæ nazwê wydania.  Próba aktualizacji odbywa siê raz na dobê, je¿eli
 pojawi siê nowa wersja systemu zostanie ona zainstalowana.</para>
+<para>
+Wersja stabilna jest zalecana do u¿ycia w ¶rodowisku produkcyjnym, zawiera poprawki
+wszystkich krytycznych b³êdów oraz w miarê regularnie dodawane nowe funkcje - po ich przetestowaniu.
+Wersja niestabilna jest czêsto budowan± wersj± dewelopersk±, zawieraj±c± najnowsze funkcje. Zalecana
+jest do u¿ycia w mniej krytycznych zastosowaniach - czyli np. tam gdzie realizowany jest
+tylko podgl±da danych.
+</para>
 </section> <!-- install-deb-packages-update -->
 
 <section id="install-deb-packages-description">
@@ -251,7 +248,7 @@ ró¿ne pomocnicze skrypty.</para></listitem>
 <listitem><para><emphasis>szarp-wx</emphasis>
 to zbiór aplikacji klienckich SZARP wykorzystuj±cych bibliotekê wxWidgets. W jego sk³ad wchodz±
 programy <emphasis>draw3</emphasis>, <emphasis>ipkedit</emphasis>,
-<emphasis>dyspwx</emphasis>, <emphasis>kontroler3</emphasis>,
+<emphasis>ekstraktor3</emphasis>, <emphasis>kontroler3</emphasis>,
 <emphasis>raporter3</emphasis>, <emphasis>wxhelp</emphasis>,
 <emphasis>SCC</emphasis> oraz <emphasis>synchronizator</emphasis>,
 <emphasis>filler</emphasis>.</para></listitem>
@@ -390,7 +387,7 @@ wykorzystywany przez skrypt startowy <filename>/etc/init.d/parstart</filename>.
 Zalecanym obecnie sposobem jest, zamiast dodawania wpisów do menu
 mened¿era okien, u¿ycie
 programu SCC (Szarp Control Center). Szczegó³y s± opisane w 
-<ulink url="http://www.szarp.com.pl/howto/scc/html/scc.html">
+<ulink url="http://www.szarp.org/szarp/doc/scc/html/scc.html">
 dokumentacji programu SCC</ulink>.
 </para>
 
@@ -466,7 +463,7 @@ Skonfigurowaæ NTP (Network Time Protocol).
 </para></listitem>
 
 <listitem><para>
-Skonfigurowaæ apt-proxy.
+Skonfigurowaæ w razie potrzeby approx.
 </para></listitem>
 
 <listitem><para>
@@ -490,9 +487,11 @@ Wymieniæ klucze.
 
 <abstract>
 
-	<para><note><para>Uwaga - obecnie wiêkszo¶æ programów (a docelowo wszystkie) nie
+	<para><note><para>Obecnie praktycznie wszystkie programy nie
 		korzystaj± z opisanych w tym rozdziale plików, ale z pojedynczego
-		pliku XML, opisanego w rozdziale <xref linkend="ipk">.
+		pliku XML, opisanego w rozdziale <xref linkend="ipk">. Ten rozdzia³
+		zostawiono dla celów archiwalnych, pomaga on te¿ zrozumieæ strukturê
+		konfiguracji systemu.
 		</para>
 </note></para>
 
@@ -4666,6 +4665,15 @@ raz, a tak¿e na tworzenie parametrów definiowalnych, których formu³y odwo³uj±
 siê do parametrów z ró¿nych baz.
 </para>
 
+<note>
+	<para>
+	Obecnie system SZARP umo¿liwia definiowanie parametrów odwo³uj±cych
+	siê do parametrów z innych baz oraz wy¶wietlanie w jednym zestawie
+	wykresów z ró¿nych baz. St±d te¿ konfiguracje agregowane nie
+	s± ju¿ niezbêdne i nie maj± takiego znaczenia.
+	</para>
+</note>
+
 <para>
 Konfiguracje sk³adowe musz± byæ w formacie IPK, a bazy musz± byæ w formacie
 SzarpBase (<xref linkend="szbase">). W wyniku z³o¿enia powstaje nowa
@@ -6350,7 +6358,11 @@ próbek parametrów - wiersze s± posortowane po czasie. Odczytywanie
 parametrów z bazy mo¿na przerwaæ przez wci¶niêcie <command>Ctrl-C</command>.
 Opcje i argumenty mog± byæ podane w dowolnej kolejno¶ci, chyba ¿e co¶ innego
 wynika z ich opisów.
+
 Mo¿liwe s± nastêpuj±ce:
+<note><para>
+Najbardziej aktualny spis mo¿liwych opcji mo¿na uzyskaæ uruchamiaj±c program z opcji± <option>--help</option>.
+</para></note>
 
 <itemizedlist>
 
@@ -6556,15 +6568,14 @@ pliku jest do¶æ prosty, oto przyk³ad:
 <listitem><para>
 <command>--openoffice</command> lub <command>-O</command> powoduje
 wygenerowanie pliku w formacie OpenOffice Calc (arkusza kalkulacyjnego z
-pakietu OpenOffice). Do generowania pliku wykorzystywany jest zewnêtrzny
-program <application>zip</application>, który musi byæ zainstalowany. Wybranie
+pakietu OpenOffice). Wybranie
 tego formatu zmusza tak¿e do okre¶lenia pliku wyj¶ciowego (za pomoc± opcji
 <command>-o</command>) - nie jest mo¿liwe wypisanie pliku na standardowe
 wyj¶cie.
 </para></listitem>
 
 <listitem><para>
-<command>--output=&lt;FILE&gt;</command> lub <command>-f
+<command>--output=&lt;FILE&gt;</command> lub <command>-o
 &lt;FILE&gt;</command> ustawia plik wyj¶ciowy (zamiast standardowego
 wyj¶cia). Opcja ta implikuje <command>-O</command> (format wyj¶ciowy
 OpenOffice Calc), chyba ¿e zostanie ustawiony inny format za pomoc± opcji
@@ -6610,9 +6621,7 @@ Opcja <command>--progress</command> lub <command>-P</command> powoduje, ¿e na
 <filename>stderr</filename> wypisywane bêd± informacje o postêpach w
 konwersji w szczególno¶ci przybli¿one procentowe zaawansowanie konwersji
 (okre¶lane na podstawie przedzia³u czasowego jaki pozosta³). Po zakoñczeniu
-w³a¶ciwej konwersji program mo¿e wypisaæ informacjê o przeprowadzaniu
-transformacji XSL (szablony XSLT s± u¿ywane do przekszta³cania formatu
-wyj¶ciowego XML na CSV lub OpenOffice Calc) czy te¿ kompresji pliku
+w³a¶ciwej konwersji program mo¿e wypisaæ informacjê o kompresji pliku
 OpenOffice. Program informuje te¿ o zakoñczeniu dzia³ania wypisuj±c komunikat
 <emphasis>Completed</emphasis>.
 </para></listitem>
@@ -7235,9 +7244,10 @@ systemu SZARP.
 <listitem><para>
 Na komputerze z dzia³aj±cym systemem InTouch/PRO-2000 instalujemy pakiet Cygwin wraz z
 serwerem ssh i programem rsync (zobacz rozdzia³ 
-<ulink url="http://www.szarp.com.pl/howto/howto/html/konfig-terminal.html#CYGWIN-SERVERS">
+<ulink url="http://www.szarp.org/szarp/doc/howto/html/cygwin-servers.html">
 Uruchamianie serwerów sshd i crond</ulink> 
 w opisie Cygwina w SZARP HOWTO.
+Alternatywnie dostêp mo¿e byæ zapewniony przez udostêpnienie katalogu przez Sambê.
 </para></listitem>
 
 <listitem><para>
@@ -7395,71 +7405,82 @@ pojawi± siê w konfiguracji w przysz³o¶ci.
 <para>
 Celem pierwotnym
 by³o stworzenie centrum internetowego, na którym sk³adowane i
-regularnie uaktualniane by³yby bazy wszystkich systemów posiadaj±cych
+regularnie uaktualniane by³yby bazy danych historycznych wszystkich systemów posiadaj±cych
 SZARPa. Z czasem okaza³o siê, ¿e nale¿y to uogólniæ na przesy³anie i
 uaktualnianie baz miêdzy ró¿nymi komputerami w taki sposób, aby proces
 przesy³ania trwa³ jak najkrócej.
 </para>
 <para>
-S± dwa warianty pracy BODASa:
-<ItemizedList>
-<listitem>
-<para> <emphasis>push </emphasis>(wa¿niejszy), gdzie transmisje inicjuje komputer, 
-na którym jest SZARP (np. transmisja danych miêdzy serwerami w Legionowie, 
-która ma siê uaktualniaæ co ka¿dy nowy zapis, czyli co 10 minut; transmisje
-ze wszystkich SZARPów do serwera internetowego). Wymagana jest
-niezawodno¶æ, ¿eby automat nie musia³ powtarzaæ po nieudanej transmisji
-(trudniejsze w implementacji i w przypadku uaktualniania na bie¿±co
-przy dwóch po³±czonych serwerach mog± wyst±piæ b³êdy odczuwalne przez
-obs³ugê).
+Struktura systemu w najprostszej postaci zak³ada, ¿e istnieje jeden centralny serwer,
+na który zgrywane s± dane z wszystkich obiektów (ciep³owni, wêz³ów). Transmisja inicjowana 
+jest z obiektów. Dodatkowo obiekty mog± wysy³aæ swoje dane na lokalne terminale oraz 
+ewentualnie bezpo¶rednio na inne obiekty.
 </para>
-</listitem>
-
-<listitem>
 <para>
-<emphasis>pull,</emphasis> gdzie transmisje inicjuje komputer ¶ci±gaj±cy bazê SZARPa 
-(np. ¶ci±ganie przez p. Filipkowskiego danych z serwera w E³ku; ¶ci±ganie
-przez kogokolwiek danych z serwera internetowego). Tu pe³na
-niezawodno¶æ nie jest warunkiem koniecznym, w przypadku z³ego
-¶ci±gniêcia u¿ytkownik ma mo¿liwo¶æ ponownej aktualizacji od daty,
-któr± chce.
- </para>
-</listitem>
-
-</ItemizedList>
+	U¿ytkownicy indywidualni oraz ewentualnie inne obiekty pobieraj± dane z serwera centralnego -
+	tu tak¿e transmisja inicjowana jest z obiektów, serwer centralny zawsze jest stron±
+	biern±.
+</para>
+<para>
+	Opisany schemat czasami mo¿e siê komplikowaæ - czyli mog± istnieæ serwery po¶rednicz±ce,
+	które dla pewnej grupy obiektów stanowi± "serwer centralny".
 </para>
 
 </section>
 
 <section>
-<title>Realizacja BODASa <emphasis>push</emphasis></title>
+<title>Realizacja BODASa</title>
 <para>
-Obecna implementacja opiera siê na narzêdziu do synchronizacji katalogów miêdzy
-komputerami - programie <command>rsync</command>. Program ten minimalizuje ilo¶æ
-kopiowanych danych, gdy¿ przesy³a tylko ró¿nice miêdzy plikami w synchronizowanych
-katalogach. <command>rsync</command> z odpowiednimi 
-opcjami jest wywo³ywany przez samego SZARPa, za pomoc± mechanizmu 
-<emphasis>execute</emphasis> opisanego w <xref linkend="meaner3-execute">.
+	U¿ywane s± obecnie 2 implementacje. Pierwsza z nich u¿ywa programu do ró¿nicowego
+	przesy³ania danych <command>rsync</command> (z pewnymi opisanymi dalej komplikacjami)
+	i wykorzystywana jest do automatycznego przesy³ania danych miêdzy obiektami. Druga 
+	wykorzystuje protokó³ oparty na rsyncu, wymiana danych odbywa siê miêdzy SZARP Synchronization
+	Server zainstalowanym na serwerze centralnym, a graficznym klientem Szarp Synchronization
+	Client zainstalowanym na komputerze u¿ytkownika chc±cego ogl±daæ dane historyczne. Obie
+	implementacje w rezultacie powoduj± utworzenie lokalnej kopii wszystkich plików tworz±cych
+	bazê SZARP. Oznacza to ¿e mechanizmy te mog± byæ u¿ywane wymiennie, a w razie potrzeby baza
+	mo¿e byæ po prostu skopiowana/przeniesiona w dowolny inny sposób.
+</para>
+<para>
+	Rsync u¿ywany jest przez ssh, zwykle z wymian± kluczy miêdzy przesy³aj±cymi dane komputerami
+	aby unikn±æ wpisywania has³a. Domy¶lnie przesy³ane s± dane tylko z 2 ostatnich miesiêcy. Je¿eli
+	potrzeba zsynchronizowaæ starsze pliki (bo np. rêcznie zmodyfikowano historyczne dane), to
+	na obiekcie ¼ród³owym dla danych modyfikowany jest plik 
+	<filename>/opt/szarp/&lt;prefix&gt;/szbase_stamp</filename>. W zwi±zku z tym aby sprawdziæ czy 
+	trzeba
+	przesy³aæ ca³o¶æ czy tylko 2 ostatnie miesi±ce, nale¿y sprawdziæ datê modyfikacji tego
+	pliku. Mo¿e byæ to robione przez ssh, ale wymaga to wtedy zestawienia dwóch po³±czeñ - najpierw
+	do sprawdzenia daty pliku, pó¼niej do przes³ania danych. Dostêpny jest wiêc mechanizm
+	pozwalaj±cy na zmniejszenie obci±¿enia serwera - data modyfikacji pliku mo¿e byæ sprawdzona
+	przez protokó³ HTTP, ³±cz±cy siê do serwera <command>stampd</command> dzia³aj±cego na porcie 81.
+	Ca³o¶æ odpowiednich operacji wykonuj± skrypty <command>/opt/szarp/bin/szbpush</command>
+	i <command>/opt/szarp/bin/szrsync</command> s³u¿±ce odpowiednio do wysy³ania i odbierania
+	danych. Szczegó³y ich u¿ycia mo¿na sprawdziæ wywo³uj±c je z opcj± <option>-h</option>.
+</para>
+<para>
+	Wiêcej informacji na temat drugiej impementacji znajduje siê w rozdziale o serwerze synchronizacji
+	- <xref linkend="sss"> oraz w dokumentacji programu SSC - <ulink url="http://szarp.org/szarp/doc/ssc/html/ssc.html">http://szarp.org/szarp/doc/ssc/html/ssc.html</ulink>.
 </para>
 </section>
 
 <section id="bodas-konf">
-<title>Konfiguracja BODASa <emphasis>push</emphasis></title>
+<title>Konfiguracja BODASa do wysy³ania danych z obiektu</title>
 <para>
 Nale¿y upewniæ siê, ¿e zarówno na serwerze SZARPa, jak i na komputerze, na
 który bêdziemy chcieli wysy³aæ, jest zainstalowany program
-<command>rsync.</command>
+<command>rsync</command>,
 Poza tym, je¶li bêdziemy siê ³±czyæ przez sieæ, komputery powinny byæ
 skonfigurowane do po³±czenia ssh bez konieczno¶ci wpisywania has³a. U¿ytkownikiem
 ³±cz±cym siê bêdzie tu root, za¶ na zdalnym komputerze najlepiej utworzyæ
-specjalnego u¿ytkownika.
+specjalnego u¿ytkownika, najlepiej bez has³a, z mo¿liwo¶ci± logowania siê tylko 
+za pomoc± wymienionego klucza.
 </para>
 <para>
 System SZARP mo¿e obs³ugiwaæ jednocze¶nie wiele <emphasis>sekcji
 push</emphasis>,
 które mog± dotyczyæ ró¿nych docelowych lokalizacji kopii bazy. Na przyk³ad
 mo¿emy chcieæ mieæ backup lokalny wykonywany co godzinê, kopiê na innym
-terminalu w tej samej sieci uaktualnian± co 10 minut oraz raz na dobê ³±czyæ
+terminalu w tej samej sieci uaktualnian± co 10 minut oraz ³±czyæ
 siê z serwerem internetowym, aby uaktualniæ centralny backup bazy.
 </para>
 <para>
@@ -7498,172 +7519,31 @@ W ka¿dej z tych sekcji nale¿y umie¶ciæ nastêpuj±ce parametry:
 <ItemizedList>
 <listitem>
 <para>
-<emphasis>command_line</emphasis> - komendê do wykonania. Je¶li wykonanie synchronizacji
-wymaga ³±czenia siê np. przez sieæ, to komenda powinna mieæ postaæ
+	<emphasis>command_line</emphasis> - komendê do wykonania, np.
 <programlisting>
-command_line= po³±cz && { /usr/bin/rsync opcje katalog_z_baz± ¶cie¿ka_docelowa ;
-	STATUS=$?; roz³±cz; exit $STATUS; }
-</programlisting>
-Je¿eli ³±czenie siê / roz³±czanie nie jest konieczne, to wystarczy
-<programlisting>
-command_line=  /usr/bin/rsync opcje katalog_z_baz± ¶cie¿ka_docelowa
+command_line=/opt/szarp/bin/szbpush -c user@server baza1 baza2
 </programlisting>
 </para>
 <para>
-Poszczególne fragmenty linii komend powinny wygl±daæ nastêpuj±co:
-</para>
-<ItemizedList>
-
-<listitem>
-<para>
-<emphasis>¶cie¿ka_docelowa</emphasis> - ¶cie¿ka do katalogu, w którym ma pojawiæ siê kopia
-bazy. Ma ona format <quote>zasobu</quote> programu <command>rsync.</command> Je¿eli
-bazê chcemy umie¶ciæ w katalogu lokalnym, na tym samym komputerze (lub te¿ w
-katalogu podmontowanym do lokalnego systemu plików), to nale¿y podaæ zwyk³±
-¶cie¿kê do katalogu w formacie uniksowym, z dodatkowym slashem na koñcu, np.:
+Zwyczajowo nazwa u¿ytkownika <emphasis>user</emphasis> jest identyczna z nazw± komputera
+wysy³aj±cego dane. Na komputerze <emphasis>server</emphasis> nale¿y wcze¶niej
+utworzyæ u¿ytkownika <emphasis>user</emphasis>:
 <programlisting>
-/opt/szarp/backup_bazy/
+adduser user
 </programlisting>
-Je¶li chcemy ³±czyæ siê przez sieæ, to ¶cie¿ka powinna mieæ formê <emphasis>
-user@host:katalog/</emphasis>, np.
-<programlisting>
-bodas_legionowo@bodas.praterm.com.pl:/home/bodas_legionowo/baza/
-</programlisting>
-Oczywi¶cie na komputerze <emphasis>bodas.praterm.com.pl</emphasis> nale¿y wcze¶niej
-utworzyæ u¿ytkownika <emphasis>bodas_legionowo</emphasis>:
-<programlisting>
-useradd -p haslo bodas_legionowo
-</programlisting>
-oraz katalog <filename>baza</filename>, z prawami dostêpu ograniczonymi tylko do 
+oraz katalog <filename>/opt/szarp/user</filename>, z prawami dostêpu ograniczonymi tylko do 
 w³a¶ciciela:
 <programlisting>
-cd /home/bodas_legionowo
-mkdir baza
-chmod go-rwx baza
+mkdir /opt/szarp/user
+chown user.user /opt/szarp/user
 </programlisting>
 Nale¿y tak¿e skonfigurowaæ po³±czenie ssh miêdzy komputerami tak, aby 
-u¿ytkownik <emphasis>root</emphasis> z serwera SZARP móg³ siê logowaæ bez podawania
-has³a jako <emphasis>bodas_legionowo</emphasis> na komputer 
-<emphasis>bodas.praterm.com.pl</emphasis>.
+u¿ytkownik <emphasis>root</emphasis> z komputera wysy³aj±cego móg³ siê logowaæ bez podawania
+has³a jako <emphasis>user</emphasis> na komputer 
+<emphasis>server</emphasis>.
 </para>
 </listitem>
 
-<listitem>
-<para>
-<emphasis>opcje</emphasis> - opcje programu 
-<command>rsync</command>. Zaleca siê u¿ycie nastêpuj±cych opcji:
-<ItemizedList>
-
-<listitem>
-<para>
-<command>-z</command> - aby w³±czyæ kompresjê przesy³anych danych, niekonieczne je¿eli
-jest to po³±czenie lokalne
-</para>
-</listitem>
-
-<listitem>
-<para>
-<command>-a</command>
-</para>
-</listitem>
-
-<listitem>
-<para>
-<command>--rsh=ssh</command> - tylko przy ³±czeniu przez sieæ - ka¿e u¿ywaæ ssh
-</para>
-</listitem>
-
-<listitem>
-<para>
-<command>-vv</command> - u¿yteczne przy testowaniu nowej konfiguracji, zwiêksza
-ilo¶æ komunikatów wypisywanych przez program (mo¿na je znale¼æ potem w pliku
-<filename>/log2</filename>)
-</para>
-</listitem>
-
-</ItemizedList>
-</para>
-<para>
-Tak wiêc je¿eli sekcja dotyczy kopii lokalnej, opcje mog± mieæ postaæ:
-<programlisting>
--a -vv
-</programlisting>
-Przy ³±czeniu siê przez Internet z serwerem SZARP powinny wygl±daæ tak:
-<programlisting>
--z -a -vv --rsh=ssh
-</programlisting>
-W razie potrzeby mo¿na tak¿e dodaæ inne opcje, których pe³en spis dostêpny
-jest w dokumentacji programu <command>rsync</command> (<command>man
-rsync</command>).
-</para>
-</listitem>
-
-<listitem>
-<para>
-<emphasis>po³±cz</emphasis> - polecenie wykonywane przed uruchomieniem w³a¶ciwej
-synchronizacji katalogów. W przypadku kopii lokalnej jest niepotrzebne.
-Natomiast przy ³±czeniu siê z Internetem przez PPP nale¿y wstawiæ tu 
-polecenie po³±czenia siê z sieci±. Zwykle bêdzie to wywo³anie skryptu
-Skrypt ten przyjmuje nastêpuj±ce parametry:
-<ItemizedList>
-<listitem>
-<para>
-numer telefonu us³ugodawcy
-</para>
-</listitem>
-<listitem>
-<para>
-nazwa u¿ytkownika
-</para>
-</listitem>
-<listitem>
-<para>has³o</para>
-</listitem>
-<listitem>
-<para>
-opcjonalnie - ilo¶æ prób ³±czenia w przypadku zajêtej linii (domy¶lnie 1)
-</para>
-</listitem>
-</ItemizedList>
-Tak wiêc prawid³owe ustawienie parametru <emphasis>connect</emphasis> je¶li chcemy
-³±czyæ siê z Internetem np. przez numer dostêpowy TP SA powinno mieæ postaæ:
-<programlisting>
-/opt/szarp/bin/szppp-on 0w202122 ppp ppp 5
-</programlisting>
-Oczywi¶cie serwer SZARPa musi byæ skonfigurowany do ³±czenia siê przez PPP.
-</para>
-<para>
-Je¿eli chcemy ³±czyæ siê bezpo¶rednio przez PPP, np. z innym komputerem
-z uruchomionym serwerem PPP, to przydatna bêdzie opcja <command>-l</command>, która
-powoduje, ¿e skrypt spodziewa siê od serwera PPP zachêty nie w postaci
-<quote>Username:</quote> (tak jak jest to w przypadku TP SA), tylko
-<quote>login:</quote>.
-Wpis w pliku konfiguracyjnym mia³by wiêc nastêpuj±c± postaæ:
-<programlisting>
-/opt/szarp/bin/szppp-on -l 0w586234567 ppp ppp 5
-</programlisting>
-Je¿eli dla danego po³±czenia nie jest wymagane has³o, nale¿y u¿yæ opcji
-<command>-n</command>.
-</para>
-<para>
-Skrypt powinien zwracaæ warto¶æ ró¿n± od zera w przypadku wyst±pienia b³êdu
-(nienawi±zania po³±czenia).
-</para>
-</listitem>
-
-<listitem>
-<para>
-<emphasis>roz³±cz</emphasis> - polecenie wywo³ywane po zakoñczeniu synchronizowania
-katalogów. Przy kopii lokalnej nie wystêpuje. Je¿eli ³±czyli¶my siê
-wcze¶niej za pomoc± skryptu <filename>szppp-on</filename>, to nale¿y teraz wywo³aæ
-skrypt <filename>szppp-off</filename>:
-<programlisting>
-/opt/szarp/bin/szppp-off
-</programlisting>
-</para>
-</listitem>
-</ItemizedList>
-</listitem>
 <listitem>
 <para>
 <emphasis>retry</emphasis> - specyfikuje ile razy nale¿y powtarzaæ nieudan± próbê
@@ -7703,6 +7583,8 @@ time=3 4 * 13 45
 </para>
 </listitem>
 </ItemizedList>
+Wiêcej informacji mo¿na znale¼æ w rozdziale o mechani¼mie <emphasis>execute</emphasis> - 
+<xref linkend="meaner3-execute">.
 </para>
 
 <para>
@@ -7712,125 +7594,21 @@ zawieraj±cy konfiguracjê BODASa dla wykonywania co 10 minut lokalnej kopii
 i codziennie o pó³nocy synchronizacji z baz± centraln± na serwerze internetowym:
 <programlisting>
 :execute
-execute_sections=local_copy relpol_copy
+execute_sections=local_copy remote_copy
 
 :local_copy
-command_line=/usr/bin/rsync -avv /opt/szarp/baza/leg1* /opt/szarp/backup/
-retry=0
+command_line=/opt/szarp/bin/szbpush terminal1 leg1
 time=* * * * *
 
-:relpol_copy
-command_line=/opt/szarp/bin/szppp-on 0w202122 ppp ppp 5 && \
-	{ /usr/bin/rsync -zavv --rsh=ssh /opt/szarp/baza/leg1* \
-	    bodas_legionowo@bodas.praterm.com.pl:/home/bodas_legionowo/baza/; \
-	  STATUS=$?; \
-	  /opt/szarp/bin/szppp-off; exit $STATUS; }
-retry=3
+:remote_copy
+command_line=/opt/szarp/bin/szbpush -c leg1@szarp.com leg1
 time=* * * 0 5
 </programlisting>
 </para>
 
-</section>
+</section> <!-- bodas-konf -->
 
-<section id="bodas-szczegoly"><title>Szczegó³y konfiguracji</title>
-<para>
-Konfiguruj±c BODAS-a nale¿y postêpowaæ wed³ug poni¿szych regu³:
-<itemizedlist>
-<listitem><para>
-Ka¿dy host przesy³aj±cy dane do centrum (praterm.com.pl)
-ma tam za³o¿onego u¿ytkownika o odpowiedniej nazwie odpowiadaj±cej
-prefiksowi bazy danych (np. host leg1 ma u¿ytkownika leg1, leg2 - leg2, 
-pore - pore, itd.). Jako¶ tak siê utar³o, ¿e s± one najczê¶ciej 
-czteroznakowe, lecz nie jest to ani obowi±zek ani regu³a.
-</para></listitem>
-<listitem><para>
-Ka¿dy z tych u¿ytkowników jest w³a¶cicielem odpowiadaj±cego mu
-katalogu w <filename>/opt/szarp</filename> (np. leg1 jest 
-w³a¶cicielem <filename>/opt/szarp/leg1</filename>,
-leg2 - <filename>/opt/szarp/leg2</filename>, itd.)
-Ka¿dy z u¿ytkowników jest równie¿ cz³onkiem grupy 'bazy', chocia¿
-to akurat nie ma w chwili obecnej wiêkszego znaczenia.
-</para></listitem>
-<listitem><para>
-Dla uproszczenia procedur ka¿dy z u¿ytkowników ma w katalogu domowym
-linka o nazwie <filename>baza</filename> wskazuj±cego katalog 
-<filename>/opt/szarp/$USER/baza</filename>,
-gdzie $USER to leg1, leg2, pore, itd.
-</para></listitem>
-<listitem><para>
-Bodas push z ró¿nych ciep³owni przesy³a dane do katalogów
-<filename>/home/$USER/baza</filename> 
-(czyli do <filename>/opt/szarp/$USER/baza</filename>). W przypadku ssh jak 
-i rsynca (opartego o rsh/ssh)
-zasób oznacza siê tak: $USER@mail.praterm.com.pl:baza
-</para></listitem>
-<listitem><para>
-¯eby dodaæ nowego hosta (powiedzmy o nazwie pekin) do BODAS-a nale¿y:
-<itemizedlist>
-<listitem><para>
-Na praterm.com.pl dodaæ u¿ytkownika 'pekin':
-<programlisting>
-# adduser pekin
-</programlisting>
-</para></listitem>
-<listitem><para>
-Dodaæ u¿ytkownika 'pekin' do grupy 'bazy': 
-<programlisting>
-# usermod -G bazy pekin
-</programlisting>
-</para></listitem>
-<listitem><para>
-Skopiowaæ (najlepiej rsync-iem) bazê do
-<filename>/opt/szarp/pekin/baza</filename>
-(w katalogu <filename>/opt/szarp/pekin</filename> mog± siê pojawiæ te¿ inne katalogi, 
-zawieraj±ce np. konfiguracjê danego hosta)
-</para></listitem>
-<listitem><para>
-Ustawiæ w³a¶ciciela katalogu:
-<programlisting>
-# chown -R pekin.bazy /opt/szarp/pekin
-</programlisting>
-</para></listitem>
-<listitem><para>
-Stworzyæ odpowiedniego softlinka: 
-<programlisting>
-ln -s /opt/szarp/pekin/baza /home/pekin/baza
-</programlisting>
-</para></listitem>
-<listitem><para>
-Stworzyæ i wymieniæ klucze z hosta 'pekin' na praterm.com.pl. 
-(dok³adny opis tej procedury znajduje siê w SZARP HOWTO)
-</para></listitem>
-<listitem><para>
-Uruchomiæ i skonfigurowaæ bodasa po stronie hosta 'pekin' 
-(<xref linkend="bodas-konf">).
-</para></listitem>
-</itemizedlist>
-
-</para></listitem>
-</itemizedlist>
-
-
-</para>
-</section>
-
-
-<section id="bodas-pull"><title>BODAS <emphasis>pull</emphasis></title>
-<para>
-Dane, które zosta³y zapisane w bazie danych, mog± byæ nastêpnie 
-przekazywane dalej, przez co skorzystaæ z nich nich mo¿e wiêksza liczba
-u¿ytkowników. ¦ci±ganie danych z inicjatywy tych¿e u¿ytkowników nazwano 
-tu metod± <emphasis>pull</emphasis>. BODAS <emphasis>pull</emphasis> 
-realizowany jest na dwa sposoby: 
-<itemizedlist>
-<listitem><para>bezpo¶rednio z hosta zbieraj±cego dane</para></listitem>
-<listitem><para>z g³ównego repozytorium, znajduj±cego siê na serwerze Pratermu
-<ulink url="http://bazy.szarp.com.pl">bazy.szarp.com.pl</ulink></para></listitem>
-</itemizedlist>
-</para>
-</section>
-
-</chapter>
+</chapter> <!-- bodas -->
 
 <chapter id="pooler">
 <title>Statusy modemów - opis zwracanych warto¶ci.</title>
@@ -9306,107 +9084,6 @@ komputer przeno¶ny, w przeciwnym wypadku wybraæ pole "Dodaj now± nazwê". W przys
 </section>
 </chapter> <!-- mobile -->
 
-<chapter id="szarpvpn">
-<title>Szarp VPN</title>
-
-<section id="szarpvpn-desc">
-<title>Krótki opis</title>
-<para>
-Pakiet <ulink url="http://www.openvpn.org">OpenVPN</ulink> pozwala tworzyæ tunele SSL
-miêdzy serwerem ze sta³ym publicznym adresem IP a wieloma klientami znajduj±cymi
-siê za maskarad± lub posiadaj±cymi zmienne adresy. Paczki szarp-vpn-serwer
-i szarp-vpn-client powsta³y aby u³atwiæ tworzenie tuneli.
-</para>
-</section> <!-- szarpvpn-desc -->
-
-<section id="szarpvpn-install">
-<title>Instalacja</title>
-
-<section id="szarpvpn-install-server">
-<title>Instalacja na serwerze</title>
-<itemizedlist>
-<listitem>
-<para>
-Na serwerze instalujemy paczkê szarp-vpn-server. Utworzy ona potrzebn±
-strukturê katalogów w <filename>/root/SzarpVPN</filename>, oraz umie¶ci
-w nim skrypty i przyk³adow± konfiguracjê.
-</para>
-</listitem>
-<listitem>
-<para>
-Po zainstalowaniu nale¿y dostosowaæ konfiguracjê OpenSSL. Zawiera j±
-plik <filename>szarpvpn.cnf</filename>. Ustawiamy w nim d³ugo¶æ
-klucza (standardowo 2048) i nazwy certyfikatów.
-</para>
-</listitem>
-<listitem>
-<para>
-Nastêpnie uruchamiamy skrypt: <command>/root/SzarpVPN/prepare-server.sh</command>.
-Utworzy on podstawowe certyfikaty.
-</para>
-</listitem>
-<listitem>
-<para>
-Pliki <filename>server.key</filename>, <filename>server.crt</filename>
-i <filename>cacert.pem</filename> nale¿y umie¶ciæ w katalogu
-<filename>/etc/openvpn/szarpvpn/</filename>. Natomiast <filename>szarpvpn.conf</filename>
-w katalogu /etc/openvpn. Po ponownym uruchomieniu openvpn serwer bêdzie gotowy.
-</para>
-</listitem>
-<listitem>
-<para>
-W pliku <filename>szarpvpn.conf.TEMPLATE</filename> znajduje siê wzór konfiguracji
-openvpn dla klientów. Mo¿na w nim zmieniæ np. adres IP serwera i numer portu.
-</para>
-</listitem>
-
-</itemizedlist>
-</section> <!-- szarpvpn-install-server -->
-
-<section id="szarpvpn-install-client">
-<title>Instalacja na kliencie</title>
-<para>
-Na kliencie wymagana jest jedynie instalacja paczki <filename>szarp-vpn-client</filename>.
-W trakcie instalacji skrypt postinst po³±czy siê z serwerem i pobierze z niego
-certyfikaty i konfiguracjê. Po³±czenie odbywa siê przez ssh i wymaga podania has³a
-roota serwera.
-</para>
-</section>
-
-</section> <!-- szarpvpn-install -->
-
-<section id="szarpvpn-repo">
-<title>Bezpieczne repozytorium apt</title>
-<para>
-Ze wzglêdów bezpieczeñstwa paczki szarp-vpn-* nie powinny byæ umieszczone
-w publicznie dostêpnym repozytorium apt. Do ich instalacji nale¿y wykorzystaæ
-repozytorium z dostêpem po ssh.
-</para>
-<para>
-Do <filename>sources.list</filename> na komputerze, na którym bêdziemy instalowaæ
-paczkê, nale¿y dodaæ:
-<programlisting>
-deb ssh://praterm:/var/work/secure testing non-free
-</programlisting>
-Nastêpnie wykonaæ
-<programlisting>
-apt-get update
-apt-get install szarp-vpn-client
-</programlisting>
-Po ka¿dej komendzie nale¿y podaæ has³o roota na serwerze praterm.
-Pytanie o has³o mo¿e byæ zamazane przez inne komunikaty apt.
-Trzeba odczekaæ kilka sekund ¿eby ssh zd±¿y³o nawi±zaæ po³±czenie
-a nastêpnie wpisaæ has³o. Niekiedy trzeba wpisaæ has³o kilkakrotnie
-¿eby zosta³o ono przyjête przez ssh.
-</para>
-<para>
-Po zakoñczeniu instalacji nale¿y <emphasis>koniecznie</emphasis> usun±æ
-wpis z <filename>sources.list</filename>. W przeciwnym wypadku przestanie
-dzia³aæ automatyczna aktualizacja szarpa.
-</para>
-</section>
-
-</chapter> <!-- szarpvpn -->
 
 <chapter id="mbusdmn">
     <title>Uniwersalny daemon do komunikacji z urz±dzeniami w protokole M-Bus</title>

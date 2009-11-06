@@ -1,7 +1,9 @@
 $Id$
 
 2009-11-06	Pawel Palucha <pawel@praterm.com.pl>
-	* wx/sync/*: translation fixes.
+	* ipk.sgml: docs update - removed obsolete sections (szarpvpn),
+	installation, data sync, szbextr sections update.
+	* wx/sync/*: translations fixes.
 2009-11-05	Pawel Palucha <pawel@praterm.com.pl>
 	* wx/*: classes and files names spelling fix: Ballon -> Balloon.
 	* wx/*: szTaskBarIcon uses BallonTaskBar under Windows.
