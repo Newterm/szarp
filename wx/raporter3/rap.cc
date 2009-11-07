@@ -47,6 +47,9 @@
 #include "fonts.h"
 #include "serverdlg.h"
 #include "version.h"
+#include "szframe.h"
+
+#include "../../resources/wx/icons/rap16.xpm"
 
 bool rapApp::OnCmdLineError(wxCmdLineParser &parser) {
 	return true;
@@ -67,7 +70,7 @@ bool rapApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 
 void rapApp::OnInitCmdLine(wxCmdLineParser &parser) {
 	szApp::OnInitCmdLine(parser);
-	parser.SetLogo(_("Szarp Raporter version 3.00 (in-progress)."));
+	parser.SetLogo(_("Szarp Raporter v 3.1"));
 	parser.AddParam(_T("server"), wxCMD_LINE_VAL_STRING,
 			wxCMD_LINE_PARAM_OPTIONAL);
 	parser.AddParam(_T("title"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL);
@@ -98,6 +101,11 @@ bool rapApp::OnInit()
 	catalogs.Add(_T("common"));
 	catalogs.Add(_T("wx"));
 	this->InitializeLocale(catalogs, locale);
+
+	wxIcon icon(wxICON(rap16));
+	if (icon.IsOk()) {
+		szFrame::setDefaultIcon(icon);
+	}
 
 	xmlInitParser();
 	szHTTPCurlClient::Init();

@@ -8,160 +8,147 @@ msgid ""
 msgstr ""
 "Project-Id-Version: raporter3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-09-15 15:42+0200\n"
+"POT-Creation-Date: 2009-11-07 18:29+0100\n"
 "PO-Revision-Date: 2008-09-15 15:43+0100\n"
 "Last-Translator: Pawe³ Pa³ucha <pawel@praterm.com.pl>\n"
+"Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language-Team: \n"
 
-#: rap.cc:58
+#: rap.cc:73
+msgid "Szarp Raporter v 3.1"
+msgstr ""
+
+#: rap.cc:89
 msgid "Raporter 3"
 msgstr "Raporter 3"
 
-#: rap.cc:60
-msgid "2004-2008"
-msgstr "2004-2008"
-
-#: rap.cc:84
-msgid "Szarp Raporter version 3.00 (in-progress)."
-msgstr "Szarp Raporter wersja 3.00 (alpha)"
-
-#: rap.cc:85
-msgid "print usage info"
-msgstr "informacja o sposobie u¿ycia"
-
-#: raporter.cc:97
+#: raporter.cc:96
 msgid "Raporter"
 msgstr "Raporter"
 
-#: raporter.cc:117
+#: raporter.cc:115
 msgid "&Start\tSpace"
 msgstr "&Start\tSpace"
 
-#: raporter.cc:118
+#: raporter.cc:116
 msgid "&File dump"
 msgstr "&Zrzut do pliku"
 
-#: raporter.cc:120
+#: raporter.cc:118
 msgid "E&xit\tAlt-X"
 msgstr "&Zakoñcz\tAlt-X"
 
-#: raporter.cc:124
+#: raporter.cc:122
 msgid "&Save\tCtrl-S"
 msgstr "&Zapisz\tCtrl-S"
 
-#: raporter.cc:125
+#: raporter.cc:123
 msgid "&Load\tCtrl-O"
 msgstr "&Otwórz\tCtrl-O"
 
-#: raporter.cc:126
+#: raporter.cc:124
 msgid "&New\tCtrl-N"
 msgstr "&Nowy\tCtrl-N"
 
-#: raporter.cc:127
+#: raporter.cc:125
 msgid "&Edit\tCtrl-E"
 msgstr "&Edycja\tCtrl-E"
 
-#: raporter.cc:129
+#: raporter.cc:127
 msgid "S&ystem"
 msgstr "S&ystem"
 
-#: raporter.cc:132
+#: raporter.cc:130
 msgid "&Server"
 msgstr "&Serwer"
 
-#: raporter.cc:133
+#: raporter.cc:131
 msgid "&Period"
 msgstr "O&kres"
 
-#: raporter.cc:135
+#: raporter.cc:133
 msgid "&Increase font\t+"
 msgstr "Z&wiêksz czcionkê\t+"
 
-#: raporter.cc:136
+#: raporter.cc:134
 msgid "&Decrease font\t-"
 msgstr "Z&mniejsz czcionkê\t-"
 
-#: raporter.cc:138
+#: raporter.cc:136
 msgid "&Raporter"
 msgstr "&Raporter"
 
-#: raporter.cc:139
+#: raporter.cc:137
 msgid "&About"
 msgstr "&O autorach"
 
-#: raporter.cc:142
+#: raporter.cc:140
 msgid "&Raports"
 msgstr "&Raporty"
 
-#: raporter.cc:143
+#: raporter.cc:141
 msgid "&Templates"
 msgstr "&Wzorce"
 
-#: raporter.cc:144
+#: raporter.cc:142
 msgid "&Options"
 msgstr "&Opcje"
 
-#: raporter.cc:145
+#: raporter.cc:143
 msgid "&Help"
 msgstr "&Pomoc"
 
-#: raporter.cc:198
-#: raporter.cc:658
+#: raporter.cc:194 raporter.cc:668
 msgid "Param"
 msgstr "Parametr"
 
-#: raporter.cc:199
-#: raporter.cc:663
+#: raporter.cc:195 raporter.cc:673
 msgid "Value"
 msgstr "Warto¶æ"
 
-#: raporter.cc:200
-#: raporteredit.cc:49
-#: raporteredit.cc:87
+#: raporter.cc:196 raporteredit.cc:79
 msgid "Description"
 msgstr "Opis"
-
-#: raporter.cc:213
-msgid "test report"
-msgstr "raport testowy"
 
 #: raporter.cc:221
 msgid "Choose report template"
 msgstr "Wybierz wzorzec raportu"
 
-#: raporter.cc:384
-#: raporter.cc:415
+#: raporter.cc:267
+msgid "test report"
+msgstr "raport testowy"
+
+#: raporter.cc:403 raporter.cc:435
 msgid "Raporter->Editor"
 msgstr "Raport->Edycja"
 
-#: raporter.cc:470
+#: raporter.cc:492
 msgid "Raporter->Period"
 msgstr "Raport->Okres"
 
-#: raporter.cc:490
+#: raporter.cc:512
 msgid "Raporter->Buffer"
 msgstr "Raport->Bufor"
 
-#: raporter.cc:550
+#: raporter.cc:572
 msgid "Start\tSpace"
 msgstr "Start\tSpace"
 
-#: raporter.cc:566
+#: raporter.cc:588
 msgid "Stop\tSpace"
 msgstr "Stop\tSpace"
 
-#: raporter.cc:596
+#: raporter.cc:594
 msgid "System"
 msgstr "System"
 
-#: raporter.cc:596
+#: raporter.cc:594
 msgid "Custom"
 msgstr "W³asny"
 
-#: raporter.cc:638
+#: raporter.cc:626 raporter.cc:634
 msgid "no data"
 msgstr "brak danych"
 
@@ -169,8 +156,7 @@ msgstr "brak danych"
 msgid "Capacity of report buffer"
 msgstr "Pojemno¶æ bufora"
 
-#: raporterbuf.cc:70
-#: raporterperiod.cc:107
+#: raporterbuf.cc:70 raporterperiod.cc:107
 msgid "Raporter - help"
 msgstr "Raport - pomoc"
 
@@ -182,29 +168,33 @@ msgstr "D³ugo¶æ okresu"
 msgid "Seconds:"
 msgstr "Sekundy:"
 
-#: raporteredit.cc:52
+#: raporteredit.cc:62
+msgid "Tile"
+msgstr "Tytu³"
+
+#: raporteredit.cc:65
 msgid "User report"
 msgstr "Raport u¿ytkownika"
 
-#: raporteredit.cc:58
-msgid "Contents"
-msgstr "Zawarto¶æ"
-
 #: raporteredit.cc:71
+msgid "Parameters list"
+msgstr "Lista parametrów"
+
+#: raporteredit.cc:78
+msgid "Shortcut"
+msgstr "Skrót"
+
+#: raporteredit.cc:88
 msgid "Add"
 msgstr "Dodaj"
 
-#: raporteredit.cc:73
+#: raporteredit.cc:90
 msgid "Delete"
 msgstr "Usuñ"
 
-#: raporteredit.cc:84
+#: raporteredit.cc:110
 msgid "Raporter->Editor->Add"
 msgstr "Raport->Edycja->Dodaj"
-
-#: raporteredit.cc:86
-msgid "Shortcut"
-msgstr "Skrót"
 
 #: filedump.cc:35
 msgid "File dump options"
@@ -238,59 +228,3 @@ msgstr "Anuluj"
 msgid "No report name"
 msgstr "Brak nazwy raportu"
 
-#~ msgid "&Buffer"
-#~ msgstr "&Bufor"
-#~ msgid "Connecting to server"
-#~ msgstr "£±czenie z serwerem"
-#~ msgid "Trying to connect to server "
-#~ msgstr "Próba ³±czenia z serwerem "
-#~ msgid ""
-#~ ".\n"
-#~ "Please wait."
-#~ msgstr ""
-#~ ".\n"
-#~ "Proszê czekaæ."
-#~ msgid "Unable to connect to server "
-#~ msgstr "Nie mo¿na po³±czyæ siê z serwerem "
-#~ msgid ""
-#~ "\n"
-#~ "Reports are not available.\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Raporty nie bêd± dostêpne.\n"
-#~ msgid "Connect error"
-#~ msgstr "B³±d po³±czenia"
-#~ msgid "&Load"
-#~ msgstr "&Odczyt"
-#~ msgid "&Delete"
-#~ msgstr "&Kasuj"
-#~ msgid "&Print"
-#~ msgstr "&Drukuj"
-#~ msgid "&New"
-#~ msgstr "&Nowy"
-#~ msgid "&Edit"
-#~ msgstr "&Edycja"
-#~ msgid "Save report: choose a file"
-#~ msgstr "Raport->Zapis"
-#~ msgid "Load report: choose a file"
-#~ msgstr "Raport->Odczyt"
-#~ msgid "Save template: choose a file"
-#~ msgstr "Szablon->Zapis"
-#~ msgid "Load template: choose a file"
-#~ msgstr "Szablon->Odczyt"
-#~ msgid "Actual"
-#~ msgstr "Aktualne"
-#~ msgid "Minutes"
-#~ msgstr "Minutowe"
-#~ msgid "10 Minutes"
-#~ msgstr "10 Minutowe"
-#~ msgid "Hours"
-#~ msgstr "Godzinne"
-#~ msgid "Day"
-#~ msgstr "Dzienne"
-#~ msgid "Data type"
-#~ msgstr "Typ danych"
-#~ msgid "Hours:"
-#~ msgstr "Godziny:"
-#~ msgid "Minutes:"
-#~ msgstr "Minuty:"

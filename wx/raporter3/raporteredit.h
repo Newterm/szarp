@@ -42,59 +42,57 @@
 
 #include "raporter.h"
 
-
 /** Raport editor dialog */
-class szRaporterEdit : public wxDialog {
-  DECLARE_CLASS(szRaporterEdit)
-  DECLARE_EVENT_TABLE()
-  /** szarp config */
-  TSzarpConfig *ipk;
-  /** */
-  wxListCtrl *rcont_listc;
-  /** */
-  szParSelect *ps;
-public:
-  /** returned data */
-  struct {
-    /** */
-    wxString m_report_name;
-    /** */
-    szParList m_raplist;
-  }g_data;
-  /**
-   * param _ipk szarp config
-   */
-  szRaporterEdit(TSzarpConfig *_ipk,
-          wxWindow* parent, wxWindowID id, const wxString& title);
-protected:
-  /** event: button: add */
-  void OnParAdd(wxCommandEvent &ev);
-  /** event: button: add */
-  void OnParDel(wxCommandEvent &ev);
-  /** event: rcont_listc: column drag */
-  void OnListColDrag(wxListEvent &ev);
-  /** event: ps */
-  //void OnParamAdd(szParSelectEvent &ev);
-//FIXME: what to do with this trash
-  //void OnListBeginDrag(wxListEvent &ev);
-  //void OnListBeginEdit(wxListEvent &ev);
-  //void OnListEndEdit(wxListEvent &ev);
-  //void OnMotion(wxMouseEvent &ev);
-  void RefreshList();
-  /** */
-  virtual bool TransferDataToWindow();
-  /** */
-  //virtual bool TransferDataFromWindow();
+class szRaporterEdit:public wxDialog {
+	DECLARE_CLASS(szRaporterEdit)
+	DECLARE_EVENT_TABLE()
+      	/** szarp config */
+	TSzarpConfig *ipk;
+      	/** */
+	wxListCtrl *rcont_listc;
+      	/** */
+	szParSelect *ps;
+ public:
+      	/** returned data */
+	struct {
+	    	/** report title */
+		wxString m_report_name;
+	    	/** list of reports parameters */
+		szParList m_raplist;
+	} g_data;
+      	/**
+	 *  param _ipk szarp config
+	 */
+	 szRaporterEdit(TSzarpConfig * _ipk,
+			wxWindow * parent, wxWindowID id,
+			const wxString & title);
+ protected:
+        /** event: button: add */
+	void OnParAdd(wxCommandEvent & ev);
+      	/** event: button: add */
+	void OnParDel(wxCommandEvent & ev);
+      	/** event: rcont_listc: column drag */
+	void OnListColDrag(wxListEvent & ev);
+      	/** event: report title modified */
+	void OnTitleChanged(wxCommandEvent &ev);
+      	/** refresh list view */
+	void RefreshList();
+	/** enable/disable Ok button based on others controls state */
+	void EnableOkButton();
+	virtual bool TransferDataToWindow();
+
+	wxWindow *m_okButton;
+	wxTextCtrl *m_title;
 };
 
 /*
  * IDs
  */
 enum {
-  ID_B_ADD = wxID_HIGHEST + 1,
-  ID_B_DEL,
-  ID_LC_RCONT/*,
-  ID_PARSEL_PSD*/
+	ID_B_ADD = wxID_HIGHEST + 1,
+	ID_B_DEL,
+	ID_LC_RCONT,
+	ID_T_TITLE
 };
 
-#endif //_RAPORTEREDIT_H
+#endif				//_RAPORTEREDIT_H

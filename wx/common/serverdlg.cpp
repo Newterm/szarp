@@ -27,6 +27,7 @@
 
 #include "cconv.h"
 #include "serverdlg.h"
+#include "szframe.h"
 
 #include <wx/config.h>
 
@@ -56,6 +57,9 @@ wxString szServerDlg::GetServer(wxString def, wxString progname, bool always_sho
 	def=server;
 
 	wxDialog* dlg = new wxDialog(NULL, wxID_ANY, progname + wxString(_(": choose server")));
+	if (szFrame::default_icon.IsOk()) {
+		dlg->SetIcon(szFrame::default_icon);
+	}
 	wxSizer* top_s = new wxBoxSizer(wxVERTICAL);
 	top_s->Add(new wxStaticText(dlg, wxID_ANY, 
 		_("Enter server address and port\nfor example '192.168.1.1:8081'")),
@@ -120,6 +124,9 @@ TSzarpConfig * szServerDlg::GetIPK(wxString server, szHTTPCurlClient *m_http) {
 
 	wxProgressDialog* pr = new wxProgressDialog(_("Connecting to server"),
 			_("Trying to connect to server ") + server + _(".\nPlease wait."));
+	if (szFrame::default_icon.IsOk()) {
+		pr->SetIcon(szFrame::default_icon);
+	}
 	pr->Update(0);
 	int ret;
 	xmlDocPtr doc = m_http->GetXML(const_cast<char*>(SC::S2A(path).c_str()), NULL, NULL);
@@ -161,6 +168,9 @@ bool szServerDlg::GetReports(wxString server, szHTTPCurlClient *m_http, wxString
 
 	wxProgressDialog* pr = new wxProgressDialog(_("Connecting to server"),
 			_("Trying to connect to server ") + server + _(".\nPlease wait."));
+	if (szFrame::default_icon.IsOk()) {
+		pr->SetIcon(szFrame::default_icon);
+	}
 	pr->Update(0);
 
 	xmlDocPtr doc = m_http->GetXML(const_cast<char*>(SC::S2A(path).c_str()), NULL, NULL);
@@ -214,7 +224,6 @@ bool szServerDlg::GetReports(wxString server, szHTTPCurlClient *m_http, wxString
 	}
 
 	reports.Sort();
-
 
 	return !error;
 }

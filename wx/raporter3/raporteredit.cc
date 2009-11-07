@@ -59,16 +59,16 @@ szRaporterEdit::szRaporterEdit(TSzarpConfig *_ipk,
 	
 	wxBoxSizer *top_sizer = new wxBoxSizer(wxVERTICAL);
 	wxStaticBoxSizer *desc_sizer = new wxStaticBoxSizer(
-			new wxStaticBox(this, wxID_ANY, _("Description")), 
+			new wxStaticBox(this, wxID_ANY, _("Tile")), 
 			wxVERTICAL);
 	
-	desc_sizer->Add(new wxTextCtrl(this, wxID_ANY, _("User report"),
+	desc_sizer->Add(m_title = new wxTextCtrl(this, ID_T_TITLE, _("User report"),
 				wxDefaultPosition, wxDefaultSize, 0,
 				wxTextValidator(wxFILTER_NONE, &g_data.m_report_name)),
 			0, wxEXPAND | wxALL, 8);
 	
 	wxStaticBoxSizer *rcont_sizer = new wxStaticBoxSizer(
-			new wxStaticBox(this, wxID_ANY, _("Contents")), 
+			new wxStaticBox(this, wxID_ANY, _("Parameters list")), 
 			wxVERTICAL);
 	
 	rcont_listc = new wxListCtrl(this, ID_LC_RCONT,
@@ -86,16 +86,27 @@ szRaporterEdit::szRaporterEdit(TSzarpConfig *_ipk,
 	wxBoxSizer *but_sizer = new wxBoxSizer(wxHORIZONTAL);
 	
 	but_sizer->Add(new wxButton(this, ID_B_ADD, _("Add")),
-			0, wxALL, 8);
+			0, wxLEFT, 8);
 	but_sizer->Add(new wxButton(this, ID_B_DEL, _("Delete")),
-			0, wxALL, 8); 
+			0, wxLEFT | wxRIGHT, 8); 
 	but_sizer->Add(CreateButtonSizer(wxOK|wxCANCEL/*|wxHELP*/), 0,
-			wxALL | wxALIGN_CENTER, 8);
+			wxLEFT | wxRIGHT | wxALIGN_CENTER, 8);
 	
-	top_sizer->Add(but_sizer, 0, wxALL | wxALIGN_CENTER, 8);
+	top_sizer->Add(but_sizer, 0, wxTOP | wxBOTTOM | wxALIGN_CENTER, 16);
 	
 	this->SetSizer(top_sizer);  
 	
+	m_okButton = NULL;
+	wxWindowList children = GetChildren();
+	for (wxWindowList::iterator iter = children.begin(); iter != children.end(); ++iter) {
+		if ((*iter)->GetId() == wxID_OK) {
+			m_okButton = *iter;
+			break;
+		}
+	}
+	assert(m_okButton != NULL);
+	m_okButton->Enable(FALSE);
+
 	ps = new szParSelect(this->ipk, this, wxID_ANY, _("Raporter->Editor->Add"), false, false, false,true,true, param_filter, true);
 	
 }
@@ -108,10 +119,9 @@ void szRaporterEdit::OnParAdd(wxCommandEvent &ev)
 		int i = g_data.m_raplist.Append(ps->g_data.m_param);
 		g_data.m_raplist.SetExtraProp(i, SZ_REPORTS_NS_URI, _T("description"), ps->g_data.m_desc);
 		
+		EnableOkButton();
 		RefreshList();
-	} else {
-		wxLogMessage(_T("par_add: cancel"));
-	}
+	} 
 }
 
 void szRaporterEdit::OnParDel(wxCommandEvent &ev) 
@@ -122,6 +132,7 @@ void szRaporterEdit::OnParDel(wxCommandEvent &ev)
 		g_data.m_raplist.Remove(i);
 	}
 	
+	EnableOkButton();
 	RefreshList();
 }
 
@@ -159,10 +170,25 @@ void szRaporterEdit::OnListColDrag(wxListEvent &ev)
 	ev.Veto();
 }
 
+void szRaporterEdit::OnTitleChanged(wxCommandEvent &ev)
+{
+	EnableOkButton();
+}
+	
+void szRaporterEdit::EnableOkButton()
+{
+	if ((m_title->IsEmpty() or (g_data.m_raplist.Count() == 0)) and m_okButton->IsEnabled()) {
+		m_okButton->Enable(FALSE);
+	} else if (!m_title->IsEmpty() and (g_data.m_raplist.Count() > 0) and !m_okButton->IsEnabled()) {
+		m_okButton->Enable(TRUE);
+	}
+}
+		
 
 IMPLEMENT_CLASS(szRaporterEdit, wxDialog)
 BEGIN_EVENT_TABLE(szRaporterEdit, wxDialog)
   EVT_BUTTON(ID_B_ADD, szRaporterEdit::OnParAdd)
   EVT_BUTTON(ID_B_DEL, szRaporterEdit::OnParDel)
   EVT_LIST_COL_BEGIN_DRAG(ID_LC_RCONT, szRaporterEdit::OnListColDrag)
+  EVT_TEXT(ID_T_TITLE, szRaporterEdit::OnTitleChanged)
 END_EVENT_TABLE()

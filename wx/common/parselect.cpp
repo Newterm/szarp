@@ -188,11 +188,11 @@ szParSelect::szParSelect(TSzarpConfig * _ipk,
 	   button_sizer->Add(add_button, 0, wxALL | wxGROW, 8);
 	   button_sizer->Add(close_button, 0, wxALL | wxGROW, 8);
  	   
-	   top_sizer->Add(check_box, 0, wxALL | wxRIGHT, 0);
-	   top_sizer->Add(button_sizer, 0, wxALL | wxALIGN_CENTER, 0);
+	   top_sizer->Add(check_box, 0, wxLEFT, 8);
+	   top_sizer->Add(button_sizer, 0, wxALIGN_CENTER, 0);
 	   add_button->SetDefault();
     } else {
-	   top_sizer->Add(check_box, 0, wxALL | wxRIGHT, 0);
+	   top_sizer->Add(check_box, 0, wxLEFT, 8);
 	   top_sizer->Add(CreateButtonSizer(wxOK | wxCANCEL /* |wxHELP */ ), 0,
 			    wxALL | wxALIGN_CENTER, 8);
     }
@@ -234,14 +234,19 @@ void szParSelect::LoadParamsLikeInDraw()
 			wxTreeItemId draw_id;
 			draws_iter = draws.find(d->GetTranslatedWindow());
 
-			if(draws_iter == draws.end()) {
+			if (draws_iter == draws.end()) {
 				draw_id = par_trct->AppendItem(root_id, wxString(d->GetTranslatedWindow()));
 				draws[d->GetTranslatedWindow()] = draw_id;
 			} else {
 				draw_id = draws_iter->second;
 			}
-			
-			wxTreeItemId tmp = par_trct->AppendItem(draw_id, wxString(p->GetTranslatedDrawName()),
+
+			wxString name = p->GetTranslatedDrawName();
+			if (name.IsEmpty()) {
+				name = wxString(p->GetTranslatedName()).AfterLast(':');
+			}
+
+			wxTreeItemId tmp = par_trct->AppendItem(draw_id, name,
 				-1, -1, new szParTreeElem(p));
 
 			if(last_param.IsSameAs(wxString(p->GetName()))) {
@@ -276,7 +281,6 @@ szParSelect::LoadParams()
     wxTreeItemId    root_id = par_trct->AddRoot(wxString(ipk->GetTitle()));
     wxTreeItemId    looked;
     do {
-	// char *name = copystring(param_it->GetName());
 	if (m_filter && m_filter(param_it)) {
 		continue;
 	}

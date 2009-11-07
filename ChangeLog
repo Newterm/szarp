@@ -1,5 +1,17 @@
 $Id$
 
+2009-11-07	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/raporter3/rap.cc: setting default application icon.
+	* wx/raporter3/raporter.h: removed printing of debug info.
+	* wx/raproter3/raporter.cc: changed icon handling.  
+	* wx/raporter3/pl/raporter3.po: translation updates.
+	* wx/raporter3/raporteredit.*: buttons arraggement fix; dialog does not
+	allow to create empty report or report without title - fixes possible
+	segfault when registering empty report.
+	* wx/common/parselect.cpp: fix in widgets arrangement; if draw name is
+	empty, widget correctly uses last part of full parameter name.
+	* wx/common/serverdlg.cpp: server dialogs use default application
+	icon.
 2009-11-06	Pawel Palucha <pawel@praterm.com.pl>
 	* resources/wx/icons/extr16.xpm: we need this icon for SCC menu.
 	* ipk.sgml: docs update - removed obsolete sections (szarpvpn),

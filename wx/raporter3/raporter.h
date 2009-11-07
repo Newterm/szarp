@@ -68,21 +68,15 @@ public:
 	/** */
 	szRapEntry() 
 	{ 
-		printf("DEBUG: szRapEntry empty constructor (0x%p)\n",
-			this);
 		Set(NULL, wxEmptyString, wxEmptyString); 
 	}
 	/** */
 	szRapEntry(const szRapEntry &s) 
 	{ 
-		printf("DEBUG: szRapEntry copy constructor (target 0x%p source 0x%p)\n",
-			this, &s);
 		Set(s); 
 	}
 	szRapEntry& operator=(const szRapEntry& s)
 	{
-		printf("DEBUG: szRapEntry assigment operator (target 0x%p source 0x%p)\n",
-			this, &s);
 		if (this != &s) {
 			Set(s);
 		}
@@ -90,12 +84,10 @@ public:
 	}
 	~szRapEntry()
 	{
-		printf("DEBUG: szRapEntry destructor (0x%p)\n", this);
 	}
 	/** */
 	szRapEntry(TParam *_param, wxString _desc, wxString _scut) 
 	{
-		printf("DEBUG: szRapEntry 3-args constructor (0x%p)\n", this);
 		Set(_param, _desc, _scut);
 	}
 	/** */

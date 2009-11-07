@@ -48,8 +48,7 @@
 #include "parlist.h"
 #include "cconv.h"
 #include "serverdlg.h"
-
-#include "../../resources/wx/icons/rap16.xpm"
+#include "szframe.h"
 
 #define KEY_FONTSIZE	_T("Raporter/FontSize")
 const int MIN_FONTSIZE	= 6;
@@ -106,9 +105,8 @@ szRaporter::szRaporter(wxWindow *parent, wxString server, wxString title)
 	stat_sb->SetFieldsCount(4, widths);
 	m_fitsize = false;
 
-	wxIcon icon(wxICON(rap16));
-	if (icon.Ok()) {
-		SetIcon(icon);
+	if (szFrame::default_icon.IsOk()) {
+		SetIcon(szFrame::default_icon);
 	}
 	
 	SetStatusBar(stat_sb);
@@ -407,23 +405,22 @@ void szRaporter::OnTemplateNew(wxCommandEvent &ev)
 	ed.g_data.m_raplist.Clear();
 	ed.g_data.m_report_name.Clear();
 	
-	if ( ed.ShowModal() == wxID_OK ) {
-		wxLogMessage(_T("templ_new: ok"));
-		m_report_ipk = false;
-		m_raplist.Clear();
-		m_raplist = ed.g_data.m_raplist;
-		m_report_name = ed.g_data.m_report_name;
-		SetTitle(_T("Raporter: ") + m_report_name);
-		SetIsTestRaport(m_report_name);
-		m_pfetcher->SetSource(m_raplist);
-		wxStaticCast(FindWindowById(ID_B_STARTSTOP), wxBitmapButton)->Enable(true);
-		RefreshReport();
-		SetFitSize();
-		m_menu_template->Enable(ID_M_TEMPLATE_SAVE, true);
-		m_menu_template->Enable(ID_M_TEMPLATE_EDIT, true);
-	} else {
-		wxLogMessage(_T("templ_new: cancel"));
+	if (ed.ShowModal() != wxID_OK) {
+		return;
 	}
+
+	m_report_ipk = false;
+	m_raplist.Clear();
+	m_raplist = ed.g_data.m_raplist;
+	m_report_name = ed.g_data.m_report_name;
+	SetTitle(_T("Raporter: ") + m_report_name);
+	SetIsTestRaport(m_report_name);
+	m_pfetcher->SetSource(m_raplist);
+	wxStaticCast(FindWindowById(ID_B_STARTSTOP), wxBitmapButton)->Enable(true);
+	RefreshReport();
+	SetFitSize();
+	m_menu_template->Enable(ID_M_TEMPLATE_SAVE, true);
+	m_menu_template->Enable(ID_M_TEMPLATE_EDIT, true);
 }
 
 void szRaporter::OnTemplateEdit(wxCommandEvent &ev) 
