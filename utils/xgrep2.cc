@@ -480,7 +480,7 @@ int is_priv_start(const char *str)
 	char *c;
 	if (strncmp("<PRIV TO=\"", str, 10))
 		return 0;
-	c = index(str + 10, '"');
+	c = index((char*) (str + 10), '"');
 	if (!c)
 		return 0;
 	if (c - str <= 1) 
@@ -1124,7 +1124,7 @@ void out_html_tag(const char *str, int len)
 	} else if (!strncmp(str+1, "CIEPLO-HOWTO", 12)) {
 		puts("<div style=\"color: " COLOR_CIEPLO ";\"><a name=\"CIEPLO-HOWTO\"><b>&lt;CIEPLO-HOWTO&gt;</b></a><br><img src=\"/wpn-img/common/cieplo.png\"/>");
 	} else {
-		c = index(str, '>');
+		c = index((char*)str, '>');
 		l = (c - str) - 1;
 		assert (c != NULL);
 		fputs("<div style=\"color: ", stdout);
@@ -1146,7 +1146,7 @@ void out_html_tag(const char *str, int len)
 void out_html_tag_end(const char *str, int len)
 {
 	char *c;
-	c = index(str, '>');
+	c = index((char*)str, '>');
 	assert (c != NULL);
 	if (output_state.pre) {		
 		output_state.pre = 0;

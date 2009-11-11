@@ -61,10 +61,6 @@
 #include <config.h>
 #include "szarp.h"
 
-#undef strfind
- /* To jakas awaria */
-
-
 #define MAXLINES 48 
 
 #define SI_BASE1 0xD0000
@@ -500,12 +496,6 @@ void ReadReport(unsigned char unit)
     printf("\n++++++++++++++++++++++++\n\n");
    }
  }
-
-char *strfind(const char *a, const char *b)
-{
-	if (!a || !b) return (char*) -1;
-	return strstr(a,b);
-}
 
 unsigned char ConnectRadio(unsigned char unit)
  {

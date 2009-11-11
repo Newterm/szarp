@@ -1,5 +1,11 @@
 $Id$
 
+2009-11-11	Darek Marcinkiewicz <darek@praterm.pl>
+	* /: SZARP once again compiles under Ubuntu, 'Karmic Koala' this time.
+	Some of the changes are strange though - e.g. index 
+	function from libc (the one that looks for a character in a string)
+	takes as an argument char* whereas under Debian it is const char*.
+	Debian version makes much more sense...
 2009-11-07	Pawel Palucha <pawel@praterm.com.pl>
 	* wx/raporter3/rap.cc: setting default application icon.
 	* wx/raporter3/raporter.h: removed printing of debug info.

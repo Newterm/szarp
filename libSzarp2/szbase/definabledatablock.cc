@@ -533,7 +533,6 @@ szb_definable_search_data(szb_buffer_t * buffer, TParam * param,
 					}
 					/* check for data at index */
 					probe_n = szb_probeind(time);
-					assert(index >= 0);
 		
 					assert(!IS_SZB_NODATA(data[block->GetFirstDataProbeIdx()]));
 					assert(!IS_SZB_NODATA(data[block->GetLastDataProbeIdx()]));
