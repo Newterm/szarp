@@ -210,8 +210,13 @@ is much more complicated. It is because:
 - some modifications of the source and configuration files of the wxWidgets 
 library should be done as well. 
 All modifications mentioned above will be done for you by INSTALL.wxWidgets.sh
-script. It should correctly work for the 2.8.10 version of the wxWidgets and also
-needs an unrar application.
+script which is stored in INSTALL.wxWidgets.sh.tgz file. It should correctly 
+work for the 2.8.10 version of the wxWidgets and also needs an unrar application. 
+To decompress this script use tar application: 
+tar -xzvf INSTALL.wxWidgets.sh.tgz
+If you want to edit this script, please do it carefully. It is because, some 
+correct (Windows) "end of line" characters will be lost (or changed) and some 
+patch operations (of Gdiplus files) will be failed.
 
 
 3.6. libxml2 library.
