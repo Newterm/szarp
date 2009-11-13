@@ -107,12 +107,12 @@ class DDEDaemon {
 	std::string m_uri;
 	int m_read_freq;
 
-	std::map<std::string, std::map<int, DDEParam> > m_params;
+	std::map<std::string, std::map<std::string, DDEParam> > m_params;
 
 	XMLRPC_REQUEST CreateRequest();
 	XMLRPC_REQUEST SendRequest(XMLRPC_REQUEST request);
 	void ParseResponse(XMLRPC_REQUEST response);
-	bool ConvertValue(XMLRPC_VALUE v, const std::string& topic, int item, unsigned short &ret);
+	bool ConvertValue(XMLRPC_VALUE v, const std::string& topic, std::string item, unsigned short &ret);
 public:
 	int Configure(DaemonConfig* cfg);
 	void Run();
@@ -239,16 +239,17 @@ XMLRPC_REQUEST DDEDaemon::CreateRequest() {
 	XMLRPC_RequestSetData(request, XMLRPC_CreateVector(NULL, xmlrpc_vector_array));
 	XMLRPC_AddValueToVector(XMLRPC_RequestGetData(request), v);
 
-	for (std::map<std::string, std::map<int, DDEParam> >::iterator i = m_params.begin();
+	for (std::map<std::string, std::map<std::string, DDEParam> >::iterator i = m_params.begin();
 			i != m_params.end();
 			i++) {
 		XMLRPC_VALUE pv = XMLRPC_CreateVector(i->first.c_str(), xmlrpc_vector_array);
 		for (std::map<int, DDEParam>::iterator j = i->second.begin();
 				j != i->second.end();
 				++j) {
-			XMLRPC_VectorAppendInt(pv, NULL, j->first);
-			if (j->second.type != DDEParam::INTEGER)
-				XMLRPC_VectorAppendInt(pv, NULL, j->first + 1);
+			XMLRPC_VectorAppendString(pv, NULL, j->first.c_str());
+			if (j->second.type != DDEParam::INTEGER) {
+				XMLRPC_VectorAppendInt(pv, NULL, atoi(j->first.c_str()) + 1);
+			}
 		}
 
 		XMLRPC_AddValueToVector(v, pv);
@@ -279,7 +280,7 @@ XMLRPC_REQUEST DDEDaemon::SendRequest(XMLRPC_REQUEST request) {
 	return response;
 }
 
-bool DDEDaemon::ConvertValue(XMLRPC_VALUE i, const std::string& topic, int item, unsigned short &ret) {
+bool DDEDaemon::ConvertValue(XMLRPC_VALUE i, const std::string& topic, std::string item, unsigned short &ret) {
 	const char *s;
 	char *err;
 	switch (XMLRPC_GetValueType(i)) {
@@ -292,17 +293,17 @@ bool DDEDaemon::ConvertValue(XMLRPC_VALUE i, const std::string& topic, int item,
 		case xmlrpc_string:
 			s = XMLRPC_GetValueString(i);
 			if (s == NULL)	{
-				dolog(1, "No value received for topic: %s, item: %d", topic.c_str(), item);
+				dolog(1, "No value received for topic: %s, item: %s", topic.c_str(), item);
 				return false;;
 			}
 			ret = strtof(s, &err);
 			if (*err != '\0') {
-				dolog(1, "Invalid value received for topic: %s, item: %d - %s", topic.c_str(), item, s);
+				dolog(1, "Invalid value received for topic: %s, item: %s - %s", topic.c_str(), item.c_str(), s);
 				return false;
 			}
 			break;
 		default:
-			dolog(0, "Unsupported value value received for topic: %s, item: %d - %d", topic.c_str(), item, XMLRPC_GetValueType(i));
+			dolog(0, "Unsupported value value received for topic: %s, item: %s - %d", topic.c_str(), item.c_str(), XMLRPC_GetValueType(i));
 			return false;
 	}
 

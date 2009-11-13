@@ -1,6 +1,10 @@
 $Id$
 
 2009-11-13	Darek Marcinkiewicz <darek@praterm.pl>
+	* wx/ddedmn.cc: items no longer have to be numbers, but they still
+	must be numbers in case of params of type float and short_float (because
+	then we assume that values of these params are stored in two consecutive 
+	items) - situation similar to modbus registers
 	* wx/ddedmn.cc: added option for speciyfing how often
 	driver should ask ddespy for values
 2009-11-12	Adam Smyk <asmyk@praterm.pl>
