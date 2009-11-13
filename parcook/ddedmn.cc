@@ -105,6 +105,7 @@ class DDEDaemon {
 	szHTTPCurlClient m_http;
 	IPCHandler *m_ipc;
 	std::string m_uri;
+	int m_read_freq;
 
 	std::map<std::string, std::map<int, DDEParam> > m_params;
 
@@ -140,6 +141,15 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 	}
 	m_uri = (char*) _uri;
 	xmlFree(_uri);
+
+	m_read_freq = 0;
+	xmlChar* _read_req = xmlGetNsProp(xdev, BAD_CAST("read_freq"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+	if (_read_req) {
+		m_read_freq = atoi((char*) _read_req);
+		xmlFree(_read_req);
+	}
+	if (m_read_freq < 10)
+		m_read_freq = 10;
 
 	TParam *param = cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->GetFirstParam();
 	for (int i = 0; i < m_ipc->m_params_count; ++i) {
@@ -255,7 +265,7 @@ XMLRPC_REQUEST DDEDaemon::SendRequest(XMLRPC_REQUEST request) {
 	if (!request_string) 
 		return NULL;
 
-	char* response_string = m_http.Post(const_cast<char*>(m_uri.c_str()), request_string, slen, 10, NULL, &rlen);
+	char* response_string = m_http.Post(const_cast<char*>(m_uri.c_str()), request_string, slen, m_read_freq, NULL, &rlen);
 	free(request_string);
 
 	if (response_string == NULL) {
@@ -365,7 +375,7 @@ void DDEDaemon::Run() {
 
 		m_ipc->GoParcook();
 
-		int s = st + 10 - time(NULL);
+		int s = st + m_read_freq - time(NULL);
 		while (s > 0) 
 			s = sleep(s);
 

@@ -1,7 +1,10 @@
 $Id$
 
+2009-11-13	Darek Marcinkiewicz <darek@praterm.pl>
+	* wx/ddedmn.cc: added option for speciyfing how often
+	driver should ask ddespy for values
 2009-11-12	Adam Smyk <asmyk@praterm.pl>
-	* INSTALL.wxWidgets - small correction
+	* INSTALL.wxWidgets: small correction
 2009-11-11	Darek Marcinkiewicz <darek@praterm.pl>
 	* /: SZARP once again compiles under Ubuntu, 'Karmic Koala' this time.
 	Some of the changes are strange though - e.g. index 
