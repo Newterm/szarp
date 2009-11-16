@@ -1,5 +1,7 @@
 $Id$
 
+2009-11-16	Pawel Palucha <pawel@praterm.com.pl>
+	* resources/documentation/new/*: Bilgoraj added to references list.
 2009-11-13	Darek Marcinkiewicz <darek@praterm.pl>
 	* wx/ddedmn.cc: items no longer have to be numbers, but they still
 	must be numbers in case of params of type float and short_float (because

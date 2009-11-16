@@ -1,6 +1,6 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook V3.1//EN"[
-<!ENTITY praterm-info SYSTEM "../common/szarp-info.sgml">
-<!ENTITY praterm-wdrozenia SYSTEM "../common/praterm-wdrozenia.sgml">
+<!ENTITY szarp-info SYSTEM "../common/szarp-info.sgml">
+<!ENTITY wdrozenia SYSTEM "../common/wdrozenia.sgml">
 ]>
 
 <!-- $Id: oszarpie.sgml 6724 2009-05-18 08:37:03Z reksio $ -->
@@ -8,7 +8,7 @@
 <article lang="pl" id="oszarpie" class="techreport">
 
 <artheader>
-&praterm-info;
+&szarp-info;
 <title>System zbierania, archiwizacji i prezentacji danych w miejskich systemach ciep³owniczych</title>
 <authorgroup>
 <author>
@@ -588,7 +588,7 @@ Poni¿sza tabela nie uwzglêdnia znacznej liczby instalacji, gdzie znajduj± siê
 tylko sterowniki i panele dostarczone i zainstalowane przez firmê PRATERM, nie
 obejmuje te¿ instalacji systemu na wêz³ach cieplnych.
 
-&praterm-wdrozenia;
+&wdrozenia;
 
 </para>
 
