@@ -1,6 +1,5 @@
 /* 
   SZARP: SCADA software 
-  
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,8 +18,9 @@
 /* $Id$
  *
  * SZARP
-
+ *
  * ecto@praterm.com.pl
+ * pawel@praterm.com.pl
  */
 
 #include <wx/wxprec.h>
@@ -107,7 +107,19 @@ szRaporterEdit::szRaporterEdit(TSzarpConfig *_ipk,
 	assert(m_okButton != NULL);
 	m_okButton->Enable(FALSE);
 
-	ps = new szParSelect(this->ipk, this, wxID_ANY, _("Raporter->Editor->Add"), false, false, false,true,true, param_filter, true);
+	ps = new szParSelect(
+			this->ipk, 	// config
+			this, 		// parent widget
+			wxID_ANY, 	
+			_("Raporter->Editor->Add"), 
+			false, 		// "add" style
+			false, 		// multiple choice
+			false,		// show short names of parameters
+			true,		// show descriptions of parameters
+			true, 		// "single" style
+			param_filter,	// parameter filtering function
+			true		// description from param name, not draw name
+			);		
 	
 }
 
@@ -131,7 +143,6 @@ void szRaporterEdit::OnParDel(wxCommandEvent &ev)
 			!= -1 ) {
 		g_data.m_raplist.Remove(i);
 	}
-	
 	EnableOkButton();
 	RefreshList();
 }
@@ -140,7 +151,6 @@ void szRaporterEdit::RefreshList()
 {
 	rcont_listc->Freeze();
 	rcont_listc->DeleteAllItems();
-	
 
 	for (size_t i = 0; i < g_data.m_raplist.Count(); i++) {
 		assert(g_data.m_raplist.GetParam(i));
@@ -184,11 +194,11 @@ void szRaporterEdit::EnableOkButton()
 	}
 }
 		
-
 IMPLEMENT_CLASS(szRaporterEdit, wxDialog)
 BEGIN_EVENT_TABLE(szRaporterEdit, wxDialog)
-  EVT_BUTTON(ID_B_ADD, szRaporterEdit::OnParAdd)
-  EVT_BUTTON(ID_B_DEL, szRaporterEdit::OnParDel)
-  EVT_LIST_COL_BEGIN_DRAG(ID_LC_RCONT, szRaporterEdit::OnListColDrag)
-  EVT_TEXT(ID_T_TITLE, szRaporterEdit::OnTitleChanged)
+	EVT_BUTTON(ID_B_ADD, szRaporterEdit::OnParAdd)
+      	EVT_BUTTON(ID_B_DEL, szRaporterEdit::OnParDel)
+      	EVT_LIST_COL_BEGIN_DRAG(ID_LC_RCONT, szRaporterEdit::OnListColDrag)
+      	EVT_TEXT(ID_T_TITLE, szRaporterEdit::OnTitleChanged)
 END_EVENT_TABLE()
+

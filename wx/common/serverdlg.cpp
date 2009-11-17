@@ -115,8 +115,6 @@ wxString szServerDlg::GetServer(wxString def, wxString progname, bool always_sho
 TSzarpConfig * szServerDlg::GetIPK(wxString server, szHTTPCurlClient *m_http) {
 	wxString path = server + _T("/params.xml");
 
-	wxLogInfo(_T("DEBUG: ipk loading from '%s'"), path.c_str());
-	
 	TSzarpConfig *ipk = new TSzarpConfig();
 	assert (ipk);
 
@@ -163,7 +161,6 @@ TSzarpConfig * szServerDlg::GetIPK(wxString server, szHTTPCurlClient *m_http) {
 bool szServerDlg::GetReports(wxString server, szHTTPCurlClient *m_http, wxString &title, wxArrayString &reports) {
 	wxString path = server + _T("/xreports");
 
-	wxLogInfo(_T("DEBUG: loading reports from '%s'"), path.c_str());
 	long time = wxGetLocalTimeMillis().ToLong();
 
 	wxProgressDialog* pr = new wxProgressDialog(_("Connecting to server"),

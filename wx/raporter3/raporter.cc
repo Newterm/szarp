@@ -20,8 +20,9 @@
  *
  * raporter3 program
  * SZARP
-
+ *
  * ecto@praterm.com.pl
+ * pawel@praterm.com.pl
  */
 
 #include <wx/wxprec.h>
@@ -41,7 +42,6 @@
 
 #include "raporter.h"
 #include "raporterperiod.h"
-#include "raporterbuf.h"
 #include "raporteredit.h"
 #include "rap.h"
 #include "fetchparams.h"
@@ -49,6 +49,7 @@
 #include "cconv.h"
 #include "serverdlg.h"
 #include "szframe.h"
+#include "userreports.h"
 
 #define KEY_FONTSIZE	_T("Raporter/FontSize")
 const int MIN_FONTSIZE	= 6;
@@ -118,13 +119,17 @@ szRaporter::szRaporter(wxWindow *parent, wxString server, wxString title)
 	m_raport_menu->Append(ID_M_RAPORT_EXIT, _("E&xit\tAlt-X"));
 	
 	template_ipk_menu = new wxMenu();
+	m_menu_user_templates = new wxMenu();
 	m_menu_template = new wxMenu();
-	m_menu_template->Append(ID_M_TEMPLATE_SAVE, _("&Save\tCtrl-S"));
-	m_menu_template->Append(ID_M_TEMPLATE_LOAD, _("&Load\tCtrl-O"));
 	m_menu_template->Append(ID_M_TEMPLATE_NEW, _("&New\tCtrl-N"));
 	m_menu_template->Append(ID_M_TEMPLATE_EDIT, _("&Edit\tCtrl-E"));
+	m_menu_template->Append(ID_M_TEMPLATE_DELETE, _("&Delete\tCtrl-D"));
+	m_menu_template->AppendSeparator();
+	m_menu_template->Append(ID_M_TEMPLATE_LOAD, _("&Import\tCtrl-O"));
+	m_menu_template->Append(ID_M_TEMPLATE_SAVE, _("&Export\tCtrl-S"));
 	m_menu_template->AppendSeparator();
 	m_menu_template->Append(ID_M_TEMPLATE_IPK, _("S&ystem"), template_ipk_menu);
+	m_menu_template->Append(ID_M_TEMPLATE_IPK, _("&User templates"), m_menu_user_templates);
 	
 	wxMenu *menu_option = new wxMenu();
 	menu_option->Append(ID_M_OPTION_SERVER, _("&Server"));
@@ -133,7 +138,7 @@ szRaporter::szRaporter(wxWindow *parent, wxString server, wxString title)
 	menu_option->Append(ID_M_OPTION_INCFONT, _("&Increase font\t+"));
 	menu_option->Append(ID_M_OPTION_DECFONT, _("&Decrease font\t-"));
 	wxMenu *menu_help = new wxMenu();
-	menu_help->Append(ID_M_HELP_RAP, _("&Raporter"));
+	menu_help->Append(ID_M_HELP_RAP, _("&Help\tF1"));
 	menu_help->Append(ID_M_HELP_ABOUT, _("&About"));
 	
 	wxMenuBar *menu_bar = new wxMenuBar();
@@ -146,6 +151,7 @@ szRaporter::szRaporter(wxWindow *parent, wxString server, wxString title)
 
 	m_menu_template->Enable(ID_M_TEMPLATE_SAVE, false);
 	m_menu_template->Enable(ID_M_TEMPLATE_EDIT, false);
+	m_menu_template->Enable(ID_M_TEMPLATE_DELETE, false);
 	
 	wxBoxSizer *top_sizer = new wxBoxSizer(wxVERTICAL);
 
@@ -239,7 +245,27 @@ szRaporter::~szRaporter()
 		delete ipk;
 }
 
-bool szRaporter::LoadIPK() {
+void szRaporter::ReloadTemplateMenu() 
+{
+	int start = template_ipk_menu->GetMenuItemCount() + ID_M_TEMPLATE_IPK + 1;
+	int count = m_menu_user_templates->GetMenuItemCount();
+	for (int i = start; i < count + start; i++) {
+		m_menu_user_templates->Delete(i);
+	}
+
+	if (m_ur.m_list.size() == 0) {
+		m_menu_user_templates->Append(start, _("(None)"));
+		m_menu_user_templates->Enable(start, false);
+		return;
+	}
+
+	for (unsigned int i = 0; i < m_ur.m_list.size(); i++) {
+		m_menu_user_templates->Append(start + i, m_ur.m_list[i]);
+	}
+}
+
+bool szRaporter::LoadIPK() 
+{
 
 	wxString title;
 	wxArrayString raports;
@@ -249,15 +275,15 @@ bool szRaporter::LoadIPK() {
 	m_menu_template->SetLabel(ID_M_TEMPLATE_IPK, title);
 
 	for (unsigned int i = 0; i < template_ipk_menu->GetMenuItemCount(); i++) {
-		template_ipk_menu->Delete(ID_M_TEMPLATE_IPK+i+1);
+		template_ipk_menu->Delete(ID_M_TEMPLATE_IPK + i + 1);
 	}
-
 	for (unsigned int i = 0; i < raports.size(); i++) {
-		template_ipk_menu->Append(ID_M_TEMPLATE_IPK+i+1, raports[i]);
+		template_ipk_menu->Append(ID_M_TEMPLATE_IPK + i + 1, raports[i]);
 	}
 
+	m_ur.RefreshList(title);
+	ReloadTemplateMenu();
 	ipk_raps = raports;
-
 	m_menu_template->Enable(ID_M_TEMPLATE_SAVE, false);
 
 	return true;
@@ -270,6 +296,20 @@ void szRaporter::SetIsTestRaport(wxString report_name) {
 		m_test_window = false;
 }
 
+int szRaporter::AskOverwrite(wxString config)
+{
+	if (!config.IsEmpty()) {
+		config = wxString(_(" for configuration ")) + _T("\"") + config + _T("\"");
+	}
+	return wxMessageBox(
+				wxString(_("User report template with the same name already exists"))
+					+ config 
+					+ _(". Do you want to replace existing template?"), 
+				_("Template overwrite"), 
+				wxICON_QUESTION | wxYES | wxNO,
+				this);
+}
+
 bool szRaporter::LoadReportIPK(const wxString &rname) 
 {
 	if (rname.IsEmpty()) {
@@ -277,6 +317,7 @@ bool szRaporter::LoadReportIPK(const wxString &rname)
 	}
 	m_menu_template->Enable(ID_M_TEMPLATE_SAVE, false);
 	m_menu_template->Enable(ID_M_TEMPLATE_EDIT, false);
+	m_menu_template->Enable(ID_M_TEMPLATE_DELETE, false);
 	m_raplist.Clear();
 	m_pfetcher->SetReportName(rname);
 	m_report_name = rname;
@@ -299,25 +340,49 @@ void szRaporter::LoadReportFile(const wxString &fname)
 	}
 
 	parlist.RegisterIPK(this->ipk);
-	if (parlist.LoadFile(fname) <= 0) {
+	if (parlist.LoadFile(fname, true) <= 0) {
 		return;
 	}
 	
 	m_raplist.Clear();
 	m_report_ipk = false;
 	
-	m_report_name = parlist.GetExtraRootProp(SZ_REPORTS_NS_URI, _T("title"));
+	wxString report_name = parlist.GetExtraRootProp(SZ_REPORTS_NS_URI, _T("title"));
+	wxString config_found;
+	if (fname.IsEmpty() and m_ur.FindTemplate(report_name, config_found)) {
+		if (AskOverwrite(config_found) == wxNO) {
+			return;
+		}
+	}
+
+	m_report_name = report_name;
 	m_raplist = parlist;
-	SetTitle(_T("Raporter: ") + m_report_name);
-	SetIsTestRaport(m_report_name);
 	
-	m_pfetcher->SetSource(m_raplist);
-	m_raport_menu->Enable(ID_M_RAPORT_START, true);
-	wxStaticCast(FindWindowById(ID_B_STARTSTOP), wxBitmapButton)->Enable(true);
-	RefreshReport();
-	SetFitSize();
-	m_menu_template->Enable(ID_M_TEMPLATE_SAVE, true);
-	m_menu_template->Enable(ID_M_TEMPLATE_EDIT, true);
+	if (m_pfetcher->SetSource(m_raplist)) {
+		SetTitle(_T("Raporter: ") + m_report_name);
+		SetIsTestRaport(m_report_name);
+		m_ur.SaveTemplate(m_report_name, m_raplist);
+		m_ur.RefreshList();
+		RefreshReport();
+		SetFitSize();
+		wxStaticCast(FindWindowById(ID_B_STARTSTOP), wxBitmapButton)->Enable(true);
+		m_raport_menu->Enable(ID_M_RAPORT_START, true);
+		m_menu_template->Enable(ID_M_TEMPLATE_SAVE, true);
+		m_menu_template->Enable(ID_M_TEMPLATE_EDIT, true);
+		m_menu_template->Enable(ID_M_TEMPLATE_DELETE, true);
+	} else {
+		Stop();
+		RefreshReport(true);
+		wxStaticCast(FindWindowById(ID_B_STARTSTOP), wxBitmapButton)->Enable(false);
+		m_raport_menu->Enable(ID_M_RAPORT_START, false);
+		m_menu_template->Enable(ID_M_TEMPLATE_SAVE, false);
+		m_menu_template->Enable(ID_M_TEMPLATE_EDIT, false);
+		m_menu_template->Enable(ID_M_TEMPLATE_DELETE, false);
+		wxMessageBox(_("Registering report on current server failed. Template does not contain valid report."), 
+				_("Incorrect report template"), 
+				wxICON_ERROR | wxOK, 
+				this);
+	}
 }
 
 void szRaporter::SaveReportFile(const wxString &fname) 
@@ -330,12 +395,19 @@ void szRaporter::SaveReportFile(const wxString &fname)
 
 void szRaporter::OnRapIPK(wxCommandEvent &ev) 
 {
-	wxLogMessage(_T("rap: ipk menu (%s)"),
-			ipk_raps[ev.GetId()-ID_M_TEMPLATE_IPK-1].c_str());
-	if (LoadReportIPK(ipk_raps[ev.GetId()-ID_M_TEMPLATE_IPK-1])) {
-		wxStaticCast(FindWindowById(ID_B_STARTSTOP), wxBitmapButton)->Enable(true);
-		m_raport_menu->Enable(ID_M_RAPORT_START, true);
-	};
+	if (ev.GetId() < (int)ipk_raps.size() + ID_M_TEMPLATE_IPK + 1) {
+		if (LoadReportIPK(ipk_raps[ev.GetId()-ID_M_TEMPLATE_IPK-1])) {
+			wxStaticCast(FindWindowById(ID_B_STARTSTOP), wxBitmapButton)->Enable(true);
+			m_raport_menu->Enable(ID_M_RAPORT_START, true);
+		}
+	} else {
+		wxString path = m_ur.GetTemplatePath(m_ur.m_list[
+				ev.GetId() - ID_M_TEMPLATE_IPK - 1 - ipk_raps.size()
+				]);
+		LoadReportFile(path);
+		m_ur.RefreshList();
+		ReloadTemplateMenu();
+	}
 }
 
 
@@ -388,6 +460,7 @@ void szRaporter::OnTemplateSave(wxCommandEvent &ev)
 void szRaporter::OnTemplateLoad(wxCommandEvent &ev) 
 {
 	LoadReportFile(wxEmptyString);
+	ReloadTemplateMenu();
 }
 
 void szRaporter::OnTemplateNew(wxCommandEvent &ev) 
@@ -408,19 +481,36 @@ void szRaporter::OnTemplateNew(wxCommandEvent &ev)
 	if (ed.ShowModal() != wxID_OK) {
 		return;
 	}
+	wxString config_found;
+	while (m_ur.FindTemplate(ed.g_data.m_report_name, config_found)) {
+		if (AskOverwrite(config_found) == wxNO) {
+			if (ed.ShowModal() != wxID_OK) {
+				return;
+			}
+		} else {
+			break;
+		}
+	}
 
 	m_report_ipk = false;
 	m_raplist.Clear();
 	m_raplist = ed.g_data.m_raplist;
 	m_report_name = ed.g_data.m_report_name;
+
 	SetTitle(_T("Raporter: ") + m_report_name);
 	SetIsTestRaport(m_report_name);
+	
+	m_ur.SaveTemplate(m_report_name, m_raplist);
+
 	m_pfetcher->SetSource(m_raplist);
+
 	wxStaticCast(FindWindowById(ID_B_STARTSTOP), wxBitmapButton)->Enable(true);
 	RefreshReport();
 	SetFitSize();
 	m_menu_template->Enable(ID_M_TEMPLATE_SAVE, true);
 	m_menu_template->Enable(ID_M_TEMPLATE_EDIT, true);
+	m_menu_template->Enable(ID_M_TEMPLATE_DELETE, true);
+	ReloadTemplateMenu();
 }
 
 void szRaporter::OnTemplateEdit(wxCommandEvent &ev) 
@@ -435,22 +525,59 @@ void szRaporter::OnTemplateEdit(wxCommandEvent &ev)
 	szRaporterEdit ed(this->ipk, this, wxID_ANY, _("Raporter->Editor"));
 	
 	ed.g_data.m_report_name = m_report_name;
+	wxString oldname = m_report_name;
 	ed.g_data.m_raplist = m_raplist;
-	if ( ed.ShowModal() == wxID_OK ) {
-		wxLogMessage(_T("templ_edit: ok"));
-		m_report_ipk = false;
-		m_raplist.Clear();
-		m_raplist = ed.g_data.m_raplist;
-		m_report_name = ed.g_data.m_report_name;
-		SetTitle(_T("Raporter: ") + m_report_name);
-		SetIsTestRaport(m_report_name);
-		m_pfetcher->SetSource(m_raplist);
-		RefreshReport();
-		SetFitSize();
-	} else {
-		wxLogMessage(_T("templ_edit: cancel"));
+	if ( ed.ShowModal() != wxID_OK ) {
+		return;
 	}
+	wxString config_found;
+	while (ed.g_data.m_report_name.Cmp(oldname) and 
+			m_ur.FindTemplate(ed.g_data.m_report_name, config_found)) {
+		if (AskOverwrite(config_found) == wxNO) {
+			if (ed.ShowModal() != wxID_OK) {
+				return;
+			}
+		} else {
+			break;
+		}
+	}
+
+	m_report_ipk = false;
+	m_raplist.Clear();
+	m_raplist = ed.g_data.m_raplist;
+	m_report_name = ed.g_data.m_report_name;
+	SetTitle(_T("Raporter: ") + m_report_name);
+	SetIsTestRaport(m_report_name);
+	if (m_report_name.Cmp(oldname) != 0) {
+		m_ur.RemoveTemplate(oldname);
+	}
+	m_ur.SaveTemplate(m_report_name, m_raplist);
+	m_pfetcher->SetSource(m_raplist);
+	RefreshReport();
+	SetFitSize();
+	ReloadTemplateMenu();
 }
+
+void szRaporter::OnTemplateDelete(wxCommandEvent &ev) 
+{
+	if (wxMessageBox(_("Are you sure you want to remove current report?"), 
+				_("Delete user report"),
+				wxICON_QUESTION | wxYES_NO,
+				this) == wxNO) {
+		return;
+	}
+	m_raplist.Clear();
+	m_ur.RemoveTemplate(m_report_name);
+	m_report_name.Empty();
+	SetTitle(_T("Raporter "));
+	Stop();
+	RefreshReport(true);
+	ReloadTemplateMenu();
+	m_raport_menu->Enable(ID_M_RAPORT_START, false);
+	wxStaticCast(FindWindowById(ID_B_STARTSTOP), wxBitmapButton)->Enable(false);
+}
+
+
 
 void szRaporter::OnOptFileDump(wxCommandEvent &ev)
 {
@@ -561,15 +688,20 @@ void szRaporter::OnRapdata(wxCommandEvent &ev)
 	}
 }
 
+void szRaporter::Stop()
+{
+	m_running = false;
+	m_pfetcher->Pause();
+	m_cur_bmp = 0;
+	wxStaticCast(FindWindowById(ID_B_STARTSTOP), wxBitmapButton)->SetBitmapLabel(
+			m_but_bmps[0]);
+	m_raport_menu->FindItem(ID_M_RAPORT_START)->SetText(_("Start\tSpace"));
+}
+
 void szRaporter::OnStartStop(wxCommandEvent &ev) 
 {
 	if ( m_running ) {
-		m_running = false;
-		m_pfetcher->Pause();
-		m_cur_bmp = 0;
-		wxStaticCast(FindWindowById(ID_B_STARTSTOP), wxBitmapButton)->SetBitmapLabel(
-				m_but_bmps[0]);
-		m_raport_menu->FindItem(ID_M_RAPORT_START)->SetText(_("Start\tSpace"));
+		Stop();
 	} else {
 		m_pfetcher->ResetTicker();
 		m_last_data = time(NULL);
@@ -692,6 +824,7 @@ BEGIN_EVENT_TABLE(szRaporter, wxFrame)
 	EVT_MENU(ID_M_TEMPLATE_LOAD, szRaporter::OnTemplateLoad)
 	EVT_MENU(ID_M_TEMPLATE_NEW, szRaporter::OnTemplateNew)
 	EVT_MENU(ID_M_TEMPLATE_EDIT, szRaporter::OnTemplateEdit)
+	EVT_MENU(ID_M_TEMPLATE_DELETE, szRaporter::OnTemplateDelete)
 	EVT_MENU(ID_M_OPTION_FILE_DUMP, szRaporter::OnOptFileDump)
 	EVT_MENU(ID_M_OPTION_SERVER, szRaporter::OnOptServer)
 	EVT_MENU(ID_M_OPTION_PERIOD, szRaporter::OnOptPeriod)

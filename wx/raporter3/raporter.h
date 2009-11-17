@@ -1,6 +1,5 @@
 /* 
   SZARP: SCADA software 
-  
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -22,6 +21,7 @@
  * SZARP
 
  * ecto@praterm.com.pl
+ * pawel@praterm.com.pl
  */
 
 #ifndef __RAPORTER_H__
@@ -45,15 +45,12 @@
 #include <wx/event.h>
 #include <wx/statusbr.h>
 
+#include "ns.h"
 #include "szarp_config.h"
-
 #include "fetchparams.h"
 #include "szhlpctrl.h"
-
 #include "filedump.h"
-
-/** URI of namespace for extra raporter properties in params lists. */
-#define SZ_REPORTS_NS_URI _T("http://www.praterm.com.pl/SZARP/reports")
+#include "userreports.h"
 
 /** Number of different bitmaps drawn on main button. */
 #define NUM_OF_BMPS	7
@@ -140,6 +137,8 @@ protected:
 	void OnTemplateLoad(wxCommandEvent &ev);
 	/** event: menu: template->new */
 	void OnTemplateNew(wxCommandEvent &ev);
+	/** event: menu: template->delete */
+	void OnTemplateDelete(wxCommandEvent &ev);
 	/** event: menu: template->edit */
 	void OnTemplateEdit(wxCommandEvent &ev);
 	/** event: menu: option->file dump */
@@ -171,16 +170,30 @@ protected:
 	 * @return true on success, false on error
 	 */
 	bool LoadIPK();
+	/**
+	 * Refresh User Template menu.
+	 */
+	void ReloadTemplateMenu();
 	/** load report from ipk
 	 * @return true if report title is not empty*/
 	bool LoadReportIPK(const wxString &rname);
-	/** load report from file FIXME:nonimplemented */
+	/** load report from file
+	 * @param fname name of file to load report from, if empty, dialog box is opened
+	 * to choose file  */
 	void LoadReportFile(const wxString &fname);
-	/** save report to file FIXME:nonimplemented */
+	/** save report to file */
 	void SaveReportFile(const wxString &fname);
-	/** creates param list from raport items list */
-	//szParList CreateParamList(szRapList& list);
+	/** Displays message box asking for report template overwrite.
+	 * @param config name of configuration, for which template was found,
+	 * should be empty string for default configuration
+	 * @return return from wxMessageBox, wxYES or wxNO
+	 */
+	int AskOverwrite(wxString config);
+	/** Saves current report template into users reports list. */
+	void SaveTemplate();
 	void SetIsTestRaport(wxString report_name);
+	/** Stop fetcher, called for example after failed report load. */
+	void Stop();
 	/**   
 	 * Refresh viewed report
 	 * @param force true to refresh even if not running
@@ -202,11 +215,9 @@ protected:
 	bool m_running;		/**< are we refershing? */
 	int m_bufsize;		/**< raporter history length 
 				FIXME:nonimplemented */
-	int m_per_type;		/**< type of data fetched (10s/1m/10m/1h) 
-				FIXME:nonimplemented */
+	int m_per_type;		/**< type of data fetched (10s/1m/10m/1h) */
 	int m_per_per;		/**< report refresh rate */
-	wxString m_report_name;	/**< current report name 
-				FIXME:what for custom? */
+	wxString m_report_name;	/**< current report name */
 	bool m_report_ipk;	/**< true for report from configuration,
 				  false for custom report */
 	szParamFetcher* m_pfetcher;
@@ -214,12 +225,15 @@ protected:
 	szHTTPCurlClient *m_http;	/**< HTTP client, used also by XSLT client */
 	szParList m_raplist;	/**< Current list of raports item. */
 	wxString m_server;	/**< path to server */
+	UserReports m_ur;	/**< user reports handler */
 	TSzarpConfig *ipk;	/**< ipk config */
 	wxArrayString ipk_raps;	/**< list of reports provided by ipk */
 	wxMenu *template_ipk_menu;
 				/**< menu: templates->ipk->* */
 	wxMenu *m_menu_template;
 				/**< menu: templates->ipk */
+	wxMenu *m_menu_user_templates;
+				/**< menu: templates->user templates->* */
 	wxMenu *m_raport_menu;	/**< menu: raport */
 	szHelpController* m_help;
 				/**< help controller */
@@ -250,6 +264,7 @@ enum {
   ID_M_TEMPLATE_LOAD,
   ID_M_TEMPLATE_NEW,
   ID_M_TEMPLATE_EDIT,
+  ID_M_TEMPLATE_DELETE,
 
   ID_M_OPTION_FILE_DUMP,
   ID_M_OPTION_SERVER,
@@ -278,3 +293,4 @@ enum {
 };
 
 #endif //_RAPORTER_H
+

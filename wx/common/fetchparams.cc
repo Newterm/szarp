@@ -87,7 +87,6 @@ bool szParamFetcher::ResetBase(const wxString &baseurl)
 
 bool szParamFetcher::SetSource_u(const wxString &url) 
 {
-	wxLogInfo(_T("DEBUG: fetch: set url(%s)"), url.c_str());
 	m_url = url;
 	if (url.IsEmpty()) {
 		m_valid = false;
@@ -113,7 +112,6 @@ bool szParamFetcher::SetReportName(const wxString &report)
 bool szParamFetcher::RegisterControlRaport(const wxString &cname, szParList& params, char *userpwd) {
 	wxCriticalSectionLocker cs(m_csec);
 	wxString url = m_baseurl + cname + _T("?set=1");
-	wxLogMessage(_(" DEBUG: TRYING TO REGISTER '%ls'\n"), url.c_str());
 	size_t ret;
 
 	xmlDocPtr doc = params.GetXML();
@@ -184,7 +182,6 @@ szParList& szParamFetcher::GetParams()
 wxString szParamFetcher::Register(const szParList &params) 
 {
 	wxString url = m_baseurl + _T("custom/add");
-	wxLogMessage(_(" DEBUG: TRYING TO REGISTER '%ls'\n"), url.c_str());
 
 	size_t ret;
 
@@ -192,13 +189,10 @@ wxString szParamFetcher::Register(const szParList &params)
 
 	char *buf = m_http->PostXML((char *)SC::S2U(url.c_str()).c_str(), doc, NULL, &ret);
 	if (buf == NULL) {
-		printf("DEBUG: FAILED: %s\n", m_http->GetErrorStr());
 		return wxEmptyString;
 	}
 
 	buf[ret] = '\0';
-
-	printf("DEBUG: SUCCESS! %s \n", buf);
 
 	wxString key = wxString::FromAscii("?title=") + wxString::FromAscii(buf);
 	free(buf);
@@ -235,7 +229,6 @@ void szParamFetcher::ResetTicker()
 
 bool szParamFetcher::Fetch() 
 {
-	wxLogInfo(_T("DEBUG: fetch: url(%s)\n"), m_url.c_str());
 	if ( m_url.Length() == 0 ) {
 		wxLogMessage(_T("fetch: url not set"));
 		return false;
@@ -243,9 +236,6 @@ bool szParamFetcher::Fetch()
 	
 	xmlDocPtr xml = m_http->GetXML((char *)SC::S2U(m_url.c_str()).c_str(), NULL, NULL);
 	if (xml == NULL) {
-		wxLogInfo(_T("DEBUG: fetch: cannot open url(%s), %s\n"), 
-			m_url.c_str(), 
-			SC::A2S(m_http->GetErrorStr()).c_str());
 		if (m_custom && m_http->GetError() == 0) /**register raport again (only if ti isn't a network failuer*/
 			SetSource(m_cust_list);
 		return false;

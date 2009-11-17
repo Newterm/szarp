@@ -1,6 +1,5 @@
 /* 
   SZARP: SCADA software 
-  
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -74,7 +73,6 @@ void rapApp::OnInitCmdLine(wxCmdLineParser &parser) {
 	parser.AddParam(_T("server"), wxCMD_LINE_VAL_STRING,
 			wxCMD_LINE_PARAM_OPTIONAL);
 	parser.AddParam(_T("title"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL);
-
 }
 
 bool rapApp::OnInit() 

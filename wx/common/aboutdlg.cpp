@@ -60,7 +60,7 @@ szAboutDlg::szAboutDlg(wxBitmap* bitmap, wxString programName, wxString version,
 	m_textCtrl = new wxTextCtrl(this, ID_ABOUT_TEXT,
 			wxEmptyString,
 			wxDefaultPosition,
-			wxSize(400, 200),
+			wxSize(400, 260),
 			wxTE_MULTILINE | wxTE_RICH | wxTE_READONLY | wxTE_AUTO_URL | wxBORDER_NONE
 			);
 

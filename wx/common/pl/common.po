@@ -634,8 +634,5 @@ msgstr "Stałe"
 msgid "Packs"
 msgstr "Paczki"
 
-#~ msgid " Praterm S.A."
-#~ msgstr " Praterm S.A."
-
 #~ msgid "Could not initialize locale."
 #~ msgstr "Błąd inicjalizacji języka."

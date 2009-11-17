@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: raporter3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-07 18:29+0100\n"
+"POT-Creation-Date: 2009-11-17 18:29+0100\n"
 "PO-Revision-Date: 2008-09-15 15:43+0100\n"
 "Last-Translator: Pawe³ Pa³ucha <pawel@praterm.com.pl>\n"
 "Language-Team: \n"
@@ -16,37 +16,29 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: rap.cc:73
+#: rap.cc:72
 msgid "Szarp Raporter v 3.1"
 msgstr ""
 
-#: rap.cc:89
+#: rap.cc:87
 msgid "Raporter 3"
 msgstr "Raporter 3"
 
-#: raporter.cc:96
+#: raporter.cc:97
 msgid "Raporter"
 msgstr "Raporter"
 
-#: raporter.cc:115
+#: raporter.cc:116
 msgid "&Start\tSpace"
 msgstr "&Start\tSpace"
 
-#: raporter.cc:116
+#: raporter.cc:117
 msgid "&File dump"
 msgstr "&Zrzut do pliku"
 
-#: raporter.cc:118
+#: raporter.cc:119
 msgid "E&xit\tAlt-X"
 msgstr "&Zakoñcz\tAlt-X"
-
-#: raporter.cc:122
-msgid "&Save\tCtrl-S"
-msgstr "&Zapisz\tCtrl-S"
-
-#: raporter.cc:123
-msgid "&Load\tCtrl-O"
-msgstr "&Otwórz\tCtrl-O"
 
 #: raporter.cc:124
 msgid "&New\tCtrl-N"
@@ -56,109 +48,157 @@ msgstr "&Nowy\tCtrl-N"
 msgid "&Edit\tCtrl-E"
 msgstr "&Edycja\tCtrl-E"
 
-#: raporter.cc:127
+#: raporter.cc:126
+msgid "&Delete\tCtrl-D"
+msgstr "&Usuñ\tCtrl-D"
+
+#: raporter.cc:128
+msgid "&Import\tCtrl-O"
+msgstr "&Importuj\tCtrl-O"
+
+#: raporter.cc:129
+msgid "&Export\tCtrl-S"
+msgstr "&Eksportuj\tCtrl-E"
+
+#: raporter.cc:131
 msgid "S&ystem"
 msgstr "S&ystem"
 
-#: raporter.cc:130
+#: raporter.cc:132
+msgid "&User templates"
+msgstr "&Wzorce u¿ytkownika"
+
+#: raporter.cc:135
 msgid "&Server"
 msgstr "&Serwer"
 
-#: raporter.cc:131
+#: raporter.cc:136
 msgid "&Period"
 msgstr "O&kres"
 
-#: raporter.cc:133
+#: raporter.cc:138
 msgid "&Increase font\t+"
 msgstr "Z&wiêksz czcionkê\t+"
 
-#: raporter.cc:134
+#: raporter.cc:139
 msgid "&Decrease font\t-"
 msgstr "Z&mniejsz czcionkê\t-"
 
-#: raporter.cc:136
-msgid "&Raporter"
-msgstr "&Raporter"
+#: raporter.cc:141
+msgid "&Help\tF1"
+msgstr "&Pomoc\tF1"
 
-#: raporter.cc:137
+#: raporter.cc:142
 msgid "&About"
 msgstr "&O autorach"
 
-#: raporter.cc:140
+#: raporter.cc:145
 msgid "&Raports"
 msgstr "&Raporty"
 
-#: raporter.cc:141
+#: raporter.cc:146
 msgid "&Templates"
 msgstr "&Wzorce"
 
-#: raporter.cc:142
+#: raporter.cc:147
 msgid "&Options"
 msgstr "&Opcje"
 
-#: raporter.cc:143
+#: raporter.cc:148
 msgid "&Help"
 msgstr "&Pomoc"
 
-#: raporter.cc:194 raporter.cc:668
+#: raporter.cc:200 raporter.cc:800
 msgid "Param"
 msgstr "Parametr"
 
-#: raporter.cc:195 raporter.cc:673
+#: raporter.cc:201 raporter.cc:805
 msgid "Value"
 msgstr "Warto¶æ"
 
-#: raporter.cc:196 raporteredit.cc:79
+#: raporter.cc:202 raporteredit.cc:79
 msgid "Description"
 msgstr "Opis"
 
-#: raporter.cc:221
+#: raporter.cc:227
 msgid "Choose report template"
 msgstr "Wybierz wzorzec raportu"
 
-#: raporter.cc:267
+#: raporter.cc:257
+msgid "(None)"
+msgstr "(Brak)"
+
+#: raporter.cc:293
 msgid "test report"
 msgstr "raport testowy"
 
-#: raporter.cc:403 raporter.cc:435
+#: raporter.cc:302
+msgid " for configuration "
+msgstr " dla konfiguracji "
+
+#: raporter.cc:305
+msgid "User report template with the same name already exists"
+msgstr "Wzorzec raportu u¿ytkownika o takiej samej nazwie ju¿ istnieje"
+
+#: raporter.cc:307
+msgid ". Do you want to replace existing template?"
+msgstr ". Czy chcesz zast±piæ istniej±cy wzorzec?"
+
+#: raporter.cc:308
+msgid "Template overwrite"
+msgstr "Nadpisanie wzorca"
+
+#: raporter.cc:381
+msgid ""
+"Registering report on current server failed. Template does not contain valid "
+"report."
+msgstr ""
+"Nie uda³o siê zarejestrowaæ raportu na wybranym serwerze. Wzorzec nie "
+"zawiera poprawnego raportu."
+
+#: raporter.cc:382
+msgid "Incorrect report template"
+msgstr "Niepoprawny wzorzec raportu"
+
+#: raporter.cc:476 raporter.cc:525
 msgid "Raporter->Editor"
-msgstr "Raport->Edycja"
+msgstr "Raporter->Edytor"
 
-#: raporter.cc:492
+#: raporter.cc:563
+msgid "Are you sure you want to remove current report?"
+msgstr "Na pewno chcesz usun±æ bie¿±cy raport?"
+
+#: raporter.cc:564
+msgid "Delete user report"
+msgstr "Usuñ raport u¿ytkownika"
+
+#: raporter.cc:619
 msgid "Raporter->Period"
-msgstr "Raport->Okres"
+msgstr "Raporter->Okres"
 
-#: raporter.cc:512
+#: raporter.cc:639
 msgid "Raporter->Buffer"
-msgstr "Raport->Bufor"
+msgstr "Raporter->Bufor"
 
-#: raporter.cc:572
+#: raporter.cc:698
 msgid "Start\tSpace"
 msgstr "Start\tSpace"
 
-#: raporter.cc:588
+#: raporter.cc:720
 msgid "Stop\tSpace"
 msgstr "Stop\tSpace"
 
-#: raporter.cc:594
+#: raporter.cc:726
 msgid "System"
 msgstr "System"
 
-#: raporter.cc:594
+#: raporter.cc:726
 msgid "Custom"
-msgstr "W³asny"
+msgstr "U¿ytkownika"
 
-#: raporter.cc:626 raporter.cc:634
+#: raporter.cc:758 raporter.cc:766
 msgid "no data"
 msgstr "brak danych"
-
-#: raporterbuf.cc:49
-msgid "Capacity of report buffer"
-msgstr "Pojemno¶æ bufora"
-
-#: raporterbuf.cc:70 raporterperiod.cc:107
-msgid "Raporter - help"
-msgstr "Raport - pomoc"
 
 #: raporterperiod.cc:66
 msgid "Period length"
@@ -167,6 +207,10 @@ msgstr "D³ugo¶æ okresu"
 #: raporterperiod.cc:81
 msgid "Seconds:"
 msgstr "Sekundy:"
+
+#: raporterperiod.cc:107
+msgid "Raporter - help"
+msgstr "Raporter - pomoc"
 
 #: raporteredit.cc:62
 msgid "Tile"
@@ -192,39 +236,54 @@ msgstr "Dodaj"
 msgid "Delete"
 msgstr "Usuñ"
 
-#: raporteredit.cc:110
+#: raporteredit.cc:114
 msgid "Raporter->Editor->Add"
-msgstr "Raport->Edycja->Dodaj"
+msgstr "Raporter->Edytor->Dodaj"
 
-#: filedump.cc:35
+#: filedump.cc:38
 msgid "File dump options"
 msgstr "Zrzut do pliku"
 
-#: filedump.cc:39
+#: filedump.cc:45
 msgid "Destination dir:"
 msgstr "Katalog docelowy:"
 
-#: filedump.cc:41
+#: filedump.cc:50
 msgid "Select a folder"
 msgstr "Wybierz katalog"
 
-#: filedump.cc:46
+#: filedump.cc:58
 msgid "Maximum file size (in MB):"
 msgstr "Maksymalny rozmiar pliku (w MB):"
 
-#: filedump.cc:53
+#: filedump.cc:71
 msgid "Enable dump to a file"
 msgstr "W³±cz zrzut warto¶ci do pliku"
 
-#: filedump.cc:62
-msgid "OK"
-msgstr "OK"
+#: filedump.cc:89
+msgid "Ok"
+msgstr ""
 
-#: filedump.cc:65
+#: filedump.cc:95
 msgid "Cancel"
 msgstr "Anuluj"
 
-#: filedump.cc:122
+#: filedump.cc:157
 msgid "No report name"
 msgstr "Brak nazwy raportu"
+
+#: userreports.cc:32
+msgid "Directory is not writable: "
+msgstr "Nie masz uprawnieñ do zapisu w katalogu: "
+
+#: userreports.cc:36
+msgid "Cannot create directory: "
+msgstr "Nie mo¿na utworzyæ katalogu: "
+
+#: userreports.cc:69
+msgid "Error saving file: "
+msgstr "B³±d przy zapisywaniu pliku: "
+
+msgid "Custom"
+msgstr "U¿ytkownika"
 

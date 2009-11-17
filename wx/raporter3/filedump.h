@@ -1,6 +1,5 @@
 /*
   SZARP: SCADA software
-  
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,7 +18,6 @@
 /*
  * raporter3 program
  * SZARP
-
  *
  * $Id$
  */
@@ -39,9 +37,9 @@
 #include <wx/wx.h>
 #endif
 
-#ifdef new
-#undef new
-#endif
+//#ifdef new
+//#undef new
+//#endif
 
 #include <wx/filepicker.h>
 #include <wx/spinctrl.h>
@@ -92,20 +90,16 @@ private:
 
 class FileDump
 {
-public:
-	static
-	void DumpValues(szParList *params, wxString report_name);
-	static
-	bool DumpEnabled();
-	static
-	wxFileName GetFileName(wxString report_name);
-	static
-	wxFileName GetFileName(wxString dir, wxString report_name);
-	static
-	wxString GetDir();
-	static
-	long GetMaxSize();
-private:
+  public:
+	static void DumpValues(szParList *params, wxString report_name);
+	static bool DumpEnabled();
+	static wxFileName GetFileName(wxString report_name);
+	static wxFileName GetFileName(wxString dir, wxString report_name);
+	static wxString GetDir();
+	static long GetMaxSize();
+  protected:
+	/** Write platform-specific end-of-line to file */
+	static void WriteEOL(wxFile& file);
 };
 
 #endif

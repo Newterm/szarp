@@ -38,10 +38,11 @@ ICONS=\
 
 raporter3_SOURCES = \
 	rap.cc raporter.cc raporter.h \
-	raporterbuf.cc raporterbuf.h \
 	raporterperiod.cc raporterperiod.h \
 	raporteredit.cc raporteredit.h \
 	filedump.cc raporteredit.h \
+	userreports.cc userreports.h \
+	ns.h \
 	$(ICONS)
 
 if MINGW32_OPT

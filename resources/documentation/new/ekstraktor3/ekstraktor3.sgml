@@ -130,7 +130,7 @@ Szarp (scc).
 <note>
 <para>Oczywi¶cie, musisz byæ zalogowany do systemu - albo pracuj±c
 bezpo¶rednio na komputerze z Linuksem, albo loguj±c siê z Windows za pomoc±
-emulatora X-terminala, takiego jak Pexus X-Deep/32 czy Cygwin.</para>
+emulatora X-terminala, np. Cygwin X-Org.</para>
 </note>
 </para>
 <para>

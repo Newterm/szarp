@@ -401,9 +401,13 @@ void szParList::RemoveUnbinded()
 
 wxString szParList::GetConfigName()
 {
-	wxString ret = _T("");
-	if (ipks.Count() <= 0)
-		return ret;
+	if (ipks.Count() <= 0) {
+		xmlChar* def = xmlGetProp(xml->children, BAD_CAST "source");
+		if (def == NULL) {
+			return _T("");
+		}
+		return wxString(SC::U2S(def));
+	}
 	return ipks.Item(0)->GetTitle();
 }
 
