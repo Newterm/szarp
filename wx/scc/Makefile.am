@@ -105,11 +105,7 @@ autostart:
 
 else DEB_BUILD
 autostart:
-	@$(INSTALL) -d $(DESTDIR)/etc/X11/Xsession.d
-	@echo -e "#!/bin/sh \nif [ -x @prefix@/bin/scc ] ; then \nexport LANG=pl_PL\n/@prefix@/bin/scc -geometry +0-30 \$$USER &\nfi"\
-		> $(DESTDIR)/etc/X11/Xsession.d/79scc 
-	@$(INSTALL) -d $(DESTDIR)/etc
-	@echo ". /etc/X11/Xsession.d/79scc" > $(DESTDIR)/etc/xprofile 
+
 endif
 
 install-data-hook: autostart
