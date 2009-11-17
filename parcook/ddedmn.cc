@@ -214,8 +214,8 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 		std::string topic = (char*) _topic;
 
 		if (m_params.find(topic) == m_params.end()
-				|| m_params[topic].find(item) == m_params[topic].end()) {
-			DDEParam& mp = m_params[topic][item];
+				|| m_params[topic].find((const char*)_item) == m_params[topic].end()) {
+			DDEParam& mp = m_params[topic][(const char *)_item];
 			mp.prec = param->GetPrec();
 			mp.address = i;
 			mp.type = val_type;
@@ -243,10 +243,10 @@ XMLRPC_REQUEST DDEDaemon::CreateRequest() {
 			i != m_params.end();
 			i++) {
 		XMLRPC_VALUE pv = XMLRPC_CreateVector(i->first.c_str(), xmlrpc_vector_array);
-		for (std::map<int, DDEParam>::iterator j = i->second.begin();
+		for (std::map<std::string, DDEParam>::iterator j = i->second.begin();
 				j != i->second.end();
 				++j) {
-			XMLRPC_VectorAppendString(pv, NULL, j->first.c_str());
+			XMLRPC_VectorAppendString(pv, NULL, j->first.c_str(), 0);
 			if (j->second.type != DDEParam::INTEGER) {
 				XMLRPC_VectorAppendInt(pv, NULL, atoi(j->first.c_str()) + 1);
 			}
@@ -293,7 +293,9 @@ bool DDEDaemon::ConvertValue(XMLRPC_VALUE i, const std::string& topic, std::stri
 		case xmlrpc_string:
 			s = XMLRPC_GetValueString(i);
 			if (s == NULL)	{
-				dolog(1, "No value received for topic: %s, item: %s", topic.c_str(), item);
+				dolog(1, "No value received for topic: %s, item: %s", 
+						topic.c_str(), 
+						item.c_str());
 				return false;;
 			}
 			ret = strtof(s, &err);
@@ -322,15 +324,19 @@ void DDEDaemon::ParseResponse(XMLRPC_REQUEST response) {
 	}
 
 	XMLRPC_VALUE i = XMLRPC_VectorRewind(XMLRPC_RequestGetData(response));
-	std::map<std::string, std::map<int, DDEParam> >::iterator j;
-	std::map<int, DDEParam>::iterator k;
+	std::map<std::string, std::map<std::string, DDEParam> >::iterator j;
+	std::map<std::string, DDEParam>::iterator k;
 
 	for (j = m_params.begin(); j != m_params.end() && i; j++)
 		for (k = j->second.begin(); k != j->second.end() && i; ++k) {
 			DDEParam& dde = k->second;
 
 			unsigned short val = SZARP_NO_DATA;
-			bool r = ConvertValue(i, j->first, k->first, val);
+			bool r = ConvertValue(
+					i, 
+					j->first, 
+					k->first, 
+					val);
 			i = XMLRPC_VectorNext(XMLRPC_RequestGetData(response));
 			if (dde.type == DDEParam::INTEGER) {
 				m_ipc->m_read[dde.address] = val;

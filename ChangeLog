@@ -1,6 +1,7 @@
 $Id$
 
 2009-11-17	Darek Marcinkiewicz <darek@praterm.pl>
+	* parcook/ddedmn.cc: it compiles now, but I doubt it works ;-)
 	* wx/scc/Makefile.am: we no longer install /etc/X11/Xsession.d/79scc
 	and /etc/X11/xprofile files - may help for scc instances that don't
 	want to die with their X session
