@@ -7,7 +7,9 @@ set -e;
 
 case "$1" in
     configure)
-	[ -e /etc/X11/Xsession.d/79scc ] || rm -f /etc/X11/Xsession.d/79scc;
+	[ -e /etc/X11/Xsession.d/79scc ] && rm -f /etc/X11/Xsession.d/79scc;
+
+	[ -e /etc/xprofile ] && sed -i '#/etc/X11/Xsession.d/79scc#d' /etc/xprofile;
 	
     ;;
 
