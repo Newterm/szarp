@@ -181,6 +181,9 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 			return 1;
 		}
 
+		std::string item = (char*) _item;
+
+#if 0
 		char *err;
 		int item = strtol((const char*)_item, &err, 10);
 		if (*err != '\0') {
@@ -188,6 +191,7 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 			dolog(0, "Error, invalid value of attribute dde:item in param definition, line(%ld)", xmlGetLineNo(n));
 			return 1;
 		}
+#endif
 
 		xmlChar* _type = xmlGetNsProp(n,
 				BAD_CAST("type"), 
@@ -214,8 +218,8 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 		std::string topic = (char*) _topic;
 
 		if (m_params.find(topic) == m_params.end()
-				|| m_params[topic].find((const char*)_item) == m_params[topic].end()) {
-			DDEParam& mp = m_params[topic][(const char *)_item];
+				|| m_params[topic].find(item) == m_params[topic].end()) {
+			DDEParam& mp = m_params[topic][item];
 			mp.prec = param->GetPrec();
 			mp.address = i;
 			mp.type = val_type;
@@ -293,9 +297,7 @@ bool DDEDaemon::ConvertValue(XMLRPC_VALUE i, const std::string& topic, std::stri
 		case xmlrpc_string:
 			s = XMLRPC_GetValueString(i);
 			if (s == NULL)	{
-				dolog(1, "No value received for topic: %s, item: %s", 
-						topic.c_str(), 
-						item.c_str());
+				dolog(1, "No value received for topic: %s, item: %s", topic.c_str(), item.c_str());
 				return false;;
 			}
 			ret = strtof(s, &err);
@@ -332,11 +334,7 @@ void DDEDaemon::ParseResponse(XMLRPC_REQUEST response) {
 			DDEParam& dde = k->second;
 
 			unsigned short val = SZARP_NO_DATA;
-			bool r = ConvertValue(
-					i, 
-					j->first, 
-					k->first, 
-					val);
+			bool r = ConvertValue(i, j->first, k->first, val);
 			i = XMLRPC_VectorNext(XMLRPC_RequestGetData(response));
 			if (dde.type == DDEParam::INTEGER) {
 				m_ipc->m_read[dde.address] = val;
