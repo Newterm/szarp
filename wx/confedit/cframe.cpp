@@ -27,6 +27,7 @@
 #define _GNU_SOURCE
 #endif
 
+#include "confapp.h"
 #include "cframe.h"
 #include "szarp_config.h"
 #include "htmlview.h"
@@ -37,7 +38,6 @@
 #include <wx/listimpl.cpp>
 
 #if defined(__WXGTK__) || defined(__WXMOTIF__)
-#include "conf_icon16.xpm"
 #include "up.xpm"
 #include "down.xpm"
 #include "load.xpm"
@@ -79,13 +79,15 @@ enum {
         ID_tbDown,
         ID_RapList,
         ID_DrawList,
+	ID_DrawItems,
 	ID_MenuDown,
 	ID_MenuUp,
 	ID_Clear,
-	ID_Reset
+	ID_Help,
+	ID_About
 };
 
-BEGIN_EVENT_TABLE(ConfFrame, wxFrame)
+BEGIN_EVENT_TABLE(ConfFrame, szFrame)
 	EVT_CLOSE(ConfFrame::OnClose)
         EVT_MENU(ID_Exit, ConfFrame::OnExit)
         EVT_TOOL(ID_tbExit, ConfFrame::OnExit)
@@ -102,24 +104,20 @@ BEGIN_EVENT_TABLE(ConfFrame, wxFrame)
         EVT_MENU(ID_tbDown, ConfFrame::DownPressed)
         EVT_MENU(ID_MenuDown, ConfFrame::DownPressed)
 	EVT_MENU(ID_Clear, ConfFrame::OnClear)
-	EVT_MENU(ID_Reset, ConfFrame::OnReset)
+	EVT_MENU(ID_Help, ConfFrame::OnHelp)
+	EVT_MENU(ID_About, ConfFrame::OnAbout)
         EVT_LISTBOX(ID_RapList, ConfFrame::RaportSelected)
-        //EVT_LISTBOX(ID_DrawList, ConfFrame::DrawSelected)
 END_EVENT_TABLE()
 
 WX_DEFINE_LIST(xmlNodeList);
 
 ConfFrame::ConfFrame(wxString _filename, const wxPoint& pos, const wxSize& size) 
-	: wxFrame((wxFrame *)NULL, -1, _("SZARP config editor"), 
+	: szFrame((wxFrame *)NULL, -1, _("SZARP config editor"), 
 		pos, size), filename(_filename), params(NULL)
 {
 	modified = FALSE;
         /* Minimal program window size */
 	SetSizeHints(300, 200);
-
-        /* Program's icon */
-	m_icon = wxICON(conf_icon16);
-	SetIcon(m_icon);
 
         /* Load IPK DTD */
         if (LoadSchema() != 0)
@@ -146,12 +144,15 @@ ConfFrame::ConfFrame(wxString _filename, const wxPoint& pos, const wxSize& size)
 	menuEdit->AppendSeparator();
 	menuEdit->Append(ID_Clear, _("&Clear all"),
 		_("Clears all the order attributes."));
-	menuEdit->Append(ID_Reset, _("&Recount all"),
-		_("Recount all attributes to assume provided order."));
+	
+	wxMenu *menuHelp = new wxMenu;
+	menuHelp->Append(ID_Help, _("&Help\tF1"), _("Open program documentation"));
+	menuHelp->Append(ID_About, _("&About"), _("Info about program and authors"));
 	
 	wxMenuBar *menuBar = new wxMenuBar;
 	menuBar->Append(menuFile, _("&File"));
 	menuBar->Append(menuEdit, _("&Edit"));
+	menuBar->Append(menuHelp, _("&Help"));
 
 	SetMenuBar(menuBar);
 
@@ -208,11 +209,10 @@ ConfFrame::ConfFrame(wxString _filename, const wxPoint& pos, const wxSize& size)
                         wxSize(150, 300));
         drawtab_sizer->Add(drawlist, 1, wxEXPAND | wxALL, 10);
 
-        ditemslist = new wxListBox(drawtab, -1, wxDefaultPosition,
-                        wxSize(150, 300));
+        ditemslist = new DrawsListCtrl(drawtab, ID_DrawItems, wxDefaultPosition,
+                        wxSize(300, 300));
         drawtab_sizer->Add(ditemslist, 1, wxEXPAND | wxTOP | wxBOTTOM | wxRIGHT,
                         10);
-        
         drawtab->SetAutoLayout(TRUE);
         drawtab->SetSizer(drawtab_sizer);
 
@@ -229,7 +229,9 @@ ConfFrame::ConfFrame(wxString _filename, const wxPoint& pos, const wxSize& size)
 
         GetStatusBar()->SetStatusText(_("SZARP IPK editor"));
 
-	Connect(ID_DrawList, wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler(ConfFrame::DrawSelected));
+	Connect(ID_DrawList, 
+			wxEVT_COMMAND_LISTBOX_SELECTED, 
+			wxCommandEventHandler(ConfFrame::DrawSelected));
 }
 
 void ConfFrame::OnExit(wxCommandEvent& WXUNUSED(event))
@@ -244,6 +246,11 @@ void ConfFrame::OnHelp(wxCommandEvent& WXUNUSED(event))
 		this, _("IPK editor help"),
 		wxDefaultPosition, wxSize(600,600));
 	f->Show();
+}
+
+void ConfFrame::OnAbout(wxCommandEvent& WXUNUSED(event))
+{
+	wxGetApp().ShowAbout();
 }
 
 void ConfFrame::OnClose(wxCloseEvent& WXUNUSED(event))
@@ -307,6 +314,7 @@ void ConfFrame::LoadFile(wxString path)
                 xmlFreeDoc(params);
         params = newdoc;
         ReloadParams();
+	ResetAll();
 	SetTitle(wxString(_("SZARP ")) + path);
 	modified = FALSE;
 	filename = path;
@@ -383,16 +391,16 @@ void ConfFrame::ReloadParams(void)
 {
         while (raplist->GetCount() > 0) {
                 delete (xmlNodeList *)raplist->GetClientData(0);
-				raplist->SetClientData(0, NULL);
+		raplist->SetClientData(0, NULL);
                 raplist->Delete(0);
         }
         ritemslist->Clear();
         while (drawlist->GetCount() > 0) {
                 delete (xmlNodeList *)drawlist->GetClientData(0);
-				drawlist->SetClientData(0, NULL);
+		drawlist->SetClientData(0, NULL);
                 drawlist->Delete(0);
         }
-        ditemslist->Clear();
+        ditemslist->DeleteAllItems();
       
         FindElements(params->children);
 }
@@ -580,39 +588,38 @@ void ConfFrame::RaportSelected(wxCommandEvent& event)
 {
         ritemslist->Clear();
         xmlNodeList::Node* node;
-		if(event.GetClientData() != NULL) {
-			for (node = ((xmlNodeList*)event.GetClientData())->GetFirst();
-					node; node = node->GetNext()) {
-					xmlChar* str = xmlGetProp(node->GetData(),
-							(xmlChar*)"description");
-					if (!str) 
-							str = xmlGetProp(node->GetData()->parent,
-							(xmlChar*)"name");
-					std::wstring s = SC::U2S(str);
-					size_t last = s.find_last_of(':');
-					if (last != std::wstring::npos)
-							s = s.substr(last + 1);
-					ritemslist->Append(wxString(s));
+	if(event.GetClientData() != NULL) {
+		for (node = ((xmlNodeList*)event.GetClientData())->GetFirst();
+				node; node = node->GetNext()) {
+			xmlChar* str = xmlGetProp(node->GetData(),
+					(xmlChar*)"description");
+			if (!str) {
+				str = xmlGetProp(node->GetData()->parent,
+						(xmlChar*)"name");
 			}
+			std::wstring s = SC::U2S(str);
+			size_t last = s.find_last_of(':');
+			if (last != std::wstring::npos) {
+				s = s.substr(last + 1);
+			}
+			ritemslist->Append(wxString(s));
 		}
+	}
 }
 
 void ConfFrame::DrawSelected(wxCommandEvent& event)
 {
-        ditemslist->Clear();
+        ditemslist->DeleteAllItems();
         xmlNodeList::Node* node;
-		if(event.GetClientData() != NULL) {
-			for (node = ((xmlNodeList*)event.GetClientData())->GetFirst();
-					node; node = node->GetNext()) {
-					xmlChar* str = xmlGetProp(node->GetData()->parent,
-							(xmlChar*)"draw_name");
-					if (!str) 
-							str = xmlGetProp(node->GetData()->parent,
-							(xmlChar*)"name");
-					std::wstring s = SC::U2S(str);
-					ditemslist->Append(wxString(s));
-			}
+	if(event.GetClientData() != NULL) {
+		int i = 0;
+		for (node = ((xmlNodeList*)event.GetClientData())->GetFirst();
+				node; node = node->GetNext(), i++) {
+			ditemslist->InsertItem(node->GetData());
 		}
+	}
+	ditemslist->SortItems();
+	ditemslist->AssignColors();
 }
 
 void ConfFrame::UpPressed(wxCommandEvent& event)
@@ -622,10 +629,11 @@ void ConfFrame::UpPressed(wxCommandEvent& event)
                 (ritemslist->GetSelection() > 0)) 
                 MoveRapItemUp();
         else if (!page_title.Cmp(_("Draws"))) {
-                if (ditemslist->GetSelection() > 0)
-                        MoveDrawItemUp();
-                else if (drawlist->GetSelection() > 0)
+		if (ditemslist->GetSelection() >= 0) {
+			MoveDrawItemUp();
+		} else if (drawlist->GetSelection() > 0) {
                         MoveDrawUp();
+		}
         }
 }
 
@@ -637,13 +645,11 @@ void ConfFrame::DownPressed(wxCommandEvent& event)
                 (ritemslist->GetSelection() < (static_cast<int>(ritemslist->GetCount()) - 1)) )
                 MoveRapItemDown();
         else if (!page_title.Cmp(_("Draws"))) {
-                if (ditemslist->GetSelection() >= 0) {
-                        if (ditemslist->GetSelection() <
-                                (static_cast<int>(ditemslist->GetCount()) - 1))
-                                MoveDrawItemDown();
-                } else if ((drawlist->GetSelection() >= 0) && (
-                        drawlist->GetSelection() < static_cast<int>(drawlist->GetCount()) - 1))
+		if (ditemslist->GetSelection() >= 0) {
+			MoveDrawItemDown();
+		} else if (drawlist->GetSelection() > 0) {
                         MoveDrawDown();
+		}
         }
 }
 
@@ -708,59 +714,13 @@ void ConfFrame::MoveRapItemDown(void)
 void ConfFrame::MoveDrawItemUp(void)
 {
 	modified = TRUE;
-        /* Get objects to swap */
-        int pos = ditemslist->GetSelection();
-        xmlNodeList* list = (xmlNodeList*) drawlist->GetClientData(
-                drawlist->GetSelection());
-        xmlNodePtr node = list->Item(pos)->GetData();
-        xmlNodePtr prev_node = list->Item(pos-1)->GetData();
-        /* Make sure that objects have order attributes. */
-        xmlChar *porder = xmlGetProp(prev_node, (xmlChar*)"order");
-        if (porder == NULL)
-                AssignItemsPriors(list, pos - 1);
-        /* Swap attribute values. */
-        xmlChar* order = xmlGetProp(node, (xmlChar*)"order");
-        porder = xmlGetProp(prev_node, (xmlChar*)"order");
-        xmlSetRemoveProp(node, (xmlChar*)"order", porder);
-        xmlSetRemoveProp(prev_node, (xmlChar*)"order", order);
-        /* Swap list elements. */
-        list->DeleteObject(prev_node);
-        list->Insert(pos, prev_node);
-        /* Swap listbox entries. */
-        wxString entry = ditemslist->GetString(pos-1);
-        ditemslist->Delete(pos - 1);
-        ditemslist->InsertItems(1, &entry, pos);
-        /* Make sure selection is in correct position */
-        ditemslist->SetSelection(pos-1);
+	ditemslist->MoveItemUp();
 }
 
 void ConfFrame::MoveDrawItemDown(void)
 {
 	modified = TRUE;
-        /* Get objects to swap */
-        int pos = ditemslist->GetSelection();
-        xmlNodeList* list = (xmlNodeList*) drawlist->GetClientData(
-                drawlist->GetSelection());
-        xmlNodePtr node = list->Item(pos)->GetData();
-        xmlNodePtr next_node = list->Item(pos+1)->GetData();
-        /* Make sure that objects have order attributes. */
-        xmlChar *order = xmlGetProp(node, (xmlChar*)"order");
-        if (order == NULL)
-                AssignItemsPriors(list, pos);
-        /* Swap attribute values. */
-        xmlChar* norder = xmlGetProp(next_node, (xmlChar*)"order");
-        order = xmlGetProp(node, (xmlChar*)"order");
-        xmlSetRemoveProp(node, (xmlChar*)"order", norder);
-        xmlSetRemoveProp(next_node, (xmlChar*)"order", order);
-        /* Swap list elements. */
-        list->DeleteObject(next_node);
-        list->Insert(pos, next_node);
-        /* Swap listbox entries. */
-        wxString entry = ditemslist->GetString(pos + 1);
-        ditemslist->Delete(pos + 1);
-        ditemslist->InsertItems(1, &entry, pos);
-        /* Make sure selection is in correct position */
-        ditemslist->SetSelection(pos+1);
+	ditemslist->MoveItemDown();
 }
 
 void ConfFrame::MoveDrawUp(void)
@@ -898,10 +858,6 @@ void ConfFrame::ClearAll()
 	modified = TRUE;
 	ClearElements(params->children);
 	ReloadParams();
-}
-
-void ConfFrame::OnReset(wxCommandEvent& WXUNUSED(event))
-{
 	ResetAll();
 }
 
@@ -944,6 +900,6 @@ void ConfFrame::ResetAll()
 					SC::S2U(str).c_str());
                 }
 	}
-	
 }
+
 

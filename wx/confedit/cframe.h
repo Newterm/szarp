@@ -40,10 +40,13 @@
 #endif
 
 #include <libxml/tree.h>
-
 #include <libxml/relaxng.h>
-
 #include <wx/notebook.h>
+#include <wx/imaglist.h>
+
+#include "szframe.h"
+#include "cconv.h"
+#include "dlistctrl.h"
 
 /**
  * xmlNodeList is a type of list containing pointers to XML nodes.
@@ -54,7 +57,7 @@ WX_DECLARE_LIST(xmlNode, xmlNodeList);
  * This class is the application main frame. It implements almost all
  * of the program logic.
  */
-class ConfFrame : public wxFrame {
+class ConfFrame : public szFrame {
 public:
         /**
          * @param filename name of file to load on start, may be wxEmptyString
@@ -68,6 +71,8 @@ private:
 	void OnExit(wxCommandEvent& event);
        	/** Event handler - displays program help. */
 	void OnHelp(wxCommandEvent& event);
+       	/** Event handler - displays "About" box. */
+	void OnAbout(wxCommandEvent& event);
 	/** Event handler - called on close event. */
 	void OnClose(wxCloseEvent& event);
 	/** Event handler - opens 'load file' dialog. */
@@ -80,9 +85,6 @@ private:
 	void OnSaveAs(wxCommandEvent& event);
 	/** Event handler - clears all the attributes. */
 	void OnClear(wxCommandEvent& event);
-	/** Event handler - reset all values to the minimum set
-	 * corresponding to current GUI order. */
-	void OnReset(wxCommandEvent& event);
         /** Event handler, called when raport is selected. Updates list of
          * raport's items. */
         void RaportSelected(wxCommandEvent& event);
@@ -166,6 +168,8 @@ private:
 	/** Assign prior and order attributes  corresponding to current 
 	 * positions in GUI. */
 	void ResetAll();
+
+	static int wxCALLBACK sort_callback(long item1, long item2, long ignored);
  
 	/** Application icon. */
 	wxIcon m_icon;
@@ -188,12 +192,13 @@ private:
         wxListBox* ritemslist;  /**< List of raport items. Content of this 
                                   listbox is generated from raplist client
                                   data. */
-        wxListBox* drawlist;    /**< List of draws (draw's windows or sets 
-                                  really). List of draw items is attached to 
-                                  each window as client data. */
-        wxListBox* ditemslist;  /**< List of draw items. Content of this
-                                  listbox is generated from drawlist client
-                                  data. */
+        wxListBox* drawlist;	/**< List of draws (draw's windows or sets 
+				  really). List of draw items is attached to 
+				  each window as client data. */
+        DrawsListCtrl* ditemslist;	
+				/**< List of draw items. Content of this
+				  list control is generated from drawlist client
+				  data. */
 };
 
 #endif

@@ -47,6 +47,7 @@
 #include "cconv.h"
 #include "coobs.h"
 #include "defcfg.h"
+#include "dcolors.h"
 
 wxString DrawParam::GetBasePrefix() {
 	assert (m_param != NULL);
@@ -504,18 +505,9 @@ const double DrawSet::defined_draws_prior_start = -2;
 
 ConfigManager::ConfigManager(DrawApp* app, IPKContainer *ipks) : m_app(app), m_ipks(ipks), splashscreen(NULL)
 {
-	DefaultColors[0] = wxColour(_T("red"));
-	DefaultColors[1] = wxColour(0xFF, 0xC2, 0x46);
-	DefaultColors[2] = wxColour(_T("cyan"));
-	DefaultColors[3] = wxColour(_T("green"));
-	DefaultColors[4] = wxColour(_T("yellow"));
-	DefaultColors[5] = wxColour(0xB9, 0xF4, 0xBE);
-	DefaultColors[6] = wxColour(_T("blue"));
-	DefaultColors[7] = wxColour(_T("magenta"));
-	DefaultColors[8] = wxColour(0x00, 0xB6, 0xFF);
-	DefaultColors[9] = wxColour(0xA6, 0xA5, 0x50);
-	DefaultColors[10] = wxColour(0xFF, 0x82, 0x5F);
-	DefaultColors[11] = wxColour(0xAF, 0xAF, 0xFF);
+	for (int i = 0; i < MAX_DRAWS_COUNT; i++) {
+		DefaultColors[i] = DrawDefaultColors::MakeColor(i);
+	}
 
 	m_defined_sets = NULL;
 

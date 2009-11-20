@@ -284,6 +284,3 @@ msgstr "Nie mo¿na utworzyæ katalogu: "
 msgid "Error saving file: "
 msgstr "B³±d przy zapisywaniu pliku: "
 
-msgid "Custom"
-msgstr "U¿ytkownika"
-

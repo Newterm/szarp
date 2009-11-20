@@ -4135,33 +4135,24 @@ programu <application>ipkedit</application>, opisanego w rozdziale
 <title>Program Edytor IPK</title>
 
 <para>
-Wbrew szumnej nazwie program <application>ipkedit</application> nie jest pe³nym
-edytorem IPK. W tej chwili jego funkcjonalno¶æ jest ograniczona do zadañ, które
-przy bezpo¶rednich operacjach na pliku sprawiaj± najwiêcej problemów, tzn.
-ustalania kolejno¶ci okien programu przegl±daj±cego oraz wykresów w oknach i
-parametrów w raportach.
+	Program <application>ipkedit</application> u³atwia najbardziej ¿mudne prace
+	przy edycji konfiugracji SZARP w formacie IPK. Pozwala na zmianê kolejno¶ci
+	parametrów w raportach, a tak¿e zestawów wykresów i kolejno¶ci wykresów w 
+	ramach zestawów. Pozwala tak¿e na edycjê zakresów osi wykresów i ich kolorów.
+</para>
+<para>
+	Program nie wykorzystuje biblioteki IPK, ale
+	operuje bezpo¶rednio na danych XML, modyfikuj±c jedynie wybrane atrybuty 
+	odpowiednich elementów. Nie usuwa wiêc ¿adnych dodatkowych informacji z konfiguracji,
+	takich jak np. elementy z innych przestrzeni nazw czy komentarze.
 </para>
 
 <para>
 <application>ipkedit</application> jest aplikacj± graficzn±, korzystaj±c± z
-biblioteki wxWindows, st±d te¿ do jego kompilacji potrzebne jest
-skonfigurowanie systemu SZARP z u¿yciem wxWindows. Interfejs programu jest
+biblioteki wxWindows.
+Interfejs programu jest
 bardzo prosty. Udostêpnia podstawowe operacje plikowe oraz mo¿liwo¶æ zmiany
-kolejno¶ci okien, wykresów i raportów.
-</para>
-
-<para>
-Program nie wykorzystuje biblioteki IPK, ale operuje bezpo¶rednio na pliku XML,
-dziêki temu nie modyfikuje i nie traci dodatkowych informacji, takich jak np.
-komentarze.
-</para>
-
-<para>
-Po uruchomieniu program mo¿e wy¶wietliæ komunikat informuj±cy o braku obs³ugi
-schematów RelaxNG. Jest to zale¿ne od wersji biblioteki libxml2 u¿ytej do
-kompilacji u¿ywanej wersji programu. Brak obs³ugi RelaxNG nie zmniejsza
-funkcjonalno¶ci, natomiast ogranicza mo¿liwo¶æ sprawdzenia przez program, czy
-³adowany plik zawiera poprawny dokument IPK.
+kolejno¶ci zestawów, wykresów i raportów oraz prosty edytor w³a¶ciwo¶ci wykresów.
 </para>
 
 <para>
@@ -4173,7 +4164,7 @@ ikon. S± to odpowiednio:
 <itemizedlist>
 <listitem><para>
 Za³adowanie pliku z dysku. Plik jest weryfikowany pod k±tem poprawno¶ci, tzn.
-musi byæ dokumentem XML zgodnym ze schematem IPK. Plik do otwarcia mo¿na tak¿e podaæ
+musi byæ dokumentem XML zgodnym ze schematem RelaxNG IPK. Plik do otwarcia mo¿na tak¿e podaæ
 jako parametr programu.
 </para></listitem>
 <listitem><para>
@@ -4190,12 +4181,7 @@ zaznaczyli¶my wykresu, a mamy zaznaczone okno przegl±daj±cego,
 przesuwane jest okno. Nie mo¿na przesuwaæ raportów.
 Przesuwanie powoduje jedynie zmianê atrybutów <emphasis>prior</emphasis> lub
 <emphasis>order</emphasis> obiektów, bez ¿adnych dodatkowych ingerencji w
-dokument. Program stara siê maksymalnie zachowaæ istniej±c± strukturê pliku, w
-tym nadane uprzednio warto¶ci atrybutów, w razie potrzeby zamieniaj±c po prostu
-atrybuty elementów, których kolejno¶æ na li¶cie siê zmieni³a. 
-Dokonuje tylko jednej optymalizacji, a mianowicie atrybut <emphasis>prior</emphasis>
-okna jest usuwany wszystkim wykresom oprócz pierwszego w oknie. Powinno to
-u³atwiæ przysz³± edycjê pliku.
+dokument. 
 </para></listitem>
 <listitem><para>
 Przesuniêcie obiektu w dó³ listy - patrz uwagi wy¿ej.
@@ -4213,32 +4199,20 @@ skróty klawiszowe. Dodatkowo w menu jest dostêpna funkcja 'Zapisz jako',
 pozwalaj±ce zapisaæ plik pod zmienion± nazw±.
 </para>
 <para>
+Dodatkowo po wy¶wietleniu listy wykresów w zestawie i dwukrotnym klikniêciu
+wykresu (lub naci¶niêciu <keycap>Enter</keycap>) otwiera siê okienko pozwalaj±ce
+na zmianê zakresów osi oraz koloru dla wykresów. Wybranie koloru <quote>automatycznego</quote>
+powoduje przydzielenie pierwszego wolnego koloru na podstawie kolejno¶ci wykresów. Tak
+przydzielone kolory zaznaczone s± na li¶cie wykresów przez szar± obwódkê wokó³ kwadratu
+z kolorem.
+</para>
+<para>
 W menu <emphasis>Edycja</emphasis> poza poleceniami do przesuwania obiektów w
-górê i w dó³ listy znajduj± siê dwa dodatkowe polecenia, nie posiadaj±ce
-swoich skrótów klawiszowych:
-<itemizedlist>
-<listitem><para>
-<emphasis>Wyczy¶æ atrybuty</emphasis> - usuwa z ca³ego pliku wszystkie
-atrybutu <emphasis>order</emphasis> i <emphasis>prior</emphasis> wykresów i
+górê i w dó³ listy znajduje nie dodatkowe polecenie 
+<emphasis>Wyczy¶æ atrybuty</emphasis>. Usuwa ono z ca³ego pliku wszystkie
+atrybuty <emphasis>order</emphasis> i <emphasis>prior</emphasis> wykresów i
 raportów. Po wydaniu polecenia kolejno¶æ obiektów jest zale¿na od kolejno¶ci
 wyst±pienia w konfiguracji IPK.
-</para></listitem>
-<listitem><para>
-<emphasis>Przelicz atrybuty</emphasis> - usuwa wszystkie zbêdne atrybuty z
-pliku, nadaje kolejne warto¶ci atrybutów zgodne z kolejno¶ci± ustalon± przez
-program. 
-</para></listitem>
-</itemizedlist>
-Powy¿sze polecenia s± przydatne w sytuacji, gdy pojawiaj± siê problemy ze
-zmian± kolejno¶ci raportów czy wykresów po zapisaniu i powtórnym za³adowaniu
-pliku. Mog± one byæ spowodowane na przyk³ad przypisaniem ró¿nym obiektom tych
-samych warto¶ci atrybutów decyduj±cych o kolejno¶ci. Je¿eli po¿±dana przez nas
-kolejno¶æ jest niewiele ró¿na od tej powsta³ej po u¿yciu polecenia
-<emphasis>Wyczy¶æ atrybuty</emphasis>, to polecane jest u¿ycie w³a¶nie jego,
-gdy¿ w przeciwieñstwie do drugiego upraszcza ono konfiguracjê. Konfiguracja
-powsta³a przez usuniêcie wszystkich atrybutów a potem ewentualne operacje za
-pomoc± programu (bez rêcznej edycji pliku) powinna byæ zawsze poprawna i nie
-sprawiaæ opisanych wy¿ej problemów.
 </para>
 <figure id="ipkedit-fig">
 <title>Przyk³adowy wygl±d okna programu</title>
@@ -4252,11 +4226,6 @@ sprawiaæ opisanych wy¿ej problemów.
 Je¿eli dana operacja (np. otwarcie pliku) mo¿e spowodowaæ utratê wprowadzonych
 zmian, program wy¶wietla okienko pozwalaj±ce na zapisanie lub zignorowanie zmian, 
 oraz na rezygnacjê z wykonywanej operacji.
-</para>
-
-<para>
-Jêzyk komunikatów wy¶wietlanych przez program zale¿y od systemowych ustawieñ 
-jêzyka, obecnie dostêpny jest polski i angielski.
 </para>
 
 </section> <!-- ipkedit -->

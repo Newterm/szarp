@@ -1,7 +1,6 @@
 /* 
   SZARP: SCADA software 
   
-
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
@@ -17,7 +16,7 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
- * confedit - wxWindows SZARP configuration editor
+ * confedit - SZARP configuration editor
  * SZARP, 2002 Pawe³ Pa³ucha
  *
  * $Id$
@@ -35,7 +34,9 @@
 
 bool ConfApp::OnInit()
 {
-	szApp::OnInit();
+	if (!szApp::OnInit()) {
+		return false;
+	}
 
 	this->InitializeLocale(_T("ipkedit"), locale);
 
@@ -48,53 +49,40 @@ bool ConfApp::OnInit()
         xmlInitParser();
         
         /* Parse command line. */
-	if (ParseCommandLine())
-		return 0;
+	//if (ParseCommandLine())
+	//	return 0;
         
 	ConfFrame *frame = new ConfFrame(filename, wxPoint(x, y), 
                         wxSize(width, height) );
 	frame->Show( TRUE );
 	
-	SetAppName(_("IPK Editor"));
+	SetProgName(_("IPK Editor"));
 	
 	SetTopWindow( frame );
-	return TRUE;
+	return true;
+}
+
+bool ConfApp::OnCmdLineHelp(wxCmdLineParser &parser) 
+{
+	parser.Usage();
+	return false;
 }
 
 
-int ConfApp::ParseCommandLine()
+bool ConfApp::OnCmdLineParsed(wxCmdLineParser &parser) 
 {
-	wxCmdLineParser parser;
-	wxString geometry;
+	if (parser.GetParamCount() > 0)
+		filename = parser.GetParam(0);
+	return true;
+}
 
-	/* Set command line info. */
-        parser.SetLogo(_("IPK Editor version 1.0."));
-	parser.AddOption(_T("geometry"), wxEmptyString, 
-		_("X windows geometry specification"), wxCMD_LINE_VAL_STRING);
-	parser.AddSwitch(_T("d<name>=<str>"), wxEmptyString,
-		_("libparnt value initialization"));
-	parser.AddSwitch(_T("h"), _T("help"), _("print usage info"));
+
+void ConfApp::OnInitCmdLine(wxCmdLineParser &parser) 
+{
+        parser.SetLogo(_("IPK Editor version 2.0."));
+	parser.AddSwitch(_T("h"), _T("help"), _("print usage info"), wxCMD_LINE_OPTION_HELP);
         parser.AddParam(_("config file"), wxCMD_LINE_VAL_STRING, 
                 wxCMD_LINE_PARAM_OPTIONAL);
-	parser.SetCmdLine(argc, argv);
-	if (parser.Parse(false) || parser.Found(_T("h"))) {
-		parser.Usage();
-		return 1;
-	}
-        filename = parser.GetParam();
-
-        /* Reads program geometry (X style) */
-
-	x = 100;
-	y = 100;
-	width = 600;
-	height = 400;
-
-        /* Read 'geometry' option. */
-	if (parser.Found(_T("geometry"), &geometry)) 
-		get_geometry(geometry, &x, &y, &width, &height);
-		
-	return 0;
 }
 
 

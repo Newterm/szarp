@@ -1,6 +1,5 @@
 /* 
   SZARP: SCADA software 
-  
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -45,6 +44,9 @@ class ConfApp: public szApp
 	 * Method called on application start.
 	 */
 	virtual bool OnInit();
+	virtual bool OnCmdLineParsed(wxCmdLineParser &parser);
+	virtual bool OnCmdLineHelp(wxCmdLineParser &parser);
+	virtual void OnInitCmdLine(wxCmdLineParser &parser);
 private:        
         wxLocale locale;        /**< Application locale object. */
 	/**
@@ -52,7 +54,7 @@ private:
 	 * program's geometry and also prints usage info.
 	 * @return 0 if OK, -1 if error occured
 	 */
-	int ParseCommandLine();
+	//int ParseCommandLine();
 	int x, y;	/**< Program's window position. */
 	int width, height;
 			/**< Program's windows size. */
@@ -60,6 +62,7 @@ private:
                         /**< Name of file to load. */
 };
 
+DECLARE_APP(ConfApp);
 
 #endif
 

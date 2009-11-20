@@ -33,6 +33,7 @@ libwxcommon_a_SOURCES = \
 		$(SOURCE_DIR)/version.h \
 		$(SOURCE_DIR)/cconv.cc $(SOURCE_DIR)/cconv.h \
 		$(SOURCE_DIR)/datechooser.cpp $(SOURCE_DIR)/datechooser.h \
+		$(SOURCE_DIR)/dcolors.cc $(SOURCE_DIR)/dcolors.h \
 		$(SOURCE_DIR)/fetchparams.cc $(SOURCE_DIR)/fetchparams.h \
 		$(SOURCE_DIR)/fonts.cpp $(SOURCE_DIR)/fonts.h \
 		$(SOURCE_DIR)/geometry.cpp $(SOURCE_DIR)/geometry.h \

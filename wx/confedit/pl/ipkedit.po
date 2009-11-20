@@ -9,255 +9,265 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-01-19 20:33+0100\n"
+"POT-Creation-Date: 2009-11-20 19:05+0100\n"
 "PO-Revision-Date: $Date: 2008-04-15 12:45:57 +0200 (wto, 15.04.2008) $\n"
 "Last-Translator: Pawe³ Pa³ucha <pawel@praterm.com.pl>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: confapp.cpp:45
-msgid "IPK Editor"
-msgstr "Edytor IPK"
-
-#: confapp.cpp:58
-msgid "IPK Editor version 1.0."
-msgstr "Edytor IPK wersja 1.0."
-
-#: confapp.cpp:60
-msgid "X windows geometry specification"
-msgstr "specyfikacja geometrii X Windows"
-
-#: confapp.cpp:62
-msgid "libparnt value initialization"
-msgstr "inicjalizacja zmiennej libparnt"
-
-#: confapp.cpp:63
-msgid "print usage info"
-msgstr "wypisz pomoc"
-
-#: confapp.cpp:64
-msgid "config file"
-msgstr "plik konfiguracyjny"
-
-#: cframe.cpp:83
+#: cframe.cpp:115
 msgid "SZARP config editor"
 msgstr "Edytor konfiguracji SZARP"
 
-#: cframe.cpp:99
+#: cframe.cpp:127
 msgid "&Open\tCtrl-O"
 msgstr "&Otwórz\tCtrl-O"
 
-#: cframe.cpp:100
+#: cframe.cpp:128
 msgid "Load configuration from file."
 msgstr "Wczytaj konfiguracjê z pliku."
 
-#: cframe.cpp:101
+#: cframe.cpp:129
 msgid "&Reload\tCtrl-R"
 msgstr "P&rze³aduj\tCtrl-R"
 
-#: cframe.cpp:102
+#: cframe.cpp:130
 msgid "Reload last opened file."
 msgstr "Wczytaj plik ponownie."
 
-#: cframe.cpp:103
+#: cframe.cpp:131
 msgid "&Save\tCtrl-S"
 msgstr "Zapi&sz\tCtrl-S"
 
-#: cframe.cpp:104
+#: cframe.cpp:132
 msgid "Save changes to file."
 msgstr "Zapisz zmiany do pliku."
 
-#: cframe.cpp:105
+#: cframe.cpp:133
 msgid "Save &As\tCtrl-A"
 msgstr "Zapisz j&ako\tCtrl-A"
 
-#: cframe.cpp:106
+#: cframe.cpp:134
 msgid "Save configuration with different file name."
 msgstr "Zapisz plik pod inn± nazw±."
 
-#: cframe.cpp:108
+#: cframe.cpp:136
 msgid "E&xit\tAlt-X"
 msgstr "&Wyjd¼\tAlt-X"
 
-#: cframe.cpp:109
+#: cframe.cpp:137
 msgid "Exit from program."
 msgstr "Zakoñcz program."
 
-#: cframe.cpp:112
+#: cframe.cpp:140
 msgid "&Up\tCtrl-U"
 msgstr "W &górê\tCtrl-U"
 
-#: cframe.cpp:113
+#: cframe.cpp:141
 msgid "Move selected object up."
 msgstr "Przesuñ wybrany obiekt w górê."
 
-#: cframe.cpp:114
+#: cframe.cpp:142
 msgid "&Down\tCtrl-D"
 msgstr "W &dó³\tCtrl-D"
 
-#: cframe.cpp:115
+#: cframe.cpp:143
 msgid "Move selected object down."
 msgstr "Przesuñ wybrany obiekt w dó³."
 
-#: cframe.cpp:117
+#: cframe.cpp:145
 msgid "&Clear all"
 msgstr "&Wyczy¶æ atrybuty"
 
-#: cframe.cpp:118
+#: cframe.cpp:146
 msgid "Clears all the order attributes."
 msgstr "Usuñ wszystkie atrybuty decyduj±ce o kolejno¶ci."
 
-#: cframe.cpp:119
-msgid "&Recount all"
-msgstr "&Przelicz atrybuty"
+#: cframe.cpp:149
+msgid "&Help\tF1"
+msgstr "&Pomoc\tF1"
 
-#: cframe.cpp:120
-msgid "Recount all attributes to assume provided order."
-msgstr "Przelicz wszystkie atrybuty, aby zapewniæ po¿±dan± kolejno¶æ."
+#: cframe.cpp:149
+msgid "Open program documentation"
+msgstr "Otwórz dokumentacjê programu"
 
-#: cframe.cpp:123
+#: cframe.cpp:150
+msgid "&About"
+msgstr "&O programie"
+
+#: cframe.cpp:150
+msgid "Info about program and authors"
+msgstr "Infomracje o programie i autorach"
+
+#: cframe.cpp:153
 msgid "&File"
 msgstr "&Plik"
 
-#: cframe.cpp:124
+#: cframe.cpp:154
 msgid "&Edit"
 msgstr "&Edycja"
 
-#: cframe.cpp:133
+#: cframe.cpp:155
+msgid "&Help"
+msgstr "P&omoc"
+
+#: cframe.cpp:164
 msgid "Load file"
 msgstr "Wczytaj plik"
 
-#: cframe.cpp:134
+#: cframe.cpp:165
 msgid "Load configuration from disk file"
 msgstr "Wczytaj konfiguracjê z pliku"
 
-#: cframe.cpp:135
+#: cframe.cpp:166
 msgid "Reload file"
 msgstr "Prze³aduj"
 
-#: cframe.cpp:136
+#: cframe.cpp:167
 msgid "Reload last opened file"
 msgstr "Wczytaj plik ponownie"
 
-#: cframe.cpp:137
+#: cframe.cpp:168
 msgid "Save file"
 msgstr "Zapisz plik"
 
-#: cframe.cpp:138
+#: cframe.cpp:169
 msgid "Save configuration to file"
 msgstr "Zapisz konfiguracjê do pliku"
 
-#: cframe.cpp:140
+#: cframe.cpp:171
 msgid "Move up"
 msgstr "W górê"
 
-#: cframe.cpp:141
+#: cframe.cpp:172
 msgid "Move object up in the list"
 msgstr "Przesuñ obiekt w górê listy"
 
-#: cframe.cpp:142
+#: cframe.cpp:173
 msgid "Move down "
 msgstr "W dó³"
 
-#: cframe.cpp:143
+#: cframe.cpp:174
 msgid "Move object down on the list"
 msgstr "Przesuñ obiekt w dó³ listy"
 
-#: cframe.cpp:145
+#: cframe.cpp:176
 msgid "Exit"
 msgstr "Wyjd¼"
 
-#: cframe.cpp:146
+#: cframe.cpp:177
 msgid "Exit from program"
 msgstr "Zakoñcz program"
 
-#: cframe.cpp:148
+#: cframe.cpp:179
 msgid "Help"
 msgstr "Pomoc"
 
-#: cframe.cpp:149
+#: cframe.cpp:180
 msgid "Display program help"
 msgstr "Wy¶wietl pomoc"
 
-#: cframe.cpp:159 cframe.cpp:563 cframe.cpp:577
+#: cframe.cpp:189 cframe.cpp:628 cframe.cpp:643
 msgid "Raports"
 msgstr "Raporty"
 
-#: cframe.cpp:175 cframe.cpp:566 cframe.cpp:581
+#: cframe.cpp:205 cframe.cpp:631 cframe.cpp:647
 msgid "Draws"
 msgstr "Wykresy"
 
-#: cframe.cpp:201
+#: cframe.cpp:230
 msgid "SZARP IPK editor"
 msgstr "Edytor SZARP IPK"
 
-#: cframe.cpp:213
+#: cframe.cpp:246
 msgid "IPK editor help"
 msgstr "Pomoc edytora IPK"
 
-#: cframe.cpp:231
+#: cframe.cpp:269
 msgid "Choose a file to load"
 msgstr "Wybierz plik do wczytania"
 
-#: cframe.cpp:234 cframe.cpp:301
+#: cframe.cpp:272 cframe.cpp:338
 msgid "XML files (*.xml)|*.xml|All files|*.*"
 msgstr "Pliki XML (*.xml)|*.xml|Wszystkie pliki|*.*"
 
-#: cframe.cpp:256
+#: cframe.cpp:294
 msgid "XML document not well-formed"
 msgstr "Plik nie zawiera poprawnego dokumentu XML"
 
-#: cframe.cpp:270
+#: cframe.cpp:307
 msgid "Failed to compile IPK schema!"
 msgstr "B³±d podczas kompilacji schematu IPK!"
 
-#: cframe.cpp:273
+#: cframe.cpp:310
 msgid "XML document doesn't validate against IPK schema!"
 msgstr "Dokument XML nie jest zgodny ze schematem IPK!"
 
-#: cframe.cpp:281 cframe.cpp:309
+#: cframe.cpp:318 cframe.cpp:346
 msgid "SZARP "
 msgstr "SZARP "
 
-#: cframe.cpp:298
+#: cframe.cpp:335
 msgid "Save as"
 msgstr "Zapisz jako"
 
-#: cframe.cpp:316
+#: cframe.cpp:353
 #, c-format
 msgid "There was error saving file %s."
 msgstr "B³±d podczas zapisywania pliku %s."
 
-#: cframe.cpp:319
+#: cframe.cpp:356
 msgid "File successfully saved."
 msgstr "Plik zapisany."
 
-#: cframe.cpp:328
+#: cframe.cpp:365
 msgid "File was modified. Save changes ?"
 msgstr "Plik zosta³ zmieniony. Zapisaæ zmiany?"
 
-#: cframe.cpp:329
+#: cframe.cpp:366
 msgid "Save changes ?"
 msgstr "Zapisaæ zmiany?"
 
-#: cframe.cpp:347
+#: cframe.cpp:383
 #, c-format
 msgid "Could not load IPK RelaxNG schema from file %s"
-msgstr "Nie mo¿na za³adowaæ DTD IPK z pliku %s"
+msgstr "Nie mo¿na za³adowaæ schematu RelaxNG IPK z pliku %s"
 
-#: cframe.cpp:352
-msgid ""
-"This version of program was compiled without RelaxNG schema support.\n"
-"Validating of loaded IPK documents is not possible."
-msgstr ""
-"Program zosta³ skompilowany bez wsparcia dla schematów RelaxNG.\n"
-"Sprawdzanie poprawno¶ci ³adowanych dokumentów IPK nie jest mo¿liwe."
+#: confapp.cpp:59
+msgid "IPK Editor"
+msgstr "Edytor IPK"
 
-#: ../common/htmlview.cpp:88
-#, c-format
-msgid "SZARP help: %s"
-msgstr "Pomoc SZARP: %s "
+#: confapp.cpp:82
+msgid "IPK Editor version 2.0."
+msgstr "Edytor IPK wersja 2.0."
 
-#~ msgid "IPK"
-#~ msgstr "IPK"
+#: confapp.cpp:83
+msgid "print usage info"
+msgstr "wypisz pomoc"
+
+#: confapp.cpp:84
+msgid "config file"
+msgstr "plik konfiguracyjny"
+
+#: deditdlg.cc:33
+msgid "Edit draw"
+msgstr "Edytuj wykres"
+
+#: deditdlg.cc:41
+msgid "min."
+msgstr "min."
+
+#: deditdlg.cc:45
+msgid "max."
+msgstr "max."
+
+#: deditdlg.cc:49
+msgid "Color"
+msgstr "Kolor"
+
+#: deditdlg.cc:51
+msgid "auto"
+msgstr "automatyczny"
+
+

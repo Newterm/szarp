@@ -27,10 +27,11 @@ EXTRA_PROGRAMS=ipkedit
 
 ipkedit_SOURCES = \
         ipkedit.cpp \
-        confapp.cpp \
-        confapp.h \
-        cframe.cpp \
-        cframe.h 
+        cframe.cpp cframe.h \
+        confapp.cpp confapp.h \
+	deditdlg.cc deditdlg.h \
+	dlistctrl.cc dlistctrl.h \
+	../common/dcolors.h
 
 ipkedit_LDADD = $(LIBWXCOMMON) @WX_LIBS@ @XML_LIBS@ $(LIBSZARP2) $(LIBSZARP) @BOOST_THREAD_LIB@ @BOOST_FILESYSTEM_LIB@
 
