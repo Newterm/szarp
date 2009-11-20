@@ -1,5 +1,7 @@
 $Id$
 
+2009-11-20	Pawel Palucha <pawel@praterm.com.pl>
+	* debian/control: boost version in Debian unstable changed to 1.39.
 2009-11-20	Darek Marcinkiwicz <darek@praterm.com.pl>
 	* extern/ttyproxy: kernel module and userland daemon emulating
 	serial port over TCP - implementation of RFC2217 (Telnet Com Port Control
