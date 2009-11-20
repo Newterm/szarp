@@ -193,13 +193,13 @@ class ModbusLine {
 
 	DaemonConfig *m_cfg;
 
-	void PerformSlaveCycle();
+	void PerformSlaveCycle(time_t start);
 
 	void PerformMasterCycle();
 
 	void QuerySlaveUnit(ModbusUnit *unit);
 
-	void PerformCycle();
+	void PerformCycle(time_t start);
 
 	public:
 
@@ -415,7 +415,7 @@ class           ModbusUnit {
 	 * error occured.
 	 * @param fd descriptor of port to read from
 	 */
-	int             SlaveWait(int fd);
+	int             SlaveWait(int fd, int secs);
 
 	/**
 	 * Send response to master using data from m_sends_buffer array. 
@@ -1277,13 +1277,13 @@ int ModbusUnit::MasterGet(int fd)
 	return 0 ;
 }
 
-int ModbusUnit::SlaveWait(int fd)
+int ModbusUnit::SlaveWait(int fd, int secs)
 {
 	sz_log(10, "calling SlaveWait()");
 	return ReceiveMasterPacket(fd, 
 			&oMasterFrame, 
 			&CRCStatus,
-			ReceiveTimeout,
+			secs,
 			DelayBetweenChars);
 }
 
@@ -1862,27 +1862,46 @@ bool ModbusLine::ParseConfig(DaemonConfig *cfg, IPCHandler *ipc) {
 
 }
 
-void ModbusLine::PerformSlaveCycle() {
+void ModbusLine::PerformSlaveCycle(time_t start) {
 
 	ModbusUnit *u = m_units[0];
 
-	int status = u->SlaveWait(m_fd);
+	do {
+		int wait = start - time(NULL) + 10;
 
-	if (status > 0) {
-		if (m_debug) 
-			fprintf(stderr, "We have a packet\n");
+		if (wait <= 0)
+			break;
 
-		status = u->SlaveReply(m_fd);
+		int status = u->SlaveWait(m_fd, wait);
 
-		if (status != SLAVE_RECEIVE_OK) {
-			if (m_debug)
-				fprintf(stderr, "Error while receiving slave frame %d", status);
+		if (status > 0) {
+			if (m_debug) 
+				fprintf(stderr, "We have a packet\n");
+
+			status = u->SlaveReply(m_fd);
+
+			if (status != SLAVE_RECEIVE_OK) {
+				if (m_debug)
+					fprintf(stderr, "Error while receiving slave frame %d", status);
+			} else {
+				if (m_fd >= 0) {
+					close(m_fd);
+					m_fd = -1;
+				}
+				m_fd = InitComm(SC::S2A(m_cfg->GetDevice()->GetPath()).c_str(),
+					m_cfg->GetDevice()->GetSpeed(), 8, m_stop_bits, m_parity);
+				if (m_fd < 0)
+					return;
+			}
+		} else if (status == TIMEOUT_ERROR) {
+			if (m_debug) 
+				fprintf(stderr, "Timeout while waiting for frame from slave");
+		} else {
+			if (m_debug) 
+				fprintf(stderr, "Error while reading data from master %d\n", status);
+
 		}
-	} else {
-		if (m_debug) 
-			fprintf(stderr, "Error while reading data from master %d\n", status);
-
-	}
+	} while (true);
 
 }
 
@@ -1898,7 +1917,7 @@ void ModbusLine::PerformMasterCycle() {
 		QuerySlaveUnit(*i);
 }
 
-void ModbusLine::PerformCycle() {
+void ModbusLine::PerformCycle(time_t start) {
 	m_ipc->GoSender();
 
 	switch (m_mode) {
@@ -1906,13 +1925,12 @@ void ModbusLine::PerformCycle() {
 			PerformMasterCycle();
 			break;
 		case MB_MODE_SLAVE:
-			PerformSlaveCycle();
+			PerformSlaveCycle(start);
 			break;
 		default:
 			assert(false);
 			break;
 	}
-
 	m_ipc->GoParcook();
 }
 
@@ -1947,7 +1965,7 @@ void ModbusLine::Go() {
 			goto finish_cycle;
 		}
 
-		PerformCycle();
+		PerformCycle(start);
 		current_cycle = (current_cycle + 1) % max_cycle;
 
 finish_cycle:
