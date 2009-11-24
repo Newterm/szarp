@@ -131,8 +131,15 @@ void DrawsListCtrl::OnDrawEdit(wxListEvent &ev)
 	  }
 	  double dmin, dmax;
 	  if (min.ToDouble(&dmin) and max.ToDouble(&dmax) and (dmin < dmax)) {
+		  min = wxString::Format(_T("%g"), dmin);
+		  max = wxString::Format(_T("%g"), dmax);
+		  min.Replace(_T(","), _T("."));
+		  max.Replace(_T(","), _T("."));
 		  xmlSetProp(node, BAD_CAST "min", BAD_CAST SC::S2U(min).c_str());
 		  xmlSetProp(node, BAD_CAST "max", BAD_CAST SC::S2U(max).c_str());
+  		  SetItem(l.GetId(), 2, min);
+  		  SetItem(l.GetId(), 3, max);
+		  
 	  }
 	  AssignColors();
 }

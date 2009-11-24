@@ -1,7 +1,11 @@
 $Id$
 
-2009-11-20	Darek Marcinkiwicz <darek@praterm.com.pl>
-	* parcook/mbrtudmn.cc: quick fix of slave mode
+2009-11-24	Pawel Palucha  <pawel@praterm.com.pl>
+	* wx/confedit/dlistctrl.cc: fixes in handling min/max attributes:
+	refreshing after edit, handling of dot/comma decimal separator,	using
+	"%g" format.
+2009-11-20	Darek Marcinkiewicz <darek@praterm.com.pl>
+	* parcook/mbrtudmn.cc: quick fix of slave mode.
 2009-11-20	Pawel Palucha <pawel@praterm.com.pl>
 	* debian/control: boost version in Debian unstable changed to 1.39.
 2009-11-20	Darek Marcinkiwicz <darek@praterm.com.pl>
