@@ -55,4 +55,6 @@ div.WARNING td {
 div.NOTE {
 	background: #ded;
 }
-
+span.GUIMENU, span.GUIBUTTON {
+	font-weight: bold;
+}
