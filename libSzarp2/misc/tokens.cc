@@ -22,7 +22,7 @@
 /** maximum token's length */
 #define BUFSIZE 128
 /** maximum number of tokens */
-#define MAXTOKS 256
+#define MAXTOKS 512
 
 typedef enum parse_states_tags { OUTSIDE, INSIDE, INCOMM } parse_states;
 
