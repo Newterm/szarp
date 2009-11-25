@@ -56,6 +56,7 @@ libwxcommon_a_SOURCES = \
 		$(SOURCE_DIR)/cfgdlg.h $(SOURCE_DIR)/cfgdlg.cpp \
 		$(SOURCE_DIR)/szframe.h $(SOURCE_DIR)/szframe.cpp \
 		$(SOURCE_DIR)/sztaskbaritem.h $(SOURCE_DIR)/sztaskbaritem.cpp \
+		$(SOURCE_DIR)/singleinstance.h $(SOURCE_DIR)/singleinstance.cc \
 		$(SOURCE_DIR)/md5.h $(SOURCE_DIR)/md5.cpp \
 		$(SOURCE_DIR)/GUI/resource.cpp \
 		$(SOURCE_DIR)/helpctrlex/helpctrlex.cpp $(SOURCE_DIR)/helpctrlex/helpctrlex.h \

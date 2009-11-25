@@ -125,12 +125,12 @@ bool SCCApp::OnInit()
 #else
 	libpar_init_with_filename(SC::S2A((GetSzarpDir() + _T("resources/szarp.cfg"))).c_str(), 0);
 #endif
-	app_instance = new wxSingleInstanceChecker(_T(".scc"));
+	app_instance = new szSingleInstanceChecker(_T(".scc"), wxEmptyString, _T("scc"));
 #ifndef MINGW32	
 	wxString display;
 	if (wxGetEnv(_T("DISPLAY"),&display)) {
 		wxString idString = wxString::Format(_T(".scc-%s-%s"), wxGetUserId().c_str(), display.c_str());
-		app_instance2 = new wxSingleInstanceChecker(idString);
+		app_instance2 = new szSingleInstanceChecker(idString, wxEmptyString, _T("scc"));
 	}
 #endif
 	

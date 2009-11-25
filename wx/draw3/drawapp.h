@@ -35,11 +35,11 @@
 #endif
 #ifndef WX_PRECOMP
 #include <wx/wx.h>
-#include <wx/snglinst.h>
 #include <wx/glcanvas.h>
 #endif
 
 #include "szapp.h"
+#include "singleinstance.h"
 #include "szhlpctrl.h"
 
 class DrawServer;
@@ -171,7 +171,7 @@ protected:
 	bool m_gl_works;
 
 	/**Object that prevents more than one m_instance of program from running.*/
-	wxSingleInstanceChecker *m_instance;
+	szSingleInstanceChecker *m_instance;
 
 	szHelpController *m_help; /**< Help system. */
 

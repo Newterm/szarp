@@ -56,7 +56,6 @@
 #include <wx/datetime.h>
 #include <wx/statline.h>
 #include <wx/config.h>
-#include <wx/snglinst.h>
 #include <wx/thread.h>
 #include <wx/taskbar.h>
 #include <wx/wizard.h>
@@ -74,6 +73,7 @@
 #include "ssfsutil.h"
 #include "ssutil.h"
 #include "szapp.h"
+#include "singleinstance.h"
 #include "szhlpctrl.h"
 #include "cfgnames.h"
 #include "hwkey.h"
@@ -813,7 +813,7 @@ class SSCApp : public szApp {
 	/**locale handling object*/
 	wxLocale locale;
 	/**checks if other instances of the application are running*/
-	wxSingleInstanceChecker* m_single_instance_check;
+	szSingleInstanceChecker* m_single_instance_check;
 	/**pointer to @see SSCTaskBarItem*/
 	SSCTaskBarItem* m_taskbar;
 	/**parses command line parameters. Returns true if 

@@ -1,6 +1,12 @@
 $Id$
 
 2009-11-25	Pawel Palucha  <pawel@praterm.com.pl>
+	* wx/*: scc, ssc and draw3 use szSingleInstanceChecker instead of
+	wxSingleInstanceChecker.
+	* wx/common/singleinstance.*: modified implementation of
+	wxSingleInstanceChecker, that checks also for executable name of
+	process holding lock. It fixes possible errors with stale lock file
+	and another process with the pid from lock file running.
 	* wx/confedit/cframe.cc: fixed segfault when moving last draws' set
 	down; correct minimum window size set.
 2009-11-25	Darek Marcinkiewicz <darek@praterm.com.pl>

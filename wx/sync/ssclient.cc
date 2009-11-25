@@ -2947,7 +2947,8 @@ bool SSCApp::OnInit() {
 	if (!ParseCommandLine())
 		return false;
 
-	m_single_instance_check = new wxSingleInstanceChecker(_T(".ssc_lock"));
+	m_single_instance_check = new szSingleInstanceChecker(_T(".ssc_lock"), wxEmptyString,
+			_T("ssc"));
 
 	if (m_single_instance_check->IsAnotherRunning()) {
 		return false;

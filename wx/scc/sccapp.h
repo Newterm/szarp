@@ -39,13 +39,13 @@
 #endif
 #ifndef WX_PRECOMP
 #include <wx/wx.h>
-#include <wx/snglinst.h>
 #endif
 
 #include "sccmenu.h"
 #include "sccframe.h"
 #include "sccipc.h"
 #include "szapp.h"
+#include "singleinstance.h"
 
 /**
  * Main application class.
@@ -86,7 +86,7 @@ protected:
 	/** 
 	 * Used to verify if other scc instance is running.
 	 */
-	wxSingleInstanceChecker* app_instance;
+	szSingleInstanceChecker* app_instance;
 #ifndef MINGW32
 	/** 
 	 * Used to verify if other scc instance is running
@@ -94,7 +94,7 @@ protected:
 	 * show "user is logged more than once" message if he or she,
 	 * is not.
 	 */
-	wxSingleInstanceChecker* app_instance2;
+	szSingleInstanceChecker* app_instance2;
 #endif
 	/**
 	 * Creates application main menu

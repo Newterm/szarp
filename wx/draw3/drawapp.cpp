@@ -71,6 +71,7 @@
 #include "frmmgr.h"
 
 #include "szapp.h"
+#include "singleinstance.h"
 #include "szmutex.h"
 #include "szbase/szbbase.h"
 #include "database.h"
@@ -187,7 +188,8 @@ bool DrawApp::OnInit() {
 	//wxLog *logger = new wxLogGui();
 	wxLog::SetActiveTarget(logger);
 
-	m_instance = new wxSingleInstanceChecker(_T(".szarp_m_instance_lock"));
+	m_instance = new szSingleInstanceChecker(_T(".szarp_m_instance_lock"), wxEmptyString, 
+			_T("draw3"));
 	if (m_instance->IsAnotherRunning()) {
 		if (!m_url.IsEmpty()) {
 			SendToRunningInstance(_T("START_URL"), m_url.c_str());
