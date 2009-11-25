@@ -117,7 +117,7 @@ ConfFrame::ConfFrame(wxString _filename, const wxPoint& pos, const wxSize& size)
 {
 	modified = FALSE;
         /* Minimal program window size */
-	SetSizeHints(300, 200);
+	SetSizeHints(300, 500);
 
         /* Load IPK DTD */
         if (LoadSchema() != 0)
@@ -647,7 +647,8 @@ void ConfFrame::DownPressed(wxCommandEvent& event)
         else if (!page_title.Cmp(_("Draws"))) {
 		if (ditemslist->GetSelection() >= 0) {
 			MoveDrawItemDown();
-		} else if (drawlist->GetSelection() > 0) {
+		} else if ((drawlist->GetSelection() > 0) 
+				and (drawlist->GetSelection() < static_cast<int>(drawlist->GetCount() - 1))) {
                         MoveDrawDown();
 		}
         }

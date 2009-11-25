@@ -1,5 +1,8 @@
 $Id$
 
+2009-11-25	Pawel Palucha  <pawel@praterm.com.pl>
+	* wx/confedit/cframe.cc: fixed segfault when moving last draws' set
+	down; correct minimum window size set.
 2009-11-25	Darek Marcinkiewicz <darek@praterm.com.pl>
 	* libSzarp2/szbase/realdatablock.cc: removed restriction that
 	block cannot come from the future (understood as starting
