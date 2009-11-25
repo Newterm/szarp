@@ -1,5 +1,9 @@
 $Id$
 
+2009-11-25	Darek Marcinkiewicz <darek@praterm.com.pl>
+	* libSzarp2/szbase/realdatablock.cc: removed restriction that
+	block cannot come from the future (understood as starting
+	later than lastest value of meaner status parameter)
 2009-11-24	Pawel Palucha  <pawel@praterm.com.pl>
 	* wx/confedit/dlistctrl.cc: fixes in handling min/max attributes:
 	refreshing after edit, handling of dot/comma decimal separator,	using

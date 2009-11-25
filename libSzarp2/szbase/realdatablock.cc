@@ -123,7 +123,6 @@ RealDatablock::RealDatablock(szb_buffer_t * b, TParam * p, int y, int m) :
 	if ( (year < ly || (year == ly && month < lm)) || this->lastUpdateTime > this->GetBlockLastDate()) {
 		this->fixedProbesCount = this->max_probes; //If there are future data or the end of block is before `now`
 	} else {
-		if (this->lastUpdateTime < this->GetBlockBeginDate())NOT_INITIALIZED; //This block dosen`t exist yet
 
 		int tmp = szb_probeind(this->lastUpdateTime) + 1;
 		this->fixedProbesCount = this->fixedProbesCount > tmp ? this->fixedProbesCount : tmp; //we have all read data or untill `now`
@@ -442,6 +441,7 @@ time_t szb_real_search_data(szb_buffer_t * buffer, TParam * param, time_t start,
 			index = szb_probeind(t);
 			assert(index >= 0);
 
+			assert(block->GetFirstDataProbeIdx() >= 0);
 			assert(!IS_SZB_NODATA(data[block->GetFirstDataProbeIdx()]));
 			assert(!IS_SZB_NODATA(data[block->GetLastDataProbeIdx()]));
 
