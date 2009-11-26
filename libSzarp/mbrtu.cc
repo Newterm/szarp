@@ -459,7 +459,7 @@ void CreateMasterPacket(tWMasterFrame MasterFrame, unsigned char *oPacket,
 	}
 }
 
-unsigned short DecodeMasterPacket(unsigned char *iPacket, int MaxPacketSize,
+unsigned short DecodeMasterPacket(unsigned char *iPacket, int PacketSize,
 				  tRMasterFrame * MasterFrame)
 {
 	unsigned char u;
@@ -493,12 +493,27 @@ unsigned short DecodeMasterPacket(unsigned char *iPacket, int MaxPacketSize,
 		fprintf(stderr, "MasterFrame->Address = 0x%x\n",
 			MasterFrame->Address);
 	}
+	if (PacketSize < 4) {
+		if (mbrtu_single == TRUE)
+			fprintf(stderr, "Received packet to short!!!\n");
+		
+		MasterFrame->CRC = 0;
+		return 1;
+	}
 	switch (MasterFrame->FunctionId) {
 	case MB_F_RHR:		/* Funkcja 3 (Odczyt bloku rejestrów) */
 		/*
 		 * W funkcji 3 pakiet jest zawsze tej samej wielko¶ci 
 		 */
 		MasterFrame->PacketSize = 8;
+		if (PacketSize < MasterFrame->PacketSize) {
+			if (mbrtu_single == TRUE)
+				fprintf(stderr, "Received packet to short!!!\n");
+		
+			MasterFrame->CRC = 0;
+			return 1;
+		}
+
 		if (mbrtu_single == TRUE) {
 			fprintf(stderr,
 				"MasterFrame->PacketSize = %d\n",
@@ -526,6 +541,13 @@ unsigned short DecodeMasterPacket(unsigned char *iPacket, int MaxPacketSize,
 		 * W funkcji 4 pakiet jest zawsze tej samej wielko¶ci 
 		 */
 		MasterFrame->PacketSize = 8;
+		if (PacketSize < MasterFrame->PacketSize) {
+			if (mbrtu_single == TRUE)
+				fprintf(stderr, "Received packet to short!!!\n");
+		
+			MasterFrame->CRC = 0;
+			return 1;
+		}
 		if (mbrtu_single == TRUE) {
 			fprintf(stderr,
 				"MasterFrame->PacketSize = %d\n",
@@ -552,6 +574,13 @@ unsigned short DecodeMasterPacket(unsigned char *iPacket, int MaxPacketSize,
 		 * W funkcji 5 pakiet jest zawsze tej samej wielko¶ci 
 		 */
 		MasterFrame->PacketSize = 8;
+		if (PacketSize < MasterFrame->PacketSize) {
+			if (mbrtu_single == TRUE)
+				fprintf(stderr, "Received packet to short!!!\n");
+		
+			MasterFrame->CRC = 0;
+			return 1;
+		}
 		if (mbrtu_single == TRUE) {
 			fprintf(stderr,
 				"MasterFrame->PacketSize = %d\n",
@@ -578,6 +607,13 @@ unsigned short DecodeMasterPacket(unsigned char *iPacket, int MaxPacketSize,
 		 * W funkcji 6 pakiet jest zawsze tej samej wielko¶ci 
 		 */
 		MasterFrame->PacketSize = 8;
+		if (PacketSize < MasterFrame->PacketSize) {
+			if (mbrtu_single == TRUE)
+				fprintf(stderr, "Received packet to short!!!\n");
+		
+			MasterFrame->CRC = 0;
+			return 1;
+		}
 		if (mbrtu_single == TRUE) {
 			fprintf(stderr,
 				"MasterFrame->PacketSize = %d\n",
@@ -606,6 +642,8 @@ unsigned short DecodeMasterPacket(unsigned char *iPacket, int MaxPacketSize,
 				"MasterFrame->DataSize = %d\n",
 				MasterFrame->DataSize);
 		}
+
+
 		MasterFrame->PacketSize =
 		    1 + 1 + 2 + 2 + 1 + 2 * MasterFrame->DataSize + 2;
 		if (mbrtu_single == TRUE) {
@@ -613,6 +651,15 @@ unsigned short DecodeMasterPacket(unsigned char *iPacket, int MaxPacketSize,
 				"MasterFrame->PacketSize = %d\n",
 				MasterFrame->PacketSize);
 		}
+
+		if (PacketSize < MasterFrame->DataSize) {
+			if (mbrtu_single == TRUE)
+				fprintf(stderr, "Received packet to short!!!\n");
+
+			MasterFrame->CRC = 0;
+			return 1;
+		}
+
 		for (u = 0; u < MasterFrame->DataSize; u++) {
 			MasterFrame->Body[u] =
 			    (iPacket[7 + 2 * u] << 8) | (iPacket[8 + 2 * u]);
@@ -1078,7 +1125,7 @@ int ReceiveMasterPacket(int CommId, tRMasterFrame * oMasterFrame,
 			usleep(1000 * DelayBetweenChars);
 		}
 
-		crc = DecodeMasterPacket(buffer, MAX_BUFFER_SIZE, oMasterFrame);
+		crc = DecodeMasterPacket(buffer, i, oMasterFrame);
 		if (crc == oMasterFrame->CRC) {
 			if (CRCStatus != NULL) {
 				*CRCStatus = CRC_OK;
