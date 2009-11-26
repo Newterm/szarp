@@ -1,6 +1,13 @@
 $Id$
 
 2009-11-26	Darek Marcinkiewicz <darek@dalkiaterm.pl>
+	* libSzarp2/szbase/definabledatablock.cc: fixed
+	typo in checking for no data values in parameters
+	for '$' drawdefinable function
+	* wx/draw3: user may now set margins, page size and
+	orientation of printouts, only setting of margins was tested
+	- it is probably the only importat fature form this
+	commit
 	* libSzarp/mbrtu.cc: check size of received frame - 
 	so far daemon blindly assumed that receive buffer
 	contains a properly formatted frame, what does

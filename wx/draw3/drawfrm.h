@@ -183,6 +183,8 @@ public:
 		
 	void OnConfigureRemarks(wxCommandEvent &event);
 
+	void OnPrintPageSetup(wxCommandEvent& event);
+
 	/**Schedules removal of a panel (at next Idle event)*/
 	void RemovePanel(DrawPanel *panel);
 

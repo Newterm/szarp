@@ -221,6 +221,8 @@ class XYFrame : public szFrame {
 	void OnGraphChange(wxCommandEvent &event);
 	/**Prints graph*/
 	void OnPrint(wxCommandEvent &event);
+	/**Prints graph*/
+	void OnPrintPageSetup(wxCommandEvent &event);
 	/**Displays print preview of xy graph*/
 	void OnPrintPreview(wxCommandEvent &event);
 	/**Zooms grap out*/

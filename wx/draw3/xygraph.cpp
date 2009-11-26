@@ -60,6 +60,7 @@ XYFrame::XYFrame(wxString default_prefix, DatabaseManager *db_manager, ConfigMan
 	menu->Append(XY_CHANGE_GRAPH, _("Change graph parameters"));
 	menu->AppendSeparator();
 	menu->Append(XY_PRINT, _("Print\tCtrl-P"));
+	menu->Append(XY_PRINT_PAGE_SETUP, _("Page Settings\tCtrl+Shift+S"));
 	menu->Append(XY_PRINT_PREVIEW, _("Print preview"));
 	menu->AppendSeparator();
 	menu->Append(XY_ZOOM_OUT, _("Zoom out\tCtrl--"));
@@ -123,6 +124,11 @@ void XYFrame::OnPrint(wxCommandEvent &event) {
 	m_panel->Print(false);
 }
 
+void XYFrame::OnPrintPageSetup(wxCommandEvent &event) {
+	Print::PageSetup(this);	
+}
+
+
 void XYFrame::OnPrintPreview(wxCommandEvent &event) {
 	m_panel->Print(true);
 }
@@ -140,6 +146,7 @@ BEGIN_EVENT_TABLE(XYFrame, szFrame)
 	EVT_MENU(XY_CHANGE_GRAPH, XYFrame::OnGraphChange)
 	EVT_MENU(wxID_CLOSE, XYFrame::OnCloseMenu)
 	EVT_MENU(XY_PRINT_PREVIEW, XYFrame::OnPrintPreview)
+	EVT_MENU(XY_PRINT_PAGE_SETUP, XYFrame::OnPrintPageSetup)
 	EVT_MENU(XY_PRINT, XYFrame::OnPrint)
 	EVT_MENU(XY_ZOOM_OUT, XYFrame::OnZoomOut)
 	EVT_MENU(wxID_HELP, XYFrame::OnHelp)

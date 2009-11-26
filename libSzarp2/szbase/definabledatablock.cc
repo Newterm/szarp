@@ -201,8 +201,8 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, szb_datablock
 					par_cnt = (short) rint(stack[sp - 1]);
 					if (sp < par_cnt + 1)
 						return SZB_NODATA;
-					for (int i = sp - 1; i >= sp - par_cnt - 1; i--)
-						if (IS_SZB_NODATA(stack[sp]))
+					for (int i = sp - 2; i >= sp - par_cnt - 1; i--)
+						if (IS_SZB_NODATA(stack[i]))
 							return SZB_NODATA;
 
 					stack[sp - par_cnt - 1] =

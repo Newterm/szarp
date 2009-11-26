@@ -65,7 +65,7 @@ class DrawsPrintout : public wxPrintout {
 	int m_draws_count;
 
 	/**Prints names of draws at the bottom of the page*/
-	void PrintDrawsInfo(wxDC *dc);
+	void PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin);
 
 	/**Prints short names of draws at the top of the page*/
 	void PrintShortDrawNames(GraphPrinter *gp, wxDC *dc);
@@ -223,15 +223,19 @@ public:
 	/**Color for background drawing - grey*/
 	static const wxColour back1_col;
 
-	BackgroundPrinter(int rightmargin,
+	BackgroundPrinter(int leftmargin,
+			int rightmargin,
 			int topmargin,
 			int bottommargin);
 
 };
 
-BackgroundPrinter::BackgroundPrinter(int rightmargin,
+BackgroundPrinter::BackgroundPrinter(
+		int leftmargin,
+		int rightmargin,
 		int topmargin,
-		int bottommargin){
+		int bottommargin) {
+	m_leftmargin = leftmargin;
 	m_rightmargin = rightmargin;
 	m_topmargin = topmargin;
 	m_bottommargin = bottommargin;
@@ -299,15 +303,11 @@ int BackgroundPrinter::FindVerticalAxesDistance(wxDC *dc, DrawPtrArray draws, co
 }
 
 int BackgroundPrinter::PrintBackground(wxDC *dc, DrawPtrArray draws, const SS& sd) {
-	int xo = print_left_margin, yo = print_top_margin;
-	dc->SetDeviceOrigin(xo, yo);
 
 	dc->SetTextForeground(GetTimeAxisCol());
 	dc->SetBrush(wxBrush(GetTimeAxisCol(), wxSOLID));
 
 	int ax_dist = FindVerticalAxesDistance(dc, draws, sd);
-
-	m_leftmargin = 0;
 
 	SS::iterator ssi = sd.begin();
 	do {
@@ -556,13 +556,6 @@ bool DrawsPrintout::OnPrintPage(int page) {
 	if (sel == m_draws_count)
 		return false;
 
-#if 0
-	wxConfigBase *cfg = wxConfig::Get();
-
-	int circle_radius = cfg->Read(_T("PrintedCircleRadius"), int(2));
-	int font_size = cfg->Read(_T("PrintedFontSize"), int(10));
-#endif
-
 	wxFont f;
 #ifdef __WXMSW__ 
 	f.Create(50, wxSWISS, wxNORMAL, wxNORMAL);
@@ -574,14 +567,28 @@ bool DrawsPrintout::OnPrintPage(int page) {
 	dc->SetMapMode(wxMM_TEXT);
 	dc->SetFont(f);
 
+	int ppiw, ppih;
+	GetPPIPrinter(&ppiw, &ppih);
+
+	//to milimiters
+	ppiw /= 25;
+	ppih /= 25;
+
+	int lorigin = Print::page_setup_dialog_data->GetMarginTopLeft().x * ppiw;
+	int torigin = Print::page_setup_dialog_data->GetMarginTopLeft().y * ppih;
+
+	dc->SetDeviceOrigin(lorigin, torigin);
+
 	int tw,th;
 	dc->GetTextExtent(_T("Z"), &tw, &th);
-	int topmargin, bottommargin, leftmargin, rightmargin;
+
+	int topmargin, bottommargin, rightmargin;
+
+	topmargin = 0;
 
 	bottommargin = int(1.4 * th);
-	topmargin = 0;
-	rightmargin = 10;
 
+	rightmargin = 10 + Print::page_setup_dialog_data->GetMarginBottomRight().x * ppiw;
 
 	SS cd = ChooseDraws();
 	for (SS::iterator i = cd.begin(); i != cd.end(); i++) {
@@ -595,11 +602,11 @@ bool DrawsPrintout::OnPrintPage(int page) {
 	GetPageSizePixels(&pw, &ph);
 	dc->SetUserScale((float)w / (float)pw, (float)h / (float)ph);
 
-	BackgroundPrinter bp(rightmargin, topmargin, bottommargin);
+	BackgroundPrinter bp(0, 0, topmargin, bottommargin);
 	bp.SetFont(f);
-	bp.SetSize(pw - print_left_margin * 2, (ph - print_top_margin * 2) * 2 / 3);
+	bp.SetSize(pw - print_left_margin - lorigin, (ph - print_top_margin - torigin) * 2 / 3);
 
-	leftmargin = bp.PrintBackground(dc, m_draws, cd);
+	int graph_start = bp.PrintBackground(dc, m_draws, cd);
 	bp.GetSize(&w, &h);
 	GraphPrinter gp(
 #ifdef __WXGTK__
@@ -607,7 +614,7 @@ bool DrawsPrintout::OnPrintPage(int page) {
 #else
 			10, 
 #endif
-			leftmargin, rightmargin, topmargin, bottommargin);
+			graph_start, rightmargin, topmargin, bottommargin);
 
 	gp.SetSize(w, h);
 	gp.SetFont(f);
@@ -615,7 +622,7 @@ bool DrawsPrintout::OnPrintPage(int page) {
 	gp.PrintDraws(dc, m_draws, m_draws_count);	
 	PrintShortDrawNames(&gp, dc);
 
-	PrintDrawsInfo(dc);
+	PrintDrawsInfo(dc, lorigin, torigin);
 
 	return true;
 }
@@ -642,7 +649,7 @@ void DrawsPrintout::PrintShortDrawNames(GraphPrinter *gp, wxDC *dc) {
 	}
 }
 
-void DrawsPrintout::PrintDrawsInfo(wxDC *dc) {
+void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin) {
 	int w, h;
 	int tw, th;
 	int maxy = 5;
@@ -654,7 +661,7 @@ void DrawsPrintout::PrintDrawsInfo(wxDC *dc) {
 	int a,b;
 	dc->GetSize(&a, &b);
 
-	dc->SetDeviceOrigin(0, b * 2 / 3);
+	dc->SetDeviceOrigin(leftmargin, b * 2 / 3 + topmargin);
 
 	Draw* fd = m_draws[0];
 	DrawInfo* fdi = m_draws[0]->GetDrawInfo();
@@ -890,10 +897,22 @@ bool XYGraphPrintout::OnPrintPage(int page) {
 	GetPageSizePixels(&pw, &ph);
 	dc->SetUserScale((float)w / (float)pw, (float)h / (float)ph);
 
-	dc->SetDeviceOrigin(0, 20);
+	int ppiw, ppih;
+	GetPPIPrinter(&ppiw, &ppih);
 
-	w = w * 9 / 10;
-	h = h * 2 / 3;
+	//to milimiters
+	ppiw /= 25;
+	ppih /= 25;
+
+	int lorigin = Print::page_setup_dialog_data->GetMarginTopLeft().x * ppiw;
+	int torigin = Print::page_setup_dialog_data->GetMarginTopLeft().y * ppih;
+	int rorigin = Print::page_setup_dialog_data->GetMarginBottomRight().x * ppiw;
+	int borigin = Print::page_setup_dialog_data->GetMarginBottomRight().y * ppih;
+
+	dc->SetDeviceOrigin(lorigin, torigin);
+
+	w = (w  - lorigin - rorigin) * 9 / 10;
+	h = (h  - torigin - borigin) * 2 / 3;
 
 	m_painter.SetSize(w, h);
 
@@ -951,7 +970,7 @@ bool XYGraphPrintout::OnPrintPage(int page) {
 					);
 	}
 
-	dc->SetDeviceOrigin(0, h + 20);
+	dc->SetDeviceOrigin(lorigin, h + torigin + 30);
 
 	int tw, th;
 	int ty = 0;
@@ -1114,8 +1133,25 @@ void Print::InitData() {
 
 	if (page_setup_data == NULL)
 		page_setup_data = new wxPageSetupData();
+
+	if (page_setup_dialog_data == NULL) {
+		page_setup_dialog_data = new wxPageSetupDialogData();
+		*page_setup_dialog_data = *print_data;
+	}
 }
 
+void Print::PageSetup(wxWindow *parent) {
+	InitData();
+
+	*page_setup_dialog_data = *print_data;
+
+	wxPageSetupDialog psd(parent, page_setup_dialog_data);
+	psd.ShowModal();
+
+	*print_data = psd.GetPageSetupDialogData().GetPrintData();
+	*page_setup_dialog_data = psd.GetPageSetupDialogData();
+
+}
 
 void Print::DoXYPrintPreview(XYGraph *graph) {
 	InitData();
@@ -1153,5 +1189,6 @@ void Print::DoXYPrint(wxWindow *parent, XYGraph *graph) {
 
 wxPrintData* Print::print_data = NULL;
 wxPageSetupData* Print::page_setup_data = NULL;
+wxPageSetupDialogData* Print::page_setup_dialog_data = NULL;
 
 

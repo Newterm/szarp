@@ -45,13 +45,16 @@ struct XYGraph;
 
 /**Class for graphs printing*/
 class Print {
+public:
 	/**Object holding wxWidgets' internal printing data*/
 	static wxPrintData *print_data;
 	/**Object holding page setup*/
 	static wxPageSetupData *page_setup_data;
+
+	static wxPageSetupDialogData *page_setup_dialog_data;
+
 	/**Initializes @see print_data and @see page_setup_data objects (if they have not yet been initialized)*/
 	static void InitData();
-	public:
 	/**Prints graphs.
 	 * @param parent parent window 
 	 * @param draws array of draws to print
@@ -67,6 +70,8 @@ class Print {
 	 * @paran parent window for print dialog
 	 * @param graph XY graph to print*/
 	static void DoXYPrint(wxWindow *parent, XYGraph *graph);
+
+	static void PageSetup(wxWindow *parent);
 
 	/**Prints XY graphs.
 	 * @param graph XY graph to preview*/

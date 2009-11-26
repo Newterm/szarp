@@ -34,6 +34,7 @@
 #include "errfrm.h"
 #include "paramslist.h"
 #include "remarks.h"
+#include "drawprint.h"
 
 #include "bitmaps/flag_de.xpm"
 #include "bitmaps/flag_pl.xpm"
@@ -1000,6 +1001,10 @@ void DrawFrame::OnConfigureRemarks(wxCommandEvent &event) {
 	
 }
 
+void DrawFrame::OnPrintPageSetup(wxCommandEvent& event) {
+	Print::PageSetup(this);
+}
+
 void DrawFrame::OnLanguageChangeTool(wxCommandEvent &event) {
 	wxMenu *menu = new wxMenu();
 
@@ -1189,6 +1194,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("AddRemark"), DrawFrame::OnAddRemark)
     EVT_MENU(XRCID("FetchRemarks"), DrawFrame::OnFetchRemarks)
     EVT_MENU(XRCID("RemarksConfiguration"), DrawFrame::OnConfigureRemarks)
+    EVT_MENU(XRCID("PageSetup"), DrawFrame::OnPrintPageSetup)
     EVT_MENU(drawTB_EXIT, DrawFrame::OnExit)
     EVT_MENU(drawTB_ABOUT, DrawFrame::OnAbout)
     EVT_MENU(langID_pl, DrawFrame::OnLanguageChangeMenuItem)
