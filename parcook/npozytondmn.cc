@@ -139,6 +139,8 @@ int parseXMLDevice(xmlNodePtr node, NPozytonDataInterface * data)
 			type = T_LZQM;
 		else if (!strcasecmp(str, "EQABP"))
 			type = T_EQABP;
+		else if (!strcasecmp (str, "EQM"))
+			type = T_EQM;
 		else {
 			sz_log(0,
 			       "error parsing npozytondmn:type attribute ('%s'), line %ld",
@@ -236,7 +238,6 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	*log_function = &sz_log;
-
 	dpozyton = createPozyton(params_count, cfg->GetSingle());
 	if (parseXMLDevice(cfg->GetXMLDevice(), dpozyton) != 0)
 		return 1;
@@ -246,6 +247,7 @@ int main(int argc, char *argv[])
 		free(dpozyton);
 		return 1;
 	}
+
 	short *ParsedData = (short *)malloc(sizeof(short) * Size);
 	if (cfg->GetSingle()) {
 		fprintf(stderr, "line number: %d\ndevice: %s\nparams in: %d\n", 
