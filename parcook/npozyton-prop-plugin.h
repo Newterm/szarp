@@ -31,6 +31,7 @@
 /* type of meter */
 #define T_LZQM	1		/* LZQM (default) */
 #define T_EQABP	2		/* EQABP */
+#define T_EQM	3		/* EQABP */
 
 
 /**
