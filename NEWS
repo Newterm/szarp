@@ -6,6 +6,27 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.206
+# 31.11.2009
+
+* there is a new apt repository branch avaiable in szarp.org repository
+- 'karmic', containing version of szarp compiled for 'karmic koala' Ubuntu
+distribution
+* draw3: it now possible to set margins, orientation and page size of printouts
+* buggy wxSingleInstanceChecker (class resposible for detecting if
+other copy of application is running) replaced with our own implementation
+* mbrtudmn: slave mode was fixed
+* ipkedit: update, min max ranges and color attributes can be changed,
+also documentation of ipkedit was updated
+* raporter3: program was expaned - user report templates are now saved
+automaticaly and are available directly from menu - this is more compliant
+with draw3 behaviour, lots of other small fixes and improvements, code review.
+* reporter3: numerous fixes
+* raporter3: initial version of documentation is available
+* Help fix: searching in documentation no longer causes application to crash
+* 'Antialiased mode' became default graphs drawing mode on both platforms.
+* 'Antialiased mode' works also on Windows.
+
 ** 3.1.163
 # 31.10.2009
 
