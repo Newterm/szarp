@@ -416,18 +416,16 @@ time_t szb_real_search_data(szb_buffer_t * buffer, TParam * param, time_t start,
 #ifdef KDEBUG
 		sz_log(SEARCH_DATA_LOG_LEVEL, "S: szb_real_search_data: start y: %d, m: %d", year, month);
 #endif
-		szb_datablock_t *block = szb_get_block(buffer, param, year, month);
+		szb_datablock_t *block = NULL;
 		const SZBASE_TYPE * data = NULL;
-		if (NULL != block)
-		data = block->GetData();
 
 		for (t = start; t >= end; t -= SZBASE_PROBE) {
 			/* check if block exists */
 			szb_time2my(t, &new_year, &new_month);
 			if (NULL == block || new_month != month || new_year != year) {
 				block = szb_get_block(buffer, param, new_year, new_month);
-				if (NULL != block)
-				data = block->GetData();
+					if (NULL != block)
+					data = block->GetData();
 				if (NULL == block || block->GetFirstDataProbeIdx() < 0) {
 					/* jump to the begining of the block, so after next iteration
 					 * we are at the end of previous */

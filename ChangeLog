@@ -1,5 +1,8 @@
 $Id$
 
+2009-12-01	Darek Marcinkiewicz <darek@dalkiaterm.pl>
+	* libSzarp2/szbase/realdatablock.cc: little fix of
+	silly bug
 2009-11-26	Darek Marcinkiewicz <darek@dalkiaterm.pl>
 	* libSzarp2/szbase/definabledatablock.cc: fixed
 	typo in checking for no data values in parameters
