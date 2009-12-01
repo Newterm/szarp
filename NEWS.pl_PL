@@ -11,25 +11,25 @@
 ** 3.1.206
 # 31.11.2009
 * Dostêpna jest nowa ga³±¼ w repozytorium apt na szarp.org "karmic", zawieraj±ca
-SZARPa skompilowanego dla Ubuntu w wesji "Karmic koala"
+SZARPa skompilowanego dla Ubuntu w wesji "Karmic koala".
 * Program przegl±daj±cy: mo¿liwe jest teraz ustawienie marginesów, rozmiaru
 oraz orientacji wydruków przez u¿ytkownika.
 * Niepoprawnie funkcjonuj±cy, pochodz±cy z bilbioteki wxWidgets, mechanizm sprawdzaj±cy
 czy kopia w³asnie uruchomionego programu jest ju¿ uruchomiona (czasami wskazywa³ b³êdnie
 ¿e program nie uruchomiony ju¿ dzia³a) zosta³ zast±piony nasz± w³±sn± implementacj±,
-która nie ma takich problemów
-* mbrtudmn(demon do komunikacji po Modbus RTU): poprawiono obs³ugê trybu 'slvae'
+która nie ma takich problemów.
+* mbrtudmn(demon do komunikacji po Modbus RTU): poprawiono obs³ugê trybu 'slave'.
 * ipkedit(program do edycji konfiguracji SZARPa): dodano obsu³gê zakresów
 min-max wykresów oraz ustawiania ich kolorów. Uaktualniono tak¿e dokumentacjê 
 programu.
 * raporter3: program zosta³ rozbudowany, wzorce u¿ytkownika s± zapisywane
 automatycznie i s± dostêpne bezpo¶rednio z menu - jest to bardziej zgodne
 z zachowaniem programu draw3, wprowadzano tak¿e liczne poprawki i usprawnienia.
-* raporter3: dostêpna jest pierwsza wersja dokumentacji
-* poprawka w systemie pomocy: poprawnie dzia³± wyszukiwanie dokumentacji z poziomu
-programów SZARPa
-* tryb wykresów antyaliasowanych jest teraz domy¶lnym trybem rysowania wykresów
-* tryb wykresów antyaliasowanych dzia³a tak¿e pod systemem Windows
+* raporter3: dostêpna jest pierwsza wersja dokumentacji.
+* Poprawka w systemie pomocy: poprawnie dzia³± wyszukiwanie dokumentacji z poziomu
+programów SZARPa.
+* Tryb wykresów antyaliasowanych jest teraz domy¶lnym trybem rysowania wykresów.
+* Tryb wykresów antyaliasowanych dzia³a tak¿e pod systemem Windows.
 
 ** 3.1.163
 # 31.10.2009
