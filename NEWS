@@ -24,8 +24,6 @@ with draw3 behaviour, lots of other small fixes and improvements, code review.
 * reporter3: numerous fixes.
 * raporter3: initial version of documentation is available.
 * Help fix: searching in documentation no longer causes applications to crash.
-* 'Antialiased mode' became default graphs drawing mode on both platforms.
-* 'Antialiased mode' works also on Windows.
 
 ** 3.1.163
 # 31.10.2009

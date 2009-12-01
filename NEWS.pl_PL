@@ -28,8 +28,6 @@ z zachowaniem programu draw3, wprowadzano tak¿e liczne poprawki i usprawnienia.
 * raporter3: dostêpna jest pierwsza wersja dokumentacji.
 * Poprawka w systemie pomocy: poprawnie dzia³± wyszukiwanie dokumentacji z poziomu
 programów SZARPa.
-* Tryb wykresów antyaliasowanych jest teraz domy¶lnym trybem rysowania wykresów.
-* Tryb wykresów antyaliasowanych dzia³a tak¿e pod systemem Windows.
 
 ** 3.1.163
 # 31.10.2009
