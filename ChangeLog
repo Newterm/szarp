@@ -14,7 +14,7 @@ $Id$
 	* libSzarp/mbrtu.cc: check size of received frame - 
 	so far daemon blindly assumed that receive buffer
 	contains a properly formatted frame, what does
-	not have to be the case in some circumstances
+	not have to be the case in some circumstances.
 2009-11-25	Pawel Palucha  <pawel@praterm.com.pl>
 	* wx/*: scc, ssc and draw3 use szSingleInstanceChecker instead of
 	wxSingleInstanceChecker.
