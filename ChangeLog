@@ -1,5 +1,7 @@
 $Id$
 
+2009-12-02	Darek Marcinkiewicz <darek@dalkiaterm.pl>
+	* resources/regulators: more controllers' definitons for szast
 2009-12-01	Darek Marcinkiewicz <darek@dalkiaterm.pl>
 	* libSzarp2/szbase/realdatablock.cc: little fix of
 	silly bug

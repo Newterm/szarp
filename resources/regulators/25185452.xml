@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="ISO-8859-2"?>
+
+<!-- This file was created automatically by docgen.pl on Wed Dec  2 15:15:19 CET 2009 -->
+<!-- You should not mess here manually, unless you have at least 5 good reasons not to use docgen.pl -->
+
+<devices>
+
+<!-- DO NOT TOUCH THIS LINE - DEV /dev/ttyS0 - unitID 1 - BEGIN -->
+<!-- Configuration for DEV /dev/ttyS0, unitID 1 last time updated on: Wed Dec  2 15:15:19 CET 2009 -->
+    <device path="/dev/ttyS0" unit="1" nE="2518" nL="" nb="" nP="3004">
+	<const number="1" min="350" max="550" prec="1" unit="&#176;C" connected_to="Pochyla:WCWCO:temperatura 'dy&#380;urna'" description=""/>
+	<const number="20" min="0" max="1000" prec="1" unit="%" connected_to="Pochyla:WCWCO:wyst. fal. pompy &#322;aduj&#261;cej w pracy r&#281;cznej" description=""/>
+	<const number="22" min="0" max="1000" prec="1" unit="%" connected_to="Pochyla:WCWCO:aktualne wysterowanie falownika pompy przewalowej" description=""/>
+	<const number="24" min="0" max="1000" prec="1" unit="" connected_to="" description="stopie&#324; otwarcia sterowanego napi&#281;ciowo zaworu za II stopniem CWU [%]"/>
+	<const number="27" min="1" max="3" prec="0" unit="-" connected_to="Pochyla:WCWCO:numer algorytmu CO" description=""/>
+	<const number="28" min="0" max="100" prec="0" unit="%" connected_to="Pochyla:WCWCO:wsp&#243;&#322;czynnik wzmocnienia dla algorytmu 1-2" description=""/>
+	<const number="29" min="200" max="450" prec="1" unit="&#176;C" connected_to="Pochyla:WCWCO:parametr sta&#322;y 49" description=""/>
+	<const number="39" min="450" max="1090" prec="1" unit="&#176;C" connected_to="Pochyla:WCWCO:temperatura wody z ciep&#322;owni odniesienia" description=""/>
+	<const number="46" min="80" max="300" prec="1" unit="&#176;C" connected_to="Pochyla:WCWCO:zadana temp. wody przed 1-st" description=""/>
+	<const number="49" min="-200" max="200" prec="1" unit="" connected_to="Pochyla:WCWCO:parametr sta&#322;y 90" description=""/>
+	<const number="57" min="-100" max="100" prec="1" unit="&#176;C" connected_to="Pochyla:WCWCO:parametr sta&#322;y 29" description=""/>
+	<const number="74" min="0" max="3" prec="0" unit="" connected_to="" description="ilo&#347;&#263; miejsc po przecinku w Kamstrupie"/>
+	<const number="75" min="0" max="1" prec="0" unit="" connected_to="" description="Tryb pracy ograniczenia na przep&#322;yw 0 - CO; 1 - CWU"/>
+	<const number="79" min="50" max="1600" prec="3" unit="" connected_to="" description="skala przyrz&#261;du pomiarowego ci&#347;nienia dyspozycyjnego [MPa]"/>
+	<const number="82" min="0" max="1500" prec="1" unit="" connected_to="" description="startowa temperatura przed I stopniem [&#176;C]"/>
+	<const number="83" min="0" max="1500" prec="1" unit="" connected_to="" description="startowa temperatura z ciep&#322;owni [&#176;C]"/>
+	<const number="84" min="0" max="9000" prec="3" unit="" connected_to="" description="startowy przep&#322;yw &#322;adowania [&#176;C]"/>
+	<const number="85" min="0" max="4" prec="0" unit="" connected_to="" description="impulsacja wodomierza obwodu &#322;adowania (0 = 1l/imp, 1 = 2.5l/imp, 2 = 10l/imp, 3 = 25l/imp, 4 = 100l/imp) [-]"/>
+	<const number="86" min="0" max="4" prec="0" unit="" connected_to="" description="impulsacja wodomierza wody wodoci&#261;gowej (0 = 1l/imp, 1 = 2.5l/imp, 2 = 10l/imp, 3 = 25l/imp, 4 = 100l/imp) [-]"/>
+	<const number="87" min="0" max="4" prec="0" unit="" connected_to="" description="impulsacja wodomierza przep&#322;ywu w&#281;z&#322;a (0 = 1l/imp, 1 = 2.5l/imp, 2 = 10l/imp, 3 = 25l/imp, 4 = 100l/imp) [-]"/>
+	<const number="88" min="0" max="4" prec="0" unit="" connected_to="" description="impulsacja wodomierza przep&#322;ywu cyrkulacji (0 = 1l/imp, 1 = 2.5l/imp, 2 = 10l/imp, 3 = 25l/imp, 4 = 100l/imp) [-]"/>
+	<const number="90" min="0" max="4" prec="0" unit="s" connected_to="Pochyla:WCWCO:parametr sta&#322;y 94" description=""/>
+	<const number="91" min="1" max="9" prec="1" unit="s" connected_to="Pochyla:WCWCO:czas trwania impulsu ruchu zaworem mieszania" description=""/>
+	<const number="92" min="1" max="9" prec="1" unit="s" connected_to="Pochyla:WCWCO:czas trwania impulsu ruchu zaworem CO" description=""/>
+	<const number="93" min="1" max="9" prec="1" unit="s" connected_to="Pochyla:WCWCO:czas trwania impulsu ruchu zaworem 2-st" description=""/>
+	<const number="94" min="1" max="9" prec="1" unit="&#176;C" connected_to="Pochyla:WCWCO:temperatura CO w funkcji temp. z ciep&#322;owni" description=""/>
+	<const number="95" min="-50" max="5" prec="1" unit="" connected_to="" description="korekta pomiaru (dwuprzewodowego) czujnika temperatury powrotnej CO [&#176;C]"/>
+	<const number="96" min="-1" max="1" prec="0" unit="" connected_to="" description="kierunek ruch zaworem mieszania w ostatnim cyklu"/>
+	<pack number="0" min="40" max="55" prec="0" unit="&#176;C" connected_to="Pochyla:WCWCO:temperatura odniesienia dla odbiorc&#243;w" description=""/>
+	<pack number="3" min="-20" max="5" prec="0" unit="&#176;C" connected_to="Pochyla:WCWCO:paczka czasowa nr 56" description=""/>
+	<pack number="10" min="50" max="9000" prec="3" unit="t/h" connected_to="Pochyla:WCWCO:wpisany przewidywany przeplyw &#322;adowania" description=""/>
+	<pack number="56" min="48" max="60" prec="0" unit="&#176;C" connected_to="Pochyla:WCWCO:parametr sta&#322;y 57" description=""/>
+	<pack number="73" min="0" max="9000" prec="1" unit="-" connected_to="Pochyla:WCWCO:zakodowany stan wej&#347;&#263; logicznych" description=""/>
+	<pack number="89" min="0" max="1" prec="0" unit="t/h" connected_to="Pochyla:WCWCO:Przep&#322;yw CO" description=""/>
+    </device>
+<!-- DO NOT TOUCH THIS LINE - DEV /dev/ttyS0 - unitID 1 - END -->
+
+<!-- DO NOT TOUCH THIS LINE - DEVICES - END -->
+
+</devices>
