@@ -1,10 +1,15 @@
 $Id$
 
+2009-12-02	Pawel Palucha <pawel@praterm.com.pl>
+	* utils/nagios/sn-fam.py: fix - daemon doest not fail when
+	configuration is not a proper XML file.
+	* libSzarp2/ipk/tszarpconfig.cc: removed warning about parameter's 
+	description length in report.
 2009-12-02	Darek Marcinkiewicz <darek@dalkiaterm.pl>
-	* resources/regulators: more controllers' definitons for szast
+	* resources/regulators: more controllers' definitons for szast.
 2009-12-01	Darek Marcinkiewicz <darek@dalkiaterm.pl>
 	* libSzarp2/szbase/realdatablock.cc: little fix of
-	silly bug
+	silly bug.
 2009-11-26	Darek Marcinkiewicz <darek@dalkiaterm.pl>
 	* libSzarp2/szbase/definabledatablock.cc: fixed
 	typo in checking for no data values in parameters

@@ -50,6 +50,7 @@ import time
 import traceback
 from optparse import OptionParser
 import ConfigParser
+from xml.sax import SAXParseException
 
 class SzarpMonitor:
 	class LADRequest:
@@ -205,7 +206,10 @@ class SzarpMonitor:
 			self.reqs[prefix].fr = self.fam.monitorDirectory(dir, prefix)
 			params = sn.SZARPDIR + "/%s/config/params.xml" % prefix
 			self.reqs[prefix].frp = self.fam.monitorFile(params, prefix)
-			self.reqs[prefix].tests = sn.get_test_params(prefix)
+			try:
+				self.reqs[prefix].tests = sn.get_test_params(prefix)
+			except SAXParseException:
+				continue
 			try:
 				self.reqs[prefix].max_delay = int(config.get(prefix, 'max_delay'))
 			except ConfigParser.NoSectionError, e:
@@ -235,7 +239,10 @@ class SzarpMonitor:
 		"""
 		for prefix in self.toreload:
 			logging.debug("reloading configuration for prefix: %s", prefix)
-			self.reqs[prefix].tests = sn.get_test_params(prefix)
+			try:
+				self.reqs[prefix].tests = sn.get_test_params(prefix)
+			except SAXParseException:
+				pass
 		self.toreload.clear()
 
 	def checkLast(self, now):

@@ -1042,8 +1042,6 @@ TSzarpConfig::SaveRaporters(const std::wstring& directory, int force)
 		snprintf(strings[j], BUFSIZE,
 			 "\n%d  %d  %s  %s [%s]", p->GetIpcInd(), prec, SC::S2A(p->GetShortName()).c_str(), SC::S2A(rap->GetDescr()).c_str(), SC::S2A(p->GetUnit()).c_str());
 	    }
-	    if (rap->GetDescr().length() > 49)
-	sz_log(1, "Raport description '%s' for param '%s' to long (more than 49 characters)", SC::S2A(rap->GetDescr()).c_str(), SC::S2A(p->GetName()).c_str());
 	}
 #undef BUFSIZE
 	// Print sorted
