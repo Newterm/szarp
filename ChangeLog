@@ -1,5 +1,9 @@
 $Id$
 
+2009-12-07	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* parcook/mbdmn.cc: modbus daemon, supporting tcp/rtu 
+	& slave/master mode, not tested yet, may still lack some
+	features of previous daemons
 2009-12-02	Pawel Palucha <pawel@praterm.com.pl>
 	* utils/nagios/sn-fam.py: fix - daemon doest not fail when
 	configuration is not a proper XML file.

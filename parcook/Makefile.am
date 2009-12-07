@@ -67,6 +67,7 @@ bin_PROGRAMS = \
 	      dprdmn \
 	      eapnetdmn \
 	      lecdmn \
+	      mbdmn \
 	      lmldmn \
 	      muksdmn \
 	      npozytondmn \
@@ -209,6 +210,9 @@ melsdmn_LDADD = $(LIBSZARP2) $(LIBSZARP) $(LDADD) $(BOOST_LDFLAGS)
 
 unitedmn_SOURCES = unitedmn.cc
 unitedmn_LDADD = $(LIBSZARP2) $(LIBSZARP) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
+
+mbdmn_SOURCES = mbdmn.cc
+mbdmn_LDADD = $(LIBSZARP2) $(LIBSZARP) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
 
 sbusdmn_SOURCES = sbusdmn.cc
 sbusdmn_LDADD = $(LIBSZARP2) $(LIBSZARP) $(LDADD) $(BOOST_LDFLAGS)
