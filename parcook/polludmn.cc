@@ -64,6 +64,8 @@
 #include "liblog.h"
 #include "conversion.h"
 
+#define SLEEP_ERROR 180 
+
 #define DAEMON_ERROR 1
 
 #define SND_NKE_LENGTH 5
@@ -431,8 +433,17 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), mbi
 	while (true) {
 		fd = mbinfo->InitComm(cfg->GetDevice()->GetPath(),
 			      cfg->GetDevice()->GetSpeed(), 8, 2, EVEN);
+		if (fd < 0){
+			sz_log(2, "problem with serial port (open)\n");
+			sleep(SLEEP_ERROR);
+			continue;	
+		}
 
-		write(fd,SND_NKE,SND_NKE_LENGTH); //Sending first Question
+		if (write(fd,SND_NKE,SND_NKE_LENGTH)<0){ //Sending first Question
+			sz_log(2, "problem with serial port (open)\n");
+			sleep(SLEEP_ERROR);
+			continue;	
+		}
 
 		if (cfg->GetSingle()){
 				fprintf(stderr,"Sending : SND_NKE\n");
@@ -444,10 +455,20 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), mbi
 			if (cfg->GetSingle()){
 				fprintf(stderr,"Error: NO DIALTONE\n");
 			}
+			if (ResponseStatus == GENERAL_ERROR){
+				sz_log(2, "problem with serial port (read)\n");
+				sleep(SLEEP_ERROR);
+				continue;	
+			}
 
 		}
 		else{
-			write(fd,REQ_UD2,REQ_UD2_LENGTH);
+			if (write(fd,REQ_UD2,REQ_UD2_LENGTH)<0){
+				sz_log(2, "problem with serial port (write)\n");
+				sleep(SLEEP_ERROR);
+				continue;	
+			}
+			
 			if (cfg->GetSingle()){
 				fprintf(stderr,"Sending : REQ_UD2\n");
 			}
@@ -457,6 +478,11 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), mbi
 				mbinfo->SetNoData(ipc); 
 				if (cfg->GetSingle()){
 					fprintf(stderr,"Error: NO DIALTONE\n");
+				}
+				if (ResponseStatus == GENERAL_ERROR){
+					sz_log(2, "problem with serial port (read)\n");
+					sleep(SLEEP_ERROR);
+					continue;	
 				}
 			}
 			else{
