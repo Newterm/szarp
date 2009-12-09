@@ -1,5 +1,9 @@
 $Id$
 
+2009-12-09	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* parcook/mbdmn.cc: fixes
+	* parcook/mbtcpdmn.cc: fix is generation of write
+	multiple registers command in client mode
 2009-12-07	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
 	* parcook/mbdmn.cc: modbus daemon, supporting tcp/rtu 
 	& slave/master mode, not tested yet, may still lack some

@@ -178,9 +178,16 @@ struct SDU {
 	PDU pdu;
 };
 
+//maps regisers values to parcook short values
 class parcook_modbus_val_op {
 public:
 	virtual unsigned short val() = 0;
+};
+
+//maps values from sender to parcook registers
+class sender_modbus_val_op {
+public:
+	virtual void set_val(unsigned short val, time_t current_time) = 0;
 };
 
 class modbus_register;
@@ -207,6 +214,7 @@ protected:
 	URMAP m_registers;
 
 	std::vector<parcook_modbus_val_op*> m_parcook_ops;
+	std::vector<sender_modbus_val_op*> m_sender_ops;
 	std::vector<modbus_register*> m_send_map;
 
 	RSET m_received;
@@ -320,8 +328,8 @@ protected:
 
 	enum {
 		AWAITING_CONNECTION,
-		READ_QUERY_SENT,
-		WRITE_QUERY_SENT,
+		SENDING_READ_QUERY,
+		SENDING_WRITE_QUERY,
 		IDLE,
 	} m_state;
 
@@ -333,10 +341,12 @@ protected:
 
 	void reset_cycle();
 	void start_cycle();
-	bool generate_next_read_query();
-	bool generate_next_write_query();
-	bool generate_next_query(bool &write_query);
 	void send_next_query();
+	void send_write_query();
+	void send_read_query();
+	void next_query();
+	void send_query();
+	void find_continous_reg_block(RSET::iterator &i, RSET &regs);
 public:
 	modbus_client(client_connection *client);
 	virtual int configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx);
@@ -514,6 +524,22 @@ public:
 	virtual unsigned short val();
 };
 
+class short_sender_modbus_val_op : public sender_modbus_val_op {
+	modbus_register *m_reg;
+public:
+	short_sender_modbus_val_op(modbus_register *reg);
+	virtual void set_val(unsigned short val, time_t time);
+};
+
+class float_sender_modbus_val_op : public sender_modbus_val_op {
+	modbus_register *m_reg_lsw;
+	modbus_register *m_reg_msw;
+	int m_prec;
+public:
+	float_sender_modbus_val_op(modbus_register *reg_lsw, modbus_register *reg_msw, int prec);
+	virtual void set_val(unsigned short val, time_t time);
+};
+
 
 void dolog(int level, const char * fmt, ...)
   __attribute__ ((format (printf, 2, 3)));
@@ -561,7 +587,7 @@ short_parcook_modbus_val_op::short_parcook_modbus_val_op(modbus_register *reg) :
 
 unsigned short short_parcook_modbus_val_op::val() {
 	bool valid;
-	unsigned short v = ntohs(m_reg->get_val(valid));
+	unsigned short v = m_reg->get_val(valid);
 	if (!valid)
 		return SZARP_NO_DATA;
 	return v;
@@ -573,7 +599,7 @@ bcd_parcook_modbus_val_op::bcd_parcook_modbus_val_op(modbus_register *reg) :
 
 unsigned short bcd_parcook_modbus_val_op::val() {
 	bool valid;
-	unsigned short val = ntohs(m_reg->get_val(valid));
+	unsigned short val = m_reg->get_val(valid);
 	if (!valid)
 		return SZARP_NO_DATA;
 
@@ -587,14 +613,14 @@ template<class T> unsigned short long_parcook_modbus_val_op<T>::val() {
 	unsigned short v2[2];
 	bool valid;
 
-	v2[0] = m_reg_msw->get_val(valid);
+	v2[1] = m_reg_msw->get_val(valid);
 	if (!valid)
 		return SZARP_NO_DATA;
-	v2[1] = m_reg_lsw->get_val(valid);
+	v2[0] = m_reg_lsw->get_val(valid);
 	if (!valid)
 		return SZARP_NO_DATA;
 
-	unsigned int v = ntohl(*(unsigned int*)&v2) * m_prec;
+	unsigned int v = (*(unsigned int*)v2) * m_prec;
 	if (m_lsw)
 		return v & 0xffff;
 	else
@@ -612,8 +638,7 @@ template<> unsigned short long_parcook_modbus_val_op<float>::val() {
 	if (!valid)
 		return SZARP_NO_DATA;
 
-	long* f = (long*) v2;
-
+	float* f = (float*) &v2;
 	unsigned int v = (*f) * m_prec;
 	if (m_lsw)
 		return v & 0xffff;
@@ -621,17 +646,37 @@ template<> unsigned short long_parcook_modbus_val_op<float>::val() {
 		return v >> 16;
 }
 
-modbus_register::modbus_register(modbus_daemon* daemon) : m_modbus_daemon(daemon), m_mod_time(-1) {}
+short_sender_modbus_val_op::short_sender_modbus_val_op(modbus_register *reg) : m_reg(reg) {}
+
+void short_sender_modbus_val_op::set_val(unsigned short val, time_t time) {
+	m_reg->set_val(val, time);
+}
+
+float_sender_modbus_val_op::float_sender_modbus_val_op(modbus_register *reg_lsw, modbus_register *reg_msw, int prec) :
+	m_reg_lsw(reg_lsw), m_reg_msw(reg_msw), m_prec(prec) {}
+
+void float_sender_modbus_val_op::set_val(unsigned short val, time_t time) {
+	float fval = float(val) / m_prec;
+	unsigned short iv[2]; 
+	memcpy(iv, &fval, sizeof(float));
+	
+	m_reg_msw->set_val(iv[0], time);
+	m_reg_lsw->set_val(iv[1], time);
+}
+
+modbus_register::modbus_register(modbus_daemon* daemon) : m_modbus_daemon(daemon), m_val(SZARP_NO_DATA), m_mod_time(-1) {}
 
 unsigned short modbus_register::get_val(bool &valid) {
-	valid = m_modbus_daemon->register_val_expired(m_mod_time);
+	if (m_mod_time < 0)
+		valid = false;
+	else
+		valid = m_modbus_daemon->register_val_expired(m_mod_time);
 	return m_val;
 }
 
 unsigned short modbus_register::get_val() {
 	return m_val;
 }
-
 
 void modbus_register::set_val(unsigned short val, time_t time) {
 	m_val = val;
@@ -672,6 +717,7 @@ bool modbus_daemon::process_request(unsigned char unit, PDU &pdu) {
 		}
 
 	} catch (std::out_of_range) {	//message was distorted
+		dolog(1, "Error while processing request - there is either a bug or sth was very wrong with request format");
 		return false;
 	}
 
@@ -684,6 +730,10 @@ void modbus_daemon::timer_event() {
 	from_sender();
 	to_parcook();
 
+	struct timeval tv;
+	tv.tv_sec = 10;
+	tv.tv_usec = 0;
+	evtimer_add(&m_timer, &tv); 
 }
 
 void modbus_daemon::timer_callback(int fd, short event, void* daemon) {
@@ -703,13 +753,6 @@ int modbus_daemon::initialize() {
 
 	evtimer_set(&m_timer, timer_callback, this);
 	event_base_set(m_event_base, &m_timer);
-
-	struct timeval tv;
-	tv.tv_sec = 10;
-	tv.tv_usec = 0;
-	evtimer_add(&m_timer, &tv); 
-
-	m_current_time = time(NULL);
 
 	return 0;
 }
@@ -782,14 +825,14 @@ bool modbus_daemon::perform_write_registers(RMAP &unit, PDU &pdu) {
 	size_t data_index;
 
 
-	start_addr = (d.at(1) << 8) | d.at(2);
+	start_addr = (d.at(0) << 8) | d.at(1);
 
 	if (pdu.func_code == MB_F_WMR) {
-		regs_count = (d.at(3) << 8) | d.at(4);
-		data_index = 6;
+		regs_count = (d.at(2) << 8) | d.at(3);
+		data_index = 5;
 	} else {
 		regs_count = 1;
-		data_index = 3;
+		data_index = 2;
 	}
 
 	dolog(7, "Processing write holding request registers start_addr: %hu, regs_count:%hu", start_addr, regs_count);
@@ -806,7 +849,7 @@ bool modbus_daemon::perform_write_registers(RMAP &unit, PDU &pdu) {
 	}
 
 	if (pdu.func_code == MB_F_WMR)
-		d.resize(5);
+		d.resize(4);
 
 	dolog(7, "Request processed successfully");
 
@@ -815,13 +858,13 @@ bool modbus_daemon::perform_write_registers(RMAP &unit, PDU &pdu) {
 
 bool modbus_daemon::perform_read_holding_regs(RMAP &unit, PDU &pdu) {
 	std::vector<unsigned char>& d = pdu.data;
-	unsigned short start_addr = (d.at(1) << 8) | d.at(2);
-	unsigned short regs_count = (d.at(3) << 8) | d.at(4);
+	unsigned short start_addr = (d.at(0) << 8) | d.at(1);
+	unsigned short regs_count = (d.at(2) << 8) | d.at(3);
 
 	dolog(7, "Responding to read holding registers request start_addr: %hu, regs_count:%hu", start_addr, regs_count);
 
-	d.resize(2);
-	d.at(1) = 2 * regs_count;
+	d.resize(1);
+	d.at(0) = 2 * regs_count;
 
 	for (size_t addr = start_addr; addr < start_addr + regs_count; addr++) {
 		RMAP::iterator j = unit.find(addr);
@@ -841,8 +884,8 @@ bool modbus_daemon::perform_read_holding_regs(RMAP &unit, PDU &pdu) {
 
 bool modbus_daemon::create_error_response(unsigned char error, PDU &pdu) {
 	pdu.func_code |= MB_ERROR_CODE;
-	pdu.data.resize(2);
-	pdu.data[1] = error;
+	pdu.data.resize(1);
+	pdu.data[0] = error;
 
 	dolog(7, "Sending error response: %s", error_string(error));
 
@@ -852,6 +895,7 @@ bool modbus_daemon::create_error_response(unsigned char error, PDU &pdu) {
 int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 	int i, j;
 	TParam *p;
+	TSendParam *sp;
 	char *c;
 
 	unsigned char id;
@@ -859,11 +903,13 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 	if (id > 9)
 		id = u->GetId() - L'A';
 
-	for (p = u->GetFirstParam(), i = 0, j = 0; i < u->GetParamsCount() + u->GetSendParamsCount(); i++, j++) {
+	for (p = u->GetFirstParam(), sp = u->GetFirstSendParam(), i = 0, j = 0; i < u->GetParamsCount() + u->GetSendParamsCount(); i++, j++) {
+		char *expr;
+
 		if (i == u->GetParamsCount())
 			j = 0;
+		bool send = j != i;
 
-	        char *expr;
 	        asprintf(&expr, ".//ipk:%s[position()=%d]", i < u->GetParamsCount() ? "param" : "send", j + 1);
 		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx);
 		assert(node);
@@ -876,80 +922,110 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 		}
 
 		unsigned short addr;
-		try {
-			addr = boost::lexical_cast<unsigned short>((char*) c);
-		} catch (boost::bad_lexical_cast &e) {
+		char *e;	
+		long l = strtol((char*)c, &e, 0);
+		if (*e != 0 || l < 1 || l > 65535) {
 			dolog(0, "Invalid address attribute value: %s(line %ld), between 0 and 65535", c, xmlGetLineNo(node));
 			return 1;
 		} 
 		xmlFree(c);
+		addr = l;
 
-		m_registers[id][addr] = new modbus_register(this);
 
-		if (i < u->GetParamsCount()) {
-			c = (char*) xmlGetNsProp(node, BAD_CAST("val_type"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-			if (c == NULL) {
-				dolog(0, "Missing val_type attribute value, line %ld", xmlGetLineNo(node));
+		c = (char*) xmlGetNsProp(node, BAD_CAST("val_type"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+		if (c == NULL) {
+			dolog(2, "Missing val_type attribute value, line %ld", xmlGetLineNo(node));
+			return 1;
+		}
+
+		TParam *param; 
+		if (send) {
+			param = m_cfg->GetIPK()->getParamByName(sp->GetParamName());
+			if (param == NULL) {
+				dolog(0, "parameter with name '%ls' not found (send parameter %d)",
+						sp->GetParamName().c_str(), j + 1);
 				return 1;
 			}
+		} else
+			param = p;
 
-			parcook_modbus_val_op *vop;
-			if (!strcmp(c, "integer")) {
+		sender_modbus_val_op *vos;
+		parcook_modbus_val_op *vop;
+		if (!strcmp(c, "integer")) {
+			m_registers[id][addr] = new modbus_register(this);
+			if (send) 
+				vos = new short_sender_modbus_val_op(m_registers[id][addr]);
+			else 
 				vop = new short_parcook_modbus_val_op(m_registers[id][addr]);
-				dolog(7, "Param %ls mapped to unit: %lc, register %hu, value type: integer", p->GetName().c_str(), u->GetId(), addr);
-			} else if (!strcmp(c, "bcd")) {
-				vop = new bcd_parcook_modbus_val_op(m_registers[id][addr]);
-				dolog(7, "Param %ls mapped to unit: %lc, register %hu, value type: bcd", p->GetName().c_str(), u->GetId(), addr);
-			} else if (!strcmp(c, "long") || !strcmp(c, "float")) {
-				xmlChar* c2 = xmlGetNsProp(node, BAD_CAST("val_op"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+			dolog(7, "Param %ls mapped to unit: %lc, register %hu, value type: integer", param->GetName().c_str(), u->GetId(), addr);
+		} else if (!strcmp(c, "bcd")) {
+			m_registers[id][addr] = new modbus_register(this);
+			if (send) {
+				dolog(0, "Unsupported bcd value type for send param no. %d", j + 1);
+				return 1;
+			}
+			vop = new bcd_parcook_modbus_val_op(m_registers[id][addr]);
+			dolog(7, "Param %ls mapped to unit: %lc, register %hu, value type: bcd", param->GetName().c_str(), u->GetId(), addr);
+		} else if (!strcmp(c, "long") || !strcmp(c, "float")) {
+			xmlChar* c2 = xmlGetNsProp(node, BAD_CAST("val_op"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 
-				unsigned short msw, lsw;
-				bool is_lsw;
-				if (c2 == NULL || !xmlStrcmp(c2, BAD_CAST "LSW")) {
-					if (m_float_order == LSWMSW) {
-						msw = addr + 1;
-						lsw = addr;
-					} else {
-						lsw = addr;
-						msw = addr - 1;
-					}
-					is_lsw = true;
-					if (c2 == NULL)
-						m_registers[id][msw] = new modbus_register(this);
-				} else if (!xmlStrcmp(c2, BAD_CAST "MSW")) {
-					if (m_float_order == LSWMSW) {
-						msw = addr;
-						lsw = addr - 1;
-					} else {
-						msw = addr;
-						lsw = addr + 1;
-					}
-					is_lsw = false;
+			m_registers[id][addr] = new modbus_register(this);
+			unsigned short msw, lsw;
+			bool is_lsw;
+			if (c2 == NULL || !xmlStrcmp(c2, BAD_CAST "MSW")) {
+				msw = addr;
+				if (m_float_order == MSWLSW)
+					lsw = addr + 1;
+				else
+					lsw = addr - 1;
+				is_lsw = false;
+			} else if (!xmlStrcmp(c2, BAD_CAST "LSW")) {
+				lsw = addr;
+				if (m_float_order == LSWMSW) {
+					msw = addr + 1;
 				} else {
-					dolog(0, "Unsupported val_op attribute value - %s, line %ld", (char*) c2, xmlGetLineNo(node));
+					msw = addr - 1;
+				}
+				is_lsw = true;
+			} else {
+				dolog(0, "Unsupported val_op attribute value - %s, line %ld", (char*) c2, xmlGetLineNo(node));
+				return 1;
+			}
+			xmlFree(c2);
+
+			if (m_registers[id].find(lsw) == m_registers[id].end()) 
+				m_registers[id][lsw] = new modbus_register(this);
+			else if (m_registers[id].find(msw) == m_registers[id].end())
+				m_registers[id][msw] = new modbus_register(this);
+
+			int prec = exp10(param->GetPrec());
+			if (!strcmp(c, "float"))  {
+				if (!send)
+					vop = new long_parcook_modbus_val_op<float>(m_registers[id][lsw], m_registers[id][msw], prec, is_lsw);
+				else
+					vos = new float_sender_modbus_val_op(m_registers[id][lsw], m_registers[id][msw], prec);
+				dolog(7, "Param %s mapped to unit: %lc, register %hu, value type: float, params holds %s part",
+					SC::S2A(param->GetName()).c_str(), u->GetId(), addr, is_lsw ? "lsw" : "msw");
+			} else {
+				if (!send)
+					vop = new long_parcook_modbus_val_op<unsigned int>(m_registers[id][lsw], m_registers[id][msw], prec, is_lsw);
+				else {
+					dolog(0, "Unsupported long value type for send param no. %d, exiting!", j + 1);
 					return 1;
 				}
-				xmlFree(c2);
-
-				int prec = exp10(p->GetPrec());
-				if (!strcmp(c, "float"))  {
-					vop = new long_parcook_modbus_val_op<float>(m_registers[id][lsw], m_registers[id][msw], prec, is_lsw);
-					dolog(7, "Param %ls mapped to unit: %lc, register %hu, value type: float, params holds %s part",
-							p->GetName().c_str(), u->GetId(), addr, is_lsw ? "lsw" : "msw");
-				} else {
-					vop = new long_parcook_modbus_val_op<unsigned int>(m_registers[id][lsw], m_registers[id][msw], prec, is_lsw);
-					dolog(7, "Param %ls mapped to unit: %lc, register %hu, value type: long, params holds %s part",
-							p->GetName().c_str(), u->GetId(), addr, is_lsw ? "lsw" : "msw");
-				}
+				dolog(7, "Param %s mapped to unit: %lc, register %hu, value type: long, params holds %s part",
+					SC::S2A(param->GetName()).c_str(), u->GetId(), addr, is_lsw ? "lsw" : "msw");
 			}
-			
-			p = p->GetNext();
-			xmlFree(c);
+		}
+		xmlFree(c);
 
+		if (!send) {
+			p = p->GetNext();
 			m_parcook_ops.push_back(vop);
 			m_received.insert(std::make_pair(id, addr));
 		} else {
-			dolog(7, "Send param number: %d unit: %lc, mapped to register %hu", j, u->GetId(), addr);
+			sp = sp->GetNext();
+			m_sender_ops.push_back(vos);
 			m_send_map.push_back(m_registers[id][addr]);
 			m_sent.insert(std::make_pair(id, addr));
 		}
@@ -962,16 +1038,16 @@ int modbus_daemon::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx) {
 
 	m_cfg = cfg;
 
-	xmlChar* c = get_device_node_prop(xp_ctx, "float_order");
+	xmlChar* c = get_device_node_prop(xp_ctx, "FloatOrder");
 	if (c == NULL) {
-		dolog(5, "Float order not specified, assuming mswlsw");
+		dolog(5, "Float order not specified, assuming msblsb");
 		m_float_order = MSWLSW;
-	} else if (!xmlStrcmp(c, BAD_CAST "lswmsw")) {
+	} else if (!xmlStrcmp(c, BAD_CAST "msblsb")) {
 		dolog(5, "Setting lswmsw float order");
-		m_float_order = LSWMSW;
-	} else if (!xmlStrcmp(c, BAD_CAST "mswlsw")) {
-		dolog(5, "Setting mswlsw float order");
 		m_float_order = MSWLSW;
+	} else if (!xmlStrcmp(c, BAD_CAST "lsbmsb")) {
+		dolog(5, "Setting mswlsw float order");
+		m_float_order = LSWMSW;
 	} else {
 		dolog(0, "Invalid float order specification: %s", c);
 		return 1;
@@ -1017,12 +1093,13 @@ int modbus_daemon::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx) {
 
 void modbus_daemon::to_parcook() {
 	short *v = m_ipc->m_read;
+	size_t j = 0;
 
 	for (std::vector<parcook_modbus_val_op*>::iterator i = m_parcook_ops.begin();
 			i != m_parcook_ops.end();
-			i++) {
+			i++, j++, v++) {
 		*v = (*i)->val();
-		v++;
+		dolog(9, "Parcook param no %zu set to %hu", j, *v);
 	}
 
 	m_ipc->GoParcook();
@@ -1030,14 +1107,15 @@ void modbus_daemon::to_parcook() {
 
 void modbus_daemon::from_sender() {
 	short *v = m_ipc->m_send;
+	size_t j = 0;
 
 	m_ipc->GoSender();
-
-	for (std::vector<modbus_register*>::iterator i = m_send_map.begin();
-			i != m_send_map.end();
-			i++) {
+		
+	for (std::vector<sender_modbus_val_op*>::iterator i = m_sender_ops.begin();
+			i != m_sender_ops.end();
+			i++, v++, j++) {
 		(*i)->set_val(*v, m_current_time);
-		v++;
+		dolog(9, "Setting %zu param from sender to %hu", j, *v);
 	}
 }
 
@@ -1054,7 +1132,7 @@ int set_nonblock(int fd) {
 	}
 
 	flags |= O_NONBLOCK;
-	flags = fcntl(fd, F_SETFL, &flags);
+	flags = fcntl(fd, F_SETFL, flags);
 	if (flags < 0) {
 		dolog(0, "set_nonblock: Unable to set socket flags");
 		return -1;
@@ -1076,14 +1154,16 @@ void tcp_parser::read_data(struct bufferevent *bufev) {
 
 	while (bufferevent_read(bufev, &c, 1) == 1) switch (m_state) {
 		case TR:
+			dolog(8, "Started to parse new tcp frame");
 			m_adu.pdu.data.resize(0);
 			m_adu.trans_id = c;
 			m_state = TR2;
 			break;
 		case TR2:
 			m_adu.trans_id |= (c << 8);
-			m_state = TR2;
+			m_state = PR;
 			m_adu.trans_id = ntohs(m_adu.trans_id);
+			dolog(8, "Transaction id: %hu", m_adu.trans_id);
 			break;
 		case PR:
 			m_adu.proto_id = c;
@@ -1093,6 +1173,7 @@ void tcp_parser::read_data(struct bufferevent *bufev) {
 			m_state = L;
 			m_adu.proto_id |= (c << 8);
 			m_adu.proto_id = ntohs(m_adu.proto_id);
+			dolog(8, "Protocol id: %hu", m_adu.proto_id);
 			break;
 		case L:
 			m_state = L2;
@@ -1103,14 +1184,17 @@ void tcp_parser::read_data(struct bufferevent *bufev) {
 			m_adu.length = (c << 8);
 			m_adu.length = ntohs(m_adu.length);
 			m_payload_size = m_adu.length - 2;
+			dolog(8, "Data size: %hu", m_payload_size);
 			break;
 		case U_ID:
 			m_state = FUNC;
 			m_adu.unit_id = c;
+			dolog(8, "Unit id: %d", (int)m_adu.unit_id);
 			break;
 		case FUNC:
 			m_state = DATA;
 			m_adu.pdu.func_code = c;
+			dolog(8, "Func code: %d", (int)m_adu.pdu.func_code);
 			break;
 		case DATA:
 			m_adu.pdu.data.push_back(c);
@@ -1201,6 +1285,7 @@ do_accept:
 	m_connections[bufev] = new tcp_connection(fd, addr, bufev, new tcp_parser(this));
 
 	bufferevent_base_set(m_event_base, bufev);
+	bufferevent_enable(bufev, EV_READ | EV_WRITE | EV_PERSIST);
 }
 
 void tcp_server::connection_error(struct bufferevent *bufev) {
@@ -1308,7 +1393,8 @@ int tcp_server::initialize() {
 	if (set_nonblock(m_listen_fd)) 
 		return 1;
 
-	event_set(&m_listen_event, m_listen_fd, EV_READ, connection_accepted_cb, this);
+	event_set(&m_listen_event, m_listen_fd, EV_READ | EV_PERSIST, connection_accepted_cb, this);
+	event_add(&m_listen_event, NULL);
 	event_base_set(m_event_base, &m_listen_event);
 
 	return 0;
@@ -1327,109 +1413,36 @@ modbus_client::modbus_client(client_connection *connection) {
 	m_connected = false;
 }
 
-bool modbus_client::generate_next_read_query() {
-	unsigned short start, current, count;
-	bool first_loop = true;
-	unsigned char id;
-
-	assert(m_received_iterator != m_received.end());
-	RSET::iterator& i = m_received_iterator;
-
-	m_pdu.func_code = MB_F_RHR;	
-	m_pdu.data.resize(0);
-
-	do {
-		if (first_loop) {
-			id = i->first;
-			start = current = i->second;
-			count = 1;
-			first_loop = false;
-		} else {
-			unsigned char c = i->first;
-			if (c != id)
-				break;
-			unsigned short addr = i->second;
-			if (++current != addr)
-				break;
-		}
-
-	} while (++i != m_received.end() && ++count < 125);
-
-	dolog(8, "Sending read holding register query, unit: %d, start_addr: %hu, regs_count: %hu", (int)id, start, count);
-
-	m_pdu.data.push_back(start >> 8);
-	m_pdu.data.push_back(start & 0xff);
-	m_pdu.data.push_back(count >> 8);
-	m_pdu.data.push_back(count & 0xff);
-
-	m_start_addr = start;
-	m_regs_count = count;
-	m_unit = id;
-
-	return true;
-
-}
-
-bool modbus_client::generate_next_write_query() {
-	unsigned short start, current, count, v;
-	bool first_loop = true;
-	unsigned char id;
-
-	assert(m_sent_iterator != m_received.end());
-	RSET::iterator& i = m_sent_iterator;
-
-
+void modbus_client::send_write_query() {
 	m_pdu.func_code = MB_F_WMR;	
-	m_pdu.data.resize(4);
+	m_pdu.data.resize(0);
+	m_pdu.data.push_back(m_start_addr >> 8);
+	m_pdu.data.push_back(m_start_addr & 0xff);
+	m_pdu.data.push_back(m_regs_count >> 8);
+	m_pdu.data.push_back(m_regs_count & 0xff);
+	m_pdu.data.push_back(m_regs_count * 2);
 
-	do {
-		if (first_loop) {
-			id = i->first;
-			start = current = i->second;
-			dolog(7, "Sending write multiple registers command, start register: %hu", start);
-			count = 1;
-			first_loop = false;
-		} else {
-			unsigned char c = i->first;
-			if (c != id)
-				break;
-			unsigned short addr = i->second;
-			if (++current != addr)
-				break;
-		}
-
-		v = m_registers[i->first][i->second]->get_val();
-
-		dolog(7, "Sending register: %hu, value: %hu:", current, v);
-
+	dolog(7, "Sending write multiple registers command, start register: %hu, registers count: %hu", m_start_addr, m_regs_count);
+	for (size_t i = 0; i < m_regs_count; i++) {
+		unsigned short v = m_registers[m_unit][m_start_addr + i]->get_val();
 		m_pdu.data.push_back(v >> 8);
 		m_pdu.data.push_back(v & 0xff);
+		dolog(7, "Sending register: %hu, value: %hu:", m_start_addr + i, v);
+	}
 
-	} while (++i != m_received.end() && ++count < 125);
-
-	dolog(7, "Sending %hu registers", count);
-
-	m_pdu.data.at(0) = start >> 8;
-	m_pdu.data.at(1) = start & 0xff;
-	m_pdu.data.at(2) = count >> 8;
-	m_pdu.data.at(3) = count & 0xff;
-
-	m_start_addr = start;
-	m_regs_count = count;
-	m_unit = id;
-
-	return true;
+	m_connection->send_pdu(m_unit, m_pdu);
 }
 
-bool modbus_client::generate_next_query(bool &write_query) {
-	if (m_received_iterator != m_received.end()) {
-		write_query = false;
-		return generate_next_read_query();
-	} else if (m_sent_iterator != m_sent.end()) {
-		write_query = true;
-		return generate_next_write_query();
-	} else 
-		return false;
+void modbus_client::send_read_query() {
+	dolog(7, "Sending read holding registers command, start register: %hu, registers count: %hu", m_start_addr, m_regs_count);
+	m_pdu.func_code = MB_F_RHR;
+	m_pdu.data.resize(0);
+	m_pdu.data.push_back(m_start_addr >> 8);
+	m_pdu.data.push_back(m_start_addr & 0xff);
+	m_pdu.data.push_back(m_regs_count >> 8);
+	m_pdu.data.push_back(m_regs_count & 0xff);
+
+	m_connection->send_pdu(m_unit, m_pdu);
 }
 
 void modbus_client::reset_cycle() {
@@ -1437,13 +1450,66 @@ void modbus_client::reset_cycle() {
 	m_sent_iterator = m_sent.begin();
 }
 
+void modbus_client::find_continous_reg_block(RSET::iterator &i, RSET &regs) {
+	unsigned short current;
+	assert(i != regs.end());
+
+	m_unit = i->first;
+	m_start_addr = current = i->second;
+	m_regs_count = 1;
+	
+	while (++i != regs.end() && m_regs_count < 125) {
+		unsigned char c = i->first;
+		if (c != m_unit)
+			break;
+		unsigned short addr = i->second;
+		if (++current != addr)
+			break;
+		m_regs_count += 1;
+	}
+}
+
+void modbus_client::next_query() {
+	switch (m_state) {
+		case AWAITING_CONNECTION:
+		case IDLE:
+			m_state = SENDING_READ_QUERY;
+		case SENDING_READ_QUERY:
+			if (m_received_iterator != m_received.end()) {
+				find_continous_reg_block(m_received_iterator, m_received);
+				break;
+			} 
+			m_state = SENDING_WRITE_QUERY;
+		case SENDING_WRITE_QUERY:
+			if (m_sent_iterator != m_sent.end()) {
+				find_continous_reg_block(m_sent_iterator, m_sent);
+				break;
+			}
+			m_state = IDLE;
+			dolog(7, "Client querying cycle finished.");
+	}
+}
+
+void modbus_client::send_query() {
+	switch (m_state) {
+		default:
+			return;
+		case SENDING_READ_QUERY:
+			send_read_query();
+			break;
+		case SENDING_WRITE_QUERY:
+			send_write_query();
+			break;
+	}
+}
+
 void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 	switch (m_state) {
-		case READ_QUERY_SENT:
+		case SENDING_READ_QUERY:
 			consume_read_regs_response(m_unit, m_start_addr, m_regs_count, pdu);
 			send_next_query();
 			break;
-		case WRITE_QUERY_SENT:
+		case SENDING_WRITE_QUERY:
 			consume_write_regs_response(m_unit, m_start_addr, m_regs_count, pdu);
 			send_next_query();
 			break;
@@ -1456,28 +1522,15 @@ void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 
 void modbus_client::send_next_query() {
 
-	bool writing;
 	switch (m_state) {
 		case IDLE:
-		case READ_QUERY_SENT:
-			if (generate_next_query(writing)) {
-				if (writing)
-					m_state = WRITE_QUERY_SENT;
-				else
-					m_state = READ_QUERY_SENT; 
-				m_connection->send_pdu(m_unit, m_pdu);
-			} else  {
-				m_state = IDLE;
-			}
-			break;
-		case WRITE_QUERY_SENT:
-			if (generate_next_query(writing))
-				m_connection->send_pdu(m_unit, m_pdu);
-			else 
-				m_state = IDLE;
+		case SENDING_READ_QUERY:
+		case SENDING_WRITE_QUERY:
+			next_query();
+			send_query();
 			break;
 		default:
-			dolog(1, "Received unexpected response from slave - ignoring it.");
+			assert(false);
 			break;
 	}
 }
@@ -1500,11 +1553,10 @@ void modbus_client::timer_event() {
 				m_connection->connect();
 			}
 			return;
-			break;
-		case READ_QUERY_SENT:
+		case SENDING_READ_QUERY:
 			dolog(2, "New cycle started but we are in read cycle");
 			break;
-		case WRITE_QUERY_SENT:
+		case SENDING_WRITE_QUERY:
 			dolog(2, "New cycle started but we are in read cycle");
 			break;
 		case AWAITING_CONNECTION:
@@ -1513,10 +1565,13 @@ void modbus_client::timer_event() {
 	}
 
 	if (m_last_activity + 60 < m_current_time) {
-		dolog(1, "Connection is idle for too long, restarting");
+		dolog(1, "Connection idle for too long, reconnecting");
 		m_last_activity = m_current_time;
 		m_connection->disconnect();
 		m_connected = false;
+	} else if (m_last_activity + 10 < m_current_time) {
+		dolog(1, "Answer did not arrive, resending");
+		send_query();
 	}
 }
 
@@ -1526,13 +1581,13 @@ int modbus_client::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx) {
 	if (m_connection->configure(cfg, xp_ctx))
 		return 1;
 
-	m_last_activity = 0;
+	m_last_activity = time(NULL);
 	return 0;
 }
 
 void modbus_client::connection_failed() {
 	dolog(2, "Connection terminated, waiting for cycle to finish and will try again");
-	m_connection = false;
+	m_connected = false;
 	m_state = IDLE;
 }
 
@@ -1540,24 +1595,27 @@ void modbus_client::connection_ready() {
 	dolog(7, "Connection ready");
 
 	if (m_state == AWAITING_CONNECTION) {
-		dolog(7, "Starting cycle");
-		send_next_query();
+		m_state = IDLE;
+		start_cycle();
 	}
 }
 
 int modbus_client::initialize() {
 	return modbus_daemon::initialize();
+
+	m_state = IDLE;
+	return 0;
 }
 
 void modbus_client::timeout() {
 	switch (m_state) {
-		case READ_QUERY_SENT:
+		case SENDING_READ_QUERY:
 			dolog(1, "Timeout while reading data, unit: %d, for address: %hu, registers count: %hu, progressing with queries",
 					(int)m_unit, m_start_addr, m_regs_count);
 
 			send_next_query();
 			break;
-		case WRITE_QUERY_SENT:
+		case SENDING_WRITE_QUERY:
 			dolog(1, "Timeout while writing data, unit: %d, for address: %hu, registers count: %hu, progressing with queries",
 					(int)m_unit, m_start_addr, m_regs_count);
 			send_next_query();
@@ -1625,7 +1683,7 @@ do_connect:
 		m_modbus_client->connection_ready();
 	} else if (errno == EINTR) {
 		goto do_connect;
-	} else if (errno == EWOULDBLOCK) {
+	} else if (errno == EWOULDBLOCK || errno == EINPROGRESS) {
 		m_connect_waiting = true;
 	} else {
 		dolog(0, "Failed to connect: %s", strerror(errno));
@@ -1635,6 +1693,7 @@ do_connect:
 
 	m_connection.bufev = bufferevent_new(m_connection.fd, connection_read_cb, connection_write_cb, connection_error_cb, this);
 	bufferevent_base_set(m_modbus_client->get_event_base(), m_connection.bufev);
+	bufferevent_enable(m_connection.bufev, EV_READ | EV_WRITE | EV_PERSIST);
 	m_trans_id = 0;
 
 }
@@ -1946,6 +2005,7 @@ void serial_client_connection::connect() {
 
 	m_bufev = bufferevent_new(m_fd, connection_read_cb, NULL, connection_error_cb, this);
 	bufferevent_base_set(get_event_base(), m_bufev);
+	bufferevent_enable(m_bufev, EV_READ | EV_WRITE | EV_PERSIST);
 
 	m_modbus_client->connection_ready();
 }
@@ -2016,6 +2076,7 @@ bool serial_server::open_connection() {
 
 	m_bufev = bufferevent_new(m_fd, connection_read_cb, NULL, connection_error_cb, this);
 	bufferevent_base_set(m_event_base, m_bufev);
+	bufferevent_enable(m_bufev, EV_READ | EV_WRITE | EV_PERSIST);
 
 	m_parser->reset();
 	
@@ -2131,6 +2192,8 @@ int main(int argc, char *argv[]) {
 	
 	if (cfg->Load(&argc, argv))
 		return 1;
+
+	g_debug = cfg->GetDiagno() || cfg->GetSingle();
 
 	modbus_daemon *daemon;
 	if (configure_daemon(&daemon, cfg))

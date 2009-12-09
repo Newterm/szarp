@@ -1411,13 +1411,14 @@ int ModbusTCP::SendWriteMultReg(int from, int to, int timeout) {
 	assert(to > from);
 	int quantity = to - from;
 
-	m_send_message_size = 5 + 2 * quantity;
+	m_send_message_size = 6 + 2 * quantity;
 	m_send_message = (char *) calloc(m_send_message_size, sizeof(char));
 	m_send_message[0] = MB_F_WMR;
 	*(int16_t*)&m_send_message[1] = htons(from);
 	*(int16_t*)&m_send_message[3] = htons(quantity);
+	m_send_message[5] = 2 * quantity;
 
-	memcpy((void *)&m_send_message[5], 
+	memcpy((void *)&m_send_message[6], 
 			(void *)&m_registers[from], 
 			quantity * 2);
 
