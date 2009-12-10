@@ -47,7 +47,7 @@
 		(optional) timeout (in seconds) to set data to 'NO_DATA' if data is not available,
 		default is 20 seconds
  *	modbus:nodata-value="-1"
- 		(optional) float value to send instead of 'NO_DATA', default is 0
+ 		(optional) value to send instead of 'NO_DATA', default is 0
  *	modbus:FloatOrder="msblsb"
  		(optional) registers order for 4 bytes (2 registers) float order - "msblsb"
 		(default) or "lsbmsb"; values names are a little misleading, it shoud be 
@@ -186,8 +186,11 @@ public:
 
 //maps values from sender to parcook registers
 class sender_modbus_val_op {
+protected:
+	float m_nodata_value;
 public:
-	virtual void set_val(unsigned short val, time_t current_time) = 0;
+	sender_modbus_val_op(float no_data) : m_nodata_value(no_data) {}	
+	virtual void set_val(short val, time_t current_time) = 0;
 };
 
 class modbus_register;
@@ -227,6 +230,7 @@ protected:
 
 	time_t m_current_time;
 	time_t m_expiration_time;
+	float m_nodata_value;
 
 	bool process_request(unsigned char unit, PDU &pdu);
 	bool perform_read_holding_regs(RMAP &unit, PDU &pdu);
@@ -527,8 +531,8 @@ public:
 class short_sender_modbus_val_op : public sender_modbus_val_op {
 	modbus_register *m_reg;
 public:
-	short_sender_modbus_val_op(modbus_register *reg);
-	virtual void set_val(unsigned short val, time_t time);
+	short_sender_modbus_val_op(float no_data, modbus_register *reg);
+	virtual void set_val(short val, time_t time);
 };
 
 class float_sender_modbus_val_op : public sender_modbus_val_op {
@@ -536,8 +540,8 @@ class float_sender_modbus_val_op : public sender_modbus_val_op {
 	modbus_register *m_reg_msw;
 	int m_prec;
 public:
-	float_sender_modbus_val_op(modbus_register *reg_lsw, modbus_register *reg_msw, int prec);
-	virtual void set_val(unsigned short val, time_t time);
+	float_sender_modbus_val_op(float no_data, modbus_register *reg_lsw, modbus_register *reg_msw, int prec);
+	virtual void set_val(short val, time_t time);
 };
 
 
@@ -646,20 +650,27 @@ template<> unsigned short long_parcook_modbus_val_op<float>::val() {
 		return v >> 16;
 }
 
-short_sender_modbus_val_op::short_sender_modbus_val_op(modbus_register *reg) : m_reg(reg) {}
+short_sender_modbus_val_op::short_sender_modbus_val_op(float no_data, modbus_register *reg) : sender_modbus_val_op(no_data), m_reg(reg) {}
 
-void short_sender_modbus_val_op::set_val(unsigned short val, time_t time) {
-	m_reg->set_val(val, time);
+void short_sender_modbus_val_op::set_val(short val, time_t time) {
+	if (val == SZARP_NO_DATA)
+		m_reg->set_val(m_nodata_value, time);
+	else
+		m_reg->set_val(val, time);
 }
 
-float_sender_modbus_val_op::float_sender_modbus_val_op(modbus_register *reg_lsw, modbus_register *reg_msw, int prec) :
-	m_reg_lsw(reg_lsw), m_reg_msw(reg_msw), m_prec(prec) {}
+float_sender_modbus_val_op::float_sender_modbus_val_op(float no_data, modbus_register *reg_lsw, modbus_register *reg_msw, int prec) :
+	sender_modbus_val_op(no_data), m_reg_lsw(reg_lsw), m_reg_msw(reg_msw), m_prec(prec) {}
 
-void float_sender_modbus_val_op::set_val(unsigned short val, time_t time) {
-	float fval = float(val) / m_prec;
+void float_sender_modbus_val_op::set_val(short val, time_t time) {
 	unsigned short iv[2]; 
+	float fval;
+	if (val == SZARP_NO_DATA)
+		fval = m_nodata_value;
+	else
+		fval = float(val) / m_prec;
 	memcpy(iv, &fval, sizeof(float));
-	
+
 	m_reg_msw->set_val(iv[0], time);
 	m_reg_lsw->set_val(iv[1], time);
 }
@@ -965,7 +976,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 		if (!strcmp(c, "integer")) {
 			m_registers[id][addr] = new modbus_register(this);
 			if (send) 
-				vos = new short_sender_modbus_val_op(m_registers[id][addr]);
+				vos = new short_sender_modbus_val_op(m_nodata_value, m_registers[id][addr]);
 			else 
 				vop = new short_parcook_modbus_val_op(m_registers[id][addr]);
 			dolog(7, "Param %s mapped to unit: %lc, register %hu, value type: integer", SC::S2A(param->GetName()).c_str(), u->GetId(), addr);
@@ -1014,7 +1025,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 				if (!send)
 					vop = new long_parcook_modbus_val_op<float>(m_registers[id][lsw], m_registers[id][msw], prec, is_lsw);
 				else
-					vos = new float_sender_modbus_val_op(m_registers[id][lsw], m_registers[id][msw], prec);
+					vos = new float_sender_modbus_val_op(m_nodata_value, m_registers[id][lsw], m_registers[id][msw], prec);
 				dolog(7, "Param %s mapped to unit: %lc, register %hu, value type: float, params holds %s part",
 					SC::S2A(param->GetName()).c_str(), u->GetId(), addr, is_lsw ? "lsw" : "msw");
 			} else {
@@ -1079,6 +1090,21 @@ int modbus_daemon::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx) {
 	}
 	xmlFree(c);
 
+	c = get_device_node_prop(xp_ctx, "nodata-value");
+	if (c == NULL) {
+		dolog(9, "Nodata value not given, using 0");
+		m_nodata_value = 0.0;
+	} else {
+		char *e;
+		m_nodata_value = strtof((char*)c , &e);
+		if (*e) {
+			dolog(0, "Invalid nodata value: %s, configuration invalid", (char*) c);
+			return 1;
+		}
+		dolog(9, "Using %f as nodata value", m_nodata_value);
+	}
+	xmlFree(c);
+
 	xmlNodePtr device_node = xp_ctx->node;
 	int j;
 	TUnit *u;
@@ -1126,7 +1152,7 @@ void modbus_daemon::from_sender() {
 			i != m_sender_ops.end();
 			i++, v++, j++) {
 		(*i)->set_val(*v, m_current_time);
-		dolog(9, "Setting %zu param from sender to %hu", j, *v);
+		dolog(9, "Setting %zu param from sender to %hd", j, *v);
 	}
 }
 
@@ -1830,6 +1856,8 @@ void serial_rtu_parser::reset() {
 
 void serial_rtu_parser::read_data(struct bufferevent *bufev) {
 	size_t r;
+
+	stop_timer();
 	switch (m_state) {
 		case ADDR:
 			if (bufferevent_read(bufev, &m_sdu.unit_id, sizeof(m_sdu.unit_id)) == 0) 
@@ -1965,7 +1993,8 @@ int open_serial_port(serial_port_configuration& spc) {
 			ti.c_cflag = B38400;
 			break;
 		default:
-			ti.c_cflag = B19200;
+			ti.c_cflag = B9600;
+			dolog(8, "setting port speed to default value 9600");
 	}
 
 	if (spc.stop_bits == 2)

@@ -1,6 +1,7 @@
 $Id$
 
 2009-12-10	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* parcook/mbdmn.cc: even more fixes for serial mode
 	* parcook/mbdmn.cc: more fixes, serial mode this time
 2009-12-09	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
 	* parcook/mbdmn.cc: fixes
