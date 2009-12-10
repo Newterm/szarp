@@ -5409,7 +5409,11 @@ poprzednie.
                     </para>
                     <note>
                         <para>
-                            <emphasis>Nie nale¿y</emphasis> u¿ywaæ
+			    Operator <emphasis>:</emphasis> definiuje tak
+			    naprawdê oddzielny typ parametru, tzn. sk³adany (ang. combined),
+			    który mo¿e byæ zarówno wy¶wietlany przez raportera, jak
+			    i przez program przegl±daj±cy. 
+                            <emphasis>Nie wolno</emphasis> u¿ywaæ
                             operatora <emphasis>:</emphasis> w
                             po³±czeniu z innymi operatorami, gdy¿ powoduje
                             to niepoprawne wyliczanie warto¶ci formu³y
@@ -5508,6 +5512,13 @@ poprzednie.
 			     od zera, to nie zostanie uwzglêdniona (pojawi siê warto¶æ brak danych).
                     </para>
                 </listitem>
+		<listitem><para>
+			wystêpuje symetryczny do poprzedniego operator <emphasis>M</emphasis>
+			s³u¿±cy do odfiltrowania za du¿ych warto¶ci; je¶li drugi od góry 
+			element na stosie jest wiêkszy ni¿ pierwszy od góry, to na stosie 
+			wstawiana jest warto¶æ NO_DATA; wpp. zostaje warto¶æ drugiego od góry
+			elementu.
+		</para></listitem>
                 <listitem>
                     <para>
                         nie s± dostêpne operatory <emphasis>^</emphasis>,

@@ -114,7 +114,7 @@ siê prawid³owo - je¶li program nie otrzyma odpowiedzi od serwera, to jej kolor z
 z zielonego na ¿ó³y, a po dalszych 10 sekundach na czerwony. Krótkotrwa³a zmiana koloru na ¿ó³ty
 jest sytuacj± normaln± - serwer widocznie potrzebowa³ trochê wiêcej czasu na odpowied¼.
 <note><para>Domy¶lnie po uruchomieniu programu wy¶wietlanie raportu jest zatrzymane - musisz
-klikn±æ na przycisk <guibutton>Start</guibutton> lub wcisn±æ klawisz<keycap>Spacja</keycap>.</para></note>
+klikn±æ na przycisk <guibutton>Start</guibutton> lub wcisn±æ klawisz <keycap>Spacja</keycap>.</para></note>
 </para>
 <para>
 Pasek statusu poni¿ej w kolejnych polach informuje o:

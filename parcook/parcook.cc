@@ -693,6 +693,17 @@ void Calcul(ushort n)
 						nodata[sp-1] = 1;
 					}
 					break;
+				case L'M' :    /* no-data if stack[sp -2] > stack [sp - 1], otherwise
+			       			stack[sp-2]	*/
+					if (sp -- < 2) return;
+					if (nodata[sp] || nodata[sp-1]) {
+						CalculNoData = 1;
+						break;
+					}
+					if (stack[sp-1] > stack[sp]) {
+						nodata[sp-1] = 1;
+					}
+					break;
 				case L'=':
 					if (sp-- < 2)
 						return;
