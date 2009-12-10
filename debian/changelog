@@ -1,3 +1,9 @@
+szarp (3.1.222) stable; urgency=low
+
+  * building stable
+
+ -- Darek Marcinkiewicz <darek@praterm.com.pl>  Tue, 10 Dec 2009 16:26:00 +0100
+
 szarp (3.1.220) stable; urgency=low
 
   * building stable
