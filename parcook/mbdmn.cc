@@ -994,7 +994,16 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 			m_registers[id][addr] = new modbus_register(this);
 			unsigned short msw, lsw;
 			bool is_lsw;
-			if (c2 == NULL || !xmlStrcmp(c2, BAD_CAST "MSW")) {
+			if (c2 == NULL)  {
+				if (m_float_order == MSWLSW) {
+					msw = addr;
+					lsw = addr + 1;
+				} else {
+					msw = addr + 1;
+					lsw = addr;
+				}
+				is_lsw = true;
+			} else if (!xmlStrcmp(c2, BAD_CAST "MSW")) {
 				msw = addr;
 				if (m_float_order == MSWLSW)
 					lsw = addr + 1;
