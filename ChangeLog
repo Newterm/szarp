@@ -1,5 +1,8 @@
 $Id$
 
+2009-12-10	Adam Smyk <asmyk@dalkiaterm.pl>
+	* wx/visio: new application for parameters visualisation 
+	has been added (it is under construction)
 2009-12-10	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
 	* parcook/mbdmn.cc: even more fixes for serial mode
 	* parcook/mbdmn.cc: more fixes, serial mode this time

@@ -13,7 +13,7 @@ if HAVE_CURL
 CURL_SUBDIRS = raporter3 kontroler3
 endif
 
-SUBDIRS = common draw3 $(INCLUDE_SUBDIRS) \
+SUBDIRS = common draw3 visio $(INCLUDE_SUBDIRS) \
 	wxhelp scc $(CURL_SUBDIRS) sync \
 	isledit szast
 

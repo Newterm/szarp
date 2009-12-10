@@ -1061,6 +1061,7 @@ AC_OUTPUT( \
 	wx/scc/Makefile \
 	wx/raporter3/Makefile \
 	wx/kontroler3/Makefile \
+	wx/visio/Makefile \
 	wx/confedit/Makefile \
 	wx/wxhelp/Makefile \
 	wx/sync/Makefile \
