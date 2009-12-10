@@ -250,12 +250,19 @@ void InfoWidget::SetOtherTime(const wxDateTime &time) {
 }
 
 void InfoWidget::SetColor(const wxColour& col) {
+	wxColour c = col;
+	if (c == *wxBLUE) {
+		/* on some displays, black text is poorly
+		 * visible on blue background, so we make
+		 * background color a little lighter */
+		c = wxColour(60, 60, 255);
+	}
 #ifdef MINGW32
-	value_text->SetBackgroundColour(col);
-	value_text2->SetBackgroundColour(col);
+	value_text->SetBackgroundColour(c);
+	value_text2->SetBackgroundColour(c);
 #else
-	value_panel->SetBackgroundColour(col);
-	value_panel2->SetBackgroundColour(col);
+	value_panel->SetBackgroundColour(c);
+	value_panel2->SetBackgroundColour(c);
 	value_panel->Refresh();
 	value_panel2->Refresh();
 #endif
