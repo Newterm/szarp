@@ -29,7 +29,7 @@
  *      xmlns:modbus="http://www.praterm.com.pl/SZARP/ipk-extra"
  *      daemon="/opt/szarp/bin/mbtcpdmn" 
  *      path="/dev/ttyA11"
- *      modbus:mode="server"
+ *      modbus:daemon'mode=
  		allowed modes are 'tcp-server' and 'tcp-client' and 'serial-client' and 'serial-server'
  *      modbud:tcp-port="502"
 		TCP port we are listenning on/connecting to (server/client)
@@ -426,7 +426,7 @@ class serial_rtu_parser : public serial_parser {
 	static unsigned short crc16[256];
 	static bool crc_table_calculated;
 
-	unsigned short update_crc(unsigned char crc, unsigned char c);
+	unsigned short update_crc(unsigned short crc, unsigned char c);
 
 	virtual void timer_event();
 public:
@@ -899,9 +899,20 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 	char *c;
 
 	unsigned char id;
-	id = u->GetId() - L'0';
-	if (id > 9)
-		id = u->GetId() - L'A';
+	switch (u->GetId()) {
+		case L'0'...L'9':
+			id = u->GetId() - L'0';
+			break;
+		case L'a'...L'z':
+			id = (u->GetId() - L'a') + 10;
+			break;
+		case L'A'...L'Z':
+			id = (u->GetId() - L'A') + 10;
+			break;
+		default:
+			id = u->GetId();
+			break;
+	}
 
 	for (p = u->GetFirstParam(), sp = u->GetFirstSendParam(), i = 0, j = 0; i < u->GetParamsCount() + u->GetSendParamsCount(); i++, j++) {
 		char *expr;
@@ -924,7 +935,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 		unsigned short addr;
 		char *e;	
 		long l = strtol((char*)c, &e, 0);
-		if (*e != 0 || l < 1 || l > 65535) {
+		if (*e != 0 || l < 0 || l > 65535) {
 			dolog(0, "Invalid address attribute value: %s(line %ld), between 0 and 65535", c, xmlGetLineNo(node));
 			return 1;
 		} 
@@ -957,7 +968,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 				vos = new short_sender_modbus_val_op(m_registers[id][addr]);
 			else 
 				vop = new short_parcook_modbus_val_op(m_registers[id][addr]);
-			dolog(7, "Param %ls mapped to unit: %lc, register %hu, value type: integer", param->GetName().c_str(), u->GetId(), addr);
+			dolog(7, "Param %s mapped to unit: %lc, register %hu, value type: integer", SC::S2A(param->GetName()).c_str(), u->GetId(), addr);
 		} else if (!strcmp(c, "bcd")) {
 			m_registers[id][addr] = new modbus_register(this);
 			if (send) {
@@ -965,7 +976,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 				return 1;
 			}
 			vop = new bcd_parcook_modbus_val_op(m_registers[id][addr]);
-			dolog(7, "Param %ls mapped to unit: %lc, register %hu, value type: bcd", param->GetName().c_str(), u->GetId(), addr);
+			dolog(7, "Param %s mapped to unit: %lc, register %hu, value type: bcd", SC::S2A(param->GetName()).c_str(), u->GetId(), addr);
 		} else if (!strcmp(c, "long") || !strcmp(c, "float")) {
 			xmlChar* c2 = xmlGetNsProp(node, BAD_CAST("val_op"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 
@@ -1564,14 +1575,15 @@ void modbus_client::timer_event() {
 			break;
 	}
 
-	if (m_last_activity + 60 < m_current_time) {
+	if (m_last_activity + 20 < m_current_time) {
 		dolog(1, "Connection idle for too long, reconnecting");
 		m_last_activity = m_current_time;
 		m_connection->disconnect();
 		m_connected = false;
-	} else if (m_last_activity + 10 < m_current_time) {
-		dolog(1, "Answer did not arrive, resending");
-		send_query();
+		m_state = IDLE;
+	} else if (m_last_activity + 3 < m_current_time) {
+		dolog(1, "Answer did not arrive, sending next query");
+		send_next_query();
 	}
 }
 
@@ -1699,6 +1711,7 @@ do_connect:
 }
 
 void tcp_client_connection::send_pdu(unsigned char uid, PDU& pdu) {
+	m_connection.parser->reset();
 	m_connection.parser->send_adu(m_trans_id++, uid, pdu, m_connection.bufev);
 }
 
@@ -1753,7 +1766,7 @@ void serial_rtu_parser::calculate_crc_table() {
 	crc_table_calculated = true;
 }
 
-unsigned short serial_rtu_parser::update_crc(unsigned char crc, unsigned char c) {
+unsigned short serial_rtu_parser::update_crc(unsigned short crc, unsigned char c) {
 	if (crc_table_calculated == false)
 		calculate_crc_table();
 	unsigned short tmp;
@@ -1773,7 +1786,9 @@ bool serial_rtu_parser::check_crc() {
 	for (size_t i = 0; i < m_data_read - 2; i++) 
 		crc = update_crc(crc, m_sdu.pdu.data[i]);
 
-	return crc == (d[m_data_read - 2] | (d[m_data_read - 1] << 8));
+	unsigned short frame_crc = d[m_data_read - 2] | (d[m_data_read - 1] << 8);
+	dolog(9, "Checking crc, caluclated crc: %hx, frame crc: %hx", crc, frame_crc);
+	return crc == frame_crc;
 }
 
 
@@ -1802,8 +1817,8 @@ void serial_parser::start_timer() {
 	stop_timer();
 
 	struct timeval tv;
-	tv.tv_sec = 10;
-	tv.tv_usec = 100000;
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
 	evtimer_add(&m_timer, &tv); 
 }
 
@@ -1817,19 +1832,21 @@ void serial_rtu_parser::read_data(struct bufferevent *bufev) {
 	size_t r;
 	switch (m_state) {
 		case ADDR:
-			if (bufferevent_read(bufev, &m_sdu.unit_id, sizeof(m_sdu.pdu.func_code)) == 0) 
+			if (bufferevent_read(bufev, &m_sdu.unit_id, sizeof(m_sdu.unit_id)) == 0) 
 				break;
+			dolog(9, "Parsing new frame, unit id: %d", (int) m_sdu.unit_id);
 			m_state = FUNC_CODE;
 		case FUNC_CODE:
-			if (bufferevent_read(bufev, &m_sdu.pdu.func_code, sizeof(&m_sdu.pdu.func_code)) == 0) {
+			if (bufferevent_read(bufev, &m_sdu.pdu.func_code, sizeof(m_sdu.pdu.func_code)) == 0) {
 				start_timer();
 				break;
 			}
+			dolog(9, "Func code: %d", (int) m_sdu.pdu.func_code);
 			m_state = DATA;
 			m_data_read = 0;
 			m_sdu.pdu.data.resize(max_frame_size - 2);
 		case DATA:
-			r = bufferevent_read(bufev, &m_sdu.pdu.func_code, sizeof(m_sdu.pdu.func_code));
+			r = bufferevent_read(bufev, &m_sdu.pdu.data[m_data_read], m_sdu.pdu.data.size() - m_data_read);
 			m_data_read += r;
 			if (check_crc()) {
 				stop_timer();
@@ -1849,10 +1866,6 @@ void serial_rtu_parser::timer_event() {
 }
 
 void serial_rtu_parser::send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev) {
-	bufferevent_write(bufev, &unit_id, sizeof(unit_id));
-	bufferevent_write(bufev, &pdu.func_code, sizeof(pdu.func_code));
-	bufferevent_write(bufev, &pdu.data[0], pdu.data.size());
-
 	unsigned short crc = 0xffff;
 	crc = update_crc(crc, unit_id);
 	crc = update_crc(crc, pdu.func_code);
@@ -1862,6 +1875,10 @@ void serial_rtu_parser::send_sdu(unsigned char unit_id, PDU &pdu, struct buffere
 	unsigned char cl, cm;
 	cl = crc & 0xff;
 	cm = crc >> 8;
+
+	bufferevent_write(bufev, &unit_id, sizeof(unit_id));
+	bufferevent_write(bufev, &pdu.func_code, sizeof(pdu.func_code));
+	bufferevent_write(bufev, &pdu.data[0], pdu.data.size());
 	bufferevent_write(bufev, &cl, 1);
 	bufferevent_write(bufev, &cm, 1);
 }
@@ -2021,7 +2038,6 @@ void serial_client_connection::timeout() {
 
 void serial_client_connection::frame_parsed(SDU &sdu, struct bufferevent *bufev) {
 	m_modbus_client->pdu_received(sdu.unit_id, sdu.pdu);
-
 }
 
 struct event_base* serial_client_connection::get_event_base() {
@@ -2124,7 +2140,7 @@ void serial_server::connection_read_cb(struct bufferevent *bufev, void *server) 
 
 int configure_daemon_mode(xmlXPathContextPtr xp_ctx, DaemonConfig *cfg, modbus_daemon **dmn) {
 	int ret = 0;
-	xmlChar* mode = get_device_node_prop(xp_ctx, "mode");
+	xmlChar* mode = get_device_node_prop(xp_ctx, "daemon-mode");
 	if (mode == NULL) {
 		dolog(0, "Unspecified driver mode, configuration not vaild, exiting!");
 		return 1;
