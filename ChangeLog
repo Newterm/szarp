@@ -1,5 +1,16 @@
 $Id$
 
+2009-12-12	Pawel Palucha <pawel@praterm.com.pl>
+	* howto.sgml: updated section about GRPS modems - configuration for
+	Debian, forcing GPRS/UMTS.
+2009-12-10	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/draw3/infowdg.cpp: on some displays, black text is poorly
+	visible on blue background, so we make background color for info
+	widget a little lighter. 
+	* raporter.sgml: typo fix.
+	* ipk.sgml: 'M' function description.
+	* parcook/parcook.cc: new 'M' function for defined parameters -
+	simmetric to 'm' function.
 2009-12-10	Adam Smyk <asmyk@dalkiaterm.pl>
 	* wx/visio: new application for parameters visualisation 
 	has been added (it is under construction)

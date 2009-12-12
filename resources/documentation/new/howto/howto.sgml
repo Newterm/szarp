@@ -10610,10 +10610,129 @@ Teraz tylko pppd call edge-gprs i powinni¶my uzyskaæ po³±czenie.
 <para>
 <filename>PLUS - </filename> AP_OPERATORA to <quote>www.plusgsm.pl</quote>. Dodatkowo do /etc/ppp/peers/edge-gprs dopisujemy <quote>noauth</quote>.
 </para>
+<para>
+<filename>PLAY - </filename> AP_OPERATORA to <quote>internet</quote>. Dodatkowo do /etc/ppp/peers/edge-gprs dopisujemy <quote>noauth</quote>.
+</para>
 </listitem>
 </itemizedlist>
+</section> <!-- gprs-isp -->
 
-</section>
+<section id="gprs-forcegprs">
+<title>Wymuszanie GPRS/UMTS</title>
+<para>
+	W przypadku np. s³abego zasiêgu mo¿emy chcieæ wymusiæ korzystanie z wolniejszej technologii
+	GPRS zamiast szybszego UMTS. W takich sytuacjach do skryptu chat po³±czenia musimy 
+	dodaæ (np. przed komend± AT+CGDCONT) jedn± z nastêpuj±cych komend:
+<itemizedlist>
+	<listitem><para>Aby wymusiæ korzystanie z GPRS:<programlisting>OK  'AT_OPSYS=0,2' \</programlisting></para></listitem>
+	<listitem><para>Aby wymusiæ korzystanie z UMTS:<programlisting>OK  'AT_OPSYS=1,2' \</programlisting></para></listitem>
+	<listitem><para>Aby ustawiæ preferowanie GPRS przed UMTS:<programlisting>OK  'AT_OPSYS=2,2' \</programlisting></para></listitem>
+	<listitem><para>Aby ustawiæ preferowanie UMTS przed GPRS:<programlisting>OK  'AT_OPSYS=3,2' \</programlisting></para></listitem>
+</itemizedlist>
+</para>
+</section> <!-- grps-forcegprs -->
+
+<section id="gprs-debian">
+<title>Konfiguracja po³±czenia GPRS w systemach Debian</title>
+<para>
+Je¶li mamy w miarê aktualn± dystrybucjê Debian/Ubuntu, konfiguracja po³±czenia GPRS powinna byæ
+do¶æ prosta i dobrze integrowaæ siê z mechanizmem zarz±dzania po³±czeniami sieciowymi. Modem powinien
+byæ wykryty automatycznie (co mo¿na sprawdziæ komend± <command>dmesg</command>), w razie problemów 
+nale¿y tylko upewniæ siê ¿e korzystamy z w miarê nowego j±dra.
+</para>
+<para>
+	W pliku <filename>/etc/network/interfaces</filename> umieszczamy wpis typu (podana ni¿ej jest 
+	przyk³adowa konfiguracja dla Era GSM i modemu Huawei E160):
+<programlisting>
+iface ppp0 inet ppp
+	provider e160
+</programlisting>
+Nazwa <emphasis>e160</emphasis> mo¿e byæ dowolnie wybrana, pó¼niej tylko nale¿y u¿yæ jej konsekwentnie
+w nazwach skryptów z opcjami PPP i skryptu chat.
+</para>
+<para>
+Zamiast zmieniaæ globalne opcje PPP, tworzymy plik <filename>/etc/ppp/peers/e160</filename> o zawarto¶ci:
+<programlisting>
+# Debug info from pppd:
+# You can comment this off, if you don't need more info
+debug
+
+# Max speed
+#230400
+
+# Use hardware flow control
+nocrtscts
+
+# Don't keep pppd attached to the terminal:
+updetach
+
+# Connection options
+nodeflate
+
+lcp-echo-interval 0
+# Path to chat script connect/disconnect
+connect "/etc/ppp/peers/e160-chat"
+# we don't need special script for that modem
+#disconnect "/etc/ppp/peers/e160-disconnect"
+
+# IP address configuration 
+:20.0.0.1
+noipdefault
+usepeerdns
+
+novj
+novjccomp
+nobsdcomp
+defaultroute
+/dev/ttyUSB0
+user erainternet
+noauth
+</programlisting>
+</para>
+<para>
+Na koniec potrzebujemy jeszcze skryptu chat - <filename>/etc/ppp/peers/e160-chat</filename> o zawarto¶ci:
+<programlisting>
+OP=erainternet
+PIN=9999
+SLEEP=5
+
+/usr/sbin/chat \
+TIMEOUT	20 \
+ABORT    '\nERROR\r' \
+ECHO	ON \
+SAY	"\r\nSetting PIN - this can fail" \
+''	'\rAT' \
+OK	 'ATZ' \
+'OK'	"AT+CPIN=$PIN" \
+'OK'	'' \
+SAY	"\r\nWaiting $SLEEP seconds" && sleep $SLEEP
+
+/usr/sbin/chat \
+TIMEOUT  20 \
+ECHO     ON \
+ABORT    '\nBUSY\r' \
+ABORT    '\nERROR\r' \
+ABORT    '\nNO ANSWER\r' \
+ABORT    '\nNO CARRIER\r' \
+ABORT    '\nNO DIALTONE\r' \
+ABORT    '\nRINGING\r\n\r\nRINGING\r' \
+TIMEOUT  30       \
+''       '\rAT'   \
+OK       'ATE1'   \
+OK	 'AT+IFC=0,0' \
+OK       "AT+CGDCONT=1,\"IP\",\"$OP\",\"\",0,0" \
+OK       'ATD*99***1#'  \
+TIMEOUT  30   \
+CONNECT  ""    \
+SAY      "\nConnected.\n"  \
+</programlisting>
+</para>
+<para>
+Przy takiej konfiguracji w³±czanie i wy³±czanie po³±czenia mo¿emy robiæ standardowymi komendami 
+<command>ifup ppp0</command> oraz <command>ifdown ppp0</command>.
+</para>
+</section> <!-- gprs-debian -->
+
 <section id="uno-gprs">
 <title>Modemy GPRS w komputerach UNO </title>
 
