@@ -1,5 +1,8 @@
 $Id$
 
+2009-12-14	Darek Marcinkiewicz <darek@praterm.com.pl>
+	* wx/visio/Makefile.am: removed installation of visio's localized
+	strings, there are no locales for visio yet
 2009-12-12	Pawel Palucha <pawel@praterm.com.pl>
 	* howto.sgml: updated section about GRPS modems - configuration for
 	Debian, forcing GPRS/UMTS.

@@ -30,15 +30,5 @@ visio_SOURCES = \
 visio_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP)
 visio_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) @XML_LIBS@ @WX_LIBS@ @LUA_LIBS@ @CURL_LIBS@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@
 
-CLEANFILES = $(visio_LOCALES)
-EXTRA_DIST = $(visio_LOCALES_SRC) 
-
 all: visio$(EXEEXT)
-
-# Install locales
-install-data-local: $(visio_LOCALES)
-	$(INSTALL) -d $(DESTDIR)@prefix@/resources/locales/pl_PL/LC_MESSAGES
-	$(INSTALL) $(visio_LOCALES) \
-                $(DESTDIR)@prefix@/resources/locales/pl_PL/LC_MESSAGES
-
 
