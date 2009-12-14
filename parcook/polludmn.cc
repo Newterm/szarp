@@ -435,12 +435,14 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), mbi
 			      cfg->GetDevice()->GetSpeed(), 8, 2, EVEN);
 		if (fd < 0){
 			sz_log(2, "problem with serial port (open)\n");
+			close(fd);
 			sleep(SLEEP_ERROR);
 			continue;	
 		}
 
 		if (write(fd,SND_NKE,SND_NKE_LENGTH)<0){ //Sending first Question
 			sz_log(2, "problem with serial port (open)\n");
+			close(fd);
 			sleep(SLEEP_ERROR);
 			continue;	
 		}
@@ -457,6 +459,7 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), mbi
 			}
 			if (ResponseStatus == GENERAL_ERROR){
 				sz_log(2, "problem with serial port (read)\n");
+				close(fd);
 				sleep(SLEEP_ERROR);
 				continue;	
 			}
@@ -465,6 +468,7 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), mbi
 		else{
 			if (write(fd,REQ_UD2,REQ_UD2_LENGTH)<0){
 				sz_log(2, "problem with serial port (write)\n");
+				close(fd);
 				sleep(SLEEP_ERROR);
 				continue;	
 			}
@@ -481,6 +485,7 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), mbi
 				}
 				if (ResponseStatus == GENERAL_ERROR){
 					sz_log(2, "problem with serial port (read)\n");
+					close(fd);
 					sleep(SLEEP_ERROR);
 					continue;	
 				}
