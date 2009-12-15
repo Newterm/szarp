@@ -1,5 +1,9 @@
 $Id$
 
+2009-12-15	Adam Smyk <asmyk@dalkiaterm.pl>
+	* wx/visio: new features have been added, visio connect to server,
+	simple fonts and frames management, locale have been added as well,
+	there are still some problems to fix
 2009-12-14	Darek Marcinkiewicz <darek@praterm.com.pl>
 	* wx/visio/Makefile.am: removed installation of visio's localized
 	strings, there are no locales for visio yet

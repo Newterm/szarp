@@ -1,0 +1,120 @@
+# PO file for Kontroler 3 program.
+# Copyright 
+# This file is distributed under the same license as the visio package.
+# Adam Smyk <asmyk@praterm.com.pl>, 2009.
+#
+# $Id: visio.po 123 2009-09-23 12:04:37Z asmyk $
+msgid ""
+msgstr ""
+"Project-Id-Version: kontroler3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-12-15 00:30+0100\n"
+"PO-Revision-Date: 2004-08-31 00:19+0200\n"
+"Last-Translator:  <asmyk@praterm.com.pl>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-2\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: visioApp.cpp:55
+msgid "visio"
+msgstr ""
+
+#: visioFetchFrame.cpp:121 visioTransparentFrame.cpp:173
+#, fuzzy
+msgid "Visio->AddParam"
+msgstr "Visio->Dodaj parametr"
+
+#: visioFetchFrame.cpp:164
+msgid "Welcome to..."
+msgstr "Witaj ..."
+
+#: visioFetchFrame.cpp:186 visioTransparentFrame.cpp:502
+msgid " "
+msgstr ""
+
+#: visioTransparentFrame.cpp:183
+msgid "This parameter is already shown"
+msgstr "Wybrany parametr jest wywietlony. Operacja anulowana."
+
+#: visioTransparentFrame.cpp:183
+msgid "Visio information"
+msgstr "Informacje"
+
+#: visioTransparentFrame.cpp:339
+#, fuzzy
+msgid "Add parameter"
+msgstr "Dodaj kolejny parametr"
+
+#: visioTransparentFrame.cpp:340
+#, fuzzy
+msgid "Change frame color"
+msgstr "Zmiana koloru ramki"
+
+#: visioTransparentFrame.cpp:341
+#, fuzzy
+msgid "Change font color"
+msgstr "Zmiana koloru tekstu"
+
+#: visioTransparentFrame.cpp:344
+msgid "Font small"
+msgstr "Czcionka 10"
+
+#: visioTransparentFrame.cpp:345
+msgid "Font middle"
+msgstr "Czcionka 15"
+
+#: visioTransparentFrame.cpp:346
+msgid "Font large"
+msgstr "Czcionka 20"
+
+#: visioTransparentFrame.cpp:347
+msgid "Change font size"
+msgstr "Zmiana rozmiaru tekstu"
+
+#: visioTransparentFrame.cpp:348
+#, fuzzy
+msgid "With frame"
+msgstr "Z ramk±"
+
+#: visioTransparentFrame.cpp:351
+msgid "Direction -> right down"
+msgstr "Kierunek -> od prawej w dó³"
+
+#: visioTransparentFrame.cpp:352
+msgid "Direction -> left down"
+msgstr "Kierunek -> od lewej w dó³"
+
+#: visioTransparentFrame.cpp:353
+msgid "Direction -> up right"
+msgstr "Kierunek -> od góry w prawo"
+
+#: visioTransparentFrame.cpp:354
+msgid "Direction -> bottom right"
+msgstr "Kierunek -> od do³u w prawo"
+
+#: visioTransparentFrame.cpp:355
+msgid "Arrange frames"
+msgstr "Uporz±dkuj okna"
+
+#: visioTransparentFrame.cpp:359
+#, fuzzy
+msgid "Close window"
+msgstr "Zamknij okno"
+
+#: visioTransparentFrame.cpp:362
+#, fuzzy
+msgid "Quit"
+msgstr "Wyj¶cie z aplikacji"
+
+#: visioParamadd.cpp:52
+msgid "Parameter"
+msgstr "Parametr monitorowany"
+
+#: visioParamadd.cpp:62
+msgid "Choose parameter"
+msgstr "Wybierz parametr"
+
+#: visioParamadd.cpp:77
+#, fuzzy
+msgid "Visio->Add->Param"
+msgstr "Kontroler->Dodaj->Parametr"
