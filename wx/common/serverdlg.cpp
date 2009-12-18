@@ -101,6 +101,7 @@ wxString szServerDlg::GetServer(wxString def, wxString progname, bool always_sho
 		//if (cb->GetValue() == true) {
 			wxConfig::Get()->Write(KEY_SERVER, server);
 		//}
+		wxConfig::Get()->Flush();
 	} else {
 		if(always_show) {
 			server = _T("Cancel");
