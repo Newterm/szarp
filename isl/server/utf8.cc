@@ -113,6 +113,8 @@ void utf2a(unsigned char *str)
 		if (str[i] < 128) {
 			if (!isalnum(str[i])) {
 				str[j] = '_';
+			} else {
+				str[j] = str[i];
 			}
 			i++; j++;
 			continue;

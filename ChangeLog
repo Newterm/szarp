@@ -1,5 +1,8 @@
 $Id$
 
+2009-12-18	Pawel Palucha <pawel@praterm.com.pl>
+	* isl/server/utf8.cc: fix in utf2a to function - fixes paramd HTML
+	output.
 2009-12-15	Adam Smyk <asmyk@dalkiaterm.pl>
 	* wx/visio: new features have been added, visio connect to server,
 	simple fonts and frames management, locale have been added as well,
