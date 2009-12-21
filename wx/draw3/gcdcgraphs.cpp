@@ -26,9 +26,23 @@
 
 #include <wx/dcbuffer.h>
 
+#include "conversion.h"
+
 #include "bitmaps/remark_flag.xpm"
-#include "gcdcgraphs.h"
+#include "ids.h"
+#include "classes.h"
+#include "cconv.h"
+#include "cfgmgr.h"
+#include "drawtime.h"
+#include "drawdnd.h"
+#include "dbinquirer.h"
+#include "database.h"
+#include "drawobs.h"
 #include "draw.h"
+#include "drawsctrl.h"
+#include "drawswdg.h"
+#include "drawapp.h"
+#include "gcdcgraphs.h"
 #include "graphsutils.h"
 
 /**Significant part of this code is just copied from classic graphs implementation, it's bad practice, I know, but I just wanted
@@ -42,6 +56,8 @@ GCDCGraphs::GCDCGraphs(wxWindow* parent, ConfigManager *cfg) : wxWindow(parent, 
 	m_screen_margins.bottommargin = 12;
 	m_screen_margins.infotopmargin = 7;
 	m_refresh = true;
+
+	m_draws_wdg = NULL;
 
 	m_remark_flag_bitmap = wxBitmap(remark_flag_xpm);
 
@@ -130,7 +146,7 @@ void GCDCGraphs::DrawBackground(wxGraphicsContext &dc) {
 	while (i < pc) {
 		double x1 = GetX(i);
 
-		i += Draw::PeriodMult[pt];
+		i += TimeIndex::PeriodMult[pt];
 	
 		double x2 = GetX(i);
 
@@ -159,11 +175,7 @@ wxDragResult GCDCGraphs::SetSetInfo(wxCoord x, wxCoord y, wxString window, wxStr
 }
 
 void GCDCGraphs::SetDrawsChanged(DrawPtrArray draws) {
-	size_t pc = m_draws.GetCount();
 	m_draws = draws;
-
-	for (size_t i = pc; i < draws.GetCount(); i++)
-		m_draws[i]->AttachObserver(this);
 
 	m_recalulate_margins = true;
 	Refresh();
@@ -175,7 +187,10 @@ void GCDCGraphs::StartDrawingParamName() {
 		m_draw_param_name = true;
 		Refresh();
 	}
+}
 
+void GCDCGraphs::DrawSelected(Draw *draw) {
+	Refresh();
 }
 
 void GCDCGraphs::StopDrawingParamName() {
@@ -255,7 +270,7 @@ void GCDCGraphs::DrawWindowInfo(wxGraphicsContext &dc) {
 	double info_left_marg = m_screen_margins.leftmargin + 8;
 	double param_name_shift = 5;
 
-	if (m_draws.GetCount() < 1)
+	if (m_draws.size() < 1)
 		return;
 
 	int w, h;
@@ -271,7 +286,7 @@ void GCDCGraphs::DrawWindowInfo(wxGraphicsContext &dc) {
 
 	int xpos = info_left_marg + namew + param_name_shift;
 
-	for (int i = 0; i < (int)m_draws.GetCount(); ++i) {
+	for (int i = 0; i < (int)m_draws.size(); ++i) {
 
 		if (!m_draws[i]->GetEnable())
 			continue;
@@ -343,7 +358,7 @@ void GCDCGraphs::DrawXAxisVals(wxGraphicsContext& dc) {
 		dc.GetTextExtent(datestring, &textw, &texth, &td, &tel);
 		dc.DrawText(datestring, x - textw / 2, h - m_screen_margins.bottommargin + 1);
 
-		i += Draw::PeriodMult[draw->GetPeriod()];
+		i += TimeIndex::PeriodMult[draw->GetPeriod()];
 	}
     
 }
@@ -443,12 +458,12 @@ void GCDCGraphs::DrawGraphs(wxGraphicsContext &dc) {
 	if (sel < 0)
 		return;
 
-	for (size_t i = 0; i <= m_draws.GetCount(); i++) {
+	for (size_t i = 0; i <= m_draws.size(); i++) {
 		 
 		size_t j = i;
 		if ((int) j == sel) 
 			continue;
-		if (j == m_draws.GetCount())	
+		if (j == m_draws.size())	
 			j = sel;
 
 		Draw* d = m_draws[j];
@@ -470,7 +485,7 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 
 	DrawInfo *di = d->GetDrawInfo();
 
-	bool double_cursor = d->GetSelected() && d->IsDoubleCursor();
+	bool double_cursor = d->GetSelected() && d->GetDoubleCursor();
 
 	wxGraphicsPath path1 = dc.CreatePath();
 	wxGraphicsPath path2 = dc.CreatePath();
@@ -601,6 +616,9 @@ void GCDCGraphs::DrawCursor(wxGraphicsContext &dc, Draw* d) {
 }
 
 void GCDCGraphs::OnPaint(wxPaintEvent& e) {
+	if (m_draws_wdg->GetSelectedDraw() == NULL)
+		return;
+
 	wxBufferedPaintDC pdc(this);
 	wxGraphicsContext* dc = wxGraphicsContext::Create(pdc);
 
@@ -618,7 +636,7 @@ void GCDCGraphs::OnPaint(wxPaintEvent& e) {
 	DrawUnit(*dc);
 	DrawWindowInfo(*dc);
 	DrawSeasonsLimitsInfo(*dc);
-	if (m_draws_wdg->IsNoData() == true)
+	if (m_draws_wdg->GetNoData() == true)
 		DrawNoData(*dc);
 	else
 		DrawGraphs(*dc);
@@ -656,7 +674,7 @@ void GCDCGraphs::RecalculateMargins(wxGraphicsContext &dc) {
 	double bottommargin = 12;
 	double topmargin = 24;
 
-	for (size_t i = 0; i < m_draws.GetCount(); i++) {
+	for (size_t i = 0; i < m_draws.size(); i++) {
 		double tw, th, td, tel;
 		DrawInfo *di = m_draws[i]->GetDrawInfo();
 		wxString sval = di->GetValueStr(di->GetMax(), _T(""));
@@ -899,7 +917,7 @@ void GCDCGraphs::OnMouseLeftDown(wxMouseEvent& event) {
 		wxDateTime time;
 	};
 
-	VoteInfo infos[m_draws.GetCount()];
+	VoteInfo infos[m_draws.size()];
 
 	int x = event.GetX();
 	int y = event.GetY();
@@ -910,7 +928,7 @@ void GCDCGraphs::OnMouseLeftDown(wxMouseEvent& event) {
 		return;
 	}
 
-	for (size_t i = 0; i < m_draws.GetCount(); ++i) {
+	for (size_t i = 0; i < m_draws.size(); ++i) {
 
 		VoteInfo & in = infos[i];
 		in.dist = -1;
@@ -924,8 +942,8 @@ void GCDCGraphs::OnMouseLeftDown(wxMouseEvent& event) {
 
 	int selected_draw = m_draws_wdg->GetSelectedDrawIndex();
 
-	for (size_t i = 1; i <= m_draws.GetCount(); ++i) {
-		size_t k = (i + selected_draw) % m_draws.GetCount();
+	for (size_t i = 1; i <= m_draws.size(); ++i) {
+		size_t k = (i + selected_draw) % m_draws.size();
 
 		VoteInfo & in = infos[k];
 		if (in.dist < 0)
@@ -960,10 +978,10 @@ void GCDCGraphs::OnMouseLeftDown(wxMouseEvent& event) {
 }
 
 void GCDCGraphs::OnMouseLeftDClick(wxMouseEvent& event) {
-	if (m_draws.GetCount() < 0)
+	if (m_draws.size() == 0)
 		return;
 
-	if (m_draws_wdg->IsNoData())
+	if (m_draws_wdg->GetNoData())
 		return;
 
 	/* get widget size */
@@ -1013,6 +1031,16 @@ void GCDCGraphs::OnIdle(wxIdleEvent &e) {
 	if (m_refresh) {
 		wxWindow::Refresh();
 		m_refresh = false;
+	}
+}
+
+void GCDCGraphs::DrawInfoChanged(Draw *draw) { 
+	if (draw->GetSelected()) {
+		m_draws.resize(0);
+
+		DrawsController* controller = draw->GetDrawsController();
+		for (size_t i = 0; i < controller->GetDrawsCount(); i++)
+			m_draws.push_back(controller->GetDraw(i));
 	}
 }
 

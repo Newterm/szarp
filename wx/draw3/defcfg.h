@@ -37,12 +37,7 @@
 #include <vector>
 #include <set>
 
-#include "incsearch.h"
-#include "cfgmgr.h"
-
-class DefinedDrawSet;
 class TParam;
-class DefinedDrawInfo;
 
 class DefinedParam : public DrawParam {
 	wxString m_formula;
@@ -317,7 +312,6 @@ public:
 
 /** Hash map connecting configuration prefixes with number ocurrances of
  * its draw in current draw set (DefinedDrawsSet) */
-class SetsNrHash;
 WX_DECLARE_STRING_HASH_MAP(int, SetsNrHash)
 ;
 
@@ -325,6 +319,8 @@ WX_DECLARE_STRING_HASH_MAP(int, SetsNrHash)
  * DrawSet with XML serialising and modyfing methods.
  */
 class DefinedDrawSet : public DrawSet {
+private:
+	DefinedDrawSet(DrawsSets* parent, DefinedDrawSet *set);
 public:
 	/** Parse XML tree to construct object 
 	 * @param cur xml node with window element
@@ -378,6 +374,8 @@ public:
 
 	DefinedDrawSet *MakeDeepCopy();
 
+	DefinedDrawSet *MakeShallowCopy(DrawsSets* parent);
+
 	virtual double GetPrior();
 
 	void SetPrior(double prior);
@@ -395,18 +393,14 @@ public:
 	bool IsTemporary() {
 		return m_temporary;
 	}
-	;
 
 	bool SetTemporary(bool val) {
 		return m_temporary = val;
 	}
-	;
 
 	DefinedDrawsSets * GetDefinedDrawsSets() {
 		return m_ds;
 	}
-	;
-
 protected:
 	/**Object this sets belongs to*/
 	DefinedDrawsSets *m_ds;
@@ -419,6 +413,10 @@ protected:
 
 	/** If this draw should be saved */
 	bool m_temporary;
+
+	bool m_copy;
+
+	std::vector<DefinedDrawSet*> *m_copies;
 
 };
 

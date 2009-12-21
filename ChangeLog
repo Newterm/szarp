@@ -1,7 +1,14 @@
 $Id$
 
+2009-12-21	Darek Marcinkiewicz <darek@praterm.com.pl>
+	* wx/draw3: simplification of code parts that were
+	most convoluted, unfortunately these changes affect nearly
+	everything, and although I have tested every feature there
+	is still a possiblity that in some cases program behaves
+	incorretcly, so this version shouldn't be pushed to 
+	production use for some time yet
 2009-12-18	Adam Smyk <asmyk@dalkiaterm.pl>
-	* wx/common/serverdlg.cpp - wxConfig flush operation has been added
+	* wx/common/serverdlg.cpp: wxConfig flush operation has been added
 2009-12-18	Pawel Palucha <pawel@praterm.com.pl>
 	* isl/server/utf8.cc: fix in utf2a to function - fixes paramd HTML
 	output.

@@ -48,15 +48,6 @@
 #include "szarp_config.h"
 #include "cfgnames.h"
 
-#include "ids.h"
-
-#include "szapp.h"
-
-#include "splashscreen.h"
-
-class DrawsSets;
-class ConfigManager;
-class DrawPsc;
 
 class DrawParam {
 protected:
@@ -188,14 +179,14 @@ class DrawSet
 {
     public:
 	/** Default constructor */
-	DrawSet() : m_name(wxString()), m_prior(-1.0),  m_number(-1), m_cfg(NULL)
+	DrawSet(DrawsSets *cfg) : m_name(wxString()), m_prior(-1.0),  m_number(-1), m_cfg(cfg)
 	    { m_draws = new DrawInfoArray(); };
     
 	/**
 	 * Constructor setting name of DrawSet
 	 * @param DrawSet name
 	 */
-	DrawSet(wxString & name) : m_name(name), m_prior(-1.0), m_number(-1), m_cfg(NULL)
+	DrawSet(wxString & name, DrawsSets *cfg) : m_name(name), m_prior(-1.0), m_number(-1), m_cfg(cfg)
 	    { m_draws = new DrawInfoArray(); };
 
 	/**
@@ -249,6 +240,9 @@ class DrawSet
 	/** @return ParamName of draw with given index */
 	wxString GetParamName(int index);
 
+	/** @return sets this set is part of*/
+	DrawsSets* GetDrawsSets();
+
 	/**
 	 * @param index Index of draw
 	 * @return Color of draw with given index
@@ -274,7 +268,6 @@ class DrawSet
     
 
 /** Hash map, sets names are keys, draw array are values. */
-class DrawSetsHash;
 WX_DECLARE_STRING_HASH_MAP(DrawSet *, DrawSetsHash);
 
 WX_DEFINE_SORTED_ARRAY(DrawSet *, SortedSetsArray);
@@ -355,14 +348,7 @@ class IPKConfig : public DrawsSets
 	
 };
 
-class ConfigObserver;
-class DatabaseManager;
-
-class DrawsSetsHash;
 WX_DECLARE_STRING_HASH_MAP(DrawsSets*, DrawsSetsHash);
-
-
-class DefinedDrawsSets;
 
 class ConfigManager
 {

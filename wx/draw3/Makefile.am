@@ -43,11 +43,13 @@ bin_PROGRAMS = draw3
 WIN_APP_NAME = Draw3
 
 draw3_SOURCES = \
+		classes.h \
                 draw3.cpp \
                 dbmgr.cpp dbmgr.h \
 		database.h database.cpp \
 		disptime.cpp disptime.h \
 		drawpnl.cpp drawpnl.h \
+		drawsctrl.h drawsctrl.cpp \
                 drawswdg.cpp drawswdg.h \
                 drawapp.cpp drawapp.h \
                 draw.cpp draw.h \
@@ -90,6 +92,7 @@ draw3_SOURCES = \
 		glgraphs.h glgraphs.cpp \
 		gcdcgraphs.h gcdcgraphs.cpp \
 		graphsutils.h graphsutils.cpp \
+		drawtime.h drawtime.cpp \
 		GUI/resource.cpp
 
 draw3_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) $(LIBWXSCINTILLA)

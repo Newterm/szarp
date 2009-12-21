@@ -23,10 +23,12 @@
  * $Id$
  */
 
-#include "drawipc.h"
+#include "ids.h"
+#include "classes.h"
 #include "frmmgr.h"
 #include "cfgmgr.h"
 #include "drawurl.h"
+#include "drawipc.h"
 
 const wxChar* const BASE_SET_STRING = _T("BASE_STARTED");
 const wxChar* const DRAW_SET_STRING = _T("DRAW_STARTED");
@@ -74,7 +76,7 @@ wxChar* DrawServerConnection::OnRequest(const wxString& topic, const wxString& i
 
 	const wxChar* response;
 	if (topic == _T("START_BASE"))
-		if (m_frm_mgr->CreateFrame(item, NULL, PERIOD_T_OTHER, -1, wxDefaultSize, wxDefaultPosition, -1, true))
+		if (m_frm_mgr->CreateFrame(item, wxEmptyString, PERIOD_T_YEAR, -1, wxDefaultSize, wxDefaultPosition, -1, true))
 			response = BASE_SET_STRING;
 		else
 			response = ERROR_SET_STRING;

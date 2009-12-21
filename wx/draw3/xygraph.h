@@ -46,23 +46,7 @@
 #include <wx/frame.h>
 #include <wx/grid.h>
 
-#include "draw.h"
-#include "dbinquirer.h"
-#include "szframe.h"
-
 #include <boost/tuple/tuple.hpp>
-
-class DrawInfo;
-class XYPointInfo;
-class XYGraphWidget;
-class XYPanel;
-class DatabaseQuery;
-class DatabaseManager;
-class DataMangler;
-class XYDialog;
-class ConfigManager;
-class ProgressFrame;
-class KDTree;
 
 typedef boost::tuple<double, double, std::vector<DTime> > XYPoint;
 

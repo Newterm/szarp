@@ -45,28 +45,16 @@
 #include <wx/arrimpl.cpp>
 #include <wx/dc.h>
 
-#include "cfgmgr.h"
-#include "drawdnd.h"
-#include "drawswdg.h"
-
-#include "dbinquirer.h"
-
 #ifndef NO_GSTREAMER
 #include <gst/gst.h>
 #endif
 
-class GraphView;
-class ConfigManager;
-class BackgroundView;
-
 /** MUST BE ODD!! */
 #define CURSOR_RECTANGLE_SIZE 9
 
-class WxGraphs:public wxWindow, public DrawGraphs, public SetInfoDropReceiver {
-	WX_DEFINE_ARRAY(GraphView*, GraphViewPtrArray);
-
+class WxGraphs : public wxWindow, public DrawGraphs, public SetInfoDropReceiver {
 	/** Internal array of @see GraphVIew objects . */
-	GraphViewPtrArray m_graphs;
+	std::vector<GraphView*> m_graphs;
 
 	/**View attached to currently selected to @see Draw, draws the background*/
 	BackgroundView *m_bg_view;
@@ -130,12 +118,6 @@ public:
 	/** Switches window */
 	virtual wxDragResult SetSetInfo(wxCoord x, wxCoord y, wxString window, wxString prefix, time_t time, PeriodType pt, wxDragResult def);
 
-	virtual void SetDrawsChanged(DrawPtrArray draws);
-
-	virtual void Deselected(int i);
-
-	virtual void Selected(int i);
-
 	virtual void Refresh();
 
 	virtual void StartDrawingParamName();
@@ -143,8 +125,32 @@ public:
 	virtual void StopDrawingParamName();
 
 	virtual void FullRefresh();
-	
+
+	virtual void DrawInfoChanged(Draw *draw);
+
 	virtual void SetFocus();
+
+	virtual void DrawDeselected(Draw *d);
+
+	virtual void DrawSelected(Draw *d);
+
+	virtual	void FilterChanged(DrawsController *draws_controller);
+
+	virtual void EnableChanged(Draw *draw);
+
+	virtual void PeriodChanged(Draw *draw, PeriodType period);
+
+	virtual void ScreenMoved(Draw* draw, const wxDateTime &start_date);
+
+	virtual void NumberOfValuesChanged(DrawsController *draws_controller);
+
+	virtual void NewData(Draw* draw, int i);
+
+	virtual void NewRemarks(Draw *draw);
+
+	virtual void DoubleCursorChanged(DrawsController *draws_controller);
+
+	virtual void CurrentProbeChanged(Draw* draw, int pi, int ni, int d);
 
 	void OnPaint(wxPaintEvent&);
 

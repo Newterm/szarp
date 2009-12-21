@@ -25,6 +25,7 @@
  * $Id$
  */
 
+#include "classes.h"
 #include "drawapp.h"
 
 IMPLEMENT_APP(DrawApp)

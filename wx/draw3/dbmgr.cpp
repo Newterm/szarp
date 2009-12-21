@@ -19,13 +19,19 @@
 #include <utility>
 #include <limits>
 
-#include "drawpnl.h" 
-#include "database.h"
-#include "cfgmgr.h"
-#include "dbinquirer.h"
 #include "cconv.h"
+
+#include "classes.h"
+
+#include "database.h"
+#include "dbinquirer.h"
+#include "drawtime.h"
+#include "drawobs.h"
+#include "cfgmgr.h"
+#include "coobs.h"
 #include "defcfg.h"
 #include "errfrm.h"
+#include "dbmgr.h"
 
 bool
 SyncedPrefixSet::Contains(wxString prefix) {

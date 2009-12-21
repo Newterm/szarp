@@ -26,6 +26,11 @@
 
 #include <vector>
 
+#include "ids.h"
+#include "classes.h"
+#include "drawtime.h"
+#include "dbinquirer.h"
+#include "database.h"
 #include "draw.h"
 #include "cfgmgr.h"
 

@@ -38,18 +38,6 @@
 
 #include <vector>
 
-#include "ids.h"
-
-#include "database.h"
-
-class ConfigManager;
-class DrawPanel;
-class DrawInfo;
-class DatabaseQueryQueue;
-struct DatabaseQuery;
-class DBInquirer;
-class DefinedParam;
-
 /**Event encapsulating response from database*/
 class DatabaseResponse : public wxCommandEvent {
 	/**@see DatabaseQuery*/

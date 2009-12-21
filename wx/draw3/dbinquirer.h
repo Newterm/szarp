@@ -32,13 +32,6 @@
 
 #include <list>
 
-#include "ids.h"
-
-class DatabaseManager;
-class TParam;
-class DatabaseQuery;
-class DrawInfo;
-
 /**Interface for objects communiating with the database*/
 class DBInquirer {
 private:
@@ -52,7 +45,6 @@ protected:
 	void QueryDatabase(DatabaseQuery *query);
 
 	void QueryDatabase(std::list<DatabaseQuery*> &qlist);
-
 public: 
 	DBInquirer(DatabaseManager *manager);
 

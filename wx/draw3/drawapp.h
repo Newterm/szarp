@@ -42,13 +42,6 @@
 #include "singleinstance.h"
 #include "szhlpctrl.h"
 
-class DrawServer;
-class FrameManager;
-class QueryExecutor;
-class DatabaseQueryQueue;
-class ConfigManager;
-class RemarksHandler;
-
 class DrawGLApp : public wxGLApp, private szAppImpl {
 public:
 	DrawGLApp();

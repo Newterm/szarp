@@ -35,10 +35,6 @@
 #include <wx/spinctrl.h>
 #include <wx/datectrl.h>
 
-#include "codeeditor.h"
-
-class ParamsListDialog;
-
 /**
  * Widget for editing param properties.
  */

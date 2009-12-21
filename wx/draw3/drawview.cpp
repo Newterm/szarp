@@ -27,17 +27,27 @@
 
 #include "szarp_config.h"
 
+#include "cconv.h"
+
 #include "ids.h"
 
+#include "classes.h"
+#include "drawobs.h"
+#include "cfgmgr.h"
+#include "database.h"
+#include "drawtime.h"
+#include "dbmgr.h"
+#include "dbinquirer.h"
+#include "drawsctrl.h"
+#include "draw.h"
+#include "drawdnd.h"
+#include "drawswdg.h"
+#include "wxgraphs.h"
 #include "drawview.h"
 #include "drawswdg.h"
-#include "cconv.h"
-#include "draw.h"
-#include "wxgraphs.h"
-#include "bitmaps/remark_flag.xpm"
+#include "graphsutils.h"
 
-using std::max;
-using std::min;
+#include "bitmaps/remark_flag.xpm"
 
 const int GraphView::cursorrectanglesize = 9;
 
@@ -137,7 +147,6 @@ BackgroundView::BackgroundView(WxGraphs *graphs, ConfigManager *cfg) :
 
 void BackgroundView::Attach(Draw *draw) {
 	m_draw = draw;
-	draw->AttachObserver(this);
 
 	int w, h;
 	m_graphs->GetClientSize(&w, &h);
@@ -182,7 +191,6 @@ void BackgroundView::Detach(Draw *draw) {
 	m_dc = NULL;
 	m_bmp = NULL;
 
-	draw->DetachObserver(this);
 	m_draw = NULL;
 }
 
@@ -282,63 +290,12 @@ void BackgroundView::DrawSeasonLimitInfo(wxDC *dc, int i, int month, int day, bo
 }
 
 void BackgroundView::DrawSeasonLimits(wxDC *dc) {
-
 	DrawsSets *cfg = m_cfg_mgr->GetConfigByPrefix(m_draw->GetDrawInfo()->GetBasePrefix());
-	IPKConfig *ipk = dynamic_cast<IPKConfig*>(cfg);
 
-	if (ipk == NULL)
-		return;
+	std::vector<SeasonLimit> limits = get_season_limits_indexes(cfg, m_draw);
+	for (std::vector<SeasonLimit>::iterator i = limits.begin(); i != limits.end(); i++)
+		DrawSeasonLimitInfo(dc, i->index, i->month, i->day, i->summer);
 
-	const TSSeason* s = ipk->GetTSzarpConfig()->GetSeasons();
-
-	wxDateTime pt = m_draw->GetTimeOfIndex(0);
-	wxDateTime::Tm tm = pt.GetTm(wxDateTime::Local);
-	int year = tm.year;
-
-	TSSeason::Season season = s->GetSeason(year);
-	bool is_summer = s->CheckSeason(season, tm.mon - wxDateTime::Jan + 1, tm.mday);
-
-	for (size_t i = 1; i < m_draw->GetValuesTable().size() - 1; ++i) {
-		wxDateTime t = m_draw->GetTimeOfIndex(i + 1);
-		tm = t.GetTm(wxDateTime::Local);
-		if (tm.year != year) {
-			year = tm.year;
-			season = s->GetSeason(year);
-		}
-		bool is = s->CheckSeason(season, (tm.mon - wxDateTime::Jan) + 1, tm.mday);
-		if (is != is_summer) {
-			int index;
-			switch (m_draw->GetPeriod()) {
-				case PERIOD_T_DAY:
-				case PERIOD_T_MONTH:
-				case PERIOD_T_WEEK:
-					index = i;
-					break;
-				case PERIOD_T_LAST:
-				case PERIOD_T_OTHER:
-				case PERIOD_T_SEASON:
-				case PERIOD_T_YEAR:
-					if (is)
-						if (tm.mday == season.day_start)
-							index = i;
-						else
-							index = i - 1;
-					else
-						if (tm.mday  == season.day_end)
-							index = i;
-						else
-							index = i - 1;
-
-					break;
-				default:
-					index = 0;
-					assert(false);
-			}
-			DrawSeasonLimitInfo(dc, index, is ? season.month_start : season.month_end, is ? season.day_start : season.day_end, is);
-		}
-		is_summer = is;
-		pt = t;
-	}
 }
 
 void BackgroundView::DrawRemarksFlags(wxDC *dc) {
@@ -463,7 +420,7 @@ void BackgroundDrawer::DrawBackground(wxDC *dc) {
 	while (i < pc) {
 		int x1 = GetX(i);
 
-		i += Draw::PeriodMult[m_draw->GetPeriod()];
+		i += TimeIndex::PeriodMult[m_draw->GetPeriod()];
 	
 		int x2 = GetX(i);
 
@@ -564,7 +521,7 @@ void BackgroundDrawer::DrawTimeAxis(wxDC *dc, int arrow_width, int arrow_height,
 		dc->SetTextForeground(GetTimeAxisCol());
 		dc->DrawText(datestring, x - textw / 2, h - m_bottommargin + 1);
 
-		i += Draw::PeriodMult[m_draw->GetPeriod()];
+		i += TimeIndex::PeriodMult[m_draw->GetPeriod()];
 	}
     
 	dc->SetPen(wxNullPen);
@@ -647,7 +604,6 @@ GraphView::GraphView(WxGraphs* widget) : GraphDrawer(2), m_graphs(widget), m_dc(
 
 void GraphView::Attach(Draw *draw) {
 	m_draw = draw;
-	draw->AttachObserver(this);
 
 	int w, h;
 	m_graphs->GetClientSize(&w, &h);
@@ -711,7 +667,6 @@ void GraphView::Detach(Draw *draw) {
 	delete m_bmp;
 	m_bmp = NULL;
 
-	draw->DetachObserver(this);
 	m_draw = NULL;
 }
 
@@ -742,7 +697,7 @@ void GraphView::CurrentProbeChanged(Draw *draw, int pi, int ni, int d) {
 	if (i)
 		i = i > 0 ? -1 : 1;
 
-	if (m_draw->IsDoubleCursor() && ni >= 0) {
+	if (m_draw->GetDoubleCursor() && ni >= 0) {
 		int vd = m_draw->GetValuesTable().size();
 
 		int s, e;
@@ -782,7 +737,7 @@ bool GraphView::AlternateColor(int idx) {
 	if (m_draw->GetSelected() == false)
 		return false;
 
-	if (m_draw->IsDoubleCursor() == false)
+	if (m_draw->GetDoubleCursor() == false)
 		return false;
 
 	const Draw::VT& vt = m_draw->GetValuesTable();
@@ -791,7 +746,7 @@ bool GraphView::AlternateColor(int idx) {
 
 	bool result = (ss >= vt.m_stats.Start()) && (ss <= vt.m_stats.End());
 
-	//wxLogInfo(_T("Alternate color for index: %d, stats start: %d, stats end:%d, result %d"), ss, vt.m_stats.Start(), vt.m_stats.End(), r);
+	wxLogInfo(_T("Alternate color for index: %d, stats start: %d, stats end:%d, result %d"), ss, vt.m_stats.Start(), vt.m_stats.End(), result ? 1 : 0);
 
 	return result;
 
@@ -803,7 +758,6 @@ void GraphView::EnableChanged(Draw *draw) {
 
 void GraphView::FilterChanged(Draw *draw) {
 	DrawAll();
-	m_graphs->Refresh();
 }
 
 void GraphView::DrawDot(int x, int y, wxDC *dc, SDC *sdc, wxRegion* region) {
@@ -843,7 +797,7 @@ void GraphView::DrawPoint(int index, wxRegion *region, bool maybe_repaint_cursor
 
 	GetPointPosition(dc, index, &x , &y);
 
-	bool wide = m_draw->GetSelected() && m_draw->IsDoubleCursor();
+	bool wide = m_draw->GetSelected() && m_draw->GetDoubleCursor();
 
 	int line_width = wide ? 3 : 1;
 
@@ -886,7 +840,7 @@ void GraphView::DrawPoint(int index, wxRegion *region, bool maybe_repaint_cursor
 		DrawDot(x1, y1, dc, &m_sdc, region);
 
 		if (region)
-			region->Union(x1 , min(y, y1) - line_width, abs(x - x1) + 2 * line_width, abs(y - y1) + 2 * line_width);
+			region->Union(x1 , std::min(y, y1) - line_width, abs(x - x1) + 2 * line_width, abs(y - y1) + 2 * line_width);
 
 		if (maybe_repaint_cursor && 
 			m_draw->GetCurrentIndex() != -1  &&
@@ -922,7 +876,7 @@ void GraphView::DrawPoint(int index, wxRegion *region, bool maybe_repaint_cursor
 		DrawDot(x2, y2, dc, &m_sdc, region);
 
 		if (region)
-			region->Union(x, min(y, y2) - line_width, abs(x - x2) + 2 * line_width, abs(y - y2) + 2 * line_width);
+			region->Union(x, std::min(y, y2) - line_width, abs(x - x2) + 2 * line_width, abs(y - y2) + 2 * line_width);
 
 		if (maybe_repaint_cursor && 
 			m_draw->GetCurrentIndex() != -1 &&
@@ -1011,26 +965,12 @@ void GraphView::DrawCursor(int index, bool clear, wxRegion *region) {
 
 }
 
-void GraphView::DrawDeselected(Draw *draw) {
-	if (m_draw->IsDoubleCursor()) {
-		DrawAll();
-		m_graphs->Refresh();
-	}
-}
-
-void GraphView::DrawSelected(Draw *draw) {
-	if (m_draw->IsDoubleCursor()) {
-		DrawAll();
-		m_graphs->Refresh();
-	}
-}
-
 void GraphView::DrawAll() {
 	m_dc->SetBrush(*wxTRANSPARENT_BRUSH);
 	m_dc->Clear();
 	m_sdc.Clear();
 
-	int line_width = (m_draw->GetSelected() && m_draw->IsDoubleCursor()) ? 3 : 1;
+	int line_width = (m_draw->GetSelected() && m_draw->GetDoubleCursor()) ? 3 : 1;
 
 	DrawAllPoints(m_dc, &m_sdc, line_width);
 

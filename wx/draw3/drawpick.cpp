@@ -26,14 +26,6 @@
  * Creating new defined window
  */
 
-#include "cconv.h"
-#include "drawpick.h"
-#include "cfgdlg.h"
-#include "paramslist.h"
-#include "paredit.h"
-#include "incsearch.h"
-#include "szframe.h"
-
 #include <sstream>
 
 #include <wx/colordlg.h>
@@ -43,6 +35,26 @@
 
 #include <libxml/tree.h>
 #include <sys/types.h>
+
+#include "szarp_config.h"
+#include "cconv.h"
+
+#include "szframe.h"
+#include "szhlpctrl.h"
+
+#include "ids.h"
+#include "classes.h"
+#include "coobs.h"
+#include "drawobs.h"
+#include "dbinquirer.h"
+#include "codeeditor.h"
+#include "cfgmgr.h"
+#include "defcfg.h"
+#include "drawpick.h"
+#include "cfgdlg.h"
+#include "paramslist.h"
+#include "paredit.h"
+#include "incsearch.h"
 
 class PickKeyboardHandler: public wxEvtHandler
 {

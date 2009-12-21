@@ -21,6 +21,8 @@
 
 #include <wx/config.h>
 
+#include <wx/printdlg.h>
+
 #ifdef __WXMSW__
 #include <wx/generic/printps.h>
 #include <wx/generic/prntdlgg.h>
@@ -29,13 +31,21 @@
 #include <tr1/unordered_map>
 #include <sstream>
 
-#include "drawprint.h"
-#include "drawview.h"
-#include "draw.h"
+#include "szframe.h"
 #include "cconv.h"
+
+#include "ids.h"
+#include "classes.h"
+
+#include "drawtime.h"
+#include "cfgmgr.h"
+#include "database.h"
+#include "dbinquirer.h"
+#include "draw.h"
+#include "drawview.h"
 #include "timeformat.h"
 #include "xygraph.h"
-#include "szframe.h"
+#include "drawprint.h"
 
 using std::map;
 using std::set;
@@ -59,7 +69,7 @@ const int tick_len = 4;
 /**Class represeting daws printout*/
 class DrawsPrintout : public wxPrintout {
 	/**Array of draws to print*/
-	DrawPtrArray m_draws;
+	std::vector<Draw*> m_draws;
 
 	/**Number of draws from array to print*/
 	int m_draws_count;
@@ -73,7 +83,7 @@ class DrawsPrintout : public wxPrintout {
 	/**@return draws choosen for printing, draws having the same values range are grouped together*/
 	std::set<std::set<int> > ChooseDraws();
 	public:
-	DrawsPrintout(DrawPtrArray draws, int count);
+	DrawsPrintout(std::vector<Draw*> draws, int count);
 	/**prints page
 	 * @param page number to print
 	 * @return true if page has been successfully printed*/
@@ -190,7 +200,7 @@ wxFont PrintedRegion::GetFont() const {
 /**Prints graphs background*/
 class BackgroundPrinter : public BackgroundDrawer, public PrintedRegion {
 	/**Finds distance (in 'pixels' between verticals axes*/
-	int FindVerticalAxesDistance(wxDC *dc, DrawPtrArray draws, const SS &sd);
+	int FindVerticalAxesDistance(wxDC *dc, std::vector<Draw*> draws, const SS &sd);
 public:
 	/**return size of region to print on*/
 	virtual void GetSize(int* w, int *h) const;
@@ -209,7 +219,7 @@ public:
 	* @param draws draws do print
 	* @param sd draws grouping (for printing vertical axes)
 	* @return horizontal position of last printex vertical axe*/ 
-	int PrintBackground(wxDC *dc, DrawPtrArray draws, const SS& sd);
+	int PrintBackground(wxDC *dc, std::vector<Draw*> draws, const SS& sd);
 
 	/**@return color of axes*/
 	const wxColour& GetTimeAxisCol();
@@ -259,7 +269,7 @@ wxDC* BackgroundPrinter::GetDC() {
 	return NULL;
 }
 
-int BackgroundPrinter::FindVerticalAxesDistance(wxDC *dc, DrawPtrArray draws, const SS& sd) {
+int BackgroundPrinter::FindVerticalAxesDistance(wxDC *dc, std::vector<Draw*> draws, const SS& sd) {
 	
 	int d = 0;
 
@@ -302,7 +312,7 @@ int BackgroundPrinter::FindVerticalAxesDistance(wxDC *dc, DrawPtrArray draws, co
 
 }
 
-int BackgroundPrinter::PrintBackground(wxDC *dc, DrawPtrArray draws, const SS& sd) {
+int BackgroundPrinter::PrintBackground(wxDC *dc, std::vector<Draw*> draws, const SS& sd) {
 
 	dc->SetTextForeground(GetTimeAxisCol());
 	dc->SetBrush(wxBrush(GetTimeAxisCol(), wxSOLID));
@@ -401,7 +411,7 @@ public:
 	 * @param device contex graphs are to be printed with
 	 * @param array of draws to print
 	 * @param count number of draws from array that shall be printed*/
-	void PrintDraws(wxDC *dc, DrawPtrArray draws, int count);
+	void PrintDraws(wxDC *dc, std::vector<Draw*> draws, int count);
 
 	/**Prints short name of draw
 	 * @param dc device context to print with
@@ -466,7 +476,7 @@ wxDC* GraphPrinter::GetDC() {
 	return NULL;
 }
 
-void GraphPrinter::PrintDraws(wxDC *dc, DrawPtrArray draws, int draws_count) {
+void GraphPrinter::PrintDraws(wxDC *dc, std::vector<Draw*> draws, int draws_count) {
 	int sel = -1;
 	for (int i = 0; i <= draws_count; ++i) {
 		int j = i;
@@ -497,7 +507,7 @@ bool GraphPrinter::AlternateColor(int idx) {
 	return false;
 }
 
-DrawsPrintout::DrawsPrintout(DrawPtrArray draws, int count) : m_draws(draws), m_draws_count(count) 
+DrawsPrintout::DrawsPrintout(std::vector<Draw*> draws, int count) : m_draws(draws), m_draws_count(count) 
 {}
 
 std::set<std::set<int> > DrawsPrintout::ChooseDraws() {
@@ -1093,7 +1103,7 @@ bool XYGraphPrintout::OnBeginDocument(int start, int end) {
 	return wxPrintout::OnBeginDocument(start, end);
 }
 
-void Print::DoPrint(wxWindow *parent, DrawPtrArray draws, int count) {
+void Print::DoPrint(wxWindow *parent, std::vector<Draw*> draws, int count) {
 	while (parent && parent->IsTopLevel() == false)
 		parent = parent->GetParent();
 
@@ -1107,7 +1117,7 @@ void Print::DoPrint(wxWindow *parent, DrawPtrArray draws, int count) {
 	printer.Print(parent, &printout, true);
 }
 
-void Print::DoPrintPreviev(DrawPtrArray draws, int count) {
+void Print::DoPrintPreviev(std::vector<Draw*> draws, int count) {
 	InitData();
 
 	wxPrintDialogData print_dialog_data(*print_data);

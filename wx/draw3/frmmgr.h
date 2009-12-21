@@ -37,19 +37,6 @@
 #include <wx/datetime.h>
 #endif
 
-#include "ids.h"
-
-class DrawInfo;
-class DrawFrame;
-class PanelManager;
-class ConfigManager;
-class DatabaseManager;
-class DrawSet;
-class StatDialog;
-class DrawPicker;
-class DrawPanel;
-class RemarksFrame;
-class RemarksHandler;
 
 /**class responsible for creating and managing @see DrawFrame objects*/
 class FrameManager : public wxEvtHandler {
@@ -80,21 +67,12 @@ class FrameManager : public wxEvtHandler {
 	FrameManager(DatabaseManager *pmgr, ConfigManager *cfgmgr, RemarksHandler* rhandle);
 	/**creates new frame with given config
 	 * @param prefix of base to use
-	 * @param set @see DrawSet to start with, NULL if first set shall be used
-	 * @param time time to start with
-	 * @param size initial size of frame
-	 * @param position initial position of frame
-	 * @return true if config was successfully read and frame created*/
-	bool CreateFrame(const wxString &prefix, DrawSet *set, PeriodType pt, time_t time, const wxSize& size, const wxPoint &position, int selected_draw=-1, bool try_load_layout = false);
-
-	/**creates new frame with given config
-	 * @param prefix of base to use
 	 * @param window name of set to start with, empty string if first set shall be used
 	 * @param time time to start with
 	 * @param size initial size of frame
 	 * @param position initial position of frame
 	 * @return true if config was successfully read and frame created*/
-	bool CreateFrame(const wxString &prefix, const wxString& window, PeriodType pt, time_t time, const wxSize& size, const wxPoint &position, int selected_draw=-1, bool try_load_layout = false);
+	bool CreateFrame(const wxString &prefix, const wxString& set, PeriodType pt, time_t time, const wxSize& size, const wxPoint &position, int selected_draw = 0, bool try_load_layout = false);
 
 	/**Close event hadnler, asks user for and confirmation wheather frame shall be really closed.
 	 * If closed frame is the only frame application is closed*/

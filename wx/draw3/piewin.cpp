@@ -16,20 +16,33 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-#include "ids.h"
-#include "piewin.h"
-#include "draw.h"
-#include "cconv.h"
-#include "timeformat.h"
-#include "drawfrm.h"
-#include "cfgmgr.h"
-#include "drawpnl.h"
 
-#include <algorithm>
-#include <sstream>
 
 #include <wx/statline.h>
+#include <algorithm>
+#include <sstream>
 #include <wx/dcbuffer.h>
+
+#include "cconv.h"
+
+#include "szhlpctrl.h"
+
+#include "ids.h"
+#include "classes.h"
+#include "cfgmgr.h"
+#include "coobs.h"
+
+#include "drawobs.h"
+
+#include "drawtime.h"
+#include "database.h"
+#include "draw.h"
+#include "dbinquirer.h"
+#include "drawsctrl.h"
+
+#include "timeformat.h"
+#include "drawpnl.h"
+#include "piewin.h"
 
 using std::max;
 
@@ -274,15 +287,10 @@ void PieWindow::Activate() {
 	m_active = true;
 	m_update = true;
 
-       	for (size_t i = 0; i < m_draws.Count(); ++i) {
-		ObservedDraw* od = m_draws[i];
-		if (od) {
-			od->draw->AttachObserver(this);
-			od->piedraw = od->draw->GetDrawInfo()->GetSpecial() == TDraw::PIEDRAW;
-		}
-	}
+	m_draws_controller->AttachObserver(this);
 
-       	for (size_t i = 0; i < m_draws.Count(); ++i) {
+       	for (size_t i = 0; i < m_draws_controller->GetDrawsCount(); ++i) {
+		SetDraw(m_draws_controller->GetDraw(i));
 		ObservedDraw* od = m_draws[i];
 		if (od && od->piedraw) {
 			if (od->piedraw)
@@ -297,23 +305,37 @@ void PieWindow::Deactivate() {
 		return;
 
 	m_active = false;
+	
+	m_draws_controller->DetachObserver(this);
 
        	for (size_t i = 0; i < m_draws.Count(); ++i) {
 		ObservedDraw* od = m_draws[i];
 		if (od != NULL) {
-			od->draw->DetachObserver(this);
-			if (od->piedraw)
-				m_proper_draws_count--;
+			ResetDraw(od->draw);	
 		}
 	}
 
 }
 
-void PieWindow::Detach(Draw *draw) {
-	assert(draw);
+void PieWindow::SetDraw(Draw *draw) {
+	int no = draw->GetDrawNo();
 
-	if (m_active) 
-		draw->DetachObserver(this);
+	assert(m_draws[no] == NULL);
+
+	if (draw->GetDrawInfo() == NULL)
+		return;
+
+	m_draws[no] = new ObservedDraw(draw);
+	m_draws[no]->piedraw = draw->GetDrawInfo()->GetSpecial() == TDraw::PIEDRAW; 
+
+	if (m_draws[no]->piedraw)
+		m_proper_draws_count++;
+	m_update = true;
+
+}
+
+void PieWindow::ResetDraw(Draw *draw) {
+	assert(draw);
 
 	int no = draw->GetDrawNo();
 
@@ -329,27 +351,17 @@ void PieWindow::Detach(Draw *draw) {
 	m_update = true;
 }
 
-void PieWindow::Attach(Draw *draw) {
+void PieWindow::Attach(DrawsController *draw_ctrl) {
+	m_draws_controller = draw_ctrl;
+}
 
-	if (m_active) 
-		draw->AttachObserver(this);
-
-	int no = draw->GetDrawNo();
-
-	assert(m_draws[no] == NULL);
-
-	m_draws[no] = new ObservedDraw(draw);
-	m_draws[no]->piedraw = draw->GetDrawInfo()->GetSpecial() == TDraw::PIEDRAW; 
-
-	if (m_draws[no]->piedraw)
-		m_proper_draws_count++;
-	m_update = true;
-
+void PieWindow::Detach(DrawsController *draw_ctrl) {
+	DrawObserver::Detach(draw_ctrl);
 }
 
 void PieWindow::DrawInfoChanged(Draw *draw) {
-	Detach(draw);
-	Attach(draw);
+	ResetDraw(draw);
+	SetDraw(draw);
 }
 
 void PieWindow::UpdateDraw(Draw *draw) {
@@ -364,6 +376,11 @@ void PieWindow::UpdateDraw(Draw *draw) {
 		return;
 
 	m_update = true;
+}
+
+void PieWindow::DoubleCursorChanged(DrawsController *draws_controller) {
+	for (size_t i = 0; i < draws_controller->GetDrawsCount(); i++)
+		UpdateDraw(draws_controller->GetDraw(i));
 }
 
 void PieWindow::StatsChanged(Draw *draw) {

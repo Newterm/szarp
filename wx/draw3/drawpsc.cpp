@@ -20,11 +20,16 @@
 #include <wx/file.h>
 #include <wx/dir.h>
 #include <wx/filename.h>
+#include <wx/statline.h>
 
-#include "drawpsc.h"
-#include "cfgmgr.h"
 #include "cconv.h"
+#include "ids.h"
+#include "classes.h"
+#include "cfgmgr.h"
+#include "cfgmgr.h"
 #include "authdiag.h"
+#include "drawpsc.h"
+#include "drawapp.h"
 
 DrawPscSystemConfigurationEditor* DrawPscSystemConfigurationEditor::Create(IPKConfig *ipk, DrawPsc *psc) {
 	wxString prefix = ipk->GetPrefix();

@@ -31,14 +31,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
-
-
-#include "cconv.h"
-#include "szarp_config.h"
-
-#include "defcfg.h"
-#include "cfgmgr.h"
-#include "errfrm.h"
+#include <sstream>
 
 #include <wx/filedlg.h>
 #include <wx/colordlg.h>
@@ -50,7 +43,18 @@
 
 #include <wx/config.h>
 
-#include <sstream>
+
+#include "cconv.h"
+#include "szarp_config.h"
+
+#include "ids.h"
+#include "classes.h"
+
+#include "drawobs.h"
+#include "coobs.h"
+#include "cfgmgr.h"
+#include "defcfg.h"
+#include "errfrm.h"
 
 #define FREE(x) if (x != NULL) free(x)
 
@@ -638,9 +642,28 @@ wxString DefinedParam::GetBasePrefix() {
 	return m_base_prefix;
 }
 
-DefinedDrawSet::DefinedDrawSet(DefinedDrawsSets *ds) {
+DefinedDrawSet::DefinedDrawSet(DrawsSets* parent,
+		DefinedDrawSet *ds) : DrawSet(parent) {
+
+	delete m_draws;
+	m_draws = ds->m_draws;
+
+	m_ds = ds->m_ds;
+	m_copies = ds->m_copies;
+	m_sets_nr = ds->m_sets_nr;
+	m_name = ds->m_name;
+	m_prior = ds->m_prior;
+	m_number = ds->m_number;
+
+	m_temporary = false;
+	m_copy = true;
+}
+
+DefinedDrawSet::DefinedDrawSet(DefinedDrawsSets *ds) : DrawSet(ds) {
 	m_ds = ds;
 	m_temporary = false;
+	m_copies = new std::vector<DefinedDrawSet*>(1, this);
+	m_copy = false;
 }
 
 double DefinedDrawSet::GetPrior() {
@@ -648,10 +671,15 @@ double DefinedDrawSet::GetPrior() {
 }
 
 void DefinedDrawSet::SetPrior(double prior) {
-	m_prior = prior;
+	for (std::vector<DefinedDrawSet*>::iterator i = m_copies->begin();
+			i != m_copies->end();
+			i++)
+		(*i)->m_prior = prior;
 }
 
-DefinedDrawSet::DefinedDrawSet(DefinedDrawsSets *ds, wxString title, std::vector<DefinedDrawInfo::EkrnDefDraw>& v) {
+DefinedDrawSet::DefinedDrawSet(DefinedDrawsSets *ds, wxString title, std::vector<DefinedDrawInfo::EkrnDefDraw>& v)  : DrawSet(ds) {
+	m_copies = new std::vector<DefinedDrawSet*>(1, this);
+	m_copy = false;
 	m_ds = ds;
 	m_temporary = false;
 
@@ -670,6 +698,10 @@ DefinedDrawSet::DefinedDrawSet(DefinedDrawsSets *ds, wxString title, std::vector
 
 DefinedDrawSet::~DefinedDrawSet()
 {
+	if (!m_copy)
+		delete m_copies;
+	if (m_copy)
+		m_draws = NULL;
 }
 
 void DefinedDrawSet::GenerateXML(xmlNodePtr root)
@@ -762,9 +794,13 @@ void DefinedDrawSet::Remove(int idx)
 {
 	wxString op = m_draws->at(idx)->GetBasePrefix();
 
-	m_sets_nr[op]--;
-	if (m_sets_nr[op] <= 0)
-		m_sets_nr.erase(op);
+	for (std::vector<DefinedDrawSet*>::iterator i = m_copies->begin();
+			i != m_copies->end();
+			i++) {
+		(*i)->m_sets_nr[op]--;
+		if ((*i)->m_sets_nr[op] <= 0)
+			(*i)->m_sets_nr.erase(op);
+	}
 
 	delete m_draws->at(idx);
 
@@ -783,16 +819,17 @@ void DefinedDrawSet::Replace(int idx, DefinedDrawInfo * ndi)
 	DefinedDrawInfo* odi = dynamic_cast<DefinedDrawInfo*>(m_draws->at(idx));
 	wxString op = odi->GetBasePrefix();
 
-	m_sets_nr[odi->GetBasePrefix()]--;
+	for (std::vector<DefinedDrawSet*>::iterator i = m_copies->begin();
+			i != m_copies->end();
+			i++) {
+		(*i)->m_sets_nr[odi->GetBasePrefix()]--;
+		(*i)->m_sets_nr[ndi->GetBasePrefix()]++;
+		if ((*i)->m_sets_nr[op] <= 0)
+			(*i)->m_sets_nr.erase(op);
+	}
+
 	delete odi;
-
 	m_draws->at(idx) = ndi;
-	m_sets_nr[ndi->GetBasePrefix()]++;
-
-	m_sets_nr[op]--;
-	if (m_sets_nr[op] <= 0)
-		m_sets_nr.erase(op);
-
 }
 
 void DefinedDrawSet::Add(DrawInfo *di) {
@@ -806,35 +843,11 @@ void DefinedDrawSet::Add(DefinedDrawInfo *ddi) {
 
 	GetColor(ddi);
 
-	m_sets_nr[ddi->GetBasePrefix()]++;
+	for (std::vector<DefinedDrawSet*>::iterator i = m_copies->begin();
+			i != m_copies->end();
+			i++)
+		(*i)->m_sets_nr[ddi->GetBasePrefix()]++;
 }
-
-#if 0
-void DefinedDrawSet::AddDefinedParamDrawInfo(wxString base_prefix,
-			wxString draw_name,
-			wxString short_name,
-			wxColour color,
-			double min,
-			double max,
-			TDraw::SPECIAL_TYPES special,
-			DefinedParam *dp) {
-
-	DefinedDrawInfo *ddi = new DefinedDrawInfo(
-			base_prefix,
-			draw_name,
-			short_name,
-			color,
-			min,
-			max,
-			special,
-			dp,
-			m_ds);
-
-	m_draws->push_back(ddi);
-	m_sets_nr[ddi->GetBasePrefix()]++;
-
-}
-#endif
 
 SetsNrHash& DefinedDrawSet::GetPrefixes()
 {
@@ -843,25 +856,43 @@ SetsNrHash& DefinedDrawSet::GetPrefixes()
 
 void DefinedDrawSet::Clear()
 {
-	m_name = wxString();
-	m_prior = -1.0;
-	m_number = -1;
+	for (std::vector<DefinedDrawSet*>::iterator i = m_copies->begin();
+			i != m_copies->end();
+			i++) {
+		(*i)->m_name = wxString();
+		(*i)->m_prior = -1.0;
+		(*i)->m_number = -1;
+		(*i)->m_sets_nr.clear();
+	}
 	
 	for (size_t i = 0; i < m_draws->size(); i++)
 		delete m_draws->at(i);
 	m_draws->resize(0);
 
-	m_sets_nr.clear();
 }
 
 void DefinedDrawSet::SetName(const wxString& name)
 {
+	if (GetName() == name)
+		return;
+	if (!m_copy)
+		for (size_t i = 0; i < m_draws->size(); i++) {
+			DefinedDrawInfo* dif = dynamic_cast<DefinedDrawInfo*>(m_draws->at(i));
+			dif->SetSetName(name);
+		}
+
 	DrawSet::SetName(name);
-	for (size_t i = 0; i < m_draws->size(); i++) {
-		DefinedDrawInfo* dif = dynamic_cast<DefinedDrawInfo*>(m_draws->at(i));
-		dif->SetSetName(name);
-	}
-	m_ds->SetModified();
+	for (std::vector<DefinedDrawSet*>::iterator i = m_copies->begin();
+			i != m_copies->end();
+			i++)
+		(*i)->SetName(name);
+	
+	if (!m_copy)
+		m_ds->SetModified();
+}
+
+DefinedDrawSet* DefinedDrawSet::MakeShallowCopy(DrawsSets* parent) {
+	return new DefinedDrawSet(parent, this);
 }
 
 DefinedDrawSet* DefinedDrawSet::MakeDeepCopy() {
@@ -939,7 +970,7 @@ bool DefinedDrawSet::SyncWithPrefix(wxString prefix) {
 
 		}
 
-		ErrorFrame::NotifyError(wxString::Format(_("Draw %s removed from set %s, it relates to non-existent parameter or graph"), dw->GetBaseDraw().c_str(), bds->GetName().c_str()));
+		ErrorFrame::NotifyError(wxString::Format(_("Draw %s removed from set %s, it relates to non-existent parameter or graph"), dw->GetBaseDraw().c_str(), GetName().c_str()));
 		tr.push_back(j);
 out:;
 	}
@@ -1217,9 +1248,10 @@ void DefinedDrawsSets::AddSet(DefinedDrawSet *s) {
 		IPKConfig *c = dynamic_cast<IPKConfig*>(m_cfgmgr->GetConfigByPrefix(i->first));
 		assert(c);
 
-		c->GetRawDrawsSets()[s->GetName()] = s;
+		DefinedDrawSet* nc = s->MakeShallowCopy(c);
+		c->GetRawDrawsSets()[s->GetName()] = nc;
 
-		m_cfgmgr->NotifySetAdded(i->first, s->GetName(), s);
+		m_cfgmgr->NotifySetAdded(i->first, s->GetName(), nc);
 	}
 
 	m_cfgmgr->NotifySetAdded(DEF_PREFIX, s->GetName(), s);
@@ -1229,7 +1261,8 @@ void DefinedDrawsSets::AddSet(DefinedDrawSet *s) {
 void DefinedDrawsSets::RemoveSet(wxString name) {
 	if (drawsSets.find(name) == drawsSets.end())
 		return;
-
+	
+	std::vector<DrawSet*> copies_to_delete;
 	DefinedDrawSet *s = dynamic_cast<DefinedDrawSet*>(drawsSets[name]);
 	assert(s);
 
@@ -1241,6 +1274,7 @@ void DefinedDrawsSets::RemoveSet(wxString name) {
 		DrawsSets *ds = m_cfgmgr->GetConfigByPrefix(i->first);
 		assert(ds);
 		
+		copies_to_delete.push_back(ds->GetRawDrawsSets()[name]);
 		ds->GetRawDrawsSets().erase(name);
 
 		m_cfgmgr->NotifySetRemoved(i->first, name);
@@ -1250,6 +1284,10 @@ void DefinedDrawsSets::RemoveSet(wxString name) {
 	m_cfgmgr->NotifySetRemoved(DEF_PREFIX, name);
 
 	delete s;
+	for (std::vector<DrawSet*>::iterator i = copies_to_delete.begin();
+			i != copies_to_delete.end();
+			i++)
+		delete *i;
 
 }
 
@@ -1272,82 +1310,11 @@ void DefinedDrawsSets::AttachDefined() {
 	m_params_attached = true;
 }
 
-#if 0
-namespace {
-
-	std::set<DefinedParam*> ExtractParams(DefinedDrawSet *ds) {
-		std::set<DefinedParam*> r;
-		return r;
-
-	}
-
-}
-
-std::set<DefinedDrawSet*> DefinedDrawsSets::SetsRelatingToParam(DefinedParam *dp) {
-	std::set<DefinedDrawSet*> r;
-	for (DrawSetsHash::iterator i = drawSets.begin();
-			i != drawSets.end();
-			i++) {
-		DefinedDrawSet *s = dynamic_cast<DefinedDrawSet*>(*i);
-		assert(s);
-
-		DrawInfoArray *dia = s->GetDraws();
-		for (DrawInfoArray::iterator j = dia->begin();
-				j != dia->end();
-				j++) {
-
-			DefinedDrawInfo *ddi = dynamic_cast<DefinedDrawInfo*>(*j);
-			assert(ddi);
-
-			if (ddi->IsDefinedParam() == false)
-				continue;
-
-			if (ddi->GetDefinedParam() == dp)
-				r.insert(s);
-		}
-
-	}
-
-	return false;
-
-}
-
-std::set<DefinedParam*> DefinedDrawsSets::FindNotPresentInConfig(std::set<DefinedParam*> ps) {
-	std::set<DefinedParam*> r;
-
-	for (std::set<DefinedParam*>::iterator i = ps.begin();
-			i != ps.end();
-			i++) {
-		if (SetsRelatingToParam(*i).size() == 0)
-			r.insert(*i);
-	}
-}
-//std::set<DefinedDrawSet*> DefinedDrawsSets::SubstituteParams(DefinedDrawSet* os, DefinedDrawsSets *ns) {
-
-std::set<DefinedDrawSet*> DefinedDrawsSets::SubstituteParams(DefinedDrawSet* os, DefinedDrawsSets *ns) {
-	std::set<DefinedParam*> op = ExtractParams(os);
-	std::set<DefinedParam*> np = ExtractParams(ns);
-
-	std::set<DefinedParam*> common = std::set_intersection(op.begin(), op.end(), np.begin(), np.end());
-	std::set<DefinedParam*> removed = std::set_difference(op.begin(), op.end(), np.begin(), np.end());
-	std::set<DefinedParam*> added = std::set_difference(np.begin(), np.end(), op.begin(), op.end());
-
-	std::set<DefinedParam*> not_in_config = FindNotPresentInConfig(removed);
-
-	RemoveParams(not_in_config);
-	AddParams(add);
-
-	std::set<DefinedDrawSet*> r = UpdateParams(common);
-
-	return r;
-
-}
-
-#endif
-
 void DefinedDrawsSets::RemoveDrawFromSet(DefinedDrawInfo *di) {
 	DefinedDrawSet* ds = dynamic_cast<DefinedDrawSet*>(drawsSets[di->GetSetName()]);
 	assert(ds);
+
+	DrawSet* ods = NULL;
 
 	size_t idx;
 	for (idx = 0; idx < ds->GetDraws()->size(); idx++)
@@ -1365,6 +1332,8 @@ void DefinedDrawsSets::RemoveDrawFromSet(DefinedDrawInfo *di) {
 		DrawsSets *c = m_cfgmgr->GetConfigByPrefix(prefix);
 		assert(c);
 
+		ods = c->GetRawDrawsSets()[ds->GetName()];
+
 		c->GetRawDrawsSets().erase(ds->GetName());
 		m_cfgmgr->NotifySetRemoved(prefix, ds->GetName());
 	}
@@ -1374,6 +1343,7 @@ void DefinedDrawsSets::RemoveDrawFromSet(DefinedDrawInfo *di) {
 			i++)
 		m_cfgmgr->NotifySetModified(i->first, ds->GetName(), ds);
 
+	delete ods;
 
 }
 
@@ -1383,6 +1353,8 @@ void DefinedDrawsSets::SubstituteSet(wxString name, DefinedDrawSet *s) {
 
 	std::set<wxString> added_prefixes;
 	std::set<wxString> removed_prefixes;
+
+	std::vector<DrawSet*> copies_to_delete;
 
 	SetsNrHash &osh = ods->GetPrefixes();
 	SetsNrHash &nsh = s->GetPrefixes();
@@ -1399,14 +1371,13 @@ void DefinedDrawsSets::SubstituteSet(wxString name, DefinedDrawSet *s) {
 		if (osh.find(i->first) == osh.end())
 			added_prefixes.insert(i->first);
 
-	SetsNrHash& onh = s->GetPrefixes();
-
 	for (std::set<wxString>::iterator i = removed_prefixes.begin();
 			i != removed_prefixes.end();
 			i++) {
 		DrawsSets *c = m_cfgmgr->GetConfigByPrefix(*i);
 		assert(c);
 
+		copies_to_delete.push_back(c->GetRawDrawsSets()[ods->GetName()]);
 		c->GetRawDrawsSets().erase(ods->GetName());
 		m_cfgmgr->NotifySetRemoved(*i, ods->GetName());
 	}
@@ -1417,13 +1388,14 @@ void DefinedDrawsSets::SubstituteSet(wxString name, DefinedDrawSet *s) {
 		DrawsSets *c = m_cfgmgr->GetConfigByPrefix(*i);
 		assert(c);
 
-		c->GetRawDrawsSets()[s->GetName()] = s;
-		m_cfgmgr->NotifySetAdded(*i, ods->GetName(), s);
+		DefinedDrawSet *nc = s->MakeShallowCopy(c);
+		c->GetRawDrawsSets()[s->GetName()] = nc;
+		m_cfgmgr->NotifySetAdded(*i, ods->GetName(), nc);
 	}
 
 	if (name != s->GetName()) {
-		for (SetsNrHash::iterator i = onh.begin();
-				i != onh.end();
+		for (SetsNrHash::iterator i = nsh.begin();
+				i != nsh.end();
 				i++) {
 			if (added_prefixes.find(i->first) != added_prefixes.end())
 				continue;
@@ -1431,11 +1403,12 @@ void DefinedDrawsSets::SubstituteSet(wxString name, DefinedDrawSet *s) {
 			DrawsSets *c = m_cfgmgr->GetConfigByPrefix(i->first);
 			assert(c);
 
-			//int count = 
-				c->GetRawDrawsSets().erase(ods->GetName());
-			c->GetRawDrawsSets()[s->GetName()] = s;
+			copies_to_delete.push_back(c->GetRawDrawsSets()[ods->GetName()]);
+			DefinedDrawSet *nc = s->MakeShallowCopy(c);
+			c->GetRawDrawsSets()[s->GetName()] = nc;
+			c->GetRawDrawsSets().erase(ods->GetName());
 
-			m_cfgmgr->NotifySetRenamed(i->first, ods->GetName(), s->GetName(), s);
+			m_cfgmgr->NotifySetRenamed(i->first, ods->GetName(), s->GetName(), nc);
 			//wxLogError(_T("%s %s %d"), ods->GetName().c_str(), s->GetName().c_str(), count);
 		}
 		drawsSets.erase(ods->GetName());
@@ -1443,8 +1416,8 @@ void DefinedDrawsSets::SubstituteSet(wxString name, DefinedDrawSet *s) {
 
 		m_cfgmgr->NotifySetRenamed(DEF_PREFIX, ods->GetName(), s->GetName(), s);
 	} else {
-		for (SetsNrHash::iterator i = onh.begin();
-				i != onh.end();
+		for (SetsNrHash::iterator i = nsh.begin();
+				i != nsh.end();
 				i++) {
 			if (added_prefixes.find(i->first) != added_prefixes.end())
 				continue;
@@ -1452,15 +1425,24 @@ void DefinedDrawsSets::SubstituteSet(wxString name, DefinedDrawSet *s) {
 			DrawsSets *c = m_cfgmgr->GetConfigByPrefix(i->first);
 			assert(c);
 
-			c->GetRawDrawsSets().erase(ods->GetName());
-			c->GetRawDrawsSets()[s->GetName()] = s;
+			copies_to_delete.push_back(c->GetRawDrawsSets()[ods->GetName()]);
 
-			m_cfgmgr->NotifySetModified(i->first, name, s);
+			c->GetRawDrawsSets().erase(ods->GetName());
+
+			DefinedDrawSet *nc = s->MakeShallowCopy(c);
+			c->GetRawDrawsSets()[s->GetName()] = nc;
+
+			m_cfgmgr->NotifySetModified(i->first, name, nc);
 		}
 		drawsSets.erase(ods->GetName());
 		drawsSets[s->GetName()] = s;
 		m_cfgmgr->NotifySetModified(DEF_PREFIX, name, s);
 	}
+
+	for (std::vector<DrawSet*>::iterator i = copies_to_delete.begin();
+			i != copies_to_delete.end();
+			i++)
+		delete *i;
 
 	delete ods;
 }

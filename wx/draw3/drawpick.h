@@ -35,15 +35,6 @@
 #include <wx/listctrl.h>
 #include <wx/textctrl.h>
 #include <wx/colordlg.h>
-#include "ids.h"
-#include "dbinquirer.h"
-#include "defcfg.h"
-
-class DrawPicker;
-class IncSearch;
-class ConfigManager;
-class DatabaseManager;
-class ParamsListDialog;
 
 /**
  * Widget for editing draw properties.

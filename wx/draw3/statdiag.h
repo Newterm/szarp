@@ -35,20 +35,6 @@
 #include <wx/wx.h>
 #endif
 
-#include "ids.h"
-#include "draw.h"
-#include "dbinquirer.h"
-#include "drawdnd.h"
-#include "coobs.h"
-#include "szframe.h"
-
-
-class DrawInfo;
-class ConfigManager;
-class DatabaseManager;
-class IncSearch;
-class ProgressFrame;
-
 /**Window calculating statistical values of a param*/
 class StatDialog : public szFrame, public DBInquirer, public DrawInfoDropReceiver, public ConfigObserver {
 	/**Type of period to fetch probes*/

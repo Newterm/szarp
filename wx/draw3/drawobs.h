@@ -30,17 +30,18 @@
 #include <list>
 
 class Draw;
+class DrawsController;
 
-/**Object implemeting following interface and attached to a @see Draw 
+/**Object implemeting following interface and attached to a @see DrawsController
  * is notified about various event occuring in @see Draw object*/
 class DrawObserver {
 	public:
 	/**Attaches to given draw
 	 * @param draw @see Draw to attach*/
-	virtual void Attach(Draw *draw);
+	virtual void Attach(DrawsController *draws_controller);
 	/**Detaches from @see Draw draw
 	 * @param Draw draw to detach from*/
-	virtual void Detach(Draw *draw);
+	virtual void Detach(DrawsController *draws_controller);
 	/**Informs object that displayed start time changed*/
 	virtual void ScreenMoved(Draw* draw, const wxDateTime &start_date) {};
 	/**Informss object that new data appeared at given index position*/
@@ -56,13 +57,23 @@ class DrawObserver {
 	/**Informs object that current @see Draw has changed it's draw info*/
 	virtual void DrawInfoChanged(Draw *draw) {};
 	/**Informs object that current @see Draw has changed it's draw info*/
-	virtual void FilterChanged(Draw *draw) {};
+	virtual void FilterChanged(DrawsController *draws_ctrl) {};
+	/**Informs object that current @see Draw has changed it's period type*/
+	virtual void NumberOfValuesChanged(DrawsController *draws_controller) {};
 	/**Informs object that current @see Draw has changed it's period type*/
 	virtual void PeriodChanged(Draw *draw, PeriodType period) {};
 	/**Informs object that current @see Draw has changed it's enabled attribute*/
 	virtual void EnableChanged(Draw *draw) {};
 	/**Informs object that current @see Draw has changed it's enabled attribute*/
+	virtual void BlockedChanged(Draw *draw) {};
+	/**Informs object that current @see Draw has changed it's enabled attribute*/
 	virtual void NewRemarks(Draw *draw) {};
+	/**Inorms object that double cursor mode was changed for @see Draw*/
+	virtual void DoubleCursorChanged(DrawsController *draw) {};
+	/**Norifies that give draw has no data*/
+	virtual void NoData(Draw *d) {}
+	/**Norifies that whole draws do not have any data*/
+	virtual void NoData(DrawsController *d) {}
 
 	virtual ~DrawObserver() = 0;
 };

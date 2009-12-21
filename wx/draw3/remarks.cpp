@@ -50,17 +50,27 @@
 #include <wx/config.h>
 #include <wx/tokenzr.h>
 
-#include "ids.h"
+#include "szframe.h"
+#include "szhlpctrl.h"
 #include "xmlutils.h"
+
+#include "ids.h"
+#include "classes.h"
+#include "drawobs.h"
+#include "drawtime.h"
+#include "coobs.h"
+#include "cfgmgr.h"
 #include "cconv.h"
-#include "remarks.h"
 #include "version.h"
-#include "drawtb.h"
 #include "drawfrm.h"
 #include "drawpnl.h"
+#include "dbinquirer.h"
+#include "database.h"
 #include "draw.h"
 #include "errfrm.h"
 #include "md5.h"
+#include "drawsctrl.h"
+#include "remarks.h"
 
 #include "timeformat.h"
 
@@ -1993,20 +2003,20 @@ BEGIN_EVENT_TABLE(RemarksListDialog, wxDialog)
 END_EVENT_TABLE()
 
 
-RemarksFetcher::RemarksFetcher(RemarksHandler *handler, DrawToolBar* tool_bar, DrawFrame *draw_frame) {
+RemarksFetcher::RemarksFetcher(RemarksHandler *handler, DrawFrame *draw_frame) {
 	m_remarks_handler = handler;
-	m_tool_bar = tool_bar;
 	m_draw_frame = draw_frame;
 	m_awaiting_for_whole_base = false;
 
-	tool_bar->PushEventHandler(this);
-
 	handler->AddRemarkFetcher(this);
-
 }
 
-void RemarksFetcher::Fetch(Draw *d) {
+void RemarksFetcher::Fetch() {
 	if (!m_remarks_handler->Configured())
+		return;
+
+	Draw* d = m_draws_controller->GetSelectedDraw();
+	if (d == NULL)
 		return;
 
 	wxDateTime start = d->GetTimeOfIndex(0);
@@ -2026,19 +2036,19 @@ void RemarksFetcher::Fetch(Draw *d) {
 }
 
 
-void RemarksFetcher::Attach(Draw *d) {
+void RemarksFetcher::Attach(DrawsController *d) {
+
+	m_draws_controller = d;
 
 	d->AttachObserver(this);
 
-	m_current_draw = d;
-
 	m_remarks.clear();
 
-	Fetch(m_current_draw);
+	Fetch();
 	
 }
 
-void RemarksFetcher::Detach(Draw *d) {
+void RemarksFetcher::Detach(DrawsController *d) {
 	m_remarks.clear();
 
 	d->DetachObserver(this);
@@ -2047,10 +2057,14 @@ void RemarksFetcher::Detach(Draw *d) {
 
 void RemarksFetcher::RemarksReceived(std::vector<Remark>& remarks) {
 
-	DrawInfo* di = m_current_draw->GetDrawInfo();
+	Draw* d = m_draws_controller->GetSelectedDraw();
+	if (d == NULL)
+		return;
 
-	wxDateTime start = m_current_draw->GetTimeOfIndex(0);
-	wxDateTime end = m_current_draw->GetTimeOfIndex(m_current_draw->GetValuesTable().size());
+	DrawInfo* di = d->GetDrawInfo();
+
+	wxDateTime start = d->GetTimeOfIndex(0);
+	wxDateTime end = d->GetTimeOfIndex(d->GetValuesTable().size());
 
 	wxString prefix = di->GetBasePrefix();
 	wxString set = di->GetSetName();
@@ -2073,14 +2087,18 @@ void RemarksFetcher::RemarksReceived(std::vector<Remark>& remarks) {
 	}
 
 	if (remarks_times.size()) {
-		m_current_draw->SetRemarksTimes(remarks_times);
+		d->SetRemarksTimes(remarks_times);
 	}
 }
 
 void RemarksFetcher::OnRemarksResponse(RemarksResponseEvent &e) {
 	std::vector<Remark>& remarks = e.GetRemarks();
 
-	ConfigNameHash& cnh = m_current_draw->GetDrawInfo()->GetDrawsSets()->GetParentManager()->GetConfigTitles();
+	Draw* d = m_draws_controller->GetSelectedDraw();
+	if (d == NULL)
+		return;
+
+	ConfigNameHash& cnh = d->GetDrawInfo()->GetDrawsSets()->GetParentManager()->GetConfigTitles();
 	for (std::vector<Remark>::iterator i = remarks.begin();
 			i != remarks.end();
 			i++) {
@@ -2104,6 +2122,11 @@ void RemarksFetcher::OnRemarksResponse(RemarksResponseEvent &e) {
 		RemarksReceived(remarks);
 }
 
+void RemarksFetcher::DrawSelected(Draw *draw) {
+	m_remarks.clear();
+	Fetch();
+}
+
 void RemarksFetcher::ScreenMoved(Draw* draw, const wxDateTime &start_time) {
 	if (!m_remarks_handler->Configured())
 		return;
@@ -2125,7 +2148,7 @@ void RemarksFetcher::ScreenMoved(Draw* draw, const wxDateTime &start_time) {
 			i++)
 		m_remarks.erase(*i);
 
-	Fetch(draw);
+	Fetch();
 }
 
 void RemarksFetcher::ShowRemarks(const wxDateTime& from_time, const wxDateTime &to_time) {
@@ -2151,26 +2174,23 @@ void RemarksFetcher::ShowRemarks() {
 	if (!m_remarks_handler->Configured())
 		return;
 	m_awaiting_for_whole_base = true;
-	m_remarks_handler->GetStorage()->GetAllRemarks(m_current_draw->GetDrawInfo()->GetBasePrefix(), this);
-}
-
-void RemarksFetcher::OnShowRemarks(wxCommandEvent &e) {
-	ShowRemarks();
+	Draw* d = m_draws_controller->GetSelectedDraw();
+	if (d == NULL)
+		return;
+	m_remarks_handler->GetStorage()->GetAllRemarks(d->GetDrawInfo()->GetBasePrefix(), this);
 }
 
 void RemarksFetcher::DrawInfoChanged(Draw *d) {
-	m_remarks.clear();
-
-	Fetch(d);
+	if (d->GetSelected()) {
+		m_remarks.clear();
+		Fetch();
+	}
 }
 
 RemarksFetcher::~RemarksFetcher() {
 	m_remarks_handler->RemoveRemarkFetcher(this);
-
-	m_tool_bar->PopEventHandler();
 }
 
 BEGIN_EVENT_TABLE(RemarksFetcher, wxEvtHandler)
 	EVT_REMARKS_RESPONSE(wxID_ANY, RemarksFetcher::OnRemarksResponse)
-	EVT_MENU(drawTB_REMARK, RemarksFetcher::OnShowRemarks)
 END_EVENT_TABLE()

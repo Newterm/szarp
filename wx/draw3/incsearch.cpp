@@ -35,9 +35,17 @@
 #include <algorithm>
 
 #include <cconv.h>
-#include "incsearch.h"
+
+#include "szhlpctrl.h"
+
+#include "ids.h"
+#include "classes.h"
+#include "cfgmgr.h"
+#include "coobs.h"
+#include "cfgnames.h"
 #include "defcfg.h"
 #include "drawpick.h"
+#include "incsearch.h"
 
 class IncKeyboardHandler: public wxEvtHandler
 {
@@ -90,6 +98,10 @@ IncSearch::IncSearch(ConfigManager * _cfg, const wxString & _confname,
 :  wxDialog(parent, id, title, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
 	window_created = false;
+
+	m_start_set = NULL;
+
+	m_start_draw_info = NULL;
 
 	m_window_search = window_search;
 
@@ -283,7 +295,7 @@ wxString IncSearch::GetConfPrefix(wxString name)
 	assert(false);
 }
 
-DrawInfo *IncSearch::GetDrawInfo(long *prev_draw)
+DrawInfo *IncSearch::GetDrawInfo(long *prev_draw, DrawSet **set)
 {
 	*prev_draw =
 	    item_list->GetNextItem(*prev_draw, wxLIST_NEXT_ALL,
@@ -291,10 +303,10 @@ DrawInfo *IncSearch::GetDrawInfo(long *prev_draw)
 	if (*prev_draw != wxNOT_FOUND) {
 		Item *i = (*m_cur_items)[*prev_draw];
 
-		if (i->id == -1)
-			return i->draw_info;
-		else
-			return cfg->GetDraw(confid, i->set, i->id);
+		if (set)
+			*set = i->draw_set;
+
+		return i->draw_info;
 	} else 
 		return NULL;
 }
@@ -342,11 +354,9 @@ void IncSearch::AddWindowItems(SortedSetsArray *sorted) {
 	int count = sorted->size();
 
 	for (int i = 0; i < count; i++) {
-		wxString drawset = sorted->Item(i)->GetName();
 		Item *item = new Item();
-		item->draw = wxEmptyString;
-		item->set = drawset;
-		item->id = -1;
+		item->draw_set = sorted->Item(i);
+		item->draw_info = NULL;
 		items_array.Add(item);
 	}
 
@@ -357,30 +367,16 @@ void IncSearch::AddDrawsItems(SortedSetsArray *sorted) {
 	int count = sorted->size();
 
 	for (int i = 0; i < count; i++) for (int j = 0; j <= MAX_DRAWS_COUNT; j++) {
-		wxString drawset = sorted->Item(i)->GetName();
-		DrawInfo *di = cfg->GetDraw(confid, drawset, j);
-		if (di == NULL) 
+		DrawSet* set = sorted->Item(i);
+		DrawInfo* info = cfg->GetDraw(confid, set->GetName(), j);
+		if (info == NULL) 
 			continue;
 			
 		Item *item = new Item();
-		item->draw = di->GetName();
-		item->set = drawset;
-		item->draw_info = di;
-		item->id = j;
+		item->draw_info = info;
+		item->draw_set = set;
 		items_array.Add(item);
 
-	}
-
-	std::pair<wxString, std::vector<DrawInfo*> >&  pi = extra_infos[confid];
-	std::vector<DrawInfo*>&  di = pi.second;
-
-	for (std::vector<DrawInfo*>::iterator i = di.begin(); i != di.end(); i++) {
-		Item *item = new Item();
-		item->draw = (*i)->GetName();
-		item->set = pi.first;
-		item->id = -1;
-		item->draw_info = *i;
-		items_array.Add(item);
 	}
 
 }
@@ -465,10 +461,17 @@ void IncSearch::GoPageUp() {
 	item_list->EnsureVisible(selected);
 }
 
-void IncSearch::StartWith(wxString prefix, wxString set, wxString param) {
-	m_start_prefix = prefix;
+void IncSearch::StartWith(DrawSet *set) {
 	m_start_set = set;
-	m_start_draw_name = param;
+	m_start_draw_info = NULL;
+	if (window_created)
+		SyncToStartDraw();
+
+}
+
+void IncSearch::StartWith(DrawSet *set, DrawInfo* info) {
+	m_start_set = set;
+	m_start_draw_info = info;
 	if (window_created)
 		SyncToStartDraw();
 }
@@ -497,15 +500,8 @@ void IncSearch::SetRemoved(wxString prefix, wxString name) {
 	if (prefix != confid)
 		return;
 
-	wxString sentry;
-	int selected = item_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-	if (selected != wxNOT_FOUND)
-		sentry = (*m_cur_items)[selected]->GetName();
-
 	LoadParams();
 	Search();
-	if (selected != wxNOT_FOUND)
-		SelectEntry(sentry);
 }
 
 void IncSearch::SetRenamed(wxString prefix, wxString from, wxString to, DrawSet *set) {
@@ -515,15 +511,8 @@ void IncSearch::SetRenamed(wxString prefix, wxString from, wxString to, DrawSet 
 	if (prefix != confid)
 		return;
 
-	wxString sentry;
-	int selected = item_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-	if (selected != wxNOT_FOUND)
-		sentry = (*m_cur_items)[selected]->GetName();
-
 	LoadParams();
 	Search();
-	if (selected != wxNOT_FOUND)
-		SelectEntry(sentry);
 }
 
 void IncSearch::SetModified(wxString prefix, wxString name, DrawSet *set) {
@@ -533,15 +522,8 @@ void IncSearch::SetModified(wxString prefix, wxString name, DrawSet *set) {
 	if (prefix != confid)
 		return;
 
-	wxString sentry;
-	int selected = item_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-	if (selected != wxNOT_FOUND)
-		sentry = (*m_cur_items)[selected]->GetName();
-
 	LoadParams();
 	Search();
-	if (selected != wxNOT_FOUND)
-		SelectEntry(sentry);
 }
 
 void IncSearch::SetAdded(wxString prefix, wxString name, DrawSet *set) {
@@ -551,15 +533,8 @@ void IncSearch::SetAdded(wxString prefix, wxString name, DrawSet *set) {
 	if (prefix != confid)
 		return;
 
-	wxString sentry;
-	int selected = item_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-	if (selected != wxNOT_FOUND)
-		sentry = (*m_cur_items)[selected]->GetName();
-
 	LoadParams();
 	Search();
-	if (selected != wxNOT_FOUND)
-		SelectEntry(sentry);
 }
 
 void IncSearch::OnWindowCreate(wxWindowCreateEvent &event) {
@@ -601,29 +576,35 @@ void IncSearch::SelectEntry(wxString string_to_select) {
 }
 
 void IncSearch::SyncToStartDraw() {
-	if (!m_start_prefix.IsEmpty() && confid != m_start_prefix) {
+	wxString nprefix;
+	if (m_start_set)
+		nprefix = m_start_set->GetDrawsSets()->GetPrefix();
+
+	if (m_start_set && confid != nprefix) {
 		if (db_picker) {
 			ConfigNameHash hash = cfg->GetConfigTitles();
-			SetConfigName(hash[m_start_prefix]);
+			SetConfigName(hash[nprefix]);
 		} else {
-			confid = m_start_prefix;
+			confid = nprefix;
 			LoadParams();
 		}
 	}
-	m_start_prefix = wxEmptyString;
 
 	wxString string_to_select;
-	if (m_window_search && !m_start_set.IsEmpty())
-		string_to_select = m_start_set;
-	else if (!m_window_search && !m_start_set.IsEmpty() && !m_start_draw_name.IsEmpty()) {
+	if (m_window_search && m_start_set) {
 		Item i;
-		i.set = m_start_set;
-		i.draw = m_start_draw_name;
+		i.draw_set = m_start_set;
+		i.draw_info = NULL;
+		string_to_select = i.GetName();
+	} else if (!m_window_search && m_start_set && m_start_draw_info) {
+		Item i;
+		i.draw_set = m_start_set;
+		i.draw_info = m_start_draw_info;
 		string_to_select = i.GetName();
 	}
 
-	m_start_set = wxEmptyString;
-	m_start_draw_name = wxEmptyString;
+	m_start_set = NULL;
+	m_start_draw_info = NULL;
 
 	if (string_to_select.IsEmpty())
 		return;
@@ -690,23 +671,16 @@ void IncSearch::ConfigurationWasReloaded(wxString prefix) {
 	if (window_created == false)
 		return;
 
-	wxString sentry;
-	int selected = item_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-	if (selected != wxNOT_FOUND)
-		sentry = (*m_cur_items)[selected]->GetName();
-
 	LoadParams();
 	Search();
-	if (selected != wxNOT_FOUND)
-		SelectEntry(sentry);
 }
 
-wxString IncSearch::GetSelectedSet() {
+DrawSet* IncSearch::GetSelectedSet() {
 	if (selected_index == wxNOT_FOUND)
-		return wxEmptyString;
+		return NULL;
 
 	Item *i = (*m_cur_items)[selected_index];
-	return i->set;
+	return i->draw_set;
 }
 
 void IncSearch::OnRightItemClick(wxListEvent &event) {
@@ -719,8 +693,7 @@ void IncSearch::OnRightItemClick(wxListEvent &event) {
 	Item *i = (*m_cur_items)[idx];
 
 	if (m_window_search) {
-		DrawsSets* ds = cfg->GetConfigByPrefix(confid);
-		DefinedDrawSet *dds = dynamic_cast<DefinedDrawSet*>(ds->GetDrawsSets()[i->set]);
+		DefinedDrawSet *dds = dynamic_cast<DefinedDrawSet*>(i->draw_set);
 
 		if (dds == NULL)
 			return; 
@@ -742,7 +715,7 @@ void IncSearch::OnEditMenu(wxCommandEvent &e) {
 	Item *i = (*m_cur_items)[selected_index];
 	
 	DrawsSets* dss = cfg->GetConfigByPrefix(confid);
-	DefinedDrawSet *ds = dynamic_cast<DefinedDrawSet*>(dss->GetDrawsSets()[i->set]);
+	DefinedDrawSet *ds = dynamic_cast<DefinedDrawSet*>(i->draw_set);
 	if (dss == NULL)
 		return;
 
@@ -766,14 +739,24 @@ void IncSearch::OnRemoveMenu(wxCommandEvent &e) {
 	Item *i = (*m_cur_items)[selected_index];
 	
 	DrawsSets* dss = cfg->GetConfigByPrefix(confid);
-	DefinedDrawSet *ds = dynamic_cast<DefinedDrawSet*>(dss->GetDrawsSets()[i->set]);
+	DefinedDrawSet *ds = dynamic_cast<DefinedDrawSet*>(i->draw_set);
 	if (dss == NULL)
 		return;
 
 	DefinedDrawsSets *dds = ds->GetDefinedDrawsSets();
-	if (m_window_search || ds->GetDraws()->size() == 1)
-		dds->RemoveSet(i->set);
-	else {
+	if (m_window_search || ds->GetDraws()->size() == 1) {
+		int answer = wxMessageBox(_("Do you really want to remove this set?"),
+			     _("Set removal"), wxYES_NO | wxICON_QUESTION);
+		if (answer != wxYES)
+			return;
+
+		dds->RemoveSet(i->draw_set->GetName());
+	} else {
+		int answer = wxMessageBox(_("Do you really want to remove this graph?"),
+			     _("Graph removal"), wxYES_NO | wxICON_QUESTION);
+		if (answer != wxYES)
+			return;
+
 		DefinedDrawInfo *di = dynamic_cast<DefinedDrawInfo*>(i->draw_info);
 		if (di == NULL)
 			return;

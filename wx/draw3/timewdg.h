@@ -30,6 +30,7 @@
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include <wx/wxprec.h>
+#include <functional>
 #ifdef __BORLANDC__
 #pragma hdrstop
 #endif
@@ -41,14 +42,10 @@
 #include "config.h"
 #endif
 
-#include "drawswdg.h"
-
-#define TIME_WIDGET_ID  wxID_HIGHEST
-
 /**
  * Widget for selecting period of time displayed in draws widget.
  */
-class TimeWidget: public wxRadioBox
+class TimeWidget: public wxRadioBox, public DrawObserver
 {
 public:
         /** Constructor.
@@ -56,7 +53,7 @@ public:
          * @param id window's identifier
          * @draws pointer to corresponding draws widget.
          */
-        TimeWidget(wxWindow* parent, DrawsWidget *draws, PeriodType pt);
+        TimeWidget(wxWindow* parent, DrawsWidget *draws_widget, PeriodType pt);
         /** Event handler, called when radio button is selected.
          * If different item is selected, draws widget is notified and
          * forced to redraw.
@@ -66,17 +63,21 @@ public:
 	/**transfers focus to @see DrawsWidget*/
 	void OnFocus(wxFocusEvent &event);
 
-	/** Select item and (optionnaly) refresh DrawsWidget
+	/** Select item and (optionnaly) update 
 	 * @param item number of item to be selected
 	 */ 
         void Select(int item, bool refresh = true);
 	
 	/** Select previously selected item and refresh DrawsWidget */
         int SelectPrev();
+
+	virtual void PeriodChanged(Draw *draw, PeriodType pt);
+
+	virtual void DrawInfoChanged(Draw *draw);
 protected:
-        DrawsWidget* draws_widget;      /**< Corresponding draws widget. */
-        int prev;			/**< Previously selected item. */
-        int selected;                   /**< Currently selected item. */
+	DrawsWidget* m_draws_widget;      /**< Corresponding draws widget. */
+        int m_previous;			/**< Previously selected item. */
+        int m_selected;                   /**< Currently selected item. */
 
         DECLARE_EVENT_TABLE()
 };

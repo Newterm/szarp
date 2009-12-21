@@ -16,12 +16,21 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
+#include "szhlpctrl.h"
+
 #include "ids.h"
+#include "classes.h"
+#include "coobs.h"
+#include "drawtime.h"
+#include "drawobs.h"
+#include "drawpnl.h"
 #include "summwin.h"
+#include "dbinquirer.h"
+#include "database.h"
 #include "draw.h"
 #include "cconv.h"
 #include "timeformat.h"
-#include "drawfrm.h"
+#include "drawsctrl.h"
 #include "drawpnl.h"
 #include "cfgmgr.h"
 
@@ -146,6 +155,8 @@ SummaryWindow::SummaryWindow(DrawPanel *draw_panel, wxWindow *parent, wxMenuItem
 	sizer->Fit(this);
 
 	this->draw_panel = draw_panel;
+
+	this->draws_controller = NULL;
 }
 
 void SummaryWindow::OnIdle(wxIdleEvent &event) {
@@ -303,9 +314,12 @@ void SummaryWindow::Activate() {
 	if (m_active)
 		return;
 
+	draws_controller->AttachObserver(this);
+
 	m_active = true;
 
-       	for (size_t i = 0; i < m_draws.Count(); ++i) {
+       	for (size_t i = 0; i < draws_controller->GetDrawsCount(); ++i) {
+		SetDraw(draws_controller->GetDraw(i));
 		ObservedDraw* od = m_draws[i];
 		if (od)
 			StartDisplaying(i);
@@ -322,10 +336,14 @@ void SummaryWindow::Deactivate() {
 	if (m_active == false) 
 		return;
 
+	draws_controller->DetachObserver(this);
+
        	for (size_t i = 0; i < m_draws.Count(); ++i) {
 		ObservedDraw* od = m_draws[i];
-		if (od != NULL) 
+		if (od != NULL) {
 			StopDisplaying(i);
+			ResetDraw(draws_controller->GetDraw(i));
+		}
 	}
 
 	m_active = false;
@@ -337,7 +355,6 @@ void SummaryWindow::Deactivate() {
 
 void SummaryWindow::StopDisplaying(int no) {
 	assert(m_draws[no]);
-	m_draws[no]->draw->DetachObserver(this);
 
 	if (m_draws[no]->hoursum) {
 		m_summary_draws_count--;
@@ -350,9 +367,7 @@ void SummaryWindow::StopDisplaying(int no) {
 	m_update = true;
 }
 
-void SummaryWindow::Detach(Draw *draw) {
-	assert(draw);
-
+void SummaryWindow::ResetDraw(Draw *draw) {
 	int no = draw->GetDrawNo();
 	if (m_draws[no] == NULL)
 		return;
@@ -365,10 +380,13 @@ void SummaryWindow::Detach(Draw *draw) {
 
 }
 
+void SummaryWindow::Detach(DrawsController *draws_controller) {
+	DrawObserver::Detach(draws_controller);
+}
+
 void SummaryWindow::StartDisplaying(int no) {
 	assert(m_active);
 	Draw* draw = m_draws[no]->draw;
-	draw->AttachObserver(this);
 
 	m_draws[no]->hoursum = draw->GetDrawInfo()->GetSpecial() == TDraw::HOURSUM; 
 
@@ -385,10 +403,14 @@ void SummaryWindow::StartDisplaying(int no) {
 
 }
 
-void SummaryWindow::Attach(Draw *draw) {
+void SummaryWindow::SetDraw(Draw *draw) {
 	int no = draw->GetDrawNo();
 
 	assert(m_draws[no] == NULL);
+
+	if (draw->GetDrawInfo() == NULL)
+		return;
+
 	m_draws[no] = new ObservedDraw(draw);
 
 	if (m_active)
@@ -396,9 +418,13 @@ void SummaryWindow::Attach(Draw *draw) {
 
 }
 
+void SummaryWindow::Attach(DrawsController *draws_controller) {
+	this->draws_controller = draws_controller;
+}
+
 void SummaryWindow::DrawInfoChanged(Draw *draw) {
-	Detach(draw);
-	Attach(draw);
+	ResetDraw(draw);
+	SetDraw(draw);
 }
 
 void SummaryWindow::UpdateDraw(Draw *draw) {
@@ -418,6 +444,11 @@ void SummaryWindow::UpdateDraw(Draw *draw) {
 
 void SummaryWindow::StatsChanged(Draw *draw) {
 	UpdateDraw(draw);
+}
+
+void SummaryWindow::DoubleCursorChanged(DrawsController *draws_controller) {
+	for (size_t i = 0; i < draws_controller->GetDrawsCount(); i++)
+		UpdateDraw(draws_controller->GetDraw(i));
 }
 
 void SummaryWindow::PeriodChanged(Draw *draw, PeriodType period) {

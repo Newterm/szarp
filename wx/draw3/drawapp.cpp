@@ -59,12 +59,15 @@
 #endif
 
 
+#include "ids.h"
+#include "classes.h"
+
+#include "drawobs.h"
 #include "drawapp.h"
 #include "drawipc.h"
 #include "libpar.h"
 #include "liblog.h"
 
-#include "ids.h"
 #include "cconv.h"
 #include "geometry.h"
 #include "cfgmgr.h"
@@ -75,6 +78,7 @@
 #include "szmutex.h"
 #include "szbase/szbbase.h"
 #include "database.h"
+#include "dbmgr.h"
 #include "drawurl.h"
 #include "errfrm.h"
 #include "splashscreen.h"
@@ -278,9 +282,9 @@ bool DrawApp::OnInit() {
 	splash->PushStatusText(_("Loading configuration..."));
 
 	wxString prefix, window;
-	PeriodType pt = PERIOD_T_OTHER;
+	PeriodType pt = PERIOD_T_YEAR;
 	time_t time = -1;
-	int selected_draw = -1;
+	int selected_draw = 0;
 
 	if (!m_url.IsEmpty()) {
 		if (!decode_url(m_url, prefix, window, pt, time, selected_draw)) {

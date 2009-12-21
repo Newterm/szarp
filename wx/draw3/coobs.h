@@ -26,10 +26,6 @@
  * $Id$
  */
 
-#include "ids.h"
-
-class ConfigManager;
-class DrawSet;
 
 /**Config observer interface, object of a class impelemnting this 
  * intrafce in notified about changes in configurations, i.e. @see IPKConcifg objects*/

@@ -24,8 +24,6 @@
 #ifndef __DRAWURL_H__
 #define __DRAWURL_H__
 
-#include "ids.h"
-
 /**Decodes window reference from url
  * @param url url to decode
  * @param prefix output param, decoded prefix

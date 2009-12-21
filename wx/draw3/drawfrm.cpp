@@ -21,19 +21,38 @@
 #include <wx/xrc/xmlres.h>
 #include <wx/tokenzr.h>
 
+#include "cconv.h"
 
 #include "version.h"
-#include "drawfrm.h"
+#include "szhlpctrl.h"
+#include "szframe.h"
+
+#include "ids.h"
+#include "classes.h"
+
+#include "drawtime.h"
+#include "dbinquirer.h"
+#include "database.h"
+#include "draw.h"
+#include "drawsctrl.h"
+
+#include "coobs.h"
+
 #include "cfgmgr.h"
+#include "defcfg.h"
+
+#include "drawobs.h"
 #include "drawapp.h"
 #include "frmmgr.h"
-#include "summwin.h"
-#include "cconv.h"
 #include "drawpick.h"
+#include "drawpnl.h"
+#include "drawtime.h"
+#include "cfgdlg.h"
 #include "drawurl.h"
 #include "errfrm.h"
 #include "paramslist.h"
 #include "remarks.h"
+#include "drawfrm.h"
 #include "drawprint.h"
 
 #include "bitmaps/flag_de.xpm"
@@ -230,8 +249,11 @@ void DrawFrame::OnDel(wxCommandEvent & event)
 void DrawFrame::OnAdd(wxCommandEvent& event)
 {
 	DrawPicker *dp = new DrawPicker(this, config_manager, database_manager);
-	if (dp->NewSet(draw_panel->GetPrefix()) == wxID_OK)
-		draw_panel->SelectSet(dp->GetNewSetName());
+	if (dp->NewSet(draw_panel->GetPrefix()) == wxID_OK) {
+		DrawsSets* dss = config_manager->GetConfigByPrefix(draw_panel->GetPrefix());
+		DrawSet* ds = dss->GetDrawsSets()[dp->GetNewSetName()];
+		draw_panel->SelectSet(ds);
+	}
 	dp->Destroy();
 }
 
@@ -252,7 +274,7 @@ void DrawFrame::SetTitle(const wxString &title, const wxString &prefix)
 	wxFrame::SetTitle(wxString(_("SZARP Draw")) + _T(" - ") + title + _T(" (") + prefix + _T(")"));
 }
 
-bool DrawFrame::AddDrawPanel(const wxString & prefix, DrawSet *set, PeriodType pt, time_t time, int selected_draw)
+bool DrawFrame::AddDrawPanel(const wxString & prefix, const wxString& set, PeriodType pt, time_t time, int selected_draw)
 {
 
 	DrawsSets *config = config_manager->GetConfigByPrefix(prefix);
@@ -299,7 +321,7 @@ bool DrawFrame::AddDrawPanel(const wxString & prefix, DrawSet *set, PeriodType p
 	DrawPanel *new_panel = new DrawPanel(database_manager,
 			config_manager,
 			remarks_handler,
-			config->GetID(),
+			config->GetPrefix(),
 			set,
 			pt,
 			time,
@@ -724,25 +746,10 @@ DrawFrame::LoadLayout() {
 			DrawsSets* ds = config_manager->GetConfigByPrefix(prefix);
 
 			if (ds != NULL) {
-
-				DrawSet *set = NULL;
-				for (DrawSetsHash::iterator i = ds->GetDrawsSets().begin();
-						i != ds->GetDrawsSets().end();
-						i++) {
-					if (i->second->GetName() == window) {
-						set = i->second;
-						break;
-					}
-				}
-
-				if (set == NULL && !window.IsEmpty()) {
-					success = false;
-				} else {
-					AddDrawPanel(prefix, set, period, time, selected_draw);
-					if(!requested_prefix_present && prefix == m_name){
-						requested_prefix_present = true;
-						selection = idx;
-					}
+				AddDrawPanel(prefix, window, period, time, selected_draw);
+				if (!requested_prefix_present && prefix == m_name){
+					requested_prefix_present = true;
+					selection = idx;
 				}
 
 			} else
@@ -851,6 +858,7 @@ void DrawFrame::OnLanguageChange(wxCommandEvent &e) {
 
 void DrawFrame::OnGraphsView(wxCommandEvent &e) {
 	wxString style = wxConfig::Get()->Read(_T("GRAPHS_VIEW"), _T("GCDC"));
+
 	wxArrayString choices;
 
 	choices.push_back(_("Classic"));
@@ -1003,6 +1011,10 @@ void DrawFrame::OnConfigureRemarks(wxCommandEvent &event) {
 
 void DrawFrame::OnPrintPageSetup(wxCommandEvent& event) {
 	Print::PageSetup(this);
+}
+
+void DrawFrame::OnShowRemarks(wxCommandEvent &e) {
+	draw_panel->ShowRemarks();	
 }
 
 void DrawFrame::OnLanguageChangeTool(wxCommandEvent &event) {
@@ -1205,6 +1217,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(langID_hu, DrawFrame::OnLanguageChangeMenuItem)
     EVT_MENU(langID_sr, DrawFrame::OnLanguageChangeMenuItem)
     EVT_MENU(drawTB_LANGUAGE, DrawFrame::OnLanguageChangeTool)
+    EVT_MENU(drawTB_REMARK, DrawFrame::OnShowRemarks)
     EVT_CLOSE(DrawFrame::OnClose)
     EVT_IDLE(DrawFrame::OnIdle)
     EVT_ACTIVATE(DrawFrame::OnActivate)

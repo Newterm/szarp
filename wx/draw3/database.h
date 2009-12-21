@@ -29,12 +29,7 @@
 #include <ids.h>
 #include <boost/thread/thread.hpp>
 
-#include "dbmgr.h"
 #include "szbase/szbbase.h"
-#include "cfgmgr.h"
-
-class DatabaseQueryQueue;
-class DrawInfo;
 
 /**Query to the database*/
 struct DatabaseQuery {

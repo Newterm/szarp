@@ -27,8 +27,17 @@
 
 #include <algorithm>
 #include <math.h>
+
 #include "cconv.h"
+
+#include "ids.h"
+#include "classes.h"
+#include "drawobs.h"
 #include "infowdg.h"
+#include "dbinquirer.h"
+#include "database.h"
+#include "drawtime.h"
+#include "drawsctrl.h"
 #include "draw.h"
 #include "timeformat.h"
 #include "cfgmgr.h"
@@ -36,9 +45,6 @@
 BEGIN_EVENT_TABLE(InfoWidget, wxPanel)
 	EVT_IDLE(InfoWidget::OnIdle)
 END_EVENT_TABLE()
-
-using std::max;
-using std::min;
 
 InfoWidget::InfoWidget(wxWindow *parent, wxWindowID id) :
 	wxPanel(parent, id, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS)
@@ -111,28 +117,24 @@ InfoWidget::~InfoWidget()
 }
 
 void InfoWidget::DrawInfoChanged(Draw *draw) {
+	if (draw->GetSelected() == false)
+		return;
+
+	m_draw = draw;
 	SetDrawInfo(draw);
 
 	m_update_values = true;
-	m_current_time = draw->GetCurrentTime();
 	m_update_time = true;
-
-	int i = draw->GetCurrentIndex();
-	const Draw::VT& vt = draw->GetValuesTable();
-
-	if (i >= 0 && vt.at(i).IsData())
-		m_val = vt.at(i).val;
-	else
-		m_val = nan("");
-
 	m_update_current_value = true;
 	m_update_values = true;
-
+	DoubleCursorMode(false);
 }
 
 void InfoWidget::PeriodChanged(Draw *draw, PeriodType period) {
 	m_period = period;
 	m_update_values = true;
+	m_update_current_value = true;
+	DoubleCursorMode(false);
 }
 
 void InfoWidget::SetDrawInfo(Draw *draw) {
@@ -145,61 +147,27 @@ void InfoWidget::SetDrawInfo(Draw *draw) {
 	SetPeriod(draw->GetPeriod());
 }
 
-void InfoWidget::Attach(Draw *draw) {
-	DrawObserver::Attach(draw);
-	m_draw = draw;
-	DrawInfoChanged(draw);
-
-	if (m_double_cursor) {
-		const Draw::VT& vt = m_draw->GetValuesTable();
-
-		int end = vt.m_stats.m_end;
-
-		double val = vt.Get(end).val;
-		
-		int idx = end - vt.m_view.Start();
-
-		SetOtherValue(val);
-
-		SetOtherTime(m_draw->GetTimeOfIndex(idx));
-	}
-}
-
-void InfoWidget::Detach(Draw *draw) {
-	DrawObserver::Detach(draw);
-	SetEmptyVals();
-}
-
 void InfoWidget::NewData(Draw *draw, int idx) {
-	if (idx == draw->GetCurrentIndex())  {
-		m_val = draw->GetValuesTable().at(idx).val;
+	if (draw->GetSelected() == false)
+		return;
+	if (idx == draw->GetCurrentIndex()) 
 		m_update_current_value = true;
-	}
 }
 
 void InfoWidget::FilterChanged(Draw *draw) {
-	const Draw::VT& vt = draw->GetValuesTable();
-	int index = draw->GetCurrentIndex();
-	if (index >= 0 && vt.at(index).IsData())
-		m_val = vt.at(index).val;
-	else
-		m_val = nan("");
+	if (draw->GetSelected() == false)
+		return;
 	m_update_values = true;
 	m_update_current_value = true;
 }
 
 void InfoWidget::CurrentProbeChanged(Draw* draw, int pi, int ni, int d) {
+	if (draw->GetSelected() == false)
+		return;
 
 	const Draw::VT& vt = draw->GetValuesTable();
 
-	if (ni < 0) {
-		m_val = nan("");
-		m_update_current_value = true;
-	} else {
-		m_val = vt.at(ni).val;
-		m_update_current_value = true;
-	}
-
+	m_update_current_value = true;
 	
 	m_current_time = draw->GetCurrentTime();
 	m_update_time = true;
@@ -281,6 +249,30 @@ void InfoWidget::SetUnit(const wxString &unit) {
 	m_unit = unit;
 }
 
+void InfoWidget::DrawSelected(Draw *draw) {
+	m_draw = draw;
+	SetDrawInfo(draw);
+
+	m_update_time = 
+		m_update_values =
+		m_update_current_value = true;
+
+	if (m_double_cursor) {
+		const Draw::VT& vt = m_draw->GetValuesTable();
+
+		int end = vt.m_stats.m_end;
+
+		double val = vt.Get(end).val;
+		
+		int idx = end - vt.m_view.Start();
+
+		SetOtherValue(val);
+
+		SetOtherTime(m_draw->GetTimeOfIndex(idx));
+	}
+
+}
+
 void InfoWidget::UpdateValues() {
 
 	const Draw::VT& vt = m_draw->GetValuesTable();
@@ -338,11 +330,19 @@ void InfoWidget::SetEmptyVals() {
 }
 
 void InfoWidget::StatsChanged(Draw *draw) {
+	if (draw->GetSelected() == false)
+		return;
+
 	m_update_values = true;
 }
 
 void InfoWidget::OnIdle(wxIdleEvent &event) {
 	if (m_update_current_value) {
+		int idx = m_draw->GetCurrentIndex();
+		if (idx >= 0)
+			m_val = m_draw->GetValuesTable().at(idx).val;
+		else
+			m_val = nan("");
 		SetValue(m_val);
 		m_update_current_value = false;
 	}
@@ -361,11 +361,12 @@ void InfoWidget::OnIdle(wxIdleEvent &event) {
 
 void InfoWidget::ShowExtraPanel(bool show) {
 	sizer1->Show(sizer1_2, show, true);
-	//value_panel->Refresh();
-	//value_panel2->Refresh();
 	sizer1->Layout();
 	GetParent()->Layout();
-	//sizer1->Fit(this);
+}
+
+void InfoWidget::DoubleCursorChanged(DrawsController *draws_controller) {
+	DoubleCursorMode(draws_controller->GetDoubleCursor());
 }
 
 void InfoWidget::DoubleCursorMode(bool set) {

@@ -36,10 +36,6 @@
 #endif
 #include <wx/statline.h>
 
-#include "drawobs.h"
-class Draw;
-class DrawPanel;
-
 /**Display summary values of currently displayed draws*/
 class RelWindow : public wxDialog, public DrawObserver {
 
@@ -71,6 +67,11 @@ class RelWindow : public wxDialog, public DrawObserver {
 	/**Widget displaying value*/
 	wxStaticText *m_label;
 
+	/**Number of draws with rel attribute set*/
+	int m_proper_draws_count;
+
+	DrawsController *m_draws_controller;
+
 	/**Recalculates summary values if necessary and/or updates labales values*/
 	void OnIdle(wxIdleEvent& event);
 
@@ -86,12 +87,13 @@ class RelWindow : public wxDialog, public DrawObserver {
 	/**Updates displayed value*/
 	void Update(Draw *draw);
 
-	/**Number of draws with rel attribute set*/
-	int m_proper_draws_count;
-
 	void Resize();
 
 	void OnHelpButton(wxCommandEvent &event);
+
+	void SetDraw(Draw *draw);
+
+	void ResetDraw(Draw *draw);
 	public:
 	RelWindow(wxWindow *parent, DrawPanel *panel, wxMenuItem *rel_item);
 
@@ -99,10 +101,10 @@ class RelWindow : public wxDialog, public DrawObserver {
 	virtual bool Show(bool show = true);
 
 	/**Removes @see Draw from observed draw's list*/
-	virtual void Detach(Draw* draw);
+	virtual void Detach(DrawsController* draws_controllerk);
 
 	/**Adds @see Draw to observer draws' list*/
-	virtual void Attach(Draw* draw);
+	virtual void Attach(DrawsController* draws_controller);
 
 	/**Causes recalulation of summary values of notifing draw (in OnIdle handler)*/
 	virtual void DrawInfoChanged(Draw *draw);

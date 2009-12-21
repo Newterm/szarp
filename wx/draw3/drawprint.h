@@ -39,10 +39,6 @@
 
 #include <set>
 
-#include "drawswdg.h"
-
-struct XYGraph;
-
 /**Class for graphs printing*/
 class Print {
 public:
@@ -59,12 +55,12 @@ public:
 	 * @param parent parent window 
 	 * @param draws array of draws to print
 	 * @param count number of draws in the array*/
-	static void DoPrint(wxWindow *parent, DrawPtrArray draws, int count);
+	static void DoPrint(wxWindow *parent, std::vector<Draw*> draws, int count);
 
 	/**Shows print preview frame.
 	 * @param draws array of draws to print
 	 * @param count number of draws in the array*/
-	static void DoPrintPreviev(DrawPtrArray draws, int count);
+	static void DoPrintPreviev(std::vector<Draw*> draws, int count);
 
 	/**Print XY graph. 
 	 * @paran parent window for print dialog

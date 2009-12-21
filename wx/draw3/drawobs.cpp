@@ -18,16 +18,21 @@
 */
 
 #include "ids.h"
+#include "classes.h"
+#include "drawtime.h"
 #include "drawobs.h"
+#include "database.h"
+#include "dbinquirer.h"
+#include "drawsctrl.h"
 #include "draw.h"
 
 
-void DrawObserver::Attach(Draw *draw) {
-	draw->AttachObserver(this);
+void DrawObserver::Attach(DrawsController *drawsctrl) {
+	drawsctrl->AttachObserver(this);
 }
 
-void DrawObserver::Detach(Draw *draw) {
-	draw->DetachObserver(this);
+void DrawObserver::Detach(DrawsController *drawsctrl) {
+	drawsctrl->DetachObserver(this);
 }
 		
 DrawObserver::~DrawObserver() {}

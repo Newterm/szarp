@@ -25,11 +25,21 @@
  */
 
 #include "ids.h"
+#include "classes.h"
+#include "cconv.h"
+#include "cfgmgr.h"
+#include "drawtime.h"
 #include "drawdnd.h"
+#include "dbinquirer.h"
+#include "database.h"
+#include "drawobs.h"
 #include "draw.h"
+#include "drawsctrl.h"
+#include "drawswdg.h"
 #include "glgraphs.h"
 #include "conversion.h"
-#include "cconv.h"
+#include "drawapp.h"
+#include "graphsutils.h"
 
 #ifdef HAVE_GLCANVAS
 #ifdef HAVE_FTGL
@@ -275,7 +285,7 @@ void GLGraphs::GeneratePaneDisplayList() {
 	int height = m_size.GetHeight() - m_screen_margins.topmargin - m_screen_margins.bottommargin;
 	const int tile_size = 8;
 	PeriodType pt = m_draws[sel]->GetPeriod();
-	int pane_width = width * Draw::PeriodMult[pt] / m_draws_wdg->GetNumberOfValues();
+	int pane_width = width * TimeIndex::PeriodMult[pt] / m_draws_wdg->GetNumberOfValues();
 	int cx = pane_width / tile_size;
 	int cy = height / tile_size;
 
@@ -353,7 +363,7 @@ void GLGraphs::DrawBackground() {
 			glPopMatrix();
 		}
 		sign *= -1;
-		i += Draw::PeriodMult[draw->GetPeriod()];
+		i += TimeIndex::PeriodMult[draw->GetPeriod()];
 	}
 		
 }
@@ -411,7 +421,7 @@ bool GLGraphs::AlternateColor(Draw *d, int idx) {
 	if (d->GetSelected() == false)
 		return false;
 
-	if (d->IsDoubleCursor() == false)
+	if (d->GetDoubleCursor() == false)
 		return false;
 
 	const Draw::VT& vt = d->GetValuesTable();
@@ -445,7 +455,7 @@ void GLGraphs::DrawGraph(Draw *d) {
 	GLfloat alternate_col[12] = { 1., 1., 1., 1,  0.5, 0.5 , 0.5, 0.5, 0.25, 0.25, 0.25};
 
 	float line_height = 2;
-	if (d->GetSelected() && d->IsDoubleCursor())
+	if (d->GetSelected() && d->GetDoubleCursor())
 		line_height = 4;
 	GLfloat *cc = &col[0];
 
@@ -538,12 +548,12 @@ void GLGraphs::DrawGraphs() {
 	if (sel < 0)
 		return;
 
-	for (size_t i = 0; i <= m_draws.GetCount(); i++) {
+	for (size_t i = 0; i <= m_draws.size(); i++) {
 		 
 		size_t j = i;
 		if ((int) j == sel) 
 			continue;
-		if (j == m_draws.GetCount())	
+		if (j == m_draws.size())	
 			j = sel;
 
 		Draw* d = m_draws[j];
@@ -797,23 +807,6 @@ void GLGraphs::DoPaint() {
 	SwapBuffers();
 }
 
-void GLGraphs::SetDrawsChanged(DrawPtrArray draws) {
-	size_t pc = m_draws.GetCount();
-	m_draws = draws;
-
-	for (size_t i = pc; i < draws.GetCount(); i++)
-		m_draws[i]->AttachObserver(this);
-
-	m_graphs_states.resize(m_draws.GetCount());
-	for (size_t i = 0; i < m_graphs_states.size(); i++) {
-		m_graphs_states[i].fade_state = GraphState::STILL;
-		m_graphs_states[i].fade_level = 1;
-	}
-
-
-	Refresh();
-}
-
 void GLGraphs::Deselected(int i) {
 }
 
@@ -977,9 +970,9 @@ void GLGraphs::OnMouseLeftDown(wxMouseEvent & event) {
 		wxDateTime time;
 	};
 
-	VoteInfo infos[m_draws.GetCount()];
+	VoteInfo infos[m_draws.size()];
 
-	for (size_t i = 0; i < m_draws.GetCount(); ++i) {
+	for (size_t i = 0; i < m_draws.size(); ++i) {
 
 		VoteInfo & in = infos[i];
 		in.dist = -1;
@@ -993,8 +986,8 @@ void GLGraphs::OnMouseLeftDown(wxMouseEvent & event) {
 
 	int selected_draw = m_draws_wdg->GetSelectedDrawIndex();
 
-	for (size_t i = 1; i <= m_draws.GetCount(); ++i) {
-		size_t k = (i + selected_draw) % m_draws.GetCount();
+	for (size_t i = 1; i <= m_draws.size(); ++i) {
+		size_t k = (i + selected_draw) % m_draws.size();
 
 		VoteInfo& in = infos[k];
 		if (in.dist < 0)
@@ -1033,10 +1026,10 @@ void GLGraphs::OnMouseLeftUp(wxMouseEvent & event)
 
 void GLGraphs::OnMouseLeftDClick(wxMouseEvent & event)
 {
-	if (m_draws.GetCount() < 0)
+	if (m_draws.size() == 0)
 		return;
 
-	if (m_draws_wdg->IsNoData())
+	if (m_draws_wdg->GetNoData())
 		return;
 
 	/* get widget size */
@@ -1246,7 +1239,7 @@ void GLGraphs::DrawXAxisVals(Draw *draw) {
 		glPopMatrix();
 		glBindTexture(GL_TEXTURE_2D, 0);
 
-		i += Draw::PeriodMult[draw->GetPeriod()];
+		i += TimeIndex::PeriodMult[draw->GetPeriod()];
 	}
     
 }
@@ -1346,7 +1339,7 @@ void GLGraphs::DrawUnit(Draw *d) {
 }
 
 void GLGraphs::DrawShortNames() {
-	if (m_draws.GetCount() < 1)
+	if (m_draws.size() < 1)
 		return ;
 
 	glPushMatrix(); 
@@ -1355,7 +1348,7 @@ void GLGraphs::DrawShortNames() {
 
 		float x = 0;
 
-		for (size_t i = 0; i < m_draws.GetCount(); i++) {
+		for (size_t i = 0; i < m_draws.size(); i++) {
 
 			if (!m_draws[i]->GetEnable())
 				continue;
@@ -1498,69 +1491,16 @@ void GLGraphs::DrawSeasonLimitInfo(Draw *d, int i, int month, int day, bool summ
 }
 
 void GLGraphs::DrawSeasonLimits() {
-
-	int sel;
-	sel = m_draws_wdg->GetSelectedDrawIndex();
-
-	if (sel < 0)
+	Draw* draw = m_draws_wdg->GetSelectedDraw();
+	if (draw == NULL)
 		return;
 
-	DrawsSets *cfg = m_cfg_mgr->GetConfigByPrefix(m_draws[sel]->GetDrawInfo()->GetBasePrefix());
-	IPKConfig *ipk = dynamic_cast<IPKConfig*>(cfg);
+	DrawsSets *cfg = m_cfg_mgr->GetConfigByPrefix(draw->GetDrawInfo()->GetBasePrefix());
 
-	if (ipk == NULL)
-		return;
+	std::vector<SeasonLimit> limits = get_season_limits_indexes(cfg, draw);
+	for (std::vector<SeasonLimit>::iterator i = limits.begin(); i != limits.end(); i++)
+		DrawSeasonLimitInfo(draw, i->index, i->month, i->day, i->summer);
 
-	const TSSeason* s = ipk->GetTSzarpConfig()->GetSeasons();
-
-	wxDateTime pt = m_draws[sel]->GetTimeOfIndex(0);
-	wxDateTime::Tm tm = pt.GetTm(wxDateTime::Local);
-	int year = tm.year;
-
-	TSSeason::Season season = s->GetSeason(year);
-	bool is_summer = s->CheckSeason(season, tm.mon - wxDateTime::Jan + 1, tm.mday);
-
-	for (size_t i = 1; i < m_draws[sel]->GetValuesTable().size() - 1; ++i) {
-		wxDateTime t = m_draws[sel]->GetTimeOfIndex(i + 1);
-		tm = t.GetTm(wxDateTime::Local);
-		if (tm.year != year) {
-			year = tm.year;
-			season = s->GetSeason(year);
-		}
-		bool is = s->CheckSeason(season, (tm.mon - wxDateTime::Jan) + 1, tm.mday);
-		if (is != is_summer) {
-			int index;
-			switch (m_draws[sel]->GetPeriod()) {
-				case PERIOD_T_DAY:
-				case PERIOD_T_MONTH:
-				case PERIOD_T_WEEK:
-					index = i;
-					break;
-				case PERIOD_T_LAST:
-				case PERIOD_T_OTHER:
-				case PERIOD_T_SEASON:
-				case PERIOD_T_YEAR:
-					if (is)
-						if (tm.mday == season.day_start)
-							index = i;
-						else
-							index = i - 1;
-					else
-						if (tm.mday  == season.day_end)
-							index = i;
-						else
-							index = i - 1;
-
-					break;
-				default:
-					index = 0;
-					assert(false);
-			}
-			DrawSeasonLimitInfo(m_draws[sel], index, is ? season.month_start : season.month_end, is ? season.day_start : season.day_end, is);
-		}
-		is_summer = is;
-		pt = t;
-	}
 }
 
 
@@ -1631,6 +1571,28 @@ void GLGraphs::EnableChanged(Draw *draw) {
 GLGraphs::GraphState::GraphState() {
 	fade_state = STILL;
 	fade_level = 1;
+}
+
+void GLGraphs::DrawSelected(Draw *draw) {
+	Refresh();
+}
+
+void GLGraphs::DrawInfoChanged(Draw *draw) { 
+	if (draw->GetSelected()) {
+		m_draws.resize(0);
+
+		DrawsController* controller = draw->GetDrawsController();
+		for (size_t i = 0; i < controller->GetDrawsCount(); i++)
+			m_draws.push_back(controller->GetDraw(i));
+
+		m_graphs_states.resize(m_draws.size());
+		for (size_t i = 0; i < m_graphs_states.size(); i++) {
+			m_graphs_states[i].fade_state = GraphState::STILL;
+			m_graphs_states[i].fade_level = 1;
+		}
+	}
+
+	Refresh();
 }
 
 #endif

@@ -29,34 +29,6 @@
 
 #include "pscgui.h"
 
-class IPKConfig;
-class DrawPscFrame;
-class DrawPsc;
-class DrawPscUnit;
-
-#if 0
-class DrawPscSystemConfiguration {
-	wxString m_address;
-	wxString m_port;
-	wxString m_prefix;
-	std::vector<PscConfigurationUnit*> m_units;
-	std::map<PscConfigurationUnit*, wxString> m_units_names;
-	DrawPsc* m_psc;
-
-public:
-	static DrawPscSystemConfiguration* Create(IPKConfig *ipk, DrawPsc *psc);
-	void SetAuthData(wxString username, wxString password, wxDateTime last_fetch);
-	void GetAuthData(wxString& username, wxString& password, wxDateTime& last_fetch);
-	void SetSettableParams(IPKConfig *cfg);
-	void Edit(wxString name = wxString());
-	void SetSpeedAndUnitNames(IPKConfig *cfg);
-	std::vector<PscConfigurationUnit*>& GetUnits() { return m_units; }
-	void GetConnectionInfo(wxString &address, wxString &port) { address = m_address; port = m_port; }
-	wxString GetPrefix() { return m_prefix; }
-	~DrawPscSystemConfiguration();
-};
-#endif
-
 class DrawPscSystemConfigurationEditor {
 	wxString m_address;
 	wxString m_port;

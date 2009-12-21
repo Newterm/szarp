@@ -40,19 +40,6 @@
 
 #include <vector>
 
-#include "szapp.h"
-#include "drawpnl.h"
-#include "cfgdlg.h"
-#include "szhlpctrl.h"
-#include "szframe.h"
-
-class DatabaseManager;
-class ConfigDialog;
-class ConfigManager;
-class FrameManager;
-class ParamsListDialog;
-class RemarksHandler;
-
 /**
  * Draw Frame class. It's responsible for remember frame size and positions.
  */
@@ -76,7 +63,7 @@ public:
 	/** 
 	 * Method add DrawPanel 
 	 */
-	bool AddDrawPanel(const wxString &m_base, DrawSet *set, PeriodType pt, time_t time, int selected_draw=-1);
+	bool AddDrawPanel(const wxString &m_base, const wxString& set, PeriodType pt, time_t time, int selected_draw = 0);
 	/**
 	 * Method call when we used exit from MenuBar.
 	 */
@@ -184,6 +171,8 @@ public:
 	void OnConfigureRemarks(wxCommandEvent &event);
 
 	void OnPrintPageSetup(wxCommandEvent& event);
+
+	void OnShowRemarks(wxCommandEvent &e);
 
 	/**Schedules removal of a panel (at next Idle event)*/
 	void RemovePanel(DrawPanel *panel);

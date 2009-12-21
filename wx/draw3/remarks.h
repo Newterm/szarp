@@ -42,10 +42,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include "biowxsock.h"
-#include "drawobs.h"
-
-class RemarkViewDialog;
-class DrawFrame;
 
 class Remark {
 public:
@@ -171,7 +167,6 @@ public:
 	void Finish();
 };
 
-class RemarksHandler;
 class RemarksConnection : public wxEvtHandler {
 	DNSResolver m_resolver;
 
@@ -370,7 +365,6 @@ public:
 };
 
 
-class RemarksFetcher;
 class RemarksHandler : public wxEvtHandler {
 
 	bool m_configured;
@@ -494,33 +488,31 @@ public:
 	DECLARE_EVENT_TABLE()
 };
 
-class DrawToolBar;
-class DrawInfo;
 class RemarksFetcher : public wxEvtHandler, public DrawObserver {
 	std::map<Remark::ID, Remark> m_remarks;
-
-	DrawToolBar *m_tool_bar;
 
 	DrawFrame *m_draw_frame;
 
 	RemarksHandler *m_remarks_handler;
 
-	Draw *m_current_draw;
+	DrawsController *m_draws_controller;
 
 	bool m_awaiting_for_whole_base;
 
-	void Fetch(Draw *d);
+	void Fetch();
 
 public:
-	RemarksFetcher(RemarksHandler *remarks_handler, DrawToolBar *tool_bar, DrawFrame* m_draw_frame);
+	RemarksFetcher(RemarksHandler *remarks_handler, DrawFrame* m_draw_frame);
 
 	virtual void ScreenMoved(Draw* draw, const wxDateTime &start_time);
 
 	virtual void DrawInfoChanged(Draw *draw);
 
-	virtual void Attach(Draw *d);
+	virtual void Attach(DrawsController *d);
 
-	virtual void Detach(Draw *d);
+	virtual void Detach(DrawsController *d);
+
+	virtual void DrawSelected(Draw *draw);
 
 	void ShowRemarks();
 

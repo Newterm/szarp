@@ -50,20 +50,11 @@
 #include <FTGL/ftgl.h>
 #include <GL/glu.h>
 
-#include "cfgmgr.h"
-#include "drawdnd.h"
-#include "drawobs.h"
-#include "drawswdg.h"
-
-#include "dbinquirer.h"
-
 #ifndef NO_GSTREAMER
 #include <gst/gst.h>
 #endif
 
-class ConfigManager;
-
-class GLGraphs : public wxGLCanvas, public DrawGraphs, public SetInfoDropReceiver, public DrawObserver {
+class GLGraphs : public wxGLCanvas, public DrawGraphs, public SetInfoDropReceiver {
 	bool m_refresh;
 
 	DrawPtrArray m_draws;
@@ -181,8 +172,6 @@ public:
 	/** Switches window */
 	virtual wxDragResult SetSetInfo(wxCoord x, wxCoord y, wxString window, wxString prefix, time_t time, PeriodType pt, wxDragResult def);
 
-	virtual void SetDrawsChanged(DrawPtrArray draws);
-
 	virtual void Deselected(int i);
 
 	virtual void Selected(int i);
@@ -237,8 +226,6 @@ public:
 
 	virtual void CurrentProbeChanged(Draw *draw, int pi, int ni, int d) { Refresh(); }
 
-	virtual void DrawInfoChanged(Draw *draw) { Refresh(); }
-
 	virtual void FilterChanged(Draw *draw) { Refresh(); }
 
 	virtual void PeriodChanged(Draw *draw, PeriodType period);
@@ -246,6 +233,10 @@ public:
 	virtual void EnableChanged(Draw *draw);
 
 	virtual void NewRemarks(Draw *draw);
+
+	virtual void DrawInfoChanged(Draw *draw);
+
+	virtual void DrawSelected(Draw *draw);
 
 	virtual ~GLGraphs();
 

@@ -28,7 +28,6 @@
 #define __TIMEFORMAT_H__
 
 #include <wx/datetime.h>
-#include "ids.h"
 
 /**Returns string representing provided time. Only part
  * of date and time significant for given period is enclosed

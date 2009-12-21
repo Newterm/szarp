@@ -36,10 +36,6 @@
 #endif
 #include <wx/statline.h>
 
-#include "drawobs.h"
-class Draw;
-class DrawPanel;
-
 /**Display summary values of currently displayed draws*/
 class PieWindow : public wxFrame, public DrawObserver {
 
@@ -102,6 +98,10 @@ class PieWindow : public wxFrame, public DrawObserver {
 	/**Cauces window repaint*/
 	void UpdateDraw(Draw *d);
 
+	void SetDraw(Draw *draw);
+
+	void ResetDraw(Draw *draw);
+
 	/**Resizes window (if neccesary)*/
 	void OnIdle(wxIdleEvent &event);
 
@@ -112,6 +112,8 @@ class PieWindow : public wxFrame, public DrawObserver {
 	/**Number of draws in current set that has 'piewin' attribute set*/
 	int m_proper_draws_count;
 
+	DrawsController *m_draws_controller;
+
 	public:
 	PieWindow(wxWindow *parent, DrawPanel *panel, wxMenuItem *pie_item);
 
@@ -119,10 +121,10 @@ class PieWindow : public wxFrame, public DrawObserver {
 	virtual bool Show(bool show = true);
 
 	/**Removes @see Draw from observed draw's list*/
-	virtual void Detach(Draw* draw);
+	virtual void Detach(DrawsController* draws_controller);
 
 	/**Adds @see Draw to observer draws' list*/
-	virtual void Attach(Draw* draw);
+	virtual void Attach(DrawsController* draws_controller);
 
 	/**Causes recalulation of summary values of notifing draw (in OnIdle handler)*/
 	virtual void DrawInfoChanged(Draw *draw);
@@ -135,6 +137,8 @@ class PieWindow : public wxFrame, public DrawObserver {
 
 	/**Causes window repaint*/
 	virtual void StatsChanged(Draw *draw);
+
+	void DoubleCursorChanged(DrawsController *draws_controller);
 
 	virtual ~PieWindow();
 

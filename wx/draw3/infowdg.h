@@ -44,18 +44,11 @@
 
 #include <wx/datetime.h>
 
-#include "ids.h"
-#include "drawobs.h"
-
 /** Class for printing info about selected draw(s). */
 class InfoWidget : public wxPanel, public DrawObserver {
 	public:
 		InfoWidget(wxWindow *parent, wxWindowID id = -1);
 		virtual ~InfoWidget();
-		/**Updates statistics*/
-		virtual void Attach(Draw * draw);
-		/**Updates statistics*/
-		virtual void Detach(Draw * draw);
 		/**Updates statistics*/
 		virtual void DrawInfoChanged(Draw *draw);
 		/**Updates @see m_val value and @see date_text*/
@@ -67,7 +60,11 @@ class InfoWidget : public wxPanel, public DrawObserver {
 		/**Updates @see m_min, @see m_max, @see m_max and m_data_count values*/
 		virtual void StatsChanged(Draw* draw);
 
+		virtual void DrawSelected(Draw* draw);
+
 		virtual void NewData(Draw* draw, int idx);
+
+		virtual void DoubleCursorChanged(DrawsController *draw);
 
 		void DoubleCursorMode(bool set);
 	protected:

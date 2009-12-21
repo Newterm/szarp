@@ -29,8 +29,8 @@
 
 #include <wx/config.h>
 
+#include "ids.h"
 #include "drawtb.h"
-#include "drawfrm.h"
 #include "bitmaps/help.xpm"
 #include "bitmaps/exit.xpm"
 #include "bitmaps/find.xpm"

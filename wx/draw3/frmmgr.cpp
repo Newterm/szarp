@@ -22,17 +22,28 @@
 
 #include "config.h"
 
+#include "szhlpctrl.h"
+
+#include "szframe.h"
+
 #include "ids.h"
+#include "classes.h"
+#include "drawobs.h"
+
+#include "drawtime.h"
+#include "coobs.h"
 #include "remarks.h"
-#include "ids.h"
 #include "drawpick.h"
-#include "frmmgr.h"
 #include "drawfrm.h"
+#include "frmmgr.h"
 #include "dbmgr.h"
 #include "drawapp.h"
 #include "cfgdlg.h"
 #include "cfgmgr.h"
+#include "defcfg.h"
 #include "xygraph.h"
+#include "dbinquirer.h"
+#include "drawdnd.h"
 #include "statdiag.h"
 
 BEGIN_EVENT_TABLE(FrameManager, wxEvtHandler)
@@ -49,27 +60,7 @@ FrameManager::FrameManager(DatabaseManager *dmgr, ConfigManager *cfgmgr, Remarks
 	stat_dialog = NULL;
 }
 
-bool FrameManager::CreateFrame(const wxString &prefix, const wxString& window, PeriodType pt, time_t time, const wxSize& size, const wxPoint &position, int selected_draw, bool try_load_layout) {
-	DrawsSets* ds = config_manager->GetConfigByPrefix(prefix);
-
-	if (ds == NULL)
-		return false;
-
-	DrawSet *set = NULL;
-	for (DrawSetsHash::iterator i = ds->GetDrawsSets().begin();
-			i != ds->GetDrawsSets().end();
-			i++)
-		if (i->second->GetName() == window) {
-			set = i->second;
-			break;
-		}
-	if (set == NULL && !window.IsEmpty())
-		return false;
-
-	return CreateFrame(prefix, set, pt, time, size, position, selected_draw, try_load_layout);
-}
-
-bool FrameManager::CreateFrame(const wxString &prefix, DrawSet *set, PeriodType pt, time_t time, const wxSize& size, const wxPoint &position, int selected_draw, bool try_load_layout) {
+bool FrameManager::CreateFrame(const wxString &prefix, const wxString& set, PeriodType pt, time_t time, const wxSize& size, const wxPoint &position, int selected_draw, bool try_load_layout) {
 	DrawFrame *frame = new DrawFrame(this, database_manager, config_manager, remarks_handler, NULL, free_frame_number, _T(""), prefix);
 
 	if(!(try_load_layout && frame->LoadLayout())) {
@@ -220,7 +211,7 @@ void FrameManager::LoadConfig(DrawFrame *frame) {
 			if (ret == wxOK)  {
 				DrawPicker* dp = new DrawPicker(frame, config_manager, database_manager);
 				if (dp->NewSet(prefix) == wxID_OK)
-					frame->AddDrawPanel(prefix, NULL, PERIOD_T_OTHER, -1);
+					frame->AddDrawPanel(prefix, wxEmptyString, PERIOD_T_YEAR, 0);
 				dp->Destroy();
 			}
 			config_dialog->Destroy();
@@ -229,9 +220,9 @@ void FrameManager::LoadConfig(DrawFrame *frame) {
 	}
 
 	if (frame)
-		frame->AddDrawPanel(prefix, NULL, PERIOD_T_OTHER, -1);
+		frame->AddDrawPanel(prefix, wxEmptyString, PERIOD_T_YEAR, 0);
 	else
-		CreateFrame(prefix, wxEmptyString, PERIOD_T_OTHER, time_t(-1), wxDefaultSize, wxDefaultPosition);
+		CreateFrame(prefix, wxEmptyString, PERIOD_T_YEAR, time_t(-1), wxDefaultSize, wxDefaultPosition);
 	config_dialog->Destroy();
 }
 

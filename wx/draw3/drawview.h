@@ -42,15 +42,6 @@
 #include <wx/dcmemory.h>
 #endif
 
-#include "drawobs.h"
-#include "ids.h"
-
-class Draw;
-class WxGraphs;
-class ConfigManager;
-class DrawInfo;
-
-
 /**I hope this all non cross-platform stuff will be removed when 
  * next version of wxWidgets is relased so I won't bother to document it.*/
 class SDC {
@@ -203,7 +194,7 @@ public:
 
 
 /**Draws background of current @see Draw*/
-class BackgroundView : public BackgroundDrawer, public DrawObserver {
+class BackgroundView : public BackgroundDrawer {
 	/**@see WxGraphs*/
 	WxGraphs* m_graphs;
 
@@ -247,22 +238,22 @@ public:
 	BackgroundView(WxGraphs *widget, ConfigManager *cfg_mgr);
 
 	/**Redraws view*/
-	virtual void Attach(Draw *draw);
+	void Attach(Draw *draw);
 
 	/**Clears background*/
-	virtual void Detach(Draw *draw);
+	void Detach(Draw *draw);
 
 	/**Redraws view*/
-	virtual void DrawInfoChanged(Draw *draw);
+	void DrawInfoChanged(Draw *draw);
 
 	/**Redraws view*/
-	virtual void NewRemarks(Draw *draw);
+	void NewRemarks(Draw *draw);
 
 	/**Redraws view*/
-	virtual void PeriodChanged(Draw *draw, PeriodType period);
+	void PeriodChanged(Draw *draw, PeriodType period);
 
 	/**Redraws view*/
-	virtual void ScreenMoved(Draw* draw, const wxDateTime &start_date);
+	void ScreenMoved(Draw* draw, const wxDateTime &start_date);
 
 	/**Resizes view*/
 	virtual void SetSize(int w, int h);
@@ -311,7 +302,7 @@ public:
 
 
 /**Class resposible for rendering graphs onto screen*/
-class GraphView : public GraphDrawer, public DrawObserver {
+class GraphView : public GraphDrawer {
 	/**@see WxGraphs*/
 	WxGraphs* m_graphs;
 protected:
@@ -363,17 +354,8 @@ protected:
 	/**@return true is alternate color shall be used while drawing point and given index*/
 	virtual bool AlternateColor(int idx);
 
-	/**clears cursor*/
-	void DrawDeselected(Draw *draw);
-
-	/**draws cursor*/
-	void DrawSelected(Draw *draw);
-
 	/**return size of region of dc used for drawing*/
 	virtual void GetSize(int *w, int *h) const;
-
-	/**repaints view*/
-	virtual void FilterChanged(Draw *draw);
 
 	/**repaints view*/
 	virtual void EnableChanged(Draw *draw);
@@ -386,32 +368,35 @@ public:
 	void SetMargins(int left, int right, int top, int bottom) { m_leftmargin = left, m_rightmargin = right, m_topmargin = top, m_bottommargin = bottom; }
 
 	/**Repaints view*/
-	virtual void Attach(Draw *draw);
+	void Attach(Draw *draw);
 
 	/**Clears view*/
-	virtual void Detach(Draw *draw);
+	void Detach(Draw *draw);
 
 	/**Repaints view*/
-	virtual void DrawInfoChanged(Draw *draw);
+	void DrawInfoChanged(Draw *draw);
 
 	/**Repaints view*/
-	virtual void PeriodChanged(Draw *draw, PeriodType period);
+	void PeriodChanged(Draw *draw, PeriodType period);
+
+	/**repaints view*/
+	virtual void FilterChanged(Draw *draw);
 
 	/**Repaints view*/
-	virtual void ScreenMoved(Draw* draw, const wxDateTime &start_date);
+	void ScreenMoved(Draw* draw, const wxDateTime &start_date);
 
 	/**Moves cursor
 	 * @param pi previous cursor poitiion, may be -1 if cursor was not visible previously
 	 * @param ni new (current cursor position)
 	 * @param d actual displacement of cursor (may be different than ni - pi)*/
-	virtual void CurrentProbeChanged(Draw* draw, int pi, int ni, int d);
+	void CurrentProbeChanged(Draw* draw, int pi, int ni, int d);
 
 	/**Draw points all cursor position*/
 	void DrawAll();
 
 	/**Draws point representing data probe
 	 * @param i index into observer @see Draw data table*/
-	virtual void NewData(Draw* draw, int i);
+	void NewData(Draw* draw, int i);
 
 	/**Resizes view*/
 	virtual void SetSize(int w, int h);

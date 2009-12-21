@@ -43,10 +43,7 @@
 #include <wx/graphics.h>
 #include <wx/dynarray.h>
 
-#include "drawswdg.h"
-#include "drawobs.h"
-
-class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver, public DrawObserver {
+class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver  {
 
 	bool m_draw_param_name;
 
@@ -123,6 +120,8 @@ public:
 
 	virtual void StartDrawingParamName();
 
+	virtual void DrawSelected(Draw *draw);
+
 	virtual void StopDrawingParamName();
 
 	virtual void Selected(int i);
@@ -175,7 +174,7 @@ public:
 
 	virtual void CurrentProbeChanged(Draw *draw, int pi, int ni, int d) { Refresh(); }
 
-	virtual void DrawInfoChanged(Draw *draw) { Refresh(); }
+	virtual void DrawInfoChanged(Draw *draw);
 
 	virtual void FilterChanged(Draw *draw) { Refresh(); }
 

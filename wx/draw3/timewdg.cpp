@@ -25,18 +25,27 @@
  * $Id$
  */
 
-#include "timewdg.h"
 #include "ids.h"
+#include "classes.h"
+#include "drawobs.h"
+#include "drawtime.h"
+#include "dbinquirer.h"
+#include "database.h"
+#include "draw.h"
+#include "drawsctrl.h"
+#include "drawswdg.h"
+#include "drawtime.h"
+#include "timewdg.h"
 #include <wx/intl.h>
 
 
 BEGIN_EVENT_TABLE(TimeWidget, wxRadioBox)
-        EVT_RADIOBOX(TIME_WIDGET_ID, TimeWidget::OnRadioSelected)
+        EVT_RADIOBOX(wxID_ANY, TimeWidget::OnRadioSelected)
 	EVT_SET_FOCUS(TimeWidget::OnFocus)
 END_EVENT_TABLE()
 
-TimeWidget::TimeWidget(wxWindow* parent, DrawsWidget *draws, PeriodType pt)
-        : wxRadioBox(), draws_widget(draws), prev(0)
+TimeWidget::TimeWidget(wxWindow* parent, DrawsWidget *draws_widget, PeriodType pt)
+        : wxRadioBox(), m_draws_widget(draws_widget), m_previous(0)
 {
 	SetHelpText(_T("draw3-base-range"));
 
@@ -47,7 +56,7 @@ TimeWidget::TimeWidget(wxWindow* parent, DrawsWidget *draws, PeriodType pt)
                 _("DAY"),
                 _("SEASON")
         };
-        Create(parent, TIME_WIDGET_ID, 
+        Create(parent, wxID_ANY, 
 			_T(""), // label
 			wxDefaultPosition, wxDefaultSize,
 			5, // number of options
@@ -58,48 +67,58 @@ TimeWidget::TimeWidget(wxWindow* parent, DrawsWidget *draws, PeriodType pt)
 			wxWANTS_CHARS);
 	switch (pt) {
 		case PERIOD_T_MONTH:
-			selected = 1;
+			m_selected = 1;
 			break;
 		case PERIOD_T_WEEK:
-			selected = 2;
+			m_selected = 2;
 			break;
 		case PERIOD_T_DAY:
-			selected = 3;
+			m_selected = 3;
 			break;
 		case PERIOD_T_SEASON: 
-			selected = 4;
+			m_selected = 4;
 			break;				     
 		default:
 		case PERIOD_T_YEAR:
-		        selected = 0;
+		        m_selected = 0;
 	}
-        SetSelection(selected);
+        SetSelection(m_selected);
 	SetToolTip(_("Select period to display"));
 }
 
 int TimeWidget::SelectPrev()
 {
-	int p = prev;
+	int p = m_previous;
 	Select(p);
 	return p;
 }
 
 void TimeWidget::Select(int item, bool refresh)
 {
-	prev=selected;
+	m_previous = m_selected;
 	SetSelection(item);
 	if (refresh)
-		draws_widget->SetPeriod((PeriodType)item);
-	draws_widget->SetFocus();
-        selected = item; 
+		m_draws_widget->SetPeriod((PeriodType)item);
+        m_selected = item; 
 }
+
 void TimeWidget::OnRadioSelected(wxCommandEvent& event)
 {
-        if (event.GetSelection() != selected)
+        if (event.GetSelection() != m_selected) {
 		Select(event.GetSelection());
+		GetParent()->SetFocus();
+	}
 }
 void TimeWidget::OnFocus(wxFocusEvent &event) {
-#ifndef MINGW32
-	draws_widget->SetFocus();
-#endif
+	GetParent()->SetFocus();
+}
+
+void TimeWidget::PeriodChanged(Draw *draw, PeriodType pt) {
+	if (draw->GetSelected())
+		SetSelection(pt);
+}
+
+void TimeWidget::DrawInfoChanged(Draw *draw) {
+	if (draw->GetSelected())
+		SetSelection(draw->GetPeriod());
 }

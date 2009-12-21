@@ -19,16 +19,24 @@
 #include <wx/statline.h>
 #include <map>
 
-#include "xydiag.h"
+#include "szhlpctrl.h"
+#include "szframe.h"
+
+#include "ids.h"
+#include "classes.h"
+#include "coobs.h"
+#include "drawdnd.h"
 #include "timeformat.h"
+#include "drawtime.h"
+#include "database.h"
+#include "dbinquirer.h"
+#include "draw.h"
 #include "datechooser.h"
+#include "progfrm.h"
+#include "xydiag.h"
 #include "cfgmgr.h"
 #include "xygraph.h"
 #include "incsearch.h"
-#include "progfrm.h"
-
-
-
 
 XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, DatabaseManager *db, XYFrame *frame) : 
 		wxDialog(parent, 
@@ -342,7 +350,7 @@ void DataMangler::Go() {
 }
 
 void DataMangler::ProgressFetch() {
-	TimeIndex idx(m_period, /*FIXME*/100);
+	TimeIndex idx(m_period);
 
 	DatabaseQuery *q_x = CreateDataQuery(m_dx, m_period, 0);
 	DatabaseQuery *q_y = CreateDataQuery(m_dy, m_period, 1);

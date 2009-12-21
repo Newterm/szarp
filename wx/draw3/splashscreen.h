@@ -40,11 +40,6 @@
 #include <wx/statline.h>
 #endif
 
-#ifdef new
-#undef new 
-#endif
-
-#include "drawapp.h"
 #include "imagepanel.h"
 
 /**Frame displaying spalsh screen*/

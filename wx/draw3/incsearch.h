@@ -37,13 +37,6 @@
 
 #include <wx/textctrl.h>
 #include <wx/listctrl.h>
-#include "cfgmgr.h"
-#include "selset.h"
-#include "seldraw.h"
-#include "coobs.h"
-
-class ListCtrl;
-class DatabaseManager;
 
 /**
  * Widget "Incremental Search" for looking params and windows.
@@ -118,30 +111,24 @@ public:
 	 * Gets DrawInfo about selected draw.
 	 * @param prev_draw pointer to index of previous draw (-1 to start)
 	 */
-	DrawInfo* GetDrawInfo(long* prev_draw);
+	DrawInfo* GetDrawInfo(long* prev_draw, DrawSet** set = NULL);
 
 	/**Displayed item*/
 	struct Item {
-		/** window name */
-		wxString set;
-		
-		/** draw name */
-		wxString draw;
-
-		/** index of draw in window */	
-		int id;
-
 		/**if id requals -1 this filed hold pointer to DrawInfo this item refers*/
 		DrawInfo *draw_info;
+
+		/**Draw set*/
+		DrawSet  *draw_set;
 		
 		/** @return name: drawname + " - Window" + drawset 
 		 * or just set if in window search mode */
 		wxString GetName()
 		{
-			if(id==-1 && draw==wxEmptyString)
-				return set;
+			if(draw_info == NULL)
+				return draw_set->GetName();
 			else
-				return draw + _(" - Window ") + set;
+				return draw_info->GetName() + _(" - Window ") + draw_set->GetName();
 		}
 	};
 
@@ -182,11 +169,13 @@ public:
 
 	void FinishWindowCreation();
 
-	void StartWith(wxString prefix, wxString set_name, wxString pname);
+	void StartWith(DrawSet *set);
+
+	void StartWith(DrawSet *set, DrawInfo* info);
 
 	WX_DEFINE_ARRAY(Item*, ItemsArray);
 
-	wxString GetSelectedSet();
+	DrawSet* GetSelectedSet();
 
 	void AddExtraDrawInfos(std::map<wxString, std::pair<wxString, std::vector<DrawInfo*> > > extra);
 
@@ -195,9 +184,8 @@ private:
 
 	void SelectEntry(wxString string_to_select);
 
-	wxString m_start_prefix;
-	wxString m_start_set;
-	wxString m_start_draw_name;
+	DrawSet* m_start_set;
+	DrawInfo* m_start_draw_info;
 
 	DatabaseManager *db_mgr;
 

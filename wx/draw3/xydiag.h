@@ -37,20 +37,6 @@
 
 #include <boost/tuple/tuple.hpp>
 
-#include "ids.h"
-#include "drawdnd.h"
-#include "draw.h"
-#include "dbinquirer.h"
-#include "coobs.h"
-
-class DrawInfo;
-class ConfigManager;
-class IncSearch;
-class ProgressFrame;
-class XYFrame;
-struct XYGraph;
-class XYDialog;
-
 
 /**Fetches and associated corresponding values with each other*/
 class DataMangler : public DBInquirer {

@@ -35,10 +35,6 @@
 #endif
 #include <wx/statline.h>
 
-#include "drawobs.h"
-class Draw;
-class DrawPanel;
-
 /**Label displaying value of param*/
 class TTLabel : public wxWindow {
 	/**Param value*/
@@ -106,6 +102,11 @@ class SummaryWindow : public wxDialog, public DrawObserver {
 	/**Line separating values*/
 	LinePtrArray m_lines;
 
+	/**Parent panel*/
+	DrawPanel *draw_panel;
+
+	DrawsController *draws_controller;
+
 	/**Adjusts window size to the size of a main sizer*/
 	void Resize();
 
@@ -129,19 +130,19 @@ class SummaryWindow : public wxDialog, public DrawObserver {
 
 	void OnHelpButton(wxCommandEvent &event);
 
-	/**Parent panel*/
-	DrawPanel *draw_panel;
+	void ResetDraw(Draw *draw);
+
+	void SetDraw(Draw *draw);
+
 	public:
 	SummaryWindow(DrawPanel* panel, wxWindow *parent, wxMenuItem *m_summ_item);
 
 	/**Displays window and activates object*/
 	virtual bool Show(bool show = true);
 
-	/**Removes @see Draw from observed draw's list*/
-	virtual void Detach(Draw* draw);
+	virtual void Detach(DrawsController* draws_controller);
 
-	/**Adds @see Draw to observer draws' list*/
-	virtual void Attach(Draw* draw);
+	virtual void Attach(DrawsController* draws_controller);
 
 	/**Causes recalulation of summary values of notifing draw (in OnIdle handler)*/
 	virtual void DrawInfoChanged(Draw *draw);
@@ -154,6 +155,8 @@ class SummaryWindow : public wxDialog, public DrawObserver {
 
 	/**Causes refresh of summary values of notifing draw (in OnIdle handler)*/
 	virtual void StatsChanged(Draw *draw);
+
+	virtual void DoubleCursorChanged(DrawsController *draws_controller);
 
 	/**Causes refresh of given param value*/
 	void UpdateDraw(Draw *draw);

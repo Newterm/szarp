@@ -44,35 +44,11 @@
  * widgets. It can be used as a main frame for program tab or windows.
  */
 
-class ConfigManager;
-class InfoWidget;
-class DrawsWidget;
-class SelectDrawWidget;
-class TimeWidget;
-class DatabaseManager;
-class DrawPanelKeyboardHandler;
-class SelectSetWidget;
-class SummaryWindow;
-class DisplayTimeWidget;
-class IncSearch;
-class PieWindow;
-class RelWindow;
-class DrawPicker;
-class DrawToolBar;
-class DrawFrame;
-class DrawGraphs;
-class DrawSet;
-class DrawInfo;
-class RemarksFetcher;
-class RemarksHandler;
-
-#include "coobs.h"
-
-class DrawPanel : public wxPanel, public ConfigObserver {
+class DrawPanel : public wxPanel, public ConfigObserver, public DrawObserver {
 	friend class DrawPanelKeyboardHandler;
 
 	/**Creates children widgets*/
-	void CreateChildren(DrawSet *set, PeriodType pt, time_t time, int selected_draw);
+	void CreateChildren(const wxString& Set, PeriodType pt, time_t time, int selected_draw);
 
 	public:
 	/**
@@ -81,8 +57,8 @@ class DrawPanel : public wxPanel, public ConfigObserver {
 	 * @param parent parent window
 	 * @param id widget identifier
 	 */
-	DrawPanel(DatabaseManager *_db_mgr, ConfigManager *cfg, RemarksHandler *rh, wxString defid, DrawSet *set, PeriodType pt, time_t time, 
-		wxWindow *parent, wxWindowID id, DrawFrame *_df, int selected_draw=-1);
+	DrawPanel(DatabaseManager *_db_mgr, ConfigManager *cfg, RemarksHandler *rh, wxString prefix, const wxString& set, PeriodType pt, time_t time, 
+		wxWindow *parent, wxWindowID id, DrawFrame *_df, int selected_draw = 0);
 	virtual ~DrawPanel();
 
 	/**Displays @see IncSearch widget allowing user to switch set and draw*/
@@ -110,7 +86,7 @@ class DrawPanel : public wxPanel, public ConfigObserver {
 	void OnSummaryWindow(wxCommandEvent &event);
 
 	/**Stars panel activity*/
-	void Start();
+	//void Start();
 
 	/**Activates/deacivates panel, if panel is deactivated all extra windows
 	 * (@see RelWindow, @see PieWindow, @see SummaryWindow) are hiden. If panel
@@ -147,6 +123,8 @@ class DrawPanel : public wxPanel, public ConfigObserver {
 
 	/**Jumps to date*/
 	void OnJumpToDate();
+
+	void ShowRemarks();
 	
 	/** 
 	 * Changes name of given set and updated its draws.
@@ -183,12 +161,6 @@ class DrawPanel : public wxPanel, public ConfigObserver {
 
 	/**toggles split cursor*/
 	void ToggleSplitCursor(wxCommandEvent &event);
-
-	/**Split cursor uncheck*/
-	void UncheckSplitCursor();
-
-	/**Split cursor check*/
-	void CheckSplitCursor();
 
 	/**Handles priting request.
 	 * @param preview if true print previev dialog, if false a print dialog will be shown*/
@@ -233,8 +205,6 @@ class DrawPanel : public wxPanel, public ConfigObserver {
 
 	void SetFocus();
 
-	void SetConfigName(wxString id);
-
 	size_t SetNumberOfStripes();
 
 	size_t GetNumberOfStripes();
@@ -243,8 +213,13 @@ class DrawPanel : public wxPanel, public ConfigObserver {
 
 	bool Switch(wxString set, wxString prefix, time_t time, PeriodType pt = PERIOD_T_OTHER, int selected_draw = -1);
 
-	void ShowRemarks();
+	virtual void DrawInfoChanged(Draw *d);
 
+	virtual void DoubleCursorChaned(DrawsController *d);
+
+	virtual void FilterChanged(DrawsController *draws_ctrl);
+
+	virtual void PeriodChanged(Draw * draw, PeriodType pt);
 	protected:
 	/** @see DrawFrame */
 	DrawFrame *df;
@@ -286,7 +261,7 @@ class DrawPanel : public wxPanel, public ConfigObserver {
 	DrawToolBar *tb;
 
 	/** current configuration title*/
-	wxString defid;
+	wxString prefix;
 
 	/**Window dispalying summary values, @see SummaryWindow*/
 	SummaryWindow *smw;

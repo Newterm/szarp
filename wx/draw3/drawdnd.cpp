@@ -18,8 +18,9 @@
 */
 
 #include "cconv.h"
+#include "ids.h"
+#include "classes.h"
 #include "drawdnd.h"
-#include "statdiag.h"
 #include "drawurl.h"
 
 const wxChar* DrawInfoDataObject::draw_info_format_id = _T("draw_info_pointer");

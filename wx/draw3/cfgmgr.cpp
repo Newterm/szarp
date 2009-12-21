@@ -20,15 +20,11 @@
  * draw3
  * SZARP
 
- * Pawe³ Pa³ucha pawel@praterm.com.pl
- *
+* Pawe³ Pa³ucha pawel@praterm.com.pl
+*
  * $Id$
  * Configuration manager.
  */
-
-#include "cfgmgr.h"
-#include "libpar.h"
-#include "drawpsc.h"
 
 #include <set>
 
@@ -44,10 +40,21 @@
 #include <wx/tokenzr.h>
 
 #include "ids.h"
+#include "classes.h"
+
+#include "cfgmgr.h"
+#include "libpar.h"
+#include "drawpsc.h"
+
 #include "cconv.h"
 #include "coobs.h"
 #include "defcfg.h"
+#include "dbmgr.h"
+#include "splashscreen.h"
+#include "drawapp.h"
 #include "dcolors.h"
+
+
 
 wxString DrawParam::GetBasePrefix() {
 	assert (m_param != NULL);
@@ -309,14 +316,19 @@ DrawSet::DrawSet(const DrawSet& drawSet)
 
 DrawSet::~DrawSet()
 {
-	for (DrawInfoArray::iterator i = m_draws->begin();
-			i != m_draws->end();
-			i++)
-		delete (*i);
+	if (m_draws) {
+		for (DrawInfoArray::iterator i = m_draws->begin();
+				i != m_draws->end();
+				i++)
+			delete (*i);
 
-	delete m_draws;
+		delete m_draws;
+	}
 }
 
+DrawsSets* DrawSet::GetDrawsSets() {
+	return m_cfg;
+}
 
 void
 DrawSet::Add(DrawInfo* drawInfo)
@@ -399,7 +411,6 @@ DrawSet::GetName()
 	return m_name;
 
     if (m_draws->size() == 0) {
-	wxLogWarning(_T("Empty DrawSet"));
 	return m_name;
     }
 
@@ -667,7 +678,7 @@ void IPKConfig::AttachDefined() {
 	SetsNrHash& pc = df->GetPrefixes();
 
 	if (pc.find(GetPrefix()) != pc.end())
-		drawSets[df->GetName()] = df;
+		drawSets[df->GetName()] = df->MakeShallowCopy(this);
 
     }
 

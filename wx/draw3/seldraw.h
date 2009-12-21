@@ -39,13 +39,6 @@
 #endif
 #include <wx/validate.h>
 
-#include "ids.h"
-#include "pscgui.h"
-#include "drawpnl.h"
-
-class SelectSetWidget;
-class DrawsWidget;
-class ConfigManager;
 
 /** Validator class - checks if draw can be disabled, and inform
  * drawswdg about enabling/disabling widget */
@@ -93,19 +86,19 @@ class SelectDrawValidator : public wxValidator {
 	protected:
 	DECLARE_EVENT_TABLE()
 
-	wxMenu *menu;		/**menu with item allowing user to block a draw*/
+	wxMenu *m_menu;		/**menu with item allowing user to block a draw*/
 
-	wxCheckBox *cb;		/**poineter do draw's checkbox, for menu popup*/
+	wxCheckBox *m_cb;	/**poineter do draw's checkbox, for menu popup*/
 	
-	DrawsWidget *drawswdg;	/** pointer to draws widget, we have to communicate with this object */
-	int index;		/** index of draw to validate */
+	DrawsWidget *m_draws_wdg;/** pointer to draws widget, we have to communicate with this object */
+	int m_index;		/** index of draw to validate */
    
 };
 
 /**
  * Widget for selecting draws.
  */
-class SelectDrawWidget: public wxWindow
+class SelectDrawWidget: public wxWindow, public DrawObserver
 {
 public:
 	SelectDrawWidget() : wxWindow()
@@ -119,13 +112,7 @@ public:
 	 * @param parent parent widget
 	 * @param widget id
 	 */
-	SelectDrawWidget(ConfigManager *cfg, DatabaseManager *dbmgr, wxString confid,
-			SelectSetWidget *selset, DrawsWidget *drawswdg,
-			wxWindow *parent, wxWindowID id = -1);
-	/**
-	 * Called when set of draw was changed. */
-	void SetChanged();
-
+	SelectDrawWidget(ConfigManager *cfg, DatabaseManager *dbmgr, DrawsWidget *drawswdg, wxWindow *parent, wxWindowID id = -1);
 	/**
 	 * Enables/disables draw
 	 * @param index draw index 
@@ -133,36 +120,34 @@ public:
 
 	void SetDrawEnable(int index, bool enable);
 	
-	/** 
-	 * Select draw given by name
-	 * @param name name of draw
-	 */ 
-	void SelectDraw(wxString name);
-
 	void SetChecked(int idx, bool checked);
 
 	void SetBlocked(int idx, bool blocked);
 
+	void BlockedChanged(Draw *draw);
+
 	void OpenParameterDoc(int i = -1);	
+
+	virtual void DrawInfoChanged(Draw *draw);
 protected:
 	/** configuration manager */
-	ConfigManager *cfg;	
+	ConfigManager *m_cfg;	
 	/** database manager */
-	DatabaseManager *dbmgr;	
-	/** configuration identifier (title) */
-	wxString confid;
-	/** widget for selecting set of draws */
-	SelectSetWidget *selset;
+	DatabaseManager *m_dbmgr;
+	/** configuration prefix */
+	wxString m_prefix;
 	/** widget for drawing draws */
-	DrawsWidget *drawswdg;
+	DrawsWidget *m_draws_wdg;
 	/** array of checkboxes */
-	wxCheckBox cb_l[MAX_DRAWS_COUNT];
+	wxCheckBox m_cb_l[MAX_DRAWS_COUNT];
 
 	/**return number of selected draw*/
 	int GetClicked(wxCommandEvent &event);
 
 	/**Blocks, unblocks a draw*/
 	void OnBlockCheck(wxCommandEvent &event);
+
+	void SetChanged(DrawsController *draws_controller);
 	
 	/** sets parameter */
 	void OnPSC(wxCommandEvent &event);
@@ -172,9 +157,6 @@ protected:
 
 	/** edit parametr */
 	void OnEditParam(wxCommandEvent &event);
-
-	/** PscGUI of current configuration*/
-	PscGUI* m_pscg;
 
         DECLARE_DYNAMIC_CLASS(SelectDrawWidget)
         DECLARE_EVENT_TABLE()

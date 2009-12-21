@@ -26,14 +26,6 @@
  * Creating new defined window
  */
 
-#include "cconv.h"
-#include "drawpick.h"
-#include "dbinquirer.h"
-#include "paredit.h"
-#include "paramslist.h"
-#include "szframe.h"
-#include "cfgdlg.h"
-
 #include <wx/colordlg.h>
 #include <wx/filesys.h>
 #include <wx/file.h>
@@ -43,6 +35,24 @@
 #include <sys/types.h>
 
 #include <time.h>
+
+#include "szhlpctrl.h"
+
+#include "cconv.h"
+#include "ids.h"
+#include "classes.h"
+#include "coobs.h"
+#include "drawpick.h"
+#include "dbinquirer.h"
+#include "database.h"
+#include "paredit.h"
+#include "cfgmgr.h"
+#include "paramslist.h"
+#include "defcfg.h"
+#include "szframe.h"
+#include "cfgdlg.h"
+#include "dbmgr.h"
+#include "incsearch.h"
 
 #include "codeeditor.h"
 

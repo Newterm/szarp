@@ -36,12 +36,6 @@
 #endif
 #include <wx/dnd.h>
 
-#include "ids.h"
-
-class DrawInfo;
-class StatDialog;
-class ConfigManager;
-
 /**Dataobject objects holding reference to @see DrawInfo object*/
 class DrawInfoDataObject : public wxDataObject {
 	/** pointer to a carried DrawInfo object*/

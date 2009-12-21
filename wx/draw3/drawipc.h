@@ -36,9 +36,6 @@
 #include <wx/ipc.h>
 #endif
 
-class FrameManager;
-class ConfigManager;
-
 /**IPC client, used by instances that detect that other copy of program is already running.*/
 class DrawClient : public wxClient {
 	/**Socket address*/

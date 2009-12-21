@@ -17,20 +17,30 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
-#include "ids.h"
-#include "relwin.h"
-#include "draw.h"
-#include "cconv.h"
-#include "timeformat.h"
-#include "drawfrm.h"
-#include "cfgmgr.h"
-
 #include <algorithm>
 #include <sstream>
 #include <wx/statline.h>
 
-using std::max;
+#include "cconv.h"
 
+#include "szhlpctrl.h"
+
+#include "ids.h"
+#include "classes.h"
+#include "cfgmgr.h"
+
+#include "drawobs.h"
+
+#include "drawtime.h"
+#include "database.h"
+#include "draw.h"
+#include "dbinquirer.h"
+#include "drawsctrl.h"
+
+#include "timeformat.h"
+#include "coobs.h"
+#include "drawpnl.h"
+#include "relwin.h"
 
 BEGIN_EVENT_TABLE(RelWindow, wxDialog)
     EVT_IDLE(RelWindow::OnIdle)
@@ -68,6 +78,9 @@ RelWindow::RelWindow(wxWindow *parent, DrawPanel *panel, wxMenuItem* pie_item) :
 	SetSizer(sizer);
 
 	m_draws.SetCount(MAX_DRAWS_COUNT, NULL);
+
+	m_draws_controller = NULL;
+
 }
 
 void RelWindow::OnIdle(wxIdleEvent &event) {
@@ -128,7 +141,7 @@ void RelWindow::OnIdle(wxIdleEvent &event) {
 		std::wstringstream wss;
 		wss.precision(2);
 		wss << (first_value / second_value);
-		m_label->SetLabel(wxString::Format(_T("%s %s/%s"), wss.str().c_str(), first_value / second_value, unit1.c_str(), unit2.c_str()));
+		m_label->SetLabel(wxString::Format(_T("%s %s/%s"), wss.str().c_str(), unit1.c_str(), unit2.c_str()));
 	} else
 		m_label->SetLabel(_T(""));
 
@@ -141,8 +154,8 @@ void RelWindow::Resize() {
 	int w, h;
 	GetSize(&w, &h);
 	wxSize s = GetSizer()->GetMinSize();
-	int wn = max(w, s.GetWidth());
-	int hn = max(h, s.GetHeight());
+	int wn = std::max(w, s.GetWidth());
+	int hn = std::max(h, s.GetHeight());
 	SetSize(wn, hn);
 	Layout();
 }
@@ -152,15 +165,10 @@ void RelWindow::Activate() {
 		return;
 	m_active = true;
 
-       	for (size_t i = 0; i < m_draws.Count(); ++i) {
-		ObservedDraw* od = m_draws[i];
-		if (od) {
-			od->draw->AttachObserver(this);
-			od->rel = od->draw->GetDrawInfo()->GetSpecial() == TDraw::REL;
-			if (od->rel)
-				m_proper_draws_count++;
-		}
-	}
+	m_draws_controller->AttachObserver(this);
+
+       	for (size_t i = 0; i < m_draws_controller->GetDrawsCount(); ++i)
+		SetDraw(m_draws_controller->GetDraw(i));
 
 	m_update = true;
 
@@ -172,22 +180,16 @@ void RelWindow::Deactivate() {
 
 	m_active = false;
 
-       	for (size_t i = 0; i < m_draws.Count(); ++i) {
-		ObservedDraw* od = m_draws[i];
-		if (od != NULL) {
-			od->draw->DetachObserver(this);
-			if (od->rel)
-				m_proper_draws_count--;
-		}
-	}
+       	for (size_t i = 0; i < m_draws.Count(); ++i)
+		ResetDraw(m_draws[i]->draw);
+
+	m_draws_controller->DetachObserver(this);
 
 }
 
-void RelWindow::Detach(Draw *draw) {
-	assert(draw);
+void RelWindow::ResetDraw(Draw *draw) {
 
-	if (m_active) 
-		draw->DetachObserver(this);
+	assert(draw);
 
 	int no = draw->GetDrawNo();
 
@@ -202,30 +204,35 @@ void RelWindow::Detach(Draw *draw) {
 
 	if (m_proper_draws_count < 2)
 		m_update = true;
+
 }
 
-void RelWindow::Attach(Draw *draw) {
+void RelWindow::Detach(DrawsController *draw) {
+	m_draws_controller->DetachObserver(this);
+}
 
-	if (m_active) 
-		draw->AttachObserver(this);
+void RelWindow::Attach(DrawsController *draws_controller) {
+	m_draws_controller = draws_controller;
+}
 
+void RelWindow::SetDraw(Draw *draw) {
 	int no = draw->GetDrawNo();
 
 	assert(m_draws[no] == NULL);
 
 	m_draws[no] = new ObservedDraw(draw);
-	m_draws[no]->rel = draw->GetDrawInfo()->GetSpecial() == TDraw::REL; 
+	m_draws[no]->rel = draw->GetDrawInfo() && draw->GetDrawInfo()->GetSpecial() == TDraw::REL; 
 
 	if (m_draws[no]->rel) {
 		m_update = true;
 		m_proper_draws_count++;
 	}
-
 }
 
+
 void RelWindow::DrawInfoChanged(Draw *draw) {
-	Detach(draw);
-	Attach(draw);
+	ResetDraw(draw);
+	SetDraw(draw);
 }
 
 void RelWindow::Update(Draw *draw) {

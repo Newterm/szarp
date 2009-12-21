@@ -19,16 +19,28 @@
 #include <wx/statline.h>
 #include <wx/minifram.h>
 
+#include "szhlpctrl.h"
+
+#include "szframe.h"
 #include "cconv.h"
 
+#include "ids.h"
+#include "classes.h"
+#include "coobs.h"
+
+#include "drawtime.h"
 #include "timeformat.h"
+#include "dbinquirer.h"
+#include "database.h"
+#include "drawdnd.h"
+#include "draw.h"
 #include "datechooser.h"
 #include "cfgmgr.h"
 #include "dbmgr.h"
 #include "incsearch.h"
-#include "statdiag.h"
 #include "drawdnd.h"
 #include "progfrm.h"
+#include "statdiag.h"
 
 
 StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, ConfigManager *cfg) : 
@@ -298,7 +310,7 @@ void StatDialog::StartFetch() {
 
 void StatDialog::ProgressFetch() {
 
-	TimeIndex idx(m_period, /*FIXME:*/ 100);
+	TimeIndex idx(m_period);
 
 	DatabaseQuery* q = CreateDataQuery(m_draw, m_period);
 
@@ -393,11 +405,11 @@ void StatDialog::OnPeriodChange(wxCommandEvent &event) {
 	wxButton *button;
 
 	button = wxDynamicCast(FindWindow(STAT_START_TIME), wxButton);
-	m_start_time.AdjustToPeriod();
+	m_start_time.SetPeriod(m_period);
 	button->SetLabel(FormatTime(m_start_time.GetTime(), m_period));
 
 	button = wxDynamicCast(FindWindow(STAT_END_TIME), wxButton);
-	m_end_time.AdjustToPeriod();
+	m_end_time.SetPeriod(m_period);
 	button->SetLabel(FormatTime(m_end_time.GetTime(), m_period));
 }
 

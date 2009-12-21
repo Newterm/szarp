@@ -22,12 +22,20 @@
 #include <wx/dcbuffer.h>
 #include <wx/splitter.h>
 
+#include "szhlpctrl.h"
 
 #include "cconv.h"
+#include "szframe.h"
 
-#include "defcfg.h"
+#include "ids.h"
+#include "classes.h"
+
 #include "cfgmgr.h"
-#include "frmmgr.h"
+#include "coobs.h"
+#include "defcfg.h"
+#include "drawtime.h"
+#include "dbinquirer.h"
+#include "database.h"
 #include "dbmgr.h"
 #include "draw.h"
 #include "drawview.h"
@@ -36,6 +44,8 @@
 #include "progfrm.h"
 #include "timeformat.h"
 #include "drawprint.h"
+
+#include "frmmgr.h"
 
 extern int CursorMovementSpeed[PERIOD_T_LAST];
 
@@ -135,11 +145,13 @@ void XYFrame::OnPrintPreview(wxCommandEvent &event) {
 
 void XYFrame::OnZoomOut(wxCommandEvent &event) {
 	m_panel->ZoomOut();	
+	m_panel->SetFocus();
 }
 
 void XYFrame::OnHelp(wxCommandEvent &event) {
 	SetHelpText(_T("draw3-ext-chartxy"));
 	wxHelpProvider::Get()->ShowHelp(this);
+	m_panel->SetFocus();
 }
 
 BEGIN_EVENT_TABLE(XYFrame, szFrame)
@@ -705,6 +717,7 @@ void XYGraphWidget::OnLeftMouseDown(wxMouseEvent &event) {
 	SetCursorIndex(result.i);
 
 	UpdateInfoWidget();
+	SetFocus();
 
 }
 
@@ -716,6 +729,7 @@ void XYGraphWidget::OnRightMouseDown(wxMouseEvent &event) {
 	m_current_rect.y = y;
 	m_current_rect.width = 0;
 	m_current_rect.height = 0;
+	SetFocus();
 
 }
 
@@ -758,6 +772,7 @@ void XYGraphWidget::OnMouseMove(wxMouseEvent &event) {
 	if (m_current_rect.width) 
 		REFRESH_RECT(m_current_rect);
 
+	SetFocus();
 }
 
 
@@ -825,7 +840,7 @@ void XYGraphWidget::OnRightMouseUp(wxMouseEvent &event) {
 
 	m_current_rect.x = -1;
 	Refresh();
-
+	SetFocus();
 }
 
 void XYGraphWidget::ZoomOut() {
@@ -858,6 +873,7 @@ void XYGraphWidget::ZoomOut() {
 	RepaintBitmap();
 	Refresh();
 
+	SetFocus();
 }
 
 void XYGraphWidget::EnableZoomOut(bool enable) {
@@ -1185,7 +1201,7 @@ void XYPointInfo::OnGoToGraph(wxCommandEvent &event) {
 
 	time_t t = m_point_dates[m_point_dates_choice->GetSelection()].GetTime().GetTicks();
 
-	m_frame_manager->CreateFrame(m_dx->GetBasePrefix(), dset, m_period, t, wxDefaultSize, wxDefaultPosition);
+	m_frame_manager->CreateFrame(m_dx->GetBasePrefix(), dset->GetName(), m_period, t, wxDefaultSize, wxDefaultPosition);
 }
 
 BEGIN_EVENT_TABLE(XYPointInfo, wxPanel)

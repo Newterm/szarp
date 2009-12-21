@@ -23,8 +23,14 @@
  *
  * $Id$
  */
-#include "splashscreen.h"
+
+
 #include "szframe.h"
+
+#include "ids.h"
+#include "classes.h"
+#include "splashscreen.h"
+#include "drawapp.h"
 
 SplashScreen::SplashScreen(wxBitmap *bitmap) : wxDialog(NULL, ID_SplashScreen, wxString(_("Starting draw3...")), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
 {

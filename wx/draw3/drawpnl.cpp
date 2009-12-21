@@ -25,9 +25,17 @@
  * Single panel for all program widgets.
  */
 
-#include "drawpnl.h"
-#include "ids.h"
+#include "szhlpctrl.h"
 
+#include "ids.h"
+#include "classes.h"
+
+#include "drawtime.h"
+#include "coobs.h"
+#include "dbinquirer.h"
+#include "drawobs.h"
+#include "database.h"
+#include "drawsctrl.h"
 #include "summwin.h"
 #include "cfgmgr.h"
 #include "disptime.h"
@@ -37,6 +45,7 @@
 #include "selset.h"
 #include "timewdg.h"
 #include "drawtb.h"
+#include "drawdnd.h"
 #include "incsearch.h"
 #include "pscgui.h"
 #include "dbmgr.h"
@@ -47,8 +56,12 @@
 #include "wxgraphs.h"
 #include "glgraphs.h"
 #include "gcdcgraphs.h"
+#include "szframe.h"
 #include "drawfrm.h"
 #include "remarks.h"
+#include "drawpnl.h"
+#include "drawapp.h"
+#include "draw.h"
 
 #include <wx/xrc/xmlres.h>
 
@@ -266,24 +279,20 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 	case '[':
 		{
 			int index = panel->dw->GetSelectedDrawIndex();
-			if (panel->dw->IsNoData() == false && index >= 0) {
+			if (index >= 0) {
 				for (int i = 0; i < MAX_DRAWS_COUNT; i++) {
 					if (i == index)
 						continue;
-					if (panel->dw->SetDrawDisable(i));
-						panel->sw->SetChecked(i, false);
+					panel->dw->SetDrawDisable(i);
 				}
 			}
 		}
 		break;
 	case ']':
 		{
-			if (!panel->dw->IsNoData())
-				for (int i = 0; i < MAX_DRAWS_COUNT; i++) {
-					panel->dw->SetDrawEnable(i);
-					if (panel->dw->IsDrawEnabled(i))
-						panel->sw->SetChecked(i, true);
-				}
+			for (int i = 0; i < MAX_DRAWS_COUNT; i++) {
+				panel->dw->SetDrawEnable(i);
+			}
 		}
 		break;
 	case WXK_F1:
@@ -300,12 +309,12 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 }
 
 DrawPanel::DrawPanel(DatabaseManager* _db_mgr, ConfigManager * _cfg, RemarksHandler * _rh,
-		wxString _defid, DrawSet *set, PeriodType pt,  time_t time,
+		wxString _prefix, const wxString& set, PeriodType pt,  time_t time,
 		wxWindow * parent, wxWindowID id, DrawFrame *_df, int selected_draw)
 	:  wxPanel(parent, id, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS),
 	df(_df), iw(NULL), dw(NULL), dtw(NULL), ssw(NULL), sw(NULL), tw(NULL),
 	dinc(NULL), sinc(NULL), db_mgr(_db_mgr), cfg(_cfg),
-	defid(_defid), smw(NULL), rh(_rh), rmf(NULL), pw(NULL), m_realized(false)
+	prefix(_prefix), smw(NULL), rh(_rh), rmf(NULL), pw(NULL), m_realized(false)
 {
 #ifdef WXAUI_IN_PANEL
 	am.SetManagedWindow(this);
@@ -318,7 +327,7 @@ DrawPanel::DrawPanel(DatabaseManager* _db_mgr, ConfigManager * _cfg, RemarksHand
 
 }
 
-void DrawPanel::CreateChildren(DrawSet *set, PeriodType pt, time_t time, int selected_draw)
+void DrawPanel::CreateChildren(const wxString& set, PeriodType pt, time_t time, int selected_draw)
 {
 	if (m_realized)
 		return;
@@ -390,9 +399,9 @@ void DrawPanel::CreateChildren(DrawSet *set, PeriodType pt, time_t time, int sel
 
 	tb = new DrawToolBar(this);
 
-	rmf = new RemarksFetcher(rh, tb, df);
+	rmf = new RemarksFetcher(rh, df);
 
-	dw = new DrawsWidget(this, cfg, db_mgr, dg, smw, pw, rw, rmf, -1, iw, pt, time, selected_draw);
+	dw = new DrawsWidget(this, cfg, db_mgr, dg, rmf);
 
 	dg->SetDrawsWidget(dw);
 
@@ -407,17 +416,16 @@ void DrawPanel::CreateChildren(DrawSet *set, PeriodType pt, time_t time, int sel
 	 * have it's own timer but it is broken under Windows
 	 * version, so we have to use only one timer */
 	dw->SetDisplayTimeWidget(dtw);
-	ssw = new SelectSetWidget(cfg, defid,
+	ssw = new SelectSetWidget(cfg,
 #ifdef WXAUI_IN_PANEL
 			hpanel,
 #else
 			this,
 #endif
 			drawID_SELSET,
-			set,
 			width);
 
-	sw = new SelectDrawWidget(cfg, db_mgr, defid, ssw, dw,
+	sw = new SelectDrawWidget(cfg, db_mgr, dw,
 #ifdef WXAUI_IN_PANEL
 			vpanel,
 #else
@@ -434,8 +442,7 @@ void DrawPanel::CreateChildren(DrawSet *set, PeriodType pt, time_t time, int sel
 			dw,
 			pt);
 
-	dw->SetSelWidgets(sw, ssw, tw);
-	if (cfg->IsPSC(cfg->GetConfig(defid)->GetPrefix()))
+	if (cfg->IsPSC(prefix))
 		menu_bar->FindItem(XRCID("SetParams"))->Enable(true);
 	else
 		menu_bar->FindItem(XRCID("SetParams"))->Enable(false);
@@ -512,10 +519,18 @@ void DrawPanel::CreateChildren(DrawSet *set, PeriodType pt, time_t time, int sel
 	sizer_1->SetSizeHints(this);
 #endif
 
-	//dg->SetFocus();
+	dw->AttachObserver(dg);
+	dw->AttachObserver(iw);
+	dw->AttachObserver(sw);
+	dw->AttachObserver(ssw);
+	dw->AttachObserver(smw);
+	dw->AttachObserver(tw);
+	dw->AttachObserver(pw);
+	dw->AttachObserver(rw);
+	dw->AttachObserver(rmf);
+	dw->AttachObserver(this);
 
-	sw->SetChanged();
-	SetChanged();
+	dw->SetSet(set, prefix, time, pt, selected_draw);
 
 }
 
@@ -584,7 +599,7 @@ void DrawPanel::GetDisplayedDrawInfo(DrawInfo **di, wxDateTime& time) {
 void DrawPanel::StartDrawSearch()
 {
 	assert(cfg != NULL);
-	assert(defid != wxEmptyString);
+	assert(prefix != wxEmptyString);
 
 	wxWindow *tlw = GetParent();
 	while (!tlw->IsTopLevel())
@@ -597,36 +612,29 @@ void DrawPanel::StartDrawSearch()
 		while (parent && (frame = wxDynamicCast(parent, wxFrame)) == NULL)
 			parent = parent->GetParent();
 
-		dinc = new IncSearch(cfg, defid, (wxFrame *) tlw, incsearch_DIALOG, _("Find"), false, true, false);
+		dinc = new IncSearch(cfg, GetConfigName(), (wxFrame *) tlw, incsearch_DIALOG, _("Find"), false, true, false);
 	}
 
 	DrawInfo* di = dw->GetCurrentDrawInfo();
+	DrawSet* set = dw->GetCurrentDrawSet();
 	if (di)
-		dinc->StartWith(GetPrefix(), di->GetSetName(), di->GetName());
+		dinc->StartWith(set, di);
 	int ret = dinc->ShowModal();
 	if (ret != wxID_OK)
 		return;
 
 	long int prev = -1;
-	di = dinc->GetDrawInfo(&prev);
+	di = dinc->GetDrawInfo(&prev, &set);
 	if (di == NULL)
 		return;
 
-	for (unsigned int i = 0; i < ssw->GetCount(); i++) {
-		DrawSet *s = (DrawSet*) ssw->GetClientData(i);
-		if (s->GetName() == di->GetSetName()) {
-			ssw->Select(i);
-			dw->SwitchToDrawInfoUponSetChange(di);
-			break;
-		}
-	}
-	sw->SetChanged();
-	SetChanged();
+	dw->SetSet(set, di);
+	
 }
 
 void DrawPanel::StartSetSearch() {
 	assert(cfg != NULL);
-	assert(defid != wxEmptyString);
+	assert(prefix != wxEmptyString);
 	
 	wxWindow *tlw = GetParent();
 	while (!tlw->IsTopLevel())
@@ -639,35 +647,22 @@ void DrawPanel::StartSetSearch() {
 		while (parent && (frame = wxDynamicCast(parent, wxFrame)) == NULL)
 			parent = parent->GetParent();
 
-		sinc = new IncSearch(cfg, defid, (wxFrame *) tlw, incsearch_DIALOG, _("Find"), true, true, false);
+		sinc = new IncSearch(cfg, GetConfigName(), (wxFrame *) tlw, incsearch_DIALOG, _("Find"), true, true, false);
 	}
 
-	sinc->StartWith(GetPrefix(), ssw->GetSelected()->GetName(), wxEmptyString);
+	sinc->StartWith(dw->GetCurrentDrawSet());
 	int ret = sinc->ShowModal();
 	if (ret != wxID_OK)
 		return;
 
-	wxString name = sinc->GetSelectedSet();
-
-	for (unsigned int i = 0; i < ssw->GetCount(); i++) {
-		DrawSet *s = (DrawSet*) ssw->GetClientData(i);
-		if (s->GetName() == name) {
-			ssw->Select(i);
-			break;
-		}
-	}
-        sw->SetChanged();
-	SetChanged();
+	DrawSet *s = sinc->GetSelectedSet();
+	if (s)
+		dw->SetSet(s);
 }
 
 void DrawPanel::StartPSC()
 {
-	cfg->EditPSC(cfg->GetConfig(defid)->GetPrefix());
-}
-
-void DrawPanel::Start()
-{
-	dw->SetDrawApply();
+	cfg->EditPSC(prefix);
 }
 
 void DrawPanel::ShowSummaryWindow(bool show) {
@@ -744,24 +739,22 @@ void DrawPanel::ShowRelWindow(bool show) {
 
 wxString DrawPanel::GetPrefix()
 {
-	return cfg->GetConfig(defid)->GetPrefix();
+	return prefix;
 }
 
 wxString DrawPanel::GetConfigName()
 {
-	return cfg->GetConfig(defid)->GetID();
-}
-
-void DrawPanel::SetConfigName(wxString id) {
-	if (defid != id) {
-		defid = id;
-		df->UpdatePanelName(this);
-	}
+	return cfg->GetConfigByPrefix(prefix)->GetID();
 }
 
 SummaryWindow *DrawPanel::GetSummaryWindow()
 {
 	return smw;
+}
+
+PeriodType DrawPanel::SetPeriod(PeriodType pt) {
+	dw->SetPeriod(pt);
+	return pt;
 }
 
 wxMenuBar *DrawPanel::GetMenuBar()
@@ -791,17 +784,6 @@ void DrawPanel::ToggleSplitCursor(wxCommandEvent& WXUNUSED(event)) {
 #endif
 }
 
-void DrawPanel::UncheckSplitCursor() {
-	tb->DoubleCursorToolUncheck();
-	menu_bar->Check(XRCID("SplitCursor"), false);
-}
-
-void DrawPanel::CheckSplitCursor() {
-	tb->DoubleCursorToolCheck();
-	menu_bar->Check(XRCID("SplitCursor"), true);
-}
-
-
 void DrawPanel::SetRenamed(wxString prefix, wxString from, wxString to, DrawSet* set) {
 	if (prefix != GetPrefix())
 		return;
@@ -814,7 +796,7 @@ void DrawPanel::SetRenamed(wxString prefix, wxString from, wxString to, DrawSet*
 		ssw->SetString(old, to); // change name
 		ssw->SetClientData(old, set); // update draws
 		if (ssw->GetSelection() == old)
-			sw->SetChanged();
+			dw->SetSet(set);
 	}
 }
 
@@ -825,18 +807,19 @@ void DrawPanel::SetRemoved(wxString prefix, wxString name) {
 
 	int old = ssw->FindString(name);
 	int sel = ssw->GetSelection();
-
 	ssw->Delete(old); // delete
+
 	if (ssw->GetCount() == 0) {
 		df->RemovePanel(this);
 	} else if (sel == old) {
-		ssw->SetSelection(0); // select first
-		ssw->SetChanged();
+		SortedSetsArray *array = cfg->GetConfigByPrefix(GetPrefix())->GetSortedDrawSetsNames();
+		dw->SetSet((*array)[0]);
+		delete array;
 	} else {
 		if (sel < old)
-			ssw->SelectWithoutEvent(sel);
+			ssw->SetSelection(sel);
 		else
-			ssw->SelectWithoutEvent(sel - 1);
+			ssw->SetSelection(sel - 1);
 	}
 }
 
@@ -849,11 +832,11 @@ void DrawPanel::SetModified(wxString prefix, wxString name, DrawSet *set) {
 		ssw->Append(name, set);
 	else
 		ssw->SetClientData(old, set); // update draws
-	sw->SetChanged();
+	dw->SetSet(set);
 }
 
 void DrawPanel::SelectSet(DrawSet *set) {
-	ssw->SelectSet(set);
+	dw->SetSet(set);
 }
 
 void DrawPanel::SetAdded(wxString prefix, wxString name, DrawSet* set) {
@@ -867,55 +850,57 @@ void DrawPanel::Print(bool preview) {
 	dw->Print(preview);
 }
 
-void DrawPanel::OnFilterChange(wxCommandEvent &event) {
-	if (event.GetId() == wxID_ANY)
-		return;
+void DrawPanel::DoubleCursorChaned(DrawsController *d) {
+	if (d->GetDoubleCursor()) {
+		menu_bar->Check(XRCID("SplitCursor"), true);
+		tb->DoubleCursorToolCheck();
+	} else {
+		tb->DoubleCursorToolUncheck();
+		menu_bar->Check(XRCID("SplitCursor"), false);
+	}
+}
 
-	int id = event.GetId();
-	int filter = 0;
+void DrawPanel::DrawInfoChanged(Draw *d) {
+	tb->DoubleCursorToolUncheck();
+}
+
+void DrawPanel::PeriodChanged(Draw *d, PeriodType pt) {
+	if (d->GetSelected())
+		tb->DoubleCursorToolUncheck();
+}
+
+void DrawPanel::FilterChanged(DrawsController *d) {
+	int filter = d->GetFilter();
 	wxMenuItem *main_menu_item;
 	wxMenuItem *popup_menu_item;
 
-	if(id==XRCID("F0") || id==XRCID("ContextF0"))
-	{
-		filter=0;
-        	main_menu_item = menu_bar->FindItem(XRCID("F0"));
-		popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF0"));
+	switch (filter) {
+		case 0:
+        		main_menu_item = menu_bar->FindItem(XRCID("F0"));
+			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF0"));
+			break;
+		case 1:
+        		main_menu_item = menu_bar->FindItem(XRCID("F1"));
+			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF1"));
+			break;
+		case 2:
+			main_menu_item = menu_bar->FindItem(XRCID("F2"));
+			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF2"));
+			break;
+		case 3:
+	        	main_menu_item = menu_bar->FindItem(XRCID("F3"));
+			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF3"));
+			break;
+		case 4:
+	        	main_menu_item = menu_bar->FindItem(XRCID("F4"));
+			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF4"));
+			break;
+		case 5:
+	        	main_menu_item = menu_bar->FindItem(XRCID("F5"));
+			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF5"));
+			break;
 	}
-	else if(id==XRCID("F1") || id==XRCID("ContextF1"))
-	{
-		filter=1;
-        	main_menu_item = menu_bar->FindItem(XRCID("F1"));
-		popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF1"));
-	}
-	else if(id==XRCID("F2") || id==XRCID("ContextF2"))
-	{
-		filter=2;
-        	main_menu_item = menu_bar->FindItem(XRCID("F2"));
-		popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF2"));
-	}
-	else if(id==XRCID("F3") || id==XRCID("ContextF3"))
-	{
-		filter=3;
-        	main_menu_item = menu_bar->FindItem(XRCID("F3"));
-		popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF3"));
-	}
-	else if(id==XRCID("F4") || id==XRCID("ContextF4"))
-	{
-		filter=4;
-        	main_menu_item = menu_bar->FindItem(XRCID("F4"));
-		popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF4"));
-	}
-	else if(id==XRCID("F5") || id==XRCID("ContextF5"))
-	{
-		filter=5;
-        	main_menu_item = menu_bar->FindItem(XRCID("F5"));
-		popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF5"));
-	}
-	else
-		assert(false);
 
-	dw->SetFilter(filter);
 	tb->SetFilterToolIcon(filter);
 
 	assert(main_menu_item);
@@ -926,8 +911,45 @@ void DrawPanel::OnFilterChange(wxCommandEvent &event) {
 
 }
 
+void DrawPanel::OnFilterChange(wxCommandEvent &event) {
+	if (event.GetId() == wxID_ANY)
+		return;
+
+	int id = event.GetId();
+	int filter = 0;
+	if(id==XRCID("F0") || id==XRCID("ContextF0"))
+	{
+		filter=0;
+	}
+	else if(id==XRCID("F1") || id==XRCID("ContextF1"))
+	{
+		filter=1;
+	}
+	else if(id==XRCID("F2") || id==XRCID("ContextF2"))
+	{
+		filter=2;
+	}
+	else if(id==XRCID("F3") || id==XRCID("ContextF3"))
+	{
+		filter=3;
+	}
+	else if(id==XRCID("F4") || id==XRCID("ContextF4"))
+	{
+		filter=4;
+	}
+	else if(id==XRCID("F5") || id==XRCID("ContextF5"))
+	{
+		filter=5;
+	}
+	else
+		assert(false);
+
+	dw->SetFilter(filter);
+
+}
+
 bool DrawPanel::IsUserDefined() {
-	DrawSet *sset = ssw->GetSelected();
+	DrawSet *sset = GetSelectedSet();
 	return dynamic_cast<DefinedDrawSet*>(sset) != NULL;
 }
 
@@ -941,29 +963,14 @@ void DrawPanel::OnToolFilterMenu(wxCommandEvent &event) {
 }
 
 DrawSet* DrawPanel::GetSelectedSet() {
-	return ssw->GetSelected();
-}
-
-void DrawPanel::SelectSet(wxString title) {
-	int idx = ssw->FindString(title);
-	if (idx == wxNOT_FOUND)
-		return;
-
-	ssw->Select(idx);
-	sw->SetChanged();
-	SetChanged();
+	return dw->GetCurrentDrawSet();
 }
 
 void DrawPanel::ConfigurationIsAboutToReload(wxString prefix) {
 	if (prefix != GetPrefix())
 		csn = _T("");
-	else  {
-		if (dw->IsDoubleCursor()) {
-			wxCommandEvent ev;
-			ToggleSplitCursor(ev);
-		}
-		csn = ssw->GetSelected()->GetName();
-	}
+	else 
+		csn = GetSelectedSet()->GetName();
 }
 
 void DrawPanel::ConfigurationWasReloaded(wxString prefix) {
@@ -971,22 +978,18 @@ void DrawPanel::ConfigurationWasReloaded(wxString prefix) {
 	if (csn.IsEmpty())
 		return;
 
-	ssw->SetConfig();
+	DrawsSets *dss = cfg->GetConfigByPrefix(prefix);
+	assert(dss);
 
-	bool found = false;
-	for (unsigned i = 0; i < ssw->GetCount(); ++i) {
-		DrawSet *set = (DrawSet*) ssw->GetClientData(i);
-		if (csn == set->GetName()) {
-			ssw->SetSelection(i);
-			found = true;
-			break;
-		}
+	DrawSet* ds = dss->GetDrawsSets()[csn];
+	if (ds)
+		dw->SetSet(ds);
+	else {
+		SortedSetsArray *array = dss->GetSortedDrawSetsNames();
+		dw->SetSet((*array)[0]);
+		delete array;
 	}
 
-	if (!found)
-		ssw->SetSelection(0);
-
-	ssw->SetChanged();
 }
 
 void DrawPanel::Copy() {
@@ -1013,32 +1016,6 @@ void DrawPanel::ShowRemarks() {
 	rmf->ShowRemarks();
 }
 
-
-PeriodType DrawPanel::SetPeriod(PeriodType pt) {
-	switch (pt) {
-		case PERIOD_T_YEAR:
-			tw->Select(0);
-			return PERIOD_T_YEAR;
-		case PERIOD_T_MONTH:
-			tw->Select(1);
-			return PERIOD_T_MONTH;
-		case PERIOD_T_WEEK:
-			tw->Select(2);
-			return PERIOD_T_WEEK;
-		case PERIOD_T_DAY:
-			tw->Select(3);
-			return PERIOD_T_DAY;
-		case PERIOD_T_SEASON:
-			if (tw->GetSelection() == 4)
-				return (PeriodType)tw->SelectPrev();
-			else {
-				tw->Select(4);
-				return PERIOD_T_SEASON;
-			}
-		default:
-			return pt;
-	}
-}
 
 void DrawPanel::SetActive(bool active) {
 	if (active) {
@@ -1070,7 +1047,7 @@ void DrawPanel::SetActive(bool active) {
 }
 
 bool DrawPanel::Switch(wxString set, wxString prefix, time_t time, PeriodType pt, int selected_draw) {
-	return dw->Switch(set, prefix, time, pt, selected_draw);
+	return dw->SetSet(set, prefix, time, pt, selected_draw);
 }
 
 wxString

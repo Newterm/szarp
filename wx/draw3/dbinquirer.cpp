@@ -16,6 +16,15 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
+
+#include "szhlpctrl.h"
+
+#include "ids.h"
+#include "classes.h"
+
+#include "coobs.h"
+#include "cfgmgr.h"
+#include "defcfg.h"
 #include "database.h"
 #include "dbinquirer.h"
 #include "dbmgr.h"

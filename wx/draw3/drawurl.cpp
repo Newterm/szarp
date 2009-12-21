@@ -21,15 +21,18 @@
  * $Id$
  */
 
-#include "drawurl.h"
-#include "string.h"
-#include "cconv.h"
-
+#include <wx/wx.h>
 #include <wx/tokenzr.h>
 #include <libxml/tree.h>
 
 #include <limits>
 
+#include "ids.h"
+#include "classes.h"
+
+#include "string.h"
+#include "cconv.h"
+#include "drawurl.h"
 
 namespace {
 

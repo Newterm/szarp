@@ -28,10 +28,20 @@
 #include <wx/clipbrd.h>
 
 #include "ids.h"
+#include "classes.h"
 #include "drawdnd.h"
 #include "drawview.h"
+#include "dbinquirer.h"
+#include "drawtime.h"
+#include "database.h"
+#include "drawsctrl.h"
+#include "cfgmgr.h"
+#include "dbmgr.h"
+#include "drawobs.h"
+#include "drawswdg.h"
 #include "draw.h"
 #include "wxgraphs.h"
+
 
 BEGIN_EVENT_TABLE(WxGraphs, wxWindow)
     EVT_PAINT(WxGraphs::OnPaint)
@@ -81,6 +91,38 @@ WxGraphs::WxGraphs(wxWindow *parent, ConfigManager *cfg) : wxWindow(parent, wxID
 
 }
 
+	/**Redraws view*/
+void WxGraphs::DrawInfoChanged(Draw *draw) {
+	if (!draw->GetSelected())
+		return;
+
+	m_draws.resize(0);
+	DrawsController* controller = draw->GetDrawsController();
+	for (size_t i = 0; i < controller->GetDrawsCount(); i++)
+		m_draws.push_back(controller->GetDraw(i));
+
+	size_t pc = m_graphs.size();
+	if (pc > m_draws.size()) for (size_t i = m_draws.size(); i < pc; i++)
+			delete m_graphs.at(i);
+	m_graphs.resize(m_draws.size());
+
+	for (size_t i = pc; i < m_draws.size(); i++) {
+		m_graphs.at(i) = new GraphView(this);
+		m_graphs.at(i)->Attach(m_draws[i]);
+		m_graphs.at(i)->DrawAll();
+	}
+
+	m_bg_view->Attach(m_draws[draw->GetDrawNo()]);
+
+	for (size_t i = 0; i < std::min(pc, m_graphs.size()); i++)
+		m_graphs.at(i)->DrawInfoChanged(m_draws[i]);
+
+
+	SetMargins();
+
+	Refresh();
+}
+
 void WxGraphs::OnIdle(wxIdleEvent & event)
 {
 	if (m_invalid_region.IsEmpty())
@@ -120,7 +162,7 @@ void WxGraphs::OnPaint(wxPaintEvent & WXUNUSED(event))
 
 	wxDC *pdc = m_bg_view->GetDC();
 
-	if (m_draws_wdg->IsNoData() == false) {
+	if (m_draws_wdg->GetNoData() == false) {
 #ifndef NO_GSTREAMER
 		if (!m_dancing) 
 #endif
@@ -136,13 +178,13 @@ void WxGraphs::OnPaint(wxPaintEvent & WXUNUSED(event))
 				if (pdc->Ok())
 					dc.Blit(x, y, w, h, pdc, x, y, wxCOPY);
 
-				for (size_t j = 0; j <= m_draws.GetCount(); ++j) {
+				for (size_t j = 0; j <= m_draws.size(); ++j) {
 					size_t i;
 	
 					if ((int)j == selected_draw)
 						continue;
 
-					if (j == m_draws.GetCount())
+					if (j == m_draws.size())
 						i = selected_draw;
 					else
 						i = j;
@@ -152,7 +194,7 @@ void WxGraphs::OnPaint(wxPaintEvent & WXUNUSED(event))
 					if (d->GetEnable() == false)
 						continue;
 
-					wxDC *pdc = m_graphs[i]->GetDC();
+					wxDC *pdc = m_graphs.at(i)->GetDC();
 					if (pdc->Ok()) 
 						dc.Blit(x, y, w, h, pdc, x, y, wxCOPY, true);
 		
@@ -225,35 +267,9 @@ void WxGraphs::Refresh() {
 	m_invalid_region.Union(m_size);
 }
 
-void WxGraphs::SetDrawsChanged(DrawPtrArray draws) {
-	size_t pc = m_graphs.GetCount();
-
-	if (pc > draws.GetCount()) {
-		for (size_t i = draws.GetCount(); i < pc; i++)
-			delete m_graphs[i];
-		m_graphs.RemoveAt(draws.GetCount(), pc - draws.GetCount());
-	}
-	m_graphs.SetCount(draws.GetCount());
-
-	int w, h;
-	GetClientSize(&w, &h);
-	for (size_t i = pc; i < draws.GetCount(); i++) {
-		m_graphs[i] = new GraphView(this);
-		m_graphs[i]->Attach(draws[i]);
-		m_graphs[i]->SetSize(w, h);
-		m_graphs[i]->DrawAll();
-	}
-
-	m_draws = draws;
-
-	SetMargins();
-
-	Refresh();
-}
-
 void WxGraphs::FullRefresh() {
-	for (size_t i = 0; i < m_draws.GetCount(); i++)
-		m_graphs[i]->DrawAll();
+	for (size_t i = 0; i < m_draws.size(); i++)
+		m_graphs.at(i)->DrawAll();
 
 	Refresh();
 }
@@ -267,7 +283,7 @@ void WxGraphs::DrawWindowInfo(wxDC * dc, const wxRegion & repainted_region)
 	int info_left_marg = m_screen_margins.leftmargin + 8;
 	int param_name_shift = 5;
 
-	if (m_draws.GetCount() < 1)
+	if (m_draws.size() < 1)
 		return;
 
 	int w, h;
@@ -290,7 +306,7 @@ void WxGraphs::DrawWindowInfo(wxDC * dc, const wxRegion & repainted_region)
 
 	int xpos = info_left_marg + namew + param_name_shift;
 
-	for (int i = 0; i < (int)m_draws.GetCount(); ++i) {
+	for (int i = 0; i < (int)m_draws.size(); ++i) {
 
 		if (!m_draws[i]->GetEnable())
 			continue;
@@ -310,13 +326,57 @@ void WxGraphs::DrawWindowInfo(wxDC * dc, const wxRegion & repainted_region)
 
 }
 
-void WxGraphs::Deselected(int i) {
-	m_bg_view->Detach(m_draws[i]);
+void WxGraphs::DrawDeselected(Draw *d) {
+	m_bg_view->Detach(m_draws.at(d->GetDrawNo()));
+	m_graphs.at(d->GetDrawNo())->DrawAll();
 }
 
-void WxGraphs::Selected(int i) {
-	m_bg_view->Attach(m_draws[i]);
+void WxGraphs::DrawSelected(Draw *d) {
+	m_bg_view->Attach(m_draws[d->GetDrawNo()]);
+	m_graphs.at(d->GetDrawNo())->DrawAll();
 	Refresh();
+}
+
+void WxGraphs::FilterChanged(DrawsController *draws_controller) {
+	for (size_t i = 0; i < m_graphs.size(); i++)
+		m_graphs.at(i)->FilterChanged(m_draws[i]);
+	Refresh();
+}
+
+void WxGraphs::EnableChanged(Draw *draw) {
+	Refresh();
+}
+
+/**Repaints view*/
+void WxGraphs::PeriodChanged(Draw *draw, PeriodType period) {
+	if (draw->GetSelected())
+		m_bg_view->PeriodChanged(draw, period);
+	m_graphs.at(draw->GetDrawNo())->PeriodChanged(draw, period);
+	Refresh();
+}
+
+/**Repaints view*/
+void WxGraphs::ScreenMoved(Draw* draw, const wxDateTime &start_date) {
+	size_t i = draw->GetDrawNo();
+	if (i >= m_draws.size())
+		return;
+
+	if (draw->GetSelected())
+		m_bg_view->ScreenMoved(draw, start_date);
+
+	m_graphs.at(draw->GetDrawNo())->ScreenMoved(draw, start_date);
+}
+
+void WxGraphs::NewData(Draw* draw, int i) {
+	m_graphs.at(draw->GetDrawNo())->NewData(draw, i);
+}
+
+void WxGraphs::CurrentProbeChanged(Draw* draw, int pi, int ni, int d) {
+	m_graphs.at(draw->GetDrawNo())->CurrentProbeChanged(draw, pi, ni, d);
+}
+
+void WxGraphs::NewRemarks(Draw *draw) {
+	m_bg_view->NewRemarks(draw);
 }
 
 void WxGraphs::OnSize(wxSizeEvent & WXUNUSED(event))
@@ -329,12 +389,12 @@ void WxGraphs::OnSize(wxSizeEvent & WXUNUSED(event))
 	m_size = wxSize(w, h);
 
 	wxLogVerbose(_T("Resizing to %d:%d"), w, h);
-	for (size_t i = 0; i < m_draws.GetCount(); ++i) {
-		m_graphs[i]->SetSize(w, h);
-		m_graphs[i]->DrawAll();
+	for (size_t i = 0; i < m_draws.size(); ++i) {
+		m_graphs.at(i)->SetSize(w, h);
+		m_graphs.at(i)->DrawAll();
 	}
 
-	if (m_draws.GetCount() > 0)
+	if (m_draws.size() > 0)
 		m_bg_view->SetSize(w, h);
 
 	RefreshRect(wxRect(0, 0, w, h));
@@ -347,7 +407,7 @@ void WxGraphs::SetMargins() {
 
 	wxClientDC dc(this);
 	dc.SetFont(GetFont());
-	for (size_t i = 0; i < m_graphs.GetCount(); i++) {
+	for (size_t i = 0; i < m_graphs.size(); i++) {
 		int tw, th;
 		DrawInfo *di = m_draws[i]->GetDrawInfo();
 		wxString sval = di->GetValueStr(di->GetMax(), _T(""));
@@ -368,8 +428,8 @@ void WxGraphs::SetMargins() {
 	m_screen_margins.topmargin = topmargin;
 
 	m_bg_view->SetMargins(m_screen_margins.leftmargin, m_screen_margins.rightmargin, m_screen_margins.topmargin, m_screen_margins.bottommargin);
-	for (size_t i = 0; i < m_graphs.GetCount(); i++)
-		m_graphs.Item(i)->SetMargins(m_screen_margins.leftmargin, m_screen_margins.rightmargin, m_screen_margins.topmargin, m_screen_margins.bottommargin);
+	for (size_t i = 0; i < m_graphs.size(); i++)
+		m_graphs.at(i)->SetMargins(m_screen_margins.leftmargin, m_screen_margins.rightmargin, m_screen_margins.topmargin, m_screen_margins.bottommargin);
 }
 
 void WxGraphs::OnMouseLeftDown(wxMouseEvent & event)
@@ -404,7 +464,7 @@ void WxGraphs::OnMouseLeftDown(wxMouseEvent & event)
 		wxDateTime time;
 	};
 
-	VoteInfo infos[m_graphs.GetCount()];
+	VoteInfo infos[m_graphs.size()];
 
 	int x = event.GetX();
 	int y = event.GetY();
@@ -415,13 +475,13 @@ void WxGraphs::OnMouseLeftDown(wxMouseEvent & event)
 		return;
 	}
 
-	for (size_t i = 0; i < m_graphs.GetCount(); ++i) {
+	for (size_t i = 0; i < m_graphs.size(); ++i) {
 
 		VoteInfo & in = infos[i];
 		in.dist = -1;
 
 		if (m_draws[i]->GetEnable())
-			m_graphs[i]->GetDistance(x, y, in.dist, in.time);
+			m_graphs.at(i)->GetDistance(x, y, in.dist, in.time);
 	}
 
 	double min = INFINITY;
@@ -429,8 +489,8 @@ void WxGraphs::OnMouseLeftDown(wxMouseEvent & event)
 
 	int selected_draw = m_draws_wdg->GetSelectedDrawIndex();
 
-	for (size_t i = 1; i <= m_draws.GetCount(); ++i) {
-		size_t k = (i + selected_draw) % m_draws.GetCount();
+	for (size_t i = 1; i <= m_draws.size(); ++i) {
+		size_t k = (i + selected_draw) % m_draws.size();
 
 		VoteInfo & in = infos[k];
 		if (in.dist < 0)
@@ -475,12 +535,24 @@ void WxGraphs::UpdateArea(const wxRegion & region)
 	m_invalid_region.Union(region);
 }
 
+void WxGraphs::DoubleCursorChanged(DrawsController *draws_controller) {
+	m_graphs[draws_controller->GetSelectedDraw()->GetDrawNo()]->DrawAll();
+	Refresh();
+}
+
+void WxGraphs::NumberOfValuesChanged(DrawsController *draws_controller) {
+	m_bg_view->DoDraw(m_bg_view->GetDC());
+	for (size_t i = 0; i < m_draws.size(); i++)
+		m_graphs.at(i)->DrawAll();
+
+}
+
 void WxGraphs::OnMouseLeftDClick(wxMouseEvent & event)
 {
-	if (m_draws.GetCount() < 0)
+	if (m_draws.size() < 0)
 		return;
 
-	if (m_draws_wdg->IsNoData())
+	if (m_draws_wdg->GetNoData())
 		return;
 
 	/* get widget size */
@@ -546,8 +618,8 @@ void WxGraphs::StopDrawingParamName() {
 
 
 WxGraphs::~WxGraphs() {
-	for (size_t i = 0; i < m_graphs.GetCount(); ++i) 
-		delete m_graphs[i];
+	for (size_t i = 0; i < m_graphs.size(); ++i) 
+		delete m_graphs.at(i);
 
 	delete m_bg_view;
 }

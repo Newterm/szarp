@@ -17,8 +17,10 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
+#include "classes.h"
 #include "database.h"
 #include "cfgmgr.h"
+#include "dbmgr.h"
 
 #include <algorithm>
 #include <iostream>
@@ -127,7 +129,7 @@ void* QueryExecutor::Entry() {
 						szb_reset_buffer(szb);
 						break;
 					case DatabaseQuery::CLEAR_CACHE:
-						szbase->ClearCacheDir(q->prefix);
+						szbase->ClearCacheDir(cfg->GetPrefix().c_str());
 						break;
 					default:
 						break;

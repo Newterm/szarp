@@ -26,12 +26,23 @@
  * Widget for selecting set of draws.
  */
 
-#include "defcfg.h"
-#include "selset.h"
-#include "seldraw.h"
-#include "drawpnl.h"
-#include "ids.h"
 #include "cconv.h"
+
+#include "ids.h"
+#include "classes.h"
+
+#include "drawobs.h"
+#include "database.h"
+#include "drawtime.h"
+#include "draw.h"
+#include "coobs.h"
+#include "dbinquirer.h"
+#include "drawsctrl.h"
+#include "cfgmgr.h"
+#include "defcfg.h"
+#include "drawswdg.h"
+#include "selset.h"
+#include "drawpnl.h"
 
 #include "wx/file.h"
 #include "wx/log.h"
@@ -39,52 +50,27 @@
 IMPLEMENT_DYNAMIC_CLASS(SelectSetWidget, wxChoice)
 
 SelectSetWidget::SelectSetWidget(ConfigManager *cfg,
-			wxString confid,
 			DrawPanel *parent,
 			wxWindowID id,
-			DrawSet *set,
 			int width)
         : wxChoice(parent, id, wxDefaultPosition, wxSize(width, -1), 0,	NULL, 
 		wxWANTS_CHARS, wxDefaultValidator, _T("SelectSetWidget"))
 {
-    this->cfg = cfg;
-    this->confid = confid;
-    this->seldraw = NULL;
+    m_cfg = cfg;
+    m_draws_controller = NULL;
 
-    this->panel = parent;
-	
     SetToolTip(_("Select set of draws to display"));
-
-    SetConfig();
-
-    if (set)
-	    SelectSet(set);
-    else
-	    SetSelection(0);
 
     Connect(drawID_SELSET, wxEVT_COMMAND_CHOICE_SELECTED,
 		        wxCommandEventHandler(SelectSetWidget::OnSetChanged));
 
-#if 0
-    /* adjust strings that are to long */
-#ifdef MINGW32
-/* set experimentally */
-#define CHOICE_MARGIN	12
-#else
-#define CHOICE_MARGIN	40
-#endif
-    for (int i = 0; i < (int)GetCount(); i++) {
-	AdjustString(i, width - CHOICE_MARGIN);
-    }
-#undef CHOICE_MARGIN
-#endif
 }
 
-void SelectSetWidget::SelectWithoutEvent(int selected) {
+void SelectSetWidget::SetSelection(int selected) {
 	Disconnect(drawID_SELSET, wxEVT_COMMAND_CHOICE_SELECTED,
 		wxCommandEventHandler(SelectSetWidget::OnSetChanged));
 
-	SetSelection(selected);
+	wxChoice::SetSelection(selected);
 	Connect(drawID_SELSET, wxEVT_COMMAND_CHOICE_SELECTED,
 		wxCommandEventHandler(SelectSetWidget::OnSetChanged));
 }
@@ -94,7 +80,7 @@ SelectSetWidget::~SelectSetWidget() {
 }
 
 void SelectSetWidget::SetConfig() {
-    SortedSetsArray * sorted = cfg->GetConfig(confid)->GetSortedDrawSetsNames();
+    SortedSetsArray * sorted = m_cfg->GetConfigByPrefix(m_prefix)->GetSortedDrawSetsNames();
 
     Clear();
     int count = sorted->size();
@@ -112,7 +98,8 @@ DrawSet *
 SelectSetWidget::GetSelected()
 {
     int n = GetSelection();
-    assert (n >= 0);
+    if (n < 0)
+	    return NULL;
 
     return (DrawSet *) GetClientData(n);
 }
@@ -120,65 +107,38 @@ SelectSetWidget::GetSelected()
 void
 SelectSetWidget::OnSetChanged(wxCommandEvent &event)
 {
-	SetChanged();
-	panel->SetFocus();
+	if (m_draws_controller) {
+		m_draws_controller->Set(GetSelected());
+		GetParent()->SetFocus();
+	}
 }
 
 void
-SelectSetWidget::SetSelectDrawWidget(SelectDrawWidget *seldraw)
-{
-    this->seldraw = seldraw;
+SelectSetWidget::Attach(DrawsController* draws_controller) {
+	DrawObserver::Attach(draws_controller);
+
+	m_draws_controller = draws_controller;
 }
 
-void SelectSetWidget::SetChanged() {
-	if (seldraw)
-		seldraw->SetChanged();
-	panel->SetChanged();
+void 
+SelectSetWidget::DrawInfoChanged(Draw *draw) {
+	if (!draw->GetSelected())
+		return;
+
+	SelectSet(draw->GetDrawsController()->GetSet());
 }
 
 void 
 SelectSetWidget::SelectSet(DrawSet *set) {
-    for (size_t i = 0; i < GetCount(); ++i)
-	    if (GetClientData(i) == set) {
-		    SetSelection(i);
-		    break;
-	    }
-}
-
-void 
-SelectSetWidget::SelectSet(wxString confid, DrawSet *set) {
-	this->confid = confid;
-	SetConfig();
-	SelectSet(set);
-	SetChanged();
-}
-
-void
-SelectSetWidget::AdjustString(int n, int w)
-{
-    int x, y;
-    size_t l;
-    wxClientDC dc(this);
-    /* this is necessary on Windows and harmless on Linux */
-    dc.SetFont(GetFont());
-    wxString s = GetString(n);
-    dc.GetTextExtent(s, &x, &y);
-    
-    if (x > w) {
-	l = s.length();
-	s.Truncate(l - 2);
-	s += _T("...");
-	l++;
-	
-	while (x > w) {
-	    if (l <= 4) {
-		return;
-	    }
-	    s.Remove(l - 4, 1);
-	    l--;
-	    dc.GetTextExtent(s, &x, &y);
+	if (set->GetDrawsSets()->GetPrefix() != m_prefix) {
+		m_prefix = set->GetDrawsSets()->GetPrefix();
+		SetConfig();
 	}
-	SetString(n, s);
-    }
+
+	if (GetSelected() != set) for (size_t i = 0; i < GetCount(); ++i)
+		if (GetClientData(i) == set) {
+			SetSelection(i);
+			break;
+		}
 }
 
