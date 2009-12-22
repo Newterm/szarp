@@ -76,9 +76,6 @@ class SummaryWindow : public wxDialog, public DrawObserver {
 	/**Number of draws that has pie attribute set*/
 	int m_summary_draws_count;
 
-	/**Pointer to Summary Window menu item in main frame*/
-	wxMenuItem *m_sum_item;
-
 	WX_DEFINE_ARRAY(ObservedDraw*, ObservedDrawPtrArray);
 
 	WX_DEFINE_ARRAY(TTLabel*, TLabelPtrArray);
@@ -135,7 +132,7 @@ class SummaryWindow : public wxDialog, public DrawObserver {
 	void SetDraw(Draw *draw);
 
 	public:
-	SummaryWindow(DrawPanel* panel, wxWindow *parent, wxMenuItem *m_summ_item);
+	SummaryWindow(DrawPanel* panel, wxWindow *parent);
 
 	/**Displays window and activates object*/
 	virtual bool Show(bool show = true);

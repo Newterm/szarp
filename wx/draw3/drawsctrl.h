@@ -187,7 +187,7 @@ class DrawsController : public DBInquirer {
 	
 	DatabaseQuery* CreateQuery(const std::vector<time_t> &times) const;
 
-	void EnterSearchState(STATE state, DTime start_time);
+	void EnterSearchState(STATE state, DTime search_from, const DTime& suggested_start_time);
 
 	void EnterWaitState(STATE state);
 

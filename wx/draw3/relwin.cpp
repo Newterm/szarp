@@ -52,10 +52,9 @@ RelWindow::ObservedDraw::ObservedDraw(Draw *_draw) : draw(_draw),
 	rel(false)
 {}
 
-RelWindow::RelWindow(wxWindow *parent, DrawPanel *panel, wxMenuItem* pie_item) :
+RelWindow::RelWindow(wxWindow *parent, DrawPanel *panel) :
 	wxDialog(parent, wxID_ANY, _("Values ratio"), wxDefaultPosition, wxSize(200, 100), 
 			wxDEFAULT_DIALOG_STYLE),
-	m_rel_item(pie_item),
 	m_update(false),
 	m_active(false),
 	m_panel(panel),
@@ -80,7 +79,6 @@ RelWindow::RelWindow(wxWindow *parent, DrawPanel *panel, wxMenuItem* pie_item) :
 	m_draws.SetCount(MAX_DRAWS_COUNT, NULL);
 
 	m_draws_controller = NULL;
-
 }
 
 void RelWindow::OnIdle(wxIdleEvent &event) {
@@ -257,7 +255,6 @@ void RelWindow::OnClose(wxCloseEvent &event) {
 	if (event.CanVeto()) {
 		event.Veto();
 		m_panel->ShowRelWindow(false);
-		m_rel_item->Check(false);
 	} else
 		Destroy();
 }

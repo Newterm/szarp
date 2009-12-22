@@ -37,8 +37,6 @@
 #include <algorithm>
 #include <wx/statline.h>
 
-using std::max;
-
 
 //BEGIN_EVENT_TABLE(SummaryWindow, wxFrame)
 BEGIN_EVENT_TABLE(SummaryWindow, wxDialog)
@@ -67,7 +65,7 @@ wxSize TTLabel::DoGetBestSize() const {
 	int w2, h2;
 	dc.GetTextExtent(unit, &w2, &h2);
 
-	return wxSize(w1 + w2 + 6, max(h1, h2) + 4);
+	return wxSize(w1 + w2 + 6, std::max(h1, h2) + 4);
 }
 
 void TTLabel::SetValueText(const wxString &value) {
@@ -110,11 +108,10 @@ SummaryWindow::ObservedDraw::ObservedDraw(Draw *_draw) : draw(_draw),
 	update(false), tooltip(false), hoursum(false)
 {}
 
-SummaryWindow::SummaryWindow(DrawPanel *draw_panel, wxWindow *parent, wxMenuItem *sum_item) : 
+SummaryWindow::SummaryWindow(DrawPanel *draw_panel, wxWindow *parent) : 
 	wxDialog(parent, drawID_SUMMWIN, _("Summary values"), wxDefaultPosition, wxSize(100, 100), 
 			wxDEFAULT_DIALOG_STYLE),
 	m_summary_draws_count(0),
-	m_sum_item(sum_item),
 	m_update(false),
 	m_active(false),
 	m_tooltip(false)
@@ -470,8 +467,6 @@ void SummaryWindow::OnClose(wxCloseEvent &event) {
 	if (event.CanVeto()) {
 		event.Veto();
 		draw_panel->ShowSummaryWindow(false);
-		m_sum_item->Check(false);
-		//Show(false);
 	} else
 		Destroy();
 }

@@ -309,32 +309,34 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 }
 
 DrawPanel::DrawPanel(DatabaseManager* _db_mgr, ConfigManager * _cfg, RemarksHandler * _rh,
-		wxString _prefix, const wxString& set, PeriodType pt,  time_t time,
+		wxMenuBar *_menu_bar, wxString _prefix, const wxString& set, PeriodType pt,  time_t time,
 		wxWindow * parent, wxWindowID id, DrawFrame *_df, int selected_draw)
 	:  wxPanel(parent, id, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS),
 	df(_df), iw(NULL), dw(NULL), dtw(NULL), ssw(NULL), sw(NULL), tw(NULL),
 	dinc(NULL), sinc(NULL), db_mgr(_db_mgr), cfg(_cfg),
-	prefix(_prefix), smw(NULL), rh(_rh), rmf(NULL), pw(NULL), m_realized(false)
+	prefix(_prefix), smw(NULL), rh(_rh), rmf(NULL), pw(NULL), realized(false)
 {
 #ifdef WXAUI_IN_PANEL
 	am.SetManagedWindow(this);
 #endif
 	cfg->RegisterConfigObserver(this);
 
+	menu_bar = _menu_bar;
+
 	CreateChildren(set, pt, time, selected_draw);
 
 	rw_show = pw_show = smw_show = false;
+
+	active = false;
 
 }
 
 void DrawPanel::CreateChildren(const wxString& set, PeriodType pt, time_t time, int selected_draw)
 {
-	if (m_realized)
+	if (realized)
 		return;
 
-	m_realized = true;
-	menu_bar = (wxMenuBar*) wxXmlResource::Get()->LoadObject(this,_T("menubar"),_T("wxMenuBar"));
-
+	realized = true;
 	filter_popup_menu = ((wxMenuBar*) wxXmlResource::Get()->LoadObject(this,_T("filter_context"),_T("wxMenuBar")))->GetMenu(0);
 
 #ifdef WXAUI_IN_PANEL
@@ -363,9 +365,9 @@ void DrawPanel::CreateChildren(const wxString& set, PeriodType pt, time_t time, 
 			);
 
 
-	smw = new SummaryWindow(this, this, menu_bar->FindItem(XRCID("Summary")));
-	pw = new PieWindow(this, this, menu_bar->FindItem(XRCID("Pie")));
-	rw = new RelWindow(this, this, menu_bar->FindItem(XRCID("Ratio")));
+	smw = new SummaryWindow(this, this);
+	pw = new PieWindow(this, this);
+	rw = new RelWindow(this, this);
 
 #ifndef MINGW32
 	gtk_window_set_accept_focus(smw->GetHandle(), 0);
@@ -442,37 +444,11 @@ void DrawPanel::CreateChildren(const wxString& set, PeriodType pt, time_t time, 
 			dw,
 			pt);
 
-	if (cfg->IsPSC(prefix))
-		menu_bar->FindItem(XRCID("SetParams"))->Enable(true);
-	else
-		menu_bar->FindItem(XRCID("SetParams"))->Enable(false);
 
 	/* add keyboard event handlers */
 	DrawPanelKeyboardHandler *eh;
 	eh = new DrawPanelKeyboardHandler(this, _T("dg"));
 	(dynamic_cast<wxWindow*>(dg))->PushEventHandler(eh);
-/*
-	eh = new DrawPanelKeyboardHandler(this, _T("iw"));
-	iw->PushEventHandler(eh);
-	eh = new DrawPanelKeyboardHandler(this, _T("dtw"));
-	dtw->PushEventHandler(eh);
-	eh = new DrawPanelKeyboardHandler(this, _T("ssw"));
-	ssw->PushEventHandler(eh);
-	eh = new DrawPanelKeyboardHandler(this, _T("sw"));
-	sw->PushEventHandler(eh);
-	eh = new DrawPanelKeyboardHandler(this, _T("tw"));
-	tw->PushEventHandler(eh);
-	eh = new DrawPanelKeyboardHandler(this, _T("smw"));
-	smw->PushEventHandler(eh);
-	*/
-	eh = new DrawPanelKeyboardHandler(this, _T("pw"));
-	pw->PushEventHandler(eh);
-	/*
-	eh = new DrawPanelKeyboardHandler(this, _T("rw"));
-	rw->PushEventHandler(eh);
-	eh = new DrawPanelKeyboardHandler(this, _T("panel"));
-	PushEventHandler(eh);
-*/
 #ifdef WXAUI_IN_PANEL
 	hsizer->Add(iw, 1, wxALL | wxEXPAND, 10);
 	hsizer->Add(ssw, 0, wxALL | wxALIGN_RIGHT, 10);
@@ -551,17 +527,6 @@ DrawPanel::~DrawPanel()
 
 	/* Remove event handlers */
 	dynamic_cast<wxWindow*>(dg)->PopEventHandler(TRUE);
-	/*
-	iw->PopEventHandler(TRUE);
-	dtw->PopEventHandler(TRUE);
-	ssw->PopEventHandler(TRUE);
-	sw->PopEventHandler(TRUE);
-	tw->PopEventHandler(TRUE);
-	smw->PopEventHandler(TRUE);
-	pw->PopEventHandler(TRUE);
-	rw->PopEventHandler(TRUE);
-	PopEventHandler(TRUE);
-	*/
 #ifdef WXAUI_IN_PANEL
 	am.UnInit();
 #endif
@@ -668,70 +633,69 @@ void DrawPanel::StartPSC()
 void DrawPanel::ShowSummaryWindow(bool show) {
 #ifndef MINGW32
 	smw->Show(show);
-	if (show) {
+	if (show)
 		smw->Raise();
-		smw_show = true;
-	} else
-		smw_show = false;
 #else
 	if (show) {
-	    smw->Show(show);
-	    this->GetParent()->Raise();
-		smw_show = true;
-	} else {
-		smw_show = false;
 		smw->Show(show);
-	}
+		GetParent()->Raise();
+	} else
+		smw->Show(show);
 #endif
+	if (active) {
+		smw_show = show;
+		wxMenuItem *item = menu_bar->FindItem(XRCID("Summary"));
+		item->Check(!smw->IsShown());
+	}
 
 }
 
 void DrawPanel::OnSummaryWindow(wxCommandEvent & event)
 {
-	wxMenuItem *item = menu_bar->FindItem(XRCID("Summary"));
-	item->Check(!smw->IsShown());
+	if (active) {
+		wxMenuItem *item = menu_bar->FindItem(XRCID("Summary"));
+		item->Check(!smw->IsShown());
+	}
 	ShowSummaryWindow(!smw->IsShown());
 }
 
 void DrawPanel::ShowPieWindow(bool show) {
 #ifndef MINGW32
 	pw->Show(show);
-	if (show) {
+	if (show)
 		pw->Raise();
-		pw_show = true;
-	} else
-		pw_show = false;
 #else
 	if (show) {
-	    pw->Show(show);
-	    this->GetParent()->Raise();
-		pw_show = true;
-	} else {
-		pw_show = false;
 		pw->Show(show);
-	}
+		GetParent()->Raise();
+	} else
+		pw->Show(show);
 #endif
+	if (active) {
+		pw_show = show;
+		wxMenuItem *item = menu_bar->FindItem(XRCID("Pie"));
+		item->Check(!pw->IsShown());
+	}
 }
 
 
 void DrawPanel::ShowRelWindow(bool show) {
 #ifndef MINGW32
 	rw->Show(show);
-	if (show) {
+	if (show)
 		rw->Raise();
-		rw_show = true;
-	} else
-		rw_show = false;
 #else
 	if (show) {
-	    rw->Show(show);
-	    this->GetParent()->Raise();
-		rw_show = true;
-	} else {
-		rw_show = false;
 		rw->Show(show);
-	}
+		GetParent()->Raise();
+	} else 
+		rw->Show(show);
 #endif
+	if (active) {
+		rw_show = show;
+		wxMenuItem *item = menu_bar->FindItem(XRCID("Ratio"));
+		item->Check(!rw->IsShown());
+	}
 }
 
 
@@ -755,11 +719,6 @@ SummaryWindow *DrawPanel::GetSummaryWindow()
 PeriodType DrawPanel::SetPeriod(PeriodType pt) {
 	dw->SetPeriod(pt);
 	return pt;
-}
-
-wxMenuBar *DrawPanel::GetMenuBar()
-{
-	return menu_bar;
 }
 
 void DrawPanel::ToggleSplitCursor(wxCommandEvent& WXUNUSED(event)) {
@@ -850,16 +809,6 @@ void DrawPanel::Print(bool preview) {
 	dw->Print(preview);
 }
 
-void DrawPanel::DoubleCursorChaned(DrawsController *d) {
-	if (d->GetDoubleCursor()) {
-		menu_bar->Check(XRCID("SplitCursor"), true);
-		tb->DoubleCursorToolCheck();
-	} else {
-		tb->DoubleCursorToolUncheck();
-		menu_bar->Check(XRCID("SplitCursor"), false);
-	}
-}
-
 void DrawPanel::DrawInfoChanged(Draw *d) {
 	tb->DoubleCursorToolUncheck();
 }
@@ -869,45 +818,66 @@ void DrawPanel::PeriodChanged(Draw *d, PeriodType pt) {
 		tb->DoubleCursorToolUncheck();
 }
 
-void DrawPanel::FilterChanged(DrawsController *d) {
-	int filter = d->GetFilter();
+void DrawPanel::UpdateFilterMenuItem(int filter) {
 	wxMenuItem *main_menu_item;
-	wxMenuItem *popup_menu_item;
 
 	switch (filter) {
 		case 0:
         		main_menu_item = menu_bar->FindItem(XRCID("F0"));
-			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF0"));
 			break;
 		case 1:
         		main_menu_item = menu_bar->FindItem(XRCID("F1"));
-			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF1"));
 			break;
 		case 2:
 			main_menu_item = menu_bar->FindItem(XRCID("F2"));
-			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF2"));
 			break;
 		case 3:
 	        	main_menu_item = menu_bar->FindItem(XRCID("F3"));
-			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF3"));
 			break;
 		case 4:
 	        	main_menu_item = menu_bar->FindItem(XRCID("F4"));
-			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF4"));
 			break;
 		case 5:
 	        	main_menu_item = menu_bar->FindItem(XRCID("F5"));
+			break;
+	}
+
+	assert(main_menu_item);
+	main_menu_item->Check(true);
+
+}
+
+void DrawPanel::FilterChanged(DrawsController *d) {
+	int filter = d->GetFilter();
+	wxMenuItem *popup_menu_item;
+
+	switch (filter) {
+		case 0:
+			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF0"));
+			break;
+		case 1:
+			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF1"));
+			break;
+		case 2:
+			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF2"));
+			break;
+		case 3:
+			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF3"));
+			break;
+		case 4:
+			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF4"));
+			break;
+		case 5:
 			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF5"));
 			break;
 	}
 
 	tb->SetFilterToolIcon(filter);
 
-	assert(main_menu_item);
-	main_menu_item->Check(true);
-
-	assert(popup_menu_item);
-	popup_menu_item->Check(true);
+	if (active) {
+		assert(popup_menu_item);
+		popup_menu_item->Check(true);
+	}
 
 }
 
@@ -918,29 +888,17 @@ void DrawPanel::OnFilterChange(wxCommandEvent &event) {
 	int id = event.GetId();
 	int filter = 0;
 	if(id==XRCID("F0") || id==XRCID("ContextF0"))
-	{
-		filter=0;
-	}
+		filter = 0;
 	else if(id==XRCID("F1") || id==XRCID("ContextF1"))
-	{
-		filter=1;
-	}
+		filter = 1;
 	else if(id==XRCID("F2") || id==XRCID("ContextF2"))
-	{
-		filter=2;
-	}
+		filter = 2;
 	else if(id==XRCID("F3") || id==XRCID("ContextF3"))
-	{
-		filter=3;
-	}
+		filter = 3;
 	else if(id==XRCID("F4") || id==XRCID("ContextF4"))
-	{
-		filter=4;
-	}
+		filter = 4;
 	else if(id==XRCID("F5") || id==XRCID("ContextF5"))
-	{
-		filter=5;
-	}
+		filter = 5;
 	else
 		assert(false);
 
@@ -954,8 +912,10 @@ bool DrawPanel::IsUserDefined() {
 }
 
 void DrawPanel::SetChanged() {
-	menu_bar->Enable(XRCID("EditSet"),  IsUserDefined());
-	menu_bar->Enable(XRCID("DelSet"),  IsUserDefined());
+	if (active) {
+		menu_bar->Enable(XRCID("EditSet"),  IsUserDefined());
+		menu_bar->Enable(XRCID("DelSet"),  IsUserDefined());
+	}
 }
 
 void DrawPanel::OnToolFilterMenu(wxCommandEvent &event) {
@@ -1017,31 +977,58 @@ void DrawPanel::ShowRemarks() {
 }
 
 
-void DrawPanel::SetActive(bool active) {
+void DrawPanel::SetActive(bool _active) {
+	active = _active;
+
+	if (smw_show)
+		ShowSummaryWindow(active);
+	if (rw_show)
+		ShowRelWindow(active);
+	if (pw_show)
+		ShowPieWindow(active);
+
 	if (active) {
-		if (smw_show) {
-			smw->Show(true);
-			smw->Raise();
+		DrawsController *dc = dw->GetSelectedDraw()->GetDrawsController();
+
+		int filter = dc->GetFilter();
+		UpdateFilterMenuItem(filter);
+
+		menu_bar->Enable(XRCID("EditSet"),  IsUserDefined());
+		menu_bar->Enable(XRCID("DelSet"),  IsUserDefined());
+
+		if (cfg->IsPSC(prefix))
+			menu_bar->FindItem(XRCID("SetParams"))->Enable(true);
+		else
+			menu_bar->FindItem(XRCID("SetParams"))->Enable(false);
+
+		wxMenuItem *item = menu_bar->FindItem(XRCID("Summary"));
+		item->Check(smw->IsShown());
+
+        	menu_bar->FindItem(XRCID("SplitCursor"))->Check(dc->GetDoubleCursor());
+
+		wxMenuItem *pmi = NULL;
+		switch (dc->GetPeriod()) {
+			case PERIOD_T_YEAR:
+				pmi = menu_bar->FindItem(XRCID("YEAR_RADIO"));
+				break;
+			case PERIOD_T_MONTH:
+				pmi = menu_bar->FindItem(XRCID("MONTH_RADIO"));
+				break;
+			case PERIOD_T_WEEK:
+				pmi = menu_bar->FindItem(XRCID("WEEK_RADIO"));
+				break;
+			case PERIOD_T_DAY:
+				pmi = menu_bar->FindItem(XRCID("DAY_RADIO"));
+				break;
+			case PERIOD_T_SEASON:
+				pmi = menu_bar->FindItem(XRCID("SEASON_RADIO"));
+				break;
+			default:
+				break;
 		}
 
-		if (rw_show) {
-			rw->Show(true);
-			rw->Raise();
-		}
-
-		if (pw_show) {
-			pw->Show(true);
-			pw->Raise();
-		}
-	} else {
-		if (smw && smw->IsShown())
-			smw->Show(false);
-
-		if (rw && rw->IsShown())
-			rw->Show(false);
-
-		if (pw && pw->IsShown())
-			pw->Show(false);
+		if (pmi)
+			pmi->Check(true);
 	}
 
 }

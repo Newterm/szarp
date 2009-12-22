@@ -45,11 +45,6 @@
  */
 
 class DrawPanel : public wxPanel, public ConfigObserver, public DrawObserver {
-	friend class DrawPanelKeyboardHandler;
-
-	/**Creates children widgets*/
-	void CreateChildren(const wxString& Set, PeriodType pt, time_t time, int selected_draw);
-
 	public:
 	/**
 	 * @param cfg initialized configuration manager object
@@ -57,7 +52,7 @@ class DrawPanel : public wxPanel, public ConfigObserver, public DrawObserver {
 	 * @param parent parent window
 	 * @param id widget identifier
 	 */
-	DrawPanel(DatabaseManager *_db_mgr, ConfigManager *cfg, RemarksHandler *rh, wxString prefix, const wxString& set, PeriodType pt, time_t time, 
+	DrawPanel(DatabaseManager *_db_mgr, ConfigManager *cfg, RemarksHandler *rh, wxMenuBar* menu_bar, wxString prefix, const wxString& set, PeriodType pt, time_t time, 
 		wxWindow *parent, wxWindowID id, DrawFrame *_df, int selected_draw = 0);
 	virtual ~DrawPanel();
 
@@ -85,9 +80,6 @@ class DrawPanel : public wxPanel, public ConfigObserver, public DrawObserver {
 	/**Show/hides summary window, toolbar icon event handler*/
 	void OnSummaryWindow(wxCommandEvent &event);
 
-	/**Stars panel activity*/
-	//void Start();
-
 	/**Activates/deacivates panel, if panel is deactivated all extra windows
 	 * (@see RelWindow, @see PieWindow, @see SummaryWindow) are hiden. If panel
 	 * is activated all extra windows that were hidding while panlel was deacivated,
@@ -103,6 +95,8 @@ class DrawPanel : public wxPanel, public ConfigObserver, public DrawObserver {
 	/**@return currently selected set*/
 	DrawSet* GetSelectedSet();
 
+
+	void ShowExtraWindow(bool show, const char *name, bool& show_flag);
 	/**show/hides @see PieWindow
 	 * @param show if true window will be shown, if false - hidden*/
 	void ShowPieWindow(bool show);
@@ -117,9 +111,6 @@ class DrawPanel : public wxPanel, public ConfigObserver, public DrawObserver {
 
 	/**@return poiter to summary window*/
 	SummaryWindow* GetSummaryWindow();
-
-	/**@return menu bar object associted with this panel*/
-	wxMenuBar* GetMenuBar();
 
 	/**Jumps to date*/
 	void OnJumpToDate();
@@ -215,12 +206,18 @@ class DrawPanel : public wxPanel, public ConfigObserver, public DrawObserver {
 
 	virtual void DrawInfoChanged(Draw *d);
 
-	virtual void DoubleCursorChaned(DrawsController *d);
-
 	virtual void FilterChanged(DrawsController *draws_ctrl);
 
 	virtual void PeriodChanged(Draw * draw, PeriodType pt);
 	protected:
+
+	friend class DrawPanelKeyboardHandler;
+
+	/**Creates children widgets*/
+	void CreateChildren(const wxString& Set, PeriodType pt, time_t time, int selected_draw);
+
+	void UpdateFilterMenuItem(int filter);
+
 	/** @see DrawFrame */
 	DrawFrame *df;
 
@@ -286,7 +283,9 @@ class DrawPanel : public wxPanel, public ConfigObserver, public DrawObserver {
 	bool rw_show;
 
 	/**flag idicating if widget is realized - i.e. children widgets are created*/
-	bool m_realized;
+	bool realized;
+
+	bool active;
 	
 	/**Menu that allows user to choose filter level*/
 	wxMenu *filter_popup_menu;

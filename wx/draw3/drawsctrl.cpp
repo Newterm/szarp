@@ -59,7 +59,6 @@ DrawsController::DrawsController(DrawsWidget *draws_widget, DatabaseManager *dat
 	m_double_cursor(false),
 	m_filter(0)
 {
-
 	for (size_t i = 0; i < max_draws_count; i++)
 		m_draws.push_back(new Draw(this, &m_observers, i));
 
@@ -106,7 +105,7 @@ void DrawsController::CheckAwaitedDataPresence() {
 				if (values.at(i).MayHaveData())
 					break;
 			if (i == -1) 
-				EnterSearchState(SEARCH_LEFT, m_time_to_go);
+				EnterSearchState(SEARCH_LEFT, m_time_to_go, DTime());
 			
 			break;
 		case WAIT_DATA_RIGHT:
@@ -115,7 +114,7 @@ void DrawsController::CheckAwaitedDataPresence() {
 					break;
 
 			if (j == max_index)
-				EnterSearchState(SEARCH_RIGHT, m_time_to_go);
+				EnterSearchState(SEARCH_RIGHT, m_time_to_go, DTime());
 			break;
 		case WAIT_DATA_NEAREST:
 			for (i = current_index, j = current_index;
@@ -130,7 +129,7 @@ void DrawsController::CheckAwaitedDataPresence() {
 			}
 
 			if (i < 0 && j >= max_index)
-				EnterSearchState(SEARCH_BOTH, m_current_time);
+				EnterSearchState(SEARCH_BOTH, m_current_time, DTime());
 
 			break;
 		default:
@@ -175,7 +174,7 @@ void DrawsController::EnterWaitState(STATE state) {
 					default:
 						assert(false);
 				}
-				EnterSearchState(ns, m_time_to_go);
+				EnterSearchState(ns, m_time_to_go, DTime());
 			}
 			break;
 		default:
@@ -185,42 +184,43 @@ void DrawsController::EnterWaitState(STATE state) {
 	BusyCursorSet();
 }
 
-void DrawsController::EnterSearchState(STATE state, DTime start_time) {
+void DrawsController::EnterSearchState(STATE state, DTime search_from, const DTime& suggested_start_time) {
 	m_got_left_search_response = false;
 	m_got_right_search_response = false;
+	m_suggested_start_time = suggested_start_time;
 
 	assert(m_selected_draw >= 0);
 	const TimeIndex& index = m_draws[m_selected_draw]->GetTimeIndex();
 
 	switch (state) {
 		case SEARCH_LEFT:
-			SendSearchQuery((start_time + index.GetTimeRes() + index.GetDateRes()).GetTime() - wxTimeSpan::Minutes(10),
+			SendSearchQuery((search_from + index.GetTimeRes() + index.GetDateRes()).GetTime() - wxTimeSpan::Minutes(10),
 					wxInvalidDateTime, -1); 
 			break;
 		case SEARCH_RIGHT:
 			SendSearchQuery(index.GetTimeOfIndex(GetNumberOfValues(m_period_type)).GetTime(), wxInvalidDateTime, 1); 
 			break;
 		case SEARCH_BOTH:
-			SendSearchQuery(start_time.GetTime(), 
+			SendSearchQuery(search_from.GetTime(), 
 					wxInvalidDateTime,
 					-1);
-			SendSearchQuery(start_time.GetTime(), 
+			SendSearchQuery(search_from.GetTime(), 
 					wxInvalidDateTime, 
 					1);
 			break;
 		case SEARCH_BOTH_PREFER_RIGHT:
-			SendSearchQuery(start_time.GetTime(), 
+			SendSearchQuery(search_from.GetTime(), 
 					index.GetLastTime().GetTime() + index.GetTimeRes() + index.GetDateRes(),
 					-1);
-			SendSearchQuery(start_time.GetTime(), 
+			SendSearchQuery(search_from.GetTime(), 
 					wxInvalidDateTime, 
 					1);
 			break;
 		case SEARCH_BOTH_PREFER_LEFT:
-			SendSearchQuery((start_time.GetTime() + index.GetTimeRes() + index.GetDateRes()) - wxTimeSpan::Minutes(10), 
+			SendSearchQuery((search_from.GetTime() + index.GetTimeRes() + index.GetDateRes()) - wxTimeSpan::Minutes(10), 
 					wxInvalidDateTime,
 					-1);
-			SendSearchQuery(start_time.GetTime(), 
+			SendSearchQuery(search_from.GetTime(), 
 					index.GetStartTime().GetTime() - wxTimeSpan::Minutes(10),
 					1);
 			break;
@@ -555,7 +555,6 @@ void DrawsController::NoDataFound() {
 					SetSelectedDraw(selected_draw);
 					EnterWaitState(WAIT_DATA_NEAREST);
 				} else {
-					EnterStopState();
 					ThereIsNoData();
 				}
 			}
@@ -675,7 +674,7 @@ void DrawsController::Set(PeriodType period_type) {
 	for (int i = 0; i < m_active_draws_count; i++)
 		m_observers.NotifyPeriodChanged(m_draws[i], period_type);
 
-	EnterSearchState(SEARCH_BOTH, start_time);
+	EnterSearchState(SEARCH_BOTH, start_time, DTime());
 
 }
 
@@ -683,7 +682,7 @@ void DrawsController::Set(PeriodType pt, const wxDateTime& time, int draw_to_sel
 	if (m_period_type == pt)
 		return Set(draw_to_select, time);
 
-	DTime start_time = DTime(pt, time).AdjustToPeriod();
+	m_time_to_go = DTime(pt, time).AdjustToPeriod();
 	m_current_time = DTime();
 	m_current_index = -1;
 
@@ -694,14 +693,14 @@ void DrawsController::Set(PeriodType pt, const wxDateTime& time, int draw_to_sel
 
 	m_period_type = pt;
 	for (size_t i = 0; i < m_draws.size(); i++)
-		m_draws.at(i)->SetPeriod(start_time, GetNumberOfValues(pt));
+		m_draws.at(i)->SetPeriod(m_time_to_go, GetNumberOfValues(pt));
 
 	for (size_t i = 0; i < m_draws.size(); i++)
 		m_observers.NotifyPeriodChanged(m_draws[i], pt);
 
 	m_observers.NotifyDrawSelected(m_draws.at(m_selected_draw));
 
-	EnterSearchState(SEARCH_BOTH, start_time);
+	EnterSearchState(SEARCH_BOTH, m_time_to_go, DTime());
 
 }
 
@@ -714,7 +713,7 @@ void DrawsController::Set(DrawSet *set, PeriodType pt, const wxDateTime& time, i
 
 	DoSet(set);
 
-	DTime start_time = DTime(pt, time).AdjustToPeriod();
+	m_time_to_go = DTime(pt, time).AdjustToPeriod();
 	m_current_time = DTime();
 	m_current_index = -1;
 
@@ -725,12 +724,12 @@ void DrawsController::Set(DrawSet *set, PeriodType pt, const wxDateTime& time, i
 
 	m_period_type = pt;
 	for (size_t i = 0; i < m_draws.size(); i++)
-		m_draws.at(i)->SetPeriod(start_time, GetNumberOfValues(pt));
+		m_draws.at(i)->SetPeriod(m_time_to_go, GetNumberOfValues(pt));
 
 	for (size_t i = 0; i < m_draws.size(); i++)
 		m_observers.NotifyDrawInfoChanged(m_draws[i]);
 
-	EnterSearchState(SEARCH_BOTH, start_time);
+	EnterSearchState(SEARCH_BOTH, m_time_to_go, DTime());
 }
 
 void DrawsController::Set(int draw_to_select, const wxDateTime& time) {
@@ -1002,9 +1001,9 @@ void DrawsController::MoveScreenLeft() {
 		return;
 
 	const TimeIndex& index = m_draws[m_selected_draw]->GetTimeIndex();
-	m_suggested_start_time = index.GetStartTime() - index.GetDatePeriod() - index.GetTimePeriod();
+	DTime suggested_start_time = index.GetStartTime() - index.GetDatePeriod() - index.GetTimePeriod();
 	m_time_to_go = m_draws[m_selected_draw]->GetTimeOfIndex(m_current_index - GetNumberOfValues(GetPeriod()));
-	EnterSearchState(SEARCH_BOTH_PREFER_LEFT, m_time_to_go);
+	EnterSearchState(SEARCH_BOTH_PREFER_LEFT, m_time_to_go, suggested_start_time);
 }
 
 void DrawsController::MoveScreenRight() {
@@ -1012,9 +1011,9 @@ void DrawsController::MoveScreenRight() {
 		return;
 
 	const TimeIndex& index = m_draws[m_selected_draw]->GetTimeIndex();
-	m_suggested_start_time = index.GetStartTime() + index.GetDatePeriod() + index.GetTimePeriod();
+	DTime suggested_start_time = index.GetStartTime() + index.GetDatePeriod() + index.GetTimePeriod();
 	m_time_to_go = m_draws[m_selected_draw]->GetTimeOfIndex(m_current_index + GetNumberOfValues(GetPeriod()));
-	EnterSearchState(SEARCH_BOTH_PREFER_RIGHT, m_time_to_go);
+	EnterSearchState(SEARCH_BOTH_PREFER_RIGHT, m_time_to_go, suggested_start_time);
 }
 
 void DrawsController::MoveCursorBegin() {
@@ -1112,7 +1111,7 @@ void DrawsController::SetNumberOfUnits(size_t number_of_units) {
 
 void DrawsController::SendQueryForEachPrefix(DatabaseQuery::QueryType qt) {
 	DrawInfo *di = m_draws.at(0)->GetDrawInfo();
-	for (size_t i = 1; i < m_draws.size(); ++i) {
+	for (int i = 1; i < m_active_draws_count; ++i) {
 		DrawInfo *_di = m_draws[i]->GetDrawInfo();
 		if (di->GetBasePrefix() != _di->GetBasePrefix()) {
 			DatabaseQuery* q = new DatabaseQuery;

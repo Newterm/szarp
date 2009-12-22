@@ -146,10 +146,6 @@ void FrameManager::OnClose(wxCloseEvent &event) {
 	wxConfig::Get()->Write(wxString::Format(_T("DrawFrameX_%d"), dn), x);
 	wxConfig::Get()->Write(wxString::Format(_T("DrawFrameY_%d"), dn), y);
 
-	wxString menu_bar;
-	menu_bar = frame->GetMenuBar() == NULL ? _T("false") : _T("true");
-	wxConfig::Get()->Write(_T("DrawMenuBar"), menu_bar);
-
 	frame->SaveLayout();
 
 	frame->Destroy();

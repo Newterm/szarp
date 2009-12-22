@@ -39,8 +39,6 @@
 /**Display summary values of currently displayed draws*/
 class RelWindow : public wxDialog, public DrawObserver {
 
-	wxMenuItem *m_rel_item;
-
 	/**This structure holds values of displayed draws*/
 	struct ObservedDraw {
 		ObservedDraw(Draw *_draw);
@@ -95,7 +93,7 @@ class RelWindow : public wxDialog, public DrawObserver {
 
 	void ResetDraw(Draw *draw);
 	public:
-	RelWindow(wxWindow *parent, DrawPanel *panel, wxMenuItem *rel_item);
+	RelWindow(wxWindow *parent, DrawPanel *panel);
 
 	/**Displays window and activates object*/
 	virtual bool Show(bool show = true);

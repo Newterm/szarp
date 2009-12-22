@@ -75,40 +75,13 @@ database_manager(dm), m_notebook(NULL), draw_panel(NULL), remarks_handler(remark
 	wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	empty_menu_bar = (wxMenuBar*) wxXmlResource::Get()->LoadObject(this,_T("menubar"),_T("wxMenuBar"));
+	menu_bar = (wxMenuBar*) wxXmlResource::Get()->LoadObject(this,_T("menubar"),_T("wxMenuBar"));
 
-	SetMenuBar(empty_menu_bar);
-
-	empty_menu_bar->Enable(XRCID("Find"), false);
-	empty_menu_bar->Enable(XRCID("SetParams"), false);
-	empty_menu_bar->Enable(XRCID("EditSet"), false);
-	empty_menu_bar->Enable(XRCID("DelSet"), false);
-	empty_menu_bar->Enable(XRCID("NewSet"), false);
-	empty_menu_bar->Enable(XRCID("Save"), false);
-	empty_menu_bar->Enable(XRCID("Load"), false);
-	empty_menu_bar->Enable(XRCID("CloseTab"), false);
-	empty_menu_bar->Enable(XRCID("Summary"), false);
-	empty_menu_bar->Enable(XRCID("Jump"), false);
-	empty_menu_bar->Enable(XRCID("Print"), false);
-	empty_menu_bar->Enable(XRCID("PrintPrev"), false);
-	empty_menu_bar->Enable(XRCID("Ratio"), false);
-	empty_menu_bar->Enable(XRCID("XYGraph"), false);
-	empty_menu_bar->Enable(XRCID("Remarks"), false);
-	empty_menu_bar->Enable(XRCID("Refresh"), false);
-	empty_menu_bar->Enable(XRCID("ClearCache"), false);
-	empty_menu_bar->Enable(XRCID("F0"), false);
-	empty_menu_bar->Enable(XRCID("F1"), false);
-	empty_menu_bar->Enable(XRCID("F2"), false);
-	empty_menu_bar->Enable(XRCID("F3"), false);
-	empty_menu_bar->Enable(XRCID("F4"), false);
-	empty_menu_bar->Enable(XRCID("F5"), false);
-	empty_menu_bar->Enable(XRCID("StatsWin"), false);
-	empty_menu_bar->Enable(XRCID("Summary"), false);
-	empty_menu_bar->Enable(XRCID("Pie"), false);
-	empty_menu_bar->Enable(XRCID("FullScreen"), false);
-	empty_menu_bar->Enable(XRCID("Help"), false);
+	SetMenuBar(menu_bar);
 
 	params_dialog = NULL;
+
+	ignore_menu_events = false;
 
 }
 
@@ -276,7 +249,6 @@ void DrawFrame::SetTitle(const wxString &title, const wxString &prefix)
 
 bool DrawFrame::AddDrawPanel(const wxString & prefix, const wxString& set, PeriodType pt, time_t time, int selected_draw)
 {
-
 	DrawsSets *config = config_manager->GetConfigByPrefix(prefix);
 
 	if (config == NULL)
@@ -321,6 +293,7 @@ bool DrawFrame::AddDrawPanel(const wxString & prefix, const wxString& set, Perio
 	DrawPanel *new_panel = new DrawPanel(database_manager,
 			config_manager,
 			remarks_handler,
+			menu_bar,
 			config->GetPrefix(),
 			set,
 			pt,
@@ -339,6 +312,7 @@ bool DrawFrame::AddDrawPanel(const wxString & prefix, const wxString& set, Perio
 		draw_panel->SetActive(false);
 
 	draw_panel = new_panel;
+
 	draw_panel->SetActive(true);
 
 	if (m_notebook) {
@@ -348,7 +322,6 @@ bool DrawFrame::AddDrawPanel(const wxString & prefix, const wxString& set, Perio
 
 	} else {
 		sizer->Add(new_panel, 1, wxEXPAND);
-		SetMenuBar(new_panel->GetMenuBar());
 		draw_panel->SetFocus();
 	}
 	SetTitle(new_panel->GetConfigName(),  new_panel->GetPrefix());
@@ -378,9 +351,6 @@ void DrawFrame::DetachFromNotebook()
 
 	m_notebook->Destroy();
 	m_notebook = NULL;
-
-	if (GetMenuBar())
-		SetMenuBar(draw_panel->GetMenuBar());
 
 	SetTitle(draw_panel->GetConfigName(), draw_panel->GetPrefix());
 }
@@ -430,7 +400,8 @@ void DrawFrame::OnCloseTab(wxCommandEvent & evt)
 
 void DrawFrame::OnSummaryWindowCheck(wxCommandEvent & event)
 {
-        draw_panel->ShowSummaryWindow(event.IsChecked());
+	if (ignore_menu_events == false)
+	        draw_panel->ShowSummaryWindow(event.IsChecked());
 }
 
 void DrawFrame::RemovePanel(DrawPanel *panel) {
@@ -452,12 +423,11 @@ void DrawFrame::OnNotebookSelectionChange(wxAuiNotebookEvent& event)
 	wxWindow *page = m_notebook->GetPage(i);
 	draw_panel = wxDynamicCast(page, DrawPanel);
 
+	ignore_menu_events = true;
 	draw_panel->SetActive(true);
+	ignore_menu_events = false;
 
 	draw_panel->SetFocus();
-
-	assert(GetMenuBar() != NULL);
-	SetMenuBar(draw_panel->GetMenuBar());
 
 	SetTitle(draw_panel->GetConfigName(), draw_panel->GetPrefix());
 
@@ -467,11 +437,6 @@ void DrawFrame::OnNotebookSelectionChange(wxAuiNotebookEvent& event)
 void DrawFrame::OnClose(wxCloseEvent & event)
 {
 	frame_manager->ProcessEvent(event);
-}
-
-void DrawFrame::ShowMenuBar()
-{
-	SetMenuBar(draw_panel->GetMenuBar());
 }
 
 void DrawFrame::OnJumpToDate(wxCommandEvent &)
@@ -515,15 +480,18 @@ void DrawFrame::OnNumberOfAxes(wxCommandEvent &event) {
 }
 
 void DrawFrame::OnFilterChange(wxCommandEvent &event) {
-	draw_panel->OnFilterChange(event);
+	if (ignore_menu_events == false)
+		draw_panel->OnFilterChange(event);
 }
 
 void DrawFrame::OnPieWin(wxCommandEvent &event) {
-	draw_panel->ShowPieWindow(event.IsChecked());
+	if (ignore_menu_events == false)
+		draw_panel->ShowPieWindow(event.IsChecked());
 }
 
 void DrawFrame::OnRelWin(wxCommandEvent &event) {
-	draw_panel->ShowRelWindow(event.IsChecked());
+	if (ignore_menu_events == false)
+		draw_panel->ShowRelWindow(event.IsChecked());
 }
 
 void DrawFrame::OnXYDialog(wxCommandEvent &event) {
@@ -550,7 +518,8 @@ void DrawFrame::OnFullScreen(wxCommandEvent &event) {
 }
 
 void DrawFrame::OnSplitCursor(wxCommandEvent &event) {
-	draw_panel->ToggleSplitCursor(event);
+	if (ignore_menu_events == false)
+		draw_panel->ToggleSplitCursor(event);
 }
 
 void DrawFrame::SwitchFullScreen() {
@@ -613,7 +582,6 @@ void DrawFrame::RemovePendingPanels() {
 			draw_panel->Destroy();
 			draw_panel = NULL;
 
-			SetMenuBar(empty_menu_bar);
 		}
 
 	}
@@ -664,6 +632,9 @@ void DrawFrame::OnErrorFrame(wxCommandEvent &event) {
 }
 
 void DrawFrame::OnAverageChange(wxCommandEvent& event) {
+	if (ignore_menu_events)
+		return;
+
 	PeriodType pt;
 	int id = event.GetId();
 	if (id == XRCID("YEAR_RADIO"))
@@ -681,9 +652,6 @@ void DrawFrame::OnAverageChange(wxCommandEvent& event) {
 }
 
 DrawFrame::~DrawFrame() {
-	if (GetMenuBar() != empty_menu_bar)
-		empty_menu_bar->Destroy();
-
 	if (params_dialog)
 		params_dialog->Destroy();
 }
@@ -772,10 +740,9 @@ DrawFrame::LoadLayout() {
 		return false;
 	}
 
-	if (idx > 1) {
+	if (idx > 1)
 		m_notebook->SetSelection(selection % m_notebook->GetPageCount());
-		dynamic_cast<DrawPanel*>(m_notebook->GetPage(selection % m_notebook->GetPageCount()))->SetFocus();
-	}
+
 
 	return requested_prefix_present;
 

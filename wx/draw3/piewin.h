@@ -55,8 +55,6 @@ class PieWindow : public wxFrame, public DrawObserver {
 
 	GraphControl *m_graph;
 
-	wxMenuItem *m_pie_item;
-
 	/**This structure holds values of displayed draws*/
 	struct ObservedDraw {
 		ObservedDraw(Draw *_draw);
@@ -115,7 +113,7 @@ class PieWindow : public wxFrame, public DrawObserver {
 	DrawsController *m_draws_controller;
 
 	public:
-	PieWindow(wxWindow *parent, DrawPanel *panel, wxMenuItem *pie_item);
+	PieWindow(wxWindow *parent, DrawPanel *panel);
 
 	/**Displays window and activates object*/
 	virtual bool Show(bool show = true);

@@ -72,9 +72,8 @@ PieWindow::ObservedDraw::ObservedDraw(Draw *_draw) : draw(_draw),
 	piedraw(false)
 {}
 
-PieWindow::PieWindow(wxWindow *parent, DrawPanel *panel, wxMenuItem* pie_item) :
+PieWindow::PieWindow(wxWindow *parent, DrawPanel *panel) :
 	wxFrame(parent, wxID_ANY, _("Percentage distribution"), wxDefaultPosition, wxSize(400, 100)),
-	m_pie_item(pie_item),
 	m_update(false),
 	m_active(false),
 	m_panel(panel),
@@ -405,7 +404,6 @@ void PieWindow::OnClose(wxCloseEvent &event) {
 	if (event.CanVeto()) {
 		event.Veto();
 		m_panel->ShowPieWindow(false);
-		m_pie_item->Check(false);
 	} else
 		Destroy();
 }

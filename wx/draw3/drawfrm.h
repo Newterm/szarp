@@ -129,9 +129,6 @@ public:
 	/**Close event handler*/
 	void OnClose(wxCloseEvent &event);
 
-	/**shows a menubar*/
-	void ShowMenuBar();
-
 	/**handles event change event sent by menu*/
 	void OnFilterChange(wxCommandEvent &event);
 
@@ -191,7 +188,6 @@ public:
 	DrawPanel *GetCurrentPanel();
 
 protected:
-
 	wxString m_name;
 
 	/**Removes all panels that was scheduled by @see RemovePanel for removal*/
@@ -291,10 +287,11 @@ protected:
 	/** panels pending for removal at idle event handler*/
 	std::vector<DrawPanel*> panels_to_remove;
 
-	/**menu bar that is displayed when there are no any @see DrawPanel objects present in the frame*/
-	wxMenuBar *empty_menu_bar;
+	wxMenuBar *menu_bar;
 
 	ParamsListDialog *params_dialog;
+
+	bool ignore_menu_events;
 
 	DECLARE_EVENT_TABLE();
 
