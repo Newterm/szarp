@@ -810,7 +810,11 @@ void DrawPanel::Print(bool preview) {
 }
 
 void DrawPanel::DrawInfoChanged(Draw *d) {
-	tb->DoubleCursorToolUncheck();
+	if (d->GetSelected()) {
+		menu_bar->Enable(XRCID("EditSet"),  IsUserDefined());
+		menu_bar->Enable(XRCID("DelSet"),  IsUserDefined());
+		tb->DoubleCursorToolUncheck();
+	}
 }
 
 void DrawPanel::PeriodChanged(Draw *d, PeriodType pt) {
@@ -909,13 +913,6 @@ void DrawPanel::OnFilterChange(wxCommandEvent &event) {
 bool DrawPanel::IsUserDefined() {
 	DrawSet *sset = GetSelectedSet();
 	return dynamic_cast<DefinedDrawSet*>(sset) != NULL;
-}
-
-void DrawPanel::SetChanged() {
-	if (active) {
-		menu_bar->Enable(XRCID("EditSet"),  IsUserDefined());
-		menu_bar->Enable(XRCID("DelSet"),  IsUserDefined());
-	}
 }
 
 void DrawPanel::OnToolFilterMenu(wxCommandEvent &event) {

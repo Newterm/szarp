@@ -1,6 +1,9 @@
 $Id$
 
 2009-12-22	Darek Marcinkiewicz <darek@praterm.com.pl>
+	* wx/draw3: "edit set" and "remove set" menu items are properly
+	enabled/disabled when sets are changed between regular and
+	user defined sets
 	* wx/draw3: now we have one menubar per farme (previously each
 	tab has its own menubar) - fixes problem with keyboard shortcuts
 	originating from menu, fixed data refreshing, fixed cursor

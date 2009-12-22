@@ -157,10 +157,6 @@ class DrawPanel : public wxPanel, public ConfigObserver, public DrawObserver {
 	 * @param preview if true print previev dialog, if false a print dialog will be shown*/
 	void Print(bool preview);
 
-	/** This method diables/enable EditSet and DelSet menu controls. If current set is user
-	 * defined set these controls are enabled*/
-	void SetChanged();
-
 	PeriodType SetPeriod(PeriodType pt);
 	
 	PeriodType GetPeriod();
