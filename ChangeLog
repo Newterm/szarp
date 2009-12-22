@@ -3,7 +3,9 @@ $Id$
 2009-12-22	Darek Marcinkiewicz <darek@praterm.com.pl>
 	* wx/draw3: now we have one menubar per farme (previously each
 	tab has its own menubar) - fixes problem with keyboard shortcuts
-	originating from menu, fixed data refreshing
+	originating from menu, fixed data refreshing, fixed cursor
+	positioning upon switch to other draw that has no data within
+	current view (silly omission on my part)
 2009-12-22	Adam Smyk <asmyk@dalkiaterm.pl>
 	* wx/common/serverdlg.cpp: dialog works for given configuration 
 	or for default one "ServerDlg". It is needed by visio where many 

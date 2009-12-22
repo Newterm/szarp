@@ -129,7 +129,7 @@ void DrawsController::CheckAwaitedDataPresence() {
 			}
 
 			if (i < 0 && j >= max_index)
-				EnterSearchState(SEARCH_BOTH, m_current_time, DTime());
+				EnterSearchState(SEARCH_BOTH, m_time_to_go, DTime());
 
 			break;
 		default:
@@ -239,6 +239,11 @@ void DrawsController::SendSearchQuery(const wxDateTime& start, const wxDateTime&
 
 	time_t t1 = start.IsValid() ? start.GetTicks() : -1;
 	time_t t2 = end.IsValid() ? end.GetTicks() : -1;
+
+	wxLogInfo(_T("Sending search query, start time:%s, end_time: %s, direction: %d"),
+			start.IsValid() ? start.Format().c_str() : L"none",
+			end.IsValid() ? end.Format().c_str() : L"none",
+			direction);
 
 	DatabaseQuery *q = new DatabaseQuery();
 	q->type = DatabaseQuery::SEARCH_DATA;
