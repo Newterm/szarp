@@ -1,5 +1,9 @@
 $Id$
 
+2009-12-22	Adam Smyk <asmyk@dalkiaterm.pl>
+	* wx/common/serverdlg.cpp: dialog works for given configuration 
+	or for default one "ServerDlg". It is needed by visio where many 
+	configurations can be chosen.
 2009-12-21	Darek Marcinkiewicz <darek@praterm.com.pl>
 	* wx/draw3: simplification of code parts that were
 	most convoluted, unfortunately these changes affect nearly

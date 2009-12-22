@@ -60,7 +60,7 @@ public:
 	 * @return server address and port (no validation!), may be
 	 * wxEmptyString
 	 */
-	static wxString GetServer(wxString def, wxString progname, bool always_show = true);
+	static wxString GetServer(wxString def, wxString progname, bool always_show = true, wxString configuration = _T("ServerDlg"));
 	static TSzarpConfig * GetIPK(wxString server,szHTTPCurlClient *m_http);
 	static bool GetReports(wxString server, szHTTPCurlClient *m_http, wxString &title, wxArrayString &reports);
 };
