@@ -30,6 +30,7 @@
 #include "database.h"
 #include "drawtime.h"
 #include "drawobs.h"
+#include "coobs.h"
 #include "drawsctrl.h"
 #include "remarks.h"
 #include "drawobs.h"
@@ -39,11 +40,11 @@
 
 const size_t DrawsController::max_draws_count = 12;
 
-DrawsController::DrawsController(DrawsWidget *draws_widget, DatabaseManager *database_manager) :
+DrawsController::DrawsController(ConfigManager *config_manager, DatabaseManager *database_manager) :
 	DBInquirer(database_manager), 
 	m_state(STOP),
 	m_time_reference(wxDateTime::Now()),
-	m_draws_widget(draws_widget),
+	m_config_manager(config_manager),
 	m_got_left_search_response(false),
 	m_got_right_search_response(false),
 	m_left_search_result(PERIOD_T_OTHER),
@@ -62,6 +63,8 @@ DrawsController::DrawsController(DrawsWidget *draws_widget, DatabaseManager *dat
 	for (size_t i = 0; i < max_draws_count; i++)
 		m_draws.push_back(new Draw(this, &m_observers, i));
 
+	m_config_manager->RegisterConfigObserver(this);
+
 	m_units_count[PERIOD_T_YEAR] = TimeIndex::default_units_count[PERIOD_T_YEAR];
 	m_units_count[PERIOD_T_MONTH] = TimeIndex::default_units_count[PERIOD_T_MONTH];
 	m_units_count[PERIOD_T_WEEK] = TimeIndex::default_units_count[PERIOD_T_WEEK];
@@ -74,6 +77,13 @@ DrawsController::DrawsController(DrawsWidget *draws_widget, DatabaseManager *dat
 	q->type = DatabaseQuery::CHECK_CONFIGURATIONS_CHANGE;
 	q->draw_info = NULL;
 	QueryDatabase(q);
+}
+
+DrawsController::~DrawsController() {
+	for (size_t i = 0; i < m_draws.size(); i++)
+		delete m_draws[i];
+
+	m_config_manager->DeregisterConfigObserver(this);
 }
 
 void DrawsController::DisableDisabledDraws() {
@@ -573,6 +583,9 @@ void DrawsController::DoSet(DrawSet *set) {
 	m_double_cursor = false;
 
 	m_draw_set = set;
+	m_current_set_name = set->GetName();
+	m_current_prefix = set->GetDrawsSets()->GetPrefix();
+
 	DrawInfoArray *draws = set->GetDraws();
 
 	for (size_t i = 0; i < draws->size(); i++)
@@ -583,6 +596,41 @@ void DrawsController::DoSet(DrawSet *set) {
 
 	m_active_draws_count = draws->size();
 
+}
+
+void DrawsController::ConfigurationWasReloaded(wxString prefix) {
+	if (prefix != m_current_prefix)
+		return;
+
+	DrawsSets *dss = m_config_manager->GetConfigByPrefix(prefix);
+	assert(dss);
+
+	DrawSet* ds = dss->GetDrawsSets()[m_current_set_name];
+	if (ds)
+		DoSet(ds);
+	else {
+		SortedSetsArray *sets = dss->GetSortedDrawSetsNames();
+		DoSet((*sets)[0]);
+		delete sets;
+	}
+
+	if (m_selected_draw >= m_active_draws_count)
+		m_selected_draw = 0;
+
+	if (m_draws[m_selected_draw]->GetEnable() == false)
+		m_draws[m_selected_draw]->SetEnable(true);
+
+	for (int i = 0; i < m_active_draws_count; i++)
+		m_draws[i]->RefreshData(true);
+	FetchData();
+
+	m_time_to_go = m_current_time;
+	m_current_time = DTime();
+
+	for (int i = 0; i < m_active_draws_count; i++)
+		m_observers.NotifyDrawInfoReloaded(m_draws[i]);
+
+	EnterWaitState(WAIT_DATA_NEAREST);
 }
 
 void DrawsController::Set(DrawSet *set) {
@@ -714,7 +762,6 @@ void DrawsController::Set(DrawSet *set, PeriodType pt, const wxDateTime& time, i
 		return Set(pt, time, draw_to_select);
 
 	m_double_cursor = false;
-	m_draw_set = set;
 
 	DoSet(set);
 
@@ -774,8 +821,6 @@ void DrawsController::Set(int draw_no) {
 }
 
 void DrawsController::Set(DrawSet *set, int draw_to_select) {
-	m_draw_set = set;
-
 	m_double_cursor = false;
 
 	DoSet(set);
@@ -1042,6 +1087,8 @@ bool DrawsController::SetDrawEnabled(int draw, bool enable) {
 		return false;
 
 	DrawInfo *di = m_draws.at(draw)->GetDrawInfo();
+	if (di == NULL)
+		return false;
 
 	m_draws[draw]->SetEnable(enable);
 
@@ -1269,6 +1316,13 @@ void DrawsObservers::NotifyDrawInfoChanged(Draw* draw) {
 			i != m_observers.end();
 			++i)
 		(*i)->DrawInfoChanged(draw);
+}
+
+void DrawsObservers::NotifyDrawInfoReloaded(Draw* draw) {
+	for (std::vector<DrawObserver*>::iterator i = m_observers.begin();
+			i != m_observers.end();
+			++i)
+		(*i)->DrawInfoReloaded(draw);
 }
 
 void DrawsObservers::NotifyDrawSelected(Draw* draw) {

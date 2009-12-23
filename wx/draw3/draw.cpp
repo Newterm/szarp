@@ -28,6 +28,7 @@
 #include "database.h"
 #include "dbinquirer.h"
 #include "draw.h" 
+#include "coobs.h"
 #include "drawsctrl.h"
 #include "database.h"
 #include "dbmgr.h"

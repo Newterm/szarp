@@ -30,6 +30,7 @@
 #include "draw.h"
 #include "cconv.h"
 #include "timeformat.h"
+#include "coobs.h"
 #include "drawsctrl.h"
 #include "drawpnl.h"
 #include "cfgmgr.h"

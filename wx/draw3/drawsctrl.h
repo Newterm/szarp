@@ -46,6 +46,7 @@ public:
 	void NotifyDrawMoved(Draw *draw, const wxDateTime& time);
 	void NotifyBlockedChanged(Draw *draw);
 	void NotifyDrawInfoChanged(Draw *draw);
+	void NotifyDrawInfoReloaded(Draw *draw);
 	void NotifyDrawSelected(Draw *draw);
 	void NotifyDrawDeselected(Draw *draw);
 	void NotifyPeriodChanged(Draw *draw, PeriodType period);
@@ -57,7 +58,7 @@ public:
 
 };
 
-class DrawsController : public DBInquirer {
+class DrawsController : public DBInquirer, public ConfigObserver {
 
 	/**State of the Draw. Not selected params may be only in state STOP and DISPLAY.
 	 * Selected param in any state*/
@@ -109,7 +110,7 @@ class DrawsController : public DBInquirer {
 		DTime Adjust(PeriodType to_period, const DTime& time);
 	} m_time_reference;
 
-	DrawsWidget *m_draws_widget;
+	ConfigManager *m_config_manager;
 
 	/**Indicates if search for data in left direction has been received*/
 	bool m_got_left_search_response;
@@ -148,6 +149,10 @@ class DrawsController : public DBInquirer {
 
 	/**Filter level*/
 	int m_filter;
+
+	wxString m_current_prefix;
+
+	wxString m_current_set_name;
 
 	size_t m_units_count[PERIOD_T_LAST];
 
@@ -213,7 +218,9 @@ class DrawsController : public DBInquirer {
 
 	void BusyCursorSet();
 public:
-	DrawsController(DrawsWidget *draws_widget, DatabaseManager *database_manager);
+	DrawsController(ConfigManager *config_manager, DatabaseManager *database_manager);
+
+	~DrawsController();
 	/**If draw is not is one of searching states the response is simply ignored.
 	 * Otherwise appopriate action is taken: 
 	 *
@@ -311,6 +318,9 @@ public:
 
 	/**@return current time, used for queries prioritization*/
 	virtual time_t GetCurrentTime();
+
+	virtual void ConfigurationWasReloaded(wxString prefix);
+
 
 	int GetCurrentIndex() const;
 

@@ -44,7 +44,7 @@
  * widgets. It can be used as a main frame for program tab or windows.
  */
 
-class DrawPanel : public wxPanel, public ConfigObserver, public DrawObserver {
+class DrawPanel : public wxPanel, public DrawObserver {
 	public:
 	/**
 	 * @param cfg initialized configuration manager object
@@ -183,10 +183,6 @@ class DrawPanel : public wxPanel, public ConfigObserver, public DrawObserver {
 	/**Pastes window refrence from clipboard to current window*/
 	void Paste();
 
-	void ConfigurationIsAboutToReload(wxString prefix);
-
-	void ConfigurationWasReloaded(wxString prefix);
-
 	/**Get Url**/
 	wxString GetUrl(bool with_infinity);
 
@@ -296,9 +292,6 @@ class DrawPanel : public wxPanel, public ConfigObserver, public DrawObserver {
 	/**Object managing panel's layout.*/
 	wxAuiManager am;
 #endif
-
-	/**Name of current set, value used when configuration is reloaded*/
-	wxString csn;
 
 	DECLARE_EVENT_TABLE()
 };

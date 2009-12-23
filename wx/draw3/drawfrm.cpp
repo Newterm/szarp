@@ -34,10 +34,8 @@
 #include "dbinquirer.h"
 #include "database.h"
 #include "draw.h"
-#include "drawsctrl.h"
-
 #include "coobs.h"
-
+#include "drawsctrl.h"
 #include "cfgmgr.h"
 #include "defcfg.h"
 
@@ -347,6 +345,7 @@ void DrawFrame::DetachFromNotebook()
 
 	sizer->Detach(m_notebook);
 	sizer->Add(draw_panel, 1, wxEXPAND);
+	sizer->Layout();
 
 	sizer->Show((size_t) 0, true);
 	draw_panel->SetFocus();

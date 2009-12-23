@@ -23,6 +23,7 @@
 #include "drawobs.h"
 #include "database.h"
 #include "dbinquirer.h"
+#include "coobs.h"
 #include "drawsctrl.h"
 #include "draw.h"
 

@@ -316,8 +316,6 @@ DrawPanel::DrawPanel(DatabaseManager* _db_mgr, ConfigManager * _cfg, RemarksHand
 #ifdef WXAUI_IN_PANEL
 	am.SetManagedWindow(this);
 #endif
-	cfg->RegisterConfigObserver(this);
-
 	menu_bar = _menu_bar;
 
 	CreateChildren(set, pt, time, selected_draw);
@@ -518,8 +516,6 @@ void DrawPanel::SetFocus() {
 
 DrawPanel::~DrawPanel()
 {
-	cfg->DeregisterConfigObserver(this);
-
 	delete rmf;
 
 	/* Remove event handlers */
@@ -918,32 +914,6 @@ void DrawPanel::OnToolFilterMenu(wxCommandEvent &event) {
 
 DrawSet* DrawPanel::GetSelectedSet() {
 	return dw->GetCurrentDrawSet();
-}
-
-void DrawPanel::ConfigurationIsAboutToReload(wxString prefix) {
-	if (prefix != GetPrefix())
-		csn = _T("");
-	else 
-		csn = GetSelectedSet()->GetName();
-}
-
-void DrawPanel::ConfigurationWasReloaded(wxString prefix) {
-
-	if (csn.IsEmpty())
-		return;
-
-	DrawsSets *dss = cfg->GetConfigByPrefix(prefix);
-	assert(dss);
-
-	DrawSet* ds = dss->GetDrawsSets()[csn];
-	if (ds)
-		dw->SetSet(ds);
-	else {
-		SortedSetsArray *array = dss->GetSortedDrawSetsNames();
-		dw->SetSet((*array)[0]);
-		delete array;
-	}
-
 }
 
 void DrawPanel::Copy() {

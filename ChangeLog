@@ -1,5 +1,11 @@
 $Id$
 
+2009-12-23	Darek Marcinkiewicz <darek@praterm.com.pl>
+	* wx/draw3: a few more bugs fixed: crash upon draws' set change
+	after configuration reload; incorrect behaviour when '[' or ']'
+	keys are pressed; handling of configuration reload moved from 
+	DrawPanel to DrawsController; draw panel is now properly
+	resized after last but one tab is closed
 2009-12-22	Pawel Palucha <pawel@praterm.com.pl>
 	* wx/draw3: pointer to parent window added for all wxMessageBox()
 	invocations, so message boxes get proper application icon; error 

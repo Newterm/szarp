@@ -56,6 +56,10 @@ class DrawObserver {
 	virtual void DrawDeselected(Draw *draw) {};
 	/**Informs object that current @see Draw has changed it's draw info*/
 	virtual void DrawInfoChanged(Draw *draw) {};
+	/**Informs object that configuration associated with this draw was reloaded.
+	 * Because for most of the object handling this requires the same action
+	 * as just changing draw info we have a shortcut here*/
+	virtual void DrawInfoReloaded(Draw *draw) { DrawInfoChanged(draw); }
 	/**Informs object that current @see Draw has changed it's draw info*/
 	virtual void FilterChanged(DrawsController *draws_ctrl) {};
 	/**Informs object that current @see Draw has changed it's period type*/

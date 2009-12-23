@@ -34,6 +34,7 @@
 #include "dbinquirer.h"
 #include "drawtime.h"
 #include "database.h"
+#include "coobs.h"
 #include "drawsctrl.h"
 #include "cfgmgr.h"
 #include "dbmgr.h"

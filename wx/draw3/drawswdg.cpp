@@ -87,7 +87,7 @@ DrawsWidget::DrawsWidget(DrawPanel * parent, ConfigManager *cfg, DatabaseManager
 
 	m_display_timer = new wxTimer(this, DISPLAY_TIMER_ID);
 	m_keyboard_timer = new wxTimer(this, KEYBOARD_TIMER_ID);
-	m_draws_controller = new DrawsController(this, dm);
+	m_draws_controller = new DrawsController(cfg, dm);
 
 	SetDisplayTimer();
 

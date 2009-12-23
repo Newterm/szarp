@@ -32,6 +32,7 @@
 #include "dbinquirer.h"
 #include "database.h"
 #include "draw.h"
+#include "coobs.h"
 #include "drawsctrl.h"
 #include "drawswdg.h"
 #include "drawtime.h"

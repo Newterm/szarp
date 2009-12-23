@@ -38,6 +38,7 @@
 #include "drawtime.h"
 #include "dbmgr.h"
 #include "dbinquirer.h"
+#include "coobs.h"
 #include "drawsctrl.h"
 #include "draw.h"
 #include "drawdnd.h"

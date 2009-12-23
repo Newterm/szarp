@@ -34,6 +34,7 @@
 #include "database.h"
 #include "drawobs.h"
 #include "draw.h"
+#include "coobs.h"
 #include "drawsctrl.h"
 #include "drawswdg.h"
 #include "glgraphs.h"

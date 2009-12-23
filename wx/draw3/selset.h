@@ -69,6 +69,8 @@ public:
 
     virtual void DrawInfoChanged(Draw *draw);
 
+    virtual void DrawInfoReloaded(Draw *draw);
+
     virtual void Attach(DrawsController *draws_controller);
 protected:
     /** Adjust choice string to fit within widget width. Trucantes strings

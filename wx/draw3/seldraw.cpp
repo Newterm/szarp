@@ -45,13 +45,13 @@
 #include "drawtime.h"
 #include "draw.h"
 #include "dbinquirer.h"
+#include "coobs.h"
 #include "drawsctrl.h"
 #include "drawswdg.h"
 #include "cfgmgr.h"
 #include "codeeditor.h"
 #include "drawdnd.h"
 #include "drawurl.h"
-#include "coobs.h"
 #include "defcfg.h"
 #include "paredit.h"
 #include "seldraw.h"
@@ -418,6 +418,10 @@ void SelectDrawWidget::OpenParameterDoc(int i) {
 #endif
 		wxMessageBox(_("I was not able to start default browser"), _("Error"), wxICON_ERROR | wxOK, this);
 
+}
+
+void SelectDrawWidget::EnableChanged(Draw *draw) {
+	SetChecked(draw->GetDrawNo(), draw->GetEnable());
 }
 
 void SelectDrawWidget::DrawInfoChanged(Draw *draw) {

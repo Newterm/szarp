@@ -98,7 +98,7 @@ class SelectDrawValidator : public wxValidator {
 /**
  * Widget for selecting draws.
  */
-class SelectDrawWidget: public wxWindow, public DrawObserver
+class SelectDrawWidget: public wxWindow, public DrawObserver, public ConfigObserver
 {
 public:
 	SelectDrawWidget() : wxWindow()
@@ -125,6 +125,8 @@ public:
 	void SetBlocked(int idx, bool blocked);
 
 	void BlockedChanged(Draw *draw);
+
+	void EnableChanged(Draw *draw);
 
 	void OpenParameterDoc(int i = -1);	
 

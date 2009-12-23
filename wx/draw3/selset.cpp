@@ -129,6 +129,15 @@ SelectSetWidget::DrawInfoChanged(Draw *draw) {
 }
 
 void 
+SelectSetWidget::DrawInfoReloaded(Draw *draw) {
+	if (!draw->GetSelected())
+		return;
+
+	SetConfig();
+	SelectSet(draw->GetDrawsController()->GetSet());
+}
+
+void 
 SelectSetWidget::SelectSet(DrawSet *set) {
 	if (set->GetDrawsSets()->GetPrefix() != m_prefix) {
 		m_prefix = set->GetDrawsSets()->GetPrefix();
