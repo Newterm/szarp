@@ -50,6 +50,7 @@
 #include "ids.h"
 #include "classes.h"
 
+#include "drawapp.h"
 #include "drawobs.h"
 #include "coobs.h"
 #include "cfgmgr.h"
@@ -1076,7 +1077,8 @@ void DefinedDrawsSets::SaveSets(wxString path) {
 	
 	if (xmlSaveFormatFileEnc(SC::S2A(path).c_str(), doc, "UTF-8", 1) == -1)
 		wxMessageBox(_("Failed to save file with users sets."),
-			     _("Operation failed."), wxOK | wxICON_ERROR);
+			     _("Operation failed."), wxOK | wxICON_ERROR,
+			     wxGetApp().GetTopWindow());
 
 	xmlFreeDoc(doc);
 }
@@ -1560,13 +1562,15 @@ void DefinedDrawsSets::LoadDraw2File() {
 
 	DrawsSets *pcfg = m_cfgmgr->GetConfigByPrefix(prefix);
 	if (pcfg == NULL) {
-		wxMessageBox(wxString::Format(_("Failed to load configuration of prefix %s. Unable to import draws."), prefix.c_str()), _("Error!"));
+		wxMessageBox(wxString::Format(_("Failed to load configuration of prefix %s. Unable to import draws."), prefix.c_str()), _("Error!"), wxICON_ERROR, 
+				wxGetApp().GetTopWindow());
 		return;
 	}
 
 	std::vector<EkrnDefConv::window_def> ws = EkrnDefConv::get_windows(pcfg, path);
 	if (ws.size() == 0) {
-		wxMessageBox(_("Failed to import draws from file."), _("Error!"));
+		wxMessageBox(_("Failed to import draws from file."), _("Error!"),
+				wxICON_ERROR, wxGetApp().GetTopWindow());
 		return;
 	}
 
@@ -1585,7 +1589,8 @@ void DefinedDrawsSets::LoadDraw2File() {
 
 	//SetModified();
 
-	wxMessageBox(_("Draws imported successfully."), _("Ok!"));
+	wxMessageBox(_("Draws imported successfully."), _("Ok!"), wxOK,
+			wxGetApp().GetTopWindow());
 }
 
 

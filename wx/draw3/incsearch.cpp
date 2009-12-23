@@ -746,14 +746,14 @@ void IncSearch::OnRemoveMenu(wxCommandEvent &e) {
 	DefinedDrawsSets *dds = ds->GetDefinedDrawsSets();
 	if (m_window_search || ds->GetDraws()->size() == 1) {
 		int answer = wxMessageBox(_("Do you really want to remove this set?"),
-			     _("Set removal"), wxYES_NO | wxICON_QUESTION);
+			     _("Set removal"), wxYES_NO | wxICON_QUESTION, this);
 		if (answer != wxYES)
 			return;
 
 		dds->RemoveSet(i->draw_set->GetName());
 	} else {
 		int answer = wxMessageBox(_("Do you really want to remove this graph?"),
-			     _("Graph removal"), wxYES_NO | wxICON_QUESTION);
+			     _("Graph removal"), wxYES_NO | wxICON_QUESTION, this);
 		if (answer != wxYES)
 			return;
 

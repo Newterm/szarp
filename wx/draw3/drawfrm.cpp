@@ -188,7 +188,8 @@ void DrawFrame::OnSetParams(wxCommandEvent & evt)
 void DrawFrame::OnSave(wxCommandEvent & event)
 {
 	if (config_manager->SaveDefinedDrawsSets())
-		wxMessageBox(_("Defined sets saved succesfully."), _("Information."), wxICON_INFORMATION);
+		wxMessageBox(_("Defined sets saved succesfully."), _("Information."), 
+				wxICON_INFORMATION, this);
 }
 
 void DrawFrame::OnEdit(wxCommandEvent & event)
@@ -199,7 +200,7 @@ void DrawFrame::OnEdit(wxCommandEvent & event)
 		dp->Destroy();
 	} else
 		wxMessageBox(_("You may edit only user defined sets."),
-			     _("Not user defined"), wxOK | wxICON_ERROR);
+			     _("Not user defined"), wxOK | wxICON_ERROR, this);
 
 }
 
@@ -207,10 +208,10 @@ void DrawFrame::OnDel(wxCommandEvent & event)
 {
 	if (!draw_panel->IsUserDefined())
 		wxMessageBox(_("You may only remove user defined sets."),
-			     _("Not user defined"), wxOK | wxICON_ERROR);
+			     _("Not user defined"), wxOK | wxICON_ERROR, this);
 	else {
 		int answer = wxMessageBox(_("Do you really want to remove this set?"),
-			     _("Set removal"), wxYES_NO | wxICON_QUESTION);
+			     _("Set removal"), wxYES_NO | wxICON_QUESTION, this);
 		if (answer != wxYES)
 			return;
 		DefinedDrawsSets *d = config_manager->GetDefinedDrawsSets();
@@ -259,7 +260,8 @@ bool DrawFrame::AddDrawPanel(const wxString & prefix, const wxString& set, Perio
 	delete sorted;
 
 	if (count <= 0) {
-		wxMessageDialog dlg(this,_("No sets in configuration"),_("No sets"),wxOK);
+		wxMessageDialog dlg(this,_("No sets in configuration"),_("No sets"), 
+				wxOK | wxICON_ERROR);
 		dlg.ShowModal();
 		return false;
 	}
@@ -453,13 +455,10 @@ void DrawFrame::OnPrintPreview(wxCommandEvent &event) {
 }
 
 void DrawFrame::OnNumberOfAxes(wxCommandEvent &event) {
-	int c;
+	long int c;
 
 	wxConfigBase *cfg = wxConfig::Get();
-	if (cfg->Read(_T("MaxPrintedAxesNumber"), &c))
-		c = 3;
-
-	wxMessageBox(wxString::Format(_T("number: %d"), c));
+	cfg->Read(_T("MaxPrintedAxesNumber"), &c, 3L);
 
 	int ret;
 	ret = wxGetNumberFromUser(
@@ -623,7 +622,7 @@ void DrawFrame::OnReloadConfig(wxCommandEvent &event) {
 
 	wxMessageBox(wxString::Format(_("Configuration '%s' cannot be reloaded, probably new version of this configuration contatins errors."), draw_panel->GetConfigName().c_str()), 
 			_("Error"),
-			wxICON_HAND);
+			wxICON_HAND, this);
 
 }
 
@@ -820,7 +819,8 @@ void DrawFrame::OnLanguageChange(wxCommandEvent &e) {
 
 	wxConfig::Get()->Write(_T("LANGUAGE"), nl);
 
-	wxMessageBox(_("Current language has been changed. You have to restart draw3"), _("Language changed"));
+	wxMessageBox(_("Current language has been changed. You have to restart draw3"), 
+			_("Language changed"), wxOK, this);
 }
 
 void DrawFrame::OnGraphsView(wxCommandEvent &e) {
@@ -849,15 +849,15 @@ void DrawFrame::OnGraphsView(wxCommandEvent &e) {
 
 	if (ret == 2) {
 		if (style != _T("GCDC"))
-			wxMessageBox(_("You need to restart application for this change to take effect."), _("Graphs view changed."), wxICON_INFORMATION);
+			wxMessageBox(_("You need to restart application for this change to take effect."), _("Graphs view changed."), wxICON_INFORMATION, this);
 		style = _T("GCDC");
 	} else if (ret == 1) {
 		if (style != _T("3D"))
-			wxMessageBox(_("You need to restart application for this change to take effect."), _("Graphs view changed."), wxICON_INFORMATION);
+			wxMessageBox(_("You need to restart application for this change to take effect."), _("Graphs view changed."), wxICON_INFORMATION, this);
 		style = _T("3D");
 	} else {
 		if (style != _T("Classic"))
-			wxMessageBox(_("You need to restart application for this change to take effect."), _("Graphs view changed."), wxICON_INFORMATION);
+			wxMessageBox(_("You need to restart application for this change to take effect."), _("Graphs view changed."), wxICON_INFORMATION, this);
 		style = _T("Classic");
 	}
 
@@ -868,7 +868,7 @@ void DrawFrame::OnGraphsView(wxCommandEvent &e) {
 
 void DrawFrame::OnAddRemark(wxCommandEvent &event) {
 	if (!remarks_handler->Configured()) {
-		wxMessageBox(_("Remarks sending not configured, You should set username, password, and remarks server adddress"), _("Remarks not configured."), wxICON_HAND);
+		wxMessageBox(_("Remarks sending not configured, You should set username, password, and remarks server adddress"), _("Remarks not configured."), wxICON_HAND, this);
 		OnConfigureRemarks(event);
 	}
 
@@ -892,7 +892,7 @@ void DrawFrame::OnAddRemark(wxCommandEvent &event) {
 
 void DrawFrame::OnFetchRemarks(wxCommandEvent &event) {
 	if (!remarks_handler->Configured()) {
-		wxMessageBox(_("Remarks sending not configured, You should set username, password, and remarks server adddress"), _("Remarks not configured."), wxICON_HAND);
+		wxMessageBox(_("Remarks sending not configured, You should set username, password, and remarks server adddress"), _("Remarks not configured."), wxICON_HAND, this);
 		OnConfigureRemarks(event);
 	}
 
@@ -1102,11 +1102,11 @@ void DrawFrame::OnLanguageChangeMenuItem(wxCommandEvent &event) {
 
 	question += lang + _T("?");
 
-	if (wxMessageBox(question, _("Question"), wxYES_NO | wxICON_QUESTION) != wxYES)
+	if (wxMessageBox(question, _("Question"), wxYES_NO | wxICON_QUESTION, this) != wxYES)
 		return;
 
 	wxConfig::Get()->Write(_T("LANGUAGE"), langid);
-	wxMessageBox(wxString::Format(_("Language changed to: %s. You need restart draw3 for this change to take effect."), lang.c_str()), _("Language changed."));
+	wxMessageBox(wxString::Format(_("Language changed to: %s. You need restart draw3 for this change to take effect."), lang.c_str()), _("Language changed."), wxOK, this);
 
 
 }

@@ -227,9 +227,6 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 		if(event.AltDown())
 			panel->OnJumpToDate();
 		break;
-	case 'W':
-		panel->Print(false);
-		break;
 	case 'B':
 		if (event.ControlDown())
 			panel->dw->SwitchCurrentDrawBlock();

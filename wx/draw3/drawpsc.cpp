@@ -421,7 +421,8 @@ void DrawPscFrame::DoHandlePsetDResponse(bool ok, xmlDocPtr doc) {
 
 	if (ok == false) {
 		if (IsShown())
-			wxMessageBox(_("Server communiation error."), _("Error"), wxOK);
+			wxMessageBox(_("Server communiation error."), _("Error"), 
+					wxOK | wxICON_ERROR, this);
 		sb->SetStatusText(_("Server communication error."));
 		EnableEditingControls(false);
 		return;
@@ -432,7 +433,8 @@ void DrawPscFrame::DoHandlePsetDResponse(bool ok, xmlDocPtr doc) {
 	bool parsed = prd.ParseResponse(doc);
 	if (parsed == false) {
 		if (IsShown())
-			wxMessageBox(_("Server communiation error. Invalid response format."), _("Error"), wxOK);
+			wxMessageBox(_("Server communiation error. Invalid response format."), 
+					_("Error"), wxOK | wxICON_ERROR, this);
 		sb->SetStatusText(_("Server communiation error. Invalid response format."));
 		EnableEditingControls(false);
 		return;
@@ -440,7 +442,8 @@ void DrawPscFrame::DoHandlePsetDResponse(bool ok, xmlDocPtr doc) {
 
 	if (!prd.ResponseOK()) {
 		if (IsShown())
-			wxMessageBox(wxString(_("Error while performing operation:")) + prd.GetError(), _("Error"), wxOK);
+			wxMessageBox(wxString(_("Error while performing operation:")) + prd.GetError(), 
+					_("Error"), wxOK | wxICON_ERROR);
 		sb->SetStatusText(wxString(_("Error while performing operation:")) + prd.GetError());
 		EnableEditingControls(false);
 		return;
@@ -449,7 +452,7 @@ void DrawPscFrame::DoHandlePsetDResponse(bool ok, xmlDocPtr doc) {
 	assert(m_unit);
 	if (m_unit->SwallowResponse(prd) == false) {
 		if (IsShown())
-			wxMessageBox(_("Configuration mismatch, you are not able to set parameters. Problem may be solved by synchronization of data."), _("Error"), wxOK);
+			wxMessageBox(_("Configuration mismatch, you are not able to set parameters. Problem may be solved by synchronization of data."), _("Error"), wxOK | wxICON_ERROR, this);
 		sb->SetStatusText(_("Configuration mismatch, you are not able to set parameters. Problem may be solved by synchronization of data."));
 		EnableEditingControls(false);
 		m_psc->IsUnitDataPresent(m_unit) = false;

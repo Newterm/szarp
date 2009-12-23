@@ -237,11 +237,11 @@ void ParamsListDialog::OnAdd(wxCommandEvent &e) {
 void ParamsListDialog::OnRemove(wxCommandEvent &e) {
 	DefinedParam *p = GetSelectedParam();
 	if (p == NULL) {
-		wxMessageBox(_("Choose parameter first"), _("Error!"));
+		wxMessageBox(_("Choose parameter first"), _("Error!"), wxOK | wxICON_ERROR, this);
 		return;
 	}
 
-	int ret = wxMessageBox(_("Are you sure you want to delete this param? All draws referring to this param will be removed as well."), _("Warning!"), wxOK | wxCANCEL);
+	int ret = wxMessageBox(_("Are you sure you want to delete this param? All draws referring to this param will be removed as well."), _("Warning!"), wxOK | wxCANCEL, this);
 	if (ret != wxOK)
 		return;
 
@@ -303,13 +303,13 @@ void ParamsListDialog::OnEdit(wxCommandEvent &e) {
 	DefinedParam *p = GetSelectedParam();
 
 	if (p == NULL) {
-		wxMessageBox( _("Select parameter first!"), _("Error!"), wxID_OK);
+		wxMessageBox( _("Select parameter first!"), _("Error!"), wxOK | wxICON_ERROR, this);
 		return;
 	}
 
 	if (m_def_sets->GetParentManager()->GetConfigByPrefix(p->GetBasePrefix()) == NULL) {
 		wxMessageBox(wxString::Format(_("Configuration that this param refers to - '%s' is not present, parameter is not accesible."), 
-				p->GetBasePrefix().c_str()), _("Error"), wxICON_ERROR);
+				p->GetBasePrefix().c_str()), _("Error"), wxOK | wxICON_ERROR, this);
 		return;
 	}
 
@@ -342,14 +342,14 @@ void ParamsListDialog::OnClose(wxCloseEvent &e) {
 
 void ParamsListDialog::OnOKButton(wxCommandEvent &e) {
 	if (m_selected_index < 0) {
-		wxMessageBox(_("Choose parameter first"), _("Error!"));
+		wxMessageBox(_("Choose parameter first"), _("Error!"), wxOK | wxICON_ERROR, this);
 		return;
 	}
 
 	DefinedParam *param = (DefinedParam*) m_param_list->GetItemData(m_selected_index);
 	if (m_def_sets->GetParentManager()->GetConfigByPrefix(param->GetBasePrefix()) == NULL) {
 		wxMessageBox(wxString::Format(_("Configuration that this param refers to - '%s' is not present, parameter is not accesible."), 
-				param->GetBasePrefix().c_str()), _("Error"), wxICON_ERROR);
+				param->GetBasePrefix().c_str()), _("Error"), wxOK | wxICON_ERROR, this);
 		return;
 	}
 
@@ -365,8 +365,10 @@ void ParamsListDialog::SelectCurrentParam() {
 		if (m_selected_index >= 0) {
 				DefinedParam *param = (DefinedParam*) m_param_list->GetItemData(m_selected_index);
 				if (m_def_sets->GetParentManager()->GetConfigByPrefix(param->GetBasePrefix()) == NULL) {
-					wxMessageBox(wxString::Format(_("Configuration that this param refers to - '%s' is not present, parameter is not accesible."), 
-						param->GetBasePrefix().c_str()), _("Error"), wxICON_ERROR);
+					wxMessageBox(wxString::Format(_("Configuration that this param refers to - '%s' is not present, parameter is not accesible."), param->GetBasePrefix().c_str()), 
+							_("Error"),
+   							wxOK | wxICON_ERROR,
+							this);
 					return;
 				}
 			EndModal(wxID_OK);

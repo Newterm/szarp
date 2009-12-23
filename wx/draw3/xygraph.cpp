@@ -102,7 +102,7 @@ XYFrame::XYFrame(wxString default_prefix, DatabaseManager *db_manager, ConfigMan
 void XYFrame::OnClose(wxCloseEvent &event) {
 
 	if (event.CanVeto()) {
-		int ret = wxMessageBox(_("Do you want to close this window?"), _("Window close"), wxICON_QUESTION | wxYES_NO);
+		int ret = wxMessageBox(_("Do you want to close this window?"), _("Window close"), wxICON_QUESTION | wxYES_NO, this);
 		if (ret == wxYES)
 			Destroy();
 	} else {

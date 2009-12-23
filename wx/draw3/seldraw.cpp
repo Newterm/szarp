@@ -416,7 +416,7 @@ void SelectDrawWidget::OpenParameterDoc(int i) {
 #else
 	if (wxExecute(wxString::Format(_T("xdg-open %s"), link.c_str())) == 0)
 #endif
-		wxMessageBox(_("I was not able to start default browser"), _("Error"), wxICON_ERROR | wxOK);
+		wxMessageBox(_("I was not able to start default browser"), _("Error"), wxICON_ERROR | wxOK, this);
 
 }
 

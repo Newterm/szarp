@@ -152,19 +152,19 @@ void DrawEdit::OnOK(wxCommandEvent & event)
 {
 	if (m_long_txt->GetValue().IsEmpty()) {
 		wxMessageBox(_("You must provide a draw name."), _("Wrong value"),
-			     wxOK | wxICON_ERROR);
+			     wxOK | wxICON_ERROR, this);
 		return;
 	}
 
 	if (m_short_txt->GetValue().IsEmpty()) {
 		wxMessageBox(_("You must provide a short draw name."), _("Wrong value"),
-			     wxOK | wxICON_ERROR);
+			     wxOK | wxICON_ERROR, this);
 		return;
 	}
 		
 	if (m_color_set == false) {
 		wxMessageBox(_("You must set a draw's colour."), _("Wrong value"),
-			     wxOK | wxICON_ERROR);
+			     wxOK | wxICON_ERROR, this);
 		return;
 	}
 
@@ -172,7 +172,7 @@ void DrawEdit::OnOK(wxCommandEvent & event)
 	miss >> m_min;
 	if (!miss.eof() || miss.fail()) {
 		wxMessageBox(_("Min must be a number."), _("Wrong value"),
-			     wxOK | wxICON_ERROR);
+			     wxOK | wxICON_ERROR, this);
 		return;
 	}
 
@@ -180,13 +180,13 @@ void DrawEdit::OnOK(wxCommandEvent & event)
 	mass >> m_max;
 	if (!mass.eof() || mass.fail()) {
 		wxMessageBox(_("Max must be a number."), _("Wrong value"),
-			     wxOK | wxICON_ERROR);
+			     wxOK | wxICON_ERROR, this);
 		return;
 	}
 
 	if (m_min >= m_max) {
 		wxMessageBox(_("Max must greater then min."), _("Wrong value"),
-			     wxOK | wxICON_ERROR);
+			     wxOK | wxICON_ERROR, this);
 		return;
 	}
 
@@ -481,7 +481,7 @@ void DrawPicker::Edit()
 {
 	if (m_selected < 0) {
 		wxMessageBox(_("Select draw first."), _("No draw selected"),
-			     wxOK | wxICON_ERROR);
+			     wxOK | wxICON_ERROR, this);
 		return;
 	}
 
@@ -511,7 +511,7 @@ void DrawPicker::OnRemove(wxCommandEvent & event)
 {
 	if (m_selected >= 0) {
 		if (wxMessageBox(_("Do you really want to remove this draw?"), _("Removal"),
-				wxYES_NO | wxICON_QUESTION) != wxYES) 
+				wxYES_NO | wxICON_QUESTION, this) != wxYES) 
 			return;
 
 		m_modified = true;
@@ -521,7 +521,7 @@ void DrawPicker::OnRemove(wxCommandEvent & event)
 		Select(0);
 	} else
 		wxMessageBox(_("Select draw first."), _("No draw selected"),
-			     wxOK | wxICON_ERROR);
+			     wxOK | wxICON_ERROR, this);
 }
 
 void DrawPicker::SetDraw(int index, DefinedDrawInfo* draw)
@@ -563,7 +563,7 @@ void DrawPicker::OnAddDraw(wxCommandEvent & event)
 		} else {
 			wxMessageBox(_("Too many draws."),
 				     _("Too many draws."),
-				     wxOK | wxICON_ERROR);
+				     wxOK | wxICON_ERROR, this);
 			return;
 		}
 	}
@@ -683,7 +683,7 @@ bool DrawPicker::FindTitle(wxString& user_title) {
 			user_title.Mid(1).c_str(), /* strip '*' from title*/
 			suggested_title.Mid(1).c_str() /*strip '*' */ );
 
-	int ret = wxMessageBox(message, _("Set name already exists."), wxYES_NO);
+	int ret = wxMessageBox(message, _("Set name already exists."), wxYES_NO, this);
 	if (ret == wxYES) {
 		user_title = suggested_title;
 		return true;
@@ -701,7 +701,7 @@ bool DrawPicker::Accept()
 
 	if (m_defined_set->GetDraws()->size() == 0) {
 		wxMessageBox(_("You must add at least one draw."),
-			     _("No draws"), wxOK | wxICON_ERROR);
+			     _("No draws"), wxOK | wxICON_ERROR, this);
 		return false;
 
 	} 
@@ -713,7 +713,7 @@ bool DrawPicker::Accept()
 
 	if (title == wxEmptyString) {
 		wxMessageBox(_("You must set the title."), _("No title"),
-			     wxOK | wxICON_ERROR);
+			     wxOK | wxICON_ERROR, this);
 		return false;
 	}
 

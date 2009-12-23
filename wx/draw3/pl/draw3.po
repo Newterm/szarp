@@ -1432,7 +1432,7 @@ msgstr "Zamknij\tCtrl+Q"
 
 #: XRC_gettext_file.h:45
 msgid "Sets"
-msgstr "Zestawy"
+msgstr "Z&estawy"
 
 #: XRC_gettext_file.h:46
 msgid "New set\tCtrl+A"
@@ -1452,7 +1452,7 @@ msgstr "Zapisz\tCtrl+S"
 
 #: XRC_gettext_file.h:50
 msgid "View"
-msgstr "Widok"
+msgstr "&Widok"
 
 #: XRC_gettext_file.h:51
 msgid "Average type"
@@ -1500,7 +1500,7 @@ msgstr "Rozdwojony kursor\tBACK"
 
 #: XRC_gettext_file.h:62
 msgid "Tools"
-msgstr "Narzêdzia"
+msgstr "&Narzêdzia"
 
 #: XRC_gettext_file.h:63
 msgid "User Params\tCtrl+U"

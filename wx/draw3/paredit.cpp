@@ -165,19 +165,19 @@ void ParamEdit::OnOK(wxCommandEvent &e) {
 
 	if (m_formula_input->GetText().Trim().IsEmpty()) {
 		wxMessageBox(_("You must provide a formula."), _("Formula missing."), 
-			     wxOK | wxICON_ERROR);
+			     wxOK | wxICON_ERROR, this);
 		return;
 	}
 
 	if (m_param_name_input->GetValue().IsEmpty()) {
 		wxMessageBox(_("You must provide a param name."), _("Parameter name missing."),
-			     wxOK | wxICON_ERROR);
+			     wxOK | wxICON_ERROR, this);
 		return;
 	}
 
 	if (m_base_prefix.IsEmpty()) {
 		wxMessageBox(_("You must set a reference configuration."), _("Reference configuration missing."),
-			     wxOK | wxICON_ERROR);
+			     wxOK | wxICON_ERROR, this);
 		return;
 	}
 

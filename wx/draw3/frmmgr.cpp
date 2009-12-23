@@ -107,6 +107,9 @@ bool FrameManager::CreateFrame(const wxString &prefix, const wxString& set, Peri
 }
 
 void FrameManager::OnClose(wxCloseEvent &event) {
+	DrawFrame *frame = wxDynamicCast(event.GetEventObject(), DrawFrame);
+	assert(frame != NULL);
+
 	if (event.CanVeto()) {
 		wxString msg;
 
@@ -116,16 +119,12 @@ void FrameManager::OnClose(wxCloseEvent &event) {
 		} else
 			msg = _("Do you want to close this window?");
 
-		int ret = wxMessageBox(msg, _("Question"), wxYES_NO);
+		int ret = wxMessageBox(msg, _("Question"), wxYES_NO, frame);
 		if (ret != wxYES) {
 			event.Veto();
 			return;
 		}
-
 	}
-
-	DrawFrame *frame = wxDynamicCast(event.GetEventObject(), DrawFrame);
-	assert(frame != NULL);
 
 	size_t i;
 	for (i = 0; i < frames.Count(); ++i)
@@ -203,7 +202,7 @@ void FrameManager::LoadConfig(DrawFrame *frame) {
 	if (prefix == DefinedDrawsSets::DEF_PREFIX) {
 		DrawsSets *cfg = config_manager->GetConfigByPrefix(prefix);
 		if (cfg == NULL || cfg->GetDrawsSets().size() == 0) {
-			int ret = wxMessageBox(_("The are no user defined sets. Do you want to create one?"), _("Question"), wxICON_QUESTION | wxOK | wxCANCEL);
+			int ret = wxMessageBox(_("The are no user defined sets. Do you want to create one?"), _("Question"), wxICON_QUESTION | wxOK | wxCANCEL, frame);
 			if (ret == wxOK)  {
 				DrawPicker* dp = new DrawPicker(frame, config_manager, database_manager);
 				if (dp->NewSet(prefix) == wxID_OK)

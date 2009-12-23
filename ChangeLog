@@ -1,5 +1,15 @@
 $Id$
 
+2009-12-22	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/draw3: pointer to parent window added for all wxMessageBox()
+	invocations, so message boxes get proper application icon; error 
+	icons added for some dialogs.
+	* wx/draw3/drawfrm.cpp: fixed loading of MaxPrintedAxesNumber, debug
+	removed.
+	* wx/draw3/drawpnl.cpp: removed redundant 'Alt-W' keyboard accelerator
+	for printing.
+	* wx/draw3/pl/draw3.po: added missing keyboard accelerators for all
+	main menu entries.
 2009-12-22	Darek Marcinkiewicz <darek@praterm.com.pl>
 	* wx/draw3: "edit set" and "remove set" menu items are properly
 	enabled/disabled when sets are changed between regular and

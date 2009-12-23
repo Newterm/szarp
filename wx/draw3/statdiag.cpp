@@ -283,7 +283,7 @@ void StatDialog::DatabaseResponse(DatabaseQuery *q) {
 
 void StatDialog::StartFetch() {
 	if (m_draw == NULL) {
-		wxMessageBox(_("You need to choose draw first."), _("Draw missing"), wxOK | wxICON_INFORMATION);
+		wxMessageBox(_("You need to choose draw first."), _("Draw missing"), wxOK | wxICON_INFORMATION, this);
 		return;
 	}
 
@@ -420,7 +420,7 @@ void StatDialog::OnCloseButton(wxCommandEvent &event) {
 void StatDialog::OnCalculate(wxCommandEvent &event) {
 
 	if (m_draw == NULL) {
-		wxMessageBox(_("You need to choose draw first"), _T("Draw missing"), wxOK | wxICON_INFORMATION);
+		wxMessageBox(_("You need to choose draw first"), _T("Draw missing"), wxOK | wxICON_INFORMATION, this);
 		return;
 	}
 

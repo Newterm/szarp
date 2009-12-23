@@ -956,7 +956,8 @@ bool ConfigManager::SaveDefinedDrawsSets() {
 		if (sd.Mkdir() == false) {
 			wxMessageBox(wxString::Format(_("Failed to create directory %s. Defined draws cannot be saved"), sd.GetFullPath().c_str()),
 					_("Error"),
-					wxICON_ERROR);
+					wxOK | wxICON_ERROR,
+					wxGetApp().GetTopWindow());
 			return false;
 		}
 

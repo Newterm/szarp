@@ -56,6 +56,7 @@
 
 #include "ids.h"
 #include "classes.h"
+#include "drawapp.h"
 #include "drawobs.h"
 #include "drawtime.h"
 #include "coobs.h"
@@ -799,7 +800,8 @@ void RemarksConnection::SetRemarkAddDialog(RemarkViewDialog *dialog) {
 void RemarksConnection::OnDNSResponse(DNSResponseEvent &event) {
 	if (event.GetAddress().empty()) {
 		if (m_inform_about_successful_fetch) {
-			wxMessageBox(wxString::Format(_("Failed to fetch remarks, failed to resolve address: %s"), m_address.c_str()), _("Error"), wxICON_ERROR);
+			wxMessageBox(wxString::Format(_("Failed to fetch remarks, failed to resolve address: %s"), m_address.c_str()), _("Error"), wxICON_ERROR,
+					wxGetApp().GetTopWindow());
 			m_inform_about_successful_fetch = false;
 		}
 		return;
@@ -988,12 +990,14 @@ void RemarksConnection::RemarksStored(const std::vector<Remark>& rms) {
 		wxConfig::Get()->Write(_T("RemarksLatestRetrieval"), long(m_retrieval_time));
 		wxConfig::Get()->Flush();
 		if (m_inform_about_successful_fetch) {
-			wxMessageBox(_("New remarks received"), _("New remarks"), wxICON_INFORMATION);
+			wxMessageBox(_("New remarks received"), _("New remarks"), wxICON_INFORMATION,
+					wxGetApp().GetTopWindow());
 			m_inform_about_successful_fetch = false;
 		}
 	} else 
 		if (m_inform_about_successful_fetch) {
-			wxMessageBox(_("No new remarks"), _("Remarks"), wxICON_INFORMATION);
+			wxMessageBox(_("No new remarks"), _("Remarks"), wxICON_INFORMATION,
+					wxGetApp().GetTopWindow());
 			m_inform_about_successful_fetch = false;
 		}
 }
@@ -1048,7 +1052,8 @@ bool RemarksConnection::HandleFault(XMLRPC_REQUEST response) {
 			if (m_current_action == POSTING_REMARK || m_pending_remark_post)
 				m_remark_add_dialog->RemarkSent(false, translate_error_message(fault_string));
 			else if (m_inform_about_successful_fetch)
-				wxMessageBox(wxString::Format(_("Failed to fetch remarks: %s"), translate_error_message(fault_string).c_str()), _("Error"), wxICON_ERROR);
+				wxMessageBox(wxString::Format(_("Failed to fetch remarks: %s"), translate_error_message(fault_string).c_str()), _("Error"), wxICON_ERROR,
+						wxGetApp().GetTopWindow());
 			else
 				ErrorFrame::NotifyError(wxString::Format(_("Failed to fetch remarks: %s"), translate_error_message(fault_string).c_str()));
 
@@ -1886,10 +1891,12 @@ void RemarkViewDialog::RemarkSent(bool ok, wxString error) {
 	Enable();
 
 	if (ok) {
-		wxMessageBox(_("Remark sent successfully."), _("Remark sent."));
+		wxMessageBox(_("Remark sent successfully."), _("Remark sent."), wxOK,
+				wxGetApp().GetTopWindow());
 		EndModal(wxID_OK);
 	} else {
-		wxMessageBox(wxString::Format(_("There was an error sending remark:'%s'."), error.c_str()), _("Error."));
+		wxMessageBox(wxString::Format(_("There was an error sending remark:'%s'."), error.c_str()), _("Error."),
+				wxICON_ERROR, wxGetApp().GetTopWindow());
 	}
 }
 
