@@ -348,6 +348,7 @@ tcflag_t rfc2217_2_termios_stop_size(int stopb) {
 void start_negotiation_phase(state_t *s) {
 	s->g_state = R_NEGOTIATION;
 
+	send_neg_command(s, WILL, FIRST_SETTING);
 	bufferevent_enable(s->r_endp, EV_READ);
 }
 
@@ -414,7 +415,8 @@ void schedule_reconnect(state_t *s) {
 
 void remote_error_cb(struct bufferevent *bufev, short what, void *arg) {
 	state_t *s = arg;
-	if (s->g_state == R_CONNECTING || start_connection(s))  {
+	fprintf(stderr, "Remote connection error\n");
+	if (s->g_state == R_NEGOTIATION || start_connection(s))  {
 		fprintf(stderr, "Remote connection failure, scheduling reconnect.");
 		schedule_reconnect(s);
 	}
@@ -505,6 +507,7 @@ void remote_read_cb(struct bufferevent *bufev, void *arg) {
 }
 
 void remote_write_cb(struct bufferevent *bufev, void *arg) {
+	fprintf(stderr, "Negotiation phase started\n");
 	state_t* s = arg;
 
 	if (s->r_c_wait) {
@@ -522,7 +525,7 @@ int set_nonblock(int fd) {
 	}
 
 	flags |= O_NONBLOCK;
-	flags = fcntl(fd, F_SETFL, &flags);
+	flags = fcntl(fd, F_SETFL, (long)flags);
 	if (flags < 0) {
 		perror("Unable to set socket flags");
 		return -1;
@@ -559,6 +562,8 @@ int start_connection(state_t* s) {
 
 	memset(&sin, 0, sizeof(sin));
 
+	sin.sin_family = AF_INET;
+
 	if (inet_pton(AF_INET, s->server_address, &sin.sin_addr) != 1) {
 		perror("Invalid address");
 		return 1;
@@ -593,7 +598,7 @@ int start_connection(state_t* s) {
 	}
 
 	if (connect(s->r_fd, (struct sockaddr*)&sin, sizeof(sin)) == -1) {
-		if (errno != EWOULDBLOCK) {
+		if (errno != EINPROGRESS) {
 			perror("Failed to connect");
 			close(s->r_fd);
 			s->r_fd = -1;
@@ -615,7 +620,9 @@ int start_connection(state_t* s) {
 	}
 
 	if (!s->r_c_wait)
-		start_negotiation_phase(s);		
+		start_negotiation_phase(s);
+	else
+		bufferevent_enable(s->r_endp, EV_WRITE);
 
 	return 0;
 }
@@ -984,7 +991,7 @@ void handle_set_termios(state_t *s) {
 }
 
 int main(int argc, char *argv[]) {
-	int dfd, sfd;
+	int eret;
 
 	if (argc != 4) {
 		usage(argv[0]);
@@ -1005,5 +1012,6 @@ int main(int argc, char *argv[]) {
 	if (start_connection(&state))
 		return 1;
 
-	event_base_loop(state.ev_base, 0);
+	eret = event_base_loop(state.ev_base, 0);
+	fprintf(stderr, "Loop exited, %d\n", eret);
 }
