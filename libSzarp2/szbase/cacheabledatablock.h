@@ -55,6 +55,7 @@ class CacheableDatablock: public szb_datablock_t
 		 * @param m month.
 		 */
 		CacheableDatablock(szb_buffer_t * b, TParam * p, int y, int m);
+		~CacheableDatablock();
 		static std::wstring GetCacheRootDirPath(szb_buffer_t *buffer);
 		static bool write_cache;
 		static void ClearCache(szb_buffer_t *buffer);
@@ -70,11 +71,7 @@ class CacheableDatablock: public szb_datablock_t
 		 */
 		virtual bool IsCacheFileValid(int &probes, time_t *mdate = NULL);
 	
-		static boost::recursive_mutex cachequeue_mutex;
 		static std::list<CacheBlockEntry> cachequeue;
-		static void cachewriter();
-		static void initcachewriter();
-
 	private:
 		friend class RemoveBlockPredicate;
 		/** Creates directory structure for the cachefile.
@@ -89,8 +86,6 @@ class CacheableDatablock: public szb_datablock_t
 		 */
 		std::wstring GetCacheFilePath(TParam * p, int y, int m);
 		bool cached;
-		CacheBlockEntry * entry;
-		boost::mutex cache_mutex;
 };
 
 #endif //__SZBASE_CACHABLE_DATABLOCK_H__

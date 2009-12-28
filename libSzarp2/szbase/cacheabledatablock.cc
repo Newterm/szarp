@@ -59,89 +59,39 @@ typedef boost::recursive_mutex::scoped_lock recursive_scoped_lock;
 
 namespace fs = boost::filesystem;
 
-boost::recursive_mutex CacheableDatablock::cachequeue_mutex;
-std::list<CacheBlockEntry> CacheableDatablock::cachequeue;
-
-boost::once_flag flag = BOOST_ONCE_INIT;
-
 bool CacheableDatablock::write_cache = false;
-
-void CacheableDatablock::cachewriter()
-{
-	boost::xtime xt;
-	boost::xtime_get(&xt, boost::TIME_UTC);
-	xt.sec += 90;
-	boost::thread::sleep(xt);
-
-	while(1) {
-		bool ismore = false;
-		do{
-			recursive_scoped_lock queuelock(cachequeue_mutex);
-			if(CacheableDatablock::cachequeue.size() == 0)
-				break;
-			if(CacheableDatablock::cachequeue.front().block != NULL) {
-				CacheableDatablock::cachequeue.front().block->Cache();
-			}
-
-			CacheableDatablock::cachequeue.pop_front();
-			ismore = CacheableDatablock::cachequeue.size() > 0;
-		} while(ismore);
-		boost::xtime_get(&xt, boost::TIME_UTC);
-		xt.sec += 90;
-		boost::thread::sleep(xt);
-	}
-
-}
-
-void CacheableDatablock::initcachewriter()
-{
-	if (write_cache)	
-		boost::thread startthread(&CacheableDatablock::cachewriter);
-}
 
 CacheableDatablock::CacheableDatablock(szb_buffer_t * b, TParam * p, int y, int m) : szb_datablock_t(b, p, y, m), cachepath(GetCacheFilePath(p, y, m)), cached(false)
 {
-
-	boost::call_once(&initcachewriter, flag);
-
-	recursive_scoped_lock queuelock(cachequeue_mutex);
-
-	CacheBlockEntry e(this);
-	CacheableDatablock::cachequeue.push_back(e);
-	this->entry = &cachequeue.back();
-
 }
 
 void CacheableDatablock::Cache()
 {
-	recursive_scoped_lock queuelock(cachequeue_mutex);
-
-	if(this->cached)
+	if (write_cache == false)
 		return;
 
-	assert(this->entry->block == this);
-
-	this->entry->block = NULL;
-	this->entry = NULL;
-	this->cached = true;
-
-	if(!this->IsInitialized() || this->buffer->cachepoison)
+	if (cached)
 		return;
 
-	if(!this->IsCachable())
+	cached = true;
+
+	if (!IsInitialized() || buffer->cachepoison)
+		return;
+
+	if (!IsCachable())
 		return;
 	
-	if(cachepath.empty()) {
+	if (cachepath.empty()) {
 		sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, "CacheableDatablock::Cache: no cache file specified");
 		return;
 	}
 
-	if(!CreateCacheDirectory())
+	if (!CreateCacheDirectory())
 		return;
 
 	std::ofstream ofs(SC::S2A(cachepath).c_str(), std::ios::binary | std::ios::out | std::ios::trunc);
 	ofs.write( (char*) data, sizeof(SZBASE_TYPE)*fixedProbesCount);
-	sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, "CacheableDatablock::Cache: %d probes written to cache file: '%ls'", this->fixedProbesCount, cachepath.c_str());
+	sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, "CacheableDatablock::Cache: %d probes written to cache file: '%ls'", fixedProbesCount, cachepath.c_str());
 	ofs.close();
 
 }
@@ -163,9 +113,6 @@ std::wstring CacheableDatablock::GetCacheRootDirPath(szb_buffer_t *buffer) {
 	fs::wpath cachepath = SC::A2S(home);
 	if (!fs::exists(cachepath))
 		return std::wstring();
-
-	//11.II.2008 - removes old cache dir, remove me someday
-	boost::filesystem::remove_all( cachepath / L".szbase" );
 
 	cachepath = cachepath / L".szarp" / L"szbase" / L"cache" / fs::wpath(buffer->prefix);
 
@@ -344,7 +291,6 @@ CacheableDatablock::CreateCacheDirectory()
 void 
 CacheableDatablock::ClearCache(szb_buffer_t *buffer)
 {
-	recursive_scoped_lock queuelock(CacheableDatablock::cachequeue_mutex);
 	buffer->cachepoison = true;
 	boost::filesystem::remove_all(CacheableDatablock::GetCacheRootDirPath(buffer));
 }
@@ -352,7 +298,6 @@ CacheableDatablock::ClearCache(szb_buffer_t *buffer)
 void 
 CacheableDatablock::ResetCache(szb_buffer_t *buffer)
 {
-	recursive_scoped_lock queuelock(CacheableDatablock::cachequeue_mutex);
 	buffer->cachepoison = false;
 }
 
@@ -383,13 +328,12 @@ class RemoveBlockPredicate
 void 
 CacheableDatablock::ClearParamFromCache(szb_buffer_t *buffer, TParam *param)
 {
-	recursive_scoped_lock queuelock(CacheableDatablock::cachequeue_mutex);
-
-	cachequeue.remove_if(RemoveBlockPredicate(param));
-
 	boost::filesystem::wpath tmp(CacheableDatablock::GetCacheRootDirPath(buffer));
 	tmp /= param->GetSzbaseName();
 
 	boost::filesystem::remove_all(CacheableDatablock::GetCacheRootDirPath(buffer));
 }
 
+CacheableDatablock::~CacheableDatablock() {
+	Cache();
+}

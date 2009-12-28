@@ -1,6 +1,13 @@
 $Id$
 
 2009-12-23	Darek Marcinkiewicz <darek@praterm.com.pl>
+	* wx/draw3: autorefresh reenabled, start time is choosen
+	correctly when moving in left direction in periods WEEK and DAY
+	* libSzarp2/szbase: definable blocks are stored into cache when
+	they are removed (this includes termination of draw3), separate
+	thread that used to do this deleted: first round of - in my 
+	opinion unneccesary - locking removal from szbase
+2009-12-23	Darek Marcinkiewicz <darek@praterm.com.pl>
 	* wx/draw3: a few more bugs fixed: crash upon draws' set change
 	after configuration reload; incorrect behaviour when '[' or ']'
 	keys are pressed; handling of configuration reload moved from 

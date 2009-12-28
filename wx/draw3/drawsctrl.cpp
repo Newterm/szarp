@@ -442,8 +442,10 @@ void DrawsController::HandleSearchResponse(DatabaseQuery *query) {
 	EnterWaitState(WAIT_DATA_NEAREST);
 }
 
-DTime DrawsController::ChooseStartDate(const DTime& found_time) {
+DTime DrawsController::ChooseStartDate(const DTime& _found_time) {
 	const TimeIndex& index = m_draws[m_selected_draw]->GetTimeIndex();
+	DTime found_time = _found_time;
+	found_time.AdjustToPeriodStart();
 
 	if (found_time.IsBetween(m_suggested_start_time,
 				m_suggested_start_time + index.GetTimePeriod() + index.GetDatePeriod()))

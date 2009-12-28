@@ -137,6 +137,7 @@ void DrawsWidget::OnKeyboardTimerEvent(wxTimerEvent & event)
 void DrawsWidget::OnDisplayTimerEvent(wxTimerEvent & event)
 {
 	SetDisplayTimer();
+	m_draws_controller->RefreshData(true);
 }
 
 size_t DrawsWidget::GetNumberOfUnits() {

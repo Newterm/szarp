@@ -37,8 +37,6 @@ class LuaDatablock: public CacheableDatablock
 	protected:
 		int m_probes_to_compute;	//numer of probes to calculate during initialization phase
 		bool m_init_in_progress;
-//		virtual bool IsCachable() {return false;};
-//		virtual bool IsCacheFileValid(int &probes, time_t *mdate = NULL) {return false;};
 	private:
 			
 };
