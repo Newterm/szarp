@@ -116,6 +116,8 @@ class TimeIndex {
 	const DTime& GetStartTime() const;
 	/**@return last time for current time period and set start time*/
 	DTime GetLastTime() const;
+
+	DTime GetFirstNotDisplayedTime() const;
 	/**@return time represented by given index position*/
 	DTime GetTimeOfIndex(int i) const;
 	/**Informs object that period has changed*/

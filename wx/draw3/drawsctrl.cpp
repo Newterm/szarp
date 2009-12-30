@@ -159,15 +159,17 @@ void DrawsController::CheckAwaitedDataPresence() {
 void DrawsController::EnterWaitState(STATE state) {
 	m_state = state;
 
+	const TimeIndex& index = m_draws[m_selected_draw]->GetTimeIndex();
+
 	switch (m_state) {
 		case WAIT_DATA_NEAREST:
 		case WAIT_DATA_LEFT:
 		case WAIT_DATA_RIGHT:
 
 			wxLogInfo(_T("checking if data: %s is between %s and %s"), m_time_to_go.Format().c_str(),
-					m_draws[m_selected_draw]->GetStartTime().Format().c_str(),
-					m_draws[m_selected_draw]->GetLastTime().Format().c_str());
-			if (m_time_to_go.IsBetween(m_draws[m_selected_draw]->GetStartTime(), m_draws[m_selected_draw]->GetLastTime()))
+					index.GetStartTime().Format().c_str(),
+					index.GetFirstNotDisplayedTime().Format().c_str());
+			if (m_time_to_go.IsBetween(index.GetStartTime(), index.GetFirstNotDisplayedTime()))
 				CheckAwaitedDataPresence();
 			else {
 				STATE ns;
@@ -220,7 +222,7 @@ void DrawsController::EnterSearchState(STATE state, DTime search_from, const DTi
 			break;
 		case SEARCH_BOTH_PREFER_RIGHT:
 			SendSearchQuery(search_from.GetTime(), 
-					index.GetLastTime().GetTime() + index.GetTimeRes() + index.GetDateRes(),
+					index.GetFirstNotDisplayedTime().GetTime(),
 					-1);
 			SendSearchQuery(search_from.GetTime(), 
 					wxInvalidDateTime, 
@@ -452,7 +454,7 @@ DTime DrawsController::ChooseStartDate(const DTime& _found_time) {
 		return m_suggested_start_time;
 
 	const DTime& start_time = index.GetStartTime();
-	if (found_time.IsBetween(start_time, index.GetLastTime()))
+	if (found_time.IsBetween(start_time, index.GetFirstNotDisplayedTime()))
 		return start_time;
 
 	DTime ret;

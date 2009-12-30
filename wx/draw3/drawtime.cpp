@@ -323,6 +323,10 @@ int TimeIndex::GetIndex(const DTime& time, int *dist) const {
 }
 
 DTime TimeIndex::GetLastTime() const {
+	return GetTimeOfIndex(m_number_of_values - 1);
+}
+
+DTime TimeIndex::GetFirstNotDisplayedTime() const {
 	return GetTimeOfIndex(m_number_of_values);
 }
 

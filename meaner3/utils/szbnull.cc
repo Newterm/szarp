@@ -17,7 +17,7 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
- * sznull - program for deleting data range from szarpbase files
+ * szbnull - program for deleting data range from szarpbase files
  * format
  * SZARP
  
@@ -86,7 +86,7 @@
 /** arguments processing, see info argp */
 #include <argp.h>
 
-const char *argp_program_version = "nodata ""$Revision: 6199 $";
+const char *argp_program_version = "szbnull ""$Revision: 6199 $";
 const char *argp_program_bug_address = "coders@praterm.com.pl";
 static char doc[] = "Fills all parameters in szbase with SZB_NODATA for provided data range.\v\
 Config file:\n\
@@ -377,13 +377,13 @@ int SetNoData(time_t start, time_t end)
 	
 	ipk_path = libpar_getpar(SZARP_CFG_SECTION, "IPK", 0);
 	if (ipk_path == NULL) {
-		sz_log(0, "sznull: set 'IPK' param in "SZARP_CFG" file");
+		sz_log(0, "szbnull: set 'IPK' param in "SZARP_CFG" file");
 		return 1;
 	}
 	
 	char *_data_dir = libpar_getpar(SZARP_CFG_SECTION, "datadir", 0);
 	if (_data_dir == NULL) {
-		sz_log(0, "sznull: set 'datadir' param in "SZARP_CFG" file");
+		sz_log(0, "szbnull: set 'datadir' param in "SZARP_CFG" file");
 		return 1;
 	}
 	data_dir = SC::A2S(_data_dir);
@@ -399,7 +399,7 @@ int SetNoData(time_t start, time_t end)
 
 	ipk = new TSzarpConfig();
 	if (ipk->loadXML(SC::A2S(ipk_path))) {
-		sz_log(0, "sznull: error loading IPK configuration '%s'",
+		sz_log(0, "szbnull: error loading IPK configuration '%s'",
 				ipk_path);
 		return 1;
 	};
@@ -438,7 +438,7 @@ int main(int argc, char* argv[])
 			|| arguments.end == -1 
 			|| arguments.start > arguments.end) {
 		printf("\nIsuffcient/invalid time specification\n");
-		argp_help(&argp, stdout, ARGP_HELP_USAGE, "sznull");
+		argp_help(&argp, stdout, ARGP_HELP_USAGE, "szbnull");
 		return 1;
 	}
 

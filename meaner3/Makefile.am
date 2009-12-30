@@ -34,7 +34,8 @@ bin_PROGRAMS = \
 	       szbindex \
 	       szbreader \
 	       szbwriter \
-	       sznull
+	       szbndremover \
+	       szbnull
 
 if !NO_LUA
 bin_PROGRAMS += checker
@@ -74,7 +75,11 @@ szbedit_LDADD = $(LDADD) @NEWT_LIBS@
 
 szbindex_SOURCES = $(UTILSDIR)/szbindex.cc
 
-sznull_SOURCES = $(UTILSDIR)/sznull.cc
+szbnull_SOURCES = $(UTILSDIR)/szbnull.cc
+
+szbndremover_SOURCES = $(UTILSDIR)/szbndremover.cc \
+		tsaveparam.cc tsaveparam.h \
+		tstatus.cc tstatus.h
 
 extrszb_SOURCES= $(UTILSDIR)/extrszb.cc
 extrszb_LDADD = $(LIBSZARP) $(LIBSZARP2) \
