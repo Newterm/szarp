@@ -1,5 +1,11 @@
 $Id$
 
+2009-12-30 Darek Marcinkiewicz <darek@dalkiaterm.pl>
+	* wx/draw3: fixed cursor positionig upon 'End' key hit
+	* meaner3/utils/sznull: sznull renamed to szbnull - to be consistent
+	with szbase utils naming scheme
+	* meaner3/utils/szbndremover: simple tool for fast removal of
+	no data holes in szbase
 2009-12-23	Darek Marcinkiewicz <darek@praterm.com.pl>
 	* wx/draw3: autorefresh reenabled, start time is choosen
 	correctly when moving in left direction in periods WEEK and DAY
