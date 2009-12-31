@@ -1,5 +1,7 @@
 $Id$
 
+2009-12-31 Darek Marcinkiewicz <darek@dalkiaterm.pl>
+	* meaner3/utils/szbndremover: added support for combined params
 2009-12-30 Darek Marcinkiewicz <darek@dalkiaterm.pl>
 	* wx/draw3: fixed cursor positionig upon 'End' key hit
 	* meaner3/utils/sznull: sznull renamed to szbnull - to be consistent

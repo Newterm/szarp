@@ -230,6 +230,43 @@ std::vector<std::pair<time_t, double> > remove_nodata(szb_buffer_t* buf, TParam*
 	return vals;
 }
 
+void save_real_param(double pw, TParam *p, std::vector<std::pair<time_t, double> >& vals, szb_buffer_t *szb) {
+	TSaveParam sp(p);
+	for (std::vector<std::pair<time_t, double> >::iterator i = vals.begin();
+			i != vals.end();
+			i++) 
+		sp.Write(szb->rootdir.c_str(),
+				i->first,
+				(SZB_FILE_TYPE)round(i->second * pw),
+				NULL, /* no status info */
+				1, /* overwrite */
+				0 /* force_nodata */);
+}
+
+void save_combined_param(double pw, TParam *p, std::vector<std::pair<time_t, double> >& vals, szb_buffer_t *szb) {
+	TSaveParam sp_msw(p->GetFormulaCache()[0]);
+	TSaveParam sp_lsw(p->GetFormulaCache()[1]);
+	for (std::vector<std::pair<time_t, double> >::iterator i = vals.begin();
+			i != vals.end();
+			i++) {
+		int v = round(i->second * pw);
+		unsigned int* uv = (unsigned int*) &v;
+		sp_msw.Write(szb->rootdir.c_str(),
+				i->first,
+				*uv >> 16,	
+				NULL, /* no status info */
+				1, /* overwrite */
+				0 /* force_nodata */);
+		sp_lsw.Write(szb->rootdir.c_str(),
+				i->first,
+				*uv & 0xffff,	
+				NULL, /* no status info */
+				1, /* overwrite */
+				0 /* force_nodata */);
+	}
+
+}
+
 int main(int argc, char* argv[])
 {
 	struct arguments arguments;
@@ -291,8 +328,8 @@ int main(int argc, char* argv[])
 			std::wcerr << "Parameter '" << arguments.params[i] << "' not found in IPK\n\n";;
 			return 1;
 		}
-		if (!p->IsInBase()) {
-			std::wcerr << "Parameter '" << arguments.params[i] << "' is not in base\n\n";;
+		if (!p->IsInBase() && !p->GetType() == TParam::P_COMBINED) {
+			std::wcerr << "Parameter '" << arguments.params[i] << "' is not in base and in not combined param\n\n";;
 			return 1;
 		}
 		params.push_back(p);
@@ -304,18 +341,11 @@ int main(int argc, char* argv[])
 	for (size_t i = 0; i < params.size(); i++) {
 		TParam *p = params[i];
 		std::vector<std::pair<time_t, double> > vals = remove_nodata(szb, p, arguments.start, arguments.end);
-		TSaveParam sp(p);
 		double pw = pow(10.0, p->GetPrec());
-		for (std::vector<std::pair<time_t, double> >::iterator j = vals.begin();
-				j != vals.end();
-				j++) {
-			sp.Write(szb->rootdir.c_str(),
-					j->first,
-					(SZB_FILE_TYPE)round((j->second * pw)), 
-					NULL, /* no status info */
-					1, /* overwrite */
-					0 /* force_nodata */);
-		}
+		if (p->GetType() == TParam::P_COMBINED)
+			save_combined_param(pw, p, vals, szb);
+		else
+			save_real_param(pw, p, vals, szb);
 	}
 
 	libpar_done();
