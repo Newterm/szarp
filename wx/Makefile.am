@@ -10,10 +10,10 @@ INCLUDE_SUBDIRS = ekstraktor3 confedit koper filler
 endif
 
 if HAVE_CURL
-CURL_SUBDIRS = raporter3 kontroler3
+CURL_SUBDIRS = raporter3 kontroler3 viszio
 endif
 
-SUBDIRS = common draw3 visio $(INCLUDE_SUBDIRS) \
+SUBDIRS = common draw3 $(INCLUDE_SUBDIRS) \
 	wxhelp scc $(CURL_SUBDIRS) sync \
 	isledit szast
 

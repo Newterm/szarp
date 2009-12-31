@@ -16,12 +16,12 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/* $Id: visioParamadd.cpp 1 2009-11-17 21:44:30Z asmyk $
+/* $Id: viszioParamadd.cpp 1 2009-11-17 21:44:30Z asmyk $
  *
- * visio program
+ * viszio program
  * SZARP
  *
- * asmyko@praterm.com.pl
+ * asmyk@praterm.com.pl
  */
  
 #include <wx/wxprec.h>
@@ -35,11 +35,11 @@
 #include <wx/valtext.h>
 #include <wx/valgen.h>
 
-#include "visioParamadd.h"
+#include "viszioParamadd.h"
 #include "cconv.h"
 
 
-szVisioAddParam::szVisioAddParam(TSzarpConfig *_ipk,
+szViszioAddParam::szViszioAddParam(TSzarpConfig *_ipk,
                                  wxWindow *parent, wxWindowID id, const wxString &title) :
         wxDialog(parent, id, title)
 {
@@ -74,20 +74,17 @@ szVisioAddParam::szVisioAddParam(TSzarpConfig *_ipk,
 
 
     this->SetSizer(top_sizer);
-    ps = new szParSelect(this->ipk, this, wxID_ANY, _("Visio->Add->Param"),
+    ps = new szParSelect(this->ipk, this, wxID_ANY, _("Viszio->Add->Param"),
                          TRUE, TRUE, false, false,true);
-//    pc = new szParCalc(this->ipk,
-    //    this, wxID_ANY, _("Visio->Add->Formula"));
-
     top_sizer->Fit(this);
 }
 
-szVisioAddParam::~szVisioAddParam()
+szViszioAddParam::~szViszioAddParam()
 {
     delete ps;
 }
 
-void szVisioAddParam::OnSelectParam(wxCommandEvent &ev)
+void szViszioAddParam::OnSelectParam(wxCommandEvent &ev)
 {
     if ( ps->ShowModal() == wxID_OK )
     {
@@ -106,7 +103,7 @@ void szVisioAddParam::OnSelectParam(wxCommandEvent &ev)
 
 
 
-bool szVisioAddParam::TransferDataToWindow()
+bool szViszioAddParam::TransferDataToWindow()
 {
 
     m_param = g_data.m_probe.m_param;
@@ -114,27 +111,16 @@ bool szVisioAddParam::TransferDataToWindow()
     return true;
 }
 
-bool szVisioAddParam::TransferDataFromWindow()
+bool szViszioAddParam::TransferDataFromWindow()
 {
     if ( m_param == NULL )
         return false;
-
     g_data.m_probe.m_param = m_param;
-#if 0
-    g_data.m_probe.m_precision = (wxStaticCast(FindWindowById(ID_SC_PREC),
-                                  wxSpinCtrl)->GetValue());
-#endif
     wxDialog::TransferDataFromWindow();
-
-//  g_data.m_probe.m_alarm_type = (wxDynamicCast(FindWindowById(ID_CH_ALARM), wxChoice)->GetSelection()) + 1;
-
-//  m_value_min.ToDouble(&g_data.m_probe.m_value_min);
-//  m_value_max.ToDouble(&g_data.m_probe.m_value_max);
-
     return true;
 }
 
-IMPLEMENT_CLASS(szVisioAddParam, wxDialog)
-BEGIN_EVENT_TABLE(szVisioAddParam, wxDialog)
-    EVT_BUTTON(ID_B_PARAM, szVisioAddParam::OnSelectParam)
+IMPLEMENT_CLASS(szViszioAddParam, wxDialog)
+BEGIN_EVENT_TABLE(szViszioAddParam, wxDialog)
+    EVT_BUTTON(ID_B_PARAM, szViszioAddParam::OnSelectParam)
 END_EVENT_TABLE()

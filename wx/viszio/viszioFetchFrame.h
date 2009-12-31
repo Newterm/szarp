@@ -16,26 +16,26 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/* $Id: visioFetchFrame.h 1 2009-11-17 21:44:30Z asmyk $
+/* $Id: viszioFetchFrame.h 1 2009-11-17 21:44:30Z asmyk $
  *
- * visio program
+ * viszio program
  * SZARP
  *
- * asmyko@praterm.com.pl
+ * asmyk@praterm.com.pl
  */
  
-#ifndef VISIOFETCHFRAME_H
-#define VISIOFETCHFRAME_H
+#ifndef __VISZIOFETCHFRAME_H__
+#define __VISZIOFETCHFRAME_H__
 #include "wx/taskbar.h"
 #include "httpcl.h"
 #include <szarp_config.h>
-#include "visioApp.h"
+#include "viszioApp.h"
 #include "conversion.h"
 #include "fetchparams.h"
 #include "serverdlg.h"
-#include "visioParamadd.h"
+#include "viszioParamadd.h"
 #include "parlist.h"
-#include "visioTransparentFrame.h"
+#include "viszioTransparentFrame.h"
 
 #define SZ_REPORTS_NS_URI _T("http://www.praterm.com.pl/SZARP/reports")
 
@@ -58,8 +58,7 @@ class FetchFrame: public TransparentFrame
     wxString m_server;
     
 public:
-	
-    FetchFrame(wxFrame *frame, wxString server);
+    FetchFrame(wxFrame*, wxString, szHTTPCurlClient*, wxString paramName);
     ~FetchFrame();
 private:
     virtual void OnClose(wxCloseEvent& event);

@@ -16,12 +16,12 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/* $Id: visioParamadd.h 1 2009-11-17 21:44:30Z asmyk $
+/* $Id: viszioParamadd.h 1 2009-11-17 21:44:30Z asmyk $
  *
- * visio program
+ * viszio program
  * SZARP
  *
- * asmyko@praterm.com.pl
+ * asmyk@praterm.com.pl
  */
  
 #ifndef _KONTRADD_H
@@ -47,8 +47,8 @@
 
 
 /** Kontroler: add par */
-class szVisioAddParam : public wxDialog {
-DECLARE_CLASS(szVisioAddParam)
+class szViszioAddParam : public wxDialog {
+DECLARE_CLASS(szViszioAddParam)
 DECLARE_EVENT_TABLE()
   /** szarp config */
   TSzarpConfig *ipk;
@@ -68,9 +68,9 @@ public:
   /**
    * @param _ipk szarp config
    */
-  szVisioAddParam(TSzarpConfig *_ipk,
+  szViszioAddParam(TSzarpConfig *_ipk,
       wxWindow *parent, wxWindowID id, const wxString &title);
-  virtual ~szVisioAddParam();
+  virtual ~szViszioAddParam();
 protected:
   /** */
   void OnSelectParam(wxCommandEvent &ev);

@@ -16,12 +16,12 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/* $Id: visioFetchFrame.cpp 1 2009-11-17 21:44:30Z asmyk $
+/* $Id: viszioFetchFrame.cpp 1 2009-11-17 21:44:30Z asmyk $
  *
- * visio program
+ * viszio program
  * SZARP
  *
- * asmyko@praterm.com.pl
+ * asmyk@praterm.com.pl
  */
  
 #ifdef WX_PRECOMP
@@ -32,7 +32,7 @@
 #pragma hdrstop
 #endif //__BORLANDC__
 
-#include "visioFetchFrame.h"
+#include "viszioFetchFrame.h"
 #include <wx/listimpl.cpp>
 WX_DEFINE_LIST(szProbeList);
 #include <szarp_config.h>
@@ -46,7 +46,7 @@ WX_DEFINE_LIST(szProbeList);
 
 #include "htmlview.h"
 #include "htmlabout.h"
-#include "authdiag.h"
+//#include "authdiag.h"
 
 #include "fetchparams.h"
 #include "parlist.h"
@@ -59,13 +59,8 @@ WX_DEFINE_LIST(szProbeList);
 #include <wx/sound.h>
 #include <szarp_config.h>
 #include <vector>
-
-#include "fetchparams.h"
 #include "serverdlg.h"
-
-
 #include "cconv.h"
-#include "authdiag.h"
 
 enum wxbuildinfoformat
 {
@@ -100,50 +95,25 @@ BEGIN_EVENT_TABLE( FetchFrame, TransparentFrame )
     EVT_SZ_FETCH(FetchFrame::OnFetch)
 END_EVENT_TABLE()
 
-FetchFrame::FetchFrame(wxFrame *frame, wxString server)
-        : TransparentFrame(frame)
+FetchFrame::FetchFrame(wxFrame *frame, wxString server, szHTTPCurlClient *http, wxString paramName)
+        : TransparentFrame(frame, true, paramName)
 {
-    m_http = new szHTTPCurlClient();
-    bool ask_for_server=false;
-    //m_server = _("83.16.25.83:8085");
-    //m_server = _("localhost:8087");
-    m_server = server;
-    while (ipk == NULL)
+	m_typeOfFrame = FETCH_TRANSPARENT_FRAME;
+	m_server = server;
+	m_http = http;
+	if (m_pfetcher == NULL)
     {
-    	if(m_server)
-        m_server = szServerDlg::GetServer(m_server, _T("Visio"), ask_for_server);
-        if (m_server.IsEmpty() or m_server.IsSameAs(_T("Cancel")))
-        {
-            exit(0);
-        }
-        ipk = szServerDlg::GetIPK(m_server, m_http);
-        if (ipk == NULL)
-            ask_for_server = true;
-        m_apd = new szVisioAddParam(this->ipk, this, wxID_ANY, _("Visio->AddParam"));
-        szProbe *probe = new szProbe();
-        m_apd->g_data.m_probe.Set(*probe);
-
-        if ( m_apd->ShowModal() != wxID_OK )
-        {
-            exit(0);
-        }
-        probe->Set(m_apd->g_data.m_probe);
-		delete m_apd;
-		
-        if (m_pfetcher==NULL)
-        {
-            m_pfetcher = new szParamFetcher(m_server, this, m_http);
-            m_pfetcher->GetParams().RegisterIPK(ipk);
-            m_pfetcher->SetPeriod(10);
-        }
-
-        m_probes.Append(probe);
-        m_parameter_name->SetText( wxString((probe->m_param != NULL)?(probe->m_param->GetName()):L"(none)").c_str() );
-        m_parameter_name->SetFont(*m_font, *m_font_color);
-        m_pfetcher->SetSource(m_probes, ipk);
-        m_pfetcher->Run();
-    }
+		m_pfetcher = new szParamFetcher(m_server, this, m_http);
+        m_pfetcher->GetParams().RegisterIPK(TransparentFrame::ipk);
+        m_pfetcher->SetPeriod(10);
+	}	
+    m_pfetcher->SetSource(m_probes, TransparentFrame::ipk);    
+    if(m_pfetcher->IsAlive())
+		m_pfetcher->Resume();
+    else
+		m_pfetcher->Run();
 }
+
 
 FetchFrame::~FetchFrame()
 {
@@ -167,12 +137,11 @@ void FetchFrame::OnAbout(wxCommandEvent &event)
 
 void FetchFrame::OnFetch(wxCommandEvent& event)
 {
-    int w = 0, h = 0;
+    int w = 0, h = 0;	
     wxSize size = GetClientSize();
     w = size.GetWidth();
-    h = size.GetHeight();
-
-	m_pfetcher->Lock();
+    h = size.GetHeight();	
+	m_pfetcher->Lock();		
 	if (m_pfetcher->IsValid() == true)
 	{		
 		for (size_t i = 0; i < m_pfetcher->GetParams().Count(); i++) {
@@ -191,15 +160,10 @@ void FetchFrame::OnFetch(wxCommandEvent& event)
 		}
 	}
 	m_pfetcher->Unlock();
-	
+		
     wxBitmap test_bitmap(w,h);
     wxMemoryDC bdc;
-    wxString s;
-    zwieksz++;
-    s.Printf(wxT("%d"), zwieksz);
-    
     bdc.SelectObject(test_bitmap);
-
     DrawContent(bdc, 1);
     wxRegion region(test_bitmap, *wxWHITE);
     SetShape(region);

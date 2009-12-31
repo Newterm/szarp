@@ -16,12 +16,12 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/* $Id: visioTransparent.h 1 2009-11-17 21:44:30Z asmyk $
+/* $Id: viszioTransparent.h 1 2009-11-17 21:44:30Z asmyk $
  *
- * visio program
+ * viszio program
  * SZARP
  *
- * asmyko@praterm.com.pl
+ * asmyk@praterm.com.pl
  */
  
 #ifndef __TransparentFrame__
@@ -39,11 +39,15 @@
 #define idMenuAbout 1001
 #include "fetchparams.h"
 #include "serverdlg.h"
-#include "visioParamadd.h"
+#include "viszioParamadd.h"
 #include "parlist.h"
-
 #include "cconv.h"
 #include "authdiag.h"
+
+enum typeOfFrame{
+		FETCH_TRANSPARENT_FRAME = 8888,
+		TRANSPARENT_FRAME
+};
 
 class TextComponent;
 
@@ -58,7 +62,7 @@ private:
     void OnLeftUp(wxMouseEvent& evt);
     void OnMouseMove(wxMouseEvent& evt);
     void OnRightDown(wxMouseEvent& evt);
-    virtual wxMenu *CreatePopupMenu();
+    wxMenu *CreatePopupMenu();
     void OnPopAdd(wxCommandEvent& evt);
     void OnMenuExit(wxCommandEvent& evt);
     void OnChangeColor(wxCommandEvent& evt);
@@ -72,8 +76,9 @@ private:
 	void OnSetFontSizeBig(wxCommandEvent& evt);
 	void OnSetFontSizeMiddle(wxCommandEvent& evt);
 	void OnSetFontSizeSmall(wxCommandEvent& evt);
+	void OnAdjustFont(wxCommandEvent& evt);
+	void WriteConfiguration();	
 protected:
-
     virtual void OnClose( wxCloseEvent& event )
     {
         event.Skip();
@@ -86,22 +91,22 @@ protected:
     {
         event.Skip();
     }
-
-    int zwieksz;
+	TextComponent *m_parameterName;
+    TextComponent *m_parameterValue;
+    wxString m_fullParameterName;
     wxPoint m_delta;
     wxColour m_color;
-    bool m_with_frame;
-    wxTimer m_timer;
+	wxTimer m_timer;
     wxMenu *m_menu;
     wxFont *m_font;
-    wxColour *m_font_color;
-    TextComponent *m_parameter_name;
-    TextComponent *m_parameter_value;
-    static szVisioAddParam  *m_apd;
+    wxColour *m_fontColor;
+    bool m_withFrame;
+	int m_typeOfFrame;
 public:
-    TransparentFrame( wxWindow* parent,  bool with_frame = true, wxString paramName = wxT("no param"), int id = wxID_ANY, wxString title = wxT("SharpShower"), wxPoint pos = wxDefaultPosition, wxSize size = wxSize( 300,100 ), int style = wxFRAME_SHAPED|wxNO_BORDER |wxSTAY_ON_TOP );
+    TransparentFrame(wxWindow* parent,  bool with_frame = true, wxString paramName = wxT("no param"), int id = wxID_ANY, wxString title = wxT("SharpShower"), wxPoint pos = wxDefaultPosition, wxSize size = wxSize( 300,100 ), int style = wxFRAME_SHAPED|wxNO_BORDER |wxSTAY_ON_TOP );
     ~TransparentFrame();
     void DrawContent(wxDC&dc, int transparent = 0);
+    void SetFrameConfiguration(wxString, bool, long, long, wxColour, wxColour, int, int, int);
     wxString GetParameterName();
     wxString GetParameterValue();
     void SetParameterName(wxString text);
@@ -109,12 +114,12 @@ public:
     static const int max_number_of_frames = 100;
     static int current_amount_of_frames;
     static TransparentFrame **all_frames;
-    static int last_red;
     static wxSize defaultSizeWithFrame;
     static wxSize defaultSizeWithOutFrame;
     static szParamFetcher *m_pfetcher;
     static szProbeList m_probes;
     static TSzarpConfig *ipk;
+    static wxString configuration_name;
 };
 
 
@@ -123,21 +128,23 @@ class TextComponent
     wxPoint m_anchor;
     wxSize  m_size;
     wxString m_text;
-    wxString m_text_down; //if needed text s divided into two lines
+    wxString m_textDown;
     wxFont   *m_font;
     wxColour *m_textcolor;
-    wxFont   *m_font_white;
     wxColour *m_forecolorPen;
     wxColour *m_forecolorBrush;
-    bool     m_fontAdjusted;
-    int      m_font_size;
+    bool 	 m_isFontAdjustable;
+    bool     m_isFontAdjusted;
+
 public:
-    TextComponent(wxPoint anchor, wxSize size, int font_size = 10);
+    TextComponent(wxPoint anchor, wxSize size, int font_size = 10, bool isFontAdjustable = false);
     ~TextComponent();
+    void SetAdjustable(bool value) { m_isFontAdjustable = value;m_isFontAdjusted=false;}
     void SetText(wxString text);
-    wxString GetText();
     void SetFont(wxFont font, wxColour color);
-    wxFont* GetFont();
+    bool GetAdjustable() { return m_isFontAdjustable;}
+    wxString GetText();
+    wxFont* GetFont();    
     void PaintComponent(wxDC&dc);
 };
 
