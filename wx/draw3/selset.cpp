@@ -57,6 +57,8 @@ SelectSetWidget::SelectSetWidget(ConfigManager *cfg,
 		wxWANTS_CHARS, wxDefaultValidator, _T("SelectSetWidget"))
 {
     m_cfg = cfg;
+    m_cfg->RegisterConfigObserver(this);
+
     m_draws_controller = NULL;
 
     SetToolTip(_("Select set of draws to display"));
@@ -76,7 +78,7 @@ void SelectSetWidget::SetSelection(int selected) {
 }
 
 SelectSetWidget::~SelectSetWidget() {
-
+	m_cfg->DeregisterConfigObserver(this);
 }
 
 void SelectSetWidget::SetConfig() {
@@ -151,3 +153,46 @@ SelectSetWidget::SelectSet(DrawSet *set) {
 		}
 }
 
+void SelectSetWidget::SetRemoved(wxString prefix, wxString name) {
+	if (m_draws_controller->GetSet()->GetDrawsSets()->GetPrefix() != prefix)
+		return;
+
+	int old = FindString(name);
+	int sel = GetSelection();
+	if (old != wxNOT_FOUND) {
+		Delete(old);
+		if (sel < old)
+			SetSelection(sel);
+		else
+			SetSelection(sel - 1);
+	}
+}
+
+void SelectSetWidget::SetModified(wxString prefix, wxString name, DrawSet *set) {
+	if (m_draws_controller->GetSet()->GetDrawsSets()->GetPrefix() != prefix)
+		return;
+	int si = FindString(name);
+	if (si != wxNOT_FOUND)
+		SetClientData(si , set);
+		
+}
+
+void SelectSetWidget::SetRenamed(wxString prefix, wxString from, wxString to, DrawSet *set) {
+	int fi = FindString(from);
+	if (fi != wxNOT_FOUND) {
+		SetString(fi, to); // change name
+		SetClientData(fi, set);
+		if (m_draws_controller->GetSet() == set)
+			SelectSet(set);
+	} else {
+		SetAdded(prefix, to, set);
+	}
+}
+
+void SelectSetWidget::SetAdded(wxString prefix, wxString name, DrawSet *set) {
+	if (m_draws_controller->GetSet()->GetDrawsSets()->GetPrefix() != prefix)
+		return;
+	Append(name, set);
+	if (m_draws_controller->GetSet() == set)
+		SelectSet(set);
+}

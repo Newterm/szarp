@@ -42,7 +42,6 @@
 
 BEGIN_EVENT_TABLE(TimeWidget, wxRadioBox)
         EVT_RADIOBOX(wxID_ANY, TimeWidget::OnRadioSelected)
-	EVT_SET_FOCUS(TimeWidget::OnFocus)
 END_EVENT_TABLE()
 
 TimeWidget::TimeWidget(wxWindow* parent, DrawsWidget *draws_widget, PeriodType pt)
@@ -109,9 +108,6 @@ void TimeWidget::OnRadioSelected(wxCommandEvent& event)
 		Select(event.GetSelection());
 		GetParent()->SetFocus();
 	}
-}
-void TimeWidget::OnFocus(wxFocusEvent &event) {
-	GetParent()->SetFocus();
 }
 
 void TimeWidget::PeriodChanged(Draw *draw, PeriodType pt) {

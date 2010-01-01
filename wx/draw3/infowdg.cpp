@@ -370,6 +370,10 @@ void InfoWidget::DoubleCursorChanged(DrawsController *draws_controller) {
 	DoubleCursorMode(draws_controller->GetDoubleCursor());
 }
 
+void InfoWidget::NumberOfValuesChanged(DrawsController *draws_controller) {
+	DoubleCursorMode(false);
+}
+
 void InfoWidget::DoubleCursorMode(bool set) {
 	ShowExtraPanel(set);
 	m_double_cursor = set;

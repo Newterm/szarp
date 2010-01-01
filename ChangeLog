@@ -1,12 +1,16 @@
 $Id$
 
+2010-01-01	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* wx/common: msw compilation fix
+	* wx/draw3: fixes resulting from testing latest changes
+	on msw	
 2009-12-31      Adam Smyk <asmyk@dalkiaterm.pl>
-        * wx/viszio/pl/*: rename of pl/visio.po to pl/viszio.po 
+	* wx/viszio/pl/*: rename of pl/visio.po to pl/viszio.po 
 2009-12-31      Adam Smyk <asmyk@dalkiaterm.pl>
-        * wx/visio->wx/viszio: name of the application has been changed,
-        some corrections has been added e.g. correct frames adjusting in GDM,
-        command line options and multiconfiguration options has been added.
-        It has been tested under linux and partially under Windows.
+	* wx/visio->wx/viszio: name of the application has been changed,
+	some corrections has been added e.g. correct frames adjusting in GDM,
+	command line options and multiconfiguration options has been added.
+	It has been tested under linux and partially under Windows.
 2009-12-31 Darek Marcinkiewicz <darek@dalkiaterm.pl>
 	* meaner3/utils/szbndremover: added support for combined params
 2009-12-30 Darek Marcinkiewicz <darek@dalkiaterm.pl>

@@ -116,40 +116,6 @@ class DrawPanel : public wxPanel, public DrawObserver {
 	void OnJumpToDate();
 
 	void ShowRemarks();
-	
-	/** 
-	 * Changes name of given set and updated its draws.
-	 * @param prefix prefix of configuration
-	 * @param from previous name of draw set
-	 * @param to current name of draw set
-	 * @param what draw set that has been renamed
-	 */
-	virtual void SetRenamed(wxString prefix, wxString from, wxString to, DrawSet* set);
-
-	/**
-	 * Removes given set and sets SSW selection to 0.
-	 * @param prefix prefix of configuration
-	 * @param name name of draw set
-	 * @param what draw set that has been removed
-	 */ 
-	virtual void SetRemoved(wxString prefix, wxString name);
-
-	/**
-	 * Updates draws of given set.
-	 * @param prefix prefix of configuration
-	 * @param name name of draw set
-	 * @param what draw set that has been modified
-	 */ 
-	virtual void SetModified(wxString prefix, wxString name, DrawSet *set);
-
-	/**
-	 * Adds given set.
-	 * @param prefix prefix of configuration
-	 * @param name name of draw set
-	 * @param what draw set that has been added
-	 */ 
-	virtual void SetAdded(wxString prefix, wxString name, DrawSet *set);
-
 	/**toggles split cursor*/
 	void ToggleSplitCursor(wxCommandEvent &event);
 

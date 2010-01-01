@@ -637,6 +637,24 @@ void DrawsController::ConfigurationWasReloaded(wxString prefix) {
 	EnterWaitState(WAIT_DATA_NEAREST);
 }
 
+void DrawsController::SetRemoved(wxString prefix, wxString name) {
+	if (m_current_prefix == prefix && m_current_set_name == name) {
+		SortedSetsArray *array = m_config_manager->GetConfigByPrefix(m_current_prefix)->GetSortedDrawSetsNames();
+		Set((*array)[0]);
+		delete array;
+	}
+}
+
+void DrawsController::SetModified(wxString prefix, wxString name, DrawSet *set) {
+	if (m_current_prefix == prefix && m_current_set_name == name)
+		Set(set);
+}
+
+void DrawsController::SetRenamed(wxString prefix, wxString from, wxString to, DrawSet *set) {
+	if (m_current_prefix == prefix && m_current_set_name == from)
+		Set(set);
+}
+
 void DrawsController::Set(DrawSet *set) {
 
 	DoSet(set);
@@ -657,7 +675,7 @@ void DrawsController::Set(DrawSet *set) {
 		m_draws[m_selected_draw]->SetEnable(true);
 	}
 	wxLogInfo(_T("Set '%s' choosen, selected draw index; %d"), set->GetName().c_str(), m_selected_draw);
-	for (int i = 0; i < m_active_draws_count; i++)
+	for (size_t i = 0; i < m_draws.size(); i++)
 		m_observers.NotifyDrawInfoChanged(m_draws[i]);
 
 	FetchData();
@@ -1146,6 +1164,8 @@ void DrawsController::SetBlocked(int index, bool blocked) {
 
 void DrawsController::SetNumberOfUnits(size_t number_of_units) {
 	m_units_count[m_period_type] = number_of_units;
+
+	m_double_cursor = false;
 
 	for (std::vector<Draw*>::iterator i = m_draws.begin(); i != m_draws.end(); i++)
 		(*i)->SetNumberOfValues(m_units_count[m_period_type] * TimeIndex::PeriodMult[m_period_type]);

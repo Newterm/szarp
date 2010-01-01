@@ -22,9 +22,9 @@
  * $Id$
  */
 
-#ifndef MINGW32
 
 #include "singleinstance.h"
+#ifndef MINGW32
 #include "cconv.h"
 #include <wx/file.h>
 

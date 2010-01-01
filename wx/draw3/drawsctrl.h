@@ -321,6 +321,11 @@ public:
 
 	virtual void ConfigurationWasReloaded(wxString prefix);
 
+	virtual void SetModified(wxString prefix, wxString name, DrawSet *set);
+
+	virtual void SetRemoved(wxString prefix, wxString name);
+
+	virtual void SetRenamed(wxString prefix, wxString from, wxString to, DrawSet *set);
 
 	int GetCurrentIndex() const;
 

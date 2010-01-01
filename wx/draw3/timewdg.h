@@ -60,9 +60,6 @@ public:
          */
         void OnRadioSelected(wxCommandEvent& event);
 
-	/**transfers focus to @see DrawsWidget*/
-	void OnFocus(wxFocusEvent &event);
-
 	/** Select item and (optionnaly) update 
 	 * @param item number of item to be selected
 	 */ 

@@ -25,6 +25,7 @@
 #ifndef __SINGLEINSTANCE_H__
 #define __SINGLEINSTANCE_H__
 
+#include "config.h"
 #include <wx/wxprec.h>
 #ifdef __BORLANDC__
 #pragma hdrstop

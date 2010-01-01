@@ -316,12 +316,8 @@ void SummaryWindow::Activate() {
 
 	m_active = true;
 
-       	for (size_t i = 0; i < draws_controller->GetDrawsCount(); ++i) {
+       	for (size_t i = 0; i < draws_controller->GetDrawsCount(); ++i)
 		SetDraw(draws_controller->GetDraw(i));
-		ObservedDraw* od = m_draws[i];
-		if (od)
-			StartDisplaying(i);
-	}
 
 }
 
@@ -339,7 +335,6 @@ void SummaryWindow::Deactivate() {
        	for (size_t i = 0; i < m_draws.Count(); ++i) {
 		ObservedDraw* od = m_draws[i];
 		if (od != NULL) {
-			StopDisplaying(i);
 			ResetDraw(draws_controller->GetDraw(i));
 		}
 	}
@@ -447,6 +442,10 @@ void SummaryWindow::StatsChanged(Draw *draw) {
 void SummaryWindow::DoubleCursorChanged(DrawsController *draws_controller) {
 	for (size_t i = 0; i < draws_controller->GetDrawsCount(); i++)
 		UpdateDraw(draws_controller->GetDraw(i));
+}
+
+void SummaryWindow::NumberOfValuesChanged(DrawsController *draws_controller) {
+	DoubleCursorChanged(draws_controller);
 }
 
 void SummaryWindow::PeriodChanged(Draw *draw, PeriodType period) {

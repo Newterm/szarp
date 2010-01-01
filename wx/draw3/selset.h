@@ -41,7 +41,7 @@
 /**
  * Widget for selecting set of draws.
  */
-class SelectSetWidget: public wxChoice, public DrawObserver
+class SelectSetWidget: public wxChoice, public DrawObserver, public ConfigObserver 
 {
 public:
     SelectSetWidget() : wxChoice()
@@ -72,6 +72,14 @@ public:
     virtual void DrawInfoReloaded(Draw *draw);
 
     virtual void Attach(DrawsController *draws_controller);
+
+    virtual void SetRemoved(wxString prefix, wxString name);
+
+    virtual void SetModified(wxString prefix, wxString name, DrawSet *set);
+
+    virtual void SetRenamed(wxString prefix, wxString from, wxString to, DrawSet *set);
+
+    virtual void SetAdded(wxString prefix, wxString name, DrawSet *set);
 protected:
     /** Adjust choice string to fit within widget width. Trucantes strings
      * that are to long.

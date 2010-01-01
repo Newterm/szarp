@@ -638,17 +638,13 @@ void DrawPanel::ShowSummaryWindow(bool show) {
 	if (active) {
 		smw_show = show;
 		wxMenuItem *item = menu_bar->FindItem(XRCID("Summary"));
-		item->Check(!smw->IsShown());
+		item->Check(smw->IsShown());
 	}
 
 }
 
 void DrawPanel::OnSummaryWindow(wxCommandEvent & event)
 {
-	if (active) {
-		wxMenuItem *item = menu_bar->FindItem(XRCID("Summary"));
-		item->Check(!smw->IsShown());
-	}
 	ShowSummaryWindow(!smw->IsShown());
 }
 
@@ -667,7 +663,7 @@ void DrawPanel::ShowPieWindow(bool show) {
 	if (active) {
 		pw_show = show;
 		wxMenuItem *item = menu_bar->FindItem(XRCID("Pie"));
-		item->Check(!pw->IsShown());
+		item->Check(pw->IsShown());
 	}
 }
 
@@ -687,7 +683,7 @@ void DrawPanel::ShowRelWindow(bool show) {
 	if (active) {
 		rw_show = show;
 		wxMenuItem *item = menu_bar->FindItem(XRCID("Ratio"));
-		item->Check(!rw->IsShown());
+		item->Check(rw->IsShown());
 	}
 }
 
@@ -736,66 +732,8 @@ void DrawPanel::ToggleSplitCursor(wxCommandEvent& WXUNUSED(event)) {
 #endif
 }
 
-void DrawPanel::SetRenamed(wxString prefix, wxString from, wxString to, DrawSet* set) {
-	if (prefix != GetPrefix())
-		return;
-
-	int old = ssw->FindString(from);
-	if (wxNOT_FOUND == old)
-		ssw->Append(to, set);
-	else
-	{
-		ssw->SetString(old, to); // change name
-		ssw->SetClientData(old, set); // update draws
-		if (ssw->GetSelection() == old)
-			dw->SetSet(set);
-	}
-}
-
-
-void DrawPanel::SetRemoved(wxString prefix, wxString name) {
-	if (prefix != GetPrefix())
-		return;
-
-	int old = ssw->FindString(name);
-	int sel = ssw->GetSelection();
-	ssw->Delete(old); // delete
-
-	if (ssw->GetCount() == 0) {
-		df->RemovePanel(this);
-	} else if (sel == old) {
-		SortedSetsArray *array = cfg->GetConfigByPrefix(GetPrefix())->GetSortedDrawSetsNames();
-		dw->SetSet((*array)[0]);
-		delete array;
-	} else {
-		if (sel < old)
-			ssw->SetSelection(sel);
-		else
-			ssw->SetSelection(sel - 1);
-	}
-}
-
-void DrawPanel::SetModified(wxString prefix, wxString name, DrawSet *set) {
-	if (prefix != GetPrefix())
-		return;
-
-	int old = ssw->FindString(name);
-	if (wxNOT_FOUND == old)
-		ssw->Append(name, set);
-	else
-		ssw->SetClientData(old, set); // update draws
-	dw->SetSet(set);
-}
-
 void DrawPanel::SelectSet(DrawSet *set) {
 	dw->SetSet(set);
-}
-
-void DrawPanel::SetAdded(wxString prefix, wxString name, DrawSet* set) {
-	if (prefix != GetPrefix())
-		return;
-
-	ssw->Append(name, set);
 }
 
 void DrawPanel::Print(bool preview) {
