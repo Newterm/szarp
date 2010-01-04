@@ -351,14 +351,11 @@ void ParamEdit::ApplyModifications() {
 			++i) {
 				
 		DefinedDrawSet *ds = dynamic_cast<DefinedDrawSet*>(dsh[i->first]);
-		SetsNrHash& dsa = ds->GetPrefixes();
 
-		for (SetsNrHash::iterator j = dsa.begin();
-				j != dsa.end();
-				j++)
-			m_cfg_mgr->NotifySetModified(j->first, i->first, ds);
+		std::vector<DefinedDrawSet*>* c = ds->GetCopies();
+		for (std::vector<DefinedDrawSet*>::iterator j = c->begin(); j != c->end(); j++)
+			m_cfg_mgr->NotifySetModified((*j)->GetDrawsSets()->GetPrefix(), i->first, *j);
 
-		m_cfg_mgr->NotifySetModified(DefinedDrawsSets::DEF_PREFIX, i->first, ds);
 	}
 	
 }

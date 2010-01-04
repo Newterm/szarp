@@ -1,5 +1,10 @@
 $Id$
 
+2010-01-04	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* wx/draw3: one more bug fixed (upon modification of
+	user defined param, SelectSetWidget had been switching to a list
+	of user defined sets while it should have kept displaying sets
+	from current configuration), unnecessary inclusion of "windows.h" header removed
 2010-01-01	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
 	* wx/common: msw compilation fix
 	* wx/draw3: fixes resulting from testing latest changes
@@ -25,7 +30,7 @@ $Id$
 	* libSzarp2/szbase: definable blocks are stored into cache when
 	they are removed (this includes termination of draw3), separate
 	thread that used to do this deleted: first round of - in my 
-	opinion unneccesary - locking removal from szbase
+	opinion unnecessary - locking removal from szbase
 2009-12-23	Darek Marcinkiewicz <darek@praterm.com.pl>
 	* wx/draw3: a few more bugs fixed: crash upon draws' set change
 	after configuration reload; incorrect behaviour when '[' or ']'

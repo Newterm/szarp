@@ -656,6 +656,8 @@ DefinedDrawSet::DefinedDrawSet(DrawsSets* parent,
 	m_prior = ds->m_prior;
 	m_number = ds->m_number;
 
+	m_copies->push_back(this);
+
 	m_temporary = false;
 	m_copy = true;
 }
@@ -666,6 +668,11 @@ DefinedDrawSet::DefinedDrawSet(DefinedDrawsSets *ds) : DrawSet(ds) {
 	m_copies = new std::vector<DefinedDrawSet*>(1, this);
 	m_copy = false;
 }
+
+std::vector<DefinedDrawSet*>* DefinedDrawSet::GetCopies() {
+	return m_copies;
+}
+
 
 double DefinedDrawSet::GetPrior() {
 	return m_prior;

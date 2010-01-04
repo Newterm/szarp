@@ -34,10 +34,6 @@
 #include <wx/log.h>
 #include <wx/xrc/xmlres.h>
 
-#ifdef __WXMSW__
-#include <windows.h>
-#endif
-
 #include <math.h>
 
 #include "classes.h"

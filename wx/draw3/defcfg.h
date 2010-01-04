@@ -401,6 +401,8 @@ public:
 	DefinedDrawsSets * GetDefinedDrawsSets() {
 		return m_ds;
 	}
+
+	std::vector<DefinedDrawSet*>* GetCopies();
 protected:
 	/**Object this sets belongs to*/
 	DefinedDrawsSets *m_ds;
