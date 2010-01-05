@@ -8,6 +8,28 @@
 # Puste linie s± ignorowane.
 # $Id$
 
+** 3.1.254
+# 31.12.2009
+
+* Zasadnicza przebudowa kodu programu przegl±daj±cego, w celu zwiêkszenia 
+czytelno¶ci i mo¿liwo¶ci przysz³ych modyfikacji. Zmiany wi±za³y siê z 
+wprowadzeniem wielu drobnych usterek, które w wiêkszo¶ci zosta³y wkrótce 
+usuniête. Usuniêto oddzielny w±tek odpowiadaj±cy za zapis na dysk bufora
+podrêcznego programu. Dodano ikony do okien dialogowych w ró¿nych miejscach
+programu.
+* Warto¶ci parametrów wy¶wietlane na ciemno-niebieskim tle na niektórych 
+monitorach by³y s³abo widoczne, zmieniono kolor wy¶wietlanego t³a na nieco 
+ja¶niejszy.
+* Dodano now± aplikacjê 'viszio', pozwalaj±c± na wy¶wietlanie bezpo¶rednio
+na ekranie warto¶ci wybranych parametrów. Program nie jest jeszcze ukoñczony.
+* Dodano narzêdzie 'szbndremover' do usuwania 'dziur' w bazie SZARP. Warto¶ci
+'brak danych' zastêpowane s± ¶rednimi z okolicznych warto¶ci.
+* Poprawiono generowanie odno¶ników HTML w programie paramd.
+* Dodano now± funkcjê 'M' do szybkiego odfiltrowywania za du¿ych warto¶ci w
+parametrach definiowalnych.
+* Dodano nowy driver do protoko³u Modbus, obs³uguj±cy kodowania ASCII i RTU
+oraz transmisjê za pomoc± zarówno ³±cza szeregowego, jak i sieci TCP/IP.
+
 ** 3.1.206
 # 31.11.2009
 * Dostêpna jest nowa ga³±¼ w repozytorium apt na szarp.org "karmic", zawieraj±ca
