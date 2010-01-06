@@ -72,12 +72,22 @@ ParamEdit::ParamEdit(wxWindow *parent, ConfigManager *cfg, DatabaseManager *dbmg
 	m_unit_input = XRCCTRL(*this, "text_ctrl_unit", wxTextCtrl);
 	assert(m_unit_input);
 
-	wxPanel *panel_editor = XRCCTRL(*this, "panel_editor", wxPanel);
-	wxBoxSizer *box_sizer = new wxBoxSizer(wxHORIZONTAL);
+	wxStaticText *code_editor_stub = XRCCTRL(*this, "code_editor_stub", wxStaticText);
+	wxSizer* stub_sizer = code_editor_stub->GetContainingSizer();
+	size_t i = 0;
+	while (stub_sizer->GetItem(i) && stub_sizer->GetItem(i)->GetWindow() != code_editor_stub)
+		i++;
+	assert(stub_sizer->GetItem(i));
+	wxWindow *stub_parent = code_editor_stub->GetParent();
 
-	m_formula_input = new CodeEditor(panel_editor);
-	box_sizer->Add(m_formula_input, 1, wxALIGN_CENTER | wxALL| wxEXPAND, 0);
-	panel_editor->SetSizer(box_sizer);
+	m_formula_input = new CodeEditor(stub_parent);
+	m_formula_input->SetSize(code_editor_stub->GetSize());
+
+	stub_sizer->Detach(code_editor_stub);
+	code_editor_stub->Destroy();
+	stub_sizer->Insert(i, m_formula_input, 1, wxALL | wxEXPAND, 4 );
+	stub_sizer->Layout();
+
 
 	m_prec_spin = XRCCTRL(*this, "spin_ctrl_prec", wxSpinCtrl);
 	
@@ -119,8 +129,8 @@ ParamEdit::ParamEdit(wxWindow *parent, ConfigManager *cfg, DatabaseManager *dbmg
 
 	m_params_list = NULL;
 
-	SetSize(1000, 800);
 	SetIcon(szFrame::default_icon);
+	Centre();
 }
 
 void ParamEdit::OnIdle(wxIdleEvent &e) {

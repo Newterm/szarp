@@ -1,5 +1,7 @@
 $Id$
 
+2010-01-05	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* wx/draw3: few small tweaks, for msw mainly
 2010-01-04	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
 	* wx/draw3: one more bug fixed (upon modification of
 	user defined param, SelectSetWidget had been switching to a list

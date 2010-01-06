@@ -742,9 +742,15 @@ void DrawPanel::Print(bool preview) {
 
 void DrawPanel::DrawInfoChanged(Draw *d) {
 	if (d->GetSelected()) {
-		menu_bar->Enable(XRCID("EditSet"),  IsUserDefined());
-		menu_bar->Enable(XRCID("DelSet"),  IsUserDefined());
+		prefix = d->GetDrawsController()->GetSet()->GetDrawsSets()->GetPrefix();
 		tb->DoubleCursorToolUncheck();
+		if (active) {
+				menu_bar->Enable(XRCID("EditSet"),  IsUserDefined());
+				menu_bar->Enable(XRCID("DelSet"),  IsUserDefined());
+				menu_bar->Check(XRCID("SplitCursor"), false); 
+				df->SetTitle(GetConfigName(), GetPrefix());
+		}
+		df->UpdatePanelName(this);
 	}
 }
 

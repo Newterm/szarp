@@ -335,6 +335,7 @@ DrawPicker::DrawPicker(wxWindow* parent, ConfigManager * cfg, DatabaseManager *d
 	SetIcon(szFrame::default_icon);
 
 	Layout();
+	Centre();
 }
 
 void DrawPicker::Select(int i)
