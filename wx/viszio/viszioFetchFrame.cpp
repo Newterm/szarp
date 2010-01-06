@@ -160,12 +160,7 @@ void FetchFrame::OnFetch(wxCommandEvent& event)
 		}
 	}
 	m_pfetcher->Unlock();
-		
-    wxBitmap test_bitmap(w,h);
-    wxMemoryDC bdc;
-    bdc.SelectObject(test_bitmap);
-    DrawContent(bdc, 1);
-    wxRegion region(test_bitmap, *wxWHITE);
-    SetShape(region);
-    Refresh();
+	for(int j=0; j<TransparentFrame::max_number_of_frames; j++)
+		if(all_frames[j] != NULL)
+			all_frames[j]->RefreshTransparentFrame();    
 }

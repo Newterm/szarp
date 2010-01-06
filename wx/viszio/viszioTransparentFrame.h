@@ -56,8 +56,8 @@ class TransparentFrame : public wxFrame
     DECLARE_EVENT_TABLE()
 private:
     void OnPaint(wxPaintEvent& WXUNUSED(evt));
-    void OnTimerRefresh(wxTimerEvent& event);
-    void OnTimer(wxCommandEvent& event);
+    //void OnTimerRefresh(wxTimerEvent& event);
+    //void OnTimer(wxCommandEvent& event);
     void OnLeftDown(wxMouseEvent& evt);
     void OnLeftUp(wxMouseEvent& evt);
     void OnMouseMove(wxMouseEvent& evt);
@@ -95,13 +95,15 @@ protected:
     TextComponent *m_parameterValue;
     wxString m_fullParameterName;
     wxPoint m_delta;
-    wxColour m_color;
-	wxTimer m_timer;
     wxMenu *m_menu;
     wxFont *m_font;
+	wxColour m_color;
     wxColour *m_fontColor;
     bool m_withFrame;
 	int m_typeOfFrame;
+	wxBitmap *m_bitmap;
+	wxMemoryDC *m_memoryDC;
+	wxRegion *m_region;					
 public:
     TransparentFrame(wxWindow* parent,  bool with_frame = true, wxString paramName = wxT("no param"), int id = wxID_ANY, wxString title = wxT("SharpShower"), wxPoint pos = wxDefaultPosition, wxSize size = wxSize( 300,100 ), int style = wxFRAME_SHAPED|wxNO_BORDER |wxSTAY_ON_TOP );
     ~TransparentFrame();
@@ -109,6 +111,7 @@ public:
     void SetFrameConfiguration(wxString, bool, long, long, wxColour, wxColour, int, int, int);
     wxString GetParameterName();
     wxString GetParameterValue();
+    void RefreshTransparentFrame();	
     void SetParameterName(wxString text);
     void SetParameterValue(wxString text);
     static const int max_number_of_frames = 100;
@@ -135,7 +138,6 @@ class TextComponent
     wxColour *m_forecolorBrush;
     bool 	 m_isFontAdjustable;
     bool     m_isFontAdjusted;
-
 public:
     TextComponent(wxPoint anchor, wxSize size, int font_size = 10, bool isFontAdjustable = false);
     ~TextComponent();

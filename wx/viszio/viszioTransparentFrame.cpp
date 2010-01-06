@@ -43,7 +43,7 @@
 
 enum
 {
-    TIMER_ID = 12340,
+    //TIMER_ID = 12340,
     PUM_ADD,
     PUM_EXIT,
     PUM_COLOR,
@@ -64,7 +64,6 @@ enum
 
 BEGIN_EVENT_TABLE( TransparentFrame, wxFrame )
     EVT_PAINT(TransparentFrame::OnPaint)
-    EVT_TIMER(TIMER_ID, TransparentFrame::OnTimerRefresh)
     EVT_LEFT_DOWN(TransparentFrame::OnLeftDown)
     EVT_RIGHT_DOWN(TransparentFrame::OnRightDown)
     EVT_LEFT_UP(TransparentFrame::OnLeftUp)
@@ -100,23 +99,24 @@ TransparentFrame::TransparentFrame( wxWindow* parent, bool with_frame, wxString 
                 wxPoint(0, 0),
                 defaultSizeWithFrame,
                 0 | wxFRAME_SHAPED | wxSIMPLE_BORDER | wxFRAME_NO_TASKBAR | wxSTAY_ON_TOP  ),
-        m_timer(this, TIMER_ID),
         m_color(*wxRED)
 {
     m_typeOfFrame = TRANSPARENT_FRAME;
     m_fullParameterName = paramName;
     m_menu = NULL;
-    m_font = new wxFont(15, wxSWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL);
+    m_font = wxFont::New(15, wxSWISS,wxFONTFLAG_NOT_ANTIALIASED|wxFONTFLAG_DEFAULT,wxFONTSTYLE_NORMAL);
     m_fontColor = new wxColour(0, 0, 0);
     m_parameterName = new TextComponent(wxPoint(0,4), wxSize(400,35), 18, true);
     m_parameterValue = new TextComponent(wxPoint(0,43), wxSize(400,35), 20, false);
     m_parameterName->SetText(paramName);
     m_parameterName->SetFont(*m_font, *m_fontColor);
     m_parameterValue->SetFont(*m_font, *m_fontColor);
-    m_timer.Start(1000);
     m_color = wxColour(255, 0, 0);
     m_withFrame = with_frame;
-
+	m_bitmap = new wxBitmap(size.GetWidth(), size.GetHeight());
+	m_memoryDC = new wxMemoryDC();
+	m_region = new wxRegion(*m_bitmap, *wxWHITE);
+		
     if (current_amount_of_frames == 0)
     {
         all_frames[0] = this;
@@ -139,6 +139,9 @@ TransparentFrame::~TransparentFrame()
     delete m_fontColor;
     delete m_parameterName;
     delete m_parameterValue;
+	delete m_bitmap;
+	delete m_memoryDC;
+	delete m_region;
 }
 
 void TransparentFrame::SetFrameConfiguration(wxString name, bool withFrame, long locationX, long locationY, wxColour frameColor, wxColour fontColor, int fontSize, int paramNameSizeAdjust, int desktopNumber)
@@ -178,6 +181,7 @@ void TransparentFrame::SetFrameConfiguration(wxString name, bool withFrame, long
         m_pfetcher->SetSource(m_probes, TransparentFrame::ipk);
 }
 
+
 void TransparentFrame::DrawContent(wxDC&dc, int transparent)
 {
     int w = 40, h = 20;
@@ -187,29 +191,34 @@ void TransparentFrame::DrawContent(wxDC&dc, int transparent)
 
     if (m_withFrame == true)
     {
-        if (!transparent)
-        {
-            dc.SetBrush(wxBrush(m_color));
-            dc.SetPen(wxPen(m_color));
-            dc.DrawRoundedRectangle(0, 0, w, h, 4);
-        }
-        else
-        {
-            dc.SetBrush(wxBrush(m_color));
-            dc.SetPen(*wxWHITE_PEN);
-            dc.DrawRectangle(0, 0, w, h);
-            dc.SetPen(wxPen(m_color));
-            dc.DrawRoundedRectangle(0, 0, w, h,4);
-        }
+		dc.SetBrush(wxBrush(*wxWHITE));
+        dc.SetPen(*wxWHITE);
+        dc.DrawRectangle(0, 0, w, h);
+        dc.SetPen(wxPen(m_color));
+        dc.SetBrush(wxBrush(m_color));
+        dc.DrawRoundedRectangle(0, 0, w, h,4);
         m_parameterName->PaintComponent(dc);
     }
     else
     {
-        dc.SetBrush(*wxWHITE_BRUSH);
+        dc.SetBrush(wxBrush(*wxWHITE));
         dc.SetPen(*wxWHITE_PEN);
         dc.DrawRectangle(0, 0, w, h);
     }
     m_parameterValue->PaintComponent(dc);
+}
+
+
+void TransparentFrame::RefreshTransparentFrame()
+{
+	delete m_bitmap;
+	m_bitmap = new wxBitmap(GetSize().GetWidth(), GetSize().GetHeight());
+	m_memoryDC->SelectObject(*m_bitmap);
+	DrawContent(*m_memoryDC, 1);
+	delete m_region;
+	m_region = new wxRegion(*m_bitmap, *wxWHITE);
+	SetShape(*m_region);
+	Refresh();
 }
 
 
@@ -270,6 +279,7 @@ void TransparentFrame::OnChangeColor(wxCommandEvent& evt)
     {
         wxColourData data = colorDialog.GetColourData();
         m_color = data.GetColour();
+		RefreshTransparentFrame();
     }
 }
 
@@ -281,7 +291,7 @@ void TransparentFrame::OnSetFontSizeBig(wxCommandEvent& evt)
     if(!m_parameterName->GetAdjustable())
 		m_parameterName->SetFont(*font, *m_fontColor);
     //m_parameterName->SetAdjustable(false);
-    Refresh();
+    RefreshTransparentFrame();
 }
 
 void TransparentFrame::OnSetFontSizeMiddle(wxCommandEvent& evt)
@@ -291,8 +301,7 @@ void TransparentFrame::OnSetFontSizeMiddle(wxCommandEvent& evt)
     m_parameterValue->SetFont(*font, *m_fontColor);
 	if(!m_parameterName->GetAdjustable())
 		m_parameterName->SetFont(*font, *m_fontColor);
-    //m_parameterName->SetAdjustable(false);
-    Refresh();
+    RefreshTransparentFrame();
 }
     
 void TransparentFrame::OnSetFontSizeSmall(wxCommandEvent& evt)
@@ -302,7 +311,7 @@ void TransparentFrame::OnSetFontSizeSmall(wxCommandEvent& evt)
     m_parameterValue->SetFont(*font, *m_fontColor);
     if(!m_parameterName->GetAdjustable())
 		m_parameterName->SetFont(*font, *m_fontColor);
-    Refresh();
+    RefreshTransparentFrame();
 }
 
 void TransparentFrame::OnAdjustFont(wxCommandEvent& evt)
@@ -311,7 +320,7 @@ void TransparentFrame::OnAdjustFont(wxCommandEvent& evt)
     m_menu->Check(PUM_FONT_SIZE_ADJUST, m_parameterName->GetAdjustable());
 	if(!m_parameterName->GetAdjustable())
 		m_parameterName->SetFont(*m_parameterValue->GetFont(), *m_fontColor);
-    Refresh();
+    RefreshTransparentFrame();
 }
 
 void TransparentFrame::OnChangeFontColor(wxCommandEvent& evt)
@@ -325,6 +334,7 @@ void TransparentFrame::OnChangeFontColor(wxCommandEvent& evt)
         m_fontColor = new wxColour(data.GetColour());
         m_parameterName->SetFont(*m_parameterName->GetFont(), *m_fontColor);
         m_parameterValue->SetFont(*m_parameterValue->GetFont(), *m_fontColor);
+        RefreshTransparentFrame();
     }
 }
 
@@ -333,22 +343,6 @@ void TransparentFrame::OnPaint(wxPaintEvent& WXUNUSED(evt))
 {
     wxPaintDC dc(this);
     DrawContent(dc, 0);
-}
-
-void TransparentFrame::OnTimerRefresh(wxTimerEvent& event)
-{
-    //m_parameterName->MoveText();
-    int w = 0, h = 0;
-    wxSize size = GetClientSize();
-    w = size.GetWidth();
-    h = size.GetHeight();
-    wxBitmap test_bitmap(w,h);
-    wxMemoryDC bdc;
-    bdc.SelectObject(test_bitmap);
-    DrawContent(bdc, 1);
-    wxRegion region(test_bitmap, *wxWHITE);
-    SetShape(region);
-    Refresh();
 }
 
 
@@ -548,6 +542,7 @@ void TransparentFrame::OnWithFrame(wxCommandEvent& evt)
 {
     m_withFrame = !m_withFrame;
     m_menu->Check(PUM_WITH_FRAME, m_withFrame);
+    RefreshTransparentFrame();
 }
 
 wxString TransparentFrame::GetParameterName()
@@ -580,9 +575,9 @@ void TransparentFrame::WriteConfiguration()
     int locationX = -1, locationY = -1;
     GetPosition(&locationX, &locationY);
     wxString mystring = wxString::Format(wxT("%d %d %d %d %d %d %d %d %d %d %d 1"), (m_withFrame?1:0), locationX, locationY, m_color.Red(), m_color.Green(), m_color.Blue(), m_fontColor->Red(), m_fontColor->Green(), m_fontColor->Blue(), m_parameterValue->GetFont()->GetPointSize(), m_parameterName->GetAdjustable());
-    wxConfig::Get()->Write(GetParameterName(), mystring);
-    wxConfig::Get()->SetPath(_T("/"));
-    wxConfig::Get()->Flush();    
+	wxConfig::Get()->Write(GetParameterName(), mystring);	
+    wxConfig::Get()->Flush();        
+	wxConfig::Get()->SetPath(_T("/"));
 }
 
 
@@ -646,7 +641,7 @@ void TextComponent::PaintComponent(wxDC&dc)
     dc.DrawRoundedRectangle(m_anchor.x, m_anchor.y, m_size.GetWidth()-1, m_size.GetHeight()-1, 4);
     dc.SetFont(*m_font);
     dc.SetTextForeground(*m_textcolor);
-
+	
     if (m_isFontAdjustable && !m_isFontAdjusted)
     {
         wxString fullText = m_text+m_textDown;

@@ -1,5 +1,7 @@
 $Id$
 
+2010-01-06      Adam Smyk <asmyk@dalkiaterm.pl>
+	* wx/viszio: frames display method has been changed (to reduce of CPU usage)
 2010-01-05	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
 	* wx/draw3: few small tweaks, for msw mainly
 2010-01-04	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
