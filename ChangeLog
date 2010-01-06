@@ -1,6 +1,7 @@
 $Id$
 
 2009-01-06	Pawel Palucha <pawel@praterm.com.pl>
+	* raporter.sgml: completed Raporter documentation, screenshots added.
 	* wx/scc/*: technical support tunnel dialog changed so user has to
 	pass server name, fixed printing of tunnel error messages, fixed
 	dialog icons, fixed widgets positioning in tunnel and base-hiding 

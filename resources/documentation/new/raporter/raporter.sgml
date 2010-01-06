@@ -9,10 +9,19 @@
 
 &szarp-info;
 
-<title>Raporter 3 - dokumentacja</title>
+<title>Program Raporter 3 - dokumentacja</title>
+
+<subtitle>SZARP wersja 3.1</subtitle>
+<authorgroup>
+	<author><firstname>Pawe³</><surname>Pa³ucha</></author>
+</authorgroup>
 
 <abstract>
 	<para>
+Program Raporter jest elementem systemu SZARP s³u¿±cym do wy¶wietlania bie¿±cych warto¶ci
+parametrów, pogrupowanych w raporty. Pozwala na wy¶wietlanie i zapisywanie na dysk
+raportów zdefiniowanych przez administratora, a tak¿e na samodzielne tworzenie wzorców 
+raportów przez u¿ytkownika.
 	</para>
 	<para>
 		Wersja pliku: $Id: ekstraktor3.sgml 6792 2009-05-29 12:14:33Z pawel $
@@ -26,10 +35,10 @@
 <section id="rap-info-main">
 <title>Witamy w programie Raporter 3</title>
 <para>
-Program Raporter jest elementem systemu SZARP s³u¿±cym do wy¶wietlania bie¿±cych warto¶ci
-parametrów, pogrupowanych w raporty. Pozwala na wy¶wietlanie i zapisywanie na dysk
-raportów zdefiniowanych przez administratora, a tak¿e na samodzielne tworzenie wzorców raportów przez
-u¿ytkownika.
+Program Raporter pozwala na ¶ledzenie bie¿±cych warto¶ci parametrów technologicznych
+udostêpnianych przez serwer SZARP. Parametry pogrupowane s± w raporty zdefiniowane
+przez u¿ytkownika systemu, mo¿liwe jest te¿ tworzenie w³asnych raportów
+z wybranymi parametrami.
 </para>
 
 <para>
@@ -42,10 +51,10 @@ Dowiedz siê wiêcej:
 			O elementach g³ównego okna programu - <xref linkend="rap-basic-window">.
 	</para></listitem>
 	<listitem><para>
-			O wybieraniu wy¶wietlanego raportu.
+			O wybieraniu wy¶wietlanego raportu - <xref linkend="rap-basic-select">.
 	</para></listitem>
 	<listitem><para>
-			O tworzeniu w³asnych wzorców raportów.
+			O tworzeniu w³asnych wzorców raportów - <xref linkend="rap-basic-templates">.
 	</para></listitem>
 </itemizedlist>
 </para>
@@ -65,7 +74,8 @@ Lub przejd¼ do spisu tre¶ci - <xref linkend="raporter">. Mo¿esz tak¿e wybieraæ o
 <para>
 	Program zazwyczaj uruchamiasz korzystaj±c z Centrum Sterowania SZARP - g³ównego menu
 	s³u¿±cego do uruchamiania wszystkich programów systemu SZARP. Centrum Sterowania ma
-	postaæ ikony z logiem systemu SZARP, znajduj±cej siê w zasobniku systemowym, czyli
+	postaæ ikony z logiem systemu SZARP, znajduj±cej siê w tacce systemowej (inaczej
+	zasobniku systemowym), czyli
 	domy¶lnie w prawym dolnym rogu ekranu.
 </para>
 <para>
@@ -78,8 +88,8 @@ Lub przejd¼ do spisu tre¶ci - <xref linkend="raporter">. Mo¿esz tak¿e wybieraæ o
 </mediaobject>
 </figure>
 	Wybierz interesuj±ce Ciê urz±dzenie oraz raport i kliknij na nim mysz± - uruchomi siê
-	program Raporter. Pierwsz± wykonywan± czynno¶ci± przez program czynno¶ci± jest próba
-	po³±czenie siê z serwerem SZARP. Je¶li próba ta nie powiedzie siê, oznacza to ¿e albo
+	program Raporter. Pierwsz± wykonywan± przez program czynno¶ci± jest próba
+	po³±czenia siê z serwerem SZARP. Je¶li próba ta nie powiedzie siê, oznacza to ¿e albo
 	serwer SZARP nie jest dostêpny, albo program nie wie do jakiego serwera siê po³±czyæ. Zobacz
 	w takim przypadku, jak ustawiæ adres serwera - <xref linkend="rap-ext-server">.
 <note><para>
@@ -113,15 +123,22 @@ i zatrzymywania wy¶wietlania raportu. Ten sam efekt mo¿na uzyskaæ wciskaj±c klaw
 siê prawid³owo - je¶li program nie otrzyma odpowiedzi od serwera, to jej kolor zmienia siê
 z zielonego na ¿ó³y, a po dalszych 10 sekundach na czerwony. Krótkotrwa³a zmiana koloru na ¿ó³ty
 jest sytuacj± normaln± - serwer widocznie potrzebowa³ trochê wiêcej czasu na odpowied¼.
-<note><para>Domy¶lnie po uruchomieniu programu wy¶wietlanie raportu jest zatrzymane - musisz
-klikn±æ na przycisk <guibutton>Start</guibutton> lub wcisn±æ klawisz <keycap>Spacja</keycap>.</para></note>
+<note><para>Domy¶lnie po uruchomieniu programu wy¶wietlanie raportu jest zatrzymane - 
+		musisz	klikn±æ na przycisk <guibutton>Start</guibutton> lub wcisn±æ klawisz <keycap>Spacja</keycap>.</para></note>
+<figure>
+<title>Okno programu po uruchomieniu raportu</title>
+<mediaobject>
+<imageobject><imagedata scale="100" fileref="pics/running.png"></imageobject>
+</mediaobject>
+</figure>
+
 </para>
 <para>
 Pasek statusu poni¿ej w kolejnych polach informuje o:
 <itemizedlist>
 	<listitem><para>
 		Rodzaju wy¶wietlanego raportu - <quote>System</quote> lub
-		<quote>U¿ytkownik</quote> dla raportu zdefiniowanego samodzielnie
+		<quote>W³asne</quote> dla raportu zdefiniowanego samodzielnie
 		przez u¿ytkownika.
 	</para></listitem>
 	<listitem><para>
@@ -153,23 +170,32 @@ to za³adowany zosta³ wybrany raport. Je¶li w inny sposób, to pocz±tkowo program 
 <!-- image -->
 </para>
 <para>
-	Na dole menu znajduj± siê dwie pozycje pozwalaj±ce na zmianê aktualnie wy¶wietlanego raportu.
-	Pierwsza z nich oznaczona jest w menu nazw± aktualnej konfiguracji SZARP, po rozwiniêciu 
-	dostêpna jest pe³na lista wszystkich raportów zdefiniowanych przez administratora serwera 
+	Na dole menu znajduj± siê dwie pozycje pozwalaj±ce na zmianê aktualnie 
+	wy¶wietlanego raportu. Pierwsza z nich oznaczona jest w menu nazw± aktualnej 
+	konfiguracji SZARP, po rozwiniêciu dostêpna jest pe³na lista wszystkich 
+	raportów zdefiniowanych przez administratora serwera 
 	SZARP, do którego jeste¶my pod³±czeni.
+<figure>
+<title>Menu wyboru wzorca raportu</title>
+<mediaobject>
+<imageobject><imagedata scale="100" fileref="pics/templates-menu.png"></imageobject>
+</mediaobject>
+</figure>
 </para>
 <para>
-	Druga to <guimenu>Wzorce u¿ytkownika</guimenu>, zawieraj±ca listê raportów zdefiniowanych
-	samodzielnie przez u¿ytkownika (tworzenie raportów - zobacz 
-	<xref linkend="rap-basic-templates">). Pocz±tkowo lista ta mo¿e byæ oczywi¶cie pusta.
+	Druga to <guimenu>Wzorce u¿ytkownika</guimenu>, zawieraj±ca listê raportów 
+	zdefiniowanych samodzielnie przez u¿ytkownika (tworzenie raportów - zobacz 
+	<xref linkend="rap-basic-templates">). Pocz±tkowo lista ta mo¿e byæ 
+	oczywi¶cie pusta.
 </para>
 <para>
 	<note><para>
-		Podczas normalnej pracy zwykle bêdziesz chcia³ widzieæ wiêcej ni¿ jeden raport. Nie
-		ma ¿adnych przeciwskazañ ¿eby uruchomiæ wiêcej ni¿ jedn± kopiê programu. Dostêp
-		do raportów systemowych jest naj³atwiejszy z Centrum Sterowania SZARP. Aby uruchomiæ
-		raport ze wzorca u¿ytkownika, uruchom program z dowolnym raportem
-		systemowym, po czym za pomoc± menu <guimenu>Wzorce -> Wzorce u¿ytkownika</guimenu> 
+		Podczas normalnej pracy zwykle bêdziesz chcia³ widzieæ wiêcej ni¿ jeden 
+		raport. Nie ma ¿adnych przeciwskazañ ¿eby uruchomiæ wiêcej ni¿ jedn± 
+		kopiê programu. Dostêp do raportów systemowych jest naj³atwiejszy z 
+		Centrum Sterowania SZARP. Aby uruchomiæ raport ze wzorca u¿ytkownika, 
+		uruchom program z dowolnym raportem systemowym, po czym za pomoc± 
+		menu <guimenu>Wzorce -> Wzorce u¿ytkownika</guimenu> 
 		wybierz ¿±dany wzorzec raportu.
 	</para></note>
 </para>
@@ -188,6 +214,12 @@ to za³adowany zosta³ wybrany raport. Je¶li w inny sposób, to pocz±tkowo program 
 	w którym musisz podaæ nazwê nowego raportu oraz wy¶wietlane parametry. Przyciski
 	<guibutton>Dodaj</guibutton> i <guibutton>Usuñ</guibutton> pozwalaj± na dodawanie
 	do raportu nowych parametrów i usuwanie zbêdnych.
+<figure>
+<title>Okno edycji raportu</title>
+<mediaobject>
+<imageobject><imagedata scale="100" fileref="pics/templates-edit.png"></imageobject>
+</mediaobject>
+</figure>
 </para>
 <para>
 	Po naci¶niêciu <guibutton>Dodaj</guibutton> wy¶wietli siê drzewko zawieraj±ce wszystkie 
@@ -223,14 +255,183 @@ to za³adowany zosta³ wybrany raport. Je¶li w inny sposób, to pocz±tkowo program 
 </para>
 </section> <!-- rap-basic-select -->
 
-</chapter> <!-- rap-basic -->
+<section id="rap-basic-templates2">
+<title>Edycja i usuwanie w³asnych raportów</title>
+<para>
+	Po utworzeniu w³asnego raportu (zobacz poprzedni rozdzia³ - 
+	<xref linkend="rap-basic-templates">) w menu <guimenu>Wzorce</guimenu>
+	uaktywni± siê opcjê <guimenu>Edycja</guimenu> i <guimenu>Usuñ</guimenu>.
+	Pozwalaj± one na odpowiednio edycjê (zmiana nazwy, dodanie i usuniêcie
+	parametrów) oraz na usuniêcie aktualnie wybranego raportu w³asnego.
+<figure>
+<title>Menu wzorców - edycja i usuwanie</title>
+<mediaobject>
+<imageobject><imagedata scale="100" fileref="pics/templates-menu2.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+<para>
+	Nie jest mo¿liwe usuwanie i edycja raportów zdefiniowanych przez
+	administratora systemu.
+</para>
+</section> <!-- rap-basic-templates2 -->
+
+<section id="rap-basic-help">
+<title>Korzystanie z pomocy programu</title>
+<para>
+	Dostêp do ninejszej dokumentacji programu mo¿na uzyskaæ korzystaj±c z
+	menu <guimenu>Pomoc</guimenu> lub za pomoc± klawisza <keycap>F1</keycap>.
+</section> <!-- rap-basic-help -->
+
+</chapter> <!-- rap-basic-templates2 -->
 
 <chapter id="rap-ext">
 <title>Zagadnienia zaawansowane</title>
 <section id="rap-ext-server">
 <title>Wybór serwera</title>
-<para>Wybór serwera</para>
+<para>Informacje o dostêpnych parametrach oraz ich warto¶ciach program pobiera
+	z serwer SZARP. Serwer SZARP mo¿e byæ tym samym komputerem na którym pracujemy,
+	mo¿e byæ te¿ dostêpny za pomoc± sieci TCP/IP. Adres serwera do którego chcesz
+	siê po³±czyæ mo¿esz podaæ wywo³uj±c z menu opcjê <guimenu>Opcje -> Serwer</guimenu>.
+	Program spyta siê o adres serwera tak¿e w sytuacji, gdy przy starcie nie bêdzie
+	móg³ siê po³±czyæ z domy¶lnym serwerem.
+	<note><para>Je¶li program dzia³a poprawnie, nie zmieniaj bez potrzeby adresu
+			serwera.
+	</para></note>
+<figure>
+<title>Okno wyboru serwera</title>
+<mediaobject>
+<imageobject><imagedata scale="100" fileref="pics/server.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+<para>
+	Adres serwera sk³ada siê z nazwy (lub adresu IP) serwera, a nastêpnie dwukropka
+	i numeru portu. Domy¶lny numer portu, na którym dzia³a serwer SZARP, to 
+	<emphasis>8083</emphasis>. Specjalne nazwa serwera <emphasis>localhost</emphasis>
+	oznacza lokalny komputer - ten na którym uruchamiasz program Raporter.
+	Je¶li nie znasz prawid³owej nazwy serwera, skontaktuj siê z administratorem
+	serwera SZARP, do którego chcesz siê po³±czyæ.
+</para>
+<para>
+	Zaznaczenie opcji <guilabel>Zapisz adres serwera jako domy¶lny</guilabel>
+	spowoduje, ¿e program bêdzie ³±czy³ siê z podanym serwerem tak¿e domy¶lnie
+	przy kolejnym uruchomieniu.
+</para>
+<para>
+	Adres serwera do którego program ³±czy siê przy uruchamianiu mo¿na tak¿e podaæ
+	jako opcjê przy uruchamianiu programu - zobacz <xref linkend="rap-ext-commandline">.
+	Mechanizm ten jest wykorzystywany np. przez program Centrum Sterowania - st±d
+	te¿ Raporter uruchamiany z poziomu Centrum Sterowania zawsze domy¶lnie bedzie
+	siê ³±czy³ z adresem podawanym przez Centrum Sterowania.
+</para>
 </section> <!-- rap-ext-server -->
+
+<section id="rap-ext-dump">
+<title>Zapis warto¶ci parametrów do pliku</title>
+<para>
+	Raporter umo¿liwia ci±g³e zapisywanie warto¶ci wy¶wietlanych parametrów
+	do pliku w formacie CSV (warto¶ci oddzielone przecinkami). Powsta³y w ten
+	sposób plik mo¿esz otworzyæ np. w arkuszu kalkulacyjnym. 
+</para>
+<para>
+	Aby w³±czyæ zapis wybierz z menu opcjê <guimenu>Plik -> Zrzut do pliku</guimenu>
+	i zaznacz opcjê <guilabel>W³±cz zrzut warto¶ci do pliku</guilabel>.
+	Program pozwoli te¿ na podanie katalogu w którym ma byæ tworzony plik, nazwa pliku
+	tworzona jest automatycznie na podstawie nazwy raportu.
+<figure>
+<title>Okno opcji zapisu warto¶ci do pliku</title>
+<mediaobject>
+<imageobject><imagedata scale="100" fileref="pics/dump.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+<para>
+	Podanie maksymalnego rozmiaru tworzonego pliku zabezpiecza przed zape³nieniem
+	dysku przez d³ugo uruchomiony program. Po osi±gniêciu podanego rozmiaru program
+	nie bêdzie zapisywa³ do pliku wiêcej danych.
+	<note><para>Czêsto¶æ dopisywania danych do pliku zale¿y od czêsto¶ci
+			odpytywania serwera, któr± mo¿na ustawiæ za pomoc± opcji 
+			<guimenu>Okres</guimenu> w menu - zobacz 
+			<xref linkend="rap-ext-period">.</para></note>
+</para>
+</section> <!-- rap-ext-dump -->
+
+<section id="rap-ext-export">
+<title>Eksport i import wzorców u¿ytkownika</title>
+<para>
+	Raporter umo¿liwia zapisanie listy parametrów z aktualnie wybranego raportu
+	u¿ytkownika do pliku na dysku. Robimy to za pomoc± opcji 
+	<guimenu>Wzorce -> Eksportuj</guimenu>, program poprosi o podanie lokalizacji
+	i nazwy tworzonego pliku (domy¶lnie z rozszerzeniem <emphasis>*.xpl</emphasis>).
+</para>
+<para>
+	Tak utworzony plik mo¿e byæ skopiowany do katalogu innego u¿ytkownika, skopiowany
+	przez sieæ na inny komputer, przes³any poczt± lub w dowolny inny sposób, a nastêpnie
+	zapisany w nim wzorzec raportu mo¿e byæ zaimportowany do programu za pomoc±
+	opcji <guimenu>Wzorce -> Importuj</guimenu>.
+</para>
+</section> <!-- rap-ext-export -->
+
+<section id="rap-ext-period">
+<title>Ustawianie czêsto¶ci odpytywania serwera</title>
+<para>
+	Za pomoc± menu <guimenu>Opcje -> Okres</guimenu> mo¿esz okre¶liæ co ile
+	sekund program bêdzie odpytywa³ serwer o warto¶ci parametrów. Domy¶lnie
+	jest to 10 sekund, gdy¿ taka jest standardowa czêsto¶æ odpytywania urz±dzeñ
+	pod³±czonych do systemu SZARP.
+<figure>
+<title>Ustawianie okresu odpytywanie serwera</title>
+<mediaobject>
+<imageobject><imagedata scale="100" fileref="pics/period.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+<para>
+	Okres mo¿esz zmieniaæ w zakresie od 10 do 300 sekund. Wyd³u¿enie okresu odpytywania
+	mo¿e byæ przydatne je¶li ³±czysz siê do serwera SZARP za pomoc± wolnego po³±czenia 
+	sieciowego lub je¶li zamierzasz w³±czyæ zrzut warto¶ci do pliku 
+	(zobacz <xref linkend="rap-ext-dump"> i nie chcesz aby dane by³y zapisywane do
+	pliku zbyt czêsto. W pozosta³ych przypadkach zaleca siê zostawienie domy¶lnej
+	warto¶ci 10 sekund.
+</para>
+</section> <!-- rap-ext-period -->
+
+<section id="rap-ext-fontsize">
+<title>Zmiana wielko¶ci czcionki raportu</title>
+<para>
+	Opcje <guimenu>Zwiêksz czcionkê</guimenu> i <guimenu>Zmniejsz czcionkê</guimenu>
+	w menu <guimenu>Opcje</guimenu> pozwalaj± na zmianê rozmiaru czcionki, któr±
+	wy¶wietlane s± nazwy i warto¶ci parametrów w raporcie.
+</para>
+<para>
+	Opcje te nie zmieniaj± wielko¶ci czcionek menu i innych elementów programu.
+	Aby zmieniæ ich wielko¶æ, u¿yj opcji <guimenu>Czcionki SZARP</guimenu>
+	programu Centrum Sterowania SZARP.
+</para>
+</section> <!-- rap-ext-fontsize -->
+
+<section id="rap-ext-commandline">
+<title>Uruchamianie program z linii poleceñ</title>
+<para> 
+	Uruchamiaj±c program z linii poleceñ (np. konsoli pod Linuksem) mo¿na podaæ
+	jako parametr adres serwera (z numerem portu po dwukropku) oraz opcjonalnie
+	nazwê wy¶wietlanego systemowego wzorca raportu. Je¿eli nazwa wzorca zawiera
+	spacjê, nale¿y wzi±æ j± w cudzys³ów.
+</para>
+<para>
+	Przyk³adowe uruchomienie programu z po³±czeniem do lokalnego serwera i 
+	wy¶wietleniem wzorca <emphasis>Praca kot³ów</emphasis>:
+<programlisting>
+	/opt/szarp/bin/raporter3 localhost:8083 'Praca kot³ów'
+</programlisting>
+</para>
+<para>
+	Uruchomienie programu z opcj± <option>-h</option> lub <option>--help</option> 
+	wy¶wietla krótk± informacjê o sposobie uruchomienia programu.
+</para>
+</section> <!-- rap-ext-commandline -->
+
 </chapter> <!-- rap-ext -->
 
 </book>
