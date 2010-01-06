@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SZARP Control Center\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-05 17:56+0100\n"
+"POT-Creation-Date: 2010-01-06 14:32+0100\n"
 "PO-Revision-Date: 2005-10-20 22:09+0200\n"
 "Last-Translator: Pawe³ Pa³ucha <pawel@praterm.com.pl>\n"
 "MIME-Version: 1.0\n"
@@ -35,6 +35,30 @@ msgstr "SCC - program ju¿ uruchomiony"
 msgid "Update data"
 msgstr "Aktualizuj dane"
 
+#: sccapp.cpp:247
+msgid ""
+"SZARP Control Center. Notice that only one copy of program with specified\n"
+"parameters can be run."
+msgstr ""
+"Centrum Sterowania SZARP. Zwróæ uwagê, ¿e tylko jedna kopia programu z\n"
+"zadanymi parametrami mo¿e byæ jednocze¶nie uruchomiona."
+
+#: sccapp.cpp:248
+msgid "show help"
+msgstr "poka¿ pomoc"
+
+#: sccapp.cpp:250
+msgid "libparnt value initialization"
+msgstr "inicjalizacja zmiennej biblioteki libparnt"
+
+#: sccapp.cpp:252
+msgid "Tell other scc to reload menu"
+msgstr "Ka¿ innej kopii programu prze³adowaæ menu"
+
+#: sccapp.cpp:253
+msgid "additional data to allow multiple runs of program"
+msgstr "dodatkowe parametry umo¿liwiaj±ce uruchomienie kolejnej kopii programu"
+
 #: sccframe.cpp:88
 msgid "Start SZARP applications"
 msgstr "Uruchom programy SZARP"
@@ -49,19 +73,19 @@ msgstr "&O programie"
 
 #: sccframe.cpp:114
 msgid "&Support tunnel"
-msgstr "Tunel pomocy technicznej"
+msgstr "&Tunel pomocy technicznej"
 
 #: sccframe.cpp:115
 msgid "SZARP &fonts"
-msgstr "Czcionki SZARP"
+msgstr "&Czcionki SZARP"
 
 #: sccframe.cpp:118
-msgid "SZARP data directory"
-msgstr "Ustaw katalog z danymi historycznymi"
+msgid "SZARP &data directory"
+msgstr "Ustaw &katalog z danymi historycznymi"
 
 #: sccframe.cpp:120
-msgid "Hide SZARP databases"
-msgstr "Ukrywanie baz SZARP"
+msgid "&Hide SZARP databases"
+msgstr "&Ukrywanie baz SZARP"
 
 #: sccframe.cpp:122
 msgid "E&xit"
@@ -111,52 +135,56 @@ msgstr "Informacja"
 msgid "Draw program"
 msgstr "Program przegl±daj±cy"
 
-#: scctunnelframe.cpp:37
+#: scctunnelframe.cpp:38
 msgid "Support tunnel"
 msgstr "Tunel pomocy technicznej"
 
-#: scctunnelframe.cpp:41
-msgid "User:"
-msgstr "U¿ytkownik:"
+#: scctunnelframe.cpp:44
+msgid "Server address:"
+msgstr "Adres serwera:"
 
-#: scctunnelframe.cpp:47
-msgid "Password:"
-msgstr "Has³o:"
-
-#: scctunnelframe.cpp:54
+#: scctunnelframe.cpp:48
 msgid "Port number:"
 msgstr "Numer portu:"
 
-#: scctunnelframe.cpp:61
+#: scctunnelframe.cpp:52
+msgid "User:"
+msgstr "U¿ytkownik:"
+
+#: scctunnelframe.cpp:56
+msgid "Password:"
+msgstr "Has³o:"
+
+#: scctunnelframe.cpp:62
 msgid "Connect"
 msgstr "Po³±cz"
 
-#: scctunnelframe.cpp:63
+#: scctunnelframe.cpp:65
 msgid "Close"
 msgstr "Zamknij"
 
-#: scctunnelframe.cpp:119
-msgid "Unable to connect"
-msgstr "Nie uda³o siê po³±czyæ"
+#: scctunnelframe.cpp:99
+msgid "No server address specified"
+msgstr "Nie podano adresu serwera"
 
-#: scctunnelframe.cpp:119 scctunnelframe.cpp:129 scctunnelframe.cpp:136
-#: scctunnelframe.cpp:268 szarpfonts.cpp:46
+#: scctunnelframe.cpp:99 scctunnelframe.cpp:105 scctunnelframe.cpp:112
+#: scctunnelframe.cpp:229 szarpfonts.cpp:47
 msgid "Error"
 msgstr "B³±d"
 
-#: scctunnelframe.cpp:129
+#: scctunnelframe.cpp:105
 msgid "Port number must be within range 1024-65535"
 msgstr "Numer portu musi byæ liczb± ca³kowit± z przedzia³u 1024-65535"
 
-#: scctunnelframe.cpp:136
+#: scctunnelframe.cpp:112
 msgid "Unable to start ssh command"
 msgstr "Nie uda³o siê uruchomiæ programu ssh"
 
-#: scctunnelframe.cpp:145
+#: scctunnelframe.cpp:121
 msgid "Connecting to: "
 msgstr "£±czenie z: "
 
-#: scctunnelframe.cpp:195
+#: scctunnelframe.cpp:169
 msgid ""
 "Bind to remote port succeeded\n"
 "Connection successful to: "
@@ -164,79 +192,79 @@ msgstr ""
 "Otwarto zdalny port\n"
 "Po³±czenie nawi±zane z: "
 
-#: scctunnelframe.cpp:200
+#: scctunnelframe.cpp:174
 msgid ""
 "Failed to bind to remote port\n"
 "Try another port number\n"
 msgstr ""
 "Nie uda³o siê otworzyæ portu na zdalnym komputerze\n"
-"Spróbuj inny numer portu\n"
+"Sprawd¼ numer portu\n"
 
-#: scctunnelframe.cpp:205
+#: scctunnelframe.cpp:178
 msgid "Network is unreachable\n"
 msgstr "Sieæ niedostêpna\n"
 
-#: scctunnelframe.cpp:210
+#: scctunnelframe.cpp:182
 msgid "No route to host\n"
 msgstr "Komputer docelowy niedostêpny\n"
 
-#: scctunnelframe.cpp:214
+#: scctunnelframe.cpp:186
 msgid "New connection via channel\n"
 msgstr "Nawi±zane po³±czenia przez tunel\n"
 
-#: scctunnelframe.cpp:217
+#: scctunnelframe.cpp:189
 msgid "Closed channel connection\n"
 msgstr "Po³±czenie tunelowane zamkniête\n"
 
-#: scctunnelframe.cpp:220
+#: scctunnelframe.cpp:192
 msgid "Connected\n"
 msgstr "Po³±czony\n"
 
-#: scctunnelframe.cpp:223
+#: scctunnelframe.cpp:195
 msgid "Unexpected close of the connection\n"
 msgstr "Niespodziewane zamkniêcie po³±czenia\n"
 
-#: scctunnelframe.cpp:228
+#: scctunnelframe.cpp:199
 msgid "Address not found\n"
 msgstr "Nie znaleziono adresu komputera docelowego\n"
 
-#: scctunnelframe.cpp:232
+#: scctunnelframe.cpp:203
 msgid "Address not found"
 msgstr "Nie znaleziono adresu komputera docelowego"
 
-#: scctunnelframe.cpp:233
+#: scctunnelframe.cpp:204
 msgid "Possible problem with network configuration\n"
 msgstr "Prawdopodobnie problem z konfiguracj± sieci\n"
 
-#: scctunnelframe.cpp:238
-msgid "Authentication failure"
-msgstr "B³±d autoryzacji"
+#: scctunnelframe.cpp:208
+msgid "Authentication failure\n"
+msgstr "B³±d autoryzacji\n"
 
-#: scctunnelframe.cpp:243
+#: scctunnelframe.cpp:212
 msgid "Connection refused\n"
 msgstr "Po³±czenie odrzucone\n"
 
-#: scctunnelframe.cpp:248
+#: scctunnelframe.cpp:216
 msgid "Timeout\n"
 msgstr "Serwer nie odpowiada\n"
 
-#: szarpfonts.cpp:49
+#: szarpfonts.cpp:50
 msgid "Setting default font size"
-msgstr "Konfiguracja czcionek"
+msgstr "Konfiguracja wielko¶ci czcionek"
 
-#: szarpfonts.cpp:59
+#: szarpfonts.cpp:61
 msgid "Default font size for SZARP"
 msgstr "Domy¶lna wielko¶æ czcionek SZARP"
 
-#: szarpfonts.cpp:86
+#: szarpfonts.cpp:88
 msgid "Apply"
 msgstr "Zastosuj"
 
-#: szarpfonts.cpp:90 scchideselectionframe.cpp:84
+#: szarpfonts.cpp:92 scchideselectionframe.cpp:92
 msgid "Cancel"
 msgstr "Anuluj"
 
-#: szarpfonts.cpp:133
+#: szarpfonts.cpp:135
 msgid ""
 "Changes will have effect only \n"
 "in newly started programs."
@@ -244,20 +272,20 @@ msgstr ""
 "Zmiany bed± uwzglêdnione tylko \n"
 "przez nowo uruchamiane programy."
 
-#: szarpfonts.cpp:134
+#: szarpfonts.cpp:136
 msgid "Message"
 msgstr "Informacja"
 
-#: szarpfonts.cpp:144
+#: szarpfonts.cpp:146
 msgid "Cannot get HOME environment variable"
 msgstr "Nie mo¿na pobraæ zmiennej ¶rodowiskowej HOME"
 
-#: szarpfonts.cpp:148
+#: szarpfonts.cpp:150
 #, c-format
 msgid "Your home directory (%s) does not exists!"
 msgstr "Twój katalog domowy (%s) nie istnieje!"
 
-#: szarpfonts.cpp:158
+#: szarpfonts.cpp:160
 #, c-format
 msgid ""
 "Cannot create directory %s - errno %d\n"
@@ -266,7 +294,7 @@ msgstr ""
 "Nie mogê utworzyæ katalogu %s\n"
 "B³±d %d - %s"
 
-#: szarpfonts.cpp:171 szarpfonts.cpp:205 szarpfonts.cpp:239
+#: szarpfonts.cpp:173 szarpfonts.cpp:207 szarpfonts.cpp:241
 #, c-format
 msgid ""
 "Cannot create file %s - errno %d\n"
@@ -275,7 +303,7 @@ msgstr ""
 "Nie mogê utworzyæ pliku %s\n"
 "B³±d %d - %s"
 
-#: szarpfonts.cpp:192 szarpfonts.cpp:220 szarpfonts.cpp:296
+#: szarpfonts.cpp:194 szarpfonts.cpp:222 szarpfonts.cpp:298
 #, c-format
 msgid ""
 "Error writing to file %s - errno %d\n"
@@ -284,39 +312,26 @@ msgstr ""
 "B³±d podczas zapisywania pliku %s\n"
 "B³±d %d - %s"
 
-#: scchideselectionframe.cpp:31
+#: scchideselectionframe.cpp:32
 msgid "Hiding SZARP databases"
 msgstr "Ukrywanie baz SZARP"
 
-#: scchideselectionframe.cpp:36
+#: scchideselectionframe.cpp:40
 msgid "Select databases to hide"
 msgstr "Zaznacz bazy do ukrycia"
 
-#: scchideselectionframe.cpp:69
+#: scchideselectionframe.cpp:75
 msgid "Databases hiding in draw3 is active"
 msgstr "Ukrywanie baz w draw3"
 
-#: scchideselectionframe.cpp:70
+#: scchideselectionframe.cpp:76
 msgid "Databases hiding in extractor is active"
 msgstr "Ukrywanie baz w ekstraktor3"
 
-#: scchideselectionframe.cpp:71
+#: scchideselectionframe.cpp:77
 msgid "Databases hiding in synchronizer is active"
 msgstr "Ukrywanie baz w synchronizatorze"
 
-#: scchideselectionframe.cpp:81
-msgid "OK"
-msgstr "OK"
-
-#: scchideselectionframe.cpp:118
-msgid "draw3"
-msgstr ""
-
-#: scchideselectionframe.cpp:133
-msgid "ekstraktor3"
-msgstr ""
-
-#: scchideselectionframe.cpp:148
-msgid "ssc"
-msgstr ""
-
+#: scchideselectionframe.cpp:87
+msgid "Ok"
+msgstr "Ok"

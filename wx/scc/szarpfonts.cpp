@@ -34,6 +34,7 @@
 #endif
 
 #include "cconv.h"
+#include "szframe.h"
 
 BEGIN_EVENT_TABLE(szCommonFontDlg, wxDialog)
 	EVT_CHOICE(wxID_ANY, szCommonFontDlg::OnChoice)
@@ -48,6 +49,7 @@ END_EVENT_TABLE()
 szCommonFontDlg::szCommonFontDlg(wxWindow* parent)
 	: wxDialog(parent, wxID_ANY, _("Setting default font size"))
 {
+	SetIcon(szFrame::default_icon);
 	
 	main_s = new wxBoxSizer(wxVERTICAL);
 	wxSizer* but_s = new wxBoxSizer(wxHORIZONTAL);

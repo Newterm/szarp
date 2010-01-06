@@ -26,6 +26,7 @@
 #include <libpar.h>
 #include "cconv.h"
 #include "scctunnelframe.h"
+#include "szframe.h"
 
 BEGIN_EVENT_TABLE(SCCTunnelFrame, wxDialog)
     EVT_BUTTON(ID_CloseBtn, SCCTunnelFrame::OnCloseBtn)
@@ -35,58 +36,47 @@ BEGIN_EVENT_TABLE(SCCTunnelFrame, wxDialog)
 END_EVENT_TABLE()
 
 SCCTunnelFrame::SCCTunnelFrame(wxFrame *parent) : wxDialog(parent, ID_TunnelFrame, wxString(_("Support tunnel"))), 
-						  connection(NULL), timer(NULL), current_address(0)
+						  connection(NULL), timer(NULL)
 {
-	wxBoxSizer *userpass_sizer = new wxBoxSizer(wxHORIZONTAL);
-	userpass_sizer->Add(new wxStaticText(this, wxID_ANY, _("User:")),
-			0, wxALIGN_CENTER | wxALL, 10);
-	
-	user_ctrl = new wxTextCtrl(this, wxID_ANY, _T(""));
-	userpass_sizer->Add(user_ctrl, 0, wxALIGN_CENTER | wxALL, 10);
-	
-	userpass_sizer->Add(new wxStaticText(this, wxID_ANY, _("Password:")),
-			0, wxALIGN_CENTER | wxALL, 10);
+	SetIcon(szFrame::default_icon);
+	wxFlexGridSizer *userpass_sizer = new wxFlexGridSizer(2, 4, 10, 10);
 
-	password_ctrl = new wxTextCtrl(this, wxID_ANY, _T(""));
-	userpass_sizer->Add(password_ctrl, 0, wxALIGN_LEFT | wxALL, 10);
-	
-	wxBoxSizer *port_sizer = new wxBoxSizer(wxHORIZONTAL);
-	port_sizer->Add(new wxStaticText(this, wxID_ANY, _("Port number:")),
-			0, wxALIGN_CENTER | wxALL, 10);
-	
+	userpass_sizer->Add(new wxStaticText(this, wxID_ANY, _("Server address:")));
+	server_ctrl = new wxTextCtrl(this, wxID_ANY);
+	userpass_sizer->Add(server_ctrl);
+
+	userpass_sizer->Add(new wxStaticText(this, wxID_ANY, _("Port number:")));
 	port_ctrl = new wxTextCtrl(this, wxID_ANY, _T("9999"));
-	port_sizer->Add(port_ctrl, 0, wxALIGN_CENTER | wxALL, 10);
+	userpass_sizer->Add(port_ctrl);
+	
+	userpass_sizer->Add(new wxStaticText(this, wxID_ANY, _("User:")));
+	user_ctrl = new wxTextCtrl(this, wxID_ANY, _T(""));
+	userpass_sizer->Add(user_ctrl);
+	
+	userpass_sizer->Add(new wxStaticText(this, wxID_ANY, _("Password:")));
+	password_ctrl = new wxTextCtrl(this, wxID_ANY, _T(""), wxDefaultPosition,
+			wxDefaultSize, wxTE_PASSWORD);
+	userpass_sizer->Add(password_ctrl);
 	
 	wxBoxSizer *button_sizer = new wxBoxSizer(wxHORIZONTAL);
 	connect_btn = new wxButton(this, ID_ConnectBtn, _("Connect"));
+	connect_btn->SetDefault();
 	button_sizer->Add(connect_btn, 0, wxALIGN_CENTER | wxALL, 10);
 	button_sizer->Add(new wxButton(this, ID_CloseBtn, _("Close")),
 			0, wxALIGN_CENTER | wxALL, 10);
 	
 	log = new wxTextCtrl(this, wxID_ANY, _T(""), wxDefaultPosition,
-			wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
+			wxSize(-1, 300), wxTE_MULTILINE | wxTE_READONLY);
 
 	wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(log, 1, wxEXPAND);
+	sizer->Add(log, 1, wxEXPAND | wxALL, 10);
 	sizer->Add(new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize), 0, wxEXPAND);
-	sizer->Add(userpass_sizer, 0, wxALIGN_CENTER);
-	sizer->Add(port_sizer, 0, wxALIGN_CENTER);
+	sizer->Add(userpass_sizer, 0, wxALIGN_CENTER | wxALL, 10);
 	sizer->Add(new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize), 0, wxEXPAND);
 	sizer->Add(button_sizer, 0, wxALIGN_CENTER);
 
 	SetSizer(sizer);
-
-	char *tunnel_addresses = libpar_getpar("scc", "tunnel_endpoints", 0);
-	if (!tunnel_addresses) {
-		addresses.push_back(wxString(_T("praterm")));
-		addresses.push_back(wxString(_T("praterm.com.pl")));
-	} else {
-		wxStringTokenizer tok = wxStringTokenizer(wxString(SC::A2S(tunnel_addresses)), _T(","));
-		while (tok.HasMoreTokens()) 
-			addresses.push_back(tok.GetNextToken().Trim());	
-		free(tunnel_addresses);
-	}
-
+	sizer->SetSizeHints(this);
 }
 
 void SCCTunnelFrame::OnCloseBtn(wxCommandEvent& WXUNUSED(event)) {
@@ -104,25 +94,11 @@ void SCCTunnelFrame::OnConnectBtn(wxCommandEvent& WXUNUSED(event)) {
 
 void SCCTunnelFrame::Connect() {
 
-	if (!addresses[current_address].valid) {
-		for (current_address = 0; current_address < addresses.size(); ++current_address)
-			if (addresses[current_address].valid) 
-				break;
-		//if all addresses are invalid - mark all of them as valid so later
-		//we can try again, but do not connect now
-		if (current_address == addresses.size()) {
-			for (vector<address>::size_type i = 0; i < addresses.size(); ++i)
-				addresses[i].valid = true;
-			current_address = 0;
-			connect_btn->Enable();
-			timer->Stop();
-			wxMessageBox(_("Unable to connect"), _("Error"));
-			return;
-		}
-		
+	const wxString& address = server_ctrl->GetValue();
+	if (address.length() < 1) {
+		wxMessageBox(_("No server address specified"), _("Error"), wxICON_HAND);
+		return;
 	}
-
-	const wxString& address = addresses[current_address].addr;
 
 	long port_no;
 	if ( !port_ctrl->GetValue().ToLong(&port_no) || port_no < 1024 || port_no > 65535) {
@@ -183,8 +159,6 @@ void SCCTunnelFrame::OnTimer(wxTimerEvent& WXUNUSED(event)) {
 	SSHConnection::Event event = connection->PollEvent();
 
 	bool failed = false; 	/* true if connection failed*/
-	bool try_other = true;  /* in case of failure indicates if we shall
-				   try another address from list*/
 
 	wxString message;
 	wxString dialog_message;
@@ -193,21 +167,19 @@ void SCCTunnelFrame::OnTimer(wxTimerEvent& WXUNUSED(event)) {
 			return;
 		case SSHConnection::LISTEN_SUCCESS:
 			message = _("Bind to remote port succeeded\nConnection successful to: ");
-			message << addresses[current_address].addr;
+			message << server_ctrl->GetValue();
 			message << _T("\n");
 			break;
 		case SSHConnection::FAILED_TO_LISTEN:
 			dialog_message = message = _("Failed to bind to remote port\nTry another port number\n");
 			failed = true;
-			try_other = false;
 			break;
 		case SSHConnection::NETWORK_DOWN:
 			dialog_message = message = _("Network is unreachable\n");
 			failed = true;
-			try_other = false;
 			break;
 		case SSHConnection::NO_ROUTE_TO_HOST:
-			message = _("No route to host\n");
+			dialog_message = message = _("No route to host\n");
 			failed = true;
 			break;
 		case SSHConnection::NEW_TUN_CONNECTION:
@@ -222,32 +194,27 @@ void SCCTunnelFrame::OnTimer(wxTimerEvent& WXUNUSED(event)) {
 		case SSHConnection::PROCESS_KILLED:
 			dialog_message = message = _("Unexpected close of the connection\n");
 			failed = true;
-			try_other = false;
 			break;
 		case SSHConnection::NAME_NOT_KNOWN:
-			message = _("Address not found\n");
+			dialog_message = message = _("Address not found\n");
 			failed = true;
 			break;
 		case SSHConnection::TEMP_FAILURE_IN_RESOLV:
 			dialog_message = _("Address not found");
 			message = _("Possible problem with network configuration\n");
 			failed = true;
-			try_other = false;
 			break;
 		case SSHConnection::AUTH_FAILURE:
-			message = _("Authentication failure");
+			dialog_message = message = _("Authentication failure\n");
 			failed = true;
-			try_other = true;
 			break;
 		case SSHConnection::CONNECTION_REFUSED:
-			message = _("Connection refused\n");
+			dialog_message = message = _("Connection refused\n");
 			failed = true;
-			try_other = true;
 			break;
 		case SSHConnection::TIMEOUT:
-			message = _("Timeout\n");
+			dialog_message = message = _("Timeout\n");
 			failed = true;
-			try_other = true;
 			break;
 	}
 
@@ -259,15 +226,8 @@ void SCCTunnelFrame::OnTimer(wxTimerEvent& WXUNUSED(event)) {
 
 	DeleteConnection();
 
-	if (try_other) {
-		addresses[current_address].valid = false;
-		Connect();
-		return;
-	}
-	else {
-		wxMessageBox(dialog_message, _("Error"));
-		connect_btn->Enable();
-	}
+	wxMessageBox(dialog_message, _("Error"), wxICON_ERROR, this);
+	connect_btn->Enable();
 
 }
 

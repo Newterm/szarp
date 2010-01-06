@@ -63,9 +63,6 @@ linex_cfg=$config_root$
 $datadir$:="$szarp_root$/$prefix$/szbase"
 datadir=$datadir$
 
-# base format, only szarpbase currently
-base_format=szarpbase
-
 # log level, default is 2
 $if $debug$<>""
 log_level=$debug$
@@ -143,7 +140,7 @@ allowed_ip=@(192.168.*.*|172.*.*.*|127.*.*.*)
 :scc
 # default menu configuration for SZARP command center:
 $dont_group_string$:="ciep³ownia\",\"Wêz([eê]³|³y)\",\"^(MP|Z|P)?EC$\",\"^ZC$\",\"Po³udnie\",\"komora\",\"Samsony?\",\"Praterm\",\"dane\",\"Kompaktu?\",\
-\"przeno¶ny\",\"ZOZ\",\"centrum\",\"zbiorcza\",\"security\",\"miejsk?\",\"centrala"
+\"przeno¶ny\",\"ZOZ\",\"centrum\",\"zbiorcza\",\"security\",\"miejsk?\",\"centrala\",\"Wydzia³\""
 menu= CONFIG("$prefix$"), \
 	SEPARATOR, \
 	DRAWS(".*"), \
@@ -151,11 +148,6 @@ menu= CONFIG("$prefix$"), \
 	DOC, ICON("$resources_root$/wx/icons/szarp16.xpm"), \
 	DONTGROUPBY("$dont_group_string$")
 
-# animation files prefix
-images_prefix=$resources_root$/wx/anim/praterm
-
-# animations file suffix, default is '.png'
-#images_suffix=.png
 
 # should we hide configurations that are parts of 'aggregated' configurations 
 # already available in menu?
@@ -176,13 +168,8 @@ $else
 $ekstraktor3$:="no"
 $end
 
-# should we use raporter3 in CONFIG
-use_raporter3=yes
-# should we use DRAW3
-use_draw3=yes
 # should we use ekstraktor3 in CONFIG
 use_ekstraktor3=$ekstraktor3$
-
 
 :sss
 # path to private key

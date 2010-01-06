@@ -244,12 +244,13 @@ int SCCApp::OnExit()
 
 void SCCApp::OnInitCmdLine(wxCmdLineParser &parser) {
 	szApp::OnInitCmdLine(parser);
-	parser.SetLogo(_T("SZARP Control Center. Notice that only one copy of program with specified\nparameters can be run."));
+	parser.SetLogo(_("SZARP Control Center. Notice that only one copy of program with specified\nparameters can be run."));
+	parser.AddSwitch(_T("h"), _T("help"), _("show help"), wxCMD_LINE_OPTION_HELP);
 	parser.AddSwitch(_T("D<name>=<str>"), wxEmptyString,
-		_T("libparnt value initialization"));
+		_("libparnt value initialization"));
 	parser.AddSwitch(_T("reload_menu"), wxEmptyString,
-		_T("Tell othet scc to reload menu"));
-	parser.AddParam(_T("additional data to allow multiple runs of program"),
+		_("Tell other scc to reload menu"));
+	parser.AddParam(_("additional data to allow multiple runs of program"),
 		wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL |
 		wxCMD_LINE_PARAM_MULTIPLE);
 

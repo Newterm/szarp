@@ -103,34 +103,19 @@ void SCCMenu::AddSeparator()
 
 void SCCMenu::AddConfig(wxString prefix)
 {
-	bool raporter3 = false;
-
-	char *use_raporter3 = libpar_getpar("scc", "use_raporter3", 0);
-
-	if (use_raporter3 != NULL)
-		raporter3 = !strcmp(use_raporter3, "yes");
-	free(use_raporter3);
-
-	if (raporter3) {
-		if(prefix != wxEmptyString) {
-			AddRaporter3(prefix);
-		} else {
-			wxFileName filename = wxFileName(wxGetApp().GetSzarpDir(), wxEmptyString);
-			filename.AppendDir(_T("bin"));
-			filename.SetName(_T("raporter3"));
-#ifdef __WXMSW__
-			filename.SetExt(_T("exe"));
-#endif
-
-			wxImage img;
-			img.LoadFile(wxGetApp().GetSzarpDir() + RAP_ICON_PATH);
-			wxBitmap b(img);
-			AddCommand(_T("Raporter"), filename.GetFullPath(), &b);
-		}
-
+	if (prefix != wxEmptyString) {
+		AddRaporter3(prefix);
 	} else {
-		assert(prefix != wxEmptyString);
-		AddRaporters(prefix);
+		wxFileName filename = wxFileName(wxGetApp().GetSzarpDir(), wxEmptyString);
+		filename.AppendDir(_T("bin"));
+		filename.SetName(_T("raporter3"));
+#ifdef __WXMSW__
+		filename.SetExt(_T("exe"));
+#endif
+		wxImage img;
+		img.LoadFile(wxGetApp().GetSzarpDir() + RAP_ICON_PATH);
+		wxBitmap b(img);
+		AddCommand(_T("Raporter"), filename.GetFullPath(), &b);
 	}
 
 	bool ekstraktor3 = false;
@@ -212,65 +197,6 @@ void SCCMenu::AddDraw(const wxString& title, const wxString &prefix, bool remova
 {
 	children->Add(CreateDrawItem(title, prefix, hierarchy_data, removable));
 }
-
-void SCCMenu::AddRaporters(wxString prefix) {
-	wxString path;
-	int is_test = 0;
-	int is_any = 0;
-	wxString test_name, s;
-	std::vector<std::wstring> raports;
-	std::wstring c;
-	int first_pos;
-
-	if (children)
-		first_pos = children->GetCount();
-	else
-		first_pos = 0;
-	SzarpConfigs* sconfs = SzarpConfigs::GetInstance();
-	TSzarpConfig* sc = sconfs->GetConfig(prefix);
-	if (sc == NULL)
-	{
-		wxLogError(_T("Could not load configuration for prefix '%s'"),
-			prefix.c_str());
-		return;
-	}
-	c = sc->GetFirstRaportTitle();
-
-	for (c = sc->GetFirstRaportTitle(); !c.empty(); c =
-			sc->GetNextRaportTitle(c))
-		raports.push_back(c);
-
-	std::sort(raports.begin(), raports.end());
-
-	for (unsigned int i = 0; i < raports.size(); i++) {
-		std::wstring c = raports[i];
-		TRaport* r = sc->GetFirstRaportItem(c);
-		if (r == NULL)
-			continue;
-		if (r->GetTitle() == L"RAPORT TESTOWY"
-				|| r->GetFileName() == L"test.rap") {
-			is_test = 1;
-			test_name = wxString(r->GetFileName());
-			continue;
-		}
-		TParam *p = r->GetParam();
-		AddRaportItem(wxString(p->GetName()), wxString(r->GetTitle()),
-			wxString(r->GetFileName()), prefix, first_pos);
-		is_any = 1;
-	}
-	if (is_any)
-		AddSeparator();
-	if (is_test) {
-		s = wxGetApp().GetSzarpDir() + _T("/bin/rap '") + wxGetApp().GetSzarpDataDir() +
-			_T("/") + prefix + _T("/config/")
-			+ test_name + _T("' -p -Dprefix=") +	prefix;
-		wxBitmap b;
-		b.LoadFile(wxGetApp().GetSzarpDir() + RAP_ICON_PATH);
-		AddCommand(_T("RAPORT TESTOWY"), s, &b);
-	}
-
-}
-
 
 void SCCMenu::AddRaportItem(wxString param, wxString title,
 		wxString file, wxString prefix, int pos)
@@ -820,19 +746,11 @@ wxString SCCMenu::Tokenizer::GetNext(int* type)
 }
 
 SCCMenu* SCCMenu::CreateDrawItem(const wxString& title, const wxString& prefix, MenuHierarchyData *hierarchy_data, bool removable) {
-	char *use_draw3 = libpar_getpar("scc", "use_draw3", 0);
-	if (use_draw3 == NULL)
-		use_draw3 = strdup("no");
-	bool draw3 = !strcmp(use_draw3, "yes");
-	free(use_draw3);
 
 	wxFileName command_fn = wxFileName(wxGetApp().GetSzarpDir(), wxEmptyString);
 	command_fn.AppendDir(_T("bin"));
 
-	if (draw3)
-		command_fn.SetName(_T("draw3"));
-	 else
-	 	command_fn.SetName(_T("draw"));
+	command_fn.SetName(_T("draw3"));
 
 #ifdef __WXMSW__
 	command_fn.SetExt(_T("exe"));

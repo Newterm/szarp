@@ -259,13 +259,6 @@ private:
 	 * Adds ekstraktor3 item to the menu.*/
 	void AddEkstraktor3();
 
-	/**
-	 * Append raports for configuration with given
-	 * prefix. Configuration must be IPK compatible.
-	 * @param prefix configuration prefix
-	 */
-	void AddRaporters(wxString prefix);
-
 	int id;			/**< Uniq menu item ID */
 	wxString name;		/**< Menu item name (title) */
 	wxString exec;		/**< Command to execute, empty for submenus. */

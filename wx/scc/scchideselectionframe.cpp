@@ -26,6 +26,7 @@
  */
 
 #include "scchideselectionframe.h"
+#include "szframe.h"
 
 
 SCCSelectionFrame::SCCSelectionFrame() : wxDialog(NULL, wxID_ANY, _("Hiding SZARP databases"),
@@ -33,10 +34,11 @@ SCCSelectionFrame::SCCSelectionFrame() : wxDialog(NULL, wxID_ANY, _("Hiding SZAR
 	wxSize(300,400), 
 	wxTAB_TRAVERSAL | wxFRAME_NO_TASKBAR | wxRESIZE_BORDER | wxCAPTION)
 {
+	SetIcon(szFrame::default_icon);
 	wxSizer *main_sizer = new wxBoxSizer(wxVERTICAL);
 
 	main_sizer->Add(new wxStaticText(this, wxID_ANY, _("Select databases to hide")), 
-			0, wxALIGN_CENTER | wxALL, 20);
+			0, wxALIGN_CENTER | wxALL, 10);
 	main_sizer->Add(new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize), 
 			0, wxEXPAND);
 
@@ -67,23 +69,24 @@ SCCSelectionFrame::SCCSelectionFrame() : wxDialog(NULL, wxID_ANY, _("Hiding SZAR
 		}
 	}
 
-	main_sizer->Add(m_databases_list_box, 1, wxEXPAND);
+	main_sizer->Add(m_databases_list_box, 1, wxEXPAND | wxALL, 10);
 	main_sizer->Add(new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize), 0, wxEXPAND);
     
 	m_draw3_hidden_active = new wxCheckBox(this, wxID_ANY, _("Databases hiding in draw3 is active"));
     	m_ekstraktor_hidden_active = new wxCheckBox(this, wxID_ANY, _("Databases hiding in extractor is active"));
     	m_ssc_hidden_active = new wxCheckBox(this, wxID_ANY, _("Databases hiding in synchronizer is active"));
     
-	main_sizer->Add(m_draw3_hidden_active, 0, wxALIGN_LEFT);
-    	main_sizer->Add(m_ekstraktor_hidden_active, 0, wxALIGN_LEFT);
-    	main_sizer->Add(m_ssc_hidden_active, 0, wxALIGN_LEFT);
+	main_sizer->Add(m_draw3_hidden_active, 0, wxALIGN_LEFT | wxLEFT, 10);
+    	main_sizer->Add(m_ekstraktor_hidden_active, 0, wxALIGN_LEFT | wxLEFT, 10);
+    	main_sizer->Add(m_ssc_hidden_active, 0, wxALIGN_LEFT | wxLEFT, 10);
     
 	SetCheckBoxes();
 
 	wxBoxSizer *button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-	wxButton* button = new wxButton(this, ID_SELECTION_FRAME_OK_BUTTON, _("OK"), 
+	wxButton* button = new wxButton(this, ID_SELECTION_FRAME_OK_BUTTON, _("Ok"), 
 			wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+	button->SetDefault();
 	button_sizer->Add(button, 0, wxALL, 10);
 
 	button = new wxButton(this, ID_SELECTION_FRAME_CANCEL_BUTTON, _("Cancel"), 

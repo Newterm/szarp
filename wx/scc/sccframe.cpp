@@ -58,16 +58,16 @@ enum {
 BEGIN_EVENT_TABLE(SCCTaskBarItem, szTaskBarItem)
     EVT_TASKBAR_LEFT_DOWN(SCCTaskBarItem::OnMouseDown)
     EVT_TASKBAR_RIGHT_DOWN(SCCTaskBarItem::OnMouseMiddleDown)
-    EVT_MENU(ID_Quit,SCCTaskBarItem::OnQuit)
-    EVT_MENU(ID_About,SCCTaskBarItem::OnAbout)
-    EVT_MENU(ID_SupportTunnel,SCCTaskBarItem::OnSupportTunnel)
+    EVT_MENU(ID_Quit, SCCTaskBarItem::OnQuit)
+    EVT_MENU(ID_About, SCCTaskBarItem::OnAbout)
+    EVT_MENU(ID_SupportTunnel, SCCTaskBarItem::OnSupportTunnel)
 #ifndef MINGW32
-    EVT_MENU(ID_Fonts,SCCTaskBarItem::OnFonts)
+    EVT_MENU(ID_Fonts, SCCTaskBarItem::OnFonts)
 #endif
-    EVT_MENU(ID_SzarpDataDir,SCCTaskBarItem::OnSzarpDataDir)
-    EVT_MENU(ID_Help,SCCTaskBarItem::OnHelp)
+    EVT_MENU(ID_SzarpDataDir, SCCTaskBarItem::OnSzarpDataDir)
+    EVT_MENU(ID_Help, SCCTaskBarItem::OnHelp)
     EVT_MENU_RANGE(SCC_MENU_FIRST_ID, SCC_MENU_MAX_ID,SCCTaskBarItem::OnMenu)
-    EVT_MENU(ID_HideBases,SCCTaskBarItem::OnHideBases)
+    EVT_MENU(ID_HideBases, SCCTaskBarItem::OnHideBases)
     EVT_CLOSE(SCCTaskBarItem::OnClose)
 END_EVENT_TABLE()
 
@@ -115,9 +115,9 @@ wxMenu* SCCTaskBarItem::CreateSystemMenu()
 	m->Append(ID_Fonts, _("SZARP &fonts"));
 #endif
 #ifdef MINGW32
-	m->Append(ID_SzarpDataDir, _("SZARP data directory"));
+	m->Append(ID_SzarpDataDir, _("SZARP &data directory"));
 #endif
-	m->Append(ID_HideBases, _("Hide SZARP databases"));
+	m->Append(ID_HideBases, _("&Hide SZARP databases"));
 	m->AppendSeparator();
 	m->Append(ID_Quit, _("E&xit"));
 	return m;
@@ -161,7 +161,7 @@ void SCCTaskBarItem::OnAbout(wxCommandEvent& WXUNUSED(event))
 void SCCTaskBarItem::OnSupportTunnel(wxCommandEvent& WXUNUSED(event))
 {
 	if (tunnel_frame == NULL || !tunnel_frame->IsShown())
-		if (wxMessageBox(_("Do you really want to activate 'IT support tunnel'?"), _("IT support tunnel"), wxICON_QUESTION|wxYES_NO) != wxYES)
+		if (wxMessageBox(_("Do you really want to activate 'IT support tunnel'?"), _("IT support tunnel"), wxICON_QUESTION | wxYES_NO) != wxYES)
 		return;
 
 	if (!tunnel_frame)

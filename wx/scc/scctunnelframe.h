@@ -100,6 +100,7 @@ private:
 	wxTextCtrl *user_ctrl;		/*<pointer to TextCtrl containing a user name*/
 	wxTextCtrl *password_ctrl;	/*<pointer to TextCtrl containing a user password*/
 	wxTextCtrl *port_ctrl;		/*<pointer to TextCtrl containing a port numer*/
+	wxTextCtrl *server_ctrl;	/*<pointer to TextCtrl containing a server address*/
 	wxTextCtrl *log;		/*<pointer to TextCtrl containing a log of connection status*/
 	wxButton *connect_btn;		/*<pointer to Connect button*/
 	wxTimer *timer;			/*<timer used for polling ssh prcoess output*/
@@ -117,11 +118,6 @@ private:
 		address(const wxString& address) : addr(address), valid(true)
 		{};
 	};
-
-	vector<address> addresses;	/*<list of addresses*/ 
-	vector<address>::size_type current_address;
-					/*<index of next addres we will try to connect*/
-
 };
 
 class SSHConnection : public wxEvtHandler {
