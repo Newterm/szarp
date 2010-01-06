@@ -242,7 +242,7 @@ void viszioApp::ShowConfigurations()
 bool viszioApp::CreateConfiguration(wxString configurationName)
 {
     wxString SerwerParam = _T("/") + configurationName+_T("/ServerString");
-    wxConfig::Get()->Write(SerwerParam, _T("localhost"));
+    wxConfig::Get()->Write(SerwerParam, _T("localhost:8087"));
     wxString configurations = _T("");
     wxConfig::Get()->Read(_T("Configurations"), &configurations);
     if(configurations.IsEmpty())
@@ -342,14 +342,15 @@ bool viszioApp::LoadConfiguration(wxString configurationName)
     TransparentFrame *frame;
     FetchFrame *start_frame;
     while (cont)
-    {
-        wxConfig::Get()->Read(name, &value);
+    {        
         if (name.StartsWith(_T("placeholder")))
         {
-            cont = wxConfig::Get()->GetNextEntry(name, dummy);
             wxConfig::Get()->DeleteEntry(name);
+            wxConfig::Get()->Flush();
+            cont = wxConfig::Get()->GetNextEntry(name, dummy);
             continue;
         }
+        wxConfig::Get()->Read(name, &value);
         wxStringTokenizer st(value);
         ReadLong(withFrame, name + _T(" with frame [1]"))
         ReadLong(locationX, name + _T(" x location [2]"))
