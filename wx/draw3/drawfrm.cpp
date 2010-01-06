@@ -738,8 +738,10 @@ DrawFrame::LoadLayout() {
 		return false;
 	}
 
-	if (idx > 1)
+	if (idx > 1) {
 		m_notebook->SetSelection(selection % m_notebook->GetPageCount());
+		draw_panel->SetFocus();
+	}
 
 
 	return requested_prefix_present;
