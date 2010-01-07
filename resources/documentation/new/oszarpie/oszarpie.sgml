@@ -3,7 +3,7 @@
 <!ENTITY wdrozenia SYSTEM "../common/wdrozenia.sgml">
 ]>
 
-<!-- $Id: oszarpie.sgml 6724 2009-05-18 08:37:03Z reksio $ -->
+<!-- $Id$ -->
 
 <article lang="pl" id="oszarpie" class="techreport">
 
@@ -30,7 +30,7 @@ Niniejszy dokument stanowi ogólny opis systemu SZARP, jego cechy,
 funkcjonalno¶æ i budowê.
 </para>
 <para>
-$Id: oszarpie.sgml 6724 2009-05-18 08:37:03Z reksio $
+$Id$
 </para>
 </abstract>
 </artheader>

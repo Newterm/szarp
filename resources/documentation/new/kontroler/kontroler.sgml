@@ -3,7 +3,7 @@
 ]>
 
 <!--
-        $Id: kontroler.sgml 6724 2009-05-18 08:37:03Z reksio $
+        $Id$
  -->
 
 <article lang="pl" id="kontroler" class="techreport">
@@ -38,7 +38,7 @@ warto¶æ spoza zdefiniowanego zakresu, program wy¶wietli stosowne ostrze¿enie na 
 
 </para>
 <para>
-$Id: kontroler.sgml 6724 2009-05-18 08:37:03Z reksio $
+$Id$
 </para>
 </abstract>
 

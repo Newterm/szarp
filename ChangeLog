@@ -1,5 +1,7 @@
 $Id$
 
+2009-01-07	Pawel Palucha <pawel@praterm.com.pl>
+	* *.sgml: setting svn:keywords properties for SGML documentation files.
 2009-01-06	Pawel Palucha <pawel@praterm.com.pl>
 	* raporter.sgml: completed Raporter documentation, screenshots added.
 	* wx/scc/*: technical support tunnel dialog changed so user has to

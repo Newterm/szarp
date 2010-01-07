@@ -3,7 +3,7 @@
 ]>
 
 <!--
-	$Id: scc.sgml 6724 2009-05-18 08:37:03Z reksio $
+	$Id$
  -->
 
 <book lang="pl" id="scc">
@@ -36,7 +36,7 @@ od ¶rodowiska, w którym zosta³ uruchomiony, a poza tym jest bardzo ³atwy w
 konfiguracji.
 </para>
 <para>
-Wersja pliku: $Id: scc.sgml 6724 2009-05-18 08:37:03Z reksio $
+Wersja pliku: $Id$
 </para>
 
 </abstract>
