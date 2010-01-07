@@ -259,6 +259,7 @@ bool viszioApp::CreateConfiguration(wxString configurationName)
 bool viszioApp::LoadConfiguration(wxString configurationName)
 {
     bool ask_for_server = false;
+    wxConfig::Get()->Read(_T("FontThreshold"), &TransparentFrame::m_fontThreshold);    
     wxString SerwerParam = configurationName+_T("/ServerString");
     wxString SerwerName;
     wxConfig::Get()->Read(SerwerParam, &SerwerName);

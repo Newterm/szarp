@@ -43,7 +43,6 @@
 
 enum
 {
-    //TIMER_ID = 12340,
     PUM_ADD,
     PUM_EXIT,
     PUM_COLOR,
@@ -91,6 +90,7 @@ szParamFetcher *TransparentFrame::m_pfetcher;
 szProbeList TransparentFrame::m_probes;
 TSzarpConfig *TransparentFrame::ipk;
 wxString TransparentFrame::configuration_name = _T("");
+long TransparentFrame::m_fontThreshold = 19;
 
 TransparentFrame::TransparentFrame( wxWindow* parent, bool with_frame, wxString paramName, int id, wxString title, wxPoint pos, wxSize size, int style ) :
         wxFrame((wxFrame *)NULL,
@@ -104,7 +104,8 @@ TransparentFrame::TransparentFrame( wxWindow* parent, bool with_frame, wxString 
     m_typeOfFrame = TRANSPARENT_FRAME;
     m_fullParameterName = paramName;
     m_menu = NULL;
-    m_font = wxFont::New(15, wxSWISS,wxFONTFLAG_NOT_ANTIALIASED|wxFONTFLAG_DEFAULT,wxFONTSTYLE_NORMAL);
+    //m_font = wxFont::New(15, wxSWISS,wxFONTFLAG_NOT_ANTIALIASED|wxFONTFLAG_DEFAULT,wxFONTSTYLE_NORMAL);
+    m_font = wxFont::New(15, wxSWISS, wxFONTFLAG_NOT_ANTIALIASED, wxFONTSTYLE_NORMAL);
     m_fontColor = new wxColour(0, 0, 0);
     m_parameterName = new TextComponent(wxPoint(0,4), wxSize(400,35), 18, true);
     m_parameterValue = new TextComponent(wxPoint(0,43), wxSize(400,35), 20, false);
@@ -113,10 +114,10 @@ TransparentFrame::TransparentFrame( wxWindow* parent, bool with_frame, wxString 
     m_parameterValue->SetFont(*m_font, *m_fontColor);
     m_color = wxColour(255, 0, 0);
     m_withFrame = with_frame;
-	m_bitmap = new wxBitmap(size.GetWidth(), size.GetHeight());
-	m_memoryDC = new wxMemoryDC();
-	m_region = new wxRegion(*m_bitmap, *wxWHITE);
-		
+    m_bitmap = NULL;//new wxBitmap(size.GetWidth(), size.GetHeight());
+    m_memoryDC = NULL;// new wxMemoryDC();
+    m_region = NULL;//new wxRegion(*m_bitmap, *wxWHITE);
+
     if (current_amount_of_frames == 0)
     {
         all_frames[0] = this;
@@ -139,15 +140,14 @@ TransparentFrame::~TransparentFrame()
     delete m_fontColor;
     delete m_parameterName;
     delete m_parameterValue;
-	delete m_bitmap;
-	delete m_memoryDC;
-	delete m_region;
+    delete m_bitmap;
+    delete m_memoryDC;
+    delete m_region;
 }
 
 void TransparentFrame::SetFrameConfiguration(wxString name, bool withFrame, long locationX, long locationY, wxColour frameColor, wxColour fontColor, int fontSize, int paramNameSizeAdjust, int desktopNumber)
 {
     m_withFrame = withFrame;
-    //m_parameterName->SetText(name);
     SetParameterName(name);
     Move(wxPoint(locationX, locationY));
     m_color = frameColor;
@@ -162,7 +162,7 @@ void TransparentFrame::SetFrameConfiguration(wxString name, bool withFrame, long
     m_fontColor = new wxColour(fontColor);
     m_parameterName->SetFont(*m_font, *m_fontColor);
     m_parameterValue->SetFont(*m_font, *m_fontColor);
-    m_parameterName->SetAdjustable(paramNameSizeAdjust==1);    
+    m_parameterName->SetAdjustable(paramNameSizeAdjust==1);
     szProbe *probe = new szProbe();
     probe->m_param = TransparentFrame::ipk->getParamByName((std::wstring)name);
     if (probe->m_param==NULL)
@@ -182,43 +182,96 @@ void TransparentFrame::SetFrameConfiguration(wxString name, bool withFrame, long
 }
 
 
-void TransparentFrame::DrawContent(wxDC&dc, int transparent)
+void TransparentFrame::DrawContent(wxDC&dc)
+{
+    if (m_bitmap==NULL)
+        RefreshTransparentFrame();
+    dc.DrawBitmap(*m_bitmap,0, 0, true);
+    return;
+}
+
+bool TransparentFrame::ShouldBeTransparent(int fakeRed, int fakeGreen, int fakeBlue, int red, int green, int blue, double threshold)
+{
+    if (fakeRed==red && fakeGreen==green && fakeBlue==blue) 
+		return true;
+    double distance = (fakeRed - red) * (fakeRed - red);
+    distance += (fakeGreen - green) * (fakeGreen - green);
+    distance += (fakeBlue - blue) * (fakeBlue - blue);
+    // it works quite fine for threshold from 17 to 22
+    if (sqrt(distance) < threshold) 
+		return true;
+    return false;
+}
+
+void TransparentFrame::RefreshTransparentFrame()
 {
     int w = 40, h = 20;
     wxSize size = GetClientSize();
     w = size.GetWidth();
     h = size.GetHeight();
+    wxBitmap *bitmap = new wxBitmap(GetSize().GetWidth(), GetSize().GetHeight());
+    wxMemoryDC *memoryDC = new wxMemoryDC();
+    memoryDC->SelectObject(*bitmap);
+
+    int r = m_fontColor->Red();
+    int g = m_fontColor->Green();
+    int b = m_fontColor->Blue();
+    int nr = (r < 20?r + 20:r - 20);
+    int ng = (g < 20?g + 20:g - 20);
+    int nb = (b < 10?b + 20:b - 20);
+    wxColor *fakeTransparentColor = new wxColor(nr, ng, nb);
 
     if (m_withFrame == true)
     {
-		dc.SetBrush(wxBrush(*wxWHITE));
-        dc.SetPen(*wxWHITE);
-        dc.DrawRectangle(0, 0, w, h);
-        dc.SetPen(wxPen(m_color));
-        dc.SetBrush(wxBrush(m_color));
-        dc.DrawRoundedRectangle(0, 0, w, h,4);
-        m_parameterName->PaintComponent(dc);
+        memoryDC->SetBrush(wxBrush(*wxWHITE));
+        memoryDC->SetPen(*wxWHITE);
+        memoryDC->DrawRectangle(0, 0, w, h);
+        memoryDC->SetBrush(wxBrush(*fakeTransparentColor));
+        memoryDC->SetPen(*fakeTransparentColor);
+        memoryDC->DrawRectangle(15, 15, w, h-15);
+        memoryDC->SetPen(wxPen(m_color));
+        memoryDC->SetBrush(wxBrush(m_color));
+        memoryDC->DrawRoundedRectangle(0, 0, w, h, 4);
+        m_parameterName->PaintComponent(*memoryDC, *fakeTransparentColor);
+        m_parameterValue->PaintComponent(*memoryDC, *fakeTransparentColor);
     }
     else
     {
-        dc.SetBrush(wxBrush(*wxWHITE));
-        dc.SetPen(*wxWHITE_PEN);
-        dc.DrawRectangle(0, 0, w, h);
+        memoryDC->SetBrush(wxBrush(*fakeTransparentColor));
+        memoryDC->SetPen(*fakeTransparentColor);
+        memoryDC->DrawRectangle(0, 0, w, h);
+        m_parameterValue->PaintComponent(*memoryDC, *fakeTransparentColor);
     }
-    m_parameterValue->PaintComponent(dc);
-}
+    wxImage im = bitmap->ConvertToImage();
+    unsigned char *data = im.GetData();
+    unsigned char *correctData = (unsigned char *)malloc(sizeof(unsigned char)*GetSize().GetWidth()*GetSize().GetHeight()*3);
+    nr = fakeTransparentColor->Red();
+    ng = fakeTransparentColor->Green();
+    nb = fakeTransparentColor->Blue();
 
-
-void TransparentFrame::RefreshTransparentFrame()
-{
-	delete m_bitmap;
-	m_bitmap = new wxBitmap(GetSize().GetWidth(), GetSize().GetHeight());
-	m_memoryDC->SelectObject(*m_bitmap);
-	DrawContent(*m_memoryDC, 1);
-	delete m_region;
-	m_region = new wxRegion(*m_bitmap, *wxWHITE);
-	SetShape(*m_region);
-	Refresh();
+    for (int i = 0; i < GetSize().GetWidth()*GetSize().GetHeight()*3; i+=3)
+    {
+        if (ShouldBeTransparent(nr, ng, nb, data[i], data[i+1], data[i+2], TransparentFrame::m_fontThreshold))
+        {
+            correctData[i] = 255;
+            correctData[i+1] = 255;
+            correctData[i+2] = 255;
+        }
+        else
+        {
+            correctData[i] = data[i];
+            correctData[i+1] = data[i+1];
+            correctData[i+2] = data[i+2];
+        }
+    }
+    delete m_bitmap;
+    delete bitmap;
+    m_bitmap = new wxBitmap(wxImage(GetSize().GetWidth(), GetSize().GetHeight(), correctData));
+    delete m_region;
+    delete memoryDC;
+    m_region = new wxRegion(*m_bitmap, *wxWHITE);
+    SetShape(*m_region);
+    Refresh();
 }
 
 
@@ -279,7 +332,7 @@ void TransparentFrame::OnChangeColor(wxCommandEvent& evt)
     {
         wxColourData data = colorDialog.GetColourData();
         m_color = data.GetColour();
-		RefreshTransparentFrame();
+        RefreshTransparentFrame();
     }
 }
 
@@ -288,8 +341,8 @@ void TransparentFrame::OnSetFontSizeBig(wxCommandEvent& evt)
     wxFont* font = m_parameterValue->GetFont();
     font->SetPointSize(20);
     m_parameterValue->SetFont(*font, *m_fontColor);
-    if(!m_parameterName->GetAdjustable())
-		m_parameterName->SetFont(*font, *m_fontColor);
+    if (!m_parameterName->GetAdjustable())
+        m_parameterName->SetFont(*font, *m_fontColor);
     //m_parameterName->SetAdjustable(false);
     RefreshTransparentFrame();
 }
@@ -299,18 +352,18 @@ void TransparentFrame::OnSetFontSizeMiddle(wxCommandEvent& evt)
     wxFont* font = m_parameterValue->GetFont();
     font->SetPointSize(15);
     m_parameterValue->SetFont(*font, *m_fontColor);
-	if(!m_parameterName->GetAdjustable())
-		m_parameterName->SetFont(*font, *m_fontColor);
+    if (!m_parameterName->GetAdjustable())
+        m_parameterName->SetFont(*font, *m_fontColor);
     RefreshTransparentFrame();
 }
-    
+
 void TransparentFrame::OnSetFontSizeSmall(wxCommandEvent& evt)
 {
     wxFont* font = m_parameterValue->GetFont();
     font->SetPointSize(10);
     m_parameterValue->SetFont(*font, *m_fontColor);
-    if(!m_parameterName->GetAdjustable())
-		m_parameterName->SetFont(*font, *m_fontColor);
+    if (!m_parameterName->GetAdjustable())
+        m_parameterName->SetFont(*font, *m_fontColor);
     RefreshTransparentFrame();
 }
 
@@ -318,8 +371,8 @@ void TransparentFrame::OnAdjustFont(wxCommandEvent& evt)
 {
     m_parameterName->SetAdjustable(!m_parameterName->GetAdjustable());
     m_menu->Check(PUM_FONT_SIZE_ADJUST, m_parameterName->GetAdjustable());
-	if(!m_parameterName->GetAdjustable())
-		m_parameterName->SetFont(*m_parameterValue->GetFont(), *m_fontColor);
+    if (!m_parameterName->GetAdjustable())
+        m_parameterName->SetFont(*m_parameterValue->GetFont(), *m_fontColor);
     RefreshTransparentFrame();
 }
 
@@ -342,7 +395,7 @@ void TransparentFrame::OnChangeFontColor(wxCommandEvent& evt)
 void TransparentFrame::OnPaint(wxPaintEvent& WXUNUSED(evt))
 {
     wxPaintDC dc(this);
-    DrawContent(dc, 0);
+    DrawContent(dc);
 }
 
 
@@ -395,14 +448,14 @@ wxMenu *TransparentFrame::CreatePopupMenu()
     fontsubmenu->AppendRadioItem(PUM_FONT_SIZE_SMALL, _("Font small"));
     fontsubmenu->AppendRadioItem(PUM_FONT_SIZE_MIDDLE, _("Font middle"));
     fontsubmenu->AppendRadioItem(PUM_FONT_SIZE_BIG, _("Font large"));
-    
+
     if (m_parameterValue->GetFont()->GetPointSize()==10)
-		fontsubmenu->Check(PUM_FONT_SIZE_SMALL, true);
-	else if (m_parameterValue->GetFont()->GetPointSize()==15)
-		fontsubmenu->Check(PUM_FONT_SIZE_MIDDLE, true);
-		else if (m_parameterValue->GetFont()->GetPointSize()==20)
-		fontsubmenu->Check(PUM_FONT_SIZE_BIG, true);
-			
+        fontsubmenu->Check(PUM_FONT_SIZE_SMALL, true);
+    else if (m_parameterValue->GetFont()->GetPointSize()==15)
+        fontsubmenu->Check(PUM_FONT_SIZE_MIDDLE, true);
+    else if (m_parameterValue->GetFont()->GetPointSize()==20)
+        fontsubmenu->Check(PUM_FONT_SIZE_BIG, true);
+
     menu->Append(PU_FONT_SIZE, _("Change font size"), fontsubmenu);
     menu->AppendCheckItem(PUM_WITH_FRAME, _("With frame"), _T("help"));
     menu->Check(PUM_WITH_FRAME, m_withFrame);
@@ -451,7 +504,7 @@ void TransparentFrame::OnArrangeRightDown(wxCommandEvent& evt)
         x -= w;
     }
 }
-	
+
 void TransparentFrame::OnArrangeLeftDown(wxCommandEvent& evt)
 {
     int x_start = 0, y_start = 0, w_max, h_max;
@@ -570,14 +623,15 @@ void TransparentFrame::SetParameterValue(wxString text)
 
 void TransparentFrame::WriteConfiguration()
 {
-	wxConfig::Get()->Flush();
+    wxConfig::Get()->Flush();
     wxConfig::Get()->SetPath(_T("/") + configuration_name + _T("/Parameters"));
     int locationX = -1, locationY = -1;
     GetPosition(&locationX, &locationY);
     wxString mystring = wxString::Format(wxT("%d %d %d %d %d %d %d %d %d %d %d 1"), (m_withFrame?1:0), locationX, locationY, m_color.Red(), m_color.Green(), m_color.Blue(), m_fontColor->Red(), m_fontColor->Green(), m_fontColor->Blue(), m_parameterValue->GetFont()->GetPointSize(), m_parameterName->GetAdjustable());
-	wxConfig::Get()->Write(GetParameterName(), mystring);	
-    wxConfig::Get()->Flush();        
-	wxConfig::Get()->SetPath(_T("/"));
+    wxConfig::Get()->Write(GetParameterName(), mystring);
+    wxConfig::Get()->SetPath(_T("/"));
+    wxConfig::Get()->Write(_T("FontThreshold"), TransparentFrame::m_fontThreshold);
+    wxConfig::Get()->Flush();
 }
 
 
@@ -635,13 +689,14 @@ wxFont* TextComponent::GetFont()
     return m_font;
 }
 
-void TextComponent::PaintComponent(wxDC&dc)
+void TextComponent::PaintComponent(wxDC&dc, wxColour fakeTransparentColor)
 {
-    dc.SetBrush(wxBrush(*m_forecolorBrush, wxSOLID));
+    //dc.SetBrush(wxBrush(*m_forecolorBrush, wxSOLID));
+    dc.SetBrush(wxBrush(fakeTransparentColor, wxSOLID));
     dc.DrawRoundedRectangle(m_anchor.x, m_anchor.y, m_size.GetWidth()-1, m_size.GetHeight()-1, 4);
     dc.SetFont(*m_font);
     dc.SetTextForeground(*m_textcolor);
-	
+
     if (m_isFontAdjustable && !m_isFontAdjusted)
     {
         wxString fullText = m_text+m_textDown;
@@ -650,29 +705,30 @@ void TextComponent::PaintComponent(wxDC&dc)
         int f_size = 25;
         do
         {
-        	f_size -= 5;
+            f_size -= 5;
             m_font->SetPointSize(f_size);
             dc.SetFont(*m_font);
-            text_size = dc.GetTextExtent(fullText);       
+            text_size = dc.GetTextExtent(fullText);
         }
         while (text_size.GetWidth()>m_size.GetWidth()/2 && f_size>10);
-        
-        SetFont(*m_font, *m_textcolor);        
 
-		if(f_size == 10)
-		{
-			wxString tekst = _T("");
-			wxStringTokenizer stt(fullText, wxT(":;  \t\n"), wxTOKEN_RET_DELIMS);
-			unsigned int len = fullText.Length();
-			while (tekst.Length() < len/2 && stt.HasMoreTokens())
-				tekst += stt.GetNextToken();
-			m_textDown = _T("");
-			while (stt.HasMoreTokens())
-				m_textDown += stt.GetNextToken();
-			m_text = tekst;
-		} else
-			m_textDown = _T("");
-	}
+        SetFont(*m_font, *m_textcolor);
+
+        if (f_size == 10)
+        {
+            wxString tekst = _T("");
+            wxStringTokenizer stt(fullText, wxT(":;  \t\n"), wxTOKEN_RET_DELIMS);
+            unsigned int len = fullText.Length();
+            while (tekst.Length() < len/2 && stt.HasMoreTokens())
+                tekst += stt.GetNextToken();
+            m_textDown = _T("");
+            while (stt.HasMoreTokens())
+                m_textDown += stt.GetNextToken();
+            m_text = tekst;
+        }
+        else
+            m_textDown = _T("");
+    }
 
     if (m_isFontAdjustable)
     {

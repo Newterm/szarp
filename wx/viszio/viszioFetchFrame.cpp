@@ -46,7 +46,6 @@ WX_DEFINE_LIST(szProbeList);
 
 #include "htmlview.h"
 #include "htmlabout.h"
-//#include "authdiag.h"
 
 #include "fetchparams.h"
 #include "parlist.h"
@@ -154,13 +153,11 @@ void FetchFrame::OnFetch(wxCommandEvent& event)
 				if(all_frames[j] != NULL && all_frames[j]->GetParameterName().Cmp(name) == 0)
 				{
 					all_frames[j]->SetParameterValue(val + _(" ") + unit);
+					all_frames[j]->RefreshTransparentFrame();
 					break;
 				}
 			}
 		}
 	}
 	m_pfetcher->Unlock();
-	for(int j=0; j<TransparentFrame::max_number_of_frames; j++)
-		if(all_frames[j] != NULL)
-			all_frames[j]->RefreshTransparentFrame();    
 }

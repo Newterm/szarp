@@ -56,8 +56,6 @@ class TransparentFrame : public wxFrame
     DECLARE_EVENT_TABLE()
 private:
     void OnPaint(wxPaintEvent& WXUNUSED(evt));
-    //void OnTimerRefresh(wxTimerEvent& event);
-    //void OnTimer(wxCommandEvent& event);
     void OnLeftDown(wxMouseEvent& evt);
     void OnLeftUp(wxMouseEvent& evt);
     void OnMouseMove(wxMouseEvent& evt);
@@ -77,7 +75,8 @@ private:
 	void OnSetFontSizeMiddle(wxCommandEvent& evt);
 	void OnSetFontSizeSmall(wxCommandEvent& evt);
 	void OnAdjustFont(wxCommandEvent& evt);
-	void WriteConfiguration();	
+	void WriteConfiguration();
+	bool ShouldBeTransparent(int, int, int, int, int, int, double);
 protected:
     virtual void OnClose( wxCloseEvent& event )
     {
@@ -107,7 +106,7 @@ protected:
 public:
     TransparentFrame(wxWindow* parent,  bool with_frame = true, wxString paramName = wxT("no param"), int id = wxID_ANY, wxString title = wxT("SharpShower"), wxPoint pos = wxDefaultPosition, wxSize size = wxSize( 300,100 ), int style = wxFRAME_SHAPED|wxNO_BORDER |wxSTAY_ON_TOP );
     ~TransparentFrame();
-    void DrawContent(wxDC&dc, int transparent = 0);
+    void DrawContent(wxDC&dc);
     void SetFrameConfiguration(wxString, bool, long, long, wxColour, wxColour, int, int, int);
     wxString GetParameterName();
     wxString GetParameterValue();
@@ -122,7 +121,8 @@ public:
     static szParamFetcher *m_pfetcher;
     static szProbeList m_probes;
     static TSzarpConfig *ipk;
-    static wxString configuration_name;
+    static wxString configuration_name;    
+    static long m_fontThreshold;
 };
 
 
@@ -147,7 +147,7 @@ public:
     bool GetAdjustable() { return m_isFontAdjustable;}
     wxString GetText();
     wxFont* GetFont();    
-    void PaintComponent(wxDC&dc);
+    void PaintComponent(wxDC&dc, wxColour fakeTransparentColor=wxColour(255,255,255));
 };
 
 #endif //__TransparentFrame__
