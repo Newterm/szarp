@@ -101,7 +101,7 @@ int hour_sec[24] = {
     16 * 3600, 17 * 3600, 18 * 3600, 19 * 3600, 20 * 3600, 21 * 3600, 22 * 3600, 23 * 3600
 };
 
-int szb_probeind(time_t t)
+int szb_probeind(time_t t, time_t probe_length)
 {
 #ifndef HAVE_GMTIME_R
     struct tm * ptm;
@@ -116,7 +116,7 @@ int szb_probeind(time_t t)
     memcpy(&tmp, ptm, sizeof(struct tm));
 #endif
 
-    return (day_sec[tmp.tm_mday] + hour_sec[tmp.tm_hour] + tmp.tm_min * 60 + tmp.tm_sec) / SZBASE_PROBE;
+    return (day_sec[tmp.tm_mday] + hour_sec[tmp.tm_hour] + tmp.tm_min * 60 + tmp.tm_sec) / probe_length;
 }
 
 time_t probe2time(int probe, int year, int month)

@@ -17,8 +17,16 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
- * meaner3 - daemon writing data to base in SzarpBase format
- * SZARP
+ * prober - daemon for writing 10-seconds data probes to disk, highly experimental ;-)
+ * Most of code is shared with meaner3, data format is identical to szbase, except for
+ * fact that there's one probe for each 10 seconds, not 10 minutes. Each file contains
+ * data for one month, about 0,5 MB per parameter per month.
+ * Data is written to disk in chunks of 6 elements every minute or at program termination.
+ * One configuration parameter is required (except for default parcook_path and IPK):
+ * prober:
+ * cachedir=/path/to/cache/dir
+ * Directory pointed by cachedir must exist and must be writeable.
+ * TODO: setting limit of disk usage and removing old data to fit within limit.
  
  * Pawe³ Pa³ucha pawel@praterm.com.pl
  
@@ -47,7 +55,7 @@
 #include <signal.h>
 
 #include "classes.h"
-#include "meaner3.h"
+#include "prober.h"
 
 #include "liblog.h"
 #include "libpar.h"
@@ -63,9 +71,9 @@
 /** arguments processing, see info argp */
 #include <argp.h>
 
-const char *argp_program_version = "meaner 3.""$Revision$";
+const char *argp_program_version = "prober 3.""$Revision$";
 const char *argp_program_bug_address = "coders@praterm.com.pl";
-static char doc[] = "SZARP database daemon.\v\
+static char doc[] = "SZARP probes cache saving daemon.\v\
 Config file:\n\
 Configuration options are read from file /etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg,\n\
 from section '" SZARP_CFG_SECTION "' or from global section.\n\
@@ -78,36 +86,6 @@ These options are optional:\n\
 	log		path to log file, default is " PREFIX "/log/" SZARP_CFG_SECTION ".log\n\
 	log_level	log level, from 0 to 10, default is from command line\n\
 			or 2.\n\
-These options are optional and are read from 'execute' section:\n\
-	execute_stdout	path to file for standard output of executed jobs,\n\
-			default is " PREFIX "/log/execute.stdout\n\
-	execute_stderr	path to file for standard output of executed jobs,\n\
-			default is " PREFIX "/log/execute.stderr\n\
-	execute_sections list of sections with command to execute, sections\n\
-			are reviewed in order\n\
-Each of sections to execute may contain following options:\n\
-	time		crontab-like description of date and time for section\n\
-			execution; fields are (in order): day of week (from 1\n\
-			to 7), month (1 to 12), day of month (1 to 31), hour\n\
-			(0 to 23), minutes (0 to 59 but values are rounded\n\
-			down by 10); wildcars (*), multiple values separated\n\
-			by commas and ranges (with '-' sign) are possible;\n\
-			fields are separated by space; option is mandatory\n\
-	command		shell command to execute, mandatory option\n\
-	limit		time limit in seconds for executing command; after\n\
-			limit expiration command is interrupted (1 second\n\
-			before limit SIGTERM signal is send, and then SIGKILL);\n\
-			limit is measured from section start time (not from\n\
-			command execution time), negative values are counted\n\
-			as number of seconds before next full 10 minutes cycle;\n\
-			default value is -1 (the same as 599)\n\
-	retry		number of following 10 minutes cycle in which command\n\
-			execution should be retried if command returned error\n\
-			or was interrupted because of limit expiration,\n\
-			default is 0\n\
-	parallel	if option value is 'yes' following sections may be run\n\
-			immediately, without waiting for command return,\n\
-			default value is 'no'\n\
 ";
 
 static struct argp_option options[] = {
@@ -152,12 +130,11 @@ volatile sig_atomic_t g_signals_blocked = 0;
 
 volatile sig_atomic_t g_should_exit = 0;
 
-TMeaner* g_meaner = NULL;
-TExecute* g_exec = NULL;
+TProber* g_prober = NULL;
 
 RETSIGTYPE g_CriticalHandler(int signum)
 {
-	sz_log(0, "meaner3: signal %d cought, exiting, report to author",
+	sz_log(0, "prober: signal %d cought, exiting, report to author",
 			signum);
 	/* resume default action - abort */
 	signal(signum, SIG_DFL);
@@ -169,14 +146,15 @@ RETSIGTYPE g_TerminateHandler(int signum)
 {
 	if (g_signals_blocked) {
 		g_should_exit = 1;
-		sz_log(2, "meaner3: interrupt signal %d cought for futher processing", signum);
+		sz_log(2, "prober: interrupt signal %d cought for futher processing", signum);
 	} else {
 		/* signal '0' is program-generated */
-		if (signum) 
-			sz_log(2, "meaner3: interrupt signal %d cought, cleaning up", 
+		if (signum != 0) 
+			sz_log(2, "prober: interrupt signal %d cought, cleaning up", 
 				signum);
-		delete g_meaner;
-		sz_log(2, "meaner3: cleanup finished, exiting");
+		g_prober->WriteParams(true);
+		delete g_prober;
+		sz_log(2, "prober: cleanup finished, exiting");
 		logdone();
 #ifdef VALGRIND_IN_USE
 		exit(0);
@@ -195,8 +173,7 @@ int main(int argc, char* argv[])
 	int loglevel;	/**< Log level. */
 	struct arguments arguments;
 	int i;
-	TMeaner* meaner;
-	TStatus *status;
+	TProber* prober;
 	time_t last_cycle; /**< time of last cycle */
 
 	/* Set initial logging. */
@@ -210,45 +187,43 @@ int main(int argc, char* argv[])
 
 	/* Check for other copies of program. */
 	if ((i = check_for_other (argc, argv))) {
-		sz_log(0, "meaner3: another copy of program is running, pid %d, exiting", i);
+		sz_log(0, "prober: another copy of program is running, pid %d, exiting", i);
 		return 1;
 	}
 
-	status = new TStatus();
-	assert (status != NULL);
-	meaner = new TMeaner(status);
-	assert (meaner != NULL);
+	prober = new TProber();
+	assert (prober != NULL);
 	
 	/* Set signal handling */
-	g_meaner = meaner;
-	if (meaner->InitSignals(g_CriticalHandler, g_TerminateHandler) != 0) {
-		sz_log(0, "meaner3: error setting signal actions, exiting");
+	g_prober = prober;
+	if (prober->InitSignals(g_CriticalHandler, g_TerminateHandler) != 0) {
+		sz_log(0, "prober: error setting signal actions, exiting");
 		return 1;
 	}
 	
 	/* Load configuration data. */
-	if (meaner->LoadConfig(SZARP_CFG_SECTION) != 0) {
-		sz_log(0, "meaner3: error while loading configuration, exiting");
+	if (prober->LoadConfig(SZARP_CFG_SECTION) != 0) {
+		sz_log(0, "prober: error while loading configuration, exiting");
 		return 1;
 	}
 	
 	libpar_done();
 
 	/* Check base. */
-	if (meaner->CheckBase() != 0) {
-		sz_log(0, "meaner3: cannot initialize base, exiting");
+	if (prober->CheckBase() != 0) {
+		sz_log(0, "prober: cannot initialize base, exiting");
 		return 1;
 	}
 
 	/* Load IPK */
-	if (meaner->LoadIPK() != 0) {
-		sz_log(0, "meaner3: cannot set up IPK configuration, exiting");
+	if (prober->LoadIPK() == -1) {
+		sz_log(0, "prober: cannot set up IPK configuration, exiting");
 		return 1;
 	}
 	
 	/* Try connecting with parcook. */
-	if (meaner->InitReader() != 0) {
-		sz_log(0, "meaner3: connection with parcook failed, exiting");
+	if (prober->InitReader() != 0) {
+		sz_log(0, "prober: connection with parcook failed, exiting");
 		return 1;
 	}
 
@@ -257,41 +232,30 @@ int main(int argc, char* argv[])
 		daemon(
 				0, /* set working dir to '/' */
 				0);/* close stdout and stderr descriptors */
-	sz_log(2, "meaner3 started");
+	sz_log(2, "prober started");
 	
-	/* set alarm for next cycle */
-	meaner->InitExec();
-	g_exec = meaner->GetExec();
-
 	last_cycle = 0;
 	while (1) {
-		/* Set status parameters info */
-		status->NextCycle();
-		
-		/* Process alarms and wait for next save-time. */
-		meaner->GetExec()->WaitForCycle();
-		
 		/* Get current time */
 		time_t t;
 		time(&t);
 
-		/* Sometimes, because of clock skew, we are still in the same
-		 * or even earlier cycle. */
-		if ((t / BASE_PERIOD) <= (last_cycle / BASE_PERIOD))
+		prober->WaitForCycle(BASE_PERIOD, t);
+
+		if ((t - last_cycle > BASE_PERIOD) && (last_cycle > 0)) {
+			sz_log(1, "prober: cycle lasted for %ld seconds", t - last_cycle);
+		} else if ((t / BASE_PERIOD) <= (last_cycle / BASE_PERIOD)) {
+			/* Sometimes, because of clock skew, we are still in the same
+			 * or even earlier cycle. */
 			continue;
+		}
 		last_cycle = t;
 
 		/* Connect with parcook. */
-		meaner->ReadParams();
+		prober->ReadParams();
 
 		/* Write data to base. */
-		meaner->WriteParams();
-
-		/* Mark sections that should be run */
-		meaner->GetExec()->MarkToRun(t);
-
-		/* Run sections */
-		meaner->GetExec()->RunSections();
+		prober->WriteParams();
 	}
 	
 	return 0;

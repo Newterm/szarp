@@ -53,10 +53,11 @@ szb_createfilename(const std::wstring& param_name, const int year, const int mon
 /**
  * Same as szb_createfilename, but param name is not recoded. Usefull
  * if you have already recoded param name.
+ * @param suffix suffix of file name
  * @see szb_createfilename
  */
 std::wstring
-szb_createfilename_ne(const std::wstring& cparam, const int year, const int month);
+szb_createfilename_ne(const std::wstring& cparam, const int year, const int month, const wchar_t* suffix = L".szb");
 
 /** Check for existence and create all parent directories for path.
  * @param path path to file, all components but the last one are treated as

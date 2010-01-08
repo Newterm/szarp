@@ -50,7 +50,10 @@ typedef short int               int16_t;
 
 namespace fs = boost::filesystem;
 
-std::wstring szb_createfilename_ne(const std::wstring &cparam, const int year, const int month)
+std::wstring szb_createfilename_ne(const std::wstring &cparam, 
+		const int year, 
+		const int month, 
+		const wchar_t* suffix)
 {
 	std::wstring ret;
 
@@ -72,7 +75,7 @@ std::wstring szb_createfilename_ne(const std::wstring &cparam, const int year, c
 #endif
 		<< std::setw(4) << std::setfill(L'0') << year 
 		<< std::setw(2) << std::setfill(L'0') << month
-		<< L".szb";
+		<< suffix;
 
 	ret = wss.str();
 

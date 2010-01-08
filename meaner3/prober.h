@@ -1,6 +1,5 @@
 /* 
   SZARP: SCADA software 
-  
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -17,7 +16,7 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
- * meaner3 - daemon writing data to base in SzarpBase format
+ * prober - daemon for writing 10-seconds data probes to disk
  * SZARP
  
  * Pawe³ Pa³ucha pawel@praterm.com.pl
@@ -25,8 +24,8 @@
  * $Id$
  */
 
-#ifndef __MEANER_H__
-#define __MEANER_H__
+#ifndef __PROBER_H__
+#define __PROBER_H__
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -52,19 +51,14 @@
 #include <errno.h>
 #include <signal.h>
 
-// TMP!!!
-class TMeaner;
-
-
 #include "liblog.h"
 #include "libpar.h"
 #include "execute.h"
 #include "szarp_config.h"
 #include "szbase/szbbase.h"
 
-#include "tmeaner.h"
+#include "tprober.h"
 #include "tparcook.h"
-#include "texecute.h"
 
 /* This macro decides how we exit from program. Normally, we exit by setting
  * default handler for termination signal and raising it, so correct return
@@ -78,13 +72,10 @@ class TMeaner;
 #define SZARP_CFG "/etc/"PACKAGE_NAME"/"PACKAGE_NAME".cfg"
 
 /** Name of section in main config file. */
-#define SZARP_CFG_SECTION "meaner3"
-
-/** Name of execute section in main config file. */
-#define EXECUTE_SECTION "execute"
+#define SZARP_CFG_SECTION "prober"
 
 /** base period in seconds */
-#define BASE_PERIOD	SZBASE_PROBE
+#define BASE_PERIOD	10
 
 /***********************************************************************/
 
@@ -96,13 +87,10 @@ extern volatile sig_atomic_t g_signals_blocked;
  * during writing to base and we should terminate */
 extern volatile sig_atomic_t g_should_exit;
 
+class TProber;
 /** pointer to main program object, must be global because we use it in signal
  * handling (for cleanup) */
-extern TMeaner* g_meaner;
-
-/** pointer to 'executer' attribute of main program object, global becasue of
- * use in signal handler */
-extern TExecute* g_exec;
+extern TProber* g_prober;
 
 /** Handler for critical signals. Must be global, no cleanup is made, just
  * writing to log. */

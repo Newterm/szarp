@@ -52,18 +52,38 @@ class TSaveParam {
 		/** Write param to base.
 		 * @param directory base directory
 		 * @param t save time
-		 * @param data data to write
+		 * @param data pointer to buffer with data to write
+		 * @param data_count number of elements in buffer to save
 		 * @param status if not NULL status object is used for counting
 		 * not-null parameters
 		 * @param overwrite 0 if is overwriting of existing data 
 		 * is not allowed, 1 otherwise
 		 * @param force_nodata 1 to force writing no-data values to file
+		 * @param length of probe in seconds, default value for meaner, 10 for prober
 		 * @return 0 on success, 1 on error
 		 */
-		int Write(const fs::wpath& directory, time_t t, short int data, 
+		int Write(const fs::wpath& directory, 
+				time_t t, 
+				short int* data, 
+				size_t data_count,
+				TStatus *status,
+				int overwrite, 
+				int force_nodata, 
+				time_t probe_length);
+		/** Write param to base - version that saves one element.
+		 * @see Write
+		 */
+		int Write(const fs::wpath& directory, 
+				time_t t, 
+				short int data, 
 				TStatus *status,
 				int overwrite = 0,
-				int force_nodata = 0);
+				int force_nodata = 0,
+				time_t probe_length = SZBASE_PROBE);
+		/** Write 10-seconds probe to disk cache.
+		 * @see Write
+		 */
+		int WriteProbes(const fs::wpath& directory, time_t t, short int* data, size_t data_count);
 	protected:
 		std::wstring cname;	/**< Encoded name of parameter */
 };

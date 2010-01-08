@@ -31,9 +31,15 @@
 
 #include "szbase/szbfile.h"
 
+typedef enum {
+	min10 = 0,
+	sec10,
+	ProbesType_last
+} ProbesType;
+
 class TParcook {
 	public:
-		TParcook();
+		TParcook(ProbesType type = min10);
 		~TParcook();
 		/** Load configuration for object using libpar.
 		 * * @return 0 on success, 1 on error */
@@ -56,8 +62,10 @@ class TParcook {
 		 */
 		short int GetData(int i);
 	protected:
+		ProbesType probes_type;	/**< type of parcook segment we read from */
 		char* parcook_path;	/**< path used to obtain semaphore and
 					  shared memory identifiers */
+		
 		int shm_desc;		/**< shared memory descriptor */
 		int sem_desc;		/**< semaphore descr */
 		int probes_count;	/**< length of probes table */

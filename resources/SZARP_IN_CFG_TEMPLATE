@@ -103,6 +103,9 @@ execute_stderr=$szarp_root$/logs/execute_stderr.log
 # meaner3 log file
 log=__INSTALL_DIR__/logs/meaner3.log
 
+:prober
+cachedir=/var/cache/szarp
+
 :szbwriter
 # szbwriter log file
 $if "$log$" <> ""

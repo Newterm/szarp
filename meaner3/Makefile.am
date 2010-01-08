@@ -29,6 +29,7 @@ LDADD = @PTHREAD_CFLAGS@ $(LIBSZARP2) $(LIBSZARP) @XSLT_LIBS@ @XML_LIBS@ @LUA_LI
 bin_PROGRAMS = \
                meaner3 \
 	       peakator \
+	       prober \
 	       @SZBEDIT@ \
 	       @EXTRSZB@ \
 	       szbindex \
@@ -54,12 +55,21 @@ meaner3_SOURCES = \
 		texecsect.cc texecsect.h \
 		texecalarm.cc texecalarm.h \
 		tstatus.cc tstatus.h \
+		twriter.cc twriter.h \
 		classes.h
 
 peakator_SOURCES = \
 		$(UTILSDIR)/peakator.cc \
 		tsaveparam.cc tsaveparam.h \
 		tstatus.cc tstatus.h
+
+prober_SOURCES = \
+		tparcook.cc \
+		tsaveparam.cc \
+		twriter.cc \
+		tprober.cc \
+		tstatus.cc \
+		prober.cc 
 
 szbreader_SOURCES = \
 		$(UTILSDIR)/szbreader.cc

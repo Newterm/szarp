@@ -36,9 +36,8 @@
 #include "boost/filesystem/path.hpp"
 #include "boost/filesystem/convenience.hpp"
 
-
-
-#include "meaner3.h"
+#include "szbase/szbbase.h"
+#include "classes.h"
 
 namespace fs = boost::filesystem;
 

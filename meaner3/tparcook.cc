@@ -51,15 +51,32 @@
 
 #include "meaner3.h"
 
-/** identifiers for connecting to parcook process */
-#define PARCOOK_SHM_FTOK_ID SHM_MIN10
-#define PARCOOK_SEM_ID2 SEM_MIN10
-#define PARCOOK_SEM_ID1 (SEM_MIN10 + 1)
-#define PARCOOK_SEM_NUM (PARCOOK_SEM_ID1 + 1)
-#define PARCOOK_SEM_FTOK_ID SEM_PARCOOK
+/** structure with IPC identifiers needed to connect to parcook */
+typedef struct {
+	key_t ipc_ftok_sem;	/**< ftok key for semaphors */
+	key_t ipc_ftok_shm;	/**< ftok key for shared memory segments */
+	int ipc_id_sem1;	/**< id fo semaphore 1 */
+	int ipc_id_sem2;	/**< id for semaphore 2 */
+} IPCIds;
 
+/** ipc identifiers for min10 and probe segment types */
+IPCIds IPCParams[ProbesType_last] = {
+	{ 
+		SEM_PARCOOK,
+	       	SHM_MIN10,
+		SEM_MIN10 + 1,
+		SEM_MIN10,
+	},
+	{
+		SEM_PARCOOK,
+		SHM_PROBE,
+		SEM_PROBE + 1,
+		SEM_PROBE, 
+	}
+};
 
-TParcook::TParcook()
+TParcook::TParcook(ProbesType type):
+	probes_type(type)
 {
 	parcook_path = NULL;
 	shm_desc = sem_desc = 0;
@@ -79,7 +96,7 @@ int TParcook::LoadConfig()
 {
 	parcook_path = libpar_getpar(SZARP_CFG_SECTION, "parcook_path", 0);
 	if (parcook_path == NULL) {
-		sz_log(0, "meaner3: set 'parcook_path' param in "SZARP_CFG" file");
+		sz_log(0, "TParcook::LoadConfig(): set 'parcook_path' param in "SZARP_CFG" file");
 		return 1;
 	}
 	return 0;
@@ -97,40 +114,40 @@ int TParcook::Init(int probes_count)
 	this->probes_count = probes_count;
 	copied = (short int *) malloc (probes_count * sizeof(short int));
 	if (copied == NULL) {
-		sz_log(0, "meaner3: not enough memory for probes table, errno %d",
+		sz_log(0, "TParcook::Init(): not enough memory for probes table, errno %d",
 				errno);
 		return 1;
 	}
-	shm_key = ftok(parcook_path, PARCOOK_SHM_FTOK_ID);
-	if (shm_key < 0) {
-		sz_log(0, "meaner3: ftok() for shared memory key failed, errno %d, \
+	shm_key = ftok(parcook_path, IPCParams[probes_type].ipc_ftok_shm);
+	if (shm_key == -1) {
+		sz_log(0, "TParcook::Init(): ftok() for shared memory key failed, errno %d, \
 path '%s'",
 			errno, parcook_path);
 		return 1;
 	}
-	sem_key = ftok(parcook_path, PARCOOK_SEM_FTOK_ID);
-	if (sem_key < 0) {
-		sz_log(0, "meaner3: ftok() for semaphore key failed, errno %d, \
+	sem_key = ftok(parcook_path, IPCParams[probes_type].ipc_ftok_sem);
+	if (sem_key == -1) {
+		sz_log(0, "TParcook::Init(): ftok() for semaphore key failed, errno %d, \
 path '%s'",
 			errno, parcook_path);
 		return 1;
 	}
 	shm_desc = shmget(shm_key, 1, 00600);
-	sem_desc = semget(sem_key, PARCOOK_SEM_NUM, 00600);
-	for (int i=0; ((shm_desc < 0) || (sem_desc < 0)) && (i < max_attempts_no-1); ++i)
+	sem_desc = semget(sem_key, 2, 00600);
+	for (int i = 0; ((shm_desc == -1) || (sem_desc == -1)) && (i < max_attempts_no-1); ++i)
 	{
 		sleep(1);
 		shm_desc = shmget(shm_key, 1, 00600);
-		sem_desc = semget(sem_key, PARCOOK_SEM_NUM, 00600);
+		sem_desc = semget(sem_key, 2, 00600);
 	}
-	if (shm_desc < 0) {
-		sz_log(0, "meaner3: error getting parcook shared memory identifier, \
+	if (shm_desc == -1) {
+		sz_log(0, "TParcook::Init(): error getting parcook shared memory identifier, \
 errno %d, key %d",
 			errno, shm_key);
 		return 1;
 	}
-	if (sem_desc < 0) {
-		sz_log(0, "meaner3: error getting parcook semaphor identifier, \
+	if (sem_desc == -1) {
+		sz_log(0, "TParcook::Init(): error getting parcook semaphor identifier, \
 errno %d, key %d",
 			errno, sem_key);
 		return 1;
@@ -147,14 +164,14 @@ void TParcook::GetValues()
 	/* block signals */
 	g_signals_blocked = 1;
 	/* enter semaphore, set undo for possible exit */
-	sems[0].sem_num = PARCOOK_SEM_ID1;
+	sems[0].sem_num = IPCParams[probes_type].ipc_id_sem1;
 	sems[0].sem_op = 0;
 	sems[0].sem_flg = SEM_UNDO;
-	sems[1].sem_num = PARCOOK_SEM_ID2;
+	sems[1].sem_num = IPCParams[probes_type].ipc_id_sem2;
 	sems[1].sem_op = 1;
 	sems[1].sem_flg = SEM_UNDO;
-	if (semop(sem_desc, sems, 2)) {
-		sz_log(0, "meaner3: cannot open parcook semaphore (is parcook runing?), errno %d, exiting", errno);
+	if (semop(sem_desc, sems, 2) == -1) {
+		sz_log(0, "TParcook::GetValues(): cannot open parcook semaphore (is parcook runing?), errno %d, exiting", errno);
 		g_signals_blocked = 0;
 		/* we use non-existing signal '0' */
 		g_TerminateHandler(0);
@@ -165,33 +182,34 @@ retry:
 	if (probes == (void*)-1) {
 		if (errno == EINTR)
 			goto retry;
-		sz_log(0, "meaner3: cannot attach parcook memory segment (is parcook runing?), errno %d, exiting", errno);
+		sz_log(0, "TParcook::GetValues(): cannot attach parcook memory segment (is parcook runing?), errno %d, exiting", errno);
 		g_signals_blocked = 0;
 		g_TerminateHandler(0);
 	}
 	/* copy values */
 	memcpy(copied, probes, probes_count * sizeof (short int) );
-	sz_log(10, "meaner3: %d params copied", probes_count);
+	sz_log(10, "TParcook::GetValues(): %d params copied", probes_count);
 	/* detach segment */
-	if (shmdt(probes) != 0) {
-		sz_log(0, "meaner3: cannot detaches parcook memory segment, errno %d, exiting", errno);
+	if (shmdt(probes) == -1) {
+		sz_log(0, "TParcook::GetValues(): cannot detaches parcook memory segment, errno %d, exiting", errno);
 		g_signals_blocked = 0;
 		g_TerminateHandler(0);
 	}
 	/* release semaphore */
-	sems[0].sem_num = PARCOOK_SEM_ID2;
+	sems[0].sem_num = IPCParams[probes_type].ipc_id_sem2;
 	sems[0].sem_op = -1;
 	sems[0].sem_flg = SEM_UNDO;
-	if (semop(sem_desc, sems, 1) != 0) {
-		sz_log(0, "meaner3: cannot release parcook semaphore, errno %d, exiting", errno);
+	if (semop(sem_desc, sems, 1) == -1) {
+		sz_log(0, "TParcook::GetValues(): cannot release parcook semaphore, errno %d, exiting", errno);
 		g_signals_blocked = 0;
 		/* we use non-existing signal '0' */
 		g_TerminateHandler(0);
 	}
 	/* unblock signals */
 	g_signals_blocked = 0;
-	if (g_should_exit) 
+	if (g_should_exit) {
 		g_TerminateHandler(0);
+	}
 }
 		
 short int TParcook::GetData(int i)

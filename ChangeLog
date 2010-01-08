@@ -1,6 +1,25 @@
 $Id$
 
 2010-01-08	Pawel Palucha <pawel@praterm.com.pl>
+	* meaner3/prober.*: prober - daemon for writing 10-seconds data probes
+	to disk, highly experimental ;-); most of code is shared with meaner3, 
+	data format is identical to szbase, except for fact that there's one 
+	probe for each 10 seconds, not 10 minutes; each file (default suffix
+	*.szc) contains data for one month, about 0,5 MB per parameter per
+	month; data is written to disk in chunks of 6 elements every minute or
+	at program termination; output directory is read from szarp.cfg -
+	'cachedir' value from 'prober' section.
+	* meaner3/*: meaner3 using new twriter class, removed reading of some
+	unnecessary config variables (eg. 'base_format'), small fixes.
+	* meaner3/twriter.*: common base class for meaner3 and prober daemons.
+	* libSzarp2/szbase/*: support for other probe lengths in
+	szb_probeind(), support for other filename suffix in
+	szb_createfilename_ne().
+	* libSzarp2/include/sumator.h: template of simple 'sumator' class - it
+	occured I don't really need it, but it's a nice template, so I decided
+	to commit it anyway...
+	* resources/SZARP_IN_CFG_TEMPLATE: added default configuration for
+	prober.
 	* wx/common/aboutdlg.cc: 'Ok' button set as default so it gets
 	keyboard focus.
 2010-01-08      Adam Smyk <asmyk@dalkiaterm.pl>

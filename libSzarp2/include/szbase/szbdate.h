@@ -54,10 +54,12 @@ szb_time2my(time_t time, int * year, int * month);
 
 /**
  * Return index of given time in file.
+ * @param t time of probe
+ * @param probe_length length of probe in file in seconds
  * @return -1 on error or non-negative index
  */
 int
-szb_probeind(time_t t);
+szb_probeind(time_t t, time_t probe_length = SZBASE_PROBE);
 
 /**
  * Converts month, year and probe index to time value.
