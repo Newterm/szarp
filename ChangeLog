@@ -1,6 +1,7 @@
 $Id$
 
 2010-01-08	Pawel Palucha <pawel@praterm.com.pl>
+	* menaer3/tprober.*: forgotten commit.
 	* meaner3/prober.*: prober - daemon for writing 10-seconds data probes
 	to disk, highly experimental ;-); most of code is shared with meaner3, 
 	data format is identical to szbase, except for fact that there's one 
