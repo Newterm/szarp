@@ -100,7 +100,9 @@ szAboutDlg::szAboutDlg(wxBitmap* bitmap, wxString programName, wxString version,
 
 	sizer->Add(m_textCtrl, 1, wxEXPAND | wxALL , 1);
 
-	sizer->Add(new wxButton(this, ID_ABOUT_DLG_OK_BUTTON, _("OK")), 0, wxALL | wxALIGN_RIGHT, 10);
+	wxButton* ok_bt = new wxButton(this, ID_ABOUT_DLG_OK_BUTTON, _("OK"));
+	ok_bt->SetDefault();
+	sizer->Add(ok_bt, 0, wxALL | wxALIGN_RIGHT, 10);
 
 	SetSizer(sizer);
 	sizer->SetSizeHints(this);
