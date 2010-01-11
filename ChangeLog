@@ -1,6 +1,20 @@
 $Id$
 
 2010-01-11	Darek Marcinkiewicz <darek@dalkiaterm.pl>
+	* meaner3/utils/szbmod: tool even cooler than szbndremover ;)
+	Szbmod allows for modification of historical data through
+	lua formulas. Szbmod takes a lua formula, period of time and a param
+	to be modified. Then for each database probe from given time period
+	it runs the formula much in the same way as it is done with drawdefinable
+	params. Values returned from the formula are then stored in database.
+	For example if program is run with following params:
+	szbmod -fformula -Dprefix=xxxx -s'2007-01-01 00:00' -e'2009-12-30 00:00' "Sieæ:Sterownik:Temperatura zewnêtrzna"
+	and contents of file formula is like that:
+	v = 2 * p("xxxx:Sieæ:Sterownik:Temperatura zewnêtrzna", t, pt)
+	then for given period values of "Sieæ:Sterownik:Temperatura zewnêtrzna" will be doubled.
+	Of course these formulas has access to the same stuff that drawdefinable
+	formulas have - they can refer to values of other params coming from
+	any point in time.
 	* wx/libSzarp2/szbase: quite significant improvement of cache mechanism
 	efficiency, more mutexes removed, some variables/class attributes renamed
 	to comply with convention used throughout szbase code, these chagnes

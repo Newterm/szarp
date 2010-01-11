@@ -36,6 +36,7 @@ bin_PROGRAMS = \
 	       szbreader \
 	       szbwriter \
 	       szbndremover \
+	       szbmod \
 	       szbnull
 
 if !NO_LUA
@@ -88,6 +89,10 @@ szbindex_SOURCES = $(UTILSDIR)/szbindex.cc
 szbnull_SOURCES = $(UTILSDIR)/szbnull.cc
 
 szbndremover_SOURCES = $(UTILSDIR)/szbndremover.cc \
+		tsaveparam.cc tsaveparam.h \
+		tstatus.cc tstatus.h
+
+szbmod_SOURCES = $(UTILSDIR)/szbmod.cc \
 		tsaveparam.cc tsaveparam.h \
 		tstatus.cc tstatus.h
 
