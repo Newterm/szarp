@@ -64,7 +64,7 @@ class CacheableDatablock: public szb_datablock_t
 	protected:
 		void Cache();		/**< Caches the data to the cachefile. */
 		bool LoadFromCache();	/**< Loads the data from the cachefile. */
-		virtual bool IsCachable() {return this->fixedProbesCount == this->max_probes;};	
+		virtual bool IsCachable() { return first_non_fixed_probe > 0; }
 		std::wstring const cachepath;	/**< The path of the cachefile. */
 		/** Checks if the cachefile is valid.
 		 * @param probes number of probes stored in the cachefile.
@@ -85,7 +85,6 @@ class CacheableDatablock: public szb_datablock_t
 		 * @return constructed path.
 		 */
 		std::wstring GetCacheFilePath(TParam * p, int y, int m);
-		bool cached;
 };
 
 #endif //__SZBASE_CACHABLE_DATABLOCK_H__

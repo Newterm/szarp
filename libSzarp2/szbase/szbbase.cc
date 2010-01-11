@@ -26,8 +26,6 @@
 #include "mingw32_missing.h"
 #endif
 
-typedef boost::recursive_mutex::scoped_lock recursive_scoped_lock;
-
 using std::find;
 using std::string;
 using std::pair;
@@ -70,14 +68,10 @@ void Szbase::Init(const std::wstring& szarp_dir, void (*callback)(std::wstring, 
 
 bool Szbase::AddBase(const std::wstring& prefix) {
 
-	recursive_scoped_lock queuelock(szbase_mutex);
-
 	return AddBase((m_szarp_dir / prefix / L"szbase").file_string(), prefix);
 }
 
 void Szbase::AddExtraParam(const std::wstring &prefix, TParam *param) {
-
-	recursive_scoped_lock queuelock(szbase_mutex);
 
 	TBI::iterator i = m_ipkbasepair.find(prefix);
 	if (i == m_ipkbasepair.end()) 
@@ -88,8 +82,6 @@ void Szbase::AddExtraParam(const std::wstring &prefix, TParam *param) {
 }
 
 void Szbase::RemoveExtraParam(const std::wstring& prefix, TParam *param) {
-
-	recursive_scoped_lock queuelock(szbase_mutex);
 
 	IPKContainer* ic = IPKContainer::GetObject();
 
@@ -132,8 +124,6 @@ void Szbase::AddParamToHash(const std::wstring& prefix, TParam *param) {
 
 bool Szbase::AddBase(const std::wstring& szbase_dir, const std::wstring &prefix) {
 
-	recursive_scoped_lock queuelock(szbase_mutex);
-
 	IPKContainer *ipks = IPKContainer::GetObject();
 	TSzarpConfig *ipk = ipks->GetConfig(prefix);
 	if (ipk == NULL) {
@@ -170,8 +160,6 @@ void Szbase::NotifyAboutConfigurationChanges() {
 
 void Szbase::RemoveConfig(const std::wstring &prefix) {
 
-	recursive_scoped_lock queuelock(szbase_mutex);
-
 	TBI::iterator bi = m_ipkbasepair.find(prefix);
 	if (bi == m_ipkbasepair.end())
 		return;
@@ -197,17 +185,14 @@ void Szbase::RemoveConfig(const std::wstring &prefix) {
 }
 
 std::wstring Szbase::GetCacheDir(const std::wstring &prefix) {
-	recursive_scoped_lock queuelock(szbase_mutex);
 	return CacheableDatablock::GetCacheRootDirPath(Szbase::GetBuffer(prefix));
 }
 
 void Szbase::ClearCacheDir(const std::wstring& prefix) {
-	recursive_scoped_lock queuelock(szbase_mutex);
 	Szbase::GetBuffer(prefix)->ClearCache();
 }
 
 void Szbase::ClearParamFromCache(const std::wstring& prefix, TParam* param) {
-	recursive_scoped_lock queuelock(szbase_mutex);
 	Szbase::GetBuffer(prefix)->ClearParamFromCache(param);
 }
 
@@ -246,7 +231,6 @@ bool Szbase::FindParam(const std::wstring& param, std::pair<szb_buffer_t*, TPara
 }
 
 time_t Szbase::SearchFirst(const std::wstring &param, bool &ok) {
-	recursive_scoped_lock queuelock(szbase_mutex);
 
 	std::pair<szb_buffer_t*, TParam*> bp;
 	ok = FindParam(param, bp);
@@ -258,7 +242,6 @@ time_t Szbase::SearchFirst(const std::wstring &param, bool &ok) {
 }
 
 time_t Szbase::SearchFirst(const std::basic_string<unsigned char> &param, bool &ok) {
-	recursive_scoped_lock queuelock(szbase_mutex);
 
 	std::pair<szb_buffer_t*, TParam*> bp;
 	ok = FindParam(param, bp);
@@ -270,7 +253,6 @@ time_t Szbase::SearchFirst(const std::basic_string<unsigned char> &param, bool &
 }
 
 time_t Szbase::SearchLast(const std::wstring& param, bool &ok) { 
-	recursive_scoped_lock queuelock(szbase_mutex);
 
 	std::pair<szb_buffer_t*, TParam*> bp;
 
@@ -282,7 +264,6 @@ time_t Szbase::SearchLast(const std::wstring& param, bool &ok) {
 }
 
 time_t Szbase::SearchLast(const std::basic_string<unsigned char>& param, bool &ok) { 
-	recursive_scoped_lock queuelock(szbase_mutex);
 
 	std::pair<szb_buffer_t*, TParam*> bp;
 
@@ -293,11 +274,11 @@ time_t Szbase::SearchLast(const std::basic_string<unsigned char>& param, bool &o
 	return szb_search_last(bp.first, bp.second);
 }
 
-double Szbase::GetValue(std::pair<szb_buffer_t*, TParam*>& bp, time_t time, SZARP_PROBE_TYPE probe_type, int custom_length, bool *isFixed, bool &ok, std::wstring &error) {
+double Szbase::GetValue(std::pair<szb_buffer_t*, TParam*>& bp, time_t time, SZARP_PROBE_TYPE probe_type, int custom_length, bool *is_fixed, bool &ok, std::wstring &error) {
 
 	time_t end = szb_move_time(time, 1, probe_type, custom_length);
 
-	double result = szb_get_avg(bp.first, bp.second, time, end, NULL, NULL, probe_type, isFixed);
+	double result = szb_get_avg(bp.first, bp.second, time, end, NULL, NULL, probe_type, is_fixed);
 
 	if (bp.first->last_err == SZBE_OK) 
 		ok = true;
@@ -311,9 +292,7 @@ double Szbase::GetValue(std::pair<szb_buffer_t*, TParam*>& bp, time_t time, SZAR
 
 }
 
-double Szbase::GetValue(const std::basic_string<unsigned char>& param, time_t time, SZARP_PROBE_TYPE probe_type, int custom_length, bool *isFixed, bool &ok, std::wstring &error) {
-
-	recursive_scoped_lock queuelock(szbase_mutex);
+double Szbase::GetValue(const std::basic_string<unsigned char>& param, time_t time, SZARP_PROBE_TYPE probe_type, int custom_length, bool *is_fixed, bool &ok, std::wstring &error) {
 
 	std::pair<szb_buffer_t*, TParam*> bp;
 	ok = FindParam(param, bp);
@@ -323,13 +302,11 @@ double Szbase::GetValue(const std::basic_string<unsigned char>& param, time_t ti
 		return SZB_NODATA;
 	}
 
-	return GetValue(bp, time, probe_type, custom_length, isFixed, ok, error);
+	return GetValue(bp, time, probe_type, custom_length, is_fixed, ok, error);
 
 }
 
-double Szbase::GetValue(const std::wstring& param, time_t time, SZARP_PROBE_TYPE probe_type, int custom_length, bool *isFixed, bool &ok, std::wstring &error) {
-
-	recursive_scoped_lock queuelock(szbase_mutex);
+double Szbase::GetValue(const std::wstring& param, time_t time, SZARP_PROBE_TYPE probe_type, int custom_length, bool *is_fixed, bool &ok, std::wstring &error) {
 
 	std::pair<szb_buffer_t*, TParam*> bp;
 	ok = FindParam(param, bp);
@@ -339,7 +316,7 @@ double Szbase::GetValue(const std::wstring& param, time_t time, SZARP_PROBE_TYPE
 		return SZB_NODATA;
 	}
 
-	return GetValue(bp, time, probe_type, custom_length, isFixed, ok, error);
+	return GetValue(bp, time, probe_type, custom_length, is_fixed, ok, error);
 
 }
 
@@ -352,8 +329,6 @@ Szbase* Szbase::GetObject() {
 Szbase* Szbase::_instance = NULL;
 
 szb_buffer_t* Szbase::GetBuffer(const std::wstring &prefix) {
-
-	recursive_scoped_lock queuelock(szbase_mutex);
 
 	TBI::iterator i = m_ipkbasepair.find(prefix);
 
@@ -375,7 +350,6 @@ void Szbase::NextQuery() {
 #ifndef NO_LUA
 
 bool Szbase::CompileLuaFormula(const std::wstring& formula, std::wstring& error) {
-	recursive_scoped_lock queuelock(szbase_mutex);
 	lua_State* lua = Lua::GetInterpreter();
 	bool r = szb_compile_lua_formula(lua, (const char*)SC::S2U(formula).c_str());
 	if (r == false)

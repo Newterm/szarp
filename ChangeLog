@@ -1,5 +1,14 @@
 $Id$
 
+2010-01-11	Darek Marcinkiewicz <darek@dalkiaterm.pl>
+	* wx/libSzarp2/szbase: quite significant improvement of cache mechanism
+	efficiency, more mutexes removed, some variables/class attributes renamed
+	to comply with convention used throughout szbase code, these chagnes
+	has also some other conseqences: cache now is saved upon clean close
+	of draw3 app, so if you want to enjoy speed of cache, you should
+	close draw3 cleany (I'll fix that); szbase code assumes that
+	szbase_stamp is updated whenever anything in historical data changes,
+	even if a change touches data that are younger then two months
 2010-01-08	Pawel Palucha <pawel@praterm.com.pl>
 	* menaer3/tprober.*: forgotten commit.
 	* meaner3/prober.*: prober - daemon for writing 10-seconds data probes

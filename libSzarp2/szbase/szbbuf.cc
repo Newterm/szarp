@@ -327,11 +327,11 @@ szb_get_data(szb_buffer_t * buffer, TParam * param, time_t time)
 	return block != NULL ? block->GetData()[index] : SZB_NODATA;
 }
 
-#define NOT_FIXED if(isFixed) *isFixed = false;
+#define NOT_FIXED if(is_fixed) *is_fixed = false;
 
 SZBASE_TYPE
 szb_get_avg(szb_buffer_t * buffer, TParam * param,
-	time_t start_time, time_t end_time, double * psum, int *pcount, SZARP_PROBE_TYPE probe_type, bool *isFixed)
+	time_t start_time, time_t end_time, double * psum, int *pcount, SZARP_PROBE_TYPE probe_type, bool *is_fixed)
 {
 #ifdef KDEBUG
 	sz_log(9, "szb_get_avg: %s s:%ld e:%ld",
@@ -339,7 +339,7 @@ szb_get_avg(szb_buffer_t * buffer, TParam * param,
 		(long unsigned int) start_time, (long unsigned int) end_time);
 #endif
 
-	if (isFixed) *isFixed = true;
+	if (is_fixed) *is_fixed = true;
 
 	szb_datablock_t *b;
 	double sum = 0.0;
@@ -352,8 +352,8 @@ szb_get_avg(szb_buffer_t * buffer, TParam * param,
 	if (param->GetType() == TParam::P_LUA && param->GetFormulaType() == TParam::LUA_AV) {
 		bool f = true;
 		SZBASE_TYPE tmp = szb_lua_get_avg(buffer, param, start_time, end_time, psum, pcount, probe_type, f);
-		if(isFixed)
-			*isFixed = f;
+		if (is_fixed)
+			*is_fixed = f;
 		return tmp;
 	}
 #endif
@@ -399,9 +399,8 @@ szb_get_avg(szb_buffer_t * buffer, TParam * param,
 			const SZBASE_TYPE * data = b->GetData();
 
 			if (b->GetFixedProbesCount() < b->max_probes 
-				&& end_time > probe2time(b->GetFixedProbesCount() - 1, b->year, b->month)) {
+				&& end_time > probe2time(b->GetFixedProbesCount() - 1, b->year, b->month))
 				NOT_FIXED;
-			}
 
 			/* scan block for values */
 			for (i = probe; (i <= b->GetLastDataProbeIdx()) && (t < end_time); i++, t += SZBASE_PROBE){
@@ -416,7 +415,6 @@ szb_get_avg(szb_buffer_t * buffer, TParam * param,
 	}
 
 	if (count <= 0) {
-		NOT_FIXED;
 		if (NULL != psum)
 			*psum = SZB_NODATA;
 		if (NULL != pcount)
@@ -446,7 +444,7 @@ szb_get_probe(szb_buffer_t * buffer, TParam * param,
 
 void
 szb_get_values(szb_buffer_t * buffer, TParam * param,
-	time_t start_time, time_t end_time, SZBASE_TYPE * retbuf, bool *isFixed)
+	time_t start_time, time_t end_time, SZBASE_TYPE * retbuf, bool *is_fixed)
 {
 	int year, month;
 	int probe, max, i;
@@ -455,7 +453,7 @@ szb_get_values(szb_buffer_t * buffer, TParam * param,
 
 	szb_datablock_t * b;
 
-	if(isFixed) *isFixed = true;
+	if (is_fixed) *is_fixed = true;
 
 	assert(param != NULL);
 	assert(start_time <= end_time);
@@ -498,12 +496,11 @@ szb_get_values(szb_buffer_t * buffer, TParam * param,
 				retbuf[pos] = data[i];
 			for (; (i < max) && (t < end_time); i++, t += SZBASE_PROBE, pos++)
 				retbuf[pos] = SZB_NODATA;
-		}
-		else {
+		} else {
 			NOT_FIXED;
 			/* fill the return buffer with SZB_NODATA */
 			for (i = probe; (i < max) && (t < end_time); i++, t += SZBASE_PROBE, pos++)
-			retbuf[pos] = SZB_NODATA;
+				retbuf[pos] = SZB_NODATA;
 		}
 		/* set t to the begining of next month */
 		t = probe2time(0, year, month) + max * SZBASE_PROBE;
@@ -530,17 +527,17 @@ szb_get_last_av_date(szb_buffer_t * buffer)
 		while (param) {
 			t = szb_search_data(buffer, param, t, -1, -1);
 			if (t > last_av_date)
-			last_av_date = t;
-		param = param->GetNext();
+				last_av_date = t;
+			param = param->GetNext();
 		}
 	}
 	if (last_av_date < 0)
 		time(&last_av_date);
 #ifdef KDEBUG
-    sz_log(9, "L: szb_get_last_av_date: %ld", last_av_date);
+	sz_log(9, "L: szb_get_last_av_date: %ld", last_av_date);
 #endif
 
-    return last_av_date;
+	return last_av_date;
 }
 
 szb_buffer_t *
@@ -691,7 +688,7 @@ szb_buffer_str::FindBlock(TParam * param, int year, int month)
 	
 	szb_datablock_t * block = this->hashstorage[BufferKey(param,year,month)];
 
-	if(block != NULL) {
+	if (block != NULL) {
 		block->MarkAsUsed();
 		return block;
 	}
@@ -824,7 +821,7 @@ szb_buffer_str::Unlock()
 }
 
 BlockLocator::BlockLocator(szb_buffer_t* buff, szb_datablock_t* b): block(b), buffer(buff),
-	newer(NULL), older(NULL), nextSameParam(NULL), prevSameParam(NULL)
+	newer(NULL), older(NULL)
 {
 	//insertion
 	if(this->buffer->newest_block == NULL) {
@@ -839,14 +836,12 @@ BlockLocator::BlockLocator(szb_buffer_t* buff, szb_datablock_t* b): block(b), bu
 		this->buffer->newest_block = this;
 	}
 
-	if(this->buffer->paramindex[this->block->param] == NULL) {
+	if (this->buffer->paramindex[this->block->param] == NULL) {
 
 		this->buffer->paramindex[this->block->param] = this;
 
 	} else {
 
-		this->nextSameParam = this->buffer->paramindex[this->block->param];
-		this->buffer->paramindex[this->block->param]->prevSameParam = this;
 		this->buffer->paramindex[this->block->param] = this;
 
 	}
@@ -865,16 +860,6 @@ BlockLocator::BlockLocator(szb_buffer_t* buff, szb_datablock_t* b): block(b), bu
 BlockLocator::~BlockLocator()
 {
 	this->buffer->blocks_c--;
-
-	if(this->prevSameParam != NULL) {
-		this->prevSameParam->nextSameParam = this->nextSameParam;
-		if(this->nextSameParam != NULL)
-			this->nextSameParam->prevSameParam = this->prevSameParam;
-	} else {
-		this->buffer->paramindex[this->block->param] = this->nextSameParam;
-		if(this->nextSameParam != NULL)
-			this->nextSameParam->prevSameParam = NULL;
-	}
 
 	if(this == this->buffer->newest_block && this == this->buffer->oldest_block) {
 

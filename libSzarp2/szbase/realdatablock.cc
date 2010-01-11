@@ -90,7 +90,7 @@ namespace fs = boost::filesystem;
  * buffer->last_err for error code
  */
 RealDatablock::RealDatablock(szb_buffer_t * b, TParam * p, int y, int m) :
-	szb_datablock_t(b, p, y, m), probesFromFile(0) {
+	szb_datablock_t(b, p, y, m), probes_from_file(0) {
 #ifdef KDEBUG
 	sz_log(DATABLOCK_CREATION_LOG_LEVEL, "D: RealDatablock::RealDatablock: (%s, %d.%d)", param->GetName(), year, month);
 #endif
@@ -105,27 +105,28 @@ RealDatablock::RealDatablock(szb_buffer_t * b, TParam * p, int y, int m) :
 	}
 
 	//Get last database update time - `now`
-	this->lastUpdateTime = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
+	this->last_update_time = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
 
 	if (szb_file_exists(this->GetBlockFullPath().c_str(), &this->block_timestamp)) {
 		if (!LoadFromFile()) //If file exists load data from in
 			assert(false);
 		//CBB: something more reasonable
-		if (this->fixedProbesCount == this->max_probes)
+		if (this->first_non_fixed_probe == this->max_probes)
 			return; //Block is full
 	} else {
-		if (this->GetBlockLastDate() < buffer->first_av_date)NOT_INITIALIZED; //Block is before first_av_date - not creating empty block
+		if (this->GetBlockLastDate() < buffer->first_av_date)
+			NOT_INITIALIZED; //Block is before first_av_date - not creating empty block
 	}
 
 	int ly, lm;
 	szb_time2my(szb_search_last(buffer, param), &ly, &lm);
 
-	if ( (year < ly || (year == ly && month < lm)) || this->lastUpdateTime > this->GetBlockLastDate()) {
-		this->fixedProbesCount = this->max_probes; //If there are future data or the end of block is before `now`
+	if ( (year < ly || (year == ly && month < lm)) || this->last_update_time > this->GetBlockLastDate()) {
+		this->first_non_fixed_probe = this->max_probes; //If there are future data or the end of block is before `now`
 	} else {
 
-		int tmp = szb_probeind(this->lastUpdateTime) + 1;
-		this->fixedProbesCount = this->fixedProbesCount > tmp ? this->fixedProbesCount : tmp; //we have all read data or untill `now`
+		int tmp = szb_probeind(this->last_update_time) + 1;
+		this->first_non_fixed_probe = this->first_non_fixed_probe > tmp ? this->first_non_fixed_probe : tmp; //we have all read data or untill `now`
 	}
 
 	return;
@@ -176,20 +177,20 @@ bool RealDatablock::LoadFromFile() {
 
 	assert(!(to_read % sizeof(SZB_FILE_TYPE)));
 
-	this->fixedProbesCount = this->probesFromFile = max_probes - (to_read / sizeof(SZB_FILE_TYPE));
+	this->first_non_fixed_probe = this->probes_from_file = max_probes - (to_read / sizeof(SZB_FILE_TYPE));
 
 	this->AllocateDataMemory();
 
 	// konwersja do SZBASE_TYPE
 	double pw = pow(10.0, param->GetPrec());
-	for (i = 0; i < this->probesFromFile; i++) {
+	for (i = 0; i < this->probes_from_file; i++) {
 		if (SZB_FILE_NODATA == buf[i]) {
 			this->data[i] = SZB_NODATA;
 		} else {
+			if (first_data_probe_index < 0)
+				first_data_probe_index = i;
 			this->data[i] = SZBASE_TYPE (((double) szbfile_endian(buf[i])) / pw);
-			if (this->firstDataProbeIdx < 0)
-				this->firstDataProbeIdx = i;
-			this->lastDataProbeIdx = i;
+			this->last_data_probe_index = i;
 		}
 	}
 
@@ -208,24 +209,24 @@ bool RealDatablock::LoadFromFile() {
  * @return -1 on error (check buffer->last_err), otherwise 0
  */
 void RealDatablock::Refresh() {
-	if (this->fixedProbesCount == this->max_probes)
+	if (this->first_non_fixed_probe == this->max_probes)
 		return;
 
 	sz_log(DATABLOCK_REFRESH_LOG_LEVEL, "RealDatablock::Refresh() '%ls'", this->GetBlockRelativePath().c_str());
 
 	time_t updateTime = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
 
-	if (this->lastUpdateTime == updateTime)
+	if (this->last_update_time == updateTime)
 		return;
 
-	this->lastUpdateTime = updateTime;
+	this->last_update_time = updateTime;
 
 	if (!fs::exists(GetBlockFullPath())) {
-		if (this->firstDataProbeIdx < 0) { //this block is empty - update fixed probes
-			int tmp = szb_probeind(this->lastUpdateTime < this->GetLastDataProbeIdx() ? this->lastUpdateTime
+		if (this->first_data_probe_index < 0) { //this block is empty - update fixed probes
+			int tmp = szb_probeind(this->last_update_time < this->GetLastDataProbeIdx() ? this->last_update_time
 					: this->GetLastDataProbeIdx());
-			assert(tmp >= this->fixedProbesCount);
-			this->fixedProbesCount = this->fixedProbesCount > tmp ? this->fixedProbesCount : tmp;
+			assert(tmp >= this->first_non_fixed_probe);
+			this->first_non_fixed_probe = this->first_non_fixed_probe > tmp ? this->first_non_fixed_probe : tmp;
 		}
 		return;
 	}
@@ -241,9 +242,9 @@ void RealDatablock::Refresh() {
 
 	/* check if file size changed */
 	int i = size / sizeof(SZB_FILE_TYPE);
-	assert(i >= this->probesFromFile);
+	assert(i >= this->probes_from_file);
 
-	if (i <= this->probesFromFile)
+	if (i <= this->probes_from_file)
 		return;
 
 	/* load data */
@@ -258,7 +259,7 @@ void RealDatablock::Refresh() {
 		NOT_INITIALIZED;
 	}
 	/* we load only new data */
-	int pos = this->probesFromFile * sizeof(SZB_FILE_TYPE);
+	int pos = this->probes_from_file * sizeof(SZB_FILE_TYPE);
 	if (lseek(fd, pos, SEEK_SET) != pos) {
 		sz_log(1, "szb_reload_block: lseek() failed");
 		close(fd);
@@ -267,7 +268,7 @@ void RealDatablock::Refresh() {
 
 	int r = size - pos;
 	int to_read = r;
-	int prev_probes_c = this->probesFromFile;
+	int prev_probes_c = this->probes_from_file;
 
 	// for conversion to SZBASE_TYPE
 	SZB_FILE_TYPE * buf = (SZB_FILE_TYPE *) malloc(sizeof(SZB_FILE_TYPE) * r);
@@ -289,7 +290,7 @@ void RealDatablock::Refresh() {
 		if (i > 0) {
 			r -= i;
 			pos += i;
-			this->probesFromFile += i / sizeof(SZB_FILE_TYPE);
+			this->probes_from_file += i / sizeof(SZB_FILE_TYPE);
 		}
 	}
 	close(fd);
@@ -301,25 +302,23 @@ void RealDatablock::Refresh() {
 		if (SZB_FILE_NODATA == buf[i])
 			this->data[prev_probes_c + i] = SZB_NODATA;
 		else {
-			if (firstDataProbeIdx < 0)
-				firstDataProbeIdx = prev_probes_c + i;
 			this->data[prev_probes_c + i] = SZBASE_TYPE (static_cast<double>(buf[i]) / pw);
-			lastDataProbeIdx = prev_probes_c + i;
+			last_data_probe_index = prev_probes_c + i;
 		}
 	}
 	free(buf);
 
-	if (this->lastUpdateTime > this->GetBlockLastDate())
-		this->fixedProbesCount = max_probes;
-	else if (this->lastUpdateTime < this->GetBlockBeginDate())
-		this->fixedProbesCount = this->probesFromFile;
+	if (this->last_update_time > this->GetBlockLastDate())
+		this->first_non_fixed_probe = max_probes;
+	else if (this->last_update_time < this->GetBlockBeginDate())
+		this->first_non_fixed_probe = this->probes_from_file;
 	else {
-		int tmp = szb_probeind(this->lastUpdateTime) + 1;
-		this->fixedProbesCount = this->probesFromFile < tmp ? this->probesFromFile : tmp;
+		int tmp = szb_probeind(this->last_update_time) + 1;
+		this->first_non_fixed_probe = this->probes_from_file < tmp ? this->probes_from_file : tmp;
 	}
 
 	if (memallocated) {
-		for (int i = this->fixedProbesCount; i < this->max_probes; i++)
+		for (int i = this->first_non_fixed_probe; i < this->max_probes; i++)
 			data[i] = SZB_NODATA;
 	}
 
@@ -365,9 +364,8 @@ time_t szb_real_search_data(szb_buffer_t * buffer, TParam * param, time_t start,
 		}
 
 		time_t last_time = szb_search_last(buffer, param);
-		if (start < 0 || start> last_time)
-		start = last_time;
-
+		if (start < 0 || start > last_time)
+			start = last_time; 
 		assert(start >= 0);
 		if (start < end) {
 #ifdef KDEBUG
@@ -377,9 +375,9 @@ time_t szb_real_search_data(szb_buffer_t * buffer, TParam * param, time_t start,
 		}
 	}
 	else {
-		assert(direction> 0);
+		assert(direction > 0);
 		if (start < 0)
-		start = szb_search_first(buffer, param);
+			start = szb_search_first(buffer, param);
 		if (start < 0) {
 #ifdef KDEBUG
 			sz_log(SEARCH_DATA_LOG_LEVEL, "S: szb_real_search_data: return: -1");
@@ -387,7 +385,7 @@ time_t szb_real_search_data(szb_buffer_t * buffer, TParam * param, time_t start,
 			return -1;
 		}
 		if (end < 0)
-		end = szb_search_last(buffer, param);
+			end = szb_search_last(buffer, param);
 		if (end < 0) {
 #ifdef KDEBUG
 			sz_log(SEARCH_DATA_LOG_LEVEL, "S: szb_real_search_data: return: -1");
@@ -425,7 +423,7 @@ time_t szb_real_search_data(szb_buffer_t * buffer, TParam * param, time_t start,
 			if (NULL == block || new_month != month || new_year != year) {
 				block = szb_get_block(buffer, param, new_year, new_month);
 					if (NULL != block)
-					data = block->GetData();
+						data = block->GetData();
 				if (NULL == block || block->GetFirstDataProbeIdx() < 0) {
 					/* jump to the begining of the block, so after next iteration
 					 * we are at the end of previous */

@@ -77,8 +77,6 @@ class Szbase {
 
 	void AddParamToHash(const std::wstring& prefix, TParam *param);
 
-	boost::recursive_mutex szbase_mutex;
-
 	long m_current_query;
 public:
 	void NotifyAboutConfigurationChanges();

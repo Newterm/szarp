@@ -78,7 +78,7 @@ CombinedDatablock::CombinedDatablock(szb_buffer_t * b, TParam * p, int y, int m)
 	sz_log(DATABLOCK_CREATION_LOG_LEVEL, "D: CombinedDatablock::CombinedDatablock(%ls, %d.%d)", param->GetName().c_str(), year, month);
 #endif
 
-	this->lastUpdateTime = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
+	this->last_update_time = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
 
 	this->AllocateDataMemory();
 
@@ -135,12 +135,12 @@ CombinedDatablock::CombinedDatablock(szb_buffer_t * b, TParam * p, int y, int m)
 		msw_readed = lsw_readed;
 	}
 
-	this->fixedProbesCount =  msw_readed / sizeof(SZB_FILE_TYPE);
+	this->first_non_fixed_probe =  msw_readed / sizeof(SZB_FILE_TYPE);
 
 	// konwersja do SZB_TYPE
 	double pw = pow(10.0, param->GetPrec());
 	int i = 0;
-	for (; i < this->fixedProbesCount; i++) {
+	for (; i < this->first_non_fixed_probe; i++) {
 		if (SZB_FILE_NODATA == buf_msw[i]) {
 			this->data[i] = SZB_NODATA;
 		} else {
@@ -151,9 +151,9 @@ CombinedDatablock::CombinedDatablock(szb_buffer_t * b, TParam * p, int y, int m)
 		}
 
 		if(!IS_SZB_NODATA(this->data[i])) {
-			if(this->firstDataProbeIdx < 0)
-				this->firstDataProbeIdx = i;
-			this->lastDataProbeIdx = i;
+			if(this->first_data_probe_index < 0)
+				this->first_data_probe_index = i;
+			this->last_data_probe_index = i;
 		}
 
 	}
@@ -179,20 +179,20 @@ void
 CombinedDatablock::Refresh()
 {
 	// block is full - no more probes can be load
-	if (this->fixedProbesCount == this->max_probes)
+	if (this->first_non_fixed_probe == this->max_probes)
 		return;
 
 	time_t updatetime = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
 
-	if (this->lastUpdateTime == updatetime)
+	if (this->last_update_time == updatetime)
 		return;
 
-	this->lastUpdateTime = updatetime;
+	this->last_update_time = updatetime;
 
 	sz_log(DATABLOCK_REFRESH_LOG_LEVEL, "CombinedDatablock::Refresh() '%ls'", this->GetBlockRelativePath().c_str());
 
 	// load only new data
-	int position = this->fixedProbesCount * sizeof(SZB_FILE_TYPE);
+	int position = this->first_non_fixed_probe * sizeof(SZB_FILE_TYPE);
 	TParam ** p_cache = this->param->GetFormulaCache();
 
 	// msw file
@@ -267,10 +267,10 @@ CombinedDatablock::Refresh()
 	// konwersja do SZB_TYPE
 	double pw = pow(10, this->param->GetPrec());
 
-	int old_c = this->fixedProbesCount;
-	this->fixedProbesCount = old_c + msw_readed / sizeof(SZB_FILE_TYPE);
+	int old_c = this->first_non_fixed_probe;
+	this->first_non_fixed_probe = old_c + msw_readed / sizeof(SZB_FILE_TYPE);
 
-	for (int i = old_c; i < this->fixedProbesCount; i++) {
+	for (int i = old_c; i < this->first_non_fixed_probe; i++) {
 		if (SZB_FILE_NODATA == buf_msw[i - old_c])
 			this->data[i] = SZB_NODATA;
 		else {
@@ -280,10 +280,10 @@ CombinedDatablock::Refresh()
 				    ) / pw );
 
 			if (!IS_SZB_NODATA(this->data[i])) {
-			    if (this->firstDataProbeIdx < 0)
-				this->firstDataProbeIdx = i;
+			    if (this->first_data_probe_index < 0)
+				this->first_data_probe_index = i;
 
-			    this->lastDataProbeIdx = i;
+			    this->last_data_probe_index = i;
 			}
 		}
 	}

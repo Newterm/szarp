@@ -61,19 +61,15 @@ namespace fs = boost::filesystem;
 
 bool CacheableDatablock::write_cache = false;
 
-CacheableDatablock::CacheableDatablock(szb_buffer_t * b, TParam * p, int y, int m) : szb_datablock_t(b, p, y, m), cachepath(GetCacheFilePath(p, y, m)), cached(false)
+CacheableDatablock::CacheableDatablock(szb_buffer_t * b, TParam * p, int y, int m) : szb_datablock_t(b, p, y, m), cachepath(GetCacheFilePath(p, y, m))
 {
+	sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, "Creating cachable block for param: %ls, year: %d, month: %d, cachepath: %ls", param->GetName().c_str(), year, month, cachepath.c_str());
 }
 
 void CacheableDatablock::Cache()
 {
 	if (write_cache == false)
 		return;
-
-	if (cached)
-		return;
-
-	cached = true;
 
 	if (!IsInitialized() || buffer->cachepoison)
 		return;
@@ -90,8 +86,8 @@ void CacheableDatablock::Cache()
 		return;
 
 	std::ofstream ofs(SC::S2A(cachepath).c_str(), std::ios::binary | std::ios::out | std::ios::trunc);
-	ofs.write( (char*) data, sizeof(SZBASE_TYPE)*fixedProbesCount);
-	sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, "CacheableDatablock::Cache: %d probes written to cache file: '%ls'", fixedProbesCount, cachepath.c_str());
+	ofs.write( (char*) data, sizeof(SZBASE_TYPE)*first_non_fixed_probe);
+	sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, "CacheableDatablock::Cache: %d probes written to cache file: '%ls'", first_non_fixed_probe, cachepath.c_str());
 	ofs.close();
 
 }
@@ -142,7 +138,7 @@ CacheableDatablock::LoadFromCache()
 
 	int probes;
 	time_t mod;
-	if(!IsCacheFileValid(probes, &mod)) {
+	if (!IsCacheFileValid(probes, &mod)) {
 		sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, 
 				"CacheableDatablock::LoadFromCache: no valid cache file: '%ls'",
 				cachepath.c_str());
@@ -168,21 +164,21 @@ CacheableDatablock::LoadFromCache()
 	
 	ifs.close();
 
-	this->fixedProbesCount = probes;
+	this->first_non_fixed_probe = probes;
 
-	for(int i = this->fixedProbesCount; i < this->max_probes; i++)
+	for(int i = this->first_non_fixed_probe; i < this->max_probes; i++)
 		data[i] = SZB_NODATA;
 
-	for(int i = 0; i < this->fixedProbesCount; i++) //find first data
+	for(int i = 0; i < this->first_non_fixed_probe; i++) //find first data
 		if(!IS_SZB_NODATA(this->data[i])) {
-			this->firstDataProbeIdx = i;
+			this->first_data_probe_index = i;
 			break;
 		}
 
-	if(this->firstDataProbeIdx >= 0)
-		for(int i = this->fixedProbesCount - 1; i >= 0; i--) //find last data
+	if(this->first_data_probe_index >= 0)
+		for(int i = this->first_non_fixed_probe - 1; i >= 0; i--) //find last data
 			if(!IS_SZB_NODATA(this->data[i])) {
-				this->lastDataProbeIdx = i;
+				this->last_data_probe_index = i;
 				break;
 			}
 	
@@ -191,11 +187,10 @@ CacheableDatablock::LoadFromCache()
 
 	sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, 
 			"CacheableDatablock::LoadFromCache: loaded %d/%d probes from cache file: '%ls'", 
-			this->fixedProbesCount, 
+			this->first_non_fixed_probe, 
 			this->max_probes,
 			cachepath.c_str());
-
-	assert(this->fixedProbesCount <= this->max_probes);
+	assert(this->first_non_fixed_probe <= this->max_probes);
 
 	return true;
 }
@@ -315,7 +310,6 @@ class RemoveBlockPredicate
 		{
 			if(cbe.block != NULL) {
 				if(cbe.block->param == deleteParam) {
-					cbe.block->cached = true;
 					return true;
 				} else
  					return false;
@@ -335,5 +329,6 @@ CacheableDatablock::ClearParamFromCache(szb_buffer_t *buffer, TParam *param)
 }
 
 CacheableDatablock::~CacheableDatablock() {
+	sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, "Destroying cachable block for param: %ls, year: %d, month: %d", param->GetName().c_str(), year, month);
 	Cache();
 }

@@ -66,9 +66,9 @@ class szb_datablock_t {
 		//int GetProbesBeforeLastAvDate();	/**< Returns number of probes before last available date. */
 		time_t GetBlockBeginDate();		/**< Returns date of the first probe from the block. */
 		time_t GetBlockLastDate();		/**< Returns date of the last probe from the block. */
-		int GetFixedProbesCount() {return fixedProbesCount;};
-		int GetFirstDataProbeIdx() {return firstDataProbeIdx;};
-		int GetLastDataProbeIdx() {return lastDataProbeIdx;};
+		int GetFixedProbesCount() {return first_non_fixed_probe;};
+		int GetFirstDataProbeIdx() {return first_data_probe_index;};
+		int GetLastDataProbeIdx() {return last_data_probe_index;};
 		virtual void Refresh() =0;	/**< Refreshes the stored data. */
 		time_t GetBlockTimestamp() {return this->block_timestamp;};
 		std::wstring GetBlockRelativePath();
@@ -86,11 +86,11 @@ class szb_datablock_t {
 		bool initialized;		/**< Flag for the block`s successful initialization. */
 		SZBASE_TYPE * data;		/**< Array of values stored in the block. */
 		
-		int fixedProbesCount;
-		int firstDataProbeIdx;
-		int lastDataProbeIdx;
+		int first_non_fixed_probe;
+		int first_data_probe_index;
+		int last_data_probe_index;
 		
-		time_t lastUpdateTime;
+		time_t last_update_time;
 		time_t block_timestamp;
 };
 

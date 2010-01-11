@@ -51,8 +51,6 @@ class BlockLocator
 		szb_buffer_t* buffer;
 		BlockLocator* newer;
 		BlockLocator* older;
-		BlockLocator* nextSameParam;
-		BlockLocator* prevSameParam;
 };
 
 time_t

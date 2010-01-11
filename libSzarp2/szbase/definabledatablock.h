@@ -28,7 +28,6 @@ class DefinableDatablock: public CacheableDatablock
 		~DefinableDatablock(){this->Cache();};
 		virtual void Refresh();
 	protected:
-		virtual bool IsCacheFileValid(int &probes, time_t *mdate = NULL);
 		virtual bool IsCachable();	
 	private:
 		bool TestParam(TParam *param, int year, int month, time_t t);

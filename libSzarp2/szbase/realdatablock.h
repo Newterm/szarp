@@ -40,7 +40,7 @@ class RealDatablock: public szb_datablock_t
 	protected:
 	private:
 		bool LoadFromFile();
-		int probesFromFile;
+		int probes_from_file;
 		bool isEmpty;
 		static bool empty_field_initialized;
 		static SZBASE_TYPE * empty_field;

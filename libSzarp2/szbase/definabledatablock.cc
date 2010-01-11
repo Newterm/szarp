@@ -369,7 +369,7 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, szb_datablock
 	} while (chptr && *(++chptr) != 0);
 
 	if (szb_definable_error)
-	return SZB_NODATA;
+		return SZB_NODATA;
 
 	if (sp-- < 0) {
 		sz_log(5, "ERROR: szb_definable_calculate: sp-- < 0");
@@ -867,7 +867,7 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 		return;
 	}
 
-	this->lastUpdateTime = updatetime;
+	this->last_update_time = updatetime;
 	
 	// local copy for readability
 	const std::wstring& formula = this->param->GetDrawFormula();
@@ -884,18 +884,18 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 
 	int probes_to_compute;
 	if (num_of_params > 0) {
-		probes_to_compute = this->GetBlocksUsedInFormula(dblocks, this->fixedProbesCount);
+		probes_to_compute = this->GetBlocksUsedInFormula(dblocks, this->first_non_fixed_probe);
 	}
 	else {
-		if(this->lastUpdateTime > this->GetBlockLastDate())
-			probes_to_compute = this->fixedProbesCount = this->max_probes;
-		else if(this->lastUpdateTime < this->GetBlockBeginDate()) {
+		if(this->last_update_time > this->GetBlockLastDate())
+			probes_to_compute = this->first_non_fixed_probe = this->max_probes;
+		else if(this->last_update_time < this->GetBlockBeginDate()) {
 			NOT_INITIALIZED;
 		} else
-			probes_to_compute = this->fixedProbesCount = szb_probeind(szb_search_last(buffer, param)) + 1;
+			probes_to_compute = this->first_non_fixed_probe = szb_probeind(szb_search_last(buffer, param)) + 1;
 	}
 
-	assert(this->fixedProbesCount <= this->max_probes);
+	assert(this->first_non_fixed_probe <= this->max_probes);
 
 	if(probes_to_compute <= 0)
 		NOT_INITIALIZED;
@@ -919,9 +919,9 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 		this->data[i] = szb_definable_calculate(b, stack, dblocks, formula, i, num_of_params, year, month, param) / pw;
 
 		if(!IS_SZB_NODATA(this->data[i])) {
-			if(this->firstDataProbeIdx < 0)
-				this->firstDataProbeIdx = i;
-			this->lastDataProbeIdx = i;
+			if(this->first_data_probe_index < 0)
+				this->first_data_probe_index = i;
+			this->last_data_probe_index = i;
 		}
 
 		if (0 != szb_definable_error) { // error
@@ -933,7 +933,7 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 		}
 	}
 
-	if(this->firstDataProbeIdx >= 0) {
+	if(this->first_data_probe_index >= 0) {
 		assert(!IS_SZB_NODATA(this->data[this->GetFirstDataProbeIdx()]));
 		assert(!IS_SZB_NODATA(this->data[this->GetLastDataProbeIdx()]));
 	}
@@ -981,9 +981,9 @@ DefinableDatablock::GetBlocksUsedInFormula(szb_datablock_t ** dblocks, int &fixe
 	if(probes < fixedprobes)
 		probes = fixedprobes;
 
-	if(this->GetBlockLastDate() < this->lastUpdateTime) {
+	if(this->GetBlockLastDate() < this->last_update_time) {
 		probes = max_probes;
-	} else if (this->GetBlockBeginDate() < this->lastUpdateTime) {
+	} else if (this->GetBlockBeginDate() < this->last_update_time) {
 		int tmp = szb_probeind(szb_search_last(buffer, this->param)) + 1;
 		if(tmp > probes)
 			probes = tmp;
@@ -996,15 +996,15 @@ void
 DefinableDatablock::Refresh()
 {
 	// block is full - no more probes can be load
-	if (this->fixedProbesCount == this->max_probes)
+	if (this->first_non_fixed_probe == this->max_probes)
 		return;
 
 	time_t updatetime = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
 
-	if (this->lastUpdateTime == updatetime)
+	if (this->last_update_time == updatetime)
 		return;
 
-	this->lastUpdateTime = updatetime;
+	this->last_update_time = updatetime;
 
 	sz_log(DATABLOCK_REFRESH_LOG_LEVEL, "DefinableDatablock::Refresh() '%ls'", this->GetBlockRelativePath().c_str());
 
@@ -1024,7 +1024,7 @@ DefinableDatablock::Refresh()
 		new_probes_c = GetBlocksUsedInFormula(dblocks, new_fixed_probes);
 	}
 	else {
-		if(this->lastUpdateTime > this->GetBlockLastDate())
+		if (this->last_update_time > this->GetBlockLastDate())
 			new_probes_c = new_fixed_probes = this->max_probes;
 		else
 			new_probes_c = new_fixed_probes = szb_probeind(szb_search_last(buffer, param)) + 1;
@@ -1032,34 +1032,24 @@ DefinableDatablock::Refresh()
 	
 	assert(new_probes_c > 0);
 
-// 	if (num_of_params == 0 || this->param->IsNUsed()) {
-// 		new_probes_c = GetProbesBeforeLastAvDate();
-// 	}
-
-	assert(new_fixed_probes >= this->fixedProbesCount);
-
-// 	if (new_fixed_probes <= this->fixedProbesCount) {
-// 		// size havent change - nothing to calculate;
-// 		szb_unlock_buffer(buffer);
-// 		return; 
-// 	}
+	assert(new_fixed_probes >= this->first_non_fixed_probe);
 
 	SZBASE_TYPE stack[DEFINABLE_STACK_SIZE]; // stack for calculatinon of formula
 
 	double pw = pow(10, this->param->GetPrec());
 
-	if(this->firstDataProbeIdx >=fixedProbesCount)
-		firstDataProbeIdx = -1;
-	if(this->lastDataProbeIdx >=fixedProbesCount)
-		lastDataProbeIdx = -1;
+	if (this->first_data_probe_index >= first_non_fixed_probe)
+		first_data_probe_index = -1;
+	if (this->last_data_probe_index >= first_non_fixed_probe)
+		last_data_probe_index = -1;
 
-	for (int i = this->fixedProbesCount; i < new_probes_c; i++) {
+	for (int i = this->first_non_fixed_probe; i < new_probes_c; i++) {
 		this->data[i] = szb_definable_calculate(buffer, stack, dblocks, formula, i, num_of_params, this->year, this->month, this->param) / pw;
 
-		if(!IS_SZB_NODATA(this->data[i])) {
-			if(this->firstDataProbeIdx < 0 || i < this->firstDataProbeIdx)
-				this->firstDataProbeIdx = i;
-			this->lastDataProbeIdx = i;
+		if (!IS_SZB_NODATA(this->data[i])) {
+			if(this->first_data_probe_index < 0 || i < this->first_data_probe_index)
+				this->first_data_probe_index = i;
+			this->last_data_probe_index = i;
 		}
 
 		if (0 != szb_definable_error) { // error
@@ -1070,12 +1060,12 @@ DefinableDatablock::Refresh()
 		}
 	}
 
-	if (this->firstDataProbeIdx >= 0) {
+	if (this->first_data_probe_index >= 0) {
 		assert(!IS_SZB_NODATA(this->data[this->GetFirstDataProbeIdx()]));
 		assert(!IS_SZB_NODATA(this->data[this->GetLastDataProbeIdx()]));
 	}
 
-	this->fixedProbesCount = new_fixed_probes;
+	this->first_non_fixed_probe = new_fixed_probes;
 
 	szb_unlock_buffer(buffer);
 
@@ -1084,124 +1074,5 @@ DefinableDatablock::Refresh()
 
 bool DefinableDatablock::IsCachable()
 {
-	TParam** params = this->param->GetFormulaCache();
-	for(int i = 0; i < this->param->GetNumParsInFormula(); i++){
-		if(!TestParam(params[i], this->year, this->month, this->block_timestamp)){
-			return false;
-		}
-	}
-	return true;
-}
-
-bool
-DefinableDatablock::IsCacheFileValid(int &probes, time_t *mdate) {
-	time_t ts;
-
-	if(!CacheableDatablock::IsCacheFileValid(probes, &ts))
-		return false;
-
-	TParam** params = this->param->GetFormulaCache();
-
-	for(int i = 0; i < this->param->GetNumParsInFormula(); i++){
-		if(!TestParam(params[i], this->year, this->month, ts))
-			return false;
-	}
-
-	if (mdate != NULL)
-		*mdate = ts;
-
-	return true;
-}
-
-bool
-DefinableDatablock::TestParam(TParam *p, int year, int month, time_t t) {
-	switch (p->GetType()) {
-		case TParam::P_REAL:
-			{
-				std::wstring tmppath = szb_datablock_t::GetBlockFullPath(buffer, p, year, month);
-
-				try {
-					time_t mt;
-
-					if (fs::exists(tmppath)) {
-						try {
-							mt = fs::last_write_time(tmppath);
-						} catch (fs::wfilesystem_error &e) {
-							sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, 
-								"DefinableDatablock::TestParam: cannot retrive modification date for: '%ls'", 
-								tmppath.c_str());
-							return false;
-						}
-
-						if (mt >= t) {
-							sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL,
-									"DefinableDatablock::TestParam: referenced param is newer: '%ls'", 
-									tmppath.c_str());
-							return false;
-						} else {
-							sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL,
-									"DefinableDatablock::TestParam: referenced file is valid: '%ls'", 
-									tmppath.c_str());
-							return true;
-						}
-					}
-					sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, 
-							"DefinableDatablock::TestParam: no file: '%ls'",
-							tmppath.c_str());
-
-					tmppath = ((fs::wpath(tmppath)).remove_leaf()).string(); //now we`ll check directory
-					if (fs::exists(tmppath)) {
-						try {
-							mt = fs::last_write_time(tmppath);
-						} catch (fs::wfilesystem_error) {
-							sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, 
-								"DefinableDatablock::TestParam: cannot retrive modification date for: '%ls'", 
-								tmppath.c_str());
-							return false;
-						}
-
-						if (mt >= t) {
-							sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL,
-									"DefinableDatablock::TestParam: directory of referenced param is newer: '%ls'",
-									tmppath.c_str());
-							return false;
-						} else {
-							sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL,
-									"DefinableDatablock::TestParam: directory referenced file is valid: '%ls'", 
-									tmppath.c_str());
-							return true;
-						}
-					}
-
-					return false;
-
-				} catch (fs::wfilesystem_error &e) {
-					sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL,
-							"DefinableDatablock: filesystem_error %ls",
-							tmppath.c_str());
-					return true;
-				}
-				break;
-			}
-		case TParam::P_COMBINED:
-		case TParam::P_DEFINABLE:
-			{
-				TParam** params = p->GetFormulaCache();
-				for(int i = 0; i < p->GetNumParsInFormula(); i++){
-					if(!TestParam(params[i], this->year, this->month, t))
-						return false;
-				}
-			}
-			break;
-		case TParam::P_LUA:
-			{
-				if (p->GetFormulaType() == TParam::LUA_AV)
-					return false;
-				else
-					return true;
-			}
-			break;
-	}
-	return true;
-
+	return first_non_fixed_probe > 0;
 }
