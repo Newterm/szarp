@@ -280,17 +280,6 @@ fi
 
 if test x$no_x != xyes ; then
 	no_x="yes"
-	PKG_CHECK_MODULES(XP, xp, no_x="no", [AC_MSG_RESULT([
-			xp-dev library not found on your system,
-			configuring without X Windows, error is: $XP_PKG_ERRORS
-		])
-	])
-	X_LIBS="$XP_LIBS $X_LIBS"
-	X_CFLAGS="$XP_CFLAGS $X_CFLAGS"
-fi
-
-if test x$no_x != xyes ; then
-	no_x="yes"
 	PKG_CHECK_MODULES(XPM, xpm, no_x="no", [AC_MSG_RESULT([
 			xpm-dev library not found on your system,
 			configuring without X Windows, error is: $XPM_PKG_ERRORS
