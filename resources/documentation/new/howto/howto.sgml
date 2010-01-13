@@ -292,14 +292,10 @@ finansowej w holdingu.
 <title>Wdro¿one instalacje</title>
 
 <para>
-Na przestrzeni historii SZARPa by³y ró¿ne instalacje: od DOSa przez UnixWare do
-Linuksa. Do koñca roku 1999 uda³o siê dokonaæ upgrade'ów wszystkich
-wcze¶niejszych instalacji do Linuksa, co pozwoli³o na uporz±dkowanie wersji
-SZARPa - wszêdzie znajdowa³ siê SZARP v2.1. W po³owie 2005 roku, ze wzglêdu na 
-zmianê formatu konfiguracji i bazy danych, zapad³a decyzja o podwy¿szeniu
-numeru wersji do 2.2. Poni¿sze zestawienie wymienia w
+Poni¿sze zestawienie wymienia w
 kolejno¶ci chronologicznej (pierwsza instalacja, nie upgrade) wszystkie
-przedsiêbiorstwa ciep³ownicze z SZARP v2.1 - 3.1:
+przedsiêbiorstwa ciep³ownicze z SZARP v2.1 - 3.1. Nie zawiera ono instalacji
+na wêz³ach ciep³nych.
 </para>
 
 <para>
