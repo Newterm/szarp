@@ -1,5 +1,7 @@
 $Id$
 
+2010-01-13	Darek Marcinkiewicz <darek@dalkiaterm.pl>
+	* wx/draw3: tabs naming fix, some commented out code removed
 2010-01-12	Pawel Palucha <pawel@praterm.com.pl>
 	* configure.in, debian/control: removed unnecessary linking and
 	dependency on libXp library.

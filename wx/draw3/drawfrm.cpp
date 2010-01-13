@@ -316,7 +316,7 @@ bool DrawFrame::AddDrawPanel(const wxString & prefix, const wxString& set, Perio
 	draw_panel->SetActive(true);
 
 	if (m_notebook) {
-		wxString title = GetTitleForPanel(config->GetID());
+		wxString title = GetTitleForPanel(config->GetID(), -1);
 
 		m_notebook->AddPage(new_panel, title, true);
 
@@ -728,12 +728,12 @@ DrawFrame::LoadLayout() {
 			success = false;
 		}
 
-
 		if (success) {
 			idx++;
 		}
 
 	}
+
 	if (idx == 0) {
 		return false;
 	}
@@ -742,7 +742,6 @@ DrawFrame::LoadLayout() {
 		m_notebook->SetSelection(selection % m_notebook->GetPageCount());
 		draw_panel->SetFocus();
 	}
-
 
 	return requested_prefix_present;
 
@@ -1035,15 +1034,15 @@ void DrawFrame::OnLanguageChangeTool(wxCommandEvent &event) {
 	PopupMenu(menu);
 }
 
-wxString DrawFrame::GetTitleForPanel(wxString title) {
+wxString DrawFrame::GetTitleForPanel(wxString title, int panel_no) {
 	int nr = 1;
 	wxString ret = title;
 
 	bool got_title = false;
 	while (!got_title) {
-		size_t i = 0;
+		int i = 0;
 		for (; i < m_notebook->GetPageCount(); i++)
-			if (ret == m_notebook->GetPageText(i))
+			if (i != panel_no && ret == m_notebook->GetPageText(i))
 				break;
 
 		if (i < m_notebook->GetPageCount())
@@ -1063,7 +1062,7 @@ void DrawFrame::UpdatePanelName(DrawPanel *panel) {
 	if (i == wxNOT_FOUND)
 		return;
 
-	m_notebook->SetPageText(i, GetTitleForPanel(panel->GetConfigName()));
+	m_notebook->SetPageText(i, GetTitleForPanel(panel->GetConfigName(), i));
 
 }
 

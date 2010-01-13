@@ -195,7 +195,7 @@ protected:
 	/**closes current tab*/
 	void OnCloseTab(wxCommandEvent &command);
 
-	wxString GetTitleForPanel(wxString title);
+	wxString GetTitleForPanel(wxString title, int panel_no);
 
 	/**Closes tab of given index
 	 * @param sel index of tab to remove*/
