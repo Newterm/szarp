@@ -40,7 +40,7 @@
  		server IP address (required in client mode)
  *      modbus:tcp-keepalive="yes"
  		should we set TCP Keep-Alive options? "yes" or "no"
- *	modbus:tcp-timeout="30"
+ *	modbus:tcp-timeout="32"
 		(optional) connection timeout in seconds, after timeout expires, connection
 		is closed; default empty value means no timeout
  *	modbus:nodata-timeout="15"
@@ -155,10 +155,16 @@ const unsigned char MB_GATEWAY_TARGET_DEVICE_FAILED_TO_RESPOND  = 0x0B;
 
 /** Modbus public function codes. */
 const unsigned char MB_F_RHR = 0x03;		/* Read Holding registers */
+const unsigned char MB_F_RIR = 0x04;		/* Read Holding registers */
 const unsigned char MB_F_WSR = 0x06;		/* Write single register */
 const unsigned char MB_F_WMR = 0x10;		/* Write multiple registers */
 
 bool g_debug = false;
+
+enum REGISTER_TYPE {
+	HOLDING_REGISTER,
+	INPUT_REGISTER
+};
 
 struct PDU {
 	unsigned char func_code;
@@ -196,7 +202,7 @@ public:
 class modbus_register;
 typedef std::map<unsigned short, modbus_register*> RMAP;
 typedef std::map<unsigned char, RMAP> URMAP;
-typedef std::set<std::pair<unsigned char, unsigned short> > RSET;
+typedef std::set<std::pair<unsigned char, std::pair<REGISTER_TYPE, unsigned short> > > RSET;
 
 class modbus_daemon;
 class modbus_register {
@@ -329,6 +335,7 @@ protected:
 	unsigned short m_start_addr;
 	unsigned short m_regs_count;
 	unsigned char m_unit;
+	REGISTER_TYPE m_register_type;
 
 	enum {
 		AWAITING_CONNECTION,
@@ -607,10 +614,10 @@ unsigned short bcd_parcook_modbus_val_op::val() {
 	if (!valid)
 		return SZARP_NO_DATA;
 
-	return (val & 0xff)
-		+ ((val >> 8) & 0xff) * 10
-		+ ((val >> 16) & 0xff) * 100
-		+ (val >> 24) * 1000;
+	return (val & 0xf)
+		+ ((val >> 4) & 0xf) * 10
+		+ ((val >> 8) & 0xf) * 100
+		+ (val >> 12) * 1000;
 }
 
 template<class T> unsigned short long_parcook_modbus_val_op<T>::val() {
@@ -953,6 +960,18 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 		xmlFree(c);
 		addr = l;
 
+		REGISTER_TYPE rt;
+		c = (char*) xmlGetNsProp(node, BAD_CAST("register_type"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+		if (c == NULL || !strcmp(c, "holding_register"))
+			rt = HOLDING_REGISTER;
+		else if (!strcmp(c, "input_register"))
+			rt = INPUT_REGISTER;
+		else {
+			dolog(0, "Unsupported register type, line %ld, should be either input_register or holding_register", xmlGetLineNo(node));
+			return 1;
+		}
+		xmlFree(c);
+
 
 		c = (char*) xmlGetNsProp(node, BAD_CAST("val_type"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 		if (c == NULL) {
@@ -973,6 +992,8 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 
 		sender_modbus_val_op *vos;
 		parcook_modbus_val_op *vop;
+		bool two_regs = false;
+		unsigned short other_reg = 0;
 		if (!strcmp(c, "integer")) {
 			m_registers[id][addr] = new modbus_register(this);
 			if (send) 
@@ -997,9 +1018,9 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 			if (c2 == NULL)  {
 				if (m_float_order == MSWLSW) {
 					msw = addr;
-					lsw = addr + 1;
+					other_reg = lsw = addr + 1;
 				} else {
-					msw = addr + 1;
+					other_reg = msw = addr + 1;
 					lsw = addr;
 				}
 				is_lsw = true;
@@ -1009,6 +1030,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 					lsw = addr + 1;
 				else
 					lsw = addr - 1;
+				other_reg = lsw;
 				is_lsw = false;
 			} else if (!xmlStrcmp(c2, BAD_CAST "LSW")) {
 				lsw = addr;
@@ -1017,6 +1039,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 				} else {
 					msw = addr - 1;
 				}
+				other_reg = msw;
 				is_lsw = true;
 			} else {
 				dolog(0, "Unsupported val_op attribute value - %s, line %ld", (char*) c2, xmlGetLineNo(node));
@@ -1047,18 +1070,21 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 				dolog(7, "Param %s mapped to unit: %lc, register %hu, value type: long, params holds %s part",
 					SC::S2A(param->GetName()).c_str(), u->GetId(), addr, is_lsw ? "lsw" : "msw");
 			}
+			two_regs = true;
 		}
 		xmlFree(c);
 
 		if (!send) {
 			p = p->GetNext();
 			m_parcook_ops.push_back(vop);
-			m_received.insert(std::make_pair(id, addr));
+			m_received.insert(std::make_pair(id, std::make_pair(rt, addr)));
+			if (two_regs)
+				m_received.insert(std::make_pair(id, std::make_pair(rt, other_reg)));
 		} else {
 			sp = sp->GetNext();
 			m_sender_ops.push_back(vos);
 			m_send_map.push_back(m_registers[id][addr]);
-			m_sent.insert(std::make_pair(id, addr));
+			m_sent.insert(std::make_pair(id, std::make_pair(rt, addr)));
 		}
 	}
 
@@ -1481,7 +1507,14 @@ void modbus_client::send_write_query() {
 
 void modbus_client::send_read_query() {
 	dolog(7, "Sending read holding registers command, start register: %hu, registers count: %hu", m_start_addr, m_regs_count);
-	m_pdu.func_code = MB_F_RHR;
+	switch (m_register_type) {
+		case INPUT_REGISTER:
+			m_pdu.func_code = MB_F_RIR;
+			break;
+		case HOLDING_REGISTER:
+			m_pdu.func_code = MB_F_RHR;
+			break;
+	}
 	m_pdu.data.resize(0);
 	m_pdu.data.push_back(m_start_addr >> 8);
 	m_pdu.data.push_back(m_start_addr & 0xff);
@@ -1501,14 +1534,17 @@ void modbus_client::find_continous_reg_block(RSET::iterator &i, RSET &regs) {
 	assert(i != regs.end());
 
 	m_unit = i->first;
-	m_start_addr = current = i->second;
+	m_start_addr = current = i->second.second;
 	m_regs_count = 1;
+	m_register_type = i->second.first;
 	
 	while (++i != regs.end() && m_regs_count < 125) {
 		unsigned char c = i->first;
 		if (c != m_unit)
 			break;
-		unsigned short addr = i->second;
+		if (m_register_type != i->second.first)
+			break;
+		unsigned short addr = i->second.second;
 		if (++current != addr)
 			break;
 		m_regs_count += 1;
@@ -1552,11 +1588,19 @@ void modbus_client::send_query() {
 void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 	switch (m_state) {
 		case SENDING_READ_QUERY:
-			consume_read_regs_response(m_unit, m_start_addr, m_regs_count, pdu);
+			try {
+				consume_read_regs_response(m_unit, m_start_addr, m_regs_count, pdu);
+			} catch (std::out_of_range) {	//message was distorted
+				dolog(1, "Error while processing response - there is either a bug or sth was very wrong with request format");
+			}
 			send_next_query();
 			break;
 		case SENDING_WRITE_QUERY:
-			consume_write_regs_response(m_unit, m_start_addr, m_regs_count, pdu);
+			try {
+				consume_write_regs_response(m_unit, m_start_addr, m_regs_count, pdu);
+			} catch (std::out_of_range) {	//message was distorted
+				dolog(1, "Error while processing response - there is either a bug or sth was very wrong with request format");
+			}
 			send_next_query();
 			break;
 		default:
@@ -1828,10 +1872,6 @@ bool serial_rtu_parser::check_crc() {
 
 
 serial_parser::serial_parser(serial_connection_handler *serial_handler) : m_serial_handler(serial_handler), m_timer_started(false) {
-	struct timeval tv;
-	tv.tv_sec = 0;
-	tv.tv_usec = 500;
-
 	evtimer_set(&m_timer, timer_callback, this);
 	event_base_set(m_serial_handler->get_event_base(), &m_timer);
 
@@ -1852,7 +1892,7 @@ void serial_parser::start_timer() {
 	stop_timer();
 
 	struct timeval tv;
-	tv.tv_sec = 1;
+	tv.tv_sec = 2;
 	tv.tv_usec = 0;
 	evtimer_add(&m_timer, &tv); 
 }

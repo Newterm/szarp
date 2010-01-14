@@ -1,5 +1,8 @@
 $Id$
 
+2010-01-15      Darek Marcinkiewicz <darek@dalkiaterm.pl>
+	* parcook/mbdmn.cc: added support for read input registers command,
+	fixes
 2010-01-14      Adam Smyk <asmyk@dalkiaterm.pl>
 	* configure.in, wx/viszio/Makefile.am: viszio is configured to 
 	link against libwnck and glib libraries (to move frames between 
