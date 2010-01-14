@@ -1,5 +1,9 @@
 $Id$
 
+2010-01-14      Adam Smyk <asmyk@dalkiaterm.pl>
+	* configure.in, wx/viszio/Makefile.am: viszio is configured to 
+	link against libwnck and glib libraries (to move frames between 
+	workspaces)
 2010-01-13	Pawel Palucha <pawel@praterm.com.pl>
 	* documentation/new/common/wdrozenia.sgml: new implementations.
 2010-01-13	Darek Marcinkiewicz <darek@dalkiaterm.pl>

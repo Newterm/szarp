@@ -769,18 +769,34 @@ if test "x$no_gstreamer" = "xyes" ; then
         AC_DEFINE(NO_GSTREAMER, 1, [Define to 1 if  gstreamer is not available])
 fi
 
+#Check for glib library
+no_glib="yes";
+if test "x$with_mingw32" != "xyes"; then
+	PKG_CHECK_MODULES(GLIB, glib, no_glib="no", [AC_MSG_RESULT(no)])
+fi
+
 #Check for GDK library
 no_gdk="yes";
 if test "x$with_mingw32" != "xyes"; then
 	PKG_CHECK_MODULES(GDK, gdk-2.0, no_gdk="no", [AC_MSG_RESULT(no)])
 fi
 
-#asm
 #Check for gtk library
 no_gtk20="yes";
 if test "x$with_mingw32" != "xyes"; then
 	PKG_CHECK_MODULES(GTK, gtk+-2.0, no_gtk20="no", [AC_MSG_RESULT(no)])
 fi
+
+#Check for wnck library
+no_wnck="no";
+AC_CHECK_LIB(wnck-1, wnck_workspace_get_number, [ WNCK_LIBS=-lwnck-1], [no_wnck=yes])
+if test "x$no_WNCK" = "xyes"; then
+    AC_MSG_WARN([
+          libwnck library is not available, some programs will not be built
+        	])
+fi
+AC_SUBST(WNCK_LIBS)
+
 
 #Check for sqlite library
 no_sqlite="yes";
@@ -1150,6 +1166,21 @@ if test "$no_gdk" != "yes" ; then
 else
         echo "no"
 fi
+
+echo -n "Configured with GLIB:              "
+if test "$no_glib" != "yes" ; then
+        echo "yes"
+else
+        echo "no"
+fi
+
+echo -n "Configured with WNCK:              "
+if test "$no_wnck" != "yes" ; then
+        echo "yes"
+else
+        echo "no"
+fi
+
 
 echo -n "Configured with python 2.4         "
 if test "$no_python" != "yes" ; then
