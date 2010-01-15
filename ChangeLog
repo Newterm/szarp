@@ -1,6 +1,9 @@
 $Id$
 
 2010-01-15      Darek Marcinkiewicz <darek@dalkiaterm.pl>
+	* parcook/mbdmn.cc: it is now possible to set 
+	msw/lsw registers order for individual params
+2010-01-14      Darek Marcinkiewicz <darek@dalkiaterm.pl>
 	* parcook/mbdmn.cc: added support for read input registers command,
 	fixes
 2010-01-14      Adam Smyk <asmyk@dalkiaterm.pl>

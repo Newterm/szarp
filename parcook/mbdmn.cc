@@ -72,6 +72,7 @@
  *                      ...
  *                      modbus:address="0x04"
  *                      modbus:val_type="float"
+ *			modbus:val_op="msblsb"
  *			modbus:val_op="LSW">
 				(optional) operator for converting data from float to 2 bytes integer;
 				default is 'NONE' (simple conversion to short int), other values
@@ -232,7 +233,7 @@ protected:
 	struct event_base* m_event_base;
 	struct event m_timer;
 
-	enum { LSWMSW, MSWLSW } m_float_order;
+	enum FLOAT_ORDER { LSWMSW, MSWLSW } m_float_order;
 
 	time_t m_current_time;
 	time_t m_expiration_time;
@@ -625,17 +626,25 @@ template<class T> unsigned short long_parcook_modbus_val_op<T>::val() {
 	bool valid;
 
 	v2[1] = m_reg_msw->get_val(valid);
-	if (!valid)
+	if (!valid) {
+		dolog(10, "Int value, msw invalid, no_data");
 		return SZARP_NO_DATA;
+	}
 	v2[0] = m_reg_lsw->get_val(valid);
-	if (!valid)
+	if (!valid) {
+		dolog(10, "Int value, lsw invalid, no_data");
 		return SZARP_NO_DATA;
+	}
 
-	unsigned int v = (*(unsigned int*)v2) * m_prec;
+	int iv = *((int*) v2) * m_prec; 
+	unsigned int* pv = (unsigned int*) &iv;
+
+	dolog(10, "Int value: %d, unsigned int: %u", iv, *pv);
+
 	if (m_lsw)
-		return v & 0xffff;
+		return *pv & 0xffff;
 	else
-		return v >> 16;
+		return *pv >> 16;
 }
 
 template<> unsigned short long_parcook_modbus_val_op<float>::val() {
@@ -643,18 +652,25 @@ template<> unsigned short long_parcook_modbus_val_op<float>::val() {
 	bool valid;
 
 	v2[0] = m_reg_msw->get_val(valid);
-	if (!valid)
+	if (!valid) {
+		dolog(10, "Float value, msw invalid, no_data");
 		return SZARP_NO_DATA;
+	}
 	v2[1] = m_reg_lsw->get_val(valid);
-	if (!valid)
+	if (!valid) {
+		dolog(10, "Float value, lsw invalid, no_data");
 		return SZARP_NO_DATA;
+	}
 
-	float* f = (float*) &v2;
-	unsigned int v = (*f) * m_prec;
+	float* f = (float*) v2;
+	int iv = *f * m_prec;	
+	unsigned int* pv = (unsigned int*) &iv;
+
+	dolog(10, "Float value: %f, int: %d, unsigned int: %u", *f, iv, *pv);
 	if (m_lsw)
-		return v & 0xffff;
+		return *pv & 0xffff;
 	else
-		return v >> 16;
+		return *pv >> 16;
 }
 
 short_sender_modbus_val_op::short_sender_modbus_val_op(float no_data, modbus_register *reg) : sender_modbus_val_op(no_data), m_reg(reg) {}
@@ -1012,11 +1028,27 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 		} else if (!strcmp(c, "long") || !strcmp(c, "float")) {
 			xmlChar* c2 = xmlGetNsProp(node, BAD_CAST("val_op"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 
-			m_registers[id][addr] = new modbus_register(this);
+			FLOAT_ORDER float_order = m_float_order;
+
+			xmlChar* c3 = xmlGetNsProp(node, BAD_CAST("FloatOrder"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+			if (c3 != NULL) {
+				if (!xmlStrcmp(c3, BAD_CAST "msblsb")) {
+					dolog(5, "Setting mswlsw for next param");
+					float_order = MSWLSW;
+				} else if (!xmlStrcmp(c3, BAD_CAST "lsbmsb")) {
+					dolog(5, "Setting lswmsw for next param");
+					float_order = LSWMSW;
+				} else {
+					dolog(0, "Invalid float order specification: %s, %ld", (char*)c, xmlGetLineNo(node));
+					return 1;
+				}
+			}
+			xmlFree(c3);
+
 			unsigned short msw, lsw;
 			bool is_lsw;
 			if (c2 == NULL)  {
-				if (m_float_order == MSWLSW) {
+				if (float_order == MSWLSW) {
 					msw = addr;
 					other_reg = lsw = addr + 1;
 				} else {
@@ -1025,19 +1057,22 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 				}
 				is_lsw = true;
 			} else if (!xmlStrcmp(c2, BAD_CAST "MSW")) {
-				msw = addr;
-				if (m_float_order == MSWLSW)
+				if (float_order == MSWLSW) {
+					msw = addr;
 					lsw = addr + 1;
-				else
-					lsw = addr - 1;
+				} else {
+					msw = addr + 1;
+					lsw = addr;
+				}
 				other_reg = lsw;
 				is_lsw = false;
 			} else if (!xmlStrcmp(c2, BAD_CAST "LSW")) {
-				lsw = addr;
-				if (m_float_order == LSWMSW) {
+				if (float_order == LSWMSW) {
+					lsw = addr;
 					msw = addr + 1;
 				} else {
-					msw = addr - 1;
+					lsw = addr + 1;
+					msw = addr;
 				}
 				other_reg = msw;
 				is_lsw = true;
@@ -1049,26 +1084,29 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 
 			if (m_registers[id].find(lsw) == m_registers[id].end()) 
 				m_registers[id][lsw] = new modbus_register(this);
-			else if (m_registers[id].find(msw) == m_registers[id].end())
+			if (m_registers[id].find(msw) == m_registers[id].end())
 				m_registers[id][msw] = new modbus_register(this);
 
 			int prec = exp10(param->GetPrec());
 			if (!strcmp(c, "float"))  {
-				if (!send)
+				if (!send) {
 					vop = new long_parcook_modbus_val_op<float>(m_registers[id][lsw], m_registers[id][msw], prec, is_lsw);
-				else
+					dolog(7, "Parcook param %s no(%zu), mapped to unit: %lc, register %hu, value type: float, params holds %s part, lsw: %hu, msw: %hu",
+						SC::S2A(param->GetName()).c_str(), m_parcook_ops.size(), u->GetId(), addr, is_lsw ? "lsw" : "msw", lsw, msw);
+				} else {
 					vos = new float_sender_modbus_val_op(m_nodata_value, m_registers[id][lsw], m_registers[id][msw], prec);
-				dolog(7, "Param %s mapped to unit: %lc, register %hu, value type: float, params holds %s part",
-					SC::S2A(param->GetName()).c_str(), u->GetId(), addr, is_lsw ? "lsw" : "msw");
+					dolog(7, "Sender param %s no(%zu), mapped to unit: %lc, register %hu, value type: float, params holds %s part",
+						SC::S2A(param->GetName()).c_str(), m_sender_ops.size(), u->GetId(), addr, is_lsw ? "lsw" : "msw");
+				}
 			} else {
-				if (!send)
+				if (!send) {
 					vop = new long_parcook_modbus_val_op<unsigned int>(m_registers[id][lsw], m_registers[id][msw], prec, is_lsw);
-				else {
+					dolog(7, "Parcook param %s no(%zu), mapped to unit: %lc, register %hu, value type: long, params holds %s part, lsw: %hu, msw: %hu",
+						SC::S2A(param->GetName()).c_str(), m_parcook_ops.size(), u->GetId(), addr, is_lsw ? "lsw" : "msw", lsw, msw);
+				} else {
 					dolog(0, "Unsupported long value type for send param no. %d, exiting!", j + 1);
 					return 1;
 				}
-				dolog(7, "Param %s mapped to unit: %lc, register %hu, value type: long, params holds %s part",
-					SC::S2A(param->GetName()).c_str(), u->GetId(), addr, is_lsw ? "lsw" : "msw");
 			}
 			two_regs = true;
 		}
@@ -1100,10 +1138,10 @@ int modbus_daemon::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx) {
 		dolog(5, "Float order not specified, assuming msblsb");
 		m_float_order = MSWLSW;
 	} else if (!xmlStrcmp(c, BAD_CAST "msblsb")) {
-		dolog(5, "Setting lswmsw float order");
+		dolog(5, "Setting mswlsw float order");
 		m_float_order = MSWLSW;
 	} else if (!xmlStrcmp(c, BAD_CAST "lsbmsb")) {
-		dolog(5, "Setting mswlsw float order");
+		dolog(5, "Setting lswmsw float order");
 		m_float_order = LSWMSW;
 	} else {
 		dolog(0, "Invalid float order specification: %s", c);
@@ -1604,7 +1642,7 @@ void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 			send_next_query();
 			break;
 		default:
-			dolog(1, "Received unexpected response from slave - ignoring it.");
+			dolog(10, "Received unexpected response from slave - ignoring it.");
 			break;
 	}
 	m_last_activity = m_current_time;
