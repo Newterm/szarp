@@ -1723,6 +1723,8 @@ void modbus_client::connection_failed() {
 void modbus_client::connection_ready() {
 	dolog(7, "Connection ready");
 
+	m_connected = true;
+
 	if (m_state == AWAITING_CONNECTION) {
 		m_state = IDLE;
 		start_cycle();
@@ -2114,6 +2116,8 @@ int open_serial_port(serial_port_configuration& spc) {
 }
 
 int serial_client_connection::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx) {
+	m_fd = -1;
+
 	if (get_serial_config(xp_ctx, cfg, m_spc))
 		return 1;
 	m_parser = new serial_rtu_parser(this);
@@ -2128,6 +2132,8 @@ void serial_client_connection::disconnect() {
 }
 
 void serial_client_connection::connect() {
+	disconnect();
+
 	m_fd = open_serial_port(m_spc);
 	if (m_fd < 0) {
 		m_modbus_client->connection_failed();
@@ -2165,6 +2171,7 @@ void serial_client_connection::connection_read(struct bufferevent *bufev) {
 }
 
 void serial_client_connection::connection_error(struct bufferevent *bufev) {
+	disconnect();
 	m_modbus_client->connection_failed();
 }
 
