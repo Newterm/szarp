@@ -1,5 +1,13 @@
 $Id$
 
+2010-01-16	Darek Marcinkiewicz <darek@dalkiaterm.pl>
+	* wx/draw3: program sometimes crashed when windows
+	with values ratio was closed, fixed
+	* libSzarp2: next_same_param and prev_same_param members from
+	BlockLockator restored, it turns out there are neccessary
+	* meaner3/utils/szbmod.cc: it is now possible to modify more
+	than one parameter in one formula, useful for e.g. parameters
+	values' swapping
 2010-01-16	Pawel Palucha <pawel@praterm.com.pl>
 	* libSzarp/daemon.cc: go_daemon() returns error if setsid() failed,
 	formatting and comments fixes.

@@ -363,7 +363,7 @@ bool Szbase::CompileLuaFormula(const std::wstring& formula, std::wstring& error)
 
 #ifndef NO_LUA
 
-bool szb_compile_lua_formula(lua_State *lua, const char *formula, const char *formula_name) {
+bool szb_compile_lua_formula(lua_State *lua, const char *formula, const char *formula_name, bool ret_v_val) {
 
 	std::ostringstream paramfunction;
 
@@ -381,10 +381,19 @@ bool szb_compile_lua_formula(lua_State *lua, const char *formula, const char *fo
 	"	local PT_CUSTOM = ProbeType.PT_CUSTOM"	<< endl <<
 	"	local szb_move_time = szb_move_time"	<< endl <<
 	"	local state = {}"			<< endl <<
-	"	return function (t,pt)"			<< endl <<
-	"		local v = nil"			<< endl <<
-	formula						<< endl <<
-	"		return v"			<< endl <<
+	"	return function (t,pt)"			<< endl;
+
+	if (ret_v_val)
+		paramfunction <<
+		"		local v = nil"		<< endl;
+
+	paramfunction << formula			<< endl;
+
+	if (ret_v_val)
+		paramfunction << 
+		"		return v"		<< endl;
+
+	paramfunction <<
 	"	end"					<< endl <<
 	"end"						<< endl;
 

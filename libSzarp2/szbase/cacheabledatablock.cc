@@ -182,9 +182,6 @@ CacheableDatablock::LoadFromCache()
 				break;
 			}
 	
-	assert(!IS_SZB_NODATA(this->data[this->GetFirstDataProbeIdx()]));
-	assert(!IS_SZB_NODATA(this->data[this->GetLastDataProbeIdx()]));
-
 	sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, 
 			"CacheableDatablock::LoadFromCache: loaded %d/%d probes from cache file: '%ls'", 
 			this->first_non_fixed_probe, 

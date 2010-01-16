@@ -180,7 +180,8 @@ void RelWindow::Deactivate() {
 	m_active = false;
 
        	for (size_t i = 0; i < m_draws.Count(); ++i)
-		ResetDraw(m_draws[i]->draw);
+		if (m_draws[i]->draw)
+			ResetDraw(m_draws[i]->draw);
 
 	m_draws_controller->DetachObserver(this);
 

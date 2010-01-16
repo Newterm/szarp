@@ -17,8 +17,6 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
-/*Find and eliminates no data values in szbase, loosely based on peaktor and szbnull.*/
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -79,7 +77,7 @@
 char argp_program_name[] = "szbmod";
 const char *argp_program_version = "szbmod " "$Revision: 6199 $";
 const char *argp_program_bug_address = "reksio@praterm.com.pl";
-static char args_doc[] = "PARAMETER NAME\n";
+static char args_doc[] = "PARAMETER NAME [PARAMETER NAME]...\n";
 
 
 static char doc[] = "Allows for fast fast data modification of szbase parameter.\n"
@@ -124,7 +122,7 @@ struct arguments {
 	time_t start;
 	time_t end;
 	std::string formula;
-	std::wstring param;
+	std::vector<std::wstring> params;
 };
 
 static error_t parse_opt(int key, char *arg, struct argp_state *state)
@@ -175,13 +173,10 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 			break;
 		}
 		case ARGP_KEY_ARG:
-			if (!arguments->param.empty())
-				argp_usage(state);
-			else
-				arguments->param = SC::A2S(arg);
+			arguments->params.push_back(SC::A2S(arg));
 			break;
 		case ARGP_KEY_END:
-			if (arguments->param.empty())
+			if (arguments->params.size() == 0)
 				argp_usage(state);
 			break;
 		default:
@@ -198,15 +193,15 @@ std::string format_time(time_t t) {
 
 static struct argp argp = { options, parse_opt, args_doc, doc };
 
-std::vector<std::pair<time_t, double> > do_run(time_t start, time_t end, lua_State *lua) {
-	std::vector<std::pair<time_t, double> > vals;
+std::vector<std::pair<time_t, std::vector<double> > > do_run(time_t start, time_t end, lua_State *lua, int pnum) {
+	std::vector<std::pair<time_t, std::vector<double> > > vals;
 	Lua::fixed.push(true);
 	for (time_t t = start; t <= end; t = szb_move_time(t, 1, PT_MIN10, 0)) {
 		lua_pushvalue(lua, -1);	
 		lua_pushnumber(lua, t);	
 		lua_pushnumber(lua, PT_MIN10);
 		lua_pushnumber(lua, 0);
-		int ret = lua_pcall(lua, 3, 1, 0);
+		int ret = lua_pcall(lua, 3, pnum, 0);
 		if (ret != 0) {
 			std::ostringstream oss;
 			oss 
@@ -215,24 +210,30 @@ std::vector<std::pair<time_t, double> > do_run(time_t start, time_t end, lua_Sta
 				<< ", terminating" << std::endl;
 			throw std::runtime_error(oss.str().c_str());
 		} else {
-			double v = lua_tonumber(lua, -1);								
-			std::cerr << "Value for time " << format_time(t) << " is " << v << std::endl;
-			vals.push_back(std::make_pair(t, v));
+			std::vector<double> vs;
+			std::cerr << "Values for time " << format_time(t) << " are ";
+			for (int i = 0; i < pnum; i++) {
+				double v = lua_tonumber(lua, -(i + 1));
+				std::cerr << v << " ";
+				vs.push_back(v);
+			}
+			std::cerr << std::endl;
+			vals.push_back(std::make_pair(t, vs));
 		}
-		lua_pop(lua, 1);										
+		lua_pop(lua, pnum);
 
 	}
 	return vals;
 }
 
-void save_real_param(double pw, TParam *p, std::vector<std::pair<time_t, double> >& vals, szb_buffer_t *szb) {
+void save_real_param(double pw, TParam *p, std::vector<std::pair<time_t, std::vector<double> > >& vals, szb_buffer_t *szb, size_t pn) {
 	TSaveParam sp(p);
-	for (std::vector<std::pair<time_t, double> >::iterator i = vals.begin();
+	for (std::vector<std::pair<time_t, std::vector<double> > >::iterator i = vals.begin();
 			i != vals.end();
 			i++)  {
 		short int v;
-		if (!std::isnan(i->second))
-			v = (SZB_FILE_TYPE)round(i->second * pw);
+		if (!std::isnan(i->second[pn]))
+			v = (SZB_FILE_TYPE)round(i->second[pn] * pw);
 		else
 			v = SZB_FILE_NODATA;
 		sp.Write(szb->rootdir.c_str(),
@@ -244,16 +245,16 @@ void save_real_param(double pw, TParam *p, std::vector<std::pair<time_t, double>
 	}
 }
 
-void save_combined_param(double pw, TParam *p, std::vector<std::pair<time_t, double> >& vals, szb_buffer_t *szb) {
+void save_combined_param(double pw, TParam *p, std::vector<std::pair<time_t, std::vector<double> > >& vals, szb_buffer_t *szb, size_t pn) {
 	TSaveParam sp_msw(p->GetFormulaCache()[0]);
 	TSaveParam sp_lsw(p->GetFormulaCache()[1]);
-	for (std::vector<std::pair<time_t, double> >::iterator i = vals.begin();
+	for (std::vector<std::pair<time_t, std::vector<double> > >::iterator i = vals.begin();
 			i != vals.end();
 			i++) {
 		int v;
 		unsigned int* uv = (unsigned int*) &v;
-		if (!std::isnan(i->second))
-			v = round(i->second * pw);
+		if (!std::isnan(i->second[pn]))
+			v = round(i->second[pn] * pw);
 		else
 			v = (SZB_FILE_NODATA << 16) | SZB_FILE_NODATA;
 		sp_msw.Write(szb->rootdir.c_str(),
@@ -327,16 +328,20 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+	std::vector<TParam*> params;
+	for (size_t i = 0; i < arguments.params.size(); i++) {
+		TParam *p = ipk->getParamByName(arguments.params[i]);
+		if (p == NULL) {
+			std::wcerr << "Parameter '" << arguments.params[i] << "' not found in IPK\n\n";;
+			return 1;
+		}
 
-	TParam *p = ipk->getParamByName(arguments.param);
-	if (p == NULL) {
-		std::wcerr << "Parameter '" << arguments.param << "' not found in IPK\n\n";;
-		return 1;
-	}
+		if (!p->IsInBase() && !p->GetType() == TParam::P_COMBINED) {
+			std::wcerr << "Parameter '" << arguments.params[i] << "' is not in base and in not combined param\n\n";;
+			return 1;
+		}
 
-	if (!p->IsInBase() && !p->GetType() == TParam::P_COMBINED) {
-		std::wcerr << "Parameter '" << arguments.param << "' is not in base and in not combined param\n\n";;
-		return 1;
+		params.push_back(p);
 	}
 
 	lua_State* lua = Lua::GetInterpreter();
@@ -346,7 +351,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	if (szb_compile_lua_formula(Lua::GetInterpreter(), (const char*) SC::A2U(arguments.formula).c_str(), "") == false) {
+	if (szb_compile_lua_formula(lua, (const char*) SC::A2U(arguments.formula).c_str(), "", false) == false) {
 		std::wcerr << "Failed to compile formula, error: " << lua_tostring(lua, -1) << std::endl;
 		return 1;
 	}
@@ -354,12 +359,16 @@ int main(int argc, char* argv[])
 	std::cerr << "start time: " << format_time(arguments.start) << std::endl;
 	std::cerr << "end time: " << format_time(arguments.end) << std::endl;
 
-	std::vector<std::pair<time_t, double> > vals = do_run(arguments.start, arguments.end, lua);
-	double pw = pow(10.0, p->GetPrec());
-	if (p->GetType() == TParam::P_COMBINED)
-		save_combined_param(pw, p, vals, szb);
-	else
-		save_real_param(pw, p, vals, szb);
+	std::vector<std::pair<time_t, std::vector<double> > > vals = do_run(arguments.start, arguments.end, lua, arguments.params.size());
+
+	for (size_t i = 0; i < params.size(); i++) {
+		TParam *p = params[i];
+		double pw = pow(10.0, p->GetPrec());
+		if (p->GetType() == TParam::P_COMBINED)
+			save_combined_param(pw, p, vals, szb, i);
+		else
+			save_real_param(pw, p, vals, szb, i);
+	}
 
 	libpar_done();
 

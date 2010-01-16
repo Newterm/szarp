@@ -748,7 +748,7 @@ void
 szb_buffer_str::ClearParamFromCache(TParam* param)
 {
 	CacheableDatablock::ClearParamFromCache(this, param);
-	while(this->paramindex[param] != NULL) {
+	while (this->paramindex[param] != NULL) {
 		szb_datablock_t * tmp = this->paramindex[param]->block;
 		DeleteBlock(tmp);
 	}
@@ -821,7 +821,7 @@ szb_buffer_str::Unlock()
 }
 
 BlockLocator::BlockLocator(szb_buffer_t* buff, szb_datablock_t* b): block(b), buffer(buff),
-	newer(NULL), older(NULL)
+	newer(NULL), older(NULL), next_same_param(NULL), prev_same_param(NULL)
 {
 	//insertion
 	if(this->buffer->newest_block == NULL) {
@@ -842,6 +842,8 @@ BlockLocator::BlockLocator(szb_buffer_t* buff, szb_datablock_t* b): block(b), bu
 
 	} else {
 
+		this->next_same_param = this->buffer->paramindex[this->block->param];
+		this->buffer->paramindex[this->block->param]->prev_same_param = this;
 		this->buffer->paramindex[this->block->param] = this;
 
 	}
@@ -861,7 +863,17 @@ BlockLocator::~BlockLocator()
 {
 	this->buffer->blocks_c--;
 
-	if(this == this->buffer->newest_block && this == this->buffer->oldest_block) {
+	if (this->prev_same_param != NULL) {
+		this->prev_same_param->next_same_param = this->next_same_param;
+		if (this->next_same_param != NULL)
+			this->next_same_param->prev_same_param = this->prev_same_param;
+	} else {
+		this->buffer->paramindex[this->block->param] = this->next_same_param;
+		if (this->next_same_param != NULL)
+			this->next_same_param->prev_same_param = NULL;
+	}
+
+	if (this == this->buffer->newest_block && this == this->buffer->oldest_block) {
 
 		assert(this->older == NULL);
 		assert(this->newer == NULL);
