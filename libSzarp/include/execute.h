@@ -13,10 +13,24 @@
 #ifndef EXECUTE_H
 #define EXECUTE_H
 
-extern int execute(char *command);
+int execute(char *command);
 
-/* Returns output of given command, null on error. */
-extern char *execute_subst(char *command);
+/**
+ * Execute specified command and returns it's output
+ * (just like the shell `command` substitution). On error returns NULL.
+ * Only the first 4 KB of command output are read. Uses strdup to allocate
+ * memory.
+ * @param command shell command to execute
+ * @return return buffer, NULL on error
+ */
+char *execute_subst(char *command);
+/**
+ * Execute specified command with execv, return output.
+ * @param path path to command to execute
+ * @param argv array of arguments, like for execv() function (must be NULL - terminated)
+ * @return first 4 KB of command output, NULL on error
+ */
+char *execute_substv(const char *path, char * const argv[]);
 
 /**
  * Checks if other copy of currently executed program (with same program name

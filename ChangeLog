@@ -1,5 +1,15 @@
 $Id$
 
+2010-01-16	Pawel Palucha <pawel@praterm.com.pl>
+	* libSzarp/daemon.cc: go_daemon() returns error if setsid() failed,
+	formatting and comments fixes.
+	* libSzarp/execute.cc: new function exec_substv(), formatting and
+	comments fixes.
+	* parcook/parcook.cc: line daemons are launched directly (without 'sh
+	-c'), fixed single handling and cleanup.
+	* parcook/execdmn.cc: path argument must be direct path to executable
+	and not shell expression, commands are executed directly, not using
+	'sh -c'.
 2010-01-15      Darek Marcinkiewicz <darek@dalkiaterm.pl>
 	* parcook/mbdmn.cc: it is now possible to set 
 	msw/lsw registers order for individual params

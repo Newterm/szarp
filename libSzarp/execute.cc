@@ -25,10 +25,15 @@
 #include <sys/errno.h>
 #include <liblog.h>
 
-/****************************************************************************/
+#include "execute.h"
+
+/**
+ * Execute command by shell, wait for return.
+ * Works like system(3S) - from Xlib Programming Manual 
+ * @param command command to execute
+ * @return command exit code
+ */
 int execute(char *command)
-/* odpowiednik system(3S) - zaczerpniête z Xlib Programming Manual p 551 */
-/****************************************************************************/
 {
  int		status, pid, w;
  void		(*istat)(int), (*qstat)(int);
@@ -52,13 +57,13 @@ int execute(char *command)
  return(status);
 }
 
-/*
- * execute_subst - execute specified command and returns it's output
- * (just like the shell `command` substitution). On error returns NULL.
- * Only the first 4 KB of command output are read. Uses strdup to allocate
- * memory.
- */
 char * execute_subst(char *cmdline)
+{
+	const char * const argv[4] = { "/bin/sh", "-c", cmdline, NULL };
+	return execute_substv(argv[0], (char * const *) argv);
+}
+
+char * execute_substv(const char *path, char * const argv[])
 {
 	/* input buffer */
 #define INPUT_BUFFER_SIZE	4096
@@ -73,22 +78,24 @@ char * execute_subst(char *cmdline)
 	int pipe_fd[2];
 	
 	if (pipe (pipe_fd) < 0) {
-	sz_log(1, "execute_subst: pipe() error, errno %d", errno);
-			return NULL;
+		sz_log(1, "execute_subst: pipe() error, errno %d", errno);
+		return NULL;
 	}
-sz_log(10, "pipe_fd = [%d, %d]", pipe_fd[0], pipe_fd[1]);
+	sz_log(10, "pipe_fd = [%d, %d]", pipe_fd[0], pipe_fd[1]);
 	switch (fork()) {
 		case -1:
-		sz_log(1, "execute_subst: fork() error, errno %d", errno);
-				return NULL;
+			/* error */
+			sz_log(1, "execute_subst: fork() error, errno %d", errno);
+			return NULL;
 		case 0 :
-		if (dup2(pipe_fd[1], 1) < 0) {
-			sz_log(1, "execute_subst: dup2() error, errno %d",
-					errno);
+			/* child */
+			if (dup2(pipe_fd[1], 1) < 0) {
+				sz_log(1, "execute_subst: dup2() error, errno %d",
+						errno);
 				return NULL;
 			}
-			execl("/bin/sh", "sh", "-c", cmdline, NULL);
-		sz_log(1, "execute_subst: execl() error, errno %d", errno);
+			execv(path, argv);
+			sz_log(1, "execute_subst: execl() error, errno %d", errno);
 			return NULL;
 		default:
 			if (close(pipe_fd[1]) < 0) {

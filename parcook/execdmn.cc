@@ -72,6 +72,7 @@
 #include "conversion.h"
 
 #include <string>
+#include <boost/tokenizer.hpp>
 using std::string;
 
 #define DAEMON_INTERVAL 10
@@ -112,7 +113,7 @@ protected :
 	public:
 	int m_params_count;	/**< size of params array */
 	protected:
-	char* m_command;		/**< command to execute */
+	char ** m_argvp;	/**< command to execute */
 	int m_freq;		/**< execute frequency */
 	time_t m_last;
 };
@@ -128,16 +129,12 @@ ExecDaemon::ExecDaemon(int params)
 	m_params_count = params;
 	m_freq = DAEMON_INTERVAL;
 	m_single = 0;
-	m_command = NULL;
 	m_last = 0;
+	m_argvp = NULL;
 }
 
 ExecDaemon::~ExecDaemon() 
 {
-	if (m_command) {
-		free(m_command);
-		m_command = NULL;
-	}
 }
 
 
@@ -203,14 +200,28 @@ int ExecDaemon::ParseConfig(DaemonConfig * cfg)
 	
 	m_single = cfg->GetSingle();
 	
-	std::wstring tmp = cfg->GetDevice()->GetPath();
-	if (!cfg->GetDevice()->GetOptions().empty()) {
-		tmp = tmp + L" " + cfg->GetDevice()->GetOptions();
-	}
-	m_command = strdup(SC::S2A(tmp).c_str());
+	std::wstring path = cfg->GetDevice()->GetPath();
+	std::wstring options = cfg->GetDevice()->GetOptions();
 	if (m_single) {
-		printf("Using command '%s'\n", m_command);
+		printf("Using command '%s'\n", SC::S2A(path + L" " + options).c_str());
 	}
+
+	using namespace boost;
+        typedef escaped_list_separator<wchar_t, std::char_traits<wchar_t> > wide_sep;
+        typedef tokenizer<wide_sep, std::wstring::const_iterator, std::wstring> wide_tokenizer;
+        wide_sep esp(L"\\", L" ", L"\"'");
+        wide_tokenizer tok(options, esp);
+        std::vector<char *> argv_v;
+        for (wide_tokenizer::iterator i = tok.begin(); i != tok.end(); i++) {
+                argv_v.push_back(strdup(SC::S2A(*i).c_str()));
+        }
+        m_argvp = (char **) malloc(sizeof(char *) * argv_v.size() + 2);
+        m_argvp[0] = strdup(SC::S2A(path).c_str());
+        int j = 1;
+        for (std::vector<char *>::iterator i = argv_v.begin(); i != argv_v.end(); i++, j++) {
+                m_argvp[j] = *i;
+        }
+        m_argvp[j] = NULL;
 
 	return 0;
 }
@@ -240,7 +251,8 @@ int ExecDaemon::Exec(IPCHandler *ipc)
 		ipc->m_read[i] = SZARP_NO_DATA;
 	}
 			
-	ret = execute_subst(m_command);
+	return 0;
+	ret = execute_substv(m_argvp[0], m_argvp);
 	if (ret == NULL)
 		return 1;
 	char **toks;
@@ -263,8 +275,9 @@ int ExecDaemon::Exec(IPCHandler *ipc)
 
 RETSIGTYPE terminate_handler(int signum)
 {
-	sz_log(2, "signal %d cought", signum);
-	exit(1);
+	sz_log(2, "signal %d cought, exiting", signum);
+	signal(signum, SIG_DFL);
+	raise(signum);
 }
 
 void init_signals()

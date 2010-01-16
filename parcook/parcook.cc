@@ -59,6 +59,7 @@
 #include <vector>
 #include <sstream>
 #include <string>
+#include <boost/tokenizer.hpp>
 #include <tr1/unordered_map>
 
 #include "szarp.h"
@@ -201,7 +202,6 @@ struct phLineInfo
 	std::wstring daemon;	/* plik wykonawczy daemona */
 	std::wstring device;	/* nazwa kontrolowanego urzadzenia */
 	std::wstring options;	/* dodatkowe opcje do programu */
-	int Linedmn;		/* PID demona linii */
 	int ShmDes;		/* deskryptor wspolnej pamieci */
 	short *ValTab;		/* wskaznik na wspolna pamiec */
 };
@@ -353,8 +353,7 @@ void register_lua_functions(lua_State *lua) {
 }
 #endif
 
-/** Removes IPC resources. Registered with 'atexit()' as on exit cleanup
- * function (first level). */
+/** Removes IPC resources. Called on exit. */
 void Rmipc()
 {
 	unsigned char ii;
@@ -362,8 +361,8 @@ void Rmipc()
 
 	errno = 0;
 
+	kill(0, SIGTERM);
 	for (ii = 0; ii < NumberOfLines; ii++) {
-		kill(LinesInfo[ii].Linedmn, SIGKILL);
 		i = shmctl(LinesInfo[ii].ShmDes, IPC_RMID, NULL);
 		sz_log((i < 0 ? 1 : 10),
 		    "parcook: removing shared memory segment for line deamon %d, shmctl() returned %d, errno %d",
@@ -409,7 +408,6 @@ void Rmipc()
 	sz_log((i < 0 ? 1 : 10),
 	    "parcook: removing 'reply' message queue, msgctl() returned %d errno %d",
 	    i, errno);
-
 }
 
 /** Releases semaphores. Registered with atexit(), second level. */
@@ -957,6 +955,41 @@ void AllocProbesMemory(void)
 	}
 }
 
+/**
+ * Split options string to tokens and return as array of chars suitable for execv() function.
+ * Double quoting and escaping using '\' is preserved.
+ * @param path daemon path
+ * @param num daemon line number
+ * @param device device argument for daemon
+ * @param options string with options
+ * @return (m)allocated 2-dimensional array of arguments suitable for execv, last element is NULL
+ */
+char * const * wstring2argvp(std::wstring path, int num, std::wstring device, std::wstring options)
+{
+	using namespace boost;
+	typedef escaped_list_separator<wchar_t, std::char_traits<wchar_t> > wide_sep;
+	typedef tokenizer<wide_sep, std::wstring::const_iterator, std::wstring> wide_tokenizer;
+	/* ? - I'd like to use only " separator for compatiblity with
+	 * libSzarp2 tokenize() function, but it does not work this way... */
+	wide_sep esp(L"\\", L" ", L"\"'");
+	wide_tokenizer tok(options, esp);
+	std::vector<char *> argv_v;
+	for (wide_tokenizer::iterator i = tok.begin(); i != tok.end(); i++) {
+		argv_v.push_back(strdup(SC::S2A(*i).c_str()));
+	}
+	char ** ret = (char **) malloc(sizeof(char *) * argv_v.size() + 4);
+	ret[0] = strdup(SC::S2A(path).c_str());
+	asprintf(&(ret[1]), "%d", num);
+	ret[2] = strdup(SC::S2A(path).c_str());
+	int j = 3;
+	for (std::vector<char *>::iterator i = argv_v.begin(); i != argv_v.end(); i++, j++) {
+		ret[j] = *i;
+	}
+	ret[j] = NULL;
+	return ret;
+}
+
+
 /** start daemon for line i */
 void LanchDaemon(int i, char* linedmnpat)
 {
@@ -993,36 +1026,30 @@ void LanchDaemon(int i, char* linedmnpat)
 	ClearShm(LinesInfo[i].ShmDes, LinesInfo[i].ParTotal);
 
 	/* fork to run line daemon */
-	if ((pid = fork()) > 0)
-		/* parent */
-		LinesInfo[i].Linedmn = pid;
-	else if (pid < 0) {
+	if ((pid = fork()) > 0) {
+		/* parent, do nothing */
+		return;
+	} else if (pid < 0) {
 		/* parent, error */
-		sz_log(0, "parcook: cannot fork for daemon %d, exiting", i+1);
+		sz_log(0, "parcook: cannot fork for daemon %d, exiting (errno %d)", i + 1, errno);
 		exit(1);
 	} else {
 		/* child */
-		/* print line number */
 		/* check for daemon executable file */
 		s = stat(SC::S2A(LinesInfo[i].daemon).c_str(), &sstat);
 		if ((s != 0) || ((sstat.st_mode & S_IFREG) == 0)) {
-			sz_log(0, "parcook: cannot stat regular file '%ls' (daemon for line %d), exiting",
-					LinesInfo[i].daemon.c_str(), i+1);
+			sz_log(0, "parcook: cannot stat regular file '%s' (daemon for line %d), exiting",
+					SC::S2A(LinesInfo[i].daemon).c_str(), i + 1);
 			exit(1);
 		}
 
-		std::wstringstream cmd;
-		/* prepare options */
-		cmd << LinesInfo[i].daemon << L" " << (i + 1) << L" " << LinesInfo[i].device; 
-		if (!LinesInfo[i].options.empty())
-			cmd << L" " << LinesInfo[i].options;
-
-		/* run daemon */
-		sz_log(10, "Executing '%ls'", cmd.str().c_str());
-		execl("/bin/sh", "/bin/sh", "-c", SC::S2A(cmd.str()).c_str(), NULL);
+		execv(SC::S2A(LinesInfo[i].daemon).c_str(), 
+				wstring2argvp(
+					LinesInfo[i].daemon, i + 1, LinesInfo[i].device, LinesInfo[i].options)
+				);
 		/* shouldn't get here */
-		sz_log(0, "parcook: could not execute '%ls' (daemon for line %d), errno %d",
-				LinesInfo[i].daemon.c_str(), i+1, errno);
+		sz_log(0, "parcook: could not execute '%ls' (daemon for line %d), errno %d (%s)",
+				LinesInfo[i].daemon.c_str(), i + 1, errno, strerror(errno));
 		exit(1);
 	} /* fork */
 }
@@ -1058,8 +1085,6 @@ void ParseCfg(TSzarpConfig *ipk, char *linedmnpat)
 	unsigned int i;
 
 	VTlen = 0;
-
-	atexit(Rmipc);
 
 	BasePeriod = ipk->GetReadFreq();
 	NumberOfLines = ipk->GetDevicesCount();
@@ -1200,7 +1225,6 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 	
 	abuf = curtime->tm_sec / 10;
 	
-	sz_log(10, "1");
 	/* Probes semaphore down */
 	Sem[0].sem_num = SEM_PROBE + 1;
 	Sem[0].sem_op = 1;
@@ -1216,7 +1240,6 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 		    errno);
 		exit(1);
 	}
-	sz_log(10, "2");
 	for (unsigned i = 0; i < NumberOfLines; i++) {
 
 		/* Line semaphore down */
@@ -1248,7 +1271,6 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 		shmdt((void *) LinesInfo[i].ValTab);
 	} /* for each line daemon */
 	/* process formulas, Calcul modifies only Probes[] table */
-	sz_log(10, "3");
 	for (ii = 0; ii < Equations.len; ii++) {
 		Calcul(ii);
 	}
@@ -1260,7 +1282,6 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 #endif
 
 	/* NOW update probes history */
-	sz_log(10, "4");
 	for (ii = 0; ii < VTlen; ii++) {
 		/* remove previous value */
 		if (Probes[ii][abuf] != SZARP_NO_DATA) {
@@ -1281,7 +1302,6 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 	/* detach probes segment */
 	shmdt((void *) Probe);
 
-	sz_log(10, "5");
 	/* update min segment */
 	abuf = curtime->tm_min % 10;
 	Sem[0].sem_num = SEM_MINUTE + 1;
@@ -1318,7 +1338,6 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 	shmdt((void *) Minute);
 
 	/* update min10 segment */
-	sz_log(10, "6");
 	abuf = curtime->tm_min / 10;
 	min = curtime->tm_min;
 	if (last_min != min || first_time) {
@@ -1357,10 +1376,8 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 		shmdt((void *) Min10);
 	}
 	last_min = min;
-	sz_log(10, "7");
 
 	/* update hour segment */
-	sz_log(10, "8");
 	abuf = curtime->tm_hour;
 	min10 = curtime->tm_min / 10;
 	if (last_min10 != min10 || first_time) {
@@ -1390,17 +1407,13 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 		shmdt((void *) Hour);
 	}
 	last_min10 = min10;
-	sz_log(10, "7");
 
 	first_time = 0;
 
 	/* sleep until next */
 	sectime = time(NULL);
 	curtime = localtime(&sectime);
-	sz_log(10, "7.5");
 	sleep((int) BasePeriod - curtime->tm_sec % (int) BasePeriod);
-
-	sz_log(10, "8");
 }
 
 int main(int argc, char *argv[])
@@ -1411,7 +1424,7 @@ int main(int argc, char *argv[])
 	int log_level;
 
 	struct arguments arguments;
-	char* linedmnpat;	/**< sciezka do linex.cfg */
+	char* linedmnpat;	/**< path for ftok */
 	char* config_prefix;
 
 	InitSignals();
@@ -1459,7 +1472,6 @@ int main(int argc, char *argv[])
 	/* end szarp.cfg processing */
 	libpar_done();
 	
-
 	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"pl", new NullMutex());	
 	Szbase::Init(SC::A2S(PREFIX));
 
@@ -1471,11 +1483,14 @@ int main(int argc, char *argv[])
 	}
 
 	/* go into background */
-	if (arguments.no_daemon == 0)
+	if (arguments.no_daemon == 0) {
 		go_daemon();
+	}
 
 	/* load configuration, start daemons */
 	ParseCfg(ipk, linedmnpat);
+
+	atexit(Rmipc);
 
 	free(linedmnpat);
 
