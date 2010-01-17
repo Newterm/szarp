@@ -1,5 +1,7 @@
 $Id$
 
+2010-01-17	Pawel Palucha <pawel@praterm.com.pl>
+	* parcook/execdmn: fixed commands running.
 2010-01-16	Darek Marcinkiewicz <darek@dalkiaterm.pl>
 	* wx/draw3: program sometimes crashed when windows
 	with values ratio was closed, fixed

@@ -251,7 +251,6 @@ int ExecDaemon::Exec(IPCHandler *ipc)
 		ipc->m_read[i] = SZARP_NO_DATA;
 	}
 			
-	return 0;
 	ret = execute_substv(m_argvp[0], m_argvp);
 	if (ret == NULL)
 		return 1;
