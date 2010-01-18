@@ -1,5 +1,11 @@
 $Id$
 
+2010-01-18	Pawel Palucha <pawel@praterm.com.pl>
+	* parcook/ddedmn.cc: mutliple fixes, support for fetching values from
+	InTouch through new ddespy.py, info about configuration.
+	* utils/ddespy.py: new version of DDE Proxy with configurable DDE
+	application name, persistent connection to DDE Server and disabled
+	resolving of client address.
 2010-01-17	Pawel Palucha <pawel@praterm.com.pl>
 	* parcook/execdmn: fixed commands running.
 2010-01-16	Darek Marcinkiewicz <darek@dalkiaterm.pl>
@@ -16,7 +22,7 @@ $Id$
 	* libSzarp/execute.cc: new function exec_substv(), formatting and
 	comments fixes.
 	* parcook/parcook.cc: line daemons are launched directly (without 'sh
-	-c'), fixed single handling and cleanup.
+	-c'), fixed signal handling and cleanup.
 	* parcook/execdmn.cc: path argument must be direct path to executable
 	and not shell expression, commands are executed directly, not using
 	'sh -c'.

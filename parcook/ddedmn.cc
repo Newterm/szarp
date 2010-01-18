@@ -1,7 +1,6 @@
 /* 
   SZARP: SCADA software 
   
-
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
@@ -16,7 +15,43 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/** Daemon communicating DDE proxy located at windows server*/
+
+/** 
+ * Daemon using XMLRPC to communicate to DDE proxy located at windows server.
+ * Launch utils/ddespy.py as DDE proxy on Windows machine.
+ *
+ * This daemon is designed to read data from 2 applications:
+ * - InTouch - popular Windows SCADA software
+ * - MBENET - InTouch driver for Modbus protocol
+ * 
+ * Configuration in params.xml:
+ *
+ * <device daemon="/opt/szarp/bin/ddedmn" path="/dev/null" dde:uri="http://192.168.1.1:8080" dde:read_freq="10"
+ *     xmlns:dde="http://www.praterm.com.pl/SZARP/ipk-extra" dde:appname="VIEW">
+ *   <unit id="1" type="2" subtype="1" bufsize="1">
+ *      <param name="Kocio³ 1:DDE:Temperatura wody przed kot³em" short_name="Twe" unit="°C" prec="1" 
+ *          dde:topic="Tagname" dde:item="Batch%Conc" dde:type="integer" base_ind="auto">
+ *       ....
+ *
+ * Where:
+ * dde:uri is URI of DDE proxy (XMLRPC server)
+ * dde:read_freq is polling frequency (in seconds), minimum and default value is 10 seconds
+ * dde:appname is DDE application name, default is 'MBENET' for MBENET driver, use 'VIEW' for standard InTouch
+ * installation
+ * dde:topic is DDE topic, for InTouch it's always 'Tagname', for MBENET use correct value
+ * dde:item is DDE item name, for InTouch it's a Tagname of param, for MBENET it's Modbus
+ * register address
+ * dde:type:
+ * - for InTouch use "string" - numbers are passed from InTouch as string and parsed according to parameter
+ *   precision
+ * - for MBENET use on of:
+ *   - 'integer' - simple one register short integer value (precision dependant)
+ *   - 'shor_float'
+ *   - 'float' - double precision float, hold in two Modbus registers and saved as two following SZARP
+ *   parameters
+ *   - 'short_float' - double precision float, hold in two Modbus registers, but copied as one SZARP
+ *   parameter
+ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -79,6 +114,7 @@ struct DDEParam {
 		FLOAT, 
 		SHORT_FLOAT,
 		INTEGER,
+		STRING,
 		NONE
 	} type;
 	int prec;
@@ -105,6 +141,7 @@ class DDEDaemon {
 	szHTTPCurlClient m_http;
 	IPCHandler *m_ipc;
 	std::string m_uri;
+	xmlChar* m_appname;	
 	int m_read_freq;
 
 	std::map<std::string, std::map<std::string, DDEParam> > m_params;
@@ -112,7 +149,8 @@ class DDEDaemon {
 	XMLRPC_REQUEST CreateRequest();
 	XMLRPC_REQUEST SendRequest(XMLRPC_REQUEST request);
 	void ParseResponse(XMLRPC_REQUEST response);
-	bool ConvertValue(XMLRPC_VALUE v, const std::string& topic, std::string item, unsigned short &ret);
+	bool ConvertValue(XMLRPC_VALUE v, const std::string& topic, std::string item, unsigned short &ret, 
+			int prec = 0);
 public:
 	int Configure(DaemonConfig* cfg);
 	void Run();
@@ -142,6 +180,8 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 	m_uri = (char*) _uri;
 	xmlFree(_uri);
 
+	m_appname = xmlGetNsProp(xdev, BAD_CAST("appname"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+
 	m_read_freq = 0;
 	xmlChar* _read_req = xmlGetNsProp(xdev, BAD_CAST("read_freq"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (_read_req) {
@@ -168,7 +208,7 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 
 		if (_topic == 0) {
-			dolog(0, "Error, attribute dde:address missing in param definition, line(%ld)", xmlGetLineNo(n));
+			dolog(0, "Error, attribute dde:topic missing in param definition, (line %ld)", xmlGetLineNo(n));
 			return 1;
 		}
 
@@ -177,21 +217,12 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 			
 		if (_item == 0) {
-			dolog(0, "Error, attribute dde:item missing in param definition, line(%ld)", xmlGetLineNo(n));
+			dolog(0, "Error, attribute dde:item missing in param definition, (line %ld)", xmlGetLineNo(n));
 			return 1;
 		}
 
 		std::string item = (char*) _item;
 
-#if 0
-		char *err;
-		int item = strtol((const char*)_item, &err, 10);
-		if (*err != '\0') {
-			xmlFree(_item);
-			dolog(0, "Error, invalid value of attribute dde:item in param definition, line(%ld)", xmlGetLineNo(n));
-			return 1;
-		}
-#endif
 
 		xmlChar* _type = xmlGetNsProp(n,
 				BAD_CAST("type"), 
@@ -208,8 +239,10 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 			val_type = DDEParam::INTEGER;
 		else if (!xmlStrcmp(_type, BAD_CAST "short_float"))
 			val_type = DDEParam::SHORT_FLOAT;
+		else if (!xmlStrcmp(_type, BAD_CAST "string"))
+			val_type = DDEParam::STRING;
 		else {
-			dolog(0, "Error, invalid parameter type specification (dde:type) in line(%ld), only 'integer' and 'float' supported", xmlGetLineNo(n));
+			dolog(0, "Error, invalid parameter type specification (dde:type) in line(%ld), only 'integer', 'float', 'short_float' and 'string' supported", xmlGetLineNo(n));
 			xmlFree(_type);
 			return 1;
 		}
@@ -243,6 +276,10 @@ XMLRPC_REQUEST DDEDaemon::CreateRequest() {
 	XMLRPC_RequestSetData(request, XMLRPC_CreateVector(NULL, xmlrpc_vector_array));
 	XMLRPC_AddValueToVector(XMLRPC_RequestGetData(request), v);
 
+	if (m_appname != NULL) {
+		XMLRPC_VectorAppendString(v, NULL, (char *)m_appname, 0);
+	}
+
 	for (std::map<std::string, std::map<std::string, DDEParam> >::iterator i = m_params.begin();
 			i != m_params.end();
 			i++) {
@@ -251,7 +288,7 @@ XMLRPC_REQUEST DDEDaemon::CreateRequest() {
 				j != i->second.end();
 				++j) {
 			XMLRPC_VectorAppendString(pv, NULL, j->first.c_str(), 0);
-			if (j->second.type != DDEParam::INTEGER) {
+			if (j->second.type != DDEParam::INTEGER and j->second.type != DDEParam::STRING) {
 				XMLRPC_VectorAppendInt(pv, NULL, atoi(j->first.c_str()) + 1);
 			}
 		}
@@ -284,9 +321,13 @@ XMLRPC_REQUEST DDEDaemon::SendRequest(XMLRPC_REQUEST request) {
 	return response;
 }
 
-bool DDEDaemon::ConvertValue(XMLRPC_VALUE i, const std::string& topic, std::string item, unsigned short &ret) {
+bool DDEDaemon::ConvertValue(XMLRPC_VALUE i, const std::string& topic, std::string item, unsigned short &ret,
+		int prec) {
 	const char *s;
+	char* copy;
+	char* ind;
 	char *err;
+	double d;
 	switch (XMLRPC_GetValueType(i)) {
 		case xmlrpc_int:
 			ret = XMLRPC_GetValueInt(i);
@@ -300,9 +341,20 @@ bool DDEDaemon::ConvertValue(XMLRPC_VALUE i, const std::string& topic, std::stri
 				dolog(1, "No value received for topic: %s, item: %s", topic.c_str(), item.c_str());
 				return false;;
 			}
-			ret = strtof(s, &err);
+			copy = strdup(s);
+			ind = index(copy, ',');
+			if (ind != NULL) {
+				*ind = '.';
+			}
+			d = strtod(copy, &err);
+			if (prec > 0) {
+				ret = mypow(d, prec);
+			} else {
+				ret = d;
+			}
+			free(copy);
 			if (*err != '\0') {
-				dolog(1, "Invalid value received for topic: %s, item: %s - %s", topic.c_str(), item.c_str(), s);
+				dolog(1, "Invalid value received for topic: %s, item: %s - %s (*err is %d, %s, %s)", topic.c_str(), item.c_str(), s, *err, copy, err);
 				return false;
 			}
 			break;
@@ -310,7 +362,7 @@ bool DDEDaemon::ConvertValue(XMLRPC_VALUE i, const std::string& topic, std::stri
 			dolog(0, "Unsupported value value received for topic: %s, item: %s - %d", topic.c_str(), item.c_str(), XMLRPC_GetValueType(i));
 			return false;
 	}
-
+	dolog(10, "Got value: %d", ret);
 	return true;
 
 
@@ -329,19 +381,20 @@ void DDEDaemon::ParseResponse(XMLRPC_REQUEST response) {
 	std::map<std::string, std::map<std::string, DDEParam> >::iterator j;
 	std::map<std::string, DDEParam>::iterator k;
 
-	for (j = m_params.begin(); j != m_params.end() && i; j++)
+	for (j = m_params.begin(); j != m_params.end() && i; j++) {
 		for (k = j->second.begin(); k != j->second.end() && i; ++k) {
 			DDEParam& dde = k->second;
 
 			unsigned short val = SZARP_NO_DATA;
-			bool r = ConvertValue(i, j->first, k->first, val);
+			bool r = ConvertValue(i, j->first, k->first, val, 
+					dde.type == DDEParam::STRING ? dde.prec : 0);
 			i = XMLRPC_VectorNext(XMLRPC_RequestGetData(response));
-			if (dde.type == DDEParam::INTEGER) {
+			if (dde.type == DDEParam::INTEGER or dde.type == DDEParam::STRING) {
 				m_ipc->m_read[dde.address] = val;
 			} else if (dde.type == DDEParam::FLOAT
 					|| dde.type == DDEParam::SHORT_FLOAT) {
 				if (i == NULL) {
-					dolog(0, "Not enought params in repsonse from spy!", 0);
+					dolog(0, "Not enought params in response from spy!", 0);
 					break;
 				}
 				unsigned short val2;
@@ -359,21 +412,26 @@ void DDEDaemon::ParseResponse(XMLRPC_REQUEST response) {
 				assert(false);
 			}
 		}
-
+	}
 }
 
 void DDEDaemon::Run() {
-
 	while (true) {
 		time_t st = time(NULL);
+		struct timeval start, end;
 
 		dolog(6, "Beginning parametr fetching loop");
 
 		for (int i = 0; i < m_ipc->m_params_count; ++i) 
 			m_ipc->m_read[i] = SZARP_NO_DATA;
 
+		
 		XMLRPC_REQUEST request = CreateRequest();
+		gettimeofday(&start, NULL);
 		XMLRPC_REQUEST response = SendRequest(request);
+		gettimeofday(&end, NULL);
+		dolog(10, "Request served in %d ms", 
+				end.tv_sec * 1000 + end.tv_usec / 1000 - start.tv_sec * 1000 - start.tv_usec / 1000);
 		ParseResponse(response);
 		XMLRPC_RequestFree(request, 1);
 		XMLRPC_RequestFree(response, 1);
@@ -408,7 +466,7 @@ int main(int argc, char *argv[]) {
 #include <iostream>
 
 int main(int argc, char *argv[]) {
-	std::cerr << "SZARP need to be compiled with xmlrpc-epi library for this porogram to work" << std::endl;
+	std::cerr << "SZARP need to be compiled with xmlrpc-epi library for this program to work" << std::endl;
 	return 1;
 }
 
