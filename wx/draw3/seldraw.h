@@ -131,6 +131,10 @@ public:
 	void OpenParameterDoc(int i = -1);	
 
 	virtual void DrawInfoChanged(Draw *draw);
+
+	virtual void PeriodChanged(Draw *draw, PeriodType period);
+
+	virtual void NoData(Draw *d);
 protected:
 	/** configuration manager */
 	ConfigManager *m_cfg;	

@@ -420,8 +420,18 @@ void SelectDrawWidget::OpenParameterDoc(int i) {
 
 }
 
+void SelectDrawWidget::NoData(Draw *d) {
+	m_cb_l[d->GetDrawNo()].Enable(false);
+}
+
 void SelectDrawWidget::EnableChanged(Draw *draw) {
 	SetChecked(draw->GetDrawNo(), draw->GetEnable());
+}
+
+void SelectDrawWidget::PeriodChanged(Draw *draw, PeriodType period) {
+	if (draw->GetSelected())
+		for (size_t i = 0; i < draw->GetDrawsController()->GetDrawsCount(); i++)
+			m_cb_l[i].Enable(true);
 }
 
 void SelectDrawWidget::DrawInfoChanged(Draw *draw) {

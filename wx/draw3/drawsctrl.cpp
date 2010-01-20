@@ -157,14 +157,20 @@ void DrawsController::CheckAwaitedDataPresence() {
 }
 
 void DrawsController::EnterWaitState(STATE state) {
+	if (m_state == STOP) {
+		EnterSearchState(SEARCH_BOTH, m_time_to_go, DTime());
+		return;
+	}
+
 	m_state = state;
 
 	const TimeIndex& index = m_draws[m_selected_draw]->GetTimeIndex();
 
-	switch (m_state) {
+	switch (state) {
 		case WAIT_DATA_NEAREST:
 		case WAIT_DATA_LEFT:
 		case WAIT_DATA_RIGHT:
+			m_state = state;
 
 			wxLogInfo(_T("checking if data: %s is between %s and %s"), m_time_to_go.Format().c_str(),
 					index.GetStartTime().Format().c_str(),
@@ -572,7 +578,7 @@ void DrawsController::NoDataFound() {
 
 				if (selected_draw != -1) {
 					SetSelectedDraw(selected_draw);
-					EnterWaitState(WAIT_DATA_NEAREST);
+					EnterSearchState(SEARCH_BOTH, m_time_to_go, DTime());
 				} else {
 					ThereIsNoData();
 				}
@@ -628,7 +634,8 @@ void DrawsController::ConfigurationWasReloaded(wxString prefix) {
 		m_draws[i]->RefreshData(true);
 	FetchData();
 
-	m_time_to_go = m_current_time;
+	if (m_state == DISPLAY)
+		m_time_to_go = m_current_time;
 	m_current_time = DTime();
 
 	for (int i = 0; i < m_active_draws_count; i++)
@@ -680,7 +687,8 @@ void DrawsController::Set(DrawSet *set) {
 
 	FetchData();
 	
-	m_time_to_go = m_current_time;
+	if (m_state == DISPLAY)
+		m_time_to_go = m_current_time;
 	m_current_time = DTime();
 	m_current_index = -1;
 
@@ -951,6 +959,7 @@ void DrawsController::ThereIsNoData() {
 }
 
 void DrawsController::EnterStopState() {
+	wxLogInfo(_T("Entering stop state!"));
 	m_state = STOP;
 }
 

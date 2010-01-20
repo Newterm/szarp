@@ -1,5 +1,11 @@
 $Id$
 
+2010-01-20	Darek Marcinkiewicz <darek@dalkiaterm.pl>
+	* libSzarp2/szbase: two bugs fixed: cache is porperly invalidated when 
+	params.xml was modified and users clicks 'reload configuration',
+	drawdefinable parames with 'N' operator do not go into the future
+	* wx/draw3: SelDrawWidget item is greyed out when there is no
+	data for given param
 2010-01-18	Pawel Palucha <pawel@praterm.com.pl>
 	* parcook/ddedmn.cc: mutliple fixes, support for fetching values from
 	InTouch through new ddespy.py, info about configuration.

@@ -158,7 +158,7 @@ void Szbase::NotifyAboutConfigurationChanges() {
 	}
 }
 
-void Szbase::RemoveConfig(const std::wstring &prefix) {
+void Szbase::RemoveConfig(const std::wstring &prefix, bool poison_cache) {
 
 	TBI::iterator bi = m_ipkbasepair.find(prefix);
 	if (bi == m_ipkbasepair.end())
@@ -180,6 +180,8 @@ void Szbase::RemoveConfig(const std::wstring &prefix) {
 
 	m_ipkbasepair.erase(prefix);
 
+	if (poison_cache)
+		b->cachepoison = true;
 	szb_free_buffer(b);
 
 }

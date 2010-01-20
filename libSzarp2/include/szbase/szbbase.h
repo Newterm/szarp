@@ -101,7 +101,7 @@ public:
 	std::wstring GetCacheDir(const std::wstring& prefix);
 	void ClearCacheDir(const std::wstring& prefix);
 	void ClearParamFromCache(const std::wstring& prefix, TParam* param);
-	void RemoveConfig(const std::wstring& prefix);
+	void RemoveConfig(const std::wstring& prefix, bool poison_cache);
 	const long& GetQueryId() { return m_current_query; }
 	void NextQuery();
 };

@@ -130,7 +130,7 @@ std::wstring CacheableDatablock::GetCacheFilePath(TParam * p, int y, int m)
 bool
 CacheableDatablock::LoadFromCache()
 {
-	if(cachepath.empty()) {
+	if (cachepath.empty()) {
 		sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, 
 				"CacheableDatablock::LoadFromCache: no cache file specified");
 		return false;
@@ -225,14 +225,14 @@ CacheableDatablock::IsCacheFileValid(int &probes, time_t *mdate)
 
 
 	probes = size;
-	if( probes % sizeof(SZBASE_TYPE) != 0 ) {
+	if (probes % sizeof(SZBASE_TYPE) != 0 ) {
 		sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, 
 				"CacheableDatablock::IsCacheFileValid: cache file has invalid size: '%ls'",
 				cachepath.c_str());
 		return false;
 	}
 
-	if( mtime < buffer->configurationDate ) {
+	if (mtime < buffer->configurationDate ) {
 		sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, 
 				"CacheableDatablock::IsCacheFileValid: cache file is older then params.xml: '%ls'",
 				cachepath.c_str());

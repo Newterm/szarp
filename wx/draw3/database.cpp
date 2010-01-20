@@ -65,7 +65,7 @@ void* QueryExecutor::Entry() {
 		bool post_response = false;
 
 		if (q->type == DatabaseQuery::STARTING_CONFIG_RELOAD) {
-			szbase->RemoveConfig(q->reload_prefix.prefix);
+			szbase->RemoveConfig(q->reload_prefix.prefix, true);
 			post_response = true;
 		} else if (q->type == DatabaseQuery::COMPILE_FORMULA) {
 			std::wstring error;

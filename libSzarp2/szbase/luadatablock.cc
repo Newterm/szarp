@@ -333,10 +333,10 @@ LuaDatablock::LuaDatablock(szb_buffer_t * b, TParam * p, int y, int m): Cacheabl
 
 	szb_time2my(end_date, &av_year, &av_month);
 
-	if(year > av_year || (year == av_year && month > av_month))
+	if (year > av_year || (year == av_year && month > av_month))
 		NOT_INITIALIZED;
 
-	if(end_date > GetBlockLastDate())
+	if (end_date > GetBlockLastDate())
 		end_date = GetBlockLastDate();
 
 	m_probes_to_compute = szb_probeind(end_date) + 1;

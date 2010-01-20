@@ -130,6 +130,8 @@ void Draw::SetPeriod(const DTime& time, size_t number_of_values) {
 
 	m_values.SetNumberOfValues(number_of_values);
 
+	m_param_has_data = true;
+
 	for (size_t i = 0; i < m_values.len(); ++i)
 		m_values.Get(i).state = ValueInfo::EMPTY;
 }

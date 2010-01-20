@@ -861,6 +861,14 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 	if (year == this->buffer->first_av_year && month < this->buffer->first_av_month)
 		NOT_INITIALIZED;
 
+	int av_year, av_month;
+	time_t end_date = szb_search_last(buffer, param);
+
+	szb_time2my(end_date, &av_year, &av_month);
+
+	if (year > av_year || (year == av_year && month > av_month))
+		NOT_INITIALIZED;
+
 	if (LoadFromCache())
 	{
 		Refresh();
@@ -885,19 +893,18 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 	int probes_to_compute;
 	if (num_of_params > 0) {
 		probes_to_compute = this->GetBlocksUsedInFormula(dblocks, this->first_non_fixed_probe);
-	}
-	else {
-		if(this->last_update_time > this->GetBlockLastDate())
+	} else {
+		if (this->last_update_time > this->GetBlockLastDate())
 			probes_to_compute = this->first_non_fixed_probe = this->max_probes;
-		else if(this->last_update_time < this->GetBlockBeginDate()) {
+		else if (this->last_update_time < this->GetBlockBeginDate()) {
 			NOT_INITIALIZED;
 		} else
-			probes_to_compute = this->first_non_fixed_probe = szb_probeind(szb_search_last(buffer, param)) + 1;
+			probes_to_compute = this->first_non_fixed_probe = szb_probeind(end_date) + 1;
 	}
 
 	assert(this->first_non_fixed_probe <= this->max_probes);
 
-	if(probes_to_compute <= 0)
+	if (probes_to_compute <= 0)
 		NOT_INITIALIZED;
 
 	/* if N is used or no params in formula we must calculate probes to last_av_date */
@@ -1022,8 +1029,7 @@ DefinableDatablock::Refresh()
 
 	if (num_of_params > 0) {
 		new_probes_c = GetBlocksUsedInFormula(dblocks, new_fixed_probes);
-	}
-	else {
+	} else {
 		if (this->last_update_time > this->GetBlockLastDate())
 			new_probes_c = new_fixed_probes = this->max_probes;
 		else
