@@ -347,6 +347,9 @@
       </attribute>
     </optional>
     <optional>
+      <attribute name="lua_start_date_time"/>
+    </optional>
+    <optional>
       <attribute name="lua_start_offset"/>
     </optional>
     <optional>

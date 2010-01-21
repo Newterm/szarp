@@ -1,5 +1,9 @@
 $Id$
 
+2010-01-21	Pawel Palucha <pawel@praterm.com.pl>
+	* ipk.sgml: clarifications in sections about defined parameters.
+	* resources/dtd/ipk-params.rng: added lua_start_date_time attribute
+	for <define> element.
 2010-01-20	Darek Marcinkiewicz <darek@dalkiaterm.pl>
 	* libSzarp2/szbase: two bugs fixed: cache is porperly invalidated when 
 	params.xml was modified and users clicks 'reload configuration',

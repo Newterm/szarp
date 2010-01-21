@@ -3054,15 +3054,40 @@ Element <emphasis>define</emphasis> ma nastêpuj±ce atrybuty:
 
 <listitem><para>
 <emphasis>type</emphasis> - typ formu³y opisuj±cej warto¶æ parametru. Mo¿liwe
-warto¶ci to "RPN", "DRAWDEFINABLE" i "LUA". Pierwsza warto¶æ jest przyjmowana
-domy¶lnie, oznacza ona parametr definiowalny wyliczany przez program parcook,
-formu³a jest w odwrotnej notacji polskiej (ONP, RPN - reverse polish notation).
-Druga warto¶æ oznacza parametr wyliczany przez program przegl±daj±cy. 
-Formu³a jest tak¿e w
-ONP, ale nieco inny jest zestaw operatorów. Taki typ parametru mo¿e wyst±piæ
-tylko w elemencie <emphasis>drawdefinable</emphasis>.
-Trzecia warto¶æ oznacza parametr zapisany w postaci skryptu jêzyka LUA. Parametry w LUA 
-mog± byæ wyliczane zarówno przez program parcook, jak i przez program przegl±daj±cy.
+warto¶ci to:
+<itemizedlist>
+<listitem><para>
+<emphasis>RPN</emphasis> - oznacza parametr wyliczany
+przez program parcook, zawarty albo w jednej z sekcji <emphasis>device</emphasis>
+albo <emphasis>defined</emphasis> (ale nie <emphasis>drawdefinable</emphasis>). Drugi atrybut
+- <emphasis>formula</emphasis> - powinien zawieraæ formu³ê zapisan± w odwrotnej
+notacji polskiej (ONP, RPN - reverse polish notation). Sk³adniê dostêpnych operatorów
+opisuje rozdzia³ <xref linkend="define-rpn">.
+</para>
+<para>
+Opcjonalnie atrybut <emphasis>formula</emphasis> mo¿e zawieraæ wyra¿enie <emphasis>null</emphasis>,
+wtedy element mo¿e zawieraæ podelement <emphasis>script</emphasis>, zawieraj±cy tekstowo
+formu³ê w jêzyku LUA.
+</para>
+</listitem>
+<listitem><para>
+<emphasis>DRAWDEFINABLE</emphasis> - oznacza parametr wyliczany przez program przegl±daj±cy, czyli
+zawarty w sekcji <emphasis>drawdefinable</emphasis>. Atrybut <emphasis>formula</emphasis> zawiera
+w takim przypadku formulê równie¿ w postaci RPN, ale z nieco innym zestawiem operatorów - zobacz
+<xref linkend="define-drawdefinable">.
+</para></listitem>
+<listitem><para>
+<emphasis>LUA</emphasis> - oznacza równie¿ parametr z sekcji <emphasis>drawdefinable</emphasis>,
+obliczany przez program przegl±daj±cy, ale zapisany jako formu³a (skrypt) w jêzyku Lua. Formu³a
+mo¿e byæ zawarta albo w atrybucie <emphasis>formula</emphasis>, albo jako tekstowa zawarto¶æ
+podelementu <emphasis>script</emphasis>. Sk³adniê formu³ w jêzyku Lua opisuje rozdzia³
+<xref linkend="draw-definable-lua">.
+</para>
+<para>
+
+</para>
+</listitem>
+</itemizedlist>
 </para></listitem>
 
 <listitem><para>
@@ -3072,11 +3097,65 @@ parametru. Jej dok³adna postaæ zale¿y od atrybutu
 </para></listitem>
 
 </itemizedlist>
+Kolejne atrybuty wykorzystywane s± tylko je¶li atrybut <emphasis>type</emphasis> ma warto¶æ 
+<emphasis>LUA</emphasis> :
+<itemizedlist>
+<listitem><para>
+<emphasis>lua_formula</emphasis> - wymagany, okre¶la sposób liczenia ¶rednich danego parametru, 
+mo¿liwe warto¶ci to <emphasis>av</emphasis> lub <emphasis>va</emphasis>.
+Pierwsza warto¶æ oznacza, ¿e najpiew liczone s± ¶rednie z warto¶ci parametrów sk³adowych, a nastêpnie
+tak wyliczone warto¶ci podstawiane s± do formu³y. Druga warto¶æ oznacza, ¿e liczymy warto¶æ formu³y
+dla wszystkich próbek, a nastêpnie wyci±gamy z nich ¶redni±. 
+<note><para>Wybór sposobu liczenia mo¿e zmieniaæ
+wyliczane warto¶ci ¶rednie. Przyk³adowo, za³ó¿my ¿e mamy 2 parametry i w danym dniu ka¿dy z nich by³ zbierany
+tylko przez czê¶æ czasu, a formu³a liczy sumê tych 2 parametrów. Przy ustawieniu sposobu obliczania 
+<emphasis>av</emphasis> ¶rednia dzienna bêdzie sum± ¶rednich warto¶ci tych parametrów w danym dniu.
+Ale je¿eli wybierzemy sposób <emphasis>va</emphasis>, to ¶rednia dzienna bêdzie sum± ¶rednich warto¶ci
+parametrów,  wybranych z momentów kiedy, oba parametry by³y zbierane naraz.
+</para></note>
 
-Opcjonalnie w przypadku formu³ LUA zamiast atrybutu <emphasis>formula</emphasis> 
-formu³a mo¿e byæ zapisana po prostu jako tekstowa zawarto¶æ elementu <emphasis>define</emphasis>.
-Jest to wygodne zw³aszcza dla bardziej skomplikowanych formu³, bêd±cych po prostu
-skryptami w jêzyku LUA.
+</para></listitem>
+<listitem><para>
+<emphasis>lua_start_date_time</emphasis> - opcjonalny atrybut okre¶laj±cy pierwsz± datê i godzinê, dla
+której ma byæ wyliczany parametr. Dla parametrów LUA okre¶lenie zakresu czasowego w jakim parametr
+ma warto¶æ jest w ogólnym przypadku niemo¿liwe. Podanie atrybutu mo¿e przyspieszyæ obliczanie parametru,
+przez podpowiedzenie programowi, ¿e przed dan± dat± nie nale¿y go próbowaæ obliczaæ. Warto¶æ atrybutu
+musi byæ zgodna z formatem <emphasis>RRR-MM-DD gg:mm</emphasis>, godzinê podajemy w strefie czasowej GMT.
+</para></listitem>
+<listitem><para>
+<emphasis>lua_start_offset</emphasis> - opcjonalny atrybut jest alternatywnym sposobem okre¶lenia kiedy
+program ma zacz±æ obliczanie parametru. Warto¶æ atrybutu to liczba sekund jak± nale¿y dodaæ (lub odj±æ je¶li
+liczba jest ujemna) od daty pocz±tkowej - albo wyliczonej automatycznie przez program pierwszej daty w bazie,
+albo podanej jako warto¶æ atrybutu <emphasis>lua_start_date_time</emphasis>.
+</para></listitem>
+<listitem><para>
+<emphasis>lua_end_offset</emphasis> - opcjonalny atrybut podaje, kiedy mamy zakoñczyæ obliczanie parametru,
+jako ilo¶æ sekund które nale¿y dodaæ (odj±æ je¶li liczba jest ujemna) od automatycznie wyznaczonej przez
+program daty koñca danych w bazie.
+<note><para>
+Przyk³adem zastosowania tych atrybutów jest np. okre¶lenie parametru, który jest zale¿ny od danych sprzed 
+7 dni, czyli mo¿e byæ wyliczany na tydzieñ w przysz³o¶æ, ale nie ma sensu go liczyæ z pierwszego
+tygodnia danych w bazie. W takiej sytuacji mo¿emy ustawiæ zarówno <emphasis>lua_start_offset</emphasis> jak i 
+<emphasis>lua_end_offset</emphasis> na 604800 (7 dni = 7 * 24 h = 7 * 24 * 3600 s = 604800 s).
+</para></note>
+</para></listitem>
+</itemizedlist>
+</para>
+<para>
+Ewentualnie zawarty w elemencie <emphasis>define</emphasis> element potomny <emphasis>script</emphasis>
+nie ma ¿adnych atrybutów, a formu³a zapisana jest jako tekstowa zawarto¶æ elementu. Aby unikn±æ
+konieczno¶ci zastêpowania encjami XML znaków o specjalnych znaczeniach (takich jak &amp; czy &lt;)
+ca³± zawarto¶æ mo¿na zawrzeæ w sekcji <emphasis>CDATA</emphasis>, np.
+<programlisting>
+<![CDATA[
+<script><![CDATA[
+	if (p("gcie:Kocio³ 4:Sterownik:Wydajno¶æ kot³a", t, pt) < 0.25) then
+		v = nan()
+	else
+		v = 4.0
+]]]]><![CDATA[></script>
+]]>
+</programlisting>
 </para>
 
 </section> <!-- form-el-define -->
@@ -6071,34 +6150,29 @@ definiuj±cy parametr LUA na poziomie programu przegl±daj±cego:
 
 <programlisting>
 <![CDATA[
-<param name="Lua:param:test" short_name="lt" draw_name="Lua param test" unit="-" prec="0">
-	<define type="LUA" lua_formula="av" lua_start_offset="604800" lua_end_offset="604800"
-		lua_start_date_time="2004-08-24 15:00">
-        	<script>
-		<![CDATA[
-			v = p("swid:Sieæ:Sterownik:sumaryczna objêto¶æ wêgla do kot³a", szb_move_time(t, -1, pt) , pt)
-		]]]]><![CDATA[>
-		</script>
-	</define>
-	<draw title="Lua" color="white" min="0" max="25" order="10"/>
+<param name="Sieæ:Sterownik:Stopniodni" short_name="StD" draw_name="Stopniodni" unit="-" prec="1">
+            <define type="LUA" lua_formula="va" lua_start_date_time="2008-01-01 00:00">
+                    <script><![CDATA[
+                            local ct
+                            ct = p("prza:Sieæ:Sterownik:Temperatura zewnêtrzna", t, PT_DAY)
+                            if not(in_season("prza", t)) and ct < 18 then
+                                v = 18 - ct
+                            else
+                                v = 0
+                            end
+                    ]]]]><![CDATA[></script>
+            </define>
+            <draw title="Stopniodni" min="0" max="30" special="hoursum"/>
 </param>
 ]]>
 </programlisting>
-Dozwolonymi warto¶ciami atrybutu <emphasis>lua_formula</emphasis> s±:
-<itemizedlist>
-	<listitem><para> <emphasis>av</emphasis> - warto¶æ parametru jest wynikiem zastosowania
-	formu³y dla ¶rednich. </para></listitem>
-	<listitem><para> <emphasis>va</emphasis> - warto¶æ parametru jest liczona jako
-	¶rednia z zastosowania formu³y dla ka¿dej próbki. </para></listitem>
-</itemizedlist>
-
-Przedzia³ czasowy, dla którego wyliczane s± warto¶ci parametru LUA mo¿na okre¶liæ
-przy pomocy poni¿szych parametrów <emphasis>lua_start_offset</emphasis> i <emphasis>lua_end_offset</emphasis>.
-Zawieraj± one liczbê sekund przesuniêcia pocz±tku i koñca przedzia³u czasu, dla którego wyliczany 
-jest parametr definiowalny LUA. Domy¶lnie pocz±tkiem tego przedzia³u jest czas najstarszej
-warto¶ci parametru w bazie, a koñcem czas najm³odszej warto¶ci w bazie. W tym przypadku wykorzystany
-jest parametr <emphasis>lua_start_date_time</emphasis>, który zmienia pocz±tek przedzia³u czasowego
-na 2004-08-24 15:00. Format daty to YYYY-MM-DD HH-mm i jest on interpretowany jako czas UTC.
+Atrybut <emphasis>lua_formula</emphasis> o warto¶ci <emphasis>va</emphasis> mówi ¿e ¶rednie parametru
+obliczane s± jako ¶rednia z policzonych za pomoc± formu³y poszczególnych warto¶ci w obejmowanym przez
+¶redni± okresie (zobacz <xref linkend="form-el-define">).
+</para>
+<para>
+Przedzia³ czasowy, dla którego wyliczane s± warto¶ci parametru jest zawê¿ony przez podanie
+atrybutu <emphasis>lua_start_date_time</emphasis>
 </para>
 
 <para>
@@ -6126,7 +6200,9 @@ definiowalnego LUA na poziomie programu parcook:
 ]]>
 </programlisting>
 Nale¿y zwróciæ uwagê na to, i¿ atrybut <emphasis>type</emphasis> ma warto¶æ "RPN", a 
-<emphasis>formula</emphasis> "null". 
+<emphasis>formula</emphasis> "null". Formu³a definiuje parametr,
+który w poszczególnych przebiegach programu zmienia swoj± warto¶æ - kolejno 1, potem 2, 
+potem brak danych i od nowa.
 </para>
 
 </section><!-- draw-definable-lua-examples -->
