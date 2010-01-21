@@ -74,6 +74,10 @@ private:
 	void OnSetFontSizeBig(wxCommandEvent& evt);
 	void OnSetFontSizeMiddle(wxCommandEvent& evt);
 	void OnSetFontSizeSmall(wxCommandEvent& evt);
+	void OnSetThresholdBig(wxCommandEvent& evt);
+    void OnSetThresholdMiddle(wxCommandEvent& evt);
+    void OnSetThresholdSmall(wxCommandEvent& evt);
+    void OnSetThresholdVerySmall(wxCommandEvent& evt);
 	void OnAdjustFont(wxCommandEvent& evt);
 	void WriteConfiguration();
 	bool ShouldBeTransparent(int, int, int, int, int, int, double);
@@ -104,7 +108,8 @@ protected:
 	wxMemoryDC *m_memoryDC;
 	wxRegion *m_region;					
 public:
-    TransparentFrame(wxWindow* parent,  bool with_frame = true, wxString paramName = wxT("no param"), int id = wxID_ANY, wxString title = wxT("SharpShower"), wxPoint pos = wxDefaultPosition, wxSize size = wxSize( 300,100 ), int style = wxFRAME_SHAPED|wxNO_BORDER |wxSTAY_ON_TOP );
+    //TransparentFrame(wxWindow* parent,  bool with_frame = true, wxString paramName = wxT("no param"), int id = wxID_ANY, wxString title = wxT("SharpShower"), wxPoint pos = wxDefaultPosition, wxSize size = wxSize( 300,100 ), int style = wxFRAME_SHAPED|wxNO_BORDER |wxSTAY_ON_TOP );
+    TransparentFrame(wxWindow* parent,  bool with_frame = true, wxString paramName = wxT("no param"), int id = wxID_ANY, wxString title = wxT("SharpShower"), wxPoint pos = wxDefaultPosition, wxSize size = wxSize( 300,100 ), int style = 0 );
     ~TransparentFrame();
     void DrawContent(wxDC&dc);
     void SetFrameConfiguration(wxString, bool, long, long, wxColour, wxColour, int, int, int);

@@ -106,11 +106,6 @@ FetchFrame::FetchFrame(wxFrame *frame, wxString server, szHTTPCurlClient *http, 
         m_pfetcher->GetParams().RegisterIPK(TransparentFrame::ipk);
         m_pfetcher->SetPeriod(10);
 	}	
-    m_pfetcher->SetSource(m_probes, TransparentFrame::ipk);    
-    if(m_pfetcher->IsAlive())
-		m_pfetcher->Resume();
-    else
-		m_pfetcher->Run();
 }
 
 
@@ -136,11 +131,10 @@ void FetchFrame::OnAbout(wxCommandEvent &event)
 
 void FetchFrame::OnFetch(wxCommandEvent& event)
 {
-    int w = 0, h = 0;	
+	int w = 0, h = 0;	
     wxSize size = GetClientSize();
     w = size.GetWidth();
     h = size.GetHeight();	
-	m_pfetcher->Lock();		
 	if (m_pfetcher->IsValid() == true)
 	{		
 		for (size_t i = 0; i < m_pfetcher->GetParams().Count(); i++) {
@@ -153,11 +147,11 @@ void FetchFrame::OnFetch(wxCommandEvent& event)
 				if(all_frames[j] != NULL && all_frames[j]->GetParameterName().Cmp(name) == 0)
 				{
 					all_frames[j]->SetParameterValue(val + _(" ") + unit);
+					all_frames[j]->SetTitle(val + _(" ") + unit);
 					all_frames[j]->RefreshTransparentFrame();
 					break;
 				}
 			}
 		}
 	}
-	m_pfetcher->Unlock();
 }

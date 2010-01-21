@@ -269,6 +269,9 @@ bool viszioApp::LoadConfiguration(wxString configurationName)
     
     m_http = new szHTTPCurlClient();
 
+	if(TransparentFrame::m_pfetcher != NULL && TransparentFrame::m_pfetcher->IsRunning())
+		TransparentFrame::m_pfetcher->Pause();
+
     while (FetchFrame::ipk == NULL)
     {
         SerwerName = szServerDlg::GetServer(SerwerName, _T("Viszio"), ask_for_server, configurationName);
@@ -290,8 +293,13 @@ bool viszioApp::LoadConfiguration(wxString configurationName)
         szViszioAddParam* apd = new szViszioAddParam(TransparentFrame::ipk, NULL, wxID_ANY, _("Viszio->AddParam"));
         if ( apd->ShowModal() != wxID_OK )
             exit(0);
-        FetchFrame* frame = new FetchFrame(0L, SerwerName, m_http, apd->g_data.m_probe.m_parname);
-        frame->SetFrameConfiguration(apd->g_data.m_probe.m_parname, true, 0, 0, *wxRED, *wxBLACK, 15, 1, 1);
+        FetchFrame* frame = new FetchFrame(0L, SerwerName, m_http, apd->g_data.m_probe.m_parname);        
+		frame->SetFrameConfiguration(apd->g_data.m_probe.m_parname, true, 0, 0, *wxRED, *wxBLACK, 15, 1, 1);
+		if (TransparentFrame::m_pfetcher->IsRunning())    
+			TransparentFrame::m_pfetcher->Resume();
+		else
+			TransparentFrame::m_pfetcher->Run();
+
         frame->Show(true);
         return true;
     }
@@ -371,18 +379,28 @@ bool viszioApp::LoadConfiguration(wxString configurationName)
         {
             start_frame = new FetchFrame(0L, SerwerName, m_http, name);
             start_frame->SetFrameConfiguration(name, withFrame, locationX, locationY, frameColor, fontColor, fontSize, fontSizeAdjust, desktopNumber);
-            start_frame->Show();
+            //start_frame->Show();
         }
         else
         {
             if (TransparentFrame::current_amount_of_frames == TransparentFrame::max_number_of_frames) return false;
             frame = new TransparentFrame(TransparentFrame::all_frames[0], name);
             frame->SetFrameConfiguration(name, withFrame, locationX, locationY, frameColor, fontColor, fontSize, fontSizeAdjust, desktopNumber);
-            frame->Show();
+           // frame->Show();
         }
         i++;
         cont = wxConfig::Get()->GetNextEntry(name, dummy);
     }
+	if (TransparentFrame::m_pfetcher->IsRunning())    
+		TransparentFrame::m_pfetcher->Resume();
+	else
+		TransparentFrame::m_pfetcher->Run();
+	
+	for(int j=0; j<TransparentFrame::max_number_of_frames; j++)
+		if(TransparentFrame::all_frames[j] != NULL) {
+			TransparentFrame::all_frames[j]->Show();
+		}
+
     wxConfig::Get()->SetPath(_T("../.."));
     return true;
 }

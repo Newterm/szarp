@@ -1,5 +1,12 @@
 $Id$
 
+2010-01-21      Adam Smyk <asmyk@dalkiaterm.pl>
+	* wx/viszio: fetchig parameters has been corrected, it should work 
+	now, antyaliasing menu has been added, moving transparent frame is 
+	more flexible (some problems with GTK has been founded),  
+	GDK_WINDOW_TYPE_HINT_DOCK flag has been used but it makes impossible 
+	to put transparent frame on taskbar now
+	* resources/wx/icons: icons for viszio has been added
 2010-01-21	Pawel Palucha <pawel@praterm.com.pl>
 	* ipk.sgml: clarifications in sections about defined parameters.
 	* resources/dtd/ipk-params.rng: added lua_start_date_time attribute

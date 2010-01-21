@@ -40,25 +40,36 @@
 #include "parlist.h"
 #include <wx/tokenzr.h>
 
+#include <libwnck/libwnck.h>
+#include <gdk/gdkx.h>
 
+#ifndef MINGW32
+#include "../../resources/wx/icons/viszio64.xpm"
+#endif
+	
 enum
 {
     PUM_ADD,
     PUM_EXIT,
     PUM_COLOR,
     PUM_CLOSE,
-    PU_ARRANGE_RD,
-    PU_ARRANGE_LD,
-    PU_ARRANGE_UR,
+    PU_ARRANGE_RD, 
+    PU_ARRANGE_LD, 
+    PU_ARRANGE_UR, 
     PU_ARRANGE_BR,
     PU_ARRANGE,
     PUM_WITH_FRAME,
     PUM_FONT_COLOR,
     PU_FONT_SIZE,
-    PUM_FONT_SIZE_BIG,
-    PUM_FONT_SIZE_MIDDLE,
-    PUM_FONT_SIZE_SMALL,
-    PUM_FONT_SIZE_ADJUST
+    PUM_FONT_SIZE_BIG, 
+    PUM_FONT_SIZE_MIDDLE, 
+    PUM_FONT_SIZE_SMALL, 
+    PUM_FONT_SIZE_ADJUST,
+	PU_FONT_THRESHOLD,
+    PUM_FONT_THRESHOLD_BIG, 
+    PUM_FONT_THRESHOLD_MIDDLE,
+    PUM_FONT_THRESHOLD_SMALL, 
+    PUM_FONT_THRESHOLD_VERY_SMALL
 };
 
 BEGIN_EVENT_TABLE( TransparentFrame, wxFrame )
@@ -80,31 +91,40 @@ BEGIN_EVENT_TABLE( TransparentFrame, wxFrame )
     EVT_MENU(PU_ARRANGE_LD, TransparentFrame::OnArrangeLeftDown)
     EVT_MENU(PU_ARRANGE_UR, TransparentFrame::OnArrangeUpRight)
     EVT_MENU(PU_ARRANGE_BR, TransparentFrame::OnChangeBottomRight)
-    EVT_MENU(PUM_WITH_FRAME, TransparentFrame::OnWithFrame)
+    EVT_MENU(PUM_WITH_FRAME, TransparentFrame::OnWithFrame)    
+    EVT_MENU(PUM_FONT_THRESHOLD_BIG, TransparentFrame::OnSetThresholdBig)
+    EVT_MENU(PUM_FONT_THRESHOLD_MIDDLE, TransparentFrame::OnSetThresholdMiddle)
+    EVT_MENU(PUM_FONT_THRESHOLD_SMALL, TransparentFrame::OnSetThresholdSmall)
+    EVT_MENU(PUM_FONT_THRESHOLD_VERY_SMALL, TransparentFrame::OnSetThresholdVerySmall)
 END_EVENT_TABLE()
 
 int TransparentFrame::current_amount_of_frames = 0;
 TransparentFrame** TransparentFrame::all_frames = new TransparentFrame*[TransparentFrame::max_number_of_frames];
-wxSize TransparentFrame::defaultSizeWithFrame = wxSize(300, 84);
+wxSize TransparentFrame::defaultSizeWithFrame = wxSize(250, 84);
 szParamFetcher *TransparentFrame::m_pfetcher;
 szProbeList TransparentFrame::m_probes;
 TSzarpConfig *TransparentFrame::ipk;
 wxString TransparentFrame::configuration_name = _T("");
 long TransparentFrame::m_fontThreshold = 19;
 
-TransparentFrame::TransparentFrame( wxWindow* parent, bool with_frame, wxString paramName, int id, wxString title, wxPoint pos, wxSize size, int style ) :
-        wxFrame((wxFrame *)NULL,
+TransparentFrame::TransparentFrame( wxWindow* parent, bool with_frame, wxString paramName, int id, wxString title, wxPoint pos, wxSize size, int style):
+        wxFrame((wxFrame *)parent,
                 wxID_ANY,
                 wxEmptyString,
                 wxPoint(0, 0),
                 defaultSizeWithFrame,
-                0 | wxFRAME_SHAPED | wxSIMPLE_BORDER | wxFRAME_NO_TASKBAR | wxSTAY_ON_TOP  ),
+                0 | wxFRAME_SHAPED | wxSIMPLE_BORDER | wxSTAY_ON_TOP | wxTRANSPARENT_WINDOW),
         m_color(*wxRED)
 {
+#ifndef MINGW32
+	//to move window everywhere
+	gtk_window_set_type_hint (GTK_WINDOW (this->GetHandle()), GDK_WINDOW_TYPE_HINT_DOCK);
+#endif
+	wxIcon icon(wxICON(viszio64));
+	SetIcon(icon);  
     m_typeOfFrame = TRANSPARENT_FRAME;
     m_fullParameterName = paramName;
     m_menu = NULL;
-    //m_font = wxFont::New(15, wxSWISS,wxFONTFLAG_NOT_ANTIALIASED|wxFONTFLAG_DEFAULT,wxFONTSTYLE_NORMAL);
     m_font = wxFont::New(15, wxSWISS, wxFONTFLAG_NOT_ANTIALIASED, wxFONTSTYLE_NORMAL);
     m_fontColor = new wxColour(0, 0, 0);
     m_parameterName = new TextComponent(wxPoint(0,4), wxSize(400,35), 18, true);
@@ -114,9 +134,9 @@ TransparentFrame::TransparentFrame( wxWindow* parent, bool with_frame, wxString 
     m_parameterValue->SetFont(*m_font, *m_fontColor);
     m_color = wxColour(255, 0, 0);
     m_withFrame = with_frame;
-    m_bitmap = NULL;//new wxBitmap(size.GetWidth(), size.GetHeight());
-    m_memoryDC = NULL;// new wxMemoryDC();
-    m_region = NULL;//new wxRegion(*m_bitmap, *wxWHITE);
+    m_bitmap = NULL;
+    m_memoryDC = NULL;
+    m_region = NULL;
 
     if (current_amount_of_frames == 0)
     {
@@ -171,14 +191,7 @@ void TransparentFrame::SetFrameConfiguration(wxString name, bool withFrame, long
         return;
     }
     m_probes.Append(probe);
-    if (m_pfetcher->IsRunning())
-    {
-        m_pfetcher->Pause();
-        m_pfetcher->SetSource(m_probes, TransparentFrame::ipk);
-        m_pfetcher->Resume();
-    }
-    else
-        m_pfetcher->SetSource(m_probes, TransparentFrame::ipk);
+	m_pfetcher->SetSource(m_probes, TransparentFrame::ipk);
 }
 
 
@@ -186,7 +199,7 @@ void TransparentFrame::DrawContent(wxDC&dc)
 {
     if (m_bitmap==NULL)
         RefreshTransparentFrame();
-    dc.DrawBitmap(*m_bitmap,0, 0, true);
+    dc.DrawBitmap(*m_bitmap, 0, 0, true);
     return;
 }
 
@@ -367,6 +380,55 @@ void TransparentFrame::OnSetFontSizeSmall(wxCommandEvent& evt)
     RefreshTransparentFrame();
 }
 
+void TransparentFrame::OnSetThresholdBig(wxCommandEvent& evt)
+{
+	TransparentFrame::m_fontThreshold = 25;
+	for (int i=0; i<TransparentFrame::max_number_of_frames; i++)
+        if (all_frames[i] != NULL)
+        {
+			all_frames[i]->RefreshTransparentFrame();
+			if (all_frames[i]->m_menu != NULL)
+				all_frames[i]->m_menu->Check(PUM_FONT_THRESHOLD_BIG, true);
+        }
+}
+
+void TransparentFrame::OnSetThresholdMiddle(wxCommandEvent& evt)
+{
+	TransparentFrame::m_fontThreshold = 20;
+	for (int i=0; i<TransparentFrame::max_number_of_frames; i++)
+        if (all_frames[i] != NULL)
+        {
+			all_frames[i]->RefreshTransparentFrame();
+			if (all_frames[i]->m_menu != NULL)
+				all_frames[i]->m_menu->Check(PUM_FONT_THRESHOLD_MIDDLE, true);
+        }
+}
+
+void TransparentFrame::OnSetThresholdSmall(wxCommandEvent& evt)
+{
+	TransparentFrame::m_fontThreshold = 15;
+	for (int i=0; i<TransparentFrame::max_number_of_frames; i++)
+        if (all_frames[i] != NULL)
+        {
+			all_frames[i]->RefreshTransparentFrame();
+			if (all_frames[i]->m_menu != NULL)
+				all_frames[i]->m_menu->Check(PUM_FONT_THRESHOLD_SMALL, true);
+        }
+}
+
+void TransparentFrame::OnSetThresholdVerySmall(wxCommandEvent& evt)
+{
+	TransparentFrame::m_fontThreshold = 10;
+	for (int i=0; i<TransparentFrame::max_number_of_frames; i++)
+		if (all_frames[i] != NULL)
+        {
+			all_frames[i]->RefreshTransparentFrame();
+			if (all_frames[i]->m_menu != NULL)
+				all_frames[i]->m_menu->Check(PUM_FONT_THRESHOLD_VERY_SMALL, true);
+        }
+}
+
+
 void TransparentFrame::OnAdjustFont(wxCommandEvent& evt)
 {
     m_parameterName->SetAdjustable(!m_parameterName->GetAdjustable());
@@ -384,7 +446,10 @@ void TransparentFrame::OnChangeFontColor(wxCommandEvent& evt)
     {
         wxColourData data = colorDialog.GetColourData();
         delete m_fontColor;
-        m_fontColor = new wxColour(data.GetColour());
+        if (data.GetColour() == *wxWHITE)
+			m_fontColor = new wxColour(220, 220, 220);
+        else
+			m_fontColor = new wxColour(data.GetColour());
         m_parameterName->SetFont(*m_parameterName->GetFont(), *m_fontColor);
         m_parameterValue->SetFont(*m_parameterValue->GetFont(), *m_fontColor);
         RefreshTransparentFrame();
@@ -418,7 +483,7 @@ void TransparentFrame::OnLeftUp(wxMouseEvent& WXUNUSED(evt))
 {
     if (HasCapture())
         ReleaseMouse();
-    WriteConfiguration();
+    //WriteConfiguration();
 }
 
 void TransparentFrame::OnMouseMove(wxMouseEvent& evt)
@@ -426,8 +491,8 @@ void TransparentFrame::OnMouseMove(wxMouseEvent& evt)
     wxPoint pt = evt.GetPosition();
     if (evt.Dragging() && evt.LeftIsDown())
     {
-        wxPoint pos = ClientToScreen(pt);
-        Move(wxPoint(pos.x - m_delta.x, pos.y - m_delta.y));
+        wxPoint pos = ClientToScreen(pt);	
+		Move(wxPoint(pos.x - m_delta.x, pos.y - m_delta.y));        
     }
 }
 
@@ -448,15 +513,45 @@ wxMenu *TransparentFrame::CreatePopupMenu()
     fontsubmenu->AppendRadioItem(PUM_FONT_SIZE_SMALL, _("Font small"));
     fontsubmenu->AppendRadioItem(PUM_FONT_SIZE_MIDDLE, _("Font middle"));
     fontsubmenu->AppendRadioItem(PUM_FONT_SIZE_BIG, _("Font large"));
-
-    if (m_parameterValue->GetFont()->GetPointSize()==10)
+    
+    if (m_parameterValue->GetFont()->GetPointSize() == 10)
         fontsubmenu->Check(PUM_FONT_SIZE_SMALL, true);
-    else if (m_parameterValue->GetFont()->GetPointSize()==15)
+    else if (m_parameterValue->GetFont()->GetPointSize() == 15)
         fontsubmenu->Check(PUM_FONT_SIZE_MIDDLE, true);
-    else if (m_parameterValue->GetFont()->GetPointSize()==20)
+    else if (m_parameterValue->GetFont()->GetPointSize() == 20)
         fontsubmenu->Check(PUM_FONT_SIZE_BIG, true);
-
+    
     menu->Append(PU_FONT_SIZE, _("Change font size"), fontsubmenu);
+    
+    wxMenu *thresholdsubmenu = new wxMenu;
+	thresholdsubmenu->AppendRadioItem(PUM_FONT_THRESHOLD_BIG, _("Font antyaliasing threshold 25"));
+    thresholdsubmenu->AppendRadioItem(PUM_FONT_THRESHOLD_MIDDLE, _("Font antyaliasing threshold 20"));
+    thresholdsubmenu->AppendRadioItem(PUM_FONT_THRESHOLD_SMALL, _("Font antyaliasing threshold 15"));
+	thresholdsubmenu->AppendRadioItem(PUM_FONT_THRESHOLD_VERY_SMALL, _("Font antyaliasing threshold 10"));    
+	
+	if (TransparentFrame::m_fontThreshold > 22)
+	{
+		TransparentFrame::m_fontThreshold = 25;
+        thresholdsubmenu->Check(PUM_FONT_THRESHOLD_BIG, true);
+	}
+    else if (TransparentFrame::m_fontThreshold > 17)
+		{
+			TransparentFrame::m_fontThreshold = 20;
+			thresholdsubmenu->Check(PUM_FONT_THRESHOLD_MIDDLE, true);
+		}
+    else if (TransparentFrame::m_fontThreshold > 13)
+		{
+			TransparentFrame::m_fontThreshold = 15;
+			thresholdsubmenu->Check(PUM_FONT_THRESHOLD_SMALL, true);
+		}
+		else 
+		{
+			TransparentFrame::m_fontThreshold = 10;
+			thresholdsubmenu->Check(PUM_FONT_THRESHOLD_VERY_SMALL, true);
+		}
+
+    menu->Append(PU_FONT_THRESHOLD, _("Change threshold"), thresholdsubmenu);
+    
     menu->AppendCheckItem(PUM_WITH_FRAME, _("With frame"), _T("help"));
     menu->Check(PUM_WITH_FRAME, m_withFrame);
     wxMenu *submenu = new wxMenu;
@@ -488,13 +583,16 @@ void TransparentFrame::OnArrangeRightDown(wxCommandEvent& evt)
     //int w_max, h_max;
     //w_max = displaySize.GetWidth();
     //h_max = displaySize.GetHeight();
-    int x = w_max - w;
+    int x = w_max - w/2;//asm -w
     int y = y_start;
-    // int x_corect = 0, y_correct = 0;
     for (int i = 0; i < max_number_of_frames; i++)
     {
-        if (all_frames[i] == NULL) continue;
-        all_frames[i]->Move(wxPoint(x, y));
+        if (all_frames[i] == NULL) continue;        
+#ifndef MINGW32	
+		all_frames[i]->Move(wxPoint(x - GetClientSize().GetWidth()/2, y));
+#else   
+		all_frames[i]->Move(wxPoint(x, y));     
+#endif        
         if (y + 2 * h < h_max)
         {
             y = y + h;
