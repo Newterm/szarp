@@ -1771,11 +1771,12 @@ int ModbusTCP::SendMessage(int timeout)
 	while (towrite > 0) {
 		c = writev(m_socket, iobuf, 2);
 		m_last_tcp_event = time(NULL);
-		if (c <= 0) {
+		if (c == -1) {
 			if (errno == EINTR) {
 				continue;
 			} else {
-				sz_log(10, "Write(): %d bytes to write", towrite);
+				sz_log(10, "Write(): %d bytes to write, errno %d (%s)", towrite, errno, 
+						strerror(errno));
 				ret = 1;
 				goto out;
 			}

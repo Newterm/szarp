@@ -1,5 +1,7 @@
 $Id$
 
+2010-01-25      Pawel Palucha <pawel@praterm.com.pl>
+	* parcook/mbtcpdmn.cc: small fix in connection errors logging.
 2010-01-25      Adam Smyk <asmyk@dalkiaterm.pl>
 	* wx/common/serverdlg.*: ipk loading is done in a separate 
 	thread - refreshing of a progress dialog works well
