@@ -34,6 +34,7 @@
 
 #include <wx/progdlg.h>
 #include <wx/timer.h>
+#include <wx/thread.h>
 #include "szarp_config.h"
 #include "fetchparams.h"
 
@@ -63,6 +64,29 @@ public:
 	static wxString GetServer(wxString def, wxString progname, bool always_show = true, wxString configuration = _T("ServerDlg"));
 	static TSzarpConfig * GetIPK(wxString server,szHTTPCurlClient *m_http);
 	static bool GetReports(wxString server, szHTTPCurlClient *m_http, wxString &title, wxArrayString &reports);
+};
+
+/** Class for loading ipk from remote server. */
+class GetIPKThread: public wxThread 
+{
+	/** name of server */
+	wxString m_server;
+	/** szarp configuration */
+	TSzarpConfig **m_ipk;
+	/** http client */
+	szHTTPCurlClient **m_http;
+	/** main thread function, it obtaines ipk from a given server. 
+		This function can change http and ipk parameters passed to
+		the constructor.
+	*/
+	virtual void* Entry();
+public:
+	/** Constructor of the GetIPKThread class
+	* @param server name of the server to be explored
+	* @param http address of a http client 
+	* @param ipk address of a szarp configuration 
+	*/
+	GetIPKThread(wxString path, szHTTPCurlClient **http, TSzarpConfig **ipk);
 };
 
 #endif /* __SERVERDLG_H__ */

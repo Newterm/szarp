@@ -1,5 +1,8 @@
 $Id$
 
+2010-01-25      Adam Smyk <asmyk@dalkiaterm.pl>
+	* wx/common/serverdlg.*: ipk loading is done in a separate 
+	thread - refreshing of a progress dialog works well
 2010-01-21      Adam Smyk <asmyk@dalkiaterm.pl>
 	* wx/viszio: fetchig parameters has been corrected, it should work 
 	now, antyaliasing menu has been added, moving transparent frame is 

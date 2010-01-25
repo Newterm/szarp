@@ -115,49 +115,45 @@ wxString szServerDlg::GetServer(wxString def, wxString progname, bool always_sho
 	return server;
 }
 
-TSzarpConfig * szServerDlg::GetIPK(wxString server, szHTTPCurlClient *m_http) {
+TSzarpConfig * szServerDlg::GetIPK(wxString server, szHTTPCurlClient *http) {
 	wxString path = server + _T("/params.xml");
 
 	TSzarpConfig *ipk = new TSzarpConfig();
 	assert (ipk);
-
-	long time = wxGetLocalTimeMillis().ToLong();
-
+	
 	wxProgressDialog* pr = new wxProgressDialog(_("Connecting to server"),
-			_("Trying to connect to server ") + server + _(".\nPlease wait."));
+			_("Trying to connect to server ") + server + _(".\nPlease wait."));// 100, NULL, wxPD_SMOOTH);
 	if (szFrame::default_icon.IsOk()) {
 		pr->SetIcon(szFrame::default_icon);
 	}
-	pr->Update(0);
-	int ret;
-	xmlDocPtr doc = m_http->GetXML(const_cast<char*>(SC::S2A(path).c_str()), NULL, NULL);
-	wxString msg;
-	if (doc == NULL) {
-		ret = -1;
-		if (m_http->GetError() != 0) {
-			msg = SC::A2S(m_http->GetErrorStr());
-		}
-	} else {
-		ret = ipk->parseXML(doc);
-		xmlFreeDoc(doc);
-	}
+	GetIPKThread *getIPKThread = new GetIPKThread(server, &http, &ipk);
+	getIPKThread->Create();
+	getIPKThread->Run();	
 
-	time = wxGetLocalTimeMillis().ToLong() - time;
-	if(time < 1000)
-		wxMilliSleep(1000 - time);
+	int max_value = 100;
+	int act_value = 0;
+	while (getIPKThread->IsAlive())
+	{
+		if(act_value >= max_value - 2) 
+			act_value = 0;
+		act_value++;
+		pr->Update(act_value);
+		wxMilliSleep(1);
+	}	
 
 	delete pr;
-	if (ret) {
-		wxMessageBox(_("Unable to connect to server ")
+	delete getIPKThread;
+	
+	if(ipk == NULL){
+		wxString msg;
+		if (http->GetError() != 0) {
+			msg = SC::A2S(http->GetErrorStr());
+		}
+		wxMessageBox(_("Unable to connect to server ") 
 				+ server + _(".\n") +
 				msg +
 				_("\nIPK is not available.\n"),
-				_("Connect error"), wxICON_ERROR | wxOK);
-		delete ipk;
-		ipk = NULL;
-		return NULL;
-	}
-	
+				_("Connect error"), wxICON_ERROR | wxOK);}
 	return ipk;
 }
 
@@ -226,4 +222,41 @@ bool szServerDlg::GetReports(wxString server, szHTTPCurlClient *m_http, wxString
 	reports.Sort();
 
 	return !error;
+}
+
+
+GetIPKThread::GetIPKThread(wxString server, szHTTPCurlClient **http, TSzarpConfig **ipk)
+	:wxThread(wxTHREAD_JOINABLE)
+{
+	m_server = server;
+	m_ipk = ipk;
+	m_http = http;
+}
+
+
+void* GetIPKThread::Entry()
+{
+	wxString path = m_server + _T("/params.xml");
+	long time = wxGetLocalTimeMillis().ToLong();
+	
+	int ret = 0;
+	xmlDocPtr doc = (*m_http)->GetXML(const_cast<char*>(SC::S2A(path).c_str()), NULL, NULL);
+
+	if (doc != NULL) {
+		ret = (*m_ipk)->parseXML(doc);
+		xmlFreeDoc(doc);
+	} else 
+		ret = -1;
+	
+	time = wxGetLocalTimeMillis().ToLong() - time;
+	if(time < 1000)
+		wxMilliSleep(1000 - time);
+
+	if (ret < 0) {
+		delete *m_ipk;
+		*m_ipk = NULL;
+		return NULL;
+	}
+	
+	return NULL;
 }
