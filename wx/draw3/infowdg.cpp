@@ -368,10 +368,12 @@ void InfoWidget::ShowExtraPanel(bool show) {
 
 void InfoWidget::DoubleCursorChanged(DrawsController *draws_controller) {
 	DoubleCursorMode(draws_controller->GetDoubleCursor());
+	m_update_values = true;
 }
 
 void InfoWidget::NumberOfValuesChanged(DrawsController *draws_controller) {
 	DoubleCursorMode(false);
+	m_update_values = true;
 }
 
 void InfoWidget::DoubleCursorMode(bool set) {

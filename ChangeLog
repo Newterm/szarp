@@ -1,5 +1,10 @@
 $Id$
 
+2010-01-28      Darek Marcinkiewicz <darek@dalkiaterm.pl>
+	* wx/draw3: info widget's min/avg/max values are
+	properly updated when switching from/to double cursor
+	mode, dialog for param editing when displayed shows
+	edited parameter type correctly
 2010-01-25      Pawel Palucha <pawel@praterm.com.pl>
 	* parcook/mbtcpdmn.cc: small fix in connection errors logging.
 2010-01-25      Adam Smyk <asmyk@dalkiaterm.pl>

@@ -237,7 +237,7 @@ int ParamEdit::Edit(DefinedParam * param)
  	m_formula_input->SetText(param->GetFormula());
 	m_param_name_input->SetValue(param->GetParamName().AfterLast(L':'));
 	m_unit_input->SetValue(param->GetUnit());
-	m_formula_type_choice->SetSelection(TParam::LUA_VA ? 0 : 1);
+	m_formula_type_choice->SetSelection(param->GetFormulaType() == TParam::LUA_VA ? 0 : 1);
 	
 	
 	if (param->GetStartTime() > 0) {
