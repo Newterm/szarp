@@ -788,15 +788,21 @@ if test "x$with_mingw32" != "xyes"; then
 fi
 
 #Check for wnck library
-no_wnck="no";
-AC_CHECK_LIB(wnck-1, wnck_workspace_get_number, [ WNCK_LIBS=-lwnck-1], [no_wnck=yes])
-if test "x$no_WNCK" = "xyes"; then
-    AC_MSG_WARN([
-          libwnck library is not available, some programs will not be built
-        	])
+no_wnck="yes"
+AC_ARG_WITH([wnck], AC_HELP_STRING([--with-wnck],
+	[compile with WNCK library]), [
+		if test "$withval" = "no" ; then
+			with_wnck="no"
+		else
+			with_wnck="yes"
+		fi
+	], with_wnck="no")
+if test "x$with_wnck" = "xyes" ; then
+	PKG_CHECK_MODULES(WNCK, libwnck-1.0, no_wnck="no", [AC_MSG_RESULT([
+			libwnck library is not available, some programs will not be built
+							   ])])
 fi
-AC_SUBST(WNCK_LIBS)
-
+AM_CONDITIONAL(HAVE_WNCK, test x$no_wnck != xyes)
 
 #Check for sqlite library
 no_sqlite="yes";

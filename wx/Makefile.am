@@ -10,12 +10,16 @@ INCLUDE_SUBDIRS = ekstraktor3 confedit koper filler
 endif
 
 if HAVE_CURL
-CURL_SUBDIRS = raporter3 kontroler3 viszio
-endif
+CURL_SUBDIRS = raporter3 kontroler3
+if HAVE_WNCK
+WNCK_SUBDIRS = viszio
+endif # WNCK
+endif # CURL
+
 
 SUBDIRS = common draw3 $(INCLUDE_SUBDIRS) \
 	wxhelp scc $(CURL_SUBDIRS) sync \
-	isledit szast
+	isledit szast $(WNCK_SUBDIRS)
 
 winsetup:
 	@srcdir@/../script/nsis/winsetup.sh -c \

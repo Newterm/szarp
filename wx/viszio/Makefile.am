@@ -10,12 +10,13 @@ MAINTAINERCLEANFILES = Makefile.in
 
 # Compilations flags
 INCLUDES = @WX_CXXFLAGS@ @XML_CFLAGS@ @CURL_CFLAGS@ @LUA_CFLAGS@ @BOOST_CPPFLAGS@ \
-	@GDK_CFLAGS@ @GLIB_CFLAGS@ \
+	@WNCK_CFLAGS@  \
 	-I@srcdir@/../../libSzarp/include \
 	-I@srcdir@/../../libSzarp2/include \
         -I@srcdir@/../../include \
 	-I@srcdir@/../common \
-	-DPREFIX=\"@prefix@\"
+	-DPREFIX=\"@prefix@\" \
+	-DWNCK_I_KNOW_THIS_IS_UNSTABLE
 
 LIBSZARP=../../libSzarp/libSzarp.a
 LIBSZARP2=../../libSzarp2/libSzarp2.a 

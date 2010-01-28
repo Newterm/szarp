@@ -1,10 +1,15 @@
 $Id$
 
+2010-01-28      Pawel Palucha <pawel@praterm.com.pl>
+	* wx/viszio/Makefile.am: correct include dirs for libwnck, current
+	library version needs WNCK_I_KNOW_THIS_IS_UNSTABLE defined.
+	* wx/Makefile.am: conditional including viszio subdirectory.
+	* configure.in: libwnck uses pkg-config; libwnck is disabled by
+	default, use '--with-wnck' to enable it.
 2010-01-28      Darek Marcinkiewicz <darek@dalkiaterm.pl>
-	* wx/draw3: info widget's min/avg/max values are
-	properly updated when switching from/to double cursor
-	mode, dialog for param editing when displayed shows
-	edited parameter type correctly
+	* wx/draw3: info widget's min/avg/max values are properly updated when 
+	switching from/to double cursor mode, dialog for param editing when 
+	displayed shows edited parameter type correctly
 2010-01-25      Pawel Palucha <pawel@praterm.com.pl>
 	* parcook/mbtcpdmn.cc: small fix in connection errors logging.
 2010-01-25      Adam Smyk <asmyk@dalkiaterm.pl>
