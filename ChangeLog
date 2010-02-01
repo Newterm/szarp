@@ -1,5 +1,8 @@
 $Id$
 
+2010-02-01      Pawel Palucha <pawel@praterm.com.pl>
+	* resources/documentation/new/Makefile.am: fix in sed replace
+	expresion.
 2010-01-28      Pawel Palucha <pawel@praterm.com.pl>
 	* wx/viszio/Makefile.am: correct include dirs for libwnck, current
 	library version needs WNCK_I_KNOW_THIS_IS_UNSTABLE defined.

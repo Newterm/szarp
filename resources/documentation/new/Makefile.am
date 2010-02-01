@@ -98,7 +98,7 @@ SGMLHELP=../../../../script/sgml2hlpctrl.pl
 	cat $< | sed -e 's+DOCTYPE book+DOCTYPE article+ig' \
 	-e 's+common/help.sgml+common/help-article.sgml+ig' \
 	-e 's+<bookinfo+<artheader+ig' \
-	-e 's+</bookinfo\>+</artheader>+ig' \
+	-e 's+</bookinfo>+</artheader>+ig' \
 	-e 's+<partintro>++ig' \
 	-e 's+</partintro>++ig' |\
 	sed -e 's+<book+<article+ig' \
