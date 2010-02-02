@@ -1,6 +1,7 @@
 $Id$
 
 2010-02-02      Pawel Palucha <pawel@praterm.com.pl>
+	* parcook/parcook.cc: fix in line daemons command line.
 	* utils/ddeproxy/*: renamed ddespy along with setup file for py2exe.
 2010-02-01      Pawel Palucha <pawel@praterm.com.pl>
 	* resources/documentation/new/Makefile.am: fix in sed replace

@@ -980,7 +980,7 @@ char * const * wstring2argvp(std::wstring path, int num, std::wstring device, st
 	char ** ret = (char **) malloc(sizeof(char *) * argv_v.size() + 4);
 	ret[0] = strdup(SC::S2A(path).c_str());
 	asprintf(&(ret[1]), "%d", num);
-	ret[2] = strdup(SC::S2A(path).c_str());
+	ret[2] = strdup(SC::S2A(device).c_str());
 	int j = 3;
 	for (std::vector<char *>::iterator i = argv_v.begin(); i != argv_v.end(); i++, j++) {
 		ret[j] = *i;
