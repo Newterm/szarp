@@ -8,6 +8,25 @@
 # Puste linie s± ignorowane.
 # $Id$
 
+** 3.1.287
+# 02.02.2009
+
+* ddespy zosta³ przepisany a ddedmn poprawiony. Dziêki tym zmianom
+pobieranie warto¶ci z serwerów DDE jest teraz znacznie szybsze.
+* Zmieniono sposób w jakich parcook uruchamia demony, teraz s± 
+one bezpo¶rednio odpalane za pomoc± execve, a nie jak dotychczas przez
+/bin/sh.
+* Dodano nowe narzêdzie szbmod, s³u¿±ce do modyfikacji zawarto¶ci bazy
+szbase za pomoc± skryptów jêzyka LUA.
+* Rozbudowano mechanizm cache, teraz znacznie wiêcej wyliczonych warto¶ci
+jest cacheowanych - zwiêksza to znacznie prêdko¶æ rysowania parametrów
+definiowalnych.
+* Rozpoczêto pracê nad now± funkcjonalno¶ci±: rysowaniem trendów warto¶ci
+dziesiêciosekundowych, zakoñczono pierwszy etap prac - demona zgyrwaj±cego
+warto¶ci próbek na dysku, w celu ich po¼niejszego udostêpnienia np.
+programowi przegl±daj±cemu.
+* Zakoñczono pracê nad dokumentacj± programu raporter3.
+
 ** 3.1.254
 # 31.12.2009
 

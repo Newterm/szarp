@@ -6,6 +6,22 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.287
+# 02.02.2009
+
+* ddespy has been rewritten and ddedmn improved. Thanks to these changes
+fetching data from DDE servers is much faster now.
+* The way parcook launches line daemons has been changed, now they are started
+directly be execve, not as it used to be - through /bin/sh -c.
+* New utility "szbmod" has been added. Szbmod allows for fast modification
+of szbase historical data through LUA scripts.
+* Szbase cache mechanism was extended, now much more values are stored in cache 
+thus improving defined parameters drawing speed.
+* Work on new major feature - trends plotting of 10 seconds probes - has been started.
+The first phase of this task - an daemon storing these probes has been written and now
+is tested at one of heating plants.
+* raporter3 has now complete documentation.
+
 ** 3.1.254
 # 31.12.2009
 
