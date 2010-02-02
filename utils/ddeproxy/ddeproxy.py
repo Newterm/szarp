@@ -24,14 +24,22 @@
   To run this script you need first  to install:
   - Python 2.X for Windows, from http://www.python.org/download/
   - Python for Windows extensions from http://sourceforge.net/projects/pywin32/
+  You can also create exe executable file using py2exe http://www.py2exe.org/. Setup
+  file setup.py is included.
+
+  You can configure listening port number (default is 8080) by creating file named
+  port.cfg in script's working directory, containing just port number.
 """
 
 import xmlrpclib
 import socket
 import win32ui
 import dde
+import sys
 import SimpleXMLRPCServer
+import os.path
 
+# default application name, for compatilibity with old ddespy/ddedmn
 __DEFAULT_APPNAME__ = "MBENET"
 """ Port to listen on """
 __PORT__ = 8080
@@ -52,10 +60,10 @@ DDE request are REQUEST(APPNAME, TOPIC, ITEM). List of return values from DDE Re
 class DDESpy:
         def __init__(self):
                 self.appname = ""
+                self.lasttopic = ""
                 self.server = dde.CreateServer()
                 self.server.Create("DDEPROXY")
                 self.convers = dde.CreateConversation(self.server)
-                self.lasttopic = ""
                 
         def __del__(self):
                 self.server.Shutdown()
@@ -95,17 +103,29 @@ class SilentRequestHandler(SimpleXMLRPCServer.SimpleXMLRPCRequestHandler):
         time-consuming.
         """
         def log_message(self, format, args, par1 = None, par2 = None):
-                print format % (args, par1, par2)
+                pass
+                #print format % (args, par1, par2)
 
+def usage():
+        print """
+SZARP DDE Proxy.
+Put port number in port.cfg file in folder containing ddeproxy executable.
+Default port number is %d
+""" % (__PORT__)
 
 if __name__ == '__main__':
-	try:
-		server = SimpleXMLRPCServer.SimpleXMLRPCServer(("", __PORT__),
-                        requestHandler = SilentRequestHandler)
-		server.register_instance(DDESpy())
-		server.serve_forever()
-	except KeyboardInterrupt:
-		pass
-	except socket.error, e:
-		print "Cannot start server on port %d (%s)" % (__PORT__, e)
+        if len(sys.argv) > 1:
+                usage()
+                sys.exit(0)
+        dir = os.path.dirname(sys.argv[0])
+        portconf = os.path.join(dir, "port.cfg")
+        try:
+                f = open(portconf, "r")
+                port = int(f.readline().strip())
+        except:
+                port = __PORT__
+        server = SimpleXMLRPCServer.SimpleXMLRPCServer(("", port),
+			requestHandler = SilentRequestHandler)
+	server.register_instance(DDESpy())
+	server.serve_forever()
 
