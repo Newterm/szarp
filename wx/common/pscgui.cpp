@@ -196,6 +196,15 @@ void PscFrame::OnSetConstantsMenuItem(wxCommandEvent &event) {
 	DoHandleSetConstants(event);
 }
 
+void PscFrame::OnSaveReportMenuItem(wxCommandEvent& event) {
+	DoHandleSaveReport(event);
+
+}
+
+void PscFrame::OnGetReportMenuItem(wxCommandEvent& event) {
+	DoHandleGetReport(event);
+}
+
 
 void PscFrame::SetConstsValues(std::map<int, int> &const_values) {
 	ParamHolder::SetConstsValues(const_values);
@@ -391,7 +400,14 @@ void PscFrame::StopWaiting() {
 }
 
 void PscFrame::EnableEditingControls(bool enable) {
-	m_notebook->Enable(enable);
+	for (size_t i = 1; i < 3; i++) {
+		wxWindow* p = m_notebook->GetPage(i);
+		wxList children = p->GetChildren();
+		for (wxList::Node *node = children.GetFirst(); node; node = node->GetNext()) {
+			wxWindow *current = (wxWindow*) node->GetData();
+			current->Enable(enable);
+		}
+	}
 
 	wxMenuBar* menu = GetMenuBar();
 	menu->Enable(XRCID("psc_set_constants_item"), enable);
@@ -675,6 +691,9 @@ BEGIN_EVENT_TABLE(PscFrame, wxFrame)
     EVT_MENU(XRCID("psc_refresh_item"), PscFrame::OnReloadMenuItem)
     EVT_MENU(XRCID("psc_settings_item"), PscFrame::OnConfigureMenuItem)
     EVT_MENU(XRCID("psc_reset_setting_item"), PscFrame::OnResetMenutItem)
+    EVT_MENU(XRCID("psc_fetch_raport"), PscFrame::OnGetReportMenuItem)
+    EVT_BUTTON(wxID_SAVE, PscFrame::OnSaveReportMenuItem)
+    EVT_BUTTON(wxID_REFRESH, PscFrame::OnGetReportMenuItem)
     EVT_PSETD_RESP(-1, PscFrame::OnPSetDResponse)
     EVT_GRID_SELECT_CELL(PscFrame::OnGridEdit)
     EVT_GRID_CELL_CHANGE(PscFrame::OnGridEdited)
@@ -1031,6 +1050,8 @@ std::map<PackTime, std::map<int, int> > PacksParamMapper::GetMapping() {
 bool PscRegulatorData::ParseResponse(xmlDocPtr document) {
 	m_ok = false;
 
+	xmlDocDump(stderr, document);
+
 	xmlNodePtr root = document->xmlChildrenNode;
 	if (xmlStrcmp(root->name, X "message") == 0) {
 		xmlChar *_type = xmlGetProp(root, X "type");
@@ -1202,6 +1223,100 @@ void PscRegulatorData::ParsePacksResponse(xmlNodePtr root) {
 		m_packs.Canonicalize();
 
 }
+
+bool PscReport::ParseResponse(xmlDocPtr doc) {
+	if (doc == NULL)
+		return false;
+
+	xmlNodePtr root = doc->xmlChildrenNode;
+	if (root == NULL)
+		return false;
+
+	if (xmlStrcmp(root->name, X"message"))
+		return false;
+
+	xmlChar *_type = xmlGetProp(root, X"type");
+	if (_type == NULL || xmlStrcmp(_type, X"report")) {
+		xmlFree(_type);
+		xmlFreeDoc(doc);
+		return false;
+	}
+	xmlFree(_type);
+
+	xmlChar* _year = xmlGetProp(root, X"year");
+	xmlChar* _month = xmlGetProp(root, X"month");
+	xmlChar* _day = xmlGetProp(root, X"day");
+	xmlChar* _hour = xmlGetProp(root, X"hour");
+	xmlChar* _minute = xmlGetProp(root, X"minute");
+
+
+	if (_year == NULL || _month == NULL || _day == NULL || _minute == NULL) {
+		xmlFree(_year); xmlFree(_month); xmlFree(_day); xmlFree(_hour); xmlFree(_minute);
+		xmlFreeDoc(doc);
+		return false;
+	}
+
+	wxDateTime rtime(
+			atoi((char*) _day),
+			wxDateTime::Month(atoi((char*) _month) - 1),
+			atoi((char*) _year) + 2000,
+			atoi((char*) _hour),
+			atoi((char*) _minute));
+
+	xmlFree(_year); xmlFree(_month); xmlFree(_day); xmlFree(_hour); xmlFree(_minute);
+
+	if (rtime.IsValid() == false) {
+		xmlFreeDoc(doc);
+		return false;
+	}
+
+	wxString nE, nL, nb, np;
+
+	xmlChar* _nE = xmlGetProp(root, X"nE");
+	xmlChar* _nL = xmlGetProp(root, X"np");
+	xmlChar* _nb = xmlGetProp(root, X"nb");
+	xmlChar* _np = xmlGetProp(root, X"np");
+
+	if (_nE) 
+		nE = SC::U2S(_nE);
+	if (_nL)
+		nL = SC::U2S(_nL);
+	if (_nb)
+		nb = SC::U2S(_nb);
+	if (_np)
+		np = SC::U2S(_np);
+
+	xmlFree(_nE); xmlFree(_nL); xmlFree(_nb); xmlFree(_np);
+
+
+	std::vector<short> v;
+	for (xmlNodePtr param = root->xmlChildrenNode; param; param = param->next) {
+		if (xmlStrcmp(param->name, X"param"))
+			continue;
+
+		xmlChar *_v = xmlGetProp(param, X"value");
+		if (_v == NULL) {
+			xmlFreeDoc(doc);
+			return false;
+		}
+
+		v.push_back(atoi((char*)_v));
+		xmlFree(_v);
+
+	}
+	xmlFreeDoc(doc);
+
+	time = rtime;
+	values = v;
+	this->nE = nE;
+	this->nL = nL;
+	this->np = np;
+	this->nb = nb;
+
+	return true;
+
+}
+
 MessagesGenerator::MessagesGenerator(wxString username, wxString password, wxString path, wxString speed, wxString id) :
 	m_path(path), m_speed(speed), m_id(id), m_has_credentials(true), m_username(username), m_password(password) {}
 
@@ -1226,6 +1341,10 @@ xmlDocPtr MessagesGenerator::StartMessage(xmlChar *type) {
 
 	return root;
 
+}
+
+xmlDocPtr MessagesGenerator::CreateGetReportMessage() {
+	return StartMessage(X "get_report");
 }
 
 xmlDocPtr MessagesGenerator::CreateResetSettingsMessage() {

@@ -103,6 +103,7 @@ xmlDocPtr parse_settings_response(const char *response, int len)
 		       calculated_checksum, received_checksum);
 		return NULL;
 	}
+
 	xmlDocPtr result = xmlNewDoc(X "1.0");
 	xmlNodePtr root_node = xmlNewNode(NULL, X "message");
 	xmlDocSetRootElement(result, root_node);
@@ -875,6 +876,204 @@ end:
 	return result;
 }
 
+xmlDocPtr parse_report(const char* response, int len) {
+	const char *end = response + len - 1;
+	/* find the 3rd '\r' from the end; our checksum should be right behind it */
+	for (int i = 3; end > response; end--)
+		if (*end == '\r' && --i == 0)
+			break;
+
+	if (end <= response) {
+		sz_log(2,
+		       "Unable to parse response from the regulator - it is too short %d", len);
+		return NULL;
+	}
+
+	int received_checksum = atoi(end + 1);
+	int calculated_checksum = 0;
+	for (const char *c = response; c <= end; c++)
+		calculated_checksum += *c;
+	calculated_checksum &= 0xFFFF;
+
+	if (calculated_checksum != received_checksum) {
+		sz_log(2,
+		       "Unable to parse response from the regulator - wrong checksum %d %d",
+		       calculated_checksum, received_checksum);
+		return NULL;
+	}
+
+	xmlDocPtr result = xmlNewDoc(X "1.0");
+	xmlNodePtr root_node = xmlNewNode(NULL, X "message");
+	xmlDocSetRootElement(result, root_node);
+	xmlSetProp(root_node, X "type", X "report");
+
+	istringstream is(string(response, end + 1));
+	is.exceptions(ios_base::failbit | ios_base::badbit | ios_base::eofbit);
+
+	try {
+		std::string year, month, day, hour, minute;
+		std::vector<std::string> vi;
+		//skip header, 0xd char and first 
+		is.ignore(6);
+		std::getline(is, year, '/');
+		xmlSetProp(root_node, X "year", X year.c_str());
+		std::getline(is, month, '/');
+		xmlSetProp(root_node, X "month", X month.c_str());
+		std::getline(is, day, ' ');
+		xmlSetProp(root_node, X "day", X day.c_str());
+		std::getline(is, hour, ':');
+		xmlSetProp(root_node, X "hour", X hour.c_str());
+		std::getline(is, minute, '\r');
+		xmlSetProp(root_node, X "minute", X minute.c_str());
+
+		while (true) {
+			try {
+				char c;
+				c = is.peek();
+			} catch (ios_base::failure) {
+				if (is.exceptions() & ios_base::eofbit && vi.size() > 0)
+					//ok - end of message
+					break;
+				//sth wrong with the message
+				throw;
+			}
+			std::string s;
+			std::getline(is, s, '\r');
+			if (s.empty())
+				break;
+			vi.push_back(s);
+		}
+
+		for (size_t i = 0; i < vi.size() - 1; i++) {
+			xmlNodePtr param = xmlNewChild(root_node, NULL, X "param", NULL);
+			xmlSetProp(param, X "value", X vi[i].c_str());
+		}
+
+	} catch (ios_base::failure) {
+		sz_log(2, "Malformed response from regulator");
+		xmlFreeDoc(result);
+		return NULL;
+	}
+
+	return result;
+
+}
+
+bool parse_regulator_parameters(const char* buf, int len, xmlDocPtr result) {
+	xmlNodePtr root_node = xmlDocGetRootElement(result);
+	istringstream is(string(buf, buf + len));
+	size_t i;
+
+	std::string vals[8];
+
+	is.exceptions(ios_base::failbit | ios_base::badbit | ios_base::eofbit);
+	try {
+
+		is.ignore(1);
+		for (i = 0; i < 8; i++)
+			getline(is, vals[i], i % 2 ? '\r' : ' ');
+		
+	} catch (ios_base::failure) { }
+
+	switch (i) {
+		default:
+			return false;
+		case 8:
+			xmlSetProp(root_node, X "nE", X vals[1].c_str());
+			xmlSetProp(root_node, X "nL", X vals[3].c_str());
+			xmlSetProp(root_node, X "nb", X vals[5].c_str());
+			xmlSetProp(root_node, X "np", X vals[7].c_str());
+			return true;
+		case 4:
+			xmlSetProp(root_node, X "nE", X vals[1].c_str());
+			xmlSetProp(root_node, X "np", X vals[3].c_str());
+			return true;
+	}
+
+}
+
+void add_regulator_parameters_to_report(PD fd, char *id, bool *ok, xmlDocPtr result) {
+	for (int i = 0; i < max_communiation_attempts; i++) {
+		string command = string("\x11\x02V") + id + "\x03\n";
+		if (write_port(fd, command.c_str(), command.size()) == false) {
+			xmlFreeDoc(result);
+			result =
+			    create_error_message("error",
+						 "Regulator communication error");
+			if (ok)
+				*ok = false;
+			return;
+		}
+
+		char *buffer;
+		int size;
+
+		if (read_port(fd, &buffer, &size)) {
+			if (parse_regulator_parameters(buffer, size, result))
+				return ;
+		}
+	}
+}
+
+xmlDocPtr read_report(PD fd, char *id, bool *ok) {
+	xmlDocPtr result;
+	for (int i = 0; i < max_communiation_attempts; i++) {
+		string command = string("\x11\x02P") + id + "\x03\n";
+		if (write_port(fd, command.c_str(), command.size()) == false) {
+			result =
+			    create_error_message("error",
+						 "Regulator communication error");
+			if (ok)
+				*ok = false;
+			return result;
+		}
+
+		char *buffer;
+		int size;
+
+		if (read_port(fd, &buffer, &size) == false) {
+			result =
+			    create_error_message("error",
+						 "Regulator communication error");
+			if (ok)
+				*ok = false;
+			return result;
+		}
+
+		result = parse_report(buffer, size);
+		free(buffer);
+
+		if (result != NULL) {
+			if (ok)
+				*ok = true;
+			add_regulator_parameters_to_report(fd, id, ok, result);
+			return result;
+		}
+	}
+
+	result = create_error_message("error", "Regulator communication error");
+	if (ok)
+		*ok = false;
+
+	return result;
+
+}
+
+xmlDocPtr handle_get_report_cmd(xmlDocPtr request, char *path, char *id,
+				int speed, DaemonStopper &stopper) {
+	xmlDocPtr result;
+	PD fd = prepare_device(path, speed, &result, stopper);
+	if (!pdvalid(fd))
+		goto end;
+
+	result = read_report(fd, id, NULL);
+	pdclose(fd);
+end:
+	stopper.StartDaemon();
+
+	return result;
+}
+
 xmlDocPtr handle_get_values_cmd(xmlDocPtr request, char *path, char *id,
 				int speed, DaemonStopper &stopper)
 {
@@ -1287,6 +1486,8 @@ xmlDocPtr handle_command(xmlDocPtr request, DaemonStoppersFactory &stopper_facto
 		result = handle_set_constans_cmd(request, path, id, speed, *stopper);
 	else if (!strcmp(msg_type, "get_values"))
 		result = handle_get_values_cmd(request, path, id, speed, *stopper);
+	else if (!strcmp(msg_type, "get_report"))
+		result = handle_get_report_cmd(request, path, id, speed, *stopper);
 	else {
 		sz_log(2,
 		       "Invalid message from client - unknown message type %s",

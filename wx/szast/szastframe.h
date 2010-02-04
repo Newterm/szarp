@@ -42,7 +42,9 @@ class SzastFrame : public PscFrame {
 
 	SzastConnection *m_connection;
 
-	enum { ALL, CONSTANTS, PACKS } m_awaiting;
+	enum { CONSTANTS, PACKS, CONSTANTS_PACKS, REPORT } m_awaiting;
+
+	PscReport m_psc_report;
 
 	void LoadRegulatorDefinitions();
 protected:
@@ -60,7 +62,15 @@ protected:
 
 	virtual void DoHandleSetConstants(wxCommandEvent &event);
 
+	virtual void DoHandleSaveReport(wxCommandEvent& event);
+
+	virtual void DoHandleGetReport(wxCommandEvent& event);
+
 	virtual void DoHandleReset(wxCommandEvent& event);
+
+	void DoHandlePacksConstansResponse(xmlDocPtr doc);
+
+	void DoHandleReportResponse(xmlDocPtr doc);
 
 	void SendMsg(xmlDocPtr msg);
 public:

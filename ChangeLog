@@ -1,5 +1,8 @@
 $Id$
 
+2010-02-04      Darek Marcinkiewicz <darek@dalkiaterm.pl>
+	* szast: szast can now fetch reports and settings
+	from regulators, user can save this data to file
 2010-02-02      Pawel Palucha <pawel@praterm.com.pl>
 	* parcook/parcook.cc: fix in line daemons command line.
 	* utils/ddeproxy/*: renamed ddespy along with setup file for py2exe.

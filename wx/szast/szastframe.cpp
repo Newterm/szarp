@@ -20,11 +20,15 @@
 #include "szastframe.h"
 #include "szastconnection.h"
 #include "szastapp.h"
+#include "fonts.h"
 #include "settingsdialog.h"
+#include "cconv.h"
 
+#include <wx/xrc/xmlres.h>
 #include <wx/filename.h>
 #include <wx/config.h>
 #include <wx/dir.h>
+#include <wx/wfstream.h>
 
 SzastFrame::SzastFrame(wxWindow *parent, wxWindowID id) : PscFrame(parent, id) {
 
@@ -34,7 +38,11 @@ SzastFrame::SzastFrame(wxWindow *parent, wxWindowID id) : PscFrame(parent, id) {
 
 	wxConfigBase* cfg = wxConfig::Get();
 
+#ifdef __WXGTK__
 	m_path = cfg->Read(_T("port_path"), _T("/dev/ttyS0"));
+#else
+	m_path = cfg->Read(_T("port_path"), _T("COM1:"));
+#endif
 	m_speed = cfg->Read(_T("speed"), _T("9600"));
 	m_id = cfg->Read(_T("unit_id"), _T("1"));
 
@@ -42,13 +50,17 @@ SzastFrame::SzastFrame(wxWindow *parent, wxWindowID id) : PscFrame(parent, id) {
 	m_msggen.SetSpeed(m_speed);
 	m_msggen.SetId(m_id);
 
-	m_awaiting = ALL;
+	m_awaiting = CONSTANTS_PACKS;
 
 	m_connection = new SzastConnection(this);
 	m_connection->Create();
 	m_connection->Run();
 
 	EnableEditingControls(false);
+
+	wxListCtrl* list = XRCCTRL(*this, "psc_report_listctrl", wxListCtrl);
+	list->InsertColumn(0, _T(""), wxLIST_FORMAT_RIGHT, 40);
+	list->InsertColumn(1, _("Parameters"), wxLIST_FORMAT_LEFT, 200);
 }
 
 
@@ -147,26 +159,24 @@ void SzastFrame::DoHandleReset(wxCommandEvent &event) {
 	SendMsg(msg);
 }
 
-void SzastFrame::DoHandlePsetDResponse(bool ok, xmlDocPtr doc) {
-	assert(ok);
-
-	StopWaiting();
-
-	wxStatusBar *sb = GetStatusBar();
+void SzastFrame::DoHandlePacksConstansResponse(xmlDocPtr doc) {
 	PscRegulatorData prd;
 	bool parsed = prd.ParseResponse(doc);
+
+	wxStatusBar *sb = GetStatusBar();
+
 	if (parsed == false) {
 		wxMessageBox(_("Regulator communiation error. Invalid response format."), _("Error"), wxOK);
 		sb->SetStatusText(_("Regulator communiation error. Invalid response format."));
 		EnableEditingControls(false);
-		m_awaiting = ALL;
+		m_awaiting = CONSTANTS_PACKS;
 		return;
 	}
 
 	if (!prd.ResponseOK()) {
 		wxMessageBox(wxString(_("Error while performing operation:")) + prd.GetError(), _("Error"), wxOK);
 		sb->SetStatusText(wxString(_("Error while performing operation:")) + prd.GetError());
-		m_awaiting = ALL;
+		m_awaiting = CONSTANTS_PACKS;
 		EnableEditingControls(false);
 		return;
 	}
@@ -177,7 +187,7 @@ void SzastFrame::DoHandlePsetDResponse(bool ok, xmlDocPtr doc) {
 			|| m_unit->GetLibrary() != prd.GetLibrary()) {
 		std::vector<PscConfigurationUnit*>::iterator i;
 
-		m_awaiting = ALL;
+		m_awaiting = CONSTANTS_PACKS;
 
 		for (i = m_definitions.begin(); i != m_definitions.end(); i++)
 			if ((*i)->GetEprom() == prd.GetEprom()
@@ -200,15 +210,99 @@ void SzastFrame::DoHandlePsetDResponse(bool ok, xmlDocPtr doc) {
 		SetConstsInfo(m_unit->GetConstsInfo());
 	}
 
-	if (m_awaiting != PACKS)
+	if (m_awaiting == CONSTANTS || m_awaiting == CONSTANTS_PACKS)
 		SetConstsValues(prd.GetConstsValues());
 
-	if (m_awaiting != CONSTANTS) {
+	if (m_awaiting == PACKS || m_awaiting == CONSTANTS_PACKS) {
 		SetPacksValues(prd.GetPacksValues());
 		SetPacksType(prd.GetPacksType());
 	}
 
-	m_awaiting = ALL;
+	m_awaiting = CONSTANTS_PACKS;
+
+}
+
+void SzastFrame::DoHandleReportResponse(xmlDocPtr doc) {
+	wxStatusBar *sb = GetStatusBar();
+	if (!m_psc_report.ParseResponse(doc)) {
+		wxMessageBox(_("Regulator communiation error."), _("Error"), wxOK);
+		sb->SetStatusText(_("Regulator communiation error."));
+	}
+
+	sb->SetStatusText(_T(""));
+
+	wxListCtrl* list = XRCCTRL(*this, "psc_report_listctrl", wxListCtrl);
+	list->DeleteAllItems();
+	for (size_t i = 0; i < m_psc_report.values.size(); i++)  {
+		list->InsertItem(i, wxString::Format(_T("%d:"), (int)i));
+		list->SetItem(i, 1, wxString::Format(_T("%d"), (int)m_psc_report.values[i]));
+	}
+
+	wxStaticText* st = XRCCTRL(*this, "report_time_text", wxStaticText);
+	st->SetLabel(m_psc_report.time.Format(_("Regulator time: %Y-%m-%d %H:%M")));
+
+	st = XRCCTRL(*this, "psc_regulator_params_text", wxStaticText);
+	st->SetLabel(wxString::Format(_("EEPROM: %s, Program: %s, Library: %s, Library built: %s"),
+				m_psc_report.nE.c_str(),
+				m_psc_report.np.c_str(),
+				m_psc_report.nL.Length() ? m_psc_report.nL.c_str() : _("none"),
+				m_psc_report.nb.Length() ? m_psc_report.nb.c_str() : _("none")));
+
+}
+
+void SzastFrame::DoHandleSaveReport(wxCommandEvent& event) {
+	if (!m_psc_report.time.IsValid() 
+			|| m_psc_report.values.size() == 0) {
+		wxMessageBox(_("There is no current raport to save."), _("No report"), wxICON_ERROR);
+		return;
+	}
+
+	wxFileDialog dlg(this, _("Choose a file"), _T(""), _T(""),
+			_T("*.txt"),
+			wxSAVE | wxCHANGE_DIR);
+
+	szSetDefFont(&dlg);
+	if (dlg.ShowModal() != wxID_OK)
+		return;
+
+	wxString path = dlg.GetPath();
+	if (path.Right(4).Find('.') < 0) {
+		path += _T(".txt");
+	}
+
+	wxString os;
+	os << _("REGULATOR REPORT:\n");
+	os << m_psc_report.time.Format(_("Regulator time: %Y-%m-%d %H:%M")) << _T("\n");
+	os << wxString::Format(_("EEPROM: %s, Program: %s, Library: %s, Library built: %s"),
+				m_psc_report.nE.c_str(),
+				m_psc_report.np.c_str(),
+				m_psc_report.nL.Length() ? m_psc_report.nL.c_str() : _("none"),
+				m_psc_report.nb.Length() ? m_psc_report.nb.c_str() : _("none")) << _T("\n");
+	for (size_t i = 0; i < m_psc_report.values.size(); i++) 
+		os << wxString::Format(_T("%d: %d\n"), (int)i, (int)m_psc_report.values[i]);
+
+	wxFileOutputStream file(path);
+	file.Write(SC::S2A(os).c_str(), strlen(SC::S2A(os).c_str()));
+	wxMessageBox(_("Raport saved."));
+
+}
+
+void SzastFrame::DoHandleGetReport(wxCommandEvent& event) {
+	StartWaiting();
+
+	SendMsg(m_msggen.CreateGetReportMessage());
+	m_awaiting = REPORT;
+}
+
+void SzastFrame::DoHandlePsetDResponse(bool ok, xmlDocPtr doc) {
+	assert(ok);
+
+	StopWaiting();
+
+	if (m_awaiting == REPORT)
+		DoHandleReportResponse(doc);
+	else 
+		DoHandlePacksConstansResponse(doc);
 }
 
 void SzastFrame::SendMsg(xmlDocPtr msg) {

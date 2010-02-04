@@ -8,18 +8,18 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-05-27 19:08+0200\n"
+"POT-Creation-Date: 2010-02-04 21:17+0100\n"
 "PO-Revision-Date: 2003-08-14 11:22+0200\n"
 "Last-Translator: Pawe³ Pa³ucha <pawel@praterm.com.pl>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: szastapp.cpp:75
+#: szastapp.cpp:79
 msgid "SZAST"
 msgstr ""
 
-#: szastapp.cpp:95
+#: szastapp.cpp:100
 #, c-format
 msgid ""
 "User %s is not a member of 'dialout' group. This probably means that you "
@@ -32,11 +32,11 @@ msgstr ""
 "Czy chcesz dodaæ u¿ytkownika %s do groupy 'dialout'? (Bêdziesz musia³ podaæ "
 "has³o administratora)."
 
-#: szastapp.cpp:97 szastframe.cpp:82 szastframe.cpp:219
+#: szastapp.cpp:102 szastframe.cpp:95 szastframe.cpp:314
 msgid "Question."
 msgstr "Pytanie."
 
-#: szastapp.cpp:115
+#: szastapp.cpp:117
 #, c-format
 msgid ""
 "User %s was added to dialout group. You must run application again for this "
@@ -45,56 +45,60 @@ msgstr ""
 "U¿ytkownik %s zosta³ dodany do grupy dialout. Musisz uruchomiæ aplikacjê "
 "ponownie by ta zmianazosta³a wprowadzona."
 
-#: szastapp.cpp:116
+#: szastapp.cpp:118
 msgid "Information."
 msgstr "Informacja."
 
-#: szastapp.cpp:119
+#: szastapp.cpp:121
 #, c-format
 msgid "User %s was not added to dialout group"
 msgstr "U¿ytkownik %s nie zosta³ dodany do grupy dialout."
 
-#: szastapp.cpp:119
+#: szastapp.cpp:121
 msgid "Error."
 msgstr "B³±d."
 
-#: szastapp.cpp:132
+#: szastapp.cpp:135
 msgid "SZAST version 1.0."
 msgstr ""
 
-#: szastapp.cpp:134
+#: szastapp.cpp:137
 msgid "X windows geometry specification"
 msgstr ""
 
-#: szastapp.cpp:136
+#: szastapp.cpp:139
 msgid "libparnt value initialization"
 msgstr ""
 
-#: szastapp.cpp:137
+#: szastapp.cpp:140
 msgid "print usage info"
 msgstr ""
 
-#: szastapp.cpp:138
+#: szastapp.cpp:141
 msgid "config file"
 msgstr ""
 
-#: szastframe.cpp:82 szastframe.cpp:219
+#: szastframe.cpp:63
+msgid "Parameters"
+msgstr "Parametry"
+
+#: szastframe.cpp:95 szastframe.cpp:314
 msgid "Do you want to close the application?"
 msgstr "Czy chcesz zamkn±æ program?"
 
-#: szastframe.cpp:158 szastframe.cpp:159
+#: szastframe.cpp:169 szastframe.cpp:170
 msgid "Regulator communiation error. Invalid response format."
 msgstr "Blad komunikacji z regulatorem. Blêdny format odpowiedzi."
 
-#: szastframe.cpp:158 szastframe.cpp:166 szastframe.cpp:192
+#: szastframe.cpp:169 szastframe.cpp:177 szastframe.cpp:203 szastframe.cpp:228
 msgid "Error"
 msgstr "B³ad."
 
-#: szastframe.cpp:166 szastframe.cpp:167
+#: szastframe.cpp:177 szastframe.cpp:178
 msgid "Error while performing operation:"
 msgstr "B³±d podczas wykonywania operacji:"
 
-#: szastframe.cpp:190
+#: szastframe.cpp:201
 #, c-format
 msgid ""
 "Unable to find file with definition of regulator with settings: eprom %s, "
@@ -104,6 +108,43 @@ msgstr ""
 "Nie uda³o siê znale¿æ pliku z definicjami regulatora o parametrach: eprom %"
 "s, program %s, library: %s.\n"
 " Ustawianie parametrów nie jest mo¿liwe."
+
+#: szastframe.cpp:228 szastframe.cpp:229
+msgid "Regulator communiation error."
+msgstr "Blad komunikacji z regulatorem."
+
+#: szastframe.cpp:242 szastframe.cpp:275
+msgid "Regulator time: %Y-%m-%d %H:%M"
+msgstr "Czas na regulatorze: %Y-%m-%d %H:%M"
+
+#: szastframe.cpp:245 szastframe.cpp:276
+#, c-format
+msgid "EEPROM: %s, Program: %s, Library: %s, Library built: %s"
+msgstr "EEPROM: %s, Program: %s, Biblioteka: %s, Kompilacja biblioteki: %s"
+
+#: szastframe.cpp:248 szastframe.cpp:249 szastframe.cpp:279 szastframe.cpp:280
+msgid "none"
+msgstr "brak"
+
+#: szastframe.cpp:256
+msgid "There is no current raport to save."
+msgstr "Nie ma aktualnego raportu"
+
+#: szastframe.cpp:256
+msgid "No report"
+msgstr "Brak raportu"
+
+#: szastframe.cpp:260
+msgid "Choose a file"
+msgstr "Wybierz plik"
+
+#: szastframe.cpp:274
+msgid "REGULATOR REPORT:\n"
+msgstr "RAPORT Z REGULATORA:\n"
+
+#: szastframe.cpp:286
+msgid "Raport saved."
+msgstr "Raport zapisany."
 
 #: XRC_gettext_file.h:1
 msgid "Settings"

@@ -239,6 +239,13 @@ public:
 
 };
 
+struct PscReport {
+	std::vector<short> values;
+	wxDateTime time;
+	wxString nE, nL, nb, np;
+	bool ParseResponse(xmlDocPtr doc);
+};
+
 class PscRegulatorData {
 	/** Values of constants.*/
 	std::map<int, int> m_consts;
@@ -429,7 +436,10 @@ protected:
 	virtual void DoHandleSetConstants(wxCommandEvent &event) = 0;
 
 	virtual void DoHandleReset(wxCommandEvent& event) = 0;
-	
+
+	virtual void DoHandleSaveReport(wxCommandEvent& event) = 0;
+
+	virtual void DoHandleGetReport(wxCommandEvent& event) = 0;
 public:
 	void OnPSetDResponse(PSetDResponse &event);
 	/** Widget constructor */
@@ -454,6 +464,10 @@ public:
 
 	/** Generate set_constans XML */
 	void OnSetConstantsMenuItem(wxCommandEvent &event);
+
+	void OnGetReportMenuItem(wxCommandEvent& event);
+
+	void OnSaveReportMenuItem(wxCommandEvent& event);
 
 	/** Start edition of packs. Event ignored for consts grid*/
 	void OnGridEdit(wxGridEvent &event);
@@ -597,6 +611,7 @@ public:
 	xmlDocPtr CreateResetSettingsMessage();
 	xmlDocPtr CreateRegulatorSettingsMessage();
 	xmlDocPtr CreateSetPacksTypeMessage(PackType type);
+	xmlDocPtr CreateGetReportMessage();
 	xmlDocPtr CreateSetPacksMessage(PacksParamMapper &vals, PackType pack_type);
 	xmlDocPtr CreateSetConstsMessage(std::map<int, int> &vals);
 

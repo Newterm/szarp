@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WX-Common\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-05-18 20:36+0200\n"
+"POT-Creation-Date: 2010-02-04 17:32+0100\n"
 "PO-Revision-Date: 2008-06-11 14:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -13,65 +13,57 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../../../wx/common/datechooser.cpp:90
-#: ../../../wx/common/XRC_gettext_file.h:16
+#: datechooser.cpp:90 XRC_gettext_file.h:16
 msgid "Hour:"
 msgstr "Heure:"
 
-#: ../../../wx/common/datechooser.cpp:99
-#: ../../../wx/common/XRC_gettext_file.h:17
+#: datechooser.cpp:99 XRC_gettext_file.h:17
 msgid "Minute:"
 msgstr "Minute:"
 
-#: ../../../wx/common/datechooser.cpp:113 ../../../wx/common/htmlabout.cpp:74
-#: ../../../wx/common/aboutdlg.cpp:103 ../../../wx/common/authdiag.cpp:72
-#: ../../../wx/common/cfgdlg.cpp:117
+#: datechooser.cpp:113 htmlabout.cpp:74 aboutdlg.cpp:103 authdiag.cpp:72
+#: cfgdlg.cpp:118 helpctrlex/helpwinex.cpp:1438 helpctrlex/helpwinex.cpp:1440
 msgid "OK"
 msgstr "OK"
 
-#: ../../../wx/common/datechooser.cpp:114 ../../../wx/common/serverdlg.cpp:84
-#: ../../../wx/common/authdiag.cpp:75 ../../../wx/common/cfgdlg.cpp:118
+#: datechooser.cpp:114 serverdlg.cpp:90 authdiag.cpp:75 cfgdlg.cpp:119
+#: helpctrlex/helpwinex.cpp:1437 helpctrlex/helpwinex.cpp:1441
 msgid "Cancel"
 msgstr "Supprimer"
 
-#: ../../../wx/common/datechooser.cpp:147
+#: datechooser.cpp:147
 msgid "Invalid (too large/small) date"
 msgstr ""
 
-#: ../../../wx/common/datechooser.cpp:147
+#: datechooser.cpp:147
 msgid "Error!"
 msgstr "Erreur!"
 
-#: ../../../wx/common/datechooser.cpp:158
+#: datechooser.cpp:158
 msgid "Please choose the date from between: "
 msgstr "Choisir la date entre "
 
-#: ../../../wx/common/datechooser.cpp:160
+#: datechooser.cpp:160
 msgid "and"
 msgstr "et"
 
-#: ../../../wx/common/datechooser.cpp:162
+#: datechooser.cpp:162
 msgid "Incorrect date range"
 msgstr "Champ incorrect"
 
-#: ../../../wx/common/datechooser.h:113
+#: datechooser.h:113
 msgid "Choose date"
 msgstr "Choisir la date"
 
-#: ../../../wx/common/fetchparams.cc:116 ../../../wx/common/fetchparams.cc:186
-#, c-format
-msgid " DEBUG: TRYING TO REGISTER '%ls'\n"
-msgstr "Debug : essai d'enregistrement '%ls'\n"
-
-#: ../../../wx/common/fonts.cpp:172
+#: fonts.cpp:172
 msgid "Default font"
 msgstr "Défaut dans police de caractère"
 
-#: ../../../wx/common/fonts.cpp:197
+#: fonts.cpp:197
 msgid "Font configuration"
 msgstr "Configuration des polices de caractère"
 
-#: ../../../wx/common/fonts.cpp:200
+#: fonts.cpp:200
 msgid ""
 "You have to restart program to apply\n"
 "new fonts settings."
@@ -79,57 +71,52 @@ msgstr ""
 "Pour prendre en compte le changement de la police, redémarrer le programme "
 "voulu"
 
-#: ../../../wx/common/fonts.cpp:202 ../../../wx/common/parselect.cpp:185
-#: ../../../wx/common/XRC_gettext_file.h:25
+#: fonts.cpp:202 parselect.cpp:189 XRC_gettext_file.h:25
 msgid "Close"
 msgstr "Fermer"
 
-#: ../../../wx/common/fonts.cpp:219 ../../../wx/common/fonts.cpp:232
+#: fonts.cpp:219 fonts.cpp:232
 msgid "Configure"
 msgstr "Configurer"
 
-#: ../../../wx/common/fonts.cpp:220 ../../../wx/common/fonts.cpp:238
+#: fonts.cpp:220 fonts.cpp:238
 msgid "Reset to default"
 msgstr "Réinitialiser par défaut"
 
-#: ../../../wx/common/htmlabout.cpp:54
+#: htmlabout.cpp:54
 msgid "About"
 msgstr "A propos"
 
-#: ../../../wx/common/htmlview.cpp:103
+#: htmlview.cpp:103
 msgid "Quit"
 msgstr "Quitter"
 
-#: ../../../wx/common/htmlview.cpp:103
+#: htmlview.cpp:103
 msgid "Close window"
 msgstr "Fermer la fenêtre"
 
-#: ../../../wx/common/htmlview.cpp:105
+#: htmlview.cpp:105
 msgid "Back"
 msgstr "Retour"
 
-#: ../../../wx/common/htmlview.cpp:105
+#: htmlview.cpp:105 helpctrlex/helpwinex.cpp:737
 msgid "Go back"
 msgstr "Aller à la page précédente"
 
-#: ../../../wx/common/htmlview.cpp:106
+#: htmlview.cpp:106
 msgid "Forward"
 msgstr "Avancer"
 
-#: ../../../wx/common/htmlview.cpp:106
+#: htmlview.cpp:106 helpctrlex/helpwinex.cpp:740
 msgid "Go forward"
 msgstr "Aller à la page suivante"
 
-#: ../../../wx/common/htmlview.cpp:112
+#: htmlview.cpp:112
 #, c-format
 msgid "SZARP help: %s"
 msgstr "SZARP aide: %s"
 
-#: ../../../wx/common/parlist.cpp:121
-msgid "No RelaxNG schema"
-msgstr "Pas de schéma RelaxNG"
-
-#: ../../../wx/common/parlist.cpp:178
+#: parlist.cpp:130
 msgid ""
 "Current parameters list is not saved.\n"
 "Continue anyway?"
@@ -137,19 +124,19 @@ msgstr ""
 "La liste des paramètres actuels n'a pas été sauvegardée.\n"
 "Continuer quand même?"
 
-#: ../../../wx/common/parlist.cpp:178
+#: parlist.cpp:130
 msgid "Parameters list modified"
 msgstr "Liste des paramètres modifiée"
 
-#: ../../../wx/common/parlist.cpp:183 ../../../wx/common/parlist.cpp:246
+#: parlist.cpp:135 parlist.cpp:198
 msgid "Choose a file"
 msgstr "Choisir un fichier"
 
-#: ../../../wx/common/parlist.cpp:184 ../../../wx/common/parlist.cpp:247
+#: parlist.cpp:136 parlist.cpp:199
 msgid "SZARP parameters list (*.xpl)|*.xpl|All files (*.*)|*.*"
 msgstr "Liste des paramètres SZARP (*.xlp)|*.xlp|Tous les fichiers (*.*)|*.*"
 
-#: ../../../wx/common/parlist.cpp:196
+#: parlist.cpp:148
 #, c-format
 msgid ""
 "Cannot open file %s\n"
@@ -158,25 +145,24 @@ msgstr ""
 "Impossible d'ouvrir le fichier %s\n"
 " Erreur %d (%s)"
 
-#: ../../../wx/common/parlist.cpp:199 ../../../wx/common/parlist.cpp:203
-#: ../../../wx/common/aboutdlg.cpp:126 ../../../wx/common/pscgui.cpp:481
+#: parlist.cpp:151 parlist.cpp:155 aboutdlg.cpp:128 pscgui.cpp:493
 msgid "Error"
 msgstr "Erreur"
 
-#: ../../../wx/common/parlist.cpp:201
+#: parlist.cpp:153
 #, c-format
 msgid "Document %s not well-formed"
 msgstr "Le document %s a été mal saisi"
 
-#: ../../../wx/common/parlist.cpp:218
+#: parlist.cpp:170
 msgid "Failed to compile IPK schema!"
 msgstr "Défaut dans compilation du schéma IPK!"
 
-#: ../../../wx/common/parlist.cpp:222
+#: parlist.cpp:174
 msgid "XML document doesn't validate against IPK schema!"
 msgstr "Le document XML non valide par rapport au schéma IPK!"
 
-#: ../../../wx/common/parlist.cpp:265
+#: parlist.cpp:217
 #, c-format
 msgid ""
 "Error saving document %s\n"
@@ -185,46 +171,45 @@ msgstr ""
 "Erreur de sauvegarde du document %s\n"
 " Erreur %d : %s"
 
-#: ../../../wx/common/parlist.cpp:516
+#: parlist.cpp:475
 #, c-format
 msgid "Could not load RelaxNG schema from file %s"
 msgstr "Impossible de télécharger le schéma RelaxNG à partir du fichier %s"
 
-#: ../../../wx/common/parlist.cpp:669
+#: parlist.cpp:628
 msgid "Print preview"
 msgstr "Aperçu avant impression"
 
-#: ../../../wx/common/parselect.cpp:129
+#: parselect.cpp:127
 msgid "Parameter"
 msgstr "Paramètre"
 
-#: ../../../wx/common/parselect.cpp:136
+#: parselect.cpp:135
 msgid "Show like in draw program"
 msgstr "Lecture d' après noms des fenêtres du programme de revue"
 
-#: ../../../wx/common/parselect.cpp:153
+#: parselect.cpp:153
 msgid "Shortcut"
 msgstr "Raccourci"
 
-#: ../../../wx/common/parselect.cpp:168 ../../../wx/common/pscgui.cpp:131
-#: ../../../wx/common/pscgui.cpp:143
+#: parselect.cpp:170 pscgui.cpp:128 pscgui.cpp:140
 msgid "Description"
 msgstr "Description"
 
-#: ../../../wx/common/parselect.cpp:183
-#: ../../../wx/common/XRC_gettext_file.h:2
+#: parselect.cpp:186 XRC_gettext_file.h:2
 msgid "Add"
 msgstr "Rajouter"
 
-#: ../../../wx/common/parselect.cpp:210
+#: parselect.cpp:217 helpctrlex/helpdlgex.cpp:81 helpctrlex/helpfrmex.cpp:81
+#: helpctrlex/helpfrmex.cpp:107
 msgid "Help"
 msgstr "Aide"
 
-#: ../../../wx/common/serverdlg.cpp:58
+#: serverdlg.cpp:61
 msgid ": choose server"
 msgstr ": choisir serveur"
 
-#: ../../../wx/common/serverdlg.cpp:61
+#: serverdlg.cpp:67
 msgid ""
 "Enter server address and port\n"
 "for example '192.168.1.1:8081'"
@@ -232,23 +217,23 @@ msgstr ""
 "Entrer l'adresse du serveur et le numéro de port\n"
 "par exemple : '192.168.1.1:8081'"
 
-#: ../../../wx/common/serverdlg.cpp:71
+#: serverdlg.cpp:77
 msgid "Save server address as default"
 msgstr "Enregistrer l'adresse du serveur par défaut"
 
-#: ../../../wx/common/serverdlg.cpp:79
+#: serverdlg.cpp:85
 msgid "Apply"
 msgstr "Appliquer"
 
-#: ../../../wx/common/serverdlg.cpp:121 ../../../wx/common/serverdlg.cpp:162
+#: serverdlg.cpp:124 serverdlg.cpp:165
 msgid "Connecting to server"
 msgstr "Connecter au serveur"
 
-#: ../../../wx/common/serverdlg.cpp:122 ../../../wx/common/serverdlg.cpp:163
+#: serverdlg.cpp:125 serverdlg.cpp:166
 msgid "Trying to connect to server "
 msgstr "Essai de connection au serveur "
 
-#: ../../../wx/common/serverdlg.cpp:122 ../../../wx/common/serverdlg.cpp:163
+#: serverdlg.cpp:125 serverdlg.cpp:166
 msgid ""
 ".\n"
 "Please wait."
@@ -256,15 +241,15 @@ msgstr ""
 ".\n"
 "Attendre svp"
 
-#: ../../../wx/common/serverdlg.cpp:143 ../../../wx/common/serverdlg.cpp:209
+#: serverdlg.cpp:152 serverdlg.cpp:215
 msgid "Unable to connect to server "
 msgstr "Impossibilité de connection au serveur "
 
-#: ../../../wx/common/serverdlg.cpp:144 ../../../wx/common/serverdlg.cpp:210
+#: serverdlg.cpp:153 serverdlg.cpp:216
 msgid ".\n"
 msgstr ".\n"
 
-#: ../../../wx/common/serverdlg.cpp:146
+#: serverdlg.cpp:155
 msgid ""
 "\n"
 "IPK is not available.\n"
@@ -272,15 +257,15 @@ msgstr ""
 "\n"
 "IPK non disponible.\n"
 
-#: ../../../wx/common/serverdlg.cpp:147 ../../../wx/common/serverdlg.cpp:213
+#: serverdlg.cpp:156 serverdlg.cpp:219
 msgid "Connect error"
 msgstr "Erreur de connection"
 
-#: ../../../wx/common/serverdlg.cpp:183
+#: serverdlg.cpp:189
 msgid "Invalid document."
 msgstr "Document non valide"
 
-#: ../../../wx/common/serverdlg.cpp:212
+#: serverdlg.cpp:218
 msgid ""
 "\n"
 "Reports are not available.\n"
@@ -288,349 +273,619 @@ msgstr ""
 "\n"
 "Rapports non disponibles.\n"
 
-#: ../../../wx/common/aboutdlg.cpp:33
+#: aboutdlg.cpp:33
 msgid "SZARP About"
 msgstr "A propos de SZARP"
 
-#: ../../../wx/common/aboutdlg.cpp:44
+#: aboutdlg.cpp:44
 #, fuzzy
 msgid " SZARP Scada"
 msgstr "SZARP Choisir la base de données"
 
-#: ../../../wx/common/aboutdlg.cpp:48
+#: aboutdlg.cpp:48
 msgid " version: "
 msgstr " version: "
 
-#: ../../../wx/common/aboutdlg.cpp:50
+#: aboutdlg.cpp:50
 msgid "Version: "
 msgstr "Version: "
 
-#: ../../../wx/common/aboutdlg.cpp:78
+#: aboutdlg.cpp:78
 msgid "This program is distributed under terms of GPLv2."
 msgstr "Ce programme est distribué sous les conditions de GPLv2"
 
-#: ../../../wx/common/aboutdlg.cpp:83
+#: aboutdlg.cpp:83
 msgid "http://www.gnu.org/licenses/gpl-2.0.html#TOC1"
 msgstr ""
 
-#: ../../../wx/common/aboutdlg.cpp:91
+#: aboutdlg.cpp:91
 msgid "Authors:"
 msgstr "Auteurs:"
 
-#: ../../../wx/common/aboutdlg.cpp:126
+#: aboutdlg.cpp:128
 msgid "I was not able to start default browser"
 msgstr "Impossible de démarrer le navigateur"
 
-#: ../../../wx/common/szapp.cpp:103
+#: szapp.cpp:103
 msgid "Cannot access Szarp directory, cannot procees!"
 msgstr "Impossible d'accéder au répertoire de SZARP. Traitement impossible!"
 
-#: ../../../wx/common/szapp.cpp:107 ../../../wx/common/szapp.cpp:116
+#: szapp.cpp:107 szapp.cpp:116
 msgid "SzarpDir: "
 msgstr "SZARPDir: "
 
-#: ../../../wx/common/szapp.cpp:212
+#: szapp.cpp:212
 msgid "Default locale cannot be loaded. Exiting"
 msgstr ""
 
-#: ../../../wx/common/szapp.cpp:212 ../../../wx/common/szapp.cpp:216
+#: szapp.cpp:212 szapp.cpp:216
 msgid "Information."
 msgstr ""
 
-#: ../../../wx/common/szapp.cpp:219
+#: szapp.cpp:219
 msgid "No locale for this system`s language."
 msgstr "Pas de paramètres pour le language de ce système."
 
-#: ../../../wx/common/szapp.cpp:299
+#: szapp.cpp:299
 msgid " (Ideas)"
 msgstr ""
 
-#: ../../../wx/common/szapp.cpp:300 ../../../wx/common/szapp.cpp:301
+#: szapp.cpp:300 szapp.cpp:301
 msgid " (French translations)"
 msgstr ""
 
-#: ../../../wx/common/szapp.cpp:302
+#: szapp.cpp:302
 msgid " (logo)"
 msgstr ""
 
-#: ../../../wx/common/szhlpctrl.cpp:37
+#: szapp.cpp:373
+msgid "Dprefix"
+msgstr ""
+
+#: szhlpctrl.cpp:37
 msgid "SZARP Help"
 msgstr "SZARP Aide"
 
-#: ../../../wx/common/authdiag.cpp:23
+#: authdiag.cpp:23
 msgid "Authentication data:"
 msgstr ""
 
-#: ../../../wx/common/authdiag.cpp:39
+#: authdiag.cpp:39
 msgid "Enter your username and password:"
 msgstr ""
 
-#: ../../../wx/common/authdiag.cpp:50
+#: authdiag.cpp:50
 msgid "Username:"
 msgstr ""
 
-#: ../../../wx/common/authdiag.cpp:57
+#: authdiag.cpp:57
 msgid "Password:"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:79 ../../../wx/common/XRC_gettext_file.h:9
+#: pscgui.cpp:76 XRC_gettext_file.h:9
 msgid "Monday"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:81 ../../../wx/common/XRC_gettext_file.h:10
+#: pscgui.cpp:78 XRC_gettext_file.h:10
 msgid "Tuesday"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:83 ../../../wx/common/XRC_gettext_file.h:11
+#: pscgui.cpp:80 XRC_gettext_file.h:11
 msgid "Wednesday"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:85 ../../../wx/common/XRC_gettext_file.h:12
+#: pscgui.cpp:82 XRC_gettext_file.h:12
 msgid "Thursday"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:87 ../../../wx/common/XRC_gettext_file.h:13
+#: pscgui.cpp:84 XRC_gettext_file.h:13
 msgid "Friday"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:89 ../../../wx/common/XRC_gettext_file.h:14
+#: pscgui.cpp:86 XRC_gettext_file.h:14
 msgid "Saturday"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:91 ../../../wx/common/XRC_gettext_file.h:15
+#: pscgui.cpp:88 XRC_gettext_file.h:15
 msgid "Sunday"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:128 ../../../wx/common/pscgui.cpp:142
+#: pscgui.cpp:125 pscgui.cpp:139
 msgid "Number"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:129 ../../../wx/common/pscgui.cpp:437
+#: pscgui.cpp:126 pscgui.cpp:449
 msgid "Value"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:174 ../../../wx/common/pscgui.cpp:175
-#: ../../../wx/common/pscgui.cpp:185
+#: pscgui.cpp:171 pscgui.cpp:172 pscgui.cpp:182
 msgid "WEEK"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:174 ../../../wx/common/pscgui.cpp:175
+#: pscgui.cpp:171 pscgui.cpp:172
 msgid "DAY"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:177
+#: pscgui.cpp:174
 msgid ""
 "Choose type of packs\n"
 "(All packs values will be reset)"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:178
+#: pscgui.cpp:175
 msgid "Choose packs' type"
 msgstr "Choisir la date"
 
-#: ../../../wx/common/pscgui.cpp:250
+#: pscgui.cpp:255
 msgid "Packs type:"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:253
+#: pscgui.cpp:258
 msgid "weekly"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:255
+#: pscgui.cpp:260
 msgid "daily"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:269
+#: pscgui.cpp:274
 msgid "Regulator communication error."
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:270
+#: pscgui.cpp:275
 msgid "Failed to communicate with daemon - is SZARP running?"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:271
+#: pscgui.cpp:276
 msgid ""
 "Failed to stop daemon - this is potentially serious error. Please contact "
 "PRATERM IT department asap!"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:272
+#: pscgui.cpp:277
 msgid "Failed to open port - hardware or configuration error."
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:273
+#: pscgui.cpp:278
 msgid "Regulator does not respond to queries."
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:274
+#: pscgui.cpp:279
 msgid "Bad username or password."
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:275
+#: pscgui.cpp:280
 msgid "You are not permitted to change parameters for this object."
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:276
+#: pscgui.cpp:281
 msgid "Cannot read settings from regulator."
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:318
+#: pscgui.cpp:323
 msgid "Value must be a number."
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:318
+#: pscgui.cpp:323
 msgid "Illegal value."
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:323
+#: pscgui.cpp:328
 msgid "Value must be no greater than: "
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:323 ../../../wx/common/pscgui.cpp:325
-#: ../../../wx/common/pscgui.cpp:595 ../../../wx/common/pscgui.cpp:597
+#: pscgui.cpp:328 pscgui.cpp:330 pscgui.cpp:607 pscgui.cpp:609
 msgid "Out of range"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:325
+#: pscgui.cpp:330
 msgid "Value must be no less than: "
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:372
+#: pscgui.cpp:377
 msgid "Awaiting response."
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:435
+#: pscgui.cpp:447
 msgid "Beginning"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:480
+#: pscgui.cpp:492
 msgid "At least one pack must be defined."
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:489
+#: pscgui.cpp:501
 msgid "Do you really want to remove this pack?"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:490
+#: pscgui.cpp:502
 msgid "Pack removal"
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:593
+#: pscgui.cpp:605
 msgid "Value must be number."
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:593
+#: pscgui.cpp:605
 msgid "Must be number."
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:595
+#: pscgui.cpp:607
 msgid "Value must be not greater than: "
 msgstr ""
 
-#: ../../../wx/common/pscgui.cpp:597
+#: pscgui.cpp:609
 msgid "Value must be not less than: "
 msgstr ""
 
-#: ../../../wx/common/cfgdlg.cpp:68
+#: cfgdlg.cpp:69
 #, fuzzy
 msgid "Choose configuration to load:"
 msgstr "Configuration des polices de caractère"
 
-#: ../../../wx/common/cfgdlg.cpp:80
+#: cfgdlg.cpp:81
 #, fuzzy
 msgid "Select configuration to load:"
 msgstr "Configuration des polices de caractère"
 
-#: ../../../wx/common/cfgdlg.cpp:95
+#: cfgdlg.cpp:96
 msgid "Search:"
 msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:1
+#: singleinstance.cc:70
+msgid "Failed to read PID from lock file."
+msgstr ""
+
+#: singleinstance.cc:74
+#, c-format
+msgid "szSingleInstanceRunning: invalid lock file '%s'."
+msgstr ""
+
+#: md5.cpp:35
+#, c-format
+msgid "%.2x"
+msgstr ""
+
+#: helpctrlex/helpctrlex.cpp:49
+#, fuzzy, c-format
+msgid "Help: %s"
+msgstr "Aide"
+
+#: helpctrlex/helpctrlex.cpp:131
+#, c-format
+msgid "Adding book %s"
+msgstr ""
+
+#: helpctrlex/helpdlgex.cpp:109 helpctrlex/helpfrmex.cpp:101
+#, fuzzy
+msgid "&Close"
+msgstr "Fermer"
+
+#: helpctrlex/helpfrmex.cpp:99
+msgid "&Open..."
+msgstr ""
+
+#: helpctrlex/helpfrmex.cpp:104
+#, fuzzy
+msgid "&About..."
+msgstr "A propos"
+
+#: helpctrlex/helpfrmex.cpp:106
+msgid "File"
+msgstr ""
+
+#: helpctrlex/helpfrmex.cpp:213
+msgid "wxWidgets HTML Help Viewer (c) 1998-2003, Vaclav Slavik et al"
+msgstr ""
+
+#: helpctrlex/helpfrmex.cpp:213
+#, fuzzy
+msgid "HelpView"
+msgstr "Aide"
+
+#: helpctrlex/helpwinex.cpp:425
+msgid "Displays help as you browse the books on the left."
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:498
+msgid "Displays help contents."
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:517 helpctrlex/helpwinex.cpp:1308
+#: helpctrlex/helpwinex.cpp:2077
+msgid "(bookmarks)"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:530
+msgid "Add current page to bookmarks"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:531
+msgid "Remove current page from bookmarks"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:555
+msgid "Contents"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:571
+msgid "Enter text and press enter."
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:572
+msgid "Find"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:573 helpctrlex/helpwinex.cpp:589
+msgid ""
+"Display all index items that contain given substring. Search is case "
+"insensitive."
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:575
+msgid "Show all"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:576 helpctrlex/helpwinex.cpp:590
+msgid "Show all items in index."
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:585
+msgid "Click on an index entry to view the relevant help page."
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:602
+msgid "Index"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:619
+msgid "Type a search word and press enter."
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:622
+msgid "Specify where to search."
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:623
+msgid "Case sensitive"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:624
+msgid "Whole words only"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:625 helpctrlex/helpwinex.cpp:642
+msgid "Search"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:626 helpctrlex/helpwinex.cpp:628
+msgid ""
+"Search contents of help book(s) for all occurences of the text you typed "
+"above."
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:633
+msgid "The search results."
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:732
+msgid "Show/hide navigation panel"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:745
+msgid "Go one level up in document hierarchy"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:748
+msgid "Previous page"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:751
+msgid "Next page"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:759 helpctrlex/helpwinex.cpp:1809
+msgid "Open HTML document"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:765
+msgid "Print this page"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:771
+msgid "Display options dialog"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:889
+#, fuzzy
+msgid "Please choose the page to display:"
+msgstr "Choisir la date entre "
+
+#: helpctrlex/helpwinex.cpp:890
+msgid "Help Topics"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:951
+msgid "Searching..."
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:951
+msgid "No matching page found yet"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:962
+#, c-format
+msgid "Found %i matches"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:1065 helpctrlex/helpwinex.cpp:1148
+#, fuzzy
+msgid "(Help)"
+msgstr "Aide"
+
+#: helpctrlex/helpwinex.cpp:1214 helpctrlex/helpwinex.cpp:1216
+#: helpctrlex/helpwinex.cpp:1234 helpctrlex/helpwinex.cpp:1235
+#: helpctrlex/helpwinex.cpp:1986 helpctrlex/helpwinex.cpp:2036
+#, c-format
+msgid "%i of %i"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:1252
+msgid "Search in all books"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:1406
+msgid "Help Browser Options"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:1411
+msgid "Normal font:"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:1412
+msgid "Fixed font:"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:1413
+msgid "Font size:"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:1428
+#, fuzzy
+msgid "Preview:"
+msgstr "Aperçu avant impression"
+
+#: helpctrlex/helpwinex.cpp:1461
+msgid ""
+"<html><body><table><tr><td>Normal face<br>(and <u>underlined</u>. <i>Italic "
+"face.</i> <b>Bold face.</b> <b><i>Bold italic face.</i></b><br><font size=-"
+"2>font size -2</font><br><font size=-1>font size -1</font><br><font size="
+"+0>font size +0</font><br><font size=+1>font size +1</font><br><font size="
+"+2>font size +2</font><br><font size=+3>font size +3</font><br><font size="
+"+4>font size +4</font><br><td><p><tt>Fixed size face.<br> <b>bold</b> "
+"<i>italic</i> <b><i>bold italic <u>underlined</u></i></b><br><font size=-"
+"2>font size -2</font><br><font size=-1>font size -1</font><br><font size="
+"+0>font size +0</font><br><font size=+1>font size +1</font><br><font size="
+"+2>font size +2</font><br><font size=+3>font size +3</font><br><font size="
+"+4>font size +4</font></tt></table></body></html>"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:1798
+msgid "Help Printing"
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:1800
+msgid "Cannot print empty page."
+msgstr ""
+
+#: helpctrlex/helpwinex.cpp:1814
+msgid ""
+"HTML files (*.htm)|*.htm|HTML files (*.html)|*.html|Help books (*.htb)|*.htb|"
+"Help books (*.zip)|*.zip|HTML Help Project (*.hhp)|*.hhp|All files (*.*)|*"
+msgstr ""
+
+#: XRC_gettext_file.h:1
 msgid "Context"
 msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:3
+#: XRC_gettext_file.h:3
 msgid "Remove"
 msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:4
+#: XRC_gettext_file.h:4
 msgid "Edit"
 msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:5
+#: XRC_gettext_file.h:5
 msgid "PackEdit"
 msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:6
+#: XRC_gettext_file.h:6
 msgid "Edit pack"
 msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:7
+#: XRC_gettext_file.h:7
 msgid "Time:"
 msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:8
+#: XRC_gettext_file.h:8
 msgid "Day:"
 msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:18
-#: ../../../wx/common/XRC_gettext_file.h:19
+#: XRC_gettext_file.h:18 XRC_gettext_file.h:19
 msgid "Value:"
 msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:20
+#: XRC_gettext_file.h:20
 msgid "Minimum value:"
 msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:21
+#: XRC_gettext_file.h:21
 msgid "Maximum value:"
 msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:22
-#, fuzzy
-msgid "Parameter Setter"
-msgstr "Paramètre"
+#: XRC_gettext_file.h:22
+msgid "Regulator"
+msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:23
+#: XRC_gettext_file.h:23
 msgid "Connection"
 msgstr "Connection"
 
-#: ../../../wx/common/XRC_gettext_file.h:24
+#: XRC_gettext_file.h:24
 msgid "Settings"
 msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:26
+#: XRC_gettext_file.h:26
 msgid "Operations"
 msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:27
-msgid "Fetch(refresh) values"
+#: XRC_gettext_file.h:27
+msgid "Fetch(refresh) report"
 msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:28
+#: XRC_gettext_file.h:28
+msgid "Fetch(refresh) packs and constants"
+msgstr ""
+
+#: XRC_gettext_file.h:29
 msgid "Set Constants"
 msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:29
+#: XRC_gettext_file.h:30
 msgid "Set Packs Type"
 msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:30
+#: XRC_gettext_file.h:31
 msgid "Set Packs"
 msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:31
-msgid "Reset settings"
+#: XRC_gettext_file.h:32
+msgid "Reset packs and contants"
 msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:32
+#: XRC_gettext_file.h:33
+msgid "Report"
+msgstr ""
+
+#: XRC_gettext_file.h:34
 msgid "Constans"
 msgstr ""
 
-#: ../../../wx/common/XRC_gettext_file.h:33
+#: XRC_gettext_file.h:35
 #, fuzzy
 msgid "Packs"
 msgstr "Retour"
+
+#~ msgid " DEBUG: TRYING TO REGISTER '%ls'\n"
+#~ msgstr "Debug : essai d'enregistrement '%ls'\n"
+
+#~ msgid "No RelaxNG schema"
+#~ msgstr "Pas de schéma RelaxNG"
+
+#, fuzzy
+#~ msgid "Parameter Setter"
+#~ msgstr "Paramètre"
 
 #~ msgid " Praterm S.A."
 #~ msgstr "Praterm S.A."
