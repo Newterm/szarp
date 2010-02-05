@@ -1,5 +1,8 @@
 $Id$
 
+2010-02-05	Darek Marcinkiewicz <darek@dalkiaterm.pl>
+	* libSzarp2/linedmn/ppset: switching from overlapped
+	to synchronous serial port I/O on msw
 2010-02-04      Darek Marcinkiewicz <darek@dalkiaterm.pl>
 	* szast: szast can now fetch reports and settings
 	from regulators, user can save retrived data to file

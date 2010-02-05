@@ -63,8 +63,6 @@ typedef int PD;
 #else
 struct PD {
 	HANDLE h;
-	OVERLAPPED ovr; 
-	OVERLAPPED ovw;
 	PD() : h(INVALID_HANDLE_VALUE) {}
 };
 #endif

@@ -71,8 +71,6 @@ void pdclose(PD fd) {
 	close(fd);
 #else
 	CloseHandle(fd.h);
-	CloseHandle(fd.ovr.hEvent);
-	CloseHandle(fd.ovw.hEvent);
 #endif
 }
 
@@ -292,7 +290,7 @@ PD prepare_device(char *path, int speed, xmlDocPtr * err_msg, DaemonStopper &sto
 		0, 
 		0, 
 		OPEN_EXISTING,
-		FILE_FLAG_OVERLAPPED,
+		0,
 		0);
 
 	if (fd.h == INVALID_HANDLE_VALUE) {
@@ -324,10 +322,16 @@ PD prepare_device(char *path, int speed, xmlDocPtr * err_msg, DaemonStopper &sto
 		return fd;
 	}
 
-	memset(&fd.ovr, 0, sizeof(fd.ovr));
-	memset(&fd.ovw, 0, sizeof(fd.ovw));
-	fd.ovw.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-	fd.ovr.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	COMMTIMEOUTS comm_timeouts;
+	comm_timeouts.ReadIntervalTimeout = 1000;
+	comm_timeouts.ReadTotalTimeoutMultiplier = 1;
+	comm_timeouts.ReadTotalTimeoutConstant = 5000;
+	comm_timeouts.WriteTotalTimeoutMultiplier = 1;
+	comm_timeouts.WriteTotalTimeoutConstant = 5000;
+
+	if (SetCommTimeouts(fd.h, &comm_timeouts) == 0) 
+		fd.h = INVALID_HANDLE_VALUE;
+
 
 	return fd;
 }
@@ -411,15 +415,11 @@ bool write_port(PD fd, const char *buffer, int size)
 	bool ret = false;
 	int total_written = 0;
 	DWORD last_written = 0;
-	time_t start = time(NULL);
 
 	sz_log(2, "Writing to port:%s", create_printable_string(buffer, size).c_str());
 
-	fd.ovw.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-
 	while (total_written < size) {
-		DWORD res;
-		if (WriteFile(fd.h, buffer + total_written, size - total_written, &last_written, &fd.ovw)) {
+		if (WriteFile(fd.h, buffer + total_written, size - total_written, &last_written, NULL)) {
 			total_written += last_written;
 			continue;
 		}
@@ -427,26 +427,11 @@ bool write_port(PD fd, const char *buffer, int size)
 		if (GetLastError() != ERROR_IO_PENDING)
 			goto end;
 
-		int wait = start + 10 - time(NULL);
-		if (wait <= 0)
-			goto end;
-				
-		res = WaitForSingleObject(fd.ovw.hEvent, wait * 1000);
-		switch (res) {
-			case WAIT_OBJECT_0:
-				if (!GetOverlappedResult(fd.h, &fd.ovw, &last_written, FALSE))
-					goto end;
-				break;
-			default:
-				goto end;
-		}
-
 		total_written += last_written;
 	}
 
 	ret = true;
 end:
-
 	return ret;
 }
 #endif
@@ -537,27 +522,23 @@ bool read_port(PD fd, char **buffer, int *size) {
 	string r;
 
 	while (true) {
-		if (!ReadFile(fd.h, *buffer + was_read, buffer_size - was_read, &last_read, &fd.ovr)) {
-			if (GetLastError() != ERROR_IO_PENDING)
-				goto error;
-
-			DWORD res;
-			res = WaitForSingleObject(fd.ovr.hEvent, first ? 5000 : 1000);
-			switch (res) {
-				case WAIT_OBJECT_0:
-					if (!GetOverlappedResult(fd.h, &fd.ovr, &last_read, FALSE))
-						goto error;
-					break;
-				case WAIT_TIMEOUT:
-					CancelIo(fd.h);
-					goto out;
-				default:
-					goto error;
-			}
-
+		if (!first) {
+			COMMTIMEOUTS comm_timeouts;
+			comm_timeouts.ReadIntervalTimeout = 1000;
+			comm_timeouts.ReadTotalTimeoutMultiplier = 1;
+			comm_timeouts.ReadTotalTimeoutConstant = 1000;
+			comm_timeouts.WriteTotalTimeoutMultiplier = 1;
+			comm_timeouts.WriteTotalTimeoutConstant = 5000;
+			SetCommTimeouts(fd.h, &comm_timeouts);
 		}
 
+		if (!ReadFile(fd.h, *buffer + was_read, buffer_size - was_read, &last_read, NULL))
+			goto error;
+
 		first = false;
+
+		if (last_read == 0)
+			break;
 
 		was_read += last_read;
 		if (was_read == buffer_size) {
@@ -571,7 +552,6 @@ bool read_port(PD fd, char **buffer, int *size) {
 		}
 
 	}
-out:
 	*size = was_read;
 	sz_log(4, "Response read from port: %s", create_printable_string(*buffer, *size).c_str());
 	return true;
