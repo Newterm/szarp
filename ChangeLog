@@ -1,6 +1,9 @@
 $Id$
 
 2010-02-05      Adam Smyk <asmyk@dalkiaterm.pl>
+	* wx/viszio/*: desktop switching is available, multifile 
+	configuration is implemented
+2010-02-05      Adam Smyk <asmyk@dalkiaterm.pl>
 	* wx/common/serverdlg.*: server name is written to default 
 	configuration file, but it can be turned off, it is needed by viszio
 	where multiconfiguration is implemented

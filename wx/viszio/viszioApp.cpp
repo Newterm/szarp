@@ -37,7 +37,10 @@
 #include "viszioFetchFrame.h"
 #include "libpar.h"
 #include <wx/tokenzr.h>
-
+#ifndef MINGW32
+#include <libwnck/libwnck.h>
+#include <gdk/gdkx.h>
+#endif
 IMPLEMENT_APP(viszioApp);
 
 bool viszioApp::OnCmdLineError(wxCmdLineParser &parser)
@@ -130,17 +133,37 @@ void viszioApp::OnInitCmdLine(wxCmdLineParser &parser)
 
 bool viszioApp::DeleteAllConfigurations()
 {
-    wxConfig::Get()->DeleteAll();
-    wxConfig::Get()->Flush();
+	wxConfig *global_config = new wxConfig(_T("viszio"));
+	wxString configurations;
+	global_config->Read(_T("Configurations"), &configurations);
+    if (configurations.IsEmpty() == false)
+    {
+        wxStringTokenizer st(configurations);
+        wxString tmp; 
+        while (st.HasMoreTokens())
+        {
+            tmp = st.GetNextToken();
+			wxConfig *local_config = new wxConfig(_T("viszio_") + tmp);
+			local_config->DeleteAll();
+			local_config ->Flush();
+			delete local_config ;
+        }
+    }		
+    global_config->DeleteAll();
+    global_config->Flush();
+    delete global_config;
     return true;
 }
 
 bool viszioApp::DeleteConfiguration(wxString configurationName)
 {
-    wxConfig::Get()->DeleteGroup(configurationName);
-    wxConfig::Get()->DeleteEntry(configurationName);
+    wxConfig *local_config =  new wxConfig(_T("viszio_") + configurationName);
+    local_config->DeleteAll();
+    local_config->Flush();
+	wxConfig *global_config = new wxConfig(_T("viszio"));
+    
     wxString configurations = _T("");
-    wxConfig::Get()->Read(_T("Configurations"), &configurations);
+    global_config->Read(_T("Configurations"), &configurations);
     if (configurations.IsEmpty() == false)
     {
         wxStringTokenizer st(configurations);
@@ -156,9 +179,12 @@ bool viszioApp::DeleteConfiguration(wxString configurationName)
                 newConfigurations += _T(" ");
             }
         }
-        wxConfig::Get()->Write(_T("Configurations"), newConfigurations);
+        global_config->Write(_T("Configurations"), newConfigurations);
     }
-    wxConfig::Get()->Flush();
+    global_config->Flush();
+
+    delete local_config;
+    delete global_config;
     return true;
 }
 
@@ -190,12 +216,15 @@ bool viszioApp::LoadAllConfiguration()
     return true;
 }
 #endif
-
+	
+	
 void viszioApp::ShowConfigurations()
 {
     char str[1024];
+    wxConfig *global_config = new wxConfig(_T("viszio"));
+    
     wxString configurations = _T("");
-    wxConfig::Get()->Read(_T("Configurations"), &configurations);
+    global_config->Read(_T("Configurations"), &configurations);
 
     if (configurations.IsEmpty())
     {
@@ -209,98 +238,125 @@ void viszioApp::ShowConfigurations()
     wxString SerwerName;
 
     wxStringTokenizer st(configurations);
+    
     while (st.HasMoreTokens())
     {
-        wxString config = st.GetNextToken();
-        strcpy(str, (const char*)config.mb_str(wxConvUTF8));
+    	wxString configuration = st.GetNextToken();
+    	wxConfig *local_config = new wxConfig(_T("viszio_") + configuration);
+    	strcpy(str, (const char*)configuration.mb_str(wxConvUTF8));
         printf("Configuracja: %s\n", str);
-        wxConfig::Get()->SetPath(_T("/") + config);
-        wxConfig::Get()->Read(SerwerParam, &SerwerName);
+        
+        //wxConfig::Get()->SetPath(_T("/") + config);
+        local_config->Read(SerwerParam, &SerwerName);
         strcpy(str, (const char*)SerwerName.mb_str(wxConvUTF8));
         printf("  Server name: %s\n", str);
-        wxConfig::Get()->SetPath(_T("/") + config + _T("/Parameters"));
-        size_t NumberOfParams = wxConfig::Get()->GetNumberOfEntries();
+        local_config->SetPath(_T("/Parameters"));
+        size_t NumberOfParams = local_config->GetNumberOfEntries();
         printf("  Number of parameters: %d\n", NumberOfParams);
 
         wxString name = _T("");
         wxString value = _T("");
         long dummy = 0;
-        bool cont = wxConfig::Get()->GetFirstEntry(name, dummy);
+        
+        bool cont = local_config->GetFirstEntry(name, dummy);
         while (cont)
         {
             strcpy(str, (const char*)name.mb_str(wxConvUTF8));
             printf("     Parameter name: %s ", str);
-            wxConfig::Get()->Read(name, &value);
+            local_config->Read(name, &value);
             strcpy(str, (const char*)value.mb_str(wxConvUTF8));
             printf("[%s]\n", str);
-            cont = wxConfig::Get()->GetNextEntry(name, dummy);
+            cont = local_config->GetNextEntry(name, dummy);
         }
-        wxConfig::Get()->SetPath(_T("../.."));
+        delete local_config;
     }
+    delete global_config;
 }
 
 bool viszioApp::CreateConfiguration(wxString configurationName)
 {
-    wxString SerwerParam = _T("/") + configurationName+_T("/ServerString");
-    wxConfig::Get()->Write(SerwerParam, _T("localhost:8087"));
+    wxConfig *global_config = new wxConfig(_T("viszio"));
+	
     wxString configurations = _T("");
-    wxConfig::Get()->Read(_T("Configurations"), &configurations);
+    global_config->Read(_T("Configurations"), &configurations);
     if(configurations.IsEmpty())
-		wxConfig::Get()->Write(_T("Configurations"), configurationName);
+		global_config->Write(_T("Configurations"), configurationName);
 	else
 	{
+		wxStringTokenizer st(configurations);
+        wxString tmp;
+        	
+        while (st.HasMoreTokens())
+        {
+            tmp = st.GetNextToken();
+            if (tmp.IsSameAs(configurationName) == true)
+            {
+                delete global_config;
+                return false;
+            }
+        }
 		configurations += _T(" ") + configurationName;
-		wxConfig::Get()->Write(_T("Configurations"), configurations);
-	}
-    wxConfig::Get()->Flush();
+		global_config->Write(_T("Configurations"), configurations);
+	}	
+	TransparentFrame::config = new Configuration(configurationName);	    
+    wxString SerwerParam = _T("/ServerString");
+    TransparentFrame::config->wxconfig->Write(SerwerParam, _T("localhost:8080"));
+    global_config->Flush();
+    TransparentFrame::config->wxconfig->Flush();    
+    delete global_config;
     return true;
 }
 
 bool viszioApp::LoadConfiguration(wxString configurationName)
 {
-    bool ask_for_server = false;
-    wxConfig::Get()->Read(_T("FontThreshold"), &TransparentFrame::m_fontThreshold);    
-    wxString SerwerParam = configurationName+_T("/ServerString");
+    bool ask_for_server = false;    
+    TransparentFrame::config = new Configuration(configurationName);
+    
+    TransparentFrame::config->wxconfig->Read(_T("FontThreshold"), &TransparentFrame::config->m_fontThreshold); 
+    wxString SerwerParam = _T("/ServerString");
     wxString SerwerName;
-    wxConfig::Get()->Read(SerwerParam, &SerwerName);
+    TransparentFrame::config->wxconfig->Read(SerwerParam, &SerwerName);
 	
 	if (SerwerName.IsEmpty())
 		exit(1);
     
     m_http = new szHTTPCurlClient();
 
-	if(TransparentFrame::m_pfetcher != NULL && TransparentFrame::m_pfetcher->IsRunning())
-		TransparentFrame::m_pfetcher->Pause();
+	if(TransparentFrame::config->m_pfetcher != NULL && TransparentFrame::config->m_pfetcher->IsRunning())
+		TransparentFrame::config->m_pfetcher->Pause();
 
-    while (FetchFrame::ipk == NULL)
+    while (TransparentFrame::config->m_ipk == NULL)
     {
-        SerwerName = szServerDlg::GetServer(SerwerName, _T("Viszio"), ask_for_server, configurationName);
+        SerwerName = szServerDlg::GetServer(SerwerName, _T("Viszio"), ask_for_server, false);
         if (SerwerName.IsEmpty() or SerwerName.IsSameAs(_T("Cancel")))
-            exit(0);
+            exit(11);
 
-        TransparentFrame::ipk = szServerDlg::GetIPK(SerwerName, m_http);
-        if (TransparentFrame::ipk == NULL)
+        TransparentFrame::config->m_ipk = szServerDlg::GetIPK(SerwerName, m_http);
+        if (TransparentFrame::config->m_ipk == NULL)
             ask_for_server = true;
     }
 
-    TransparentFrame::configuration_name = configurationName;
-    wxConfig::Get()->Write(SerwerParam, SerwerName);
-    wxConfig::Get()->SetPath(configurationName + _T("/Parameters/"));
-    wxConfig::Get()->Flush();
-    size_t NumberOfParams = wxConfig::Get()->GetNumberOfEntries();
+    TransparentFrame::config->wxconfig->Write(SerwerParam, SerwerName);
+    TransparentFrame::config->wxconfig->SetPath(_T("/Parameters/"));
+    TransparentFrame::config->wxconfig->Flush();
+    size_t NumberOfParams = TransparentFrame::config->wxconfig->GetNumberOfEntries();
     if (NumberOfParams<=0)
     {
-        szViszioAddParam* apd = new szViszioAddParam(TransparentFrame::ipk, NULL, wxID_ANY, _("Viszio->AddParam"));
+        szViszioAddParam* apd = new szViszioAddParam(TransparentFrame::config->m_ipk, NULL, wxID_ANY, _("Viszio->AddParam"));
         if ( apd->ShowModal() != wxID_OK )
             exit(0);
         FetchFrame* frame = new FetchFrame(0L, SerwerName, m_http, apd->g_data.m_probe.m_parname);        
 		frame->SetFrameConfiguration(apd->g_data.m_probe.m_parname, true, 0, 0, *wxRED, *wxBLACK, 15, 1, 1);
-		if (TransparentFrame::m_pfetcher->IsRunning())    
-			TransparentFrame::m_pfetcher->Resume();
+		if (TransparentFrame::config->m_pfetcher->IsRunning())    
+			TransparentFrame::config->m_pfetcher->Resume();
 		else
-			TransparentFrame::m_pfetcher->Run();
-
-        frame->Show(true);
+			TransparentFrame::config->m_pfetcher->Run();        
+#ifndef MINGW32		
+		gtk_widget_show_now(GTK_WIDGET(frame->GetHandle()));
+		frame->MoveToDesktop();		
+#else
+		frame->Show(true);
+#endif
         return true;
     }
     wxString tmp;
@@ -346,7 +402,7 @@ bool viszioApp::LoadConfiguration(wxString configurationName)
     long withFrame = 0;
     long desktopNumber = 1;
     int i = 0;
-    bool cont = wxConfig::Get()->GetFirstEntry(name, dummy);
+    bool cont = TransparentFrame::config->wxconfig->GetFirstEntry(name, dummy);
 
     TransparentFrame *frame;
     FetchFrame *start_frame;
@@ -354,12 +410,12 @@ bool viszioApp::LoadConfiguration(wxString configurationName)
     {        
         if (name.StartsWith(_T("placeholder")))
         {
-            wxConfig::Get()->DeleteEntry(name);
-            wxConfig::Get()->Flush();
-            cont = wxConfig::Get()->GetNextEntry(name, dummy);
+            TransparentFrame::config->wxconfig->DeleteEntry(name);
+            TransparentFrame::config->wxconfig->Flush();
+            cont = TransparentFrame::config->wxconfig->GetNextEntry(name, dummy);
             continue;
         }
-        wxConfig::Get()->Read(name, &value);
+        TransparentFrame::config->wxconfig->Read(name, &value);
         wxStringTokenizer st(value);
         ReadLong(withFrame, name + _T(" with frame [1]"))
         ReadLong(locationX, name + _T(" x location [2]"))
@@ -383,25 +439,30 @@ bool viszioApp::LoadConfiguration(wxString configurationName)
         }
         else
         {
-            if (TransparentFrame::current_amount_of_frames == TransparentFrame::max_number_of_frames) return false;
-            frame = new TransparentFrame(TransparentFrame::all_frames[0], name);
+            if (TransparentFrame::config->m_current_amount_of_frames == TransparentFrame::config->m_max_number_of_frames) return false;
+            frame = new TransparentFrame(TransparentFrame::config->m_all_frames[0], name);
             frame->SetFrameConfiguration(name, withFrame, locationX, locationY, frameColor, fontColor, fontSize, fontSizeAdjust, desktopNumber);
            // frame->Show();
         }
         i++;
-        cont = wxConfig::Get()->GetNextEntry(name, dummy);
+        cont = TransparentFrame::config->wxconfig->GetNextEntry(name, dummy);
     }
-	if (TransparentFrame::m_pfetcher->IsRunning())    
-		TransparentFrame::m_pfetcher->Resume();
+	if (TransparentFrame::config->m_pfetcher->IsRunning())    
+		TransparentFrame::config->m_pfetcher->Resume();
 	else
-		TransparentFrame::m_pfetcher->Run();
+		TransparentFrame::config->m_pfetcher->Run();
 	
-	for(int j=0; j<TransparentFrame::max_number_of_frames; j++)
-		if(TransparentFrame::all_frames[j] != NULL) {
-			TransparentFrame::all_frames[j]->Show();
+	for(int j = 0; j < TransparentFrame::config->m_max_number_of_frames; j++)
+		if(TransparentFrame::config->m_all_frames[j] != NULL) {			
+#ifndef MINGW32
+			gtk_widget_show_now(GTK_WIDGET(TransparentFrame::config->m_all_frames[j]->GetHandle()));
+			TransparentFrame::config->m_all_frames[j]->MoveToDesktop();
+#else
+			TransparentFrame::config->m_all_frames[j]->Show();
+#endif
 		}
 
-    wxConfig::Get()->SetPath(_T("../.."));
+    TransparentFrame::config->wxconfig->SetPath(_T("/"));
     return true;
 }
 
@@ -419,8 +480,14 @@ bool viszioApp::OnInit()
     libpar_read_cmdline(&argc, argv);
 #endif //wxUSE_UNICODE
 
+/*	if (m_configuration.IsEmpty() == false)
+		m_configuration = _T("_") + m_configuration;
+	*/	
+    //this->SetProgName(_T("viszio") + m_configuration);
+    //this->SetAppName(_T("viszio") + m_configuration);
     this->SetProgName(_T("viszio"));
     this->SetAppName(_T("viszio"));
+    
     wxLog *logger=new wxLogStderr();
     wxLog::SetActiveTarget(logger);
 

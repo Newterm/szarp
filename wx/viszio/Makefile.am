@@ -29,8 +29,8 @@ bin_PROGRAMS = viszio
 WIN_APP_NAME=viszio
 
 viszio_SOURCES = \
-	viszioApp.cpp viszioFetchFrame.cpp viszioTransparentFrame.cpp viszioParamadd.cpp \
-	viszioApp.h viszioFetchFrame.h viszioTransparentFrame.h viszioParamadd.h
+	viszioApp.cpp viszioFetchFrame.cpp viszioTransparentFrame.cpp viszioParamadd.cpp viszioConfiguration.cpp \
+	viszioApp.h viszioFetchFrame.h viszioTransparentFrame.h viszioParamadd.h viszioConfiguration.h
 
 
 viszio_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2)

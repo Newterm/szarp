@@ -40,12 +40,13 @@
 #include "parlist.h"
 #include <wx/tokenzr.h>
 
+#ifndef MINGW32
 #include <libwnck/libwnck.h>
 #include <gdk/gdkx.h>
-
-#ifndef MINGW32
 #include "../../resources/wx/icons/viszio64.xpm"
 #endif
+
+Configuration *TransparentFrame::config;
 	
 enum
 {
@@ -69,7 +70,9 @@ enum
     PUM_FONT_THRESHOLD_BIG, 
     PUM_FONT_THRESHOLD_MIDDLE,
     PUM_FONT_THRESHOLD_SMALL, 
-    PUM_FONT_THRESHOLD_VERY_SMALL
+    PUM_FONT_THRESHOLD_VERY_SMALL,
+    PU_DESKTOP,
+    PUM_DESKTOP = 999
 };
 
 BEGIN_EVENT_TABLE( TransparentFrame, wxFrame )
@@ -96,29 +99,24 @@ BEGIN_EVENT_TABLE( TransparentFrame, wxFrame )
     EVT_MENU(PUM_FONT_THRESHOLD_MIDDLE, TransparentFrame::OnSetThresholdMiddle)
     EVT_MENU(PUM_FONT_THRESHOLD_SMALL, TransparentFrame::OnSetThresholdSmall)
     EVT_MENU(PUM_FONT_THRESHOLD_VERY_SMALL, TransparentFrame::OnSetThresholdVerySmall)
+#ifndef MINGW32
+    EVT_MENU_RANGE(PUM_DESKTOP, PUM_DESKTOP + 36, TransparentFrame::OnMoveToDesktop)
+#endif
 END_EVENT_TABLE()
 
-int TransparentFrame::current_amount_of_frames = 0;
-TransparentFrame** TransparentFrame::all_frames = new TransparentFrame*[TransparentFrame::max_number_of_frames];
-wxSize TransparentFrame::defaultSizeWithFrame = wxSize(250, 84);
-szParamFetcher *TransparentFrame::m_pfetcher;
-szProbeList TransparentFrame::m_probes;
-TSzarpConfig *TransparentFrame::ipk;
-wxString TransparentFrame::configuration_name = _T("");
-long TransparentFrame::m_fontThreshold = 19;
 
 TransparentFrame::TransparentFrame( wxWindow* parent, bool with_frame, wxString paramName, int id, wxString title, wxPoint pos, wxSize size, int style):
         wxFrame((wxFrame *)parent,
                 wxID_ANY,
                 wxEmptyString,
                 wxPoint(0, 0),
-                defaultSizeWithFrame,
+                config->m_defaultSizeWithFrame,
                 0 | wxFRAME_SHAPED | wxSIMPLE_BORDER | wxSTAY_ON_TOP | wxTRANSPARENT_WINDOW),
         m_color(*wxRED)
 {
 #ifndef MINGW32
-	//to move window everywhere
-	gtk_window_set_type_hint (GTK_WINDOW (this->GetHandle()), GDK_WINDOW_TYPE_HINT_DOCK);
+	//to move window everywhere 
+	//gtk_window_set_type_hint (GTK_WINDOW (this->GetHandle()), GDK_WINDOW_TYPE_HINT_DOCK);	
 #endif
 	wxIcon icon(wxICON(viszio64));
 	SetIcon(icon);  
@@ -138,20 +136,20 @@ TransparentFrame::TransparentFrame( wxWindow* parent, bool with_frame, wxString 
     m_memoryDC = NULL;
     m_region = NULL;
 
-    if (current_amount_of_frames == 0)
+    if (config->m_current_amount_of_frames == 0)
     {
-        all_frames[0] = this;
-        for (int i=1; i<TransparentFrame::max_number_of_frames; i++)
-            all_frames[i] = NULL;
+        config->m_all_frames[0] = this;
+        for (int i = 1; i < config->m_max_number_of_frames; i++)
+            config->m_all_frames[i] = NULL;
     }
     else
     {
         int i = 0;
-        for (; i<TransparentFrame::max_number_of_frames; i++)
-            if (all_frames[i] == NULL) break;
-        all_frames[i] = this;
+        for (; i < config->m_max_number_of_frames; i++)
+            if (config->m_all_frames[i] == NULL) break;
+        config->m_all_frames[i] = this;
     }
-    current_amount_of_frames++;
+    config->m_current_amount_of_frames++;
 }
 
 TransparentFrame::~TransparentFrame()
@@ -163,6 +161,7 @@ TransparentFrame::~TransparentFrame()
     delete m_bitmap;
     delete m_memoryDC;
     delete m_region;
+    delete m_menu;
 }
 
 void TransparentFrame::SetFrameConfiguration(wxString name, bool withFrame, long locationX, long locationY, wxColour frameColor, wxColour fontColor, int fontSize, int paramNameSizeAdjust, int desktopNumber)
@@ -183,23 +182,26 @@ void TransparentFrame::SetFrameConfiguration(wxString name, bool withFrame, long
     m_parameterName->SetFont(*m_font, *m_fontColor);
     m_parameterValue->SetFont(*m_font, *m_fontColor);
     m_parameterName->SetAdjustable(paramNameSizeAdjust==1);
+#ifndef MINGW32	
+    m_desktop = desktopNumber;
+#endif
     szProbe *probe = new szProbe();
-    probe->m_param = TransparentFrame::ipk->getParamByName((std::wstring)name);
+    probe->m_param = config->m_ipk->getParamByName((std::wstring)name);
     if (probe->m_param==NULL)
     {
         m_parameterName->SetText(_("error parameter name"));
         return;
     }
-    m_probes.Append(probe);
-	m_pfetcher->SetSource(m_probes, TransparentFrame::ipk);
+    config->m_probes.Append(probe);
+	config->m_pfetcher->SetSource(config->m_probes, config->m_ipk);
 }
 
 
 void TransparentFrame::DrawContent(wxDC&dc)
 {
-    if (m_bitmap==NULL)
+    if (m_bitmap == NULL)
         RefreshTransparentFrame();
-    dc.DrawBitmap(*m_bitmap, 0, 0, true);
+		dc.DrawBitmap(*m_bitmap, 0, 0, true);
     return;
 }
 
@@ -264,7 +266,7 @@ void TransparentFrame::RefreshTransparentFrame()
 
     for (int i = 0; i < GetSize().GetWidth()*GetSize().GetHeight()*3; i+=3)
     {
-        if (ShouldBeTransparent(nr, ng, nb, data[i], data[i+1], data[i+2], TransparentFrame::m_fontThreshold))
+        if (ShouldBeTransparent(nr, ng, nb, data[i], data[i+1], data[i+2], config->m_fontThreshold))
         {
             correctData[i] = 255;
             correctData[i+1] = 255;
@@ -290,16 +292,16 @@ void TransparentFrame::RefreshTransparentFrame()
 
 void TransparentFrame::OnPopAdd(wxCommandEvent& evt)
 {
-    if (current_amount_of_frames >= max_number_of_frames) return;
-    szViszioAddParam* apd = new szViszioAddParam(this->ipk, this, wxID_ANY, _("Viszio->AddParam"));
+    if (config->m_current_amount_of_frames >= config->m_max_number_of_frames) return;
+    szViszioAddParam* apd = new szViszioAddParam(config->m_ipk, this, wxID_ANY, _("Viszio->AddParam"));
     szProbe *probe = new szProbe();
     apd->g_data.m_probe.Set(*probe);
     if ( apd->ShowModal() != wxID_OK )
         return;
 
-    for (int j=0; j<TransparentFrame::max_number_of_frames; j++)
+    for (int j = 0; j < config->m_max_number_of_frames; j++)
     {
-        if (all_frames[j] != NULL && all_frames[j]->GetParameterName().Cmp(apd->g_data.m_probe.m_parname) == 0)
+        if (config->m_all_frames[j] != NULL && config->m_all_frames[j]->GetParameterName().Cmp(apd->g_data.m_probe.m_parname) == 0)
         {
             wxMessageDialog w(this, _("This parameter is already shown"), _("Viszio information"), wxOK);
             w.ShowModal();
@@ -315,9 +317,9 @@ void TransparentFrame::OnPopAdd(wxCommandEvent& evt)
 
 void TransparentFrame::OnMenuExit(wxCommandEvent& evt)
 {
-    for (int i=0; i<TransparentFrame::max_number_of_frames; i++)
-        if (all_frames[i] != NULL)
-            all_frames[i]->WriteConfiguration();
+    for (int i = 0; i < config->m_max_number_of_frames; i++)
+        if (config->m_all_frames[i] != NULL)
+            config->m_all_frames[i]->WriteConfiguration();
     exit(0);
 }
 
@@ -325,15 +327,15 @@ void TransparentFrame::OnMenuExit(wxCommandEvent& evt)
 void TransparentFrame::OnMenuClose(wxCommandEvent& evt)
 {
     int i=0;
-    wxConfig::Get()->SetPath(_T("/")+TransparentFrame::configuration_name+_T("/Parameters"));
-    wxConfig::Get()->DeleteEntry(m_fullParameterName);
-    wxConfig::Get()->SetPath(_T("/"));
-    wxConfig::Get()->Flush();
-    for (; i<max_number_of_frames; i++)
-        if (all_frames[i] == this)
+    config->wxconfig->SetPath(_T("/Parameters"));
+    config->wxconfig->DeleteEntry(m_fullParameterName);
+    config->wxconfig->SetPath(_T("/"));
+    config->wxconfig->Flush();
+    for (; i < config->m_max_number_of_frames; i++)
+        if (config->m_all_frames[i] == this)
             break;
-    all_frames[i] = NULL;
-    current_amount_of_frames--;
+    config->m_all_frames[i] = NULL;
+    config->m_current_amount_of_frames--;
     Close();
 }
 
@@ -382,49 +384,49 @@ void TransparentFrame::OnSetFontSizeSmall(wxCommandEvent& evt)
 
 void TransparentFrame::OnSetThresholdBig(wxCommandEvent& evt)
 {
-	TransparentFrame::m_fontThreshold = 25;
-	for (int i=0; i<TransparentFrame::max_number_of_frames; i++)
-        if (all_frames[i] != NULL)
+	config->m_fontThreshold = 25;
+	for (int i = 0; i < config->m_max_number_of_frames; i++)
+        if (config->m_all_frames[i] != NULL)
         {
-			all_frames[i]->RefreshTransparentFrame();
-			if (all_frames[i]->m_menu != NULL)
-				all_frames[i]->m_menu->Check(PUM_FONT_THRESHOLD_BIG, true);
+			config->m_all_frames[i]->RefreshTransparentFrame();
+			if (config->m_all_frames[i]->m_menu != NULL)
+				config->m_all_frames[i]->m_menu->Check(PUM_FONT_THRESHOLD_BIG, true);
         }
 }
 
 void TransparentFrame::OnSetThresholdMiddle(wxCommandEvent& evt)
 {
-	TransparentFrame::m_fontThreshold = 20;
-	for (int i=0; i<TransparentFrame::max_number_of_frames; i++)
-        if (all_frames[i] != NULL)
+	config->m_fontThreshold = 20;
+	for (int i=0; i < config->m_max_number_of_frames; i++)
+        if (config->m_all_frames[i] != NULL)
         {
-			all_frames[i]->RefreshTransparentFrame();
-			if (all_frames[i]->m_menu != NULL)
-				all_frames[i]->m_menu->Check(PUM_FONT_THRESHOLD_MIDDLE, true);
+			config->m_all_frames[i]->RefreshTransparentFrame();
+			if (config->m_all_frames[i]->m_menu != NULL)
+				config->m_all_frames[i]->m_menu->Check(PUM_FONT_THRESHOLD_MIDDLE, true);
         }
 }
 
 void TransparentFrame::OnSetThresholdSmall(wxCommandEvent& evt)
 {
-	TransparentFrame::m_fontThreshold = 15;
-	for (int i=0; i<TransparentFrame::max_number_of_frames; i++)
-        if (all_frames[i] != NULL)
+	config->m_fontThreshold = 15;
+	for (int i = 0; i < config->m_max_number_of_frames; i++)
+        if (config->m_all_frames[i] != NULL)
         {
-			all_frames[i]->RefreshTransparentFrame();
-			if (all_frames[i]->m_menu != NULL)
-				all_frames[i]->m_menu->Check(PUM_FONT_THRESHOLD_SMALL, true);
+			config->m_all_frames[i]->RefreshTransparentFrame();
+			if (config->m_all_frames[i]->m_menu != NULL)
+				config->m_all_frames[i]->m_menu->Check(PUM_FONT_THRESHOLD_SMALL, true);
         }
 }
 
 void TransparentFrame::OnSetThresholdVerySmall(wxCommandEvent& evt)
 {
-	TransparentFrame::m_fontThreshold = 10;
-	for (int i=0; i<TransparentFrame::max_number_of_frames; i++)
-		if (all_frames[i] != NULL)
+	config->m_fontThreshold = 10;
+	for (int i = 0; i < config->m_max_number_of_frames; i++)
+		if (config->m_all_frames[i] != NULL)
         {
-			all_frames[i]->RefreshTransparentFrame();
-			if (all_frames[i]->m_menu != NULL)
-				all_frames[i]->m_menu->Check(PUM_FONT_THRESHOLD_VERY_SMALL, true);
+			config->m_all_frames[i]->RefreshTransparentFrame();
+			if (config->m_all_frames[i]->m_menu != NULL)
+				config->m_all_frames[i]->m_menu->Check(PUM_FONT_THRESHOLD_VERY_SMALL, true);
         }
 }
 
@@ -499,8 +501,28 @@ void TransparentFrame::OnMouseMove(wxMouseEvent& evt)
 
 wxMenu *TransparentFrame::CreatePopupMenu()
 {
-    if (m_menu != NULL)
+    if (m_menu != NULL) 
+    {
+#ifndef MINGW32
+		m_menu->Delete(PU_DESKTOP);
+		delete m_desktop_menu;
+		m_desktop_menu = new wxMenu;
+		WnckScreen *wnck_screen = wnck_screen_get_default();
+		wnck_screen_force_update(wnck_screen);
+		if(wnck_screen == NULL) {
+			printf("ADAM SMYK");fflush(stdout);
+		}
+		int cout = wnck_screen_get_workspace_count(wnck_screen);
+		for(int i = 0; i < cout; i++)
+		{
+			WnckWorkspace *w = wnck_screen_get_workspace(wnck_screen, i);
+			const char *name = wnck_workspace_get_name(w);
+			m_desktop_menu->Append(PUM_DESKTOP + i, wxString(name, wxConvUTF8));
+		}
+		m_menu->Append(PU_DESKTOP, _("Move to desktop"), m_desktop_menu);	
+#endif		
         return m_menu;
+    }
     m_menu = new wxMenu;
     wxMenu *menu = m_menu;
     menu->Append(PUM_ADD, _("Add parameter"));
@@ -529,24 +551,24 @@ wxMenu *TransparentFrame::CreatePopupMenu()
     thresholdsubmenu->AppendRadioItem(PUM_FONT_THRESHOLD_SMALL, _("Font antyaliasing threshold 15"));
 	thresholdsubmenu->AppendRadioItem(PUM_FONT_THRESHOLD_VERY_SMALL, _("Font antyaliasing threshold 10"));    
 	
-	if (TransparentFrame::m_fontThreshold > 22)
+	if (config->m_fontThreshold > 22)
 	{
-		TransparentFrame::m_fontThreshold = 25;
+		config->m_fontThreshold = 25;
         thresholdsubmenu->Check(PUM_FONT_THRESHOLD_BIG, true);
 	}
-    else if (TransparentFrame::m_fontThreshold > 17)
+    else if (config->m_fontThreshold > 17)
 		{
-			TransparentFrame::m_fontThreshold = 20;
+			config->m_fontThreshold = 20;
 			thresholdsubmenu->Check(PUM_FONT_THRESHOLD_MIDDLE, true);
 		}
-    else if (TransparentFrame::m_fontThreshold > 13)
+    else if (config->m_fontThreshold > 13)
 		{
-			TransparentFrame::m_fontThreshold = 15;
+			config->m_fontThreshold = 15;
 			thresholdsubmenu->Check(PUM_FONT_THRESHOLD_SMALL, true);
 		}
 		else 
 		{
-			TransparentFrame::m_fontThreshold = 10;
+			config->m_fontThreshold = 10;
 			thresholdsubmenu->Check(PUM_FONT_THRESHOLD_VERY_SMALL, true);
 		}
 
@@ -567,6 +589,23 @@ wxMenu *TransparentFrame::CreatePopupMenu()
         menu->AppendSeparator();
     }
     menu->Append(PUM_EXIT,    _("Quit"));
+    menu->AppendSeparator();
+#ifndef MINGW32	
+	m_desktop_menu = new wxMenu;
+	WnckScreen *wnck_screen = wnck_screen_get_default();
+	wnck_screen_force_update(wnck_screen);
+	if(wnck_screen == NULL) {
+		printf("ADAM SMYK");fflush(stdout);
+	}
+	int cout = wnck_screen_get_workspace_count(wnck_screen);
+	for(int i = 0; i < cout; i++)
+	{
+		WnckWorkspace *w = wnck_screen_get_workspace(wnck_screen, i);
+		const char *name = wnck_workspace_get_name(w);
+		m_desktop_menu->Append(PUM_DESKTOP + i, wxString(name, wxConvUTF8));
+	}
+	menu->Append(PU_DESKTOP, _("Move to desktop"), m_desktop_menu);	
+#endif		
     return menu;
 }
 
@@ -585,13 +624,13 @@ void TransparentFrame::OnArrangeRightDown(wxCommandEvent& evt)
     //h_max = displaySize.GetHeight();
     int x = w_max - w/2;//asm -w
     int y = y_start;
-    for (int i = 0; i < max_number_of_frames; i++)
+    for (int i = 0; i < config->m_max_number_of_frames; i++)
     {
-        if (all_frames[i] == NULL) continue;        
+        if (config->m_all_frames[i] == NULL) continue;        
 #ifndef MINGW32	
-		all_frames[i]->Move(wxPoint(x - GetClientSize().GetWidth()/2, y));
+		config->m_all_frames[i]->Move(wxPoint(x - GetClientSize().GetWidth()/2, y));
 #else   
-		all_frames[i]->Move(wxPoint(x, y));     
+		config->m_all_frames[i]->Move(wxPoint(x, y));     
 #endif        
         if (y + 2 * h < h_max)
         {
@@ -617,10 +656,10 @@ void TransparentFrame::OnArrangeLeftDown(wxCommandEvent& evt)
     //h_max = displaySize.GetHeight();
     int x = x_start;
     int y = y_start;
-    for (int i = 0; i < max_number_of_frames; i++)
+    for (int i = 0; i < config->m_max_number_of_frames; i++)
     {
-        if (all_frames[i] == NULL) continue;
-        all_frames[i]->Move(wxPoint(x, y));
+        if (config->m_all_frames[i] == NULL) continue;
+        config->m_all_frames[i]->Move(wxPoint(x, y));
 
         if (y + 2 * h < h_max)
         {
@@ -647,10 +686,10 @@ void TransparentFrame::OnArrangeUpRight(wxCommandEvent& evt)
     //h_max = displaySize.GetHeight();
     int x = x_start;
     int y = y_start;
-    for (int i = 0; i < max_number_of_frames; i++)
+    for (int i = 0; i < config->m_max_number_of_frames; i++)
     {
-        if (all_frames[i] == NULL) continue;
-        all_frames[i]->Move(wxPoint(x, y));
+        if (config->m_all_frames[i] == NULL) continue;
+        config->m_all_frames[i]->Move(wxPoint(x, y));
         if (x + 2 * w < w_max)
         {
             x = x + w;
@@ -675,10 +714,10 @@ void TransparentFrame::OnChangeBottomRight(wxCommandEvent& evt)
     //h_max = displaySize.GetHeight();
     int x = x_start;
     int y = h_max - h;
-    for (int i = 0; i < max_number_of_frames; i++)
+    for (int i = 0; i < config->m_max_number_of_frames; i++)
     {
-        if (all_frames[i] == NULL) continue;
-        all_frames[i]->Move(wxPoint(x, y));
+        if (config->m_all_frames[i] == NULL) continue;
+        config->m_all_frames[i]->Move(wxPoint(x, y));
         if (x + 2 * w < w_max)
         {
             x = x + w;
@@ -721,16 +760,53 @@ void TransparentFrame::SetParameterValue(wxString text)
 
 void TransparentFrame::WriteConfiguration()
 {
-    wxConfig::Get()->Flush();
-    wxConfig::Get()->SetPath(_T("/") + configuration_name + _T("/Parameters"));
+    config->wxconfig->Flush();
+    //wxConfig::Get()->SetPath(_T("/") + config->m_configuration_name + _T("/Parameters"));
+    config->wxconfig->SetPath(_T("/Parameters"));
     int locationX = -1, locationY = -1;
     GetPosition(&locationX, &locationY);
+#ifndef MINGW32    
+    wxString mystring = wxString::Format(wxT("%d %d %d %d %d %d %d %d %d %d %d %d"), (m_withFrame?1:0), locationX, locationY, m_color.Red(), m_color.Green(), m_color.Blue(), m_fontColor->Red(), m_fontColor->Green(), m_fontColor->Blue(), m_parameterValue->GetFont()->GetPointSize(), m_parameterName->GetAdjustable(), m_desktop);
+#else
     wxString mystring = wxString::Format(wxT("%d %d %d %d %d %d %d %d %d %d %d 1"), (m_withFrame?1:0), locationX, locationY, m_color.Red(), m_color.Green(), m_color.Blue(), m_fontColor->Red(), m_fontColor->Green(), m_fontColor->Blue(), m_parameterValue->GetFont()->GetPointSize(), m_parameterName->GetAdjustable());
-    wxConfig::Get()->Write(GetParameterName(), mystring);
-    wxConfig::Get()->SetPath(_T("/"));
-    wxConfig::Get()->Write(_T("FontThreshold"), TransparentFrame::m_fontThreshold);
-    wxConfig::Get()->Flush();
+#endif    
+    config->wxconfig->Write(GetParameterName(), mystring);
+    config->wxconfig->SetPath(_T("/"));
+    config->wxconfig->Write(_T("FontThreshold"), config->m_fontThreshold);
+    config->wxconfig->Flush();
 }
+
+#ifndef MINGW32
+void TransparentFrame::OnMoveToDesktop(wxCommandEvent& evt)
+{
+	MoveToDesktop(evt.GetId() - PUM_DESKTOP);		
+}
+
+
+bool TransparentFrame::MoveToDesktop(int number)
+{
+	
+	if(number == -1)
+		number = m_desktop;
+	WnckWindow *wnck_window = NULL;
+	WnckScreen *wnck_screen = wnck_screen_get_default();
+	wnck_screen_force_update(wnck_screen);	
+	GdkWindow *gdkwindow;
+	gdkwindow = gtk_widget_get_window(GTK_WIDGET(GTK_WINDOW (this->GetHandle())));
+	if(gdkwindow == NULL) 
+		return false;
+	wnck_window = wnck_window_get(GDK_WINDOW_XID(gdkwindow));				
+	if(wnck_window == NULL)
+		return false;
+	
+	WnckScreen *wnck_screen1 = wnck_window_get_screen(wnck_window);
+	WnckWorkspace *wnck_workspace = wnck_screen_get_workspace(wnck_screen1, number);
+    wnck_window_move_to_workspace(wnck_window, wnck_workspace);
+    wnck_window_set_window_type(wnck_window, WNCK_WINDOW_DOCK);    
+    m_desktop = number;
+    return true;
+}
+#endif
 
 
 TextComponent::TextComponent(wxPoint anchor, wxSize  size, int font_size, bool isFontAdjustable):

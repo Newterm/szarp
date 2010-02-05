@@ -40,6 +40,7 @@
 #include "fetchparams.h"
 #include "serverdlg.h"
 #include "viszioParamadd.h"
+#include "viszioConfiguration.h"
 #include "parlist.h"
 #include "cconv.h"
 #include "authdiag.h"
@@ -78,6 +79,9 @@ private:
     void OnSetThresholdMiddle(wxCommandEvent& evt);
     void OnSetThresholdSmall(wxCommandEvent& evt);
     void OnSetThresholdVerySmall(wxCommandEvent& evt);
+#ifndef MINGW32
+    void OnMoveToDesktop(wxCommandEvent& evt);
+#endif
 	void OnAdjustFont(wxCommandEvent& evt);
 	void WriteConfiguration();
 	bool ShouldBeTransparent(int, int, int, int, int, int, double);
@@ -99,6 +103,10 @@ protected:
     wxString m_fullParameterName;
     wxPoint m_delta;
     wxMenu *m_menu;
+#ifndef MINGW32	
+    wxMenu *m_desktop_menu;
+    int m_desktop;
+#endif
     wxFont *m_font;
 	wxColour m_color;
     wxColour *m_fontColor;
@@ -118,16 +126,10 @@ public:
     void RefreshTransparentFrame();	
     void SetParameterName(wxString text);
     void SetParameterValue(wxString text);
-    static const int max_number_of_frames = 100;
-    static int current_amount_of_frames;
-    static TransparentFrame **all_frames;
-    static wxSize defaultSizeWithFrame;
-    static wxSize defaultSizeWithOutFrame;
-    static szParamFetcher *m_pfetcher;
-    static szProbeList m_probes;
-    static TSzarpConfig *ipk;
-    static wxString configuration_name;    
-    static long m_fontThreshold;
+#ifndef MINGW32
+    bool MoveToDesktop(int number = -1);
+#endif    
+    static Configuration *config;
 };
 
 

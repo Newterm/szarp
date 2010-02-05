@@ -56,6 +56,7 @@ WX_DEFINE_LIST(szProbeList);
 #include <wx/list.h>
 #include <wx/colour.h>
 #include <wx/sound.h>
+#include <wx/wupdlock.h>
 #include <szarp_config.h>
 #include <vector>
 #include "serverdlg.h"
@@ -100,11 +101,11 @@ FetchFrame::FetchFrame(wxFrame *frame, wxString server, szHTTPCurlClient *http, 
 	m_typeOfFrame = FETCH_TRANSPARENT_FRAME;
 	m_server = server;
 	m_http = http;
-	if (m_pfetcher == NULL)
+	if (config->m_pfetcher == NULL)
     {
-		m_pfetcher = new szParamFetcher(m_server, this, m_http);
-        m_pfetcher->GetParams().RegisterIPK(TransparentFrame::ipk);
-        m_pfetcher->SetPeriod(10);
+		config->m_pfetcher = new szParamFetcher(m_server, this, m_http);
+        config->m_pfetcher->GetParams().RegisterIPK(config->m_ipk);
+        config->m_pfetcher->SetPeriod(10);
 	}	
 }
 
@@ -135,23 +136,43 @@ void FetchFrame::OnFetch(wxCommandEvent& event)
     wxSize size = GetClientSize();
     w = size.GetWidth();
     h = size.GetHeight();	
-	if (m_pfetcher->IsValid() == true)
+	if (config->m_pfetcher->IsValid() == true)
 	{		
-		for (size_t i = 0; i < m_pfetcher->GetParams().Count(); i++) {
-			wxString name = m_pfetcher->GetParams().GetName(i);
-			wxString val = m_pfetcher->GetParams().GetExtraProp(i, SZ_REPORTS_NS_URI, _T("value"));
-			wxString unit = m_pfetcher->GetParams().GetExtraProp(i, SZ_REPORTS_NS_URI, _T("unit"));
+		config->m_pfetcher->Lock();
+		for (size_t i = 0; i < config->m_pfetcher->GetParams().Count(); i++) {
+			wxString name = config->m_pfetcher->GetParams().GetName(i);
+			wxString val = config->m_pfetcher->GetParams().GetExtraProp(i, SZ_REPORTS_NS_URI, _T("value"));
+			wxString unit = config->m_pfetcher->GetParams().GetExtraProp(i, SZ_REPORTS_NS_URI, _T("unit"));
 					
-			for(int j=0; j<TransparentFrame::max_number_of_frames; j++)
+			for(int j = 0; j < config->m_max_number_of_frames; j++)
 			{
-				if(all_frames[j] != NULL && all_frames[j]->GetParameterName().Cmp(name) == 0)
+				if (config->m_all_frames[j] != NULL && config->m_all_frames[j]->GetParameterName().Cmp(name) == 0)
 				{
-					all_frames[j]->SetParameterValue(val + _(" ") + unit);
-					all_frames[j]->SetTitle(val + _(" ") + unit);
-					all_frames[j]->RefreshTransparentFrame();
+					//all_frames[j]->Freeze();
+					//wxWindowUpdateLocker w(all_frames[j]);
+					//all_frames[j]->SetParameterValue(_("                      "));
+					//all_frames[j]->RefreshTransparentFrame();
+					config->m_all_frames[j]->SetParameterValue(val + _(" ") + unit);
+					//all_frames[j]->SetTitle(val + _(" ") + unit);
+					config->m_all_frames[j]->RefreshTransparentFrame();
+					//all_frames[j]->Thaw();
 					break;
 				}
 			}
 		}
+		config->m_pfetcher->Unlock();
+		/*for(int j=0; j<TransparentFrame::max_number_of_frames; j++)
+			{
+				if(all_frames[j] != NULL)
+				{
+					//all_frames[j]->Freeze();
+					//all_frames[j]->SetParameterValue(val + _(" ") + unit);
+					//all_frames[j]->SetTitle(val + _(" ") + unit);
+					
+					all_frames[j]->RefreshTransparentFrame();
+					all_frames[j]->Thaw();
+				}
+			}
+			*/
 	}
 }
