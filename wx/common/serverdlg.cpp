@@ -34,15 +34,15 @@
 //#define KEY_SAVEDEFAULT	_T("ServerDlg/SaveDefault")
 //#define KEY_SERVER	_T("ServerDlg/ServerString")
 
-wxString szServerDlg::GetServer(wxString def, wxString progname, bool always_show, wxString configuration)
+wxString szServerDlg::GetServer(wxString def, wxString progname, bool always_show, bool store_server_name)
 {
 	if (!def.IsEmpty() && !always_show) {
 		/* There is a default value and we are not forced to always
 		 * show dialog. */
 		return def;
 	}
-	wxString key_savedefault = configuration + _T("/SaveDefault");
-	wxString key_server = configuration + _T("/ServerString");
+	wxString key_savedefault = _T("/SaveDefault");
+	wxString key_server = _T("/ServerString");
 	
 	wxString server;
 	bool save_default = false;
@@ -98,12 +98,14 @@ wxString szServerDlg::GetServer(wxString def, wxString progname, bool always_sho
 	top_s->SetSizeHints(dlg);
 	int ret = dlg->ShowModal();
 	if (ret == wxID_OK) {
-		wxConfig::Get()->Write(key_savedefault, cb->GetValue());
 		server = text->GetValue();
-		//if (cb->GetValue() == true) {
-			wxConfig::Get()->Write(key_server, server);
-		//}
-		wxConfig::Get()->Flush();
+		if (store_server_name) {
+			wxConfig::Get()->Write(key_savedefault, cb->GetValue());			
+			//if (cb->GetValue() == true) {
+				wxConfig::Get()->Write(key_server, server);
+			//}
+			wxConfig::Get()->Flush();
+		}
 	} else {
 		if(always_show) {
 			server = _T("Cancel");
