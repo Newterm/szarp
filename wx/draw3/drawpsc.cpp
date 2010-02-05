@@ -570,6 +570,11 @@ void DrawPscFrame::DoHandleCloseMenuItem(wxCommandEvent &event) {
 	Show(false);
 }
 
+void DrawPscFrame::DoHandleGetReport(wxCommandEvent &event) {}
+
+void DrawPscFrame::DoHandleSaveReport(wxCommandEvent& event) {}
+
+
 void DrawPscFrame::OnClose(wxCloseEvent &event) {
 	if (event.CanVeto()) {
 		event.Veto();

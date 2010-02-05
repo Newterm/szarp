@@ -125,6 +125,10 @@ protected:
 
 	virtual void DoHandleSetConstants(wxCommandEvent &event);
 
+	virtual void DoHandleSaveReport(wxCommandEvent &event);
+
+	virtual void DoHandleGetReport(wxCommandEvent &event);
+
 	virtual void DoHandleReset(wxCommandEvent& event);
 
 public:
