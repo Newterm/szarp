@@ -1,5 +1,8 @@
 $Id$
 
+2010-02-05      Pawel Palucha <pawel@praterm.com.pl>
+	* parcook/ddedmn.cc: support for 2-words (combined) DDE::STRING 
+	parameters.
 2010-02-05      Adam Smyk <asmyk@dalkiaterm.pl>
 	* wx/viszio/*: desktop switching is available, multifile 
 	configuration is implemented

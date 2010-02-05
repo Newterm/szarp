@@ -18,10 +18,11 @@
 
 /** 
  * Daemon using XMLRPC to communicate to DDE proxy located at windows server.
- * Launch utils/ddespy.py as DDE proxy on Windows machine.
+ * Launch utils/ddeproxy.py as DDE proxy on Windows machine.
  *
  * This daemon is designed to read data from 2 applications:
- * - InTouch - popular Windows SCADA software
+ * - InTouch - popular Windows SCADA software (should work with any DDE Server answering for Request
+ *   function with text represenation of number values)
  * - MBENET - InTouch driver for Modbus protocol
  * 
  * Configuration in params.xml:
@@ -43,10 +44,10 @@
  * register address
  * dde:type:
  * - for InTouch use "string" - numbers are passed from InTouch as string and parsed according to parameter
- *   precision
+ *   precision; if you need to split large value into 2 parameters, use same topic and id for both parameters
+ *   and aditional dde:word="msw" and dde:word="lsw" attributes for  most- and less- significant word.
  * - for MBENET use on of:
  *   - 'integer' - simple one register short integer value (precision dependant)
- *   - 'shor_float'
  *   - 'float' - double precision float, hold in two Modbus registers and saved as two following SZARP
  *   parameters
  *   - 'short_float' - double precision float, hold in two Modbus registers, but copied as one SZARP
@@ -117,12 +118,15 @@ struct DDEParam {
 		STRING,
 		NONE
 	} type;
-	int prec;
-	int address;
+	int prec;		/**< parameter precision */
+	int address;		/**< IPK index of parameter */
+	int lsw_address;	/**< IPK index of second (less significant) word of value for 2-words 
+				  parameters, -1 for 1-word parameters */
 	DDEParam() {
 		type = NONE;
 		prec = 0;
 		address = -1;
+		lsw_address = -1;
 	}
 };
 
@@ -144,12 +148,18 @@ class DDEDaemon {
 	xmlChar* m_appname;	
 	int m_read_freq;
 
+	/** topic -> (item -> param) map */
 	std::map<std::string, std::map<std::string, DDEParam> > m_params;
 
 	XMLRPC_REQUEST CreateRequest();
 	XMLRPC_REQUEST SendRequest(XMLRPC_REQUEST request);
 	void ParseResponse(XMLRPC_REQUEST response);
-	bool ConvertValue(XMLRPC_VALUE v, const std::string& topic, std::string item, unsigned short &ret, 
+	/** convert RPC answer to parameter value */
+	template<typename T> bool ConvertValue(
+			XMLRPC_VALUE v, 
+			const std::string& topic, 
+			std::string item, 
+			T &ret, 
 			int prec = 0);
 public:
 	int Configure(DaemonConfig* cfg);
@@ -248,14 +258,40 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 		}
 		xmlFree(_type);
 
+		xmlChar* _word = xmlGetNsProp(n,
+				BAD_CAST("word"), 
+				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+		bool lsw = false;
+		if (_word != NULL) {
+			if (!xmlStrcmp(_word, BAD_CAST "lsw")) {
+				lsw = true;
+			} else if (xmlStrcmp(_word, BAD_CAST "msw")) {
+				dolog(0, "Error, invalid dde:word attribute in line %ld, must be 'lsw' or 'msw'",
+						xmlGetLineNo(n));
+				xmlFree(_word);
+				return 1;
+			}
+			xmlFree(_word);
+		}
+
 		std::string topic = (char*) _topic;
 
 		if (m_params.find(topic) == m_params.end()
 				|| m_params[topic].find(item) == m_params[topic].end()) {
 			DDEParam& mp = m_params[topic][item];
 			mp.prec = param->GetPrec();
-			mp.address = i;
+			if (lsw) {
+				mp.lsw_address = i;
+			} else {
+				mp.address = i;
+			}
 			mp.type = val_type;
+		} else {
+			if (lsw) {
+				m_params[topic][item].lsw_address = i;
+			} else {
+				m_params[topic][item].address = i;
+			}
 		}
 
 		param = param->GetNext();
@@ -321,7 +357,7 @@ XMLRPC_REQUEST DDEDaemon::SendRequest(XMLRPC_REQUEST request) {
 	return response;
 }
 
-bool DDEDaemon::ConvertValue(XMLRPC_VALUE i, const std::string& topic, std::string item, unsigned short &ret,
+template <typename T> bool DDEDaemon::ConvertValue(XMLRPC_VALUE i, const std::string& topic, std::string item, T &ret,
 		int prec) {
 	const char *s;
 	char* copy;
@@ -342,6 +378,7 @@ bool DDEDaemon::ConvertValue(XMLRPC_VALUE i, const std::string& topic, std::stri
 				return false;;
 			}
 			copy = strdup(s);
+			dolog(10, "For topic: '%s', item '%s' received value '%s'", topic.c_str(), item.c_str(), copy);
 			ind = index(copy, ',');
 			if (ind != NULL) {
 				*ind = '.';
@@ -364,8 +401,6 @@ bool DDEDaemon::ConvertValue(XMLRPC_VALUE i, const std::string& topic, std::stri
 	}
 	dolog(10, "Got value: %d", ret);
 	return true;
-
-
 }
 
 void DDEDaemon::ParseResponse(XMLRPC_REQUEST response) {
@@ -385,37 +420,48 @@ void DDEDaemon::ParseResponse(XMLRPC_REQUEST response) {
 		for (k = j->second.begin(); k != j->second.end() && i; ++k) {
 			DDEParam& dde = k->second;
 
-			unsigned short val = SZARP_NO_DATA;
-			bool r = ConvertValue(i, j->first, k->first, val, 
-					dde.type == DDEParam::STRING ? dde.prec : 0);
+			uint16_t val = SZARP_NO_DATA;
+
+			bool r;
+			if (dde.type != DDEParam::STRING) {
+		       		r = ConvertValue(i, j->first, k->first, val);
+			} else {
+				int32_t lval;
+		       		r = ConvertValue(i, j->first, k->first, lval, dde.prec);
+				if (dde.lsw_address == -1) {
+					m_ipc->m_read[dde.address] = (int16_t)lval;
+				} else {
+					m_ipc->m_read[dde.address] = lval >> 16;
+					m_ipc->m_read[dde.lsw_address] = lval & 0xffff;
+				}
+			}
 			i = XMLRPC_VectorNext(XMLRPC_RequestGetData(response));
-			if (dde.type == DDEParam::INTEGER or dde.type == DDEParam::STRING) {
+			if (dde.type == DDEParam::INTEGER) {
 				m_ipc->m_read[dde.address] = val;
 			} else if (dde.type == DDEParam::FLOAT
 					|| dde.type == DDEParam::SHORT_FLOAT) {
 				if (i == NULL) {
-					dolog(0, "Not enought params in response from spy!", 0);
+					dolog(0, "Not enough params in response from spy!", 0);
 					break;
 				}
-				unsigned short val2;
+				uint16_t val2;
 				if (r && ConvertValue(i, j->first, k->first, val2)) {
 					float f;
-					memcpy(&f, &val, sizeof(val));
-					memcpy((char*)(&f) + 2, &val2, sizeof(val2));
+					memcpy(&f, &val, sizeof(short int));
+					memcpy((char*)(&f) + 2, &val2, sizeof(short int));
 					int v = (int)mypow(f, dde.prec);
 					if (dde.type == DDEParam::FLOAT)
 						m_ipc->m_read[dde.address + 1] = v >> 16;
 					m_ipc->m_read[dde.address] = v & 0xffff;
 				}
 				i = XMLRPC_VectorNext(XMLRPC_RequestGetData(response));
-			} else {
-				assert(false);
 			}
 		}
 	}
 }
 
 void DDEDaemon::Run() {
+	dolog(6, "Starting DDE daemon with %d parameters", m_ipc->m_params_count);
 	while (true) {
 		time_t st = time(NULL);
 		struct timeval start, end;
