@@ -24,8 +24,8 @@
  * asmyk@praterm.com.pl
  */
  
-#ifndef _KONTRADD_H
-#define _KONTRADD_H
+#ifndef __VISZIOPARAMADD_H__
+#define __VISZIOPARAMADD_H__
 
 #include <wx/wxprec.h>
 #ifdef __BORLANDC__
@@ -36,65 +36,53 @@
 #endif
 
 #include <wx/spinctrl.h>
-
 #include <szarp_config.h>
-
 #include "parselect.h"
 #include "parlist.h"
-//#include "parcalc.h"
-
-//#include "kontroler.h"
 
 
-/** Kontroler: add par */
+
+/**
+ * Viszio add parameter dialog window 
+ */
 class szViszioAddParam : public wxDialog {
-DECLARE_CLASS(szViszioAddParam)
-DECLARE_EVENT_TABLE()
-  /** szarp config */
-  TSzarpConfig *ipk;
-  /** */
-  szParSelect *ps;
-//  szParCalc *pc;
-  /** */
-  TParam *m_param;
-  /** */
-//  wxString m_value_min;
-//  wxString m_value_max;
+	DECLARE_CLASS(szViszioAddParam)
+	DECLARE_EVENT_TABLE()
+	TSzarpConfig *ipk;		/**< szarp config */
+	szParSelect *ps;		/**< parameter select dialog */
+	TParam *m_param;		/**< pointer to parameter */
 public:
-  /** returned data */
   struct {
-    szProbe m_probe;
-  }g_data;
+    szProbe m_probe;		/**< returned data */
+  }g_data;  
   /**
+   * Add parameter dialog constructor
    * @param _ipk szarp config
+   * @param parent parent window
+   * @param id window id
+   * @param title window title
    */
   szViszioAddParam(TSzarpConfig *_ipk,
       wxWindow *parent, wxWindowID id, const wxString &title);
   virtual ~szViszioAddParam();
 protected:
-  /** */
+  /** Invoked when button 'select param' has beend pressed  */
   void OnSelectParam(wxCommandEvent &ev);
-  /** */
+  /** Transfers data to window */
   virtual bool TransferDataToWindow();
-  /** */
+  /** Transfers data from window */
   virtual bool TransferDataFromWindow();
+  /** 
+  * Returns pointer to chosen parameter 
+  * @return pointer to chosen parameter 
+  */
   virtual TParam* GetParam() { return m_param; }
 };
 
-/*
- * IDs
- */
+
 enum {
   ID_TC_PARNAME = wxID_HIGHEST + 1,
   ID_B_PARAM,
-  ID_B_FORMULA,
-  ID_CB_VALID,
-  ID_TC_VALMIN,
-  ID_TC_VALMAX,
-  ID_SC_PREC,
-  ID_SC_GROUP,
-  ID_CH_DTYPE,
-  ID_CH_ALARM
 };
 
-#endif //_KONTRADD_H
+#endif //__VISZIOPARAMADD_H__

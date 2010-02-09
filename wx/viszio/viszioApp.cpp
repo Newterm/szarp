@@ -63,8 +63,6 @@ bool viszioApp::OnCmdLineParsed(wxCmdLineParser &parser)
     m_showAll = false;
     m_createNew = false;
     m_configuration = _T("");
-    m_configurationToDelete = _T("");
-    m_configurationToCreate = _T("");
 
    if (parser.Found(_T("H")))
     {
@@ -100,12 +98,12 @@ bool viszioApp::OnCmdLineParsed(wxCmdLineParser &parser)
         m_loadOne = true;
         return true;
     }
-    if (parser.Found(_T("d"), &m_configurationToDelete))
+    if (parser.Found(_T("d"), &m_configuration))
     {
         m_deleteOne = true;
         return true;
     }
-    if (parser.Found(_T("c"), &m_configurationToCreate))
+    if (parser.Found(_T("c"), &m_configuration))
     {
         m_createNew = true;
         return true;
@@ -191,7 +189,6 @@ bool viszioApp::DeleteConfiguration(wxString configurationName)
 #ifndef MINGW32    
 bool viszioApp::LoadAllConfiguration()
 {
-	//TODO: correct wxConfig with running many configurations
     wxString configurations = _T("");
     wxConfig::Get()->Read(_T("Configurations"), &configurations);
     if (configurations.IsEmpty() == false)
@@ -244,21 +241,18 @@ void viszioApp::ShowConfigurations()
     	wxString configuration = st.GetNextToken();
     	wxConfig *local_config = new wxConfig(_T("viszio_") + configuration);
     	strcpy(str, (const char*)configuration.mb_str(wxConvUTF8));
-        printf("Configuracja: %s\n", str);
-        
-        //wxConfig::Get()->SetPath(_T("/") + config);
+        printf("Configuracja: %s\n", str);        
         local_config->Read(SerwerParam, &SerwerName);
         strcpy(str, (const char*)SerwerName.mb_str(wxConvUTF8));
         printf("  Server name: %s\n", str);
         local_config->SetPath(_T("/Parameters"));
         size_t NumberOfParams = local_config->GetNumberOfEntries();
         printf("  Number of parameters: %d\n", NumberOfParams);
-
         wxString name = _T("");
         wxString value = _T("");
         long dummy = 0;
-        
         bool cont = local_config->GetFirstEntry(name, dummy);
+        
         while (cont)
         {
             strcpy(str, (const char*)name.mb_str(wxConvUTF8));
@@ -529,7 +523,7 @@ bool viszioApp::OnInit()
 
     if (m_deleteOne)
     {
-        DeleteConfiguration(m_configurationToDelete);
+        DeleteConfiguration(m_configuration);
         exit(0);
     }
 
@@ -552,7 +546,7 @@ bool viszioApp::OnInit()
     
     if (m_createNew)
     {
-        CreateConfiguration(m_configurationToCreate);
+        CreateConfiguration(m_configuration);
         exit(0);
     }
 

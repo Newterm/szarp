@@ -24,8 +24,8 @@
  * asmyk@praterm.com.pl
  */
  
-#ifndef __configuration__
-#define __configuration__
+#ifndef __VISZIOCONFIGURATION_H__
+#define __VISZIOCONFIGURATION_H__
 #ifdef WX_GCH
 #include <wx_pch.h>
 #else
@@ -44,23 +44,28 @@
 
 class TransparentFrame;
 
+/**
+ * Viszio configuration class.
+ */
 class Configuration 
 {
 public:
+	/** Constructor of the viszio configuration object
+	 * @param configurationName configuration name 
+	 */        
 	Configuration(wxString configurationName);
 	~Configuration();
-	static const int m_max_number_of_frames = 100;
-    int m_current_amount_of_frames;
-    TransparentFrame **m_all_frames;
-    wxSize m_defaultSizeWithFrame;
-    wxSize m_defaultSizeWithOutFrame;
-    szParamFetcher *m_pfetcher;
-    szProbeList m_probes;
-    TSzarpConfig *m_ipk;
-    wxString m_configuration_name;    
-    wxConfig *wxconfig;
-    long m_fontThreshold;
+	static const int m_max_number_of_frames = 100;	/**< Maximum number of frames */
+    int m_current_amount_of_frames;					/**< Current number of frames */
+    TransparentFrame **m_all_frames;				/**< Array of transparent frames */
+    wxSize m_defaultSizeWithFrame;					/**< Default frame size */
+    szParamFetcher *m_pfetcher;		/**< Pointer to prefetcher object */
+    szProbeList m_probes;			/**< List of probes */
+    TSzarpConfig *m_ipk;			/**< Pointer to szarp configuration */
+    wxString m_configuration_name;  /**< Name of configuration */
+    wxConfig *wxconfig;				/**< Pointer to current viszio configuration (file for Linux or register for Windows) */
+    long m_fontThreshold;			/**< Value of font antyaliasing threshold. Correct threshold value varies from 10 to 30. */
 };
 
 
-#endif // __configuration__
+#endif // __VISZIOCONFIGURATION_H__

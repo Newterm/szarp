@@ -32,36 +32,53 @@
 #include "libpar.h"
 #include "viszioFetchFrame.h"
 
+/**
+ * Viszio application class.
+ */
 class viszioApp : public szApp
 {
-	wxLocale locale;
-	wxString m_server;
+	wxLocale locale;	/**< Locale object */
+	wxString m_server;	/**< Server name */
 #ifndef MINGW32    	
-	bool m_loadAll;
+	bool m_loadAll;		/**< True if all configuration will be loaded */
 #endif
-    bool m_deleteAll;
-    bool m_loadOne;
-    bool m_deleteOne;
-    bool m_showAll;
-    bool m_createNew;
-    wxString m_configuration;
-	wxString m_configurationToDelete;
-	wxString m_configurationToCreate;
-	szHTTPCurlClient *m_http;
+    bool m_deleteAll;	/**< True if all configuration will be deleted */
+    bool m_loadOne;		/**< True if one configuration will be loaded */
+    bool m_deleteOne;	/**< True if one configuration will be deleted */
+    bool m_showAll;		/**< True if all configuration will be shown */
+    bool m_createNew;	/**< True if a new configuration will be created */
+    wxString m_configuration;	/**< Configuration name */
+	szHTTPCurlClient *m_http;	/**< HTTP client */
 public:
     virtual bool OnInit();
     int OnExit();
+	/** Invoked when command line error occured */
     bool OnCmdLineError(wxCmdLineParser&);
+    /** Invoked when command line help (-h or --help) option is specified */
     bool OnCmdLineHelp(wxCmdLineParser&);
+    /** Command line parsing */
     bool OnCmdLineParsed(wxCmdLineParser&);
+    /** Initialization of command line parser */
     void OnInitCmdLine(wxCmdLineParser&);
+    /** Shows all available configurations */
     void ShowConfigurations();
-    bool LoadConfiguration(wxString);
+	/** Load configuration
+	 * @param configurationName configuration name 
+	 */    
+	 bool LoadConfiguration(wxString);
 #ifndef MINGW32        
+	/** Load all configurations */    
     bool LoadAllConfiguration();
 #endif
+	/** Delete configuration
+	 * @param configurationName configuraton name 
+	 */    
     bool DeleteConfiguration(wxString);
+	/** Delete all configurations */    
     bool DeleteAllConfigurations();
+	/** Create configuration
+	 * @param configurationName configuraton name 
+	 */        
     bool CreateConfiguration(wxString);
 };
 

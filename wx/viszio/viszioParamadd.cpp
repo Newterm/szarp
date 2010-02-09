@@ -34,13 +34,12 @@
 
 #include <wx/valtext.h>
 #include <wx/valgen.h>
-
 #include "viszioParamadd.h"
 #include "cconv.h"
 
 
 szViszioAddParam::szViszioAddParam(TSzarpConfig *_ipk,
-                                 wxWindow *parent, wxWindowID id, const wxString &title) :
+	wxWindow *parent, wxWindowID id, const wxString &title):
         wxDialog(parent, id, title)
 {
     this->ipk = _ipk;
@@ -51,7 +50,6 @@ szViszioAddParam::szViszioAddParam(TSzarpConfig *_ipk,
     wxStaticBoxSizer *param_sizer = new wxStaticBoxSizer(
         new wxStaticBox(this, wxID_ANY, _("Parameter")), wxVERTICAL);
 
-
     param_sizer->Add(new wxTextCtrl(this, ID_TC_PARNAME, _T(""),
                                     wxDefaultPosition, wxDefaultSize, wxTE_READONLY,
                                     wxTextValidator(wxFILTER_NONE, &g_data.m_probe.m_parname)),
@@ -61,7 +59,6 @@ szViszioAddParam::szViszioAddParam(TSzarpConfig *_ipk,
 
     paramt_sizer->Add(new wxButton(this, ID_B_PARAM, _("Choose parameter")),
                       0, wxALIGN_CENTER | wxALL, 8);
-
 
     param_sizer->Add(paramt_sizer, 1, wxEXPAND | wxALL, 8);
     top_sizer->Add(param_sizer, 0, wxGROW | wxALL, 8);
@@ -79,10 +76,12 @@ szViszioAddParam::szViszioAddParam(TSzarpConfig *_ipk,
     top_sizer->Fit(this);
 }
 
+
 szViszioAddParam::~szViszioAddParam()
 {
     delete ps;
 }
+
 
 void szViszioAddParam::OnSelectParam(wxCommandEvent &ev)
 {
@@ -93,7 +92,6 @@ void szViszioAddParam::OnSelectParam(wxCommandEvent &ev)
                      wxTextCtrl)->SetValue(wxString(m_param->GetName()));
         wxLogMessage(_T("par_add: ok (%s)"),
                      wxString(m_param->GetName()).c_str());
-        //TODO
     }
     else
     {
@@ -102,14 +100,13 @@ void szViszioAddParam::OnSelectParam(wxCommandEvent &ev)
 }
 
 
-
 bool szViszioAddParam::TransferDataToWindow()
 {
-
     m_param = g_data.m_probe.m_param;
     wxDialog::TransferDataToWindow();
     return true;
 }
+
 
 bool szViszioAddParam::TransferDataFromWindow()
 {
@@ -119,6 +116,7 @@ bool szViszioAddParam::TransferDataFromWindow()
     wxDialog::TransferDataFromWindow();
     return true;
 }
+
 
 IMPLEMENT_CLASS(szViszioAddParam, wxDialog)
 BEGIN_EVENT_TABLE(szViszioAddParam, wxDialog)

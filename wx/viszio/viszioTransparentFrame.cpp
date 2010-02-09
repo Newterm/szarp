@@ -92,7 +92,7 @@ BEGIN_EVENT_TABLE( TransparentFrame, wxFrame )
     EVT_MENU(PUM_FONT_SIZE_ADJUST, TransparentFrame::OnAdjustFont)
     EVT_MENU(PU_ARRANGE_RD, TransparentFrame::OnArrangeRightDown)
     EVT_MENU(PU_ARRANGE_LD, TransparentFrame::OnArrangeLeftDown)
-    EVT_MENU(PU_ARRANGE_UR, TransparentFrame::OnArrangeUpRight)
+    EVT_MENU(PU_ARRANGE_UR, TransparentFrame::OnArrangeTopRight)
     EVT_MENU(PU_ARRANGE_BR, TransparentFrame::OnChangeBottomRight)
     EVT_MENU(PUM_WITH_FRAME, TransparentFrame::OnWithFrame)    
     EVT_MENU(PUM_FONT_THRESHOLD_BIG, TransparentFrame::OnSetThresholdBig)
@@ -356,7 +356,7 @@ void TransparentFrame::OnSetFontSizeBig(wxCommandEvent& evt)
     wxFont* font = m_parameterValue->GetFont();
     font->SetPointSize(20);
     m_parameterValue->SetFont(*font, *m_fontColor);
-    if (!m_parameterName->GetAdjustable())
+    if (!m_parameterName->IsAdjustable())
         m_parameterName->SetFont(*font, *m_fontColor);
     //m_parameterName->SetAdjustable(false);
     RefreshTransparentFrame();
@@ -367,7 +367,7 @@ void TransparentFrame::OnSetFontSizeMiddle(wxCommandEvent& evt)
     wxFont* font = m_parameterValue->GetFont();
     font->SetPointSize(15);
     m_parameterValue->SetFont(*font, *m_fontColor);
-    if (!m_parameterName->GetAdjustable())
+    if (!m_parameterName->IsAdjustable())
         m_parameterName->SetFont(*font, *m_fontColor);
     RefreshTransparentFrame();
 }
@@ -377,7 +377,7 @@ void TransparentFrame::OnSetFontSizeSmall(wxCommandEvent& evt)
     wxFont* font = m_parameterValue->GetFont();
     font->SetPointSize(10);
     m_parameterValue->SetFont(*font, *m_fontColor);
-    if (!m_parameterName->GetAdjustable())
+    if (!m_parameterName->IsAdjustable())
         m_parameterName->SetFont(*font, *m_fontColor);
     RefreshTransparentFrame();
 }
@@ -433,9 +433,9 @@ void TransparentFrame::OnSetThresholdVerySmall(wxCommandEvent& evt)
 
 void TransparentFrame::OnAdjustFont(wxCommandEvent& evt)
 {
-    m_parameterName->SetAdjustable(!m_parameterName->GetAdjustable());
-    m_menu->Check(PUM_FONT_SIZE_ADJUST, m_parameterName->GetAdjustable());
-    if (!m_parameterName->GetAdjustable())
+    m_parameterName->SetAdjustable(!m_parameterName->IsAdjustable());
+    m_menu->Check(PUM_FONT_SIZE_ADJUST, m_parameterName->IsAdjustable());
+    if (!m_parameterName->IsAdjustable())
         m_parameterName->SetFont(*m_parameterValue->GetFont(), *m_fontColor);
     RefreshTransparentFrame();
 }
@@ -530,7 +530,7 @@ wxMenu *TransparentFrame::CreatePopupMenu()
     menu->Append(PUM_FONT_COLOR, _("Change font color"));
     wxMenu *fontsubmenu = new wxMenu;
     fontsubmenu->AppendCheckItem(PUM_FONT_SIZE_ADJUST, _("Adjust name font size"));
-    fontsubmenu->Check(PUM_FONT_SIZE_ADJUST, m_parameterName->GetAdjustable());
+    fontsubmenu->Check(PUM_FONT_SIZE_ADJUST, m_parameterName->IsAdjustable());
     fontsubmenu->AppendSeparator();
     fontsubmenu->AppendRadioItem(PUM_FONT_SIZE_SMALL, _("Font small"));
     fontsubmenu->AppendRadioItem(PUM_FONT_SIZE_MIDDLE, _("Font middle"));
@@ -579,7 +579,7 @@ wxMenu *TransparentFrame::CreatePopupMenu()
     wxMenu *submenu = new wxMenu;
     submenu->Append(PU_ARRANGE_RD, _("Direction -> right down"));
     submenu->Append(PU_ARRANGE_LD, _("Direction -> left down"));
-    submenu->Append(PU_ARRANGE_UR, _("Direction -> up right"));
+    submenu->Append(PU_ARRANGE_UR, _("Direction -> top right"));
     submenu->Append(PU_ARRANGE_BR, _("Direction -> bottom right"));
     menu->Append(PU_ARRANGE, _("Arrange frames"), submenu);
     menu->AppendSeparator();
@@ -672,7 +672,7 @@ void TransparentFrame::OnArrangeLeftDown(wxCommandEvent& evt)
 
 }
 
-void TransparentFrame::OnArrangeUpRight(wxCommandEvent& evt)
+void TransparentFrame::OnArrangeTopRight(wxCommandEvent& evt)
 {
     int x_start = 0, y_start = 0, w_max, h_max;
     wxClientDisplayRect(&x_start, &y_start, &w_max, &h_max);
@@ -766,9 +766,9 @@ void TransparentFrame::WriteConfiguration()
     int locationX = -1, locationY = -1;
     GetPosition(&locationX, &locationY);
 #ifndef MINGW32    
-    wxString mystring = wxString::Format(wxT("%d %d %d %d %d %d %d %d %d %d %d %d"), (m_withFrame?1:0), locationX, locationY, m_color.Red(), m_color.Green(), m_color.Blue(), m_fontColor->Red(), m_fontColor->Green(), m_fontColor->Blue(), m_parameterValue->GetFont()->GetPointSize(), m_parameterName->GetAdjustable(), m_desktop);
+    wxString mystring = wxString::Format(wxT("%d %d %d %d %d %d %d %d %d %d %d %d"), (m_withFrame?1:0), locationX, locationY, m_color.Red(), m_color.Green(), m_color.Blue(), m_fontColor->Red(), m_fontColor->Green(), m_fontColor->Blue(), m_parameterValue->GetFont()->GetPointSize(), m_parameterName->IsAdjustable(), m_desktop);
 #else
-    wxString mystring = wxString::Format(wxT("%d %d %d %d %d %d %d %d %d %d %d 1"), (m_withFrame?1:0), locationX, locationY, m_color.Red(), m_color.Green(), m_color.Blue(), m_fontColor->Red(), m_fontColor->Green(), m_fontColor->Blue(), m_parameterValue->GetFont()->GetPointSize(), m_parameterName->GetAdjustable());
+    wxString mystring = wxString::Format(wxT("%d %d %d %d %d %d %d %d %d %d %d 1"), (m_withFrame?1:0), locationX, locationY, m_color.Red(), m_color.Green(), m_color.Blue(), m_fontColor->Red(), m_fontColor->Green(), m_fontColor->Blue(), m_parameterValue->GetFont()->GetPointSize(), m_parameterName->IsAdjustable());
 #endif    
     config->wxconfig->Write(GetParameterName(), mystring);
     config->wxconfig->SetPath(_T("/"));
@@ -863,10 +863,10 @@ wxFont* TextComponent::GetFont()
     return m_font;
 }
 
-void TextComponent::PaintComponent(wxDC&dc, wxColour fakeTransparentColor)
+void TextComponent::PaintComponent(wxDC&dc, wxColour transparentColor)
 {
     //dc.SetBrush(wxBrush(*m_forecolorBrush, wxSOLID));
-    dc.SetBrush(wxBrush(fakeTransparentColor, wxSOLID));
+    dc.SetBrush(wxBrush(transparentColor, wxSOLID));
     dc.DrawRoundedRectangle(m_anchor.x, m_anchor.y, m_size.GetWidth()-1, m_size.GetHeight()-1, 4);
     dc.SetFont(*m_font);
     dc.SetTextForeground(*m_textcolor);

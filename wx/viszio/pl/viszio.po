@@ -8,84 +8,80 @@ msgid ""
 msgstr ""
 "Project-Id-Version: kontroler3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-05 14:53+0100\n"
+"POT-Creation-Date: 2010-02-09 09:06+0100\n"
 "PO-Revision-Date: 2004-08-31 00:19+0200\n"
 "Last-Translator:  <asmyk@praterm.com.pl>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: viszioApp.cpp:121
+#: viszioApp.cpp:119
 msgid "create"
 msgstr ""
 
-#: viszioApp.cpp:121
+#: viszioApp.cpp:119
 msgid "new configuration 'str' will be created"
 msgstr ""
 
-#: viszioApp.cpp:122
+#: viszioApp.cpp:120
 msgid "load"
 msgstr ""
 
-#: viszioApp.cpp:122
+#: viszioApp.cpp:120
 msgid "configuration 'str' will be loaded"
 msgstr ""
 
-#: viszioApp.cpp:123
+#: viszioApp.cpp:121
 msgid "delete"
 msgstr ""
 
-#: viszioApp.cpp:123
+#: viszioApp.cpp:121
 msgid "configuration 'str' will be deleted"
 msgstr ""
 
-#: viszioApp.cpp:124
+#: viszioApp.cpp:122
 msgid "help"
 msgstr ""
 
-#: viszioApp.cpp:124
+#: viszioApp.cpp:122
 msgid "show help"
 msgstr ""
 
-#: viszioApp.cpp:126
+#: viszioApp.cpp:124
 msgid "Load"
 msgstr ""
 
-#: viszioApp.cpp:126
+#: viszioApp.cpp:124
 msgid "load all configurations"
 msgstr ""
 
-#: viszioApp.cpp:128
+#: viszioApp.cpp:126
 msgid "Delete"
 msgstr ""
 
-#: viszioApp.cpp:128
+#: viszioApp.cpp:126
 msgid "delete all configurations"
 msgstr ""
 
-#: viszioApp.cpp:129
+#: viszioApp.cpp:127
 msgid "Show"
 msgstr ""
 
-#: viszioApp.cpp:129
+#: viszioApp.cpp:127
 msgid "show all configurations"
 msgstr ""
 
-#: viszioApp.cpp:130
+#: viszioApp.cpp:128
 msgid "usage"
 msgstr ""
 
-#: viszioApp.cpp:130
+#: viszioApp.cpp:128
 msgid "show how to use viszio"
 msgstr ""
 
-#: viszioApp.cpp:345 viszioTransparentFrame.cpp:296
+#: viszioApp.cpp:339 viszioTransparentFrame.cpp:296
 msgid "Viszio->AddParam"
 msgstr "Visio->Dodaj parametr"
-
-#: viszioFetchFrame.cpp:130
-msgid "Welcome to..."
-msgstr "Witaj ..."
 
 #: viszioFetchFrame.cpp:155 viszioTransparentFrame.cpp:815
 msgid " "
@@ -121,7 +117,7 @@ msgstr "Zmiana koloru tekstu"
 
 #: viszioTransparentFrame.cpp:532
 msgid "Adjust name font size"
-msgstr "Zmiana rozmiaru tekstu"
+msgstr "Dopasowanie rozmiaru tekstu"
 
 #: viszioTransparentFrame.cpp:535
 msgid "Font small"
@@ -172,7 +168,7 @@ msgid "Direction -> left down"
 msgstr "Kierunek -> od lewej w dó³"
 
 #: viszioTransparentFrame.cpp:582
-msgid "Direction -> up right"
+msgid "Direction -> top right"
 msgstr "Kierunek -> od góry w prawo"
 
 #: viszioTransparentFrame.cpp:583
@@ -191,14 +187,17 @@ msgstr "Zamknij okno"
 msgid "Quit"
 msgstr "Wyj¶cie z aplikacji"
 
-#: viszioParamadd.cpp:52
+#: viszioParamadd.cpp:51
 msgid "Parameter"
 msgstr "Parametr monitorowany"
 
-#: viszioParamadd.cpp:62
+#: viszioParamadd.cpp:60
 msgid "Choose parameter"
 msgstr "Wybierz parametr"
 
-#: viszioParamadd.cpp:77
+#: viszioParamadd.cpp:74
 msgid "Viszio->Add->Param"
 msgstr "Kontroler->Dodaj->Parametr"
+
+#~ msgid "Welcome to..."
+#~ msgstr "Witaj ..."

@@ -113,7 +113,7 @@ FetchFrame::FetchFrame(wxFrame *frame, wxString server, szHTTPCurlClient *http, 
 FetchFrame::~FetchFrame()
 {
 }
-
+/*
 void FetchFrame::OnClose(wxCloseEvent &event)
 {
     Destroy();
@@ -129,7 +129,7 @@ void FetchFrame::OnAbout(wxCommandEvent &event)
     wxString msg = wxbuildinfo(long_f);
     wxMessageBox(msg, _("Welcome to..."));
 }
-
+*/
 void FetchFrame::OnFetch(wxCommandEvent& event)
 {
 	int w = 0, h = 0;	

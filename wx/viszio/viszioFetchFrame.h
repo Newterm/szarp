@@ -39,31 +39,28 @@
 
 #define SZ_REPORTS_NS_URI _T("http://www.praterm.com.pl/SZARP/reports")
 
-enum
-{
-    PU_RESTORE = 10001,
-    PU_NEW_ICON,
-    PU_OLD_ICON,
-    PU_EXIT,
-    PU_CHECKMARK,
-    PU_SUB1,
-    PU_SUB2,
-    PU_SUBMAIN,
-};
-
+/**
+ * Viszio transparent frame with event fetch handling.
+ */
 class FetchFrame: public TransparentFrame
 {
 	DECLARE_EVENT_TABLE()
+	/** HTTP client */
     szHTTPCurlClient *m_http;
+    /** name of server */
     wxString m_server;
     
 public:
+	/** FetchFrame constructor.
+	 * @param frame parent window 
+	 * @param server name of server
+	 * @param http http client
+	 * @param paramName name of parameter
+	 */ 
     FetchFrame(wxFrame*, wxString, szHTTPCurlClient*, wxString paramName);
     ~FetchFrame();
 private:
-    virtual void OnClose(wxCloseEvent& event);
-    virtual void OnQuit(wxCommandEvent& event);
-    virtual void OnAbout(wxCommandEvent& event);
+    /** Called on fetching parameters */
 	virtual void OnFetch(wxCommandEvent& event);
 };
 

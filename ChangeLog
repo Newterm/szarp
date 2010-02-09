@@ -1,5 +1,8 @@
 $Id$
 
+2010-02-09      Adam Smyk <asmyk@dalkiaterm.pl>
+	* wx/viszio/*: some code re-organisation, doxygen comments has 
+	been added
 2010-02-05      Pawel Palucha <pawel@praterm.com.pl>
 	* parcook/ddedmn.cc: support for 2-words (combined) DDE::STRING 
 	parameters.
