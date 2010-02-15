@@ -1,5 +1,8 @@
 $Id$
 
+2010-02-15      Adam Smyk <asmyk@dalkiaterm.pl>
+	* resources/documentation/new/viszio : viszio documentation has 
+	been added
 2010-02-09      Adam Smyk <asmyk@dalkiaterm.pl>
 	* wx/viszio/*: some code re-organisation, doxygen comments has 
 	been added
