@@ -132,6 +132,7 @@ private:
 	* Executed on menu font size small
 	*/ 	
 	void OnSetFontSizeSmall(wxCommandEvent& evt);
+#ifndef MINGW32
 	/**
 	* Executed on menu antyaliasing threshold big
 	*/ 	
@@ -148,7 +149,6 @@ private:
 	* Executed on menu antyaliasing threshold very small
 	*/ 	    
     void OnSetThresholdVerySmall(wxCommandEvent& evt);
-#ifndef MINGW32
 	/**
 	* Executed on menu move to another desktop
 	*/ 	    

@@ -32,7 +32,6 @@
 #pragma hdrstop
 #endif //__BORLANDC__
 
-#include "szapp.h"
 #include "viszioApp.h"
 #include "viszioFetchFrame.h"
 #include "libpar.h"
@@ -41,6 +40,11 @@
 #include <libwnck/libwnck.h>
 #include <gdk/gdkx.h>
 #endif
+#include <wx/arrstr.h>
+//WX_DECLARE_LIST(wxString, ListStrings);
+//#include <wx/listimpl.cpp>
+//WX_DEFINE_LIST(ListStrings);
+
 IMPLEMENT_APP(viszioApp);
 
 bool viszioApp::OnCmdLineError(wxCmdLineParser &parser)
@@ -56,7 +60,9 @@ bool viszioApp::OnCmdLineHelp(wxCmdLineParser &parser)
 
 bool viszioApp::OnCmdLineParsed(wxCmdLineParser &parser)
 {
+#ifndef MINGW32    
     m_loadAll = false;
+#endif
     m_deleteAll = false;
     m_loadOne = false;
     m_deleteOne = false;
@@ -66,14 +72,9 @@ bool viszioApp::OnCmdLineParsed(wxCmdLineParser &parser)
 
    if (parser.Found(_T("H")))
     {
-    	printf("To start work with viszio, you have to pass through several following steps:\n");
-		printf("\t 1. Creating of a new configuration [-c option].\n");
-		printf("\t 2. Loading of a specified configuration [-l option].\n");
-		//printf("\t 2. Loading of all available configurations [-L option] (works only on the Linux system).\n");
-		printf("\t 3. If a new configuration is loaded, you will have to define a correct server name and \n\t    you have to choose parameter to display.\n");
-		printf("\t 4. If some old configuration is loaded, all information will be read from configuration file.\n");
-		printf("\t 5. All information concerning each displayed parameter will be stored in configuration file.\n");
-		fflush(stdout);
+		wxString message(_("   1. You have to create of a new configuration [-c option].\n   2. Next, you can load of a specified configuration [-l option].\n   3. If a new configuration is loaded:\n   3.1. You will have to define a server name and port.\n   3.2. You will have to choose a parameter to be shown.\n   4. If some old configuration is loaded, all information\n      will be read either from configuration files (for Linux)\n      or from register (for Windows).\n   5. All information concerning each displayed parameter\n      will be stored in configuration files or in register."));
+		wxMessageDialog *dialog = new wxMessageDialog(NULL, message, _("How to use viszio"), wxOK);
+		dialog->ShowModal();
         exit(0);
     }
     if (parser.Found(_T("S")))
@@ -115,7 +116,7 @@ bool viszioApp::OnCmdLineParsed(wxCmdLineParser &parser)
 void viszioApp::OnInitCmdLine(wxCmdLineParser &parser)
 {
     //szApp::OnInitCmdLine(parser);
-    parser.SetLogo(_T("Szarp viszio v 1.1"));
+    parser.SetLogo(_T("Szarp viszio v 2.1"));
     parser.AddOption(_T("c"), _("create"), _("new configuration 'str' will be created"));
     parser.AddOption(_T("l"), _("load"), _("configuration 'str' will be loaded"));
     parser.AddOption(_T("d"), _("delete"), _("configuration 'str' will be deleted"));
@@ -217,7 +218,7 @@ bool viszioApp::LoadAllConfiguration()
 	
 void viszioApp::ShowConfigurations()
 {
-    char str[1024];
+	wxArrayString array;
     wxConfig *global_config = new wxConfig(_T("viszio"));
     
     wxString configurations = _T("");
@@ -225,46 +226,54 @@ void viszioApp::ShowConfigurations()
 
     if (configurations.IsEmpty())
     {
-        printf("Configurations: not available\n");
-        return;
+    	configurations = _("not available");
     }
-    strcpy(str, (const char*)configurations.mb_str(wxConvUTF8));
-    printf("Configurations: %s\n", str);
-
-    wxString SerwerParam = _T("ServerString");
-    wxString SerwerName;
-
-    wxStringTokenizer st(configurations);
-    
-    while (st.HasMoreTokens())
+    else
     {
-    	wxString configuration = st.GetNextToken();
-    	wxConfig *local_config = new wxConfig(_T("viszio_") + configuration);
-    	strcpy(str, (const char*)configuration.mb_str(wxConvUTF8));
-        printf("Configuracja: %s\n", str);        
-        local_config->Read(SerwerParam, &SerwerName);
-        strcpy(str, (const char*)SerwerName.mb_str(wxConvUTF8));
-        printf("  Server name: %s\n", str);
-        local_config->SetPath(_T("/Parameters"));
-        size_t NumberOfParams = local_config->GetNumberOfEntries();
-        printf("  Number of parameters: %d\n", NumberOfParams);
-        wxString name = _T("");
-        wxString value = _T("");
-        long dummy = 0;
-        bool cont = local_config->GetFirstEntry(name, dummy);
-        
-        while (cont)
-        {
-            strcpy(str, (const char*)name.mb_str(wxConvUTF8));
-            printf("     Parameter name: %s ", str);
-            local_config->Read(name, &value);
-            strcpy(str, (const char*)value.mb_str(wxConvUTF8));
-            printf("[%s]\n", str);
-            cont = local_config->GetNextEntry(name, dummy);
-        }
-        delete local_config;
+		wxString SerwerParam = _T("ServerString");
+		wxString SerwerName;
+		wxStringTokenizer st(configurations);
+    
+		while (st.HasMoreTokens())
+		{
+			wxString configuration = st.GetNextToken();
+			wxConfig *local_config = new wxConfig(_T("viszio_") + configuration);
+			array.Add(_("Configuration name = ") + configuration);			
+			local_config->Read(SerwerParam, &SerwerName);
+			array.Add(_("    Server name = ") + SerwerName);
+			local_config->SetPath(_T("/Parameters"));
+			size_t NumberOfParams = local_config->GetNumberOfEntries();
+			array.Add(wxString::Format(_T("    Number of parameters: %d"), NumberOfParams));
+			wxString name = _T("");
+			wxString value = _T("");
+			long dummy = 0;
+			bool cont = local_config->GetFirstEntry(name, dummy);
+			
+			while (cont)
+			{				
+				local_config->Read(name, &value);
+				array.Add(_T("    ") + name + _T(" = ") + value);
+				cont = local_config->GetNextEntry(name, dummy);
+			}
+			delete local_config;
+			array.Add(_T("    ")	);
+		}
     }
     delete global_config;
+	
+    wxDialog *dlg = new wxDialog(NULL, wxID_ANY, wxString(_("Viszio")));
+	wxListBox *list = new wxListBox(dlg, wxID_ANY);
+	list->Set(array);		
+	wxSizer* top_s = new wxBoxSizer(wxVERTICAL);
+	top_s->Add(new wxStaticText(dlg, wxID_ANY, _("Configurations: ") + configurations),
+		0, wxALL | wxALIGN_CENTER, 10);		
+	top_s->Add(list);
+	top_s->Add(new wxButton(dlg, wxID_OK, _("OK")), 0, wxALL | wxEXPAND, 10);		
+	dlg->SetSizer(top_s);
+		
+	top_s->SetSizeHints(dlg);
+	dlg->ShowModal();
+	dlg->Destroy();
 }
 
 bool viszioApp::CreateConfiguration(wxString configurationName)

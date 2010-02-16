@@ -95,11 +95,11 @@ BEGIN_EVENT_TABLE( TransparentFrame, wxFrame )
     EVT_MENU(PU_ARRANGE_UR, TransparentFrame::OnArrangeTopRight)
     EVT_MENU(PU_ARRANGE_BR, TransparentFrame::OnChangeBottomRight)
     EVT_MENU(PUM_WITH_FRAME, TransparentFrame::OnWithFrame)    
+#ifndef MINGW32    
     EVT_MENU(PUM_FONT_THRESHOLD_BIG, TransparentFrame::OnSetThresholdBig)
     EVT_MENU(PUM_FONT_THRESHOLD_MIDDLE, TransparentFrame::OnSetThresholdMiddle)
     EVT_MENU(PUM_FONT_THRESHOLD_SMALL, TransparentFrame::OnSetThresholdSmall)
     EVT_MENU(PUM_FONT_THRESHOLD_VERY_SMALL, TransparentFrame::OnSetThresholdVerySmall)
-#ifndef MINGW32
     EVT_MENU_RANGE(PUM_DESKTOP, PUM_DESKTOP + 36, TransparentFrame::OnMoveToDesktop)
 #endif
 END_EVENT_TABLE()
@@ -111,7 +111,11 @@ TransparentFrame::TransparentFrame( wxWindow* parent, bool with_frame, wxString 
                 wxEmptyString,
                 wxPoint(0, 0),
                 config->m_defaultSizeWithFrame,
+#ifndef MINGW32                
                 0 | wxFRAME_SHAPED | wxSIMPLE_BORDER | wxSTAY_ON_TOP | wxTRANSPARENT_WINDOW),
+#else                
+                0 | wxFRAME_SHAPED | wxNO_BORDER | wxSTAY_ON_TOP | wxFRAME_NO_TASKBAR),
+#endif                
         m_color(*wxRED)
 {
 #ifndef MINGW32
@@ -382,6 +386,7 @@ void TransparentFrame::OnSetFontSizeSmall(wxCommandEvent& evt)
     RefreshTransparentFrame();
 }
 
+#ifndef MINGW32
 void TransparentFrame::OnSetThresholdBig(wxCommandEvent& evt)
 {
 	config->m_fontThreshold = 25;
@@ -429,7 +434,7 @@ void TransparentFrame::OnSetThresholdVerySmall(wxCommandEvent& evt)
 				config->m_all_frames[i]->m_menu->Check(PUM_FONT_THRESHOLD_VERY_SMALL, true);
         }
 }
-
+#endif
 
 void TransparentFrame::OnAdjustFont(wxCommandEvent& evt)
 {
@@ -544,7 +549,7 @@ wxMenu *TransparentFrame::CreatePopupMenu()
         fontsubmenu->Check(PUM_FONT_SIZE_BIG, true);
     
     menu->Append(PU_FONT_SIZE, _("Change font size"), fontsubmenu);
-    
+#ifndef MINGW32    
     wxMenu *thresholdsubmenu = new wxMenu;
 	thresholdsubmenu->AppendRadioItem(PUM_FONT_THRESHOLD_BIG, _("Font antyaliasing threshold 25"));
     thresholdsubmenu->AppendRadioItem(PUM_FONT_THRESHOLD_MIDDLE, _("Font antyaliasing threshold 20"));
@@ -573,7 +578,7 @@ wxMenu *TransparentFrame::CreatePopupMenu()
 		}
 
     menu->Append(PU_FONT_THRESHOLD, _("Change threshold"), thresholdsubmenu);
-    
+#endif    
     menu->AppendCheckItem(PUM_WITH_FRAME, _("With frame"), _T("help"));
     menu->Check(PUM_WITH_FRAME, m_withFrame);
     wxMenu *submenu = new wxMenu;

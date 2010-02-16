@@ -27,7 +27,7 @@
 #ifndef __VISZIOAPP_H__
 #define __VISZIOAPP_H__
 
-#include <wx/app.h>
+//#include <wx/app.h>
 #include "szapp.h"
 #include "libpar.h"
 #include "viszioFetchFrame.h"
@@ -83,4 +83,4 @@ public:
 };
 
 #endif // __VISZIOAPP_H__
-    
+

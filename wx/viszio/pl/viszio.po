@@ -197,7 +197,7 @@ msgstr "Wybierz parametr"
 
 #: viszioParamadd.cpp:74
 msgid "Viszio->Add->Param"
-msgstr "Kontroler->Dodaj->Parametr"
+msgstr "Viszio->Dodaj->Parametr"
 
 #~ msgid "Welcome to..."
 #~ msgstr "Witaj ..."
