@@ -1,5 +1,8 @@
 $Id$
 
+2010-02-16      Darek Marcinkiewcz <darek@dalkiaterm.pl>
+	* parcook/tensdmn.cc: a simple daemon for reading values
+	from tensometric scales
 2010-02-16      Adam Smyk <asmyk@dalkiaterm.pl>
 	* wx/viszio/*: some additions for Windows compilation, new 
 	dialogs for configurations visualisation have been added, it

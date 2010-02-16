@@ -69,6 +69,7 @@ bin_PROGRAMS = \
 	      lecdmn \
 	      mbdmn \
 	      lmldmn \
+	      tensdmn \
 	      muksdmn \
 	      npozytondmn \
 	      melsdmn \
@@ -159,6 +160,9 @@ lecdmn_LDADD = $(LIBSZARP2) $(LIBSZARP) $(LDADD)
 
 lecmdmn_SOURCES = lecdmn.cc
 lecmdmn_LDADD = $(LIBSZARP2) $(LIBSZARP) $(LDADD)
+
+tensdmn_SOURCES = tensdmn.cc
+tensdmn_LDADD = $(LIBSZARP2) $(LIBSZARP) $(LDADD)
 
 muksdmn_SOURCES = muksdmn.cc
 muksdmn_LDADD = $(LIBSZARP2) $(LIBSZARP) $(LDADD)
