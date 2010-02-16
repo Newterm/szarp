@@ -1,5 +1,7 @@
 $Id$
 
+2010-02-16      Adam Smyk <asmyk@dalkiaterm.pl>
+	* resources/documentation/new/Makefile.am: makefile update
 2010-02-15      Adam Smyk <asmyk@dalkiaterm.pl>
 	* resources/documentation/new/viszio : viszio documentation has 
 	been added

@@ -31,6 +31,7 @@ DOCS=\
 	draw3 \
 	eksploatacja \
 	ekstraktor3 \
+	viszio \
 	howto \
 	ipk \
 	kontroler \
