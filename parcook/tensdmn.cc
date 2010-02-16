@@ -50,7 +50,6 @@
 #include "tokens.h"
 #include "xmlutils.h"
 
-	
 /**Exception thrown when problem with communitaction thorugh 
  * @see SerialPort occurrs*/
 class SerialException : public std::exception 
@@ -286,6 +285,8 @@ void SerialPort::WriteData(const char* buffer, size_t size)
 
 /******************************************************************/
 
+bool g_debug = false;
+
 class Daemon {
 #define BUF_SIZE 1000	/**<transmit buffer size*/
 #define WAIT_TIME 4	/**<time we will wait for unit to answer (seconds)*/
@@ -321,13 +322,15 @@ private:
 int Daemon::ConfigureDaemon(DaemonConfig *cfg) 
 {
 	const char *device_name = strdup(cfg->GetDevicePath());
+	g_debug = cfg->GetSingle() || cfg->GetDiagno();
 	if (!device_name) {
 		sz_log(0,"No device specified -- exiting");
 		exit(1);
 	}
 	int speed = cfg->GetSpeed();
 	int stopbits = cfg->GetNoConf() ? 1 : cfg->GetDevice()->GetStopBits();
-	int wait_time;
+	int wait_time = WAIT_TIME;
+	m_cycle_duration = CYCLE_TIME;
 	m_ipc = new IPCHandler(cfg);
 	if (m_ipc->Init()) {
 		sz_log(0, "Intialization of IPCHandler failed");
@@ -336,7 +339,7 @@ int Daemon::ConfigureDaemon(DaemonConfig *cfg)
 	TDevice* dev = cfg->GetDevice();
 	TUnit* unit = dev->GetFirstRadio()->GetFirstUnit();
 	assert(unit);
-	for (TParam* p = unit->GetFirstParam(); p; unit->GetNext())
+	for (TParam* p = unit->GetFirstParam(); p; p = p->GetNext())
 		m_param_precs.push_back(pow10(p->GetPrec()));
 	m_params_count = unit->GetParamsCount();
 	m_port = new SerialPort(device_name,
@@ -356,9 +359,14 @@ void Daemon::ParseResponse(const char* buffer, size_t size) {
 	size_t i;
 	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 
-	tokenizer msg_tokenizer(std::string(buffer, buffer + size), boost::char_separator<char>("\n"));
+	if (g_debug) {
+		std::cout << "Response:" << std::endl;
+		std::cout << std::string(buffer, buffer + size);
+	}
+
+	tokenizer msg_tokenizer(std::string(buffer, buffer + size), boost::char_separator<char>("\r\n"));
 	tokenizer::iterator msg_iter = msg_tokenizer.begin();
-	std::advance(msg_iter, 3);
+	std::advance(msg_iter, 4);
 
 	for (i = 0; i < m_params_count && msg_iter != msg_tokenizer.end(); msg_iter++, i++) {
 		tokenizer line_tokenizer(*msg_iter, boost::char_separator<char>(" "));
@@ -368,6 +376,8 @@ void Daemon::ParseResponse(const char* buffer, size_t size) {
 			sz_log(1, "Invalid response format for param: %d", i);
 			return;
 		}
+		if (g_debug)
+			std::cout << "Param no:" << i << " val: " << atof((*line_iter).c_str()) << std::endl; 
 		m_ipc->m_read[i] = atof((*line_iter).c_str()) * m_param_precs[i];
 	}
 	if (m_params_count != i) {
@@ -389,11 +399,13 @@ void Daemon::Go()
 
 		try {
 			m_port->Open();
-			m_port->WriteData("L", 1);
+			m_port->WriteData("L\r", 2);
 			ssize_t read;
 			read = m_port->GetData(buffer, BUF_SIZE);
-			if (read)
+			if (read == 0)
 				m_port->Close();
+
+			ParseResponse(buffer, read);
 
 		} catch (SerialException&) {
 			if (m_ipc) for (size_t i = 0; i < m_params_count; i++)
