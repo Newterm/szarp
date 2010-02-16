@@ -213,7 +213,7 @@ std::vector<std::pair<time_t, std::vector<double> > > do_run(time_t start, time_
 			std::vector<double> vs;
 			std::cerr << "Values for time " << format_time(t) << " are ";
 			for (int i = 0; i < pnum; i++) {
-				double v = lua_tonumber(lua, -(i + 1));
+				double v = lua_tonumber(lua, -(pnum - i));
 				std::cerr << v << " ";
 				vs.push_back(v);
 			}
