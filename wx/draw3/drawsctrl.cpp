@@ -1182,7 +1182,9 @@ void DrawsController::SetNumberOfUnits(size_t number_of_units) {
 	switch (m_state) {
 		case DISPLAY:
 			FetchData();
+			m_current_index = -1;
 			m_time_to_go = m_current_time;
+			m_current_time = DTime();
 			EnterWaitState(WAIT_DATA_NEAREST);
 		case STOP:
 			break;

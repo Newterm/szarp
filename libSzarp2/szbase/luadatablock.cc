@@ -88,6 +88,8 @@ void szb_lua_get_values(szb_buffer_t *buffer, TParam *param, time_t start_time, 
 	for (size_t i = 0; start_time < end_time; ++i, start_time = szb_move_time(start_time, 1, probe_type, 0)) {
 		Lua::fixed.push(true);
 		LUA_GET_VAL(lua, buffer, start_time, probe_type, 0, ret[i]);
+		if (buffer->last_err != SZBE_OK)
+			break;
 		ret[i] = rint(ret[i] * pow10(param->GetPrec())) / pow10(param->GetPrec()); 
 		Lua::fixed.pop();
 	}
@@ -413,6 +415,10 @@ void LuaDatablock::FinishInitialization() {
 		LUA_GET_VAL(lua, buffer, probe2time(i, year, month), PT_MIN10, 0, data[i]);
 		bool fixedvalue = Lua::fixed.top();
 		Lua::fixed.pop();
+		if (buffer->last_err != SZBE_OK) {
+			NOT_INITIALIZED;
+			break;
+		}
 		if (fixedvalue && i == this->first_non_fixed_probe) {
 			this->first_non_fixed_probe++;
 		}
@@ -470,6 +476,8 @@ LuaDatablock::Refresh() {
 		LUA_GET_VAL(lua, buffer, probe2time(i, year, month), PT_MIN10, 0, data[i]);
 		bool fixedvalue = Lua::fixed.top();
 		Lua::fixed.pop();
+		if (buffer->last_err != SZBE_OK)
+			break;
 		if (fixedvalue && i == this->first_non_fixed_probe) {
 			this->first_non_fixed_probe++;
 		}

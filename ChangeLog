@@ -1,5 +1,8 @@
 $Id$
 
+2010-02-18      Darek Marcinkiewcz <darek@dalkiaterm.pl>
+	* libSzarp2/szbase: improved checking for lua params execution erros
+	* wx/draw3: fix in switching number of displayed points
 2010-02-16      Darek Marcinkiewcz <darek@dalkiaterm.pl>
 	* parcook/tensdmn.cc: a simple daemon for reading values
 	from tensometric scales
