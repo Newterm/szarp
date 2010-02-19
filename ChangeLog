@@ -1,5 +1,8 @@
 $Id$
 
+2010-02-19	Krzysztof Galazka <kg@dalkiaterm.pl>
+	* debian/control: no reason for conflict with szarp-daemons in
+	szarp-viewer package
 2010-02-18      Darek Marcinkiewcz <darek@dalkiaterm.pl>
 	* libSzarp2/szbase: improved checking for lua params execution erros
 	* wx/draw3: fix in switching number of displayed points

@@ -70,7 +70,7 @@ Description: Configure SZARP as a terminal
 Package: szarp-viewer
 Section: x11
 Architecture: any
-Conflicts: szarp-viewer-cb, szarp-terminal-cb, szarp-terminal, szarp-daemons, szarp-daemons-cb
+Conflicts: szarp-viewer-cb, szarp-terminal-cb, szarp-terminal
 Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-wx, szarp-doc-html
 Description: Configure SZARP for viewing databases
  This package installs other SZARP's packages so that it is capable of viewing
