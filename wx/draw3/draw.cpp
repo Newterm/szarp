@@ -186,6 +186,7 @@ DatabaseQuery* Draw::GetDataToFetch() {
 
 void Draw::SetDraw(DrawInfo *info) {
 	m_param_has_data = true;
+	m_blocked = false;
 	m_draw_info = info;
 	for (size_t i = 0; i < m_values.len(); ++i) {
 		m_values.Get(i).state = ValueInfo::EMPTY;

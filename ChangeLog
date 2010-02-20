@@ -1,5 +1,9 @@
 $Id$
 
+2010-02-20      Darek Marcinkiewcz <darek@dalkiaterm.pl>
+	* wx/draw3: blocked draws objects were not unblocked
+	upon draws' set switch, that might rise assert in 
+	some usage scenarios
 2010-02-19	Krzysztof Galazka <kg@dalkiaterm.pl>
 	* debian/control: no reason for conflict with szarp-daemons in
 	szarp-viewer package
