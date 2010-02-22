@@ -1,6 +1,9 @@
 $Id$
 
 2010-02-22      Darek Marcinkiewcz <darek@dalkiaterm.pl>
+	* wx/libSzarp2/szbase/lua: lua parser, initial version, not hooked
+	into build yet, should allow us to do transformation/optimization 
+	of not too complex lua parameters
 	* wx/draw3/cfgmgr.h: unused method removed
 	* wx/draw3/: if all graphs of user defined set come from the
 	same configuration, the configuration name in printed instead of 
