@@ -77,6 +77,8 @@ class DrawsPrintout : public wxPrintout {
 	/**Prints names of draws at the bottom of the page*/
 	void PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin);
 
+	wxString GetPrintoutConfigTitle();
+
 	/**Prints short names of draws at the top of the page*/
 	void PrintShortDrawNames(GraphPrinter *gp, wxDC *dc);
 
@@ -659,19 +661,29 @@ void DrawsPrintout::PrintShortDrawNames(GraphPrinter *gp, wxDC *dc) {
 	}
 }
 
+wxString DrawsPrintout::GetPrintoutConfigTitle() {
+	int i;
+	wxString prefix = m_draws[0]->GetDrawInfo()->GetBasePrefix();
+	for (i = 1; i < m_draws_count; i++) {
+		if (prefix != m_draws[i]->GetDrawInfo()->GetBasePrefix())
+			break;
+	}
+	if (i == m_draws_count)
+		return m_draws[0]->GetDrawInfo()->GetDrawsSets()->GetParentManager()->GetConfigTitles()[prefix];
+	else
+		return m_draws[0]->GetDrawInfo()->GetDrawsSets()->GetID();
+}
+
 void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin) {
 	int w, h;
 	int tw, th;
 	int maxy = 5;
-
-
+	int info_print_start;
 	GetPageSizePixels(&w, &h);
 	int hw = w / 2;
 
-	int a,b;
-	dc->GetSize(&a, &b);
-
-	dc->SetDeviceOrigin(leftmargin, b * 2 / 3 + topmargin);
+	info_print_start = h * 2 / 3 + topmargin;
+	dc->SetDeviceOrigin(leftmargin, info_print_start);
 
 	Draw* fd = m_draws[0];
 	DrawInfo* fdi = m_draws[0]->GetDrawInfo();
@@ -687,7 +699,7 @@ void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin) {
 	dc->SetTextForeground(*wxBLACK);
 	dc->SetFont(f);
 
-	wxString cn = fdi->GetDrawsSets()->GetID();
+	wxString cn = GetPrintoutConfigTitle();
 	dc->GetTextExtent(cn, &tw, &th);
 	dc->DrawText(cn, hw - tw / 2, maxy);
 	maxy += int(1.4 * th);
@@ -726,92 +738,117 @@ void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin) {
 			assert(false);
 	}
 
-	switch (pt) {
-		case PERIOD_T_WEEK:
-		case PERIOD_T_DAY:
-			dc->GetTextExtent(period, &tw, &th);
-			dc->DrawText(period, hw - tw / 2, maxy);
-			maxy += int(1.4 * th);
-			period = _T("");
-			break;
-		default:
-			break;
-	}
-
-	period += _("From: ");
-	period += FormatTime(fd->GetTimeOfIndex(0), pt);
-	period += _(" to: ");
-	period += FormatTime(fd->GetTimeOfIndex(fd->GetValuesTable().size() - 1), pt);
-
 	dc->GetTextExtent(period, &tw, &th);
 	dc->DrawText(period, hw - tw / 2, maxy);
 	maxy += int(1.4 * th);
 
-	for (int i = 0; i < m_draws_count; ++i) {
-		Draw *d = m_draws[i];
-		if (!d->GetEnable())
-			continue;
+	int point_size = f.GetPointSize();
+	bool painted = false;
+	do {
+		wxString time;
+		time += _("From: ");
+		time += FormatTime(fd->GetTimeOfIndex(0), pt);
+		time += _(" to: ");
+		time += FormatTime(fd->GetTimeOfIndex(fd->GetValuesTable().size() - 1), pt);
 
-		DrawInfo* di = d->GetDrawInfo();
+		dc->GetTextExtent(time, &tw, &th);
+		if (tw > dc->GetSize().GetWidth() - 0.02 * w) {
+			f.SetPointSize(f.GetPointSize() - 1);
+			dc->SetFont(f);	
+		} else {
+			dc->DrawText(time, 0.02 * w, maxy);
+			maxy += int(1.4 * th);
+			painted = true;
+		}
+	} while (!painted);
 
-		int cx = int(0.02 * a);
-
-		wxString str = wxString::Format(_T("%s = %s "), 
-					di->GetShortName().c_str(),
-					di->GetName().c_str());
-
-		dc->SetTextForeground(di->GetDrawColor());
-		dc->GetTextExtent(str, &tw, &th);
-		dc->DrawText(str, cx, maxy);
-
-		cx += tw;
-
-		const Draw::VT& vt = d->GetValuesTable();
-		if (vt.m_count) {
-			dc->SetTextForeground(*wxBLACK);
-
-			wxString unit = di->GetUnit();
-
-			str = wxString(_T(": ")) 
-				+ _("min.=") + d->GetDrawInfo()->GetValueStr(vt.m_min, _T("- -")) + 
-				+ _T(" ; ") + _("avg.=") + wxString(d->GetDrawInfo()->GetValueStr(vt.m_sum / vt.m_count, _T("- -"))) + 
-				+ _T(" ; ") + _("max.=") + wxString(d->GetDrawInfo()->GetValueStr(vt.m_max, _T("- -"))) +
-				+ _T(" ") + unit;
-
+	f.SetPointSize(point_size) ;
+	dc->SetFont(f);
+	painted = false;
+	bool painting = false;
+	int pmaxy = maxy;
+	do {
+		for (int i = 0; i < m_draws_count; ++i) {
+			Draw *d = m_draws[i];
+			if (!d->GetEnable())
+				continue;
+	
+			DrawInfo* di = d->GetDrawInfo();
+	
+			int cx = 0.02 * w;
+	
+			wxString str = wxString::Format(_T("%s = %s "), 
+						di->GetShortName().c_str(),
+						di->GetName().c_str());
+	
+			dc->SetTextForeground(di->GetDrawColor());
 			dc->GetTextExtent(str, &tw, &th);
-			dc->DrawText(str, cx, maxy);
-			cx += tw;
-
-			if (di->GetSpecial() == TDraw::HOURSUM) {
-				wxString u = unit;
-				if (u.Replace(_T("/h"), _T("")) == 0)
-					u += _T("*h");
-				wxString vals;
-				double val = vt.m_hsum;
-				wxString sunit = d->GetDrawInfo()->GetSumUnit();
-				if (!sunit.IsEmpty()) {
-					vals = wxString(di->GetValueStr(val, _T(""))) + _T(" ") + sunit;
-				} else if (unit == _T("kW")) {
-					vals = wxString(di->GetValueStr(val, _T(""))) + _T(" ") + _T("kWh") + 
-						_T(" (") + wxString(di->GetValueStr(val * 3.6 / 1000, _T(""))) + _T(" GJ)");
-				} else if (unit == _T("MW")) {
-					vals = wxString(di->GetValueStr(val, _T(""))) + _T(" ") + _T("MWh") + 
-						_T(" (") + wxString(di->GetValueStr(val * 3.6, _T(""))) + _T(" GJ)");
-				} else if (unit.Replace(_T("/h"), _T("")) == 0) {
-					u += _T("*h");
-					vals = wxString(di->GetValueStr(val, _T(""))) + _T(" ") + u;
-				} else {
-					vals = wxString(di->GetValueStr(val, _T(""))) + _T(" ") + u;
-				}
-				str = wxString::Format(_T(" sum.: %s"), vals.c_str());
-
+			if (painting)
 				dc->DrawText(str, cx, maxy);
+	
+			cx += tw;
+	
+			const Draw::VT& vt = d->GetValuesTable();
+			if (vt.m_count) {
+				dc->SetTextForeground(*wxBLACK);
+	
+				wxString unit = di->GetUnit();
+	
+				str = wxString(_T(": ")) 
+					+ _("min.=") + d->GetDrawInfo()->GetValueStr(vt.m_min, _T("- -")) + 
+					+ _T(" ; ") + _("avg.=") + wxString(d->GetDrawInfo()->GetValueStr(vt.m_sum / vt.m_count, _T("- -"))) + 
+					+ _T(" ; ") + _("max.=") + wxString(d->GetDrawInfo()->GetValueStr(vt.m_max, _T("- -"))) +
+					+ _T(" ") + unit;
+	
+				if (painting) {
+					dc->GetTextExtent(str, &tw, &th);
+					dc->DrawText(str, cx, maxy);
+				}
+				cx += tw;
+	
+				if (di->GetSpecial() == TDraw::HOURSUM) {
+					wxString u = unit;
+					if (u.Replace(_T("/h"), _T("")) == 0)
+						u += _T("*h");
+					wxString vals;
+					double val = vt.m_hsum;
+					wxString sunit = d->GetDrawInfo()->GetSumUnit();
+					if (!sunit.IsEmpty()) {
+						vals = wxString(di->GetValueStr(val, _T(""))) + _T(" ") + sunit;
+					} else if (unit == _T("kW")) {
+						vals = wxString(di->GetValueStr(val, _T(""))) + _T(" ") + _T("kWh") + 
+							_T(" (") + wxString(di->GetValueStr(val * 3.6 / 1000, _T(""))) + _T(" GJ)");
+					} else if (unit == _T("MW")) {
+						vals = wxString(di->GetValueStr(val, _T(""))) + _T(" ") + _T("MWh") + 
+							_T(" (") + wxString(di->GetValueStr(val * 3.6, _T(""))) + _T(" GJ)");
+					} else if (unit.Replace(_T("/h"), _T("")) == 0) {
+						u += _T("*h");
+						vals = wxString(di->GetValueStr(val, _T(""))) + _T(" ") + u;
+					} else {
+						vals = wxString(di->GetValueStr(val, _T(""))) + _T(" ") + u;
+					}
+					str = wxString::Format(_T(" sum.: %s"), vals.c_str());
+	
+					if (painting)
+						dc->DrawText(str, cx, maxy);
+				}
 			}
+			maxy += int(1.4 * th);
 		}
 
-		maxy += int(1.4 * th);
-
-	}
+		if (painting)
+			painted = true;
+		else  {
+			if (maxy + info_print_start + topmargin < dc->GetSize().GetHeight())
+				painting = true;
+			else {
+				f.SetPointSize(f.GetPointSize() - 1);
+				dc->SetFont(f);
+			}
+			maxy = pmaxy;
+		}
+		
+	} while (!painted);
 
 }
 

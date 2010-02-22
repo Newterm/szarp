@@ -412,9 +412,6 @@ class ConfigManager
 	 */
 	wxColour* GetDefaultColors();
 	
-	/**Loads all IPK's that has not yet been loaded and are present in directory pointed by result of @see GetSzarpDir*/
-	void LoadConfigurations();
-
 	/**@return all available onfigurations*/
 	DrawsSetsHash& GetConfigurations();
 
