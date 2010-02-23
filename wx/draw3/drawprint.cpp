@@ -75,7 +75,7 @@ class DrawsPrintout : public wxPrintout {
 	int m_draws_count;
 
 	/**Prints names of draws at the bottom of the page*/
-	void PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin);
+	void PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin, int rightmargin, int bottommargin);
 
 	wxString GetPrintoutConfigTitle();
 
@@ -581,34 +581,26 @@ bool DrawsPrintout::OnPrintPage(int page) {
 
 	int ppiw, ppih;
 	GetPPIPrinter(&ppiw, &ppih);
-
 	//to milimiters
 	ppiw /= 25;
 	ppih /= 25;
-
 	int lorigin = Print::page_setup_dialog_data->GetMarginTopLeft().x * ppiw;
 	int torigin = Print::page_setup_dialog_data->GetMarginTopLeft().y * ppih;
-
 	dc->SetDeviceOrigin(lorigin, torigin);
 
 	int tw,th;
 	dc->GetTextExtent(_T("Z"), &tw, &th);
 
 	int topmargin, bottommargin, rightmargin;
-
 	topmargin = 0;
-
-	bottommargin = int(1.4 * th);
-
+	bottommargin = int(1.4 * th) + Print::page_setup_dialog_data->GetMarginBottomRight().y * ppih;
 	rightmargin = 10 + Print::page_setup_dialog_data->GetMarginBottomRight().x * ppiw;
-
 	SS cd = ChooseDraws();
 	for (SS::iterator i = cd.begin(); i != cd.end(); i++) {
 		int tm = (th + line_width) * (i->size() + 1);
 		if (tm > topmargin)
 			topmargin = tm;
 	}
-
 	int w, h, pw, ph;
 	dc->GetSize(&w, &h);
 	GetPageSizePixels(&pw, &ph);
@@ -627,14 +619,12 @@ bool DrawsPrintout::OnPrintPage(int page) {
 			10, 
 #endif
 			graph_start, rightmargin, topmargin, bottommargin);
-
 	gp.SetSize(w, h);
 	gp.SetFont(f);
 
 	gp.PrintDraws(dc, m_draws, m_draws_count);	
 	PrintShortDrawNames(&gp, dc);
-
-	PrintDrawsInfo(dc, lorigin, torigin);
+	PrintDrawsInfo(dc, lorigin, torigin, rightmargin, bottommargin);
 
 	return true;
 }
@@ -674,12 +664,14 @@ wxString DrawsPrintout::GetPrintoutConfigTitle() {
 		return m_draws[0]->GetDrawInfo()->GetDrawsSets()->GetID();
 }
 
-void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin) {
+void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin, int rightmargin, int bottommargin) {
 	int w, h;
 	int tw, th;
 	int maxy = 5;
 	int info_print_start;
-	GetPageSizePixels(&w, &h);
+	dc->GetSize(&w, &h);
+	//GetPageSizePixels(&w, &h);
+	w -= leftmargin + rightmargin;
 	int hw = w / 2;
 
 	info_print_start = h * 2 / 3 + topmargin;
@@ -693,7 +685,6 @@ void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin) {
 #ifdef __WXMSW__
 	f.SetPointSize(100);
 #else
-
 	f.SetPointSize(16);
 #endif
 	dc->SetTextForeground(*wxBLACK);
@@ -752,11 +743,11 @@ void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin) {
 		time += FormatTime(fd->GetTimeOfIndex(fd->GetValuesTable().size() - 1), pt);
 
 		dc->GetTextExtent(time, &tw, &th);
-		if (tw > dc->GetSize().GetWidth() - 0.02 * w) {
+		if (tw > w && f.GetPointSize() >= 2) {
 			f.SetPointSize(f.GetPointSize() - 1);
 			dc->SetFont(f);	
 		} else {
-			dc->DrawText(time, 0.02 * w, maxy);
+			dc->DrawText(time, hw - tw / 2, maxy);
 			maxy += int(1.4 * th);
 			painted = true;
 		}
@@ -839,10 +830,12 @@ void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin) {
 		if (painting)
 			painted = true;
 		else  {
-			if (maxy + info_print_start + topmargin < dc->GetSize().GetHeight())
+			if (maxy + info_print_start + topmargin < dc->GetSize().GetHeight() - bottommargin)
 				painting = true;
 			else {
 				f.SetPointSize(f.GetPointSize() - 1);
+				if (f.GetPointSize() <= 2)
+					painting = true;
 				dc->SetFont(f);
 			}
 			maxy = pmaxy;

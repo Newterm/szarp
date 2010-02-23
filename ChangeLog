@@ -1,5 +1,7 @@
 $Id$
 
+2010-02-23      Darek Marcinkiewcz <darek@dalkiaterm.pl>
+	* wx/draw3: some more printing improvements
 2010-02-22      Darek Marcinkiewcz <darek@dalkiaterm.pl>
 	* wx/libSzarp2/szbase/lua: lua parser, initial version, not hooked
 	into build yet, should allow us to do transformation/optimization 
