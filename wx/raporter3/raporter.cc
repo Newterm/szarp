@@ -105,7 +105,8 @@ szRaporter::szRaporter(wxWindow *parent, wxString server, wxString title)
 	const int widths[] = { 75, -1, 50, 75};
 	stat_sb->SetFieldsCount(4, widths);
 	m_fitsize = false;
-
+	m_first_time = true;
+	
 	if (szFrame::default_icon.IsOk()) {
 		SetIcon(szFrame::default_icon);
 	}
@@ -698,6 +699,7 @@ void szRaporter::Stop()
 	m_raport_menu->FindItem(ID_M_RAPORT_START)->SetText(_("Start\tSpace"));
 }
 
+
 void szRaporter::OnStartStop(wxCommandEvent &ev) 
 {
 	if ( m_running ) {
@@ -729,8 +731,8 @@ void szRaporter::RefreshReport(bool force)
 	if (!m_running && !force) {
 		return ;
 	}
-	params_listc->Freeze();
-	params_listc->DeleteAllItems();
+	params_listc->Freeze();	
+	int col0_width = 0, col1_width = 0, col2_width = 0;
 	
 	m_pfetcher->Lock();
 	if (m_pfetcher->IsValid()) {
@@ -754,31 +756,47 @@ void szRaporter::RefreshReport(bool force)
 	
 				if (m_test_window == false) {	
 					//TODO sorting by order
-					params_listc->InsertItem(i, scut);
+					if (m_first_time == true) 
+						params_listc->InsertItem(i, scut);
+					else {
+						col0_width = params_listc->GetColumnWidth(0);
+						col1_width = params_listc->GetColumnWidth(1);
+						col2_width = params_listc->GetColumnWidth(2);
+					}
 					params_listc->SetItem(i, 1, val.CmpNoCase(_T("unknown"))? val : wxString(_("no data")));
 					params_listc->SetItem(i, 2, desc + _T(" [") +
 					      (unit.IsEmpty() ? _T("-") : unit ) + _T("]"));
 				} else {
-					params_listc->InsertItem(i, _T("-"));
+					if (m_first_time == true) 
+						params_listc->InsertItem(i, _T("-"));
 					if (val.CmpNoCase(_T("unknown")) != 0)
 						params_listc->SetItem(i,1, _T("ok"));
 					else
 						params_listc->SetItem(i,1, _("no data"));
 					params_listc->SetItem(i, 2, desc);
 				}
+				if (m_first_time == false) {
+					params_listc->SetColumnWidth(0, col0_width);
+					params_listc->SetColumnWidth(1, col1_width);
+					params_listc->SetColumnWidth(2, col2_width);
+				}
 			}
 			stat_sb->SetStatusText(wxString::Format(_T("%d s"),this->m_per_per), 2);
 			stat_sb->SetStatusText(wxDateTime::Now().FormatTime(), 3);
-			params_listc->SetColumnWidth(0, -2);
-			params_listc->SetColumnWidth(1, -2);
-			params_listc->SetColumnWidth(2, -1);
-	
+			
+			if (m_first_time == true) {
+				params_listc->SetColumnWidth(0, -1);
+				params_listc->SetColumnWidth(1, -1);
+				params_listc->SetColumnWidth(2, -1);
+			}
+			
 			if(m_pfetcher->GetParams().Count() > 0)
 				FileDump::DumpValues(&m_pfetcher->GetParams(),m_report_name);
 		}
 	}
 	m_pfetcher->Unlock();
 	params_listc->Thaw();
+	m_first_time = false;
 	
 }
 

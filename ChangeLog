@@ -1,5 +1,7 @@
 $Id$
 
+2010-02-23      Adam Smyk <asmyk@dalkiaterm.pl>
+	* wx/raporter3/: list refreshing improvement
 2010-02-23      Darek Marcinkiewcz <darek@dalkiaterm.pl>
 	* wx/draw3: some more printing improvements
 2010-02-22      Darek Marcinkiewcz <darek@dalkiaterm.pl>
