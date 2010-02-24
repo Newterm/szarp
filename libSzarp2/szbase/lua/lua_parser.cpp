@@ -220,16 +220,23 @@ std::ostream& operator<< (std::ostream& out, const parlist1& c ) {
 std::ostream& operator<< (std::ostream& os, const expression& e);
 
 std::ostream& operator<< (std::ostream& os, const boost::tuple<expression, expression> & t) {
-	os << t.get<0>() << " " << t.get<1>();
+	return os << t.get<0>() << " " << t.get<1>();
 }
 
 std::ostream& operator<< (std::ostream& os, const boost::tuple<identifier, expression> & t) {
-	os << t.get<0>() << " " << t.get<1>();
+	return os << t.get<0>() << " " << t.get<1>();
 }
 
 std::ostream& operator<<(std::ostream& os, const boost::recursive_wrapper<std::vector<expression> >& v) {
 	for (size_t i = 0; i < v.get().size(); i++)
 		os << " " << v.get()[i];
+	return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const std::vector<field>& v) {
+	for (size_t i = 0; i < v.size(); i++)
+		os << " " << v[i];
+	return os;
 }
 
 std::ostream& operator<< (std::ostream& os, const tableconstructor& e) {
@@ -239,32 +246,35 @@ std::ostream& operator<< (std::ostream& os, const tableconstructor& e) {
 }
 
 std::ostream& operator<< (std::ostream& os, const boost::tuple<identifier, args> & t) {
-	os << t.get<0>() << " " << t.get<1>();
+	return os << t.get<0>() << " " << t.get<1>();
 }
 
 std::ostream& operator<< (std::ostream& os, const boost::tuple<expression, namearg> & t) {
-	os << t.get<0>() << " " << t.get<1>();
+	return os << t.get<0>() << " " << t.get<1>();
 }
 
 std::ostream& operator<< (std::ostream& os, const unop_expression & e) {
 	os << "unop operator(unprinted) ";
-	os << e.expression_;
+	return os << e.expression_;
 }
 
 std::ostream& operator<< (std::ostream& os, const funcbody& e) {
 	os << e.parlist_;
 	os << e.block_;
+	return os;
 }
 
 std::ostream& operator<< (std::ostream& os, const binop_expression & e) {
 	os << "binop operator(unprinted) ";
 	os << e.expression_;
+	return os;
 }
 
 std::ostream& operator<< (std::ostream& os, const expression& e) {
 	os << e.exp_left_;
 	if (e.exp_rest_)
 		os << " " << (*(e.exp_rest_)).get();
+	return os;
 }
 
 std::ostream& operator<< (std::ostream& os, const var_seq& v) {
@@ -301,16 +311,19 @@ std::ostream& operator<< (std::ostream& os, const assignment& a) {
 		os << " " << a.varlist[i];
 	for (size_t i = 0; i < a.explist.size(); i++) 
 		os << " " << a.explist[i];
+	return os;
 }
 
 std::ostream& operator<< (std::ostream& os, const while_loop& l) {
 	os << l.expression_;
 	os << " " << l.block_;
+	return os;
 }
 
 std::ostream& operator<< (std::ostream& os, const repeat_loop& l) {
 	os << l.expression_;
 	os << " " << l.block_;
+	return os;
 }
 
 std::ostream& operator<< (std::ostream& os, const if_stat& if_) {
@@ -323,6 +336,7 @@ std::ostream& operator<< (std::ostream& os, const if_stat& if_) {
 	}
 	if (if_.else_)
 		os << " else " << *if_.else_;
+	return os;
 }
 
 std::ostream& operator<< (std::ostream& os, const for_from_to_loop& for_) {
@@ -332,6 +346,7 @@ std::ostream& operator<< (std::ostream& os, const for_from_to_loop& for_) {
 	if (for_.step)
 		os << " " << for_.step;
 	os << " " << for_.block_;
+	return os;
 }
 
 std::ostream& operator<< (std::ostream& os, const for_in_loop& for_) {
@@ -339,6 +354,7 @@ std::ostream& operator<< (std::ostream& os, const for_in_loop& for_) {
 	for (size_t i = 0; i < for_.expressions.size(); i++)
 		os << " " << for_.expressions[i];
 	os << " " << for_.block_;
+	return os;
 }
 
 std::ostream& operator<< (std::ostream& os, const funcname& f) {
@@ -346,6 +362,7 @@ std::ostream& operator<< (std::ostream& os, const funcname& f) {
 		os << " " << f.identifiers[i];
 	if (f.method_name)
 		os << " " << *f.method_name;
+	return os;
 }
 
 std::ostream& operator<< (std::ostream& os, const function_declaration& f) {
@@ -440,7 +457,7 @@ template<typename Iterator> struct lua_parser : qi::grammar<Iterator, chunk(), l
 		}
 	} escaped_symbol_;
 
-	qi::rule<Iterator, std::string()> keywords;
+	qi::rule<Iterator, std::string(), space> keywords;
 	qi::rule<Iterator, std::string(), space> identifier_, comment;
 	qi::rule<Iterator, std::string(), space> string;
 	qi::rule<Iterator, bool(), space> boolean;
@@ -483,7 +500,6 @@ template<typename Iterator> struct lua_parser : qi::grammar<Iterator, chunk(), l
 	qi::rule<Iterator, function_declaration(), space> function_declaration_;
 	qi::rule<Iterator, local_assignment(), space> local_assignment_;
 	qi::rule<Iterator, local_function_declaration(), space> local_function_declaration_;
-	qi::rule<Iterator, std::string(), space> result;
 	qi::rule<Iterator, break_(), space> break__;
 	qi::rule<Iterator, return_(), space> return__;
 	qi::rule<Iterator, stat(), space> stat_;
@@ -491,6 +507,7 @@ template<typename Iterator> struct lua_parser : qi::grammar<Iterator, chunk(), l
 	qi::rule<Iterator, chunk(), space> chunk_;
 	qi::rule<Iterator, tableconstructor(), space> tableconstructor_;
 	qi::rule<Iterator, std::vector<var>(), space> varlist_;
+	qi::rule<Iterator, std::vector<field>(), space> fieldlist_;
 	qi::rule<Iterator, std::vector<expression>(), space> explist_;
 	qi::rule<Iterator, space> fieldsep_;
 
@@ -542,8 +559,6 @@ public:
 			| ("\"" >> *(escaped_character - "\"") >> "\"")
 			| ("[[" >> *(char_ - "]]") >> "]]"); 
 
-		result = string;
-
 		break__ = lit("break") [_val = break_()];
 
 		boolean = lit("true")[_val = true]
@@ -561,7 +576,9 @@ public:
 
 		varlist_ = var_ % ',' | eps;
 
-		tableconstructor_ = ("{" >> (field_ % fieldsep_) >> '}') [ _val = _1];
+		fieldlist_ = field_  % fieldsep_ | eps;
+
+		tableconstructor_ = ("{" >> fieldlist_ >> '}') [ _val = _1];
 
 		args_ = lit('(') >> explist_ >> lit(')')
 			| tableconstructor_
@@ -706,7 +723,6 @@ public:
 		function_declaration_.name("function_declaration_");
 		local_assignment_.name("local_assignment_");
 		local_function_declaration_.name("local_function_declaration_");
-		result.name("result");
 		break__.name("break__");
 		return__.name("return__");
 		stat_.name("stat_");
@@ -714,6 +730,7 @@ public:
 		chunk_.name("chunk_");
 		tableconstructor_.name("tableconstructor_");
 		varlist_.name("varlist_");
+		varlist_.name("fieldlist_");
 		explist_.name("explist_");
 		fieldsep_.name("fieldsep_");
 
@@ -759,7 +776,6 @@ public:
 		qi::debug(function_declaration_);
 		qi::debug(local_assignment_);
 		qi::debug(local_function_declaration_);
-		qi::debug(result);
 		qi::debug(break__);
 		qi::debug(return__);
 		qi::debug(stat_);
@@ -767,6 +783,7 @@ public:
 		qi::debug(chunk_);
 		qi::debug(tableconstructor_);
 		qi::debug(varlist_);
+		qi::debug(fieldlist_);
 		qi::debug(explist_);
 		qi::debug(fieldsep_);
 
