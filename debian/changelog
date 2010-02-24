@@ -1,3 +1,9 @@
+szarp (3.1.313) stable; urgency=low
+
+  * building stable
+
+ -- Pawel Palucha <pawel@praterm.com.pl>  Wed, 24 Feb 2010 11:22:16 +0100
+
 szarp (3.1.310) unstable; urgency=low
 
   * building unstable
