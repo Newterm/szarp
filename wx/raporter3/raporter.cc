@@ -399,16 +399,33 @@ void szRaporter::OnRapIPK(wxCommandEvent &ev)
 	if (ev.GetId() < (int)ipk_raps.size() + ID_M_TEMPLATE_IPK + 1) {
 		if (LoadReportIPK(ipk_raps[ev.GetId()-ID_M_TEMPLATE_IPK-1])) {
 			wxStaticCast(FindWindowById(ID_B_STARTSTOP), wxBitmapButton)->Enable(true);
-			m_raport_menu->Enable(ID_M_RAPORT_START, true);
+			m_raport_menu->Enable(ID_M_RAPORT_START, true);			
+			m_first_time = true;
+			if ( m_running ) {
+				Stop();
+				OnStartStop(ev);
+			} else {
+				OnStartStop(ev);
+				Stop();
+			}
 		}
 	} else {
 		wxString path = m_ur.GetTemplatePath(m_ur.m_list[
 				ev.GetId() - ID_M_TEMPLATE_IPK - 1 - ipk_raps.size()
 				]);
 		LoadReportFile(path);
+		m_first_time = true;
+		if ( m_running ) {
+				Stop();
+				OnStartStop(ev);
+			} else {
+				OnStartStop(ev);
+				Stop();
+			}
 		m_ur.RefreshList();
-		ReloadTemplateMenu();
+		ReloadTemplateMenu();		
 	}
+	
 }
 
 
@@ -503,9 +520,9 @@ void szRaporter::OnTemplateNew(wxCommandEvent &ev)
 	
 	m_ur.SaveTemplate(m_report_name, m_raplist);
 
-	m_pfetcher->SetSource(m_raplist);
-
+	m_pfetcher->SetSource(m_raplist);	
 	wxStaticCast(FindWindowById(ID_B_STARTSTOP), wxBitmapButton)->Enable(true);
+	m_first_time = true;
 	RefreshReport();
 	SetFitSize();
 	m_menu_template->Enable(ID_M_TEMPLATE_SAVE, true);
@@ -732,6 +749,9 @@ void szRaporter::RefreshReport(bool force)
 		return ;
 	}
 	params_listc->Freeze();	
+	if (m_first_time == true) 
+		params_listc->DeleteAllItems();
+		
 	int col0_width = 0, col1_width = 0, col2_width = 0;
 	
 	m_pfetcher->Lock();
