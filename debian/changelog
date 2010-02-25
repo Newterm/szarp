@@ -1,3 +1,9 @@
+szarp (3.1.318) stable; urgency=low
+
+  * building stable - changes in reporter rejected.
+
+ -- Pawel Palucha <pawel@praterm.com.pl>  Thu, 25 Feb 2010 12:15:14 +0100
+
 szarp (3.1.316) stable; urgency=low
 
   * building stable - fix in reporter parameters list refreshing when
