@@ -49,18 +49,6 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::functioncall_seq,
-	(std::vector<lua_grammar::exp_identifier>, exp_identifiers)
-	(lua_grammar::namearg, namearg_)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::functioncall,
-	(lua_grammar::exp_identifier, exp_identifier_)
-	(std::vector<lua_grammar::functioncall_seq>, functioncall_seqs)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
 	lua_grammar::funcbody,
 	(lua_grammar::parlist, parlist_)
 	(lua_grammar::block, block_)
@@ -227,6 +215,13 @@ std::ostream& operator<< (std::ostream& out, const parlist1& c ) {
 	return out;
 }
 
+std::ostream& operator<< (std::ostream& os, const boost::tuple<exp_identifier, std::vector<exp_ident_arg_namearg> > &e) {
+	os << e.get<0>();
+	for (size_t i = 0; i < e.get<1>().size(); i++)
+		os << " " << e.get<1>()[i];
+	return os;
+}
+
 std::ostream& operator<< (std::ostream& os, const pow_exp& e) {
 	if (e.size() > 1)
 		os << "pow exp:";
@@ -344,20 +339,6 @@ std::ostream& operator<< (std::ostream& os, const varc& v) {
 	os << v.exp_identifier_;
 	for (size_t i = 0; i < v.var_seqs.size(); i++)
 		os << " " << v.var_seqs[i];
-	return os;
-}
-
-std::ostream& operator<< (std::ostream& os, const functioncall_seq& f) {
-	for (size_t i = 0; i < f.exp_identifiers.size(); i++)
-		os << " " << f.exp_identifiers[i];
-	os << " " << f.namearg_;
-	return os;
-}
-
-std::ostream& operator<< (std::ostream& os, const functioncall& f) {
-	os << f.exp_identifier_;
-	for (size_t i = 0; i < f.functioncall_seqs.size(); i++)
-		os << " " << f.functioncall_seqs[i];
 	return os;
 }
 
@@ -543,8 +524,8 @@ template<typename Iterator> struct lua_parser : qi::grammar<Iterator, chunk(), l
 	qi::rule<Iterator, var_seq(), space> var_seq_;
 	qi::rule<Iterator, varc(), space> varc_;
 	qi::rule<Iterator, var(), space> var_;
-	qi::rule<Iterator, functioncall_seq(), space> functioncall_seq_;
-	qi::rule<Iterator, functioncall(), space> functioncall_;
+	qi::rule<Iterator, boost::tuple<exp_identifier, std::vector<exp_ident_arg_namearg> >(), space> exp_ident_arg_namearg_;
+	qi::rule<Iterator, postfixexp(), space> postfixexp_;
 	qi::rule<Iterator, funcbody(), space> funcbody_;
 	qi::rule<Iterator, term(), space> term_;
 	qi::rule<Iterator, expression(), space> expression_;
@@ -684,8 +665,7 @@ public:
 			| local_function_declaration_
 			| assignment_ 
 			| function_declaration_
-			| functioncall_
-			| var_;
+			| postfixexp_;
 
 		laststat_ = return__ | break__;
 
@@ -701,8 +681,7 @@ public:
 			| string
 			| threedots_
 			| function_
-			| functioncall_
-			| var_
+			| postfixexp_
 			| tableconstructor_
 			| '(' >> expression_ >> ')';
 
@@ -723,15 +702,15 @@ public:
 
 		namearg_ = args_ | identifier_args_; 
 
+		exp_ident_arg_namearg_ = exp_identifier_ >> +(exp_identifier_square | namearg_);
+
+		postfixexp_ = exp_ident_arg_namearg_ | identifier_;
+
 		var_seq_ = *namearg_ >> exp_identifier_square;
 
 		varc_ = exp_identifier_ >> +var_seq_;
 
 		var_ = varc_ | identifier_;
-
-		functioncall_seq_ = *exp_identifier_square >> namearg_;
-
-		functioncall_ = exp_identifier_ >> +functioncall_seq_;
 
 		funcbody_ = '(' >> -parlist_ >> ')' >> block_ >> "end";
 		
@@ -772,8 +751,6 @@ public:
 		BOOST_SPIRIT_DEBUG_NODE(var_seq_);
 		BOOST_SPIRIT_DEBUG_NODE(varc_);
 		BOOST_SPIRIT_DEBUG_NODE(var_);
-		BOOST_SPIRIT_DEBUG_NODE(functioncall_seq_);
-		BOOST_SPIRIT_DEBUG_NODE(functioncall_);
 		BOOST_SPIRIT_DEBUG_NODE(funcbody_);
 		BOOST_SPIRIT_DEBUG_NODE(expression_);
 		BOOST_SPIRIT_DEBUG_NODE(assignment_);
@@ -808,6 +785,7 @@ public:
 		BOOST_SPIRIT_DEBUG_NODE(unop_);
 		BOOST_SPIRIT_DEBUG_NODE(pow_);
 		BOOST_SPIRIT_DEBUG_NODE(term_);
+		BOOST_SPIRIT_DEBUG_NODE(postfixexp_);
 		//BOOST_SPIRIT_DEBUG_NODE(qi::double_);
 	}
 

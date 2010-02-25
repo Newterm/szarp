@@ -96,6 +96,14 @@ namespace lua_grammar {
 		args,
 		boost::tuple<identifier, args> > namearg;
 
+	typedef boost::variant<
+		exp_identifier,
+		namearg> exp_ident_arg_namearg;
+
+	typedef boost::variant<
+		identifier, 
+		boost::tuple<exp_identifier, std::vector<exp_ident_arg_namearg> > > postfixexp;
+		
 	struct var_seq {
 		std::vector<namearg> nameargs;
 		exp_identifier exp_identifier_;
@@ -110,16 +118,6 @@ namespace lua_grammar {
 		identifier,
 		varc> var;
 
-	struct functioncall_seq {
-		std::vector<exp_identifier> exp_identifiers;
-		namearg namearg_;
-	};
-
-	struct functioncall {
-		exp_identifier exp_identifier_;
-		std::vector<functioncall_seq> functioncall_seqs;
-	};
-
 	struct funcbody {
 		parlist parlist_;
 		block block_;
@@ -132,8 +130,7 @@ namespace lua_grammar {
 		std::string,
 		threedots,
 		funcbody,
-		var,
-		functioncall,
+		postfixexp,
 		tableconstructor,
 		expf> term;
 
@@ -232,13 +229,12 @@ namespace lua_grammar {
 
 	typedef boost::variant<
 		assignment,
-		functioncall,
-		var,
 		block,
 		while_loop,
 		repeat_loop,
 		if_stat,
 		for_in_loop,
+		postfixexp,
 		for_from_to_loop,
 		function_declaration,
 		local_assignment,
