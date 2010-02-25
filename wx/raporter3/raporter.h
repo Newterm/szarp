@@ -249,7 +249,6 @@ protected:
 				were are not ready for it... */
 #endif
 	bool m_test_window;	/**< is set true if window is a test window */
-	bool m_first_time; 	/**< is set true if list is updated first time */
 };
 
 /** IDs */

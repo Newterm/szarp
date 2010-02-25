@@ -1,6 +1,9 @@
 $Id$
 
 2010-02-25      Adam Smyk <asmyk@dalkiaterm.pl>
+	* wx/raporter3/: last two changes are temporarly rejected, because some problems
+	appears when server configuration is changed
+2010-02-25      Adam Smyk <asmyk@dalkiaterm.pl>
 	* wx/raporter3/: some bugs fixed, refreshment works correctly 
 	for predefined raports and for templates
 2010-02-23      Adam Smyk <asmyk@dalkiaterm.pl>
