@@ -8,35 +8,34 @@
 #include <boost/spirit/include/phoenix_fusion.hpp>
 #include <boost/spirit/include/phoenix_stl.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
+#include <boost/variant.hpp>
 #include <boost/variant/recursive_variant.hpp>
 
 namespace lua_grammar {
 
 	namespace qi = boost::spirit::qi;
 
-	struct expression;
-	struct unop_expression;
-	struct binop_expression;
+	enum mul_op {
+		MUL,
+		DIV,
+		REM
+	};
 
-	enum binop {
+	enum add_op {
 		PLUS,
 		MINUS,
+	};
+
+	enum cmp_op {
 		LT,
 		LTE,
 		GT,
 		GTE,
 		EQ,
-		NEQ,
-		CONCAT,
-		MUL,
-		DIV,
-		REM,
-		POW,
-		OR,
-		AND
+		NEQ
 	};
 
-	enum unop {
+	enum un_op {
 		NEG,
 		NOT,	
 		LEN
@@ -136,14 +135,39 @@ namespace lua_grammar {
 		var,
 		functioncall,
 		tableconstructor,
-		boost::recursive_wrapper<unop_expression>
-		> exp_left;
+		expf> term;
 
-	typedef boost::recursive_wrapper<binop_expression> exp_rest;
+	typedef std::vector<term> pow_exp;
+
+	typedef boost::tuple<std::vector<un_op>, pow_exp> unop_exp;
+
+	typedef std::vector<boost::tuple<mul_op, unop_exp> > mul_list;
+	struct mul_exp {
+		unop_exp unop;
+		mul_list muls;
+	};
+
+	typedef std::vector<boost::tuple<add_op, mul_exp> > add_list;
+	struct add_exp {
+		mul_exp mul;
+		add_list adds;
+	};
+
+	typedef std::vector<add_exp> concat_exp;
+
+	typedef std::vector<boost::tuple<cmp_op, concat_exp> > cmp_list;
+	struct cmp_exp {
+		concat_exp concat;
+		cmp_list cmps;
+	};
+
+	typedef std::vector<cmp_exp> and_exp;
+
+	typedef std::vector<and_exp> or_exp;
 
 	struct expression {
-		exp_left exp_left_;
-		boost::optional<exp_rest> exp_rest_;
+		expression& operator=(const or_exp&);
+		or_exp o;
 	};
 
 	struct while_loop {
@@ -153,16 +177,6 @@ namespace lua_grammar {
 
 	struct repeat_loop {
 		block block_;
-		expression expression_;
-	};
-
-	struct unop_expression {
-		unop op;
-		expression expression_;
-	};
-
-	struct binop_expression {
-		binop op;
 		expression expression_;
 	};
 
@@ -238,6 +252,7 @@ namespace lua_grammar {
 		std::vector<stat> stats;
 		boost::optional<laststat> laststat_;	
 	};
+
 
 	bool parse(std::string::const_iterator& iter, std::string::const_iterator &end, chunk& chunk_);
 };
