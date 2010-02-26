@@ -1,5 +1,12 @@
 $Id$
 
+2010-02-26      Darek Marcinkiewicz <reksio@daliaterm.pl>
+	* wx/sync: now, when szbase_stamp is always updated if historical
+	data, no matter how 'fresh', is changed, we can speed up
+	synchronization - instead of exchanging rsync hashes for szbase files,
+	we just send a part of file that contains data not yet present
+	on a client - code not tested, I just commit it to make testing 
+	a little bit easier for me
 2010-02-26      Pawel Palucha <pawel@praterm.com.pl>
 	* ipk.sgml: description of params element attributes; added
 	description of formulas documentations (extra:doc subelements of define

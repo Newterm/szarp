@@ -142,6 +142,8 @@ class TPath {
 	 * @param p path to concactate with this object*/
 	TPath Concat(const TPath& p) const;
 
+	bool IsSzbaseFile() const;
+
 #ifndef MINGW32
 	/**Finds a relative path from directory where param b is located
 	 * to path pointed by param a. If param a in not an absolute path

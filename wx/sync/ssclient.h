@@ -155,6 +155,7 @@ class CFileSyncer {
 		enum Type { COMPLETE_FILE, 	/**<request for a complete file*/
 			PATCH, 			/**<request for a patch	*/
 			LINK, 			/**<request for a link*/ 
+			FILE_REST		/**<request for a file remainder*/	
 		} m_type;
 		/**number of file this request refers to*/
 		uint32_t m_num;
@@ -240,6 +241,8 @@ class CFileSyncer {
 
 		bool m_processing_extra_requests;
 
+		bool m_request_new_file_data;
+
 		std::list<uint32_t> m_extra_requests;
 
 		std::list<uint32_t>::iterator m_extra_requests_iterator;
@@ -257,6 +260,7 @@ class CFileSyncer {
 				std::vector<TPath>& files, 
 				std::deque<Request>& requests,
 				PacketExchanger *exch,
+				bool request_new_data,
 				Progress &progress);
 
 
@@ -275,6 +279,8 @@ class CFileSyncer {
 
 		/**Generates packets holding existing file signature*/
 		Packet* PatchReqPacket();
+
+		Packet* RestReqPacket(TPath& path);
 					
 		void AddExtraRequest(uint32_t file_no);
 	};
@@ -293,7 +299,8 @@ class CFileSyncer {
 		enum { IDLE, 			/**<no file is synchronized at this moment*/
 			COMPLETE_RECEPTION, 	/**<object is in process of reception of new file*/
 			PATCH_RECEPTION, 	/**<object is in process of reception of patch for a file*/
-			LINK_RECEPTION 		/**<object is in process of reception of link data*/
+			LINK_RECEPTION,		/**<object is in process of reception of link data*/
+			REST_RECEPTION		/**<object is in process of reception of new file data*/
 		} m_state;
 
 		/**destination(temporary) file*/
@@ -378,6 +385,8 @@ class CFileSyncer {
 
 		/**Applies patch to a file*/
 		void HandlePatchPacket(Packet *p);
+
+		void HandleRestFilePacket(Packet *p);
 
 		void SetRequestGenerator(RequestGenerator *gen);
 

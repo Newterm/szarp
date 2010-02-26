@@ -46,12 +46,15 @@ class SFileSyncer {
 			COMPLETE_FILE, 	/**<Request for a complete file*/
 			PATCH, 		/**<Request for a patch*/
 			LINK, 		/**<Request for a link*/
+			REST_FILE,	/**Send rest file*/
 			EOR,		/**<No more request from server*/
 			} m_type;
 		uint32_t m_num;		/**<Nubmer of file on file list this request refers to*/
 		/**If request if of type PATCH, this variable points to client's file signature*/
 		rs_signature_t* m_signature;
+		uint32_t m_size;
 		Request(Type type, uint32_t num, rs_signature_t *sig = NULL);
+		Request(Type type, uint32_t num, uint32_t size);
 	};
 
 	/**Reads requests from client and puts them in request queue*/
@@ -91,6 +94,8 @@ class SFileSyncer {
 		 * @param p packet to read data from*/
 		void HandleSigPacket(Packet* p);
 
+		/**Handles request for new file data*/
+		void HandleRestFilePacket(Packet *p);
 	};
 				
 	class ResponseGenerator : public PacketWriter {
@@ -104,7 +109,8 @@ class SFileSyncer {
 		PacketExchanger* m_exchanger;
 		enum { IDLE, 			/**<No request is processed*/
 			SENDING_COMPLETE_FILE,	/**<We are in process of sending new files*/ 
-			SENDING_PATCH } 	/**<We are in process of sending patch*/
+			SENDING_PATCH,		/**<We are in process of sending patch*/
+			SENDING_REST_FILE } 	/**<Sending new data of file*/
 		m_state;		/**<Holds info on internal object's state between subsequent
 					  calls to @see Iterate method*/
 		struct {
@@ -130,6 +136,8 @@ class SFileSyncer {
 
 		/**Sends packets holdling response for link request*/
 		Packet *LinkPacket();
+
+		Packet *RestPacket();
 
 		/**Sends packet holding response for request for a complete file*/
 		Packet* RawFilePacket();

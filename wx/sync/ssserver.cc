@@ -30,8 +30,10 @@
 #include "latin2.h"
 
 SFileSyncer::Request::Request(SFileSyncer::Request::Type type, uint32_t num, rs_signature_t *sig)
-	: m_type(type), m_num(num), m_signature(sig) {
-}
+	: m_type(type), m_num(num), m_signature(sig) { } 
+
+SFileSyncer::Request::Request(SFileSyncer::Request::Type type, uint32_t num, uint32_t size) :
+	m_type(type), m_num(num), m_size(size) { }
 
 SFileSyncer::RequestReceiver::RequestReceiver(std::deque<Request>& request_queue, PacketExchanger* exchanger) 
 	: m_request_queue(request_queue), m_exchanger(exchanger), m_state(IDLE) {
@@ -64,6 +66,8 @@ void SFileSyncer::RequestReceiver::ReadPacket(Packet *p) {
 			HandleSigPacket(p);
 		else if (msg_type == MessageType::SEND_LINK)
 			HandleNewFilePacket(p, true);
+		else if (msg_type == MessageType::SEND_FILE_REST)
+			HandleRestFilePacket(p);
 		else {
 			sz_log(6, "No more requests for this base");
 
@@ -79,7 +83,20 @@ void SFileSyncer::RequestReceiver::ReadPacket(Packet *p) {
 
 }
 
+void SFileSyncer::RequestReceiver::HandleRestFilePacket(Packet *p) {
+	assert(p->m_size == sizeof(uint16_t) + 2 * sizeof(uint32_t));
+
+	uint32_t file_no = ntohl(*(uint32_t*) (p->m_data + sizeof(uint16_t)));
+	uint32_t size = ntohl(*(uint32_t*) (p->m_data + sizeof(uint32_t) + sizeof(uint16_t)));
+
+	m_request_queue.push_back(Request(Request::REST_FILE, file_no, size));
+	free(p->m_data);
+	delete p;
+}
+
 void SFileSyncer::RequestReceiver::HandleNewFilePacket(Packet* p, bool link) {
+	assert(p->m_size == sizeof(uint16_t) + sizeof(uint32_t));
+
 	m_state = IDLE;
 	uint32_t file_no = ntohl(*(uint32_t*) (p->m_data + sizeof(uint16_t)));
 	Request::Type type; 
@@ -168,6 +185,8 @@ Packet* SFileSyncer::ResponseGenerator::GivePacket() {
 			return PatchPacket();
 		case Request::LINK:
 			return LinkPacket();
+		case Request::REST_FILE:
+			return RestPacket();
 		case Request::EOR:
 			m_request_queue.pop_front();
 			m_exchanger->SetWriter(NULL);
@@ -242,6 +261,42 @@ Packet *SFileSyncer::ResponseGenerator::RawFilePacket() {
 		}
 	}
 	m_state = SENDING_COMPLETE_FILE;
+
+	Packet *p = new Packet;
+	p->m_data = (uint8_t*) malloc(Packet::MAX_LENGTH);
+	p->m_type = Packet::OK_PACKET;
+	size_t read = ReadFully(m_state_data.m_file, p->m_data, Packet::MAX_LENGTH);
+	if (read != Packet::MAX_LENGTH) {
+		fclose(m_state_data.m_file);
+		p->m_type = Packet::LAST_PACKET;
+		m_request_queue.pop_front();
+		m_state = IDLE;
+		sz_log(6, "End of sent of raw file %zu", m_request_queue.size());
+	}
+	p->m_size = read;
+
+	return p;
+}
+
+Packet *SFileSyncer::ResponseGenerator::RestPacket() {
+	if (m_state == IDLE) {
+		sz_log(6, "Begin sent of raw file %s", FilePath().GetPath());
+
+		TPath path = FilePath();
+		m_state_data.m_file = fopen(path.GetPath(), "r");
+
+		if (m_state_data.m_file == NULL) {
+			m_request_queue.pop_front();
+			return ErrorPacket();
+		}
+
+		if (fseek(m_state_data.m_file, m_request_queue.front().m_size, SEEK_SET)) {
+			m_request_queue.pop_front();
+			fclose(m_state_data.m_file);
+			return ErrorPacket();
+		}
+	}
+	m_state = SENDING_REST_FILE;
 
 	Packet *p = new Packet;
 	p->m_data = (uint8_t*) malloc(Packet::MAX_LENGTH);

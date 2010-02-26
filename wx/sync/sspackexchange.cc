@@ -28,6 +28,7 @@ const uint16_t MessageType::SEND_LINK = 7;
 const uint16_t MessageType::SEND_FILE_PATCH = 9;
 const uint16_t MessageType::BYE = 11;
 const uint16_t MessageType::BASE_MODIFICATION_TIME = 12;
+const uint16_t MessageType::SEND_FILE_REST = 13;
 
 const uint16_t Message::AUTH_OK = 0;
 const uint16_t Message::AUTH_FAILURE = 1;

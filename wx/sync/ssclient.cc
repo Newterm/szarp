@@ -217,7 +217,9 @@ CFileSyncer::RequestGenerator::RequestGenerator(const TPath& local_dir,
 	std::vector<TPath>& files,
 	std::deque<Request>& requests,
 	PacketExchanger *exch,
-	Progress& progress)
+	bool request_new_file_data,
+	Progress& progress
+	)
 	:
 	m_local_dir(local_dir),
 	m_file_list(file_list),
@@ -227,7 +229,8 @@ CFileSyncer::RequestGenerator::RequestGenerator(const TPath& local_dir,
 	m_requests(requests),
 	m_exchanger(exch),
 	m_state(IDLE),
-	m_processing_extra_requests(false) {
+	m_processing_extra_requests(false),
+	m_request_new_file_data(request_new_file_data) {
 
 	memset(&m_sigstate, 0, sizeof(m_sigstate));
 
@@ -362,10 +365,42 @@ Packet *CFileSyncer::RequestGenerator::StartRequest() {
 	if (local_path.GetType() == TPath::TFILE
 		&& path.GetType() == TPath::TFILE) {
 		sz_log(7, "Requesting patch for file %s", local_path.GetPath());
-		return PatchReqPacket();
+		if (m_request_new_file_data && local_path.IsSzbaseFile()) {
+			sz_log(7, "Requesting new data from file %s", local_path.GetPath());
+			return RestReqPacket(local_path);
+		} else {
+			sz_log(7, "Requesting patch for file %s", local_path.GetPath());
+			return PatchReqPacket();
+		}
 	}
 
 	return NewFileRequest(path);
+}
+
+Packet *CFileSyncer::RequestGenerator::RestReqPacket(TPath &path) {
+	m_requests.push_back(Request(Request::FILE_REST, FileNo()));
+
+	Packet* p = new Packet;
+	p->m_type = Packet::LAST_PACKET;
+
+	size_t s = sizeof(uint16_t) +  sizeof(uint32_t) + sizeof(uint32_t);
+	uint8_t* b = (uint8_t*) malloc(s);
+	p->m_data = b;
+
+	*(uint16_t*)b = htons(MessageType::SEND_FILE_REST);
+	b += sizeof(uint16_t);
+
+	*(uint32_t*)b = htonl(FileNo());
+	b += sizeof(uint32_t);
+
+	*(uint32_t*)b = htonl(path.GetSize());
+
+	p->m_data = b;
+	p->m_size = s;
+
+	MoveForward();
+
+	return p;
 }
 
 Packet* CFileSyncer::RequestGenerator::NewFileRequest(TPath& path) {
@@ -552,7 +587,7 @@ void CFileSyncer::ResponseReceiver::OpenTmpFile() {
 void CFileSyncer::ResponseReceiver::OpenBaseFile() {
 	assert (m_base == NULL);
 	TPath path = LocalFileName();
-	m_base = fopen(path.GetPath(), "rb");
+	m_base = fopen(path.GetPath(), "a+b");
 }
 
 void CFileSyncer::ResponseReceiver::CloseBaseFile() {
@@ -614,6 +649,9 @@ void CFileSyncer::ResponseReceiver::ReadPacket(Packet *p) {
 			case PATCH_RECEPTION:
 				HandlePatchPacket(p);
 				break;
+			case REST_RECEPTION:
+				HandleRestFilePacket(p);
+				break;
 			case IDLE:
 				switch (req.m_type) {
 					case Request::COMPLETE_FILE:
@@ -624,6 +662,9 @@ void CFileSyncer::ResponseReceiver::ReadPacket(Packet *p) {
 						break;
 					case Request::LINK:
 						HandleLinkPacket(p);
+						break;
+					case Request::FILE_REST:
+						HandleRestFilePacket(p);
 						break;
 					default:
 						assert(false);
@@ -752,6 +793,32 @@ void CFileSyncer::ResponseReceiver::HandleNewFilePacket(Packet *p) {
 	delete p;
 }
 
+void CFileSyncer::ResponseReceiver::HandleRestFilePacket(Packet *p) {
+	if (m_state == IDLE) {
+		sz_log(8, "Begin reception of existing file new data");
+		m_progress.SetProgress(Progress::SYNCING,
+				m_synced_count * 100 / m_file_list.size(),
+				DataBaseName());
+		OpenBaseFile();
+		m_state = REST_RECEPTION;
+	}
+
+	if (m_dest)
+		WriteFully(m_dest, p->m_data, p->m_size);
+
+	if (p->m_type == Packet::LAST_PACKET) {
+		m_state = IDLE;
+		sz_log(8, "End reception of rest of file");
+		m_requests.pop_front();
+		m_synced_count++;
+		CloseBaseFile();
+	}
+
+	free(p->m_data);
+	delete p;
+
+}
+
 void CFileSyncer::ResponseReceiver::HandlePatchPacket(Packet *p) {
 	if (m_state == IDLE) {
 		OpenTmpFile();
@@ -848,7 +915,7 @@ CFileSyncer::CFileSyncer (const TPath &local_dir, const TPath &sync_dir,
 	:
 	m_sync_file_list(server_list),
 	m_request_queue(),
-	m_generator(local_dir, m_file_list, server_list, m_request_queue, exchanger, progress),
+	m_generator(local_dir, m_file_list, server_list, m_request_queue, exchanger, !delete_option, progress),
 	m_receiver(local_dir, m_file_list, m_request_queue, exchanger, progress),
 	m_progress(progress),
 	m_exchanger(exchanger),

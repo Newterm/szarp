@@ -382,6 +382,8 @@ struct MessageType {
 	static const uint16_t BYE;
 
 	static const uint16_t BASE_MODIFICATION_TIME;
+
+	static const uint16_t SEND_FILE_REST;
 };
 
 /**Struct used as an exception when for some reason files' list cannot be sent to a client*/

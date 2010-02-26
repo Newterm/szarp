@@ -123,6 +123,24 @@ uint32_t TPath::GetSize() const {
 	return m_size;
 }
 
+bool TPath::IsSzbaseFile() const {
+	size_t l = strlen(m_path);
+	if (l < 10)
+		return false;
+
+	if (m_path[l - 4] != '.'
+			|| m_path[l - 3] != 's'
+			|| m_path[l - 2] != 'z'
+			|| m_path[l - 1] != 'b')
+		return false;
+
+	for (size_t i = l - 5; i > l - 11; i--)
+		if (m_path[i] < '0' || m_path[i] > '9')
+			return false;
+
+	return true;
+}
+
 void TPath::CreateDir() {
 	if (!m_stated)
 		Stat();
