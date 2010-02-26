@@ -2351,6 +2351,12 @@ wersji 2.1.
 <section id="konc">
 <title>Koncepcja</title>
 
+<note><para>
+Informacje w tym rozdziale maj± obecnie charakter historyczny. W szczególno¶ci ¿adne programy
+SZARP nie u¿ywaj± ju¿ plików konfiguracyjnych w formacie 2.1, wszystkie nowo dodawane programy
+tak¿e korzystaj± wy³±cznie z konfiguracji w formacie IPK.
+</para></note>
+
 <section id="konc-poco">
 <title>Po co nowy format konfiguracji</title>
 
@@ -2679,6 +2685,33 @@ Przyk³adowy pocz±tek pliku mo¿e wygl±daæ tak:
         read_freq="10" send_freq="10" title="ZEC Katowice Wydzia³ V"&gt;
        
 </programlisting>
+</para>
+<para>Atrybuty element <emphasis>params</emphasis>:
+<itemizedlist>
+	<listitem><para><emphasis>xmlns</emphasis> - deklaracja przestrzeni nazw SZARP - <emphasis>http://www.praterm.com.pl/SZARP/ipk</emphasis>, atrybut obowi±zkowy. W razie potrzeby mo¿na dodaæ deklaracje innych przestrzeni nazw, zgodnie ze standardem XML.</para></listitem>
+	<listitem><para><emphasis>version</emphasis> - wersja formatu pliku, musi byæ równa <emphasis>1.0</emphasis>, atrybut obowi±zkowy.</para></listitem>
+	<listitem><para><emphasis>read_freq</emphasis> - d³ugo¶æ w sekundach trwania pojedynczego cyklu pracy programu parcook, czyli czêstotliwo¶æ wymieniania danych z posta³ymi elementami systemu SZARP. Standardowo jest to 10, zmiana tej warto¶ci jest niezalecana i mo¿e powodowaæ niepo¿±dane efekty, w szczególno¶ci zafa³szowanie warto¶ci wyliczanych przez program ¶rednich. Atrybut obowi±zkowy.</para></listitem>
+	<listitem><para><emphasis>send_freq</emphasis> - d³ugo¶æ w sekundach trwania pojedynczego cyklu pracy 
+	programu sender, czyli czêstotliwo¶æ wysy³ania danych (zadawania parametrów) do sterowników pod³±czonych 
+	regulatorów czy innych urz±dzeñ. Rzeczywista czêstotliwo¶æ wysy³ania danych do urz±dzenia jest ustalana 
+	przez sterownik urz±dzenia, parametr ten mówi tylko o czêsto¶ci wysy³ania danych z sendera do sterownika. 
+	Standardowo jest to 10, zmiana tej warto¶ci jest niezalecana. Atrybut obowi±zkowy.</para></listitem>
+	<listitem><para><emphasis>title</emphasis> - tytu³ konfiguracji - zwykle nazwa obiektu, z którego
+	zbierane s± dane. Tytu³ ten wy¶wietlany jest przez programy u¿ytkowe SZARP, np. w tytule okna
+	programu przegl±daj±cego. Atrybut obowi±zkowy.</para></listitem>
+	<listitem><para><emphasis>ps_address</emphasis> - adres IP zwi±zanego z konfiguracj± serwera do 
+	ustawiania warto¶ci parametrów. SZARP umo¿liwia opcjonalnie zdalne zadawanie warto¶ci parametrów
+	do regulatorów, wymaga to konfiguracji serwera psetd, o podanym w tym atrybucie adresie. Atrybut opcjonalny.
+	</para></listitem>
+	<listitem><para><emphasis>ps_port</emphasis> - numer portu serwera zadawania parametrów o adresie
+	podanym w poprzednio opisanym atrybucie. Atrybut opcjonalny.
+	</para></listitem>
+	<listitem><para><emphasis>documentation_base_url</emphasis> - adres strony WWW serwera wy¶wietlaj±cego
+	opcjonaln± dokumentacjê parametrów SZARP. W przypadku braku atrybutu u¿ywana jest warto¶æ domy¶lna,
+	obecnie <emphasis>http://www.szarp.com.pl</emphasis>, która jednak mo¿e siê zmieniæ w przysz³ej wersji
+	oprogramowania. Atrybut jest opcjonalny, ale zaleca siê jego ustawianie.
+	</para></listitem>
+</itemizedlist>
 </para>
 
 </section> <!-- form-el-params -->
@@ -3154,6 +3187,27 @@ ca³± zawarto¶æ mo¿na zawrzeæ w sekcji <emphasis>CDATA</emphasis>, np.
 	else
 		v = 4.0
 ]]]]><![CDATA[></script>
+]]>
+</programlisting>
+</para>
+<para>
+Element <emphasis>define</emphasis>, podobnie jak wiele innych elementów w konfiguracji IPK, dopuszcza
+dodawanie elementów i atrybutów z obcych przestrzeni nazw (zobacz <xref linkend="form-other-ns">). 
+W szczególno¶ci w elemencie mo¿na umie¶ciæ element <emphasis>doc</emphasis> z przestrzeni nazw
+<emphasis>http://www.praterm.com.pl/SZARP/ipk-extra</emphasis>. Jego zawarto¶æ bêdzie wy¶wietlana
+jako czê¶æ dokumentacji parametru w przypadku korzystania z serwera dokumentacji parametrów.
+Przyk³ad:
+<programlisting>
+<![CDATA[
+<param name="Sieæ:Sterownik:zmodyfikowana temperatura zewnêtrzna" short_name="Tzew" draw_name="Temp. zewnêtrzna"
+	unit="°C" prec="2" xmlns:doc="http://www.praterm.com.pl/SZARP/ipk-extra">
+	<define type="DRAWDEFINABLE" formula="(*:*:temperatura zewnêtrzna) 150 -">
+		<doc:doc>Pomiar temperatury zewnêtrznej skorygowany o 1,5 stopnia ze wzglêdu na z³e 
+			umiejscowienie czujnika temperatury.</doc:doc>
+	</define>
+	<draw name="Temperatury sieciowe" min="-30" max="50"/>
+</param>
+<define type="DRAWDEFINABLE"
 ]]>
 </programlisting>
 </para>

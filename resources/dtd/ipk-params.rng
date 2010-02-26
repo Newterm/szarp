@@ -27,6 +27,7 @@
   	title - wymagany, nazwa obiektu którego dotyczy konfiguracja,
 	ps_address - opcjonalny, adres serwera ustawiaj±cego parametry
 	ps_port - opcjonalny, porst serwera ustawiaj±cego parametry
+	documentation_base_url - opcjonalny, adres bazowy dokumentacji parametrów
 -->
 
   <define name="params">
