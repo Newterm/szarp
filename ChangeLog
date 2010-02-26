@@ -1,6 +1,7 @@
 $Id$
 
 2010-02-26      Darek Marcinkiewicz <reksio@daliaterm.pl>
+	* wx/sync: small fixes, seems to work
 	* wx/sync: now, when szbase_stamp is always updated if historical
 	data, no matter how 'fresh', is changed, we can speed up
 	synchronization - instead of exchanging rsync hashes for szbase files,

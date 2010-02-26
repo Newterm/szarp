@@ -363,8 +363,7 @@ Packet *CFileSyncer::RequestGenerator::StartRequest() {
 	}
 
 	if (local_path.GetType() == TPath::TFILE
-		&& path.GetType() == TPath::TFILE) {
-		sz_log(7, "Requesting patch for file %s", local_path.GetPath());
+			&& path.GetType() == TPath::TFILE) {
 		if (m_request_new_file_data && local_path.IsSzbaseFile()) {
 			sz_log(7, "Requesting new data from file %s", local_path.GetPath());
 			return RestReqPacket(local_path);
@@ -386,6 +385,7 @@ Packet *CFileSyncer::RequestGenerator::RestReqPacket(TPath &path) {
 	size_t s = sizeof(uint16_t) +  sizeof(uint32_t) + sizeof(uint32_t);
 	uint8_t* b = (uint8_t*) malloc(s);
 	p->m_data = b;
+	p->m_size = s;
 
 	*(uint16_t*)b = htons(MessageType::SEND_FILE_REST);
 	b += sizeof(uint16_t);
@@ -394,9 +394,6 @@ Packet *CFileSyncer::RequestGenerator::RestReqPacket(TPath &path) {
 	b += sizeof(uint32_t);
 
 	*(uint32_t*)b = htonl(path.GetSize());
-
-	p->m_data = b;
-	p->m_size = s;
 
 	MoveForward();
 
@@ -803,8 +800,10 @@ void CFileSyncer::ResponseReceiver::HandleRestFilePacket(Packet *p) {
 		m_state = REST_RECEPTION;
 	}
 
-	if (m_dest)
-		WriteFully(m_dest, p->m_data, p->m_size);
+	if (m_base) {
+		sz_log(9, "Writing %hu bytes of new data", p->m_size);
+		WriteFully(m_base, p->m_data, p->m_size);
+	}
 
 	if (p->m_type == Packet::LAST_PACKET) {
 		m_state = IDLE;
@@ -1551,16 +1550,13 @@ void Client::GetExInEpxression(TPath& dir, uint32_t dir_no, char*& exclude, char
 	MessageReceiver rmsg(m_exchanger);
 	MessageSender smsg(m_exchanger);
 
-	if (program_uruchomiony.GetType() != TPath::TDIR)
-		goto none;
-
 	smsg.PutUInt16(MessageType::BASE_MODIFICATION_TIME);
 	smsg.PutUInt32(dir_no);
 	smsg.FinishMessage();
 
 	present = rmsg.GetByte();
 	if (present) {
-		sz_log(9, "Base stamp present on server");
+		sz_log(8, "Base stamp present on server");
 		struct tm t;
 		memset(&t, 0, sizeof(t));
 
@@ -1576,11 +1572,15 @@ void Client::GetExInEpxression(TPath& dir, uint32_t dir_no, char*& exclude, char
 		if (szbase_stamp.GetType() != TPath::TFILE ||
 				szbase_stamp.GetModTime() != modtime) {
 
-			sz_log(9, "Base stamp mismatch(or file not present locally), requesint all files info");
+			sz_log(9, "Base stamp mismatch(or file not present locally), requesting all files info");
 			goto none;
 		}
 	} else
-		sz_log(9, "Base stamp not present on server");
+		sz_log(8, "Base stamp not present on server");
+
+	if (program_uruchomiony.GetType() != TPath::TDIR)
+		goto no_program_uruchomiony;
+
 
 	do {
 		char *current, *tmp;
@@ -1620,9 +1620,10 @@ void Client::GetExInEpxression(TPath& dir, uint32_t dir_no, char*& exclude, char
 	return;
 
 none:
+	force_delete = true;
+no_program_uruchomiony:
 	exclude = strdup("");
 	include = strdup("");
-	force_delete = true;
 
 }
 
