@@ -165,6 +165,8 @@ protected:
 	void OnRapdata(wxCommandEvent &ev);
 	/** event: timer */
 	void OnTimer(wxTimerEvent &ev);
+	/** event: list item selected */
+	void OnListItemSelect(wxListEvent &event);
 	/**
 	 * Load params.xml from server.
 	 * @return true on success, false on error
@@ -249,6 +251,7 @@ protected:
 				were are not ready for it... */
 #endif
 	bool m_test_window;	/**< is set true if window is a test window */
+	wxString m_selected_parameter;	/**< selected parameter name, empty if none is selected */
 };
 
 /** IDs */
@@ -280,7 +283,8 @@ enum {
 
   ID_TIMER,
 
-  ID_M_TEMPLATE_IPK
+  ID_M_TEMPLATE_IPK,
+  ID_L_ITEMSELECT
 };
 
 /** data type */

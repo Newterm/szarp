@@ -155,8 +155,8 @@ szRaporter::szRaporter(wxWindow *parent, wxString server, wxString title)
 	
 	wxBoxSizer *top_sizer = new wxBoxSizer(wxVERTICAL);
 
-	params_listc = new wxListCtrl(this, wxID_ANY,
-			wxDefaultPosition, wxDefaultSize, wxLC_REPORT);
+	params_listc = new wxListCtrl(this, ID_L_ITEMSELECT,
+			wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_SINGLE_SEL);
 	wxFont font = params_listc->GetFont();
 	int size = 9;
 	wxConfig::Get()->Read(KEY_FONTSIZE, &size);
@@ -731,6 +731,12 @@ void szRaporter::RefreshReport(bool force)
 	}
 	params_listc->Freeze();
 	params_listc->DeleteAllItems();
+	int col0_width = params_listc->GetColumnWidth(0);
+	int col1_width = params_listc->GetColumnWidth(1);	
+	int col2_width = params_listc->GetColumnWidth(2);	
+	if (col0_width == -2) col0_width = -1;
+	if (col1_width == -2) col1_width = -1;
+	if (col2_width == -2) col2_width = -1;
 	
 	m_pfetcher->Lock();
 	if (m_pfetcher->IsValid()) {
@@ -766,12 +772,20 @@ void szRaporter::RefreshReport(bool force)
 						params_listc->SetItem(i,1, _("no data"));
 					params_listc->SetItem(i, 2, desc);
 				}
+				if (scut == m_selected_parameter)
+					params_listc->SetItemState(i, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);		
 			}
 			stat_sb->SetStatusText(wxString::Format(_T("%d s"),this->m_per_per), 2);
 			stat_sb->SetStatusText(wxDateTime::Now().FormatTime(), 3);
-			params_listc->SetColumnWidth(0, -2);
-			params_listc->SetColumnWidth(1, -2);
-			params_listc->SetColumnWidth(2, -1);
+			params_listc->SetColumnWidth(0, col0_width);
+			params_listc->SetColumnWidth(1, col1_width);
+			params_listc->SetColumnWidth(2, col2_width);
+			int total_width = 0, dummy = -1;
+			params_listc->GetSize(&total_width, &dummy);
+			total_width = total_width - params_listc->GetColumnWidth(0) - params_listc->GetColumnWidth(1);
+			if (total_width - params_listc->GetColumnWidth(2) < 0)
+				total_width = -1;
+			params_listc->SetColumnWidth(2, total_width);
 	
 			if(m_pfetcher->GetParams().Count() > 0)
 				FileDump::DumpValues(&m_pfetcher->GetParams(),m_report_name);
@@ -814,6 +828,12 @@ void szRaporter::SetFitSize()
 	m_fitsize = true;
 }
 
+void szRaporter::OnListItemSelect(wxListEvent &event)
+{
+	wxListItem item = event.GetItem();
+	m_selected_parameter = item.GetText();
+}
+
 IMPLEMENT_CLASS(szRaporter, wxFrame)
 BEGIN_EVENT_TABLE(szRaporter, wxFrame)
 	EVT_MENU_RANGE(ID_M_TEMPLATE_IPK, ID_M_TEMPLATE_IPK+64, 
@@ -837,5 +857,6 @@ BEGIN_EVENT_TABLE(szRaporter, wxFrame)
 	EVT_SZ_FETCH(szRaporter::OnRapdata)
 	EVT_CLOSE(szRaporter::OnClose)
 	EVT_TIMER(-1, szRaporter::OnTimer)
+	EVT_LIST_ITEM_SELECTED(ID_L_ITEMSELECT, szRaporter::OnListItemSelect)
 END_EVENT_TABLE()
 
