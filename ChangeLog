@@ -1,5 +1,8 @@
 $Id$
 
+2010-02-27      Darek Marcinkiewicz <reksio@daliaterm.pl>
+	* libSzarp2: lua parser added do built, small app
+	for parser testing added
 2010-02-26      Darek Marcinkiewicz <reksio@daliaterm.pl>
 	* wx/sync: small fixes, seems to work
 	* wx/sync: now, when szbase_stamp is always updated if historical

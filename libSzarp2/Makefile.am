@@ -31,8 +31,12 @@ INCLUDES = @XML_CFLAGS@ @XSLT_CFLAGS@ @CURL_CFLAGS@ @LUA_CFLAGS@ \
 
 noinst_LIBRARIES = libSzarp2.a
 
-EXTRA_PROGRAMS = szbtest
+EXTRA_PROGRAMS = szbtest lua_parser_test
 szbtest_SOURCES = $(SZBASE_DIR)/szbtest.cc
+
+lua_parser_test_INCLUDES = $(INCLUDES)
+lua_parser_test_LDADD = $(LDADD) libSzarp.a libSzarp2.a
+lua_parser_test_SOURCES = $(SZBASE_DIR)/lua_parser_test.cc
 
 test: szbtest
 	./szbtest
@@ -103,8 +107,10 @@ libSzarp2_a_SOURCES = \
 			$(SZBASE_DIR)/luadatablock.cc $(SZBASE_DIR)/luadatablock.h \
 			$(SZBASE_DIR)/szbhash.cc $(SZBASE_DIR)/szbhash.h \
 			$(SZBASE_DIR)/szbdatablock.cc $(SZBASE_DIR)/szbdatablock.h \
+			$(SZBASE_DIR)/szbdatablock.cc $(SZBASE_DIR)/szbdatablock.h \
 			$(SZBASE_DIR)/szbfilewatcher.cc $(INCLUDE_DIR)/szbase/szbfilewatcher.h \
-			$(SZBASE_DIR)/szbcancelhandle.cc $(INCLUDE_DIR)/szbase/szbcancelhandle.h
+			$(SZBASE_DIR)/szbcancelhandle.cc $(INCLUDE_DIR)/szbase/szbcancelhandle.h \
+			$(SZBASE_DIR)/lua_parser.cc $(INCLUDE_DIR)/szbase/lua_syntax.h
 
 
 # Additional files for deleting on 'make maintainer-clean'

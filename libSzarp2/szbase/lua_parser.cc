@@ -1,9 +1,17 @@
-#define BOOST_SPIRIT_DEBUG
-#define BOOST_SPIRIT_DEBUG_PRINT_SOME 100
-#include "lua_syntax.h"
-
+//#define BOOST_SPIRIT_DEBUG
 #include <iostream>
-#include <string>
+#include <boost/config/warning_disable.hpp>
+#include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/fusion/include/boost_tuple.hpp>
+#include <boost/fusion/include/vector.hpp>
+#include <boost/spirit/include/phoenix_core.hpp>
+#include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/spirit/include/phoenix_fusion.hpp>
+#include <boost/spirit/include/phoenix_stl.hpp>
+#include <boost/fusion/include/adapt_struct.hpp>
+
+#include "lua_syntax.h"
 
 BOOST_FUSION_ADAPT_STRUCT(
 	lua_grammar::namelist,
@@ -156,8 +164,12 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 namespace lua_grammar {
 
+namespace qi = boost::spirit::qi;
+
+
 expression& expression::operator=(const or_exp& o_) {
 	o = o_;
+	return *this;
 }
 
 namelist& namelist::operator=(const namelist& v) {
@@ -201,6 +213,7 @@ std::ostream& operator<< (std::ostream& out, const chunk& c ) {
 		out << " " << c.stats[i];	
 	if (c.laststat_)
 		out << "last stat " << *c.laststat_;
+	return out;
 }
 
 std::ostream& operator<< (std::ostream& out, const block& c ) {
@@ -506,8 +519,8 @@ template<typename Iterator> struct lua_parser : qi::grammar<Iterator, chunk(), l
 	qi::rule<Iterator, std::string(), space> string;
 	qi::rule<Iterator, bool(), space> boolean;
 	qi::rule<Iterator, nil(), space> nil_;
-	qi::rule<Iterator, char(), space> octal_char;
-	qi::rule<Iterator, char(), space> escaped_character;
+	qi::rule<Iterator, char()> octal_char;
+	qi::rule<Iterator, char()> escaped_character;
 	qi::rule<Iterator, threedots(), space> threedots_;
 	qi::rule<Iterator, namelist(), space> namelist_;
 	qi::rule<Iterator, parlist1(), space> parlist1_;
@@ -604,9 +617,9 @@ public:
 
 		threedots_ = lit("...") [_val = threedots() ];
 
-		string = ("'" >> *(escaped_character - "'") >> "'")
-			| ("\"" >> *(escaped_character - "\"") >> "\"")
-			| ("[[" >> *(char_ - "]]") >> "]]"); 
+		string = lexeme["'" >> *(escaped_character - "'") >> "'"]
+			| lexeme["\"" >> *(escaped_character - "\"") >> "\""]
+			| lexeme["[[" >> *(char_ - "]]") >> "]]"]; 
 
 		break__ = lit("break") [_val = break_()];
 

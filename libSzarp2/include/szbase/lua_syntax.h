@@ -1,19 +1,13 @@
-#include <boost/config/warning_disable.hpp>
-#include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/phoenix_operator.hpp>
-#include <boost/fusion/include/boost_tuple.hpp>
-#include <boost/fusion/include/vector.hpp>
-#include <boost/spirit/include/phoenix_core.hpp>
-#include <boost/spirit/include/phoenix_operator.hpp>
-#include <boost/spirit/include/phoenix_fusion.hpp>
-#include <boost/spirit/include/phoenix_stl.hpp>
-#include <boost/fusion/include/adapt_struct.hpp>
+#ifndef __LUA_SYNTAX_H__
+#define __LUA_SYNTAX_H__
+
+#include <string>
+#include <vector>
 #include <boost/variant.hpp>
-#include <boost/variant/recursive_variant.hpp>
+#include <boost/optional.hpp>
+#include <boost/tuple/tuple.hpp>
 
 namespace lua_grammar {
-
-	namespace qi = boost::spirit::qi;
 
 	enum mul_op {
 		MUL,
@@ -253,3 +247,4 @@ namespace lua_grammar {
 	bool parse(std::string::const_iterator& iter, std::string::const_iterator &end, chunk& chunk_);
 };
 
+#endif
