@@ -1,5 +1,8 @@
 $Id$
 
+2010-02-28      Darek Marcinkiewicz <reksio@daliaterm.pl>
+	* libSzarp2/Makefile.am: linking fix for test app
+	* libSzarp2: parser coverted to unicode
 2010-02-27      Adam Smyk <asmyk@dalkiaterm.pl>
 	* wx/raporter3/: only single parameter from given report can be selected, 
 	selected parameter is rememberd and it is correctly displayed after 

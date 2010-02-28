@@ -35,15 +35,15 @@ namespace lua_grammar {
 		LEN
 	};
 
-	struct nil { std::string nil_; nil() : nil_("nil") {} };
-	struct threedots { std::string threedots_; threedots() : threedots_("threedots") {} };
+	struct nil { std::wstring nil_; nil() : nil_(L"nil") {} };
+	struct threedots { std::wstring threedots_; threedots() : threedots_(L"threedots") {} };
 
-	typedef std::string identifier;
+	typedef std::wstring identifier;
 
 	struct namelist {
 		namelist& operator=(const namelist& v);
-		namelist& operator=(const std::vector<std::string>& v);
-		std::vector<std::string> namelist_;
+		namelist& operator=(const std::vector<std::wstring>& v);
+		std::vector<std::wstring> namelist_;
 	};
 
 	struct parlist1 {
@@ -80,7 +80,7 @@ namespace lua_grammar {
 	typedef boost::variant<
 		boost::recursive_wrapper<std::vector<expression> >,
 		tableconstructor,
-		std::string> args;
+		std::wstring> args;
 
 	typedef boost::variant<
 		expf,
@@ -244,7 +244,7 @@ namespace lua_grammar {
 	};
 
 
-	bool parse(std::string::const_iterator& iter, std::string::const_iterator &end, chunk& chunk_);
+	bool parse(std::wstring::const_iterator& iter, std::wstring::const_iterator &end, chunk& chunk_);
 };
 
 #endif

@@ -1,5 +1,9 @@
-//#define BOOST_SPIRIT_DEBUG
+#define BOOST_SPIRIT_DEBUG
 #include <iostream>
+#include <string>
+namespace std {
+ostream& operator<< (ostream& os, const wstring& s);
+}
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
@@ -12,10 +16,11 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "lua_syntax.h"
+#include "conversion.h"
 
 BOOST_FUSION_ADAPT_STRUCT(
 	lua_grammar::namelist,
-	(std::vector<std::string>, namelist_)
+	(std::vector<std::wstring>, namelist_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -31,12 +36,12 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
 	lua_grammar::nil,
-	(std::string, nil_)
+	(std::wstring, nil_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
 	lua_grammar::threedots,
-	(std::string, threedots_)
+	(std::wstring, threedots_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -162,6 +167,13 @@ BOOST_FUSION_ADAPT_STRUCT(
 	(boost::optional<lua_grammar::laststat>, laststat_)
 )
 
+namespace std {
+ostream& operator<< (ostream& os, const wstring& s) {
+	return os << SC::S2A(s);
+}
+}
+
+
 namespace lua_grammar {
 
 namespace qi = boost::spirit::qi;
@@ -177,7 +189,8 @@ namelist& namelist::operator=(const namelist& v) {
 	return *this;
 }
 
-namelist& namelist::operator=(const std::vector<std::string>& v) {
+
+namelist& namelist::operator=(const std::vector<std::wstring>& v) {
 	namelist_ = v;
 	return *this;
 }
@@ -193,6 +206,19 @@ tableconstructor& tableconstructor::operator=(const std::vector<field>& v) {
 }
 
 std::ostream& operator<< (std::ostream& os, const expression& e);
+
+std::ostream& operator<< (std::ostream& os, const boost::recursive_wrapper<expression>& e) {
+	return os << e.get();
+}
+
+std::ostream& operator<< (std::ostream& os, const wchar_t* s) {
+	return os << SC::S2A(s);
+}
+
+std::ostream& operator<< (std::ostream& os, const boost::recursive_wrapper<std::wstring>& s) {
+	return os << SC::S2A(s.get());
+}
+
 
 std::ostream& operator<<(std::ostream& os, const namelist& c ) {
 	for (size_t i = 0; i < c.namelist_.size(); i++)
@@ -228,13 +254,6 @@ std::ostream& operator<< (std::ostream& out, const parlist1& c ) {
 	return out;
 }
 
-std::ostream& operator<< (std::ostream& os, const boost::tuple<exp_identifier, std::vector<exp_ident_arg_namearg> > &e) {
-	os << e.get<0>();
-	for (size_t i = 0; i < e.get<1>().size(); i++)
-		os << " " << e.get<1>()[i];
-	return os;
-}
-
 std::ostream& operator<< (std::ostream& os, const pow_exp& e) {
 	if (e.size() > 1)
 		os << "pow exp:";
@@ -242,6 +261,14 @@ std::ostream& operator<< (std::ostream& os, const pow_exp& e) {
 		os << " " << e[i];
 	return os;
 }
+
+std::ostream& operator<< (std::ostream& os, const boost::tuple<exp_identifier, std::vector<exp_ident_arg_namearg> > &e) {
+	os << e.get<0>();
+	for (size_t i = 0; i < e.get<1>().size(); i++)
+		os << " " << e.get<1>()[i];
+	return os;
+}
+
 
 std::ostream& operator<< (std::ostream& os, const unop_exp& e) {
 	if (e.get<0>().size()) {
@@ -450,11 +477,12 @@ template<typename Iterator> struct lua_skip_parser : qi::grammar<Iterator> {
 
 	lua_skip_parser() : lua_skip_parser::base_type(skip) {
 
-		using boost::spirit::ascii::char_;
+		using boost::spirit::standard_wide::char_;
+		using boost::spirit::standard_wide::space;
 
 		skip = qi::space
-			| "--[[" >> *(char_ - "]]") >> "]]"
-			| "--" >> *(char_ - qi::eol) >> qi::eol
+			| L"--[[" >> *(char_ - L"]]") >> L"]]"
+			| L"--" >> *(char_ - qi::eol) >> qi::eol
 			;
 	}
 
@@ -465,62 +493,62 @@ template<typename Iterator> struct lua_parser : qi::grammar<Iterator, chunk(), l
 
 	typedef lua_skip_parser<Iterator> space;
 
-	struct mulop_symbols : qi::symbols<char, mul_op> {
+	struct mulop_symbols : qi::symbols<wchar_t, mul_op> {
 		mulop_symbols () {
-			add("*", MUL)
-				("/", DIV)
-				("%", REM);
+			add(L"*", MUL)
+				(L"/", DIV)
+				(L"%", REM);
 		}
 	} mulop_symbols_;
 
-	struct addop_symbols : qi::symbols<char, add_op> {
+	struct addop_symbols : qi::symbols<wchar_t, add_op> {
 		addop_symbols () {
-			add("+", PLUS)
-				("-", MINUS);
+			add(L"+", PLUS)
+				(L"-", MINUS);
 		}
 	} addop_symbols_;
 
-	struct cmpop_symbols : qi::symbols<char, cmp_op> {
+	struct cmpop_symbols : qi::symbols<wchar_t, cmp_op> {
 		cmpop_symbols () {
-			add("<", LT)
-				("<=", LTE)
-				(">", GT)
-				(">=", GTE)
-				("==", EQ)
-				("~=", NEQ);
+			add(L"<", LT)
+				(L"<=", LTE)
+				(L">", GT)
+				(L">=", GTE)
+				(L"==", EQ)
+				(L"~=", NEQ);
 		}
 	} cmpop_symbols_;
 
-	struct unop_symbols : qi::symbols<char, un_op> {
+	struct unop_symbols : qi::symbols<wchar_t, un_op> {
 		unop_symbols () {
-			add("-", NEG)
-				("not", NOT)
-				("#", LEN);
+			add(L"-", NEG)
+				(L"not", NOT)
+				(L"#", LEN);
 		}
 	} unop_symbols_;
 
-	struct escaped_symbol : qi::symbols<char, char> {
+	struct escaped_symbol : qi::symbols<wchar_t, wchar_t> {
 		escaped_symbol() {
-			add("a", '\a')
-				("b", '\b')
-				("f", '\f')
-				("n", '\n')
-				("t", '\t')
-				("r", '\r')
-				("v", '\v')
-				("\\", '\\')
-				("\'", '\'')
-				("\"", '\"');
+			add(L"a", L'\a')
+				(L"b", L'\b')
+				(L"f", L'\f')
+				(L"n", L'\n')
+				(L"t", L'\t')
+				(L"r", L'\r')
+				(L"v", L'\v')
+				(L"\\", L'\\')
+				(L"\'", L'\'')
+				(L"\"", L'\"');
 		}
 	} escaped_symbol_;
 
-	qi::rule<Iterator, std::string(), space> keywords;
-	qi::rule<Iterator, std::string(), space> identifier_;
-	qi::rule<Iterator, std::string(), space> string;
+	qi::rule<Iterator, std::wstring(), space> keywords;
+	qi::rule<Iterator, std::wstring(), space> identifier_;
+	qi::rule<Iterator, std::wstring(), space> string;
 	qi::rule<Iterator, bool(), space> boolean;
 	qi::rule<Iterator, nil(), space> nil_;
-	qi::rule<Iterator, char()> octal_char;
-	qi::rule<Iterator, char()> escaped_character;
+	qi::rule<Iterator, wchar_t()> octal_char;
+	qi::rule<Iterator, wchar_t()> escaped_character;
 	qi::rule<Iterator, threedots(), space> threedots_;
 	qi::rule<Iterator, namelist(), space> namelist_;
 	qi::rule<Iterator, parlist1(), space> parlist1_;
@@ -582,91 +610,91 @@ public:
 		using qi::_val;
 		using qi::_1;
 		using qi::eps;
-		using boost::spirit::ascii::char_;
+		using boost::spirit::standard_wide::char_;
 
-		keywords = lit("and")
-			| "break"
-			| "do"
-			| "else"
-			| "elseif"
-			| "end"   
-			| "false"
-			| "for"
-			| "function"
-			| "if"
-			| "in"
-			| "local"
-			| "nil"
-			| "not"
-			| "or"
-			| "repeat"
-			| "return"
-			| "then"
-			| "true"
-			| "until"
-			| "while";
+		keywords = lit(L"and")
+			| L"break"
+			| L"do"
+			| L"else"
+			| L"elseif"
+			| L"end"   
+			| L"false"
+			| L"for"
+			| L"function"
+			| L"if"
+			| L"in"
+			| L"local"
+			| L"nil"
+			| L"not"
+			| L"or"
+			| L"repeat"
+			| L"return"
+			| L"then"
+			| L"true"
+			| L"until"
+			| L"while";
 
-		identifier_ = lexeme[ char_("a-zA-Z_") >> *(char_("a-zA-Z0-9_")) ] - keywords;
+		identifier_ = lexeme[ char_(L"a-zA-Z_") >> *(char_(L"a-zA-Z0-9_")) ] - keywords;
 
 		octal_char = eps [_val = 0] >> 
-			char_("0-7") [ _val = (_1 - '0') * 64 ] >>
-			char_("0-7") [ _val += (_1 - '0') * 8] >>
-			char_("0-7") [ _val += (_1 - '0')];
+			char_(L"0-7") [ _val = (_1 - L'0') * 64 ] >>
+			char_(L"0-7") [ _val += (_1 - L'0') * 8] >>
+			char_(L"0-7") [ _val += (_1 - L'0')];
 
-		escaped_character = ( lit('\\') >> (escaped_symbol_ | octal_char) ) | char_;
+		escaped_character = ( lit(L'\\') >> (escaped_symbol_ | octal_char) ) | char_;
 
-		threedots_ = lit("...") [_val = threedots() ];
+		threedots_ = lit(L"...") [_val = threedots() ];
 
-		string = lexeme["'" >> *(escaped_character - "'") >> "'"]
-			| lexeme["\"" >> *(escaped_character - "\"") >> "\""]
-			| lexeme["[[" >> *(char_ - "]]") >> "]]"]; 
+		string = lexeme[L"'" >> *(escaped_character - L"'") >> L"'"]
+			| lexeme[L"\"" >> *(escaped_character - L"\"") >> L"\""]
+			| lexeme[L"[[" >> *(char_ - L"]]") >> L"]]"]; 
 
-		break__ = lit("break") [_val = break_()];
+		break__ = lit(L"break") [_val = break_()];
 
-		boolean = lit("true")[_val = true]
-			| lit("false")[_val = false];
+		boolean = lit(L"true")[_val = true]
+			| lit(L"false")[_val = false];
 
-		nil_ = lit("nil")[_val = nil()];
+		nil_ = lit(L"nil")[_val = nil()];
 
-		return__ = ("return" >> explist_) [_val = _1];
+		return__ = (L"return" >> explist_) [_val = _1];
 
-		chunk_ = *(stat_ >> -lit(";")) >> -(laststat_ >> -lit(";"));
+		chunk_ = *(stat_ >> -lit(L";")) >> -(laststat_ >> -lit(L";"));
 
 		block_ = chunk_[_val =  _1];
 
-		explist_ = expression_ % ',' | eps;
+		explist_ = expression_ % L',' | eps;
 
-		varlist_ = var_ % ',' | eps;
+		varlist_ = var_ % L',' | eps;
 
 		fieldlist_ = field_  % fieldsep_ | eps;
 
-		tableconstructor_ = ("{" >> fieldlist_ >> '}') [ _val = _1];
+		tableconstructor_ = (L"{" >> fieldlist_ >> L'}') [ _val = _1];
 
-		args_ = lit('(') >> explist_ >> lit(')')
+		args_ = lit(L'(') >> explist_ >> lit(L')')
 			| tableconstructor_
 			| string;
 
-		assignment_ = varlist_ >> "=" >> explist_;
+		assignment_ = varlist_ >> L"=" >> explist_;
 
-		while_loop_ = "while" >> expression_ >> "do" >> block_ >> "end";
+		while_loop_ = L"while" >> expression_ >> L"do" >> block_ >> L"end";
 
-		do_block = "do" >> block_ >> "end";
+		do_block = L"do" >> block_ >> L"end";
 
-		repeat_loop_ = "repeat" >> block_ >> "until" >> expression_;
+		repeat_loop_ = L"repeat" >> block_ >> L"until" >> expression_;
 
-		if_stat_ = "if" >> expression_ >> "then" >> block_ >> *("elseif" >> expression_ >> "then" >> block_) >> -("else" >> block_) >> "end";
+		if_stat_ = L"if" >> expression_ >> L"then" >> block_ >> *(L"elseif" >> expression_ >> L"then" >> block_) >> -(L"else" >> block_) >> L"end";
 
-		for_from_to_loop_ = "for" >> identifier_ >> "=" >> expression_ >> "," >> expression_ >> -("," >> expression_) >> "do" >> block_ >> "end";
+		for_from_to_loop_ = L"for" >> identifier_ >> L"=" >> expression_ >> L"," >> expression_ >> -(L"," >> expression_) >> L"do" >> block_ >> L"end";
 
-		for_in_loop_ = "for" >> namelist_ >> "in" >> explist_ >> "do" >> block_ >> "end";
+		for_in_loop_ = L"for" >> namelist_ >> L"in" >> explist_ >> L"do" >> block_ >> L"end";
 
-		funcname_ = "function" >> (identifier_ % ".") >> -(":" >> identifier_);
+		funcname_ = L"function" >> (identifier_ % L".") >> -(L":" >> identifier_);
 
-		function_declaration_ = "function" >> funcname_ >> funcbody_;
+		function_declaration_ = L"function" >> funcname_ >> funcbody_;
 
-		local_assignment_ = "local" >> varlist_ >> "=" >> explist_;
+		local_assignment_ = L"local" >> varlist_ >> L"=" >> explist_;
 
-		local_function_declaration_ = lit("local") >> "function" >> funcname_ >> funcbody_;
+		local_function_declaration_ = lit(L"local") >> L"function" >> funcname_ >> funcbody_;
 
 		stat_ = do_block
 			| while_loop_
@@ -682,11 +710,11 @@ public:
 
 		laststat_ = return__ | break__;
 
-		namelist_ = (identifier_ % ',' )[_val = _1] | eps;
+		namelist_ = (identifier_ % L',' )[_val = _1] | eps;
 		
-		explist_ = expression_ % ',' | eps;
+		explist_ = expression_ % L',' | eps;
 		
-		function_ = "function" >> funcbody_;
+		function_ = L"function" >> funcbody_;
 
 		term_ = nil_
 			| qi::double_
@@ -696,22 +724,22 @@ public:
 			| function_
 			| postfixexp_
 			| tableconstructor_
-			| '(' >> expression_ >> ')';
+			| L'(' >> expression_ >> L')';
 
 		expression_ = or_ [_val = _1];
-		or_ = and_ % "or";
-		and_ =  cmp_ % "and";
+		or_ = and_ % L"or";
+		and_ =  cmp_ % L"and";
 		cmp_ = concat_ >> *(cmpop_symbols_ >> concat_);
-		concat_ = add_ % "..";
+		concat_ = add_ % L"..";
 		add_ = mul_ >> *(addop_symbols_ >> mul_);
 		mul_ = unop_ >> *(mulop_symbols_ >> unop_);
 		unop_ = *unop_symbols_ >> pow_;
-		pow_ = term_ % "^";
+		pow_ = term_ % L"^";
 
-		exp_identifier_ = '(' >> expression_ >> ')' | identifier_;
-		exp_identifier_square = "[" >> expression_ >> "]" | "." >> identifier_;
+		exp_identifier_ = L'(' >> expression_ >> L')' | identifier_;
+		exp_identifier_square = L"[" >> expression_ >> L"]" | L"." >> identifier_;
 
-		identifier_args_ = ":" >> identifier_ >> args_;
+		identifier_args_ = L":" >> identifier_ >> args_;
 
 		namearg_ = args_ | identifier_args_; 
 
@@ -725,21 +753,21 @@ public:
 
 		var_ = varc_ | identifier_;
 
-		funcbody_ = '(' >> -parlist_ >> ')' >> block_ >> "end";
+		funcbody_ = L'(' >> -parlist_ >> L')' >> block_ >> L"end";
 		
-		parlist1_ = namelist_ >> -("," >> threedots_);
+		parlist1_ = namelist_ >> -(L"," >> threedots_);
 
 		parlist_ = parlist1_ | threedots_;
 
-		tuple_expression_expression_ = '[' >> expression_ >> ']' >> '=' >> expression_;
+		tuple_expression_expression_ = L'[' >> expression_ >> L']' >> L'=' >> expression_;
 
-		tuple_identifier_expression_ = identifier_ >> '=' >> expression_;
+		tuple_identifier_expression_ = identifier_ >> L'=' >> expression_;
 
 		field_ = tuple_expression_expression_
 			| tuple_identifier_expression_
 			| expression_;
 
-		fieldsep_ = lit(",") | lit(";");
+		fieldsep_ = lit(L",") | lit(L";");
 
 		using qi::debug;
 
@@ -804,9 +832,9 @@ public:
 
 };
 
-bool parse(std::string::const_iterator& iter, std::string::const_iterator &end, chunk& chunk_) {
-	typedef lua_parser<std::string::const_iterator> parser;
-	typedef lua_skip_parser<std::string::const_iterator> skip;
+bool parse(std::wstring::const_iterator& iter, std::wstring::const_iterator &end, chunk& chunk_) {
+	typedef lua_parser<std::wstring::const_iterator> parser;
+	typedef lua_skip_parser<std::wstring::const_iterator> skip;
 	return qi::phrase_parse(iter, end, parser(), skip(), chunk_);
 }
 

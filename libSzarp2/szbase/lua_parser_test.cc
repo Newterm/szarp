@@ -2,6 +2,8 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+
+#include "conversion.h"
 #include "lua_syntax.h"
 
 int main(int argc, char *argv[]) {
@@ -20,10 +22,10 @@ int main(int argc, char *argv[]) {
 		ss << ff.rdbuf();
 
 		lua_grammar::chunk result;
-		str = ss.str();
-		std::string::const_iterator iter = str.begin();
-		std::string::const_iterator end = str.end();
-		std::cout << "Parsing: " << str << std::endl;
+		std::wstring wstr = SC::A2S(ss.str());
+		std::wstring::const_iterator iter = wstr.begin();
+		std::wstring::const_iterator end = wstr.end();
+		std::cout << "Parsing: " << ss.str() << std::endl;
 		bool r = lua_grammar::parse(iter, end, result);
 
 		if (r && iter == end)

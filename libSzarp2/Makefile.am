@@ -35,7 +35,7 @@ EXTRA_PROGRAMS = szbtest lua_parser_test
 szbtest_SOURCES = $(SZBASE_DIR)/szbtest.cc
 
 lua_parser_test_INCLUDES = $(INCLUDES)
-lua_parser_test_LDADD = $(LDADD) libSzarp.a libSzarp2.a
+lua_parser_test_LDADD = $(LDADD) ../libSzarp/libSzarp.a libSzarp2.a
 lua_parser_test_SOURCES = $(SZBASE_DIR)/lua_parser_test.cc
 
 test: szbtest
