@@ -1,3 +1,7 @@
+#include "config.h"
+
+#ifdef LUA_PARAM_OPTIMISE
+
 #define BOOST_SPIRIT_DEBUG
 #include <iostream>
 #include <string>
@@ -842,4 +846,4 @@ block& block::operator=(const boost::recursive_wrapper<chunk>& c) { chunk_ = c.g
 
 }
 
-
+#endif

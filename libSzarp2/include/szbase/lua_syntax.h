@@ -1,6 +1,10 @@
 #ifndef __LUA_SYNTAX_H__
 #define __LUA_SYNTAX_H__
 
+#include "config.h"
+
+#ifdef LUA_PARAM_OPTIMISE
+
 #include <string>
 #include <vector>
 #include <boost/variant.hpp>
@@ -246,5 +250,7 @@ namespace lua_grammar {
 
 	bool parse(std::wstring::const_iterator& iter, std::wstring::const_iterator &end, chunk& chunk_);
 };
+
+#endif
 
 #endif
