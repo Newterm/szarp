@@ -1,5 +1,8 @@
 $Id$
 
+2010-03-01      Pawel Palucha <pawel@praterm.com.pl>
+	* resources/documentation/new/: 2 screenshots replaced because NSIS
+	mysteriously fails on them.
 2010-02-28      Darek Marcinkiewicz <reksio@daliaterm.pl>
 	* libSzarp2/Makefile.am: linking fix for test app
 	* libSzarp2: parser coverted to unicode
