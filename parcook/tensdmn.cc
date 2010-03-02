@@ -24,6 +24,8 @@
  * $Id: nrsdmn.cc 1 2009-06-24 15:09:25Z isl $
  */
 
+#include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <time.h>
@@ -229,7 +231,7 @@ ssize_t SerialPort::GetData(char* buffer, size_t size)
 	ssize_t r = 0;
 	time (&t1);
 	t2 = t1;
-	while (r < size) {
+	while (r < (ssize_t) size) {
 		int delay;
 		delay = m_timeout - (t2 - t1);
 		if (!Wait(delay))
@@ -302,7 +304,10 @@ public:
 	 * into parcook shared memory segment.*/
 	void Go(); 
 
-	void ParseResponse(const char* buffer, size_t size);
+	void ParseWeightResponse(const char* buffer, size_t size);
+
+	void ParseFlowResponse(const char* buffer, size_t size);
+
 private:
 	int ConfigureDaemon(DaemonConfig *cfg);
 	/**Object responsible for communication with sender and parcook*/
@@ -313,6 +318,8 @@ private:
 	SerialPort *m_port;
 	/**Cycle length(in seconds)*/
 	int m_cycle_duration;
+
+	std::vector<int> m_weight_params, m_flow_params;
 
 	size_t m_params_count;
 
@@ -339,8 +346,36 @@ int Daemon::ConfigureDaemon(DaemonConfig *cfg)
 	TDevice* dev = cfg->GetDevice();
 	TUnit* unit = dev->GetFirstRadio()->GetFirstUnit();
 	assert(unit);
-	for (TParam* p = unit->GetFirstParam(); p; p = p->GetNext())
+	xmlDocPtr doc;
+	doc = cfg->GetXMLDoc();
+	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(doc);
+	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
+			SC::S2U(IPK_NAMESPACE_STRING).c_str());
+	assert (ret == 0);
+	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "tens",
+			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
+	assert (ret == 0);
+	xp_ctx->node = cfg->GetXMLDevice();
+	int i = 0;
+	for (TParam* p = unit->GetFirstParam(); p; p = p->GetNext(), i++) {
+		char *expr;
+	        asprintf(&expr, ".//ipk:unit[position()=1]/ipk:param[position()=%d]", i + 1);
+		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx);
+		assert(node);
+		char* c = (char*) xmlGetNsProp(node, BAD_CAST("type"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+		if (c == NULL || !strcmp(c, "weight"))
+			m_weight_params.push_back(i);
+		else if (!strcmp(c, "flow"))
+			m_flow_params.push_back(i);
+		else {
+			sz_log(0, "Unsupported param type: %s", c);
+			return 1;
+		}
+		assert(node);
+		free(expr);
+		xmlFree(c);
 		m_param_precs.push_back(pow10(p->GetPrec()));
+	}
 	m_params_count = unit->GetParamsCount();
 	m_port = new SerialPort(device_name,
 			speed, 
@@ -355,7 +390,37 @@ int Daemon::ConfigureDaemon(DaemonConfig *cfg)
 	return 0;
 }
 
-void Daemon::ParseResponse(const char* buffer, size_t size) {
+void Daemon::ParseFlowResponse(const char* buffer, size_t size) {
+	size_t i;
+	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+
+	if (g_debug) {
+		std::cout << "Response:" << std::endl;
+		std::cout << std::string(buffer, buffer + size);
+	}
+
+	tokenizer msg_tokenizer(std::string(buffer, buffer + size), boost::char_separator<char>("\r\n"));
+	tokenizer::iterator msg_iter = msg_tokenizer.begin();
+	for (i = 0; i < m_flow_params.size() && msg_iter != msg_tokenizer.end(); msg_iter++, i++) {
+		tokenizer line_tokenizer(*msg_iter, boost::char_separator<char>(" "));
+		tokenizer::iterator line_iter = line_tokenizer.begin();
+		std::advance(line_iter, 8);
+		if (line_iter == line_tokenizer.end()) {
+			sz_log(1, "Invalid response format for param: %d", i);
+			return;
+		}
+		if (g_debug)
+			std::cout << "Param no:" << i << " val: " << atof((*line_iter).c_str()) << std::endl; 
+		m_ipc->m_read[m_flow_params[i]] = atof((*line_iter).c_str()) * m_param_precs[m_flow_params[i]];
+	}
+	if (m_flow_params.size() != i) {
+		sz_log(1, "Not enough params received from weigh, got %d, expected at least %d", i, m_flow_params.size());
+		return;
+	}
+
+}
+
+void Daemon::ParseWeightResponse(const char* buffer, size_t size) {
 	size_t i;
 	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 
@@ -368,7 +433,7 @@ void Daemon::ParseResponse(const char* buffer, size_t size) {
 	tokenizer::iterator msg_iter = msg_tokenizer.begin();
 	std::advance(msg_iter, 4);
 
-	for (i = 0; i < m_params_count && msg_iter != msg_tokenizer.end(); msg_iter++, i++) {
+	for (i = 0; i < m_weight_params.size() && msg_iter != msg_tokenizer.end(); msg_iter++, i++) {
 		tokenizer line_tokenizer(*msg_iter, boost::char_separator<char>(" "));
 		tokenizer::iterator line_iter = line_tokenizer.begin();
 		std::advance(line_iter, 4);
@@ -378,10 +443,10 @@ void Daemon::ParseResponse(const char* buffer, size_t size) {
 		}
 		if (g_debug)
 			std::cout << "Param no:" << i << " val: " << atof((*line_iter).c_str()) << std::endl; 
-		m_ipc->m_read[i] = atof((*line_iter).c_str()) * m_param_precs[i];
+		m_ipc->m_read[m_weight_params[i]] = atof((*line_iter).c_str()) * m_param_precs[m_weight_params[i]];
 	}
-	if (m_params_count != i) {
-		sz_log(1, "Not enough params received from weigh, got %d, expected at least %d", i, m_params_count);
+	if (m_weight_params.size() != i) {
+		sz_log(1, "Not enough params received from weigh, got %d, expected at least %d", i, m_weight_params.size());
 		return;
 	}
 }
@@ -399,13 +464,27 @@ void Daemon::Go()
 
 		try {
 			m_port->Open();
-			m_port->WriteData("L\r", 2);
-			ssize_t read;
-			read = m_port->GetData(buffer, BUF_SIZE);
-			if (read == 0)
-				m_port->Close();
+			if (m_weight_params.size()) {
+				m_port->WriteData("L\r", 2);
+				ssize_t read;
+				read = m_port->GetData(buffer, BUF_SIZE);
+				if (read == 0) {
+					m_port->Close();
+					throw SerialException();
+				}
 
-			ParseResponse(buffer, read);
+				ParseWeightResponse(buffer, read);
+			}
+
+			if (m_flow_params.size()) {
+				m_port->WriteData("P\r", 2);
+				ssize_t read;
+				read = m_port->GetData(buffer, BUF_SIZE);
+				if (read == 0)
+					m_port->Close();
+				else
+					ParseFlowResponse(buffer, read);
+			}
 
 		} catch (SerialException&) {
 			if (m_ipc) for (size_t i = 0; i < m_params_count; i++)
@@ -430,7 +509,7 @@ void Daemon::Go()
 
 int main(int argc, char *argv[]) {
 
-	DaemonConfig* cfg = new DaemonConfig("nrsdmn");
+	DaemonConfig* cfg = new DaemonConfig("tensdmn");
 
 	if (cfg->Load(&argc, argv)) {
 		return 1;

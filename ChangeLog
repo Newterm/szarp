@@ -1,5 +1,13 @@
 $Id$
 
+2010-03-02      Darek Marcinkiewicz <reksio@daliaterm.pl>
+	* parcook/tensdmn.cc: added support for reading flow values
+	* wx/draw3: two fixes: draws enabling/disabling was reported
+	twice to 'observers', first notification was happening when
+	controller was in inconsistent state what might result in assert
+	upon set change; program does not crash when configuration is reloded
+	and new version of configuration has currently selected set
+	renamed/removed
 2010-03-01      Darek Marcinkiewicz <reksio@daliaterm.pl>
 	* libSzarp2/szbase: beginnigns of optimized params 'execution engine'
 2010-03-01      Pawel Palucha <pawel@praterm.com.pl>

@@ -615,9 +615,10 @@ void DrawsController::ConfigurationWasReloaded(wxString prefix) {
 	DrawsSets *dss = m_config_manager->GetConfigByPrefix(prefix);
 	assert(dss);
 
-	DrawSet* ds = dss->GetDrawsSets()[m_current_set_name];
-	if (ds)
-		DoSet(ds);
+	DrawSetsHash& dsh = dss->GetDrawsSets();
+	DrawSetsHash::iterator i = dsh.find(m_current_set_name);
+	if (i != dsh.end())
+		DoSet(i->second);
 	else {
 		SortedSetsArray *sets = dss->GetSortedDrawSetsNames();
 		DoSet((*sets)[0]);
@@ -627,6 +628,7 @@ void DrawsController::ConfigurationWasReloaded(wxString prefix) {
 	if (m_selected_draw >= m_active_draws_count)
 		m_selected_draw = 0;
 
+	DisableDisabledDraws();
 	if (m_draws[m_selected_draw]->GetEnable() == false)
 		m_draws[m_selected_draw]->SetEnable(true);
 

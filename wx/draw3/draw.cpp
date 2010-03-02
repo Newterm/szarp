@@ -214,8 +214,6 @@ void Draw::SetEnable(bool enable) {
 		return;
 	m_enabled = enable;
 
-	m_observers->NotifyEnableChanged(this);
-
 }
 
 int Draw::GetDrawNo() const {
