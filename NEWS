@@ -6,8 +6,23 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.332
+# 02.03.2010
+
+* synchronizer protocol was extended to more efficiently
+handle most common case of adding new data to szbase file
+* draw3 printing support was improved
+* lua parameters execution errors are now properly captured
+* daemon for reading values from tensometric scale has been added
+to SZARP
+* development of viszio application has been completed
+* szast application has been enhanced, it can now fetch reports from
+regulators
+* a minor fix in raporter3 application: parameter selection persist
+values list refresh
+
 ** 3.1.287
-# 02.02.2009
+# 02.02.2010
 
 * ddespy has been rewritten and ddedmn improved. Thanks to these changes
 fetching data from DDE servers is much faster now.
