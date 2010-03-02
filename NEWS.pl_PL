@@ -10,16 +10,16 @@
 
 ** 3.1.332
 # 02.03.2010
-* protoko³ synchronizatora zosta³ rozbudowany tak by efektywniej
-obs³ugiwaæ synchronizacjê nowych danych w plikach szbase
-* rozbudowano obs³ugê drukowania w draw3
-* poprawiono obs³ugê b³êdów wykonania parametów lua
-* zosta³ napisany demon do odpytywania danych z wagi tensometrycznej
-* zakoñczono rozwój aplikacji viszio
-* do aplikacji szast zosta³a dodana funkcja pobierania raportów oraz
-ustawieñ regulatora, przydatna przy diagnostyce komunikacji z regulatorem
-* drobne usprawnienie programu raporter3: zaznaczenie akutalnego parametru
-jest zachowywane pomiêdzy od¶wie¿eniami listy warto¶ci
+* Protokó³ synchronizatora zosta³ rozbudowany tak by efektywniej obs³ugiwaæ
+synchronizacjê nowych danych w plikach szbase.
+* Rozbudowano obs³ugê drukowania w draw3
+* Poprawiono obs³ugê b³êdów wykonania parametów LUA.
+* Zosta³ napisany demon do odpytywania danych z wagi tensometrycznej.
+* Zakoñczono rozwój aplikacji viszio.
+* Do aplikacji szast zosta³a dodana funkcja pobierania raportów oraz
+ustawieñ regulatora, przydatna przy diagnostyce komunikacji z regulatorem.
+* Drobne usprawnienie programu raporter3: zaznaczenie aktualnego parametru
+jest zachowywane pomiêdzy od¶wie¿eniami listy warto¶ci.
 
 ** 3.1.287
 # 02.02.2010
