@@ -1,5 +1,7 @@
 $Id$
 
+2010-03-03      Darek Marcinkiewicz <reksio@daliaterm.pl>
+	* building unstable
 2010-03-02      Darek Marcinkiewicz <reksio@daliaterm.pl>
 	* parcook/tensdmn.cc: added support for reading flow values
 	* wx/draw3: two fixes: draws enabling/disabling was reported
