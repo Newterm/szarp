@@ -1384,6 +1384,7 @@ do_accept:
 	if (!ip_allowed(&addr)) {
 		dolog(5, "Connection from: %s rejected, not on allowed list", inet_ntoa(addr.sin_addr));
 		close(fd);
+		return;
 	}
 
 	struct bufferevent* bufev = bufferevent_new(fd,
