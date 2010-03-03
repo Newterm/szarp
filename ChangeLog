@@ -1,5 +1,9 @@
 $Id$
 
+2010-03-03      Pawel Palucha <pawel@praterm.com.pl>
+	* parcook/mbdmn.cc: removed "dereferencing type-punned pointer ..."
+	warning, replaced '< 0' with '== -1' on checking return values from
+	various system functions.
 2010-03-03      Darek Marcinkiewicz <reksio@daliaterm.pl>
 	* wx/sync: fix for windows, for reasons I won't be
 	investigating now:

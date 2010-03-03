@@ -622,7 +622,7 @@ unsigned short bcd_parcook_modbus_val_op::val() {
 }
 
 template<class T> unsigned short long_parcook_modbus_val_op<T>::val() {
-	unsigned short v2[2];
+	uint16_t v2[2];
 	bool valid;
 
 	v2[1] = m_reg_msw->get_val(valid);
@@ -636,8 +636,8 @@ template<class T> unsigned short long_parcook_modbus_val_op<T>::val() {
 		return SZARP_NO_DATA;
 	}
 
-	int iv = *((int*) v2) * m_prec; 
-	unsigned int* pv = (unsigned int*) &iv;
+	int16_t iv = *((int16_t*)v2) * m_prec; 
+	uint16_t* pv = (uint16_t*) &iv;
 
 	dolog(10, "Int value: %d, unsigned int: %u", iv, *pv);
 
@@ -1236,14 +1236,14 @@ struct event_base* modbus_daemon::get_event_base() {
 int set_nonblock(int fd) {
 
 	int flags = fcntl(fd, F_GETFL, 0);
-	if (flags < 0) {
+	if (flags == -1) {
 		dolog(0, "set_nonblock: Unable to get socket flags");
 		return -1;
 	}
 
 	flags |= O_NONBLOCK;
 	flags = fcntl(fd, F_SETFL, flags);
-	if (flags < 0) {
+	if (flags == -1) {
 		dolog(0, "set_nonblock: Unable to set socket flags");
 		return -1;
 	}
@@ -1366,7 +1366,7 @@ void tcp_server::accept_connection() {
 
 do_accept:
 	int fd = accept(m_listen_fd, (struct sockaddr*) &addr, &size);
-	if (fd < 0) {
+	if (fd == -1) {
 		if (errno == EINTR)
 			goto do_accept;
 		else if (errno == EAGAIN || errno == EWOULDBLOCK) 
@@ -1453,14 +1453,14 @@ int tcp_server::initialize() {
 		return 1;
 
 	m_listen_fd = socket(PF_INET, SOCK_STREAM, 0);
-	if (m_listen_fd < 0) {
+	if (m_listen_fd == -1) {
 		dolog(0, "socket() failed, errno %d (%s)", errno, strerror(errno));
 		return 1;
 	}
 
 	ret = setsockopt(m_listen_fd, SOL_SOCKET, SO_REUSEADDR, 
 			&on, sizeof(on));
-	if (ret < 0) {
+	if (ret == -1) {
 		dolog(0, "setsockopt() failed, errno %d (%s)",
 				errno, strerror(errno));
 		close(m_listen_fd);
@@ -1483,7 +1483,7 @@ int tcp_server::initialize() {
 		}
 		break;
 	}
-	if (ret < 0) {
+	if (ret == -1) {
 		dolog(0, "bind() failed, errno %d (%s)",
 				errno, strerror(errno));
 		close(m_listen_fd);
@@ -1492,7 +1492,7 @@ int tcp_server::initialize() {
 	}
 
 	ret = listen(m_listen_fd, 1);
-	if (ret < 0) {
+	if (ret == -1) {
 		dolog(0, "listen() failed, errno %d (%s)",
 				errno, strerror(errno));
 		close(m_listen_fd);
@@ -1796,7 +1796,7 @@ void tcp_client_connection::connect() {
 
 	disconnect();
 	m_connection.fd = socket(PF_INET, SOCK_STREAM, 0);
-	if (m_connection.fd < 0) {
+	if (m_connection.fd == -1) {
 		dolog(1, "Faile to create connection socket, error: %s", strerror(errno));
 		m_modbus_client->connection_failed(); 
 		return;
@@ -2045,8 +2045,10 @@ int get_serial_config(xmlXPathContextPtr xp_ctx, DaemonConfig* cfg, serial_port_
 
 int open_serial_port(serial_port_configuration& spc) {
 	int fd = open(spc.path.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK, 0);
-	if (fd < 0)
+	if (fd == -1) {
 		dolog(0, "Failed do open port: %s, error: %s", spc.path.c_str(), strerror(errno));
+		return -1;
+	}
 	
 	struct termios ti;
 	if (tcgetattr(fd, &ti) == -1) {
@@ -2135,7 +2137,7 @@ void serial_client_connection::connect() {
 	disconnect();
 
 	m_fd = open_serial_port(m_spc);
-	if (m_fd < 0) {
+	if (m_fd == -1) {
 		m_modbus_client->connection_failed();
 		return;
 	}
@@ -2208,7 +2210,7 @@ void serial_server::close_connection() {
 
 bool serial_server::open_connection() {
 	m_fd = open_serial_port(m_spc);
-	if (m_fd < 0) {
+	if (m_fd == -1) {
 		dolog(0, "Failed to open serial port, initialization failed. exiting");
 		return false;
 	}
