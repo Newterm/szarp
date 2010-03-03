@@ -1583,8 +1583,9 @@ void Client::GetExInEpxression(TPath& dir, uint32_t dir_no, char*& exclude, char
 
 
 	do {
-		char *current, *tmp;
-		asprintf(&current, "%.4lu%.2lu.szb", year, month);
+		char *tmp;
+		char current[11];
+		sprintf(current, "%.4ld%.2ld.szb", year, month);
 		if (_include == NULL)
 			asprintf(&tmp, "%s", current);
 		else
@@ -1593,13 +1594,10 @@ void Client::GetExInEpxression(TPath& dir, uint32_t dir_no, char*& exclude, char
 		_include = tmp;
 
 		if (program_uruchomiony.Concat(current).GetType() != TPath::TNOTEXISTS) {
-			if (found) {
-				free(current);
+			if (found)
 				break;
-			}
 			found = true;
 		}
-		free(current);
 
 		if (i++ > loop_guard) {
 			free(_include);

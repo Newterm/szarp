@@ -1,7 +1,17 @@
 $Id$
 
 2010-03-03      Darek Marcinkiewicz <reksio@daliaterm.pl>
-	* building unstable
+	* wx/sync: fix for windows, for reasons I won't be
+	investigating now:
+	char *c;
+	asprintf(&c, "%.4ld%.2ld.szb", year, month)
+	produces garbage, wheras:
+	char c[11];
+	sprintf(c, "%.4ld%.2ld.szb", year, month) 
+	works fine
+	asprintf uses vsnprintf internally and initial
+	buffer is large enough so we don't do any reallocations
+	- it should just work...
 2010-03-02      Darek Marcinkiewicz <reksio@daliaterm.pl>
 	* parcook/tensdmn.cc: added support for reading flow values
 	* wx/draw3: two fixes: draws enabling/disabling was reported
