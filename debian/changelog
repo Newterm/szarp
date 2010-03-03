@@ -1,3 +1,9 @@
+szarp (3.1.335) stable; urgency=low
+
+  * building unstable
+
+ -- Darek Marcinkiewicz <reksio@dalkiaterm.pl>  Fri, 03 Mar 2010 09:48:30 +0100
+
 szarp (3.1.318) stable; urgency=low
 
   * building stable - changes in reporter rejected.
