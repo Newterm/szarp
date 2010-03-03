@@ -1,5 +1,9 @@
 $Id$
 
+2010-03-03      Darek Marcinkiewicz <reksio@daliaterm.pl>
+	* meaner3: usage of "C" locale in boost::wpath enforced -
+	may prevent program termination when started with strange/
+	invalid LC_ variables values
 2010-03-03      Pawel Palucha <pawel@praterm.com.pl>
 	* parcook/mbdmn.cc: removed "dereferencing type-punned pointer ..."
 	warning, replaced '< 0' with '== -1' on checking return values from

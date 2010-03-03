@@ -46,6 +46,10 @@
 #include <errno.h>
 #include <signal.h>
 
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/convenience.hpp> 
+
+
 #include "classes.h"
 #include "meaner3.h"
 
@@ -198,6 +202,8 @@ int main(int argc, char* argv[])
 	TMeaner* meaner;
 	TStatus *status;
 	time_t last_cycle; /**< time of last cycle */
+
+	boost::filesystem::wpath_traits::imbue(std::locale("C")); 	
 
 	/* Set initial logging. */
 	loglevel = loginit_cmdline(2, NULL, &argc, argv);
