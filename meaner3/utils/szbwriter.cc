@@ -665,13 +665,6 @@ int main(int argc, char *argv[])
 
 	char *c;
 
-	c = libpar_getpar(SZARP_CFG_SECTION, "base_format", 1);
-	if (strcmp(c, "szarpbase")) {
-		sz_log(0, "szbwriter: set 'base_format' to 'szarpbase' in "SZARP_CFG);
-		return 1;
-	}
-	free(c);
-
 	ipk_path = libpar_getpar(SZARP_CFG_SECTION, "IPK", 1);
 	data_dir = libpar_getpar(MEANER3_CFG_SECTION, "datadir", 1);
 

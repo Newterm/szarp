@@ -1,5 +1,8 @@
 $Id$
 
+2010-03-04      Pawel Palucha <pawel@praterm.com.pl>
+	* meaner3/utils/szbwriter.cc: removed failing check for 'base_format'
+	parameter from szarp.cfg.
 2010-03-03      Pawel Palucha <pawel@praterm.com.pl>
 	* parcook/mbdmn.cc: added forgotten return from function after
 	rejecting connecting client's address.
