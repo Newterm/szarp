@@ -1,3 +1,9 @@
+szarp (3.1.343) stable; urgency=low
+
+  * building stable
+
+ -- Pawel Palucha <pawel@praterm.com.pl>  Thu, 04 Mar 2010 10:10:40 +0100
+
 szarp (3.1.342) unstable; urgency=low
 
   * building stable - fix in szbwriter
