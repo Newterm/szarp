@@ -22,9 +22,29 @@
  * $Id: cacheabledatablock.h 267 2010-01-11 09:06:34Z reksi0 $
  */
 
+#ifndef __LOPTDATABLOCK_H__
+#define __LOPTDATABLOCK_H__
+
+#include "config.h"
+
+#ifdef LUA_PARAM_OPTIMISE
+
+#include "cacheabledatablock.h"
+
+namespace LuaExec {
+	class Param;
+	class ExecutionEngine;
+};
+
 class LuaOptDatablock : public CacheableDatablock
 {
+	void CalculateValues(LuaExec::ExecutionEngine *ee);
 public:
+	LuaExec::Param *exec_param;
 	LuaOptDatablock(szb_buffer_t * b, TParam * p, int y, int m);
 	virtual void Refresh();
 };
+
+#endif
+
+#endif

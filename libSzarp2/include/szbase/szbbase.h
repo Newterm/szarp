@@ -68,9 +68,6 @@ class Szbase {
 
 	bool AddBase(const std::wstring& prefix);
 
-	bool FindParam(const std::basic_string<unsigned char>& param, std::pair<szb_buffer_t*, TParam*>& bp);
-	bool FindParam(const std::wstring& param, std::pair<szb_buffer_t*, TParam*>& bp);
-
 	static Szbase* _instance;
 	Szbase(const std::wstring& szarp_dir);
 	~Szbase();
@@ -99,6 +96,8 @@ public:
 	szb_buffer_t* GetBuffer(const std::wstring& prefix);
 	static Szbase* GetObject();
 	std::wstring GetCacheDir(const std::wstring& prefix);
+	bool FindParam(const std::basic_string<unsigned char>& param, std::pair<szb_buffer_t*, TParam*>& bp);
+	bool FindParam(const std::wstring& param, std::pair<szb_buffer_t*, TParam*>& bp);
 	void ClearCacheDir(const std::wstring& prefix);
 	void ClearParamFromCache(const std::wstring& prefix, TParam* param);
 	void RemoveConfig(const std::wstring& prefix, bool poison_cache);

@@ -89,7 +89,7 @@ szb_datablock_t::szb_datablock_t(szb_buffer_t * b, TParam * p, int y, int m) :
 		locator(NULL),
 		initialized(true),
 		data(NULL),
-		first_non_fixed_probe(-1),
+		first_non_fixed_probe(0),
 		first_data_probe_index(-1),
 		last_data_probe_index(-1),
 		last_update_time(-1),

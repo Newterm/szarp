@@ -848,7 +848,7 @@ szb_definable_choose_function(double funid, double *parlst)
 DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int m): CacheableDatablock(b, p, y, m)
 {
 	#ifdef KDEBUG
-	sz_log(DATABLOCK_CREATION_LOG_LEVEL, "D: DefinableDatablock::DefinableDatablock(%s, %d.%d)", param->GetName(), year, month);
+	sz_log(DATABLOCK_CREATION_LOG_LEVEL, "D: DefinableDatablock::DefinableDatablock(%ls, %d.%d)", param->GetName().c_str(), year, month);
 	#endif
 
 	time_t updatetime = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);

@@ -1,5 +1,8 @@
 $Id$
 
+2010-03-06      Darek Marcinkiewicz <reksio@daliaterm.pl>
+	* libSzarp2: optimizer code typed in, but it is
+	not incorporated into szbase code yet
 2010-03-04      Pawel Palucha <pawel@praterm.com.pl>
 	* debian/changelog: building stable.
 	* meaner3/utils/szbwriter.cc: removed failing check for 'base_format'

@@ -125,7 +125,7 @@ namespace lua_grammar {
 		nil,
 		bool,
 		double,
-		std::string,
+		std::wstring,
 		threedots,
 		funcbody,
 		postfixexp,
