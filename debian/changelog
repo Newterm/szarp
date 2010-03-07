@@ -1,3 +1,9 @@
+szarp (3.1.344) karmic; urgency=low
+
+  * building karmic 
+
+ -- Darek Marcinkiewicz <reksio@dalkiaterm.pl>  Fri, 07 Mar 2010 09:48:30 +0100
+
 szarp (3.1.343) stable; urgency=low
 
   * building stable
@@ -10,6 +16,7 @@ szarp (3.1.342) unstable; urgency=low
 
  -- Pawel Palucha <pawel@praterm.com.pl>  Thu, 04 Mar 2010 09:09:38 +0100
 
+>>>>>>> .r344
 szarp (3.1.336) unstable; urgency=low
 
   * building unstable
