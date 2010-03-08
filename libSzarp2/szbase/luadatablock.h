@@ -27,11 +27,16 @@ time_t szb_lua_search_data(szb_buffer_t * buffer, TParam * param , time_t start,
 
 SZBASE_TYPE szb_lua_calc_avg(szb_buffer_t * buffer, TParam * param, time_t time, SZARP_PROBE_TYPE probe_type, int custom_length);
 
-class LuaDatablock: public CacheableDatablock
+class LuaDatablock: public CacheableDatablock {
+public:
+	LuaDatablock(szb_buffer_t * b, TParam * p, int y, int m);
+};
+
+class LuaNativeDatablock: public LuaDatablock
 {
 	public:
-		LuaDatablock(szb_buffer_t * b, TParam * p, int y, int m);
-		~LuaDatablock(){this->Cache();};
+		LuaNativeDatablock(szb_buffer_t * b, TParam * p, int y, int m);
+		~LuaNativeDatablock(){this->Cache();};
 		virtual void FinishInitialization();
 		virtual void Refresh();
 	protected:

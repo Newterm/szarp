@@ -5,10 +5,11 @@
 #include <cmath>
 #include <cfloat>
 #include <functional>
-#include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/variant.hpp>
 
+#include "conversion.h"
+#include "liblog.h"
 #include "lua_syntax.h"
 #include "szbbase.h"
 #include "loptdatablock.h"
@@ -18,49 +19,7 @@ namespace LuaExec {
 using namespace lua_grammar;
 
 
-typedef double Val;
-
 class ExecutionEngine;
-
-struct ParamRef {
-	szb_buffer_t *m_buffer;
-	TParam* m_param;
-	size_t m_param_index;
-	ExecutionEngine* m_exec_engine;
-public:
-	void SetExecutionEngine(ExecutionEngine *exec_engine) { m_exec_engine = exec_engine; }
-	Val Value(const double &time, const double& period);
-};
-
-class Var {
-	size_t m_var_no;
-	ExecutionEngine* m_ee;
-public:
-	Var(size_t var_no) : m_var_no(var_no) {}
-	Val& operator()();
-	Var& operator=(const Val& val);
-	void SetExecutionEngine(ExecutionEngine *ee) { m_ee = ee; }
-};
-
-class Expression {
-public:
-	virtual Val Value() = 0;
-};
-
-typedef boost::shared_ptr<Expression> PExpression;
-
-class ExpressionList : public Expression {
-	std::vector<PExpression> m_expressions;
-public:
-	void AddExpression(PExpression expression);
-	virtual Val Value();
-};
-
-struct Param {
-	std::vector<Var> m_vars;
-	std::vector<ParamRef> m_par_refs;
-	ExpressionList m_expression;
-};
 
 class NilExpression : public Expression {
 public:
@@ -1033,7 +992,7 @@ ExecutionEngine::~ExecutionEngine() {
 
 } // LuaExec
 
-LuaOptDatablock::LuaOptDatablock(szb_buffer_t * b, TParam * p, int y, int m) : CacheableDatablock(b, p, y, m) {
+LuaOptDatablock::LuaOptDatablock(szb_buffer_t * b, TParam * p, int y, int m) : LuaDatablock(b, p, y, m) {
 	#ifdef KDEBUG
 	sz_log(DATABLOCK_CREATION_LOG_LEVEL, "D: DefinableDatablock::DefinableDatablock(%ls, %d.%d)", param->GetName().c_str(), year, month);
 	#endif
@@ -1084,4 +1043,39 @@ void LuaOptDatablock::Refresh() {
 	}
 }
 
+#endif
+
+#if LUA_PARAM_OPTIMISE
+LuaDatablock *create_lua_data_block(szb_buffer_t *b, TParam* p, int y, int m) {
+	LuaExec::Param *ep = p->GetLuaExecParam();
+	if (ep == NULL) {
+		ep = new LuaExec::Param;
+		b->AddExecParam(ep);
+		p->SetLuaExecParam(ep);
+		lua_grammar::chunk param_code;
+		std::wstring param_text = SC::U2S(p->GetLuaScript());
+		std::wstring::const_iterator param_text_begin = param_text.begin();
+		std::wstring::const_iterator param_text_end = param_text.end();
+		ep->m_optimized = false;
+		if (!lua_grammar::parse(param_text_begin, param_text_end, param_code)) {
+			LuaExec::ParamConverter pc(Szbase::GetObject());
+			try {
+				pc.ConvertParam(param_code, ep);
+				ep->m_optimized = true;
+			} catch (LuaExec::ParamConversionException &e) {
+				sz_log(2, "Parameter %ls cannot be optimized, reason: %ls", p->GetName().c_str(), e.what().c_str());
+			}
+		}
+	}
+	if (ep->m_optimized)
+		return new LuaOptDatablock(b, p, y, m);
+	else
+		return new LuaNativeDatablock(b, p, y, m);
+
+
+}
+#else
+LuaDataBlock *create_lua_data_block(szb_buffer_t *b, TParam* p, int y, int m) {
+	return new LuaNativeDatablock(b, p, y, m);
+}
 #endif

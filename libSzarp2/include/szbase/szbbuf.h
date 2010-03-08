@@ -93,6 +93,12 @@ private:
 	unordered_map< BufferKey, szb_datablock_t*, TupleHasher, TupleComparer > hashstorage;
 
 	std::map< TParam* , BlockLocator* > paramindex;
+#ifndef NO_LUA
+#if LUA_PARAM_OPTIMISE
+	std::vector<LuaExec::Param*> optimized_params;
+#endif
+#endif
+
 	BlockLocator* newest_block;
 	BlockLocator* oldest_block;
 
@@ -106,6 +112,11 @@ private:
 public:
 	void Lock();
 	void Unlock();
+#ifndef NO_LUA
+#if LUA_PARAM_OPTIMISE
+	void AddExecParam(LuaExec::Param *param);
+#endif
+#endif
 	void AddBlock(szb_datablock_t* block);
 	void DeleteBlock(szb_datablock_t* block);
 	szb_buffer_str(int size);

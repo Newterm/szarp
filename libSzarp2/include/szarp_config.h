@@ -705,7 +705,17 @@ protected:
  * Single input parameter description
  */
 
+#ifndef NO_LUA
 
+#ifdef LUA_PARAM_OPTIMISE
+
+namespace LuaExec {
+	class Param;
+};
+
+#endif
+
+#endif
 class TParam {
 public:
 	typedef enum { NONE, RPN, DEFINABLE
@@ -718,7 +728,7 @@ public:
 		, P_LUA
 #endif
 		} ParamType;
-
+	
 	TParam(TUnit *parent,
 		TSzarpConfig *parentSC = NULL,
 		const std::wstring& formula = std::wstring(),
@@ -755,6 +765,7 @@ public:
             _lua_start_date_time(-1),
 	    _lua_start_offset(0),
 	    _lua_end_offset(0),
+	    _opt_lua_param(NULL),
 #endif
 	    _sum_unit(),
 	    _sum_divisor(6.)
@@ -1074,6 +1085,9 @@ public:
 
 	void SetLuaScript(const unsigned char* script);
 
+	LuaExec::Param* GetLuaExecParam();
+
+	void SetLuaExecParam(LuaExec::Param *param);
 #endif
 	void SetName(const std::wstring& name) { assert (_name == std::wstring()); _name = name; }
 	/** Get parameter writting period. */
@@ -1159,6 +1173,11 @@ protected:
 				/**<lua param start time offset*/
 	time_t _lua_end_offset;
 				/**<lua param end time offset*/
+
+#if LUA_PARAM_OPTIMISE
+	LuaExec::Param* _opt_lua_param;
+#endif
+
 #endif
 	/*unit that shall be used to display summaried values of this params*/
 	std::wstring _sum_unit;

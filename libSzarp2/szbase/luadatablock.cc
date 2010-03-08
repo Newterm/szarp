@@ -312,11 +312,13 @@ error:
 
 	return SZB_NODATA;
 }
+
+LuaDatablock::LuaDatablock(szb_buffer_t * b, TParam * p, int y, int m): CacheableDatablock(b, p, y, m) {}
 	
-LuaDatablock::LuaDatablock(szb_buffer_t * b, TParam * p, int y, int m): CacheableDatablock(b, p, y, m)
+LuaNativeDatablock::LuaNativeDatablock(szb_buffer_t * b, TParam * p, int y, int m): LuaDatablock(b, p, y, m)
 {
 #ifdef KDEBUG
-	sz_log(DATABLOCK_CREATION_LOG_LEVEL, "D: LuaDatablock::LuaDatablock(%s, %d.%d)", param->GetName(), year, month);
+	sz_log(DATABLOCK_CREATION_LOG_LEVEL, "D: LuaNativeDatablock::LuaNativeDatablock(%s, %d.%d)", param->GetName(), year, month);
 #endif
 
 	m_init_in_progress = false;
@@ -357,7 +359,7 @@ LuaDatablock::LuaDatablock(szb_buffer_t * b, TParam * p, int y, int m): Cacheabl
 		NOT_INITIALIZED;
 }
 
-void LuaDatablock::FinishInitialization() {
+void LuaNativeDatablock::FinishInitialization() {
 	if (!IsInitialized())
 		return;
 
@@ -438,7 +440,7 @@ void LuaDatablock::FinishInitialization() {
 }
 
 void
-LuaDatablock::Refresh() {
+LuaNativeDatablock::Refresh() {
 
 	if(this->first_non_fixed_probe == this->max_probes)
 		return;

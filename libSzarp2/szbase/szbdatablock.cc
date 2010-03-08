@@ -104,9 +104,9 @@ szb_datablock_t::szb_datablock_t(szb_buffer_t * b, TParam * p, int y, int m) :
 
 szb_datablock_t::~szb_datablock_t()
 {
-	if(data != NULL)
+	if (data != NULL)
 		FreeDataMemory();
-	if(this->locator)
+	if (this->locator)
 		delete this->locator;
 }
 

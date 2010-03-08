@@ -27,16 +27,66 @@
 
 #include "config.h"
 
+#include <boost/shared_ptr.hpp>
+
+#include "luadatablock.h"
+
+LuaDatablock *create_lua_data_block(szb_buffer_t *b, TParam* p, int y, int m);
+
 #ifdef LUA_PARAM_OPTIMISE
 
-#include "cacheabledatablock.h"
-
 namespace LuaExec {
-	class Param;
-	class ExecutionEngine;
+
+class ExecutionEngine;
+
+typedef double Val;
+
+struct ParamRef {
+	szb_buffer_t *m_buffer;
+	TParam* m_param;
+	size_t m_param_index;
+	ExecutionEngine* m_exec_engine;
+public:
+	void SetExecutionEngine(ExecutionEngine *exec_engine) { m_exec_engine = exec_engine; }
+	Val Value(const double &time, const double& period);
 };
 
-class LuaOptDatablock : public CacheableDatablock
+class Var {
+	size_t m_var_no;
+	ExecutionEngine* m_ee;
+public:
+	Var(size_t var_no) : m_var_no(var_no) {}
+	Val& operator()();
+	Var& operator=(const Val& val);
+	void SetExecutionEngine(ExecutionEngine *ee) { m_ee = ee; }
+};
+
+
+class Expression {
+public:
+	virtual Val Value() = 0;
+};
+
+typedef boost::shared_ptr<Expression> PExpression;
+
+class ExpressionList : public Expression {
+	std::vector<PExpression> m_expressions;
+public:
+	void AddExpression(PExpression expression);
+	virtual Val Value();
+};
+
+class Param {
+public:
+	bool m_optimized;
+	std::vector<Var> m_vars;
+	std::vector<ParamRef> m_par_refs;
+	ExpressionList m_expression;
+};
+
+};
+
+class LuaOptDatablock : public LuaDatablock 
 {
 	void CalculateValues(LuaExec::ExecutionEngine *ee);
 public:

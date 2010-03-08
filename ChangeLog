@@ -1,5 +1,10 @@
 $Id$
 
+2010-03-08      Darek Marcinkiewicz <reksio@daliaterm.pl>
+	* libSzarp2: optimizer incorporated into szbase, 
+	now what's left is to make it work... note: optimizer is
+	not compiled by default so current szarp codebase can
+	still be considered stable
 2010-03-06      Darek Marcinkiewicz <reksio@daliaterm.pl>
 	* libSzarp2: optimizer code typed in, but it is
 	not incorporated into szbase code yet

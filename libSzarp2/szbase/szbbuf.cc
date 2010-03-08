@@ -28,6 +28,7 @@
 
 #include "definabledatablock.h"
 #include "realdatablock.h"
+#include "loptdatablock.h"
 
 #include "szbbase.h"
 #include "include/szarp_config.h"
@@ -56,6 +57,7 @@
 #include "szbdefines.h"
 #include "realdatablock.h"
 #include "combineddatablock.h"
+#include "loptdatablock.h"
 
 #include "boost/filesystem/path.hpp"
 #include "boost/filesystem/operations.hpp"
@@ -150,7 +152,7 @@ szb_get_block(szb_buffer_t * buffer, TParam * param, int year, int month)
 	case TParam::P_LUA:
 	    	if (param->GetFormulaType() == TParam::LUA_AV)
 			return NULL;
-		ret = new LuaDatablock(buffer, param, year, month);
+		ret = create_lua_data_block(buffer, param, year, month);
 	    break;
 #endif
 
@@ -680,6 +682,12 @@ szb_buffer_str::szb_buffer_str(int size): newest_block(NULL), oldest_block(NULL)
 szb_buffer_str::~szb_buffer_str()
 {
 	this->freeBlocks();
+#ifndef NO_LUA
+#if LUA_PARAM_OPTIMISE
+	for (size_t i = 0; i < optimized_params.size(); i++)
+		delete optimized_params[i];
+#endif
+#endif
 }
 
 szb_datablock_t *
