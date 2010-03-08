@@ -707,7 +707,7 @@ protected:
 
 #ifndef NO_LUA
 
-#ifdef LUA_PARAM_OPTIMISE
+#if LUA_PARAM_OPTIMISE
 
 namespace LuaExec {
 	class Param;
@@ -765,7 +765,9 @@ public:
             _lua_start_date_time(-1),
 	    _lua_start_offset(0),
 	    _lua_end_offset(0),
+#if LUA_PARAM_OPTIMISE
 	    _opt_lua_param(NULL),
+#endif
 #endif
 	    _sum_unit(),
 	    _sum_divisor(6.)
@@ -1085,9 +1087,11 @@ public:
 
 	void SetLuaScript(const unsigned char* script);
 
+#if LUA_PARAM_OPTIMISE
 	LuaExec::Param* GetLuaExecParam();
 
 	void SetLuaExecParam(LuaExec::Param *param);
+#endif 
 #endif
 	void SetName(const std::wstring& name) { assert (_name == std::wstring()); _name = name; }
 	/** Get parameter writting period. */

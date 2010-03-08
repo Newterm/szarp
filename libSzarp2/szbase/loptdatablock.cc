@@ -1,11 +1,8 @@
 #include "config.h"
 
-#ifdef LUA_PARAM_OPTIMISE
-
 #include <cmath>
 #include <cfloat>
 #include <functional>
-#include <boost/make_shared.hpp>
 #include <boost/variant.hpp>
 
 #include "conversion.h"
@@ -13,6 +10,10 @@
 #include "lua_syntax.h"
 #include "szbbase.h"
 #include "loptdatablock.h"
+
+#ifdef LUA_PARAM_OPTIMISE
+
+#include <boost/make_shared.hpp>
 
 namespace LuaExec {
 
@@ -1075,7 +1076,7 @@ LuaDatablock *create_lua_data_block(szb_buffer_t *b, TParam* p, int y, int m) {
 
 }
 #else
-LuaDataBlock *create_lua_data_block(szb_buffer_t *b, TParam* p, int y, int m) {
+LuaDatablock *create_lua_data_block(szb_buffer_t *b, TParam* p, int y, int m) {
 	return new LuaNativeDatablock(b, p, y, m);
 }
 #endif
