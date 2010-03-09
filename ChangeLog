@@ -1,5 +1,9 @@
 $Id$
 
+2010-03-09      Darek Marcinkiewicz <reksio@daliaterm.pl>
+	* parcook/mbdmn.cc: serial mode fixes - stop_timer was called when
+	timer was already stopped, m_timer_started flag was not
+	set to true upon timer start
 2010-03-08      Darek Marcinkiewicz <reksio@daliaterm.pl>
 	* libSzarp2: optimizer incorporated into szbase, 
 	now what's left is to make it work... note: optimizer is

@@ -1,3 +1,9 @@
+szarp (3.1.349) stable; urgency=low
+
+  * building stable
+
+ -- Darek Marcinkiewicz <reksio@dalkiaterm.pl>  Fri, 09 Mar 2010 09:48:30 +0100
+
 szarp (3.1.344) karmic; urgency=low
 
   * building karmic 

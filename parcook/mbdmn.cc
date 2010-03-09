@@ -636,8 +636,8 @@ template<class T> unsigned short long_parcook_modbus_val_op<T>::val() {
 		return SZARP_NO_DATA;
 	}
 
-	int16_t iv = *((int16_t*)v2) * m_prec; 
-	uint16_t* pv = (uint16_t*) &iv;
+	int32_t iv = *((int32_t*)v2) * m_prec; 
+	uint32_t* pv = (uint32_t*) &iv;
 
 	dolog(10, "Int value: %d, unsigned int: %u", iv, *pv);
 
@@ -1936,6 +1936,7 @@ void serial_parser::start_timer() {
 	tv.tv_sec = 2;
 	tv.tv_usec = 0;
 	evtimer_add(&m_timer, &tv); 
+	m_timer_started = true;
 }
 
 serial_rtu_parser::serial_rtu_parser(serial_connection_handler *serial_handler) : serial_parser(serial_handler), m_state(FUNC_CODE) {}
@@ -1967,7 +1968,6 @@ void serial_rtu_parser::read_data(struct bufferevent *bufev) {
 			r = bufferevent_read(bufev, &m_sdu.pdu.data[m_data_read], m_sdu.pdu.data.size() - m_data_read);
 			m_data_read += r;
 			if (check_crc()) {
-				stop_timer();
 				m_state = ADDR;
 				m_sdu.pdu.data.resize(m_data_read - 2);
 				m_serial_handler->frame_parsed(m_sdu, bufev);
