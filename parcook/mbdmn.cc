@@ -415,6 +415,7 @@ protected:
 	struct event m_timer;
 	SDU m_sdu;
 	bool m_timer_started;
+	int m_timeout;
 
 	void start_timer();
 	void stop_timer();
@@ -442,7 +443,7 @@ class serial_rtu_parser : public serial_parser {
 
 	virtual void timer_event();
 public:
-	serial_rtu_parser(serial_connection_handler *serial_handler);
+	serial_rtu_parser(serial_connection_handler *serial_handler, int speed);
 	void read_data(struct bufferevent *bufev);
 	void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev);
 	void reset();
@@ -1915,7 +1916,7 @@ bool serial_rtu_parser::check_crc() {
 serial_parser::serial_parser(serial_connection_handler *serial_handler) : m_serial_handler(serial_handler), m_timer_started(false) {
 	evtimer_set(&m_timer, timer_callback, this);
 	event_base_set(m_serial_handler->get_event_base(), &m_timer);
-
+	m_timeout = 1000000;
 }
 
 void serial_parser::timer_callback(int fd, short event, void* parser) {
@@ -1933,13 +1934,19 @@ void serial_parser::start_timer() {
 	stop_timer();
 
 	struct timeval tv;
-	tv.tv_sec = 2;
-	tv.tv_usec = 0;
+	tv.tv_sec = 0;
+	tv.tv_usec = m_timeout;
 	evtimer_add(&m_timer, &tv); 
 	m_timer_started = true;
 }
 
-serial_rtu_parser::serial_rtu_parser(serial_connection_handler *serial_handler) : serial_parser(serial_handler), m_state(FUNC_CODE) {}
+serial_rtu_parser::serial_rtu_parser(serial_connection_handler *serial_handler, int speed) : serial_parser(serial_handler), m_state(FUNC_CODE) {
+	/*according to protocol specification, intra-character
+	 * delay cannot exceed 1.5 * (time of transmittion of one character),
+	 * we will make it double to be on safe side */
+	if (speed)
+		m_timeout = 3 * 1000000 / (speed / 8);
+}
 
 void serial_rtu_parser::reset() {
 	m_state = ADDR;	
@@ -2123,7 +2130,7 @@ int serial_client_connection::configure(DaemonConfig *cfg, xmlXPathContextPtr xp
 
 	if (get_serial_config(xp_ctx, cfg, m_spc))
 		return 1;
-	m_parser = new serial_rtu_parser(this);
+	m_parser = new serial_rtu_parser(this, m_spc.speed);
 	return 0;
 }
 
@@ -2188,7 +2195,7 @@ void serial_client_connection::connection_error_cb(struct bufferevent *ev, short
 
 serial_server::serial_server() {
 	m_fd = -1;
-	m_parser = new serial_rtu_parser(this);
+	m_parser = new serial_rtu_parser(this, m_spc.speed);
 }
 
 int serial_server::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx) {

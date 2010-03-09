@@ -1,6 +1,13 @@
 $Id$
 
 2010-03-09      Darek Marcinkiewicz <reksio@daliaterm.pl>
+	* parcook/mbdmn.cc: one more serial mode adjustment to comply
+	with modbus rtu spec - while reading frame daemon decides that
+	whole frame was received when no characters arrives for 1.5 *
+	{time of trasmition of one byte} - (actually it waits
+	twice the time given above, just to be on safe side) previous time
+	- 2 seconds - turned out to be too long, because some masters query us
+	with frequency equal or greater than that
 	* parcook/mbdmn.cc: serial mode fixes - stop_timer was called when
 	timer was already stopped, m_timer_started flag was not
 	set to true upon timer start
