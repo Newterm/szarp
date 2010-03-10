@@ -97,7 +97,6 @@ using std::vector;
 time_t StartDate=0;
 time_t StopDate=0;
 
-
 #define SZARP_CFG		"/etc/szarp/szarp.cfg"
 
 #define IPKCHECKER_NAMESPACE_STRING "http://www.praterm.com.pl/SZARP/ipk-checker"
@@ -700,6 +699,12 @@ class Cfunction {
 	  */
 	int CheckGreaterThan(int value);
 	 /**
+          * function checks if all values are diffrent than NO_DATA    
+	  * @param value - value
+	  * @return -1 NO_DATA; 0 - false; 1 - true 
+	  */
+	int CheckParamsNO_DATA();
+	/**
           * function returns amount of probes 
 	  * @return _Hpr (amount of probes) 
 	  */
@@ -902,6 +907,14 @@ int Cfunction::CheckGreaterThan (int value){
 	return S_FAIL;
 }
 
+int Cfunction::CheckParamsNO_DATA (){
+	if (HowProbesNO_DATA()==0) return S_NO_DATA;
+	if (HowProbes()!=HowProbesNO_DATA()) return S_NO_DATA;
+	else	
+		return S_OK;	
+	return S_FAIL;
+}
+
 /**Class deriver from Clua it defines additional functions in LUA and return status from LUA main() function*/
 class CluaRegister : public Clua {
 	public:
@@ -970,6 +983,11 @@ class CluaRegister : public Clua {
 	  */
 	static int checkgreaterthan(lua_State *L);
 	 /**
+	   * This function defines function in LUA and wraps Cfunction::CheckParamsNO_DATA()
+	   * @param L - state of LUA (required by LUA library)
+	  */
+	static int checkparamsnodata(lua_State *L);
+	 /**
 	   * This function returns status of main() function defined in LUA -1/0/1 and execute it.
 	   * @return status of main() function -1/0/1
 	  */
@@ -990,6 +1008,23 @@ class CluaRegister : public Clua {
 	   * @return status -1/0/1
 	  */
 	static int GetDataFromParam(time_t StartDate, time_t StopDate, char *PName, int *PData, int *PSize);
+	 /**
+	   * This function reads data from SZARP database
+	   * @param StartDate - begin of period
+	   * @param StopDate end of period
+	   * @param PWildCard for many params (currently only works asterix in the end of the name)
+	   * @param PData - array of read data
+	   * @param PSize - amount of read probes
+	   * @return status -1/0/1
+	  */
+	static int GetDataFromParams(time_t StartDate, time_t StopDate, char *PWildCard, int *PData, int *PSize);
+	 /**
+	   * Wildcard support
+	   * @param str - string 
+	   * @param wcard - string with wildcard
+	   * @return status (same as string.compare method)
+	  */
+	static int CheckWildCardString(char * str, char * wcard);
 	~CluaRegister(){};
 	
 };
@@ -1047,6 +1082,72 @@ int CluaRegister::GetDataFromParam(time_t StartDate, time_t StopDate, char *PNam
 	return S_OK;
 }
 
+int CluaRegister::GetDataFromParams(time_t StartDate, time_t StopDate, char *PWildCard, int *PData, int *PSize){
+	TSzarpConfig *ipk = new TSzarpConfig();
+	int ParamsCtr = 0;
+	char *path = libpar_getpar("", "IPK", 0);
+	szb_buffer_t* buf ;
+	SZBASE_TYPE data;
+
+	if (path == NULL) {
+		sz_log(0, "'IPK' not found in szarp.cfg");
+		return S_NO_DATA;
+	}
+	char *dir = libpar_getpar("", "datadir", 0);
+	if (dir == NULL) {
+		sz_log(0, "'datadir' not found in szarp.cfg");
+		return S_NO_DATA;
+	}
+	ipk->loadXML(SC::A2S(path));
+
+
+	for (TParam *ppp = ipk->GetFirstParam();ppp;ppp=ipk->GetNextParam(ppp)){
+		
+		if (CheckWildCardString((char *)(SC::S2A(ppp->GetName()).c_str()),(char *)PWildCard)==0){	
+			IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"", new NullMutex());
+			Szbase::Init(SC::A2S(PREFIX), NULL);
+			buf = szb_create_buffer(Szbase::GetObject(), SC::A2S(dir), 1, ipk);
+			data = szb_get_avg(buf, ipk->getParamByName(ppp->GetName()), StartDate, StopDate);
+			PData[ParamsCtr] = (int)ipk->getParamByName(ppp->GetName())->ToIPCValue(data); 
+			szb_free_buffer(buf);
+			Szbase::Destroy();
+			IPKContainer::Destroy();
+			if (ParamsCtr++>=MAXIMUM_PSIZE) ParamsCtr= MAXIMUM_PSIZE;
+		}
+	}
+	*PSize = ParamsCtr;  
+	if (ParamsCtr==0){
+		sz_log(0,"ERROR: WildCard '%s' couldn't match any parametr", PWildCard);	
+		delete ipk;
+		return S_NO_DATA;
+	}
+
+	free (dir);
+	free (path);
+	delete ipk;
+	return S_OK;
+}
+
+/** Function implements very simple wildcarding wit asterisk at the endo f the string */
+/** returns 0 - if string passes wildcard */
+int CluaRegister::CheckWildCardString(char * str, char * wcard){
+	const char WILDCARD = '*';
+	const short NO_IDX = -1;
+	string sstr(str);
+	string swcard(wcard);
+	int i=0;
+	short idx = NO_IDX; 
+	/* look for asterisk and cutting the string */
+	for (i = swcard.length(); (i > 0) && (idx == NO_IDX); i--){
+		if (swcard[i-1] == WILDCARD){
+			idx = (int)i;
+		}	
+	}
+	sstr.resize(i);
+	swcard.resize(i);
+	return sstr.compare(swcard);
+}
+
 int CluaRegister::main_lua(){
 	int narg, nres;
 	int m_result = 0;
@@ -1099,7 +1200,7 @@ int CluaRegister::checknoconsthyst(lua_State *L){
 	int Hpr;
 	int result=0;
 	if ( n != 2 ){
-        	lua_pushstring(L, "Two arguments is required for 'checknoconsthyst'");
+        	lua_pushstring(L, "Two arguments are required for 'checknoconsthyst'");
 		lua_error(L);
     	}
 	result = GetDataFromParam( StartDate, StopDate, (char *)lua_tostring( L, 1 ), buffer, &Hpr);
@@ -1144,7 +1245,7 @@ int CluaRegister::checknosaw(lua_State *L){
 	int Hpr;
 	int result=0;
 	if ( n != 2 ){
-      	lua_pushstring(L, "Two arguments is required for 'checknosaw'");
+      	lua_pushstring(L, "Two arguments are required for 'checknosaw'");
 		lua_error(L);
   	}
 	result = GetDataFromParam(StartDate, StopDate, (char *)lua_tostring( L, 1 ), buffer, &Hpr);
@@ -1303,7 +1404,7 @@ int CluaRegister::checklessthan(lua_State *L){
 	int Hpr;
 	int result=0;
 	if ( n != 2 ){
-        	lua_pushstring(L, "Two arguments is required for 'checklessthan'");
+        	lua_pushstring(L, "Two arguments are required for 'checklessthan'");
 		lua_error(L);
     	}
 	result = GetDataFromParam( StartDate, StopDate, (char *)lua_tostring( L, 1 ), buffer, &Hpr);
@@ -1325,7 +1426,7 @@ int CluaRegister::checkgreaterthan(lua_State *L){
 	int Hpr;
 	int result=0;
 	if ( n != 2 ){
-        	lua_pushstring(L, "Two arguments is required for 'checkgreaterthan'");
+        	lua_pushstring(L, "Two arguments are required for 'checkgreaterthan'");
 		lua_error(L);
     	}
 	result = GetDataFromParam( StartDate, StopDate, (char *)lua_tostring( L, 1 ), buffer, &Hpr);
@@ -1339,6 +1440,27 @@ int CluaRegister::checkgreaterthan(lua_State *L){
 	return 1;
 }
 
+/* checkparamsnodata (param_name(s)) */
+int CluaRegister::checkparamsnodata(lua_State *L){
+	int n = lua_gettop(L);
+	Cfunction *fcn;
+	int buffer [MAXIMUM_PSIZE];
+	int Hpr;
+	int result=0;
+	if ( n != 1 ){
+        	lua_pushstring(L, "One argument is required for 'checkparamsnodata'");
+		lua_error(L);
+    	}
+	result = GetDataFromParams( StartDate, StopDate, (char *)lua_tostring( L, 1 ), buffer, &Hpr);
+	if (result == S_NO_DATA) exit (0);	
+	if (result!=S_NO_DATA){
+		fcn = new Cfunction((int *)buffer, (int)Hpr);
+		result = fcn->CheckParamsNO_DATA();
+		delete fcn;
+	}
+	lua_pushnumber(L, result);
+	return 1;
+}
 
 
 CluaRegister::CluaRegister() : Clua(){
@@ -1355,6 +1477,7 @@ CluaRegister::CluaRegister() : Clua(){
 	lua_register(m_lua, "avgprobe", avgprobe);
 	lua_register(m_lua, "checklessthan", checklessthan);
 	lua_register(m_lua, "checkgreaterthan", checkgreaterthan);
+	lua_register(m_lua, "checkparamsnodata", checkparamsnodata);
 }
 
 /** This class writes log (into checker.log) */
