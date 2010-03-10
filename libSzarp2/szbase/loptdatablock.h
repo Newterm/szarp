@@ -57,7 +57,7 @@ class Var {
 public:
 	Var(size_t var_no) : m_var_no(var_no) {}
 	Val& operator()();
-	Var& operator=(const Val& val);
+	Val& operator=(const Val& val);
 	void SetExecutionEngine(ExecutionEngine *ee) { m_ee = ee; }
 };
 
@@ -81,7 +81,7 @@ public:
 	bool m_optimized;
 	std::vector<Var> m_vars;
 	std::vector<ParamRef> m_par_refs;
-	ExpressionList m_expression;
+	PExpression m_expression;
 };
 
 };

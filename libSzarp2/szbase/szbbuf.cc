@@ -828,6 +828,15 @@ szb_buffer_str::Unlock()
 
 }
 
+#ifndef NO_LUA
+#if LUA_PARAM_OPTIMISE
+void
+szb_buffer_str::AddExecParam(LuaExec::Param *param) {
+	optimized_params.push_back(param);	
+}
+#endif
+#endif
+
 BlockLocator::BlockLocator(szb_buffer_t* buff, szb_datablock_t* b): block(b), buffer(buff),
 	newer(NULL), older(NULL), next_same_param(NULL), prev_same_param(NULL)
 {

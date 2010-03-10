@@ -1,5 +1,8 @@
 $Id$
 
+2010-03-10      Darek Marcinkiewicz <reksio@daliaterm.pl>
+	* libSzarp2/szbase: some progress in lua param optimizer,
+	a couple of simple params do work
 2010-03-09      Darek Marcinkiewicz <reksio@daliaterm.pl>
 	* parcook/mbdmn.cc: one more serial mode adjustment to comply
 	with modbus rtu spec - while reading frame daemon decides that

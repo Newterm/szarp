@@ -1260,6 +1260,15 @@ std::wstring TParam::GetGlobalName() const {
 	assert (sc != NULL);
 	return sc->GetPrefix() + L":" + _name;
 }
+#if LUA_PARAM_OPTIMISE
+
+LuaExec::Param* TParam::GetLuaExecParam() {
+	return _opt_lua_param;
+}
+
+void TParam::SetLuaExecParam(LuaExec::Param *param) {
+	_opt_lua_param = param;
+}
 
 #endif
-
+#endif

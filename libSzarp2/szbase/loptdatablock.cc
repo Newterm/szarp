@@ -13,6 +13,8 @@
 
 #ifdef LUA_PARAM_OPTIMISE
 
+#define LUA_OPTIMIZER_DEBUG
+
 #include <boost/make_shared.hpp>
 
 namespace LuaExec {
@@ -37,13 +39,23 @@ public:
 	}
 };
 
-class VarExpression : public Expression {
-	Var* m_var;
+class VarRef {
+	std::vector<Var>* m_vec;
+	size_t m_var_no;
 public:
-	VarExpression(Var *var) : m_var(var) {}
+	VarRef() : m_vec(NULL) {}
+	VarRef(std::vector<Var>* vec, size_t var_no) : m_vec(vec), m_var_no(var_no) {}
+	Var& var() { return (*m_vec)[m_var_no]; }
+};
+
+
+class VarExpression : public Expression {
+	VarRef m_var;
+public:
+	VarExpression(VarRef var) : m_var(var) {}
 
 	virtual Val Value() {
-		return (*m_var)();
+		return m_var.var()();
 	}
 };
 
@@ -82,14 +94,13 @@ template<> Val BinExpression<std::modulus<Val> >::Value() {
 }
 
 class AssignmentExpression : public Expression {
-	Var* m_var;
+	VarRef m_var;
 	PExpression m_exp;
 public:
-	AssignmentExpression(Var* var, PExpression exp) : m_var(var), m_exp(exp) {}
+	AssignmentExpression(VarRef var, PExpression exp) : m_var(var), m_exp(exp) {}
 
 	virtual Val Value() {
-		*m_var = m_exp->Value();
-		return (*m_var)();
+		return m_var.var() = m_exp->Value();
 	}
 };
 
@@ -157,23 +168,24 @@ public:
 };
 
 class ForLoopExpression : public Expression { 
-	Var* m_var;
+	VarRef m_var;
 	PExpression m_start;
 	PExpression m_limit;
 	PExpression m_step;
 	PExpression m_exp;
 public:
-	ForLoopExpression(Var *var, PExpression start, PExpression limit, PExpression step, PExpression exp) :
+	ForLoopExpression(VarRef var, PExpression start, PExpression limit, PExpression step, PExpression exp) :
 		m_var(var), m_start(start), m_limit(limit), m_step(step), m_exp(exp) {}
 
 	virtual Val Value() {
-		*m_var = m_start->Value();
+		Var& var = m_var.var();
+		var() = m_start->Value();
 		double limit = m_limit->Value();
 		double step = m_step->Value();
-		while ((step > 0 && (*m_var)() <= limit)
-				|| (step <= 0 && (*m_var)() >= limit)) {
+		while ((step > 0 && var() <= limit)
+				|| (step <= 0 && var() >= limit)) {
 			m_exp->Value();
-			*m_var = (*m_var)() + step;
+			var = var() + step;
 		}
 		return nan("");
 	}
@@ -212,7 +224,7 @@ class ParamConversionException {
 	std::wstring m_error;
 public:
 	ParamConversionException(std::wstring error) : m_error(error) {}
-	const std::wstring& what() const ;
+	const std::wstring& what() const  { return m_error; }
 };
 
 class ParamConverter;
@@ -348,18 +360,18 @@ public:
 class ParamConverter {
 	Szbase* m_szbase;
 	Param* m_param;
-	typedef std::map<std::wstring, Var*> frame;
+	typedef std::map<std::wstring, VarRef> frame;
 	std::vector<frame> m_vars_map;
-	std::vector<std::map<std::wstring, Var*> >::iterator m_current_frame;
+	std::vector<std::map<std::wstring, VarRef> >::iterator m_current_frame;
 	std::map<std::wstring, boost::shared_ptr<FunctionConverter> > m_function_converters;
 public:
 	ParamConverter(Szbase *szbase);
 
-	Var* GetGlobalVar(std::wstring identifier);
+	VarRef GetGlobalVar(std::wstring identifier);
 
-	Var* GetLocalVar(const std::wstring& identifier);
+	VarRef GetLocalVar(const std::wstring& identifier);
 
-	Var* FindVar(const std::wstring& identifier);
+	VarRef FindVar(const std::wstring& identifier);
 
 	ParamRef* GetParamRef(const std::wstring param_name);
 
@@ -399,7 +411,7 @@ public:
 
 	void Refresh();
 
-	double Value(size_t param_index, double time, double period_type);
+	double Value(size_t param_index, const double& time, const double& period_type);
 
 	std::vector<double>& Vars();
 
@@ -410,9 +422,8 @@ Val& Var::operator()() {
 	return m_ee->Vars()[m_var_no];
 }
 
-Var& Var::operator=(const Val& val) {
-	m_ee->Vars()[m_var_no] = val;
-	return *this;
+Val& Var::operator=(const Val& val) {
+	return m_ee->Vars()[m_var_no] = val;
 }
 
 void ExpressionList::AddExpression(PExpression expression) {
@@ -429,6 +440,9 @@ Val ExpressionList::Value() {
 }
 
 PExpression StatementConverter::operator() (const assignment &a) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting assignement" << std::endl;
+#endif
 #if 0
 	for (size_t i = 0; i < a.varlist.size(); i++) {
 #else
@@ -436,7 +450,10 @@ PExpression StatementConverter::operator() (const assignment &a) {
 #endif
 		try {
 			const identifier& identifier_ = boost::get<identifier>(a.varlist[i]);
-			Var* variable = m_param_converter->GetGlobalVar(identifier_);
+#ifdef LUA_OPTIMIZER_DEBUG
+			std::cerr << "Identifier: " << SC::S2A(identifier_) << std::endl;
+#endif
+			VarRef variable = m_param_converter->GetGlobalVar(identifier_);
 			PExpression expression;
 			if (i < a.explist.size())
 				expression = m_param_converter->ConvertExpression(a.explist[i]);
@@ -452,32 +469,55 @@ PExpression StatementConverter::operator() (const assignment &a) {
 }
 
 PExpression StatementConverter::operator() (const block &b) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr <<  "Coverting block" << std::endl;
+#endif
 	return m_param_converter->ConvertBlock(b);
 }
 
 PExpression StatementConverter::operator() (const while_loop &w) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting while loop" << std::endl;
+#endif
 	PExpression condition = m_param_converter->ConvertExpression(w.expression_);
 	PExpression block = m_param_converter->ConvertBlock(w.block_);
 	return boost::make_shared<WhileExpression>(condition, block);
 }
 
 PExpression StatementConverter::operator() (const repeat_loop &r) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting while loop" << std::endl;
+#endif
 	PExpression condition = m_param_converter->ConvertExpression(r.expression_);
 	PExpression block = m_param_converter->ConvertBlock(r.block_);
 	return boost::make_shared<RepeatExpression>(condition, block);
 }
 
 PExpression StatementConverter::operator() (const if_stat &if_) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting if statement" << std::endl;
+	std::cerr << "Converting if expression" << std::endl;
+#endif
 	PExpression cond = m_param_converter->ConvertExpression(if_.if_exp);
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting if block" << std::endl;
+#endif
 	PExpression block = m_param_converter->ConvertBlock(if_.block_);
-	std::vector<std::pair<PExpression, PExpression> > elseif; 
-	for (size_t i = 0; i < if_.elseif_.size(); i++)
+	std::vector<std::pair<PExpression, PExpression> > elseif;
+	for (size_t i = 0; i < if_.elseif_.size(); i++) {
+#ifdef LUA_OPTIMIZER_DEBUG
+		std::cerr << "Converting elseif" << std::endl;
+#endif
 		elseif.push_back(std::make_pair(m_param_converter->ConvertExpression(if_.elseif_[i].get<0>()),
 				m_param_converter->ConvertBlock(if_.elseif_[i].get<1>())));
+	}
 	PExpression else_;
-	if (if_.else_)
+	if (if_.else_) {
+#ifdef LUA_OPTIMIZER_DEBUG
+		std::cerr << "Converting else" << std::endl;
+#endif
 		else_ = m_param_converter->ConvertBlock(*if_.else_);
-	else
+	} else
 		else_ = boost::make_shared<NilExpression>();
 	return boost::make_shared<IfExpression>(cond, block, elseif, else_);
 }
@@ -491,7 +531,10 @@ PExpression StatementConverter::operator() (const postfixexp &a) {
 }
 
 PExpression StatementConverter::operator() (const for_from_to_loop &for_) {
-	Var* var = m_param_converter->GetLocalVar(for_.identifier_);
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr <<  "Converting for from to loop" << std::endl;
+#endif
+	VarRef var = m_param_converter->GetLocalVar(for_.identifier_);
 	PExpression from = m_param_converter->ConvertExpression(for_.from);
 	PExpression to = m_param_converter->ConvertExpression(for_.to);
 	PExpression step;
@@ -508,6 +551,9 @@ PExpression StatementConverter::operator() (const function_declaration &a) {
 }
 
 PExpression StatementConverter::operator() (const local_assignment &a) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting local assignment" << std::endl;
+#endif
 	PExpression expression;
 #if 0
 	for (size_t i = 0; i < a.varlist.size(); i++) {
@@ -516,7 +562,10 @@ PExpression StatementConverter::operator() (const local_assignment &a) {
 #endif
 		try {
 			const identifier& identifier_ = boost::get<identifier>(a.varlist[i]);
-			Var* variable = m_param_converter->GetLocalVar(identifier_);
+#ifdef LUA_OPTIMIZER_DEBUG
+			std::cerr << "Identifier: " << SC::S2A(identifier_) << std::endl;
+#endif
+			VarRef variable = m_param_converter->GetLocalVar(identifier_);
 			if (i < a.explist.size())
 				expression = m_param_converter->ConvertExpression(a.explist[i]);
 			else
@@ -535,6 +584,9 @@ PExpression StatementConverter::operator() (const local_function_declaration &f)
 }
 
 PExpression ExpressionConverter::ConvertTerm(const term& term_) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting term" << std::endl;
+#endif
 	return m_param_converter->ConvertTerm(term_);
 }
 
@@ -548,6 +600,9 @@ PExpression ExpressionConverter::ConvertPow(const pow_exp& exp) {
 	pow_exp::const_reverse_iterator i = exp.rbegin();
 	PExpression p = ConvertTerm(*i);
 	while (++i != exp.rend()) {
+#ifdef LUA_OPTIMIZER_DEBUG
+		std::cerr << "Converting power expression" << std::endl;
+#endif
 		PExpression p2 = ConvertTerm(*i);
 		p = boost::make_shared<BinExpression<pow_functor> >(p2, p);
 	}
@@ -562,9 +617,15 @@ PExpression ExpressionConverter::ConvertUnOp(const unop_exp& unop) {
 			i++)
 		switch (*i) {
 			case NEG:
+#ifdef LUA_OPTIMIZER_DEBUG
+				std::cerr << "Converting negate unop expression" << std::endl;
+#endif
 				p = boost::make_shared<UnExpression<std::negate<Val> > >(p);
 				break;
 			case NOT:
+#ifdef LUA_OPTIMIZER_DEBUG
+				std::cerr << "Converting not unop expression" << std::endl;
+#endif
 				p = boost::make_shared<UnExpression<std::logical_not<Val> > >(p);
 				break;
 			case LEN:
@@ -580,12 +641,21 @@ PExpression ExpressionConverter::ConvertMul(const mul_exp& mul_) {
 		PExpression p2 = ConvertUnOp(mul_.muls[i].get<1>());
 		switch (mul_.muls[i].get<0>()) {
 			case MUL:
+#ifdef LUA_OPTIMIZER_DEBUG
+				std::cerr << "Converting mul binop expression" << std::endl;
+#endif
 				p = boost::make_shared<BinExpression<std::multiplies<Val> > >(p, p2);
 				break;
 			case DIV:
+#ifdef LUA_OPTIMIZER_DEBUG
+				std::cerr << "Converting div binop expression" << std::endl;
+#endif
 				p = boost::make_shared<BinExpression<std::divides<Val> > >(p, p2);
 				break;
 			case REM:
+#ifdef LUA_OPTIMIZER_DEBUG
+				std::cerr << "Converting rem binop expression" << std::endl;
+#endif
 				p = boost::make_shared<BinExpression<std::modulus<Val> > >(p, p2);
 				break;
 		}
@@ -599,9 +669,15 @@ PExpression ExpressionConverter::ConvertAdd(const add_exp& add_) {
 		PExpression p2 = ConvertMul(add_.adds[i].get<1>());
 		switch (add_.adds[i].get<0>()) {
 			case PLUS:
+#ifdef LUA_OPTIMIZER_DEBUG
+				std::cerr << "Converting plus binop expression" << std::endl;
+#endif
 				p = boost::make_shared<BinExpression<std::plus<Val> > >(p, p2);
 				break;
 			case MINUS:
+#ifdef LUA_OPTIMIZER_DEBUG
+				std::cerr << "Converting minus binop expression" << std::endl;
+#endif
 				p = boost::make_shared<BinExpression<std::minus<Val> > >(p, p2);
 				break;
 		}
@@ -621,21 +697,39 @@ PExpression ExpressionConverter::ConvertCmp(const cmp_exp& cmp_exp_) {
 		PExpression p2 = ConvertConcat(cmp_exp_.cmps[i].get<1>());
 		switch (cmp_exp_.cmps[i].get<0>()) {
 			case LT:
+#ifdef LUA_OPTIMIZER_DEBUG
+				std::cerr << "Converting less binop expression" << std::endl;
+#endif
 				p = boost::make_shared<BinExpression<std::less<Val> > >(p, p2);
 				break;
 			case LTE:
+#ifdef LUA_OPTIMIZER_DEBUG
+				std::cerr << "Converting less-equal binop expression" << std::endl;
+#endif
 				p = boost::make_shared<BinExpression<std::less_equal<Val> > >(p, p2);
 				break;
 			case EQ:
+#ifdef LUA_OPTIMIZER_DEBUG
+				std::cerr << "Converting equal binop expression" << std::endl;
+#endif
 				p = boost::make_shared<BinExpression<std::equal_to<Val> > >(p, p2);
 				break;
 			case GTE:
+#ifdef LUA_OPTIMIZER_DEBUG
+				std::cerr << "Converting greater equal binop expression" << std::endl;
+#endif
 				p = boost::make_shared<BinExpression<std::greater_equal<Val> > >(p, p2);
 				break;
 			case GT:
+#ifdef LUA_OPTIMIZER_DEBUG
+				std::cerr << "Converting greater binop expression" << std::endl;
+#endif
 				p = boost::make_shared<BinExpression<std::greater<Val> > >(p, p2);
 				break;
 			case NEQ:
+#ifdef LUA_OPTIMIZER_DEBUG
+				std::cerr << "Converting not equal binop expression" << std::endl;
+#endif
 				p = boost::make_shared<BinExpression<std::not_equal_to<Val> > >(p, p2);
 				break;
 		}
@@ -645,31 +739,51 @@ PExpression ExpressionConverter::ConvertCmp(const cmp_exp& cmp_exp_) {
 
 PExpression ExpressionConverter::ConvertAnd(const and_exp& and_exp_) {
 	PExpression p = ConvertCmp(and_exp_[0]);
-	for (size_t i = 1; i < and_exp_.size(); i++)
+	for (size_t i = 1; i < and_exp_.size(); i++) {
+#ifdef LUA_OPTIMIZER_DEBUG
+		std::cerr << "Converting and binop expression" << std::endl;
+#endif
 		p = boost::make_shared<BinExpression<std::logical_and<Val> > >(p, ConvertCmp(and_exp_[i]));
+	}
 	return p;
 }
 
 PExpression ExpressionConverter::ConvertOr(const or_exp& or_exp_) {
 	PExpression p = ConvertAnd(or_exp_[0]);
-	for (size_t i = 1; i < or_exp_.size(); i++)
+	for (size_t i = 1; i < or_exp_.size(); i++) {
+#ifdef LUA_OPTIMIZER_DEBUG
+		std::cerr << "Converting or binop expression" << std::endl;
+#endif
 		p = boost::make_shared<BinExpression<std::logical_or<Val> > >(p, ConvertAnd(or_exp_[i]));
+	}
 	return p;
 }
 
 PExpression ExpressionConverter::ConvertExpression(const expression& expression_) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting expression" << std::endl;
+#endif
 	return ConvertOr(expression_.o);
 }
 
 PExpression TermConverter::operator()(const nil& nil_) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting nil expression" << std::endl;
+#endif
 	return boost::make_shared<NilExpression>();
 }
 
 PExpression TermConverter::operator()(const bool& bool_) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting boolean value" << std::endl;
+#endif
 	return boost::make_shared<NumberExpression>(bool_ ? 1. : 0.);
 }
 
 PExpression TermConverter::operator()(const double& double_) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting number expression" << std::endl;
+#endif
 	return boost::make_shared<NumberExpression>(double_);
 }
 
@@ -690,6 +804,9 @@ PExpression TermConverter::operator()(const tableconstructor& tableconstrutor_) 
 }
 
 PExpression TermConverter::operator()(const postfixexp& postfixexp_) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting postfix expression" << std::endl;
+#endif
 	return m_param_converter->ConvertPostfixExp(postfixexp_);
 }
 
@@ -698,18 +815,28 @@ PExpression TermConverter::operator()(const expression& expression_) {
 }
 
 PExpression PostfixConverter::operator()(const identifier& identifier_) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting variable expression, var: " << SC::S2A(identifier_) << std::endl;
+#endif
 	return boost::make_shared<VarExpression>(m_param_converter->FindVar(identifier_));
 }
 
 const std::vector<expression>& PostfixConverter::GetArgs(const std::vector<exp_ident_arg_namearg>& e) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting args, number of exp_ident_arg_namerg :) expressions:" << e.size() << std::endl;
+#endif
 	if (e.size() != 1)
 		throw ParamConversionException(L"Only postfix expression in form functioname(exp, exp, ...) are allowed");
 	try {
 		const namearg& namearg_ = boost::get<namearg>(e[0]);
 		const args& args_ = boost::get<args>(namearg_);
+/*
 		const boost::recursive_wrapper<std::vector<expression> > &exps_
 			= boost::get<boost::recursive_wrapper<std::vector<expression> > >(args_);
-		return exps_.get();
+*/
+		const std::vector<expression> &exps_
+			= boost::get<std::vector<expression> >(args_);
+		return exps_;
 	} catch (boost::bad_get &e) {
 		throw ParamConversionException(L"Only postfix expression in form functioname(exp, exp, ...) are allowed");
 	}
@@ -719,6 +846,9 @@ PExpression PostfixConverter::operator()(const boost::tuple<exp_identifier, std:
 	try {
 		const exp_identifier& ei = exp.get<0>();
 		const identifier& identifier_ = boost::get<identifier>(ei);
+#ifdef LUA_OPTIMIZER_DEBUG
+		std::cerr << "Converting postfix expression, identifier: " << SC::S2A(identifier_) << std::endl;
+#endif
 		const std::vector<expression>& args = GetArgs(exp.get<1>());
 		return m_param_converter->ConvertFunction(identifier_, args);
 	} catch (boost::bad_get &e) {
@@ -727,6 +857,9 @@ PExpression PostfixConverter::operator()(const boost::tuple<exp_identifier, std:
 }
 
 PExpression SzbMoveTimeConverter::Convert(const std::vector<expression>& expressions) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting szb_move_time expression" << std::endl;
+#endif
 	if (expressions.size() < 3)
 		throw ParamConversionException(L"szb_move_time requires three arguments");
 
@@ -737,6 +870,9 @@ PExpression SzbMoveTimeConverter::Convert(const std::vector<expression>& express
 }
 
 PExpression IsNanConverter::Convert(const std::vector<expression>& expressions) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting isnan expression"  << std::endl;
+#endif
 	if (expressions.size() < 1)
 		throw ParamConversionException(L"isnan takes one argument");
 
@@ -745,6 +881,9 @@ PExpression IsNanConverter::Convert(const std::vector<expression>& expressions) 
 }
 
 PExpression NanConverter::Convert(const std::vector<expression>& expressions) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting nan expression" << std::endl;
+#endif
 	return boost::make_shared<NilExpression>();
 }
 
@@ -783,16 +922,27 @@ std::wstring ParamValueConverter::GetParamName(const expression& e) {
 	if (pow_exp_.size() != 1)
 		ERROR;
 
-	if (const std::wstring* name = boost::get<std::wstring*>(pow_exp_[0])) 
-		return *name;
-	else
+	try {
+		const std::wstring& name = boost::get<std::wstring>(pow_exp_[0]);
+		return name;
+	} catch (boost::bad_get &e) {
+#ifdef LUA_OPTIMIZER_DEBUG
+		std::cerr << "Error, first expression for p param is: " << e.what() << std::endl;
+#endif
 		ERROR;
+	}
 }
 
 PExpression ParamValueConverter::Convert(const std::vector<expression>& expressions) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting p(..) expression" << std::endl;
+#endif
 	if (expressions.size() < 3)
 		throw ParamConversionException(L"p function requires three arguemnts");
 	std::wstring param_name = GetParamName(expressions[0]);
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Parameter name: " << SC::S2A(param_name) << std::endl;
+#endif
 	ParamRef* param_ref = m_param_converter->GetParamRef(param_name);
 	return boost::make_shared<ParamValue>(param_ref,
 			m_param_converter->ConvertExpression(expressions[1]),
@@ -806,35 +956,37 @@ ParamConverter::ParamConverter(Szbase *szbase) : m_szbase(szbase) {
 	m_function_converters[L"p"] = boost::make_shared<ParamValueConverter>(this);
 }
 
-Var* ParamConverter::GetGlobalVar(std::wstring identifier) {
-	std::map<std::wstring, Var*>::iterator i = m_vars_map[0].find(identifier);
+VarRef ParamConverter::GetGlobalVar(std::wstring identifier) {
+	std::map<std::wstring, VarRef>::iterator i = m_vars_map[0].find(identifier);
 	if (i == m_vars_map[0].end()) {
 		size_t s = m_param->m_vars.size();
 		m_param->m_vars.push_back(s);
-		m_vars_map[0][identifier] = &m_param->m_vars.back();
-		return &m_param->m_vars.back();
+		VarRef i(&m_param->m_vars, s);
+		m_vars_map[0][identifier] = i;
+		return i;
 	} else {
 		return i->second;
 	}
 }
 
-Var* ParamConverter::GetLocalVar(const std::wstring& identifier) {
-	std::map<std::wstring, Var*>::iterator i = m_vars_map.back().find(identifier);
+VarRef ParamConverter::GetLocalVar(const std::wstring& identifier) {
+	std::map<std::wstring, VarRef>::iterator i = m_vars_map.back().find(identifier);
 	if (i == m_vars_map.back().end()) {
 		size_t s = m_param->m_vars.size();
 		m_param->m_vars.push_back(s);
-		m_vars_map.back()[identifier] = &m_param->m_vars.back();
-		return &m_param->m_vars.back();
+		VarRef i(&m_param->m_vars, s);
+		m_vars_map.back()[identifier] = i;
+		return i;
 	} else {
 		return i->second;
 	}
 }
 
-Var* ParamConverter::FindVar(const std::wstring& identifier) {
+VarRef ParamConverter::FindVar(const std::wstring& identifier) {
 	for (std::vector<frame>::reverse_iterator i = m_vars_map.rbegin();
 			i != m_vars_map.rend();
 			i++) {
-		std::map<std::wstring, Var*>::iterator j = i->find(identifier);
+		std::map<std::wstring, VarRef>::iterator j = i->find(identifier);
 		if (j != i->end())
 			return j->second;
 	}
@@ -879,6 +1031,9 @@ PExpression ParamConverter::ConvertFunction(const identifier& identifier_, const
 
 PExpression ParamConverter::ConvertStatement(const stat& stat_) {
 	StatementConverter sc(this);
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting statement" << std::endl;
+#endif
 	return boost::apply_visitor(sc, stat_);
 }
 
@@ -902,19 +1057,27 @@ PExpression ParamConverter::ConvertExpression(const expression& expression_) {
 }
 
 PExpression ParamConverter::ConvertPostfixExp(const postfixexp& postfixexp_) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting postfix expression" << std::endl;
+#endif
 	PostfixConverter pc(this);
 	return boost::apply_visitor(pc, postfixexp_);
 }
 
 void ParamConverter::ConvertParam(const chunk& chunk_, Param* param) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Starting to optimize param" << std::endl;
+#endif
 	m_param = param;
 	InitalizeVars();
-	ConvertChunk(chunk_);
+	param->m_expression = ConvertChunk(chunk_);
 }
 
 void ParamConverter::AddVariable(std::wstring name) {
-	m_param->m_vars.push_back(Var(m_param->m_vars.size()));
-	(*m_current_frame)[name] = &m_param->m_vars.back();
+	size_t s = m_param->m_vars.size();
+	m_param->m_vars.push_back(Var(s));
+	VarRef i(&m_param->m_vars, s);
+	(*m_current_frame)[name] = i;
 }
 
 void ParamConverter::InitalizeVars() {
@@ -947,7 +1110,7 @@ void ExecutionEngine::CalculateValue(time_t t, double &val, bool &fixed) {
 	m_vals[0] = nan("");
 	m_vals[1] = t;
 	m_vals[2] = PT_MIN10;
-	m_param->m_expression.Value();
+	m_param->m_expression->Value();
 	fixed = m_fixed;
 	val = m_vals[0];
 }
@@ -968,7 +1131,7 @@ void ExecutionEngine::Refresh() {
 	}
 }
 
-double ExecutionEngine::Value(size_t param_index, double time, double period_type) {
+double ExecutionEngine::Value(size_t param_index, const double& time, const double& period_type) {
 	int probe_index  = (time_t(time) - m_start_time) / SZBASE_PROBE;
 	szb_datablock_t* block = m_blocks.at(param_index);
 	double ret;
@@ -991,12 +1154,18 @@ ExecutionEngine::~ExecutionEngine() {
 	szb_unlock_buffer(m_buffer);
 }
 
+Val ParamRef::Value(const double& time, const double& period) {
+	return m_exec_engine->Value(m_param_index, time, period);
+}
+
 } // LuaExec
 
 LuaOptDatablock::LuaOptDatablock(szb_buffer_t * b, TParam * p, int y, int m) : LuaDatablock(b, p, y, m) {
 	#ifdef KDEBUG
 	sz_log(DATABLOCK_CREATION_LOG_LEVEL, "D: DefinableDatablock::DefinableDatablock(%ls, %d.%d)", param->GetName().c_str(), year, month);
 	#endif
+
+	exec_param = p->GetLuaExecParam();
 
 	AllocateDataMemory();
 
@@ -1058,13 +1227,14 @@ LuaDatablock *create_lua_data_block(szb_buffer_t *b, TParam* p, int y, int m) {
 		std::wstring::const_iterator param_text_begin = param_text.begin();
 		std::wstring::const_iterator param_text_end = param_text.end();
 		ep->m_optimized = false;
-		if (!lua_grammar::parse(param_text_begin, param_text_end, param_code)) {
+		if (lua_grammar::parse(param_text_begin, param_text_end, param_code)) {
 			LuaExec::ParamConverter pc(Szbase::GetObject());
 			try {
 				pc.ConvertParam(param_code, ep);
 				ep->m_optimized = true;
 			} catch (LuaExec::ParamConversionException &e) {
 				sz_log(2, "Parameter %ls cannot be optimized, reason: %ls", p->GetName().c_str(), e.what().c_str());
+				std::cerr << "Parameter " << SC::S2A(p->GetName()) << " cannot be optimized, reason: " << SC::S2A(e.what()) << std::endl;
 			}
 		}
 	}
