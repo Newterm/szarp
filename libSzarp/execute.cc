@@ -96,7 +96,7 @@ char * execute_substv(const char *path, char * const argv[])
 			}
 			execv(path, argv);
 			sz_log(1, "execute_subst: execl() error, errno %d", errno);
-			return NULL;
+			exit(1);
 		default:
 			if (close(pipe_fd[1]) < 0) {
 			sz_log(1, "execute_subst: close() error, errno %d",
