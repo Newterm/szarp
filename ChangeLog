@@ -1,5 +1,8 @@
 $Id$
 
+2010-03-12      Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* parcook/dlmsdmn.cc: IEC starting protocol connection
+	speed is now configurable
 2010-03-11      Darek Marcinkiewicz <reksio@dalkiaterm.pl>
 	* libSzarp2/execute.cc: do exit() in child process
 	if execv fails, prevents execdmn from forking

@@ -298,28 +298,6 @@ void SerialPort::Open(int ispeed, int ospeed)
 		}
 	}
 
-#if 0
-#if 1
-	int status;
-
-	if (ioctl(m_fd, TIOCMGET, &status) == -1) {
-		dolog(1, "Failed to get modem lines status %d(%s)", errno, strerror(errno));	
-		return;
-	}
-
-#if 0
-	if ((status & (TIOCM_DTR | TIOCM_RTS)) != (TIOCM_RTS | TIOCM_DTR)) {
-#endif
-	//status |= TIOCM_DTR | TIOCM_RTS | TIOCM_CTS | TIOCM_DSR;
-	status |= TIOCM_DTR | TIOCM_RTS;
-	if (ioctl(m_fd, TIOCMSET, &status) == -1)
-		dolog(1, "Failed to set modem lines status %d(%s)", errno, strerror(errno));	
-#if 0
-	}
-#endif
-#endif
-#endif
-	
 	struct termios ti;
 	if (tcgetattr(m_fd, &ti) == -1) {
 		dolog(1, "nrsdmn: cannot retrieve port settings, errno:%d (%s)",
@@ -334,7 +312,6 @@ void SerialPort::Open(int ispeed, int ospeed)
 	ti.c_iflag =
 	ti.c_lflag = 0;
 
-//	ti.c_cflag |= CREAD | CS8 | CLOCAL;
 	ti.c_cflag |= CREAD | CS8 | CLOCAL;
 
 	cfsetospeed(&ti, speed_to_speed_t(m_ospeed));
@@ -636,13 +613,14 @@ long long Buffer::ReadSLongLong() {
 class IECConnector {
 	SerialPort *m_port;
 	std::string m_address;
+	int m_speed;
 	void AddParityBit(std::vector<unsigned char>& b);
 public:
-	IECConnector(SerialPort *port, std::string m_address);
+	IECConnector(SerialPort *port, std::string m_address, int speed);
 	int Connect();	
 };
 
-IECConnector::IECConnector(SerialPort* port, std::string address) : m_port(port), m_address(address) {}
+IECConnector::IECConnector(SerialPort* port, std::string address, int speed) : m_port(port), m_address(address), m_speed(speed) {}
 
 void IECConnector::AddParityBit(std::vector<unsigned char> &b) {
 	for (size_t i = 0; i < b.size(); i++) {
@@ -659,7 +637,7 @@ void IECConnector::AddParityBit(std::vector<unsigned char> &b) {
 
 int IECConnector::Connect() {
 
-	m_port->Open(300, 300);
+	m_port->Open(m_speed, m_speed);
 
 	std::ostringstream qs1;
 	qs1 << "/?" << m_address << "!\r\n";
@@ -726,33 +704,31 @@ int IECConnector::Connect() {
 
 	m_port->WriteData(&query[0], query.size());
 
-//this is completly ugly workaround, we close the port 
-//and flush the answer down the toilet, but the response
-//we receive is usually either distorted or not present at all
-//so we just continue assuming that meter has switched to proper speed 
-//i have no idea why this happens, under MSW everything works
-//like charm...
-	sleep(1);
-	m_port->Close();
-	m_port->Open(speed, speed);
+	if (speed != m_speed) {
+	//this is completly ugly workaround, we close the port 
+	//and flush the answer down the toilet, but the response
+	//we receive is usually either distorted or not present at all
+	//so we just continue assuming that meter has switched to proper speed 
+	//i have no idea why this happens, under MSW everything works
+	//like a charm...
+		sleep(1);
+		m_port->Close();
+		m_port->Open(speed, speed);
+	} else {
+		read_pos = 0;
+		do {
+			if (!m_port->Wait(2))
+				throw DeviceResponseTimeout();
+	
+			read_pos += m_port->GetData(read_buffer + read_pos, sizeof(read_buffer) - read_pos);
 
-#if 0
-	read_pos = 0;
-	do {
-		if (!m_port->Wait(2))
-			throw DeviceResponseTimeout();
+		} while ((size_t)read_pos < query.size());
 
-		read_pos += m_port->GetData(read_buffer + read_pos, sizeof(read_buffer) - read_pos);
-
-	} while ((size_t)read_pos < query.size());
-
-
-	//if (query != std::vector<unsigned char>(read_buffer, read_buffer + read_pos)) {
-	if (query.size() != std::vector<unsigned char>(read_buffer, read_buffer + read_pos).size()) {
-		dolog(0, "Invalid response received from meter  - %s", tohex(read_buffer, read_pos).c_str());
-		throw IECException("Failed to enter HDLC mode");
+		if (query.size() != std::vector<unsigned char>(read_buffer, read_buffer + read_pos).size()) {
+			dolog(0, "Invalid response received from meter  - %s", tohex(read_buffer, read_pos).c_str());
+			throw IECException("Failed to enter HDLC mode");
+		}
 	}
-#endif
 
 	return speed;
 
@@ -2406,11 +2382,24 @@ bool COSEMUnit::Configure(TUnit *unit, xmlNodePtr xunit, short *params, SerialPo
 	if (use_iec) {
 		xmlChar* _iec_address = xmlGetNsProp(xunit, BAD_CAST "iec_address", BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 		if (_iec_address == NULL) {
-			dolog(0, "Attribbute dlms:iec_address not present in unit element, line no (%ld)", xmlGetLineNo(xunit)); 
+			dolog(0, "Attribute dlms:iec_address not present in unit element, line no (%ld)", xmlGetLineNo(xunit)); 
 			return false;
 		}
 
-		iec = new IECConnector(port, (const char*) _iec_address);
+		int iec_speed;
+		xmlChar* _iec_speed = xmlGetNsProp(xunit, BAD_CAST "iec_speed", BAD_CAST IPKEXTRA_NAMESPACE_STRING);
+		if (_iec_speed != NULL) {
+			char *e;
+			iec_speed = strtod((char*) _iec_speed, &e);
+			if (*e) {
+				dolog(0, "Attribute dlms:iec_speed invalid, line no (%ld)", xmlGetLineNo(xunit)); 
+				return false;
+			}
+			xmlFree(_iec_speed);
+		} else
+			iec_speed = 300;
+
+		iec = new IECConnector(port, (const char*) _iec_address, iec_speed);
 		xmlFree(_iec_address);
 	}
 
@@ -2911,7 +2900,7 @@ void fetch_params(DaemonConfig *cfg, unsigned short address, std::string iec_add
 	SerialPort* port = new SerialPort(cfg->GetDevicePath());
 	IECConnector *iec = NULL;
 	if (iec_address != std::string())
-		iec = new IECConnector(port, iec_address);
+		iec = new IECConnector(port, iec_address, 300);
 
 	HDLCConnection *hdlc = new HDLCConnection(port, cfg->GetSpeed(), address, 4, 0x21, iec);
 	COSEMConnection *cosem = new COSEMConnection(hdlc);
