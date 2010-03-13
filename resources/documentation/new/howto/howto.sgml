@@ -10491,6 +10491,90 @@ Je¶li jeste¶my u¿ytkownikami Debiana, mo¿emy pomin±æ nastêpne rozdzia³y i zainst
 
 </section>
 
+<section id="modem-huawei-e160">
+<title>Konfiguracja modemu Huawei E160</title>
+<para>
+Modem Huawei E160 jest automatycznie rozpoznawany i obs³ugiwany przez wspó³czesne wersja j±dra Linuksa. Po
+pod³±czeniu modem powinien byæ widziany jako urz±dzenie <filename>/dev/ttyUSB0</filename> (lub kolejne, je¶li
+mamy pod³±czon± np. przej¶ciówkê USB - RS232).
+Dzia³aj±ca konfiguracja dla tego modemu podana jest jako przyk³ad w rozdziale <xref linkend="gprs-debian">.
+</para>
+</section>
+
+<section id="modem-icon225">
+<title>Konfiguracja modemu ICON225</title>
+<para>
+Modem ICON 225 jest automatycznie rozpoznawany i obs³ugiwany przez wspó³czesne wersja j±dra Linuksa. Po
+pod³±czeniu modem powinien byæ widziany jako urz±dzenia <filename>/dev/ttyHS0</filename> do 
+<filename>/dev/ttyHS3</filename>, przy czym do w³a¶ciwej komunikacji u¿ywamy tego ostatniego. Poni¿ej
+znajduje siê przyk³adowa
+konfiguracja modemu, zgodnie z konwencj± opisan± w rozdziale <xref linkend="gprs-debian">.
+</para>
+<para>
+Plik <filename>/etc/ppp/peers/icon225</filename>:
+<programlisting>
+crtscts
+updetach
+lcp-echo-interval 65536
+lcp-echo-failure 4
+connect "/etc/ppp/icon225-chat"
+disconnect "/etc/ppp/icon225-disconnect"
+lock
+local
+defaultroute
+usepeerdns
+/dev/ttyHS3
+noauth
+</programlisting>
+</para>
+<para>
+Plik <filename>/etc/ppp/icon225-chat</filename> (przyk³ad dla sieci Orange, zobacz te¿ <xref linkend="gprs-isp">):
+<programlisting>
+OP=www.idea.pl
+PIN=1111
+SLEEP=3
+
+/usr/sbin/chat -v \
+TIMEOUT 5 \
+ABORT    '\nERROR\r' \
+ECHO    ON \
+SAY     "\r\nSetting PIN - this can fail" \
+''      '\rAT' \
+OK       'ATZ' \
+'OK'    "AT+CPIN=$PIN" \
+'OK'    '' \
+SAY     "\r\nWaiting $SLEEP seconds" && sleep $SLEEP
+
+/usr/sbin/chat -v \
+TIMEOUT  20 \
+ECHO     ON \
+ABORT    '\nBUSY\r' \
+ABORT    '\nERROR\r' \
+ABORT    '\nNO ANSWER\r' \
+ABORT    '\nNO CARRIER\r' \
+ABORT    '\nNO DIALTONE\r' \
+ABORT    '\nRINGING\r\n\r\nRINGING\r' \
+TIMEOUT  30       \
+''       '\rAT'   \
+OK       'AT+IFC=0,0' \
+SAY     'PRE\r' \
+OK       "AT+CGDCONT=1,\"IP\",\"$OP\",\"\",0,0" \
+SAY     'Dialing...' \
+OK       'ATD*99***1#'  \
+SAY      "\nConnected.\n"  \
+</programlisting>
+</para>
+<para>
+Plik <filename>/etc/ppp/icon225-disconnect</filename>:
+<programlisting>
+/usr/sbin/chat -v \
+TIMEOUT  5 \
+ECHO     ON \
+""      "\K" \
+""      "+++ATH0"
+</programlisting>
+</para>
+</section>
 <section id="gprs-reset">
 <title>Resetowanie modemów GPRS (GCXX i OGTFusion+) </title>
 <para>

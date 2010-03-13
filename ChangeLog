@@ -1,5 +1,7 @@
 $Id$
 
+2010-03-13      Pawel Palucha <pawel@praterm.com.pl>
+	* howto.sgml: added info about ICON 225 gprs modem configuration.
 2010-03-12      Darek Marcinkiewicz <reksio@dalkiaterm.pl>
 	* parcook/dlmsdmn.cc: IEC starting protocol connection
 	speed is now configurable
