@@ -188,6 +188,14 @@ tCnts *Cnts;			/* liczniki usrednien */
 
 tSums *Sums;			/* sumy usrednien */
 
+struct tParamInfo {
+	enum { SINGLE, COMBINED } type;
+	enum { LSW, MSW } lsw_msw;
+	int other;
+};
+
+tParamInfo **ParsInfo;
+
 struct sembuf Sem[4];
 
 static char* parcookpat = NULL;	/**< sciezka do parcook.cfg */
@@ -207,6 +215,100 @@ struct phLineInfo
 };
 
 typedef struct phLineInfo tLineInfo;
+
+void calculate_average(short *probes, int param_no, int probe_type) {
+	sz_log(9, "Enetring calculate average, probe type: %d", probe_type);
+	if (ParsInfo[param_no]->type == tParamInfo::SINGLE) {
+		if (Cnts[param_no][probe_type])
+			probes[param_no] = Sums[param_no][probe_type] / (int) Cnts[param_no][probe_type];
+		else
+			probes[param_no] = SZARP_NO_DATA;
+		return;
+	}
+	int other = ParsInfo[param_no]->other;
+	if (!Cnts[param_no][probe_type] || !Cnts[other][probe_type]) {
+		sz_log(9, "Calculating average for combined both counts equal 0");
+		probes[param_no] = SZARP_NO_DATA;
+		return;
+	}
+	int lsw, msw;
+	unsigned long long v;
+	if (ParsInfo[param_no]->lsw_msw == tParamInfo::LSW) {
+		lsw = param_no;
+		msw = other;
+	} else {
+		msw = param_no;
+		lsw = other;
+	}
+	sz_log(9, "msw portion: %u, lsw portion:%u ", Sums[msw][probe_type], Sums[lsw][probe_type]);
+	v = ((unsigned long long)Sums[msw][probe_type] << 16) + (unsigned)Sums[lsw][probe_type];
+	sz_log(9, "Combinded sum value %llu", v);
+	v /= Cnts[param_no][probe_type];
+	sz_log(9, "Calculated value %llu", v);
+	unsigned short *vp = (unsigned short*)&probes[param_no];
+	if (ParsInfo[param_no]->lsw_msw == tParamInfo::LSW) {
+		*vp = v & 0xffff;
+		sz_log(9, "Setting lsw to %hu", *vp);
+	} else {
+		*vp = v >> 16;
+		sz_log(9, "Setting msw to %hu", *vp);
+	}
+	sz_log(9, "Leaving calculate average");
+}
+
+template<class IVT, class OVT> void update_value(int param_no, int probe_type, IVT ivt, OVT ovt, int abuf) {
+	if (ParsInfo[param_no]->type == tParamInfo::SINGLE) {
+		if (ovt[param_no][abuf] != SZARP_NO_DATA) {
+			Sums[param_no][probe_type] -= (int) ovt[param_no][abuf];
+			Cnts[param_no][probe_type]--;
+		}
+
+		ovt[param_no][abuf] = ivt[param_no];
+		if (ovt[param_no][abuf] != SZARP_NO_DATA) {
+			Sums[param_no][probe_type] += (int) ivt[param_no];
+			Cnts[param_no][probe_type]++;
+		}
+		return;
+	}
+	if (ParsInfo[param_no]->lsw_msw == tParamInfo::LSW)
+		//we will update both sums when updating msw
+		return;
+	sz_log(9, "Entering update value for combined param, probe type: %d", probe_type);
+	int other = ParsInfo[param_no]->other;
+	/*
+	We cast everything to unsigned, because we don't really
+	care about signs in combined params.
+	NOTE: It is possible that casting is unneccessary
+	and values would behave as expected anyway, but 
+	it is not immidiately obvious (at least for me)
+	so I hope I will save a future developer some head scratching
+	while hunting for bugs in parcook ;)
+	*/
+	unsigned short* pv = (unsigned short*)&ovt[param_no][abuf];
+	unsigned short* ov = (unsigned short*)&ovt[other][abuf];
+	unsigned int* pvs = (unsigned int*)&Sums[param_no][probe_type];
+	unsigned int* ovs = (unsigned int*)&Sums[other][probe_type];
+	if (ovt[param_no][abuf] != SZARP_NO_DATA || ovt[other][abuf] != SZARP_NO_DATA) {
+		*pvs -= *pv;
+		*ovs -= *ov;
+		Cnts[param_no][probe_type]--;
+		Cnts[other][probe_type]--;
+		sz_log(9, "Decreasing sum counts for combined param cause at least one value is data");
+	} else {
+		sz_log(9, "Not decreasing sum counts for combined param cause both values are no data");
+	}
+	ovt[param_no][abuf] = ivt[param_no];
+	ovt[other][abuf] = ivt[other];
+	if (ovt[param_no][abuf] != SZARP_NO_DATA || ovt[other][abuf] != SZARP_NO_DATA) {
+		*pvs += *pv;
+		*ovs += *ov;
+		Cnts[param_no][probe_type]++;
+		Cnts[other][probe_type]++;
+		sz_log(9, "Increasing vals count: %d", Cnts[param_no][probe_type]);
+		sz_log(9, "Increasing vals count: msw %hu, lsw %hu, sum msw: %u, sum lsw:%u", *pv, *ov, *pvs, *ovs);
+	}
+	sz_log(9, "Leaving update for combined param");
+}
 
 const char* lua_ipc_table_key = "ipc_table_key";
 
@@ -246,7 +348,7 @@ unsigned int NumberOfLines;
 time_t sectime;
 struct tm *curtime;
 struct tm tmbuf;
-	
+
 #ifndef NO_LUA
 int lua_ipc_value(lua_State *lua) {
 
@@ -937,6 +1039,11 @@ void AllocProbesMemory(void)
 		exit(1);
 	}
 
+	if ((ParsInfo = (tParamInfo**) calloc(VTlen, sizeof(tParamInfo*))) == NULL) {
+		sz_log(0, "parcook: calloc error for ParsInfo, exiting");
+		exit(1);
+	}
+
 	/* set memory to NO_DATA */
 	for (ii = 0; ii < VTlen; ii++) {
 		for (i = 0; i < 3; i++) {
@@ -952,6 +1059,37 @@ void AllocProbesMemory(void)
 		for (i = 0; i < 6; i++) {
 			Min10s[ii][i] = (short) SZARP_NO_DATA;
 		}
+	}
+}
+
+void configure_pars_infos(TSzarpConfig *ipk) {
+	for (TParam* p = ipk->GetFirstDrawDefinable(); p; p = p->GetNext()) {
+		if (p->GetType() != TParam::P_COMBINED)
+			continue;
+		TParam **p_cache = p->GetFormulaCache();
+		unsigned int msw = p_cache[0]->GetIpcInd();
+		unsigned int lsw = p_cache[1]->GetIpcInd();
+
+		tParamInfo* msw_pi = (tParamInfo*) malloc(sizeof(tParamInfo));
+		msw_pi->type = tParamInfo::COMBINED;
+		msw_pi->lsw_msw = tParamInfo::MSW;
+		msw_pi->other = lsw;
+		ParsInfo[msw] = msw_pi;
+
+		tParamInfo* lsw_pi = (tParamInfo*) malloc(sizeof(tParamInfo));
+		lsw_pi->type = tParamInfo::COMBINED;
+		lsw_pi->lsw_msw = tParamInfo::LSW;
+		lsw_pi->other = msw;
+		ParsInfo[lsw] = lsw_pi;
+
+	}
+
+	for (int i = 0; i < VTlen; i++) {
+		if (ParsInfo[i])
+			continue;
+		tParamInfo* pi = (tParamInfo*) malloc(sizeof(tParamInfo));
+		pi->type = tParamInfo::SINGLE;
+		ParsInfo[i] = pi;
 	}
 }
 
@@ -977,7 +1115,7 @@ char * const * wstring2argvp(std::wstring path, int num, std::wstring device, st
 	for (wide_tokenizer::iterator i = tok.begin(); i != tok.end(); i++) {
 		argv_v.push_back(strdup(SC::S2A(*i).c_str()));
 	}
-	char ** ret = (char **) malloc(sizeof(char *) * argv_v.size() + 4);
+	char ** ret = (char **) malloc(sizeof(char *) * (argv_v.size() + 4));
 	ret[0] = strdup(SC::S2A(path).c_str());
 	asprintf(&(ret[1]), "%d", num);
 	ret[2] = strdup(SC::S2A(device).c_str());
@@ -1282,19 +1420,8 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 #endif
 
 	/* NOW update probes history */
-	for (ii = 0; ii < VTlen; ii++) {
-		/* remove previous value */
-		if (Probes[ii][abuf] != SZARP_NO_DATA) {
-			Sums[ii][0] -= (int) Probes[ii][abuf];
-			Cnts[ii][0]--;
-		}
-		/* copy current */
-		Probes[ii][abuf] = Probe[ii];
-		if (Probes[ii][abuf] != SZARP_NO_DATA) {
-			Sums[ii][0] += (int) Probes[ii][abuf];
-			Cnts[ii][0]++;
-		}
-	}
+	for (ii = 0; ii < VTlen; ii++)
+		update_value(ii, 0, Probe, Probes, abuf);
 	/* release probes semaphore */
 	Sem[0].sem_num = SEM_PROBE + 1;
 	Sem[0].sem_op = -1;
@@ -1317,21 +1444,10 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 		    errno);
 		exit(1);
 	}
-	for (ii = 0; ii < VTlen; ii++) {
-		Minute[ii] =
-			Cnts[ii][0] ? (short) (Sums[ii][0] /
-					       (int) Cnts[ii][0]) :
-			SZARP_NO_DATA;
-		if (Minutes[ii][abuf] != SZARP_NO_DATA) {
-			Sums[ii][1] -= Minutes[ii][abuf];
-			Cnts[ii][1]--;
-		}
-		Minutes[ii][abuf] = Minute[ii];
-		if (Minutes[ii][abuf] != SZARP_NO_DATA) {
-			Sums[ii][1] += Minute[ii];
-			Cnts[ii][1]++;
-		}
-	}
+	for (ii = 0; ii < VTlen; ii++)
+		calculate_average(Minute, ii, 0);
+	for (ii = 0; ii < VTlen; ii++)
+		update_value(ii, 1, Minute, Minutes, abuf);
 	Sem[0].sem_num = SEM_MINUTE + 1;
 	Sem[0].sem_op = -1;
 	semop(SemDes, Sem, 1);
@@ -1354,22 +1470,10 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 			    errno);
 			exit(1);
 		}
-		for (ii = 0; ii < VTlen; ii++) {
-			Min10[ii] =
-				Cnts[ii][1] ? (short) (Sums[ii][1] /
-						       (int)
-						       Cnts[ii][1]) :
-				SZARP_NO_DATA;
-			if (Min10s[ii][abuf] != SZARP_NO_DATA) {
-				Sums[ii][2] -= Min10s[ii][abuf];
-				Cnts[ii][2]--;
-			}
-			Min10s[ii][abuf] = Min10[ii];
-			if (Min10s[ii][abuf] != SZARP_NO_DATA) {
-				Sums[ii][2] += Min10[ii];
-				Cnts[ii][2]++;
-			}
-		}
+		for (ii = 0; ii < VTlen; ii++)
+			calculate_average(Min10, ii, 1);
+		for (ii = 0; ii < VTlen; ii++)
+			update_value(ii, 2, Min10, Min10s, abuf);
 		Sem[0].sem_num = SEM_MIN10 + 1;
 		Sem[0].sem_op = -1;
 		semop(SemDes, Sem, 1);
@@ -1394,13 +1498,8 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 			    errno);
 			exit(1);
 		}
-		for (ii = 0; ii < VTlen; ii++) {
-			Hour[ii] =
-				Cnts[ii][2] ? (short) (Sums[ii][2] /
-						       (int)
-						       Cnts[ii][2]) :
-				SZARP_NO_DATA;
-		}
+		for (ii = 0; ii < VTlen; ii++) 
+			calculate_average(Hour, ii, 2);
 		Sem[0].sem_num = SEM_HOUR + 1;
 		Sem[0].sem_op = -1;
 		semop(SemDes, Sem, 1);
@@ -1481,6 +1580,7 @@ int main(int argc, char *argv[])
 		sz_log(0, "Unable to load IPK for prefix %s", config_prefix);
 		return 1;
 	}
+	ipk->PrepareDrawDefinable();
 
 	/* go into background */
 	if (arguments.no_daemon == 0) {
@@ -1507,6 +1607,7 @@ int main(int argc, char *argv[])
 	/* alloc memory for probes */
 	sz_log(10, "Allocating memory for probes");
 	AllocProbesMemory();
+	configure_pars_infos(ipk);
 
 	/* register second cleanup handler */
 	atexit(CleanUp);

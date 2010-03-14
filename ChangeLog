@@ -1,5 +1,11 @@
 $Id$
 
+2010-03-14      Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* parcook/parcook.cc: lsw and msw parts of combined 
+	params are glued together while average values
+	are calculated, this prevents nasty effects of rounding
+	errors on msw; small bug in allocating memory for
+	daemons' arguments removed
 2010-03-13      Pawel Palucha <pawel@praterm.com.pl>
 	* howto.sgml: added info about ICON 225 gprs modem configuration.
 2010-03-12      Darek Marcinkiewicz <reksio@dalkiaterm.pl>
