@@ -1,5 +1,7 @@
 $Id$
 
+2010-03-15      Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* parcook/parcook.cc: small simplification
 2010-03-14      Darek Marcinkiewicz <reksio@dalkiaterm.pl>
 	* parcook/parcook.cc: lsw and msw parts of combined 
 	params are glued together while average values

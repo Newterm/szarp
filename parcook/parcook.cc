@@ -256,7 +256,7 @@ void calculate_average(short *probes, int param_no, int probe_type) {
 	sz_log(9, "Leaving calculate average");
 }
 
-template<class IVT, class OVT> void update_value(int param_no, int probe_type, IVT ivt, OVT ovt, int abuf) {
+template<class OVT> void update_value(int param_no, int probe_type, short* ivt, OVT ovt, int abuf) {
 	if (ParsInfo[param_no]->type == tParamInfo::SINGLE) {
 		if (ovt[param_no][abuf] != SZARP_NO_DATA) {
 			Sums[param_no][probe_type] -= (int) ovt[param_no][abuf];
