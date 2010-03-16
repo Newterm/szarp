@@ -48,6 +48,15 @@ public:
 	Var& var() { return (*m_vec)[m_var_no]; }
 };
 
+class ParRefRef {
+	std::vector<ParamRef>* m_vec;
+	size_t m_par_no;
+public:
+	ParRefRef() : m_vec(NULL) {}
+	ParRefRef(std::vector<ParamRef>* vec, size_t par_no) : m_vec(vec), m_par_no(par_no) {}
+	ParamRef& par_ref() { return (*m_vec)[m_par_no]; }
+};
+
 
 class VarExpression : public Expression {
 	VarRef m_var;
@@ -134,15 +143,15 @@ public:
 };
 
 class ParamValue : public Expression {
-	ParamRef* m_param_ref;
+	ParRefRef m_param_ref;
 	PExpression m_time;
 	PExpression m_avg_type;
 public:
-	ParamValue(ParamRef* param_ref, PExpression time, const PExpression avg_type)
+	ParamValue(ParRefRef param_ref, PExpression time, const PExpression avg_type)
 		: m_param_ref(param_ref), m_time(time), m_avg_type(avg_type) {}
 
 	virtual Val Value() {
-		return m_param_ref->Value(m_time->Value(), m_avg_type->Value());
+		return m_param_ref.par_ref().Value(m_time->Value(), m_avg_type->Value());
 	}
 };
 
@@ -399,7 +408,7 @@ public:
 
 	VarRef FindVar(const std::wstring& identifier);
 
-	ParamRef* GetParamRef(const std::wstring param_name);
+	ParRefRef GetParamRef(const std::wstring param_name);
 
 	PExpression ConvertBlock(const block& block);
 
@@ -990,7 +999,7 @@ PExpression ParamValueConverter::Convert(const std::vector<expression>& expressi
 #ifdef LUA_OPTIMIZER_DEBUG
 	std::cerr << "Parameter name: " << SC::S2A(param_name) << std::endl;
 #endif
-	ParamRef* param_ref = m_param_converter->GetParamRef(param_name);
+	ParRefRef param_ref = m_param_converter->GetParamRef(param_name);
 	return boost::make_shared<ParamValue>(param_ref,
 			m_param_converter->ConvertExpression(expressions[1]),
 			m_param_converter->ConvertExpression(expressions[2]));
@@ -1064,17 +1073,14 @@ VarRef ParamConverter::FindVar(const std::wstring& identifier) {
 	throw ParamConversionException(std::wstring(L"Variable ") + identifier + L" is unbound");
 }
 
-ParamRef* ParamConverter::GetParamRef(const std::wstring param_name) {
+ParRefRef ParamConverter::GetParamRef(const std::wstring param_name) {
 	std::pair<szb_buffer_t*, TParam*> bp;
 	if (m_szbase->FindParam(param_name, bp) == false)
 		throw ParamConversionException(std::wstring(L"Param ") + param_name + L" not found");
 
-	for (std::vector<ParamRef>::iterator i = m_param->m_par_refs.begin();
-			i != m_param->m_par_refs.end();
-			i++)
-		if (i->m_buffer == bp.first
-				&& i->m_param == bp.second)
-			return &(*i);
+	for (size_t i = 0; i < m_param->m_par_refs.size(); i++)
+		if (m_param->m_par_refs[i].m_buffer == bp.first && m_param->m_par_refs[i].m_param == bp.second)
+			return ParRefRef(&m_param->m_par_refs, i);
 
 	size_t pi = m_param->m_par_refs.size();
 	ParamRef pr;
@@ -1083,7 +1089,7 @@ ParamRef* ParamConverter::GetParamRef(const std::wstring param_name) {
 	pr.m_param_index = pi;
 	m_param->m_par_refs.push_back(pr);
 
-	return &m_param->m_par_refs.back();
+	return ParRefRef(&m_param->m_par_refs, pi);
 }
 
 PExpression ParamConverter::ConvertBlock(const block& block) {
@@ -1170,10 +1176,12 @@ ExecutionEngine::ExecutionEngine(LuaOptDatablock *block) {
 	szb_lock_buffer(m_buffer);
 	m_start_time = probe2time(0, block->year, block->month);
 	m_param = block->exec_param;
+	m_blocks.resize(m_param->m_par_refs.size());
+	m_blocks_iterators.resize(m_param->m_par_refs.size());
 	for (size_t i = 0; i < m_param->m_par_refs.size(); i++) {
 		m_param->m_par_refs[i].SetExecutionEngine(this);
-		m_blocks.push_back(std::list<BlockListEntry>(1, CreateBlock(i, m_start_time)));
-		m_blocks_iterators.push_back(m_blocks.back().begin());
+		m_blocks[i] = std::list<BlockListEntry>(1, CreateBlock(i, m_start_time));
+		m_blocks_iterators[i] = m_blocks[i].begin();
 	}
 	m_vals.resize(m_param->m_vars.size());
 	for (size_t i = 0; i < m_vals.size(); i++)

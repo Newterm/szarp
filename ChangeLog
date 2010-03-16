@@ -1,6 +1,7 @@
 $Id$
 
 2010-03-16      Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* parcook/libSzarp2: lua param optimiser - more fixes
 	* parcook/libSzarp2: lua param optimiser: support for
 	in_season function added, optimized parameters 
 	may now refer to any moment in time, some bug fixes
