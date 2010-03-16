@@ -2,7 +2,7 @@
 
 #ifdef LUA_PARAM_OPTIMISE
 
-#define BOOST_SPIRIT_DEBUG
+//#define BOOST_SPIRIT_DEBUG
 #include <iostream>
 #include <string>
 namespace std {

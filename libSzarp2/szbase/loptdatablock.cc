@@ -13,7 +13,7 @@
 
 #ifdef LUA_PARAM_OPTIMISE
 
-#define LUA_OPTIMIZER_DEBUG
+//#define LUA_OPTIMIZER_DEBUG
 
 #include <boost/make_shared.hpp>
 
@@ -111,6 +111,25 @@ public:
 
 	virtual Val Value() {
 		return std::isnan(m_exp->Value());
+	}
+};
+
+class InSeasonExpression : public Expression {
+	TSzarpConfig* m_sc;
+	PExpression m_t;
+public:
+	InSeasonExpression(TSzarpConfig* sc, PExpression t) : m_sc(sc), m_t(t) {}
+
+	virtual Val Value() {
+		struct tm *ptm;
+		time_t t = m_t->Value();
+#ifdef HAVE_LOCALTIME_R
+		struct tm _tm;
+		ptm = localtime_r(&t, &_tm);
+#else
+		ptm = localtime(&time);
+#endif
+		return m_sc->GetSeasons()->IsSummerSeason(ptm);
 	}
 };
 
@@ -357,6 +376,13 @@ public:
 	PExpression Convert(const std::vector<expression>& expressions);
 };
 
+class InSeasonConverter : public FunctionConverter {
+public:
+	InSeasonConverter(ParamConverter *param_converter) : FunctionConverter(param_converter) {}	
+
+	PExpression Convert(const std::vector<expression>& expressions);
+};
+
 class ParamConverter {
 	Szbase* m_szbase;
 	Param* m_param;
@@ -400,10 +426,23 @@ public:
 class ExecutionEngine {
 	time_t m_start_time;
 	szb_buffer_t* m_buffer;
-	std::vector<szb_datablock_t*> m_blocks;
+	struct BlockListEntry {
+		time_t start;
+		time_t end;
+		szb_datablock_t *block;
+		BlockListEntry(time_t start_, time_t end_, szb_datablock_t* block_) : start(start_), end(end_), block(block_) {}
+	};
+	std::vector<TParam*> m_params;
+	std::vector<std::list<BlockListEntry> > m_blocks;
+	std::vector<std::list<BlockListEntry>::iterator> m_blocks_iterators;
 	std::vector<double> m_vals;
 	Param* m_param;
 	bool m_fixed;
+	BlockListEntry CreateBlock(size_t param_index, time_t t);
+	BlockListEntry& AddBlock(size_t param_index, time_t t, std::list<BlockListEntry>::iterator& i);
+	BlockListEntry& SearchBlockLeft(size_t param_index, time_t t, std::list<BlockListEntry>::iterator& i);
+	BlockListEntry& SearchBlockRight(size_t param_index, time_t t, std::list<BlockListEntry>::iterator& i);
+	BlockListEntry& GetBlock(size_t param_index, time_t time);
 public:
 	ExecutionEngine(LuaOptDatablock *block);
 
@@ -887,9 +926,8 @@ PExpression NanConverter::Convert(const std::vector<expression>& expressions) {
 	return boost::make_shared<NilExpression>();
 }
 
-std::wstring ParamValueConverter::GetParamName(const expression& e) {
-#define ERROR throw ParamConversionException(L"First parameter of p function should be literal string")
-
+std::wstring get_string_expression(const expression &e) {
+#define ERROR throw ParamConversionException(L"Expression is not string")
 	const or_exp& or_exp_ = e.o;
 	if (or_exp_.size() != 1)
 		ERROR;
@@ -927,10 +965,19 @@ std::wstring ParamValueConverter::GetParamName(const expression& e) {
 		return name;
 	} catch (boost::bad_get &e) {
 #ifdef LUA_OPTIMIZER_DEBUG
-		std::cerr << "Error, first expression for p param is: " << e.what() << std::endl;
+		std::cerr << "Failed to convert expression to string: " << e.what() << std::endl;
 #endif
 		ERROR;
 	}
+}
+
+std::wstring ParamValueConverter::GetParamName(const expression& e) {
+	try {
+		return get_string_expression(e);
+	} catch (const ParamConversionException& e) {
+		throw ParamConversionException(L"First parameter of p function should be literal string");
+	}
+
 }
 
 PExpression ParamValueConverter::Convert(const std::vector<expression>& expressions) {
@@ -949,11 +996,35 @@ PExpression ParamValueConverter::Convert(const std::vector<expression>& expressi
 			m_param_converter->ConvertExpression(expressions[2]));
 }
 
+PExpression InSeasonConverter::Convert(const std::vector<expression>& expressions) {
+#ifdef LUA_OPTIMIZER_DEBUG
+	std::cerr << "Converting isnan(..) expression" << std::endl;
+#endif
+	if (expressions.size() < 2)
+		throw ParamConversionException(L"in season function requires two arguments");
+	std::wstring prefix;
+	try {
+		prefix = get_string_expression(expressions[0]);
+#ifdef LUA_OPTIMIZER_DEBUG
+		std::cerr << "in_season parameter: " << SC::S2A(prefix) << std::endl;
+#endif
+	} catch (ParamConversionException &e) {
+		throw ParamConversionException(L"First argument to in_season function should be literal configuration prefix");
+	}
+
+	IPKContainer* ic = IPKContainer::GetObject();
+	TSzarpConfig* sc = ic->GetConfig(prefix);
+	if (sc == NULL)
+		throw ParamConversionException(std::wstring(L"Prefix ") + prefix + L" given in in_season not found");
+	return boost::make_shared<InSeasonExpression>(sc, m_param_converter->ConvertExpression(expressions[1]));
+}
+
 ParamConverter::ParamConverter(Szbase *szbase) : m_szbase(szbase) {
 	m_function_converters[L"szb_move_time"] = boost::make_shared<SzbMoveTimeConverter>(this);
 	m_function_converters[L"isnan"] = boost::make_shared<IsNanConverter>(this);
 	m_function_converters[L"nan"] = boost::make_shared<NanConverter>(this);
 	m_function_converters[L"p"] = boost::make_shared<ParamValueConverter>(this);
+	m_function_converters[L"in_season"] = boost::make_shared<InSeasonConverter>(this);
 }
 
 VarRef ParamConverter::GetGlobalVar(std::wstring identifier) {
@@ -1087,6 +1158,11 @@ void ParamConverter::InitalizeVars() {
 	AddVariable(L"v");
 	AddVariable(L"t");
 	AddVariable(L"pt");
+	AddVariable(L"PT_MIN10");
+	AddVariable(L"PT_HOUR");
+	AddVariable(L"PT_HOUR8");
+	AddVariable(L"PT_WEEK");
+	AddVariable(L"PT_MONTH");
 }
 
 ExecutionEngine::ExecutionEngine(LuaOptDatablock *block) {
@@ -1094,15 +1170,19 @@ ExecutionEngine::ExecutionEngine(LuaOptDatablock *block) {
 	szb_lock_buffer(m_buffer);
 	m_start_time = probe2time(0, block->year, block->month);
 	m_param = block->exec_param;
-	for (std::vector<ParamRef>::iterator i = m_param->m_par_refs.begin();
-			i != m_param->m_par_refs.end();
-			i++) {
-		i->SetExecutionEngine(this);
-		m_blocks.push_back(szb_get_block(i->m_buffer, i->m_param, block->year, block->month));
+	for (size_t i = 0; i < m_param->m_par_refs.size(); i++) {
+		m_param->m_par_refs[i].SetExecutionEngine(this);
+		m_blocks.push_back(std::list<BlockListEntry>(1, CreateBlock(i, m_start_time)));
+		m_blocks_iterators.push_back(m_blocks.back().begin());
 	}
 	m_vals.resize(m_param->m_vars.size());
 	for (size_t i = 0; i < m_vals.size(); i++)
 		m_param->m_vars[i].SetExecutionEngine(this);
+	m_vals[3] = PT_MIN10;
+	m_vals[4] = PT_HOUR;
+	m_vals[5] = PT_HOUR8;
+	m_vals[6] = PT_WEEK;
+	m_vals[7] = PT_MONTH;
 }
 
 void ExecutionEngine::CalculateValue(time_t t, double &val, bool &fixed) {
@@ -1116,32 +1196,95 @@ void ExecutionEngine::CalculateValue(time_t t, double &val, bool &fixed) {
 }
 
 void ExecutionEngine::Refresh() {
-	for (std::vector<szb_datablock_t*>::iterator i = m_blocks.begin();
-			i != m_blocks.end();
-			i++) {
-		if (*i != NULL)
-			(*i)->Refresh();
-#if 0
-		else {
-			std::
-			std::vector<ParamRef>::iterator j = m_param->m_par_refs.begin();
-			*i = szb_get_block(m_buffer, i->m_param, (*i)->year, (*i)->month)szb_get_block(i->m_buffer, i->m_param, block->year, block->month));
-		}
-#endif
-	}
+	for (size_t i = 0; i < m_param->m_par_refs.size(); i++)
+		for (std::list<BlockListEntry>::iterator j =  m_blocks[i].begin();
+				j != m_blocks[i].end();
+				j++)
+			if (j->block)
+				j->block->Refresh();
+			else {
+				BlockListEntry b = CreateBlock(i, j->start);
+				j->block = b.block;
+			}
 }
 
-double ExecutionEngine::Value(size_t param_index, const double& time, const double& period_type) {
-	int probe_index  = (time_t(time) - m_start_time) / SZBASE_PROBE;
-	szb_datablock_t* block = m_blocks.at(param_index);
+ExecutionEngine::BlockListEntry ExecutionEngine::CreateBlock(size_t param_index, time_t t) {
+	int year, month;
+	szb_time2my(t, &year, &month);
+	time_t start = probe2time(0, year, month);
+	time_t end = start + SZBASE_PROBE * szb_probecnt(year, month);
+	szb_datablock_t *block = szb_get_block(m_param->m_par_refs[param_index].m_buffer, m_param->m_par_refs[param_index].m_param, year, month);
+	return BlockListEntry(start, end, block);
+}
+
+ExecutionEngine::BlockListEntry& ExecutionEngine::AddBlock(size_t param_index, time_t t, std::list<BlockListEntry>::iterator& i) {
+	BlockListEntry ble(CreateBlock(param_index, t));
+	m_blocks[param_index].insert(i, ble);
+	std::advance(i, -1);
+	return *i;
+}
+
+ExecutionEngine::BlockListEntry& ExecutionEngine::SearchBlockLeft(size_t param_index, time_t t, std::list<BlockListEntry>::iterator& i) {
+	do {
+		if (i == m_blocks[param_index].begin())
+			return AddBlock(param_index, t, i);
+
+		if ((--i)->end <= t)
+			return AddBlock(param_index, t, ++i);
+
+		if (i->start <= t)
+			return *i;
+		
+	} while (true);	
+
+}
+
+ExecutionEngine::BlockListEntry& ExecutionEngine::SearchBlockRight(size_t param_index, time_t t, std::list<BlockListEntry>::iterator& i) {
+	do {
+		if (++i == m_blocks[param_index].end())
+			return AddBlock(param_index, t, i);
+
+		if (i->start > t)
+			return AddBlock(param_index, t, i);
+
+		if (i->end > t)
+			return *i;
+		
+	} while (true);	
+
+}
+
+ExecutionEngine::BlockListEntry& ExecutionEngine::GetBlock(size_t param_index, time_t time) {
+	std::list<BlockListEntry>::iterator& i = m_blocks_iterators[param_index];
+	if (i->start <= time && time < i->end)
+		return *i;
+	else if (i->start > time)
+		return SearchBlockLeft(param_index, time, i);
+	else
+		return SearchBlockRight(param_index, time, i);
+}
+
+double ExecutionEngine::Value(size_t param_index, const double& time_, const double& period_type) {
+	time_t time = time_;
 	double ret;
-	if (block) {
-		if (block->GetFixedProbesCount() < probe_index)
+
+	if (period_type == PT_MIN10) {
+		BlockListEntry& block = GetBlock(param_index, time);
+		if (block.block) {
+			int probe_index  = (time - block.start) / SZBASE_PROBE;
+			if (block.block->GetFixedProbesCount() < probe_index)
+				m_fixed = false;
+			ret = block.block->GetData(false)[probe_index];
+		} else {
 			m_fixed = false;
-		ret = block->GetData(false)[probe_index];
+			ret = nan("");
+		}
 	} else {
-		m_fixed = false;
-		ret = nan("");
+		bool fixed;
+		ParamRef& v = m_param->m_par_refs[param_index];	
+		ret = szb_get_avg(v.m_buffer, v.m_param, time, szb_move_time(time, 1, (SZARP_PROBE_TYPE)period_type, 0), NULL, NULL, (SZARP_PROBE_TYPE)period_type, &fixed);
+		if (!fixed)
+			m_fixed = false;
 	}
 	return ret;
 }
@@ -1233,8 +1376,10 @@ LuaDatablock *create_lua_data_block(szb_buffer_t *b, TParam* p, int y, int m) {
 				pc.ConvertParam(param_code, ep);
 				ep->m_optimized = true;
 			} catch (LuaExec::ParamConversionException &e) {
-				sz_log(2, "Parameter %ls cannot be optimized, reason: %ls", p->GetName().c_str(), e.what().c_str());
+				sz_log(3, "Parameter %ls cannot be optimized, reason: %ls", p->GetName().c_str(), e.what().c_str());
+#ifdef LUA_OPTIMIZER_DEBUG
 				std::cerr << "Parameter " << SC::S2A(p->GetName()) << " cannot be optimized, reason: " << SC::S2A(e.what()) << std::endl;
+#endif
 			}
 		}
 	}
