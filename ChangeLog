@@ -1,6 +1,8 @@
 $Id$
 
 2010-03-16      Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* debian/control: boost1.42 added to build depends as
+	another alternative
 	* debian: added --enable-lua-optimizer (just
 	for this one build), building unstable
 	* libSzarp2: lua param optimiser - blocks 
