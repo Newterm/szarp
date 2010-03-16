@@ -1,6 +1,8 @@
 $Id$
 
 2010-03-16      Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* debian/control: boost1.42 set as only boost version
+	in build depends	
 	* debian/control: boost1.42 added to build depends as
 	another alternative
 	* debian: added --enable-lua-optimizer (just
