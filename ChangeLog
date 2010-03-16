@@ -1,10 +1,12 @@
 $Id$
 
 2010-03-16      Darek Marcinkiewicz <reksio@dalkiaterm.pl>
-	* parcook/libSzarp2: lua param optimiser - blocks 
+	* debian: added --enable-lua-optimizer (just
+	for this one build), building unstable
+	* libSzarp2: lua param optimiser - blocks 
 	are properly refreshed
-	* parcook/libSzarp2: lua param optimiser - more fixes
-	* parcook/libSzarp2: lua param optimiser: support for
+	* libSzarp2: lua param optimiser - more fixes
+	* libSzarp2: lua param optimiser: support for
 	in_season function added, optimized parameters 
 	may now refer to any moment in time, some bug fixes
 2010-03-15      Darek Marcinkiewicz <reksio@dalkiaterm.pl>
