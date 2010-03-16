@@ -1312,36 +1312,42 @@ Val ParamRef::Value(const double& time, const double& period) {
 } // LuaExec
 
 LuaOptDatablock::LuaOptDatablock(szb_buffer_t * b, TParam * p, int y, int m) : LuaDatablock(b, p, y, m) {
-	#ifdef KDEBUG
+#ifdef KDEBUG
 	sz_log(DATABLOCK_CREATION_LOG_LEVEL, "D: DefinableDatablock::DefinableDatablock(%ls, %d.%d)", param->GetName().c_str(), year, month);
-	#endif
-
-	exec_param = p->GetLuaExecParam();
-
+#endif
 	AllocateDataMemory();
-
+	exec_param = p->GetLuaExecParam();
 	if (year < buffer->first_av_year)
 		NOT_INITIALIZED;
-
 	if (year == buffer->first_av_year && month < buffer->first_av_month)
 		NOT_INITIALIZED;
+	int year, month;
+	time_t end_date = szb_search_last(buffer, param);
+	szb_time2my(end_date, &year, &month);
+	if (this->year > year || (this->year == year && this->month > month))
+		NOT_INITIALIZED;
+	if (end_date > GetBlockLastDate())
+		end_date = GetBlockLastDate();
+	int probes_to_compute = szb_probeind(end_date) + 1;
+	for (int i = probes_to_compute; i < max_probes; i++)
+		data[i] = SZB_NODATA;
 
+	last_update_time = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
 	if (LoadFromCache()) {
 		Refresh();
 		return;
 	} else {
-		last_update_time = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
 		LuaExec::ExecutionEngine ee(this);
 		ee.Refresh();
-		CalculateValues(&ee);
+		CalculateValues(&ee, probes_to_compute);
 	}
 }
 
-void LuaOptDatablock::CalculateValues(LuaExec::ExecutionEngine *ee) {
+void LuaOptDatablock::CalculateValues(LuaExec::ExecutionEngine *ee, int end_probe) {
 	time_t t = probe2time(first_non_fixed_probe, year, month);
 	bool fixed = true;
 
-	for (int i = first_non_fixed_probe; i < max_probes; i++, t += SZBASE_PROBE) {
+	for (int i = first_non_fixed_probe; i < end_probe; i++, t += SZBASE_PROBE) {
 		bool probe_fixed = true;
 		ee->CalculateValue(t, data[i], fixed);
 		if (!std::isnan(data[i])) {
@@ -1355,13 +1361,22 @@ void LuaOptDatablock::CalculateValues(LuaExec::ExecutionEngine *ee) {
 }
 
 void LuaOptDatablock::Refresh() {
-	time_t meaner_date = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
-	if (last_update_time != meaner_date) {
-		LuaExec::ExecutionEngine ee(this);
-		ee.Refresh();
-		CalculateValues(&ee);
-		last_update_time = meaner_date;
-	}
+	if (first_non_fixed_probe == max_probes)
+		return;
+
+	time_t updatetime = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
+	if (last_update_time == updatetime)
+		return;
+
+	time_t end_date = szb_search_last(buffer, param);
+	if (end_date > GetBlockLastDate())
+		end_date = GetBlockLastDate();
+
+	int end_probe = szb_probeind(end_date) + 1;
+	LuaExec::ExecutionEngine ee(this);
+	ee.Refresh();
+	CalculateValues(&ee, end_probe);
+	last_update_time = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
 }
 
 #endif

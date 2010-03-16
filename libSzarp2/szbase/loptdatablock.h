@@ -88,7 +88,7 @@ public:
 
 class LuaOptDatablock : public LuaDatablock 
 {
-	void CalculateValues(LuaExec::ExecutionEngine *ee);
+	void CalculateValues(LuaExec::ExecutionEngine *ee, int end_probe);
 public:
 	LuaExec::Param *exec_param;
 	LuaOptDatablock(szb_buffer_t * b, TParam * p, int y, int m);
