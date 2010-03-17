@@ -64,8 +64,9 @@ public:
     void ShowConfigurations();
 	/** Load configuration
 	 * @param configurationName configuration name 
+	 * @param true if first availabale configuration will be loaded and false if specified configuration will be loaded
 	 */    
-	 bool LoadConfiguration(wxString);
+	 bool LoadConfiguration(wxString configurationName, bool defaultLoading = false);
 #ifndef MINGW32        
 	/** Load all configurations */    
     bool LoadAllConfiguration();
@@ -80,6 +81,15 @@ public:
 	 * @param configurationName configuraton name 
 	 */        
     bool CreateConfiguration(wxString);
+    /** Load first valid configuration from configuration file
+	 * @return true if any configuration has been valid
+	 */        
+    bool LoadFirstConfiguration();
+private:
+    /** Gets configuration name from dialog
+	 * @return name of new configuration
+	 */        
+    wxString GetConfigurationName();
 };
 
 #endif // __VISZIOAPP_H__

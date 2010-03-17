@@ -148,14 +148,8 @@ void FetchFrame::OnFetch(wxCommandEvent& event)
 			{
 				if (config->m_all_frames[j] != NULL && config->m_all_frames[j]->GetParameterName().Cmp(name) == 0)
 				{
-					//all_frames[j]->Freeze();
-					//wxWindowUpdateLocker w(all_frames[j]);
-					//all_frames[j]->SetParameterValue(_("                      "));
-					//all_frames[j]->RefreshTransparentFrame();
-					config->m_all_frames[j]->SetParameterValue(val + _(" ") + unit);
-					//all_frames[j]->SetTitle(val + _(" ") + unit);
+					config->m_all_frames[j]->SetParameterValue(val + _T(" ") + unit);
 					config->m_all_frames[j]->RefreshTransparentFrame();
-					//all_frames[j]->Thaw();
 					break;
 				}
 			}

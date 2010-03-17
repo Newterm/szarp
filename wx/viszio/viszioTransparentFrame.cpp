@@ -112,7 +112,7 @@ TransparentFrame::TransparentFrame( wxWindow* parent, bool with_frame, wxString 
                 wxPoint(0, 0),
                 config->m_defaultSizeWithFrame,
 #ifndef MINGW32                
-                0 | wxFRAME_SHAPED | wxSIMPLE_BORDER | wxSTAY_ON_TOP | wxTRANSPARENT_WINDOW),
+                0 | wxFRAME_SHAPED | wxSIMPLE_BORDER | wxSTAY_ON_TOP | wxTRANSPARENT_WINDOW | wxFRAME_NO_TASKBAR),
 #else                
                 0 | wxFRAME_SHAPED | wxNO_BORDER | wxSTAY_ON_TOP | wxFRAME_NO_TASKBAR),
 #endif                
@@ -168,7 +168,7 @@ TransparentFrame::~TransparentFrame()
     delete m_menu;
 }
 
-void TransparentFrame::SetFrameConfiguration(wxString name, bool withFrame, long locationX, long locationY, wxColour frameColor, wxColour fontColor, int fontSize, int paramNameSizeAdjust, int desktopNumber)
+bool TransparentFrame::SetFrameConfiguration(wxString name, bool withFrame, long locationX, long locationY, wxColour frameColor, wxColour fontColor, int fontSize, int paramNameSizeAdjust, int desktopNumber)
 {
     m_withFrame = withFrame;
     SetParameterName(name);
@@ -194,10 +194,37 @@ void TransparentFrame::SetFrameConfiguration(wxString name, bool withFrame, long
     if (probe->m_param==NULL)
     {
         m_parameterName->SetText(_("error parameter name"));
-        return;
+        return false;
     }
     config->m_probes.Append(probe);
 	config->m_pfetcher->SetSource(config->m_probes, config->m_ipk);
+	return true;
+}
+
+bool TransparentFrame::SetFrameConfiguration(szProbe &probe, bool withFrame, long locationX, long locationY, wxColour frameColor, wxColour fontColor, int fontSize, int paramNameSizeAdjust, int desktopNumber)
+{
+    m_withFrame = withFrame;
+    SetParameterName(probe.m_parname);
+    Move(wxPoint(locationX, locationY));
+    m_color = frameColor;
+    if (fontSize<=10)
+        fontSize=10;
+    else if (fontSize<=15)
+        fontSize=15;
+    else
+        fontSize=20;
+    m_font->SetPointSize(fontSize);
+    delete m_fontColor;
+    m_fontColor = new wxColour(fontColor);
+    m_parameterName->SetFont(*m_font, *m_fontColor);
+    m_parameterValue->SetFont(*m_font, *m_fontColor);
+    m_parameterName->SetAdjustable(paramNameSizeAdjust==1);
+#ifndef MINGW32	
+    m_desktop = desktopNumber;
+#endif
+    config->m_probes.Append(&probe);
+	config->m_pfetcher->SetSource(config->m_probes, config->m_ipk);
+	return true;
 }
 
 
@@ -314,8 +341,11 @@ void TransparentFrame::OnPopAdd(wxCommandEvent& evt)
         }
     }
     TransparentFrame *frame = new TransparentFrame(this, m_withFrame, wxString((probe->m_param != NULL)?(probe->m_param->GetName()):L"(none)").c_str());
-    frame->SetFrameConfiguration(apd->g_data.m_probe.m_parname, true, 0, 0, *wxRED, *wxBLACK, 15, 1, 1);
-    frame->Show();
+    bool result = frame->SetFrameConfiguration(apd->g_data.m_probe, true, 0, 0, *wxRED, *wxBLACK, 15, 1, 1);
+    if (result == false) 
+    	delete frame;
+    else
+		frame->Show();
     delete apd;
 }
 
@@ -600,7 +630,7 @@ wxMenu *TransparentFrame::CreatePopupMenu()
 	WnckScreen *wnck_screen = wnck_screen_get_default();
 	wnck_screen_force_update(wnck_screen);
 	if(wnck_screen == NULL) {
-		printf("ADAM SMYK");fflush(stdout);
+		return menu;
 	}
 	int cout = wnck_screen_get_workspace_count(wnck_screen);
 	for(int i = 0; i < cout; i++)

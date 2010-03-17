@@ -227,8 +227,25 @@ public:
 	* @param fontSize size of font
 	* @param paramNameSizeAdjust if equals to 1, name of parameter is fully adjusted
 	* @param desktopNumber desktop number (only for Linux)
+	* @return true if parameter name is valid, otherwise false
 	*/    
-    void SetFrameConfiguration(wxString, bool, long, long, wxColour, wxColour, int, int, int);
+    bool SetFrameConfiguration(wxString, bool, long, long, wxColour, wxColour, int, int, int);
+    /**
+	* Sets configuration for this frame. 
+	* It works similar to constructor, but it is mainly used to mainipulate of the 
+	* existing frames according to configuration written in wxConfig
+	* @param probe pointer to probe
+	* @param withFrame true if transparent frame contains a graphical frame 
+	* @param locationX x location of this frame
+	* @param locationY y location of this frame
+	* @param frameColor color of frame
+	* @param fontColor color of font
+	* @param fontSize size of font
+	* @param paramNameSizeAdjust if equals to 1, name of parameter is fully adjusted
+	* @param desktopNumber desktop number (only for Linux)
+	* @return always true
+	*/    
+    bool SetFrameConfiguration(szProbe &probe, bool withFrame, long locationX, long locationY, wxColour frameColor, wxColour fontColor, int fontSize, int paramNameSizeAdjust, int desktopNumber);
     /**
 	* Returns name of the parameter
 	* @return name of the parameter

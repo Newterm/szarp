@@ -116,17 +116,17 @@ bool viszioApp::OnCmdLineParsed(wxCmdLineParser &parser)
 void viszioApp::OnInitCmdLine(wxCmdLineParser &parser)
 {
     //szApp::OnInitCmdLine(parser);
-    parser.SetLogo(_T("Szarp viszio v 2.1"));
-    parser.AddOption(_T("c"), _("create"), _("new configuration 'str' will be created"));
-    parser.AddOption(_T("l"), _("load"), _("configuration 'str' will be loaded"));
-    parser.AddOption(_T("d"), _("delete"), _("configuration 'str' will be deleted"));
-	parser.AddSwitch(_T("h"), _("help"), _("show help"), wxCMD_LINE_OPTION_HELP);
+    parser.SetLogo(_T("Szarp viszio v 3.1"));
+    parser.AddOption(_T("c"), _T("create"), _T("new configuration 'str' will be created"));
+    parser.AddOption(_T("l"), _T("load"), _T("configuration 'str' will be loaded"));
+    parser.AddOption(_T("d"), _T("delete"), _T("configuration 'str' will be deleted"));
+	parser.AddSwitch(_T("h"), _T("help"), _T("show help"), wxCMD_LINE_OPTION_HELP);
 #ifndef MINGW32    
-    parser.AddSwitch(_T("L"), _("Load"), _("load all configurations"), wxCMD_LINE_SWITCH);
+    parser.AddSwitch(_T("L"), _T("Load"), _T("load all configurations"), wxCMD_LINE_SWITCH);
 #endif    
-    parser.AddSwitch(_T("D"), _("Delete"), _("delete all configurations"), wxCMD_LINE_SWITCH);
-	parser.AddSwitch(_T("S"), _("Show"), _("show all configurations"), wxCMD_LINE_SWITCH);    
-	parser.AddSwitch(_T("H"), _("usage"), _("show how to use viszio"), wxCMD_LINE_SWITCH);
+    parser.AddSwitch(_T("D"), _T("Delete"), _T("delete all configurations"), wxCMD_LINE_SWITCH);
+	parser.AddSwitch(_T("S"), _T("Show"), _T("show all configurations"), wxCMD_LINE_SWITCH);    
+	parser.AddSwitch(_T("H"), _T("usage"), _T("show how to use viszio"), wxCMD_LINE_SWITCH);
 }
 
 
@@ -243,7 +243,7 @@ void viszioApp::ShowConfigurations()
 			array.Add(_("    Server name = ") + SerwerName);
 			local_config->SetPath(_T("/Parameters"));
 			size_t NumberOfParams = local_config->GetNumberOfEntries();
-			array.Add(wxString::Format(_T("    Number of parameters: %d"), NumberOfParams));
+			array.Add(wxString::Format(_("    Number of parameters: %d"), NumberOfParams));
 			wxString name = _T("");
 			wxString value = _T("");
 			long dummy = 0;
@@ -261,7 +261,7 @@ void viszioApp::ShowConfigurations()
     }
     delete global_config;
 	
-    wxDialog *dlg = new wxDialog(NULL, wxID_ANY, wxString(_("Viszio")));
+    wxDialog *dlg = new wxDialog(NULL, wxID_ANY, wxString(_T("Viszio")));
 	wxListBox *list = new wxListBox(dlg, wxID_ANY);
 	list->Set(array);		
 	wxSizer* top_s = new wxBoxSizer(wxVERTICAL);
@@ -310,7 +310,7 @@ bool viszioApp::CreateConfiguration(wxString configurationName)
     return true;
 }
 
-bool viszioApp::LoadConfiguration(wxString configurationName)
+bool viszioApp::LoadConfiguration(wxString configurationName, bool defaultLoading)
 {
     bool ask_for_server = false;    
     TransparentFrame::config = new Configuration(configurationName);
@@ -320,8 +320,8 @@ bool viszioApp::LoadConfiguration(wxString configurationName)
     wxString SerwerName;
     TransparentFrame::config->wxconfig->Read(SerwerParam, &SerwerName);
 	
-	if (SerwerName.IsEmpty())
-		exit(1);
+	if (!defaultLoading && SerwerName.IsEmpty())
+		exit(2);
     
     m_http = new szHTTPCurlClient();
 
@@ -349,14 +349,14 @@ bool viszioApp::LoadConfiguration(wxString configurationName)
         if ( apd->ShowModal() != wxID_OK )
             exit(0);
         FetchFrame* frame = new FetchFrame(0L, SerwerName, m_http, apd->g_data.m_probe.m_parname);        
-		frame->SetFrameConfiguration(apd->g_data.m_probe.m_parname, true, 0, 0, *wxRED, *wxBLACK, 15, 1, 1);
+		frame->SetFrameConfiguration(apd->g_data.m_probe, true, 0, 0, *wxRED, *wxBLACK, 15, 1, 0);
 		if (TransparentFrame::config->m_pfetcher->IsRunning())    
 			TransparentFrame::config->m_pfetcher->Resume();
 		else
 			TransparentFrame::config->m_pfetcher->Run();        
 #ifndef MINGW32		
 		gtk_widget_show_now(GTK_WIDGET(frame->GetHandle()));
-		frame->MoveToDesktop();		
+	//	frame->MoveToDesktop();		
 #else
 		frame->Show(true);
 #endif
@@ -438,14 +438,12 @@ bool viszioApp::LoadConfiguration(wxString configurationName)
         {
             start_frame = new FetchFrame(0L, SerwerName, m_http, name);
             start_frame->SetFrameConfiguration(name, withFrame, locationX, locationY, frameColor, fontColor, fontSize, fontSizeAdjust, desktopNumber);
-            //start_frame->Show();
         }
         else
         {
             if (TransparentFrame::config->m_current_amount_of_frames == TransparentFrame::config->m_max_number_of_frames) return false;
             frame = new TransparentFrame(TransparentFrame::config->m_all_frames[0], name);
             frame->SetFrameConfiguration(name, withFrame, locationX, locationY, frameColor, fontColor, fontSize, fontSizeAdjust, desktopNumber);
-           // frame->Show();
         }
         i++;
         cont = TransparentFrame::config->wxconfig->GetNextEntry(name, dummy);
@@ -469,6 +467,64 @@ bool viszioApp::LoadConfiguration(wxString configurationName)
     return true;
 }
 
+bool viszioApp::LoadFirstConfiguration()
+{
+	wxString configuration;
+	configuration.Empty();
+	
+	wxConfig *global_config = new wxConfig(_T("viszio"));    
+    wxString configurations = _T("");
+    global_config->Read(_T("Configurations"), &configurations);
+	delete global_config;
+	
+    if (configurations.IsEmpty() == false)
+    {
+		wxStringTokenizer st(configurations);
+		while (st.HasMoreTokens())
+		{
+			configuration = st.GetNextToken();
+			bool result = LoadConfiguration(configuration);
+			if (result) 
+				return true;
+		}
+    }
+	return false;
+}
+
+
+wxString viszioApp::GetConfigurationName()
+{	
+	wxString name = _T("");
+	
+	wxDialog* dlg = new wxDialog(NULL, wxID_ANY, wxString(_T("Viszio")));
+	wxSizer* top_s = new wxBoxSizer(wxVERTICAL);
+	top_s->Add(new wxStaticText(dlg, wxID_ANY, 
+		_("Enter first configuration name")), 0, wxALL | wxALIGN_CENTER, 10);
+	wxTextCtrl* text;
+	top_s->Add(text = new wxTextCtrl(dlg, wxID_ANY, name), 0, wxALL | wxEXPAND, 10);
+	wxSizer* but_s = new wxBoxSizer(wxHORIZONTAL);
+	wxButton* def_but;
+	but_s->AddStretchSpacer(1);
+	but_s->Add(def_but = new wxButton(dlg, wxID_OK, _("Apply")), 0, wxALL | wxEXPAND, 10);
+	but_s->AddStretchSpacer(1);
+	but_s->Add(new wxButton(dlg, wxID_CANCEL, _("Cancel")), 0, wxALL | wxEXPAND, 10);
+	but_s->AddStretchSpacer(1);
+	top_s->Add(but_s, 0, wxEXPAND, 0);
+	def_but->SetDefault();
+	dlg->SetSizer(top_s);
+	top_s->SetSizeHints(dlg);
+	int ret = 0;
+	do {
+		ret = dlg->ShowModal();
+		if (ret == wxID_CANCEL) 
+			exit(1);
+		if (ret == wxID_OK) 
+			name = text->GetValue();
+	}while(name.IsEmpty());
+	
+	delete dlg;
+	return name;
+}
 
 
 
@@ -559,7 +615,18 @@ bool viszioApp::OnInit()
         exit(0);
     }
 
-    exit(0);
+	xmlInitParser();
+	xmlSubstituteEntitiesDefault(1);
+	szHTTPCurlClient::Init();
+	bool result = LoadFirstConfiguration();
+	
+	if (result == true)
+		return true;
+	
+	m_configuration = GetConfigurationName();
+	CreateConfiguration(m_configuration);
+	LoadConfiguration(m_configuration, true);
+    return true;
 }
 
 int viszioApp::OnExit()
