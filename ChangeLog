@@ -1,5 +1,8 @@
 $Id$
 
+2010-03-17      Adam Smyk <asmyk@dalkiaterm.pl>
+	* resources/documentation/new/viszio - viszio documentation 
+	update
 2010-03-17      Darek Marcinkiewicz <reksio@dalkiaterm.pl>
 	* libSzarp2/szbase/loptdatablock.{c.h} - micro optimization - 
 	statments have now separate internal represenation from

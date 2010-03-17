@@ -14,7 +14,7 @@
 
 <title>Viszio</title>
 
-<subtitle>SZARP v2.1</subtitle>
+<subtitle>SZARP v3.1</subtitle>
 <authorgroup>
 <author>
 	<firstname>Adam</firstname><surname>Smyk</surname>
@@ -39,7 +39,7 @@ $Id: viszio.sgml 262 2010-01-07 09:41:16Z asmyk $
 <title>Uruchamianie programu</title>
 <para>
 
-Program <emphasis>viszio</emphasis> jest standardowo uruchamiany z poziomu linii poleceñ. Je¿eli chcemy zapoznaæ siê z podstawowymi mo¿liwo¶cimi viszio uruchamiamy aplikacjê z opcj± -h lub --help jak poni¿ej: <programlisting>
+Program <emphasis>viszio</emphasis> jest standardowo uruchamiany z poziomu linii poleceñ. Je¿eli chcemy zapoznaæ siê z podstawowymi mo¿liwo¶cimi <emphasis>viszio</emphasis> uruchamiamy aplikacjê z opcj± -h lub --help jak poni¿ej: <programlisting>
 user@debian:~$ --help
 Szarp viszio v 1.1
 Usage: viszio [-c &lang;str&rang;] [-l &lang;str&rang;] [-d &lang;str&rang;] [-h] [-L] [-D] [-S] [-H]
@@ -67,7 +67,7 @@ Usage: viszio [-c &lang;str&rang;] [-l &lang;str&rang;] [-d &lang;str&rang;] [-h
 </programlisting> 
 </para>
 <para>   
-Dok³adniejsze informacje o obs³udze aplikacji viszio uzyskamy po u¿yciu -H lub --usage.
+Dok³adniejsze informacje o obs³udze aplikacji <emphasis>viszio</emphasis> uzyskamy po u¿yciu -H lub --usage.
 <programlisting>
 user@debian:~$ ./viszio --usage
 To start work with viszio, you have to pass through several following steps:
@@ -80,7 +80,7 @@ To start work with viszio, you have to pass through several following steps:
          5. All information concerning each displayed parameter will be stored 
          	in configuration file.
 </programlisting>
-Uwaga: uruchomienie aplikacji viszio bez ¿adnych paramterów nie odniesie ¿adnego efektu.
+Uruchomienie aplikacji <emphasis>viszio</emphasis> bez ¿adnych parametrów spowoduje za³adowanie pierwszej dostêpnej konfiguracji zapisanej w pliku konfiguracyjnym (opcja -l), a je¿eli nie istnieje ¿adna konfiguracja to zostaniemy poproszeni o podanie nazwy pierwszej konfiguracji.
 </para>
 <para>
 Je¿eli jest to pierwsze uruchomienie programu, musimy utworzyæ konfiguracjê pracy (parametr -c).
@@ -103,8 +103,147 @@ zadanych przez u¿ytkownika co zostanie opisane w nastêpnych rozdzia³ach.
 </para>
 </section>
 
+
+<section id="Viszio-okno-glowne">
+<title>G³ówne okno</title>
+<para>
+
+G³ówne okno <emphasis>viszio</emphasis> zawiera wy³±cznie podstawowe informacje, czyli w czê¶ci górnej wystêpuje nazwa prezentowanego parametru, a w dolnej czê¶ci jego warto¶æ.  
+	 	
+<figure id="Viszio-okno-glowne-fig"><title>
+Okno programu viszio (Linux)</title>
+<mediaobject>
+<imageobject><imagedata scale="60" fileref="pics/viszio-okno-glowne.png"></imageobject>
+</mediaobject>
+</figure>
+
+Dok³adniejsze informacje o mo¿liwo¶ciach aplikacji uzyskamy klikaj±c prawym klawiszem myszki na ramce okna lub na wy¶wietlanych tekstach. Zostanie wy¶wietlone popup-menu naszej aplikacji. 
+
+<figure id="Viszio-menu-glowne-fig"><title>
+Menu programu viszio (Linux)</title>
+<mediaobject>
+<imageobject><imagedata scale="60" fileref="pics/viszio-menu-glowne.png"></imageobject>
+</mediaobject>
+</figure>
+W pierwszej kolejno¶ci omówimy najistotniejszy element naszej aplikacji czyli dodawanie nowych parametrów. 
+</para>
+</section>
+
+<section id="Viszio-dodawanie-parametru">
+<title>Dodawanie nowych parametrów</title>
+<para>
+
+Dodawanie nowych parametrów jest czynno¶ci± relatywnie prost± i wymagane jest w przypadku gdy uruchamiamy viszio po raz pierwszy lub gdy z popup-menu wybierzemy opcjê <emphasis>Dodaj kolejny parametr</emphasis>. Je¿eli viszio ma po³±czenie z wcze¶niej zdefiniowanym serwerem wówczas zostan± wy¶wietlone okno wyboru parametru jak na poni¿szym rysunku.
+
+<figure id="Viszio-dodawanie-parametru-fig"><title>
+Dodawanie nowego parametru (Linux)</title>
+<mediaobject>
+<imageobject><imagedata scale="60" fileref="pics/viszio-dodawanie-parametrow.png"></imageobject>
+</mediaobject>
+</figure>
+ 
+Je¿eli <emphasis>viszio</emphasis> nie bêdzie w stanie po³±czyæ siê z serwerem, lub gdy uruchamiane jest po raz pierwszy, wówczas zostanie wy¶wietlone okno dialogowe, w którym nale¿y podaæ nazwê serwera, z którego pobierane bêd± warto¶ci parametrów. W oknie dialogowym nale¿y podaæ nazwê w formacie <emphasis>nazwa_serwera:port</emphasis> lub <emphasis>ip_serwera:port</emphasis>. Dopiero po poprawnym po³±czeniu z serwerem, <emphasis>viszio</emphasis> ¶ci±gnie aktualn± konfiguracjê systemu SZARP ze zdalnego systemu i dopiero wtedy bêdziemy mogli wybraæ ¿±dany parametr. Po wyborze parametru, zostanie otwarte nowe okienko, w którym zostanie wy¶wietlona warto¶æ wybranego parametru. 
+</para>
+<para>
+Ka¿de okno ma domy¶lnie czerwon± ramkê i czarne teksty, natomiast mo¿emy to zmieniæ korzystaj±c z popup-menu. Na poni¿szym rysunku widzimy okno z nowo dodanym parametrem, w którym zosta³a ustawiona ramka w kolorze bia³ym. Ustalenie koloru ramki na bia³y powoduje, ¿e nie jest ona wy¶wietlana, natomiast wy¶wietlane s± nazwa parametru i jego warto¶æ. Uwaga: nie ma mo¿liwo¶ci ustalenia koloru tekstu jako bia³y. <emphasis>Viszio</emphasis> automatycznie zmodyfikuje kolor bia³y na szary (co widaæ na poni¿szym rysunku w oknie z czerwon± ramk±).  
+ 
+<figure id="Viszio-dodawany-parametr-fig"><title>
+Po dodaniu kolejnego parametru (Linux)</title>
+<mediaobject>
+<imageobject><imagedata scale="60" fileref="pics/viszio-dodany-parametr.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+</section>
+
+<section id="Viszio-rozmiarow-tekstow">
+<title>Zmiana rozmiarów tekstów</title>
+<para>
+U¿ytkownik ma do¶æ ograniczon± mo¿liwo¶æ zmiany rozmiaru tekstów. Rozmiar tekstu mo¿e zostaæ ustalony na: ma³y (10), ¶redni(15) i du¿y(20). Istnieje równie¿ mo¿liwo¶æ ustawienia automatycznego dopasowywania rozmiaru tekstu do rozmiaru okna. Opcja ta dotyczy wy³±cznie nazwy parametru. 
+<figure id="Viszio-rozmiarow-tekstow-fig"><title>
+Zmiana rozmiaru tekstów (Linux)</title>
+<mediaobject>
+<imageobject><imagedata scale="60" fileref="pics/viszio-rozmiar-czcionek.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+</section>
+
+
+<section id="Viszio-antyaliasing-tekstow">
+<title>Redukcja wp³ywu antyaliasingu</title>
+<para>
+Kolejna opcja zosta³a dodana, aby u¿ytkownik móg³ dostosowaæ sposób wy¶wietlania czcionek transparentych z mo¿liwie optymaln± redukcj± wp³ywu antyalisingu. Ka¿dy u¿ytkownik powinien dopasowaæ indywidualnie warto¶æ tego parametru. W przypadku, gdy jako¶æ wy¶wietlanego tekstu nie jest zadowalaj±ca dla predefiniowanych warto¶ci, prosimy o kontakt z autorem viszio.
+
+<figure id="Viszio-antyaliasing-tekstow-fig"><title>
+Usuwanie wp³ywu antyaliasingu przy progowaniu 10 (Linux)</title>
+<mediaobject>
+<imageobject><imagedata scale="60" fileref="pics/viszio-antyaliasing.png"></imageobject>
+</mediaobject>
+</figure>
+
+<figure id="Viszio-antyaliasing-tekstow-fig2"><title>
+Usuwanie wp³ywu antyaliasingu przy progowaniu 25 (Linux)</title>
+<mediaobject>
+<imageobject><imagedata scale="60" fileref="pics/viszio-antyaliasing2.png"></imageobject>
+</mediaobject>
+</figure>
+W innych systemach, zw³aszcza w systemach uruchamianych na maszynach wirtualnych z ograniczonymi mo¿liwo¶ciami graficznymi dla tych samych warto¶ci parametru progowania (które s± przedstawione na powy¿szych rysunkach) mo¿emy uzyskaæ zdecydowanie inny efekt graficzny. Nie jest to uznawane za b³±d. 
+</para>
+</section>
+
+<section id="Viszio-bez-ramki">
+<title>Okna bez ramki</title>
+<para>
+Czasami, mo¿e zaistnieæ potrzeba wy¶wietlenia tylko i wy³±cznie warto¶ci parametru (bez nazwy i bez ramki). Opcja taka zosta³a dodana do viszio, a efekt jej wyboru zosta³ pokazany na poni¿szym rysunku, gdzie umieszczono dwa okna, jedno z czerwon± ramk±, i drugie (w ¶rodkowej czê¶ci ekranu) bez ramki zawieraj±ce tylko warto¶æ (w tym przypadku 138.7 t/h). Takie rozwi±zanie umo¿liwia bezproblemow± i wygodn± obserwacjê warto¶ci parametrów w trakcie normalnej pracy z innymi aplikacjami.
+<figure id="Viszio-bez-ramki-fig"><title>
+Przyk³ady okna z ramk± i bez ramki (wy¶wietlamy tylko warto¶æ parametru) (Linux)</title>
+<mediaobject>
+<imageobject><imagedata scale="60" fileref="pics/viszio-bez-ramki.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+</section>
+
+
+<section id="Viszio-uporzadkowanie-okien">
+<title>Uporz±dkowanie okien</title>
+<para>
+Je¿eli ilo¶æ wybranych do obserwacji parametrów jest znaczna, mo¿e zaistnieæ potrzeba automatycznego uporz±kowania okien. W <emphasis>viszio</emphasis> zosta³y predefiniowane cztery porz±dki okien:
+<itemizedlist>     
+<listitem><para>
+<emphasis>prawo - dó³</emphasis> - okna ustawiane s± od prawej strony ekranu w dó³, po wype³nieniu aktualnej kolumny, ka¿da kolejna jest ustawiana na lewo od aktualnej  
+</para></listitem>
+<listitem><para>
+<emphasis>lewo - dó³</emphasis> - okna ustawiane s± od lewej strony ekranu w dó³, po wype³nieniu aktualnej kolumny, ka¿da kolejna jest ustawiana na prawo od aktualnej
+</para></listitem>
+<listitem><para>
+<emphasis>góra - prawo</emphasis> - okna ustawiane s± od górnej czêsci ekranu w prawo, po wype³nieniu aktualnego wiersza, ka¿dy kolejny jest ustawiany poni¿ej aktualnego
+</para></listitem>
+<listitem><para>
+<emphasis>dó³ - prawo</emphasis> - okna ustawiane s± od dolnej czêsci ekranu w prawo, po wype³nieniu aktualnego wiersza, ka¿dy kolejny jest ustawiany powy¿ej aktualnego
+</para></listitem>
+</itemizedlist>
+<figure id="Viszio-uporzadkowanie-okien-fig"><title>
+Uporz±dkowanie okien - porz±dek prawo-dó³ (Linux)</title>
+<mediaobject>
+<imageobject><imagedata scale="60" fileref="pics/viszio-uporzadkowanie-okien.png"></imageobject>
+</mediaobject>
+</figure>
+
+
+<figure id="Viszio-uporzadkowanie-okien1-fig"><title>
+Uporz±dkowanie okien - porz±dek góra-prawo (Linux)</title>
+<mediaobject>
+<imageobject><imagedata scale="60" fileref="pics/viszio-uporzadkowanie-okien1.png"></imageobject>
+</mediaobject>
+</figure>
+
+
+</para> 
+</section>
 <section id="Viszio-opis-konfiguracji">
-<title>Opis konfiguracji</title>
+<title>Dodatek: Opis plików konfiguracyjnych</title>
 <para>
 Do poprawnej pracy, <emphasis>viszio</emphasis> wymaga istnienia opisu konfiguracji. W systemie Linux konfiguracja zapisana jest w plikach znajduj±cych siê w katalogu g³ównym u¿ytkownika, natomiast w systemie Windows wykorzystywany jest rejestr systemowy. W poni¿szym opisie skupili¶my siê wy³±cznie na systemie Linux. 
 </para>
@@ -193,138 +332,4 @@ Jakiekolwiek rêczne modyfikacje tych parametrów mog± doprowadziæ do niew³a¶ciweg
 </para>
 </section>
 
-<section id="Viszio-okno-glowne">
-<title>G³ówne okno</title>
-<para>
-
-G³ówne okno <emphasis>viszio</emphasis> zawiera wy³±cznie podstawowe informacje, czyli w czê¶ci górnej wystêpuje nazwa prezentowanego parametru, a w dolnej czê¶ci jego warto¶æ.  
-	 	
-<figure id="Viszio-okno-glowne-fig"><title>
-Okno programu viszio (linux)</title>
-<mediaobject>
-<imageobject><imagedata scale="60" fileref="pics/viszio-okno-glowne.png"></imageobject>
-</mediaobject>
-</figure>
-
-Dok³adniejsze informacje o mo¿liwo¶ciach aplikacji uzyskamy klikaj±c prawym klawiszem myszki na ramce okna lub na wy¶wietlanych tekstach. Zostanie wy¶wietlone popup-menu naszej aplikacji. 
-
-<figure id="Viszio-menu-glowne-fig"><title>
-Menu programu viszio (linux)</title>
-<mediaobject>
-<imageobject><imagedata scale="60" fileref="pics/viszio-menu-glowne.png"></imageobject>
-</mediaobject>
-</figure>
-W pierwszej kolejno¶ci omówimy najistotniejszy element naszej aplikacji czyli dodawanie nowych parametrów. 
-</para>
-</section>
-
-<section id="Viszio-dodawanie-parametru">
-<title>Dodawanie nowych parametrów</title>
-<para>
-
-Dodawanie nowych parametrów jest czynno¶ci± relatywnie prost± i wymagane jest w przypadku gdy uruchamiamy viszio po raz pierwszy lub gdy z popup-menu wybierzemy opcjê <emphasis>Dodaj kolejny parametr</emphasis>. Je¿eli viszio ma po³±czenie z wcze¶niej zdefiniowanym serwerem wówczas zostan± wy¶wietlone okno wyboru parametru jak na poni¿szym rysunku.
-
-<figure id="Viszio-dodawanie-parametru-fig"><title>
-Dodawanie nowego parametru (linux)</title>
-<mediaobject>
-<imageobject><imagedata scale="60" fileref="pics/viszio-dodawanie-parametrow.png"></imageobject>
-</mediaobject>
-</figure>
- 
-Je¿eli <emphasis>viszio</emphasis> nie bêdzie w stanie po³±czyæ siê z serwerem, lub gdy uruchamiane jest po raz pierwszy, wówczas zostanie wy¶wietlone okno dialogowe, w którym nale¿y podaæ nazwê serwera, z którego pobierane bêd± warto¶ci parametrów. W oknie dialogowym nale¿y podaæ nazwê w formacie <emphasis>nazwa_serwera:port</emphasis> lub <emphasis>ip_serwera:port</emphasis>. Dopiero po poprawnym po³±czeniu z serwerem, <emphasis>viszio</emphasis> ¶ci±gnie aktualn± konfiguracjê systemu SZARP ze zdalnego systemu i dopiero wtedy bêdziemy mogli wybraæ ¿±dany parametr. Po wyborze parametru, zostanie otwarte nowe okienko, w którym zostanie wy¶wietlona warto¶æ wybranego parametru. 
-</para>
-<para>
-Ka¿de okno ma domy¶lnie czerwon± ramkê i czarne teksty, natomiast mo¿emy to zmieniæ korzystaj±c z popup-menu. Na poni¿szym rysunku widzimy okno z nowo dodanym parametrem, w którym zosta³a ustawiona ramka w kolorze bia³ym. Ustalenie koloru ramki na bia³y powoduje, ¿e nie jest ona wy¶wietlana, natomiast wy¶wietlane s± nazwa parametru i jego warto¶æ. Uwaga: nie ma mo¿liwo¶ci ustalenia koloru tekstu jako bia³y. <emphasis>Viszio</emphasis> automatycznie zmodyfikuje kolor bia³y na szary (co widaæ na poni¿szym rysunku w oknie z czerwon± ramk±).  
- 
-<figure id="Viszio-dodawany-parametr-fig"><title>
-Po dodaniu kolejnego parametru (linux)</title>
-<mediaobject>
-<imageobject><imagedata scale="60" fileref="pics/viszio-dodany-parametr.png"></imageobject>
-</mediaobject>
-</figure>
-</para>
-</section>
-
-<section id="Viszio-rozmiarow-tekstow">
-<title>Zmiana rozmiarów tekstów</title>
-<para>
-U¿ytkownik ma do¶æ ograniczon± mo¿liwo¶æ zmiany rozmiaru tekstów. Rozmiar tekstu mo¿e zostaæ ustalony na: ma³y (10), ¶redni(15) i du¿y(20). Istnieje równie¿ mo¿liwo¶æ ustawienia automatycznego dopasowywania rozmiaru tekstu do rozmiaru okna. Opcja ta dotyczy wy³±cznie nazwy parametru. 
-<figure id="Viszio-rozmiarow-tekstow-fig"><title>
-Zmiana rozmiaru tekstów (linux)</title>
-<mediaobject>
-<imageobject><imagedata scale="60" fileref="pics/viszio-rozmiar-czcionek.png"></imageobject>
-</mediaobject>
-</figure>
-</para>
-</section>
-
-
-<section id="Viszio-antyaliasing-tekstow">
-<title>Redukcja wp³ywu antyaliasingu</title>
-<para>
-Kolejna opcja zosta³a dodana, aby u¿ytkownik móg³ dostosowaæ sposób wy¶wietlania czcionek transparentych z mo¿liwie optymaln± redukcj± wp³ywu antyalisingu. Ka¿dy u¿ytkownik powinien dopasowaæ indywidualnie warto¶æ tego parametru. W przypadku, gdy jako¶æ wy¶wietlanego tekstu nie jest zadowalaj±ca dla predefiniowanych warto¶ci, prosimy o kontakt z autorem viszio.
-
-<figure id="Viszio-antyaliasing-tekstow-fig"><title>
-Usuwanie wp³ywu antyaliasingu przy progowaniu 10 (linux)</title>
-<mediaobject>
-<imageobject><imagedata scale="60" fileref="pics/viszio-antyaliasing.png"></imageobject>
-</mediaobject>
-</figure>
-
-<figure id="Viszio-antyaliasing-tekstow-fig2"><title>
-Usuwanie wp³ywu antyaliasingu przy progowaniu 25 (linux)</title>
-<mediaobject>
-<imageobject><imagedata scale="60" fileref="pics/viszio-antyaliasing2.png"></imageobject>
-</mediaobject>
-</figure>
-W innych systemach, zw³aszcza w systemach uruchamianych na maszynach wirtualnych z ograniczonymi mo¿liwo¶ciami graficznymi dla tych samych warto¶ci parametru progowania (które s± przedstawione na powy¿szych rysunkach) mo¿emy uzyskaæ zdecydowanie inny efekt graficzny. Nie jest to uznawane za b³±d. 
-</para>
-</section>
-
-<section id="Viszio-bez-ramki">
-<title>Tylko warto¶æ</title>
-<para>
-Czasami, mo¿e zaistnieæ potrzeba wy¶wietlenia tylko i wy³±cznie warto¶ci parametru (bez jego nazwy). Opcja taka zosta³a dodana do viszio, a efekt jej wyboru zosta³ pokazany na poni¿szym rysunku.  
-
-<figure id="Viszio-bez-ramki-fig"><title>
-Okno bez ramki - tylko warto¶æ parametru (linux)</title>
-<mediaobject>
-<imageobject><imagedata scale="60" fileref="pics/viszio-bez-ramki.png"></imageobject>
-</mediaobject>
-</figure>
-</para>
-</section>
-
-
-<section id="Viszio-uporzadkowanie-okien">
-<title>Uporz±dkowanie okien</title>
-<para>
-Je¿eli ilo¶æ wybranych do obserwacji parametrów jest znaczna, mo¿e zaistnieæ potrzeba automatycznego uporz±kowania okien. W <emphasis>viszio</emphasis> zosta³y predefiniowane cztery porz±dki okien:
-<itemizedlist>     
-<listitem><para>
-<emphasis>prawo - dó³</emphasis> - okna ustawiane s± od prawej strony ekranu w dó³, po wype³nieniu aktualnej kolumny, ka¿da kolejna jest ustawiana na lewo od aktualnej  
-</para></listitem>
-<listitem><para>
-<emphasis>lewo - dó³</emphasis> - okna ustawiane s± od lewej strony ekranu w dó³, po wype³nieniu aktualnej kolumny, ka¿da kolejna jest ustawiana na prawo od aktualnej
-</para></listitem>
-<listitem><para>
-<emphasis>góra - prawo</emphasis> - okna ustawiane s± od górnej czêsci ekranu w prawo, po wype³nieniu aktualnego wiersza, ka¿dy kolejny jest ustawiany poni¿ej aktualnego
-</para></listitem>
-<listitem><para>
-<emphasis>dó³ - prawo</emphasis> - okna ustawiane s± od dolnej czêsci ekranu w prawo, po wype³nieniu aktualnego wiersza, ka¿dy kolejny jest ustawiany powy¿ej aktualnego
-</para></listitem>
-</itemizedlist>
-
-<figure id="Viszio-uporzadkowanie-okien-fig"><title>
-Uporz±dkowanie okien (linux)</title>
-<mediaobject>
-<imageobject><imagedata scale="60" fileref="pics/viszio-uporzadkowanie-okien.png"></imageobject>
-</mediaobject>
-</figure>
-</para>
-<para>
-UWAGA 1: w ró¿nych zarz±dcach okien opcja ta mo¿e dzia³aæ w ró¿ny sposób. Je¿eli zachowanie aplikacji nie bêdzie zgodne z oczekiwaniami prosimy o kontakt.   
-UWAGA 2: dotyczy systemu Linux - w aktualnej wersji <emphasis>viszio</emphasis>, je¿eli okna z danej konfiguracji zosta³y umieszczone w ró¿nych obszarach roboczych, wówczas uporz±dkowanie okien dotyczy wszystkich okien, tak jakby by³y one na jednym obszarze roboczym. Zostanie to poprawione w kolejnej wersji programu <emphasis>viszio</emphasis>. 
-</para>
-</section>
 </article>
