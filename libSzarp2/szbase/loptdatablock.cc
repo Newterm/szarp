@@ -24,6 +24,11 @@ using namespace lua_grammar;
 
 class ExecutionEngine;
 
+class EmptyStatement : public Statement {
+public:
+	virtual void Execute() {}
+};
+
 class NilExpression : public Expression {
 public:
 	virtual Val Value() { return nan(""); }
@@ -102,14 +107,14 @@ template<> Val BinExpression<std::modulus<Val> >::Value() {
 	return int(m_e1->Value()) % int(m_e2->Value());
 }
 
-class AssignmentExpression : public Expression {
+class AssignmentStatement : public Statement {
 	VarRef m_var;
 	PExpression m_exp;
 public:
-	AssignmentExpression(VarRef var, PExpression exp) : m_var(var), m_exp(exp) {}
+	AssignmentStatement(VarRef var, PExpression exp) : m_var(var), m_exp(exp) {}
 
-	virtual Val Value() {
-		return m_var.var() = m_exp->Value();
+	virtual void Execute() {
+		m_var.var() = m_exp->Value();
 	}
 };
 
@@ -170,80 +175,79 @@ public:
 };
 
 
-class IfExpression : public Expression {
+class IfStatement : public Statement {
 	PExpression m_cond;
-	PExpression m_consequent;
-	std::vector<std::pair<PExpression, PExpression> > m_elseif;
-	PExpression m_alternative;
+	PStatement m_consequent;
+	std::vector<std::pair<PExpression, PStatement> > m_elseif;
+	PStatement m_alternative;
 public:
-	IfExpression(const PExpression cond,
-			const PExpression conseqeunt,
-			const std::vector<std::pair<PExpression, PExpression> >& elseif,
-			const PExpression alternative)
+	IfStatement(const PExpression cond,
+			const PStatement conseqeunt,
+			const std::vector<std::pair<PExpression, PStatement> >& elseif,
+			const PStatement alternative)
 		: m_cond(cond), m_consequent(conseqeunt), m_elseif(elseif), m_alternative(alternative) {}
 
-	virtual Val Value() {
+	virtual void Execute() {
 		if (m_cond->Value())
-			return m_consequent->Value();
-		else for (std::vector<std::pair<PExpression, PExpression> >::iterator i = m_elseif.begin();
+			m_consequent->Execute();
+		else for (std::vector<std::pair<PExpression, PStatement> >::iterator i = m_elseif.begin();
 				i != m_elseif.end();	
 				i++) 
-			if (i->first->Value())
-				return i->second->Value();
-		return m_alternative->Value();
+			if (i->first->Value()) {
+				i->second->Execute();
+				return;
+			}
+		m_alternative->Execute();
 	}
 
 };
 
-class ForLoopExpression : public Expression { 
+class ForLoopStatement : public Statement { 
 	VarRef m_var;
 	PExpression m_start;
 	PExpression m_limit;
 	PExpression m_step;
-	PExpression m_exp;
+	PStatement m_stat;
 public:
-	ForLoopExpression(VarRef var, PExpression start, PExpression limit, PExpression step, PExpression exp) :
-		m_var(var), m_start(start), m_limit(limit), m_step(step), m_exp(exp) {}
+	ForLoopStatement(VarRef var, PExpression start, PExpression limit, PExpression step, PStatement stat) :
+		m_var(var), m_start(start), m_limit(limit), m_step(step), m_stat(stat) {}
 
-	virtual Val Value() {
+	virtual void Execute() {
 		Var& var = m_var.var();
 		var() = m_start->Value();
 		double limit = m_limit->Value();
 		double step = m_step->Value();
 		while ((step > 0 && var() <= limit)
 				|| (step <= 0 && var() >= limit)) {
-			m_exp->Value();
+			m_stat->Execute();
 			var = var() + step;
 		}
-		return nan("");
 	}
 
 };
 
-class WhileExpression : public Expression {
+class WhileStatement : public Statement {
 	PExpression m_cond;
-	PExpression m_exp;
+	PStatement m_stat;
 public:
-	WhileExpression(PExpression cond, PExpression exp) : m_cond(cond), m_exp(exp) {}
+	WhileStatement(PExpression cond, PStatement stat) : m_cond(cond), m_stat(stat) {}
 
-	virtual Val Value() {
+	virtual void Execute() {
 		while (m_cond->Value())
-			m_exp->Value();
-		return nan("");
+			m_stat->Execute();
 	}
 
 };
 
-class RepeatExpression : public Expression {
+class RepeatStatement : public Statement {
 	PExpression m_cond;
-	PExpression m_exp;
+	PStatement m_stat;
 public:
-	RepeatExpression(PExpression cond, PExpression exp) : m_cond(cond), m_exp(exp) {}
-	virtual Val Value() {
+	RepeatStatement(PExpression cond, PStatement stat) : m_cond(cond), m_stat(stat) {}
+	virtual void Execute() {
 		do
-			m_exp->Value();
+			m_stat->Execute();
 		while (m_cond->Value());
-		return nan("");
 	}
 };
 
@@ -257,32 +261,32 @@ public:
 
 class ParamConverter;
 
-class StatementConverter : public boost::static_visitor<PExpression> {
+class StatementConverter : public boost::static_visitor<PStatement> {
 	ParamConverter* m_param_converter;
 public:
 	StatementConverter(ParamConverter *param_converter) : m_param_converter(param_converter) {}
 
-	PExpression operator() (const assignment &a);
+	PStatement operator() (const assignment &a);
 
-	PExpression operator() (const block &b);
+	PStatement operator() (const block &b);
 
-	PExpression operator() (const while_loop &w);
+	PStatement operator() (const while_loop &w);
 
-	PExpression operator() (const repeat_loop &r);
+	PStatement operator() (const repeat_loop &r);
 
-	PExpression operator() (const if_stat &if_);
+	PStatement operator() (const if_stat &if_);
 
-	PExpression operator() (const for_in_loop &a);
+	PStatement operator() (const for_in_loop &a);
 
-	PExpression operator() (const postfixexp &a);
+	PStatement operator() (const postfixexp &a);
 
-	PExpression operator() (const for_from_to_loop &for_);
+	PStatement operator() (const for_from_to_loop &for_);
 
-	PExpression operator() (const function_declaration &a);
+	PStatement operator() (const function_declaration &a);
 
-	PExpression operator() (const local_assignment &a);
+	PStatement operator() (const local_assignment &a);
 
-	PExpression operator() (const local_function_declaration &f);
+	PStatement operator() (const local_function_declaration &f);
 
 };
 
@@ -410,13 +414,13 @@ public:
 
 	ParRefRef GetParamRef(const std::wstring param_name);
 
-	PExpression ConvertBlock(const block& block);
+	PStatement ConvertBlock(const block& block);
 
 	PExpression ConvertFunction(const identifier& identifier_, const std::vector<expression>& args);
 
-	PExpression ConvertStatement(const stat& stat_);
+	PStatement ConvertStatement(const stat& stat_);
 
-	PExpression ConvertChunk(const chunk& chunk_);
+	PStatement ConvertChunk(const chunk& chunk_);
 
 	PExpression ConvertTerm(const term& term_);
 	
@@ -474,20 +478,17 @@ Val& Var::operator=(const Val& val) {
 	return m_ee->Vars()[m_var_no] = val;
 }
 
-void ExpressionList::AddExpression(PExpression expression) {
-	m_expressions.push_back(expression);
+void StatementList::AddStatement(PStatement statement) {
+	m_statements.push_back(statement);
 }
 
-Val ExpressionList::Value() {
-	size_t l = m_expressions.size();
-	if (l == 0)
-		return nan("");
-	for (size_t i = 0; i < l - 1; i++)
-		m_expressions[i]->Value();
-	return m_expressions[l - 1]->Value();
+void StatementList::Execute() {
+	size_t l = m_statements.size();
+	for (size_t i = 0; i < l; i++)
+		m_statements[i]->Execute();
 }
 
-PExpression StatementConverter::operator() (const assignment &a) {
+PStatement StatementConverter::operator() (const assignment &a) {
 #ifdef LUA_OPTIMIZER_DEBUG
 	std::cerr << "Converting assignement" << std::endl;
 #endif
@@ -507,7 +508,7 @@ PExpression StatementConverter::operator() (const assignment &a) {
 				expression = m_param_converter->ConvertExpression(a.explist[i]);
 			else
 				expression = boost::make_shared<NilExpression>();
-			return boost::make_shared<AssignmentExpression>(AssignmentExpression(variable, expression));
+			return boost::make_shared<AssignmentStatement>(variable, expression);
 		} catch (boost::bad_get&) {
 			throw ParamConversionException(L"Only assignment to variables allowed in optimized expressions");
 		}
@@ -516,32 +517,32 @@ PExpression StatementConverter::operator() (const assignment &a) {
 #endif
 }
 
-PExpression StatementConverter::operator() (const block &b) {
+PStatement StatementConverter::operator() (const block &b) {
 #ifdef LUA_OPTIMIZER_DEBUG
 	std::cerr <<  "Coverting block" << std::endl;
 #endif
 	return m_param_converter->ConvertBlock(b);
 }
 
-PExpression StatementConverter::operator() (const while_loop &w) {
+PStatement StatementConverter::operator() (const while_loop &w) {
 #ifdef LUA_OPTIMIZER_DEBUG
 	std::cerr << "Converting while loop" << std::endl;
 #endif
 	PExpression condition = m_param_converter->ConvertExpression(w.expression_);
-	PExpression block = m_param_converter->ConvertBlock(w.block_);
-	return boost::make_shared<WhileExpression>(condition, block);
+	PStatement block = m_param_converter->ConvertBlock(w.block_);
+	return boost::make_shared<WhileStatement>(condition, block);
 }
 
-PExpression StatementConverter::operator() (const repeat_loop &r) {
+PStatement StatementConverter::operator() (const repeat_loop &r) {
 #ifdef LUA_OPTIMIZER_DEBUG
 	std::cerr << "Converting while loop" << std::endl;
 #endif
 	PExpression condition = m_param_converter->ConvertExpression(r.expression_);
-	PExpression block = m_param_converter->ConvertBlock(r.block_);
-	return boost::make_shared<RepeatExpression>(condition, block);
+	PStatement block = m_param_converter->ConvertBlock(r.block_);
+	return boost::make_shared<RepeatStatement>(condition, block);
 }
 
-PExpression StatementConverter::operator() (const if_stat &if_) {
+PStatement StatementConverter::operator() (const if_stat &if_) {
 #ifdef LUA_OPTIMIZER_DEBUG
 	std::cerr << "Converting if statement" << std::endl;
 	std::cerr << "Converting if expression" << std::endl;
@@ -550,8 +551,8 @@ PExpression StatementConverter::operator() (const if_stat &if_) {
 #ifdef LUA_OPTIMIZER_DEBUG
 	std::cerr << "Converting if block" << std::endl;
 #endif
-	PExpression block = m_param_converter->ConvertBlock(if_.block_);
-	std::vector<std::pair<PExpression, PExpression> > elseif;
+	PStatement block = m_param_converter->ConvertBlock(if_.block_);
+	std::vector<std::pair<PExpression, PStatement> > elseif;
 	for (size_t i = 0; i < if_.elseif_.size(); i++) {
 #ifdef LUA_OPTIMIZER_DEBUG
 		std::cerr << "Converting elseif" << std::endl;
@@ -559,26 +560,26 @@ PExpression StatementConverter::operator() (const if_stat &if_) {
 		elseif.push_back(std::make_pair(m_param_converter->ConvertExpression(if_.elseif_[i].get<0>()),
 				m_param_converter->ConvertBlock(if_.elseif_[i].get<1>())));
 	}
-	PExpression else_;
+	PStatement else_;
 	if (if_.else_) {
 #ifdef LUA_OPTIMIZER_DEBUG
 		std::cerr << "Converting else" << std::endl;
 #endif
 		else_ = m_param_converter->ConvertBlock(*if_.else_);
 	} else
-		else_ = boost::make_shared<NilExpression>();
-	return boost::make_shared<IfExpression>(cond, block, elseif, else_);
+		else_ = boost::make_shared<EmptyStatement>();
+	return boost::make_shared<IfStatement>(cond, block, elseif, else_);
 }
 
-PExpression StatementConverter::operator() (const for_in_loop &a) {
+PStatement StatementConverter::operator() (const for_in_loop &a) {
 	throw ParamConversionException(L"For in loops not supported by converter");
 }
 
-PExpression StatementConverter::operator() (const postfixexp &a) {
+PStatement StatementConverter::operator() (const postfixexp &a) {
 	throw ParamConversionException(L"Postfix expressions as statments not supported by converter");
 }
 
-PExpression StatementConverter::operator() (const for_from_to_loop &for_) {
+PStatement StatementConverter::operator() (const for_from_to_loop &for_) {
 #ifdef LUA_OPTIMIZER_DEBUG
 	std::cerr <<  "Converting for from to loop" << std::endl;
 #endif
@@ -590,15 +591,15 @@ PExpression StatementConverter::operator() (const for_from_to_loop &for_) {
 		step = m_param_converter->ConvertExpression(*for_.step);
 	else
 		step = boost::make_shared<NumberExpression>(1);
-	PExpression block = m_param_converter->ConvertBlock(for_.block_);
-	return boost::make_shared<ForLoopExpression>(var, from, to, step, block);
+	PStatement block = m_param_converter->ConvertBlock(for_.block_);
+	return boost::make_shared<ForLoopStatement>(var, from, to, step, block);
 }
 
-PExpression StatementConverter::operator() (const function_declaration &a) {
+PStatement StatementConverter::operator() (const function_declaration &a) {
 	throw ParamConversionException(L"Function declarations not supported by converter");
 }
 
-PExpression StatementConverter::operator() (const local_assignment &a) {
+PStatement StatementConverter::operator() (const local_assignment &a) {
 #ifdef LUA_OPTIMIZER_DEBUG
 	std::cerr << "Converting local assignment" << std::endl;
 #endif
@@ -618,7 +619,7 @@ PExpression StatementConverter::operator() (const local_assignment &a) {
 				expression = m_param_converter->ConvertExpression(a.explist[i]);
 			else
 				expression = boost::make_shared<NilExpression>();
-			return boost::make_shared<AssignmentExpression>(AssignmentExpression(variable, expression));
+			return boost::make_shared<AssignmentStatement>(variable, expression);
 		} catch (boost::bad_get&) {
 			throw ParamConversionException(L"Only assignment to variables allowed in optimized expressions");
 		}
@@ -627,7 +628,7 @@ PExpression StatementConverter::operator() (const local_assignment &a) {
 #endif
 }
 
-PExpression StatementConverter::operator() (const local_function_declaration &f) {
+PStatement StatementConverter::operator() (const local_function_declaration &f) {
 	throw ParamConversionException(L"Function declarations not supported by converter");
 }
 
@@ -1092,9 +1093,9 @@ ParRefRef ParamConverter::GetParamRef(const std::wstring param_name) {
 	return ParRefRef(&m_param->m_par_refs, pi);
 }
 
-PExpression ParamConverter::ConvertBlock(const block& block) {
+PStatement ParamConverter::ConvertBlock(const block& block) {
 	m_vars_map.push_back(frame());
-	PExpression ret = ConvertChunk(block.chunk_.get());
+	PStatement ret = ConvertChunk(block.chunk_.get());
 	m_vars_map.pop_back();
 	return ret;
 }
@@ -1106,7 +1107,7 @@ PExpression ParamConverter::ConvertFunction(const identifier& identifier_, const
 	return i->second->Convert(args);
 }
 
-PExpression ParamConverter::ConvertStatement(const stat& stat_) {
+PStatement ParamConverter::ConvertStatement(const stat& stat_) {
 	StatementConverter sc(this);
 #ifdef LUA_OPTIMIZER_DEBUG
 	std::cerr << "Converting statement" << std::endl;
@@ -1114,12 +1115,12 @@ PExpression ParamConverter::ConvertStatement(const stat& stat_) {
 	return boost::apply_visitor(sc, stat_);
 }
 
-PExpression ParamConverter::ConvertChunk(const chunk& chunk_) {
-	boost::shared_ptr<ExpressionList> ret = boost::make_shared<ExpressionList>();
+PStatement ParamConverter::ConvertChunk(const chunk& chunk_) {
+	boost::shared_ptr<StatementList> ret = boost::make_shared<StatementList>();
 	for (std::vector<stat>::const_iterator i = chunk_.stats.begin();
 			i != chunk_.stats.end();
 			i++)
-		ret->AddExpression(ConvertStatement(*i));
+		ret->AddStatement(ConvertStatement(*i));
 	return ret;
 }
 
@@ -1147,7 +1148,7 @@ void ParamConverter::ConvertParam(const chunk& chunk_, Param* param) {
 #endif
 	m_param = param;
 	InitalizeVars();
-	param->m_expression = ConvertChunk(chunk_);
+	param->m_statement = ConvertChunk(chunk_);
 }
 
 void ParamConverter::AddVariable(std::wstring name) {
@@ -1198,7 +1199,7 @@ void ExecutionEngine::CalculateValue(time_t t, double &val, bool &fixed) {
 	m_vals[0] = nan("");
 	m_vals[1] = t;
 	m_vals[2] = PT_MIN10;
-	m_param->m_expression->Value();
+	m_param->m_statement->Execute();
 	fixed = m_fixed;
 	val = m_vals[0];
 }

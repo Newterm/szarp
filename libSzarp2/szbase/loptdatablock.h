@@ -67,13 +67,19 @@ public:
 	virtual Val Value() = 0;
 };
 
-typedef boost::shared_ptr<Expression> PExpression;
-
-class ExpressionList : public Expression {
-	std::vector<PExpression> m_expressions;
+class Statement {
 public:
-	void AddExpression(PExpression expression);
-	virtual Val Value();
+	virtual void Execute() = 0;
+};
+
+typedef boost::shared_ptr<Expression> PExpression;
+typedef boost::shared_ptr<Statement> PStatement;
+
+class StatementList : public Statement {
+	std::vector<PStatement> m_statements;
+public:
+	void AddStatement(PStatement statement);
+	virtual void Execute();
 };
 
 class Param {
@@ -81,7 +87,7 @@ public:
 	bool m_optimized;
 	std::vector<Var> m_vars;
 	std::vector<ParamRef> m_par_refs;
-	PExpression m_expression;
+	PStatement m_statement;
 };
 
 };

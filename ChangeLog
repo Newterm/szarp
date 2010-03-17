@@ -1,5 +1,10 @@
 $Id$
 
+2010-03-17      Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* libSzarp2/szbase/loptdatablock.{c.h} - micro optimization - 
+	statments have now separate internal represenation from
+	expressions, it should save a little time cause we don't have
+	to push dummy value onto stack at the end of statement execution
 2010-03-16      Darek Marcinkiewicz <reksio@dalkiaterm.pl>
 	* debian/control: libboost1.42-all-dev added to build
 	depends
