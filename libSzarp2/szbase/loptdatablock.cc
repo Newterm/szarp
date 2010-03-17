@@ -190,14 +190,16 @@ public:
 	virtual void Execute() {
 		if (m_cond->Value())
 			m_consequent->Execute();
-		else for (std::vector<std::pair<PExpression, PStatement> >::iterator i = m_elseif.begin();
-				i != m_elseif.end();	
-				i++) 
-			if (i->first->Value()) {
-				i->second->Execute();
-				return;
-			}
-		m_alternative->Execute();
+		else {
+			for (std::vector<std::pair<PExpression, PStatement> >::iterator i = m_elseif.begin();
+					i != m_elseif.end();	
+					i++) 
+				if (i->first->Value()) {
+					i->second->Execute();
+					return;
+				}
+			m_alternative->Execute();
+		}
 	}
 
 };
