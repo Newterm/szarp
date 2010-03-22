@@ -1,14 +1,16 @@
 $Id$
 
+2010-03-22	Pawel Palucha <pawel@praterm.com.pl>
+	* utils/szredialer: retrying initialization of modem. 
 2010-03-17      Adam Smyk <asmyk@dalkiaterm.pl>
-	* wx/viszio - viszio is removed from taskbar(Linux), default 
+	* wx/viszio: viszio is removed from taskbar (Linux), default 
 	configuration is created when viszio is started without any 
 	parameters
 2010-03-17      Adam Smyk <asmyk@dalkiaterm.pl>
-	* resources/documentation/new/viszio - viszio documentation 
+	* resources/documentation/new/viszio: viszio documentation 
 	update
 2010-03-17      Darek Marcinkiewicz <reksio@dalkiaterm.pl>
-	* libSzarp2/szbase/loptdatablock.{c.h} - micro optimization - 
+	* libSzarp2/szbase/loptdatablock.{c.h}: micro optimization - 
 	statments have now separate internal represenation from
 	expressions, it should save a little time cause we don't have
 	to push dummy value onto stack at the end of statement execution
