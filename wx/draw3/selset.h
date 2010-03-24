@@ -80,6 +80,11 @@ public:
     virtual void SetRenamed(wxString prefix, wxString from, wxString to, DrawSet *set);
 
     virtual void SetAdded(wxString prefix, wxString name, DrawSet *set);
+
+    /** Event handler, called when widget gains focus.
+     * Tries to get rid of focus by passing it to parent window.
+     */
+    void OnFocus(wxFocusEvent &event);
 protected:
     /** Adjust choice string to fit within widget width. Trucantes strings
      * that are to long.

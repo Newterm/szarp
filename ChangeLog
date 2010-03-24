@@ -1,5 +1,8 @@
 $Id$
 
+2010-03-24	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/draw/selset.*: fixed bug with incorrect focus after mouse leaving
+	SelectSetWidget.
 2010-03-22	Pawel Palucha <pawel@praterm.com.pl>
 	* utils/szredialer: retrying initialization of modem. 
 2010-03-17      Adam Smyk <asmyk@dalkiaterm.pl>

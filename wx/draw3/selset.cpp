@@ -63,6 +63,8 @@ SelectSetWidget::SelectSetWidget(ConfigManager *cfg,
 
     SetToolTip(_("Select set of draws to display"));
 
+    Connect(drawID_SELSET, wxEVT_SET_FOCUS,
+		    wxFocusEventHandler(SelectSetWidget::OnFocus));
     Connect(drawID_SELSET, wxEVT_COMMAND_CHOICE_SELECTED,
 		        wxCommandEventHandler(SelectSetWidget::OnSetChanged));
 
@@ -196,3 +198,9 @@ void SelectSetWidget::SetAdded(wxString prefix, wxString name, DrawSet *set) {
 	if (m_draws_controller->GetSet() == set)
 		SelectSet(set);
 }
+
+void SelectSetWidget::OnFocus(wxFocusEvent &event)
+{
+	GetParent()->SetFocus();
+}
+
