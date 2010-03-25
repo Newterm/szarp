@@ -71,6 +71,9 @@ class SelectDrawValidator : public wxValidator {
 
 	/** Event handler */
 	void OnCheck(wxCommandEvent& c);
+
+	/** Event handler - tries to get rid of focus. */
+	void OnFocus(wxFocusEvent &event);
 	
 	/** Called to transfer data to the window. */
 	virtual bool TransferFromWindow();

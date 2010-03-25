@@ -60,6 +60,9 @@ public:
          */
         void OnRadioSelected(wxCommandEvent& event);
 
+	/** Event handler, tries to get rid of focus. */
+	void OnFocus(wxFocusEvent &event);
+
 	/** Select item and (optionnaly) update 
 	 * @param item number of item to be selected
 	 */ 

@@ -1,5 +1,8 @@
 $Id$
 
+2010-03-25	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/draw/*: more focus fixes, added icon for X/Y Graph dialog,
+	removed double menu entry in X/Y Graph dialog.
 2010-03-24	Pawel Palucha <pawel@praterm.com.pl>
 	* wx/draw/selset.*: fixed bug with incorrect focus after mouse leaving
 	SelectSetWidget.

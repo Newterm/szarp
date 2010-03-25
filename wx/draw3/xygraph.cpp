@@ -76,8 +76,6 @@ XYFrame::XYFrame(wxString default_prefix, DatabaseManager *db_manager, ConfigMan
 	menu->Append(XY_ZOOM_OUT, _("Zoom out\tCtrl--"));
 	menu->Enable(XY_ZOOM_OUT, false);
 	menu->AppendSeparator();
-	menu->Append(XY_CHANGE_GRAPH, _("Change graph parameters"));
-	menu->AppendSeparator();
 	menu->Append(wxID_CLOSE, _("Close"));
 
 	menu_bar->Append(menu, _("Graph"));

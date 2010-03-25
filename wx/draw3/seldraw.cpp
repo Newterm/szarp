@@ -60,6 +60,7 @@
 
 BEGIN_EVENT_TABLE(SelectDrawValidator, wxValidator)
 	EVT_CHECKBOX(drawID_SELDRAWCB, SelectDrawValidator::OnCheck)
+	EVT_SET_FOCUS(SelectDrawValidator::OnFocus)
 	EVT_RIGHT_DOWN(SelectDrawValidator::OnMouseRightDown)
 	EVT_MIDDLE_DOWN(SelectDrawValidator::OnMouseMiddleDown)
 END_EVENT_TABLE()
@@ -117,9 +118,12 @@ SelectDrawValidator::OnCheck(wxCommandEvent& c)
 	m_draws_wdg->SetDrawEnable(m_index);
     else if (!m_draws_wdg->SetDrawDisable(m_index))
 	    	((wxCheckBox *)(c.GetEventObject()))->SetValue(TRUE);
+}
 
+void
+SelectDrawValidator::OnFocus(wxFocusEvent& c)
+{
     m_draws_wdg->SetFocus();
-
 }
 
 void 
@@ -175,10 +179,10 @@ void SelectDrawValidator::Set(DrawsWidget *drawswdg, int index, wxCheckBox *cb) 
 	m_cb = cb;
 }
 
-
 SelectDrawValidator::~SelectDrawValidator() {
 	delete m_menu;
 }
+
 
 BEGIN_EVENT_TABLE(SelectDrawWidget, wxWindow)
 	EVT_MENU(seldrawID_CTX_BLOCK_MENU, SelectDrawWidget::OnBlockCheck)
@@ -188,7 +192,6 @@ BEGIN_EVENT_TABLE(SelectDrawWidget, wxWindow)
 END_EVENT_TABLE()
 
 IMPLEMENT_DYNAMIC_CLASS(SelectDrawWidget, wxWindow)
-
 
 SelectDrawWidget::SelectDrawWidget(ConfigManager *cfg, DatabaseManager *dbmgr, DrawsWidget *drawswdg,
 		wxWindow* parent, wxWindowID id)

@@ -50,6 +50,7 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 		m_end_time(m_period, wxDateTime::Now()) {
 
 	SetHelpText(_T("draw3-ext-chartxy"));
+	SetIcon(szFrame::default_icon);
 
 	wxString period_choices[PERIOD_T_SEASON] = { _("YEAR"), _("MONTH"), _("WEEK"), _("DAY") };
 

@@ -113,7 +113,6 @@ SelectSetWidget::OnSetChanged(wxCommandEvent &event)
 {
 	if (m_draws_controller) {
 		m_draws_controller->Set(GetSelected());
-		GetParent()->SetFocus();
 	}
 }
 
