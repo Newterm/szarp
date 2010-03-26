@@ -940,7 +940,27 @@ std::set<wxString> DefinedDrawSet::GetUnresolvedPrefixes() {
 	return r;
 }
 
+DefinedParam* DefinedDrawSet::LookupDefinedParam(wxString prefix, wxString param_name, const std::vector<DefinedParam*>& defined_params) {
+	std::vector<DefinedParam*>::const_iterator i;
+	for (i = defined_params.begin();
+			i != defined_params.end();
+			i++) {
+		
+		DefinedParam *p = *i;
+		if (p->GetBasePrefix() == prefix && 
+				param_name == p->GetParamName())
+			return p;
+	}
+	return NULL;
+}
+
+
 bool DefinedDrawSet::SyncWithPrefix(wxString prefix) {
+	std::vector<wxString> removed;
+	return SyncWithPrefix(prefix, removed, m_ds->GetDefinedParams());
+}
+
+bool DefinedDrawSet::SyncWithPrefix(wxString prefix, std::vector<wxString>& removed, const std::vector<DefinedParam*>& defined_params) {
 	IPKConfig *bc = dynamic_cast<IPKConfig*>(m_ds->GetParentManager()->GetConfigByPrefix(prefix));
 
 	std::vector<size_t> tr;
@@ -952,7 +972,7 @@ bool DefinedDrawSet::SyncWithPrefix(wxString prefix) {
 			continue;
 
 		if (dw->GetBaseDraw().IsEmpty()) {
-			DefinedParam* tp = m_ds->LookupDefinedParam(dw->GetBasePrefix(), dw->GetParamName());
+			DefinedParam* tp = LookupDefinedParam(dw->GetBasePrefix(), dw->GetParamName(), defined_params);
 			if (tp == NULL) 
 				tr.push_back(j);
 			else
@@ -978,7 +998,7 @@ bool DefinedDrawSet::SyncWithPrefix(wxString prefix) {
 
 		}
 
-		ErrorFrame::NotifyError(wxString::Format(_("Draw %s removed from set %s, it relates to non-existent parameter or graph"), dw->GetBaseDraw().c_str(), GetName().c_str()));
+		removed.push_back(dw->GetBaseDraw());
 		tr.push_back(j);
 out:;
 	}
@@ -1011,12 +1031,11 @@ DefinedDrawsSets::~DefinedDrawsSets() {
 	for (DrawSetsHash::iterator i = drawsSets.begin(); i != drawsSets.end(); ++i) {
 		DefinedDrawSet *dset = dynamic_cast<DefinedDrawSet*>(i->second);
 
-		if(dset != NULL) {
+		if (dset != NULL) {
 			if (dset->IsTemporary()) {
 				delete dset;
 			}
 		}
-
 	}
 }
 
@@ -1037,10 +1056,22 @@ void DefinedDrawsSets::SetModified(bool modified) {
 }
 
 void DefinedDrawsSets::LoadSets(wxString path) {
+	std::vector<DefinedDrawSet*> draw_sets;
+	std::vector<DefinedParam*> defined_params;
+	LoadSets(path, draw_sets, defined_params);
+	for (size_t i = 0; i < draw_sets.size(); i++) {
+		DefinedDrawSet *ds = draw_sets[i];
+		drawsSets[ds->GetName()] = ds;
+	}
+	for (size_t i = 0; i < defined_params.size(); i++)
+		definedParams.push_back(defined_params[i]);
+}
+
+bool DefinedDrawsSets::LoadSets(wxString path, std::vector<DefinedDrawSet*>& draw_sets, std::vector<DefinedParam*>& defined_params) {
 
 	xmlDocPtr root = xmlParseFile(SC::S2A(path).c_str());
 	if (root == NULL)
-		return;
+		return false;
 
 	xmlNodePtr cur = root->xmlChildrenNode;
 	for (cur = cur->xmlChildrenNode; cur != NULL; cur = cur->next) {
@@ -1048,15 +1079,33 @@ void DefinedDrawsSets::LoadSets(wxString path) {
 			DefinedDrawSet* ds = new DefinedDrawSet(this);
 			ds->ParseXML(cur);
 			ds->SetPrior(m_prior--);
-			drawsSets[ds->GetName()] = ds;
+			draw_sets.push_back(ds);
 		} else if (!xmlStrcmp(cur->name, X "param")) {
 			DefinedParam* dp = new DefinedParam();	
 			dp->ParseXML(cur);
-			definedParams.push_back(dp);
+			defined_params.push_back(dp);
 		}
 	}
 
 	xmlFreeDoc(root);
+	return true;
+}
+
+bool DefinedDrawsSets::SaveSets(wxString path, const std::vector<DefinedDrawSet*>& ds, const std::vector<DefinedParam*>& dp) {
+	xmlDocPtr doc = xmlNewDoc(X "1.0");
+	doc->children = xmlNewDocNode(doc, NULL, X "windows", NULL);
+	xmlNewNs(doc->children, X "http://www.praterm.com.pl/SZARP/draw3", NULL);
+
+	for (std::vector<DefinedDrawSet*>::const_iterator i = ds.begin(); i != ds.end(); i++)
+		(*i)->GenerateXML(doc->children);
+	for (std::vector<DefinedParam*>::const_iterator i = dp.begin(); i != dp.end(); i++)
+		(*i)->GenerateXML(doc->children);
+
+	bool ret = true;
+	if (xmlSaveFormatFileEnc(SC::S2A(path).c_str(), doc, "UTF-8", 1) == -1)
+		ret = false;
+	xmlFreeDoc(doc);
+	return ret;
 
 }
 
@@ -1065,29 +1114,20 @@ void DefinedDrawsSets::SaveSets(wxString path) {
 	if (m_modified == false)
 		return;
 
-	xmlDocPtr doc = xmlNewDoc(X "1.0");
-	doc->children = xmlNewDocNode(doc, NULL, X "windows", NULL);
-	xmlNewNs(doc->children, X "http://www.praterm.com.pl/SZARP/draw3", NULL);
+	std::vector<DefinedDrawSet*> dsv;
 
 	SortedSetsArray* ssa = GetSortedDrawSetsNames();
-
 	for (size_t i = 0; i < ssa->GetCount(); i++) {
 		DefinedDrawSet *ds = dynamic_cast<DefinedDrawSet*>(ssa->Item(i));
 		assert(ds);
-		ds->GenerateXML(doc->children);
+		dsv.push_back(ds);
 	}
 	delete ssa;
 
-	for (std::vector<DefinedParam*>::iterator i = definedParams.begin(); i != definedParams.end(); i++) {
-		(*i)->GenerateXML(doc->children);
-	}
-	
-	if (xmlSaveFormatFileEnc(SC::S2A(path).c_str(), doc, "UTF-8", 1) == -1)
+	if (SaveSets(path, dsv, definedParams) == false)
 		wxMessageBox(_("Failed to save file with users sets."),
 			     _("Operation failed."), wxOK | wxICON_ERROR,
 			     wxGetApp().GetTopWindow());
-
-	xmlFreeDoc(doc);
 }
 
 void DefinedDrawsSets::AddDrawsToConfig(wxString prefix, std::set<wxString> *configs_to_load) {
@@ -1109,7 +1149,8 @@ void DefinedDrawsSets::AddDrawsToConfig(wxString prefix, std::set<wxString> *con
 		std::set<wxString> ur = df->GetUnresolvedPrefixes();
 		missing_prefixes.insert(ur.begin(), ur.end());
 
-		bool changed = df->SyncWithPrefix(prefix);
+		std::vector<wxString> removed_draws;
+		bool changed = df->SyncWithPrefix(prefix, removed_draws, definedParams);
 		if (!changed)
 			continue;
 
@@ -1118,6 +1159,10 @@ void DefinedDrawsSets::AddDrawsToConfig(wxString prefix, std::set<wxString> *con
 			ErrorFrame::NotifyError(wxString::Format(_("Defined set %s was removed because all draws in this set were removed"), i->first.c_str()));
 			removed.insert(i->first);
 		} else {
+			for (size_t j = 0; j < removed_draws.size(); j++)
+				ErrorFrame::NotifyError(wxString::Format(_("Draw %s removed from set %s, it relates to non-existent parameter or graph"),
+								removed_draws[j].c_str(),
+								df->GetName().c_str()));
 			wxLogInfo(_T("Defined window %s was modified"), i->first.c_str());
 			modified.insert(i->first);
 		}
@@ -1308,7 +1353,7 @@ void DefinedDrawsSets::AttachDefined() {
 	for (std::set<wxString>::iterator i = unresolved_prefixes.begin();
 			i != unresolved_prefixes.end();
 			i++)
-		m_cfgmgr->GetConfigByPrefix(*i);	
+		m_cfgmgr->GetConfigByPrefix(*i);
 
 	unresolved_prefixes = GetUnresolvedPrefixes();
 	for (std::set<wxString>::iterator i = unresolved_prefixes.begin();
@@ -1484,20 +1529,6 @@ namespace {
 
 }
 
-DefinedParam* DefinedDrawsSets::LookupDefinedParam(wxString prefix, wxString param_name) {
-	std::vector<DefinedParam*>::iterator i;
-	for (i = definedParams.begin();
-			i != definedParams.end();
-			i++) {
-		
-		DefinedParam *p = *i;
-		if (p->GetBasePrefix() == prefix && 
-				param_name == p->GetParamName())
-			return p;
-	}
-	return NULL;
-}
-
 
 wxString DefinedDrawsSets::GetNameForParam(const wxString& prefix, const wxString& proposed_name) {
 	bool done = false;
@@ -1527,7 +1558,7 @@ wxString DefinedDrawsSets::GetNameForParam(const wxString& prefix, const wxStrin
 	return result;
 }
 
-const std::vector<DefinedParam*>& DefinedDrawsSets::GetDefinedParams() {
+std::vector<DefinedParam*>& DefinedDrawsSets::GetDefinedParams() {
 	return definedParams;
 }
 

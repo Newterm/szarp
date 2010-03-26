@@ -202,6 +202,18 @@ void DrawFrame::OnEdit(wxCommandEvent & event)
 
 }
 
+void DrawFrame::OnImportSet(wxCommandEvent &event) {
+	config_manager->ImportSet();
+}
+
+void DrawFrame::OnExportSet(wxCommandEvent &event) {
+	wxString name, password, server;
+	bool autofetch;
+	if (remarks_handler->Configured())
+		remarks_handler->GetConfiguration(name, password, server, autofetch);
+	config_manager->ExportSet(dynamic_cast<DefinedDrawSet*>(draw_panel->GetSelectedSet()), name);
+}
+
 void DrawFrame::OnDel(wxCommandEvent & event)
 {
 	if (!draw_panel->IsUserDefined())
@@ -973,7 +985,6 @@ void DrawFrame::OnConfigureRemarks(wxCommandEvent &event) {
 		remarks_handler->SetConfiguration(username, password, server, autofetch);
 		return;
 	}
-	
 }
 
 void DrawFrame::OnPrintPageSetup(wxCommandEvent& event) {
@@ -1128,6 +1139,8 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("SetParams"), DrawFrame::OnSetParams)
     EVT_MENU(XRCID("ClearCache"), DrawFrame::OnClearCache)
     EVT_MENU(XRCID("EditSet"), DrawFrame::OnEdit)
+    EVT_MENU(XRCID("ImportSet"), DrawFrame::OnImportSet)
+    EVT_MENU(XRCID("ExportSet"), DrawFrame::OnExportSet)
     EVT_MENU(XRCID("DelSet"), DrawFrame::OnDel)
     EVT_MENU(XRCID("NewSet"), DrawFrame::OnAdd)
     EVT_MENU(XRCID("Save"), DrawFrame::OnSave)

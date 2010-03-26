@@ -117,6 +117,10 @@ public:
 	 * Editing defined window
 	 */
 	void OnEdit(wxCommandEvent &evt);
+
+	void OnImportSet(wxCommandEvent &event);
+
+	void OnExportSet(wxCommandEvent &event);
 	
 	/**
 	 * Saving defined window to XML file

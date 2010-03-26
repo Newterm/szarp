@@ -148,6 +148,8 @@ private:
 
 	wxChoice *m_formula_type_choice;
 
+	wxStaticText *m_user_param_label;
+
 	DefinedParam *m_edited_param;
 
 	ParamsListDialog *m_params_list;

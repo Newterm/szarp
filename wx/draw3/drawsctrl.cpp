@@ -1223,11 +1223,11 @@ void DrawsController::ClearCache() {
 }
 
 void DrawsController::RefreshData(bool auto_refresh) {
-	for (int i = 0; i < m_active_draws_count; i++)
-		m_draws[i]->RefreshData(auto_refresh);
-
 	if (auto_refresh == false)
 		SendQueryForEachPrefix(DatabaseQuery::RESET_BUFFER);
+
+	for (int i = 0; i < m_active_draws_count; i++)
+		m_draws[i]->RefreshData(auto_refresh);
 
 	FetchData();
 	EnterWaitState(WAIT_DATA_NEAREST);

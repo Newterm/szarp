@@ -114,11 +114,15 @@ public:
 	/** Return configuration prefix*/
 	virtual wxString GetPrefix();
 
+	bool LoadSets(wxString path, std::vector<DefinedDrawSet*>& draw_sets, std::vector<DefinedParam*>& defined_params);
+
 	void LoadSets(wxString path);
 
 	bool IsModified();
 
 	void SetModified(bool modfied = true);
+
+	bool SaveSets(wxString path, const std::vector<DefinedDrawSet*>& ds, const std::vector<DefinedParam*>& dp);
 
 	void SaveSets(wxString path);
 
@@ -148,9 +152,7 @@ public:
 
 	wxString GetNameForParam(const wxString& prefix, const wxString& proposed_name);
 
-	const std::vector<DefinedParam*>& GetDefinedParams();
-
-	DefinedParam* LookupDefinedParam(wxString prefix, wxString param_name);
+	std::vector<DefinedParam*>& GetDefinedParams();
 
 	void AddDefinedParam(DefinedParam *dp);
 
@@ -384,7 +386,11 @@ public:
 
 	void GetColor(DefinedDrawInfo *ddi);
 
+	DefinedParam* LookupDefinedParam(wxString prefix, wxString param_name, const std::vector<DefinedParam*>& defined_params);
+
 	bool SyncWithPrefix(wxString prefix);
+
+	bool SyncWithPrefix(wxString prefix, std::vector<wxString>& removed, const std::vector<DefinedParam*>& defined_params);
 
 	bool RefersToPrefix(wxString prefix);
 

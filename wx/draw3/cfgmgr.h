@@ -480,6 +480,14 @@ class ConfigManager
 	bool IsPSC(wxString prefix);
 
 	void EditPSC(wxString prefix, wxString param = wxString());
+
+	void ImportSet();
+
+	void ExportSet(DefinedDrawSet *set, wxString our_name);
+
+	void SubstituteOrAddDefinedParams(std::vector<DefinedParam*>& dp);
+
+	void SubstiuteDefinedParams(const std::vector<DefinedParam*>& to_rem, const std::vector<DefinedParam*>& to_add);
 	
 	~ConfigManager();
 protected:

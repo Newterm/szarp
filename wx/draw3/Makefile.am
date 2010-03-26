@@ -93,6 +93,7 @@ draw3_SOURCES = \
 		gcdcgraphs.h gcdcgraphs.cpp \
 		graphsutils.h graphsutils.cpp \
 		drawtime.h drawtime.cpp \
+		luapextract.h luapextract.cpp \
 		GUI/resource.cpp
 
 draw3_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) $(LIBWXSCINTILLA)

@@ -1,5 +1,7 @@
 $Id$
 
+2010-03-26	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* wx/draw3: new feature: import/export of user sets
 2010-03-25	Pawel Palucha <pawel@praterm.com.pl>
 	* wx/draw/*: more focus fixes, added icon for X/Y Graph dialog,
 	removed double menu entry in X/Y Graph dialog.

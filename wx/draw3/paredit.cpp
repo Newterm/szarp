@@ -110,6 +110,8 @@ ParamEdit::ParamEdit(wxWindow *parent, ConfigManager *cfg, DatabaseManager *dbmg
 	m_formula_type_choice = XRCCTRL(*this, "FORMULA_TYPE_CHOICE", wxChoice);
 
 	m_param_name_input = XRCCTRL(*this, "parameter_name", wxTextCtrl);
+
+	m_user_param_label = XRCCTRL(*this, "user_param_label", wxStaticText);
 	
 	m_datepicker_ctrl_start_date->Enable(false);
 	m_datepicker_ctrl_start_date->SetValue(wxDateTime::Now());
@@ -235,6 +237,7 @@ int ParamEdit::Edit(DefinedParam * param)
 	m_button_base_config->SetLabel(ds->GetID());
 	m_prec_spin->SetValue(param->GetPrec());
  	m_formula_input->SetText(param->GetFormula());
+	m_user_param_label->SetLabel(param->GetParamName().BeforeLast(L':'));
 	m_param_name_input->SetValue(param->GetParamName().AfterLast(L':'));
 	m_unit_input->SetValue(param->GetUnit());
 	m_formula_type_choice->SetSelection(param->GetFormulaType() == TParam::LUA_VA ? 0 : 1);
@@ -321,53 +324,17 @@ time_t ParamEdit::GetStartTime() {
 void ParamEdit::ApplyModifications() {
 	assert(m_edited_param);
 
-	DefinedParam *p = m_edited_param;
+	DefinedParam *np = new DefinedParam(GetBasePrefix(),
+				m_user_param_label->GetLabel() + _T(":") + GetParamName(),
+				GetUnit(),
+				GetFormula(),
+				GetPrec(),
+				GetFormulaType(),
+				GetStartTime());
+	np->CreateParam();
+	m_cfg_mgr->SubstiuteDefinedParams(std::vector<DefinedParam*>(1, m_edited_param), std::vector<DefinedParam*>(1, np));
 
-	DefinedDrawsSets *def_sets = m_cfg_mgr->GetDefinedDrawsSets();
-
-	std::map<wxString, bool> us;
-
-	DrawSetsHash& dsh = def_sets->GetRawDrawsSets();
-	for (DrawSetsHash::iterator i = dsh.begin();
-			i != dsh.end();
-			i++) {
-		DrawInfoArray* dia = i->second->GetDraws();
-		for (size_t j = 0; j < dia->size(); j++) {
-			DefinedDrawInfo *dp = dynamic_cast<DefinedDrawInfo*>((*dia)[j]);
-
-			if (dp->GetParam() == p) {
-				dp->SetParamName(wxString(_("User:Param:")) + GetParamName());
-				us[i->first] = true;
-			}
-		}
-	}
-
-	p->SetPrec(GetPrec());
-	p->SetFormula(GetFormula());
-	p->SetFormulaType(GetFormulaType());
-	p->SetUnit(GetUnit());
-	p->SetStartTime(GetStartTime());
-
-	std::vector<DefinedParam*> dpv;
-	dpv.push_back(p);
-	m_database_manager->RemoveParams(dpv);
-
-	p->SetParamName(_("User:Param:") + GetParamName());
-	p->CreateParam();
-	m_database_manager->AddParams(dpv);
-
-	for (std::map<wxString, bool>::iterator i = us.begin();
-			i != us.end();
-			++i) {
-				
-		DefinedDrawSet *ds = dynamic_cast<DefinedDrawSet*>(dsh[i->first]);
-
-		std::vector<DefinedDrawSet*>* c = ds->GetCopies();
-		for (std::vector<DefinedDrawSet*>::iterator j = c->begin(); j != c->end(); j++)
-			m_cfg_mgr->NotifySetModified((*j)->GetDrawsSets()->GetPrefix(), i->first, *j);
-
-	}
-	
+	m_edited_param = np;
 }
 
 void ParamEdit::DatabaseResponse(DatabaseQuery *q) {
@@ -408,6 +375,8 @@ int ParamEdit::StartNewParameter() {
 	m_creating_new = true;
 
 	m_edited_param = NULL;
+
+	m_user_param_label->SetLabel(_("User:Param:"));
 
 	return ShowModal();
 

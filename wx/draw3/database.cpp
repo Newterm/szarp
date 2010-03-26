@@ -288,22 +288,22 @@ float DatabaseQueryQueue::FindQueryRanking(DatabaseQuery* q) {
 	if (q == NULL)
 		return 100.f;
 
+	if (q->type == DatabaseQuery::CLEAR_CACHE)
+		return 150.f;
+
 	if (q->type == DatabaseQuery::RESET_BUFFER)
 		return 100.f;
 
 	if (q->type == DatabaseQuery::COMPILE_FORMULA)
 		return 100.f;
 
-	if (q->type == DatabaseQuery::ADD_PARAM)
-		return 75.f;
-
 	if (q->type == DatabaseQuery::REMOVE_PARAM)
 		return 75.f;
 
-	if (q->type == DatabaseQuery::STARTING_CONFIG_RELOAD)
-		return -100.f;
+	if (q->type == DatabaseQuery::ADD_PARAM)
+		return 70.f;
 
-	if (q->type == DatabaseQuery::CLEAR_CACHE)
+	if (q->type == DatabaseQuery::STARTING_CONFIG_RELOAD)
 		return -100.f;
 
 	if (q->type == DatabaseQuery::CHECK_CONFIGURATIONS_CHANGE)

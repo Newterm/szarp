@@ -39,6 +39,8 @@
 #include <wx/config.h>
 #include <wx/tokenzr.h>
 
+#include "fonts.h"
+
 #include "ids.h"
 #include "classes.h"
 
@@ -53,7 +55,8 @@
 #include "splashscreen.h"
 #include "drawapp.h"
 #include "dcolors.h"
-
+#include "errfrm.h"
+#include "luapextract.h"
 
 
 wxString DrawParam::GetBasePrefix() {
@@ -524,15 +527,6 @@ ConfigManager::ConfigManager(DrawApp* app, IPKContainer *ipks) : m_app(app), m_i
 
 	LoadDefinedDrawsSets();
 
-	IPKContainer* ic = IPKContainer::GetObject();
-
-	const std::vector<DefinedParam*>& vp = m_defined_sets->GetDefinedParams();
-
-	for (std::vector<DefinedParam*>::const_iterator i = vp.begin();
-			i != vp.end();
-			i++)
-		ic->AddExtraParam((*i)->GetBasePrefix().c_str(), (*i)->GetIPKParam());
-
 	psc = new DrawPsc();
 }
 
@@ -885,6 +879,7 @@ void ConfigManager::NotifySetAdded(wxString prefix, wxString name, DrawSet *set)
 
 void ConfigManager::SetDatabaseManager(DatabaseManager *db_mgr) {
 	m_db_mgr = db_mgr;
+	m_db_mgr->AddParams(m_defined_sets->GetDefinedParams());
 }
 
 bool ConfigManager::ReloadConfiguration(wxString prefix) {
@@ -967,6 +962,236 @@ bool ConfigManager::SaveDefinedDrawsSets() {
 
 	return true;
 
+}
+
+void ConfigManager::SubstituteOrAddDefinedParams(std::vector<DefinedParam*>& dp) {
+	std::vector<DefinedParam*> to_rem, to_add, new_pars;
+	std::vector<DefinedParam*>& dps = m_defined_sets->GetDefinedParams();
+	for (std::vector<DefinedParam*>::iterator i = dp.begin();
+			i != dp.end();
+			i++) {
+		std::vector<DefinedParam*>::iterator j;
+		for (j = dps.begin(); j != dps.end(); j++)
+			if ((*j)->GetBasePrefix() == (*i)->GetBasePrefix() && (*j)->GetParamName() == (*i)->GetParamName()) {
+				to_rem.push_back(*j);
+				to_add.push_back(*i);
+				break;
+			}
+		if (j == dps.end())
+			new_pars.push_back(*i);
+	}
+	dps.insert(dps.end(), new_pars.begin(), new_pars.end());
+	m_db_mgr->AddParams(new_pars);
+	SubstiuteDefinedParams(to_rem, to_add);
+}
+
+void ConfigManager::SubstiuteDefinedParams(const std::vector<DefinedParam*>& to_rem, const std::vector<DefinedParam*>& to_add) {
+
+	std::map<wxString, bool> us;
+
+	DrawSetsHash& dsh = m_defined_sets->GetRawDrawsSets();
+	for (size_t i = 0; i < to_rem.size(); i++)
+		for (DrawSetsHash::iterator j = dsh.begin();
+				j != dsh.end();
+				j++) {
+			DrawInfoArray* dia = j->second->GetDraws();
+			for (size_t k = 0; k < dia->size(); k++) {
+				DefinedDrawInfo *dp = dynamic_cast<DefinedDrawInfo*>((*dia)[k]);
+				if (dp->GetParam() == to_rem[i]) {
+					dp->SetParam(to_add[i]);
+					us[j->first] = true;
+				}
+			}
+		}
+
+	m_db_mgr->RemoveParams(to_rem);
+	m_db_mgr->AddParams(to_add);
+
+	for (size_t i = 0; i < to_rem.size(); i++) {
+		m_defined_sets->DestroyParam(to_rem[i]);
+		m_defined_sets->AddDefinedParam(to_add[i]);
+	}
+
+	for (std::map<wxString, bool>::iterator i = us.begin();
+			i != us.end();
+			++i) {
+		DefinedDrawSet *ds = dynamic_cast<DefinedDrawSet*>(dsh[i->first]);
+		std::vector<DefinedDrawSet*>* c = ds->GetCopies();
+		for (std::vector<DefinedDrawSet*>::iterator j = c->begin(); j != c->end(); j++)
+			NotifySetModified((*j)->GetDrawsSets()->GetPrefix(), i->first, *j);
+	}
+
+}
+
+class ExportImportSet {
+	ConfigManager *m_cfg_mgr;
+	DatabaseManager *m_db_mgr;
+	DefinedDrawsSets *m_def_sets;
+	DefinedParam* FindDefinedParam(wxString gname);
+	void ConvertParam(DefinedParam *dp, wxString our_name, std::map<DefinedParam*, DefinedParam*>& converted);
+	bool FindSetName(DefinedDrawSet *ds);
+public:
+	ExportImportSet(ConfigManager *cfg_mgr, DatabaseManager *db_mgr, DefinedDrawsSets *def_sets) :
+		m_cfg_mgr(cfg_mgr), m_db_mgr(db_mgr), m_def_sets(def_sets) {}
+
+	void ExportSet(DefinedDrawSet *set, wxString our_name);
+	void ImportSet();
+};
+
+DefinedParam* ExportImportSet::FindDefinedParam(wxString gname) {
+	const std::vector<DefinedParam*>& dps = m_def_sets->GetDefinedParams();
+	for (size_t i = 0; i < dps.size(); i++) {
+		if (dps[i]->GetBasePrefix() + _T(":") + dps[i]->GetParamName() == gname)
+			return dps[i];
+	}
+	return NULL;
+}
+
+void ExportImportSet::ConvertParam(DefinedParam *dp, wxString our_name, std::map<DefinedParam*, DefinedParam*>& converted) {
+	if (converted.find(dp) != converted.end())
+		return;
+	wxString pname = dp->GetParamName();
+	DefinedParam *np = new DefinedParam(*dp);
+	converted[dp] = np;
+	if (pname.StartsWith(_("User:Param:")) == false)
+		return;
+	wxString nname = pname.BeforeFirst(_T(':')) + _T(":") + our_name + _T(":") + pname.AfterLast(_T(':'));
+	np->SetParamName(nname);
+	wxString formula = dp->GetFormula();
+	std::vector<std::wstring> strings;
+	extract_strings_from_formula(formula.c_str(), strings);	
+	for (size_t i = 0; i < strings.size(); i++) if (DefinedParam* d = FindDefinedParam(strings[i])) {
+		ConvertParam(d, our_name, converted);
+		formula.Replace(_T("\"") + d->GetBasePrefix() + _T(":") + d->GetParamName() + _T("\""),
+				_T("\"") + converted[d]->GetBasePrefix() + _T(":") + converted[d]->GetParamName() + _T("\""));
+	}
+	np->SetFormula(formula);
+}
+
+void ExportImportSet::ExportSet(DefinedDrawSet *set, wxString our_name) {
+	wxFileDialog dlg(wxGetApp().GetTopWindow(), _("Choose a file"), _T(""), _T(""),
+			_("SZARP draw set (*.xds)|*.xds|All files (*.*)|*.*"),
+			wxSAVE | wxCHANGE_DIR);
+	szSetDefFont(&dlg);
+	if (dlg.ShowModal() != wxID_OK)
+		return;
+	wxString path = dlg.GetPath();
+	if (path.Right(4).Find('.') < 0)
+		path += _T(".xds");
+
+	DefinedDrawSet *dset = set->MakeDeepCopy();
+	std::vector<DefinedDrawSet*> dsv;
+	dsv.push_back(dset);
+
+	std::map<DefinedParam*, DefinedParam*> converted_params;
+	DrawInfoArray* dia = dset->GetDraws();
+	for (size_t i = 0; i < dia->size(); i++) {
+		DefinedDrawInfo* di = dynamic_cast<DefinedDrawInfo*>((*dia)[i]);
+		DrawParam* drp = di->GetParam();
+		if (DefinedParam* dep = dynamic_cast<DefinedParam*>(drp)) {
+			ConvertParam(dep, our_name, converted_params);
+			di->SetParamName(converted_params[dep]->GetParamName());
+		}
+	}
+	std::vector<DefinedParam*> dpv;
+	for (std::map<DefinedParam*, DefinedParam*>::iterator i = converted_params.begin();
+			i != converted_params.end();
+			i++)
+		dpv.push_back(i->second);
+
+	if (m_def_sets->SaveSets(path, dsv, dpv) == false)
+		wxMessageBox(wxString::Format(_("Export of set to file: %s failed"), path.c_str()), _("Error!"), wxICON_ERROR, wxGetApp().GetTopWindow());
+	for (size_t i = 0; i < dpv.size(); i++)
+		delete dpv[i];
+	delete dset;
+}
+
+bool ExportImportSet::FindSetName(DefinedDrawSet *ds) {
+	DrawSetsHash& dh = m_def_sets->GetRawDrawsSets();
+	wxString title = ds->GetName();
+	while (dh.find(title) != dh.end()) {
+		int n = 0;
+		wxString ntitle = title;
+		while (dh.find(ntitle) != dh.end()) {
+			if (n == 0)
+				ntitle = wxString::Format(_("%s (%s)"), title.c_str(), _("imported"));
+			else
+				ntitle = wxString::Format(_("%s (%s <%d>)"), title.c_str(), _("imported"), n);
+			n += 1;
+		}
+		title = wxGetTextFromUser(
+			wxString::Format(_("Set with name %s already exists. Give a name for a set:"), title.c_str()), 
+			_("Set already exists"),
+			ntitle,
+			wxGetApp().GetTopWindow());
+		if (title.IsEmpty())
+			return false;
+	}
+	ds->SetName(title);
+	return true;
+}
+
+void ExportImportSet::ImportSet() {
+	wxFileDialog dlg(wxGetApp().GetTopWindow(), _("Choose a file"), _T(""), _T(""), 
+				_("SZARP draw set (*.xds)|*.xds|All files (*.*)|*.*"));
+	szSetDefFont(&dlg);
+	if (dlg.ShowModal() != wxID_OK)
+		return;
+	wxString path = dlg.GetPath();
+	std::vector<DefinedDrawSet*> draw_sets;
+	std::vector<DefinedParam*> defined_params;
+	if (m_def_sets->LoadSets(path, draw_sets, defined_params) == false || draw_sets.size() == 0) 
+		goto fail;
+	for (size_t i = 0; i < draw_sets.size(); i++) {
+		std::vector<wxString> removed;
+		DefinedDrawSet* ds = draw_sets[i];
+		ErrorFrame::NotifyError(wxString::Format(_("Importing set: %s"), ds->GetName().c_str()));
+		SetsNrHash& prefixes = ds->GetPrefixes();
+		for (SetsNrHash::iterator i = prefixes.begin(); i != prefixes.end(); i++) {
+			DrawsSetsHash& config_hash = m_cfg_mgr->GetConfigurations();
+			if (config_hash.find(i->first) != config_hash.end())
+				continue;
+			ErrorFrame::NotifyError(wxString::Format(_("Need to load configuration for prefix: %s"), i->first.c_str()));
+			if (m_cfg_mgr->GetConfigByPrefix(i->first) == NULL) {
+				ErrorFrame::NotifyError(wxString::Format(_("Failed to load configuration: %s"), i->first.c_str()));
+				goto fail;
+			}
+		}
+		for (SetsNrHash::iterator i = prefixes.begin(); i != prefixes.end(); i++)
+			if (ds->SyncWithPrefix(i->first, removed, defined_params)) {
+				ErrorFrame::NotifyError(wxString::Format(_("Set %s cannot be imported, because it refers to unknonwn draws/parametrs"), ds->GetName().c_str()));
+				goto fail;
+			}
+	}
+	for (size_t i = 0; i < draw_sets.size(); i++) {
+		if (FindSetName(draw_sets[i]) == false)
+			goto clean_up;
+	}
+	
+	m_cfg_mgr->SubstituteOrAddDefinedParams(defined_params);
+	for (size_t i = 0; i < draw_sets.size(); i++)
+		m_def_sets->AddSet(draw_sets[i]);
+	wxMessageBox(wxString::Format(_("Operation completed successfully, set %s imported"), draw_sets[0]->GetName().c_str(), path.c_str()), _("Operation successful."), wxOK | wxICON_INFORMATION, wxGetApp().GetTopWindow());
+	return;
+fail:
+	wxMessageBox(wxString::Format(_("Failed to import set from file: %s"), path.c_str()), _("Operation failed."), wxOK | wxICON_ERROR, wxGetApp().GetTopWindow());
+clean_up:
+	for (size_t i = 0; i < draw_sets.size(); i++)
+		delete draw_sets[i];
+	for (size_t i = 0; i < defined_params.size(); i++)
+		delete defined_params[i];
+
+}
+
+
+void ConfigManager::ExportSet(DefinedDrawSet *set, wxString our_name) {
+	ExportImportSet es(this, m_db_mgr, m_defined_sets);
+	es.ExportSet(set, our_name.IsEmpty() ? wxString(_("imported")) : our_name);
+}
+
+void ConfigManager::ImportSet() {
+	ExportImportSet is(this, m_db_mgr, m_defined_sets);
+	is.ImportSet();
 }
 
 ConfigManager::~ConfigManager() {
