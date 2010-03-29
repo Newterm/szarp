@@ -163,6 +163,8 @@ protected:
 
 	bool m_gl_works;
 
+	bool m_just_print_version;
+
 	/**Object that prevents more than one m_instance of program from running.*/
 	szSingleInstanceChecker *m_instance;
 

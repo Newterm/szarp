@@ -61,6 +61,7 @@
 
 #include "ids.h"
 #include "classes.h"
+#include "version.h"
 
 #include "drawobs.h"
 #include "drawapp.h"
@@ -84,6 +85,7 @@
 #include "splashscreen.h"
 #include "szframe.h"
 #include "remarks.h"
+#include "vercheck.h"
 
 #include "../../resources/wx/icons/draw64.xpm"
 
@@ -164,6 +166,11 @@ bool DrawApp::OnInit() {
 
 	SetProgName(_T("Draw 3"));
 	//signal(SIGINT, INThandler);
+
+	if (m_just_print_version) {
+		std::cout << SZARP_VERSION << std::endl;
+		return false;
+	}
 
 	m_server = NULL;
 	m_db_queue = NULL;
@@ -327,6 +334,9 @@ bool DrawApp::OnInit() {
 	
 	splash->PushStatusText(_("Creating Frame Manager..."));
 
+	VersionChecker* version_checker = new VersionChecker(argv[0]);
+	version_checker->Start();
+
 	FrameManager *fm = new FrameManager(dbmgr, m_cfg_mgr, m_remarks_handler);
 
 	/*@michal  */
@@ -369,6 +379,9 @@ void DrawApp::OnInitCmdLine(wxCmdLineParser &parser) {
 
 	parser.AddSwitch(_T("v"), wxEmptyString, 
 		_("verbose logging"));
+
+	parser.AddSwitch(_T("V"), _T("version"), 
+		_("print version number and exit"));
 	
 #if 0
 	parser.AddSwitch(_T("D<name>=<str>"), wxEmptyString,
@@ -407,6 +420,8 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 
 	if (parser.Found(_T("v")))
     		wxLog::SetVerbose();
+
+	m_just_print_version = parser.Found(_("V"));
 
 	parser.Found(_T("base"), &m_base);
 

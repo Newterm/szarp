@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-26 15:17+0100\n"
+"POT-Creation-Date: 2010-03-29 19:13+0200\n"
 "PO-Revision-Date: 2008-09-15 15:35+0100\n"
 "Last-Translator: Pawe³ Pa³ucha <pawel@praterm.com.pl>\n"
 "Language-Team: \n"
@@ -34,85 +34,89 @@ msgstr ""
 msgid "Error"
 msgstr "B³±d"
 
-#: cfgmgr.cpp:1055 paramslist.cpp:218 paredit.cpp:380 XRC_gettext_file.h:159
+#: cfgmgr.cpp:1056 paramslist.cpp:218 paredit.cpp:379 XRC_gettext_file.h:159
 msgid "User:Param:"
 msgstr "Parametr:U¿ytkownika:"
 
-#: cfgmgr.cpp:1071 cfgmgr.cpp:1133
+#: cfgmgr.cpp:1072 cfgmgr.cpp:1135
 msgid "Choose a file"
 msgstr "Wybierz plik"
 
-#: cfgmgr.cpp:1072 cfgmgr.cpp:1134
+#: cfgmgr.cpp:1073 cfgmgr.cpp:1136
 msgid "SZARP draw set (*.xds)|*.xds|All files (*.*)|*.*"
 msgstr "SZARP plik z definicj± zestawu (*.xds)|*.xds|All files (*.*)|*.*"
 
-#: cfgmgr.cpp:1102
+#: cfgmgr.cpp:1103
 #, c-format
 msgid "Export of set to file: %s failed"
 msgstr "Export zestawu do pliku %s nie powiód³ siê"
 
-#: cfgmgr.cpp:1102 defcfg.cpp:1603 defcfg.cpp:1610 paramslist.cpp:240
+#: cfgmgr.cpp:1103 defcfg.cpp:1603 defcfg.cpp:1610 paramslist.cpp:240
 #: paramslist.cpp:306 paramslist.cpp:345
 msgid "Error!"
 msgstr "B³±d"
 
-#: cfgmgr.cpp:1116
+#: cfgmgr.cpp:1117
 #, c-format
 msgid "%s (%s)"
 msgstr ""
 
-#: cfgmgr.cpp:1116 cfgmgr.cpp:1118 cfgmgr.cpp:1187
+#: cfgmgr.cpp:1117 cfgmgr.cpp:1119 cfgmgr.cpp:1189
 msgid "imported"
 msgstr "zaimportowany"
 
-#: cfgmgr.cpp:1118
+#: cfgmgr.cpp:1119
 #, c-format
 msgid "%s (%s <%d>)"
 msgstr ""
 
-#: cfgmgr.cpp:1121
+#: cfgmgr.cpp:1123
+#, c-format
 msgid "Set with name %s already exists. Give a name for a set:"
 msgstr "Set o nazwie %s ju¿ istnieje. Podaj inn± nazwe dla zestawu:"
 
-#: cfgmgr.cpp:1122
+#: cfgmgr.cpp:1124
 msgid "Set already exists"
 msgstr "Zestaw ju¿ istnieje."
 
-#: cfgmgr.cpp:1146
+#: cfgmgr.cpp:1148
 #, c-format
 msgid "Importing set: %s"
 msgstr "Importuje zestaw: %s"
 
-#: cfgmgr.cpp:1152
-msgid "Need to load configuration for prefix: %s"
-msgstr ""
-"Muszê za³adowaæ konfiguracjê o prefiksie: %s"
-
 #: cfgmgr.cpp:1154
+#, c-format
+msgid "Need to load configuration for prefix: %s"
+msgstr "Muszê za³adowaæ konfiguracjê o prefiksie: %s"
+
+#: cfgmgr.cpp:1156
+#, c-format
 msgid "Failed to load configuration: %s"
 msgstr "Nie uda³o siê za³adowaæ konfiguracji: %s"
 
-#: cfgmgr.cpp:1160
+#: cfgmgr.cpp:1162
 #, c-format
 msgid ""
 "Set %s cannot be imported, because it refers to unknonwn draws/parametrs"
 msgstr ""
-"Zestaw %s nie mo¿e zostaæ zaimportowany poniewa¿ odnosi siê do niezanych wykresów/parametrów" 
+"Zestaw %s nie mo¿e zostaæ zaimportowany poniewa¿ odnosi siê do niezanych "
+"wykresów/parametrów"
 
-#: cfgmgr.cpp:1172
+#: cfgmgr.cpp:1174
 #, c-format
 msgid "Operation completed successfully, set %s imported"
 msgstr "Zestaw %s zosta³ zaimportowany"
 
-#: cfgmgr.cpp:1172
+#: cfgmgr.cpp:1174
 msgid "Operation successful."
 msgstr "Operacja zakoñczona."
 
-#: cfgmgr.cpp:1175
+#: cfgmgr.cpp:1177
+#, c-format
 msgid "Failed to import set from file: %s"
 msgstr "Nie uda³o siê zaimporowaæ zestawu z pliku :%s"
 
-#: cfgmgr.cpp:1175 defcfg.cpp:1129
+#: cfgmgr.cpp:1177 defcfg.cpp:1129
 msgid "Operation failed."
 msgstr "Operacja siê nie powiod³a."
 
@@ -241,76 +245,84 @@ msgstr " %Y%n godzina %H:%M"
 msgid "%A, %d %B %Y%n time %H:%M"
 msgstr "%A, %d %B %Y%n godz. %H:%M"
 
-#: drawapp.cpp:236
+#: drawapp.cpp:243
 msgid "Setting locale..."
 msgstr "£adowanie ustawieñ lokalizacyjnych..."
 
-#: drawapp.cpp:241
+#: drawapp.cpp:248
 msgid "Reading params from szarp.cfg..."
 msgstr "£adowanie parametrów z szarp.cfg..."
 
-#: drawapp.cpp:243
+#: drawapp.cpp:250
 msgid "Initializing IPKContainer..."
 msgstr "Inicjalizacja kontenera IPK..."
 
-#: drawapp.cpp:252
+#: drawapp.cpp:259
 msgid "Initializing szbase..."
 msgstr "Inicjalizacja szbase..."
 
-#: drawapp.cpp:254
+#: drawapp.cpp:261
 msgid "Initializing XML Resources..."
 msgstr "Inicjalizacja zasobów XML..."
 
-#: drawapp.cpp:259
+#: drawapp.cpp:266
 msgid "Starting database query mechanism..."
 msgstr "Uruchamianie mechanizmu odpytywania bazy..."
 
-#: drawapp.cpp:282
+#: drawapp.cpp:289
 msgid "Loading configuration..."
 msgstr "Wczytywanie konfiguracji..."
 
-#: drawapp.cpp:297
+#: drawapp.cpp:304
 msgid ""
 "Error occurred while loading default configuration. Check your szarp.cfg "
 "file."
 msgstr ""
 "B³±d podczas ³adowania domy¶lnej konfiguracji. Sprawd¼ swój plik szarp.cfg"
 
-#: drawapp.cpp:303
+#: drawapp.cpp:310
 msgid "Missing starting base specification."
 msgstr "Nie okre¶lono bazy startowej"
 
-#: drawapp.cpp:323
+#: drawapp.cpp:330
 msgid "Initizalizing remarks..."
 msgstr "Inicjalizacja obs³ugi komentarzy..."
 
-#: drawapp.cpp:328
+#: drawapp.cpp:335
 msgid "Creating Frame Manager..."
 msgstr "Tworzenie menad¿era ramek..."
 
-#: drawapp.cpp:360
+#: drawapp.cpp:370
 msgid "Szarp Draw version 3.00."
 msgstr "Szarp Draw wersja 3.00."
 
-#: drawapp.cpp:363
+#: drawapp.cpp:373
 msgid "X windows geometry specification"
 msgstr "specyfikacja geometrii jak dla X windows"
 
-#: drawapp.cpp:366
+#: drawapp.cpp:376
 msgid "base name"
 msgstr "nazwa bazy"
 
-#: drawapp.cpp:371
+#: drawapp.cpp:381
 msgid "verbose logging"
 msgstr "gadatliwe logowanie"
 
-#: drawapp.cpp:375
+#: drawapp.cpp:384
+msgid "print version number and exit"
+msgstr ""
+
+#: drawapp.cpp:388
 msgid "libparnt value initialization"
 msgstr ""
 
-#: drawapp.cpp:379
+#: drawapp.cpp:392
 msgid "debug level"
 msgstr "poziom komunikatów debuguj±cych"
+
+#: drawapp.cpp:424
+msgid "V"
+msgstr ""
 
 #: drawfrm.cpp:103
 msgid "Number of displayed values"
@@ -636,7 +648,7 @@ msgid "No title"
 msgstr "Brak tytu³u"
 
 #: drawpick.cpp:767 drawpick.cpp:814 drawpnl.cpp:573 drawpnl.cpp:608
-#: drawtb.cpp:61 paredit.cpp:401
+#: drawtb.cpp:62 paredit.cpp:400
 msgid "Find"
 msgstr "Wyszukaj"
 
@@ -740,38 +752,42 @@ msgstr ""
 msgid "Select date"
 msgstr "Wybierz datê"
 
-#: drawtb.cpp:60
+#: drawtb.cpp:61
 msgid "About"
 msgstr "O programie"
 
-#: drawtb.cpp:62
+#: drawtb.cpp:63
 msgid "Summary Window"
 msgstr "Warto¶ci sumaryczne"
 
-#: drawtb.cpp:63
+#: drawtb.cpp:64
 msgid "Split cursor"
 msgstr "Rozdwojony kursor"
 
-#: drawtb.cpp:64 drawtb.cpp:128 XRC_gettext_file.h:68 XRC_gettext_file.h:84
+#: drawtb.cpp:65 drawtb.cpp:139 XRC_gettext_file.h:68 XRC_gettext_file.h:84
 msgid "Filter"
 msgstr "Filtr"
 
-#: drawtb.cpp:65
+#: drawtb.cpp:66
 msgid "Refresh"
 msgstr "Od¶wie¿"
 
-#: drawtb.cpp:85 XRC_gettext_file.h:76
+#: drawtb.cpp:86 XRC_gettext_file.h:76
 msgid "Language"
 msgstr "Jêzyk"
 
-#: drawtb.cpp:86 remarks.cpp:999 XRC_gettext_file.h:60 XRC_gettext_file.h:78
+#: drawtb.cpp:87 remarks.cpp:999 XRC_gettext_file.h:60 XRC_gettext_file.h:78
 #: XRC_gettext_file.h:109 XRC_gettext_file.h:130 XRC_gettext_file.h:131
 msgid "Remarks"
 msgstr "Komentarze"
 
-#: drawtb.cpp:87
+#: drawtb.cpp:88
 msgid "Quit"
 msgstr "Wyjd¼"
+
+#: drawtb.cpp:106
+msgid "New version available"
+msgstr "Nowa wersja zainstalowana"
 
 #: drawview.cpp:229 gcdcgraphs.cpp:738 glgraphs.cpp:1422
 msgid "summer season"
@@ -854,7 +870,6 @@ msgid "Do you really want to remove this graph?"
 msgstr "Czy na pewno chcesz usun±æ ten wykres?"
 
 #: incsearch.cpp:756
-#, fuzzy
 msgid "Graph removal"
 msgstr "Usuniêcie zestawu"
 
@@ -911,7 +926,7 @@ msgstr "Musisz podaæ konfiguracjê odniesienia."
 msgid "Reference configuration missing."
 msgstr "Brak konfiguracji odniesienia."
 
-#: paredit.cpp:349
+#: paredit.cpp:348
 #, c-format
 msgid "Error while compiling param %s"
 msgstr "B³±d podczas kompilacji parametru %s"
@@ -1056,19 +1071,19 @@ msgstr "Uruchamiam draw3..."
 msgid "Statistics window"
 msgstr "Warto¶ci ¶rednie"
 
-#: statdiag.cpp:67 timewdg.cpp:54 xydiag.cpp:55 ids.h:181
+#: statdiag.cpp:67 timewdg.cpp:54 xydiag.cpp:55 ids.h:182
 msgid "YEAR"
 msgstr "ROK"
 
-#: statdiag.cpp:67 timewdg.cpp:55 xydiag.cpp:55 ids.h:181
+#: statdiag.cpp:67 timewdg.cpp:55 xydiag.cpp:55 ids.h:182
 msgid "MONTH"
 msgstr "MIESI¡C"
 
-#: statdiag.cpp:67 timewdg.cpp:56 xydiag.cpp:55 ids.h:181
+#: statdiag.cpp:67 timewdg.cpp:56 xydiag.cpp:55 ids.h:182
 msgid "WEEK"
 msgstr "TYDZIEÑ"
 
-#: statdiag.cpp:67 timewdg.cpp:57 xydiag.cpp:55 ids.h:181
+#: statdiag.cpp:67 timewdg.cpp:57 xydiag.cpp:55 ids.h:182
 msgid "DAY"
 msgstr "DZIEÑ"
 
@@ -1183,13 +1198,25 @@ msgstr " %H:%M"
 msgid " %R"
 msgstr " %R"
 
-#: timewdg.cpp:58 ids.h:181
+#: timewdg.cpp:58 ids.h:182
 msgid "SEASON"
 msgstr "SEZON"
 
 #: timewdg.cpp:87
 msgid "Select period to display"
 msgstr "Wybierz rodzaj ¶redniej"
+
+#: vercheck.cpp:110
+msgid ""
+"There is new a version of draw3 installed on this computer, you should "
+"restart it."
+msgstr ""
+"Wersja programu draw3 zainstalowana na tym komputerze jest nowsza, ni¿ akuatlnie "
+"uruchomiona. Powiniene¶ zrestartowaæ program draw3"
+
+#: vercheck.cpp:111
+msgid "New version."
+msgstr "Nowa wersja"
 
 #: xydiag.cpp:44
 msgid "X/Y graph parameters"

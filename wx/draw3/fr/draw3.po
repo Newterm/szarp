@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-26 15:17+0100\n"
+"POT-Creation-Date: 2010-03-29 19:13+0200\n"
 "PO-Revision-Date: 2008-06-11 17:54+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -32,91 +32,91 @@ msgstr ""
 msgid "Error"
 msgstr "Echec"
 
-#: cfgmgr.cpp:1055 paramslist.cpp:218 paredit.cpp:380 XRC_gettext_file.h:159
+#: cfgmgr.cpp:1056 paramslist.cpp:218 paredit.cpp:379 XRC_gettext_file.h:159
 msgid "User:Param:"
 msgstr "Utilisateur:Paramètres:"
 
-#: cfgmgr.cpp:1071 cfgmgr.cpp:1133
+#: cfgmgr.cpp:1072 cfgmgr.cpp:1135
 #, fuzzy
 msgid "Choose a file"
 msgstr "Choisir la date de début"
 
-#: cfgmgr.cpp:1072 cfgmgr.cpp:1134
+#: cfgmgr.cpp:1073 cfgmgr.cpp:1136
 msgid "SZARP draw set (*.xds)|*.xds|All files (*.*)|*.*"
 msgstr ""
 
-#: cfgmgr.cpp:1102
+#: cfgmgr.cpp:1103
 #, c-format
 msgid "Export of set to file: %s failed"
 msgstr ""
 
-#: cfgmgr.cpp:1102 defcfg.cpp:1603 defcfg.cpp:1610 paramslist.cpp:240
+#: cfgmgr.cpp:1103 defcfg.cpp:1603 defcfg.cpp:1610 paramslist.cpp:240
 #: paramslist.cpp:306 paramslist.cpp:345
 msgid "Error!"
 msgstr "Echec!"
 
-#: cfgmgr.cpp:1116
+#: cfgmgr.cpp:1117
 #, c-format
 msgid "%s (%s)"
 msgstr ""
 
-#: cfgmgr.cpp:1116 cfgmgr.cpp:1118 cfgmgr.cpp:1187
+#: cfgmgr.cpp:1117 cfgmgr.cpp:1119 cfgmgr.cpp:1189
 msgid "imported"
 msgstr ""
 
-#: cfgmgr.cpp:1118
+#: cfgmgr.cpp:1119
 #, c-format
 msgid "%s (%s <%d>)"
 msgstr ""
 
-#: cfgmgr.cpp:1121
+#: cfgmgr.cpp:1123
 #, c-format
 msgid "Set with name %s already exists. Give a name for a set:"
 msgstr ""
 
-#: cfgmgr.cpp:1122
+#: cfgmgr.cpp:1124
 msgid "Set already exists"
 msgstr ""
 
-#: cfgmgr.cpp:1146
+#: cfgmgr.cpp:1148
 #, c-format
 msgid "Importing set: %s"
 msgstr ""
 
-#: cfgmgr.cpp:1152
+#: cfgmgr.cpp:1154
 #, fuzzy, c-format
 msgid "Need to load configuration for prefix: %s"
 msgstr ""
 "Echec de téléchargement de la configuration du préfixe %s. Impossible "
 "d'importer les draws."
 
-#: cfgmgr.cpp:1154
+#: cfgmgr.cpp:1156
 #, fuzzy, c-format
 msgid "Failed to load configuration: %s"
 msgstr "Télécharger la configuration"
 
-#: cfgmgr.cpp:1160
+#: cfgmgr.cpp:1162
 #, c-format
 msgid ""
 "Set %s cannot be imported, because it refers to unknonwn draws/parametrs"
 msgstr ""
 
-#: cfgmgr.cpp:1172
+#: cfgmgr.cpp:1174
 #, c-format
 msgid "Operation completed successfully, set %s imported"
 msgstr ""
 
-#: cfgmgr.cpp:1172
+#: cfgmgr.cpp:1174
 #, fuzzy
 msgid "Operation successful."
 msgstr "Echec de l'opération"
 
-#: cfgmgr.cpp:1175
+#: cfgmgr.cpp:1177
 #, fuzzy, c-format
 msgid "Failed to import set from file: %s"
 msgstr "Echec de l'importation de draws du fichier."
 
-#: cfgmgr.cpp:1175 defcfg.cpp:1129
+#: cfgmgr.cpp:1177 defcfg.cpp:1129
 msgid "Operation failed."
 msgstr "Echec de l'opération"
 
@@ -240,35 +240,35 @@ msgstr " %Y%n heure %H : %M"
 msgid "%A, %d %B %Y%n time %H:%M"
 msgstr "%A, %d %B %Y%n temps %H : %M"
 
-#: drawapp.cpp:236
+#: drawapp.cpp:243
 msgid "Setting locale..."
 msgstr "Réglage local..."
 
-#: drawapp.cpp:241
+#: drawapp.cpp:248
 msgid "Reading params from szarp.cfg..."
 msgstr "Lecture des paramètres à partir de szarp.cfg..."
 
-#: drawapp.cpp:243
+#: drawapp.cpp:250
 msgid "Initializing IPKContainer..."
 msgstr "Initialiser container IPK..."
 
-#: drawapp.cpp:252
+#: drawapp.cpp:259
 msgid "Initializing szbase..."
 msgstr "Initialiser szbase..."
 
-#: drawapp.cpp:254
+#: drawapp.cpp:261
 msgid "Initializing XML Resources..."
 msgstr "Initialiser les ressources XML..."
 
-#: drawapp.cpp:259
+#: drawapp.cpp:266
 msgid "Starting database query mechanism..."
 msgstr "Ouverture du mécanisme de recherche dans la base..."
 
-#: drawapp.cpp:282
+#: drawapp.cpp:289
 msgid "Loading configuration..."
 msgstr "Charger la configuration... "
 
-#: drawapp.cpp:297
+#: drawapp.cpp:304
 msgid ""
 "Error occurred while loading default configuration. Check your szarp.cfg "
 "file."
@@ -276,42 +276,50 @@ msgstr ""
 "Erreur lors du chargement de la configuration par défaut. Vérifier le "
 "fichier szarp.cfg."
 
-#: drawapp.cpp:303
+#: drawapp.cpp:310
 msgid "Missing starting base specification."
 msgstr "Absence de spécification de base du démarrage."
 
-#: drawapp.cpp:323
+#: drawapp.cpp:330
 #, fuzzy
 msgid "Initizalizing remarks..."
 msgstr "Initialiser szbase..."
 
-#: drawapp.cpp:328
+#: drawapp.cpp:335
 msgid "Creating Frame Manager..."
 msgstr "Création du manager du cadrage..."
 
-#: drawapp.cpp:360
+#: drawapp.cpp:370
 msgid "Szarp Draw version 3.00."
 msgstr "Szarp Draw version 3.00."
 
-#: drawapp.cpp:363
+#: drawapp.cpp:373
 msgid "X windows geometry specification"
 msgstr "Spécification de la géométrie comme pour X windows"
 
-#: drawapp.cpp:366
+#: drawapp.cpp:376
 msgid "base name"
 msgstr "Nom de la base"
 
-#: drawapp.cpp:371
+#: drawapp.cpp:381
 msgid "verbose logging"
 msgstr "Loggin simple"
 
-#: drawapp.cpp:375
+#: drawapp.cpp:384
+msgid "print version number and exit"
+msgstr ""
+
+#: drawapp.cpp:388
 msgid "libparnt value initialization"
 msgstr ""
 
-#: drawapp.cpp:379
+#: drawapp.cpp:392
 msgid "debug level"
 msgstr "Niveau du debug"
+
+#: drawapp.cpp:424
+msgid "V"
+msgstr ""
 
 #: drawfrm.cpp:103
 #, fuzzy
@@ -643,7 +651,7 @@ msgid "No title"
 msgstr "Pas de titre"
 
 #: drawpick.cpp:767 drawpick.cpp:814 drawpnl.cpp:573 drawpnl.cpp:608
-#: drawtb.cpp:61 paredit.cpp:401
+#: drawtb.cpp:62 paredit.cpp:400
 msgid "Find"
 msgstr "Recherche"
 
@@ -752,38 +760,42 @@ msgstr ""
 msgid "Select date"
 msgstr "Choix de la date"
 
-#: drawtb.cpp:60
+#: drawtb.cpp:61
 msgid "About"
 msgstr "A propos"
 
-#: drawtb.cpp:62
+#: drawtb.cpp:63
 msgid "Summary Window"
 msgstr "Fenêtre de résumé"
 
-#: drawtb.cpp:63
+#: drawtb.cpp:64
 msgid "Split cursor"
 msgstr "Curseur double"
 
-#: drawtb.cpp:64 drawtb.cpp:128 XRC_gettext_file.h:68 XRC_gettext_file.h:84
+#: drawtb.cpp:65 drawtb.cpp:139 XRC_gettext_file.h:68 XRC_gettext_file.h:84
 msgid "Filter"
 msgstr "Filtre"
 
-#: drawtb.cpp:65
+#: drawtb.cpp:66
 msgid "Refresh"
 msgstr "Rafraîchir"
 
-#: drawtb.cpp:85 XRC_gettext_file.h:76
+#: drawtb.cpp:86 XRC_gettext_file.h:76
 msgid "Language"
 msgstr "Langue"
 
-#: drawtb.cpp:86 remarks.cpp:999 XRC_gettext_file.h:60 XRC_gettext_file.h:78
+#: drawtb.cpp:87 remarks.cpp:999 XRC_gettext_file.h:60 XRC_gettext_file.h:78
 #: XRC_gettext_file.h:109 XRC_gettext_file.h:130 XRC_gettext_file.h:131
 msgid "Remarks"
 msgstr "Remarques"
 
-#: drawtb.cpp:87
+#: drawtb.cpp:88
 msgid "Quit"
 msgstr "Quitter"
+
+#: drawtb.cpp:106
+msgid "New version available"
+msgstr ""
 
 #: drawview.cpp:229 gcdcgraphs.cpp:738 glgraphs.cpp:1422
 msgid "summer season"
@@ -920,7 +932,7 @@ msgstr "Vous devez choisir une configuration de référence."
 msgid "Reference configuration missing."
 msgstr "Absence de configuration de référence."
 
-#: paredit.cpp:349
+#: paredit.cpp:348
 #, c-format
 msgid "Error while compiling param %s"
 msgstr "Erreur lors de la compilation des paramètres %s"
@@ -1075,19 +1087,19 @@ msgstr "Ouvrir la courbe 3..."
 msgid "Statistics window"
 msgstr "Fenêtre des statistiques"
 
-#: statdiag.cpp:67 timewdg.cpp:54 xydiag.cpp:55 ids.h:181
+#: statdiag.cpp:67 timewdg.cpp:54 xydiag.cpp:55 ids.h:182
 msgid "YEAR"
 msgstr "ANNEE"
 
-#: statdiag.cpp:67 timewdg.cpp:55 xydiag.cpp:55 ids.h:181
+#: statdiag.cpp:67 timewdg.cpp:55 xydiag.cpp:55 ids.h:182
 msgid "MONTH"
 msgstr "MOIS"
 
-#: statdiag.cpp:67 timewdg.cpp:56 xydiag.cpp:55 ids.h:181
+#: statdiag.cpp:67 timewdg.cpp:56 xydiag.cpp:55 ids.h:182
 msgid "WEEK"
 msgstr "SEMAINE"
 
-#: statdiag.cpp:67 timewdg.cpp:57 xydiag.cpp:55 ids.h:181
+#: statdiag.cpp:67 timewdg.cpp:57 xydiag.cpp:55 ids.h:182
 msgid "DAY"
 msgstr "JOUR"
 
@@ -1203,13 +1215,24 @@ msgstr " %H:%M"
 msgid " %R"
 msgstr " %R"
 
-#: timewdg.cpp:58 ids.h:181
+#: timewdg.cpp:58 ids.h:182
 msgid "SEASON"
 msgstr "SAISON"
 
 #: timewdg.cpp:87
 msgid "Select period to display"
 msgstr "Choisir la période à afficher"
+
+#: vercheck.cpp:110
+msgid ""
+"There is new a version of draw3 installed on this computer, you should "
+"restart it."
+msgstr ""
+
+#: vercheck.cpp:111
+#, fuzzy
+msgid "New version."
+msgstr "Remarques"
 
 #: xydiag.cpp:44
 msgid "X/Y graph parameters"

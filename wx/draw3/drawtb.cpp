@@ -1,7 +1,6 @@
 /* 
   SZARP: SCADA software 
   
-
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
@@ -31,6 +30,7 @@
 
 #include "ids.h"
 #include "drawtb.h"
+#include "vercheck.h"
 #include "bitmaps/help.xpm"
 #include "bitmaps/exit.xpm"
 #include "bitmaps/find.xpm"
@@ -51,6 +51,7 @@
 #include "bitmaps/flag_hu.xpm"
 #include "bitmaps/flag_it.xpm"
 #include "bitmaps/remark.xpm"
+#include "bitmaps/oldverwarn.xpm"
 
 DrawToolBar::DrawToolBar(wxWindow *parent) :
 	wxToolBar(parent,-1)
@@ -85,7 +86,11 @@ DrawToolBar::DrawToolBar(wxWindow *parent) :
 	AddTool(drawTB_LANGUAGE, _T(""), lang_icon, _("Language"));
 	AddTool(drawTB_REMARK, _T(""), remark_xpm, _("Remarks"));
 	AddTool(drawTB_EXIT, _T(""),exit_xpm, _("Quit"));
-	Realize();
+	if (VersionChecker::IsNewVersion())
+		NewDrawVersionAvailable();
+	else
+		Realize();
+	VersionChecker::AddToolbar(this);
 }
 
 void DrawToolBar::DoubleCursorToolCheck() {
@@ -94,6 +99,12 @@ void DrawToolBar::DoubleCursorToolCheck() {
 
 void DrawToolBar::DoubleCursorToolUncheck() {
 	ToggleTool(drawTB_SPLTCRS, false);
+}
+
+void DrawToolBar::NewDrawVersionAvailable() {
+	int index = GetToolPos(drawTB_EXIT);
+	InsertTool(index, drawTB_NEWDRAWVERSION, old_version_warning_xpm, wxNullBitmap, false, NULL, _T(""), _("New version available"));
+	Realize();
 }
 
 void DrawToolBar::SetFilterToolIcon(int i) {
@@ -129,3 +140,14 @@ void DrawToolBar::SetFilterToolIcon(int i) {
 	Realize();
 }
 
+void DrawToolBar::NewVersionToolClicked(wxCommandEvent &e) {
+	VersionChecker::ShowNewVersionMessage();
+}
+
+DrawToolBar::~DrawToolBar() {
+	VersionChecker::RemoveToolbar(this);
+}
+
+BEGIN_EVENT_TABLE(DrawToolBar, wxToolBar)
+	EVT_MENU(drawTB_NEWDRAWVERSION, DrawToolBar::NewVersionToolClicked)
+END_EVENT_TABLE()

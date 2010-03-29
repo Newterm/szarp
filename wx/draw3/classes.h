@@ -109,6 +109,7 @@ class DrawPscFrame;
 class DrawPsc;
 class DrawPscSystemConfigurationEditor;
 class CodeEditor;
+class VersionChecker;
 
 struct XYGraph;
 struct DatabaseQuery;

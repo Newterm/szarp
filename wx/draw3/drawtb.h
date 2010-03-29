@@ -44,8 +44,6 @@
 #include "cconv.h"
 
 
-class DrawFrame;
-
 /**
  * DrawToolBar with most used buttons...
  * Important: EVENTS for toolbar buttonts must be connected in DrawFrame class
@@ -59,6 +57,8 @@ public:
 	 */
 	DrawToolBar(wxWindow *parent);
 
+	~DrawToolBar();
+
 	/**'Unchecks' double cursor tool*/
 	void DoubleCursorToolUncheck();
 
@@ -68,6 +68,11 @@ public:
 	/**Set's icon representing given filter level*/
 	void SetFilterToolIcon(int i);
 
+	void NewDrawVersionAvailable();
+
+	void NewVersionToolClicked(wxCommandEvent &e);
+
+	DECLARE_EVENT_TABLE();
 };
 #endif
 
