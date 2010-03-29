@@ -110,31 +110,29 @@ void* QueryExecutor::Entry() {
 			TParam *p = q->draw_info->GetParam()->GetIPKParam();
 			TSzarpConfig *cfg = p->GetSzarpConfig();
 
-			if (cfg) {
+			assert(cfg);
 
-				szb_buffer_t *szb = szbase->GetBuffer(cfg->GetPrefix());
+			szb_buffer_t *szb = szbase->GetBuffer(cfg->GetPrefix());
 
-				switch (q->type) {
-					case DatabaseQuery::SEARCH_DATA: 
-						szbase->NextQuery();
-						ExecuteSearchQuery(szb, p, q->search_data);
-						post_response = true;
-						break;
-					case DatabaseQuery::GET_DATA: 
-						szbase->NextQuery();
-						ExecuteDataQuery(szb, p, q);
-						post_response = false;
-						break;
-					case DatabaseQuery::RESET_BUFFER:
-						szb_reset_buffer(szb);
-						break;
-					case DatabaseQuery::CLEAR_CACHE:
-						szbase->ClearCacheDir(cfg->GetPrefix().c_str());
-						break;
-					default:
-						break;
-				}
-
+			switch (q->type) {
+				case DatabaseQuery::SEARCH_DATA: 
+					szbase->NextQuery();
+					ExecuteSearchQuery(szb, p, q->search_data);
+					post_response = true;
+					break;
+				case DatabaseQuery::GET_DATA: 
+					szbase->NextQuery();
+					ExecuteDataQuery(szb, p, q);
+					post_response = false;
+					break;
+				case DatabaseQuery::RESET_BUFFER:
+					szb_reset_buffer(szb);
+					break;
+				case DatabaseQuery::CLEAR_CACHE:
+					szbase->ClearCacheDir(cfg->GetPrefix().c_str());
+					break;
+				default:
+					break;
 			}
 
 		}

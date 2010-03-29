@@ -13,14 +13,18 @@
 
 #ifdef LUA_PARAM_OPTIMISE
 
-//#define LUA_OPTIMIZER_DEBUG
-
 #include <boost/make_shared.hpp>
+
+#define LUA_OPTIMIZER_DEBUG
+
+#ifdef LUA_OPTIMIZER_DEBUG
+#include <fstream>
+std::ofstream lua_opt_debug_stream("/tmp/lua_optimizer_debug");
+#endif
 
 namespace LuaExec {
 
 using namespace lua_grammar;
-
 
 class ExecutionEngine;
 
@@ -492,7 +496,7 @@ void StatementList::Execute() {
 
 PStatement StatementConverter::operator() (const assignment &a) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting assignement" << std::endl;
+	lua_opt_debug_stream << "Converting assignement" << std::endl;
 #endif
 #if 0
 	for (size_t i = 0; i < a.varlist.size(); i++) {
@@ -502,7 +506,7 @@ PStatement StatementConverter::operator() (const assignment &a) {
 		try {
 			const identifier& identifier_ = boost::get<identifier>(a.varlist[i]);
 #ifdef LUA_OPTIMIZER_DEBUG
-			std::cerr << "Identifier: " << SC::S2A(identifier_) << std::endl;
+			lua_opt_debug_stream << "Identifier: " << SC::S2A(identifier_) << std::endl;
 #endif
 			VarRef variable = m_param_converter->GetGlobalVar(identifier_);
 			PExpression expression;
@@ -521,14 +525,14 @@ PStatement StatementConverter::operator() (const assignment &a) {
 
 PStatement StatementConverter::operator() (const block &b) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr <<  "Coverting block" << std::endl;
+	lua_opt_debug_stream <<  "Coverting block" << std::endl;
 #endif
 	return m_param_converter->ConvertBlock(b);
 }
 
 PStatement StatementConverter::operator() (const while_loop &w) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting while loop" << std::endl;
+	lua_opt_debug_stream << "Converting while loop" << std::endl;
 #endif
 	PExpression condition = m_param_converter->ConvertExpression(w.expression_);
 	PStatement block = m_param_converter->ConvertBlock(w.block_);
@@ -537,7 +541,7 @@ PStatement StatementConverter::operator() (const while_loop &w) {
 
 PStatement StatementConverter::operator() (const repeat_loop &r) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting while loop" << std::endl;
+	lua_opt_debug_stream << "Converting while loop" << std::endl;
 #endif
 	PExpression condition = m_param_converter->ConvertExpression(r.expression_);
 	PStatement block = m_param_converter->ConvertBlock(r.block_);
@@ -546,18 +550,18 @@ PStatement StatementConverter::operator() (const repeat_loop &r) {
 
 PStatement StatementConverter::operator() (const if_stat &if_) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting if statement" << std::endl;
-	std::cerr << "Converting if expression" << std::endl;
+	lua_opt_debug_stream << "Converting if statement" << std::endl;
+	lua_opt_debug_stream << "Converting if expression" << std::endl;
 #endif
 	PExpression cond = m_param_converter->ConvertExpression(if_.if_exp);
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting if block" << std::endl;
+	lua_opt_debug_stream << "Converting if block" << std::endl;
 #endif
 	PStatement block = m_param_converter->ConvertBlock(if_.block_);
 	std::vector<std::pair<PExpression, PStatement> > elseif;
 	for (size_t i = 0; i < if_.elseif_.size(); i++) {
 #ifdef LUA_OPTIMIZER_DEBUG
-		std::cerr << "Converting elseif" << std::endl;
+		lua_opt_debug_stream << "Converting elseif" << std::endl;
 #endif
 		elseif.push_back(std::make_pair(m_param_converter->ConvertExpression(if_.elseif_[i].get<0>()),
 				m_param_converter->ConvertBlock(if_.elseif_[i].get<1>())));
@@ -565,7 +569,7 @@ PStatement StatementConverter::operator() (const if_stat &if_) {
 	PStatement else_;
 	if (if_.else_) {
 #ifdef LUA_OPTIMIZER_DEBUG
-		std::cerr << "Converting else" << std::endl;
+		lua_opt_debug_stream << "Converting else" << std::endl;
 #endif
 		else_ = m_param_converter->ConvertBlock(*if_.else_);
 	} else
@@ -583,7 +587,7 @@ PStatement StatementConverter::operator() (const postfixexp &a) {
 
 PStatement StatementConverter::operator() (const for_from_to_loop &for_) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr <<  "Converting for from to loop" << std::endl;
+	lua_opt_debug_stream <<  "Converting for from to loop" << std::endl;
 #endif
 	VarRef var = m_param_converter->GetLocalVar(for_.identifier_);
 	PExpression from = m_param_converter->ConvertExpression(for_.from);
@@ -603,7 +607,7 @@ PStatement StatementConverter::operator() (const function_declaration &a) {
 
 PStatement StatementConverter::operator() (const local_assignment &a) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting local assignment" << std::endl;
+	lua_opt_debug_stream << "Converting local assignment" << std::endl;
 #endif
 	PExpression expression;
 #if 0
@@ -614,7 +618,7 @@ PStatement StatementConverter::operator() (const local_assignment &a) {
 		try {
 			const identifier& identifier_ = boost::get<identifier>(a.varlist[i]);
 #ifdef LUA_OPTIMIZER_DEBUG
-			std::cerr << "Identifier: " << SC::S2A(identifier_) << std::endl;
+			lua_opt_debug_stream << "Identifier: " << SC::S2A(identifier_) << std::endl;
 #endif
 			VarRef variable = m_param_converter->GetLocalVar(identifier_);
 			if (i < a.explist.size())
@@ -636,7 +640,7 @@ PStatement StatementConverter::operator() (const local_function_declaration &f) 
 
 PExpression ExpressionConverter::ConvertTerm(const term& term_) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting term" << std::endl;
+	lua_opt_debug_stream << "Converting term" << std::endl;
 #endif
 	return m_param_converter->ConvertTerm(term_);
 }
@@ -652,7 +656,7 @@ PExpression ExpressionConverter::ConvertPow(const pow_exp& exp) {
 	PExpression p = ConvertTerm(*i);
 	while (++i != exp.rend()) {
 #ifdef LUA_OPTIMIZER_DEBUG
-		std::cerr << "Converting power expression" << std::endl;
+		lua_opt_debug_stream << "Converting power expression" << std::endl;
 #endif
 		PExpression p2 = ConvertTerm(*i);
 		p = boost::make_shared<BinExpression<pow_functor> >(p2, p);
@@ -669,13 +673,13 @@ PExpression ExpressionConverter::ConvertUnOp(const unop_exp& unop) {
 		switch (*i) {
 			case NEG:
 #ifdef LUA_OPTIMIZER_DEBUG
-				std::cerr << "Converting negate unop expression" << std::endl;
+				lua_opt_debug_stream << "Converting negate unop expression" << std::endl;
 #endif
 				p = boost::make_shared<UnExpression<std::negate<Val> > >(p);
 				break;
 			case NOT:
 #ifdef LUA_OPTIMIZER_DEBUG
-				std::cerr << "Converting not unop expression" << std::endl;
+				lua_opt_debug_stream << "Converting not unop expression" << std::endl;
 #endif
 				p = boost::make_shared<UnExpression<std::logical_not<Val> > >(p);
 				break;
@@ -693,19 +697,19 @@ PExpression ExpressionConverter::ConvertMul(const mul_exp& mul_) {
 		switch (mul_.muls[i].get<0>()) {
 			case MUL:
 #ifdef LUA_OPTIMIZER_DEBUG
-				std::cerr << "Converting mul binop expression" << std::endl;
+				lua_opt_debug_stream << "Converting mul binop expression" << std::endl;
 #endif
 				p = boost::make_shared<BinExpression<std::multiplies<Val> > >(p, p2);
 				break;
 			case DIV:
 #ifdef LUA_OPTIMIZER_DEBUG
-				std::cerr << "Converting div binop expression" << std::endl;
+				lua_opt_debug_stream << "Converting div binop expression" << std::endl;
 #endif
 				p = boost::make_shared<BinExpression<std::divides<Val> > >(p, p2);
 				break;
 			case REM:
 #ifdef LUA_OPTIMIZER_DEBUG
-				std::cerr << "Converting rem binop expression" << std::endl;
+				lua_opt_debug_stream << "Converting rem binop expression" << std::endl;
 #endif
 				p = boost::make_shared<BinExpression<std::modulus<Val> > >(p, p2);
 				break;
@@ -721,13 +725,13 @@ PExpression ExpressionConverter::ConvertAdd(const add_exp& add_) {
 		switch (add_.adds[i].get<0>()) {
 			case PLUS:
 #ifdef LUA_OPTIMIZER_DEBUG
-				std::cerr << "Converting plus binop expression" << std::endl;
+				lua_opt_debug_stream << "Converting plus binop expression" << std::endl;
 #endif
 				p = boost::make_shared<BinExpression<std::plus<Val> > >(p, p2);
 				break;
 			case MINUS:
 #ifdef LUA_OPTIMIZER_DEBUG
-				std::cerr << "Converting minus binop expression" << std::endl;
+				lua_opt_debug_stream << "Converting minus binop expression" << std::endl;
 #endif
 				p = boost::make_shared<BinExpression<std::minus<Val> > >(p, p2);
 				break;
@@ -749,37 +753,37 @@ PExpression ExpressionConverter::ConvertCmp(const cmp_exp& cmp_exp_) {
 		switch (cmp_exp_.cmps[i].get<0>()) {
 			case LT:
 #ifdef LUA_OPTIMIZER_DEBUG
-				std::cerr << "Converting less binop expression" << std::endl;
+				lua_opt_debug_stream << "Converting less binop expression" << std::endl;
 #endif
 				p = boost::make_shared<BinExpression<std::less<Val> > >(p, p2);
 				break;
 			case LTE:
 #ifdef LUA_OPTIMIZER_DEBUG
-				std::cerr << "Converting less-equal binop expression" << std::endl;
+				lua_opt_debug_stream << "Converting less-equal binop expression" << std::endl;
 #endif
 				p = boost::make_shared<BinExpression<std::less_equal<Val> > >(p, p2);
 				break;
 			case EQ:
 #ifdef LUA_OPTIMIZER_DEBUG
-				std::cerr << "Converting equal binop expression" << std::endl;
+				lua_opt_debug_stream << "Converting equal binop expression" << std::endl;
 #endif
 				p = boost::make_shared<BinExpression<std::equal_to<Val> > >(p, p2);
 				break;
 			case GTE:
 #ifdef LUA_OPTIMIZER_DEBUG
-				std::cerr << "Converting greater equal binop expression" << std::endl;
+				lua_opt_debug_stream << "Converting greater equal binop expression" << std::endl;
 #endif
 				p = boost::make_shared<BinExpression<std::greater_equal<Val> > >(p, p2);
 				break;
 			case GT:
 #ifdef LUA_OPTIMIZER_DEBUG
-				std::cerr << "Converting greater binop expression" << std::endl;
+				lua_opt_debug_stream << "Converting greater binop expression" << std::endl;
 #endif
 				p = boost::make_shared<BinExpression<std::greater<Val> > >(p, p2);
 				break;
 			case NEQ:
 #ifdef LUA_OPTIMIZER_DEBUG
-				std::cerr << "Converting not equal binop expression" << std::endl;
+				lua_opt_debug_stream << "Converting not equal binop expression" << std::endl;
 #endif
 				p = boost::make_shared<BinExpression<std::not_equal_to<Val> > >(p, p2);
 				break;
@@ -792,7 +796,7 @@ PExpression ExpressionConverter::ConvertAnd(const and_exp& and_exp_) {
 	PExpression p = ConvertCmp(and_exp_[0]);
 	for (size_t i = 1; i < and_exp_.size(); i++) {
 #ifdef LUA_OPTIMIZER_DEBUG
-		std::cerr << "Converting and binop expression" << std::endl;
+		lua_opt_debug_stream << "Converting and binop expression" << std::endl;
 #endif
 		p = boost::make_shared<BinExpression<std::logical_and<Val> > >(p, ConvertCmp(and_exp_[i]));
 	}
@@ -803,7 +807,7 @@ PExpression ExpressionConverter::ConvertOr(const or_exp& or_exp_) {
 	PExpression p = ConvertAnd(or_exp_[0]);
 	for (size_t i = 1; i < or_exp_.size(); i++) {
 #ifdef LUA_OPTIMIZER_DEBUG
-		std::cerr << "Converting or binop expression" << std::endl;
+		lua_opt_debug_stream << "Converting or binop expression" << std::endl;
 #endif
 		p = boost::make_shared<BinExpression<std::logical_or<Val> > >(p, ConvertAnd(or_exp_[i]));
 	}
@@ -812,28 +816,28 @@ PExpression ExpressionConverter::ConvertOr(const or_exp& or_exp_) {
 
 PExpression ExpressionConverter::ConvertExpression(const expression& expression_) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting expression" << std::endl;
+	lua_opt_debug_stream << "Converting expression" << std::endl;
 #endif
 	return ConvertOr(expression_.o);
 }
 
 PExpression TermConverter::operator()(const nil& nil_) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting nil expression" << std::endl;
+	lua_opt_debug_stream << "Converting nil expression" << std::endl;
 #endif
 	return boost::make_shared<NilExpression>();
 }
 
 PExpression TermConverter::operator()(const bool& bool_) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting boolean value" << std::endl;
+	lua_opt_debug_stream << "Converting boolean value" << std::endl;
 #endif
 	return boost::make_shared<NumberExpression>(bool_ ? 1. : 0.);
 }
 
 PExpression TermConverter::operator()(const double& double_) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting number expression" << std::endl;
+	lua_opt_debug_stream << "Converting number expression" << std::endl;
 #endif
 	return boost::make_shared<NumberExpression>(double_);
 }
@@ -856,7 +860,7 @@ PExpression TermConverter::operator()(const tableconstructor& tableconstrutor_) 
 
 PExpression TermConverter::operator()(const postfixexp& postfixexp_) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting postfix expression" << std::endl;
+	lua_opt_debug_stream << "Converting postfix expression" << std::endl;
 #endif
 	return m_param_converter->ConvertPostfixExp(postfixexp_);
 }
@@ -867,14 +871,14 @@ PExpression TermConverter::operator()(const expression& expression_) {
 
 PExpression PostfixConverter::operator()(const identifier& identifier_) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting variable expression, var: " << SC::S2A(identifier_) << std::endl;
+	lua_opt_debug_stream << "Converting variable expression, var: " << SC::S2A(identifier_) << std::endl;
 #endif
 	return boost::make_shared<VarExpression>(m_param_converter->FindVar(identifier_));
 }
 
 const std::vector<expression>& PostfixConverter::GetArgs(const std::vector<exp_ident_arg_namearg>& e) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting args, number of exp_ident_arg_namerg :) expressions:" << e.size() << std::endl;
+	lua_opt_debug_stream << "Converting args, number of exp_ident_arg_namerg :) expressions:" << e.size() << std::endl;
 #endif
 	if (e.size() != 1)
 		throw ParamConversionException(L"Only postfix expression in form functioname(exp, exp, ...) are allowed");
@@ -898,7 +902,7 @@ PExpression PostfixConverter::operator()(const boost::tuple<exp_identifier, std:
 		const exp_identifier& ei = exp.get<0>();
 		const identifier& identifier_ = boost::get<identifier>(ei);
 #ifdef LUA_OPTIMIZER_DEBUG
-		std::cerr << "Converting postfix expression, identifier: " << SC::S2A(identifier_) << std::endl;
+		lua_opt_debug_stream << "Converting postfix expression, identifier: " << SC::S2A(identifier_) << std::endl;
 #endif
 		const std::vector<expression>& args = GetArgs(exp.get<1>());
 		return m_param_converter->ConvertFunction(identifier_, args);
@@ -909,7 +913,7 @@ PExpression PostfixConverter::operator()(const boost::tuple<exp_identifier, std:
 
 PExpression SzbMoveTimeConverter::Convert(const std::vector<expression>& expressions) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting szb_move_time expression" << std::endl;
+	lua_opt_debug_stream << "Converting szb_move_time expression" << std::endl;
 #endif
 	if (expressions.size() < 3)
 		throw ParamConversionException(L"szb_move_time requires three arguments");
@@ -922,7 +926,7 @@ PExpression SzbMoveTimeConverter::Convert(const std::vector<expression>& express
 
 PExpression IsNanConverter::Convert(const std::vector<expression>& expressions) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting isnan expression"  << std::endl;
+	lua_opt_debug_stream << "Converting isnan expression"  << std::endl;
 #endif
 	if (expressions.size() < 1)
 		throw ParamConversionException(L"isnan takes one argument");
@@ -933,7 +937,7 @@ PExpression IsNanConverter::Convert(const std::vector<expression>& expressions) 
 
 PExpression NanConverter::Convert(const std::vector<expression>& expressions) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting nan expression" << std::endl;
+	lua_opt_debug_stream << "Converting nan expression" << std::endl;
 #endif
 	return boost::make_shared<NilExpression>();
 }
@@ -977,7 +981,7 @@ std::wstring get_string_expression(const expression &e) {
 		return name;
 	} catch (boost::bad_get &e) {
 #ifdef LUA_OPTIMIZER_DEBUG
-		std::cerr << "Failed to convert expression to string: " << e.what() << std::endl;
+		lua_opt_debug_stream << "Failed to convert expression to string: " << e.what() << std::endl;
 #endif
 		ERROR;
 	}
@@ -994,13 +998,13 @@ std::wstring ParamValueConverter::GetParamName(const expression& e) {
 
 PExpression ParamValueConverter::Convert(const std::vector<expression>& expressions) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting p(..) expression" << std::endl;
+	lua_opt_debug_stream << "Converting p(..) expression" << std::endl;
 #endif
 	if (expressions.size() < 3)
 		throw ParamConversionException(L"p function requires three arguemnts");
 	std::wstring param_name = GetParamName(expressions[0]);
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Parameter name: " << SC::S2A(param_name) << std::endl;
+	lua_opt_debug_stream << "Parameter name: " << SC::S2A(param_name) << std::endl;
 #endif
 	ParRefRef param_ref = m_param_converter->GetParamRef(param_name);
 	return boost::make_shared<ParamValue>(param_ref,
@@ -1010,7 +1014,7 @@ PExpression ParamValueConverter::Convert(const std::vector<expression>& expressi
 
 PExpression InSeasonConverter::Convert(const std::vector<expression>& expressions) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting isnan(..) expression" << std::endl;
+	lua_opt_debug_stream << "Converting isnan(..) expression" << std::endl;
 #endif
 	if (expressions.size() < 2)
 		throw ParamConversionException(L"in season function requires two arguments");
@@ -1018,7 +1022,7 @@ PExpression InSeasonConverter::Convert(const std::vector<expression>& expression
 	try {
 		prefix = get_string_expression(expressions[0]);
 #ifdef LUA_OPTIMIZER_DEBUG
-		std::cerr << "in_season parameter: " << SC::S2A(prefix) << std::endl;
+		lua_opt_debug_stream << "in_season parameter: " << SC::S2A(prefix) << std::endl;
 #endif
 	} catch (ParamConversionException &e) {
 		throw ParamConversionException(L"First argument to in_season function should be literal configuration prefix");
@@ -1112,7 +1116,7 @@ PExpression ParamConverter::ConvertFunction(const identifier& identifier_, const
 PStatement ParamConverter::ConvertStatement(const stat& stat_) {
 	StatementConverter sc(this);
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting statement" << std::endl;
+	lua_opt_debug_stream << "Converting statement" << std::endl;
 #endif
 	return boost::apply_visitor(sc, stat_);
 }
@@ -1138,7 +1142,7 @@ PExpression ParamConverter::ConvertExpression(const expression& expression_) {
 
 PExpression ParamConverter::ConvertPostfixExp(const postfixexp& postfixexp_) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Converting postfix expression" << std::endl;
+	lua_opt_debug_stream << "Converting postfix expression" << std::endl;
 #endif
 	PostfixConverter pc(this);
 	return boost::apply_visitor(pc, postfixexp_);
@@ -1146,7 +1150,7 @@ PExpression ParamConverter::ConvertPostfixExp(const postfixexp& postfixexp_) {
 
 void ParamConverter::ConvertParam(const chunk& chunk_, Param* param) {
 #ifdef LUA_OPTIMIZER_DEBUG
-	std::cerr << "Starting to optimize param" << std::endl;
+	lua_opt_debug_stream << "Starting to optimize param" << std::endl;
 #endif
 	m_param = param;
 	InitalizeVars();
@@ -1170,6 +1174,7 @@ void ParamConverter::InitalizeVars() {
 	AddVariable(L"PT_MIN10");
 	AddVariable(L"PT_HOUR");
 	AddVariable(L"PT_HOUR8");
+	AddVariable(L"PT_DAY");
 	AddVariable(L"PT_WEEK");
 	AddVariable(L"PT_MONTH");
 }
@@ -1389,22 +1394,27 @@ LuaDatablock *create_lua_data_block(szb_buffer_t *b, TParam* p, int y, int m) {
 	LuaExec::Param *ep = p->GetLuaExecParam();
 	if (ep == NULL) {
 		ep = new LuaExec::Param;
-		b->AddExecParam(ep);
 		p->SetLuaExecParam(ep);
+		b->AddExecParam(p);
 		lua_grammar::chunk param_code;
 		std::wstring param_text = SC::U2S(p->GetLuaScript());
 		std::wstring::const_iterator param_text_begin = param_text.begin();
 		std::wstring::const_iterator param_text_end = param_text.end();
 		ep->m_optimized = false;
 		if (lua_grammar::parse(param_text_begin, param_text_end, param_code)) {
-			LuaExec::ParamConverter pc(Szbase::GetObject());
+			Szbase* szbase = Szbase::GetObject();
+			LuaExec::ParamConverter pc(szbase);
 			try {
 				pc.ConvertParam(param_code, ep);
 				ep->m_optimized = true;
+				for (std::vector<LuaExec::ParamRef>::iterator i = ep->m_par_refs.begin();
+					 	i != ep->m_par_refs.end();
+						i++)
+					szbase->AddLuaOptParamReference(i->m_param, p);
 			} catch (LuaExec::ParamConversionException &e) {
 				sz_log(3, "Parameter %ls cannot be optimized, reason: %ls", p->GetName().c_str(), e.what().c_str());
 #ifdef LUA_OPTIMIZER_DEBUG
-				std::cerr << "Parameter " << SC::S2A(p->GetName()) << " cannot be optimized, reason: " << SC::S2A(e.what()) << std::endl;
+				lua_opt_debug_stream << "Parameter " << SC::S2A(p->GetName()) << " cannot be optimized, reason: " << SC::S2A(e.what()) << std::endl;
 #endif
 			}
 		}

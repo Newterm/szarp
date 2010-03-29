@@ -748,7 +748,6 @@ void DrawPanel::DrawInfoChanged(Draw *d) {
 				menu_bar->Enable(XRCID("EditSet"),  IsUserDefined());
 				menu_bar->Enable(XRCID("DelSet"),  IsUserDefined());
 				menu_bar->Enable(XRCID("ExportSet"),  IsUserDefined());
-				menu_bar->Enable(XRCID("ImportSet"),  IsUserDefined());
 				menu_bar->Check(XRCID("SplitCursor"), false); 
 				df->SetTitle(GetConfigName(), GetPrefix());
 		}
@@ -905,6 +904,7 @@ void DrawPanel::SetActive(bool _active) {
 
 		menu_bar->Enable(XRCID("EditSet"),  IsUserDefined());
 		menu_bar->Enable(XRCID("DelSet"),  IsUserDefined());
+		menu_bar->Enable(XRCID("ExportSet"),  IsUserDefined());
 
 		if (cfg->IsPSC(prefix))
 			menu_bar->FindItem(XRCID("SetParams"))->Enable(true);

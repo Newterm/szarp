@@ -95,7 +95,7 @@ private:
 	std::map< TParam* , BlockLocator* > paramindex;
 #ifndef NO_LUA
 #if LUA_PARAM_OPTIMISE
-	std::vector<LuaExec::Param*> optimized_params;
+	std::vector<TParam*> optimized_params;
 #endif
 #endif
 
@@ -114,7 +114,8 @@ public:
 	void Unlock();
 #ifndef NO_LUA
 #if LUA_PARAM_OPTIMISE
-	void AddExecParam(LuaExec::Param *param);
+	void AddExecParam(TParam *param);
+	void RemoveExecParam(TParam* param);
 #endif
 #endif
 	void AddBlock(szb_datablock_t* block);

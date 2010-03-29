@@ -1,5 +1,11 @@
 $Id$
 
+2010-03-29	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* libSzarp2/szbase: lua parser fixes, optimized params
+	are now properly updated with configuration reload,
+	added better debug info in params optimizer,
+	when user param is modfied its cache is cleared
+	* wx/draw3: 'import set' is always active 
 2010-03-26	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
 	* wx/draw3: new feature: import/export of user sets
 2010-03-25	Pawel Palucha <pawel@praterm.com.pl>

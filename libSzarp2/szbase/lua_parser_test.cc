@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
 		ss << ff.rdbuf();
 
 		lua_grammar::chunk result;
-		std::wstring wstr = SC::A2S(ss.str());
+		std::wstring wstr = SC::U2S((const unsigned char*)ss.str().c_str());
 		std::wstring::const_iterator iter = wstr.begin();
 		std::wstring::const_iterator end = wstr.end();
 		std::cout << "Parsing: " << ss.str() << std::endl;

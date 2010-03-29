@@ -81,6 +81,14 @@ void Szbase::AddExtraParam(const std::wstring &prefix, TParam *param) {
 
 }
 
+#ifndef NO_LUA
+#if LUA_PARAM_OPTIMISE
+void Szbase::AddLuaOptParamReference(TParam* refered, TParam* referring) {
+	m_lua_opt_param_reference_map[refered].insert(referring);
+}
+#endif
+#endif
+
 void Szbase::RemoveExtraParam(const std::wstring& prefix, TParam *param) {
 
 	IPKContainer* ic = IPKContainer::GetObject();
@@ -90,6 +98,23 @@ void Szbase::RemoveExtraParam(const std::wstring& prefix, TParam *param) {
 		ic->RemoveExtraParam(prefix, param);
 		return;
 	}
+
+#ifndef NO_LUA
+#if LUA_PARAM_OPTIMISE
+	std::set<TParam*>& set = m_lua_opt_param_reference_map[param];
+	for (std::set<TParam*>::iterator i = set.begin();
+			i != set.end();
+			i++) {
+		TParam* p = *i;
+		const std::wstring& prefix = p->GetSzarpConfig()->GetPrefix();
+		std::pair<szb_buffer_t*, TSzarpConfig*>& bc = m_ipkbasepair[prefix];
+		bc.first->RemoveExecParam(p);
+		ClearParamFromCache(prefix, p);
+		p->SetLuaExecParam(NULL);
+	}
+	set.clear();
+#endif
+#endif
 
 	std::wstring global_param_name = prefix + L":" + param->GetName();
 	std::wstring translated_global_param_name = prefix + L":" + param->GetTranslatedName();
@@ -184,6 +209,7 @@ void Szbase::RemoveConfig(const std::wstring &prefix, bool poison_cache) {
 		b->cachepoison = true;
 	szb_free_buffer(b);
 
+	m_ipkbasepair.erase(prefix);
 }
 
 std::wstring Szbase::GetCacheDir(const std::wstring &prefix) {

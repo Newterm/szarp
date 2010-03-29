@@ -322,7 +322,7 @@ CacheableDatablock::ClearParamFromCache(szb_buffer_t *buffer, TParam *param)
 	boost::filesystem::wpath tmp(CacheableDatablock::GetCacheRootDirPath(buffer));
 	tmp /= param->GetSzbaseName();
 
-	boost::filesystem::remove_all(CacheableDatablock::GetCacheRootDirPath(buffer));
+	boost::filesystem::remove_all(tmp);
 }
 
 CacheableDatablock::~CacheableDatablock() {

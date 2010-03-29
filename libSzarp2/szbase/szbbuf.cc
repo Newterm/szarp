@@ -684,8 +684,10 @@ szb_buffer_str::~szb_buffer_str()
 	this->freeBlocks();
 #ifndef NO_LUA
 #if LUA_PARAM_OPTIMISE
-	for (size_t i = 0; i < optimized_params.size(); i++)
-		delete optimized_params[i];
+	for (size_t i = 0; i < optimized_params.size(); i++) {
+		delete optimized_params[i]->GetLuaExecParam();
+		optimized_params[i]->SetLuaExecParam(NULL);
+	}
 #endif
 #endif
 }
@@ -748,18 +750,24 @@ std::wstring szb_buffer_str::GetSzbaseStampFilePath() {
 void 
 szb_buffer_str::ClearCache()
 {
+	bool cachepoison_ = cachepoison;
+	cachepoison = true;
 	CacheableDatablock::ClearCache(this);
 	this->Reset();
+	cachepoison = cachepoison_;
 }
 
 void 
 szb_buffer_str::ClearParamFromCache(TParam* param)
 {
+	bool cachepoison_ = cachepoison;
+	cachepoison = true;
 	CacheableDatablock::ClearParamFromCache(this, param);
 	while (this->paramindex[param] != NULL) {
 		szb_datablock_t * tmp = this->paramindex[param]->block;
 		DeleteBlock(tmp);
 	}
+	cachepoison = cachepoison_;
 }
 
 void 
@@ -831,8 +839,16 @@ szb_buffer_str::Unlock()
 #ifndef NO_LUA
 #if LUA_PARAM_OPTIMISE
 void
-szb_buffer_str::AddExecParam(LuaExec::Param *param) {
+szb_buffer_str::AddExecParam(TParam *param) {
 	optimized_params.push_back(param);	
+}
+
+void
+szb_buffer_str::RemoveExecParam(TParam *param) {
+	std::vector<TParam*>::iterator e = std::remove(optimized_params.begin(), optimized_params.end(), param);
+	delete (*e)->GetLuaExecParam();
+	(*e)->SetLuaExecParam(NULL);
+	optimized_params.erase(e, optimized_params.end());
 }
 #endif
 #endif

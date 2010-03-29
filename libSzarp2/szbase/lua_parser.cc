@@ -4,6 +4,13 @@
 
 //#define BOOST_SPIRIT_DEBUG
 #include <iostream>
+#include <fstream>
+
+#ifdef BOOST_SPIRIT_DEBUG
+std::ofstream ofs("/tmp/boost_spirit_debug_out");
+#define BOOST_SPIRIT_DEBUG_OUT ofs
+#endif
+
 #include <string>
 namespace std {
 ostream& operator<< (ostream& os, const wstring& s);
@@ -486,8 +493,9 @@ template<typename Iterator> struct lua_skip_parser : qi::grammar<Iterator> {
 
 		skip = qi::space
 			| L"--[[" >> *(char_ - L"]]") >> L"]]"
-			| L"--" >> *(char_ - qi::eol) >> qi::eol
+			| L"--" >> *(char_ - (qi::eol | qi::eoi)) >> (qi::eol | qi::eoi);
 			;
+
 	}
 
 };
@@ -546,7 +554,8 @@ template<typename Iterator> struct lua_parser : qi::grammar<Iterator, chunk(), l
 		}
 	} escaped_symbol_;
 
-	qi::rule<Iterator, std::wstring(), space> keywords;
+	qi::rule<Iterator, std::wstring()> keywords;
+	qi::rule<Iterator, std::wstring()> keywordse;
 	qi::rule<Iterator, std::wstring(), space> identifier_;
 	qi::rule<Iterator, std::wstring(), space> string;
 	qi::rule<Iterator, bool(), space> boolean;
@@ -603,6 +612,7 @@ template<typename Iterator> struct lua_parser : qi::grammar<Iterator, chunk(), l
 	qi::rule<Iterator, std::vector<var>(), space> varlist_;
 	qi::rule<Iterator, std::vector<field>(), space> fieldlist_;
 	qi::rule<Iterator, std::vector<expression>(), space> explist_;
+	qi::rule<Iterator, std::vector<expression>(), space> eexplist_;
 	qi::rule<Iterator, space> fieldsep_;
 
 public:
@@ -638,7 +648,9 @@ public:
 			| L"until"
 			| L"while";
 
-		identifier_ = lexeme[ char_(L"a-zA-Z_") >> *(char_(L"a-zA-Z0-9_")) ] - keywords;
+		keywordse = keywords >> !char_(L"a-zA-Z0-9_");
+
+		identifier_ = lexeme[ char_(L"a-zA-Z_") >> *(char_(L"a-zA-Z0-9_")) ] - keywordse;
 
 		octal_char = eps [_val = 0] >> 
 			char_(L"0-7") [ _val = (_1 - L'0') * 64 ] >>
@@ -660,13 +672,15 @@ public:
 
 		nil_ = lit(L"nil")[_val = nil()];
 
-		return__ = (L"return" >> explist_) [_val = _1];
+		return__ = (L"return" >> eexplist_) [_val = _1];
 
 		chunk_ = *(stat_ >> -lit(L";")) >> -(laststat_ >> -lit(L";"));
 
 		block_ = chunk_[_val =  _1];
 
-		explist_ = expression_ % L',' | eps;
+		explist_ = expression_ % L',';
+
+		eexplist_ = expression_ % L',' | eps;
 
 		varlist_ = var_ % L',' | eps;
 
@@ -674,7 +688,7 @@ public:
 
 		tableconstructor_ = (L"{" >> fieldlist_ >> L'}') [ _val = _1];
 
-		args_ = lit(L'(') >> explist_ >> lit(L')')
+		args_ = lit(L'(') >> eexplist_ >> lit(L')')
 			| tableconstructor_
 			| string;
 
@@ -696,7 +710,7 @@ public:
 
 		function_declaration_ = L"function" >> funcname_ >> funcbody_;
 
-		local_assignment_ = L"local" >> varlist_ >> L"=" >> explist_;
+		local_assignment_ = L"local" >> varlist_ >> -(L"=" >> explist_);
 
 		local_function_declaration_ = lit(L"local") >> L"function" >> funcname_ >> funcbody_;
 
@@ -715,8 +729,6 @@ public:
 		laststat_ = return__ | break__;
 
 		namelist_ = (identifier_ % L',' )[_val = _1] | eps;
-		
-		explist_ = expression_ % L',' | eps;
 		
 		function_ = L"function" >> funcbody_;
 
@@ -819,6 +831,7 @@ public:
 		BOOST_SPIRIT_DEBUG_NODE(varlist_);
 		BOOST_SPIRIT_DEBUG_NODE(fieldlist_);
 		BOOST_SPIRIT_DEBUG_NODE(explist_);
+		BOOST_SPIRIT_DEBUG_NODE(eexplist_);
 		BOOST_SPIRIT_DEBUG_NODE(fieldsep_);
 		BOOST_SPIRIT_DEBUG_NODE(expression_);
 		BOOST_SPIRIT_DEBUG_NODE(or_);
@@ -831,6 +844,8 @@ public:
 		BOOST_SPIRIT_DEBUG_NODE(pow_);
 		BOOST_SPIRIT_DEBUG_NODE(term_);
 		BOOST_SPIRIT_DEBUG_NODE(postfixexp_);
+		BOOST_SPIRIT_DEBUG_NODE(keywords);
+		BOOST_SPIRIT_DEBUG_NODE(keywordse);
 		//BOOST_SPIRIT_DEBUG_NODE(qi::double_);
 	}
 

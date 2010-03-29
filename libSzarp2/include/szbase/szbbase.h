@@ -33,6 +33,7 @@
 #endif
 
 #include <string>
+#include <set>
 #include <utility>
 #include <exception>
 
@@ -64,6 +65,13 @@ class Szbase {
 	TBI m_ipkbasepair;
 	boost::filesystem::wpath m_szarp_dir;
 	SzbFileWatcher m_file_watcher;
+#ifndef NO_LUA
+#if LUA_PARAM_OPTIMISE
+	std::map<TParam*, std::set<TParam*> > m_lua_opt_param_reference_map;
+#endif
+#endif
+	long m_current_query;
+
 	void (*m_config_modification_callback)(std::wstring, std::wstring);
 
 	bool AddBase(const std::wstring& prefix);
@@ -74,7 +82,6 @@ class Szbase {
 
 	void AddParamToHash(const std::wstring& prefix, TParam *param);
 
-	long m_current_query;
 public:
 	void NotifyAboutConfigurationChanges();
 	time_t SearchFirst(const std::wstring& param, bool &ok);
@@ -82,6 +89,11 @@ public:
 	time_t SearchLast(const std::wstring& param, bool &ok);
 	time_t SearchLast(const std::basic_string<unsigned char>& param, bool &ok);
 	void AddExtraParam(const std::wstring& prefix, TParam *param);
+#ifndef NO_LUA
+#if LUA_PARAM_OPTIMISE
+	void AddLuaOptParamReference(TParam* refered, TParam* referring);
+#endif
+#endif
 	void RemoveExtraParam(const std::wstring& prefix, TParam *param);
 	bool AddBase(const std::wstring& szbase_dir, const std::wstring &prefix);
 	double GetValue(const std::wstring& param, time_t time, SZARP_PROBE_TYPE probe_type, int custom_length, bool *isFixed, bool &ok, std::wstring &error);
