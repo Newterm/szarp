@@ -1,6 +1,7 @@
 $Id$
 
 2010-03-30	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* wx/draw3: documentation link defaults to http://szarp.com
 	* wx/draw3: when 'parameter documentation' is
 	clicked on user defined param, we simply show
 	this parameter formula instead of directing

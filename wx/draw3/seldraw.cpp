@@ -390,7 +390,7 @@ void SelectDrawWidget::GoToWWWDocumentation(DrawInfo *d) {
 	wxString link = sc->GetDocumentationBaseURL();
 
 	if (link.IsEmpty())
-		link = _T("https://www.szarp.com.pl");
+		link = _T("http://www.szarp.com");
 
 	link += _T("/cgi-bin/param_docs.py?");
 	link << _T("prefix=") << d->GetBasePrefix().c_str();
