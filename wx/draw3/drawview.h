@@ -150,9 +150,6 @@ protected:
 
 class BackgroundDrawer : public View {
 protected:
-        /** Return short localized week day name. */
-        wxString GetShortDayName(wxDateTime::WeekDay day);
-
 	/** Draws background 'stripes'*/
 	void DrawBackground(wxDC* dc);
 
@@ -202,9 +199,6 @@ class BackgroundView : public BackgroundDrawer {
 	wxMemoryDC *m_dc;
 	/**Bitmap where the result of drawing is stored*/
 	wxBitmap *m_bmp;
-
-        /** Return short localized week day name. */
-        wxString GetShortDayName(wxDateTime::WeekDay day);
 
 	/**@return font for text drawing*/
 	virtual wxFont GetFont() const;

@@ -53,6 +53,8 @@ public:
 	/**Start edition of a param*/
 	int Edit(DefinedParam * param);
 
+	int View(DefinedParam * param);
+
 	/**Starts new parameter*/
 	int StartNewParameter();
 
@@ -121,6 +123,8 @@ private:
 	void OnIdle(wxIdleEvent &e);
 
 	void ApplyModifications();
+
+	void TransferToWindow(DefinedParam *param);
 
 	CodeEditor *m_formula_input;
 

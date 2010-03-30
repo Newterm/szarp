@@ -37,4 +37,9 @@ struct SeasonLimit {
 
 std::vector<SeasonLimit> get_season_limits_indexes(DrawsSets *ipk, Draw* draw);
 
+wxString get_date_string(PeriodType, const wxDateTime &time);
+
+wxString get_short_day_name(wxDateTime::WeekDay day);
+
+
 #endif

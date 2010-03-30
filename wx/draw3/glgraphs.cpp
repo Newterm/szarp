@@ -1207,28 +1207,8 @@ void GLGraphs::DrawXAxisVals(Draw *draw) {
 		wxDateTime date = draw->GetTimeOfIndex(i);
 	
 		/* Print date */
-		wxString datestring;
+		wxString datestring = get_date_string(draw->GetPeriod(), date);
 
-		switch (draw->GetPeriod()) {
-			case PERIOD_T_YEAR:
-				datestring = wxString::Format(_T("%02d"), date.GetMonth() + 1);
-				break;
-			case PERIOD_T_MONTH:
-				datestring = wxString::Format(_T("%02d"), date.GetDay());
-				break;
-			case PERIOD_T_WEEK:
-				datestring = GetShortDayName(date.GetWeekDay());
-				break;
-			case PERIOD_T_DAY:
-				datestring = wxString::Format(_T("%02d"), date.GetHour());
-				break;
-			case PERIOD_T_SEASON :
-				datestring = wxString::Format(_T("%02d"), date.GetWeekOfYear());
-				break;
-			default:
-				break;
-		}
-	
 		glPushMatrix();
 		{
 			FTBBox bbox = _font->BBox(datestring.c_str()); float width = bbox.Upper().Xf() - bbox.Lower().Xf();
@@ -1376,22 +1356,6 @@ void GLGraphs::DrawShortNames() {
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-
-wxString GLGraphs::GetShortDayName(wxDateTime::WeekDay day)
-{
-    switch (day) {
-	case 0 : return _("Su");
-	case 1 : return _("Mo");
-	case 2 : return _("Tu");
-	case 3 : return _("We");
-	case 4 : return _("Th");
-	case 5 : return _("Fr");
-	case 6 : return _("Sa");
-	default :
-		 break;
-    }
-    return _T("?");
-}
 
 void GLGraphs::DrawSeasonLimitInfo(Draw *d, int i, int month, int day, bool summer) {
 

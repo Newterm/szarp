@@ -133,6 +133,10 @@ public:
 
 	void OpenParameterDoc(int i = -1);	
 
+	void ShowDefinedParamDoc(DefinedParam *param);
+
+	void GoToWWWDocumentation(DrawInfo* d);
+
 	virtual void DrawInfoChanged(Draw *draw);
 
 	virtual void PeriodChanged(Draw *draw, PeriodType period);

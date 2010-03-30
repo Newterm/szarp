@@ -55,6 +55,7 @@
 #include "defcfg.h"
 #include "paredit.h"
 #include "seldraw.h"
+#include "paredit.h"
 
 //IMPLEMENT_DYNAMIC_CLASS(SelectDrawValidator, wxValidator)
 
@@ -376,16 +377,13 @@ void SelectDrawWidget::OnDocs(wxCommandEvent &event) {
 	OpenParameterDoc(i);
 }
 
-void SelectDrawWidget::OpenParameterDoc(int i) {
-	DrawInfo* d;
-	if (i == -1)
-		d = m_draws_wdg->GetCurrentDrawInfo();
-	else
-		d = m_draws_wdg->GetDrawInfo(i);
+void SelectDrawWidget::ShowDefinedParamDoc(DefinedParam *param) {
+	ParamEdit* pe = new ParamEdit(this, m_cfg, m_dbmgr);
+	pe->View(param);
+	delete pe;
+}
 
-	if (d == NULL)
-		return;
-
+void SelectDrawWidget::GoToWWWDocumentation(DrawInfo *d) {
 	TParam *p = d->GetParam()->GetIPKParam();
 	TSzarpConfig* sc = p->GetSzarpConfig();
 
@@ -398,9 +396,6 @@ void SelectDrawWidget::OpenParameterDoc(int i) {
 	link << _T("prefix=") << d->GetBasePrefix().c_str();
 
 	link << _T("&param=") << encode_string(p->GetName().c_str());
-
-	wxString username, password;
-
 
 	TUnit* u;
 	if ((u = p->GetParentUnit())) {
@@ -421,6 +416,23 @@ void SelectDrawWidget::OpenParameterDoc(int i) {
 #endif
 		wxMessageBox(_("I was not able to start default browser"), _("Error"), wxICON_ERROR | wxOK, this);
 
+
+}
+
+void SelectDrawWidget::OpenParameterDoc(int i) {
+	DrawInfo* d;
+	if (i == -1)
+		d = m_draws_wdg->GetCurrentDrawInfo();
+	else
+		d = m_draws_wdg->GetDrawInfo(i);
+
+	if (d == NULL)
+		return;
+
+	if (DefinedParam* dp = dynamic_cast<DefinedParam*>(d->GetParam()))
+		ShowDefinedParamDoc(dp);
+	else 
+		GoToWWWDocumentation(d);
 }
 
 void SelectDrawWidget::NoData(Draw *d) {

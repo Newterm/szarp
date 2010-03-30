@@ -744,22 +744,21 @@ void DrawsController::Set(PeriodType period_type) {
 
 	m_double_cursor = false;
 
-	DTime start_time;
 	if (m_state == DISPLAY)
-		start_time = m_time_reference.Adjust(period_type, m_current_time);
+		m_time_to_go = m_time_reference.Adjust(period_type, m_current_time);
 	else
-		start_time = m_time_reference.Adjust(period_type, m_time_to_go);
+		m_time_to_go = m_time_reference.Adjust(period_type, m_time_to_go);
 
 	m_current_time = DTime();
 	m_current_index = -1;
 
 	for (size_t i = 0; i < m_draws.size(); i++)
-		m_draws.at(i)->SetPeriod(start_time, GetNumberOfValues(period_type));
+		m_draws.at(i)->SetPeriod(m_time_to_go, GetNumberOfValues(period_type));
 
 	for (int i = 0; i < m_active_draws_count; i++)
 		m_observers.NotifyPeriodChanged(m_draws[i], period_type);
 
-	EnterSearchState(SEARCH_BOTH, start_time, DTime());
+	EnterSearchState(SEARCH_BOTH, m_time_to_go, DTime());
 
 }
 

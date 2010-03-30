@@ -323,37 +323,8 @@ void GCDCGraphs::DrawXAxisVals(wxGraphicsContext& dc) {
 		wxDateTime date = draw->GetTimeOfIndex(i);
 	
 		/* Print date */
-		wxString datestring;
+		wxString datestring = get_date_string(draw->GetPeriod(), date);
 
-		switch (draw->GetPeriod()) {
-			case PERIOD_T_YEAR :
-				datestring = wxString::Format(_T("%02d"), date.GetMonth() + 1);
-				break;
-			case PERIOD_T_MONTH :
-				datestring = wxString::Format(_T("%02d"), date.GetDay());
-				break;
-			case PERIOD_T_WEEK :
-				switch (date.GetWeekDay()) {
-					case 0 : datestring = _("Su"); break;
-					case 1 : datestring = _("Mo"); break;
-					case 2 : datestring = _("Tu"); break;
-					case 3 : datestring = _("We"); break;
-					case 4 : datestring = _("Th"); break;
-					case 5 : datestring = _("Fr"); break;
-					case 6 : datestring = _("Sa"); break;
-					default : break;
-				}
-				break;
-			case PERIOD_T_DAY :
-				datestring = wxString::Format(_T("%02d"), date.GetHour());
-				break;
-			case PERIOD_T_SEASON :
-				datestring = wxString::Format(_T("%02d"), date.GetWeekOfYear());
-				break;
-			default:
-				break;
-		}
-	
 		double textw, texth, td, tel;
 
 		dc.GetTextExtent(datestring, &textw, &texth, &td, &tel);

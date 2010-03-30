@@ -175,6 +175,11 @@ void ParamEdit::Close() {
 
 void ParamEdit::OnOK(wxCommandEvent &e) {
 
+	if (m_edited_param == NULL && m_creating_new == false) {
+		EndModal(wxID_OK);
+		return;
+	}
+
 	if (m_formula_input->GetText().Trim().IsEmpty()) {
 		wxMessageBox(_("You must provide a formula."), _("Formula missing."), 
 			     wxOK | wxICON_ERROR, this);
@@ -227,12 +232,8 @@ void ParamEdit::OnCancel(wxCommandEvent & event) {
 	}
 }
 
-int ParamEdit::Edit(DefinedParam * param)
-{
-	m_edited_param = param;
+void ParamEdit::TransferToWindow(DefinedParam *param) {
 	DrawsSets *ds = m_cfg_mgr->GetConfigByPrefix(param->GetBasePrefix());
-
-	m_base_prefix = param->GetBasePrefix();
 
 	m_button_base_config->SetLabel(ds->GetID());
 	m_prec_spin->SetValue(param->GetPrec());
@@ -259,6 +260,16 @@ int ParamEdit::Edit(DefinedParam * param)
 		m_spin_ctrl_start_minutes->Enable(true);
 	}
 
+}
+
+int ParamEdit::Edit(DefinedParam * param)
+{
+	TransferToWindow(param);
+
+	m_edited_param = param;
+
+	m_base_prefix = param->GetBasePrefix();
+
 	m_creating_new = false;
 
 	m_button_base_config->Disable();
@@ -269,6 +280,51 @@ int ParamEdit::Edit(DefinedParam * param)
 
 	return ret;
 }
+
+int ParamEdit::View(DefinedParam * param)
+{
+	m_edited_param = NULL;
+	m_creating_new = false;
+
+	TransferToWindow(param);
+
+	m_button_base_config->Enable(false);
+	m_prec_spin->Enable(false);
+ 	m_formula_input->Enable(false);
+	m_user_param_label->Enable(false);
+	m_param_name_input->Enable(false);
+	m_unit_input->Enable(false);
+	m_formula_type_choice->Enable(false);
+	
+	m_spin_ctrl_start_minutes->Enable(false);
+	m_spin_ctrl_start_hours->Enable(false);
+	
+	m_datepicker_ctrl_start_date->Enable(false);
+	m_checkbox_start->Enable(false);
+		
+	m_datepicker_ctrl_start_date->Enable(false);
+	m_spin_ctrl_start_hours->Enable(false);
+	m_spin_ctrl_start_minutes->Enable(false);
+
+	m_button_base_config->Disable();
+
+	wxSizer *main_sizer = GetSizer();
+	wxSizer *buttons_sizer = m_button_formula_redo->GetContainingSizer();
+	main_sizer->Show(buttons_sizer, false, true);
+
+	wxWindow *cancel_button = FindWindow(wxID_CANCEL); 
+	wxSizer *button_sizer = cancel_button->GetContainingSizer();
+	button_sizer->Show(cancel_button, false, true);
+	button_sizer->Layout();
+
+	m_formula_input->SetReadOnly(true);
+
+	main_sizer->Layout();
+
+	return ShowModal();
+
+}
+
 
 void ParamEdit::Cancel() {
 	EndModal(wxID_CANCEL);

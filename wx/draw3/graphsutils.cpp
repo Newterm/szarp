@@ -110,3 +110,41 @@ std::vector<SeasonLimit> get_season_limits_indexes(DrawsSets *ds, Draw* draw) {
 	return ret;
 }
 
+wxString get_short_day_name(wxDateTime::WeekDay day) {
+    switch (day) {
+	case 0 : return _("Su");
+	case 1 : return _("Mo");
+	case 2 : return _("Tu");
+	case 3 : return _("We");
+	case 4 : return _("Th");
+	case 5 : return _("Fr");
+	case 6 : return _("Sa");
+	default :
+		 break;
+    }
+    return _T("?");
+}
+
+wxString get_date_string(PeriodType period, const wxDateTime &date) {
+	wxString ret;
+	switch (period) {
+		case PERIOD_T_YEAR :
+			ret = wxString::Format(_T("%02d"), date.GetMonth() + 1);
+			break;
+		case PERIOD_T_MONTH :
+			ret = wxString::Format(_T("%02d"), date.GetDay());
+			break;
+		case PERIOD_T_WEEK :
+			ret = get_short_day_name(date.GetWeekDay());
+			break;
+		case PERIOD_T_DAY :
+			ret = wxString::Format(_T("%02d"), date.GetHour());
+			break;
+		case PERIOD_T_SEASON :
+			ret = wxString::Format(_T("%02d"), date.GetWeekOfYear());
+			break;
+		default:
+			break;
+	}
+	return ret;
+}

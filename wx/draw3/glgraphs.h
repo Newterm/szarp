@@ -141,8 +141,6 @@ class GLGraphs : public wxGLCanvas, public DrawGraphs, public SetInfoDropReceive
 
 	bool AlternateColor(Draw *d, int idx);
 
-        wxString GetShortDayName(wxDateTime::WeekDay day);
-
 	void DrawSeasonLimitInfo(Draw *d, int i, int month, int day, bool summer);
 
 	void DrawSeasonLimits();

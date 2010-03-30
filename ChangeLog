@@ -1,5 +1,14 @@
 $Id$
 
+2010-03-30	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* wx/draw3: when 'parameter documentation' is
+	clicked on user defined param, we simply show
+	this parameter formula instead of directing
+	user to nonexistent documentation on the web;
+	one corner case bug fixed (found by observing how draw3
+	behaves when database thread is shut down and user starts
+	sitching sets and average types); some more of common
+	drawing code moved to graphsutils.cpp
 2010-03-29	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
 	* wx/draw3: draw3 periodically checks if version
 	that is running is older that the one installed
