@@ -1,6 +1,7 @@
 $Id$
 
 2010-03-31	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* libSzarp2/szbase/loptdatablock.cc: one more cache fix...
 	* libSzarp2/szbase/loptdatablock.cc: some values
 	that should not yet be cached were wrongly classified
 	as cacheable (this bug only affected lua optimized

@@ -1288,7 +1288,7 @@ double ExecutionEngine::Value(size_t param_index, const double& time_, const dou
 		BlockListEntry& block = GetBlock(param_index, time);
 		if (block.block) {
 			int probe_index  = (time - block.start) / SZBASE_PROBE;
-			if (block.block->GetFixedProbesCount() < probe_index)
+			if (block.block->GetFixedProbesCount() <= probe_index)
 				m_fixed = false;
 			ret = block.block->GetData(false)[probe_index];
 		} else {
