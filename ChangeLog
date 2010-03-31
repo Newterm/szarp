@@ -1,6 +1,12 @@
 $Id$
 
 2010-03-31	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* libSzarp2/szbase/loptdatablock.cc: when deciding
+	if a block should be refreshed, we check for change 
+	of meaner last update time in any of buffers referred 
+	by this block, so far we checked only the block's
+	parent buffer, what is not sufficient in case 
+	of formulas that take data from multiple configurations
 	* libSzarp2/szbase/loptdatablock.cc: one more cache fix...
 	* libSzarp2/szbase/loptdatablock.cc: some values
 	that should not yet be cached were wrongly classified

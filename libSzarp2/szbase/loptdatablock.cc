@@ -15,7 +15,7 @@
 
 #include <boost/make_shared.hpp>
 
-#define LUA_OPTIMIZER_DEBUG
+//#define LUA_OPTIMIZER_DEBUG
 
 #ifdef LUA_OPTIMIZER_DEBUG
 #include <fstream>
@@ -1095,6 +1095,7 @@ ParRefRef ParamConverter::GetParamRef(const std::wstring param_name) {
 	pr.m_param = bp.second;
 	pr.m_param_index = pi;
 	m_param->m_par_refs.push_back(pr);
+	m_param->m_last_update_times[bp.first] = -1;
 
 	return ParRefRef(&m_param->m_par_refs, pi);
 }
@@ -1291,6 +1292,13 @@ double ExecutionEngine::Value(size_t param_index, const double& time_, const dou
 			if (block.block->GetFixedProbesCount() <= probe_index)
 				m_fixed = false;
 			ret = block.block->GetData(false)[probe_index];
+#ifdef LUA_OPTIMIZER_DEBUG
+			if (std::isnan(ret) && m_fixed) {
+				lua_opt_debug_stream << "Lua opt - fixed no data value, probe_index: " << probe_index << std::endl;
+				lua_opt_debug_stream << "from param: " << SC::S2A(block.block->param->GetName()) << std::endl;
+				lua_opt_debug_stream << "root dir: " << SC::S2A(block.block->buffer->rootdir) << std::endl;
+			}
+#endif
 		} else {
 			m_fixed = false;
 			ret = nan("");
@@ -1372,8 +1380,21 @@ void LuaOptDatablock::Refresh() {
 	if (first_non_fixed_probe == max_probes)
 		return;
 
-	time_t updatetime = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
-	if (last_update_time == updatetime)
+	bool refresh = false;
+	for (std::map<szb_buffer_t*, time_t>::iterator i = exec_param->m_last_update_times.begin();
+			i != exec_param->m_last_update_times.end();
+			i++) {
+		time_t meaner_time = szb_round_time(i->first->GetMeanerDate(), PT_MIN10, 0);
+		time_t& update_time = i->second;
+		if (i->first == buffer)
+			last_update_time = meaner_time;
+		if (update_time != meaner_time) {
+			update_time = meaner_time;
+			refresh = true;
+		}
+	}
+	
+	if (!refresh)
 		return;
 
 	time_t end_date = szb_search_last(buffer, param);

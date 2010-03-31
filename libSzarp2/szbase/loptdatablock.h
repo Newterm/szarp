@@ -87,6 +87,7 @@ public:
 	bool m_optimized;
 	std::vector<Var> m_vars;
 	std::vector<ParamRef> m_par_refs;
+	std::map<szb_buffer_t*, time_t> m_last_update_times;
 	PStatement m_statement;
 };
 
