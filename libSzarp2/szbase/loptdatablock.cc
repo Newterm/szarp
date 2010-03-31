@@ -1353,18 +1353,18 @@ LuaOptDatablock::LuaOptDatablock(szb_buffer_t * b, TParam * p, int y, int m) : L
 
 void LuaOptDatablock::CalculateValues(LuaExec::ExecutionEngine *ee, int end_probe) {
 	time_t t = probe2time(first_non_fixed_probe, year, month);
-	bool fixed = true;
 
 	for (int i = first_non_fixed_probe; i < end_probe; i++, t += SZBASE_PROBE) {
 		bool probe_fixed = true;
-		ee->CalculateValue(t, data[i], fixed);
+		ee->CalculateValue(t, data[i], probe_fixed);
 		if (!std::isnan(data[i])) {
 			last_data_probe_index = i;
 			if (first_data_probe_index < 0)
 				first_data_probe_index = i;
 		}
-		if (fixed && probe_fixed)
-			first_non_fixed_probe += 1;
+		if (probe_fixed && first_non_fixed_probe == i)
+			first_non_fixed_probe = i + 1;
+		
 	}
 }
 

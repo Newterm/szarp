@@ -118,6 +118,8 @@ public:
 	 */
 	void OnEdit(wxCommandEvent &evt);
 
+	void OnEditSetAsNew(wxCommandEvent &evt);
+
 	void OnImportSet(wxCommandEvent &event);
 
 	void OnExportSet(wxCommandEvent &event);

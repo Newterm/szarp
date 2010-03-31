@@ -1,5 +1,14 @@
 $Id$
 
+2010-03-31	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* libSzarp2/szbase/loptdatablock.cc: some values
+	that should not yet be cached were wrongly classified
+	as cacheable (this bug only affected lua optimized
+	paramters)
+	* wx/draw3: small new feature 'edit as new defined' - 
+	when this option is choosen current set is 
+	converted to user defined set and dialog for
+	editing this newly cereated set pops up
 2010-03-30	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
 	* wx/draw3: documentation link defaults to http://szarp.com
 	* wx/draw3: when 'parameter documentation' is

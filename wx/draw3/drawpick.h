@@ -167,6 +167,8 @@ public:
 
 	int EditDraw(DefinedDrawInfo *di, wxString prefix);
 
+	int EditAsNew(DrawSet *set, wxString prefix);
+
 	int EditSet(DefinedDrawSet *set, wxString prefix);
 		/** Starts editing of new window. 
 		 * @param prefix - prefix, of start base
@@ -197,6 +199,8 @@ public:
 
 		/** Sets color name database */
 	void SetColorNames();
+
+	wxString GetUniqueTitle(wxString user_title);
 
 	bool FindTitle(wxString& user_title);
 		/** Saves user data and cretates new configuration (@see CreateConfig()) if necessary

@@ -664,11 +664,8 @@ void DrawPicker::ConfigurationWasReloaded(wxString prefix) {
 	RefreshData(false);
 }
 
-bool DrawPicker::FindTitle(wxString& user_title) {
+wxString DrawPicker::GetUniqueTitle(wxString user_title) {
 	DefinedDrawsSets *dds = m_config_mgr->GetDefinedDrawsSets();
-
-	if (dds->GetRawDrawsSets()[user_title] == NULL) 
-		return true;
 
 	wxString suggested_title;
 	int nr = 2;
@@ -677,7 +674,17 @@ bool DrawPicker::FindTitle(wxString& user_title) {
 		if (dds->GetRawDrawsSets()[suggested_title] == NULL)
 			break;
 	}
+	return suggested_title;
 
+}
+
+bool DrawPicker::FindTitle(wxString& user_title) {
+	DefinedDrawsSets *dds = m_config_mgr->GetDefinedDrawsSets();
+
+	if (dds->GetRawDrawsSets()[user_title] == NULL) 
+		return true;
+
+	wxString suggested_title = GetUniqueTitle(user_title);
 	wxString message = wxString::Format(
 			_("The set with given name '%s' already exists.\nWould you like to use name '%s' instead?\n"
 			"If you don't want to use suggested name, choose No and provide different title."), 
@@ -796,6 +803,47 @@ int DrawPicker::EditDraw(DefinedDrawInfo *di, wxString prefix) {
 
 wxString DrawPicker::GetNewSetName() {
 	return m_created_set_name;
+}
+
+int DrawPicker::EditAsNew(DrawSet *set, wxString prefix) {
+	m_editing_existing = false;
+
+	m_modified = true;
+
+	m_prefix = prefix;
+
+	Clear();
+
+	DefinedDrawsSets *c = m_config_mgr->GetDefinedDrawsSets();
+	m_defined_set = new DefinedDrawSet(c);
+
+	for (DrawInfoArray::iterator i = set->GetDraws()->begin();
+			i != set->GetDraws()->end();
+			i++) {
+		if (DefinedDrawInfo* d = dynamic_cast<DefinedDrawInfo*>(*i))
+			m_defined_set->Add(new DefinedDrawInfo(*d));
+		else
+			m_defined_set->Add(*i);
+	}
+
+	wxString cn = m_config_mgr->GetConfigByPrefix(prefix)->GetID();
+
+	if (m_inc_search == NULL)
+		m_inc_search = new IncSearch(m_config_mgr, cn, static_cast<wxWindow*>(this), incsearch_DIALOG, _("Find"), false, false, true, m_database_manager);
+	else
+		m_inc_search->SetConfigName(cn);
+
+	wxString title = set->GetName();
+	if (!title.size() || title[0] != L'*')
+		title = L"*" + title;
+	title = GetUniqueTitle(title);
+	m_title_input->SetValue(title) ;
+	SetTitle(_("Editing parameter set ") + title);
+
+	RefreshData();
+
+	return ShowModal();
+
 }
 
 int DrawPicker::EditSet(DefinedDrawSet *set, wxString prefix) {

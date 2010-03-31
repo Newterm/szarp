@@ -202,6 +202,16 @@ void DrawFrame::OnEdit(wxCommandEvent & event)
 
 }
 
+void DrawFrame::OnEditSetAsNew(wxCommandEvent &e) {
+	DrawPicker *dp = new DrawPicker(this, config_manager, database_manager);
+	if (dp->EditAsNew(draw_panel->GetSelectedSet(), draw_panel->GetPrefix()) == wxID_OK) {
+		DrawsSets* dss = config_manager->GetConfigByPrefix(draw_panel->GetPrefix());
+		DrawSet* ds = dss->GetDrawsSets()[dp->GetNewSetName()];
+		draw_panel->SelectSet(ds);
+	}
+	dp->Destroy();
+}
+
 void DrawFrame::OnImportSet(wxCommandEvent &event) {
 	config_manager->ImportSet();
 }
@@ -1139,6 +1149,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("SetParams"), DrawFrame::OnSetParams)
     EVT_MENU(XRCID("ClearCache"), DrawFrame::OnClearCache)
     EVT_MENU(XRCID("EditSet"), DrawFrame::OnEdit)
+    EVT_MENU(XRCID("EditAsNew"), DrawFrame::OnEditSetAsNew)
     EVT_MENU(XRCID("ImportSet"), DrawFrame::OnImportSet)
     EVT_MENU(XRCID("ExportSet"), DrawFrame::OnExportSet)
     EVT_MENU(XRCID("DelSet"), DrawFrame::OnDel)
