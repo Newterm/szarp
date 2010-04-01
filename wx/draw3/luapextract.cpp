@@ -18,6 +18,8 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
+#ifdef LUA_PARAM_OPTIMISE
+
 #include <boost/variant.hpp>
 
 #include "szbase/lua_syntax.h"
@@ -366,4 +368,6 @@ void expression_extractor::operator() (const expression& e) const {
 				extract_concat(k->get<1>());
 		}
 }
+
+#endif /* ifdef LUA_PARAM_OPTIMISE */
 

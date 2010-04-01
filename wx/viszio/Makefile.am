@@ -14,7 +14,7 @@ INCLUDES = @WX_CXXFLAGS@ @XML_CFLAGS@ @CURL_CFLAGS@ @LUA_CFLAGS@ @BOOST_CPPFLAGS
 	-I@srcdir@/../../libSzarp2/include \
         -I@srcdir@/../../include \
 	-I@srcdir@/../common \
-	-DPREFIX=\"@prefix@\" \	
+	-DPREFIX=\"@prefix@\" \
 	-DWNCK_I_KNOW_THIS_IS_UNSTABLE
 
 
