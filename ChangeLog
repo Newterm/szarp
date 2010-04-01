@@ -1,6 +1,9 @@
 $Id$
 
 2010-04-01	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/draw/*: fixed compilation with lua parameters optimiser disabled.
+	* wx/viszio/Makefile.am: typo fix.
+	* configure.in: fixed parsing of --enable-lua-param-optimiser option.
 	* parcook/ddedmn.cc: less strict parsing of dde return strings.
 	* parcook/mbdmn.cc: fix in modbus 0x04 function name, fixes in
 	configuration example.
@@ -76,7 +79,7 @@ $Id$
 	are properly refreshed
 	* libSzarp2: lua param optimiser - more fixes
 	* libSzarp2: lua param optimiser: support for
-	in_season function added, optimized parameters 
+	in_season function added, optimized parameters
 	may now refer to any moment in time, some bug fixes
 2010-03-15      Darek Marcinkiewicz <reksio@dalkiaterm.pl>
 	* parcook/parcook.cc: small simplification
@@ -150,7 +153,7 @@ $Id$
 	* wx/draw3: two fixes: draws enabling/disabling was reported
 	twice to 'observers', first notification was happening when
 	controller was in inconsistent state what might result in assert
-	upon set change; program does not crash when configuration is reloded
+	upon set change; program does not crash when configuration is reloaded
 	and new version of configuration has currently selected set
 	renamed/removed
 2010-03-01      Darek Marcinkiewicz <reksio@daliaterm.pl>

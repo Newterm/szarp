@@ -6,6 +6,22 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.385
+# 01.04.2010
+
+* New features in draw3 program: editing currect draws' set as defined set, 
+importing and exporting draws' sets, showing "documentation" of user-defined
+parameters, checking if newer draw3 version is already installed.
+* Optimiser for Lua parameters - if parameter is enough "simple", it is parsed
+by internal SZARP engine and calculated without need of evaluating it by Lua 
+interpreter. The effect is, that Lua optimised parameters are event faster then
+traditional RPN parameters.
+* Parcook daemon correctly calculates average values for "combined" parameters, 
+without errors resulting from separate averaging of less- and more- significant
+words.
+* Fixes in new Modbus daemon serial mode transmit timeouts handling.
+* Many bug fixes.
+
 ** 3.1.332
 # 02.03.2010
 

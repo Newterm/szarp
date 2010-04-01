@@ -8,6 +8,25 @@
 # Puste linie s± ignorowane.
 # $Id$
 
+** 3.1.385
+# 01.04.2010
+
+* Nowe funkcje w programie przegl±daj±cym: edycja aktualnego zestawu wykresów
+jako zestawu definiowalnego, wy¶wietlanie "dokumentacji" parametrów 
+u¿ytkownika, sprawdzanie czy nie zosta³a zainstalowana nowsze wersja programu.
+* Optymalizator dla parametrów w jêzyku skryptowym Lua - je¿eli parameter jest
+wystarczaj±co "prosty", jest przetwarzany bezpo¶rednio przez SZARP, bez 
+odwo³ywania siê do interpretera jêzyka Lua. W efekcie zoptymalizowane parametry
+Lua obliczane s± nawet szybciej, ni¿ tradycyjne parametry zapisane jako formu³y
+RPN.
+* Program parcook poprawnie wylicza ¶rednie z parametrów "sklejanych" - 
+dotychczas przy parametrach o silnie zmiennych warto¶ciach mog³y pojawiaæ siê 
+b³êdy wynikaj±ce z oddzielnego u¶redniania warto¶ci bardziej- i mniej- 
+znacz±cego s³owa warto¶ci z³o¿onej.
+* Poprawki w zale¿no¶ciach czasowych nowego sterownika protoko³u Modbus, w 
+obs³udze po³±czeñ szeregowych.
+* Wiele innych drobnych poprawek.
+
 ** 3.1.332
 # 02.03.2010
 * Protokó³ synchronizatora zosta³ rozbudowany tak by efektywniej obs³ugiwaæ
