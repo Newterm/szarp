@@ -1,5 +1,9 @@
 $Id$
 
+2010-04-01	Pawel Palucha <pawel@praterm.com.pl>
+	* parcook/ddedmn.cc: less strict parsing of dde return strings.
+	* parcook/mbdmn.cc: fix in modbus 0x04 function name, fixes in
+	configuration example.
 2010-03-31	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
 	* libSzarp2/szbase/loptdatablock.cc: when deciding
 	if a block should be refreshed, we check for change 

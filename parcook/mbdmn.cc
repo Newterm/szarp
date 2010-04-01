@@ -27,9 +27,9 @@
  * ...
  * <device 
  *      xmlns:modbus="http://www.praterm.com.pl/SZARP/ipk-extra"
- *      daemon="/opt/szarp/bin/mbtcpdmn" 
- *      path="/dev/ttyA11"
- *      modbus:daemon'mode=
+ *      daemon="/opt/szarp/bin/mbdmn" 
+ *      path="/dev/null"
+ *      modbus:daemon-mode=
  		allowed modes are 'tcp-server' and 'tcp-client' and 'serial-client' and 'serial-server'
  *      modbud:tcp-port="502"
 		TCP port we are listenning on/connecting to (server/client)
@@ -156,7 +156,7 @@ const unsigned char MB_GATEWAY_TARGET_DEVICE_FAILED_TO_RESPOND  = 0x0B;
 
 /** Modbus public function codes. */
 const unsigned char MB_F_RHR = 0x03;		/* Read Holding registers */
-const unsigned char MB_F_RIR = 0x04;		/* Read Holding registers */
+const unsigned char MB_F_RIR = 0x04;		/* Read Input registers */
 const unsigned char MB_F_WSR = 0x06;		/* Write single register */
 const unsigned char MB_F_WMR = 0x10;		/* Write multiple registers */
 

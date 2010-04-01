@@ -391,8 +391,8 @@ template <typename T> bool DDEDaemon::ConvertValue(XMLRPC_VALUE i, const std::st
 			}
 			free(copy);
 			if (*err != '\0') {
-				dolog(1, "Invalid value received for topic: %s, item: %s - %s (*err is %d, %s, %s)", topic.c_str(), item.c_str(), s, *err, copy, err);
-				return false;
+				dolog(1, "possible invalid value received for topic: %s, item: %s: %s", 
+						topic.c_str(), item.c_str(), s);
 			}
 			break;
 		default:
