@@ -19,20 +19,37 @@
  * RSDMN 1.5 - new generation of SZARP RS deamon.
  * <reksio@praterm.com.pl>
  * Significant part of the code through courtesy of tcpdmn.cc
- * and rsdmn.c
- *
- * For usage instruction use '--help' option. For configuration details
- * see dmncfg.h file; one extra attribute is provided by this daemon - 
- * extra:speed attribute for unit element sets special serial port
- * communication speed for given unit. In the following example, default speed
- * is set to 19200 bps, but speed for unit 2 is 9600 bps:
- * <device ... speed="19200">
- *  <unit id="1" .../>
- *  <unit id="2" ... xmlns:extra="http://www.praterm.com.pl/SZARP/ipk-extra" 
- * 	extra:speed=9600" ... />
- *
+ * and rsdmn.
  * $Id$
  */
+
+/*
+ SZARP daemon description block.
+
+ @descripion_start
+
+ @class 4
+
+ @devices Z-Elektronik PLC, Sterkom SK-2000 PLC, Sterkom SK-4000 PLC.
+
+ @protocol Z-Elektronik.
+ 
+ @config For usage instruction use '--help' option. For configuration details
+ see dmncfg.h file; one extra attribute is provided by this daemon - 
+ extra:speed attribute for unit element sets special serial port
+ communication speed for given unit. In the following example, default speed is set to 19200 bps, 
+ but speed for unit 2 is 9600 bps.
+
+ @config_example 
+ <device ... speed="19200">
+ <unit id="1" .../>
+ <unit id="2" ... xmlns:extra="http://www.praterm.com.pl/SZARP/ipk-extra" 
+ 	extra:speed=9600" ... />
+ ...
+
+ @description_end
+
+*/
 
 #include <sys/types.h>
 #include <fcntl.h>

@@ -1,5 +1,6 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V4.1//EN" [
 <!ENTITY szarp-info SYSTEM "../common/szarp-info.sgml">
+<!ENTITY daemons SYSTEM "../daemons.sgml">
 ]>
 
 <!--
@@ -6265,6 +6266,36 @@ potem brak danych i od nowa.
 
 
 </chapter> <!-- define -->
+
+<chapter id="daemons">
+<title>Obs³ugiwane urz±dzenia</title>
+<abstract>
+<para>Do komunikacji z urz±dzeniami SZARP wykorzystuje sterowniki, zwane te¿
+ze wzglêdów historycznych <emphasis>demonami linii</emphasis>. Rozdzia³ zawiera
+spis aktualnie dostêpnych w systemie SZARP sterowników. Opisy tworzone s± automatycznie
+na podstawie kodu ¼ród³owego, st±d te¿ nie wszystkie musz± byæ w danej chwili kompletne,
+czê¶æ opisów mo¿e byæ te¿ dostêpna jedynie w jêzyku angielskim.
+</para>
+<para>
+	Specyfikacja w opisie sterownika oznacza zgodno¶æ z dan± klas± specyfikacji, gdzie wy¿szy
+	numer oznacza nowszê klasê.  Poszczególne klasy to:
+<itemizedlist>
+	<listitem><para>4 - sterownik wykorzystuje API DaemonConfig do konfiguracji i IPCHandler
+	do komunikacji z systemem SZARP.</para></listitem>
+	<listitem><para>3 - sterownik nie spe³nia wymagañ klasy 4, ale czyta konfiguracjê wy³±cznie z params.xml
+			(lub linii komend podawanej przez parcooka).</para></listitem>
+	<listitem><para>2 - sterownik nie spe³nia wymagañ klasy 3 (np. wymaga plików konfiguracyjnych
+			w formacie SZARP 2.1, ale korzysta do komunikacji z SZARP, logowania itp. z API 
+			libSzarp.</para></listitem>
+       <listitem><para>1 - sterownik nie spe³nia wymagañ klasy 2, np. we w³asnym zakresie ³±czy siê
+		     do mechanizmów IPC SZARP lub ma w³asny mechanizm logowania.</para></listitem>
+</itemizedlist>
+</para>
+</abstract>
+
+&daemons;
+
+</chapter> <!-- daemons -->
 
 <chapter id="szbase">
 <title>Format bazy SzarpBase</title>

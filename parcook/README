@@ -1,0 +1,41 @@
+All source files int this directory with base name ending in 'dmn' are SZARP
+device drivers (called 'SZARP daemons') source files. This file describes
+specification classes for SZARP daemons and format of daemon description.
+
+** SZARP daemons (drivers) specifications classes. **
+
+Each SZARP daemon conforms two one of specification classes:
+
+1. None - daemon does not conform to any higher specification class. For 
+example it can access IPC segments on its own.
+
+2. Daemon uses libSzarp to access SZARP IPC mechanisms, but does not conforms
+to any higher specification class, for example it reads configuration from
+SZARP 2.1 format configuraion files.
+
+3. Daemon conforms to class 2 and reads configuration entirely from params.xml.
+
+4. Daemon conforms to class 3 and uses DaemonConfig class for reading 
+configuration and IPCHandler to access SZARP IPC mechanisms.
+
+** SZARP daemons description format. **
+
+Description is placed in comment in main daemon source file. It contains 
+commands starting with '@' sign and text content. Text content ends at
+next command. Available commands:
+
+@description_start - marks start of description block
+@description_end - marks end of description block
+@class <number> - specification class that daemon conforms to
+@protocol - protocol name/description that daemon uses to communicate with device
+@devices - description of served devices
+@comment - aditional comment on daemon
+@config - description of daemon configuration
+@config_example - example of daemon configuration
+
+Commands can have '.<language code>' suffix, for content in other language, for 
+example '@comment.pl' marks start of daemon comment in Polish. See setdmn.cc for
+example of specification. Text content encoding should be ISO-8859-2. config_example
+section is generated as CDATA, in other sections you can use docbook tags. Empty
+lines are replaces with </para>\n<para>.
+

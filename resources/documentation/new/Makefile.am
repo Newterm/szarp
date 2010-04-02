@@ -71,10 +71,13 @@ pdf: $(DOCS_A_PDF)
 JADE=@JADE@
 WWWPATH=$(DESTDIR)/var/www/htdocs/serv/howto
 STYLE=../../stylesheet.dsl
-STDDEP=stylesheet.dsl common/szarp-info.sgml common/help.sgml
+STDDEP=stylesheet.dsl common/szarp-info.sgml common/help.sgml daemons.sgml
 SGMLHELP=../../../../script/sgml2hlpctrl.pl
 
 ##### RULES  #####
+
+daemons.sgml: $(wildcard ../../../parcook/*dmn.c?) ../../../script/dmn2sgml.py
+	../../../script/dmn2sgml.py ../../../parcook > $@
 
 %.html: ../%.sgml $(STDDEP) 
 	cd $(dir $<)html; $(JADE) -d $(STYLE)\#html -t sgml -i html ../$(notdir $<)
@@ -119,7 +122,7 @@ install_on_server:
 ##### PHONIES #####
 
 # najmocniejszy clean
-clean: clean_html clean_pdf clean_generated_pics
+clean: clean_html clean_pdf clean_generated_pics clean_daemons
 
 clean_html:
 	for i in $(DOCS) ; do \
@@ -138,3 +141,5 @@ clean_generated_pics:
 		rm -rf $$i/pdf/pics; \
 	done
 
+clean_daemons:
+	rm -f daemons.sgml

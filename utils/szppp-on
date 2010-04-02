@@ -97,30 +97,30 @@ export TELEPHONE ACCOUNT PASSWORD RETRY EXPECT NOPASSWD EXP_PASS
 
 DIALER_SCRIPT=`dirname $0`/szredialer
 
-#exec /usr/sbin/pppd noauth debug lock modem crtscts /dev/modem 57600 \
-#	asyncmap 20A0000 escape FF kdebug 24 $LOCAL_IP:$REMOTE_IP \
-#	noipdefault netmask $NETMASK defaultroute connect $DIALER_SCRIPT
-
 # Uruchamiam w tle i co sekunde sprawdzam, czy nie nawi±zano po³±czenia
 # lub te¿ czy skrypt dzwoni±cy nie zakoñczy³ dzia³ania.
-      /usr/sbin/pppd $LOCAL_IP:$REMOTE_IP \
-      connect $DIALER_SCRIPT &> /dev/null &
+/usr/sbin/pppd \
+	$LOCAL_IP:$REMOTE_IP \
+	connect $DIALER_SCRIPT \
+	disconnect "chat -v '' '~~+++~~ATH0'" \
+	&> /dev/null &
 
-# Nie czekam d³u¿ej ni¿ 3 minuty
+# Nie czekam d³u¿ej ni¿ 30 sekund
 I=1
-while  [ 180 -gt $I ] ; do {
+while  [ 30 -gt $I ] ; do 
     I=$(($I+1))    
     sleep 1s
-    echo `/sbin/ifconfig` | grep "ppp0" &> /dev/null \
-	&& echo "Connect OK" && exit 0 
+    /sbin/ifconfig ppp0 &> /dev/null && echo "Connect OK" && exit 0 
     C=`ps ax | grep "pppd" | grep -v -c  "grep"`
-    [ $C -eq 0 ] && {
+    if [ $C -eq 0 ]; then
     	[ $RETRY -eq 0 ] && echo "Cannot connect" && exit 2 
     	RETRY=$(($RETRY-1))
 	# ¯eby modem mial czas sie zresetowaæ
 	sleep 5
-    }
-}; done
+  	/usr/sbin/pppd $LOCAL_IP:$REMOTE_IP \
+  		connect $DIALER_SCRIPT &> /dev/null &
+	fi
+done
 
 # Na wszelki wypadek zabijam pppd
 killall /usr/sbin/pppd

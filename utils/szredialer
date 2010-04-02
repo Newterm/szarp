@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # SZARP: SCADA software 
 # 
 #
@@ -23,12 +23,13 @@
 # To jest skrypt dzwoni±cy (uzywany przez szppp-on)
 #
 
+#MAX_ATTEMPTS=$(($RETRY+1))
 MAX_ATTEMPTS=1
 SLEEP_DELAY=5s
 
 function initialize
 {
-    /usr/sbin/chat -v TIMEOUT 3 '' AT 'OK-+++\c-OK'
+    /usr/sbin/chat -v TIMEOUT 3 '' '~~+++~~ATH' 'OK' 'ATZ' 'OK'
     return
 }
 
@@ -72,19 +73,13 @@ function callnumber
 }
 
 initialize
-if [ "$?" -ne "0" ]; then
-	sleep 3
-     	initialize
-	if [ "$?" -ne "0" ]; then
-		sleep 1
-		echo "Modem initialization failed"
-		exit 1
-	fi
+if [ ! "$?" = "0" ]; then
+   exit 1
 fi
 
 attempt=0
-while true ; do
-    attempt=$(($attempt + 1))
+while : ; do
+    attempt=`expr $attempt + 1`
     
     callnumber $TELEPHONE
     if [ "$attempt" = "$MAX_ATTEMPTS" ]; then

@@ -15,28 +15,50 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
+
 /*
  * Demon do odczytywania danych generowanych przez zewnêtrzny program.
  * 
  * Pawe³ Pa³ucha <pawel@praterm.com.pl>
  * 
  * $Id$
- * 
- * Konfiguracja w params.xml:
- * ...
- * <device 
- *      xmlns:exec="http://www.praterm.com.pl/SZARP/ipk-extra"
- *      daemon="/opt/szarp/bin/execdmn" 
- *      path="/opt/szarp/bin/..."
- *      	program do uruchomienia
- *      exec:frequency="30"
- *      	co ile sekund uruchamiaæ program, domy¶lnie 10
- *      options="..."
- *      	opcje podawane do programu
- *
- * Logi l±duj± domy¶lnie w /opt/szarp/log/execdmn.
- *
  */
+
+/*
+ SZARP daemon description block.
+
+ @description_start
+
+ @class 4
+
+ @devices Daemon reads and parses standard output of external program.
+ @devices.pl Sterownik czyta wyj¶cie generowane przez zewnêtrzny program.
+
+ @protocol Running program output is parsed as raw parameter values (without precision), one
+ parameter per line.
+ @protocol.pl Sterownik parsuje wyj¶cie uruchamianego programu, spodziewaj±c siê surowych
+ (bez precyzji) warto¶ci kolejnych parametrów w kolejnych liniach.
+
+ @config 'path' attribute of device element in params.xml contains path of program to run. Optional
+ 'frequency' attribute from extra namespace contains number of seconds between program runs (
+ default is 10 seconds). 'options' attribute is splitted on white spaces and passed as options to program.
+
+ @config.pl Atrybut 'path' elementu device w pliku params.xml zawiera ¶cie¿kê do uruchamianego
+ programu. Opcjonalny atrybut 'frequency' z dodatkowej przestrzeni nazw okre¶la co ile sekund uruchamiaæ
+ program (domy¶lnie co 10). Zawarto¶æ atrybutu 'options' jest dzielona na s³owa i przekazywana jako
+ opcje do uruchamianego programu.
+
+ @config_example
+ <device 
+      xmlns:exec="http://www.praterm.com.pl/SZARP/ipk-extra"
+      daemon="/opt/szarp/bin/execdmn" 
+      path="/opt/szarp/bin/some_script"
+      exec:frequency="30"
+      options="--some-option -f some-argument">
+      ...
+
+ @description_end
+*/
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

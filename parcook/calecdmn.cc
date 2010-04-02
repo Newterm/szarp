@@ -17,63 +17,100 @@
 
   Pawel Palucha <pawel@praterm.com.pl>
   $Id$
+*/
 
-  Daemon for Aquametro CALEC MCP-300 heatmeter.
+/*
+
+  Daemon description block.
+
+  @description_start
+
+  @class 4
+
+  @devices Aquametro CALEC MCP-300 heatmeter.
+  @devices.pl Ciep³omierz Aquametro CALEC MCP-300.
+
+  @protocol Calec protocol.
+
   Serial port settings: 9600 8N1
   Wiring: RX, TX, GND
 
   Protocol:
 
   Q: AM
+
   R: OK
+
   Q: R4
+
   R: ACK
-  Q: <AD1,AD2> (register address in MCP format, see below)
-  R: <data> (4 bytes)
-  R: <checksum> (1 byte - lower byte of arithmetic sum of previous 6 bytes, starting from AD1)
+
+  Q: [AD1,AD2] (register address in MCP format, see below)
+
+  R: [data] (4 bytes)
+
+  R: [checksum] (1 byte - lower byte of arithmetic sum of previous 6 bytes, starting from AD1)
 
   MCP address format, R is register address:
+
   AD2 = R & 0xFF
+
   AD1 = ((R >> 8) & 0x07) | ((R & 0x70) << 1)
 
   Data may be:
 
-  fixedpoint: unsigned integer, 7 digits
-  coding: 1111 bbbb  bbbb bbbb  bbbb bbbb 0000 dddd
-  'b' bits code 6 last digits, 'd' bits code first digit, so if E is 4 bytes encoded
-  representation, value is:
+  - fixedpoint: unsigned integer, 7 digits, coding: 1111 bbbb  bbbb bbbb  bbbb bbbb 0000 dddd,
+  'b' bits code 6 last digits, 'd' bits code first digit, so if E is 4 bytes encoded representation, value is:
+
   val = 1000000 * (E & 0x0F) + (E >> 8) & 0xFFFFF
 
-  floating point: 
-  coding: s1mm mmmm  mmmm mmmm  mmmm mmmm  eeee eeee
-  s is sign, 0 - positive, 1 - negative
-  mantisa M = 0.1mmmmmmmmmmmmmmmmmmmmmmmmm
-  E = eeeeeeee : -127 << 127 (signed 7 bytes integer)
-  value = M*2^E
+  - floating point: 
+  coding: s1mm mmmm  mmmm mmmm  mmmm mmmm  eeee eeee,
+  s is sign, 0 - positive, 1 - negative,
+  mantisa M = 0.1mmmmmmmmmmmmmmmmmmmmmmmmm,
+  E = eeeeeeee : -127 << 127 (signed 7 bytes integer),
+  value = M*2^E. 
   If value is negative, 3 first bytes are inverted (bit by bit).
 
   Available registers (value, address, number of bytes, coding, unit):
 
   1	Energy meter		0x2000	4	fixedpoint	10 * MWh
+
   2	Volume meter		0x2040	4	fixedpoint	10 * t
+
   3	Output temperature	0x2080	4	floatingpoint	C degree
+
   4	Return temperature	0x2084	4	floatingpoint	C degree
+
   5	Temperature difference	0x2088	4	floatingpoint	C degree
+
   6	Flow			0x2098	4	floatingpoint	kg/h
+
   7	Power			0x209c	4	floatingpoint	kW
+
   8	Serial number		0x0100	16	ASCII
+
   9	Number of impulses	0x018c	4	floatingpoint	-
 
-  Daemon output 16 values:
+  Daemon outputs 8 values:
 
   1. Energy meter, most significant word, MWh, precision 1
+
   2. Energy meter, less significant word
+
   3. Volume meter, most significant word, t, precision 1
+
   4. Volume meter, less significant word
+
   5. Output temperature, precision 2
+
   6. Return temperature, precision 2
+
   7. Flow, m3/h, precision 2
+
   8. Power, kW, precision 1
+
+  @description_end
 */
 
 

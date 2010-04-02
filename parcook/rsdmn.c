@@ -31,6 +31,25 @@
  * Obsluga libpar 27.05.1998
  */
 
+/*
+ SZARP daemon description block.
+
+ @descripion_start
+
+ @class 2
+
+ @devices Z-Elektronik PLC, Sterkom SK-2000 PLC, Sterkom SK-4000 PLN
+
+ @protocol Z-Elektronik
+
+ @comment This driver is obsolete and not used anymore, replaced by nrsdmn.
+ @comment.pl Ten sterownik jest przestarza³y i nie jest ju¿ u¿ywany. Zosta³ zast±piony przez
+ sterownik nrsdmn.
+
+ @description_end
+
+*/
+
 #define _IPCTOOLS_H_		/* Nie dolaczaj ipctools.h z szarp.h */
 #define _HELP_H_
 #define _ICON_ICON_

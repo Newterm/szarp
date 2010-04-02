@@ -16,43 +16,70 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
-/** 
- * Daemon using XMLRPC to communicate to DDE proxy located at windows server.
- * Launch utils/ddeproxy.py as DDE proxy on Windows machine.
- *
- * This daemon is designed to read data from 2 applications:
- * - InTouch - popular Windows SCADA software (should work with any DDE Server answering for Request
- *   function with text represenation of number values)
- * - MBENET - InTouch driver for Modbus protocol
- * 
- * Configuration in params.xml:
- *
- * <device daemon="/opt/szarp/bin/ddedmn" path="/dev/null" dde:uri="http://192.168.1.1:8080" dde:read_freq="10"
- *     xmlns:dde="http://www.praterm.com.pl/SZARP/ipk-extra" dde:appname="VIEW">
- *   <unit id="1" type="2" subtype="1" bufsize="1">
- *      <param name="Kocio³ 1:DDE:Temperatura wody przed kot³em" short_name="Twe" unit="°C" prec="1" 
- *          dde:topic="Tagname" dde:item="Batch%Conc" dde:type="integer" base_ind="auto">
- *       ....
- *
- * Where:
- * dde:uri is URI of DDE proxy (XMLRPC server)
- * dde:read_freq is polling frequency (in seconds), minimum and default value is 10 seconds
- * dde:appname is DDE application name, default is 'MBENET' for MBENET driver, use 'VIEW' for standard InTouch
- * installation
- * dde:topic is DDE topic, for InTouch it's always 'Tagname', for MBENET use correct value
- * dde:item is DDE item name, for InTouch it's a Tagname of param, for MBENET it's Modbus
- * register address
- * dde:type:
- * - for InTouch use "string" - numbers are passed from InTouch as string and parsed according to parameter
- *   precision; if you need to split large value into 2 parameters, use same topic and id for both parameters
- *   and aditional dde:word="msw" and dde:word="lsw" attributes for  most- and less- significant word.
- * - for MBENET use on of:
- *   - 'integer' - simple one register short integer value (precision dependant)
- *   - 'float' - double precision float, hold in two Modbus registers and saved as two following SZARP
- *   parameters
- *   - 'short_float' - double precision float, hold in two Modbus registers, but copied as one SZARP
- *   parameter
+/*
+ * $Id$
  */
+
+/* 
+ SZARP daemon description block.
+
+ @description_start
+
+ @devices This daemon is designed to read data from 2 applications:
+
+ - Wonderware InTouch - popular Windows SCADA software (should work with any DDE Server answering for Request
+  function with text represenation of number values)
+
+ - MBENET - InTouch driver for Modbus protocol
+
+ @class 4
+
+ @devices.pl Sterownik ten mo¿e s³u¿yæ do odczytu danych z 2 programów:
+
+ - Wonderware InTouch - popularne oprogramowanie SCADA pod Windows (powinno te¿ dzia³aæ z dowolnym
+ innym serwerem DDE, który na ¿±danie Request zwraca tekstow± reprezentacjê warto¶ci parametru)
+
+ - MBENET - sterownik protoko³u Modbus do oprogramowania InTouch
+
+ @protocol Daemon uses XMLRPC protocol to communicate with DDE proxy located at Windows server.
+ @protocol.pl Sterownik wykorzystuje protokó³ XMLRPC do komunikacji z proxy DDE uruchomionym
+ na serwerze Windows.
+
+ @comment Launch utils/ddeproxy.py as DDE proxy on Windows machine.
+ @comment.pl Wymaga uruchomienia na serwerze z Windows skryptu utils/ddeproxy.py, s³u¿±cego jako proxy
+ do komunikacji z protoko³em DDE.
+
+ @config_example
+
+ <device daemon="/opt/szarp/bin/ddedmn" path="/dev/null" dde:uri="http://192.168.1.1:8080" dde:read_freq="10"
+     xmlns:dde="http://www.praterm.com.pl/SZARP/ipk-extra" dde:appname="VIEW">
+   <unit id="1" type="2" subtype="1" bufsize="1">
+      <param name="Kocio³ 1:DDE:Temperatura wody przed kot³em" short_name="Twe" unit="°C" prec="1" 
+          dde:topic="Tagname" dde:item="Batch%Conc" dde:type="integer" base_ind="auto">
+       ....
+
+ Where:
+ dde:uri is URI of DDE proxy (XMLRPC server)
+ dde:read_freq is polling frequency (in seconds), minimum and default value is 10 seconds
+ dde:appname is DDE application name, default is 'MBENET' for MBENET driver, use 'VIEW' for standard InTouch
+ installation
+ dde:topic is DDE topic, for InTouch it's always 'Tagname', for MBENET use correct value
+ dde:item is DDE item name, for InTouch it's a Tagname of param, for MBENET it's Modbus
+ register address
+ dde:type:
+ - for InTouch use "string" - numbers are passed from InTouch as string and parsed according to parameter
+   precision; if you need to split large value into 2 parameters, use same topic and id for both parameters
+   and aditional dde:word="msw" and dde:word="lsw" attributes for  most- and less- significant word.
+ - for MBENET use on of:
+   - 'integer' - simple one register short integer value (precision dependant)
+   - 'float' - double precision float, hold in two Modbus registers and saved as two following SZARP
+   parameters
+   - 'short_float' - double precision float, hold in two Modbus registers, but copied as one SZARP
+   parameter
+
+ @description_end
+
+*/
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

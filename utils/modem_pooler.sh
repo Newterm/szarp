@@ -29,6 +29,12 @@
 
 export PATH=/bin:/usr/bin:/sbin:/usr/sbin
 
+DEBUG=""
+if [ "$1" = "-m" ]; then
+	DEBUG=debug
+	shift
+fi
+
 szpppon='/opt/szarp/bin/szppp-on'
 szpppoff='/opt/szarp/bin/szppp-off'
 rs=`which rsync`
@@ -41,8 +47,8 @@ results=
 
 #checking if /etc/szarp/nocall exist and exit
 nocall=`ls /etc/szarp | grep nocall`
-if [ -n "$nocall" ]; then
-	echo "Do nothing./etc/szarp/nocall exist"
+if [ -z "$DEBUG" -a -n "$nocall" ]; then
+	echo "Do nothing - /etc/szarp/nocall exist"
 	exit
 fi
 
@@ -98,12 +104,29 @@ for base in $*; do
 	done
   
     echo -n "$base: calling($phone) "
-    if $szpppon -l -n $phone ppp >/dev/null 2>/dev/null; then
+    if [ -z $DEBUG ]; then
+	    $szpppon -l -n $phone ppp &>/dev/null
+    else
+	    $szpppon -l -n $phone ppp
+    fi
+    if [ $? -eq 0 ]; then
       echo -n "rsync "
-      $rs $rs_options $szbase_options root@192.168.8.1:/opt/szarp/$base/ /opt/szarp/$base/ >/dev/null 2>/dev/null
+      if [ -z $DEBUG ]; then
+	      $rs $rs_options $szbase_options root@192.168.8.1:/opt/szarp/$base/ /opt/szarp/$base/ &>/dev/null
+      else
+	      $rs $rs_options $szbase_options root@192.168.8.1:/opt/szarp/$base/ /opt/szarp/$base/ 
+      fi
       results[$nr_of_finished_phones]="$?" 
-      ssh root@192.168.8.1 "/usr/sbin/ntpdate -u 192.168.8.8" >/dev/null 2>/dev/null
-      $szpppoff >/dev/null 2>/dev/null
+      if [ -z $DEBUG ]; then
+	      ssh root@192.168.8.1 "/usr/sbin/ntpdate -u 192.168.8.8" &>/dev/null 
+      else
+	      ssh root@192.168.8.1 "/usr/sbin/ntpdate -u 192.168.8.8"
+      fi
+      if [ -z $DEBUG ]; then
+	      $szpppoff &>/dev/null
+      else
+	      $szpppoff
+      fi
       echo "done"
     else
       results[$nr_of_finished_phones]="-5"
