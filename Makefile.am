@@ -50,3 +50,4 @@ winsetup:
 EXTRA_DIST = \
 	     Doxyfile
 
+.PHONY: doxy

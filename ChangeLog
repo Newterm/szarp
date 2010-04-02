@@ -1,5 +1,10 @@
 $Id$
 
+2010-04-02	Pawel Palucha <pawel@praterm.com.pl>
+	* Makefile.am: doxy target made .PHONY, so it is regenerated on every
+	run.
+	* Doxyfile: JAVADOC_AUTOBRIEF enabled to get brief description of
+	classes.
 2010-04-01	Pawel Palucha <pawel@praterm.com.pl>
 	* wx/draw/*: fixed compilation with lua parameters optimiser disabled.
 	* wx/viszio/Makefile.am: typo fix.
