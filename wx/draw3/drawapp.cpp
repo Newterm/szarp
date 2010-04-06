@@ -58,6 +58,9 @@
 #include <shlwapi.h>
 #endif
 
+#ifdef HAVE_GLCANVAS
+#include <wx/glcanvas.h>
+#endif
 
 #include "ids.h"
 #include "classes.h"
@@ -120,6 +123,23 @@ int GL_ATTRIBUTES[] = {
 }
 
 DrawApp::DrawApp() : DrawGLApp() {
+	m_gl_context = NULL;
+}
+
+wxGLContext* DrawApp::GetGLContext() {
+	if (m_gl_context)
+		return m_gl_context;
+
+	if (!m_gl_works)
+		return NULL;
+
+#ifdef HAVE_GLCANVAS
+	GetTopWindow();
+	wxGLCanvas *tcanvas  = new wxGLCanvas(GetTopWindow(), wxID_ANY, GLContextAttribs());
+	m_gl_context = new wxGLContext(tcanvas);
+	tcanvas->Destroy();
+#endif
+	return m_gl_context;
 }
 
 void DrawApp::InitGL() { 
@@ -131,8 +151,7 @@ void DrawApp::InitGL() {
 	wxConfig::Get()->Write(_T("GL_INIT_FAILED"), true);
 #endif
 	wxConfig::Get()->Flush();
-	if (!gl_init_failed && 	// draw3 died during initialization of OpenGL
-			wxConfig::Get()->Read(_T("GRAPHS_VIEW"), _T("Classic")) == _T("3D") ) {
+	if (!gl_init_failed) {
 		if (InitGLVisual(GL_ATTRIBUTES)) {
 			m_gl_context_attribs = GL_ATTRIBUTES;
 			m_gl_works = true;

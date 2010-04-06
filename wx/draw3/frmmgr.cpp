@@ -18,6 +18,8 @@
 */
 #include <utility>
 
+#include <deque>
+
 #include <wx/config.h>
 
 #include "config.h"
@@ -41,8 +43,12 @@
 #include "cfgdlg.h"
 #include "cfgmgr.h"
 #include "defcfg.h"
-#include "xygraph.h"
 #include "dbinquirer.h"
+#include "database.h"
+#include "draw.h"
+#include "xydiag.h"
+#include "xygraph.h"
+#include "xyzgraph.h"
 #include "drawdnd.h"
 #include "statdiag.h"
 
@@ -174,6 +180,12 @@ void FrameManager::CreateXYGraph(wxString prefix) {
 	DrawsSets* config = config_manager->GetConfigByPrefix(prefix);
 
 	new XYFrame(config->GetID(), database_manager, config_manager, this);
+}
+
+void FrameManager::CreateXYZGraph(wxString prefix) {
+	DrawsSets* config = config_manager->GetConfigByPrefix(prefix);
+
+	new XYZFrame(config->GetID(), database_manager, config_manager, this);
 }
 
 void FrameManager::ShowStatDialog(wxString prefix) {

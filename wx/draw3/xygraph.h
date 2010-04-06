@@ -46,80 +46,6 @@
 #include <wx/frame.h>
 #include <wx/grid.h>
 
-#include <boost/tuple/tuple.hpp>
-
-typedef boost::tuple<double, double, std::vector<DTime> > XYPoint;
-
-/**Struct describing parametrs of XY graph*/
-struct XYGraph {
-	/**@see DrawInfo of param drawn on the X axis*/
-	DrawInfo *m_dx;
-
-	/**@see DrawInfo of param drawn on the Y axis*/
-	DrawInfo *m_dy;
-
-	/**Minimum value of x axis*/
-	double m_dxmin;
-	/**Maximum value of x axis*/
-	double m_dxmax;
-
-	/**Minimum value of y axis*/
-	double m_dymin;
-	/**Maximum value of y axis*/
-	double m_dymax;
-
-	/**Minimum value of x-axis param*/
-	double m_xmin;
-	/**Avereage value of x-axis param*/
-	double m_xavg;
-	/**Maximum value of x-axis param*/
-	double m_xmax;
-
-	/**Minimum value of y-axis param*/
-	double m_ymin;
-	/**Avereage value of y-axis param*/
-	double m_yavg;
-	/**Maximum value of y-axis param*/
-	double m_ymax;
-	/**Standard deviation of X*/
-	double x_standard_deviation;
-	/**Standard deviation of Y*/
-	double y_standard_deviation;
-	/**Correlation of x and y*/
-	double m_xy_correlation;
-	/**Rank correlation of x and y*/
-	double m_xy_rank_correlation;
-
-	/**Flag indicates if calculated values were averaged*/
-	bool m_averaged;
-
-	/**Start of time range*/
-	wxDateTime m_start;
-	/**End of time range*/
-	wxDateTime m_end;
-
-	/**Period type of probes fetched from db*/
-	PeriodType m_period;
-	
-	/**Graph values*/
-	std::deque<XYPoint> m_points_values; 
-
-	std::deque<size_t> m_visible_points;
-
-	XYPoint& ViewPoint(size_t i) {
-		return m_points_values.at(m_visible_points.at(i));
-	}
-
-	std::deque<std::pair<wxRealPoint, wxRealPoint> > m_zoom_history;
-
-	/**Maps point to the group of points that are drawn on the same pixel*/
-	std::map<int, int> point2group;
-
-	/**Groups of points on the same pixel*/
-	std::vector< std::list<int> > points_groups;
-
-};
-
 /**Paints XY graph onto DC*/
 class XYGraphPainter {
 	/**margins*/
@@ -192,7 +118,7 @@ class XYGraphPainter {
 };
 
 /**Main XY grap frame*/
-class XYFrame : public szFrame {
+class XYFrame : public szFrame, public XFrame {
 	/**Panel holding widgets*/
 	XYPanel *m_panel;
 	/**Dialog for xy graph parameters retrieval*/
@@ -221,7 +147,10 @@ class XYFrame : public szFrame {
 	ConfigManager *m_cfg_manager;
 public:
 	/**Sets parameters of displayed graphs*/
-	void SetGraph(XYGraph *graph);
+	virtual void SetGraph(XYGraph *graph);
+
+	virtual int GetDimCount();
+
 	XYFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigManager *cfgmanager, FrameManager *frame_manager);
 
 	virtual ~XYFrame();

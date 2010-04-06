@@ -44,6 +44,8 @@
 #include "draw.h"
 #include "drawview.h"
 #include "timeformat.h"
+#include "coobs.h"
+#include "xydiag.h"
 #include "xygraph.h"
 #include "drawprint.h"
 
@@ -993,7 +995,7 @@ bool XYGraphPrintout::OnPrintPage(int page) {
 			);
 
 	pen = dc->GetPen();
-	pen.SetColour(m_graph->m_dy->GetDrawColor());
+	pen.SetColour(m_graph->m_di[1]->GetDrawColor());
 	dc->SetPen(pen);
 
 	for (size_t i = 0; i < m_graph->m_visible_points.size(); ++i) {
@@ -1024,7 +1026,7 @@ bool XYGraphPrintout::OnPrintPage(int page) {
 
 	wxString txt;
 
-	txt = m_graph->m_dx->GetDrawsSets()->GetID();
+	txt = m_graph->m_di[0]->GetDrawsSets()->GetID();
 	dc->GetTextExtent(txt, &tw, &th);
 	dc->DrawText(txt, (w - tw)  / 2, ty);
 
@@ -1037,34 +1039,34 @@ bool XYGraphPrintout::OnPrintPage(int page) {
 #endif
 	dc->SetFont(f);
 
-	txt = m_graph->m_dx->GetName();
+	txt = m_graph->m_di[0]->GetName();
 
 	dc->GetTextExtent(txt, &tw, &th);
 	dc->DrawText(txt, (w - tw) / 2, ty);
 
 	ty += th * 12 / 10;
 
-	txt = wxString(_("min.=")) + m_graph->m_dx->GetValueStr(m_graph->m_xmin, _T("")) 
-			+ _T(" ; ") + _("avg.=") + m_graph->m_dx->GetValueStr(m_graph->m_xavg, _T(""))
-			+ _T(" ; ") + _("max.=") + m_graph->m_dx->GetValueStr(m_graph->m_xmax, _T(""))
-			+ _T(" ; ") + _("s.d.=") + m_graph->m_dx->GetValueStr(m_graph->x_standard_deviation, _T(""));
+	txt = wxString(_("min.=")) + m_graph->m_di[0]->GetValueStr(m_graph->m_min[0], _T("")) 
+			+ _T(" ; ") + _("avg.=") + m_graph->m_di[0]->GetValueStr(m_graph->m_avg[0], _T(""))
+			+ _T(" ; ") + _("max.=") + m_graph->m_di[0]->GetValueStr(m_graph->m_max[0], _T(""))
+			+ _T(" ; ") + _("s.d.=") + m_graph->m_di[0]->GetValueStr(m_graph->m_standard_deviation[0], _T(""));
 
 	dc->GetTextExtent(txt, &tw, &th);
 	dc->DrawText(txt, (w - tw) / 2, ty);
 
 	ty += th * 12 / 10;
 
-	txt = m_graph->m_dy->GetName();
+	txt = m_graph->m_di[1]->GetName();
 
 	dc->GetTextExtent(txt, &tw, &th);
 	dc->DrawText(txt, (w - tw) / 2, ty);
 
 	ty += th * 12 / 10;
 
-	txt = wxString(_("min.=")) + m_graph->m_dy->GetValueStr(m_graph->m_ymin, _T("")) 
-			+ _T(" ; ") + _("avg.=") + m_graph->m_dy->GetValueStr(m_graph->m_yavg, _T(""))
-			+ _T(" ; ") + _("max.=") + m_graph->m_dy->GetValueStr(m_graph->m_ymax, _T(""))
-			+ _T(" ; ") + _("s.d.=") + m_graph->m_dy->GetValueStr(m_graph->y_standard_deviation, _T(""));
+	txt = wxString(_("min.=")) + m_graph->m_di[1]->GetValueStr(m_graph->m_min[1], _T("")) 
+			+ _T(" ; ") + _("avg.=") + m_graph->m_di[1]->GetValueStr(m_graph->m_avg[1], _T(""))
+			+ _T(" ; ") + _("max.=") + m_graph->m_di[1]->GetValueStr(m_graph->m_max[1], _T(""))
+			+ _T(" ; ") + _("s.d.=") + m_graph->m_di[1]->GetValueStr(m_graph->m_standard_deviation[1], _T(""));
 
 	dc->GetTextExtent(txt, &tw, &th);
 	dc->DrawText(txt, (w - tw) / 2, ty);

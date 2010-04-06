@@ -318,11 +318,11 @@ DrawPanel::DrawPanel(DatabaseManager* _db_mgr, ConfigManager * _cfg, RemarksHand
 #endif
 	menu_bar = _menu_bar;
 
+	active = false;
+
 	CreateChildren(set, pt, time, selected_draw);
 
 	rw_show = pw_show = smw_show = false;
-
-	active = false;
 
 }
 
@@ -374,14 +374,6 @@ void DrawPanel::CreateChildren(const wxString& set, PeriodType pt, time_t time, 
 #ifdef HAVE_GLCANVAS
 #ifdef HAVE_FTGL
 	if (style == _T("3D") && wxGetApp().GLWorks()) {
-		if (GLGraphs::_context == NULL) {
-			wxGLCanvas *tcanvas  = new wxGLCanvas(this, wxID_ANY
-					, wxGetApp().GLContextAttribs());
-			GLGraphs::_context = new wxGLContext(tcanvas);
-			tcanvas->Destroy();
-
-		}
-
 		dg = new GLGraphs(this, cfg);
 		GLGraphs *glg = new GLGraphs(this, cfg);
 		dg = glg;

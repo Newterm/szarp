@@ -107,7 +107,7 @@ private:
 						-1 means no limit (default value). */
 
 	void freeBlocks();
-	int locked;		/**< flag, if 1 blocks are not removed from buffer */
+	int locked;		/**< flag, if not 0 blocks are not removed from buffer */
 
 public:
 	void Lock();
@@ -169,6 +169,7 @@ public:
 
 
 /** Creates new buffer.
+ * @param object to parent @see Szbase object
  * @param directory path to base root directory
  * @param num maximum number of blocks in buffer
  * @param ipk pointer to configuration

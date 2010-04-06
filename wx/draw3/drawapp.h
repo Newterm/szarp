@@ -108,6 +108,8 @@ public:
 
 	void DisplayHelp();
 
+	wxGLContext* GetGLContext();
+
 	virtual bool OnCmdLineError(wxCmdLineParser &parser);
 	virtual bool OnCmdLineHelp(wxCmdLineParser &parser);
 	virtual bool OnCmdLineParsed(wxCmdLineParser &parser);
@@ -135,6 +137,7 @@ protected:
 	 * @return 0 if OK, -1 if error occured
 	 */
 	int ParseCommandLine();
+
         wxLocale locale;
                         /**< Program's locale object. */
 	wxString m_base; /**< Base name. */
@@ -162,6 +165,8 @@ protected:
 	int *m_gl_context_attribs;
 
 	bool m_gl_works;
+
+	wxGLContext *m_gl_context;
 
 	bool m_just_print_version;
 

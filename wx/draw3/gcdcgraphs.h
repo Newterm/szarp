@@ -116,8 +116,6 @@ public:
 
 	virtual wxDragResult SetSetInfo(wxCoord x, wxCoord y, wxString window, wxString prefix, time_t time, PeriodType pt, wxDragResult def);
 
-	virtual void SetDrawsChanged(DrawPtrArray draws);
-
 	virtual void StartDrawingParamName();
 
 	virtual void DrawSelected(Draw *draw);

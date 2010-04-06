@@ -71,8 +71,6 @@ GLuint GLGraphs::_line1_tex = 0;
 
 FTFont* GLGraphs::_font = NULL;
 
-wxGLContext* GLGraphs::_context = NULL;
-
 namespace {
 
 	float cube_vertices[] = {
@@ -155,6 +153,7 @@ GLGraphs::GLGraphs(wxWindow *parent, ConfigManager *cfg) : wxGLCanvas(parent, wx
 
 	m_timer = new wxTimer(this, wxID_ANY);
 
+	m_gl_context = NULL;
 
 }
 
@@ -226,7 +225,6 @@ void GLGraphs::DrawYAxis() {
 		glVertex3f(m_screen_margins.leftmargin + 8, m_size.GetHeight() - 8, 0);
 		glVertex3f(m_screen_margins.leftmargin + 8, m_size.GetHeight() - 10, 0);
 	glEnd();
-
 
 }
 
@@ -717,6 +715,8 @@ void GLGraphs::OnPaint(wxPaintEvent & WXUNUSED(event))
 {
 	if (m_draws_wdg == NULL || !IsShown())
 		return;
+	if (m_gl_context == NULL)
+		m_gl_context = wxGetApp().GetGLContext();
 	wxPaintDC dc(this);
 	DoPaint();
 }
@@ -753,10 +753,7 @@ void GLGraphs::DrawCurrentParamName() {
 
 void GLGraphs::DoPaint() {
 
-	if (!GLGraphs::_context)
-		return;
-
-	GLGraphs::_context->SetCurrent(*this);
+	GLGraphs::m_gl_context->SetCurrent(*this);
 
 	InitGL();
 
@@ -1555,9 +1552,10 @@ void GLGraphs::DrawInfoChanged(Draw *draw) {
 			m_graphs_states[i].fade_state = GraphState::STILL;
 			m_graphs_states[i].fade_level = 1;
 		}
-	}
 
-	Refresh();
+		m_recalulate_margins = true;
+		Refresh();
+	}
 }
 
 #endif

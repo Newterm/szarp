@@ -1,5 +1,13 @@
 $Id$
 
+2010-04-06	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* libSzarp2: added proper termination of 'configuration
+	watcher' thread, introducing comments into new code part I:
+	comments for Szbase class
+	* wx/draw3: readded calculation of margins on time graph,
+	proper removal of wxAuiNotebook when last but one tab is closed		
+	- bugs that resulted from code refactoring...
+	some progress on 3D graphs	
 2010-04-02	Pawel Palucha <pawel@praterm.com.pl>
 	* Makefile.am: doxy target made .PHONY, so it is regenerated on every
 	run.

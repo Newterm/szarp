@@ -42,6 +42,7 @@ void Szbase::Destroy() {
 }
 
 Szbase::~Szbase() {
+	m_file_watcher.Terminate();
 	for (TBI::iterator i = m_ipkbasepair.begin() ; i != m_ipkbasepair.end() ; ++i) {
 		std::pair<szb_buffer_t*, TSzarpConfig*> v = i->second;
 		szb_free_buffer(v.first);
@@ -347,6 +348,7 @@ double Szbase::GetValue(const std::wstring& param, time_t time, SZARP_PROBE_TYPE
 	return GetValue(bp, time, probe_type, custom_length, is_fixed, ok, error);
 
 }
+
 
 Szbase* Szbase::GetObject() {
 	if (_instance == NULL)

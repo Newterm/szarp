@@ -29,8 +29,8 @@
 #include "timeformat.h"
 #include "drawtime.h"
 #include "database.h"
-#include "dbinquirer.h"
 #include "draw.h"
+#include "dbinquirer.h"
 #include "datechooser.h"
 #include "progfrm.h"
 #include "xydiag.h"
@@ -38,7 +38,7 @@
 #include "xygraph.h"
 #include "incsearch.h"
 
-XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, DatabaseManager *db, XYFrame *frame) : 
+XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, DatabaseManager *db, XFrame *frame) : 
 		wxDialog(parent, 
 			wxID_ANY, 
 			_("X/Y graph parameters"),
@@ -47,15 +47,13 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 			wxDEFAULT_DIALOG_STYLE | wxTAB_TRAVERSAL),
 		m_period(PERIOD_T_YEAR),
 		m_start_time(m_period, wxDateTime::Now()),
-		m_end_time(m_period, wxDateTime::Now()) {
+		m_end_time(m_period, wxDateTime::Now())
+		{
 
 	SetHelpText(_T("draw3-ext-chartxy"));
 	SetIcon(szFrame::default_icon);
 
 	wxString period_choices[PERIOD_T_SEASON] = { _("YEAR"), _("MONTH"), _("WEEK"), _("DAY") };
-
-	m_xdraw = NULL;
-	m_ydraw = NULL;
 
 	m_start_time.AdjustToPeriod();
 	m_end_time.AdjustToPeriod();
@@ -94,6 +92,17 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 	button = new wxButton(this, XY_YAXIS_BUTTON, _("Choose draw"));
 	sizer_2->Add(button, 1, wxEXPAND);
 	sizer->Add(sizer_2, 0, wxEXPAND | wxALL, 5);
+
+	if (m_frame->GetDimCount() == 3) {
+		wxBoxSizer* sizer_3 = new wxBoxSizer(wxHORIZONTAL);
+		label = new wxStaticText(this, wxID_ANY, _("Axis Z:"));
+		sizer_3->Add(label, 0, wxALIGN_CENTER | wxALL, 5);
+		button = new wxButton(this, XY_ZAXIS_BUTTON, _("Choose draw"));
+		sizer_3->Add(button, 1, wxEXPAND);
+		sizer->Add(sizer_3, 0, wxEXPAND | wxALL, 5);
+		SetSize(500, 400);
+	} else
+		SetSize(500, 350);
 
 	line = new wxStaticLine(this);
 	sizer->Add(line, 0, wxEXPAND, 10);
@@ -142,20 +151,20 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 
 	sizer->Add(button_sizer, 1, wxALIGN_CENTER | wxALL, 10);
 
-	SetSize(500, 350);
-
-	SetSizer(sizer);
-
 	m_period_choice->SetSelection(0);
 	m_period_choice->SetFocus();
 
 	//DrawInfoDropTarget* dt = new DrawInfoDropTarget(this);
 	//SetDropTarget(dt);
+	for (int i = 0; i < m_frame->GetDimCount(); i++)
+		m_di.push_back(NULL);
+
+	SetSizer(sizer);
 
 }
 
 void XYDialog::OnOK(wxCommandEvent &event) {
-	if (m_xdraw == NULL || m_ydraw == NULL) {
+	if (m_di[0] == NULL || m_di[1] == NULL) {
 		wxMessageBox(_("You have to specify both draws"), _("Draw missing"), wxICON_INFORMATION | wxOK, this);
 		return;
 	}
@@ -168,8 +177,7 @@ void XYDialog::OnOK(wxCommandEvent &event) {
 	delete m_mangler;
 
 	m_mangler = new DataMangler(m_database_manager,
-			m_xdraw,
-			m_ydraw,
+			m_di,
 			m_start_time.GetTime(),
 			m_end_time.GetTime(),
 			m_period,
@@ -194,26 +202,16 @@ void XYDialog::DataFromMangler(XYGraph *graph) {
 void XYDialog::ConfigurationIsAboutToReload(wxString prefix) {
 	wxButton *button;
 
-	if (m_xdraw && m_xdraw->GetBasePrefix() == prefix) {
-		delete m_mangler;
-		m_mangler = NULL;
+	for (size_t i = 0; i < m_di.size(); i++)
+		if (m_di[i] && m_di[i]->GetBasePrefix() == prefix) {
+			delete m_mangler;
+			m_mangler = NULL;
 
-		m_xdraw = NULL;
+			m_di[i] = NULL;
 
-		button = wxDynamicCast(FindWindow(XY_XAXIS_BUTTON), wxButton);
-		button->SetLabel(_T(""));
-	}
-
-	if (m_ydraw && m_ydraw->GetBasePrefix() == prefix) {
-		delete m_mangler;
-		m_mangler = NULL;
-
-		m_ydraw = NULL;
-
-		button = wxDynamicCast(FindWindow(XY_YAXIS_BUTTON), wxButton);
-		button->SetLabel(_T(""));
-	}
-
+			button = wxDynamicCast(FindWindow(XY_XAXIS_BUTTON + i), wxButton);
+			button->SetLabel(_T(""));
+		}
 }
 
 void XYDialog::ConfigurationWasReloaded(wxString prefix) { }
@@ -273,13 +271,10 @@ void XYDialog::OnDrawChange(wxCommandEvent &event) {
 	DrawInfo **draw;
 	wxButton *button;
 
-	if (event.GetId() == XY_XAXIS_BUTTON) {
-		button = wxDynamicCast(FindWindow(XY_XAXIS_BUTTON), wxButton);
-		draw = &m_xdraw;
-	} else {
-		button = wxDynamicCast(FindWindow(XY_YAXIS_BUTTON), wxButton);
-		draw = &m_ydraw;
-	}
+	int i = event.GetId() - XY_XAXIS_BUTTON;
+	draw = &m_di[i];
+
+	button = wxDynamicCast(FindWindowById(event.GetId()), wxButton);
 
 	if (m_draw_search->ShowModal() == wxID_CANCEL)
 		return;
@@ -311,10 +306,9 @@ XYDialog::~XYDialog() {
 	m_draw_search->Destroy();
 }
 
-DataMangler::DataMangler(DatabaseManager* db, DrawInfo *dx, DrawInfo *dy, wxDateTime start_time, wxDateTime end_time, PeriodType period, XYDialog *dialog, bool average) :
+DataMangler::DataMangler(DatabaseManager* db, std::vector<DrawInfo*> di, wxDateTime start_time, wxDateTime end_time, PeriodType period, XYDialog *dialog, bool average) :
 		DBInquirer(db),
-		m_dx(dx),
-		m_dy(dy),
+		m_di(di),
 		m_period(period),
 		m_start_time(m_period, start_time),
 		m_current_time(m_period, start_time),
@@ -329,7 +323,7 @@ DataMangler::DataMangler(DatabaseManager* db, DrawInfo *dx, DrawInfo *dy, wxDate
 	int vs = m_start_time.GetDistance(m_end_time) + 1;
 
 	DTime tmpdate(PERIOD_T_OTHER, wxDateTime::Now());
-	boost::tuple<ValueInfo, ValueInfo, DTime> tmptuple(ValueInfo(), ValueInfo(), tmpdate);
+	std::pair<std::vector<ValueInfo> , DTime> tmptuple(std::vector<ValueInfo>(di.size(), ValueInfo()), tmpdate);
 	m_draw_vals.resize(vs, tmptuple);
 
 	m_dialog = dialog;
@@ -339,7 +333,7 @@ DataMangler::DataMangler(DatabaseManager* db, DrawInfo *dx, DrawInfo *dy, wxDate
 }	
 
 void DataMangler::Go() {
-	m_tofetch = m_draw_vals.size() * 2;
+	m_tofetch = m_draw_vals.size() * m_di.size();
 	m_fetched = 0;
 	m_pending = 0;
 
@@ -353,19 +347,19 @@ void DataMangler::Go() {
 void DataMangler::ProgressFetch() {
 	TimeIndex idx(m_period);
 
-	DatabaseQuery *q_x = CreateDataQuery(m_dx, m_period, 0);
-	DatabaseQuery *q_y = CreateDataQuery(m_dy, m_period, 1);
+	std::vector<DatabaseQuery*> queries;
+	for (size_t i = 0; i < m_di.size(); i++)
+		queries.push_back(CreateDataQuery(m_di[i], m_period, i));
 
 	while (m_pending < 200 && m_current_time <= m_end_time) {
-		AddTimeToDataQuery(q_x, m_current_time.GetTime().GetTicks());
-		AddTimeToDataQuery(q_y, m_current_time.GetTime().GetTicks());
-
-		m_pending += 2;
+		for (size_t i = 0; i < m_di.size(); i++)
+			AddTimeToDataQuery(queries[i], m_current_time.GetTime().GetTicks());
+		m_pending += m_di.size();
 		m_current_time = m_current_time + idx.GetTimeRes() + idx.GetDateRes();
 	}
 
-	QueryDatabase(q_x);
-	QueryDatabase(q_y);
+	for (size_t i = 0; i < m_di.size(); i++)
+		QueryDatabase(queries[i]);
 }
 
 void DataMangler::DatabaseResponse(DatabaseQuery *q) {
@@ -377,17 +371,12 @@ void DataMangler::DatabaseResponse(DatabaseQuery *q) {
 
 		int index = m_start_time.GetDistance(time);
 
+		m_draw_vals.at(index).second = time;
+
 		ValueInfo *vi;
-		if (q->draw_no == 0) 
-			vi = &m_draw_vals.at(index).get<0>();
-		else 
-			vi = &m_draw_vals.at(index).get<1>();
-
-		m_draw_vals.at(index).get<2>() = time;
-
+		vi = &m_draw_vals.at(index).first.at(q->draw_no);
 		vi->state = ValueInfo::PRESENT;
 		vi->val = i->response;
-
 	}
 
 	m_pending -= q->value_data.vv->size();
@@ -402,15 +391,20 @@ void DataMangler::DatabaseResponse(DatabaseQuery *q) {
 
 		XYGraph* graph = new XYGraph;
 
-		AssociateValues(graph);
-		FindMaxMinRange(graph);
-
 		graph->m_start = m_start_time.GetTime();
 		graph->m_end = m_end_time.GetTime();
 		graph->m_period = m_period;
-		graph->m_dx = m_dx;
-		graph->m_dy = m_dy;
+		graph->m_di = m_di;
+		graph->m_min.resize(m_di.size());
+		graph->m_max.resize(m_di.size());
+		graph->m_dmin.resize(m_di.size());
+		graph->m_dmax.resize(m_di.size());
+		graph->m_avg.resize(m_di.size());
+		graph->m_standard_deviation.resize(m_di.size());
 		graph->m_averaged = m_average;
+
+		AssociateValues(graph);
+		FindMaxMinRange(graph);
 
 		if (m_average)
 			AverageValues(graph);
@@ -424,11 +418,11 @@ void DataMangler::DatabaseResponse(DatabaseQuery *q) {
 }
 
 void DataMangler::AverageValues(XYGraph *graph) {
-	double pvx = pow(0.1, m_dx->GetPrec());
+	double pvx = pow(0.1, m_di[0]->GetPrec());
 
 	int count;
 	double slice;
-	double dif = graph->m_dxmax - graph->m_dxmin;
+	double dif = graph->m_dmax[0] - graph->m_dmin[0];
 	if (dif < pvx) {
 		count = 1;
 		slice = pvx;
@@ -444,11 +438,11 @@ void DataMangler::AverageValues(XYGraph *graph) {
 	std::deque< std::vector<DTime> > ptimes(count);
 
 	for (size_t i = 0; i < graph->m_points_values.size(); ++i) {
-		double& x = graph->m_points_values.at(i).get<0>();
-		double& y = graph->m_points_values.at(i).get<1>();
-		std::vector<DTime> &times = graph->m_points_values.at(i).get<2>();
+		double& x = graph->m_points_values.at(i).first[0];
+		double& y = graph->m_points_values.at(i).first[1];
+		std::vector<DTime> &times = graph->m_points_values.at(i).second;
 
-		int idx = int((x - graph->m_dxmin - slice / 2) * count / dif);
+		int idx = int((x - graph->m_dmin[0] - slice / 2) * count / dif);
 		if (idx < 0)
 			idx = 0;
 
@@ -469,10 +463,11 @@ void DataMangler::AverageValues(XYGraph *graph) {
 		if (c == 0)
 			continue;
 
-		double x = graph->m_dxmin + dif * i / count;
-		double y = sums[i] / c;
+		std::vector<double> xy(2);
+		xy[0] = graph->m_dmin[0] + dif * i / count;
+		xy[1] = sums[i] / c;
 
-		graph->m_points_values.push_back(XYPoint(x, y, ptimes[i]));
+		graph->m_points_values.push_back(XYPoint(xy, ptimes[i]));
 	}
 			
 }
@@ -539,65 +534,51 @@ void DataMangler::ApplyPPAlgorithm(double &min, double &max, int prec) {
 
 
 void DataMangler::FindMaxMinRange(XYGraph *graph) {
-
-	graph->m_dxmin = graph->m_xmin;
-	graph->m_dxmax = graph->m_xmax;
-
-	graph->m_dymin = graph->m_ymin;
-	graph->m_dymax = graph->m_ymax;
-
-	ApplyPPAlgorithm(graph->m_dxmin, graph->m_dxmax, m_dx->GetPrec());
-	ApplyPPAlgorithm(graph->m_dymin, graph->m_dymax, m_dy->GetPrec());
-
+	for (size_t i = 0; i < graph->m_di.size(); i++) {
+		graph->m_dmin[i] = graph->m_min[i];
+		graph->m_dmax[i] = graph->m_max[i];
+		ApplyPPAlgorithm(graph->m_dmin[i], graph->m_dmax[i], graph->m_di[i]->GetPrec());
+	}
 }
 
 void DataMangler::AssociateValues(XYGraph *graph) {
 
 	int count = 0;
-
-	std::map< double , std::map< double , std::vector<DTime> > > points;
+	
+	std::map<std::vector<double>, std::vector<DTime> > points;
 
 	for (size_t i = 0; i < m_draw_vals.size(); ++i) {
-		ValueInfo& vx = m_draw_vals.at(i).get<0>();
-		ValueInfo& vy = m_draw_vals.at(i).get<1>();
-		DTime time = m_draw_vals.at(i).get<2>();
+		std::vector<double> v;
+
+		DTime time = m_draw_vals.at(i).second;
 		
-		if (!vx.IsData() || !vy.IsData())
-			continue;
-
-		points[vx.val][vy.val].push_back(time);
-
-		if (count != 0) {
-			graph->m_xmin = wxMin(graph->m_xmin, vx.val);
-			graph->m_xmax = wxMax(graph->m_xmax, vx.val);
-
-			graph->m_ymin = wxMin(graph->m_ymin, vy.val);
-			graph->m_ymax = wxMax(graph->m_ymax, vy.val);
-		} else {
-			graph->m_xmin = 
-			graph->m_xmax = vx.val;
-
-			graph->m_ymin = 
-			graph->m_ymax = vy.val;
+		for (size_t j = 0; j < graph->m_di.size(); j++) {
+			ValueInfo &vi = m_draw_vals.at(i).first[j];
+			if (!vi.IsData())
+				goto next;
+			v.push_back(vi.val);
 		}
+		
+		points[v].push_back(time);
+
+		if (count != 0)
+			for (size_t j = 0; j < graph->m_di.size(); j++) {
+				graph->m_min[j] = wxMin(graph->m_min[j], v[j]);
+				graph->m_max[j] = wxMax(graph->m_max[j], v[j]);
+			}
+		else
+			for (size_t j = 0; j < graph->m_di.size(); j++)
+				graph->m_min[j] = graph->m_max[j] = v[j];
 
 		count++;
-
+next:;
 	}
 
-	std::map< double , std::map< double , std::vector<DTime> > >::iterator i;
-	std::map< double , std::vector<DTime> >::iterator j;
+	std::map<std::vector<double>, std::vector<DTime> >::iterator i;
+	std::vector<DTime>::iterator j;
 
-	for(i = points.begin(); i != points.end(); i++) {
-		for(j = i->second.begin(); j != i->second.end(); j++) {
-
-			XYPoint tmp (i->first, j->first);
-			tmp.get<2>() = j->second;
-			graph->m_points_values.push_back(tmp);
-
-		}
-	}
-
+	for (i = points.begin(); i != points.end(); i++)
+			graph->m_points_values.push_back(XYPoint(i->first, i->second));
 }
 
 void XYDialog::OnCancel(wxCommandEvent &event) {
@@ -616,7 +597,7 @@ void XYDialog::OnHelpButton(wxCommandEvent &event) {
 }
 
 DrawInfo* DataMangler::GetCurrentDrawInfo() {
-	return m_dx;
+	return m_di[0];
 }
 
 time_t DataMangler::GetCurrentTime() {
@@ -633,4 +614,5 @@ BEGIN_EVENT_TABLE(XYDialog, wxDialog)
 	EVT_CHOICE(XY_CHOICE_PERIOD, XYDialog::OnPeriodChange)
 	EVT_BUTTON(XY_XAXIS_BUTTON, XYDialog::OnDrawChange)
 	EVT_BUTTON(XY_YAXIS_BUTTON, XYDialog::OnDrawChange)
+	EVT_BUTTON(XY_ZAXIS_BUTTON, XYDialog::OnDrawChange)
 END_EVENT_TABLE()

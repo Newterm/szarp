@@ -37,7 +37,11 @@ void Watcher::operator()() {
 		boost::xtime xt;
 		boost::xtime_get(&xt, boost::TIME_UTC);
 		xt.sec = xt.sec - (xt.sec % 600) + 900;
-		boost::thread::sleep(xt);
+		try {
+			boost::thread::sleep(xt);
+		} catch (boost::thread_interrupted) {
+			return;
+		}
 
 		m_watcher->CheckModifications();
 		
@@ -47,14 +51,23 @@ void Watcher::operator()() {
 
 SzbFileWatcher::SzbFileWatcher(): start_flag(false) {}
 
+
+void
+SzbFileWatcher::Terminate() {
+	if (start_flag) {
+		thread.interrupt();
+		thread.join();
+	}
+}
+
 void
 SzbFileWatcher::AddFileWatch(std::wstring file, std::wstring prefix, void (*callback)(std::wstring, std::wstring)) {
 
 	boost::mutex::scoped_lock datalock(datamutex);
 
 	if (!start_flag) {
-		boost::thread startthread(Watcher(this));
 		start_flag = true;
+		thread = boost::thread(Watcher(this));
 	}
 
 	WatchEntry w;

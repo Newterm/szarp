@@ -543,10 +543,12 @@ wxString DrawsWidget::GetUrl(bool with_infinity) {
 		t = m_draws_controller->GetCurrentTime();
 	}
 
+	wxString prefix = m_draws_controller->GetSet()->GetDrawsSets()->GetPrefix();
+
 	DrawInfo* di = d->GetDrawInfo();
 
 	SetInfoDataObject* wido = 
-		new SetInfoDataObject(di->GetBasePrefix(), di->GetSetName(), d->GetPeriod(), t , d->GetDrawNo());
+		new SetInfoDataObject(prefix, di->GetSetName(), d->GetPeriod(), t , d->GetDrawNo());
 
 	wxString tmp = wido->GetUrl();
 

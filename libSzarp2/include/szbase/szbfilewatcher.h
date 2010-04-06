@@ -39,12 +39,14 @@ class SzbFileWatcher {
 		void AddFileWatch(std::wstring file, std::wstring prefix, void (*callback)(std::wstring, std::wstring));
 		void RemoveFileWatch( std::wstring prefix );
 		void CheckModifications();
+		void Terminate();
 		void operator()();
 	private:
 		friend class Watcher;
 		bool start_flag;
 		std::list<WatchEntry> watchlist;
 		boost::mutex datamutex;
+		boost::thread thread;
 };
 
 #endif //__SZBFILEWATCHER_H__

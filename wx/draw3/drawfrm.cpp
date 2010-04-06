@@ -302,7 +302,7 @@ bool DrawFrame::AddDrawPanel(const wxString & prefix, const wxString& set, Perio
 
 		draw_panel->Reparent(m_notebook);
 
-		m_notebook->AddPage(draw_panel, draw_panel->GetConfigName(), false);
+		m_notebook->AddPage(draw_panel, draw_panel->GetConfigName(), true);
 
 		sizer->Add(m_notebook, 1, wxEXPAND);
 
@@ -380,8 +380,6 @@ void DrawFrame::DetachFromNotebook()
 
 void DrawFrame::OnNotebookPageClose(wxAuiNotebookEvent &event)
 {
-	if (m_notebook->GetPageCount() == 1)
-		DetachFromNotebook();
 }
 
 void DrawFrame::CloseTab(int sel)
@@ -399,17 +397,6 @@ void DrawFrame::CloseTab(int sel)
 
 	panel->Destroy();
 
-	int count = m_notebook->GetPageCount();
-
-	if (count == 1)
-		DetachFromNotebook();
-	else {
-		if (sel == m_notebook->GetSelection()) {
-			if (sel > 0)
-				sel = sel - 1;
-			m_notebook->SetSelection(sel);
-		}
-	}
 }
 
 void DrawFrame::OnCloseTab(wxCommandEvent & evt)
@@ -433,6 +420,9 @@ void DrawFrame::RemovePanel(DrawPanel *panel) {
 
 void DrawFrame::OnNotebookSelectionChange(wxAuiNotebookEvent& event)
 {
+	if (m_notebook->GetPageCount() == 1) {
+		return;
+	}
 
 	int i = m_notebook->GetSelection();
 	if (i < 0) {
@@ -517,6 +507,11 @@ void DrawFrame::OnRelWin(wxCommandEvent &event) {
 void DrawFrame::OnXYDialog(wxCommandEvent &event) {
 	wxString prefix = draw_panel->GetPrefix();
 	frame_manager->CreateXYGraph(prefix);
+}
+
+void DrawFrame::OnXYZDialog(wxCommandEvent &event) {
+	wxString prefix = draw_panel->GetPrefix();
+	frame_manager->CreateXYZGraph(prefix);
 }
 
 void DrawFrame::OnStatDialog(wxCommandEvent &event) {
@@ -610,14 +605,8 @@ void DrawFrame::RemovePendingPanels() {
 }
 
 void DrawFrame::OnIdle(wxIdleEvent &event) {
-	if (panels_to_remove.size() == 0)
-		return;
-
-	RemovePendingPanels();
-
 	if (m_notebook && m_notebook->GetPageCount() == 1)
 		DetachFromNotebook();
-
 }
 
 void DrawFrame::OnCopy(wxCommandEvent &event) {
@@ -1174,6 +1163,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("Pie"), DrawFrame::OnPieWin)
     EVT_MENU(XRCID("Ratio"), DrawFrame::OnRelWin)
     EVT_MENU(XRCID("XYGraph"), DrawFrame::OnXYDialog)
+    EVT_MENU(XRCID("XYZGraph"), DrawFrame::OnXYZDialog)
     EVT_MENU(XRCID("ShowRemarks"), DrawFrame::OnRemarks)
     EVT_MENU(XRCID("StatsWin"), DrawFrame::OnStatDialog)
     EVT_MENU(XRCID("FullScreen"), DrawFrame::OnFullScreen)

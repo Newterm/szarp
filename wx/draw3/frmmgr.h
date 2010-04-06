@@ -82,6 +82,8 @@ class FrameManager : public wxEvtHandler {
 	 * @param prefix initial configutation prefix*/
 	void CreateXYGraph(wxString prefix);
 
+	void CreateXYZGraph(wxString prefix);
+
 	/**Shows dialog statistics calculation
 	 * @param prefix initial configuration prefix*/
 	void ShowStatDialog(wxString prefix);

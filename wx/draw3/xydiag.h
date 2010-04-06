@@ -35,15 +35,62 @@
 #include <wx/wx.h>
 #endif
 
-#include <boost/tuple/tuple.hpp>
+typedef std::pair<std::vector<double>, std::vector<DTime> > XYPoint;
+
+/**Struct describing parametrs of XY graph*/
+struct XYGraph {
+	std::vector<DrawInfo*> m_di;
+
+	std::vector<double> m_dmin;
+
+	std::vector<double> m_dmax;
+
+	std::vector<double> m_min;
+
+	std::vector<double> m_max;
+
+	std::vector<double> m_avg;
+
+	std::vector<double> m_standard_deviation;
+
+	double m_xy_correlation;
+	/**Rank correlation of x and y*/
+	double m_xy_rank_correlation;
+
+	/**Flag indicates if calculated values were averaged*/
+	bool m_averaged;
+
+	/**Start of time range*/
+	wxDateTime m_start;
+	/**End of time range*/
+	wxDateTime m_end;
+
+	/**Period type of probes fetched from db*/
+	PeriodType m_period;
+	
+	/**Graph values*/
+	std::deque<XYPoint> m_points_values; 
+
+	std::deque<size_t> m_visible_points;
+
+	XYPoint& ViewPoint(size_t i) {
+		return m_points_values.at(m_visible_points.at(i));
+	}
+
+	std::deque<std::pair<wxRealPoint, wxRealPoint> > m_zoom_history;
+
+	/**Maps point to the group of points that are drawn on the same pixel*/
+	std::map<int, int> point2group;
+
+	/**Groups of points on the same pixel*/
+	std::vector< std::list<int> > points_groups;
+
+};
 
 
 /**Fetches and associated corresponding values with each other*/
 class DataMangler : public DBInquirer {
-	/**@see DrawInfo of X param*/
-	DrawInfo *m_dx;
-	/**@see DrawInfo of Y param*/
-	DrawInfo *m_dy;
+	std::vector<DrawInfo*> m_di;
 	/**Type of probes fetches from database*/
 	PeriodType m_period;
 	/**Start of time range*/
@@ -53,7 +100,7 @@ class DataMangler : public DBInquirer {
 	/**End of time range*/
 	DTime m_end_time;
 	/**Paired values of params*/
-	std::deque<boost::tuple<ValueInfo, ValueInfo, DTime> > m_draw_vals;
+	std::deque<std::pair<std::vector<ValueInfo>, DTime> > m_draw_vals;
 	/**Number of fetches probes*/
 	int m_fetched;
 	/**Number of remaing probes to fetch*/
@@ -82,12 +129,10 @@ class DataMangler : public DBInquirer {
 
 	public:
 	DataMangler(DatabaseManager *db, 
-			DrawInfo *dx, 
-			DrawInfo* dy, 
+			std::vector<DrawInfo*> di,
 			wxDateTime start_time, 
-			wxDateTime 
-			end_time, 
-			PeriodType pt, 
+			wxDateTime end_time,
+			PeriodType pt,
 			XYDialog *dialog,
 			bool average);
 
@@ -103,6 +148,12 @@ class DataMangler : public DBInquirer {
 };
 
 
+class XFrame {
+public:
+	virtual int GetDimCount() = 0;
+	virtual void SetGraph(XYGraph *graph) = 0;
+};
+
 class XYDialog : public wxDialog, public ConfigObserver
 {
 	/**Period selected by user*/
@@ -111,10 +162,9 @@ class XYDialog : public wxDialog, public ConfigObserver
 	DTime m_start_time;
 	/**End of range selected by user*/
 	DTime m_end_time;
-	/**@see DrawInfo of graph to be drawn on horizontal axis*/
-	DrawInfo* m_xdraw;
-	/**@see DrawInfo of graph to be drawn on vertical axis*/
-	DrawInfo* m_ydraw;
+	
+	std::vector<DrawInfo*> m_di;
+
 	/**@see DataMangler. Object for data retrival and manipulaton*/
 	DataMangler *m_mangler;
 	/**Widget for selectin probe types*/
@@ -130,7 +180,7 @@ class XYDialog : public wxDialog, public ConfigObserver
 	/**@see IncSearch. Window for choosing search*/
 	IncSearch* m_draw_search;
 	/**@see XYFrame. Frame for displaying XY graph*/
-	XYFrame *m_frame;
+	XFrame *m_frame;
 
 	static const wxString period_choices[PERIOD_T_SEASON];
 
@@ -144,7 +194,7 @@ class XYDialog : public wxDialog, public ConfigObserver
 	void OnHelpButton(wxCommandEvent &event);
 
 	public:	
-	XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, DatabaseManager *db, XYFrame *frame);
+	XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, DatabaseManager *db, XFrame *frame);
 	/**Called by @see DataMangler when data has been fetched*/
 	void DataFromMangler(XYGraph *graph);
 	/**Start data fetching*/
@@ -154,9 +204,9 @@ class XYDialog : public wxDialog, public ConfigObserver
 	/**Sets focus on first button in windows, allowing for tab traversal*/
 	void OnShow(wxShowEvent &event);
 	/**@return selected X graph DrawInfo*/
-	DrawInfo* GetXDraw() const { return m_xdraw; }
+	DrawInfo* GetXDraw() const { return m_di[0]; }
 	/**@return selected X graph DrawInfo*/
-	DrawInfo* GetYDraw() const { return m_ydraw; }
+	DrawInfo* GetYDraw() const { return m_di[1]; }
 	/**@return selected period*/
 	PeriodType GetPeriod() const { return m_period; }
 	/**@return selected start time*/
@@ -167,10 +217,6 @@ class XYDialog : public wxDialog, public ConfigObserver
 	void ConfigurationIsAboutToReload(wxString prefix);
 
 	void ConfigurationWasReloaded(wxString prefix);
-
-#if 0
-	virtual wxDragResult SetDrawInfo(wxCoord x, wxCoord y, DrawInfo *draw_info, wxDragResult def);
-#endif
 
 	virtual ~XYDialog();
 

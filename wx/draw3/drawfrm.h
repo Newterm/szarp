@@ -237,6 +237,8 @@ protected:
 	/**Shows @see XYDialog*/
 	void OnXYDialog(wxCommandEvent& event);
 
+	void OnXYZDialog(wxCommandEvent &event);
+
 	/**Shows @see StatDialog*/
 	void OnStatDialog(wxCommandEvent &event);
 

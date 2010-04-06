@@ -39,8 +39,8 @@
 #include "dbmgr.h"
 #include "draw.h"
 #include "drawview.h"
-#include "xygraph.h"
 #include "xydiag.h"
+#include "xygraph.h"
 #include "progfrm.h"
 #include "timeformat.h"
 #include "drawprint.h"
@@ -110,6 +110,10 @@ void XYFrame::OnClose(wxCloseEvent &event) {
 
 XYFrame::~XYFrame() {
 	m_dialog->Destroy();
+}
+
+int XYFrame::GetDimCount() {
+	return 2;
 }
 
 void XYFrame::SetGraph(XYGraph *graph) {
@@ -806,17 +810,17 @@ void XYGraphWidget::OnRightMouseUp(wxMouseEvent &event) {
 	ww -= left_margin + right_margin;
 	wh -= top_margin + bottom_margin;
 
-	nxmin = (nrec.x - left_margin) * (m_graph->m_dxmax - m_graph->m_dxmin) / ww + m_graph->m_dxmin;
-	nxmax = (nrec.x + nrec.width - left_margin) * (m_graph->m_dxmax - m_graph->m_dxmin) / ww + m_graph->m_dxmin;
+	nxmin = (nrec.x - left_margin) * (m_graph->m_dmax[0] - m_graph->m_dmin[0]) / ww + m_graph->m_dmin[0];
+	nxmax = (nrec.x + nrec.width - left_margin) * (m_graph->m_dmax[0] - m_graph->m_dmin[0]) / ww + m_graph->m_dmin[0];
 
-	nymin = (wh - (nrec.y + nrec.height - top_margin)) * (m_graph->m_dymax - m_graph->m_dymin) / wh + m_graph->m_dymin;
-	nymax = (wh - (nrec.y - top_margin)) * (m_graph->m_dymax - m_graph->m_dymin) / wh + m_graph->m_dymin;
+	nymin = (wh - (nrec.y + nrec.height - top_margin)) * (m_graph->m_dmax[1] - m_graph->m_dmin[1]) / wh + m_graph->m_dmin[1];
+	nymax = (wh - (nrec.y - top_margin)) * (m_graph->m_dmax[1] - m_graph->m_dmin[1]) / wh + m_graph->m_dmin[1];
 
 	std::deque<size_t> points;
 	for (size_t i = 0; i < m_graph->m_points_values.size(); i++) {
 		XYPoint &p = m_graph->m_points_values[i];
-		double& x = p.get<0>();
-		double& y = p.get<1>();
+		double& x = p.first[0];
+		double& y = p.first[1];
 		if (x >= nxmin && x <= nxmax && y >= nymin && y <= nymax)
 			points.push_back(i);
 	}
@@ -824,12 +828,12 @@ void XYGraphWidget::OnRightMouseUp(wxMouseEvent &event) {
 	if (points.size()) {
 		m_cursor_index = 0;
 		m_graph->m_visible_points = points;
-		m_graph->m_zoom_history.push_back(std::make_pair(wxRealPoint(m_graph->m_dxmin, m_graph->m_dymin), wxRealPoint(m_graph->m_dxmax, m_graph->m_dymax))); 
+		m_graph->m_zoom_history.push_back(std::make_pair(wxRealPoint(m_graph->m_dmin[0], m_graph->m_dmin[1]), wxRealPoint(m_graph->m_dmax[0], m_graph->m_dmax[1]))); 
 
-		m_graph->m_dxmin = nxmin;
-		m_graph->m_dymin = nymin;
-		m_graph->m_dxmax = nxmax;
-		m_graph->m_dymax = nymax;
+		m_graph->m_dmin[0] = nxmin;
+		m_graph->m_dmin[1] = nymin;
+		m_graph->m_dmax[0] = nxmax;
+		m_graph->m_dmax[1] = nymax;
 		UpdateTree();
 		if (UpdateStats()) 
 			RepaintBitmap();
@@ -846,10 +850,10 @@ void XYGraphWidget::ZoomOut() {
 		return;
 
 	std::pair<wxRealPoint, wxRealPoint>& pp = m_graph->m_zoom_history.back();
-	m_graph->m_dxmin = pp.first.x;
-	m_graph->m_dymin = pp.first.y;
-	m_graph->m_dxmax = pp.second.x;
-	m_graph->m_dymax = pp.second.y;
+	m_graph->m_dmin[0] = pp.first.x;
+	m_graph->m_dmin[1] = pp.first.y;
+	m_graph->m_dmax[0] = pp.second.x;
+	m_graph->m_dmax[1] = pp.second.y;
 	m_graph->m_zoom_history.pop_back();
 
 	EnableZoomOut(m_graph->m_zoom_history.size() > 0);
@@ -857,9 +861,9 @@ void XYGraphWidget::ZoomOut() {
 	std::deque<size_t> points;
 	for (size_t i = 0; i < m_graph->m_points_values.size(); i++) {
 		XYPoint &p = m_graph->m_points_values[i];
-		double& x = p.get<0>();
-		double& y = p.get<1>();
-		if (x >= m_graph->m_dxmin && x <= m_graph->m_dxmax && y >= m_graph->m_dymin && y <= m_graph->m_dymax)
+		double& x = p.first[0];
+		double& y = p.first[1];
+		if (x >= m_graph->m_dmin[0] && x <= m_graph->m_dmax[0] && y >= m_graph->m_dmin[1] && y <= m_graph->m_dmax[1])
 			points.push_back(i);
 	}
 
@@ -916,11 +920,11 @@ int StatsCollector::GetDataCount() {
 }
 
 void StatsCollector::Visit(const KDTree::KDTreeEntry &e) {
-	double x = m_graph->ViewPoint(e.i).get<0>();
-	double y = m_graph->ViewPoint(e.i).get<1>();
+	double x = m_graph->ViewPoint(e.i).first[0];
+	double y = m_graph->ViewPoint(e.i).first[1];
 
 	//Bacouse points of the same values are compressed to one with many dates
-	int how_many = m_graph->ViewPoint(e.i).get<2>().size();
+	int how_many = m_graph->ViewPoint(e.i).second.size();
 
 	assert(how_many > 0);
 
@@ -950,10 +954,10 @@ double StatsCollector::ComputeCorrelation(double xavg, double yavg, std::vector<
 		x_standard_deviation = sqrt(x_standard_deviation);
 		y_standard_deviation = sqrt(y_standard_deviation);
 
-		if(m_graph->x_standard_deviation == 0 || m_graph->y_standard_deviation == 0)
+		if (m_graph->m_standard_deviation[0] == 0 || m_graph->m_standard_deviation[1] == 0)
 			return 0;	
 		else
-			return (mulsum - n * xavg * yavg) / ( (n - 1) * x_standard_deviation * y_standard_deviation );
+			return (mulsum - n * xavg * yavg) / ( (n - 1) * x_standard_deviation * y_standard_deviation);
 	} else
 		return 0;
 	
@@ -970,11 +974,11 @@ void StatsCollector::UpdateGraphStats() {
 	std::sort(tmp_x_vals.begin(), tmp_x_vals.end());
 	std::sort(tmp_y_vals.begin(), tmp_y_vals.end());
 
-	m_graph->m_xmin = tmp_x_vals[0];
-	m_graph->m_xmax = tmp_x_vals[tmp_x_vals.size()-1];
+	m_graph->m_min[0] = tmp_x_vals[0];
+	m_graph->m_max[0] = tmp_x_vals[tmp_x_vals.size()-1];
 
-	m_graph->m_ymin = tmp_y_vals[0];
-	m_graph->m_ymax = tmp_y_vals[tmp_y_vals.size()-1];
+	m_graph->m_min[1] = tmp_y_vals[0];
+	m_graph->m_max[1] = tmp_y_vals[tmp_y_vals.size()-1];
 
 	std::map<double, std::pair<int, int> > xrankmap;
 	std::map<double, std::pair<int, int> > yrankmap;
@@ -1001,10 +1005,10 @@ void StatsCollector::UpdateGraphStats() {
 		idx++;
 	}
 	
-	m_graph->m_xavg = xsum / tmp_x_vals.size();
-	m_graph->m_yavg = ysum / tmp_y_vals.size();
+	m_graph->m_avg[0] = xsum / tmp_x_vals.size();
+	m_graph->m_avg[1] = ysum / tmp_y_vals.size();
 
-	m_graph->m_xy_correlation = ComputeCorrelation(m_graph->m_xavg, m_graph->m_yavg, xvals, yvals, m_graph->x_standard_deviation, m_graph->y_standard_deviation);
+	m_graph->m_xy_correlation = ComputeCorrelation(m_graph->m_avg[0], m_graph->m_avg[1], xvals, yvals, m_graph->m_standard_deviation[0], m_graph->m_standard_deviation[1]);
 
 	xsum = 0;
 	ysum = 0;
@@ -1096,20 +1100,20 @@ XYPointInfo::XYPointInfo(wxWindow *parent, ConfigManager *cfg_manager, FrameMana
 
 void XYPointInfo::SetGraphInfo(XYGraph *graph) {
 
-	m_dx = graph->m_dx;
-	m_dy = graph->m_dy;
+	m_dx = graph->m_di[0];
+	m_dy = graph->m_di[1];
 
 	m_px = m_dx->GetPrec();
 	m_py = m_dy->GetPrec();
 	
-	m_info_grid->SetCellValue(Xmin, 0, m_dx->GetValueStr(graph->m_xmin, _T("")));
-	m_info_grid->SetCellValue(Xavg, 0, m_dx->GetValueStr(graph->m_xavg, _T("")));
-	m_info_grid->SetCellValue(Xmax, 0, m_dx->GetValueStr(graph->m_xmax, _T("")));
-	m_info_grid->SetCellValue(Xsigma, 0, m_dx->GetValueStr(graph->x_standard_deviation));
-	m_info_grid->SetCellValue(Ymin, 0, m_dy->GetValueStr(graph->m_ymin, _T("")));
-	m_info_grid->SetCellValue(Yavg, 0, m_dy->GetValueStr(graph->m_yavg, _T("")));
-	m_info_grid->SetCellValue(Ymax, 0, m_dy->GetValueStr(graph->m_ymax, _T("")));
-	m_info_grid->SetCellValue(Ysigma, 0, m_dy->GetValueStr(graph->y_standard_deviation));
+	m_info_grid->SetCellValue(Xmin, 0, m_dx->GetValueStr(graph->m_min[0], _T("")));
+	m_info_grid->SetCellValue(Xavg, 0, m_dx->GetValueStr(graph->m_avg[0], _T("")));
+	m_info_grid->SetCellValue(Xmax, 0, m_dx->GetValueStr(graph->m_max[0], _T("")));
+	m_info_grid->SetCellValue(Xsigma, 0, m_dx->GetValueStr(graph->m_standard_deviation[0]));
+	m_info_grid->SetCellValue(Ymin, 0, m_dy->GetValueStr(graph->m_min[1], _T("")));
+	m_info_grid->SetCellValue(Yavg, 0, m_dy->GetValueStr(graph->m_avg[1], _T("")));
+	m_info_grid->SetCellValue(Ymax, 0, m_dy->GetValueStr(graph->m_max[1], _T("")));
+	m_info_grid->SetCellValue(Ysigma, 0, m_dy->GetValueStr(graph->m_standard_deviation[1]));
 
 	m_info_grid->SetCellValue(XYstart, 0, XYFormatTime(graph->m_start, graph->m_period));
 	m_info_grid->SetCellValue(XYend, 0, XYFormatTime(graph->m_end, graph->m_period));
@@ -1137,8 +1141,8 @@ void XYPointInfo::SetPointInfo(XYGraph *graph, int point_index) {
 
 	XYPoint &point = graph->ViewPoint(point_index);
 
-	double vx = point.get<0>();
-	double vy = point.get<1>();
+	double vx = point.first[0];
+	double vy = point.first[1];
 
 	wxString str1 = m_dx->GetValueStr(vx, _T(" -- "));
 	str1 +=	wxString(_T(" ")) + m_dx->GetUnit();
@@ -1164,7 +1168,7 @@ void XYPointInfo::SetPointInfo(XYGraph *graph, int point_index) {
 
 			XYPoint &same_pixel_point = graph->ViewPoint(*iter);
 			std::vector<DTime>::iterator tmp;
-			for(tmp = same_pixel_point.get<2>().begin(); tmp != same_pixel_point.get<2>().end(); tmp++) {
+			for (tmp = same_pixel_point.second.begin(); tmp != same_pixel_point.second.end(); tmp++) {
 				m_point_dates.push_back(*tmp);
 			}
 
@@ -1173,7 +1177,7 @@ void XYPointInfo::SetPointInfo(XYGraph *graph, int point_index) {
 		std::sort(m_point_dates.begin(), m_point_dates.end());
 
 	} else
-		m_point_dates = point.get<2>();
+		m_point_dates = point.second;
 
 	for(unsigned int i = 0; i < m_point_dates.size(); i++)
 		m_point_dates_choice->Append( XYFormatTime(m_point_dates[i].GetTime() , m_period) );
@@ -1537,16 +1541,16 @@ void XYGraphPainter::GetPointPosition(int i, int *x, int *y)  {
 	w -= m_left_margin + m_right_margin;
 	h -= m_top_margin + m_bottom_margin;
 
-	double xmax = m_graph->m_dxmax;
-	double xmin = m_graph->m_dxmin;
+	double xmax = m_graph->m_dmax[0];
+	double xmin = m_graph->m_dmin[0];
 	double xdif = xmax - xmin;
-	double& vx = m_graph->ViewPoint(i).get<0>();
+	double& vx = m_graph->ViewPoint(i).first[0];
 	*x = int(m_left_margin + (vx - xmin) * w / xdif);
 
-	double ymax = m_graph->m_dymax;
-	double ymin = m_graph->m_dymin;
+	double ymax = m_graph->m_dmax[1];
+	double ymin = m_graph->m_dmin[1];
 	double ydif = ymax - ymin;
-	double& vy = m_graph->ViewPoint(i).get<1>();
+	double& vy = m_graph->ViewPoint(i).first[1];
 	*y = int(m_top_margin + (ymax - vy) * h / ydif);
 
 }
@@ -1561,20 +1565,20 @@ void XYGraphPainter::DrawXAxis(wxDC *dc, int arrow_width, int arrow_height, int 
 
 	int rw = w - (m_left_margin + m_right_margin);
 
-	DrawInfo *dx = m_graph->m_dx;
+	DrawInfo *dx = m_graph->m_di[0];
 
-	double dif = m_graph->m_dxmax - m_graph->m_dxmin;
+	double dif = m_graph->m_dmax[0] - m_graph->m_dmin[0];
 
-	int slices = FindNumberOfSlices(m_graph->m_dxmax,
-			m_graph->m_dxmin,
-			m_graph->m_dx);
+	int slices = FindNumberOfSlices(m_graph->m_dmax[0],
+			m_graph->m_dmin[0],
+			m_graph->m_di[0]);
 
 	assert(slices > 1);
 
 	for (int i = 0; i <= slices; ++i) {
-		double val = m_graph->m_dxmin + dif * i / slices;
+		double val = m_graph->m_dmin[0] + dif * i / slices;
 
-		int x = int(m_left_margin + (val - m_graph->m_dxmin) * rw / dif);
+		int x = int(m_left_margin + (val - m_graph->m_dmin[0]) * rw / dif);
 
 		dc->DrawLine(x, h - m_bottom_margin + mark_height, x, h - m_bottom_margin);
 
@@ -1597,20 +1601,20 @@ void XYGraphPainter::DrawYAxis(wxDC *dc, int arrow_height, int arrow_width, int 
 
 	int rh = h - (m_top_margin + m_bottom_margin);
 
-	DrawInfo *dy = m_graph->m_dy;
+	DrawInfo *dy = m_graph->m_di[1];
 
-	double dif = m_graph->m_dymax - m_graph->m_dymin;
+	double dif = m_graph->m_dmax[1] - m_graph->m_dmin[1];
 
-	int slices = FindNumberOfSlices(m_graph->m_dymax,
-			m_graph->m_dymin,
-			m_graph->m_dy);
+	int slices = FindNumberOfSlices(m_graph->m_dmax[1],
+			m_graph->m_dmin[1],
+			m_graph->m_di[1]);
 
 	assert(slices > 0);
 
 	for (int i = 0; i <= slices; ++i) {
-		double val = m_graph->m_dymin + dif * i / slices;
+		double val = m_graph->m_dmin[1] + dif * i / slices;
 
-		int y = int(m_top_margin + (m_graph->m_dymax - val) * rh / dif);
+		int y = int(m_top_margin + (m_graph->m_dmax[1] - val) * rh / dif);
 
 		dc->DrawLine(m_left_margin - mark_width, y, m_left_margin, y);
 
@@ -1627,18 +1631,18 @@ void XYGraphPainter::DrawYAxis(wxDC *dc, int arrow_height, int arrow_width, int 
 void XYGraphPainter::DrawYUnit(wxDC *dc, int xdisp, int ydisp) {
 
 	int tw, th;
-	dc->GetTextExtent(m_graph->m_dy->GetUnit(), &tw, &th);
+	dc->GetTextExtent(m_graph->m_di[1]->GetUnit(), &tw, &th);
 
-	dc->DrawText(m_graph->m_dy->GetUnit(), m_left_margin - tw - xdisp, ydisp);
+	dc->DrawText(m_graph->m_di[1]->GetUnit(), m_left_margin - tw - xdisp, ydisp);
 }
 
 void XYGraphPainter::DrawXUnit(wxDC *dc, int xdisp, int ydisp) {
 	int w = m_width, h = m_height;
 
 	int tw, th;
-	dc->GetTextExtent(m_graph->m_dx->GetUnit(), &tw, &th);
+	dc->GetTextExtent(m_graph->m_di[0]->GetUnit(), &tw, &th);
 
-	dc->DrawText(m_graph->m_dx->GetUnit(), 
+	dc->DrawText(m_graph->m_di[0]->GetUnit(), 
 			w - tw - xdisp, 
 			h - m_bottom_margin + ydisp);
 }
@@ -1651,7 +1655,7 @@ void XYGraphPainter::DrawGraph(wxDC *dc) {
 	std::map< int, std::map<int, std::list<int> > > points;
 
 	wxPen pen = dc->GetPen();
-	pen.SetColour(m_graph->m_dy->GetDrawColor());
+	pen.SetColour(m_graph->m_di[1]->GetDrawColor());
 	dc->SetPen(pen);
 
 	for (size_t i = 0; i < m_graph->m_visible_points.size(); ++i) {
@@ -1703,8 +1707,8 @@ void XYGraphPainter::DrawDrawsInfo(wxDC *dc, int xdisp, int y) {
 
 	wxColour col = dc->GetTextForeground();
 
-	text = m_graph->m_dy->GetName();
-	dc->SetTextForeground(m_graph->m_dy->GetDrawColor());
+	text = m_graph->m_di[1]->GetName();
+	dc->SetTextForeground(m_graph->m_di[1]->GetDrawColor());
 	dc->GetTextExtent(text, &tw, &th);
 	dc->DrawText(text, x, y);
 	x += tw;
@@ -1715,8 +1719,8 @@ void XYGraphPainter::DrawDrawsInfo(wxDC *dc, int xdisp, int y) {
 	dc->DrawText(text, x, y);
 	x += tw;
 
-	text = m_graph->m_dx->GetName();
-	dc->SetTextForeground(m_graph->m_dx->GetDrawColor());
+	text = m_graph->m_di[0]->GetName();
+	dc->SetTextForeground(m_graph->m_di[0]->GetDrawColor());
 	dc->GetTextExtent(text, &tw, &th);
 	dc->DrawText(text, x, y);
 	x += tw;

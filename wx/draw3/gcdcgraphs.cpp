@@ -175,14 +175,6 @@ wxDragResult GCDCGraphs::SetSetInfo(wxCoord x, wxCoord y, wxString window, wxStr
 	return m_draws_wdg->SetSetInfo(window, prefix, time, pt, def);
 }
 
-void GCDCGraphs::SetDrawsChanged(DrawPtrArray draws) {
-	m_draws = draws;
-
-	m_recalulate_margins = true;
-	Refresh();
-}
-
-
 void GCDCGraphs::StartDrawingParamName() {
 	if (!m_draw_param_name) {
 		m_draw_param_name = true;
@@ -660,6 +652,9 @@ void GCDCGraphs::RecalculateMargins(wxGraphicsContext &dc) {
 		if (topmargin < th + m_screen_margins.infotopmargin)
 			topmargin = th + m_screen_margins.infotopmargin;
 
+		dc.GetTextExtent(di->GetUnit(), &tw, &th, &td, &tel);
+		if (leftmargin < tw + 6)
+			leftmargin = tw + 6;
 	}
 
 	m_screen_margins.leftmargin = leftmargin;
@@ -1009,10 +1004,12 @@ void GCDCGraphs::OnIdle(wxIdleEvent &e) {
 void GCDCGraphs::DrawInfoChanged(Draw *draw) { 
 	if (draw->GetSelected()) {
 		m_draws.resize(0);
-
 		DrawsController* controller = draw->GetDrawsController();
 		for (size_t i = 0; i < controller->GetDrawsCount(); i++)
 			m_draws.push_back(controller->GetDraw(i));
+
+		m_recalulate_margins = true;
+		Refresh();
 	}
 }
 

@@ -95,6 +95,8 @@ class GLGraphs : public wxGLCanvas, public DrawGraphs, public SetInfoDropReceive
 
 	wxTimer *m_timer;
 
+	wxGLContext *m_gl_context;
+
 	ConfigManager* m_cfg_mgr;
 
 	static FTFont *_font;
@@ -163,7 +165,6 @@ class GLGraphs : public wxGLCanvas, public DrawGraphs, public SetInfoDropReceive
 
 	bool m_draw_current_draw_name;
 public:
-	static wxGLContext *_context;
 
         GLGraphs(wxWindow* parent, ConfigManager *cfg);
 

@@ -47,9 +47,11 @@ bool szb_compile_lua_formula(lua_State *lua, const char *formula, const char *fo
 #endif
 
 
+/** Highest level szbase API, provides access to szbase content
+ This class should be initialized by calling one of Init static method.
+ Also before this class can be used @see IPKContiner should be initialized.
+*/
 class Szbase {
-	typedef std::tr1::unordered_map<std::wstring, std::pair<szb_buffer_t*, TParam*> > TBP;
-
 	class UnsignedStringHash {
 		std::tr1::hash<std::string> m_hasher;
 		public:
@@ -58,66 +60,107 @@ class Szbase {
 		}
 	};
 
+	/** Maps global parameters names encoding in utf-8 to corresponding szb_buffer_t* and TParam* objects. 
+	 UTF-8 encoded param names are used by LUA formulas*/
 	typedef std::tr1::unordered_map<std::basic_string<unsigned char>, std::pair<szb_buffer_t*, TParam*>, UnsignedStringHash > TBPU8;
+	/*Maps global parameters encoded in wchar_t. Intention of having two separate maps 
+	is to avoid frequent conversions between two encodings*/
+	typedef std::tr1::unordered_map<std::wstring, std::pair<szb_buffer_t*, TParam*> > TBP;
+	/**Maps config prefixes to @see szb_buffer_t and @see TSzarpConfig.*/
 	typedef std::tr1::unordered_map<std::wstring, std::pair<szb_buffer_t*, TSzarpConfig*> > TBI;
 	TBP m_params;
 	TBPU8 m_u8params;
 	TBI m_ipkbasepair;
+	/** Path to root szarp dir*/
 	boost::filesystem::wpath m_szarp_dir;
+	/** Object used for monitoring updates of params.xml files*/
 	SzbFileWatcher m_file_watcher;
+	void (*m_config_modification_callback)(std::wstring, std::wstring);
 #ifndef NO_LUA
 #if LUA_PARAM_OPTIMISE
+	/**Object keeps track of references between lua optimized params*/
 	std::map<TParam*, std::set<TParam*> > m_lua_opt_param_reference_map;
 #endif
 #endif
+	/**Current 'transaction id' number. Blocks from @see szb_buffer_t 
+	held by this object are refreshed only when their last_current_id is 
+	different than this value (refresh operation causes their @see last_current_id
+	to be set to m_current_query). The intention of this mechanism is to
+	give client apps explicit control over when data is refreshed.*/
 	long m_current_query;
 
-	void (*m_config_modification_callback)(std::wstring, std::wstring);
-
+	/**Load configuration for this prefix into internal hashes*/
 	bool AddBase(const std::wstring& prefix);
 
 	static Szbase* _instance;
+
 	Szbase(const std::wstring& szarp_dir);
+
 	~Szbase();
 
 	void AddParamToHash(const std::wstring& prefix, TParam *param);
-
 public:
+	/**Notifies listener about changes in configuration*/
 	void NotifyAboutConfigurationChanges();
+
 	time_t SearchFirst(const std::wstring& param, bool &ok);
 	time_t SearchFirst(const std::basic_string<unsigned char> & param, bool &ok);
 	time_t SearchLast(const std::wstring& param, bool &ok);
 	time_t SearchLast(const std::basic_string<unsigned char>& param, bool &ok);
+	/**Add user defined param to object*/
 	void AddExtraParam(const std::wstring& prefix, TParam *param);
 #ifndef NO_LUA
 #if LUA_PARAM_OPTIMISE
 	void AddLuaOptParamReference(TParam* refered, TParam* referring);
 #endif
 #endif
+	/**Remove user param from object, cache associated with param is destroyed*/
 	void RemoveExtraParam(const std::wstring& prefix, TParam *param);
+	/**Add configuration to object*/
 	bool AddBase(const std::wstring& szbase_dir, const std::wstring &prefix);
+	/**Methods for retrieveing data from szbase
+	* @param param name of param
+	* @param time time of value to retrieve
+	* @param probe_type type of probe to retrieve
+	* @param custom_length if probe type is PERIOT_T_OTHER, this value denotes number of 10 minute values to average over
+	* @param isFixed output parameter, denotes is this probe vlaue is fixed i.e. can be cached
+	* @param ok flag indicate if there was an error in retrieveing this value
+	* @param error if ok is set to false, this output params holds error string*/
 	double GetValue(const std::wstring& param, time_t time, SZARP_PROBE_TYPE probe_type, int custom_length, bool *isFixed, bool &ok, std::wstring &error);
 	double GetValue(const std::basic_string<unsigned char>& param, time_t time, SZARP_PROBE_TYPE probe_type, int custom_length, bool *isFixed, bool &ok, std::wstring &error);
 	double GetValue(std::pair<szb_buffer_t*, TParam*>& bp, time_t time, SZARP_PROBE_TYPE probe_type, int custom_length, bool *isFixed, bool &ok, std::wstring &error);
 #ifndef NO_LUA
+	/**Compiles lua formula*/
 	bool CompileLuaFormula(const std::wstring& formula, std::wstring& error);
 #endif
+	/**Static methods for initizaling global object*/
 	static void Init(const std::wstring& szarp_dir, bool write_cache = false);
 	static void Init(const std::wstring& szarp_dir, void (*callback)(std::wstring, std::wstring), bool write_cache);
+	/**Destroy all object contents*/
 	static void Destroy();
+	/**Get buffer for give prefix*/
 	szb_buffer_t* GetBuffer(const std::wstring& prefix);
 	static Szbase* GetObject();
 	std::wstring GetCacheDir(const std::wstring& prefix);
+	/**Find param with given global name*/
 	bool FindParam(const std::basic_string<unsigned char>& param, std::pair<szb_buffer_t*, TParam*>& bp);
+	/**Find param with given wchar_r version*/
 	bool FindParam(const std::wstring& param, std::pair<szb_buffer_t*, TParam*>& bp);
+	/**Clear whole cache for given prefix*/
 	void ClearCacheDir(const std::wstring& prefix);
+	/**Clears param from cache*/
 	void ClearParamFromCache(const std::wstring& prefix, TParam* param);
+	/**Remove all parameters from configuration of prefix from object
+	@param prefix prefix to remove
+	@param poison_cache if true, cache for this prefix will be removed*/
 	void RemoveConfig(const std::wstring& prefix, bool poison_cache);
 	const long& GetQueryId() { return m_current_query; }
+	/**advances @see m_current_query id*/
 	void NextQuery();
 };
 
 #ifndef NO_LUA
+/*Global object wrapping lua interpreter used internally by szabse*/
 class Lua {
 	static lua_State* lua;
 	Lua();
