@@ -32,7 +32,6 @@ install-data-local: $(setter_LOCALES)
 	$(INSTALL) -d $(DESTDIR)@prefix@/resources/locales/pl_PL/LC_MESSAGES
 	$(INSTALL) $(setter_LOCALES) \
                 $(DESTDIR)@prefix@/resources/locales/pl_PL/LC_MESSAGES
-	$(INSTALL) $(setter_script) $(DESTDIR)@prefix@/bin
 
 update-po:
 	@XGETTEXT@ -o $(setter_LOCALES_TMP) -L Python --keyword=_  setter
