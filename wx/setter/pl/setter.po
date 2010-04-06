@@ -1,0 +1,59 @@
+# SZARP setdmn client.
+# This file is distributed under the same license as the SZARP package.
+# Pawel Palucha <pawel@newterm.pl>, 2010.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: SZARP_3.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-04-06 16:57+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Pawel Palucha <pawel@newterm.pl>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-2\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: setter:53
+msgid "Enter new value:"
+msgstr "Podaj now± warto¶æ"
+
+#: setter:104
+msgid "Name"
+msgstr "Nazwa"
+
+#: setter:106
+msgid "Min"
+msgstr "Min"
+
+#: setter:107
+msgid "Max"
+msgstr "Maks"
+
+#: setter:108
+msgid "Current"
+msgstr "Aktualna"
+
+#: setter:129
+msgid "Value to small"
+msgstr "Warto¶æ za ma³a"
+
+#: setter:129 setter:132 setter:135 setter:138
+msgid "Error"
+msgstr "B³±d"
+
+#: setter:132
+msgid "Value to large"
+msgstr "Warto¶æ za du¿a"
+
+#: setter:135
+msgid "Incorrect value"
+msgstr "Nieprawid³owa warto¶æ"
+
+#: setter:138
+msgid "Incorrect server response"
+msgstr "Nierozpoznana odpowied¼ serwera"
+
+#: setter:219
+msgid "Setter"
+msgstr "Ustawiacz"

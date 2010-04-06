@@ -1437,7 +1437,7 @@ int tcp_server::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx) {
 		return 1;
 
 	xmlChar* c;
-	c = get_device_node_prop(xp_ctx, "allowed_ip");
+	c = get_device_node_prop(xp_ctx, "tcp-allowed");
 	if (c != NULL) {
 		int tokc = 0;
 		char **toks;

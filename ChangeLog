@@ -1,5 +1,12 @@
 $Id$
 
+2010-04-06	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/setter: simple wxPython client for setdmn.
+	* parcook/setdmn.cc: daemon working.
+	* parcook/mbdmn.cc: parsing of 'tcp-allowed' attribute instead of
+	incorrect 'allowed_ip'.
+	* libSzarp2/ipk/tparam.cc: correct rounding when converting double to
+	short int in TParam::ToIPCValue() method.
 2010-04-06	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
 	* libSzarp2: added proper termination of 'configuration
 	watcher' thread, introducing comments into new code part I:
@@ -9,6 +16,17 @@ $Id$
 	- bugs that resulted from code refactoring...
 	some progress on 3D graphs	
 2010-04-02	Pawel Palucha <pawel@praterm.com.pl>
+	* script/dmn2sgml.py: script for generating SGML documentation from
+	line daemons source code files.
+	* parcook/README: description of line daemons documentation format.
+	* parcook/setdmn.cc: daemon for setting parameters from network
+	client, work in progress.
+	* parcook/*: added documentation for some daemons.
+	* resources/documentation/new/Makefile.am, ipk.sgml: inclusion of line
+	daemons documentation.
+	* utils/*: fixes in modem pooling utilities, modem_pooler.sh has now
+	new option '-m' (like 'manual') that turns verbose mode and ignores
+	'nocall' file.
 	* Makefile.am: doxy target made .PHONY, so it is regenerated on every
 	run.
 	* Doxyfile: JAVADOC_AUTOBRIEF enabled to get brief description of

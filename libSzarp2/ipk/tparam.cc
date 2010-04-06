@@ -853,7 +853,7 @@ TParam::ToIPCValue(SZBASE_TYPE value)
 	for (int i = 0; i < GetPrec(); i++) {
 		value *= 10;
 	}
-	return (SZB_FILE_TYPE) value;
+	return (SZB_FILE_TYPE) nearbyint(value);
 }
 
 void

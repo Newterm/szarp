@@ -1,0 +1,227 @@
+#!/usr/bin/env python
+# -*- coding: ISO-8859-2 -*-
+#
+# SZARP: SCADA software 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+"""
+$Id:$
+Pawel Palucha <pawel@newterm.pl>
+
+Simple wxWidgets client for SZARP setdmn driver. Allows to set current value
+of parameters maintained by setdmn.
+"""
+
+import asynchat
+import asyncore
+from lxml import etree
+from optparse import OptionParser
+import socket
+import sys
+import thread
+import time
+import wx
+
+import gettext
+_ = gettext.gettext
+
+class NumDialog(wx.Dialog):
+	"""
+	Simple dialog to read number from user.
+	Currently, it does not check if value provided by user is a number, check is 
+	done on server side.
+	"""
+	def __init__(self, *args, **kwds):
+		value = kwds['value']
+		del kwds['value']
+		wx.Dialog.__init__(self, *args, **kwds)
+		sizer = wx.BoxSizer(wx.VERTICAL)
+		
+		label = wx.StaticText(self, wx.ID_ANY, label = _("Enter new value:"))
+		sizer.Add(label, proportion = 0, flag = wx.ALL | wx.EXPAND, border = 10)
+		buttons = self.CreateButtonSizer(wx.OK | wx.CANCEL)
+		self.tctrl = wx.TextCtrl(self, wx.ID_ANY, value = value) 
+		sizer.Add(self.tctrl, proportion = 0, flag = wx.ALL | wx.EXPAND, border = 10)
+		sizer.Add(buttons, proportion = 0, 
+				flag = wx.BOTTOM | wx.LEFT | wx.RIGHT | wx.EXPAND, 
+				border = 10)
+		self.SetSizer(sizer)
+		sizer.SetSizeHints(self)
+		self.SetAutoLayout(True)
+		self.Layout()
+		self.tctrl.SetFocus()
+	
+	def get_value(self):
+		return self.tctrl.GetValue()
+	
+
+"""
+Main frame, displaying list of parameters.
+"""
+class MainFrame(wx.Frame):
+	"""
+	"""
+	def __init__(self, *args, **kwds):
+		kwds['size'] = (450, 100)
+
+		wx.Frame.__init__(self, *args, **kwds)
+
+		self.__do_layout()
+		self.l.Bind(wx.EVT_SIZE, self.OnResize, self.l)
+		self.l.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnEdit, self.l)
+		self.l.SetFocus()
+		self.Show()
+
+	def OnResize(self, e):
+		self.Refresh()
+		e.Skip()
+
+	def OnEdit(self, l):
+		i = self.l.GetItem(l.GetIndex(), 3)
+		dlg = NumDialog(self, value = i.GetText())
+		if dlg.ShowModal() == wx.ID_OK:
+			i2 = self.l.GetItem(l.GetIndex(), 0)
+			s = '"' + i2.GetText() + '" ' + dlg.get_value() + "\n"
+			self.chat.push(s.encode('utf8'))
+
+	def __do_layout(self):
+		sizer = wx.BoxSizer(wx.VERTICAL)
+
+		self.l = wx.ListCtrl(self, wx.ID_ANY, style = wx.LC_REPORT | wx.LC_SINGLE_SEL)
+		self.l.InsertColumn(0, _("Name"))
+		self.l.SetColumnWidth(0,250)
+		self.l.InsertColumn(1, _("Min"), format = wx.LIST_FORMAT_RIGHT)
+		self.l.InsertColumn(2, _("Max"), format = wx.LIST_FORMAT_RIGHT)
+		self.l.InsertColumn(3, _("Current"), format = wx.LIST_FORMAT_RIGHT)
+
+		sizer.Add(self.l, proportion = 1, flag = wx.ALL | wx.EXPAND, border = 10)
+		self.SetMinSize((350, 80))
+		self.SetSizer(sizer)
+		self.SetAutoLayout(True)
+		self.Layout()
+
+		self.SetIcon(wx.Icon("/opt/szarp/resources/wx/icons/szarp64.xpm", wx.BITMAP_TYPE_XPM))
+
+	def ValueChanged(self, name, val, vmin, vmax):
+		i = self.l.FindItem(-1, name)
+		if i < 0:
+			i = self.l.GetItemCount()
+			self.l.InsertStringItem(i, name)
+		self.l.SetStringItem(i, 1, str(vmin));
+		self.l.SetStringItem(i, 2, str(vmax));
+		self.l.SetStringItem(i, 3, str(val));
+		self.l.SetColumnWidth(0, -1);
+
+	def ErrorValueToSmall(self):
+		wx.MessageBox(_("Value to small"), _("Error"), style = wx.OK | wx.ICON_ERROR, parent = self)
+
+	def ErrorValueToLarge(self):
+		wx.MessageBox(_("Value to large"), _("Error"), style = wx.OK | wx.ICON_ERROR, parent = self)
+
+	def ErrorOther(self):
+		wx.MessageBox(_("Incorrect value"), _("Error"), style = wx.OK | wx.ICON_ERROR, parent = self)
+
+	def ErrorParse(self):
+		wx.MessageBox(_("Incorrect server response"), _("Error"), style = wx.OK | wx.ICON_ERROR, parent = self)
+
+class SetterClient(asynchat.async_chat):
+	"""
+	"""
+
+	def __init__(self, parent, host, port):
+		self.ibuffer = ""
+		self.parent = parent
+		asynchat.async_chat.__init__(self)
+		self.set_terminator("\n")
+		self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.host = host
+		self.port = port
+		self.connect((self.host, self.port))
+	def collect_incoming_data(self, data):
+		"""Buffer the data"""
+		self.ibuffer += data
+
+	def found_terminator(self):
+		if self.ibuffer == ':E_MIN':
+			# CallAfter is a safe way to pass data from asyncore
+			# thread to main application thread
+			wx.CallAfter(self.parent.ErrorValueToSmall)
+		elif self.ibuffer == ':E_MAX':
+			wx.CallAfter(self.parent.ErrorValueToLarge)
+		elif self.ibuffer == ':E_OTHER':
+			wx.CallAfter(self.parent.ErrorOther)
+		else:
+			try:
+				(_, name, tmp) = self.ibuffer.split('"')
+				(val, vmin, vmax) = tmp.split()
+				val = float(val)
+				vmin = float(vmin);
+				vmax = float(vmax);
+				try:
+					wx.CallAfter(self.parent.ValueChanged, name.decode('utf8'), val, vmin, vmax)
+				except KeyError:
+					pass
+			except ValueError:
+				wx.CallAfter(self.parent.ErrorParse)
+
+		self.ibuffer = ""
+
+	def handle_connect(self):
+		# connection succeeded
+		pass
+
+	def handle_expt(self):
+		# connection failed
+		self.close()
+
+	def handle_error(self):
+		#asynchat.async_chat.handle_error(self)
+		self.handle_close()
+
+	def handle_close(self):
+		asynchat.async_chat.handle_close(self)
+		time.sleep(1)
+		self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.connect((self.host, self.port))
+
+if __name__ == '__main__':
+
+	gettext.bindtextdomain('setter', '/opt/szarp/resources/locales')
+	gettext.textdomain('setter')
+
+	parser = OptionParser(usage="usage: %prog [options] [host] [port=8010]\nClient for SZARP setdmn.")
+	(options, args) = parser.parse_args()
+	if len(args) < 1 or len(args) > 2:
+		parser.error("incorrect number of arguments")
+	host = args[0]
+	try:
+		port = int(args[1])
+	except IndexError:
+		port = 8010
+
+
+	app = wx.App()
+	wx.InitAllImageHandlers()
+
+	mainFrame = MainFrame(None, wx.ID_ANY, _('Setter'))
+	k = SetterClient(mainFrame, host, port)
+	mainFrame.chat = k
+	app.SetTopWindow(mainFrame)
+	# we use another thread to start asyncore main loop, because main thread is 
+	# running wxWidgets loop
+	thread.start_new_thread(asyncore.loop, ())
+	app.MainLoop()
+
