@@ -1,5 +1,7 @@
 $Id$
 
+2010-04-07	Pawel Palucha <pawel@praterm.com.pl>
+	* parcook/wagadmn.cc: removed obsolete driver.
 2010-04-06	Pawel Palucha <pawel@praterm.com.pl>
 	* wx/setter/Makefile.am: installation rule fix.
 	* wx/setter: simple wxPython client for setdmn.
