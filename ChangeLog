@@ -1,6 +1,8 @@
 $Id$
 
 2010-04-07	Pawel Palucha <pawel@praterm.com.pl>
+	* parcook/*, ipk.sgml: documentation of mbusdmn and wlkdmn moved to
+	daemons source code.
 	* parcook/*dmn.cc: added daemons descriptions, small fixes, removed
 	unnecessary C headers inclusions.
 	* script/sgml2hlpctrl.pl: fix, shell command replaced with perl	function.

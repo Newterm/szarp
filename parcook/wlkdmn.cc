@@ -23,9 +23,674 @@
 /*
  @description_start
  @class 3
+
  @devices Daemon reading WKL files from Davis Instruments Vantage Pro 2 meteo station.
  @devices.pl Daemon do odczytu danych z plików WKL stacji meteorologicznej Vantage
  Pro 2 firmy Davis Instruments.
+
+ @comment Daemon reads WLK files, that can be fetched from meteo station using Open Source 
+ <ulink url="http://www.wviewweather.com/">wview</ulink> software.
+ @comment.pl Daemon zosta³ zaimplementowany nie jako narzêdzie do komunikacji ze stacj± bezpo¶rednio poprzez port
+ szeregowy/USB, a jako parser plików w formacie WLK, które udostêpnia stacja. W zwi±zku z tym wymagane jest 
+ zewnêtrzne oprogramowanie, które odpowiedzialne bêdzie za komunikacjê ze stacj± oraz pobieranie
+ z niej plików WLK. Dostêpne jest oprogramowanie na licencji typu Open Source, które bardzo dobrze realizuje 
+ to zadanie: <ulink url="http://www.wviewweather.com/">wview</ulink>.
+
+ @config Prior to configuring wlkdmn you need to have wview running. Set "path" attribute to directory
+ where wview stores WLK files. Configuration contains 148 parameters, if some of them are not used by
+ your meteo station model, they will be filled with NO_DATA values.
+ @config.pl Demon do dzia³ania wymaga poprawnie skonfigurowanego i dzia³aj±cego oprogramowania wview.
+ Jako ¶cie¿kê do urz±dzenia podana powinna zostaæ ¶cie¿ka do katalogu, w którm wview przechowuje pliki
+ WLK. W konfiguracji nale¿y umie¶ciæ wszystkie 148 parametrów, gdy¿ taka ilo¶æ danych jest
+ przechowywana w plikach WLK; je¿eli dany model stacji nie obs³uguje wszystkich parametrów,
+ które mog± byæ przechowywane w plikach WLK, to zostan± one wype³nione warto¶ci± NO_DATA.
+ @comment.pl
+            Daemon <emphasis>wlkdmn</emphasis> oprócz podstawowej
+            funkcjonalno¶ci odczytywania danych bie¿±cych z plików WLK i
+            przekazywania ich do parcooka, posiada równie¿ mo¿liwo¶æ
+            odczytania danych historycznych z tych¿e plików (np. za
+            podany okres w przesz³o¶ci), a nastêpnie wyeksportowania ich
+            do pliku w formacie odpowiednim dla programu
+            <emphasis>szbwriter</emphasis> (patrz <xref
+            linkend="szbase-szbwriter">). Uruchomienie
+            <emphasis>wlkdmn</emphasis> w tym trybie pracy nastêpuje
+            poprzez podanie argumentu <emphasis>--export</emphasis> w
+            linii poleceñ. W tym trybie dostêpne s± nastêpuj±ce
+            argumenty linii poleceñ:
+            <itemizedlist>
+                <listitem>
+                    <para>
+                        <emphasis>--file</emphasis> - ¶cie¿ka do pliku, do
+                        którego wyeksportowane dane maj± zostaæ zapisane;
+                        je¶li plik ten ju¿ istnieje, dane wyeksportowane
+                        zostan± dopisane na jego koñcu; argument ten
+                        jest <emphasis>obowi±zkowy</emphasis>
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <emphasis>--from</emphasis> - data (w formacie
+                        RRRR-MM-DD), od której nale¿y zacz±æ eksport 
+                        danych; je¶li zostanie pominiêta zostan± 
+                        wyeksportowane dane od najwcze¶niejszych dostêpnych
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <emphasis>--to</emphasis> - data (w formacie
+                        RRRR-MM-DD), na której nale¿y zakoñczyæ eksport 
+                        danych; je¶li zostanie pominiêta zostan± 
+                        wyeksportowane dane do najpó¼niejszych dostêpnych
+                    </para>
+                </listitem>
+            </itemizedlist>
+
+ @config_example
+  <device daemon="/opt/szarp/bin/wlkdmn" path="/var/wview/archive">
+    <unit id="1" type="1" subtype="1" bufsize="1">
+      <param name="WView:Simulator:maksymalna dobowa temperatura zewnêtrzna" short_name="Tzmx" draw_name="Temp. zewn. max" unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - temperatury powietrza" min="-40" max="50" prior="1" order="1"/>
+        <raport title="WView - simulator" order="1"/>
+      </param>
+      <param name="WView:Simulator:minimalna dobowa temperatura zewnêtrzna" short_name="Tzmn" draw_name="Temp. zewn. min" unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - temperatury powietrza" min="-40" max="50" order="3"/>
+        <raport title="WView - simulator" order="2"/>
+      </param>
+      <param name="WView:Simulator:maksymalna dobowa temperatura wewnêtrzna" short_name="Twmx" draw_name="Temp. wewn. max" unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - temperatury powietrza" min="-40" max="50" order="4"/>
+        <raport title="WView - simulator" order="3"/>
+      </param>
+      <param name="WView:Simulator:minimalna dobowa temperatura wewnêtrzna" short_name="Twmn" draw_name="Temp. wewn. min" unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - temperatury powietrza" min="-40" max="50" order="6"/>
+        <raport title="WView - simulator" order="4"/>
+      </param>
+      <param name="WView:Simulator:¶rednia dobowa temperatura zewnêtrzna" short_name="Tzsr" draw_name="Temp. zewn. ¶r." unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - temperatury powietrza" min="-40" max="50" order="2"/>
+        <raport title="WView - simulator" order="5"/>
+      </param>
+      <param name="WView:Simulator:¶rednia dobowa temperatura wewnêtrzna" short_name="Twsr" draw_name="Temp. wewn. ¶r." unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - temperatury powietrza" min="-40" max="50" order="5"/>
+        <raport title="WView - simulator" order="6"/>
+      </param>
+      <param name="WView:Simulator:maksymalne dobowe och³odzenie spowodowane wiatrem" short_name="Tzwmx" draw_name="Och³. sp. w. max" unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - wp³yw wiatru, s³oñca i wilgoci" min="-40" max="50" prior="2" order="1"/>
+        <raport title="WView - simulator" order="7"/>
+      </param>
+      <param name="WView:Simulator:minimalne dobowe och³odzenie spowodowane wiatrem" short_name="Tzwmn" draw_name="Och³. sp. w. min" unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - wp³yw wiatru, s³oñca i wilgoci" min="-40" max="50" order="3"/>
+        <raport title="WView - simulator" order="8"/>
+      </param>
+      <param name="WView:Simulator:maksymalny dobowy punkt rosy" short_name="Trmx" draw_name="Punkt rosy max" unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - punkt rosy" min="0" max="50" prior="3" order="1"/>
+        <raport title="WView - simulator" order="9"/>
+      </param>
+      <param name="WView:Simulator:minimalny dobowy punkt rosy" short_name="Trmn" draw_name="Punkt rosy min" unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - punkt rosy" min="0" max="50" order="3"/>
+        <raport title="WView - simulator" order="10"/>
+      </param>
+      <param name="WView:Simulator:¶rednie dobowe och³odzenie spowodowane wiatrem" short_name="Tzwsr" draw_name="Och³. sp. w. ¶r." unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - wp³yw wiatru, s³oñca i wilgoci" min="-40" max="50" order="2"/>
+        <raport title="WView - simulator" order="11"/>
+      </param>
+      <param name="WView:Simulator:¶redni dobowy punkt rosy" short_name="Trsr" draw_name="Punkt rosy ¶r." unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - punkt rosy" min="0" max="50" order="2"/>
+        <raport title="WView - simulator" order="12"/>
+      </param>
+      <param name="WView:Simulator:maksymalna dobowa zewnêtrzna wilgotno¶æ" short_name="fzmx" draw_name="Zewn. wilg. max" unit="%" prec="1" base_ind="auto">
+        <draw title="WView - wilgotno¶æ" min="0" max="100" prior="4" order="1"/>
+        <raport title="WView - simulator" order="13"/>
+      </param>
+      <param name="WView:Simulator:minimalna dobowa zewnêtrzna wilgotno¶æ" short_name="fzmn" draw_name="Zewn. wilg. min" unit="%" prec="1" base_ind="auto">
+        <draw title="WView - wilgotno¶æ" min="0" max="100" order="3"/>
+        <raport title="WView - simulator" order="14"/>
+      </param>
+      <param name="WView:Simulator:maksymalna dobowa wewnêtrzna wilgotno¶æ" short_name="fwmx" draw_name="Wewn. wilg. max" unit="%" prec="1" base_ind="auto">
+        <draw title="WView - wilgotno¶æ" min="0" max="100" order="4"/>
+        <raport title="WView - simulator" order="15"/>
+      </param>
+      <param name="WView:Simulator:minimalna dobowa wewnêtrzna wilgotno¶æ" short_name="fwmn" draw_name="Wewn. wilg. min" unit="%" prec="1" base_ind="auto">
+        <draw title="WView - wilgotno¶æ" min="0" max="100" order="5"/>
+        <raport title="WView - simulator" order="16"/>
+      </param>
+      <param name="WView:Simulator:¶rednia dobowa zewnêtrzna wilgotno¶æ" short_name="fzsr" draw_name="Zewn. wilg. ¶r." unit="%" prec="1" base_ind="auto">
+        <draw title="WView - wilgotno¶æ" min="0" max="100" order="2"/>
+        <raport title="WView - simulator" order="17"/>
+      </param>
+      <param name="WView:Simulator:maksymalne dobowe ci¶nienie atmosferyczne" short_name="Pamx" draw_name="Ci¶n. atm. max" unit="mmHg" prec="1" base_ind="auto">
+        <draw title="WView - ci¶nienie atmosferyczne" min="700" max="800" prior="5" order="1"/>
+        <raport title="WView - simulator" order="18"/>
+      </param>
+      <param name="WView:Simulator:minimalne dobowe ci¶nienie atmosferyczne" short_name="Pamn" draw_name="Ci¶n. atm. min" unit="mmHg" prec="1" base_ind="auto">
+        <draw title="WView - ci¶nienie atmosferyczne" order="3" min="700" max="800"/>
+        <raport title="WView - simulator" order="19"/>
+      </param>
+      <param name="WView:Simulator:¶rednie dobowe ci¶nienie atmosferyczne" short_name="Pasr" draw_name="Ci¶n. atm. ¶r." unit="mmHg" prec="1" base_ind="auto">
+        <draw title="WView - ci¶nienie atmosferyczne" min="700" max="800" order="2"/>
+        <raport title="WView - simulator" order="20"/>
+      </param>
+      <param name="WView:Simulator:maksymalna dobowa prêdko¶æ wiatru" short_name="vwmx" draw_name="Prêd. w. max" unit="km/h" prec="1" base_ind="auto">
+        <draw title="WView - wiatr" min="0" max="200" prior="6" order="1"/>
+        <raport title="WView - simulator" order="21"/>
+      </param>
+      <param name="WView:Simulator:¶rednia dobowa prêdko¶æ wiatru" short_name="vwsr" draw_name="Prêd. w. ¶r." unit="km/h" prec="1" base_ind="auto">
+        <draw title="WView - wiatr" order="2" min="0" max="200"/>
+        <raport title="WView - simulator" order="22"/>
+      </param>
+      <param name="WView:Simulator:ca³kowita dobowa odlego¶æ przebyta przez wiatr" short_name="sw" draw_name="Odl. przeb. w." unit="km" prec="1" base_ind="auto">
+        <draw title="WView - wiatr" min="0" max="4000" order="3"/>
+        <raport title="WView - simulator" order="23"/>
+      </param>
+      <param name="WView:Simulator:maksymalna dobowa prêdko¶æ 10-minutowa wiatru" short_name="vw10s" draw_name="Prêd. w. 10m max" unit="km/h" prec="1" base_ind="auto">
+        <draw title="WView - wiatr" min="0" max="200" order="4"/>
+        <raport title="WView - simulator" order="24"/>
+      </param>
+      <param name="WView:Simulator:kierunek wiatru o maksymalnej dobowej prêdko¶ci" short_name="Dmxv" draw_name="Max prêd. w. kier." unit="-" base_ind="auto">
+        <value int="0" name="N"/>
+        <value int="1" name="NNE"/>
+        <value int="2" name="NE"/>
+        <value int="3" name="ENE"/>
+        <value int="4" name="E"/>
+        <value int="5" name="ESE"/>
+        <value int="6" name="SE"/>
+        <value int="7" name="SSE"/>
+        <value int="8" name="S"/>
+        <value int="9" name="SSW"/>
+        <value int="10" name="SW"/>
+        <value int="11" name="WSW"/>
+        <value int="12" name="W"/>
+        <value int="13" name="WNW"/>
+        <value int="14" name="NW"/>
+        <value int="15" name="NNW"/>
+        <raport title="WView - simulator" order="25"/>
+      </param>
+      <param name="WView:Simulator:kierunek wiatru o maksymalnej dobowej prêd. 10min" short_name="Dmxv10" draw_name="Max p. 10m w. kier." unit="-" base_ind="auto">
+        <value int="0" name="N"/>
+        <value int="1" name="NNE"/>
+        <value int="2" name="NE"/>
+        <value int="3" name="ENE"/>
+        <value int="4" name="E"/>
+        <value int="5" name="ESE"/>
+        <value int="6" name="SE"/>
+        <value int="7" name="SSE"/>
+        <value int="8" name="S"/>
+        <value int="9" name="SSW"/>
+        <value int="10" name="SW"/>
+        <value int="11" name="WSW"/>
+        <value int="12" name="W"/>
+        <value int="13" name="WNW"/>
+        <value int="14" name="NW"/>
+        <value int="15" name="NNW"/>
+        <raport title="WView - simulator" order="26"/>
+      </param>
+      <param name="WView:Simulator:ca³kowity dobowy opad deszczu" short_name="hdc" draw_name="Dobowy opad d." unit="mm" prec="1" base_ind="auto">
+        <draw title="WView - deszcz" min="0" max="1000" prior="7" order="1"/>
+        <raport title="WView - simulator" order="27"/>
+      </param>
+      <param name="WView:Simulator:maksymalna dobowa intensywno¶æ opadu deszczu" short_name="Fdmx" draw_name="Int. op. d. max" unit="mm/h" prec="1" base_ind="auto">
+        <draw title="WView - deszcz" min="0" max="200" order="2"/>
+        <raport title="WView - simulator" order="28"/>
+      </param>
+      <param name="WView:Simulator:dobowa dawka promieniowania UV" short_name="UV" draw_name="Dobowa dawka UV" unit="MED" prec="1" base_ind="auto">
+        <draw title="WView - promieniowanie" min="0" max="5" prior="8" order="1"/>
+        <raport title="WView - simulator" order="29"/>
+      </param>
+      <param name="WView:Simulator:maksymalny dobowy indeks UV" short_name="UVimx" draw_name="Max indeks UV" unit="UVindex" prec="1" base_ind="auto">
+        <draw title="WView - promieniowanie" min="0" max="16" order="2"/>
+        <raport title="WView - simulator" order="30"/>
+      </param>
+      <param name="WView:Simulator:czas maksymalnej dobowej temperatury zewnêtrznej" short_name="tTzmx" draw_name="Czas Tzmx" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="31"/>
+      </param>
+      <param name="WView:Simulator:czas minimalnej dobowej temperatury zewnêtrznej" short_name="tTzmn" draw_name="Czas Tzmn" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="32"/>
+      </param>
+      <param name="WView:Simulator:czas maksymalnej dobowej temperatury wewnêtrznej" short_name="tTwmx" draw_name="Czas Twmx" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="33"/>
+      </param>
+      <param name="WView:Simulator:czas minimalnej dobowej temperatury wewnêtrznej" short_name="tTwmn" draw_name="Czas Twmn" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="34"/>
+      </param>
+      <param name="WView:Simulator:czas maks. dobowego och³odzenia spow. wiatrem" short_name="tTzwmx" draw_name="Czas Tzwmx" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="35"/>
+      </param>
+      <param name="WView:Simulator:czas min. dobowego och³odzenia spow. wiatrem" short_name="tTzwmn" draw_name="Czas Tzwmn" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="36"/>
+      </param>
+      <param name="WView:Simulator:czas maksymalnego dobowego punktu rosy" short_name="tTrmx" draw_name="Czas Trmx" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="37"/>
+      </param>
+      <param name="WView:Simulator:czas minimalnego dobowego punkut rosy" short_name="tTrmn" draw_name="Czas Trmn" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="38"/>
+      </param>
+      <param name="WView:Simulator:czas maksymalnej dobowej zewnêtrznej wilgotno¶ci" short_name="tfzmx" draw_name="Czas fzmx" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="39"/>
+      </param>
+      <param name="WView:Simulator:czas minimalnej dobowej zewnêtrznej wilgotno¶ci" short_name="tfzmn" draw_name="Czas fzmn" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="40"/>
+      </param>
+      <param name="WView:Simulator:czas maksymalnej dobowej wewnêtrznej wilgotno¶ci" short_name="tfwmx" draw_name="Czas fwmx" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="41"/>
+      </param>
+      <param name="WView:Simulator:czas minimalnej dobowej wewnêtrznej wilgotno¶ci" short_name="tfwmn" draw_name="Czas fwmn" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="42"/>
+      </param>
+      <param name="WView:Simulator:czas maksymalnego dobowego ci¶nienia atm." short_name="tPamx" draw_name="Czas Pamx" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="43"/>
+      </param>
+      <param name="WView:Simulator:czas minimalnego dobowego ci¶nienia atm." short_name="tPamn" draw_name="Czas Pamn" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="44"/>
+      </param>
+      <param name="WView:Simulator:czas maksymalnej dobowej prêdko¶ci wiatru" short_name="tvwmx" draw_name="Czas vwmx" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="45"/>
+      </param>
+      <param name="WView:Simulator:czas maks. dobowej prêdko¶ci 10min wiatru" short_name="tvw10s" draw_name="Czas vw10s" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="46"/>
+      </param>
+      <param name="WView:Simulator:czas maks. dobowej intensywno¶ci opadu deszczu" short_name="tFdmx" draw_name="Czas Fdmx" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="47"/>
+      </param>
+      <param name="WView:Simulator:czas maksymalnego dobowego indeksu UV" short_name="tUVimx" draw_name="Czas UVimx" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="48"/>
+      </param>
+      <param name="WView:Simulator:dobowa mapa pogody" short_name="Map" draw_name="Mapa pogody" unit="-" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="49"/>
+      </param>
+      <param name="WView:Simulator:dobowe prawid³owo odebrane pakiety z wiatromierza" short_name="NP" draw_name="Pakiety wiatrom." unit="-" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="50"/>
+      </param>
+      <param name="WView:Simulator:maksymalna dobowa energia s³oneczna" short_name="Esmx" draw_name="En. s³oneczna max" unit="W/m2" prec="0" base_ind="auto">
+        <draw title="WView - promieniowanie" min="0" max="300" order="3"/>
+        <raport title="WView - simulator" order="51"/>
+      </param>
+      <param name="WView:Simulator:ca³kowita dobowa energia s³oneczna" short_name="Esd" draw_name="En. s. dobowa c." unit="Ly" prec="1" base_ind="auto">
+        <draw title="WView - promieniowanie" min="0" max="4000" order="4"/>
+        <raport title="WView - simulator" order="52"/>
+      </param>
+      <param name="WView:Simulator:czas o¶wietlenia s³onecznego" short_name="ts" draw_name="Czas owietlenia" unit="min" prec="0" base_ind="auto">
+        <draw title="WView - promieniowanie" min="0" max="1000" order="5"/>
+        <raport title="WView - simulator" order="53"/>
+      </param>
+      <param name="WView:Simulator:sumaryczne dzienne parowanie" short_name="par" draw_name="Sumaryczne parowanie" unit="mm" prec="3" base_ind="auto">
+        <draw title="WView - parowanie" min="0" max="50" prior="9" order="1"/>
+        <raport title="WView - simulator" order="54"/>
+      </param>
+      <param name="WView:Simulator:maksymalne dobowe ocieplenie spowodowane s³oñcem" short_name="Tzsmx" draw_name="Ociep. sp. s. max" unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - wp³yw wiatru, s³oñca i wilgoci" min="-40" max="50" order="4"/>
+        <raport title="WView - simulator" order="55"/>
+      </param>
+      <param name="WView:Simulator:minimalne dobowe ocieplenie spowodowane s³oñcem" short_name="Tzsmn" draw_name="Ociep. sp. s. min" unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - wp³yw wiatru, s³oñca i wilgoci" min="-40" max="50" order="6"/>
+        <raport title="WView - simulator" order="56"/>
+      </param>
+      <param name="WView:Simulator:¶rednie dobowe ocieplenie spowodowane s³oñcem" short_name="Tzssr" draw_name="Ociep. sp. s. ¶r." unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - wp³yw wiatru, s³oñca i wilgoci" min="-40" max="50" order="5"/>
+        <raport title="WView - simulator" order="57"/>
+      </param>
+      <param name="WView:Simulator:maksymalna dobowa warto¶æ indeksu THSW" short_name="THSWmx" draw_name="THSW max" unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - indeksy temperaturowe" min="-40" max="50" prior="10" order="1"/>
+        <raport title="WView - simulator" order="58"/>
+      </param>
+      <param name="WView:Simulator:minimalna dobowa warto¶æ indeksu THSW" short_name="THSWmn" draw_name="THSW min" unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - indeksy temperaturowe" min="-40" max="50" order="2"/>
+        <raport title="WView - simulator" order="59"/>
+      </param>
+      <param name="WView:Simulator:maksymalna dobowa warto¶æ indeksu THW" short_name="THWmx" draw_name="THW max" unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - indeksy temperaturowe" min="-40" max="50" order="3"/>
+        <raport title="WView - simulator" order="60"/>
+      </param>
+      <param name="WView:Simulator:minimalna dobowa warto¶æ indeksu THW" short_name="THWmn" draw_name="THW min" unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - indeksy temperaturowe" min="-40" max="50" order="4"/>
+        <raport title="WView - simulator" order="61"/>
+      </param>
+      <param name="WView:Simulator:ilo¶æ stopniodni zimnych" short_name="SDz" draw_name="Stopniodni zimne" unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - indeksy temperaturowe" min="0" max="200" order="5"/>
+        <raport title="WView - simulator" order="62"/>
+      </param>
+      <param name="WView:Simulator:maks. dobowa temperatura z mokrego termometru" short_name="Tmmx" draw_name="Max temp. mokr. t." unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - wp³yw wiatru, s³oñca i wilgoci" min="-40" max="50" order="7"/>
+        <raport title="WView - simulator" order="63"/>
+      </param>
+      <param name="WView:Simulator:minimalna dobowa temperatura z mokrego termometru" short_name="Tmmn" draw_name="Min temp. mokr. t." unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - wp³yw wiatru, s³oñca i wilgoci" min="-40" max="50" order="9"/>
+        <raport title="WView - simulator" order="64"/>
+      </param>
+      <param name="WView:Simulator:¶rednia dobowa temperatura z mokrego termometru" short_name="Tmsr" draw_name="¦r. temp. mokr. t." unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - wp³yw wiatru, s³oñca i wilgoci" min="-40" max="50" order="8"/>
+        <raport title="WView - simulator" order="65"/>
+      </param>
+      <param name="WView:Simulator:czas dominacji kierunku N wiatru" short_name="twN" draw_name="Czas wiatru N" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="66"/>
+      </param>
+      <param name="WView:Simulator:czas dominacji kierunku NNE wiatru" short_name="twNNE" draw_name="Czas wiatru NNE" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="67"/>
+      </param>
+      <param name="WView:Simulator:czas dominacji kierunku NE wiatru" short_name="twNE" draw_name="Czas wiatru NE" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="68"/>
+      </param>
+      <param name="WView:Simulator:czas dominacji kierunku ENE wiatru" short_name="twENE" draw_name="Czas wiatru ENE" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="69"/>
+      </param>
+      <param name="WView:Simulator:czas dominacji kierunku E wiatru" short_name="twE" draw_name="Czas wiatru E" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="70"/>
+      </param>
+      <param name="WView:Simulator:czas dominacji kierunku ESE wiatru" short_name="twESE" draw_name="Czas wiatru ESE" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="71"/>
+      </param>
+      <param name="WView:Simulator:czas dominacji kierunku SE wiatru" short_name="twSE" draw_name="Czas wiatru SE" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="72"/>
+      </param>
+      <param name="WView:Simulator:czas dominacji kierunku SSE wiatru" short_name="twSSE" draw_name="Czas wiatru SSE" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="73"/>
+      </param>
+      <param name="WView:Simulator:czas dominacji kierunku S wiatru" short_name="twS" draw_name="Czas wiatru S" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="74"/>
+      </param>
+      <param name="WView:Simulator:czas dominacji kierunku SSW wiatru" short_name="twSSW" draw_name="Czas wiatru SSW" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="75"/>
+      </param>
+      <param name="WView:Simulator:czas dominacji kierunku SW wiatru" short_name="twSW" draw_name="Czas wiatru SW" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="76"/>
+      </param>
+      <param name="WView:Simulator:czas dominacji kierunku WSW wiatru" short_name="twWSW" draw_name="Czas wiatru WSW" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="77"/>
+      </param>
+      <param name="WView:Simulator:czas dominacji kierunku W wiatru" short_name="twW" draw_name="Czas wiatru W" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="78"/>
+      </param>
+      <param name="WView:Simulator:czas dominacji kierunku WNW wiatru" short_name="twWNW" draw_name="Czas wiatru WNW" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="79"/>
+      </param>
+      <param name="WView:Simulator:czas dominacji kierunku NW wiatru" short_name="twNW" draw_name="Czas wiatru NW" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="80"/>
+      </param>
+      <param name="WView:Simulator:czas dominacji kierunku NNW wiatru" short_name="twNNW" draw_name="Czas wiatru NNW" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="81"/>
+      </param>
+      <param name="WView:Simulator:czas maksymalnej energii s³onecznej" short_name="tEsmx" draw_name="Czas Esmx" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="82"/>
+      </param>
+      <param name="WView:Simulator:czas maks. dobowego ocieplenia spow. s³oñcem" short_name="tTzsmx" draw_name="Czas Tzsmx" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="83"/>
+      </param>
+      <param name="WView:Simulator:czas min. dobowego ocieplenia spow. s³oñcem" short_name="tTzsmn" draw_name="Czas Tzsmn" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="84"/>
+      </param>
+      <param name="WView:Simulator:czas maksymalnej dobowej warto¶ci indeksu THSW" short_name="tTHSWmx" draw_name="Czas THSWmx" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="85"/>
+      </param>
+      <param name="WView:Simulator:czas minimalnej dobowej warto¶ci indeksu THSW" short_name="tTHSWmx" draw_name="Czas THSWmn" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="86"/>
+      </param>
+      <param name="WView:Simulator:czas maksymalnej dobowej warto¶ci indeksu THW" short_name="tTHWmx" draw_name="Czas THWmx" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="87"/>
+      </param>
+      <param name="WView:Simulator:czas minimalnej dobowej warto¶ci indeksu THW" short_name="tTHWmn" draw_name="Czas THWmn" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="88"/>
+      </param>
+      <param name="WView:Simulator:czas maks. dobowej temp. z mokrego termometru" short_name="tTmmx" draw_name="Czas Tmmx" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="89"/>
+      </param>
+      <param name="WView:Simulator:czas min. dobowej temp. z mokrego termometru" short_name="tTmmn" draw_name="Czas Tmmn" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="90"/>
+      </param>
+      <param name="WView:Simulator:ilo¶æ stopniodni ciep³ych" short_name="SDc" draw_name="Stopniodni ciep³e" unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - indeksy temperaturowe" min="0" max="200" order="6"/>
+        <raport title="WView - simulator" order="91"/>
+      </param>
+      <param name="WView:Simulator:flagi aktualnego rekordu" short_name="fl" draw_name="Flagi rekordu" unit="-" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="92"/>
+      </param>
+      <param name="WView:Simulator:czas aktualnego rekordu" short_name="t" draw_name="Czas rekordu" unit="min" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="93"/>
+      </param>
+      <param name="WView:Simulator:aktualna temperatura zewnêtrzna" short_name="Tz" draw_name="Temp. zewn." unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - temperatury powietrza" min="-40" max="50" order="8"/>
+        <raport title="WView - simulator" order="94"/>
+      </param>
+      <param name="WView:Simulator:maksymalna temperatura zewnêtrzna" short_name="Tzmx" draw_name="Temp. zewn. max" unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - temperatury powietrza" min="-40" max="50" order="7"/>
+        <raport title="WView - simulator" order="95"/>
+      </param>
+      <param name="WView:Simulator:minimalna temperatura zewnêtrzna" short_name="Tzmn" draw_name="Temp. zewn. min" unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - temperatury powietrza" min="-40" max="50" order="9"/>
+        <raport title="WView - simulator" order="96"/>
+      </param>
+      <param name="WView:Simulator:temperatura wewnêtrzna" short_name="Tw" draw_name="Temp. wewn." unit="°C" prec="1" base_ind="auto">
+        <draw title="WView - temperatury powietrza" min="-40" max="50" order="10"/>
+        <raport title="WView - simulator" order="97"/>
+      </param>
+      <param name="WView:Simulator:ci¶nienie atmosferyczne" short_name="Pa" draw_name="Ci¶n. atm." unit="mmHg" prec="1" base_ind="auto">
+        <draw title="WView - ci¶nienie atmosferyczne" min="700" max="800" order="4"/>
+        <raport title="WView - simulator" order="98"/>
+      </param>
+      <param name="WView:Simulator:wilgotno¶æ zewnêtrzna" short_name="fz" draw_name="Wilg. zewn." unit="%" prec="1" base_ind="auto">
+        <draw title="WView - wilgotno¶æ" min="0" max="100" order="6"/>
+        <raport title="WView - simulator" order="99"/>
+      </param>
+      <param name="WView:Simulator:wilgotno¶æ wewnêtrzna" short_name="fw" draw_name="Wilg. wewn." unit="%" prec="1" base_ind="auto">
+        <draw title="WView - wilgotno¶æ" min="0" max="100" order="7"/>
+        <raport title="WView - simulator" order="100"/>
+      </param>
+      <param name="WView:Simulator:liczba klikniêæ deszczomierza" short_name="nd" draw_name="Klikn. deszcz." unit="-" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="101"/>
+      </param>
+      <param name="WView:Simulator:maksymalna intensywno¶æ opadu deszczu" short_name="Fdmx" draw_name="Intens. deszczu max" unit="n/h" prec="0" base_ind="auto">
+        <draw title="WView - deszcz" min="0" max="4000" order="3"/>
+        <raport title="WView - simulator" order="102"/>
+      </param>
+      <param name="WView:Simulator:prêdko¶æ wiatru" short_name="vw" draw_name="Prêdko¶æ wiatru" unit="km/h" prec="1" base_ind="auto">
+        <draw title="WView - wiatr" min="0" max="200" order="6"/>
+        <raport title="WView - simulator" order="103"/>
+      </param>
+      <param name="WView:Simulator:maksymalna prêdko¶æ wiatru" short_name="vwmx" draw_name="Prêdko¶æ wiatru max" unit="km/h" prec="1" base_ind="auto">
+        <draw title="WView - wiatr" min="0" max="200" order="5"/>
+        <raport title="WView - simulator" order="104"/>
+      </param>
+      <param name="WView:Simulator:aktualny kierunek wiatru" short_name="Dw" draw_name="Kierunek wiatru" unit="-" base_ind="auto">
+        <value int="0" name="N"/>
+        <value int="1" name="NNE"/>
+        <value int="2" name="NE"/>
+        <value int="3" name="ENE"/>
+        <value int="4" name="E"/>
+        <value int="5" name="ESE"/>
+        <value int="6" name="SE"/>
+        <value int="7" name="SSE"/>
+        <value int="8" name="S"/>
+        <value int="9" name="SSW"/>
+        <value int="10" name="SW"/>
+        <value int="11" name="WSW"/>
+        <value int="12" name="W"/>
+        <value int="13" name="WNW"/>
+        <value int="14" name="NW"/>
+        <value int="15" name="NNW"/>
+        <raport title="WView - simulator" order="105"/>
+      </param>
+      <param name="WView:Simulator:dominuj±cy kierunek wiatru" short_name="Dwd" draw_name="Domin. kier. wiatru" unit="-" base_ind="auto">
+        <value int="0" name="N"/>
+        <value int="1" name="NNE"/>
+        <value int="2" name="NE"/>
+        <value int="3" name="ENE"/>
+        <value int="4" name="E"/>
+        <value int="5" name="ESE"/>
+        <value int="6" name="SE"/>
+        <value int="7" name="SSE"/>
+        <value int="8" name="S"/>
+        <value int="9" name="SSW"/>
+        <value int="10" name="SW"/>
+        <value int="11" name="WSW"/>
+        <value int="12" name="W"/>
+        <value int="13" name="WNW"/>
+        <value int="14" name="NW"/>
+        <value int="15" name="NNW"/>
+        <raport title="WView - simulator" order="106"/>
+      </param>
+      <param name="WView:Simulator:prawid³owo odebrane pakiety z wiatromierza" short_name="NP" draw_name="Pakiety wiatrom." unit="-" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="107"/>
+      </param>
+      <param name="WView:Simulator:aktualna energia s³oneczna" short_name="Es" draw_name="Energia s³oneczna" unit="W/m2" prec="0" base_ind="auto">
+        <draw title="WView - promieniowanie" min="0" max="300" order="7"/>
+        <raport title="WView - simulator" order="108"/>
+      </param>
+      <param name="WView:Simulator:maksymalna energia s³oneczna" short_name="Esmx" draw_name="En. s³oneczna max" unit="W/m2" prec="0" base_ind="auto">
+        <draw title="WView - promieniowanie" min="0" max="300" order="6"/>
+        <raport title="WView - simulator" order="109"/>
+      </param>
+      <param name="WView:Simulator:aktualny indeks UV" short_name="UVi" draw_name="Indeks UV" unit="UVindex" prec="1" base_ind="auto">
+        <draw title="WView - promieniowanie" min="0" max="16" order="9"/>
+        <raport title="WView - simulator" order="110"/>
+      </param>
+      <param name="WView:Simulator:maksymalny indeks UV" short_name="UVimx" draw_name="Indeks UV max" unit="UVindex" prec="1" base_ind="auto">
+        <draw title="WView - promieniowanie" min="0" max="16" order="8"/>
+        <raport title="WView - simulator" order="111"/>
+      </param>
+      <param name="WView:Simulator:temperatura li¶ci 1" short_name="Tl1" draw_name="Temp. li¶ci 1" unit="°C" prec="0" base_ind="auto">
+        <draw title="WView - temperatury li¶ci i gleby" min="-40" max="50" prior="11" order="1"/>
+        <raport title="WView - simulator" order="112"/>
+      </param>
+      <param name="WView:Simulator:temperatura li¶ci 2" short_name="Tl2" draw_name="Temp. li¶ci 2" unit="°C" prec="0" base_ind="auto">
+        <draw title="WView - temperatury li¶ci i gleby" min="-40" max="50" order="2"/>
+        <raport title="WView - simulator" order="113"/>
+      </param>
+      <param name="WView:Simulator:temperatura li¶ci 3" short_name="Tl3" draw_name="Temp. li¶ci 3" unit="°C" prec="0" base_ind="auto">
+        <draw title="WView - temperatury li¶ci i gleby" min="-40" max="50" order="3"/>
+        <raport title="WView - simulator" order="114"/>
+      </param>
+      <param name="WView:Simulator:temperatura li¶ci 4" short_name="Tl4" draw_name="Temp. li¶ci 4" unit="°C" prec="0" base_ind="auto">
+        <draw title="WView - temperatury li¶ci i gleby" min="-40" max="50" order="4"/>
+        <raport title="WView - simulator" order="115"/>
+      </param>
+      <param name="WView:Simulator:dodatkowe informacje o promieniowaniu" short_name="Prd" draw_name="Dodatkowe prom." unit="-" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="116"/>
+      </param>
+      <param name="WView:Simulator:prognoza pogody" short_name="Prg" draw_name="Prognoza pogody" unit="-" prec="0" base_ind="auto">
+        <raport title="WView - simulator" order="117"/>
+      </param>
+      <param name="WView:Simulator:parowanie" short_name="par" draw_name="Parowanie" unit="mm" prec="3" base_ind="auto">
+        <draw title="WView - parowanie" min="0" max="50" order="2"/>
+        <raport title="WView - simulator" order="118"/>
+      </param>
+      <param name="WView:Simulator:temperatura gleby 1" short_name="Tg1" draw_name="Temp. gleby 1" unit="°C" prec="0" base_ind="auto">
+        <draw title="WView - temperatury li¶ci i gleby" min="-40" max="50" order="5"/>
+        <raport title="WView - simulator" order="119"/>
+      </param>
+      <param name="WView:Simulator:temperatura gleby 2" short_name="Tg2" draw_name="Temp. gleby 2" unit="°C" prec="0" base_ind="auto">
+        <draw title="WView - temperatury li¶ci i gleby" min="-40" max="50" order="6"/>
+        <raport title="WView - simulator" order="120"/>
+      </param>
+      <param name="WView:Simulator:temperatura gleby 3" short_name="Tg3" draw_name="Temp. gleby 3" unit="°C" prec="0" base_ind="auto">
+        <draw title="WView - temperatury li¶ci i gleby" min="-40" max="50" order="7"/>
+        <raport title="WView - simulator" order="121"/>
+      </param>
+      <param name="WView:Simulator:temperatura gleby 4" short_name="Tg4" draw_name="Temp. gleby 4" unit="°C" prec="0" base_ind="auto">
+        <draw title="WView - temperatury li¶ci i gleby" min="-40" max="50" order="8"/>
+        <raport title="WView - simulator" order="122"/>
+      </param>
+      <param name="WView:Simulator:temperatura gleby 5" short_name="Tg5" draw_name="Temp. gleby 5" unit="°C" prec="0" base_ind="auto">
+        <draw title="WView - temperatury li¶ci i gleby" min="-40" max="50" order="9"/>
+        <raport title="WView - simulator" order="123"/>
+      </param>
+      <param name="WView:Simulator:temperatura gleby 6" short_name="Tg6" draw_name="Temp. gleby 6" unit="°C" prec="0" base_ind="auto">
+        <draw title="WView - temperatury li¶ci i gleby" min="-40" max="50" order="10"/>
+        <raport title="WView - simulator" order="124"/>
+      </param>
+      <param name="WView:Simulator:wilgotno¶æ gleby 1" short_name="fg1" draw_name="Wilg. gleby 1" unit="cb" prec="0" base_ind="auto">
+        <draw title="WView - wilgotno¶æ li¶ci i gleby" min="0" max="50" order="5"/>
+        <raport title="WView - simulator" order="125"/>
+      </param>
+      <param name="WView:Simulator:wilgotno¶æ gleby 2" short_name="fg2" draw_name="Wilg. gleby 2" unit="cb" prec="0" base_ind="auto">
+        <draw title="WView - wilgotno¶æ li¶ci i gleby" min="0" max="50" order="6"/>
+        <raport title="WView - simulator" order="126"/>
+      </param>
+      <param name="WView:Simulator:wilgotno¶æ gleby 3" short_name="fg3" draw_name="Wilg. gleby 3" unit="cb" prec="0" base_ind="auto">
+        <draw title="WView - wilgotno¶æ li¶ci i gleby" min="0" max="50" order="7"/>
+        <raport title="WView - simulator" order="127"/>
+      </param>
+      <param name="WView:Simulator:wilgotno¶æ gleby 4" short_name="fg4" draw_name="Wilg. gleby 4" unit="cb" prec="0" base_ind="auto">
+        <draw title="WView - wilgotno¶æ li¶ci i gleby" min="0" max="50" order="8"/>
+        <raport title="WView - simulator" order="128"/>
+      </param>
+      <param name="WView:Simulator:wilgotno¶æ gleby 5" short_name="fg5" draw_name="Wilg. gleby 5" unit="cb" prec="0" base_ind="auto">
+        <draw title="WView - wilgotno¶æ li¶ci i gleby" min="0" max="50" order="9"/>
+        <raport title="WView - simulator" order="129"/>
+      </param>
+      <param name="WView:Simulator:wilgotno¶æ gleby 6" short_name="fg6" draw_name="Wilg. gleby 6" unit="cb" prec="0" base_ind="auto">
+        <draw title="WView - wilgotno¶æ li¶ci i gleby" min="0" max="50" order="10"/>
+        <raport title="WView - simulator" order="130"/>
+      </param>
+      <param name="WView:Simulator:wilgotno¶æ li¶ci 1" short_name="fl1" draw_name="Wilg. li¶ci 1" unit="-" prec="0" base_ind="auto">
+        <draw title="WView - wilgotno¶æ li¶ci i gleby" min="0" max="15" prior="12" order="1"/>
+        <raport title="WView - simulator" order="131"/>
+      </param>
+      <param name="WView:Simulator:wilgotno¶æ li¶ci 2" short_name="fl2" draw_name="Wilg. li¶ci 2" unit="-" prec="0" base_ind="auto">
+        <draw title="WView - wilgotno¶æ li¶ci i gleby" min="0" max="15" order="2"/>
+        <raport title="WView - simulator" order="132"/>
+      </param>
+      <param name="WView:Simulator:wilgotno¶æ li¶ci 3" short_name="fl3" draw_name="Wilg. li¶ci 3" unit="-" prec="0" base_ind="auto">
+        <draw title="WView - wilgotno¶æ li¶ci i gleby" min="0" max="15" order="3"/>
+        <raport title="WView - simulator" order="133"/>
+      </param>
+      <param name="WView:Simulator:wilgotno¶æ li¶ci 4" short_name="fl4" draw_name="Wilg. li¶ci 4" unit="-" prec="0" base_ind="auto">
+        <draw title="WView - wilgotno¶æ li¶ci i gleby" min="0" max="15" order="4"/>
+        <raport title="WView - simulator" order="134"/>
+      </param>
+      <param name="WView:Simulator:dodatkowa temperatura 1" short_name="Td1" draw_name="Temp. dodatk. 1" unit="°C" prec="0" base_ind="auto">
+        <draw title="WView - temperatury dodatkowe" min="-40" max="50" prior="13" order="1"/>
+        <raport title="WView - simulator" order="135"/>
+      </param>
+      <param name="WView:Simulator:dodatkowa temperatura 2" short_name="Td2" draw_name="Temp. dodatk. 2" unit="°C" prec="0" base_ind="auto">
+        <draw title="WView - temperatury dodatkowe" min="-40" max="50" order="2"/>
+        <raport title="WView - simulator" order="136"/>
+      </param>
+      <param name="WView:Simulator:dodatkowa temperatura 3" short_name="Td3" draw_name="Temp. dodatk. 3" unit="°C" prec="0" base_ind="auto">
+        <draw title="WView - temperatury dodatkowe" min="-40" max="50" order="3"/>
+        <raport title="WView - simulator" order="137"/>
+      </param>
+      <param name="WView:Simulator:dodatkowa temperatura 4" short_name="Td4" draw_name="Temp. dodatk. 4" unit="°C" prec="0" base_ind="auto">
+        <draw title="WView - temperatury dodatkowe" min="-40" max="50" order="4"/>
+        <raport title="WView - simulator" order="138"/>
+      </param>
+      <param name="WView:Simulator:dodatkowa temperatura 5" short_name="Td5" draw_name="Temp. dodatk. 5" unit="°C" prec="0" base_ind="auto">
+        <draw title="WView - temperatury dodatkowe" min="-40" max="50" order="5"/>
+        <raport title="WView - simulator" order="139"/>
+      </param>
+      <param name="WView:Simulator:dodatkowa temperatura 6" short_name="Td6" draw_name="Temp. dodatk. 6" unit="°C" prec="0" base_ind="auto">
+        <draw title="WView - temperatury dodatkowe" min="-40" max="50" order="6"/>
+        <raport title="WView - simulator" order="140"/>
+      </param>
+      <param name="WView:Simulator:dodatkowa temperatura 7" short_name="Td7" draw_name="Temp. dodatk. 7" unit="°C" prec="0" base_ind="auto">
+        <draw title="WView - temperatury dodatkowe" min="-40" max="50" order="7"/>
+        <raport title="WView - simulator" order="141"/>
+      </param>
+      <param name="WView:Simulator:dodatkowa wilgotno¶æ 1" short_name="fd1" draw_name="Wilg. dodatk. 1" unit="%" prec="0" base_ind="auto">
+        <draw title="WView - wilgotno¶ci dodatkowe" min="0" max="100" prior="14" order="1"/>
+        <raport title="WView - simulator" order="142"/>
+      </param>
+      <param name="WView:Simulator:dodatkowa wilgotno¶æ 2" short_name="fd2" draw_name="Wilg. dodatk. 2" unit="%" prec="0" base_ind="auto">
+        <draw title="WView - wilgotno¶ci dodatkowe" min="0" max="100" order="2"/>
+        <raport title="WView - simulator" order="143"/>
+      </param>
+      <param name="WView:Simulator:dodatkowa wilgotno¶æ 3" short_name="fd3" draw_name="Wilg. dodatk. 3" unit="%" prec="0" base_ind="auto">
+        <draw title="WView - wilgotno¶ci dodatkowe" min="0" max="100" order="3"/>
+        <raport title="WView - simulator" order="144"/>
+      </param>
+      <param name="WView:Simulator:dodatkowa wilgotno¶æ 4" short_name="fd4" draw_name="Wilg. dodatk. 4" unit="%" prec="0" base_ind="auto">
+        <draw title="WView - wilgotno¶ci dodatkowe" min="0" max="100" order="4"/>
+        <raport title="WView - simulator" order="145"/>
+      </param>
+      <param name="WView:Simulator:dodatkowa wilgotno¶æ 5" short_name="fd5" draw_name="Wilg. dodatk. 5" unit="%" prec="0" base_ind="auto">
+        <draw title="WView - wilgotno¶ci dodatkowe" min="0" max="100" order="5"/>
+        <raport title="WView - simulator" order="146"/>
+      </param>
+      <param name="WView:Simulator:dodatkowa wilgotno¶æ 6" short_name="fd6" draw_name="Wilg. dodatk. 6" unit="%" prec="0" base_ind="auto">
+        <draw title="WView - wilgotno¶ci dodatkowe" min="0" max="100" order="6"/>
+        <raport title="WView - simulator" order="147"/>
+      </param>
+      <param name="WView:Simulator:dodatkowa wilgotno¶æ 7" short_name="fd7" draw_name="Wilg. dodatk. 7" unit="%" prec="0" base_ind="auto">
+        <draw title="WView - wilgotno¶ci dodatkowe" min="0" max="100" order="7"/>
+        <raport title="WView - simulator" order="148"/>
+      </param>
+    </unit>
+  </device>
  @description_end
  */
 
