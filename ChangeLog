@@ -1,6 +1,7 @@
 $Id$
 
 2010-04-07	Pawel Palucha <pawel@praterm.com.pl>
+	* script/sgml2hlpctrl.pl: fix, shell command replaced with perl	function.
 	* parcook/wagadmn.cc: removed obsolete driver.
 2010-04-06	Pawel Palucha <pawel@praterm.com.pl>
 	* wx/setter/Makefile.am: installation rule fix.

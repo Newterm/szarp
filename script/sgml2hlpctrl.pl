@@ -138,8 +138,7 @@ while (<SGMLFILE>) {
 	
 	if(/\&/ and /;/ and !/lt/ and !/qt/) {
 		chomp $line; 
-		$line=`echo "$line" | cut -b 2-`;
-		chomp $line;
+		$line= substr $line, 2;
 				
 		for(@entity_name) {
 			
