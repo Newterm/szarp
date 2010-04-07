@@ -36,6 +36,17 @@
  * 	3(opcjonalnie): znak ('d' lub 's')
  */ 	
 
+/*
+ @description_start
+ @class 2
+ @devices Z-Elektronik PLC using radio modems.
+ @devices.pl Sterowniki PLC Z-Elektronik po radioliniach.
+ @protocol Z-Elektronik.
+ @comment This daemon is obsolete, not used anymore and scheduled for removing.
+ @comment.pl Jest to przestarza³y, nieu¿ywany demon, przeznaczony do usuniêcia.
+ @description_end
+*/
+
 #define _IPCTOOLS_H_ /* Nie dolaczaj ipctools.h z szarp.h */
 #define _HELP_H_
 #define _ICON_ICON_

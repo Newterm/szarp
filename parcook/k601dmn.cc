@@ -17,55 +17,62 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
- * Demon KMP (Kamstrup Heat Meter Protocol) for new Kamstrup Multical 601 
- * heatmeters.
- *
  * (C) Pawe³ Kolega 2007
  * (C) Pawe³ Pa³ucha 2009
- * 
  * $Id$
- *
- * Kamstrup Company does not allow to publish communication protocol, so this 
- * daemon needs closed-source plugin, loaded from szarp-prop-plugins.so.
- * 
- * params.xml configration example, attributes from 'm601' namespace are mandatory:
- * ...
- * <device 
- *      xmlns:m601="http://www.praterm.com.pl/SZARP/ipk-extra"
- *      daemon="/opt/szarp/bin/k601dmn" 
- *      path="/dev/ttyA11"
- *      m601:delay_between_chars="10000"
- *      m601:delay_between_requests="10">
- *      <unit id="1">
- *              <param
- *                      name="..."
- *                      ...
- *                      k601:register="0x80"
- *                      k601:type="lsb"
- *                      k601:multiplier="100">
- *                      ...
- *              </param>
- *              <param
- *                      name="..."
- *                      ...
- *                      k601:address="0x80"
- *                      k601:type="msb"
- *			k601:multiplier="100">
- *                      ...
- *              </param>
- *              ...
- *              <param
- *                      name="..."
- *                      ...
- *                      k601:address="0x81"
- *                      k601:type="single"
- *			k601:multiplier="1">
- *                      ...
- *              </param>
- *      </unit>
- * </device>
- *
- * Logging output is /opt/szarp/log/k601dmn.
+ */
+/*
+ @description_start
+ @class 4
+ @devices Kamstrup Multical 601 heatmeter.
+ @devices.pl Ciep³omierz Kamstrup Multical 601.
+ @protocol Kamstrup Heat Meter Protocol.
+
+ @comment Kamstrup Company does not allow to publish communication protocol, so this 
+ daemon needs closed-source plugin, loaded from szarp-prop-plugins.so.
+ @comment.pl Producent ciep³omierzy Kamstrup nie zezwoli³ na upublicznienie protoko³u
+ komunikacyjnego, wobec czego sterownik ten wymaga zamkniêtej wtyczki, dostêpnej w bibliotece
+ szarp-prop-plugins.so.
+ 
+ @config Example of params.xml configuration, attributes from 'm601' namespace are mandatory.
+ @config.pl Przyk³adowa konfiguracja w pliku params.xml, atrybuty z przetrzenie nazw 'm601' 
+ s± obowi±zkowe.
+ @config_example
+ <device 
+      xmlns:m601="http://www.praterm.com.pl/SZARP/ipk-extra"
+      daemon="/opt/szarp/bin/k601dmn" 
+      path="/dev/ttyA11"
+      m601:delay_between_chars="10000"
+      m601:delay_between_requests="10">
+      <unit id="1">
+              <param
+                      name="..."
+                      ...
+                      k601:register="0x80"
+                      k601:type="lsb"
+                      k601:multiplier="100">
+                      ...
+              </param>
+              <param
+                      name="..."
+                      ...
+                      k601:address="0x80"
+                      k601:type="msb"
+			k601:multiplier="100">
+                      ...
+              </param>
+              ...
+              <param
+                      name="..."
+                      ...
+                      k601:address="0x81"
+                      k601:type="single"
+			k601:multiplier="1">
+                      ...
+              </param>
+      </unit>
+ </device>
+ @description_end
  */
 
 #ifdef HAVE_CONFIG_H

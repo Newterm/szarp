@@ -1,6 +1,5 @@
 /* 
   SZARP: SCADA software 
-  
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,8 +18,15 @@
 /*
  * SZARP 2.0
  * parcook
- * endmn.c
+ * $Id$
  */
+/*
+ @description_start
+ @class 2
+ @devices Pafal 2EC8 energy meter.
+ @devices.pl Licznik energii elektrycznej Pafal 2EC8.
+ @description_end
+*/
 
 #define _IPCTOOLS_H_
 

@@ -21,6 +21,18 @@
  * alstmn.c
  * Demon odczytujacy dane z licznikow Alstom M301*
  */
+/*
+ @description_start
+
+ @class 2
+
+ @devices Alstom M301 energy meter
+ @devices.pl Licznik energii elektrycznej Alstom M301
+
+ @protocol Modbus RTU
+
+ @description_end
+*/
 
 #define _IPCTOOLS_H_
 

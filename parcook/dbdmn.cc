@@ -21,26 +21,38 @@
  * Pawe³ Pa³ucha <pawel@praterm.com.pl>
  * 
  * $Id$
- * 
- * params.xml configuration:
- * ...
- * <device 
- *      xmlns:db="http://www.praterm.com.pl/SZARP/ipk-extra"
- *      daemon="/opt/szarp/bin/dbdmn" 
- *      path="/opt/szarp/trgr"
- *      	path to szbase main directory
- *      db:expire="600"
- *		time (in seconds) of data expiration - if last available data
- *		is older then given ammount of seconds, NO_DATA is send;
- *		set 0 to turn expiration off
- *	<unit id="1" ...>
- *		<param name="..." 
- *			db:param="...:...:..."
- *				name of parameter to read from database
- *
- * Logging to /opt/szarp/logs/dbdmn.
- *
  */
+
+/*
+
+ @description_start
+
+ @class 4
+
+ @devices Daemon reads parameters from SZARP base.
+ @devices.pl Demon czyta warto¶æ parametrów z bazy danych SZARP.
+
+ @comment Usually the same effect can be obtained using Lua scriptable parameters.
+ @comment.pl Zazwyczaj ten sam efekt mo¿na osi±gn±æ za pomoc± parametrów w jêzyku skryptowym Lua.
+
+
+ @config_example 
+ <device 
+	xmlns:db="http://www.praterm.com.pl/SZARP/ipk-extra"
+  	daemon="/opt/szarp/bin/dbdmn" 
+  	path="/opt/szarp/trgr"
+		path to szbase main directory
+	db:expire="600"
+		time (in seconds) of data expiration - if last available data
+		is older then given ammount of seconds, NO_DATA is send;
+		set 0 to turn expiration off
+	<unit id="1" ...>
+		<param name="..." 
+			db:param="...:...:..."
+				name of parameter to read from database
+ @description_end
+
+*/
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

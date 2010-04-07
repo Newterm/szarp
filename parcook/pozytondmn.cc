@@ -18,9 +18,22 @@
 
 /*
  * (C) Pawe³ Kolega, Pawe³ Pa³ucha
- * Daemon for POZYTON EAP-MS-B13DB76 energy meter.
- * Pozyton Company does not allow to publish communication protocol, so 
- * this daemon needs closed-source plugin, loaded from szarp-prop-plugins.so.
+ * $Id$
+ */
+/*
+ @description_start
+ @class 4
+ @devices POZYTON EAP-MS-B13DB76 energy meter.
+ @devices.pl Licznik energii POZYTON EAP-MS-B13DB76.
+ @config See --help option for usage instructions, function codes must be provided on command line.
+ @config.pl Uruchom z opcj± --help aby zobaczyæ instrukcjê - w szczególno¶ci demon wymaga podania
+ w linii polecenia kodów funkcji pytaj±cych.
+ @comment Pozyton Company does not allow to publish communication protocol, so this 
+ daemon needs closed-source plugin, loaded from szarp-prop-plugins.so.
+ @comment.pl Producent liczników Pozyton nie zezwoli³ na upublicznienie protoko³u
+ komunikacyjnego, wobec czego sterownik ten wymaga zamkniêtej wtyczki, dostêpnej w bibliotece
+ szarp-prop-plugins.so.
+ @description_end
  */
 
 #ifdef HAVE_CONFIG_H

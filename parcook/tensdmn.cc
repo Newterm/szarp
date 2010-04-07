@@ -23,6 +23,13 @@
  *
  * $Id: nrsdmn.cc 1 2009-06-24 15:09:25Z isl $
  */
+/*
+ @description_start
+ @class 4
+ @devices Tensometric weighing machine Rowag MWT 6.
+ @devices.pl Waga tensometryczna Rowag MWT 6.
+ @description_end
+ */
 
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>

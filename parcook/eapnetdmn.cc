@@ -23,6 +23,15 @@
  * Pozyton Company does not allow to publish communication protocol, so this 
  * daemon needs closed-source plugin, loaded from szarp-prop-plugins.so.
  */
+/*
+ @description_start
+ @class 4
+ @devices Pozyton EAP-IMS-B13DB76 energy meter
+ @devices.pl Licznik energii Pozyton EAP-IMS-B13DB76
+ @config Driver needs command line parameters, run with '--help' to get usage instruction.
+ @config.pl Demon wymaga dodatkowych parametrów w linii komend, zobacz opcjê '--help'.
+ @description_end
+*/
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

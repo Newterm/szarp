@@ -21,11 +21,15 @@
  * SZARP 2.0
  * parcook
  * rsdmn.c
+ * $Id$
  */
 
 /*
- * KWMSdmn
- * Obsluga libpar 27.05.1998
+ @description_start
+ @class 2
+ @devices Pozyton KWMS Energy Meters.
+ @devices.pl Liczniki energii Pozyton KWMS.
+ @description_end
  */
 
 #define _IPCTOOLS_H_ /* Nie dolaczaj ipctools.h z szarp.h */

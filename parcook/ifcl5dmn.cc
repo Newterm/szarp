@@ -23,30 +23,25 @@
  * Protokol MBUS, engine sciagniety z Infcl5dmn
  * Przy poprawnym zaakceprowaniu komendy cieplomierz zwraca
  * #E5
+ *
+ * $Id$
  */
+/*
+ @description_start
+ @class 4
+ @devices Danfoss Infocal 5 heatmeter
+ @devices.pl Przelicznik Danfoss Infocal 5
+ @protocol M-Bus (EN 1434-3, EN 60870-5)
+ @description_end
+*/
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <sys/shm.h>
-#include <sys/sem.h>
-#include <sys/msg.h>
-#include <errno.h>
 #include <assert.h>
-#include <libxml/tree.h>
 #include <termio.h>
 #include <fcntl.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/ioctl.h>
-
-
-#define _IPCTOOLS_H_
-#define _HELP_H_
-#define _ICON_ICON_
-#include "szarp.h"
-#include "msgtypes.h"
 
 #include "ipchandler.h"
 #include "conversion.h"

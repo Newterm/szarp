@@ -16,36 +16,27 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /* 
- * Daemon for Kamstrup heatmeters Multical IV, 66CDE 
- *
- * Kamstrup Company does not allow to publish communication protocol, so this 
- * daemon needs closed-source plugin, loaded from szarp-prop-plugins.so.
+ * $Id$
  */
+/*
+ @description_start
+ @class 4
+ @devices Kamstrup Multical IV, Kamstrup Multical 66CDE heatmeters.
+ @devices.pl Ciep³omierz Kamstrup Multical IV, Kamstrup Multical 66CDE.
 
+ @comment Kamstrup Company does not allow to publish communication protocol, so this 
+ daemon needs closed-source plugin, loaded from szarp-prop-plugins.so.
+ @comment.pl Producent ciep³omierzy Kamstrup nie zezwoli³ na upublicznienie protoko³u
+ komunikacyjnego, wobec czego sterownik ten wymaga zamkniêtej wtyczki, dostêpnej w bibliotece
+ szarp-prop-plugins.so.
+ @description_end
+*/
+ 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/uio.h>
-#include <sys/time.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <sys/sem.h>
-#include <sys/msg.h>
-#include <fcntl.h>
-#include <time.h>
-#include <termio.h>
-#include <unistd.h>
-#include <signal.h>
-#include <string.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <libgen.h>
-#include <math.h>
-#include <ctype.h>
 #include <dlfcn.h>
 
 #include "liblog.h"

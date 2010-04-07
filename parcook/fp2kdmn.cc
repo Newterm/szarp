@@ -20,11 +20,25 @@
  * SZARP 2.0
  * parcook
  * fp2kdmn.c
+ * $Id$
  */
  
 /* Driver przelicznikow metronic FP-2001 i Fp-2001W */
 /* Odczytuje kolejno dane z dwoch licznikow: FP-2001(para) , FP-2001W(woda)*/
 /* czyta parametry z pliku konfiguracyjnego fp2001.cfg */
+
+/*
+ @description_start
+ @class 2
+ @devices Metronic FP-2001, Metronic FP-2001W.
+ @protocol Modbus RTU.
+ @config Reads configuration from fp2001.cfg file.
+ @config.pl Czyta konfiguracjê z pliku fp2001.cfg file.
+ @comment This driver is obsolete, use general Modbus driver (mbdmn).
+ @comment.pl Ten demon jest przestarza³y, zamiast niego nale¿y u¿ywaæ ogólnego demona 
+ do obs³ugi protoko³u Modbus, czyli mbdmn.
+ @description_end
+*/
 
 #define _IPCTOOLS_H_
 #define _HELP_H_

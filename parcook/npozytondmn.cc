@@ -22,7 +22,55 @@
  * Pozyton Company does not allow to publish communication protocol, so 
  * this daemon needs closed-source plugin, loaded from szarp-prop-plugins.so.
  */
-
+/*
+ @description_start
+ @class 4
+ @devices Pozyton electric energy meters.
+ @devices.pl Liczniki energii elektrycznej Pozyton.
+ @comment Pozyton Company does not allow to publish communication protocol, so this 
+ daemon needs closed-source plugin, loaded from szarp-prop-plugins.so.
+ @comment.pl Producent liczników Pozyton nie zezwoli³ na upublicznienie protoko³u
+ komunikacyjnego, wobec czego sterownik ten wymaga zamkniêtej wtyczki, dostêpnej w bibliotece
+ szarp-prop-plugins.so.
+ @config.pl Obs³ugiwane parametry konfiguracyjne: voltage_factor = dzielnik przek³adników napiêciowych;
+ current_factor - dzielnik przek³adników pr±dowych; delay = - opó¼nienie odpytywania;
+ interface = opto|rs485|currloop - typ interfejsu komunikacyjnego, codes - kody funkcji jakie maj± byæ odczytywane.
+ @config_example
+ <device daemon="/opt/szarp/bin/npozytondmn" xmlns:pozyton="http://www.praterm.com.pl/SZARP/ipk-extra"
+ 	path="/dev/ttyS0" pozyton:voltage_factor="60" pozyton:current_factor="200" pozyton:interface="opto" 
+	pozyton:codes="0.8.0/1;1.8.0/1;2.8.0/1;3.8.0/1;97.5.1/1;97.5.2/1;97.5.3/1;97.4.1*10;97.4.2*10;97.4.3*10;97.6.0*100;97.1.1/1000;97.1.2/1000;97.1.3/1000;97.1.0/1000;97.2.1/1000;97.2.2/1000;97.2.3/1000;97.2.0/1000;97.3.1/1000;97.3.2/1000;97.3.3/1000;97.3.0/1000">
+	<unit id="1" type="1" subtype="1" bufsize="1">
+		<param name="Sieæ:LZQM-1:Energia EP plus lsw" .../>
+		<param name="Sieæ:LZQM-1:Energia EP plus msw" .../>
+		<param name="Sieæ:LZQM-1:Energia EP minus lsw" .../>
+		<param name="Sieæ:LZQM-1:Energia EP minus msw" .../>
+		<param name="Sieæ:LZQM-1:Energia EQ plus lsw" .../>
+		<param name="Sieæ:LZQM-1:Energia EQ plus msw" .../>
+		<param name="Sieæ:LZQM-1:Energia EQ minus lsw" .../>
+		<param name="Sieæ:LZQM-1:Energia EQ minus msw" .../>
+		<param name="Sieæ:LZQM-1:Napiêcie U1" .../>
+		<param name="Sieæ:LZQM-1:Napiêcie U2" .../>
+		<param name="Sieæ:LZQM-1:Napiêcie U3" .../>
+		<param name="Sieæ:LZQM-1:Pr±d I1" .../>
+		<param name="Sieæ:LZQM-1:Pr±d I2" .../>
+		<param name="Sieæ:LZQM-1:Pr±d I3" .../>
+		<param name="Sieæ:LZQM-1:Czêstotliwo¶æ" .../>
+		<param name="Sieæ:LZQM-1:Moc czynna faza 1" .../>
+		<param name="Sieæ:LZQM-1:Moc czynna faza 2" .../>
+		<param name="Sieæ:LZQM-1:Moc czynna faza 3" .../>
+		<param name="Sieæ:LZQM-1:Moc czynna sumaryczna rezerwa" .../>
+		<param name="Sieæ:LZQM-1:Moc bierna faza 1" .../>
+		<param name="Sieæ:LZQM-1:Moc bierna faza 2" .../>
+		<param name="Sieæ:LZQM-1:Moc bierna faza 3" .../>
+		<param name="Sieæ:LZQM-1:Moc bierna sumaryczna rezerwa" .../>
+		<param name="Sieæ:LZQM-1:Moc pozorna faza 1" .../>
+		<param name="Sieæ:LZQM-1:Moc pozorna faza 2" .../>
+		<param name="Sieæ:LZQM-1:Moc pozorna faza 3" .../>
+		<param name="Sieæ:LZQM-1:Moc pozorna sumaryczna rezerwa" .../>
+	</unit>
+ </device>
+ @description_end
+*/
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

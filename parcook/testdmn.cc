@@ -18,7 +18,15 @@
 */
 /* $Id$ */
 
-/* Demon testowy, czyta warto¶ci z pliku tekstowego. */
+/*
+ @description_start
+ @class 2
+ @devices Daemon reads raw IPC values from text file, one parameter per line.
+ @devices.pl Demon czyta nieprzeliczone warto¶ci parametrów z podanego pliku tekstowego, jeden parametr
+ w linii.
+ @description_end
+*/
+
 
 #define _IPCTOOLS_H_		/* Nie dolaczaj ipctools.h z szarp.h */
 #define _HELP_H_

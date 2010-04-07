@@ -22,33 +22,33 @@
  * demon nie odczytuj±cy danych z ¿adnych urz±dzeñ, a jedynie wyliczaj±cy warto¶æ chwilow± z warto¶ci sumarycznej np. Chwilowy przep³yw z przepp³ywu sumarycznego itd.
  */
 
+/*
+ @description_start
+
+ @class 4
+
+ @devices Daemon calculates instant value of parameter based on changes in summary values, for example
+ flow basing on summay flow.
+ @devices.pl Demon wyliczaj±cy warto¶æ chwilow± parametru z warto¶ci sumarycznej np. chwilowy przep³yw z przep³ywu 
+ sumarycznego.
+
+ @comment This daemon is obsolete - the same effect can be easier obtained using Lua scriptable
+ parameters.
+ @comment.pl Ten demon jest zdeaktualizowany - ten sam efekt mo¿e byæ uzyskany za pomoc± parametrów w
+ jêzyku skryptowym Lua.
+
+ @description_end
+
+*/
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <sys/shm.h>
-#include <sys/sem.h>
-#include <sys/msg.h>
-#include <errno.h>
-#include <assert.h>
-#include <libxml/tree.h>
-#include <termio.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/ioctl.h>
-
-
-#define _IPCTOOLS_H_
-#define _HELP_H_
-#define _ICON_ICON_
-#include "szarp.h"
-#include "msgtypes.h"
 
 #include "ipchandler.h"
 #include "liblog.h"
 
-#define DAEMON_ERROR 1
 
 #define SND_NKE_LENGTH 5
 #define REQ_UD2_LENGTH 5
@@ -58,17 +58,11 @@
 #define PACKET_SIZE_ERROR -1
 
 /* DEFINY do parametrow oblicznych */
-#define C_DATA_TIMEOUT  600 /* sec */  
 
-#define AVG_BUFFER 10
 
 #define HOW_PARAMS 2
 #define HOW_SENDS 2
 
-
-
-
-//int AvgFlowBuffer[AVG_BUFFER];
 
 class AvgBuffer {
 	public:
@@ -95,19 +89,23 @@ class AvgBuffer {
 
 };
 
-	AvgBuffer::AvgBuffer(int size){
-		_ptr = 0;
-		_size = size;
-		_AvgBuffer = (int *)malloc(_size * sizeof(int));
-	}
+AvgBuffer::AvgBuffer(int size)
+{
+	_ptr = 0;
+	_size = size;
+	_AvgBuffer = (int *)malloc(_size * sizeof(int));
+}
 
-	void AvgBuffer::InitAvgBuffer(int FillValue){
+void AvgBuffer::InitAvgBuffer(int FillValue)
+{
 	int i;
-	for (i=0;i<_size;i++)
+	for (i=0;i<_size;i++) {
 		_AvgBuffer[i] = FillValue;
 	}
+}
 
-int AvgBuffer::CalcAvgBuffer(int Value){
+int AvgBuffer::CalcAvgBuffer(int Value)
+{
 	int Div;
 	int Sum;
 	int i;
@@ -124,11 +122,10 @@ int AvgBuffer::CalcAvgBuffer(int Value){
 	return (Sum/Div);
 }
 
-
-AvgBuffer::~AvgBuffer(){
+AvgBuffer::~AvgBuffer()
+{
 	free (_AvgBuffer);
 }
-
 
 class Calc : public AvgBuffer{
 	public:
@@ -139,55 +136,50 @@ class Calc : public AvgBuffer{
 		int Update(int Value);
 		~Calc();
 	private:
-	int		CFlow ; /* Calculated Flow (from Sumaric flow) */
-	int		NewFlow;
-	int		OldFlow;
-	time_t		NewFlowTime ;
-	time_t		OldFlowTime ;
-	char InitFlowBuffer ;
+		int		CFlow ; /* Calculated Flow (from Sumaric flow) */
+		int		NewFlow;
+		int		OldFlow;
+		time_t		NewFlowTime ;
+		time_t		OldFlowTime ;
+		char InitFlowBuffer ;
 };
 
+int Calc::Update(int Value)
+{
+	 NewFlow = Value;
+	 NewFlowTime = time(NULL); 
+	/* Inicjacja */
+	if (OldFlow==0){
+		OldFlow = NewFlow;
+		CFlow = 0;
+	}
 
+	if (OldFlowTime==0){
+		OldFlowTime = NewFlowTime;
+	}
 
-int Calc::Update(int Value){
-		 NewFlow = Value;
-		 NewFlowTime = time(NULL); 
-		/* Inicjacja */
-		if (OldFlow==0){
-			OldFlow = NewFlow;
-			CFlow = 0;
-		}
-
-		if (OldFlowTime==0){
+	if (OldFlowTime != NewFlowTime){
+		if (NewFlowTime - OldFlowTime >=data_timeout){
 			OldFlowTime = NewFlowTime;
+			CFlow = 0 ;
 		}
+	}
 
-		if (OldFlowTime != NewFlowTime){
-			if (NewFlowTime - OldFlowTime >=data_timeout){
-				OldFlowTime = NewFlowTime;
-				CFlow = 0 ;
+	if (OldFlow!=NewFlow){
+		if (NewFlowTime != OldFlowTime	)
+			CFlow = ((NewFlow - OldFlow) * 3600)/(NewFlowTime - OldFlowTime) ;
+			if (InitFlowBuffer==0){
+				InitAvgBuffer(CFlow);
+				InitFlowBuffer = 1;
+			}else{
+				CFlow = CalcAvgBuffer(CFlow);	
 			}
-		}
-
-		if (OldFlow!=NewFlow){
-			if (NewFlowTime != OldFlowTime	)
-				CFlow = ((NewFlow - OldFlow) * 3600)/(NewFlowTime - OldFlowTime) ;
-				if (InitFlowBuffer==0){
-					InitAvgBuffer(CFlow);
-					InitFlowBuffer = 1;
-				}else{
-					CFlow = CalcAvgBuffer(CFlow);	
-				}
-				OldFlowTime = NewFlowTime;
-				OldFlow = NewFlow;
-				//InitFlowBuffer; //to bylo ale bylo bez sensu?
-		}
-
-		return CFlow;
+			OldFlowTime = NewFlowTime;
+			OldFlow = NewFlow;
+			//InitFlowBuffer; //to bylo ale bylo bez sensu?
+	}
+	return CFlow;
 }
-
-
-
 
 /**
  * DaemonClass communication config.
@@ -205,7 +197,8 @@ class           DaemonClass {
 	 * @param params number of params to read
 	 * @param sends number of params to send (write)
 	 */
-	DaemonClass(int params, int sends) {
+	DaemonClass(int params, int sends) 
+	{
 		assert(params >= 0);
 		assert(sends >= 0);
 
@@ -213,31 +206,22 @@ class           DaemonClass {
 		m_sends_count = sends;
 	}
 
-		/**
+	/**
 	 * Search for 'modbus:mode' and 'modbus:id' attribute in 
 	 * 'device' element, sets 'm_mode' and 'm_id' attributes;
 	 * @param node XML 'device' element
 	 * @return 0 on success, 1 on error
 	 */
-	int  parseDevice(xmlNodePtr node);
+	int parseDevice(xmlNodePtr node);
 
-	~DaemonClass() {
-	}
-
-
+	~DaemonClass() 
+	{ }
 
 	/**
 	 * Filling m_read structure SZARP_NO_DATA value
 	 */
-	void            SetNoData(IPCHandler * ipc);
-
-	/**
-	 * Function oppening serial port special for Infocal 5 Heat Meter
-	 * @param Device Path to device np "/dev/ttyS0"
-	 */
-
+	void SetNoData(IPCHandler * ipc);
 };
-
 
 int DaemonClass::parseDevice(xmlNodePtr node)
 {
@@ -291,9 +275,6 @@ int DaemonClass::parseDevice(xmlNodePtr node)
 
 	return 0;
 }
-
-
-
 
 void DaemonClass::SetNoData(IPCHandler * ipc)
 {
@@ -393,7 +374,6 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), cal
 		ipc->GoSender();
 		sleep(calcinfo->m_refresh);
 	}
-	delete calcinfo;
 	return 0;
 }
 

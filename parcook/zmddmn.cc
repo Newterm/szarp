@@ -21,14 +21,22 @@
  * zmddmn.c
  * Driver licznika LandisGyr ZMD405CT44.2407
  * $Id$
- *
- * Demon moze na zadany okres czasu zostac zdezaktywowany (zamyka port, wstawia do 
- * segmentu pamieci parcook'a wartosci SZARP_NO_DATA i spi). Okresy deaktywacji demona okresla sie 
- * za pomoca parametrow lini komend. Np. wywolanie programu w sposob nastepujacy: 
- * zmddmn 3 /dev/ttyS0 -t 12:00 10 -t 18:05 13
- * Spowoduje ze w godzinach 12:00-12:10 oraz 18:05-18:18 demon nie bedzie aktywny.
- * Ilosc okresow deaktywacji jest dowolna.
  */
+/*
+ @description_start
+ @class 2
+ @devices LandisGyr ZMD405CT44.2407 energy meter.
+ @devices.pl Licznik energii elektrycznej LandisGyr ZMD405CT44.2407.
+ @config.pl Demon moze na zadany okres czasu zostac zdezaktywowany (zamyka port, wstawia do 
+ segmentu pamieci parcook'a wartosci SZARP_NO_DATA ¶pi). Okresy deaktywacji demona okre¶la siê
+ za pomoca parametrów lini komend. Np. wywo³anie programu w sposob nastepujacy: 
+
+ zmddmn 3 /dev/ttyS0 -t 12:00 10 -t 18:05 13
+
+ spowoduje, ¿e w godzinach 12:00-12:10 oraz 18:05-18:18 demon nie bedzie aktywny. Ilo¶æ
+ okresów deaktywacji jest dowolna.
+ @description_end
+*/
 
 #define _IPCTOOLS_H_
 

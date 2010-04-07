@@ -16,31 +16,33 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
- * Daemon do komunikacji z urzÄ…dzeniami w protokole M-Bus.
- * Oparty o uniwersalnÄ… klasÄ™ do komunikacji w protokole M-Bus.
+ * Daemon do komunikacji z urz±dzeniami w protokole M-Bus.
+ * Oparty o uniwersaln± klasêdo komunikacji w protokole M-Bus.
  *
  * Autor: Marcin Goliszewski
  *
  * $Id$
  */
+/*
+ @description_start
+ @class 3
+ @protocol M-Bus
+ @devices All devices using M-Bus protocol.
+ @devices.pl Dowolne urz±dzenia korzystaj±ce z protoko³u M-Bus.
+ @description_end
+*/
+
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#define _IPCTOOLS_H_
-#define _HELP_H_
-#define _ICON_ICON_
-#include "szarp.h"
-#include "msgtypes.h"
 #include "ipchandler.h"
 #include "liblog.h"
 
 #include <iostream>
 #include <string>
 #include <map>
-#include <cstdlib>
-#include <cassert>
 
 #include <getopt.h>
 

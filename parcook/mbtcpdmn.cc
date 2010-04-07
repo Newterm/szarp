@@ -20,86 +20,94 @@
  * Pawe³ Pa³ucha <pawel@praterm.com.pl>
  * 
  * $Id$
- * 
- * Configuration example, all attributes from 'modbus' namespace not explicity
- *  described as optional are required.
- * ...
- * <device 
- *      xmlns:modbus="http://www.praterm.com.pl/SZARP/ipk-extra"
- *      daemon="/opt/szarp/bin/mbtcpdmn" 
- *      path="/dev/ttyA11"
- *      modbus:tcp-mode="server"
+ */
+
+
+/* 
+ @description_start
+ @class 4
+ @comment Daemon obsolete by new universal Modbus driver mbdmn. Allows only one simultaneus connection.
+ @comment.pl Demon przestarza³y, zast±piony przez uniwersalny demon protoko³u Modubs - mbdmn. Pozwala
+ tylko na jedno jednoczesne po³±czenie.
+ @protocol Modbus TCP/IP.
+ @devices All devices/software using Modbus TCP/IP protocol.
+ @devices.pl Wszystkie urz±dzenia/oprogramowanie komunikuj±ce siê przez protokó³ Modbus TCP/IP.
+ @config All attributes from 'modbus' namespace not explicity
+  described as optional are required.
+ @config.pl Konfiguracja w params.xml, wszystkie atrybuty z przestrzeni nazw 'modbus' nie
+ oznaczone jako opcjonalne s± wymagane.
+ @config_example 
+ <device 
+      xmlns:modbus="http://www.praterm.com.pl/SZARP/ipk-extra"
+      daemon="/opt/szarp/bin/mbtcpdmn" 
+      path="/dev/ttyA11"
+      modbus:tcp-mode="server"
  		allowe modes are 'server' and 'client'
- *      modbud:tcp-port="502"
+      modbud:tcp-port="502"
 		TCP port we are listenning on/connecting to (server/client)
 		port TCP na którym mamy nas³uchiwaæ/do którego mamy siê ³±czyæ(zale¿nie od trybu)
- *      modbus:tcp-allowed="192.9.200.201 192.9.200.202"
+      modbus:tcp-allowed="192.9.200.201 192.9.200.202"
 		(optional) list of allowed clients IP addresses for server mode, if empty all
 		addresses are allowed
- *      modbus:tcp-address="192.9.200.201"
+      modbus:tcp-address="192.9.200.201"
  		server IP address (required in client mode)
- *      modbus:tcp-keepalive="yes"
+      modbus:tcp-keepalive="yes"
  		should we set TCP Keep-Alive options? "yes" or "no"
- *	modbus:tcp-timeout="30"
+	modbus:tcp-timeout="30"
 		(optional) connection timeout in seconds, after timeout expires, connection
 		is closed; default empty value means no timeout
- *	modbus:nodata-timeout="15"
+	modbus:nodata-timeout="15"
 		(optional) timeout (in seconds) to set data to 'NO_DATA' if data is not available,
 		default is 20 seconds
- *	modbus:nodata-value="-1"
+	modbus:nodata-value="-1"
  		(optional) float value to send instead of 'NO_DATA', default is 0
- *	modbus:FloatOrder="msblsb"
+	modbus:FloatOrder="msblsb"
  		(optional) registers order for 4 bytes (2 registers) float order - "msblsb"
 		(default) or "lsbmsb"; values names are a little misleading, it shoud be 
 		msw/lsw (most/less significant word) not msb/lsb (most/less significant byte),
 		but it's left like this for compatibility with Modbus RTU driver configuration
 
- *      >
- *      <unit id="1">
- *              <param
+      >
+      <unit id="1">
+              <param
 			Read value using ReadHoldingRegisters (0x03) Modbus function              
- *                      name="..."
- *                      ...
- *                      modbus:address="0x03"
+                      name="..."
+                      ...
+                      modbus:address="0x03"
  	                      	modbus register number, starting from 0
- *                      modbus:val_type="integer">
+                      modbus:val_type="integer">
  	                      	register value type, 'integer' (2 bytes, 1 register) or float (4 bytes,
 	                       	2 registers)
- *                      ...
- *              </param>
- *              <param
- *                      name="..."
- *                      ...
- *                      modbus:address="0x04"
- *                      modbus:val_type="float"
- *			modbus:val_op="LSW">
+                      ...
+              </param>
+              <param
+                      name="..."
+                      ...
+                      modbus:address="0x04"
+                      modbus:val_type="float"
+			modbus:val_op="LSW">
 				(optional) operator for converting data from float to 2 bytes integer;
 				default is 'NONE' (simple conversion to short int), other values
 				are 'LSW' and 'MSW' - converting to 4 bytes long and getting less/more
 				significant word; in this case there should be 2 parameters with the
 				same register address and different val_op attributes - LSW and MSW.
 				s³owa
- *                      ...
- *              </param>
- *              ...
- *              <send 
+                      ...
+              </param>
+              ...
+              <send 
               		Sending value using WriteMultipleRegisters (0x10) Modbus function
- *                      param="..." 
- *                      type="min"
- *                      modbus:address="0x1f"
- *                      modbus:val_type="float">
- *                      ...
- *              </send>
- *              ...
- *      </unit>
- * </device>
- *
- * Logi l±duj± domy¶lnie w /opt/szarp/log/mbtcpdmn.
- *
- * Serwer pozwala na jedno po³±czenie i jedn± transakcjê na raz. Nie sprawdza
- * kiedy ostatnio przysz³y dane. £±czenie z parcookiem i senderem nastêpuje
- * raz na 10 sekund.
- */
+                      param="..." 
+                      type="min"
+                      modbus:address="0x1f"
+                      modbus:val_type="float">
+                      ...
+              </send>
+              ...
+      </unit>
+ </device>
+ @description_end
+*/
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

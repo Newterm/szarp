@@ -16,12 +16,17 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
- * Daemon do odczytu danych z plikÃ³w WKL stacji meteorologicznej Vantage
- * Pro 2 firmy Davis Instruments.
- *
- * Autor: Marcin Goliszewski
+ * Marcin Goliszewski
  *
  * $Id$
+ */
+/*
+ @description_start
+ @class 3
+ @devices Daemon reading WKL files from Davis Instruments Vantage Pro 2 meteo station.
+ @devices.pl Daemon do odczytu danych z plików WKL stacji meteorologicznej Vantage
+ Pro 2 firmy Davis Instruments.
+ @description_end
  */
 
 #ifdef HAVE_CONFIG_H
@@ -30,11 +35,6 @@
 
 #if defined(HAVE_BOOST_DATE_TIME) && defined(HAVE_BOOST_FILESYSTEM) && defined(HAVE_BOOST_REGEX) && defined(HAVE_BOOST_PROGRAM_OPTIONS)
 
-#define _IPCTOOLS_H_
-#define _HELP_H_
-#define _ICON_ICON_
-#include "szarp.h"
-#include "msgtypes.h"
 #include "ipchandler.h"
 #include "liblog.h"
 #include "conversion.h"

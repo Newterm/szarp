@@ -36,29 +36,35 @@
  * Przy poprawnym zaakceprowaniu komendy cieplomierz zwraca
  * #E5
  */
+/*
+ @description_start
+ @class 4
+ @devices Pollustat-E heat meter.
+ @devices.pl Ciep³omierz Polustat-E.
+ @protocol Reverse-engineered, Mbus based:
+
+  Datum/uhrzeit: #68#09#09#68#53#FE#51#04#6D#30#14#AD#01#05#16 
+
+  Mittelungszeit: #68#09#09#68#53#FE#51#04#6D#30#14#AD#01#05#16 
+
+  Mbus primaadrrese setzen: #68#09#09#68#53#FE#51#04#6D#30#14#AD#01#05#16 
+
+  Absolut maxima loshen: #68#09#09#68#53#FE#51#04#6D#30#14#AD#01#05#16 
+
+  Zahlereinstellungen lesen: #10#40#FE#3E#16, #10#5B#FE#59#16
+
+  Meter confirmation: #E5
+
+ @description_end
+*/
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <sys/shm.h>
-#include <sys/sem.h>
-#include <sys/msg.h>
-#include <errno.h>
-#include <assert.h>
-#include <libxml/tree.h>
 #include <termio.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/ioctl.h>
-
-
-#define _IPCTOOLS_H_
-#define _HELP_H_
-#define _ICON_ICON_
-#include "szarp.h"
-#include "msgtypes.h"
 
 #include "ipchandler.h"
 #include "liblog.h"

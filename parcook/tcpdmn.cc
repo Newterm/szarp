@@ -21,18 +21,26 @@
  * TCP Server urz±dzenia Moxa NPort W2250/2150.
  * 
  * $Id$
- * 
- * Konfiguracja w params.xml (przyk³ad, atrybuty z przestrzeni nazw
- * 'tcp' s± wymagane, chyba ¿e napisano inaczej):
- * ...
- * <device 
- *      xmlns:tcp="http://www.praterm.com.pl/SZARP/ipk-extra"
- *      daemon="/opt/szarp/bin/tcpdmn" 
- *      tcp:tcp-ip="192.168.6.10"
- *      	adres IP serwera portów
- *      tcp:tcp-port="4001"
-		port TCP serwera, domy¶lnie 4001
- *      tcp:tcp-keepalive="yes"
+ */
+/*
+ @description_start
+ @class 4
+ @devices Z-Elektronik, SK-2000 or SK-4000 PLCs, using ethernet serial port
+ server, for example Moxa NPort W2250/2150 in TCP Server mode.
+ @devices.pl Sterowniki Z-Elektronik, SK-2000 i SK-4000 z wykorzystaniem 
+ sieciowego serwera portów szeregowych, np. Moxa  NPort W2250/2150 w trybie TCP Server.
+ @protocol Z-Elektronik through TCP/IP link.
+ @config.pl Konfiguracja w params.xml, atrybuty z przestrzeni nazw 'tcp' s± wymagane, 
+ chyba ¿e napisano inaczej:
+ @config_example.pl
+ <device 
+      xmlns:tcp="http://www.praterm.com.pl/SZARP/ipk-extra"
+      daemon="/opt/szarp/bin/tcpdmn" 
+      tcp:tcp-ip="192.168.6.10"
+      		serial ports' server address
+      tcp:tcp-port="4001"
+		serial ports TCP port
+      tcp:tcp-keepalive="yes"
  		czy po³±czenie TCP powinno mieæ opcjê Keep-Alive; dopuszczalne
 		warto¶ci to "yes" i "no"
 	tcp:nodata-timeout="15"
@@ -41,24 +49,22 @@
 	tcp:nodata-value="-1"
 		warto¶æ (typu float) jak± wysy³amy zamiast 'NO_DATA' dla
 		parametrów typu send, domy¶lnie wysy³amy 0
- *      >
- *      <unit id="1">
- *              <param
- *                      name="..."
- *                      ...
- *              </param>
-  *              ...
- *              <send 
- *                      param="..." 
- *                      type="min"
- *                      ...
- *              </send>
- *              ...
- *      </unit>
- * </device>
- *
- * Logi l±duj± domy¶lnie w /opt/szarp/log/tcpdmn.
- *
+      >
+      <unit id="1">
+              <param
+                      name="..."
+                      ...
+              </param>
+               ...
+              <send 
+                      param="..." 
+                      type="min"
+                      ...
+              </send>
+              ...
+      </unit>
+ </device>
+ @description_end
  */
 
 #ifdef HAVE_CONFIG_H

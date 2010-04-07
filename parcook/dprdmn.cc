@@ -15,67 +15,55 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
+
 /*
  * Demon dla urz±dzeñ DPR100C-100D. 
  * $Id$
- *
- * Przyk³adowa konfiguracja w params.xml
- * <device
- *      xmlns:dprdmn="http://www.praterm.com.pl/SZARP/ipk-extra"
- *      daemon="/opt/szarp/bin/dprdmn" 
- *      path="/dev/ttyA11"
- *      <unit id="1" dprdmn:unit_address="0x01">
- *              <param
- *                      name="..."
- *                      ...
- *                      dprdmn:address="0x00"
- *                      dprdmn:param_type="alarm">
- *                      ...
- *              </param>
- *              <param
- *                      name="..."
- *                      ...
- *                      prec="0x01"
- *                      dprdmn:address="0x02"
- *                      dprdmn:param_type="input">
- *              </param>
- *              ...
- *      </unit>
- * </device>
  */
+/*
+ @description_start
+ @class 4
+ @devices Honeywell DPR100C/DPR100D universal recorder.
+ @devices.pl Rejestrator Honeywell DPR100C/DPR100D.
+ @config_example
+ <device
+      xmlns:dprdmn="http://www.praterm.com.pl/SZARP/ipk-extra"
+      daemon="/opt/szarp/bin/dprdmn" 
+      path="/dev/ttyA11"
+      <unit id="1" dprdmn:unit_address="0x01">
+              <param
+                      name="..."
+                      ...
+                      dprdmn:address="0x00"
+                      dprdmn:param_type="alarm">
+                      ...
+              </param>
+              <param
+                      name="..."
+                      ...
+                      prec="0x01"
+                      dprdmn:address="0x02"
+                      dprdmn:param_type="input">
+              </param>
+              ...
+      </unit>
+ </device>
+ @description_end
+*/
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-extern "C" {
-#include <sys/shm.h>
-#include <sys/sem.h>
-#include <sys/msg.h>
-#include <sys/msg.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <time.h>
-#include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <termios.h>
-#include <unistd.h>
-#include <errno.h>
 #include <assert.h>
-#include <unistd.h>
-#include <libxml/tree.h>
-#include <math.h>
-}
 
 #include <vector>
 #include <string>
 #include <sstream>
 
-#define _IPCTOOLS_H_
-#define _HELP_H_
-#define _ICON_ICON_
-#include "szarp.h"
 #include "conversion.h"
 #include "szarp_config.h"
 #include "dmncfg.h"

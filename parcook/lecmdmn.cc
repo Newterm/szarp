@@ -21,35 +21,31 @@
  * Pawe³ Kolega
  * demon dla ciep³omierza LEC z interfejsem M-Bus
  * 100% Reverse engineering
- * Przy poprawnym zaakceproswaniu komendy cieplomierz zwraca
+ * Przy poprawnym zaakceptowaniu komendy cieplomierz zwraca
  * #E5
  */
+/*
+ @description_start
+ @class 4
+ @devices LEC Heatmeters with M-Bus interface.
+ @devices.pl Ciep³omierze LEC z interfejsem M-Bus.
+ @protocol M-Bus.
+ @description_end
+*/
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <sys/shm.h>
-#include <sys/sem.h>
-#include <sys/msg.h>
-#include <errno.h>
-#include <assert.h>
-#include <libxml/tree.h>
 #include <termio.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
-
-#define _IPCTOOLS_H_
-#define _HELP_H_
-#define _ICON_ICON_
-#include "szarp.h"
-#include "msgtypes.h"
-
 #include "ipchandler.h"
 #include "liblog.h"
+#include "conversion.h"
 
 #define DAEMON_ERROR 1
 
@@ -134,7 +130,7 @@ class           LecMbus {
 	 * @param Device Path to device np "/dev/ttyS0"
 	 */
 
-	int OpenLine(char *line) ;
+	int OpenLine(const char *line) ;
 
 	/**
 	 * Function gets response from serial port
@@ -188,7 +184,7 @@ void LecMbus::SetNoData(IPCHandler * ipc)
 }
 
 
-int LecMbus::OpenLine(char *line)
+int LecMbus::OpenLine(const char *line)
 {
 	int             linedes;
 	struct termio   rsconf;
@@ -436,7 +432,7 @@ int main(int argc, char *argv[])
 		printf("\
 line number: %d\n\
 device: %s\n\
-params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath(), mbinfo->m_params_count);
+params in: %d\n", cfg->GetLineNumber(), SC::S2A(cfg->GetDevice()->GetPath()).c_str(), mbinfo->m_params_count);
 	}
 
 
@@ -449,7 +445,7 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath(), mbinfo->m_p
 	sz_log(2, "starting main loop");
 	mbinfo->SetNoData(ipc);
 	while (true) {
-	fd = mbinfo->OpenLine(cfg->GetDevice()->GetPath()) ;
+	fd = mbinfo->OpenLine(SC::S2A(cfg->GetDevice()->GetPath()).c_str()) ;
 //	fd = mbinfo->InitComm(cfg->GetDevice()->GetPath(),
 //			      cfg->GetDevice()->GetSpeed(), 8, 1, 0);
 		write(fd,SND_NKE,SND_NKE_LENGTH); //Sending first Question

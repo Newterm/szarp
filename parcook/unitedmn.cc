@@ -20,39 +20,37 @@
  *
  * Daemon Uni-Telway.
  *
- * Autor: Krzysztof Gałązka <kg@praterm.pl>
- * 
- * Pracuje jako urządzenie 'slave'.
- * Odczytuje dane typu 'WORD' z adresów 0-8191.
- *
- * Konfiguracja:
- *  <device
- *	    daemon="/opt/szarp/bin/unitedmn"
- *	    path="/dev/ttyA11"
- *	    speed="9600"
- *	    unitelway:address="6"
- *  >
- *	<unit id="1" type="1" subtype="1" bufsize="1"
- *		unitelway:network="0x00"
- *		unitelway:station="0xFE"
- *		unitelway:gate="0x00"
- *		unitelway:module="0x00"
- *		unitelway:channel="0x00"
- *	>
- *		<param ... unitelway:address="1000">
- *		</param>
- *	</unit>
- *  </device>
- *
- *
- *  Atrybut <device unitelway:address=""> jest wymagany. Określa adres daemona na szynie UniTE
- *  
- *  Atrybut <device unitelway:address=""> jest wymagany. Określa adres rejestru, z którego nastąpi odczyt.
- *  
- *  Atrybuty unitelway:* w elemencie unit określają adres urządzenia, które będzie odpytywane.
- *  Są opcjonalne. Domyślne wartości zgodnie z powyższym przykładem.
- *
- *
+ * Autor: Krzysztof Ga��zka <kg@praterm.pl>
+ */
+/*
+ @description_start 
+ @class 4
+ @devices Devices using Schneider Electric Uni-Telway protocol.
+ @devices.pl Urz�dzenia korzystaj�ce z protoko�u Schneider Electric Uni-Telway.
+ @protocol Schneider Electric Uni-Telway
+ @comment Daemon works as Uni-Telway slave device. Reads WORD data from 0 - 8191 addresses.
+ @comment.pl Demon pracuje w sieci Uni-Telway jako urz�dzenie slave. Odczytuje dane typu 'WORD' z adres�w 0-8191.
+ @config "address" attribute of "device" element describes daemon address on UniTE bus. Attributes
+ of "unit" element describes device to read. "address" attribute of "param" element describes register
+ to read.
+ @config_example
+  <device
+	    daemon="/opt/szarp/bin/unitedmn"
+	    path="/dev/ttyA11"
+	    speed="9600"
+	    unitelway:address="6">
+	<unit id="1" type="1" subtype="1" bufsize="1"
+		unitelway:network="0x00"
+		unitelway:station="0xFE"
+		unitelway:gate="0x00"
+		unitelway:module="0x00"
+		unitelway:channel="0x00">
+		<param ... unitelway:address="1000">
+		</param>
+	</unit>
+  </device>
+ @description_end 
+
  */
 
 #define _BSD_SOURCE 1

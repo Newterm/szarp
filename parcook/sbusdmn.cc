@@ -16,7 +16,18 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
-/** Daemon for querying energy meters.*/
+/** Daemon for querying energy meters.
+ * $Id$
+ */
+
+/*
+ @description_start
+ @class 4
+ @devices Energy meters using S-Bus (Saia-Burgess Bus) protocol.
+ @devices.pl Liczniki energii u¿ywaj±ce protoko³u S-Bus (Saia-Burgess Bus).
+ @description_end
+*/
+
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

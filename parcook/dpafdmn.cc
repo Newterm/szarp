@@ -22,6 +22,13 @@
 */
 
 /*
+ @description_start
+ @class 2
+ @devices DataPAF 3.x Energy meters.
+ @devices.pl Liczniki energii DataPAF 3.X
+ @description_end
+*/
+/*
  * SZARP 2.0
  * parcook
  * dpafdmn.c

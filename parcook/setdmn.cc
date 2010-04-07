@@ -66,7 +66,7 @@ presented to user.
 	extra:tcp-port="8010" 		<!-- TCP port to listen on -->
 	extra:tcp-allowed="192.168.1.2"	<!-- list of allowed IP addresses, delimited with spaces -->
 	>
-	<unit id="1" type="1" subtype="1" buffer_size="1">
+	<unit id="1" type="1" subtype="1" bufsize="1">
 		<param name="Some:Setable:Parameter" ... 
 			extra:min="0"		<!-- minimum allowed value -->
 			extra:max="27.8"	<!-- maximum allowed value -->
@@ -432,7 +432,6 @@ bool SetDaemon::Init()
 	if (c == NULL) {
 		dolog(1, "missing tcp-port attribute, exiting, using default value %d", DEFAULT_PORT);
 		m_listen_port = DEFAULT_PORT;
-		return false;
 	} else {
 		m_listen_port = string2num<uint16_t>(SC::U2S(c));
 		dolog(2, "using port number %d", m_listen_port);

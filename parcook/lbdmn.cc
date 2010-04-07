@@ -21,6 +21,13 @@
  * lbdmn.c
  * Wersja $Id$
  */
+/*
+ @description_start
+ @class 2
+ @devices Label LB-746 wind meter.
+ @devices.pl Wiatromierz Label LB-746.
+ @description_end
+*/
 
 #define _IPCTOOLS_H_
 

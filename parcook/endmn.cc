@@ -20,7 +20,16 @@
  * SZARP 2.0
  * parcook
  * endmn.c
+ * $Id$
  */
+/*
+ @description_start
+ @class 2
+ @devices Circutor CVMk power meter.
+ @devices.pl Licznik energii Circutor CVMk.
+ @protocol Modbus RTU
+ @description_end
+*/
 
 #define _IPCTOOLS_H_
 #define _HELP_H_

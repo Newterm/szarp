@@ -17,19 +17,24 @@
 */
 /*
  * AQTDMN
+ * $Id$
  * demon do odczytu parametrów z przelicznika SuperCal Aquatherm 431 lub 432 
  * Pawe³ Kolega 2005
- * Zczytywane parametry
- * Energia MSB
- * Energia LSB
- * Przep³yw zliczony MSB
- * Przep³yw zlicozny LSB
- * Temperatura zasilania MSB
- * Temperatura zasilania LSB 
- * Temperatura powrotu MSB 
- * Temperatura powrotu LSB 
- * Przep³yw aktualny MSB
- * Przep³yw aktualny LSB  
+ */
+
+/*
+ @descrption_start
+
+ @class 4
+
+ @devices SuperCal Aquatherm 431 and 432 heatmeters
+ @devices.pl Ciep³omierze SuperCal Aquatherm 431/432
+
+ @comment.pl Sczytywane parametry: Energia MSB, Energia LSB, Przep³yw zliczony MSB, Przep³yw zlicozny LSB,
+ Temperatura zasilania MSB, Temperatura zasilania LSB, Temperatura powrotu MSB, Temperatura powrotu LSB,
+ Przep³yw aktualny MSB, Przep³yw aktualny LSB  
+
+ @description_end
  */
 
 #ifdef HAVE_CONFIG_H

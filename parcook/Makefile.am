@@ -74,7 +74,6 @@ bin_PROGRAMS = \
 	      tensdmn \
 	      testdmn \
 	      @UNITEDMN@ \
-              wagadmn \
 	      wlkdmn \
               zmddmn 
 
@@ -133,7 +132,7 @@ ratedmn_SOURCES = ratedmn.cc
 
 lecdmn_SOURCES = lecdmn.cc
 
-lecmdmn_SOURCES = lecdmn.cc
+lecmdmn_SOURCES = lecmdmn.cc
 
 tensdmn_SOURCES = tensdmn.cc
 
@@ -152,8 +151,6 @@ nrsdmn_SOURCES = nrsdmn.cc
 tcpdmn_SOURCES = tcpdmn.cc
 
 testdmn_SOURCES = testdmn.cc
-
-wagadmn_SOURCES = wagadmn.cc
 
 zmddmn_SOURCES = zmddmn.cc
 

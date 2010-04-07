@@ -21,31 +21,28 @@
  * Logi l±duj± domy¶lnie w /opt/szarp/log/ratedmn.
  * W trybie Master zostala dodana konwersja FLOAT-> parametr MSB i FLOAT-> PARAMETR LSB
  */
+/*
+ @description_start
+ @class 4
+ @devices Daemon performs electric energy rate related calculations on existing SZARP parameters.
+ @devices.pl Sterownik wykonuje obliczenia zwi±zane z taryfikowaniem energii elektrycznej na podstawie
+ istniej±cych parametrów.
+ @comment This daemon is obsolete, LUA parameters can be used to get the same effect.
+ @comment.pl Ten demon jest obecnie niepotrzebny - ten sam efekt mo¿e byæ uzyskany za pomoc± parametrów w LUA.
+ @description_end
+ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <sys/shm.h>
-#include <sys/sem.h>
-#include <sys/msg.h>
-#include <errno.h>
-#include <assert.h>
 #include <unistd.h>
 #include <termio.h>
 #include <fcntl.h>
-#include <sys/types.h>
-#include <sys/ioctl.h>
 
 #include "conversion.h"
 
 #include <libxml/tree.h>
-
-#define _IPCTOOLS_H_
-#define _HELP_H_
-#define _ICON_ICON_
-#include "szarp.h"
-#include "msgtypes.h"
 
 #include "ipchandler.h"
 #include "liblog.h"

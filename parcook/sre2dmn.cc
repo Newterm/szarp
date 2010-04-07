@@ -25,16 +25,33 @@
  * documentation bought from producer. Version without configurable channels.
  * SRE2 has 8 channels.
  * wersja bez konfigurowalnych kana³ów SRE-2 ma 8 kana³ów bez mozliwosci uzycia retransmitera (chyba)
- * Parameters:
- * - Energy MSB I
- * - Energy LSB I
- *   ...
- * - Energy MSB VIII
- * - Energy LSB VIII
- * - Power I
- *   ...
- * - Power VIII
  */
+
+/*
+ @description_start
+ @class 4
+ @devices Tech-Agro SRE2 Electric Energy Sumator.
+ @devices.pl Sumator liczników energii elektrycznej Tech-Agro SRE2.
+ @config Version without configurable channels (8 channels possible). Available parameters:
+
+ - Energy MSB I
+
+ - Energy LSB I
+
+   ...
+
+ - Energy MSB VIII
+
+ - Energy LSB VIII
+
+ - Power I
+
+   ...
+
+ - Power VIII
+
+ @description_end
+*/
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

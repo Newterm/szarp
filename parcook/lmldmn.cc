@@ -15,6 +15,49 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
+
+/*
+ @description_start
+ @class 2
+ @devices Lumel RE-31 PID regulator.
+ @devices.pl Regulator PID Lumel RE-31.
+ @config_example
+ 	Numery parametrów z sekcji "OPTIONS" params.xml:
+	Czas wytrzymania #DataCode = 1 #Comma = 1
+	Prêdko¶æ narostu warto¶ci zadanej #DataCode = 2 #Comma = 1
+	Kompensacja odchylenia sygna³u wej¶ciowego #DataCode = 3 #Comma = 2
+	Przesuniêcie warto¶ci regulowanej #DataCode = 4 #Comma = 1
+	Nastawa zakresu proporcjonalno¶ci PID-a #DataCode = 5 #Comma = 0
+	Nastawa czasu ca³kowania PID-a #DataCode = 6 #Comma = 0
+	Nastawa czasu ró¿niczkowania PID-a #DataCode = 7 #Comma = 0
+	Histereza alarmu 1 #DataCode = 8 #Comma = 1
+	Histereza dla regulacji dwustanowej #DataCode = 9 #Comma = 1
+	Adres urz±dzenia w sieci #DataCode = 10 #Comma = 0
+	Dolna granica zakresu #DataCode = 11 #Comma = 1
+	Górna granica zakresu #DataCode = 12 #Comma = 1
+	Ograniczenie mocy wyj¶cia 1 #DataCode = 13 #Comma = 0
+	Ograniczenie mocy wyj¶cia 2 #DataCode = 14 #Comma = 0
+	Rodzaj sygna³u wej¶ciowego #DataCode = 15 #Comma = 0
+	Typ jednostk #DataCode = 16 #Comma = 0
+	Rozdzielczo¶ #DataCode = 17 #Comma = 0
+	Rodzaj regulacj #DataCode = 18 #Comma = 0
+	Typ alarmu #DataCode = 19 #Comma = 0
+	Funkcje alarmu 2 #DataCode = 20 #Comma = 0
+	Okres impulsowania dla wyj¶cia 1 #DataCode = 21 #Comma = 0
+	Okres impulsowania dla wyj¶cia ch³odzeni #DataCode = 22 #Comma = 0
+	Zakres proporcjonalno¶ci dla wyj¶cia ch³odzenia #DataCode = 23 #Comma = 1
+	Strefa nieczu³o¶ci #DataCode = 24 #Comma = 1
+	Warto¶æ mierzona #DataCode = 25 #Comma = 0
+	Warto¶æ zadana #DataCode = 26 #Comma = 1 
+	Warto¶æ sygna³u na wyj¶ciu 1 # DataCode = 27 #Comma = 0
+	Warto¶æ sygna³u na wyj¶ciu 2 #DataCode = 28 #Comma = 0
+	Warto¶æ alarmu 2 lub czas wytrzymania #DataCode = 29 #Comma = 1
+	Histereza alarmu 2 #DataCode = 30 #Comma = 1
+	Typ alarmu 2 #DataCode = 31 #Comma = 0
+	Funkcje alarmu 2 #DataCode = 32 #Comma = 0
+ @description_end
+*/
+
 #define _IPCTOOLS_H_
 
 #include<sys/types.h>
@@ -48,40 +91,6 @@
 
 #undef DEBUG			/* debug wewnêtrzny */
 /*
-Numery parametrów z sekcji "OPTIONS" params.xml
-	Parametry do odczytu z licznika LUMEL RE-31
-	Czas wytrzymania #DataCode = 1 #Comma = 1
-	Prêdko¶æ narostu warto¶ci zadanej #DataCode = 2 #Comma = 1
-	Kompensacja odchylenia sygna³u wej¶ciowego #DataCode = 3 #Comma = 2
-	Przesuniêcie warto¶ci regulowanej #DataCode = 4 #Comma = 1
-	Nastawa zakresu proporcjonalno¶ci PID-a #DataCode = 5 #Comma = 0
-	Nastawa czasu ca³kowania PID-a #DataCode = 6 #Comma = 0
-	Nastawa czasu ró¿niczkowania PID-a #DataCode = 7 #Comma = 0
-	Histereza alarmu 1 #DataCode = 8 #Comma = 1
-	Histereza dla regulacji dwustanowej #DataCode = 9 #Comma = 1
-	Adres urz±dzenia w sieci #DataCode = 10 #Comma = 0
-	Dolna granica zakresu #DataCode = 11 #Comma = 1
-	Górna granica zakresu #DataCode = 12 #Comma = 1
-	Ograniczenie mocy wyj¶cia 1 #DataCode = 13 #Comma = 0
-	Ograniczenie mocy wyj¶cia 2 #DataCode = 14 #Comma = 0
-	Rodzaj sygna³u wej¶ciowego #DataCode = 15 #Comma = 0
-	Typ jednostk #DataCode = 16 #Comma = 0
-	Rozdzielczo¶ #DataCode = 17 #Comma = 0
-	Rodzaj regulacj #DataCode = 18 #Comma = 0
-	Typ alarmu #DataCode = 19 #Comma = 0
-	Funkcje alarmu 2 #DataCode = 20 #Comma = 0
-	Okres impulsowania dla wyj¶cia 1 #DataCode = 21 #Comma = 0
-	Okres impulsowania dla wyj¶cia ch³odzeni #DataCode = 22 #Comma = 0
-	Zakres proporcjonalno¶ci dla wyj¶cia ch³odzenia #DataCode = 23 #Comma = 1
-	Strefa nieczu³o¶ci #DataCode = 24 #Comma = 1
-	Warto¶æ mierzona #DataCode = 25 #Comma = 0
-	Warto¶æ zadana #DataCode = 26 #Comma = 1 
-	Warto¶æ sygna³u na wyj¶ciu 1 # DataCode = 27 #Comma = 0
-	Warto¶æ sygna³u na wyj¶ciu 2 #DataCode = 28 #Comma = 0
-	Warto¶æ alarmu 2 lub czas wytrzymania #DataCode = 29 #Comma = 1
-	Histereza alarmu 2 #DataCode = 30 #Comma = 1
-	Typ alarmu 2 #DataCode = 31 #Comma = 0
-	Funkcje alarmu 2 #DataCode = 32 #Comma = 0
 */
 
 static int DeviceId;

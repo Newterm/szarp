@@ -18,33 +18,25 @@
 /*
  * MUKSdmn 
  * Pawe³ Kolega
+ * $Id$
  * demon dla kot³a olejowego KOG6
  * dla sterownika MUKS firmy N&N oraz firmy Merpro
  * Demon powstal bardziej na podstawie Reverse Engineeringu niz dokumentacji, ktora jest niedostateczna!
+ */
+/*
+ @description_start
+ @class 4
+ @devices MUKS-MERPRO PLC for KOG6 oil boiler.
+ @devices.pl Sterownik MUKS-MERPRO kot³a olejowego KOG6.
+ @description_end
  */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <sys/shm.h>
-#include <sys/sem.h>
-#include <sys/msg.h>
-#include <errno.h>
-#include <assert.h>
-#include <libxml/tree.h>
 #include <termio.h>
 #include <fcntl.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/ioctl.h>
-
-
-#define _IPCTOOLS_H_
-#define _HELP_H_
-#define _ICON_ICON_
-#include "szarp.h"
-#include "msgtypes.h"
 
 #include "ipchandler.h"
 #include "liblog.h"

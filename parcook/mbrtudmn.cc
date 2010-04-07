@@ -19,109 +19,95 @@
  * Demon Modbus RTU do odczytu systemu monitoringu spalin.
  * 
  * $Id$
- * 
- * Konfiguracja w params.xml (przyk³ad, atrybuty z przestrzeni nazw
- * 'modbus' s± wymagane):
- * Nowy stuff, zeby bardziej zuniwersalnic demona - w trybie MASTER podaje sie numer 
- * funkcyji pytajacej
- *
- * ...
- * <device 
- *      xmlns:modbus="http://www.praterm.com.pl/SZARP/ipk-extra"
- *      daemon="/opt/szarp/bin/mbrtudmn" 
- *      path="/dev/ttyA11"
- *      modbus:id="0xA1"
- *      modbus:mode="master"
- *      <unit id="1" modbus:id="0xA11">
- *              <param
- *                      name="..."
- *                      ...
- *                      modbus:address="0x00"
- *                      modbus:type="integer">
- *                      ...
- *              </param>
- *              <param
- *                      name="..."
- *                      ...
- *                      modbus:address="0x02"
- *                      modbus:type="float">
- *                      ...
- *              </param>
- *              ...
- *              <send 
- *                      param="..." 
- *                      type="min"
- *                      modbus:address="0x1f"
- *                      modbus:type="float">
- *                      ...
- *              </send>
- *              ...
- *      </unit>
- *      <unit id="1" modbus:id="0xA12">
- *              <param
- *                      name="..."
- *                      ...
- *                      modbus:address="0x00"
- *                      modbus:type="integer">
- *                      ...
- *              </param>
- *              <param
- *                      name="..."
- *                      ...
- *                      modbus:address="0x02"
- *                      modbus:type="float">
- *                      ...
- *              </param>
- *              ...
- *              <send 
- *                      param="..." 
- *                      type="min"
- *                      modbus:address="0x1f"
- *                      modbus:type="float">
- *                      ...
- *              </send>
- *              ...
- *      </unit>
- * </device>
- *
- * Logi l±duj± domy¶lnie w /opt/szarp/log/mbrtudmn.
- * W trybie Master zostala dodana konwersja FLOAT-> parametr MSB i FLOAT-> PARAMETR LSB
- * Nowy typ danych: BCD (modbus:type="bcd")
  */
+
+/* 
+ @description_start
+ @class 4
+ @protocol Modbus RTU.
+ @devices All devices using Modbus RTU protocol.
+ @devices.pl Wszelkie urz±dzenia wykorzystuj±ce protokó³ Modbus RTU.
+ @comment This daemon is obsolete by newer univeral Modbus daemon - mbdmn.
+ @comment.pl Demon przestarza³y, zastêpuje go uniwersalny demon protoko³u Modbus - mbdmn.
+
+ @config_example
+ <device 
+      xmlns:modbus="http://www.praterm.com.pl/SZARP/ipk-extra"
+      daemon="/opt/szarp/bin/mbrtudmn" 
+      path="/dev/ttyA11"
+      modbus:id="0xA1"
+      modbus:mode="master"
+      		'master' or 'slave'
+      <unit id="1" modbus:id="0xA11">
+              <param
+                      name="..."
+                      ...
+                      modbus:address="0x00"
+		      modbus:function="0x03"
+		      		modbus function to use (only in master mode)
+                      modbus:type="integer">
+		      		value type: integer, bcd or float
+                      ...
+              </param>
+              <param
+                      name="..."
+                      ...
+                      modbus:address="0x02"
+                      modbus:type="float"
+		      modbus:extra="lsb"
+		      		lsb or msb for combined (2 registers) values
+		      >
+                      ...
+              </param>
+              ...
+              <send 
+                      param="..." 
+                      type="min"
+                      modbus:address="0x1f"
+                      modbus:type="bcd">
+                      ...
+              </send>
+              ...
+      </unit>
+      <unit id="1" modbus:id="0xA12">
+              <param
+                      name="..."
+                      ...
+                      modbus:address="0x00"
+                      modbus:type="integer">
+                      ...
+              </param>
+              <param
+                      name="..."
+                      ...
+                      modbus:address="0x02"
+                      modbus:type="float">
+                      ...
+              </param>
+              ...
+              <send 
+                      param="..." 
+                      type="min"
+                      modbus:address="0x1f"
+                      modbus:type="float">
+                      ...
+              </send>
+              ...
+      </unit>
+ </device>
+ @description_end
+*/
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-
-#include <sys/shm.h>
-#include <sys/sem.h>
-#include <sys/msg.h>
-#include <errno.h>
-#include <assert.h>
-#include <unistd.h>
-#include <termio.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/ioctl.h>
-
-#include <libxml/xpath.h>
-#include <libxml/xpathInternals.h>
-
-
-#include <libxml/tree.h>
 #include <vector>
 
 #include "conversion.h"
 #include "xmlutils.h"
 
 using std::vector; 
-
-#define _IPCTOOLS_H_
-#define _HELP_H_
-#define _ICON_ICON_
-#include "szarp.h"
-#include "msgtypes.h"
 
 #include "mbrtu.h"
 #include "ipchandler.h"
