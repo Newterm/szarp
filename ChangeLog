@@ -1,5 +1,9 @@
 $Id$
 
+2010-04-09	Pawel Palucha <pawel@praterm.com.pl>
+	* parcook/ddedmnc.cc: added optional dde:prec attribute for
+	parameters.
+	* utils/ddeproxy/ddeproxy.py: attempt to catch server exceptions.
 2010-04-07	Pawel Palucha <pawel@praterm.com.pl>
 	* parcook/*, ipk.sgml: documentation of mbusdmn and wlkdmn moved to
 	daemons source code.

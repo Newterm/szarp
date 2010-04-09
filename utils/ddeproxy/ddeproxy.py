@@ -124,8 +124,14 @@ if __name__ == '__main__':
                 port = int(f.readline().strip())
         except:
                 port = __PORT__
-        server = SimpleXMLRPCServer.SimpleXMLRPCServer(("", port),
+	
+	server = SimpleXMLRPCServer.SimpleXMLRPCServer(("", port),
 			requestHandler = SilentRequestHandler)
 	server.register_instance(DDESpy())
-	server.serve_forever()
+	while True:
+		try:
+			server.serve_forever()
+		except Exception, e:
+			print "Cought exception", e
+			print "Trying to restart"
 

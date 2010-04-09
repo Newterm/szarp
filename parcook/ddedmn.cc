@@ -55,7 +55,7 @@
      xmlns:dde="http://www.praterm.com.pl/SZARP/ipk-extra" dde:appname="VIEW">
    <unit id="1" type="2" subtype="1" bufsize="1">
       <param name="Kocio³ 1:DDE:Temperatura wody przed kot³em" short_name="Twe" unit="°C" prec="1" 
-          dde:topic="Tagname" dde:item="Batch%Conc" dde:type="integer" base_ind="auto">
+          dde:topic="Tagname" dde:item="Batch%Conc" dde:type="integer" dde:prec="1" base_ind="auto">
        ....
 
  Where:
@@ -66,6 +66,7 @@
  dde:topic is DDE topic, for InTouch it's always 'Tagname', for MBENET use correct value
  dde:item is DDE item name, for InTouch it's a Tagname of param, for MBENET it's Modbus
  register address
+ dde:prec optional precision of 'string' parameter, value is divided by 10 ^ dde:prec, default is 0
  dde:type:
  - for InTouch use "string" - numbers are passed from InTouch as string and parsed according to parameter
    precision; if you need to split large value into 2 parameters, use same topic and id for both parameters
@@ -285,6 +286,17 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 		}
 		xmlFree(_type);
 
+		int ddeprec = 0;
+		xmlChar* _prec = xmlGetNsProp(n,
+				BAD_CAST("prec"), 
+				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+		if (_prec != NULL) {
+			ddeprec = atoi((char*)_prec);
+			xmlFree(_prec);
+		}
+
+
+
 		xmlChar* _word = xmlGetNsProp(n,
 				BAD_CAST("word"), 
 				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
@@ -306,7 +318,7 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 		if (m_params.find(topic) == m_params.end()
 				|| m_params[topic].find(item) == m_params[topic].end()) {
 			DDEParam& mp = m_params[topic][item];
-			mp.prec = param->GetPrec();
+			mp.prec = param->GetPrec() - ddeprec;
 			if (lsw) {
 				mp.lsw_address = i;
 			} else {
@@ -411,11 +423,8 @@ template <typename T> bool DDEDaemon::ConvertValue(XMLRPC_VALUE i, const std::st
 				*ind = '.';
 			}
 			d = strtod(copy, &err);
-			if (prec > 0) {
-				ret = mypow(d, prec);
-			} else {
-				ret = d;
-			}
+			ret = mypow(d, prec);
+			dolog(10, "Converted value '%g'", double(ret));
 			free(copy);
 			if (*err != '\0') {
 				dolog(1, "possible invalid value received for topic: %s, item: %s: %s", 
