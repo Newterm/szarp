@@ -32,7 +32,7 @@ RESOURCES =
 endif
 
 wxhelp_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP)
-wxhelp_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) @WX_LIBS@ @BOOST_LDFLAGS@ @BOOST_THREAD_LIB@ @XML_LIBS@
+wxhelp_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) @WX_LIBS@ @BOOST_LDFLAGS@ @BOOST_SYSTEM_LIB@ @BOOST_THREAD_LIB@ @XML_LIBS@
 
 # Creating resources file with icons for Windows
 # Application does not use this icon - but Windows use it

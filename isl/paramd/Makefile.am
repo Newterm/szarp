@@ -15,7 +15,7 @@ INCLUDES = -I@srcdir@/../../include \
 LDADD=../server/libserver.a \
       ../../libSzarp/libSzarp.a    \
       ../../libSzarp2/libSzarp2.a  \
-      @SSL_LIBS@ @PAM_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ @PTHREAD_LIBS@ @LUA_LIBS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_FILESYSTEM_LIB@
+      @SSL_LIBS@ @PAM_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ @PTHREAD_LIBS@ @LUA_LIBS@ @BOOST_SYSTEM_LIB@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_FILESYSTEM_LIB@
 
 SHORTHOST=$(shell hostname -s)
 
