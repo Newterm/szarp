@@ -1,5 +1,7 @@
 $Id$
 
+2010-04-13	Pawel Palucha <reksio@praterm.com.pl>
+	* wx/common/szapp.cc: updated year in About dialog.
 2010-04-13	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
 	* debian/control: libboost-1.42-all-dev removed from build
 	dependencies
