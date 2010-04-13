@@ -1,14 +1,14 @@
+szarp (3.1.398) stable; urgency=low
+
+  * building stable
+
+ -- Darek Marcinkiewicz <reksio@dalkiaterm.pl>  Fri, 13 Apr 2010 23:48:30 +0100
+
 szarp (3.1.395) unstable; urgency=low
 
   * building unstable.
 
  -- Pawel Palucha <pawel@praterm.com.pl>  Wed, 07 Apr 2010 13:01:03 +0200
-
-szarp (3.1.392) unstable; urgency=low
-
-  * building unstable
-
- -- Pawel Palucha <pawel@praterm.com.pl>  Tue, 06 Apr 2010 18:02:20 +0200
 
 szarp (3.1.391) unstable; urgency=low
 

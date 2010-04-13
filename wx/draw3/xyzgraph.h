@@ -58,10 +58,14 @@ class XYZFrame: public XFrame, public szFrame {
 	ConfigManager *m_cfg_manager;
 
 	FrameManager *m_frame_manager;
+
+	XYDialog *m_xydialog;
 public:
 	XYZFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigManager *cfgmanager, FrameManager *frame_manager);
 
 	virtual int GetDimCount();
+
+	void GetNewGraph();
 
 	virtual void SetGraph(XYGraph *graph);
 

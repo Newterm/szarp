@@ -1,5 +1,8 @@
 $Id$
 
+2010-04-13	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+	* wx/draw3: 3D graph can be zoomed/rotated/moved around,
+	cursor to 3D graph added, but for now XYZ graphs are disabled
 2010-04-09	Pawel Palucha <pawel@praterm.com.pl>
 	* parcook/ddedmnc.cc: added optional dde:prec attribute for
 	parameters.

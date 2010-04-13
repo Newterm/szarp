@@ -743,9 +743,11 @@
             <object class="wxMenuItem" name="XYGraph">
                 <label>XY Graph\tCtrl+Shift+X</label>
             </object>
+<!--
             <object class="wxMenuItem" name="XYZGraph">
                 <label>XYZ Graph\tCtrl+Shift+Z</label>
             </object>
+-->
             <object class="wxMenuItem" name="StatsWin">
                 <label>Statistics window\tCtrl+Shift+S</label>
             </object>

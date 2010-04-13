@@ -100,9 +100,7 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 		button = new wxButton(this, XY_ZAXIS_BUTTON, _("Choose draw"));
 		sizer_3->Add(button, 1, wxEXPAND);
 		sizer->Add(sizer_3, 0, wxEXPAND | wxALL, 5);
-		SetSize(500, 400);
-	} else
-		SetSize(500, 350);
+	} 
 
 	line = new wxStaticLine(this);
 	sizer->Add(line, 0, wxEXPAND, 10);
@@ -135,11 +133,14 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 	line = new wxStaticLine(this);
 	sizer->Add(line, 0, wxEXPAND | wxALL, 5);
 
-	m_avg_check = new wxCheckBox(this, wxID_ANY, _("Average values"));
-	sizer->Add(m_avg_check, 0, wxALIGN_CENTER | wxALL, 5);
+	m_avg_check = NULL;
+	if (m_frame->GetDimCount() == 2) {
+		m_avg_check = new wxCheckBox(this, wxID_ANY, _("Average values"));
+		sizer->Add(m_avg_check, 0, wxALIGN_CENTER | wxALL, 5);
 
-	line = new wxStaticLine(this);
-	sizer->Add(line, 0, wxEXPAND | wxALL, 5);
+		line = new wxStaticLine(this);
+		sizer->Add(line, 0, wxEXPAND | wxALL, 5);
+	}
 
 	wxBoxSizer *button_sizer = new wxBoxSizer(wxHORIZONTAL);
 	button = new wxButton(this, wxID_OK, _("OK"));
@@ -159,6 +160,7 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 	for (int i = 0; i < m_frame->GetDimCount(); i++)
 		m_di.push_back(NULL);
 
+	SetSize(500, 350);
 	SetSizer(sizer);
 
 }
@@ -182,7 +184,7 @@ void XYDialog::OnOK(wxCommandEvent &event) {
 			m_end_time.GetTime(),
 			m_period,
 			this,
-			m_avg_check->IsChecked());
+			m_avg_check ? m_avg_check->IsChecked() : false);
 
 	m_mangler->Go();
 }
