@@ -4,7 +4,7 @@ $Id$
 	* meaner3/utils/szbmod.cc: updated usage instructions, removed
 	unnecessary C headers inclusions.
 	* wx/common/szapp.cc: updated year in About dialog.
-2010-04-13	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+2010-04-13	Darek Marcinkiewicz <reksio@praterm.com.pl>
 	* debian/control: libboost-1.42-all-dev removed from build
 	dependencies
 	* wx/draw3: 3D graph can be zoomed/rotated/moved around,
@@ -28,7 +28,7 @@ $Id$
 	incorrect 'allowed_ip'.
 	* libSzarp2/ipk/tparam.cc: correct rounding when converting double to
 	short int in TParam::ToIPCValue() method.
-2010-04-06	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+2010-04-06	Darek Marcinkiewicz <reksio@praterm.com.pl>
 	* libSzarp2: added proper termination of 'configuration
 	watcher' thread, introducing comments into new code part I:
 	comments for Szbase class
@@ -59,7 +59,7 @@ $Id$
 	* parcook/ddedmn.cc: less strict parsing of dde return strings.
 	* parcook/mbdmn.cc: fix in modbus 0x04 function name, fixes in
 	configuration example.
-2010-03-31	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+2010-03-31	Darek Marcinkiewicz <reksio@praterm.com.pl>
 	* libSzarp2/szbase/loptdatablock.cc: when deciding
 	if a block should be refreshed, we check for change 
 	of meaner last update time in any of buffers referred 
@@ -75,7 +75,7 @@ $Id$
 	when this option is choosen current set is 
 	converted to user defined set and dialog for
 	editing this newly cereated set pops up
-2010-03-30	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+2010-03-30	Darek Marcinkiewicz <reksio@praterm.com.pl>
 	* wx/draw3: documentation link defaults to http://szarp.com
 	* wx/draw3: when 'parameter documentation' is
 	clicked on user defined param, we simply show
@@ -85,18 +85,18 @@ $Id$
 	behaves when database thread is shut down and user starts
 	sitching sets and average types); some more of common
 	drawing code moved to graphsutils.cpp
-2010-03-29	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+2010-03-29	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: draw3 periodically checks if version
 	that is running is older that the one installed
 	on a computer, if the installed version is newer,
 	user is asked to restart draw3
-2010-03-29	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+2010-03-29	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2/szbase: lua parser fixes, optimized params
 	are now properly updated with configuration reload,
 	added better debug info in params optimizer,
 	when user param is modfied its cache is cleared
 	* wx/draw3: 'import set' is always active 
-2010-03-26	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
+2010-03-26	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: new feature: import/export of user sets
 2010-03-25	Pawel Palucha <pawel@praterm.com.pl>
 	* wx/draw/*: more focus fixes, added icon for X/Y Graph dialog,
