@@ -1,6 +1,7 @@
 $Id$
 
 2010-04-13	Darek Marcinkiewicz <reksio@praterm.com.pl>
+	* parcook/setdmn.cc: lenny compilation fix
 	* debian/control: more build-depends additions
 	* /: added missing BOOST_SYSTEM_LIB to Makefiles.am
 	* debian/control: one more addition to build-deps

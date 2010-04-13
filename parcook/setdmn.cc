@@ -561,7 +561,7 @@ void SetDaemon::WriteValue(struct bufferevent* buf, const std::wstring& name)
 	std::ostringstream s;
 	s << std::string("\"") << SC::S2U(name).c_str() << "\" " << p.current 
 			<< " " << p.min << " " << p.max << "\n";
-	bufferevent_write(buf, s.str().c_str(), strlen(s.str().c_str()));
+	bufferevent_write(buf, const_cast<char*>(s.str().c_str()), strlen(s.str().c_str()));
 }
 
 struct bufferevent* SetDaemon::NewConnection(int fd)
@@ -581,7 +581,7 @@ struct bufferevent* SetDaemon::NewConnection(int fd)
 
 void write_string(struct bufferevent* bufev, const char* str)
 {
-	bufferevent_write(bufev, str, strlen(str) + 1);
+	bufferevent_write(bufev, const_cast<char*>(str), strlen(str) + 1);
 }
 
 void SetDaemon::Read(struct bufferevent* bufev)
