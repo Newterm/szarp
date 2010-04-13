@@ -1,7 +1,6 @@
 /* 
   SZARP: SCADA software 
   
-
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
@@ -16,55 +15,21 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
+/*
+ * $Id:$
+ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef HAVE_STRING_H
-#include <string.h>
-#endif
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-
-#ifdef HAVE_SYS_STAT_H
-#include <sys/stat.h>
-#endif
-
-#include <sys/statvfs.h>
-#include <sys/ipc.h>
-#include <sys/sem.h>
-#include <sys/shm.h>
-#include <sys/time.h>
-#include <time.h>
-#include <assert.h>
-#include <errno.h>
-#include <stdio.h>
-#include <signal.h>
-#include <sstream>
 #include <fstream>
-#include <stdexcept>
-#include <fcntl.h>
 #include <argp.h>
 
 #include "liblog.h"
 #include "libpar.h"
-#include "execute.h"
-#include "szarp_config.h"
 #include "tsaveparam.h"
-#include "szbase/szbbase.h"
 
-#include "szarp.h"
 #include "conversion.h"
 
 /** Path to main config file. */
@@ -72,7 +37,6 @@
 
 /** Name of section in main config file for reading data dir.. */
 #define SZARP_CFG_SECTION "meaner3"
-
 
 char argp_program_name[] = "szbmod";
 const char *argp_program_version = "szbmod " "$Revision: 6199 $";
@@ -90,7 +54,8 @@ static char doc[] = "Allows for fast fast data modification of szbase parameter.
 "For example if program is run with following params:\n"
 "./szbmod -fformula -Dprefix=xxxx -s'2007-01-01 00:00' -e'2009-12-30 00:00' \"Sieæ:Sterownik:Temperatura zewnêtrzna\"\n"
 "and contents of file formula is like that:\n"
-"v = 2 * p(\"xxx:Sieæ:Sterownik:Temperatura zewnêtrzna\", t, pt)\n"
+"local v = 2 * p(\"xxx:Sieæ:Sterownik:Temperatura zewnêtrzna\", t, pt)\n"
+"return v\n"
 "then for given period values of \"Sieæ:Sterownik:Temperatura zewnêtrzna\" will be doubled.\n"
 "Config file:\n\
 Configuration options are read from file /etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg,\n\

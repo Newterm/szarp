@@ -1,6 +1,8 @@
 $Id$
 
 2010-04-13	Pawel Palucha <reksio@praterm.com.pl>
+	* meaner3/utils/szbmod.cc: updated usage instructions, removed
+	unnecessary C headers inclusions.
 	* wx/common/szapp.cc: updated year in About dialog.
 2010-04-13	Darek Marcinkiewicz <reksio@dalkiaterm.pl>
 	* debian/control: libboost-1.42-all-dev removed from build
