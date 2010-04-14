@@ -1,6 +1,7 @@
 # Git does not support keywords substitutions. Use 'git log ...'.
 
 2010-04-14	Pawel Palucha <pawel@praterm.com.pl>
+	* ChangeLog: testing e-mail again.
 	* ChangeLog: testing e-mail.
 	* Makefile.am, debian/rules: fetching version info from version file.
 	* version: conversion to git; git does not use numeric revision
