@@ -61,12 +61,6 @@ Files: etc/xdg/autostart/koper.desktop
 Package: szarp-updater
 Files: opt/szarp/bin/update_debs
 
-Package: szarp-sss
-Files: opt/szarp/bin/update_ssuserdb.sh
-Files: etc/cron.d/szarp-sss
-Files: opt/szarp/bin/sss_bases.pl
-Files: etc/cron.d/sss_bases
-
 Package: szarp-filler
 Files: opt/szarp/lib/python/{cmdLineParser.py*,DateDialog.py*,fillerGUI.py*,filler.py*}
 Files: opt/szarp/resources/locales/pl_PL/LC_MESSAGES/filler.mo

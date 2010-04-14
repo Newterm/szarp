@@ -1,6 +1,10 @@
 $Id$
 
 2010-04-14	Pawel Palucha <pawel@praterm.com.pl>
+	* debian/*: removed szarp-sss and szarp-doc-pdf-chrno packages, loosen
+	some package dependencies, removed '-g' from compiler flags.
+	* script/*: removed obsolete sss bases/users synchronization
+	mechanism.
 	* wx/sync/ssconfd/ssconf.py: we're not using /opt/szarp/.../sss_bases
 	file anymore.
 2010-04-14	Darek Marcinkiewcz <reksio@praterm.com.pl>

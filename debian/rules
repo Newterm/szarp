@@ -62,7 +62,6 @@ NO_CB_PACK_OPTS ?= \
 		-pszarp-scripts \
 		-pszarp-server \
 		-pszarp-server-complete \
-		-pszarp-sss \
 		-pszarp-sssweb \
 		-pszarp-terminal \
 		-pszarp-updater \
@@ -72,17 +71,15 @@ NO_CB_PACK_OPTS ?= \
 		-pszarp-xsltd 
 
 DOC_PACKAGES ?= \
-		-pszarp-doc-html \
 		-pszarp-doc-pdf \
-		-pszarp-doc-html \
-		-pszarp-doc-pdf-chrno
+		-pszarp-doc-html
 		 
-CFLAGS = -Wall -I/usr/include/gtk-2.0
-
 ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
-	CFLAGS += -O0
+	CFLAGS = -O0
+	CXXFLAGS = -O0
 else
-	CFLAGS += -O2
+	CFLAGS = -O2
+	CXXFLAGS = -O2
 endif
 
 configure: 
@@ -94,7 +91,7 @@ debian/config-status-no-cb: configure
 		$(MAKE) clean; \
 		rm debian/config-status-cb; \
 	fi;
-	./configure CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" --prefix=/$(PREFIX) \
+	./configure CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" --prefix=/$(PREFIX) \
 		--host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) \
 		--enable-deb-build --enable-lua-param-optimiser
 	@touch $@
@@ -169,11 +166,6 @@ install-doc-pdf:
 	dh_install -p szarp-doc-pdf resources/documentation/new/_pdf/* \
 		$(PREFIX)resources/documentation/new/pdf
 
-install-doc-pdf-chrno:
-	$(MAKE) DESTDIR=$(CURDIR)/$(INSTALL_DIR) -C resources/documentation/new install_on_server
-	dh_install --sourcedir=$(INSTALL_DIR) -p szarp-doc-pdf-chrno var/www/htdocs/serv/howto/_pdf/* \
-		var/www/htdocs/serv/howto/_pdf
-
 install-doc-html:
 	@for i in `find resources/documentation/new/ -type d -name html`; do \
 		dh_install -X.svn -p szarp-doc-html $$i $(PREFIX)`(dirname $$i)`; \
@@ -183,7 +175,7 @@ install-doc-html:
 	dh_install -p szarp-doc-html resources/documentation/new/style.css \
 		$(PREFIX)/resources/documentation/new
 
-install-indep: install-doc-pdf install-doc-pdf-chrno install-doc-html
+install-indep: install-doc-pdf install-doc-html
 
 create-indep: DH_OPTIONS=$(DOC_PACKAGES)
 create-indep: 

@@ -18,10 +18,7 @@ PACKAGED_SCRIPT = \
 	@srcdir@/samson2/convert_names \
 	@srcdir@/samson2/get_sam \
 	@srcdir@/samson2/process_csv \
-	@srcdir@/update_debs \
-	@srcdir@/update_ssuserdb.sh \
-	@srcdir@/ssupage/sss_bases.pl \
-	@srcdir@/ssupage/sss_bases.cron 
+	@srcdir@/update_debs 
 
 EXTRA_DIST = \
 	$(PACKAGED_SCRIPT) \
@@ -33,9 +30,6 @@ EXTRA_DIST = \
 	@srcdir@/szarp-sss.cron 
 
 
-install_scripts:
-	${INSTALL} ssupage/sss_bases.pl $(DESTDIR)@prefix@/bin/
-
 if DEB_BUILD
 bin_SCRIPTS = $(PACKAGED_SCRIPT) \
 	      sysinfo
@@ -45,7 +39,6 @@ install-data-local:
 	$(INSTALL) -d $(DESTDIR)/etc/cron.d
 	$(INSTALL) szarp-server.cron $(DESTDIR)/etc/cron.d/szarp-server
 	$(INSTALL) szarp-sss.cron $(DESTDIR)/etc/cron.d/szarp-sss
-	$(INSTALL) ssupage/sss_bases.cron $(DESTDIR)/etc/cron.d/sss_bases
 	$(INSTALL) -d $(DESTDIR)/usr/bin
 	$(INSTALL) -d $(DESTDIR)/etc/init.d
 endif
