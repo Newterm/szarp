@@ -1,6 +1,9 @@
-$Id$
+# Git does not support keywords substitutions. Use 'git log ...'.
 
 2010-04-14	Pawel Palucha <pawel@praterm.com.pl>
+	* version: conversion to git; git does not use numeric revision
+	numbers, so SZARP version numbers are not incremented automatically
+	after each commit, you need to set it manually in version file.
 	* debian/*: removed szarp-sss and szarp-doc-pdf-chrno packages, loosen
 	some package dependencies, removed '-g' from compiler flags.
 	* script/*: removed obsolete sss bases/users synchronization
