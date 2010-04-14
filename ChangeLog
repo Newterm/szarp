@@ -1,5 +1,7 @@
 $Id$
 
+2010-04-14	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* wx/draw3/GUI/resources.xrc: XYZ graph menu item readded
 2010-04-13	Darek Marcinkiewicz <reksio@praterm.com.pl>
 	* parcook/setdmn.cc: lenny compilation fix
 	* debian/control: more build-depends additions
