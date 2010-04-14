@@ -1,6 +1,7 @@
 # Git does not support keywords substitutions. Use 'git log ...'.
 
 2010-04-14	Pawel Palucha <pawel@praterm.com.pl>
+	* Makefile.am, debian/rules: fetching version info from version file.
 	* version: conversion to git; git does not use numeric revision
 	numbers, so SZARP version numbers are not incremented automatically
 	after each commit, you need to set it manually in version file.

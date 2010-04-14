@@ -23,8 +23,7 @@ doc documentation:
 version: 
 	@install -d $(DESTDIR)@prefix@/resources
 	@echo "Creating version info..."
-	@grep "\$$Id" @srcdir@/ChangeLog | cut '--delimiter= ' --fields=3,4,5 \
-		> $(DESTDIR)@prefix@/resources/version.info
+	@cat @srcdir@/version > $(DESTDIR)@prefix@/resources/version.info
 
 install_scripts:
 	${MAKE} -C script install_scripts
