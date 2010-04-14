@@ -1,5 +1,8 @@
 $Id$
 
+2010-04-14	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/sync/ssconfd/ssconf.py: we're not using /opt/szarp/.../sss_bases
+	file anymore.
 2010-04-14	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* wx/draw3/GUI/resources.xrc: XYZ graph menu item readded
 2010-04-13	Darek Marcinkiewicz <reksio@praterm.com.pl>

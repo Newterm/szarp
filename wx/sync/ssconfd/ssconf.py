@@ -422,14 +422,7 @@ class SSConf:
 		"""
 		Return list of bases for server
 		"""
-		all = self.get_available_bases(user, passhash)
-		if server == self.main_server:
-			return all
-		try:
-			list = file(szarp_dir + "/" + server + "/sss_bases").read().splitlines()
-		except IOError:
-			return []
-		return filter(lambda x: x in list, all)
+		return self.get_available_bases(user, passhash)
 
 	@checkauth
 	def disable_key(self, user, passhash, name):
