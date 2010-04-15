@@ -414,7 +414,7 @@ int main(int argc, char *argv[])
 	int             fd;
 	int 		ResponseStatus;
 	int		i;
-	short ParsedData[10];	
+	short ParsedData[13];	
 	unsigned char buf[1000];
 	unsigned long buffer;
 		
