@@ -9,7 +9,7 @@ const char* base64_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvw
 std::basic_string<unsigned char> encode(const std::basic_string<unsigned char>& input) {
 	std::basic_string<unsigned char> ret;
 
-	unsigned char pv;
+	unsigned char pv = 0;
 	int state = 0;
 
 	for (size_t i = 0; i < input.size(); i++) {
@@ -79,7 +79,7 @@ unsigned char base64_char_to_val(unsigned char v) {
 std::basic_string<unsigned char> decode(const std::basic_string<unsigned char>& input) {
 	std::basic_string<unsigned char> ret;
 
-	unsigned char pv;
+	unsigned char pv = 0;
 	unsigned char cv;
 	int state = 0;
 
