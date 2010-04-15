@@ -1,7 +1,9 @@
-# $Id: README 4394 2007-09-13 16:38:33Z pawel $
-
 SZARP -  System Zbierania Archiwizacji i Prezentacji danych.
-(C) Praterm S.A. 04-555 Warszawa B.Czecha 36 http://www.praterm.pl
+http://www.szarp.org
+
+(C) 1991 - 2010 Witold Kowalewski Praterm Automatyzacja Ciep³ownictwa
+(C) 1995 - 2009 Praterm S.A.
+(C) 1991 - 2010 various authors (see AUTHORS file)
 
 Table of contents:
 
@@ -29,7 +31,7 @@ systems. This is completely free software, published under GPL 2.0
 2. What does it mean SZARP, how to pronounce it?
 
 SZARP is acronym from full Polish name: 'System Zbierania ARchwizacji i Prezentacji 
-danych' which is 'System for Data Collection, Archiving and Presentation'. 'sz' in
+danych' which is 'System for Data Acquisition, Archiving and Presentation'. 'sz' in
 Polish is pronounced as 'sh', so 'SZARP' should be pronounced as 'sharp'.
 
 
@@ -39,13 +41,13 @@ SZARP architecure contains 3 main layers.
 
 The first layer is device drivers. There are several drivers available, for different 
 devices, including:
-* Modbus RST/TCP, master and slave
+* Modbus RTU/TCP, master and slave
 * MBus
 * Praterm ZET/Sterkom PLC
 * Pollustat and Infocal heating meters
 * Pozyton electricity meters
 * text files and text output from programs
-Device drivers are, for historical reasons, calles 'line daemons'.
+Device drivers are, for historical reasons, called 'line daemons'.
 
 The second layer are deamons for collecting data from drivers, calculating average
 values and formulas (defined parameters), and saving data to database. Datas are
@@ -62,17 +64,19 @@ The third layer are client programs, including:
 
 4. What is the origin of SZARP?
 
-SZARP is developed since 1991 (!) by Praterm company and is used in all heating
-systems (over 20) owned by Praterm and in few other all over Poland. In 2007 
-Praterm decided to publish almost all of the code under GPL License. Full
-history of develpoment is available in Polish on www.szarp.com.pl website.
+SZARP was developed since 1991 (!) by Praterm company and was used in all heating
+systems (over 20) owned by Praterm and in similar number of other systems all over 
+Poland. In 2007 Praterm decided to publish almost all of the code under GPL License. 
+Currently SZARP is developed as Open Source project on SourceForge.net. Project 
+website is http://www.szarp.org. Main founder of development is currently Newterm 
+company - http://newterm.pl.
 
 
 5. What platform is SZARP running on?
 
 SZARP is developed and deployed on Debian GNU/Linux, but should also compile and 
-work on any modern Linux distribution, on x86, ia64, amd64 and ARM (server onlt). 
-Clients applications can also run on Windows XP machines with NTFS file system.
+work on any modern Linux distribution, on x86, ia64, amd64 and ARM (server only). 
+Clients applications can also run on Windows XP/Vista/7 machines with NTFS file system.
 
 
 6. How to install SZARP?
@@ -84,12 +88,12 @@ File INSTALL contains installation instructions.
 
 Most of the user documentation is available only in Polish. Sources of documentation
 are in resources/documentation/new directory, it's also available on-line at 
-http://www.szarp.com.pl. Most of the new code is pretty-well documented.
+http://www.szarp.org. Most of the new code is pretty-well documented, using Doxygen.
 
 
 8. How can I get SZARP sources?
 
-Sources are available to download from http://www.szarp.com.pl.
+See http://www.szarp.org/en/download.
 
 
 9. How to set-up my first SZARP server?
@@ -109,18 +113,12 @@ is to treat machine as SZARP server only if the machine name is equal to configu
 prefix. This is propably not your case, so modify the file that it contains:
 
 PARCOOK=1
-PARDUP=0
-MEANER=0
 MEANER3=1
-NETPARD=1
 SENDER=1
-ANALIZA=0
-NETBASD=0
 PARAMD=1
 PSETD=0
 XSLTD=0
 SSS=0
-NETPAR_HOSTS=
 
 Now look at the /etc/szarp/szarp.cfg file and modify the begining of the file so
 it looks like ($prefix$ variable shoud be set to 'test'):
@@ -172,8 +170,6 @@ and analyze your system average load.
 
 10. How to get help?
 
-You can try to write us at coders@praterm.com.pl. But we won't answer stupid 
-questions ;-) If there will be broader interest in SZARP, we will think about
-mailing list and so on.
+You can try to write us at coders@newterm.pl.
 
 

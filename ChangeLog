@@ -1,6 +1,7 @@
 # Git does not support keywords substitutions. Use 'git log ...'.
 
 2010-04-15	Pawel Palucha <pawel@praterm.com.pl>
+	* README, INSTALL, INSTALL.Windows: docs update.
 	* AUTHORS: update.
 2010-04-14	Pawel Palucha <pawel@praterm.com.pl>
 	* ChangeLog: testing e-mail.

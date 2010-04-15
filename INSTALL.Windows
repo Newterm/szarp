@@ -400,12 +400,8 @@ using Mingw tools.
 To perform a compilation, we need to download:
  -  sources of the boost library from:
 	http://www.boost.org
-    The newest version (1.40 - October 2009) is available from
-	http://sourceforge.net/projects/boost/files/boost/1.40.0/
  -  boost jam application from:
 	http://www.boost.org
-    The newest version (3.1.17 - October 2009) is available from
-	http://sourceforge.net/projects/boost/files/boost-jam/3.1.17/
    
 We assume that you place your boost sources in F:\boost_1_40_0\ directory. 
 The bjam application can be stored wherever. The best location is a root of 
@@ -447,7 +443,6 @@ We assumed that the boost libraries under the Linux will be stored in
 
 You need at least system, filesystem, date_time, program_options, regex 
 and thread libraries.
-
 
 
 3.15. sqlite library.
