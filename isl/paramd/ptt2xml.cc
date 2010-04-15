@@ -290,7 +290,7 @@ std::wstring PTTParamProxy::getValue(int ind, int prec, PROBE_TYPE probe_type)
  */
 std::wstring PTTParamProxy::getCombinedValue(int indmsw, int indlsw, int prec, PROBE_TYPE probe_type)
 {
-	int im,il, j, k;
+	int j, k;
 	
 	if ((indmsw < 0) || (indmsw >= (int)values[probe_type].size()) || (indlsw < 0) || (indlsw >= (int)values[probe_type].size()))
 		return L"unknown";
