@@ -344,7 +344,7 @@ unsigned short MakeCommandSec(unsigned char *outbuf, unsigned short size_of_outb
   unsigned char buf[3] ;
   unsigned char code[25] ;
   unsigned short len,size_of_command;
-  int i;
+  unsigned i;
 
   sprintf((char*)code, "%ld", tab_code[month-1][day-1]);
 
