@@ -218,7 +218,7 @@ int authenticate(xmlDocPtr doc, string & reason)
 	}
 	sz_log(5, "User %s successfully bound to ldap server", username);
 
-	char *member_uid[] = { "memberUID", NULL };
+	char *member_uid[] = { (char *)"memberUID", NULL };
 	string group_dn = string("cn=") + prefix + "_masters," + ldap_group_dn;
 	LDAPMessage *msg;
 	error = ldap_search_ext_s(ld,
