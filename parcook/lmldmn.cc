@@ -103,7 +103,7 @@ static unsigned char Diagno = 0;
 
 static unsigned char Simple = 0;
 
-static int VTlen;
+static unsigned VTlen;
 
 static char parcookpat[81];
 
@@ -192,7 +192,6 @@ CRC (char *inSTR)
   const int CRC_LEN = 3;	/* CRC ma 2 bajty +\0 */
   unsigned int tmpCRC;		/* Zmienna przechowujaca CRC z przeniesieniem */
   char *oCRC;			/* wskaznik do sumy CRC */
-  int i;
   int initi;
   tmpCRC = 0;
   if (inSTR[0] == ':')
@@ -204,7 +203,7 @@ CRC (char *inSTR)
       initi = 0;
     }
 
-  for (i = initi; i < strlen (inSTR); i++)
+  for (unsigned i = initi; i < strlen (inSTR); i++)
     {
       tmpCRC += inSTR[i];
     }
@@ -263,8 +262,7 @@ OpenLine (char *line)
 void
 SendQuery (int linedes, char *Query)
 {
-  int i;
-  for (i = 0; i < strlen (Query); i++)
+  for (unsigned i = 0; i < strlen (Query); i++)
     {
       write (linedes, &Query[i], 1);
       usleep (1000 * 10);
@@ -358,12 +356,12 @@ main (int argc, char *argv[])
   int Commas[100];
   int linedes;
   int LineNum;
-  int i, j;
+  unsigned i, j;
   int Data;
   int DataBuffer[MAX_DATA];
   char FirstTime;
-  int HowCodes;
-  int HowCommas;
+  unsigned HowCodes;
+  unsigned HowCommas;
   char *p;
   char *Query;
   char ArgName[100];		/* Nazwa argumentu */
