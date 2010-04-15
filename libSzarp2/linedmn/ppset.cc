@@ -942,7 +942,7 @@ xmlDocPtr parse_report(const char* response, int len) {
 bool parse_regulator_parameters(const char* buf, int len, xmlDocPtr result) {
 	xmlNodePtr root_node = xmlDocGetRootElement(result);
 	istringstream is(string(buf, buf + len));
-	size_t i;
+	size_t i = 0;
 
 	std::string vals[8];
 
