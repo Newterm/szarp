@@ -1,6 +1,8 @@
 # Git does not support keywords substitutions. Use 'git log ...'.
 
 2010-04-16	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* debian/rules: packages version taken from current_tag file
+	(that is automatically generated)
 	* libSzarp2/szbase/lua_parser.cc: fix in recognizing
 	'elseif' as keyword
 2010-04-15	Pawel Palucha <pawel@praterm.com.pl>
