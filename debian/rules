@@ -43,9 +43,8 @@ export DH_OPTIONS
 DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 
-SZARP_MAJOR_VERSION := $(shell awk -F'[ ,]' '/AC_INIT/ {print $$3}' configure.in)
 SZARP_MINOR_VERSION := $(shell cut -d ' ' -f 1 version | cut -d '.' -f 3)
-SZARP_VERSION := $(SZARP_MAJOR_VERSION).$(SZARP_MINOR_VERSION)
+SZARP_VERSION := $(shell cat current_tag)
 
 PREFIX = opt/szarp/
 
