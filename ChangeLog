@@ -1,5 +1,8 @@
 # Git does not support keywords substitutions. Use 'git log ...'.
 
+2010-04-16	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* libSzarp2/szbase/lua_parser.cc: fix in recognizing
+	'elseif' as keyword
 2010-04-15	Pawel Palucha <pawel@praterm.com.pl>
 	* README, INSTALL, INSTALL.Windows: docs update.
 	* AUTHORS: update.

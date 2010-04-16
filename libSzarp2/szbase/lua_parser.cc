@@ -629,8 +629,8 @@ public:
 		keywords = lit(L"and")
 			| L"break"
 			| L"do"
-			| L"else"
 			| L"elseif"
+			| L"else"
 			| L"end"   
 			| L"false"
 			| L"for"
