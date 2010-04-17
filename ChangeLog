@@ -1,5 +1,10 @@
 # Git does not support keywords substitutions. Use 'git log ...'.
 
+2010-04-17	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* wx/common/Makefile.am: version.h generated from
+	/version (or current_tag in packages build), 
+	* debian/packs.files: version.info removed from
+	list of szarp-base files' list
 2010-04-16	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* debian/rules: packages version taken from current_tag file
 	(that is automatically generated)
