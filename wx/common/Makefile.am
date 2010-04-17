@@ -111,13 +111,13 @@ update-po:
 winsetup: ${WIN_APP_NAME}Setup.exe
 
 @srcdir@/version.h: @top_srcdir@/ChangeLog Makefile.am
+	echo -n "\"" > @srcdir@/version.h
 if !DEB_BUILD
-	cat @top_srcdir@/version | cut -f1 -d' ' > @srcdir@/version.h; 
+	cat @top_srcdir@/version | cut -f1 -d' ' | tr -d \\n >> @srcdir@/version.h; 
 else DEB_BUILD
-	cat @top_srcdir@/current_tag > @srcdir@/version.h; 
+	cat @top_srcdir@/current_tag | tr -d \\n >> @srcdir@/version.h; 
 endif
-	awk -F' ' '/\Id:/ {printf $$3}' @top_srcdir@/ChangeLog  >> @srcdir@/version.h
-	@echo "\"" >> @srcdir@/version.h
+	echo "\"" >> @srcdir@/version.h
 
 @srcdir@/GUI/resource.cpp: @srcdir@/GUI/*xrc
 	wxrc -n InitCommonXmlResource -c -o @srcdir@/GUI/resource.cpp @srcdir@/GUI/*xrc
