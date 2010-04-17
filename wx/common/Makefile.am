@@ -111,7 +111,7 @@ update-po:
 winsetup: ${WIN_APP_NAME}Setup.exe
 
 @srcdir@/version.h: @top_srcdir@/ChangeLog Makefile.am
-	echo -n "\"" > @srcdir@/version.h
+	echo -n "#define SZARP_VERSION \"" > @srcdir@/version.h
 if !DEB_BUILD
 	cat @top_srcdir@/version | cut -f1 -d' ' | tr -d \\n >> @srcdir@/version.h; 
 else DEB_BUILD
