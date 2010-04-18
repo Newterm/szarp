@@ -1,5 +1,11 @@
 # Git does not support keywords substitutions. Use 'git log ...'.
 
+2010-04-18	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* wx/draw3/xyzgraph.cpp: 3D graphs: fix in points
+	selection with mouse, graph can be rotated by mouse movement
+	/right button should be pressed for that/, mouse wheel
+	zooms graph in/out, keyboard controlled rotation affects
+	field of view and not graph itself
 2010-04-17	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* wx/common/Makefile.am: version.h generated from
 	/version (or current_tag in packages build), 

@@ -76,6 +76,17 @@ class XYZCanvas : public wxGLCanvas  {
 	wxTimer *m_timer;
 	FTFont *m_font;
 
+	float m_camera_x, m_camera_y, m_camera_z;
+	float m_camera_angle_x, m_camera_angle_y;
+
+	bool m_right_down;
+
+	float m_start_angle_x, m_start_angle_y;
+	float m_graph_angle_x, m_graph_angle_y;
+
+	int m_start_mouse_x;
+	int m_start_mouse_y;
+
 	static const size_t slices_no = 25; 
 	
 	void DrawFrameOfReference();
@@ -84,13 +95,13 @@ class XYZCanvas : public wxGLCanvas  {
 	void DrawLineGraph();
 	void UpdateArrays();
 	void DrawPointInfo();
+	void MoveCameraX(float disp);
+	void MoveCameraY(float disp);
+	void MoveCameraZ(float disp);
+	void Camera();
 	size_t XZToIndex(size_t x, size_t z);
 
-	float m_vrot, m_hrot;
-	float m_x_disp, m_z_disp, m_y_disp;
-
 	enum { WIRE, COLORED } m_graph_type;
-
 
 	enum {
 		UP_ROTATION,
@@ -111,15 +122,22 @@ class XYZCanvas : public wxGLCanvas  {
 	} m_movement;
 
 	int m_cursor_x, m_cursor_z;
+
 public:
 	XYZCanvas(wxWindow *parent);	
 	~XYZCanvas();	
+	void MoveCameraForward();
 	void OnPaint(wxPaintEvent & event);
 	void OnSize(wxSizeEvent& event);
 	void SetGraph(XYGraph *graph);
 	void OnTimer(wxTimerEvent &e);
 	void OnChar(wxKeyEvent &event);
 	void OnMouseLeftDown(wxMouseEvent &event);
+	void OnMouseWheel(wxMouseEvent &event);
+    	void OnMouseRightDown(wxMouseEvent &event);
+    	void OnMouseRightUp(wxMouseEvent &event);
+	void OnMouseMotion(wxMouseEvent &event);
+	void OnMouseLeaveWindow(wxMouseEvent &event);
 	void OnKeyUp(wxKeyEvent &event);
 	void DrawCursor();	
 	DECLARE_EVENT_TABLE()
@@ -203,17 +221,20 @@ XYZCanvas::XYZCanvas(wxWindow *parent) : wxGLCanvas(parent, wxID_ANY,
 	m_normals.resize(3 * slices_no * slices_no, 0);
 	m_colors.resize(4 * slices_no * slices_no);
 	m_movement = NONE;
-	m_hrot = 30;
-	m_vrot = -30;
-	m_x_disp = 0;
-	m_y_disp = 0;
-	m_z_disp = -60;
+	m_camera_angle_x = 0;
+	m_camera_angle_y = 0;
+	m_camera_x = 0;
+	m_camera_y = 0;
+	m_camera_z = 60;
+	m_graph_angle_x = 30;
+	m_graph_angle_y = -30;
 	m_timer = new wxTimer(this, wxID_ANY);
 	m_timer->Start(100);
 	m_graph_type = COLORED;
 	m_cursor_x = -1;
 	m_cursor_z = -1;
 	m_font = NULL;
+	m_right_down = false;
 }
 
 void XYZCanvas::DrawFrameOfReference() {
@@ -279,6 +300,53 @@ void XYZCanvas::DrawAxis(const wxString& short_name) {
 	glPopMatrix();
 }
 
+void XYZCanvas::MoveCameraX(float disp) {
+	float dx = disp * cos(m_camera_angle_x / 180 * M_PI) * cos(m_camera_angle_y / 180 * M_PI);
+	float dy = disp * sin(m_camera_angle_x / 180 * M_PI);
+	float dz = -disp * cos(m_camera_angle_x / 180 * M_PI) * sin(m_camera_angle_y / 180 * M_PI);
+
+	//std::cout << "(" << m_camera_angle_x << "," << m_camera_angle_y << ") (" << dx << "," << dy << "," << dz << ")" << std::endl;
+
+	m_camera_x += dx;
+	m_camera_y += dy;
+	m_camera_z += dz;
+}
+
+void XYZCanvas::MoveCameraY(float disp) {
+	float dx = disp * sin(m_camera_angle_x / 180 * M_PI) * sin(m_camera_angle_y / 180 * M_PI);
+	float dy = disp * cos(m_camera_angle_x / 180 * M_PI);
+	float dz = -disp * sin(m_camera_angle_x / 180 * M_PI) * cos(m_camera_angle_y / 180 * M_PI);
+
+	//std::cout << "(" << m_camera_angle_x << "," << m_camera_angle_y << ") (" << dx << "," << dy << "," << dz << ")" << std::endl;
+
+	m_camera_x += dx;
+	m_camera_y += dy;
+	m_camera_z += dz;
+}
+
+void XYZCanvas::MoveCameraZ(float disp) {
+	float dx = disp * cos(m_camera_angle_x / 180 * M_PI) * sin(m_camera_angle_y / 180 * M_PI);
+	float dy = disp * sin(m_camera_angle_x / 180 * M_PI);
+	float dz = -disp * cos(m_camera_angle_x / 180 * M_PI) * cos(m_camera_angle_y / 180 * M_PI);
+
+	//std::cout << "(" << m_camera_angle_x << "," << m_camera_angle_y << ") (" << dx << "," << dy << "," << dz << ")" << std::endl;
+
+	m_camera_x += dx;
+	m_camera_y += dy;
+	m_camera_z += dz;
+}
+
+void XYZCanvas::Camera() {
+	glRotatef(m_camera_angle_y, 0, 1, 0);
+	glRotatef(m_camera_angle_x, -1, 0, 0);
+
+	glTranslatef(-m_camera_x, -m_camera_y, -m_camera_z);
+
+	glRotatef(m_graph_angle_x, 1, 0, 0);
+	glRotatef(m_graph_angle_y, 0, 1, 0);
+
+}
+
 void XYZCanvas::OnPaint(wxPaintEvent& event) {
 	if (m_gl_context == NULL)
 		m_gl_context = wxGetApp().GetGLContext();
@@ -312,15 +380,11 @@ void XYZCanvas::OnPaint(wxPaintEvent& event) {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glDepthFunc(GL_LEQUAL);
+	glEnable(GL_DITHER);
 	glShadeModel(GL_SMOOTH);
 	glClearColor(0, 0, 0, 0);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHTING);
-#if 0
-	float ambient[4] = { 0.8, 0.8, 0.8, 1.0}, diffuse[4] = { 0.2, 0.2, 0.2, 1}; 
-	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient); 
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse); 
-#endif
 	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_BLEND);
@@ -328,9 +392,8 @@ void XYZCanvas::OnPaint(wxPaintEvent& event) {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glTranslatef(m_x_disp, m_y_disp, m_z_disp);
-	glRotatef(m_hrot, 1, 0, 0);
-	glRotatef(m_vrot, 0, 1, 0);
+	Camera();
+
 	float light_position[] = { slices_no / 2, slices_no * 3, slices_no / 2, 0};
 	float light_direction[] = { 0, -1, 0 };
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
@@ -348,6 +411,8 @@ void XYZCanvas::OnPaint(wxPaintEvent& event) {
 			break;
 	}
 	DrawCursor();
+
+
 
 	glDisable(GL_DEPTH_TEST);
 	glMatrixMode(GL_PROJECTION);
@@ -780,7 +845,7 @@ void XYZCanvas::OnChar(wxKeyEvent &event) {
 			m_movement = UP_ROTATION;
 			break;
 		case 's':
-			m_movement = FORWARD_MOVEMENT;
+			m_movement = BACKWARD_MOVEMENT;
 			break;
 		case 'e':
 			m_movement = UP_MOVEMENT;
@@ -792,7 +857,7 @@ void XYZCanvas::OnChar(wxKeyEvent &event) {
 			m_movement = DOWN_ROTATION;
 			break;
 		case 'w':
-			m_movement = BACKWARD_MOVEMENT;
+			m_movement = FORWARD_MOVEMENT;
 			break;
 		case WXK_UP:
 			m_movement = CURSOR_UP;
@@ -820,34 +885,34 @@ void XYZCanvas::OnTimer(wxTimerEvent&e) {
 
 	switch (m_movement) {
 		case UP_ROTATION:
-			m_hrot += 1;
+			m_camera_angle_x += 1;
 			break;
 		case DOWN_ROTATION:
-			m_hrot -= 1;
+			m_camera_angle_x -= 1;
 			break;
 		case LEFT_ROTATION:
-			m_vrot += 1;
+			m_camera_angle_y -= 1;
 			break;
 		case RIGHT_ROTATION:
-			m_vrot -= 1;
+			m_camera_angle_y += 1;
 			break;
 		case FORWARD_MOVEMENT:
-			m_z_disp -= 1;
+			MoveCameraZ(1);
 			break;
 		case BACKWARD_MOVEMENT:
-			m_z_disp += 1;
+			MoveCameraZ(-1);
 			break;
 		case LEFT_MOVEMENT:
-			m_x_disp -= 1;
+			MoveCameraX(-1);
 			break;
 		case RIGHT_MOVEMENT:
-			m_x_disp += 1;
+			MoveCameraX(1);
 			break;
 		case UP_MOVEMENT:
-			m_y_disp += 1;
+			MoveCameraY(1);
 			break;
 		case DOWN_MOVEMENT:
-			m_y_disp -= 1;
+			MoveCameraY(-1);
 			break;
 		case CURSOR_LEFT:
 			if (m_cursor_x == 0)
@@ -907,13 +972,16 @@ void XYZCanvas::OnMouseLeftDown(wxMouseEvent &event) {
 	glDrawBuffer(GL_BACK);
 
 	glDepthFunc(GL_LEQUAL);
-	glShadeModel(GL_SMOOTH);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glShadeModel(GL_FLAT);
+	glDisable(GL_BLEND);
+	glDisable(GL_DITHER);
 	glClearColor(0, 0, 0, 0);
 	glEnable(GL_DEPTH_TEST);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_COLOR_MATERIAL);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -923,9 +991,8 @@ void XYZCanvas::OnMouseLeftDown(wxMouseEvent &event) {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glTranslatef(m_x_disp, m_y_disp, m_z_disp);
-	glRotatef(m_hrot, 1, 0, 0);
-	glRotatef(m_vrot, 0, 1, 0);
+
+	Camera();
 
 	unsigned char color[4] = { 0, 0, 0, 255 };
 	glBegin(GL_TRIANGLES);
@@ -956,6 +1023,7 @@ void XYZCanvas::OnMouseLeftDown(wxMouseEvent &event) {
 
 	unsigned char point_color[3];
 	glReadPixels(event.GetX(), size.GetHeight() - event.GetY(), 1, 1, GL_RGB, GL_UNSIGNED_BYTE, point_color);
+
 	if (point_color[0] == 0 && point_color[1] == 0 && point_color[2] == 0)
 		return;
 	int index = 0;
@@ -963,6 +1031,7 @@ void XYZCanvas::OnMouseLeftDown(wxMouseEvent &event) {
 		size_t i = 3 * (point_color[0] + size_t(point_color[1]) * 256);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glShadeModel(GL_SMOOTH);
 		glBegin(GL_TRIANGLES);
 			color[0] = 255; color[1] = 0; color[2] = 0;
 			glColor4ubv(color);
@@ -989,14 +1058,66 @@ void XYZCanvas::OnMouseLeftDown(wxMouseEvent &event) {
 			else
 				index = m_triangles_indexes[i];
 
-	} else  {
+	} else  if (point_color[2] == 2) {
 		index = point_color[0] + 256 * size_t(point_color[1]);
+	} else {
+		return;
 	}
+
 	index /= 3;
 
 	m_cursor_z = index / slices_no;
 	m_cursor_x = index % slices_no;
 	Refresh();
+}
+
+void XYZCanvas::OnMouseWheel(wxMouseEvent &event) {
+	MoveCameraZ(event.m_wheelRotation / event.m_wheelDelta);
+	Refresh();
+}
+
+void XYZCanvas::OnMouseRightDown(wxMouseEvent &event) {
+	m_right_down = true;
+	m_start_angle_x = m_graph_angle_x;
+	m_start_angle_y = m_graph_angle_y;
+
+	m_start_mouse_x = event.GetX();
+	m_start_mouse_y = event.GetY();
+}
+
+void XYZCanvas::OnMouseRightUp(wxMouseEvent &event) {
+	m_right_down = false;
+}
+
+void XYZCanvas::OnMouseMotion(wxMouseEvent &event) {
+	if (m_right_down == false)
+		return;
+
+	int x = event.GetX();
+	int y = event.GetY();
+
+	int dx = x - m_start_mouse_x;
+	int dy = y - m_start_mouse_y;
+
+	wxSize size = GetSize();
+
+	m_graph_angle_y = m_start_angle_y + 360 * dx / (size.GetWidth() / size.GetHeight()) / size.GetWidth();
+	m_graph_angle_x = m_start_angle_x + 360 * dy / size.GetHeight();
+
+	//std::cout << "(" << m_start_angle_x << " " << m_start_angle_y << ") -> (" << m_camera_angle_x << " " << m_camera_angle_y << ")" << std::endl;
+
+	Refresh();
+}
+
+void XYZCanvas::OnMouseLeaveWindow(wxMouseEvent &event) {
+	m_right_down = false;
+#if 0
+	if (m_right_down) {	
+		m_graph_angle_x = m_start_angle_x;
+		m_graph_angle_y = m_start_angle_y;
+		Refresh();
+	}
+#endif
 }
 
 XYZCanvas::~XYZCanvas() {
@@ -1011,6 +1132,11 @@ BEGIN_EVENT_TABLE(XYZCanvas, wxGLCanvas)
     	EVT_KEY_UP(XYZCanvas::OnKeyUp)
     	EVT_CHAR(XYZCanvas::OnChar)
     	EVT_LEFT_DOWN(XYZCanvas::OnMouseLeftDown)
+    	EVT_RIGHT_DOWN(XYZCanvas::OnMouseRightDown)
+    	EVT_RIGHT_UP(XYZCanvas::OnMouseRightUp)
+	EVT_MOTION(XYZCanvas::OnMouseMotion)
+	EVT_LEAVE_WINDOW(XYZCanvas::OnMouseLeaveWindow)
+	EVT_MOUSEWHEEL(XYZCanvas::OnMouseWheel)
 END_EVENT_TABLE()
 
 
