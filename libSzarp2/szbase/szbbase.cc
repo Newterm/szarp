@@ -31,6 +31,8 @@ using std::string;
 using std::pair;
 using std::tr1::unordered_map;
 
+const int default_szbuffer_cache_size = 12 * 12 * 5;	/** 12 graphs * 12 months * 5 block for param*/
+
 Szbase::Szbase(const std::wstring& szarp_dir) : m_szarp_dir(szarp_dir), m_config_modification_callback(NULL)
 {
 	m_current_query = 0;
@@ -55,16 +57,22 @@ void Szbase::Init(const std::wstring& szarp_dir, bool write_cache) {
 	CacheableDatablock::write_cache = write_cache;
 
 	_instance = new Szbase(szarp_dir);
+	_instance->m_buffer_cache_size = default_szbuffer_cache_size;
 
 }
 
-void Szbase::Init(const std::wstring& szarp_dir, void (*callback)(std::wstring, std::wstring), bool write_cache) {
+void Szbase::Init(const std::wstring& szarp_dir, void (*callback)(std::wstring, std::wstring), bool write_cache, int memory_cache_size) {
 	assert(_instance == NULL);
 
 	CacheableDatablock::write_cache = write_cache;
 
 	_instance = new Szbase(szarp_dir);
 	_instance->m_config_modification_callback = callback;
+
+	if (memory_cache_size)
+		_instance->m_buffer_cache_size = memory_cache_size;
+	else 
+		_instance->m_buffer_cache_size = default_szbuffer_cache_size;
 }
 
 bool Szbase::AddBase(const std::wstring& prefix) {
@@ -157,7 +165,7 @@ bool Szbase::AddBase(const std::wstring& szbase_dir, const std::wstring &prefix)
 		return false;
 	}
 		
-	szb_buffer_t* szbbuf = szb_create_buffer(this, szbase_dir, 1000/*HOW MUCH?!?*/, ipk);
+	szb_buffer_t* szbbuf = szb_create_buffer(this, szbase_dir, m_buffer_cache_size, ipk);
 	if (szbbuf == NULL) {
 		sz_log(0, "Unable to load ipk dir:%ls", szbase_dir.c_str());
 		return false;

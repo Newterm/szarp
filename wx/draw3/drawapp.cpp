@@ -279,8 +279,7 @@ bool DrawApp::OnInit() {
 
 	splash->PushStatusText(_("Initializing XML Resources..."));
     
-	InitXmlResource(); // binary
-	// wxXmlResource::Get()->Load(_T("GUI/*.xrc")); // XML
+	InitXmlResource();
 
 	splash->PushStatusText(_("Starting database query mechanism..."));
 
@@ -288,7 +287,10 @@ bool DrawApp::OnInit() {
 	DatabaseManager* dbmgr = new DatabaseManager(m_db_queue, m_cfg_mgr);
 	m_db_queue->SetDatabaseManager(dbmgr);
 
-	Szbase::Init(GetSzarpDataDir().c_str(), &ConfigurationFileChangeHandler::handle, true);
+	Szbase::Init(GetSzarpDataDir().c_str(),
+			&ConfigurationFileChangeHandler::handle,
+			true,
+			wxConfig::Get()->Read(_T("SZBUFER_IN_MEMORY_CACHE"), 0L));
 	Szbase* szbase = Szbase::GetObject();
 
 	m_executor = new QueryExecutor(m_db_queue, dbmgr, szbase);

@@ -88,6 +88,9 @@ class Szbase {
 	to be set to m_current_query). The intention of this mechanism is to
 	give client apps explicit control over when data is refreshed.*/
 	long m_current_query;
+	
+	/**value passed to @see szb_buffer_t upon buffer constrution*/
+	int m_buffer_cache_size;
 
 	/**Load configuration for this prefix into internal hashes*/
 	bool AddBase(const std::wstring& prefix);
@@ -135,7 +138,7 @@ public:
 #endif
 	/**Static methods for initizaling global object*/
 	static void Init(const std::wstring& szarp_dir, bool write_cache = false);
-	static void Init(const std::wstring& szarp_dir, void (*callback)(std::wstring, std::wstring), bool write_cache);
+	static void Init(const std::wstring& szarp_dir, void (*callback)(std::wstring, std::wstring), bool write_cache, int memory_cache_size = 0);
 	/**Destroy all object contents*/
 	static void Destroy();
 	/**Get buffer for give prefix*/
