@@ -87,7 +87,7 @@ class XYZCanvas : public wxGLCanvas  {
 	int m_start_mouse_x;
 	int m_start_mouse_y;
 
-	static const size_t slices_no = 25; 
+	static const size_t slices_no = 100; 
 	
 	void DrawFrameOfReference();
 	void DrawAxis(const wxString& short_name);
@@ -98,6 +98,7 @@ class XYZCanvas : public wxGLCanvas  {
 	void MoveCameraX(float disp);
 	void MoveCameraY(float disp);
 	void MoveCameraZ(float disp);
+	void SetProjectionMatrix(const wxSize &size);
 	void Camera();
 	size_t XZToIndex(size_t x, size_t z);
 
@@ -124,7 +125,7 @@ class XYZCanvas : public wxGLCanvas  {
 	int m_cursor_x, m_cursor_z;
 
 public:
-	XYZCanvas(wxWindow *parent);	
+	XYZCanvas(XYZFrame *parent);	
 	~XYZCanvas();	
 	void MoveCameraForward();
 	void OnPaint(wxPaintEvent & event);
@@ -209,13 +210,13 @@ namespace {
 }
 
 
-XYZCanvas::XYZCanvas(wxWindow *parent) : wxGLCanvas(parent, wxID_ANY,
+XYZCanvas::XYZCanvas(XYZFrame *parent) : wxGLCanvas(parent, wxID_ANY,
 #ifdef __WXGTK__
 		wxGetApp().GLContextAttribs(),
 #else
 		NULL,
 #endif
-		wxDefaultPosition, wxSize(300, 200), 0, _T("XYZCanvas")), m_graph(NULL), m_gl_context(NULL) {
+		wxDefaultPosition, wxSize(300, 200), 0, _T("XYZCanvas")), m_parent(parent), m_graph(NULL), m_gl_context(NULL) {
 	m_vertices.resize(3 * slices_no * slices_no);
 	m_point_types.resize(3 * slices_no * slices_no, SINGLE);
 	m_normals.resize(3 * slices_no * slices_no, 0);
@@ -225,7 +226,7 @@ XYZCanvas::XYZCanvas(wxWindow *parent) : wxGLCanvas(parent, wxID_ANY,
 	m_camera_angle_y = 0;
 	m_camera_x = 0;
 	m_camera_y = 0;
-	m_camera_z = 60;
+	m_camera_z = slices_no * 2;
 	m_graph_angle_x = 30;
 	m_graph_angle_y = -30;
 	m_timer = new wxTimer(this, wxID_ANY);
@@ -272,11 +273,12 @@ void XYZCanvas::DrawFrameOfReference() {
 }
 
 void XYZCanvas::DrawAxis(const wxString& short_name) {
-	gluCylinder(m_quad, 0.1, 0.1, 24, 30, 1);
+	//gluCylinder(m_quad, 0.1, 0.1, 1.2 * slices_no, 30, 1);
+	gluCylinder(m_quad, 0.5, 0.5, 1.2 * slices_no, 30, 1);
 	glPushMatrix();
-	glTranslatef(0, 0, 24);
-	gluCylinder(m_quad, 0.3, 0.0, 0.5, 30, 10);
-	glTranslatef(0, 0, 1);
+	glTranslatef(0, 0, 1.2 * slices_no);
+	gluCylinder(m_quad, 1.5, 0.0, 5, 30, 10);
+	glTranslatef(0, 0, 10);
 
 	double m[16];
 	glGetDoublev(GL_TRANSPOSE_MODELVIEW_MATRIX, m);
@@ -290,11 +292,11 @@ void XYZCanvas::DrawAxis(const wxString& short_name) {
 	glLoadTransposeMatrixd(m);
 	glRotatef(180 / M_PI * atan(x / -z), 0, -1, 0);
 	glRotatef(180 / M_PI * atan(y / -z), 1, 0, 0);
-	glTranslatef(-1.0, 0.0, 0.0);
+	glTranslatef(-2.5, 0.0, 0.0);
 
 	FTBBox bbox = m_font->BBox(short_name.c_str());
 	float w = bbox.Upper().Xf() - bbox.Lower().Xf();
-	glScalef(2 / w, 2 / w, 1);
+	glScalef(5 / w, 5 / w, 1);
 	//fprintf(stdout, "width: %f\n", bbox.Upper().Xf() - bbox.Lower().Xf());
 	m_font->Render(short_name.c_str());
 	glPopMatrix();
@@ -347,6 +349,13 @@ void XYZCanvas::Camera() {
 
 }
 
+void XYZCanvas::SetProjectionMatrix(const wxSize &size) {
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glViewport(0, 0, size.GetWidth(), size.GetHeight());
+	glFrustum(-0.5 * size.GetWidth() / size.GetHeight(), 0.5 * size.GetWidth() / size.GetHeight(), -0.5, 0.5, 1, 500);
+}
+
 void XYZCanvas::OnPaint(wxPaintEvent& event) {
 	if (m_gl_context == NULL)
 		m_gl_context = wxGetApp().GetGLContext();
@@ -371,11 +380,7 @@ void XYZCanvas::OnPaint(wxPaintEvent& event) {
 
 	wxSize size = GetSize();
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glViewport(0, 0, size.GetWidth(), size.GetHeight());
-
-	glFrustum(-0.5 * size.GetWidth() / size.GetHeight(), 0.5 * size.GetWidth() / size.GetHeight(), -0.5, 0.5, 1, 100);
+	SetProjectionMatrix(size);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -411,8 +416,6 @@ void XYZCanvas::OnPaint(wxPaintEvent& event) {
 			break;
 	}
 	DrawCursor();
-
-
 
 	glDisable(GL_DEPTH_TEST);
 	glMatrixMode(GL_PROJECTION);
@@ -642,25 +645,22 @@ void XYZCanvas::UpdateArrays() {
 				m_triangles_colors.push_back(m_colors[ki / 3 * 4]);
 				m_triangles_colors.push_back(m_colors[ki / 3 * 4 + 1]);
 				m_triangles_colors.push_back(m_colors[ki / 3 * 4 + 2]);
-				m_triangles_colors.push_back(m_colors[ki / 3 * 4 + 4]);
+				m_triangles_colors.push_back(m_colors[ki / 3 * 4 + 3]);
 			}
 		}
 
 		if (m_point_types[i / 3] == SINGLE) {
 			m_single_quads_indexes.push_back(i);
+			for (size_t m = 0; m < sizeof(cube_vertices) / sizeof(float) / 3; ++m)  {
 
-			float zs[] = { -0.2, -0.2, 0.2, 0.2 };
-			float xs[] = { -0.2, 0.2, 0.2, -0.2 };
-			for (size_t l = 0; l < 4; l++) {
-
-				m_single_quads.push_back(m_vertices[i] + xs[l]);
-				m_single_quads.push_back(m_vertices[i + 1]);
-				m_single_quads.push_back(m_vertices[i + 2] + zs[l]);
+				m_single_quads.push_back(m_vertices[i] + 0.8 * cube_vertices[m * 3]);
+				m_single_quads.push_back(m_vertices[i + 1] + 0.8 * cube_vertices[m * 3 + 1]);
+				m_single_quads.push_back(m_vertices[i + 2] + 0.8 * cube_vertices[m * 3 + 2]);
 
 				m_single_quads_colors.push_back(m_colors[i / 3 * 4]);
 				m_single_quads_colors.push_back(m_colors[i / 3 * 4 + 1]);
 				m_single_quads_colors.push_back(m_colors[i / 3 * 4 + 2]);
-				m_single_quads_colors.push_back(m_colors[i / 3 * 4 + 4]);
+				m_single_quads_colors.push_back(m_colors[i / 3 * 4 + 3]);
 			}
 		}
 	}
@@ -983,10 +983,7 @@ void XYZCanvas::OnMouseLeftDown(wxMouseEvent &event) {
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_COLOR_MATERIAL);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glViewport(0, 0, size.GetWidth(), size.GetHeight());
-	glFrustum(-0.5 * size.GetWidth() / size.GetHeight(), 0.5 * size.GetWidth() / size.GetHeight(), -0.5, 0.5, 1, 100);
+	SetProjectionMatrix(size);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -999,7 +996,7 @@ void XYZCanvas::OnMouseLeftDown(wxMouseEvent &event) {
 	for (size_t i = 0; i < m_triangles_indexes.size(); i += 3) {
 		color[0] = (i / 3) % 256;
 		color[1] = i / 3 / 256; 
-		color[2] = 1;
+		color[2] = i / 3 / 256 / 256 * 2 + 1;
 		glColor4ubv(color);
 		glVertex3fv(&m_vertices[m_triangles_indexes[i]]);
 		glVertex3fv(&m_vertices[m_triangles_indexes[i + 1]]);
@@ -1007,28 +1004,59 @@ void XYZCanvas::OnMouseLeftDown(wxMouseEvent &event) {
 	}
 	glEnd();
 
-	glBegin(GL_QUADS);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glVertexPointer(3, GL_FLOAT, 0, &m_single_quads[0]);
 	for (size_t i = 0; i < m_single_quads_indexes.size(); i++) {
 		color[0] = m_single_quads_indexes[i] % 256;
 		color[1] = m_single_quads_indexes[i] / 256;
-		color[2] = 2;
+		color[2] = m_single_quads_indexes[i] / 256 / 256 * 2;
 		glColor4ubv(color);
-		glVertex3fv(&m_single_quads[i * 4 * 3]);
-		glVertex3fv(&m_single_quads[i * 4 * 3 + 3]);
-		glVertex3fv(&m_single_quads[i * 4 * 3 + 6]);
-		glVertex3fv(&m_single_quads[i * 4 * 3 + 9]);
+		glDrawArrays(GL_QUADS, i * 24, 24);
 	}
-	glEnd();
+	glDisableClientState(GL_VERTEX_ARRAY);
 	glFinish();
 
-	unsigned char point_color[3];
-	glReadPixels(event.GetX(), size.GetHeight() - event.GetY(), 1, 1, GL_RGB, GL_UNSIGNED_BYTE, point_color);
+#if 0
+	wxImage img(size.GetWidth(), size.GetHeight());
+	unsigned char* inversed = (unsigned char*) malloc(size.GetWidth() * size.GetHeight() * 3);
+	unsigned char* regular = (unsigned char*) malloc(size.GetWidth() * size.GetHeight() * 3);
+	glReadPixels(0, 0, size.GetWidth(), size.GetHeight(), GL_RGB, GL_UNSIGNED_BYTE, inversed);
+	for (int i = 0; i < size.GetHeight(); i++)
+		for (int j = 0; j < size.GetWidth(); j++) {
+			regular[size.GetWidth() * i * 3 + j * 3] = inversed[size.GetWidth() * (size.GetHeight() - i) * 3 + j * 3];
+			regular[size.GetWidth() * i * 3 + j * 3 + 1] = inversed[size.GetWidth() * (size.GetHeight() - i) * 3 + j * 3 + 1];
+			regular[size.GetWidth() * i * 3 + j * 3 + 2] = inversed[size.GetWidth() * (size.GetHeight() - i) * 3 + j * 3 + 2];
+		}
+	img.SetData(regular);
+	img.SaveFile(_T("a.bmp"));
+	free(inversed);
+#endif
 
-	if (point_color[0] == 0 && point_color[1] == 0 && point_color[2] == 0)
-		return;
+
+	unsigned char points_colors[25 * 3 * 3];
+	unsigned char point_color[3];
+	size_t cx = 2;
+	size_t cy = 2;
+	glReadPixels(event.GetX() - 2, size.GetHeight() - event.GetY() - 2, 5, 5, GL_RGB, GL_UNSIGNED_BYTE, points_colors);
+	//middle point
+	point_color[0] = points_colors[3 * 5 * cy + 3 * cx];
+	point_color[1] = points_colors[3 * 5 * cy + 3 * cx + 1];
+	point_color[2] = points_colors[3 * 5 * cy + 3 * cx + 2];
+	cx = 0;
+	cy = 0;
+	while (point_color[0] == 0 && point_color[1] == 0 && point_color[2] == 0) {
+		point_color[0] = points_colors[3 * 5 * cy + 3 * cx];
+		point_color[1] = points_colors[3 * 5 * cy + 3 * cx + 1];
+		point_color[2] = points_colors[3 * 5 * cy + 3 * cx + 2];
+		if (++cx == 5) {
+			if (++cy == 5)
+				return;
+			cx = 0;
+		}
+	}
 	int index = 0;
-	if (point_color[2] == 1) {
-		size_t i = 3 * (point_color[0] + size_t(point_color[1]) * 256);
+	if (point_color[2] & 1) {
+		size_t i = 3 * (point_color[0] + size_t(point_color[1]) * 256 + size_t(point_color[2] / 2 * 256 * 256));
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glShadeModel(GL_SMOOTH);
@@ -1058,11 +1086,8 @@ void XYZCanvas::OnMouseLeftDown(wxMouseEvent &event) {
 			else
 				index = m_triangles_indexes[i];
 
-	} else  if (point_color[2] == 2) {
-		index = point_color[0] + 256 * size_t(point_color[1]);
-	} else {
-		return;
-	}
+	} else 
+		index = point_color[0] + 256 * size_t(point_color[1]) + 256 * 256 * size_t(point_color[2] / 2);
 
 	index /= 3;
 
