@@ -90,7 +90,7 @@ class XYZCanvas : public wxGLCanvas  {
 	static const size_t slices_no = 100; 
 	
 	void DrawFrameOfReference();
-	void DrawAxis(const wxString& short_name);
+	void DrawAxis(int axis_no);
 	void DrawColoredGraph();
 	void DrawLineGraph();
 	void UpdateArrays();
@@ -127,6 +127,8 @@ class XYZCanvas : public wxGLCanvas  {
 public:
 	XYZCanvas(XYZFrame *parent);	
 	~XYZCanvas();	
+	void DrawPole(double val, int prec);
+	void FaceViewer();
 	void MoveCameraForward();
 	void OnPaint(wxPaintEvent & event);
 	void OnSize(wxSizeEvent& event);
@@ -226,7 +228,7 @@ XYZCanvas::XYZCanvas(XYZFrame *parent) : wxGLCanvas(parent, wxID_ANY,
 	m_camera_angle_y = 0;
 	m_camera_x = 0;
 	m_camera_y = 0;
-	m_camera_z = slices_no * 2;
+	m_camera_z = slices_no * 2.5;
 	m_graph_angle_x = 30;
 	m_graph_angle_y = -30;
 	m_timer = new wxTimer(this, wxID_ANY);
@@ -249,37 +251,32 @@ void XYZCanvas::DrawFrameOfReference() {
 	color[1] = float(c.Green()) / 255;
 	color[2] = float(c.Blue()) / 255;
 	glColor4fv(color); 
-	DrawAxis(m_graph->m_di[2]->GetShortName());
+	DrawAxis(2);
 
 	glPushMatrix();
 	glRotatef(90, 0, 1, 0);
+	glRotatef(90, 0, 0, 1);
 
 	c = m_graph->m_di[0]->GetDrawColor();
 	color[0] = float(c.Red()) / 255;
 	color[1] = float(c.Green()) / 255;
 	color[2] = float(c.Blue()) / 255;
 	glColor4fv(color); 
-	DrawAxis(m_graph->m_di[0]->GetShortName());
+	DrawAxis(0);
 
 	c = m_graph->m_di[1]->GetDrawColor();
 	color[0] = float(c.Red()) / 255;
 	color[1] = float(c.Green()) / 255;
 	color[2] = float(c.Blue()) / 255;
 	glColor4fv(color); 
-	glRotatef(-90, 1, 0, 0);
-	DrawAxis(m_graph->m_di[1]->GetShortName());
+	glRotatef(90, 0, 1, 0);
+	glRotatef(90, 0, 0, 1);
+	DrawAxis(1);
 
 	glPopMatrix();
 }
 
-void XYZCanvas::DrawAxis(const wxString& short_name) {
-	//gluCylinder(m_quad, 0.1, 0.1, 1.2 * slices_no, 30, 1);
-	gluCylinder(m_quad, 0.5, 0.5, 1.2 * slices_no, 30, 1);
-	glPushMatrix();
-	glTranslatef(0, 0, 1.2 * slices_no);
-	gluCylinder(m_quad, 1.5, 0.0, 5, 30, 10);
-	glTranslatef(0, 0, 10);
-
+void XYZCanvas::FaceViewer() {
 	double m[16];
 	glGetDoublev(GL_TRANSPOSE_MODELVIEW_MATRIX, m);
 	m[0] = 1; m[1] = 0; m[2] = 0;
@@ -292,20 +289,60 @@ void XYZCanvas::DrawAxis(const wxString& short_name) {
 	glLoadTransposeMatrixd(m);
 	glRotatef(180 / M_PI * atan(x / -z), 0, -1, 0);
 	glRotatef(180 / M_PI * atan(y / -z), 1, 0, 0);
-	glTranslatef(-2.5, 0.0, 0.0);
+}
 
-	FTBBox bbox = m_font->BBox(short_name.c_str());
+void XYZCanvas::DrawPole(double val, int prec) {
+	gluCylinder(m_quad, 0.2, 0.2, slices_no + 1, 30, 1);
+	glPushMatrix();
+	glTranslatef(0, 0, slices_no + 1 + 5);
+	FaceViewer();
+	glTranslatef(-2.5, 0.0, 0.0);
+	wxString str = wxString::Format(_T("%.*f"), prec, val);
+	FTBBox bbox = m_font->BBox(str.c_str());
 	float w = bbox.Upper().Xf() - bbox.Lower().Xf();
 	glScalef(5 / w, 5 / w, 1);
-	//fprintf(stdout, "width: %f\n", bbox.Upper().Xf() - bbox.Lower().Xf());
-	m_font->Render(short_name.c_str());
+	m_font->Render(str.c_str());
 	glPopMatrix();
 }
 
+void XYZCanvas::DrawAxis(int axis_no) {
+	wxString short_name = m_graph->m_di[axis_no]->GetShortName();
+
+	glPushMatrix();
+	gluCylinder(m_quad, 0.5, 0.5, 1.1 * slices_no, 30, 1);
+	glTranslatef(0, 1.1 * slices_no + 5, 0.0);
+	FaceViewer();
+	glTranslatef(-2.5, 0.0, 0.0);
+	FTBBox bbox = m_font->BBox(short_name.c_str());
+	float w = bbox.Upper().Xf() - bbox.Lower().Xf();
+	glScalef(5 / w, 5 / w, 1);
+	m_font->Render(short_name.c_str());
+	glPopMatrix();
+
+	glPushMatrix();
+	glRotatef(-90, 1, 0, 0);
+	glPushMatrix();
+	for (size_t i = 0; i < 10; i++) {
+		DrawPole(m_graph->m_dmin[axis_no] + (m_graph->m_dmax[axis_no] - m_graph->m_dmin[axis_no]) * i * 10 / slices_no,
+			m_graph->m_di[axis_no]->GetPrec());
+		glTranslatef(0, -float(slices_no) / 10, 0);
+	}
+	glPopMatrix();
+
+	glRotatef(90, 0, 1, 0);
+	for (size_t i = 0; i < 10; i++) {
+		DrawPole(m_graph->m_dmin[axis_no] + (m_graph->m_dmax[axis_no] - m_graph->m_dmin[axis_no]) * i * 10 / slices_no,
+			m_graph->m_di[axis_no]->GetPrec());
+		glTranslatef(0, -float(slices_no) / 10, 0);
+	}
+	glPopMatrix();
+
+}
+
 void XYZCanvas::MoveCameraX(float disp) {
-	float dx = disp * cos(m_camera_angle_x / 180 * M_PI) * cos(m_camera_angle_y / 180 * M_PI);
-	float dy = disp * sin(m_camera_angle_x / 180 * M_PI);
-	float dz = -disp * cos(m_camera_angle_x / 180 * M_PI) * sin(m_camera_angle_y / 180 * M_PI);
+	float dx = disp * cos(m_camera_angle_y / 180 * M_PI);
+	float dy = 0;
+	float dz = disp * sin(m_camera_angle_y / 180 * M_PI);
 
 	//std::cout << "(" << m_camera_angle_x << "," << m_camera_angle_y << ") (" << dx << "," << dy << "," << dz << ")" << std::endl;
 
