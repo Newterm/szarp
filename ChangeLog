@@ -1,5 +1,12 @@
 # Git does not support keywords substitutions. Use 'git log ...'.
 
+2010-04-27	Pawel Palucha <pawel@praterm.com.pl>
+	* ipk.sgml: description of doc:doc subelement in param element.
+2010-04-24	Pawel Palucha <pawel@praterm.com.pl>
+	* wx/draw3/GUI/*: fixes in 'Notifications' window - added surrounding
+	wxPanel so keyboard navigation works, added spaces around widgets.
+2010-04-23	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* libSzarp2/szbase: configurable size of in-memory cache
 2010-04-18	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* wx/draw3/xyzgraph.cpp: 3D graphs: fix in points
 	selection with mouse, graph can be rotated by mouse movement
