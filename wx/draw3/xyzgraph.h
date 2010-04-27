@@ -69,6 +69,16 @@ public:
 
 	virtual void SetGraph(XYGraph *graph);
 
+	void OnChangeGraph(wxCommandEvent &event);
+
+	void OnQuit(wxCommandEvent &event);
+
+	void OnPrint(wxCommandEvent &event);
+
+	void OnPrintPreview(wxCommandEvent &event);
+
+	void OnPageSetup(wxCommandEvent &event);
+
 	virtual ~XYZFrame();
 };
 

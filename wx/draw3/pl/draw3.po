@@ -865,7 +865,6 @@ msgid "Help"
 msgstr "Pomoc"
 
 #: incsearch.cpp:755
-#, fuzzy
 msgid "Do you really want to remove this graph?"
 msgstr "Czy na pewno chcesz usun±æ ten wykres?"
 

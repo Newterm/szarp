@@ -67,11 +67,22 @@ public:
 	 * @param graph XY graph to print*/
 	static void DoXYPrint(wxWindow *parent, XYGraph *graph);
 
-	static void PageSetup(wxWindow *parent);
-
 	/**Prints XY graphs.
 	 * @param graph XY graph to preview*/
 	static void DoXYPrintPreview(XYGraph *graph);
+
+	/**Print XY graph. 
+	 * @paran parent window for print dialog
+	 * @param graph XY graph to print*/
+	static void DoXYZPrint(wxWindow *parent, XYGraph *graph, wxImage graph_image);
+
+	/**Print XY graph. 
+	 * @paran parent window for print dialog
+	 * @param graph XY graph to print*/
+	static void DoXYZPrintPreview(wxWindow *parent, XYGraph *graph, wxImage graph_image);
+
+	static void PageSetup(wxWindow *parent);
+
 
 
 };

@@ -1229,6 +1229,182 @@ void Print::DoXYPrint(wxWindow *parent, XYGraph *graph) {
 
 };
 
+/**class representing xy grah printout*/
+class XYZGraphPrintout : public wxPrintout {
+	/**page margins*/
+	static const int bottom_margin;
+	static const int top_margin;
+	static const int left_margin;
+	static const int right_margin;
+
+	/**graph that is printed*/
+	XYGraph *m_graph;
+
+	wxImage m_image;
+
+	public:
+	XYZGraphPrintout(XYGraph *graph, wxImage image);
+
+	/**prints page
+	 * @param number of page to print*/
+	bool OnPrintPage(int page);
+
+	/**@return true if given page is present in printout*/
+	virtual bool HasPage(int page);
+
+	/**Obligatory method to implement by printout, simply calls the same method but from base class*/
+	virtual bool OnBeginDocument(int start, int end);
+
+	/**Provides info on printout.*/
+	void GetPageInfo(int *min, int *max, int *sel_from, int *sel_to);
+
+};
+
+#ifdef __WXMSW__
+const int XYZGraphPrintout::left_margin = 64 * 6 ;
+const int XYZGraphPrintout::right_margin = 64 * 6;
+const int XYZGraphPrintout::top_margin = 24 * 6;
+const int XYZGraphPrintout::bottom_margin = 24 * 6;
+#else
+const int XYZGraphPrintout::left_margin = 64;
+const int XYZGraphPrintout::right_margin = 64;
+const int XYZGraphPrintout::top_margin = 24;
+const int XYZGraphPrintout::bottom_margin = 24;
+#endif
+
+XYZGraphPrintout::XYZGraphPrintout(XYGraph *graph, wxImage image) : m_graph(graph), m_image(image) { }
+
+bool XYZGraphPrintout::OnPrintPage(int page) {
+	if (page != 1)
+		return false;
+	wxFont f;
+#ifdef __WXMSW__ 
+	f.Create(50, wxSWISS, wxNORMAL, wxNORMAL);
+#else
+	f.Create(8, wxSWISS, wxNORMAL, wxNORMAL);
+#endif
+
+	wxDC *dc = GetDC();
+	dc->SetMapMode(wxMM_TEXT);
+	dc->SetFont(f);
+
+	int ppiw, ppih;
+	GetPPIPrinter(&ppiw, &ppih);
+	//to milimiters
+	ppiw /= 25;
+	ppih /= 25;
+	int lorigin = Print::page_setup_dialog_data->GetMarginTopLeft().x * ppiw;
+	int torigin = Print::page_setup_dialog_data->GetMarginTopLeft().y * ppih;
+	dc->SetDeviceOrigin(lorigin, torigin);
+
+	int w, h, pw, ph;
+	dc->GetSize(&w, &h);
+	GetPageSizePixels(&pw, &ph);
+	dc->SetUserScale((float)(pw - 2 * lorigin) / m_image.GetWidth() * w / pw, (float)(ph - 2 * torigin) / m_image.GetHeight() / 2 * w / ph);
+	wxBitmap bmp(m_image);
+	dc->DrawBitmap(bmp, 0, 0);
+
+	dc->SetUserScale((float)w / (float)pw, (float)h / (float)ph);
+
+	dc->SetDeviceOrigin(lorigin, ph / 2 + 2 * torigin);
+
+	int ty = 0;
+	int tw, th;
+	wxString txt;
+
+#ifdef __WXMSW__
+	f.SetPointSize(70);
+#else
+	f.SetPointSize(12);
+#endif
+	dc->SetFont(f);
+
+	txt = m_graph->m_di[0]->GetDrawsSets()->GetID();
+	dc->GetTextExtent(txt, &tw, &th);
+	dc->DrawText(txt, (pw - tw)  / 2, ty);
+
+	ty += th * 12 / 10;
+#ifdef __WXMSW__
+	f.SetPointSize(50);
+#else
+	f.SetPointSize(8);
+#endif
+	dc->SetFont(f);
+
+
+	txt = wxString(_("From:"))
+			+ wxString(_T(" "))
+			+ FormatTime(m_graph->m_start, m_graph->m_period);
+
+	dc->GetTextExtent(txt, &tw, &th);
+	dc->DrawText(txt, (pw - tw) / 2, ty);
+
+	ty += th * 12 / 10;
+
+	txt = wxString(_("To:")) 
+			+ wxString(_T(" ")) 
+			+ FormatTime(m_graph->m_end, m_graph->m_period);
+
+	dc->GetTextExtent(txt, &tw, &th);
+	dc->DrawText(txt, (pw - tw) / 2, ty);
+
+	ty += th * 12 / 10;
+	for (size_t i = 0; i < 3; i++) {
+		txt = wxString() + (L'X' + i) + _T(": ") + m_graph->m_di[i]->GetShortName() + _T(" ") + m_graph->m_di[i]->GetName();
+		dc->SetTextForeground(m_graph->m_di[i]->GetDrawColor());
+		dc->GetTextExtent(txt, &tw, &th);
+		dc->DrawText(txt, (pw - tw) / 2, ty);
+		ty += th * 12 / 10;
+	}
+
+
+	return true;
+}
+
+bool XYZGraphPrintout::HasPage(int page) {
+	return page == 1;
+}
+
+/**Obligatory method to implement by printout, simply calls the same method but from base class*/
+bool XYZGraphPrintout::OnBeginDocument(int start, int end) {
+	return wxPrintout::OnBeginDocument(start, end);
+}
+
+void XYZGraphPrintout::GetPageInfo(int *min, int *max, int *sel_from, int *sel_to) {
+	*min = 1;
+	*max = 1;
+
+	*sel_from = *sel_to = 1;
+}
+
+void Print::DoXYZPrint(wxWindow *parent, XYGraph *graph, wxImage graph_image) {
+	InitData();
+
+	wxPrintDialogData print_dialog(*print_data);
+	wxPrinter printer(&print_dialog);
+	XYZGraphPrintout printout(graph, graph_image);
+	printer.Print(NULL, &printout, true);
+}
+
+void Print::DoXYZPrintPreview(wxWindow *parent, XYGraph *graph, wxImage graph_image) {
+	InitData();
+
+	wxPrintDialogData print_dialog_data(*print_data);
+
+	wxPrintPreview *preview = new wxPrintPreview(new XYZGraphPrintout(graph, graph_image), 
+							new XYZGraphPrintout(graph, graph_image), 
+							&print_dialog_data);
+	if (!preview->Ok()) {
+		delete preview;
+		return;
+	}
+
+	wxPreviewFrame *frame = new wxPreviewFrame(preview, NULL, _("Print Preview"), wxPoint(100, 100), wxSize(600, 650));
+	frame->Centre(wxBOTH);
+	frame->Initialize();
+	frame->Show();
+}
+
 wxPrintData* Print::print_data = NULL;
 wxPageSetupData* Print::page_setup_data = NULL;
 wxPageSetupDialogData* Print::page_setup_dialog_data = NULL;
