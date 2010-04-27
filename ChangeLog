@@ -1,11 +1,20 @@
 # Git does not support keywords substitutions. Use 'git log ...'.
 
+2010-04-27	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* wx/draw3: 3D graphs - 3D graphs print support (printouts are quite ugly so far, though)
+	* wx/draw3: added commented out code for multisampling of 3D graphs (requires patched version
+	of wxWidgets), commented out because none of drivers for video cards I have, supports
+	multisampling, so I have no way of testing 
 2010-04-27	Pawel Palucha <pawel@praterm.com.pl>
 	* ipk.sgml: description of doc:doc subelement in param element.
+2010-04-25	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* wx/draw3/xyzgraph.cpp: axes and units painted, fix in left-right keyboard movement
 2010-04-24	Pawel Palucha <pawel@praterm.com.pl>
 	* wx/draw3/GUI/*: fixes in 'Notifications' window - added surrounding
 	wxPanel so keyboard navigation works, added spaces around widgets.
 2010-04-23	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* wx/draw3: 3d graph colors fix, cubes instead of sqaures for single points,
+	better catching of mouse clicks
 	* libSzarp2/szbase: configurable size of in-memory cache
 2010-04-18	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* wx/draw3/xyzgraph.cpp: 3D graphs: fix in points
