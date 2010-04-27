@@ -3028,7 +3028,13 @@ Opis parametru uzupe³niaj± elementy wchodz±ce w sk³ad elementu
 <emphasis>param</emphasis>. S± to elementy <emphasis>value</emphasis>,
 <emphasis>define</emphasis>, <emphasis>raport</emphasis>,
 <emphasis>draw</emphasis> i <emphasis>analysis</emphasis>(wystêpuj± w³a¶nie w tej kolejno¶ci).
-
+</para>
+<para>
+	Dodatkowo parametr mo¿e zawieraæ element <emphasis>doc</emphasis> z przestrzeni nazw 
+	<emphasis>http://www.praterm.com.pl/SZARP/ipk-extra</emphasis>, którego tekstowa zawarto¶æ
+	jest u¿ywana jako dokumentacja parametru na serwerze parametrów w sytuacji, kiedy nie zadzia³aj±
+	inne sposoby uzyskania dokumentacji (czyli dokumentacja generowana na podstawie dokumentacji
+	programu technologicznego lub na podstawie formu³y).
 </para>
 </section> <!-- form-el-param -->
 
