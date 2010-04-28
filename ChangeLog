@@ -1,6 +1,7 @@
 # Git does not support keywords substitutions. Use 'git log ...'.
 
 2010-04-28	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* parcook/mbdmn.cc: read-tiemeout option added, chars-delay renamed to out-intra-character-delay
 	* parcook/mbdmn.cc: chars-delay option added for delaying tranmition
 	of invdividual chars in message (needs testing)
 2010-04-27	Darek Marcinkiewcz <reksio@praterm.com.pl>
