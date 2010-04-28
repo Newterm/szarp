@@ -147,6 +147,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <iostream>
+#include <deque>
 #include <set>
 
 #include <libxml/parser.h>
@@ -293,6 +294,7 @@ struct serial_port_configuration {
 	} parity;
 	int stop_bits;
 	int speed;
+	int delay_between_chars;
 };
 
 class tcp_connection_handler {
@@ -427,26 +429,39 @@ public:
 	virtual void frame_parsed(SDU &adu, struct bufferevent* bufev) = 0;
 	virtual void timeout() = 0;
 	virtual struct event_base* get_event_base() = 0;
+	virtual struct bufferevent* get_buffer_event() = 0;
 };
 
 class serial_parser {
 protected:
 	serial_connection_handler *m_serial_handler;
-	struct event m_timer;
+	struct event m_read_timer;
 	SDU m_sdu;
-	bool m_timer_started;
+	bool m_read_timer_started;
 	int m_timeout;
 
-	void start_timer();
-	void stop_timer();
-	virtual void timer_event() = 0;
+	int m_delay_between_chars;
+	std::deque<unsigned char> m_output_buffer;
+	struct event m_write_timer;
+	bool m_write_timer_started;
+
+	void start_read_timer();
+	void stop_read_timer();
+
+	void start_write_timer();
+	void stop_write_timer();
+
+	virtual void read_timer_event() = 0;
+	virtual void write_timer_event();
 public:
-	serial_parser(serial_connection_handler *serial_handler);
+	serial_parser(serial_connection_handler *serial_handler, int delay_between_chars);
 	virtual void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev) = 0;
 	virtual void read_data(struct bufferevent *bufev) = 0;
+	virtual void write_finished(struct bufferevent *bufev);
 	virtual void reset() = 0;
 
-	static void timer_callback(int fd, short event, void* serial_parser);
+	static void read_timer_callback(int fd, short event, void* serial_parser);
+	static void write_timer_callback(int fd, short event, void* serial_parser);
 };
 
 class serial_rtu_parser : public serial_parser {
@@ -461,9 +476,9 @@ class serial_rtu_parser : public serial_parser {
 
 	unsigned short update_crc(unsigned short crc, unsigned char c);
 
-	virtual void timer_event();
+	virtual void read_timer_event();
 public:
-	serial_rtu_parser(serial_connection_handler *serial_handler, int speed);
+	serial_rtu_parser(serial_connection_handler *serial_handler, int delay_between_chars, int speed);
 	void read_data(struct bufferevent *bufev);
 	void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev);
 	void reset();
@@ -499,14 +514,17 @@ public:
 	virtual int configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx);
 	virtual int initialize();
 	virtual void frame_parsed(SDU &sdu, struct bufferevent* bufev);
+	virtual struct bufferevent* get_buffer_event();
 
 	void connection_error(struct bufferevent* bufev);
 	void connection_read(struct bufferevent* bufev);
+	void connection_write(struct bufferevent* bufev);
 
 	virtual void timeout();
 	virtual struct event_base* get_event_base();
 
 	static void connection_read_cb(struct bufferevent *ev, void* tcp_server);
+	static void connection_write_cb(struct bufferevent *ev, void* client);
 	static void connection_error_cb(struct bufferevent *ev, short event, void* server);
 };
 
@@ -519,6 +537,7 @@ public:
 	virtual int configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx);
 	virtual void send_pdu(unsigned char u, PDU &pdu);
 	virtual void frame_parsed(SDU& sdu, struct bufferevent* bufev);
+	virtual struct bufferevent* get_buffer_event();
 
 	virtual void timeout();
 	virtual void connect();
@@ -526,10 +545,12 @@ public:
 
 	void connection_error(struct bufferevent* bufev);
 	void connection_read(struct bufferevent* bufev);
+	void connection_write(struct bufferevent* bufev);
 
 	virtual struct event_base* get_event_base();
 
 	static void connection_read_cb(struct bufferevent *ev, void* client);
+	static void connection_write_cb(struct bufferevent *ev, void* client);
 	static void connection_error_cb(struct bufferevent *ev, short event, void* client);
 };
 
@@ -1933,34 +1954,76 @@ bool serial_rtu_parser::check_crc() {
 }
 
 
-serial_parser::serial_parser(serial_connection_handler *serial_handler) : m_serial_handler(serial_handler), m_timer_started(false) {
-	evtimer_set(&m_timer, timer_callback, this);
-	event_base_set(m_serial_handler->get_event_base(), &m_timer);
+serial_parser::serial_parser(serial_connection_handler *serial_handler, int delay_between_chars) : m_serial_handler(serial_handler), m_read_timer_started(false), m_delay_between_chars(delay_between_chars), m_write_timer_started(false) {
+	evtimer_set(&m_read_timer, read_timer_callback, this);
+	event_base_set(m_serial_handler->get_event_base(), &m_read_timer);
+	if (m_delay_between_chars)
+		evtimer_set(&m_write_timer, write_timer_callback, this);
 	m_timeout = 1000000;
 }
 
-void serial_parser::timer_callback(int fd, short event, void* parser) {
-	((serial_parser*) parser)->timer_event();
+void serial_parser::read_timer_callback(int fd, short event, void* parser) {
+	((serial_parser*) parser)->read_timer_event();
 }
 
-void serial_parser::stop_timer() {
-	if (m_timer_started) {
-		event_del(&m_timer);
-		m_timer_started = false;
+void serial_parser::write_timer_callback(int fd, short event, void* parser) {
+	((serial_parser*) parser)->write_timer_event();
+}
+
+void serial_parser::write_timer_event() {
+	if (m_delay_between_chars && m_output_buffer.size()) {
+		unsigned char c = m_output_buffer.front();
+		m_output_buffer.pop_front();
+		bufferevent_write(m_serial_handler->get_buffer_event(), &c, 1);
+		if (m_output_buffer.size())
+			start_write_timer();
+		else
+			stop_write_timer();
+	}
+	
+}
+
+void serial_parser::write_finished(struct bufferevent *bufev) {
+	if (m_delay_between_chars && m_output_buffer.size())
+		start_write_timer();
+}
+
+void serial_parser::stop_write_timer() {
+	if (m_write_timer_started) {
+		event_del(&m_write_timer);
+		m_write_timer_started = false;
 	}
 }
 
-void serial_parser::start_timer() {
-	stop_timer();
+void serial_parser::start_write_timer() {
+	stop_write_timer();
+
+	struct timeval tv;
+	tv.tv_sec = 0;
+	tv.tv_usec = m_delay_between_chars;
+	evtimer_add(&m_write_timer, &tv);
+
+	m_write_timer_started = true;
+}
+
+void serial_parser::stop_read_timer() {
+	if (m_read_timer_started) {
+		event_del(&m_read_timer);
+		m_read_timer_started = false;
+	}
+}
+
+void serial_parser::start_read_timer() {
+	stop_read_timer();
 
 	struct timeval tv;
 	tv.tv_sec = 0;
 	tv.tv_usec = m_timeout;
-	evtimer_add(&m_timer, &tv); 
-	m_timer_started = true;
+	evtimer_add(&m_read_timer, &tv); 
+	m_read_timer_started = true;
 }
 
-serial_rtu_parser::serial_rtu_parser(serial_connection_handler *serial_handler, int speed) : serial_parser(serial_handler), m_state(FUNC_CODE) {
+serial_rtu_parser::serial_rtu_parser(serial_connection_handler *serial_handler, int delay_between_chars, int speed) : serial_parser(serial_handler, delay_between_chars), m_state(FUNC_CODE) {
 	/*according to protocol specification, intra-character
 	 * delay cannot exceed 1.5 * (time of transmittion of one character),
 	 * we will make it double to be on safe side */
@@ -1970,12 +2033,15 @@ serial_rtu_parser::serial_rtu_parser(serial_connection_handler *serial_handler, 
 
 void serial_rtu_parser::reset() {
 	m_state = ADDR;	
+	stop_write_timer();
+	stop_read_timer();
+	m_output_buffer.resize(0);
 }
 
 void serial_rtu_parser::read_data(struct bufferevent *bufev) {
 	size_t r;
 
-	stop_timer();
+	stop_read_timer();
 	switch (m_state) {
 		case ADDR:
 			if (bufferevent_read(bufev, &m_sdu.unit_id, sizeof(m_sdu.unit_id)) == 0) 
@@ -1984,7 +2050,7 @@ void serial_rtu_parser::read_data(struct bufferevent *bufev) {
 			m_state = FUNC_CODE;
 		case FUNC_CODE:
 			if (bufferevent_read(bufev, &m_sdu.pdu.func_code, sizeof(m_sdu.pdu.func_code)) == 0) {
-				start_timer();
+				start_read_timer();
 				break;
 			}
 			dolog(9, "Func code: %d", (int) m_sdu.pdu.func_code);
@@ -1999,13 +2065,13 @@ void serial_rtu_parser::read_data(struct bufferevent *bufev) {
 				m_sdu.pdu.data.resize(m_data_read - 2);
 				m_serial_handler->frame_parsed(m_sdu, bufev);
 			} else {
-				start_timer();
+				start_read_timer();
 			}
 	}
 
 }
 
-void serial_rtu_parser::timer_event() {
+void serial_rtu_parser::read_timer_event() {
 	reset();
 	m_serial_handler->timeout();
 }
@@ -2021,11 +2087,21 @@ void serial_rtu_parser::send_sdu(unsigned char unit_id, PDU &pdu, struct buffere
 	cl = crc & 0xff;
 	cm = crc >> 8;
 
-	bufferevent_write(bufev, &unit_id, sizeof(unit_id));
-	bufferevent_write(bufev, &pdu.func_code, sizeof(pdu.func_code));
-	bufferevent_write(bufev, &pdu.data[0], pdu.data.size());
-	bufferevent_write(bufev, &cl, 1);
-	bufferevent_write(bufev, &cm, 1);
+	if (m_delay_between_chars) {
+		m_output_buffer.resize(0);
+		m_output_buffer.push_back(pdu.func_code);
+		m_output_buffer.insert(m_output_buffer.end(), pdu.data.begin(), pdu.data.end());
+		m_output_buffer.push_back(cl);
+		m_output_buffer.push_back(cm);
+
+		bufferevent_write(bufev, &unit_id, sizeof(unit_id));
+	} else {
+		bufferevent_write(bufev, &unit_id, sizeof(unit_id));
+		bufferevent_write(bufev, &pdu.func_code, sizeof(pdu.func_code));
+		bufferevent_write(bufev, &pdu.data[0], pdu.data.size());
+		bufferevent_write(bufev, &cl, 1);
+		bufferevent_write(bufev, &cm, 1);
+	}
 }
 
 int get_serial_config(xmlXPathContextPtr xp_ctx, DaemonConfig* cfg, serial_port_configuration &spc) {
@@ -2067,6 +2143,16 @@ int get_serial_config(xmlXPathContextPtr xp_ctx, DaemonConfig* cfg, serial_port_
 		return 1;
 	}
 	xmlFree(stop_bits);
+
+	xmlChar* delay_between_chars = get_device_node_prop(xp_ctx, "chars-delay");
+	if (stop_bits == NULL) {
+		dolog(10, "Serial port configuration, delay between chars not given assuming no delay");
+		spc.delay_between_chars = 0;
+	} else {
+		spc.delay_between_chars = atoi((char*) delay_between_chars) * 1000;
+		dolog(10, "Serial port configuration, delay between chars set to %d miliseconds", spc.delay_between_chars);
+	}
+	xmlFree(delay_between_chars);
 
 	return 0;
 }
@@ -2150,7 +2236,7 @@ int serial_client_connection::configure(DaemonConfig *cfg, xmlXPathContextPtr xp
 
 	if (get_serial_config(xp_ctx, cfg, m_spc))
 		return 1;
-	m_parser = new serial_rtu_parser(this, m_spc.speed);
+	m_parser = new serial_rtu_parser(this, m_spc.delay_between_chars, m_spc.speed);
 	return 0;
 }
 
@@ -2172,7 +2258,7 @@ void serial_client_connection::connect() {
 
 	m_parser->reset();
 
-	m_bufev = bufferevent_new(m_fd, connection_read_cb, NULL, connection_error_cb, this);
+	m_bufev = bufferevent_new(m_fd, connection_read_cb, connection_write_cb, connection_error_cb, this);
 	bufferevent_base_set(get_event_base(), m_bufev);
 	bufferevent_enable(m_bufev, EV_READ | EV_WRITE | EV_PERSIST);
 
@@ -2192,12 +2278,20 @@ void serial_client_connection::frame_parsed(SDU &sdu, struct bufferevent *bufev)
 	m_modbus_client->pdu_received(sdu.unit_id, sdu.pdu);
 }
 
+struct bufferevent* serial_client_connection::get_buffer_event() {
+	return m_bufev;
+}
+
 struct event_base* serial_client_connection::get_event_base() {
 	return m_modbus_client->get_event_base();
 }
 
 void serial_client_connection::connection_read(struct bufferevent *bufev) {
 	m_parser->read_data(bufev);
+}
+
+void serial_client_connection::connection_write(struct bufferevent *bufev) {
+	m_parser->write_finished(bufev);
 }
 
 void serial_client_connection::connection_error(struct bufferevent *bufev) {
@@ -2209,13 +2303,17 @@ void serial_client_connection::connection_read_cb(struct bufferevent *ev, void* 
 	((serial_client_connection*) client)->connection_read(ev);
 }
 
+void serial_client_connection::connection_write_cb(struct bufferevent *ev, void* client) {
+	((serial_client_connection*) client)->connection_write(ev);
+}
+
 void serial_client_connection::connection_error_cb(struct bufferevent *ev, short event, void* client) {
 	((serial_client_connection*) client)->connection_error(ev);
 }
 
 serial_server::serial_server() {
 	m_fd = -1;
-	m_parser = new serial_rtu_parser(this, m_spc.speed);
+	m_parser = new serial_rtu_parser(this, m_spc.delay_between_chars, m_spc.speed);
 }
 
 int serial_server::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx) {
@@ -2243,7 +2341,7 @@ bool serial_server::open_connection() {
 		return false;
 	}
 
-	m_bufev = bufferevent_new(m_fd, connection_read_cb, NULL, connection_error_cb, this);
+	m_bufev = bufferevent_new(m_fd, connection_read_cb, connection_write_cb, connection_error_cb, this);
 	bufferevent_base_set(m_event_base, m_bufev);
 	bufferevent_enable(m_bufev, EV_READ | EV_WRITE | EV_PERSIST);
 
@@ -2273,8 +2371,16 @@ void serial_server::frame_parsed(SDU &sdu, struct bufferevent* bufev) {
 		m_parser->send_sdu(sdu.unit_id, sdu.pdu, bufev);
 }
 
+struct bufferevent* serial_server::get_buffer_event() {
+	return m_bufev;
+}
+
 void serial_server::connection_read(struct bufferevent *bufev) {
 	m_parser->read_data(bufev);
+}
+
+void serial_server::connection_write(struct bufferevent *bufev) {
+	m_parser->write_finished(bufev);
 }
 
 void serial_server::connection_error(struct bufferevent* bufev) {
@@ -2289,6 +2395,10 @@ void serial_server::connection_error_cb(struct bufferevent *bufev, short event, 
 
 void serial_server::connection_read_cb(struct bufferevent *bufev, void *server) {
 	((serial_server*) server)->connection_read(bufev);
+}
+
+void serial_server::connection_write_cb(struct bufferevent *bufev, void *server) {
+	((serial_server*) server)->connection_write(bufev);
 }
 
 int configure_daemon_mode(xmlXPathContextPtr xp_ctx, DaemonConfig *cfg, modbus_daemon **dmn) {
