@@ -1185,7 +1185,7 @@ wxImage XYZCanvas::GetGraphImage() {
 	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGBA, size.GetWidth(), size.GetHeight());
 	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_RENDERBUFFER_EXT, color_buffer_id);
 
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
+	if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
 		return img;
 		std::cout << "Framebuffer error" << std::endl;
 	}
