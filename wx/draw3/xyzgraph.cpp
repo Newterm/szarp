@@ -690,7 +690,6 @@ void XYZCanvas::UpdateArrays() {
 				m_point_types[i / 3] = m_point_types[j / 3] = m_point_types[k / 3] = IN_TRIANGLE;
 				AddTriangle(i, j, k);
 			} else {
-
 				m_point_types[i / 3] = SINGLE;
 				m_single_quads_indexes.push_back(i);
 
@@ -1186,8 +1185,8 @@ wxImage XYZCanvas::GetGraphImage() {
 	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_RENDERBUFFER_EXT, color_buffer_id);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
-		return img;
 		std::cout << "Framebuffer error" << std::endl;
+		return img;
 	}
 
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -1220,7 +1219,7 @@ wxImage XYZCanvas::GetGraphImage() {
 
 
 XYZCanvas::~XYZCanvas() {
-	delete m_timer;
+	m_timer->Stop();
 }
 
 
@@ -1250,38 +1249,26 @@ XYZFrame::XYZFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigMa
 
 	SetSizer(sizer);
 
-	m_xydialog = new XYDialog(this, 
-			m_default_prefix,
-			m_cfg_manager,
-			m_db_manager,
-			this);
-	m_xydialog->Show();
-
 	wxMenu *menu = new wxMenu();
 	wxMenuItem* menu_item; 
 
 	menu_item = new wxMenuItem(menu, XYZ_CHANGE_GRAPH, _("Change graph parameters"));
-	Connect(XYZ_CHANGE_GRAPH, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(XYZFrame::OnChangeGraph), this);
 	menu->Append(menu_item);
 
 	menu->AppendSeparator();
 
 	menu_item = new wxMenuItem(menu, XYZ_PRINT, _("Print\tCtrl-P"));
-	Connect(XYZ_PRINT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(XYZFrame::OnPrint), this);
 	menu->Append(menu_item);
 
 	menu_item = new wxMenuItem(menu, XYZ_PRINT_PREVIEW, _("Print preview"));
-	Connect(XYZ_PRINT_PREVIEW, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(XYZFrame::OnPrintPreview), this);
 	menu->Append(menu_item);
 
 	menu_item = new wxMenuItem(menu, XYZ_PRINT_PAGE_SETUP, _("Page Settings\tCtrl+Shift+S"));
-	Connect(XYZ_PRINT_PAGE_SETUP, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(XYZFrame::OnPageSetup), this);
 	menu->Append(menu_item);
 
 	menu->AppendSeparator();
 
 	menu_item = new wxMenuItem(menu, wxID_EXIT, _("Close"));
-	Connect(wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(XYZFrame::OnQuit), this);
 	menu->Append(menu_item);
 
 	wxMenuBar* menu_bar = new wxMenuBar();
@@ -1292,6 +1279,19 @@ XYZFrame::XYZFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigMa
 	menu_bar->Append(menu, _("Help"));
 
 	SetMenuBar(menu_bar);
+
+	SetHelpText(_T("draw3-ext-chartxyz"));
+
+	m_xydialog = new XYDialog(this, 
+			m_default_prefix,
+			m_cfg_manager,
+			m_db_manager,
+			this);
+	if (m_xydialog->ShowModal() == wxID_OK)
+		SetGraph(m_xydialog->GetGraph());
+	else
+		Destroy();
+
 }
 
 int XYZFrame::GetDimCount() {
@@ -1305,7 +1305,8 @@ void XYZFrame::SetGraph(XYGraph *graph) {
 }
 
 void XYZFrame::GetNewGraph() {
-	m_xydialog->Show();
+	if (m_xydialog->ShowModal() == wxID_OK)
+		SetGraph(m_xydialog->GetGraph());
 }
 
 void XYZFrame::OnChangeGraph(wxCommandEvent &event) {
@@ -1314,6 +1315,10 @@ void XYZFrame::OnChangeGraph(wxCommandEvent &event) {
 
 void XYZFrame::OnQuit(wxCommandEvent &event) {
 	Destroy();
+}
+
+void XYZFrame::OnHelp(wxCommandEvent &event) {
+	wxHelpProvider::Get()->ShowHelp(this);
 }
 
 void XYZFrame::OnPrint(wxCommandEvent &event) {
@@ -1328,7 +1333,18 @@ void XYZFrame::OnPageSetup(wxCommandEvent &event) {
 	Print::PageSetup(this);
 }
 
-XYZFrame::~XYZFrame() {}
+XYZFrame::~XYZFrame() {
+	m_xydialog->Destroy();
+}
+
+BEGIN_EVENT_TABLE(XYZFrame, szFrame)
+	EVT_MENU(XYZ_CHANGE_GRAPH, XYZFrame::OnChangeGraph)
+	EVT_MENU(XYZ_PRINT, XYZFrame::OnPrint)
+	EVT_MENU(XYZ_PRINT_PREVIEW, XYZFrame::OnPrintPreview)
+	EVT_MENU(XYZ_PRINT_PAGE_SETUP, XYZFrame::OnPageSetup)
+	EVT_MENU(wxID_EXIT, XYZFrame::OnQuit)
+	EVT_MENU(wxID_HELP, XYZFrame::OnHelp)
+END_EVENT_TABLE()
 
 #endif
 #endif

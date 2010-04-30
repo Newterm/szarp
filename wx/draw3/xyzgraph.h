@@ -79,7 +79,11 @@ public:
 
 	void OnPageSetup(wxCommandEvent &event);
 
+	void OnHelp(wxCommandEvent &event);
+
 	virtual ~XYZFrame();
+
+	DECLARE_EVENT_TABLE()
 };
 
 #endif

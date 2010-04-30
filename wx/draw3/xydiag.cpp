@@ -50,7 +50,11 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 		m_end_time(m_period, wxDateTime::Now())
 		{
 
-	SetHelpText(_T("draw3-ext-chartxy"));
+	if (frame->GetDimCount() == 3)
+		SetHelpText(_T("draw3-ext-chartxyz"));
+	else
+		SetHelpText(_T("draw3-ext-chartxy"));
+
 	SetIcon(szFrame::default_icon);
 
 	wxString period_choices[PERIOD_T_SEASON] = { _("YEAR"), _("MONTH"), _("WEEK"), _("DAY") };
@@ -160,6 +164,8 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 	for (int i = 0; i < m_frame->GetDimCount(); i++)
 		m_di.push_back(NULL);
 
+	if (m_frame->GetDimCount() == 3)
+		SetTitle(_("XYZ Graph"));
 	SetSize(500, 350);
 	SetSizer(sizer);
 
@@ -189,6 +195,10 @@ void XYDialog::OnOK(wxCommandEvent &event) {
 	m_mangler->Go();
 }
 
+XYGraph* XYDialog::GetGraph() {
+	return m_graph;
+}
+
 void XYDialog::DataFromMangler(XYGraph *graph) {
 	if (graph->m_points_values.size() == 0) {
 		wxMessageBox(_("There is no common data in selected draws from given time span"), _("No common data"), wxICON_INFORMATION | wxOK, this);
@@ -196,9 +206,8 @@ void XYDialog::DataFromMangler(XYGraph *graph) {
 		return;
 	}
 
-	m_frame->SetGraph(graph);
-
-	Show(false);
+	m_graph = graph;
+	EndModal(wxID_OK);
 }
 
 void XYDialog::ConfigurationIsAboutToReload(wxString prefix) {
@@ -584,9 +593,7 @@ next:;
 }
 
 void XYDialog::OnCancel(wxCommandEvent &event) {
-	Show(false);
-	if (m_frame == NULL)
-		Destroy();	
+	EndModal(wxID_CANCEL);
 }
 
 void XYDialog::OnShow(wxShowEvent &event) {

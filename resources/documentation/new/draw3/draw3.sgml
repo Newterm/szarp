@@ -641,6 +641,59 @@ wykresu poziomego (z osi X) na maksymalnie 24 obszary, w których warto¶ci Y s± u
 </para>
 </section> <!-- draw3-ext-chartxy -->
 
+<section id="draw3-ext-chartxyz">
+<title>Zale¿no¶ci pomiêdzy parametrami - wykres XYZ</title>
+<para>
+Rozszerzenie wykresów X/Y stanowi± wykresy XYZ. Wykresy XYZ pokazuj± zale¿no¶æ miêdzy warto¶ciami trzech
+parametrów równocze¶nie. Aby obejrzeæ wykres XYZ wybierz z menu <guimenu>Plik</guimenu> opcjê <guimenu>Wykres XYZ</guimenu>.
+Po jej wybraniu zobaczysz okno do wyboru parametrów oraz zakresu czasu z jakiego maj± byæ pobrane warto¶ci. Okno to jest bardzo podobne
+do analogicznego okna dla wykresów X/Y.
+<figure>
+<title>Tworzenie wykresu XYZ</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-xyz1.png"></imageobject>
+</mediaobject></figure>
+</para>
+<para>
+Gdy okre¶lisz parametry oraz przedzia³ czasowy naci¶nij przycisk OK. Powinno to spowodowaæ pobranie danych z bazy oraz otwartcie okna z wykresem.
+</para>
+<para>
+Na górze okna znajduje siê menu z opcjami pozwalaj±cymi z opcjami pozwalaj±cymi: zmianê akutalnych parametrów wykresu, wydruk wykresu, podgl±d wydruku
+oraz zamkniêcie aktualnego okna.
+</para>
+<para>
+Poni¿ej menu znajdziesz g³ówn± cze¶æ okna, zawieraj±ca w³a¶ciwy wykres. W lewym-górnym rogu okna wy¶wietlana jest
+informacja o akutalnej pozycji kursorsa. Kursor reprezentowany jest na wykresie jako bia³y sze¶æian, którego pozycjê mo¿na zmieniaæ za pomoc± klawiszy kursora.
+Mo¿esz te¿ spowodowaæ ustawienie siê kursora na konkretnym punkcie, klikaj±c na ten punkt lewym klawisem myszy.
+<figure>
+<title>Wykres XYZ</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-xyz2.png"></imageobject>
+</mediaobject></figure>
+</para>
+<para>
+Po wykresie mo¿esz siê poruszaæ (zmieniaj±c po³o¿enie "punktu widzenia" obserwatora) za pomoc± nastêpuj±cych klawiszy:
+<itemizedlist>
+<listitem><para><keycode>w</keycode> - ruch obserwartora do przodu</para></listitem>
+<listitem><para><keycode>s</keycode> - ruch obserwartora do ty³u</para></listitem>
+<listitem><para><keycode>a</keycode> - ruch obserwartora w lewo</para></listitem>
+<listitem><para><keycode>d</keycode> - ruch obserwartora w prawo</para></listitem>
+<listitem><para><keycode>q</keycode> - ruch obserwartora do góry</para></listitem>
+<listitem><para><keycode>e</keycode> - ruch obserwartora w dó³</para></listitem>
+<listitem><para><keycode>Shift + w</keycode> - obrót kierunku widzenia do góry</para></listitem>
+<listitem><para><keycode>Shift + s</keycode> - obrót kierunku widzenia do do³u</para></listitem>
+<listitem><para><keycode>Shift + a</keycode> - obrót kierunku widzenia w lewo</para></listitem>
+<listitem><para><keycode>Shift + d</keycode> - obrót kierunku widzenia w prawo</para></listitem>
+</itemizedlist>
+Ruch do przodu i ty³u mo¿esz te¿ uzyskaæ za pomoc± rolki myszy (na latopie ten sam efekt mo¿esz wywo³aæ 
+przesuwaj±c palcem wzd³ó¿ prawej jego krawêdzi.</para>
+<para>
+Oprócz zmiany pozycji obserwartora mo¿esz te¿ obracaæ wykres. By obracaæ wykres naci¶nij i przytrzymaj prawy klawisz myszy, a nastêpnie zacznij
+poruszaæ wska¼nikiem myszy. Ruch myszy w kierunku pionowym powoduje obrót wykresu wokó³ osi X, natomiast ruchy myszy w kierunku poziomym obrót wykresu
+wokó³ osi Y.
+</para>
+</section> <!-- draw3-ext-chartxyz -->
+
 <section id="draw3-ext-filter">
 <title>Filtr</title>
 <para>

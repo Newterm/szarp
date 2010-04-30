@@ -182,6 +182,8 @@ class XYDialog : public wxDialog, public ConfigObserver
 	/**@see XYFrame. Frame for displaying XY graph*/
 	XFrame *m_frame;
 
+	XYGraph *m_graph;
+
 	static const wxString period_choices[PERIOD_T_SEASON];
 
 	/**Handles date change triggered by the user*/
@@ -217,6 +219,8 @@ class XYDialog : public wxDialog, public ConfigObserver
 	void ConfigurationIsAboutToReload(wxString prefix);
 
 	void ConfigurationWasReloaded(wxString prefix);
+
+	XYGraph* GetGraph();
 
 	virtual ~XYDialog();
 

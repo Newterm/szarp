@@ -93,7 +93,11 @@ XYFrame::XYFrame(wxString default_prefix, DatabaseManager *db_manager, ConfigMan
 			m_cfg_manager,
 			m_db_manager,
 			this);
-	m_dialog->Show();
+
+	if (m_dialog->ShowModal() == wxID_OK)
+		SetGraph(m_dialog->GetGraph());
+	else
+		Destroy();
 
 }
 
@@ -128,8 +132,8 @@ void XYFrame::OnCloseMenu(wxCommandEvent &event) {
 }
 
 void XYFrame::OnGraphChange(wxCommandEvent &event) {
-	m_dialog->Show(true);
-	m_dialog->Raise();
+	if (m_dialog->ShowModal() == wxID_OK)
+		SetGraph(m_dialog->GetGraph());
 }
 
 void XYFrame::OnPrint(wxCommandEvent &event) {
