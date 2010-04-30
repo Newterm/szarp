@@ -1,13 +1,10 @@
 
 2010-04-30	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* resources/version.info: readded to packages
 	* wx/draw3: help for XYZ graphs
 2010-04-28	Darek Marcinkiewcz <reksio@praterm.com.pl>
-<<<<<<< HEAD:ChangeLog
-	* parcook/mbdmn.cc: chars-delay option added for delaying transmition
-=======
 	* parcook/mbdmn.cc: read-tiemeout option added, chars-delay renamed to out-intra-character-delay
 	* parcook/mbdmn.cc: chars-delay option added for delaying tranmition
->>>>>>> f6c109d07aef8657aee156aaccc6c739b56050ef:ChangeLog
 	of invdividual chars in message (needs testing)
 2010-04-27	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* wx/draw3: 3D graphs - 3D graphs print support (printouts are quite ugly so far, though)
