@@ -295,6 +295,7 @@ struct serial_port_configuration {
 	int stop_bits;
 	int speed;
 	int delay_between_chars;
+	int read_timeout;
 };
 
 class tcp_connection_handler {
@@ -454,7 +455,7 @@ protected:
 	virtual void read_timer_event() = 0;
 	virtual void write_timer_event();
 public:
-	serial_parser(serial_connection_handler *serial_handler, int delay_between_chars);
+	serial_parser(serial_connection_handler *serial_handler, int delay_between_chars, int read_timeout);
 	virtual void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev) = 0;
 	virtual void read_data(struct bufferevent *bufev) = 0;
 	virtual void write_finished(struct bufferevent *bufev);
@@ -478,7 +479,7 @@ class serial_rtu_parser : public serial_parser {
 
 	virtual void read_timer_event();
 public:
-	serial_rtu_parser(serial_connection_handler *serial_handler, int delay_between_chars, int speed);
+	serial_rtu_parser(serial_connection_handler *serial_handler, int delay_between_chars, int speed, int read_timeout);
 	void read_data(struct bufferevent *bufev);
 	void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev);
 	void reset();
@@ -1826,11 +1827,11 @@ int tcp_client_connection::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ct
 
 void tcp_client_connection::disconnect() {
 	if (m_connection.fd >= 0) {
-		close(m_connection.fd);
-		m_connection.fd = -1;
-
 		bufferevent_free(m_connection.bufev);
 		m_connection.bufev = NULL;
+
+		close(m_connection.fd);
+		m_connection.fd = -1;
 	}
 }
 
@@ -1954,12 +1955,11 @@ bool serial_rtu_parser::check_crc() {
 }
 
 
-serial_parser::serial_parser(serial_connection_handler *serial_handler, int delay_between_chars) : m_serial_handler(serial_handler), m_read_timer_started(false), m_delay_between_chars(delay_between_chars), m_write_timer_started(false) {
+serial_parser::serial_parser(serial_connection_handler *serial_handler, int delay_between_chars, int read_timeout) : m_serial_handler(serial_handler), m_read_timer_started(false), m_timeout(read_timeout), m_delay_between_chars(delay_between_chars), m_write_timer_started(false) {
 	evtimer_set(&m_read_timer, read_timer_callback, this);
 	event_base_set(m_serial_handler->get_event_base(), &m_read_timer);
 	if (m_delay_between_chars)
 		evtimer_set(&m_write_timer, write_timer_callback, this);
-	m_timeout = 1000000;
 }
 
 void serial_parser::read_timer_callback(int fd, short event, void* parser) {
@@ -2023,12 +2023,16 @@ void serial_parser::start_read_timer() {
 	m_read_timer_started = true;
 }
 
-serial_rtu_parser::serial_rtu_parser(serial_connection_handler *serial_handler, int delay_between_chars, int speed) : serial_parser(serial_handler, delay_between_chars), m_state(FUNC_CODE) {
+serial_rtu_parser::serial_rtu_parser(serial_connection_handler *serial_handler, int delay_between_chars, int speed, int read_timeout) : serial_parser(serial_handler, delay_between_chars, read_timeout), m_state(FUNC_CODE) {
 	/*according to protocol specification, intra-character
 	 * delay cannot exceed 1.5 * (time of transmittion of one character),
 	 * we will make it double to be on safe side */
-	if (speed)
-		m_timeout = 3 * 1000000 / (speed / 8);
+	if (m_timeout == 0) {
+		if (speed)
+			m_timeout = 3 * 1000000 / (speed / 8);
+		else
+			m_timeout = 10000;
+	}
 }
 
 void serial_rtu_parser::reset() {
@@ -2144,8 +2148,8 @@ int get_serial_config(xmlXPathContextPtr xp_ctx, DaemonConfig* cfg, serial_port_
 	}
 	xmlFree(stop_bits);
 
-	xmlChar* delay_between_chars = get_device_node_prop(xp_ctx, "chars-delay");
-	if (stop_bits == NULL) {
+	xmlChar* delay_between_chars = get_device_node_prop(xp_ctx, "out-intra-character-delay");
+	if (delay_between_chars == NULL) {
 		dolog(10, "Serial port configuration, delay between chars not given assuming no delay");
 		spc.delay_between_chars = 0;
 	} else {
@@ -2153,6 +2157,16 @@ int get_serial_config(xmlXPathContextPtr xp_ctx, DaemonConfig* cfg, serial_port_
 		dolog(10, "Serial port configuration, delay between chars set to %d miliseconds", spc.delay_between_chars);
 	}
 	xmlFree(delay_between_chars);
+
+	xmlChar* read_timeout = get_device_node_prop(xp_ctx, "read-timeout");
+	if (read_timeout == NULL) {
+		dolog(10, "Serial port configuration, read timeout not given, will use one based on speed");
+		spc.read_timeout = 0;
+	} else {
+		spc.read_timeout = atoi((char*) read_timeout) * 1000;
+		dolog(10, "Serial port configuration, read timeout set to %d miliseconds", spc.read_timeout);
+	}
+	xmlFree(read_timeout);
 
 	return 0;
 }
@@ -2236,14 +2250,15 @@ int serial_client_connection::configure(DaemonConfig *cfg, xmlXPathContextPtr xp
 
 	if (get_serial_config(xp_ctx, cfg, m_spc))
 		return 1;
-	m_parser = new serial_rtu_parser(this, m_spc.delay_between_chars, m_spc.speed);
+	m_parser = new serial_rtu_parser(this, m_spc.delay_between_chars, m_spc.speed, m_spc.read_timeout);
 	return 0;
 }
 
 void serial_client_connection::disconnect() {
 	if (m_fd >= 0) {
-		close(m_fd);
 		bufferevent_free(m_bufev);
+		close(m_fd);
+		m_fd = -1;
 	}
 }
 
@@ -2313,7 +2328,7 @@ void serial_client_connection::connection_error_cb(struct bufferevent *ev, short
 
 serial_server::serial_server() {
 	m_fd = -1;
-	m_parser = new serial_rtu_parser(this, m_spc.delay_between_chars, m_spc.speed);
+	m_parser = new serial_rtu_parser(this, m_spc.delay_between_chars, m_spc.speed, m_spc.read_timeout);
 }
 
 int serial_server::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx) {
