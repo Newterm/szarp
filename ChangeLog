@@ -1,4 +1,3 @@
-# Git does not support keywords substitutions. Use 'git log ...'.
 
 2010-04-30	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* wx/draw3: help for XYZ graphs
