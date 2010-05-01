@@ -1,4 +1,9 @@
 
+2010-05-01	Pawel Palucha <pawel@praterm.com.pl>
+	* utils/probes_server/*: probes_server sometimes works.
+	* utils/probes_server/csv_client.py: extrszb-like client for
+	probes_server.
+	* .gitignore: more git-ignored files.
 2010-04-30	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* resources/version.info: readded to packages
 	* wx/draw3: help for XYZ graphs
