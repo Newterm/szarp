@@ -217,12 +217,25 @@ class SzbCache:
 			f = open(path, "rb")
 			output.write(f.read(towrite))
 			f.close()
+		self.fill_empty(output, endindex - lastindex)
+
+		debug("WRITE_FILE FINISH")
+
+	def fill_empty(self, output, count):
+		"""
+		Write count NO_DATA values to output.
+		"""
+		s = 1
 		arr = array.array(self.SZBCACHE_TYPE)
 		arr.append(self.SZBCACHE_NODATA)
-		while lastindex < endindex:
-			output.write(arr.tostring())
-			lastindex += 1
-		debug("WRITE_FILE FINISH")
+
+		while count > 0:
+			if count % (s * 2) != 0:
+				output.write(arr.tostring())
+				count -= s
+			if count > 0:
+				s *= 2
+				arr.extend(arr)
 
 	def search_first_last(self, dirpath):
 		"""

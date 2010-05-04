@@ -1,5 +1,6 @@
 
 2010-05-04	Pawel Palucha <pawel@praterm.com.pl>
+	* utils/probes_server/szbcache.py: optimization in NO_DATA writing.
 	* utils/probes_server/szbcache.py: fixes in data reading.
 2010-05-04	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* wx/draw3: added triangulation to 3D graphs, it is a
