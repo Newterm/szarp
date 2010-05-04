@@ -6,6 +6,21 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.423
+# 04.05.2010
+* New type of graphs was added to draw3 application - XYZ graphs. These 3 dimensional graphs
+can be used to analyze dependecies among values of 3 parameters from any period of time.
+This feature enhances even further SZARPs historical data analysis abilities. XYZ graphs can also
+be quite pleasant aesthetically.
+* There was significant progress in development of 10-second archivisation/presentation
+infrastucture.
+* SZARP device drivers (daemons) have now generic mechanism for reporting protocols that they
+support, making information on devices supported by SZARP more easily available.
+* New pair of applications were added to SZARP: setdmn accompanied by GUI client - setter. These
+apps sole purpose is to allow users to set parameters values over network.
+* SZARP source code repository has been migrated to git.
+* number of smaller fixes/improvements
+
 ** 3.1.385
 # 01.04.2010
 

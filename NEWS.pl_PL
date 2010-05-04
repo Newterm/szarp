@@ -8,6 +8,24 @@
 # Puste linie s± ignorowane.
 # $Id$
 
+** 3.1.423
+# 04.05.2010
+* Nowy rodzaj wykresów w programie przegl±daj±cym - wykresy XYZ. Wykresy XYZ to 
+wykresy trójwymiarowe, pozwalaj±ca na analizê zale¿no¶ci miêdzy warto¶ciami
+trzech parametrów. Ta funkcja rozszerza jeszcze bardziej mo¿liwo¶ci analizy 
+danych historycznych oferowane przez system SZARP. Niektóre wykresy XYZ potrafi±
+te¿ dostarczyæ przyjemnych wra¿eñ estetycznych.
+* Nast±pi³ dalszy rozwój mechanizmu do archiwizacji oraz udostêpniania w formie
+wykresów próbek 10 sekunowych.
+* Sterowniki urz±dzeñ systemu (w nomenklaturze SZARPa nazwyane demonami) zosta³y
+wyposa¿one w ogólny mechanizm przechowywania informacji o protoko³ach jakie obs³uguj±.
+Dziêki temu informacje o urz±dzeniach obs³ugiwanych przez system SZARP sta³a
+siê w ³atwy sposób dostêpne.
+* Dodano dwie nowe aplikacje: setdmn oraz setter. Pozwalaj± one do zadawania warto¶ci
+chwilowych parametrów przez sieæ.
+* Repozytorium SZARP zosta³o przeniesione na system kontroli wersji git.
+* Jak zwykle dokonowano wielu drobnych usprawnieñ oraz poprawek. 
+
 ** 3.1.385
 # 01.04.2010
 
