@@ -59,8 +59,14 @@
 #include "timeformat.h"
 #include "drawapp.h"
 #include "drawprint.h"
+#include "triangulation.h"
 
-class XYZCanvas : public wxGLCanvas  {
+class PointsSource;
+class TriangleConsumer;
+
+class XYZCanvas : public wxGLCanvas {
+	friend class PointsSource;
+	friend class TriangleConsumer;
 	XYZFrame *m_parent;
 	XYGraph *m_graph;
 	wxGLContext *m_gl_context;
@@ -106,7 +112,6 @@ class XYZCanvas : public wxGLCanvas  {
 	void Camera();
 	bool LookupTriangle(size_t i, size_t& j, size_t &k);
 	size_t XZToIndex(size_t x, size_t z);
-	void AddTriangle(size_t i, size_t j, size_t k);
 	void IndexToXZ(size_t index, int& x, int& z);
 
 	enum { WIRE, COLORED } m_graph_type;
@@ -142,6 +147,7 @@ public:
 	void SetGraph(XYGraph *graph);
 	XYGraph* GetGraph();
 	wxImage GetGraphImage();
+	void AddTriangle(size_t i, size_t j, size_t k);
 	void OnTimer(wxTimerEvent &e);
 	void OnChar(wxKeyEvent &event);
 	void OnMouseLeftDown(wxMouseEvent &event);
@@ -153,6 +159,42 @@ public:
 	void OnKeyUp(wxKeyEvent &event);
 	void DrawCursor();	
 	DECLARE_EVENT_TABLE()
+};
+
+class PointsSource : public triangulation::PointsSource {
+	XYZCanvas *m_canvas;
+	size_t m_x;
+	size_t m_z;
+public:
+	PointsSource(XYZCanvas *canvas) : m_canvas(canvas), m_x(0), m_z(0) {}
+	virtual bool GetNextPoint(float &x, float &y) {
+		while (m_z < XYZCanvas::slices_no) {
+			y = m_z;
+			while (m_x < XYZCanvas::slices_no) {
+				size_t i = m_canvas->XZToIndex(m_x, m_z);
+				x = m_x;
+				m_x += 1;
+				if (isnan(m_canvas->m_vertices[i + 1]))
+					continue;
+				return true;
+			}
+			m_z += 1;
+			m_x = 0;
+		}
+		return false;
+	}
+};
+
+class TriangleConsumer : public triangulation::TriangleConsumer {
+	XYZCanvas *m_canvas;
+public:
+	TriangleConsumer(XYZCanvas *canvas) : m_canvas(canvas) {}
+	virtual void NewTriangle(float x1, float y1, float x2, float y2, float x3, float y3) {
+		size_t i = m_canvas->XZToIndex(x1, y1);
+		size_t j = m_canvas->XZToIndex(x2, y2);
+		size_t k = m_canvas->XZToIndex(x3, y3);
+		m_canvas->AddTriangle(i, j, k);
+	}
 };
 
 namespace {
@@ -587,6 +629,7 @@ bool XYZCanvas::LookupTriangle(size_t i, size_t& j, size_t &k) {
 }
 
 void XYZCanvas::AddTriangle(size_t i, size_t j, size_t k) {
+	m_point_types[i / 3] = m_point_types[j / 3] = m_point_types[k / 3] = IN_TRIANGLE;
 
 	m_triangles_indexes.push_back(i);
 	m_triangles_indexes.push_back(j);
@@ -645,6 +688,7 @@ void XYZCanvas::UpdateArrays() {
 		counts[k] += 1;
 	}
 
+	size_t data_points = 0;
 	for (size_t x = 0; x < slices_no; x++) for (size_t z = 0; z < slices_no; z++) {
 		int vi = XZToIndex(x, z);
 		int si = vi / 3;
@@ -656,6 +700,7 @@ void XYZCanvas::UpdateArrays() {
 			m_colors[si * 4 + 1] = 0;
 			m_colors[si * 4 + 2] = 255 - m_colors[si * 4];
 			m_colors[si * 4 + 3] = 200;
+			data_points += 1;
 		} else {
 			m_vertices[vi + 1] = nan("");
 		}
@@ -669,6 +714,12 @@ void XYZCanvas::UpdateArrays() {
 	m_single_quads_indexes.resize(0);
 	m_point_types.resize(slices_no * slices_no, SINGLE);
 
+	PointsSource point_source(this);
+	TriangleConsumer triangle_conumer(this);
+
+	triangulation _triangulation(0, slices_no - 1, 0, slices_no - 1, data_points, &point_source, &triangle_conumer);
+	_triangulation.go();
+#if 0
 	for (size_t x = 0; x < slices_no; x++) for (size_t z = 0; z < slices_no; z++) {
 		size_t i = XZToIndex(x, z);
 
@@ -707,6 +758,7 @@ void XYZCanvas::UpdateArrays() {
 			}
 		}
 	}
+#endif
 }
 
 void XYZCanvas::DrawLineGraph() {
