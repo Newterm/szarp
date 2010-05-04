@@ -55,6 +55,7 @@ class PathIterator:
 		Returns path to next file, set this path as current.
 		"""
 		(dirname, year, month) = self.split()
+		month += 1
 		if month > 12:
 			month = 1
 			year += 1
@@ -66,6 +67,7 @@ class PathIterator:
 		Returns path to previous file, set this path as current.
 		"""
 		(dirname, year, month) = self.split()
+		month -= 1
 		if month <= 0:
 			month = 12
 			year -= 1
@@ -78,7 +80,7 @@ class PathIterator:
 		"""
 		(dirname, base) = os.path.split(self.path)
 		year = int(base[0:4])
-		month = int(base[4:6]) - 1
+		month = int(base[4:6])
 		return (dirname, year, month)
 
 	def join(self, dirname, year, month):
@@ -181,6 +183,7 @@ class SzbCache:
 		dpath = self.check_path(parampath)
 		if not os.path.isdir(dpath):
 			return endtime + 1
+		debug("WRITE_DATA_2: %s" % dpath)
 		startpath, startindex = self.time2index(starttime, dpath)
 		endpath, endindex = self.time2index(endtime, dpath)
 		if startpath == endpath:
@@ -190,9 +193,10 @@ class SzbCache:
 		else:
 			# write to the end of file
 			pi = PathIterator(startpath)
-			nextpath = startpath.next()
+			nextpath = pi.next()
+			debug("WRITE_DATA_3 startpath %s nextpath %s" % (startpath, nextpath))
 			nexttime = self.index2time(nextpath, 0)
-			endpath, endindex = self.time2index(nexttime - self.SZBCACHE_PROBE, startpath)
+			endpath, endindex = self.time2index(nexttime - self.SZBCACHE_PROBE, dpath)
 			self.write_file(startindex, endindex, startpath, output)
 			return nexttime
 
@@ -209,9 +213,10 @@ class SzbCache:
 		lastindex = min(endindex, self.last_index(path))
 		towrite = ((lastindex - startindex) + 1) * self.SZBCACHE_SIZE
 		debug("WRITE_FILE TOWRITE %d" % towrite)
-		f = open(path, "rb")
-		output.write(f.read(towrite))
-		f.close()
+		if towrite > 0:
+			f = open(path, "rb")
+			output.write(f.read(towrite))
+			f.close()
 		arr = array.array(self.SZBCACHE_TYPE)
 		arr.append(self.SZBCACHE_NODATA)
 		while lastindex < endindex:
@@ -274,6 +279,7 @@ class SzbCache:
 		@param dpath path to parameter data directory
 		@return -1 if data not found, otherwise time_t time of data found
 		"""
+		debug("SEARCH_FOR_1 %s" % dpath)
 		(startpath, startindex) = self.time2index(start, dpath)
 		pi = PathIterator(startpath)
 		(endpath, endindex) = self.time2index(end, dpath)
@@ -376,7 +382,10 @@ class SzbCache:
 		"""
 		Return number of last index of file (or size of file in indexes minus 1).
 		"""
-		return os.path.getsize(path) / self.SZBCACHE_SIZE - 1
+		try:
+			return os.path.getsize(path) / self.SZBCACHE_SIZE - 1
+		except OSError:
+			return -1
 
 	def time2index(self, t, dirpath):
 		"""
