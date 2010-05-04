@@ -1,3 +1,5 @@
+#include <vector>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -107,7 +109,7 @@ triangulation::Halfedge *triangulation::ELleftbnd(Point * p)
 			he = he->ELleft;
 		} while (he != ELleftend && !right_of(he, p));
 	}
-    /*** Update hash table and reference counts ***/
+	/*** Update hash table and reference counts ***/
 	if ((bucket > 0) && (bucket < ELhashsize - 1)) {
 		if (ELhash[bucket] != (Halfedge *) NULL) {
 			(ELhash[bucket]->ELrefcnt)--;
@@ -481,6 +483,7 @@ char *triangulation::myalloc(unsigned n)
 			siteidx);
 		exit(0);
 	}
+	malloced_memory.push_back((void*)t);
 	return (t);
 }
 
@@ -526,7 +529,6 @@ void triangulation::out_triple(Site * s1, Site * s2, Site * s3)
 {
 	if (triangulate && !debug) {
 		_triangle_consumer->NewTriangle(s1->coord.x, s1->coord.y, s2->coord.x, s2->coord.y, s3->coord.x, s3->coord.y);
-		printf("%d %d %d\n", s1->sitenbr, s2->sitenbr, s3->sitenbr);
 	}
 	if (debug) {
 		printf("circle through left=%d right=%d bottom=%d\n",
@@ -649,4 +651,9 @@ void triangulation::go()
 		e = lbnd->ELedge;
 		out_ep(e);
 	}
+}
+
+triangulation::~triangulation() {
+	for (size_t i = 0; i < malloced_memory.size(); i++)
+		free(malloced_memory[i]);
 }
