@@ -59,6 +59,8 @@ private:
 	Freelist hfl;
 	Halfedge *ELleftend, *ELrightend, **ELhash;
 
+	std::vector<void*> malloced_memory;
+
 	int sorted, triangulate, debug, nsites, siteidx, sqrt_nsites, nvertices, nedges;
 	float xmin, xmax, ymin, ymax, deltax, deltay;
 	Site *sites;
@@ -117,5 +119,6 @@ private:
 public:
 	triangulation(float _xmin, float _xmax, float _ymin, float _ymax, size_t sites_count, PointsSource* __point_source, TriangleConsumer* __triangle_consumer);
 	void go();
+	~triangulation();
 
 };
