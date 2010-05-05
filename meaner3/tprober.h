@@ -47,8 +47,9 @@ class TProber : public TWriter {
 		/** Wait until begining of next cycle
 		 * @param period cycle length in seconds
 		 * @param current time (in seconds since EPOC)
+		 * @return planned waiting time, for debug purposes
 		 */
-		void WaitForCycle(time_t period, time_t t);
+		time_t WaitForCycle(time_t period, time_t t);
 	protected:
 		short int * buffer;	/**< buffer for data to save */
 		bool all_written;	/**< flag for marking that all available data was saved */

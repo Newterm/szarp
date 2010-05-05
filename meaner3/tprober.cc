@@ -55,12 +55,14 @@ TProber::~TProber()
 	g_prober = NULL;
 }
 
-void TProber::WaitForCycle(time_t period, time_t t)
+time_t TProber::WaitForCycle(time_t period, time_t t)
 {
 	time_t tosleep = period - (t % period);
+	time_t ret = tosleep;
 	while (tosleep > 0) {
 		tosleep =  sleep(tosleep);
 	}
+	return ret;
 }
 
 int TProber::LoadConfig(const char *section)

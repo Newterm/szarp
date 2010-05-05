@@ -240,10 +240,10 @@ int main(int argc, char* argv[])
 		time_t t;
 		time(&t);
 
-		prober->WaitForCycle(BASE_PERIOD, t);
+		time_t plan = prober->WaitForCycle(BASE_PERIOD, t);
 
 		if ((t - last_cycle > BASE_PERIOD) && (last_cycle > 0)) {
-			sz_log(1, "prober: cycle lasted for %ld seconds", t - last_cycle);
+			sz_log(1, "prober: cycle lasted for %ld seconds, planned %ld", t - last_cycle, plan);
 		} else if ((t / BASE_PERIOD) <= (last_cycle / BASE_PERIOD)) {
 			/* Sometimes, because of clock skew, we are still in the same
 			 * or even earlier cycle. */
