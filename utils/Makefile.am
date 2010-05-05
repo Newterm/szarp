@@ -127,19 +127,6 @@ analiza_create_SOURCES = analiza_create.c
 analiza_create_CPPFLAGS = 
 analiza_create_LDADD = 
 
-xgrep2_SOURCES = xgrep2.cc
-xgrep2_LDADD = $(LIBSZARP2) $(LIBSZARP)
-
-#unifier_SOURCES = unifier.cc
-#unifier_LDADD = @XML_LIBS@ $(LIBSZARP2) $(LIBSZARP)
-
 stampd_SOURCES = stampd.c
 stampd_LDADD = @EVENT_LIBS@ $(LIBSZARP)
-
-if DEB_BUILD
-install-data-local: xgrep2
-	$(INSTALL) -d $(DESTDIR)/var/www/wpn/wpn-cgi
-	$(INSTALL) xgrep2 $(DESTDIR)/var/www/wpn/wpn-cgi/xgrep2.cgi
-	chmod +x $(DESTDIR)/var/www/wpn/wpn-cgi/xgrep2.cgi
-endif
 
