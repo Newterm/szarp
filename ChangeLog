@@ -1,5 +1,7 @@
 
 2010-05-04	Pawel Palucha <pawel@praterm.com.pl>
+	* resources/, debian/: prober added to debian packages and init
+	scripts.
 	* utils/*: removed obsolete xgrep2 program.
 	* utils/probes_server/szbcache.py: optimization in NO_DATA writing.
 	* utils/probes_server/szbcache.py: fixes in data reading.

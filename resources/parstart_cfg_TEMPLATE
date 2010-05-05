@@ -25,5 +25,6 @@ if [ `hostname -s` = $HOST ] ; then
 	SSCONF=0
 	STAMPD=0
 	REMARKS_SERVER=0
+	PROBER=0
 fi
 

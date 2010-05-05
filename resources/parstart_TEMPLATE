@@ -104,6 +104,13 @@ case "$1" in
 	    log_end_msg $?
 	fi
 
+	if [ x$PROBER = x1 ]; then
+	    DAEMON=__INSTALL_DIR__/bin/prober
+	    szlog
+	    start_daemon $DAEMON
+	    log_end_msg $?
+	fi
+
 	if [ x$REMARKS_SERVER = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/bin/remarks_server.py
 	    szlog
@@ -115,6 +122,13 @@ case "$1" in
   stop)
 	if [ x$SSS = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/bin/sss
+	    stlog
+	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
+	    log_end_msg $?
+	fi
+
+	if [ x$PROBER = x1 ]; then
+	    DAEMON=__INSTALL_DIR__/bin/prober
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
 	    log_end_msg $?
