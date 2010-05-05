@@ -972,7 +972,6 @@ if test x$with_mingw32 != xyes ; then
 	IPKMAX=ipkmax
 	PRECCONV=precconv
 	SZARP2IPK=szarp2ipk
-	XGREP2=xgrep2
 fi
 AC_SUBST(AGREGATOR)
 AC_SUBST(ANALIZA2IPK)
@@ -984,7 +983,6 @@ AC_SUBST(PRECCONV)
 AC_SUBST(OLDCREATE)
 AC_SUBST(RECONF)
 AC_SUBST(SZARP2IPK)
-AC_SUBST(XGREP2)
 
 #unitedmn and stampd needs libevent
 if test "x$no_libevent" != "xyes"; then

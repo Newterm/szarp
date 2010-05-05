@@ -29,9 +29,6 @@ LIBSZARP2=../libSzarp2/libSzarp2.a ../libSzarp/libSzarp.a @BOOST_DATE_TIME_LIB@ 
 LDADD = @XML_LIBS@ $(LIBSZARP) @LUA_LIBS@
 
 # Programs to create
-#if MINGW32_OPT
-#bin_PROGRAMS=sendhexw @XGREP2@
-#else
 if !MINGW32_OPT
 bin_PROGRAMS = \
 		@AGREGATOR@ \
@@ -46,7 +43,6 @@ bin_PROGRAMS = \
 		vrsh \
 		vrsh_d \
 		analiza_create \
-		@XGREP2@  \
 		@STAMPD@
 	      
                
@@ -58,7 +54,6 @@ EXTRA_PROGRAMS = \
 		ipkmax \
 		precconv \
 		analiza_create \
-		xgrep2 \
 		stampd
 
 
