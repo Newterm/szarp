@@ -1,4 +1,7 @@
 
+2010-05-07	Pawel Palucha <pawel@praterm.com.pl>
+	* utils/proves_server/*: added time of last available probe to
+	response for GET request.
 2010-05-04	Pawel Palucha <pawel@praterm.com.pl>
 	* resources/, debian/: prober added to debian packages and init
 	scripts.

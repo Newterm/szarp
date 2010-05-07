@@ -73,13 +73,15 @@ res = socket.getaddrinfo('localhost', 8090, socket.AF_UNSPEC, socket.SOCK_STREAM
 s = socket.socket(family, socktype, proto)
 s.connect(sockaddr)
 s.send("GET %d %d %s\r\n" % (start, end, param))
-sizestr = ''
+statusstr = ''
 c = ''
 while c != '\n':
 	c = s.recv(1)
-	sizestr += c
+	statusstr += c
 
-size = int(sizestr.rstrip())
+laststr, sizestr = statusstr.rstrip().split(None, 1)
+print "DEBUG", laststr
+size = int(sizestr)
 
 t = start
 while size > 0:

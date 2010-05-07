@@ -104,7 +104,8 @@ class GetProducer(Producer):
 		self._param = param
 		self._proto = proto
 		self._paused = False
-		self._size = self._proto.factory.szbcache.get_size(self._start, self._end, self._param)
+		self._size, self._last = self._proto.factory.szbcache.get_size_and_last(
+				self._start, self._end, self._param)
 
 	def pauseProducing(self):
 		self._paused = True
@@ -112,7 +113,7 @@ class GetProducer(Producer):
 	def resumeProducing(self):
 		self._paused = False
 		if not self._size is None:
-			self._proto.transport.write("%d\n" % self._size)
+			self._proto.transport.write("%d %d\n" % (self._last, self._size))
 			self._size = None
 		while not self._paused and self._start < self._end:
 			self._start = self._proto.factory.szbcache.write_data(
@@ -156,10 +157,13 @@ class ProbesProtocol(basic.LineReceiver):
 
 	Response for GET request is:
 
-	size\r\n
+	last_time size\r\n
 	data
 
-	Where size is size (in bytes) of following data, data is raw values of fetched parameter.
+	Where:
+	- last_time is time of last available probe for parameter as time_t
+	- size is size (in bytes) of following data
+	- data is raw values of fetched parameter as little-endian short int (16 bits) numbers
 
 	Optionally, response for client request may be:
 

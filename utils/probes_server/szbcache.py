@@ -154,19 +154,21 @@ class SzbCache:
 		debug("START END: %s %s" % (format_time(start), format_time(end)))
 		return self.search_for(start, end, direction, dpath)
 
-	def get_size(self, starttime, endtime, parampath):
+	def get_size_and_last(self, starttime, endtime, parampath):
 		"""
-		Returns number of bytes that will be written when calling write_data
-		with the same arguments.
+		Returns tupple with number of bytes that will be written when calling write_data
+		with the same arguments and time of last available probe for parampath.
 		@param starttime first time to write (as time_t)
 		@param endtime last time to write (as time_t)
 		@param parampath path to parameter, relative to main szbcache directory
-		@return number of bytes to write
+		@return (number of bytes to write, time_t of last probe)
 		"""
 		dpath = self.check_path(parampath)
 		if not os.path.isdir(dpath):
 			return 0
-		return (((endtime - starttime) / self.SZBCACHE_PROBE) + 1) * self.SZBCACHE_SIZE
+		first, last = self.search_first_last(dpath)
+		return ((((endtime - starttime) / self.SZBCACHE_PROBE) + 1) * self.SZBCACHE_SIZE,
+				last)
 
 	def write_data(self, starttime, endtime, parampath, output):
 		"""
