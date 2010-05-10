@@ -202,7 +202,14 @@ bool TSSeason::IsSummerSeason(int year, int month, int day) const {
 	return CheckSeason(s, month, day);
 }
 
-bool TSSeason::IsSummerSeason(const tm* t) const {
+bool TSSeason::IsSummerSeason(time_t time) const {
+	struct tm *t;
+#ifndef HAVE_LOCALTIME_R
+	t = localtime(&time);
+#else
+	struct tm ptm;
+	t = localtime_r(&time, &ptm);
+#endif
 	return IsSummerSeason(t->tm_year + 1900, t->tm_mon + 1, t->tm_mday);
 }
 

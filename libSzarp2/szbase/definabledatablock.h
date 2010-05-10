@@ -31,7 +31,7 @@ class DefinableDatablock: public CacheableDatablock
 		virtual bool IsCachable();	
 	private:
 		bool TestParam(TParam *param, int year, int month, time_t t);
-		int GetBlocksUsedInFormula(szb_datablock_t ** dblocks, int &fixedprobes);
+		int GetBlocksUsedInFormula(const double** dblocks, TParam** params, int &fixedprobes);
 };
 
 

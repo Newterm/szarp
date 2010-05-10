@@ -19,8 +19,7 @@
 #include "szbdefines.h"
 
 /** Enumeration type for different probe types. */
-typedef enum { PT_MIN10, PT_HOUR, PT_HOUR8, PT_DAY, PT_WEEK, PT_MONTH, 
-		PT_CUSTOM } SZARP_PROBE_TYPE ;
+typedef enum { PT_SEC10, PT_MIN10, PT_HOUR, PT_HOUR8, PT_DAY, PT_WEEK, PT_MONTH, PT_CUSTOM } SZARP_PROBE_TYPE ;
 		
 /**
  * Return number of days in month of given year.

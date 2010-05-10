@@ -566,14 +566,7 @@ int lua_szbase_in_season(lua_State *lua) {
 	if (cfg == NULL)
 		luaL_error(lua, "Config %s not found", (char*)prefix);
 
-	struct tm *ptm;
-#ifdef HAVE_LOCALTIME_R
-	struct tm _tm;
-	ptm = localtime_r(&time, &_tm);
-#else
-	ptm = localtime(&time);
-#endif
-	lua_pushboolean(lua, cfg->GetSeasons()->IsSummerSeason(ptm));
+	lua_pushboolean(lua, cfg->GetSeasons()->IsSummerSeason(time));
 
 	return 1;
 

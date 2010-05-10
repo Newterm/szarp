@@ -139,15 +139,8 @@ public:
 	InSeasonExpression(TSzarpConfig* sc, PExpression t) : m_sc(sc), m_t(t) {}
 
 	virtual Val Value() {
-		struct tm *ptm;
 		time_t t = m_t->Value();
-#ifdef HAVE_LOCALTIME_R
-		struct tm _tm;
-		ptm = localtime_r(&t, &_tm);
-#else
-		ptm = localtime(&time);
-#endif
-		return m_sc->GetSeasons()->IsSummerSeason(ptm);
+		return m_sc->GetSeasons()->IsSummerSeason(t);
 	}
 };
 
@@ -1178,6 +1171,7 @@ void ParamConverter::InitalizeVars() {
 	AddVariable(L"PT_DAY");
 	AddVariable(L"PT_WEEK");
 	AddVariable(L"PT_MONTH");
+	AddVariable(L"PT_SEC10");
 }
 
 ExecutionEngine::ExecutionEngine(LuaOptDatablock *block) {

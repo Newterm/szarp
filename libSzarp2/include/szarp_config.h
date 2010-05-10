@@ -1953,7 +1953,7 @@ public:
 	TSSeason(Season _defs = Season()) : defs(_defs) {};
 
 	/**return true if given date falls within summer season*/
-	bool IsSummerSeason(const tm* t) const;
+	bool IsSummerSeason(time_t time) const;
 
 	/**return true if given date falls within summer season*/
 	bool IsSummerSeason(int year, int month, int day) const;

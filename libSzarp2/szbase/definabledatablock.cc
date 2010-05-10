@@ -65,36 +65,6 @@ debug_str(char * msg_str, ...)
 
 #define DEFINABLE_STACK_SIZE 200
 
-static szb_custom_function custom_functions[26];
-
-void
-szb_register_custom_function(char symbol, szb_custom_function function) {
-	int index = symbol - 'A';
-
-	if (index < 0 || index > (int)(sizeof(custom_functions) / sizeof(szb_custom_function))) 
-		assert(false);
-
-	custom_functions[index] = function;			
-
-}
-
-static bool
-szb_execute_custom_function(char symbol, SZBASE_TYPE* stack, short *sp, int year, int month, int probe_n) {
-	int index = symbol - 'A';
-	szb_custom_function func;
-
-	if (index < 0 
-		|| index > (int)(sizeof(custom_functions) / sizeof(szb_custom_function)) 
-		|| (func = custom_functions[index]) == NULL)
-		return false;
-
-	struct tm t;
-	probe2local(probe_n, year, month, &t);
-	(*func)(&t, stack, sp);
-	return true;
-
-}
-
 /** Calculates value of one probe in block.
  * @param stack array usesd as stack
  * @param cache array of blocks used in formula calculation.
@@ -105,8 +75,8 @@ szb_execute_custom_function(char symbol, SZBASE_TYPE* stack, short *sp, int year
  * @return calculated value.
  */
 SZBASE_TYPE
-szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, szb_datablock_t ** cache,
-	const std::wstring& formula, int probe_n, int param_cnt, int year, int month, TParam* param)
+szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, const double** cache, TParam** params,
+	const std::wstring& formula, int probe_n, int param_cnt, time_t time, TParam* param)
 {
 
 	short sp = 0;
@@ -145,21 +115,18 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, szb_datablock
 	
 			// put probe value on stack
 			if (cache[it] != NULL) {
-				const SZBASE_TYPE * data = cache[it]->GetData(false);
+				const SZBASE_TYPE * data = cache[it];
 				if(!IS_SZB_NODATA(data[probe_n]))
-					stack[sp++] = data[probe_n] * pow(10, cache[it]->param->GetPrec());
+					stack[sp++] = data[probe_n] * pow(10, params[it]->GetPrec());
 				else
 					stack[sp++] = SZB_NODATA;
 			} else {
 				TParam** fc = param->GetFormulaCache();
 				if (fc[it]->GetType() == TParam::P_LUA
 					&& fc[it]->GetFormulaType() == TParam::LUA_AV) {
-
-					time_t t = probe2time(probe_n, year, month);
-
-					stack[sp++] = szb_get_data(buffer, fc[it], t);
+					stack[sp++] = szb_get_data(buffer, fc[it], time);
 					if (!IS_SZB_NODATA(stack[sp]))
-						stack[sp] = stack[sp] * pow(10, cache[it]->param->GetPrec());
+						stack[sp] = stack[sp] * pow(10, params[it]->GetPrec());
 				} else {
 					stack[sp++] = SZB_NODATA;
 				}
@@ -186,10 +153,10 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, szb_datablock
 
 					// check stack size
 					if (DEFINABLE_STACK_SIZE <= sp) {
-					sz_log(0,
-						"Przepelnienie stosu dla formuly %ls, w funkcji '!'",
-						formula.c_str());
-					return SZB_NODATA;
+						sz_log(0,
+							"Przepelnienie stosu dla formuly %ls, w funkcji '!'",
+							formula.c_str());
+						return SZB_NODATA;
 					}
 
 					stack[sp] = stack[sp - 1];	/* duplicate */
@@ -347,9 +314,7 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, szb_datablock
 						assert(config);
 						const TSSeason *seasons;
 						if ((seasons = config->GetSeasons())) {
-							struct tm t;
-							probe2local(probe_n, year, month, &t);
-							stack[sp++] = seasons->IsSummerSeason(&t) ? 1 : 0;
+							stack[sp++] = seasons->IsSummerSeason(time) ? 1 : 0;
 							break;
 						}
 					} else {
@@ -361,8 +326,6 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, szb_datablock
 				default:
 					if (iswspace(*chptr))
 						break;
-					if (!szb_execute_custom_function(*chptr, stack, &sp, year, month, probe_n))
-						return SZB_NODATA;
 					break;
 			}
 		}
@@ -885,14 +848,15 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 	sz_log(9, "  f: %ls, n: %d", formula.c_str(), num_of_params);
 	#endif
 
-	szb_datablock_t * dblocks[num_of_params];
+	const double* dblocks[num_of_params];
+	TParam* params[num_of_params];
 
 	// prevent removing blocks from cache
 	szb_lock_buffer(this->buffer);
 
 	int probes_to_compute;
 	if (num_of_params > 0) {
-		probes_to_compute = this->GetBlocksUsedInFormula(dblocks, this->first_non_fixed_probe);
+		probes_to_compute = this->GetBlocksUsedInFormula(dblocks, params, this->first_non_fixed_probe);
 	} else {
 		if (this->last_update_time > this->GetBlockLastDate())
 			probes_to_compute = this->first_non_fixed_probe = this->max_probes;
@@ -922,10 +886,11 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 #endif	
 
 	int i = 0;
-	for (; i < probes_to_compute; i++) {
-		this->data[i] = szb_definable_calculate(b, stack, dblocks, formula, i, num_of_params, year, month, param) / pw;
+	time_t time = probe2time(0, year, month);
+	for (; i < probes_to_compute; i++, time += SZBASE_PROBE) {
+		this->data[i] = szb_definable_calculate(b, stack, dblocks, params, formula, i, num_of_params, time, param) / pw;
 
-		if(!IS_SZB_NODATA(this->data[i])) {
+		if (!IS_SZB_NODATA(this->data[i])) {
 			if(this->first_data_probe_index < 0)
 				this->first_data_probe_index = i;
 			this->last_data_probe_index = i;
@@ -940,7 +905,7 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 		}
 	}
 
-	if(this->first_data_probe_index >= 0) {
+	if (this->first_data_probe_index >= 0) {
 		assert(!IS_SZB_NODATA(this->data[this->GetFirstDataProbeIdx()]));
 		assert(!IS_SZB_NODATA(this->data[this->GetLastDataProbeIdx()]));
 	}
@@ -955,7 +920,7 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 }
 
 int
-DefinableDatablock::GetBlocksUsedInFormula(szb_datablock_t ** dblocks, int &fixedprobes)
+DefinableDatablock::GetBlocksUsedInFormula(const double** blocks, TParam** params, int &fixedprobes)
 {
 	int probes = 0;
 	int num_of_params = this->param->GetNumParsInFormula();
@@ -965,22 +930,26 @@ DefinableDatablock::GetBlocksUsedInFormula(szb_datablock_t ** dblocks, int &fixe
 
 	for (int i = 0; i < num_of_params; i++) {
 
-		dblocks[i] = szb_get_block(this->buffer, f_cache[i], this->year, this->month);
+		szb_datablock_t* block = szb_get_block(this->buffer, f_cache[i], this->year, this->month);
 
-		if(dblocks[i] == NULL) {
+		if (block == NULL) {
+			blocks[i] = NULL;
 			fixedprobes = 0;
 			continue;
 		}
-		dblocks[i]->Refresh();
+		block->Refresh();
+
+		blocks[i] = block->GetData(false);
+		params[i] = block->param;
 
 		switch (f_cache[i]->GetType()) {
 			case TParam::P_REAL:
 			case TParam::P_COMBINED:
 			case TParam::P_DEFINABLE:
 			case TParam::P_LUA:
-				probes = probes > dblocks[i]->GetLastDataProbeIdx() + 1 ? probes : dblocks[i]->GetLastDataProbeIdx() + 1;
-				fixedprobes = fixedprobes < dblocks[i]->GetFixedProbesCount() ? fixedprobes : dblocks[i]->GetFixedProbesCount();
-				this->block_timestamp = this->block_timestamp > dblocks[i]->GetBlockTimestamp() ? this->block_timestamp : dblocks[i]->GetBlockTimestamp();
+				probes = probes > block->GetLastDataProbeIdx() + 1 ? probes : block->GetLastDataProbeIdx() + 1;
+				fixedprobes = fixedprobes < block->GetFixedProbesCount() ? fixedprobes : block->GetFixedProbesCount();
+				this->block_timestamp = this->block_timestamp > block->GetBlockTimestamp() ? this->block_timestamp : block->GetBlockTimestamp();
 				break;
 		}
 	}
@@ -1019,7 +988,8 @@ DefinableDatablock::Refresh()
 	const std::wstring& formula = this->param->GetDrawFormula();
 	int num_of_params = this->param->GetNumParsInFormula();
 
-	szb_datablock_t * dblocks[num_of_params];
+	const double* dblocks[num_of_params];
+	TParam* params[num_of_params];
 
 	// prevent removing blocks from cache
 	szb_lock_buffer(this->buffer);
@@ -1028,7 +998,7 @@ DefinableDatablock::Refresh()
 	int new_fixed_probes;
 
 	if (num_of_params > 0) {
-		new_probes_c = GetBlocksUsedInFormula(dblocks, new_fixed_probes);
+		new_probes_c = GetBlocksUsedInFormula(dblocks, params, new_fixed_probes);
 	} else {
 		if (this->last_update_time > this->GetBlockLastDate())
 			new_probes_c = new_fixed_probes = this->max_probes;
@@ -1049,8 +1019,9 @@ DefinableDatablock::Refresh()
 	if (this->last_data_probe_index >= first_non_fixed_probe)
 		last_data_probe_index = -1;
 
-	for (int i = this->first_non_fixed_probe; i < new_probes_c; i++) {
-		this->data[i] = szb_definable_calculate(buffer, stack, dblocks, formula, i, num_of_params, this->year, this->month, this->param) / pw;
+	time_t time = probe2time(0, year, month);
+	for (int i = this->first_non_fixed_probe; i < new_probes_c; i++, time += SZBASE_PROBE) {
+		this->data[i] = szb_definable_calculate(buffer, stack, dblocks, params, formula, i, num_of_params, time, param) / pw;
 
 		if (!IS_SZB_NODATA(this->data[i])) {
 			if(this->first_data_probe_index < 0 || i < this->first_data_probe_index)
