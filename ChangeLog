@@ -15,7 +15,8 @@
 	moved to seperate file.
 	* meaner3/tprober.cc: prober writes data each 10 seconds.
 2010-05-11	Darek Marcinkiewcz <reksio@praterm.com.pl>
-	* ?:?
+	* INSTALL.Window: small addition
+	* resources/documentation/new/Makefile.am: added @srcdir@ to dmn2sgml.py invocation
 2010-05-07	Pawel Palucha <pawel@praterm.com.pl>
 	* utils/proves_server/*: added time of last available probe to
 	response for GET request.

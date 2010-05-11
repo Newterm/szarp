@@ -529,8 +529,8 @@ save following patch into file:
 
 patch sources: patch -p0 < file
 ./configure --host=i586-mingw32msvc --target=i586-mingw32msvc --with-ft-prefix=/usr/local/i586-mingw32msvc --without-x --prefix=/usr/local/i586-mingw32msvc
-make
-make install
+make ECHO=echo
+make ECHO=echo install
 
 4. Compiling SZARP.
 
