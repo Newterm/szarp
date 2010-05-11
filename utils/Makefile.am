@@ -77,6 +77,7 @@ bin_SCRIPTS = \
               isdn_pooler.sh \
               modem_pooler.sh \
               raprec \
+	      raporter.py \
               rsync_wrap.pl \
 	      sortlog \
               ssh_tunel.sh \
@@ -88,9 +89,6 @@ bin_SCRIPTS = \
 	      szrsync \
 	      szbpush \
               remarks_server/remarks_server.py
-
-raporterdir = @prefix@/bin/
-raporter_PYTHON = raporter.py
 
 endif
 
