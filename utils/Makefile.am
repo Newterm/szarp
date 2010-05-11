@@ -59,7 +59,7 @@ EXTRA_PROGRAMS = \
 
 EXTRA_DIST = \
               $(bin_SCRIPTS) \
-              $(noinst_SCRIPTS)
+              $(noinst_SCRIPTS) 
 
 noinst_SCRIPTS = \
               isdn-up-in.sh \
@@ -88,9 +88,18 @@ bin_SCRIPTS = \
               szredialer \
 	      szrsync \
 	      szbpush \
+	      probes_server/probes_client.py \
               remarks_server/remarks_server.py
 
 endif
+
+probesserverdir = @prefix@/lib/python
+probesserver_PYTHON = \
+	probes_server/libpar.py \
+	probes_server/probes_server.py \
+	probes_server/szbcache.py \
+	probes_server/probes_server.tac
+
 
 agregator_SOURCES = agregator.cc
 agregator_LDADD = $(LIBSZARP2) $(LIBSZARP) @PTHREAD_CFLAGS@ @BOOST_SYSTEM_LIB@ @XML_LIBS@ @BOOST_LDFLAGS@ @BOOST_FILESYSTEM_LIB@ @SSL_LIBS@

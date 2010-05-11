@@ -25,7 +25,7 @@ import time
 from calendar import timegm
 import glob
 import array
-from subprocess import Popen, PIPE
+from libpar import LibparReader
 
 def debug(s):
 	print "DEBUG:", s
@@ -88,20 +88,6 @@ class PathIterator:
 		Creates new path from dirname, year and month, set is as current.
 		"""
 		self.path = os.path.join(dirname, '%04d%02d.%s' % (year, month, self.ext))
-
-class LibparReader:
-	"""
-	Class for reading parameters from szarp.cfg files.
-	"""
-	def __init__(self):
-		pass
-
-	def get(self, section, parameter):
-		"""
-		Return value of parameter from section, empty if parameter is not found.
-		"""
-		return Popen(["/opt/szarp/bin/lpparse", "-s", section, parameter],
-				stdout=PIPE).communicate()[0].strip()
 
 class SzbCache:
 	"""

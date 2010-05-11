@@ -104,7 +104,16 @@ execute_stderr=$szarp_root$/logs/execute_stderr.log
 log=__INSTALL_DIR__/logs/meaner3.log
 
 :prober
+# directory with 10-seconds probes cache
 cachedir=/var/cache/szarp
+# number of full months to keep
+months_count=2
+
+:probes_server
+# address of interface to listen on, empty means 'any'
+address=
+# port to listen on
+port=8090
 
 :szbwriter
 # szbwriter log file

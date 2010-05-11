@@ -1,12 +1,12 @@
 #!/usr/bin/python
 """
+SZARP: SCADA software 
+Pawel Palucha <pawel@praterm.com.pl>
+
 Simple client for probe_server. Reads data and writes as CSV file.
 Command line options are similar to extrszb program, use --help for details.
 Arguments: param_path start_time end_time
 Time in "%Y-%m-%d %H:%M:%S" format
-
-SZARP: SCADA software 
-Pawel Palucha <pawel@praterm.com.pl>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -80,7 +80,6 @@ while c != '\n':
 	statusstr += c
 
 laststr, sizestr = statusstr.rstrip().split(None, 1)
-print "DEBUG", laststr
 size = int(sizestr)
 
 t = start

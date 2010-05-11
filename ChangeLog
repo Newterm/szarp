@@ -1,5 +1,18 @@
 
 2010-05-11	Pawel Palucha <pawel@praterm.com.pl>
+	* resources/documentation/new/Makefile.am: trying to fix building docs
+	from other directory.
+	* debian/control: szarp-daemons suggests python-twisted-core.
+	* debian/pack.files: probes server and client added to packs.
+	* utils/Makefile.am: probes_server installation.
+	* resources/parstart*: running probes_server with twistd.
+	* resources/SZARP_IN_CFG_TEMPLATE: default values for probes_server.
+	* utils/probes_server/probes_server.tac: tac file for starting
+	probes_server with twistd.
+	* utils/probes_server/probes_server.py: using twistd.
+	* utils/probes_server/probes_client.py: script renamed, debug removed.
+	* utils/probes_server/libpar.py: module for accessing libpar variables
+	moved to seperate file.
 	* meaner3/tprober.cc: prober writes data each 10 seconds.
 2010-05-11	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* ?:?

@@ -111,10 +111,17 @@ case "$1" in
 	    log_end_msg $?
 	fi
 
+	if [ x$PROBES_SERVER = x1 ]; then
+	    DAEMON=__INSTALL_DIR__/lib/python/probes_server.tac
+    	    szlog
+	    twistd -y $DAEMON --pidfile /var/run/probes_server.pid
+	    log_end_msg $?
+	fi
+
 	if [ x$REMARKS_SERVER = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/bin/remarks_server.py
 	    szlog
-	    twistd -y $DAEMON --pidfile /var/run/remarks_server.pid -l /opt/szarp/logs/remarks_server.log
+	    twistd -y $DAEMON --pidfile /var/run/remarks_server.pid -l __INSTALL_DIR__/logs/remarks_server.log
 	    log_end_msg $?
 	fi
 	;;
@@ -131,6 +138,13 @@ case "$1" in
 	    DAEMON=__INSTALL_DIR__/bin/prober
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
+	    log_end_msg $?
+	fi
+
+	if [ x$PROBES_SERVER = x1 ]; then
+	    DAEMON=__INSTALL_DIR__/lib/python/probes_server.tac
+	    stlog
+	    /sbin/start-stop-daemon --stop --quiet --oknodo --pidfile /var/run/probes_server.pid
 	    log_end_msg $?
 	fi
 

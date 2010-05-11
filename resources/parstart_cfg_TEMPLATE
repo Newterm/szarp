@@ -26,5 +26,6 @@ if [ `hostname -s` = $HOST ] ; then
 	STAMPD=0
 	REMARKS_SERVER=0
 	PROBER=0
+	PROBES_SERVER=0
 fi
 

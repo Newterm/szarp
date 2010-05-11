@@ -24,10 +24,17 @@
 from zope.interface import implements
 from twisted.internet import protocol, reactor, interfaces
 from twisted.protocols import basic
+from twisted.python.log import msg
+
+# To allow importing SZARP modules
+import sys
+sys.path.append("/opt/szarp/lib/python")
+
 import szbcache
+from libpar import LibparReader
 
 def debug(s):
-	print "server.py DEBUG:", s
+	msg("DEBUG: " + s)
 
 class ErrorCodes():
 	BadRequest = 400
@@ -271,8 +278,21 @@ class ProbesFactory(protocol.ServerFactory):
 	def getCacheDir():
 		return self.cachedir
 
+def get_port_address():
+	"""
+	Return (port, interface) tupple for reactor.listenTCP or internet.TCPServer.
+	"""
+	lpr = LibparReader()
+	try:
+		port = int(lpr.get("probes_server", "port"))
+	except ValueError:
+		raise RuntimeError("missing 'port' parameter in 'probes_server' section of szarp.cfg file")
+	address = lpr.get("probes_server", "address")
+	return (port, address)
 
-reactor.listenTCP(8090, ProbesFactory())
-reactor.run()
+if __name__ == "__main__":
+	port, addr = get_port_address()
 
+	reactor.listenTCP(port, ProbesFactory(), interface=addr)
+	reactor.run()
 
