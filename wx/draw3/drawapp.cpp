@@ -150,11 +150,6 @@ void DrawApp::InitGL() {
 
 	bool gl_init_failed = false;
 	wxConfig::Get()->Read(_T("GL_INIT_FAILED"), &gl_init_failed);
-#ifdef __WXMSW__
-	gl_init_failed = true;
-	wxConfig::Get()->Write(_T("GL_INIT_FAILED"), true);
-#endif
-	wxConfig::Get()->Flush();
 	if (!gl_init_failed) {
 		if (InitGLVisual(GL_ATTRIBUTES)) {
 			m_gl_context_attribs = GL_ATTRIBUTES;
@@ -162,8 +157,9 @@ void DrawApp::InitGL() {
 		} else if (InitGLVisual(NULL)) {
 			m_gl_context_attribs = NULL;
 			m_gl_works = true;
-		} else
+		} else {
 			m_gl_works = false;
+		}
 
 		wxConfig::Get()->Write(_T("GL_INIT_FAILED"), false);
 		wxConfig::Get()->Flush();
@@ -463,7 +459,11 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 
 	long debug;
 	if (parser.Found(_T("debug"), &debug))
+#ifdef __WXGTK__
 	    loginit((int) debug, "/tmp/draw3.log");
+#else
+	    loginit((int) debug, "c:\\draw3.log");
+#endif
 	else
 	    loginit(2, NULL);
 	log_info(0);

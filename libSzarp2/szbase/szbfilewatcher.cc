@@ -15,6 +15,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/xtime.hpp>
 #include "szbfilewatcher.h"
+#include "liblog.h"
 #include "szbfile.h"
 
 class WatchEntryPredicate {
@@ -33,19 +34,25 @@ Watcher::Watcher( SzbFileWatcher * watcher ): m_watcher(watcher){};
 
 void Watcher::operator()() {
 
-	do {
-		boost::xtime xt;
-		boost::xtime_get(&xt, boost::TIME_UTC);
-		xt.sec = xt.sec - (xt.sec % 600) + 900;
-		try {
-			boost::thread::sleep(xt);
-		} catch (boost::thread_interrupted) {
-			return;
-		}
+	try {
 
-		m_watcher->CheckModifications();
+		do {
+			boost::xtime xt;
+			boost::xtime_get(&xt, boost::TIME_UTC);
+			xt.sec = xt.sec - (xt.sec % 600) + 900;
+			boost::thread::sleep(xt);
+			m_watcher->CheckModifications();
 		
-	} while(1);
+		} while(1);
+
+	} catch (boost::thread_interrupted) {
+		sz_log(10, "File watcher thread terminated");
+		return;
+	} catch (...) {
+		sz_log(10, "Unknown excpetion thrown in watcher thread");
+		return;
+	}
+
 
 }
 
@@ -54,10 +61,18 @@ SzbFileWatcher::SzbFileWatcher(): start_flag(false) {}
 
 void
 SzbFileWatcher::Terminate() {
+/* this does not work under MSW (app crashes), according to boost mailing list
+archives, mingw should be compiled with support for dwarf2 exceptions (and not sjlj).
+However, commenting this out seems to be harmless...*/
+#ifndef MINGW32
+	sz_log(10, "Terminating file watcher thread");
 	if (start_flag) {
 		thread.interrupt();
+		sz_log(10, "After terminating");
 		thread.join();
 	}
+	sz_log(10, "File watcher thread terminated");
+#endif
 }
 
 void

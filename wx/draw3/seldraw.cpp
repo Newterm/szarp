@@ -124,7 +124,9 @@ SelectDrawValidator::OnCheck(wxCommandEvent& c)
 void
 SelectDrawValidator::OnFocus(wxFocusEvent& c)
 {
+#ifndef __WXMSW__
     m_draws_wdg->SetFocus();
+#endif
 }
 
 void 
@@ -318,11 +320,17 @@ SelectDrawWidget::OnBlockCheck(wxCommandEvent &event) {
 
 	int i = GetClicked(event);
 	m_draws_wdg->BlockDraw(i, event.IsChecked());
+#ifdef __WXMSW__
+	m_draws_wdg->SetFocus();
+#endif
 }
 
 void 
 SelectDrawWidget::BlockedChanged(Draw *draw) {
 	SetBlocked(draw->GetDrawNo(), draw->GetBlocked());
+#ifdef __WXMSW__
+	m_draws_wdg->SetFocus();
+#endif
 }
 
 void 
@@ -433,6 +441,9 @@ void SelectDrawWidget::OpenParameterDoc(int i) {
 		ShowDefinedParamDoc(dp);
 	else 
 		GoToWWWDocumentation(d);
+#ifdef __WXMSW__
+	m_draws_wdg->SetFocus();
+#endif
 }
 
 void SelectDrawWidget::NoData(Draw *d) {

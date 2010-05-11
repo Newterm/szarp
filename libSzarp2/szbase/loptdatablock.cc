@@ -145,7 +145,7 @@ public:
 		struct tm _tm;
 		ptm = localtime_r(&t, &_tm);
 #else
-		ptm = localtime(&time);
+		ptm = localtime(&t);
 #endif
 		return m_sc->GetSeasons()->IsSummerSeason(ptm);
 	}
@@ -424,7 +424,7 @@ public:
 
 	PExpression ConvertFunction(const identifier& identifier_, const std::vector<expression>& args);
 
-	PStatement ConvertStatement(const stat& stat_);
+	PStatement ConvertStatement(const lua_grammar::stat& stat_);
 
 	PStatement ConvertChunk(const chunk& chunk_);
 
@@ -1114,7 +1114,7 @@ PExpression ParamConverter::ConvertFunction(const identifier& identifier_, const
 	return i->second->Convert(args);
 }
 
-PStatement ParamConverter::ConvertStatement(const stat& stat_) {
+PStatement ParamConverter::ConvertStatement(const lua_grammar::stat& stat_) {
 	StatementConverter sc(this);
 #ifdef LUA_OPTIMIZER_DEBUG
 	lua_opt_debug_stream << "Converting statement" << std::endl;
@@ -1124,7 +1124,7 @@ PStatement ParamConverter::ConvertStatement(const stat& stat_) {
 
 PStatement ParamConverter::ConvertChunk(const chunk& chunk_) {
 	boost::shared_ptr<StatementList> ret = boost::make_shared<StatementList>();
-	for (std::vector<stat>::const_iterator i = chunk_.stats.begin();
+	for (std::vector<lua_grammar::stat>::const_iterator i = chunk_.stats.begin();
 			i != chunk_.stats.end();
 			i++)
 		ret->AddStatement(ConvertStatement(*i));

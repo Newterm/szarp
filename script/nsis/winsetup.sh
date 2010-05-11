@@ -172,11 +172,18 @@ function CopyDlls()
 	/usr/local/i586-mingw32msvc/*/libz*.dll \
 	/usr/local/i586-mingw32msvc/bin/*iconv*.dll \
 	/usr/local/i586-mingw32msvc/bin/libxml2*.dll \
+	/usr/local/i586-mingw32msvc/bin/libfreetype*.dll \
+	/usr/local/i586-mingw32msvc/bin/libftgl*.dll \
 	/usr/local/i586-mingw32msvc/lib/librsync*.dll \
 	/usr/local/i586-mingw32msvc/bin/libcares*.dll \
 	/usr/local/i586-mingw32msvc/bin/libexpat*.dll \
 	/usr/local/i586-mingw32msvc/bin/libsqlite*.dll \
 	/usr/local/i586-mingw32msvc/*/lua*.dll \
+	/usr/local/boost/lib/boost_system*.dll \
+	/usr/local/boost/lib/boost_filesystem*.dll \
+	/usr/local/boost/lib/boost_date_time*.dll \
+	/usr/local/boost/lib/boost_program_options*.dll \
+	/usr/local/boost/lib/boost_thread*.dll \
 	$MINGW"
 	
 	cat >> "`GetTmp`/FileList.nsh" <<EOF

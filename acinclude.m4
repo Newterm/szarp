@@ -1242,7 +1242,7 @@ AC_DEFUN([AX_BOOST_DATE_TIME],
 			BN_BOOST_DATE_TIME_LIB=boost_date_time
 			BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
 			if test "x$ax_boost_user_date_time_lib" = "x"; then
-				for libextension in `ls $BOOSTLIBDIR/libboost_date_time* | egrep "so|a|lib"$ | sed 's,.*/,,' | sed -e 's;^libboost_date_time\(.*\)\.so.*$;\1;' -e 's;^libboost_date_time\(.*\)\.a*$;\1;' -e 's;^libboost_date_time\(.*\)\.lib*$;\1;'` ; do
+				for libextension in `(ls $BOOSTLIBDIR/boost_date_time*; ls $BOOSTLIBDIR/libboost_date_time* ) | sed 's,.*/,,' | egrep "so|a|lib"$ | sed -e 's;^\(lib\)\?boost_date_time\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_date_time\(.*\)\.a*$;\2;' -e 's;^\(lib\)\?boost_date_time\(.*\)\.lib*$;\2;'` ; do
 					ax_lib=${BN_BOOST_DATE_TIME_LIB}${libextension}
 					AC_CHECK_LIB($ax_lib, exit,
 						[BOOST_DATE_TIME_LIB="-l$ax_lib"; AC_SUBST(BOOST_DATE_TIME_LIB) link_date_time="yes"; break],
@@ -1329,7 +1329,7 @@ AC_DEFUN([AX_BOOST_FILESYSTEM],
 			BN_BOOSTFILESYSTEM_LIB=boost_filesystem
 			BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
 			if test "x$ax_boost_user_filesystem_lib" = "x"; then
-		                for libextension in `ls $BOOSTLIBDIR/libboost_filesystem* | egrep "so|a|lib"$ | sed 's,.*/,,' | sed -e 's;^libboost_filesystem\(.*\)\.so.*$;\1;' -e 's;^libboost_filesystem\(.*\)\.a*$;\1;' -e 's;^libboost_filesystem\(.*\)\.lib*$;\1;'` ; do
+		                for libextension in `(ls $BOOSTLIBDIR/boost_filesystem*; ls $BOOSTLIBDIR/libboost_filesystem* ) | sed 's,.*/,,' | egrep "so|a|lib"$ | sed -e 's;^\(lib\)\?boost_filesystem\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_filesystem\(.*\)\.a*$;\2;' -e 's;^\(lib\)\?boost_filesystem\(.*\)\.lib*$;\2;'` ; do
 					ax_lib=${BN_BOOSTFILESYSTEM_LIB}${libextension}
 					AC_CHECK_LIB($ax_lib, exit,
 						[BOOST_FILESYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_FILESYSTEM_LIB) link_filesystem="yes"; break],
@@ -1443,7 +1443,7 @@ AC_DEFUN([AX_BOOST_THREAD],
 			if test "x$ax_boost_user_thread_lib" = "x"; then
 				for ax_lib in $BN $BN-$CC $BN-$CC-mt $BN-$CC-mt-s $BN-$CC-s \
 					lib$BN lib$BN-$CC lib$BN-$CC-mt lib$BN-$CC-mt-s lib$BN-$CC-s \
-					$BN-mt $BN-mgw $BN-mgw $BN-mgw-mt $BN-mgw-mt-s $BN-mgw-s lib$BN-mgw44-mt-1_40 ; do
+					$BN-mt $BN-mgw $BN-mgw $BN-mgw-mt $BN-mgw-mt-s $BN-mgw-s lib$BN-mgw44-mt-1_40 lib$BN-mgw44-mt-1_42 $BN-mgw44-mt-1_42; do
 					AC_CHECK_LIB(
 						$ax_lib, 
 						main, 
@@ -1458,7 +1458,7 @@ AC_DEFUN([AX_BOOST_THREAD],
                                 done
 			else
 				for ax_lib in $ax_boost_user_thread_lib $BN-$ax_boost_user_thread_lib \
-				    $BN-mgw44-mt-1_40 lib$BN-mgw44-mt-1_40 $BN-mgw44-mt-1_40.lib lib$BN-mgw44-mt-1_40.lib; do
+				    $BN-mgw44-mt-1_40 lib$BN-mgw44-mt-1_40 $BN-mgw44-mt-1_40.lib lib$BN-mgw44-mt-1_40.lib lib$BN-mgw34-mt-1_42.lib lib$BN-mgw44-mt-1_42.lib; do
 					AC_CHECK_LIB(
 						$ax_lib, 
 						main,
@@ -1541,7 +1541,7 @@ AC_DEFUN([AX_BOOST_SYSTEM],
 			
 	                if test "x$ax_boost_user_system_lib" = "x"; then
 			    BN_BOOST_SYSTEM="boost_system"
-	                    for libraryext in `ls $BOOSTLIBDIR/libboost_system* | egrep "so|a|lib"$ | sed 's,.*/,,' | sed -e 's;^libboost_system\(.*\)\.so.*$;\1;' -e 's;^libboost_system\(.*\)\.a*$;\1;' -e 's;^libboost_system\(.*\)\.lib*$;\1;'`; do
+	                    for libraryext in `(ls $BOOSTLIBDIR/boost_system*; ls $BOOSTLIBDIR/libboost_system* ) | sed 's,.*/,,' | egrep "so|a|lib"$ | sed -e 's;^\(lib\)\?boost_system\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_system\(.*\)\.a*$;\2;' -e 's;^\(lib\)\?boost_system\(.*\)\.lib*$;\2;'`; do
     	                        ax_lib=${BN_BOOST_SYSTEM}${libraryext}			
                                 AC_CHECK_LIB($ax_lib, exit,
                                  [BOOST_SYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_SYSTEM_LIB) link_system="yes"; break],
@@ -1621,7 +1621,7 @@ AC_DEFUN([AX_BOOST_REGEX],
                         BN_BOOST_REGEX=boost_regex
                         BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
                         if test "x$ax_boost_user_regex_lib" = "x"; then
-                        	for libextension in `ls $BOOSTLIBDIR/libboost_regex* | egrep "so|a|lib"$ | sed 's,.*/,,' | sed -e 's;^libboost_regex\(.*\)\.so.*$;\1;' -e 's;^libboost_regex\(.*\)\.a*$;\1;'  -e 's;^libboost_regex\(.*\)\.lib*$;\1;'` ; do
+                        	for libextension in `(ls $BOOSTLIBDIR/boost_regex*; ls $BOOSTLIBDIR/libboost_regex* ) | sed 's,.*/,,' | egrep "so|a|lib"$ | sed -e 's;^\(lib\)\?boost_regex\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_regex\(.*\)\.a*$;\2;'  -e 's;^\(lib\)\?boost_regex\(.*\)\.lib*$;\2;'` ; do
                         		ax_lib=${BN_BOOST_REGEX}${libextension}
                         		AC_CHECK_LIB($ax_lib, exit,
                         		 [BOOST_REGEX_LIB="-l$ax_lib"; AC_SUBST(BOOST_REGEX_LIB) link_regex="yes"; break],
@@ -1701,7 +1701,7 @@ AC_DEFUN([AX_BOOST_PROGRAM_OPTIONS],
                                   BN_BOOST_PROGRAM_OPTIONS_LIB=boost_program_options
                                   BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
                                   if test "x$ax_boost_user_program_options_lib" = "x"; then
-                                  	for libextension in `ls $BOOSTLIBDIR/libboost_program_options* | egrep "so|a|lib"$ | sed 's,.*/,,' | sed -e 's;^libboost_program_options\(.*\)\.so.*$;\1;' -e 's;^libboost_program_options\(.*\)\.a*$;\1;'  -e 's;^libboost_program_options\(.*\)\.lib*$;\1;'` ; do
+                                  	for libextension in `(ls $BOOSTLIBDIR/boost_program_options*; ls $BOOSTLIBDIR/libboost_program_options* ) | sed 's,.*/,,' | egrep "so|a|lib"$ | sed -e 's;^\(lib\)\?boost_program_options\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_program_options\(.*\)\.a*$;\2;'  -e 's;^\(lib\)\?boost_program_options\(.*\)\.lib*$;\2;'` ; do
                                   		ax_lib=${BN_BOOST_PROGRAM_OPTIONS_LIB}${libextension}
                                   		AC_CHECK_LIB($ax_lib, exit,
                                   		[BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib"; AC_SUBST(BOOST_PROGRAM_OPTIONS_LIB) link_program_options="yes"; break],

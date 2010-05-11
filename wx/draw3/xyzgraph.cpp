@@ -143,6 +143,7 @@ public:
 	void FaceViewer();
 	void MoveCameraForward();
 	void OnPaint(wxPaintEvent & event);
+	void OnEraseBackground(wxEraseEvent &);
 	void OnSize(wxSizeEvent& event);
 	void SetGraph(XYGraph *graph);
 	XYGraph* GetGraph();
@@ -174,7 +175,7 @@ public:
 				size_t i = m_canvas->XZToIndex(m_x, m_z);
 				x = m_x;
 				m_x += 1;
-				if (isnan(m_canvas->m_vertices[i + 1]))
+				if (std::isnan(m_canvas->m_vertices[i + 1]))
 					continue;
 				return true;
 			}
@@ -329,15 +330,16 @@ void XYZCanvas::DrawFrameOfReference() {
 
 void XYZCanvas::FaceViewer() {
 	double m[16];
-	glGetDoublev(GL_TRANSPOSE_MODELVIEW_MATRIX, m);
-	m[0] = 1; m[1] = 0; m[2] = 0;
-	m[4] = 0; m[5] = 1; m[6] = 0;
-	m[8] = 0; m[9] = 0; m[10] = 1;
-	m[12] = 0; m[13] = 0; m[14] = 0; m[15] = 1;
-	double x = m[3];
-	double y = m[7];
-	double z = m[11];
-	glLoadTransposeMatrixd(m);
+	glGetDoublev(GL_MODELVIEW_MATRIX, m);
+	m[0] = 1; m[4] = 0; m[8] = 0;
+	m[1] = 0; m[5] = 1; m[9] = 0;
+	m[2] = 0; m[6] = 0; m[10] = 1;
+	m[3] = 0; m[7] = 0; m[11] = 0; m[15] = 1;
+
+	double x = m[12];
+	double y = m[13];
+	double z = m[14];
+	glLoadMatrixd(m);
 	glRotatef(180 / M_PI * atan(x / -z), 0, -1, 0);
 	glRotatef(180 / M_PI * atan(y / -z), 1, 0, 0);
 }
@@ -536,6 +538,10 @@ void XYZCanvas::OnPaint(wxPaintEvent& event) {
 	SwapBuffers();
 }
 
+void XYZCanvas::OnEraseBackground(wxEraseEvent &)
+{ 
+}
+
 void XYZCanvas::DrawPointInfo() {
 	if (m_graph == NULL)
 		return;
@@ -608,7 +614,7 @@ bool XYZCanvas::LookupTriangle(size_t i, size_t& j, size_t &k) {
 		}
 		if (x >= 0 && x < int(slices_no) && z >= 0 && z < int(slices_no)) {
 			size_t oi = XZToIndex(x, z);
-			if (isnan(m_vertices[oi + 1]))
+			if (std::isnan(m_vertices[oi + 1]))
 				continue;
 			if (got_one) {
 #if 0
@@ -723,13 +729,13 @@ void XYZCanvas::UpdateArrays() {
 	for (size_t x = 0; x < slices_no; x++) for (size_t z = 0; z < slices_no; z++) {
 		size_t i = XZToIndex(x, z);
 
-		if (isnan(m_vertices[i + 1]))
+		if (std::isnan(m_vertices[i + 1]))
 			continue;
 
 		if (x + 1 < slices_no && z + 1 < slices_no
-				&& !isnan(m_vertices[XZToIndex(x + 1, z) + 1])
-				&& !isnan(m_vertices[XZToIndex(x, z + 1) + 1])
-				&& !isnan(m_vertices[XZToIndex(x + 1, z + 1) + 1])) {
+				&& !std::isnan(m_vertices[XZToIndex(x + 1, z) + 1])
+				&& !std::isnan(m_vertices[XZToIndex(x, z + 1) + 1])
+				&& !std::isnan(m_vertices[XZToIndex(x + 1, z + 1) + 1])) {
 			AddTriangle(i, XZToIndex(x, z + 1), XZToIndex(x + 1, z)); 
 			AddTriangle(XZToIndex(x + 1, z + 1), XZToIndex(x, z + 1), XZToIndex(x + 1, z)); 
 		} else {
@@ -883,7 +889,7 @@ void XYZCanvas::SetGraph(XYGraph *graph) {
 	UpdateArrays();
 	for (x = slices_no - 2; x >= 0; x--)
 		for (z = slices_no - 2; z >= 0; z--) 
-			if (!isnan(m_vertices[XZToIndex(x, z) + 1])) {
+			if (!std::isnan(m_vertices[XZToIndex(x, z) + 1])) {
 				m_cursor_z = z;
 				m_cursor_x = x;
 				goto out;
@@ -996,7 +1002,7 @@ void XYZCanvas::OnTimer(wxTimerEvent&e) {
 			if (m_cursor_x == 0)
 				return;
 			nx = m_cursor_x - 1;
-			while (nx >= 0 && isnan(m_vertices[XZToIndex(nx, m_cursor_z) + 1]))
+			while (nx >= 0 && std::isnan(m_vertices[XZToIndex(nx, m_cursor_z) + 1]))
 				nx -= 1;
 			if (nx < 0)
 				return;
@@ -1006,7 +1012,7 @@ void XYZCanvas::OnTimer(wxTimerEvent&e) {
 			if (m_cursor_x == slices_no - 2)
 				return;
 			nx = m_cursor_x + 1;
-			while (nx < (int)slices_no - 1 && isnan(m_vertices[XZToIndex(nx, m_cursor_z) + 1]))
+			while (nx < (int)slices_no - 1 && std::isnan(m_vertices[XZToIndex(nx, m_cursor_z) + 1]))
 				nx += 1;
 			if (nx == slices_no - 1)
 				return;
@@ -1016,7 +1022,7 @@ void XYZCanvas::OnTimer(wxTimerEvent&e) {
 			if (m_cursor_z == slices_no - 2)
 				return;
 			nz = m_cursor_z + 1;
-			while (nz < (int)slices_no - 1 && isnan(m_vertices[XZToIndex(m_cursor_x, nz) + 1]))
+			while (nz < (int)slices_no - 1 && std::isnan(m_vertices[XZToIndex(m_cursor_x, nz) + 1]))
 				nz += 1;
 			if (nz == slices_no - 1)
 				return;
@@ -1026,7 +1032,7 @@ void XYZCanvas::OnTimer(wxTimerEvent&e) {
 			if (m_cursor_z == 0)
 				return;
 			nz = m_cursor_z - 1;
-			while (nz >= 0 && isnan(m_vertices[XZToIndex(m_cursor_x, nz) + 1]))
+			while (nz >= 0 && std::isnan(m_vertices[XZToIndex(m_cursor_x, nz) + 1]))
 				nz -= 1;
 			if (nz < 0)
 				return;
@@ -1219,6 +1225,7 @@ wxImage XYZCanvas::GetGraphImage() {
 		return img;
 
 
+#ifdef __WXGTK__
 	GLuint frame_buffer_id;
 
 	glGenFramebuffersEXT(1, &frame_buffer_id);
@@ -1266,6 +1273,7 @@ wxImage XYZCanvas::GetGraphImage() {
 	glDeleteRenderbuffersEXT(1, &color_buffer_id);
 	glDeleteRenderbuffersEXT(1, &depth_buffer_id);
 
+#endif
 	return img;
 }
 

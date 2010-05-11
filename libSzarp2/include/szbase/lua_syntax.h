@@ -243,6 +243,8 @@ namespace lua_grammar {
 		break_> laststat;
 
 	struct chunk {
+		chunk();
+		chunk(const block&);
 		std::vector<stat> stats;
 		boost::optional<laststat> laststat_;	
 	};

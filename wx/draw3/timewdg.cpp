@@ -108,12 +108,17 @@ void TimeWidget::OnRadioSelected(wxCommandEvent& event)
 {
         if (event.GetSelection() != m_selected) {
 		Select(event.GetSelection());
+#ifdef __WXMSW__
+		GetParent()->SetFocus();
+#endif
 	}
 }
 
 void TimeWidget::OnFocus(wxFocusEvent &event)
 {
+#ifdef __WXGTK__
 	GetParent()->SetFocus();
+#endif
 }
 
 void TimeWidget::PeriodChanged(Draw *draw, PeriodType pt) {
