@@ -71,12 +71,12 @@ pdf: $(DOCS_A_PDF)
 JADE=@JADE@
 WWWPATH=$(DESTDIR)/var/www/htdocs/serv/howto
 STYLE=../../stylesheet.dsl
-STDDEP=stylesheet.dsl common/szarp-info.sgml common/help.sgml daemons.sgml
+STDDEP=stylesheet.dsl common/szarp-info.sgml common/help.sgml @srcdir@/daemons.sgml
 SGMLHELP=../../../../script/sgml2hlpctrl.pl
 
 ##### RULES  #####
 
-daemons.sgml: $(wildcard ../../../parcook/*dmn.c?) ../../../script/dmn2sgml.py
+@srcdir@/daemons.sgml: $(wildcard ../../../parcook/*dmn.c?) ../../../script/dmn2sgml.py
 	../../../script/dmn2sgml.py ../../../parcook > $@
 
 %.html: ../%.sgml $(STDDEP) 
