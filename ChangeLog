@@ -1,5 +1,6 @@
 
 2010-05-11	Pawel Palucha <pawel@praterm.com.pl>
+	* meaner3/*: prober removes outdated files from cache.
 	* resources/documentation/new/Makefile.am: trying to fix building docs
 	from other directory.
 	* debian/control: szarp-daemons suggests python-twisted-core.

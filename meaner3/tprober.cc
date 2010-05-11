@@ -42,6 +42,7 @@
 /** write data to file each WRITE_EACH cycle */
 #define WRITE_EACH 1
 
+
 TProber::TProber() : TWriter(sec10), buffer(NULL), all_written(true)
 {
 }
@@ -59,15 +60,18 @@ time_t TProber::WaitForCycle(time_t period, time_t t)
 {
 	time_t tosleep = period - (t % period);
 	time_t ret = tosleep;
+	tosleep -= m_fr.Go(time(NULL) + tosleep);
 	while (tosleep > 0) {
-		tosleep =  sleep(tosleep);
+		tosleep = sleep(tosleep);
 	}
 	return ret;
 }
 
 int TProber::LoadConfig(const char *section)
 {
-	return TWriter::LoadConfig(section, "cachedir");
+	int ret = TWriter::LoadConfig(section, "cachedir");
+	m_fr.Init(path(SC::S2A(data_dir)), atoi(libpar_getpar(section, "months_count", 1)));
+	return ret;
 }
 
 int TProber::LoadIPK()

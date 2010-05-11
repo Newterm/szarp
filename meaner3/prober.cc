@@ -73,15 +73,18 @@
 
 const char *argp_program_version = "prober 3.""$Revision$";
 const char *argp_program_bug_address = "coders@praterm.com.pl";
-static char doc[] = "SZARP probes cache saving daemon.\v\
+static char doc[] = "SZARP 10-seconds probes cache saving daemon.\v\
 Config file:\n\
 Configuration options are read from file /etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg,\n\
 from section '" SZARP_CFG_SECTION "' or from global section.\n\
 These options are mandatory:\n\
 	IPK		full path to configuration file\n\
-	datadir		root directory for base.\n\
+	cachedir	root directory for probes cache.\n\
 	parcook_path	path to file used to create identifiers for IPC\n\
 			resources, this file must exist.\n\
+	months_count	number of full months to keep cache, older files are removed\n\
+			from cache; data for 1 month for 1 parameters used about\n\
+			0.5 MB of disk space, so set this parameter accordingly.\n\
 These options are optional:\n\
 	log		path to log file, default is " PREFIX "/log/" SZARP_CFG_SECTION ".log\n\
 	log_level	log level, from 0 to 10, default is from command line\n\
@@ -166,7 +169,6 @@ RETSIGTYPE g_TerminateHandler(int signum)
 }
 
 /***********************************************************************/
-
 
 int main(int argc, char* argv[])
 {

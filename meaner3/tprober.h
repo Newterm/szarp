@@ -17,11 +17,7 @@
 */
 /*
  * prober - daemon for writing 10-seconds data probes to disk
- * SZARP
- 
  * Pawe³ Pa³ucha pawel@praterm.com.pl
- 
- * $Id$
  */
 
 #ifndef __TPROBER_H__
@@ -33,6 +29,7 @@
 #include "tparcook.h"
 #include "tsaveparam.h"
 #include "prober.h"
+#include "fileremover.h"
 
 /** Application object responsible for saving data to base. */
 class TProber : public TWriter {
@@ -44,7 +41,8 @@ class TProber : public TWriter {
 		/** Write data to base.
 		 * @param force_write force write in the middle of the cycle, used during program termination */
 		void WriteParams(bool force_write = false);
-		/** Wait until begining of next cycle
+		/** Wait until begining of next cycle. During wait we also check if we need to remove
+		 * outdated cache files.
 		 * @param period cycle length in seconds
 		 * @param current time (in seconds since EPOC)
 		 * @return planned waiting time, for debug purposes
@@ -53,6 +51,7 @@ class TProber : public TWriter {
 	protected:
 		short int * buffer;	/**< buffer for data to save */
 		bool all_written;	/**< flag for marking that all available data was saved */
+		FileRemover m_fr;	/**< */
 };
 
 #endif

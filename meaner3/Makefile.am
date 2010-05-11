@@ -65,6 +65,7 @@ peakator_SOURCES = \
 		tstatus.cc tstatus.h
 
 prober_SOURCES = \
+		fileremover.cc \
 		tparcook.cc \
 		tsaveparam.cc \
 		twriter.cc \
