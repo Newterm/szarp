@@ -1,6 +1,8 @@
 
+2010-05-11	Pawel Palucha <pawel@praterm.com.pl>
+	* meaner3/tprober.cc: prober writes data each 10 seconds.
 2010-05-11	Darek Marcinkiewcz <reksio@praterm.com.pl>
-	* 
+	* ?:?
 2010-05-07	Pawel Palucha <pawel@praterm.com.pl>
 	* utils/proves_server/*: added time of last available probe to
 	response for GET request.

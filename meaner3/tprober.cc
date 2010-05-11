@@ -40,7 +40,7 @@
 #include "sumator.h"
 
 /** write data to file each WRITE_EACH cycle */
-#define WRITE_EACH 6
+#define WRITE_EACH 1
 
 TProber::TProber() : TWriter(sec10), buffer(NULL), all_written(true)
 {
@@ -97,6 +97,7 @@ void TProber::WriteParams(bool force_write)
 	time(&t);
 	t = t - (t % BASE_PERIOD);
 	int cycle = (t % (BASE_PERIOD * WRITE_EACH)) / BASE_PERIOD;
+	sz_log(9, "Cycle %d of %d", cycle, WRITE_EACH);
 
 	/* block signals */
 	g_signals_blocked = 1;
