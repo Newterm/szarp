@@ -3,4 +3,10 @@
 *.map
 *.hhk
 *.hhp
+*.aux
+*.log
+*.out
+*.pdf
+*.tex
+pics
 daemons.sgml

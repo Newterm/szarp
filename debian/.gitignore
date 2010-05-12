@@ -1,0 +1,9 @@
+*.log
+*.substvars
+*.install
+*.debhelper
+szarp-*
+build-*
+config-*
+files
+tmp
