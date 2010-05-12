@@ -365,20 +365,15 @@ dostêpny.
 <title>Korzystanie z dokumentacji</title>
 <para>
 Wszystkie programy SZARP posiadaj± kompletn± dokumentacjê, opisuj±c± wszystkie
-funkcje programów. W programach <xref linkend="gloss-raporter"> i 
-<xref linkend="gloss-ekstraktor"> pomoc dostêpna jest z
+funkcje programów. W wiêkszo¶ci programów pomoc dostêpna jest z
 menu Pomoc. W programie <xref linkend="gloss-scc"> pomoc dostêpna jest z menu 
-otwieraj±cego siê po
-klikniêciu ¶rodkowym przyciskiem na ikonie programu (zamiast ¶rodkowego
-przycisku mo¿na te¿ jednocze¶nie klikn±æ prawym i lewym przyciskiem). W
-programie <xref linkend="gloss-draw"> pomoc dostêpna jest albo przez klikniêcie ikony z
-czerwonym znakiem zapytania w dolnej czê¶ci programu, albo przez klikniêcie
-prawym przyciskiem myszy na wybranym elemencie okna programu.
-</para>
+otwieraj±cego siê po 
+klikniêciu prawym przyciskiem myszy na ikonie programu.</para>
 <para>
 Dodatkowo, dokumentacja dla wszystkich programów a tak¿e wiele innych
 informacji o SZARP'ie i Linuksie dostêpna jest zwykle jako ostatnia pozycja w
-menu programu <xref linkend="gloss-scc">.
+menu programu <xref linkend="gloss-scc">. Aktualna dokumentacja dostêpna jest
+	te¿ na stronie <ulink url="http://www.szarp.org">www.szarp.org</ulink>.
 </para>
 </section> <!-- base-help -->
 
@@ -579,7 +574,7 @@ Sterowania</guimenu>, <guimenu>Wygl±d i zachowanie</guimenu>,
 <para>
 Do wykonania niektórych czynno¶ci konieczne jest wpisanie odpowiednich komend
 w tzw. terminalu lub inaczej konsoli. O wpisanie tych komend mo¿e np. poprosiæ
-pracownik dzia³u informatycznego Praterm w celu rozwi±zania jakiego¶ problemu.
+pracownik obs³ugi technicznej systemu w celu rozwi±zania jakiego¶ problemu.
 </para>
 <para>
 Konsola dostêpna jest w <xref linkend="gloss-menukde">, opcja
@@ -590,10 +585,11 @@ Konsola dostêpna jest w <xref linkend="gloss-menukde">, opcja
 Po uruchomieniu konsoli widoczny jest tzw. znak zachêty, sk³adaj±cy siê miêdzy
 innymi z nazwy u¿ytkownika, nazwy komputera i aktualnego katalogu, np.:
 <programlisting>
-palacz@pasl-t1:~$ 
+palacz@kato-t1:~$ 
 </programlisting>
 Po znaku zachêty mo¿emy wpisywaæ komendy, koñczymy je zawsze naci¶niêciem
-Enter.
+Enter. Poprzednio wykonan± komendê mo¿emy przywo³aæ naciskaj±c klawisz 
+<quote>strza³ka w górê</quote>.
 </para>
 </section> <!-- problems-faq-terminal -->
 
@@ -607,7 +603,7 @@ wiêcej ni¿ jeden terminal. Mo¿na j± sprawdziæ na wiele sposobów, np.:
 <itemizedlist>
 <listitem><para>
 Nazwa komputera widoczna jest na ekranie logowania - mo¿emy siê wylogowaæ,
-powinni¶my wtedy zobaczyæ napis postaci: <emphasis>Witamy w SZARP 2.2 na
+powinni¶my wtedy zobaczyæ napis postaci: <emphasis>Witamy w SZARP 3.1 na
 swid-t4</emphasis> - nazwa komputera to w³a¶nie <emphasis>swid-t4</emphasis>.
 </para></listitem>
 <listitem><para>
