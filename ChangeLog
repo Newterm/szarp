@@ -1,7 +1,6 @@
 
 2010-05-13	Darek Marcinkiewcz <reksio@praterm.com.pl>
-	* scripts/nsis.sh/wisetup.sh: libgcc_s_dw2-1.dll added to list of
-	to installation package	
+	* scripts/nsis.sh/wisetup.sh: libgcc_s_dw2-1.dll added to to installation package	
 2010-05-11	Pawel Palucha <pawel@praterm.com.pl>
 	* meaner3/*: prober removes outdated files from cache.
 	* resources/documentation/new/Makefile.am: trying to fix building docs
