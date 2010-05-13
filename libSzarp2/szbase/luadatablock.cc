@@ -14,6 +14,8 @@
 
 #ifndef NO_LUA
 
+#include "luacalculate.h"
+
 using std::ostringstream;
 using std::string;
 using std::endl;
@@ -30,35 +32,6 @@ static void lua_printstack(const char* a, lua_State *lua) {
 
 }
 #endif
-
-static int compile_lua_param(lua_State *lua, TParam *p) {
-	int lua_function_reference = LUA_NOREF;
-	if (szb_compile_lua_formula(lua, (const char*) p->GetLuaScript(), (const char*)SC::S2U(p->GetName()).c_str()))
-		lua_function_reference = luaL_ref(lua, LUA_REGISTRYINDEX);
-	else {
-		sz_log(0, "Error compiling param %ls: %s\n", p->GetName().c_str(), lua_tostring(lua, -1));
-		lua_function_reference = LUA_REFNIL;
-	}
-	p->SetLuaParamRef(lua_function_reference);
-	return lua_function_reference;
-
-}
-
-void LUA_GET_VAL(lua_State* lua, szb_buffer_t *BUFFER, time_t START, SZARP_PROBE_TYPE PROBE_TYPE, int CUSTOM_LENGTH, double& RESULT) 
-{													
-	lua_pushvalue(lua, -1);		
-	lua_pushnumber(lua, (START));									
-	lua_pushnumber(lua, (PROBE_TYPE));								
-	lua_pushnumber(lua, (CUSTOM_LENGTH));								
-	int _ret = lua_pcall(lua, 3, 1, 0);								
-	if (_ret != 0) {										
-		RESULT = SZB_NODATA;									
-		BUFFER->last_err = SZBE_LUA_ERROR;							
-		BUFFER->last_err_string = SC::U2S((const unsigned char*)lua_tostring(lua, -1));		
-	} else 												
-		RESULT = lua_tonumber(lua, -1);								
-	lua_pop(lua, 1);										
-}
 
 void szb_lua_get_values(szb_buffer_t *buffer, TParam *param, time_t start_time, time_t end_time, SZARP_PROBE_TYPE probe_type, SZBASE_TYPE *ret) {
 	lua_State* lua = Lua::GetInterpreter();
@@ -87,7 +60,7 @@ void szb_lua_get_values(szb_buffer_t *buffer, TParam *param, time_t start_time, 
 
 	for (size_t i = 0; start_time < end_time; ++i, start_time = szb_move_time(start_time, 1, probe_type, 0)) {
 		Lua::fixed.push(true);
-		LUA_GET_VAL(lua, buffer, start_time, probe_type, 0, ret[i]);
+		lua_get_val(lua, buffer, start_time, probe_type, 0, ret[i]);
 		if (buffer->last_err != SZBE_OK)
 			break;
 		ret[i] = rint(ret[i] * pow10(param->GetPrec())) / pow10(param->GetPrec()); 
@@ -271,7 +244,7 @@ SZBASE_TYPE szb_lua_get_avg(szb_buffer_t* buffer, TParam *param, time_t start_ti
 	for (size_t i = 0; start_time < end_time; ++i, start_time = szb_move_time(start_time, 1, probe, 0)) {
 		if (start_time <= param_last_av_date) {
 			Lua::fixed.push(true);
-			LUA_GET_VAL(lua, buffer, start_time, probe, 0, val);
+			lua_get_val(lua, buffer, start_time, probe, 0, val);
 			fixed = fixed && Lua::fixed.top();
 			Lua::fixed.pop();
 		} else {
@@ -414,7 +387,7 @@ void LuaNativeDatablock::FinishInitialization() {
 	lua_rawgeti(lua, LUA_REGISTRYINDEX, ref);
 	for (int i = start_probe; i < end_probe; i++) {
 		Lua::fixed.push(true);
-		LUA_GET_VAL(lua, buffer, probe2time(i, year, month), PT_MIN10, 0, data[i]);
+		lua_get_val(lua, buffer, probe2time(i, year, month), PT_MIN10, 0, data[i]);
 		bool fixedvalue = Lua::fixed.top();
 		Lua::fixed.pop();
 		if (buffer->last_err != SZBE_OK) {
@@ -475,7 +448,7 @@ LuaNativeDatablock::Refresh() {
 	for (int i = this->first_non_fixed_probe; i < new_probes_count; i++) {
 
 		Lua::fixed.push(true);
-		LUA_GET_VAL(lua, buffer, probe2time(i, year, month), PT_MIN10, 0, data[i]);
+		lua_get_val(lua, buffer, probe2time(i, year, month), PT_MIN10, 0, data[i]);
 		bool fixedvalue = Lua::fixed.top();
 		Lua::fixed.pop();
 		if (buffer->last_err != SZBE_OK)

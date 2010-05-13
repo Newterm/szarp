@@ -76,6 +76,8 @@ class TupleHasher {
 		size_t operator()(const BufferKey s) const;
 };
 
+class ProberConnection;
+
 /**
  * Buffer structure:
  * - buffer contains linear hash table of blocks
@@ -144,6 +146,8 @@ public:
 				  last available date */
 
 	Szbase *szbase;		/**< parent szbase object*/
+
+	ProberConnection* prober_connection; /**< @see ProberConnection*/
 
 	time_t configurationDate;
 

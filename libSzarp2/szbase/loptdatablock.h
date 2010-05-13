@@ -1,3 +1,6 @@
+#ifndef __LOPTDATABLOCK_H__
+#define __LOPTDATABLOCK_H__
+
 /* 
   SZARP: SCADA software 
   
@@ -16,14 +19,6 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/* 
- *
- * loptdatablock
- * $Id: cacheabledatablock.h 267 2010-01-11 09:06:34Z reksi0 $
- */
-
-#ifndef __LOPTDATABLOCK_H__
-#define __LOPTDATABLOCK_H__
 
 #include "config.h"
 
