@@ -1,4 +1,7 @@
 
+2010-05-13	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* scripts/nsis.sh/wisetup.sh: libgcc_s_dw2-1.dll added to list of
+	to installation package	
 2010-05-11	Pawel Palucha <pawel@praterm.com.pl>
 	* meaner3/*: prober removes outdated files from cache.
 	* resources/documentation/new/Makefile.am: trying to fix building docs
@@ -18,6 +21,15 @@
 2010-05-11	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* INSTALL.Window: small addition
 	* resources/documentation/new/Makefile.am: added @srcdir@ to dmn2sgml.py invocation
+        * INSTALL.Windows: infomation on cross-compilation of FTGL and
+	libfreetype added
+	* acinclue.m4: more boost libraries recognized under msw
+	* libSzarp2: lua parser split into two files - otherwise mingw chokes and dies on it
+	* libSzarp2: some minor compilation fixes
+	* winsetup.sh: more dlls added
+	* wx/draw3: xyz graphs work under msw, focus fixes - under
+	msw, moving focus in focus event, makes control that received
+	the event completly inactive
 2010-05-07	Pawel Palucha <pawel@praterm.com.pl>
 	* utils/proves_server/*: added time of last available probe to
 	response for GET request.

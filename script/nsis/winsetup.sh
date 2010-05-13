@@ -171,6 +171,7 @@ function CopyDlls()
 	/usr/local/i586-mingw32msvc/lib/*ssl*.dll \
 	/usr/local/i586-mingw32msvc/*/libz*.dll \
 	/usr/local/i586-mingw32msvc/bin/*iconv*.dll \
+	/usr/local/i586-mingw32msvc/bin/libgcc*.dll \
 	/usr/local/i586-mingw32msvc/bin/libxml2*.dll \
 	/usr/local/i586-mingw32msvc/bin/libfreetype*.dll \
 	/usr/local/i586-mingw32msvc/bin/libftgl*.dll \
