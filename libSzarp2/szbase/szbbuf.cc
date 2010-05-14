@@ -114,7 +114,7 @@ template<typename OP> std::wstring find_one_param_file(const fs::wpath &paramPat
 szb_datablock_t *
 szb_find_block(szb_buffer_t * buffer, TParam * param, int year, int month)
 {
-    return buffer->FindBlock(param, year, month);
+    return buffer->FindDataBlock(param, year, month);
 }
 
 /** Returns pointer to block for given param, year and month. 
@@ -693,10 +693,10 @@ szb_buffer_str::~szb_buffer_str()
 }
 
 szb_datablock_t *
-szb_buffer_str::FindBlock(TParam * param, int year, int month)
+szb_buffer_str::FindBlock(TParam * param, time_t start_time)
 {
 	
-	szb_datablock_t * block = this->hashstorage[BufferKey(param,year,month)];
+	szb_datablock_t * block = this->hashstorage[BufferKey(param, start_time)];
 
 	if (block != NULL) {
 		block->MarkAsUsed();
@@ -799,7 +799,7 @@ szb_buffer_str::DeleteBlock(szb_datablock_t* block)
 {
 	assert(block);
 
-	unordered_map< BufferKey, szb_datablock_t*, TupleHasher, TupleComparer >::iterator i = this->hashstorage.find(BufferKey(block->param, block->year, block->month));
+	unordered_map< BufferKey, szb_datablock_t*, TupleHasher, TupleComparer >::iterator i = this->hashstorage.find(BufferKey(block->param, block->start_time));
 
 	delete i->second;
 
@@ -810,7 +810,7 @@ szb_buffer_str::DeleteBlock(szb_datablock_t* block)
 void
 szb_buffer_str::AddBlock(szb_datablock_t* block)
 {
-	this->hashstorage[BufferKey(block->param, block->year, block->month)] = block;
+	this->hashstorage[BufferKey(block->param, block->start_time)] = block;
 	block->locator = new BlockLocator(this, block);
 }
 
@@ -968,8 +968,5 @@ TupleHasher::operator()(const BufferKey s) const
 	size_t val = (size_t) s.get<0>();
 	size_t val2 = s.get<1>();
 	val ^= val2 << 14;
-	val2 = s.get<2>();
-	val ^= val2 << 28;
-	
 	return val;
 }

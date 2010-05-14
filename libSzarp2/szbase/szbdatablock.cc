@@ -64,7 +64,7 @@ namespace fs = boost::filesystem;
 time_t
 szb_datablock_t::GetBlockBeginDate()
 {
-	return probe2time(0, year, month);
+	return m_start_time;
 }
 
 time_t

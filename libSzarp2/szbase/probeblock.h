@@ -1,5 +1,13 @@
 
 
+class szb_block_t {
+	time_t start_time;
+	TParam *param;
+public:
+	time_t GetBlockBeginDate();
+	szb_block(szb_buffer_t *buffer, TParam* param, time_t start_time);
+};
+
 class szb_probes_block {
 public:
 	szb_buffer_t *m_buffer;

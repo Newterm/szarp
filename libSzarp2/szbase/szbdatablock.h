@@ -34,7 +34,7 @@ typedef struct szb_buffer_str szb_buffer_t;
 
 /** Base class for datablocks.
  * This class realizes basic functionality od datablock. */
-class szb_datablock_t {
+class szb_datablock_t : public szb_block_t {
 	public:
 		/** Constructor.
 		 * @param szb_buffer_t owner of the block.

@@ -61,7 +61,7 @@ szb_get_last_av_date(szb_buffer_t * buffer);
 time_t
 szb_definable_meaner_last(szb_buffer_t * buffer);
 
-typedef boost::tuple<TParam*, int, int> BufferKey;
+typedef boost::tuple<TParam*, time_t> BufferKey;
 
 class TupleComparer {
 public:
@@ -168,7 +168,7 @@ public:
 
 	time_t last_av_date;
 
-	szb_datablock_t * FindBlock(TParam * param, int year, int month);
+	szb_datablock_t * FindDataBlock(TParam * param, time_t start_time);
 };
 
 
