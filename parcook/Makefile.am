@@ -69,6 +69,7 @@ bin_PROGRAMS = \
               rsdmn \
 	      sbusdmn \
 	      setdmn \
+	      iecdmn \
 	      sre2dmn \
 	      tcpdmn \
 	      tensdmn \
@@ -181,3 +182,6 @@ sbusdmn_SOURCES = sbusdmn.cc
 ddedmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(XMLRPC_EPI_LIBS) $(CURL_LIBS)
 
 setdmn_LDADD = $(LDADD) @EVENT_LIBS@
+
+iecdmn_SOURCES = iecdmn.cc
+iecdmn_LDADD = $(LDADD)

@@ -1,4 +1,7 @@
 
+2010-05-17	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* parcook/iecdmn.cc: daemon for queryig enery meters over protocol
+	defined in IEC 62056-21, version not yet tested
 2010-05-13	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* scripts/nsis.sh/wisetup.sh: libgcc_s_dw2-1.dll added to to installation package	
 2010-05-11	Pawel Palucha <pawel@praterm.com.pl>
