@@ -7,6 +7,7 @@
 #include <boost/bind.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include "conversion.h"
 #include "szbdefines.h"
 #include "proberconnection.h"
 
@@ -52,7 +53,7 @@ void ProberConnection::SendSearchQuery() {
 		<< m_from << " "
 		<< m_to << " "
 		<< m_direction << " "
-		<< m_path << "\r\n";
+		<< SC::S2A(m_path) << "\r\n";
 
 	boost::asio::async_write(m_socket, m_output_buffer, 
 		boost::bind(&ProberConnection::HandleWrite, this, _1));
@@ -68,7 +69,7 @@ void ProberConnection::SendGetQuery() {
 	ostream << "GET "
 		<< m_from << " "
 		<< m_to << " "
-		<< m_path << "\r\n";
+		<< SC::S2A(m_path) << "\r\n";
 
 	boost::asio::async_write(m_socket, m_output_buffer, 
 		boost::bind(&ProberConnection::HandleWrite, this, _1));
@@ -167,7 +168,7 @@ void ProberConnection::HandleSearchResponse(const boost::system::error_code &err
 	}
 }
 
-time_t ProberConnection::Search(time_t from, time_t to, int direction, std::string path) {
+time_t ProberConnection::Search(time_t from, time_t to, int direction, std::wstring path) {
 	m_operation = SEND_SEARCH;
 	m_from = from;
 	m_to = to;
@@ -191,7 +192,7 @@ time_t ProberConnection::Search(time_t from, time_t to, int direction, std::stri
 
 
 
-int ProberConnection::Get(time_t from, time_t to, std::string path) {
+int ProberConnection::Get(time_t from, time_t to, std::wstring path) {
 	m_operation = SEND_GET;
 	m_from = from;
 	m_to = to;

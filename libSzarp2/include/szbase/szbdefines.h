@@ -61,8 +61,9 @@ static inline SZB_FILE_TYPE szbfile_endian(SZB_FILE_TYPE n)
 
 #define SZBASE_MIN_YEAR	0	/**< Minimal year for use in base. */
 #define SZBASE_MAX_YEAR	9999	/**< Maximum year for use in base. */
-#define SZBASE_PROBE	600	/**< Length in seconds of probe saved to base. */
-#define SZBASE_PROBES_PER_DAY (24*(3600/600))	/**< Number of probes per day. */
+#define SZBASE_DATA_SPAN	600	/**< Length in seconds of data saved to base. */
+#define SZBASE_PROBE_SPAN	10	/**< Length in seconds of probe stroed in base. */
+#define SZBASE_DATA_PER_DAY (24*(3600/600))	/**< Number of probes per day. */
 
 
 /* SzarpBase error codes. */
@@ -77,5 +78,11 @@ static inline SZB_FILE_TYPE szbfile_endian(SZB_FILE_TYPE n)
 typedef void (*szb_custom_function) (struct tm* time, SZBASE_TYPE* stack, short* sp);
 
 void szb_register_custom_function(wchar_t symbol, szb_custom_function function);
+
+enum SZB_BLOCK_TYPE {
+	MIN10_BLOCK = 0,
+	SEC10_BLOCK,
+	UNUSED_BLOCK_TYPE,
+};
 
 #endif // __SZARP_BASE_DEFINES__

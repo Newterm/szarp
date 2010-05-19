@@ -10,6 +10,7 @@
 #include "lua_syntax.h"
 #include "szbbase.h"
 #include "loptdatablock.h"
+#include "loptcalculate.h"
 
 #ifdef LUA_PARAM_OPTIMISE
 LuaOptDatablock::LuaOptDatablock(szb_buffer_t * b, TParam * p, int y, int m) : LuaDatablock(b, p, y, m) {
@@ -27,8 +28,8 @@ LuaOptDatablock::LuaOptDatablock(szb_buffer_t * b, TParam * p, int y, int m) : L
 	szb_time2my(end_date, &year, &month);
 	if (this->year > year || (this->year == year && this->month > month))
 		NOT_INITIALIZED;
-	if (end_date > GetBlockLastDate())
-		end_date = GetBlockLastDate();
+	if (end_date > GetEndTime())
+		end_date = GetEndTime();
 	int probes_to_compute = szb_probeind(end_date) + 1;
 	for (int i = probes_to_compute; i < max_probes; i++)
 		data[i] = SZB_NODATA;
@@ -38,7 +39,7 @@ LuaOptDatablock::LuaOptDatablock(szb_buffer_t * b, TParam * p, int y, int m) : L
 		Refresh();
 		return;
 	} else {
-		LuaExec::ExecutionEngine ee(this);
+		LuaExec::ExecutionEngine ee(buffer, param->GetLuaExecParam());
 		CalculateValues(&ee, probes_to_compute);
 	}
 }
@@ -46,7 +47,7 @@ LuaOptDatablock::LuaOptDatablock(szb_buffer_t * b, TParam * p, int y, int m) : L
 void LuaOptDatablock::CalculateValues(LuaExec::ExecutionEngine *ee, int end_probe) {
 	time_t t = probe2time(first_non_fixed_probe, year, month);
 
-	for (int i = first_non_fixed_probe; i < end_probe; i++, t += SZBASE_PROBE) {
+	for (int i = first_non_fixed_probe; i < end_probe; i++, t += SZBASE_DATA_SPAN) {
 		bool probe_fixed = true;
 		ee->CalculateValue(t, PT_MIN10, data[i], probe_fixed);
 		if (!std::isnan(data[i])) {
@@ -82,11 +83,11 @@ void LuaOptDatablock::Refresh() {
 		return;
 
 	time_t end_date = szb_search_last(buffer, param);
-	if (end_date > GetBlockLastDate())
-		end_date = GetBlockLastDate();
+	if (end_date > GetEndTime())
+		end_date = GetEndTime();
 
 	int end_probe = szb_probeind(end_date) + 1;
-	LuaExec::ExecutionEngine ee(this);
+	LuaExec::ExecutionEngine ee(buffer, param->GetLuaExecParam());
 	CalculateValues(&ee, end_probe);
 	last_update_time = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
 }
@@ -97,7 +98,8 @@ void LuaOptDatablock::Refresh() {
 LuaDatablock *create_lua_data_block(szb_buffer_t *b, TParam* p, int y, int m) {
 	LuaExec::Param *ep = p->GetLuaExecParam();
 	if (ep == NULL) {
-		ep = optimize_lua_param(ep);
+		ep = LuaExec::optimize_lua_param(p);
+		b->AddExecParam(p);
 	}
 	if (ep->m_optimized)
 		return new LuaOptDatablock(b, p, y, m);

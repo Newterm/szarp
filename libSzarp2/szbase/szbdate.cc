@@ -35,18 +35,18 @@ int szb_daysinmonth(int year, int month)
 int szb_probecnt(const int year, const int month)
 {
     static int probes[14] = { 0,
-		    31 * SZBASE_PROBES_PER_DAY,
-		    28 * SZBASE_PROBES_PER_DAY,
-		    31 * SZBASE_PROBES_PER_DAY,
-		    30 * SZBASE_PROBES_PER_DAY,
-		    31 * SZBASE_PROBES_PER_DAY,
-		    30 * SZBASE_PROBES_PER_DAY,
-		    31 * SZBASE_PROBES_PER_DAY,
-		    31 * SZBASE_PROBES_PER_DAY,
-		    30 * SZBASE_PROBES_PER_DAY,
-		    31 * SZBASE_PROBES_PER_DAY,
-		    30 * SZBASE_PROBES_PER_DAY,
-		    31 * SZBASE_PROBES_PER_DAY,
+		    31 * SZBASE_DATA_PER_DAY,
+		    28 * SZBASE_DATA_PER_DAY,
+		    31 * SZBASE_DATA_PER_DAY,
+		    30 * SZBASE_DATA_PER_DAY,
+		    31 * SZBASE_DATA_PER_DAY,
+		    30 * SZBASE_DATA_PER_DAY,
+		    31 * SZBASE_DATA_PER_DAY,
+		    31 * SZBASE_DATA_PER_DAY,
+		    30 * SZBASE_DATA_PER_DAY,
+		    31 * SZBASE_DATA_PER_DAY,
+		    30 * SZBASE_DATA_PER_DAY,
+		    31 * SZBASE_DATA_PER_DAY,
 		    0 };
     
     if ((year < SZBASE_MIN_YEAR) || (year > SZBASE_MAX_YEAR))
@@ -54,11 +54,11 @@ int szb_probecnt(const int year, const int month)
 
     if (month == 2) {
 	if ((year % 400) == 0)
-	    return 29 * SZBASE_PROBES_PER_DAY;
+	    return 29 * SZBASE_DATA_PER_DAY;
 	if ((year % 100) == 0)
-	    return 28 * SZBASE_PROBES_PER_DAY;
+	    return 28 * SZBASE_DATA_PER_DAY;
 	if ((year % 4) == 0)
-	    return 29 * SZBASE_PROBES_PER_DAY;
+	    return 29 * SZBASE_DATA_PER_DAY;
     }
 
     return probes[month];
@@ -133,7 +133,7 @@ time_t probe2time(int probe, int year, int month)
 
 	t = timegm(&tm);
 	
-	return t + (probe * SZBASE_PROBE);
+	return t + (probe * SZBASE_DATA_SPAN);
 }
 
 void probe2gmt(int probe, int year, int month, struct tm * tm)

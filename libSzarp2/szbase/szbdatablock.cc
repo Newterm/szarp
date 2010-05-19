@@ -61,18 +61,6 @@
 
 namespace fs = boost::filesystem;
 
-time_t
-szb_datablock_t::GetBlockBeginDate()
-{
-	return m_start_time;
-}
-
-time_t
-szb_datablock_t::GetBlockLastDate()
-{
-	return probe2time(max_probes - 1, year, month);
-}
-
 const SZBASE_TYPE *
 szb_datablock_t::GetData(bool refresh)
 {
@@ -82,11 +70,9 @@ szb_datablock_t::GetData(bool refresh)
 }
 
 szb_datablock_t::szb_datablock_t(szb_buffer_t * b, TParam * p, int y, int m) :
-		buffer(b),
-		hash_next(NULL), older(NULL), newer(NULL),
-		year(y), month(m), param(p),
+		szb_block_t(b, p, probe2time(0, y, m), probe2time(szb_probecnt(y, m) - 1, y, m)),
+		year(y), month(m), 
 		max_probes(szb_probecnt(y, m)),
-		locator(NULL),
 		initialized(true),
 		data(NULL),
 		first_non_fixed_probe(0),
@@ -152,3 +138,10 @@ szb_datablock_t::GetBlockFullPath(szb_buffer_t* buffer, TParam * param, int year
 	return paramPath.string();
 }
 
+void szb_datablock_t::AllocateDataMemory() { assert(!data); data = new SZBASE_TYPE[this->max_probes]; }
+
+void szb_datablock_t::FreeDataMemory() { assert(data); delete[] data;};
+
+SZB_BLOCK_TYPE szb_datablock_t::GetBlockType() {
+	return MIN10_BLOCK;
+}

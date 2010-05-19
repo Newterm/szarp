@@ -116,7 +116,7 @@ int TSaveParam::Write(const fs::wpath& directory, time_t t, short int* data, siz
 			data[0], data_count - 1, cname.c_str());
 	
 	/* get file name */
-	filename = szb_createfilename_ne(cname, year, month, probe_length == SZBASE_PROBE ? L".szb" : L".szc");
+	filename = szb_createfilename_ne(cname, year, month, probe_length == SZBASE_DATA_SPAN ? L".szb" : L".szc");
 	path = (directory / filename).string();
 		
 	/* check for file size */

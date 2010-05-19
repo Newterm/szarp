@@ -27,7 +27,7 @@ class ProberConnection {
 	time_t m_from;
 	time_t m_to;
 	int m_direction;
-	std::string m_path;
+	std::wstring m_path;
 
 	time_t m_search_result;
 	time_t m_server_time;
@@ -71,9 +71,9 @@ public:
 
 	void HandleSearchResponse(const boost::system::error_code &error);
 
-	time_t Search(time_t from, time_t to, int direction, std::string path);
+	time_t Search(time_t from, time_t to, int direction, std::wstring path);
 
-	int Get(time_t from, time_t to, std::string path);
+	int Get(time_t from, time_t to, std::wstring path);
 
 	int GetData(short *buffer, int count);
 

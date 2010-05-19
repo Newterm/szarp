@@ -113,7 +113,12 @@ libSzarp2_a_SOURCES = \
 			$(SZBASE_DIR)/szbcancelhandle.cc $(INCLUDE_DIR)/szbase/szbcancelhandle.h \
 			$(SZBASE_DIR)/loptdatablock.cc $(SZBASE_DIR)/loptdatablock.h \
 			$(SZBASE_DIR)/lua_parser.cc $(INCLUDE_DIR)/szbase/lua_syntax.h \
-			$(SZBASE_DIR)/proberconnection.cc $(SZBASE_DIR)/proberconnection.h
+			$(SZBASE_DIR)/proberconnection.cc $(SZBASE_DIR)/proberconnection.h \
+			$(SZBASE_DIR)/luacalculate.cc $(SZBASE_DIR)/luacalculate.h \
+			$(SZBASE_DIR)/luacalculate.cc $(SZBASE_DIR)/luacalculate.h \
+			$(SZBASE_DIR)/loptcalculate.cc $(SZBASE_DIR)/loptcalculate.h \
+			$(SZBASE_DIR)/probeblock.cc
+
 
 
 # Additional files for deleting on 'make maintainer-clean'

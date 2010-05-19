@@ -114,14 +114,14 @@ RealDatablock::RealDatablock(szb_buffer_t * b, TParam * p, int y, int m) :
 		if (this->first_non_fixed_probe == this->max_probes)
 			return; //Block is full
 	} else {
-		if (this->GetBlockLastDate() < buffer->first_av_date)
+		if (this->GetEndTime() < buffer->first_av_date)
 			NOT_INITIALIZED; //Block is before first_av_date - not creating empty block
 	}
 
 	int ly, lm;
 	szb_time2my(szb_search_last(buffer, param), &ly, &lm);
 
-	if ( (year < ly || (year == ly && month < lm)) || this->last_update_time > this->GetBlockLastDate()) {
+	if ( (year < ly || (year == ly && month < lm)) || this->last_update_time > this->GetEndTime()) {
 		this->first_non_fixed_probe = this->max_probes; //If there are future data or the end of block is before `now`
 	} else {
 
@@ -308,9 +308,9 @@ void RealDatablock::Refresh() {
 	}
 	free(buf);
 
-	if (this->last_update_time > this->GetBlockLastDate())
+	if (this->last_update_time > this->GetEndTime())
 		this->first_non_fixed_probe = max_probes;
-	else if (this->last_update_time < this->GetBlockBeginDate())
+	else if (this->last_update_time < this->GetStartTime())
 		this->first_non_fixed_probe = this->probes_from_file;
 	else {
 		int tmp = szb_probeind(this->last_update_time) + 1;
@@ -417,11 +417,11 @@ time_t szb_real_search_data(szb_buffer_t * buffer, TParam * param, time_t start,
 		szb_datablock_t *block = NULL;
 		const SZBASE_TYPE * data = NULL;
 
-		for (t = start; t >= end; t -= SZBASE_PROBE) {
+		for (t = start; t >= end; t -= SZBASE_DATA_SPAN) {
 			/* check if block exists */
 			szb_time2my(t, &new_year, &new_month);
 			if (NULL == block || new_month != month || new_year != year) {
-				block = szb_get_block(buffer, param, new_year, new_month);
+				block = szb_get_datablock(buffer, param, new_year, new_month);
 					if (NULL != block)
 						data = block->GetData();
 				if (NULL == block || block->GetFirstDataProbeIdx() < 0) {
@@ -474,10 +474,10 @@ time_t szb_real_search_data(szb_buffer_t * buffer, TParam * param, time_t start,
 	sz_log(SEARCH_DATA_LOG_LEVEL, "S: szb_real_search_data: start y: %d, m: %d", year, month);
 #endif
 
-	for (t = start; t <= end; t += SZBASE_PROBE) {
+	for (t = start; t <= end; t += SZBASE_DATA_SPAN) {
 		szb_time2my(t, &new_year, &new_month);
 		if (NULL == block || new_month != month || new_year != year) {
-			block = szb_get_block(buffer, param, new_year, new_month);
+			block = szb_get_datablock(buffer, param, new_year, new_month);
 			if (NULL != block)
 			data = block->GetData();
 			if (NULL == block || block->GetFirstDataProbeIdx() < 0) {

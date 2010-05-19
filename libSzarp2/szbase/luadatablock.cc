@@ -313,8 +313,8 @@ LuaNativeDatablock::LuaNativeDatablock(szb_buffer_t * b, TParam * p, int y, int 
 	if (year > av_year || (year == av_year && month > av_month))
 		NOT_INITIALIZED;
 
-	if (end_date > GetBlockLastDate())
-		end_date = GetBlockLastDate();
+	if (end_date > GetEndTime())
+		end_date = GetEndTime();
 
 	m_probes_to_compute = szb_probeind(end_date) + 1;
 
@@ -426,8 +426,8 @@ LuaNativeDatablock::Refresh() {
 	this->last_update_time = updatetime;
 
 	time_t end_date = szb_search_last(buffer, param);
-	if (end_date > GetBlockLastDate())
-		end_date = GetBlockLastDate();
+	if (end_date > GetEndTime())
+		end_date = GetEndTime();
 
 	lua_State* lua = Lua::GetInterpreter();
 	int ref = param->GetLuaParamReference();

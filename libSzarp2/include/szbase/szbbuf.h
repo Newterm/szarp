@@ -36,17 +36,18 @@ using std::tr1::unordered_map;
 class TParam;
 class TSzarpConfig;
 class Szbase;
-class szb_datablock_t;
 
 typedef class szb_buffer_str szb_buffer_t;
+
+class szb_block_t;
 
 class BlockLocator
 {
 	public:
-		BlockLocator(szb_buffer_t* buff, szb_datablock_t* b);
+		BlockLocator(szb_buffer_t* buff, szb_block_t* b);
 		~BlockLocator();
 		void Used();
-		szb_datablock_t * block;
+		szb_block_t * block;
 	private:
 		szb_buffer_t* buffer;
 		BlockLocator* newer;
@@ -54,6 +55,92 @@ class BlockLocator
 		BlockLocator* next_same_param;
 		BlockLocator* prev_same_param;
 };
+
+class szb_block_t {
+public:
+	szb_buffer_t * const buffer;
+	TParam * const param;
+	const time_t start_time;
+	const time_t end_time;
+	size_t fixed_probes_count;
+	BlockLocator *locator;
+	virtual SZB_BLOCK_TYPE GetBlockType() = 0;
+	time_t GetStartTime();
+	time_t GetEndTime();
+	size_t GetFixedProbesCount();	
+	void MarkAsUsed();
+	szb_block_t(szb_buffer_t *buffer, TParam* param, time_t start_time, time_t end_time);
+	virtual const SZBASE_TYPE* GetData(bool refresh = true) = 0;
+};
+
+/** Base class for datablocks.
+ * This class realizes basic functionality od datablock. */
+class szb_datablock_t : public szb_block_t {
+public:
+	/** Constructor.
+	 * @param szb_buffer_t owner of the block.
+	 * @param p param.
+	 * @param y year.
+	 * @param m month.
+	 */
+	szb_datablock_t(szb_buffer_t * b, TParam * p, int y, int m); 
+	/** Destructor. */
+	virtual ~szb_datablock_t();
+
+	int const year;			/**< Year for definable and combined. */
+	int const month;		/**< Month. */
+
+	const int max_probes;		/**< Size of data block. */
+
+	virtual const SZBASE_TYPE * GetData(bool refresh=true);	/**< Returns pointer to the block`s data.
+					 * Before that the block is refreshed*/
+	
+	virtual void FinishInitialization() {};
+	bool IsInitialized(){ return initialized; }; /**< If the initialization of the block has successed. */
+	int GetFixedProbesCount() {return first_non_fixed_probe;};
+	int GetFirstDataProbeIdx() {return first_data_probe_index;};
+	int GetLastDataProbeIdx() {return last_data_probe_index;};
+	virtual void Refresh() =0;	/**< Refreshes the stored data. */
+	time_t GetBlockTimestamp() {return this->block_timestamp;};
+	std::wstring GetBlockRelativePath();
+	static std::wstring GetBlockRelativePath(TParam * param, int year, int month);
+	std::wstring GetBlockFullPath();
+	static std::wstring GetBlockFullPath(szb_buffer_t* buffer, TParam * param, int year, int month);
+	SZB_BLOCK_TYPE GetBlockType();
+
+protected:
+	void AllocateDataMemory();
+	void FreeDataMemory();
+	bool initialized;		/**< Flag for the block`s successful initialization. */
+	SZBASE_TYPE * data;		/**< Array of values stored in the block. */
+	
+	int first_non_fixed_probe;
+	int first_data_probe_index;
+	int last_data_probe_index;
+	
+	time_t last_update_time;
+	time_t block_timestamp;
+};
+
+class szb_probeblock_t : public szb_block_t {
+public:
+	szb_buffer_t *buffer;
+	time_t end_time;
+	size_t non_fixed_probe;
+	TParam* param;
+	double* data;
+
+	static const size_t probes_per_block = 10 * 60;
+
+	int GetParamDataFromServer(time_t start, time_t end, TParam* param);
+	virtual void FetchProbes() = 0;
+	virtual bool Refresh();
+	virtual SZB_BLOCK_TYPE GetBlockType();
+
+	virtual const SZBASE_TYPE* GetData(bool refresh = true);
+	szb_probeblock_t(szb_buffer_t *buffer, TParam* param, time_t start_time, time_t end_time);
+};
+
 
 time_t
 szb_get_last_av_date(szb_buffer_t * buffer);
@@ -92,7 +179,8 @@ class szb_buffer_str {
 private:
 	friend class BlockLocator;
 
-	unordered_map< BufferKey, szb_datablock_t*, TupleHasher, TupleComparer > hashstorage;
+	unordered_map< BufferKey, szb_datablock_t*, TupleHasher, TupleComparer > datastorage;
+	unordered_map< BufferKey, szb_probeblock_t*, TupleHasher, TupleComparer > probestorage;
 
 	std::map< TParam* , BlockLocator* > paramindex;
 #ifndef NO_LUA
@@ -100,7 +188,6 @@ private:
 	std::vector<TParam*> optimized_params;
 #endif
 #endif
-
 	BlockLocator* newest_block;
 	BlockLocator* oldest_block;
 
@@ -120,8 +207,8 @@ public:
 	void RemoveExecParam(TParam* param);
 #endif
 #endif
-	void AddBlock(szb_datablock_t* block);
-	void DeleteBlock(szb_datablock_t* block);
+	void AddBlock(szb_block_t* block);
+	void DeleteBlock(szb_block_t* block);
 	szb_buffer_str(int size);
 	~szb_buffer_str();
 
@@ -168,7 +255,9 @@ public:
 
 	time_t last_av_date;
 
-	szb_datablock_t * FindDataBlock(TParam * param, time_t start_time);
+	szb_datablock_t* FindDataBlock(TParam * param, int year, int month);
+
+	szb_probeblock_t* FindProbeBlock(TParam * param, time_t start_time);
 };
 
 
@@ -234,7 +323,13 @@ szb_set_format(szb_buffer_t * buffer, const std::wstring& formatstring, int extr
  * or couldn't be loaded, buffer->last_err is set to error code
  */
 szb_datablock_t *
-szb_get_block(szb_buffer_t * buffer, TParam * param, int year, int month);
+szb_get_datablock(szb_buffer_t * buffer, TParam * param, int year, int month);
+
+szb_probeblock_t *
+szb_get_probeblock(szb_buffer_t * buffer, TParam * param, time_t time);
+
+szb_block_t *
+szb_get_block(szb_buffer_t * buffer, TParam * param, time_t time, SZB_BLOCK_TYPE block_type);
 
 /** Searches for block in buffer. Does not load blocks, only searches within
  * already loaded blocks.
@@ -304,7 +399,7 @@ szb_get_probe(szb_buffer_t * buffer, TParam * param, time_t t,
  * @param start_time begining of time period (inclusive)
  * @param end_time end of time period (exclusive)
  * @param retbuf pointer to buffer, enough memory must be allocated - at
- * least (end_time - start_time) / SZBASE_PROBE * sizeof(SZBASE_TYPE)
+ * least (end_time - start_time) / SZBASE_DATA_SPAN * sizeof(SZBASE_TYPE)
  */
 void
 szb_get_values(szb_buffer_t * buffer, TParam * param,
@@ -348,6 +443,7 @@ szb_search_first(szb_buffer_t * buffer, TParam * param);
 time_t
 szb_search_last(szb_buffer_t * buffer, TParam * param);
 
+szb_probeblock_t* szb_create_probe_block(szb_buffer_t *buffer, TParam *param, time_t time);
 
 
 #endif

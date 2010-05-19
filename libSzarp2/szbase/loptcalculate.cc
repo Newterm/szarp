@@ -16,6 +16,9 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
+
+#include "config.h"
+
 #ifdef LUA_PARAM_OPTIMISE
 
 #include "conversion.h"
@@ -1157,16 +1160,14 @@ void ParamConverter::InitalizeVars() {
 	AddVariable(L"PT_SEC10");
 }
 
-ExecutionEngine::ExecutionEngine(szb_buffer_t *block, Param *param) {
-	m_buffer = block->buffer;
+ExecutionEngine::ExecutionEngine(szb_buffer_t *buffer, Param *param) {
+	m_buffer = buffer;
 	szb_lock_buffer(m_buffer);
 	m_param = param;
-	m_blocks.resize(m_param->m_par_refs.size());
-	m_blocks_iterators.resize(m_param->m_par_refs.size());
-	for (size_t i = 0; i < m_param->m_par_refs.size(); i++) {
+	for (size_t i = 0; i < m_param->m_par_refs.size(); i++)
 		m_param->m_par_refs[i].SetExecutionEngine(this);
-		m_blocks_iterators[i] = m_blocks[i].begin();
-	}
+	m_blocks.resize(UNUSED_BLOCK_TYPE);
+	m_blocks_iterators.resize(UNUSED_BLOCK_TYPE);
 	m_vals.resize(m_param->m_vars.size());
 	for (size_t i = 0; i < m_vals.size(); i++)
 		m_param->m_vars[i].SetExecutionEngine(this);
@@ -1188,78 +1189,95 @@ void ExecutionEngine::CalculateValue(time_t t, SZARP_PROBE_TYPE probe_type, doub
 	val = m_vals[0];
 }
 
-ExecutionEngine::BlockListEntry ExecutionEngine::CreateBlock(size_t param_index, time_t t) {
-	int year, month;
-	szb_time2my(t, &year, &month);
-	time_t start = probe2time(0, year, month);
-	time_t end = start + SZBASE_PROBE * szb_probecnt(year, month);
-	szb_datablock_t *block = szb_get_block(m_param->m_par_refs[param_index].m_buffer, m_param->m_par_refs[param_index].m_param, year, month);
-	return BlockListEntry(start, end, block);
+szb_block_t* ExecutionEngine::GetBlockFromBuffer(size_t param_index, time_t t, SZB_BLOCK_TYPE bt) {
+	return szb_get_block(m_param->m_par_refs[param_index].m_buffer, m_param->m_par_refs[param_index].m_param, t, bt);
 }
 
-ExecutionEngine::BlockListEntry& ExecutionEngine::AddBlock(size_t param_index, time_t t, std::list<BlockListEntry>::iterator& i) {
-	BlockListEntry ble(CreateBlock(param_index, t));
-	m_blocks[param_index].insert(i, ble);
+szb_block_t* ExecutionEngine::AddBlock(size_t param_index,
+		time_t t,
+		std::list<szb_block_t*>::iterator& i,
+		SZB_BLOCK_TYPE bt) {
+	szb_block_t* block = GetBlockFromBuffer(param_index, t, bt);
+	m_blocks[bt][param_index].insert(i, block);
 	std::advance(i, -1);
 	return *i;
 }
 
-ExecutionEngine::BlockListEntry& ExecutionEngine::SearchBlockLeft(size_t param_index, time_t t, std::list<BlockListEntry>::iterator& i) {
+szb_block_t* ExecutionEngine::SearchBlockLeft(size_t param_index,
+		time_t t,
+		std::list<szb_block_t*>::iterator& i,
+		SZB_BLOCK_TYPE bt) {
 	do {
-		if (i == m_blocks[param_index].begin())
-			return AddBlock(param_index, t, i);
+		if (i == m_blocks[bt][param_index].begin())
+			return AddBlock(param_index, t, i, bt);
 
-		if ((--i)->end <= t)
-			return AddBlock(param_index, t, ++i);
+		if ((*(--i))->GetEndTime() <= t)
+			return AddBlock(param_index, t, ++i, bt);
 
-		if (i->start <= t)
+		if ((*i)->GetStartTime() <= t)
 			return *i;
 		
 	} while (true);	
 
 }
 
-ExecutionEngine::BlockListEntry& ExecutionEngine::SearchBlockRight(size_t param_index, time_t t, std::list<BlockListEntry>::iterator& i) {
+szb_block_t* ExecutionEngine::SearchBlockRight(
+		size_t param_index,
+		time_t t, std::list<szb_block_t*>::iterator& i,
+		SZB_BLOCK_TYPE bt) {
 	do {
-		if (++i == m_blocks[param_index].end())
-			return AddBlock(param_index, t, i);
+		if (++i == m_blocks[bt][param_index].end())
+			return AddBlock(param_index, t, i, bt);
 
-		if (i->start > t)
-			return AddBlock(param_index, t, i);
+		if ((*i)->GetStartTime() > t)
+			return AddBlock(param_index, t, i, bt);
 
-		if (i->end > t)
+		if ((*i)->GetEndTime() > t)
 			return *i;
 		
 	} while (true);	
 
 }
 
-ExecutionEngine::BlockListEntry& ExecutionEngine::GetBlock(size_t param_index, time_t time) {
-	if (m_blocks[param_index].size()) {	
-		std::list<BlockListEntry>::iterator& i = m_blocks_iterators[param_index];
-		if (i->start <= time && time < i->end)
+szb_block_t* ExecutionEngine::GetBlock(size_t param_index,
+		time_t time,
+		SZB_BLOCK_TYPE bt) {
+	if (m_blocks[bt][param_index].size()) {	
+		std::list<szb_block_t*>::iterator& i = m_blocks_iterators[bt][param_index];
+		if ((*i)->GetStartTime() <= time && time < (*i)->GetEndTime())
 			return *i;
-		else if (i->start > time)
-			return SearchBlockLeft(param_index, time, i);
+		else if ((*i)->GetStartTime() > time)
+			return SearchBlockLeft(param_index, time, i, bt);
 		else
-			return SearchBlockRight(param_index, time, i);
+			return SearchBlockRight(param_index, time, i, bt);
 	} else {
-		BlockListEntry ble(CreateBlock(param_index, t));
-		m_blocks[param_index].insert(ble);
-		m_blocks_iterators[param_index] = m_blocks[param_index].begin();
-		return *m_blocks_iterators[param_index];
+		szb_block_t* block = GetBlockFromBuffer(param_index, time, bt);
+		m_blocks[bt][param_index].push_back(block);
+		m_blocks_iterators[bt][param_index] = m_blocks[bt][param_index].begin();
+		return *m_blocks_iterators[bt][param_index];
 	}
 }
 
-double ExecutionEngine::Value_PTMIN10(size_t param_index, const time_t& time) {
+double ExecutionEngine::ValueBlock(size_t param_index, const time_t& time, SZB_BLOCK_TYPE block_type) {
 	double ret;
 
-	BlockListEntry& block = GetBlock(param_index, time);
-	if (block.block) {
-		int probe_index  = (time - block.start) / SZBASE_PROBE;
-		if (block.block->GetFixedProbesCount() <= probe_index)
+	szb_block_t* block = GetBlock(param_index, time, block_type);
+	if (block) {
+		time_t timediff = time - block->GetStartTime();
+		size_t probe_index;
+		switch (block_type) {
+			case MIN10_BLOCK:
+				probe_index = timediff / SZBASE_DATA_SPAN;
+				break;
+			case SEC10_BLOCK:
+				probe_index = timediff / SZBASE_PROBE_SPAN;
+				break;
+			default:
+				assert(false);
+		}
+		if (block->GetFixedProbesCount() <= probe_index)
 			m_fixed = false;
-		ret = block.block->GetData(false)[probe_index];
+		ret = block->GetData(false)[probe_index];
 #ifdef LUA_OPTIMIZER_DEBUG
 		if (std::isnan(ret) && m_fixed) {
 			lua_opt_debug_stream << "Lua opt - fixed no data value, probe_index: " << probe_index << std::endl;
@@ -1274,31 +1292,25 @@ double ExecutionEngine::Value_PTMIN10(size_t param_index, const time_t& time) {
 	return ret;
 }
 
-double ExecutionEngine::Value_PTSEC10(size_t param_index, const time_t& time) {
-	double val;
-	return val;
-}
-
-double ExecutionEngine::Value_AVG(size_t param_index, const time_t& time, const double& period_type) {
+double ExecutionEngine::ValueAvg(size_t param_index, const time_t& time, const double& period_type) {
 	bool fixed;
 	ParamRef& v = m_param->m_par_refs[param_index];	
-	ret = szb_get_avg(v.m_buffer, v.m_param, time, szb_move_time(time, 1, (SZARP_PROBE_TYPE)period_type, 0), NULL, NULL, (SZARP_PROBE_TYPE)period_type, &fixed);
+	double ret = szb_get_avg(v.m_buffer, v.m_param, time, szb_move_time(time, 1, (SZARP_PROBE_TYPE)period_type, 0), NULL, NULL, (SZARP_PROBE_TYPE)period_type, &fixed);
 	if (!fixed)
 		m_fixed = false;
-	return;
+	return ret;
 }
 
 double ExecutionEngine::Value(size_t param_index, const double& time_, const double& period_type) {
 	time_t time = time_;
-	double ret;
 
-	switch (period_type) {
+	switch ((SZARP_PROBE_TYPE) period_type) {
 		case PT_MIN10: 
-			return Value_PTMIN10(param_index, time);
+			return ValueBlock(param_index, time, MIN10_BLOCK);
 		case PT_SEC10:
-			return Value_PTSEC10(param_index, time);
+			return ValueBlock(param_index, time, SEC10_BLOCK);
 		default: 
-			return Value_AVG(param_index, time, period_type);
+			return ValueAvg(param_index, time, period_type);
 	}
 }
 
@@ -1315,9 +1327,8 @@ Val ParamRef::Value(const double& time, const double& period) {
 }
 
 Param* optimize_lua_param(TParam* p) {
-	TParam* ep = new LuaExec::Param;
+	LuaExec::Param* ep = new LuaExec::Param;
 	p->SetLuaExecParam(ep);
-	b->AddExecParam(p);
 	lua_grammar::chunk param_code;
 	std::wstring param_text = SC::U2S(p->GetLuaScript());
 	std::wstring::const_iterator param_text_begin = param_text.begin();

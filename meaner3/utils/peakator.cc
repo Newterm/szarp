@@ -188,7 +188,7 @@ PeakEliminator::~PeakEliminator()
 time_t PeakEliminator::StartRun(TParam *p, time_t first, time_t last)
 {
 	assert (last > first);
-	for (time_t t = last; t >= first; t -= SZBASE_PROBE) {
+	for (time_t t = last; t >= first; t -= SZBASE_DATA_SPAN) {
 		window.Push(szb_get_probe(buf, p, t, PT_MIN10, 0));
 		if (window.Full())
 			return t;
@@ -266,7 +266,7 @@ time_t PeakEliminator::Fix(TParam* p, time_t window_last)
 
 	/* Move time and window */
 	for (size_t i = 0; i < good; i++) {
-		window_last -= SZBASE_PROBE;
+		window_last -= SZBASE_DATA_SPAN;
 		window.Push(szb_get_probe(buf, p, window_last, PT_MIN10, 0));
 	}
 	return window_last;
@@ -318,7 +318,7 @@ void PeakEliminator::SaveWindow(TParam* p, time_t t)
 {
 	TSaveParam sp(p);
 	double pw = pow(10.0, p->GetPrec());
-	for (size_t i = window.Size() - 1; i >= 1; i--, t+= SZBASE_PROBE) {
+	for (size_t i = window.Size() - 1; i >= 1; i--, t+= SZBASE_DATA_SPAN) {
 		sp.Write(
 				buf->rootdir.c_str(), 
 				t, 
@@ -350,7 +350,7 @@ void PeakEliminator::CheckParam(TParam *p)
 	}
 	delta_avg = delta_sum / delta_count;
 	while (t >= first) {
-		t -= SZBASE_PROBE;
+		t -= SZBASE_DATA_SPAN;
 		SZBASE_TYPE val = szb_get_probe(buf, p, t, PT_MIN10, 0);
 		window.Push(val);
 		if (IS_SZB_NODATA(window[0])) {
@@ -368,7 +368,7 @@ void PeakEliminator::CheckParam(TParam *p)
 		SZBASE_TYPE delta = fabs(window[check] - window[0]);
 		//cout << "DELTA: " << delta << " AVG: " << delta_avg << "\n";
 		if ((delta_sum > 0) && (delta > PEAK_DELTA_FACT * delta_avg)) {
-			time_t tmp = t + (window.Size()) * SZBASE_PROBE;
+			time_t tmp = t + (window.Size()) * SZBASE_DATA_SPAN;
 			char date_buf[100];
 			strftime(date_buf, sizeof(date_buf), "%Y-%m-%d %H:%M", localtime(&tmp));
 

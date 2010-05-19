@@ -1065,7 +1065,7 @@ TSzarpConfig::SaveRaporters(const std::wstring& directory, int force)
 	// Print all without priorities
 	for (int j = 0; j < n; j++)
 	    if (orders[j] < 0)
-		fprintf(f, strings[j]);
+		fprintf(f, "%ss", strings[j]);
 	fclose(f);
 	free(orders);
 	for (int j = 0; j < n; j++)

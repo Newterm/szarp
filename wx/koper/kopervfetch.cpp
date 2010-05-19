@@ -225,7 +225,7 @@ bool KoperValueFetcher::Setup(vector<string>& ts, time_t ct) {
 	time_t pld = (time_t) -1;
 
 	if (ld != (time_t) -1) {
-		pld = szb_search_data(m_szbbuf, m_param, ld - SZBASE_PROBE, -1, -1);
+		pld = szb_search_data(m_szbbuf, m_param, ld - SZBASE_DATA_SPAN, -1, -1);
 		if (pld != (time_t) -1)
 			AdjustToTime(pld);
 		AdjustToTime(ld);

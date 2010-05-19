@@ -58,7 +58,7 @@ szb_time2my(time_t time, int * year, int * month);
  * @return -1 on error or non-negative index
  */
 int
-szb_probeind(time_t t, time_t probe_length = SZBASE_PROBE);
+szb_probeind(time_t t, time_t probe_length = SZBASE_DATA_SPAN);
 
 /**
  * Converts month, year and probe index to time value.

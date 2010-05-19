@@ -193,10 +193,10 @@ szb_definable_search_data(szb_buffer_t * buffer, TParam * param,
 					(unsigned long int) start_time, (unsigned long int) end_time);
 #endif
 				const SZBASE_TYPE * data = NULL;
-				for (time = start_time; time >= end_time; time -= SZBASE_PROBE) {
+				for (time = start_time; time >= end_time; time -= SZBASE_DATA_SPAN) {
 					szb_time2my(time, &new_year, &new_month);
 					if (block == NULL || new_month != month || new_year != year) {
-						block = szb_get_block(buffer, param, new_year, new_month);
+						block = szb_get_datablock(buffer, param, new_year, new_month);
 						if (block != NULL)
 							data = block->GetData();
 						if (NULL == block || block->GetFirstDataProbeIdx() < 0) {
@@ -264,10 +264,10 @@ szb_definable_search_data(szb_buffer_t * buffer, TParam * param,
 				szb_time2my(start_time, &year, &month);
 
 				const SZBASE_TYPE * data = NULL;
-				for (time = start_time; time <= end_time; time += SZBASE_PROBE) {
+				for (time = start_time; time <= end_time; time += SZBASE_DATA_SPAN) {
 					szb_time2my(time, &new_year, &new_month);
 					if (block == NULL || new_month != month || new_year != year) {
-						block = szb_get_block(buffer, param, new_year, new_month);
+						block = szb_get_datablock(buffer, param, new_year, new_month);
 						if (NULL != block)
 							data = block->GetData();
 						if (NULL == block || block->GetFirstDataProbeIdx() < 0) {
@@ -365,9 +365,9 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 	if (num_of_params > 0) {
 		probes_to_compute = this->GetBlocksUsedInFormula(dblocks, params, this->first_non_fixed_probe);
 	} else {
-		if (this->last_update_time > this->GetBlockLastDate())
+		if (this->last_update_time > this->GetEndTime())
 			probes_to_compute = this->first_non_fixed_probe = this->max_probes;
-		else if (this->last_update_time < this->GetBlockBeginDate()) {
+		else if (this->last_update_time < this->GetEndTime()) {
 			NOT_INITIALIZED;
 		} else
 			probes_to_compute = this->first_non_fixed_probe = szb_probeind(end_date) + 1;
@@ -394,7 +394,7 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 
 	int i = 0;
 	time_t time = probe2time(0, year, month);
-	for (; i < probes_to_compute; i++, time += SZBASE_PROBE) {
+	for (; i < probes_to_compute; i++, time += SZBASE_DATA_SPAN) {
 		this->data[i] = szb_definable_calculate(b, stack, dblocks, params, formula, i, num_of_params, time, param) / pw;
 
 		if (!IS_SZB_NODATA(this->data[i])) {
@@ -437,7 +437,7 @@ DefinableDatablock::GetBlocksUsedInFormula(const double** blocks, TParam** param
 
 	for (int i = 0; i < num_of_params; i++) {
 
-		szb_datablock_t* block = szb_get_block(this->buffer, f_cache[i], this->year, this->month);
+		szb_datablock_t* block = szb_get_datablock(this->buffer, f_cache[i], this->year, this->month);
 
 		if (block == NULL) {
 			blocks[i] = NULL;
@@ -464,9 +464,9 @@ DefinableDatablock::GetBlocksUsedInFormula(const double** blocks, TParam** param
 	if(probes < fixedprobes)
 		probes = fixedprobes;
 
-	if(this->GetBlockLastDate() < this->last_update_time) {
+	if(this->GetEndTime() < this->last_update_time) {
 		probes = max_probes;
-	} else if (this->GetBlockBeginDate() < this->last_update_time) {
+	} else if (this->GetStartTime() < this->last_update_time) {
 		int tmp = szb_probeind(szb_search_last(buffer, this->param)) + 1;
 		if(tmp > probes)
 			probes = tmp;
@@ -507,7 +507,7 @@ DefinableDatablock::Refresh()
 	if (num_of_params > 0) {
 		new_probes_c = GetBlocksUsedInFormula(dblocks, params, new_fixed_probes);
 	} else {
-		if (this->last_update_time > this->GetBlockLastDate())
+		if (this->last_update_time > this->GetEndTime())
 			new_probes_c = new_fixed_probes = this->max_probes;
 		else
 			new_probes_c = new_fixed_probes = szb_probeind(szb_search_last(buffer, param)) + 1;
@@ -527,7 +527,7 @@ DefinableDatablock::Refresh()
 		last_data_probe_index = -1;
 
 	time_t time = probe2time(0, year, month);
-	for (int i = this->first_non_fixed_probe; i < new_probes_c; i++, time += SZBASE_PROBE) {
+	for (int i = this->first_non_fixed_probe; i < new_probes_c; i++, time += SZBASE_DATA_SPAN) {
 		this->data[i] = szb_definable_calculate(buffer, stack, dblocks, params, formula, i, num_of_params, time, param) / pw;
 
 		if (!IS_SZB_NODATA(this->data[i])) {

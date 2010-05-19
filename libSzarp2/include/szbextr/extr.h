@@ -92,7 +92,7 @@ class SzbExtractor {
 		 * @param custom_period if probe_type is PT_CUSTOM this is
 		 * length of period in seconds, start and end date are rounded
 		 * down by custom_period values, it must be positive, values
-		 * less then SZBASE_PROBE have no sense
+		 * less then SZBASE_DATA_SPAN have no sense
 		 */
 		void SetPeriod(SZARP_PROBE_TYPE period_type, 
 				time_t start, time_t end, 

@@ -79,7 +79,7 @@ class TSaveParam {
 				TStatus *status,
 				int overwrite = 0,
 				int force_nodata = 0,
-				time_t probe_length = SZBASE_PROBE);
+				time_t probe_length = SZBASE_DATA_SPAN);
 		/** Write 10-seconds probe to disk cache.
 		 * @see Write
 		 */
