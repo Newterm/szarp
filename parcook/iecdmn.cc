@@ -136,6 +136,8 @@ public:
 	 * @param size size of the buffer*/
 	void WriteData(const void* buffer, size_t size);
 
+	void AddParityBit(unsigned char* output, const unsigned char* input, size_t size);
+
 	/**Waits for data arrival on a port, throws SerialException
 	 * if no data arrived withing specified time interval
 	 * or select call failed. In both cases port is closed.
@@ -204,17 +206,34 @@ again:
 			throw SerialException(errno);
 		}
 	}
+	for (ssize_t i = 0; i < ret; i++)
+		((unsigned char*)buffer)[i] &= 0x7f;
 	return ret;
+}
+
+void SerialPort::AddParityBit(unsigned char* output, const unsigned char* input, size_t size) {
+	for (size_t i = 0; i < size; i++) {
+		int mask = 1;
+		bool even = false;
+		for (size_t j = 0; j < 7; j++, mask <<= 1) 
+			if (input[i] & mask)
+				even = !even;
+
+		output[i] = input[i];
+		if (even) 
+			output[i] |= 128;
+	}
+
 }
 
 void SerialPort::WriteData(const void* buffer, size_t size) {
 	size_t sent = 0;
 	int ret;
-
-	const char* b = static_cast<const char*>(buffer);
+	unsigned char b[size];
+	AddParityBit(b, (const unsigned char*)buffer, size);
 
 	while (sent < size) {
-		ret = write(m_fd, b + sent, size - sent);
+		ret = write(m_fd, (const unsigned char*)b + sent, size - sent);
 			
 		if (ret < 0) { 
 			if (errno != EINTR) {
@@ -344,7 +363,7 @@ class IECDaemon {
 
 	bool ConfigureUnit(TUnit *unit, xmlNodePtr xunit, int& param_index, xmlXPathContextPtr xp_ctx);
 	void QueryUnit(IECDaemon::Unit &unit);
-	void ParseParam(std::istream& istream, Unit& unit);
+	void ParseParamValue(std::istream& istream, Unit& unit);
 	void ParseResponse(IECDaemon::Unit& unit, const char* read_buffer, size_t buf_size);
 public:
 	void Start();
@@ -369,8 +388,10 @@ bool IECDaemon::ConfigureUnit(TUnit *unit, xmlNodePtr xunit, int& param_index, x
 		Value value;
 		xmlNodePtr n = rset->nodesetval->nodeTab[j];
 		xmlChar* _address = xmlGetNsProp(n, BAD_CAST("address"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-		if (_address) 
+		if (_address == NULL) { 
 			dolog(0, "Attribute iec:address not present in param element, line no (%ld)", xmlGetLineNo(n)); 
+			return false;
+		}
 		std::string address = (char*)_address;
 		xmlFree(_address);
 		bool is_msw = false;
@@ -381,7 +402,7 @@ bool IECDaemon::ConfigureUnit(TUnit *unit, xmlNodePtr xunit, int& param_index, x
 			is_msw = true;
 		xmlFree(_is_msw);
 		int prec = pow10(p->GetPrec());
-		if (dunit.values.find(address) == dunit.values.end()) {
+		if (dunit.values.find(address) != dunit.values.end()) {
 			Value& value = dunit.values[address];
 			if (prec)
 				value.prec = prec;
@@ -513,31 +534,40 @@ void IECDaemon::QueryUnit(IECDaemon::Unit &unit) {
 	ParseResponse(unit, (const char*)read_buffer, read_pos);
 }
 
-void IECDaemon::ParseParam(std::istream& istream, Unit& unit) {
+void IECDaemon::ParseParamValue(std::istream& istream, Unit& unit) {
 	std::string address;
 	std::string value;
 	double dval;
 	int ival;
 	short lsw;
 	short msw;
+	const char* vs;
 	char* e;
 
 	std::getline(istream, address, '(');
-	std::getline(istream, value, ')');
-
-	while (istream.peek() == '(') {
-		istream.ignore(1);
-		std::getline(istream, value, ')');
-	}
+	bool done = false;
+	do {
+		std::string v;
+		std::getline(istream, v, ')');
+		if (v.find('*') != std::string::npos)
+			value = v;
+		if (istream.peek() == '(')
+			istream.ignore(1);
+		else	
+			done = true;
+	} while (!done);
 
 	std::map<std::string, Value>::iterator i = unit.values.find(address);
 	if (i == unit.values.end()) {
 		dolog(2, "Address %s skipped, not defined in configuration", address.c_str()); 
 		goto end;
 	}
-	dval = strtod(value.c_str(), &e); 
-	if (e == value.c_str() || *e != '*' || *e != ')') {
-		dolog(1, "Invalid value(%s) received for address: %s", value.c_str(), address.c_str());
+	vs = value.c_str();
+	while (*vs == ' ')
+		vs++;
+	dval = strtod(vs, &e); 
+	if (e == vs || *e != '*') {
+		dolog(1, "Invalid value(%s) received for address: %s, pasring stopped at: %s", vs, address.c_str(), e);
 		goto end;
 	}
 
@@ -545,7 +575,7 @@ void IECDaemon::ParseParam(std::istream& istream, Unit& unit) {
 	lsw = ival & 0xffffu;
 	msw = ival >> 16;
 
-	dolog(1, "Got value %s for address: %s", value.c_str(), address.c_str());
+	dolog(1, "Got value %s for address: %s", vs, address.c_str());
 
 	if (i->second.msw >= 0)
 		m_ipc->m_read[i->second.msw] = msw;
@@ -566,7 +596,7 @@ void IECDaemon::ParseResponse(IECDaemon::Unit& unit, const char* read_buffer, si
 					is.ignore(2);
 					break;
 				default:
-					ParseParam(is, unit);
+					ParseParamValue(is, unit);
 					break;
 			}
 	} catch (std::ios_base::failure) {
@@ -592,7 +622,7 @@ void IECDaemon::Start() {
 			}
 
 		int to_sleep;
-		while ((to_sleep = (time(NULL) - start - 10)) > 0) 
+		while ((to_sleep = (start + 10 - time(NULL))) > 0) 
 			sleep(to_sleep);
 		dolog(6, "Cycle finish");
 		m_ipc->GoParcook();
@@ -602,6 +632,9 @@ void IECDaemon::Start() {
 
 int main(int argc, char *argv[]) {
 	DaemonConfig* cfg = new DaemonConfig("iecdmn");
+	if (cfg->Load(&argc, argv))
+		return 1;
+	g_single = cfg->GetSingle() || cfg->GetDiagno();
 	IECDaemon daemon;
 	if (!daemon.Configure(cfg))
 		return 1;

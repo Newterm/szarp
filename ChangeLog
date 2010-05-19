@@ -1,4 +1,6 @@
 
+2010-05-19	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* parcook/iecdmn.cc: fixes
 2010-05-17	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* parcook/iecdmn.cc: daemon for queryig enery meters over protocol
 	defined in IEC 62056-21, version not yet tested
