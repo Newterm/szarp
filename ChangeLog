@@ -1,4 +1,14 @@
 
+2010-05-21	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* wx/draw3/drawfrm: under lenny (probably due to different
+	version of gtk and this should probably be considered as wxWidgets bug,
+	btw) there is an idle event emitted in the middle of our
+	DrawFrame::AddDrawPanel method, some time ago idle event handler became
+	responsible for destroying notebook widget when there is only one tab in it - 
+	I don't remeber now, why I had to delay notebook destruction
+	till idle event, but probably to workaround another wxWidgets bug - 
+	anyway, when new tab was being added, idle event destoryed notebook that was
+	just created to store tabs, thus leading to draw3 crash
 2010-05-19	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* parcook/iecdmn.cc: fixes
 2010-05-17	Darek Marcinkiewcz <reksio@praterm.com.pl>

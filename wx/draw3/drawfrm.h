@@ -301,6 +301,8 @@ protected:
 
 	bool ignore_menu_events;
 
+	bool panel_is_added;
+
 	DECLARE_EVENT_TABLE();
 
 };

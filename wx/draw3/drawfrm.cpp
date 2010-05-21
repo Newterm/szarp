@@ -81,6 +81,7 @@ database_manager(dm), m_notebook(NULL), draw_panel(NULL), remarks_handler(remark
 
 	ignore_menu_events = false;
 
+	panel_is_added = false;
 }
 
 void DrawFrame::OnAbout(wxCommandEvent & event)
@@ -290,6 +291,8 @@ bool DrawFrame::AddDrawPanel(const wxString & prefix, const wxString& set, Perio
 
 	wxSizer *sizer = GetSizer();
 
+	panel_is_added = true;
+
 	if (draw_panel != NULL && m_notebook == NULL) {
 
 		m_notebook =
@@ -324,12 +327,6 @@ bool DrawFrame::AddDrawPanel(const wxString & prefix, const wxString& set, Perio
 			wxID_ANY,
 			this, selected_draw);
 
-	if (new_panel == NULL) {
-		if (m_notebook->GetPageCount())
-			DetachFromNotebook();
-		return false;
-	}
-
 	if (draw_panel)
 		draw_panel->SetActive(false);
 
@@ -347,6 +344,8 @@ bool DrawFrame::AddDrawPanel(const wxString & prefix, const wxString& set, Perio
 		draw_panel->SetFocus();
 	}
 	SetTitle(new_panel->GetConfigName(),  new_panel->GetPrefix());
+
+	panel_is_added = false;
 
 	return true;
 }
@@ -605,6 +604,8 @@ void DrawFrame::RemovePendingPanels() {
 }
 
 void DrawFrame::OnIdle(wxIdleEvent &event) {
+	if (panel_is_added)
+		return;
 	if (m_notebook && m_notebook->GetPageCount() == 1)
 		DetachFromNotebook();
 }
