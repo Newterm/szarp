@@ -1,4 +1,7 @@
 
+2010-05-24	Pawel Palucha <pawel@praterm.com.pl>
+	* utils/nagios/sn-fam.py: ignoring temporary OSError exceptions that
+	can happen when working on NFS-mounted data.
 2010-05-21	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* wx/draw3/drawfrm: under lenny (probably due to different
 	version of gtk and this should probably be considered as wxWidgets bug,
