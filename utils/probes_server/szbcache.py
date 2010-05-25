@@ -112,6 +112,7 @@ class SzbCache:
 		@param end end of search as time_t
 		@param direction 1 for right search, -1 for left search, 0 for in-place
 		@param parampath path to directory with parameter, relative to main cache directory
+		@return (found_time, first_time, last_time) tupple
 
 		start should be grater then end for direction equal to -1 and less for direction equal 1;
 		end is ignored for direction equal 0; if start or end is equal to -1, appropriate first/last
@@ -122,11 +123,11 @@ class SzbCache:
 		dpath = self.check_path(parampath)
 		if not os.path.isdir(dpath):
 			return -1
+		(first, last) = self.search_first_last()
 		if direction == 0:
 			if start == -1:
-				(start, last) = self.search_first_last()
-			return self.search_at(start, dpath)
-		(first, last) = self.search_first_last(dpath)
+				start = first
+			return (self.search_at(start, dpath), first, last)
 		if direction > 0:
 			if start == -1 or start < first:
 				start = first
@@ -138,7 +139,7 @@ class SzbCache:
 			if end == -1 or end < first:
 				end = first
 		debug("START END: %s %s" % (format_time(start), format_time(end)))
-		return self.search_for(start, end, direction, dpath)
+		return (self.search_for(start, end, direction, dpath), first, last)
 
 	def get_size_and_last(self, starttime, endtime, parampath):
 		"""

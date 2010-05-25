@@ -93,8 +93,7 @@ class SearchProducer(Producer):
 		Producer.resumeProducing(self)
 		try:
 			ret = self._proto.factory.szbcache.search(self._start, self._end, self._direction, self._param)
-			print "RET:", ret
-			self._proto.transport.write("%d\n" % (ret))
+			self._proto.transport.write("%d %d %d\n" % ret)
 		except szbcache.SzbException, e:
 			self._proto.transport.write("ERROR %d %s\n" % (ErrorCodes.BadRequest, str(e)))
 		self.finish()
@@ -150,9 +149,11 @@ class ProbesProtocol(basic.LineReceiver):
 
 	Response for SEARCH request is:
 
-	found_time\r\n
+	found_time first_time last_time\r\n
 
-	where found_time is -1 if search failed, or date/time of data found as time_t.
+	where found_time is -1 if search failed, or date/time of data found as time_t, first_time
+	and last_time are date/time of first/ast available data or -1 if no data for parameter
+	is available
 
 	GET request:
 
