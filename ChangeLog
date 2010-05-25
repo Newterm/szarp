@@ -1,4 +1,6 @@
 
+2010-05-25	Pawel Palucha <pawel@praterm.com.pl>
+	* utils/conf-*.sh: added -p/--port option for setting svn+ssh port number.
 2010-05-24	Pawel Palucha <pawel@praterm.com.pl>
 	* utils/nagios/sn-fam.py: ignoring temporary OSError exceptions that
 	can happen when working on NFS-mounted data.
