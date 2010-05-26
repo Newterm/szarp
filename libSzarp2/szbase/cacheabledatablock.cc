@@ -86,8 +86,8 @@ void CacheableDatablock::Cache()
 		return;
 
 	std::ofstream ofs(SC::S2A(cachepath).c_str(), std::ios::binary | std::ios::out | std::ios::trunc);
-	ofs.write( (char*) data, sizeof(SZBASE_TYPE)*first_non_fixed_probe);
-	sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, "CacheableDatablock::Cache: %d probes written to cache file: '%ls'", first_non_fixed_probe, cachepath.c_str());
+	ofs.write( (char*) data, sizeof(SZBASE_TYPE)*fixed_probes_count);
+	sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, "CacheableDatablock::Cache: %d probes written to cache file: '%ls'", fixed_probes_count, cachepath.c_str());
 	ofs.close();
 
 }
@@ -164,19 +164,19 @@ CacheableDatablock::LoadFromCache()
 	
 	ifs.close();
 
-	this->first_non_fixed_probe = probes;
+	this->fixed_probes_count = probes;
 
-	for(int i = this->first_non_fixed_probe; i < this->max_probes; i++)
+	for(int i = this->fixed_probes_count; i < this->max_probes; i++)
 		data[i] = SZB_NODATA;
 
-	for(int i = 0; i < this->first_non_fixed_probe; i++) //find first data
+	for(int i = 0; i < this->fixed_probes_count; i++) //find first data
 		if(!IS_SZB_NODATA(this->data[i])) {
 			this->first_data_probe_index = i;
 			break;
 		}
 
 	if(this->first_data_probe_index >= 0)
-		for(int i = this->first_non_fixed_probe - 1; i >= 0; i--) //find last data
+		for(int i = this->fixed_probes_count - 1; i >= 0; i--) //find last data
 			if(!IS_SZB_NODATA(this->data[i])) {
 				this->last_data_probe_index = i;
 				break;
@@ -184,10 +184,10 @@ CacheableDatablock::LoadFromCache()
 	
 	sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, 
 			"CacheableDatablock::LoadFromCache: loaded %d/%d probes from cache file: '%ls'", 
-			this->first_non_fixed_probe, 
+			this->fixed_probes_count, 
 			this->max_probes,
 			cachepath.c_str());
-	assert(this->first_non_fixed_probe <= this->max_probes);
+	assert(this->fixed_probes_count <= this->max_probes);
 
 	return true;
 }

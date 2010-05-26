@@ -79,6 +79,7 @@ struct DatabaseQuery {
 			wchar_t *error;
 		};
 		std::vector<V> *vv;
+		bool refresh;
 	};
 
 	/**Parameters of a search query*/

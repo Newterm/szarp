@@ -62,12 +62,12 @@ public:
 	TParam * const param;
 	const time_t start_time;
 	const time_t end_time;
-	size_t fixed_probes_count;
+	int fixed_probes_count;
 	BlockLocator *locator;
 	virtual SZB_BLOCK_TYPE GetBlockType() = 0;
 	time_t GetStartTime();
 	time_t GetEndTime();
-	size_t GetFixedProbesCount();	
+	int GetFixedProbesCount();	
 	void MarkAsUsed();
 	szb_block_t(szb_buffer_t *buffer, TParam* param, time_t start_time, time_t end_time);
 	virtual const SZBASE_TYPE* GetData(bool refresh = true) = 0;
@@ -97,7 +97,6 @@ public:
 	
 	virtual void FinishInitialization() {};
 	bool IsInitialized(){ return initialized; }; /**< If the initialization of the block has successed. */
-	int GetFixedProbesCount() {return first_non_fixed_probe;};
 	int GetFirstDataProbeIdx() {return first_data_probe_index;};
 	int GetLastDataProbeIdx() {return last_data_probe_index;};
 	virtual void Refresh() =0;	/**< Refreshes the stored data. */
@@ -114,7 +113,6 @@ protected:
 	bool initialized;		/**< Flag for the block`s successful initialization. */
 	SZBASE_TYPE * data;		/**< Array of values stored in the block. */
 	
-	int first_non_fixed_probe;
 	int first_data_probe_index;
 	int last_data_probe_index;
 	
@@ -124,21 +122,19 @@ protected:
 
 class szb_probeblock_t : public szb_block_t {
 public:
-	szb_buffer_t *buffer;
-	time_t end_time;
-	size_t non_fixed_probe;
-	TParam* param;
 	double* data;
+	long last_query_id;
 
-	static const size_t probes_per_block = 10 * 60;
+	static const int probes_per_block = 10 * 60;
 
 	int GetParamDataFromServer(time_t start, time_t end, TParam* param);
 	virtual void FetchProbes() = 0;
-	virtual bool Refresh();
+	virtual void Refresh();
 	virtual SZB_BLOCK_TYPE GetBlockType();
 
 	virtual const SZBASE_TYPE* GetData(bool refresh = true);
 	szb_probeblock_t(szb_buffer_t *buffer, TParam* param, time_t start_time, time_t end_time);
+	virtual ~szb_probeblock_t();
 };
 
 
@@ -201,6 +197,7 @@ private:
 public:
 	void Lock();
 	void Unlock();
+	bool PrepareConnection();
 #ifndef NO_LUA
 #if LUA_PARAM_OPTIMISE
 	void AddExecParam(TParam *param);
@@ -212,7 +209,6 @@ public:
 	szb_buffer_str(int size);
 	~szb_buffer_str();
 
-	unsigned int state;	/**< State of buffer (bit mask) */
 	int last_err;		/**< code of last error */
 	std::wstring last_err_string;	/**< textual descripton of last error*/
 
@@ -389,7 +385,7 @@ szb_get_avg(szb_buffer_t * buffer, TParam * param,
  */
 SZBASE_TYPE
 szb_get_probe(szb_buffer_t * buffer, TParam * param, time_t t,
-	SZARP_PROBE_TYPE probe, int custom_probe);
+	SZARP_PROBE_TYPE probe, int custom_probe = 0);
 
 
 /** Return values of param from given period. Fills in the given buffer
@@ -416,7 +412,7 @@ szb_get_values(szb_buffer_t * buffer, TParam * param,
  * @return -1 if no data was found, else date of first not empty record
  */
 time_t
-szb_search_data(szb_buffer_t * buffer, TParam * param,
+szb_search(szb_buffer_t * buffer, TParam * param,
 		time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe = PT_MIN10, SzbCancelHandle * c_handle = NULL);
 
 /** Return time of begining of first file in base for given param.

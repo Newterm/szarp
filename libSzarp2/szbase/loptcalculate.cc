@@ -1168,6 +1168,10 @@ ExecutionEngine::ExecutionEngine(szb_buffer_t *buffer, Param *param) {
 		m_param->m_par_refs[i].SetExecutionEngine(this);
 	m_blocks.resize(UNUSED_BLOCK_TYPE);
 	m_blocks_iterators.resize(UNUSED_BLOCK_TYPE);
+	for (size_t i = 0 ; i < UNUSED_BLOCK_TYPE; i++) {
+		m_blocks[i].resize(m_param->m_par_refs.size());
+		m_blocks_iterators[i].resize(m_param->m_par_refs.size());
+	}
 	m_vals.resize(m_param->m_vars.size());
 	for (size_t i = 0; i < m_vals.size(); i++)
 		m_param->m_vars[i].SetExecutionEngine(this);
@@ -1176,7 +1180,7 @@ ExecutionEngine::ExecutionEngine(szb_buffer_t *buffer, Param *param) {
 	m_vals[5] = PT_HOUR8;
 	m_vals[6] = PT_WEEK;
 	m_vals[7] = PT_MONTH;
-	m_vals[7] = PT_SEC10;
+	m_vals[8] = PT_SEC10;
 }
 
 void ExecutionEngine::CalculateValue(time_t t, SZARP_PROBE_TYPE probe_type, double &val, bool &fixed) {
@@ -1189,33 +1193,48 @@ void ExecutionEngine::CalculateValue(time_t t, SZARP_PROBE_TYPE probe_type, doub
 	val = m_vals[0];
 }
 
-szb_block_t* ExecutionEngine::GetBlockFromBuffer(size_t param_index, time_t t, SZB_BLOCK_TYPE bt) {
-	return szb_get_block(m_param->m_par_refs[param_index].m_buffer, m_param->m_par_refs[param_index].m_param, t, bt);
+ExecutionEngine::ListEntry ExecutionEngine::GetBlockEntry(size_t param_index, time_t t, SZB_BLOCK_TYPE bt) {
+	ListEntry le;
+	le.block = szb_get_block(m_param->m_par_refs[param_index].m_buffer, m_param->m_par_refs[param_index].m_param, t, bt);
+	le.start_time = t;
+	int year, month;
+	switch (bt) {
+		case MIN10_BLOCK:
+			szb_time2my(t, &year, &month);
+			le.end_time = t + SZBASE_DATA_SPAN * szb_probecnt(year, month);	
+			break;
+		case SEC10_BLOCK:
+			le.end_time = t + SZBASE_PROBE_SPAN * szb_probeblock_t::probes_per_block;
+			break;
+		case UNUSED_BLOCK_TYPE:
+			assert(false);
+	}
+	return le;
 }
 
 szb_block_t* ExecutionEngine::AddBlock(size_t param_index,
 		time_t t,
-		std::list<szb_block_t*>::iterator& i,
+		std::list<ListEntry>::iterator& i,
 		SZB_BLOCK_TYPE bt) {
-	szb_block_t* block = GetBlockFromBuffer(param_index, t, bt);
-	m_blocks[bt][param_index].insert(i, block);
+	ListEntry le(GetBlockEntry(param_index, t, bt));
+	m_blocks[bt][param_index].insert(i, le);
 	std::advance(i, -1);
-	return *i;
+	return i->block;
 }
 
 szb_block_t* ExecutionEngine::SearchBlockLeft(size_t param_index,
 		time_t t,
-		std::list<szb_block_t*>::iterator& i,
+		std::list<ListEntry>::iterator& i,
 		SZB_BLOCK_TYPE bt) {
 	do {
 		if (i == m_blocks[bt][param_index].begin())
 			return AddBlock(param_index, t, i, bt);
 
-		if ((*(--i))->GetEndTime() <= t)
+		if ((--i)->end_time <= t)
 			return AddBlock(param_index, t, ++i, bt);
 
-		if ((*i)->GetStartTime() <= t)
-			return *i;
+		if (i->start_time <= t)
+			return i->block;
 		
 	} while (true);	
 
@@ -1223,17 +1242,17 @@ szb_block_t* ExecutionEngine::SearchBlockLeft(size_t param_index,
 
 szb_block_t* ExecutionEngine::SearchBlockRight(
 		size_t param_index,
-		time_t t, std::list<szb_block_t*>::iterator& i,
+		time_t t, std::list<ListEntry>::iterator& i,
 		SZB_BLOCK_TYPE bt) {
 	do {
 		if (++i == m_blocks[bt][param_index].end())
 			return AddBlock(param_index, t, i, bt);
 
-		if ((*i)->GetStartTime() > t)
+		if (i->start_time > t)
 			return AddBlock(param_index, t, i, bt);
 
-		if ((*i)->GetEndTime() > t)
-			return *i;
+		if (i->end_time > t)
+			return i->block;
 		
 	} while (true);	
 
@@ -1243,18 +1262,18 @@ szb_block_t* ExecutionEngine::GetBlock(size_t param_index,
 		time_t time,
 		SZB_BLOCK_TYPE bt) {
 	if (m_blocks[bt][param_index].size()) {	
-		std::list<szb_block_t*>::iterator& i = m_blocks_iterators[bt][param_index];
-		if ((*i)->GetStartTime() <= time && time < (*i)->GetEndTime())
-			return *i;
-		else if ((*i)->GetStartTime() > time)
+		std::list<ListEntry>::iterator& i = m_blocks_iterators[bt][param_index];
+		if (i->start_time <= time && time < i->end_time)
+			return i->block;
+		else if (i->start_time > time)
 			return SearchBlockLeft(param_index, time, i, bt);
 		else
 			return SearchBlockRight(param_index, time, i, bt);
 	} else {
-		szb_block_t* block = GetBlockFromBuffer(param_index, time, bt);
-		m_blocks[bt][param_index].push_back(block);
+		ListEntry le(GetBlockEntry(param_index, time, bt));
+		m_blocks[bt][param_index].push_back(le);
 		m_blocks_iterators[bt][param_index] = m_blocks[bt][param_index].begin();
-		return *m_blocks_iterators[bt][param_index];
+		return m_blocks_iterators[bt][param_index]->block;
 	}
 }
 
@@ -1264,7 +1283,7 @@ double ExecutionEngine::ValueBlock(size_t param_index, const time_t& time, SZB_B
 	szb_block_t* block = GetBlock(param_index, time, block_type);
 	if (block) {
 		time_t timediff = time - block->GetStartTime();
-		size_t probe_index;
+		int probe_index;
 		switch (block_type) {
 			case MIN10_BLOCK:
 				probe_index = timediff / SZBASE_DATA_SPAN;

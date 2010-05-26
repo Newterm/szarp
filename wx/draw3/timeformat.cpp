@@ -63,12 +63,16 @@ wxString FormatTime(const wxDateTime &time, PeriodType period) {
 		ret += _("hour") + time.Format(_(" %R")) + end.Format(_T("-%R"));
 #endif
 	} else {
+		int minute = time.GetMinute();
+		if (period != PERIOD_T_10MINUTE)
+			minute = minute / 10 * 10;
 		switch (period) {
-			case PERIOD_T_DAY :
+			case PERIOD_T_10MINUTE:
+				ret = wxString::Format(_T(":%02d"), time.GetSecond() / 10 * 10);
+			case PERIOD_T_DAY:
 			case PERIOD_T_OTHER :
 				ret = wxString(_T(", ")) + _("hour") + time.Format(_T(" %H:")) + 
-					wxString::Format(_T("%02d"), 
-							(time.GetMinute() / 10) * 10);
+					wxString::Format(_T("%02d"), minute) + ret;
 			case PERIOD_T_MONTH :
 				ret = wxString(_T(", ")) 
 #ifdef MINGW32

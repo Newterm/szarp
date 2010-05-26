@@ -298,7 +298,7 @@ LuaNativeDatablock::LuaNativeDatablock(szb_buffer_t * b, TParam * p, int y, int 
 
 	this->AllocateDataMemory();
 
-	this->first_non_fixed_probe = 0;
+	this->fixed_probes_count = 0;
 
 	if (CacheableDatablock::LoadFromCache()) {
 		Refresh();
@@ -338,7 +338,7 @@ void LuaNativeDatablock::FinishInitialization() {
 
 	if (m_init_in_progress == false) {
 		//block has been load from cache
-		if (first_non_fixed_probe > 0)
+		if (fixed_probes_count > 0)
 			return;
 		m_init_in_progress = true;
 	} else
@@ -365,7 +365,7 @@ void LuaNativeDatablock::FinishInitialization() {
 
 	for (int i = 0; i < start_probe; i++)
 		this->data[i] = SZB_NODATA;
-	this->first_non_fixed_probe = start_probe;
+	this->fixed_probes_count = start_probe;
 
 	time_t end_date = buffer->GetMeanerDate() + param->GetLuaEndOffset();
 
@@ -394,8 +394,8 @@ void LuaNativeDatablock::FinishInitialization() {
 			NOT_INITIALIZED;
 			break;
 		}
-		if (fixedvalue && i == this->first_non_fixed_probe) {
-			this->first_non_fixed_probe++;
+		if (fixedvalue && i == this->fixed_probes_count) {
+			this->fixed_probes_count++;
 		}
 		if (!IS_SZB_NODATA(this->data[i])) {
 			data[i] = rint(data[i] * pow10(param->GetPrec())) / pow10(param->GetPrec()); 
@@ -415,7 +415,7 @@ void LuaNativeDatablock::FinishInitialization() {
 void
 LuaNativeDatablock::Refresh() {
 
-	if(this->first_non_fixed_probe == this->max_probes)
+	if(this->fixed_probes_count == this->max_probes)
 		return;
 
 	time_t updatetime = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
@@ -438,14 +438,14 @@ LuaNativeDatablock::Refresh() {
 
 	int new_probes_count = szb_probeind(end_date) + 1;
 
-	assert(new_probes_count >= this->first_non_fixed_probe);
+	assert(new_probes_count >= this->fixed_probes_count);
 
-	if (this->first_data_probe_index >= first_non_fixed_probe)
+	if (this->first_data_probe_index >= fixed_probes_count)
 		first_data_probe_index = -1;
-	if (this->last_data_probe_index >= first_non_fixed_probe)
+	if (this->last_data_probe_index >= fixed_probes_count)
 		last_data_probe_index = -1;
 
-	for (int i = this->first_non_fixed_probe; i < new_probes_count; i++) {
+	for (int i = this->fixed_probes_count; i < new_probes_count; i++) {
 
 		Lua::fixed.push(true);
 		lua_get_val(lua, buffer, probe2time(i, year, month), PT_MIN10, 0, data[i]);
@@ -453,8 +453,8 @@ LuaNativeDatablock::Refresh() {
 		Lua::fixed.pop();
 		if (buffer->last_err != SZBE_OK)
 			break;
-		if (fixedvalue && i == this->first_non_fixed_probe) {
-			this->first_non_fixed_probe++;
+		if (fixedvalue && i == this->fixed_probes_count) {
+			this->fixed_probes_count++;
 		}
 		if(!IS_SZB_NODATA(this->data[i])) {
 			data[i] = rint(data[i] * pow10(param->GetPrec())) / pow10(param->GetPrec()); 

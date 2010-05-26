@@ -47,6 +47,9 @@ SZARP_PROBE_TYPE PeriodToProbeType(PeriodType period) {
 		case PERIOD_T_DAY:
 			pt = PT_MIN10;
 			break;
+		case PERIOD_T_10MINUTE:
+			pt = PT_SEC10;
+			break;
 		default:
 			pt = PT_CUSTOM;
 			assert (0);
@@ -241,7 +244,7 @@ void QueryExecutor::ExecuteSearchQuery(szb_buffer_t* szb, TParam *p, DatabaseQue
 #endif
 
 	sd.response = 
-		szb_search_data(szb, 
+		szb_search(szb, 
 			p, 
 			sd.start, 
 			sd.end, 

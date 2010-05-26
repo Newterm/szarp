@@ -45,9 +45,9 @@ LuaOptDatablock::LuaOptDatablock(szb_buffer_t * b, TParam * p, int y, int m) : L
 }
 
 void LuaOptDatablock::CalculateValues(LuaExec::ExecutionEngine *ee, int end_probe) {
-	time_t t = probe2time(first_non_fixed_probe, year, month);
+	time_t t = probe2time(fixed_probes_count, year, month);
 
-	for (int i = first_non_fixed_probe; i < end_probe; i++, t += SZBASE_DATA_SPAN) {
+	for (int i = fixed_probes_count; i < end_probe; i++, t += SZBASE_DATA_SPAN) {
 		bool probe_fixed = true;
 		ee->CalculateValue(t, PT_MIN10, data[i], probe_fixed);
 		if (!std::isnan(data[i])) {
@@ -55,14 +55,14 @@ void LuaOptDatablock::CalculateValues(LuaExec::ExecutionEngine *ee, int end_prob
 			if (first_data_probe_index < 0)
 				first_data_probe_index = i;
 		}
-		if (probe_fixed && first_non_fixed_probe == i)
-			first_non_fixed_probe = i + 1;
+		if (probe_fixed && fixed_probes_count == i)
+			fixed_probes_count = i + 1;
 		
 	}
 }
 
 void LuaOptDatablock::Refresh() {
-	if (first_non_fixed_probe == max_probes)
+	if (fixed_probes_count == max_probes)
 		return;
 
 	bool refresh = false;

@@ -363,17 +363,17 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 
 	int probes_to_compute;
 	if (num_of_params > 0) {
-		probes_to_compute = this->GetBlocksUsedInFormula(dblocks, params, this->first_non_fixed_probe);
+		probes_to_compute = this->GetBlocksUsedInFormula(dblocks, params, this->fixed_probes_count);
 	} else {
 		if (this->last_update_time > this->GetEndTime())
-			probes_to_compute = this->first_non_fixed_probe = this->max_probes;
+			probes_to_compute = this->fixed_probes_count = this->max_probes;
 		else if (this->last_update_time < this->GetEndTime()) {
 			NOT_INITIALIZED;
 		} else
-			probes_to_compute = this->first_non_fixed_probe = szb_probeind(end_date) + 1;
+			probes_to_compute = this->fixed_probes_count = szb_probeind(end_date) + 1;
 	}
 
-	assert(this->first_non_fixed_probe <= this->max_probes);
+	assert(this->fixed_probes_count <= this->max_probes);
 
 	if (probes_to_compute <= 0)
 		NOT_INITIALIZED;
@@ -461,14 +461,14 @@ DefinableDatablock::GetBlocksUsedInFormula(const double** blocks, TParam** param
 		}
 	}
 
-	if(probes < fixedprobes)
+	if (probes < fixedprobes)
 		probes = fixedprobes;
 
 	if(this->GetEndTime() < this->last_update_time) {
 		probes = max_probes;
 	} else if (this->GetStartTime() < this->last_update_time) {
 		int tmp = szb_probeind(szb_search_last(buffer, this->param)) + 1;
-		if(tmp > probes)
+		if (tmp > probes)
 			probes = tmp;
 	}
 
@@ -479,7 +479,7 @@ void
 DefinableDatablock::Refresh()
 {
 	// block is full - no more probes can be load
-	if (this->first_non_fixed_probe == this->max_probes)
+	if (this->fixed_probes_count == this->max_probes)
 		return;
 
 	time_t updatetime = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
@@ -515,19 +515,19 @@ DefinableDatablock::Refresh()
 	
 	assert(new_probes_c > 0);
 
-	assert(new_fixed_probes >= this->first_non_fixed_probe);
+	assert(new_fixed_probes >= this->fixed_probes_count);
 
 	SZBASE_TYPE stack[DEFINABLE_STACK_SIZE]; // stack for calculatinon of formula
 
 	double pw = pow(10, this->param->GetPrec());
 
-	if (this->first_data_probe_index >= first_non_fixed_probe)
+	if (this->first_data_probe_index >= int(fixed_probes_count))
 		first_data_probe_index = -1;
-	if (this->last_data_probe_index >= first_non_fixed_probe)
+	if (this->last_data_probe_index >= int(fixed_probes_count))
 		last_data_probe_index = -1;
 
 	time_t time = probe2time(0, year, month);
-	for (int i = this->first_non_fixed_probe; i < new_probes_c; i++, time += SZBASE_DATA_SPAN) {
+	for (int i = this->fixed_probes_count; i < new_probes_c; i++, time += SZBASE_DATA_SPAN) {
 		this->data[i] = szb_definable_calculate(buffer, stack, dblocks, params, formula, i, num_of_params, time, param) / pw;
 
 		if (!IS_SZB_NODATA(this->data[i])) {
@@ -549,7 +549,7 @@ DefinableDatablock::Refresh()
 		assert(!IS_SZB_NODATA(this->data[this->GetLastDataProbeIdx()]));
 	}
 
-	this->first_non_fixed_probe = new_fixed_probes;
+	this->fixed_probes_count = new_fixed_probes;
 
 	szb_unlock_buffer(buffer);
 
@@ -558,5 +558,5 @@ DefinableDatablock::Refresh()
 
 bool DefinableDatablock::IsCachable()
 {
-	return first_non_fixed_probe > 0;
+	return fixed_probes_count > 0;
 }

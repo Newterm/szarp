@@ -111,7 +111,7 @@ RealDatablock::RealDatablock(szb_buffer_t * b, TParam * p, int y, int m) :
 		if (!LoadFromFile()) //If file exists load data from in
 			assert(false);
 		//CBB: something more reasonable
-		if (this->first_non_fixed_probe == this->max_probes)
+		if (this->fixed_probes_count == this->max_probes)
 			return; //Block is full
 	} else {
 		if (this->GetEndTime() < buffer->first_av_date)
@@ -122,11 +122,10 @@ RealDatablock::RealDatablock(szb_buffer_t * b, TParam * p, int y, int m) :
 	szb_time2my(szb_search_last(buffer, param), &ly, &lm);
 
 	if ( (year < ly || (year == ly && month < lm)) || this->last_update_time > this->GetEndTime()) {
-		this->first_non_fixed_probe = this->max_probes; //If there are future data or the end of block is before `now`
+		this->fixed_probes_count = this->max_probes; //If there are future data or the end of block is before `now`
 	} else {
-
 		int tmp = szb_probeind(this->last_update_time) + 1;
-		this->first_non_fixed_probe = this->first_non_fixed_probe > tmp ? this->first_non_fixed_probe : tmp; //we have all read data or untill `now`
+		this->fixed_probes_count = this->fixed_probes_count > tmp ? this->fixed_probes_count : tmp; //we have all read data or untill `now`
 	}
 
 	return;
@@ -177,7 +176,7 @@ bool RealDatablock::LoadFromFile() {
 
 	assert(!(to_read % sizeof(SZB_FILE_TYPE)));
 
-	this->first_non_fixed_probe = this->probes_from_file = max_probes - (to_read / sizeof(SZB_FILE_TYPE));
+	this->fixed_probes_count = this->probes_from_file = max_probes - (to_read / sizeof(SZB_FILE_TYPE));
 
 	this->AllocateDataMemory();
 
@@ -209,7 +208,7 @@ bool RealDatablock::LoadFromFile() {
  * @return -1 on error (check buffer->last_err), otherwise 0
  */
 void RealDatablock::Refresh() {
-	if (this->first_non_fixed_probe == this->max_probes)
+	if (this->fixed_probes_count == this->max_probes)
 		return;
 
 	sz_log(DATABLOCK_REFRESH_LOG_LEVEL, "RealDatablock::Refresh() '%ls'", this->GetBlockRelativePath().c_str());
@@ -225,8 +224,8 @@ void RealDatablock::Refresh() {
 		if (this->first_data_probe_index < 0) { //this block is empty - update fixed probes
 			int tmp = szb_probeind(this->last_update_time < this->GetLastDataProbeIdx() ? this->last_update_time
 					: this->GetLastDataProbeIdx());
-			assert(tmp >= this->first_non_fixed_probe);
-			this->first_non_fixed_probe = this->first_non_fixed_probe > tmp ? this->first_non_fixed_probe : tmp;
+			assert(tmp >= this->fixed_probes_count);
+			this->fixed_probes_count = this->fixed_probes_count > tmp ? this->fixed_probes_count : tmp;
 		}
 		return;
 	}
@@ -309,16 +308,16 @@ void RealDatablock::Refresh() {
 	free(buf);
 
 	if (this->last_update_time > this->GetEndTime())
-		this->first_non_fixed_probe = max_probes;
+		this->fixed_probes_count = max_probes;
 	else if (this->last_update_time < this->GetStartTime())
-		this->first_non_fixed_probe = this->probes_from_file;
+		this->fixed_probes_count = this->probes_from_file;
 	else {
 		int tmp = szb_probeind(this->last_update_time) + 1;
-		this->first_non_fixed_probe = this->probes_from_file < tmp ? this->probes_from_file : tmp;
+		this->fixed_probes_count = this->probes_from_file < tmp ? this->probes_from_file : tmp;
 	}
 
 	if (memallocated) {
-		for (int i = this->first_non_fixed_probe; i < this->max_probes; i++)
+		for (int i = this->fixed_probes_count; i < this->max_probes; i++)
 			data[i] = SZB_NODATA;
 	}
 

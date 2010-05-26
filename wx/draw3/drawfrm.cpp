@@ -125,6 +125,11 @@ NumberOfUnitsDialog::NumberOfUnitsDialog(wxWindow *parent, PeriodType pt, size_t
 			max = 72;
 			text = _("Select number of displayed hours");
 			break;
+		case PERIOD_T_10MINUTE:
+			min = 1;
+			max = 36;
+			text = _("Select number of displayed minutes");
+			break;
 		case PERIOD_T_SEASON:
 			min = 1;
 			max = 80;
@@ -654,6 +659,8 @@ void DrawFrame::OnAverageChange(wxCommandEvent& event) {
 		pt = PERIOD_T_WEEK;
 	else if (id == XRCID("DAY_RADIO"))
 		pt = PERIOD_T_DAY;
+	else if (id == XRCID("HOUR_RADIO"))
+		pt = PERIOD_T_10MINUTE;
 	else
 		pt = PERIOD_T_SEASON;
 

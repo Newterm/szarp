@@ -78,15 +78,20 @@ public:
 class ExecutionEngine {
 	szb_buffer_t* m_buffer;
 	std::vector<TParam*> m_params;
-	std::vector<std::vector<std::list<szb_block_t*> > > m_blocks;
-	std::vector<std::vector<std::list<szb_block_t*>::iterator> > m_blocks_iterators;
+	struct ListEntry {
+		time_t start_time;
+		time_t end_time;
+		szb_block_t *block;
+	};
+	std::vector<std::vector<std::list<ListEntry> > > m_blocks;
+	std::vector<std::vector<std::list<ListEntry>::iterator> > m_blocks_iterators;
 	std::vector<double> m_vals;
 	Param* m_param;
 	bool m_fixed;
-	szb_block_t* GetBlockFromBuffer(size_t param_index, time_t t, SZB_BLOCK_TYPE bt);
-	szb_block_t* AddBlock(size_t param_index, time_t t, std::list<szb_block_t*>::iterator& i, SZB_BLOCK_TYPE bt);
-	szb_block_t* SearchBlockLeft(size_t param_index, time_t t, std::list<szb_block_t*>::iterator& i, SZB_BLOCK_TYPE bt);
-	szb_block_t* SearchBlockRight(size_t param_index, time_t t, std::list<szb_block_t*>::iterator& i, SZB_BLOCK_TYPE bt);
+	ListEntry GetBlockEntry(size_t param_index, time_t t, SZB_BLOCK_TYPE bt);
+	szb_block_t* AddBlock(size_t param_index, time_t t, std::list<ListEntry>::iterator& i, SZB_BLOCK_TYPE bt);
+	szb_block_t* SearchBlockLeft(size_t param_index, time_t t, std::list<ListEntry>::iterator& i, SZB_BLOCK_TYPE bt);
+	szb_block_t* SearchBlockRight(size_t param_index, time_t t, std::list<ListEntry>::iterator& i, SZB_BLOCK_TYPE bt);
 	szb_block_t* GetBlock(size_t param_index, time_t time, SZB_BLOCK_TYPE bt);
 public:
 	ExecutionEngine(szb_buffer_t *buffer, Param *param);

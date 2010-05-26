@@ -22,9 +22,9 @@
 #include "ids.h"
 #include "drawtime.h"
 
-const size_t TimeIndex::default_units_count[PERIOD_T_LAST] = { 12, 31, 7, 24, 40 };
+const size_t TimeIndex::default_units_count[PERIOD_T_LAST] = { 12, 31, 7, 24, 10, 40 };
 /*for year, month, week, day, season*/
-const int TimeIndex::PeriodMult[PERIOD_T_LAST] = {1, 1, 3, 6, 1};
+const int TimeIndex::PeriodMult[PERIOD_T_LAST] = {1, 1, 3, 6, 6, 1};
 
 DTime::DTime(const PeriodType& period, const wxDateTime& time) : m_period(period), m_time(time)
 {
@@ -51,6 +51,9 @@ DTime& DTime::AdjustToPeriodStart() {
 		case PERIOD_T_WEEK:
 			m_time.SetHour(0);
 			m_time.SetMinute(0);
+			break;
+		case PERIOD_T_10MINUTE:
+			m_time.SetSecond(0);
 			break;
 		case PERIOD_T_DAY: {
 			wxDateTime tmp = m_time;
@@ -93,7 +96,6 @@ DTime& DTime::AdjustToPeriod() {
 			m_time = wxDateTime(m_time.GetDay(), m_time.GetMonth(), m_time.GetYear());
 			break;
 		case PERIOD_T_WEEK :
-			m_time = m_time;
 			m_time.SetHour((m_time.GetHour()/8) * 8);
 			m_time.SetMinute(0);
 			m_time.SetSecond(0);
@@ -102,6 +104,19 @@ DTime& DTime::AdjustToPeriod() {
 		case PERIOD_T_DAY : {
 			wxDateTime tmp = m_time;
 			m_time.SetMinute(m_time.GetMinute() / 10 * 10);
+
+			//yet another workaround for bug in wxDateTime
+			if (tmp.IsDST() && !m_time.IsDST())
+				m_time -= wxTimeSpan::Hours(1);
+			else if (!tmp.IsDST() && m_time.IsDST())
+				m_time += wxTimeSpan::Hours(1);
+
+			break;
+
+		}
+		case PERIOD_T_10MINUTE : {
+			wxDateTime tmp = m_time;
+			m_time.SetSecond(m_time.GetSecond() / 10 * 10);
 
 			//yet another workaround for bug in wxDateTime
 			if (tmp.IsDST() && !m_time.IsDST())
@@ -149,6 +164,7 @@ DTime DTime::operator+(const wxTimeSpan& span) const {
 			return DTime(m_period, m_time);
 			break;
 		//in this case will just follow UTC
+		case PERIOD_T_10MINUTE: 
 		case PERIOD_T_DAY: 
 			return DTime(m_period, m_time + span);
 			break;
@@ -254,6 +270,9 @@ int DTime::GetDistance(const DTime &t) const {
 			break;
 		case PERIOD_T_DAY:
 			ret = (_t - _t0).GetMinutes() / 10;
+			break;
+		case PERIOD_T_10MINUTE:
+			ret = ((_t - _t0).GetSeconds() / 10).ToLong();
 			break;
 		case PERIOD_T_WEEK:
 			ret = (_t - _t0).GetHours() / 8;
@@ -365,6 +384,12 @@ void TimeIndex::UpdatePeriods() {
 			m_timeperiod = wxTimeSpan(1, 0, 0, 0) * (m_number_of_values / TimeIndex::PeriodMult[p]);
 			m_dateperiod = wxDateSpan(0);
 			break;
+		case PERIOD_T_10MINUTE :
+			m_timeres = wxTimeSpan(0, 0, 10, 0);
+			m_dateres = wxDateSpan(0);
+			m_timeperiod = wxTimeSpan(0, 1, 0, 0) * (m_number_of_values / TimeIndex::PeriodMult[p]);
+			m_dateperiod = wxDateSpan(0);
+			break;
 		case PERIOD_T_SEASON :
 			m_timeres = wxTimeSpan(24 * 7, 0, 0, 0);
 			m_dateres = wxDateSpan(0);
@@ -399,6 +424,9 @@ DTime TimeIndex::AdjustToPeriodSpan(const DTime &time) const {
 			case PERIOD_T_DAY :
 				dt.SetHour(0);
 				dt.SetMinute(0);
+				break;
+			case PERIOD_T_10MINUTE :
+				dt.SetMinute(dt.GetMinute() / 10 * 10);
 				break;
 			case PERIOD_T_OTHER:
 			case PERIOD_T_LAST:

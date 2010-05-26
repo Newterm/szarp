@@ -104,6 +104,7 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 		wxDateTime::WeekDay m_wday;
 		int m_hour;
 		int m_minute;
+		int m_second;
 	public:
 		TimeReference(const wxDateTime &datetime);
 		void Update(const DTime& time); 

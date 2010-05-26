@@ -10,8 +10,11 @@
 
 #include "config.h"
 
+#include <boost/asio.hpp>
 
 class ProberConnection {
+	szb_buffer_t* m_buffer;
+
 	boost::asio::io_service m_io_service;
 	boost::asio::ip::tcp::resolver m_resolver;
 	boost::asio::deadline_timer m_deadline;
@@ -31,21 +34,27 @@ class ProberConnection {
 
 	time_t m_search_result;
 	time_t m_server_time;
+	time_t m_start_time;
+	time_t m_end_time;
 	int m_values_count;
 
-	enum { SEND_SEARCH, SEND_GET } m_operation; 
+	enum { SEND_SEARCH, SEND_GET, SEND_BOUNDARY_TIME } m_operation; 
 
 	std::string m_error;
 
 	class message_error : public std::exception  { };
 public:
-	ProberConnection(std::string address, std::string port);
+	ProberConnection(szb_buffer_t* buffer, std::string address, std::string port);
 
 	void Connect();
 
 	void TimeoutHandler(const boost::system::error_code& error);
 
+	bool IsError();
+
 	std::string Error();
+
+	void ClearError();
 
 	void ResetBuffers();
 
@@ -54,6 +63,8 @@ public:
 	void SendSearchQuery();
 
 	void SendGetQuery();
+
+	void SendBoundsQuery();
 
 	void HandleConnect(const boost::system::error_code& error);
 
@@ -69,6 +80,8 @@ public:
 
 	void HandleReadValues(const boost::system::error_code &error);
 
+	void HandleBoundsResponse(const boost::system::error_code &error, bool first_line);
+
 	void HandleSearchResponse(const boost::system::error_code &error);
 
 	time_t Search(time_t from, time_t to, int direction, std::wstring path);
@@ -78,6 +91,8 @@ public:
 	int GetData(short *buffer, int count);
 
 	time_t GetServerTime();
+
+	bool GetBoundaryTimes(time_t &first_date, time_t& end_date);
 
 	void Go();
 

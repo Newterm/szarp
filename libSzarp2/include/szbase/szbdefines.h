@@ -74,6 +74,7 @@ static inline SZB_FILE_TYPE szbfile_endian(SZB_FILE_TYPE n)
 #define SZBE_NULL	-4	/**< Null parameter for function where it's not allowed */
 #define SZBE_OUTMEM	-5	/**< out of memory */
 #define SZBE_LUA_ERROR  -6	/**< error in lua param execution/compilation */
+#define SZBE_CONN_ERROR -7	/**< error in connection with probe server */
 
 typedef void (*szb_custom_function) (struct tm* time, SZBASE_TYPE* stack, short* sp);
 

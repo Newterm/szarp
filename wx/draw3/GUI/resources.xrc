@@ -683,6 +683,10 @@
                     <label>Day\tAlt+D</label>
                     <radio>1</radio>
                 </object>
+                <object class="wxMenuItem" name="10MINUTE_RADIO">
+                    <label>10 Minutes\tAlt+1</label>
+                    <radio>1</radio>
+                </object>
                 <object class="wxMenuItem" name="SEASON_RADIO">
                     <label>Season\tAlt+S</label>
                     <radio>1</radio>

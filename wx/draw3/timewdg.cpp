@@ -55,12 +55,13 @@ TimeWidget::TimeWidget(wxWindow* parent, DrawsWidget *draws_widget, PeriodType p
                 _("MONTH"),
                 _("WEEK"),
                 _("DAY"),
+                _("10 MINUTES"),
                 _("SEASON")
         };
         Create(parent, wxID_ANY, 
 			_T(""), // label
 			wxDefaultPosition, wxDefaultSize,
-			5, // number of options
+			6, // number of options
 			time_wdg_choices, // options strings array
 			1, // number of columns
 			wxRA_SPECIFY_COLS | // vertical
@@ -76,8 +77,11 @@ TimeWidget::TimeWidget(wxWindow* parent, DrawsWidget *draws_widget, PeriodType p
 		case PERIOD_T_DAY:
 			m_selected = 3;
 			break;
-		case PERIOD_T_SEASON: 
+		case PERIOD_T_10MINUTE:
 			m_selected = 4;
+			break;
+		case PERIOD_T_SEASON: 
+			m_selected = 5;
 			break;				     
 		default:
 		case PERIOD_T_YEAR:

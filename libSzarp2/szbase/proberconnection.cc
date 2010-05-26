@@ -3,15 +3,15 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
-#include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/algorithm/string.hpp>
 
 #include "conversion.h"
 #include "szbdefines.h"
+#include "szbase/szbbuf.h"
 #include "proberconnection.h"
 
-ProberConnection::ProberConnection(std::string address, std::string port) : m_io_service(), m_resolver(m_io_service), m_deadline(m_io_service), m_socket(m_io_service), m_address(address), m_port(port), m_connected(false) {
+ProberConnection::ProberConnection(szb_buffer_t *buffer, std::string address, std::string port) : m_buffer(buffer), m_io_service(), m_resolver(m_io_service), m_deadline(m_io_service), m_socket(m_io_service), m_address(address), m_port(port), m_connected(false) {
 }
 
 void ProberConnection::Connect() {
@@ -24,6 +24,14 @@ void ProberConnection::Connect() {
 void ProberConnection::TimeoutHandler(const boost::system::error_code& error) {
 	std::cerr << "Timeout" << std::endl;
 	//m_resolver.cancel();
+}
+
+bool ProberConnection::IsError() {
+	return !m_error.empty();
+}
+
+void ProberConnection::ClearError() {
+	m_error.clear();
 }
 
 std::string ProberConnection::Error() {
@@ -43,6 +51,19 @@ void ProberConnection::HandleResolve(const boost::system::error_code& error, boo
 	} else {
 		throw error;
 	}
+}
+
+void ProberConnection::SendBoundsQuery() {
+	ResetBuffers();
+
+	std::ostream ostream(&m_output_buffer);
+	ostream << "TIME_BOUND" << "\r\n";
+
+	boost::asio::async_write(m_socket, m_output_buffer, 
+		boost::bind(&ProberConnection::HandleWrite, this, _1));
+
+	boost::asio::async_read_until(m_socket, m_input_buffer, "\r\n",
+			boost::bind(&ProberConnection::HandleBoundsResponse, this, _1, true));
 }
 
 void ProberConnection::SendSearchQuery() {
@@ -91,6 +112,9 @@ void ProberConnection::HandleConnect(const boost::system::error_code& error) {
 			case SEND_GET:
 				SendGetQuery();
 				break;
+			case SEND_BOUNDARY_TIME:
+				SendBoundsQuery();
+				break;
 		}
 
 	} else {
@@ -103,6 +127,21 @@ void ProberConnection::HandleWrite(const boost::system::error_code &error) {
 		std::cerr << "Write was successfull" << std::endl;
 	} else {
 		throw error;
+	}
+}
+
+void ProberConnection::HandleBoundsResponse(const boost::system::error_code &error, bool first_line) {
+	if (error)
+		throw error;
+
+	time_t time;
+	std::istringstream(ReadLine()) >> time;
+	if (first_line) {
+		m_start_time = time;
+		boost::asio::async_read_until(m_socket, m_input_buffer, "\r\n",
+				boost::bind(&ProberConnection::HandleBoundsResponse, this, _1, false));
+	} else {
+		m_end_time = time;
 	}
 }
 
@@ -181,12 +220,15 @@ time_t ProberConnection::Search(time_t from, time_t to, int direction, std::wstr
 			Connect();
 		Go();
 	} catch (const boost::system::error_code& error) {
-		m_error = error.message();
+		m_buffer->last_err = SZBE_CONN_ERROR;
+		m_buffer->last_err_string = SC::A2S(error.message());
 		m_search_result = -1;
 	} catch (const message_error& error) {
+		m_buffer->last_err = SZBE_CONN_ERROR;
+		m_buffer->last_err_string = SC::A2S(m_error);
+		m_error = "Invalid response from server";
 		m_search_result = -1;
 	}
-
 	return m_search_result;
 }
 
@@ -206,8 +248,13 @@ int ProberConnection::Get(time_t from, time_t to, std::wstring path) {
 		Go();
 	} catch (const boost::system::error_code& error) {
 		m_error = error.message();
+		m_buffer->last_err = SZBE_CONN_ERROR;
+		m_buffer->last_err_string = SC::A2S(m_error);
 		return -1;
 	} catch (const message_error& error) {
+		m_error = "Invalid response from server";
+		m_buffer->last_err = SZBE_CONN_ERROR;
+		m_buffer->last_err_string = SC::A2S(m_error);
 		return -1;
 	}
 	return m_values_count;
@@ -220,6 +267,33 @@ int ProberConnection::GetData(short *buffer, int count) {
 	istream.read((char*)&buffer, 2 * count);
 	m_values_count -= count;
 	return count;
+}
+
+time_t ProberConnection::GetServerTime() {
+	return m_server_time;
+}
+
+bool ProberConnection::GetBoundaryTimes(time_t& start_time, time_t& end_time) {
+	m_operation = SEND_BOUNDARY_TIME;
+	try {
+		if (m_connected)
+			SendBoundsQuery();
+		else
+			Connect();
+	} catch (const boost::system::error_code& error) {
+		m_error = error.message();
+		m_buffer->last_err = SZBE_CONN_ERROR;
+		m_buffer->last_err_string = SC::A2S(m_error);
+		return false;
+	} catch (const message_error& error) {
+		m_error = "Invalid response from server";
+		m_buffer->last_err = SZBE_CONN_ERROR;
+		m_buffer->last_err_string = SC::A2S(m_error);
+		return false;
+	}
+	start_time = m_start_time;	
+	end_time = m_end_time;	
+	return true;
 }
 
 void ProberConnection::Go() {

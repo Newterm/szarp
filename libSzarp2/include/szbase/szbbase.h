@@ -69,12 +69,19 @@ class Szbase {
 	/**Maps config prefixes to @see szb_buffer_t and @see TSzarpConfig.*/
 	typedef std::tr1::unordered_map<std::wstring, std::pair<szb_buffer_t*, TSzarpConfig*> > TBI;
 	TBP m_params;
+
 	TBPU8 m_u8params;
+
 	TBI m_ipkbasepair;
+
+	/**Stores address of probes servers for particular prefixes.*/
+	std::tr1::unordered_map<std::wstring, std::pair<std::wstring, std::wstring> >
+		m_probers_addresses;
 	/** Path to root szarp dir*/
 	boost::filesystem::wpath m_szarp_dir;
 	/** Object used for monitoring updates of params.xml files*/
 	SzbFileWatcher m_file_watcher;
+
 	void (*m_config_modification_callback)(std::wstring, std::wstring);
 #ifndef NO_LUA
 #if LUA_PARAM_OPTIMISE
@@ -86,7 +93,7 @@ class Szbase {
 	held by this object are refreshed only when their last_current_id is 
 	different than this value (refresh operation causes their @see last_current_id
 	to be set to m_current_query). The intention of this mechanism is to
-	give client apps explicit control over when data is refreshed.*/
+	give client apps explicit control over data refresh.*/
 	long m_current_query;
 	
 	/**value passed to @see szb_buffer_t upon buffer constrution*/
@@ -158,6 +165,8 @@ public:
 	@param poison_cache if true, cache for this prefix will be removed*/
 	void RemoveConfig(const std::wstring& prefix, bool poison_cache);
 	const long& GetQueryId() { return m_current_query; }
+	void SetProberAddress(std::wstring prefix, std::wstring address, std::wstring port);
+	bool GetProberAddress(std::wstring prefix, std::wstring& address, std::wstring& port);
 	/**advances @see m_current_query id*/
 	void NextQuery();
 };
