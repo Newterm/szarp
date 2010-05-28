@@ -1,4 +1,7 @@
 
+2010-05-28	Pawel Palucha <pawel@praterm.com.pl>
+	* utils/probes_server/*: added RANGE request for checking global
+	first/last probe available.
 2010-05-25	Pawel Palucha <pawel@praterm.com.pl>
 	* utils/probes_server/*: added info about first/last data in response
 	for search request.

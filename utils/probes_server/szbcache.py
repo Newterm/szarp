@@ -104,6 +104,27 @@ class SzbCache:
 		self.cachedir = lpr.get("prober", "cachedir")
 		if not os.path.isdir(self.cachedir):
 			raise SzbException("incorrect cache dir '" + self.cachedir + "'")
+		self.months = int(lpr.get("prober", "months_count"))
+		if self.months <= 0:
+			raise SzbException("months_count parameter in szarp.cfg must be grater then 0")
+
+	def available_range(self):
+		"""
+		Return globally available first and last probe time, based on current time and months_count.
+		Return value is approximate - especially data can be available before first time if prober
+		has not removed old files.
+		@return (first time, last_time)
+		"""
+		last = time.time()
+		last -= last % 10
+		ts = time.gmtime(last)
+		(year, month) = (ts.tm_year, ts.tm_mon)
+		month -= self.months
+		if month < 1:
+			month += 12
+			year -= 1
+		first = timegm((year, month, 1, 0, 0, 0))
+		return (first, last)
 
 	def search(self, start, end, direction, parampath):
 		"""
