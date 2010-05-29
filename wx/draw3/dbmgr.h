@@ -153,6 +153,8 @@ public:
 
 	void RemoveParams(const std::vector<DefinedParam*>& ddi);
 
+	void SetProbersAddresses(const std::map<wxString, std::pair<wxString, wxString> > &addresses);
+
 	void InitiateConfigurationReload(wxString prefix);
 
 	void ConfigurationReloadFinished(wxString prefix);

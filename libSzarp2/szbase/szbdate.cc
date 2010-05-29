@@ -300,3 +300,8 @@ time_t szb_move_time(time_t t, int count, SZARP_PROBE_TYPE probe_type,
 	}
 	return -1;
 }
+
+time_t
+szb_round_to_probe_block_start(time_t t) {
+	return t / (SZBASE_PROBES_IN_BLOCK * SZBASE_PROBE_SPAN) * (SZBASE_PROBES_IN_BLOCK * SZBASE_PROBE_SPAN);
+}

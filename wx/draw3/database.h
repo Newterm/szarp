@@ -55,7 +55,9 @@ struct DatabaseQuery {
 		/**Removes param from configuration*/
 		REMOVE_PARAM,
 		/**Checks if any configuration has changed*/
-		CHECK_CONFIGURATIONS_CHANGE
+		CHECK_CONFIGURATIONS_CHANGE,
+		/**Set addresses of probers servers*/
+		SET_PROBER_ADDRESS
 	};
 
 	/**Parameters of a query for data*/
@@ -114,6 +116,11 @@ struct DatabaseQuery {
 		wchar_t *prefix;
 	};
 
+	struct ProberAddress {
+		wchar_t *address;
+		wchar_t *port;
+	};
+
 	/**Type of query*/
 	QueryType type;
 
@@ -133,6 +140,7 @@ struct DatabaseQuery {
 		ConfigReloadPrefix reload_prefix;
 		CompileFormula compile_formula;
 		DefinedParamData defined_param;
+		ProberAddress prober_address;
 	};
 
 	~DatabaseQuery();

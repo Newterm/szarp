@@ -52,7 +52,7 @@ class szb_probeblock_real_t  : public szb_probeblock_t {
 protected:
 	virtual void FetchProbes(); 
 public:
-	szb_probeblock_real_t(szb_buffer_t *buffer, TParam* param, time_t start_time) : szb_probeblock_t(buffer, param, start_time, start_time * (probes_per_block - 1) * SZBASE_PROBE_SPAN) {}
+	szb_probeblock_real_t(szb_buffer_t *buffer, TParam* param, time_t start_time) : szb_probeblock_t(buffer, param, start_time, start_time + (probes_per_block - 1) * SZBASE_PROBE_SPAN) {}
 };
 
 class szb_probeblock_combined_t : public szb_probeblock_t {
@@ -60,7 +60,7 @@ class szb_probeblock_combined_t : public szb_probeblock_t {
 protected:
 	virtual void FetchProbes(); 
 public:
-	szb_probeblock_combined_t(szb_buffer_t *buffer, TParam* param, time_t start_time) : szb_probeblock_t(buffer, param, start_time, start_time * (probes_per_block - 1) * SZBASE_PROBE_SPAN) {}
+	szb_probeblock_combined_t(szb_buffer_t *buffer, TParam* param, time_t start_time) : szb_probeblock_t(buffer, param, start_time, start_time + (probes_per_block - 1) * SZBASE_PROBE_SPAN) {}
 };
 
 class szb_probeblock_definable_t : public szb_probeblock_t {
@@ -68,7 +68,7 @@ class szb_probeblock_definable_t : public szb_probeblock_t {
 protected:
 	virtual void FetchProbes(); 
 public:
-	szb_probeblock_definable_t(szb_buffer_t *buffer, TParam* param, time_t start_time) : szb_probeblock_t(buffer, param, start_time, start_time * (probes_per_block - 1) * SZBASE_PROBE_SPAN) {}
+	szb_probeblock_definable_t(szb_buffer_t *buffer, TParam* param, time_t start_time) : szb_probeblock_t(buffer, param, start_time, start_time + (probes_per_block - 1) * SZBASE_PROBE_SPAN) {}
 };
 
 class szb_probeblock_lua_t : public szb_probeblock_t {
@@ -76,7 +76,7 @@ class szb_probeblock_lua_t : public szb_probeblock_t {
 protected:
 	virtual void FetchProbes(); 
 public:
-	szb_probeblock_lua_t(szb_buffer_t *buffer, TParam* param, time_t start_time) : szb_probeblock_t(buffer, param, start_time, start_time * (probes_per_block - 1) * SZBASE_PROBE_SPAN) {}
+	szb_probeblock_lua_t(szb_buffer_t *buffer, TParam* param, time_t start_time) : szb_probeblock_t(buffer, param, start_time, start_time + (probes_per_block - 1) * SZBASE_PROBE_SPAN) {}
 };
 
 class szb_probeblock_lua_opt_t : public szb_probeblock_t {
@@ -84,12 +84,12 @@ class szb_probeblock_lua_opt_t : public szb_probeblock_t {
 protected:
 	virtual void FetchProbes(); 
 public:
-	szb_probeblock_lua_opt_t(szb_buffer_t *buffer, TParam* param, time_t start_time) : szb_probeblock_t(buffer, param, start_time, start_time * (probes_per_block - 1) * SZBASE_PROBE_SPAN) {}
+	szb_probeblock_lua_opt_t(szb_buffer_t *buffer, TParam* param, time_t start_time) : szb_probeblock_t(buffer, param, start_time, start_time + (probes_per_block - 1) * SZBASE_PROBE_SPAN) {}
 };
 
 
 void szb_probeblock_real_t::FetchProbes() {
-	size_t count = buffer->prober_connection->Get(start_time + SZBASE_PROBE_SPAN * fixed_probes_count,
+	int count = buffer->prober_connection->Get(start_time + SZBASE_PROBE_SPAN * fixed_probes_count,
 			end_time,
 			param->GetSzbaseName());
 	if (!count)
@@ -97,16 +97,21 @@ void szb_probeblock_real_t::FetchProbes() {
 
 	short values[count];
 	buffer->prober_connection->GetData(values, count);
+	count = std::min(count, probes_per_block - fixed_probes_count);
  
 	int prec10 = pow10(param->GetPrec());
-	for (size_t i = 0; i < count; i++)
-		data[i + fixed_probes_count] =  prec10 * values[i];
+	for (int i = 0; i < count; i++) {
+		if (values[i] == SZB_FILE_NODATA)
+			data[i + fixed_probes_count] = SZB_NODATA;
+		else
+			data[i + fixed_probes_count] = double(values[i]) / prec10;
+	}
 	
 	time_t server_time = buffer->prober_connection->GetServerTime();
 	if (server_time < start_time)
 		return;
 
-	fixed_probes_count = (buffer->prober_connection->GetServerTime() - start_time) / SZBASE_PROBE_SPAN + 1;
+	fixed_probes_count = (server_time - start_time) / SZBASE_PROBE_SPAN + 1;
 	if (fixed_probes_count > probes_per_block)
 		fixed_probes_count = probes_per_block;
 }
@@ -361,7 +366,7 @@ szb_definable_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, 
 	time_t first_date;
 	time_t last_date;
 
-	if (buffer->prober_connection->GetBoundaryTimes(first_date, last_date) == false)
+	if (buffer->prober_connection->GetRange(first_date, last_date) == false)
 		return -1;
 
 	if (adjust_search_boundaries(start, end, first_date, last_date, direction) == false)
@@ -375,7 +380,7 @@ szb_lua_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t
 	time_t first_date;
 	time_t last_date;
 
-	if (buffer->prober_connection->GetBoundaryTimes(first_date, last_date) == false)
+	if (buffer->prober_connection->GetRange(first_date, last_date) == false)
 		return -1;
 	
 	if (param->GetLuaStartDateTime() > 0)

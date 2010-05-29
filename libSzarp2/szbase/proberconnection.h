@@ -64,7 +64,7 @@ public:
 
 	void SendGetQuery();
 
-	void SendBoundsQuery();
+	void SendRangeQuery();
 
 	void HandleConnect(const boost::system::error_code& error);
 
@@ -72,15 +72,13 @@ public:
 
 	std::string ReadLine();
 
-	void HandleTimeLine(const boost::system::error_code &error);
-
-	void HandleSizeLine(const boost::system::error_code &error);
+	void HandleGetFirstLine(const boost::system::error_code &error);
 
 	void HandleReadValues();
 
-	void HandleReadValues(const boost::system::error_code &error);
+	void HandleReadValues(const boost::system::error_code &error, size_t bytes_transferred);
 
-	void HandleBoundsResponse(const boost::system::error_code &error, bool first_line);
+	void HandleRangeResponse(const boost::system::error_code &error, bool first_line);
 
 	void HandleSearchResponse(const boost::system::error_code &error);
 
@@ -92,7 +90,7 @@ public:
 
 	time_t GetServerTime();
 
-	bool GetBoundaryTimes(time_t &first_date, time_t& end_date);
+	bool GetRange(time_t &first_date, time_t& end_date);
 
 	void Go();
 

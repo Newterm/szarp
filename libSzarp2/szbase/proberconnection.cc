@@ -1,5 +1,7 @@
 #include "config.h"
 
+#include "liblog.h"
+
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -17,12 +19,12 @@ ProberConnection::ProberConnection(szb_buffer_t *buffer, std::string address, st
 void ProberConnection::Connect() {
 	boost::asio::ip::tcp::resolver::query query(m_address, m_port);
 	m_resolver.async_resolve(query, boost::bind(&ProberConnection::HandleResolve, this, _1, _2));
-	m_deadline.expires_from_now(boost::posix_time::seconds(1));
-	m_deadline.async_wait(boost::bind(&ProberConnection::TimeoutHandler, this, _1));
+	//m_deadline.expires_from_now(boost::posix_time::seconds(1));
+	//m_deadline.async_wait(boost::bind(&ProberConnection::TimeoutHandler, this, _1));
 }
 
 void ProberConnection::TimeoutHandler(const boost::system::error_code& error) {
-	std::cerr << "Timeout" << std::endl;
+	sz_log(4, "Timeout handler called");
 	//m_resolver.cancel();
 }
 
@@ -45,29 +47,32 @@ void ProberConnection::ResetBuffers() {
 
 void ProberConnection::HandleResolve(const boost::system::error_code& error, boost::asio::ip::tcp::resolver::iterator &i) {
 	if (!error) {
-		std::cerr << "Got it!" << std::endl;
-		std::cerr << i->endpoint().address() << std::endl;
+		sz_log(10, "Resolved address");
 		m_socket.async_connect(*i, boost::bind(&ProberConnection::HandleConnect, this, _1));
 	} else {
 		throw error;
 	}
 }
 
-void ProberConnection::SendBoundsQuery() {
+void ProberConnection::SendRangeQuery() {
 	ResetBuffers();
 
 	std::ostream ostream(&m_output_buffer);
-	ostream << "TIME_BOUND" << "\r\n";
+	ostream << "RANGE" << "\r\n";
+
+	sz_log(10, "Sending range query");
 
 	boost::asio::async_write(m_socket, m_output_buffer, 
 		boost::bind(&ProberConnection::HandleWrite, this, _1));
 
-	boost::asio::async_read_until(m_socket, m_input_buffer, "\r\n",
-			boost::bind(&ProberConnection::HandleBoundsResponse, this, _1, true));
+	boost::asio::async_read_until(m_socket, m_input_buffer, "\n",
+			boost::bind(&ProberConnection::HandleRangeResponse, this, _1, true));
 }
 
 void ProberConnection::SendSearchQuery() {
 	ResetBuffers();
+
+	sz_log(10, "Sending search query, from: %ld, to: %ld, path: %ls", m_from, m_to, m_path.c_str());
 
 	std::ostream ostream(&m_output_buffer);
 	ostream << "SEARCH "
@@ -79,7 +84,7 @@ void ProberConnection::SendSearchQuery() {
 	boost::asio::async_write(m_socket, m_output_buffer, 
 		boost::bind(&ProberConnection::HandleWrite, this, _1));
 
-	boost::asio::async_read_until(m_socket, m_input_buffer, "\r\n",
+	boost::asio::async_read_until(m_socket, m_input_buffer, "\n",
 			boost::bind(&ProberConnection::HandleSearchResponse, this, _1));
 }
 
@@ -92,16 +97,18 @@ void ProberConnection::SendGetQuery() {
 		<< m_to << " "
 		<< SC::S2A(m_path) << "\r\n";
 
+	sz_log(10, "Sending get query, from: %ld, to: %ld, path: %ls", m_from, m_to, m_path.c_str());
+
 	boost::asio::async_write(m_socket, m_output_buffer, 
 		boost::bind(&ProberConnection::HandleWrite, this, _1));
 
-	boost::asio::async_read_until(m_socket, m_input_buffer, "\r\n",
-			boost::bind(&ProberConnection::HandleTimeLine, this, _1));
+	boost::asio::async_read_until(m_socket, m_input_buffer, "\n",
+			boost::bind(&ProberConnection::HandleGetFirstLine, this, _1));
 }
 
 void ProberConnection::HandleConnect(const boost::system::error_code& error) {
 	if (!error) {
-		std::cerr << "Connected" << std::endl;
+		sz_log(10, "connected to server");
 
 		m_connected = true;
 
@@ -113,7 +120,7 @@ void ProberConnection::HandleConnect(const boost::system::error_code& error) {
 				SendGetQuery();
 				break;
 			case SEND_BOUNDARY_TIME:
-				SendBoundsQuery();
+				SendRangeQuery();
 				break;
 		}
 
@@ -124,22 +131,24 @@ void ProberConnection::HandleConnect(const boost::system::error_code& error) {
 
 void ProberConnection::HandleWrite(const boost::system::error_code &error) {
 	if (!error) {
-		std::cerr << "Write was successfull" << std::endl;
+		sz_log(10, "Successfully written data to server");
 	} else {
 		throw error;
 	}
 }
 
-void ProberConnection::HandleBoundsResponse(const boost::system::error_code &error, bool first_line) {
+void ProberConnection::HandleRangeResponse(const boost::system::error_code &error, bool first_line) {
 	if (error)
 		throw error;
+
+	sz_log(10, "Got response to range query");
 
 	time_t time;
 	std::istringstream(ReadLine()) >> time;
 	if (first_line) {
 		m_start_time = time;
-		boost::asio::async_read_until(m_socket, m_input_buffer, "\r\n",
-				boost::bind(&ProberConnection::HandleBoundsResponse, this, _1, false));
+		boost::asio::async_read_until(m_socket, m_input_buffer, "\n",
+				boost::bind(&ProberConnection::HandleRangeResponse, this, _1, false));
 	} else {
 		m_end_time = time;
 	}
@@ -152,13 +161,23 @@ std::string ProberConnection::ReadLine() {
 	return line;
 }
 
-void ProberConnection::HandleTimeLine(const boost::system::error_code &error) {
+void ProberConnection::HandleGetFirstLine(const boost::system::error_code &error) {
 	if (!error) {
 		std::string line = ReadLine();
+		sz_log(10, "First line of response to get query: %s", line.c_str());
 		if (line.substr(0, sizeof("ERROR") - 1) != "ERROR") {
-			std::istringstream(line) >> m_server_time;
-			boost::asio::async_read_until(m_socket, m_input_buffer, "\r\n",
-				boost::bind(&ProberConnection::HandleSearchResponse, this, _1));
+			std::istringstream is(line); 
+			size_t length;
+			is >> m_server_time >> length;
+			sz_log(10, "Reading %zu bytes of data, %zu already in buffer", length, m_input_buffer.size());
+			m_values_count = length / 2;
+			if (m_input_buffer.size() == length)
+				HandleReadValues();
+			else
+				boost::asio::async_read(m_socket,
+					m_input_buffer.prepare(length - m_input_buffer.size()),
+					boost::asio::transfer_at_least(length - m_input_buffer.size()),
+					boost::bind(&ProberConnection::HandleReadValues, this, _1, _2));
 		} else {
 			m_error = line.substr(sizeof("ERROR"));
 			throw message_error();
@@ -168,28 +187,13 @@ void ProberConnection::HandleTimeLine(const boost::system::error_code &error) {
 	}
 }
 
-void ProberConnection::HandleSizeLine(const boost::system::error_code &error) {
-	if (!error) {
-		std::string line = ReadLine();
-		size_t length;
-		std::istringstream(line) >> length;
-		std::cerr << "Reading " << length << " bytes" << std::endl;
-		m_values_count = length / 2;
-		if (m_input_buffer.size() == length)
-			HandleReadValues();
-		else
-			boost::asio::async_read(m_socket, m_input_buffer.prepare(length - m_input_buffer.size()), 
-				boost::bind(&ProberConnection::HandleReadValues, this, _1));
-	} else {
-		throw error;
-	}
-}
-
 void ProberConnection::HandleReadValues() {
 	return;
 }
 
-void ProberConnection::HandleReadValues(const boost::system::error_code &error) {
+void ProberConnection::HandleReadValues(const boost::system::error_code &error, size_t bytes_transferred) {
+	sz_log(10, "Reading remaining %zu bytes", bytes_transferred);
+	m_input_buffer.commit(bytes_transferred);
 	HandleReadValues();
 }
 
@@ -200,7 +204,7 @@ void ProberConnection::HandleSearchResponse(const boost::system::error_code &err
 		std::istream is(&m_input_buffer);
 		std::getline(is, line);
 		std::istringstream(line) >> response;
-		std::cerr << "Found time:" << response << std::endl;
+		sz_log(10, "Found time: %d", (int) response);
 		m_search_result = response;
 	} else {
 		throw error;
@@ -212,6 +216,7 @@ time_t ProberConnection::Search(time_t from, time_t to, int direction, std::wstr
 	m_from = from;
 	m_to = to;
 	m_direction = direction;
+	m_path = path;
 
 	try {
 		if (m_connected)
@@ -242,7 +247,7 @@ int ProberConnection::Get(time_t from, time_t to, std::wstring path) {
 
 	try {
 		if (m_connected)
-			SendSearchQuery();
+			SendGetQuery();
 		else
 			Connect();
 		Go();
@@ -264,7 +269,8 @@ int ProberConnection::GetData(short *buffer, int count) {
 	count = std::min(count, m_values_count);
 	assert(m_values_count > 0);
 	std::istream istream(&m_input_buffer);
-	istream.read((char*)&buffer, 2 * count);
+	istream.read((char*)buffer, 2 * count);
+	assert(istream.gcount() == 2 * count);
 	m_values_count -= count;
 	return count;
 }
@@ -273,13 +279,14 @@ time_t ProberConnection::GetServerTime() {
 	return m_server_time;
 }
 
-bool ProberConnection::GetBoundaryTimes(time_t& start_time, time_t& end_time) {
+bool ProberConnection::GetRange(time_t& start_time, time_t& end_time) {
 	m_operation = SEND_BOUNDARY_TIME;
 	try {
 		if (m_connected)
-			SendBoundsQuery();
+			SendRangeQuery();
 		else
 			Connect();
+		Go();
 	} catch (const boost::system::error_code& error) {
 		m_error = error.message();
 		m_buffer->last_err = SZBE_CONN_ERROR;
@@ -298,5 +305,6 @@ bool ProberConnection::GetBoundaryTimes(time_t& start_time, time_t& end_time) {
 
 void ProberConnection::Go() {
 	m_io_service.run();
+	m_io_service.reset();
 }
 

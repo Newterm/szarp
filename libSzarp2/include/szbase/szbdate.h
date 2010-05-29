@@ -103,6 +103,9 @@ probe2local(int probe, int year, int month, struct tm * tm);
 time_t
 szb_round_time(time_t t, SZARP_PROBE_TYPE probe_type, int custom_length);
 
+time_t
+szb_round_to_probe_block_start(time_t t);
+
 /** Moves time value by specified number of probes. Count value can be
  * negative to indicate left direction of move. For example
  * szb_move_time(t, -2, PT_WEEK, 0) moves t value 2 weeks back

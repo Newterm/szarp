@@ -125,7 +125,7 @@ public:
 	double* data;
 	long last_query_id;
 
-	static const int probes_per_block = 10 * 60;
+	static const int probes_per_block = SZBASE_PROBES_IN_BLOCK;
 
 	int GetParamDataFromServer(time_t start, time_t end, TParam* param);
 	virtual void FetchProbes() = 0;

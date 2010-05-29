@@ -38,6 +38,8 @@
 #include <wx/glcanvas.h>
 #endif
 
+#include <map>
+
 #include "szapp.h"
 #include "singleinstance.h"
 #include "szhlpctrl.h"
@@ -109,6 +111,10 @@ public:
 	void DisplayHelp();
 
 	wxGLContext* GetGLContext();
+
+	std::map<wxString, std::pair<wxString, wxString> > GetProbersAddresses();
+
+	void SetProbersAddresses(const std::map<wxString, std::pair<wxString, wxString> >&);
 
 	virtual bool OnCmdLineError(wxCmdLineParser &parser);
 	virtual bool OnCmdLineHelp(wxCmdLineParser &parser);

@@ -108,6 +108,13 @@ void* QueryExecutor::Entry() {
 		} else if (q->type == DatabaseQuery::CHECK_CONFIGURATIONS_CHANGE) {
 			szbase->NotifyAboutConfigurationChanges();
 			post_response = false;
+		} else if (q->type == DatabaseQuery::SET_PROBER_ADDRESS) {
+			szbase->SetProberAddress(q->prefix,
+					q->prober_address.address,
+					q->prober_address.port);
+			free(q->prober_address.address);
+			free(q->prober_address.port);
+			post_response = false;
 		} else {
 
 			TParam *p = q->draw_info->GetParam()->GetIPKParam();
@@ -290,6 +297,9 @@ float DatabaseQueryQueue::FindQueryRanking(DatabaseQuery* q) {
 		return 100.f;
 
 	if (q->type == DatabaseQuery::CLEAR_CACHE)
+		return 150.f;
+
+	if (q->type == DatabaseQuery::SET_PROBER_ADDRESS)
 		return 150.f;
 
 	if (q->type == DatabaseQuery::RESET_BUFFER)

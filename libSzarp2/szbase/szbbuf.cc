@@ -20,6 +20,7 @@
 
 #include "conversion.h"
 
+#include "szbdefines.h"
 #include "szbbuf.h"
 #include "szbname.h"
 #include "szbfile.h"
@@ -404,7 +405,7 @@ szb_get_avg_probe(szb_buffer_t * buffer, TParam * param,
 
 	while (start_time < end_time) {
 		/* check current block */
-		time_t t = szb_round_time(start_time, PT_HOUR, 0);
+		time_t t = szb_round_to_probe_block_start(start_time);
 		probe = (start_time - t) / SZBASE_PROBE_SPAN;
 		b = szb_get_probeblock(buffer, param, t);
 		if (b != NULL) {
@@ -415,7 +416,7 @@ szb_get_avg_probe(szb_buffer_t * buffer, TParam * param,
 				NOT_FIXED;
 
 			/* scan block for values */
-			for (int i = probe; t < end_time; i++, t += SZBASE_PROBE_SPAN) {
+			for (int i = probe; t < end_time && i < SZBASE_PROBES_IN_BLOCK; i++, t += SZBASE_PROBE_SPAN) {
 				if (!IS_SZB_NODATA(data[i])) {
 					psum += data[i];
 					pcount++;

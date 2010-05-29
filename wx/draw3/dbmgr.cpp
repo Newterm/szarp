@@ -302,11 +302,23 @@ void DatabaseManager::RemoveParams(const std::vector<DefinedParam*>& ddi) {
 		query->type = DatabaseQuery::REMOVE_PARAM;
 		query->defined_param.p = (*i)->GetIPKParam();
 		query->defined_param.prefix = wcsdup((*i)->GetBasePrefix());
-
 		query_queue->Add(query);
 	}
 }
 
 void DatabaseManager::OnConfigurationChange(ConfigurationChangedEvent &e) {
 	config_manager->ReloadConfiguration(e.GetPrefix());
+}
+
+void DatabaseManager::SetProbersAddresses(const std::map<wxString, std::pair<wxString, wxString> > &addresses) {
+	for (std::map<wxString, std::pair<wxString, wxString> >::const_iterator i = addresses.begin();
+			i != addresses.end();
+			i++) {
+		DatabaseQuery* query = new DatabaseQuery;
+		query->type = DatabaseQuery::SET_PROBER_ADDRESS;
+		query->prefix = i->first.c_str();
+		query->prober_address.address = wcsdup(i->second.first.c_str());
+		query->prober_address.port = wcsdup(i->second.second.c_str());
+		query_queue->Add(query);
+	}
 }

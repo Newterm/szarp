@@ -46,6 +46,7 @@
 #include <wx/cmdline.h>
 #include <wx/config.h>
 #include <wx/tooltip.h>
+#include <wx/tokenzr.h>
 #include <wx/xrc/xmlres.h>
 #include <signal.h>
 
@@ -138,7 +139,6 @@ wxGLContext* DrawApp::GetGLContext() {
 		return NULL;
 
 #ifdef HAVE_GLCANVAS
-	GetTopWindow();
 	wxGLCanvas *tcanvas  = new wxGLCanvas(GetTopWindow(), wxID_ANY, GLContextAttribs());
 	m_gl_context = new wxGLContext(tcanvas);
 	tcanvas->Destroy();
@@ -290,6 +290,7 @@ bool DrawApp::OnInit() {
 	m_db_queue = new DatabaseQueryQueue();
 	DatabaseManager* dbmgr = new DatabaseManager(m_db_queue, m_cfg_mgr);
 	m_db_queue->SetDatabaseManager(dbmgr);
+	dbmgr->SetProbersAddresses(GetProbersAddresses());
 
 	Szbase::Init(GetSzarpDataDir().c_str(),
 			&ConfigurationFileChangeHandler::handle,
@@ -519,6 +520,44 @@ void DrawApp::SendToRunningInstance(wxString topic, wxString msg) {
 
 void DrawApp::DisplayHelp() {
 	m_help->DisplayContents();
+}
+
+std::map<wxString, std::pair<wxString, wxString> > DrawApp::GetProbersAddresses() {
+	std::map<wxString, std::pair<wxString, wxString> > ret;
+	wxConfigBase* config = wxConfigBase::Get(true);
+	wxString tmp;
+	if (config->Read(_T("PROBE_SERVER_ADDRESSES"), &tmp)) {
+		wxStringTokenizer tkz(tmp, _T(";"), wxTOKEN_STRTOK);
+		while (tkz.HasMoreTokens()) {
+			wxString token = tkz.GetNextToken();
+			int pos = token.Find(L'/');
+			if (pos == -1)
+				continue;
+			wxString prefix = token.Left(pos);
+
+			wxString tmp = token.Mid(pos + 1);
+			pos = tmp.Find(L'/');
+			if (pos == -1)
+				continue;
+
+			wxString address = tmp.Left(pos);
+			wxString port = tmp.Mid(pos + 1);
+			ret[prefix] = std::make_pair(address, port);
+		}
+	}
+	return ret;
+}
+
+void DrawApp::SetProbersAddresses(const std::map<wxString, std::pair<wxString, wxString> > &addresses) {
+	wxConfigBase* config = wxConfigBase::Get(true);
+	wxString string;
+	for (std::map<wxString, std::pair<wxString, wxString> >::const_iterator i = addresses.begin();
+			i != addresses.end();
+			i++)
+		string += i->first + _T("/") + i->second.first + _T("/") + i->second.second + _T(";");
+	config->Write(_T("PROBE_SERVER_ADDRESSES"), string.Mid(0, string.Length() - 1));
+	config->Flush();
+
 }
 
 DrawApp::~DrawApp() {

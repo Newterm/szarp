@@ -97,6 +97,7 @@ draw3_SOURCES = \
 		vercheck.h vercheck.cpp \
 		xyzgraph.h xyzgraph.cpp \
 		triangulation.h triangulation.cpp \
+		probadddiag.h probadddiag.cpp \
 		GUI/resource.cpp
 
 draw3_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) $(LIBWXSCINTILLA)
