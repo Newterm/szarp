@@ -449,7 +449,7 @@ error:
 #ifdef MINGW32
 	closesocket(m_fd);
 #else
-	close(m_fd);
+	::close(m_fd);
 #endif
 	m_fd = -1;
 	return false;
