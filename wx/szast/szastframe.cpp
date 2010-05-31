@@ -44,11 +44,17 @@ SzastFrame::SzastFrame(wxWindow *parent, wxWindowID id) : PscFrame(parent, id) {
 	m_path = cfg->Read(_T("port_path"), _T("COM1:"));
 #endif
 	m_speed = cfg->Read(_T("speed"), _T("9600"));
+	m_ip_address = cfg->Read(_T("ip_address"), _T("192.168.2.1"));
+	m_port = cfg->Read(_T("port"), _T("23"));
+	m_connection_type = cfg->Read(_T("connection_type"), _T("serial")) == _T("serial") ? MessagesGenerator::SERIAL_CONNECTION : MessagesGenerator::NETWORK_CONNECTION;
 	m_id = cfg->Read(_T("unit_id"), _T("1"));
 
 	m_msggen.SetPath(m_path);
 	m_msggen.SetSpeed(m_speed);
+	m_msggen.SetIPAddress(m_ip_address);
+	m_msggen.SetPort(m_port);
 	m_msggen.SetId(m_id);
+	m_msggen.SetConnectionType(m_connection_type);
 
 	m_awaiting = CONSTANTS_PACKS;
 
@@ -107,24 +113,30 @@ void SzastFrame::DoHandleReload(wxCommandEvent& event) {
 
 void SzastFrame::DoHandleConfigure(wxCommandEvent& event) {
 	SettingsDialog* sd = new SettingsDialog(this);
-	sd->SetValues(m_speed, m_path, m_id);
+	sd->SetValues(m_speed, m_path, m_ip_address, m_port, m_connection_type, m_id);
 
 	if (sd->ShowModal() != wxID_OK) {
 		sd->Destroy();
 		return;
 	}
 
-	sd->GetValues(m_speed, m_path, m_id);
+	sd->GetValues(m_speed, m_path, m_ip_address, m_port, m_connection_type, m_id);
 	sd->Destroy();
 
 	m_msggen.SetPath(m_path);
 	m_msggen.SetSpeed(m_speed);
+	m_msggen.SetIPAddress(m_ip_address);
+	m_msggen.SetPort(m_port);
 	m_msggen.SetId(m_id);
+	m_msggen.SetConnectionType(m_connection_type);
 
 	wxConfigBase *cfg = wxConfig::Get();
 	cfg->Write(_T("port_path"), m_path);
 	cfg->Write(_T("speed"), m_speed);
+	cfg->Write(_T("ip_address"), m_ip_address);
+	cfg->Write(_T("port"), m_port);
 	cfg->Write(_T("unit_id"), m_id);
+	cfg->Write(_T("connection_type"), m_connection_type == MessagesGenerator::SERIAL_CONNECTION ? _T("serial") : _T("network"));
 
 }
 

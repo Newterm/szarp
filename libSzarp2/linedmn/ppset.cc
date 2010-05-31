@@ -29,7 +29,16 @@
 #include <termios.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#else
+#include <windows.h>
 #endif
+
 #include <cassert>
 #include <locale.h>
 
@@ -58,23 +67,8 @@ const int invalid_port_pd = -1;
 const PD invalid_port_pd = PD();
 #endif
 
-bool pdvalid(PD fd) {
-#ifndef MINGW32
-	return fd >= 0;
-#else
-	return fd.h != INVALID_HANDLE_VALUE;
-#endif
-}
+std::string create_printable_string(const char *buffer, int size);
 
-void pdclose(PD fd) {
-#ifndef MINGW32
-	close(fd);
-#else
-	CloseHandle(fd.h);
-#endif
-}
-
-	
 xmlDocPtr parse_settings_response(const char *response, int len)
 {
 	const char *end = response + len - 1;
@@ -221,24 +215,28 @@ xmlDocPtr create_error_message(const string & type, const string & reason)
 	return result;
 }
 
+serial_connection::serial_connection(char *path, int speed) : m_path(path), m_speed(speed) {
 #ifndef MINGW32 
-PD prepare_device(char *path, int speed, xmlDocPtr * err_msg, DaemonStopper &stopper)
+	m_fd = -1;
+#endif
+}
+
+#ifndef MINGW32 
+bool serial_connection::open(xmlDocPtr * err_msg, DaemonStopper &stopper)
 {
-	PD fd;
-
 	if (stopper.StopDaemon(err_msg) == false)
-		return -1;
+		return false;
 
-	if ((fd = open(path, O_RDWR | O_NOCTTY | O_NONBLOCK, 0)) < 0) {
+	if ((m_fd = ::open(m_path.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK, 0)) < 0) {
 		*err_msg =
 		    create_error_message("error", "Unable to open port");
-		return -1;
+		return false;
 	}
 
 	struct termios ti;
-	tcgetattr(fd, &ti);
-	sz_log(5, "setting port speed to %d", speed);
-	switch (speed) {
+	tcgetattr(m_fd, &ti);
+	sz_log(5, "setting port speed to %d", m_speed);
+	switch (m_speed) {
 	case 300:
 		ti.c_cflag = B300;
 		break;
@@ -273,19 +271,17 @@ PD prepare_device(char *path, int speed, xmlDocPtr * err_msg, DaemonStopper &sto
 
 	ti.c_cflag |= CS8 | CREAD | CLOCAL ;
 
-	tcsetattr(fd, TCSANOW, &ti);
+	tcsetattr(m_fd, TCSANOW, &ti);
 
-	return fd;
+	return true;
 }
 #else
-PD prepare_device(char *path, int speed, xmlDocPtr * err_msg, DaemonStopper &stopper)
+bool serial_connection::prepare_device(char *path, int speed, xmlDocPtr * err_msg, DaemonStopper &stopper)
 {
-	PD fd;
-
 	if (stopper.StopDaemon(err_msg) == false)
-		return fd;
+		return false;
 
-	fd.h = CreateFile(path,  
+	m_fd.h = CreateFile(path,  
 		GENERIC_READ | GENERIC_WRITE, 
 		0, 
 		0, 
@@ -293,10 +289,10 @@ PD prepare_device(char *path, int speed, xmlDocPtr * err_msg, DaemonStopper &sto
 		0,
 		0);
 
-	if (fd.h == INVALID_HANDLE_VALUE) {
+	if (m_fd.h == INVALID_HANDLE_VALUE) {
 		*err_msg =
 		    create_error_message("error", "Unable to open port");
-		return fd;
+		return false;
 
 	}
 
@@ -310,16 +306,16 @@ PD prepare_device(char *path, int speed, xmlDocPtr * err_msg, DaemonStopper &sto
 	if (!BuildCommDCB(dcs.str().c_str(), &dcb)) {
 		*err_msg =
 		    create_error_message("error", "Unable to set port settings");
-		fd.h = INVALID_HANDLE_VALUE;
-		pdclose(fd);
-		return fd;
+		m_fd.h = INVALID_HANDLE_VALUE;
+		pdclose(m_fd);
+		return false;
 	}
 
 	if (!SetCommState(fd.h, &dcb)) {
 		*err_msg =
 		    create_error_message("error", "Unable to set port settings");
-		fd.h = INVALID_HANDLE_VALUE;
-		return fd;
+		m_fd.h = INVALID_HANDLE_VALUE;
+		return false;
 	}
 
 	COMMTIMEOUTS comm_timeouts;
@@ -330,37 +326,101 @@ PD prepare_device(char *path, int speed, xmlDocPtr * err_msg, DaemonStopper &sto
 	comm_timeouts.WriteTotalTimeoutConstant = 5000;
 
 	if (SetCommTimeouts(fd.h, &comm_timeouts) == 0) 
-		fd.h = INVALID_HANDLE_VALUE;
+		m_fd.h = INVALID_HANDLE_VALUE;
 
 
-	return fd;
+	return true;
 }
 #endif
 
-std::string create_printable_string(const char *buffer, int size) {
-	string r(buffer, size);
-	for (size_t i = 0; i < r.size(); i++) {
-		switch (r[i]) {
-			case '0'...'9':
-			case 'A'...'Z':
-			case 'a'...'z':
-			case '$':
-			case ':':
-			case ',':
-			case '\n':
-				break;
-			default:
-				r[i] = ' ';
-		}
-	}
-
-	return r;
+void serial_connection::close() {
+#ifndef MINGW32
+	if (m_fd >= 0)
+		::close(m_fd);
+#else
+	if (pdvalid(m_fd.h))
+		CloseHandle(fd.h);
+	m_fd = m_fd();
+#endif
 }
 
+tcp_connection::tcp_connection(char *address, int port) : m_address(address), m_port(port) {}
 
-#ifndef MINGW32
-bool write_port(PD fd, const char *buffer, int size)
-{
+bool tcp_connection::open(xmlDocPtr * err_msg, DaemonStopper &stopper) {
+
+	struct sockaddr_in addr;
+	long on = 1;
+
+	if (inet_pton(AF_INET, m_address.c_str(), &addr.sin_addr) != 1) {
+		*err_msg =
+		    create_error_message("error", "Invalid address");
+		return false;
+	}
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons(m_port);
+
+	m_fd = socket(PF_INET, SOCK_STREAM, 0);
+#ifdef MINGW32
+	if (ioctlsocket(m_fd, FIONBIO, &on)) {
+#else
+	if (ioctl(m_fd, FIONBIO, &on)) {
+#endif
+		*err_msg =
+		    create_error_message("error", "Failed to set non-blocking mode on socket");
+		goto error;
+	}
+
+
+	if (::connect(m_fd, (struct sockaddr*)&addr, sizeof(addr) != 0)) {
+		fd_set set, exset;
+		FD_ZERO(&set);
+		FD_SET(m_fd, &set);
+#ifdef MINGW32 
+		FD_SET(m_fd, &exset);
+#endif
+
+		struct timeval tv;
+		tv.tv_sec = 0;
+		tv.tv_usec = 500000;
+
+again:
+		int ret = select(m_fd + 1, NULL, &set, &exset, &tv);
+		if (ret == -1) {
+			if (errno == EINTR)
+				goto again;
+			else {
+				*err_msg =
+				    create_error_message("error", "Failed to connect to host");
+				goto error;
+			}
+		}
+
+		if (ret == 0) {
+			*err_msg =
+			    create_error_message("error", "Failed to connect to host");
+			goto error;
+		}
+
+#ifdef MINGW32
+		if (FD_ISSET(sock, &exset)) {
+			*err_msg =
+			    create_error_message("error", "Failed to connect to host");
+			goto error;
+		}
+#endif
+
+	}
+
+
+	return true;
+error:
+	::close(m_fd);
+	m_fd = -1;
+	return false;
+
+}
+
+bool descriptor_write(int fd, const char *buffer, int size) {
 	bool ret = false;
 
 	const int seconds = 10;
@@ -409,36 +469,8 @@ again:
 
 	return ret;
 }
-#else
-bool write_port(PD fd, const char *buffer, int size)
-{
-	bool ret = false;
-	int total_written = 0;
-	DWORD last_written = 0;
 
-	sz_log(2, "Writing to port:%s", create_printable_string(buffer, size).c_str());
-
-	while (total_written < size) {
-		if (WriteFile(fd.h, buffer + total_written, size - total_written, &last_written, NULL)) {
-			total_written += last_written;
-			continue;
-		}
-
-		if (GetLastError() != ERROR_IO_PENDING)
-			goto end;
-
-		total_written += last_written;
-	}
-
-	ret = true;
-end:
-	return ret;
-}
-#endif
-
-#ifndef MINGW32
-bool read_port(PD fd, char **buffer, int *size)
-{
+bool descriptor_read(int fd, char** buffer, int *size) {
 	const int start_buffer_size = 512;
 	const int max_buffer_size = start_buffer_size * 4;
 
@@ -474,7 +506,7 @@ bool read_port(PD fd, char **buffer, int *size)
 			break;
 		}
 	      again:
-		ret = read(fd, *buffer + pos, buffer_size - pos);
+		ret = ::read(fd, *buffer + pos, buffer_size - pos);
 		if (ret < 0) {
 			if (errno == EINTR)
 				goto again;
@@ -507,9 +539,108 @@ error:
 	*buffer = NULL;
 	return false;
 }
-#else
-bool read_port(PD fd, char **buffer, int *size) {
 
+bool tcp_connection::write(const char* buffer, int size) {
+	return descriptor_write(m_fd, buffer, size);
+}
+
+bool tcp_connection::read(char** buffer, int *size) {
+	return descriptor_read(m_fd, buffer, size);
+}
+
+void tcp_connection::close() {
+	if (m_fd >= 0) {
+		::close(m_fd);
+		m_fd = -1;
+	}
+}
+	
+std::string create_printable_string(const char *buffer, int size) {
+	string r(buffer, size);
+	for (size_t i = 0; i < r.size(); i++) {
+		switch (r[i]) {
+			case '0'...'9':
+			case 'A'...'Z':
+			case 'a'...'z':
+			case '$':
+			case ':':
+			case ',':
+			case '\n':
+				break;
+			default:
+				r[i] = ' ';
+		}
+	}
+
+	return r;
+}
+
+
+#ifndef MINGW32
+bool serial_connection::write(const char *buffer, int size)
+{
+	bool ret = false;
+
+	const int seconds = 10;
+	time_t t1 = time(NULL);
+
+	sz_log(2, "Writing to port:%s", create_printable_string(buffer, size).c_str());
+
+	int pos = 0;
+
+	while (pos < size) {
+		struct timeval tv;
+
+		tv.tv_sec = seconds - (time(NULL) - t1);
+		tv.tv_usec = 0;
+
+		if (tv.tv_sec < 0)
+			break;
+
+		fd_set set;
+		FD_ZERO(&set);
+		FD_SET(m_fd, &set);
+		int ret = select(m_fd + 1, NULL, &set, NULL, &tv);
+		if (ret < 0) {
+			if (errno == EINTR)
+				continue;
+			sz_log(2, "Error while writing to port %s",
+			       strerror(errno));
+			break;
+		} else if (ret == 0)
+			continue;
+again:
+		ret = ::write(m_fd, buffer + pos, size - pos);
+		if (ret < 0) {
+			if (errno == EINTR)
+				goto again;
+			sz_log(2, "Error while writing to port %s",
+			       strerror(errno));
+			break;
+		}
+
+		pos += ret;
+	}
+
+	if (pos == size)
+		ret = true;
+
+	return ret;
+}
+#else
+bool serial_connection::write(const char *buffer, int size)
+{
+	return descriptor_write(m_fd, buffer, size);
+}
+#endif
+
+#ifndef MINGW32
+bool serial_connection::read(char **buffer, int *size)
+{
+	return descriptor_read(m_fd, buffer, size);
+}
+#else
+bool serial_connection::read(char **buffer, int *size) {
 	const int start_buffer_size = 512;
 	const int max_buffer_size = start_buffer_size * 4;
 
@@ -529,10 +660,10 @@ bool read_port(PD fd, char **buffer, int *size) {
 			comm_timeouts.ReadTotalTimeoutConstant = 1000;
 			comm_timeouts.WriteTotalTimeoutMultiplier = 1;
 			comm_timeouts.WriteTotalTimeoutConstant = 5000;
-			SetCommTimeouts(fd.h, &comm_timeouts);
+			SetCommTimeouts(m_fd.h, &comm_timeouts);
 		}
 
-		if (!ReadFile(fd.h, *buffer + was_read, buffer_size - was_read, &last_read, NULL))
+		if (!ReadFile(m_fd.h, *buffer + was_read, buffer_size - was_read, &last_read, NULL))
 			goto error;
 
 		first = false;
@@ -563,13 +694,13 @@ error:
 
 #endif
 
-bool wait_for_ok(PD fd)
+bool wait_for_ok(connection& conn)
 {
 	static const char OK[] = "\x0dOK\x0d";
 	char *data;
 	int size;
 
-	if (read_port(fd, &data, &size) == false)
+	if (conn.read(&data, &size) == false)
 		return false;
 
 	bool ret = false;
@@ -631,10 +762,10 @@ void append_regualtor_id(regulator_id &rid, xmlDocPtr doc) {
 
 }
 
-xmlDocPtr read_regulator_id(xmlDocPtr doc, PD fd, char *id) {
+xmlDocPtr read_regulator_id(xmlDocPtr doc, connection &conn, char *id) {
 	for (int i = 0; i < max_communiation_attempts; i++) {
 		string command = string("\x11\x02V") + id + "\x03";
-		if (write_port(fd, command.c_str(), command.size()) == false) {
+		if (conn.write(command.c_str(), command.size()) == false) {
 			xmlFreeDoc(doc);
 			doc =
 			    create_error_message("error",
@@ -645,7 +776,7 @@ xmlDocPtr read_regulator_id(xmlDocPtr doc, PD fd, char *id) {
 		char *buffer;
 		int size;
 
-		if (read_port(fd, &buffer, &size) == false) {
+		if (conn.read(&buffer, &size) == false) {
 			xmlFree(doc);
 			doc =
 			    create_error_message("error",
@@ -670,12 +801,12 @@ xmlDocPtr read_regulator_id(xmlDocPtr doc, PD fd, char *id) {
 
 }
 
-xmlDocPtr read_regulator_settings(PD fd, char *id, bool* ok)
+xmlDocPtr read_regulator_settings(connection& conn, char *id, bool* ok)
 {
 	xmlDocPtr result;
 	for (int i = 0; i < max_communiation_attempts; i++) {
 		string command = string("\x02Q") + id + "\x03";
-		if (write_port(fd, command.c_str(), command.size()) == false) {
+		if (conn.write(command.c_str(), command.size()) == false) {
 			result =
 			    create_error_message("error",
 						 "Regulator communication error");
@@ -687,7 +818,7 @@ xmlDocPtr read_regulator_settings(PD fd, char *id, bool* ok)
 		char *buffer;
 		int size;
 
-		if (read_port(fd, &buffer, &size) == false) {
+		if (conn.read(&buffer, &size) == false) {
 			result =
 			    create_error_message("error",
 						 "Regulator communication error");
@@ -743,20 +874,20 @@ end:
 	return ret;
 }
 
-bool reset_packs(PD fd, char *id, xmlDocPtr& error) {
+bool reset_packs(connection &conn, char *id, xmlDocPtr& error) {
 
 	string command = string("\x11\x02R") + id + "ST\x03";
 
 	for (int i = 0; i < max_communiation_attempts; ++i) {
 
-		if (write_port(fd, command.c_str(), command.size()) == false) {
+		if (conn.write(command.c_str(), command.size()) == false) {
 			error =
 			    create_error_message("error",
 						 "Regulator communication error");
 			return false;
 		}
 
-		if (wait_for_ok(fd)) 
+		if (wait_for_ok(conn)) 
 			return true;
 	}
 
@@ -767,13 +898,11 @@ bool reset_packs(PD fd, char *id, xmlDocPtr& error) {
 }
 
 
-xmlDocPtr handle_set_packs_type_cmd(xmlDocPtr request, char *path, char *id,
-				    int speed, DaemonStopper& stopper)
+xmlDocPtr handle_set_packs_type_cmd(xmlDocPtr request, connection &conn, char *id, DaemonStopper& stopper)
 {
 	xmlDocPtr result = NULL;
 	string command;
 	char c = 0;
-	PD fd = invalid_port_pd;
 	bool ok = false;
 	PACKS packs;
 
@@ -795,61 +924,58 @@ xmlDocPtr handle_set_packs_type_cmd(xmlDocPtr request, char *path, char *id,
 
 	command = string("\x11\x02W") + id + c + "X" + c + "\x03";
 
-	fd = prepare_device(path, speed, &result, stopper);
-	if (!pdvalid(fd)) 
+	if (!conn.open(&result, stopper))
 		goto end;
 
-	if (reset_packs(fd, id, result) == false) 
+	if (reset_packs(conn, id, result) == false) 
 		goto end;
 
 	for (int i = 0; i < max_communiation_attempts; i++) {
 
-		if (write_port(fd, command.c_str(), command.size()) == false) {
+		if (conn.write(command.c_str(), command.size()) == false) {
 			result =
 			    create_error_message("error",
 						 "Regulator communication error");
 			goto end;
 		}
 
-		if (wait_for_ok(fd) == true) {
+		if (wait_for_ok(conn) == true) {
 			ok = true;
 			break;
 		}
 	}
 
 	if (ok) {
-		result = read_regulator_settings(fd, id, &ok);
+		result = read_regulator_settings(conn, id, &ok);
 		if (ok)
-			result = read_regulator_id(result, fd, id);
+			result = read_regulator_id(result, conn, id);
 	} else
 		result =
 		    create_error_message("error", "Regulator does not respond");
 
 end:
-	pdclose(fd);
+	conn.close();
 	stopper.StartDaemon();
 
 	return result;
 
 }
 
-xmlDocPtr handle_reset_packs_cmd(xmlDocPtr request, char *path, char *id,
-				 int speed, DaemonStopper &stopper)
+xmlDocPtr handle_reset_packs_cmd(xmlDocPtr request, connection &conn, char *id, DaemonStopper &stopper)
 {
 	xmlDocPtr result = NULL;
-	PD fd = prepare_device(path, speed, &result, stopper);
-	if (!pdvalid(fd)) 
+	if (conn.open(&result, stopper) == false)
 		goto end;
 
-	if (reset_packs(fd, id, result) == false) 
+	if (reset_packs(conn, id, result) == false) 
 		goto end;
 
 	bool ok;
-	result = read_regulator_settings(fd, id, &ok);
+	result = read_regulator_settings(conn, id, &ok);
 	if (ok)
-		result = read_regulator_id(result, fd, id);
+		result = read_regulator_id(result, conn, id);
 
-	pdclose(fd);
+	conn.close();
 end:
 	stopper.StartDaemon();
 
@@ -972,10 +1098,10 @@ bool parse_regulator_parameters(const char* buf, int len, xmlDocPtr result) {
 
 }
 
-void add_regulator_parameters_to_report(PD fd, char *id, bool *ok, xmlDocPtr result) {
+void add_regulator_parameters_to_report(connection &conn, char *id, bool *ok, xmlDocPtr result) {
 	for (int i = 0; i < max_communiation_attempts; i++) {
 		string command = string("\x11\x02V") + id + "\x03\n";
-		if (write_port(fd, command.c_str(), command.size()) == false) {
+		if (conn.write(command.c_str(), command.size()) == false) {
 			xmlFreeDoc(result);
 			result =
 			    create_error_message("error",
@@ -988,18 +1114,18 @@ void add_regulator_parameters_to_report(PD fd, char *id, bool *ok, xmlDocPtr res
 		char *buffer;
 		int size;
 
-		if (read_port(fd, &buffer, &size)) {
+		if (conn.read(&buffer, &size)) {
 			if (parse_regulator_parameters(buffer, size, result))
 				return ;
 		}
 	}
 }
 
-xmlDocPtr read_report(PD fd, char *id, bool *ok) {
+xmlDocPtr read_report(connection &conn, char *id, bool *ok) {
 	xmlDocPtr result;
 	for (int i = 0; i < max_communiation_attempts; i++) {
 		string command = string("\x11\x02P") + id + "\x03\n";
-		if (write_port(fd, command.c_str(), command.size()) == false) {
+		if (conn.write(command.c_str(), command.size()) == false) {
 			result =
 			    create_error_message("error",
 						 "Regulator communication error");
@@ -1011,7 +1137,7 @@ xmlDocPtr read_report(PD fd, char *id, bool *ok) {
 		char *buffer;
 		int size;
 
-		if (read_port(fd, &buffer, &size) == false) {
+		if (conn.read(&buffer, &size) == false) {
 			result =
 			    create_error_message("error",
 						 "Regulator communication error");
@@ -1026,7 +1152,7 @@ xmlDocPtr read_report(PD fd, char *id, bool *ok) {
 		if (result != NULL) {
 			if (ok)
 				*ok = true;
-			add_regulator_parameters_to_report(fd, id, ok, result);
+			add_regulator_parameters_to_report(conn, id, ok, result);
 			return result;
 		}
 	}
@@ -1039,43 +1165,38 @@ xmlDocPtr read_report(PD fd, char *id, bool *ok) {
 
 }
 
-xmlDocPtr handle_get_report_cmd(xmlDocPtr request, char *path, char *id,
-				int speed, DaemonStopper &stopper) {
+xmlDocPtr handle_get_report_cmd(xmlDocPtr request, connection &conn, char *id, DaemonStopper &stopper) {
 	xmlDocPtr result;
-	PD fd = prepare_device(path, speed, &result, stopper);
-	if (!pdvalid(fd))
+	if (conn.open(&result, stopper) == false)
 		goto end;
 
-	result = read_report(fd, id, NULL);
-	pdclose(fd);
+	result = read_report(conn, id, NULL);
+	conn.close();
 end:
 	stopper.StartDaemon();
 
 	return result;
 }
 
-xmlDocPtr handle_get_values_cmd(xmlDocPtr request, char *path, char *id,
-				int speed, DaemonStopper &stopper)
+xmlDocPtr handle_get_values_cmd(xmlDocPtr request, connection &conn, char *id, DaemonStopper &stopper)
 {
 	xmlDocPtr result;
-	PD fd = prepare_device(path, speed, &result, stopper);
-	if (!pdvalid(fd))
+	if (conn.open(&result, stopper) == false)
 		goto end;
 
 	bool ok;
-	result = read_regulator_settings(fd, id, &ok);
+	result = read_regulator_settings(conn, id, &ok);
 	if (ok)
-		result = read_regulator_id(result, fd, id);
+		result = read_regulator_id(result, conn, id);
 
-	pdclose(fd);
+	conn.close();
 end:
 	stopper.StartDaemon();
 
 	return result;
 }
 
-bool send_set_command(PD fd, char *id, string vals_type, string vals,
-		      xmlDocPtr * err)
+bool send_set_command(connection &conn, char *id, string vals_type, string vals, xmlDocPtr * err)
 {
 	vals += '\x03';
 
@@ -1088,14 +1209,14 @@ bool send_set_command(PD fd, char *id, string vals_type, string vals,
 	oss << "\x11\x02" << vals_type << id << checksum << vals;
 
 	for (int i = 0; i < max_communiation_attempts; ++i) {
-		if (write_port(fd, oss.str().c_str(), oss.str().size()) == false) {
+		if (conn.write(oss.str().c_str(), oss.str().size()) == false) {
 			*err =
 			    create_error_message("invalid_message",
 						 "Regulator communiation error");
 			return false;
 		}
 
-		if (wait_for_ok(fd) == true)
+		if (wait_for_ok(conn) == true)
 			return true;
 	}
 	*err =
@@ -1160,7 +1281,7 @@ bool prepare_constants_string(xmlDocPtr request, string & result)
 	return ret;
 }
 
-xmlDocPtr handle_set_constans_cmd(xmlDocPtr request, PD fd, char *id) {
+xmlDocPtr handle_set_constans_cmd(xmlDocPtr request, connection& conn, char *id) {
 	string command;
 	xmlDocPtr result = NULL;
 
@@ -1170,31 +1291,28 @@ xmlDocPtr handle_set_constans_cmd(xmlDocPtr request, PD fd, char *id) {
 		goto end;
 	}
 
-	if (send_set_command(fd, id, "C", command, &result) == false) {
-		pdclose(fd);
+	if (send_set_command(conn, id, "C", command, &result) == false) {
+		conn.close();
 		goto end;
 	}
 
 	bool ok;
-	result = read_regulator_settings(fd, id, &ok);
+	result = read_regulator_settings(conn, id, &ok);
 	if (ok)
-		result = read_regulator_id(result, fd, id);
+		result = read_regulator_id(result, conn, id);
 end:
 	return result;
 }
 
 
-xmlDocPtr handle_set_constans_cmd(xmlDocPtr request, char *path, char *id,
-				  int speed, DaemonStopper &stopper)
+xmlDocPtr handle_set_constans_cmd(xmlDocPtr request, connection& conn, char *id, DaemonStopper &stopper)
 {
 	xmlDocPtr result = NULL;
-	PD fd;
 
-	fd = prepare_device(path, speed, &result, stopper);
-	if (pdvalid(fd)) 
-		result = handle_set_constans_cmd(request, fd, id);
-
-	pdclose(fd);
+	if (conn.open(&result, stopper)) {
+		result = handle_set_constans_cmd(request, conn, id, stopper);
+		conn.close();
+	}
 	stopper.StartDaemon();
 
 	return result;
@@ -1340,13 +1458,11 @@ end:
 	return ret;
 }
 
-xmlDocPtr handle_set_packs_cmd(xmlDocPtr request, char *path, char *id,
-			       int speed, DaemonStopper &stopper)
+xmlDocPtr handle_set_packs_cmd(xmlDocPtr request, connection& conn, char *id, DaemonStopper &stopper)
 {
 	xmlDocPtr result = NULL;
 	xmlDocPtr current_settings = NULL;
 	string command;
-	PD fd = invalid_port_pd;
 
 	vector<string> commands;
 	if (prepare_packs_string(request, commands) == false) {
@@ -1355,31 +1471,30 @@ xmlDocPtr handle_set_packs_cmd(xmlDocPtr request, char *path, char *id,
 		goto end;
 	}
 
-	fd = prepare_device(path, speed, &result, stopper);
-	if (!pdvalid(fd))
+	if (conn.open(&result, stopper) == false)
 		goto end;
 
-	current_settings = read_regulator_settings(fd, id); 
+	current_settings = read_regulator_settings(conn, id); 
 	if (current_settings == NULL) {
 		    result = create_error_message("error", "Cannot read current settings from regulator");
-		    pdclose(fd);
+		    conn.close();
 		    goto end;
 	}
 
-	if (reset_packs(fd, id, result) == false)  {
-		pdclose(fd);
+	if (reset_packs(conn, id, result) == false)  {
+		conn.close();
 		goto end;
 	}
 
 	for (size_t i = 0; i < commands.size(); ++i) 
-		if (send_set_command(fd, id, "T", commands[i], &result) == false) {
-			pdclose(fd);
+		if (send_set_command(conn, id, "T", commands[i], &result) == false) {
+			conn.close();
 			goto end;
 		}
 
-	result = handle_set_constans_cmd(current_settings, fd, id);
+	result = handle_set_constans_cmd(current_settings, conn, id);
 
-	pdclose(fd);
+	conn.close();
 end:
 	if (current_settings)
 		xmlFreeDoc(current_settings);
@@ -1394,11 +1509,14 @@ xmlDocPtr handle_command(xmlDocPtr request, DaemonStoppersFactory &stopper_facto
 	char *c;
 	char *msg_type = NULL;
 	char *path = NULL;
+	char *ip_address = NULL;
 	char *id = NULL;
 	int speed;
+	int port;
 	xmlXPathContextPtr xpath_ctx = NULL;
 	xmlNodePtr device;
 	DaemonStopper *stopper = NULL;
+	connection* conn = NULL;
 
 	c = (char *)xmlGetProp(request->children, BAD_CAST "type");
 	if (c == NULL) {
@@ -1422,15 +1540,45 @@ xmlDocPtr handle_command(xmlDocPtr request, DaemonStoppersFactory &stopper_facto
 	}
 
 	c = (char *)xmlGetProp(device, BAD_CAST "path");
-	if (c == NULL) {
+	if (c != NULL) {
+		path = c;
+
+		c = (char *)xmlGetProp(device, BAD_CAST "speed");
+		if (c == NULL) {
+			sz_log(2,
+			       "Invalid message from client - speed attribute missing");
+			result =
+			    create_error_message("invalid_message",
+						 "Invalid message - speed attribute missing");
+			goto end;
+		}
+		speed = atoi(c);
+		xmlFree(c);
+
+		conn = new serial_connection(path, speed);
+	} else if ((c = (char*) xmlGetProp(device, BAD_CAST "ip-address"))) {
+		ip_address = c;
+		c = (char *)xmlGetProp(device, BAD_CAST "port");
+		if (c == NULL) {
+			sz_log(2,
+			       "Invalid message from client - port attribute missing");
+			result =
+			    create_error_message("invalid_message",
+						 "Invalid message - port attribute missing");
+			goto end;
+		}
+		port = atoi(c);
+		xmlFree(c);
+
+		conn = new tcp_connection(ip_address, port); 
+	} else {
 		sz_log(2,
-		       "Invalid message from client - path attribute missing");
+		       "Invalid message from client - neither path nor ip-address attribute present");
 		result =
 		    create_error_message("invalid_message",
-					 "Invalid message - path attribute missing");
+					 "Invalid message - netither path nor ip-address attribute present");
 		goto end;
 	}
-	path = c;
 
 	c = (char *)xmlGetProp(device, BAD_CAST "id");
 	if (c == NULL) {
@@ -1442,32 +1590,21 @@ xmlDocPtr handle_command(xmlDocPtr request, DaemonStoppersFactory &stopper_facto
 	}
 	id = c;
 
-	c = (char *)xmlGetProp(device, BAD_CAST "speed");
-	if (c == NULL) {
-		sz_log(2,
-		       "Invalid message from client - speed attribute missing");
-		result =
-		    create_error_message("invalid_message",
-					 "Invalid message - speed attribute missing");
-		goto end;
-	}
-	speed = atoi(c);
-	xmlFree(c);
 
-	stopper = stopper_factory.CreateDaemonStopper(path);
+	stopper = stopper_factory.CreateDaemonStopper(path != NULL ? path : "");
 
 	if (!strcmp(msg_type, "set_packs_type"))
-		result = handle_set_packs_type_cmd(request, path, id, speed, *stopper);
+		result = handle_set_packs_type_cmd(request, *conn, id, *stopper);
 	else if (!strcmp(msg_type, "reset_packs"))
-		result = handle_reset_packs_cmd(request, path, id, speed, *stopper);
+		result = handle_reset_packs_cmd(request, *conn, id, *stopper);
 	else if (!strcmp(msg_type, "set_packs"))
-		result = handle_set_packs_cmd(request, path, id, speed, *stopper);
+		result = handle_set_packs_cmd(request, *conn, id, *stopper);
 	else if (!strcmp(msg_type, "set_constants"))
-		result = handle_set_constans_cmd(request, path, id, speed, *stopper);
+		result = handle_set_constans_cmd(request, *conn, id, *stopper);
 	else if (!strcmp(msg_type, "get_values"))
-		result = handle_get_values_cmd(request, path, id, speed, *stopper);
+		result = handle_get_values_cmd(request, *conn, id, *stopper);
 	else if (!strcmp(msg_type, "get_report"))
-		result = handle_get_report_cmd(request, path, id, speed, *stopper);
+		result = handle_get_report_cmd(request, *conn, id, *stopper);
 	else {
 		sz_log(2,
 		       "Invalid message from client - unknown message type %s",
@@ -1482,10 +1619,11 @@ xmlDocPtr handle_command(xmlDocPtr request, DaemonStoppersFactory &stopper_facto
 	if (xpath_ctx)
 		xmlXPathFreeContext(xpath_ctx);
 	delete stopper;
-
+	delete conn;
 	xmlFree(msg_type);
 	xmlFree(id);
 	xmlFree(path);
+	xmlFree(ip_address);
 
 	return result;
 }
