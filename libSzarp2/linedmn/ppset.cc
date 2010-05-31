@@ -276,12 +276,12 @@ bool serial_connection::open(xmlDocPtr * err_msg, DaemonStopper &stopper)
 	return true;
 }
 #else
-bool serial_connection::prepare_device(char *path, int speed, xmlDocPtr * err_msg, DaemonStopper &stopper)
+bool serial_connection::open(xmlDocPtr * err_msg, DaemonStopper &stopper)
 {
 	if (stopper.StopDaemon(err_msg) == false)
 		return false;
 
-	m_fd.h = CreateFile(path,  
+	m_fd.h = CreateFile(m_path.c_str(),  
 		GENERIC_READ | GENERIC_WRITE, 
 		0, 
 		0, 
@@ -302,16 +302,16 @@ bool serial_connection::prepare_device(char *path, int speed, xmlDocPtr * err_ms
 	dcb.DCBlength = sizeof(dcb);
 
 	std::stringstream dcs;
-	dcs << "baud=" << speed << " parity=n data=8 stop=1";
+	dcs << "baud=" << m_speed << " parity=n data=8 stop=1";
 	if (!BuildCommDCB(dcs.str().c_str(), &dcb)) {
 		*err_msg =
 		    create_error_message("error", "Unable to set port settings");
+		CloseHandle(m_fd.h);
 		m_fd.h = INVALID_HANDLE_VALUE;
-		pdclose(m_fd);
 		return false;
 	}
 
-	if (!SetCommState(fd.h, &dcb)) {
+	if (!SetCommState(m_fd.h, &dcb)) {
 		*err_msg =
 		    create_error_message("error", "Unable to set port settings");
 		m_fd.h = INVALID_HANDLE_VALUE;
@@ -325,7 +325,7 @@ bool serial_connection::prepare_device(char *path, int speed, xmlDocPtr * err_ms
 	comm_timeouts.WriteTotalTimeoutMultiplier = 1;
 	comm_timeouts.WriteTotalTimeoutConstant = 5000;
 
-	if (SetCommTimeouts(fd.h, &comm_timeouts) == 0) 
+	if (SetCommTimeouts(m_fd.h, &comm_timeouts) == 0)
 		m_fd.h = INVALID_HANDLE_VALUE;
 
 
@@ -338,9 +338,9 @@ void serial_connection::close() {
 	if (m_fd >= 0)
 		::close(m_fd);
 #else
-	if (pdvalid(m_fd.h))
-		CloseHandle(fd.h);
-	m_fd = m_fd();
+	if (m_fd.h != INVALID_HANDLE_VALUE)
+		CloseHandle(m_fd.h);
+	m_fd = PD();
 #endif
 }
 
@@ -349,13 +349,22 @@ tcp_connection::tcp_connection(char *address, int port) : m_address(address), m_
 bool tcp_connection::open(xmlDocPtr * err_msg, DaemonStopper &stopper) {
 
 	struct sockaddr_in addr;
-	long on = 1;
+	unsigned long on = 1;
 
+#ifndef MINGW32
 	if (inet_pton(AF_INET, m_address.c_str(), &addr.sin_addr) != 1) {
 		*err_msg =
 		    create_error_message("error", "Invalid address");
 		return false;
 	}
+#else
+	addr.sin_addr.s_addr = inet_addr(m_address.c_str());
+	if (addr.sin_addr.s_addr == INADDR_NONE || addr.sin_addr.s_addr == INADDR_ANY) {
+		*err_msg =
+		    create_error_message("error", "Invalid address");
+		return false;
+	}
+#endif
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(m_port);
 
@@ -388,6 +397,7 @@ bool tcp_connection::open(xmlDocPtr * err_msg, DaemonStopper &stopper) {
 
 		fd_set set, exset;
 		FD_ZERO(&set);
+		FD_ZERO(&exset);
 		FD_SET(m_fd, &set);
 #ifdef MINGW32 
 		FD_SET(m_fd, &exset);
@@ -415,7 +425,7 @@ again:
 		}
 
 #ifdef MINGW32
-		if (FD_ISSET(sock, &exset)) {
+		if (FD_ISSET(m_fd, &exset)) {
 			*err_msg =
 			    create_error_message("error", "Failed to connect to host");
 			goto error;
@@ -436,7 +446,11 @@ again:
 
 	return true;
 error:
-	::close(m_fd);
+#ifdef MINGW32
+	closesocket(m_fd);
+#else
+	close(m_fd);
+#endif
 	m_fd = -1;
 	return false;
 
@@ -473,6 +487,7 @@ bool descriptor_write(int fd, const char *buffer, int size) {
 			break;
 		} else if (ret == 0)
 			continue;
+#ifndef MINGW32
 again:
 		ret = write(fd, buffer + pos, size - pos);
 		if (ret < 0) {
@@ -482,6 +497,11 @@ again:
 			       strerror(errno));
 			break;
 		}
+#else
+		ret = send(fd, buffer + pos, size - pos, 0);
+		if (ret == SOCKET_ERROR)
+			break;
+#endif
 
 		pos += ret;
 	}
@@ -527,7 +547,12 @@ bool descriptor_read(int fd, char** buffer, int *size) {
 				       "Timeout while waiting for respone from regulator");
 			break;
 		}
-	      again:
+#ifdef MINGW32
+		ret = recv(fd, *buffer + pos, buffer_size - pos, 0);
+		if (ret == SOCKET_ERROR)
+			goto error;
+#else
+again:
 		ret = ::read(fd, *buffer + pos, buffer_size - pos);
 		if (ret < 0) {
 			if (errno == EINTR)
@@ -536,6 +561,7 @@ bool descriptor_read(int fd, char** buffer, int *size) {
 			       strerror(errno));
 			goto error;
 		}
+#endif
 
 		pos += ret;
 		if (pos == buffer_size) {
@@ -572,7 +598,11 @@ bool tcp_connection::read(char** buffer, int *size) {
 
 void tcp_connection::close() {
 	if (m_fd >= 0) {
+#ifdef MINGW32
+		closesocket(m_fd);
+#else
 		::close(m_fd);
+#endif
 		m_fd = -1;
 	}
 }
@@ -601,58 +631,33 @@ std::string create_printable_string(const char *buffer, int size) {
 #ifndef MINGW32
 bool serial_connection::write(const char *buffer, int size)
 {
-	bool ret = false;
-
-	const int seconds = 10;
-	time_t t1 = time(NULL);
-
-	sz_log(2, "Writing to port:%s", create_printable_string(buffer, size).c_str());
-
-	int pos = 0;
-
-	while (pos < size) {
-		struct timeval tv;
-
-		tv.tv_sec = seconds - (time(NULL) - t1);
-		tv.tv_usec = 0;
-
-		if (tv.tv_sec < 0)
-			break;
-
-		fd_set set;
-		FD_ZERO(&set);
-		FD_SET(m_fd, &set);
-		int ret = select(m_fd + 1, NULL, &set, NULL, &tv);
-		if (ret < 0) {
-			if (errno == EINTR)
-				continue;
-			sz_log(2, "Error while writing to port %s",
-			       strerror(errno));
-			break;
-		} else if (ret == 0)
-			continue;
-again:
-		ret = ::write(m_fd, buffer + pos, size - pos);
-		if (ret < 0) {
-			if (errno == EINTR)
-				goto again;
-			sz_log(2, "Error while writing to port %s",
-			       strerror(errno));
-			break;
-		}
-
-		pos += ret;
-	}
-
-	if (pos == size)
-		ret = true;
-
-	return ret;
+	return descriptor_write(m_fd, buffer, size);
 }
 #else
 bool serial_connection::write(const char *buffer, int size)
 {
-	return descriptor_write(m_fd, buffer, size);
+	bool ret = false;
+	int total_written = 0;
+	DWORD last_written = 0;
+
+	sz_log(2, "Writing to port:%s", create_printable_string(buffer, size).c_str());
+
+	while (total_written < size) {
+		if (WriteFile(m_fd.h, buffer + total_written, size - total_written, &last_written, NULL)) {
+			total_written += last_written;
+			continue;
+		}
+
+		if (GetLastError() != ERROR_IO_PENDING)
+			goto end;
+
+		total_written += last_written;
+	}
+
+	ret = true;
+end:
+	return ret;
+
 }
 #endif
 

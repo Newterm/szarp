@@ -26,8 +26,6 @@
 #ifndef MINGW32
 #include <sys/types.h>
 #include <grp.h>
-#else
-#include <windows.h>
 #endif
 
 #include <wx/image.h>
@@ -41,6 +39,10 @@
 #include "geometry.h"
 #include "cconv.h"
 #include "libpar.h"
+
+#ifdef MINGW32
+#include <windows.h>
+#endif
 
 extern void InitXmlResource();
 
