@@ -26,6 +26,8 @@
 #ifndef MINGW32
 #include <sys/types.h>
 #include <grp.h>
+#else
+#include <windows.h>
 #endif
 
 #include <wx/image.h>
@@ -79,6 +81,12 @@ bool SzastApp::OnInit()
 	SetAppName(_("SZAST"));
 	
 	SetTopWindow( frame );
+
+#ifdef MINGW32
+	WORD wVersionRequested = MAKEWORD(2, 2);
+	WSADATA wsaData;
+	WSAStartup(wVersionRequested, &wsaData);
+#endif
 
 	return TRUE;
 }

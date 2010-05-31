@@ -371,7 +371,21 @@ bool tcp_connection::open(xmlDocPtr * err_msg, DaemonStopper &stopper) {
 	}
 
 
-	if (::connect(m_fd, (struct sockaddr*)&addr, sizeof(addr) != 0)) {
+	if (::connect(m_fd, (struct sockaddr*)&addr, sizeof(addr)) != 0) {
+#ifndef MINGW32
+		if (errno != EINPROGRESS) {
+			*err_msg =
+			    create_error_message("error", "Failed to connect to host");
+			goto error;
+		}
+#else
+		if (WSAGetLastError() != WSAEWOULDBLOCK) {
+			*err_msg =
+			    create_error_message("error", "Failed to connect to host");
+			goto error;
+		}
+#endif
+
 		fd_set set, exset;
 		FD_ZERO(&set);
 		FD_SET(m_fd, &set);
@@ -380,9 +394,8 @@ bool tcp_connection::open(xmlDocPtr * err_msg, DaemonStopper &stopper) {
 #endif
 
 		struct timeval tv;
-		tv.tv_sec = 0;
-		tv.tv_usec = 500000;
-
+		tv.tv_sec = 2;
+		tv.tv_usec = 0;
 again:
 		int ret = select(m_fd + 1, NULL, &set, &exset, &tv);
 		if (ret == -1) {
@@ -403,6 +416,15 @@ again:
 
 #ifdef MINGW32
 		if (FD_ISSET(sock, &exset)) {
+			*err_msg =
+			    create_error_message("error", "Failed to connect to host");
+			goto error;
+		}
+#else
+		int error = 0;
+		socklen_t error_s = sizeof(error);
+		getsockopt(m_fd, SOL_SOCKET, SO_ERROR, &error, &error_s);
+		if (error) {
 			*err_msg =
 			    create_error_message("error", "Failed to connect to host");
 			goto error;
