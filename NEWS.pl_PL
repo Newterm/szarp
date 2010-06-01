@@ -6,7 +6,18 @@
 # wersji SZARP.
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
-# $Id$
+
+** 3.1.426
+# 01.06.2010
+* Integracja procesu zapisuj±cego próbki 10-sekundowe ze skryptami startowymi 
+systemu, dodano usuwanie starszych ni¿ zadana ilo¶æ miesiêcy.
+* Kontynuowane s± prace nad wy¶wietlaniem próbek 10-sekundowych przez program 
+przegl±daj±cy, wprowadzono wymagane poprawki i usprawnienia w serwerze próbek.
+* Poprawki w procesie kompilacji i tworzenia pakietu instalacyjnego dla systemu 
+Windows.
+* Nowy sterownik dla liczników energii pos³uguj±cych siê protoko³em IEC 62056-2.
+* Program do kontroli regulatorów ZET/Sterkom - szast - wzbogacono o mo¿liwo¶æ
+³±czenia siê z regulatorami przez sieæ.
 
 ** 3.1.423
 # 04.05.2010

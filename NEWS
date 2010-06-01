@@ -6,6 +6,16 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.426
+# 01.06.2010
+* 10-second probes archivisation process is integrated into SZARP startup scripts and removes
+outdated files from cache.
+* draw3 support for displaying 10-second probes is under developement, along with necessary fixes
+and improvements in probes server.
+* Fixes in Windows version compilation and bundled DLLs set, allowing to prepare new Windows version.
+* New driver for energy meteres usingg IEC 62056-21 protocol.
+* szast program for controling ZET/Sterkom PLCs can now talk over TCP/IP connection.
+
 ** 3.1.423
 # 04.05.2010
 * New type of graphs was added to draw3 application - XYZ graphs. These 3 dimensional graphs
