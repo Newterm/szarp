@@ -1,4 +1,6 @@
 
+2010-06-01	Pawel Palucha <pawel@praterm.com.pl>
+	* utils/probes_server/*: fixes in search request handling.
 2010-05-31 	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* wx/draw3: empty erase event hadler added to xyz graph widget,
 	this event handler eliminates flickering at widget's repainting

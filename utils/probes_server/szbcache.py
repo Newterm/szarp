@@ -144,7 +144,7 @@ class SzbCache:
 		dpath = self.check_path(parampath)
 		if not os.path.isdir(dpath):
 			return -1
-		(first, last) = self.search_first_last()
+		(first, last) = self.search_first_last(dpath)
 		if direction == 0:
 			if start == -1:
 				start = first
@@ -368,17 +368,20 @@ class SzbCache:
 		bsize = 32768 / self.SZBCACHE_SIZE
 		
 		f = open(path, "rb")
-		while startindex * direction <= endindex * direction:
+		while startindex * direction < endindex * direction:
 			rsize = min(bsize, (endindex - startindex) * direction)
 			if direction < 0:
-				self.file_seek(f, startindex - rsize)
+				search_block_begin = startindex - rsize
 			else:
-				self.file_seek(f, startindex)
+				search_block_begin = startindex
+			self.file_seek(f, search_block_begin)
 			arr = array.array(self.SZBCACHE_TYPE)
 			arr.fromfile(f, rsize)
 			found, foundindex = self.search_array(arr, direction)
 			if found:
-				return (True, self.index2time(path, foundindex))
+				debug("SEARCH ARRAY FOUND: foundindex %d, search_block_begin %d"
+						% (foundindex, search_block_begin))
+				return (True, self.index2time(path, foundindex + search_block_begin))
 			startindex += rsize * direction
 		return (False, -1)
 
