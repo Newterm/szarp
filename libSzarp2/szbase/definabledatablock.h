@@ -1,26 +1,28 @@
 /* 
   SZARP: SCADA software 
+  
 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/* 
- *
- * ndefinable - new way of definable calculating
- * $Id$
- */
-
 #ifndef __SZBASE_DEFINABLE_DATABLOCK_H__
 #define __SZBASE_DEFINABLE_DATABLOCK_H__
-
-#include <time.h>
 
 #include "szbbuf.h"
 #include "cacheabledatablock.h"
 #include "szbdatablock.h"
  
-time_t
-szb_definable_search_data(szb_buffer_t * buffer, TParam * param, 
-		time_t start_time, time_t end_time, int direction);
-
 class DefinableDatablock: public CacheableDatablock
 {
 	public:
@@ -31,7 +33,7 @@ class DefinableDatablock: public CacheableDatablock
 		virtual bool IsCachable();	
 	private:
 		bool TestParam(TParam *param, int year, int month, time_t t);
-		int GetBlocksUsedInFormula(szb_datablock_t ** dblocks, int &fixedprobes);
+		int GetBlocksUsedInFormula(const double** dblocks, TParam** params, int &fixedprobes);
 };
 
 

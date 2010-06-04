@@ -52,6 +52,7 @@
 #include "remarks.h"
 #include "drawfrm.h"
 #include "drawprint.h"
+#include "probadddiag.h"
 
 #include "bitmaps/flag_de.xpm"
 #include "bitmaps/flag_pl.xpm"
@@ -124,6 +125,11 @@ NumberOfUnitsDialog::NumberOfUnitsDialog(wxWindow *parent, PeriodType pt, size_t
 			min = 1;
 			max = 72;
 			text = _("Select number of displayed hours");
+			break;
+		case PERIOD_T_10MINUTE:
+			min = 1;
+			max = 36;
+			text = _("Select number of displayed minutes");
 			break;
 		case PERIOD_T_SEASON:
 			min = 1;
@@ -654,6 +660,8 @@ void DrawFrame::OnAverageChange(wxCommandEvent& event) {
 		pt = PERIOD_T_WEEK;
 	else if (id == XRCID("DAY_RADIO"))
 		pt = PERIOD_T_DAY;
+	else if (id == XRCID("HOUR_RADIO"))
+		pt = PERIOD_T_10MINUTE;
 	else
 		pt = PERIOD_T_SEASON;
 
@@ -1051,11 +1059,11 @@ wxString DrawFrame::GetTitleForPanel(wxString title, int panel_no) {
 	bool got_title = false;
 	while (!got_title) {
 		int i = 0;
-		for (; i < m_notebook->GetPageCount(); i++)
+		for (; i < (int) m_notebook->GetPageCount(); i++)
 			if (i != panel_no && ret == m_notebook->GetPageText(i))
 				break;
 
-		if (i < m_notebook->GetPageCount())
+		if (i < (int) m_notebook->GetPageCount())
 			ret = wxString::Format(_T("%s <%d>"), title.c_str(), ++nr);
 		else
 			got_title = true;
@@ -1118,6 +1126,23 @@ void DrawFrame::OnLanguageChangeMenuItem(wxCommandEvent &event) {
 	wxConfig::Get()->Write(_T("LANGUAGE"), langid);
 	wxMessageBox(wxString::Format(_("Language changed to: %s. You need restart draw3 for this change to take effect."), lang.c_str()), _("Language changed."), wxOK, this);
 
+
+}
+
+void DrawFrame::OnProberAddresses(wxCommandEvent &event) {
+	std::map<wxString, std::pair<wxString, wxString> > addresses = wxGetApp().GetProbersAddresses();
+
+	ProbersAddressDialog dialog(this, database_manager, config_manager, addresses);
+	if (dialog.ShowModal() != wxID_OK)
+		return;
+
+	std::map<wxString, std::pair<wxString, wxString> > naddresses = dialog.GetModifiedAddresses();
+	for (std::map<wxString, std::pair<wxString, wxString> >::iterator i = naddresses.begin();
+			i != naddresses.end();
+			i++)
+		addresses[i->first] = i->second;
+
+	wxGetApp().SetProbersAddresses(addresses);
 
 }
 
@@ -1188,6 +1213,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("FetchRemarks"), DrawFrame::OnFetchRemarks)
     EVT_MENU(XRCID("RemarksConfiguration"), DrawFrame::OnConfigureRemarks)
     EVT_MENU(XRCID("PageSetup"), DrawFrame::OnPrintPageSetup)
+    EVT_MENU(XRCID("ProberAddress"), DrawFrame::OnProberAddresses)
     EVT_MENU(drawTB_EXIT, DrawFrame::OnExit)
     EVT_MENU(drawTB_ABOUT, DrawFrame::OnAbout)
     EVT_MENU(langID_pl, DrawFrame::OnLanguageChangeMenuItem)

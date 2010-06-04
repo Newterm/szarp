@@ -57,7 +57,7 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 
 	SetIcon(szFrame::default_icon);
 
-	wxString period_choices[PERIOD_T_SEASON] = { _("YEAR"), _("MONTH"), _("WEEK"), _("DAY") };
+	wxString period_choices[PERIOD_T_SEASON] = { _("YEAR"), _("MONTH"), _("WEEK"), _("DAY"), _("10 MINUTES") };
 
 	m_start_time.AdjustToPeriod();
 	m_end_time.AdjustToPeriod();

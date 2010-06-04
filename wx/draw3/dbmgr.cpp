@@ -131,14 +131,14 @@ void DatabaseManager::CheckAndNotifyAboutError(DatabaseResponse &response) {
 				i++) {
 			if (i->ok) 
 				continue;
-			ErrorFrame::NotifyError(wxString::Format(_("Definable param error(%s): %s"),
+			ErrorFrame::NotifyError(wxString::Format(_("Database error(%s): %s"),
 				q->draw_info->GetName().c_str(),
 				i->error));
 			free(i->error);
 		}
 	else if (q->type == DatabaseQuery::SEARCH_DATA) {
 		if (!q->search_data.ok) {
-			ErrorFrame::NotifyError(wxString::Format(_("Definable param error(%s): %s"),
+			ErrorFrame::NotifyError(wxString::Format(_("Database error(%s): %s"),
 				q->draw_info->GetName().c_str(),
 				q->search_data.error));
 			free(q->search_data.error);
@@ -302,11 +302,23 @@ void DatabaseManager::RemoveParams(const std::vector<DefinedParam*>& ddi) {
 		query->type = DatabaseQuery::REMOVE_PARAM;
 		query->defined_param.p = (*i)->GetIPKParam();
 		query->defined_param.prefix = wcsdup((*i)->GetBasePrefix());
-
 		query_queue->Add(query);
 	}
 }
 
 void DatabaseManager::OnConfigurationChange(ConfigurationChangedEvent &e) {
 	config_manager->ReloadConfiguration(e.GetPrefix());
+}
+
+void DatabaseManager::SetProbersAddresses(const std::map<wxString, std::pair<wxString, wxString> > &addresses) {
+	for (std::map<wxString, std::pair<wxString, wxString> >::const_iterator i = addresses.begin();
+			i != addresses.end();
+			i++) {
+		DatabaseQuery* query = new DatabaseQuery;
+		query->type = DatabaseQuery::SET_PROBER_ADDRESS;
+		query->prefix = i->first.c_str();
+		query->prober_address.address = wcsdup(i->second.first.c_str());
+		query->prober_address.port = wcsdup(i->second.second.c_str());
+		query_queue->Add(query);
+	}
 }

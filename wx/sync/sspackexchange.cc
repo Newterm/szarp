@@ -59,6 +59,8 @@ const uint32_t FetchFileListEx::NOT_SUCH_DIR = 1;
 const uint32_t FetchFileListEx::REGEX_COMP_FAILED = 2;
 const uint32_t FetchFileListEx::NO_FILES_SELECTED = 3;
 
+const int connection_timeout_seconds = 5 * 60;
+
 Packet* PacketExchanger::DequeInputPacket() { 
 	if (m_input_queue.size() == 0)
 		return NULL;
@@ -421,6 +423,7 @@ void PacketExchanger::GetPacketsFromWriter() {
 }
 
 void PacketExchanger::Drive() {
+	size_t no_transition_cycles = 0;
 	while (true) {
 
 		PutPacketsToReader();
@@ -429,8 +432,13 @@ void PacketExchanger::Drive() {
 		bool has_written = WritePackets();
 		bool has_read = ReadPackets();
 
-		if (has_read || has_written)
+		if (has_read || has_written) {
+			no_transition_cycles = 0;
 			continue;
+		} else if (no_transition_cycles++ * m_select_timeout
+				> connection_timeout_seconds) {
+			throw AppException(_("Connection timeout!"));
+		}
 
 		if (!(m_packet_reader || m_packet_writer))
 			break;

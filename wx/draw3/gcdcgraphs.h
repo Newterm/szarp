@@ -131,6 +131,8 @@ public:
 	virtual void FullRefresh();
 
 	virtual void NewRemarks(Draw *draw);
+
+	virtual void NoData(DrawsController *d);
 	
 	virtual void SetFocus();
 

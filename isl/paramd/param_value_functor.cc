@@ -53,7 +53,7 @@ boost::tuple<std::wstring, std::wstring, std::wstring, std::wstring> SzbaseParam
 
 	time_t magic_offset = 60; //for meaner to write base
 
-	if (time(NULL) - last_query_time > SZBASE_PROBE) {
+	if (time(NULL) - last_query_time > SZBASE_DATA_SPAN) {
 
 		last_query_time = szb_round_time(time(NULL), PT_MIN10, 0) + magic_offset;
 

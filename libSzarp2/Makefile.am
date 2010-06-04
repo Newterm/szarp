@@ -101,6 +101,7 @@ libSzarp2_a_SOURCES = \
 			$(SZBASE_DIR)/szbfile.cc $(SZBASE_DIR)/szbfile.h \
 			$(SZBASE_DIR)/szbname.cc $(SZBASE_DIR)/szbname.h \
 			$(SZBASE_DIR)/definabledatablock.cc $(SZBASE_DIR)/definabledatablock.h \
+			$(SZBASE_DIR)/definablecalculate.cc $(SZBASE_DIR)/definablecalculate.h \
 			$(SZBASE_DIR)/realdatablock.cc $(SZBASE_DIR)/realdatablock.h \
 			$(SZBASE_DIR)/combineddatablock.cc $(SZBASE_DIR)/combineddatablock.h \
 			$(SZBASE_DIR)/cacheabledatablock.cc $(SZBASE_DIR)/cacheabledatablock.h \
@@ -112,7 +113,14 @@ libSzarp2_a_SOURCES = \
 			$(SZBASE_DIR)/szbcancelhandle.cc $(INCLUDE_DIR)/szbase/szbcancelhandle.h \
 			$(SZBASE_DIR)/loptdatablock.cc $(SZBASE_DIR)/loptdatablock.h \
 			$(SZBASE_DIR)/lua_parser_extra.cc $(SZBASE_DIR)/lua_parser_extra.h \
-			$(SZBASE_DIR)/lua_parser.cc $(INCLUDE_DIR)/szbase/lua_syntax.h
+			$(SZBASE_DIR)/lua_parser.cc $(INCLUDE_DIR)/szbase/lua_syntax.h \
+			$(SZBASE_DIR)/proberconnection.cc $(SZBASE_DIR)/proberconnection.h \
+			$(SZBASE_DIR)/luacalculate.cc $(SZBASE_DIR)/luacalculate.h \
+			$(SZBASE_DIR)/luacalculate.cc $(SZBASE_DIR)/luacalculate.h \
+			$(SZBASE_DIR)/loptcalculate.cc $(SZBASE_DIR)/loptcalculate.h \
+			$(SZBASE_DIR)/probeblock.cc \
+			$(SZBASE_DIR)/szbsearch.h $(SZBASE_DIR)/szbsearch.cc \
+			$(SZBASE_DIR)/szbblock.cc
 
 
 # Additional files for deleting on 'make maintainer-clean'

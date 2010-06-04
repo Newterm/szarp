@@ -425,12 +425,12 @@ SzbExtractor::PrintTimeToOOXML(FILE* output, char *datebuf,
 	}
 	if ((period_type != PT_WEEK) && (period_type != PT_MONTH)) {
 		fprintf(output, "<table:table-cell office:value-type=\"date\" office:date-value=\"");
-	       	fprintf(output, datebuf);
+	       	fprintf(output, "%s", datebuf);
 	       	fprintf(output, "\"><text:p>");
-	       	fprintf(output, datebuf);
+	       	fprintf(output, "%s", datebuf);
 	} else {
 		fprintf(output, "<table:table-cell><text:p>");
-	       	fprintf(output, datebuf);
+	       	fprintf(output, "%s", datebuf);
 	}
 	if (c)
 		*c = ' ';
@@ -626,7 +626,7 @@ SzbExtractor::ExtractToOpenOffice(const std::wstring& path)
 	struct zip_source *s;
 	s = zip_source_filep(ods, tmp, 0 /* start offset */, -1 /* all file */);
 	if (zip_add(ods, "content.xml", s) < 0) {
-		sz_log(0, zip_strerror(ods));
+		sz_log(0, "%s", zip_strerror(ods));
 		zip_source_free(s);
 		return ERR_ZIPADD;
 	}
@@ -656,7 +656,7 @@ SzbExtractor::ExtractToOpenOffice(const std::wstring& path)
 
 	s = zip_source_buffer(ods, manifest, strlen(manifest), 0 /* don't free buffer */);
 	if (zip_add(ods, "META-INF/manifest.xml", s) < 0) {
-		sz_log(0, zip_strerror(ods));
+		sz_log(0, "%s", zip_strerror(ods));
 		zip_source_free(s);
 		return ERR_ZIPADD;
 	}

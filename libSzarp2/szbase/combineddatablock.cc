@@ -60,6 +60,8 @@
 #include "combineddatablock.h"
 #include "realdatablock.h"
 #include "conversion.h"
+#include "szbsearch.h"
+
 
 
 namespace fs = boost::filesystem;
@@ -135,12 +137,12 @@ CombinedDatablock::CombinedDatablock(szb_buffer_t * b, TParam * p, int y, int m)
 		msw_readed = lsw_readed;
 	}
 
-	this->first_non_fixed_probe =  msw_readed / sizeof(SZB_FILE_TYPE);
+	this->fixed_probes_count =  msw_readed / sizeof(SZB_FILE_TYPE);
 
 	// konwersja do SZB_TYPE
 	double pw = pow(10.0, param->GetPrec());
 	int i = 0;
-	for (; i < this->first_non_fixed_probe; i++) {
+	for (; i < this->fixed_probes_count; i++) {
 		if (SZB_FILE_NODATA == buf_msw[i]) {
 			this->data[i] = SZB_NODATA;
 		} else {
@@ -179,7 +181,7 @@ void
 CombinedDatablock::Refresh()
 {
 	// block is full - no more probes can be load
-	if (this->first_non_fixed_probe == this->max_probes)
+	if (this->fixed_probes_count == this->max_probes)
 		return;
 
 	time_t updatetime = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
@@ -192,7 +194,7 @@ CombinedDatablock::Refresh()
 	sz_log(DATABLOCK_REFRESH_LOG_LEVEL, "CombinedDatablock::Refresh() '%ls'", this->GetBlockRelativePath().c_str());
 
 	// load only new data
-	int position = this->first_non_fixed_probe * sizeof(SZB_FILE_TYPE);
+	int position = this->fixed_probes_count * sizeof(SZB_FILE_TYPE);
 	TParam ** p_cache = this->param->GetFormulaCache();
 
 	// msw file
@@ -267,10 +269,10 @@ CombinedDatablock::Refresh()
 	// konwersja do SZB_TYPE
 	double pw = pow(10, this->param->GetPrec());
 
-	int old_c = this->first_non_fixed_probe;
-	this->first_non_fixed_probe = old_c + msw_readed / sizeof(SZB_FILE_TYPE);
+	int old_c = this->fixed_probes_count;
+	this->fixed_probes_count = old_c + msw_readed / sizeof(SZB_FILE_TYPE);
 
-	for (int i = old_c; i < this->first_non_fixed_probe; i++) {
+	for (int i = old_c; i < this->fixed_probes_count; i++) {
 		if (SZB_FILE_NODATA == buf_msw[i - old_c])
 			this->data[i] = SZB_NODATA;
 		else {
@@ -293,38 +295,6 @@ CombinedDatablock::Refresh()
 
 	return;
 }
-
-/** Search first available probe in given period for combined (glued) parameters.
- * @param buffer cache buffer
- * @param param parameter
- * @param start start time of search
- * @param end time of search
- * @param direction direction of search
- * @return time of first available probe, -1 for error
- */
-time_t
-szb_combined_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction)
-{
-#ifdef KDEBUG
-	sz_log(SEARCH_DATA_LOG_LEVEL, "S: szb_combined_search_data: %s, s: %ld, e: %ld, d: %d",
-		param->GetName(), start, end, direction);
-#endif
-	assert(param->GetNumParsInFormula() == 2);
-	TParam ** cache = param->GetFormulaCache();
-
-	// search for lsb param
-	time_t t = szb_real_search_data(buffer, cache[0], start, end, direction);
-	if (-1 == t)
-		return -1;
-
-	// if data not found search for msw param
-	if (IS_SZB_NODATA(szb_get_data(buffer, param, t)))
-		t = szb_real_search_data(buffer, cache[1], start, end, direction);
-
-	// if found return time, else return -1
-	return IS_SZB_NODATA(szb_get_data(buffer, param, t)) ? -1 : t;
-}
-
 
 /** Loads data from szbase file.
  * @param buffer pointer to cache buffer

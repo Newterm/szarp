@@ -21,6 +21,7 @@
 
 #include "cacheabledatablock.h"
 #include "conversion.h"
+#include "proberconnection.h"
 
 #ifdef MINGW32
 #include "mingw32_missing.h"
@@ -385,6 +386,31 @@ void Szbase::NextQuery() {
 	m_current_query++;
 }
 
+void Szbase::SetProberAddress(std::wstring prefix, std::wstring address, std::wstring port) {
+	m_probers_addresses[prefix] = std::make_pair(address, port);
+
+	TBI::iterator i = m_ipkbasepair.find(prefix);
+	if (i != m_ipkbasepair.end()) {
+		if (i->second.first->prober_connection) {
+			delete i->second.first->prober_connection;
+			i->second.first->prober_connection = NULL;
+		}
+	}
+
+}
+
+
+bool Szbase::GetProberAddress(std::wstring prefix, std::wstring &address, std::wstring &port) {
+	std::tr1::unordered_map<std::wstring, std::pair<std::wstring, std::wstring> >::iterator i;
+	i = m_probers_addresses.find(prefix);
+	if (i == m_probers_addresses.end())
+		return false;
+
+	address = i->second.first;
+	port = i->second.second;
+	return true;
+}
+
 #ifndef NO_LUA
 
 bool Szbase::CompileLuaFormula(const std::wstring& formula, std::wstring& error) {
@@ -469,65 +495,65 @@ static void lua_printstack(const char* a, lua_State *lua) {
 #endif
 
 int lua_szbase(lua_State *lua) {
-	Szbase* szbase = Szbase::GetObject();
+		Szbase* szbase = Szbase::GetObject();
 
-	const unsigned char* param = (unsigned char*) luaL_checkstring(lua, 1);
-	time_t time = static_cast<time_t>(lua_tonumber(lua, 2));
-	SZARP_PROBE_TYPE probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 3));
-	int custom_length = lua_tointeger(lua, 4);
+		const unsigned char* param = (unsigned char*) luaL_checkstring(lua, 1);
+		time_t time = static_cast<time_t>(lua_tonumber(lua, 2));
+		SZARP_PROBE_TYPE probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 3));
+		int custom_length = lua_tointeger(lua, 4);
 
-	time = szb_round_time(time, probe_type, custom_length);
+		time = szb_round_time(time, probe_type, custom_length);
 
-	bool fixed = true;
-	bool ok = true;
-	std::wstring error;
-	//FIXME: proper type
-	double result = szbase->GetValue(param, time, probe_type, custom_length, &fixed, ok, error);
+		bool fixed = true;
+		bool ok = true;
+		std::wstring error;
+		//FIXME: proper type
+		double result = szbase->GetValue(param, time, probe_type, custom_length, &fixed, ok, error);
 
-	assert(Lua::fixed.size() > 0);
-	Lua::fixed.top() = Lua::fixed.top() && fixed;
+		assert(Lua::fixed.size() > 0);
+		Lua::fixed.top() = Lua::fixed.top() && fixed;
 
-	if (ok == false)
-		luaL_error(lua, "%s", SC::S2U(error).c_str());
+		if (ok == false)
+			luaL_error(lua, "%s", SC::S2U(error).c_str());
 
-	lua_pushnumber(lua, result);
+		lua_pushnumber(lua, result);
 
-	return 1;
+		return 1;
 
-}
+	}
 
-int lua_szbase_move_time(lua_State* lua) {
-	time_t time = static_cast<time_t>(lua_tonumber(lua, 1));
-	int count = lua_tointeger(lua, 2);
-	SZARP_PROBE_TYPE probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 3));
-	int custom_lenght = lua_tointeger(lua, 4);
+	int lua_szbase_move_time(lua_State* lua) {
+		time_t time = static_cast<time_t>(lua_tonumber(lua, 1));
+		int count = lua_tointeger(lua, 2);
+		SZARP_PROBE_TYPE probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 3));
+		int custom_lenght = lua_tointeger(lua, 4);
 
-	time_t result = szb_move_time(time , count, probe_type, custom_lenght);
-	lua_pushnumber(lua, result);
+		time_t result = szb_move_time(time , count, probe_type, custom_lenght);
+		lua_pushnumber(lua, result);
 
-	return 1;
-}
+		return 1;
+	}
 
-int lua_szbase_round_time(lua_State* lua) {
-	time_t time = static_cast<time_t>(lua_tonumber(lua, 1));
-	SZARP_PROBE_TYPE probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 2));
-	int custom_length = lua_tointeger(lua, 3);
+	int lua_szbase_round_time(lua_State* lua) {
+		time_t time = static_cast<time_t>(lua_tonumber(lua, 1));
+		SZARP_PROBE_TYPE probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 2));
+		int custom_length = lua_tointeger(lua, 3);
 
-	time_t result = szb_round_time(time , probe_type, custom_length);
-	lua_pushnumber(lua, result);
+		time_t result = szb_round_time(time , probe_type, custom_length);
+		lua_pushnumber(lua, result);
 
-	return 1;
-}
+		return 1;
+	}
 
-int lua_szbase_isnan(lua_State* lua) {
-	double v = lua_tonumber(lua, 1);
-	lua_pushboolean(lua, std::isnan(v));
-	return 1;
-}
+	int lua_szbase_isnan(lua_State* lua) {
+		double v = lua_tonumber(lua, 1);
+		lua_pushboolean(lua, std::isnan(v));
+		return 1;
+	}
 
-int lua_szbase_search_first(lua_State *lua) {
-	const unsigned char* param = (unsigned char*) luaL_checkstring(lua, 1);
-	Szbase* szbase = Szbase::GetObject();
+	int lua_szbase_search_first(lua_State *lua) {
+		const unsigned char* param = (unsigned char*) luaL_checkstring(lua, 1);
+		Szbase* szbase = Szbase::GetObject();
 	
 	bool ok;
 	time_t ret = szbase->SearchFirst(SC::U2S(param), ok);
@@ -566,14 +592,7 @@ int lua_szbase_in_season(lua_State *lua) {
 	if (cfg == NULL)
 		luaL_error(lua, "Config %s not found", (char*)prefix);
 
-	struct tm *ptm;
-#ifdef HAVE_LOCALTIME_R
-	struct tm _tm;
-	ptm = localtime_r(&time, &_tm);
-#else
-	ptm = localtime(&time);
-#endif
-	lua_pushboolean(lua, cfg->GetSeasons()->IsSummerSeason(ptm));
+	lua_pushboolean(lua, cfg->GetSeasons()->IsSummerSeason(time));
 
 	return 1;
 

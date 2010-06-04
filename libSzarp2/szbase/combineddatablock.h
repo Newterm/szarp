@@ -30,8 +30,6 @@
 #include "szbbuf.h"
 #include "szbdatablock.h"
  
-time_t
-szb_combined_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction);
 int
 szb_load_data(szb_buffer_t * buffer, const std::wstring& path, SZB_FILE_TYPE * pdata_buffer,
 	int start, int count);

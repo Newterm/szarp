@@ -243,7 +243,7 @@ void GCDCGraphs::DrawXAxis(wxGraphicsContext &dc) {
 }
 
 namespace {
-const int PeriodMarkShift[PERIOD_T_LAST] = {0, 0, 1, 3, 0};
+const int PeriodMarkShift[PERIOD_T_LAST] = {0, 0, 1, 3, 3, 0};
 }
 
 
@@ -493,7 +493,7 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 			path = &path2;
 			pcircles = &p2circles;
 
-			if (d->GetPeriod() != PERIOD_T_DAY 
+			if ((d->GetPeriod() != PERIOD_T_DAY && d->GetPeriod() != PERIOD_T_10MINUTE)
 					|| (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())) 
 				pcircles->push_back(std::make_pair(x, y));
 
@@ -512,7 +512,7 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 			else
 				p = &p1circles;
 
-			if (d->GetPeriod() != PERIOD_T_DAY 
+			if ((d->GetPeriod() != PERIOD_T_DAY && d->GetPeriod() != PERIOD_T_10MINUTE)
 					|| (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())) 
 				p->push_back(std::make_pair(x, y));
 
@@ -531,7 +531,7 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 			else
 				path->MoveToPoint(x, y);
 
-			if (d->GetPeriod() != PERIOD_T_DAY 
+			if ((d->GetPeriod() != PERIOD_T_DAY && d->GetPeriod() != PERIOD_T_10MINUTE)
 					|| (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())) 
 				pcircles->push_back(std::make_pair(x, y));
 		}
@@ -542,7 +542,7 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 	for (std::vector<std::pair<double, double> >::iterator i = p1circles.begin();
 			i != p1circles.end();
 			i++)
-		if (d->GetPeriod() != PERIOD_T_DAY)
+		if (d->GetPeriod() != PERIOD_T_DAY && d->GetPeriod() != PERIOD_T_10MINUTE)
 			path1.AddEllipse(i->first - ellipse_size / 2, i->second - ellipse_size / 2, ellipse_size, ellipse_size);
 		else
 			path1.AddCircle(i->first, i->second, 1);
@@ -554,7 +554,7 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 		for (std::vector<std::pair<double, double> >::iterator i = p2circles.begin();
 				i != p2circles.end();
 				i++)
-			if (d->GetPeriod() != PERIOD_T_DAY)
+			if (d->GetPeriod() != PERIOD_T_DAY && d->GetPeriod() != PERIOD_T_10MINUTE)
 				path2.AddEllipse(i->first - ellipse_size / 2, i->second - ellipse_size / 2, ellipse_size, ellipse_size);
 			else
 				path2.AddCircle(i->first, i->second, 1);
@@ -999,6 +999,10 @@ void GCDCGraphs::OnIdle(wxIdleEvent &e) {
 		wxWindow::Refresh();
 		m_refresh = false;
 	}
+}
+
+void GCDCGraphs::NoData(DrawsController *d) {
+	m_refresh = true;
 }
 
 void GCDCGraphs::DrawInfoChanged(Draw *draw) { 

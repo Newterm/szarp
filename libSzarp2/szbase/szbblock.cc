@@ -16,27 +16,30 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-#ifndef __SZBDATABLOCK_H__
-#define __SZBDATABLOCK_H__
 
-#include <config.h>
+#include "szbase/szbbuf.h"
 
-#include <limits.h>
-#include <time.h>
-#include <assert.h>
+szb_block_t::szb_block_t(szb_buffer_t* b, TParam* p, time_t st, time_t et) :
+		buffer(b), param(p), start_time(st), end_time(et), fixed_probes_count(0), locator(NULL)
+{}
 
-#include "szbdefines.h"
-#include "szarp_config.h"
-#include "szbfile.h"
-#include "szbdate.h"
+void szb_block_t::MarkAsUsed() {
+	locator->Used();
+}
 
-#define IS_INITIALIZED if(this->initialized) throw std::wstring("Datablock not initialized properly");
-#define NOT_INITIALIZED {this->initialized = false; return;}
-#define DATABLOCK_CREATION_LOG_LEVEL 8
-#define DATABLOCK_REFRESH_LOG_LEVEL 8
-#define DATABLOCK_CACHE_ACTIONS_LOG_LEVEL 8
-#define SEARCH_DATA_LOG_LEVEL 8
-#define MAX_PROBES 4500
+int szb_block_t::GetFixedProbesCount() {
+	return fixed_probes_count;
+}
 
-#endif
+time_t szb_block_t::GetStartTime() {
+	return start_time;
+}
 
+time_t szb_block_t::GetEndTime() {
+	return end_time;
+}
+
+szb_block_t::~szb_block_t() {
+	if (locator)
+		delete locator;
+}

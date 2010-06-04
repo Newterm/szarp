@@ -100,34 +100,34 @@ This program should run under valgrind without errors.\n\n");
 	TEST(tmpi == 0);
 	/* check for different months */
 	tmpi = szb_probecnt(2001, 1);
-	TEST(tmpi == (SZBASE_PROBES_PER_DAY*31));
+	TEST(tmpi == (SZBASE_DATA_PER_DAY*31));
 	tmpi = szb_probecnt(2001, 3);
-	TEST(tmpi == (SZBASE_PROBES_PER_DAY*31));
+	TEST(tmpi == (SZBASE_DATA_PER_DAY*31));
 	tmpi = szb_probecnt(2001, 5);
-	TEST(tmpi == (SZBASE_PROBES_PER_DAY*31));
+	TEST(tmpi == (SZBASE_DATA_PER_DAY*31));
 	tmpi = szb_probecnt(2001, 7);
-	TEST(tmpi == (SZBASE_PROBES_PER_DAY*31));
+	TEST(tmpi == (SZBASE_DATA_PER_DAY*31));
 	tmpi = szb_probecnt(2001, 8);
-	TEST(tmpi == (SZBASE_PROBES_PER_DAY*31));
+	TEST(tmpi == (SZBASE_DATA_PER_DAY*31));
 	tmpi = szb_probecnt(2001, 10);
-	TEST(tmpi == (SZBASE_PROBES_PER_DAY*31));
+	TEST(tmpi == (SZBASE_DATA_PER_DAY*31));
 	tmpi = szb_probecnt(2001, 12);
-	TEST(tmpi == (SZBASE_PROBES_PER_DAY*31));
+	TEST(tmpi == (SZBASE_DATA_PER_DAY*31));
 	tmpi = szb_probecnt(2001, 4);
-	TEST(tmpi == (SZBASE_PROBES_PER_DAY*30));
+	TEST(tmpi == (SZBASE_DATA_PER_DAY*30));
 	tmpi = szb_probecnt(2001, 6);
-	TEST(tmpi == (SZBASE_PROBES_PER_DAY*30));
+	TEST(tmpi == (SZBASE_DATA_PER_DAY*30));
 	tmpi = szb_probecnt(2001, 9);
-	TEST(tmpi == (SZBASE_PROBES_PER_DAY*30));
+	TEST(tmpi == (SZBASE_DATA_PER_DAY*30));
 	tmpi = szb_probecnt(2001, 11);
-	TEST(tmpi == (SZBASE_PROBES_PER_DAY*30));
+	TEST(tmpi == (SZBASE_DATA_PER_DAY*30));
 	/* check for july */
 	tmpi = szb_probecnt(2000, 2);
-	TEST(tmpi == (SZBASE_PROBES_PER_DAY*29));
+	TEST(tmpi == (SZBASE_DATA_PER_DAY*29));
 	tmpi = szb_probecnt(1996, 2);
-	TEST(tmpi == (SZBASE_PROBES_PER_DAY*29));
+	TEST(tmpi == (SZBASE_DATA_PER_DAY*29));
 	tmpi = szb_probecnt(2100, 2);
-	TEST(tmpi == (SZBASE_PROBES_PER_DAY*28));
+	TEST(tmpi == (SZBASE_DATA_PER_DAY*28));
 	TEST_OK
 
 	TESTING("szb_open()");

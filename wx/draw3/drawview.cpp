@@ -58,7 +58,7 @@ const wxColour BackgroundView::back2_col = wxColour(0, 0, 0);
 
 const wxColour GraphDrawer::alt_color = wxColour(255, 255, 255);
 
-const int View::PeriodMarkShift[PERIOD_T_LAST] = {0, 0, 1, 3, 0};
+const int View::PeriodMarkShift[PERIOD_T_LAST] = {0, 0, 1, 3, 3, 0};
 
 void View::ClearDC(wxMemoryDC *dc,wxBitmap *bitmap, int w, int h) {
 	dc->SelectObject(*bitmap);
@@ -729,7 +729,7 @@ void GraphView::DrawDot(int x, int y, wxDC *dc, SDC *sdc, wxRegion* region) {
 	dc->DrawPoint(x, y);
 	m_sdc.DrawPoint(x, y);
 
-	if (m_draw->GetPeriod() != PERIOD_T_DAY) {
+	if (m_draw->GetPeriod() != PERIOD_T_DAY && m_draw->GetPeriod() != PERIOD_T_10MINUTE) {
 		//dc->DrawCircle(x, y, wide ? 4 : 2);
 		//m_sdc.DrawCircle(x, y, wide ? 4 : 2);
 
@@ -1011,7 +1011,7 @@ void GraphDrawer::DrawAllPoints(wxDC *dc, SDC *sdc, int point_width) {
 			if (sdc)
 				sdc->DrawPoint(x1, y1);
 
-			if (m_draw->GetPeriod() != PERIOD_T_DAY) {
+			if (m_draw->GetPeriod() != PERIOD_T_DAY && m_draw->GetPeriod() != PERIOD_T_10MINUTE) {
 				dc->DrawCircle(x1, y1, m_circle_radius);
 				if (sdc)
 					sdc->DrawCircle(x1, y1, m_circle_radius);
@@ -1030,7 +1030,7 @@ void GraphDrawer::DrawAllPoints(wxDC *dc, SDC *sdc, int point_width) {
 			if (sdc)
 				sdc->DrawPoint(x, y);
 
-			if (m_draw->GetPeriod() != PERIOD_T_DAY) {
+			if (m_draw->GetPeriod() != PERIOD_T_DAY && m_draw->GetPeriod() != PERIOD_T_10MINUTE) {
 				dc->DrawCircle(x, y, m_circle_radius);
 				if (sdc)
 					sdc->DrawCircle(x, y, m_circle_radius);

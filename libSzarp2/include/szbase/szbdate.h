@@ -19,8 +19,7 @@
 #include "szbdefines.h"
 
 /** Enumeration type for different probe types. */
-typedef enum { PT_MIN10, PT_HOUR, PT_HOUR8, PT_DAY, PT_WEEK, PT_MONTH, 
-		PT_CUSTOM } SZARP_PROBE_TYPE ;
+typedef enum { PT_SEC10, PT_MIN10, PT_HOUR, PT_HOUR8, PT_DAY, PT_WEEK, PT_MONTH, PT_CUSTOM } SZARP_PROBE_TYPE ;
 		
 /**
  * Return number of days in month of given year.
@@ -59,7 +58,7 @@ szb_time2my(time_t time, int * year, int * month);
  * @return -1 on error or non-negative index
  */
 int
-szb_probeind(time_t t, time_t probe_length = SZBASE_PROBE);
+szb_probeind(time_t t, time_t probe_length = SZBASE_DATA_SPAN);
 
 /**
  * Converts month, year and probe index to time value.
@@ -103,6 +102,9 @@ probe2local(int probe, int year, int month, struct tm * tm);
  */
 time_t
 szb_round_time(time_t t, SZARP_PROBE_TYPE probe_type, int custom_length);
+
+time_t
+szb_round_to_probe_block_start(time_t t);
 
 /** Moves time value by specified number of probes. Count value can be
  * negative to indicate left direction of move. For example

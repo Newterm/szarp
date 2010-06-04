@@ -922,6 +922,9 @@ void DrawPanel::SetActive(bool _active) {
 			case PERIOD_T_DAY:
 				pmi = menu_bar->FindItem(XRCID("DAY_RADIO"));
 				break;
+			case PERIOD_T_10MINUTE:
+				pmi = menu_bar->FindItem(XRCID("HOUR_RADIO"));
+				break;
 			case PERIOD_T_SEASON:
 				pmi = menu_bar->FindItem(XRCID("SEASON_RADIO"));
 				break;

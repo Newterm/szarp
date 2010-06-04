@@ -84,7 +84,7 @@ class TMeaner;
 #define EXECUTE_SECTION "execute"
 
 /** base period in seconds */
-#define BASE_PERIOD	SZBASE_PROBE
+#define BASE_PERIOD	SZBASE_DATA_SPAN
 
 /***********************************************************************/
 

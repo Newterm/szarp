@@ -1,8 +1,21 @@
 /* 
   SZARP: SCADA software 
+  
 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-
 #include <sstream>
 #include <string>
 #include <assert.h>
@@ -13,6 +26,8 @@
 #include "liblog.h"
 
 #ifndef NO_LUA
+
+#include "luacalculate.h"
 
 using std::ostringstream;
 using std::string;
@@ -30,35 +45,6 @@ static void lua_printstack(const char* a, lua_State *lua) {
 
 }
 #endif
-
-static int compile_lua_param(lua_State *lua, TParam *p) {
-	int lua_function_reference = LUA_NOREF;
-	if (szb_compile_lua_formula(lua, (const char*) p->GetLuaScript(), (const char*)SC::S2U(p->GetName()).c_str()))
-		lua_function_reference = luaL_ref(lua, LUA_REGISTRYINDEX);
-	else {
-		sz_log(0, "Error compiling param %ls: %s\n", p->GetName().c_str(), lua_tostring(lua, -1));
-		lua_function_reference = LUA_REFNIL;
-	}
-	p->SetLuaParamRef(lua_function_reference);
-	return lua_function_reference;
-
-}
-
-void LUA_GET_VAL(lua_State* lua, szb_buffer_t *BUFFER, time_t START, SZARP_PROBE_TYPE PROBE_TYPE, int CUSTOM_LENGTH, double& RESULT) 
-{													
-	lua_pushvalue(lua, -1);		
-	lua_pushnumber(lua, (START));									
-	lua_pushnumber(lua, (PROBE_TYPE));								
-	lua_pushnumber(lua, (CUSTOM_LENGTH));								
-	int _ret = lua_pcall(lua, 3, 1, 0);								
-	if (_ret != 0) {										
-		RESULT = SZB_NODATA;									
-		BUFFER->last_err = SZBE_LUA_ERROR;							
-		BUFFER->last_err_string = SC::U2S((const unsigned char*)lua_tostring(lua, -1));		
-	} else 												
-		RESULT = lua_tonumber(lua, -1);								
-	lua_pop(lua, 1);										
-}
 
 void szb_lua_get_values(szb_buffer_t *buffer, TParam *param, time_t start_time, time_t end_time, SZARP_PROBE_TYPE probe_type, SZBASE_TYPE *ret) {
 	lua_State* lua = Lua::GetInterpreter();
@@ -87,7 +73,7 @@ void szb_lua_get_values(szb_buffer_t *buffer, TParam *param, time_t start_time, 
 
 	for (size_t i = 0; start_time < end_time; ++i, start_time = szb_move_time(start_time, 1, probe_type, 0)) {
 		Lua::fixed.push(true);
-		LUA_GET_VAL(lua, buffer, start_time, probe_type, 0, ret[i]);
+		lua_get_val(lua, buffer, start_time, probe_type, 0, ret[i]);
 		if (buffer->last_err != SZBE_OK)
 			break;
 		ret[i] = rint(ret[i] * pow10(param->GetPrec())) / pow10(param->GetPrec()); 
@@ -103,119 +89,6 @@ error:
 
 
 }
-
-time_t szb_lua_search_data(szb_buffer_t * buffer, TParam * param ,
-		time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe, SzbCancelHandle * c_handle) {
-#ifdef KDEBUG
-	sz_log(SEARCH_DATA_LOG_LEVEL, "S: szb_lua_search_data: %s, s: %ld, e: %ld, d: %d",
-	    param->GetName(), start, end, direction);
-#endif
-	if (param->GetFormulaType() == TParam::LUA_VA)
-		probe = PT_MIN10;
-
-	start = szb_round_time(start, probe, 0);
-
-	time_t param_first_av_date;
-
-	double val = SZB_NODATA;
-
-	if (param->GetLuaStartDateTime() > 0) {
-		param_first_av_date = param->GetLuaStartDateTime();
-	} else {
-		param_first_av_date = buffer->first_av_date;
-	}
-	param_first_av_date += param->GetLuaStartOffset();
-	param_first_av_date = szb_round_time(param_first_av_date, probe, 0);
-
-	time_t param_last_av_date = szb_search_last(buffer, param);
-
-	if (direction == 0) {
-		if (start < param_first_av_date || start > param_last_av_date)
-			return -1;
-
-		val = szb_get_probe(buffer, param, start, probe, 0);
-
-		time_t ret = IS_SZB_NODATA(val) ? -1 : start;
-		sz_log(SEARCH_DATA_LOG_LEVEL, "Search data called with direction = %d, start = %d, end %d, result = %d, found value = %f", direction, (int)start, (int)end, (int)ret, val);
-		return ret;
-	}
-
-	if (direction > 0 && end == -1)
-		end = param_last_av_date;
-
-	if (direction < 0 && end == -1)
-		end = param_first_av_date;
-
-	if (direction > 0) {
-		if (start > param_last_av_date || end < param_first_av_date)
-			return -1;
-		if (start < param_first_av_date)
-			start = param_first_av_date;
-		if (end > param_last_av_date)
-			end = param_last_av_date;
-	}
-	else {
-		if (start < param_first_av_date || end > param_last_av_date)
-			return -1;
-		if (start > param_last_av_date)
-			start = param_last_av_date;
-		if (end < param_first_av_date)
-			end = param_first_av_date;
-	}
-
-	end = szb_round_time(end, probe, 0);
-
-#define INTERVAL 500
-#define BREAK_IF_CANCELED \
-	if(c_handle) { \
-		counter--; \
-		if (counter == 0) { \
-			counter = INTERVAL; \
-			if(c_handle->IsStopFlag()) { \
-				sz_log(SEARCH_DATA_LOG_LEVEL, "Search data called with direction = %d, start = %d, end %d, stopped by cancel handle", direction, (int)start, (int)end); \
-				return -1; \
-			} \
-		} \
-	}
-
-	int counter = INTERVAL;
-	if (c_handle) {
-		c_handle->Start();
-		counter = INTERVAL;
-	}
-
-	if (direction > 0) {
-		for (;start <= end; start = szb_move_time(start, 1, probe, 0)) {
-			val = szb_get_probe(buffer, param, start, probe, 0);
-			if (!IS_SZB_NODATA(val) || buffer->last_err != SZBE_OK)
-				break;
-			BREAK_IF_CANCELED;
-		}
-	}
-	else {
-		for (;start >= end; start = szb_move_time(start, -1, probe, 0)) {
-			val = szb_get_probe(buffer, param, start, probe, 0);
-			if (!IS_SZB_NODATA(val) || buffer->last_err != SZBE_OK)
-				break;
-			BREAK_IF_CANCELED;
-		}
-	}
-
-#undef INTERVAL
-#undef BREAK_IF_CANCELED
-
-	time_t ret;
-	if (IS_SZB_NODATA(val))
-		ret = -1;
-	else
-		ret = start;
-
-	sz_log(SEARCH_DATA_LOG_LEVEL, "Search data called with direction = %d, start = %d, end %d, result = %d, found value = %f", direction, (int)start, (int)end, (int)ret, val);
-
-	return ret;
-
-}
-
 
 SZBASE_TYPE szb_lua_get_avg(szb_buffer_t* buffer, TParam *param, time_t start_time, time_t end_time, SZBASE_TYPE *psum, int *pcount, SZARP_PROBE_TYPE probe, bool &fixed) {
 	double sum = .0;
@@ -271,7 +144,7 @@ SZBASE_TYPE szb_lua_get_avg(szb_buffer_t* buffer, TParam *param, time_t start_ti
 	for (size_t i = 0; start_time < end_time; ++i, start_time = szb_move_time(start_time, 1, probe, 0)) {
 		if (start_time <= param_last_av_date) {
 			Lua::fixed.push(true);
-			LUA_GET_VAL(lua, buffer, start_time, probe, 0, val);
+			lua_get_val(lua, buffer, start_time, probe, 0, val);
 			fixed = fixed && Lua::fixed.top();
 			Lua::fixed.pop();
 		} else {
@@ -325,7 +198,7 @@ LuaNativeDatablock::LuaNativeDatablock(szb_buffer_t * b, TParam * p, int y, int 
 
 	this->AllocateDataMemory();
 
-	this->first_non_fixed_probe = 0;
+	this->fixed_probes_count = 0;
 
 	if (CacheableDatablock::LoadFromCache()) {
 		Refresh();
@@ -340,8 +213,8 @@ LuaNativeDatablock::LuaNativeDatablock(szb_buffer_t * b, TParam * p, int y, int 
 	if (year > av_year || (year == av_year && month > av_month))
 		NOT_INITIALIZED;
 
-	if (end_date > GetBlockLastDate())
-		end_date = GetBlockLastDate();
+	if (end_date > GetEndTime())
+		end_date = GetEndTime();
 
 	m_probes_to_compute = szb_probeind(end_date) + 1;
 
@@ -365,7 +238,7 @@ void LuaNativeDatablock::FinishInitialization() {
 
 	if (m_init_in_progress == false) {
 		//block has been load from cache
-		if (first_non_fixed_probe > 0)
+		if (fixed_probes_count > 0)
 			return;
 		m_init_in_progress = true;
 	} else
@@ -392,7 +265,7 @@ void LuaNativeDatablock::FinishInitialization() {
 
 	for (int i = 0; i < start_probe; i++)
 		this->data[i] = SZB_NODATA;
-	this->first_non_fixed_probe = start_probe;
+	this->fixed_probes_count = start_probe;
 
 	time_t end_date = buffer->GetMeanerDate() + param->GetLuaEndOffset();
 
@@ -414,15 +287,15 @@ void LuaNativeDatablock::FinishInitialization() {
 	lua_rawgeti(lua, LUA_REGISTRYINDEX, ref);
 	for (int i = start_probe; i < end_probe; i++) {
 		Lua::fixed.push(true);
-		LUA_GET_VAL(lua, buffer, probe2time(i, year, month), PT_MIN10, 0, data[i]);
+		lua_get_val(lua, buffer, probe2time(i, year, month), PT_MIN10, 0, data[i]);
 		bool fixedvalue = Lua::fixed.top();
 		Lua::fixed.pop();
 		if (buffer->last_err != SZBE_OK) {
 			NOT_INITIALIZED;
 			break;
 		}
-		if (fixedvalue && i == this->first_non_fixed_probe) {
-			this->first_non_fixed_probe++;
+		if (fixedvalue && i == this->fixed_probes_count) {
+			this->fixed_probes_count++;
 		}
 		if (!IS_SZB_NODATA(this->data[i])) {
 			data[i] = rint(data[i] * pow10(param->GetPrec())) / pow10(param->GetPrec()); 
@@ -442,7 +315,7 @@ void LuaNativeDatablock::FinishInitialization() {
 void
 LuaNativeDatablock::Refresh() {
 
-	if(this->first_non_fixed_probe == this->max_probes)
+	if(this->fixed_probes_count == this->max_probes)
 		return;
 
 	time_t updatetime = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
@@ -453,8 +326,8 @@ LuaNativeDatablock::Refresh() {
 	this->last_update_time = updatetime;
 
 	time_t end_date = szb_search_last(buffer, param);
-	if (end_date > GetBlockLastDate())
-		end_date = GetBlockLastDate();
+	if (end_date > GetEndTime())
+		end_date = GetEndTime();
 
 	lua_State* lua = Lua::GetInterpreter();
 	int ref = param->GetLuaParamReference();
@@ -465,23 +338,23 @@ LuaNativeDatablock::Refresh() {
 
 	int new_probes_count = szb_probeind(end_date) + 1;
 
-	assert(new_probes_count >= this->first_non_fixed_probe);
+	assert(new_probes_count >= this->fixed_probes_count);
 
-	if (this->first_data_probe_index >= first_non_fixed_probe)
+	if (this->first_data_probe_index >= fixed_probes_count)
 		first_data_probe_index = -1;
-	if (this->last_data_probe_index >= first_non_fixed_probe)
+	if (this->last_data_probe_index >= fixed_probes_count)
 		last_data_probe_index = -1;
 
-	for (int i = this->first_non_fixed_probe; i < new_probes_count; i++) {
+	for (int i = this->fixed_probes_count; i < new_probes_count; i++) {
 
 		Lua::fixed.push(true);
-		LUA_GET_VAL(lua, buffer, probe2time(i, year, month), PT_MIN10, 0, data[i]);
+		lua_get_val(lua, buffer, probe2time(i, year, month), PT_MIN10, 0, data[i]);
 		bool fixedvalue = Lua::fixed.top();
 		Lua::fixed.pop();
 		if (buffer->last_err != SZBE_OK)
 			break;
-		if (fixedvalue && i == this->first_non_fixed_probe) {
-			this->first_non_fixed_probe++;
+		if (fixedvalue && i == this->fixed_probes_count) {
+			this->fixed_probes_count++;
 		}
 		if(!IS_SZB_NODATA(this->data[i])) {
 			data[i] = rint(data[i] * pow10(param->GetPrec())) / pow10(param->GetPrec()); 

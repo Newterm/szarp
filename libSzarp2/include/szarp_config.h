@@ -758,7 +758,7 @@ public:
 	    _next(NULL),
 	    _szbase_name(),
 	    _psc(false),
-	    _period(SZBASE_PROBE),
+	    _period(SZBASE_DATA_SPAN),
 #ifndef NO_LUA
 	    _script(NULL),
 	    _lua_function_reference(LUA_NOREF),
@@ -1097,7 +1097,7 @@ public:
 	/** Get parameter writting period. */
 	time_t GetPeriod() { return  _period; }
 	/** Set parameter writting period. */
-	void SetPeriod(time_t period) { _period = period <= 0 ? SZBASE_PROBE : period; }
+	void SetPeriod(time_t period) { _period = period <= 0 ? SZBASE_DATA_SPAN : period; }
 	bool GetPSC() { return _psc; }
 	void SetPSC(bool psc) { _psc = psc; }
 
@@ -1953,7 +1953,7 @@ public:
 	TSSeason(Season _defs = Season()) : defs(_defs) {};
 
 	/**return true if given date falls within summer season*/
-	bool IsSummerSeason(const tm* t) const;
+	bool IsSummerSeason(time_t time) const;
 
 	/**return true if given date falls within summer season*/
 	bool IsSummerSeason(int year, int month, int day) const;

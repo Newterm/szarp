@@ -1,13 +1,21 @@
 /* 
   SZARP: SCADA software 
+  
 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/* 
- * szbase - data buffer
- * $Id$
- * <pawel@praterm.com.pl>
- */
-
 #include <config.h>
 
 #ifndef _GNU_SOURCE
@@ -20,15 +28,12 @@
 
 #include "conversion.h"
 
+#include "szbdefines.h"
 #include "szbbuf.h"
 #include "szbname.h"
 #include "szbfile.h"
 #include "szbdate.h"
 #include "szbhash.h"
-
-#include "definabledatablock.h"
-#include "realdatablock.h"
-#include "loptdatablock.h"
 
 #include "szbbase.h"
 #include "include/szarp_config.h"
@@ -57,7 +62,11 @@
 #include "szbdefines.h"
 #include "realdatablock.h"
 #include "combineddatablock.h"
+#include "definabledatablock.h"
 #include "loptdatablock.h"
+#include "loptcalculate.h"
+#include "proberconnection.h"
+#include "szbsearch.h"
 
 #include "boost/filesystem/path.hpp"
 #include "boost/filesystem/operations.hpp"
@@ -114,8 +123,9 @@ template<typename OP> std::wstring find_one_param_file(const fs::wpath &paramPat
 szb_datablock_t *
 szb_find_block(szb_buffer_t * buffer, TParam * param, int year, int month)
 {
-    return buffer->FindBlock(param, year, month);
+    return buffer->FindDataBlock(param, year, month);
 }
+
 
 /** Returns pointer to block for given param, year and month. 
  * @param buffer pointer to szbase buffer context
@@ -126,12 +136,8 @@ szb_find_block(szb_buffer_t * buffer, TParam * param, int year, int month)
  * or couldn't be loaded, buffer->last_err is set to error code
  */
 szb_datablock_t *
-szb_get_block(szb_buffer_t * buffer, TParam * param, int year, int month)
+szb_get_datablock(szb_buffer_t * buffer, TParam * param, int year, int month)
 {
-#ifdef KDEBUG
-    sz_log(9, "D: szb_get_block: %ls, %d.%d", param->GetName().c_str(), year, month);
-#endif
-
     assert(NULL != buffer);
 
     szb_datablock_t *ret = szb_find_block(buffer, param, year, month);
@@ -176,6 +182,37 @@ szb_get_block(szb_buffer_t * buffer, TParam * param, int year, int month)
 	return ret;
 }
 
+szb_datablock_t *
+szb_get_datablock(szb_buffer_t * buffer, TParam * param, time_t time) {
+	int year, month;
+	szb_time2my(time, &year, &month);
+	return szb_get_datablock(buffer, param, year, month);
+}
+
+szb_block_t *
+szb_get_block(szb_buffer_t * buffer, TParam * param, time_t time, SZB_BLOCK_TYPE bt) {
+	switch (bt) {
+		case MIN10_BLOCK:
+			return szb_get_datablock(buffer, param, time);
+		case SEC10_BLOCK:
+			return szb_get_probeblock(buffer, param, time);
+		case UNUSED_BLOCK_TYPE:
+			assert(false);
+	}
+	return NULL;	
+}
+
+szb_probeblock_t *
+szb_get_probeblock(szb_buffer_t * buffer, TParam * param, time_t time){
+	assert(NULL != buffer);
+
+	szb_probeblock_t *ret = buffer->FindProbeBlock(param, time);
+	if (ret == NULL) {
+		ret = szb_create_probe_block(buffer, param, time);
+		buffer->AddBlock(ret);
+	}
+	return ret;
+}
 
 time_t
 szb_search_first(szb_buffer_t * buffer, TParam * param)
@@ -276,12 +313,34 @@ szb_search_last(szb_buffer_t * buffer, TParam * param)
 }
 
 time_t
+szb_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle) {
+	
+	if (buffer->PrepareConnection() == false)
+		return -1;
+
+	switch (param->GetType()) {
+		case TParam::P_REAL:
+			return szb_real_search_probe(buffer, param, start, end, direction, c_handle);
+	    
+		case TParam::P_COMBINED:
+			return szb_combined_search_probe(buffer, param, start, end, direction, c_handle);
+	    
+		case TParam::P_DEFINABLE:
+			return szb_definable_search_probe(buffer, param, start, end, direction, c_handle);
+
+#ifndef NO_LUA
+		case TParam::P_LUA:
+			return szb_lua_search_probe(buffer, param, start, end, direction, c_handle);
+#endif
+		default:
+			return -1;
+	}
+	return -1;
+}
+
+time_t
 szb_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe, SzbCancelHandle * c_handle)
 {
-#ifdef KDEBUG
-    sz_log(9, "S: szb_search_data: %s, s: %ld, e: %ld, d: %d",
-	    param->GetName(), start, end, direction);
-#endif
     switch(param->GetType()) {
 	case TParam::P_REAL:
 	    return szb_real_search_data(buffer, param, start, end, direction);
@@ -294,12 +353,26 @@ szb_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end,
 
 #ifndef NO_LUA
 	case TParam::P_LUA:
-	   return szb_lua_search_data(buffer, param, start, end, direction, probe, c_handle);
+	   return szb_lua_search_data(buffer, param, start, end, direction);
 #endif
 	default:
 	    return -1;
     }
 }
+
+time_t
+szb_search(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe, SzbCancelHandle * c_handle)
+{
+#ifndef NO_LUA
+	if (param->GetType() == TParam::P_LUA && param->GetFormulaType() == TParam::LUA_AV)
+		return szb_search_by_value(buffer, param, probe, start, end, direction);
+#endif
+	if (probe == PT_SEC10)
+		return szb_search_probe(buffer, param, start, end, direction, c_handle);
+	else
+		return szb_search_data(buffer, param, start, end, direction, probe, c_handle);
+}
+
 
 SZBASE_TYPE
 szb_get_data(szb_buffer_t * buffer, TParam * param, time_t time)
@@ -321,7 +394,7 @@ szb_get_data(szb_buffer_t * buffer, TParam * param, time_t time)
 
 	szb_time2my(time, &year, &month);
 	
-	block = szb_get_block(buffer, param, year, month);
+	block = szb_get_datablock(buffer, param, year, month);
 
 	index = szb_probeind(time);
 	assert(index >= 0);
@@ -331,34 +404,47 @@ szb_get_data(szb_buffer_t * buffer, TParam * param, time_t time)
 
 #define NOT_FIXED if(is_fixed) *is_fixed = false;
 
-SZBASE_TYPE
-szb_get_avg(szb_buffer_t * buffer, TParam * param,
-	time_t start_time, time_t end_time, double * psum, int *pcount, SZARP_PROBE_TYPE probe_type, bool *is_fixed)
-{
-#ifdef KDEBUG
-	sz_log(9, "szb_get_avg: %s s:%ld e:%ld",
-		param->GetName(),
-		(long unsigned int) start_time, (long unsigned int) end_time);
-#endif
+void 
+szb_get_avg_probe(szb_buffer_t * buffer, TParam * param,
+	time_t start_time, time_t end_time, double &psum, int &pcount, SZARP_PROBE_TYPE probe_type, bool *is_fixed) {
 
-	if (is_fixed) *is_fixed = true;
+	szb_probeblock_t* b;
+	int probe;
+
+	while (start_time < end_time) {
+		/* check current block */
+		time_t t = szb_round_to_probe_block_start(start_time);
+		probe = (start_time - t) / SZBASE_PROBE_SPAN;
+		b = szb_get_probeblock(buffer, param, t);
+		if (b != NULL) {
+			const SZBASE_TYPE * data = b->GetData();
+
+			if (b->GetFixedProbesCount() < b->probes_per_block
+					&& time_t(b->GetFixedProbesCount() * SZBASE_PROBE_SPAN + b->GetStartTime()) < end_time)
+				NOT_FIXED;
+
+			/* scan block for values */
+			for (int i = probe; t < end_time && i < SZBASE_PROBES_IN_BLOCK; i++, t += SZBASE_PROBE_SPAN) {
+				if (!IS_SZB_NODATA(data[i])) {
+					psum += data[i];
+					pcount++;
+				}
+			}
+		}
+		start_time += szb_probeblock_t::probes_per_block * SZBASE_PROBE_SPAN;
+	}
+
+}
+
+void
+szb_get_avg_data(szb_buffer_t * buffer, TParam * param,
+	time_t start_time, time_t end_time, double& psum, int &pcount, SZARP_PROBE_TYPE probe_type, bool *is_fixed)
+{
 
 	szb_datablock_t *b;
-	double sum = 0.0;
-	int count = 0;
-	time_t t = start_time;
 	int year, month;
 	int probe, max, i;
-
-#ifndef NO_LUA
-	if (param->GetType() == TParam::P_LUA && param->GetFormulaType() == TParam::LUA_AV) {
-		bool f = true;
-		SZBASE_TYPE tmp = szb_lua_get_avg(buffer, param, start_time, end_time, psum, pcount, probe_type, f);
-		if (is_fixed)
-			*is_fixed = f;
-		return tmp;
-	}
-#endif
+	time_t t = start_time;
 
 	if (param->IsConst()) {
 
@@ -371,22 +457,14 @@ szb_get_avg(szb_buffer_t * buffer, TParam * param,
 			start_time = buffer->first_av_date;
 	
 		if (start_time <= end_time) {
-			count = (end_time - start_time) / SZBASE_PROBE;
-			if (NULL != psum)
-				*psum = param->GetConstValue() * count;
-			if (NULL != pcount)
-				*pcount = count;
-	
-			return param->GetConstValue();
-	
-			sz_log(9, "C: szb_get_avg: %ls, v: %f", param->GetName().c_str(), param->GetConstValue());
+			pcount = (end_time - start_time) / SZBASE_DATA_SPAN;
+			psum = param->GetConstValue() * pcount;
+			return;
 		} else {
-			if (NULL != psum)
-				*psum = SZB_NODATA;
-			if (NULL != pcount)
-				*pcount = 0;
+			psum = SZB_NODATA;
+			pcount = 0;
 	
-			return SZB_NODATA;
+			return;
 		}
 
     }
@@ -396,7 +474,7 @@ szb_get_avg(szb_buffer_t * buffer, TParam * param,
 		szb_time2my(t, &year, &month);
 		probe = szb_probeind(t);
 		max = szb_probecnt(year, month);
-		b = szb_get_block(buffer, param, year, month);
+		b = szb_get_datablock(buffer, param, year, month);
 		if (b != NULL) {
 			const SZBASE_TYPE * data = b->GetData();
 
@@ -405,16 +483,42 @@ szb_get_avg(szb_buffer_t * buffer, TParam * param,
 				NOT_FIXED;
 
 			/* scan block for values */
-			for (i = probe; (i <= b->GetLastDataProbeIdx()) && (t < end_time); i++, t += SZBASE_PROBE){
+			for (i = probe; (i <= b->GetLastDataProbeIdx()) && (t < end_time); i++, t += SZBASE_DATA_SPAN){
 				if (!IS_SZB_NODATA(data[i])) {
-					sum += data[i];
-					count++;
+					psum += data[i];
+					pcount++;
 				}
 			}
 		}
 		/* set t to the begining of next month */
-		t = probe2time(0, year, month) + max * SZBASE_PROBE;
+		t = probe2time(0, year, month) + max * SZBASE_DATA_SPAN;
 	}
+}
+
+SZBASE_TYPE
+szb_get_avg(szb_buffer_t * buffer, TParam * param,
+	time_t start_time, time_t end_time, double * psum, int *pcount, SZARP_PROBE_TYPE probe_type, bool *is_fixed) {
+
+	if (is_fixed)
+		*is_fixed = true;
+
+	double sum = 0.0;
+	int count = 0;
+
+#ifndef NO_LUA
+	if (param->GetType() == TParam::P_LUA && param->GetFormulaType() == TParam::LUA_AV) {
+		bool f = true;
+		SZBASE_TYPE tmp = szb_lua_get_avg(buffer, param, start_time, end_time, psum, pcount, probe_type, f);
+		if (is_fixed)
+			*is_fixed = f;
+		return tmp;
+	}
+#endif
+
+	if (probe_type == PT_SEC10)
+		szb_get_avg_probe(buffer, param, start_time, end_time, sum, count, probe_type, is_fixed);
+	else
+		szb_get_avg_data(buffer, param, start_time, end_time, sum, count, probe_type, is_fixed);
 
 	if (count <= 0) {
 		if (NULL != psum)
@@ -430,6 +534,7 @@ szb_get_avg(szb_buffer_t * buffer, TParam * param,
 		*pcount = count;
 	return sum / count;
 }
+
 
 SZBASE_TYPE
 szb_get_probe(szb_buffer_t * buffer, TParam * param,
@@ -470,7 +575,7 @@ szb_get_values(szb_buffer_t * buffer, TParam * param,
 #endif
 
 	if (param->IsConst()) {
-		long int cnt = (end_time - start_time / SZBASE_PROBE);
+		long int cnt = (end_time - start_time / SZBASE_DATA_SPAN);
 		SZBASE_TYPE val = param->GetConstValue();
 
 		for (pos = 0; pos < cnt; pos++)
@@ -484,7 +589,7 @@ szb_get_values(szb_buffer_t * buffer, TParam * param,
 		szb_time2my(t, &year, &month);
 		probe = szb_probeind(t);
 		max = szb_probecnt(year, month);
-		b = szb_get_block(buffer, param, year, month);
+		b = szb_get_datablock(buffer, param, year, month);
 		if (b != NULL) {
 			const SZBASE_TYPE * data = b->GetData();
 
@@ -494,18 +599,18 @@ szb_get_values(szb_buffer_t * buffer, TParam * param,
 			}
 
 			/* copy values from block */
-			for (i = probe; (i <= b->GetLastDataProbeIdx() ) && (t < end_time); i++, t += SZBASE_PROBE, pos++)
+			for (i = probe; (i <= b->GetLastDataProbeIdx() ) && (t < end_time); i++, t += SZBASE_DATA_SPAN, pos++)
 				retbuf[pos] = data[i];
-			for (; (i < max) && (t < end_time); i++, t += SZBASE_PROBE, pos++)
+			for (; (i < max) && (t < end_time); i++, t += SZBASE_DATA_SPAN, pos++)
 				retbuf[pos] = SZB_NODATA;
 		} else {
 			NOT_FIXED;
 			/* fill the return buffer with SZB_NODATA */
-			for (i = probe; (i < max) && (t < end_time); i++, t += SZBASE_PROBE, pos++)
+			for (i = probe; (i < max) && (t < end_time); i++, t += SZBASE_DATA_SPAN, pos++)
 				retbuf[pos] = SZB_NODATA;
 		}
 		/* set t to the begining of next month */
-		t = probe2time(0, year, month) + max * SZBASE_PROBE;
+		t = probe2time(0, year, month) + max * SZBASE_DATA_SPAN;
 	}
 }
 
@@ -527,7 +632,7 @@ szb_get_last_av_date(szb_buffer_t * buffer)
 		TParam * param = buffer->first_param;
 	
 		while (param) {
-			t = szb_search_data(buffer, param, t, -1, -1);
+			t = szb_search(buffer, param, t, -1, -1);
 			if (t > last_av_date)
 				last_av_date = t;
 			param = param->GetNext();
@@ -674,9 +779,8 @@ szb_definable_meaner_last(szb_buffer_t * buffer)
 }
 
 szb_buffer_str::szb_buffer_str(int size): newest_block(NULL), oldest_block(NULL),
-	blocks_c(0), max_blocks(size), locked(0), state(0), cachepoison(false)
+	blocks_c(0), max_blocks(size), locked(0), prober_connection(NULL), cachepoison(false)
 {
-	this->hashstorage.rehash(size);
 }
 
 szb_buffer_str::~szb_buffer_str()
@@ -693,10 +797,24 @@ szb_buffer_str::~szb_buffer_str()
 }
 
 szb_datablock_t *
-szb_buffer_str::FindBlock(TParam * param, int year, int month)
+szb_buffer_str::FindDataBlock(TParam * param, int year, int month)
 {
 	
-	szb_datablock_t * block = this->hashstorage[BufferKey(param,year,month)];
+	szb_datablock_t * block = datastorage[BufferKey(param, probe2time(0, year, month))];
+
+	if (block != NULL) {
+		block->MarkAsUsed();
+		return block;
+	}
+	return NULL;
+
+}
+
+szb_probeblock_t *
+szb_buffer_str::FindProbeBlock(TParam * param, time_t start_time)
+{
+	
+	szb_probeblock_t * block = probestorage[BufferKey(param, start_time)];
 
 	if (block != NULL) {
 		block->MarkAsUsed();
@@ -764,7 +882,7 @@ szb_buffer_str::ClearParamFromCache(TParam* param)
 	cachepoison = true;
 	CacheableDatablock::ClearParamFromCache(this, param);
 	while (this->paramindex[param] != NULL) {
-		szb_datablock_t * tmp = this->paramindex[param]->block;
+		szb_block_t* tmp = this->paramindex[param]->block;
 		DeleteBlock(tmp);
 	}
 	cachepoison = cachepoison_;
@@ -774,7 +892,6 @@ void
 szb_buffer_str::Reset()
 {
 	this->freeBlocks();
-	this->state = 0;
 	assert(this->blocks_c == 0);
 
 	this->configurationDate = this->GetConfigurationDate();
@@ -787,30 +904,53 @@ szb_buffer_str::Reset()
 void
 szb_buffer_str::freeBlocks()
 {
-	while(this->hashstorage.begin() != this->hashstorage.end()) {
-		delete this->hashstorage.begin()->second;
-		this->hashstorage.erase(this->hashstorage.begin());
+	while (datastorage.begin() != datastorage.end()) {
+		delete datastorage.begin()->second;
+		datastorage.erase(datastorage.begin());
 	}
 
+	while (probestorage.begin() != probestorage.end()) {
+		delete probestorage.begin()->second;
+		probestorage.erase(probestorage.begin());
+	}
 }
 
 void
-szb_buffer_str::DeleteBlock(szb_datablock_t* block)
+szb_buffer_str::DeleteBlock(szb_block_t* block)
 {
 	assert(block);
 
-	unordered_map< BufferKey, szb_datablock_t*, TupleHasher, TupleComparer >::iterator i = this->hashstorage.find(BufferKey(block->param, block->year, block->month));
+	BufferKey key(block->param, block->GetStartTime());
+	switch (block->GetBlockType()) {
+		case MIN10_BLOCK:
+			assert(datastorage.erase(key) == 1);
+			break;
+		case SEC10_BLOCK:
+			assert(probestorage.erase(key) == 1);
+			break;
+		default:
+			assert(false);
+			break;
+	}
 
-	delete i->second;
-
-	this->hashstorage.erase(i);
+	delete block;
 
 }
 
 void
-szb_buffer_str::AddBlock(szb_datablock_t* block)
+szb_buffer_str::AddBlock(szb_block_t* block)
 {
-	this->hashstorage[BufferKey(block->param, block->year, block->month)] = block;
+	switch (block->GetBlockType()) {
+		case MIN10_BLOCK:
+			datastorage[BufferKey(block->param, block->start_time)] = dynamic_cast<szb_datablock_t*>(block);
+			break;
+		case SEC10_BLOCK:
+			probestorage[BufferKey(block->param, block->start_time)] = dynamic_cast<szb_probeblock_t*>(block);
+			break;
+		default:
+			assert(false);
+			break;
+	}
 	block->locator = new BlockLocator(this, block);
 }
 
@@ -829,8 +969,8 @@ szb_buffer_str::Unlock()
 	if (this->locked)
 		return;
 
-	while(this->blocks_c > this->max_blocks) {
-		szb_datablock_t * tmp = this->oldest_block->block;
+	while (this->blocks_c > this->max_blocks) {
+		szb_block_t * tmp = this->oldest_block->block;
 		this->DeleteBlock(tmp);
 	}
 
@@ -853,7 +993,22 @@ szb_buffer_str::RemoveExecParam(TParam *param) {
 #endif
 #endif
 
-BlockLocator::BlockLocator(szb_buffer_t* buff, szb_datablock_t* b): block(b), buffer(buff),
+bool
+szb_buffer_str::PrepareConnection() {
+	if (prober_connection)
+		return true;
+	std::wstring address, port;
+	if (szbase->GetProberAddress(prefix, address, port)) {
+		prober_connection = new ProberConnection(this, SC::S2A(address), SC::S2A(port));
+		return true;
+	} else {
+		last_err = SZBE_CONN_ERROR;
+		last_err_string = L"Connection with probes server not configured";
+		return false;
+	}
+}
+
+BlockLocator::BlockLocator(szb_buffer_t* buff, szb_block_t* b): block(b), buffer(buff),
 	newer(NULL), older(NULL), next_same_param(NULL), prev_same_param(NULL)
 {
 	//insertion
@@ -883,9 +1038,9 @@ BlockLocator::BlockLocator(szb_buffer_t* buff, szb_datablock_t* b): block(b), bu
 
 	this->buffer->blocks_c++;
 
-	if(!this->buffer->locked) {
+	if (!this->buffer->locked) {
 		while(this->buffer->blocks_c > this->buffer->max_blocks) {
-			szb_datablock_t * tmp = this->buffer->oldest_block->block;
+			szb_block_t * tmp = this->buffer->oldest_block->block;
 			this->buffer->DeleteBlock(tmp);
 		}
 	}
@@ -937,13 +1092,13 @@ void
 BlockLocator::Used()
 {
 	//We are the newest
-	if(this == this->buffer->newest_block){
+	if (this == this->buffer->newest_block){
 		assert(this->newer == NULL);
 		return;
 	}
 
 	//We are the oldest
-	if(this == this->buffer->oldest_block) {
+	if (this == this->buffer->oldest_block) {
 		assert(this->older == NULL);
 		assert(this->newer != NULL);
 		this->buffer->oldest_block = this->newer;
@@ -968,8 +1123,5 @@ TupleHasher::operator()(const BufferKey s) const
 	size_t val = (size_t) s.get<0>();
 	size_t val2 = s.get<1>();
 	val ^= val2 << 14;
-	val2 = s.get<2>();
-	val ^= val2 << 28;
-	
 	return val;
 }

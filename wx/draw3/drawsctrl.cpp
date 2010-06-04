@@ -69,6 +69,7 @@ DrawsController::DrawsController(ConfigManager *config_manager, DatabaseManager 
 	m_units_count[PERIOD_T_MONTH] = TimeIndex::default_units_count[PERIOD_T_MONTH];
 	m_units_count[PERIOD_T_WEEK] = TimeIndex::default_units_count[PERIOD_T_WEEK];
 	m_units_count[PERIOD_T_DAY] = TimeIndex::default_units_count[PERIOD_T_DAY];
+	m_units_count[PERIOD_T_10MINUTE] = TimeIndex::default_units_count[PERIOD_T_10MINUTE];
 	m_units_count[PERIOD_T_SEASON] = TimeIndex::default_units_count[PERIOD_T_SEASON];
 
 	m_period_type = PERIOD_T_OTHER;
@@ -212,7 +213,7 @@ void DrawsController::EnterSearchState(STATE state, DTime search_from, const DTi
 
 	switch (state) {
 		case SEARCH_LEFT:
-			SendSearchQuery((search_from + index.GetTimeRes() + index.GetDateRes()).GetTime() - wxTimeSpan::Minutes(10),
+			SendSearchQuery((search_from + index.GetTimeRes() + index.GetDateRes()).GetTime() - wxTimeSpan::Seconds(10),
 					wxInvalidDateTime, -1); 
 			break;
 		case SEARCH_RIGHT:
@@ -235,11 +236,11 @@ void DrawsController::EnterSearchState(STATE state, DTime search_from, const DTi
 					1);
 			break;
 		case SEARCH_BOTH_PREFER_LEFT:
-			SendSearchQuery((search_from.GetTime() + index.GetTimeRes() + index.GetDateRes()) - wxTimeSpan::Minutes(10), 
+			SendSearchQuery((search_from.GetTime() + index.GetTimeRes() + index.GetDateRes()) - wxTimeSpan::Seconds(10), 
 					wxInvalidDateTime,
 					-1);
 			SendSearchQuery(search_from.GetTime(), 
-					index.GetStartTime().GetTime() - wxTimeSpan::Minutes(10),
+					index.GetStartTime().GetTime() - wxTimeSpan::Seconds(10),
 					1);
 			break;
 		default:
@@ -896,11 +897,14 @@ DrawsController::TimeReference::TimeReference(const wxDateTime &datetime) {
 	m_wday = now.GetWeekDay();
 	m_hour = now.GetHour();
 	m_minute = now.GetMinute();
+	m_second = now.GetSecond();
 }
 
 void DrawsController::TimeReference::Update(const DTime& time) {
 	const wxDateTime& wxt = time.GetTime();
 	switch (time.GetPeriod()) {
+		case PERIOD_T_10MINUTE:
+			m_second = wxt.GetSecond();
 		case PERIOD_T_DAY:
 			m_minute = wxt.GetMinute();
 			m_hour = wxt.GetHour();
@@ -925,6 +929,8 @@ DTime DrawsController::TimeReference::Adjust(PeriodType pt, const DTime& time) {
 	switch (pt) {
 		default:
 			break;
+		case PERIOD_T_10MINUTE:
+			t.SetSecond(m_second);
 		case PERIOD_T_DAY:
 			t.SetMinute(m_minute);
 			t.SetHour(m_hour);

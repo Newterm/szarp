@@ -47,6 +47,9 @@ SZARP_PROBE_TYPE PeriodToProbeType(PeriodType period) {
 		case PERIOD_T_DAY:
 			pt = PT_MIN10;
 			break;
+		case PERIOD_T_10MINUTE:
+			pt = PT_SEC10;
+			break;
 		default:
 			pt = PT_CUSTOM;
 			assert (0);
@@ -104,6 +107,13 @@ void* QueryExecutor::Entry() {
 #endif
 		} else if (q->type == DatabaseQuery::CHECK_CONFIGURATIONS_CHANGE) {
 			szbase->NotifyAboutConfigurationChanges();
+			post_response = false;
+		} else if (q->type == DatabaseQuery::SET_PROBER_ADDRESS) {
+			szbase->SetProberAddress(q->prefix,
+					q->prober_address.address,
+					q->prober_address.port);
+			free(q->prober_address.address);
+			free(q->prober_address.port);
 			post_response = false;
 		} else {
 
@@ -241,7 +251,7 @@ void QueryExecutor::ExecuteSearchQuery(szb_buffer_t* szb, TParam *p, DatabaseQue
 #endif
 
 	sd.response = 
-		szb_search_data(szb, 
+		szb_search(szb, 
 			p, 
 			sd.start, 
 			sd.end, 
@@ -287,6 +297,9 @@ float DatabaseQueryQueue::FindQueryRanking(DatabaseQuery* q) {
 		return 100.f;
 
 	if (q->type == DatabaseQuery::CLEAR_CACHE)
+		return 150.f;
+
+	if (q->type == DatabaseQuery::SET_PROBER_ADDRESS)
 		return 150.f;
 
 	if (q->type == DatabaseQuery::RESET_BUFFER)

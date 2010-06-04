@@ -35,18 +35,18 @@ int szb_daysinmonth(int year, int month)
 int szb_probecnt(const int year, const int month)
 {
     static int probes[14] = { 0,
-		    31 * SZBASE_PROBES_PER_DAY,
-		    28 * SZBASE_PROBES_PER_DAY,
-		    31 * SZBASE_PROBES_PER_DAY,
-		    30 * SZBASE_PROBES_PER_DAY,
-		    31 * SZBASE_PROBES_PER_DAY,
-		    30 * SZBASE_PROBES_PER_DAY,
-		    31 * SZBASE_PROBES_PER_DAY,
-		    31 * SZBASE_PROBES_PER_DAY,
-		    30 * SZBASE_PROBES_PER_DAY,
-		    31 * SZBASE_PROBES_PER_DAY,
-		    30 * SZBASE_PROBES_PER_DAY,
-		    31 * SZBASE_PROBES_PER_DAY,
+		    31 * SZBASE_DATA_PER_DAY,
+		    28 * SZBASE_DATA_PER_DAY,
+		    31 * SZBASE_DATA_PER_DAY,
+		    30 * SZBASE_DATA_PER_DAY,
+		    31 * SZBASE_DATA_PER_DAY,
+		    30 * SZBASE_DATA_PER_DAY,
+		    31 * SZBASE_DATA_PER_DAY,
+		    31 * SZBASE_DATA_PER_DAY,
+		    30 * SZBASE_DATA_PER_DAY,
+		    31 * SZBASE_DATA_PER_DAY,
+		    30 * SZBASE_DATA_PER_DAY,
+		    31 * SZBASE_DATA_PER_DAY,
 		    0 };
     
     if ((year < SZBASE_MIN_YEAR) || (year > SZBASE_MAX_YEAR))
@@ -54,11 +54,11 @@ int szb_probecnt(const int year, const int month)
 
     if (month == 2) {
 	if ((year % 400) == 0)
-	    return 29 * SZBASE_PROBES_PER_DAY;
+	    return 29 * SZBASE_DATA_PER_DAY;
 	if ((year % 100) == 0)
-	    return 28 * SZBASE_PROBES_PER_DAY;
+	    return 28 * SZBASE_DATA_PER_DAY;
 	if ((year % 4) == 0)
-	    return 29 * SZBASE_PROBES_PER_DAY;
+	    return 29 * SZBASE_DATA_PER_DAY;
     }
 
     return probes[month];
@@ -133,7 +133,7 @@ time_t probe2time(int probe, int year, int month)
 
 	t = timegm(&tm);
 	
-	return t + (probe * SZBASE_PROBE);
+	return t + (probe * SZBASE_DATA_SPAN);
 }
 
 void probe2gmt(int probe, int year, int month, struct tm * tm)
@@ -185,6 +185,8 @@ time_t szb_round_time(time_t t, SZARP_PROBE_TYPE probe_type, int custom_length)
 			return (t - (t % custom_length));
 		case PT_MIN10 :
 			return (t - (t % 600));
+		case PT_SEC10:
+			return (t - (t % 10));
 		case PT_HOUR :
 			return (t - (t % 3600));
 		case PT_HOUR8 :
@@ -251,6 +253,8 @@ time_t szb_move_time(time_t t, int count, SZARP_PROBE_TYPE probe_type,
 			return (t + custom_length * count);
 		case PT_MIN10 :
 			return (t + (count * 600 ));
+		case PT_SEC10 :
+			return (t + (count * 10 ));
 		case PT_HOUR :
 			return (t + (count * 3600));
 		case PT_HOUR8 :
@@ -295,4 +299,9 @@ time_t szb_move_time(time_t t, int count, SZARP_PROBE_TYPE probe_type,
 			return mktime(&tm);
 	}
 	return -1;
+}
+
+time_t
+szb_round_to_probe_block_start(time_t t) {
+	return t - (t % (SZBASE_PROBES_IN_BLOCK * SZBASE_PROBE_SPAN));
 }
