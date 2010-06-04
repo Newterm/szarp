@@ -104,6 +104,27 @@ class SzbCache:
 		self.cachedir = lpr.get("prober", "cachedir")
 		if not os.path.isdir(self.cachedir):
 			raise SzbException("incorrect cache dir '" + self.cachedir + "'")
+		self.months = int(lpr.get("prober", "months_count"))
+		if self.months <= 0:
+			raise SzbException("months_count parameter in szarp.cfg must be grater then 0")
+
+	def available_range(self):
+		"""
+		Return globally available first and last probe time, based on current time and months_count.
+		Return value is approximate - especially data can be available before first time if prober
+		has not removed old files.
+		@return (first time, last_time)
+		"""
+		last = time.time()
+		last -= last % 10
+		ts = time.gmtime(last)
+		(year, month) = (ts.tm_year, ts.tm_mon)
+		month -= self.months
+		if month < 1:
+			month += 12
+			year -= 1
+		first = timegm((year, month, 1, 0, 0, 0))
+		return (first, last)
 
 	def search(self, start, end, direction, parampath):
 		"""
@@ -112,6 +133,7 @@ class SzbCache:
 		@param end end of search as time_t
 		@param direction 1 for right search, -1 for left search, 0 for in-place
 		@param parampath path to directory with parameter, relative to main cache directory
+		@return (found_time, first_time, last_time) tupple
 
 		start should be grater then end for direction equal to -1 and less for direction equal 1;
 		end is ignored for direction equal 0; if start or end is equal to -1, appropriate first/last
@@ -122,11 +144,11 @@ class SzbCache:
 		dpath = self.check_path(parampath)
 		if not os.path.isdir(dpath):
 			return -1
+		(first, last) = self.search_first_last(dpath)
 		if direction == 0:
 			if start == -1:
-				(start, last) = self.search_first_last()
-			return self.search_at(start, dpath)
-		(first, last) = self.search_first_last(dpath)
+				start = first
+			return (self.search_at(start, dpath), first, last)
 		if direction > 0:
 			if start == -1 or start < first:
 				start = first
@@ -138,7 +160,7 @@ class SzbCache:
 			if end == -1 or end < first:
 				end = first
 		debug("START END: %s %s" % (format_time(start), format_time(end)))
-		return self.search_for(start, end, direction, dpath)
+		return (self.search_for(start, end, direction, dpath), first, last)
 
 	def get_size_and_last(self, starttime, endtime, parampath):
 		"""
@@ -346,17 +368,20 @@ class SzbCache:
 		bsize = 32768 / self.SZBCACHE_SIZE
 		
 		f = open(path, "rb")
-		while startindex * direction <= endindex * direction:
+		while startindex * direction < endindex * direction:
 			rsize = min(bsize, (endindex - startindex) * direction)
 			if direction < 0:
-				self.file_seek(f, startindex - rsize)
+				search_block_begin = startindex - rsize
 			else:
-				self.file_seek(f, startindex)
+				search_block_begin = startindex
+			self.file_seek(f, search_block_begin)
 			arr = array.array(self.SZBCACHE_TYPE)
 			arr.fromfile(f, rsize)
 			found, foundindex = self.search_array(arr, direction)
 			if found:
-				return (True, self.index2time(path, foundindex))
+				debug("SEARCH ARRAY FOUND: foundindex %d, search_block_begin %d"
+						% (foundindex, search_block_begin))
+				return (True, self.index2time(path, foundindex + search_block_begin))
 			startindex += rsize * direction
 		return (False, -1)
 

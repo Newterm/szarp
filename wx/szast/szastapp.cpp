@@ -40,6 +40,10 @@
 #include "cconv.h"
 #include "libpar.h"
 
+#ifdef MINGW32
+#include <windows.h>
+#endif
+
 extern void InitXmlResource();
 
 bool SzastApp::OnInit()
@@ -79,6 +83,12 @@ bool SzastApp::OnInit()
 	SetAppName(_("SZAST"));
 	
 	SetTopWindow( frame );
+
+#ifdef MINGW32
+	WORD wVersionRequested = MAKEWORD(2, 2);
+	WSADATA wsaData;
+	WSAStartup(wVersionRequested, &wsaData);
+#endif
 
 	return TRUE;
 }

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-04 21:17+0100\n"
+"POT-Creation-Date: 2010-05-31 11:58+0200\n"
 "PO-Revision-Date: 2003-08-14 11:22+0200\n"
 "Last-Translator: Pawe³ Pa³ucha <pawel@praterm.com.pl>\n"
 "MIME-Version: 1.0\n"
@@ -32,7 +32,7 @@ msgstr ""
 "Czy chcesz dodaæ u¿ytkownika %s do groupy 'dialout'? (Bêdziesz musia³ podaæ "
 "has³o administratora)."
 
-#: szastapp.cpp:102 szastframe.cpp:95 szastframe.cpp:314
+#: szastapp.cpp:102 szastframe.cpp:101 szastframe.cpp:326
 msgid "Question."
 msgstr "Pytanie."
 
@@ -78,71 +78,71 @@ msgstr ""
 msgid "config file"
 msgstr ""
 
-#: szastframe.cpp:63
+#: szastframe.cpp:69
 msgid "Parameters"
 msgstr "Parametry"
 
-#: szastframe.cpp:95 szastframe.cpp:314
+#: szastframe.cpp:101 szastframe.cpp:326
 msgid "Do you want to close the application?"
 msgstr "Czy chcesz zamkn±æ program?"
 
-#: szastframe.cpp:169 szastframe.cpp:170
+#: szastframe.cpp:181 szastframe.cpp:182
 msgid "Regulator communiation error. Invalid response format."
 msgstr "Blad komunikacji z regulatorem. Blêdny format odpowiedzi."
 
-#: szastframe.cpp:169 szastframe.cpp:177 szastframe.cpp:203 szastframe.cpp:228
+#: szastframe.cpp:181 szastframe.cpp:189 szastframe.cpp:215 szastframe.cpp:240
 msgid "Error"
 msgstr "B³ad."
 
-#: szastframe.cpp:177 szastframe.cpp:178
+#: szastframe.cpp:189 szastframe.cpp:190
 msgid "Error while performing operation:"
 msgstr "B³±d podczas wykonywania operacji:"
 
-#: szastframe.cpp:201
+#: szastframe.cpp:213
 #, c-format
 msgid ""
 "Unable to find file with definition of regulator with settings: eprom %s, "
 "program %s, library: %s.\n"
 " Unable to continue."
 msgstr ""
-"Nie uda³o siê znale¿æ pliku z definicjami regulatora o parametrach: eprom %"
-"s, program %s, library: %s.\n"
+"Nie uda³o siê znale¿æ pliku z definicjami regulatora o parametrach: eprom "
+"%s, program %s, library: %s.\n"
 " Ustawianie parametrów nie jest mo¿liwe."
 
-#: szastframe.cpp:228 szastframe.cpp:229
+#: szastframe.cpp:240 szastframe.cpp:241
 msgid "Regulator communiation error."
 msgstr "Blad komunikacji z regulatorem."
 
-#: szastframe.cpp:242 szastframe.cpp:275
+#: szastframe.cpp:254 szastframe.cpp:287
 msgid "Regulator time: %Y-%m-%d %H:%M"
 msgstr "Czas na regulatorze: %Y-%m-%d %H:%M"
 
-#: szastframe.cpp:245 szastframe.cpp:276
+#: szastframe.cpp:257 szastframe.cpp:288
 #, c-format
 msgid "EEPROM: %s, Program: %s, Library: %s, Library built: %s"
 msgstr "EEPROM: %s, Program: %s, Biblioteka: %s, Kompilacja biblioteki: %s"
 
-#: szastframe.cpp:248 szastframe.cpp:249 szastframe.cpp:279 szastframe.cpp:280
+#: szastframe.cpp:260 szastframe.cpp:261 szastframe.cpp:291 szastframe.cpp:292
 msgid "none"
 msgstr "brak"
 
-#: szastframe.cpp:256
+#: szastframe.cpp:268
 msgid "There is no current raport to save."
 msgstr "Nie ma aktualnego raportu"
 
-#: szastframe.cpp:256
+#: szastframe.cpp:268
 msgid "No report"
 msgstr "Brak raportu"
 
-#: szastframe.cpp:260
+#: szastframe.cpp:272
 msgid "Choose a file"
 msgstr "Wybierz plik"
 
-#: szastframe.cpp:274
+#: szastframe.cpp:286
 msgid "REGULATOR REPORT:\n"
 msgstr "RAPORT Z REGULATORA:\n"
 
-#: szastframe.cpp:286
+#: szastframe.cpp:298
 msgid "Raport saved."
 msgstr "Raport zapisany."
 
@@ -151,29 +151,48 @@ msgid "Settings"
 msgstr "Ustawienia"
 
 #: XRC_gettext_file.h:2
-msgid "Port settings:"
-msgstr "Ustawienia portu:"
+msgid "Communication through:"
+msgstr "Po³±czenie przez:"
 
 #: XRC_gettext_file.h:3
+msgid "Serial Port"
+msgstr "Port szeregowy"
+
+#: XRC_gettext_file.h:4
 msgid "Device path:"
 msgstr "¦cie¿ka urz±dzenia:"
 
-#: XRC_gettext_file.h:4
+#: XRC_gettext_file.h:5
 msgid "/dev/ttyS1"
 msgstr ""
 
-#: XRC_gettext_file.h:5
+#: XRC_gettext_file.h:6
 msgid "Port speed:"
 msgstr "Prêdko¶æ portu:"
 
-#: XRC_gettext_file.h:6
+#: XRC_gettext_file.h:7
 msgid "9600"
 msgstr ""
 
-#: XRC_gettext_file.h:7
+#: XRC_gettext_file.h:8
 msgid "19200"
 msgstr ""
 
-#: XRC_gettext_file.h:8
+#: XRC_gettext_file.h:9
+msgid "Network Connection"
+msgstr "Sieæ"
+
+#: XRC_gettext_file.h:10
+msgid "Address IP:"
+msgstr "Adress IP:"
+
+#: XRC_gettext_file.h:11
+msgid "Port number:"
+msgstr "Numer portu:"
+
+#: XRC_gettext_file.h:12
 msgid "Device id:"
 msgstr "Identyfikator urz±dzenia:"
+
+#~ msgid "Port settings:"
+#~ msgstr "Ustawienia portu:"

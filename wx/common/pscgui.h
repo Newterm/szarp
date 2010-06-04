@@ -591,9 +591,18 @@ private:
 };
 
 class MessagesGenerator {
+public:
+	enum CONNECTION_TYPE {
+		SERIAL_CONNECTION,
+		NETWORK_CONNECTION
+	};
+private:
 	wxString m_path;
 	wxString m_speed;
 	wxString m_id;
+	wxString m_ip_address;
+	wxString m_port;
+	CONNECTION_TYPE m_connection_type;
 
 	bool m_has_credentials;
 	wxString m_username, m_password;
@@ -608,6 +617,9 @@ public:
 	void SetSpeed(wxString speed) { m_speed = speed; }
 	void SetPath(wxString path) { m_path = path; }
 	void SetId(wxString id) { m_id = id; }
+	void SetIPAddress(wxString address) { m_ip_address = address; }
+	void SetPort(wxString port) { m_port = port; }
+	void SetConnectionType(CONNECTION_TYPE type) { m_connection_type = type; }
 	xmlDocPtr CreateResetSettingsMessage();
 	xmlDocPtr CreateRegulatorSettingsMessage();
 	xmlDocPtr CreateSetPacksTypeMessage(PackType type);

@@ -1329,10 +1329,17 @@ xmlDocPtr MessagesGenerator::StartMessage(xmlChar *type) {
 	xmlSetProp(root->children, X "type", type);
 
 	xmlNodePtr device = xmlNewChild(root->children, NULL, X "device", NULL);
-	xmlSetProp(device, X "path", SC::S2U(m_path).c_str());
-	xmlSetProp(device, X "speed", SC::S2U(m_speed).c_str());
 	xmlSetProp(device, X "id", SC::S2U(m_id).c_str());
-
+	switch (m_connection_type) {
+		case SERIAL_CONNECTION:
+			xmlSetProp(device, X "path", SC::S2U(m_path).c_str());
+			xmlSetProp(device, X "speed", SC::S2U(m_speed).c_str());
+			break;
+		case NETWORK_CONNECTION:
+			xmlSetProp(device, X "ip-address", SC::S2U(m_ip_address).c_str());
+			xmlSetProp(device, X "port", SC::S2U(m_port).c_str());
+			break;
+	}
 	if (m_has_credentials) {
 		xmlNodePtr cred = xmlNewChild(root->children, NULL, X "credentials", NULL);
 		xmlSetProp(cred, X "username", SC::S2U(m_username).c_str());

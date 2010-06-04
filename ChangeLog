@@ -1,4 +1,30 @@
 
+2010-06-01	Pawel Palucha <pawel@praterm.com.pl>
+	* utils/probes_server/*: fixes in search request handling.
+2010-05-31 	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* wx/draw3: empty erase event hadler added to xyz graph widget,
+	this event handler eliminates flickering at widget's repainting
+	* wx/szast: szast can talk over tcp/ip connection
+2010-05-28	Pawel Palucha <pawel@praterm.com.pl>
+	* utils/probes_server/*: added RANGE request for checking global
+	first/last probe available.
+2010-05-25	Pawel Palucha <pawel@praterm.com.pl>
+	* utils/probes_server/*: added info about first/last data in response
+	for search request.
+	* utils/conf-*.sh: added -p/--port option for setting svn+ssh port number.
+2010-05-24	Pawel Palucha <pawel@praterm.com.pl>
+	* utils/nagios/sn-fam.py: ignoring temporary OSError exceptions that
+	can happen when working on NFS-mounted data.
+2010-05-21	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* wx/draw3/drawfrm: under lenny (probably due to different
+	version of gtk and this should probably be considered as wxWidgets bug,
+	btw) there is an idle event emitted in the middle of our
+	DrawFrame::AddDrawPanel method, some time ago idle event handler became
+	responsible for destroying notebook widget when there is only one tab in it - 
+	I don't remeber now, why I had to delay notebook destruction
+	till idle event, but probably to workaround another wxWidgets bug - 
+	anyway, when new tab was being added, idle event destoryed notebook that was
+	just created to store tabs, thus leading to draw3 crash
 2010-05-19	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* parcook/iecdmn.cc: fixes
 2010-05-17	Darek Marcinkiewcz <reksio@praterm.com.pl>

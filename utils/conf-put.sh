@@ -17,17 +17,45 @@
 #
 # $Id$
 
-if [ ! $# -eq 1 -o "$1" == '-h' -o "$1" == '--help' ]; then
+
+Usage() {
 	cat <<EOF
-Usage $0 USERNAME
+Usage $0 [OPTION]... USERNAME
 
 Commit changes in SZARP configuration to repository. Uses USERNAME to
 access configuration SVN repository.
 
+Options:
+	-h, --help		print usage info and exit
+	-p, --port=PORT		set ssh port number to PORT, default is 22
+
 EOF
-	exit 1;
-fi
+}
+
+PORT=22
+BASENAME=`basename "$0"`
+TEMP=`getopt -o hp: --long help,port: -n "$BASENAME" -- "$@"`
+if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
+eval set -- "$TEMP"
+
+while true ; do
+	case "$1" in
+		-h|--help)
+			Usage $BASENAME
+			exit 0
+			shift
+			;;
+		-p|--port)
+			PORT=$2
+			shift 2
+			;;
+		--) shift; break;;
+		*) echo "Internal error!" ; exit 1 ;;
+	esac
+done
+
+if [ $# != 1 ] ; then Usage $BASENAME; exit 1; fi
 
 USERNAME=$1;
+env SVN_SSH="ssh -l $USERNAME -p $PORT" echo $SVN_SSH
 
-SVN_SSH="ssh -l $USERNAME" svn commit 

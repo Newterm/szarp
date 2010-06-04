@@ -19,7 +19,7 @@
 
 Usage() {
 	cat <<EOF
-Usage: $0 <REPOSITORY_ADDRESS> <USER_NAME> [ <CONFIG_PREFIX> ]
+Usage: $0 [OPTION]... REPOSITORY_ADDRESS USER_NAME [ CONFIG_PREFIX ]
 
 Script for replacing SZARP configuration with version fetched from SVN server.
 Configuration must be first imported to repository using conf-import.py script.
@@ -27,8 +27,34 @@ REPOSITORY_ADDRESS must be full address of SVN repository. CONFIG_PREFIX, if
 not given, is guessed from server hostname.
 USER_NAME is used to access repository.
 
+Options:
+	-h, --help		print usage info and exit
+	-p, --port=PORT		set ssh port number to PORT, default is 22
+
 EOF
 }
+
+PORT=22
+BASENAME=`basename "$0"`
+TEMP=`getopt -o hp: --long help,port: -n "$BASENAME" -- "$@"`
+if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
+eval set -- "$TEMP"
+
+while true ; do
+	case "$1" in
+		-h|--help)
+			Usage $BASENAME
+			exit 0
+			shift
+			;;
+		-p|--port)
+			PORT=$2
+			shift 2
+			;;
+		--) shift; break;;
+		*) echo "Internal error!" ; exit 1 ;;
+	esac
+done
 
 REPO=
 PREFIX=
@@ -43,8 +69,7 @@ elif [ $# -eq 2 ]; then
 	echo -n "Guessing prefix... ";
 	PREFIX=$(hostname -s);
 	echo $PREFIX;
-fi
-if [ -z "$REPO" -o "$REPO" == "-h" -o "$REPO" == "--help" ] ; then
+else
 	Usage $0
 	exit 1
 fi
@@ -94,8 +119,8 @@ echo "Checking out configuration"
 CDIR=`pwd`
 cd $DIRPATH;
 
-echo Running SVN_SSH="ssh -l $USERNAME" svn co $REPO/$PREFIX . 
-SVN_SSH="ssh -l $USERNAME" svn co $REPO/$PREFIX . 
+echo Running SVN_SSH="ssh -l $USERNAME -p $PORT" svn co $REPO/$PREFIX . 
+env SVN_SSH="ssh -l $USERNAME -p $PORT" svn co $REPO/$PREFIX . 
 
 if [ $? -ne 0 ]; then 
 	echo "Failed to fetch configuration, help!";

@@ -1294,6 +1294,7 @@ BEGIN_EVENT_TABLE(XYZCanvas, wxGLCanvas)
     	EVT_RIGHT_UP(XYZCanvas::OnMouseRightUp)
 	EVT_MOTION(XYZCanvas::OnMouseMotion)
 	EVT_LEAVE_WINDOW(XYZCanvas::OnMouseLeaveWindow)
+	EVT_ERASE_BACKGROUND(XYZCanvas::OnEraseBackground)
 	EVT_MOUSEWHEEL(XYZCanvas::OnMouseWheel)
 END_EVENT_TABLE()
 

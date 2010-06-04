@@ -38,7 +38,8 @@ class SzastFrame : public PscFrame {
 	std::vector<PscConfigurationUnit*> m_definitions;
 	PscConfigurationUnit *m_unit;
 	MessagesGenerator m_msggen;
-	wxString m_path, m_speed, m_id; 
+	wxString m_path, m_speed, m_ip_address, m_port, m_id; 
+	MessagesGenerator::CONNECTION_TYPE m_connection_type;
 
 	SzastConnection *m_connection;
 

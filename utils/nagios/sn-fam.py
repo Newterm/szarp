@@ -178,10 +178,16 @@ class SzarpMonitor:
 		for prefix in to_send:
 			self.reqs[prefix].last = now
 			count += 1
-			self.print_lad(self.output, prefix, "Status/Meaner3/program_uruchomiony", "Current data available")
+			try:
+				self.print_lad(self.output, prefix, "Status/Meaner3/program_uruchomiony", "Current data available")
+			except OSError:
+				pass
 			for test in self.reqs[prefix].tests:
 				count += 1
-				self.print_test(self.output, prefix, test)
+				try:
+					self.print_test(self.output, prefix, test)
+				except OSError:
+					pass
 		self.changed.clear()
 		self.output.flush()
 		if count > 0:

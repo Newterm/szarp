@@ -33,9 +33,12 @@ class SettingsDialog : public wxDialog {
 	wxComboBox* m_speed_combo;
 	wxTextCtrl* m_id_text_ctrl;
 	wxTextCtrl* m_path_text_ctrl;
+	wxTextCtrl* m_ip_address_text_ctrl;
+	wxTextCtrl* m_port_text_ctrl;
+	wxNotebook* m_settings_notebook;
 public:
-	void GetValues(wxString &speed, wxString &path, wxString &id);
-	void SetValues(wxString speed, wxString path, wxString id);
+	void GetValues(wxString &speed, wxString &path, wxString &ip_address, wxString &port, MessagesGenerator::CONNECTION_TYPE& type, wxString &id);
+	void SetValues(wxString speed, wxString path, wxString ip_address, wxString port, MessagesGenerator::CONNECTION_TYPE type, wxString id);
 	SettingsDialog(wxWindow *parent);
 };
 

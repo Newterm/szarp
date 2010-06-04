@@ -93,11 +93,27 @@ class SearchProducer(Producer):
 		Producer.resumeProducing(self)
 		try:
 			ret = self._proto.factory.szbcache.search(self._start, self._end, self._direction, self._param)
-			print "RET:", ret
-			self._proto.transport.write("%d\n" % (ret))
+			self._proto.transport.write("%d %d %d\n" % ret)
 		except szbcache.SzbException, e:
 			self._proto.transport.write("ERROR %d %s\n" % (ErrorCodes.BadRequest, str(e)))
 		self.finish()
+
+class RangeProducer(Producer):
+	"""
+	Producer creating respons for RANGE request
+	"""
+	def __init__(self, proto):
+		Producer.__init__(self, proto)
+
+	def resumeProducing(self):
+		Producer.resumeProducing(self)
+		try:
+			ret = self._proto.factory.szbcache.available_range()
+			self._proto.transport.write("%d %d\n" % ret)
+		except szbcache.SzbException, e:
+			self._proto.transport.write("ERROR %d %s\n" % (ErrorCodes.BadRequest, str(e)))
+		self.finish()
+
 
 class GetProducer(Producer):
 	"""
@@ -135,7 +151,7 @@ class ProbesProtocol(basic.LineReceiver):
 	"""
 	Parses request line, returns apropriate response producer.
 	Protocol description:
-	There are two kind of requestes, SEARCH and GET.
+	There are three kinds of requestes, SEARCH, GET and RANGE.
 
 	SEARCH request:
 
@@ -150,9 +166,11 @@ class ProbesProtocol(basic.LineReceiver):
 
 	Response for SEARCH request is:
 
-	found_time\r\n
+	found_time first_time last_time\r\n
 
-	where found_time is -1 if search failed, or date/time of data found as time_t.
+	where found_time is -1 if search failed, or date/time of data found as time_t, first_time
+	and last_time are date/time of first/ast available data or -1 if no data for parameter
+	is available
 
 	GET request:
 
@@ -172,6 +190,17 @@ class ProbesProtocol(basic.LineReceiver):
 	- size is size (in bytes) of following data
 	- data is raw values of fetched parameter as little-endian short int (16 bits) numbers
 
+	RANGE request:
+
+	RANGE\r\n
+
+	Reponse for RANGE request is:
+	first_time last_time\r\n
+
+	Where:
+	- first_time is approximate date/time of first globally available probe as time_t
+	- last_time is approximate date/time of last globally available probe as time_t
+
 	Optionally, response for client request may be:
 
 	ERROR code description\r\n
@@ -187,6 +216,8 @@ class ProbesProtocol(basic.LineReceiver):
 			return self.parseGET(line)
 		elif line.startswith('SEARCH '):
 			return self.parseSEARCH(line)
+		elif line.startswith('RANGE'):
+			return self.parseRANGE(line)
 		else:
 			return ErrorProducer(self, 
 					ErrorCodes.BadRequest, 
@@ -231,6 +262,15 @@ class ProbesProtocol(basic.LineReceiver):
 		except ValueError:
 			return ErrorProducer(self, ErrorCodes.BadRequest, "Incorrect direction")
 		return SearchProducer(self, start, end, direction, path)
+
+	def parseRANGE(self, line):
+		"""
+		Parse RANGE request.
+		"""
+		req = line.strip()
+		if req != "RANGE":
+			return ErrorProducer(self, ErrorCodes.BasRequest, "Unnecesarry arguments for RANGE request")
+		return RangeProducer(self)
 
 	def connectionMade(self):
 		print('connection made from %s' % (self.transport.getPeer()))
