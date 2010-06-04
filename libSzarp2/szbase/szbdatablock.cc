@@ -91,8 +91,6 @@ szb_datablock_t::~szb_datablock_t()
 {
 	if (data != NULL)
 		FreeDataMemory();
-	if (this->locator)
-		delete this->locator;
 }
 
 std::wstring

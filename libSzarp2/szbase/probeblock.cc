@@ -1,3 +1,22 @@
+/* 
+  SZARP: SCADA software 
+  
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+*/
+
 #include "config.h"
 
 #include <boost/asio.hpp>
@@ -151,37 +170,33 @@ void szb_probeblock_combined_t::FetchProbes() {
 }
 
 void szb_probeblock_definable_t::FetchProbes() {
-	TParam ** p_cache = param->GetFormulaCache();
-	size_t msw_count = buffer->prober_connection->Get(start_time + SZBASE_PROBE_SPAN * fixed_probes_count,
-			end_time,
-			p_cache[0]->GetSzbaseName());
-	if (!msw_count)
+	time_t range_start, range_end;
+	if (!buffer->prober_connection->GetRange(range_start, range_end))
 		return;
-	short buf_msw[msw_count];
-	buffer->prober_connection->GetData(buf_msw, msw_count);
-	time_t server_time = buffer->prober_connection->GetServerTime();
-	size_t lsw_count = buffer->prober_connection->Get(start_time + SZBASE_PROBE_SPAN * fixed_probes_count,
-			end_time,
-			p_cache[1]->GetSzbaseName());
-	if (!lsw_count)
-		return;
-	short buf_lsw[lsw_count];
-	size_t count = std::min(lsw_count, msw_count);
-	double prec10 = pow10(param->GetPrec());
-	for (size_t i = 0; i < count; i++) {
-		if (buf_msw[i] == SZB_FILE_NODATA)
-			data[fixed_probes_count + i] = SZB_NODATA;
-		else
-			data[i] = (SZBASE_TYPE) ( (double)(
-				    int(szbfile_endian(buf_msw[i]) << 16)
-				    	| (unsigned short)(szbfile_endian(buf_lsw[i]))
-				    ) / prec10);
+	int count;
+	if (range_end > GetEndTime())
+		count = probes_per_block;
+	else
+		count = (range_end - GetStartTime()) / SZBASE_PROBE_SPAN + 1;
+	int num_of_params = param->GetNumParsInFormula();
+	TParam** p_cache = param->GetFormulaCache();
+	szb_lock_buffer(buffer);
+	const double* dblocks[num_of_params];
+	int new_fixed_probes = probes_per_block;
+	for (int i = 0; i < num_of_params; i++) {
+		szb_probeblock_t* block = szb_get_probeblock(buffer, p_cache[i], GetStartTime());
+		dblocks[i] = block->GetData();
+		new_fixed_probes = std::min(new_fixed_probes, block->GetFixedProbesCount());
 	}
-	if (server_time < start_time)
-		return;
-	fixed_probes_count = (buffer->prober_connection->GetServerTime() - start_time) / SZBASE_PROBE_SPAN + 1;
-	if (fixed_probes_count > probes_per_block)
-		fixed_probes_count = probes_per_block;
+
+	double pw = pow(10, param->GetPrec());
+	SZBASE_TYPE  stack[DEFINABLE_STACK_SIZE]; // stack for calculatinon of formula
+	const std::wstring& formula = this->param->GetDrawFormula();
+	for (int i = fixed_probes_count; i < count; i++) {
+		time_t time = GetStartTime() + i * SZBASE_PROBE_SPAN;
+		data[i] = szb_definable_calculate(buffer, stack, dblocks, p_cache, formula, i, num_of_params, time, param) / pw;
+	}
+	szb_unlock_buffer(buffer);
 }
 
 void szb_probeblock_lua_t::FetchProbes() {
@@ -270,127 +285,11 @@ szb_probeblock_t* szb_create_probe_block(szb_buffer_t *buffer, TParam *param, ti
 			ret = create_lua_probe_block(buffer, param, time);
 			break;
 #endif
-			default:
-				fprintf(stderr,  "szb_calculate_block_default\n");
-				ret = NULL;
+		default:
+			fprintf(stderr,  "szb_calculate_block_default\n");
+			ret = NULL;
 			break;
 	}
 	return ret;
 }
 
-time_t 
-szb_real_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle) {
-	if (buffer->PrepareConnection() == false)
-		return -1;
-	time_t t = buffer->prober_connection->Search(start, end, direction, param->GetSzbaseName());
-	if (t == (time_t) -1)
-		if (buffer->prober_connection->IsError())
-			buffer->prober_connection->ClearError();
-	return t;
-}
-
-time_t 
-szb_combined_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle) {
-	if (buffer->PrepareConnection() == false)
-		return -1;
-	TParam ** p_cache = param->GetFormulaCache();
-	time_t msw_ret = szb_real_search_probe(buffer, p_cache[0], start, end, direction, c_handle);
-	if (msw_ret == (time_t) -1)
-		return msw_ret;
-
-	time_t lsw_ret = szb_real_search_probe(buffer, p_cache[1], start, end, direction, c_handle);
-	if (lsw_ret == (time_t) -1)
-		return lsw_ret;
-
-	if (direction < 0)
-		return std::min(lsw_ret, msw_ret);
-	else
-		return std::max(lsw_ret, msw_ret);
-}
-
-
-time_t search_in_range(szb_buffer_t* buffer, TParam* param, time_t start, time_t end, int direction) {
-	if (param->IsConst())
-		return start;
-
-	if (direction == 0)
-		return IS_SZB_NODATA(szb_get_probe(buffer, param, start, PT_SEC10)) ? -1 : start;
-
-	szb_block_t *block = NULL;
-	for (time_t t = start; direction > 0 ? t <= start: t >= end; t += SZBASE_PROBE_SPAN * direction) {
-		if (block == NULL || block->GetStartTime() > t || block->GetEndTime() < t) {
-			time_t b_start = t
-				/ (SZBASE_PROBE_SPAN * szb_probeblock_t::probes_per_block)
-				* (SZBASE_PROBE_SPAN * szb_probeblock_t::probes_per_block);
-			block = szb_get_block(buffer, 
-						param,
-						b_start,
-						SEC10_BLOCK);
-			if (buffer->last_err)
-				return -1;
-		}
-
-		int index = (t - block->GetStartTime()) / SZBASE_PROBE_SPAN;
-		if (!IS_SZB_NODATA(block->GetData()[index]))
-			return t;
-	}
-
-	return -1;
-}
-
-bool adjust_search_boundaries(time_t& start, time_t& end, time_t first_date, time_t last_date, int direction) {
-	if (direction <= 0 && start < first_date)
-		return false;
-
-	if (direction >= 0 && start > last_date)
-		return false;
-
-	if (direction > 0 && start < first_date)
-		start = first_date;
-
-	if (direction < 0 && start > last_date)
-		start = first_date;
-
-	if (end == -1) {
-		if (direction < 0)
-			end = first_date;
-		else
-			end = last_date;
-	}
-
-	return true;
-}
-
-time_t 
-szb_definable_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle) {
-	time_t first_date;
-	time_t last_date;
-
-	if (buffer->prober_connection->GetRange(first_date, last_date) == false)
-		return -1;
-
-	if (adjust_search_boundaries(start, end, first_date, last_date, direction) == false)
-		return -1;
-
-	return search_in_range(buffer, param, start, end, direction);
-}
-
-time_t 
-szb_lua_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle) {
-	time_t first_date;
-	time_t last_date;
-
-	if (buffer->prober_connection->GetRange(first_date, last_date) == false)
-		return -1;
-	
-	if (param->GetLuaStartDateTime() > 0)
-		first_date = param->GetLuaStartDateTime();
-
-	first_date += param->GetLuaStartOffset();
-	last_date += param->GetLuaEndOffset();
-
-	if (adjust_search_boundaries(start, end, first_date, last_date, direction) == false)
-		return -1;
-
-	return search_in_range(buffer, param, start, end, direction);
-}

@@ -131,14 +131,14 @@ void DatabaseManager::CheckAndNotifyAboutError(DatabaseResponse &response) {
 				i++) {
 			if (i->ok) 
 				continue;
-			ErrorFrame::NotifyError(wxString::Format(_("Definable param error(%s): %s"),
+			ErrorFrame::NotifyError(wxString::Format(_("Database error(%s): %s"),
 				q->draw_info->GetName().c_str(),
 				i->error));
 			free(i->error);
 		}
 	else if (q->type == DatabaseQuery::SEARCH_DATA) {
 		if (!q->search_data.ok) {
-			ErrorFrame::NotifyError(wxString::Format(_("Definable param error(%s): %s"),
+			ErrorFrame::NotifyError(wxString::Format(_("Database error(%s): %s"),
 				q->draw_info->GetName().c_str(),
 				q->search_data.error));
 			free(q->search_data.error);

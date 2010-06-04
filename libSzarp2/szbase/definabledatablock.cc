@@ -1,13 +1,21 @@
 /* 
   SZARP: SCADA software 
+  
 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/*
- * Liczenie parametrow definiowalnych - nowa wersja
- * $Id$
- *
- */
-
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -59,261 +67,6 @@ debug_str(char * msg_str, ...)
     fprintf(stderr, msg_str, args);
 }
 #endif
-
-/** Search first available probe in given period.
- * @param buffer pointer to cache buffer
- * @param param  parameter
- * @param start_time begin of period
- * @param end_time   end of period
- * @param direction  direction of search
- * @return date of first available probe
- */
-time_t
-szb_definable_search_data(szb_buffer_t * buffer, TParam * param, 
-	time_t start_time, time_t end_time, int direction)
-{
-#ifdef KDEBUG
-	sz_log(SEARCH_DATA_LOG_LEVEL, "szb_definable_search_data: %s, s:%ld, e:%ld, d:%d",
-		param->GetName(),
-		(unsigned long int) start_time, (unsigned long int) end_time,
-		direction);
-#endif
-
-	time_t first_available = buffer->first_av_date; 
-	time_t last_available = szb_search_last(buffer, param);
-
-#ifdef KDEBUG
-	sz_log(SEARCH_DATA_LOG_LEVEL, "szb_definable_search_data: fad:%ld, lad:%ld",
-		(unsigned long int) first_available,
-		(unsigned long int) last_available);
-#endif
-
-	if (param->IsConst()) {
-		if (start_time >= first_available && start_time <= last_available) {
-#ifdef KDEBUG
-			sz_log(SEARCH_DATA_LOG_LEVEL, "szb_definable_search_data: return %ld", start_time);
-#endif
-			return start_time;
-		}
-
-		switch (direction) {
-			case -1:
-				if (end_time < 0 || end_time < first_available)
-					end_time = first_available;
-				if (end_time < 0 || end_time > last_available) {
-#ifdef KDEBUG
-					sz_log(SEARCH_DATA_LOG_LEVEL, "szb_definable_search_data: return -1 ");
-#endif
-					return -1;
-				}
-
-				if (start_time < 0 || start_time > last_available)
-					start_time = last_available;
-				if (start_time >= 0 && start_time > end_time) {
-#ifdef KDEBUG
-					sz_log(SEARCH_DATA_LOG_LEVEL, "szb_definable_search_data: return %ld", start_time);
-#endif
-					return start_time;
-				} else {
-#ifdef KDEBUG
-					sz_log(SEARCH_DATA_LOG_LEVEL, "szb_definable_search_data: return -1 ");
-#endif
-					return -1;
-				}
-				break;
-			case 1:
-				if (end_time < 0 || end_time > last_available)
-					end_time = last_available;
-				if (end_time < first_available) {
-#ifdef KDEBUG
-					sz_log(SEARCH_DATA_LOG_LEVEL, "szb_definable_search_data: return -1 ");
-#endif
-					return -1;
-				}
-
-				if (start_time < 0 || start_time < first_available)
-					start_time = first_available;
-				if (start_time < 0 || start_time > last_available) {
-#ifdef KDEBUG
-					sz_log(SEARCH_DATA_LOG_LEVEL, "szb_definable_search_data: return -1 ");
-#endif
-					return -1;
-				} else {
-#ifdef KDEBUG
-					sz_log(SEARCH_DATA_LOG_LEVEL, "szb_definable_search_data: return %ld", start_time);
-#endif
-					return start_time;
-				}
-			default:
-#ifdef KDEBUG
-				sz_log(SEARCH_DATA_LOG_LEVEL, "szb_definable_search_data: return -1 ");
-#endif
-				return -1;
-		}
-	}
-
-#ifdef DEBUG
-	debug_str("ndef.c (641): last_available = %s\n", ctime(&last_available));
-#endif
-
-	if ((start_time >= first_available && start_time <= last_available)
-			&& !IS_SZB_NODATA(szb_get_data(buffer, param, start_time))) {
-#ifdef KDEBUG
-		sz_log(SEARCH_DATA_LOG_LEVEL, "szb_definable_search_data: return %ld", start_time);
-#endif
-		return start_time;
-	}
-
-	time_t time = -1;
-
-	switch (direction) {
-		case -1: // search left
-#ifdef KDEBUG
-			sz_log(SEARCH_DATA_LOG_LEVEL, "S: szb_definable_search_last: searching left");
-#endif
-			if (end_time < 0 || end_time < first_available)
-				end_time = first_available;
-			if (end_time < 0 || end_time > last_available) {
-#ifdef KDEBUG
-				sz_log(SEARCH_DATA_LOG_LEVEL, "szb_definable_search_data: return -1 ");
-#endif
-				return -1;
-			}
-
-			if (start_time < 0 || start_time > last_available)
-				start_time = last_available;
-			if (start_time >= 0 && start_time > end_time) {
-				int probe_n, month = 0, year = 0;
-				int new_year, new_month;
-				szb_datablock_t * block = NULL;
-
-				szb_time2my(start_time, &year, &month);
-#ifdef KDEBUG
-				sz_log(9, "szb_definable_search_data: s_t:%ld, e_t:%ld",
-					(unsigned long int) start_time, (unsigned long int) end_time);
-#endif
-				const SZBASE_TYPE * data = NULL;
-				for (time = start_time; time >= end_time; time -= SZBASE_DATA_SPAN) {
-					szb_time2my(time, &new_year, &new_month);
-					if (block == NULL || new_month != month || new_year != year) {
-						block = szb_get_datablock(buffer, param, new_year, new_month);
-						if (block != NULL)
-							data = block->GetData();
-						if (NULL == block || block->GetFirstDataProbeIdx() < 0) {
-							time = probe2time(0, new_year, new_month);
-							continue;
-						}
-						year = new_year;
-						month = new_month;
-					}
-					/* check for data at index */
-					probe_n = szb_probeind(time);
-		
-					assert(!IS_SZB_NODATA(data[block->GetFirstDataProbeIdx()]));
-					assert(!IS_SZB_NODATA(data[block->GetLastDataProbeIdx()]));
-		
-					if(probe_n > block->GetLastDataProbeIdx()) { //If index is after last data jump to last data in next iteration
-						time = probe2time(block->GetLastDataProbeIdx() + 1, new_year, new_month);
-						continue;
-					}
-					if(probe_n < block->GetFirstDataProbeIdx()) { //If index is before first data jump to the previous block in next iteration
-						time = probe2time(0, new_year, new_month);
-						continue;
-					}
-		
-					if ( !IS_SZB_NODATA(data[probe_n]) ) {
-#ifdef KDEBUG
-						sz_log(SEARCH_DATA_LOG_LEVEL, "szb_definable_search_data: return %ld", time);
-#endif
-						return time;
-					}
-				}
-			}
-#ifdef KDEBUG
-			sz_log(SEARCH_DATA_LOG_LEVEL, "szb_definable_search_data: return -1 ");
-#endif
-			return -1;		
-		case 1: // search right
-#ifdef KDEBUG
-			sz_log(SEARCH_DATA_LOG_LEVEL, "S: szb_definable_search_data: searching right");
-#endif
-			if (end_time < 0)
-				end_time = last_available;
-
-			if (end_time < first_available) {
-#ifdef KDEBUG
-				sz_log(SEARCH_DATA_LOG_LEVEL, "szb_definable_search_data: return -1 ");
-#endif
-				return -1;
-			}
-
-			if (start_time < 0 || start_time < first_available)
-				start_time = first_available;
-			if (start_time < 0 || start_time > last_available) {
-#ifdef KDEBUG
-				sz_log(SEARCH_DATA_LOG_LEVEL, "szb_definable_search_data: return -1 ");
-#endif
-				return -1;
-			}
-
-			if (end_time >= 0) {
-				int probe_n, month = 0, year = 0;
-				int new_year, new_month;
-				szb_datablock_t * block = NULL;
-
-				szb_time2my(start_time, &year, &month);
-
-				const SZBASE_TYPE * data = NULL;
-				for (time = start_time; time <= end_time; time += SZBASE_DATA_SPAN) {
-					szb_time2my(time, &new_year, &new_month);
-					if (block == NULL || new_month != month || new_year != year) {
-						block = szb_get_datablock(buffer, param, new_year, new_month);
-						if (NULL != block)
-							data = block->GetData();
-						if (NULL == block || block->GetFirstDataProbeIdx() < 0) {
-							time = probe2time(szb_probecnt(new_year, new_month) - 1, new_year, new_month);
-							continue;
-						}
-						data = block->GetData();
-						year = new_year;
-						month = new_month;
-					}
-					probe_n = szb_probeind(time);
-					assert(probe_n >= 0);
-			
-					assert(!IS_SZB_NODATA(data[block->GetFirstDataProbeIdx()]));
-					assert(!IS_SZB_NODATA(data[block->GetLastDataProbeIdx()]));
-			
-					if(probe_n > block->GetLastDataProbeIdx()) { //If index is after last data jump to the next block
-						time = probe2time(block->max_probes - 1, new_year, new_month);
-						continue;
-					}
-					if(probe_n < block->GetFirstDataProbeIdx()) { //If index is before first data jump first data in next iteration
-						time = probe2time(block->GetFirstDataProbeIdx() - 1, new_year, new_month);
-						continue;
-					}
-			
-					if (!IS_SZB_NODATA(block->GetData()[probe_n])) {
-#ifdef KDEBUG
-						sz_log(SEARCH_DATA_LOG_LEVEL, "szb_definable_search_data: return %ld", time);
-#endif
-						return time;
-					}
-				}
-			}
-#ifdef KDEBUG
-			sz_log(SEARCH_DATA_LOG_LEVEL, "szb_definable_search_data: return -1 ");
-#endif
-			return -1;
-		default:
-#ifdef KDEBUG
-			sz_log(SEARCH_DATA_LOG_LEVEL, "szb_definable_search_data: return -1 ");
-#endif
-			return -1;
-	}
-
-	return time;
-}
 
 DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int m): CacheableDatablock(b, p, y, m)
 {
@@ -368,6 +121,7 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 		if (this->last_update_time > this->GetEndTime())
 			probes_to_compute = this->fixed_probes_count = this->max_probes;
 		else if (this->last_update_time < this->GetEndTime()) {
+			szb_unlock_buffer(this->buffer);
 			NOT_INITIALIZED;
 		} else
 			probes_to_compute = this->fixed_probes_count = szb_probeind(end_date) + 1;
@@ -375,8 +129,10 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 
 	assert(this->fixed_probes_count <= this->max_probes);
 
-	if (probes_to_compute <= 0)
+	if (probes_to_compute <= 0) {
+		szb_unlock_buffer(this->buffer);
 		NOT_INITIALIZED;
+	}
 
 	/* if N is used or no params in formula we must calculate probes to last_av_date */
 // 	if (param->IsNUsed() || 0 == num_of_params) {

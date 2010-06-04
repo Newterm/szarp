@@ -1,13 +1,21 @@
 /* 
   SZARP: SCADA software 
+  
 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/* 
- * szbase - data buffer
- * $Id$
- * <pawel@praterm.com.pl>
- */
-
 #include <config.h>
 
 #ifndef _GNU_SOURCE
@@ -58,7 +66,7 @@
 #include "loptdatablock.h"
 #include "loptcalculate.h"
 #include "proberconnection.h"
-#include "probeblock.h"
+#include "szbsearch.h"
 
 #include "boost/filesystem/path.hpp"
 #include "boost/filesystem/operations.hpp"
@@ -333,10 +341,6 @@ szb_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end
 time_t
 szb_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe, SzbCancelHandle * c_handle)
 {
-#ifdef KDEBUG
-    sz_log(9, "S: szb_search_data: %s, s: %ld, e: %ld, d: %d",
-	    param->GetName(), start, end, direction);
-#endif
     switch(param->GetType()) {
 	case TParam::P_REAL:
 	    return szb_real_search_data(buffer, param, start, end, direction);
@@ -349,7 +353,7 @@ szb_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end,
 
 #ifndef NO_LUA
 	case TParam::P_LUA:
-	   return szb_lua_search_data(buffer, param, start, end, direction, probe, c_handle);
+	   return szb_lua_search_data(buffer, param, start, end, direction);
 #endif
 	default:
 	    return -1;
@@ -359,6 +363,10 @@ szb_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end,
 time_t
 szb_search(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe, SzbCancelHandle * c_handle)
 {
+#ifndef NO_LUA
+	if (param->GetType() == TParam::P_LUA && param->GetFormulaType() == TParam::LUA_AV)
+		return szb_search_by_value(buffer, param, probe, start, end, direction);
+#endif
 	if (probe == PT_SEC10)
 		return szb_search_probe(buffer, param, start, end, direction, c_handle);
 	else
@@ -432,11 +440,6 @@ void
 szb_get_avg_data(szb_buffer_t * buffer, TParam * param,
 	time_t start_time, time_t end_time, double& psum, int &pcount, SZARP_PROBE_TYPE probe_type, bool *is_fixed)
 {
-#ifdef KDEBUG
-	sz_log(9, "szb_get_avg: %s s:%ld e:%ld",
-		param->GetName(),
-		(long unsigned int) start_time, (long unsigned int) end_time);
-#endif
 
 	szb_datablock_t *b;
 	int year, month;
@@ -966,7 +969,7 @@ szb_buffer_str::Unlock()
 	if (this->locked)
 		return;
 
-	while(this->blocks_c > this->max_blocks) {
+	while (this->blocks_c > this->max_blocks) {
 		szb_block_t * tmp = this->oldest_block->block;
 		this->DeleteBlock(tmp);
 	}
@@ -998,8 +1001,11 @@ szb_buffer_str::PrepareConnection() {
 	if (szbase->GetProberAddress(prefix, address, port)) {
 		prober_connection = new ProberConnection(this, SC::S2A(address), SC::S2A(port));
 		return true;
-	} else
+	} else {
+		last_err = SZBE_CONN_ERROR;
+		last_err_string = L"Connection with probes server not configured";
 		return false;
+	}
 }
 
 BlockLocator::BlockLocator(szb_buffer_t* buff, szb_block_t* b): block(b), buffer(buff),

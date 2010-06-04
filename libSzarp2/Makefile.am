@@ -117,7 +117,8 @@ libSzarp2_a_SOURCES = \
 			$(SZBASE_DIR)/luacalculate.cc $(SZBASE_DIR)/luacalculate.h \
 			$(SZBASE_DIR)/luacalculate.cc $(SZBASE_DIR)/luacalculate.h \
 			$(SZBASE_DIR)/loptcalculate.cc $(SZBASE_DIR)/loptcalculate.h \
-			$(SZBASE_DIR)/probeblock.cc $(SZBASE_DIR)/probeblock.h \
+			$(SZBASE_DIR)/probeblock.cc \
+			$(SZBASE_DIR)/szbsearch.h $(SZBASE_DIR)/szbsearch.cc \
 			$(SZBASE_DIR)/szbblock.cc
 
 

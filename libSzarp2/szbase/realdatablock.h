@@ -33,12 +33,8 @@
 #include "szbdatablock.h"
 #include "szarp_config.h"
 
-time_t szb_real_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction);
-
 class RealDatablock: public szb_datablock_t
 {
-	protected:
-	private:
 		bool LoadFromFile();
 		int probes_from_file;
 		bool isEmpty;

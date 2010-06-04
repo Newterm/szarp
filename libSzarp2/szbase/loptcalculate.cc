@@ -1196,19 +1196,23 @@ void ExecutionEngine::CalculateValue(time_t t, SZARP_PROBE_TYPE probe_type, doub
 ExecutionEngine::ListEntry ExecutionEngine::GetBlockEntry(size_t param_index, time_t t, SZB_BLOCK_TYPE bt) {
 	ListEntry le;
 	le.block = szb_get_block(m_param->m_par_refs[param_index].m_buffer, m_param->m_par_refs[param_index].m_param, t, bt);
-	le.start_time = t;
 	int year, month;
 	switch (bt) {
 		case MIN10_BLOCK:
 			szb_time2my(t, &year, &month);
-			le.end_time = t + SZBASE_DATA_SPAN * szb_probecnt(year, month);	
+			le.start_time = probe2time(0, year, month);
+			le.end_time = le.start_time + SZBASE_DATA_SPAN * szb_probecnt(year, month);	
 			break;
 		case SEC10_BLOCK:
-			le.end_time = t + SZBASE_PROBE_SPAN * szb_probeblock_t::probes_per_block;
+			le.start_time = szb_round_to_probe_block_start(t);
+			le.end_time = le.start_time + SZBASE_PROBE_SPAN * szb_probeblock_t::probes_per_block;
 			break;
 		case UNUSED_BLOCK_TYPE:
 			assert(false);
 	}
+	//force retrieval/refreshment of data in block
+	if (le.block)
+		le.block->GetData();
 	return le;
 }
 

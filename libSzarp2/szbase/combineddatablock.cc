@@ -60,6 +60,8 @@
 #include "combineddatablock.h"
 #include "realdatablock.h"
 #include "conversion.h"
+#include "szbsearch.h"
+
 
 
 namespace fs = boost::filesystem;
@@ -293,38 +295,6 @@ CombinedDatablock::Refresh()
 
 	return;
 }
-
-/** Search first available probe in given period for combined (glued) parameters.
- * @param buffer cache buffer
- * @param param parameter
- * @param start start time of search
- * @param end time of search
- * @param direction direction of search
- * @return time of first available probe, -1 for error
- */
-time_t
-szb_combined_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction)
-{
-#ifdef KDEBUG
-	sz_log(SEARCH_DATA_LOG_LEVEL, "S: szb_combined_search_data: %s, s: %ld, e: %ld, d: %d",
-		param->GetName(), start, end, direction);
-#endif
-	assert(param->GetNumParsInFormula() == 2);
-	TParam ** cache = param->GetFormulaCache();
-
-	// search for lsb param
-	time_t t = szb_real_search_data(buffer, cache[0], start, end, direction);
-	if (-1 == t)
-		return -1;
-
-	// if data not found search for msw param
-	if (IS_SZB_NODATA(szb_get_data(buffer, param, t)))
-		t = szb_real_search_data(buffer, cache[1], start, end, direction);
-
-	// if found return time, else return -1
-	return IS_SZB_NODATA(szb_get_data(buffer, param, t)) ? -1 : t;
-}
-
 
 /** Loads data from szbase file.
  * @param buffer pointer to cache buffer

@@ -40,9 +40,12 @@ class ProberConnection {
 
 	enum { SEND_SEARCH, SEND_GET, SEND_BOUNDARY_TIME } m_operation; 
 
-	std::string m_error;
+	enum { IDLE, RESOLVING, CONNECTING, PERFORMING_OPERATION } m_state; 
 
-	class message_error : public std::exception  { };
+	std::wstring m_error;
+
+	bool m_timeout;
+
 public:
 	ProberConnection(szb_buffer_t* buffer, std::string address, std::string port);
 
@@ -52,7 +55,7 @@ public:
 
 	bool IsError();
 
-	std::string Error();
+	const std::wstring& Error();
 
 	void ClearError();
 
@@ -66,6 +69,8 @@ public:
 
 	void SendRangeQuery();
 
+	void SendQuery();
+
 	void HandleConnect(const boost::system::error_code& error);
 
 	void HandleWrite(const boost::system::error_code &error);
@@ -78,7 +83,7 @@ public:
 
 	void HandleReadValues(const boost::system::error_code &error, size_t bytes_transferred);
 
-	void HandleRangeResponse(const boost::system::error_code &error, bool first_line);
+	void HandleRangeResponse(const boost::system::error_code &error);
 
 	void HandleSearchResponse(const boost::system::error_code &error);
 
@@ -90,8 +95,16 @@ public:
 
 	time_t GetServerTime();
 
+	void PerformOperation();
+
 	bool GetRange(time_t &first_date, time_t& end_date);
 
 	void Go();
+
+	void Disconnect();
+
+	void StartTimer();
+	
+	void StopTimer();
 
 };

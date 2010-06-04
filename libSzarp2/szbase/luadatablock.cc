@@ -1,8 +1,21 @@
 /* 
   SZARP: SCADA software 
+  
 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-
 #include <sstream>
 #include <string>
 #include <assert.h>
@@ -76,119 +89,6 @@ error:
 
 
 }
-
-time_t szb_lua_search_data(szb_buffer_t * buffer, TParam * param ,
-		time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe, SzbCancelHandle * c_handle) {
-#ifdef KDEBUG
-	sz_log(SEARCH_DATA_LOG_LEVEL, "S: szb_lua_search_data: %s, s: %ld, e: %ld, d: %d",
-	    param->GetName(), start, end, direction);
-#endif
-	if (param->GetFormulaType() == TParam::LUA_VA)
-		probe = PT_MIN10;
-
-	start = szb_round_time(start, probe, 0);
-
-	time_t param_first_av_date;
-
-	double val = SZB_NODATA;
-
-	if (param->GetLuaStartDateTime() > 0) {
-		param_first_av_date = param->GetLuaStartDateTime();
-	} else {
-		param_first_av_date = buffer->first_av_date;
-	}
-	param_first_av_date += param->GetLuaStartOffset();
-	param_first_av_date = szb_round_time(param_first_av_date, probe, 0);
-
-	time_t param_last_av_date = szb_search_last(buffer, param);
-
-	if (direction == 0) {
-		if (start < param_first_av_date || start > param_last_av_date)
-			return -1;
-
-		val = szb_get_probe(buffer, param, start, probe, 0);
-
-		time_t ret = IS_SZB_NODATA(val) ? -1 : start;
-		sz_log(SEARCH_DATA_LOG_LEVEL, "Search data called with direction = %d, start = %d, end %d, result = %d, found value = %f", direction, (int)start, (int)end, (int)ret, val);
-		return ret;
-	}
-
-	if (direction > 0 && end == -1)
-		end = param_last_av_date;
-
-	if (direction < 0 && end == -1)
-		end = param_first_av_date;
-
-	if (direction > 0) {
-		if (start > param_last_av_date || end < param_first_av_date)
-			return -1;
-		if (start < param_first_av_date)
-			start = param_first_av_date;
-		if (end > param_last_av_date)
-			end = param_last_av_date;
-	}
-	else {
-		if (start < param_first_av_date || end > param_last_av_date)
-			return -1;
-		if (start > param_last_av_date)
-			start = param_last_av_date;
-		if (end < param_first_av_date)
-			end = param_first_av_date;
-	}
-
-	end = szb_round_time(end, probe, 0);
-
-#define INTERVAL 500
-#define BREAK_IF_CANCELED \
-	if(c_handle) { \
-		counter--; \
-		if (counter == 0) { \
-			counter = INTERVAL; \
-			if(c_handle->IsStopFlag()) { \
-				sz_log(SEARCH_DATA_LOG_LEVEL, "Search data called with direction = %d, start = %d, end %d, stopped by cancel handle", direction, (int)start, (int)end); \
-				return -1; \
-			} \
-		} \
-	}
-
-	int counter = INTERVAL;
-	if (c_handle) {
-		c_handle->Start();
-		counter = INTERVAL;
-	}
-
-	if (direction > 0) {
-		for (;start <= end; start = szb_move_time(start, 1, probe, 0)) {
-			val = szb_get_probe(buffer, param, start, probe, 0);
-			if (!IS_SZB_NODATA(val) || buffer->last_err != SZBE_OK)
-				break;
-			BREAK_IF_CANCELED;
-		}
-	}
-	else {
-		for (;start >= end; start = szb_move_time(start, -1, probe, 0)) {
-			val = szb_get_probe(buffer, param, start, probe, 0);
-			if (!IS_SZB_NODATA(val) || buffer->last_err != SZBE_OK)
-				break;
-			BREAK_IF_CANCELED;
-		}
-	}
-
-#undef INTERVAL
-#undef BREAK_IF_CANCELED
-
-	time_t ret;
-	if (IS_SZB_NODATA(val))
-		ret = -1;
-	else
-		ret = start;
-
-	sz_log(SEARCH_DATA_LOG_LEVEL, "Search data called with direction = %d, start = %d, end %d, result = %d, found value = %f", direction, (int)start, (int)end, (int)ret, val);
-
-	return ret;
-
-}
-
 
 SZBASE_TYPE szb_lua_get_avg(szb_buffer_t* buffer, TParam *param, time_t start_time, time_t end_time, SZBASE_TYPE *psum, int *pcount, SZARP_PROBE_TYPE probe, bool &fixed) {
 	double sum = .0;

@@ -23,8 +23,6 @@ void szb_lua_get_values(szb_buffer_t* buffer, TParam *param, time_t start_time, 
 
 SZBASE_TYPE szb_lua_get_avg(szb_buffer_t *buffer, TParam *param, time_t start_time, time_t end_time, SZBASE_TYPE *psum, int *pcount, SZARP_PROBE_TYPE probe, bool &fixed);
 
-time_t szb_lua_search_data(szb_buffer_t * buffer, TParam * param , time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe, SzbCancelHandle * c_handle = NULL);
-
 SZBASE_TYPE szb_lua_calc_avg(szb_buffer_t * buffer, TParam * param, time_t time, SZARP_PROBE_TYPE probe_type, int custom_length);
 
 class LuaDatablock: public CacheableDatablock {
