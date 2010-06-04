@@ -1,4 +1,8 @@
 
+2010-06-04	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* /: support for 10-seconds values that mostly works - there
+	are sill some bug's lurking here and there and only draw3 knows
+	hot to use them
 2010-06-01	Pawel Palucha <pawel@praterm.com.pl>
 	* utils/probes_server/*: fixes in search request handling.
 2010-05-31 	Darek Marcinkiewcz <reksio@praterm.com.pl>

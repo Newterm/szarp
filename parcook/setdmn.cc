@@ -361,7 +361,7 @@ void SetDaemon::ReadVals()
 			dolog(10, "No data found for parameter");
 			continue;
 		}
-		t = szb_search_data(m_szb, i->second.param, t, -1, -1);
+		t = szb_search(m_szb, i->second.param, t, -1, -1);
 		if (t == -1) {
 			dolog(10, "No data found for parameter");
 			continue;

@@ -123,14 +123,14 @@ EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry)
 			continue;
 		}
 		if (first_date < 0) {
-			first_date = szb_search_data(szbase_buffer, prm, tmp_date,	/* from */
+			first_date = szb_search(szbase_buffer, prm, tmp_date,	/* from */
 						     -1,	/* to - all data */
 						     1	/* search right */
 			    );
 		} else {
 			if (tmp_date < first_date) {
 				tmp_date =
-				    szb_search_data(szbase_buffer, prm,
+				    szb_search(szbase_buffer, prm,
 						    tmp_date, first_date, 1);
 				if (tmp_date < first_date) {
 					first_date = tmp_date;
@@ -141,12 +141,12 @@ EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry)
 		assert(is_correct_time(tmp_date));
 		if (last_date < 0) {
 			last_date =
-			    szb_search_data(szbase_buffer, prm, tmp_date,
+			    szb_search(szbase_buffer, prm, tmp_date,
 					    first_date, -1);
 		} else {
 			if (tmp_date > last_date) {
 				tmp_date =
-				    szb_search_data(szbase_buffer, prm,
+				    szb_search(szbase_buffer, prm,
 						    tmp_date, last_date, -1);
 				if (tmp_date > last_date) {
 					last_date = tmp_date;

@@ -300,7 +300,7 @@ int DbDaemon::Read(IPCHandler *ipc)
 			sz_log(10, "No data found for parameter");
 			continue;
 		}
-		t = szb_search_data(m_szb, m_dbparams[i], t, 
+		t = szb_search(m_szb, m_dbparams[i], t, 
 			m_last - m_expire, -1);
 		if (t == -1) {
 			sz_log(10, "Data is too old");

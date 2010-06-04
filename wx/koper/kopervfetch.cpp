@@ -220,12 +220,12 @@ bool KoperValueFetcher::Setup(vector<string>& ts, time_t ct) {
 		m_vt.push_back(v);
 	}
 
-	time_t ld = szb_search_data(m_szbbuf, m_param, ct, -1, -1);
+	time_t ld = szb_search(m_szbbuf, m_param, ct, -1, -1);
 
 	time_t pld = (time_t) -1;
 
 	if (ld != (time_t) -1) {
-		pld = szb_search_data(m_szbbuf, m_param, ld - SZBASE_DATA_SPAN, -1, -1);
+		pld = szb_search(m_szbbuf, m_param, ld - SZBASE_DATA_SPAN, -1, -1);
 		if (pld != (time_t) -1)
 			AdjustToTime(pld);
 		AdjustToTime(ld);
@@ -273,7 +273,7 @@ void KoperValueFetcher::AdjustToTime(time_t t) {
 
 	Szbase::GetObject()->NextQuery();
 
-	time_t ld = szb_search_data(m_szbbuf, m_param, t, -1, -1);
+	time_t ld = szb_search(m_szbbuf, m_param, t, -1, -1);
 	ld = szb_round_time(ld , PT_MIN10, 0);
 
 	
