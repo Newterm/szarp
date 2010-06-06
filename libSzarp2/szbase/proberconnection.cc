@@ -274,7 +274,7 @@ int ProberConnection::Get(time_t from, time_t to, std::wstring path) {
 		Disconnect();
 		m_buffer->last_err = SZBE_CONN_ERROR;
 		m_buffer->last_err_string = m_error;
-		m_values_count = -1;
+		m_values_count = 0;
 	}
 	m_state = IDLE;
 	return m_values_count;

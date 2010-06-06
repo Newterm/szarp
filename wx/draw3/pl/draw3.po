@@ -121,7 +121,6 @@ msgid "Operation failed."
 msgstr "Operacja siê nie powiod³a."
 
 #: dbmgr.cpp:134 dbmgr.cpp:141
-#, fuzzy, c-format
 msgid "Database error(%s): %s"
 msgstr "B³±d pobrania parametru z bazy danych(%s) : %s"
 
@@ -341,9 +340,8 @@ msgid "Select number of displayed hours"
 msgstr "Wybierz liczbê wy¶wietlanych godzin"
 
 #: drawfrm.cpp:132
-#, fuzzy
 msgid "Select number of displayed minutes"
-msgstr "Wybierz liczbê wy¶wietlanych miesiêcy"
+msgstr "Wybierz liczbê wy¶wietlanych minut"
 
 #: drawfrm.cpp:137
 msgid "Select number of displayed weeks"
@@ -679,7 +677,7 @@ msgstr "DZIEÑ "
 
 #: drawprint.cpp:728
 msgid "HOUR "
-msgstr ""
+msgstr "GODZINA "
 
 #: drawprint.cpp:731
 msgid "SEASON "
@@ -963,21 +961,20 @@ msgid "All values equal zero."
 msgstr "Suma warto¶ci wynosi 0."
 
 #: probadddiag.cpp:39
-#, fuzzy
 msgid "Server"
 msgstr "Serwer:"
 
 #: probadddiag.cpp:40
 msgid "Address"
-msgstr ""
+msgstr "Adres"
 
 #: probadddiag.cpp:70
 msgid "Set address for prober server:"
-msgstr ""
+msgstr "Ustaw adres serwera próbek:"
 
 #: probadddiag.cpp:71
 msgid "Prober server address"
-msgstr ""
+msgstr "Adres serwera próbek"
 
 #: progfrm.cpp:35
 msgid "Fetching values"
@@ -1114,7 +1111,7 @@ msgstr "DZIEÑ"
 
 #: statdiag.cpp:67 timewdg.cpp:58 xydiag.cpp:60
 msgid "10 MINUTES"
-msgstr ""
+msgstr "10 MINUT"
 
 #: statdiag.cpp:76 xydiag.cpp:77 xydiag.cpp:89 xydiag.cpp:96 xydiag.cpp:104
 msgid "Choose draw"
@@ -1400,12 +1397,10 @@ msgid " in terms of "
 msgstr " od "
 
 #: xyzgraph.cpp:893
-#, fuzzy
 msgid "No common data found"
 msgstr "Brak wspólnych danych"
 
 #: xyzgraph.cpp:893
-#, fuzzy
 msgid "There is no common data for these params for given time period"
 msgstr "Brak wspólnych danych dla wybranych wykresów w zadanym okresie czasu"
 
@@ -1531,11 +1526,11 @@ msgstr "Warto¶æ sumowana godzinowo."
 
 #: XRC_gettext_file.h:36
 msgid "Probe servers addresses"
-msgstr ""
+msgstr "Adres serwera próbek"
 
 #: XRC_gettext_file.h:37
 msgid "Probe servers addresses:"
-msgstr ""
+msgstr "Adres serwra próbek:"
 
 #: XRC_gettext_file.h:39
 msgid "Remarks:"
@@ -1935,7 +1930,7 @@ msgstr "Dzieñ\tAlt+D"
 
 #: XRC_gettext_file.h:144
 msgid "10 Minutes\tAlt+1"
-msgstr ""
+msgstr "10 Minut\tAlt+1"
 
 #: XRC_gettext_file.h:145
 msgid "Season\tAlt+S"
@@ -2063,9 +2058,8 @@ msgid "Graphs view"
 msgstr "Widok okna z wykresami"
 
 #: XRC_gettext_file.h:180
-#, fuzzy
 msgid "Addresses of probes' servers"
-msgstr "Niepoprawna odpowied¼ od serwera"
+msgstr "Adres serwera próbek"
 
 #: XRC_gettext_file.h:181
 msgid "&Help"
@@ -2131,59 +2125,3 @@ msgstr "Wyczy¶æ"
 msgid "Hide"
 msgstr "Schowaj"
 
-#~ msgid "Choose file to play:"
-#~ msgstr "Wybierz plik do odtwarzania"
-
-#~ msgid ""
-#~ "Failed to start music playback, make sure that you have chosen proper "
-#~ "file (ogg format) and that you have installed required gstreamer modules. "
-#~ "If you use Debian, you should have gstreamer-plugins-bad package on your "
-#~ "system."
-#~ msgstr ""
-#~ "Nie uda³o siê odtworzyæ pliku. Upewnij siê, ¿e wybra³e¶ odpowiedni plik "
-#~ "(w formacie ogg) i ¿e masz zainstalowane wymagane modu³y gstreamera. "
-#~ "Je¶li u¿ywasz Debiana, powiniene¶ zainstalowaæ pakiet gstreamer-plugins-"
-#~ "bad."
-
-#~ msgid "Feature not supported"
-#~ msgstr "Funkcjonalno¶æ niedostêpna"
-
-#~ msgid "Add remark"
-#~ msgstr "Dodaj komentarz"
-
-#~ msgid "Confiugration"
-#~ msgstr "Konfiguracja"
-
-#~ msgid "Failed to create dir: "
-#~ msgstr "Nie uda³o siê stworzyæ katalogu :"
-
-#~ msgid "Parameters' documentation access"
-#~ msgstr "Dostêp do dokumentacji parametrów"
-
-#~ msgid "Unable to open database"
-#~ msgstr "Nie uda³o siê otworzyæ bazy danych"
-
-#~ msgid "Failed to initialize database"
-#~ msgstr "Nie uda³o siê zainicjalizowaæ bazy danych."
-
-#~ msgid "Croatian"
-#~ msgstr "Chorwacki"
-
-#~ msgid "%.*f"
-#~ msgstr "%.*f"
-
-#~ msgid "print usage info"
-#~ msgstr "wy¶wietl sposób u¿ycia"
-
-#~ msgid "You must set different title."
-#~ msgstr "Musisz ustawiæ inny tytu³."
-
-#~ msgid "Duplicated title"
-#~ msgstr "Istniej±cy tytu³"
-
-#~ msgid "User defined sets has been modified. Do you wish do save it?"
-#~ msgstr ""
-#~ "Wprowadzono zmiany do zestawu okien definiowalnych, czy chcesz je zapisaæ?"
-
-#~ msgid "User defined sets"
-#~ msgstr "Zestawy zdefiniowane przez u¿ytkownika"

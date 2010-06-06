@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WX-Common\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-04 17:32+0100\n"
+"POT-Creation-Date: 2010-06-06 12:02+0200\n"
 "PO-Revision-Date: 2008-07-09 16:26+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -13,45 +13,49 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: datechooser.cpp:90 XRC_gettext_file.h:16
+#: datechooser.cpp:93 XRC_gettext_file.h:16
 msgid "Hour:"
 msgstr "Stunde:"
 
-#: datechooser.cpp:99 XRC_gettext_file.h:17
+#: datechooser.cpp:102 XRC_gettext_file.h:17
 msgid "Minute:"
 msgstr "Minute:"
 
-#: datechooser.cpp:113 htmlabout.cpp:74 aboutdlg.cpp:103 authdiag.cpp:72
+#: datechooser.cpp:113
+msgid "Second:"
+msgstr ""
+
+#: datechooser.cpp:129 htmlabout.cpp:74 aboutdlg.cpp:103 authdiag.cpp:72
 #: cfgdlg.cpp:118 helpctrlex/helpwinex.cpp:1438 helpctrlex/helpwinex.cpp:1440
 msgid "OK"
 msgstr "OK"
 
-#: datechooser.cpp:114 serverdlg.cpp:90 authdiag.cpp:75 cfgdlg.cpp:119
+#: datechooser.cpp:130 serverdlg.cpp:90 authdiag.cpp:75 cfgdlg.cpp:119
 #: helpctrlex/helpwinex.cpp:1437 helpctrlex/helpwinex.cpp:1441
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: datechooser.cpp:147
+#: datechooser.cpp:165
 msgid "Invalid (too large/small) date"
 msgstr "Falsches (zu wenig oder zu viel) Datum."
 
-#: datechooser.cpp:147
+#: datechooser.cpp:165
 msgid "Error!"
 msgstr "Fehler!"
 
-#: datechooser.cpp:158
+#: datechooser.cpp:176
 msgid "Please choose the date from between: "
 msgstr "Sie müssen das Datum aus dem Bereich wählen."
 
-#: datechooser.cpp:160
+#: datechooser.cpp:178
 msgid "and"
 msgstr "und"
 
-#: datechooser.cpp:162
+#: datechooser.cpp:180
 msgid "Incorrect date range"
 msgstr "Falsches Datum"
 
-#: datechooser.h:113
+#: datechooser.h:116
 msgid "Choose date"
 msgstr "Wählen Sie Datum"
 
@@ -145,7 +149,7 @@ msgstr ""
 "Ich kann die Datei nicht öffnen. %s\n"
 "Fehler %d (%s)"
 
-#: parlist.cpp:151 parlist.cpp:155 aboutdlg.cpp:128 pscgui.cpp:493
+#: parlist.cpp:151 parlist.cpp:155 aboutdlg.cpp:128 pscgui.cpp:494
 msgid "Error"
 msgstr "Fehler"
 
@@ -225,15 +229,15 @@ msgstr "Schreib die IP addresse als Standard auf."
 msgid "Apply"
 msgstr "Anwend"
 
-#: serverdlg.cpp:124 serverdlg.cpp:165
+#: serverdlg.cpp:126 serverdlg.cpp:167
 msgid "Connecting to server"
 msgstr "Verbindung mit dem Server"
 
-#: serverdlg.cpp:125 serverdlg.cpp:166
+#: serverdlg.cpp:127 serverdlg.cpp:168
 msgid "Trying to connect to server "
 msgstr "Prüfung Verbindung mit Server"
 
-#: serverdlg.cpp:125 serverdlg.cpp:166
+#: serverdlg.cpp:127 serverdlg.cpp:168
 msgid ""
 ".\n"
 "Please wait."
@@ -241,15 +245,15 @@ msgstr ""
 ".\n"
 "Bitte warten."
 
-#: serverdlg.cpp:152 serverdlg.cpp:215
+#: serverdlg.cpp:154 serverdlg.cpp:217
 msgid "Unable to connect to server "
 msgstr "Fehler beim Verbindung mit dem Server"
 
-#: serverdlg.cpp:153 serverdlg.cpp:216
+#: serverdlg.cpp:155 serverdlg.cpp:218
 msgid ".\n"
 msgstr ""
 
-#: serverdlg.cpp:155
+#: serverdlg.cpp:157
 msgid ""
 "\n"
 "IPK is not available.\n"
@@ -257,15 +261,15 @@ msgstr ""
 "\n"
 "IPK ist nicht verfügbar.\n"
 
-#: serverdlg.cpp:156 serverdlg.cpp:219
+#: serverdlg.cpp:158 serverdlg.cpp:221
 msgid "Connect error"
 msgstr "Fehler beim Verbindung"
 
-#: serverdlg.cpp:189
+#: serverdlg.cpp:191
 msgid "Invalid document."
 msgstr "Ungültige Dokument"
 
-#: serverdlg.cpp:218
+#: serverdlg.cpp:220
 msgid ""
 "\n"
 "Reports are not available.\n"
@@ -395,7 +399,7 @@ msgstr "Sontag"
 msgid "Number"
 msgstr "Numer"
 
-#: pscgui.cpp:126 pscgui.cpp:449
+#: pscgui.cpp:126 pscgui.cpp:450
 msgid "Value"
 msgstr "Wert"
 
@@ -419,27 +423,27 @@ msgstr ""
 msgid "Choose packs' type"
 msgstr "Wähle Typ von Paket"
 
-#: pscgui.cpp:255
+#: pscgui.cpp:256
 msgid "Packs type:"
 msgstr "Typ von Paket:"
 
-#: pscgui.cpp:258
+#: pscgui.cpp:259
 msgid "weekly"
 msgstr "Wöchentlich"
 
-#: pscgui.cpp:260
+#: pscgui.cpp:261
 msgid "daily"
 msgstr "Täglich"
 
-#: pscgui.cpp:274
+#: pscgui.cpp:275
 msgid "Regulator communication error."
 msgstr "Regulator Kommunikationsfehler"
 
-#: pscgui.cpp:275
+#: pscgui.cpp:276
 msgid "Failed to communicate with daemon - is SZARP running?"
 msgstr "Es könnte keine Kommunikation mit Daemon - ist SZARP laufen?"
 
-#: pscgui.cpp:276
+#: pscgui.cpp:277
 msgid ""
 "Failed to stop daemon - this is potentially serious error. Please contact "
 "PRATERM IT department asap!"
@@ -447,82 +451,82 @@ msgstr ""
 "Es könnte nich Daemon stoppen. Das ist vermutlich schwerwiegender Fehler. "
 "Bitte um Kontakt mit PRATERM IT"
 
-#: pscgui.cpp:277
+#: pscgui.cpp:278
 msgid "Failed to open port - hardware or configuration error."
 msgstr ""
 "Es kann nicht serielle Schnittstelle initiieren - Fehler in Konfiguration "
 "oder mit Hardware."
 
-#: pscgui.cpp:278
+#: pscgui.cpp:279
 msgid "Regulator does not respond to queries."
 msgstr "Regulator antwortet nicht auf Fragen."
 
-#: pscgui.cpp:279
+#: pscgui.cpp:280
 msgid "Bad username or password."
 msgstr "Falscher Nutzername oder Passwort."
 
-#: pscgui.cpp:280
+#: pscgui.cpp:281
 msgid "You are not permitted to change parameters for this object."
 msgstr "Du hast nicht Berechtigung fur Parameter Andern."
 
-#: pscgui.cpp:281
+#: pscgui.cpp:282
 msgid "Cannot read settings from regulator."
 msgstr ""
 "Ich könnte nicht Einstellungen von Regulator lessen - Kommunikationfehler."
 
-#: pscgui.cpp:323
+#: pscgui.cpp:324
 msgid "Value must be a number."
 msgstr "Wert muss einer Zahl."
 
-#: pscgui.cpp:323
+#: pscgui.cpp:324
 msgid "Illegal value."
 msgstr "Ungültiger Wert."
 
-#: pscgui.cpp:328
+#: pscgui.cpp:329
 msgid "Value must be no greater than: "
 msgstr "Der Wert muss nicht mehr als:"
 
-#: pscgui.cpp:328 pscgui.cpp:330 pscgui.cpp:607 pscgui.cpp:609
+#: pscgui.cpp:329 pscgui.cpp:331 pscgui.cpp:608 pscgui.cpp:610
 msgid "Out of range"
 msgstr "Außerhalb der Reichweite von."
 
-#: pscgui.cpp:330
+#: pscgui.cpp:331
 msgid "Value must be no less than: "
 msgstr "Der Wert muss nicht weniger als:"
 
-#: pscgui.cpp:377
+#: pscgui.cpp:378
 msgid "Awaiting response."
 msgstr "Ich freue mich auf eine Antwort vom Server."
 
-#: pscgui.cpp:447
+#: pscgui.cpp:448
 msgid "Beginning"
 msgstr "Anfang"
 
-#: pscgui.cpp:492
+#: pscgui.cpp:493
 msgid "At least one pack must be defined."
 msgstr "Mindestens ein Paket muss definiert."
 
-#: pscgui.cpp:501
+#: pscgui.cpp:502
 msgid "Do you really want to remove this pack?"
 msgstr "Willst du dieses Paket entfernen?"
 
-#: pscgui.cpp:502
+#: pscgui.cpp:503
 msgid "Pack removal"
 msgstr "Löschen von Paketen"
 
-#: pscgui.cpp:605
+#: pscgui.cpp:606
 msgid "Value must be number."
 msgstr "Wert muss einer Zahl"
 
-#: pscgui.cpp:605
+#: pscgui.cpp:606
 msgid "Must be number."
 msgstr "Muss einer Zahl"
 
-#: pscgui.cpp:607
+#: pscgui.cpp:608
 msgid "Value must be not greater than: "
 msgstr "Der Wert muss nicht mehr als:"
 
-#: pscgui.cpp:609
+#: pscgui.cpp:610
 msgid "Value must be not less than: "
 msgstr "Der Wert muss nicht weniger als:"
 

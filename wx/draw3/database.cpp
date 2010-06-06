@@ -61,7 +61,9 @@ SZARP_PROBE_TYPE PeriodToProbeType(PeriodType period) {
 void* QueryExecutor::Entry() {
 	DatabaseQuery *q = NULL;
 
+#if 0
 	try {
+#endif
 
 	while ((q = queue->GetQuery())) {
 
@@ -155,9 +157,11 @@ void* QueryExecutor::Entry() {
 	
 	}
 	
+#if 0
 	} catch (std::exception &e) {
 		std::cout << e.what() << std::endl;
 	}
+#endif
 	
 
 	Szbase::Destroy();

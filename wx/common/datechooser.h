@@ -76,7 +76,9 @@ class DateChooserWidget : public wxDialog
 	time_t min_date; // minimal possible date (user cannot choose date earlier than this)
 	time_t max_date; // maximal possible date (user cannot choose date later than this)
 	int minute_quantum; // a 'quantum' step while changing minutes
+	int second_quantum; // a 'quantum' step while changing seconds
 	int current_minute; // what is the current value of the 'minute' SpinCtrl
+	int current_second; // what is the current value of the 'minute' SpinCtrl
 
         wxCalendarCtrl* date_control;
 	mywxTimeCtrl* time_control;
@@ -106,6 +108,7 @@ class DateChooserWidget : public wxDialog
 
 	wxSpinCtrl *hour_control;
 	wxSpinCtrl *minute_control;
+	wxSpinCtrl *second_control;
 
 	public:
 		DateChooserWidget(
@@ -113,7 +116,8 @@ class DateChooserWidget : public wxDialog
 			wxString caption = _("Choose date"), // title string
 			int quantum = 10, 
 			time_t min_date = 0, 
-			time_t max_date = time(NULL)
+			time_t max_date = time(NULL),
+			int second_quantum = -1
 		); 
 		~DateChooserWidget();
 
@@ -126,6 +130,7 @@ class DateChooserWidget : public wxDialog
 		void onCancel(wxCommandEvent &event);
 		void onHourChange(wxSpinEvent &event);
 		void onMinuteChange(wxSpinEvent &event);
+		void onSecondChange(wxSpinEvent &event);
 
 	private:
 		DECLARE_EVENT_TABLE()

@@ -334,9 +334,10 @@ void DrawsWidget::OnJumpToDate() {
 		new DateChooserWidget(
 				m_parent,
 				_("Select date"),
-				10,
+				1,
 				wxDateTime(1, 1, 1990).GetTicks(),
-				wxDateTime::Now().GetTicks()
+				wxDateTime::Now().GetTicks(),
+				10
 		);
 	
 	bool ret = dcw->GetDate(date);

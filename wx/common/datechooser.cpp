@@ -39,7 +39,8 @@
 enum {
 	ID_DateChooserWidget = wxID_HIGHEST, 
 	ID_SpinCtrlHour,
-	ID_SpinCtrlMinute
+	ID_SpinCtrlMinute,
+	ID_SpinCtrlSecond
 };
 
 
@@ -48,7 +49,9 @@ DateChooserWidget::DateChooserWidget(wxWindow *parent,
 		wxString caption,
 		int minute_quantump,
 		time_t min_datep,
-		time_t max_datep)
+		time_t max_datep,
+		int second_quantump)
+
 
 	: wxDialog(parent, ID_DateChooserWidget, caption, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxTAB_TRAVERSAL)
 
@@ -105,6 +108,20 @@ DateChooserWidget::DateChooserWidget(wxWindow *parent,
 	sizer1_1_2->Add(minute_control, 0, wxALL, 0); 
 	minute_control->SetRange(0, 59);
 
+	if (second_quantump != -1) {
+		sizer1_1_2->Add(new wxStaticText(this, -1, 
+				_("Second:")), 0, wxTOP, 5); // the 'second' text (1_1_2_5)
+		second_control = new wxSpinCtrl(this, ID_SpinCtrlSecond, 
+				_T("00"), // initial value
+				wxDefaultPosition, wxDefaultSize, 
+				wxSP_ARROW_KEYS | wxSP_WRAP); // the second spin control (1_1_2_6)
+		sizer1_1_2->Add(second_control, 0, wxALL, 0); 
+		second_control->SetRange(0, 59);
+	} else {
+		second_control = NULL;
+	}
+	second_quantum = second_quantump;
+
 	// OK & Cancel buttons sizer (1_2)
         sizer1_2 = new wxBoxSizer(wxHORIZONTAL);
 	sizer1->Add(sizer1_2, 0, wxALL, 10); // 1_2
@@ -131,6 +148,7 @@ bool DateChooserWidget::GetDate(wxDateTime &date)
 	minute_control->SetValue(date.GetMinute());
 
 	current_minute = date.GetMinute();
+	current_second = date.GetSecond();
 	
 	while( (ret = ShowModal()) == wxID_OK){ 
 
@@ -139,6 +157,8 @@ bool DateChooserWidget::GetDate(wxDateTime &date)
 		// ustawiamy godzine
 		date.SetHour(hour_control->GetValue());
 		date.SetMinute(minute_control->GetValue());
+		if (second_control)
+			date.SetSecond(second_control->GetValue());
 
 		wxDateTime tmin(time_t(0));
 		wxDateTime tmax(MAX_TIME_T_FOR_WX_DATE_TIME);
@@ -183,32 +203,56 @@ void DateChooserWidget::onHourChange(wxSpinEvent &event)
 
 void DateChooserWidget::onMinuteChange(wxSpinEvent &event)
 {
-	if( abs(event.GetPosition() - current_minute) == 1 ||
-			abs(event.GetPosition() - current_minute) == 59
-	) {
+	if (abs(event.GetPosition() - current_minute) == 1 || abs(event.GetPosition() - current_minute) == 59) {
 		
-	if(event.GetPosition() > current_minute && event.GetPosition() < 60 - minute_quantum + 1) 
-		current_minute += minute_quantum;
-	else if(event.GetPosition() < current_minute && event.GetPosition() != 0) 
-		current_minute -= minute_quantum;
-	else if(current_minute == 0 && event.GetPosition() == 59) 
-		current_minute = (60/minute_quantum - 1)*minute_quantum ;
-	else if(event.GetPosition() == current_minute)
-		; // do nothing
-	else
-		current_minute = 0;
+		if (event.GetPosition() > current_minute && event.GetPosition() < 60 - minute_quantum + 1) 
+			current_minute += minute_quantum;
+		else if (event.GetPosition() < current_minute && event.GetPosition() != 0) 
+			current_minute -= minute_quantum;
+		else if (current_minute == 0 && event.GetPosition() == 59) 
+			current_minute = (60 / minute_quantum - 1) * minute_quantum;
+		else if (event.GetPosition() == current_minute)
+			; // do nothing
+		else
+			current_minute = 0;
 
 	} else {
 		int p = event.GetPosition();
-		current_minute = p%minute_quantum<=minute_quantum/2 ? 
-			(p/minute_quantum)*minute_quantum : 
-			(p/minute_quantum + 1)*minute_quantum;
+		current_minute = p % minute_quantum <= minute_quantum / 2 ? 
+				(p / minute_quantum) * minute_quantum : 
+				(p / minute_quantum + 1) * minute_quantum;
 		if (current_minute >= 60)
 			current_minute = 0;
 	}
 
 	minute_control->SetValue(current_minute);
+}
 
+void DateChooserWidget::onSecondChange(wxSpinEvent &event) {
+
+	if (abs(event.GetPosition() - current_second) == 1 || abs(event.GetPosition() - current_second) == 59) {
+		
+		if (event.GetPosition() > current_second && event.GetPosition() < 60 - second_quantum + 1) 
+			current_second += second_quantum;
+		else if (event.GetPosition() < current_second && event.GetPosition() != 0) 
+			current_second -= second_quantum;
+		else if (current_second == 0 && event.GetPosition() == 59) 
+			current_second = (60 / second_quantum - 1) * second_quantum;
+		else if (event.GetPosition() == current_second)
+			; // do nothing
+		else
+			current_second = 0;
+
+	} else {
+		int p = event.GetPosition();
+		current_second = p % second_quantum <= second_quantum / 2 ? 
+				(p / second_quantum) * second_quantum : 
+				(p / second_quantum + 1) * second_quantum;
+		if (current_second >= 60)
+			current_second = 0;
+	}
+
+	second_control->SetValue(current_second);
 
 }
 
@@ -239,6 +283,7 @@ BEGIN_EVENT_TABLE(DateChooserWidget, wxDialog)
 	EVT_BUTTON(wxCANCEL, DateChooserWidget::onCancel)
 	EVT_SPINCTRL(ID_SpinCtrlHour, DateChooserWidget::onHourChange)
 	EVT_SPINCTRL(ID_SpinCtrlMinute, DateChooserWidget::onMinuteChange)
+	EVT_SPINCTRL(ID_SpinCtrlSecond, DateChooserWidget::onSecondChange)
 END_EVENT_TABLE()
 
 

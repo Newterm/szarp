@@ -21,6 +21,7 @@
 
 #include <boost/asio.hpp>
 
+#include "liblog.h"
 #include "szbbuf.h"
 #include "szbdefines.h"
 #include "szbdate.h"
@@ -108,6 +109,7 @@ public:
 
 
 void szb_probeblock_real_t::FetchProbes() {
+	sz_log(10, "Fetcheing real probes");
 	int count = buffer->prober_connection->Get(start_time + SZBASE_PROBE_SPAN * fixed_probes_count,
 			end_time,
 			param->GetSzbaseName());
@@ -133,9 +135,11 @@ void szb_probeblock_real_t::FetchProbes() {
 	fixed_probes_count = (server_time - start_time) / SZBASE_PROBE_SPAN + 1;
 	if (fixed_probes_count > probes_per_block)
 		fixed_probes_count = probes_per_block;
+	sz_log(10, "Fetched %d real probes, fixed probes: %d", count, fixed_probes_count);
 }
 
 void szb_probeblock_combined_t::FetchProbes() {
+	sz_log(10, "Fetching combined probes");
 	TParam ** p_cache = param->GetFormulaCache();
 	size_t msw_count = buffer->prober_connection->Get(start_time + SZBASE_PROBE_SPAN * fixed_probes_count,
 			end_time,
@@ -167,9 +171,11 @@ void szb_probeblock_combined_t::FetchProbes() {
 	fixed_probes_count = (buffer->prober_connection->GetServerTime() - start_time) / SZBASE_PROBE_SPAN + 1;
 	if (fixed_probes_count > probes_per_block)
 		fixed_probes_count = probes_per_block;
+	sz_log(10, "Fetched %d combined probes, fixed probes: %d", count, fixed_probes_count);
 }
 
 void szb_probeblock_definable_t::FetchProbes() {
+	sz_log(10, "Fetching definable probes");
 	time_t range_start, range_end;
 	if (!buffer->prober_connection->GetRange(range_start, range_end))
 		return;
@@ -188,7 +194,6 @@ void szb_probeblock_definable_t::FetchProbes() {
 		dblocks[i] = block->GetData();
 		new_fixed_probes = std::min(new_fixed_probes, block->GetFixedProbesCount());
 	}
-
 	double pw = pow(10, param->GetPrec());
 	SZBASE_TYPE  stack[DEFINABLE_STACK_SIZE]; // stack for calculatinon of formula
 	const std::wstring& formula = this->param->GetDrawFormula();
@@ -196,10 +201,13 @@ void szb_probeblock_definable_t::FetchProbes() {
 		time_t time = GetStartTime() + i * SZBASE_PROBE_SPAN;
 		data[i] = szb_definable_calculate(buffer, stack, dblocks, p_cache, formula, i, num_of_params, time, param) / pw;
 	}
+	fixed_probes_count = new_fixed_probes;
 	szb_unlock_buffer(buffer);
+	sz_log(10, "Fetched %d definable probes, fixed probes: %d", count, fixed_probes_count);
 }
 
 void szb_probeblock_lua_t::FetchProbes() {
+	sz_log(10, "Fetcheing lua probes");
 	lua_State* lua = Lua::GetInterpreter();
 	time_t t = start_time + fixed_probes_count * SZBASE_PROBE_SPAN;
 	int ref = param->GetLuaParamReference();
@@ -230,11 +238,12 @@ void szb_probeblock_lua_t::FetchProbes() {
 			fixed_probes_count += 1;
 	}
 	lua_pop(lua, 1);
+	sz_log(10, "Fetched lua probes, fixed probes: %d", fixed_probes_count);
 }
 
 void szb_probeblock_lua_opt_t::FetchProbes() {
 	LuaExec::ExecutionEngine ee(buffer, param->GetLuaExecParam());
-
+	sz_log(10, "Fetching lua opt probes");
 	time_t t = start_time + fixed_probes_count * SZBASE_PROBE_SPAN;
 	for (int i = fixed_probes_count; i < probes_per_block; i++, t += SZBASE_PROBE_SPAN) {
 		bool probe_fixed = true;
@@ -242,6 +251,7 @@ void szb_probeblock_lua_opt_t::FetchProbes() {
 		if (probe_fixed && fixed_probes_count == i)
 			fixed_probes_count = i + 1;
 	}
+	sz_log(10, "Fetched lua opt probes fixed probes: %d", fixed_probes_count);
 
 }
 

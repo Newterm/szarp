@@ -258,9 +258,10 @@ void XYDialog::OnDateChange(wxCommandEvent &event) {
 		new DateChooserWidget(
 				this,
 				_("Select date"),
-				10,
+				1,
 				-1,
-				-1
+				-1,
+				1
 		);
 
 	wxDateTime wxtime = time->GetTime();

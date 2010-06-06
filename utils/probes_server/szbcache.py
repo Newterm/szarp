@@ -221,13 +221,16 @@ class SzbCache:
 		"""
 		debug("WRITE_FILE %d %d %s" % (startindex, endindex, str(output)))
 		lastindex = min(endindex, self.last_index(path))
-		towrite = ((lastindex - startindex) + 1) * self.SZBCACHE_SIZE
+		towrite = lastindex - startindex + 1
+		if towrite < 0:
+			towrite = 0
 		debug("WRITE_FILE TOWRITE %d" % towrite)
 		if towrite > 0:
 			f = open(path, "rb")
-			output.write(f.read(towrite))
+			self.file_seek(f, startindex)
+			output.write(f.read(towrite * self.SZBCACHE_SIZE))
 			f.close()
-		self.fill_empty(output, endindex - lastindex)
+		self.fill_empty(output, endindex - startindex - towrite + 1)
 
 		debug("WRITE_FILE FINISH")
 
@@ -314,11 +317,14 @@ class SzbCache:
 			if found:
 				return start
 			if direction > 0:
-				(startpath, startindex) = (pi.next(), 0)
+				startpath = pi.next()
+				start = self.index2time(startpath, 0)
+				startindex = 0
 			else:
-				(startpath, startindex) = (pi.prev(), -1)
+				start = self.index2time(startpath, 0) - self.SZBCACHE_PROBE
+				startpath = pi.prev()
+				startindex = -1
 			print "DEBUG startpath, direction", startpath, direction
-			start = self.index2time(startpath, startindex)
 		return -1
 
 	def search_file(self, path, startindex, endpath, endindex, direction):

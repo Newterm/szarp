@@ -343,9 +343,10 @@ void StatDialog::OnDateChange(wxCommandEvent &event) {
 		new DateChooserWidget(
 				this,
 				_("Select date"),
-				10,
+				1,
 				-1,
-				-1
+				-1,
+				10
 		);
 	
 	bool ret = dcw->GetDate(time);
