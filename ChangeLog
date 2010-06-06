@@ -1,6 +1,12 @@
 
 2010-06-06	Darek Marcinkiewcz <reksio@praterm.com.pl>
-	* 
+	* libSzarp2/szbase: more logging, fix in setting number of 
+	fixed 10-seconds probes for RPN params
+	* utils/probes_server/szbcache.py: few small fixes
+	* wx/common/datechooser.*: also allows to set second
+	in date being choosen
+	* wx/draw3: translation of new GUI elements, date in xygraph,
+	xyzgraph, stat dialog can be set with 10 seconds resolution
 2010-06-04	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* /: support for 10-seconds values that mostly works - there
 	are sill some bugs lurking here and there and only draw3 knows
