@@ -25,6 +25,7 @@
 
 #ifdef MINGW32
 #include "mingw32_missing.h"
+#undef GetObject
 #endif
 
 using std::find;

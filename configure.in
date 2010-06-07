@@ -399,12 +399,14 @@ AC_SUBST(MSGMERGE)
 AC_SUBST(WINDRES)
 
 if test "$with_mingw32" = "yes" ; then
-        CFLAGS="$CFLAGS -D__GNUWIN32__ -D__WIN32_IE=0x400"
-        CXXFLAGS="$CXXFLAGS -D__GNUWIN32__ -D__WIN32_IE=0x400"
+        CFLAGS="$CFLAGS -D__GNUWIN32__ -D__WIN32_IE=0x400 -D_WIN32_WINT=0x0502"
+        CXXFLAGS="$CXXFLAGS -D__GNUWIN32__ -D__WIN32_IE=0x400 -D_WIN32_WINNT=0x0502"
         WX_CXXFLAGS="$WX_CXXFLAGS -DwxUSE_OWNER_DRAWN=1 -DwxUSE_GRAPHICS_CONTEXT=1"
+	MINGW32_LIBS="-lwsock32 -lshlwapi -liphlpapi -lws2_32 -liconv -lexpat"
 	AC_DEFINE(MINGW32, 1, [Define to 1 when compiling under mingw32
 	enviroment])
 fi
+AC_SUBST(MINGW32_LIBS)
 
 # check for libxml2 (sets XML_CLAGS and XML_LIBS)
 AM_PATH_XML2(2.6.5, [no_xml=], [no_xml="yes"])

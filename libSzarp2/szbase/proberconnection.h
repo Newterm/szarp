@@ -10,6 +10,9 @@
 
 #include "config.h"
 
+#ifdef MING32
+#include <windows.h>
+#endif
 #include <boost/asio.hpp>
 
 class ProberConnection {
