@@ -1,4 +1,6 @@
 
+2010-06-07	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* /: latest changes compile on windows
 2010-06-06	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* libSzarp2/szbase: more logging, fix in setting number of 
 	fixed 10-seconds probes for RPN params
