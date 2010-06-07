@@ -542,6 +542,11 @@ void DrawFrame::OnSplitCursor(wxCommandEvent &event) {
 		draw_panel->ToggleSplitCursor(event);
 }
 
+void DrawFrame::OnLatestDataFollow(wxCommandEvent &event) {
+	if (ignore_menu_events == false)
+		draw_panel->SetLatestDataFollow(event.IsChecked());
+}
+
 void DrawFrame::SwitchFullScreen() {
 	wxMenuItem *item = GetMenuBar()->FindItem(XRCID("FullScreen"));
 	if (IsFullScreen()) {
@@ -1194,6 +1199,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("StatsWin"), DrawFrame::OnStatDialog)
     EVT_MENU(XRCID("FullScreen"), DrawFrame::OnFullScreen)
     EVT_MENU(XRCID("SplitCursor"), DrawFrame::OnSplitCursor)
+    EVT_MENU(XRCID("LATEST_DATA_FOLLOW"), DrawFrame::OnLatestDataFollow)
     EVT_MENU(XRCID("YEAR_RADIO"), DrawFrame::OnAverageChange)
     EVT_MENU(XRCID("MONTH_RADIO"), DrawFrame::OnAverageChange)
     EVT_MENU(XRCID("WEEK_RADIO"), DrawFrame::OnAverageChange)

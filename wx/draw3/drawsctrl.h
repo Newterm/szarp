@@ -148,6 +148,9 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 	/**Denotes if we are working in 'double cursor mode (affects table range calculation)*/
 	bool m_double_cursor;
 
+	/**Follow last data mode*/
+	bool m_follow_latest_data_mode; 
+
 	/**Filter level*/
 	int m_filter;
 
@@ -299,6 +302,8 @@ public:
 
 
 	bool SetDoubleCursor(bool double_cursor);
+
+	void SetFollowLatestData(bool follow_latest_data);
 
 	bool GetDoubleCursor();
 

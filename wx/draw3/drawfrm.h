@@ -251,6 +251,8 @@ protected:
 	/** Toggles split cursor mode*/
 	void OnSplitCursor(wxCommandEvent &event);
 
+	void OnLatestDataFollow(wxCommandEvent &event);
+
 	/** Idle event handler*/
 	void OnIdle(wxIdleEvent &event);
 

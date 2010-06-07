@@ -79,10 +79,9 @@ class DrawsWidget : public wxEvtHandler
 
 	int m_action;		/**< Action to perform repeatedly (with timer generated 
 				  events) after refreshing. */
-	DisplayTimeWidget* m_displaytime;
-				/**< Pointer to widget for displaying time. */
-
     	wxTimer* m_display_timer;
+
+	int m_display_timer_events;
 
 	wxTimer* m_keyboard_timer;
 
@@ -180,8 +179,6 @@ public:
 	/**Show remarks*/
 	void ShowRemarks(int index);
 
-	void SetDisplayTimeWidget(DisplayTimeWidget *dtw);
-
 	/**blcoks/unblock draw
 	 * @param index index of draw to be blocked
 	 * @param block if true draw is blocked if false unbloced*/
@@ -263,6 +260,7 @@ public:
 
 	void DetachObserver(DrawObserver *draw_observer);
 
+	DrawsController* GetDrawsController();
 protected:
 	/** Set timer to generate next event. */
 	void SetDisplayTimer();

@@ -1,5 +1,9 @@
 
 2010-06-07	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* wx/draw3: latest data following mode - in this mode, draw3,
+	while performing automatic data refresh, does a search for latest
+	value of current param and then positions cursor at this latest
+	value	
 	* /: latest changes compile on windows
 2010-06-06	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* libSzarp2/szbase: more logging, fix in setting number of 

@@ -58,6 +58,7 @@ DrawsController::DrawsController(ConfigManager *config_manager, DatabaseManager 
 	m_draw_set(NULL),
 	m_current_index(-1),
 	m_double_cursor(false),
+	m_follow_latest_data_mode(false),
 	m_filter(0)
 {
 	for (size_t i = 0; i < max_draws_count; i++)
@@ -507,6 +508,12 @@ bool DrawsController::SetDoubleCursor(bool double_cursor) {
 	m_observers.NotifyDoubleCursorChanged(this);
 
 	return double_cursor;
+}
+
+void DrawsController::SetFollowLatestData(bool follow_latest_data) {
+	m_follow_latest_data_mode = follow_latest_data;
+	if (m_state == DISPLAY && m_follow_latest_data_mode)
+		RefreshData(true);
 }
 
 void DrawsController::FetchData() {
@@ -1234,8 +1241,17 @@ void DrawsController::RefreshData(bool auto_refresh) {
 	for (int i = 0; i < m_active_draws_count; i++)
 		m_draws[i]->RefreshData(auto_refresh);
 
-	FetchData();
-	EnterWaitState(WAIT_DATA_NEAREST);
+	if (m_follow_latest_data_mode) {
+		assert(m_selected_draw >= 0);
+		const TimeIndex& index = m_draws[m_selected_draw]->GetTimeIndex();
+		wxDateTime t = wxDateTime(std::numeric_limits<time_t>::max() - 10)
+			- index.GetTimeRes()
+			- index.GetDateRes();
+		EnterSearchState(SEARCH_LEFT, DTime(GetPeriod(), t), DTime());
+	} else {
+		FetchData();
+		EnterWaitState(WAIT_DATA_NEAREST);
+	}
 }
 
 void DrawsController::MoveCursorEnd() {

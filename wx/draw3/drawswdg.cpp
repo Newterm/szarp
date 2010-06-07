@@ -79,13 +79,12 @@ END_EVENT_TABLE()
 DrawsWidget::DrawsWidget(DrawPanel * parent, ConfigManager *cfg, DatabaseManager* dm, DrawGraphs* graphs, RemarksFetcher *rf) : 
 	m_graphs(graphs), m_cfg(cfg), m_parent(parent), m_draws_controller(NULL), m_action(NONE), m_remarks_fetcher(rf)
 {
-	m_displaytime = NULL;
-
 	m_display_timer = new wxTimer(this, DISPLAY_TIMER_ID);
 	m_keyboard_timer = new wxTimer(this, KEYBOARD_TIMER_ID);
 	m_draws_controller = new DrawsController(cfg, dm);
 
-	SetDisplayTimer();
+	m_display_timer_events = 0;
+	m_display_timer->Start(5000, wxTIMER_ONE_SHOT);
 
 }
 
@@ -132,8 +131,21 @@ void DrawsWidget::OnKeyboardTimerEvent(wxTimerEvent & event)
 
 void DrawsWidget::OnDisplayTimerEvent(wxTimerEvent & event)
 {
-	SetDisplayTimer();
-	m_draws_controller->RefreshData(true);
+	wxDateTime now = wxDateTime::Now();
+	m_display_timer->Start((5 - (now.GetSecond() % 5)) * 1000, wxTIMER_ONE_SHOT);
+
+	m_display_timer_events += 1;
+	if (m_draws_controller->GetPeriod() == PERIOD_T_10MINUTE) {
+		if (m_display_timer_events > 1) {
+			m_display_timer_events = 0;
+			m_draws_controller->RefreshData(true);
+		}
+	} else {
+		if (m_display_timer_events >= 10) {
+			m_display_timer_events = 0;
+			m_draws_controller->RefreshData(true);
+		}
+	}
 }
 
 size_t DrawsWidget::GetNumberOfUnits() {
@@ -279,22 +291,6 @@ void DrawsWidget::SetDrawEnable(size_t index)
 	m_draws_controller->SetDrawEnabled(index, true);
 }
 
-void DrawsWidget::SetDisplayTimer()
-{
-	if (m_displaytime) {
-		m_displaytime->Update();
-	}
-
-	m_display_timer->Start((60 - wxDateTime::Now().GetSecond()) *
-		1000, wxTIMER_ONE_SHOT);
-
-}
-
-void DrawsWidget::SetDisplayTimeWidget(DisplayTimeWidget * dtw)
-{
-	m_displaytime = dtw;
-}
-
 void DrawsWidget::MoveScreenRight()
 {
 	m_draws_controller->MoveScreenRight();
@@ -437,6 +433,8 @@ bool DrawsWidget::GetNoData() {
 void DrawsWidget::RefreshData(bool auto_refresh)
 {
 	m_draws_controller->RefreshData(auto_refresh);
+	if (!auto_refresh)
+		m_display_timer_events = 0;
 }
 
 wxDragResult DrawsWidget::SetSetInfo(wxString window,
@@ -587,4 +585,8 @@ void DrawsWidget::AttachObserver(DrawObserver *draw_observer) {
 
 void DrawsWidget::DetachObserver(DrawObserver *draw_observer) {
 	draw_observer->Detach(m_draws_controller);
+}
+
+DrawsController* DrawsWidget::GetDrawsController() {
+	return m_draws_controller;
 }

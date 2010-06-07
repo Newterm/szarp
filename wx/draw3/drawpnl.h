@@ -119,6 +119,8 @@ class DrawPanel : public wxPanel, public DrawObserver {
 	/**toggles split cursor*/
 	void ToggleSplitCursor(wxCommandEvent &event);
 
+	void SetLatestDataFollow(bool follow);
+
 	/**Handles priting request.
 	 * @param preview if true print previev dialog, if false a print dialog will be shown*/
 	void Print(bool preview);

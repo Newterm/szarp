@@ -401,10 +401,6 @@ void DrawPanel::CreateChildren(const wxString& set, PeriodType pt, time_t time, 
 			this
 #endif
 			);
-	/* connect widget for updating time events; dtw used to
-	 * have it's own timer but it is broken under Windows
-	 * version, so we have to use only one timer */
-	dw->SetDisplayTimeWidget(dtw);
 	ssw = new SelectSetWidget(cfg,
 #ifdef WXAUI_IN_PANEL
 			hpanel,
@@ -700,6 +696,10 @@ SummaryWindow *DrawPanel::GetSummaryWindow()
 PeriodType DrawPanel::SetPeriod(PeriodType pt) {
 	dw->SetPeriod(pt);
 	return pt;
+}
+
+void DrawPanel::SetLatestDataFollow(bool follow) {
+	dw->GetDrawsController()->SetFollowLatestData(follow);
 }
 
 void DrawPanel::ToggleSplitCursor(wxCommandEvent& WXUNUSED(event)) {
