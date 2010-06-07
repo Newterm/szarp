@@ -1530,7 +1530,7 @@ msgstr "Adres serwera próbek"
 
 #: XRC_gettext_file.h:37
 msgid "Probe servers addresses:"
-msgstr "Adres serwra próbek:"
+msgstr "Adres serwera próbek:"
 
 #: XRC_gettext_file.h:39
 msgid "Remarks:"
