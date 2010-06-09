@@ -1,4 +1,8 @@
 
+2010-06-09	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* wx/draw3: some bugs killed
+	* resources/documentation/new/draw3/darw3.sgml: added short description of
+	differences between linear correlation and rank correlation
 2010-06-07	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* wx/draw3: latest data following mode - in this mode, draw3,
 	while performing automatic data refresh, does a search for latest

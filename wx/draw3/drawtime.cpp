@@ -51,13 +51,13 @@ DTime& DTime::AdjustToPeriodStart() {
 		case PERIOD_T_WEEK:
 			m_time.SetHour(0);
 			m_time.SetMinute(0);
-			break;
 		case PERIOD_T_10MINUTE:
 			m_time.SetSecond(0);
 			break;
 		case PERIOD_T_DAY: {
 			wxDateTime tmp = m_time;
 			m_time.SetMinute(0);
+			m_time.SetSecond(0);
 
 			//yet another workaround for bug in wxDateTime
 			if (tmp.IsDST() && !m_time.IsDST())
@@ -104,6 +104,7 @@ DTime& DTime::AdjustToPeriod() {
 		case PERIOD_T_DAY : {
 			wxDateTime tmp = m_time;
 			m_time.SetMinute(m_time.GetMinute() / 10 * 10);
+			m_time.SetSecond(0);
 
 			//yet another workaround for bug in wxDateTime
 			if (tmp.IsDST() && !m_time.IsDST())

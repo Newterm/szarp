@@ -582,8 +582,8 @@ W oknie obok wykresu X/Y, po prawej jego stronie, umieszczone s± dok³adniejsze i
 <listitem><para>warto¶æ w wybranym punkcie wykresu</para></listitem>
 <listitem><para>warto¶æ minimaln±, ¶redni± i maksymaln± w wybranym okresie czasu</para></listitem>
 <listitem><para>odchylenie standardowe</para></listitem>
-<listitem><para>korelacja X/Y</para></listitem>
-<listitem><para>korelacja rangowa X/Y</para></listitem>
+<listitem><para>korelacja X/Y - pokazuje warto¶æ wspó³czynnika korelacji Pearsona - wspó³czynnik ten przyjmuje warto¶æ tym bli¿sz± 1 lub -1 im bardziej waro¶ci parametru X s± liniowo zale¿ne od warto¶ci parametru Y</para></listitem>
+<listitem><para>korelacja rangowa X/Y - korelacja rangowa przyjmuje warto¶æ tym wiêksz± im bardziej warto¶ci parametrów X i Y spe³niaj± zale¿no¶æ monotoniczno¶ci, a wiêc im bardziej spe³niony jest warunek ¿e wzrostowi warto¶ci parametru X towarzyszy wzrost warto¶ci parametru Y. Korelacja rangowa mierzy ogólniejsz± zale¿no¶æ miêdzy parametarmi X i Y ni¿ wspó³czynnik Pearsona poniewa¿ by korelacja rangowa przyjê³a du¿± warto¶æ wystarczy by wzrostowi warto¶ci jednego parametru towarzyszy³ jakikolwiek wzrost warto¶ci drugiego parametru, w przypadku wspó³czynnika Pearsona wzrost ten dodatkowo musi byæ liniowy.</para></listitem>
 <listitem><para>zakres dat, dla których tworzony jest wykres X/Y</para></listitem>
 <listitem><para>ilo¶æ próbek, które s± wy¶wietlane w wybranym miejscu na wykresie</para></listitem>
 <listitem><para>listê powy¿ej wymienionych próbek</para></listitem>

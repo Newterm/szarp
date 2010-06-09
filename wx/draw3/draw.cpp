@@ -539,7 +539,8 @@ void ValuesTable::UpdateStats(int idx) {
 		if (m_draw->GetDrawInfo() != NULL)
 			m_hsum = v.sum / m_draw->GetDrawInfo()->GetSumDivisor();
 	}
-
+	if (m_draw->m_draws_controller->GetPeriod() == PERIOD_T_10MINUTE)
+		m_hsum /= 60;
 	m_count++;
 }
 

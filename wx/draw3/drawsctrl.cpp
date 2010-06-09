@@ -109,6 +109,13 @@ void DrawsController::CheckAwaitedDataPresence() {
 	const Draw::VT& values = draw->GetValuesTable();
 	int max_index = values.size();
 
+	wxLogInfo(_T("Waiting for data at index: %d, time: %s, data at index is in state %d, value: %f"),
+			current_index,
+			m_time_to_go.Format().c_str(),
+			values.at(current_index).state,
+			values.at(current_index).val
+			);
+
 	int i = -1, j = max_index;
 
 	switch (m_state) {
@@ -133,11 +140,21 @@ void DrawsController::CheckAwaitedDataPresence() {
 					i >= 0 || j < max_index;
 					--i, ++j) {
 
-				if (i >= 0 && values.at(i).MayHaveData())
+				if (i >= 0 && values.at(i).MayHaveData()) {
+					if (values.at(i).IsData())
+						wxLogInfo(_T("Stopping scan because value at index: %d has data"), i);
+					else
+						wxLogInfo(_T("Stopping scan because value at index: %d might have data"), i);
 					break;
+				}
 
-				if (j < max_index && values.at(j).MayHaveData())
+				if (j < max_index && values.at(j).MayHaveData()) {
+					if (values.at(i).IsData())
+						wxLogInfo(_T("Stopping scan because value at index: %d has data"), j);
+					else
+						wxLogInfo(_T("Stopping scan because value at index: %d might have data"), j);
 					break;
+				}
 			}
 
 			if (i < 0 && j >= max_index)
@@ -384,7 +401,7 @@ void DrawsController::HandleSearchResponse(DatabaseQuery *query) {
 			if (!m_got_left_search_response)
 				return;
 			if (m_left_search_result.IsValid()) {
-				wxLogInfo(_T("Left search result:%s"), m_right_search_result.Format().c_str());
+				wxLogInfo(_T("Left search result:%s"), m_left_search_result.Format().c_str());
 				found_time = m_left_search_result;
 			} else {
 				NoDataFound();
@@ -1027,30 +1044,28 @@ const PeriodType& DrawsController::GetPeriod() {
 }
 
 void DrawsController::EnterDisplayState(const DTime& time) {
-	if (time != m_current_time) {
-		Draw *d = GetSelectedDraw();
+	Draw *d = GetSelectedDraw();
 
-		int dist = 0;
-		int pi = m_current_index;
+	int dist = 0;
+	int pi = m_current_index;
 
-		m_current_time = time;
-		m_current_index = d->GetIndex(m_current_time);
+	m_current_time = time;
+	m_current_index = d->GetIndex(m_current_time);
 
-		if (m_double_cursor) {
-			int ssi = d->GetStatsStartIndex();
-			wxLogInfo(_T("Statistics start index: %d"), ssi);
-			dist = m_current_index - ssi;
-			for (std::vector<Draw*>::iterator i = m_draws.begin();
-					i != m_draws.end();
-					i++)
-				(*i)->DragStats(dist);
-		}
-		wxLogInfo(_T("Entering display state current index set to: %d"),  m_current_index);
-
-		m_time_reference.Update(time);
-
-		m_observers.NotifyCurrentProbeChanged(d, pi, m_current_index, dist);
+	if (m_double_cursor) {
+		int ssi = d->GetStatsStartIndex();
+		wxLogInfo(_T("Statistics start index: %d"), ssi);
+		dist = m_current_index - ssi;
+		for (std::vector<Draw*>::iterator i = m_draws.begin();
+				i != m_draws.end();
+				i++)
+			(*i)->DragStats(dist);
 	}
+	wxLogInfo(_T("Entering display state current index set to: %d"),  m_current_index);
+
+	m_time_reference.Update(time);
+
+	m_observers.NotifyCurrentProbeChanged(d, pi, m_current_index, dist);
 
 	if (wxIsBusy())
 		wxEndBusyCursor();

@@ -252,7 +252,7 @@ void SummaryWindow::OnIdle(wxIdleEvent &event) {
 				}
 		
 				if (!std::isnan(data_percentage) && data_percentage < 0.99)
-					text += wxString::Format(_T(" (%.0f%%)"), data_percentage * 100);
+					text += wxString::Format(_T(" (%.2f%%)"), data_percentage * 100);
 		
 				l->SetValueText(text);
 		
