@@ -64,7 +64,7 @@ StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, C
 	wxPanel* panel = new wxPanel(this);
 
 	wxString period_choices[PERIOD_T_SEASON] =
-	{ _("YEAR"), _("MONTH"), _("WEEK"), _("DAY"), _("10 MINUTES") };
+	{ _("YEAR"), _("MONTH"), _("WEEK"), _("DAY"), _("30 MINUTES") };
 
 	wxStaticText *label; 
 	wxStaticLine *line;

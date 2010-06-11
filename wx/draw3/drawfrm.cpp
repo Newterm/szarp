@@ -127,9 +127,9 @@ NumberOfUnitsDialog::NumberOfUnitsDialog(wxWindow *parent, PeriodType pt, size_t
 			max = 72;
 			text = _("Select number of displayed hours");
 			break;
-		case PERIOD_T_10MINUTE:
+		case PERIOD_T_30MINUTE:
 			min = 1;
-			max = 36;
+			max = 50;
 			text = _("Select number of displayed minutes");
 			break;
 		case PERIOD_T_SEASON:
@@ -666,8 +666,8 @@ void DrawFrame::OnAverageChange(wxCommandEvent& event) {
 		pt = PERIOD_T_WEEK;
 	else if (id == XRCID("DAY_RADIO"))
 		pt = PERIOD_T_DAY;
-	else if (id == XRCID("HOUR_RADIO"))
-		pt = PERIOD_T_10MINUTE;
+	else if (id == XRCID("30MINUTE_RADIO"))
+		pt = PERIOD_T_30MINUTE;
 	else
 		pt = PERIOD_T_SEASON;
 
@@ -1204,6 +1204,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("MONTH_RADIO"), DrawFrame::OnAverageChange)
     EVT_MENU(XRCID("WEEK_RADIO"), DrawFrame::OnAverageChange)
     EVT_MENU(XRCID("DAY_RADIO"), DrawFrame::OnAverageChange)
+    EVT_MENU(XRCID("30MINUTE_RADIO"), DrawFrame::OnAverageChange)
     EVT_MENU(XRCID("SEASON_RADIO"), DrawFrame::OnAverageChange)
     EVT_MENU(XRCID("Copy"), DrawFrame::OnCopy)
     EVT_MENU(XRCID("Paste"), DrawFrame::OnPaste)

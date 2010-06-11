@@ -64,7 +64,7 @@ std::vector<SeasonLimit> get_season_limits_indexes(DrawsSets *ds, Draw* draw) {
 		if (is != is_summer) {
 			size_t index;
 			switch (draw->GetPeriod()) {
-				case PERIOD_T_10MINUTE:
+				case PERIOD_T_30MINUTE:
 				case PERIOD_T_DAY:
 				case PERIOD_T_MONTH:
 				case PERIOD_T_WEEK:
@@ -126,7 +126,7 @@ wxString get_short_day_name(wxDateTime::WeekDay day) {
     return _T("?");
 }
 
-wxString get_date_string(PeriodType period, const wxDateTime &date) {
+wxString get_date_string(PeriodType period, const wxDateTime& prev_date, const wxDateTime &date) {
 	wxString ret;
 	switch (period) {
 		case PERIOD_T_YEAR :
@@ -141,8 +141,11 @@ wxString get_date_string(PeriodType period, const wxDateTime &date) {
 		case PERIOD_T_DAY :
 			ret = wxString::Format(_T("%02d"), date.GetHour());
 			break;
-		case PERIOD_T_10MINUTE :
-			ret = wxString::Format(_T("%02d"), date.GetMinute());
+		case PERIOD_T_30MINUTE :
+			if (prev_date.IsValid() && prev_date.GetHour() != date.GetHour())
+				ret = wxString::Format(_T("%02d:%02d"), date.GetHour(), date.GetMinute());
+			else
+				ret = wxString::Format(_T("%02d"), date.GetMinute());
 			break;
 		case PERIOD_T_SEASON :
 			ret = wxString::Format(_T("%02d"), date.GetWeekOfYear());

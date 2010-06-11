@@ -99,6 +99,9 @@ class Szbase {
 	/**value passed to @see szb_buffer_t upon buffer constrution*/
 	int m_buffer_cache_size;
 
+	/**maximum serach time*/
+	time_t m_maximum_search_time;
+
 	/**Load configuration for this prefix into internal hashes*/
 	bool AddBase(const std::wstring& prefix);
 
@@ -165,10 +168,20 @@ public:
 	@param poison_cache if true, cache for this prefix will be removed*/
 	void RemoveConfig(const std::wstring& prefix, bool poison_cache);
 	const long& GetQueryId() { return m_current_query; }
+
+	/**sets prober address for given prefix*/
 	void SetProberAddress(std::wstring prefix, std::wstring address, std::wstring port);
+	/**retrives prober address for given prefix*/
 	bool GetProberAddress(std::wstring prefix, std::wstring& address, std::wstring& port);
+
 	/**advances @see m_current_query id*/
 	void NextQuery();
+
+	/**@return maximum amount of time that  serach operation is allowed to last*/
+	int GetMaximumSearchTime() const;
+
+	/**sets maximum amount of time that serach operation is allowed to last*/
+	void SetMaximumSerachTime(int search_time);
 };
 
 #ifndef NO_LUA

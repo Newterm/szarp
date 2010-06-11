@@ -132,7 +132,7 @@ wxString SetInfoDataObject::GetUrl() const {
 		case PERIOD_T_DAY:
 			url << _T("D");
 			break;
-		case PERIOD_T_10MINUTE:
+		case PERIOD_T_30MINUTE:
 			url << _T("10M");
 			break;
 		default:

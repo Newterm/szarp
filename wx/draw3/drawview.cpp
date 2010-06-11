@@ -487,6 +487,7 @@ void BackgroundDrawer::DrawTimeAxis(wxDC *dc, int arrow_width, int arrow_height,
 	int i = PeriodMarkShift[m_draw->GetPeriod()];
 	int size = m_draw->GetValuesTable().size();
     
+	wxDateTime prev_date;
 	while (i < size) {
 		int x = GetX(i);
 		dc->DrawLine(x, h - m_bottommargin + tick_height / 2, x, h - m_bottommargin - tick_height / 2);
@@ -494,7 +495,7 @@ void BackgroundDrawer::DrawTimeAxis(wxDC *dc, int arrow_width, int arrow_height,
 		wxDateTime date = m_draw->GetTimeOfIndex(i);
 	
 		/* Print date */
-		wxString datestring = get_date_string(m_draw->GetPeriod(), date);
+		wxString datestring = get_date_string(m_draw->GetPeriod(), prev_date, date);
 
 		int textw, texth;
 
@@ -503,6 +504,8 @@ void BackgroundDrawer::DrawTimeAxis(wxDC *dc, int arrow_width, int arrow_height,
 		dc->DrawText(datestring, x - textw / 2, h - m_bottommargin + 1);
 
 		i += TimeIndex::PeriodMult[m_draw->GetPeriod()];
+
+		prev_date = date;
 	}
     
 	dc->SetPen(wxNullPen);
@@ -729,7 +732,7 @@ void GraphView::DrawDot(int x, int y, wxDC *dc, SDC *sdc, wxRegion* region) {
 	dc->DrawPoint(x, y);
 	m_sdc.DrawPoint(x, y);
 
-	if (m_draw->GetPeriod() != PERIOD_T_DAY && m_draw->GetPeriod() != PERIOD_T_10MINUTE) {
+	if (m_draw->GetPeriod() != PERIOD_T_DAY && m_draw->GetPeriod() != PERIOD_T_30MINUTE) {
 		//dc->DrawCircle(x, y, wide ? 4 : 2);
 		//m_sdc.DrawCircle(x, y, wide ? 4 : 2);
 
@@ -1011,7 +1014,7 @@ void GraphDrawer::DrawAllPoints(wxDC *dc, SDC *sdc, int point_width) {
 			if (sdc)
 				sdc->DrawPoint(x1, y1);
 
-			if (m_draw->GetPeriod() != PERIOD_T_DAY && m_draw->GetPeriod() != PERIOD_T_10MINUTE) {
+			if (m_draw->GetPeriod() != PERIOD_T_DAY && m_draw->GetPeriod() != PERIOD_T_30MINUTE) {
 				dc->DrawCircle(x1, y1, m_circle_radius);
 				if (sdc)
 					sdc->DrawCircle(x1, y1, m_circle_radius);
@@ -1030,7 +1033,7 @@ void GraphDrawer::DrawAllPoints(wxDC *dc, SDC *sdc, int point_width) {
 			if (sdc)
 				sdc->DrawPoint(x, y);
 
-			if (m_draw->GetPeriod() != PERIOD_T_DAY && m_draw->GetPeriod() != PERIOD_T_10MINUTE) {
+			if (m_draw->GetPeriod() != PERIOD_T_DAY && m_draw->GetPeriod() != PERIOD_T_30MINUTE) {
 				dc->DrawCircle(x, y, m_circle_radius);
 				if (sdc)
 					sdc->DrawCircle(x, y, m_circle_radius);

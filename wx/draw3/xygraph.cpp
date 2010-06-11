@@ -1743,11 +1743,11 @@ wxString XYFormatTime(const wxDateTime& time, PeriodType period) {
 	assert(period != PERIOD_T_SEASON);
 
 	int minute = time.GetMinute();
-	if (period != PERIOD_T_10MINUTE)
+	if (period != PERIOD_T_30MINUTE)
 		minute = minute / 10 * 10;
 
 	switch (period) {
-		case PERIOD_T_10MINUTE:
+		case PERIOD_T_30MINUTE:
 			ret = wxString::Format(_T(":%02d"), time.GetSecond() / 10 * 10);
 		case PERIOD_T_WEEK:
 		case PERIOD_T_DAY :

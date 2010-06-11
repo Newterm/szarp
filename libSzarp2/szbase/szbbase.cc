@@ -33,11 +33,22 @@ using std::string;
 using std::pair;
 using std::tr1::unordered_map;
 
-const int default_szbuffer_cache_size = 12 * 12 * 5;	/** 12 graphs * 12 months * 5 block for param*/
+const int default_szbuffer_cache_size = 12 * 12 * 5 * 2;	/** 12 graphs * 12 months * 5 block for param and make it double*/
+
+const int default_maximum_search_time = 15;			/** maximum deafult serach time */
 
 Szbase::Szbase(const std::wstring& szarp_dir) : m_szarp_dir(szarp_dir), m_config_modification_callback(NULL)
 {
 	m_current_query = 0;
+	m_maximum_search_time = default_maximum_search_time;
+}
+
+int Szbase::GetMaximumSearchTime() const {
+	return m_maximum_search_time;
+}
+
+void Szbase::SetMaximumSerachTime(int serach_time) {
+	m_maximum_search_time = serach_time;
 }
 
 void Szbase::Destroy() {

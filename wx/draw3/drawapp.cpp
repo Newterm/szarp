@@ -190,7 +190,6 @@ bool DrawApp::OnInit() {
 		std::cout << SZARP_VERSION << std::endl;
 		return false;
 	}
-
 	m_server = NULL;
 	m_db_queue = NULL;
 	m_executor = NULL;
@@ -206,6 +205,7 @@ bool DrawApp::OnInit() {
 		free(base);
 	}
 
+	ReadProbersAddressesFromSzarpCfg();
 #endif
 
 #ifdef MINGW32
@@ -522,8 +522,32 @@ void DrawApp::DisplayHelp() {
 	m_help->DisplayContents();
 }
 
+#ifdef __WXGTK__
+void DrawApp::ReadProbersAddressesFromSzarpCfg() {
+	char *_servers = libpar_getpar("", "probes_servers", 0);
+	if (_servers == NULL)
+		return;
+
+	wxString servers = SC::A2S(_servers);
+	wxStringTokenizer tkz(servers, _T(" "), wxTOKEN_STRTOK);
+	while (tkz.HasMoreTokens()) {
+		wxString prefix = tkz.GetNextToken();
+		std::string section = SC::S2A(prefix + _T("_probes_server"));
+		char *_address = libpar_getpar(section.c_str(), "address", 0);
+		char *_port = libpar_getpar(section.c_str(), "port", 0);
+		if (_address != NULL && _port  != NULL) {
+			wxString address = SC::A2S(_address);
+			wxString port = SC::A2S(_port);
+			m_probers_from_szarp_cfg[prefix] = std::make_pair(address, port); 
+		}
+		free(_address);
+		free(_port);
+	}
+}
+#endif
+
 std::map<wxString, std::pair<wxString, wxString> > DrawApp::GetProbersAddresses() {
-	std::map<wxString, std::pair<wxString, wxString> > ret;
+	std::map<wxString, std::pair<wxString, wxString> > ret = m_probers_from_szarp_cfg;
 	wxConfigBase* config = wxConfigBase::Get(true);
 	wxString tmp;
 	if (config->Read(_T("PROBE_SERVER_ADDRESSES"), &tmp)) {
@@ -554,7 +578,8 @@ void DrawApp::SetProbersAddresses(const std::map<wxString, std::pair<wxString, w
 	for (std::map<wxString, std::pair<wxString, wxString> >::const_iterator i = addresses.begin();
 			i != addresses.end();
 			i++)
-		string += i->first + _T("/") + i->second.first + _T("/") + i->second.second + _T(";");
+		if (m_probers_from_szarp_cfg[i->first] != i->second)
+			string += i->first + _T("/") + i->second.first + _T("/") + i->second.second + _T(";");
 	config->Write(_T("PROBE_SERVER_ADDRESSES"), string.Mid(0, string.Length() - 1));
 	config->Flush();
 

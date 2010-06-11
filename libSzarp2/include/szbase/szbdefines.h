@@ -46,7 +46,7 @@ static inline SZB_FILE_TYPE szbfile_endian(SZB_FILE_TYPE n)
 	std::isnan(v)		/**< checks if value is 'no data' */
 
 #define SZBASE_MAX_DATA_IN_BLOCK 4608 // TODO sprawdzic
-#define SZBASE_PROBES_IN_BLOCK 600 // TODO sprawdzic
+#define SZBASE_PROBES_IN_BLOCK 1800
 
 #define SZBASE_CMASK 0664	/**< Mode for creat() used when creating new files. */
 #define SZBASE_CMASK_DIR 0775	/**< Mode for mkdir() used when creating directories. */
@@ -76,6 +76,7 @@ static inline SZB_FILE_TYPE szbfile_endian(SZB_FILE_TYPE n)
 #define SZBE_OUTMEM	-5	/**< out of memory */
 #define SZBE_LUA_ERROR  -6	/**< error in lua param execution/compilation */
 #define SZBE_CONN_ERROR -7	/**< error in connection with probe server */
+#define SZBE_SEARCH_TIMEOUT -8	/**< error in connection with probe server */
 
 typedef void (*szb_custom_function) (struct tm* time, SZBASE_TYPE* stack, short* sp);
 

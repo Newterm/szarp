@@ -210,7 +210,7 @@ void ProberConnection::HandleGetFirstLine(const boost::system::error_code &error
 				boost::asio::transfer_at_least(length - m_input_buffer.size()),
 				boost::bind(&ProberConnection::HandleReadValues, this, _1, _2));
 	} else {
-		m_error = std::wstring(L"Error performing operation on prober") + SC::A2S(line.substr(sizeof("ERROR")));
+		m_error = std::wstring(L"Error performing operation on prober ") + SC::A2S(line.substr(sizeof("ERROR")));
 		StopTimer();
 	}
 }

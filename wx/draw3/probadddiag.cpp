@@ -19,6 +19,9 @@
 
 #include <wx/xrc/xmlres.h>
 
+#include <vector>
+#include <algorithm>
+
 #include "classes.h"
 #include "ids.h"
 #include "cfgmgr.h"
@@ -37,23 +40,30 @@ ProbersAddressDialog::ProbersAddressDialog(wxWindow *parent, DatabaseManager *db
 
 	m_address_list = XRCCTRL(*this, "ProbersAddressListCtrl", wxListCtrl);
 	m_address_list->InsertColumn(0, _("Server"), wxLIST_FORMAT_LEFT, 300);
-	m_address_list->InsertColumn(1, _("Address"), wxLIST_FORMAT_LEFT, 100);
+	m_address_list->InsertColumn(1, _("Prefix"), wxLIST_FORMAT_LEFT, 100);
+	m_address_list->InsertColumn(2, _("Address"), wxLIST_FORMAT_LEFT, 100);
 
 	ConfigNameHash& titles = m_cfg_mgr->GetConfigTitles();
-	int row = 0;
 	for (ConfigNameHash::iterator i = titles.begin();
 			i != titles.end();
 			i++) {
-
 		if (i->first == DefinedDrawsSets::DEF_PREFIX)
 			continue;
-
-		m_address_list->InsertItem(row, i->second);
-		wxString address;
-		if (m_addresses[i->first].first.Length())
-			address = m_addresses[i->first].first + _T(":") + m_addresses[i->first].second;
-		m_address_list->SetItem(row, 1, address);
 		m_prefixes.push_back(i->first);
+	}
+
+	std::sort(m_prefixes.begin(), m_prefixes.end());
+
+	int row = 0;
+	for (std::vector<wxString>::iterator i = m_prefixes.begin();
+			i != m_prefixes.end();
+			i++)  {
+		m_address_list->InsertItem(row, titles[*i]);
+		m_address_list->SetItem(row, 1, *i);
+		wxString address;
+		if (m_addresses[*i].first.Length())
+			address = m_addresses[*i].first + _T(":") + m_addresses[*i].second;
+		m_address_list->SetItem(row, 2, address);
 		row += 1;
 	}
 
@@ -86,7 +96,7 @@ void ProbersAddressDialog::OnListItemActivated(wxListEvent &event) {
 		m_modified_addresses[prefix] = std::make_pair(server, port);
 		m_addresses[prefix] = std::make_pair(server, port);
 
-		m_address_list->SetItem(event.GetIndex(), 1, server + _T(":") + port);
+		m_address_list->SetItem(event.GetIndex(), 2, server + _T(":") + port);
 	}
 }
 

@@ -70,7 +70,7 @@ DrawsController::DrawsController(ConfigManager *config_manager, DatabaseManager 
 	m_units_count[PERIOD_T_MONTH] = TimeIndex::default_units_count[PERIOD_T_MONTH];
 	m_units_count[PERIOD_T_WEEK] = TimeIndex::default_units_count[PERIOD_T_WEEK];
 	m_units_count[PERIOD_T_DAY] = TimeIndex::default_units_count[PERIOD_T_DAY];
-	m_units_count[PERIOD_T_10MINUTE] = TimeIndex::default_units_count[PERIOD_T_10MINUTE];
+	m_units_count[PERIOD_T_30MINUTE] = TimeIndex::default_units_count[PERIOD_T_30MINUTE];
 	m_units_count[PERIOD_T_SEASON] = TimeIndex::default_units_count[PERIOD_T_SEASON];
 
 	m_period_type = PERIOD_T_OTHER;
@@ -149,7 +149,7 @@ void DrawsController::CheckAwaitedDataPresence() {
 				}
 
 				if (j < max_index && values.at(j).MayHaveData()) {
-					if (values.at(i).IsData())
+					if (values.at(j).IsData())
 						wxLogInfo(_T("Stopping scan because value at index: %d has data"), j);
 					else
 						wxLogInfo(_T("Stopping scan because value at index: %d might have data"), j);
@@ -235,7 +235,7 @@ void DrawsController::EnterSearchState(STATE state, DTime search_from, const DTi
 					wxInvalidDateTime, -1); 
 			break;
 		case SEARCH_RIGHT:
-			SendSearchQuery(index.GetTimeOfIndex(GetNumberOfValues(m_period_type)).GetTime(), wxInvalidDateTime, 1); 
+			SendSearchQuery(search_from.GetTime(), wxInvalidDateTime, 1); 
 			break;
 		case SEARCH_BOTH:
 			SendSearchQuery(search_from.GetTime(), 
@@ -927,7 +927,7 @@ DrawsController::TimeReference::TimeReference(const wxDateTime &datetime) {
 void DrawsController::TimeReference::Update(const DTime& time) {
 	const wxDateTime& wxt = time.GetTime();
 	switch (time.GetPeriod()) {
-		case PERIOD_T_10MINUTE:
+		case PERIOD_T_30MINUTE:
 			m_second = wxt.GetSecond();
 		case PERIOD_T_DAY:
 			m_minute = wxt.GetMinute();
@@ -953,7 +953,7 @@ DTime DrawsController::TimeReference::Adjust(PeriodType pt, const DTime& time) {
 	switch (pt) {
 		default:
 			break;
-		case PERIOD_T_10MINUTE:
+		case PERIOD_T_30MINUTE:
 			t.SetSecond(m_second);
 		case PERIOD_T_DAY:
 			t.SetMinute(m_minute);
@@ -1250,6 +1250,9 @@ void DrawsController::ClearCache() {
 }
 
 void DrawsController::RefreshData(bool auto_refresh) {
+	if (auto_refresh && m_state != DISPLAY)
+		return;
+
 	if (auto_refresh == false)
 		SendQueryForEachPrefix(DatabaseQuery::RESET_BUFFER);
 

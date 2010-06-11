@@ -1192,6 +1192,7 @@ void GLGraphs::DrawXAxisVals(Draw *draw) {
 	int size = draw->GetValuesTable().size();
     
 	const float tick_height = 5;
+	wxDateTime prev_date;
 	while (i < size) {
 		float x = GetX(i, size);
 		glBegin(GL_QUADS);
@@ -1204,7 +1205,7 @@ void GLGraphs::DrawXAxisVals(Draw *draw) {
 		wxDateTime date = draw->GetTimeOfIndex(i);
 	
 		/* Print date */
-		wxString datestring = get_date_string(draw->GetPeriod(), date);
+		wxString datestring = get_date_string(draw->GetPeriod(), prev_date, date);
 
 		glPushMatrix();
 		{
@@ -1218,6 +1219,7 @@ void GLGraphs::DrawXAxisVals(Draw *draw) {
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		i += TimeIndex::PeriodMult[draw->GetPeriod()];
+		prev_date = date;
 	}
     
 }

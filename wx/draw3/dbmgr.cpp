@@ -20,6 +20,7 @@
 #include <limits>
 
 #include "cconv.h"
+#include "szbase/szbdefines.h"
 
 #include "classes.h"
 
@@ -131,17 +132,42 @@ void DatabaseManager::CheckAndNotifyAboutError(DatabaseResponse &response) {
 				i++) {
 			if (i->ok) 
 				continue;
-			ErrorFrame::NotifyError(wxString::Format(_("Database error(%s): %s"),
-				q->draw_info->GetName().c_str(),
-				i->error));
-			free(i->error);
+			switch (i->error) {
+				case SZBE_CONN_ERROR:
+					ErrorFrame::NotifyError(wxString::Format(_("Error in connection with probe server: %s"),
+						i->error_str));
+					break;
+				default:
+					ErrorFrame::NotifyError(wxString::Format(_("Database error(%s): %s"),
+						q->draw_info->GetName().c_str(),
+						i->error_str));
+					break;
+			}
+			free(i->error_str);
 		}
 	else if (q->type == DatabaseQuery::SEARCH_DATA) {
 		if (!q->search_data.ok) {
-			ErrorFrame::NotifyError(wxString::Format(_("Database error(%s): %s"),
-				q->draw_info->GetName().c_str(),
-				q->search_data.error));
-			free(q->search_data.error);
+			switch (q->search_data.error) {
+				case SZBE_SEARCH_TIMEOUT:
+					ErrorFrame::NotifyError(wxString::Format(_("Search timed out while seraching for graph: %s"),
+						q->draw_info->GetName().c_str(),
+						q->search_data.error_str));
+					break;
+				case SZBE_CONN_ERROR:
+					if (std::wstring(L"Connection with probes server not configured") == q->search_data.error_str)
+						ErrorFrame::NotifyError(wxString::Format(_("Error in connection with probe server: %s"),
+							_("Connection with probes server not configured")));
+					else
+						ErrorFrame::NotifyError(wxString::Format(_("Error in connection with probe server: %s"),
+							q->search_data.error_str));
+					break;
+				default:
+					ErrorFrame::NotifyError(wxString::Format(_("Database error(%s): %s"),
+						q->draw_info->GetName().c_str(),
+						q->search_data.error_str));
+					break;
+			}
+			free(q->search_data.error_str);
 		}
 	}
 }

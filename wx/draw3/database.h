@@ -77,8 +77,10 @@ struct DatabaseQuery {
 			int count;
 			/** False if error ocurred during data retrieval*/
 			bool ok;
+			/** error no*/	
+			int error;
 			/** Error string*/
-			wchar_t *error;
+			wchar_t *error_str;
 		};
 		std::vector<V> *vv;
 		bool refresh;
@@ -96,8 +98,10 @@ struct DatabaseQuery {
 		PeriodType period_type;
 		/** False if error ocurred during data search*/
 		bool ok;
+		/** error no*/	
+		int error;
 		/** Error string*/
-		wchar_t *error;
+		wchar_t *error_str;
 	};
 
 	/**Name of configuration prefix to be reloaded*/

@@ -25,6 +25,11 @@ void ErrorFrame::Create() {
 
 void ErrorFrame::NotifyError(const wxString &s) {
 	Create();
+	if (s == _error_frame->m_last_message)
+		if ((wxDateTime::Now() - _error_frame->m_last_update_time).GetSeconds() < 60)
+			return;
+	_error_frame->m_last_update_time = wxDateTime::Now();
+	_error_frame->m_last_message = s;
 	_error_frame->AddErrorText(s);
 }
 

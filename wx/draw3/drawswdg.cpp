@@ -135,7 +135,7 @@ void DrawsWidget::OnDisplayTimerEvent(wxTimerEvent & event)
 	m_display_timer->Start((5 - (now.GetSecond() % 5)) * 1000, wxTIMER_ONE_SHOT);
 
 	m_display_timer_events += 1;
-	if (m_draws_controller->GetPeriod() == PERIOD_T_10MINUTE) {
+	if (m_draws_controller->GetPeriod() == PERIOD_T_30MINUTE) {
 		if (m_display_timer_events > 1) {
 			m_display_timer_events = 0;
 			m_draws_controller->RefreshData(true);

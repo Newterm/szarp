@@ -1,4 +1,15 @@
 
+2010-06-12	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* libsSzarp2: bug in getting 10-seconds probes killed,
+	introduced timeouts for search operations
+	* wx/draw3: fixed stupid bug in setting current time
+	* wx/draw3: addresses of prebes servers may specified in szarp.cfg
+	* wx/draw3: configurations' titles in dialog for setting addresses
+	of probes servers are sorted by prefix
+	* wx/draw3: only uniqe errors are displayed in error frame,
+	also added translation of error messages that originate from szbase 
+	* wx/draw3: 10 minutes -> 30 minutes period
+	* wx/draw3: better labelling of time axis for 30 minutes period
 2010-06-09	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* wx/draw3: some bugs killed
 	* resources/documentation/new/draw3/darw3.sgml: added short description of

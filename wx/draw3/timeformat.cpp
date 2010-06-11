@@ -64,10 +64,10 @@ wxString FormatTime(const wxDateTime &time, PeriodType period) {
 #endif
 	} else {
 		int minute = time.GetMinute();
-		if (period != PERIOD_T_10MINUTE)
+		if (period != PERIOD_T_30MINUTE)
 			minute = minute / 10 * 10;
 		switch (period) {
-			case PERIOD_T_10MINUTE:
+			case PERIOD_T_30MINUTE:
 				ret = wxString::Format(_T(":%02d"), time.GetSecond() / 10 * 10);
 			case PERIOD_T_DAY:
 			case PERIOD_T_OTHER :

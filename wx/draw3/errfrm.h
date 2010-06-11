@@ -40,6 +40,9 @@ class ErrorFrame : public wxFrame {
 	wxTextCtrl *m_text;
 	wxCheckBox *m_rise_check;
 
+	wxDateTime m_last_update_time;
+	wxString m_last_message;
+
 	void AddErrorText(const wxString &s);
 
 	static void Create();

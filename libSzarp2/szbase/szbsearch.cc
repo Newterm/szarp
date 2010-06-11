@@ -20,6 +20,7 @@
 #include "config.h"
 
 #include "liblog.h"
+#include "szbbase.h"
 #include "szbase/szbbuf.h"
 #include "proberconnection.h"
 
@@ -78,6 +79,24 @@ szb_combined_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, t
 }
 
 
+class search_timeout_check {
+	szb_buffer_t *buffer;
+	time_t end_time;
+public:
+	search_timeout_check(szb_buffer_t *_buffer) : buffer(_buffer), end_time(time_t(-1)) {}
+	bool timeout() { 
+		if (end_time == time_t(-1)) {
+			end_time = time(NULL) + buffer->szbase->GetMaximumSearchTime();
+			return false;
+		}
+		if (end_time > time(NULL))
+			return false;
+		buffer->last_err = SZBE_SEARCH_TIMEOUT;
+		buffer->last_err_string = L"Searching for value timed out";
+		return true;
+	}
+};
+
 time_t search_in_probe_range(szb_buffer_t* buffer, TParam* param, time_t start, time_t end, int direction) {
 	if (param->IsConst())
 		return start;
@@ -86,6 +105,7 @@ time_t search_in_probe_range(szb_buffer_t* buffer, TParam* param, time_t start, 
 	if (direction == 0)
 		return IS_SZB_NODATA(szb_get_probe(buffer, param, start, PT_SEC10)) ? -1 : start;
 
+	search_timeout_check timeout_check(buffer);
 	szb_block_t *block = NULL;
 	for (time_t t = start; direction > 0 ? t <= end : t >= end; t += SZBASE_PROBE_SPAN * direction) {
 		if (block == NULL || block->GetStartTime() > t || block->GetEndTime() < t) {
@@ -96,6 +116,8 @@ time_t search_in_probe_range(szb_buffer_t* buffer, TParam* param, time_t start, 
 						b_start,
 						SEC10_BLOCK);
 			if (buffer->last_err != SZBE_OK)
+				return -1;
+			if (timeout_check.timeout())
 				return -1;
 		}
 
@@ -182,12 +204,15 @@ time_t search_in_data_left(szb_buffer_t* buffer, TParam* param, time_t start, ti
 	int year = -1, month = -1;
 	szb_datablock_t* block = NULL;
 	const SZBASE_TYPE* data = NULL;
+	search_timeout_check timeout_check(buffer);
 	for (time_t t = start; t >= end; t -= SZBASE_DATA_SPAN) {
 		int new_year, new_month;
 		szb_time2my(t, &new_year, &new_month);
 		if (block == NULL || new_month != month || new_year != year) {
 			block = szb_get_datablock(buffer, param, new_year, new_month);
 			if (buffer->last_err != SZBE_OK)
+				return -1;
+			if (timeout_check.timeout())
 				return -1;
 			if (block != NULL)
 				data = block->GetData();
@@ -219,6 +244,7 @@ time_t search_in_data_left(szb_buffer_t* buffer, TParam* param, time_t start, ti
 time_t search_in_data_right(szb_buffer_t* buffer, TParam* param, time_t start, time_t end) {
 	int year = -1, month = -1;
 	szb_datablock_t* block = NULL;
+	search_timeout_check timeout_check(buffer);
 	const SZBASE_TYPE* data = NULL;
 	for (time_t t = start; t <= end; t += SZBASE_DATA_SPAN) {
 		int new_year, new_month;
@@ -226,6 +252,8 @@ time_t search_in_data_right(szb_buffer_t* buffer, TParam* param, time_t start, t
 		if (block == NULL || new_month != month || new_year != year) {
 			block = szb_get_datablock(buffer, param, new_year, new_month);
 			if (buffer->last_err != SZBE_OK)
+				return -1;
+			if (timeout_check.timeout())
 				return -1;
 			if (NULL != block)
 				data = block->GetData();

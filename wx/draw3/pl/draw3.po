@@ -8,10 +8,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-06-07 23:31+0200\n"
+"POT-Creation-Date: 2010-06-12 00:19+0200\n"
 "PO-Revision-Date: 2008-09-15 15:35+0100\n"
 "Last-Translator: Pawe³ Pa³ucha <pawel@praterm.com.pl>\n"
 "Language-Team: \n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -34,7 +35,7 @@ msgstr ""
 msgid "Error"
 msgstr "B³±d"
 
-#: cfgmgr.cpp:1056 paramslist.cpp:218 paredit.cpp:435 XRC_gettext_file.h:146
+#: cfgmgr.cpp:1056 paramslist.cpp:218 paredit.cpp:435 XRC_gettext_file.h:166
 msgid "User:Param:"
 msgstr "Parametr:U¿ytkownika:"
 
@@ -120,10 +121,24 @@ msgstr "Nie uda³o siê zaimporowaæ zestawu z pliku :%s"
 msgid "Operation failed."
 msgstr "Operacja siê nie powiod³a."
 
-#: dbmgr.cpp:134 dbmgr.cpp:141
+#: dbmgr.cpp:137 dbmgr.cpp:158 dbmgr.cpp:161
+#, c-format
+msgid "Error in connection with probe server: %s"
+msgstr "B³ad po³±czenia z serwerem próbek: %s"
+
+#: dbmgr.cpp:141 dbmgr.cpp:165
 #, c-format
 msgid "Database error(%s): %s"
 msgstr "B³±d pobrania parametru z bazy danych(%s) : %s"
+
+#: dbmgr.cpp:152
+#, c-format
+msgid "Search timed out while seraching for graph: %s"
+msgstr "Przekroczono czas oczekiwania na wynik wyszukiwania dla wykresu: %s"
+
+#: dbmgr.cpp:159
+msgid "Connection with probes server not configured"
+msgstr "Po³±czenie z serwerem próbek nie skonfigurowane"
 
 #: defcfg.cpp:66
 msgid "User defined"
@@ -189,51 +204,51 @@ msgstr "Operacja importu wykresów zakoñczy³a siê poprawnie."
 msgid "Ok!"
 msgstr "Ok!"
 
-#: disptime.cpp:74 drawview.cpp:237 gcdcgraphs.cpp:712 glgraphs.cpp:1391
+#: disptime.cpp:74 drawview.cpp:237 gcdcgraphs.cpp:714 glgraphs.cpp:1393
 msgid "january"
 msgstr "styczeñ"
 
-#: disptime.cpp:75 drawview.cpp:240 gcdcgraphs.cpp:715 glgraphs.cpp:1394
+#: disptime.cpp:75 drawview.cpp:240 gcdcgraphs.cpp:717 glgraphs.cpp:1396
 msgid "february"
 msgstr "luty"
 
-#: disptime.cpp:76 drawview.cpp:243 gcdcgraphs.cpp:718 glgraphs.cpp:1397
+#: disptime.cpp:76 drawview.cpp:243 gcdcgraphs.cpp:720 glgraphs.cpp:1399
 msgid "march"
 msgstr "marzec"
 
-#: disptime.cpp:77 drawview.cpp:246 gcdcgraphs.cpp:721 glgraphs.cpp:1400
+#: disptime.cpp:77 drawview.cpp:246 gcdcgraphs.cpp:723 glgraphs.cpp:1402
 msgid "april"
 msgstr "kwiecieñ"
 
-#: disptime.cpp:78 drawview.cpp:249 gcdcgraphs.cpp:724 glgraphs.cpp:1403
+#: disptime.cpp:78 drawview.cpp:249 gcdcgraphs.cpp:726 glgraphs.cpp:1405
 msgid "may"
 msgstr "maj"
 
-#: disptime.cpp:79 drawview.cpp:252 gcdcgraphs.cpp:727 glgraphs.cpp:1406
+#: disptime.cpp:79 drawview.cpp:252 gcdcgraphs.cpp:729 glgraphs.cpp:1408
 msgid "june"
 msgstr "czerwiec"
 
-#: disptime.cpp:80 drawview.cpp:255 gcdcgraphs.cpp:730 glgraphs.cpp:1409
+#: disptime.cpp:80 drawview.cpp:255 gcdcgraphs.cpp:732 glgraphs.cpp:1411
 msgid "july"
 msgstr "lipiec"
 
-#: disptime.cpp:81 drawview.cpp:258 gcdcgraphs.cpp:733 glgraphs.cpp:1412
+#: disptime.cpp:81 drawview.cpp:258 gcdcgraphs.cpp:735 glgraphs.cpp:1414
 msgid "august"
 msgstr "sierpieñ"
 
-#: disptime.cpp:82 drawview.cpp:261 gcdcgraphs.cpp:736 glgraphs.cpp:1415
+#: disptime.cpp:82 drawview.cpp:261 gcdcgraphs.cpp:738 glgraphs.cpp:1417
 msgid "septermber"
 msgstr "wrzesieñ"
 
-#: disptime.cpp:83 drawview.cpp:264 gcdcgraphs.cpp:739 glgraphs.cpp:1418
+#: disptime.cpp:83 drawview.cpp:264 gcdcgraphs.cpp:741 glgraphs.cpp:1420
 msgid "october"
 msgstr "pa¼dziernik"
 
-#: disptime.cpp:84 drawview.cpp:267 gcdcgraphs.cpp:742 glgraphs.cpp:1421
+#: disptime.cpp:84 drawview.cpp:267 gcdcgraphs.cpp:744 glgraphs.cpp:1423
 msgid "november"
 msgstr "listopad"
 
-#: disptime.cpp:85 drawview.cpp:270 gcdcgraphs.cpp:745 glgraphs.cpp:1424
+#: disptime.cpp:85 drawview.cpp:270 gcdcgraphs.cpp:747 glgraphs.cpp:1426
 msgid "december"
 msgstr "grudzieñ"
 
@@ -551,7 +566,7 @@ msgstr "Warto¶æ maksymalna musi byæ liczb±."
 msgid "Max must greater then min."
 msgstr "Warto¶æ minimalna musi byæ mniejsza ni¿ maksymalna."
 
-#: drawpick.cpp:293 incsearch.cpp:709 XRC_gettext_file.h:113
+#: drawpick.cpp:293 incsearch.cpp:709 XRC_gettext_file.h:140
 msgid "Edit"
 msgstr "Edytuj"
 
@@ -559,11 +574,11 @@ msgstr "Edytuj"
 msgid "Parameters"
 msgstr "Parametry"
 
-#: drawpick.cpp:305 XRC_gettext_file.h:195
+#: drawpick.cpp:305 XRC_gettext_file.h:13
 msgid "Short name"
 msgstr "Nazwa skrócona"
 
-#: drawpick.cpp:306 XRC_gettext_file.h:194
+#: drawpick.cpp:306 XRC_gettext_file.h:12
 msgid "Full name"
 msgstr "Nazwa pe³na"
 
@@ -579,7 +594,7 @@ msgstr "Warto¶æ maksymalna"
 msgid "Remove"
 msgstr "Usuñ"
 
-#: drawpick.cpp:394 XRC_gettext_file.h:192
+#: drawpick.cpp:394 XRC_gettext_file.h:10
 msgid "Edit graph"
 msgstr "Edytuj wykres"
 
@@ -772,7 +787,7 @@ msgstr "Warto¶ci sumaryczne"
 msgid "Split cursor"
 msgstr "Rozdwojony kursor"
 
-#: drawtb.cpp:65 drawtb.cpp:139 XRC_gettext_file.h:21 XRC_gettext_file.h:81
+#: drawtb.cpp:65 drawtb.cpp:139 XRC_gettext_file.h:20 XRC_gettext_file.h:91
 msgid "Filter"
 msgstr "Filtr"
 
@@ -780,12 +795,12 @@ msgstr "Filtr"
 msgid "Refresh"
 msgstr "Od¶wie¿"
 
-#: drawtb.cpp:86 XRC_gettext_file.h:89
+#: drawtb.cpp:86 XRC_gettext_file.h:99
 msgid "Language"
 msgstr "Jêzyk"
 
-#: drawtb.cpp:87 remarks.cpp:999 XRC_gettext_file.h:5 XRC_gettext_file.h:6
-#: XRC_gettext_file.h:28 XRC_gettext_file.h:73 XRC_gettext_file.h:91
+#: drawtb.cpp:87 remarks.cpp:999 XRC_gettext_file.h:1 XRC_gettext_file.h:2
+#: XRC_gettext_file.h:83 XRC_gettext_file.h:101 XRC_gettext_file.h:107
 msgid "Remarks"
 msgstr "Komentarze"
 
@@ -797,15 +812,15 @@ msgstr "Wyjd¼"
 msgid "New version available"
 msgstr "Nowa wersja zainstalowana"
 
-#: drawview.cpp:229 gcdcgraphs.cpp:704 glgraphs.cpp:1383
+#: drawview.cpp:229 gcdcgraphs.cpp:706 glgraphs.cpp:1385
 msgid "summer season"
 msgstr "sezon letni"
 
-#: drawview.cpp:231 gcdcgraphs.cpp:706 glgraphs.cpp:1385
+#: drawview.cpp:231 gcdcgraphs.cpp:708 glgraphs.cpp:1387
 msgid "winter season"
 msgstr "sezon zimowy"
 
-#: errfrm.cpp:40
+#: errfrm.cpp:45
 msgid "draw3-ext-errorwindow"
 msgstr ""
 
@@ -823,7 +838,7 @@ msgstr ""
 "Nie zdefiniowano ¿adnych zestawów u¿ytkownika. Czy chcesz stworzyæ nowy "
 "zestaw?"
 
-#: gcdcgraphs.cpp:411 wxgraphs.cpp:217
+#: gcdcgraphs.cpp:413 wxgraphs.cpp:217
 msgid "No data"
 msgstr "Brak danych"
 
@@ -961,19 +976,23 @@ msgstr "Dla wykresów w tym oknie nie jest liczony rozk³ad procentowy."
 msgid "All values equal zero."
 msgstr "Suma warto¶ci wynosi 0."
 
-#: probadddiag.cpp:39
+#: probadddiag.cpp:42
 msgid "Server"
 msgstr "Serwer:"
 
-#: probadddiag.cpp:40
+#: probadddiag.cpp:43
+msgid "Prefix"
+msgstr "Prefiks"
+
+#: probadddiag.cpp:44
 msgid "Address"
 msgstr "Adres"
 
-#: probadddiag.cpp:70
+#: probadddiag.cpp:80
 msgid "Set address for prober server:"
 msgstr "Ustaw adres serwera próbek:"
 
-#: probadddiag.cpp:71
+#: probadddiag.cpp:81
 msgid "Prober server address"
 msgstr "Adres serwera próbek"
 
@@ -1053,7 +1072,7 @@ msgstr "B³±d."
 msgid "Date"
 msgstr "Data"
 
-#: remarks.cpp:1925 XRC_gettext_file.h:104
+#: remarks.cpp:1925 XRC_gettext_file.h:116
 msgid "Title"
 msgstr "Tytu³"
 
@@ -1110,9 +1129,9 @@ msgstr "TYDZIEÑ"
 msgid "DAY"
 msgstr "DZIEÑ"
 
-#: statdiag.cpp:67 timewdg.cpp:58 xydiag.cpp:60
-msgid "10 MINUTES"
-msgstr "10 MINUT"
+#: statdiag.cpp:67 timewdg.cpp:58 xydiag.cpp:60 ids.h:188
+msgid "30 MINUTES"
+msgstr "30 MINUT"
 
 #: statdiag.cpp:76 xydiag.cpp:77 xydiag.cpp:89 xydiag.cpp:96 xydiag.cpp:104
 msgid "Choose draw"
@@ -1122,7 +1141,7 @@ msgstr "Wybierz wykres"
 msgid "Choose graph parameters"
 msgstr "Wybierz parametry wykresu"
 
-#: statdiag.cpp:83 XRC_gettext_file.h:193
+#: statdiag.cpp:83 XRC_gettext_file.h:11
 msgid "Draw"
 msgstr "Wykres"
 
@@ -1166,7 +1185,7 @@ msgstr "Maksimum"
 msgid "Hour sum"
 msgstr "Warto¶æ sumaryczna"
 
-#: statdiag.cpp:151 xydiag.cpp:150 XRC_gettext_file.h:186
+#: statdiag.cpp:151 xydiag.cpp:150 XRC_gettext_file.h:34
 msgid "OK"
 msgstr "OK"
 
@@ -1273,7 +1292,7 @@ msgstr "Rodzaj ¶rednich: "
 msgid "Average values"
 msgstr "U¶redniaj warto¶ci"
 
-#: xydiag.cpp:152 XRC_gettext_file.h:187
+#: xydiag.cpp:152 XRC_gettext_file.h:35
 msgid "Cancel"
 msgstr "Anuluj"
 
@@ -1305,7 +1324,7 @@ msgstr "Zmieñ parametry wykresu"
 msgid "Print\tCtrl-P"
 msgstr "Drukuj\tCtrl-P"
 
-#: xygraph.cpp:73 xyzgraph.cpp:1327 XRC_gettext_file.h:38
+#: xygraph.cpp:73 xyzgraph.cpp:1327 XRC_gettext_file.h:48
 msgid "Page Settings\tCtrl+Shift+S"
 msgstr "Ustawienia strony\tCtrl+Shift+S"
 
@@ -1413,719 +1432,719 @@ msgstr ""
 msgid " - Window "
 msgstr " - Zestaw "
 
-#: XRC_gettext_file.h:1
-msgid "CM"
-msgstr "CM"
-
-#: XRC_gettext_file.h:2
-msgid "Add Parameter"
-msgstr "Dodaj parametr"
-
 #: XRC_gettext_file.h:3
-msgid "Edit Parameter"
-msgstr "Edytuj parametr"
-
-#: XRC_gettext_file.h:4
-msgid "Remove Parameter"
-msgstr "Usuñ parametr"
-
-#: XRC_gettext_file.h:7
 msgid "Create Remark"
 msgstr "Stwórz komentarz"
 
-#: XRC_gettext_file.h:8
+#: XRC_gettext_file.h:4
 msgid "Fetch Remarks"
 msgstr "Pobierz komentarze"
 
-#: XRC_gettext_file.h:9
+#: XRC_gettext_file.h:5
 msgid "Refetch group list"
 msgstr "Pobierz listê grup"
 
-#: XRC_gettext_file.h:10
+#: XRC_gettext_file.h:6
 msgid "Options"
 msgstr "O&pcje"
 
-#: XRC_gettext_file.h:11
+#: XRC_gettext_file.h:7
 msgid "Close window"
 msgstr "Zamknij okno"
 
-#: XRC_gettext_file.h:12 XRC_gettext_file.h:135
+#: XRC_gettext_file.h:8 XRC_gettext_file.h:125
 msgid "Author:"
 msgstr "Autor:"
 
-#: XRC_gettext_file.h:13
+#: XRC_gettext_file.h:9
 msgid "Subject:"
 msgstr "Temat:"
 
 #: XRC_gettext_file.h:14
-msgid "Notifications"
-msgstr "Komunikaty"
+msgid "Min"
+msgstr "Min"
 
 #: XRC_gettext_file.h:15
-msgid "Notifications:"
-msgstr "Komunikaty:"
+msgid "Max"
+msgstr "Max"
 
 #: XRC_gettext_file.h:16
-msgid "Automatically rises window upon reception of new notification"
-msgstr "Automatyczne pokazuj okno po pojawieniu siê nowego komunikatu"
+msgid "Unit"
+msgstr "Jednostka"
 
 #: XRC_gettext_file.h:17
-msgid "Automatically rise window"
-msgstr "Pokazuj okno automatycznie"
+msgid "Change color"
+msgstr "Wybierz kolor"
 
 #: XRC_gettext_file.h:18
-msgid "Clear"
-msgstr "Wyczy¶æ"
+msgid "Summary value."
+msgstr "Warto¶æ sumowana godzinowo."
 
 #: XRC_gettext_file.h:19
-msgid "Hide"
-msgstr "Schowaj"
-
-#: XRC_gettext_file.h:20
 msgid "FC"
 msgstr "FC"
 
-#: XRC_gettext_file.h:22
+#: XRC_gettext_file.h:21
 msgid "0"
 msgstr "0"
 
-#: XRC_gettext_file.h:23
+#: XRC_gettext_file.h:22
 msgid "1"
 msgstr "1"
 
-#: XRC_gettext_file.h:24
+#: XRC_gettext_file.h:23
 msgid "2"
 msgstr "2"
 
-#: XRC_gettext_file.h:25
+#: XRC_gettext_file.h:24
 msgid "3"
 msgstr "3"
 
-#: XRC_gettext_file.h:26
+#: XRC_gettext_file.h:25
 msgid "4"
 msgstr "4"
 
-#: XRC_gettext_file.h:27
+#: XRC_gettext_file.h:26
 msgid "5"
 msgstr "5"
 
+#: XRC_gettext_file.h:27
+msgid "CM"
+msgstr "CM"
+
+#: XRC_gettext_file.h:28
+msgid "Add Parameter"
+msgstr "Dodaj parametr"
+
 #: XRC_gettext_file.h:29
-msgid "Remarks:"
-msgstr "Komentarze:"
+msgid "Edit Parameter"
+msgstr "Edytuj parametr"
 
 #: XRC_gettext_file.h:30
+msgid "Remove Parameter"
+msgstr "Usuñ parametr"
+
+#: XRC_gettext_file.h:31
+msgid "Login"
+msgstr "Login"
+
+#: XRC_gettext_file.h:32
+msgid "Username"
+msgstr "Nazwa u¿ytkownika"
+
+#: XRC_gettext_file.h:33
+msgid "Password"
+msgstr "Has³o"
+
+#: XRC_gettext_file.h:36
+msgid "New remark"
+msgstr "Nowy komentarz"
+
+#: XRC_gettext_file.h:37
+msgid "Remark reffering to current window"
+msgstr "Komentarz odnosz±cy siê do bierz±cego okna"
+
+#: XRC_gettext_file.h:38
+msgid "Remark reffering to whole installation"
+msgstr "Komentarz odnosz±cy siê do ca³ego obiektu"
+
+#: XRC_gettext_file.h:39
+msgid "Choose remark type:"
+msgstr "Wybierz rodzja komentarza:"
+
+#: XRC_gettext_file.h:40
 msgid "&File"
 msgstr "&Plik"
 
-#: XRC_gettext_file.h:31
+#: XRC_gettext_file.h:41
 msgid "Open new window\tCtrl+N"
 msgstr "Otwórz nowe okno\tCtrl+N"
 
-#: XRC_gettext_file.h:32
+#: XRC_gettext_file.h:42
 msgid "Open new tab\tCtrl+T"
 msgstr "Otwórz now± zak³adkê\tCtrl+T"
 
-#: XRC_gettext_file.h:33
+#: XRC_gettext_file.h:43
 msgid "CloseTab\tCtrl+W"
 msgstr "Zamknij zak³adkê\tCtrl+W"
 
-#: XRC_gettext_file.h:34
+#: XRC_gettext_file.h:44
 msgid "XY Graph\tCtrl+Shift+X"
 msgstr "Wykres XY\tCtrl+X"
 
-#: XRC_gettext_file.h:35
+#: XRC_gettext_file.h:45
 msgid "XYZ Graph\tCtrl+Shift+Z"
 msgstr "Wykres XYZ\tCtrl+Z"
 
-#: XRC_gettext_file.h:36
+#: XRC_gettext_file.h:46
 msgid "Statistics window\tCtrl+Shift+S"
 msgstr "Warto¶ci ¶rednie\tCtrl+Alt+S"
 
-#: XRC_gettext_file.h:37
+#: XRC_gettext_file.h:47
 msgid "Print\tCtrl+P"
 msgstr "Drukuj\tCtrl+P"
 
-#: XRC_gettext_file.h:39
+#: XRC_gettext_file.h:49
 msgid "Print preview\tCtrl+Shift+P"
 msgstr "Podgl±d wydruku\tCtrl+Shift+P"
 
-#: XRC_gettext_file.h:40
+#: XRC_gettext_file.h:50
 msgid "Quit\tCtrl+Q"
 msgstr "Zamknij\tCtrl+Q"
 
-#: XRC_gettext_file.h:41
+#: XRC_gettext_file.h:51
 msgid "Sets"
 msgstr "Z&estawy"
 
-#: XRC_gettext_file.h:42
+#: XRC_gettext_file.h:52
 msgid "New set\tCtrl+A"
 msgstr "Nowy zestaw\tCtrl+A"
 
-#: XRC_gettext_file.h:43
+#: XRC_gettext_file.h:53
 msgid "Delete set\tCtrl+D"
 msgstr "Usuñ zestaw\tCtrl+D"
 
-#: XRC_gettext_file.h:44
+#: XRC_gettext_file.h:54
 msgid "Edit Set\tCtrl+E"
 msgstr "Edytuj zestaw\tCtrl+E"
 
-#: XRC_gettext_file.h:45
+#: XRC_gettext_file.h:55
 msgid "Edit as new defined\tCtrl+Shift+Alt+E"
 msgstr "Edytuj jako nowy definiowalny\tCtrl+Shift+Alt+E"
 
-#: XRC_gettext_file.h:46
+#: XRC_gettext_file.h:56
 msgid "Import Set\tCtrl+Shift+I"
 msgstr "Importuj zestaw\tCtrl+Shift+I"
 
-#: XRC_gettext_file.h:47
+#: XRC_gettext_file.h:57
 msgid "Export Set\tCtrl+Shift+E"
 msgstr "Eksportuj zestaw\tCtrl+Shift+E"
 
-#: XRC_gettext_file.h:48
+#: XRC_gettext_file.h:58
 msgid "Save\tCtrl+S"
 msgstr "Zapisz\tCtrl+S"
 
-#: XRC_gettext_file.h:49
+#: XRC_gettext_file.h:59
 msgid "View"
 msgstr "&Widok"
 
-#: XRC_gettext_file.h:50
+#: XRC_gettext_file.h:60
 msgid "Average type"
 msgstr "Rodzaj ¶rednich"
 
-#: XRC_gettext_file.h:51
+#: XRC_gettext_file.h:61
 msgid "Year\tAlt+Y"
 msgstr "Rok\tAlt+R"
 
-#: XRC_gettext_file.h:52
+#: XRC_gettext_file.h:62
 msgid "Month\tAlt+M"
 msgstr "Miesi±c\tAlt+M"
 
-#: XRC_gettext_file.h:53
+#: XRC_gettext_file.h:63
 msgid "Week\tAlt+W"
 msgstr "Tydzieñ\tAlt+T"
 
-#: XRC_gettext_file.h:54
+#: XRC_gettext_file.h:64
 msgid "Day\tAlt+D"
 msgstr "Dzieñ\tAlt+D"
 
-#: XRC_gettext_file.h:55
-msgid "10 Minutes\tAlt+1"
-msgstr "10 Minut\tAlt+1"
+#: XRC_gettext_file.h:65
+msgid "30 Minutes\tAlt+3"
+msgstr "30 Minut\tAlt+3"
 
-#: XRC_gettext_file.h:56
+#: XRC_gettext_file.h:66
 msgid "Season\tAlt+S"
 msgstr "Sezon\tAlt+S"
 
-#: XRC_gettext_file.h:57
+#: XRC_gettext_file.h:67
 msgid "Summary window\tCtrl+G"
 msgstr "Warto¶ci sumaryczne\tCtrl+G"
 
-#: XRC_gettext_file.h:58
+#: XRC_gettext_file.h:68
 msgid "Pie window\tCtrl+Shift+T"
 msgstr "¦rednie procentowe\tCtrl+Alt+S"
 
-#: XRC_gettext_file.h:59
+#: XRC_gettext_file.h:69
 msgid "Ratio window\tCtrl+Shift+R"
 msgstr "Stosunek warto¶ci\tCtrl+Shift+S"
 
-#: XRC_gettext_file.h:60
+#: XRC_gettext_file.h:70
 msgid "Full screen\tF11"
 msgstr "Pe³ny ekran\tF11"
 
-#: XRC_gettext_file.h:61
+#: XRC_gettext_file.h:71
 msgid "Split cursor\tBACK"
 msgstr "Rozdwojony kursor\tBACK"
 
-#: XRC_gettext_file.h:62
+#: XRC_gettext_file.h:72
 msgid "Latest data following mode"
 msgstr "Tryb pod±¿ania za najnowsz± dan±"
 
-#: XRC_gettext_file.h:63
+#: XRC_gettext_file.h:73
 msgid "Tools"
 msgstr "&Narzêdzia"
 
-#: XRC_gettext_file.h:64
+#: XRC_gettext_file.h:74
 msgid "User Params\tCtrl+U"
 msgstr "Parametry u¿ytkownika\tCtrl+U"
 
-#: XRC_gettext_file.h:65
+#: XRC_gettext_file.h:75
 msgid "Copy location\tCtrl+C"
 msgstr "Kopiuj lokalizacjê\tCtrl+C"
 
-#: XRC_gettext_file.h:66
+#: XRC_gettext_file.h:76
 msgid "Paste location\tCtrl+V"
 msgstr "Wklej lokalizacjê\tCtrl+V"
 
-#: XRC_gettext_file.h:67
+#: XRC_gettext_file.h:77
 msgid "Jump to date\tCtrl+J"
 msgstr "Skok pod datê\tCtrl+J"
 
-#: XRC_gettext_file.h:68
+#: XRC_gettext_file.h:78
 msgid "Find\tCtrl+F"
 msgstr "Wyszukaj\tCtrl+F"
 
-#: XRC_gettext_file.h:69
+#: XRC_gettext_file.h:79
 msgid "Number of points on the graph"
 msgstr "Ilo¶æ punktów na wykresie"
 
-#: XRC_gettext_file.h:70
+#: XRC_gettext_file.h:80
 msgid "Refresh\tCtrl+R"
 msgstr "Od¶wie¿\tCtrl+R"
 
-#: XRC_gettext_file.h:71
+#: XRC_gettext_file.h:81
 msgid "Clear cache\tCtrl+Shift+R"
 msgstr "Usuñ zawarto¶æ cache\tCtrl+Shift+R"
 
-#: XRC_gettext_file.h:72
+#: XRC_gettext_file.h:82
 msgid "Set Params\tCtrl+O"
 msgstr "Ustaw parametry\tCtrl+O"
 
-#: XRC_gettext_file.h:74
+#: XRC_gettext_file.h:84
 msgid "Add remark\tCtrl+Shift+Alt+A"
 msgstr "Dodaj komentarz\tCtrl+Shift+Alt+A"
 
-#: XRC_gettext_file.h:75
+#: XRC_gettext_file.h:85
 msgid "Fetch remarks\tCtrl+Shift+Alt+F"
 msgstr "Pobierz komentarze\tCtrl+Shift+Alt+F"
 
-#: XRC_gettext_file.h:76
+#: XRC_gettext_file.h:86
 msgid "Show Remarks\tCtrl+Shift+Alt+S"
 msgstr "Poka¿ komentarze\tCtrl+Shift+Alt+S"
 
-#: XRC_gettext_file.h:77
+#: XRC_gettext_file.h:87
 msgid "Import Draw2 definable windows\tCtrl+Shift+I"
 msgstr ""
 "Importuj okna definiowalne z wcze¶niejszej wersji programu\tCtrl+Shift+I"
 
-#: XRC_gettext_file.h:78
+#: XRC_gettext_file.h:88
 msgid "Reload Configuration\tCtrl+Shift+Alt+R"
 msgstr "Prze³aduj konfiguracjê\tCtrl+Shift+Alt+R"
 
-#: XRC_gettext_file.h:79
+#: XRC_gettext_file.h:89
 msgid "Show error window\tCtrl+Shift+E"
 msgstr "Poka¿ okno komunikatów\tCtrl+Shift+E"
 
-#: XRC_gettext_file.h:80
+#: XRC_gettext_file.h:90
 msgid "Settings"
 msgstr "Ustawienia"
 
-#: XRC_gettext_file.h:82
+#: XRC_gettext_file.h:92
 msgid "0\tA"
 msgstr "0\tA"
 
-#: XRC_gettext_file.h:83
+#: XRC_gettext_file.h:93
 msgid "1\tB"
 msgstr "1\tB"
 
-#: XRC_gettext_file.h:84
+#: XRC_gettext_file.h:94
 msgid "2\tC"
 msgstr "2\tC"
 
-#: XRC_gettext_file.h:85
+#: XRC_gettext_file.h:95
 msgid "3\tD"
 msgstr "3\tD"
 
-#: XRC_gettext_file.h:86
+#: XRC_gettext_file.h:96
 msgid "4\tE"
 msgstr "4\tE"
 
-#: XRC_gettext_file.h:87
+#: XRC_gettext_file.h:97
 msgid "5\tF"
 msgstr "5\tF"
 
-#: XRC_gettext_file.h:88
+#: XRC_gettext_file.h:98
 msgid "Number of printed axes\tCtrl+X"
 msgstr "Ilo¶æ drukowanych osi\tCtrl+X"
 
-#: XRC_gettext_file.h:90
+#: XRC_gettext_file.h:100
 msgid "Graphs view"
 msgstr "Widok okna z wykresami"
 
-#: XRC_gettext_file.h:92
+#: XRC_gettext_file.h:102
 msgid "Addresses of probes' servers"
 msgstr "Adres serwera próbek"
 
-#: XRC_gettext_file.h:93
+#: XRC_gettext_file.h:103
 msgid "&Help"
 msgstr "Pomo&c"
 
-#: XRC_gettext_file.h:94
+#: XRC_gettext_file.h:104
 msgid "Help\tF1"
 msgstr "Pomo&c\tF1"
 
-#: XRC_gettext_file.h:95
+#: XRC_gettext_file.h:105
 msgid "Context help\tShift+F1"
 msgstr "Pomoc kontekstowa\tShift+F1"
 
-#: XRC_gettext_file.h:96
+#: XRC_gettext_file.h:106
 msgid "About\tF2"
 msgstr "O programie\tF2"
 
-#: XRC_gettext_file.h:97
+#: XRC_gettext_file.h:108
+msgid "Remarks:"
+msgstr "Komentarze:"
+
+#: XRC_gettext_file.h:109
 msgid "Remarks Settings"
 msgstr "Ustawienia komentarzy"
 
-#: XRC_gettext_file.h:98
+#: XRC_gettext_file.h:110
 msgid "Username:"
 msgstr "Nazwa u¿ytkownika:"
 
-#: XRC_gettext_file.h:99
+#: XRC_gettext_file.h:111
 msgid "Password:"
 msgstr "Has³o:"
 
-#: XRC_gettext_file.h:100
+#: XRC_gettext_file.h:112
 msgid "Set password"
 msgstr "Ustaw has³o"
 
-#: XRC_gettext_file.h:101
+#: XRC_gettext_file.h:113
 msgid "Server:"
 msgstr "Serwer:"
 
-#: XRC_gettext_file.h:102
+#: XRC_gettext_file.h:114
 msgid "Automatically fetch"
 msgstr "Pobieraj komentarze automatycznie"
 
-#: XRC_gettext_file.h:103
+#: XRC_gettext_file.h:115
 msgid "Editing definable set "
 msgstr "Edycja zestawu definiowalnego"
 
-#: XRC_gettext_file.h:105
+#: XRC_gettext_file.h:117
 msgid "Move up"
 msgstr "Przenie¶ w górê"
 
-#: XRC_gettext_file.h:106
+#: XRC_gettext_file.h:118
 msgid "Move down"
 msgstr "Przenie¶ w dó³"
 
-#: XRC_gettext_file.h:107
+#: XRC_gettext_file.h:119
 msgid "Add draw"
 msgstr "Wstaw wykres"
 
-#: XRC_gettext_file.h:108
+#: XRC_gettext_file.h:120
 msgid "Add parameter"
 msgstr "Dodaj parametr"
 
-#: XRC_gettext_file.h:109
-msgid "User's params list"
-msgstr "Lista parametrów u¿ytkownika"
-
-#: XRC_gettext_file.h:110
-msgid "Parameters:"
-msgstr "Parametry:"
-
-#: XRC_gettext_file.h:111
-msgid "Search:"
-msgstr "Szukaj:"
-
-#: XRC_gettext_file.h:112
-msgid "New"
-msgstr "Nowy"
-
-#: XRC_gettext_file.h:114
-msgid "Delete"
-msgstr "Usuñ"
-
-#: XRC_gettext_file.h:115
-msgid "Edit pack"
-msgstr "Edytuj paczkê"
-
-#: XRC_gettext_file.h:116 XRC_gettext_file.h:136
-msgid "Time:"
-msgstr "Czas:"
-
-#: XRC_gettext_file.h:117
-msgid "Day:"
-msgstr "Dzieñ:"
-
-#: XRC_gettext_file.h:118
-msgid "Monday"
-msgstr "Poniedzia³ek"
-
-#: XRC_gettext_file.h:119
-msgid "Tuesday"
-msgstr "Wtorek"
-
-#: XRC_gettext_file.h:120
-msgid "Wednesday"
-msgstr "¦roda"
-
 #: XRC_gettext_file.h:121
-msgid "Thursday"
-msgstr "Czwartek"
-
-#: XRC_gettext_file.h:122
-msgid "Friday"
-msgstr "Pi±tek"
-
-#: XRC_gettext_file.h:123
-msgid "Saturday"
-msgstr "Sobota"
-
-#: XRC_gettext_file.h:124
-msgid "Sunday"
-msgstr "Niedziela"
-
-#: XRC_gettext_file.h:125
-msgid "Hour:"
-msgstr "Godz.:"
-
-#: XRC_gettext_file.h:126
-msgid "Minute:"
-msgstr "Minuta:"
-
-#: XRC_gettext_file.h:127 XRC_gettext_file.h:128
-msgid "Value:"
-msgstr "Warto¶æ:"
-
-#: XRC_gettext_file.h:129
-msgid "Minimum value:"
-msgstr "Warto¶æ minimalna:"
-
-#: XRC_gettext_file.h:130
-msgid "Maximum value:"
-msgstr "Warto¶æ maksymalna:"
-
-#: XRC_gettext_file.h:131
 msgid "Remark"
 msgstr "Komentarz"
 
-#: XRC_gettext_file.h:132
+#: XRC_gettext_file.h:122
 msgid "Base:"
 msgstr "Konfiguracja:"
 
-#: XRC_gettext_file.h:133
+#: XRC_gettext_file.h:123
 msgid "label&2"
 msgstr ""
 
-#: XRC_gettext_file.h:134
+#: XRC_gettext_file.h:124
 msgid "Set:"
 msgstr "Zestaw:"
 
-#: XRC_gettext_file.h:137
+#: XRC_gettext_file.h:126 XRC_gettext_file.h:143
+msgid "Time:"
+msgstr "Czas:"
+
+#: XRC_gettext_file.h:127
 msgid "label&5"
 msgstr ""
 
-#: XRC_gettext_file.h:138
+#: XRC_gettext_file.h:128
 msgid "Remark referring to:"
 msgstr "Komentarz odnosi siê do:"
 
-#: XRC_gettext_file.h:139
+#: XRC_gettext_file.h:129
 msgid "Currently selected window"
 msgstr "aktualnie wybranego okna"
 
-#: XRC_gettext_file.h:140
+#: XRC_gettext_file.h:130
 msgid "Whole base"
 msgstr "ca³ego obiektu"
 
-#: XRC_gettext_file.h:141
+#: XRC_gettext_file.h:131
 msgid "Title:"
 msgstr "Tytu³:"
 
-#: XRC_gettext_file.h:142
+#: XRC_gettext_file.h:132
 msgid "Content:"
 msgstr "Tre¶æ:"
 
-#: XRC_gettext_file.h:143
+#: XRC_gettext_file.h:133
 msgid "Go to..."
 msgstr "Id¼ do..."
 
-#: XRC_gettext_file.h:144
-msgid "Edit parameter"
-msgstr "Edytuj parametr"
-
-#: XRC_gettext_file.h:145
-msgid "Parameter name:"
-msgstr "Nazwa parametru:"
-
-#: XRC_gettext_file.h:147
-msgid "Average value calculation method"
-msgstr "¦rednie liczone jako:"
-
-#: XRC_gettext_file.h:148
-msgid "mean of values of formula application to each probe"
-msgstr "¶rednia z zastosowania formu³y dla ka¿dej próbki"
-
-#: XRC_gettext_file.h:149
-msgid "result of formula's application to average values of components"
-msgstr "wynik zastosowania formu³y dla ¶rednich"
-
-#: XRC_gettext_file.h:150
-msgid "Parameter formula:"
-msgstr "Formu³a parametru:"
-
-#: XRC_gettext_file.h:151
-msgid "label&11"
-msgstr ""
-
-#: XRC_gettext_file.h:152
-msgid "Undo"
-msgstr "Cofnij"
-
-#: XRC_gettext_file.h:153
-msgid "<"
-msgstr "<"
-
-#: XRC_gettext_file.h:154
-msgid "Redo"
-msgstr "Ponów"
-
-#: XRC_gettext_file.h:155
-msgid ">"
-msgstr ">"
-
-#: XRC_gettext_file.h:156
-msgid "Plus"
-msgstr "Plus"
-
-#: XRC_gettext_file.h:157
-msgid "+"
-msgstr "+"
-
-#: XRC_gettext_file.h:158
-msgid "Minus"
-msgstr "Minus"
-
-#: XRC_gettext_file.h:159
-msgid "-"
-msgstr "-"
-
-#: XRC_gettext_file.h:160
-msgid "Times"
-msgstr "Razy"
-
-#: XRC_gettext_file.h:161
-msgid "*"
-msgstr "*"
-
-#: XRC_gettext_file.h:162
-msgid "Divide"
-msgstr "Podzieliæ"
-
-#: XRC_gettext_file.h:163
-msgid "/"
-msgstr "/"
-
-#: XRC_gettext_file.h:164
-msgid "Insert param from graph"
-msgstr "Wstaw nowy parametr z wykresu"
-
-#: XRC_gettext_file.h:165
-msgid "ID"
-msgstr "<W>"
-
-#: XRC_gettext_file.h:166
-msgid "Insert user defined param"
-msgstr "Wstaw parametr zdefiniowany przez u¿ytkownika"
-
-#: XRC_gettext_file.h:167
-msgid "IP"
-msgstr "<P>"
-
-#: XRC_gettext_file.h:168
-msgid "Displayed parameter precision:"
-msgstr "Ilo¶æ miejsc po przecinku:"
-
-#: XRC_gettext_file.h:169
-msgid "Unit:"
-msgstr "Jednostka:"
-
-#: XRC_gettext_file.h:170
-msgid "Insert degree"
-msgstr "Wstaw symbol stopnia"
-
-#: XRC_gettext_file.h:171
-msgid "D"
-msgstr "D"
-
-#: XRC_gettext_file.h:172
-msgid "Start date:"
-msgstr "Pocz±tek:"
-
-#: XRC_gettext_file.h:173
-msgid "Choose start date"
-msgstr "Wybierz datê pocz±tkow±"
-
-#: XRC_gettext_file.h:174
-msgid "Choose start hour"
-msgstr "Wybierz godzinê"
-
-#: XRC_gettext_file.h:175
-msgid "Choose start minute"
-msgstr "Wybierz minutê"
-
-#: XRC_gettext_file.h:176
-msgid "Enable inserting start date"
-msgstr "Wstawianie daty pocz±tkowej"
-
-#: XRC_gettext_file.h:177
-msgid "enabled"
-msgstr "w³±cz"
-
-#: XRC_gettext_file.h:178
-msgid "Base configuration:"
-msgstr "Konfiguracja odniesienia: "
-
-#: XRC_gettext_file.h:179
-msgid "Choose reference configuration"
-msgstr "Wybierz konfiguracjê odniesienia"
-
-#: XRC_gettext_file.h:180
-msgid "LABEL"
-msgstr "LABEL"
-
-#: XRC_gettext_file.h:181
+#: XRC_gettext_file.h:134
 msgid "Probe servers addresses"
 msgstr "Adres serwera próbek"
 
-#: XRC_gettext_file.h:182
+#: XRC_gettext_file.h:135
 msgid "Probe servers addresses:"
 msgstr "Adres serwera próbek:"
 
+#: XRC_gettext_file.h:136
+msgid "User's params list"
+msgstr "Lista parametrów u¿ytkownika"
+
+#: XRC_gettext_file.h:137
+msgid "Parameters:"
+msgstr "Parametry:"
+
+#: XRC_gettext_file.h:138
+msgid "Search:"
+msgstr "Szukaj:"
+
+#: XRC_gettext_file.h:139
+msgid "New"
+msgstr "Nowy"
+
+#: XRC_gettext_file.h:141
+msgid "Delete"
+msgstr "Usuñ"
+
+#: XRC_gettext_file.h:142
+msgid "Edit pack"
+msgstr "Edytuj paczkê"
+
+#: XRC_gettext_file.h:144
+msgid "Day:"
+msgstr "Dzieñ:"
+
+#: XRC_gettext_file.h:145
+msgid "Monday"
+msgstr "Poniedzia³ek"
+
+#: XRC_gettext_file.h:146
+msgid "Tuesday"
+msgstr "Wtorek"
+
+#: XRC_gettext_file.h:147
+msgid "Wednesday"
+msgstr "¦roda"
+
+#: XRC_gettext_file.h:148
+msgid "Thursday"
+msgstr "Czwartek"
+
+#: XRC_gettext_file.h:149
+msgid "Friday"
+msgstr "Pi±tek"
+
+#: XRC_gettext_file.h:150
+msgid "Saturday"
+msgstr "Sobota"
+
+#: XRC_gettext_file.h:151
+msgid "Sunday"
+msgstr "Niedziela"
+
+#: XRC_gettext_file.h:152
+msgid "Hour:"
+msgstr "Godz.:"
+
+#: XRC_gettext_file.h:153
+msgid "Minute:"
+msgstr "Minuta:"
+
+#: XRC_gettext_file.h:154 XRC_gettext_file.h:155
+msgid "Value:"
+msgstr "Warto¶æ:"
+
+#: XRC_gettext_file.h:156
+msgid "Minimum value:"
+msgstr "Warto¶æ minimalna:"
+
+#: XRC_gettext_file.h:157
+msgid "Maximum value:"
+msgstr "Warto¶æ maksymalna:"
+
+#: XRC_gettext_file.h:158
+msgid "Notifications"
+msgstr "Komunikaty"
+
+#: XRC_gettext_file.h:159
+msgid "Notifications:"
+msgstr "Komunikaty:"
+
+#: XRC_gettext_file.h:160
+msgid "Automatically rises window upon reception of new notification"
+msgstr "Automatyczne pokazuj okno po pojawieniu siê nowego komunikatu"
+
+#: XRC_gettext_file.h:161
+msgid "Automatically rise window"
+msgstr "Pokazuj okno automatycznie"
+
+#: XRC_gettext_file.h:162
+msgid "Clear"
+msgstr "Wyczy¶æ"
+
+#: XRC_gettext_file.h:163
+msgid "Hide"
+msgstr "Schowaj"
+
+#: XRC_gettext_file.h:164
+msgid "Edit parameter"
+msgstr "Edytuj parametr"
+
+#: XRC_gettext_file.h:165
+msgid "Parameter name:"
+msgstr "Nazwa parametru:"
+
+#: XRC_gettext_file.h:167
+msgid "Average value calculation method"
+msgstr "¦rednie liczone jako:"
+
+#: XRC_gettext_file.h:168
+msgid "mean of values of formula application to each probe"
+msgstr "¶rednia z zastosowania formu³y dla ka¿dej próbki"
+
+#: XRC_gettext_file.h:169
+msgid "result of formula's application to average values of components"
+msgstr "wynik zastosowania formu³y dla ¶rednich"
+
+#: XRC_gettext_file.h:170
+msgid "Parameter formula:"
+msgstr "Formu³a parametru:"
+
+#: XRC_gettext_file.h:171
+msgid "label&11"
+msgstr ""
+
+#: XRC_gettext_file.h:172
+msgid "Undo"
+msgstr "Cofnij"
+
+#: XRC_gettext_file.h:173
+msgid "<"
+msgstr "<"
+
+#: XRC_gettext_file.h:174
+msgid "Redo"
+msgstr "Ponów"
+
+#: XRC_gettext_file.h:175
+msgid ">"
+msgstr ">"
+
+#: XRC_gettext_file.h:176
+msgid "Plus"
+msgstr "Plus"
+
+#: XRC_gettext_file.h:177
+msgid "+"
+msgstr "+"
+
+#: XRC_gettext_file.h:178
+msgid "Minus"
+msgstr "Minus"
+
+#: XRC_gettext_file.h:179
+msgid "-"
+msgstr "-"
+
+#: XRC_gettext_file.h:180
+msgid "Times"
+msgstr "Razy"
+
+#: XRC_gettext_file.h:181
+msgid "*"
+msgstr "*"
+
+#: XRC_gettext_file.h:182
+msgid "Divide"
+msgstr "Podzieliæ"
+
 #: XRC_gettext_file.h:183
-msgid "Login"
-msgstr "Login"
+msgid "/"
+msgstr "/"
 
 #: XRC_gettext_file.h:184
-msgid "Username"
-msgstr "Nazwa u¿ytkownika"
+msgid "Insert param from graph"
+msgstr "Wstaw nowy parametr z wykresu"
 
 #: XRC_gettext_file.h:185
-msgid "Password"
-msgstr "Has³o"
+msgid "ID"
+msgstr "<W>"
+
+#: XRC_gettext_file.h:186
+msgid "Insert user defined param"
+msgstr "Wstaw parametr zdefiniowany przez u¿ytkownika"
+
+#: XRC_gettext_file.h:187
+msgid "IP"
+msgstr "<P>"
 
 #: XRC_gettext_file.h:188
-msgid "New remark"
-msgstr "Nowy komentarz"
+msgid "Displayed parameter precision:"
+msgstr "Ilo¶æ miejsc po przecinku:"
 
 #: XRC_gettext_file.h:189
-msgid "Remark reffering to current window"
-msgstr "Komentarz odnosz±cy siê do bierz±cego okna"
+msgid "Unit:"
+msgstr "Jednostka:"
 
 #: XRC_gettext_file.h:190
-msgid "Remark reffering to whole installation"
-msgstr "Komentarz odnosz±cy siê do ca³ego obiektu"
+msgid "Insert degree"
+msgstr "Wstaw symbol stopnia"
 
 #: XRC_gettext_file.h:191
-msgid "Choose remark type:"
-msgstr "Wybierz rodzja komentarza:"
+msgid "D"
+msgstr "D"
+
+#: XRC_gettext_file.h:192
+msgid "Start date:"
+msgstr "Pocz±tek:"
+
+#: XRC_gettext_file.h:193
+msgid "Choose start date"
+msgstr "Wybierz datê pocz±tkow±"
+
+#: XRC_gettext_file.h:194
+msgid "Choose start hour"
+msgstr "Wybierz godzinê"
+
+#: XRC_gettext_file.h:195
+msgid "Choose start minute"
+msgstr "Wybierz minutê"
 
 #: XRC_gettext_file.h:196
-msgid "Min"
-msgstr "Min"
+msgid "Enable inserting start date"
+msgstr "Wstawianie daty pocz±tkowej"
 
 #: XRC_gettext_file.h:197
-msgid "Max"
-msgstr "Max"
+msgid "enabled"
+msgstr "w³±cz"
 
 #: XRC_gettext_file.h:198
-msgid "Unit"
-msgstr "Jednostka"
+msgid "Base configuration:"
+msgstr "Konfiguracja odniesienia: "
 
 #: XRC_gettext_file.h:199
-msgid "Change color"
-msgstr "Wybierz kolor"
+msgid "Choose reference configuration"
+msgstr "Wybierz konfiguracjê odniesienia"
 
 #: XRC_gettext_file.h:200
-msgid "Summary value."
-msgstr "Warto¶æ sumowana godzinowo."
+msgid "LABEL"
+msgstr "LABEL"

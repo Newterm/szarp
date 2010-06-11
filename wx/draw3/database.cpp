@@ -47,7 +47,7 @@ SZARP_PROBE_TYPE PeriodToProbeType(PeriodType period) {
 		case PERIOD_T_DAY:
 			pt = PT_MIN10;
 			break;
-		case PERIOD_T_10MINUTE:
+		case PERIOD_T_30MINUTE:
 			pt = PT_SEC10;
 			break;
 		default:
@@ -218,7 +218,8 @@ void QueryExecutor::ExecuteDataQuery(szb_buffer_t* szb, TParam* p, DatabaseQuery
 
 		if (szb->last_err != SZBE_OK) {
 			i->ok = false;
-			i->error = wcsdup(szb->last_err_string.c_str());
+			i->error = szb->last_err;
+			i->error_str = wcsdup(szb->last_err_string.c_str());
 
 			szb->last_err = SZBE_OK;
 			szb->last_err_string = std::wstring();
@@ -264,7 +265,8 @@ void QueryExecutor::ExecuteSearchQuery(szb_buffer_t* szb, TParam *p, DatabaseQue
 
 	if (szb->last_err != SZBE_OK) {
 		sd.ok = false;
-		sd.error = wcsdup(szb->last_err_string.c_str());
+		sd.error = szb->last_err;
+		sd.error_str = wcsdup(szb->last_err_string.c_str());
 
 		szb->last_err = SZBE_OK;
 		szb->last_err_string = std::wstring();

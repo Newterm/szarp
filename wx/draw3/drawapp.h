@@ -112,6 +112,10 @@ public:
 
 	wxGLContext* GetGLContext();
 
+#ifdef __WXGTK__
+	void ReadProbersAddressesFromSzarpCfg();
+#endif
+
 	std::map<wxString, std::pair<wxString, wxString> > GetProbersAddresses();
 
 	void SetProbersAddresses(const std::map<wxString, std::pair<wxString, wxString> >&);
@@ -148,12 +152,15 @@ protected:
                         /**< Program's locale object. */
 	wxString m_base; /**< Base name. */
 
-	wxString m_url; /** Draw url, describing base, set, period and time to sart with*/
+	wxString m_url; /**< Draw url, describing base, set, period and time to sart with*/
+
+			/** Addresses of probers servers retrived from szarp.cfg*/
+	std::map<wxString, std::pair<wxString, wxString> > m_probers_from_szarp_cfg;
 
 			/**Server listening for requests from other running m_instances of application*/
 	DrawServer* m_server;
 
-			/**Object representing thread that executes queries*/
+			/**<Object representing thread that executes queries*/
 	QueryExecutor* m_executor;
 
 			/**Queries queue*/
