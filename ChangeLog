@@ -1,4 +1,12 @@
 
+2010-06-13	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* wx/draw3: there was a bug in color assignemnt in 3D graph - 
+	wrong color values were assigned to 2 points of each traingle
+	composing graph, what resulted in 'edgy' and kind of odd looking
+	graphs, now things look much smoother and what's most important it is
+	easier to make sense of data presented; new 'raw' drawing mode added
+	to 3D graphs, where no triangulation is prefermed, just individual
+	points are painted (space bar switches between graph modes)
 2010-06-12	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* libsSzarp2: bug in getting 10-seconds probes killed,
 	introduced timeouts for search operations

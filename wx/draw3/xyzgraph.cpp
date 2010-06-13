@@ -73,15 +73,14 @@ class XYZCanvas : public wxGLCanvas {
 	GLUquadric* m_quad;	
 	std::vector<float> m_vertices;
 	enum POINT_TYPE { IN_TRIANGLE, SINGLE};
-	std::vector<POINT_TYPE> m_point_types;
 	std::vector<float> m_triangles;
 	std::vector<unsigned char> m_triangles_colors;
 	std::vector<size_t> m_triangles_indexes;
-	std::vector<float> m_single_quads;
-	std::vector<unsigned char> m_single_quads_colors;
-	std::vector<size_t> m_single_quads_indexes;
-	std::vector<float> m_normals;
 	std::vector<unsigned char> m_colors;
+	std::vector<float> m_single_points_normals;
+	std::vector<float> m_single_points_points;
+	std::vector<unsigned char> m_single_points_colors;
+	std::vector<size_t> m_single_points_indexes;
 	wxTimer *m_timer;
 	FTFont *m_font;
 
@@ -96,6 +95,8 @@ class XYZCanvas : public wxGLCanvas {
 	int m_start_mouse_x;
 	int m_start_mouse_y;
 
+	size_t m_data_points;
+
 	static const size_t slices_no = 100; 
 	
 	void DrawFrameOfReference();
@@ -109,12 +110,18 @@ class XYZCanvas : public wxGLCanvas {
 	void MoveCameraZ(float disp);
 	void SetProjectionMatrix(const wxSize &size);
 	void DrawGraph(const wxSize& size);
+	void DrawTrianglesGraph();
+	void DrawSinglePointsGraph();
+	void PrepareTriangles();
+	void PrepareSinglePoints();
 	void Camera();
+	void CheckTriangleClick(int x, int y, wxSize& size);
+	void CheckSinglePointsClick(int x, int y, wxSize& size);
 	bool LookupTriangle(size_t i, size_t& j, size_t &k);
 	size_t XZToIndex(size_t x, size_t z);
 	void IndexToXZ(size_t index, int& x, int& z);
 
-	enum { WIRE, COLORED } m_graph_type;
+	enum { TRIANGLES, SINGLE_POINTS } m_graph_type;
 
 	enum {
 		UP_ROTATION,
@@ -272,8 +279,6 @@ XYZCanvas::XYZCanvas(XYZFrame *parent) : wxGLCanvas(parent, wxID_ANY,
 #endif
 		wxDefaultPosition, wxSize(300, 200), 0, _T("XYZCanvas")), m_parent(parent), m_graph(NULL), m_gl_context(NULL) {
 	m_vertices.resize(3 * slices_no * slices_no);
-	m_point_types.resize(3 * slices_no * slices_no, SINGLE);
-	m_normals.resize(3 * slices_no * slices_no, 0);
 	m_colors.resize(4 * slices_no * slices_no);
 	m_movement = NONE;
 	m_camera_angle_x = 0;
@@ -285,7 +290,7 @@ XYZCanvas::XYZCanvas(XYZFrame *parent) : wxGLCanvas(parent, wxID_ANY,
 	m_graph_angle_y = -30;
 	m_timer = new wxTimer(this, wxID_ANY);
 	m_timer->Start(100);
-	m_graph_type = COLORED;
+	m_graph_type = TRIANGLES;
 	m_cursor_x = -1;
 	m_cursor_z = -1;
 	m_font = NULL;
@@ -484,11 +489,11 @@ void XYZCanvas::DrawGraph(const wxSize& size) {
 	DrawFrameOfReference();
 	gluDeleteQuadric(m_quad);
 	switch (m_graph_type) {
-		case COLORED:
-			DrawColoredGraph();
+		case TRIANGLES:
+			DrawTrianglesGraph();
 			break;
-		case WIRE:
-			DrawLineGraph();
+		case SINGLE_POINTS:
+			DrawSinglePointsGraph();
 			break;
 	}
 
@@ -635,7 +640,6 @@ bool XYZCanvas::LookupTriangle(size_t i, size_t& j, size_t &k) {
 }
 
 void XYZCanvas::AddTriangle(size_t i, size_t j, size_t k) {
-	m_point_types[i / 3] = m_point_types[j / 3] = m_point_types[k / 3] = IN_TRIANGLE;
 
 	m_triangles_indexes.push_back(i);
 	m_triangles_indexes.push_back(j);
@@ -656,18 +660,58 @@ void XYZCanvas::AddTriangle(size_t i, size_t j, size_t k) {
 	m_triangles_colors.push_back(m_colors[i / 3 * 4]);
 	m_triangles_colors.push_back(m_colors[i / 3 * 4 + 1]);
 	m_triangles_colors.push_back(m_colors[i / 3 * 4 + 2]);
-	m_triangles_colors.push_back(m_colors[i / 3 * 4 + 4]);
+	m_triangles_colors.push_back(m_colors[i / 3 * 4 + 3]);
 
 	m_triangles_colors.push_back(m_colors[j / 3 * 4]);
 	m_triangles_colors.push_back(m_colors[j / 3 * 4 + 1]);
 	m_triangles_colors.push_back(m_colors[j / 3 * 4 + 2]);
-	m_triangles_colors.push_back(m_colors[j / 3 * 4 + 4]);
+	m_triangles_colors.push_back(m_colors[j / 3 * 4 + 3]);
 
 	m_triangles_colors.push_back(m_colors[k / 3 * 4]);
 	m_triangles_colors.push_back(m_colors[k / 3 * 4 + 1]);
 	m_triangles_colors.push_back(m_colors[k / 3 * 4 + 2]);
 	m_triangles_colors.push_back(m_colors[k / 3 * 4 + 3]);
 
+}
+
+void XYZCanvas::PrepareTriangles() {
+	m_triangles.resize(0);
+	m_triangles_colors.resize(0);
+	m_triangles_indexes.resize(0);
+
+	PointsSource point_source(this);
+	TriangleConsumer triangle_conumer(this);
+
+	triangulation _triangulation(0, slices_no - 1, 0, slices_no - 1, m_data_points, &point_source, &triangle_conumer);
+	_triangulation.go();
+}
+
+void XYZCanvas::PrepareSinglePoints() {
+	m_single_points_normals.resize(0);
+	m_single_points_points.resize(0);
+	m_single_points_colors.resize(0);
+	m_single_points_indexes.resize(0);
+	for (size_t x = 0; x < slices_no; x++) for (size_t z = 0; z < slices_no; z++) {
+		int vi = XZToIndex(x, z);
+		int si = vi / 3;
+		if (isnan(m_vertices[vi + 1]))
+			continue;
+
+		for (size_t i = 0; i < sizeof(cube_vertices) / 3 / sizeof(cube_vertices[0]); i++) {
+			m_single_points_points.push_back(m_vertices[vi] + cube_vertices[3 * i]);
+			m_single_points_points.push_back(m_vertices[vi + 1] + cube_vertices[3 * i + 1]);
+			m_single_points_points.push_back(m_vertices[vi + 2] + cube_vertices[3 * i + 2]);
+			m_single_points_normals.push_back(cube_normals[3 * i]);
+			m_single_points_normals.push_back(cube_normals[3 * i + 1]);
+			m_single_points_normals.push_back(cube_normals[3 * i + 2]);
+			m_single_points_colors.push_back(m_colors[4 * si]);
+			m_single_points_colors.push_back(m_colors[4 * si + 1]);
+			m_single_points_colors.push_back(m_colors[4 * si + 2]);
+			m_single_points_colors.push_back(m_colors[4 * si + 3]);
+		}
+
+		m_single_points_indexes.push_back(si);
+	}
 }
 
 void XYZCanvas::UpdateArrays() {
@@ -694,7 +738,7 @@ void XYZCanvas::UpdateArrays() {
 		counts[k] += 1;
 	}
 
-	size_t data_points = 0;
+	m_data_points = 0;
 	for (size_t x = 0; x < slices_no; x++) for (size_t z = 0; z < slices_no; z++) {
 		int vi = XZToIndex(x, z);
 		int si = vi / 3;
@@ -706,130 +750,38 @@ void XYZCanvas::UpdateArrays() {
 			m_colors[si * 4 + 1] = 0;
 			m_colors[si * 4 + 2] = 255 - m_colors[si * 4];
 			m_colors[si * 4 + 3] = 200;
-			data_points += 1;
+			m_data_points += 1;
 		} else {
 			m_vertices[vi + 1] = nan("");
 		}
 	}
 
-	m_triangles.resize(0);
-	m_triangles_colors.resize(0);
-	m_triangles_indexes.resize(0);
-	m_single_quads.resize(0);
-	m_single_quads_colors.resize(0);
-	m_single_quads_indexes.resize(0);
-	m_point_types.resize(slices_no * slices_no, SINGLE);
-
-	PointsSource point_source(this);
-	TriangleConsumer triangle_conumer(this);
-
-	triangulation _triangulation(0, slices_no - 1, 0, slices_no - 1, data_points, &point_source, &triangle_conumer);
-	_triangulation.go();
-#if 0
-	for (size_t x = 0; x < slices_no; x++) for (size_t z = 0; z < slices_no; z++) {
-		size_t i = XZToIndex(x, z);
-
-		if (std::isnan(m_vertices[i + 1]))
-			continue;
-
-		if (x + 1 < slices_no && z + 1 < slices_no
-				&& !std::isnan(m_vertices[XZToIndex(x + 1, z) + 1])
-				&& !std::isnan(m_vertices[XZToIndex(x, z + 1) + 1])
-				&& !std::isnan(m_vertices[XZToIndex(x + 1, z + 1) + 1])) {
-			AddTriangle(i, XZToIndex(x, z + 1), XZToIndex(x + 1, z)); 
-			AddTriangle(XZToIndex(x + 1, z + 1), XZToIndex(x, z + 1), XZToIndex(x + 1, z)); 
-		} else {
-			if (m_point_types[i / 3] == IN_TRIANGLE)
-				continue;
-
-			size_t j, k;
-			if (LookupTriangle(i, j, k)) {
-				m_point_types[i / 3] = m_point_types[j / 3] = m_point_types[k / 3] = IN_TRIANGLE;
-				AddTriangle(i, j, k);
-			} else {
-				m_point_types[i / 3] = SINGLE;
-				m_single_quads_indexes.push_back(i);
-
-				for (size_t m = 0; m < sizeof(cube_vertices) / sizeof(float) / 3; ++m)  {
-
-					m_single_quads.push_back(m_vertices[i] + 0.8 * cube_vertices[m * 3]);
-					m_single_quads.push_back(m_vertices[i + 1] + 0.8 * cube_vertices[m * 3 + 1]);
-					m_single_quads.push_back(m_vertices[i + 2] + 0.8 * cube_vertices[m * 3 + 2]);
-
-					m_single_quads_colors.push_back(m_colors[i / 3 * 4]);
-					m_single_quads_colors.push_back(m_colors[i / 3 * 4 + 1]);
-					m_single_quads_colors.push_back(m_colors[i / 3 * 4 + 2]);
-					m_single_quads_colors.push_back(m_colors[i / 3 * 4 + 3]);
-				}
-			}
-		}
+	switch (m_graph_type) {
+		case TRIANGLES:
+			PrepareTriangles();
+			break;
+		case SINGLE_POINTS:
+			PrepareSinglePoints();
+			break;
 	}
-#endif
+
 }
 
-void XYZCanvas::DrawLineGraph() {
+void XYZCanvas::DrawSinglePointsGraph() {
 
 	if (m_graph == NULL)
 		return;
 
-	size_t i, ci;
-	
-	glBegin(GL_LINES);
-	for (size_t x = 0; x < slices_no - 2; x++) {
-		i = XZToIndex(x, 0);
-		ci = i / 3 * 4;
-		glColor4ubv(&m_colors[ci]);
-		glNormal3fv(&m_normals[i]);
-		glVertex3fv(&m_vertices[i]);
-
-		i = XZToIndex(x + 1, 0);
-		ci = i / 3 * 4;
-		glColor4ubv(&m_colors[ci]);
-		glNormal3fv(&m_normals[i]);
-		glVertex3fv(&m_vertices[i]);
-
-		for (size_t z = 0; z < slices_no - 2; z++) {
-			i = XZToIndex(x, z);
-			ci = i / 3 * 4;
-			glColor4ubv(&m_colors[ci]);
-			glNormal3fv(&m_normals[i]);
-			glVertex3fv(&m_vertices[i]);
-
-			i = XZToIndex(x, z + 1);
-			ci = i / 3 * 4;
-			glColor4ubv(&m_colors[ci]);
-			glNormal3fv(&m_normals[i]);
-			glVertex3fv(&m_vertices[i]);
-
-			i = XZToIndex(x, z + 1);
-			ci = i / 3 * 4;
-			glColor4ubv(&m_colors[ci]);
-			glNormal3fv(&m_normals[i]);
-			glVertex3fv(&m_vertices[i]);
-
-			i = XZToIndex(x + 1, z + 1);
-			ci = i / 3 * 4;
-			glColor4ubv(&m_colors[ci]);
-			glNormal3fv(&m_normals[i]);
-			glVertex3fv(&m_vertices[i]);
-
-		}
-	}
-	for (size_t z = 0; z < slices_no - 2; z++) {
-		i = XZToIndex(slices_no - 2, z);
-		ci = i / 3 * 4;
-		glColor4ubv(&m_colors[ci]);
-		glNormal3fv(&m_normals[i]);
-		glVertex3fv(&m_vertices[i]);
-
-		i = XZToIndex(slices_no - 2, z + 1);
-		ci = i / 3 * 4;
-		glColor4ubv(&m_colors[ci]);
-		glNormal3fv(&m_normals[i]);
-		glVertex3fv(&m_vertices[i]);
-	}
-	glEnd();
-
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_NORMAL_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+	glVertexPointer(3, GL_FLOAT, 0, &m_single_points_points[0]);
+	glNormalPointer(GL_FLOAT, 0, &m_single_points_normals[0]);
+	glColorPointer(4, GL_UNSIGNED_BYTE, 0, &m_single_points_colors[0]);
+	glDrawArrays(GL_QUADS, 0, m_single_points_points.size() / 4);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
 }
 
 void XYZCanvas::DrawCursor() {
@@ -850,7 +802,7 @@ void XYZCanvas::DrawCursor() {
 	glPopMatrix();
 }
 
-void XYZCanvas::DrawColoredGraph() {
+void XYZCanvas::DrawTrianglesGraph() {
 	if (m_graph == NULL)
 		return;
 
@@ -863,16 +815,6 @@ void XYZCanvas::DrawColoredGraph() {
 		glVertexPointer(3, GL_FLOAT, 0, &m_triangles[0]);
 		glColorPointer(4, GL_UNSIGNED_BYTE, 0, &m_triangles_colors[0]);
 		glDrawArrays(GL_TRIANGLES, 0, m_triangles.size() / 3);
-		glDisableClientState(GL_VERTEX_ARRAY);
-		glDisableClientState(GL_COLOR_ARRAY);
-	}
-
-	if (m_single_quads.size()) {
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_COLOR_ARRAY);
-		glVertexPointer(3, GL_FLOAT, 0, &m_single_quads[0]);
-		glColorPointer(4, GL_UNSIGNED_BYTE, 0, &m_single_quads_colors[0]);
-		glDrawArrays(GL_QUADS, 0, m_single_quads.size() / 3);
 		glDisableClientState(GL_VERTEX_ARRAY);
 		glDisableClientState(GL_COLOR_ARRAY);
 	}
@@ -954,6 +896,19 @@ void XYZCanvas::OnChar(wxKeyEvent &event) {
 			break;
 		case WXK_RIGHT:
 			m_movement = CURSOR_RIGHT;
+			break;
+		case WXK_SPACE:
+			switch (m_graph_type) {
+				case TRIANGLES:
+					m_graph_type = SINGLE_POINTS;
+					PrepareSinglePoints();
+					break;
+				case SINGLE_POINTS:
+					m_graph_type = TRIANGLES;
+					PrepareTriangles();
+					break;
+			}
+			Refresh();
 			break;
 		default:
 			break;
@@ -1044,39 +999,7 @@ void XYZCanvas::OnTimer(wxTimerEvent&e) {
 	Refresh();
 }
 
-void XYZCanvas::OnMouseLeftDown(wxMouseEvent &event) {
-	SetFocus();
-
-	if (m_graph == NULL)
-		return;
-
-	wxSize size = GetSize();
-
-	m_gl_context->SetCurrent(*this);
-
-	glReadBuffer(GL_BACK);
-	glDrawBuffer(GL_BACK);
-
-	glDepthFunc(GL_LEQUAL);
-	glShadeModel(GL_FLAT);
-	glDisable(GL_BLEND);
-	glDisable(GL_DITHER);
-	glClearColor(0, 0, 0, 0);
-	glEnable(GL_DEPTH_TEST);
-	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_COLOR_MATERIAL);
-
-	SetProjectionMatrix(size);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	Camera();
-
+void XYZCanvas::CheckTriangleClick(int x, int y, wxSize& size) {
 	unsigned char color[4] = { 0, 0, 0, 255 };
 	glBegin(GL_TRIANGLES);
 	for (size_t i = 0; i < m_triangles_indexes.size(); i += 3) {
@@ -1090,23 +1013,13 @@ void XYZCanvas::OnMouseLeftDown(wxMouseEvent &event) {
 	}
 	glEnd();
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, &m_single_quads[0]);
-	for (size_t i = 0; i < m_single_quads_indexes.size(); i++) {
-		color[0] = m_single_quads_indexes[i] % 256;
-		color[1] = m_single_quads_indexes[i] / 256;
-		color[2] = m_single_quads_indexes[i] / 256 / 256 * 2;
-		glColor4ubv(color);
-		glDrawArrays(GL_QUADS, i * 24, 24);
-	}
-	glDisableClientState(GL_VERTEX_ARRAY);
 	glFinish();
 
 	unsigned char points_colors[25 * 3 * 3];
 	unsigned char point_color[3];
 	size_t cx = 2;
 	size_t cy = 2;
-	glReadPixels(event.GetX() - 2, size.GetHeight() - event.GetY() - 2, 5, 5, GL_RGB, GL_UNSIGNED_BYTE, points_colors);
+	glReadPixels(x - 2, size.GetHeight() - y - 2, 5, 5, GL_RGB, GL_UNSIGNED_BYTE, points_colors);
 	//middle point
 	point_color[0] = points_colors[3 * 5 * cy + 3 * cx];
 	point_color[1] = points_colors[3 * 5 * cy + 3 * cx + 1];
@@ -1143,7 +1056,7 @@ void XYZCanvas::OnMouseLeftDown(wxMouseEvent &event) {
 		glFinish();
 
 		unsigned char tv[3];
-		glReadPixels(event.GetX(), size.GetHeight() - event.GetY(), 1, 1, GL_RGB, GL_UNSIGNED_BYTE, tv);
+		glReadPixels(x, size.GetHeight() - x, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, tv);
 		if (tv[1] > tv[0])
 			if (tv[2] > tv[1])
 				index = m_triangles_indexes[i + 2];
@@ -1163,6 +1076,79 @@ void XYZCanvas::OnMouseLeftDown(wxMouseEvent &event) {
 	m_cursor_z = index / slices_no;
 	m_cursor_x = index % slices_no;
 	Refresh();
+
+}
+
+void XYZCanvas::CheckSinglePointsClick(int x, int y, wxSize& size) {
+	unsigned char color[4] = { 0, 0, 0, 255 };
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glVertexPointer(3, GL_FLOAT, 0, &m_single_points_points[0]);
+	for (size_t i = 0; i < m_single_points_indexes.size(); i++) {
+		int index = m_single_points_indexes[i];
+		color[0] = ((index + 1)) % 256;
+		color[1] = (index + 1) / 256; 
+		color[2] = (index + 1) / 256 / 256;
+		glColor4ubv(color);
+		glDrawArrays(GL_QUADS, i * 24, 24);
+	}
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glFinish();
+
+	unsigned char point_color[3];
+	glReadPixels(x, size.GetHeight() - y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, point_color);
+
+	if (point_color[0] == 0 && point_color[1] == 0 && point_color[2] == 0)
+		return;
+
+	size_t index = point_color[0] + 256 * size_t(point_color[1]) + 256 * 256 * size_t(point_color[2]) - 1;
+
+	m_cursor_z = index / slices_no;
+	m_cursor_x = index % slices_no;
+	Refresh();
+}
+
+void XYZCanvas::OnMouseLeftDown(wxMouseEvent &event) {
+	SetFocus();
+
+	if (m_graph == NULL)
+		return;
+
+	wxSize size = GetSize();
+
+	m_gl_context->SetCurrent(*this);
+
+	glReadBuffer(GL_BACK);
+	glDrawBuffer(GL_BACK);
+
+	glDepthFunc(GL_LEQUAL);
+	glShadeModel(GL_FLAT);
+	glDisable(GL_BLEND);
+	glDisable(GL_DITHER);
+	glClearColor(0, 0, 0, 0);
+	glEnable(GL_DEPTH_TEST);
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_COLOR_MATERIAL);
+
+	SetProjectionMatrix(size);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	Camera();
+
+	switch (m_graph_type) {
+		case TRIANGLES:
+			CheckTriangleClick(event.GetX(), event.GetY(), size);
+			break;
+		case SINGLE_POINTS:
+			CheckSinglePointsClick(event.GetX(), event.GetY(), size);
+			break;
+	}
+
 }
 
 void XYZCanvas::OnMouseWheel(wxMouseEvent &event) {
