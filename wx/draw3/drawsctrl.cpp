@@ -958,14 +958,14 @@ DTime DrawsController::TimeReference::Adjust(PeriodType pt, const DTime& time) {
 		case PERIOD_T_DAY:
 			t.SetMinute(m_minute);
 			t.SetHour(m_hour);
-			t.SetDay(m_day);
+			t.SetDay(std::min(m_day, (int)wxDateTime::GetNumberOfDays(t.GetMonth(), t.GetYear())));
 			break;
 		case PERIOD_T_WEEK:
 			t.SetHour(m_hour / 8 * 8);
 			t.SetToWeekDayInSameWeek(m_wday);
 			break;
 		case PERIOD_T_MONTH:
-			t.SetDay(m_day);
+			t.SetDay(std::min(m_day, (int)wxDateTime::GetNumberOfDays(t.GetMonth(), t.GetYear())));
 			break;
 		case PERIOD_T_SEASON:
 			//actually do nothing
