@@ -861,9 +861,10 @@ const char* modbus_daemon::error_string(const unsigned char& error) {
 }
 
 void modbus_daemon::consume_read_regs_response(unsigned char& uid, unsigned short start_addr, unsigned short regs_count, PDU &pdu) {
-	dolog(5, "Consuming read holing register response response for unit (%d), for address: %hu, registers count: %hu", (int) uid, start_addr, regs_count);
+	dolog(5, "Consuming read holing register response unit_id: %d, address: %hu, registers count: %hu", (int) uid, start_addr, regs_count);
 	if (pdu.func_code & MB_ERROR_CODE) {
-		dolog(1, "Exception received in response to read holding registers command");
+		dolog(1, "Exception received in response to read holding registers command, unit_id: %d, address: %hu, count: %hu",
+		       	(int)uid, start_addr, regs_count);
 		dolog(1, "Error is: %s(%d)", error_string(pdu.data.at(0)), (int)pdu.data.at(0));
 		return;
 	} 
@@ -877,7 +878,7 @@ void modbus_daemon::consume_read_regs_response(unsigned char& uid, unsigned shor
 	for (size_t addr = start_addr; addr < start_addr + regs_count; addr++, data_index += 2) {
 		RMAP::iterator j = unit.find(addr);
 		unsigned short v = (pdu.data.at(data_index) << 8) | pdu.data.at(data_index + 1);
-		dolog(7, "Setting unit %d, register: %hu, to value:%hu", (int) uid, addr, v);
+		dolog(7, "Setting register unit_id: %d, address: %hu, value: %hu", (int) uid, addr, v);
 		j->second->set_val(v, m_current_time);
 	}
 
@@ -885,9 +886,10 @@ void modbus_daemon::consume_read_regs_response(unsigned char& uid, unsigned shor
 }
 
 void modbus_daemon::consume_write_regs_response(unsigned char& unit, unsigned short start_addr, unsigned short regs_count, PDU &pdu) { 
-	dolog(5, "Consuming write holding register response for unit (%d), for address: %hu, registers count: %hu", (int) unit, start_addr, regs_count);
+	dolog(5, "Consuming write holding register response unit_id: %d, address: %hu, registers count: %hu", (int) unit, start_addr, regs_count);
 	if (pdu.func_code & MB_ERROR_CODE) {
-		dolog(1, "Exception received in response to write holding registers command");
+		dolog(1, "Exception received in response to write holding registers command, unit_id: %d, address: %hu, count: %hu",
+		       	(int)unit, start_addr, regs_count);
 		dolog(1, "Error is: %s(%d)", error_string(pdu.data.at(0)), (int)pdu.data.at(0));
 	} else {
 		dolog(5, "Write holding register command poisitively acknowledged");
@@ -1588,7 +1590,7 @@ void modbus_client::send_write_query() {
 }
 
 void modbus_client::send_read_query() {
-	dolog(7, "Sending read holding registers command, start register: %hu, registers count: %hu", m_start_addr, m_regs_count);
+	dolog(7, "Sending read holding registers command, unit_id: %d,  address: %hu, count: %hu", (int)m_unit, m_start_addr, m_regs_count);
 	switch (m_register_type) {
 		case INPUT_REGISTER:
 			m_pdu.func_code = MB_F_RIR;
@@ -1785,13 +1787,13 @@ int modbus_client::initialize() {
 void modbus_client::timeout() {
 	switch (m_state) {
 		case SENDING_READ_QUERY:
-			dolog(1, "Timeout while reading data, unit: %d, for address: %hu, registers count: %hu, progressing with queries",
+			dolog(1, "Timeout while reading data, unit_id: %d, address: %hu, registers count: %hu, progressing with queries",
 					(int)m_unit, m_start_addr, m_regs_count);
 
 			send_next_query();
 			break;
 		case SENDING_WRITE_QUERY:
-			dolog(1, "Timeout while writing data, unit: %d, for address: %hu, registers count: %hu, progressing with queries",
+			dolog(1, "Timeout while writing data, unit_id: %d, address: %hu, registers count: %hu, progressing with queries",
 					(int)m_unit, m_start_addr, m_regs_count);
 			send_next_query();
 			break;
@@ -1950,7 +1952,22 @@ bool serial_rtu_parser::check_crc() {
 		crc = update_crc(crc, m_sdu.pdu.data[i]);
 
 	unsigned short frame_crc = d[m_data_read - 2] | (d[m_data_read - 1] << 8);
-	dolog(9, "Checking crc, caluclated crc: %hx, frame crc: %hx", crc, frame_crc);
+	dolog(9, "Checking crc, result: %s, unit_id: %d, caluclated crc: %hx, frame crc: %hx",
+	       	(crc == frame_crc ? "OK" : "ERROR"), m_sdu.unit_id, crc, frame_crc);
+#if 0
+	if (crc != frame_crc) {
+	    char * s = (char *) malloc(sizeof(char) * 3 * m_data_read + 256);
+	    if (NULL != s) {
+		int pos = 0;
+    		pos += sprintf(s, "Frame dump: id: %hhx func: %hhx data: ", m_sdu.unit_id, m_sdu.pdu.func_code);
+		for (size_t j = 0; j < m_data_read - 2; j++) {
+		    pos += sprintf(s + pos, "%hhx ", m_sdu.pdu.data[j]);
+		}
+		dolog(10, s);
+		free(s);
+	    }
+	}
+#endif
 	return crc == frame_crc;
 }
 
@@ -2029,10 +2046,11 @@ serial_rtu_parser::serial_rtu_parser(serial_connection_handler *serial_handler, 
 	 * we will make it double to be on safe side */
 	if (m_timeout == 0) {
 		if (speed)
-			m_timeout = 3 * 1000000 / (speed / 8);
+			m_timeout = 5 * 1000000 / (speed / 10);
 		else
 			m_timeout = 10000;
 	}
+	dolog(9, "serial_rtu_parser m_timeout: %d", m_timeout);
 }
 
 void serial_rtu_parser::reset() {
@@ -2050,14 +2068,14 @@ void serial_rtu_parser::read_data(struct bufferevent *bufev) {
 		case ADDR:
 			if (bufferevent_read(bufev, &m_sdu.unit_id, sizeof(m_sdu.unit_id)) == 0) 
 				break;
-			dolog(9, "Parsing new frame, unit id: %d", (int) m_sdu.unit_id);
+			dolog(9, "Parsing new frame, unit_id: %d", (int) m_sdu.unit_id);
 			m_state = FUNC_CODE;
 		case FUNC_CODE:
 			if (bufferevent_read(bufev, &m_sdu.pdu.func_code, sizeof(m_sdu.pdu.func_code)) == 0) {
 				start_read_timer();
 				break;
 			}
-			dolog(9, "Func code: %d", (int) m_sdu.pdu.func_code);
+			dolog(9, "\tfunc code: %d", (int) m_sdu.pdu.func_code);
 			m_state = DATA;
 			m_data_read = 0;
 			m_sdu.pdu.data.resize(max_frame_size - 2);

@@ -1,4 +1,6 @@
 
+2010-06-14	Krzysztof Galazka <kg@dalkiaterm.pl>
+	* parcook/mbdmn.cc: logging fixes for easier grep usage
 2010-06-14	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* wx/draw3: one more bug fixed...
 2010-06-13	Darek Marcinkiewcz <reksio@praterm.com.pl>
