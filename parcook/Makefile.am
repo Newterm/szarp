@@ -70,6 +70,7 @@ bin_PROGRAMS = \
 	      sbusdmn \
 	      setdmn \
 	      iecdmn \
+	      prodmn \
 	      sre2dmn \
 	      tcpdmn \
 	      tensdmn \
@@ -185,3 +186,6 @@ setdmn_LDADD = $(LDADD) @EVENT_LIBS@
 
 iecdmn_SOURCES = iecdmn.cc
 iecdmn_LDADD = $(LDADD)
+
+prodmn_SOURCES = prodmn.cc
+prodmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)

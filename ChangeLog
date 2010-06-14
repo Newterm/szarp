@@ -1,4 +1,6 @@
 
+2010-06-14	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* parcook/prodmn.cc: daemon for getting data from PRO2000 proxy
 2010-06-14	Krzysztof Galazka <kg@dalkiaterm.pl>
 	* parcook/mbdmn.cc: logging fixes for easier grep usage
 2010-06-14	Darek Marcinkiewcz <reksio@praterm.com.pl>
