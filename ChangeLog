@@ -1,4 +1,11 @@
 
+2010-06-15	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* parcook/mbdmn.cc: daemons logs all requests to a units' ids
+	that are not present in its configuration + unit id given
+	in ipk can be overriden by attribute id from modbus namespace,
+	id attribute from this extra namespace daemon treats
+	as a numeric value, as opposed to id from ipk namespace
+	which is a single char
 2010-06-14	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* parcook/prodmn.cc: daemon for getting data from PRO2000 proxy
 2010-06-14	Krzysztof Galazka <kg@dalkiaterm.pl>

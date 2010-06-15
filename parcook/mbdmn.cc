@@ -778,8 +778,10 @@ bool modbus_daemon::register_val_expired(time_t time) {
 
 bool modbus_daemon::process_request(unsigned char unit, PDU &pdu) {
 	URMAP::iterator i = m_registers.find(unit);
-	if (i == m_registers.end())
+	if (i == m_registers.end()) {
+		dolog(1, "Received request to unit %d, not such unit in configuration, ignoring", (int) unit);
 		return false;
+	}
 
 	try {
 
@@ -978,20 +980,25 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 	char *c;
 
 	unsigned char id;
-	switch (u->GetId()) {
-		case L'0'...L'9':
-			id = u->GetId() - L'0';
-			break;
-		case L'a'...L'z':
-			id = (u->GetId() - L'a') + 10;
-			break;
-		case L'A'...L'Z':
-			id = (u->GetId() - L'A') + 10;
-			break;
-		default:
-			id = u->GetId();
-			break;
-	}
+	c = (char*) xmlGetNsProp(xp_ctx->node, BAD_CAST("id"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+	if (c != NULL) {
+		id = atoi(c);
+		xmlFree(c);
+	} else 
+		switch (u->GetId()) {
+			case L'0'...L'9':
+				id = u->GetId() - L'0';
+				break;
+			case L'a'...L'z':
+				id = (u->GetId() - L'a') + 10;
+				break;
+			case L'A'...L'Z':
+				id = (u->GetId() - L'A') + 10;
+				break;
+			default:
+				id = u->GetId();
+				break;
+		}
 
 	for (p = u->GetFirstParam(), sp = u->GetFirstSendParam(), i = 0, j = 0; i < u->GetParamsCount() + u->GetSendParamsCount(); i++, j++) {
 		char *expr;
