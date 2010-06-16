@@ -20,9 +20,6 @@
 #define SZB_SERACH_H__
 
 time_t
-szb_search_by_value(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_TYPE probe_type, time_t start_time, time_t end_time, int direction);
-
-time_t
 szb_real_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction);
 
 time_t
@@ -45,4 +42,8 @@ szb_definable_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, 
 
 time_t 
 szb_lua_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle);
+
+time_t
+szb_lua_search_by_value(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_TYPE probe_type, time_t start_time, time_t end_time, int direction);
+
 #endif

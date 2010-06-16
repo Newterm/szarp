@@ -647,6 +647,7 @@ static int InitProbeType(lua_State *lua) {
 	lua_pushnumber(lua, name); \
 	lua_settable(lua, -3);
 	
+	LUA_ENUM(PT_SEC10);
 	LUA_ENUM(PT_MIN10);
 	LUA_ENUM(PT_HOUR);
 	LUA_ENUM(PT_HOUR8);

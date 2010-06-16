@@ -748,8 +748,38 @@ void DrawPanel::DrawInfoChanged(Draw *d) {
 }
 
 void DrawPanel::PeriodChanged(Draw *d, PeriodType pt) {
-	if (d->GetSelected())
-		tb->DoubleCursorToolUncheck();
+	if (d->GetSelected() == false)
+		return;
+
+	tb->DoubleCursorToolUncheck();
+
+	if (active == false)
+		return;
+	int id;
+	switch (pt) {
+		case PERIOD_T_YEAR:
+			id = XRCID("YEAR_RADIO");
+			break;
+		case PERIOD_T_MONTH:
+			id = XRCID("MONTH_RADIO");
+			break;
+		case PERIOD_T_WEEK:
+			id = XRCID("WEEK_RADIO");
+			break;
+		case PERIOD_T_DAY:
+			id = XRCID("DAY_RADIO");
+			break;
+		case PERIOD_T_30MINUTE:
+			id = XRCID("30MINUTE_RADIO");
+			break;
+		case PERIOD_T_SEASON:
+			id = XRCID("SEASON_RADIO");
+			break;
+		case PERIOD_T_LAST:
+		case PERIOD_T_OTHER:
+			assert(false);
+	}
+	menu_bar->Check(id, true);
 }
 
 void DrawPanel::UpdateFilterMenuItem(int filter) {

@@ -1,4 +1,9 @@
 
+2010-06-16	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* libSzarp2/szbase: fix in searching/computing values of lua parameters
+	that are handled the 'old way'
+	* wx/draw3: current period radiobox from main menu was not properly
+	updated upon period change - fixed
 2010-06-16	Pawel Palucha <pawel@praterm.com.pl>
 	* utils/probes_server/*: search left fix, more debug.
 	* utils/probes_server/*: last probe number fix, more debug.

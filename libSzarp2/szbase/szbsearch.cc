@@ -24,30 +24,6 @@
 #include "szbase/szbbuf.h"
 #include "proberconnection.h"
 
-template<class CMP> time_t do_szb_search(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_TYPE probe_type, time_t start_time, time_t end_time, int direction) {
-	CMP cmp;
-	for (time_t t = start_time; cmp(t, end_time); t = szb_move_time(t, direction, probe_type, 0)) {
-		double val = szb_get_probe(buffer, param, t, probe_type, 0);
-		if (!IS_SZB_NODATA(val))
-			return t;
-	}
-	return -1;
-}
-
-time_t szb_search_by_value(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_TYPE probe_type, time_t start_time, time_t end_time, int direction) {
-	switch (direction) {
-		case -1:
-			return do_szb_search<std::greater_equal<time_t> >(buffer, param, probe_type, start_time, end_time, direction);
-		case 1:
-			return do_szb_search<std::less_equal<time_t> >(buffer, param, probe_type, start_time, end_time, direction);
-		case 0:
-			return IS_SZB_NODATA(szb_get_probe(buffer, param, start_time, probe_type)) ? -1 : start_time;
-		default:
-			assert(false);
-			return -1;
-	}
-}
-
 time_t 
 szb_real_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle) {
 	if (buffer->PrepareConnection() == false)
@@ -341,4 +317,67 @@ time_t szb_lua_search_data(szb_buffer_t * buffer, TParam * param , time_t start,
 	return search_in_data_range(buffer, param, start, end, direction);
 }
 
+
+template<class CMP> time_t do_szb_search(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_TYPE probe_type, time_t start_time, time_t end_time, int direction) {
+	CMP cmp;
+	search_timeout_check timeout_check(buffer);
+	for (time_t t = start_time; cmp(t, end_time); t = szb_move_time(t, direction, probe_type, 0)) {
+		double val = szb_get_probe(buffer, param, t, probe_type, 0);
+		if (buffer->last_err != SZBE_OK)
+			return -1;
+		if (timeout_check.timeout())
+			return -1;
+		if (!IS_SZB_NODATA(val))
+			return t;
+	}
+	return -1;
+}
+
+time_t szb_lua_search_by_value(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_TYPE probe_type, time_t start_time, time_t end_time, int direction) {
+
+	time_t first_date;
+	time_t last_date;
+
+	switch (probe_type) {
+		case PT_SEC10:
+			if (buffer->PrepareConnection() == false)
+				return -1;
+			if (buffer->prober_connection->GetRange(first_date, last_date) == false)
+				return -1;
+			if (param->GetLuaStartDateTime() > 0 && param->GetLuaStartDateTime() > first_date)
+				first_date = param->GetLuaStartDateTime();
+			break;
+		case PT_MIN10:
+		case PT_HOUR:
+		case PT_HOUR8:
+		case PT_DAY:
+		case PT_WEEK:
+		case PT_MONTH:
+		case PT_CUSTOM:
+			if (param->GetLuaStartDateTime() > 0)
+				first_date = param->GetLuaStartDateTime();
+			else
+				first_date = buffer->first_av_date;
+			first_date = szb_round_time(first_date, PT_MIN10, 0);
+			last_date = szb_search_last(buffer, param);
+			break;
+	}
+	first_date += param->GetLuaStartOffset(); 
+	last_date += param->GetLuaEndOffset();
+
+	if (adjust_search_boundaries(start_time, end_time, first_date, last_date, direction) == false)
+		return -1;
+
+	switch (direction) {
+		case -1:
+			return do_szb_search<std::greater_equal<time_t> >(buffer, param, probe_type, start_time, end_time, direction);
+		case 1:
+			return do_szb_search<std::less_equal<time_t> >(buffer, param, probe_type, start_time, end_time, direction);
+		case 0:
+			return IS_SZB_NODATA(szb_get_probe(buffer, param, start_time, probe_type)) ? -1 : start_time;
+		default:
+			assert(false);
+			return -1;
+	}
+}
 

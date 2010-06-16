@@ -169,7 +169,7 @@ class DrawPanel : public wxPanel, public DrawObserver {
 	virtual void FilterChanged(DrawsController *draws_ctrl);
 
 	virtual void PeriodChanged(Draw * draw, PeriodType pt);
-	protected:
+protected:
 
 	friend class DrawPanelKeyboardHandler;
 

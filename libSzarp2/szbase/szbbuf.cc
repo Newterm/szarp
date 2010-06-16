@@ -365,7 +365,7 @@ szb_search(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int 
 {
 #ifndef NO_LUA
 	if (param->GetType() == TParam::P_LUA && param->GetFormulaType() == TParam::LUA_AV)
-		return szb_search_by_value(buffer, param, probe, start, end, direction);
+		return szb_lua_search_by_value(buffer, param, probe, start, end, direction);
 #endif
 	if (probe == PT_SEC10)
 		return szb_search_probe(buffer, param, start, end, direction, c_handle);
