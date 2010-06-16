@@ -1,4 +1,6 @@
 
+2010-06-16	Pawel Palucha <pawel@praterm.com.pl>
+	* utils/probes_server/*: last probe number fix, more debug.
 2010-06-15	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* parcook/mbdmn.cc: daemons logs all requests to a units' ids
 	that are not present in its configuration + unit id given

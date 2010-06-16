@@ -86,16 +86,18 @@ class SearchProducer(Producer):
 		self._end = end
 		self._direction = direction
 		self._param = param
-		debug("SEARCH PRODUCER: start %s end %s, direction %d" %
+		debug("SEARCH PRODUCER CREATE: start %s end %s, direction %d" %
 				(szbcache.format_time(start), szbcache.format_time(end), direction))
 
 	def resumeProducing(self):
 		Producer.resumeProducing(self)
+		debug("SEARCH PRODUCER RESUME")
 		try:
 			ret = self._proto.factory.szbcache.search(self._start, self._end, self._direction, self._param)
 			self._proto.transport.write("%d %d %d\n" % ret)
 		except szbcache.SzbException, e:
 			self._proto.transport.write("ERROR %d %s\n" % (ErrorCodes.BadRequest, str(e)))
+		debug("SEARCH PRODUCER FINISH")
 		self.finish()
 
 class RangeProducer(Producer):
@@ -143,6 +145,7 @@ class GetProducer(Producer):
 					self._start, self._end, self._param, self._proto.transport)
 		if self._start >= self._end:
 			self.finish()
+			debug("GET PRODUCER FINISH")
 	
 	def stopProducing(self):
 		pass

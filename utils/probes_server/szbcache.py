@@ -173,7 +173,7 @@ class SzbCache:
 		"""
 		dpath = self.check_path(parampath)
 		if not os.path.isdir(dpath):
-			return 0
+			return (0, -1)
 		first, last = self.search_first_last(dpath)
 		return ((((endtime - starttime) / self.SZBCACHE_PROBE) + 1) * self.SZBCACHE_SIZE,
 				last)
@@ -189,7 +189,7 @@ class SzbCache:
 		@param output file to write to (object with 'write' method)
 		@return starttime for next call, grater then endtime after last call
 		"""
-		debug("WRITE_DATA: %d %d" % (starttime, endtime))
+		debug("WRITE_DATA: %d %d (current time: %d)" % (starttime, endtime, time.time()))
 		dpath = self.check_path(parampath)
 		if not os.path.isdir(dpath):
 			return endtime + 1
@@ -219,8 +219,11 @@ class SzbCache:
 		@param path path to file
 		@param output output file
 		"""
-		debug("WRITE_FILE %d %d %s" % (startindex, endindex, str(output)))
-		lastindex = min(endindex, self.last_index(path))
+		lastindex = self.last_index(path)
+		debug("WRITE_FILE INDEX %d %d last_index: %d" % (startindex, endindex, lastindex))
+		debug("WRITE_FILE TIME  %d %d last_index: %d" % (self.index2time(path, startindex), 
+			self.index2time(path, endindex), self.index2time(path, lastindex)))
+		lastindex = min(endindex, lastindex)
 		towrite = lastindex - startindex + 1
 		if towrite < 0:
 			towrite = 0
@@ -324,7 +327,7 @@ class SzbCache:
 				start = self.index2time(startpath, 0) - self.SZBCACHE_PROBE
 				startpath = pi.prev()
 				startindex = -1
-			print "DEBUG startpath, direction", startpath, direction
+			debug("DEBUG startpath, direction %s %s" %  (startpath, direction))
 		return -1
 
 	def search_file(self, path, startindex, endpath, endindex, direction):
@@ -337,6 +340,8 @@ class SzbCache:
 		@param direction search direction
 		@return (found, found_time) tupple
 		"""
+		debug("called search_file() path %s startindex %d endpath %s endindex %d direction %d" %
+				(path, startindex, endpath, endindex, direction))
 		if not os.path.isfile(path):
 			return (False, -1)
 		if endpath != path:
@@ -427,7 +432,7 @@ class SzbCache:
 		path = "%s/%04d%02d%s" % (dirpath, ts.tm_year, ts.tm_mon, self.SZBCACHE_EXT)
 		index = (ts.tm_mday - 1) * 24 * 3600 + ts.tm_hour * 3600 + ts.tm_min * 60 + ts.tm_sec
 		index = index // self.SZBCACHE_PROBE
-		print path, index
+		debug("time2inex: %s %d" % (path, index))
 		return (path, index)
 
 	def index2time(self, path, index = 0):
@@ -435,9 +440,9 @@ class SzbCache:
 		Returns time_t for given file and index. If index - 1, look for last index in file.
 		"""
 		if index == -1:
-			index = os.path.getsize(path) / self.SZBCACHE_SIZE
+			index = os.path.getsize(path) / self.SZBCACHE_SIZE - 1
 		(dirname, filename) = os.path.split(path)
-		print "FILENAME:", filename
+		debug("FILENAME: " + filename)
 		year = int(filename[0:4])
 		month = int(filename[4:6])
 		return timegm((year, month, 1, 0, 0, 0)) + index * self.SZBCACHE_PROBE
