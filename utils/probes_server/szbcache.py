@@ -346,9 +346,10 @@ class SzbCache:
 			return (False, -1)
 		if endpath != path:
 			# search all file
-			if direction > 0:
+			if direction >= 0:
 				endindex = self.last_index(path)
 			else:
+				startindex = min(startindex, self.last_index(path))
 				endindex = 0
 		else:
 			if direction > 0:
@@ -378,9 +379,11 @@ class SzbCache:
 		"""
 		bsize = 32768 / self.SZBCACHE_SIZE
 		
+		debug("called real_search_file path %s startindex %d endindex %d direction %d" %
+				(path, startindex, endindex, direction))
 		f = open(path, "rb")
-		while startindex * direction < endindex * direction:
-			rsize = min(bsize, (endindex - startindex) * direction)
+		while startindex * direction <= endindex * direction:
+			rsize = min(bsize, (endindex - startindex + 1) * direction)
 			if direction < 0:
 				search_block_begin = startindex - rsize
 			else:
