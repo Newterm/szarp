@@ -73,7 +73,11 @@
 		msw/lsw (most/less significant word) not msb/lsb (most/less significant byte),
 		but it's left like this for compatibility with Modbus RTU driver configuration
       >
-      <unit id="1">
+      <unit id="1" modbus:id="49">
+		modbus:id is optional Modbus unit identifier - number from 0 to 255; default is to
+		use IPK id attribute, but parsed as a character value and not a number; in this 
+		example both definitions id="1" and modbud:id="49" give tha same value, because ASCII
+		code of "1" is 49
               <param
 			Read value using ReadHoldingRegisters (0x03) Modbus function              
                       name="..."
