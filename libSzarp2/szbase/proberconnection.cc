@@ -8,12 +8,13 @@
 #include <boost/bind.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include "szbbase.h"
 #include "conversion.h"
 #include "szbdefines.h"
 #include "szbase/szbbuf.h"
 #include "proberconnection.h"
 
-ProberConnection::ProberConnection(szb_buffer_t *buffer, std::string address, std::string port) : m_buffer(buffer), m_io_service(), m_resolver(m_io_service), m_deadline(m_io_service), m_socket(m_io_service), m_address(address), m_port(port), m_connected(false), m_state(IDLE), m_timeout(false) {
+ProberConnection::ProberConnection(szb_buffer_t *buffer, std::string address, std::string port) : m_buffer(buffer), m_io_service(), m_resolver(m_io_service), m_deadline(m_io_service), m_socket(m_io_service), m_address(address), m_port(port), m_connected(false), m_state(IDLE), m_timeout(false), m_last_range_query_id(-1) {
 }
 
 void ProberConnection::Connect() {
@@ -315,6 +316,11 @@ void ProberConnection::PerformOperation() {
 }
 
 bool ProberConnection::GetRange(time_t& start_time, time_t& end_time) {
+	if (m_last_range_query_id == m_buffer->szbase->GetQueryId()) {
+		start_time = m_start_time;
+		end_time = m_end_time;
+		return true;
+	}
 	ClearError();
 	m_operation = SEND_BOUNDARY_TIME;
 	bool ok = true;
@@ -328,6 +334,8 @@ bool ProberConnection::GetRange(time_t& start_time, time_t& end_time) {
 	m_state = IDLE;
 	start_time = m_start_time;
 	end_time = m_end_time;	
+	if (ok)
+		m_last_range_query_id = m_buffer->szbase->GetQueryId();
 	return ok;
 }
 

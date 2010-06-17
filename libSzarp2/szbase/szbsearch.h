@@ -46,4 +46,7 @@ szb_lua_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t
 time_t
 szb_lua_search_by_value(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_TYPE probe_type, time_t start_time, time_t end_time, int direction);
 
+bool
+szb_lua_search_first_last_date(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_TYPE probe_type, time_t& first_date, time_t& last_date);
+
 #endif

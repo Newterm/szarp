@@ -21,6 +21,7 @@
 
 #include "liblog.h"
 #include "szbbase.h"
+#include "szbsearch.h"
 #include "szbase/szbbuf.h"
 #include "proberconnection.h"
 
@@ -53,7 +54,6 @@ szb_combined_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, t
 	else
 		return std::max(lsw_ret, msw_ret);
 }
-
 
 class search_timeout_check {
 	szb_buffer_t *buffer;
@@ -158,17 +158,9 @@ szb_definable_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, 
 
 time_t 
 szb_lua_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle) {
-	time_t first_date;
-	time_t last_date;
-
-	if (buffer->prober_connection->GetRange(first_date, last_date) == false)
+	time_t first_date, last_date;
+	if (!szb_lua_search_first_last_date(buffer, param, PT_SEC10, first_date, last_date))
 		return -1;
-	
-	if (param->GetLuaStartDateTime() > 0 && param->GetLuaStartDateTime() > first_date)
-		first_date = param->GetLuaStartDateTime();
-
-	first_date += param->GetLuaStartOffset();
-	last_date += param->GetLuaEndOffset();
 
 	if (adjust_search_boundaries(start, end, first_date, last_date, direction) == false)
 		return -1;
@@ -304,14 +296,9 @@ szb_definable_search_data(szb_buffer_t * buffer, TParam * param, time_t start, t
 
 
 time_t szb_lua_search_data(szb_buffer_t * buffer, TParam * param , time_t start, time_t end, int direction) {
-	time_t first_date;
-	if (param->GetLuaStartDateTime() > 0)
-		first_date = param->GetLuaStartDateTime();
-	else
-		first_date = buffer->first_av_date;
-	first_date += param->GetLuaStartOffset();
-	first_date = szb_round_time(first_date, PT_MIN10, 0);
-	time_t last_date = szb_search_last(buffer, param) + param->GetLuaEndOffset();
+	time_t first_date, last_date;
+	if (!szb_lua_search_first_last_date(buffer, param, PT_MIN10, first_date, last_date))
+		return -1;
 	if (adjust_search_boundaries(start, end, first_date, last_date, direction) == false)
 		return -1;
 	return search_in_data_range(buffer, param, start, end, direction);
@@ -333,17 +320,13 @@ template<class CMP> time_t do_szb_search(szb_buffer_t* buffer, TParam* param, SZ
 	return -1;
 }
 
-time_t szb_lua_search_by_value(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_TYPE probe_type, time_t start_time, time_t end_time, int direction) {
-
-	time_t first_date;
-	time_t last_date;
-
+bool szb_lua_search_first_last_date(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_TYPE probe_type, time_t& first_date, time_t& last_date) {
 	switch (probe_type) {
 		case PT_SEC10:
 			if (buffer->PrepareConnection() == false)
-				return -1;
+				return false;
 			if (buffer->prober_connection->GetRange(first_date, last_date) == false)
-				return -1;
+				return false;
 			if (param->GetLuaStartDateTime() > 0 && param->GetLuaStartDateTime() > first_date)
 				first_date = param->GetLuaStartDateTime();
 			break;
@@ -364,6 +347,15 @@ time_t szb_lua_search_by_value(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_
 	}
 	first_date += param->GetLuaStartOffset(); 
 	last_date += param->GetLuaEndOffset();
+	return true;
+}
+
+time_t szb_lua_search_by_value(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_TYPE probe_type, time_t start_time, time_t end_time, int direction) {
+	time_t first_date;
+	time_t last_date;
+
+	if (!szb_lua_search_first_last_date(buffer, param, probe_type, first_date, last_date))
+		return -1;
 
 	if (adjust_search_boundaries(start_time, end_time, first_date, last_date, direction) == false)
 		return -1;

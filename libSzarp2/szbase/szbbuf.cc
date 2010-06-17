@@ -67,6 +67,7 @@
 #include "loptcalculate.h"
 #include "proberconnection.h"
 #include "szbsearch.h"
+#include "luacalculate.h"
 
 #include "boost/filesystem/path.hpp"
 #include "boost/filesystem/operations.hpp"
@@ -548,71 +549,6 @@ szb_get_probe(szb_buffer_t * buffer, TParam * param,
 		NULL,
 		NULL,
 		probe); //end
-}
-
-void
-szb_get_values(szb_buffer_t * buffer, TParam * param,
-	time_t start_time, time_t end_time, SZBASE_TYPE * retbuf, bool *is_fixed)
-{
-	int year, month;
-	int probe, max, i;
-	long int pos = 0;
-	time_t t = start_time;
-
-	szb_datablock_t * b;
-
-	if (is_fixed) *is_fixed = true;
-
-	assert(param != NULL);
-	assert(start_time <= end_time);
-	assert(retbuf != NULL);
-
-#ifndef NO_LUA
-	if (param->GetType() == TParam::P_LUA && param->GetFormulaType() == TParam::LUA_AV) {
-		NOT_FIXED;
-		szb_lua_get_values(buffer, param, start_time, end_time, PT_MIN10, retbuf);
-		return ;
-	}
-#endif
-
-	if (param->IsConst()) {
-		long int cnt = (end_time - start_time / SZBASE_DATA_SPAN);
-		SZBASE_TYPE val = param->GetConstValue();
-
-		for (pos = 0; pos < cnt; pos++)
-			retbuf[pos] = val;
-
-		return;
-	}
-
-	while (t < end_time) {
-		/* check current block */
-		szb_time2my(t, &year, &month);
-		probe = szb_probeind(t);
-		max = szb_probecnt(year, month);
-		b = szb_get_datablock(buffer, param, year, month);
-		if (b != NULL) {
-			const SZBASE_TYPE * data = b->GetData();
-
-			if (b->GetFixedProbesCount() < b->max_probes 
-				&& end_time > probe2time(b->GetFixedProbesCount() - 1, b->year, b->month)) {
-				NOT_FIXED;
-			}
-
-			/* copy values from block */
-			for (i = probe; (i <= b->GetLastDataProbeIdx() ) && (t < end_time); i++, t += SZBASE_DATA_SPAN, pos++)
-				retbuf[pos] = data[i];
-			for (; (i < max) && (t < end_time); i++, t += SZBASE_DATA_SPAN, pos++)
-				retbuf[pos] = SZB_NODATA;
-		} else {
-			NOT_FIXED;
-			/* fill the return buffer with SZB_NODATA */
-			for (i = probe; (i < max) && (t < end_time); i++, t += SZBASE_DATA_SPAN, pos++)
-				retbuf[pos] = SZB_NODATA;
-		}
-		/* set t to the begining of next month */
-		t = probe2time(0, year, month) + max * SZBASE_DATA_SPAN;
-	}
 }
 
 #undef NOT_FIXED

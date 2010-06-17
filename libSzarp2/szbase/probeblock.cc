@@ -189,11 +189,12 @@ void szb_probeblock_definable_t::FetchProbes() {
 	szb_lock_buffer(buffer);
 	const double* dblocks[num_of_params];
 	int new_fixed_probes = probes_per_block;
-	for (int i = 0; i < num_of_params; i++) {
+	if (num_of_params) for (int i = 0; i < num_of_params; i++) {
 		szb_probeblock_t* block = szb_get_probeblock(buffer, p_cache[i], GetStartTime());
 		dblocks[i] = block->GetData();
 		new_fixed_probes = std::min(new_fixed_probes, block->GetFixedProbesCount());
-	}
+	} else
+		new_fixed_probes = count;
 	double pw = pow(10, param->GetPrec());
 	SZBASE_TYPE  stack[DEFINABLE_STACK_SIZE]; // stack for calculatinon of formula
 	const std::wstring& formula = this->param->GetDrawFormula();

@@ -49,6 +49,7 @@ class ProberConnection {
 
 	bool m_timeout;
 
+	int m_last_range_query_id;
 public:
 	ProberConnection(szb_buffer_t* buffer, std::string address, std::string port);
 
