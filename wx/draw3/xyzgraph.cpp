@@ -694,7 +694,7 @@ void XYZCanvas::PrepareSinglePoints() {
 	for (size_t x = 0; x < slices_no; x++) for (size_t z = 0; z < slices_no; z++) {
 		int vi = XZToIndex(x, z);
 		int si = vi / 3;
-		if (isnan(m_vertices[vi + 1]))
+		if (std::isnan(m_vertices[vi + 1]))
 			continue;
 
 		for (size_t i = 0; i < sizeof(cube_vertices) / 3 / sizeof(cube_vertices[0]); i++) {
