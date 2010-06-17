@@ -175,7 +175,7 @@ namespace SC {
 			throw std::runtime_error("Incomplete multibyte sequence encountered in convertsion");
 		}
 
-		return std::string(buff.get(), res);
+		return std::string(buff.get(), res - 1);
 #else
 		return szarp2ascii_iw.convert<char, wchar_t>(c);
 #endif
