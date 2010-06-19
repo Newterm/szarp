@@ -182,7 +182,10 @@ void szb_probeblock_definable_t::FetchProbes() {
 	int count;
 	if (range_end > GetEndTime())
 		count = probes_per_block;
-	else
+	else if (GetStartTime() > range_end) {
+		sz_log(10, "Not fetching probes for definable block because it is from the future");
+		return;
+	} else
 		count = (range_end - GetStartTime()) / SZBASE_PROBE_SPAN + 1;
 	int num_of_params = param->GetNumParsInFormula();
 	TParam** p_cache = param->GetFormulaCache();

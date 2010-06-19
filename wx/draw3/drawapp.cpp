@@ -284,9 +284,9 @@ bool DrawApp::OnInit() {
 	splash->PushStatusText(_("Starting database query mechanism..."));
 
 	m_db_queue = new DatabaseQueryQueue();
-	DatabaseManager* dbmgr = new DatabaseManager(m_db_queue, m_cfg_mgr);
-	m_db_queue->SetDatabaseManager(dbmgr);
-	dbmgr->SetProbersAddresses(GetProbersAddresses());
+	m_dbmgr = new DatabaseManager(m_db_queue, m_cfg_mgr);
+	m_db_queue->SetDatabaseManager(m_dbmgr);
+	m_dbmgr->SetProbersAddresses(GetProbersAddresses());
 
 	Szbase::Init(GetSzarpDataDir().c_str(),
 			&ConfigurationFileChangeHandler::handle,
@@ -294,14 +294,14 @@ bool DrawApp::OnInit() {
 			wxConfig::Get()->Read(_T("SZBUFER_IN_MEMORY_CACHE"), 0L));
 	Szbase* szbase = Szbase::GetObject();
 
-	m_executor = new QueryExecutor(m_db_queue, dbmgr, szbase);
+	m_executor = new QueryExecutor(m_db_queue, m_dbmgr, szbase);
 	m_executor->Create();
 	m_executor->SetPriority((WXTHREAD_MAX_PRIORITY + WXTHREAD_DEFAULT_PRIORITY) / 2);
 	m_executor->Run();
 
-	m_cfg_mgr->SetDatabaseManager(dbmgr);
+	m_cfg_mgr->SetDatabaseManager(m_dbmgr);
 
-	ConfigurationFileChangeHandler::database_manager = dbmgr;
+	ConfigurationFileChangeHandler::database_manager = m_dbmgr;
 
 	/* default config */
 	wxString defid;
@@ -359,7 +359,7 @@ bool DrawApp::OnInit() {
 	VersionChecker* version_checker = new VersionChecker(argv[0]);
 	version_checker->Start();
 
-	FrameManager *fm = new FrameManager(dbmgr, m_cfg_mgr, m_remarks_handler);
+	FrameManager *fm = new FrameManager(m_dbmgr, m_cfg_mgr, m_remarks_handler);
 
 	/*@michal  */
 	if (!fm->CreateFrame(prefix, window, pt, time, wxSize(width, height), wxPoint(x, y), selected_draw, m_url.IsEmpty())) {
@@ -577,12 +577,14 @@ void DrawApp::SetProbersAddresses(const std::map<wxString, std::pair<wxString, w
 	wxString string;
 	for (std::map<wxString, std::pair<wxString, wxString> >::const_iterator i = addresses.begin();
 			i != addresses.end();
-			i++)
+			i++) {
 		if (m_probers_from_szarp_cfg[i->first] != i->second)
 			string += i->first + _T("/") + i->second.first + _T("/") + i->second.second + _T(";");
+
+	}
 	config->Write(_T("PROBE_SERVER_ADDRESSES"), string.Mid(0, string.Length() - 1));
 	config->Flush();
-
+	m_dbmgr->SetProbersAddresses(GetProbersAddresses());
 }
 
 DrawApp::~DrawApp() {

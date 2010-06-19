@@ -120,7 +120,7 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 	} else {
 		if (this->last_update_time > this->GetEndTime())
 			probes_to_compute = this->fixed_probes_count = this->max_probes;
-		else if (this->last_update_time < this->GetEndTime()) {
+		else if (this->last_update_time < this->GetStartTime()) {
 			szb_unlock_buffer(this->buffer);
 			NOT_INITIALIZED;
 		} else

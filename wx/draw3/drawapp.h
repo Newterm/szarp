@@ -163,6 +163,9 @@ protected:
 			/**<Object representing thread that executes queries*/
 	QueryExecutor* m_executor;
 
+			/**Database manager object*/
+	DatabaseManager* m_dbmgr;
+
 			/**Queries queue*/
 	DatabaseQueryQueue* m_db_queue;
 

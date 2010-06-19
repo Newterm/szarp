@@ -59,7 +59,7 @@ SZBASE_TYPE szb_lua_get_avg(szb_buffer_t* buffer, TParam *param, time_t start_ti
 		buffer->last_err_string = L"Invalid LUA param";
 		goto error;
 	}
-	if (szb_lua_search_first_last_date(buffer, param, probe, first_date, last_date))
+	if (!szb_lua_search_first_last_date(buffer, param, probe, first_date, last_date))
 		goto error;
 	end_time = std::min(end_time, first_date);
 	start_time = std::max(start_time, last_date);

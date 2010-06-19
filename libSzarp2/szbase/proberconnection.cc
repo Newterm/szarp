@@ -253,7 +253,6 @@ time_t ProberConnection::Search(time_t from, time_t to, int direction, std::wstr
 	m_path = path;
 	PerformOperation();
 	if (IsError()) {
-		Disconnect();
 		m_buffer->last_err = SZBE_CONN_ERROR;
 		m_buffer->last_err_string = m_error;
 		m_search_result = -1;
@@ -272,7 +271,6 @@ int ProberConnection::Get(time_t from, time_t to, std::wstring path) {
 	m_path = path;
 	PerformOperation();				
 	if (IsError()) {
-		Disconnect();
 		m_buffer->last_err = SZBE_CONN_ERROR;
 		m_buffer->last_err_string = m_error;
 		m_values_count = 0;
@@ -303,13 +301,17 @@ void ProberConnection::PerformOperation() {
 	else
 		Connect();
 	Go();
-	if (IsError() && already_connected) {
-		if (m_timeout)
-			m_timeout = false;	
-		ClearError();
-		Disconnect();
-		Connect();
-		Go();
+	if (IsError() || m_timeout) {
+		if (already_connected) {
+			if (m_timeout)
+				m_timeout = false;	
+			ClearError();
+			Disconnect();
+			Connect();
+			Go();
+		} else {
+			Disconnect();	
+		}
 	}
 	if (m_timeout)
 		m_error = L"Connection timeout";
@@ -326,7 +328,6 @@ bool ProberConnection::GetRange(time_t& start_time, time_t& end_time) {
 	bool ok = true;
 	PerformOperation();
 	if (IsError()) {
-		Disconnect();
 		m_buffer->last_err = SZBE_CONN_ERROR;
 		m_buffer->last_err_string = m_error;
 		ok = false;
