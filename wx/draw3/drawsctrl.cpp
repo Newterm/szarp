@@ -315,7 +315,10 @@ void DrawsController::HandleDataResponse(DatabaseQuery *query) {
 
 	bool data_within_view = false;
 
-	m_draws.at(draw_no)->AddData(query, data_within_view);
+	bool no_data = m_draws.at(draw_no)->GetNoData();
+	m_draws[draw_no]->AddData(query, data_within_view);
+	if (no_data)
+		m_observers.NotifyNoData(m_draws[draw_no]);
 
 	if (draw_no == m_selected_draw && data_within_view)
 		switch (m_state) {
@@ -531,6 +534,10 @@ void DrawsController::SetFollowLatestData(bool follow_latest_data) {
 	m_follow_latest_data_mode = follow_latest_data;
 	if (m_state == DISPLAY && m_follow_latest_data_mode)
 		RefreshData(true);
+}
+
+bool DrawsController::GetFollowLatestData() {
+	return m_follow_latest_data_mode;
 }
 
 void DrawsController::FetchData() {

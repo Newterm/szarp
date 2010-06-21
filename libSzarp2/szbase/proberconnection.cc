@@ -221,6 +221,8 @@ void ProberConnection::HandleReadValues() {
 }
 
 void ProberConnection::HandleReadValues(const boost::system::error_code &error, size_t bytes_transferred) {
+	if (error == boost::asio::error::operation_aborted)
+		return;
 	sz_log(10, "Reading remaining %zu bytes", bytes_transferred);
 	m_input_buffer.commit(bytes_transferred);
 	HandleReadValues();

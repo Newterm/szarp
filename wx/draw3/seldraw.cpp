@@ -447,7 +447,7 @@ void SelectDrawWidget::OpenParameterDoc(int i) {
 }
 
 void SelectDrawWidget::NoData(Draw *d) {
-	m_cb_l[d->GetDrawNo()].Enable(false);
+	m_cb_l[d->GetDrawNo()].Enable(!d->GetNoData());
 }
 
 void SelectDrawWidget::EnableChanged(Draw *draw) {

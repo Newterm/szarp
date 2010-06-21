@@ -292,6 +292,8 @@ void Draw::AddData(DatabaseQuery *query, bool &data_within_view) {
 
 	m_values.AddData(query, data_within_view, stats_updated);
 
+	m_param_has_data = true;
+
 	if (stats_updated)
 		m_observers->NotifyStatsChanged(this);
 

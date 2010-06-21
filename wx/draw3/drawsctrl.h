@@ -305,6 +305,8 @@ public:
 
 	void SetFollowLatestData(bool follow_latest_data);
 
+	bool GetFollowLatestData();
+
 	bool GetDoubleCursor();
 
 

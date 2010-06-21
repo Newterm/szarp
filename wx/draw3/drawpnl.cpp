@@ -964,6 +964,8 @@ void DrawPanel::SetActive(bool _active) {
 
 		if (pmi)
 			pmi->Check(true);
+
+        	menu_bar->FindItem(XRCID("LATEST_DATA_FOLLOW"))->Check(dc->GetFollowLatestData());
 	}
 
 }
