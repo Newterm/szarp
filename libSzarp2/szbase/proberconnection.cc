@@ -26,7 +26,7 @@ void ProberConnection::Connect() {
 void ProberConnection::TimeoutHandler(const boost::system::error_code& error) {
 	if (error == boost::asio::error::operation_aborted)
 		return;
-	sz_log(4, "Timeout handler called, %s", error.message().c_str());
+	sz_log(4, "Timeout handler called");
 	switch (m_state) {
 		case IDLE:
 			return;
@@ -348,15 +348,18 @@ void ProberConnection::Go() {
 }
 
 void ProberConnection::StartTimer() {
+	sz_log(9, "Starting deadline timer");
 	m_deadline.expires_from_now(boost::posix_time::seconds(5));
 	m_deadline.async_wait(boost::bind(&ProberConnection::TimeoutHandler, this, _1));
 }
 
 void ProberConnection::StopTimer() {
+	sz_log(9, "Stoping deadline timer");
 	m_deadline.cancel();
 }
 
 void ProberConnection::Disconnect() {
+	sz_log(9, "Disconnecting with prober server");
 	if (m_connected) {
 		m_connected = false;
 		m_socket.close();
