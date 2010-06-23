@@ -309,8 +309,7 @@ void ProberConnection::PerformOperation() {
 				m_timeout = false;	
 			ClearError();
 			Disconnect();
-			Connect();
-			Go();
+			PerformOperation();
 		} else {
 			Disconnect();	
 		}

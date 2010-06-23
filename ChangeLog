@@ -1,4 +1,6 @@
 
+2010-06-23	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* libSzarp2/szbase: fix in deadline timer handling 
 2010-06-17	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* libSzarp2/szbase: fixes, improvments resulting from yet another 10
 	seconds' probes testing session
