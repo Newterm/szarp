@@ -1,4 +1,9 @@
 
+2010-06-25	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* libSzarp2/szbase: instead of canceling operation on a socket when 
+	timeout occurs, we just close the socket - under MS Windows XP cancelling 
+	asio operations on a socket does not work (it's even worse
+	than 'not working' - it causes draw3 to crash)
 2010-06-23	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* libSzarp2/szbase: fix in deadline timer handling 
 2010-06-17	Darek Marcinkiewcz <reksio@praterm.com.pl>

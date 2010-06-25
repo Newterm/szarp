@@ -34,8 +34,10 @@ void ProberConnection::TimeoutHandler(const boost::system::error_code& error) {
 			m_resolver.cancel();
 			break;
 		case CONNECTING:
+			m_socket.close();
+			break;
 		case PERFORMING_OPERATION:
-			m_socket.cancel();
+			Disconnect();
 			break;
 	}
 	m_timeout = true;
