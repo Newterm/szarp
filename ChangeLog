@@ -1,4 +1,8 @@
 
+2010-06-29	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* libSzarp2/szbase/lua_parser.cc: under boost version
+	that we use for arm, qi::phrase_parse take non-const
+	reference to parser and skip parser objects
 2010-06-25	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* libSzarp2/szbase: instead of canceling operation on a socket when 
 	timeout occurs, we just close the socket - under MS Windows XP cancelling 

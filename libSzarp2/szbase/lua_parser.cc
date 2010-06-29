@@ -563,7 +563,9 @@ public:
 };
 
 bool parse(std::wstring::const_iterator& iter, std::wstring::const_iterator &end, chunk& chunk_) {
-	return qi::phrase_parse(iter, end, lua_parser(), lua_skip_parser(), chunk_);
+	lua_parser _lua_parser;
+	lua_skip_parser _lua_skip_parser;
+	return qi::phrase_parse(iter, end, _lua_parser, _lua_skip_parser, chunk_);
 }
 
 block& block::operator=(const boost::recursive_wrapper<chunk>& c) { chunk_ = c.get(); return *this; }
