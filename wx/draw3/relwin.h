@@ -37,7 +37,7 @@
 #include <wx/statline.h>
 
 /**Display summary values of currently displayed draws*/
-class RelWindow : public wxDialog, public DrawObserver {
+class RelWindow : public wxFrame, public DrawObserver {
 
 	/**This structure holds values of displayed draws*/
 	struct ObservedDraw {

@@ -43,7 +43,7 @@
 #include "drawpnl.h"
 #include "relwin.h"
 
-BEGIN_EVENT_TABLE(RelWindow, wxDialog)
+BEGIN_EVENT_TABLE(RelWindow, wxFrame)
     EVT_IDLE(RelWindow::OnIdle)
     EVT_BUTTON(wxID_HELP, RelWindow::OnHelpButton)
     EVT_CLOSE(RelWindow::OnClose)
@@ -54,8 +54,7 @@ RelWindow::ObservedDraw::ObservedDraw(Draw *_draw) : draw(_draw),
 {}
 
 RelWindow::RelWindow(wxWindow *parent, DrawPanel *panel) :
-	wxDialog(parent, wxID_ANY, _("Values ratio"), wxDefaultPosition, wxSize(200, 100), 
-			wxDEFAULT_DIALOG_STYLE),
+	wxFrame(parent, wxID_ANY, _("Values ratio"), wxDefaultPosition, wxSize(200, 100)),
 	m_update(false),
 	m_active(false),
 	m_panel(panel),
@@ -180,7 +179,7 @@ void RelWindow::Deactivate() {
 	m_active = false;
 
        	for (size_t i = 0; i < m_draws.Count(); ++i)
-		if (m_draws[i]->draw)
+		if (m_draws[i] && m_draws[i]->draw)
 			ResetDraw(m_draws[i]->draw);
 
 	m_draws_controller->DetachObserver(this);
@@ -275,7 +274,7 @@ bool RelWindow::Show(bool show) {
 	else
 		Deactivate();
 
-	bool ret = wxDialog::Show(show);
+	bool ret = wxFrame::Show(show);
 
 	return ret;
 }
