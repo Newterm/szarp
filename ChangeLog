@@ -1,4 +1,6 @@
 
+2010-06-30	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* wx/draw3/xyzgraph.cpp: axis description fix
 2010-06-29	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* libSzarp2/szbase/lua_parser.cc: under boost version
 	that we use for arm, qi::phrase_parse take non-const

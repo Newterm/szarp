@@ -369,7 +369,7 @@ void XYZCanvas::DrawAxis(int axis_no) {
 
 	glPushMatrix();
 	gluCylinder(m_quad, 0.5, 0.5, 1.1 * slices_no, 30, 1);
-	glTranslatef(0, 1.1 * slices_no + 5, 0.0);
+	glTranslatef(0, 0, 1.1 * slices_no + 5);
 	FaceViewer();
 	glTranslatef(-2.5, 0.0, 0.0);
 	FTBBox bbox = m_font->BBox(short_name.c_str());
