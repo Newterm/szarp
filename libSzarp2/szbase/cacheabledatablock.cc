@@ -146,7 +146,6 @@ CacheableDatablock::LoadFromCache()
 	}
 
 	this->block_timestamp = mod;
-	assert(mod<=time(NULL));
 
 	std::ifstream ifs(SC::S2A(cachepath).c_str(), std::ios::binary | std::ios::in);
 

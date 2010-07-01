@@ -828,14 +828,14 @@ szb_buffer_str::ClearParamFromCache(TParam* param)
 void 
 szb_buffer_str::Reset()
 {
-	this->freeBlocks();
+	bool cachepoison_ = cachepoison;
+	cachepoison = true;
+	freeBlocks();
+	cachepoison = cachepoison_;
 	assert(this->blocks_c == 0);
+	configurationDate = this->GetConfigurationDate();
+	last_err = SZBE_OK;
 
-	this->configurationDate = this->GetConfigurationDate();
-
-	this->last_err = SZBE_OK;
-
-	CacheableDatablock::ResetCache(this);
 }
 
 void

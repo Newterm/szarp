@@ -1,5 +1,10 @@
 
 2010-07-01	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* libSzarp2/szbase: cache is poisoned before 
+	refresh operation; removed assert checking if
+	cache file modification time is not later than
+	now, suprisingly, it is something that can happen
+	unser msw
 	* libSzarp2/szbase: fixed an old, obsurce bug in
 	calculating numer of values in drawdefinable param block, bug
 	was triggerd for certain months by formulas that
