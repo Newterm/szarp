@@ -6,6 +6,15 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.432
+# 01.07.2010
+* support for 10-second probes in szbase and draw3 application was completed
+* new 'latest data following mode' was added to draw3, draw3 when working in this mode 
+positions graph in such a way that always latest data is visible 
+* there are some improvements and bug fixes in XYZ graph drawing
+* mbdmn: daemon now supports unit addresses from 1 up to 255
+* mbdmn: improved logging
+
 ** 3.1.426
 # 01.06.2010
 * 10-second probes archivisation process is integrated into SZARP startup scripts and removes
