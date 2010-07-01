@@ -532,6 +532,11 @@ void ParamEdit::OnDegButton(wxCommandEvent &event) {
 	m_unit_input->WriteText(wxString(wxConvUTF8.cMB2WC(degree_char), *wxConvCurrent));
 }
 
+DefinedParam* ParamEdit::GetModifiedParam() {
+	assert(m_edited_param);
+	return m_edited_param;
+}
+
 ParamEdit::~ParamEdit() {
 	if (m_params_list)
 		m_params_list->Destroy();

@@ -92,6 +92,9 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 	if (year > av_year || (year == av_year && month > av_month))
 		NOT_INITIALIZED;
 
+	if (updatetime < GetStartTime())
+		NOT_INITIALIZED;
+
 	if (LoadFromCache())
 	{
 		Refresh();
@@ -118,26 +121,18 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 	if (num_of_params > 0) {
 		probes_to_compute = this->GetBlocksUsedInFormula(dblocks, params, this->fixed_probes_count);
 	} else {
-		if (this->last_update_time > this->GetEndTime())
-			probes_to_compute = this->fixed_probes_count = this->max_probes;
-		else if (this->last_update_time < this->GetStartTime()) {
-			szb_unlock_buffer(this->buffer);
-			NOT_INITIALIZED;
-		} else
-			probes_to_compute = this->fixed_probes_count = szb_probeind(end_date) + 1;
+		if (last_update_time > GetEndTime())
+			probes_to_compute = fixed_probes_count = max_probes;
+		else
+			probes_to_compute = szb_probeind(last_update_time) + 1;
 	}
 
 	assert(this->fixed_probes_count <= this->max_probes);
 
 	if (probes_to_compute <= 0) {
-		szb_unlock_buffer(this->buffer);
+		szb_unlock_buffer(buffer);
 		NOT_INITIALIZED;
 	}
-
-	/* if N is used or no params in formula we must calculate probes to last_av_date */
-// 	if (param->IsNUsed() || 0 == num_of_params) {
-// 		this->probes_c = GetProbesBeforeLastAvDate();
-// 	}
 
 	double pw = pow(10, param->GetPrec());
 
@@ -210,23 +205,18 @@ DefinableDatablock::GetBlocksUsedInFormula(const double** blocks, TParam** param
 			case TParam::P_COMBINED:
 			case TParam::P_DEFINABLE:
 			case TParam::P_LUA:
-				probes = probes > block->GetLastDataProbeIdx() + 1 ? probes : block->GetLastDataProbeIdx() + 1;
-				fixedprobes = fixedprobes < block->GetFixedProbesCount() ? fixedprobes : block->GetFixedProbesCount();
-				this->block_timestamp = this->block_timestamp > block->GetBlockTimestamp() ? this->block_timestamp : block->GetBlockTimestamp();
+				fixedprobes = std::min(fixedprobes, block->GetFixedProbesCount());
+				block_timestamp = std::min(block_timestamp, block->GetBlockTimestamp());
 				break;
 		}
 	}
 
-	if (probes < fixedprobes)
-		probes = fixedprobes;
-
-	if(this->GetEndTime() < this->last_update_time) {
+	if (GetEndTime() < last_update_time)
 		probes = max_probes;
-	} else if (this->GetStartTime() < this->last_update_time) {
-		int tmp = szb_probeind(szb_search_last(buffer, this->param)) + 1;
-		if (tmp > probes)
-			probes = tmp;
-	}
+	else if (GetStartTime() > last_update_time)
+		probes = 0;
+	else
+		probes = szb_probeind(last_update_time) + 1;
 
 	return probes;
 }
@@ -263,8 +253,8 @@ DefinableDatablock::Refresh()
 	if (num_of_params > 0) {
 		new_probes_c = GetBlocksUsedInFormula(dblocks, params, new_fixed_probes);
 	} else {
-		if (this->last_update_time > this->GetEndTime())
-			new_probes_c = new_fixed_probes = this->max_probes;
+		if (last_update_time > GetEndTime())
+			new_probes_c = new_fixed_probes = max_probes;
 		else
 			new_probes_c = new_fixed_probes = szb_probeind(szb_search_last(buffer, param)) + 1;
 	}

@@ -1,4 +1,14 @@
 
+2010-07-01	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* libSzarp2/szbase: fixed an old, obsurce bug in
+	calculating numer of values in drawdefinable param block, bug
+	was triggerd for certain months by formulas that
+	referred to parameters with values reaching into the future
+	* wx/draw3: percentage of probes in summary window
+	not shown only if 100% of probes are present
+	* wx/draw3: fixed crash ocurring when user chose 
+	'edit as new definable' menu item and then edited
+	a user defined param from such freshly created set
 2010-06-30	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* wx/draw3/xyzgraph.cpp: axes description fix
 2010-06-29	Darek Marcinkiewcz <reksio@praterm.com.pl>

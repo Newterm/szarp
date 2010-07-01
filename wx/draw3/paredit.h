@@ -85,7 +85,7 @@ public:
 
 	DrawInfo* GetCurrentDrawInfo();
 
-	bool IsSummaried();
+	DefinedParam* GetModifiedParam();
 
 	void DatabaseResponse(DatabaseQuery *query);
 

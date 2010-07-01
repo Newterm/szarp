@@ -671,7 +671,8 @@ wxString DrawPicker::GetUniqueTitle(wxString user_title) {
 	int nr = 2;
 	while (true) {
 		suggested_title = wxString::Format(_T("%s <%d>"), user_title.c_str(), nr++);
-		if (dds->GetRawDrawsSets()[suggested_title] == NULL)
+		DrawSetsHash& dsh = dds->GetDrawsSets();
+		if (dsh.find(suggested_title) == dsh.end())
 			break;
 	}
 	return suggested_title;
@@ -919,7 +920,9 @@ void DrawPicker::OnEditParam(wxCommandEvent &e) {
 	DefinedParam *dp = dynamic_cast<DefinedParam*>(ddi->GetParam());
 
 	ParamEdit* pe = new ParamEdit(this, m_config_mgr, m_database_manager);
-	pe->Edit(dp);
+	int ret = pe->Edit(dp);
+	if (!m_editing_existing && ret == wxID_OK)
+		ddi->SetParam(pe->GetModifiedParam());
 	delete pe;
 
 	RefreshData();
