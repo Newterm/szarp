@@ -9,14 +9,14 @@
 
 ** 3.1.432
 # 01.07.2010
-* Zakoñczono prace nad obs³ug± próbek 10 sekundowych w szbase i oraz
+* Zakoñczono prace nad obs³ug± próbek 10 sekundowych w bibliotece szbase oraz w
 programie przegl±daj±cym
 * Dodano nowy tryb pracy do programu draw3 - tryb pod±¿ania za najnowsz±
-dan± - pracuj±c w tym trybie, podczas od¶wie¿ania wykresu, program zawsze ustawia
-widok tak by najnowsza dostêpna dana z wykresu by³a widoczna
-* Dodkonano usprawnieñ w rysowaniu wykresów XYZ
+dan±. Pracuj±c w tym trybie, podczas od¶wie¿ania wykresu, program zawsze ustawia
+widok tak, by by³a widoczna najnowsza dostêpna dana z wykresu.
+* Dodkonano usprawnieñ w rysowaniu wykresów XYZ.
 * W demonie mbdmn rozbudowano mechanizm logowania, oraz dodano obs³ugê adresów
-jedostek z przadzia³u 1-255
+jednostek z przedzia³u 1-255.
 
 ** 3.1.426
 # 01.06.2010
