@@ -1,4 +1,14 @@
 
+2010-07-02	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* libSzarp2/szbase: proper refresh of lua optimized datablock
+	for params that do not refer to any parameters
+	* wx/sync: do not start automatic synchronization
+	immidiately after program startup - users from Szombierki
+	claim that sometimes when program in run by windows startup
+	scripts, synchronization hangs, and program needs to be restarted.
+	Unfortunately I was not able to reprocude incorrect ssc behaviour,
+	since the workaround. I have also updated libcares in a windows build,
+	as it a first thing that does any network I/O.
 2010-07-01	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* libSzarp2/szbase: cache is poisoned before 
 	refresh operation; removed assert checking if

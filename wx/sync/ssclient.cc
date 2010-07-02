@@ -2627,7 +2627,7 @@ SSCTaskBarItem::SSCTaskBarItem(wxString szarp_dir) {
 
 	m_timer = new wxTimer(this, ID_TIMER);
 
-	m_timer->Start(1000);
+	m_timer->Start(60000);
 }
 
 wxMenu* SSCTaskBarItem::CreateMenu() {

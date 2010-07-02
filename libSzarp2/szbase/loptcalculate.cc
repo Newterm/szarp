@@ -1367,6 +1367,12 @@ Param* optimize_lua_param(TParam* p) {
 				 	i != ep->m_par_refs.end();
 					i++)
 				szbase->AddLuaOptParamReference(i->m_param, p);
+			//no params are referenced by this param
+			if (ep->m_par_refs.size() == 0) {
+				szb_buffer_t* buffer = szbase->GetBuffer(p->GetSzarpConfig()->GetPrefix());
+				assert(buffer);
+				ep->m_last_update_times[buffer] = -1;
+			}
 		} catch (LuaExec::ParamConversionException &e) {
 			sz_log(3, "Parameter %ls cannot be optimized, reason: %ls", p->GetName().c_str(), e.what().c_str());
 #ifdef LUA_OPTIMIZER_DEBUG
