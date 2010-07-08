@@ -61,8 +61,8 @@ SZBASE_TYPE szb_lua_get_avg(szb_buffer_t* buffer, TParam *param, time_t start_ti
 	}
 	if (!szb_lua_search_first_last_date(buffer, param, probe, first_date, last_date))
 		goto error;
-	end_time = std::min(end_time, first_date);
-	start_time = std::max(start_time, last_date);
+	start_time = std::max(start_time, first_date);
+	end_time = std::min(end_time, last_date);
 	lua_rawgeti(lua, LUA_REGISTRYINDEX, ref);
 	for (size_t i = 0; start_time < end_time; ++i, start_time = szb_move_time(start_time, 1, probe, 0)) {
 		if (start_time <= last_date) {

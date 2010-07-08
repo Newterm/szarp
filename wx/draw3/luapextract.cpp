@@ -18,358 +18,147 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
-
 #include "config.h"
 
 #ifdef LUA_PARAM_OPTIMISE
 
+#include <algorithm>
+#include <vector>
+
 #include <boost/variant.hpp>
+#include <boost/fusion/include/is_sequence.hpp>
+#include <boost/fusion/include/adapt_struct.hpp>
+#include <boost/fusion/include/boost_tuple.hpp>
+#include <boost/fusion/include/algorithm.hpp>
+#include <boost/mpl/eval_if.hpp>
+#include <boost/mpl/identity.hpp>
 
 #include "szbase/lua_syntax.h"
+#include "szbase/lua_syntax_fusion_adapt.h"
 #include "luapextract.h"
 
-using namespace lua_grammar;
-
-class field_extractor : public boost::static_visitor<> {
-	mutable std::vector<std::wstring>& strings_;
-public:
-	field_extractor(std::vector<std::wstring>& strings) : strings_(strings) {}
-
-	void operator()(const boost::tuple<expression, expression>& e) const;
-
-	void operator()(const boost::tuple<identifier, expression>& e) const;
-
-	void operator()(const expression& e) const;
+struct extract_ {
+	template<class T> std::vector<std::wstring> operator()(const T& x) const;
 };
 
-class term_extractor : public boost::static_visitor<> {
-	mutable std::vector<std::wstring>& strings_;
-public:
-	term_extractor(std::vector<std::wstring>& strings) : strings_(strings) {}
-
-	template <typename T> void operator()(const T& op) const;
-
-	void operator()(const std::wstring& string) const;
-
-	void operator()(const funcbody& funcbody_) const;
-
-	void operator()(const tableconstructor& tableconstructor_) const;
-
-	void operator()(const postfixexp& postfixexp_) const;
-
-	void operator()(const expression& expression_) const;
+struct variant_visitor : public boost::static_visitor<std::vector<std::wstring> > {
+	template<class T> std::vector<std::wstring> operator()(const T& x) const {
+		return extract_()(x);
+	}
 };
 
-class args_extractor : public boost::static_visitor<> {
-	mutable std::vector<std::wstring>& strings_;
-public:
-	args_extractor(std::vector<std::wstring> &strings) : strings_(strings) {}
-
-	void operator()(const std::vector<expression>& exps_) const;
-
-	void operator()(const tableconstructor& tc) const;
-
-	void operator()(const std::wstring& str) const;
-
+struct extract_variant {
+	template <class T> std::vector<std::wstring> operator()(const T &x) const {
+		return boost::apply_visitor(variant_visitor(), x);
+	}
 };
 
-class name_arg_extractor: public boost::static_visitor<> {
-	mutable std::vector<std::wstring>& strings_;
-public:
-	name_arg_extractor(std::vector<std::wstring> &strings) : strings_(strings) {}
-
-	void operator()(const args& args_) const;
-
-	void operator()(const boost::tuple<identifier, args>& namearg) const;
-
+template<class F, class V> struct acc {
+	F _f;	
+	mutable std::vector<V> _v;
+	template <class	T> void operator()(const T& x) const {
+		std::vector<V> v = _f(x);
+		_v.insert(_v.end(), v.begin(), v.end());
+	}
 };
 
-class exp_identifier_extractor : public boost::static_visitor<> {
-	mutable std::vector<std::wstring>& strings_;
-public:
-	exp_identifier_extractor(std::vector<std::wstring> &strings) : strings_(strings) {}
-
-	void operator()(const expression& e) const;
-
-	void operator()(const identifier& i) const {}
+struct extract_seq {
+	template <class T> std::vector<std::wstring> operator()(const T &x) const {
+		acc<extract_, std::wstring> _acc;
+		boost::fusion::for_each(x, _acc);
+		return _acc._v;	
+	}
 };
 
-class exp_identifier_name_arg_extractor : public boost::static_visitor<> {
-	mutable std::vector<std::wstring>& strings_;
-public:
-	exp_identifier_name_arg_extractor(std::vector<std::wstring> &strings) : strings_(strings) {}
-
-	void operator()(const exp_identifier& exp_identifier_) const;
-
-	void operator()(const namearg& namearg_) const;
+struct extract_vec {
+	template <class T> std::vector<std::wstring> operator()(const std::vector<T> &x) const {
+		return std::for_each(x.begin(), x.end(), acc<extract_, std::wstring>())._v;
+	}
 };
 
-class postfix_extractor : public boost::static_visitor<> {
-	mutable std::vector<std::wstring>& strings_;
-public:
-	postfix_extractor(std::vector<std::wstring> &strings) : strings_(strings) {}
-
-	void operator()(const identifier& identifier_) const {}
-
-	void operator()(const boost::tuple<exp_identifier, std::vector<exp_ident_arg_namearg> > &e) const;
+struct extract_string {
+	template <class T> std::vector<std::wstring> operator()(const T &x) const {
+		return std::vector<std::wstring>(1, x);
+	}
 };
 
-class var_extractor : public boost::static_visitor<> {
-	mutable std::vector<std::wstring>& strings_;
-public:
-	var_extractor(std::vector<std::wstring> &strings) : strings_(strings) {}
-
-	void operator()(const identifier& identifier_) const {}
-
-	void operator()(const varc& varc) const;
-
+struct extract_optional {
+	template <class T> std::vector<std::wstring> operator()(const T &x) const {
+		if (x)
+			return extract_()(*x);
+		else
+			return std::vector<std::wstring>();
+	}
 };
 
-class statement_extractor : public boost::static_visitor<> {
-	mutable std::vector<std::wstring>& strings_;
-public:
-	statement_extractor(std::vector<std::wstring> &strings) : strings_(strings) {}
-
-	void operator() (const assignment &a) const;
-
-	void operator() (const block &b) const;
-
-	void operator() (const while_loop &w) const;
-
-	void operator() (const repeat_loop &r) const;
-
-	void operator() (const if_stat &if_) const;
-
-	void operator() (const for_in_loop &a) const;
-
-	void operator() (const for_from_to_loop &for_) const;
-
-	void operator() (const postfixexp &a) const;
-
-	void operator() (const function_declaration &a) const;
+struct extract_recursive_wrapper {
+	template <class T> std::vector<std::wstring> operator()(const boost::recursive_wrapper<T> &x) const {
+		return extract_()(x.get());
+	}
 };
 
-class block_extractor {
-	mutable std::vector<std::wstring>& strings_;
-public:
-	block_extractor(std::vector<std::wstring>& strings) : strings_(strings) {}
-
-	void operator()(const block& block_) const;
+struct extract_none {
+	template <class T> std::vector<std::wstring> operator()(const T &x) const {
+		return std::vector<std::wstring>();
+	}
 };
 
-class chunk_extractor {
-	mutable std::vector<std::wstring>& strings_;
-public:
-	chunk_extractor(std::vector<std::wstring>& strings) : strings_(strings) {}
-	void operator()(const chunk& chunk_) const;
-};
+//from http://lists.boost.org/Archives/boost/2004/02/60473.php
+template<typename T> struct is_variant : boost::mpl::false_ {};
+template<BOOST_VARIANT_ENUM_PARAMS(typename T)>
+	struct is_variant< boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)> >
+		: boost::mpl::true_ {}; 
 
-class expression_extractor {
-	mutable std::vector<std::wstring>& strings_;
-	void extract_unop(const unop_exp& e) const;
-	void extract_mul(const mul_exp &e) const;
-	void extract_concat(const concat_exp &e) const;
-public:
-	expression_extractor(std::vector<std::wstring>& strings) : strings_(strings) {}
-	void operator() (const expression& e) const;
-};
+template<typename T> struct is_vector : boost::mpl::false_ {};
+template<typename T>
+	struct is_vector< std::vector<T> >
+		: boost::mpl::true_ {}; 
+
+template<typename T> struct is_optional: boost::mpl::false_ {};
+template<typename T>
+	struct is_optional< boost::optional<T> >
+		: boost::mpl::true_ {}; 
+
+template<typename T> struct is_recursive_wrapper: boost::mpl::false_ {};
+template<typename T>
+	struct is_recursive_wrapper < boost::recursive_wrapper<T> >
+		: boost::mpl::true_ {}; 
+
+template<class T> struct extract_impl :
+		boost::mpl::eval_if<boost::fusion::traits::is_sequence<T>,
+			boost::mpl::identity<extract_seq>, 
+			boost::mpl::eval_if<is_variant<T>,
+				boost::mpl::identity<extract_variant>,
+				boost::mpl::eval_if<is_vector<T>,
+					boost::mpl::identity<extract_vec>,
+					boost::mpl::eval_if<boost::is_same<T, std::wstring>,
+						boost::mpl::identity<extract_string>,
+						boost::mpl::eval_if<is_optional<T>,
+							boost::mpl::identity<extract_optional>,
+							boost::mpl::eval_if<is_recursive_wrapper<T>,
+								boost::mpl::identity<extract_recursive_wrapper>,
+								boost::mpl::identity<extract_none>
+							>
+						>
+					>
+				>
+			>
+		>::type
+{};
+
+template<class T> std::vector<std::wstring> extract_::operator()(const T& x) const {
+	return extract_impl<T>()(x);
+}
 
 bool extract_strings_from_formula(const std::wstring& formula, std::vector<std::wstring> &strings) {
-	chunk c;
+	lua_grammar::chunk c;
 	std::wstring::const_iterator s = formula.begin();
 	std::wstring::const_iterator e = formula.end();
-	if (parse(s, e, c)) {
-		(chunk_extractor(strings))(c);
+	if (lua_grammar::parse(s, e, c)) {
+		strings = extract_()(c);
 		return true;
 	} else 
 		return false; 
-}
-
-void field_extractor::operator()(const boost::tuple<expression, expression>& e) const {
-	(expression_extractor(strings_))(e.get<0>());
-	(expression_extractor(strings_))(e.get<1>());
-}
-
-void field_extractor::operator()(const boost::tuple<identifier, expression>& e) const {
-	(expression_extractor(strings_))(e.get<1>());
-}
-
-void field_extractor::operator()(const expression& e) const {
-	(expression_extractor(strings_))(e);
-}
-
-template <typename T> void term_extractor::operator()(const T& op) const {}
-
-void term_extractor::operator()(const std::wstring& string) const {
-	strings_.push_back(string);
-}
-
-void term_extractor::operator()(const funcbody& funcbody_) const {
-	(block_extractor(strings_))(funcbody_.block_);
-}
-
-void term_extractor::operator()(const tableconstructor& t) const {
-	for (size_t i = 0; i < t.tableconstructor_.size(); i++) 
-		boost::apply_visitor(field_extractor(strings_), t.tableconstructor_[i]);
-}
-
-void term_extractor::operator()(const postfixexp& postfixexp_) const {
-	boost::apply_visitor(postfix_extractor(strings_), postfixexp_);
-}
-
-void term_extractor::operator()(const expression& expression_) const {
-	(expression_extractor(strings_))(expression_);
-}
-
-void args_extractor::operator()(const std::vector<expression>& exps_) const {
-	for (size_t i = 0; i < exps_.size(); i++)
-		(expression_extractor(strings_))(exps_[i]);
-}
-
-void args_extractor::operator()(const tableconstructor& t) const {
-	for (size_t i = 0; i < t.tableconstructor_.size(); i++) 
-		boost::apply_visitor(field_extractor(strings_), t.tableconstructor_[i]);
-}
-
-void args_extractor::operator()(const std::wstring& str) const {
-	strings_.push_back(str);
-}
-
-void name_arg_extractor::operator()(const args& args_) const {
-	boost::apply_visitor(args_extractor(strings_), args_);	
-}
-
-void name_arg_extractor::operator()(const boost::tuple<identifier, args>& namearg) const {
-	boost::apply_visitor(args_extractor(strings_), namearg.get<1>());	
-}
-
-void exp_identifier_extractor::operator()(const expression& e) const {
-	(expression_extractor(strings_))(e);
-}
-
-void exp_identifier_name_arg_extractor::operator()(const exp_identifier& exp_identifier_) const {
-	boost::apply_visitor(exp_identifier_extractor(strings_), exp_identifier_);
-}
-
-void exp_identifier_name_arg_extractor::operator()(const namearg& namearg_) const {
-	boost::apply_visitor(name_arg_extractor(strings_), namearg_);
-}
-
-void postfix_extractor::operator()(const boost::tuple<exp_identifier, std::vector<exp_ident_arg_namearg> > &e) const {
-	boost::apply_visitor(exp_identifier_extractor(strings_), e.get<0>());
-	for (std::vector<exp_ident_arg_namearg>::const_iterator i = e.get<1>().begin(); i != e.get<1>().end(); i++)
-		boost::apply_visitor(exp_identifier_name_arg_extractor(strings_), *i);
-}
-
-void var_extractor::operator()(const varc& varc_) const {
-	boost::apply_visitor(exp_identifier_extractor(strings_), varc_.exp_identifier_);
-	for (size_t i = 0; i < varc_.var_seqs.size(); i++) {
-		boost::apply_visitor(exp_identifier_extractor(strings_), varc_.var_seqs[i].exp_identifier_);
-		const std::vector<namearg>& nameargs = varc_.var_seqs[i].nameargs;
-		for (size_t j = 0; j < nameargs.size(); j++)
-			boost::apply_visitor(name_arg_extractor(strings_), nameargs[j]);
-	}
-}
-
-void statement_extractor::operator() (const assignment &a) const {
-	for (size_t i = 0; i < a.varlist.size(); i++)
-		boost::apply_visitor(var_extractor(strings_), a.varlist[i]);
-
-	for (size_t i = 0; i < a.explist.size(); i++)
-		(expression_extractor(strings_))(a.explist[i]);
-}
-
-void statement_extractor::operator() (const block &b) const {
-	(block_extractor(strings_))(b);
-}
-
-void statement_extractor::operator() (const while_loop &w) const {
-	(expression_extractor(strings_))(w.expression_);
-	(block_extractor(strings_))(w.block_);
-}
-
-void statement_extractor::operator() (const repeat_loop &r) const {
-	(expression_extractor(strings_))(r.expression_);
-	(block_extractor(strings_))(r.block_);
-}
-
-void statement_extractor::operator() (const if_stat &if_) const {
-	(expression_extractor(strings_))(if_.if_exp);
-	(block_extractor(strings_))(if_.block_);
-	for (size_t i = 0; i < if_.elseif_.size(); i++) {
-		(expression_extractor(strings_))(if_.elseif_[i].get<0>());
-		(block_extractor(strings_))(if_.elseif_[i].get<1>());
-	}
-	if (if_.else_)
-		(block_extractor(strings_))(*if_.else_);
-}
-
-void statement_extractor::operator() (const for_in_loop &a) const {
-	for (size_t i = 0; i < a.expressions.size(); i++) 
-		(expression_extractor(strings_))(a.expressions[i]);
-	(block_extractor(strings_))(a.block_);
-}
-
-void statement_extractor::operator() (const for_from_to_loop &for_) const {
-	(expression_extractor(strings_))(for_.from);
-	(expression_extractor(strings_))(for_.to);
-	if (for_.step)
-		(expression_extractor(strings_))(*for_.step);
-	(block_extractor(strings_))(for_.block_);
-}
-
-void statement_extractor::operator() (const postfixexp &a) const {
-	boost::apply_visitor(postfix_extractor(strings_), a);
-}
-
-void statement_extractor::operator() (const function_declaration &f) const {
-	(block_extractor(strings_))(f.funcbody_.block_);
-}
-
-
-void block_extractor::operator()(const block& block_) const {
-	(chunk_extractor(strings_))(block_.chunk_.get());
-}
-
-void chunk_extractor::operator()(const chunk& chunk_) const {
-	for (size_t i = 0; i < chunk_.stats.size(); i++)
-		boost::apply_visitor(statement_extractor(strings_), chunk_.stats[i]);
-
-	if (chunk_.laststat_)
-		try {
-			const return_& ret = boost::get<return_>(*chunk_.laststat_);
-			for (size_t i = 0; i < ret.expressions.size(); i++)
-				(expression_extractor(strings_))(ret.expressions[i]);
-		} catch (boost::bad_get&) { }
-}
-
-void expression_extractor::extract_unop(const unop_exp& e) const {
-	const pow_exp& pe = e.get<1>();
-	for (pow_exp::const_iterator i = pe.begin(); i != pe.end(); i++)
-		boost::apply_visitor(term_extractor(strings_), *i);				
-}
-
-void expression_extractor::extract_mul(const mul_exp &e) const {
-	extract_unop(e.unop);
-	for (mul_list::const_iterator i = e.muls.begin(); i != e.muls.end(); i++)
-		extract_unop(i->get<1>());
-}
-
-void expression_extractor::extract_concat(const concat_exp &e) const {
-	for (concat_exp::const_iterator i = e.begin(); i != e.end(); i++) {
-		extract_mul(i->mul);
-		for (add_list::const_iterator j = i->adds.begin(); j != i->adds.end(); j++)
-			extract_mul(j->get<1>());
-	}
-}
-
-void expression_extractor::operator() (const expression& e) const {
-	for (or_exp::const_iterator i = e.o.begin(); i != e.o.end(); i++)
-		for (and_exp::const_iterator j = i->begin(); j != i->end(); j++) {
-			extract_concat(j->concat);
-			for (cmp_list::const_iterator k = j->cmps.begin(); k != j->cmps.end(); k++)
-				extract_concat(k->get<1>());
-		}
 }
 
 #endif /* ifdef LUA_PARAM_OPTIMISE */

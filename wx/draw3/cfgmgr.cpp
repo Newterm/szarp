@@ -1057,8 +1057,8 @@ void ExportImportSet::ConvertParam(DefinedParam *dp, wxString our_name, std::map
 		return;
 	wxString nname = pname.BeforeFirst(_T(':')) + _T(":") + our_name + _T(":") + pname.AfterLast(_T(':'));
 	np->SetParamName(nname);
-#ifdef LUA_PARAM_OPTIMISE
 	wxString formula = dp->GetFormula();
+#ifdef LUA_PARAM_OPTIMISE
 	std::vector<std::wstring> strings;
 	extract_strings_from_formula(formula.c_str(), strings);	
 	for (size_t i = 0; i < strings.size(); i++) if (DefinedParam* d = FindDefinedParam(strings[i])) {
@@ -1066,8 +1066,8 @@ void ExportImportSet::ConvertParam(DefinedParam *dp, wxString our_name, std::map
 		formula.Replace(_T("\"") + d->GetBasePrefix() + _T(":") + d->GetParamName() + _T("\""),
 				_T("\"") + converted[d]->GetBasePrefix() + _T(":") + converted[d]->GetParamName() + _T("\""));
 	}
-	np->SetFormula(formula);
 #endif /* LUA_PARAM_OPTIMISE */
+	np->SetFormula(formula);
 }
 
 void ExportImportSet::ExportSet(DefinedDrawSet *set, wxString our_name) {

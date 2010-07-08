@@ -1,7 +1,36 @@
+/* 
+  SZARP: SCADA software 
+  
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+*/
 #include "config.h"
 
 #ifdef LUA_PARAM_OPTIMISE
 
+/*
+  This is a parser for lua grammar as defined in http://www.lua.org/manual/5.1/manual.html#8
+  The parser takes into account operator precedence. Parser in split into three files:
+  ../include/szbase/lua_syntax.h: defines a data structers used by parser
+  lua_prser.cc: this file, contains majority of parsing code
+  lua_parer_extra.cc: addition file, containing part of a parser, this file exists
+    because version of mingw present in debian unstable (as of this writing) was not able to compile
+    parser contained in one file (compiler died on symbol table overflow)
+*/
+	
+//uncomment to enable parser debugging
 //#define BOOST_SPIRIT_DEBUG
 #include <iostream>
 #include <fstream>
@@ -28,156 +57,8 @@ ostream& operator<< (ostream& os, const wstring& s);
 
 #include "lua_syntax.h"
 #include "lua_parser_extra.h"
+#include "lua_syntax_fusion_adapt.h"
 #include "conversion.h"
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::namelist,
-	(std::vector<std::wstring>, namelist_)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::tableconstructor,
-	(std::vector<lua_grammar::field>, tableconstructor_)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::parlist1,
-	(lua_grammar::namelist, namelist_)
-	(boost::optional<lua_grammar::threedots>, threedots_)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::nil,
-	(std::wstring, nil_)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::threedots,
-	(std::wstring, threedots_)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::block,
-	(boost::recursive_wrapper<lua_grammar::chunk>, chunk_)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::var_seq,
-	(std::vector<lua_grammar::namearg>, nameargs)
-	(lua_grammar::exp_identifier, exp_identifier_) 
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::varc,
-	(lua_grammar::exp_identifier, exp_identifier_)
-	(std::vector<lua_grammar::var_seq>, var_seqs)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::funcbody,
-	(lua_grammar::parlist, parlist_)
-	(lua_grammar::block, block_)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::mul_exp,
-	(lua_grammar::unop_exp, unop)
-	(lua_grammar::mul_list, muls)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::add_exp,
-	(lua_grammar::mul_exp, mul)
-	(lua_grammar::add_list, adds)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::cmp_exp,
-	(lua_grammar::concat_exp, concat)
-	(lua_grammar::cmp_list, cmps)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::expression,
-	(lua_grammar::or_exp, o)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::assignment,
-	(std::vector<lua_grammar::var>, varlist)
-	(std::vector<lua_grammar::expression>, explist)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::while_loop,
-	(lua_grammar::expression, expression_)
-	(lua_grammar::block, block_)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::repeat_loop,
-	(lua_grammar::block, block_)
-	(lua_grammar::expression, expression_)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::if_stat,
-	(lua_grammar::expression, if_exp)
-	(lua_grammar::block, block_)
-	(lua_grammar::elseif, elseif_)
-	(boost::optional<lua_grammar::block>, else_)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::for_from_to_loop,
-	(lua_grammar::identifier, identifier_)
-	(lua_grammar::expression, from)
-	(lua_grammar::expression, to)
-	(boost::optional<lua_grammar::expression>, step)
-	(lua_grammar::block, block_)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::for_in_loop,
-	(lua_grammar::namelist, namelist_)
-	(std::vector<lua_grammar::expression>, expressions)
-	(lua_grammar::block, block_)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::funcname,
-	(std::vector<lua_grammar::identifier>, identifiers)
-	(boost::optional<lua_grammar::identifier>, method_name)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::function_declaration,
-	(lua_grammar::funcname, funcname_)
-	(lua_grammar::funcbody, funcbody_)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::local_assignment,
-	(std::vector<lua_grammar::var>, varlist)
-	(std::vector<lua_grammar::expression>, explist)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::local_function_declaration,
-	(lua_grammar::funcname, funcname_)
-	(lua_grammar::funcbody, funcbody_)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::return_,
-	(std::vector<lua_grammar::expression>, expressions)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::chunk,
-	(std::vector<lua_grammar::stat>, stats)
-	(boost::optional<lua_grammar::laststat>, laststat_)
-)
 
 namespace std {
 ostream& operator<< (ostream& os, const wstring& s);
@@ -357,51 +238,83 @@ public:
 		using qi::eps;
 		using boost::spirit::standard_wide::char_;
 
+		//actual grammar definition
+
+		//keywords rule sucked from lua_parser_extra.cc
 		keywords = get_keywords_rule();
 
+		//identifier is a string that is not a keyword
 		keywordse = keywords >> !char_(L"a-zA-Z0-9_");
-
 		identifier_ = lexeme[ char_(L"a-zA-Z_") >> *(char_(L"a-zA-Z0-9_")) ] - keywordse;
 
+		//pretty strightforward octal char definition
 		octal_char = eps [_val = 0] >> 
 			char_(L"0-7") [ _val = (_1 - L'0') * 64 ] >>
 			char_(L"0-7") [ _val += (_1 - L'0') * 8] >>
 			char_(L"0-7") [ _val += (_1 - L'0')];
 
+		//esacped characters
 		escaped_character = ( lit(L'\\') >> (escaped_symbol_ | octal_char) ) | char_;
 
+		//three dots term
 		threedots_ = lit(L"...") [_val = threedots() ];
 
+		//proper string handling
 		string = lexeme[L"'" >> *(escaped_character - L"'") >> L"'"]
 			| lexeme[L"\"" >> *(escaped_character - L"\"") >> L"\""]
 			| lexeme[L"[[" >> *(char_ - L"]]") >> L"]]"]; 
 
+		//break term
 		break__ = lit(L"break") [_val = break_()];
 
+		//boolean constant
 		boolean = lit(L"true")[_val = true]
 			| lit(L"false")[_val = false];
 
+		//nil constant
 		nil_ = lit(L"nil")[_val = nil()];
 
+		//return expression parser
 		return__ = (L"return" >> eexplist_) [_val = _1];
 
+		//chunk ::= {stat [`;´]} [laststat [`;´]]
 		chunk_ = *(stat_ >> -lit(L";")) >> -(laststat_ >> -lit(L";"));
 
+		//block ::= chunk
 		block_ = chunk_[_val =  _1];
 
+		//explist ::= {exp `,´} exp
 		explist_ = expression_ % L',';
 
+		//potentially empty expresion list
 		eexplist_ = expression_ % L',' | eps;
 
+		//potentially empty variables list
 		varlist_ = var_ % L',' | eps;
 
+		//fieldlist ::= field {fieldsep field} [fieldsep]
+		//tableconstructor ::= `{´ [fieldlist] `}´
 		fieldlist_ = field_  % fieldsep_ | eps;
-
 		tableconstructor_ = (L"{" >> fieldlist_ >> L'}') [ _val = _1];
 
+		//args ::=  `(´ [explist] `)´ | tableconstructor | String 
 		args_ = lit(L'(') >> eexplist_ >> lit(L')')
 			| tableconstructor_
 			| string;
+
+/*	
+		stat ::=  varlist `=´ explist | 
+			functioncall | 
+			do block end | 
+			while exp do block end | 
+			repeat block until exp | 
+			if exp then block {elseif exp then block} [else block] end | 
+			for Name `=´ exp `,´ exp [`,´ exp] do block end | 
+			for namelist in explist do block end | 
+			function funcname funcbody | 
+			local function Name funcbody | 
+			local namelist [`=´ explist] 
+*/
 
 		assignment_ = varlist_ >> L"=" >> explist_;
 
@@ -437,11 +350,18 @@ public:
 			| function_declaration_
 			| postfixexp_;
 
+		//laststat ::= return [explist] | break 
 		laststat_ = return__ | break__;
 
+		//namelist ::= Name {`,´ Name}
 		namelist_ = (identifier_ % L',' )[_val = _1] | eps;
 		
 		function_ = L"function" >> funcbody_;
+
+		/* exp ::=  nil | false | true | Number | String | `...´ | function | 
+			prefixexp | tableconstructor | exp binop exp | unop exp 
+		  we remove left recursion and add operator precedence
+		*/
 
 		term_ = nil_
 			| qi::double_
@@ -453,6 +373,7 @@ public:
 			| tableconstructor_
 			| L'(' >> expression_ >> L')';
 
+		//operator precedence
 		expression_ = or_ [_val = _1];
 		or_ = and_ % L"or";
 		and_ =  cmp_ % L"and";
@@ -463,7 +384,16 @@ public:
 		unop_ = *unop_symbols_ >> pow_;
 		pow_ = term_ % L"^";
 
+		/*
+		 We have following rules that cannot be directly fed to spirit
+  		 var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name 
+ 		 prefixexp ::= var | functioncall | `(´ exp `)´
+		 functioncall ::=  prefixexp args | prefixexp `:´ Name args 
+		 We subsitute them with the following:
+		*/
+
 		exp_identifier_ = L'(' >> expression_ >> L')' | identifier_;
+
 		exp_identifier_square = L"[" >> expression_ >> L"]" | L"." >> identifier_;
 
 		identifier_args_ = L":" >> identifier_ >> args_;
@@ -479,6 +409,15 @@ public:
 		varc_ = exp_identifier_ >> +var_seq_;
 
 		var_ = varc_ | identifier_;
+
+		/*
+		 so our parser does not distinguish directly between functioncall, variable and array's
+		 element access, expressions: something[], something(), and something1.something2
+		 are all recognized as postfixexp_.
+		 var_ rule is very similar to postfixexp_ but refers only to expressions
+		 that can be on the left hand side of assignements: variables and array elements
+		*/
+		
 
 		funcbody_ = L'(' >> -parlist_ >> L')' >> block_ >> L"end";
 		

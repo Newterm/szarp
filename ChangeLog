@@ -1,4 +1,18 @@
 
+2010-07-08	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* libSzarp2/include/szbase/lua_syntax_fusion_adapt.h: code 
+	adopting lua grammar structs to fusion sequences kicked out
+	to separate header
+	* libSzarp2/szbase/lua_parser.cc: added comments 
+	* libSzarp2/szbase/luacalculate.cc: fix of a stupid bug when
+	max of two values was taken instead of min and vice versa
+	* libSzarp2/szbase/realdatablock.cc: fix a bug that, for mysterious
+	and unknown reasons, only hit windows version of szarp
+	* parcook/sbusdmn.cc: fixes
+	* version: windows version bump
+	* wx/draw3/drawapp.cpp: under windows debug log goes to user home directory
+	* wx/draw3/luapextract.cpp: code for extracting strings from lua formulas
+	now more generic (actually grammar-agnostic) and half as long as initial version
 2010-07-02	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* libSzarp2/szbase: proper refresh of lua optimized datablock
 	for params that do not refer to any parameters

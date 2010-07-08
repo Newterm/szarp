@@ -620,7 +620,9 @@ bool SBUSUnit::Configure(TUnit *unit, xmlNodePtr xmlunit, short *params, SerialP
 		dolog(0, "Attribbute sbus:id not present in unit element, line no (%ld)", xmlGetLineNo(xmlunit)); 
 		return false;
 	}
-	m_id = strtoul((char*)_id, &endptr, 0);
+	m_id = (char*)_id;
+	dolog(5, "Attribbute sbus:id is %s", m_id.c_str());
+	m_id[0] -= '0';
 	xmlFree(_id);
 
 	m_read_timeout = 10;
@@ -1045,6 +1047,10 @@ bool SBUSDaemon::Configure(DaemonConfig *cfg) {
 	int ret;
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
 	assert(ret == 0);
+
+	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "sbus", BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+	assert(ret == 0);
+
 
 	xmlXPathObjectPtr rset = xmlXPathEvalExpression(BAD_CAST ".//ipk:unit", xp_ctx);
 

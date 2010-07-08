@@ -220,11 +220,11 @@ void RealDatablock::Refresh() {
 	this->last_update_time = updateTime;
 
 	if (!fs::exists(GetBlockFullPath())) {
-		if (this->first_data_probe_index < 0) { //this block is empty - update fixed probes
-			int tmp = szb_probeind(this->last_update_time < this->GetLastDataProbeIdx() ? this->last_update_time
-					: this->GetLastDataProbeIdx());
-			assert(tmp >= this->fixed_probes_count);
-			this->fixed_probes_count = this->fixed_probes_count > tmp ? this->fixed_probes_count : tmp;
+		if (first_data_probe_index < 0) { //this block is empty - update fixed probes
+			if (last_update_time > GetEndTime())
+				fixed_probes_count = max_probes;
+			else if (last_update_time >= GetStartTime())
+				fixed_probes_count = szb_probeind(last_update_time);
 		}
 		return;
 	}

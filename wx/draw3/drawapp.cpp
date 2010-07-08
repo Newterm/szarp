@@ -461,12 +461,12 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 	long debug;
 	if (parser.Found(_T("debug"), &debug))
 #ifdef __WXGTK__
-	    loginit((int) debug, "/tmp/draw3.log");
+		loginit((int) debug, "/tmp/draw3.log");
 #else
-	    loginit((int) debug, "c:\\draw3.log");
+		loginit((int) debug, SC::S2A(wxGetHomeDir() + _T("\\draw3.log")).c_str());
 #endif
 	else
-	    loginit(2, NULL);
+		loginit(2, NULL);
 	log_info(0);
 
 	return true;
