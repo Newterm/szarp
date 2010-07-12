@@ -1,4 +1,8 @@
 
+2010-07-12	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* utlis/{szrsync,szbpush}: scrpits supports new 
+	command line option: -b, that allows to specify maximum
+	data transfer speed
 2010-07-08	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* libSzarp2/include/szbase/lua_syntax_fusion_adapt.h: code 
 	adopting lua grammar structs to fusion sequences kicked out

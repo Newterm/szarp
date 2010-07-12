@@ -50,12 +50,13 @@ function log {
 function usage {
     echo "`basename $0` [-c] <ADDRESS> <BASE> <BASE2>"
     echo "    -c - user curl to get szbase_stamp"
+    echo "    -b speed limit transfer speed to speed kbps"
     echo "    <ADDRESS> - address to connect to"
     echo "    <BASE> - base to send"
     echo
 }
 
-OPTS=`getopt -q -o c -n $ME -- "$@"`
+OPTS=`getopt -q -o cb: -n $ME -- "$@"`
 
 if [ $? != 0 ]; then
     usage
@@ -64,8 +65,14 @@ fi
 
 eval set -- "$OPTS"
 
+BWLIMIT=0
+
 while true; do
     case "$1" in
+    	-b)
+	    BWLIMIT=$2
+	    shift 2
+	    ;;
 	-c)
 	    USE_CURL=yes
 	    shift
@@ -141,7 +148,7 @@ function do_rsync {
 	    fi
 	fi
 
-	/usr/bin/rsync $RSYNC_VERBOSE $RSYNC_OPTIONS $SE $1 $REMOTE:/opt/szarp
+	/usr/bin/rsync --bwlimit=$BWLIMIT $RSYNC_VERBOSE $RSYNC_OPTIONS $SE $1 $REMOTE:/opt/szarp
 }
 
 

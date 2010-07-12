@@ -39,6 +39,7 @@ DEFAULT_SERVER=praterm
 ADDRESS=
 DELETE="--delete --force"
 USE_SSH=
+BWLIMIT=0
 SERVER=$DEFAULT_SERVER
 
 ME=`basename $0`
@@ -66,6 +67,7 @@ function usage {
 	echo -e "\t-a <ADDRESS> address for rsync to connect (user@server)"
 	echo -e "\t-u <USER> user for rsync to connect to server, ignored if -a given"
 	echo -e "\t-H <HOST> server to connect to instead of default one ($DEFAULT_SERVER)"
+	echo -e "\t-b speed limit transfer speed to speed kbps"
 	echo -e "\t-n do not delete files"
 	echo -e "\t-s use ssh for getting szbase_stamp date (default curl if -a not given)"
 	echo -e "\t-h print this usage info"
@@ -74,7 +76,7 @@ function usage {
 
 
 # parse options
-OPTS=`getopt -q -o a:u:H:hns -n $ME -- "$@"`
+OPTS=`getopt -q -o a:u:H:b:hns -n $ME -- "$@"`
 
 if [ $? != 0 ]; then
 	usage
@@ -87,6 +89,10 @@ while true; do
     case "$1" in
 	-a)
 	    ADDRESS=$2
+	    shift 2
+	    ;;
+	-b)
+	    BWLIMIT=$2
 	    shift 2
 	    ;;
 	-u)
@@ -232,7 +238,7 @@ function do_rsync () {
 
 	[ $? -eq 0 ] || return
 
-	rsync -az $SZRSYNC_VERBOSE --rsh="ssh -o StrictHostKeyChecking=no" --exclude='.*' --exclude='nohup.out' $DELETE $INC $EXC $ADDRESS:$i /opt/szarp
+	rsync -az $SZRSYNC_VERBOSE --bwlimit=$BWLIMIT --rsh="ssh -o StrictHostKeyChecking=no" --exclude='.*' --exclude='nohup.out' $DELETE $INC $EXC $ADDRESS:$i /opt/szarp
 	LAST=$?
 	if [ $LAST -ne 0 -a $CODE -eq 0 ] ; then
 		CODE=$LAST
