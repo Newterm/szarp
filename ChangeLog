@@ -1,4 +1,17 @@
 
+2010-07-14	Darek Marcinkiewcz <reksio@praterm.com.pl>
+	* wx/sync: added functionality similar to what
+	is already present in draw3: in debug mode liblog output
+	is directed to a file; improved logging; fixed error
+	in case of premature connection termination from 
+	server - until now timeout error were reported;
+	command line parsing adapted from old, unsupported
+	way to 'new', 'better' and supported ;) API
+	* wx/raporter3/raportededit.cc: wxMSW bug workaround:
+	under MSWin, passing validator to wxTextCtrl constutor
+	leads to EVT_TEXT being emitted from within control's
+	construtor - much too early for a parent window object
+	to be in any sane state...
 2010-07-12	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* utlis/{szrsync,szbpush}: scrpits supports new 
 	command line option: -b, that allows to specify maximum

@@ -55,6 +55,7 @@ szRaporterEdit::szRaporterEdit(TSzarpConfig *_ipk,
 		wxWindow* parent, wxWindowID id, const wxString& title) :
 	wxDialog(parent, id, title, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER) 
 {
+	m_title = NULL;
 	this->ipk = _ipk;
 	
 	wxBoxSizer *top_sizer = new wxBoxSizer(wxVERTICAL);
@@ -182,7 +183,9 @@ void szRaporterEdit::OnListColDrag(wxListEvent &ev)
 
 void szRaporterEdit::OnTitleChanged(wxCommandEvent &ev)
 {
-	EnableOkButton();
+	//under MSW this event is generated also from wxTextCtrl constructor...
+	if (m_title)
+		EnableOkButton();
 }
 	
 void szRaporterEdit::EnableOkButton()

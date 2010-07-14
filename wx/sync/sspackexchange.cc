@@ -225,7 +225,7 @@ again:
 	if (ret > 0) {
 #ifdef MINGW32
 		if (FD_ISSET(m_fd, &err_set))
-			throw (_("connection with server terminated"));
+			throw Exception(_("connection with server terminated"));
 #endif
 		if (FD_ISSET(m_fd, &rd_set)) {
 			if (m_write_blocked_on_read)
@@ -295,7 +295,8 @@ bool PacketExchanger::ReadPackets(bool read_one_packet) {
 						if (GetLastError() != 0)
 							throw IOException(GetLastError());
 #else
-						throw IOException(errno);
+						if (errno)
+							throw IOException(errno);
 #endif
 					case SSL_ERROR_ZERO_RETURN: {
 						Packet *p = new Packet;

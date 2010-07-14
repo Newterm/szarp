@@ -636,6 +636,9 @@ void CFileSyncer::ResponseReceiver::ReadPacket(Packet *p) {
 	else if (p->m_type == Packet::EOS_PACKET) {
 		m_all_requests_sent = true;
 		delete p;
+	} else if (p->m_type == Packet::EOF_PACKET) {
+		delete p;
+		throw Exception(_("connection with server terminated"));
 	} else {
 		assert (m_requests.size() > 0);
 		Request& req = m_requests.front();
@@ -1198,14 +1201,14 @@ uint32_t Client::ResolveAddress() {
 	if (status != ARES_SUCCESS)
 		throw Exception(_("unable to connect to server "));
 
+	sz_log(10, "resolving address");
+
 	std::pair<bool, uint32_t> result;
 	ares_gethostbyname(channel, m_current_address, AF_INET, ares_cb, &result);
 
 	try {
-		while (true) {
-			struct timeval tv;
-			tv.tv_sec = 0;
-			tv.tv_usec = 500000;
+		while (result.first == false) {
+			struct timeval tv, *tvp;
 
 			fd_set read_fds, write_fds
 #ifdef MINGW32
@@ -1221,12 +1224,13 @@ uint32_t Client::ResolveAddress() {
 			m_progress.Check();
 
 			int nfds = ares_fds(channel, &read_fds, &write_fds);
+			sz_log(10, "ares fds returned %d fds", nfds);
 			if (nfds == 0)
 				break;
 
 			bool any_in = false;
 			bool any_out = false;
-			for (int i = 0; i < nfds + 1; i++) {
+			for (int i = 0; i < nfds; i++) {
 				if (FD_ISSET(i, &read_fds)) {
 					any_in = true;
 #ifdef MINGW32
@@ -1241,19 +1245,22 @@ uint32_t Client::ResolveAddress() {
 				}
 			}
 
-			select(nfds + 1, any_in ? &read_fds : NULL, any_out ? &write_fds : NULL,
+			tvp = ares_timeout(channel, NULL, &tv);
+
+			select(nfds, any_in ? &read_fds : NULL, any_out ? &write_fds : NULL,
 #ifdef MINGW32
 					&err_fds,
 #else
 					NULL,
 #endif
-					&tv);
+					tvp);
 
 #ifdef MINGW32
-			for (int i = 0; i < nfds + 1; i++)
+			for (int i = 0; i < nfds; i++)
 				if (FD_ISSET(i, &err_fds))
 					throw Exception(_("unable to connect to server "));
 #endif
+			sz_log(10, "calling ares process");
 			ares_process(channel, &read_fds, &write_fds);
 
 		}
@@ -2066,12 +2073,10 @@ void ProgressFrame::OnUpdate(ProgressEvent& event) {
 			m_ballon->ShowBalloon(_("SSC"), wxString(_("Sync failed ")) + event.GetDescription(),
 					BalloonTaskBar::ICON_ERROR);
 #endif
-#if 0
 			if (IsShown())
 				wxMessageBox(wxString(_("Synchronization failed ")) + event.GetDescription(),
 						_("Synchronization failed "),
 						wxICON_EXCLAMATION);
-#endif
 			Hide();
 			Enable();
 			return;
@@ -2560,8 +2565,8 @@ void SSCSelectionFrame::LoadConfiguration() {
 }
 
 void SSCSelectionFrame::LoadDatabases() {
-    wxArrayString hidden_databases;
-    wxString tmp;
+	wxArrayString hidden_databases;
+	wxString tmp;
 	wxConfigBase* config = wxConfigBase::Get(true);
 	if (config->Read(_T("HIDDEN_DATABASES"), &tmp))
 	{
@@ -2901,27 +2906,31 @@ SSCThirdWizardFrame::SSCThirdWizardFrame(wxWizard *parent) : SSCWizardFrameCance
 	sizer->Fit(this);
 }
 
-bool SSCApp::ParseCommandLine() {
-	wxCmdLineParser parser;
-	parser.AddOption(_("d"), _("debug"), _("debug level (0-10)"), wxCMD_LINE_VAL_NUMBER);
-	parser.AddSwitch(_("h"), _("help"), _("print usage info"));
-
-	parser.SetCmdLine(argc, argv);
-
-	if (parser.Parse(false) || parser.Found(_("h"))) {
-		parser.Usage();
-		return false;
-	}
-
-	long loglevel;
-	if (parser.Found(_("d"), &loglevel)) {
-		if (loglevel < 0 || loglevel > 10) {
-			parser.Usage();
-			return false;
-		}
-		sz_loginit(loglevel, NULL);
-	}
+bool SSCApp::OnCmdLineError(wxCmdLineParser &parser) {
 	return true;
+}
+
+bool SSCApp::OnCmdLineHelp(wxCmdLineParser &parser) {
+	parser.Usage();
+	return false;
+}
+
+bool SSCApp::OnCmdLineParsed(wxCmdLineParser &parser) {
+
+	long debug;
+	if (parser.Found(_T("debug"), &debug))
+		loginit((int) debug, SC::S2A(wxGetHomeDir() + _T("\\ssc.log")).c_str());
+	return true;
+}
+
+void SSCApp::OnInitCmdLine(wxCmdLineParser &parser) {
+	szApp::OnInitCmdLine(parser);
+
+        parser.SetLogo(_("SSC version 3.00."));
+
+	parser.AddOption(_T("debug"), wxEmptyString,
+		_("debug level"), wxCMD_LINE_VAL_NUMBER);
+	
 }
 
 void SSCApp::InitLocale() {
@@ -2954,8 +2963,8 @@ void SSCApp::ConvertConfigToMultipleServers() {
 	config->Write(server + _T("/USERNAME"), username);
 
 
-    wxArrayString hidden_databases;
-    wxString tmp;
+	wxArrayString hidden_databases;
+	wxString tmp;
 	//config = wxConfigBase::Get(true);
 	if (config->Read(_T("HIDDEN_DATABASES"), &tmp))
 	{
@@ -3009,9 +3018,6 @@ bool SSCApp::OnInit() {
 	wxInitAllImageHandlers();
 
 	InitLocale();
-
-	if (!ParseCommandLine())
-		return false;
 
 	m_single_instance_check = new szSingleInstanceChecker(_T(".ssc_lock"), wxEmptyString,
 			_T("ssc"));

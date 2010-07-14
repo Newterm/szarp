@@ -825,9 +825,6 @@ class SSCApp : public szApp {
 	szSingleInstanceChecker* m_single_instance_check;
 	/**pointer to @see SSCTaskBarItem*/
 	SSCTaskBarItem* m_taskbar;
-	/**parses command line parameters. Returns true if 
-	 * parse was suncessfull*/
-	bool ParseCommandLine();
 	/**Initalizes locale*/
 	void InitLocale();
 	/**method called upon application start*/
@@ -839,6 +836,14 @@ class SSCApp : public szApp {
 	int OnExit();
 
 	void ConvertConfigToMultipleServers();
+public:
+	virtual bool OnCmdLineError(wxCmdLineParser &parser);
+
+	virtual bool OnCmdLineHelp(wxCmdLineParser &parser);
+
+	virtual bool OnCmdLineParsed(wxCmdLineParser &parser);
+
+	virtual void OnInitCmdLine(wxCmdLineParser &parser);
 
 };
 
