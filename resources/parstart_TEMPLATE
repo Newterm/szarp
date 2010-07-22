@@ -16,7 +16,7 @@ if [ -f /etc/szarp/parstart.cfg ]; then
        	. /etc/szarp/parstart.cfg
 else
 	log_failure_msg "Configuration file /etc/szarp/parstart.cfg is missing"
-	exit 1
+	exit 0
 fi
 
 # Check for SZARP dir

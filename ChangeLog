@@ -1,4 +1,8 @@
 
+2010-07-22	Pawel Palucha <pawel@newterm.pl>
+	* resources/parstart_TEMPLATE: init script returns 0 (success) 
+	if szarp.cfg was not found; allows proper (de)installation
+	of szarp packages when changing configuration prefix.
 2010-07-14	Darek Marcinkiewcz <reksio@praterm.com.pl>
 	* wx/sync: added functionality similar to what
 	is already present in draw3: in debug mode liblog output
