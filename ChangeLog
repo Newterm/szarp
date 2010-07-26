@@ -1,4 +1,18 @@
 
+2010-07-26	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/borutadmn: boruta daemon, thin meta-daemon
+	which does not implement any specific protocol
+	but is intended as a generic platform for running particular
+	protocols implementations, boruta offers a few adventages
+	over traditional daemons: any number of devices working
+	as servers or clients over serial line or tcp using any
+	implemented protocol can be communicated from within one
+	running process; boruta's code contains some helper functions
+	for parsing params.xml and setting up connections parameters;
+	boruta takes care of mundane tasks of managing connections ideally
+	allowing protocol implementor to focus only on protcol details,
+	leaving rest of the stuff to boruta's code
+	* parcook/botura_zet.cc: zet protocol implementation for boruta
 2010-07-22	Pawel Palucha <pawel@newterm.pl>
 	* resources/parstart_TEMPLATE: init script returns 0 (success) 
 	if szarp.cfg was not found; allows proper (de)installation
