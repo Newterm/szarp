@@ -108,22 +108,22 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 
 	*/
 
-	selectedPeriod = 0;
+	selectedPeriod = PT_MIN10;
 	selectedSeparator = COMMA;
 
 	wxPanel* panel = new wxPanel(this);
 
 	// Building begin/end date section
 	firstDatabaseText = new wxStaticText(panel, -1, 
-			wxString(FIRST_DATE_STR) + wxString(_T("YYYY-MM-DD HH:MM")), wxDefaultPosition, wxDefaultSize);
+			wxString(FIRST_DATE_STR) + wxString(_T("YYYY-MM-DD HH:MM:SS")), wxDefaultPosition, wxDefaultSize);
 	exSetDefFont(firstDatabaseText);
 	lastDatabaseText = new wxStaticText(panel, -1, 
-			wxString(LAST_DATE_STR) + wxString(_T("YYYY-MM-DD HH:MM")) , wxDefaultPosition, wxDefaultSize);
+			wxString(LAST_DATE_STR) + wxString(_T("YYYY-MM-DD HH:MM:SS")) , wxDefaultPosition, wxDefaultSize);
 	exSetDefFont(lastDatabaseText);
 	startDateText = new wxStaticText(panel, -1, 
-			wxString(START_DATE_STR) + wxString(_T("YYYY-MM-DD HH:MM")), wxDefaultPosition, wxDefaultSize);
+			wxString(START_DATE_STR) + wxString(_T("YYYY-MM-DD HH:MM:SS")), wxDefaultPosition, wxDefaultSize);
 	stopDateText = new wxStaticText(panel, -1, 
-			wxString(STOP_DATE_STR) + wxString(_T("YYYY-MM-DD HH:MM")), wxDefaultPosition, wxDefaultSize);
+			wxString(STOP_DATE_STR) + wxString(_T("YYYY-MM-DD HH:MM:SS")), wxDefaultPosition, wxDefaultSize);
 
 	setStartDateBtn = new wxButton(panel, ID_ChangeStartDate, _("Change start date"), 
 			//wxPoint(15, 2), wxDefaultSize, 0, wxDefaultValidator, _T(""));
@@ -154,7 +154,14 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 	static_box = period_box_sizer->GetStaticBox();
 	static_box->SetToolTip(_("Sets type of result data"));
 
-	period_box_sizer->Add(new wxRadioButton(panel, ID_Min10Period, _("10 MINUTES"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP), 0, wxEXPAND | wxRIGHT, 20);
+	if (widget->IsProberConfigured()) {
+		period_box_sizer->Add(new wxRadioButton(panel, ID_Sec10Period, _("10 SECONDS"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP),
+			0, wxEXPAND | wxRIGHT, 20);
+		period_box_sizer->Add(new wxRadioButton(panel, ID_Min10Period, _("10 MINUTES"), wxDefaultPosition, wxDefaultSize),
+			0, wxEXPAND | wxRIGHT, 20);
+	} else
+		period_box_sizer->Add(new wxRadioButton(panel, ID_Min10Period, _("10 MINUTES"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP),
+			0, wxEXPAND | wxRIGHT, 20);
 	period_box_sizer->Add(new wxRadioButton(panel, ID_HourPeriod, _("HOUR")), 0, wxEXPAND | wxRIGHT, 20);
 	period_box_sizer->Add(new wxRadioButton(panel, ID_8HourPeriod, _("8 HOURS")), 0, wxEXPAND | wxRIGHT, 20);
 	period_box_sizer->Add(new wxRadioButton(panel, ID_DayPeriod, _("DAY")), 0, wxEXPAND | wxRIGHT, 20);
@@ -243,6 +250,7 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 	if (icon.Ok())
 		SetIcon(icon);
 	TestEmpty();
+	dynamic_cast<wxRadioButton*>(FindWindowById(ID_Min10Period))->SetValue(true);
 	Show( TRUE );
 }
 
@@ -347,7 +355,7 @@ EkstraktorMainWindow::~EkstraktorMainWindow()
 
 wxString EkstraktorMainWindow::FormatDate(time_t date)
 {
-	return wxString( wxDateTime(date).Format(_T("%Y-%m-%d %H:%M")) );
+	return wxString( wxDateTime(date).Format(_T("%Y-%m-%d %H:%M:%S")) );
 }
 
 void EkstraktorMainWindow::onChooseParams(wxCommandEvent &event) 
@@ -662,9 +670,10 @@ void EkstraktorMainWindow::onStartDate(wxCommandEvent &event)
 		new DateChooserWidget(
 				this,
 				_("Select start date"),
-				10,
+				1,
 				mainWidget->GetFirstDate(), 
-				mainWidget->GetLastDate()
+				mainWidget->GetLastDate(),
+				10
 		);
 		wxDateTime date = mainWidget->GetStartDate();
 	
@@ -684,9 +693,10 @@ void EkstraktorMainWindow::onStopDate(wxCommandEvent &event)
 		new DateChooserWidget(
 				this,
 				_("Select stop date"),
-				10,
+				1,
 				mainWidget->GetFirstDate(), 
-				mainWidget->GetLastDate()
+				mainWidget->GetLastDate(),
+				10
 		);
 		wxDateTime date = mainWidget->GetStopDate();
 	
@@ -733,7 +743,7 @@ void EkstraktorMainWindow::ResumeProgressBar()
 }
 
 void EkstraktorMainWindow::onPeriodChange(wxCommandEvent &event) {
-	selectedPeriod = event.GetId() - ID_Min10Period;
+	selectedPeriod = event.GetId() - ID_Sec10Period;
 }
 
 void EkstraktorMainWindow::onSeparatorChange(wxCommandEvent &event) {
@@ -763,6 +773,7 @@ BEGIN_EVENT_TABLE(EkstraktorMainWindow, wxFrame)
 	EVT_RADIOBUTTON(ID_CommaSeparator, EkstraktorMainWindow::onSeparatorChange)
 
 	EVT_RADIOBUTTON(ID_CommaSeparator, EkstraktorMainWindow::onPeriodChange)
+	EVT_RADIOBUTTON(ID_Sec10Period, EkstraktorMainWindow::onPeriodChange)
 	EVT_RADIOBUTTON(ID_Min10Period, EkstraktorMainWindow::onPeriodChange)
 	EVT_RADIOBUTTON(ID_HourPeriod, EkstraktorMainWindow::onPeriodChange)
 	EVT_RADIOBUTTON(ID_8HourPeriod, EkstraktorMainWindow::onPeriodChange)

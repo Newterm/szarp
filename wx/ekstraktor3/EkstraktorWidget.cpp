@@ -36,7 +36,7 @@
 
 bool is_correct_time(time_t time);
 
-EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry)
+EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry, std::pair<wxString, wxString> prober_address)
 {
 	int x, y, width, height;
 
@@ -107,8 +107,18 @@ EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry)
 		return;
 	}
 
-	szbase_buffer = Szbase::GetObject()->GetBuffer(ipk_prefix);
+	Szbase* szbase = Szbase::GetObject();
+	szbase_buffer = szbase->GetBuffer(ipk_prefix);
 	assert(szbase_buffer != NULL);
+	if (prober_address != std::pair<wxString, wxString>()) {
+		szbase->SetProberAddress(
+			ipk_prefix.c_str(),
+			prober_address.first.c_str(),
+			prober_address.second.c_str());
+		prober_configured = true;	
+	} else {
+		prober_configured = false;	
+	}
 
 	time_t tmp_date;
 	first_date = -1;

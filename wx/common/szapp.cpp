@@ -370,6 +370,7 @@ bool szApp::OnCmdLineParsed(wxCmdLineParser &parser){
 }
 
 void szApp::OnInitCmdLine(wxCmdLineParser &parser) {
+	wxApp::OnInitCmdLine(parser);
 	parser.AddSwitch(_("Dprefix"), wxEmptyString, _T("database prefix"));
 }
 

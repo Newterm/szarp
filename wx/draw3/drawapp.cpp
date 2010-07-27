@@ -90,6 +90,7 @@
 #include "szframe.h"
 #include "remarks.h"
 #include "vercheck.h"
+#include "getprobersaddresses.h"
 
 #include "../../resources/wx/icons/draw64.xpm"
 
@@ -205,7 +206,7 @@ bool DrawApp::OnInit() {
 		free(base);
 	}
 
-	ReadProbersAddressesFromSzarpCfg();
+	m_probers_from_szarp_cfg = get_probers_addresses();
 #endif
 
 #ifdef MINGW32
@@ -521,30 +522,6 @@ void DrawApp::SendToRunningInstance(wxString topic, wxString msg) {
 void DrawApp::DisplayHelp() {
 	m_help->DisplayContents();
 }
-
-#ifdef __WXGTK__
-void DrawApp::ReadProbersAddressesFromSzarpCfg() {
-	char *_servers = libpar_getpar("", "probes_servers", 0);
-	if (_servers == NULL)
-		return;
-
-	wxString servers = SC::A2S(_servers);
-	wxStringTokenizer tkz(servers, _T(" "), wxTOKEN_STRTOK);
-	while (tkz.HasMoreTokens()) {
-		wxString prefix = tkz.GetNextToken();
-		std::string section = SC::S2A(prefix + _T("_probes_server"));
-		char *_address = libpar_getpar(section.c_str(), "address", 0);
-		char *_port = libpar_getpar(section.c_str(), "port", 0);
-		if (_address != NULL && _port  != NULL) {
-			wxString address = SC::A2S(_address);
-			wxString port = SC::A2S(_port);
-			m_probers_from_szarp_cfg[prefix] = std::make_pair(address, port); 
-		}
-		free(_address);
-		free(_port);
-	}
-}
-#endif
 
 std::map<wxString, std::pair<wxString, wxString> > DrawApp::GetProbersAddresses() {
 	std::map<wxString, std::pair<wxString, wxString> > ret = m_probers_from_szarp_cfg;

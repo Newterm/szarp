@@ -62,8 +62,20 @@
 class EkstrApp: public szApp
 {
 	wxLocale locale;
+
+	wxString base;
+
+	wxString geometry;
   protected:
 	virtual bool OnInit();
+  public:
+	virtual bool OnCmdLineError(wxCmdLineParser &parser);
+
+	virtual bool OnCmdLineHelp(wxCmdLineParser &parser);
+
+	virtual bool OnCmdLineParsed(wxCmdLineParser &parser);
+
+	virtual void OnInitCmdLine(wxCmdLineParser &parser);
 }; 
 
 DECLARE_APP(EkstrApp)

@@ -1,5 +1,20 @@
 
 2010-07-27	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/common: function reading addresses of probes servers
+	moved from draw3 to common	
+	* wx/ekstrator3: fix in commandline parsing
+	* wx/ekstrator3: support for 10 seconds probes, with two limitations
+	compared to draw: ekstartor3 ignores any szbase errors, so in case of any
+	connection problems, user just gets no-datas and no information
+	about their cause; unlike in draw3, there is no GUI for configuring servers'
+	addreses by a user, ekstartor3 only knows how to read probes addresses
+	from szarp.cfg /those limitations are quite easy to remove, but
+	still require some work/
+	* resources/SZARP_IN_CFG: default configuration of probes
+	server
+	* resources/parstart_cfg_TEMPLATE: prober and probes server
+	started by default
+2010-07-27	Darek Marcinkiewicz <reksio@newterm.pl>
 	* meaner3: szbwriter support for 10 second probes	
 2010-07-26	Darek Marcinkiewicz <reksio@newterm.pl>
 	* parcook/borutadmn: boruta daemon, thin meta-daemon

@@ -130,9 +130,11 @@ void SzbExtractor::SetDecDelim(wchar_t dec_sep)
 	this->dec_sep = dec_sep;
 }
 
-const char* SzbExtractor::SetFormat(int period_type)
+const char* SzbExtractor::SetFormat(SZARP_PROBE_TYPE period_type)
 {
        	switch (period_type) {
+		case PT_SEC10:
+	    		return "%Y-%m-%d %H:%M:%S";
 		case PT_CUSTOM :
 		case PT_MIN10 :
 		case PT_HOUR :
@@ -413,6 +415,7 @@ SzbExtractor::PrintTimeToOOXML(FILE* output, char *datebuf,
 	fprintf(output, "</table:table-row><table:table-row table:style-name=\"ro1\">");
 	char *c;
 	switch (period_type) {
+		case PT_SEC10:
 		case PT_CUSTOM :
 		case PT_MIN10 :
 		case PT_HOUR :

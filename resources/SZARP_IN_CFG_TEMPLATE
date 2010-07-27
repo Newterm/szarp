@@ -115,6 +115,18 @@ address=
 # port to listen on
 port=8090
 
+:available_probes_servers
+# list of reachable probes servers
+servers=local_probes_server
+
+# adress of server running $prefix$ configuration
+:local_probes_server
+prefix=$prefix$
+
+address=$prefix$
+
+port=8090
+
 :szbwriter
 # szbwriter log file
 $if "$log$" <> ""

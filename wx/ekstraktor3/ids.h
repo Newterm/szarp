@@ -44,6 +44,7 @@ enum EkstraktorMainWindowIDs {
 	ID_DotSeparator,
 	ID_CommaSeparator,
 
+	ID_Sec10Period,
 	ID_Min10Period,
 	ID_HourPeriod,
 	ID_8HourPeriod,

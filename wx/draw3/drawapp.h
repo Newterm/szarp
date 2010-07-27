@@ -112,10 +112,6 @@ public:
 
 	wxGLContext* GetGLContext();
 
-#ifdef __WXGTK__
-	void ReadProbersAddressesFromSzarpCfg();
-#endif
-
 	std::map<wxString, std::pair<wxString, wxString> > GetProbersAddresses();
 
 	void SetProbersAddresses(const std::map<wxString, std::pair<wxString, wxString> >&);

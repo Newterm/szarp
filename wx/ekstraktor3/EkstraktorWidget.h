@@ -58,9 +58,9 @@ class EkstraktorWidget
 	TSzarpConfig *ipk;
 	int is_ok;	/**< 1 when object is properly initialized, 
 			  0 otherwise */
-
+	bool prober_configured;
 	public:
-		EkstraktorWidget(std::wstring ipk_prefix, wxString *geometry);
+		EkstraktorWidget(std::wstring ipk_prefix, wxString *geometry, std::pair<wxString, wxString> prober_address);
 		
 		int GetNumberOfParams() { return number_of_params; }
 		void SetNumberOfParams(int params) { number_of_params = params; }
@@ -88,6 +88,8 @@ class EkstraktorWidget
 		std::wstring GetSzbaseDataDir() { return szbase_datadir; }
 
 		TSzarpConfig *GetIpk() { return ipk; }
+		
+		bool IsProberConfigured() { return prober_configured; }
 };
 
 #endif // __EKSTRAKTOR_WIDGET_H__
