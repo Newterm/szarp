@@ -54,6 +54,7 @@
 TSaveParam::TSaveParam(TParam* p) 
 {
 	this->cname = wchar2szb(p->GetName());
+	this->fd = -1;
 }
 
 TSaveParam::TSaveParam(const std::wstring& name)
@@ -63,6 +64,7 @@ TSaveParam::TSaveParam(const std::wstring& name)
 
 TSaveParam::~TSaveParam()
 {
+	CloseFile();
 }
 		
 int TSaveParam::WriteProbes(const fs::wpath& directory, time_t t, short int* data, size_t data_count)
@@ -76,10 +78,8 @@ int TSaveParam::Write(const fs::wpath& directory, time_t t, short int data, TSta
 	return Write(directory, t, &data, 1, status, overwrite, force_nodata, probe_length);
 }
 
-int TSaveParam::Write(const fs::wpath& directory, time_t t, short int* data, size_t data_count, TStatus *status, 
-		int overwrite, int force_nodata, time_t probe_length)
-{
-	int fd;			/* file descriptor */
+int TSaveParam::WriteBuffered(const fs::wpath& directory, time_t t, short int* data, size_t data_count, TStatus *status, 
+		int overwrite, int force_nodata, time_t probe_length) {
 	std::wstring filename;  /* name of file */
 	std::wstring path;      /* full path to file */
 	int month, year;	/* month and year of save */
@@ -131,18 +131,22 @@ int TSaveParam::Write(const fs::wpath& directory, time_t t, short int* data, siz
 	} catch (fs::wfilesystem_error) 
 	{ }
 
-	/* make sure directory exists */
-	if (szb_cc_parent(path)) {
-		sz_log(1, "TSaveParam::Write(): error creating directory for file '%ls', errno %d",
+	if (fd == -1 || last_path != path) {
+		CloseFile();
+		/* make sure directory exists */
+		if (szb_cc_parent(path)) {
+			sz_log(1, "TSaveParam::Write(): error creating directory for file '%ls', errno %d",
+					path.c_str(), errno);
+			return 1;
+		}
+		/* open file */
+		fd = open(SC::S2A(path).c_str(), O_RDWR | O_CREAT, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH);
+		if (fd < 0) {
+			sz_log(1, "TSaveParam::Write(): error opening file '%ls', errno %d",
 				path.c_str(), errno);
-		return 1;
-	}
-	/* open file */
-	fd = open(SC::S2A(path).c_str(), O_RDWR | O_CREAT, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH);
-	if (fd < 0) {
-		sz_log(1, "TSaveParam::Write(): error opening file '%ls', errno %d",
-				path.c_str(), errno);
-		return 1;
+			return 1;
+		}
+		last_path = path;
 	}
 
 	/* check for file size */
@@ -159,7 +163,7 @@ int TSaveParam::Write(const fs::wpath& directory, time_t t, short int* data, siz
 			if (write(fd, &tmp, sizeof(tmp)) < 0) {
 				sz_log(1, "TSaveParam::Write(): error writing (1) to file '%ls', errno %d",
 						path.c_str(), errno);
-				close(fd);
+				CloseFile();
 				return 1;
 			}
 	} else { /* set file pointer */
@@ -175,13 +179,27 @@ int TSaveParam::Write(const fs::wpath& directory, time_t t, short int* data, siz
 	if (write(fd, data, data_count * sizeof(*data)) != (int)(data_count * sizeof(*data))) {
 		sz_log(1, "TSaveParam::Write(): error writing (2) to file '%ls', errno %d",
 				path.c_str(), errno);
-		close(fd);
+		CloseFile();
 		return 1;
 	} 
-
-	/* close file */
-	close(fd);
-		
 	return 0;
+
+}
+
+int TSaveParam::Write(const fs::wpath& directory, time_t t, short int* data, size_t data_count, TStatus *status, 
+		int overwrite, int force_nodata, time_t probe_length)
+{
+	int ret = WriteBuffered(directory, t, data, data_count, status, overwrite, force_nodata, probe_length);
+	if (ret)
+		CloseFile();
+	return ret;
+}
+
+void TSaveParam::CloseFile() {
+	if (fd >= 0) {
+		close(fd);
+		fd = -1;
+		last_path.clear();
+	}
 }
 

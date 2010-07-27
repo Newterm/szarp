@@ -71,6 +71,7 @@
 #include "szarp_config.h"
 #include "szbase/szbbase.h"
 #include "tokens.h"
+#include "tsaveparam.h"
 
 #include "conversion.h"
 
@@ -83,7 +84,7 @@ using namespace std::tr1;
 class SzbaseWriter : public TSzarpConfig {
 public:
 	SzbaseWriter(const std::wstring &ipk_path, const std::wstring& title, const std::wstring &double_pattern,
-			const std::wstring& data_dir, int fill_how_many);
+			const std::wstring& data_dir, const std::wstring &cache_dir);
 	~SzbaseWriter();
 	/* Process input. 
 	 * @return 1 on error, 0 on success*/
@@ -108,19 +109,19 @@ protected:
 	/** Adds data to base.
 	 * @return 0 on success, 1 on error */
 	int add_data(const std::wstring& name, const std::wstring& unit, int year, int month, int day, 
-			int hour, int min, const std::wstring &data);
+			int hour, int min, int sec, const std::wstring &data);
 	/** Process sigle input line.
 	 * @return 1 on error, 0 on success*/
 	int process_line(char *line);
 
+	enum PROBE_TYPE { MIN10 = 0, SEC10, LAST_PROBE_TYPE };
+
 	/** Saves data for current index.
 	 * @return 0 on success, 1 on error */
-	int save_data();
-	
-	/** Calls save_data(), closes opened files. 
-	 * @return 0 on success, 1 on error (from save_data) */
-	int close_data();
+	int save_data(PROBE_TYPE pt);
 
+	int close_data();
+	
 	/** Checks if param should be saved in two words.
 	 * @param name name of param
 	 * @return 1 for double params, 0 otherwise */
@@ -130,40 +131,39 @@ protected:
 					  that should be saved in two words,
 					  may be NULL */
 
-	std::wstring m_dir;			/**< szbase data directory */
+	std::vector<std::wstring> m_dir;	/**< szbase data directory */
 
 	TParam *m_cur_par;		/**< pointer to currently saved param */
-	std::wstring m_cur_filename;		/**< name of currently opened file;
+	TSaveParam* m_save_param[LAST_PROBE_TYPE][2];
+	std::wstring m_cur_name;		/**< name of currently opened file;
 					(virtual - real names may be different
 					becasue of low/high words) */
-	int m_cur_fd;			/**< currently opened file descriptor */
-	int m_cur_fd1;			/**< file descriptor for second word (-1 for
-					non-double parameters) */
-	int m_cur_ind;			/**< current index in file */
-	double m_cur_sum;		/**< sum of values to save */
-	int m_cur_cnt;			/**< count of values to save */
+	int m_cur_t[LAST_PROBE_TYPE];		/**< current time*/
+	double m_cur_sum[LAST_PROBE_TYPE];	/**< sum of values to save */
+	int m_cur_cnt[LAST_PROBE_TYPE];		/**< count of values to save */
+	int m_probe_length[LAST_PROBE_TYPE];		/**< lenght of probe */
 
-	int m_fill_how_many;		/** how many previous empty fields should 
-					  we fill with current value during saving */
 	unordered_map<std::wstring, int> m_draws_count;
 	bool m_new_par; /** if new parameter was added */
 };
 
 SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _title, const std::wstring& double_pattern,
-		const std::wstring& data_dir, int fill_how_many)
+		const std::wstring& data_dir, const std::wstring& cache_dir)
 {
 	m_double_pattern = double_pattern;
-	m_dir = data_dir;
-	
+	m_dir.push_back(data_dir);
+	m_dir.push_back(cache_dir);
 	m_cur_par = NULL;
-	m_cur_fd = -1;
-	m_cur_fd1 = -1;
-	m_cur_ind = -1;
-	m_cur_cnt = 0;
-	m_cur_sum = 0;
-	m_fill_how_many = fill_how_many;
-	sz_log(10, "Parameter fill_how_many set to: %d", fill_how_many);
-	m_new_par=false;
+	for (size_t i = 0; i < LAST_PROBE_TYPE; i++) {
+		m_save_param[i][0] = 
+			m_save_param[i][1] = NULL;
+		m_cur_t[i] = 0;
+		m_cur_cnt[i] = 0;
+		m_cur_sum[i] = 0;
+	}
+	m_probe_length[0] = 60 * 10;
+	m_probe_length[1] = 10;
+	m_new_par = false;
 
 	if (loadXML(ipk_path) == 0) {
 		for (TParam* p = GetFirstParam(); p; p = GetNextParam(p)) {
@@ -202,7 +202,7 @@ SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _ti
 	
 	p->SetAutoBase();
 
-	m_new_par=true;
+	m_new_par = true;
 }
 
 SzbaseWriter::~SzbaseWriter()
@@ -267,15 +267,8 @@ int SzbaseWriter::add_param(const std::wstring &name, const std::wstring& unit, 
 	std::wstring draww;
 	int i;
 	
-	p = getParamByName(name);
-	
-	if (p != NULL) {
-		m_cur_par = p;
-		return p->GetPrec();
-	}
-	
 	sz_log(2, "Adding new parameter %ls\n", name.c_str());
-	m_new_par=true;
+	m_new_par = true;
 
 	if (is_double(name)) {
 		std::wstring n1, n2, formula;
@@ -343,10 +336,9 @@ int SzbaseWriter::is_double(const std::wstring& name)
 }
 
 int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, int year, int month, int day, 
-		int hour, int min, const std::wstring& data)
+		int hour, int min, int sec, const std::wstring& data)
 {
 	std::wstring filename;
-	int index;
 	struct tm tm;
 	time_t t;
 	int is_dbl;
@@ -366,106 +358,94 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	year = tm.tm_year + 1900;
 	month = tm.tm_mon + 1;
 	
-	filename = szb_createfilename(name, year, month);
-	index = szb_probeind(t);
 	is_dbl = is_double(name);
-	
-	if (m_cur_ind >= 0) {
-		/* save previous data */
-		if ((m_cur_filename != filename) || 
-				(index >= szb_probecnt(year, month))) {
-			if (close_data())
-				return 1;
-		} else if (m_cur_ind != index) {
-			if (save_data())
-				return 1;
-		}
-	}
-	if (m_cur_ind < 0) {
-		/* open new file */
-		m_cur_filename = filename;
-		if (is_dbl) {
-			m_cur_fd = szb_open(m_dir, name + L" msw", year, month,
-					O_CREAT | O_RDWR);
-			if (m_cur_fd == -1) {
-				sz_log(0, "Error opening file for '%ls', errno %d",
-						(name + L" msw").c_str(), errno);
-				return 1;
-			}
-			m_cur_fd1 = szb_open(m_dir, name + L" lsw", year, month,
-					O_CREAT | O_RDWR);
-			if (m_cur_fd1 == -1) {
-				sz_log(0, "Error opening file for '%ls', errno %d",
-						(name + L" lsw").c_str(), errno);
-				return 1;
-			}
-			m_cur_ind = 0;
-		} else {
-			m_cur_fd = szb_open(m_dir, name, year, month,
-					O_CREAT | O_RDWR);
-			if (m_cur_fd == -1) {
-				sz_log(0, "Error opening file for '%ls', errno %d",
-						name.c_str(), errno);
-				return 1;
-			}
-			m_cur_ind = 0;
-		}
-	}
-
+	TParam *par = NULL, *par2 = NULL;
 	int prec;
-	if (is_dbl)
-		prec = 0;
-	else
-		prec = guess_prec(data);
-	prec = add_param(name, unit, prec);
+	if (name != m_cur_name) {
+		for (size_t i = 0; i < LAST_PROBE_TYPE; i++)
+			for (size_t j = 0; j < 2; j++) {
+				delete m_save_param[i][j];
+				m_save_param[i][j] = NULL;
+			}
+		if (is_dbl) {
+			m_cur_par = getParamByName(name);
+			if (m_cur_par == NULL) {
+				prec = add_param(name, unit, guess_prec(data));
+				m_cur_par = getParamByName(name);
+			} else {
+				prec = m_cur_par->GetPrec();
+			}
+			std::wstring name1 = name + L" msw";
+			std::wstring name2 = name + L" lsw";
+			par = getParamByName(name1);
+			par2 = getParamByName(name2);
+			assert(par != NULL);
+			assert(par2 != NULL);
+		} else {
+			m_cur_par = par = getParamByName(name);
+			if (m_cur_par == NULL) {
+				prec = add_param(name, unit, guess_prec(data));
+				m_cur_par = par = getParamByName(name);
+			} else {
+				prec = m_cur_par->GetPrec();
+			}
+			assert(m_cur_par != NULL);
+		}
+		for (size_t i = 0; i < LAST_PROBE_TYPE; i++) {
+			if (m_dir.at(i).empty())
+				continue;
+			m_save_param[i][0] = new TSaveParam(par);
+			if (is_dbl)
+				m_save_param[i][1] = new TSaveParam(par2);
+			m_cur_sum[i] = 0;
+			m_cur_cnt[i] = 0;
+		}
+		m_cur_name = name;
+	}
 
-	m_cur_ind = index;
-	m_cur_sum += wcstof(data.c_str(), NULL);
-	m_cur_cnt++;
+	for (size_t i = 0; i < LAST_PROBE_TYPE; i++) {
+		if (m_dir.at(i).empty())
+			continue;
+		if (m_cur_t[i] - t < m_probe_length[i]) 
+			continue;
+		if (save_data((PROBE_TYPE)i))
+			return 1;
+		m_cur_t[i] = t / m_probe_length[i] * m_probe_length[i];
+	}
+
+	for (size_t i = 0; i < 2; i++) {
+		m_cur_sum[i] += wcstof(data.c_str(), NULL);
+		m_cur_cnt[i]++;
+	}
 	
 	return 0;
 }
 
-int SzbaseWriter::save_data()
+int SzbaseWriter::save_data(PROBE_TYPE pt)
 {
-	long pos, pos1 = -1;
-	short data = SZB_FILE_NODATA;
-	short data1;
 	double d;
 
-	/* no files opened, return */
-	if (m_cur_fd == -1)
+	if (m_dir[pt].empty())
 		return 0;
-	
-	/* no data to save, return */
-	if (m_cur_cnt <= 0)
-		return 0;
-	
-	/* get current file position */
-	pos = lseek(m_cur_fd, 0, SEEK_END);
-	pos /= sizeof(data);
-	if (pos > m_cur_ind) {
-		sz_log(3, "Index before current position (input not sorted?) (%ls)",
-				m_cur_filename.c_str());
-		pos = lseek(m_cur_fd, m_cur_ind * sizeof(data), SEEK_SET);
-		pos /= sizeof(data);
-	}
-	
-	if (m_cur_fd1 != -1) {
-		pos1 = lseek(m_cur_fd1, 0, SEEK_END);
-		pos1 /= sizeof(data);
-		if (pos1 > m_cur_ind) {
-			sz_log(3, "Index 2 before current position (input not sorted?) (%ls)",
-					m_cur_filename.c_str());
-			pos1 = lseek(m_cur_fd1, m_cur_ind * sizeof(data), SEEK_SET);
-			pos1 /= sizeof(data);
-		}
-	}
 
-	/* what data to save ? */
-	d = m_cur_sum / m_cur_cnt;
-	m_cur_sum = 0;
-	m_cur_cnt = 0;
+	if (!m_cur_cnt[pt])
+		return 0;
+
+	d = m_cur_sum[pt] / m_cur_cnt[pt];
+
+	if (m_save_param[pt][1]) {
+		int v = rint(pow10(m_cur_par->GetPrec()) * d);
+		unsigned *pv = (unsigned*) &v;
+		short v1 = *pv >> 16, v2 = *pv & 0xffff;
+		if (m_save_param[pt][0]->WriteBuffered(m_dir[pt], m_cur_t[pt], &v1, 1, NULL, 1, 0, m_probe_length[pt]))
+			return 1;
+		if (m_save_param[pt][1]->WriteBuffered(m_dir[pt], m_cur_t[pt], &v2, 1, NULL, 1, 0, m_probe_length[pt]))
+			return 1;
+	} else {
+		short v = rint(pow10(m_cur_par->GetPrec()) * d);
+		if (m_save_param[pt][0]->WriteBuffered(m_dir[pt], m_cur_t[pt], &v, 1, NULL, 1, 0, m_probe_length[pt]))
+			return 1;
+	}
 
 	/* check for draw's min and max; it's strange but it works ;-) */
 	if (m_cur_par->GetDraws()) {
@@ -488,83 +468,17 @@ int SzbaseWriter::save_data()
 		}
 
 	}
-
-	for (int i = 0; i < m_cur_par->GetPrec(); i++) {
-		d *= 10;
-	}
-	
-	if (m_cur_fd1 == -1) {
-		/* one file */
-		data = (short)rint(d);
-	} else {
-		/* two files */
-		long ldata;
-		ldata = (long)rint(d);
-		data1 = (short)(ldata & 0xFFFF);
-		data = (short) ((ldata >> 16) & 0XFFFF);
-	}
-
-	/* fill in empty fields */
-	short filldata, filldata1;
-	filldata = filldata1 = SZB_FILE_NODATA;
-	while (pos++ < m_cur_ind) {
-		if (pos - 1 + m_fill_how_many >= m_cur_ind) {
-			filldata = data;
-		}
-		if (write(m_cur_fd, &filldata, sizeof(data)) != sizeof(data)) {
-			sz_log(0, "Write error for '%ls', errno %d",
-					m_cur_filename.c_str(), errno);
-			return 1;
-		}
-	}
-	if (m_cur_fd1 != -1) while (pos1++ < m_cur_ind) {
-		if (pos1 - 1 + m_fill_how_many >= m_cur_ind) {
-			filldata1 = data1;
-		}
-		if (write(m_cur_fd1, &filldata1, sizeof(data)) != sizeof(data)) {
-			sz_log(0, "Write error for '%ls' (lsw), errno %d",
-					m_cur_filename.c_str(), errno);
-			return 1;
-		}
-	}
-	
-	
-	/* write value to first file */
-	if (write(m_cur_fd, &data, sizeof(data)) != sizeof(data)) {
-			sz_log(0, "Write error for '%ls', errno %d",
-					m_cur_filename.c_str(), errno);
-			return 1;
-	}
-		
-	if (m_cur_fd1 == -1)
-		return 0;
-
-	/* write value for second file */
-	if (write(m_cur_fd1, &data1, sizeof(data1)) != sizeof(data1)) {
-			sz_log(0, "Write error for '%ls' (lsw), errno %d",
-					m_cur_filename.c_str(), errno);
-			return 1;
-	}
-
+	m_cur_cnt[pt] = 0;
+	m_cur_sum[pt] = 0;
 	return 0;
 }
 
 
 int SzbaseWriter::close_data()
 {
-	if (m_cur_fd == -1)
-		return 0;
-	if (save_data())
-		return 1;
-	close(m_cur_fd);
-	
-	m_cur_fd = -1;
-	m_cur_ind = -1;
-	m_cur_filename = L"";
-	if (m_cur_fd1 == -1)
-		return 0;
-	close(m_cur_fd1);
-	m_cur_fd1 = -1;
+	for (size_t i = 0; i < LAST_PROBE_TYPE; i++)
+		if (save_data((PROBE_TYPE)i))
+			return 1;
 	return 0;
 }
 
@@ -574,8 +488,8 @@ int SzbaseWriter::process_line(char *line)
 	char **toks;
 	tokenize(line, &toks, &tokc);
 
-	if (tokc != 7) {
-		sz_log(0, "szbwriter: incorrect tokens number (%d - expected 7) in line '%s'", 
+	if (tokc != 7 && tokc != 8) {
+		sz_log(0, "szbwriter: incorrect tokens number (%d - expected 7 or 8) in line '%s'", 
 				tokc, line);
 		tokenize(NULL, &toks, &tokc);
 		return 1;
@@ -612,11 +526,19 @@ int SzbaseWriter::process_line(char *line)
 		tokenize(NULL, &toks, &tokc);
 		return 1;
 	}
-	char *data = toks[6];
+	int sec;
+	char *data;
+	if (tokc == 8) {
+		sec = atoi(toks[6]);
+		data = toks[7];
+	} else {
+		sec = 10;
+		data = toks[6];
+	}
 
 	char *unit = check_unit(name);	
 
-	if (add_data(SC::A2S(name), unit != NULL ? SC::A2S(unit) : L"", year, month, day, hour, min, SC::A2S(data))) {
+	if (add_data(SC::A2S(name), unit != NULL ? SC::A2S(unit) : L"", year, month, day, hour, min, sec, SC::A2S(data))) {
 		tokenize(NULL, &toks, &tokc);
 		return 1;
 	}
@@ -655,8 +577,8 @@ int main(int argc, char *argv[])
 	int loglevel;
 	char *ipk_path;
 	char *data_dir;
+	char *cache_dir;
 	char *double_pattern;
-	int fill_how_many;
 
 	loglevel = loginit_cmdline(2, NULL, &argc, argv);
 	
@@ -667,15 +589,9 @@ int main(int argc, char *argv[])
 
 	ipk_path = libpar_getpar(SZARP_CFG_SECTION, "IPK", 1);
 	data_dir = libpar_getpar(MEANER3_CFG_SECTION, "datadir", 1);
+	cache_dir = libpar_getpar(MEANER3_CFG_SECTION, "cachedir", 0);
 
 	double_pattern = libpar_getpar(SZARP_CFG_SECTION, "double_match", 0);
-
-	c = libpar_getpar(SZARP_CFG_SECTION, "fill_how_many", 0);
-	if (c) {
-		fill_how_many = atoi(c);
-		free(c);
-	} else
-		fill_how_many = 0;
 
 	c = libpar_getpar(SZARP_CFG_SECTION, "log_level", 0);
 	if (c == NULL)
@@ -704,7 +620,7 @@ int main(int argc, char *argv[])
 	}
 	SzbaseWriter *szbw = new SzbaseWriter(SC::A2S(ipk_path), SC::A2S(title), 
 			double_pattern != NULL ? SC::A2S(double_pattern) : L"",
-			SC::A2S(data_dir), fill_how_many);
+			SC::A2S(data_dir), cache_dir ? SC::A2S(cache_dir) : std::wstring());
 	assert (szbw != NULL);
 
 #ifndef FNM_EXTMATCH

@@ -37,7 +37,6 @@
 
 namespace fs = boost::filesystem;
 
-
 /** Class represents parameter saved to base. */
 class TSaveParam {
 	public:
@@ -80,12 +79,20 @@ class TSaveParam {
 				int overwrite = 0,
 				int force_nodata = 0,
 				time_t probe_length = SZBASE_DATA_SPAN);
+		/** performs @see Write operation but tries minimise opening/closing
+		* of data cache file*/
+		int WriteBuffered(const fs::wpath& directory, time_t t, short int* data, size_t data_count, TStatus *status, 
+		                int overwrite, int force_nodata, time_t probe_length);
 		/** Write 10-seconds probe to disk cache.
 		 * @see Write
 		 */
 		int WriteProbes(const fs::wpath& directory, time_t t, short int* data, size_t data_count);
+		/** Closes currenly open file desctiptor*/
+		void CloseFile();
 	protected:
 		std::wstring cname;	/**< Encoded name of parameter */
+		std::wstring last_path; /**< Last file data was written to*/
+		int fd;			/**< Currently open data file desriptor*/
 };
 
 #endif

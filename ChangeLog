@@ -1,4 +1,6 @@
 
+2010-07-27	Darek Marcinkiewicz <reksio@newterm.pl>
+	* meaner3: szbwriter support for 10 second probes	
 2010-07-26	Darek Marcinkiewicz <reksio@newterm.pl>
 	* parcook/borutadmn: boruta daemon, thin meta-daemon
 	which does not implement any specific protocol

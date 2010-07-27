@@ -80,7 +80,7 @@ checker_SOURCES = \
 		$(UTILSDIR)/checker.cc
 
 szbwriter_SOURCES = \
-		$(UTILSDIR)/szbwriter.cc
+		$(UTILSDIR)/szbwriter.cc tsaveparam.h tsaveparam.cc tstatus.h tstatus.cc
 
 szbedit_SOURCES = $(UTILSDIR)/szbedit.cc
 szbedit_LDADD = $(LDADD) @NEWT_LIBS@
