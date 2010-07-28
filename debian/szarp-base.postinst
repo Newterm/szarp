@@ -24,7 +24,7 @@ gen_locale() {
 case "$1" in
     configure)
 
-	/opt/szarp/bin/install_vim
+	/opt/szarp/bin/install_vim || true
 
 	gen_locale;
 

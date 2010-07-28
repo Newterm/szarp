@@ -1,8 +1,12 @@
 
 2010-07-28	Darek Marcinkiewicz <reksio@newterm.pl>
+	* debian/szarp-base.postinst: szarp-base no longer depends
+	on vim, but script install_vim returned non-zero exit status if there
+	was no vim - szarp-base was uninstallable on vimless systems
+2010-07-28	Darek Marcinkiewicz <reksio@newterm.pl>
 	* parcook/boruta_zet.cc: compiles under debian stable
 	* parcook/tcpdmn.cc: forgotten commit - small fixes
-	* maener3/tsaveparam.cc: removed reduntat check
+	* maener3/tsaveparam.cc: removed redundant check
 	of file size
 	* maener3/utils/szbwriter.cc: fixes
 2010-07-28	Darek Marcinkiewicz <reksio@newterm.pl>
