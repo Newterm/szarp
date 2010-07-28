@@ -547,17 +547,30 @@ int TCPServer::GetData(IPCHandler *ipc)
 		printf("Reading data\n");
 
 	int c;
+	int wret;
 	count = 0;
-	do {
+	while ((wret = Wait(0)) == 1) {
+again:
 		c = read(m_socket, inbuf + count, BUFSIZE - 1 - count);
 		if (m_single) {
 			printf("Received packet of %d bytes\n", c);
 		}
 		if (c > 0) {
 			count += c;
+		} else if (c < 0 && errno == EINTR) {
+			goto again;
+		} else {
+			if (m_single)
+				printf("Reading data error: %s\n", strerror(errno));
+			sz_log(0, "Reading data error: %s\n", strerror(errno));
+			close(m_socket);
+			m_socket = -1;
+			return 1;
 		}
 		/* repeat if data is still available */
-	} while (Wait(0) == 1);
+	}
+	if (wret < 0)
+		return 1;
 	if (count <= 0) {
 		if (m_single) {
 			printf("NO DATA RECEIVED\n");
@@ -582,6 +595,7 @@ int TCPServer::GetData(IPCHandler *ipc)
 	if (tokc - 5 != m_params_count ) {
 		if (m_single)
 			printf("Incorrect number of params (%d expected)\n", m_params_count);
+		sz_log(0, "Incorrect number of params (got %d, %d expected)\n", tokc - 5, m_params_count);
 		goto error;
 	}
 	
@@ -740,8 +754,8 @@ int main(int argc, char *argv[])
 			/* A little sleep to make sure that all data is transfered. */
 			sleep(1);
 			if (server->GetData(ipc)) {
-				sleep(DAEMON_INTERVAL);
-				continue;
+				for (int i = 0; i < server->m_params_count; i++)
+					ipc->m_read[i] = SZARP_NO_DATA;
 			}
 		} else {
 			int rest = sleep(2 * DAEMON_INTERVAL);

@@ -1,5 +1,11 @@
 
 2010-07-28	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/boruta_zet.cc: compiles under debian stable
+	* parcook/tcpdmn.cc: forgotten commit - small fixes
+	* maener3/tsaveparam.cc: removed reduntat check
+	of file size
+	* maener3/utils/szbwriter.cc: fixes
+2010-07-28	Darek Marcinkiewicz <reksio@newterm.pl>
 	* meaner3: szbwriter fixes
 	* utils/probes_server: one more off-by-one error
 	in seraching left

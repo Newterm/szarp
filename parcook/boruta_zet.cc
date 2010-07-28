@@ -27,6 +27,7 @@
 
 #include <stdexcept>
 #include <sstream>
+#include <sys/types.h>
 #include <event.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -102,7 +103,7 @@ template<class BASE> void zet_proto_impl<BASE>::send_query(struct bufferevent* b
 	if (sending_data)
 		ss << SENDER_CHECKSUM_PARAM << "," << sender_checksum;
 	ss << "\x03\n";
-	bufferevent_write(bufev, ss.str().c_str(), ss.str().size());
+	bufferevent_write(bufev, (void*)ss.str().c_str(), ss.str().size());
 	m_data_in_buffer = 0;
 	m_buffer.resize(1000);
 	start_timer();

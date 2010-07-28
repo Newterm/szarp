@@ -349,7 +349,7 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	tm.tm_mday = day;
 	tm.tm_hour = hour;
 	tm.tm_min = min;
-	tm.tm_sec = 0;
+	tm.tm_sec = sec;
 	tm.tm_isdst = -1;
 	
 	t = mktime(&tm);
@@ -407,7 +407,7 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	for (size_t i = 0; i < LAST_PROBE_TYPE; i++) {
 		if (m_dir.at(i).empty())
 			continue;
-		if (abs(m_cur_t[i] - t) < m_probe_length[i]) 
+		if (t >= m_cur_t[i] && t - m_cur_t[i] < m_probe_length[i]) 
 			continue;
 		if (save_data((PROBE_TYPE)i))
 			return 1;
