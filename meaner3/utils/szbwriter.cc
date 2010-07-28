@@ -399,6 +399,7 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 				m_save_param[i][1] = new TSaveParam(par2);
 			m_cur_sum[i] = 0;
 			m_cur_cnt[i] = 0;
+			m_cur_t[i] = t / m_probe_length[i] * m_probe_length[i];
 		}
 		m_cur_name = name;
 	}
@@ -406,7 +407,7 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	for (size_t i = 0; i < LAST_PROBE_TYPE; i++) {
 		if (m_dir.at(i).empty())
 			continue;
-		if (m_cur_t[i] - t < m_probe_length[i]) 
+		if (abs(m_cur_t[i] - t) < m_probe_length[i]) 
 			continue;
 		if (save_data((PROBE_TYPE)i))
 			return 1;
@@ -589,7 +590,7 @@ int main(int argc, char *argv[])
 
 	ipk_path = libpar_getpar(SZARP_CFG_SECTION, "IPK", 1);
 	data_dir = libpar_getpar(MEANER3_CFG_SECTION, "datadir", 1);
-	cache_dir = libpar_getpar(MEANER3_CFG_SECTION, "cachedir", 0);
+	cache_dir = libpar_getpar("prober", "cachedir", 0);
 
 	double_pattern = libpar_getpar(SZARP_CFG_SECTION, "double_match", 0);
 

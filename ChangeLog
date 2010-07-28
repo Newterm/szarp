@@ -1,4 +1,8 @@
 
+2010-07-28	Darek Marcinkiewicz <reksio@newterm.pl>
+	* meaner3: szbwriter fixes
+	* utils/probes_server: one more off-by-one error
+	in seraching left
 2010-07-27	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/common: function reading addresses of probes servers
 	moved from draw3 to common	

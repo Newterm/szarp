@@ -383,9 +383,9 @@ class SzbCache:
 				(path, startindex, endindex, direction))
 		f = open(path, "rb")
 		while startindex * direction <= endindex * direction:
-			rsize = min(bsize, (endindex - startindex + 1) * direction)
+			rsize = min(bsize, (endindex - startindex) * direction + 1)
 			if direction < 0:
-				search_block_begin = startindex - rsize
+				search_block_begin = startindex - rsize + 1
 			else:
 				search_block_begin = startindex
 			self.file_seek(f, search_block_begin)

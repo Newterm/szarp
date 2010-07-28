@@ -119,18 +119,6 @@ int TSaveParam::WriteBuffered(const fs::wpath& directory, time_t t, short int* d
 	filename = szb_createfilename_ne(cname, year, month, probe_length == SZBASE_DATA_SPAN ? L".szb" : L".szc");
 	path = (directory / filename).string();
 		
-	/* check for file size */
-	try {
-		last = fs::file_size(path) / sizeof(short int);
-		if (last > index && overwrite == 0) {
-			sz_log(1, "TSaveParam::Write(): cannot overwrite data in file '%ls'",
-					path.c_str());
-			return 1;
-		}
-
-	} catch (fs::wfilesystem_error) 
-	{ }
-
 	if (fd == -1 || last_path != path) {
 		CloseFile();
 		/* make sure directory exists */
@@ -148,6 +136,18 @@ int TSaveParam::WriteBuffered(const fs::wpath& directory, time_t t, short int* d
 		}
 		last_path = path;
 	}
+
+	/* check for file size */
+	try {
+		last = fs::file_size(path) / sizeof(short int);
+		if (last > index && overwrite == 0) {
+			sz_log(1, "TSaveParam::Write(): cannot overwrite data in file '%ls'",
+					path.c_str());
+			return 1;
+		}
+
+	} catch (fs::wfilesystem_error) 
+	{ }
 
 	/* check for file size */
 	if (last < 0) 
