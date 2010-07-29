@@ -70,6 +70,10 @@ time_t TProber::WaitForCycle(time_t period, time_t t)
 int TProber::LoadConfig(const char *section)
 {
 	int ret = TWriter::LoadConfig(section, "cachedir");
+	//rest of the code assumes that cachedir exists, so if it is not the case -
+	//let's create it 
+	if (!fs::exists(data_dir))
+		fs::create_directory(data_dir);
 	m_fr.Init(path(SC::S2A(data_dir)), atoi(libpar_getpar(section, "months_count", 1)));
 	return ret;
 }

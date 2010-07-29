@@ -24,7 +24,6 @@
 from twisted.application import internet, service
 from twisted.internet import protocol, reactor, defer
 from twisted.protocols import basic
-from twisted.python.log import ILogObserver, FileLogObserver
 from twisted.python.logfile import LogFile
 
 # To allow importing SZARP modules
@@ -36,8 +35,13 @@ from libpar import LibparReader
 port, addr = probes_server.get_port_address()
 
 application = service.Application('probes_server')
-logfile = LogFile("probes_server.log", "/opt/szarp/logs")
-application.setComponent(ILogObserver, FileLogObserver(logfile).emit)
+try:
+	from twisted.python.log import ILogObserver, FileLogObserver
+	logfile = LogFile("probes_server.log", "/opt/szarp/logs")
+	application.setComponent(ILogObserver, FileLogObserver(logfile).emit)
+except ImportError:
+	print "Logging not enabled, probably twisted is not new enough"
+	pass
 
 factory = probes_server.ProbesFactory()
 internet.TCPServer(port, factory, interface=addr).setServiceParent(

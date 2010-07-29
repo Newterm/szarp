@@ -1,4 +1,9 @@
 
+2010-07-29	Darek Marcinkiewicz <reksio@newterm.pl>
+	* debian/control: szarp-daemons depends on python-twisted now
+	* meaner3/tprober.cc: creates cachedir if not exists
+	* utils/probes_server/probes_server.tac: there is no twisted.python.log 
+	in version of twisted from lenny, but we can live with that
 2010-07-28	Darek Marcinkiewicz <reksio@newterm.pl>
 	* debian/szarp-base.postinst: szarp-base no longer depends
 	on vim, but script install_vim returned non-zero exit status if there
