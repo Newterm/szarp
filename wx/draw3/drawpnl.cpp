@@ -737,13 +737,16 @@ void DrawPanel::DrawInfoChanged(Draw *d) {
 		prefix = d->GetDrawsController()->GetSet()->GetDrawsSets()->GetPrefix();
 		tb->DoubleCursorToolUncheck();
 		if (active) {
-				menu_bar->Enable(XRCID("EditSet"),  IsUserDefined());
-				menu_bar->Enable(XRCID("DelSet"),  IsUserDefined());
-				menu_bar->Enable(XRCID("ExportSet"),  IsUserDefined());
-				menu_bar->Check(XRCID("SplitCursor"), false); 
-				df->SetTitle(GetConfigName(), GetPrefix());
+			menu_bar->Enable(XRCID("EditSet"),  IsUserDefined());
+			menu_bar->Enable(XRCID("DelSet"),  IsUserDefined());
+			menu_bar->Enable(XRCID("ExportSet"),  IsUserDefined());
+			menu_bar->Check(XRCID("SplitCursor"), false); 
+			df->SetTitle(GetConfigName(), GetPrefix());
+			//possibly
+			PeriodChanged(d, d->GetPeriod());	
 		}
 		df->UpdatePanelName(this);
+		
 	}
 }
 
@@ -779,7 +782,9 @@ void DrawPanel::PeriodChanged(Draw *d, PeriodType pt) {
 		case PERIOD_T_OTHER:
 			assert(false);
 	}
-	menu_bar->Check(id, true);
+	wxMenuItem* radio = menu_bar->FindItem(id);
+	if (!radio->IsChecked())
+		radio->Check(true);
 }
 
 void DrawPanel::UpdateFilterMenuItem(int filter) {

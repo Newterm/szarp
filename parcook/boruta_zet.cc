@@ -44,7 +44,7 @@
 
 #define SENDER_CHECKSUM_PARAM 299
 
-template<class BASE> class zet_proto_impl : public BASE {
+class zet_proto_impl : public client_driver {
 	enum PLC_TYPE { ZET, SK } m_plc_type;
 	char m_id;
 	short *m_read;
@@ -61,31 +61,29 @@ template<class BASE> class zet_proto_impl : public BASE {
 public:
 	void send_query(struct bufferevent* bufev);
 	virtual void connection_error(struct bufferevent *bufev);
-	virtual void data_ready(struct bufferevent* bufev);
 	virtual void data_ready(struct bufferevent* bufev, int fd);
-	virtual void scheduled(struct bufferevent* bufev);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
 	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send);
 	static void timeout_cb(int fd, short event, void *zet_proto_impl);
 };
 
-template<class BASE> void zet_proto_impl<BASE>::set_no_data() {
+void zet_proto_impl::set_no_data() {
 	for (size_t i = 0; i < m_read_count; i++)
 		m_read[i] = SZARP_NO_DATA;
 }
 
-template<class BASE> void zet_proto_impl<BASE>::start_timer() {
+void zet_proto_impl::start_timer() {
 	struct timeval tv;
 	tv.tv_sec = 5;
 	tv.tv_usec = 0;
 	evtimer_add(&m_timer, &tv); 
 }
 
-template<class BASE> void zet_proto_impl<BASE>::stop_timer() {
+void zet_proto_impl::stop_timer() {
 	event_del(&m_timer);
 }
 
-template<class BASE> void zet_proto_impl<BASE>::send_query(struct bufferevent* bufev) {
+void zet_proto_impl::send_query(struct bufferevent* bufev) {
 	std::stringstream ss;
 	ss << "\x11\x02P" << m_id << "\x03";
 	bool sending_data = false;
@@ -109,12 +107,12 @@ template<class BASE> void zet_proto_impl<BASE>::send_query(struct bufferevent* b
 	start_timer();
 }
 
-template<class BASE> void zet_proto_impl<BASE>::connection_error(struct bufferevent *bufev) {
+void zet_proto_impl::connection_error(struct bufferevent *bufev) {
 	set_no_data();
 	stop_timer();
 }
 
-template<class BASE> void zet_proto_impl<BASE>::data_ready(struct bufferevent* bufev) {
+void zet_proto_impl::data_ready(struct bufferevent* bufev, int fd) {
 	size_t ret;
 	if (m_data_in_buffer > m_buffer.size() / 2)
 		m_buffer.resize(m_buffer.size() * 2);
@@ -174,23 +172,15 @@ template<class BASE> void zet_proto_impl<BASE>::data_ready(struct bufferevent* b
 		m_read[i] = atoi(toks[i+4]);
 	tokenize_d(NULL, &toks, &tokc, NULL);
 	stop_timer();
-	BASE::m_manager->driver_finished_job(this);
+	m_manager->driver_finished_job(this);
 }
 
 
-template<class BASE> void zet_proto_impl<BASE>::data_ready(struct bufferevent* bufev, int fd) {
-	data_ready(bufev);
-}
-
-template<class BASE> void zet_proto_impl<BASE>::scheduled(struct bufferevent* bufev, int fd) {
+void zet_proto_impl::scheduled(struct bufferevent* bufev, int fd) {
 	send_query(bufev);
 }
 
-template<class BASE> void zet_proto_impl<BASE>::scheduled(struct bufferevent* bufev) {
-	send_query(bufev);
-}
-
-template<class BASE> int zet_proto_impl<BASE>::configure(TUnit* unit, xmlNodePtr node, short* read, short *send) {
+int zet_proto_impl::configure(TUnit* unit, xmlNodePtr node, short* read, short *send) {
 	m_id = unit->GetId();
 	m_read_count = unit->GetParamsCount();
 	m_send_count = unit->GetSendParamsCount();
@@ -211,22 +201,18 @@ template<class BASE> int zet_proto_impl<BASE>::configure(TUnit* unit, xmlNodePtr
 	for (size_t i = 0; i < m_send_count; i++, sp = sp->GetNext())
 		m_send_no_data.push_back(sp->GetSendNoData());
 	evtimer_set(&m_timer, timeout_cb, this);
-	event_base_set(BASE::m_event_base, &m_timer);
+	event_base_set(m_event_base, &m_timer);
 	return 0;
 }
 
-template<class BASE> void zet_proto_impl<BASE>::timeout_cb(int fd, short event, void *_zet_proto_impl) {
+void zet_proto_impl::timeout_cb(int fd, short event, void *_zet_proto_impl) {
 	zet_proto_impl* z = (zet_proto_impl*) _zet_proto_impl;
 	z->set_no_data();
 	z->stop_timer();
 	z->m_manager->driver_finished_job(z);
 }
 
-serial_client_driver* create_zet_serial_client() {
-	return new zet_proto_impl<serial_client_driver>();
-}
-
-tcp_client_driver* create_zet_tcp_client() {
-	return new zet_proto_impl<tcp_client_driver>();
+client_driver* create_zet_client() {
+	return new zet_proto_impl();
 }
 

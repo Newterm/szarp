@@ -74,13 +74,6 @@ public:
 	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send) = 0;
 };
 
-class client_driver : public boruta_driver {
-	std::pair<size_t, size_t> m_id;
-public:
-	virtual void connection_error(struct bufferevent *bufev) = 0;
-	std::pair<size_t, size_t> & id();
-};
-
 class server_driver : public boruta_driver {
 	size_t m_id;
 public:
@@ -92,23 +85,15 @@ class tcp_client_manager;
 class serial_client_manager;
 class tcp_server_manager;
 class serial_server_manager;
+class client_manager;
 
-class tcp_client_driver : public client_driver {
+class client_driver : public boruta_driver {
+	std::pair<size_t, size_t> m_id;
 protected:
-	tcp_client_manager* m_manager;
+	client_manager* m_manager;
 public:
-	void set_manager(tcp_client_manager* manager);
-	virtual void connection_error(struct bufferevent *bufev) = 0;
-	virtual void scheduled(struct bufferevent* bufev) = 0;
-	virtual void data_ready(struct bufferevent* bufev) = 0;
-	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send) = 0;
-};
-
-class serial_client_driver : public client_driver {
-protected:
-	serial_client_manager* m_manager;
-public:
-	void set_manager(serial_client_manager* manager);
+	std::pair<size_t, size_t> & id();
+	void set_manager(client_manager* manager);
 	virtual void connection_error(struct bufferevent *bufev) = 0;
 	virtual void scheduled(struct bufferevent* bufev, int fd) = 0;
 	virtual void data_ready(struct bufferevent* bufev, int fd) = 0;
@@ -117,7 +102,7 @@ public:
 
 class serial_server_driver : public server_driver {
 protected:
-	serial_client_manager* m_manager;
+	client_manager* m_manager;
 public:
 	void set_manager(serial_server_manager* manager);
 	virtual void connection_error(struct bufferevent *bufev) = 0;
@@ -139,10 +124,10 @@ public:
 };
 
 class protocols {
-	typedef std::map<std::string, tcp_client_driver* (*)()> tcp_client_factories_table;
+	typedef std::map<std::string, client_driver* (*)()> tcp_client_factories_table;
 	tcp_client_factories_table m_tcp_client_factories;
 
-	typedef std::map<std::string, serial_client_driver* (*)()> serial_client_factories_table;
+	typedef std::map<std::string, client_driver* (*)()> serial_client_factories_table;
 	serial_client_factories_table m_serial_client_factories;
 
 	typedef std::map<std::string, tcp_server_driver* (*)()> tcp_server_factories_table;
@@ -154,8 +139,8 @@ class protocols {
 	std::string get_proto_name(xmlNodePtr node);
 public:
 	protocols();
-	tcp_client_driver* create_tcp_client_driver(xmlNodePtr node);
-	serial_client_driver* create_serial_client_driver(xmlNodePtr node);
+	client_driver* create_tcp_client_driver(xmlNodePtr node);
+	client_driver* create_serial_client_driver(xmlNodePtr node);
 	tcp_server_driver* create_tcp_server_driver(xmlNodePtr node);
 	serial_server_driver* create_serial_server_driver(xmlNodePtr node);
 };
@@ -183,10 +168,20 @@ public:
 
 class boruta_daemon;
 
-class tcp_client_manager {
+class client_manager { 
+protected:
+	std::vector<std::vector<client_driver*> > m_clients;
+	std::vector<size_t> m_current_client;
+	virtual void do_terminate_connection(size_t conn_no) = 0;
+	virtual void do_schedule(size_t conn_no, size_t client_no) = 0;
+	virtual int do_establish_connection(size_t conn_no) = 0;
+public:
+	void driver_finished_job(client_driver *driver);
+	void terminate_connection(client_driver *driver);
+};
+
+class tcp_client_manager : client_manager {
 	boruta_daemon *m_boruta;
-	std::vector<std::vector<tcp_client_driver*> > m_tcp_clients;
-	std::vector<size_t> m_current_tcp_client;
 	std::vector<sockaddr_in> m_addresses;
 	struct tcp_connection {
 		tcp_connection(tcp_client_manager *manager, size_t conn_no);
@@ -202,33 +197,34 @@ class tcp_client_manager {
 	void close_connection(tcp_connection &c);
 	int open_connection(tcp_connection &c, struct sockaddr_in& addr);
 	void connect_all();
+protected:
+	virtual void do_terminate_connection(size_t conn_no);
+	virtual void do_schedule(size_t conn_no, size_t client_no);
+	virtual int do_establish_connection(size_t conn_no);
 public:
 	tcp_client_manager(boruta_daemon *boruta) : m_boruta(boruta) {}
 	int configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols);
 	int initialize();
 	void starting_new_cycle();
-	void driver_finished_job(tcp_client_driver *driver);
 	static void connection_read_cb(struct bufferevent *ev, void* _tcp_connection);
 	static void connection_write_cb(struct bufferevent *ev, void* _tcp_connection);
 	static void connection_error_cb(struct bufferevent *ev, short event, void* _tcp_connection);
 };
 
-class serial_client_manager : public serial_connection_manager {
+class serial_client_manager : public serial_connection_manager, public client_manager {
 	boruta_daemon *m_boruta;
-	std::vector<std::vector<serial_client_driver*> > m_clients;
 	std::vector<std::vector<serial_port_configuration> > m_configurations;
-	std::vector<size_t> m_current_serial_client;
 	std::map<std::string, size_t> m_ports_client_no_map;
 	std::vector<serial_connection> m_connections;
-	int open_connection(std::string path, serial_connection &sc);
-	void close_connection(serial_connection& sc);
-	void schedule(size_t connection_number);
+protected:
+	virtual void do_terminate_connection(size_t conn_no);
+	virtual void do_schedule(size_t conn_no, size_t client_no);
+	virtual int do_establish_connection(size_t conn_no);
 public:
 	serial_client_manager(boruta_daemon *boruta) : m_boruta(boruta) {}
 	int configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols);
 	int initialize();
 	void starting_new_cycle();
-	void driver_finished_job(serial_client_driver *driver);
 	void connection_read_cb(serial_connection *c);
 	void connection_error_cb(serial_connection *c);
 };
@@ -300,7 +296,6 @@ public:
 	static void cycle_timer_callback(int fd, short event, void* daemon);
 };
 
-serial_client_driver* create_zet_serial_client();
-tcp_client_driver* create_zet_tcp_client();
+client_driver* create_zet_client();
 
 #endif

@@ -126,12 +126,6 @@ bool adjust_search_boundaries(time_t& start, time_t& end, time_t first_date, tim
 		else
 			end = last_date;
 	} else {
-		if (direction <= 0 && end > last_date)
-			return false;
-
-		if (direction >= 0 && end < last_date)
-			return false;
-
 		if (direction < 0 && end < first_date)
 			end = first_date;
 

@@ -1,4 +1,11 @@
 
+2010-08-02	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2/szbase/szbsearch.cc: fix in setting serach
+	boundarines in quite rare case when both start and end
+	serach time is specified
+	* parcook/boruta*: progress, some code simplification
+	* wx/draw3: more intuitive behaviour on PgUp/PgDown
+	key press
 2010-07-29	Darek Marcinkiewicz <reksio@newterm.pl>
 	* debian/control: szarp-daemons depends on python-twisted now
 	* meaner3/tprober.cc: creates cachedir if not exists

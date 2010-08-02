@@ -336,17 +336,13 @@ size_t& server_driver::id() {
 	return m_id;
 }
 
-void tcp_client_driver::set_manager(tcp_client_manager* manager) {
-	m_manager = manager;
-}
-
-void serial_client_driver::set_manager(serial_client_manager* manager) {
+void client_driver::set_manager(client_manager* manager) {
 	m_manager = manager;
 }
 
 protocols::protocols() {
-	m_tcp_client_factories["zet"] = create_zet_tcp_client;
-	m_serial_client_factories["zet"] = create_zet_serial_client;
+	m_tcp_client_factories["zet"] = create_zet_client;
+	m_serial_client_factories["zet"] = create_zet_client;
 #if 0
 	m_tcp_client_factories["modbus"] = create_modbus_tcp_client;
 	m_serial_client_factories["modbus"] = create_modbus_serial_client;
@@ -361,7 +357,7 @@ std::string protocols::get_proto_name(xmlNodePtr node) {
 	return ret;
 }
 
-tcp_client_driver* protocols::create_tcp_client_driver(xmlNodePtr node) {
+client_driver* protocols::create_tcp_client_driver(xmlNodePtr node) {
 	std::string proto = get_proto_name(node);
 	if (proto.empty())
 		return NULL;
@@ -373,7 +369,7 @@ tcp_client_driver* protocols::create_tcp_client_driver(xmlNodePtr node) {
 	return i->second();
 }
 
-serial_client_driver* protocols::create_serial_client_driver(xmlNodePtr node) {
+client_driver* protocols::create_serial_client_driver(xmlNodePtr node) {
 	std::string proto = get_proto_name(node);
 	if (proto.empty())
 		return NULL;
@@ -445,6 +441,28 @@ void serial_connection::connection_error_cb(struct bufferevent *ev, short event,
 	c->manager->connection_error_cb(c);
 }
 
+void client_manager::driver_finished_job(client_driver *driver) {
+	size_t conn_no = driver->id().first;
+	size_t& client_no = m_current_client.at(conn_no);
+	assert(driver->id().second == conn_no);
+	if (++client_no < m_clients.at(conn_no).size())
+		do_schedule(conn_no, client_no);
+}
+
+void client_manager::terminate_connection(client_driver *driver) {
+	size_t conn_no = driver->id().first;
+	size_t& client_no = m_current_client.at(conn_no);
+	assert(driver->id().second == conn_no);
+	do_terminate_connection(conn_no);
+	if (++client_no < m_clients.at(conn_no).size()) {
+		if (do_establish_connection(conn_no))
+			return
+		do_schedule(conn_no, conn_no);
+	}
+}
+
+
+
 tcp_client_manager::tcp_connection::tcp_connection(tcp_client_manager *_manager, size_t _addr_no) : state(NOT_CONNECTED), fd(-1), bufev(NULL), conn_no(_addr_no), manager(_manager) {}
 
 int tcp_client_manager::configure_tcp_address(xmlNodePtr node, struct sockaddr_in &addr) {
@@ -514,11 +532,26 @@ void tcp_client_manager::connect_all() {
 	}
 }
 
+void tcp_client_manager::do_terminate_connection(size_t conn_no) {
+	close_connection(m_connections.at(conn_no));
+}
+
+int tcp_client_manager::do_establish_connection(size_t conn_no) {
+	tcp_connection &c = m_connections.at(conn_no);
+	if (open_connection(m_connections.at(conn_no), m_addresses.at(conn_no)))
+		return 1;
+	return c.state == tcp_connection::CONNECTED ? 0 : 1;
+}
+
+void tcp_client_manager::do_schedule(size_t conn_no, size_t client_no) {
+	m_clients.at(conn_no).at(client_no)->scheduled(m_connections.at(conn_no).bufev, m_connections.at(conn_no).fd);
+}
+
 int tcp_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols& _protocols) {
 	struct sockaddr_in addr;
 	if (configure_tcp_address(node, addr))
 		return 1;
-	tcp_client_driver* driver = _protocols.create_tcp_client_driver(node);
+	client_driver* driver = _protocols.create_tcp_client_driver(node);
 	if (driver == NULL)
 		return 1;
 	if (driver->configure(unit, node, read, send)) {
@@ -532,21 +565,21 @@ int tcp_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, sho
 	if (i == m_addresses.size()) {
 		i = m_addresses.size();
 		m_addresses.push_back(addr);
-		m_tcp_clients.push_back(std::vector<tcp_client_driver*>());
+		m_clients.push_back(std::vector<client_driver*>());
 		m_connections.push_back(tcp_connection(this, i));
 	}
-	driver->id() = std::make_pair(i, m_tcp_clients[i].size());
-	m_tcp_clients[i].push_back(driver);
+	driver->id() = std::make_pair(i, m_clients[i].size());
+	m_clients[i].push_back(driver);
 	driver->set_manager(this);
 	return 0;
 }
 
 int tcp_client_manager::initialize() {
-	for (size_t i = 0; i < m_tcp_clients.size(); i++)
-		m_current_tcp_client.at(i) = m_tcp_clients.at(i).size();
-	for (size_t i = 0; i < m_tcp_clients.size(); i++)
-		for (size_t j = 0; j < m_tcp_clients[i].size(); j++)
-			m_tcp_clients[i][j]->set_event_base(m_boruta->get_event_base());
+	for (size_t i = 0; i < m_clients.size(); i++)
+		m_current_client.at(i) = m_clients.at(i).size();
+	for (size_t i = 0; i < m_clients.size(); i++)
+		for (size_t j = 0; j < m_clients[i].size(); j++)
+			m_clients[i][j]->set_event_base(m_boruta->get_event_base());
 	return 0;
 }
 
@@ -555,34 +588,24 @@ void tcp_client_manager::starting_new_cycle() {
 	connect_all(); 
 	for (size_t i = 0; i < m_addresses.size(); i++) {
 		if (m_connections.at(i).state == tcp_connection::NOT_CONNECTED) {
-			for (size_t j = 0; m_tcp_clients.at(i).size(); j++)
-				m_tcp_clients.at(i).at(j)->connection_error(m_connections.at(i).bufev);
+			for (size_t j = 0; m_clients.at(i).size(); j++)
+				m_clients.at(i).at(j)->connection_error(m_connections.at(i).bufev);
 		} else {
-			size_t& j = m_current_tcp_client.at(i);
-			if (j == m_tcp_clients.at(i).size()) {
+			size_t& j = m_current_client.at(i);
+			if (j == m_clients.at(i).size()) {
 				j = 0;
 				if (m_connections.at(i).state == tcp_connection::CONNECTED)
-					m_tcp_clients.at(i).at(j)->scheduled(m_connections.at(i).bufev);
+					m_clients.at(i).at(j)->scheduled(m_connections.at(i).bufev, m_connections.at(i).fd);
 			}
 		}
 	}
 }
 
-void tcp_client_manager::driver_finished_job(tcp_client_driver *driver) {
-	size_t i = driver->id().first;
-	size_t& j = m_current_tcp_client.at(i);
-	assert(driver->id().second == j);
-	if (++j < m_tcp_clients.at(i).size())
-		m_tcp_clients.at(i).at(j)->scheduled(m_connections.at(i).bufev);
-}
-
-void driver_(tcp_client_driver *driver);
-
 void tcp_client_manager::connection_read_cb(struct bufferevent *ev, void* _tcp_connection) {
 	tcp_connection* c = (tcp_connection*) _tcp_connection;
 	tcp_client_manager* t = c->manager;
-	tcp_client_driver* d = t->m_tcp_clients.at(c->conn_no).at(t->m_current_tcp_client[c->conn_no]);
-	d->data_ready(ev);
+	client_driver* d = t->m_clients.at(c->conn_no).at(t->m_current_client[c->conn_no]);
+	d->data_ready(ev, c->fd);
 }
 
 void tcp_client_manager::connection_write_cb(struct bufferevent *ev, void* _tcp_connection) {
@@ -591,22 +614,22 @@ void tcp_client_manager::connection_write_cb(struct bufferevent *ev, void* _tcp_
 		return;
 	tcp_client_manager* t = c->manager;
 	c->state = tcp_connection::CONNECTED;
-	tcp_client_driver* d = t->m_tcp_clients.at(c->conn_no).at(t->m_current_tcp_client.at(c->conn_no));
-	d->scheduled(ev);
+	client_driver* d = t->m_clients.at(c->conn_no).at(t->m_current_client.at(c->conn_no));
+	d->scheduled(ev, c->fd);
 }
  
 void tcp_client_manager::connection_error_cb(struct bufferevent *ev, short event, void* _tcp_connection) {
 	tcp_connection* c = (tcp_connection*) _tcp_connection;
 	tcp_client_manager* t = c->manager;
 	t->close_connection(*c);
-	size_t& cc = t->m_current_tcp_client.at(c->conn_no);
-	client_driver* d = t->m_tcp_clients.at(c->conn_no).at(cc);
+	size_t& cc = t->m_current_client.at(c->conn_no);
+	client_driver* d = t->m_clients.at(c->conn_no).at(cc);
 	d->connection_error(c->bufev);
-	while (++cc < t->m_tcp_clients.at(c->conn_no).size()) {
-		tcp_client_driver* d = t->m_tcp_clients.at(c->conn_no).at(cc);
+	while (++cc < t->m_clients.at(c->conn_no).size()) {
+		client_driver* d = t->m_clients.at(c->conn_no).at(cc);
 		if (t->open_connection(*c, t->m_addresses.at(c->conn_no)) == 0) {
 			if (c->state == tcp_connection::CONNECTED)
-				d->scheduled(c->bufev);
+				d->scheduled(c->bufev, c->fd);
 			return;
 		}
 		d->connection_error(c->bufev);
@@ -614,20 +637,28 @@ void tcp_client_manager::connection_error_cb(struct bufferevent *ev, short event
 	}
 }
 
-void serial_client_manager::schedule(size_t connection_number) {
-	serial_connection& sc = m_connections.at(connection_number);
-	size_t j = m_current_serial_client.at(connection_number);
-	set_serial_port_settings(sc.fd, m_configurations.at(connection_number).at(j));
-	m_clients.at(connection_number).at(j)->scheduled(
-			m_connections.at(connection_number).bufev,
-			m_connections.at(connection_number).fd);
+void serial_client_manager::do_terminate_connection(size_t conn_no) {
+	m_connections.at(conn_no).close_connection();
+}
+
+int serial_client_manager::do_establish_connection(size_t conn_no) {
+	const std::string path = m_configurations.at(conn_no).at(m_current_client.at(conn_no)).path;
+	return m_connections.at(conn_no).open_connection(path, m_boruta->get_event_base());
+}
+
+void serial_client_manager::do_schedule(size_t conn_no, size_t client_no) {
+	serial_connection& sc = m_connections.at(conn_no);
+	set_serial_port_settings(sc.fd, m_configurations.at(conn_no).at(client_no));
+	m_clients.at(conn_no).at(client_no)->scheduled(
+			m_connections.at(conn_no).bufev,
+			m_connections.at(conn_no).fd);
 }
 
 int serial_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols) {
 	serial_port_configuration spc;
 	if (!get_serial_port_config(node, spc))
 		return 1;
-	serial_client_driver* driver = _protocols.create_serial_client_driver(node);
+	client_driver* driver = _protocols.create_serial_client_driver(node);
 	if (driver == NULL)
 		return 1;
 	if (driver->configure(unit, node, read, send)) {
@@ -638,7 +669,7 @@ int serial_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, 
 	size_t j;	
 	if (i == m_ports_client_no_map.end()) {
 		j = m_clients.size();
-		m_clients.push_back(std::vector<serial_client_driver*>());
+		m_clients.push_back(std::vector<client_driver*>());
 		m_configurations.resize(m_configurations.size() + 1);
 		m_ports_client_no_map[spc.path] = j;
 		m_connections.push_back(serial_connection(j, this));
@@ -654,7 +685,7 @@ int serial_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, 
 
 int serial_client_manager::initialize() {
 	for (size_t i = 0; i < m_clients.size(); i++)
-		m_current_serial_client.at(i) = m_clients.at(i).size();
+		m_current_client.at(i) = m_clients.at(i).size();
 	for (size_t i = 0; i < m_clients.size(); i++)
 		for (size_t j = 0; j < m_clients[i].size(); j++)
 			m_clients[i][j]->set_event_base(m_boruta->get_event_base());
@@ -666,37 +697,29 @@ void serial_client_manager::starting_new_cycle() {
 	for (size_t i = 0; i < m_clients.size(); i++) {
 		if (m_connections.at(i).fd < 0) {
 			if (m_connections.at(i).open_connection(
-					m_configurations.at(i).at(m_current_serial_client.at(i)).path,
+					m_configurations.at(i).at(m_current_client.at(i)).path,
 					m_boruta->get_event_base())) {
 				for (size_t j = 0; m_clients.at(i).size(); j++)
 					m_clients.at(i).at(j)->connection_error(m_connections.at(i).bufev);
 				continue;
 			}
 		}
-		size_t& j = m_current_serial_client.at(i);
+		size_t& j = m_current_client.at(i);
 		if (j == m_clients.at(i).size()) {
 			j = 0;
-			schedule(i);
+			do_schedule(i, j);
 		}
 	}
 }
 
-void serial_client_manager::driver_finished_job(serial_client_driver *driver) {
-	size_t i = driver->id().first;
-	size_t& j = m_current_serial_client.at(i);
-	assert(driver->id().second == j);
-	if (++j < m_clients.at(i).size())
-		schedule(i);
-}
-
 void serial_client_manager::connection_read_cb(serial_connection* c) {
-	serial_client_driver *d = m_clients.at(c->conn_no).at(m_current_serial_client.at(c->conn_no));
+	client_driver *d = m_clients.at(c->conn_no).at(m_current_client.at(c->conn_no));
 	d->data_ready(c->bufev, c->fd);
 }
 
 void serial_client_manager::connection_error_cb(serial_connection* c) {
-	size_t &cc = m_current_serial_client.at(c->conn_no);
-	serial_client_driver *d = m_clients.at(c->conn_no).at(cc);
+	size_t &cc = m_current_client.at(c->conn_no);
+	client_driver *d = m_clients.at(c->conn_no).at(cc);
 	d->connection_error(c->bufev);
 	c->close_connection();
 	size_t cs = m_clients.at(c->conn_no).size();
@@ -706,7 +729,7 @@ void serial_client_manager::connection_error_cb(serial_connection* c) {
 				m_clients.at(c->conn_no).at(cc)->connection_error(c->bufev);
 			} while (++cc < cs);
 		} else {
-			schedule(cc);
+			do_schedule(c->conn_no, cc);
 		}
 	}
 }

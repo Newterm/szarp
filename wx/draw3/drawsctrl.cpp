@@ -375,10 +375,13 @@ void DrawsController::HandleSearchResponse(DatabaseQuery *query) {
 	assert(search_start_time.IsValid());
 
 	wxDateTime res;
-	if (sd.response != -1)
+	if (sd.response != -1) {
 		res = wxDateTime(sd.response);
-	else
+		wxLogInfo(_T("Response to search: %s"), res.Format().c_str());
+	} else {
+		wxLogInfo(_T("Invalid response to search"));
 		res = wxInvalidDateTime;
+	}
 
 	switch (sd.direction) {
 		case -1:
@@ -398,7 +401,8 @@ void DrawsController::HandleSearchResponse(DatabaseQuery *query) {
 	delete query;
 
 	DTime found_time;
-
+	const TimeIndex& index = m_draws.at(m_selected_draw)->GetTimeIndex();
+	wxTimeSpan d1, d2;
 	switch (m_state) {
 		case SEARCH_LEFT: 
 			if (!m_got_left_search_response)
@@ -428,31 +432,39 @@ void DrawsController::HandleSearchResponse(DatabaseQuery *query) {
 		case SEARCH_BOTH:
 			if (!m_got_right_search_response || !m_got_left_search_response) 
 				return;	
-
-			if (m_left_search_result.IsValid() || m_right_search_result.IsValid()) {
-				/*choose time that is closer to start time*/
-				wxTimeSpan d1;
-				if (m_left_search_result.IsValid()) 
+			if (!m_left_search_result.IsValid() && !m_right_search_result.IsValid())
+				return NoDataFound();
+			if (!m_left_search_result.IsValid())
+				found_time = m_right_search_result;
+			else if (!m_right_search_result.IsValid())
+				found_time = m_left_search_result;
+			else switch (m_state) {
+				case SEARCH_BOTH_PREFER_LEFT:
+					if (m_left_search_result <
+							index.GetStartTime() - index.GetDatePeriod() - index.GetTimePeriod())
+						found_time = m_right_search_result;
+					else
+						found_time = m_left_search_result;
+					wxLogInfo(_T("Search both prefer left found data at time: %s"), found_time.Format().c_str());
+					break;
+				case SEARCH_BOTH_PREFER_RIGHT:
+					if (m_right_search_result >=
+							index.GetStartTime() + 2 * index.GetDatePeriod() + 2 * index.GetTimePeriod())
+						found_time = m_right_search_result;
+					else
+						found_time = m_left_search_result;
+					wxLogInfo(_T("Search both prefer right found data at time: %s"), found_time.Format().c_str());
+					break;
+				case SEARCH_BOTH:
 					d1 = search_start_time - m_left_search_result.GetTime();
-
-				wxTimeSpan d2;
-				if (m_right_search_result.IsValid()) 
 					d2 = m_right_search_result.GetTime() - search_start_time;
-	
-				if (!m_left_search_result.IsValid())
-					found_time = m_right_search_result;
-				else if (!m_right_search_result.IsValid())
-					found_time = m_left_search_result;
-				else
 					found_time = (d1 < d2) ? m_left_search_result : m_right_search_result;
-	
-				wxLogInfo(_T("Search both found data at time: %s"), found_time.Format().c_str());
-	
-				break;
-			} else {
-				NoDataFound();
-				return;
-			}
+					wxLogInfo(_T("Search both found data at time: %s"), found_time.Format().c_str());
+					break;
+				default:
+					assert(false);
+				}
+			break;
 		default:
 			assert(false);
 			break;
@@ -1056,7 +1068,7 @@ void DrawsController::EnterDisplayState(const DTime& time) {
 	int dist = 0;
 	int pi = m_current_index;
 
-	m_current_time = time;
+	m_current_time = m_time_to_go = time;
 	m_current_index = d->GetIndex(m_current_time);
 
 	if (m_double_cursor) {
