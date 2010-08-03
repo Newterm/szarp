@@ -7,6 +7,18 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.438
+# 01.08.2010
+* Nowy uniwersalny meta-sterownik "boruta" umo¿liwiaj±cy obs³ugê wielu 
+protoko³ów, z mo¿liwo¶ci± jednoczesnej obs³ugi wielu urz±dzeñ.
+* Obs³uga próbek 10-sekundowych w programach Ekstraktor i szbwriter.
+* Próbki 10-sekundowe s± domy¶lnie w³±czone.
+* Nowa opcja dla programów szrsync i szbpush pozwalaj±ca na ograniczenie
+prêdko¶ci transferu danych.
+* Poprawki w programie przegl±daj±cym, w tym bardziej intuicyjne zachowanie
+po naci¶niêciu PgUp/PgDown.
+* Drobne poprawki w Raporterze i Synchronizatorze.
+
 ** 3.1.432
 # 01.07.2010
 * Zakoñczono prace nad obs³ug± próbek 10 sekundowych w bibliotece szbase oraz w

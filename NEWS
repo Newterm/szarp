@@ -6,6 +6,16 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.438
+# 01.08.2010
+* New universal device driver - "boruta" meta-daemon, with possibility to easily
+add different protocol implementations and support for multiple devices.
+* Support for 10-seconds probes in extractor and szbwriter programs.
+* 10-seconds probes are on by default.
+* New options for szrsync and szbpush to allow limiting transfer speed.
+* Draw3 fixes, including more intuitive behaviour on PgUp/PgDown.
+* Small fixes in raporter and synchronizer applications.
+
 ** 3.1.432
 # 01.07.2010
 * Support for 10-second probes in szbase and draw3 application was completed.
