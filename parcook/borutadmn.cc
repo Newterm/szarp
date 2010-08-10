@@ -231,30 +231,6 @@ int get_serial_port_config(xmlNodePtr node, serial_port_configuration &spc) {
 		dolog(0, "Unsupported number of stop bits %s, confiugration invalid (line %ld)!!!", stop_bits.c_str(), xmlGetLineNo(node));
 		return 1;
 	}
-
-#if 0
-	xmlChar* delay_between_chars = get_device_node_prop(xp_ctx, "out-intra-character-delay");
-	std::string 
-	if (delay_between_chars == NULL) {
-		dolog(10, "Serial port configuration, delay between chars not given assuming no delay");
-		spc.delay_between_chars = 0;
-	} else {
-		spc.delay_between_chars = atoi((char*) delay_between_chars) * 1000;
-		dolog(10, "Serial port configuration, delay between chars set to %d miliseconds", spc.delay_between_chars);
-	}
-	xmlFree(delay_between_chars);
-
-	xmlChar* read_timeout = get_device_node_prop(xp_ctx, "read-timeout");
-	if (read_timeout == NULL) {
-		dolog(10, "Serial port configuration, read timeout not given, will use one based on speed");
-		spc.read_timeout = 0;
-	} else {
-		spc.read_timeout = atoi((char*) read_timeout) * 1000;
-		dolog(10, "Serial port configuration, read timeout set to %d miliseconds", spc.read_timeout);
-	}
-	xmlFree(read_timeout);
-#endif
-
 	return 0;
 }
 
@@ -332,23 +308,25 @@ std::pair<size_t, size_t> & client_driver::id() {
 	return m_id;
 }
 
-size_t& server_driver::id() {
-	return m_id;
-}
-
 void client_driver::set_manager(client_manager* manager) {
 	m_manager = manager;
 }
 
+void client_driver::starting_new_cycle() {
+	return;
+}
+
+size_t& server_driver::id() {
+	return m_id;
+}
+
 protocols::protocols() {
-	m_tcp_client_factories["zet"] = create_zet_client;
-	m_serial_client_factories["zet"] = create_zet_client;
-#if 0
+	m_tcp_client_factories["zet"] = create_zet_tcp_client;
+	m_serial_client_factories["zet"] = create_zet_serial_client;
 	m_tcp_client_factories["modbus"] = create_modbus_tcp_client;
 	m_serial_client_factories["modbus"] = create_modbus_serial_client;
 	m_tcp_server_factories["modbus"] = create_modbus_tcp_server;
 	m_serial_server_factories["modbus"] = create_modbus_serial_server;
-#endif
 }
 
 std::string protocols::get_proto_name(xmlNodePtr node) {
@@ -357,7 +335,7 @@ std::string protocols::get_proto_name(xmlNodePtr node) {
 	return ret;
 }
 
-client_driver* protocols::create_tcp_client_driver(xmlNodePtr node) {
+tcp_client_driver* protocols::create_tcp_client_driver(xmlNodePtr node) {
 	std::string proto = get_proto_name(node);
 	if (proto.empty())
 		return NULL;
@@ -369,7 +347,7 @@ client_driver* protocols::create_tcp_client_driver(xmlNodePtr node) {
 	return i->second();
 }
 
-client_driver* protocols::create_serial_client_driver(xmlNodePtr node) {
+serial_client_driver* protocols::create_serial_client_driver(xmlNodePtr node) {
 	std::string proto = get_proto_name(node);
 	if (proto.empty())
 		return NULL;
@@ -551,7 +529,7 @@ int tcp_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, sho
 	struct sockaddr_in addr;
 	if (configure_tcp_address(node, addr))
 		return 1;
-	client_driver* driver = _protocols.create_tcp_client_driver(node);
+	tcp_client_driver* driver = _protocols.create_tcp_client_driver(node);
 	if (driver == NULL)
 		return 1;
 	if (driver->configure(unit, node, read, send)) {
@@ -658,10 +636,10 @@ int serial_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, 
 	serial_port_configuration spc;
 	if (!get_serial_port_config(node, spc))
 		return 1;
-	client_driver* driver = _protocols.create_serial_client_driver(node);
+	serial_client_driver* driver = _protocols.create_serial_client_driver(node);
 	if (driver == NULL)
 		return 1;
-	if (driver->configure(unit, node, read, send)) {
+	if (driver->configure(unit, node, read, send, spc)) {
 		delete driver;
 		return 1;
 	}
@@ -741,7 +719,7 @@ int serial_server_manager::configure(TUnit *unit, xmlNodePtr node, short* read, 
 	serial_server_driver* driver = _protocols.create_serial_server_driver(node);
 	if (driver == NULL)
 		return 1;
-	if (driver->configure(unit, node, read, send)) {
+	if (driver->configure(unit, node, read, send, spc)) {
 		delete driver;
 		return 1;
 	}
@@ -820,6 +798,13 @@ int tcp_server_manager::start_listening_on_port(int port) {
 	}
 }
 
+void tcp_server_manager::close_connection(struct bufferevent* bufev) {
+	connection &c = m_connections[bufev];
+	close(c.fd);
+	m_connections.erase(bufev);
+	bufferevent_free(bufev);
+}
+
 int tcp_server_manager::configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols) {
 	tcp_server_driver* driver = _protocols.create_tcp_server_driver(node);
 	if (driver == NULL)		
@@ -865,9 +850,7 @@ void tcp_server_manager::connection_error_cb(struct bufferevent *bufev, short ev
 	tcp_server_manager *m = (tcp_server_manager*) _manager;
 	connection &c = m->m_connections[bufev];
 	m->m_drivers.at(c.serv_no)->connection_error(bufev);
-	close(c.fd);
-	m->m_connections.erase(bufev);
-	bufferevent_free(bufev);
+	m->close_connection(bufev);
 }
 
 void tcp_server_manager::connection_accepted_cb(int _fd, short event, void* _listen_port) {
@@ -901,7 +884,8 @@ do_accept:
 	bufferevent_base_set(m->m_boruta->get_event_base(), c.bufev);
 	bufferevent_enable(c.bufev, EV_READ | EV_WRITE | EV_PERSIST);
 	m->m_connections[c.bufev] = c;
-	m->m_drivers.at(p->serv_no)->connection_accepted(c.bufev);
+	if (m->m_drivers.at(p->serv_no)->connection_accepted(c.bufev, fd, &addr))
+		m->close_connection(c.bufev);
 }
 
 int boruta_daemon::configure_ipc() {
@@ -930,8 +914,8 @@ int boruta_daemon::configure_units() {
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 		SC::S2U(IPK_NAMESPACE_STRING).c_str());
 	assert(ret == 0);
-	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "borutadmn",
-		SC::S2U(IPK_NAMESPACE_STRING).c_str());
+	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "boruta",
+		BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 	assert(ret == 0);
 	short *read = m_ipc->m_read;
 	short *send = m_ipc->m_send;

@@ -555,19 +555,23 @@ void DrawPicker::OnAddDraw(wxCommandEvent & event)
 
 	int number = m_list->GetItemCount();
 	DrawInfo *draw = m_inc_search->GetDrawInfo(&prev);
+	std::vector<DrawInfo*> to_add;
 	while (draw != NULL) {	// adding all selected draws
-		if (number < MAX_DRAWS_COUNT) {
-			m_defined_set->Add(draw);
-			draw = m_inc_search->GetDrawInfo(&prev);
-			number++;
-			m_modified = true;
-		} else {
+		to_add.push_back(draw);
+		if (to_add.size() + number >= MAX_DRAWS_COUNT) {
 			wxMessageBox(_("Too many draws."),
 				     _("Too many draws."),
 				     wxOK | wxICON_ERROR, this);
 			return;
 		}
+		draw = m_inc_search->GetDrawInfo(&prev);
 	}
+	for (std::vector<DrawInfo*>::iterator i = to_add.begin();
+			i != to_add.end();
+			i++)
+		m_defined_set->Add(*i);
+	number += to_add.size();
+	m_modified = true;
 
 #ifdef MINGW32
 	Raise();

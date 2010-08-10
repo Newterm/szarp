@@ -1,4 +1,11 @@
 
+2010-08-09	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: fixed a bug in a boundary case when 
+	there were more than MAX_DRAWS_COUNT draws added into user set
+	* wx/filler: default command (/opt/szarp/bin/szbwriter) that filler
+	executes in order to store data in database, can by overriden 
+	by envirnment variable FILLER_COMMAND
+	* parcook/boruta: progress, modbus protocol support added
 2010-08-02	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2/szbase/szbsearch.cc: fix in setting serach
 	boundarines in quite rare case when both start and end

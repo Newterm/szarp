@@ -170,10 +170,11 @@ class ParamList(wx.ListCtrl):
 
 			outFile.close()
 
+			command = '/opt/szarp/bin/szbwriter -Dlog="/tmp/szbwriter-by-filler"'
+			if "FILLER_COMMAND" in os.environ:
+				command = os.environ["FILLER_COMMAND"]
 			# writing to database
-			writer = popen2.Popen3('/opt/szarp/bin/szbwriter ' +\
-					' -Dlog="/tmp/szbwriter-by-filler" ' +\
-					self.main.options+' < ' +fileName, True)
+			writer = popen2.Popen3(command + self.main.options + ' < ' + fileName, True)
 			result = writer.wait()/256
 			err = writer.childerr.read().strip()
 

@@ -44,7 +44,7 @@
 
 #define SENDER_CHECKSUM_PARAM 299
 
-class zet_proto_impl : public client_driver {
+class zet_proto_impl {
 	enum PLC_TYPE { ZET, SK } m_plc_type;
 	char m_id;
 	short *m_read;
@@ -58,6 +58,10 @@ class zet_proto_impl : public client_driver {
 	void set_no_data();
 	void start_timer();
 	void stop_timer();
+protected:
+	virtual void driver_finished_job() = 0;
+	virtual void terminate_connection() = 0;
+	virtual struct event_base* get_event_base() = 0;
 public:
 	void send_query(struct bufferevent* bufev);
 	virtual void connection_error(struct bufferevent *bufev);
@@ -65,6 +69,30 @@ public:
 	virtual void scheduled(struct bufferevent* bufev, int fd);
 	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send);
 	static void timeout_cb(int fd, short event, void *zet_proto_impl);
+};
+
+class zet_proto_tcp : public zet_proto_impl, public tcp_client_driver {
+protected:
+	virtual void driver_finished_job();
+	virtual void terminate_connection();
+	struct event_base* get_event_base();
+public:
+	virtual void connection_error(struct bufferevent *bufev);
+	virtual void scheduled(struct bufferevent* bufev, int fd);
+	virtual void data_ready(struct bufferevent* bufev, int fd);
+	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send);
+};
+
+class zet_proto_serial : public zet_proto_impl, public serial_client_driver {
+protected:
+	virtual void driver_finished_job();
+	virtual void terminate_connection();
+	struct event_base* get_event_base();
+public:
+	virtual void connection_error(struct bufferevent *bufev);
+	virtual void scheduled(struct bufferevent* bufev, int fd);
+	virtual void data_ready(struct bufferevent* bufev, int fd);
+	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration& spc);
 };
 
 void zet_proto_impl::set_no_data() {
@@ -172,7 +200,7 @@ void zet_proto_impl::data_ready(struct bufferevent* bufev, int fd) {
 		m_read[i] = atoi(toks[i+4]);
 	tokenize_d(NULL, &toks, &tokc, NULL);
 	stop_timer();
-	m_manager->driver_finished_job(this);
+	driver_finished_job();
 }
 
 
@@ -201,7 +229,7 @@ int zet_proto_impl::configure(TUnit* unit, xmlNodePtr node, short* read, short *
 	for (size_t i = 0; i < m_send_count; i++, sp = sp->GetNext())
 		m_send_no_data.push_back(sp->GetSendNoData());
 	evtimer_set(&m_timer, timeout_cb, this);
-	event_base_set(m_event_base, &m_timer);
+	event_base_set(get_event_base(), &m_timer);
 	return 0;
 }
 
@@ -209,10 +237,69 @@ void zet_proto_impl::timeout_cb(int fd, short event, void *_zet_proto_impl) {
 	zet_proto_impl* z = (zet_proto_impl*) _zet_proto_impl;
 	z->set_no_data();
 	z->stop_timer();
-	z->m_manager->driver_finished_job(z);
+	z->driver_finished_job();
 }
 
-client_driver* create_zet_client() {
-	return new zet_proto_impl();
+void zet_proto_tcp::driver_finished_job() {
+	m_manager->driver_finished_job(this);
 }
 
+void zet_proto_tcp::terminate_connection() {
+	m_manager->terminate_connection(this);
+}
+
+struct event_base* zet_proto_tcp::get_event_base() {
+	return m_event_base;
+}
+
+void zet_proto_tcp::connection_error(struct bufferevent *bufev) {
+	zet_proto_impl::connection_error(bufev);
+}
+
+void zet_proto_tcp::scheduled(struct bufferevent* bufev, int fd) {
+	zet_proto_impl::scheduled(bufev, fd);
+}
+
+void zet_proto_tcp::data_ready(struct bufferevent* bufev, int fd) {
+	zet_proto_impl::data_ready(bufev, fd);
+}
+
+int zet_proto_tcp::configure(TUnit* unit, xmlNodePtr node, short* read, short *send) {
+	return zet_proto_impl::configure(unit, node, read, send);
+}
+
+void zet_proto_serial::driver_finished_job() {
+	m_manager->driver_finished_job(this);
+}
+
+void zet_proto_serial::terminate_connection() {
+	m_manager->terminate_connection(this);
+}
+
+struct event_base* zet_proto_serial::get_event_base() {
+	return m_event_base;
+}
+
+void zet_proto_serial::connection_error(struct bufferevent *bufev) {
+	zet_proto_impl::connection_error(bufev);
+}
+
+void zet_proto_serial::scheduled(struct bufferevent* bufev, int fd) {
+	zet_proto_impl::scheduled(bufev, fd);
+}
+
+void zet_proto_serial::data_ready(struct bufferevent* bufev, int fd) {
+	zet_proto_impl::data_ready(bufev, fd);
+}
+
+int zet_proto_serial::configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration& spc) {
+	return zet_proto_impl::configure(unit, node, read, send);
+}
+
+serial_client_driver* create_zet_serial_client() {
+	return new zet_proto_serial();
+}
+
+tcp_client_driver* create_zet_tcp_client() {
+	return new zet_proto_tcp();
+}

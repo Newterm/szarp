@@ -58,8 +58,6 @@ struct serial_port_configuration {
 	} parity;
 	int stop_bits;
 	int speed;
-	//int delay_between_chars;
-	//int read_timeout;
 };
 
 int get_serial_port_config(xmlNodePtr node, serial_port_configuration &spc);
@@ -71,7 +69,6 @@ protected:
 	struct event_base* m_event_base;
 public:
 	void set_event_base(struct event_base* ev_base);
-	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send) = 0;
 };
 
 class server_driver : public boruta_driver {
@@ -97,7 +94,23 @@ public:
 	virtual void connection_error(struct bufferevent *bufev) = 0;
 	virtual void scheduled(struct bufferevent* bufev, int fd) = 0;
 	virtual void data_ready(struct bufferevent* bufev, int fd) = 0;
+	virtual void starting_new_cycle();
+};
+
+class tcp_client_driver : public client_driver {
+public:
+	virtual void connection_error(struct bufferevent *bufev) = 0;
+	virtual void scheduled(struct bufferevent* bufev, int fd) = 0;
+	virtual void data_ready(struct bufferevent* bufev, int fd) = 0;
 	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send) = 0;
+};
+
+class serial_client_driver : public client_driver {
+public:
+	virtual void connection_error(struct bufferevent *bufev) = 0;
+	virtual void scheduled(struct bufferevent* bufev, int fd) = 0;
+	virtual void data_ready(struct bufferevent* bufev, int fd) = 0;
+	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration& spc) = 0;
 };
 
 class serial_server_driver : public server_driver {
@@ -108,7 +121,7 @@ public:
 	virtual void connection_error(struct bufferevent *bufev) = 0;
 	virtual void data_ready(struct bufferevent* bufev) = 0;
 	virtual void starting_new_cycle() = 0;
-	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send) = 0;
+	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration&) = 0;
 };
 
 class tcp_server_driver : public server_driver {
@@ -118,16 +131,16 @@ public:
 	void set_manager(tcp_server_manager* manager);
 	virtual void connection_error(struct bufferevent *bufev) = 0;
 	virtual void data_ready(struct bufferevent* bufev) = 0;
-	virtual void connection_accepted(struct bufferevent* bufev) = 0;
+	virtual int connection_accepted(struct bufferevent* bufev, int socket, struct sockaddr_in* addr) = 0;
 	virtual void starting_new_cycle() = 0;
 	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send) = 0;
 };
 
 class protocols {
-	typedef std::map<std::string, client_driver* (*)()> tcp_client_factories_table;
+	typedef std::map<std::string, tcp_client_driver* (*)()> tcp_client_factories_table;
 	tcp_client_factories_table m_tcp_client_factories;
 
-	typedef std::map<std::string, client_driver* (*)()> serial_client_factories_table;
+	typedef std::map<std::string, serial_client_driver* (*)()> serial_client_factories_table;
 	serial_client_factories_table m_serial_client_factories;
 
 	typedef std::map<std::string, tcp_server_driver* (*)()> tcp_server_factories_table;
@@ -139,8 +152,8 @@ class protocols {
 	std::string get_proto_name(xmlNodePtr node);
 public:
 	protocols();
-	client_driver* create_tcp_client_driver(xmlNodePtr node);
-	client_driver* create_serial_client_driver(xmlNodePtr node);
+	tcp_client_driver* create_tcp_client_driver(xmlNodePtr node);
+	serial_client_driver* create_serial_client_driver(xmlNodePtr node);
 	tcp_server_driver* create_tcp_server_driver(xmlNodePtr node);
 	serial_server_driver* create_serial_server_driver(xmlNodePtr node);
 };
@@ -180,7 +193,7 @@ public:
 	void terminate_connection(client_driver *driver);
 };
 
-class tcp_client_manager : client_manager {
+class tcp_client_manager : public client_manager {
 	boruta_daemon *m_boruta;
 	std::vector<sockaddr_in> m_addresses;
 	struct tcp_connection {
@@ -263,6 +276,7 @@ class tcp_server_manager {
 	std::vector<listen_port> m_listen_ports;
 	std::map<struct bufferevent*, connection> m_connections;
 	int start_listening_on_port(int port);
+	void close_connection(struct bufferevent* bufev);
 public:
 	tcp_server_manager(boruta_daemon *boruta) : m_boruta(boruta) {}
 	int configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols);
@@ -296,6 +310,13 @@ public:
 	static void cycle_timer_callback(int fd, short event, void* daemon);
 };
 
-client_driver* create_zet_client();
+serial_client_driver* create_zet_serial_client();
+tcp_client_driver* create_zet_tcp_client();
+
+serial_client_driver* create_modbus_serial_client();
+tcp_client_driver* create_modbus_tcp_client();
+
+serial_server_driver* create_modbus_serial_server();
+tcp_server_driver* create_modbus_tcp_server();
 
 #endif
