@@ -1,4 +1,5 @@
-
+2010-08-17	Krzysztof Galazka <kg@dalkiaterm.pl>
+	* utils/conf-put.sh: replaced debug code with real svn call
 2010-08-17	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2/szbase/realdatablock.cc: fixed incorrect behaviour
 	under msw when there is no 'Status/Meaner3/program uruchomiony' param
