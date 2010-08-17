@@ -362,11 +362,14 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	TParam *par = NULL, *par2 = NULL;
 	int prec;
 	if (name != m_cur_name) {
-		for (size_t i = 0; i < LAST_PROBE_TYPE; i++)
+		for (size_t i = 0; i < LAST_PROBE_TYPE; i++) {
+			if (save_data((PROBE_TYPE)i))
+				return 1;
 			for (size_t j = 0; j < 2; j++) {
 				delete m_save_param[i][j];
 				m_save_param[i][j] = NULL;
 			}
+		}
 		if (is_dbl) {
 			m_cur_par = getParamByName(name);
 			if (m_cur_par == NULL) {
