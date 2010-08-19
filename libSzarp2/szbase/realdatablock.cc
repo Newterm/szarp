@@ -105,13 +105,10 @@ RealDatablock::RealDatablock(szb_buffer_t * b, TParam * p, int y, int m) :
 
 	//Get last database update time - `now`
 	this->last_update_time = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
-
 	if (szb_file_exists(this->GetBlockFullPath().c_str(), &this->block_timestamp)) {
 		if (!LoadFromFile()) //If file exists load data from in
 			assert(false);
-		//CBB: something more reasonable
-		if (this->fixed_probes_count == this->max_probes)
-			return; //Block is full
+		return;
 	} else {
 		if (this->GetEndTime() < buffer->first_av_date)
 			NOT_INITIALIZED; //Block is before first_av_date - not creating empty block
@@ -122,10 +119,7 @@ RealDatablock::RealDatablock(szb_buffer_t * b, TParam * p, int y, int m) :
 
 	if ( (year < ly || (year == ly && month < lm)) || this->last_update_time > this->GetEndTime()) {
 		this->fixed_probes_count = this->max_probes; //If there are future data or the end of block is before `now`
-	} else {
-		int tmp = szb_probeind(this->last_update_time) + 1;
-		this->fixed_probes_count = this->fixed_probes_count > tmp ? this->fixed_probes_count : tmp; //we have all read data or untill `now`
-	}
+	} 
 
 	return;
 }

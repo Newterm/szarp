@@ -380,10 +380,17 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 					name.c_str());
 				return 1;
 			}
+			m_cur_par = getParamByName(name);
+			if (m_cur_par == NULL) {
+				prec = add_param(name, unit, guess_prec(data));
+				m_cur_par = getParamByName(name);
+			} else {
+				prec = m_cur_par->GetPrec();
+			}
 			prec = add_param(name, unit, guess_prec(data));
 			cur_par = getParamByName(name);
 		} else {
-			prec = m_cur_par->GetPrec();
+			prec = cur_par->GetPrec();
 		}
 		m_cur_par = cur_par;
 		if (is_dbl) {

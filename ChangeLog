@@ -1,4 +1,24 @@
 
+2010-08-19	Krzysztof Galazka <kg@dalkiaterm.pl>
+	* libSzarp2/ipk/tparam.cc: generation of XML node for lua
+	parameter did not set lua_formula attribute properly - saveXML
+	generated inproper params.xml
+	* meaner3/utils/szbwriter.cc: Szbwriter has a cool feature:
+	when a param name is encoutered that is not present in configuration,
+	szbwriter updates configuration by adding new param with this name.
+	That is very nice, but in majority of cases (I belive) param name that
+	in not present in config really means that somebody misspelled
+	its name and because szbwriter uses ipk to modify params.xml,
+	new configuration is stripped of all elementes from extra namespaces,
+	what is really irritating. So, by now unknown parameters are ignored,
+	old behaviour might be activated by giving a -n switch on the command line.
+2010-08-17	Krzysztof Galazka <kg@dalkiaterm.pl>
+	* utils/conf-put.sh: replaced debug code with real svn call
+2010-08-17	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2/szbase/realdatablock.cc: fixed incorrect behaviour
+	under msw when there is no 'Status/Meaner3/program uruchomiony' param
+	for a given base
+	* meaner3/utils/szbwriter.cc: fix in params switching
 2010-08-09	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: fixed a bug in a boundary case when 
 	there were more than MAX_DRAWS_COUNT draws added into user set

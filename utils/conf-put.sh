@@ -57,5 +57,5 @@ done
 if [ $# != 1 ] ; then Usage $BASENAME; exit 1; fi
 
 USERNAME=$1;
-env SVN_SSH="ssh -l $USERNAME -p $PORT" echo $SVN_SSH
+env SVN_SSH="ssh -l $USERNAME -p $PORT"  svn commit
 
