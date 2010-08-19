@@ -409,6 +409,19 @@ TParam::generateXMLNode(void)
     if (GetType() == P_LUA) {
 	c = xmlNewChild(r, NULL, X "define", NULL);
 	xmlSetProp(c, X "type", X "LUA");
+	switch (_ftype) {
+		case LUA_VA:
+			xmlSetProp(c, X "lua_formula", X "va");
+			break;
+		case LUA_AV:
+			xmlSetProp(c, X "lua_formula", X "av");
+			break;
+		case LUA_IPC:
+			xmlSetProp(c, X "lua_formula", X "ipc");
+			break;
+		default:
+			assert(false);
+	}
 	c = xmlNewChild(c, NULL, X "script", NULL);
 	xmlNodePtr cd = xmlNewCDataBlock(r->doc, _script, strlen((char*)_script));
 	xmlAddChild(c, cd);

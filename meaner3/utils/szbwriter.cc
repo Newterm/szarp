@@ -84,7 +84,7 @@ using namespace std::tr1;
 class SzbaseWriter : public TSzarpConfig {
 public:
 	SzbaseWriter(const std::wstring &ipk_path, const std::wstring& title, const std::wstring &double_pattern,
-			const std::wstring& data_dir, const std::wstring &cache_dir);
+			const std::wstring& data_dir, const std::wstring &cache_dir, bool add_new_pars);
 	~SzbaseWriter();
 	/* Process input. 
 	 * @return 1 on error, 0 on success*/
@@ -144,11 +144,12 @@ protected:
 	int m_probe_length[LAST_PROBE_TYPE];		/**< lenght of probe */
 
 	unordered_map<std::wstring, int> m_draws_count;
+	bool m_add_new_pars; /** flag denoting if we add new pars*/
 	bool m_new_par; /** if new parameter was added */
 };
 
 SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _title, const std::wstring& double_pattern,
-		const std::wstring& data_dir, const std::wstring& cache_dir)
+		const std::wstring& data_dir, const std::wstring& cache_dir, bool add_new_pars)
 {
 	m_double_pattern = double_pattern;
 	m_dir.push_back(data_dir);
@@ -202,6 +203,7 @@ SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _ti
 	
 	p->SetAutoBase();
 
+	m_add_new_pars = add_new_pars;
 	m_new_par = true;
 }
 
@@ -362,19 +364,29 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	TParam *par = NULL, *par2 = NULL;
 	int prec;
 	if (name != m_cur_name) {
-		for (size_t i = 0; i < LAST_PROBE_TYPE; i++)
+		for (size_t i = 0; i < LAST_PROBE_TYPE; i++) {
+			if (save_data((PROBE_TYPE)i))
+				return 1;
 			for (size_t j = 0; j < 2; j++) {
 				delete m_save_param[i][j];
 				m_save_param[i][j] = NULL;
 			}
-		if (is_dbl) {
-			m_cur_par = getParamByName(name);
-			if (m_cur_par == NULL) {
-				prec = add_param(name, unit, guess_prec(data));
-				m_cur_par = getParamByName(name);
-			} else {
-				prec = m_cur_par->GetPrec();
+		}
+		TParam* cur_par = getParamByName(name);
+		if (cur_par == NULL) {
+			if (!m_add_new_pars) {
+				sz_log(1, "Param %ls not found in configuration and "
+					"program run without -n flag, value ignored!",
+					name.c_str());
+				return 1;
 			}
+			prec = add_param(name, unit, guess_prec(data));
+			cur_par = getParamByName(name);
+		} else {
+			prec = m_cur_par->GetPrec();
+		}
+		m_cur_par = cur_par;
+		if (is_dbl) {
 			std::wstring name1 = name + L" msw";
 			std::wstring name2 = name + L" lsw";
 			par = getParamByName(name1);
@@ -382,14 +394,8 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 			assert(par != NULL);
 			assert(par2 != NULL);
 		} else {
-			m_cur_par = par = getParamByName(name);
-			if (m_cur_par == NULL) {
-				prec = add_param(name, unit, guess_prec(data));
-				m_cur_par = par = getParamByName(name);
-			} else {
-				prec = m_cur_par->GetPrec();
-			}
-			assert(m_cur_par != NULL);
+			par = m_cur_par;
+			assert(par != NULL);
 		}
 		for (size_t i = 0; i < LAST_PROBE_TYPE; i++) {
 			if (m_dir.at(i).empty())
@@ -613,15 +619,26 @@ int main(int argc, char *argv[])
 	}
 	free(c);
 
+	int _argc = argc;
+	int _argp = 0;
+	bool add_new_pars = false;
+	if (_argc > 1) {
+		if (!strcmp("-n", argv[1])) {
+			add_new_pars = true;
+			_argc -= 1;
+			_argp += 1;
+		}
+	}
 	const char *title;
-	if (argc <= 1) {
+	if (_argc <= 1) {
 		title = "Wêz³y Samson";
 	} else {
-		title = argv[1];
+		title = argv[_argp + 1];
 	}
 	SzbaseWriter *szbw = new SzbaseWriter(SC::A2S(ipk_path), SC::A2S(title), 
 			double_pattern != NULL ? SC::A2S(double_pattern) : L"",
-			SC::A2S(data_dir), cache_dir ? SC::A2S(cache_dir) : std::wstring());
+			SC::A2S(data_dir), cache_dir ? SC::A2S(cache_dir) : std::wstring(),
+			add_new_pars);
 	assert (szbw != NULL);
 
 #ifndef FNM_EXTMATCH
