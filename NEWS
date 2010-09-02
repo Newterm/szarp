@@ -6,6 +6,19 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.439
+# 01.09.2010
+* Fixes in generating XML config for LUA formulas using IPK library.
+* szbwriter by default does not add unkown parameters to configuration, that 
+prevents from breaking configuration by incorrect calls to szbwriter.
+* Fixed few draw3 crashes under Windows on non-standard configuration/bases.
+* Fixed incorrect draw3 behaviour when to many draws are added to user set.
+* More flexible filler behaviour - default database writing comment can be 
+overwritten using FILLER_COMMAND environment variable.
+* Added modbus protocol support for boruta meta-daemon.
+* More intuitive draw3 behaviour on PgUp/PgDown key press.
+* Few other small fixes.
+
 ** 3.1.438
 # 01.08.2010
 * New universal device driver - "boruta" meta-daemon, with possibility to easily

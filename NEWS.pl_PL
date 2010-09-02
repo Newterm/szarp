@@ -7,6 +7,23 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.439
+# 01.09.2010
+* Poprawione tworzenie za pomoc± biblioteki IPK konfiguracji XML zawieraj±cej
+ formu³y w jêzyku LUA.
+* szbwriter domy¶lnie nie dodaje parametrów do konfiguracji, co zabezpiecza 
+przed przypadkow± modyfikacj± konfiguracji przez b³êdne wywo³anie programu.
+* Poprawione przypadki awarii programu programu przegl±daj±cego pod Windows 
+na niestandardowych konfiguracjach/bazach.
+* Poprawione nieprawid³owe zachowanie programu przegl±daj±cego po dodaniu do 
+zestawu u¿ytkownika zbyt du¿ej ilo¶ci wykresów.
+* Bardziej elastyczne dzia³anie programu filler - komenda zapisu do bazy mo¿e
+byæ podana w zmiennej ¶rodowiskowej FILLER_COMMAND.
+* Dodana obs³uga protoko³u Modbus do meta-sterownika "boruta".
+* Bardziej intuicyjne zachowanie programu przegl±daj±cego po naci¶niêciu 
+klawiszy PgUp/PgDown.
+* Kilka innych drobnych poprawek.
+
 ** 3.1.438
 # 01.08.2010
 * Nowy uniwersalny meta-sterownik "boruta" umo¿liwiaj±cy obs³ugê wielu 
@@ -26,7 +43,7 @@ programie przegl±daj±cym
 * Dodano nowy tryb pracy do programu draw3 - tryb pod±¿ania za najnowsz±
 dan±. Pracuj±c w tym trybie, podczas od¶wie¿ania wykresu, program zawsze ustawia
 widok tak, by by³a widoczna najnowsza dostêpna dana z wykresu.
-* Dodkonano usprawnieñ w rysowaniu wykresów XYZ.
+* Dokonano usprawnieñ w rysowaniu wykresów XYZ.
 * W demonie mbdmn rozbudowano mechanizm logowania, oraz dodano obs³ugê adresów
 jednostek z przedzia³u 1-255.
 
