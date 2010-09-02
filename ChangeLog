@@ -1,5 +1,5 @@
 
-2010-08-19	Krzysztof Galazka <kg@dalkiaterm.pl>
+2010-08-19	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2/ipk/tparam.cc: generation of XML node for lua
 	parameter did not set lua_formula attribute properly - saveXML
 	generated inproper params.xml
