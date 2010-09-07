@@ -110,6 +110,8 @@ for base in $*; do
 	    $szpppon -l -n $phone ppp
     fi
     if [ $? -eq 0 ]; then
+      echo -n "wait... "
+      sleep 5
       echo -n "rsync "
       if [ -z $DEBUG ]; then
 	      $rs $rs_options $szbase_options root@192.168.8.1:/opt/szarp/$base/ /opt/szarp/$base/ &>/dev/null

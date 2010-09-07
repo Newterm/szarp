@@ -1,15 +1,18 @@
 
+2010-09-07	Pawe³ Pa³ucha <pawel@newterm.pl>
+	* utils/modem_pooler.sh: additional sleep before running rsync (fixes
+	some issues).
 2010-08-19	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2/ipk/tparam.cc: generation of XML node for lua
 	parameter did not set lua_formula attribute properly - saveXML
-	generated inproper params.xml
+	generated improper params.xml
 	* meaner3/utils/szbwriter.cc: Szbwriter has a cool feature:
 	when a param name is encoutered that is not present in configuration,
 	szbwriter updates configuration by adding new param with this name.
-	That is very nice, but in majority of cases (I belive) param name that
+	That is very nice, but in majority of cases (I believe) param name that
 	in not present in config really means that somebody misspelled
 	its name and because szbwriter uses ipk to modify params.xml,
-	new configuration is stripped of all elementes from extra namespaces,
+	new configuration is stripped of all elements from extra namespaces,
 	what is really irritating. So, by now unknown parameters are ignored,
 	old behaviour might be activated by giving a -n switch on the command line.
 2010-08-17	Krzysztof Galazka <kg@dalkiaterm.pl>
@@ -23,13 +26,13 @@
 	* wx/draw3: fixed a bug in a boundary case when 
 	there were more than MAX_DRAWS_COUNT draws added into user set
 	* wx/filler: default command (/opt/szarp/bin/szbwriter) that filler
-	executes in order to store data in database, can by overriden 
-	by envirnment variable FILLER_COMMAND
+	executes in order to store data in database, can by overridden 
+	by environment variable FILLER_COMMAND
 	* parcook/boruta: progress, modbus protocol support added
 2010-08-02	Darek Marcinkiewicz <reksio@newterm.pl>
-	* libSzarp2/szbase/szbsearch.cc: fix in setting serach
-	boundarines in quite rare case when both start and end
-	serach time is specified
+	* libSzarp2/szbase/szbsearch.cc: fix in setting search
+	boundaries in quite rare case when both start and end
+	search time is specified
 	* parcook/boruta*: progress, some code simplification
 	* wx/draw3: more intuitive behaviour on PgUp/PgDown
 	key press
