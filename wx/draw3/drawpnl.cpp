@@ -61,6 +61,7 @@
 #include "remarks.h"
 #include "drawpnl.h"
 #include "drawapp.h"
+#include "drawtreedialog.h"
 #include "draw.h"
 
 #include <wx/xrc/xmlres.h>
@@ -311,7 +312,7 @@ DrawPanel::DrawPanel(DatabaseManager* _db_mgr, ConfigManager * _cfg, RemarksHand
 	:  wxPanel(parent, id, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS),
 	df(_df), iw(NULL), dw(NULL), dtw(NULL), ssw(NULL), sw(NULL), tw(NULL),
 	dinc(NULL), sinc(NULL), db_mgr(_db_mgr), cfg(_cfg),
-	prefix(_prefix), smw(NULL), rh(_rh), rmf(NULL), pw(NULL), realized(false)
+	prefix(_prefix), smw(NULL), rh(_rh), rmf(NULL), dtd(NULL), pw(NULL), realized(false)
 {
 #ifdef WXAUI_IN_PANEL
 	am.SetManagedWindow(this);
@@ -516,6 +517,8 @@ DrawPanel::~DrawPanel()
 		dinc->Destroy();
 	if (sinc != NULL)
 		sinc->Destroy();
+	if (dtd != NULL)
+		dtd->Destroy();
 	smw->Destroy();
 	rw->Destroy();
 	pw->Destroy();
@@ -875,6 +878,14 @@ void DrawPanel::OnFilterChange(wxCommandEvent &event) {
 
 }
 
+void DrawPanel::OnDrawTree(wxCommandEvent&) {
+	if (dtd == NULL)
+		dtd = new DrawTreeDialog(this, cfg);
+	dtd->SetSelectedSet(GetSelectedSet());
+	if (dtd->ShowModal() == wxID_OK)
+		SelectSet(dtd->GetSelectedSet());	
+}
+
 bool DrawPanel::IsUserDefined() {
 	DrawSet *sset = GetSelectedSet();
 	return dynamic_cast<DefinedDrawSet*>(sset) != NULL;
@@ -996,4 +1007,5 @@ BEGIN_EVENT_TABLE(DrawPanel, wxPanel)
     EVT_MENU(XRCID("ContextF5"), DrawPanel::OnFilterChange)
     EVT_MENU(drawTB_SPLTCRS, DrawPanel::ToggleSplitCursor)
     EVT_MENU(drawTB_FILTER, DrawPanel::OnToolFilterMenu)
+    EVT_MENU(drawTB_DRAWTREE, DrawPanel::OnDrawTree)
 END_EVENT_TABLE()

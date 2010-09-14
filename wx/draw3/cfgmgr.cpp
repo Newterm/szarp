@@ -26,7 +26,8 @@
  * Configuration manager.
  */
 
-#include <set>
+#include <functional>
+#include <algorithm>
 
 #include <assert.h>
 
@@ -641,7 +642,7 @@ IPKConfig::IPKConfig(TSzarpConfig *c, ConfigManager *mgr) : DrawsSets(mgr), defi
 	    pds->Add(pdi);
 
 	    drawSets[name] = pds;
-
+	    m_tree_root.AddSet(d, pds);
 	}
     }
 
@@ -654,7 +655,6 @@ IPKConfig::IPKConfig(TSzarpConfig *c, ConfigManager *mgr) : DrawsSets(mgr), defi
     /*init null colors*/
     for (it = drawSets.begin(); it != drawSets.end(); ++it)
 	    it->second->InitNullColors();
-
 
     baseDrawSets = drawSets;
 }
@@ -671,13 +671,15 @@ void IPKConfig::AttachDefined() {
 	DefinedDrawSet *df = dynamic_cast<DefinedDrawSet*>(i->second);
 	SetsNrHash& pc = df->GetPrefixes();
 
-	if (pc.find(GetPrefix()) != pc.end())
-		drawSets[df->GetName()] = df->MakeShallowCopy(this);
+	if (pc.find(GetPrefix()) == pc.end())
+		continue;
 
+	DrawSet* ds = df->MakeShallowCopy(this);
+	drawSets[df->GetName()] = ds;
+	m_tree_root.AddUserSet(ds);
     }
-
+    m_tree_root.Sort();
     defined_attached = true;
-
 }
 
 DrawSetsHash&
@@ -706,6 +708,165 @@ IPKConfig::~IPKConfig()
 
 }
 
+bool DrawTreeNodeCmp(const DrawTreeNode* n1, const DrawTreeNode* n2) {
+	double p1 = n1->GetPrior();
+	double p2 = n2->GetPrior();
+	if (p1 < 0)
+		if (p2 < 0)
+			return p1 > p2;
+		else
+			return false;
+	else
+		if (p2 < 0)
+			return true;
+		else
+			return p1 < p2;
+}
+
+
+class DrawTreeNodeNameEq {
+	const wxString& m_name;
+public:
+	DrawTreeNodeNameEq(const wxString& name) : m_name(name) {}
+	bool operator()(const DrawTreeNode* node) const { return node->GetName() == m_name; }
+};
+
+DrawTreeNode::DrawTreeNode() {
+	m_prior = -1;
+	m_elemet_type = NODE;
+	m_child_set = NULL;
+}
+
+void DrawTreeNode::Sort() {
+	std::stable_sort(m_child_nodev.begin(), m_child_nodev.end(), DrawTreeNodeCmp);
+	std::for_each(m_child_nodev.begin(), m_child_nodev.end(), std::mem_fun(&DrawTreeNode::Sort));
+}
+
+wxString DrawTreeNode::GetName() const {
+	return m_name;
+}
+
+double DrawTreeNode::GetPrior() const {
+	return m_prior;
+}
+
+const std::vector<DrawTreeNode*>& DrawTreeNode::GetChildren() const {
+	return m_child_nodev;
+}
+
+DrawSet* DrawTreeNode::GetDrawSet() const {
+	return m_child_set;
+}
+
+DrawTreeNode::ELEMENT_TYPE DrawTreeNode::GetElementType() const {
+	return m_elemet_type;
+}
+
+DrawTreeNode::~DrawTreeNode() {
+	for (std::vector<DrawTreeNode*>::iterator i = m_child_nodev.begin();
+		 	i != m_child_nodev.end();
+			i++)
+		delete *i;
+}
+
+DrawTreeRoot::DrawTreeRoot() {
+	m_user_subtree = NULL;
+}
+
+DrawTreeNode* DrawTreeRoot::AddTNode(TTreeNode *tnode) {
+	if (tnode == NULL)
+		return this;
+	DrawTreeNode* pnode = AddTNode(tnode->GetParent());
+	std::vector<DrawTreeNode*>::iterator i =
+		std::find_if(pnode->m_child_nodev.begin(), pnode->m_child_nodev.end(), DrawTreeNodeNameEq(tnode->GetName()));
+	DrawTreeNode* node;
+	if (i == pnode->m_child_nodev.end()) {
+		node = new DrawTreeNode;
+		node->m_name = tnode->GetName();
+		node->m_prior = tnode->GetPrior();
+		node->m_child_set = NULL;
+		node->m_elemet_type = NODE;
+		pnode->m_child_nodev.push_back(node);
+	} else {
+		node = *i;
+	}
+	return node;
+}
+
+void DrawTreeRoot::AddSet(TDraw* tdraw, DrawSet *drawsset) {
+	const std::vector<TTreeNode*>& tnodev = tdraw->GetTreeNode();
+	for (std::vector<TTreeNode*>::const_iterator i = tnodev.begin();
+			i != tnodev.end();
+			i++) {
+		DrawTreeNode* pnode = AddTNode(*i);
+		if (pnode->GetElementType() == DrawTreeNode::LEAF)
+			//already present
+			continue;
+		DrawTreeNode* node = new DrawTreeNode();
+		node->m_name = drawsset->GetName();
+		node->m_prior = (*i)->GetDrawPrior();
+		node->m_child_set = drawsset;
+		node->m_elemet_type = LEAF;
+		pnode->m_child_nodev.push_back(node);
+	}
+}
+
+void DrawTreeRoot::AddUserSet(DrawSet* drawsset) {
+	if (!m_child_nodev.size()) 
+		return;
+	if (m_user_subtree == NULL) {
+		m_user_subtree = new DrawTreeNode();
+		m_user_subtree->m_name = _("User sets");
+		m_user_subtree->m_prior = -2;
+		m_user_subtree->m_child_set = NULL;
+		m_user_subtree->m_elemet_type = NODE;
+		m_child_nodev.push_back(m_user_subtree);
+	}
+	DrawTreeNode* node = new DrawTreeNode();
+	node->m_name = drawsset->GetName();
+	node->m_prior = drawsset->GetPrior();
+	node->m_child_set = drawsset;
+	node->m_elemet_type = LEAF;
+	m_user_subtree->m_child_nodev.push_back(node);
+	m_user_subtree->Sort();
+}
+
+void DrawTreeRoot::RemoveUserSet(wxString name) {
+	if (m_user_subtree == NULL)
+		return;
+	std::vector<DrawTreeNode*>::iterator i = m_user_subtree->m_child_nodev.begin();
+	for (; i != m_user_subtree->m_child_nodev.end(); i++)
+		if ((*i)->m_name == name)
+			break;
+	if (i != m_child_nodev.end()) {
+		delete *i;
+		m_child_nodev.erase(i);
+	}
+}
+
+void DrawTreeRoot::RenameUserSet(wxString oname, DrawSet *set) {
+	std::vector<DrawTreeNode*>::iterator i = m_user_subtree->m_child_nodev.begin();
+	for (; i != m_user_subtree->m_child_nodev.end(); i++)
+		if ((*i)->m_name == oname)
+			break;
+	if (i != m_user_subtree->m_child_nodev.end()) {
+		(*i)->m_name = set->GetName();
+		(*i)->m_child_set = set;
+	}
+}
+
+void DrawTreeRoot::SubstituteUserSet(wxString oname, DrawSet *set) {
+	std::vector<DrawTreeNode*>::iterator i = m_user_subtree->m_child_nodev.begin();
+	for (; i != m_user_subtree->m_child_nodev.end(); i++)
+		if ((*i)->m_name == oname)
+			break;
+	if (i != m_user_subtree->m_child_nodev.end()) {
+		(*i)->m_name = set->GetName();
+		(*i)->m_child_set = set;
+	}
+}
+
+
 DrawsSets::DrawsSets(ConfigManager *cfg) : m_cfgmgr(cfg) {}
 
 SortedSetsArray *
@@ -729,6 +890,34 @@ DrawsSets::GetParentManager()
 {
     return m_cfgmgr;
 }
+
+DrawTreeNode& DrawsSets::GetDrawTree() {
+	return m_tree_root;
+}
+
+
+void DrawsSets::AddUserSet(DefinedDrawSet *s) {
+	GetRawDrawsSets()[s->GetName()] = s;
+	m_tree_root.AddUserSet(s);
+}
+
+void DrawsSets::RemoveUserSet(wxString name) {
+	GetRawDrawsSets().erase(name);
+	m_tree_root.RemoveUserSet(name);
+}
+
+void DrawsSets::RenameUserSet(wxString oname, DefinedDrawSet *set) {
+	GetRawDrawsSets().erase(oname);
+	GetRawDrawsSets()[set->GetName()] = set;
+	m_tree_root.RenameUserSet(oname, set);
+}
+
+void DrawsSets::SubstituteUserSet(wxString oname, DefinedDrawSet *set) {
+	GetRawDrawsSets().erase(oname);
+	GetRawDrawsSets()[set->GetName()] = set;
+	m_tree_root.SubstituteUserSet(oname, set);
+}
+
 
 DrawsSets*
 ConfigManager::AddConfig(TSzarpConfig *ipk)

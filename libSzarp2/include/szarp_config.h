@@ -57,6 +57,7 @@ class TAnalysisInterval;
 class TAnalysisParam;
 class TSSeason;
 class TDictionary;
+class TTreeNode;
 
 
 /** SZARP system configuration */
@@ -1341,6 +1342,11 @@ public:
 	 * @return number of draws in list.
 	 */
 	int GetCount();
+
+	/**
+	* @return parent tree nodes of this draw
+	*/
+	std::vector<TTreeNode*>& GetTreeNode() { return _tree_nodev; }
 protected:
 	std::wstring color;	/**< Color of draw, may be a name (e.g. "Red") or an
 			 * RGB value (e.g. "#AA99FF"), NULL means default (auto)
@@ -1363,6 +1369,26 @@ protected:
 			/**< Special SZARP 2.1 draw attribute (may affect all
 			 * the window). */
 	TDraw* next;	/**< Next list element */
+
+	std::vector<TTreeNode*> _tree_nodev; /**< Parent tree nodes for this draw*/
+
+};
+
+/** Class representing a node in draws tree hierarchy*/
+class TTreeNode {
+	TTreeNode* _parent;
+	double _prior;
+	double _draw_prior;
+	std::wstring _name;
+public:
+	TTreeNode();
+	xmlNodePtr generateXML();
+	int parseXML(xmlNodePtr node);
+	double GetPrior() { return _prior; }
+	double GetDrawPrior() { return _draw_prior; }
+	std::wstring GetName() { return _name; }
+	TTreeNode* GetParent() { return _parent; }
+	~TTreeNode();
 };
 
 /**

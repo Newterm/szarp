@@ -75,6 +75,7 @@ libSzarp2_a_SOURCES = \
 			$(IPK_DIR)/tainterval.cc \
 			$(IPK_DIR)/ipkcontainer.cc \
 			$(IPK_DIR)/tdictionary.cc \
+			$(IPK_DIR)/ttreenode.cc \
 			$(IPK_DIR)/dmncfg.cc \
 			$(DMN_DIR)/ipchandler.cc \
 			$(SOURCE_DIR)/misc/convuri.cc \

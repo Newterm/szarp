@@ -41,6 +41,7 @@ class RelWindow;
 class SummaryWindow;
 class DrawObserver;
 class DrawSet;
+class DrawsSet;
 class DrawsSets;
 class TimeIndex;
 class DisplayTimeWidget;
@@ -110,6 +111,7 @@ class DrawPsc;
 class DrawPscSystemConfigurationEditor;
 class CodeEditor;
 class VersionChecker;
+class DrawTreeDialog;
 
 struct XYGraph;
 struct DatabaseQuery;

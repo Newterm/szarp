@@ -1,4 +1,7 @@
 
+2010-09-14	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2, wx/draw3: draws' sets can be arranged in hierarchical 
+	tree structure
 2010-09-07	Pawe³ Pa³ucha <pawel@newterm.pl>
 	* utils/modem_pooler.sh: additional sleep before running rsync (fixes
 	some issues).

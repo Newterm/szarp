@@ -168,7 +168,14 @@ TDraw* TDraw::parseXML(xmlNodePtr node)
 
 	xmlFree(c);
 	xmlFree(w);
-
+	for (xmlNodePtr ch = node->children; ch; ch = ch->next) if (!strcmp((const char*) ch->name, "treenode")) {
+		TTreeNode* node = new TTreeNode();
+		if (node->parseXML(ch)) {
+			delete ret;	
+			return NULL;
+		}
+		ret->_tree_nodev.push_back(node);
+	}
 	return ret;
 
 #undef CONVERT
@@ -218,6 +225,8 @@ xmlNodePtr TDraw::GenerateXMLNode()
 	
 	if (special != NONE)
 		xmlSetProp(r, X"special", SC::S2U(SPECIAL_TYPES_STR[special]).c_str());
+	for (std::vector<TTreeNode*>::iterator i = _tree_nodev.begin(); i != _tree_nodev.end(); i++)
+		xmlAddChild(r, (*i)->generateXML());
 	return r;
 #undef X
 #undef ITOA
@@ -226,6 +235,8 @@ xmlNodePtr TDraw::GenerateXMLNode()
 
 TDraw::~TDraw()
 {
+	for (std::vector<TTreeNode*>::iterator i = _tree_nodev.begin(); i != _tree_nodev.end(); i++)
+		delete *i;
 	delete next;
 }
 

@@ -272,6 +272,41 @@ WX_DECLARE_STRING_HASH_MAP(DrawSet *, DrawSetsHash);
 
 WX_DEFINE_SORTED_ARRAY(DrawSet *, SortedSetsArray);
 
+class DrawTreeRoot;
+
+class DrawTreeNode {
+public:
+	enum ELEMENT_TYPE { LEAF, NODE };
+protected:
+	ELEMENT_TYPE m_elemet_type;
+	DrawSet* m_child_set;	
+	std::vector<DrawTreeNode*> m_child_nodev;
+	double m_prior;
+	wxString m_name;
+public:	
+	DrawTreeNode();
+	void Sort();
+	wxString GetName() const;
+	double GetPrior() const;
+	const std::vector<DrawTreeNode*>& GetChildren() const;
+	DrawSet* GetDrawSet() const;
+	ELEMENT_TYPE GetElementType() const;
+	virtual ~DrawTreeNode();
+
+	friend class DrawTreeRoot;
+};
+
+class DrawTreeRoot : public DrawTreeNode {
+	DrawTreeNode* m_user_subtree;
+	DrawTreeNode* AddTNode(TTreeNode *node);
+public:
+	DrawTreeRoot();
+	void AddSet(TDraw* d, DrawSet *node);
+	void AddUserSet(DrawSet* darwset);
+	void RemoveUserSet(wxString name);
+	void RenameUserSet(wxString oname, DrawSet *set);
+	void SubstituteUserSet(wxString name, DrawSet *set);
+};
 
 class DrawsSets
 {
@@ -300,8 +335,20 @@ class DrawsSets
 
 	virtual void AttachDefined() = 0;
 	
+	void AddUserSet(DefinedDrawSet *s);
+
+	void RemoveUserSet(wxString name);
+
+	void RenameUserSet(wxString oname, DefinedDrawSet *set);
+
+	void SubstituteUserSet(wxString name, DefinedDrawSet *set);
+
+	DrawTreeNode& GetDrawTree();
+
     protected:
 	ConfigManager*  m_cfgmgr;    /**< parent ConfigManager */
+
+	DrawTreeRoot m_tree_root;		
 };
 
 class IPKConfig : public DrawsSets 
@@ -332,7 +379,7 @@ class IPKConfig : public DrawsSets
 
 	virtual DrawSetsHash& GetRawDrawsSets();
 
-    protected:
+protected:
 	wxString m_id;	/**< Configuration ID (title) */
 
 	TSzarpConfig* m_sc;    /**< Configuration data. */
@@ -345,7 +392,7 @@ class IPKConfig : public DrawsSets
 	DrawSetsHash baseDrawSets;
 	
 	bool defined_attached;
-	
+
 };
 
 WX_DECLARE_STRING_HASH_MAP(DrawsSets*, DrawsSetsHash);

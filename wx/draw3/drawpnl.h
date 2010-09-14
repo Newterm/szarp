@@ -139,6 +139,8 @@ class DrawPanel : public wxPanel, public DrawObserver {
 	/**Displays a menu that allows user to change filter level*/
 	void OnToolFilterMenu(wxCommandEvent &event);
 
+	void OnDrawTree(wxCommandEvent&);
+
 	/**@return true if currently defined set is user defined*/
 	bool IsUserDefined();
 
@@ -226,6 +228,8 @@ protected:
 	RemarksHandler *rh;
 
 	RemarksFetcher *rmf;
+
+	DrawTreeDialog *dtd;
 
 	/**Indicates if summary window shall be shown while panel is activaed*/
 	bool smw_show;

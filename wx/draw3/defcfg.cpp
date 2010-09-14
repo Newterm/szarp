@@ -1303,7 +1303,7 @@ void DefinedDrawsSets::AddSet(DefinedDrawSet *s) {
 		assert(c);
 
 		DefinedDrawSet* nc = s->MakeShallowCopy(c);
-		c->GetRawDrawsSets()[s->GetName()] = nc;
+		c->AddUserSet(nc);
 
 		m_cfgmgr->NotifySetAdded(i->first, s->GetName(), nc);
 	}
@@ -1329,7 +1329,7 @@ void DefinedDrawsSets::RemoveSet(wxString name) {
 		assert(ds);
 		
 		copies_to_delete.push_back(ds->GetRawDrawsSets()[name]);
-		ds->GetRawDrawsSets().erase(name);
+		ds->RemoveUserSet(name);
 
 		m_cfgmgr->NotifySetRemoved(i->first, name);
 
@@ -1387,8 +1387,7 @@ void DefinedDrawsSets::RemoveDrawFromSet(DefinedDrawInfo *di) {
 		assert(c);
 
 		ods = c->GetRawDrawsSets()[ds->GetName()];
-
-		c->GetRawDrawsSets().erase(ds->GetName());
+		c->RemoveUserSet(ds->GetName());
 		m_cfgmgr->NotifySetRemoved(prefix, ds->GetName());
 	}
 
@@ -1432,7 +1431,7 @@ void DefinedDrawsSets::SubstituteSet(wxString name, DefinedDrawSet *s) {
 		assert(c);
 
 		copies_to_delete.push_back(c->GetRawDrawsSets()[ods->GetName()]);
-		c->GetRawDrawsSets().erase(ods->GetName());
+		c->RemoveUserSet(ods->GetName());
 		m_cfgmgr->NotifySetRemoved(*i, ods->GetName());
 	}
 
@@ -1443,7 +1442,7 @@ void DefinedDrawsSets::SubstituteSet(wxString name, DefinedDrawSet *s) {
 		assert(c);
 
 		DefinedDrawSet *nc = s->MakeShallowCopy(c);
-		c->GetRawDrawsSets()[s->GetName()] = nc;
+		c->AddUserSet(nc);
 		m_cfgmgr->NotifySetAdded(*i, ods->GetName(), nc);
 	}
 
@@ -1459,9 +1458,7 @@ void DefinedDrawsSets::SubstituteSet(wxString name, DefinedDrawSet *s) {
 
 			copies_to_delete.push_back(c->GetRawDrawsSets()[ods->GetName()]);
 			DefinedDrawSet *nc = s->MakeShallowCopy(c);
-			c->GetRawDrawsSets()[s->GetName()] = nc;
-			c->GetRawDrawsSets().erase(ods->GetName());
-
+			c->RenameUserSet(ods->GetName(), nc);
 			m_cfgmgr->NotifySetRenamed(i->first, ods->GetName(), s->GetName(), nc);
 			//wxLogError(_T("%s %s %d"), ods->GetName().c_str(), s->GetName().c_str(), count);
 		}
@@ -1481,10 +1478,8 @@ void DefinedDrawsSets::SubstituteSet(wxString name, DefinedDrawSet *s) {
 
 			copies_to_delete.push_back(c->GetRawDrawsSets()[ods->GetName()]);
 
-			c->GetRawDrawsSets().erase(ods->GetName());
-
 			DefinedDrawSet *nc = s->MakeShallowCopy(c);
-			c->GetRawDrawsSets()[s->GetName()] = nc;
+			c->SubstituteUserSet(ods->GetName(), nc);
 
 			m_cfgmgr->NotifySetModified(i->first, name, nc);
 		}
