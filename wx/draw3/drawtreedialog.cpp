@@ -119,7 +119,7 @@ wxTreeItemId DrawTreeDialog::SearchSetDown(wxTreeItemId current, DrawSet* set, w
 			if (cid.IsOk())
 				return cid;
 		}
-		id = m_tree_ctrl->GetNextChild(id, cookie);
+		id = m_tree_ctrl->GetNextChild(current, cookie);
 	}
 	return id;
 }

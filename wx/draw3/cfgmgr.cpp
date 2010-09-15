@@ -657,6 +657,8 @@ IPKConfig::IPKConfig(TSzarpConfig *c, ConfigManager *mgr) : DrawsSets(mgr), defi
 	    it->second->InitNullColors();
 
     baseDrawSets = drawSets;
+
+    m_tree_root.Sort();
 }
 
 void IPKConfig::AttachDefined() {
@@ -678,7 +680,6 @@ void IPKConfig::AttachDefined() {
 	drawSets[df->GetName()] = ds;
 	m_tree_root.AddUserSet(ds);
     }
-    m_tree_root.Sort();
     defined_attached = true;
 }
 
@@ -834,10 +835,8 @@ void DrawTreeRoot::AddUserSet(DrawSet* drawsset) {
 void DrawTreeRoot::RemoveUserSet(wxString name) {
 	if (m_user_subtree == NULL)
 		return;
-	std::vector<DrawTreeNode*>::iterator i = m_user_subtree->m_child_nodev.begin();
-	for (; i != m_user_subtree->m_child_nodev.end(); i++)
-		if ((*i)->m_name == name)
-			break;
+	std::vector<DrawTreeNode*>::iterator i;
+	i = std::find_if(m_user_subtree->m_child_nodev.begin(), m_user_subtree->m_child_nodev.end(), DrawTreeNodeNameEq(name));
 	if (i != m_child_nodev.end()) {
 		delete *i;
 		m_child_nodev.erase(i);
@@ -845,10 +844,8 @@ void DrawTreeRoot::RemoveUserSet(wxString name) {
 }
 
 void DrawTreeRoot::RenameUserSet(wxString oname, DrawSet *set) {
-	std::vector<DrawTreeNode*>::iterator i = m_user_subtree->m_child_nodev.begin();
-	for (; i != m_user_subtree->m_child_nodev.end(); i++)
-		if ((*i)->m_name == oname)
-			break;
+	std::vector<DrawTreeNode*>::iterator i;
+	i = std::find_if(m_user_subtree->m_child_nodev.begin(), m_user_subtree->m_child_nodev.end(), DrawTreeNodeNameEq(oname));
 	if (i != m_user_subtree->m_child_nodev.end()) {
 		(*i)->m_name = set->GetName();
 		(*i)->m_child_set = set;
@@ -856,10 +853,8 @@ void DrawTreeRoot::RenameUserSet(wxString oname, DrawSet *set) {
 }
 
 void DrawTreeRoot::SubstituteUserSet(wxString oname, DrawSet *set) {
-	std::vector<DrawTreeNode*>::iterator i = m_user_subtree->m_child_nodev.begin();
-	for (; i != m_user_subtree->m_child_nodev.end(); i++)
-		if ((*i)->m_name == oname)
-			break;
+	std::vector<DrawTreeNode*>::iterator i;
+	i = std::find_if(m_user_subtree->m_child_nodev.begin(), m_user_subtree->m_child_nodev.end(), DrawTreeNodeNameEq(oname));
 	if (i != m_user_subtree->m_child_nodev.end()) {
 		(*i)->m_name = set->GetName();
 		(*i)->m_child_set = set;
