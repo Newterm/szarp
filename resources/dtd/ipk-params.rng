@@ -469,7 +469,9 @@
   <define name="draw">
     <element name="draw" ns="http://www.praterm.com.pl/SZARP/ipk">
       <ref name="attlist.draw"/>
-      <empty/>
+      <zeroOrMore>
+         <ref name="treenode">
+      </zeroOrMore>
     </element>
   </define>
   <define name="attlist.draw" combine="interleave">
@@ -509,6 +511,33 @@
           <value>none</value>
         </choice>
       </attribute>
+    </optional>
+  </define>
+
+  <!--
+    Element 'treenode' jest to podelement elementu draw lub treenode, s³u¿y do umieszczenia 
+    zestawu wykresów w drzewie. 
+    Atrybuty:
+      prior - okre¶la priorytet tego wêz³a w¶ród jego braci, funkcjonuje to identycznie
+      jak element prior w elementach draw
+      draw_prior - okre¶la priorytet zestawu ojca w wê¼le definiowanym przez ten element,
+      ma tylko sens w przypadku elementów których bezpo¶rednim ojcem jest element draw
+  -->
+  <define name="treenode">
+    <element name="treenode" ns="http://www.praterm.com.pl/SZARP/ipk">
+      <ref name="attlist.treenode"/>
+      <optional>
+        <ref name="treenode"/>
+      </optional>
+    </element>
+  </define>
+
+  <define name="attlist.treenode">
+    <optional>
+      <attribute name="prior"/>
+    </optional>
+    <optional>
+      <attribute name="draw_prior"/>
     </optional>
   </define>
   

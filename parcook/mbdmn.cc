@@ -2146,13 +2146,13 @@ int get_serial_config(xmlXPathContextPtr xp_ctx, DaemonConfig* cfg, serial_port_
 	if (parity == NULL) {
 		dolog(10, "Serial port configuration, parity not specified, assuming no parity");
 		spc.parity = serial_port_configuration::NONE;
-	} else if (xmlStrcasecmp(parity, BAD_CAST "none")) {
+	} else if (!xmlStrcasecmp(parity, BAD_CAST "none")) {
 		dolog(10, "Serial port configuration, none parity");
 		spc.parity = serial_port_configuration::NONE;
-	} else if (xmlStrcasecmp(parity, BAD_CAST "even")) {
+	} else if (!xmlStrcasecmp(parity, BAD_CAST "even")) {
 		dolog(10, "Serial port configuration, even parity");
 		spc.parity = serial_port_configuration::EVEN;
-	} else if (xmlStrcasecmp(parity, BAD_CAST "odd")) {
+	} else if (!xmlStrcasecmp(parity, BAD_CAST "odd")) {
 		dolog(10, "Serial port configuration, odd parity");
 		spc.parity = serial_port_configuration::ODD;
 	} else {
