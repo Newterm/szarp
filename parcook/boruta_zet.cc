@@ -142,19 +142,23 @@ void zet_proto_impl::connection_error(struct bufferevent *bufev) {
 
 void zet_proto_impl::data_ready(struct bufferevent* bufev, int fd) {
 	size_t ret;
-	if (m_data_in_buffer > m_buffer.size() / 2)
+	if (m_data_in_buffer + 1 > m_buffer.size() / 2)
 		m_buffer.resize(m_buffer.size() * 2);
-	ret = bufferevent_read(bufev, &m_buffer.at(m_data_in_buffer), m_buffer.size() - m_data_in_buffer);
+	ret = bufferevent_read(bufev, &m_buffer.at(m_data_in_buffer), m_buffer.size() - m_data_in_buffer - 1);
 	m_data_in_buffer += ret;
 	try {
-		if (m_buffer.at(m_data_in_buffer - 1) != '\n'
-				|| m_buffer.at(m_data_in_buffer - 2) != '\n'
+		if (m_buffer.at(m_data_in_buffer - 1) != '\r'
+				|| m_buffer.at(m_data_in_buffer - 2) != '\r'
 				|| (m_plc_type == SK
-					&& m_buffer.at(m_data_in_buffer - 3) != '\n'))
+					&& m_buffer.at(m_data_in_buffer - 3) != '\r'))
 			return;
 	} catch (std::out_of_range) {
 		return;
 	}
+	if (m_plc_type == SK)
+		m_buffer.at(m_data_in_buffer - 1) = '\0';
+	else
+		m_buffer.at(m_data_in_buffer) = '\0';
 	char **toks;
 	int tokc = 0;
 	tokenize_d(&m_buffer[0], &toks, &tokc, "\r");
@@ -215,11 +219,11 @@ int zet_proto_impl::configure(TUnit* unit, xmlNodePtr node, short* read, short *
 	m_read = read;
 	m_send = send;
 	std::string plc;
-	if (!get_xml_extra_prop(node, "plc", plc))
+	if (get_xml_extra_prop(node, "plc", plc))
 		return 1;
-	if (plc == "SK") {
+	if (plc == "sk") {
 		m_plc_type = SK;
-	} else if (plc == "ZET") {
+	} else if (plc == "zet") {
 		m_plc_type = ZET;
 	} else {
 		dolog(0, "Invalid value of plc attribute %s, line:%ld", plc.c_str(), xmlGetLineNo(node));
