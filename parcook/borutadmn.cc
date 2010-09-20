@@ -432,24 +432,84 @@ void serial_connection::connection_error_cb(struct bufferevent *ev, short event,
 	c->manager->connection_error_cb(c);
 }
 
+void client_manager::starting_new_cycle() {
+	dolog(10, "client_manager, starting new cycle");
+	for (size_t i = 0; i < m_clients.size(); i++) {
+		size_t& j = m_current_client.at(i);
+		if (j == m_clients.at(i).size())
+			j = 0;
+		if (do_get_connection_state(i) == NOT_CONNECTED) {
+			if (do_establish_connection(i)) {
+				struct bufferevent* bufev = m_connection_buffers.at(i);
+				for (size_t j = 0; m_clients.at(i).size(); j++)
+					m_clients.at(i).at(j)->connection_error(bufev);
+				continue;
+			}
+		}
+		if (do_get_connection_state(i) == CONNECTED)
+			do_schedule(i, j);
+	}
+}
+
 void client_manager::driver_finished_job(client_driver *driver) {
-	size_t conn_no = driver->id().first;
-	size_t& client_no = m_current_client.at(conn_no);
-	assert(driver->id().second == client_no);
-	if (++client_no < m_clients.at(conn_no).size())
-		do_schedule(conn_no, client_no);
+	size_t connection = driver->id().first;
+	size_t& client = m_current_client.at(connection);
+	assert(driver->id().second == client);
+	if (++client < m_clients.at(connection).size())
+		do_schedule(connection, client);
 }
 
 void client_manager::terminate_connection(client_driver *driver) {
-	size_t conn_no = driver->id().first;
-	size_t& client_no = m_current_client.at(conn_no);
-	assert(driver->id().second == client_no);
-	do_terminate_connection(conn_no);
-	if (++client_no < m_clients.at(conn_no).size()) {
-		if (do_establish_connection(conn_no))
-			return
-		do_schedule(conn_no, client_no);
+	size_t connection = driver->id().first;
+	size_t& client = m_current_client.at(connection);
+	assert(driver->id().second == client);
+	do_terminate_connection(connection);
+	client += 1;
+	if (client < m_clients.at(connection).size()) {
+		if (do_establish_connection(connection))
+			return;
+		do_schedule(connection, client);
 	}
+}
+
+void client_manager::connection_read_cb(size_t connection, struct bufferevent *bufev, int fd) { 
+	if (m_current_client.at(connection) < m_clients.at(connection).size()) {
+		client_driver *d = m_clients.at(connection).at(m_current_client.at(connection));
+		d->data_ready(bufev, fd);
+	} else {
+		dolog(1, "Received data in client_manager when for this connection (no. %zu) no driver is active. Terminating connection", connection);
+		do_terminate_connection(connection);
+	}
+}
+
+void client_manager::connection_error_cb(size_t connection) {
+	size_t &current_client = m_current_client.at(connection);
+	if (m_current_client.at(connection) >= m_clients.at(connection).size()) {
+		do_terminate_connection(connection);
+		return;
+	}
+	client_driver *d = m_clients.at(connection).at(current_client);
+	d->connection_error(do_get_connection_buf(connection));
+	do_terminate_connection(connection);
+	size_t clients_count = m_clients.at(connection).size();
+	current_client += 1;
+	if (current_client == clients_count)
+		return;
+
+	if (!do_establish_connection(connection)) {
+		if (do_get_connection_state(connection) == CONNECTED)
+			do_schedule(connection, current_client);	
+	} else {
+		for (size_t i = current_client; i < m_clients.at(connection).size(); i++)
+			m_clients.at(connection).at(i)->connection_error(do_get_connection_buf(connection));
+	}
+}
+
+void client_manager::connection_established_cb(size_t connection) {
+	size_t &current_client = m_current_client.at(connection);
+	if (current_client >= m_clients.at(connection).size())
+		return;
+	do_schedule(connection, current_client);
 }
 
 tcp_client_manager::tcp_connection::tcp_connection(tcp_client_manager *_manager, size_t _addr_no) : state(NOT_CONNECTED), fd(-1), bufev(NULL), conn_no(_addr_no), manager(_manager) {}
@@ -479,7 +539,7 @@ void tcp_client_manager::close_connection(tcp_connection &c) {
 		close(c.fd);
 		c.fd = -1;
 	}
-	c.state = tcp_connection::NOT_CONNECTED;
+	c.state = NOT_CONNECTED;
 }
 
 int tcp_client_manager::open_connection(tcp_connection &c, struct sockaddr_in& addr) {
@@ -493,11 +553,11 @@ int tcp_client_manager::open_connection(tcp_connection &c, struct sockaddr_in& a
 do_connect:
 	int ret = connect(c.fd, (struct sockaddr*) &addr, sizeof(addr));
 	if (ret == 0) {
-		c.state = tcp_connection::CONNECTED;
+		c.state = CONNECTED;
 	} else if (errno == EINTR) {
 		goto do_connect;
 	} else if (errno == EWOULDBLOCK || errno == EINPROGRESS) {
-		c.state = tcp_connection::CONNECTING;
+		c.state = CONNECTING;
 	} else {
 		dolog(0, "Failed to connect: %s", strerror(errno));
 		close_connection(c);
@@ -509,16 +569,12 @@ do_connect:
 	return 0;
 }
 
-void tcp_client_manager::connect_all() {
-	for (size_t i = 0; i < m_connections.size(); i++) {
-		if (m_connections[i].state == tcp_connection::CONNECTED)
-			continue;
-		if (m_connections[i].state == tcp_connection::CONNECTING) 
-			//TODO: probably we can do better
-			continue;
-		if (open_connection(m_connections[i], m_addresses[i]))
-			dolog(1, "Failed to establish connection with: %s", sock_addr_to_string(m_addresses[i]).c_str());
-	}
+CONNECTION_STATE tcp_client_manager::do_get_connection_state(size_t conn_no) {
+	return m_connections.at(conn_no).state;
+}
+
+struct bufferevent* tcp_client_manager::do_get_connection_buf(size_t conn_no) {
+	return m_connections.at(conn_no).bufev;
 }
 
 void tcp_client_manager::do_terminate_connection(size_t conn_no) {
@@ -529,7 +585,7 @@ int tcp_client_manager::do_establish_connection(size_t conn_no) {
 	tcp_connection &c = m_connections.at(conn_no);
 	if (open_connection(m_connections.at(conn_no), m_addresses.at(conn_no)))
 		return 1;
-	return c.state == tcp_connection::CONNECTED ? 0 : 1;
+	return c.state == NOT_CONNECTED ? 1 : 0;
 }
 
 void tcp_client_manager::do_schedule(size_t conn_no, size_t client_no) {
@@ -571,69 +627,33 @@ int tcp_client_manager::initialize() {
 	return 0;
 }
 
-void tcp_client_manager::starting_new_cycle() {
-	dolog(10, "tcp_client_manager, starting new cycle");
-	connect_all(); 
-	for (size_t i = 0; i < m_addresses.size(); i++) {
-		size_t& j = m_current_client.at(i);
-		if (j == m_clients.at(i).size())
-			j = 0;
-		switch (m_connections.at(i).state) {
-			case tcp_connection::NOT_CONNECTED:
-				for (size_t k = 0; m_clients.at(i).size(); k++)
-					m_clients.at(i).at(k)->connection_error(m_connections.at(i).bufev);
-				break;
-			case tcp_connection::CONNECTED:
-				m_clients.at(i).at(j)->scheduled(m_connections.at(i).bufev, m_connections.at(i).fd);
-			default: break;
-		}
-	}
-}
-
 void tcp_client_manager::connection_read_cb(struct bufferevent *ev, void* _tcp_connection) {
 	tcp_connection* c = (tcp_connection*) _tcp_connection;
 	tcp_client_manager* t = c->manager;
-	if (t->m_current_client.at(c->conn_no) < t->m_clients.at(c->conn_no).size()) {
-		client_driver* d = t->m_clients.at(c->conn_no).at(t->m_current_client.at(c->conn_no));
-		d->data_ready(ev, c->fd);
-	} else {
-		dolog(1, "Received data in tcp_client_manager when for this connection (no. %zu) no driver is active. Terminating connection", c->conn_no);
-		t->close_connection(*c);
-	}
+	t->client_manager::connection_read_cb(c->conn_no, c->bufev, c->fd);
 }
 
 void tcp_client_manager::connection_write_cb(struct bufferevent *ev, void* _tcp_connection) {
 	tcp_connection* c = (tcp_connection*) _tcp_connection;
-	if (c->state != tcp_connection::CONNECTING)
+	if (c->state != CONNECTING)
 		return;
 	tcp_client_manager* t = c->manager;
-	c->state = tcp_connection::CONNECTED;
-	client_driver* d = t->m_clients.at(c->conn_no).at(t->m_current_client.at(c->conn_no));
-	d->scheduled(ev, c->fd);
+	c->state = CONNECTED;
+	t->connection_established_cb(c->conn_no);
 }
  
 void tcp_client_manager::connection_error_cb(struct bufferevent *ev, short event, void* _tcp_connection) {
 	tcp_connection* c = (tcp_connection*) _tcp_connection;
 	tcp_client_manager* t = c->manager;
-	size_t& cc = t->m_current_client.at(c->conn_no);
-	if (cc == t->m_clients.at(c->conn_no).size()) {
-		t->close_connection(*c);
-		return;
-	}
-	client_driver* d = t->m_clients.at(c->conn_no).at(cc);
-	d->connection_error(c->bufev);
-	t->close_connection(*c);
-	if (++cc == t->m_clients.at(c->conn_no).size())
-		return;
-	d = t->m_clients.at(c->conn_no).at(cc);
-	if (t->open_connection(*c, t->m_addresses.at(c->conn_no)) == 0) {
-		if (c->state == tcp_connection::CONNECTED)
-			d->scheduled(c->bufev, c->fd);
-	} else {
-		for (size_t i = cc; i < t->m_clients.at(c->conn_no).size(); i++)
-			t->m_clients.at(c->conn_no).at(cc)->connection_error(c->bufev);
-		t->close_connection(*c);
-	}
+	t->client_manager::connection_error_cb(c->conn_no);
+}
+
+CONNECTION_STATE serial_client_manager::do_get_connection_state(size_t conn_no) {
+	return m_connections.at(conn_no).fd >= 0 ? CONNECTED : NOT_CONNECTED;
+}
+
+struct bufferevent* serial_client_manager::do_get_connection_buf(size_t conn_no) {
+	return m_connections.at(conn_no).bufev;
 }
 
 void serial_client_manager::do_terminate_connection(size_t conn_no) {
@@ -690,50 +710,12 @@ int serial_client_manager::initialize() {
 	return 0;
 }
 
-void serial_client_manager::starting_new_cycle() {
-	dolog(10, "serial_client_manager, starting new cycle");
-	for (size_t i = 0; i < m_clients.size(); i++) {
-		size_t& j = m_current_client.at(i);
-		if (j == m_clients.at(i).size())
-			j = 0;
-		if (m_connections.at(i).fd < 0) {
-			if (m_connections.at(i).open_connection(
-					m_configurations.at(i).at(m_current_client.at(i)).path,
-					m_boruta->get_event_base())) {
-				for (size_t j = 0; m_clients.at(i).size(); j++)
-					m_clients.at(i).at(j)->connection_error(m_connections.at(i).bufev);
-				continue;
-			}
-		}
-		do_schedule(i, j);
-	}
-}
-
 void serial_client_manager::connection_read_cb(serial_connection* c) {
-	if (m_current_client.at(c->conn_no) < m_clients.at(c->conn_no).size()) {
-		client_driver *d = m_clients.at(c->conn_no).at(m_current_client.at(c->conn_no));
-		d->data_ready(c->bufev, c->fd);
-	} else {
-		dolog(1, "Received data in serial_client_manager when for this connection (no. %zu) no driver is active. Terminating connection", c->conn_no);
-		c->close_connection();
-	}
+	client_manager::connection_read_cb(c->conn_no, c->bufev, c->fd);
 }
 
 void serial_client_manager::connection_error_cb(serial_connection* c) {
-	size_t &cc = m_current_client.at(c->conn_no);
-	client_driver *d = m_clients.at(c->conn_no).at(cc);
-	d->connection_error(c->bufev);
-	c->close_connection();
-	size_t cs = m_clients.at(c->conn_no).size();
-	if (++cc < cs) {
-		if (c->open_connection(m_configurations.at(c->conn_no).at(cc).path, m_boruta->get_event_base())) {
-			do {
-				m_clients.at(c->conn_no).at(cc)->connection_error(c->bufev);
-			} while (++cc < cs);
-		} else {
-			do_schedule(c->conn_no, cc);
-		}
-	}
+	client_manager::connection_error_cb(c->conn_no);		
 }
 
 int serial_server_manager::configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols) {

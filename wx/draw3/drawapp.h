@@ -150,6 +150,8 @@ protected:
 
 	wxString m_url; /**< Draw url, describing base, set, period and time to sart with*/
 
+	bool m_url_open_in_existing;
+
 			/** Addresses of probers servers retrived from szarp.cfg*/
 	std::map<wxString, std::pair<wxString, wxString> > m_probers_from_szarp_cfg;
 

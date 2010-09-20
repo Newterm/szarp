@@ -51,6 +51,7 @@
 #include "xyzgraph.h"
 #include "drawdnd.h"
 #include "statdiag.h"
+#include "drawpnl.h"
 
 BEGIN_EVENT_TABLE(FrameManager, wxEvtHandler)
 	EVT_CLOSE(FrameManager::OnClose)
@@ -110,6 +111,26 @@ bool FrameManager::CreateFrame(const wxString &prefix, const wxString& set, Peri
 	frame->Raise();
 	return true;
 
+}
+
+bool FrameManager::OpenInExistingFrame(const wxString &prefix, const wxString& set, PeriodType pt, time_t time, int selected_draw) {
+	if (frames.GetCount() == 0) {
+		bool ret = CreateFrame(prefix, set, pt, time, wxDefaultSize, wxDefaultPosition, selected_draw);
+		if (ret) {
+			frames[0]->Show(true);	
+			frames[0]->Raise();	
+		}
+		return ret;
+	}
+	DrawFrame* frame = frames[0];
+	DrawPanel* panel = frame->GetCurrentPanel();
+	if (panel)
+		panel->Switch(set, prefix, time, pt, selected_draw);
+	else
+		frame->AddDrawPanel(prefix, set, pt, time, selected_draw);
+	frame->Show(true);	
+	frame->Raise();	
+	return true;
 }
 
 void FrameManager::OnClose(wxCloseEvent &event) {

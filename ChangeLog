@@ -1,4 +1,11 @@
 
+2010-09-20	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: new command line switch '-e' for draw3, when this
+	switch is given on command line toghether with an url
+	and if draw3 is already running, this url will be opened
+	by currently active panel of running draw3 instance and
+	parent frame of this panel will be raised
+	* parcook/boruta*: more fixes
 2010-09-14	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2, wx/draw3: draws' sets can be arranged in hierarchical 
 	tree structure

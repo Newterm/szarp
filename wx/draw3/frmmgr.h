@@ -74,6 +74,16 @@ class FrameManager : public wxEvtHandler {
 	 * @return true if config was successfully read and frame created*/
 	bool CreateFrame(const wxString &prefix, const wxString& set, PeriodType pt, time_t time, const wxSize& size, const wxPoint &position, int selected_draw = 0, bool try_load_layout = false);
 
+
+	/**postition current panel at following params
+	 * @param prefix of base to use
+	 * @param window name of set 
+	 * @param time time to start with
+	 * @param size initial size of frame
+	 * @param position initial position of frame
+	 * @return true if config was successfully read and frame created*/
+	bool OpenInExistingFrame(const wxString &prefix, const wxString& set, PeriodType pt, time_t time, int selected_draw);
+
 	/**Close event hadnler, asks user for and confirmation wheather frame shall be really closed.
 	 * If closed frame is the only frame application is closed*/
 	void OnClose(wxCloseEvent &event);

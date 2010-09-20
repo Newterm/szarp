@@ -209,6 +209,7 @@ void zet_proto_impl::data_ready(struct bufferevent* bufev, int fd) {
 
 
 void zet_proto_impl::scheduled(struct bufferevent* bufev, int fd) {
+	set_no_data();
 	send_query(bufev);
 }
 

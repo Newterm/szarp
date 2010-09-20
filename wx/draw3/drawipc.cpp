@@ -57,7 +57,8 @@ DrawServer::DrawServer(FrameManager *frm_mgr, ConfigManager *cfg_mgr) : m_frm_mg
 
 wxConnectionBase *DrawServer::OnAcceptConnection(const wxString &topic) {
 	if (topic != _T("START_BASE") 
-			&& topic != _T("START_URL"))
+			&& topic != _T("START_URL")
+			&& topic != _T("START_URL_EXISTING"))
 		return NULL;
 
 	return new DrawServerConnection(m_frm_mgr, topic);
@@ -80,18 +81,25 @@ wxChar* DrawServerConnection::OnRequest(const wxString& topic, const wxString& i
 			response = BASE_SET_STRING;
 		else
 			response = ERROR_SET_STRING;
-	else if (topic == _T("START_URL")) {
+	else if (topic == _T("START_URL") || topic == _T("START_URL_EXISTING")) {
+		bool open_in_new_frame = topic == _T("START_URL_EXISTING");
 		wxString prefix, window;
 		PeriodType pt;
 		time_t time;
 		int selected_draw = -1;
 
-		if (decode_url(item, prefix, window, pt, time, selected_draw))
-			if (m_frm_mgr->CreateFrame(prefix, window, pt, time, wxDefaultSize, wxDefaultPosition, selected_draw))
+		if (decode_url(item, prefix, window, pt, time, selected_draw)) {
+			bool ret;
+			if (open_in_new_frame)
+				ret = m_frm_mgr->CreateFrame(prefix, window, pt, time, wxDefaultSize, wxDefaultPosition, selected_draw);
+			else
+				ret = m_frm_mgr->OpenInExistingFrame(prefix, window, pt, time, selected_draw);
+
+			if (ret)
 				response = DRAW_SET_STRING;
 			else
 				response = ERROR_SET_STRING;
-		else
+		} else
 				response = ERROR_SET_STRING;
 
 	} else

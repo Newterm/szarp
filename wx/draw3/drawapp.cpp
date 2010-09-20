@@ -223,7 +223,10 @@ bool DrawApp::OnInit() {
 			_T("draw3"));
 	if (m_instance->IsAnotherRunning()) {
 		if (!m_url.IsEmpty()) {
-			SendToRunningInstance(_T("START_URL"), m_url.c_str());
+			if (m_url_open_in_existing)
+				SendToRunningInstance(_T("START_URL"), m_url.c_str());
+			else
+				SendToRunningInstance(_T("START_URL_EXISTING"), m_url.c_str());
 		} else if (!m_base.IsEmpty()) {		
 			SendToRunningInstance(_T("START_BASE"), m_base.c_str());
 		} else {
@@ -400,6 +403,10 @@ void DrawApp::OnInitCmdLine(wxCmdLineParser &parser) {
 
 	parser.AddParam(_T("url"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL);
 
+	parser.AddSwitch(_T("e"), wxEmptyString, 
+		_("open url in existing window"));
+
+
 	parser.AddSwitch(_T("v"), wxEmptyString, 
 		_("verbose logging"));
 
@@ -449,6 +456,8 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 	parser.Found(_T("base"), &m_base);
 
 	parser.Found(_T("url"), &m_url);
+
+	m_url_open_in_existing = parser.Found(_T("e"));
 
 	if (m_base.IsEmpty())
 		for (size_t i = 0; i < parser.GetParamCount(); ++i) {

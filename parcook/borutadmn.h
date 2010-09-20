@@ -181,14 +181,24 @@ public:
 
 class boruta_daemon;
 
+enum CONNECTION_STATE { CONNECTED, NOT_CONNECTED, CONNECTING };
+
 class client_manager { 
 protected:
 	std::vector<std::vector<client_driver*> > m_clients;
 	std::vector<size_t> m_current_client;
+	std::vector<struct bufferevent*> m_connection_buffers;
+	virtual CONNECTION_STATE do_get_connection_state(size_t conn_no) = 0;
+	virtual struct bufferevent* do_get_connection_buf(size_t conn_no) = 0;
 	virtual void do_terminate_connection(size_t conn_no) = 0;
 	virtual void do_schedule(size_t conn_no, size_t client_no) = 0;
 	virtual int do_establish_connection(size_t conn_no) = 0;
+
+	void connection_read_cb(size_t connection, struct bufferevent *bufev, int fd);
+	void connection_error_cb(size_t connection);
+	void connection_established_cb(size_t connection);
 public:
+	void starting_new_cycle();
 	void driver_finished_job(client_driver *driver);
 	void terminate_connection(client_driver *driver);
 };
@@ -199,7 +209,7 @@ class tcp_client_manager : public client_manager {
 	struct tcp_connection {
 		tcp_connection(tcp_client_manager *manager, size_t conn_no);
 		void close();
-		enum CONNECTION_STATE { CONNECTED, CONNECTING, NOT_CONNECTED } state;	
+		CONNECTION_STATE state;	
 		int fd;
 		struct bufferevent *bufev;
 		size_t conn_no;
@@ -209,8 +219,9 @@ class tcp_client_manager : public client_manager {
 	int configure_tcp_address(xmlNodePtr node, struct sockaddr_in &addr);
 	void close_connection(tcp_connection &c);
 	int open_connection(tcp_connection &c, struct sockaddr_in& addr);
-	void connect_all();
 protected:
+	virtual CONNECTION_STATE do_get_connection_state(size_t conn_no);
+	virtual struct bufferevent* do_get_connection_buf(size_t conn_no);
 	virtual void do_terminate_connection(size_t conn_no);
 	virtual void do_schedule(size_t conn_no, size_t client_no);
 	virtual int do_establish_connection(size_t conn_no);
@@ -218,7 +229,6 @@ public:
 	tcp_client_manager(boruta_daemon *boruta) : m_boruta(boruta) {}
 	int configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols);
 	int initialize();
-	void starting_new_cycle();
 	static void connection_read_cb(struct bufferevent *ev, void* _tcp_connection);
 	static void connection_write_cb(struct bufferevent *ev, void* _tcp_connection);
 	static void connection_error_cb(struct bufferevent *ev, short event, void* _tcp_connection);
@@ -230,6 +240,8 @@ class serial_client_manager : public serial_connection_manager, public client_ma
 	std::map<std::string, size_t> m_ports_client_no_map;
 	std::vector<serial_connection> m_connections;
 protected:
+	virtual CONNECTION_STATE do_get_connection_state(size_t conn_no);
+	virtual struct bufferevent* do_get_connection_buf(size_t conn_no);
 	virtual void do_terminate_connection(size_t conn_no);
 	virtual void do_schedule(size_t conn_no, size_t client_no);
 	virtual int do_establish_connection(size_t conn_no);
@@ -237,7 +249,6 @@ public:
 	serial_client_manager(boruta_daemon *boruta) : m_boruta(boruta) {}
 	int configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols);
 	int initialize();
-	void starting_new_cycle();
 	void connection_read_cb(serial_connection *c);
 	void connection_error_cb(serial_connection *c);
 };
