@@ -1,4 +1,6 @@
 
+2010-09-23	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/sbusdmn.cc: added support for PCD variant of SBUS protocol
 2010-09-20	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: new command line switch '-e' for draw3, when this
 	switch is given on command line toghether with an url
