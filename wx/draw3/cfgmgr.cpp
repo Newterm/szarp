@@ -844,6 +844,8 @@ void DrawTreeRoot::RemoveUserSet(wxString name) {
 }
 
 void DrawTreeRoot::RenameUserSet(wxString oname, DrawSet *set) {
+	if (m_user_subtree == NULL)
+		return;
 	std::vector<DrawTreeNode*>::iterator i;
 	i = std::find_if(m_user_subtree->m_child_nodev.begin(), m_user_subtree->m_child_nodev.end(), DrawTreeNodeNameEq(oname));
 	if (i != m_user_subtree->m_child_nodev.end()) {
@@ -853,6 +855,8 @@ void DrawTreeRoot::RenameUserSet(wxString oname, DrawSet *set) {
 }
 
 void DrawTreeRoot::SubstituteUserSet(wxString oname, DrawSet *set) {
+	if (m_user_subtree == NULL)
+		return;
 	std::vector<DrawTreeNode*>::iterator i;
 	i = std::find_if(m_user_subtree->m_child_nodev.begin(), m_user_subtree->m_child_nodev.end(), DrawTreeNodeNameEq(oname));
 	if (i != m_user_subtree->m_child_nodev.end()) {
