@@ -1,4 +1,8 @@
 
+2010-09-24	Pawel Palucha <pawel@newterm.pl>
+	* script/{csv2p,p2csv}.py: scripts for importing/exporting IPK
+	configuration to/from CSV format - sometimes it's easier to edit
+	params.xml in spreadsheet format.
 2010-09-24	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: fix a bug introduced together with support 
 	for draws sets' trees...
@@ -22,7 +26,7 @@
 	parameter did not set lua_formula attribute properly - saveXML
 	generated improper params.xml
 	* meaner3/utils/szbwriter.cc: Szbwriter has a cool feature:
-	when a param name is encoutered that is not present in configuration,
+	when a param name is encountered that is not present in configuration,
 	szbwriter updates configuration by adding new param with this name.
 	That is very nice, but in majority of cases (I believe) param name that
 	in not present in config really means that somebody misspelled
