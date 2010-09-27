@@ -23,17 +23,49 @@ tree = etree.Element(addns('params'), nsmap = {None: "http://www.praterm.com.pl/
 insert = etree.SubElement(tree, addns('device'))
 insert = etree.SubElement(insert, addns('unit'))
 
+drawdefinable = []
+
 for data in reader:
 	els = dict()
+	name = ':'.join([data["group"].decode('utf-8'), 
+		data['unit'].decode('utf-8'), data['name'].decode('utf-8')])
 	els['param'] = etree.SubElement(insert, addns('param'))
-	els['raport'] = etree.SubElement(els['param'], addns('raport'))
-	els['draw'] = etree.SubElement(els['param'], addns('draw'))
-	els['param'].set("name", ':'.join([data["group"].decode('utf-8'), 
-		data['unit'].decode('utf-8'), data['name'].decode('utf-8')]))
+	if name.endswith("msw"):
+		drawdefinable.append(data)
+		pass
+	elif not name.endswith("lsw"):
+		els['raport'] = etree.SubElement(els['param'], addns('raport'))
+		els['draw'] = etree.SubElement(els['param'], addns('draw'))
+
+	els['param'].set("name", name)
 	for k, v in data.items():
 		try:
 			el, ignore, attr = k.partition(':')
 			els[el].set(attr, v.decode('utf-8'))
+		except:
+			pass
+
+insert = etree.SubElement(tree, addns("drawdefinable"))
+
+for data in drawdefinable:
+	els = dict()
+	name = ':'.join([data["group"].decode('utf-8'), 
+		data['unit'].decode('utf-8'), data['name'].decode('utf-8')])
+	els['param'] = etree.SubElement(insert, addns('param'))
+	basename = name.rstrip("msw")
+
+	define = etree.SubElement(els['param'], addns('define'))
+	define.set("type", "DRAWDEFINABLE")
+	define.set("formula", "(" + basename + "msw) (" + basename + "lsw) :")
+
+	els['param'].set("name", basename)
+	els['raport'] = etree.SubElement(els['param'], addns('raport'))
+	els['draw'] = etree.SubElement(els['param'], addns('draw'))
+	for k, v in data.items():
+		try:
+			el, ignore, attr = k.partition(':')
+			if attr != "base_ind":
+				els[el].set(attr, v.decode('utf-8'))
 		except:
 			pass
 
