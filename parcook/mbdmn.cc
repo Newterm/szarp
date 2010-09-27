@@ -2516,6 +2516,8 @@ int main(int argc, char *argv[]) {
 	if (cfg->Load(&argc, argv))
 		return 1;
 
+	signal(SIGPIPE, SIG_IGN);
+
 	g_debug = cfg->GetDiagno() || cfg->GetSingle();
 
 	modbus_daemon *daemon;

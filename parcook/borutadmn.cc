@@ -1061,6 +1061,7 @@ int main(int argc, char *argv[]) {
 	boruta_daemon daemon;
 	if (daemon.configure(cfg))
 		return 1;
+	signal(SIGPIPE, SIG_IGN);
 	dolog(2, "Starting Boruta Daemon");
 	daemon.go();
 	dolog(0, "Error: daemon's event loop exited - that shouldn't happen!");
