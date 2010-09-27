@@ -1,7 +1,8 @@
 
 2010-09-27	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/boruta*: more boruta imprements
 	* parcook/boruta*: bunch of fixes for boruta, modbus
-	rtu in client mode seems to be running
+	rtu in client mode seems to be working
 	* parccok/sbusdmn.cc: fixes for PCD mode, driver now 
 	correctly gathers data in Legionowo
 2010-09-24	Pawel Palucha <pawel@newterm.pl>

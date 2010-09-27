@@ -158,6 +158,7 @@ public:
 	virtual int initialize();
 	int configure_unit(TUnit* u, xmlNodePtr node);
 	int configure(TUnit *unit, xmlNodePtr node, short *read, short *send);
+	void finished_cycle();
 	void starting_new_cycle();
 };
 
@@ -248,6 +249,8 @@ public:
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
 	virtual void data_ready(struct bufferevent* bufev, int fd);
+	virtual void finished_cycle();
+	virtual void starting_new_cycle();
 	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send);
 	virtual void timeout();
 };
@@ -325,6 +328,8 @@ protected:
 	virtual void terminate_connection();
 public:
 
+	virtual void finished_cycle();
+	virtual void starting_new_cycle();
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
 	virtual void data_ready(struct bufferevent* bufev, int fd);
@@ -988,11 +993,14 @@ int modbus_unit::configure(TUnit *unit, xmlNodePtr node, short *read, short *sen
 	return 0;
 }
 
+void modbus_unit::finished_cycle() {
+	to_parcook();
+}
+
 void modbus_unit::starting_new_cycle() {
 	dolog(5, "Timer click, doing ipc data exchange");
 	m_current_time = time(NULL);
 	from_sender();
-	to_parcook();
 }
 
 int modbus_unit::initialize() {
@@ -1360,6 +1368,14 @@ void modbus_tcp_client::frame_parsed(TCPADU &adu, struct bufferevent* bufev) {
 	pdu_received(adu.unit_id, adu.pdu);
 }
 
+void modbus_tcp_client::finished_cycle() {
+	modbus_unit::finished_cycle();
+}
+
+void modbus_tcp_client::starting_new_cycle() {
+	modbus_unit::starting_new_cycle();
+}
+
 void modbus_tcp_client::connection_error(struct bufferevent *bufev) {
 	m_parser->reset();
 }
@@ -1396,6 +1412,14 @@ void modbus_serial_client::cycle_finished() {
 
 void modbus_serial_client::terminate_connection() {
 	m_manager->terminate_connection(this);
+}
+
+void modbus_serial_client::finished_cycle() {
+	modbus_unit::finished_cycle();
+}
+
+void modbus_serial_client::starting_new_cycle() {
+	modbus_unit::starting_new_cycle();
 }
 
 void modbus_serial_client::connection_error(struct bufferevent *bufev) {

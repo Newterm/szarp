@@ -94,6 +94,7 @@ public:
 	virtual void connection_error(struct bufferevent *bufev) = 0;
 	virtual void scheduled(struct bufferevent* bufev, int fd) = 0;
 	virtual void data_ready(struct bufferevent* bufev, int fd) = 0;
+	virtual void finished_cycle();
 	virtual void starting_new_cycle();
 };
 
@@ -198,6 +199,7 @@ protected:
 	void connection_error_cb(size_t connection);
 	void connection_established_cb(size_t connection);
 public:
+	void finished_cycle();
 	void starting_new_cycle();
 	void driver_finished_job(client_driver *driver);
 	void terminate_connection(client_driver *driver);

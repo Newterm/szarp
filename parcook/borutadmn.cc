@@ -325,6 +325,10 @@ void client_driver::set_manager(client_manager* manager) {
 	m_manager = manager;
 }
 
+void client_driver::finished_cycle() {
+	return;
+}
+
 void client_driver::starting_new_cycle() {
 	return;
 }
@@ -432,8 +436,26 @@ void serial_connection::connection_error_cb(struct bufferevent *ev, short event,
 	c->manager->connection_error_cb(c);
 }
 
+void client_manager::finished_cycle() {
+	dolog(10, "client_manager, starting new cycle");
+	for (std::vector<std::vector<client_driver*> >::iterator i = m_connection_client_map.begin();
+			i != m_connection_client_map.end();
+			i++) 
+		for (std::vector<client_driver*>::iterator j = i->begin();
+				j != i->end();
+				j++)
+			(*j)->finished_cycle();
+}
+
 void client_manager::starting_new_cycle() {
 	dolog(10, "client_manager, starting new cycle");
+	for (std::vector<std::vector<client_driver*> >::iterator i = m_connection_client_map.begin();
+			i != m_connection_client_map.end();
+			i++) 
+		for (std::vector<client_driver*>::iterator j = i->begin();
+				j != i->end();
+				j++)
+			(*j)->starting_new_cycle();
 	for (size_t connection = 0; connection < m_connection_client_map.size(); connection++) {
 		size_t& client = m_current_client.at(connection);
 		if (do_get_connection_state(connection) == NOT_CONNECTED) {
@@ -1012,6 +1034,8 @@ void boruta_daemon::go() {
 
 void boruta_daemon::cycle_timer_callback(int fd, short event, void* daemon) {
 	boruta_daemon* b = (boruta_daemon*) daemon;
+	b->m_tcp_client_mgr.finished_cycle();
+	b->m_serial_client_mgr.finished_cycle();
 	b->m_ipc->GoParcook();
 	b->m_ipc->GoSender();
 	b->m_tcp_client_mgr.starting_new_cycle();

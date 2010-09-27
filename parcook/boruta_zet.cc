@@ -64,6 +64,7 @@ protected:
 	virtual struct event_base* get_event_base() = 0;
 public:
 	void send_query(struct bufferevent* bufev);
+	virtual void starting_new_cycle();
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void data_ready(struct bufferevent* bufev, int fd);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
@@ -77,6 +78,7 @@ protected:
 	virtual void terminate_connection();
 	struct event_base* get_event_base();
 public:
+	virtual void starting_new_cycle();
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
 	virtual void data_ready(struct bufferevent* bufev, int fd);
@@ -89,6 +91,7 @@ protected:
 	virtual void terminate_connection();
 	struct event_base* get_event_base();
 public:
+	virtual void starting_new_cycle();
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
 	virtual void data_ready(struct bufferevent* bufev, int fd);
@@ -133,6 +136,10 @@ void zet_proto_impl::send_query(struct bufferevent* bufev) {
 	m_data_in_buffer = 0;
 	m_buffer.resize(1000);
 	start_timer();
+}
+
+void zet_proto_impl::starting_new_cycle() {
+	set_no_data();
 }
 
 void zet_proto_impl::connection_error(struct bufferevent *bufev) {
@@ -207,7 +214,6 @@ void zet_proto_impl::data_ready(struct bufferevent* bufev, int fd) {
 
 
 void zet_proto_impl::scheduled(struct bufferevent* bufev, int fd) {
-	set_no_data();
 	send_query(bufev);
 }
 
@@ -255,6 +261,10 @@ struct event_base* zet_proto_tcp::get_event_base() {
 	return m_event_base;
 }
 
+void zet_proto_tcp::starting_new_cycle() {
+	zet_proto_impl::starting_new_cycle();
+}
+
 void zet_proto_tcp::connection_error(struct bufferevent *bufev) {
 	zet_proto_impl::connection_error(bufev);
 }
@@ -281,6 +291,10 @@ void zet_proto_serial::terminate_connection() {
 
 struct event_base* zet_proto_serial::get_event_base() {
 	return m_event_base;
+}
+
+void zet_proto_serial::starting_new_cycle() {
+	zet_proto_impl::starting_new_cycle();
 }
 
 void zet_proto_serial::connection_error(struct bufferevent *bufev) {
