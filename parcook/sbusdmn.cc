@@ -883,8 +883,12 @@ Buffer DecodeB5Values(const Buffer &b, size_t size) {
 
 } 
 
-unsigned short CalculateCRC(const Buffer &b, size_t len) {
+unsigned short CalculateCRC(const Buffer &b, size_t len, bool addfe) {
 	unsigned short crc = 0;
+	if (addfe) {
+		int index = (((crc >> 8) ^ 0xfe) & 0xff);
+		crc = crc_table[index] ^ ((crc << 8) & 0xffff);
+	}
 	for (size_t i = 0; i < len; i++) {
 		int index = (((crc >> 8) ^ b.GetChar(i)) & 0xff);
 		crc = crc_table[index] ^ ((crc << 8) & 0xffff);
@@ -902,7 +906,7 @@ Buffer SBUSUnit::CreateQueryPacket(unsigned short start, int count) {
 	b.PutChar('\x06');
 	b.PutChar(count - 1);
 	b.PutShort(start);
-	b.PutShort(CalculateCRC(b, b.Size()));
+	b.PutShort(CalculateCRC(b, b.Size(), m_protocol == SBUS_PCD));
 	if (m_protocol != SBUS_PCD) 
 		return EncodeB5Values(b);
 	else
@@ -921,7 +925,7 @@ bool SBUSUnit::ReadResponse(int count, Buffer &dec) {
 	size_t has_read = 0;
 
 	if (!m_port->Wait(m_read_timeout)) {
-		dolog(1, "Timeout while waiting for response for device %d", (int)m_id[0]);
+		dolog(1, "Timeout while waiting for response for device %c", m_id[0]);
 		return false;
 	}
 
@@ -932,14 +936,14 @@ bool SBUSUnit::ReadResponse(int count, Buffer &dec) {
 			break;
 
 		if (m_port->Wait(1)) {
-			dolog(1, "Timeout while waiting for character from device %d", (int)m_id[0]);
+			dolog(1, "Timeout while waiting for character from device %c", m_id[0]);
 			return false;
 		}
 
 	} while (true);
 
 	if (m_protocol != SBUS_PCD && response.GetChar(1) != '\x01') {
-		dolog(1, "Error while quering device %d, invalid response type %d", (int)m_id[0], (int) response.GetChar(1));
+		dolog(1, "Error while quering device %c, invalid response type %d", m_id[0], (int) response.GetChar(1));
 		return false;
 	}
 
@@ -953,16 +957,17 @@ bool SBUSUnit::ReadResponse(int count, Buffer &dec) {
 		dec = DecodeB5Values(response, has_read);
 	} else {
 		dec = response;
+		dec.Resize(has_read);
 	}
 	if (dec.Size() != response_size) {
-		dolog(1, "Invalid lenght of response for device %d, expected:%zu, got:%zu", (int)m_id[0], response_size, dec.Size());
+		dolog(1, "Invalid lenght of response for device %c, expected:%zu, got:%zu", m_id[0], response_size, dec.Size());
 		return false;
 	}
 
-	unsigned short ccrc = CalculateCRC(dec, dec.Size() - 2);
+	unsigned short ccrc = CalculateCRC(dec, dec.Size() - 2, false);
 	unsigned short pcrc = dec.GetShort(dec.Size() - 2);
 	if (ccrc != pcrc) {
-		dolog(1, "Invalid crc while querying device %d, calculated:%hu, received:%hu", (int)m_id[0], ccrc, pcrc);
+		dolog(1, "Invalid crc while querying device %c, calculated:%hu, received:%hu", m_id[0], ccrc, pcrc);
 		return false;
 	}
 
@@ -1044,11 +1049,10 @@ void SBUSUnit::QueryRange(unsigned short start, int count) {
 	int no_of_tries = 0;	
 	Buffer response;
 	while (!data_read && no_of_tries++ < m_max_read_attempts) {
-		if (!m_port->IsOpen()) {
+		if (!m_port->IsOpen())
 			m_port->Open();
-			if (m_protocol == SBUS_PCD)
-				DoPCDInit();
-		}
+		if (m_protocol == SBUS_PCD)
+			DoPCDInit();
 		m_port->WriteData(query.Content(), query.Size());
 
 		response = Buffer();
@@ -1239,18 +1243,20 @@ int main(int argc, char *argv[]) {
 void dolog(int level, const char * fmt, ...) {
 	va_list fmt_args;
 
-	char *l;
-	va_start(fmt_args, fmt);
-
 	if (single) {
+		char *l;
+		va_start(fmt_args, fmt);
 		vasprintf(&l, fmt, fmt_args);
+		va_end(fmt_args);
+
 		std::cout << l << std::endl;
 		sz_log(level, "%s", l);
 		free(l);
-	} else
-		vsz_log(level, "%s", fmt_args);
-
-	va_end(fmt_args);
+	} else {
+		va_start(fmt_args, fmt);
+		vsz_log(level, fmt, fmt_args);
+		va_end(fmt_args);
+	}
 } 
 
 

@@ -158,6 +158,7 @@ public:
 	virtual int initialize();
 	int configure_unit(TUnit* u, xmlNodePtr node);
 	int configure(TUnit *unit, xmlNodePtr node, short *read, short *send);
+	void finished_cycle();
 	void starting_new_cycle();
 };
 
@@ -215,6 +216,7 @@ protected:
 	time_t m_last_activity;
 
 protected:
+	modbus_client();
 	void reset_cycle();
 	void start_cycle();
 	void send_next_query();
@@ -222,7 +224,7 @@ protected:
 	void send_read_query();
 	void next_query();
 	void send_query();
-	void find_continous_reg_block(RSET::iterator &i, RSET &regs);
+	void find_continuous_reg_block(RSET::iterator &i, RSET &regs);
 	void timeout();
 
 	virtual void send_pdu(unsigned char unit, PDU &pdu) = 0;
@@ -247,6 +249,8 @@ public:
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
 	virtual void data_ready(struct bufferevent* bufev, int fd);
+	virtual void finished_cycle();
+	virtual void starting_new_cycle();
 	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send);
 	virtual void timeout();
 };
@@ -324,6 +328,8 @@ protected:
 	virtual void terminate_connection();
 public:
 
+	virtual void finished_cycle();
+	virtual void starting_new_cycle();
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
 	virtual void data_ready(struct bufferevent* bufev, int fd);
@@ -960,11 +966,11 @@ int modbus_unit::configure(TUnit *unit, xmlNodePtr node, short *read, short *sen
 	}
 
 	m_expiration_time = 0;
-	if (get_xml_extra_prop(node, "nodata-timeout", m_expiration_time, false)) {
+	if (get_xml_extra_prop(node, "nodata-timeout", m_expiration_time, true)) {
 		dolog(5, "invalid no-data timeout specified, error");
 		return 1;
 	}
-	if (m_expiration_time) {
+	if (!m_expiration_time) {
 		dolog(5, "no-data timeout not specified (or 0), assuming no data expiration");
 		m_expiration_time = 0;
 	} 
@@ -987,11 +993,14 @@ int modbus_unit::configure(TUnit *unit, xmlNodePtr node, short *read, short *sen
 	return 0;
 }
 
+void modbus_unit::finished_cycle() {
+	to_parcook();
+}
+
 void modbus_unit::starting_new_cycle() {
 	dolog(5, "Timer click, doing ipc data exchange");
 	m_current_time = time(NULL);
 	from_sender();
-	to_parcook();
 }
 
 int modbus_unit::initialize() {
@@ -1145,6 +1154,8 @@ void tcp_server::connection_error(struct bufferevent *bufev) {
 	delete parser;
 }
 
+modbus_client::modbus_client() : m_state(IDLE) {}
+
 void modbus_client::reset_cycle() {
 	m_received_iterator = m_received.begin();
 	m_sent_iterator = m_sent.begin();
@@ -1215,13 +1226,13 @@ void modbus_client::next_query() {
 			m_state = READ_QUERY_SENT;
 		case READ_QUERY_SENT:
 			if (m_received_iterator != m_received.end()) {
-				find_continous_reg_block(m_received_iterator, m_received);
+				find_continuous_reg_block(m_received_iterator, m_received);
 				break;
 			} 
 			m_state = WRITE_QUERY_SENT;
 		case WRITE_QUERY_SENT:
 			if (m_sent_iterator != m_sent.end()) {
-				find_continous_reg_block(m_sent_iterator, m_sent);
+				find_continuous_reg_block(m_sent_iterator, m_sent);
 				break;
 			}
 			m_state = IDLE;
@@ -1264,7 +1275,7 @@ void modbus_client::timeout() {
 }
 
 
-void modbus_client::find_continous_reg_block(RSET::iterator &i, RSET &regs) {
+void modbus_client::find_continuous_reg_block(RSET::iterator &i, RSET &regs) {
 	unsigned short current;
 	assert(i != regs.end());
 
@@ -1357,6 +1368,14 @@ void modbus_tcp_client::frame_parsed(TCPADU &adu, struct bufferevent* bufev) {
 	pdu_received(adu.unit_id, adu.pdu);
 }
 
+void modbus_tcp_client::finished_cycle() {
+	modbus_unit::finished_cycle();
+}
+
+void modbus_tcp_client::starting_new_cycle() {
+	modbus_unit::starting_new_cycle();
+}
+
 void modbus_tcp_client::connection_error(struct bufferevent *bufev) {
 	m_parser->reset();
 }
@@ -1375,6 +1394,7 @@ int modbus_tcp_client::configure(TUnit* unit, xmlNodePtr node, short* read, shor
 		return 1;
 	m_trans_id = 0;
 	m_parser = new tcp_parser(this);
+	modbus_client::reset_cycle();
 	return 0;
 }
 
@@ -1394,6 +1414,14 @@ void modbus_serial_client::terminate_connection() {
 	m_manager->terminate_connection(this);
 }
 
+void modbus_serial_client::finished_cycle() {
+	modbus_unit::finished_cycle();
+}
+
+void modbus_serial_client::starting_new_cycle() {
+	modbus_unit::starting_new_cycle();
+}
+
 void modbus_serial_client::connection_error(struct bufferevent *bufev) {
 	m_parser->reset();
 }
@@ -1410,8 +1438,10 @@ void modbus_serial_client::data_ready(struct bufferevent* bufev, int fd) {
 int modbus_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration &spc) {
 	if (modbus_unit::configure(unit, node, read, send))
 		return 1;
+	m_parser = new serial_rtu_parser(this);
 	if (m_parser->configure(node, spc))
 		return 1;
+	modbus_client::reset_cycle();
 	return 0;
 }
 
@@ -1477,7 +1507,7 @@ bool serial_rtu_parser::check_crc() {
 	return crc == frame_crc;
 }
 
-serial_parser::serial_parser(serial_connection_handler *serial_handler) : m_serial_handler(serial_handler), m_write_timer_started(false) {
+serial_parser::serial_parser(serial_connection_handler *serial_handler) : m_serial_handler(serial_handler), m_read_timer_started(false), m_write_timer_started(false) {
 	evtimer_set(&m_read_timer, read_timer_callback, this);
 	event_base_set(m_serial_handler->get_event_base(), &m_read_timer);
 }
@@ -1544,19 +1574,19 @@ void serial_parser::write_timer_callback(int fd, short event, void* parser) {
 }
 
 int serial_parser::configure(xmlNodePtr node, serial_port_configuration &spc) {
-	int delay_between_chars = 0;
-	get_xml_extra_prop(node, "out-intra-character-delay", delay_between_chars, true);
-	if (delay_between_chars == 0)
+	m_delay_between_chars = 0;
+	get_xml_extra_prop(node, "out-intra-character-delay", m_delay_between_chars, true);
+	if (m_delay_between_chars == 0)
 		dolog(10, "Serial port configuration, delay between chars not given (or 0) assuming no delay");
 	else
-		dolog(10, "Serial port configuration, delay between chars set to %d miliseconds", delay_between_chars);
+		dolog(10, "Serial port configuration, delay between chars set to %d miliseconds", m_delay_between_chars);
 
-	int read_timeout = 0;
-	get_xml_extra_prop(node, "read-timeout", read_timeout, true);
-	if (read_timeout == 0)
+	m_timeout = 0;
+	get_xml_extra_prop(node, "read-timeout", m_timeout, true);
+	if (m_timeout == 0)
 		dolog(10, "Serial port configuration, read timeout not given (or 0), will use one based on speed");
 	else
-		dolog(10, "Serial port configuration, read timeout set to %d miliseconds", read_timeout);
+		dolog(10, "Serial port configuration, read timeout set to %d miliseconds", m_timeout);
 	/*according to protocol specification, intra-character
 	 * delay cannot exceed 1.5 * (time of transmittion of one character),
 	 * we will make it double to be on safe side */
@@ -1573,6 +1603,7 @@ int serial_parser::configure(xmlNodePtr node, serial_port_configuration &spc) {
 }
 
 serial_rtu_parser::serial_rtu_parser(serial_connection_handler *serial_handler) : serial_parser(serial_handler), m_state(FUNC_CODE) {
+	reset();
 }
 
 void serial_rtu_parser::reset() {
