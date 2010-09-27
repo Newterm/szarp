@@ -1,4 +1,9 @@
 
+2010-09-27	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/boruta*: bunch of fixes for boruta, modbus
+	rtu in client mode seems to be running
+	* parccok/sbusdmn.cc: fixes for PCD mode, driver now 
+	correctly gathers data in Legionowo
 2010-09-24	Pawel Palucha <pawel@newterm.pl>
 	* script/{csv2p,p2csv}.py: scripts for importing/exporting IPK
 	configuration to/from CSV format - sometimes it's easier to edit

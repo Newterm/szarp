@@ -155,10 +155,8 @@ void zet_proto_impl::data_ready(struct bufferevent* bufev, int fd) {
 	} catch (std::out_of_range) {
 		return;
 	}
-	if (m_plc_type == SK)
-		m_buffer.at(m_data_in_buffer - 1) = '\0';
-	else
-		m_buffer.at(m_data_in_buffer) = '\0';
+
+	m_buffer.at(m_data_in_buffer) = '\0';
 	char **toks;
 	int tokc = 0;
 	tokenize_d(&m_buffer[0], &toks, &tokc, "\r");

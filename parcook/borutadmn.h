@@ -185,7 +185,7 @@ enum CONNECTION_STATE { CONNECTED, NOT_CONNECTED, CONNECTING };
 
 class client_manager { 
 protected:
-	std::vector<std::vector<client_driver*> > m_clients;
+	std::vector<std::vector<client_driver*> > m_connection_client_map;
 	std::vector<size_t> m_current_client;
 	std::vector<struct bufferevent*> m_connection_buffers;
 	virtual CONNECTION_STATE do_get_connection_state(size_t conn_no) = 0;
@@ -215,7 +215,7 @@ class tcp_client_manager : public client_manager {
 		size_t conn_no;
 		tcp_client_manager *manager;
 	};
-	std::vector<tcp_connection> m_connections;
+	std::vector<tcp_connection> m_tcp_connections;
 	int configure_tcp_address(xmlNodePtr node, struct sockaddr_in &addr);
 	void close_connection(tcp_connection &c);
 	int open_connection(tcp_connection &c, struct sockaddr_in& addr);
@@ -238,7 +238,7 @@ class serial_client_manager : public serial_connection_manager, public client_ma
 	boruta_daemon *m_boruta;
 	std::vector<std::vector<serial_port_configuration> > m_configurations;
 	std::map<std::string, size_t> m_ports_client_no_map;
-	std::vector<serial_connection> m_connections;
+	std::vector<serial_connection> m_serial_connections;
 protected:
 	virtual CONNECTION_STATE do_get_connection_state(size_t conn_no);
 	virtual struct bufferevent* do_get_connection_buf(size_t conn_no);
