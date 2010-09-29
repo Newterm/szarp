@@ -56,7 +56,7 @@ class SCCMenu;
 WX_DEFINE_ARRAY(SCCMenu*, ArrayOfMenu);
 
 #define SCC_MENU_FIRST_ID	(wxID_HIGHEST + 100)
-#define SCC_MENU_MAX_ID		(SCC_MENU_FIRST_ID + 200)
+#define SCC_MENU_MAX_ID		(SCC_MENU_FIRST_ID + 500)
 
 /**
  * Class is an internal representation of SZARP menu. It holds information
