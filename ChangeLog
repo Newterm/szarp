@@ -1,4 +1,7 @@
 
+2010-10-01	Darek Marcinkiewicz <reksio@newterm.pl>
+	* resources/documentation/new/ipk/ipk.sgml: ipk documentation
+	updated with description of treenode elements
 2010-09-29	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/scc/sccmenu.h: increased number of maximum
 	items in scc menu

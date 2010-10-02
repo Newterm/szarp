@@ -3393,8 +3393,92 @@ max="150" order="2"/>
 ]]>
 </programlisting>
 </para>
-
 </section> <!-- form-el-draw -->
+
+<section id="form-el-treenode">
+<title>Element treenode</title>
+<para>
+Element <emphasis>draw</emphasis> mo¿e zawieraæ jeden lub wiêcej elementów <emphasis>treenode</emphasis>.
+Elementy <emphasis>treenode</emphasis> s³u¿± do ustawiania zestawów wykresów w drzewko, którego li¶cmi s± zestawy wykresów,
+a wêz³ami elementy <emphasis>treenode</emphasis>. Ka¿dy z elementów <emphasis>treenode</emphasis>
+mo¿e zawieraæ opcjonalnie jeden element <emphasis>treenode</emphasis> który okre¶la ojca elementu.
+<para>
+Przyk³ad:
+<programlisting>
+<![CDATA[
+        <draw title="Kocio³ WR 5 - temperatury" prior="81" color="cyan" min="0"
+max="150" order="2">
+		<treenode name="Kocio³ WR 5"/>
+	</draw>
+]]>
+</programlisting>
+W tym wypadku w programie przegl±daj±cym jako dziecko korzenia drzewa zostanie dodany element
+"Kocio³ WR 5", którego potomkiem bêdzie wêze³ "Kocio³ WR 5 - temperatory".
+</para>
+<para>
+Przyk³ad kolejny:
+<programlisting>
+<![CDATA[
+        <draw title="Kocio³ WR 5 - temperatury" prior="81" color="cyan" min="0"
+max="150" order="2">
+		<treenode name="Kocio³ WR 5">
+			<treenode name="Kot³y"/>
+		</treenode>
+	</draw>
+]]>
+</programlisting>
+W tym wypadku w programie przegl±daj±cym jako dziecko korzenia zostanie utworzony element
+"Kot³y", którego potomkiem bêdzie wêze³ "Kocio³ WR 5", a ten wêze³ bêdzie zawiera³ li¶æ
+"Kocio³ WR 5 - temperatury".
+</para>
+<para>
+Element <emphasis>treenode</emphasis> mo¿e zawieraæ nastêpuj±ce atrybuty:
+<itemizedlist>
+<listitem><para>
+<emphasis>order</emphasis> - okre¶la on po³o¿enie elementu <emphasis>treenode</emphasis>  wobec jako braci (elementów
+maj±cych tego samego ojca)
+Przyk³ad:
+<programlisting>
+<![CDATA[
+        <draw title="Kocio³ WR 5 - temperatury" ...>
+		<treenode order="1" name="Kocio³ WR 5">
+			<treenode name="Kot³y"/>
+		</treenode>
+	</draw>
+...
+        <draw title="Kocio³ WR 4 - temperatury" .. >
+		<treenode order="0" name="Kocio³ WR 4">
+			<treenode name="Kot³y"/>
+		</treenode>
+	</draw>
+]]>
+</programlisting>
+Taka konfiguracja oznacze ¿e w wêze³ "Kocio³ WR 4" bêdzie znajdowa³ siê przed wêz³em "Kocio³ WR 5".
+</para></listitem>
+<listitem><para>
+<emphasis>draw_order</emphasis> - okre¶la on po³o¿enie li¶cia <emphasis>draw</emphasis> w danym elemencie <emphasis>treenode</emphasis>.
+Dzia³a on analogicznie do elementu <emphasis>order</emphasis>.
+Przyk³ad:
+<programlisting>
+<![CDATA[
+        <draw title="Kocio³ WR 5 - temperatury" ...>
+		<treenode draw_order="1" order="1" name="Kocio³ WR 5"/>
+	</draw>
+...
+        <draw title="Kocio³ WR 5 - ci¶nienia" .. >
+		<treenode draw_order="0" order="0" name="Kocio³ WR 5"/>
+	</draw>
+]]>
+</programlisting>
+W tym wypadku li¶æ "Kocio³ WR 5 - temperatury" bêdzie umiejscowiony przed li¶ciem "Kocio³ WR 5 - ci¶nienia".
+</para>
+</listitem>
+</itemizedlist>
+
+</para>
+</section> <!-- form-el-treenode -->
+
+
 
 <section id="form-el-analysis">
 <title>Element analysis</title>
