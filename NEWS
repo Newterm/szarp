@@ -6,6 +6,20 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.442
+# 01.10.2010
+* A support from "PCD" variant of SBUS protcol was added to sbusdmn.
+* A lot of fixes and improvemnts was introduced to meta-daemon boruta,
+daemon support for zet and modbus rtu protcols were tested and deployed.
+* Draw3 can now be configured to display draw sets arranged in hierarchical
+tree-like structure. This feature will be especially useful for users
+that prefer to navigate trough draw sets using mouse than seraching
+with keyboard. It also allows to categorize sets in more explicit way.
+* A pair of tools was added that convert ipk configuration from/to 
+cvs format. It is sometimes more convenient to edit configuration
+in tabluar form.
+* And usual assortment of small fixes and improvements.
+
 ** 3.1.439
 # 01.09.2010
 * Fixes in generating XML config for LUA formulas using IPK library.

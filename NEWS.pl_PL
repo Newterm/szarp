@@ -7,6 +7,25 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.442
+# 01.10.2010
+* Demon sbusdmn zosta³ rozszerony o obs³ugê wariantu "PCD" protoko³u 
+SBUS.
+* Du¿o zmian i poprawek zosta³ wprowadzonych do meta-demona boruta, 
+demon dzia³a ju¿ stablinie jako klient komunikuj±cy siê ze sterownikami
+ZET oraz tych u¿ywaj±cych protoko³u modbus rtu.
+* Dodano now± funkcjê do draw3  - 'drzewko'. Zestawy wykresów (okna) 
+mog± zostaæ pokategoryzowany w grupy, a te grupy w kolejne grupy
+(z dowolnym poziomem zagnie¿dzenia), ta funkcja powinna u¿ytkownikom,
+którzy do ogl±dania danych u¿ywaj± tylko myszy, znakomicie 
+u³atwiæ przegl±danie zestawów wykresów, szczególnie w przypadku
+du¿ych instalacji.
+* Dodano zestaw skyrptów pozwalaj±cych na konwertowanie konfiguracji
+systemu SZARP z/do plików csv. Czasami edytowanie konfiguracji
+w formie tabelarzynej bywa wygodniejsze.
+* Comiesiêczny zestaw drobnych poprawek i usprawnieñ.
+
+
 ** 3.1.439
 # 01.09.2010
 * Poprawione tworzenie za pomoc± biblioteki IPK konfiguracji XML zawieraj±cej
