@@ -188,7 +188,6 @@ class client_manager {
 protected:
 	std::vector<std::vector<client_driver*> > m_connection_client_map;
 	std::vector<size_t> m_current_client;
-	std::vector<struct bufferevent*> m_connection_buffers;
 	virtual CONNECTION_STATE do_get_connection_state(size_t conn_no) = 0;
 	virtual struct bufferevent* do_get_connection_buf(size_t conn_no) = 0;
 	virtual void do_terminate_connection(size_t conn_no) = 0;
@@ -331,5 +330,7 @@ tcp_client_driver* create_modbus_tcp_client();
 
 serial_server_driver* create_modbus_serial_server();
 tcp_server_driver* create_modbus_tcp_server();
+
+serial_client_driver* create_fp210_serial_client();
 
 #endif

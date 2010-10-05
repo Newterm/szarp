@@ -179,7 +179,7 @@ unitedmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_
 mbdmn_SOURCES = mbdmn.cc
 mbdmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
 
-borutadmn_SOURCES = borutadmn.cc borutadmn.h boruta_zet.cc boruta_modbus.cc
+borutadmn_SOURCES = borutadmn.cc borutadmn.h boruta_zet.cc boruta_modbus.cc boruta_fp210.cc
 borutadmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
 
 sbusdmn_SOURCES = sbusdmn.cc

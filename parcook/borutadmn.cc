@@ -344,6 +344,7 @@ protocols::protocols() {
 	m_serial_client_factories["modbus"] = create_modbus_serial_client;
 	m_tcp_server_factories["modbus"] = create_modbus_tcp_server;
 	m_serial_server_factories["modbus"] = create_modbus_serial_server;
+	m_serial_client_factories["fp210"] = create_fp210_serial_client;
 }
 
 std::string protocols::get_proto_name(xmlNodePtr node) {
@@ -460,9 +461,8 @@ void client_manager::starting_new_cycle() {
 		size_t& client = m_current_client.at(connection);
 		if (do_get_connection_state(connection) == NOT_CONNECTED) {
 			if (do_establish_connection(connection)) {
-				struct bufferevent* bufev = m_connection_buffers.at(connection);
 				for (size_t c = 0; c < m_connection_client_map.at(c).size(); c++)
-					m_connection_client_map.at(connection).at(c)->connection_error(bufev);
+					m_connection_client_map.at(connection).at(c)->connection_error(NULL);
 				continue;
 			}
 		}

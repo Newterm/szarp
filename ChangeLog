@@ -1,4 +1,6 @@
 
+2010-10-05	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/boruta_fp210.cc: boruta driver for metronic fp210 device
 2010-10-01	Darek Marcinkiewicz <reksio@newterm.pl>
 	* resources/documentation/new/ipk/ipk.sgml: ipk documentation
 	updated with description of treenode elements
