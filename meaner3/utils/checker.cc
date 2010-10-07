@@ -915,6 +915,46 @@ int Cfunction::CheckParamsNO_DATA (){
 	return S_FAIL;
 }
 
+/** Class keeps ipk configuration */
+class CipkConf{
+	public:
+		TSzarpConfig *ipk;
+		unsigned char m_ipk_initialised ;
+		unsigned char m_path_initialised;
+		unsigned char m_dir_initialised;
+		char *path;	
+		char * dir;
+		CipkConf() {m_ipk_initialised = m_path_initialised = m_dir_initialised =  0;};
+		int IpkInit() ;		
+		~CipkConf(){if (m_dir_initialised) free(dir); if (m_path_initialised) free(path); if (m_ipk_initialised) delete(ipk);};
+};
+
+int CipkConf::IpkInit(){
+	if (m_ipk_initialised>0)
+		return S_FAIL;
+	ipk = new TSzarpConfig();
+	m_ipk_initialised = 1;
+	path = libpar_getpar("", "IPK", 0);
+
+	if (path == NULL) {
+		sz_log(0, "'IPK' not found in szarp.cfg");
+		return S_NO_DATA;
+	}else{
+		m_path_initialised = 1;
+	}
+	
+	dir = libpar_getpar("", "datadir", 0);
+	if (dir == NULL) {
+		sz_log(0, "'datadir' not found in szarp.cfg");
+		return S_NO_DATA;
+	}else{
+		m_dir_initialised = 1;
+	}
+	ipk->loadXML(SC::A2S(path));
+	return S_OK;
+};		
+CipkConf IpkConf;
+
 /**Class deriver from Clua it defines additional functions in LUA and return status from LUA main() function*/
 class CluaRegister : public Clua {
 	public:
@@ -1018,7 +1058,7 @@ class CluaRegister : public Clua {
 	   * @return status -1/0/1
 	  */
 	static int GetDataFromParams(time_t StartDate, time_t StopDate, char *PWildCard, int *PData, int *PSize);
-	 /**
+	/**
 	   * Wildcard support
 	   * @param str - string 
 	   * @param wcard - string with wildcard
@@ -1028,28 +1068,16 @@ class CluaRegister : public Clua {
 	~CluaRegister(){};
 	
 };
-
-int CluaRegister::GetDataFromParam(time_t StartDate, time_t StopDate, char *PName, int *PData, int *PSize){
-	TSzarpConfig *ipk = new TSzarpConfig();
+int CluaRegister::GetDataFromParam(time_t StartDate, time_t StopDate, char *PName, int *PData, int *PSize){	
 	time_t ActualDate=0;
-	char *path = libpar_getpar("", "IPK", 0);
-	if (path == NULL) {
-		sz_log(0, "'IPK' not found in szarp.cfg");
-		return S_NO_DATA;
-	}
-	char *dir = libpar_getpar("", "datadir", 0);
-	if (dir == NULL) {
-		sz_log(0, "'datadir' not found in szarp.cfg");
-		return S_NO_DATA;
-	}
-	ipk->loadXML(SC::A2S(path));
+	
 	TParam *p=NULL;
-	p = ipk->getParamByName(SC::A2S(PName));
+	p = IpkConf.ipk->getParamByName(SC::A2S(PName));
 
 
 	if (p==NULL){
 		sz_log(0,"ERROR: Parametr '%s' is not at all", PName);	
-		delete ipk;
+	//	delete ipk;
 		return S_NO_DATA;
 	}
 
@@ -1063,7 +1091,7 @@ int CluaRegister::GetDataFromParam(time_t StartDate, time_t StopDate, char *PNam
 	
 	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"", new NullMutex());
 	Szbase::Init(SC::A2S(PREFIX), NULL);
-	buf = szb_create_buffer(Szbase::GetObject(), SC::A2S(dir), 1, ipk);
+	buf = szb_create_buffer(Szbase::GetObject(), SC::A2S(IpkConf.dir), 1, IpkConf.ipk);
 	while(ActualDate < StopDate){
 		data = szb_get_data(buf, p, ActualDate);
 		PData[i] = (int)p->ToIPCValue(data); 
@@ -1076,9 +1104,9 @@ int CluaRegister::GetDataFromParam(time_t StartDate, time_t StopDate, char *PNam
 	Szbase::Destroy();
 	IPKContainer::Destroy();
 	*PSize = i;	
-	free (dir);
-	free (path);
-	delete ipk;
+//	free (dir);
+//	free (path);
+//	delete ipk;
 	return S_OK;
 }
 
@@ -1611,7 +1639,7 @@ free (dir);
 free (path);
 
 
-
+IpkConf.IpkInit();
 if (!pConfig.loadXML()){
 	sz_log(1, "ERROR: Parse XML failed\n");
 	return 1;
@@ -1672,7 +1700,6 @@ if (pConfig.IsParam() && !lth)
 	sz_log(1, "ERROR: Given parametr %s not found\n",prm);
 
 }
-
 
 #endif
 
