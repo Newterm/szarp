@@ -108,7 +108,6 @@ void fp210_driver::send_sum_query(struct bufferevent* bufev) {
 }
 
 void fp210_driver::starting_new_cycle() {
-	set_no_data();
 }
 
 void fp210_driver::connection_error(struct bufferevent *bufev) {
@@ -122,8 +121,10 @@ void fp210_driver::set_flow_value(char *val) {
 
 void fp210_driver::set_sum_value(char *val) {
 	std::string vs(val);
-	std::string vs1 = vs.substr(8, 9);
-	std::string vs2 = vs.substr(18, 9);
+	std::string vs1 = vs.substr(8, 11);
+	std::string vs2 = vs.substr(19, 11);
+	dolog(4, "Sumator 1: %s", vs1.c_str());
+	dolog(4, "Sumator 2: %s", vs2.c_str());
 	int v1 = atof(vs1.c_str()) * m_sum_prec;
 	int v2 = atof(vs2.c_str()) * m_sum_prec;
 	unsigned* pv1 = (unsigned*)&v1;
@@ -137,8 +138,9 @@ void fp210_driver::set_sum_value(char *val) {
 bool fp210_driver::readline(struct bufferevent* bufev) {
 	char c;
 	while (bufferevent_read(bufev, &c, 1)) {
-		if (c == '\r') {
-			m_input_buffer.push_back('\0');
+		size_t bs = m_input_buffer.size();
+		if (c == '\r' && bs && m_input_buffer.at(bs - 1)) {
+			m_input_buffer.at(bs - 1) = '\0';
 			return true;
 		}
 		m_input_buffer.push_back(c);
@@ -147,12 +149,12 @@ bool fp210_driver::readline(struct bufferevent* bufev) {
 }
 
 void fp210_driver::data_ready(struct bufferevent* bufev, int fd) {
-	int tokc;
+	int tokc = 0;
 	char **toks;
 	if (!readline(bufev))
 		return;
 	dolog(4, "fp210, got response: %s", &m_input_buffer[0]);
-	tokenize_d(&m_input_buffer.at(0), &toks, &tokc, " ");
+	tokenize_d(&m_input_buffer[0], &toks, &tokc, " ");
 	switch (m_state) {
 		case READING_FLOW:
 			if (tokc != 4) {
@@ -173,6 +175,7 @@ void fp210_driver::data_ready(struct bufferevent* bufev, int fd) {
 			set_sum_value(toks[2]);
 			stop_timer();
 			m_manager->driver_finished_job(this);
+			m_state = IDLE;
 			break;
 		case IDLE:
 			break;
@@ -186,7 +189,7 @@ void fp210_driver::scheduled(struct bufferevent* bufev, int fd) {
 }
 
 int fp210_driver::configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration &spc) {
-	if (!get_xml_extra_prop(node, "id", m_id))
+	if (get_xml_extra_prop(node, "id", m_id))
 		return 1;
 	m_read_count = unit->GetParamsCount();
 	if (m_read_count != 5) {
@@ -206,8 +209,8 @@ int fp210_driver::configure(TUnit* unit, xmlNodePtr node, short* read, short *se
 void fp210_driver::timeout_cb(int fd, short event, void *_fp210_driver) {
 	fp210_driver* z = (fp210_driver*) _fp210_driver;
 	z->set_no_data();
-	z->stop_timer();
-	z->m_manager->driver_finished_job(z);
+	if (z->m_state != IDLE)
+		z->m_manager->driver_finished_job(z);
 }
 
 serial_client_driver* create_fp210_serial_client() {

@@ -28,91 +28,43 @@
 
  @class 4
 
- @devices All devices or SCADA systems (or other software) using Modbus protocol.
- @devices.pl Wszystkie urz±dzenia i systemy SCADA (lub inne oprogramowanie) wykorzystuj±ce protokó³ Modbus.
+ @devices This is a generic daemon that does not implement any particular protocol. Instead it relies on its
+  components - drivers to provide a support for particular protocols. Currently drivers for modbus, zet
+  and fp2100 protocols are written.
+ @devices.pl Boruta jest uniwersalnym demonem, który sam w sobie nie implementuje ¿adnego z protoko³ów.
+  Obs³ug± w³±¶ciwych protoko³ow zajuj± siê sterowniki bêd±ce modu³ami boruty.
 
- @protocol Modbus RTU using serial line or Modbus TCP/IP.
- @protocol.pl Modbus RTU (po³±czenie szeregowe RS232/RS485) lub Modbus TCP/IP.
+ @protocol Modbus RTU, Modbus TCP, ZET and FP210
+ @protocol.pl Modbus RTU, Modbus TCP, ZET i FP210
 
- @config Daemon is configured in params.xml, all attributes from 'modbus' namespace not explicity
- described as optional are required.
- @config.pl Sterownik jest konfigurowany w pliku params.xml, wszystkie atrybuty z przestrzeni nazw
- 'modbus', nie opisane jako opcjonalne, s± wymagane.
+ @config Daemon is configured in params.xml
+ @config.pl Sterownik jest konfigurowany w pliku params.xml
 
- @comment This daemon is to replace older mbrtudmn and mbtcpdmn daemons.
- @comment.pl Ten sterownik zastêpuje starsze sterowniki mbrtudmn i mbtcpdmn.
+ @comment 
+ @comment.pl 
 
  @config_example
 <device 
-     xmlns:modbus="http://www.praterm.com.pl/SZARP/ipk-extra"
-     daemon="/opt/szarp/bin/mbdmn" 
-     path="/dev/null"
-     modbus:daemon-mode=
- 		allowed modes are 'tcp-server' and 'tcp-client' and 'serial-client' and 'serial-server'
-     modbud:tcp-port="502"
-		TCP port we are listenning on/connecting to (server/client)
-     modbus:tcp-allowed="192.9.200.201 192.9.200.202"
-		(optional) list of allowed clients IP addresses for server mode, if empty all
-		addresses are allowed
-     modbus:tcp-address="192.9.200.201"
- 		server IP address (required in client mode)
-     modbus:tcp-keepalive="yes"
- 		should we set TCP Keep-Alive options? "yes" or "no"
-     modbus:tcp-timeout="32"
-		(optional) connection timeout in seconds, after timeout expires, connection
-		is closed; default empty value means no timeout
-     modbus:nodata-timeout="15"
-		(optional) timeout (in seconds) to set data to 'NO_DATA' if data is not available,
-		default is 20 seconds
-     modbus:nodata-value="-1"
- 		(optional) value to send instead of 'NO_DATA', default is 0
-     modbus:FloatOrder="msblsb"
- 		(optional) registers order for 4 bytes (2 registers) float order - "msblsb"
-		(default) or "lsbmsb"; values names are a little misleading, it shoud be 
-		msw/lsw (most/less significant word) not msb/lsb (most/less significant byte),
-		but it's left like this for compatibility with Modbus RTU driver configuration
-      >
-      <unit id="1" modbus:id="49">
-		modbus:id is optional Modbus unit identifier - number from 0 to 255; default is to
-		use IPK id attribute, but parsed as a character value and not a number; in this 
-		example both definitions id="1" and modbud:id="49" give tha same value, because ASCII
-		code of "1" is 49
-              <param
-			Read value using ReadHoldingRegisters (0x03) Modbus function              
-                      name="..."
-                      ...
-                      modbus:address="0x03"
- 	                      	modbus register number, starting from 0
-                      modbus:val_type="integer">
- 	                      	register value type, 'integer' (2 bytes, 1 register) or float (4 bytes,
-	                       	2 registers)
-                      ...
-              </param>
-              <param
-                      name="..."
-                      ...
-                      modbus:address="0x04"
-                      modbus:val_type="float"
-			modbus:val_op="msblsb"
-			modbus:val_op="LSW">
-				(optional) operator for converting data from float to 2 bytes integer;
-				default is 'NONE' (simple conversion to short int), other values
-				are 'LSW' and 'MSW' - converting to 4 bytes long and getting less/more
-				significant word; in this case there should be 2 parameters with the
-				same register address and different val_op attributes - LSW and MSW.
-				s³owa
-                      ...
-              </param>
-              ...
-              <send 
-              		Sending value using WriteMultipleRegisters (0x10) Modbus function
-                      param="..." 
-                      type="min"
-                      modbus:address="0x1f"
-                      modbus:val_type="float">
-                      ...
-              </send>
-              ...
+	xmlns:extra="http://www.praterm.com.pl/SZARP/ipk-extra"
+	daemon="/opt/szarp/bin/borutadmn" 
+	path="/dev/null"
+	>
+
+	<unit id="1"
+		extra:mode="client"
+			this unit working mode possible values are 'client' and 'server'
+		extra:medium="serial"
+			data transmittion medium, may be either serial (line) or tcp
+		extra:proto="modbus"
+			protocol to use for this unit
+		in case of serial line, following self-explanatory attributes are also supported:
+		extra:path, extra:speed, extra:parity, extra:stopbits (all but path are not required, 
+			they have defaults which are 9600, N, 1)
+		in case of tcp client mode following attributes are required
+		extra:tcp-address, extra:tcp-port
+		in case of tcp server mode one need to specify extra:tcp-port attribute
+	>
+	...
       </unit>
  </device>
 
@@ -467,9 +419,10 @@ void client_manager::starting_new_cycle() {
 			}
 		}
 		if (do_get_connection_state(connection) == CONNECTED) {
-			if (client == m_connection_client_map.at(connection).size())
+			if (client == m_connection_client_map.at(connection).size()) {
 				client = 0;
-			do_schedule(connection, client);
+				do_schedule(connection, client);
+			}
 		}
 	}
 }

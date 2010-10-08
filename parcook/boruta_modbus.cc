@@ -215,6 +215,7 @@ protected:
 
 	time_t m_last_activity;
 
+	void starting_new_cycle();
 protected:
 	modbus_client();
 	void reset_cycle();
@@ -747,10 +748,11 @@ int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
 	TParam *p;
 	TSendParam *sp;
 	char *c;
+	unsigned char id;
 
-	unsigned char id = 0;
-	get_xml_extra_prop(node, "id", id, true);
-	if (!id)
+	std::string _id;
+	get_xml_extra_prop(node, "id", _id, true);
+	if (_id.empty()) {
 		switch (u->GetId()) {
 			case L'0'...L'9':
 				id = u->GetId() - L'0';
@@ -765,6 +767,9 @@ int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
 				id = u->GetId();
 				break;
 		}
+	} else {
+		id = strtol(_id.c_str(), NULL, 0);
+	}
 
 	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(node->doc);
 	xp_ctx->node = node;
@@ -1154,6 +1159,26 @@ void tcp_server::connection_error(struct bufferevent *bufev) {
 	delete parser;
 }
 
+void modbus_client::starting_new_cycle() {
+	modbus_unit::starting_new_cycle();
+	switch (m_state)  {
+		case IDLE:
+			return;
+		case READ_QUERY_SENT:
+			dolog(2, "New cycle started, we are in read cycle");
+			break;
+		case WRITE_QUERY_SENT:
+			dolog(2, "New cycle started, we are in write cycle");
+			break;
+	}
+
+	if (m_last_activity + 10 < m_current_time) {
+		dolog(1, "Answer did not arrive, sending next query");
+		send_next_query();
+	}
+}
+
+
 modbus_client::modbus_client() : m_state(IDLE) {}
 
 void modbus_client::reset_cycle() {
@@ -1253,6 +1278,7 @@ void modbus_client::send_query() {
 			send_write_query();
 			break;
 	}
+	m_last_activity = m_current_time;
 }
 
 void modbus_client::timeout() {
@@ -1322,31 +1348,6 @@ void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 	m_last_activity = m_current_time;
 }
 
-#if 0
-void modbus_client::starting_new_cycle() {
-	modbus_unit::startig_new_cycle();
-	switch (m_state)  {
-		case IDLE:
-			return;
-		case READ_QUERY_SENT:
-			dolog(2, "New cycle started but we are in read cycle");
-			break;
-		case WRITE_QUERY_SENT:
-			dolog(2, "New cycle started but we are in read cycle");
-			break;
-	}
-
-	if (m_last_activity + 30 < m_current_time) {
-		dolog(1, "Connection idle for too long, terminating");
-		m_last_activity = m_current_time;
-		terminate_connection();
-	} else if (m_last_activity + 10 < m_current_time) {
-		dolog(1, "Answer did not arrive, sending next query");
-		send_next_query();
-	}
-}
-#endif
-
 int modbus_client::initialize() {
 	return 0;
 }
@@ -1373,7 +1374,7 @@ void modbus_tcp_client::finished_cycle() {
 }
 
 void modbus_tcp_client::starting_new_cycle() {
-	modbus_unit::starting_new_cycle();
+	modbus_client::starting_new_cycle();
 }
 
 void modbus_tcp_client::connection_error(struct bufferevent *bufev) {
@@ -1419,7 +1420,7 @@ void modbus_serial_client::finished_cycle() {
 }
 
 void modbus_serial_client::starting_new_cycle() {
-	modbus_unit::starting_new_cycle();
+	modbus_client::starting_new_cycle();
 }
 
 void modbus_serial_client::connection_error(struct bufferevent *bufev) {
@@ -1583,10 +1584,12 @@ int serial_parser::configure(xmlNodePtr node, serial_port_configuration &spc) {
 
 	m_timeout = 0;
 	get_xml_extra_prop(node, "read-timeout", m_timeout, true);
-	if (m_timeout == 0)
+	if (m_timeout == 0) {
 		dolog(10, "Serial port configuration, read timeout not given (or 0), will use one based on speed");
-	else
+	} else {
+		m_timeout *= 1000;
 		dolog(10, "Serial port configuration, read timeout set to %d miliseconds", m_timeout);
+	}
 	/*according to protocol specification, intra-character
 	 * delay cannot exceed 1.5 * (time of transmittion of one character),
 	 * we will make it double to be on safe side */
@@ -1594,7 +1597,7 @@ int serial_parser::configure(xmlNodePtr node, serial_port_configuration &spc) {
 		if (spc.speed)
 			m_timeout = 5 * 1000000 / (spc.speed / 10);
 		else
-			m_timeout = 10000;
+			m_timeout = 100000;
 	}
 	dolog(9, "serial_parser m_timeout: %d", m_timeout);
 	if (m_delay_between_chars)

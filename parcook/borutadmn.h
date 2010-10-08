@@ -24,31 +24,6 @@
 #ifndef __BORUTADMN_H_
 #define __BORUTADMN_H_
 
-void dolog(int level, const char * fmt, ...)
-  __attribute__ ((format (printf, 2, 3)));
-
-template<class T> int get_xml_extra_prop(xmlNodePtr node, const char* pname, T& value, bool optional = false) {
-	xmlChar* prop = xmlGetNsProp(node, BAD_CAST pname, BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	if (prop == NULL) {
-		if (!optional) {
-			dolog(0, "No attribute %s given in line %ld", pname, xmlGetLineNo(node));
-			return 1;
-		} else {
-			return 0;
-		}
-	}
-	std::stringstream ss((char*)prop);
-	bool ok = ss >> value;
-	if (!ok) {
-		if (ss.eof())
-			ok = true;
-		else
-			dolog(0, "Invalid value %s for attribute %s in line, %ld", (char*)prop, pname, xmlGetLineNo(node));
-	}
-	xmlFree(prop);	
-	return ok ? 0 : 1;
-}
-
 struct serial_port_configuration {
 	std::string path;
 	enum PARITY {
@@ -60,10 +35,8 @@ struct serial_port_configuration {
 	int speed;
 };
 
-int get_serial_port_config(xmlNodePtr node, serial_port_configuration &spc);
-
-int set_serial_port_settings(int fd, serial_port_configuration &sc);
-
+/**common class for types of drivers, actually the only thing they share is a fact
+that they hold a pointer to event_base*/
 class boruta_driver {
 protected:
 	struct event_base* m_event_base;
@@ -71,6 +44,8 @@ public:
 	void set_event_base(struct event_base* ev_base);
 };
 
+/**base class for server drivers, server drivers have a single numeric identifier,
+and respond to connection_error 'event'*/
 class server_driver : public boruta_driver {
 	size_t m_id;
 public:
@@ -332,5 +307,36 @@ serial_server_driver* create_modbus_serial_server();
 tcp_server_driver* create_modbus_tcp_server();
 
 serial_client_driver* create_fp210_serial_client();
+
+void dolog(int level, const char * fmt, ...)
+  __attribute__ ((format (printf, 2, 3)));
+
+int get_serial_port_config(xmlNodePtr node, serial_port_configuration &spc);
+
+int set_serial_port_settings(int fd, serial_port_configuration &sc);
+
+
+template<class T> int get_xml_extra_prop(xmlNodePtr node, const char* pname, T& value, bool optional = false) {
+	xmlChar* prop = xmlGetNsProp(node, BAD_CAST pname, BAD_CAST IPKEXTRA_NAMESPACE_STRING);
+	if (prop == NULL) {
+		if (!optional) {
+			dolog(0, "No attribute %s given in line %ld", pname, xmlGetLineNo(node));
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+	std::stringstream ss((char*)prop);
+	bool ok = ss >> value;
+	if (!ok) {
+		if (ss.eof())
+			ok = true;
+		else
+			dolog(0, "Invalid value %s for attribute %s in line, %ld", (char*)prop, pname, xmlGetLineNo(node));
+	}
+	xmlFree(prop);	
+	return ok ? 0 : 1;
+}
+
 
 #endif

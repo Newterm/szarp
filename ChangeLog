@@ -1,4 +1,8 @@
 
+2010-10-08	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/boruta: proper daemon description, modbus driver:
+	reintroduced proper timeout support after code 
+	conversion from mbdmn, fp210 driver - fixes	
 2010-10-05	Darek Marcinkiewicz <reksio@newterm.pl>
 	* parcook/boruta_fp210.cc: boruta driver for metronic fp210 device
 2010-10-01	Darek Marcinkiewicz <reksio@newterm.pl>
