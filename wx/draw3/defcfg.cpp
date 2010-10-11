@@ -269,6 +269,7 @@ void DefinedDrawInfo::SetDraw(TDraw *_d) {
 
 void DefinedDrawInfo::SetParam(DrawParam *_p) {
 	p = _p;
+	SetParamName(_p->GetParamName());
 }
 
 void DefinedDrawInfo::SetDrawName(wxString name) {

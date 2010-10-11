@@ -1,4 +1,8 @@
 
+2010-10-11	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: changing name of user defined param
+	properly propagates this change to parent 
+	draw sets
 2010-10-08	Darek Marcinkiewicz <reksio@newterm.pl>
 	* parcook/boruta: proper daemon description, modbus driver:
 	reintroduced proper timeout support after code 
