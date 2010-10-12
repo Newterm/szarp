@@ -146,8 +146,6 @@ public:
 
 	void RemoveAllRelatedToPrefix(wxString prefix);
 
-	std::set<wxString> GetUnresolvedPrefixes();
-
 	virtual void AttachDefined();
 
 	wxString GetNameForParam(const wxString& prefix, const wxString& proposed_name);

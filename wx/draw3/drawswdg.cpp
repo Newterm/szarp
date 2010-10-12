@@ -469,9 +469,8 @@ bool DrawsWidget::SetSet(wxString sset,
 	}
 	if (set == NULL)
 		if ((set = m_draws_controller->GetSet()) == NULL) {
-			SortedSetsArray* ssa = ds->GetSortedDrawSetsNames();
-			set = (*ssa)[0];
-			delete ssa;
+			SortedSetsArray ssa = ds->GetSortedDrawSetsNames();
+			set = ssa[0];
 		}
 
 	if (set == NULL)

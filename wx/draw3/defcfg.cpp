@@ -1019,7 +1019,6 @@ DefinedDrawsSets::DefinedDrawsSets(ConfigManager *cfg) : DrawsSets(cfg), m_prior
 }
 
 DrawSetsHash& DefinedDrawsSets::GetDrawsSets(bool all) {
-	AttachDefined();
 	return drawsSets;
 }
 
@@ -1117,13 +1116,12 @@ void DefinedDrawsSets::SaveSets(wxString path) {
 
 	std::vector<DefinedDrawSet*> dsv;
 
-	SortedSetsArray* ssa = GetSortedDrawSetsNames();
-	for (size_t i = 0; i < ssa->GetCount(); i++) {
-		DefinedDrawSet *ds = dynamic_cast<DefinedDrawSet*>(ssa->Item(i));
+	SortedSetsArray ssa = GetSortedDrawSetsNames();
+	for (size_t i = 0; i < ssa.GetCount(); i++) {
+		DefinedDrawSet *ds = dynamic_cast<DefinedDrawSet*>(ssa.Item(i));
 		assert(ds);
 		dsv.push_back(ds);
 	}
-	delete ssa;
 
 	if (SaveSets(path, dsv, definedParams) == false)
 		wxMessageBox(_("Failed to save file with users sets."),
@@ -1272,25 +1270,6 @@ void DefinedDrawsSets::RemoveAllRelatedToPrefix(wxString prefix) {
 
 }
 
-std::set<wxString> DefinedDrawsSets::GetUnresolvedPrefixes() {
-	std::set<wxString> ret;
-
-	for (DrawSetsHash::iterator i = drawsSets.begin();
-			i != drawsSets.end();
-			i++) {
-		assert(i->second);
-
-		DrawInfoArray *dia = i->second->GetDraws();
-		for (size_t j = 0; j < dia->size(); ++j) {
-			DefinedDrawInfo* dw = dynamic_cast<DefinedDrawInfo*>(dia->at(j));
-			if (dw->GetParam() == NULL)
-				ret.insert(dw->GetBasePrefix());
-		}
-	}
-
-	return ret;
-}
-
 void DefinedDrawsSets::AddSet(DefinedDrawSet *s) {
 	drawsSets[s->GetName()] = s;
 	s->SetPrior(m_prior--);
@@ -1347,22 +1326,6 @@ void DefinedDrawsSets::RemoveSet(wxString name) {
 }
 
 void DefinedDrawsSets::AttachDefined() {
-	if (m_params_attached)
-		return;
-
-	std::set<wxString> unresolved_prefixes = GetUnresolvedPrefixes();
-	for (std::set<wxString>::iterator i = unresolved_prefixes.begin();
-			i != unresolved_prefixes.end();
-			i++)
-		m_cfgmgr->GetConfigByPrefix(*i);
-
-	unresolved_prefixes = GetUnresolvedPrefixes();
-	for (std::set<wxString>::iterator i = unresolved_prefixes.begin();
-			i != unresolved_prefixes.end();
-			i++)
-		RemoveAllRelatedToPrefix(*i);
-
-	m_params_attached = true;
 }
 
 void DefinedDrawsSets::RemoveDrawFromSet(DefinedDrawInfo *di) {

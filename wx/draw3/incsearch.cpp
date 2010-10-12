@@ -388,18 +388,16 @@ void IncSearch::LoadParams()
 		delete items_array[i];
 	items_array.Clear();
 
-	SortedSetsArray *sorted;
+	SortedSetsArray sorted(DrawSet::CompareSets);
 	if (m_window_search) {
 		sorted = cfg->GetConfigByPrefix(confid)->GetSortedDrawSetsNames(true);
-		AddWindowItems(sorted);
+		AddWindowItems(&sorted);
 	} else {
 		sorted = cfg->GetConfigByPrefix(confid)->GetSortedDrawSetsNames(m_show_defined);
-		AddDrawsItems(sorted);
+		AddDrawsItems(&sorted);
 	}
 
 	m_cur_items = &items_array;
-
-	delete sorted;
 
 	selected_index = wxNOT_FOUND;
 }

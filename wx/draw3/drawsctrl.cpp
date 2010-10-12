@@ -664,9 +664,8 @@ void DrawsController::ConfigurationWasReloaded(wxString prefix) {
 	if (i != dsh.end())
 		DoSet(i->second);
 	else {
-		SortedSetsArray *sets = dss->GetSortedDrawSetsNames();
-		DoSet((*sets)[0]);
-		delete sets;
+		SortedSetsArray sets = dss->GetSortedDrawSetsNames();
+		DoSet(sets[0]);
 	}
 
 	if (m_selected_draw >= m_active_draws_count)
@@ -692,9 +691,8 @@ void DrawsController::ConfigurationWasReloaded(wxString prefix) {
 
 void DrawsController::SetRemoved(wxString prefix, wxString name) {
 	if (m_current_prefix == prefix && m_current_set_name == name) {
-		SortedSetsArray *array = m_config_manager->GetConfigByPrefix(m_current_prefix)->GetSortedDrawSetsNames();
-		Set((*array)[0]);
-		delete array;
+		SortedSetsArray array = m_config_manager->GetConfigByPrefix(m_current_prefix)->GetSortedDrawSetsNames();
+		Set(array[0]);
 	}
 }
 
