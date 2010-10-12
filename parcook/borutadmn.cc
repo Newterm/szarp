@@ -60,7 +60,7 @@
 		in case of serial line, following self-explanatory attributes are also supported:
 		extra:path, extra:speed, extra:parity, extra:stopbits (all but path are not required, 
 			they have defaults which are 9600, N, 1)
-		in case of tcp client mode following attributes are required
+		in case of tcp client mode following attributes are required:
 		extra:tcp-address, extra:tcp-port
 		in case of tcp server mode one need to specify extra:tcp-port attribute
 	>
@@ -289,6 +289,14 @@ size_t& server_driver::id() {
 	return m_id;
 }
 
+void serial_server_driver::set_manager(serial_server_manager* manager) {
+	m_manager = manager;
+}
+
+void tcp_server_driver::set_manager(tcp_server_manager* manager) {
+	m_manager = manager;
+}
+
 protocols::protocols() {
 	m_tcp_client_factories["zet"] = create_zet_tcp_client;
 	m_serial_client_factories["zet"] = create_zet_serial_client;
@@ -430,7 +438,11 @@ void client_manager::starting_new_cycle() {
 void client_manager::driver_finished_job(client_driver *driver) {
 	size_t connection = driver->id().first;
 	size_t& client = m_current_client.at(connection);
-	assert(driver->id().second == client);
+	if (driver->id().second != client) {
+		dolog(0, "Boruta was notfied by client number %zu (connection %zu) that it has finished it's job!", client, connection);
+		dolog(0, "But this driver in not a current driver for this connection, THIS IS VERY, VERY WRONG (BUGGY DRIVER?)");
+		return;
+	}
 	if (++client < m_connection_client_map.at(connection).size())
 		do_schedule(connection, client);
 }
@@ -438,7 +450,12 @@ void client_manager::driver_finished_job(client_driver *driver) {
 void client_manager::terminate_connection(client_driver *driver) {
 	size_t connection = driver->id().first;
 	size_t& client = m_current_client.at(connection);
-	assert(driver->id().second == client);
+	if (driver->id().second != client) {
+		dolog(0, "Boruta core was requested by driver number %zu (connection %zu) to terminate connection!", client, connection);
+		dolog(0, "But this driver in not a current driver for this connection, THIS IS VERY, VERY WRONG (BUGGY DRIVER?)");
+		dolog(0, "Request ignored");
+		return;
+	}
 	do_terminate_connection(connection);
 	client += 1;
 	if (client < m_connection_client_map.at(connection).size()) {
@@ -703,7 +720,7 @@ int serial_server_manager::configure(TUnit *unit, xmlNodePtr node, short* read, 
 	serial_server_driver* driver = _protocols.create_serial_server_driver(node);
 	if (driver == NULL)
 		return 1;
-	//driver->set_manager(this);
+	driver->set_manager(this);
 	driver->set_event_base(m_boruta->get_event_base());
 	if (driver->configure(unit, node, read, send, spc)) {
 		delete driver;
@@ -793,7 +810,7 @@ int tcp_server_manager::configure(TUnit *unit, xmlNodePtr node, short* read, sho
 	tcp_server_driver* driver = _protocols.create_tcp_server_driver(node);
 	if (driver == NULL)		
 		return 1;
-	//driver->set_manager(this);
+	driver->set_manager(this);
 	driver->set_event_base(m_boruta->get_event_base());
 	if (driver->configure(unit, node, read, send)) {
 		delete driver;

@@ -111,6 +111,7 @@ void fp210_driver::starting_new_cycle() {
 }
 
 void fp210_driver::connection_error(struct bufferevent *bufev) {
+	m_state = IDLE;
 	set_no_data();
 	stop_timer();
 }

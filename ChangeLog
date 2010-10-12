@@ -1,4 +1,8 @@
 
+2010-10-12	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/borutadmn: a lot of comments added, 
+	upon connection error modbus and fp210 drivers
+	go to 'IDLE' state
 2010-10-11	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: changing name of user defined param
 	properly propagates this change to parent 

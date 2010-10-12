@@ -1378,6 +1378,7 @@ void modbus_tcp_client::starting_new_cycle() {
 }
 
 void modbus_tcp_client::connection_error(struct bufferevent *bufev) {
+	m_state = IDLE;
 	m_parser->reset();
 }
 
@@ -1424,6 +1425,7 @@ void modbus_serial_client::starting_new_cycle() {
 }
 
 void modbus_serial_client::connection_error(struct bufferevent *bufev) {
+	m_state = IDLE;
 	m_parser->reset();
 }
 
