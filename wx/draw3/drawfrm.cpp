@@ -282,9 +282,8 @@ bool DrawFrame::AddDrawPanel(const wxString & prefix, const wxString& set, Perio
 	if (config == NULL)
 		return false;
 
-	SortedSetsArray * sorted = config->GetSortedDrawSetsNames();
-	int count = sorted->size();
-	delete sorted;
+	SortedSetsArray sorted = config->GetSortedDrawSetsNames();
+	int count = sorted.size();
 
 	if (count <= 0) {
 		wxMessageDialog dlg(this,_("No sets in configuration"),_("No sets"), 

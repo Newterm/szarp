@@ -1,5 +1,12 @@
 
 2010-10-12	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: speedup closing of draw3 - draw3,
+	unnecessarly at saving defined.xml, loaded all
+	configuration for which there were any user draws
+	sets or params defined; GetSortedDrawsSetsNames
+	returns a copy of vector instead pointer to 
+	newly allocated array (which later were
+	to be deleted)
 	* parcook/borutadmn: a lot of comments added, 
 	upon connection error modbus and fp210 drivers
 	go to 'IDLE' state

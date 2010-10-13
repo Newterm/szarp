@@ -326,7 +326,7 @@ class DrawsSets
 	virtual DrawSetsHash& GetDrawsSets(bool all = true) = 0;
 
 	/** @return sorted drawsets names */
-	virtual SortedSetsArray * GetSortedDrawSetsNames(bool all = true);
+	virtual SortedSetsArray GetSortedDrawSetsNames(bool all = true);
 
 	/** @return @see ConfigManager*/
 	ConfigManager* GetParentManager();

@@ -868,14 +868,14 @@ void DrawTreeRoot::SubstituteUserSet(wxString oname, DrawSet *set) {
 
 DrawsSets::DrawsSets(ConfigManager *cfg) : m_cfgmgr(cfg) {}
 
-SortedSetsArray *
+SortedSetsArray
 DrawsSets::GetSortedDrawSetsNames(bool all)
 {
     AttachDefined();
-    SortedSetsArray * sorted = new SortedSetsArray(DrawSet::CompareSets);
+    SortedSetsArray sorted(DrawSet::CompareSets);
 
     for (DrawSetsHash::iterator it = GetDrawsSets(all).begin(); it != GetDrawsSets(all).end(); it++) {
-	sorted->Add(it->second);
+	sorted.Add(it->second);
     }
 
     return sorted;

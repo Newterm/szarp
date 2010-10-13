@@ -86,16 +86,15 @@ SelectSetWidget::~SelectSetWidget() {
 }
 
 void SelectSetWidget::SetConfig() {
-    SortedSetsArray * sorted = m_cfg->GetConfigByPrefix(m_prefix)->GetSortedDrawSetsNames();
+    SortedSetsArray sorted = m_cfg->GetConfigByPrefix(m_prefix)->GetSortedDrawSetsNames();
 
     Clear();
-    int count = sorted->size();
+    int count = sorted.size();
 
     for (int i = 0; i < count; i++) {
-	Append(sorted->Item(i)->GetName());
-	SetClientData(i, (void *) sorted->Item(i));
+	Append(sorted.Item(i)->GetName());
+	SetClientData(i, (void *) sorted.Item(i));
     }
-    delete sorted;
 
 }
 
