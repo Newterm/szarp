@@ -277,11 +277,12 @@ void ParamsListDialog::OnRemove(wxCommandEvent &e) {
 		else for (size_t j = 0; j < tr.size(); j++) {
 			ds->Remove(tr[j] - j);
 
-			for (SetsNrHash::iterator k = prefixes.begin();
-					k != prefixes.end();
-					k++)
-				cfg_mgr->NotifySetModified(k->first, i->first, ds);
-			cfg_mgr->NotifySetModified(DefinedDrawsSets::DEF_PREFIX, i->first, ds);
+			std::vector<DefinedDrawSet*>* v = ds->GetCopies();
+			for (std::vector<DefinedDrawSet*>::iterator k = v->begin();
+					k != v->end();
+					k++) {
+				cfg_mgr->NotifySetModified((*k)->GetDrawsSets()->GetPrefix(), i->first, *k);
+			}
 		}
 
 	}
@@ -292,11 +293,8 @@ void ParamsListDialog::OnRemove(wxCommandEvent &e) {
 	std::vector<DefinedParam*> dbv;
 	dbv.push_back(p);
 	m_dbmgr->RemoveParams(dbv);
-
 	m_def_sets->DestroyParam(p);
-
 	LoadParams();	
-
 }
 
 void ParamsListDialog::OnEdit(wxCommandEvent &e) {

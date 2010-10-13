@@ -210,6 +210,9 @@ class DatabaseQueryQueue {
 	/**Mutex guarding access to a queue*/
 	wxMutex mutex;
 
+	/**Number of elements in the queue preventing queries prioritisation*/
+	int cant_prioritise_entries;
+
 	/**Calculates ranking of the query*/
 	float FindQueryRanking(DatabaseQuery* q);
 

@@ -22,6 +22,8 @@
 #include "cfgmgr.h"
 #include "dbmgr.h"
 
+#include <math.h>
+
 #include <algorithm>
 #include <iostream>
 
@@ -288,7 +290,7 @@ DatabaseQuery::~DatabaseQuery() {
 		delete value_data.vv;
 }
 
-DatabaseQueryQueue::DatabaseQueryQueue() : database_manager(NULL)
+DatabaseQueryQueue::DatabaseQueryQueue() : database_manager(NULL), cant_prioritise_entries(0)
 {}
 
 bool DatabaseQueryQueue::QueryCmp(const QueueEntry& q1, const QueueEntry& q2) { 
@@ -315,10 +317,10 @@ float DatabaseQueryQueue::FindQueryRanking(DatabaseQuery* q) {
 		return 100.f;
 
 	if (q->type == DatabaseQuery::REMOVE_PARAM)
-		return 75.f;
+		return nan("");
 
 	if (q->type == DatabaseQuery::ADD_PARAM)
-		return 70.f;
+		return nan("");
 
 	if (q->type == DatabaseQuery::STARTING_CONFIG_RELOAD)
 		return -100.f;
@@ -364,6 +366,9 @@ void DatabaseQueryQueue::ShufflePriorities() {
 
 	wxMutexLocker lock(mutex);
 
+	if (cant_prioritise_entries)
+		return;
+
 	for (std::list<QueueEntry>::iterator i = queue.begin();
 		i != queue.end();
 		++i) {
@@ -406,8 +411,13 @@ void DatabaseQueryQueue::Add(DatabaseQuery *query) {
 	entry.query = query;
 	entry.ranking = FindQueryRanking(query);
 	wxMutexLocker lock(mutex);
-	std::list<QueueEntry>::iterator i = std::upper_bound(queue.begin(), queue.end(), entry, QueryCmp);
-	
+	if (isnan(entry.ranking))
+		cant_prioritise_entries += 1;
+	std::list<QueueEntry>::iterator i;
+	if (cant_prioritise_entries)
+		i = queue.end();
+	else 
+       		i = std::upper_bound(queue.begin(), queue.end(), entry, QueryCmp);
 	queue.insert(i, entry);
 	semaphore.Post();
 }
@@ -444,6 +454,9 @@ DatabaseQuery* DatabaseQueryQueue::GetQuery() {
 	wxMutexLocker lock(mutex);
 
 	QueueEntry& qe = queue.front();
+	if (isnan(qe.ranking))
+		cant_prioritise_entries -= 1;
+
 	DatabaseQuery* dq = qe.query;
 	queue.pop_front();
 	return dq;

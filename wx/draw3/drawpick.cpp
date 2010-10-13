@@ -920,16 +920,18 @@ void DrawPicker::SetModified(wxString prefix, wxString name, DrawSet *set) {
 
 void DrawPicker::OnEditParam(wxCommandEvent &e) {
 	DefinedDrawInfo* ddi = m_defined_set->GetDraw(m_selected);
-
 	DefinedParam *dp = dynamic_cast<DefinedParam*>(ddi->GetParam());
-
 	ParamEdit* pe = new ParamEdit(this, m_config_mgr, m_database_manager);
 	int ret = pe->Edit(dp);
-	if (ret == wxID_OK)
+	if (ret == wxID_OK &&
+			!m_editing_existing) {
+			/* if we are editing existing set we got notified about
+			 * change trough SetModified where we recreate m_defined_set
+			 * anew, so in this case there is nothing to do here*/
 		ddi->SetParam(pe->GetModifiedParam());
+		RefreshData();
+	}
 	delete pe;
-
-	RefreshData();
 }
 
 void DrawPicker::OnClose(wxCloseEvent &e) {
