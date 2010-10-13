@@ -470,7 +470,7 @@
     <element name="draw" ns="http://www.praterm.com.pl/SZARP/ipk">
       <ref name="attlist.draw"/>
       <zeroOrMore>
-         <ref name="treenode">
+        <ref name="treenode"/>
       </zeroOrMore>
     </element>
   </define>
