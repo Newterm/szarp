@@ -192,7 +192,7 @@ class DatabaseQueryQueue {
 		/**@see DatabaseQuery*/
 		DatabaseQuery *query;
 		/**ranking of this entry, The greater the sooner the query will be executed*/
-		float ranking;
+		double ranking;
 	};
 
 	/**Compares queries rangings*/
@@ -214,7 +214,7 @@ class DatabaseQueryQueue {
 	int cant_prioritise_entries;
 
 	/**Calculates ranking of the query*/
-	float FindQueryRanking(DatabaseQuery* q);
+	double FindQueryRanking(DatabaseQuery* q);
 
 public:
 	DatabaseQueryQueue();

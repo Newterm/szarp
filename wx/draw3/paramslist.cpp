@@ -103,6 +103,9 @@ ParamsListDialog::ParamsListDialog(wxWindow *parent, DefinedDrawsSets *dds, Data
 		wxButton *ok_button = XRCCTRL(*this, "wxID_OK", wxButton);
 		main_sizer->Show(ok_button->GetContainingSizer(), true, true);
 
+		wxButton *new_button = XRCCTRL(*this, "NEW_BUTTON", wxButton);
+		main_sizer->Show(new_button->GetContainingSizer(), false, true);
+
 	} else {
 
 		wxButton *button = XRCCTRL(*this, "wxID_CLOSE", wxButton);
@@ -199,7 +202,8 @@ void ParamsListDialog::OnSerachTextChanged(wxCommandEvent &e) {
 void ParamsListDialog::OnListItemClick(wxListEvent& e) {
 	m_selected_index = e.GetIndex();
 
-	PopupMenu(m_popup_menu);
+	if (!m_search_mode)
+		PopupMenu(m_popup_menu);
 }
 
 void ParamsListDialog::OnListItemSelected(wxListEvent& e) {
@@ -245,55 +249,33 @@ void ParamsListDialog::OnRemove(wxCommandEvent &e) {
 	if (ret != wxOK)
 		return;
 
-	ConfigManager* cfg_mgr = m_def_sets->GetParentManager();
 	DrawSetsHash& dsh = m_def_sets->GetRawDrawsSets();
 	
-	std::vector<wxString> rs;
+	std::vector<DefinedDrawInfo*> ddiv;
 
 	for (DrawSetsHash::iterator i = dsh.begin();
 			i != dsh.end();
 			i++) {
-
 		DefinedDrawSet* ds = dynamic_cast<DefinedDrawSet*>(i->second);
 		assert(ds);
-
 		DrawInfoArray* dia = ds->GetDraws();
-
-		std::vector<size_t> tr;
-
-		SetsNrHash prefixes = ds->GetPrefixes();
-
 		for (size_t j = 0; j < dia->size(); j++) {
 			DefinedDrawInfo *dp = dynamic_cast<DefinedDrawInfo*>((*dia)[j]);
 			assert(dp);
 
 			if (dp->GetParam() == p)
-				tr.push_back(j);
-
+				ddiv.push_back(dp);
 		}
-
-		if (tr.size() == dia->size())
-			rs.push_back(i->first);
-		else for (size_t j = 0; j < tr.size(); j++) {
-			ds->Remove(tr[j] - j);
-
-			std::vector<DefinedDrawSet*>* v = ds->GetCopies();
-			for (std::vector<DefinedDrawSet*>::iterator k = v->begin();
-					k != v->end();
-					k++) {
-				cfg_mgr->NotifySetModified((*k)->GetDrawsSets()->GetPrefix(), i->first, *k);
-			}
-		}
-
 	}
 
-	for (size_t i = 0; i < rs.size(); ++i)
-		m_def_sets->RemoveSet(rs[i]);
-
-	std::vector<DefinedParam*> dbv;
-	dbv.push_back(p);
-	m_dbmgr->RemoveParams(dbv);
+	m_dbmgr->RemoveParams(std::vector<DefinedParam*>(1, p));
 	m_def_sets->DestroyParam(p);
+
+	for (std::vector<DefinedDrawInfo*>::iterator i = ddiv.begin();
+			i != ddiv.end();
+			i++)
+		m_def_sets->RemoveDrawFromSet(*i);
+
 	LoadParams();	
 }
 
@@ -359,7 +341,7 @@ void ParamsListDialog::OnCancelButton(wxCommandEvent &e) {
 }
 
 void ParamsListDialog::SelectCurrentParam() {
-	if (m_search_mode)
+	if (m_search_mode) {
 		if (m_selected_index >= 0) {
 				DefinedParam *param = (DefinedParam*) m_param_list->GetItemData(m_selected_index);
 				if (m_def_sets->GetParentManager()->GetConfigByPrefix(param->GetBasePrefix()) == NULL) {
@@ -372,7 +354,7 @@ void ParamsListDialog::SelectCurrentParam() {
 			EndModal(wxID_OK);
 		} else
 			EndModal(wxID_CANCEL);
-	else {
+	} else {
 		wxCommandEvent e;
 		OnEdit(e);
 	}

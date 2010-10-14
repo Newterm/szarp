@@ -297,9 +297,9 @@ bool DatabaseQueryQueue::QueryCmp(const QueueEntry& q1, const QueueEntry& q2) {
 		return q1.ranking > q2.ranking;
 }
 
-float DatabaseQueryQueue::FindQueryRanking(DatabaseQuery* q) {
+double DatabaseQueryQueue::FindQueryRanking(DatabaseQuery* q) {
 
-	float ranking = 0;
+	double ranking = 0;
 
 	if (q == NULL)
 		return 100.f;

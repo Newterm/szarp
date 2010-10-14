@@ -923,9 +923,9 @@ szb_buffer_str::AddExecParam(TParam *param) {
 void
 szb_buffer_str::RemoveExecParam(TParam *param) {
 	std::vector<TParam*>::iterator e = std::remove(optimized_params.begin(), optimized_params.end(), param);
-	delete (*e)->GetLuaExecParam();
-	(*e)->SetLuaExecParam(NULL);
 	optimized_params.erase(e, optimized_params.end());
+	delete param->GetLuaExecParam();
+	param->SetLuaExecParam(NULL);
 }
 #endif
 #endif

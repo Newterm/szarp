@@ -156,7 +156,8 @@ void IPKContainer::RemoveExtraParam(const std::wstring& prefix, TParam *p) {
 		}
 		pp = cp;
 	}
-
+	p->SetNext(NULL);
+	delete p;
 }
 
 TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wstring &file) {

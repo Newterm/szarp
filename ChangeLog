@@ -1,4 +1,7 @@
 
+2010-10-14	Darek Marcinkiewicz <reksio@newterm.pl>
+	* : another round of fixes related to adding/removing/
+	editing of user defined params
 2010-10-12	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: speedup closing of draw3 - draw3,
 	unnecessarly at saving defined.xml, loaded all

@@ -707,10 +707,15 @@ DefinedDrawSet::DefinedDrawSet(DefinedDrawsSets *ds, wxString title, std::vector
 
 DefinedDrawSet::~DefinedDrawSet()
 {
-	if (!m_copy)
+	if (!m_copy) {
 		delete m_copies;
-	if (m_copy)
+	} else {
+		std::vector<DefinedDrawSet*>::iterator i = std::remove(m_copies->begin(), m_copies->end(), this);
+		m_copies->erase(i, m_copies->end());
+		//this would be deleted by parent destructor, but since each copy share the same array
+		//obviously we want this to be deleted only once
 		m_draws = NULL;
+	}
 }
 
 void DefinedDrawSet::GenerateXML(xmlNodePtr root)
@@ -1354,13 +1359,11 @@ void DefinedDrawsSets::RemoveDrawFromSet(DefinedDrawInfo *di) {
 		c->RemoveUserSet(ds->GetName());
 		m_cfgmgr->NotifySetRemoved(prefix, ds->GetName());
 	}
-
-	for (SetsNrHash::iterator i = ds->GetPrefixes().begin();
-			i != ds->GetPrefixes().end();
-			i++)
-		m_cfgmgr->NotifySetModified(i->first, ds->GetName(), ds);
-
 	delete ods;
+
+	std::vector<DefinedDrawSet*>* c = ds->GetCopies();
+	for (std::vector<DefinedDrawSet*>::iterator i = c->begin(); i != c->end(); i++)
+		m_cfgmgr->NotifySetModified((*i)->GetDrawsSets()->GetPrefix(), (*i)->GetName(), *i);
 
 }
 

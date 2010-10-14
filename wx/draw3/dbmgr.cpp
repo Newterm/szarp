@@ -322,7 +322,7 @@ void DatabaseManager::RemoveParams(const std::vector<DefinedParam*>& ddi) {
 			i != ddi.end();
 			i++) {
 
-		wxLogInfo(_T("Removing param with prefix: %s"), (*i)->GetBasePrefix().c_str());
+		wxLogInfo(_T("Removing param with prefix: %s, param: %s"), (*i)->GetBasePrefix().c_str(), (*i)->GetParamName().c_str());
 
 		DatabaseQuery* query = new DatabaseQuery;
 		query->type = DatabaseQuery::REMOVE_PARAM;

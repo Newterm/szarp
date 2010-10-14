@@ -28,6 +28,12 @@
 #undef GetObject
 #endif
 
+#ifndef NO_LUA
+#if LUA_PARAM_OPTIMISE
+#include "loptcalculate.h"
+#endif
+#endif
+
 using std::find;
 using std::string;
 using std::pair;
@@ -115,8 +121,8 @@ void Szbase::RemoveExtraParam(const std::wstring& prefix, TParam *param) {
 
 	IPKContainer* ic = IPKContainer::GetObject();
 
-	TBI::iterator i = m_ipkbasepair.find(prefix);
-	if (i == m_ipkbasepair.end()) {
+	TBI::iterator iibk = m_ipkbasepair.find(prefix);
+	if (iibk == m_ipkbasepair.end()) {
 		ic->RemoveExtraParam(prefix, param);
 		return;
 	}
@@ -134,7 +140,18 @@ void Szbase::RemoveExtraParam(const std::wstring& prefix, TParam *param) {
 		ClearParamFromCache(prefix, p);
 		p->SetLuaExecParam(NULL);
 	}
-	set.clear();
+	m_lua_opt_param_reference_map.erase(param);
+	LuaExec::Param *ep = param->GetLuaExecParam();
+	if (ep) {
+		for (std::vector<LuaExec::ParamRef>::iterator i = ep->m_par_refs.begin();
+			 	i != ep->m_par_refs.end();
+				i++) {
+			m_lua_opt_param_reference_map[i->m_param].erase(param);
+			if (m_lua_opt_param_reference_map[i->m_param].empty())
+				m_lua_opt_param_reference_map.erase(i->m_param);
+		}
+		iibk->second.first->RemoveExecParam(param);
+	}
 #endif
 #endif
 
@@ -149,6 +166,9 @@ void Szbase::RemoveExtraParam(const std::wstring& prefix, TParam *param) {
 
 	m_params.erase(global_param_name);
 	m_params.erase(translated_global_param_name);
+
+	m_u8params.erase(SC::S2U(global_param_name));
+	m_u8params.erase(SC::S2U(translated_global_param_name));
 
 	ClearParamFromCache(prefix, param);
 	ic->RemoveExtraParam(prefix, param);
