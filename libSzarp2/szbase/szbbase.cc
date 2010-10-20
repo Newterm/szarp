@@ -101,11 +101,10 @@ bool Szbase::AddBase(const std::wstring& prefix) {
 
 void Szbase::AddExtraParam(const std::wstring &prefix, TParam *param) {
 
+	m_extra_params[prefix].insert(param);
 	TBI::iterator i = m_ipkbasepair.find(prefix);
-	if (i == m_ipkbasepair.end()) 
-		return;
-	
-	AddParamToHash(prefix, param);
+	if (i != m_ipkbasepair.end())
+		AddParamToHash(prefix, param);
 
 }
 
@@ -119,13 +118,11 @@ void Szbase::AddLuaOptParamReference(TParam* refered, TParam* referring) {
 
 void Szbase::RemoveExtraParam(const std::wstring& prefix, TParam *param) {
 
-	IPKContainer* ic = IPKContainer::GetObject();
+	m_extra_params[prefix].erase(param);
 
 	TBI::iterator iibk = m_ipkbasepair.find(prefix);
-	if (iibk == m_ipkbasepair.end()) {
-		ic->RemoveExtraParam(prefix, param);
+	if (iibk == m_ipkbasepair.end())
 		return;
-	}
 
 #ifndef NO_LUA
 #if LUA_PARAM_OPTIMISE
@@ -160,7 +157,6 @@ void Szbase::RemoveExtraParam(const std::wstring& prefix, TParam *param) {
 
 	TBP::iterator j = m_params.find(global_param_name);
 	if (j == m_params.end()) {
-		ic->RemoveExtraParam(prefix, param);
 		return;
 	}
 
@@ -171,7 +167,6 @@ void Szbase::RemoveExtraParam(const std::wstring& prefix, TParam *param) {
 	m_u8params.erase(SC::S2U(translated_global_param_name));
 
 	ClearParamFromCache(prefix, param);
-	ic->RemoveExtraParam(prefix, param);
 }
 
 void Szbase::AddParamToHash(const std::wstring& prefix, TParam *param) {
@@ -206,9 +201,11 @@ bool Szbase::AddBase(const std::wstring& szbase_dir, const std::wstring &prefix)
 
 	m_ipkbasepair[prefix] = pair<szb_buffer_t*, TSzarpConfig*>(szbbuf, ipk);
 
-	TParam* p;
-	for (p = ipk->GetFirstParam(); p; p = p->GetNext(true))
-		AddParamToHash(prefix.c_str(), p);
+	for (TParam *p = ipk->GetFirstParam(); p; p = p->GetNext(true))
+		AddParamToHash(prefix, p);
+
+	for (std::set<TParam*>::iterator i = m_extra_params[prefix].begin(); i != m_extra_params[prefix].end(); i++)
+		AddParamToHash(prefix, *i);
 
 	if ( m_config_modification_callback != NULL ) {
 		m_file_watcher.AddFileWatch(szbbuf->GetConfigurationFilePath(), prefix, m_config_modification_callback);

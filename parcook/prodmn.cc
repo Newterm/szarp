@@ -123,18 +123,20 @@ void dolog(int level, const char *fmt, ...)
 {
 	va_list fmt_args;
 
-	char *l;
-	va_start(fmt_args, fmt);
-
 	if (g_single) {
+		char *l;
+		va_start(fmt_args, fmt);
 		vasprintf(&l, fmt, fmt_args);
+		va_end(fmt_args);
+
 		std::cout << l << std::endl;
 		sz_log(level, "%s", l);
 		free(l);
-	} else
-		vsz_log(level, "%s", fmt_args);
-
-	va_end(fmt_args);
+	} else {
+		va_start(fmt_args, fmt);
+		vsz_log(level, fmt, fmt_args);
+		va_end(fmt_args);
+	}
 }
 
 class PRO2000Daemon {
@@ -153,6 +155,9 @@ class PRO2000Daemon {
 	struct bufferevent *m_bufev;
 	std::vector<int> m_precs;
 	std::vector<int> m_param_addrs;
+
+	std::string m_buffer;
+	size_t m_semicolon_count;
 
 	void Connect();
 	void Disconnect();
@@ -234,7 +239,7 @@ int PRO2000Daemon::Configure(DaemonConfig * cfg)
 		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx);
 		assert(node);
 		free(expr);
-		c = (char *)xmlGetNsProp(node, BAD_CAST("param"),
+		c = (char *)xmlGetNsProp(node, BAD_CAST("address"),
 					 BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 		if (c == NULL) {
 			dolog(0,
@@ -291,15 +296,15 @@ do_connect:
 			m_fd = -1;
 			return;
 		}
-	} else {
-		m_state = WAITING_FOR_CONNECT;
-	}
+	} 
 	m_bufev =
 	    bufferevent_new(m_fd, PRO2000Daemon::ReadReadyCallback,
 			    PRO2000Daemon::ConnectCallback,
 			    PRO2000Daemon::ErrorCallback, this);
 	bufferevent_base_set(m_event_base, m_bufev);
 	bufferevent_enable(m_bufev, EV_READ | EV_WRITE | EV_PERSIST);
+	if (ret == 0)
+		SendQuery();
 }
 
 void PRO2000Daemon::Disconnect()
@@ -327,34 +332,40 @@ void PRO2000Daemon::SendQuery()
 {
 	size_t i;
 	assert(m_param_addrs.size());
+	struct evbuffer *evb = evbuffer_new();
 	for (i = 0; i < m_param_addrs.size() - 1; i++)
-		evbuffer_add_printf(m_bufev->output, "%d,", m_param_addrs[i]);
-	evbuffer_add_printf(m_bufev->output, "%d\n", m_param_addrs[i]);
+		evbuffer_add_printf(evb, "%d;", m_param_addrs[i]);
+	evbuffer_add_printf(evb, "%d\n", m_param_addrs[i]);
+	bufferevent_write_buffer(m_bufev, evb);
+	evbuffer_free(evb);
 	m_state = WAITING_FOR_RESPONSE;
+	m_buffer.clear();
+	m_semicolon_count = 0;
 }
 
 void PRO2000Daemon::HandleReadReady()
 {
-	char *line = evbuffer_readline(m_bufev->input);
-	if (line == NULL)
-		return;
-	dolog(10, "Received respone: %s", line);
-	char *s = line, *e = line;
-	size_t i = 0;
-	while (i < m_param_addrs.size() && *e != '\n') {
-		double v = strtod(s, &e);
-		m_ipc->m_read[i] = v * m_precs[i];
-		i += 1;
-		if (*e != '\n' && *e != ';') {
-			dolog(1, "Incorrent message in response: %s", line);
-			break;
-		}
-		s = e + 1;
+	char c;
+	while (bufferevent_read(m_bufev, &c, 1)) {
+		m_buffer.push_back(c);
+		if (c == ';')
+			m_semicolon_count += 1;
 	}
-	if (i != m_param_addrs.size() || *e != '\n')
+	if (m_semicolon_count != m_param_addrs.size() - 1)
+		return;
+	dolog(10, "Received respone: %s", m_buffer.c_str());
+	std::istringstream iss(m_buffer);
+	double v;
+	size_t i = 0;
+	while (i < m_param_addrs.size() && (iss >> v)) {
+		dolog(10, "Param %d(%zu), value %f", m_param_addrs[i], i, v); 
+		m_ipc->m_read[i] = v * m_precs[i];
+		iss.ignore(1);
+		i += 1;
+	}
+	if (i != m_param_addrs.size())
 		dolog(1,
 		      "Number of params in response does not match number of params in request");
-	free(line);
 	Disconnect();
 	m_state = IDLE;
 }

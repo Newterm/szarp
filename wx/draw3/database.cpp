@@ -102,12 +102,8 @@ void* QueryExecutor::Entry() {
 		} else if (q->type == DatabaseQuery::REMOVE_PARAM) {
 			TParam *p = q->defined_param.p;
 			wchar_t *prefix = q->defined_param.prefix;
-
 			szbase->RemoveExtraParam(prefix, p);
-
-			post_response = false;
-
-			free(prefix);
+			post_response = true;
 #endif
 		} else if (q->type == DatabaseQuery::CHECK_CONFIGURATIONS_CHANGE) {
 			szbase->NotifyAboutConfigurationChanges();

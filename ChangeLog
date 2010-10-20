@@ -1,4 +1,10 @@
 
+2010-10-20	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2,wx/draw3: change in how database and gui
+	threads interact while user params are edited
+	* parcook/prodmn.cc: fixes and amendment for
+	a bug in proxy that I have no way of fixing
+	now
 2010-10-14	Darek Marcinkiewicz <reksio@newterm.pl>
 	* : another round of fixes related to adding/removing/
 	editing of user defined params

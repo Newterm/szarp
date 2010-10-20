@@ -709,9 +709,12 @@ DefinedDrawSet::~DefinedDrawSet()
 {
 	if (!m_copy) {
 		delete m_copies;
+		m_copies = NULL;
 	} else {
-		std::vector<DefinedDrawSet*>::iterator i = std::remove(m_copies->begin(), m_copies->end(), this);
-		m_copies->erase(i, m_copies->end());
+		if (m_copies) {
+			std::vector<DefinedDrawSet*>::iterator i = std::remove(m_copies->begin(), m_copies->end(), this);
+			m_copies->erase(i, m_copies->end());
+		}
 		//this would be deleted by parent destructor, but since each copy share the same array
 		//obviously we want this to be deleted only once
 		m_draws = NULL;

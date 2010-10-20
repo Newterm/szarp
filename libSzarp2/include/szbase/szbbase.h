@@ -111,6 +111,8 @@ class Szbase {
 
 	~Szbase();
 
+	std::map<std::wstring, std::set<TParam*> > m_extra_params;
+
 	void AddParamToHash(const std::wstring& prefix, TParam *param);
 public:
 	/**Notifies listener about changes in configuration*/

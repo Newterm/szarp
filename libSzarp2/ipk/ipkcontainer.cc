@@ -112,25 +112,12 @@ bool IPKContainer::ReadyConfigurationForLoad(const std::wstring &prefix) {
 
 void IPKContainer::AddExtraParam(const std::wstring& prefix, TParam *n) {
 	TSMutexLocker locker(mutex);
-
 	m_extra_params[prefix].push_back(n);
 
 	CM::iterator i = configs.find(prefix);
 	if (i == configs.end())
 		return;
-
-	TSzarpConfig *ipk = i->second;
-	TParam *p = ipk->GetFirstParam();
-	assert(p);
-
-	while (p->GetNext(true))
-		p = p->GetNext(true);
-
-	p->SetNext(n); 
-	n->SetNext(NULL);
-
-	n->SetParentSzarpConfig(ipk);
-
+	n->SetParentSzarpConfig(i->second);
 }
 
 void IPKContainer::RemoveExtraParam(const std::wstring& prefix, TParam *p) {
@@ -140,23 +127,6 @@ void IPKContainer::RemoveExtraParam(const std::wstring& prefix, TParam *p) {
 	std::vector<TParam*>::iterator ei = std::remove(tp.begin(), tp.end(), p);
 	tp.erase(ei, tp.end());
 
-	CM::iterator i = configs.find(prefix);
-	if (i == configs.end()) {
-		delete p;
-		return;
-	}
-
-	TSzarpConfig *ipk = i->second;
-	TParam *pp = NULL;
-	for (TParam *cp = ipk->GetFirstParam(); cp; cp = cp->GetNext(true)) {
-		if (cp == p) {
-			assert(pp);
-			pp->SetNext(cp->GetNext(true));
-			break;
-		}
-		pp = cp;
-	}
-	p->SetNext(NULL);
 	delete p;
 }
 
@@ -184,48 +154,13 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 
 	}
 
-	std::wstring name = prefix;
-
 	TDictionary d(szarp_system_dir.string());
 	d.TranslateIPK(ipk, language);
-		
-	std::vector<TParam*>& pv = m_extra_params[name];
-
-	if (configs.find(name) != configs.end()) {
-		TSzarpConfig *ipk = configs[name];
-
-		TParam *p = ipk->GetFirstParam();
-		while (p && p->GetNext(true)) {
-			std::vector<TParam*>::iterator i = std::find(pv.begin(), pv.end(), p->GetNext(true));
-			if (i != pv.end())
-				p->SetNext(p->GetNext(true)->GetNext(true));
-			else 
-				p = p->GetNext(true);
-		}
-
-		delete configs[name];
-	}
-
-	configs[name] = ipk;
-
-	TParam *prv = ipk->GetFirstParam();
-	while (prv && prv->GetNext(true) != NULL) 
-		prv = prv->GetNext(true);
-
-	if (prv) for (std::vector<TParam*>::iterator i = pv.begin(); 
-			i != pv.end();
-			i++) {
-
-		TParam *p = *i;
-
-		prv->SetNext(p);
-
-		p->SetParentSzarpConfig(ipk);
-		p->SetNext(NULL);
-
-		prv = p;
-	}
-
+	if (configs.find(prefix) != configs.end())
+		delete configs[prefix];
+	configs[prefix] = ipk;
+	std::vector<TParam*>& pv = m_extra_params[prefix];
+	std::for_each(pv.begin(), pv.end(), std::bind2nd(std::mem_fun(&TParam::SetParentSzarpConfig), ipk));
 	return ipk;
 
 }
@@ -234,7 +169,6 @@ TSzarpConfig* IPKContainer::LoadConfig(const std::wstring& prefix, const std::ws
 	TSMutexLocker locker(mutex);
 	return AddConfig(prefix, file);
 }
-
 
 void IPKContainer::Destroy() {
 	delete _object->mutex;

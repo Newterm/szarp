@@ -102,14 +102,16 @@ void DatabaseManager::OnDatabaseResponse(DatabaseResponse &response) {
 
 	CheckAndNotifyAboutError(response);
 
-	if (query->type == DatabaseQuery::STARTING_CONFIG_RELOAD) {
+	if (query->type == DatabaseQuery::REMOVE_PARAM) {
+		IPKContainer *ic = IPKContainer::GetObject();
+		ic->RemoveExtraParam(query->defined_param.prefix, query->defined_param.p);
+		free(query->defined_param.prefix);
+		delete query;
+	} else if (query->type == DatabaseQuery::STARTING_CONFIG_RELOAD) {
 		std::wstring dbprefix(query->reload_prefix.prefix);
 		free(query->reload_prefix.prefix);
 		delete query;
-
 		config_manager->ConfigurationReadyForLoad(dbprefix.c_str());
-		return;
-
 	} else {
 
 		IHI i = inquirers.find(query->inquirer_id);
