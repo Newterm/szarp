@@ -407,7 +407,7 @@ void DatabaseQueryQueue::Add(DatabaseQuery *query) {
 	entry.query = query;
 	entry.ranking = FindQueryRanking(query);
 	wxMutexLocker lock(mutex);
-	if (isnan(entry.ranking))
+	if (std::isnan(entry.ranking))
 		cant_prioritise_entries += 1;
 	std::list<QueueEntry>::iterator i;
 	if (cant_prioritise_entries)
@@ -450,7 +450,7 @@ DatabaseQuery* DatabaseQueryQueue::GetQuery() {
 	wxMutexLocker lock(mutex);
 
 	QueueEntry& qe = queue.front();
-	if (isnan(qe.ranking))
+	if (std::isnan(qe.ranking))
 		cant_prioritise_entries -= 1;
 
 	DatabaseQuery* dq = qe.query;
