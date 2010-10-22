@@ -1,4 +1,9 @@
 
+2010-10-22	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: do not show 'user defined' configuraion
+	in serach widget - it now should not be selectable anywhere
+	because recently I have removed resolving dependencies
+	for this configuration (for convenice and simplicity)
 2010-10-20	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2,wx/draw3: change in how database and gui
 	threads interact while user params are edited

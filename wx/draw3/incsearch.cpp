@@ -315,8 +315,10 @@ wxArrayString IncSearch::GetConfNames()
 {
 	wxArrayString confNames;
 	const ConfigNameHash& hash = cfg->GetConfigTitles();
-	for (ConfigNameHash::const_iterator i = hash.begin(); i != hash.end(); ++i)
-		confNames.Add(i->second);
+	for (ConfigNameHash::const_iterator i = hash.begin(); i != hash.end(); ++i) {
+		if (i->first != DefinedDrawsSets::DEF_PREFIX)
+			confNames.Add(i->second);
+	}
 	return confNames;
 }
 
