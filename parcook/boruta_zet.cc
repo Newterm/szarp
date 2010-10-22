@@ -163,52 +163,48 @@ void zet_proto_impl::data_ready(struct bufferevent* bufev, int fd) {
 		return;
 	}
 
-	m_buffer.at(m_data_in_buffer) = '\0';
-	char **toks;
-	int tokc = 0;
-	tokenize_d(&m_buffer[0], &toks, &tokc, "\r");
-	if (tokc < 3) {
-		tokenize_d(NULL, &toks, &tokc, NULL);
-		dolog(5, "Unable to parse response from ZET/SK, it is invalid");
-		stop_timer();
-		set_no_data();
-		return;
-	}
-	size_t params_count = tokc - 5;
-	if (params_count != m_read_count) {
-		dolog(5, "Invalid number of values received, expected: %zu, got: %zu", m_read_count, params_count);
-		tokenize_d(NULL, &toks, &tokc, NULL);
-		stop_timer();
-		set_no_data();
-		return;
-	}
-	char id = toks[2][0];
-	if (id != m_id) {
-		dolog(5, "Invalid id in response, expected: %c, got: %c", m_id, id);
-		tokenize_d(NULL, &toks, &tokc, NULL);
-		set_no_data();
-		stop_timer();
-		return;
-	}
-	int checksum = 0;
-	for (size_t j = 0; j < m_data_in_buffer; j++)
-		checksum += (uint) m_buffer[j];
-	/* Checksum without checksum ;-) and last empty lines */
-	for (char *c = toks[tokc-1]; *c; c++)
-		checksum -= (uint) *c;
-	for (char *c = &m_buffer[m_data_in_buffer - 1]; *c == '\r'; c--) 
-		checksum -= (uint) *c;
-	if (checksum != atoi(toks[tokc-1])) {
-		dolog(4, "ZET/SK driver, wrong checksum");
-		tokenize_d(NULL, &toks, &tokc, NULL);
-		set_no_data();
-		stop_timer();
-		return;
-	}
-	for (size_t i = 0; i < m_read_count; i++)
-		m_read[i] = atoi(toks[i+4]);
-	tokenize_d(NULL, &toks, &tokc, NULL);
 	stop_timer();
+	try {
+		m_buffer.at(m_data_in_buffer) = '\0';
+		char **toks;
+		int tokc = 0;
+		tokenize_d(&m_buffer[0], &toks, &tokc, "\r");
+		if (tokc < 3) {
+			tokenize_d(NULL, &toks, &tokc, NULL);
+			dolog(5, "Unable to parse response from ZET/SK, it is invalid");
+			throw std::invalid_argument("Wrong response format");
+		}
+		size_t params_count = tokc - 5;
+		if (params_count != m_read_count) {
+			dolog(5, "Invalid number of values received, expected: %zu, got: %zu", m_read_count, params_count);
+			tokenize_d(NULL, &toks, &tokc, NULL);
+			throw std::invalid_argument("Wrong number or values");
+		}
+		char id = toks[2][0];
+		if (id != m_id) {
+			dolog(5, "Invalid id in response, expected: %c, got: %c", m_id, id);
+			tokenize_d(NULL, &toks, &tokc, NULL);
+			throw std::invalid_argument("Wrong id in response");
+		}
+		int checksum = 0;
+		for (size_t j = 0; j < m_data_in_buffer; j++)
+			checksum += (uint) m_buffer[j];
+		/* Checksum without checksum ;-) and last empty lines */
+		for (char *c = toks[tokc-1]; *c; c++)
+			checksum -= (uint) *c;
+		for (char *c = &m_buffer[m_data_in_buffer - 1]; *c == '\r'; c--) 
+			checksum -= (uint) *c;
+		if (checksum != atoi(toks[tokc-1])) {
+			dolog(4, "ZET/SK driver, wrong checksum");
+			tokenize_d(NULL, &toks, &tokc, NULL);
+			throw std::invalid_argument("Wrong checksum");
+		}
+		for (size_t i = 0; i < m_read_count; i++)
+			m_read[i] = atoi(toks[i+4]);
+		tokenize_d(NULL, &toks, &tokc, NULL);
+	} catch (const std::invalid_argument&) {
+		set_no_data();
+	}
 	driver_finished_job();
 }
 

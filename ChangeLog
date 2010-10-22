@@ -1,5 +1,8 @@
 
 2010-10-22	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/boruta_zet.cc: fix stupid omission in zet driver
+	for boruta - driver stopped quering device whenever
+	erroneous response was received
 	* wx/draw3: do not show 'user defined' configuraion
 	in serach widget - it now should not be selectable anywhere
 	because recently I have removed resolving dependencies
