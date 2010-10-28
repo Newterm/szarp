@@ -1,5 +1,5 @@
 
-2010-10-22	Darek Marcinkiewicz <reksio@newterm.pl>
+2010-10-28	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2/szbase/realdatablock.cc: do not mark 
 	a block that ends before meaner last date as
 	having all values 'fixed'
