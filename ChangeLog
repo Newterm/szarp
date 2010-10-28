@@ -1,5 +1,21 @@
 
 2010-10-22	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2/szbase/realdatablock.cc: do not mark 
+	a block that ends before meaner last date as
+	having all values 'fixed'
+	* libSzarp2/szbase/szbbuf.cc: szb_search_last that,
+	as I understand, is supposed to search for last date
+	of a param. For definaed params maximum of:
+	actual last date of a param (understood as minuimum of
+	latest dates of params referred by params formulas)
+	and meaner last date was returned, what was breaking cache.
+	Now meaner last date if returned only for formulas that 
+	contain 'N' operator or do not refer to any other
+	parameters.
+	* libSzarp2/szbase/definabledatablock.cc: definable
+	blocks that do not contain any values are not immidiately
+	discarded
+2010-10-22	Darek Marcinkiewicz <reksio@newterm.pl>
 	* parcook/boruta_zet.cc: fix stupid omission in zet driver
 	for boruta - driver stopped quering device whenever
 	erroneous response was received

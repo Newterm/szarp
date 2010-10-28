@@ -78,22 +78,10 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 
 	this->AllocateDataMemory();
 
-	if (year < this->buffer->first_av_year)
-		NOT_INITIALIZED;
-
-	if (year == this->buffer->first_av_year && month < this->buffer->first_av_month)
-		NOT_INITIALIZED;
-
 	int av_year, av_month;
 	time_t end_date = szb_search_last(buffer, param);
 
 	szb_time2my(end_date, &av_year, &av_month);
-
-	if (year > av_year || (year == av_year && month > av_month))
-		NOT_INITIALIZED;
-
-	if (updatetime < GetStartTime())
-		NOT_INITIALIZED;
 
 	if (LoadFromCache())
 	{
@@ -118,7 +106,7 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 	szb_lock_buffer(this->buffer);
 
 	int probes_to_compute;
-	if (num_of_params > 0) {
+	if  (num_of_params > 0) {
 		probes_to_compute = this->GetBlocksUsedInFormula(dblocks, params, this->fixed_probes_count);
 	} else {
 		if (last_update_time > GetEndTime())
@@ -128,11 +116,6 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 	}
 
 	assert(this->fixed_probes_count <= this->max_probes);
-
-	if (probes_to_compute <= 0) {
-		szb_unlock_buffer(buffer);
-		NOT_INITIALIZED;
-	}
 
 	double pw = pow(10, param->GetPrec());
 
@@ -168,9 +151,8 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 		assert(!IS_SZB_NODATA(this->data[this->GetLastDataProbeIdx()]));
 	}
 
-	for (; i < this->max_probes; i++) {
+	for (; i < this->max_probes; i++)
 		this->data[i] = SZB_NODATA;
-	}
 
 	szb_unlock_buffer(this->buffer);
 
@@ -259,8 +241,6 @@ DefinableDatablock::Refresh()
 			new_probes_c = new_fixed_probes = szb_probeind(szb_search_last(buffer, param)) + 1;
 	}
 	
-	assert(new_probes_c > 0);
-
 	assert(new_fixed_probes >= this->fixed_probes_count);
 
 	SZBASE_TYPE stack[DEFINABLE_STACK_SIZE]; // stack for calculatinon of formula

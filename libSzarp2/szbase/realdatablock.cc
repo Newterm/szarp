@@ -110,18 +110,12 @@ RealDatablock::RealDatablock(szb_buffer_t * b, TParam * p, int y, int m) :
 			assert(false);
 		return;
 	} else {
-		if (this->GetEndTime() < buffer->first_av_date)
-			NOT_INITIALIZED; //Block is before first_av_date - not creating empty block
+		int ly, lm;
+		szb_time2my(szb_search_last(buffer, param), &ly, &lm);
+		if (year < ly || (year == ly && month < lm))
+			this->fixed_probes_count = this->max_probes; 
 	}
 
-	int ly, lm;
-	szb_time2my(szb_search_last(buffer, param), &ly, &lm);
-
-	if ( (year < ly || (year == ly && month < lm)) || this->last_update_time > this->GetEndTime()) {
-		this->fixed_probes_count = this->max_probes; //If there are future data or the end of block is before `now`
-	} 
-
-	return;
 }
 
 RealDatablock::~RealDatablock() {

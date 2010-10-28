@@ -263,13 +263,7 @@ szb_search_last(szb_buffer_t * buffer, TParam * param)
 					return -1;
 				}
 
-				time_t t = probe2time(size / 2 - 1, year, month);
-				if(param == buffer->meaner3_param) {
-					return t;
-				} else {
-					time_t tmp = buffer->GetMeanerDate();
-					return tmp > t ? tmp : t;
-				}
+				return probe2time(size / 2 - 1, year, month);
 			}
 		case TParam::P_COMBINED:
 			{
@@ -289,15 +283,12 @@ szb_search_last(szb_buffer_t * buffer, TParam * param)
 		case TParam::P_DEFINABLE:
 			{
 				TParam ** cache = param->GetFormulaCache();
-				if(param->GetNumParsInFormula() == 0)
+				if (param->GetNumParsInFormula() == 0 || param->IsNUsed())
 					return buffer->GetMeanerDate();
 				
-				time_t t =  buffer->GetMeanerDate();
-				for(int i = 0; i < param->GetNumParsInFormula(); i++) {
-					time_t tmp = szb_search_last(buffer, cache[i]);
-					if(tmp > t)
-						t = tmp;
-				}
+				time_t t = buffer->GetMeanerDate();
+				for(int i = 0; i < param->GetNumParsInFormula(); i++)
+					t = std::min(t, szb_search_last(buffer, cache[i]));
 				return t;
 			}
 #ifndef NO_LUA
