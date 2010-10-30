@@ -16,6 +16,8 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
+#include <sstream>
+
 #include "ssclient.h"
 #include "ssutil.h"
 #include "libpar.h"
@@ -1385,6 +1387,7 @@ void Client::SyncFiles() {
 			continue;
 		}
 #endif
+		
 		std::vector<TPath> file_list = GetFileList(i->first, i->second, m_delete_option);
 		CFileSyncer syncer(m_local_dir,
 				i->first,
@@ -1636,7 +1639,7 @@ no_program_uruchomiony:
 std::vector<TPath> Client::GetFileList(const TPath &dir, uint32_t dir_no, bool &delete_option) {
 	sz_log(9, "Starting grab of file list");
 
-	m_progress.SetProgress(Progress::FETCHING_FILE_LIST, 1,
+	m_progress.SetProgress(Progress::FETCHING_FILE_LIST, 0,
 			csconv(strrchr(dir.GetPath(),
 #ifndef MINGW32
 							'/'
@@ -1956,6 +1959,11 @@ void ProgressFrame::StartSync(bool show, wxArrayString dirList, bool delete_opti
 	m_sync_start_time = wxDateTime::Now();
 	m_client->BeginSync(delete_option, dirList);
 
+	m_synced_prefixes.clear();
+	m_to_sync.clear();
+	for (size_t i = 0; i < dirList.GetCount(); i++)
+		m_to_sync.insert(dirList[i].c_str());
+
 	if (show) {
 		Iconize(false);
 		Show(true);
@@ -2029,6 +2037,8 @@ void ProgressFrame::OnUpdate(ProgressEvent& event) {
 			break;
 		case Progress::FETCHING_FILE_LIST:
 			action_string = _("Fetching file list ");
+			if (event.GetValue() == 0)
+				m_synced_prefixes.insert(event.GetDescription());
 			break;
 		case Progress::SYNCING:
 			action_string = _("Synchronization ");
@@ -2053,6 +2063,20 @@ void ProgressFrame::OnUpdate(ProgressEvent& event) {
 						hours,
 						minutes,
 						seconds);
+
+				if (m_to_sync.size() && m_to_sync != m_synced_prefixes) {
+					msg += _("\nFollowing configurations were not synced: ");
+					std::wostringstream ss;
+					std::ostream_iterator<std::wstring, wchar_t> iter(ss, L",");
+					std::set_difference(m_to_sync.begin(),
+							m_to_sync.end(),
+							m_synced_prefixes.begin(),
+							m_synced_prefixes.end(), 
+							iter);
+					msg += ss.str();
+					msg = msg.substr(0, msg.size() - 1);
+					msg += _(". Either they do no exsits or you have no access to them.");
+				}
 
 				wxMessageBox(msg, _("SSC"), wxICON_INFORMATION);
 			}
@@ -2113,7 +2137,6 @@ void ProgressFrame::OnClose(wxCloseEvent &event) {
 		TerminateSynchronization();
 	}
 }
-
 
 BEGIN_EVENT_TABLE(ProgressFrame, wxDialog)
 	EVT_PROGRESS(ID_PROGRESS_EVNT_ORIG, ProgressFrame::OnUpdate)
@@ -2640,6 +2663,7 @@ wxMenu* SSCTaskBarItem::CreateMenu() {
 
 	menu->Append(new wxMenuItem(menu, ID_START_SYNC_MENU, _("Begin synchronization"), wxEmptyString, wxITEM_NORMAL));
 	menu->Append(new wxMenuItem(menu, ID_SYNC_SELECTED_MENU, _("Synchronize selected databeses"), wxEmptyString, wxITEM_NORMAL));
+	menu->Append(new wxMenuItem(menu, ID_SYNC_PREFIX_MENU, _("Synchronize given database by prefix"), wxEmptyString, wxITEM_NORMAL));
 	menu->AppendSeparator();
 	menu->Append(new wxMenuItem(menu, ID_CONFIGURATION_MENU, _("Configuration"), wxEmptyString, wxITEM_NORMAL));
 	menu->Append(new wxMenuItem(menu, ID_HELP_MENU, _("Help"), wxEmptyString, wxITEM_NORMAL));
@@ -2697,6 +2721,22 @@ void SSCTaskBarItem::OnSyncSelected(wxCommandEvent &event) {
 	}
 }
 
+void SSCTaskBarItem::OnSyncPrefix(wxCommandEvent &event) {
+	/*if running, only rise window*/
+	if (!m_progress_frame->ShowIfRunning()) {
+		wxString prefix = wxGetTextFromUser(
+				_("Enter prefix you would like to sync:"),	
+				_("Prefix:"),
+				_T(""),
+				this);
+		if (prefix.IsEmpty())
+			return;
+		wxArrayString array;
+		array.Add(prefix);
+		m_progress_frame->StartSync(true, array);
+	}
+}
+
 void SSCTaskBarItem::OnTimer(wxTimerEvent& WXUNUSED(event)) {
 
 	wxConfigBase* config = wxConfigBase::Get(true);
@@ -2732,6 +2772,7 @@ BEGIN_EVENT_TABLE(SSCTaskBarItem, szTaskBarItem)
 	EVT_MENU(ID_CONFIGURATION_MENU, SSCTaskBarItem::OnConfiguration)
 	EVT_MENU(ID_START_SYNC_MENU, SSCTaskBarItem::OnBeginSync)
 	EVT_MENU(ID_SYNC_SELECTED_MENU, SSCTaskBarItem::OnSyncSelected)
+	EVT_MENU(ID_SYNC_PREFIX_MENU, SSCTaskBarItem::OnSyncPrefix)
 	EVT_MENU(ID_HELP_MENU, SSCTaskBarItem::OnHelp)
 	EVT_MENU(ID_ABOUT_MENU, SSCTaskBarItem::OnAbout)
 	EVT_MENU(ID_LOG_MENU, SSCTaskBarItem::OnLog)

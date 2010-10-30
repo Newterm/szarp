@@ -1,4 +1,7 @@
 
+l010-10-30	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/sync: a new, small feature - it is possible
+	synchronize base by providing its prefix
 2010-10-28	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2/szbase/realdatablock.cc: do not mark 
 	a block that ends before meaner last date as

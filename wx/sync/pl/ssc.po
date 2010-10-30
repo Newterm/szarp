@@ -5,10 +5,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-06 10:16+0100\n"
+"POT-Creation-Date: 2010-10-30 11:29+0200\n"
 "PO-Revision-Date: 2009-04-22 12:10+0100\n"
 "Last-Translator: Pawe³ Pa³ucha <pawel@praterm.com.pl>\n"
 "Language-Team: \n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -21,46 +22,50 @@ msgstr "Po³±czenie przerwane"
 msgid "TerminationRequest"
 msgstr ""
 
-#: sspackexchange.cc:225
+#: sspackexchange.cc:228 ssclient.cc:643
 msgid "connection with server terminated"
 msgstr "po³±czecie z serwerem przerwane"
 
-#: sspackexchange.cc:614
+#: sspackexchange.cc:441
+msgid "Connection timeout!"
+msgstr "Przekorczony czas oczekiwania na po³±czenie"
+
+#: sspackexchange.cc:624
 msgid ""
 "Attempt to read data from message but there is no more data in it (protocol "
 "mismatch?)"
 msgstr ""
 "Próba odczytu danych z komunikatu ale brak danych (niezgodno¶æ protoko³u?)"
 
-#: ssclient.cc:877
+#: ssclient.cc:948
 msgid "synchronization completed"
 msgstr "Synchronizacja zakoñczona"
 
-#: ssclient.cc:883
+#: ssclient.cc:954
 msgid "deleting files not present on the server - start"
 msgstr "usuwanie plików nieobecnych na serwerze - start"
 
-#: ssclient.cc:905
+#: ssclient.cc:976
 msgid "error while preparing list of files from the server: "
 msgstr "b³±d przy przygotowywaniu listy plików z serwera: "
 
-#: ssclient.cc:939
+#: ssclient.cc:1010
 msgid " error while deleting file: "
 msgstr " b³±d przy kasowaniu pliku: "
 
-#: ssclient.cc:951
+#: ssclient.cc:1022
 msgid "error while iterating through directories: "
 msgstr "b³±d podczas przegl±dania katalogów:"
 
-#: ssclient.cc:958
+#: ssclient.cc:1029
 msgid "deleting files not present on the server - end"
 msgstr "usuwanie plików nieobecnych na serwerze - koniec"
 
-#: ssclient.cc:1133 ssclient.cc:1189 ssclient.cc:1200 ssclient.cc:1289
+#: ssclient.cc:1204 ssclient.cc:1263 ssclient.cc:1275 ssclient.cc:1364
 msgid "unable to connect to server "
 msgstr "nie uda³o siê po³±czyæ z serwerem "
 
-#: ssclient.cc:1415
+#: ssclient.cc:1491
 msgid ""
 "SSC discover an attemption to run synchronization on invalid computer. "
 "Please contact with us."
@@ -68,263 +73,285 @@ msgstr ""
 "SSC wykry³ próbê synchronizacji danych na niezarejestrowanym komputerze."
 "Prosimy o skontakowanie siê z nami."
 
-#: ssclient.cc:1417
+#: ssclient.cc:1493
 msgid "Your account expired, contact with us."
 msgstr "Twoje konto straci³o wa¿no¶æ. Skontaktuj sie z nami."
 
-#: ssclient.cc:1419
+#: ssclient.cc:1495
 msgid "Incorrect user name or/and password."
 msgstr "Nieprawid³owa nazwa u¿ytkownika lub/i has³o."
 
-#: ssclient.cc:1426
+#: ssclient.cc:1502
 msgid "Your account is almost expired. Please contact with us."
 msgstr "Twoje konto nied³ugo straci wa¿no¶æ. Skontaktuj siê z nami."
 
-#: ssclient.cc:1428
+#: ssclient.cc:1504
 msgid ""
 "You are using old version of ssc/sss protocol. Please update to the newest "
 "version your ssc"
 msgstr ""
 "U¿ywasz bardzo starej wersji ssc, powiniene¶ jak najszybciej j± uaktualniæ."
 
-#: ssclient.cc:1441
+#: ssclient.cc:1517
 msgid "Not able to obtain file list - server configuration error"
 msgstr "Nie uda³o siê pobraæ listy plików - b³±d w konfiguracji serwera"
 
-#: ssclient.cc:1783
+#: ssclient.cc:1859
 msgid "SSC - synchronization"
 msgstr "SSC - Synchronizacja "
 
-#: ssclient.cc:1792 ssclient.cc:2170 ssclient.cc:2436
+#: ssclient.cc:1868 ssclient.cc:2264 ssclient.cc:2530
 msgid "Cancel"
 msgstr "Anuluj"
 
-#: ssclient.cc:1949
+#: ssclient.cc:2030
 msgid "Connecting "
 msgstr "£±czenie "
 
-#: ssclient.cc:1952
+#: ssclient.cc:2033
 msgid "Authorization "
 msgstr "Autoryzacja "
 
-#: ssclient.cc:1955 ssclient.cc:1966 ssclient.cc:1984 ssclient.cc:2000
-#: ssclient.cc:2801
+#: ssclient.cc:2036 ssclient.cc:2049 ssclient.cc:2081 ssclient.cc:2097
+#: ssclient.cc:2913
 msgid "SSC"
 msgstr "Synchronizator"
 
-#: ssclient.cc:1958
+#: ssclient.cc:2039
 msgid "Fetching file list "
 msgstr "Pobieranie listy plików "
 
-#: ssclient.cc:1961
+#: ssclient.cc:2044
 msgid "Synchronization "
 msgstr "Synchronizacja "
 
-#: ssclient.cc:1966
+#: ssclient.cc:2049
 msgid "Sync finished"
 msgstr "Synchronizacja zakoñczona"
 
-#: ssclient.cc:1979
+#: ssclient.cc:2062
 #, c-format
 msgid "Sychronization complete (elapsed %.2d:%.2d:%.2d)"
 msgstr "Synchronizacja zakoñczona (czas trwania %.2d:%.2d:%.2d)"
 
-#: ssclient.cc:2000
+#: ssclient.cc:2068
+msgid ""
+"\n"
+"Following configurations were not synced: "
+msgstr "\nNastêpuj±ce konfiguracje nie zosta³y zsychronizowane:"
+
+#: ssclient.cc:2078
+msgid ". Either they do no exsits or you have no access to them."
+msgstr ". Albo nie masz do nich dostêpu albo np. nie istniej±."
+
+#: ssclient.cc:2097
 msgid "Sync failed "
 msgstr "Synchronizacja nie powiod³a siê "
 
-#: ssclient.cc:2005 ssclient.cc:2006
+#: ssclient.cc:2101 ssclient.cc:2102
 msgid "Synchronization failed "
 msgstr "Synchronizacja nie powiod³a siê "
 
-#: ssclient.cc:2028
+#: ssclient.cc:2123
 msgid "Do you really want to terminate synchronization?"
 msgstr "Czy chcesz przerwaæ synchronizacjê?"
 
-#: ssclient.cc:2054
+#: ssclient.cc:2148
 msgid "SZARP File synchronizer - configuration"
 msgstr "Synchronizator plików"
 
-#: ssclient.cc:2060 ssclient.cc:2573
+#: ssclient.cc:2154 ssclient.cc:2668
 msgid "Configuration"
 msgstr "Konfiguracja"
 
-#: ssclient.cc:2065
+#: ssclient.cc:2159
 msgid "Servers:"
 msgstr "Serwery:"
 
-#: ssclient.cc:2087 ssclient.cc:2736
+#: ssclient.cc:2181 ssclient.cc:2848
 msgid "User name:"
 msgstr "Nazwa u¿ytkownika:"
 
-#: ssclient.cc:2100 ssclient.cc:2750
+#: ssclient.cc:2194 ssclient.cc:2862
 msgid "Password:"
 msgstr "Has³o:"
 
-#: ssclient.cc:2106
+#: ssclient.cc:2200
 msgid "Change"
 msgstr "Zmieñ"
 
-#: ssclient.cc:2117
+#: ssclient.cc:2211
 msgid "Add server"
 msgstr "Nowy serwer"
 
-#: ssclient.cc:2118
+#: ssclient.cc:2212
 msgid "Change address"
 msgstr "Zmieñ adres"
 
-#: ssclient.cc:2119
+#: ssclient.cc:2213
 msgid "Remove server"
 msgstr "Usuñ serwer"
 
-#: ssclient.cc:2124
+#: ssclient.cc:2218
 msgid "Synchronization setup:"
 msgstr "Ustawienia synchronizacji:"
 
-#: ssclient.cc:2129
+#: ssclient.cc:2223
 msgid "Automatic synchronization"
 msgstr "Automatyczna synchronizacja"
 
-#: ssclient.cc:2137
+#: ssclient.cc:2231
 msgid "Data actualization period(minutes):"
 msgstr "Czêsto¶æ aktualizacji(w minutach)"
 
-#: ssclient.cc:2157
+#: ssclient.cc:2251
 msgid "Show notification upon sync completion"
 msgstr "Informuj o zakoñczeniu"
 
-#: ssclient.cc:2167 ssclient.cc:2433
+#: ssclient.cc:2261 ssclient.cc:2527
 msgid "OK"
 msgstr "OK"
 
-#: ssclient.cc:2242
+#: ssclient.cc:2336
 #, c-format
 msgid "Enter password for server %s:"
 msgstr "Wprowad¼ has³o do serwera %s:"
 
-#: ssclient.cc:2243
+#: ssclient.cc:2337
 msgid "New password"
 msgstr "Nowe has³o"
 
-#: ssclient.cc:2271
+#: ssclient.cc:2365
 msgid "Enter server address:"
 msgstr "Wprowad¼ adres serwera:"
 
-#: ssclient.cc:2272
+#: ssclient.cc:2366
 msgid "New server"
 msgstr "Nowy serwer"
 
-#: ssclient.cc:2280 ssclient.cc:2344
+#: ssclient.cc:2374 ssclient.cc:2438
 msgid "Server with that address already exists."
 msgstr "Serwer o takim adresie ju¿ istnieje."
 
-#: ssclient.cc:2280 ssclient.cc:2344
+#: ssclient.cc:2374 ssclient.cc:2438
 msgid "Server already exists"
 msgstr "Serwer ju¿ istnieje"
 
-#: ssclient.cc:2286
+#: ssclient.cc:2380
 #, c-format
 msgid "Enter user name for server: %s"
 msgstr "Wprowad¼ nazwê u¿ytkownika do serwwera: %s"
 
-#: ssclient.cc:2287
+#: ssclient.cc:2381
 msgid "Username"
 msgstr "Nazwa u¿ytkownika"
 
-#: ssclient.cc:2295
+#: ssclient.cc:2389
 #, c-format
 msgid "Enter password for server: %s"
 msgstr "Wprowad¼ has³o do serwera: %s"
 
-#: ssclient.cc:2296
+#: ssclient.cc:2390
 msgid "Password"
 msgstr "Has³o"
 
-#: ssclient.cc:2311
+#: ssclient.cc:2405
 msgid "At least one server must be present."
 msgstr "Przynajmiej jeden serwer musi byæ skonfigurowany."
 
-#: ssclient.cc:2311
+#: ssclient.cc:2405
 msgid "Error"
 msgstr "B³±d"
 
-#: ssclient.cc:2316
+#: ssclient.cc:2410
 #, c-format
 msgid "Do you wish to remove server: %s ?"
 msgstr "Czy chcesz usun±æ serwer; %s ?"
 
-#: ssclient.cc:2317
+#: ssclient.cc:2411
 msgid "Server removal"
 msgstr "Usuniêcie serwera"
 
-#: ssclient.cc:2332
+#: ssclient.cc:2426
 #, c-format
 msgid "Enter new address of server: %s"
 msgstr "Wprowad¼ nowy adress dla serwera: %s"
 
-#: ssclient.cc:2333
+#: ssclient.cc:2427
 msgid "Server address"
 msgstr "Adres serwera"
 
-#: ssclient.cc:2374
+#: ssclient.cc:2468
 msgid "Server "
 msgstr "Serwer "
 
-#: ssclient.cc:2389
+#: ssclient.cc:2483
 msgid "SZARP Select databases"
 msgstr "SZARP Wybór baz do synchronizacji"
 
-#: ssclient.cc:2394
+#: ssclient.cc:2488
 msgid "Select databases to synchronize"
 msgstr "Wybierz bazy do synchronizacji"
 
-#: ssclient.cc:2428
+#: ssclient.cc:2522
 msgid "Delete files not present on the server"
 msgstr "Usuñ lokalne pliki nieobecne na serwerze"
 
-#: ssclient.cc:2539
+#: ssclient.cc:2633
 msgid "Log dialog"
 msgstr "Dziennik"
 
-#: ssclient.cc:2546
+#: ssclient.cc:2640
 msgid "Synchronize SZARP data"
 msgstr "Synchronizuj dane SZARP"
 
-#: ssclient.cc:2570
+#: ssclient.cc:2664
 msgid "Begin synchronization"
 msgstr "Synchronizuj"
 
-#: ssclient.cc:2571
+#: ssclient.cc:2665
 msgid "Synchronize selected databeses"
 msgstr "Synchronizuj wybrane bazy"
 
-#: ssclient.cc:2574
+#: ssclient.cc:2666
+msgid "Synchronize given database by prefix"
+msgstr "Synchronizuj wybran± baze po prefiksie"
+
+#: ssclient.cc:2669
 msgid "Help"
 msgstr "Pomoc"
 
-#: ssclient.cc:2575
+#: ssclient.cc:2670
 msgid "About"
 msgstr "O programie"
 
-#: ssclient.cc:2576
+#: ssclient.cc:2671
 msgid "Log"
 msgstr "Dziennik"
 
-#: ssclient.cc:2579
+#: ssclient.cc:2674
 msgid "Close application"
 msgstr "Zamknij aplikacjê"
 
-#: ssclient.cc:2678
+#: ssclient.cc:2728
+msgid "Enter prefix you would like to sync:"
+msgstr "Podaj prefiks który chcesz zsynchronizowaæ:"
+
+#: ssclient.cc:2729
+msgid "Prefix:"
+msgstr "Prefiks:"
+
+#: ssclient.cc:2790
 msgid ""
 "Do you really want to cancel configuration and terminate the application"
 msgstr ""
 "Czy chcesz przerwaæ proces konfiguracji i zakoñczyæ dzia³anie aplikacji?"
 
-#: ssclient.cc:2678
+#: ssclient.cc:2790
 msgid "Question"
 msgstr "Pytanie"
 
-#: ssclient.cc:2692
+#: ssclient.cc:2804
 msgid ""
 "\n"
 "Welcome to SZARP Synchronizer Client\n"
@@ -336,7 +363,7 @@ msgstr ""
 "\n"
 "\n"
 
-#: ssclient.cc:2703
+#: ssclient.cc:2815
 msgid ""
 "\n"
 "\n"
@@ -366,7 +393,7 @@ msgstr ""
 "\n"
 "Naci¶nij przycisk \"Dalej\", by kontynuowaæ."
 
-#: ssclient.cc:2722
+#: ssclient.cc:2834
 msgid ""
 "\n"
 "\n"
@@ -380,11 +407,11 @@ msgstr ""
 "swoj± nazwê u¿ytkowika oraz has³o. Te dane s± niezbêdne, \n"
 "by aplikacja mog³a pobieraæ dane z serwera.\n"
 
-#: ssclient.cc:2765
+#: ssclient.cc:2877
 msgid "Server address:"
 msgstr "Adres serwera:"
 
-#: ssclient.cc:2780
+#: ssclient.cc:2892
 msgid ""
 "If you don't know your username or password please server administrator.\n"
 "You may click Cancel button to stop configuration process and close the\n"
@@ -397,12 +424,12 @@ msgstr ""
 "pracê\n"
 "aplikacji.\n"
 
-#: ssclient.cc:2801
+#: ssclient.cc:2913
 msgid "You must fill in username, password and server address fields"
 msgstr ""
 "Musisz uzupe³niæ pola \"nazwa u¿ytkownika\",  \"has³o\" i \"adres serwera\""
 
-#: ssclient.cc:2820
+#: ssclient.cc:2932
 msgid ""
 "The configuration process is now over.\n"
 "\n"
@@ -433,39 +460,23 @@ msgstr ""
 "\n"
 "Kliknij przycisk \"Zakoñcz\", by uruchomiæ program.\n"
 
-#: ssclient.cc:2840 ssclient.cc:2851
-msgid "d"
+#: ssclient.cc:2970
+msgid "SSC version 3.00."
 msgstr ""
 
-#: ssclient.cc:2840
-msgid "debug"
+#: ssclient.cc:2973
+msgid "debug level"
 msgstr ""
 
-#: ssclient.cc:2840
-msgid "debug level (0-10)"
-msgstr ""
-
-#: ssclient.cc:2841 ssclient.cc:2845
-msgid "h"
-msgstr ""
-
-#: ssclient.cc:2841
-msgid "help"
-msgstr ""
-
-#: ssclient.cc:2841
-msgid "print usage info"
-msgstr ""
-
-#: ssclient.cc:2929
+#: ssclient.cc:3045
 msgid "Sync Client"
 msgstr "Synchronizator"
 
-#: ssclient.cc:2935
+#: ssclient.cc:3051
 msgid "ERROR!"
 msgstr "B³±d!"
 
-#: ssclient.cc:2935
+#: ssclient.cc:3051
 msgid ""
 "Cannot determine main SZARP directory.\n"
 "Application is not able to function"
@@ -473,18 +484,18 @@ msgstr ""
 "Nie jestem w stanie ustaliæ katalogu z systemem SZARP.\n"
 "Aplikacja nie mo¿e funkcjonowaæ."
 
-#: ssclient.cc:2986
+#: ssclient.cc:3100
 msgid "SSC - intial configuration"
 msgstr "Synchronizator - wstêpna konfiguracja"
 
-#: ssfsutil.cc:142 ssfsutil.cc:147 ssfsutil.cc:161 ssfsutil.cc:168
+#: ssfsutil.cc:160 ssfsutil.cc:165 ssfsutil.cc:179 ssfsutil.cc:186
 msgid "Unable to create dir: "
 msgstr "Nie uda³o siê stworzyæ katalogu: "
 
-#: ssfsutil.cc:317
+#: ssfsutil.cc:335
 msgid "Error while reading file "
 msgstr "B³±d podczas odczytu pliku "
 
-#: ssfsutil.cc:333
+#: ssfsutil.cc:351
 msgid "Error while writing file "
 msgstr "B³±d podczas zapisu pliku "
