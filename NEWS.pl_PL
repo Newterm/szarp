@@ -7,22 +7,36 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.500
+# 01.11.2010
+* Dokumentacja programu przegl±daj±cego uzupe³niona o opis funkcjonalno¶ci
+"drzewka".
+* Do demona boruta dodana zosta³a obs³uga protoko³u przep³ywomierza Metronic 
+FP210, wprowadzono tak¿e usprawnienia i poprawki w obs³udze protoko³ów ZET
+i Modbus.
+* Poprawki w programie przegl±daj±cym: prawid³owa propagacja zmiany nazwy 
+parametru u¿ytkownika, przyspieszenia zamykania programu, wykresy z zestawów
+u¿ytkownika nie s± pokazywane w oknie wyszukiwania, drobne poprawki w silniku 
+bazy danych poprawiaj±ce kilka sporadycznie wystêpuj±cych b³êdów.
+* W Synchronizatorze dodano mo¿liwo¶æ rêcznego podania prefiksu (nazwy) bazy
+do synchronizacji.
+
 ** 3.1.442
 # 01.10.2010
-* Demon sbusdmn zosta³ rozszerony o obs³ugê wariantu "PCD" protoko³u 
+* Demon sbusdmn zosta³ rozszerzony o obs³ugê wariantu "PCD" protoko³u 
 SBUS.
 * Du¿o zmian i poprawek zosta³ wprowadzonych do meta-demona boruta, 
-demon dzia³a ju¿ stablinie jako klient komunikuj±cy siê ze sterownikami
+demon dzia³a ju¿ stabilnie jako klient komunikuj±cy siê ze sterownikami
 ZET oraz tych u¿ywaj±cych protoko³u modbus rtu.
 * Dodano now± funkcjê do draw3  - 'drzewko'. Zestawy wykresów (okna) 
 mog± zostaæ pokategoryzowany w grupy, a te grupy w kolejne grupy
-(z dowolnym poziomem zagnie¿dzenia), ta funkcja powinna u¿ytkownikom,
+(z dowolnym poziomem zagnie¿d¿enia), ta funkcja powinna u¿ytkownikom,
 którzy do ogl±dania danych u¿ywaj± tylko myszy, znakomicie 
 u³atwiæ przegl±danie zestawów wykresów, szczególnie w przypadku
 du¿ych instalacji.
-* Dodano zestaw skyrptów pozwalaj±cych na konwertowanie konfiguracji
+* Dodano zestaw skryptów pozwalaj±cych na konwertowanie konfiguracji
 systemu SZARP z/do plików csv. Czasami edytowanie konfiguracji
-w formie tabelarzynej bywa wygodniejsze.
+w formie tabelarycznej bywa wygodniejsze.
 * Comiesiêczny zestaw drobnych poprawek i usprawnieñ.
 
 
