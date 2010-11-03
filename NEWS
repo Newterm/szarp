@@ -6,24 +6,36 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.500
+# 01.11.2010
+* Draw3 documentation updated with description of treenode element.
+* New boruta sub-driver for Metronic FP210, fixes in Modbus and ZET 
+sub-driver.
+* Draw3 fixes: propagating change of user-defined parameter name, speeding 
+up closing of program, fixes in editing user defined params, draws from 
+user defined sets are not shown in search windows, small improvements in 
+database engine fixing some rarely occurring bugs.
+* Szarp synchronizer - added option to manually set prefix of database to 
+synchronize.
+
 ** 3.1.442
 # 01.10.2010
 * A support from "PCD" variant of SBUS protcol was added to sbusdmn.
-* A lot of fixes and improvemnts was introduced to meta-daemon boruta,
+* A lot of fixes and improvements was introduced to meta-daemon boruta,
 daemon support for zet and modbus rtu protcols were tested and deployed.
 * Draw3 can now be configured to display draw sets arranged in hierarchical
 tree-like structure. This feature will be especially useful for users
-that prefer to navigate trough draw sets using mouse than seraching
+that prefer to navigate trough draw sets using mouse than searching
 with keyboard. It also allows to categorize sets in more explicit way.
 * A pair of tools was added that convert ipk configuration from/to 
 cvs format. It is sometimes more convenient to edit configuration
-in tabluar form.
+in tabular form.
 * And usual assortment of small fixes and improvements.
 
 ** 3.1.439
 # 01.09.2010
 * Fixes in generating XML config for LUA formulas using IPK library.
-* szbwriter by default does not add unkown parameters to configuration, that 
+* szbwriter by default does not add unknown parameters to configuration, that 
 prevents from breaking configuration by incorrect calls to szbwriter.
 * Fixed few draw3 crashes under Windows on non-standard configuration/bases.
 * Fixed incorrect draw3 behaviour when to many draws are added to user set.
