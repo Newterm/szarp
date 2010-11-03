@@ -2727,8 +2727,7 @@ void SSCTaskBarItem::OnSyncPrefix(wxCommandEvent &event) {
 		wxString prefix = wxGetTextFromUser(
 				_("Enter prefix you would like to sync:"),	
 				_("Prefix:"),
-				_T(""),
-				this);
+				_T(""));
 		if (prefix.IsEmpty())
 			return;
 		wxArrayString array;
