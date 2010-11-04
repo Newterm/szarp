@@ -14,11 +14,13 @@
 
 #ifdef LUA_PARAM_OPTIMISE
 LuaOptDatablock::LuaOptDatablock(szb_buffer_t * b, TParam * p, int y, int m) : LuaDatablock(b, p, y, m) {
-#ifdef KDEBUG
-	sz_log(DATABLOCK_CREATION_LOG_LEVEL, "D: DefinableDatablock::DefinableDatablock(%ls, %d.%d)", param->GetName().c_str(), year, month);
-#endif
 	AllocateDataMemory();
-	exec_param = p->GetLuaExecParam();
+}
+
+void LuaOptDatablock::FinishInitialization() {
+
+	exec_param = param->GetLuaExecParam();
+
 	if (year < buffer->first_av_year)
 		NOT_INITIALIZED;
 	if (year == buffer->first_av_year && month < buffer->first_av_month)
@@ -37,7 +39,6 @@ LuaOptDatablock::LuaOptDatablock(szb_buffer_t * b, TParam * p, int y, int m) : L
 	last_update_time = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
 	if (LoadFromCache()) {
 		Refresh();
-		return;
 	} else {
 		LuaExec::ExecutionEngine ee(buffer, param->GetLuaExecParam());
 		CalculateValues(&ee, probes_to_compute);

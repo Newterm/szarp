@@ -1,4 +1,9 @@
 
+2010-11-04	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2/szbase/loptdatablock: move calculation
+	of optimized LUA param values from block constructor
+	to FinishInitizalization method, this lets
+	a LUA optimized param to reference itself 
 2010-10-30	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/sync: a new, small feature - it is possible
 	synchronize base by providing its prefix

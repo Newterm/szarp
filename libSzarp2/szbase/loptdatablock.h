@@ -42,6 +42,7 @@ class LuaOptDatablock : public LuaDatablock
 public:
 	LuaExec::Param *exec_param;
 	LuaOptDatablock(szb_buffer_t * b, TParam * p, int y, int m);
+	virtual void FinishInitialization();
 	virtual void Refresh();
 };
 
