@@ -114,7 +114,7 @@ case "$1" in
 	if [ x$PROBES_SERVER = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/lib/python/probes_server.tac
     	    szlog
-	    twistd -y $DAEMON --logfile /opt/szarp/legs/prober.log --pidfile /var/run/probes_server.pid
+	    twistd -y $DAEMON --logfile /opt/szarp/logs/prober.log --pidfile /var/run/probes_server.pid
 	    log_end_msg $?
 	fi
 
