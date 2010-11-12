@@ -801,7 +801,7 @@ msgstr "Od¶wie¿"
 
 #: drawtb.cpp:68
 msgid "Tree Set"
-msgstr ""
+msgstr "Drzewo wykresów"
 
 #: drawtb.cpp:88 XRC_gettext_file.h:140
 msgid "Language"

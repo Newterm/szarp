@@ -1,4 +1,8 @@
 
+2010-11-12	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3/draw3.po: "Tree Set" string translation added
+	* utils/probes_server/szbcache.py: added proper handling
+	of certain corner cases
 2010-11-04	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2/szbase/loptdatablock: move calculation
 	of optimized LUA param values from block constructor

@@ -143,7 +143,7 @@ class SzbCache:
 		debug("SEARCH PARAMS: start %s, end %s, direction %d" % (format_time(start), format_time(end), direction))
 		dpath = self.check_path(parampath)
 		if not os.path.isdir(dpath):
-			return -1
+			return (-1, -1, -1)
 		(first, last) = self.search_first_last(dpath)
 		if direction == 0:
 			if start == -1:
@@ -222,7 +222,7 @@ class SzbCache:
 		lastindex = self.last_index(path)
 		debug("WRITE_FILE INDEX %d %d last_index: %d" % (startindex, endindex, lastindex))
 		debug("WRITE_FILE TIME  %d %d last_index: %d" % (self.index2time(path, startindex), 
-			self.index2time(path, endindex), self.index2time(path, lastindex)))
+			self.index2time(path, endindex), lastindex >= 0 and self.index2time(path, lastindex) or -1))
 		lastindex = min(endindex, lastindex)
 		towrite = lastindex - startindex + 1
 		if towrite < 0:
