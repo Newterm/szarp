@@ -1,5 +1,8 @@
 
 2010-11-16	Darek Marcinkiewicz <reksio@newterm.pl>
+	* configure.in, debian/rules: --enable-lua-param-optimiser
+	substituted with --with-lua-param-optimiser which is now
+	'on' by default
 	* INSTALL.Windows: it is now possible to cross-compile
 	boost libraries
 2010-11-12	Darek Marcinkiewicz <reksio@newterm.pl>
