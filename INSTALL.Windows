@@ -394,58 +394,22 @@ make install
 
 3.14. boost libraries.
 
-Well, there's a problem - boost uses own building tool, called 'bjam'. And it
-doesn't support cross-compilation - we were not able to build for example 
-boost thread library for Mingw using Linux. So, we just built boost on Windows
-using Mingw tools. 
+In order to build a boost libraries, bjam utility is required. It is
+available in Debian packages.
 
-To perform a compilation, we need to download:
- -  sources of the boost library from:
-	http://www.boost.org
- -  boost jam application from:
-	http://www.boost.org
-   
-We assume that you place your boost sources in F:\boost_1_42_0\ directory. 
-The bjam application can be stored wherever. The best location is a root of 
-the boost sources directory (F:\boost_1_42_0\). Otherwise, the location 
-should be added to the PATH variable.
-In the next step, we have to specified, which compiler will be used for boost 
-compilation. It can be done by editing of the user-config.jam file which is 
-stored in F:\boost_1_42_0\tools\build\v2 directory. We have to choose a proper 
-configuration for our compilation system. For example, for MinGW compiler 
-suite a line
-	# Configure gcc (default version)
-	# using gcc ;
-should be changed into
-	# Configure gcc (default version)
-	using gcc ;
-Be aware that the bin directory of the MingGW compiler suite is added to 
-the PATH variable (e.g. C:\MinGW\bin).
-We can also use the MSVC and the Borland compilers instead of the MinGW, 
-but these configurations have not been tested.
+Download and unpack boost source distribution, enter
+boost source main directory and:
 
-To run boost compilation we execute bjam.exe application and the compilation 
-will be started. If we don't specify any additional parameters, the minimal 
-set of varaints will be build (static, multithreaded, debug, release, shared 
-runtime). It takes about 350MB on the hard disc and it is enough for Szarp 
-cross-compilation on the Linux system. 
-We can also build all possible variations if we execute 
-	bjam.exe --build-type=complete
+* add line
+using gcc : m : i586-mingw32msvc-g++ ;
+somethere to tools/build/v2/user-config.jam
 
-After the succesful compilation, the boost libraries will be stored in:
-	- boost_1_42_0\stage
-	- boost_1_42_0\bin.v2 
-directories.
+* issue command:
+bjam --layout=system --without-mpi --without-graph --without-graph_parallel --without-iostreams --without-python --without-math  variant=release threading=multi link=shared runtime-link=shared toolset=gcc-mingw target-os=windows threadapi=win32 stage
 
-We assumed that the boost libraries under the Linux will be stored in 
-/usr/local/boost, so we need to copy a contents of the 
-	boost_1_42_0\stage\lib\ to /usr/local/boost/lib
-	and
-	boost_1_42_0\boost\ to /usr/local/boost/include/boost
-
-You need at least system, filesystem, date_time, program_options, regex 
-and thread libraries.
-
+and that's it. Headers are located in boost directory, compiled libraries 
+in stages/lib. Copy headers to /usr/local/boost/include and librarires to 
+/usr/local/boost/lib
 
 3.15. sqlite library.
 
