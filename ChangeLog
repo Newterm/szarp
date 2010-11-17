@@ -1,4 +1,9 @@
 
+2010-11-17	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2/szbase/szbbuf.cc: first_av_date no
+	later than first date of meaner status param
+	* libSzarp2/szbase/loptcalculate: part two
+	of self referencing params support in lua optimizer
 2010-11-16	Darek Marcinkiewicz <reksio@newterm.pl>
 	* configure.in, debian/rules: --enable-lua-param-optimiser
 	substituted with --with-lua-param-optimiser which is now

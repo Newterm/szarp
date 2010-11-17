@@ -601,17 +601,21 @@ szb_create_buffer(Szbase *szbase, const std::wstring &directory, int num, TSzarp
 	ret->first_av_date = -1;
 	ret->first_param = ipk->getParamByIPC(0);
 
+	TParam * p = new TParam(NULL);
+	p->Configure(L"Status:Meaner3:program uruchomiony",
+			L"", L"", L"", NULL, 0, -1, 1);
+	ret->meaner3_param = p;
+
 	int ii = 0;
 	TParam *param;
 	while (ret->first_av_date < 0 && (param = ipk->getParamByIPC(ii++)))
 		ret->first_av_date = szb_search_first(ret, param);
 
-	szb_time2my(ret->first_av_date, &(ret->first_av_year), &(ret->first_av_month));
+	time_t meaner_start = szb_search_first(ret, ret->meaner3_param);
+	if (meaner_start > 0 && meaner_start < ret->first_av_date)
+		ret->first_av_date = meaner_start;
 
-	TParam * p = new TParam(NULL);
-	p->Configure(L"Status:Meaner3:program uruchomiony",
-			L"", L"", L"", NULL, 0, -1, 1);
-	ret->meaner3_param = p;
+	szb_time2my(ret->first_av_date, &(ret->first_av_year), &(ret->first_av_month));
 
 	rootpath /= p->GetSzbaseName();
 	// prepare mpath for fast path creation

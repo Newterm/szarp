@@ -68,6 +68,34 @@ public:
 	}
 };
 
+ParamRef::ParamRef() {
+	m_exec_engine = NULL;
+}
+
+void ParamRef::PushExecutionEngine(ExecutionEngine *exec_engine) {
+	m_exec_engines.push_back(m_exec_engine);
+	m_exec_engine = exec_engine;
+}
+
+void ParamRef::PopExecutionEngine() {
+	assert(m_exec_engines.size());
+	m_exec_engine = m_exec_engines.back();
+	m_exec_engines.pop_back();
+}
+
+Var::Var(size_t var_no) : m_var_no(var_no), m_ee(NULL) {}
+
+void Var::PushExecutionEngine(ExecutionEngine *exec_engine) {
+	m_exec_engines.push_back(m_ee);
+	m_ee = exec_engine;
+}
+
+void Var::PopExecutionEngine() {
+	assert(m_exec_engines.size());
+	m_ee = m_exec_engines.back();
+	m_exec_engines.pop_back();
+}
+
 class VarRef {
 	std::vector<Var>* m_vec;
 	size_t m_var_no;
@@ -1165,7 +1193,7 @@ ExecutionEngine::ExecutionEngine(szb_buffer_t *buffer, Param *param) {
 	szb_lock_buffer(m_buffer);
 	m_param = param;
 	for (size_t i = 0; i < m_param->m_par_refs.size(); i++)
-		m_param->m_par_refs[i].SetExecutionEngine(this);
+		m_param->m_par_refs[i].PushExecutionEngine(this);
 	m_blocks.resize(UNUSED_BLOCK_TYPE);
 	m_blocks_iterators.resize(UNUSED_BLOCK_TYPE);
 	for (size_t i = 0 ; i < UNUSED_BLOCK_TYPE; i++) {
@@ -1174,7 +1202,7 @@ ExecutionEngine::ExecutionEngine(szb_buffer_t *buffer, Param *param) {
 	}
 	m_vals.resize(m_param->m_vars.size());
 	for (size_t i = 0; i < m_vals.size(); i++)
-		m_param->m_vars[i].SetExecutionEngine(this);
+		m_param->m_vars[i].PushExecutionEngine(this);
 	m_vals[3] = PT_MIN10;
 	m_vals[4] = PT_HOUR;
 	m_vals[5] = PT_HOUR8;
@@ -1343,6 +1371,10 @@ std::vector<double>& ExecutionEngine::Vars() {
 
 ExecutionEngine::~ExecutionEngine() {
 	szb_unlock_buffer(m_buffer);
+	for (size_t i = 0; i < m_param->m_par_refs.size(); i++)
+		m_param->m_par_refs[i].PopExecutionEngine();
+	for (size_t i = 0; i < m_vals.size(); i++)
+		m_param->m_vars[i].PopExecutionEngine();
 }
 
 Val ParamRef::Value(const double& time, const double& period) {

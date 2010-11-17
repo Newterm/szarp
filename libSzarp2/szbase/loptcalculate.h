@@ -29,20 +29,25 @@ struct ParamRef {
 	szb_buffer_t *m_buffer;
 	TParam* m_param;
 	size_t m_param_index;
+	std::list<ExecutionEngine*> m_exec_engines;
 	ExecutionEngine* m_exec_engine;
 public:
-	void SetExecutionEngine(ExecutionEngine *exec_engine) { m_exec_engine = exec_engine; }
+	ParamRef();
+	void PushExecutionEngine(ExecutionEngine *exec_engine);
+	void PopExecutionEngine();
 	Val Value(const double &time, const double& period);
 };
 
 class Var {
 	size_t m_var_no;
 	ExecutionEngine* m_ee;
+	std::list<ExecutionEngine*> m_exec_engines;
 public:
-	Var(size_t var_no) : m_var_no(var_no) {}
+	Var(size_t var_no);
 	Val& operator()();
 	Val& operator=(const Val& val);
-	void SetExecutionEngine(ExecutionEngine *ee) { m_ee = ee; }
+	void PushExecutionEngine(ExecutionEngine *exec_engine);
+	void PopExecutionEngine();
 };
 
 
