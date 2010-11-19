@@ -912,8 +912,7 @@ void DrawPicker::SetModified(wxString prefix, wxString name, DrawSet *set) {
 	DefinedDrawSet *ds = dynamic_cast<DefinedDrawSet*>(set);
 	assert(ds);
 
-	delete m_defined_set;
-	m_defined_set = ds->MakeDeepCopy();
+	m_defined_set->SyncWithAllPrefixes();
 
 	RefreshData();
 }

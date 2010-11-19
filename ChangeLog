@@ -1,4 +1,7 @@
 
+2010-11-19	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: user set being edited does not reset
+	to its initial state upon change of defined param
 2010-11-17	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2/szbase/szbbuf.cc: first_av_date no
 	later than first date of meaner status param

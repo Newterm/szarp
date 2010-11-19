@@ -388,6 +388,8 @@ public:
 
 	bool SyncWithPrefix(wxString prefix);
 
+	void SyncWithAllPrefixes();
+
 	bool SyncWithPrefix(wxString prefix, std::vector<wxString>& removed, const std::vector<DefinedParam*>& defined_params);
 
 	bool RefersToPrefix(wxString prefix);

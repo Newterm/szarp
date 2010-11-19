@@ -963,6 +963,13 @@ DefinedParam* DefinedDrawSet::LookupDefinedParam(wxString prefix, wxString param
 	return NULL;
 }
 
+void DefinedDrawSet::SyncWithAllPrefixes() {
+
+	for (SetsNrHash::iterator i = GetPrefixes().begin();
+			i != GetPrefixes().end();
+			i++)
+		SyncWithPrefix(i->first);
+}
 
 bool DefinedDrawSet::SyncWithPrefix(wxString prefix) {
 	std::vector<wxString> removed;
