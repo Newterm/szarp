@@ -743,6 +743,7 @@ bool DrawPicker::Accept()
 		m_modified = true;
 
 	if (m_editing_existing) {	// only modyfing
+
 		if (m_modified == false) {
 			delete m_defined_set;
 			m_defined_set = NULL;
@@ -750,21 +751,15 @@ bool DrawPicker::Accept()
 		}
 
 		DefinedDrawSet *nds = m_defined_set;
-
-		//to idicate that we have to ignore any events related to draws removal, subustiution cause
-		//we are not editing anything
-		m_defined_set = NULL;
-
 		dds->SubstituteSet(old_title, nds);
+
 	} else {	// adding new
+
 		DefinedDrawSet *nds = m_defined_set;
-		//to idicate that we have to ignore any events related to draws removal and subustiution cause
-		//we are not editing anything
-		m_defined_set = NULL;
-	
 		dds->AddSet(nds);
 
 		m_created_set_name = title;
+
 	}
 
 	return true;
@@ -874,46 +869,17 @@ int DrawPicker::EditSet(DefinedDrawSet *set, wxString prefix) {
 
 }
 
-void DrawPicker::SetRemoved(wxString prefix, wxString name) {
+void DrawPicker::ParamDestroyed(DefinedParam *d) {
 	if (m_defined_set == NULL)
 		return;
-	if (prefix != DefinedDrawsSets::DEF_PREFIX || m_defined_set->GetName() != name)
-		return;
-
-	m_draw_edit->Cancel();
-	StartNewSet();
-}
-
-void DrawPicker::SetRenamed(wxString prefix, wxString from, wxString to, DrawSet *set) {
-	if (m_defined_set == NULL)
-		return;
-	if (prefix != DefinedDrawsSets::DEF_PREFIX || m_defined_set->GetName() != from)
-		return;
-
-	m_draw_edit->Cancel();
-
-	DefinedDrawSet *ds = dynamic_cast<DefinedDrawSet*>(set);
-	assert(ds);
-
-	delete m_defined_set;
-	m_defined_set = ds->MakeDeepCopy();
-
+	m_defined_set->SyncWithAllPrefixes();
 	RefreshData();
 }
 
-void DrawPicker::SetModified(wxString prefix, wxString name, DrawSet *set) {
+void DrawPicker::ParamSubstituted(DefinedParam *d, DefinedParam *p) {
 	if (m_defined_set == NULL)
 		return;
-	if (prefix != DefinedDrawsSets::DEF_PREFIX || m_defined_set->GetName() != name)
-		return;
-
-	m_draw_edit->Cancel();
-
-	DefinedDrawSet *ds = dynamic_cast<DefinedDrawSet*>(set);
-	assert(ds);
-
 	m_defined_set->SyncWithAllPrefixes();
-
 	RefreshData();
 }
 

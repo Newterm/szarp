@@ -112,7 +112,10 @@ static struct argp_option options[] = {
 	{"progress", 'P', NULL, 0,
 		"Print progress information on stderr", -3},
 	{"sum", 'X', NULL, 0,
-		"Print only sums of values from given time range, implies --csv", 6},
+		"Print only sums of values from given time range, implies --csv", 7},
+	{"probes-server", 'A', "ADDRESS", 0,
+		"Address of probes server to fetch data from", 7},
+	{"probes-server-port", 'L', "PORT", 0, "Port probes server listens on", 7},
 	{0}
 };
 
@@ -145,6 +148,8 @@ struct arguments {
 	char dec_sep;
 	int empty;
 	int sum;
+	char * prober_address;
+	char * prober_port;
 };
 
 static error_t parse_opt(int key, char *arg, struct argp_state *state)
@@ -249,7 +254,9 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 				(arg[5] - '0');
 			break;
 		case 'p':
-			if (!strcmp(arg, "10min")) 
+			if (!strcmp(arg, "10sec")) 
+				arguments->probe = PT_SEC10;
+			else if (!strcmp(arg, "10min")) 
 				arguments->probe = PT_MIN10;
 			else if (!strcmp(arg, "hour"))
 				arguments->probe = PT_HOUR;
@@ -326,6 +333,13 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 			arguments->csv = 1;
 			free(arguments->delimiter);
 			asprintf(&arguments->delimiter, "%s", arg);
+			break;
+		case 'A':
+			arguments->prober_address = strdup(arg);
+			sz_log(10, "Setting prober address: %s", arg);
+			break;
+		case 'L':
+			arguments->prober_port = strdup(arg);
 			break;
 		case 'P':
 			arguments->progress = 1;
@@ -448,6 +462,8 @@ int main(int argc, char* argv[])
 	arguments.dec_sep = 0;
 	arguments.empty = 0;
 	arguments.sum = 0;
+	arguments.prober_address = NULL;
+	arguments.prober_port = NULL;
 
 	setbuf(stdout, 0);
 	
@@ -486,11 +502,20 @@ int main(int argc, char* argv[])
 
 	IPKContainer::Init(SC::A2S(szarp_data_root), SC::A2S(PREFIX), L"", new NullMutex());
 	Szbase::Init(SC::A2S(szarp_data_root), NULL);
+
+
 	
 	TSzarpConfig *ipk = IPKContainer::GetObject()->GetConfig(SC::A2S(ipk_prefix));
 	if (ipk == NULL) {
 		sz_log(0, "Could not load IPK configuration for prefix '%s'", ipk_prefix);
 		return 1;
+	}
+
+	if (arguments.prober_address) {
+		sz_log(0, "Prober address: %s", arguments.prober_address);
+		Szbase::GetObject()->SetProberAddress(SC::A2S(ipk_prefix),
+			SC::A2S(arguments.prober_address),
+			arguments.prober_port ? SC::A2S(arguments.prober_port) : L"8090");
 	}
 
 	szb_buffer_t *szb = Szbase::GetObject()->GetBuffer(SC::A2S(ipk_prefix));

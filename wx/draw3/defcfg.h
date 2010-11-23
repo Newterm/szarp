@@ -154,7 +154,7 @@ public:
 
 	void AddDefinedParam(DefinedParam *dp);
 
-	void DestroyParam(DefinedParam *dp);
+	void RemoveParam(DefinedParam *dp);
 
 	void RemoveDrawFromSet(DefinedDrawInfo *di);
 protected:

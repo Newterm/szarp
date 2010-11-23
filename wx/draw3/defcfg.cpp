@@ -1538,13 +1538,11 @@ void DefinedDrawsSets::AddDefinedParam(DefinedParam *dp) {
 	definedParams.push_back(dp);
 }
 
-void DefinedDrawsSets::DestroyParam(DefinedParam *dp) {
+void DefinedDrawsSets::RemoveParam(DefinedParam *dp) {
 	std::vector<DefinedParam*> n;
 	for (size_t i = 0; i < definedParams.size(); i++)
 		if (definedParams[i] != dp)
 			n.push_back(definedParams[i]);
-	delete dp;
-
 	definedParams = n;
 }
 

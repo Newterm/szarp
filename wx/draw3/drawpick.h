@@ -210,13 +210,11 @@ public:
 		/** Removes information about chosen draws*/
 	void Clear();
 
-	virtual void SetRemoved(wxString prefix, wxString name);
-
-	virtual void SetRenamed(wxString prefix, wxString from, wxString to, DrawSet *set);
-
-	virtual void SetModified(wxString prefix, wxString name, DrawSet *set);
-
 	virtual void ConfigurationWasReloaded(wxString prefix);
+
+	virtual void ParamDestroyed(DefinedParam *d);
+
+	virtual void ParamSubstituted(DefinedParam *d, DefinedParam *p);
 
 	wxString GetNewSetName();
 

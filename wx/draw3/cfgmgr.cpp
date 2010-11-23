@@ -1058,6 +1058,20 @@ void ConfigManager::NotifySetModified(wxString prefix, wxString name, DrawSet *s
 		(*i)->SetModified(prefix, name, set);
 }
 
+void ConfigManager::NotifyParamSubsitute(DefinedParam *d, DefinedParam *n) {
+	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
+			i != m_observers.end();
+			i++)
+		(*i)->ParamSubstituted(d, n);
+}
+
+void ConfigManager::NotifyParamDestroy(DefinedParam *d) {
+	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
+			i != m_observers.end();
+			i++)
+		(*i)->ParamDestroyed(d);
+}
+
 void ConfigManager::NotifySetAdded(wxString prefix, wxString name, DrawSet *set) {
 	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
 			i != m_observers.end();
@@ -1195,11 +1209,6 @@ void ConfigManager::SubstiuteDefinedParams(const std::vector<DefinedParam*>& to_
 	m_db_mgr->RemoveParams(to_rem);
 	m_db_mgr->AddParams(to_add);
 
-	for (size_t i = 0; i < to_rem.size(); i++) {
-		m_defined_sets->DestroyParam(to_rem[i]);
-		m_defined_sets->AddDefinedParam(to_add[i]);
-	}
-
 	for (std::map<wxString, bool>::iterator i = us.begin();
 			i != us.end();
 			++i) {
@@ -1207,6 +1216,13 @@ void ConfigManager::SubstiuteDefinedParams(const std::vector<DefinedParam*>& to_
 		std::vector<DefinedDrawSet*>* c = ds->GetCopies();
 		for (std::vector<DefinedDrawSet*>::iterator j = c->begin(); j != c->end(); j++)
 			NotifySetModified((*j)->GetDrawsSets()->GetPrefix(), i->first, *j);
+	}
+
+	for (size_t i = 0; i < to_rem.size(); i++) {
+		m_defined_sets->RemoveParam(to_rem[i]);
+		m_defined_sets->AddDefinedParam(to_add[i]);
+		NotifyParamSubsitute(to_rem[i], to_add[i]);
+		delete to_rem[i];	
 	}
 
 }

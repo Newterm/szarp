@@ -62,6 +62,10 @@ public:
 	 * @param prefix prefix of configuration that is about to be reloaded*/
 	virtual void ConfigurationWasReloaded(wxString prefix) {}
 
+	virtual void ParamSubstituted(DefinedParam *d, DefinedParam *n) {}
+
+	virtual void ParamDestroyed(DefinedParam *d) {}
+
 	virtual ~ConfigObserver();
 	
 };

@@ -507,6 +507,10 @@ class ConfigManager
 	 * @param set - pointer to new set*/
 	void NotifySetAdded(wxString prefix, wxString name,DrawSet *set);
 
+	void NotifyParamSubsitute(DefinedParam *d, DefinedParam *n);
+
+	void NotifyParamDestroy(DefinedParam *d);
+
 	/**Method called when @see DatabaseManager is ready for configuration reload*/
 	void ConfigurationReadyForLoad(wxString prefix);
 

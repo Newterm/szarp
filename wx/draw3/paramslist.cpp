@@ -94,26 +94,22 @@ ParamsListDialog::ParamsListDialog(wxWindow *parent, DefinedDrawsSets *dds, Data
 	m_selected_index = -1;
 
 	wxSizer *main_sizer = GetSizer();
-
-	if (search_mode) {
-
+       if (search_mode) {
+ 
 		wxButton *button = XRCCTRL(*this, "wxID_CLOSE", wxButton);
 		main_sizer->Show(button, false, true);
-	
+
 		wxButton *ok_button = XRCCTRL(*this, "wxID_OK", wxButton);
 		main_sizer->Show(ok_button->GetContainingSizer(), true, true);
+       } else {
 
-		wxButton *new_button = XRCCTRL(*this, "NEW_BUTTON", wxButton);
-		main_sizer->Show(new_button->GetContainingSizer(), false, true);
+               wxButton *button = XRCCTRL(*this, "wxID_CLOSE", wxButton);
+               main_sizer->Show(button, true, true);
 
-	} else {
+               wxButton *ok_button = XRCCTRL(*this, "wxID_OK", wxButton);
+               main_sizer->Show(ok_button->GetContainingSizer(), false, true);
+       }
 
-		wxButton *button = XRCCTRL(*this, "wxID_CLOSE", wxButton);
-		main_sizer->Show(button, true, true);
-
-		wxButton *ok_button = XRCCTRL(*this, "wxID_OK", wxButton);
-		main_sizer->Show(ok_button->GetContainingSizer(), false, true);
-	}
 
 	Layout();
 	main_sizer->Fit(this);
@@ -269,7 +265,9 @@ void ParamsListDialog::OnRemove(wxCommandEvent &e) {
 	}
 
 	m_dbmgr->RemoveParams(std::vector<DefinedParam*>(1, p));
-	m_def_sets->DestroyParam(p);
+	m_def_sets->RemoveParam(p);
+	m_def_sets->GetParentManager()->NotifyParamDestroy(p);
+	delete p;
 
 	for (std::vector<DefinedDrawInfo*>::iterator i = ddiv.begin();
 			i != ddiv.end();
