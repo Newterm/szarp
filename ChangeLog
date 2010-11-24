@@ -1,4 +1,7 @@
 
+2010-11-24	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2/szbase/probeblock.cc: fix in calculating
+	values for 10 seconds' blocks combined params
 2010-11-23	Darek Marcinkiewicz <reksio@newterm.pl>
 	* meaner3/utils/extrszb.cc: extractor can now extract
 	10 second probes

@@ -155,20 +155,21 @@ void szb_probeblock_combined_t::FetchProbes() {
 	if (!lsw_count)
 		return;
 	short buf_lsw[lsw_count];
+	buffer->prober_connection->GetData(buf_lsw, lsw_count);
 	size_t count = std::min(lsw_count, msw_count);
 	double prec10 = pow10(param->GetPrec());
 	for (size_t i = 0; i < count; i++) {
 		if (buf_msw[i] == SZB_FILE_NODATA)
 			data[fixed_probes_count + i] = SZB_NODATA;
 		else
-			data[i] = (SZBASE_TYPE) ( (double)(
+			data[fixed_probes_count + i] = (SZBASE_TYPE) ( (double)(
 				    int(szbfile_endian(buf_msw[i]) << 16)
 				    	| (unsigned short)(szbfile_endian(buf_lsw[i]))
 				    ) / prec10);
 	}
 	if (server_time < start_time)
 		return;
-	fixed_probes_count = (buffer->prober_connection->GetServerTime() - start_time) / SZBASE_PROBE_SPAN + 1;
+	fixed_probes_count = (server_time - start_time) / SZBASE_PROBE_SPAN + 1;
 	if (fixed_probes_count > probes_per_block)
 		fixed_probes_count = probes_per_block;
 	sz_log(10, "Fetched %d combined probes, fixed probes: %d", count, fixed_probes_count);
