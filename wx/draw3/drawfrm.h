@@ -177,6 +177,8 @@ public:
 
 	void OnShowRemarks(wxCommandEvent &e);
 
+	void OnGoToLatestDate(wxCommandEvent &e);
+
 	/**Schedules removal of a panel (at next Idle event)*/
 	void RemovePanel(DrawPanel *panel);
 

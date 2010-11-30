@@ -1003,6 +1003,10 @@ void DrawFrame::OnPrintPageSetup(wxCommandEvent& event) {
 	Print::PageSetup(this);
 }
 
+void DrawFrame::OnGoToLatestDate(wxCommandEvent& event) {
+	draw_panel->GoToLatestDate();	
+}
+
 void DrawFrame::OnShowRemarks(wxCommandEvent &e) {
 	draw_panel->ShowRemarks();	
 }
@@ -1232,6 +1236,8 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(langID_sr, DrawFrame::OnLanguageChangeMenuItem)
     EVT_MENU(drawTB_LANGUAGE, DrawFrame::OnLanguageChangeTool)
     EVT_MENU(drawTB_REMARK, DrawFrame::OnShowRemarks)
+    EVT_MENU(drawTB_GOTOLATESTDATE, DrawFrame::OnGoToLatestDate)
+    EVT_MENU(XRCID("GoToLatestDate"), DrawFrame::OnGoToLatestDate)
     EVT_CLOSE(DrawFrame::OnClose)
     EVT_IDLE(DrawFrame::OnIdle)
     EVT_ACTIVATE(DrawFrame::OnActivate)

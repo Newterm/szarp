@@ -51,6 +51,7 @@
 #include "bitmaps/flag_hu.xpm"
 #include "bitmaps/flag_it.xpm"
 #include "bitmaps/remark.xpm"
+#include "bitmaps/flag_checkered.xpm"
 #include "bitmaps/oldverwarn.xpm"
 #include "bitmaps/draw_tree.xpm"
 
@@ -66,6 +67,7 @@ DrawToolBar::DrawToolBar(wxWindow *parent) :
 	AddTool(drawTB_FILTER, _T(""),filter0_xpm, _("Filter"));
 	AddTool(drawTB_REFRESH, _T(""),refresh_xpm, _("Refresh"));
 	AddTool(drawTB_DRAWTREE, _T(""),draw_tree_xpm, _("Tree Set"));
+	AddTool(drawTB_GOTOLATESTDATE, _T(""), flag_checkered_xpm, _("Go to latest date"));
 
 	wxString lang = wxConfig::Get()->Read(_T("LANGUAGE"), _T("pl"));
 	const char **lang_icon;

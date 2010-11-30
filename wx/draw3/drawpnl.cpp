@@ -923,6 +923,9 @@ void DrawPanel::ShowRemarks() {
 	rmf->ShowRemarks();
 }
 
+void DrawPanel::GoToLatestDate() {
+	dw->GetDrawsController()->GoToLatestDate();
+}
 
 void DrawPanel::SetActive(bool _active) {
 	active = _active;

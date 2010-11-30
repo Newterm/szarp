@@ -1266,6 +1266,17 @@ void DrawsController::ClearCache() {
 	SendQueryForEachPrefix(DatabaseQuery::CLEAR_CACHE);
 }
 
+void DrawsController::GoToLatestDate() {
+	if (m_state != DISPLAY || m_selected_draw < 0)
+		return;
+
+	const TimeIndex& index = m_draws[m_selected_draw]->GetTimeIndex();
+	wxDateTime t = wxDateTime(std::numeric_limits<time_t>::max() - 10)
+		- index.GetTimeRes()
+		- index.GetDateRes();
+	EnterSearchState(SEARCH_LEFT, DTime(GetPeriod(), t), DTime());
+}
+
 void DrawsController::RefreshData(bool auto_refresh) {
 	if (auto_refresh && m_state != DISPLAY)
 		return;
@@ -1278,11 +1289,7 @@ void DrawsController::RefreshData(bool auto_refresh) {
 
 	if (m_follow_latest_data_mode) {
 		assert(m_selected_draw >= 0);
-		const TimeIndex& index = m_draws[m_selected_draw]->GetTimeIndex();
-		wxDateTime t = wxDateTime(std::numeric_limits<time_t>::max() - 10)
-			- index.GetTimeRes()
-			- index.GetDateRes();
-		EnterSearchState(SEARCH_LEFT, DTime(GetPeriod(), t), DTime());
+		GoToLatestDate();
 	} else {
 		FetchData();
 		EnterWaitState(WAIT_DATA_NEAREST);

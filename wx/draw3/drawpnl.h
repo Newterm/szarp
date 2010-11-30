@@ -166,6 +166,8 @@ class DrawPanel : public wxPanel, public DrawObserver {
 
 	bool Switch(wxString set, wxString prefix, time_t time, PeriodType pt = PERIOD_T_OTHER, int selected_draw = -1);
 
+	void GoToLatestDate();
+
 	virtual void DrawInfoChanged(Draw *d);
 
 	virtual void FilterChanged(DrawsController *draws_ctrl);

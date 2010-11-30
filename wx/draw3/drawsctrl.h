@@ -268,6 +268,7 @@ public:
 
 	void SelectPreviousDraw();
 
+	void GoToLatestDate();
 
 	void Set(DrawSet* draws);
 
