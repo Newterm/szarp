@@ -7,6 +7,22 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.508
+# 01.12.2010
+* Dodany przycisk i pozycja w menu programu przegl±daj±cego pozwalaj±ca na
+szybkie ustawienie kursora na ostatniej dostêpnej danej.
+* Poprawki w interfejsie programu przegl±daj±cego w czê¶ci dotycz±cej edycji 
+w³asnych wykresów i parametrów.
+* Dodanie do ekstraktora mo¿liwo¶ci generowania danych tak¿e z próbek 
+10-sekundowych.
+* Zmiany w podsystemie optymalizacji formu³ w jêzyku skryptowych LUA - 
+optymalizator potrafi obecnie obs³u¿yæ tak¿e parametry, które odwo³uj±
+siê rekurencyjnie do samych siebie.
+* Poprawki drobnych b³êdów w przetwarzaniu warto¶ci parametrów przez program 
+przegl±daj±cy dla próbek 10-sekundowych i w kilku innych brzegowych 
+przypadkach. 
+
+
 ** 3.1.500
 # 01.11.2010
 * Dokumentacja programu przegl±daj±cego uzupe³niona o opis funkcjonalno¶ci

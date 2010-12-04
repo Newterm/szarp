@@ -6,6 +6,17 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.508
+# 01.12.2010
+* Button/menu item added to Draw3 for positioning cursor at last available 
+data.
+* Fixes in Draw3 GUI for editing draw/parameters.
+* Extractor can now extract also 10-seconds probes.
+* Lua parameter optimizer updated to process parameters which reference 
+itself.
+* Small fixes in data handling by Draw3 - 10 seconds combined probes, few 
+other corner cases.
+
 ** 3.1.500
 # 01.11.2010
 * Draw3 documentation updated with description of treenode element.
