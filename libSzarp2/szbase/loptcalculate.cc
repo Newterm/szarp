@@ -1206,9 +1206,10 @@ ExecutionEngine::ExecutionEngine(szb_buffer_t *buffer, Param *param) {
 	m_vals[3] = PT_MIN10;
 	m_vals[4] = PT_HOUR;
 	m_vals[5] = PT_HOUR8;
-	m_vals[6] = PT_WEEK;
-	m_vals[7] = PT_MONTH;
-	m_vals[8] = PT_SEC10;
+	m_vals[6] = PT_DAY;
+	m_vals[7] = PT_WEEK;
+	m_vals[8] = PT_MONTH;
+	m_vals[9] = PT_SEC10;
 }
 
 void ExecutionEngine::CalculateValue(time_t t, SZARP_PROBE_TYPE probe_type, double &val, bool &fixed) {
@@ -1346,7 +1347,8 @@ double ExecutionEngine::ValueBlock(size_t param_index, const time_t& time, SZB_B
 double ExecutionEngine::ValueAvg(size_t param_index, const time_t& time, const double& period_type) {
 	bool fixed;
 	ParamRef& v = m_param->m_par_refs[param_index];	
-	double ret = szb_get_avg(v.m_buffer, v.m_param, time, szb_move_time(time, 1, (SZARP_PROBE_TYPE)period_type, 0), NULL, NULL, (SZARP_PROBE_TYPE)period_type, &fixed);
+	time_t ptime = szb_round_time(time, (SZARP_PROBE_TYPE) period_type, 0);
+	double ret = szb_get_avg(v.m_buffer, v.m_param, ptime, szb_move_time(ptime, 1, (SZARP_PROBE_TYPE)period_type, 0), NULL, NULL, (SZARP_PROBE_TYPE)period_type, &fixed);
 	if (!fixed)
 		m_fixed = false;
 	return ret;

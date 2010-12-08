@@ -1,4 +1,7 @@
 
+2010-12-07	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2/szbase: fix in retriving average values
+	/for period longer than day/ in lua optimized params
 2010-11-30	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: by popular demand: button/menu item
 	for positioning cursor at latest available data
