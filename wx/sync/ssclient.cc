@@ -1539,7 +1539,7 @@ std::map<TPath, int, TPath::less> Client::GetDirList() {
 	return result;
 }
 
-void Client::GetExInEpxression(TPath& dir, uint32_t dir_no, char*& exclude, char*& include, bool &force_delete) {
+void Client::GetExInEpxression(TPath& dir, uint32_t dir_no, std::string& exclude, std::string& include, bool &force_delete) {
 	TPath program_uruchomiony = dir.Concat(
 #ifndef MINGW32
 						"szbase/Status/Meaner3/program_uruchomiony"
@@ -1548,6 +1548,8 @@ void Client::GetExInEpxression(TPath& dir, uint32_t dir_no, char*& exclude, char
 #endif
 					);
 
+	bool first_path = true;
+	std::ostringstream ss;
 	const int loop_guard = 12;
 	int i = 0;
 	char *_include = NULL;
@@ -1591,17 +1593,14 @@ void Client::GetExInEpxression(TPath& dir, uint32_t dir_no, char*& exclude, char
 	if (program_uruchomiony.GetType() != TPath::TDIR)
 		goto no_program_uruchomiony;
 
-
 	do {
-		char *tmp;
 		char current[11];
 		sprintf(current, "%.4ld%.2ld.szb", year, month);
-		if (_include == NULL)
-			asprintf(&tmp, "%s", current);
+		if (first_path)
+			ss << current;
 		else
-			asprintf(&tmp, "%s|%s", _include, current);
-		free(_include);
-		_include = tmp;
+			ss << "|" << current;
+		first_path = false;
 
 		if (program_uruchomiony.Concat(current).GetType() != TPath::TNOTEXISTS) {
 			if (found)
@@ -1610,7 +1609,6 @@ void Client::GetExInEpxression(TPath& dir, uint32_t dir_no, char*& exclude, char
 		}
 
 		if (i++ > loop_guard) {
-			free(_include);
 			goto none;
 		}
 
@@ -1621,17 +1619,14 @@ void Client::GetExInEpxression(TPath& dir, uint32_t dir_no, char*& exclude, char
 
 	} while (true);
 
-	asprintf(&exclude, "(.*\\.szb|%s)", BASESTAMP_FILENAME);
-	asprintf(&include, "(%s)", _include);
-	free(_include);
+	exclude = std::string("(.*\\.szb|") + BASESTAMP_FILENAME + ")";
+	include = "(" + ss.str() + ")";
 
 	return;
 
 none:
 	force_delete = true;
-no_program_uruchomiony:
-	exclude = strdup("");
-	include = strdup("");
+no_program_uruchomiony:;
 
 }
 
@@ -1650,23 +1645,18 @@ std::vector<TPath> Client::GetFileList(const TPath &dir, uint32_t dir_no, bool &
 
 	TPath current_dir = dir;
 
-	char *exclude, *include;
-	if (delete_option) {
-		exclude = strdup("");
-		include = strdup("");
-	} else
+	std::string exclude, include;
+	if (!delete_option) {
 		GetExInEpxression(current_dir, dir_no, exclude, include, delete_option);
-	sz_log(9, "Sending expressions exclude: '%s', include '%s' for dir %s", exclude, include, current_dir.GetPath());
+	} else
+	sz_log(9, "Sending expressions exclude: '%s', include '%s' for dir %s", exclude.c_str(), include.c_str(), current_dir.GetPath());
 
 	MessageSender smsg(m_exchanger);
 	smsg.PutUInt16(MessageType::GET_FILE_LIST);
 	smsg.PutUInt32(dir_no);
-	smsg.PutString(exclude);
-	smsg.PutString(include);
+	smsg.PutString(exclude.c_str());
+	smsg.PutString(include.c_str());
 	smsg.FinishMessage();
-
-	free(exclude);
-	free(include);
 
 	MessageReceiver rmsg(m_exchanger);
 

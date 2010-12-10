@@ -515,9 +515,9 @@ private:
 	 * These expressions declare files that shall be put on file list by server,
 	 * depend on existence and content of "szbase/Status/program_uruchomiony".
 	 * @param dir direcotry to be considered
-	 * @param exclude output param, exclude regular expression string, shall be freed by caller
-	 * @param include output param, exclude regular expression string, shall be freed by caller*/
-	void GetExInEpxression(TPath& dir, uint32_t dir_no, char*& exclude, char*& include, bool &force_delete);
+	 * @param exclude output param, exclude regular expression string
+	 * @param include output param, exclude regular expression string*/
+	void GetExInEpxression(TPath& dir, uint32_t dir_no, std::string& exclude, std::string& include, bool &force_delete);
 		
 	~Client();
 };
