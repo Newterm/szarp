@@ -10575,6 +10575,77 @@ ECHO     ON \
 </programlisting>
 </para>
 </section>
+
+<section id="modem-lggt505">
+<title>Konfiguracja telefonu LG GT505 jako modemu</title>
+<para>Telefon LG GT505 mo¿e byæ w ³atwy sposób wykorzystany jako modem. Po podpiêciu telefonu do 
+	komputera za pomoc± kabla USB, wybieramy tryb PC Suite. Powinno to spowodowaæ widoczno¶æ
+	telefonu jako modemu - w logu dmesg pojawi siê komunikat:
+<programlisting>
+[838134.116082] usb 1-2: new high speed USB device using ehci_hcd and address 38
+[838134.263708] usb 1-2: New USB device found, idVendor=1004, idProduct=6091
+[838134.263722] usb 1-2: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[838134.263728] usb 1-2: Product: GT500
+[838134.263733] usb 1-2: Manufacturer: LG Electronics
+[838134.263738] usb 1-2: SerialNumber: 3546950362635220
+[838134.264660] usb 1-2: configuration #1 chosen from 1 choice
+[838134.267204] cdc_acm 1-2:1.1: ttyACM0: USB ACM device
+[838134.283571] cdc_wdm 1-2:1.5: cdc-wdm-176: USB WDM device
+</programlisting>
+</para>
+<para>
+Przygotowujemy skrypty konfiguracyjne - <filename>/etc/ppp/peers/lg</filename> o tre¶ci:
+<programlisting>
+debug
+230400
+nocrtscts
+nodeflate
+lcp-echo-interval 0
+connect "/etc/ppp/lg-chat"
+:20.0.0.1
+noipdefault
+usepeerdns
+novj
+novjccomp
+nobsdcomp
+defaultroute
+/dev/ttyACM0
+noauth
+</programlisting>
+oraz <filename>/etc/ppp/lg-chat</filename>:
+<programlisting>
+OP=internet
+SLEEP=3
+/usr/sbin/chat \
+TIMEOUT  20 \
+ECHO     ON \
+ABORT    '\nBUSY\r' \
+ABORT    '\nERROR\r' \
+ABORT    '\nNO ANSWER\r' \
+ABORT    '\nNO CARRIER\r' \
+ABORT    '\nNO DIALTONE\r' \
+ABORT    '\nRINGING\r\n\r\nRINGING\r' \
+TIMEOUT  30       \
+''       '\rAT'   \
+OK       'ATE1'   \
+OK       'AT+IFC=0,0' \
+OK       "AT+CGDCONT=1,\"IP\",\"$OP\",\"\",0,0" \
+OK       'ATD*99***1#'  \
+TIMEOUT  30   \
+CONNECT  ""    \
+SAY      "\nConnected.\n"  \
+</programlisting>
+</para>
+<para>W pliku <filename>/etc/network/interfaces</filename> (pod Debianem) dodajemy sekcjê:
+<programlisting>
+iface ppp0 inet ppp
+	provider lg
+</programlisting>
+Po³±czenie nawi±zujemy wydaj±c komendê <command>ifup ppp0</command>, wy³±czamy przez <command>ifdown ppp0</command>. 
+Je¿eli po zerwaniu po³±czenia nie da siê nawi±zaæ go ponownie (w logach s± informacje o niemo¿no¶ci otwarcia
+urz±dzenia <filename>/dev/ttyACM0</filename>), pomaga od³±czenie telefonu od komputera i ponowne po³±czenie.
+</section>
+
 <section id="gprs-reset">
 <title>Resetowanie modemów GPRS (GCXX i OGTFusion+) </title>
 <para>
