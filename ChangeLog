@@ -1,4 +1,6 @@
 
+2010-12-14	Pawel Palucha <pawel@newterm.pl>
+	* debian/packs.files: borutadmn added to szarp-daemons package.
 2010-12-11	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/sync: asprintf substitued with stringstring, asprintf
 	does not work reliably under msw
