@@ -1,4 +1,7 @@
 
+2010-12-14	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/boruta_modbus.cc: added ascii protocol support
+	for borutadmn
 2010-12-14	Pawel Palucha <pawel@newterm.pl>
 	* debian/packs.files: borutadmn added to szarp-daemons package.
 2010-12-11	Darek Marcinkiewicz <reksio@newterm.pl>

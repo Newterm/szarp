@@ -258,8 +258,9 @@ public:
 
 class serial_connection_handler {
 public:
+	enum ERROR_CONDITION { TIMEOUT, FRAME_ERROR, CRC_ERROR };
 	virtual void frame_parsed(SDU &adu, struct bufferevent* bufev) = 0;
-	virtual void timeout() = 0;
+	virtual void error(ERROR_CONDITION) = 0;
 	virtual struct event_base* get_event_base() = 0;
 	virtual struct bufferevent* get_buffer_event() = 0;
 };
@@ -287,7 +288,7 @@ protected:
 	virtual void write_timer_event();
 public:
 	serial_parser(serial_connection_handler *serial_handler);
-	int configure(xmlNodePtr node, serial_port_configuration &spc);
+	virtual int configure(xmlNodePtr node, serial_port_configuration &spc) = 0;
 	virtual void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev) = 0;
 	virtual void read_data(struct bufferevent *bufev) = 0;
 	virtual void write_finished(struct bufferevent *bufev);
@@ -315,10 +316,32 @@ public:
 	void read_data(struct bufferevent *bufev);
 	void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev);
 	void reset();
+	virtual int configure(xmlNodePtr node, serial_port_configuration &spc);
 
 	static const int max_frame_size = 256;
 };
 
+class serial_ascii_parser : public serial_parser {
+	unsigned char m_previous_char;
+	enum { COLON, ADDR_1, ADDR_2, FUNC_CODE_1, FUNC_CODE_2, DATA_1, DATA_2, LF } m_state;
+
+	void reset();
+
+	bool check_crc();
+
+	unsigned char update_crc(unsigned char c, unsigned char crc) const;
+	unsigned char finish_crc(unsigned char c) const;
+
+	int from_ascii(unsigned char c1, unsigned char c2, unsigned char &c) const;
+	void to_ascii(unsigned char c, unsigned char& c1, unsigned char &c2) const;
+
+	virtual void read_timer_event();
+public:
+	serial_ascii_parser(serial_connection_handler *serial_handler);
+	void read_data(struct bufferevent *bufev);
+	void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev);
+	virtual int configure(xmlNodePtr node, serial_port_configuration &spc);
+};
 
 class modbus_serial_client : public serial_connection_handler, public serial_client_driver, public modbus_client {
 	serial_parser *m_parser;
@@ -336,28 +359,16 @@ public:
 	virtual void data_ready(struct bufferevent* bufev, int fd);
 	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration &spc);
 	virtual void frame_parsed(SDU &adu, struct bufferevent* bufev);
-	virtual void timeout();
+	virtual void error(ERROR_CONDITION error);
 	virtual struct event_base* get_event_base();
 	virtual struct bufferevent* get_buffer_event();
 };
-
-#if 0 
-#error to be implemented
-class serial_ascii_parser {
-public:
-	serial_ascii_parser(serial_connection_handler *serial_handler) : serial_parser(serial_handler) {}
-	void read_data(struct bufferevent *bufev);
-	void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev);
-	void reset();
-};
-#endif
-
 
 unsigned short serial_rtu_parser::crc16[256] = {};
 bool serial_rtu_parser::crc_table_calculated = false;
 
 class serial_server : public modbus_unit, public serial_connection_handler, public serial_server_driver {
-	serial_rtu_parser* m_parser;
+	serial_parser* m_parser;
 	struct bufferevent *m_bufev;
 
 public:
@@ -369,7 +380,7 @@ public:
 	virtual void connection_error(struct bufferevent* bufev);
 	virtual void data_ready(struct bufferevent* bufev);
 	virtual struct event_base* get_event_base();
-	virtual void timeout();
+	virtual void error(serial_connection_handler::ERROR_CONDITION error);
 	virtual void starting_new_cycle();
 };
 
@@ -1441,7 +1452,17 @@ void modbus_serial_client::data_ready(struct bufferevent* bufev, int fd) {
 int modbus_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration &spc) {
 	if (modbus_unit::configure(unit, node, read, send))
 		return 1;
-	m_parser = new serial_rtu_parser(this);
+	std::string protocol;
+	get_xml_extra_prop(node, "serial_protocol_variant", protocol, true);
+	if (protocol.empty() || protocol == "rtu")
+		m_parser = new serial_rtu_parser(this);
+	else if (protocol == "ascii")
+		m_parser = new serial_ascii_parser(this);
+	else {
+		dolog(0, "Unsupported protocol variant: %s, unit not configured", protocol.c_str());
+		return 1;
+	}
+
 	if (m_parser->configure(node, spc))
 		return 1;
 	modbus_client::reset_cycle();
@@ -1452,7 +1473,8 @@ void modbus_serial_client::frame_parsed(SDU &sdu, struct bufferevent* bufev) {
 	pdu_received(sdu.unit_id, sdu.pdu);
 }
 
-void modbus_serial_client::timeout() {
+void modbus_serial_client::error(ERROR_CONDITION error) {
+	//for now treat everything as timeout
 	modbus_client::timeout();
 }
 
@@ -1576,7 +1598,11 @@ void serial_parser::write_timer_callback(int fd, short event, void* parser) {
 	((serial_parser*) parser)->write_timer_event();
 }
 
-int serial_parser::configure(xmlNodePtr node, serial_port_configuration &spc) {
+serial_rtu_parser::serial_rtu_parser(serial_connection_handler *serial_handler) : serial_parser(serial_handler), m_state(FUNC_CODE) {
+	reset();
+}
+
+int serial_rtu_parser::configure(xmlNodePtr node, serial_port_configuration &spc) {
 	m_delay_between_chars = 0;
 	get_xml_extra_prop(node, "out-intra-character-delay", m_delay_between_chars, true);
 	if (m_delay_between_chars == 0)
@@ -1607,9 +1633,6 @@ int serial_parser::configure(xmlNodePtr node, serial_port_configuration &spc) {
 	return 0;
 }
 
-serial_rtu_parser::serial_rtu_parser(serial_connection_handler *serial_handler) : serial_parser(serial_handler), m_state(FUNC_CODE) {
-	reset();
-}
 
 void serial_rtu_parser::reset() {
 	m_state = ADDR;	
@@ -1651,8 +1674,8 @@ void serial_rtu_parser::read_data(struct bufferevent *bufev) {
 }
 
 void serial_rtu_parser::read_timer_event() {
+	m_serial_handler->error(serial_connection_handler::TIMEOUT);
 	reset();
-	m_serial_handler->timeout();
 }
 
 void serial_rtu_parser::send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev) {
@@ -1683,10 +1706,209 @@ void serial_rtu_parser::send_sdu(unsigned char unit_id, PDU &pdu, struct buffere
 	}
 }
 
+unsigned char serial_ascii_parser::update_crc(unsigned char c, unsigned char crc) const {
+	return crc + c;
+}
+
+unsigned char serial_ascii_parser::finish_crc(unsigned char crc) const {
+	return 0x100 - crc; 
+}
+
+serial_ascii_parser::serial_ascii_parser(serial_connection_handler* serial_handler) : serial_parser(serial_handler), m_state(COLON) { }
+
+bool serial_ascii_parser::check_crc() {
+	unsigned char crc = 0;
+	std::vector<unsigned char>& d = m_sdu.pdu.data;
+	crc = update_crc(crc, m_sdu.unit_id);
+	crc = update_crc(crc, m_sdu.pdu.func_code);
+	if (d.size() == 0)
+		return false;
+	for (size_t i = 0; i < d.size() - 2; i++)
+		crc = update_crc(crc, d[i]);
+	crc = finish_crc(crc);
+	return crc == d[d.size() - 1];
+	d.resize(d.size() - 1);
+}
+
+namespace {
+
+int char2value(unsigned char c, unsigned char &o) {
+	if (c >= '0' && c <= '9')
+		o |= (c - '0');
+	else if (c >= 'A' && c <= 'F')
+		o |= (c - 'A' + 10);
+	else
+		return 1;
+	return 0;
+}
+
+}
+
+int serial_ascii_parser::from_ascii(unsigned char c1, unsigned char c2, unsigned char &c) const {
+	c = 0;
+	if (char2value(c1, c))
+		return 1;
+	c <<= 4;
+	if (char2value(c2, c))
+		return 1;
+	return 0;
+}
+
+namespace {
+
+unsigned char value2char(unsigned char c) {
+	if (c <= 9)
+		return '0' + c;
+	else
+		return 'A' + c - 10;
+}
+
+}
+
+void serial_ascii_parser::to_ascii(unsigned char c, unsigned char& c1, unsigned char &c2) const {
+	c1 = value2char(c >> 4);
+	c2 = value2char(c & 0xf);
+}
+
+void serial_ascii_parser::read_data(struct bufferevent* bufev) {
+	unsigned char c;
+	stop_read_timer();
+	while (bufferevent_read(bufev, &c, 1)) switch (m_state) {
+		case COLON:
+			if (c != ':') {
+				dolog(1, "Modbus ascii frame did not start with the colon");
+				m_serial_handler->error(serial_connection_handler::FRAME_ERROR);
+				return;
+			}
+			m_state = FUNC_CODE_1; 
+			break;
+		case ADDR_1:
+			m_previous_char = c;
+			m_state = ADDR_2;
+			break;
+		case ADDR_2:
+			if (from_ascii(m_previous_char, c, m_sdu.unit_id)) {
+				dolog(1, "Invalid value received in request");
+				m_serial_handler->error(serial_connection_handler::FRAME_ERROR);
+				m_state = COLON;
+				return;
+			}
+			dolog(9, "Parsing new frame, unit_id: %d", (int) m_sdu.unit_id);
+			m_state = FUNC_CODE_1;
+			break;
+		case FUNC_CODE_1:
+			m_previous_char = c;
+			m_state = FUNC_CODE_2; 
+			break;
+		case FUNC_CODE_2:
+			if (from_ascii(m_previous_char, c, m_sdu.pdu.func_code)) {
+				dolog(1, "Invalid value received in request");
+				m_serial_handler->error(serial_connection_handler::FRAME_ERROR);
+				m_state = COLON;
+				return;
+			}
+			m_sdu.pdu.data.resize(0);
+			m_state = DATA_1;
+			break;
+		case DATA_1:
+			if (c == '\r') {
+				m_state = LF;	
+			} else {
+				m_previous_char = c;
+				m_state = DATA_2;
+			}
+			break;
+		case DATA_2:
+			if (from_ascii(m_previous_char, c, c)) {
+				dolog(1, "Invalid value received in request");
+				m_serial_handler->error(serial_connection_handler::FRAME_ERROR);
+				m_state = COLON;
+				return;
+			}
+			m_sdu.pdu.data.push_back(c);
+			m_state = DATA_1;
+			break;
+		case LF:
+			if (c != '\n') {
+				dolog(1, "Modbus ascii frame did end with crlf");
+				m_state = COLON;
+				m_serial_handler->error(serial_connection_handler::FRAME_ERROR);
+				return;
+			}
+			if (check_crc()) 
+				m_serial_handler->error(serial_connection_handler::CRC_ERROR);
+			else 
+				m_serial_handler->frame_parsed(m_sdu, bufev);
+			m_state = COLON;
+			return;
+	}
+	start_read_timer();
+}
+
+void serial_ascii_parser::read_timer_event() {
+	m_serial_handler->error(serial_connection_handler::TIMEOUT);
+	reset();
+}
+
+void serial_ascii_parser::send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev) {
+	unsigned char crc = 0;
+	unsigned char c1, c2;
+
+	bufferevent_write(bufev, ":", 1);
+
+#define SEND_VAL(v) { \
+	to_ascii(unit_id, c1, c2); \
+	bufferevent_write(bufev, &c1, sizeof(c1)); \
+	bufferevent_write(bufev, &c2, sizeof(c2)); }
+
+	crc = update_crc(crc, unit_id);
+	SEND_VAL(unit_id);
+
+	crc = update_crc(crc, pdu.func_code);
+	SEND_VAL(pdu.func_code);
+
+	for (size_t i = 0; i < pdu.data.size(); i++) {
+		crc = update_crc(crc, pdu.data[i]);
+		SEND_VAL(pdu.data[i]);
+	}
+
+	crc = finish_crc(crc);
+	SEND_VAL(crc);
+
+	bufferevent_write(bufev, "\r", 1);
+	bufferevent_write(bufev, "\n", 1);
+}
+
+int serial_ascii_parser::configure(xmlNodePtr node, serial_port_configuration &spc) {
+	m_delay_between_chars = 0;
+	get_xml_extra_prop(node, "read-timeout", m_timeout, true);
+	if (m_timeout == 0) {
+		m_timeout = 1000;
+	} else {
+		m_timeout *= 1000;
+		dolog(10, "Serial port configuration, read timeout set to %d miliseconds", m_timeout);
+	}
+	dolog(9, "serial_parser m_timeout: %d", m_timeout);
+	return 0;
+}
+
+void serial_ascii_parser::reset() {
+	m_state = COLON;
+}
+
 int serial_server::configure(TUnit *unit, xmlNodePtr node, short *read, short *send, serial_port_configuration &spc) {
 	if (modbus_unit::configure(unit, node, read, send))
 		return 1;
-	m_parser = new serial_rtu_parser(this);
+	std::string protocol;
+	get_xml_extra_prop(node, "serial_protocol_variant", protocol, true);
+	if (protocol.empty() || protocol == "rtu")
+		m_parser = new serial_rtu_parser(this);
+	else if (protocol == "ascii")
+		m_parser = new serial_ascii_parser(this);
+	else {
+		dolog(0, "Unsupported protocol variant: %s, unit not configured", protocol.c_str());
+		return 1;
+	}
 	if (m_parser->configure(node, spc))
 		return 1;
 	return 0;
@@ -1711,7 +1933,7 @@ void serial_server::data_ready(struct bufferevent* bufev) {
 	m_parser->read_data(bufev);	
 }
 
-void serial_server::timeout() {
+void serial_server::error(serial_connection_handler::ERROR_CONDITION error) {
 	m_parser->reset();
 }
 
