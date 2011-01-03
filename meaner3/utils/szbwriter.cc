@@ -44,28 +44,11 @@
 #include "config.h"
 #endif
 
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef HAVE_STRING_H
-#include <string.h>
-#endif
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
-#include <stdio.h>
-#include <errno.h>
-#include <assert.h>
 #include <fnmatch.h>
-#include <sys/fcntl.h>
-#include <ctype.h>
-#include <math.h>
-#include <map>
-#include <sstream>
 #include <tr1/unordered_map>
+
+#include <argp.h>
+
 #include "liblog.h"
 #include "libpar.h"
 #include "szarp_config.h"
@@ -77,14 +60,16 @@
 
 #define SZARP_CFG_SECTION	"szbwriter"
 #define MEANER3_CFG_SECTION	"meaner3"
-#define SZARP_CFG		"/etc/szarp/szarp.cfg"
+#define SZARP_CFG		"/etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg"
+#define DEFAULT_LOG		PREFIX"/logs/szbwriter.log"
 
 using namespace std::tr1;
 
 class SzbaseWriter : public TSzarpConfig {
 public:
 	SzbaseWriter(const std::wstring &ipk_path, const std::wstring& title, const std::wstring &double_pattern,
-			const std::wstring& data_dir, const std::wstring &cache_dir, bool add_new_pars);
+			const std::wstring& data_dir, const std::wstring &cache_dir, bool add_new_pars,
+			bool write_10sec);
 	~SzbaseWriter();
 	/* Process input. 
 	 * @return 1 on error, 0 on success*/
@@ -144,18 +129,24 @@ protected:
 	int m_probe_length[LAST_PROBE_TYPE];		/**< lenght of probe */
 
 	unordered_map<std::wstring, int> m_draws_count;
-	bool m_add_new_pars; /** flag denoting if we add new pars*/
-	bool m_new_par; /** if new parameter was added */
+	bool m_add_new_pars; 	/** flag denoting if we add new pars*/
+	bool m_new_par; 	/** if new parameter was added */
+	size_t m_last_type;	/** last type of probe to write + 1 */
 };
 
-SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _title, const std::wstring& double_pattern,
-		const std::wstring& data_dir, const std::wstring& cache_dir, bool add_new_pars)
+SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _title, 
+		const std::wstring& double_pattern,
+		const std::wstring& data_dir, const std::wstring& cache_dir, 
+		bool add_new_pars,
+		bool write_10sec):
+	m_double_pattern(double_pattern),
+	m_add_new_pars(add_new_pars),
+	m_last_type(write_10sec ? LAST_PROBE_TYPE : SEC10)
 {
-	m_double_pattern = double_pattern;
 	m_dir.push_back(data_dir);
 	m_dir.push_back(cache_dir);
 	m_cur_par = NULL;
-	for (size_t i = 0; i < LAST_PROBE_TYPE; i++) {
+	for (size_t i = 0; i < m_last_type; i++) {
 		m_save_param[i][0] = 
 			m_save_param[i][1] = NULL;
 		m_cur_t[i] = 0;
@@ -203,7 +194,6 @@ SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _ti
 	
 	p->SetAutoBase();
 
-	m_add_new_pars = add_new_pars;
 	m_new_par = true;
 }
 
@@ -364,7 +354,7 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	TParam *par = NULL, *par2 = NULL;
 	int prec;
 	if (name != m_cur_name) {
-		for (size_t i = 0; i < LAST_PROBE_TYPE; i++) {
+		for (size_t i = 0; i < m_last_type; i++) {
 			if (save_data((PROBE_TYPE)i))
 				return 1;
 			for (size_t j = 0; j < 2; j++) {
@@ -404,7 +394,7 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 			par = m_cur_par;
 			assert(par != NULL);
 		}
-		for (size_t i = 0; i < LAST_PROBE_TYPE; i++) {
+		for (size_t i = 0; i < m_last_type; i++) {
 			if (m_dir.at(i).empty())
 				continue;
 			m_save_param[i][0] = new TSaveParam(par);
@@ -417,7 +407,7 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 		m_cur_name = name;
 	}
 
-	for (size_t i = 0; i < LAST_PROBE_TYPE; i++) {
+	for (size_t i = 0; i < m_last_type; i++) {
 		if (m_dir.at(i).empty())
 			continue;
 		if (t >= m_cur_t[i] && t - m_cur_t[i] < m_probe_length[i]) 
@@ -427,7 +417,7 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 		m_cur_t[i] = t / m_probe_length[i] * m_probe_length[i];
 	}
 
-	for (size_t i = 0; i < 2; i++) {
+	for (size_t i = 0; i < m_last_type; i++) {
 		m_cur_sum[i] += wcstof(data.c_str(), NULL);
 		m_cur_cnt[i]++;
 	}
@@ -490,7 +480,7 @@ int SzbaseWriter::save_data(PROBE_TYPE pt)
 
 int SzbaseWriter::close_data()
 {
-	for (size_t i = 0; i < LAST_PROBE_TYPE; i++)
+	for (size_t i = 0; i < m_last_type; i++)
 		if (save_data((PROBE_TYPE)i))
 			return 1;
 	return 0;
@@ -586,6 +576,87 @@ bool SzbaseWriter::have_new_params()
 	return m_new_par;
 }
 
+/* arguments handling */
+const char *argp_program_version = "szbwriter " VERSION;
+const char *argp_program_bug_address = "coders@szarp.org";
+static char doc[] = "SZARP batch database writer.\v\
+Config file:\n\
+Configuration options are read from file " SZARP_CFG ".\n\
+These options are read from 'meaner3' section and are mandatory:\n\
+	datadir		path to main szbase data directory\n\
+	IPK		path to SZARP instance XML config file\n\
+These options are read from section 'prober' and are optional:\n\
+      	cachedir	path to main 10-second probes directory\n\
+These options are read from section 'szbwriter' and are optional:\n\
+        log             path to log file, default is " DEFAULT_LOG "\n\
+        log_level       log level, from 0 to 10, default is 2.\n\
+	double_match	shell pattern for names of 'combined' (two\n\
+		      	words) parameters, for example:\n\
+\n\
+:szbwriter\n\
+double_match=@(*-energy|*-volume)\n\
+\n\
+	See 'info fnmatch' for shell patterns' syntax.\n\
+\n\
+Program read data from standard input, each input line is in format:\n\
+\"<parameter name> [<unit>]\" <year> <month> <day of month> <hour> <minute> <value>\n\
+\n\
+For optimal performance input lines should be sorted by parameter name and\n\
+then by date/time. [<unit>] is optional.\n\
+";
+static struct argp_option options[] = {
+        {"debug", 'd', "n", 0, "Set initial debug level to n, n is from 0 \
+(error only), to 10 (extreme debug), default is 2; this is overwritten by \
+settings in config file"},
+        {"D<param>", 0, "val", 0,
+         "Set initial value of libpar variable <param> to val"},
+        {"add-new-params", 'n', 0, 0,
+         "Add newly found parameters to IPK configuration"},
+	{"no-probes", 'p', 0, 0,
+	 "Do not write 10-seconds probes in addition to 10-minutes probes"},
+        {0}
+};
+static char args_doc[] = "[CONFIG_TITLE]\n\
+CONFIG_TITLE command line argument is an optional title of newly created \
+configuration, used only with -n option, when changes to IPK configuration \
+are written. \
+";
+
+struct arguments
+{
+        bool add_new_params;
+	bool no_probes;
+	std::wstring title;
+};
+
+static error_t parse_opt(int key, char *arg, struct argp_state *state)
+{
+        struct arguments *arguments = (struct arguments *) state->input;
+
+        switch (key) {
+                case 'd':
+                        break;
+                case 'n':
+                        arguments->add_new_params = true;
+                        break;
+                case 'p':
+                        arguments->no_probes = true;
+                        break;
+		case ARGP_KEY_ARG:
+			if (state->arg_num >= 2)
+				return ARGP_ERR_UNKNOWN;
+			arguments->title = SC::A2S(arg);
+			break;
+                default:
+			if (state->arg_num >= 2)
+				return ARGP_ERR_UNKNOWN;
+			break;
+        }
+        return 0;
+}
+
+static struct argp argp = { options, parse_opt, args_doc, doc };
+
 int main(int argc, char *argv[])
 {
 	int loglevel;
@@ -593,6 +664,7 @@ int main(int argc, char *argv[])
 	char *data_dir;
 	char *cache_dir;
 	char *double_pattern;
+	struct arguments arguments;
 
 	loglevel = loginit_cmdline(2, NULL, &argc, argv);
 	
@@ -617,7 +689,7 @@ int main(int argc, char *argv[])
 	
 	c = libpar_getpar(SZARP_CFG_SECTION, "log", 0);
 	if (c == NULL)
-		c = strdup(PREFIX"/logs/szbwriter");
+		c = strdup(DEFAULT_LOG);
 	loglevel = loginit(loglevel, c);
 	if (loglevel < 0) {
 		sz_log(0, "szbwriter: cannot inialize log file %s, errno %d", c, errno);
@@ -626,26 +698,17 @@ int main(int argc, char *argv[])
 	}
 	free(c);
 
-	int _argc = argc;
-	int _argp = 0;
-	bool add_new_pars = false;
-	if (_argc > 1) {
-		if (!strcmp("-n", argv[1])) {
-			add_new_pars = true;
-			_argc -= 1;
-			_argp += 1;
-		}
+	arguments.add_new_params = false;
+	arguments.no_probes = false;
+        argp_parse(&argp, argc, argv, 0, 0, &arguments);
+	if (arguments.title.empty()) {
+		arguments.title = SC::A2S("Wêz³y Samson");
 	}
-	const char *title;
-	if (_argc <= 1) {
-		title = "Wêz³y Samson";
-	} else {
-		title = argv[_argp + 1];
-	}
-	SzbaseWriter *szbw = new SzbaseWriter(SC::A2S(ipk_path), SC::A2S(title), 
+
+	SzbaseWriter *szbw = new SzbaseWriter(SC::A2S(ipk_path), arguments.title, 
 			double_pattern != NULL ? SC::A2S(double_pattern) : L"",
 			SC::A2S(data_dir), cache_dir ? SC::A2S(cache_dir) : std::wstring(),
-			add_new_pars);
+			arguments.add_new_params, not arguments.no_probes);
 	assert (szbw != NULL);
 
 #ifndef FNM_EXTMATCH
