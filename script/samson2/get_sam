@@ -195,7 +195,7 @@ function get_files()
 	
 
 	# Zapis danych do bazy
-	/opt/szarp/bin/szbwriter -Dprefix=$PREFIX "$TITLE" < $OUTPUTNEW
+	/opt/szarp/bin/szbwriter -p -Dprefix=$PREFIX "$TITLE" < $OUTPUTNEW
 	if [ $? != 0 ] ; then
 		echo "Error runing szbwriter"
 		return
@@ -207,10 +207,6 @@ function get_files()
 		/opt/szarp/$PREFIX/config/params.xml \
 		$TMPDIR/nazwy.txt
 
-	# Konfiguracja (params.xml) mog³a zostaæ zmodyfikowana (dodanie 
-	# nowych parametrów).
-	cd /opt/szarp/$PREFIX/config && /opt/szarp/bin/ipk2szarp -f -p $PREFIX
-	
 	# Zapisz czas ostatniej nastêpnej operacji.
 	echo $_NOWDATE > $LASTPATH
 	

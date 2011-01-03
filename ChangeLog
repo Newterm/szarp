@@ -1,5 +1,7 @@
 
 2010-01-03	Pawel Palucha <pawel@newterm.pl>
+	* script/samson2/get_sam: script calls szbwriter with '-p' option
+	and skips obsolete call to ipk2szarp.
 	* meaner3/utils/szbwriter.cc: added option for not writing
 	10-second probes.
 2010-12-14	Darek Marcinkiewicz <reksio@newterm.pl>
