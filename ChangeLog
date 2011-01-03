@@ -1,5 +1,6 @@
 
 2010-01-03	Pawel Palucha <pawel@newterm.pl>
+	* parcook/parcook.cfg: version/bugs info fix.
 	* script/samson2/get_sam: script calls szbwriter with '-p' option
 	and skips obsolete call to ipk2szarp.
 	* meaner3/utils/szbwriter.cc: added option for not writing

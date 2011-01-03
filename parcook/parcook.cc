@@ -79,8 +79,8 @@ using std::tr1::unordered_map;
 /***********************************************************************/
 /* Arguments handling, see 'info argp' */
 
-const char *argp_program_version = "parcook 2.""$Revision: 6824 $";
-const char *argp_program_bug_address = "coders@praterm.com.pl";
+const char *argp_program_version = "parcook " VERSION;
+const char *argp_program_bug_address = "coders@szarp.org";
 static char doc[] = "SZARP parameters daemon.\v\
 Config file:\n\
 Configuration options are read from file /etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg.\n\
