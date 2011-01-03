@@ -6985,10 +6985,11 @@ Wyliczanie zakresu warto¶ci dla wykresów parametrów.
 <listitem><para>
 Obs³ugê parametrów o warto¶ciach przechowywanych w dwóch s³owach.
 </para></listitem>
-
+<!--
 <listitem><para>
 Uzupe³nianie próbek je¿eli warto¶ci zbierane s± rzadziej ni¿ co 10 minut.
 </para></listitem>
+-->
 
 </itemizedlist>
 
@@ -7003,7 +7004,7 @@ regulatorów wêz³ów obs³ugiwanych przez system InTouch lub Mikrob PRO-2000 (zobac
 <para>
 Program korzysta z biblioteki libpar (<xref linkend="libpar">).
 Wymaga czytanych z sekcji <emphasis>meaner3</emphasis> lub globalnej 
-parametrów base_format, datadir, IPK i 
+parametrów datadir, IPK i 
 czytanych z sekcji <emphasis>szbwriter</emphasis> opcjonalnych log oraz 
 log_level. Opis
 znaczenia tych parametrów znajduje siê w rozdziale
@@ -7024,6 +7025,7 @@ double_match=@(*-energia|*-objetosc)
 Wiêcej informacji o wzorcach pow³oki mo¿na uzyskaæ wydaj±c komendê 
 <command>info fnmatch</command>.
 </para>
+<!--
 <para>
 W tej samej sekcji pliku <filename>szarp.cfg</filename> mo¿e siê znajdowaæ
 parametr <emphasis>fill_how_many</emphasis>. Jego warto¶ci± jest liczba,
@@ -7032,10 +7034,22 @@ aktualnie zapisywan± warto¶ci±. Przydatny jest do likwidowania 'dziur w
 wykresach', wystêpuj±cych w sytuacji gdy przerwy miêdzy danymi wej¶ciowymi
 wynosz± wiêcej ni¿ 10 minut. Domy¶lna warto¶æ parametru to 0.
 </para>
+-->
 
 <para>W linii komend mo¿na podaæ jeden, opcjonalny, parametr - nazwê
 konfiguracji. Wykorzystywany jest on tylko, je¿eli konfiguracja opisana
 parametrem IPK nie istnieje i bêdzie tworzona od nowa.
+</para>
+<para>
+	Dodatkowe opcje programu to <option>-n</option>, wymuszaj±ca dodanie nowo napotkanych
+	parmaterów do konfiguracji i zapis tak zmodyfikowanej konfiguracji do pliku 
+	<filename>params.xml</filename>, oraz <option>-p</option>, wy³±czaj±ca zapisywanie
+	obok zwyk³ych próbek 10-minutowych tak¿e próbek 10-sekundowych (o ile s± skonfigurowane
+	w pliku <filename>szarp.cfg</filename>).
+</para>
+<para>
+	Listê opcji i sposób konfiguracji programu mo¿na wy¶wietliæ uruchamiaj±c
+	program z opcj± <option>--help</option>.
 </para>
 
 </section>
@@ -7065,7 +7079,8 @@ pierwszych 5 znaków.
 
 <para>
 Program wczytuje kolejne linie z wej¶cia. Je¿eli parametr o podanej nazwie nie
-istnieje w konfiguracji, jest do niej dodawany jako parametr definiowalny.
+istnieje w konfiguracji a u¿yto opcji <option>-n</option>, jest do niej dodawany 
+jako parametr definiowalny.
 </para>
 <para>
 Je¿eli nazwa parametru pasuje do wzorca dla parametrów dwus³ownych (patrz
@@ -7076,7 +7091,7 @@ parametr definiowalny przegl±daj±cego, z odpowiedni± formu³± sklejaj±c± dwa
 parametry definiowalne.
 </para>
 <para>
-Je¿eli parametr nie jest "dwus³owny", to jego precyzja jest ustalana na
+Je¿eli nowy parametr nie jest "dwus³owny", to jego precyzja jest ustalana na
 podstawie ilo¶ci miejsc po przecinku w polu warto¶ci.
 </para>
 <para>
@@ -7089,6 +7104,10 @@ wymaga³oby to konwersji zapisanych wcze¶niej do bazy danych.
 sobie wyst±pi wiêcej warto¶ci, które mieszcz± siê w jednej 10-minutowej próbce
 (a wiêc np. warto¶æ z 10:10 i 10:15), to do bazy zostanie zapisana ich
 ¶rednia.</para>
+<para>
+Je¿eli skonfigurowano zapisywanie próbek 10-sekundowych za pomoc± programu prober, 
+oraz nie u¿yto opcji <option>-p</option>, to program zapisze tak¿e próbki 10-sekundowe.
+</para>
 
 <para><!--Program nie zapisze danych, je¿eli w pliku szbase zosta³y ju¿ zapisane
 pó¼niej jakie¶ dane.--> Puste miejsca zostan± wype³nione warto¶ciami NO_DATA.
@@ -7142,11 +7161,6 @@ parametr wymagany, czytany z sekcji globalnej.
 <emphasis>datadir</emphasis> - g³ówny katalog z baz± w formacie SzarpBase,
 parametr wymagany, czytany z sekcji globalnej.
 </para></listitem>
-
-<listitem><para>
-<emphasis>base_format</emphasis> - parametr wymagany, czytany z sekcji
-g³ównej. Musi mieæ warto¶æ <emphasis>szarpbase</emphasis>, w przeciwnym razie
-program odmówi uruchomienia.</para></listitem>
 
 <listitem><para>
 <emphasis>parcook_path</emphasis> - ¶cie¿ka do pliku, u¿ywana do tworzenia
