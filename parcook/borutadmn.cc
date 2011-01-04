@@ -421,7 +421,7 @@ void client_manager::starting_new_cycle() {
 		size_t& client = m_current_client.at(connection);
 		if (do_get_connection_state(connection) == NOT_CONNECTED) {
 			if (do_establish_connection(connection)) {
-				for (size_t c = 0; c < m_connection_client_map.at(c).size(); c++)
+				for (size_t c = 0; c < m_connection_client_map.at(connection).size(); c++)
 					m_connection_client_map.at(connection).at(c)->connection_error(NULL);
 				continue;
 			}

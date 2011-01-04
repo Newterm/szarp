@@ -242,7 +242,7 @@ void zet_proto_impl::timeout_cb(int fd, short event, void *_zet_proto_impl) {
 	zet_proto_impl* z = (zet_proto_impl*) _zet_proto_impl;
 	z->set_no_data();
 	z->stop_timer();
-	z->driver_finished_job();
+	z->terminate_connection();
 }
 
 void zet_proto_tcp::driver_finished_job() {

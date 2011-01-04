@@ -1726,8 +1726,9 @@ bool serial_ascii_parser::check_crc() {
 	for (size_t i = 0; i < d.size() - 2; i++)
 		crc = update_crc(crc, d[i]);
 	crc = finish_crc(crc);
-	return crc == d[d.size() - 1];
+	unsigned char frame_crc = d[d.size() - 1];
 	d.resize(d.size() - 1);
+	return crc == frame_crc;
 }
 
 namespace {
@@ -1854,10 +1855,10 @@ void serial_ascii_parser::send_sdu(unsigned char unit_id, PDU &pdu, struct buffe
 	unsigned char crc = 0;
 	unsigned char c1, c2;
 
-	bufferevent_write(bufev, ":", 1);
+	bufferevent_write(bufev, const_cast<char*>(":"), 1);
 
 #define SEND_VAL(v) { \
-	to_ascii(unit_id, c1, c2); \
+	to_ascii(v, c1, c2); \
 	bufferevent_write(bufev, &c1, sizeof(c1)); \
 	bufferevent_write(bufev, &c2, sizeof(c2)); }
 
@@ -1875,8 +1876,8 @@ void serial_ascii_parser::send_sdu(unsigned char unit_id, PDU &pdu, struct buffe
 	crc = finish_crc(crc);
 	SEND_VAL(crc);
 
-	bufferevent_write(bufev, "\r", 1);
-	bufferevent_write(bufev, "\n", 1);
+	bufferevent_write(bufev, const_cast<char*>("\r"), 1);
+	bufferevent_write(bufev, const_cast<char*>("\n"), 1);
 }
 
 int serial_ascii_parser::configure(xmlNodePtr node, serial_port_configuration &spc) {

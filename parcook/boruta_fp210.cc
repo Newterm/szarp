@@ -140,7 +140,7 @@ bool fp210_driver::readline(struct bufferevent* bufev) {
 	char c;
 	while (bufferevent_read(bufev, &c, 1)) {
 		size_t bs = m_input_buffer.size();
-		if (c == '\r' && bs && m_input_buffer.at(bs - 1)) {
+		if (c == '\r' && bs > 1 && m_input_buffer.at(bs - 1) == '\r') {
 			m_input_buffer.at(bs - 1) = '\0';
 			return true;
 		}
