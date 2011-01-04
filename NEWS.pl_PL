@@ -7,6 +7,16 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.511
+# 01.01.2011
+* Dodano obs³ugê protoko³u modbus ascii do demona Boruta.
+* Usuniêto b³±d powoduj±cy b³êdne wyliczanie warto¶ci optymalizowanych parametrów 
+gdy te odwo³ywa³y siê do warto¶ci ¶rednich (wiêkszych ni¿ 10 minut)
+* Dodano now± funkcjonalno¶æ do programu draw3 - w programie przegl±daj±cym
+mo¿na wprowadziæ warunek (maj±cy postaæ wyra¿enia jêzyka Lua) a draw3 potrafi
+wyszukaæ chwile w czasie gdy ten warunek jest spe³niony.
+* Sumowanie godzinowe ustawiane jest automatycznie dla parametrów o odpowiednich
+jednostkach (MW, KW, GJ, */h).
 ** 3.1.508
 # 01.12.2010
 * Dodany przycisk i pozycja w menu programu przegl±daj±cego pozwalaj±ca na

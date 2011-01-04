@@ -6,6 +6,16 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.511
+# 01.01.2011
+* Added support for modbus ascii protocol to boruta daemon.
+* Fixed bug in accessing of average (longer than 10 minutes) values from within
+lua optimized parameters.
+* Hoursum attribute is attimaticaly set for parameters having appropriate
+units.
+* New feature added to draw3: it is now possible to provide an condition 
+(as a lua expression) and draw3 will look for moments in time when this condition
+evalutes to true.
 ** 3.1.508
 # 01.12.2010
 * Button/menu item added to Draw3 for positioning cursor at last available 
