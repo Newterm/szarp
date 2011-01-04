@@ -1,4 +1,12 @@
 
+2010-01-03	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2: "hoursum" attribute is automatically
+	set for parameters (actually draws of parameters)
+	having appropirate unit name
+	* wx/draw3: new feature - user can enter
+	a condition (as a lua expression) and draw3 
+	will look for moments in time that satisfy
+	this condition
 2010-01-03	Pawel Palucha <pawel@newterm.pl>
 	* ipk.sgml: updated szbwriter documentation.
 	* parcook/parcook.cfg: version/bugs info fix.

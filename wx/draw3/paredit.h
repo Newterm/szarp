@@ -36,14 +36,18 @@
 #include <wx/datectrl.h>
 
 /**
- * Widget for editing param properties.
+ * Widget for editing param properties and also for searching data given a formula.
  */
 class ParamEdit : public wxDialog, public DBInquirer {
+
 public:
 		/** Widget constructor
-		 * @param color_picker color picking widget
 		 */
 	ParamEdit(wxWindow *parent, ConfigManager* cfg, DatabaseManager *db);
+
+		/** Widget constructor, starts widget in param searching mode
+		*/
+	ParamEdit(wxWindow *parent, ConfigManager* cfg, DatabaseManager *db, DrawsController *dc);
 
 		/** Changes accepted by user - OK button clicked*/
 	void OnOK(wxCommandEvent & event);
@@ -101,6 +105,12 @@ public:
 
 	void OnHelpButton(wxCommandEvent &event);
 
+	void OnForwardButton(wxCommandEvent& event);
+
+	void OnBackwardButton(wxCommandEvent& event);
+
+	void OnCloseButton(wxCommandEvent& event);
+
 	void OnFormulaSubtract(wxCommandEvent &event);
 
 	void OnFormulaMultiply(wxCommandEvent &event);
@@ -125,6 +135,14 @@ private:
 	void ApplyModifications();
 
 	void TransferToWindow(DefinedParam *param);
+
+	void FormulaCompiledForExpression(DatabaseQuery *q);
+
+	void FormulaCompiledForParam(DatabaseQuery *q);
+
+	void InitWidget(wxWindow *parent);
+
+	void SendCompileFormulaQuery();
 
 	CodeEditor *m_formula_input;
 
@@ -154,15 +172,33 @@ private:
 
 	wxStaticText *m_user_param_label;
 
+	wxStaticText *m_found_date_label;
+
 	DefinedParam *m_edited_param;
 
 	ParamsListDialog *m_params_list;
+
+	DrawsController* m_draws_ctrl;
 
 	bool m_creating_new;
 
 	bool m_error;
 
+	enum WIDGET_MODE {
+		EDITING_PARAM,	
+		EDITING_SEARCH_EXPRESSION,	
+	} m_widget_mode;
+
+	enum WIDGET_SERACH_DIRECTION {
+		SEARCHING_LEFT,
+		SEARCHING_RIGHT
+	} m_search_direction;
+
+	wxDateTime m_current_search_date;
+
 	wxString m_error_string;
+
+	wxString m_info_string;
 
 		/** Button calling SimpleColorPicker
 		 * @see SimpleColorPicker

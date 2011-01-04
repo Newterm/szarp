@@ -270,6 +270,10 @@ void DefinedDrawInfo::SetDraw(TDraw *_d) {
 void DefinedDrawInfo::SetParam(DrawParam *_p) {
 	p = _p;
 	SetParamName(_p->GetParamName());
+	if (TParam::IsHourSumUnit(_p->GetUnit().c_str())) {
+		m_special_changed = true;
+		m_sp = TDraw::HOURSUM;
+	}
 }
 
 void DefinedDrawInfo::SetDrawName(wxString name) {

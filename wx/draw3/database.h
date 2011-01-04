@@ -102,6 +102,8 @@ struct DatabaseQuery {
 		int error;
 		/** Error string*/
 		wchar_t *error_str;
+		/** Search condtion*/
+		szb_search_condition *search_condition;
 	};
 
 	/**Name of configuration prefix to be reloaded*/

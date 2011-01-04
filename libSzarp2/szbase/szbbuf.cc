@@ -305,24 +305,24 @@ szb_search_last(szb_buffer_t * buffer, TParam * param)
 }
 
 time_t
-szb_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle) {
+szb_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle, const szb_search_condition& condition) {
 	
 	if (buffer->PrepareConnection() == false)
 		return -1;
 
 	switch (param->GetType()) {
 		case TParam::P_REAL:
-			return szb_real_search_probe(buffer, param, start, end, direction, c_handle);
+			return szb_real_search_probe(buffer, param, start, end, direction, c_handle, condition);
 	    
 		case TParam::P_COMBINED:
-			return szb_combined_search_probe(buffer, param, start, end, direction, c_handle);
+			return szb_combined_search_probe(buffer, param, start, end, direction, c_handle, condition);
 	    
 		case TParam::P_DEFINABLE:
-			return szb_definable_search_probe(buffer, param, start, end, direction, c_handle);
+			return szb_definable_search_probe(buffer, param, start, end, direction, c_handle, condition);
 
 #ifndef NO_LUA
 		case TParam::P_LUA:
-			return szb_lua_search_probe(buffer, param, start, end, direction, c_handle);
+			return szb_lua_search_probe(buffer, param, start, end, direction, c_handle, condition);
 #endif
 		default:
 			return -1;
@@ -331,38 +331,42 @@ szb_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end
 }
 
 time_t
-szb_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe, SzbCancelHandle * c_handle)
+szb_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe, SzbCancelHandle * c_handle, const szb_search_condition& condition)
 {
     switch(param->GetType()) {
 	case TParam::P_REAL:
-	    return szb_real_search_data(buffer, param, start, end, direction);
+	    return szb_real_search_data(buffer, param, start, end, direction, condition);
 	    
 	case TParam::P_COMBINED:
-	    return szb_combined_search_data(buffer, param, start, end, direction);
+	    return szb_combined_search_data(buffer, param, start, end, direction, condition);
 	    
 	case TParam::P_DEFINABLE:
-	    return szb_definable_search_data(buffer, param, start, end, direction);
+	    return szb_definable_search_data(buffer, param, start, end, direction, condition);
 
 #ifndef NO_LUA
 	case TParam::P_LUA:
-	   return szb_lua_search_data(buffer, param, start, end, direction);
+	   return szb_lua_search_data(buffer, param, start, end, direction, condition);
 #endif
 	default:
 	    return -1;
     }
 }
 
+bool szb_nan_search_condition::operator()(const double& v) const {
+	return !IS_SZB_NODATA(v);
+}
+
 time_t
-szb_search(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe, SzbCancelHandle * c_handle)
+szb_search(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe, SzbCancelHandle * c_handle, const szb_search_condition& condition)
 {
 #ifndef NO_LUA
 	if (param->GetType() == TParam::P_LUA && param->GetFormulaType() == TParam::LUA_AV)
-		return szb_lua_search_by_value(buffer, param, probe, start, end, direction);
+		return szb_lua_search_by_value(buffer, param, probe, start, end, direction, condition);
 #endif
 	if (probe == PT_SEC10)
-		return szb_search_probe(buffer, param, start, end, direction, c_handle);
+		return szb_search_probe(buffer, param, start, end, direction, c_handle, condition);
 	else
-		return szb_search_data(buffer, param, start, end, direction, probe, c_handle);
+		return szb_search_data(buffer, param, start, end, direction, probe, c_handle, condition);
 }
 
 

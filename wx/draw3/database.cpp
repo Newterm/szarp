@@ -259,7 +259,7 @@ void QueryExecutor::ExecuteSearchQuery(szb_buffer_t* szb, TParam *p, DatabaseQue
 			sd.start, 
 			sd.end, 
 			sd.direction, 
-			PeriodToProbeType(sd.period_type), cancelHandle);
+			PeriodToProbeType(sd.period_type), cancelHandle, *sd.search_condition);
 
 	if (szb->last_err != SZBE_OK) {
 		sd.ok = false;

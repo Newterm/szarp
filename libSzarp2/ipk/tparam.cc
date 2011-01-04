@@ -46,6 +46,17 @@
 
 using namespace std;
 
+bool TParam::IsHourSumUnit(const std::wstring& unit) {
+	if (unit == L"MW" || unit == L"kW" || unit == L"GJ")
+		return true;
+
+	if (unit.size() > 3
+			&& unit.substr(unit.size() - 2) == L"/h")
+		return true;
+
+	return false;
+}
+
 void
 TParam::SetAutoBase()
 {
@@ -95,6 +106,8 @@ TParam::AddDraw(TDraw * draw)
 	_draws = draw;
 	return draw;
     }
+    if (IsHourSumUnit(_unit))
+	draw->SetSpecial(TDraw::HOURSUM);
     return _draws->Append(draw);
 }
 

@@ -1159,6 +1159,9 @@ DrawPanel* DrawFrame::GetCurrentPanel() {
 	return draw_panel;
 }
 
+void DrawFrame::OnSearchDate(wxCommandEvent &event) {
+	draw_panel->SearchDate();
+}
 
 /**
  * IMPORTANT: Declare Events which are share by DrawMenuBar and DrawToolBar
@@ -1238,6 +1241,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(drawTB_REMARK, DrawFrame::OnShowRemarks)
     EVT_MENU(drawTB_GOTOLATESTDATE, DrawFrame::OnGoToLatestDate)
     EVT_MENU(XRCID("GoToLatestDate"), DrawFrame::OnGoToLatestDate)
+    EVT_MENU(XRCID("SearchDate"), DrawFrame::OnSearchDate)
     EVT_CLOSE(DrawFrame::OnClose)
     EVT_IDLE(DrawFrame::OnIdle)
     EVT_ACTIVATE(DrawFrame::OnActivate)

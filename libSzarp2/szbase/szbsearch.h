@@ -20,31 +20,31 @@
 #define SZB_SERACH_H__
 
 time_t
-szb_real_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction);
+szb_real_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, const szb_search_condition& condtion);
 
 time_t
-szb_combined_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction);
+szb_combined_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, const szb_search_condition& condtion);
 
 time_t
-szb_definable_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction);
+szb_definable_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, const szb_search_condition& condtion);
 
 time_t
-szb_lua_search_data(szb_buffer_t * buffer, TParam * param , time_t start, time_t end, int direction);
+szb_lua_search_data(szb_buffer_t * buffer, TParam * param , time_t start, time_t end, int direction, const szb_search_condition& condtion);
 
 time_t 
-szb_real_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle);
+szb_real_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle, const szb_search_condition& condtion);
 
 time_t 
-szb_combined_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle);
+szb_combined_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle, const szb_search_condition& condtion);
 
 time_t 
-szb_definable_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle);
+szb_definable_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle, const szb_search_condition& condtion);
 
 time_t 
-szb_lua_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle);
+szb_lua_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle, const szb_search_condition& condtion);
 
 time_t
-szb_lua_search_by_value(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_TYPE probe_type, time_t start_time, time_t end_time, int direction);
+szb_lua_search_by_value(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_TYPE probe_type, time_t start_time, time_t end_time, int direction, const szb_search_condition& condtion);
 
 bool
 szb_lua_search_first_last_date(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_TYPE probe_type, time_t& first_date, time_t& last_date);

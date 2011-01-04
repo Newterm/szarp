@@ -62,6 +62,7 @@
 #include "drawpnl.h"
 #include "drawapp.h"
 #include "drawtreedialog.h"
+#include "paredit.h"
 #include "draw.h"
 
 #include <wx/xrc/xmlres.h>
@@ -312,7 +313,7 @@ DrawPanel::DrawPanel(DatabaseManager* _db_mgr, ConfigManager * _cfg, RemarksHand
 	:  wxPanel(parent, id, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS),
 	df(_df), iw(NULL), dw(NULL), dtw(NULL), ssw(NULL), sw(NULL), tw(NULL),
 	dinc(NULL), sinc(NULL), db_mgr(_db_mgr), cfg(_cfg),
-	prefix(_prefix), smw(NULL), rh(_rh), rmf(NULL), dtd(NULL), pw(NULL), realized(false)
+	prefix(_prefix), smw(NULL), rh(_rh), rmf(NULL), dtd(NULL), pw(NULL), realized(false), ee(NULL)
 {
 #ifdef WXAUI_IN_PANEL
 	am.SetManagedWindow(this);
@@ -519,6 +520,8 @@ DrawPanel::~DrawPanel()
 		sinc->Destroy();
 	if (dtd != NULL)
 		dtd->Destroy();
+	if (ee != NULL)
+		ee->Destroy();
 	smw->Destroy();
 	rw->Destroy();
 	pw->Destroy();
@@ -996,7 +999,17 @@ bool DrawPanel::Switch(wxString set, wxString prefix, time_t time, PeriodType pt
 wxString
 DrawPanel::GetUrl(bool with_infinity) {
 	return dw != NULL ? dw->GetUrl(with_infinity) : _T("");
-};
+}
+
+void DrawPanel::SearchDate() {
+	if (ee) {
+		ee->Show();
+		ee->Raise();
+	} else {
+		ee = new ParamEdit(this, cfg, db_mgr, dw->GetDrawsController());
+		ee->Show();
+	}
+}
 
 BEGIN_EVENT_TABLE(DrawPanel, wxPanel)
     EVT_MENU(drawTB_REFRESH, DrawPanel::OnRefresh)

@@ -730,6 +730,8 @@ public:
 #endif
 		} ParamType;
 	
+	static bool IsHourSumUnit(const std::wstring& unit);
+
 	TParam(TUnit *parent,
 		TSzarpConfig *parentSC = NULL,
 		const std::wstring& formula = std::wstring(),

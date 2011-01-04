@@ -26,7 +26,7 @@
 #include "proberconnection.h"
 
 time_t 
-szb_real_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle) {
+szb_real_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle, const szb_search_condition& condition) {
 	if (buffer->PrepareConnection() == false)
 		return -1;
 	time_t t = buffer->prober_connection->Search(start, end, direction, param->GetSzbaseName());
@@ -37,15 +37,15 @@ szb_real_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_
 }
 
 time_t 
-szb_combined_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle) {
+szb_combined_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle, const szb_search_condition& condition) {
 	if (buffer->PrepareConnection() == false)
 		return -1;
 	TParam ** p_cache = param->GetFormulaCache();
-	time_t msw_ret = szb_real_search_probe(buffer, p_cache[0], start, end, direction, c_handle);
+	time_t msw_ret = szb_real_search_probe(buffer, p_cache[0], start, end, direction, c_handle, condition);
 	if (msw_ret == (time_t) -1)
 		return msw_ret;
 
-	time_t lsw_ret = szb_real_search_probe(buffer, p_cache[1], start, end, direction, c_handle);
+	time_t lsw_ret = szb_real_search_probe(buffer, p_cache[1], start, end, direction, c_handle, condition);
 	if (lsw_ret == (time_t) -1)
 		return lsw_ret;
 
@@ -73,7 +73,7 @@ public:
 	}
 };
 
-time_t search_in_probe_range(szb_buffer_t* buffer, TParam* param, time_t start, time_t end, int direction) {
+time_t search_in_probe_range(szb_buffer_t* buffer, TParam* param, time_t start, time_t end, int direction, const szb_search_condition& condition) {
 	if (param->IsConst())
 		return start;
 
@@ -98,7 +98,7 @@ time_t search_in_probe_range(szb_buffer_t* buffer, TParam* param, time_t start, 
 		}
 
 		int index = (t - block->GetStartTime()) / SZBASE_PROBE_SPAN;
-		if (!IS_SZB_NODATA(block->GetData()[index])) {
+		if (condition(block->GetData()[index])) {
 			sz_log(10, "Data found at %d", int(t));
 			return t;
 		}
@@ -137,7 +137,7 @@ bool adjust_search_boundaries(time_t& start, time_t& end, time_t first_date, tim
 }
 
 time_t 
-szb_definable_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle) {
+szb_definable_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle, const szb_search_condition& condtion) {
 	time_t first_date;
 	time_t last_date;
 
@@ -147,11 +147,11 @@ szb_definable_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, 
 	if (adjust_search_boundaries(start, end, first_date, last_date, direction) == false)
 		return -1;
 
-	return search_in_probe_range(buffer, param, start, end, direction);
+	return search_in_probe_range(buffer, param, start, end, direction, condtion);
 }
 
 time_t 
-szb_lua_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle) {
+szb_lua_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SzbCancelHandle * c_handle, const szb_search_condition& condtion) {
 	time_t first_date, last_date;
 	if (!szb_lua_search_first_last_date(buffer, param, PT_SEC10, first_date, last_date))
 		return -1;
@@ -159,10 +159,10 @@ szb_lua_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t
 	if (adjust_search_boundaries(start, end, first_date, last_date, direction) == false)
 		return -1;
 
-	return search_in_probe_range(buffer, param, start, end, direction);
+	return search_in_probe_range(buffer, param, start, end, direction, condtion);
 }
 
-time_t search_in_data_left(szb_buffer_t* buffer, TParam* param, time_t start, time_t end) {
+time_t search_in_data_left(szb_buffer_t* buffer, TParam* param, time_t start, time_t end, const szb_search_condition& condtion) {
 	int year = -1, month = -1;
 	szb_datablock_t* block = NULL;
 	const SZBASE_TYPE* data = NULL;
@@ -197,13 +197,13 @@ time_t search_in_data_left(szb_buffer_t* buffer, TParam* param, time_t start, ti
 			t = probe2time(0, new_year, new_month);
 			continue;
 		}
-		if (!IS_SZB_NODATA(data[probe_n]))
+		if (condtion(data[probe_n]))
 			return t;
 	}
 	return -1;
 }
 
-time_t search_in_data_right(szb_buffer_t* buffer, TParam* param, time_t start, time_t end) {
+time_t search_in_data_right(szb_buffer_t* buffer, TParam* param, time_t start, time_t end, const szb_search_condition& condtion) {
 	int year = -1, month = -1;
 	szb_datablock_t* block = NULL;
 	search_timeout_check timeout_check(buffer);
@@ -241,65 +241,65 @@ time_t search_in_data_right(szb_buffer_t* buffer, TParam* param, time_t start, t
 			t = probe2time(block->GetFirstDataProbeIdx() - 1, new_year, new_month);
 			continue;
 		}
-		if (!IS_SZB_NODATA(data[probe_n]))
+		if (condtion(data[probe_n]))
 			return t;
 	}
 	return -1;
 }
 
-time_t search_in_data_range(szb_buffer_t* buffer, TParam* param, time_t start, time_t end, int direction) {
+time_t search_in_data_range(szb_buffer_t* buffer, TParam* param, time_t start, time_t end, int direction, const szb_search_condition& condtion) {
 	switch (direction) {
 		case 0:
-			return IS_SZB_NODATA(szb_get_probe(buffer, param, start, PT_MIN10)) ? -1 : start;
+			return condtion(szb_get_probe(buffer, param, start, PT_MIN10)) ? start : -1;
 		case -1:
-			return search_in_data_left(buffer, param, start, end);
+			return search_in_data_left(buffer, param, start, end, condtion);
 		case 1:
-			return search_in_data_right(buffer, param, start, end);
+			return search_in_data_right(buffer, param, start, end, condtion);
 		default:
 			assert(false);
 			return -1;
 	}
 }
 
-time_t szb_real_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction) {
+time_t szb_real_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, const szb_search_condition& condtion) {
 	time_t first_date = szb_search_first(buffer, param);
 	time_t last_date = szb_search_last(buffer, param);
 	if (adjust_search_boundaries(start, end, first_date, last_date, direction) == false)
 		return -1;
-	return search_in_data_range(buffer, param, start, end, direction);
+	return search_in_data_range(buffer, param, start, end, direction, condtion);
 }
 
-time_t szb_combined_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction) {
+time_t szb_combined_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, const szb_search_condition& condtion) {
 	assert(param->GetNumParsInFormula() == 2);
 	TParam ** cache = param->GetFormulaCache();
 	time_t first_date = szb_search_first(buffer, cache[0]);
 	time_t last_date = szb_search_last(buffer, cache[0]);
 	if (adjust_search_boundaries(start, end, first_date, last_date, direction) == false)
 		return -1;
-	return search_in_data_range(buffer, param, start, end, direction);
+	return search_in_data_range(buffer, param, start, end, direction, condtion);
 }
 
 time_t
-szb_definable_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction) {
+szb_definable_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, const szb_search_condition& condtion) {
 	time_t first_date = buffer->first_av_date; 
 	time_t last_date = szb_search_last(buffer, param);
 	if (adjust_search_boundaries(start, end, first_date, last_date, direction) == false)
 		return -1;
-	return search_in_data_range(buffer, param, start, end, direction);
+	return search_in_data_range(buffer, param, start, end, direction, condtion);
 }
 
 
-time_t szb_lua_search_data(szb_buffer_t * buffer, TParam * param , time_t start, time_t end, int direction) {
+time_t szb_lua_search_data(szb_buffer_t * buffer, TParam * param , time_t start, time_t end, int direction, const szb_search_condition& condtion) {
 	time_t first_date, last_date;
 	if (!szb_lua_search_first_last_date(buffer, param, PT_MIN10, first_date, last_date))
 		return -1;
 	if (adjust_search_boundaries(start, end, first_date, last_date, direction) == false)
 		return -1;
-	return search_in_data_range(buffer, param, start, end, direction);
+	return search_in_data_range(buffer, param, start, end, direction, condtion);
 }
 
 
-template<class CMP> time_t do_szb_search(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_TYPE probe_type, time_t start_time, time_t end_time, int direction) {
+template<class CMP> time_t do_szb_search(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_TYPE probe_type, time_t start_time, time_t end_time, int direction, const szb_search_condition& condtion) {
 	CMP cmp;
 	search_timeout_check timeout_check(buffer);
 	for (time_t t = start_time; cmp(t, end_time); t = szb_move_time(t, direction, probe_type, 0)) {
@@ -308,7 +308,7 @@ template<class CMP> time_t do_szb_search(szb_buffer_t* buffer, TParam* param, SZ
 			return -1;
 		if (timeout_check.timeout())
 			return -1;
-		if (!IS_SZB_NODATA(val))
+		if (condtion(val))
 			return t;
 	}
 	return -1;
@@ -344,7 +344,7 @@ bool szb_lua_search_first_last_date(szb_buffer_t* buffer, TParam* param, SZARP_P
 	return true;
 }
 
-time_t szb_lua_search_by_value(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_TYPE probe_type, time_t start_time, time_t end_time, int direction) {
+time_t szb_lua_search_by_value(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_TYPE probe_type, time_t start_time, time_t end_time, int direction, const szb_search_condition& condtion) {
 	time_t first_date;
 	time_t last_date;
 
@@ -356,11 +356,11 @@ time_t szb_lua_search_by_value(szb_buffer_t* buffer, TParam* param, SZARP_PROBE_
 
 	switch (direction) {
 		case -1:
-			return do_szb_search<std::greater_equal<time_t> >(buffer, param, probe_type, start_time, end_time, direction);
+			return do_szb_search<std::greater_equal<time_t> >(buffer, param, probe_type, start_time, end_time, direction, condtion);
 		case 1:
-			return do_szb_search<std::less_equal<time_t> >(buffer, param, probe_type, start_time, end_time, direction);
+			return do_szb_search<std::less_equal<time_t> >(buffer, param, probe_type, start_time, end_time, direction, condtion);
 		case 0:
-			return IS_SZB_NODATA(szb_get_probe(buffer, param, start_time, probe_type)) ? -1 : start_time;
+			return condtion(szb_get_probe(buffer, param, start_time, probe_type)) ? start_time : -1;
 		default:
 			assert(false);
 			return -1;

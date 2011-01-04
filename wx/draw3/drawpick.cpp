@@ -145,7 +145,7 @@ void DrawEdit::Close() {
 }
 
 bool DrawEdit::IsSummaried() {
-	return m_summary_checkbox->IsChecked();
+	return m_summary_checkbox->IsChecked() || TParam::IsHourSumUnit(GetUnit().c_str());
 }
 
 void DrawEdit::OnOK(wxCommandEvent & event)
@@ -597,12 +597,14 @@ void DrawPicker::OnAddParameter(wxCommandEvent& event) {
 	if (ret != wxID_OK)
 		return;
 
+	bool isHourSum = m_draw_edit->IsSummaried();
+
 	DefinedDrawInfo *ddi = new DefinedDrawInfo(m_draw_edit->GetLongName(),
 			m_draw_edit->GetShortName(),
 			m_draw_edit->GetColor(),
 			m_draw_edit->GetMin(),
 			m_draw_edit->GetMax(),
-			m_draw_edit->IsSummaried() ? TDraw::HOURSUM : TDraw::NONE,
+			isHourSum ? TDraw::HOURSUM : TDraw::NONE,
 			m_draw_edit->GetUnit(),
 			dp,
 			m_config_mgr->GetDefinedDrawsSets());

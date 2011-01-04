@@ -272,6 +272,8 @@ protected:
 
 	void OnProberAddresses(wxCommandEvent &event);
 
+	void OnSearchDate(wxCommandEvent &event);
+
 	/** 
 	 * Finds next DrawPanel with configuration given by prefix
 	 * (looks in m_notebook and draw_panel).

@@ -40,6 +40,8 @@
 
 const size_t DrawsController::max_draws_count = 12;
 
+szb_nan_search_condition DrawsController::search_condition;
+
 DrawsController::DrawsController(ConfigManager *config_manager, DatabaseManager *database_manager) :
 	DBInquirer(database_manager), 
 	m_state(STOP),
@@ -290,6 +292,7 @@ void DrawsController::SendSearchQuery(const wxDateTime& start, const wxDateTime&
 	q->search_data.end = t2;
 	q->search_data.period_type = m_draws[m_selected_draw]->GetPeriod();
 	q->search_data.direction = direction;
+	q->search_data.search_condition = &DrawsController::search_condition;
 
 	QueryDatabase(q);
 
@@ -683,8 +686,9 @@ void DrawsController::ConfigurationWasReloaded(wxString prefix) {
 		m_time_to_go = m_current_time;
 	m_current_time = DTime();
 
-	for (int i = 0; i < m_active_draws_count; i++)
+	for (int i = 0; i < m_active_draws_count; i++) {
 		m_observers.NotifyDrawInfoReloaded(m_draws[i]);
+	}
 
 	EnterWaitState(WAIT_DATA_NEAREST);
 }
@@ -1419,10 +1423,13 @@ void DrawsObservers::NotifyDrawInfoChanged(Draw* draw) {
 }
 
 void DrawsObservers::NotifyDrawInfoReloaded(Draw* draw) {
+	std::for_each(m_observers.begin(), m_observers.end(), std::bind2nd(std::mem_fun(&DrawObserver::DrawInfoReloaded), draw));
+#if 0
 	for (std::vector<DrawObserver*>::iterator i = m_observers.begin();
 			i != m_observers.end();
 			++i)
 		(*i)->DrawInfoReloaded(draw);
+#endif
 }
 
 void DrawsObservers::NotifyDrawSelected(Draw* draw) {

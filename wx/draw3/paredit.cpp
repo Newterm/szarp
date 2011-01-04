@@ -53,6 +53,10 @@
 #include "cfgdlg.h"
 #include "dbmgr.h"
 #include "incsearch.h"
+#include "drawtime.h"
+#include "drawsctrl.h"
+#include "timeformat.h"
+#include "drawtime.h"
 
 #include "codeeditor.h"
 
@@ -62,8 +66,55 @@
 
 char degree_char[] = { 0xc2, 0xb0, 0x0 };
 
+class non_zero_search_condition : public szb_search_condition {
+public:
+	bool operator()(const double& v) const { return v ; }
+};
+
 ParamEdit::ParamEdit(wxWindow *parent, ConfigManager *cfg, DatabaseManager *dbmgr) : DBInquirer(dbmgr)
 {
+	m_widget_mode = EDITING_PARAM;
+
+	m_cfg_mgr = cfg;
+	m_draws_ctrl = NULL;
+
+	InitWidget(parent);
+
+	wxSizer* sizer = GetSizer();
+	wxButton *forward_button = XRCCTRL(*this, "wxID_FORWARD", wxButton);
+	sizer->Show(forward_button->GetContainingSizer(), false, true);
+	sizer->Show(m_found_date_label->GetContainingSizer(), false, true);
+	sizer->Layout();
+
+}
+
+ParamEdit::ParamEdit(wxWindow *parent, ConfigManager *cfg, DatabaseManager *dbmgr, DrawsController *dc) : DBInquirer(dbmgr)
+{
+	m_cfg_mgr = cfg;
+	m_draws_ctrl = dc;
+	m_base_prefix = dc->GetCurrentDrawInfo()->GetBasePrefix();
+
+	m_widget_mode = EDITING_SEARCH_EXPRESSION;
+
+	InitWidget(parent);
+
+	wxSizer* sizer = GetSizer();
+
+	wxButton *ok_button = XRCCTRL(*this, "wxID_OK", wxButton);
+	sizer->Show(ok_button->GetContainingSizer(), false, true);
+	sizer->Show(m_param_name_input->GetContainingSizer(), false, true);
+	sizer->Show(m_unit_input->GetContainingSizer(), false, true);
+	sizer->Show(m_datepicker_ctrl_start_date->GetContainingSizer(), false, true);
+	sizer->Show(m_button_base_config->GetContainingSizer(), false, true);
+	sizer->Show(m_formula_type_choice->GetContainingSizer(), false, true);
+	sizer->Show(m_prec_spin->GetContainingSizer(), false, true);
+	sizer->Layout();
+
+	m_formula_input->AppendText(_T("v = "));
+
+}
+
+void ParamEdit::InitWidget(wxWindow *parent) {
 
 	SetHelpText(_T("draw3-ext-parametersset"));
 	
@@ -88,6 +139,7 @@ ParamEdit::ParamEdit(wxWindow *parent, ConfigManager *cfg, DatabaseManager *dbmg
 	stub_sizer->Insert(i, m_formula_input, 1, wxALL | wxEXPAND, 4 );
 	stub_sizer->Layout();
 
+	m_found_date_label = XRCCTRL(*this, "found_date_label", wxStaticText);
 
 	m_prec_spin = XRCCTRL(*this, "spin_ctrl_prec", wxSpinCtrl);
 	
@@ -123,8 +175,6 @@ ParamEdit::ParamEdit(wxWindow *parent, ConfigManager *cfg, DatabaseManager *dbmg
 	wxButton* degree_button = XRCCTRL(*this, "button_degree", wxButton);
 	degree_button->SetLabel(wxString(wxConvUTF8.cMB2WC(degree_char), *wxConvCurrent));
 
-	m_cfg_mgr = cfg;
-
 	m_inc_search = NULL;
 
 	m_error = false;
@@ -138,8 +188,13 @@ ParamEdit::ParamEdit(wxWindow *parent, ConfigManager *cfg, DatabaseManager *dbmg
 void ParamEdit::OnIdle(wxIdleEvent &e) {
 	if (m_error) {
 		m_error = false;
-
 		wxMessageDialog* dlg = new wxMessageDialog(this, m_error_string, _("Error"), wxOK);
+		dlg->ShowModal();
+		delete dlg;
+	} else if (m_info_string.size()) {
+		wxString s = m_info_string;
+		m_info_string = wxString();
+		wxMessageDialog* dlg = new wxMessageDialog(this, s, _("Information"), wxOK);
 		dlg->ShowModal();
 		delete dlg;
 	}
@@ -210,17 +265,7 @@ void ParamEdit::OnOK(wxCommandEvent &e) {
 		EndModal(wxID_OK);
 	}
 
-	DatabaseQuery *q = new DatabaseQuery;
-	q->type = DatabaseQuery::COMPILE_FORMULA;
-	q->draw_info = NULL;
-	DatabaseQuery::CompileFormula& cf = q->compile_formula;
-
-	cf.error = NULL;
-	cf.formula = wcsdup(m_formula_input->GetText().c_str());
-
-	QueryDatabase(q);
-
-	return;
+	SendCompileFormulaQuery();
 }
 
 void ParamEdit::OnCancel(wxCommandEvent & event) {
@@ -393,9 +438,8 @@ void ParamEdit::ApplyModifications() {
 	m_edited_param = np;
 }
 
-void ParamEdit::DatabaseResponse(DatabaseQuery *q) {
+void ParamEdit::FormulaCompiledForParam(DatabaseQuery *q) {
 	assert(q->type == DatabaseQuery::COMPILE_FORMULA);
-
 	DatabaseQuery::CompileFormula& cf = q->compile_formula;
 
 	bool ok = cf.ok;
@@ -406,14 +450,105 @@ void ParamEdit::DatabaseResponse(DatabaseQuery *q) {
 
 	free(cf.formula);
 	free(cf.error);
-	delete q;
 
 	if (ok) {
 		if (m_creating_new == false)
 			ApplyModifications();
 		EndModal(wxID_OK);
 	}
+	delete q;
+}
 
+void ParamEdit::FormulaCompiledForExpression(DatabaseQuery *q) {
+
+	if (q->type == DatabaseQuery::COMPILE_FORMULA) {
+		DatabaseQuery::CompileFormula& cf = q->compile_formula;
+		bool ok = cf.ok;
+		if (ok == false) {
+			m_error = true;
+			m_error_string = wxString::Format(_("Invalid expression %s"), cf.error);
+		}
+		free(cf.formula);
+		free(cf.error);
+
+		delete q;
+		if (!ok) {
+			return;
+		}
+
+		DefinedParam* param = new DefinedParam(m_draws_ctrl->GetCurrentDrawInfo()->GetBasePrefix(),
+			L"TEMPORARY:SEARCH:EXPRESSION",
+			L"",
+			GetFormula(),
+			0,
+			TParam::LUA_VA,
+			-1);
+		param->CreateParam();
+
+		std::vector<DefinedParam*> dpv = std::vector<DefinedParam*>(1, param);
+		m_cfg_mgr->SubstituteOrAddDefinedParams(dpv);
+
+		DefinedDrawInfo* ddi = new DefinedDrawInfo(L"",
+				L"",
+				wxColour(),
+				0,
+				1,
+				TDraw::NONE,
+				L"",
+				param,
+				m_cfg_mgr->GetDefinedDrawsSets());
+
+		q = new DatabaseQuery();
+		q->type = DatabaseQuery::SEARCH_DATA;
+		q->draw_info = ddi;
+		q->draw_no = -1;
+		q->search_data.end = -1;
+		q->search_data.period_type = m_draws_ctrl->GetPeriod();
+		q->search_data.search_condition = new non_zero_search_condition;
+
+		wxDateTime t = m_current_search_date.IsValid() ? m_current_search_date.GetTicks() : m_draws_ctrl->GetCurrentTime();
+		DTime dt(m_draws_ctrl->GetPeriod(), t);
+		dt.AdjustToPeriod();
+		TimeIndex time_index(m_draws_ctrl->GetPeriod());
+		switch (m_search_direction) {
+			case SEARCHING_LEFT:
+				q->search_data.start = (dt - time_index.GetTimeRes() - time_index.GetDateRes()).GetTime().GetTicks();
+				q->search_data.direction = -1;
+				break;
+			case SEARCHING_RIGHT:
+				q->search_data.start = (dt + time_index.GetTimeRes() + time_index.GetDateRes()).GetTime().GetTicks();
+				q->search_data.direction = 1;
+				break;
+		}
+		QueryDatabase(q);
+	} else if (q->type == DatabaseQuery::SEARCH_DATA) {
+		if (q->search_data.response != -1) {
+			m_current_search_date = q->search_data.response;
+			m_draws_ctrl->Set(m_current_search_date);	
+			m_found_date_label->SetLabel(wxString::Format(_("Found time %s"), FormatTime(m_current_search_date, m_draws_ctrl->GetPeriod()).c_str()));
+		} else {
+			m_info_string = wxString::Format(_("%s"), _("No data found"));
+		}
+		DefinedParam* dp = dynamic_cast<DefinedParam*>(q->draw_info->GetParam());
+		std::vector<DefinedParam*> dpv(1, dp);
+		m_database_manager->RemoveParams(dpv);
+		m_cfg_mgr->GetDefinedDrawsSets()->RemoveParam(dp);
+		delete q->search_data.search_condition;
+		delete q->draw_info;
+		delete q;
+	}
+}
+
+void ParamEdit::DatabaseResponse(DatabaseQuery *q) {
+
+	switch (m_widget_mode) {
+		case EDITING_PARAM: 
+			FormulaCompiledForParam(q);
+			break;
+		case EDITING_SEARCH_EXPRESSION:
+			FormulaCompiledForExpression(q);
+			break;
+	}
 }
 
 wxString ParamEdit::GetBasePrefix() {
@@ -547,10 +682,38 @@ void ParamEdit::OnHelpButton(wxCommandEvent &event) {
 	wxHelpProvider::Get()->ShowHelp(this);
 }
 
+void ParamEdit::SendCompileFormulaQuery() {
+	DatabaseQuery *q = new DatabaseQuery;
+	q->type = DatabaseQuery::COMPILE_FORMULA;
+	q->draw_info = NULL;
+	DatabaseQuery::CompileFormula& cf = q->compile_formula;
+	cf.error = NULL;
+	cf.formula = wcsdup(m_formula_input->GetText().c_str());
+
+	QueryDatabase(q);
+}
+
+void ParamEdit::OnForwardButton(wxCommandEvent& event) {
+	m_search_direction = SEARCHING_RIGHT;	
+	SendCompileFormulaQuery();
+}
+
+void ParamEdit::OnBackwardButton(wxCommandEvent& event) {
+	m_search_direction = SEARCHING_LEFT;	
+	SendCompileFormulaQuery();
+}
+
+void ParamEdit::OnCloseButton(wxCommandEvent& event) {
+	Show(false);
+}
+
 BEGIN_EVENT_TABLE(ParamEdit, wxDialog)
     EVT_BUTTON(wxID_CANCEL, ParamEdit::OnCancel)
     EVT_BUTTON(wxID_OK, ParamEdit::OnOK)
     EVT_BUTTON(wxID_HELP, ParamEdit::OnHelpButton)
+    EVT_BUTTON(wxID_FORWARD, ParamEdit::OnForwardButton)
+    EVT_BUTTON(wxID_BACKWARD, ParamEdit::OnBackwardButton)
+    EVT_BUTTON(wxID_CLOSE, ParamEdit::OnCloseButton)
     EVT_BUTTON(XRCID("formula_undo_button"), ParamEdit::OnFormulaUndo)
     EVT_BUTTON(XRCID("formula_redo_button"), ParamEdit::OnFormulaRedo)
     EVT_BUTTON(XRCID("formula_add_button"), ParamEdit::OnFormulaAdd)
@@ -560,6 +723,7 @@ BEGIN_EVENT_TABLE(ParamEdit, wxDialog)
     EVT_BUTTON(XRCID("formula_insert_param_button"), ParamEdit::OnFormulaInsertParam)
     EVT_BUTTON(XRCID("formula_insert_user_param_button"), ParamEdit::OnFormulaInsertUserParam)
     EVT_BUTTON(XRCID("button_base_config"), ParamEdit::OnButtonBaseConfig)
+    EVT_BUTTON(XRCID("button_degree"), ParamEdit::OnDegButton)
     EVT_BUTTON(XRCID("button_degree"), ParamEdit::OnDegButton)
     EVT_CHECKBOX(XRCID("checkbox_start"), ParamEdit::OnStartDateEnabled)
     EVT_IDLE(ParamEdit::OnIdle)

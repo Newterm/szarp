@@ -62,6 +62,7 @@ class DrawsSetsHash;
 class DrawPsc;
 class ParamsListDialog;
 class DrawEdit;
+class ParamEdit;
 class DrawPicker;
 class DrawServer;
 class DatabaseQueryQueue;

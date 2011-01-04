@@ -39,6 +39,8 @@
 #include <wx/aui/aui.h>
 #endif
 
+#include "classes.h"
+
 /**
  * This class reprezents panel with all the draws' display and control
  * widgets. It can be used as a main frame for program tab or windows.
@@ -95,6 +97,7 @@ class DrawPanel : public wxPanel, public DrawObserver {
 	/**@return currently selected set*/
 	DrawSet* GetSelectedSet();
 
+	void SearchDate();
 
 	void ShowExtraWindow(bool show, const char *name, bool& show_flag);
 	/**show/hides @see PieWindow
@@ -260,6 +263,8 @@ protected:
 	wxMenuBar *menu_bar;
 
 	DrawGraphs *dg;
+
+	ParamEdit* ee;
 
 //#define WXAUI_IN_PANEL
 #ifdef WXAUI_IN_PANEL

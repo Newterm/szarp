@@ -410,6 +410,18 @@ void
 szb_get_values(szb_buffer_t * buffer, TParam * param,
 		time_t start_time, time_t end_time, SZBASE_TYPE * retbuf, bool *isFixed = NULL);
 
+
+class szb_search_condition {
+public:
+	virtual bool operator()(const double&) const = 0;
+	virtual ~szb_search_condition() {};
+};
+
+class szb_nan_search_condition : public szb_search_condition {
+public:
+	virtual bool operator()(const double&) const;
+};
+
 /** Searches for not-null data in given time period.
  * @param buffer base buffer
  * @param param parameter
@@ -422,7 +434,7 @@ szb_get_values(szb_buffer_t * buffer, TParam * param,
  */
 time_t
 szb_search(szb_buffer_t * buffer, TParam * param,
-		time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe = PT_MIN10, SzbCancelHandle * c_handle = NULL);
+		time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe = PT_MIN10, SzbCancelHandle * c_handle = NULL, const szb_search_condition& condtion = szb_nan_search_condition());
 
 /** Return time of begining of first file in base for given param.
  * It is the time of first record in base, but it doesn't 
