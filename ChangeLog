@@ -1,4 +1,7 @@
 
+2010-01-03	Pawel Palucha <pawel@newterm.pl>
+	* parcook/boruta*, script/dmn2sgml.py: added documentation for boruta
+	subdrivers.
 2010-01-03	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2: "hoursum" attribute is automatically
 	set for parameters (actually draws of parameters)

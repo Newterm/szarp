@@ -29,19 +29,19 @@
  @class 4
 
  @devices This is a generic daemon that does not implement any particular protocol. Instead it relies on its
-  components - drivers to provide a support for particular protocols. Currently drivers for modbus, zet
-  and fp2100 protocols are written.
+  components - subdrivers - to provide support for particular protocols. Currently drivers are available for modbus, 
+  zet and fp2100 protocols. 
  @devices.pl Boruta jest uniwersalnym demonem, który sam w sobie nie implementuje ¿adnego z protoko³ów.
-  Obs³ug± w³±¶ciwych protoko³ow zajuj± siê sterowniki bêd±ce modu³ami boruty.
+  Obs³ug± w³±¶ciwych protoko³ow zajuj± siê sterowniki bêd±ce modu³ami boruty. Obecnie dostêpne s± sterowniki
+  dla protoko³ów Modbus, ZET i FP210.
 
- @protocol Modbus RTU, Modbus TCP, ZET and FP210
- @protocol.pl Modbus RTU, Modbus TCP, ZET i FP210
+ @protocol Modbus RTU/ASCII, Modbus TCP, ZET and FP210
+ @protocol.pl Modbus RTU/ASCII, Modbus TCP, ZET i FP210
 
- @config Daemon is configured in params.xml
- @config.pl Sterownik jest konfigurowany w pliku params.xml
-
- @comment 
- @comment.pl 
+ @config Daemon is configured in params.xml. Each unit subelement of device describes one driver. Please consult
+ descriptions of particular drivers for configuration details.
+ @config.pl Sterownik jest konfigurowany w pliku params.xml. Ka¿dy podelement unit zawiera konfiguracjê jednego
+ sterownika. Szczegó³y konfiguracji znajdziesz w opisach poszczególnych sterowników.
 
  @config_example
 <device 

@@ -76,7 +76,7 @@ SGMLHELP=../../../../script/sgml2hlpctrl.pl
 
 ##### RULES  #####
 
-@srcdir@/daemons.sgml: $(wildcard ../../../parcook/*dmn.c?) @srcdir@/../../../script/dmn2sgml.py
+@srcdir@/daemons.sgml: $(wildcard ../../../parcook/*dmn.c?) $(wildcard ../../../parcook/boruta_*.cc) @srcdir@/../../../script/dmn2sgml.py
 	@srcdir@/../../../script/dmn2sgml.py ../../../parcook > $@
 
 %.html: ../%.sgml $(STDDEP) 
