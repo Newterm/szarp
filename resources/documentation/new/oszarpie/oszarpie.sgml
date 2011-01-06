@@ -3,7 +3,6 @@
 <!ENTITY wdrozenia SYSTEM "../common/wdrozenia.sgml">
 ]>
 
-<!-- $Id$ -->
 
 <article lang="pl" id="oszarpie" class="techreport">
 
@@ -26,11 +25,8 @@
 </authorgroup>
 <abstract>
 <para>
-Niniejszy dokument stanowi ogólny opis systemu SZARP, jego cechy,
+Niniejszy dokument opisuje ogólnie systemu SZARP, jego cechy,
 funkcjonalno¶æ i budowê.
-</para>
-<para>
-$Id$
 </para>
 </abstract>
 </artheader>
