@@ -105,6 +105,8 @@ public:
 
 	void OnHelpButton(wxCommandEvent &event);
 
+	void OnHelpSearchButton(wxCommandEvent &event);
+
 	void OnForwardButton(wxCommandEvent& event);
 
 	void OnBackwardButton(wxCommandEvent& event);
@@ -125,6 +127,8 @@ public:
 
 	void OnDegButton(wxCommandEvent &event);
 
+	void ResetStartDate();
+
 	~ParamEdit();
 
 private:
@@ -137,6 +141,8 @@ private:
 	void TransferToWindow(DefinedParam *param);
 
 	void FormulaCompiledForExpression(DatabaseQuery *q);
+
+	void SearchResultReceived(DatabaseQuery *q);
 
 	void FormulaCompiledForParam(DatabaseQuery *q);
 

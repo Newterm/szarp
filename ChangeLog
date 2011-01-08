@@ -1,4 +1,7 @@
 
+2010-01-08	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: added missing translation, polished up searching feature
+	* resources/documentation: short description of expression based searching
 2010-01-03	Pawel Palucha <pawel@newterm.pl>
 	* parcook/boruta*, script/dmn2sgml.py: added documentation for boruta
 	subdrivers.

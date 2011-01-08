@@ -1370,6 +1370,30 @@ Wiêcej o pisaniu w³asnych funkcji mo¿esz przeczytaæ w rozdziale <ulink url="http
 
 </section> <!-- draw3-ext-luamath -->
 
+<section id="draw3-ext-expression-searching">
+<title>Wyszukiwanie wed³ug podanych kryteriów</title>
+<note><para>
+Program przeg³±daj±cy pozwala na wyszukiwanie momentow w czasie, ktore spe³niaj± zadane przez u¿ytkownika kryteria.
+</para></note>
+<para>
+By uruchomiæ tê funkcjê wybierz z menu Narzêdzia opcjê "Wyszukaj datê". Pojawi siê okno podobne do okna s³u¿±cego do edycji parametrow definiowalnych
+(zobacz: <xref linkend="draw3-ext-parametersset">). Podobnieñ¶two to wynika z faktu, ¿e kryteria wyszukiwania maj± postaæ wyra¿eñ jêzyka LUA i s±
+tak na prawde specyficznymi parametrami, ktore zamiast warto¶ci liczbowej maj± zwarcaæ warto¶c logiczn± '1' gdy kryterium dla podanej chwili w czasie
+jest spe³nione lub '0' gdy kryterium spe³nione nie jest. Wprowadzenia kryterium dokonuje siê w dok³adnie w takich sam sposob jak edytuje parametry u¿ytkownika.</para>
+<note><para> Przy czym jako warto¶æ logczin± '1' tak na prawde rozumie siê wszystko co nie jest liczbowym 0.
+Mo¿na te¿ u¿ywac sta³ych jêzyka LUA true i false (jednak je¿eli nie jest to konieczne lepiej u¿ywaæ warto¶ci liczbowych bo umo¿liwi to zoptymaliowanie
+takich kryteriow przez optymalizator).
+</para></note>
+<para>
+Jak ju¿ wprowadzisz wyra¿nie wci¶nij przycisk 'Wstecz' - spowoduje to wyszukanie kryterium 'do ty³u' - tzn. dla chwil w czasie wcze¶niejszych ni¿
+ta na ktorej znajdowa³ sie kursor z wykresu z ktorego otworzy³e¶ okno wyszukiwania. Gdy taka chwila w czasie zostanie znaleziona, pojawi siê
+w oknie, a kursor zostanie ustawiony na wykresie na pozycji odpowiadaj±cej znalezionej chwili. Analogicznie dzia³a przycisk 'Dalej'.
+</para>
+<figure> <title>Wyszukiwanie wg. zadanego wartunku</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-searching_date.png"></imageobject>
+</mediaobject></figure>
+</section>
 <section id="draw3-ext-draw2draw3comparison">
 <title>Porównanie Draw 3 z poprzedni± wersj± programu</title>
 <para>

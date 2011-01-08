@@ -68,11 +68,13 @@ char degree_char[] = { 0xc2, 0xb0, 0x0 };
 
 class non_zero_search_condition : public szb_search_condition {
 public:
-	bool operator()(const double& v) const { return v ; }
+	bool operator()(const double& v) const { return std::isnan(v) ? false : v ; }
 };
 
 ParamEdit::ParamEdit(wxWindow *parent, ConfigManager *cfg, DatabaseManager *dbmgr) : DBInquirer(dbmgr)
 {
+	SetHelpText(_T("draw3-ext-parametersset"));
+	
 	m_widget_mode = EDITING_PARAM;
 
 	m_cfg_mgr = cfg;
@@ -90,6 +92,8 @@ ParamEdit::ParamEdit(wxWindow *parent, ConfigManager *cfg, DatabaseManager *dbmg
 
 ParamEdit::ParamEdit(wxWindow *parent, ConfigManager *cfg, DatabaseManager *dbmgr, DrawsController *dc) : DBInquirer(dbmgr)
 {
+	SetHelpText(_T("draw3-ext-expression-searching"));
+
 	m_cfg_mgr = cfg;
 	m_draws_ctrl = dc;
 	m_base_prefix = dc->GetCurrentDrawInfo()->GetBasePrefix();
@@ -108,16 +112,34 @@ ParamEdit::ParamEdit(wxWindow *parent, ConfigManager *cfg, DatabaseManager *dbmg
 	sizer->Show(m_button_base_config->GetContainingSizer(), false, true);
 	sizer->Show(m_formula_type_choice->GetContainingSizer(), false, true);
 	sizer->Show(m_prec_spin->GetContainingSizer(), false, true);
+	sizer->Show(XRCCTRL(*this, "param_name_label", wxStaticText), false, true);
+
+#define HIDE_WINDOW(ID, CLASS) \
+	{ \
+		wxSizer* sizer = XRCCTRL(*this, ID, CLASS)->GetContainingSizer(); \
+		sizer->Show(XRCCTRL(*this, ID, CLASS), false, true); \
+		sizer->Layout(); \
+	};
+	HIDE_WINDOW("static_line_unit", wxStaticLine)
+	HIDE_WINDOW("static_line_start", wxStaticLine)
+	HIDE_WINDOW("static_line_precision", wxStaticLine)
+
+	XRCCTRL(*this, "parameter_formula_label", wxStaticText)->SetLabel(_("Expression:"));
+
+	m_formula_input->SetSize(900, 200);
+
+	SetSize(900, 200);
+
 	sizer->Layout();
 
 	m_formula_input->AppendText(_T("v = "));
+
+	SetTitle(_("Searching date"));
 
 }
 
 void ParamEdit::InitWidget(wxWindow *parent) {
 
-	SetHelpText(_T("draw3-ext-parametersset"));
-	
 	wxXmlResource::Get()->LoadDialog(this, parent, _T("param_edit"));
 	
 	m_unit_input = XRCCTRL(*this, "text_ctrl_unit", wxTextCtrl);
@@ -461,82 +483,82 @@ void ParamEdit::FormulaCompiledForParam(DatabaseQuery *q) {
 
 void ParamEdit::FormulaCompiledForExpression(DatabaseQuery *q) {
 
-	if (q->type == DatabaseQuery::COMPILE_FORMULA) {
-		DatabaseQuery::CompileFormula& cf = q->compile_formula;
-		bool ok = cf.ok;
-		if (ok == false) {
-			m_error = true;
-			m_error_string = wxString::Format(_("Invalid expression %s"), cf.error);
-		}
-		free(cf.formula);
-		free(cf.error);
-
-		delete q;
-		if (!ok) {
-			return;
-		}
-
-		DefinedParam* param = new DefinedParam(m_draws_ctrl->GetCurrentDrawInfo()->GetBasePrefix(),
-			L"TEMPORARY:SEARCH:EXPRESSION",
-			L"",
-			GetFormula(),
-			0,
-			TParam::LUA_VA,
-			-1);
-		param->CreateParam();
-
-		std::vector<DefinedParam*> dpv = std::vector<DefinedParam*>(1, param);
-		m_cfg_mgr->SubstituteOrAddDefinedParams(dpv);
-
-		DefinedDrawInfo* ddi = new DefinedDrawInfo(L"",
-				L"",
-				wxColour(),
-				0,
-				1,
-				TDraw::NONE,
-				L"",
-				param,
-				m_cfg_mgr->GetDefinedDrawsSets());
-
-		q = new DatabaseQuery();
-		q->type = DatabaseQuery::SEARCH_DATA;
-		q->draw_info = ddi;
-		q->draw_no = -1;
-		q->search_data.end = -1;
-		q->search_data.period_type = m_draws_ctrl->GetPeriod();
-		q->search_data.search_condition = new non_zero_search_condition;
-
-		wxDateTime t = m_current_search_date.IsValid() ? m_current_search_date.GetTicks() : m_draws_ctrl->GetCurrentTime();
-		DTime dt(m_draws_ctrl->GetPeriod(), t);
-		dt.AdjustToPeriod();
-		TimeIndex time_index(m_draws_ctrl->GetPeriod());
-		switch (m_search_direction) {
-			case SEARCHING_LEFT:
-				q->search_data.start = (dt - time_index.GetTimeRes() - time_index.GetDateRes()).GetTime().GetTicks();
-				q->search_data.direction = -1;
-				break;
-			case SEARCHING_RIGHT:
-				q->search_data.start = (dt + time_index.GetTimeRes() + time_index.GetDateRes()).GetTime().GetTicks();
-				q->search_data.direction = 1;
-				break;
-		}
-		QueryDatabase(q);
-	} else if (q->type == DatabaseQuery::SEARCH_DATA) {
-		if (q->search_data.response != -1) {
-			m_current_search_date = q->search_data.response;
-			m_draws_ctrl->Set(m_current_search_date);	
-			m_found_date_label->SetLabel(wxString::Format(_("Found time %s"), FormatTime(m_current_search_date, m_draws_ctrl->GetPeriod()).c_str()));
-		} else {
-			m_info_string = wxString::Format(_("%s"), _("No data found"));
-		}
-		DefinedParam* dp = dynamic_cast<DefinedParam*>(q->draw_info->GetParam());
-		std::vector<DefinedParam*> dpv(1, dp);
-		m_database_manager->RemoveParams(dpv);
-		m_cfg_mgr->GetDefinedDrawsSets()->RemoveParam(dp);
-		delete q->search_data.search_condition;
-		delete q->draw_info;
-		delete q;
+	DatabaseQuery::CompileFormula& cf = q->compile_formula;
+	bool ok = cf.ok;
+	if (ok == false) {
+		m_error = true;
+		m_error_string = wxString::Format(_("Invalid expression %s"), cf.error);
 	}
+	free(cf.formula);
+	free(cf.error);
+
+	delete q;
+	if (!ok) {
+		return;
+	}
+
+	DefinedParam* param = new DefinedParam(m_draws_ctrl->GetCurrentDrawInfo()->GetBasePrefix(),
+		L"TEMPORARY:SEARCH:EXPRESSION",
+		L"",
+		GetFormula(),
+		0,
+		TParam::LUA_VA,
+		-1);
+	param->CreateParam();
+
+	std::vector<DefinedParam*> dpv = std::vector<DefinedParam*>(1, param);
+	m_cfg_mgr->SubstituteOrAddDefinedParams(dpv);
+
+	DefinedDrawInfo* ddi = new DefinedDrawInfo(L"",
+			L"",
+			wxColour(),
+			0,
+			1,
+			TDraw::NONE,
+			L"",
+			param,
+			m_cfg_mgr->GetDefinedDrawsSets());
+
+	q = new DatabaseQuery();
+	q->type = DatabaseQuery::SEARCH_DATA;
+	q->draw_info = ddi;
+	q->draw_no = -1;
+	q->search_data.end = -1;
+	q->search_data.period_type = m_draws_ctrl->GetPeriod();
+	q->search_data.search_condition = new non_zero_search_condition;
+
+	wxDateTime t = m_current_search_date.IsValid() ? m_current_search_date.GetTicks() : m_draws_ctrl->GetCurrentTime();
+	DTime dt(m_draws_ctrl->GetPeriod(), t);
+	dt.AdjustToPeriod();
+	TimeIndex time_index(m_draws_ctrl->GetPeriod());
+	switch (m_search_direction) {
+		case SEARCHING_LEFT:
+			q->search_data.start = (dt - time_index.GetTimeRes() - time_index.GetDateRes()).GetTime().GetTicks();
+			q->search_data.direction = -1;
+			break;
+		case SEARCHING_RIGHT:
+			q->search_data.start = (dt + time_index.GetTimeRes() + time_index.GetDateRes()).GetTime().GetTicks();
+			q->search_data.direction = 1;
+			break;
+	}
+	QueryDatabase(q);
+}
+
+void ParamEdit::SearchResultReceived(DatabaseQuery *q) {
+	if (q->search_data.response != -1) {
+		m_current_search_date = q->search_data.response;
+		m_draws_ctrl->Set(m_current_search_date);	
+		m_found_date_label->SetLabel(wxString::Format(_("Found time: %s"), FormatTime(m_current_search_date, m_draws_ctrl->GetPeriod()).c_str()));
+	} else {
+		m_info_string = wxString::Format(_("%s"), _("No date found"));
+	}
+	DefinedParam* dp = dynamic_cast<DefinedParam*>(q->draw_info->GetParam());
+	std::vector<DefinedParam*> dpv(1, dp);
+	m_database_manager->RemoveParams(dpv);
+	m_cfg_mgr->GetDefinedDrawsSets()->RemoveParam(dp);
+	delete q->search_data.search_condition;
+	delete q->draw_info;
+	delete q;
 }
 
 void ParamEdit::DatabaseResponse(DatabaseQuery *q) {
@@ -546,7 +568,16 @@ void ParamEdit::DatabaseResponse(DatabaseQuery *q) {
 			FormulaCompiledForParam(q);
 			break;
 		case EDITING_SEARCH_EXPRESSION:
-			FormulaCompiledForExpression(q);
+			switch (q->type) {
+				case DatabaseQuery::COMPILE_FORMULA:
+					FormulaCompiledForExpression(q);
+					break;
+				case DatabaseQuery::SEARCH_DATA:
+					SearchResultReceived(q);
+					break;
+				default:
+					assert(false);
+			}
 			break;
 	}
 }
@@ -667,6 +698,11 @@ void ParamEdit::OnDegButton(wxCommandEvent &event) {
 	m_unit_input->WriteText(wxString(wxConvUTF8.cMB2WC(degree_char), *wxConvCurrent));
 }
 
+void ParamEdit::ResetStartDate() {
+	m_current_search_date = wxInvalidDateTime;
+	m_found_date_label->SetLabel(L"");
+}
+
 DefinedParam* ParamEdit::GetModifiedParam() {
 	assert(m_edited_param);
 	return m_edited_param;
@@ -679,6 +715,10 @@ ParamEdit::~ParamEdit() {
 }
 
 void ParamEdit::OnHelpButton(wxCommandEvent &event) {
+	wxHelpProvider::Get()->ShowHelp(this);
+}
+
+void ParamEdit::OnHelpSearchButton(wxCommandEvent &event) {
 	wxHelpProvider::Get()->ShowHelp(this);
 }
 
@@ -711,6 +751,7 @@ BEGIN_EVENT_TABLE(ParamEdit, wxDialog)
     EVT_BUTTON(wxID_CANCEL, ParamEdit::OnCancel)
     EVT_BUTTON(wxID_OK, ParamEdit::OnOK)
     EVT_BUTTON(wxID_HELP, ParamEdit::OnHelpButton)
+    EVT_BUTTON(XRCID("help_serach_button"), ParamEdit::OnHelpSearchButton)
     EVT_BUTTON(wxID_FORWARD, ParamEdit::OnForwardButton)
     EVT_BUTTON(wxID_BACKWARD, ParamEdit::OnBackwardButton)
     EVT_BUTTON(wxID_CLOSE, ParamEdit::OnCloseButton)
