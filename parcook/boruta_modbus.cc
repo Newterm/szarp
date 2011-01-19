@@ -20,7 +20,241 @@
  * Darek Marcinkiewicz <reksio@newterm.pl>
  * 
  */
+/*
+ Daemon description block.
 
+ @description_start
+
+ @class 4
+
+ @devices This is a borutadmn subdriver for Modbus protocol, widely used by various PLC and metering
+ devices or SCADA systems.
+ @devices.pl Sterownik do demona borutadmn, obs³uguj±cy protokó³ Modbus, powszechnie u¿ywany przez ró¿nego
+ rodzaju urz±dzenia pomiarowe, sterowniki PLC czy systemy SCADA.
+
+ @protocol Modbus RTU or ASCII protocol over serial line (master and slave mode), Modbus TCP over network 
+ (client and server mode).
+ @protocol.pl Modbus RTU lub ASCII na ³±czu szeregowym (tryb master i slave), Modbus TCP przez po³±czenie
+ sieciowe (tryb client i server)
+
+ @config Driver is configured as a unit subelement of device element in params.xml. See example for allowed
+ attributes.
+ @config.pl Sterownik jest konfigurowany w pliku params.xml, w podelemencie unit elementu device. Opis
+ dodatkowych atrybutów XML znajduje siê w przyk³adzie poni¿ej.
+
+ @config_example
+<device 
+	xmlns:extra="http://www.praterm.com.pl/SZARP/ipk-extra"
+	daemon="/opt/szarp/bin/borutadmn" 
+	path="/dev/null"
+		ignored, should be /dev/null
+	speed="9600"
+		ignored
+	>
+
+	<unit 
+		id="1"
+			Modbus unit id own (for server/slave mode) or other side; if given as single digit or letter
+			it's interpreted as ASCII ('A' is 65, '1' is 49), otherwise it's interpreted as number ('01 
+			is 1); you should rather use extra:id attribute which is always interpreted as number
+		extra:id="1"
+			Modbus unit id, overwrites 'id' attribute
+		type="1"
+			ignored, should be 1
+	       	subtype="1" 
+			ignored, should be 1
+		bufsize="1"
+			average buffer size, at least 1
+		extra:proto="modbus" 
+			protocol name, denoting boruta driver to use, should be "modbus" for this driver
+		extra:mode="client" 
+			unit working mode, "client" or "server"; client always denote active side (master
+			for Modbus RTU, client for Modbus TCP); server always denote passive side (slave
+			for Modbus RTU, server for Modbus TCP)
+		extra:medium="serial"
+			data transmission medium, may be "serial" (for Modbus RTU) or "tcp" (for Modbus TCP)
+                extra:tcp-address="172.18.2.2"
+			IP address to connect to, required for mode "client" and medium "tcp"
+                extra:tcp-port="23"
+                        IP port to connect to (mode "client") or listen on (mode "server"), required for 
+			medium "tcp"
+                extra:path="/dev/ttyS0"
+                        path to serial port, required if medium is set to "serial"
+                extra:speed="19200"
+                        optional serial port speed in bps (for medium "serial"), default is 9600, allowed values
+                        are also 300, 600, 1200, 2400, 4800, 19200, 38400; all other values result in
+                        port speed 9600
+                extra:parity="even"
+                        optional serial port parity (for medium "serial"), default is "none", other
+                        allowed values are "odd" and "even"
+                extra:stopbits="1"
+                        optional serial port stop bits number (for medium "serial"), default is 1, other
+                        allowed value is 2
+		extra:FloatOrder="msblsb"
+			order of words for 2 registers encoded values, default is "msblsb" (first most, then less
+			significant word), other possible value is "lsbmsb"; can be overwritten for specific
+			parameter
+		extra:nodata-timeout="60"
+			time (in seconds) of value  expiration if no data was received, default value is
+		        "0" (never expire)
+		extra:nodata-value="-1"
+			value send when no parameter value is not available, default is 0	
+        >
+	<param
+		param elements denote values that can be send or read from device to SZARP
+		name="Name:Of:Parameter"
+		...
+		extra:address="0x12"
+			required, decimal or hexadecimal raw modbus address of first register connected to parameter,
+			from 0 to 65535
+		extra:register_type="holding_register"
+			Modbus register type, one of "holding_register" (default) or "input_register", decides
+			what Modbus function can be used to read register from device (0x03 - ReadHoldingRegister or
+			0x04 - ReadInputRegister); for server mode it's not significant - both 0x06 (WriteSingleRegister)
+			and 0x10 (WriteMultipleRegisters) functions are accepted
+		extra:val_type="integer"
+			required, register value type, one of "integer", "bcd" (not supported for 'send' elements), 
+			"long" or "float"; integer and bcd coded parameters occupy 1 register, long integer and float
+			registers occupy 2 successive registers
+		extra:FloatOrder="lsbmsb"
+			overwritten unit FloatOrder value for specific parameter
+		extra:val_op="MSW"
+			optional operator for converting long or float modbus values to parameter values; SZARP
+			holds parameters as 2 bytes integers with fixed precision; if val_op is not given,
+			4 bytes float or long value is simply converted to short integer (reflecting precision);
+			you can also divide one modbus values into 2 szarp parameters (called 'combined parameters')
+			- you need to configure these 2 parameters with the same modbus addres and type, but one
+			with val_op="MSW" (it will hold most significant word of value), second with val_op="LSW"
+		...
+	/>
+	...
+	<send
+		denotes value send/read from SZARP to device
+		param="Name:Of:Parameter"
+			name of parameter to send
+		extra:address="0x12"
+			same as for param element above
+		extra:register_type="holding_register"
+			same as for param element above, significant only for server mode (for client mode
+			function 0x10 (WriteMultipleRegisters) is always used
+		extra:val_type="integer"
+		extra:FloatOrder="lsbmsb"
+		extra:val_op="MSW"
+			see description of param element
+        ...
+      </unit>
+ </device>
+
+ @config_example.pl
+<device 
+        xmlns:extra="http://www.praterm.com.pl/SZARP/ipk-extra"
+        daemon="/opt/szarp/bin/borutadmn" 
+        path="/dev/null"
+                ignorowany, zaleca siê ustawienie /dev/null
+        speed="9600"
+                ignorowany
+        >
+
+        <unit 
+                id="1"
+			identyfikator Modbus nasz lub strony przeciwnej (zale¿nie od trybu server/client); je¿eli
+			jest liter± lub pojedyncz± cyfr± to interpretowany jest jako znak ASCII (czyli 'A' to 65,
+			'1' to 49), wpp. interpretowany jest jako liczba (czyli '01' to 1); zaleca siê u¿ywanie
+			zamiast niego jednoznacznego atrybutu extra:od
+		extra:id="1"
+			identyfikator Modbus jednostki, nadpisuje atrybut 'id', zawsze interpretowany jako liczba
+                type="1"
+                        ignorowany, powinno byæ "1"
+                subtype="1" 
+                        ignorowany, powinno byæ "1"
+                bufsize="1"
+                        wielko¶æ bufora u¶redniania, 1 lub wiêcej
+                extra:proto="modbus" 
+                        nazwa protoko³u, u¿ywana przez Borutê do ustalenia u¿ywanego sterownika, dla
+                        tego sterownika musi byæ "modbus"
+        	extra:mode="client" 
+                        tryb pracy jednostki, "client" lub "server"; client oznacza stronê aktywn± (master
+			dla Modbus RTU, klient dla Modbus TCP); server oznacza stronê pasywn± (slave dla
+			Modbus RTU, serwer dla Modbus TCP)
+		extra:medium="serial"
+                        medium transmisyjne, "serial" dla Modbus TCP, "tcp" dla Modbus TCP
+                extra:tcp-address="172.18.2.2"
+			adres IP do którego siê pod³±czamy, wymagany dla trybu "client" i medium "tcp"
+                extra:tcp-port="23"
+			port IP na który siê ³±czymy (mode "client") lub na którym nas³uchujemy (mode "server"),
+			wymagany dla medium "tcp",
+                extra:path="/dev/ttyS0"
+               	  	¶cie¿ka do portu szeregowego dla medium "serial"
+                extra:speed="19200"
+                        opcjonalna prêdko¶æ portu szeregowego w bps dla medium "serial", domy¶lna to 9600,
+                        inne mo¿liwe warto¶ci to 300, 600, 1200, 2400, 4800, 19200, 38400; ustawienie innej
+                        warto¶ci spowoduje przyjêcie prêdko¶ci 9600
+                extra:parity="even"
+                        opcjonalna parzysto¶æ portu dla medium "serial", mo¿liwe warto¶ci to "none" (domy¶lna),
+                        "odd" i "even"
+                extra:stopbits="1"
+                        opcjonalna liczba bitów stopu dla medium "serial", 1 (domy¶lnie) lub 2
+		extra:FloatOrder="msblsb"
+			kolejno¶æ s³ów dla warto¶ci zajmuj±cych 2 rejestry (typu "long" lub "float"), domy¶lna
+			to "msblsb" (najpierw bardziej znacz±ce s³owo), inna mo¿liwo¶æ to "lsbmsb" (najpierw
+			mniej znacz±ce s³owo); mo¿e byæ nadpisana dla konkretnego parametru
+		extra:nodata-timeout="60"
+			czas w sekundach po którym wygasa warto¶æ parametru w przypadku braku komunikacji, domy¶lnie
+			to 0 (brak wygasania)
+		extra:nodata-value="-1"
+			warto¶æ wysy³ana gdy warto¶æ parametru SZARP nie jest dostêpna, domy¶lnie 0
+               >
+	<param
+		elementy param oznaczaj± warto¶æi przesy³ane/odczytywane z urz±dzenia do systemu SZARP
+		name="Name:Of:Parameter"
+		...
+		extra:address="0x12"
+			wymagany, podany dziesi±tkowo lub szesnastkowo bezpo¶redni adres Modbus pierwszego rejestru
+			zawieraj±cego warto¶æ parametru, od 0 do 65535
+		extra:register_type="holding_register"
+			typ rejestru Modbus - "holding_register" (domy¶lne) lub "input_register", decyduje która funkcja
+			Modbus jest wykorzystywana do czytania warto¶ci rejestru - (0x03 - ReadHoldingRegister or
+			0x04 - ReadInputRegister); dla trybu "server" nie ma to znaczenia - akceptowane s± obie funkcje
+			zapisuj±ce - zarówno x06 (WriteSingleRegister) jak i 0x10 (WriteMultipleRegisters)
+		extra:val_type="integer"
+			wymagany, typ kodowania warto¶æ - jeden z "integer", "bcd" (niewspierany dla elementów 'send'),
+			"long" lub "float"; warto¶ci typu "integer" i "bcd" zajmuj± 1 rejestr, "long" i "float" zajmuj±
+			dwa kolejne rejestry
+		extra:FloatOrder="lsbmsb"
+			nadpisuje warto¶æ atrybutu FloatOrder jednostki dla konkretnego parametru
+		extra:val_op="MSW"
+			opcjonalny operator pozwalaj±cy na konwersjê warto¶ci typu float i long na warto¶ci 
+			parametrów SZARP; domy¶lnie warto¶æi te zamieniane s± na 16-bitow± reprezentacjê warto¶æi
+			w systemie SZARP bezpo¶rednio, jedynie z uwzglêdnieniem precyzji parametru w SZARP; mo¿liwe
+			jest jednak przepisanie tych warto¶ci do dwóch parametrów SZARP (tak zwane parametry 
+			'kombinowane') co pozwala na nietracenie precyzji i/lub uwzglêdnienie wiêkszego zakresu;
+			w tym celu nale¿y skonfigurowaæ 2 parametry SZARP z takimi samymi parametrami dotycz±cymi
+			adresu i typu, przy czym jeden z nich powinien mieæ val_op ustawiony na "MSW", a drugi na 
+			"LSW" - przyjm± warto¶æ odpowiednio bardziej i mniej znacz±cego s³owa warto¶ci parametru
+			Modbus
+		...
+	/>
+	...
+	<send
+		elementy send oznaczaj± warto¶ci przesy³ane/czytane z systemu SZARP do urz±dzenia
+		param="Name:Of:Parameter"
+			nazwa parametru, którego warto¶æ mamy przesy³aæ
+		extra:address="0x12"
+			adres Modbus docelowego rejestru
+		extra:register_type="holding_register"
+			jak dla elementu "param", ale ma znaczenie tylko dla trybu "server", dla trybu 
+			"klient" u¿ywana jest zawsze funkcja 0x10 (WriteMultipleRegisters)
+		extra:val_type="integer"
+		extra:FloatOrder="lsbmsb"
+		extra:val_op="MSW"
+			analogicznie jak dla elementu param
+        ...
+      </unit>
+ </device>
+
+ @description_end
+
+*/
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

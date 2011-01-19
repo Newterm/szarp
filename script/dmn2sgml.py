@@ -73,7 +73,7 @@ class Scanner:
 				self.feed(token)
 	
 	def print_content(self):
-		print '<section id="daemon-' + self.name + '">'
+		print '<section id="daemon-' + self.name.replace("_", "-") + '">'
 		print '<title>Sterownik ' + self.name + '</title>'
 		print '<itemizedlist>'
 		print '<listitem><para>Zgodno¶æ ze specyfikacj±:',
@@ -113,7 +113,7 @@ class Scanner:
 				+ content + ']]></programlisting></para></listitem>')
 
 def scan_files(srcdir):
-	files = sorted(glob(srcdir + "/*dmn.c?"))
+	files = sorted(glob(srcdir + "/*dmn.c?") + glob(srcdir + "/boruta_*.cc"))
 	s = Scanner()
 	for f in files:
 		s.scan_file(f)

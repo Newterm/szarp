@@ -20,7 +20,132 @@
  * Darek Marcinkiewicz <reksio@newterm.pl>
  * 
  */
+/*
+ Daemon description block.
 
+ @description_start
+
+ @class 4
+
+ @devices This is a borutadmn subdriver for ZET protocol, used by Z-Elektronik, SK2000 and SK4000 PLC units,
+ produced for Praterm company. It's a simple ASCII protocol with unit addressing and CRC checksum, used on
+ serial lines or over TCP.
+ @devices.pl Sterownik do demona borutadmn, obs³uguj±cy protokó³ ZET, u¿ywany do komunikacji z produkowanymi
+ dla firmy Praterm regulatorami Z-Elektronik, SK2000 i SK4000. Protokó³ ZET jest prostym protoko³em typu ASCII
+ z adresowaniem jednostek i sprawdzaniem sumy kontrolnej CRC, przeznaczonym do transmisji po ³±czu szeregowym
+ lub za pomoc± transmisji TCP.
+
+ @protocol ZET over serial line or ethernet/serial converter.
+ @protocol.pl Protokó³ ZET na linii szeregowej RS232/485 lub konwerterze ethernet/RS232.
+
+ @config Driver is configured as a unit subelement of device element in params.xml. See example for allowed
+ attributes.
+ @config.pl Sterownik jest konfigurowany w pliku params.xml, w podelemencie unit elementu device. Opis
+ dodatkowych atrybutów XML znajduje siê w przyk³adzie poni¿ej.
+
+ @config_example
+<device 
+	xmlns:extra="http://www.praterm.com.pl/SZARP/ipk-extra"
+	daemon="/opt/szarp/bin/borutadmn" 
+	path="/dev/null"
+		ignored, should be /dev/null
+	speed="9600"
+		ignored
+	>
+
+	<unit 
+		id="1"
+			ZET unit identifier
+		type="1"
+			ignored, should be 1
+	       	subtype="1" 
+			ignored, should be 1
+		bufsize="1"
+			average buffer size, at least 1
+		extra:proto="zet" 
+			protocol name, denoting boruta driver to use, should be "zet" for this driver
+		extra:mode="client" 
+			unit working mode, for this driver must be "client"
+		extra:plc="zet"
+			PLC type, must be "zet" (for Z-Elektronik) or "sk" (for SK2000/SK4000)
+		extra:medium="serial"
+			data transmission medium, may be "serial" (for RS232) or "tcp" (for TCP)
+		extra:tcp-address="172.18.2.2"
+		extra:tcp-port="23"
+			IP address and port to connect to, required if medium is set to "tcp"
+		extra:path="/dev/ttyS0"
+			path to serial port, required if medium is set to "serial"
+		extra:speed="19200"
+			optional serial port speed in bps (for medium "serial"), default is 9600, allowed values
+			are also 300, 600, 1200, 2400, 4800, 19200, 38400; all other values result in
+			port speed 9600
+		extra:parity="even"
+			optional serial port parity (for medium "serial"), default is "none", other
+			allowed values are "odd" and "even"
+		extra:stopbits="1"
+			optional serial port stop bits number (for medium "serial"), default is 1, other
+			allowed value is 2
+	>
+		<param .../>
+			number and order of parameters corresponds to number and order of parametrs in PLC
+		...
+	...
+      </unit>
+ </device>
+
+ @config_example.pl
+<device 
+	xmlns:extra="http://www.praterm.com.pl/SZARP/ipk-extra"
+	daemon="/opt/szarp/bin/borutadmn" 
+	path="/dev/null"
+		ignorowany, zaleca siê ustawienie /dev/null
+	speed="9600"
+		ignorowany
+	>
+
+	<unit 
+		id="1"
+			identyfikator sterownika
+		type="1"
+			ignorowany, powinno byæ "1"
+	       	subtype="1" 
+			ignorowany, powinno byæ "1"
+		bufsize="1"
+			wielko¶æ bufora u¶redniania, 1 lub wiêcej
+		extra:proto="zet" 
+			nazwa protoko³u, u¿ywana przez Borutê do ustalenia u¿ywanego sterownika, dla
+			tego sterownika musi byæ "zet"
+		extra:mode="client" 
+			tryb pracy jednostki, dla tego sterownika powinien byæ "client"
+		extra:plc="zet"
+			typ regulatora - "zet" dla Z-Elektronika lub "sk" dla SK2000/SK4000
+		extra:medium="serial"
+			medium transmisyjne, "serial" dla RS232, "tcp" dla konwertera ethernet/RS232
+		extra:tcp-address="172.18.2.2"
+		extra:tcp-port="23"
+			adres i port IP do którego siê ³±czymy, u¿ywany dla medium "tcp"
+		extra:path="/dev/ttyS0"
+			¶cie¿ka do portu szeregowego dla medium "serial"
+		extra:speed="19200"
+			opcjonalna prêdko¶æ portu szeregowego w bps dla medium "serial", domy¶lna to 9600,
+			inne mo¿liwe warto¶ci to 300, 600, 1200, 2400, 4800, 19200, 38400; ustawienie innej
+			warto¶ci spowoduje przyjêcie prêdko¶ci 9600
+		extra:parity="even"
+			opcjonalna parzysto¶æ portu dla medium "serial", mo¿liwe warto¶ci to "none" (domy¶lna),
+			"odd" i "even"
+		extra:stopbits="1"
+			opcjonalna liczba bitów stopu dla medium "serial", 1 (domy¶lnie) lub 2
+	>
+		<param .../>
+			Ilo¶æ i kolejno¶æ parametrów odpowiada ilo¶ci i kolejno¶ci parametrów w sterowniku.
+		...
+      </unit>
+	...
+ </device>
+
+ @description_end
+
+*/
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
