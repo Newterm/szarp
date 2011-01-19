@@ -51,6 +51,7 @@ class zet_proto_impl {
 	short *m_send;
 	size_t m_read_count;
 	size_t m_send_count;
+	size_t m_timeout_count;
 	std::vector<bool> m_send_no_data;
 	std::vector<char> m_buffer;
 	size_t m_data_in_buffer;
@@ -105,7 +106,7 @@ void zet_proto_impl::set_no_data() {
 
 void zet_proto_impl::start_timer() {
 	struct timeval tv;
-	tv.tv_sec = 5;
+	tv.tv_sec = 10;
 	tv.tv_usec = 0;
 	evtimer_add(&m_timer, &tv); 
 }
@@ -139,7 +140,6 @@ void zet_proto_impl::send_query(struct bufferevent* bufev) {
 }
 
 void zet_proto_impl::starting_new_cycle() {
-	set_no_data();
 }
 
 void zet_proto_impl::connection_error(struct bufferevent *bufev) {
@@ -149,6 +149,7 @@ void zet_proto_impl::connection_error(struct bufferevent *bufev) {
 
 void zet_proto_impl::data_ready(struct bufferevent* bufev, int fd) {
 	size_t ret;
+	m_timeout_count = 0;
 	if (m_data_in_buffer + 1 > m_buffer.size() / 2)
 		m_buffer.resize(m_buffer.size() * 2);
 	ret = bufferevent_read(bufev, &m_buffer.at(m_data_in_buffer), m_buffer.size() - m_data_in_buffer - 1);
@@ -219,6 +220,7 @@ int zet_proto_impl::configure(TUnit* unit, xmlNodePtr node, short* read, short *
 	m_send_count = unit->GetSendParamsCount();
 	m_read = read;
 	m_send = send;
+	m_timeout_count = 0;
 	std::string plc;
 	if (get_xml_extra_prop(node, "plc", plc))
 		return 1;
@@ -240,9 +242,12 @@ int zet_proto_impl::configure(TUnit* unit, xmlNodePtr node, short* read, short *
 
 void zet_proto_impl::timeout_cb(int fd, short event, void *_zet_proto_impl) {
 	zet_proto_impl* z = (zet_proto_impl*) _zet_proto_impl;
-	z->set_no_data();
+	if (++z->m_timeout_count > 5) {
+		z->m_timeout_count = 0;
+		z->terminate_connection();
+		z->set_no_data();
+	}
 	z->stop_timer();
-	z->terminate_connection();
 }
 
 void zet_proto_tcp::driver_finished_job() {

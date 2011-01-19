@@ -269,13 +269,14 @@ public:
 class tcp_client_manager : public client_manager {
 	boruta_daemon *m_boruta;
 	struct tcp_connection {
-		tcp_connection(tcp_client_manager *manager, size_t conn_no);
+		tcp_connection(tcp_client_manager *manager, size_t conn_no, std::string address);
 		void close();
 		CONNECTION_STATE state;	
 		int fd;
 		struct bufferevent *bufev;
 		size_t conn_no;
 		tcp_client_manager *manager;
+		std::string address;
 	};
 	/**adresses for connections*/
 	std::vector<sockaddr_in> m_addresses;

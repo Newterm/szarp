@@ -493,7 +493,7 @@ void client_manager::connection_error_cb(size_t connection) {
 		if (do_get_connection_state(connection) == CONNECTED)
 			do_schedule(connection, current_client);	
 	} else {
-		for (size_t i = current_client; i < m_connection_client_map.at(connection).size(); i++)
+		     for (size_t i = current_client; i < m_connection_client_map.at(connection).size(); i++)
 			m_connection_client_map.at(connection).at(i)->connection_error(do_get_connection_buf(connection));
 	}
 }
@@ -505,7 +505,7 @@ void client_manager::connection_established_cb(size_t connection) {
 	do_schedule(connection, current_client);
 }
 
-tcp_client_manager::tcp_connection::tcp_connection(tcp_client_manager *_manager, size_t _addr_no) : state(NOT_CONNECTED), fd(-1), bufev(NULL), conn_no(_addr_no), manager(_manager) {}
+tcp_client_manager::tcp_connection::tcp_connection(tcp_client_manager *_manager, size_t _addr_no, std::string _address) : state(NOT_CONNECTED), fd(-1), bufev(NULL), conn_no(_addr_no), manager(_manager), address(_address) {}
 
 int tcp_client_manager::configure_tcp_address(xmlNodePtr node, struct sockaddr_in &addr) {
 	std::string address;
@@ -571,18 +571,25 @@ struct bufferevent* tcp_client_manager::do_get_connection_buf(size_t conn_no) {
 }
 
 void tcp_client_manager::do_terminate_connection(size_t conn_no) {
-	close_connection(m_tcp_connections.at(conn_no));
+	tcp_connection &c = m_tcp_connections.at(conn_no);
+	dolog(8, "tcp_client_manager::terminating connection: %s", c.address.c_str());
+	close_connection(c);
 }
 
 int tcp_client_manager::do_establish_connection(size_t conn_no) {
 	tcp_connection &c = m_tcp_connections.at(conn_no);
-	if (open_connection(m_tcp_connections.at(conn_no), m_addresses.at(conn_no)))
+	dolog(8, "tcp_client_manager::connecting to address: %s", c.address.c_str());
+	if (open_connection(c, m_addresses.at(conn_no)))
 		return 1;
+	if (c.state == CONNECTED)
+		dolog(8, "tcp_client_manager::connection with address: %s established", c.address.c_str());
 	return c.state == NOT_CONNECTED ? 1 : 0;
 }
 
 void tcp_client_manager::do_schedule(size_t conn_no, size_t client_no) {
-	m_connection_client_map.at(conn_no).at(client_no)->scheduled(m_tcp_connections.at(conn_no).bufev, m_tcp_connections.at(conn_no).fd);
+	tcp_connection& c = m_tcp_connections.at(conn_no);
+	dolog(8, "tcp_client_manager::scheduling client %zu for address %s", client_no, c.address.c_str());
+	m_connection_client_map.at(conn_no).at(client_no)->scheduled(c.bufev, c.fd);
 }
 
 int tcp_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols& _protocols) {
@@ -606,7 +613,7 @@ int tcp_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, sho
 		i = m_addresses.size();
 		m_addresses.push_back(addr);
 		m_connection_client_map.push_back(std::vector<client_driver*>());
-		m_tcp_connections.push_back(tcp_connection(this, i));
+		m_tcp_connections.push_back(tcp_connection(this, i, sock_addr_to_string(addr)));
 	} else {
 		assert(false);
 	}
@@ -634,12 +641,14 @@ void tcp_client_manager::connection_write_cb(struct bufferevent *ev, void* _tcp_
 		return;
 	tcp_client_manager* t = c->manager;
 	c->state = CONNECTED;
+	dolog(8, "tcp_client_manager: connection with address: %s established", c->address.c_str());
 	t->connection_established_cb(c->conn_no);
 }
  
 void tcp_client_manager::connection_error_cb(struct bufferevent *ev, short event, void* _tcp_connection) {
 	tcp_connection* c = (tcp_connection*) _tcp_connection;
 	tcp_client_manager* t = c->manager;
+	dolog(8, "tcp_client_manager: connection with address: %s error", c->address.c_str());
 	t->client_manager::connection_error_cb(c->conn_no);
 }
 

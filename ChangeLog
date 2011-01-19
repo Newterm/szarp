@@ -1,4 +1,8 @@
 
+2010-01-19	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/borutadmn: more logging
+	* parcook/boruta_zet: close connection not on every
+	timeout but on every 5th timeout
 2010-01-03	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2: "hoursum" attribute is automatically
 	set for parameters (actually draws of parameters)
