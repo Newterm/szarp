@@ -1,4 +1,8 @@
 
+2010-01-27	Pawel Palucha <pawel@newterm.pl>
+	* meaner3/tsaveparam.cc: fixed check of open() and write() return
+	values.
+	* meaner3/meaner3.cc: added logging of current 'nofiles' limit.
 2010-01-19	Darek Marcinkiewicz <reksio@newterm.pl>
 	* parcook/borutadmn: more logging
 	* parcook/boruta_zet: close connection not on every

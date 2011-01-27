@@ -45,6 +45,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <signal.h>
+#include <sys/resource.h>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/convenience.hpp> 
@@ -193,6 +194,12 @@ RETSIGTYPE g_TerminateHandler(int signum)
 
 /***********************************************************************/
 
+void log_ulimit()
+{
+	struct rlimit limit;
+	getrlimit(RLIMIT_NOFILE, &limit);
+	sz_log(2, "meaner3: RLIMIT_NOFILE soft %ld, hard %ld", limit.rlim_cur, limit.rlim_max);
+}
 
 int main(int argc, char* argv[])
 {
@@ -264,6 +271,7 @@ int main(int argc, char* argv[])
 				0, /* set working dir to '/' */
 				0);/* close stdout and stderr descriptors */
 	sz_log(2, "meaner3 started");
+	log_ulimit();
 	
 	/* set alarm for next cycle */
 	meaner->InitExec();
