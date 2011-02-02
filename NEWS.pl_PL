@@ -7,6 +7,20 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.514
+# 01.02.2011
+* Dodano do dokumentacji programu przegl±daj±cego opis funkcji wyszukiwania danych.
+* Usprawniono graficzny interfejs u¿ytkownika obs³uguj±cy funkcjê wszyukiwania danych w programie 
+przegl±daj±cym.
+* Dodano dokumentacjê sterowników wchodz±cych w sk³ad demona Boruta.
+* Rozbudowano logowanie demona bututa, dziêki temu mo¿liwe jest teraz bardziej dok³adne
+monitorowanie jego pracy.
+* Poprawiono drobne blêdy w programie meaner3. Program maener3 odpowiedzalny jest
+za zapisywanie aktualnych warto¶æi parametrów do bazy danych szbase.
+* ddeproxy pracuje teraz jako serwis systemu windows, dziêki temu okno
+programu nie jest widoczne na pulpicie i nie pojawia siê na pasku
+zadañ.
+
 ** 3.1.511
 # 01.01.2011
 * Dodano obs³ugê protoko³u modbus ascii do demona Boruta.

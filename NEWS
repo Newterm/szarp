@@ -6,6 +6,18 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.514
+# 01.02.2011
+* Draw3 searching feature has been polished up, GUI has been updated to render
+this feature more convenient to use.
+* Draw3 documentation has been updated with description of searching feature.
+* Boruta subdrivers has been documented.
+* More verbose logging has been added to boruta driver, allowing for greater monitoring
+of running daemon.
+* Fixes in meaner3 - SZARP application responsible for storing parameters' values to szbase.
+* ddeproxy has been changed to work as a windows service, biggest user visible change is that
+now program's window no longer appears neither on desktop nor on application tray.
+
 ** 3.1.511
 # 01.01.2011
 * Added support for modbus ascii protocol to boruta daemon.
