@@ -6,27 +6,11 @@ set -e;
 
 . /usr/share/debconf/confmodule;
 
-# check if pl_PL ISO-8859-2 locale data is generated - Ubuntu doesn't have
-# this locale by default
-gen_locale() {
-	[ -e /etc/locale.gen ] || return 0;
-	[ -x /usr/sbin/locale-gen ] || return 0;
-	
-	grep '^pl_PL ISO-8859-2$' /etc/locale.gen &> /dev/null && return 0;
-	echo "pl_PL ISO-8859-2" >> /etc/locale.gen;
-	
-	/usr/sbin/locale-gen;
-	
-	return 0;
-}
-	
 
 case "$1" in
     configure)
 
 	/opt/szarp/bin/install_vim || true
-
-	gen_locale;
 
     ;;
 
