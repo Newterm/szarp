@@ -1,3 +1,9 @@
+szarp (3.1.515) testing; urgency=low
+
+  * building packages for squeeze
+
+ -- Pawel Palucha <pawel@praterm.com.pl>  Tue, 08 Feb 2011 23:28:17 +0100
+
 szarp (3.1.514) stable; urgency=low
 
   * building stable
