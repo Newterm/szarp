@@ -28,7 +28,10 @@ import array
 from libpar import LibparReader
 
 def debug(s):
-	print "DEBUG:", s
+	"""
+	"""
+	# Uncomment following line to turn on debug
+	# print "DEBUG:", s
 
 def format_time(tm):
 	if not isinstance(tm, time.struct_time):

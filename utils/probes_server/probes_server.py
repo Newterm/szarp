@@ -34,7 +34,10 @@ import szbcache
 from libpar import LibparReader
 
 def debug(s):
-	print "DEBUG: ", s
+	"""
+	"""
+	# Uncomment following line to turn on debug
+	# print "DEBUG:", s
 
 class ErrorCodes():
 	BadRequest = 400
