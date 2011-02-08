@@ -1,4 +1,7 @@
 
+2010-02-08	Pawel Palucha <pawel@newterm.pl>
+	* debian/szarp-base.postinst: remove generating of pl_PL locales.
+	* utils/probes_server/*: remove verbose logging.
 2010-01-27	Pawel Palucha <pawel@newterm.pl>
 	* meaner3/tsaveparam.cc: fixed check of open() and write() return
 	values.
