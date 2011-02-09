@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="454.117"
+   height="141.183"
+   id="svg3280"
+   version="1.1"
+   inkscape:version="0.47 r22583"
+   sodipodi:docname="Nowy dokument 2">
+  <defs
+     id="defs3282">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective3288" />
+    <inkscape:perspective
+       id="perspective3255"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.35"
+     inkscape:cx="282.0585"
+     inkscape:cy="-59.320513"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="551"
+     inkscape:window-height="483"
+     inkscape:window-x="95"
+     inkscape:window-y="114"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata3285">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-92.9415,-56.056394)">
+    <g
+       id="Warstwa_1_kopia_3"
+       transform="translate(92.9415,56.056394)">
+      <g
+         id="g8"
+         inkscape:export-filename="/home/pawel/szarp-experimental/resources/documentation/new/common/szarp-logo.png"
+         inkscape:export-xdpi="58.66"
+         inkscape:export-ydpi="58.66">
+        <g
+           id="g10">
+          <path
+             style="fill:#e3e4e4"
+             d="m 0,90.767 28.922,50.416 48.358,-28.12 C 62.874,80.251 53.387,65.849 65.046,0 57.386,36.124 29.264,73.393 0,90.767 z"
+             id="path12" />
+          <path
+             style="fill:#c6c7c8"
+             d="M 13.946,84.938 28.922,141.183 82.879,126.55 C 77.507,91.112 72.022,74.764 100.255,14.175 83.681,46.985 46.755,75.792 13.946,84.938 z"
+             id="path14" />
+          <path
+             style="fill:#a7a8aa"
+             d="M 28.922,141.183 77.28,113.063 C 68.821,93.971 62.187,81.051 60.245,60.704 45.612,72.02 29.379,80.594 13.946,84.938 l 14.976,56.245 z"
+             id="path16" />
+          <path
+             style="fill:#db001b"
+             d="m 29.038,82.995 -0.116,58.188 55.9,-0.115 C 88.709,105.286 87.796,88.139 130.78,37.039 106.086,64.362 63.104,82.651 29.038,82.995 z"
+             id="path18" />
+        </g>
+        <g
+           id="g20">
+          <g
+             id="g22">
+            <polygon
+               points="306.446,141.183 306.446,121.45 267.09,121.45 267.09,141.183 257.222,141.183 257.222,111.583 316.311,111.583 316.311,141.183 "
+               id="polygon24" />
+            <rect
+               x="257.22198"
+               y="91.848"
+               width="59.089001"
+               height="9.8669996"
+               id="rect26" />
+          </g>
+          <polygon
+             points="454.117,91.848 454.117,121.45 404.785,121.45 404.785,141.183 394.918,141.183 394.918,111.583 444.253,111.583 444.253,101.715 394.918,101.715 394.918,91.848 "
+             id="polygon28" />
+          <g
+             id="g30">
+            <rect
+               x="119.086"
+               y="91.848"
+               width="59.201"
+               height="9.8669996"
+               id="rect32" />
+            <polygon
+               points="119.086,141.183 119.086,131.317 168.42,131.317 168.42,121.45 119.086,121.45 119.086,111.583 178.288,111.583 178.288,141.183 "
+               id="polygon34" />
+          </g>
+          <g
+             id="g36">
+            <polygon
+               points="229.267,111.583 211.066,131.317 247.354,131.317 247.354,141.183 188.155,141.183 215.453,111.583 "
+               id="polygon38" />
+            <polygon
+               points="188.155,101.715 188.155,91.848 247.354,91.848 238.254,101.715 "
+               id="polygon40" />
+          </g>
+          <g
+             id="g42">
+            <polygon
+               points="326.179,141.183 326.179,91.848 385.381,91.848 385.381,111.583 375.513,111.583 375.513,101.715 336.046,101.715 336.046,141.183 "
+               id="polygon44" />
+            <polygon
+               points="358.189,111.583 344.379,111.583 371.566,141.183 385.381,141.183 "
+               id="polygon46" />
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

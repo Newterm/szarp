@@ -1,0 +1,17 @@
+# This is not really a .desktop file like the rest, but it's useful to treat
+# it as such
+
+# This GDM theme is based on Happy GNOME with Browser theme. It tries
+# to look a little like KDM 3.
+#  user.png is a proposed default user face, stolen from KDE icons.
+
+[GdmGreeterTheme]
+Encoding=UTF-8
+Greeter=szarp-greeter.xml
+Name=SZARP with users browser
+Name[pl]=SZARP z przeglądarką użytkowników
+Description=Theme with SZARP logo and users browser
+Description[pl]=Motyw z logo systemu SZARP i przeglądarką obrazów twarzy
+Author=GPL 2.0 www.szarp.org
+Copyright=(C) 2011 Newterm
+Screenshot=screenshot.png
