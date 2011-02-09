@@ -1,5 +1,7 @@
 
 2010-02-09	Pawel Palucha <pawel@newterm.pl>
+	* utils/raporter.py: encoding fixes, unused code removed, auto-refresh
+	enabled.
 	* wx/common/szapp.cc: release date updated to include year 2011.
 	* resources/gdm-themes/szarp: SZARP theme for GNOME display manager.
 2010-02-08	Pawel Palucha <pawel@newterm.pl>

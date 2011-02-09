@@ -4,7 +4,6 @@
   Text version of Reporter3 - replacing rap.txt
 
   SZARP: SCADA software 
-  Copyright (C) 2009  PRATERM S.A.
   Adam Smyk <asmyk@praterm.com.pl>
 
   This program is free software; you can redistribute it and/or modify
@@ -22,9 +21,10 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 """
 
-import curses, os, sys, traceback, glob, re, urllib2, unicodedata, threading, time, string
-#°±∆ÊÍ ÛÛ”≥£∂¶øØ¨ºÒ—
-
+import curses, os, sys, traceback, unicodedata, threading, string, locale
+# To allow importing SZARP modules
+sys.path.append("/opt/szarp/lib/python")
+from libpar import LibparReader
 
 class gb:
 	"""
@@ -44,40 +44,21 @@ class gb:
 	portnumber = None # paramd 
 	user = None # user name
 	passwd = None # password
-	fileencoding = "ISO-8859-2" # file encoding
-	fileencoding1 = "UTF-8" # file encoding
+	fileencoding = locale.getpreferredencoding()
+	if not fileencoding:
+		fileencoding = "UTF-8"
+	fileencoding1 = "UTF-8"
 	ti = None # timer object
-	timeinterval = 0 # screen refresh interval, if <=0 automatic screen refresh is off
-
-
- 
-def getDirectory():
-	"""
-	Returns directory with current configuration.
-	"""
-	root = "/opt/szarp/"
-	lenroot= len(root)
-	cmd = '/opt/szarp/bin/lpparse prefix'
-	e, f = os.popen2(cmd, 'r')    
-	prefix = f.readlines()[0]
-	f.close()    
-	e.close()
-	prefix= prefix[lenroot:]
-	if prefix[0]=="/":prefix= prefix[1:5]
-	else: prefix= prefix[0:4]
-	return root+prefix+"/config/"
+	timeinterval = 10 # screen refresh interval, if <=0 automatic screen refresh is off
 
 def getLocalParamdPort():
 	"""
 	Returns local paramd port.
 	"""
-	root = "/opt/szarp/"
-	cmd = '/opt/szarp/bin/lpparse -s paramd_for_raporter port'
-	e, f = os.popen2(cmd, 'r')    
-	port = f.readlines()[0]
-	f.close()    
-	e.close()
-	if len(port)==1: return "8081"
+	lp = LibparReader()
+	port = lp.get('paramd_for_raporter', 'port')
+	if not port: 
+		port = "8081"
 	return port
 
 def converseRaportName(arg1):
@@ -87,8 +68,8 @@ def converseRaportName(arg1):
 	"""
 	from string import maketrans
 	arg2 = arg1.translate(maketrans(" ","_"))
-	arg2 = arg2.replace('£','L')
-	arg2 = arg2.replace('≥','l')
+	arg2 = arg2.replace('≈Å','L')
+	arg2 = arg2.replace('≈Ç','l')
 	return  unicodedata.normalize('NFKD', unicode(arg2,gb.fileencoding)).encode('ascii','ignore')
 	
 def readReportsFromParamd(hostname):
@@ -420,6 +401,7 @@ def getTimeInterval(argv):
 	return 10
 
 if __name__ == "__main__":
+	locale.setlocale(locale.LC_ALL, '')
 	if len(sys.argv) == 2 and sys.argv[1]=="--help":
 		print "usage: raporter.py [-p port] [-h hostname] [-t timeinterval] [--help]"
 		print "where:"
