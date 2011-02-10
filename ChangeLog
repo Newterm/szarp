@@ -1,27 +1,29 @@
 
-2010-02-09	Pawel Palucha <pawel@newterm.pl>
+2011-02-10	Pawel Palucha <pawel@newterm.pl>
+	* libSzarp/daemon.cc: fixed incorrect descriptors handling in go_daemon().
+2011-02-09	Pawel Palucha <pawel@newterm.pl>
 	* utils/raporter.py: encoding fixes, unused code removed, auto-refresh
 	enabled.
 	* wx/common/szapp.cc: release date updated to include year 2011.
 	* resources/gdm-themes/szarp: SZARP theme for GNOME display manager.
-2010-02-08	Pawel Palucha <pawel@newterm.pl>
+2011-02-08	Pawel Palucha <pawel@newterm.pl>
 	* debian/szarp-base.postinst: remove generating of pl_PL locales.
 	* utils/probes_server/*: remove verbose logging.
-2010-01-27	Pawel Palucha <pawel@newterm.pl>
+2011-01-27	Pawel Palucha <pawel@newterm.pl>
 	* meaner3/tsaveparam.cc: fixed check of open() and write() return
 	values.
 	* meaner3/meaner3.cc: added logging of current 'nofiles' limit.
-2010-01-19	Darek Marcinkiewicz <reksio@newterm.pl>
+2011-01-19	Darek Marcinkiewicz <reksio@newterm.pl>
 	* parcook/borutadmn: more logging
 	* parcook/boruta_zet: close connection not on every
 	timeout but on every 5th timeout
-2010-01-08	Darek Marcinkiewicz <reksio@newterm.pl>
+2011-01-08	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: added missing translation, polished up searching feature
 	* resources/documentation: short description of expression based searching
-2010-01-03	Pawel Palucha <pawel@newterm.pl>
+2011-01-03	Pawel Palucha <pawel@newterm.pl>
 	* parcook/boruta*, script/dmn2sgml.py: added documentation for boruta
 	subdrivers.
-2010-01-03	Darek Marcinkiewicz <reksio@newterm.pl>
+2011-01-03	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2: "hoursum" attribute is automatically
 	set for parameters (actually draws of parameters)
 	having appropirate unit name
@@ -29,7 +31,7 @@
 	a condition (as a lua expression) and draw3 
 	will look for moments in time that satisfy
 	this condition
-2010-01-03	Pawel Palucha <pawel@newterm.pl>
+2011-01-03	Pawel Palucha <pawel@newterm.pl>
 	* ipk.sgml: updated szbwriter documentation.
 	* parcook/parcook.cfg: version/bugs info fix.
 	* script/samson2/get_sam: script calls szbwriter with '-p' option

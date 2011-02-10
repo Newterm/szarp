@@ -51,8 +51,24 @@ int go_daemon(void)
 	signal(SIGCLD, SIG_DFL);
 	signal(SIGPIPE, SIG_IGN);
 	close(0); close(1); close(2);
-	open("/dev/null", O_RDWR);
-	dup2(0, 1); dup2(0, 2);
+	int fd = open("/dev/null", O_RDWR);
+	if (fd == -1) {
+		sz_log(1, "open(\"/dev/null\") failed, errno is %d (%s)", errno, strerror(errno));
+		return -1;
+	}
+	if (dup2(fd, 0) == -1) {
+		sz_log(1, "dup2 failed for fd 0, errno is %d (%s)", errno, strerror(errno));
+		return -1;
+	}
+	if (dup2(fd, 1) == -1) {
+		sz_log(1, "dup2 failed for fd 1, errno is %d (%s)", errno, strerror(errno));
+		return -1;
+	}
+	if (dup2(fd, 2) == -1) {
+		sz_log(1, "dup2 failed for fd 2, errno is %d (%s)", errno, strerror(errno));
+		return -1;
+	}
+	close(fd);
 	umask(0002);
 	return 0;
 }
