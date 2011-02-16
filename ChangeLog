@@ -1,4 +1,7 @@
 
+2011-02-16	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/boruta_zet.cc: timeout handling fix, in certain
+	circumstances driver ceased querying zet...
 2011-02-10	Pawel Palucha <pawel@newterm.pl>
 	* libSzarp/daemon.cc: fixed incorrect descriptors handling in go_daemon().
 2011-02-09	Pawel Palucha <pawel@newterm.pl>
