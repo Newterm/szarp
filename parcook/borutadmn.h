@@ -125,6 +125,27 @@ public:
 	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration& spc) = 0;
 };
 
+/**client driver operating over tcp connection that pretends */
+class tcp_proxy_2_serial_client : public tcp_client_driver {
+	serial_client_driver* m_serial_client;
+public:
+	tcp_proxy_2_serial_client(serial_client_driver* _client_driver);
+
+	virtual void connection_error(struct bufferevent *bufev);
+
+	virtual void scheduled(struct bufferevent* bufev, int fd);
+
+	virtual void data_ready(struct bufferevent* bufev, int fd);
+
+	virtual void finished_cycle();
+
+	virtual void starting_new_cycle();
+
+	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send);
+
+	~tcp_proxy_2_serial_client();
+};
+
 class serial_server_manager;
 /**server driver operating over serial line*/
 class serial_server_driver : public server_driver {

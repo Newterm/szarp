@@ -369,10 +369,11 @@ void zet_proto_impl::timeout_cb(int fd, short event, void *_zet_proto_impl) {
 	zet_proto_impl* z = (zet_proto_impl*) _zet_proto_impl;
 	if (++z->m_timeout_count > 5) {
 		z->m_timeout_count = 0;
-		z->terminate_connection();
 		z->set_no_data();
+		z->terminate_connection();
+	} else {
+		z->start_timer();
 	}
-	z->stop_timer();
 }
 
 void zet_proto_tcp::driver_finished_job() {

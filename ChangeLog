@@ -1,4 +1,15 @@
 
+2011-02-16	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/boruta_zet.cc: timeout handling fix, in certain
+	circumstances driver ceased querying zet...
+	* parcook/borutadmn.cc: a small addition to boruta daemon - it is now possible
+	to run serial client drivers, like modbus rtu driver, over tcp connection.
+	In order to acticate this feature, we have to configure a regular
+	tcp client driver, in its params.xml unit node we have to provide also all
+	the configuration params specific to serial client driver - path (value does
+	not matter ofc. can be /dev/null for example), speed, etc. And finnally, to activate
+	this feature the following need to be set in this driver's unit node:
+	extra:use_tcp_2_serial_proxy="yes"
 2011-02-10	Pawel Palucha <pawel@newterm.pl>
 	* libSzarp/daemon.cc: fixed incorrect descriptors handling in go_daemon().
 2011-02-09	Pawel Palucha <pawel@newterm.pl>
