@@ -376,7 +376,7 @@ int TExecute::RunCommand(char *command)
 		int file, errfile;
 		/* redirect stdout */
 		file = TEMP_FAILURE_RETRY (open(stdout_file, 
-					O_RDWR | O_CREAT | O_APPEND, 0644));
+					O_RDWR | O_CREAT | O_APPEND | O_NONBLOCK, 0644));
 		if (file < 0) {
 			sz_log(1, "execute: cannot redirect output for command '%s' - cannot open file '%s', errno %d",
 					command, stdout_file, errno);
@@ -389,7 +389,7 @@ int TExecute::RunCommand(char *command)
 		}
 		/* redirect stderr */
 		errfile = TEMP_FAILURE_RETRY (open(stderr_file, 
-					O_RDWR | O_CREAT | O_APPEND, 0644));
+					O_RDWR | O_CREAT | O_APPEND | O_NONBLOCK, 0644));
 		if (errfile < 0) {
 			sz_log(1, "execute: cannot redirect stderr for command '%s' - cannot open file '%s', errno %d",
 					command, stderr_file, errno);
