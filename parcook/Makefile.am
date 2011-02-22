@@ -25,6 +25,9 @@ LIBSZARP = ../libSzarp/libSzarp.a
 
 LDADD = $(LIBSZARP2) $(LIBSZARP) @PTHREAD_CFLAGS@ @XML_LIBS@ @LUA_LIBS@ @BOOST_LDFLAGS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_THREAD_LIB@ @BOOST_DATE_TIME_LIB@
 
+# Aditional libraries for daemons using dlopen
+DL = -ldl
+
 # Programs to create
 
 bin_PROGRAMS = \
@@ -95,6 +98,7 @@ dbdmn_SOURCES = dbdmn.cc
 dprdmn_SOURCES = dprdmn.cc
 
 eapnetdmn_SOURCES = eapnetdmn.cc eapnet-prop-plugin.h
+eapnetdmn_LDADD = $(LDADD) $(DL)
 
 endmn_SOURCES = endmn.cc
 
@@ -105,7 +109,7 @@ fp2kdmn_SOURCES = fp2kdmn.cc
 ipcinfo_SOURCES = ipcinfo.cc
 
 kamsdmn_SOURCES = kamsdmn.cc kams-prop-plugin.h
-kamsdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_DATE_TIME_LIB)
+kamsdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_DATE_TIME_LIB) $(DL)
 
 kwmsdmn_SOURCES = kwmsdmn.cc
 
@@ -116,6 +120,7 @@ lmldmn_SOURCES = lmldmn.cc
 mbrtudmn_SOURCES = mbrtudmn.cc
 
 k601dmn_SOURCES = k601dmn.cc k601-prop-plugin.h
+k601dmn_LDADD = $(LDADD) $(DL)
 
 ifcl5dmn_SOURCES = ifcl5dmn.cc
 
@@ -128,6 +133,7 @@ pafdmnr_SOURCES = pafdmnr.cc
 polludmn_SOURCES = polludmn.cc
 
 sre2dmn_SOURCES = sre2dmn.cc
+sre2dmn_LDADD = $(LDADD) $(DL)
 
 calcdmn_SOURCES = calcdmn.cc
 
@@ -144,8 +150,10 @@ muksdmn_SOURCES = muksdmn.cc
 aqtdmn_SOURCES = aqtdmn.cc
 
 pozytondmn_SOURCES = pozytondmn.cc pozyton-prop-plugin.h
+pozytondmn_LDADD = $(LDADD) $(DL)
 
 npozytondmn_SOURCES = npozytondmn.cc npozyton-prop-plugin.h
+npozytondmn_LDADD = $(LDADD) $(DL)
 
 rsdmn_SOURCES = nrsdmn.cc
 
@@ -171,7 +179,7 @@ dlmsdmn_SOURCES = dlmsdmn.cc
 dlmsdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(LBER_LIBS)
 
 melsdmn_SOURCES = melsdmn.cc mels-prop-plugin.h
-melsdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS)
+melsdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(DL)
 
 unitedmn_SOURCES = unitedmn.cc
 unitedmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
@@ -184,9 +192,9 @@ borutadmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE
 
 sbusdmn_SOURCES = sbusdmn.cc
 
-ddedmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(XMLRPC_EPI_LIBS) $(CURL_LIBS)
+ddedmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(XMLRPC_EPI_LIBS) $(CURL_LIBS) -lstdc++
 
-setdmn_LDADD = $(LDADD) @EVENT_LIBS@
+setdmn_LDADD = $(LDADD) @EVENT_LIBS@ -lstdc++
 
 iecdmn_SOURCES = iecdmn.cc
 iecdmn_LDADD = $(LDADD)
