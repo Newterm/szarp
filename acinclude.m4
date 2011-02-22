@@ -347,6 +347,9 @@ AC_DEFUN([AM_PATH_WXCONFIG],
       no_wx=yes
     else
       WX_LIBS=`$WX_CONFIG_WITH_ARGS --libs`
+      if echo `$WX_CONFIG_WITH_ARGS --basename` | grep -q 'gtk' ; then
+        WX_LIBS="$WX_LIBS -lgdk-x11-2.0 -lgtk-x11-2.0 -lgobject-2.0"
+      fi
 
       dnl starting with version 2.2.6 wx-config has --cppflags argument
       wx_has_cppflags=""
@@ -455,8 +458,8 @@ IMPLEMENT_APP(A)
 	WXGL_CFLAGS=
 	WXGL_LIBS=
 	if test "x$no_wxglcanvas" = "xno"; then
-		WXGL_CFLAGS=$($WX_CONFIG_PATH --cflags gl);
-		WXGL_LIBS=$($WX_CONFIG_PATH --libs gl);
+		WXGL_CFLAGS=$($WX_CONFIG_PATH --cflags gl)
+		WXGL_LIBS="$($WX_CONFIG_PATH --libs gl) -lGLU -lGL"
 		AC_MSG_RESULT( yes)
      		ifelse([$1], , :, [$1])     
 	else
@@ -682,9 +685,9 @@ AC_DEFUN([AC_PATH_SSL], [
 				fi
 			fi
 			
-			SSL_LIBS="$ssl_config_args_l -l$ssl_name -l$ssl_eay_lib"
+			SSL_LIBS="$ssl_config_args_l -l$ssl_name -l$ssl_eay_lib -lcrypto"
 		else
-			SSL_LIBS="$ssl_config_args_l -l$ssl_name"
+			SSL_LIBS="$ssl_config_args_l -l$ssl_name -lcrypto"
 		fi
 		SSL_CFLAGS="$ssl_config_args_i"
 		ifelse([$1], , :, [$1])

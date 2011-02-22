@@ -125,10 +125,10 @@ ipkmax_LDADD = @PTHREAD_CFLAGS@ @XML_LIBS@ $(LIBSZARP) $(LIBSZARP2) @BOOST_SYSTE
 crypt_LDADD = -lcrypt
 
 vrsh_SOURCES = vrsh.c
-vrsh_LDADD = $(LIBSZARP2) $(LIBSZARP)
+vrsh_LDADD = $(LIBSZARP2) $(LIBSZARP) -lstdc++
 vrsh_d_SOURCES = vrsh.c
 vrsh_d_CPPFLAGS = -DDEBUG $(AM_CPPFLAGS)
-vrsh_d_LDADD = $(LIBSZARP2) $(LIBSZARP)
+vrsh_d_LDADD = $(LIBSZARP2) $(LIBSZARP) -lstdc++
 
 analiza_create_SOURCES = analiza_create.c
 analiza_create_CPPFLAGS = 
