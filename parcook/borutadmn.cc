@@ -289,6 +289,42 @@ size_t& server_driver::id() {
 	return m_id;
 }
 
+tcp_proxy_2_serial_client::tcp_proxy_2_serial_client(serial_client_driver* _serial_client) : m_serial_client(_serial_client) { }
+
+void tcp_proxy_2_serial_client::connection_error(struct bufferevent *bufev) {
+	m_serial_client->connection_error(bufev);
+}
+
+void tcp_proxy_2_serial_client::scheduled(struct bufferevent* bufev, int fd) {
+	m_serial_client->scheduled(bufev, fd);
+}
+
+void tcp_proxy_2_serial_client::data_ready(struct bufferevent* bufev, int fd) {
+	m_serial_client->data_ready(bufev, fd);
+}
+
+void tcp_proxy_2_serial_client::finished_cycle() {
+	m_serial_client->finished_cycle();
+}
+
+void tcp_proxy_2_serial_client::starting_new_cycle() {
+	m_serial_client->starting_new_cycle();
+}
+
+int tcp_proxy_2_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, short *send) {
+	serial_port_configuration spc;
+	if (get_serial_port_config(node, spc)) {
+		dolog(1, "tcp_proxy_2_serial_client: failed to get serial port settings for tcp_proxy_2_serial_client");
+		return 1;
+	}
+	return m_serial_client->configure(unit, node, read, send, spc);
+}
+
+tcp_proxy_2_serial_client::~tcp_proxy_2_serial_client() {
+	delete m_serial_client;
+}
+
+
 void serial_server_driver::set_manager(serial_server_manager* manager) {
 	m_manager = manager;
 }
@@ -317,12 +353,26 @@ tcp_client_driver* protocols::create_tcp_client_driver(xmlNodePtr node) {
 	std::string proto = get_proto_name(node);
 	if (proto.empty())
 		return NULL;
-	tcp_client_factories_table::iterator i = m_tcp_client_factories.find(proto);
-	if (i == m_tcp_client_factories.end()) {
-		dolog(0, "No driver defined for proto %s and tcp client role", proto.c_str());
+
+	std::string use_tcp_2_serial_proxy;
+	if (get_xml_extra_prop(node, "use_tcp_2_serial_proxy", use_tcp_2_serial_proxy, true))
 		return NULL;
+
+	if (use_tcp_2_serial_proxy != "yes") {
+		tcp_client_factories_table::iterator i = m_tcp_client_factories.find(proto);
+		if (i == m_tcp_client_factories.end()) {
+			dolog(0, "No driver defined for proto %s and tcp client role", proto.c_str());
+			return NULL;
+		}
+		return i->second();
+	} else {
+		serial_client_factories_table::iterator i = m_serial_client_factories.find(proto);
+		if (i == m_serial_client_factories.end()) {
+			dolog(0, "No driver defined for proto %s and serial client role", proto.c_str());
+			return NULL;
+		}
+		return new tcp_proxy_2_serial_client(i->second());
 	}
-	return i->second();
 }
 
 serial_client_driver* protocols::create_serial_client_driver(xmlNodePtr node) {
