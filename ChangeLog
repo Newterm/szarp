@@ -1,4 +1,6 @@
-
+2010-02-23	Krzysztof Galazka <kg@newterm.pl>
+	* meaner3/tsaveparam.cc: open files with O_CLOEXEC flag to avoid
+	probles with running execute sections.
 2011-02-22	Pawel Palucha <pawel@newterm.pl>
 	* acinclude.m4, */Makefile.am: added depended libraries, required by
 	new ld version from Debian unstable.
