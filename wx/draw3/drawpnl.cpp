@@ -279,8 +279,9 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 		{
 			int index = panel->dw->GetSelectedDrawIndex();
 			if (index >= 0) {
-				for (int i = 0; i < MAX_DRAWS_COUNT; i++) {
-					if (i == index)
+    				DrawSet *selected_set = panel->dw->GetDrawsController()->GetSet();
+				for (size_t i = 0; i < selected_set->GetDraws()->size(); i++) {
+					if (i == size_t(index))
 						continue;
 					panel->dw->SetDrawDisable(i);
 				}
@@ -289,7 +290,8 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 		break;
 	case ']':
 		{
-			for (int i = 0; i < MAX_DRAWS_COUNT; i++) {
+    			DrawSet *selected_set = panel->dw->GetDrawsController()->GetSet();
+			for (size_t i = 0; i < selected_set->GetDraws()->size(); i++) {
 				panel->dw->SetDrawEnable(i);
 			}
 		}

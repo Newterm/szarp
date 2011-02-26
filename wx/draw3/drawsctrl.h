@@ -367,7 +367,6 @@ public:
 
 	static szb_nan_search_condition search_condition;
 
-	static const size_t max_draws_count;
 };
 
 #endif

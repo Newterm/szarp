@@ -337,12 +337,6 @@ DrawsSets* DrawSet::GetDrawsSets() {
 void
 DrawSet::Add(DrawInfo* drawInfo)
 {
-    if (m_draws->size() >= MAX_DRAWS_COUNT) {
-	    wxLogWarning(_T("Too many draws in window '%s'"), m_name.c_str());
-	    delete drawInfo;
-	    return;
-    }
-
     m_draws->push_back(drawInfo);
 
     /* update prior */
@@ -429,43 +423,31 @@ DrawSet::SetName(const wxString & name) { m_name = name; };
 void
 DrawSet::InitNullColors()
 {
-    if (NULL == m_cfg)
-	return;
-
-    wxColour * DefaultColors = m_cfg->GetParentManager()->GetDefaultColors();
-    int ex[MAX_DRAWS_COUNT];
-    int first_free = 0;
-
-    /* check for used colors */
-    for (int i = 0; i < MAX_DRAWS_COUNT; i++)
-	ex[i] = 0;
+    size_t first_free = 0;
 
     wxLogInfo(_T("InitNullColors: draws count: %zu"), m_draws->size());
 
+    std::set<size_t> ex;
+
     for (size_t i = 0; i < m_draws->size(); i++) {
-	for (int j = 0; j < MAX_DRAWS_COUNT; j++)
-	    if (m_draws->at(i)->GetDrawColor() == DefaultColors[j]) {
-		ex[j] = 1;
-		//only one color in table can be equal
-		break;
-	    }
+	if (m_draws->at(i)->GetDrawColor() == wxNullColour)
+		continue;
+	int j = DrawDefaultColors::FindIndex(m_draws->at(i)->GetDrawColor());
+	if (j != -1)
+		ex.insert(j);
     }
 
     /* now assign null colors */
     for (size_t i = 0; i < m_draws->size(); i++) {
 	if (m_draws->at(i)->GetDrawColor() == wxNullColour) {
 	    /* search for next free color */
-	    while (ex[first_free]) {
+	    while (ex.find(first_free) != ex.end()) {
 		first_free++;
 	    }
-
-	    assert (first_free < MAX_DRAWS_COUNT);
+	    ex.insert(first_free);
 
 	    /* set color */
-	    m_draws->at(i)->SetDrawColor(DefaultColors[first_free]);
-
-	    /* mark color as used */
-	    ex[first_free] = 1;
+	    m_draws->at(i)->SetDrawColor(DrawDefaultColors::MakeColor(first_free));
 	}
     }
 }
@@ -520,10 +502,6 @@ const double DrawSet::defined_draws_prior_start = -2;
 
 ConfigManager::ConfigManager(DrawApp* app, IPKContainer *ipks) : m_app(app), m_ipks(ipks), splashscreen(NULL)
 {
-	for (int i = 0; i < MAX_DRAWS_COUNT; i++) {
-		DefaultColors[i] = DrawDefaultColors::MakeColor(i);
-	}
-
 	m_defined_sets = NULL;
 
 	LoadDefinedDrawsSets();
@@ -594,13 +572,6 @@ ConfigManager::GetDrawColor(const wxString prefix, const wxString set, int index
 {
     return config_hash[prefix]->GetDrawsSets()[set]->GetDrawColor(index);
 }
-
-wxColour*
-ConfigManager::GetDefaultColors()
-{
-    return DefaultColors;
-}
-
 
 wxString
 IPKConfig::GetID()

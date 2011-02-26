@@ -454,11 +454,6 @@ class ConfigManager
 	 * @return colur of draw */
 	wxColour GetDrawColor(const wxString id, const wxString set, int index);
 
-	/**
-	 * @return array of default colors for draws
-	 */
-	wxColour* GetDefaultColors();
-	
 	/**@return all available onfigurations*/
 	DrawsSetsHash& GetConfigurations();
 
@@ -546,9 +541,6 @@ protected:
 	/**Vector of observers*/
 	std::vector<ConfigObserver*> m_observers;
 
-	/** Array of available colours */
-	wxColour DefaultColors[MAX_DRAWS_COUNT];
-    
 	/** Hash of configurations. */
 	DrawsSetsHash config_hash;
 

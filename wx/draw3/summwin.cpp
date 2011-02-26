@@ -106,7 +106,7 @@ void TTLabel::OnPaint(wxPaintEvent &event) {
 
 
 SummaryWindow::ObservedDraw::ObservedDraw(Draw *_draw) : draw(_draw), 
-	update(false), tooltip(false), hoursum(false)
+	update(false), tooltip(false)
 {}
 
 SummaryWindow::SummaryWindow(DrawPanel *draw_panel, wxWindow *parent) : 
@@ -119,7 +119,6 @@ SummaryWindow::SummaryWindow(DrawPanel *draw_panel, wxWindow *parent) :
 {
 	SetHelpText(_T("draw3-ext-summaryvalues"));
 
-	m_draws.SetCount(MAX_DRAWS_COUNT, NULL);
 	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
@@ -127,27 +126,20 @@ SummaryWindow::SummaryWindow(DrawPanel *draw_panel, wxWindow *parent) :
 	sizer->Add(txt, 0, wxALIGN_CENTER | wxALL, 5);
 	sizer->Add(new wxStaticLine(this, wxID_ANY), 0, wxEXPAND);
 
-	for (size_t i = 0; i <= MAX_DRAWS_COUNT; ++i) {
-		TTLabel *label = new TTLabel(this, wxID_ANY);
-		sizer->Add(label, 0, wxEXPAND);
-		m_labels.Add(label);
-		label->Show(false);
-		sizer->Show(label, false, true);
+	m_values_sizer = new wxBoxSizer(wxVERTICAL);
 
-		wxStaticLine *line = new wxStaticLine(this, wxID_ANY);
-		m_lines.Add(line);
-		sizer->Add(line, 0, wxEXPAND);
-		line->Show(false);
-		sizer->Show(line, false, true);
+	m_no_draws_label = new TTLabel(this, wxID_ANY);
+	m_no_draws_label->Show(true);
+	m_no_draws_label->SetForegroundColour(*wxBLACK);
+	m_no_draws_label->SetValueText(_("This set does not contain draws for which summary values are calculated."));
+	m_values_sizer->Add(m_no_draws_label, 1, wxEXPAND);
 
-	}
+	m_no_draws_line = new wxStaticLine(this, wxID_ANY);
+	m_values_sizer->Add(m_no_draws_line, 0, wxEXPAND);
 
-	m_labels[MAX_DRAWS_COUNT]->Show(true);
-	m_labels[MAX_DRAWS_COUNT]->SetForegroundColour(*wxBLACK);
-	m_labels[MAX_DRAWS_COUNT]->SetValueText(_("This set does not contain draws for which summary values are calculated."));
-	sizer->Show(m_labels[MAX_DRAWS_COUNT], true, true);
+	sizer->Add(m_values_sizer, 1, wxEXPAND);
 
-	sizer->Add(new wxStaticLine(this, wxID_ANY), 0, wxEXPAND);
+	//sizer->Add(new wxStaticLine(this, wxID_ANY), 0, wxEXPAND);
 	sizer->Add(new wxButton(this, wxID_HELP), 0, wxALIGN_CENTER | wxALL, 5);
 
 	sizer->Fit(this);
@@ -164,29 +156,21 @@ void SummaryWindow::OnIdle(wxIdleEvent &event) {
 
 	bool resize = false;
 
-	wxSizer* sizer = GetSizer();
-
 #define SHOW(wdg, show) \
 	wdg->Show(show); \
-	sizer->Show(wdg, show, true);
+	m_values_sizer->Show(wdg, show, true);
 
 
 	if (m_update) {
 		if (m_summary_draws_count == 0) {
-			for (int i = 0; i < MAX_DRAWS_COUNT; ++i) {
-				SHOW(m_labels[i], false);
-				SHOW(m_lines[i], false);
-			}
-			SHOW(m_labels[MAX_DRAWS_COUNT], true)
+			SHOW(m_no_draws_label, true)
+			SHOW(m_no_draws_line, true)
 			resize = true;
 		} else { 
 			for (size_t i = 0; i < m_draws.Count(); ++i) {
 	
 				ObservedDraw* od = m_draws[i];
 				if (od == NULL)
-					continue;
-	
-				if (!od->update)
 					continue;
 	
 				TTLabel *l = m_labels[i];
@@ -215,7 +199,6 @@ void SummaryWindow::OnIdle(wxIdleEvent &event) {
 					SHOW(l, true);
 					SHOW(li, true);
 
-					l->SetBackgroundColour(od->draw->GetDrawInfo()->GetDrawColor());
 					resize = true;
 		
 					od->tooltip = true;
@@ -259,9 +242,10 @@ void SummaryWindow::OnIdle(wxIdleEvent &event) {
 				resize = true;
 
 			}
-			if (m_labels[MAX_DRAWS_COUNT]->IsShown())
-				SHOW(m_labels[MAX_DRAWS_COUNT], false);
-	
+			if (m_no_draws_label->IsShown()) {
+				SHOW(m_no_draws_label, false);
+				SHOW(m_no_draws_line, false);
+			}
 		}
 	}
 
@@ -308,7 +292,6 @@ void SummaryWindow::OnIdle(wxIdleEvent &event) {
 }
 
 void SummaryWindow::Activate() {
-
 	if (m_active)
 		return;
 
@@ -316,12 +299,17 @@ void SummaryWindow::Activate() {
 
 	m_active = true;
 
+	m_draws.resize(draws_controller->GetDrawsCount(), NULL);
+	m_labels.resize(draws_controller->GetDrawsCount(), NULL);
+	m_lines.resize(draws_controller->GetDrawsCount(), NULL);
        	for (size_t i = 0; i < draws_controller->GetDrawsCount(); ++i)
 		SetDraw(draws_controller->GetDraw(i));
 
+	Resize();
 }
 
 void SummaryWindow::Resize() {
+	m_values_sizer->Layout();
 	GetSizer()->Layout();
 	GetSizer()->Fit(this);
 }
@@ -334,10 +322,11 @@ void SummaryWindow::Deactivate() {
 
        	for (size_t i = 0; i < m_draws.Count(); ++i) {
 		ObservedDraw* od = m_draws[i];
-		if (od != NULL) {
-			ResetDraw(draws_controller->GetDraw(i));
-		}
+		if (od != NULL)
+			StopDisplaying(i);
 	}
+
+	m_draws.SetCount(0);
 
 	m_active = false;
 
@@ -349,28 +338,22 @@ void SummaryWindow::Deactivate() {
 void SummaryWindow::StopDisplaying(int no) {
 	assert(m_draws[no]);
 
-	if (m_draws[no]->hoursum) {
-		m_summary_draws_count--;
-		assert(m_summary_draws_count >= 0);
-	}
+	m_summary_draws_count--;
+	assert(m_summary_draws_count >= 0);
 
-	m_lines[no]->Show(false);
-	m_labels[no]->Show(false);
+	m_values_sizer->Detach(m_lines[no]);
+	m_values_sizer->Detach(m_labels[no]);
 
-	m_update = true;
-}
+	m_lines[no]->Destroy();
+	m_labels[no]->Destroy();
 
-void SummaryWindow::ResetDraw(Draw *draw) {
-	int no = draw->GetDrawNo();
-	if (m_draws[no] == NULL)
-		return;
-
-	if (m_active)
-		StopDisplaying(no);
+	m_lines[no] = NULL;
+	m_labels[no] = NULL;
 
 	delete m_draws[no];
 	m_draws[no] = NULL;
 
+	m_update = true;
 }
 
 void SummaryWindow::Detach(DrawsController *draws_controller) {
@@ -381,15 +364,18 @@ void SummaryWindow::StartDisplaying(int no) {
 	assert(m_active);
 	Draw* draw = m_draws[no]->draw;
 
-	m_draws[no]->hoursum = draw->GetDrawInfo()->GetSpecial() == TDraw::HOURSUM; 
+	m_draws[no]->update = true;
+	m_draws[no]->tooltip = true;
 
-	if (m_draws[no]->hoursum) {
-		m_labels[no]->SetUnitText(draw->GetDrawInfo()->GetShortName() + _T(":"));
-		m_draws[no]->update = true;
-		m_draws[no]->tooltip = true;
-		m_summary_draws_count++;
-	} else
-		m_labels[no]->SetUnitText(_T(""));
+	m_summary_draws_count++;
+
+	m_labels[no] = new TTLabel(this, wxID_ANY);
+	m_labels[no]->SetUnitText(draw->GetDrawInfo()->GetShortName() + _T(":"));
+	m_labels[no]->SetBackgroundColour(draw->GetDrawInfo()->GetDrawColor());
+	m_lines[no] = new wxStaticLine(this, wxID_ANY);
+
+	m_values_sizer->Add(m_labels[no], 0, wxEXPAND);
+	m_values_sizer->Add(m_lines[no], 0, wxEXPAND);
 
 	m_tooltip = true;
 	m_update = true;
@@ -403,12 +389,12 @@ void SummaryWindow::SetDraw(Draw *draw) {
 
 	if (draw->GetDrawInfo() == NULL)
 		return;
+	if (draw->GetDrawInfo()->GetSpecial() != TDraw::HOURSUM)
+		return;
 
 	m_draws[no] = new ObservedDraw(draw);
 
-	if (m_active)
-		StartDisplaying(no);
-
+	StartDisplaying(no);
 }
 
 void SummaryWindow::Attach(DrawsController *draws_controller) {
@@ -416,8 +402,10 @@ void SummaryWindow::Attach(DrawsController *draws_controller) {
 }
 
 void SummaryWindow::DrawInfoChanged(Draw *draw) {
-	ResetDraw(draw);
-	SetDraw(draw);
+	if (draw->GetSelected()) {
+		Deactivate();
+		Activate();
+	}
 }
 
 void SummaryWindow::UpdateDraw(Draw *draw) {
@@ -426,9 +414,6 @@ void SummaryWindow::UpdateDraw(Draw *draw) {
 	ObservedDraw *od = m_draws[no];
 
 	if (od == NULL)
-		return;
-
-	if (od->hoursum == false)
 		return;
 
 	m_update = od->update = true;
@@ -456,11 +441,10 @@ void SummaryWindow::EnableChanged(Draw *draw) {
 	int no = draw->GetDrawNo();
 
 	ObservedDraw *od = m_draws[no];
+	if (od == NULL)
+		return;
 
-	assert(od);
-
-	if (od->hoursum)
-		m_update = od->update = true;
+	m_update = od->update = true;
 }
 
 void SummaryWindow::OnClose(wxCloseEvent &event) {

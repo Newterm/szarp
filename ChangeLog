@@ -1,3 +1,5 @@
+2010-02-26	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: limit of 12 graphs per window removed
 2010-02-23	Krzysztof Galazka <kg@newterm.pl>
 	* meaner3/tsaveparam.cc: open files with O_CLOEXEC flag to avoid
 	probles with running execute sections.

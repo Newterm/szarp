@@ -176,9 +176,6 @@ enum ActionKeyboardType {
 #define DRAW3_BG_COLOR wxSystemSettings::GetColour(wxSYS_COLOUR_BACKGROUND) 
 #endif
 
-/** Number of draws per set */
-#define MAX_DRAWS_COUNT 12
-
 #define RIGHT_PANEL_LENGTH	300
 
 /** Enumeration type for period shown on time axis. */
