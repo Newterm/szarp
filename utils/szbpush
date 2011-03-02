@@ -37,9 +37,10 @@ ME=`basename $0`
 
 REMOTE=
 USE_CURL=
+SSH_PORT=
 
 #dodatkowe opcje dla rsync'a
-RSYNC_OPTIONS="-az --rsh=ssh --exclude='.*' --exclude='nohup.out' --delete --force"
+RSYNC_OPTIONS="-az --exclude='.*' --exclude='nohup.out' --delete --force"
 # dodatkowe opcje dla rsynca do wysy³ania baz szbase (gdy nie robimy pelnego synca)
 SZBASE_EXTRA=" --include=`date +%Y%m.szb` --include=`date +%Y%m -d '1 month ago'`.szb --exclude=*.szb"
 
@@ -56,7 +57,7 @@ function usage {
     echo
 }
 
-OPTS=`getopt -q -o cb: -n $ME -- "$@"`
+OPTS=`getopt -q -o cb:p: -n $ME -- "$@"`
 
 if [ $? != 0 ]; then
     usage
@@ -71,6 +72,10 @@ while true; do
     case "$1" in
     	-b)
 	    BWLIMIT=$2
+	    shift 2
+	    ;;
+	-p)
+	    SSH_PORT="-p $2"
 	    shift 2
 	    ;;
 	-c)
@@ -111,7 +116,7 @@ function get_local_stamp {
 function get_remote_stamp {
 	RET=-1;	
 	if [ -z $USE_CURL ]; then
-		RESULT=`ssh -o StrictHostKeyChecking=no $REMOTE "stat --format=%Y $1/szbase_stamp" 2>/dev/null` 
+		RESULT=`ssh -o StrictHostKeyChecking=no $SSH_PORT $REMOTE "stat --format=%Y $1/szbase_stamp" 2>/dev/null` 
 		SRET=$?
 		#connection failed
 		if [ $SRET -eq 255 ]; then
@@ -147,7 +152,7 @@ function do_rsync {
 		SE=$SZBASE_EXTRA
 	    fi
 	fi
-
+	export RSYNC_RSH="ssh -o StrictHostKeyChecking=no $SSH_PORT"
 	/usr/bin/rsync --bwlimit=$BWLIMIT $RSYNC_VERBOSE $RSYNC_OPTIONS $SE $1 $REMOTE:/opt/szarp
 }
 
