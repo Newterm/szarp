@@ -13,7 +13,7 @@ from webhelpers.html.tools import *
 from webhelpers.util import *
 from webhelpers.containers import *
 from webhelpers.html.tags import *
-from routes import url_for, redirect_to
+from routes import url_for
 from pylons import config
 
 import string

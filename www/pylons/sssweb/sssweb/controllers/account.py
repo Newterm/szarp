@@ -1,34 +1,37 @@
 import logging
 import hashlib
 
+from pylons import app_globals
 from pylons import request, response, session, tmpl_context as c
-from pylons.controllers.util import abort, redirect_to
+from pylons.controllers.util import abort, redirect
+from pylons.decorators import rest
+
 from pylons.i18n import set_lang
-from pylons import config
 from sssweb.lib.base import *
 
 log = logging.getLogger(__name__)
 
-class UserController(BaseController):
+class AccountController(BaseController):
 	requires_auth = True	# http://wiki.pylonshq.com/display/pylonscookbook/Simple+Homegrown+Authentication
-	
+
 	def __before__(self):
 		BaseController.__before__(self)
-		set_lang(config['lang'])
+		set_lang(app_globals.config['lang'])
 
 	def index(self):
 		# Return a rendered template
-		c.user = g.rpcservice.user_get_info(session['user'], session['passhash'])
-		return render('/u_user.mako')
+		c.user = app_globals.rpcservice.user_get_info(session['user'], session['passhash'])
+		return render('/account/index.mako')
 
+        @rest.dispatch_on(POST='change_password')
 	def password(self):
-		return render('/u_password.mako')
+		return render('/account/password.mako')
 
+        @rest.restrict('POST')
 	def change_password(self):
 		c.action = 'index'
-		cur = request.params['password']
 		m = hashlib.md5()
-		m.update(cur)
+		m.update(request.params['password'])
 		if m.hexdigest() != session['passhash']:
 			c.message = _("Incorrect current password!")
 			return render('/info.mako')
@@ -44,7 +47,7 @@ class UserController(BaseController):
 		m = hashlib.md5()
 		m.update(new)
 		new = m.hexdigest()
-		g.rpcservice.user_change_password(session['user'], session['passhash'], new)
+		app_globals.rpcservice.user_change_password(session['user'], session['passhash'], new)
 		session['passhash'] = new
 		session.save()
 		c.message = _("Password set succesfully")

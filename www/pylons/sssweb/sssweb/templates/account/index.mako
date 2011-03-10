@@ -1,4 +1,4 @@
-<%inherit file="baseuser.mako"/>
+<%inherit file="base.mako"/>
 
 <h1>${_('Your account status')}</h1>
 
