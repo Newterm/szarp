@@ -1,3 +1,7 @@
+2010-03-10	Krzysztof Galazka <kg@newterm.pl>
+	* www/pylons/sssweb: major refactoring for pylons 0.10
+	* wx/sync/ssconfd/ssconf.py: missing 'self'
+	* utils/{szrsync,szbpush}: SSH on non-standard port
 2010-02-26	Darek Marcinkiewicz <reksio@newterm.pl>
 	* parcook/execdmn.cc: more logging.
 	* wx/draw3: limit of 12 graphs per window removed
