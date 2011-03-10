@@ -69,8 +69,7 @@ BEGIN_EVENT_TABLE(PieWindow, wxFrame)
     EVT_CLOSE(PieWindow::OnClose)
 END_EVENT_TABLE()
 
-PieWindow::ObservedDraw::ObservedDraw(Draw *_draw) : draw(_draw), 
-	piedraw(false)
+PieWindow::ObservedDraw::ObservedDraw(Draw *_draw) : draw(_draw)
 {}
 
 PieWindow::PieWindow(wxWindow *parent, DrawPanel *panel) :
@@ -83,7 +82,6 @@ PieWindow::PieWindow(wxWindow *parent, DrawPanel *panel) :
 	SetHelpText(_T("draw3-percentagedistribution"));
 
 	m_graph = new GraphControl(this);
-	m_draws.SetCount(MAX_DRAWS_COUNT, NULL);
 	wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(new wxStaticText(this, wxID_ANY,_("Average percentage distribution")), 0, wxALIGN_CENTER);
 	sizer->Add(new wxStaticLine(this), 0, wxEXPAND);
@@ -145,9 +143,6 @@ void PieWindow::PaintGraphControl(wxDC &dc) {
 	for (size_t i = 0; i < m_draws.Count(); ++i) {
 		ObservedDraw* od = m_draws[i];
 		if (od == NULL)
-			continue;
-
-		if (od->piedraw == false)
 			continue;
 
 		Draw* draw = od->draw;
@@ -289,12 +284,12 @@ void PieWindow::Activate() {
 
 	m_draws_controller->AttachObserver(this);
 
+	m_draws.resize(m_draws_controller->GetDrawsCount(), NULL);
        	for (size_t i = 0; i < m_draws_controller->GetDrawsCount(); ++i) {
 		SetDraw(m_draws_controller->GetDraw(i));
 		ObservedDraw* od = m_draws[i];
-		if (od && od->piedraw) {
-			if (od->piedraw)
-				m_proper_draws_count++;
+		if (od) {
+			m_proper_draws_count++;
 		}
 	}
 
@@ -311,10 +306,10 @@ void PieWindow::Deactivate() {
        	for (size_t i = 0; i < m_draws.Count(); ++i) {
 		ObservedDraw* od = m_draws[i];
 		if (od != NULL) {
-			ResetDraw(od->draw);	
+			ResetDraw(i);
 		}
 	}
-
+	m_draws.resize(0);
 }
 
 void PieWindow::SetDraw(Draw *draw) {
@@ -325,25 +320,21 @@ void PieWindow::SetDraw(Draw *draw) {
 	if (draw->GetDrawInfo() == NULL)
 		return;
 
-	m_draws[no] = new ObservedDraw(draw);
-	m_draws[no]->piedraw = draw->GetDrawInfo()->GetSpecial() == TDraw::PIEDRAW; 
+	if (draw->GetDrawInfo()->GetSpecial() != TDraw::PIEDRAW)
+		return;
 
-	if (m_draws[no]->piedraw)
-		m_proper_draws_count++;
+	m_draws[no] = new ObservedDraw(draw);
+
+	m_proper_draws_count++;
 	m_update = true;
 
 }
 
-void PieWindow::ResetDraw(Draw *draw) {
-	assert(draw);
-
-	int no = draw->GetDrawNo();
-
+void PieWindow::ResetDraw(size_t no) {
 	if (m_draws[no] == NULL)
 		return;
 
-	if (m_draws[no]->piedraw)
-		m_proper_draws_count--;
+	m_proper_draws_count--;
 
 	delete m_draws[no];
 	m_draws[no] = NULL;
@@ -360,8 +351,14 @@ void PieWindow::Detach(DrawsController *draw_ctrl) {
 }
 
 void PieWindow::DrawInfoChanged(Draw *draw) {
-	ResetDraw(draw);
-	SetDraw(draw);
+	if (draw->GetSelected()) {
+		for (size_t i = 0; i < m_draws.size(); i++)
+			ResetDraw(i);
+
+		m_draws.resize(m_draws_controller->GetDrawsCount(), NULL);
+		for (size_t i = 0; i < m_draws_controller->GetDrawsCount(); i++) 
+			SetDraw(m_draws_controller->GetDraw(i));
+	}
 }
 
 void PieWindow::UpdateDraw(Draw *draw) {
@@ -370,9 +367,6 @@ void PieWindow::UpdateDraw(Draw *draw) {
 	ObservedDraw *od = m_draws[no];
 
 	if (od == NULL)
-		return;
-
-	if (od->piedraw == false)
 		return;
 
 	m_update = true;

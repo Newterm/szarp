@@ -31,7 +31,7 @@ class DrawDefaultColors {
   public:
 	static int dcolors[12][3];
 	/** Return index of color col in dcolors table, -1 if not found */
-	static int FindIndex(wxColour& col);
+	static int FindIndex(const wxColour& col);
 	/** Return string representation of color, wxEmptyString for color not in dcolor
 	 * @param index index of color in dcolors table
 	 */

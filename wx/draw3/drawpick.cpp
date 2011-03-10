@@ -41,6 +41,7 @@
 
 #include "szframe.h"
 #include "szhlpctrl.h"
+#include "dcolors.h"
 
 #include "ids.h"
 #include "classes.h"
@@ -88,11 +89,11 @@ DrawEdit::DrawEdit(wxWindow * parent, wxWindowID id, const wxString title,
 	
 	m_parent = (DrawPicker *) parent;
 
-	wxColour *colors = cfg->GetDefaultColors();
 	m_color_dialog = new wxColourDialog(this);
 
-	for (int i = 0; i < MAX_DRAWS_COUNT; ++i)
-		m_color_dialog->GetColourData().SetCustomColour(i, colors[i]);
+	//as per wxWidgets documentation - there are 16 custom colours*/
+	for (int i = 0; i < 16; ++i)
+		m_color_dialog->GetColourData().SetCustomColour(i, DrawDefaultColors::MakeColor(i));
 
 	// long name input
 	m_long_txt = XRCCTRL(*this, "text_ctrl_long", wxTextCtrl);
@@ -557,12 +558,6 @@ void DrawPicker::OnAddDraw(wxCommandEvent & event)
 	DrawInfo *draw = m_inc_search->GetDrawInfo(&prev);
 	std::vector<DrawInfo*> to_add;
 	while (draw != NULL) {	// adding all selected draws
-		if (to_add.size() + number >= MAX_DRAWS_COUNT) {
-			wxMessageBox(_("Too many draws."),
-				     _("Too many draws."),
-				     wxOK | wxICON_ERROR, this);
-			return;
-		}
 		to_add.push_back(draw);
 		draw = m_inc_search->GetDrawInfo(&prev);
 	}

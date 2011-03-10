@@ -36,6 +36,8 @@
 #endif
 #include <wx/statline.h>
 
+#include <map>
+
 /**Display summary values of currently displayed draws*/
 class RelWindow : public wxFrame, public DrawObserver {
 
@@ -48,8 +50,6 @@ class RelWindow : public wxFrame, public DrawObserver {
 		bool rel;
 	};
 
-	WX_DEFINE_ARRAY(ObservedDraw*, ObservedDrawPtrArray);
-
 	/**Indicates if we shall update value label*/
 	bool m_update;
 
@@ -59,8 +59,7 @@ class RelWindow : public wxFrame, public DrawObserver {
 	/**parent @see DrawPanel*/
 	DrawPanel *m_panel;
 
-	/**Draw values array*/
-	ObservedDrawPtrArray m_draws;
+	std::map<size_t, ObservedDraw*> m_draws;
 
 	/**Widget displaying value*/
 	wxStaticText *m_label;

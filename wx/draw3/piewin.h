@@ -61,7 +61,6 @@ class PieWindow : public wxFrame, public DrawObserver {
 		/**@see Draw which values are displayed*/
 		Draw *draw;
 
-		bool piedraw;
 	};
 
 	WX_DEFINE_ARRAY(ObservedDraw*, ObservedDrawPtrArray);
@@ -98,7 +97,7 @@ class PieWindow : public wxFrame, public DrawObserver {
 
 	void SetDraw(Draw *draw);
 
-	void ResetDraw(Draw *draw);
+	void ResetDraw(size_t no);
 
 	/**Resizes window (if neccesary)*/
 	void OnIdle(wxIdleEvent &event);

@@ -38,7 +38,7 @@
 #include "drawswdg.h"
 #include "cfgmgr.h"
 
-const size_t DrawsController::max_draws_count = 12;
+static const size_t MAXIMUM_NUMBER_OF_INITIALLY_ENABLED_DRAWS = 12;
 
 szb_nan_search_condition DrawsController::search_condition;
 
@@ -63,9 +63,6 @@ DrawsController::DrawsController(ConfigManager *config_manager, DatabaseManager 
 	m_follow_latest_data_mode(false),
 	m_filter(0)
 {
-	for (size_t i = 0; i < max_draws_count; i++)
-		m_draws.push_back(new Draw(this, &m_observers, i));
-
 	m_config_manager->RegisterConfigObserver(this);
 
 	m_units_count[PERIOD_T_YEAR] = TimeIndex::default_units_count[PERIOD_T_YEAR];
@@ -91,14 +88,26 @@ DrawsController::~DrawsController() {
 }
 
 void DrawsController::DisableDisabledDraws() {
+	bool any_disabled_draw_present = false;
 	for (std::vector<Draw*>::iterator i = m_draws.begin(); i != m_draws.end(); i++) {
 		DrawInfo *di = (*i)->GetDrawInfo();
 		if (di != NULL &&
 				m_disabled_draws.find(std::make_pair(di->GetSetName(), std::make_pair(di->GetName(), (*i)->GetDrawNo()))) 
-					!= m_disabled_draws.end())
-			(*i)->SetEnable(false);
-		else
+					!= m_disabled_draws.end()) {
+			if (m_selected_draw != int(std::distance(m_draws.begin(), i))) 
+				(*i)->SetEnable(false);
+			any_disabled_draw_present = true;
+		} else {
 			(*i)->SetEnable(true);
+		}
+	}
+	
+	if (!any_disabled_draw_present) for (size_t i = MAXIMUM_NUMBER_OF_INITIALLY_ENABLED_DRAWS; i < m_draws.size(); i++) {
+		DrawInfo *di = m_draws[i]->GetDrawInfo();
+		m_draws[i]->SetEnable(false);
+		if (di == NULL)
+			continue;
+		m_disabled_draws[std::make_pair(di->GetSetName(), std::make_pair(di->GetName(), m_draws[i]->GetDrawNo()))] = true;
 	}
 }
 
@@ -531,10 +540,10 @@ bool DrawsController::SetDoubleCursor(bool double_cursor) {
 		if (m_current_index < 0)
 			return false;
 
-		for (size_t i = 0; i < max_draws_count; i++)
+		for (size_t i = 0; i < m_draws.size(); i++)
 			m_draws[i]->StartDoubleCursor(m_current_index);
 	} else {
-		for (size_t i = 0; i < max_draws_count; i++)
+		for (size_t i = 0; i < m_draws.size(); i++)
 			m_draws[i]->StopDoubleCursor();
 	}
 
@@ -556,7 +565,7 @@ bool DrawsController::GetFollowLatestData() {
 }
 
 void DrawsController::FetchData() {
-	for (size_t i = 0; i < max_draws_count; i++) {
+	for (size_t i = 0; i < m_draws.size(); i++) {
 		DatabaseQuery *q = m_draws[i]->GetDataToFetch();
 		if (q)
 			QueryDatabase(q);
@@ -572,7 +581,7 @@ void DrawsController::MoveToTime(const DTime &time) {
 		d->MoveToTime(time);
 		moved.push_back(d->GetDrawNo());
 	} else 
-		for (size_t i = 0; i < max_draws_count; i++)
+		for (size_t i = 0; i < m_draws.size(); i++)
 			if (m_draws[i]->GetBlocked() == false) {
 				m_draws[i]->MoveToTime(time);
 				if (m_draws[i]->GetDrawInfo())
@@ -645,14 +654,28 @@ void DrawsController::DoSet(DrawSet *set) {
 
 	DrawInfoArray *draws = set->GetDraws();
 
+	if (m_draws.size() < draws->size()) {
+		Draw* selected_draw = GetSelectedDraw();
+		DTime start_time;
+		if (selected_draw) {
+			start_time = selected_draw->GetStartTime();
+		}
+		for (size_t i = m_draws.size(); i < draws->size(); i++) {
+			Draw* draw = new Draw(this, &m_observers, i);
+			if (selected_draw)
+				draw->SetPeriod(start_time, GetNumberOfValues(m_period_type));
+			m_draws.push_back(draw);
+		}
+	}
+
 	for (size_t i = 0; i < draws->size(); i++)
 		m_draws.at(i)->SetDraw((*draws)[i]);	
 
 	for (size_t i = draws->size(); i < m_draws.size(); i++)
-		m_draws.at(i)->SetDraw(NULL);
+		delete m_draws.at(i);
 
 	m_active_draws_count = draws->size();
-
+	m_draws.resize(m_active_draws_count);
 }
 
 void DrawsController::ConfigurationWasReloaded(wxString prefix) {
@@ -675,8 +698,6 @@ void DrawsController::ConfigurationWasReloaded(wxString prefix) {
 		m_selected_draw = 0;
 
 	DisableDisabledDraws();
-	if (m_draws[m_selected_draw]->GetEnable() == false)
-		m_draws[m_selected_draw]->SetEnable(true);
 
 	for (int i = 0; i < m_active_draws_count; i++)
 		m_draws[i]->RefreshData(true);
@@ -851,6 +872,8 @@ void DrawsController::Set(DrawSet *set, PeriodType pt, const wxDateTime& time, i
 
 	m_selected_draw = draw_to_select;
 
+	DisableDisabledDraws();
+
 	m_period_type = pt;
 	for (size_t i = 0; i < m_draws.size(); i++)
 		m_draws.at(i)->SetPeriod(m_time_to_go, GetNumberOfValues(pt));
@@ -903,6 +926,8 @@ void DrawsController::Set(DrawSet *set, int draw_to_select) {
 	DoSet(set);
 
 	m_selected_draw = draw_to_select;
+
+	DisableDisabledDraws();
 
 	for (size_t i = 0; i < m_draws.size(); i++)
 		m_observers.NotifyDrawInfoChanged(m_draws[i]);
@@ -1179,6 +1204,9 @@ bool DrawsController::SetDrawEnabled(int draw, bool enable) {
 		m_disabled_draws[std::make_pair(di->GetSetName(), std::make_pair(di->GetName(), draw))] = true;
 
 	m_observers.NotifyEnableChanged(m_draws[draw]);
+
+	if (enable)
+		FetchData();
 
 	return true;
 

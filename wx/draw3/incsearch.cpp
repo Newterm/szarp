@@ -365,22 +365,20 @@ void IncSearch::AddWindowItems(SortedSetsArray *sorted) {
 }
 
 void IncSearch::AddDrawsItems(SortedSetsArray *sorted) {
-
 	int count = sorted->size();
-
-	for (int i = 0; i < count; i++) for (int j = 0; j <= MAX_DRAWS_COUNT; j++) {
+	for (int i = 0; i < count; i++) { 
 		DrawSet* set = sorted->Item(i);
-		DrawInfo* info = cfg->GetDraw(confid, set->GetName(), j);
-		if (info == NULL) 
-			continue;
-			
-		Item *item = new Item();
-		item->draw_info = info;
-		item->draw_set = set;
-		items_array.Add(item);
-
+		for (size_t j = 0; j < set->GetDraws()->size(); j++) {
+			DrawInfo* info = cfg->GetDraw(confid, set->GetName(), j);
+			if (info == NULL) 
+				continue;
+				
+			Item *item = new Item();
+			item->draw_info = info;
+			item->draw_set = set;
+			items_array.Add(item);
+		}
 	}
-
 }
 
 void IncSearch::LoadParams()

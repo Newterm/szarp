@@ -50,6 +50,7 @@
 #include "ids.h"
 #include "classes.h"
 
+#include "dcolors.h"
 #include "drawapp.h"
 #include "drawobs.h"
 #include "coobs.h"
@@ -754,36 +755,7 @@ typedef std::map<wxColour, bool, ColorCompare> ColorMap;
 }
 
 void DefinedDrawSet::GetColor(DefinedDrawInfo *ddi) {
-	ColorMap uc;
-
 	wxColour color = ddi->GetDrawColor();
-
-	if (color == wxNullColour)
-		return;
-
-	wxColour* dc = m_ds->GetParentManager()->GetDefaultColors();	
-	for (int i = 0; i < MAX_DRAWS_COUNT; ++i)
-		uc[dc[i]] = false;
-
-	for (size_t i = 0; i < m_draws->size(); ++i) {
-		DrawInfo* di = m_draws->at(i);
-		if (di == ddi)
-			continue;
-
-		uc[di->GetDrawColor()] = true;
-	}
-
-	if (uc.find(color) == uc.end() || uc[color] == false) {
-		ddi->SetDrawColor(color);
-		return;
-	}
-
-	for (ColorMap::iterator i = uc.begin(); i != uc.end(); ++i)
-		if (i->second == false) {
-			color = i->first;
-			break;
-		}
-
 	ddi->SetDrawColor(color);
 }
 
@@ -1711,7 +1683,7 @@ namespace EkrnDefConv {
 			if (di == NULL)
 				continue;
 
-			wxColour color = cfg->GetParentManager()->GetDefaultColors()[color_idx - 1];
+			wxColour color = DrawDefaultColors::MakeColor(color_idx - 1);
 			DefinedDrawInfo::EkrnDefDraw e;
 			e.di = di;
 			e.color = color;

@@ -284,7 +284,10 @@ int ExecDaemon::Exec(IPCHandler *ipc)
 		int d;
 		d = (int)strtod(toks[i], &errptr);
 		if (*errptr != 0) {
+			sz_log(2, "Got incorrect string for param i: '%s'", toks[i]);
 			d = SZARP_NO_DATA;
+		} else {
+			sz_log(10, "Got string for param i: '%s', converted to value %d", toks[i], d);
 		}
 		ipc->m_read[i] = d;
 	}

@@ -76,8 +76,6 @@ RelWindow::RelWindow(wxWindow *parent, DrawPanel *panel) :
 	
 	SetSizer(sizer);
 
-	m_draws.SetCount(MAX_DRAWS_COUNT, NULL);
-
 	m_draws_controller = NULL;
 }
 
@@ -107,11 +105,8 @@ void RelWindow::OnIdle(wxIdleEvent &event) {
 
 	bool got_first = false;
 
-	for (size_t i = 0; i < m_draws.Count(); ++i) {
-		if (m_draws[i] == NULL)
-			break;
-
-		ObservedDraw *od = m_draws[i];
+       	for (std::map<size_t, ObservedDraw*>::iterator i = m_draws.begin(); i != m_draws.end(); ++i) {
+		ObservedDraw *od = i->second;
 		if (od->rel == false)
 			continue;
 
@@ -178,9 +173,9 @@ void RelWindow::Deactivate() {
 
 	m_active = false;
 
-       	for (size_t i = 0; i < m_draws.Count(); ++i)
-		if (m_draws[i] && m_draws[i]->draw)
-			ResetDraw(m_draws[i]->draw);
+       	for (std::map<size_t, ObservedDraw*>::iterator i = m_draws.begin(); i != m_draws.end(); ++i)
+		ResetDraw(i->second->draw);
+	m_draws.clear();
 
 	m_draws_controller->DetachObserver(this);
 
@@ -217,7 +212,7 @@ void RelWindow::Attach(DrawsController *draws_controller) {
 void RelWindow::SetDraw(Draw *draw) {
 	int no = draw->GetDrawNo();
 
-	assert(m_draws[no] == NULL);
+	assert(m_draws.find(no) == m_draws.end()); 
 
 	m_draws[no] = new ObservedDraw(draw);
 	m_draws[no]->rel = draw->GetDrawInfo() && draw->GetDrawInfo()->GetSpecial() == TDraw::REL; 
@@ -237,12 +232,12 @@ void RelWindow::DrawInfoChanged(Draw *draw) {
 void RelWindow::Update(Draw *draw) {
 	int no = draw->GetDrawNo();
 
-	ObservedDraw *od = m_draws[no];
+	std::map<size_t, ObservedDraw*>::iterator i  = m_draws.find(no);
 
-	if (od == NULL)
+	if (i == m_draws.end())
 		return;
 
-	if (od->rel == false)
+	if (i->second->rel == false)
 		return;
 
 	m_update = true;
@@ -261,8 +256,8 @@ void RelWindow::OnClose(wxCloseEvent &event) {
 }
 
 RelWindow::~RelWindow() { 
-	for (size_t i = 0; i < m_draws.size(); ++i)
-		delete m_draws[i];
+       	for (std::map<size_t, ObservedDraw*>::iterator i = m_draws.begin(); i != m_draws.end(); ++i)
+		delete i->second;
 }
 
 bool RelWindow::Show(bool show) {
