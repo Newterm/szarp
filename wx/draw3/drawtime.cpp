@@ -22,9 +22,9 @@
 #include "ids.h"
 #include "drawtime.h"
 
-const size_t TimeIndex::default_units_count[PERIOD_T_LAST] = { 12, 31, 7, 24, 30, 40 };
+const size_t TimeIndex::default_units_count[PERIOD_T_LAST] = { 10, 12, 31, 7, 24, 30, 40 };
 /*for year, month, week, day, season*/
-const int TimeIndex::PeriodMult[PERIOD_T_LAST] = {1, 1, 3, 6, 6, 1};
+const int TimeIndex::PeriodMult[PERIOD_T_LAST] = {1, 1, 1, 3, 6, 6, 1};
 
 DTime::DTime(const PeriodType& period, const wxDateTime& time) : m_period(period), m_time(time)
 {
@@ -45,6 +45,8 @@ DTime& DTime::AdjustToPeriodStart() {
 		return *this;
 
 	switch (m_period) {
+		case PERIOD_T_DECADE:
+			m_time.SetMonth(wxDateTime::Jan);
 		case PERIOD_T_YEAR:
 			m_time.SetDay(1);
 		case PERIOD_T_MONTH:
@@ -91,6 +93,9 @@ DTime& DTime::AdjustToPeriod() {
 		return *this;
     
 	switch (m_period) {
+		case PERIOD_T_DECADE :
+			m_time = wxDateTime(1, 1, m_time.GetYear());
+			break;
 		case PERIOD_T_YEAR :
 			m_time = wxDateTime(1, m_time.GetMonth(), m_time.GetYear());
 			break;
@@ -162,6 +167,7 @@ DTime DTime::operator+(const wxTimeSpan& span) const {
 		
 	switch (m_period) {
 		//in following periods we are not interested in time resolution
+		case PERIOD_T_DECADE:
 		case PERIOD_T_YEAR:
 		case PERIOD_T_MONTH: 
 			return DTime(m_period, m_time);
@@ -258,6 +264,9 @@ int DTime::GetDistance(const DTime &t) const {
 	int ret = -1;
 
 	switch (GetPeriod()) {
+		case PERIOD_T_DECADE:
+			ret = _t.GetYear() - _t0.GetYear();
+			break;
 		case PERIOD_T_YEAR:
 			ret = _t.GetYear() * 12 + _t.GetMonth()
 				- _t0.GetYear() * 12 - _t0.GetMonth();
@@ -362,6 +371,12 @@ void TimeIndex::UpdatePeriods() {
 	const PeriodType& p = m_time.GetPeriod();
 
 	switch (p) {
+		case PERIOD_T_DECADE :
+			m_timeres = wxTimeSpan(0, 0, 0, 0);
+			m_dateres = wxDateSpan::Year();
+			m_timeperiod = wxTimeSpan(0, 0, 0, 0);
+			m_dateperiod = wxDateSpan::Year() * (m_number_of_values / TimeIndex::PeriodMult[p]);
+			break;
 		case PERIOD_T_YEAR :
 			m_timeres = wxTimeSpan(0, 0, 0, 0);
 			m_dateres = wxDateSpan::Month();
@@ -415,6 +430,7 @@ DTime TimeIndex::AdjustToPeriodSpan(const DTime &time) const {
 
 	if (m_number_of_values == default_units_count[time.GetPeriod()] * PeriodMult[time.GetPeriod()]) {
 		switch (time.GetPeriod()) {
+			case PERIOD_T_DECADE :
 			case PERIOD_T_YEAR :
 				dt.SetMonth(wxDateTime::Jan);
 			case PERIOD_T_MONTH :

@@ -74,6 +74,7 @@ std::vector<SeasonLimit> get_season_limits_indexes(DrawsSets *ds, Draw* draw) {
 				case PERIOD_T_OTHER:
 				case PERIOD_T_SEASON:
 				case PERIOD_T_YEAR:
+				case PERIOD_T_DECADE:
 					if (is)
 						if (tm.mday == season.day_start)
 							index = i;
@@ -129,6 +130,9 @@ wxString get_short_day_name(wxDateTime::WeekDay day) {
 wxString get_date_string(PeriodType period, const wxDateTime& prev_date, const wxDateTime &date) {
 	wxString ret;
 	switch (period) {
+		case PERIOD_T_DECADE :
+			ret = wxString::Format(_T("%04d"), date.GetYear());
+			break;
 		case PERIOD_T_YEAR :
 			ret = wxString::Format(_T("%02d"), date.GetMonth() + 1);
 			break;

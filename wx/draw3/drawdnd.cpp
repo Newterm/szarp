@@ -117,6 +117,9 @@ wxString SetInfoDataObject::GetUrl() const {
 
 	url << _T("/");
 	switch (m_period) {
+		case PERIOD_T_DECADE:
+			url << _T("E"); // "D is reserved for DAY"
+			break;
 		case PERIOD_T_YEAR:
 			url << _T("Y");
 			break;

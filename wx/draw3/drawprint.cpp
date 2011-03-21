@@ -712,6 +712,9 @@ void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin, int 
 	PeriodType pt = fd->GetPeriod();
 	wxString period = _("For period: ");
 	switch (pt) {
+		case PERIOD_T_DECADE:
+			period += _("DECADE ");
+			break;
 		case PERIOD_T_YEAR:
 			period += _("YEAR ");
 			break;

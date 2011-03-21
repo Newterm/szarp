@@ -768,6 +768,9 @@ void DrawPanel::PeriodChanged(Draw *d, PeriodType pt) {
 		return;
 	int id;
 	switch (pt) {
+		case PERIOD_T_DECADE:
+			id = XRCID("DECADE_RADIO");
+			break;
 		case PERIOD_T_YEAR:
 			id = XRCID("YEAR_RADIO");
 			break;
@@ -964,6 +967,9 @@ void DrawPanel::SetActive(bool _active) {
 
 		wxMenuItem *pmi = NULL;
 		switch (dc->GetPeriod()) {
+			case PERIOD_T_DECADE:
+				pmi = menu_bar->FindItem(XRCID("DECADE_RADIO"));
+				break;
 			case PERIOD_T_YEAR:
 				pmi = menu_bar->FindItem(XRCID("YEAR_RADIO"));
 				break;
