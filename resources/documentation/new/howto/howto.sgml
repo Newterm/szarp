@@ -755,11 +755,7 @@ dwuportow± PCI. Dobrze wspó³pracuj± z Linuksem karty na uk³adzie firmy NetMos
 
 <para>
 Jeszcze innym rozwi±zaniem jest u¿ycie przej¶ciówki USB/RS232. Testowane by³y
-najpopularniejsze przej¶ciówki na uk³adzie PL-2303 formy Prolific. Poprawna
-wspó³praca z przej¶ciówki wymaga patcha do j±dra dostêpnego pod adresem
-<ulink url="http://www.szarp.com.pl/pub/">
-http://www.szarp.com.pl/pub/</ulink> (patch zosta³ w³±czony do j±dra Linuksa
-od wersji 2.6.14).
+najpopularniejsze przej¶ciówki na uk³adzie PL-2303 formy Prolific.
 </para>
 
 </section>
@@ -14337,7 +14333,9 @@ skonfigurowaæ i zainstalowaæ ¶rodowisko Cygwin. Pe³n± informacjê o mo¿liwych
 sposobach instalacji cygwina zawiera <xref linkend="cygwin">. Minimalna, w
 pe³ni funkcjonalna wersja (bez obs³ugi polskiej klawiatury), mo¿e byæ
 ¶ci±gniêta ze strony 
-<ulink url="http://www.szarp.com.pl/download.php">www.szarp.com.pl/download.php</ulink>. Przy
+<ulink url="https://sourceforge.net/projects/szarp/files/Cygwin%20X.Org%20Viewer/xorg-setup.exe/download
+">https://sourceforge.net/projects/szarp/files/Cygwin%20X.Org%20Viewer/xorg-setup.exe/download
+</ulink>. Przy
 instalacji pyta siê ona jedynie o adres IP serwera X-ów. Mo¿e byæ tak¿e 
 konieczne zastosowanie opcji <emphasis>-from</emphasis> (zobacz dalej).
 </para>

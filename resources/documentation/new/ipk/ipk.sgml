@@ -3823,7 +3823,8 @@ demonów, wiêkszo¶æ z nich u¿ywa przestrzeni nazw
 <![CDATA[
   <device daemon="/opt/szarp/bin/mbrtudmn" path="/dev/ttyA11" 
         xmlns:extra="http://www.praterm.com.pl/SZARP/ipk-extra"
-	extra:docpath="http://www.szarp.com.pl/howto/zethowto/html/other-szarp-devices.html">
+	extra:docpath="http://www.szarp.org/docs/szarp-plc-howto/html/heatmeter-kamstrup-66c.html
+	">
 	....
 ]]>
 </programlisting>
