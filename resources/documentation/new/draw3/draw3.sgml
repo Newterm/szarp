@@ -69,14 +69,14 @@ Ten rozdzia³ opisuje:
 <section id="draw3-base-run">
 <title>Uruchomienie programu</title>
 <para>
-Program bêdziesz zwykle uruchamiaæ pos³uguj±c siê programem Centrum Sterowania Szarp (SCC). Wystarczy klikn±æ lewym przyciskiem myszki na ikonê SCC i wybraæ interesuj±c± nas ciep³owniê lub wêze³ cieplny (wiêcej informacji o SCC mo¿esz znale¼æ w dokumencie <ulink url="http://szarp.com.pl/howto/scc/html/scc.html">Centrum Sterowania SZARP</ulink> [<ulink url="http://szarp.com.pl/howto/_pdf/scc.pdf">pdf</ulink>]). Proces uruchomienia (tutaj na systemie Linux) jest widoczny poni¿ej:
+Program bêdziesz zwykle uruchamiaæ pos³uguj±c siê programem Centrum Sterowania Szarp (SCC). Wystarczy klikn±æ lewym przyciskiem myszki na ikonê SCC i wybraæ interesuj±c± nas ciep³owniê lub wêze³ cieplny (wiêcej informacji o SCC mo¿esz znale¼æ w dokumencie <ulink url="http://szarp.org/szarp/doc/scc/html/scc.html">Centrum Sterowania SZARP</ulink> [<ulink url="http://szarp.org/szarp/doc/pdf/scc-article.pdf">pdf</ulink>]). Proces uruchomienia (tutaj na systemie Linux) jest widoczny poni¿ej:
 <figure> <title>Centrum Sterowania Szarp - uruchomienie programu przegl±daj±cego (pod Linuksem)</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-scc.png"></imageobject>
 </mediaobject></figure>
 <note>
 <para>
-¯eby uruchomiæ program przegl±daj±cy, musisz mieæ dostêp do danych, które bêd± w nim wy¶wietlane. Mo¿esz albo ¶ci±gn±æ dane na dysk poprzez synchronizator danych (wiêcej o synchronizacji w dokumencie <ulink url="http://szarp.com.pl/howto/ssc/html/ssc.html">Synchronizator plików</ulink>), albo zalogowaæ siê do systemu, który takie dane przechowuje. Do systemu mo¿esz siê zalogowaæ bezpo¶rednio (pracuj±c pod Linuksem) lub (w przypadku systemu Windows) za pomoc± emulatora X-terminala (np. Cygwin). Program SCC automatycznie wy¶wietla nazwy wszystkich ciep³owni (lub innych obiektów), dla których dostêpne s± dane.
+¯eby uruchomiæ program przegl±daj±cy, musisz mieæ dostêp do danych, które bêd± w nim wy¶wietlane. Mo¿esz albo ¶ci±gn±æ dane na dysk poprzez synchronizator danych (wiêcej o synchronizacji w dokumencie <ulink url="http://szarp.org/szarp/doc/ssc/html/ssc.html">Synchronizator plików</ulink>), albo zalogowaæ siê do systemu, który takie dane przechowuje. Do systemu mo¿esz siê zalogowaæ bezpo¶rednio (pracuj±c pod Linuksem) lub (w przypadku systemu Windows) za pomoc± emulatora X-terminala (np. Cygwin). Program SCC automatycznie wy¶wietla nazwy wszystkich ciep³owni (lub innych obiektów), dla których dostêpne s± dane.
 </para>
 </note>
 </para>
@@ -896,7 +896,7 @@ liczony parametr.
 Sam± formu³ê wstawiamy w okienko formu³y, piszemy j± w jêzyku skryptowym LUA - mo¿esz u¿ywaæ wyra¿eñ arytmetycznych, odwo³ywaæ siê do 
 warto¶ci innych parametrów. Wiêcej na ten temat znajdziesz w rozdziale 
 <xref linkend="draw3-ext-luamath"> oraz w 
-<ulink url="http://www.szarp.com.pl/howto/ipk/html/draw-definable-lua.html">dokumentacji
+<ulink url="http://szarp.org/szarp/doc/ipk/html/draw-definable-lua.html">dokumentacji
 technicznej systemu SZARP</ulink>.
 </para>
 <para>
@@ -1365,7 +1365,7 @@ math.sqrt(100)
 </table>
 </para>
 <para>
-Wiêcej o pisaniu w³asnych funkcji mo¿esz przeczytaæ w rozdziale <ulink url="http://www.szarp.com.pl/howto/ipk/html/draw-definable-lua.html">Parametry definiowalne LUA</ulink> dokumentu <ulink url="http://www.szarp.com.pl/howto/ipk/html/szarp.html">System SZARP - dokumentacja techniczna</ulink>.
+Wiêcej o pisaniu w³asnych funkcji mo¿esz przeczytaæ w rozdziale <ulink url="http://szarp.org/szarp/doc/ipk/html/draw-definable-lua.html">Parametry definiowalne LUA</ulink> dokumentu <ulink url="http://szarp.org/szarp/doc/ipk/html/szarp.html">System SZARP - dokumentacja techniczna</ulink>.
 </para>
 
 </section> <!-- draw3-ext-luamath -->

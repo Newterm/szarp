@@ -113,7 +113,7 @@ rozpocz±æ od dodania wpisów do pliku
 <filename>/etc/apt/sources.list</filename>:
 <programlisting>
 deb http://www.szarp.org/debian stable main non-free
-deb http://www.szarp.com.pl/debian unstable main non-free
+deb http://www.szarp.org/debian unstable main non-free
 </programlisting>
 Oczywi¶cie, mo¿emy dodaæ tylko jedn± z w/w linii je¿eli zamierzamy korzystaæ
 tylko i wy³±cznie z jednej wersji SZARPa. Zalecane jest jednak, by plik
@@ -2709,7 +2709,7 @@ Przyk³adowy pocz±tek pliku mo¿e wygl±daæ tak:
 	</para></listitem>
 	<listitem><para><emphasis>documentation_base_url</emphasis> - adres strony WWW serwera wy¶wietlaj±cego
 	opcjonaln± dokumentacjê parametrów SZARP. W przypadku braku atrybutu u¿ywana jest warto¶æ domy¶lna,
-	obecnie <emphasis>http://www.szarp.com.pl</emphasis>, która jednak mo¿e siê zmieniæ w przysz³ej wersji
+	obecnie <emphasis>http://www.szarp.org</emphasis>, która jednak mo¿e siê zmieniæ w przysz³ej wersji
 	oprogramowania. Atrybut jest opcjonalny, ale zaleca siê jego ustawianie.
 	</para></listitem>
 </itemizedlist>

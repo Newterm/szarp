@@ -8276,9 +8276,6 @@ Do uruchomienia go konieczne jest pobranie i zainstalowanie
 firmware'u. Jest on dostêpny na stronie:
 <ulink url="http://eagle-usb.org/ueagle-atm/non-free/">
 http://eagle-usb.org/ueagle-atm/non-free/</ulink>
-Mo¿na te¿ skorzystaæ z paczki dostêpnej na stronie SZARPa
-<ulink url="http://szarp.com.pl/download.php">
-http://szarp.com.pl/download.php</ulink>
 </para>
 <para>
 Za za³adowanie firmware'u potrzebny jest jeszcze <emphasis>udev</emphasis>
@@ -14541,7 +14538,7 @@ ssh -x lucek@praterm.com.pl /etc/X11/xinit/xinitrc.d/scc
 ]]>
 </programlisting>
 uruchomi w systemie Windows jedno okno z 
-<ulink url="http://www.szarp.com.pl/howto/scc/html/scc.html">programem SCC</ulink>, 
+<ulink url="http://szarp.org/szarp/doc/ssc/html/ssc.html">programem SCC</ulink>, 
 który pozwoli nam na uruchamianie programów SZARP-a w oddzielnych oknach windowsowych
 (opcja -multiwindow).
 </para></listitem>
