@@ -94,7 +94,7 @@ DTime& DTime::AdjustToPeriod() {
     
 	switch (m_period) {
 		case PERIOD_T_DECADE :
-			m_time = wxDateTime(1, 1, m_time.GetYear());
+			m_time = wxDateTime(1, wxDateTime::Jan, m_time.GetYear());
 			break;
 		case PERIOD_T_YEAR :
 			m_time = wxDateTime(1, m_time.GetMonth(), m_time.GetYear());

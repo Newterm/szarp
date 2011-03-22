@@ -987,6 +987,7 @@ void DrawsController::TimeReference::Update(const DTime& time) {
 		case PERIOD_T_SEASON:
 			m_day = wxt.GetDay();
 		case PERIOD_T_YEAR:
+		case PERIOD_T_DECADE:
 			break;
 		default:
 			assert(false);
