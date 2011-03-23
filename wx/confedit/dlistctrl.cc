@@ -31,6 +31,7 @@
 DrawsListCtrl::DrawsListCtrl(wxWindow* parent, wxWindowID id, 
 			const wxPoint& pos, const wxSize& size, long style) 
 		: wxListCtrl(parent, id, pos, size, style | wxLC_REPORT | wxLC_SINGLE_SEL)
+		, modified(false)
 {  
 	InsertColumn(0, _T("Name"), wxLIST_ALIGN_DEFAULT, 
 			GetSize().GetWidth() - (20 + 50 + 50 + 1));
@@ -122,12 +123,13 @@ void DrawsListCtrl::OnDrawEdit(wxListEvent &ev)
 	  if (dlg.ShowModal() != wxID_OK) {
 		  return;
 	  }
+
 	  if (c_ind == -1) {
 		  xmlUnsetProp(node, BAD_CAST "color");
 	  } else {
 		  xmlSetProp(node, BAD_CAST "color", BAD_CAST 
 				  SC::S2U(DrawDefaultColors::AsString(c_ind)).c_str());
-
+		  modified = true;
 	  }
 	  double dmin, dmax;
 	  if (min.ToDouble(&dmin) and max.ToDouble(&dmax) and (dmin < dmax)) {
@@ -139,7 +141,7 @@ void DrawsListCtrl::OnDrawEdit(wxListEvent &ev)
 		  xmlSetProp(node, BAD_CAST "max", BAD_CAST SC::S2U(max).c_str());
   		  SetItem(l.GetId(), 2, min);
   		  SetItem(l.GetId(), 3, max);
-		  
+		  modified = true;
 	  }
 	  AssignColors();
 }
@@ -240,6 +242,7 @@ long DrawsListCtrl::GetSelection()
 
 void DrawsListCtrl::MoveItem(long from, long to)
 {
+	modified = true;
 	assert (from >= 0);
 	assert (to >= 0);
 	char tmp[4];

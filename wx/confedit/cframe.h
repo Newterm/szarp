@@ -65,6 +65,7 @@ public:
          * @param initial program window size
          */
 	ConfFrame(wxString filename, const wxPoint& pos, const wxSize& size);
+	virtual ~ConfFrame();
 private:
 	DECLARE_EVENT_TABLE()
        	/** Event handler - called on exit command. */

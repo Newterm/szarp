@@ -234,6 +234,14 @@ ConfFrame::ConfFrame(wxString _filename, const wxPoint& pos, const wxSize& size)
 			wxCommandEventHandler(ConfFrame::DrawSelected));
 }
 
+ConfFrame::~ConfFrame()
+{
+        delete raplist;
+        delete ritemslist;
+        delete drawlist;
+        delete ditemslist;	
+}
+
 void ConfFrame::OnExit(wxCommandEvent& WXUNUSED(event))
 {
 	Close(TRUE);
@@ -360,7 +368,7 @@ int ConfFrame::SaveFile(wxString path)
 
 int ConfFrame::AskForSave(void)
 {
-	if (!modified)
+	if (!modified && !ditemslist->Modified() )
 		return 0;
 	int ret = wxMessageBox(_("File was modified. Save changes ?"),
 			_("Save changes ?"), wxYES_NO | wxCANCEL | 
@@ -641,13 +649,13 @@ void ConfFrame::DownPressed(wxCommandEvent& event)
 {
         wxString page_title = notebook->GetPageText(notebook->GetSelection());
         if (!page_title.Cmp(_("Raports")) && 
-                (ritemslist->GetSelection() > 0) &&
+                (ritemslist->GetSelection() >= 0) &&
                 (ritemslist->GetSelection() < (static_cast<int>(ritemslist->GetCount()) - 1)) )
                 MoveRapItemDown();
         else if (!page_title.Cmp(_("Draws"))) {
 		if (ditemslist->GetSelection() >= 0) {
 			MoveDrawItemDown();
-		} else if ((drawlist->GetSelection() > 0) 
+		} else if ((drawlist->GetSelection() >= 0) 
 				and (drawlist->GetSelection() < static_cast<int>(drawlist->GetCount() - 1))) {
                         MoveDrawDown();
 		}
