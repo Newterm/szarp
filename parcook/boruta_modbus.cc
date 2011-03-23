@@ -427,6 +427,7 @@ public:
 	virtual void data_ready(struct bufferevent* bufev);
 	virtual int connection_accepted(struct bufferevent* bufev, int socket, struct sockaddr_in *addr);
 	virtual void starting_new_cycle();
+	virtual void finished_cycle();
 };
 
 class modbus_client : public modbus_unit {
@@ -586,8 +587,8 @@ protected:
 	virtual void terminate_connection();
 public:
 
-	virtual void finished_cycle();
 	virtual void starting_new_cycle();
+	virtual void finished_cycle();
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
 	virtual void data_ready(struct bufferevent* bufev, int fd);
@@ -616,6 +617,7 @@ public:
 	virtual struct event_base* get_event_base();
 	virtual void error(serial_connection_handler::ERROR_CONDITION error);
 	virtual void starting_new_cycle();
+	virtual void finished_cycle();
 };
 
 class short_parcook_modbus_val_op : public parcook_modbus_val_op {
@@ -1397,6 +1399,10 @@ void tcp_server::starting_new_cycle() {
 	modbus_unit::starting_new_cycle();
 }
 
+void tcp_server::finished_cycle() {
+	modbus_unit::finished_cycle();
+}
+
 void tcp_server::connection_error(struct bufferevent *bufev) {
 	tcp_parser* parser = m_parsers[bufev];
 	dolog(5, "Terminating connection");
@@ -2174,6 +2180,10 @@ void serial_server::error(serial_connection_handler::ERROR_CONDITION error) {
 
 void serial_server::starting_new_cycle() {
 	modbus_unit::starting_new_cycle();
+}
+
+void serial_server::finished_cycle() {
+	modbus_unit::finished_cycle();
 }
 
 struct event_base* serial_server::get_event_base() {

@@ -1,3 +1,5 @@
+2010-03-23	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/boruta*: added missing finish_cycle methods for server dirvers
 2010-03-10	Krzysztof Galazka <kg@newterm.pl>
 	* www/pylons/sssweb: major refactoring for pylons 0.10
 	* wx/sync/ssconfd/ssconf.py: missing 'self'

@@ -810,6 +810,13 @@ void serial_server_manager::starting_new_cycle() {
 		(*i)->starting_new_cycle();
 }
 
+void serial_server_manager::finished_cycle() {
+	for (std::vector<serial_server_driver*>::iterator i = m_drivers.begin();
+			i != m_drivers.end();
+			i++)
+		(*i)->finished_cycle();
+}
+
 void serial_server_manager::restart_connection_of_driver(serial_server_driver* driver) {
 	std::vector<serial_server_driver*>::iterator i = std::find(m_drivers.begin(), m_drivers.end(), driver);		
 	assert(i != m_drivers.end());
@@ -899,6 +906,13 @@ void tcp_server_manager::starting_new_cycle() {
 		event_add(&i->_event, NULL);
 		event_base_set(m_boruta->get_event_base(), &i->_event);
 	}
+}
+
+void tcp_server_manager::finished_cycle() {
+	for (std::vector<tcp_server_driver*>::iterator i = m_drivers.begin();
+			i != m_drivers.end();
+			i++)
+		(*i)->finished_cycle();
 }
 
 void tcp_server_manager::connection_read_cb(struct bufferevent *bufev, void* _manager) {
@@ -1065,6 +1079,8 @@ void boruta_daemon::cycle_timer_callback(int fd, short event, void* daemon) {
 	boruta_daemon* b = (boruta_daemon*) daemon;
 	b->m_tcp_client_mgr.finished_cycle();
 	b->m_serial_client_mgr.finished_cycle();
+	b->m_tcp_server_mgr.finished_cycle();
+	b->m_serial_server_mgr.finished_cycle();
 	b->m_ipc->GoParcook();
 	b->m_ipc->GoSender();
 	b->m_tcp_client_mgr.starting_new_cycle();
