@@ -1,131 +1,72 @@
 #!/usr/bin/python
-
+# SZARP: SCADA software 
 #
-# Script creates samples for szbwriter. See usage funcion for more information :)
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+# $Id$
+#
+# 2011 Krzysztof Golinski
+#
+# Script creates samples for szbwriter. See usage funcion for more information.
 #
 
-import getopt
 import string
-import sys
 import datetime
 import time
 import random
-
-def usage():
-
-	m ="""All listed parameters are required:
---name="Grup:Union:Parameter"
-	converted name like in SzarpBase
-		Example: Legionowo:wezel:temp1
---begin-date="YYYY-MM-DD"
-	Set begin date for data. 
-		Example: "2011-05-14"
-
-Optional parameters:
---help
---usage
-	Show this message and end script
---days=NUM
-	Hom many data for NUM days create -> "End-date" = begin-date + days
-		Example: 5
-		Default: 30
---percent=NUM
-	How much percent of data create (0 < NUM < 100) 
-		Example: 90
-		Default: 80
---type=[ float | int ]
-	Type of data
-		Example: int
-		default: float
---min=NUM
-	Minimal value for data, Examples:
-		5
-		3.14
-	Default: 0 for int ,  0.00 for float
---max=NUM
-	Max value for data, Examples:
-		127
-		128.0
-	Default: 100 for int, 100.00 for float
---step=NUM
-	Step beetween two samples
-	Default 1 for int 1.00 for float
-
-Usage examples:
-datagen.py --name="Leg:Union1:temp" --begin-date="2012-12-24"
-datagen.py --name="AX:Wezel:temp" --begin-date="2012-03-22" --days=35 --percent=80 --type=int
-"""
-	print m
+import optparse
 
 def main():
 
-	args = sys.argv[1:]
-	if "--help" in args or "--usage" in args:
-		usage()
-		sys.exit(0)
+	parser = optparse.OptionParser()
+	parser.add_option('-n', '--name', help='REQUIRED. Converted name like in SzarpBase: "Group:Unit:Parameter"',dest='name')
+	parser.add_option('-b', '--begin-date', help='REQUIRED. Set begin date for data: "YYYY-MM-DD"', dest='beginDate')
+	parser.add_option('-d', '--days', help='create data for DAYS days. Default value [%default]',
+		dest='days', default=30)
+	parser.add_option('-s', '--step', help='Step between two samples. Default value [%default]', dest='step', default=1)
+	parser.add_option('-m', '--min', help='Minimal value for data. Default value [%default]', dest='minVal', default=0)
+	parser.add_option('-M', '--max', help='Max value for data. Default value [%default]', dest='maxVal', default=100)
+	parser.add_option('-p', '--percent', help='How much percent of data create (0 < PERCENT < 100). Default value [%default]', dest='percent', default=80)
+	parser.add_option('-t', '--type', help='Type of data [ float | int ]. Default value [%default]', dest='type', default='float')
 
-	try:
-		optlist, args = getopt.getopt(args,'x', ['name=','begin-date=','days=','percent=','type=','min=','max=','step='])
+	(opts, args) = parser.parse_args()
 
-	except getopt.GetoptError:
-		usage()
-		sys.exit(2)
+	# check required options
+	if opts.name is None or opts.beginDate is None:
+		print 'Required option is missing'
+		parser.print_help()
+		exit(-1)
 
-	# default values, if you edit them change usage()
-
-	name = ""
-	beginDate=""
-	days=30
-	percent=80
-	typeData="float"
-	minVal=0.00
-	maxVal=100.00
-	step=1.00
-
-	# process parameters
-	for k, v in optlist:
-		if k == '--name':
-			name = v
-		if k == '--begin-date':
-			beginDate = v
-		if k == '--days':
-			days = v
-		if k == '--percent':
-			percent = int(v)
-		if k == '--type':
-			typeData = v
-		if k == '--min':
-			minVal = v
-		if k == '--max':
-			maxVal = v
-		if k == '--step':
-			step = v
-
-	# quick check parameters
-	if (name == "" or beginDate == "") or ( typeData != "float" and typeData != "int" ):
-		usage()
-		sys.exit(2)
-
-	if typeData == "float":
-		minVal = float (minVal)
-		maxVal = float (maxVal)
-		step = float (step)
+	if opts.type == "float":
+		opts.minVal = float (opts.minVal)
+		opts.maxVal = float (opts.maxVal)
+		opts.step = float (opts.step)
 	else:
-		minVal = int (minVal)
-		maxVal = int (maxVal)
-		step = int (step)
-
-	print minVal, maxVal
+		opts.minVal = int (opts.minVal)
+		opts.maxVal = int (opts.maxVal)
+		opts.step = int (opts.step)
 
 	# create begin/end date
-	tmp = beginDate.split('-')
+	tmp = opts.beginDate.split('-')
 	beginTime = datetime.datetime(int (tmp[0]), int (tmp[1]), int (tmp[2]))
-	difference = datetime.timedelta(days=int (days))
+	difference = datetime.timedelta(days=int (opts.days))
 	endTime   = beginTime + difference
 
-	# max namber of samles
-	maxData = int (days) * 6 * 24
-	maxData = int ( (maxData * percent) / 100 )
+	# max number of samples
+	maxData = int (opts.days) * 6 * 24
+	maxData = int ( (maxData * int (opts.percent) ) / 100 )
 
 	# time in seconds
 	sBeginTime = time.mktime(beginTime.timetuple())
@@ -141,27 +82,27 @@ def main():
 		data.add(t)
 
 	# init begin value
-	if typeData == "float":
-		oldValue = random.uniform(minVal,maxVal)
+	if opts.type == "float":
+		oldValue = random.uniform(opts.minVal,opts.maxVal)
 	else:
-		oldValue = random.randint(minVal,maxVal)
+		oldValue = random.randint(opts.minVal,opts.maxVal)
 
 	# print data
 	for i in sorted(data):
-		print '"' + name +'"', i, 
-		if (typeData == "int"):
+		print '"' + opts.name +'"', i,
+		if opts.type == "int":
 			print oldValue
 		else:
 			print round(oldValue,2)
 
 		# make step
-		if ( random.randint(0,1) == 0):
-			tmp = oldValue + step
+		if  random.randint(0,1) == 0:
+			tmp = oldValue + opts.step
 		else:
-			tmp = oldValue - step
+			tmp = oldValue - opts.step
 		
-		if (minVal <= tmp and tmp <= maxVal):
+		if opts.minVal <= tmp and tmp <= opts.maxVal:
 			oldValue = tmp
 
 if __name__ == "__main__":
-    main()
+	main()
