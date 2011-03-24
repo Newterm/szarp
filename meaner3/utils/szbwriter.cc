@@ -69,7 +69,7 @@ class SzbaseWriter : public TSzarpConfig {
 public:
 	SzbaseWriter(const std::wstring &ipk_path, const std::wstring& title, const std::wstring &double_pattern,
 			const std::wstring& data_dir, const std::wstring &cache_dir, bool add_new_pars,
-			bool write_10sec);
+			bool write_10sec, int _fill_how_many);
 	~SzbaseWriter();
 	/* Process input. 
 	 * @return 1 on error, 0 on success*/
@@ -132,16 +132,20 @@ protected:
 	bool m_add_new_pars; 	/** flag denoting if we add new pars*/
 	bool m_new_par; 	/** if new parameter was added */
 	size_t m_last_type;	/** last type of probe to write + 1 */
+
+	int m_fill_how_many;
 };
 
 SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _title, 
 		const std::wstring& double_pattern,
 		const std::wstring& data_dir, const std::wstring& cache_dir, 
 		bool add_new_pars,
-		bool write_10sec):
+		bool write_10sec,
+		int _fill_how_many):
 	m_double_pattern(double_pattern),
 	m_add_new_pars(add_new_pars),
-	m_last_type(write_10sec ? LAST_PROBE_TYPE : SEC10)
+	m_last_type(write_10sec ? LAST_PROBE_TYPE : SEC10),
+	m_fill_how_many(_fill_how_many)
 {
 	m_dir.push_back(data_dir);
 	m_dir.push_back(cache_dir);
@@ -353,6 +357,9 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	is_dbl = is_double(name);
 	TParam *par = NULL, *par2 = NULL;
 	int prec;
+
+	sz_log(10,"name=%s m_cur_name=%s",SC::S2A(name).c_str(),SC::S2A(m_cur_name).c_str());
+	
 	if (name != m_cur_name) {
 		for (size_t i = 0; i < m_last_type; i++) {
 			if (save_data((PROBE_TYPE)i))
@@ -432,10 +439,14 @@ int SzbaseWriter::save_data(PROBE_TYPE pt)
 	if (m_dir[pt].empty())
 		return 0;
 
+	sz_log(10,"save_data: pt=%d, m_dir[pt]=%s",(int) pt, SC::S2A(m_dir[pt]).c_str());
+
 	if (!m_cur_cnt[pt])
 		return 0;
 
 	d = m_cur_sum[pt] / m_cur_cnt[pt];
+
+	sz_log(2,"save data: current sum = %lf current count =%d value=%G",m_cur_sum[pt],m_cur_cnt[pt],d);
 
 	if (m_save_param[pt][1]) {
 		int v = rint(pow10(m_cur_par->GetPrec()) * d);
@@ -541,6 +552,8 @@ int SzbaseWriter::process_line(char *line)
 	}
 
 	char *unit = check_unit(name);	
+
+	sz_log(10,"before add_data data: %s %s %d-%d-%d %d:%d:%d",name,data,year,month,day,hour,min,sec);
 
 	if (add_data(SC::A2S(name), unit != NULL ? SC::A2S(unit) : L"", year, month, day, hour, min, sec, SC::A2S(data))) {
 		tokenize(NULL, &toks, &tokc);
@@ -664,6 +677,7 @@ int main(int argc, char *argv[])
 	char *data_dir;
 	char *cache_dir;
 	char *double_pattern;
+	char *fill_how_many;
 	struct arguments arguments;
 
 	loglevel = loginit_cmdline(2, NULL, &argc, argv);
@@ -678,6 +692,7 @@ int main(int argc, char *argv[])
 	cache_dir = libpar_getpar("prober", "cachedir", 0);
 
 	double_pattern = libpar_getpar(SZARP_CFG_SECTION, "double_match", 0);
+	fill_how_many = libpar_getpar(SZARP_CFG_SECTION, "fill_how_many", 0);
 
 	c = libpar_getpar(SZARP_CFG_SECTION, "log_level", 0);
 	if (c == NULL)
@@ -708,7 +723,8 @@ int main(int argc, char *argv[])
 	SzbaseWriter *szbw = new SzbaseWriter(SC::A2S(ipk_path), arguments.title, 
 			double_pattern != NULL ? SC::A2S(double_pattern) : L"",
 			SC::A2S(data_dir), cache_dir ? SC::A2S(cache_dir) : std::wstring(),
-			arguments.add_new_params, not arguments.no_probes);
+			arguments.add_new_params, not arguments.no_probes,
+			atoi(fill_how_many));
 	assert (szbw != NULL);
 
 #ifndef FNM_EXTMATCH
