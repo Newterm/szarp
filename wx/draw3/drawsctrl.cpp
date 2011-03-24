@@ -663,7 +663,7 @@ void DrawsController::DoSet(DrawSet *set) {
 		for (size_t i = m_draws.size(); i < draws->size(); i++) {
 			Draw* draw = new Draw(this, &m_observers, i);
 			if (selected_draw)
-				draw->SetPeriod(start_time, GetNumberOfValues(m_period_type));
+				draw->SetStartTimeAndNumberOfValues(start_time, GetNumberOfValues(m_period_type));
 			m_draws.push_back(draw);
 		}
 	}
