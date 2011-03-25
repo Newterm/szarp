@@ -1,3 +1,7 @@
+2010-03-25	Krzysztof Golinski <krzygol@newterm.pl>
+	* meaner3/utils/szbwriter.cc: added option fill_how_many - save data in
+	database for 10min probes
+	* added more debug information (level 10)
 2010-03-25	Pawel Palucha <pawel@newterm.pl>
 	* AUTHORS, wx/common/szapp.cpp: updated authors list.
 2010-03-24	Darek Marcinkiewicz <reksio@newterm.pl>
@@ -6,6 +10,8 @@
 	as a result - new Draw object were sometimes shifted in time
 2010-03-23	Darek Marcinkiewicz <reksio@newterm.pl>
 	* parcook/boruta*: added missing finish_cycle methods for server dirvers
+2010-03-23	Krzysztof Golinski <krzygol@newterm.pl>
+	* script/szbwgen.py: Script szbwgen.py added. It generates data for szbwriter.
 2010-03-10	Krzysztof Galazka <kg@newterm.pl>
 	* www/pylons/sssweb: major refactoring for pylons 0.10
 	* wx/sync/ssconfd/ssconf.py: missing 'self'
