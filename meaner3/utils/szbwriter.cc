@@ -133,7 +133,7 @@ protected:
 	bool m_new_par; 	/** if new parameter was added */
 	size_t m_last_type;	/** last type of probe to write + 1 */
 
-	int m_fill_how_many;
+	int m_fill_how_many;	/** fill gaps in data when distance between two probes is <=  m_fill_how_many **/
 };
 
 SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _title, 
@@ -334,6 +334,8 @@ int SzbaseWriter::is_double(const std::wstring& name)
 int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, int year, int month, int day, 
 		int hour, int min, int sec, const std::wstring& data)
 {
+	sz_log(10,"add_data: name=%s, data=%s %d-%d-%d %d:%d:%d",SC::S2A(name).c_str(),SC::S2A(data).c_str(),year,month,day,hour,min,sec);
+
 	std::wstring filename;
 	struct tm tm;
 	time_t t;
@@ -358,7 +360,7 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	TParam *par = NULL, *par2 = NULL;
 	int prec;
 
-	sz_log(10,"name=%s m_cur_name=%s",SC::S2A(name).c_str(),SC::S2A(m_cur_name).c_str());
+	sz_log(10,"add_data: name=%s, m_cur_name=%s",SC::S2A(name).c_str(),SC::S2A(m_cur_name).c_str());
 	
 	if (name != m_cur_name) {
 		for (size_t i = 0; i < m_last_type; i++) {
@@ -409,25 +411,35 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 				m_save_param[i][1] = new TSaveParam(par2);
 			m_cur_sum[i] = 0;
 			m_cur_cnt[i] = 0;
+			sz_log(10,"add_data: (name != n_cur_name) i=%d, t = %ld",i,t);
 			m_cur_t[i] = t / m_probe_length[i] * m_probe_length[i];
+			sz_log(10,"add_data: (name != n_cur_name) i=%d, m_cur_t[i] = %d",i,m_cur_t[i]);
 		}
 		m_cur_name = name;
 	}
 
 	for (size_t i = 0; i < m_last_type; i++) {
+
+		sz_log(10,"add_data: i=%d, t=%ld, m_cur_t[i]=%d, t-m_cur=%ld, m_len=%d",i,t,m_cur_t[i],t-m_cur_t[i],m_probe_length[i]);
+
 		if (m_dir.at(i).empty())
 			continue;
 		if (t >= m_cur_t[i] && t - m_cur_t[i] < m_probe_length[i]) 
 			continue;
 		if (save_data((PROBE_TYPE)i))
 			return 1;
+		sz_log(10,"add_data: i=%d,  t = %ld",i,t);
 		m_cur_t[i] = t / m_probe_length[i] * m_probe_length[i];
+		sz_log(10,"add_data: i=%d,  m_cur_t[i] = %d",i,m_cur_t[i]);
 	}
 
 	for (size_t i = 0; i < m_last_type; i++) {
 		m_cur_sum[i] += wcstof(data.c_str(), NULL);
 		m_cur_cnt[i]++;
 	}
+
+	sz_log(10,"add_data end: t[0]=%d, t[1]=%d, sum[0]=%lf, sum[1]=%lf, cnt[0]=%d, cnt[1]=%d, len[0]=%d, len[1]=%d",
+		m_cur_t[0],m_cur_t[1],m_cur_sum[0],m_cur_sum[1],m_cur_cnt[0],m_cur_cnt[1],m_probe_length[0],m_probe_length[1]);
 	
 	return 0;
 }
@@ -446,7 +458,7 @@ int SzbaseWriter::save_data(PROBE_TYPE pt)
 
 	d = m_cur_sum[pt] / m_cur_cnt[pt];
 
-	sz_log(2,"save data: current sum = %lf current count =%d value=%G",m_cur_sum[pt],m_cur_cnt[pt],d);
+	sz_log(10,"save_data: current sum = %lf, current count =%d, value=%G",m_cur_sum[pt],m_cur_cnt[pt],d);
 
 	if (m_save_param[pt][1]) {
 		int v = rint(pow10(m_cur_par->GetPrec()) * d);
@@ -552,8 +564,6 @@ int SzbaseWriter::process_line(char *line)
 	}
 
 	char *unit = check_unit(name);	
-
-	sz_log(10,"before add_data data: %s %s %d-%d-%d %d:%d:%d",name,data,year,month,day,hour,min,sec);
 
 	if (add_data(SC::A2S(name), unit != NULL ? SC::A2S(unit) : L"", year, month, day, hour, min, sec, SC::A2S(data))) {
 		tokenize(NULL, &toks, &tokc);
