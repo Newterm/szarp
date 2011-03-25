@@ -105,6 +105,10 @@ protected:
 	 * @return 0 on success, 1 on error */
 	int save_data(PROBE_TYPE pt);
 
+	/** Fill gaps in data.
+	 * @return 0 on success, 1 on error */
+	int fill_gaps(PROBE_TYPE pt, int gap, int time, double sum, int count);
+
 	int close_data();
 	
 	/** Checks if param should be saved in two words.
@@ -334,7 +338,7 @@ int SzbaseWriter::is_double(const std::wstring& name)
 int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, int year, int month, int day, 
 		int hour, int min, int sec, const std::wstring& data)
 {
-	sz_log(10,"add_data: name=%s, data=%s %d-%d-%d %d:%d:%d",SC::S2A(name).c_str(),SC::S2A(data).c_str(),year,month,day,hour,min,sec);
+	sz_log(10,"add_data begin: name=%s, data=%s %d-%d-%d %d:%d:%d",SC::S2A(name).c_str(),SC::S2A(data).c_str(),year,month,day,hour,min,sec);
 
 	std::wstring filename;
 	struct tm tm;
@@ -426,11 +430,28 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 			continue;
 		if (t >= m_cur_t[i] && t - m_cur_t[i] < m_probe_length[i]) 
 			continue;
+
+		// save data for gaps
+		int _time = m_cur_t[i];
+		double _sum = m_cur_sum[i];
+		int _count = m_cur_cnt[i];
+
 		if (save_data((PROBE_TYPE)i))
 			return 1;
+
 		sz_log(10,"add_data: i=%d,  t = %ld",i,t);
 		m_cur_t[i] = t / m_probe_length[i] * m_probe_length[i];
 		sz_log(10,"add_data: i=%d,  m_cur_t[i] = %d",i,m_cur_t[i]);
+
+		int gap = m_cur_t[i] - _time;
+		sz_log(10,"add_data: i=%d, check time gap: %d",i,gap);
+		assert(gap >= 0 && gap >= m_probe_length[i]);
+
+		if (m_fill_how_many > 0 && m_probe_length[i] < gap && gap <= (m_fill_how_many + 1) * m_probe_length[i])
+		{
+			if(fill_gaps((PROBE_TYPE)i,gap,_time,_sum,_count))
+				return 1;
+		}
 	}
 
 	for (size_t i = 0; i < m_last_type; i++) {
@@ -451,14 +472,15 @@ int SzbaseWriter::save_data(PROBE_TYPE pt)
 	if (m_dir[pt].empty())
 		return 0;
 
-	sz_log(10,"save_data: pt=%d, m_dir[pt]=%s",(int) pt, SC::S2A(m_dir[pt]).c_str());
+	sz_log(10,"save_data begin: pt=%d, m_dir[pt]=%s",(int) pt, SC::S2A(m_dir[pt]).c_str());
+	sz_log(10,"save_data %s",!m_cur_cnt[pt] ? "end - NO DATA" : "data exists");
 
 	if (!m_cur_cnt[pt])
 		return 0;
 
 	d = m_cur_sum[pt] / m_cur_cnt[pt];
 
-	sz_log(10,"save_data: current sum = %lf, current count =%d, value=%G",m_cur_sum[pt],m_cur_cnt[pt],d);
+	sz_log(10,"save_data: current sum = %lf, current count =%d, current time=%d, value=%G",m_cur_sum[pt],m_cur_cnt[pt],m_cur_t[pt],d);
 
 	if (m_save_param[pt][1]) {
 		int v = rint(pow10(m_cur_par->GetPrec()) * d);
@@ -497,9 +519,49 @@ int SzbaseWriter::save_data(PROBE_TYPE pt)
 	}
 	m_cur_cnt[pt] = 0;
 	m_cur_sum[pt] = 0;
+
+	sz_log(10,"save_data end - cnt[pt] = 0, sum[pt]= 0");
+
 	return 0;
 }
 
+int SzbaseWriter::fill_gaps(PROBE_TYPE pt, int gap, int time, double sum, int count) 
+{
+	if (m_fill_how_many <= 0)
+		return 0;
+
+	//TODO:pt1 = 1 not supported yet
+	if (pt != 0)
+		return 0;
+
+	sz_log(10,"fill_gaps begin, gap=%d",gap);
+
+	// save current data
+	int save_time = m_cur_t[pt];
+	int save_cnt = m_cur_cnt[pt];
+	double save_sum = m_cur_sum[pt];
+
+	// fill gaps
+	for (int t = time + m_probe_length[pt]; t < time + gap; t += m_probe_length[pt])
+	{
+		sz_log(10,"fill gap for t=%d",t);
+
+		m_cur_t[pt] = t;
+		m_cur_cnt[pt] = count;
+		m_cur_sum[pt] = sum;
+		
+		if (save_data(pt))
+			return 1;
+	}
+
+	// restore data
+	m_cur_t[pt] = save_time;
+	m_cur_cnt[pt] = save_cnt;
+	m_cur_sum[pt] = save_sum;
+
+	sz_log(10,"fill_gaps end");
+	return 0;
+}
 
 int SzbaseWriter::close_data()
 {
