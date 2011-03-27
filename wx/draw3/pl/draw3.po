@@ -1347,9 +1347,13 @@ msgstr "Anuluj"
 msgid "XYZ Graph"
 msgstr "Wykres XYZ"
 
-#: xydiag.cpp:176
+#: xydiag.cpp:180
 msgid "You have to specify both draws"
 msgstr "Musisz podaæ oba wykresy"
+
+#: xydiag.cpp:182
+msgid "You have to specify all draws"
+msgstr "Musisz podaæ wszystkie wykresy"
 
 #: xydiag.cpp:204
 msgid "There is no common data in selected draws from given time span"

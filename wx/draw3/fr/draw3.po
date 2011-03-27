@@ -1373,9 +1373,13 @@ msgstr "Annuler"
 msgid "XYZ Graph"
 msgstr "Graphique X/Y"
 
-#: xydiag.cpp:176
+#: xydiag.cpp:~176
 msgid "You have to specify both draws"
 msgstr "Vous devz définir les deux courbes"
+
+#: xydiag.cpp:~176
+msgid "You have to specify all draws"
+msgstr "Vous devz définir tous les courbes"
 
 #: xydiag.cpp:204
 msgid "There is no common data in selected draws from given time span"

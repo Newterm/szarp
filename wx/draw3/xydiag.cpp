@@ -172,12 +172,18 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 }
 
 void XYDialog::OnOK(wxCommandEvent &event) {
-	if (m_di[0] == NULL || m_di[1] == NULL) {
-		wxMessageBox(_("You have to specify both draws"), _("Draw missing"), wxICON_INFORMATION | wxOK, this);
+	bool ok = true;
+	for( DrawInfoList::iterator i = m_di.begin() ; i != m_di.end() && (ok&=(bool)*i) ; ++i );
+
+	if( !ok ) {
+		if( m_frame->GetDimCount() == 2 )
+			wxMessageBox(_("You have to specify both draws"), _("Draw missing"), wxICON_INFORMATION | wxOK, this);
+		else
+			wxMessageBox(_("You have to specify all draws") , _("Draw missing"), wxICON_INFORMATION | wxOK, this);
 		return;
 	}
 
-	if (m_start_time > m_end_time) {
+	if( m_start_time > m_end_time ) {
 		wxMessageBox(_("Start date must be less than or equal to end date"), _("Invalid date"), wxICON_INFORMATION | wxOK, this);
 		return;
 	}
@@ -318,7 +324,7 @@ XYDialog::~XYDialog() {
 	m_draw_search->Destroy();
 }
 
-DataMangler::DataMangler(DatabaseManager* db, std::vector<DrawInfo*> di, wxDateTime start_time, wxDateTime end_time, PeriodType period, XYDialog *dialog, bool average) :
+DataMangler::DataMangler(DatabaseManager* db, const DrawInfoList& di, wxDateTime start_time, wxDateTime end_time, PeriodType period, XYDialog *dialog, bool average) :
 		DBInquirer(db),
 		m_di(di),
 		m_period(period),

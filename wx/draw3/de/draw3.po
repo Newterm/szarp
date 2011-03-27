@@ -1536,9 +1536,13 @@ msgid "XYZ Graph"
 msgstr "Edit Schaubild"
 
 # "Musisz podaæ oba wykresy"
-#: xydiag.cpp:176
+#: xydiag.cpp:~176
 msgid "You have to specify both draws"
 msgstr "Sie mussen zwei Schaubilder geben"
+
+#: xydiag.cpp:~176
+msgid "You have to specify all draws"
+msgstr "Sie mussen alle Schaubilder geben"
 
 # "Brak wspólnych danych dla wybranych wykresów w zadanym okresie czasu"
 #: xydiag.cpp:204
