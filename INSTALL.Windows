@@ -407,7 +407,13 @@ bjam --layout=system --without-mpi --without-graph --without-graph_parallel --wi
 
 and that's it. Headers are located in boost directory, compiled libraries 
 in stages/lib. Copy headers to /usr/local/boost/include and librarires to 
-/usr/local/boost/lib
+/usr/local/boost/lib :
+
+mkdir -p /usr/local/boost/include
+cp -a boost/* /usr/local/boost/include/
+mkdir -p /usr/local/boost/lib
+cp -a stage/lib/* /usr/local/boost/lib/
+
 
 3.15. sqlite library.
 
