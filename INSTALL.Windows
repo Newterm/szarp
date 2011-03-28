@@ -421,16 +421,16 @@ make install
 
 3.16 freetype library.
 
-http://www.very-clever.com/download/nongnu/freetype/freetype-2.3.12.tar.bz2
-tar xjf freetype-2.3.12.tar.bz2
-cd freetype-2.3.12
+wget http://downloads.sourceforge.net/project/freetype/freetype2/2.4.4/freetype-2.4.4.tar.gz
+tar -zxvf freetype-2.4.4.tar.gz
+cd freetype-2.4.4
 ./configure --host=i586-mingw32msvc --target=i586-mingw32msvc --prefix=/usr/local/i586-mingw32msvc
 make
 make install
 
 3.17 ftgl libraray.
 
-fetch latest source from sourceforge
+wget http://downloads.sourceforge.net/project/ftgl/FTGL%20Source/2.1.3%7Erc5/ftgl-2.1.3-rc5.tar.gz
 tar xzf ftgl-2.1.3-rc5.tar.gz
 cd ftgl-2.1.3~rc5
 save following patch into file:
