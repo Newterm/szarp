@@ -282,22 +282,16 @@ Testing:
 wine /usr/local/i586-mingw32msvc/bin/openssl.exe --help
 
 
-3.9. curl library.
+3.9 c-ares library.
 
-wget http://curl.haxx.se/download/curl-7.19.5.tar.gz
-tar xzvf curl-7.19.5.tar.gz
-cd curl-7.19.5
-./configure --host=i586-mingw32msvc \
-	--prefix=/usr/local/i586-mingw32msvc \
-	--target=i586-mingw32msvc \
-	--with-zlib=/usr/local/i586-mingw32msvc \
-	--with-ssl=/usr/local/i586-mingw32msvc \
-	--enable-ares \
-	--without-random
+wget http://c-ares.haxx.se/c-ares-1.6.0.tar.gz
+tar xzvf c-ares-1.6.0.tar.gz
+cd c-ares-1.6.0
+./configure --host=i586-mingw32msvc --target=i586-mingw32msvc --enable-shared \
+ --prefix=/usr/local/i586-mingw32msvc/ --without-random
 make
 make install
-cp bin/curl
-
+cp .libs/libcares-2.dll /usr/local/i586-mingw32msvc/lib/
 
 3.10 librsync library.
 
@@ -347,7 +341,7 @@ wget http://luajit.org/download/LuaJIT-1.1.5.tar.gz
 tar xzvf LuaJIT-1.1.5.tar.gz
 cd LuaJIT-1.1.5
 
-Now edit src/Makefile and set values:
+Now edit src/Makefile and set values or use patch:
 
 CC= i586-mingw32msvc-gcc
 RANLIB= i586-mingw32msvc-strip
@@ -362,24 +356,28 @@ cp src/lua51.dll /usr/local/i586-mingw32msvc/lib/lua51.dll
 mkdir -p /usr/local/i586-mingw32msvc/lib/pkgconfig/
 cp etc/*.pc /usr/local/i586-mingw32msvc/lib/pkgconfig/
 
+3.12. curl library.
+(you should install c-ares first see 3.9)
 
-3.12. c-ares library.
-
-wget http://c-ares.haxx.se/c-ares-1.6.0.tar.gz
-tar xzvf c-ares-1.6.0.tar.gz
-cd c-ares-1.6.0
-./configure --host=i586-mingw32msvc --target=i586-mingw32msvc --enable-shared \
- --prefix=/usr/local/i586-mingw32msvc/ --without-random
+wget http://curl.haxx.se/download/curl-7.19.5.tar.gz
+tar xzvf curl-7.19.5.tar.gz
+cd curl-7.19.5
+./configure --host=i586-mingw32msvc \
+	--prefix=/usr/local/i586-mingw32msvc \
+	--target=i586-mingw32msvc \
+	--with-zlib=/usr/local/i586-mingw32msvc \
+	--with-ssl=/usr/local/i586-mingw32msvc \
+	--enable-ares \
+	--without-random
 make
 make install
-cp .libs/libcares-2.dll /usr/local/i586-mingw32msvc/lib/
-
+cp bin/curl
 
 3.13. xmlrpc-epi library.
 
-wget http://sourceforge.net/projects/xmlrpc-epi/files/xmlrpc-epi-base/xmlrpc-epi-0.54.tar.gz
-tar xzvf xmlrpc-epi-0.54.tar.gz
-cd xmlrpc-epi-0.54
+wget http://downloads.sourceforge.net/project/xmlrpc-epi/xmlrpc-epi-base/0.54.1/xmlrpc-epi-0.54.1.tar.gz
+tar xzvf xmlrpc-epi-0.54.1.tar.gz
+cd xmlrpc
 ./autogen.sh
 ./configure --host=i586-mingw32msvc --target=i586-mingw32msvc \
 	--prefix=/usr/local/i586-mingw32msvc \
