@@ -1762,7 +1762,9 @@ wxString XYFormatTime(const wxDateTime& time, PeriodType period) {
 #endif
 				+ ret;
 		case PERIOD_T_YEAR :
-			ret = time.Format(_T("%Y-%m")) + ret;
+			ret = wxString(_T("-")) + time.Format(_T("%m")) + ret;
+		case PERIOD_T_DECADE:
+			ret = time.Format(_T("%Y")) + ret;
 			break;
 		default:
 			break;

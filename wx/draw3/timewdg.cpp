@@ -51,6 +51,7 @@ TimeWidget::TimeWidget(wxWindow* parent, DrawsWidget *draws_widget, PeriodType p
 	SetHelpText(_T("draw3-base-range"));
 
         wxString time_wdg_choices[] = {
+		_("DECADE"),
                 _("YEAR"),
                 _("MONTH"),
                 _("WEEK"),
@@ -68,24 +69,26 @@ TimeWidget::TimeWidget(wxWindow* parent, DrawsWidget *draws_widget, PeriodType p
 			wxSUNKEN_BORDER | 
 			wxWANTS_CHARS);
 	switch (pt) {
+		case PERIOD_T_DECADE:
+		        m_selected = 0;
 		case PERIOD_T_MONTH:
-			m_selected = 1;
-			break;
-		case PERIOD_T_WEEK:
 			m_selected = 2;
 			break;
-		case PERIOD_T_DAY:
+		case PERIOD_T_WEEK:
 			m_selected = 3;
 			break;
-		case PERIOD_T_30MINUTE:
+		case PERIOD_T_DAY:
 			m_selected = 4;
 			break;
-		case PERIOD_T_SEASON: 
+		case PERIOD_T_30MINUTE:
 			m_selected = 5;
+			break;
+		case PERIOD_T_SEASON: 
+			m_selected = 6;
 			break;				     
 		default:
 		case PERIOD_T_YEAR:
-		        m_selected = 0;
+		        m_selected = 1;
 	}
         SetSelection(m_selected);
 	SetToolTip(_("Select period to display"));

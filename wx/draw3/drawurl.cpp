@@ -141,7 +141,9 @@ bool decode_url(wxString surl, wxString& prefix, wxString &window, PeriodType& p
 	window = tok.GetNextToken();
 
 	wxString pstr = tok.GetNextToken();
-	if (pstr == _T("Y")) 
+	if (pstr == _T("E")) 
+		period = PERIOD_T_DECADE;
+	else if (pstr == _T("Y")) 
 		period = PERIOD_T_YEAR;
 	else if (pstr == _T("M"))
 		period = PERIOD_T_MONTH;

@@ -65,6 +65,7 @@ DrawsController::DrawsController(ConfigManager *config_manager, DatabaseManager 
 {
 	m_config_manager->RegisterConfigObserver(this);
 
+	m_units_count[PERIOD_T_DECADE] = TimeIndex::default_units_count[PERIOD_T_DECADE];
 	m_units_count[PERIOD_T_YEAR] = TimeIndex::default_units_count[PERIOD_T_YEAR];
 	m_units_count[PERIOD_T_MONTH] = TimeIndex::default_units_count[PERIOD_T_MONTH];
 	m_units_count[PERIOD_T_WEEK] = TimeIndex::default_units_count[PERIOD_T_WEEK];
@@ -233,6 +234,7 @@ void DrawsController::EnterWaitState(STATE state) {
 }
 
 void DrawsController::EnterSearchState(STATE state, DTime search_from, const DTime& suggested_start_time) {
+	wxLogVerbose(_("DrawsController::EnterSearchState"));
 	m_got_left_search_response = false;
 	m_got_right_search_response = false;
 	m_suggested_start_time = suggested_start_time;
@@ -985,6 +987,7 @@ void DrawsController::TimeReference::Update(const DTime& time) {
 		case PERIOD_T_SEASON:
 			m_day = wxt.GetDay();
 		case PERIOD_T_YEAR:
+		case PERIOD_T_DECADE:
 			break;
 		default:
 			assert(false);

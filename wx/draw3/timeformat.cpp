@@ -90,6 +90,9 @@ wxString FormatTime(const wxDateTime &time, PeriodType period) {
 			case PERIOD_T_YEAR :
 				ret = _T(" ") + time.Format(_T("%Y, %B")) + ret;
 				break;
+			case PERIOD_T_DECADE :
+				ret = _T(" ") + time.Format(_T("%Y")) + ret;
+				break;
 			default:
 				break;
 		}

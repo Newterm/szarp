@@ -222,7 +222,7 @@ void FrameManager::ShowStatDialog(wxString prefix) {
 }
 
 void FrameManager::LoadConfig(DrawFrame *frame) {
-	ConfigDialog *config_dialog = new ConfigDialog(frame, config_manager->GetConfigTitles(),DefinedDrawsSets::DEF_PREFIX);
+	ConfigDialog *config_dialog = new ConfigDialog(frame, config_manager->GetConfigTitles(), DefinedDrawsSets::DEF_PREFIX);
 
 	int ret = config_dialog->ShowModal();
 	if (ret != wxID_OK) {
