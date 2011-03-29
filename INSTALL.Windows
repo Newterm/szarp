@@ -33,6 +33,7 @@ This file describes how to prepare SZARP installation package for Windows.
 3.15. sqlite library.
 3.16. freetype libraray.
 3.17. ftgl libraray.
+3.18 libevent library.
 4. Compiling SZARP.
 5. Installation package.
 
@@ -499,6 +500,15 @@ patch sources: patch -p0 < file
 ./configure --host=i586-mingw32msvc --target=i586-mingw32msvc --with-ft-prefix=/usr/local/i586-mingw32msvc --without-x --prefix=/usr/local/i586-mingw32msvc
 make ECHO=echo
 make ECHO=echo install
+
+3.18 libevent library.
+
+wget http://downloads.sourceforge.net/project/levent/libevent/libevent-2.0/libevent-2.0.10-stable.tar.gz
+tar -zxvf libevent-2.0.10-stable.tar.gz 
+cd libevent-2.0.10-stable
+./configure --host=i586-mingw32msvc --target=i586-mingw32msvc         --prefix=/usr/local/i586-mingw32msvc
+make
+cp .libs/libevent* /usr/local/i586-mingw32msvc/lib/
 
 4. Compiling SZARP.
 
