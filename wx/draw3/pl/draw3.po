@@ -1160,6 +1160,10 @@ msgstr "Uruchamiam draw3..."
 msgid "Statistics window"
 msgstr "Warto¶ci ¶rednie"
 
+#:
+msgid "DECADE"
+msgstr "DEKADA"
+
 #: statdiag.cpp:67 timewdg.cpp:54 xydiag.cpp:60 ids.h:190
 msgid "YEAR"
 msgstr "ROK"
@@ -1690,6 +1694,10 @@ msgstr "&Widok"
 #: XRC_gettext_file.h:62
 msgid "Average type"
 msgstr "Rodzaj ¶rednich"
+
+#:
+msgid "Decade\tAlt+A"
+msgstr "Dekada\tAlt+A"
 
 #: XRC_gettext_file.h:63
 msgid "Year\tAlt+Y"

@@ -57,7 +57,7 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 
 	SetIcon(szFrame::default_icon);
 
-	wxString period_choices[PERIOD_T_SEASON] = { _("YEAR"), _("MONTH"), _("WEEK"), _("DAY"), _("30 MINUTES") };
+	wxString period_choices[PERIOD_T_SEASON] = { _("DECADE"), _("YEAR"), _("MONTH"), _("WEEK"), _("DAY"), _("30 MINUTES") };
 
 	m_start_time.AdjustToPeriod();
 	m_end_time.AdjustToPeriod();
@@ -156,7 +156,7 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 
 	sizer->Add(button_sizer, 1, wxALIGN_CENTER | wxALL, 10);
 
-	m_period_choice->SetSelection(0);
+	m_period_choice->SetSelection(m_period);
 	m_period_choice->SetFocus();
 
 	//DrawInfoDropTarget* dt = new DrawInfoDropTarget(this);
