@@ -411,9 +411,9 @@ in stages/lib. Copy headers to /usr/local/boost/include and librarires to
 /usr/local/boost/lib :
 
 mkdir -p /usr/local/boost/include
-cp -a boost/* /usr/local/boost/include/
-mkdir -p /usr/local/boost/lib
-cp -a stage/lib/* /usr/local/boost/lib/
+cp -a boost/ /usr/local/boost/include/
+mkdir -p /usr/local/boost/
+cp -a stage/lib/ /usr/local/boost/
 
 
 3.15. sqlite library.
