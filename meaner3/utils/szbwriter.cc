@@ -685,6 +685,11 @@ These options are read from section 'szbwriter' and are optional:\n\
 double_match=@(*-energy|*-volume)\n\
 \n\
 	See 'info fnmatch' for shell patterns' syntax.\n\
+	fill_how_many	max number of 10min probes which should be fill\n\
+			if gap between last two probes is lower then\n\
+			value of fill_how_many, for example:\n\
+:szbwriter\n\
+fill_how_many=2\n\
 \n\
 Program read data from standard input, each input line is in format:\n\
 \"<parameter name> [<unit>]\" <year> <month> <day of month> <hour> <minute> <value>\n\
