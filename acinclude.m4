@@ -474,6 +474,8 @@ IMPLEMENT_APP(A)
 
 	if test "$host_os" = "mingw32" -o "$host_os" = "mingw32msvc"; then
 		WXGL_LIBS="-lglu32 -lopengl32 $WXGL_LIBS"
+		_tmp_wxgl=`echo $WXGL_LIBS | sed -e "s/-lGLU//g" | sed -e "s/-lGL//g"`
+		WXGL_LIBS=$_tmp_wxgl
 	fi
 
 	AC_SUBST(WXGL_CFLAGS)
