@@ -557,8 +557,8 @@ int SzbaseWriter::fill_gaps(PROBE_TYPE pt, int begin, int end, double sum, int c
 	m_cur_cnt[pt] = save_cnt;
 	m_cur_sum[pt] = save_sum;
 
-	// call fill_gaps for seconds
-	if (pt == MIN10)
+	// call fill_gaps for 10sec
+	if (pt == MIN10 && m_last_type > SEC10)
 		if (fill_gaps(SEC10,begin,end,sum,count))
 			return 1;
 
