@@ -1,3 +1,5 @@
+2011-03-29	Krzysztof Ga³±zka <kg@newterm.pl>
+	* libSzarp2/*, wx/draw3/*: 'DECACE' - new average type in draw3 
 2010-03-25	Krzysztof Golinski <krzygol@newterm.pl>
 	* meaner3/utils/szbwriter.cc: added option fill_how_many - save data in
 	database for 10min probes
