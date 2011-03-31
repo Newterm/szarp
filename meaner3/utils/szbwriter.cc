@@ -105,9 +105,9 @@ protected:
 	 * @return 0 on success, 1 on error */
 	int save_data(PROBE_TYPE pt);
 
-	/** Fill gaps in data.
+	/** Fill gaps in data. Range: [begin, end)
 	 * @return 0 on success, 1 on error */
-	int fill_gaps(PROBE_TYPE pt, int gap, int time, double sum, int count);
+	int fill_gaps(PROBE_TYPE pt, int begin, int end, double sum, int count);
 
 	int close_data();
 	
@@ -447,9 +447,9 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 		sz_log(10,"add_data: i=%d, check time gap: %d",i,gap);
 		assert(gap >= 0 && gap >= m_probe_length[i]);
 
-		if (m_fill_how_many > 0 && m_probe_length[i] < gap && gap <= (m_fill_how_many + 1) * m_probe_length[i])
+		if ((PROBE_TYPE) i == MIN10 && m_fill_how_many > 0 && m_probe_length[i] < gap && gap <= (m_fill_how_many + 1) * m_probe_length[i])
 		{
-			if(fill_gaps((PROBE_TYPE)i,gap,_time,_sum,_count))
+			if(fill_gaps((PROBE_TYPE)i, _time + m_probe_length[i] , _time + gap ,_sum,_count))
 				return 1;
 		}
 	}
@@ -525,16 +525,14 @@ int SzbaseWriter::save_data(PROBE_TYPE pt)
 	return 0;
 }
 
-int SzbaseWriter::fill_gaps(PROBE_TYPE pt, int gap, int time, double sum, int count) 
+int SzbaseWriter::fill_gaps(PROBE_TYPE pt, int begin, int end, double sum, int count) 
 {
 	if (m_fill_how_many <= 0)
 		return 0;
 
-	//TODO:pt1 = 1 not supported yet
-	if (pt != 0)
-		return 0;
+	assert(pt == MIN10 || pt == SEC10);
 
-	sz_log(10,"fill_gaps begin, gap=%d",gap);
+	sz_log(10,"fill_gaps begin, pt=%d",(int)pt);
 
 	// save current data
 	int save_time = m_cur_t[pt];
@@ -542,7 +540,7 @@ int SzbaseWriter::fill_gaps(PROBE_TYPE pt, int gap, int time, double sum, int co
 	double save_sum = m_cur_sum[pt];
 
 	// fill gaps
-	for (int t = time + m_probe_length[pt]; t < time + gap; t += m_probe_length[pt])
+	for (int t = begin; t < end; t += m_probe_length[pt])
 	{
 		sz_log(10,"fill gap for t=%d",t);
 
@@ -559,7 +557,12 @@ int SzbaseWriter::fill_gaps(PROBE_TYPE pt, int gap, int time, double sum, int co
 	m_cur_cnt[pt] = save_cnt;
 	m_cur_sum[pt] = save_sum;
 
-	sz_log(10,"fill_gaps end");
+	// call fill_gaps for 10sec
+	if (pt == MIN10 && m_last_type > SEC10)
+		if (fill_gaps(SEC10,begin,end,sum,count))
+			return 1;
+
+	sz_log(10,"fill_gaps end, pt=%d", (int)pt);
 	return 0;
 }
 
@@ -682,6 +685,11 @@ These options are read from section 'szbwriter' and are optional:\n\
 double_match=@(*-energy|*-volume)\n\
 \n\
 	See 'info fnmatch' for shell patterns' syntax.\n\
+	fill_how_many	max number of 10min probes which should be fill\n\
+			if gap between last two probes is lower then\n\
+			value of fill_how_many, for example:\n\
+:szbwriter\n\
+fill_how_many=2\n\
 \n\
 Program read data from standard input, each input line is in format:\n\
 \"<parameter name> [<unit>]\" <year> <month> <day of month> <hour> <minute> <value>\n\

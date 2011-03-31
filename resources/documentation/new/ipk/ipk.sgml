@@ -7026,16 +7026,18 @@ double_match=@(*-energia|*-objetosc)
 Wiêcej informacji o wzorcach pow³oki mo¿na uzyskaæ wydaj±c komendê 
 <command>info fnmatch</command>.
 </para>
-<!--
+
 <para>
 W tej samej sekcji pliku <filename>szarp.cfg</filename> mo¿e siê znajdowaæ
 parametr <emphasis>fill_how_many</emphasis>. Jego warto¶ci± jest liczba,
 okre¶laj±ca ile ewentualnych pustych próbek nale¿y przy zapisie zast±piæ
 aktualnie zapisywan± warto¶ci±. Przydatny jest do likwidowania 'dziur w
 wykresach', wystêpuj±cych w sytuacji gdy przerwy miêdzy danymi wej¶ciowymi
-wynosz± wiêcej ni¿ 10 minut. Domy¶lna warto¶æ parametru to 0.
+wynosz± wiêcej ni¿ 10 minut. Domy¶lna warto¶æ parametru to 0. Oprócz
+wype³niania 10 minutowych luk, uzupe³niane s± równie¿ odpowiadaj±ce im
+10 sekundowe próbki. Mo¿na wy³±czyæ zapisywanie 10 sekundowych próbek, 
+uruchamiaj±c program z parametrem <option>-p</option>.
 </para>
--->
 
 <para>W linii komend mo¿na podaæ jeden, opcjonalny, parametr - nazwê
 konfiguracji. Wykorzystywany jest on tylko, je¿eli konfiguracja opisana
