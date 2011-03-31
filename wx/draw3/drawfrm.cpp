@@ -107,6 +107,11 @@ NumberOfUnitsDialog::NumberOfUnitsDialog(wxWindow *parent, PeriodType pt, size_t
 	wxString text;
 	int min, max;
 	switch (pt) {
+		case PERIOD_T_DECADE:
+			text = _("Select number of displayed years");
+			min = 1;
+			max = 36;
+			break;
 		case PERIOD_T_YEAR:
 			text = _("Select number of displayed months");
 			min = 1;
@@ -657,7 +662,9 @@ void DrawFrame::OnAverageChange(wxCommandEvent& event) {
 
 	PeriodType pt;
 	int id = event.GetId();
-	if (id == XRCID("YEAR_RADIO"))
+	if (id == XRCID("DECADE_RADIO"))
+		pt = PERIOD_T_DECADE;
+	else if (id == XRCID("YEAR_RADIO"))
 		pt = PERIOD_T_YEAR;
 	else if (id == XRCID("MONTH_RADIO"))
 		pt = PERIOD_T_MONTH;
@@ -1206,6 +1213,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("FullScreen"), DrawFrame::OnFullScreen)
     EVT_MENU(XRCID("SplitCursor"), DrawFrame::OnSplitCursor)
     EVT_MENU(XRCID("LATEST_DATA_FOLLOW"), DrawFrame::OnLatestDataFollow)
+    EVT_MENU(XRCID("DECADE_RADIO"), DrawFrame::OnAverageChange)
     EVT_MENU(XRCID("YEAR_RADIO"), DrawFrame::OnAverageChange)
     EVT_MENU(XRCID("MONTH_RADIO"), DrawFrame::OnAverageChange)
     EVT_MENU(XRCID("WEEK_RADIO"), DrawFrame::OnAverageChange)

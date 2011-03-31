@@ -179,7 +179,7 @@ enum ActionKeyboardType {
 #define RIGHT_PANEL_LENGTH	300
 
 /** Enumeration type for period shown on time axis. */
-typedef enum { PERIOD_T_YEAR = 0, PERIOD_T_MONTH, PERIOD_T_WEEK,
+typedef enum { PERIOD_T_DECADE = 0, PERIOD_T_YEAR, PERIOD_T_MONTH, PERIOD_T_WEEK,
 	PERIOD_T_DAY, PERIOD_T_30MINUTE, PERIOD_T_SEASON, PERIOD_T_OTHER, PERIOD_T_LAST } PeriodType;
 
 /**period names*/

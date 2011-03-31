@@ -1,6 +1,8 @@
 2010-03-30	Krzysztof Golinski <krzygol@newterm.pl>
 	* meaner3/utils/szbwriter.cc: option fill_how_many - added support for
 	10 sec probes
+2011-03-29	Krzysztof Ga³±zka <kg@newterm.pl>
+	* libSzarp2/*, wx/draw3/*: 'DECACE' - new average type in draw3 
 2010-03-25	Krzysztof Golinski <krzygol@newterm.pl>
 	* meaner3/utils/szbwriter.cc: added option fill_how_many - save data in
 	database for 10min probes

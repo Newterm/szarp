@@ -34,6 +34,9 @@ QueryExecutor::QueryExecutor(DatabaseQueryQueue *_queue, wxEvtHandler *_response
 SZARP_PROBE_TYPE PeriodToProbeType(PeriodType period) {
 	SZARP_PROBE_TYPE pt;
 	switch (period) {
+		case PERIOD_T_DECADE:
+			pt = PT_YEAR;
+			break;
 		case PERIOD_T_YEAR:
 			pt = PT_MONTH;
 			break;

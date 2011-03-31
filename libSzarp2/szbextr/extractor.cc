@@ -150,6 +150,9 @@ const char* SzbExtractor::SetFormat(SZARP_PROBE_TYPE period_type)
 		case PT_MONTH :
 	    		return "%Y %B";
 	    		break;
+		case PT_YEAR :
+	    		return "%Y";
+	    		break;
 		default:
 	    		assert (0);
     	}
