@@ -33,7 +33,7 @@
 
 #include "windows.h"
 #include "iphlpapi.h"
-#include "winsock.h"
+#include "winsock2.h"
 
 #else
 #include "assert.h"

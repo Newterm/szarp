@@ -27,10 +27,6 @@
 #include "version.h"
 #include <wx/platform.h>
 
-#include <openssl/ssl.h>
-#include <openssl/md5.h>
-#include <math.h>
-
 #ifndef MINGW32
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -40,6 +36,13 @@
 #include <shlwapi.h>
 #endif
 #include <utime.h>
+
+#include <ares.h>
+#include <ares_dns.h>
+
+#include <openssl/ssl.h>
+#include <openssl/md5.h>
+#include <math.h>
 
 #include <librsync.h>
 

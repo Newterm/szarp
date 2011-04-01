@@ -18,11 +18,11 @@
 */
 #ifndef _SSEXCEPTION_H_
 #define _SSEXCEPTION_H_
-#include <openssl/err.h>
 #ifdef MINGW32
 #include <wx/wx.h>
 #include <windows.h>
 #endif
+#include <openssl/err.h>
 
 #include "ssstring.h"
 

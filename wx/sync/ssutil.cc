@@ -16,6 +16,13 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
+
+#include "ssexception.h"
+#include "config.h"
+#include "libpar.h"
+#include "liblog.h"
+#include "ssutil.h"
+
 #include <errno.h>
 #include <stdio.h>
 #include <openssl/bio.h>
@@ -25,12 +32,6 @@
 #include <fcntl.h>
 
 #include <string>
-
-#include "config.h"
-#include "libpar.h"
-#include "liblog.h"
-#include "ssutil.h"
-#include "ssexception.h"
 
 #ifndef MINGW32
 bool InitLogging(int *argc, char **argv, const char* progname) {
