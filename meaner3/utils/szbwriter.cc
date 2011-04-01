@@ -750,6 +750,8 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 
 static struct argp argp = { options, parse_opt, args_doc, doc };
 
+#define ERRXIT(msg) do{ fprintf(stderr,"%s\n",msg) ; /*return 1;*/ } while(0);
+
 int main(int argc, char *argv[])
 {
 	int loglevel;
@@ -758,6 +760,7 @@ int main(int argc, char *argv[])
 	char *cache_dir;
 	char *double_pattern;
 	char *fill_how_many;
+	int fill_how_many_num = 0;
 	struct arguments arguments;
 
 	loglevel = loginit_cmdline(2, NULL, &argc, argv);
@@ -767,12 +770,16 @@ int main(int argc, char *argv[])
 
 	char *c;
 
-	ipk_path = libpar_getpar(SZARP_CFG_SECTION, "IPK", 1);
-	data_dir = libpar_getpar(MEANER3_CFG_SECTION, "datadir", 1);
-	cache_dir = libpar_getpar("prober", "cachedir", 0);
+	if( !(ipk_path  = libpar_getpar(SZARP_CFG_SECTION  , "IPK"     , 1))) ERRXIT("Cannot find IPK variable");
+	if( !(data_dir  = libpar_getpar(MEANER3_CFG_SECTION, "datadir" , 1))) ERRXIT("Cannot find datadir");
+	if( !(cache_dir = libpar_getpar("prober"           , "cachedir", 0)))
+		cache_dir = "";
 
-	double_pattern = libpar_getpar(SZARP_CFG_SECTION, "double_match", 0);
-	fill_how_many = libpar_getpar(SZARP_CFG_SECTION, "fill_how_many", 0);
+	if( !(double_pattern = libpar_getpar(SZARP_CFG_SECTION, "double_match" , 0)))
+		double_pattern = "";
+	if( !(fill_how_many  = libpar_getpar(SZARP_CFG_SECTION, "fill_how_many", 0)))
+		fill_how_many_num = 0;
+	else	fill_how_many_num = atoi(fill_how_many);
 
 	c = libpar_getpar(SZARP_CFG_SECTION, "log_level", 0);
 	if (c == NULL)
@@ -801,10 +808,9 @@ int main(int argc, char *argv[])
 	}
 
 	SzbaseWriter *szbw = new SzbaseWriter(SC::A2S(ipk_path), arguments.title, 
-			double_pattern != NULL ? SC::A2S(double_pattern) : L"",
-			SC::A2S(data_dir), cache_dir ? SC::A2S(cache_dir) : std::wstring(),
+			SC::A2S(double_pattern) , SC::A2S(data_dir), SC::A2S(cache_dir) ,
 			arguments.add_new_params, not arguments.no_probes,
-			atoi(fill_how_many));
+			fill_how_many_num);
 	assert (szbw != NULL);
 
 #ifndef FNM_EXTMATCH
