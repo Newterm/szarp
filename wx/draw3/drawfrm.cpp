@@ -20,7 +20,7 @@
 #include <wx/numdlg.h>
 #include <wx/xrc/xmlres.h>
 #include <wx/tokenzr.h>
-
+#include <map>
 #include "cconv.h"
 
 #include "version.h"
@@ -789,62 +789,41 @@ void DrawFrame::OnUserParams(wxCommandEvent &evt) {
 void DrawFrame::OnLanguageChange(wxCommandEvent &e) {
 	wxString lang = wxConfig::Get()->Read(_T("LANGUAGE"), _T("pl"));
 
+	typedef std::map<wxString, wxString> SMSS;
+	SMSS mapLang;
+
+	mapLang[_T("en")] =  _("English");
+	mapLang[_T("fr")] =  _("French");
+	mapLang[_T("de")] =  _("German");
+	mapLang[_T("hu")] =  _("Hungarian");
+	mapLang[_T("it")] =  _("Italian");
+	mapLang[_T("pl")] =  _("Polish");
+	mapLang[_T("sr")] =  _("Serbian");
+
 	wxArrayString choices;
-	choices.push_back(_("English"));
-	choices.push_back(_("French"));
-	choices.push_back(_("German"));
-	choices.push_back(_("Hungarian"));
-	choices.push_back(_("Italian"));
-	choices.push_back(_("Polish"));
-	choices.push_back(_("Serbian"));
+
+	// create array choices
+	for (SMSS::iterator it = mapLang.begin(); it != mapLang.end(); ++it)
+		choices.push_back(it->second);
 
 	wxString caption = _("Current language is ");
-	if (lang == _T("pl"))
-		caption += _("Polish");
-	else if (lang == _T("en"))
-		caption += _("English");
-	else if (lang == _T("de"))
-		caption += _("German");
-	else if (lang == _T("sr"))
-		caption += _("Serbian");
-	else if (lang == _T("hu"))
-		caption += _("Hungarian");
-	else if (lang == _T("it"))
-		caption += _("Italian");
-	else
-		caption += _("French");
+	caption += mapLang[lang];
 
 	int ret = wxGetSingleChoiceIndex(_("Choose language"), caption, choices, this);
 	if (ret == -1)
 		return;
 
+	// get short lang name - ugly but better than switch :)
 	wxString nl;
-	switch (ret) {
-		case 0:
-			nl = _T("en");
+	for (SMSS::iterator it = mapLang.begin(); it != mapLang.end(); ++it)
+		if (ret == 0) 
+		{
+			nl = it->first;
 			break;
-		case 1:
-			nl = _T("fr");
-			break;
-		case 2:
-			nl = _T("de");
-			break;
-		case 3:
-			nl = _T("hu");
-			break;
-		case 4:
-			nl = _T("it");
-			break;
-		case 5:
-			nl = _T("pl");
-			break;
-		case 6:
-			nl = _T("sr");
-			break;
-		default:
-			return;
-	}
-
+		}
+		else
+			--ret;
+	
 	if (nl == lang)
 		return;
 
@@ -1019,6 +998,8 @@ void DrawFrame::OnShowRemarks(wxCommandEvent &e) {
 }
 
 void DrawFrame::OnLanguageChangeTool(wxCommandEvent &event) {
+/*
+//TODO: remove it
 	wxMenu *menu = new wxMenu();
 
 
@@ -1066,6 +1047,7 @@ void DrawFrame::OnLanguageChangeTool(wxCommandEvent &event) {
 		menu->Append(mi);
 	}
 	PopupMenu(menu);
+*/
 }
 
 wxString DrawFrame::GetTitleForPanel(wxString title, int panel_no) {
