@@ -9,7 +9,7 @@
 ** 3.1.522
 # 01.04.2011
 * Restored fill_how_many option of szbwriter.
-* Support for new average type - DECATE (10 years).
+* Support for new average type in draw3 - DECADE (10 years).
 * Fixed Modbus server modes of borutadmn driver.
 * sssweb changes for Pylons version 0.10.
 * Added support for non-standard ssh port in szrsync/szbpush utilities.
