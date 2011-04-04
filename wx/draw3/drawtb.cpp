@@ -43,13 +43,6 @@
 #include "bitmaps/filter4.xpm"
 #include "bitmaps/filter5.xpm"
 #include "bitmaps/refresh.xpm"
-#include "bitmaps/flag_fr.xpm"
-#include "bitmaps/flag_pl.xpm"
-#include "bitmaps/flag_gb.xpm"
-#include "bitmaps/flag_de.xpm"
-#include "bitmaps/flag_sr.xpm"
-#include "bitmaps/flag_hu.xpm"
-#include "bitmaps/flag_it.xpm"
 #include "bitmaps/remark.xpm"
 #include "bitmaps/flag_checkered.xpm"
 #include "bitmaps/oldverwarn.xpm"
@@ -68,26 +61,6 @@ DrawToolBar::DrawToolBar(wxWindow *parent) :
 	AddTool(drawTB_REFRESH, _T(""),refresh_xpm, _("Refresh"));
 	AddTool(drawTB_DRAWTREE, _T(""),draw_tree_xpm, _("Tree Set"));
 	AddTool(drawTB_GOTOLATESTDATE, _T(""), flag_checkered_xpm, _("Go to latest date"));
-
-	wxString lang = wxConfig::Get()->Read(_T("LANGUAGE"), _T("pl"));
-	const char **lang_icon;
-
-	if (lang == _T("pl"))
-		lang_icon = flag_pl;
-	else if (lang == _T("en"))
-		lang_icon = flag_gb;
-	else if (lang == _T("de"))
-		lang_icon = flag_de;
-	else if (lang == _T("sr"))
-		lang_icon = flag_sr;
-	else if (lang == _T("it"))
-		lang_icon = flag_it;
-	else if (lang == _T("hu"))
-		lang_icon = flag_hu;
-	else
-		lang_icon = flag_fr;
-
-	AddTool(drawTB_LANGUAGE, _T(""), lang_icon, _("Language"));
 	AddTool(drawTB_REMARK, _T(""), remark_xpm, _("Remarks"));
 	AddTool(drawTB_EXIT, _T(""),exit_xpm, _("Quit"));
 	if (VersionChecker::IsNewVersion())

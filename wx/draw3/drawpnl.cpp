@@ -766,7 +766,7 @@ void DrawPanel::PeriodChanged(Draw *d, PeriodType pt) {
 
 	if (active == false)
 		return;
-	int id;
+	int id = 0;
 	switch (pt) {
 		case PERIOD_T_DECADE:
 			id = XRCID("DECADE_RADIO");
@@ -799,7 +799,7 @@ void DrawPanel::PeriodChanged(Draw *d, PeriodType pt) {
 }
 
 void DrawPanel::UpdateFilterMenuItem(int filter) {
-	wxMenuItem *main_menu_item;
+	wxMenuItem *main_menu_item = NULL;
 
 	switch (filter) {
 		case 0:
@@ -829,7 +829,7 @@ void DrawPanel::UpdateFilterMenuItem(int filter) {
 
 void DrawPanel::FilterChanged(DrawsController *d) {
 	int filter = d->GetFilter();
-	wxMenuItem *popup_menu_item;
+	wxMenuItem *popup_menu_item = NULL;
 
 	switch (filter) {
 		case 0:

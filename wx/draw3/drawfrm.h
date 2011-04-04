@@ -96,12 +96,9 @@ public:
 	 * Adding new defined window
 	 */
 	void OnAdd(wxCommandEvent &evt);
-	
-	void OnLanguageChangeMenuItem(wxCommandEvent &evt);
 
 	void OnGraphsView(wxCommandEvent &e);
 
-	void OnLanguageChangeTool(wxCommandEvent &evt);
 	/**
 	 * Removing defined window
 	 */
