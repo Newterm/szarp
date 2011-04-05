@@ -182,24 +182,16 @@ wxString szAppImpl::GetSzarpDataDir() {
 
 void szAppImpl::InitializeLocale(wxArrayString &catalogs, wxLocale &locale) {
 
-		wxString lang = wxConfig::Get()->Read(_T("LANGUAGE"), _T("pl"));
+	wxString lang = wxConfig::Get()->Read(_T("LANGUAGE"), DEFAULT_LANGUAGE);
+
+	const wxLanguageInfo *info = wxLocale::FindLanguageInfo(lang);
 
 	int l;
-	if (lang == _T("pl"))
-		l = wxLANGUAGE_POLISH;
-	else if (lang == _T("fr"))
-		l = wxLANGUAGE_FRENCH;
-	else if (lang == _T("de"))
-		l = wxLANGUAGE_GERMAN;
-	else if (lang == _T("it"))
-		l = wxLANGUAGE_ITALIAN;
-	else if (lang == _T("sr"))
-		l = wxLANGUAGE_SERBIAN;
-	else if (lang == _T("hu"))
-		l = wxLANGUAGE_HUNGARIAN;
-	else if (lang == _T("sr"))
-		l = wxLANGUAGE_SERBIAN;
-	else
+
+	if (info)
+	{
+		l = info->Language;
+	} else
 		l = wxLANGUAGE_ENGLISH;
 
 	locale.Init(l);
@@ -225,22 +217,11 @@ void szAppImpl::InitializeLocale(wxArrayString &catalogs, wxLocale &locale) {
 	for(size_t i = 0; i < catalogs.Count(); i++)
 		locale.AddCatalog(catalogs[i]);
 
-
 #ifdef __WXGTK__
-	if (l == wxLANGUAGE_POLISH)
-		setenv("LC_ALL", "pl_PL", 1);
-	else if (l == wxLANGUAGE_FRENCH)
-		setenv("LC_ALL", "fr_FR", 1);
-	else if (l == wxLANGUAGE_GERMAN)
-		setenv("LC_ALL", "de_DE", 1);
-	else if (l == wxLANGUAGE_ITALIAN)
-		setenv("LC_ALL", "it_IT", 1);
-	else if (l == wxLANGUAGE_SERBIAN)
-		setenv("LC_ALL", "sr_RS", 1);
-	else if (l == wxLANGUAGE_HUNGARIAN)
-		setenv("LC_ALL", "hu_HU", 1);
-	else
+	if (!locale.IsOk())
 		setenv("LC_ALL", "C", 1);
+	else
+		setenv("LC_ALL", SC::S2A(info->CanonicalName).c_str(), 1);
 #endif
 
 }

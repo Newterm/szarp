@@ -777,7 +777,7 @@ void DrawFrame::OnUserParams(wxCommandEvent &evt) {
 }
 
 void DrawFrame::OnLanguageChange(wxCommandEvent &e) {
-	wxString lang = wxConfig::Get()->Read(_T("LANGUAGE"), _T("pl"));
+	wxString lang = wxConfig::Get()->Read(_T("LANGUAGE"), DEFAULT_LANGUAGE);
 
 	typedef std::map<wxString, wxString> SMSS;
 	SMSS mapLang;
@@ -799,7 +799,7 @@ void DrawFrame::OnLanguageChange(wxCommandEvent &e) {
 		choices.push_back(it->second);
 
 	wxString caption = _("Current language is ");
-	caption += mapLang[lang];
+	caption += mapLang[lang].Len() ? mapLang[lang] : wxString(_("default language"));
 
 	int ret = wxGetSingleChoiceIndex(_("Choose language"), caption, choices, this);
 	if (ret == -1)

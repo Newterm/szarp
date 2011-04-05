@@ -40,6 +40,8 @@
 
 #include "config.h"
 
+#define DEFAULT_LANGUAGE wxLocale::GetLanguageInfo(wxLocale::GetSystemLanguage() == wxLANGUAGE_UNKNOWN ? wxLANGUAGE_ENGLISH_UK : wxLocale::GetSystemLanguage())->CanonicalName.Left(2)
+
 class szAppImpl {
 	bool has_data_dir;
 
