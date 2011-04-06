@@ -786,7 +786,6 @@ void DrawFrame::OnLanguageChange(wxCommandEvent &e) {
 	mapLang[_T("en")] =  _("English");
 	mapLang[_T("fr")] =  _("French");
 	mapLang[_T("de")] =  _("German");
-	mapLang[_T("es")] =  _("Spanish");
 	mapLang[_T("hu")] =  _("Hungarian");
 	mapLang[_T("it")] =  _("Italian");
 	mapLang[_T("pl")] =  _("Polish");
