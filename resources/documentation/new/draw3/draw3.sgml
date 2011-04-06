@@ -129,7 +129,6 @@ oraz ikony skrótów:
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-split_icon.png"></imageobject></inlinemediaobject> - Rozdwojony kursor - wiêcej <xref linkend="draw3-ext-doublecursor"></para></listitem>
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-filtericon.png"></imageobject></inlinemediaobject> - Filtr - wiêcej <xref linkend="draw3-ext-filter"></para></listitem>
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-refresh_icon.png"></imageobject></inlinemediaobject> - Od¶wie¿  - wiêcej <xref linkend="draw3-ext-refresh"></para></listitem>
-<listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-flag_pl_icon.png"></imageobject></inlinemediaobject> - Zmieñ jêzyk programu - wiêcej <xref linkend="draw3-ext-languages"></para></listitem>
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-remark_icon.png"></imageobject></inlinemediaobject> - Poka¿ kometarze dla akutalnej konfiguracji - wiêcej <xref linkend="draw3-ext-remarks"></para></listitem>
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-exit_icon.png"></imageobject></inlinemediaobject> - Wyjd¼ - wyj¶cie z programu</para></listitem>
 </itemizedlist>
@@ -405,7 +404,7 @@ Program przegl±daj±cy potrafi samodzielnie doczytaæ zmieniaj±ce siê wykresy (np.
 <section id="draw3-ext-blockgraphs">
 <title>Blokowanie wykresów</title>
 <para>
-Je¶li chcesz porównaæ warto¶ci parametrów z ró¿nych okresów czasowych (np. temperaturê steruj±c± z marca z temperatur± odniesienia z kwietnia), wykorzystaj funkcjê blokowania wykresu. Kliknij prawym klawiszem na tytu³ wykresu i wybierz <quote>Wykres zablokowany</quote>. Na pokazanym poni¿ej zestawie wykresów zablokowany zosta³ wykres "Temp. steruj±ca":
+Je¶li chcesz porównaæ warto¶ci parametrów z ró¿nych okresów czasowych (np. temperaturê steruj±c± z marca z temperatur± odniesienia z kwietnia), wykorzystaj funkcjê blokowania wykresu. Kliknij prawym klawiszem na tytu³ wykresu i wybierz <quote>Wykres zablokowany</quote>. Na pokazanym poni¿ej zestawie wykresów zablokowany zosta³ wykres "Temp. powrotna":
 <figure><title>Blokowanie wykresu</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-blockgraph.png"></imageobject>
@@ -416,7 +415,7 @@ Je¶li chcesz porównaæ warto¶ci parametrów z ró¿nych okresów czasowych (np. tempe
 Do zablokowania wykresu mo¿esz równie¿ u¿yæ skrótu klawiszowego <keycode>Ctrl + B</keycode>.
 </para>
 <para>
-Po przesuniêciu czasu na marzec, wykres "Temp. steruj±ca" (oznaczony kolorem ¿ó³tym) nie zmieni³ swojego po³o¿enia (zwróæ uwagê, ¿e przy nazwie zablokowanego wykresu pojawi³ siê dopisek <emphasis>[B]</emphasis>):
+Po przesuniêciu czasu z lutego na styczeñ, wykres "Temp. powrotna" (oznaczony kolorem ¿ó³tym) nie zmieni³ swojego po³o¿enia (zwróæ uwagê, ¿e przy nazwie zablokowanego wykresu pojawi³ siê dopisek <emphasis>[B]</emphasis>):
 <figure><title>Zablokowany wykres</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-blockgraph2.png"></imageobject>
@@ -765,17 +764,6 @@ programie.
 <title>Zmiana jêzyka w programie Draw3</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-language.png"></imageobject>
-</mediaobject></figure>
-</para>
-<para>
-¯eby zmieniæ jêzyk programu, mo¿esz równie¿ klikn±æ ikonê z flag± 
-<inlinemediaobject><imageobject><imagedata align="center" 
-fileref="pics/draw3-flag_pl_icon.png"></imageobject></inlinemediaobject> widoczn± na dole
-g³ównego okna programu i wybraæ odpowiedni jêzyk.
-<figure>
-<title>Zmiana jêzyka programu Draw3</title>
-<mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-language2.png"></imageobject>
 </mediaobject></figure>
 </para>
 <para>
