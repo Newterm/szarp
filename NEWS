@@ -6,6 +6,23 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.522
+# 01.04.2011
+* Restored fill_how_many option of szbwriter.
+* Support for new average type in draw3 - DECADE (10 years).
+* Fixed Modbus server modes of borutadmn driver.
+* sssweb changes for Pylons version 0.10.
+* Added support for non-standard ssh port in szrsync/szbpush utilities.
+
+** 3.1.518
+# 01.03.2011
+* Removed draw3 limit of 12 draws per set.
+* Meaner3 fix for large number of opened files - added flag O_CLOEXEC.
+* Borutadmn serial drivers may be now run over TCP connection.
+* Changes for Debian 6.0 squeeze, including full support for encoding different 
+then ISO-8859-2.
+* Custom SZARP theme for Gnome Display Manager.
+
 ** 3.1.514
 # 01.02.2011
 * Draw3 searching feature has been polished up, GUI has been updated to render

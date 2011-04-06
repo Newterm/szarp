@@ -2,21 +2,21 @@
 	* meaner3/utils/szbwriter.cc: option fill_how_many - added support for
 	10 sec probes
 2011-03-29	Krzysztof Ga³±zka <kg@newterm.pl>
-	* libSzarp2/*, wx/draw3/*: 'DECACE' - new average type in draw3 
+	* libSzarp2/*, wx/draw3/*: 'DECADE' - new average type in draw3 
 2010-03-25	Krzysztof Golinski <krzygol@newterm.pl>
 	* meaner3/utils/szbwriter.cc: added option fill_how_many - save data in
-	database for 10min probes
-	* added more debug information (level 10)
+	database for 10min probes, added more debug information (level 10)
 2010-03-25	Pawel Palucha <pawel@newterm.pl>
 	* AUTHORS, wx/common/szapp.cpp: updated authors list.
 2010-03-24	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: SetPeriod method was incorrectly used to initialize
-	new Draw objects, the problem was that it roundes provided start time,
+	new Draw objects, the problem was that it rounds provided start time,
 	as a result - new Draw object were sometimes shifted in time
 2010-03-23	Darek Marcinkiewicz <reksio@newterm.pl>
-	* parcook/boruta*: added missing finish_cycle methods for server dirvers
+	* parcook/boruta*: added missing finish_cycle methods for server drivers
 2010-03-23	Krzysztof Golinski <krzygol@newterm.pl>
-	* script/szbwgen.py: Script szbwgen.py added. It generates data for szbwriter.
+	* script/szbwgen.py: Script szbwgen.py added. It generates random data for 
+	szbwriter.
 2010-03-10	Krzysztof Galazka <kg@newterm.pl>
 	* www/pylons/sssweb: major refactoring for pylons 0.10
 	* wx/sync/ssconfd/ssconf.py: missing 'self'
@@ -26,7 +26,7 @@
 	* wx/draw3: limit of 12 graphs per window removed
 2010-02-23	Krzysztof Galazka <kg@newterm.pl>
 	* meaner3/tsaveparam.cc: open files with O_CLOEXEC flag to avoid
-	probles with running execute sections.
+	problems with running execute sections.
 2011-02-22	Pawel Palucha <pawel@newterm.pl>
 	* acinclude.m4, */Makefile.am: added depended libraries, required by
 	new ld version from Debian unstable.
