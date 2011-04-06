@@ -1,9 +1,14 @@
-2010-03-30	Krzysztof Golinski <krzygol@newterm.pl>
+2010-04-06	Krzysztof Golinski <krzgol@newterm.pl>
+	* wx/common/szapp.cpp: improved initialization of a language
+	* wx/draw3/drawfrm.cpp: removed button "choose language" from toolbar
+	* resources/documentation/new/draw3/draw3.sgml: updated documemtation
+	* resources/documentation/new/draw3/html/pics/*: updated images
+2011-03-30	Krzysztof Golinski <krzgol@newterm.pl>
 	* meaner3/utils/szbwriter.cc: option fill_how_many - added support for
 	10 sec probes
 2011-03-29	Krzysztof Ga³±zka <kg@newterm.pl>
 	* libSzarp2/*, wx/draw3/*: 'DECADE' - new average type in draw3 
-2010-03-25	Krzysztof Golinski <krzygol@newterm.pl>
+2011-03-25	Krzysztof Golinski <krzgol@newterm.pl>
 	* meaner3/utils/szbwriter.cc: added option fill_how_many - save data in
 	database for 10min probes, added more debug information (level 10)
 2010-03-25	Pawel Palucha <pawel@newterm.pl>
