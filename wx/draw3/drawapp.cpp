@@ -273,7 +273,7 @@ bool DrawApp::OnInit() {
 	splash->PushStatusText(_("Initializing IPKContainer..."));
 	IPKContainer::Init(GetSzarpDataDir().c_str(), 
 			GetSzarpDir().c_str(), 
-			wxConfig::Get()->Read(_T("LANGUAGE"), _T("pl")).c_str(), 
+			wxConfig::Get()->Read(_T("LANGUAGE"), DEFAULT_LANGUAGE ).c_str(), 
 			new szMutex());
 	m_cfg_mgr = new ConfigManager(this, IPKContainer::GetObject());
 
