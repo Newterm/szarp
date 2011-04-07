@@ -1,3 +1,9 @@
+szarp (3.1.524) unstable; urgency=low
+
+  * building unstable
+
+ -- Krzysztof Goliński <krzgol@newterm.pl>  Thu, 07 Apr 2011 20:23:33 +0200
+
 szarp (3.1.523) stable; urgency=low
 
   * building stable
