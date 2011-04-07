@@ -407,8 +407,7 @@ void DrawApp::OnInitCmdLine(wxCmdLineParser &parser) {
 		_("open url in existing window"));
 
 
-	parser.AddSwitch(_T("v"), wxEmptyString, 
-		_("verbose logging"));
+	parser.AddSwitch(_T("v"), _T("verbose"), _("verbose logging"));
 
 	parser.AddSwitch(_T("V"), _T("version"), 
 		_("print version number and exit"));
@@ -418,8 +417,7 @@ void DrawApp::OnInitCmdLine(wxCmdLineParser &parser) {
 		_("libparnt value initialization"));
 #endif
 	
-	parser.AddOption(_T("debug"), wxEmptyString,
-		_("debug level"), wxCMD_LINE_VAL_NUMBER);
+	parser.AddOption(_T("d"), _T("debug"), _("debug level"), wxCMD_LINE_VAL_NUMBER);
 	
 
 }

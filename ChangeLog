@@ -1,3 +1,6 @@
+2010-04-07	Krzysztof Ga³±zka <kg@newterm.pl>
+	* wx/draw3/drawapp.cpp: proper handling of verbose & debug options
+	* wx/draw3/drawpnl.cpp: broken shift+left/right after adding DECADE
 2010-04-06	Krzysztof Golinski <krzgol@newterm.pl>
 	* wx/common/szapp.cpp: improved initialization of a language
 	* wx/draw3/drawfrm.cpp: removed button "choose language" from toolbar
