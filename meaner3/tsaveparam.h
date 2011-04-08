@@ -45,8 +45,11 @@ class TSaveParam {
 		TSaveParam(TParam* p);
 		/** Creates object for param with given name. Used for status
 		 * parameters.
-		 * @param name name of parameter */
-		TSaveParam(const std::wstring& name);
+		 * @param name name of parameters
+		 * @param convert decide if name should be converted with wchar2szb
+		 */
+
+		TSaveParam(const std::wstring& name , bool convert = true );
 		~TSaveParam();
 		/** Write param to base.
 		 * @param directory base directory
@@ -58,7 +61,7 @@ class TSaveParam {
 		 * @param overwrite 0 if is overwriting of existing data 
 		 * is not allowed, 1 otherwise
 		 * @param force_nodata 1 to force writing no-data values to file
-		 * @param length of probe in seconds, default value for meaner, 10 for prober
+		 * @param probe_length of probe in seconds, default value for meaner, 10 for prober
 		 * @return 0 on success, 1 on error
 		 */
 		int Write(const fs::wpath& directory, 
@@ -89,6 +92,8 @@ class TSaveParam {
 		int WriteProbes(const fs::wpath& directory, time_t t, short int* data, size_t data_count);
 		/** Closes currenly open file desctiptor*/
 		void CloseFile();
+
+		const std::wstring& GetName() { return cname; }
 	protected:
 		std::wstring cname;	/**< Encoded name of parameter */
 		std::wstring last_path; /**< Last file data was written to*/

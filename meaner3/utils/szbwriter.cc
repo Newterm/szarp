@@ -58,6 +58,8 @@
 
 #include "conversion.h"
 
+#include "szbwriter_cache.h"
+
 #define SZARP_CFG_SECTION	"szbwriter"
 #define MEANER3_CFG_SECTION	"meaner3"
 #define SZARP_CFG		"/etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg"
@@ -130,14 +132,16 @@ protected:
 	int m_cur_t[LAST_PROBE_TYPE];		/**< current time*/
 	double m_cur_sum[LAST_PROBE_TYPE];	/**< sum of values to save */
 	int m_cur_cnt[LAST_PROBE_TYPE];		/**< count of values to save */
-	int m_probe_length[LAST_PROBE_TYPE];		/**< lenght of probe */
+	int m_probe_length[LAST_PROBE_TYPE];		/**< length of probe */
 
 	unordered_map<std::wstring, int> m_draws_count;
-	bool m_add_new_pars; 	/** flag denoting if we add new pars*/
-	bool m_new_par; 	/** if new parameter was added */
-	size_t m_last_type;	/** last type of probe to write + 1 */
+	bool m_add_new_pars; 	/**< flag denoting if we add new pars*/
+	bool m_new_par; 	/**< if new parameter was added */
+	size_t m_last_type;	/**< last type of probe to write + 1 */
 
-	int m_fill_how_many;	/** fill gaps in data when distance between two probes is <=  m_fill_how_many **/
+	int m_fill_how_many;	/**< fill gaps in data when distance between two probes is <=  m_fill_how_many **/
+
+	SzProbeCache m_cache;   /**< cache writing to database */ 
 };
 
 SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _title, 
@@ -149,7 +153,8 @@ SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _ti
 	m_double_pattern(double_pattern),
 	m_add_new_pars(add_new_pars),
 	m_last_type(write_10sec ? LAST_PROBE_TYPE : SEC10),
-	m_fill_how_many(_fill_how_many)
+	m_fill_how_many(_fill_how_many) ,
+	m_cache(1024,10) // TODO: move this params to config file
 {
 	m_dir.push_back(data_dir);
 	m_dir.push_back(cache_dir);
@@ -482,18 +487,36 @@ int SzbaseWriter::save_data(PROBE_TYPE pt)
 
 	sz_log(10,"save_data: current sum = %lf, current count =%d, current time=%d, value=%G",m_cur_sum[pt],m_cur_cnt[pt],m_cur_t[pt],d);
 
+	// TODO: change m_save_param to names and leave
+	//       TSaveParam handling to SzProbeCache
+	short v1 = 0 , v2 = 0;
 	if (m_save_param[pt][1]) {
 		int v = rint(pow10(m_cur_par->GetPrec()) * d);
 		unsigned *pv = (unsigned*) &v;
-		short v1 = *pv >> 16, v2 = *pv & 0xffff;
-		if (m_save_param[pt][0]->WriteBuffered(m_dir[pt], m_cur_t[pt], &v1, 1, NULL, 1, 0, m_probe_length[pt]))
-			return 1;
-		if (m_save_param[pt][1]->WriteBuffered(m_dir[pt], m_cur_t[pt], &v2, 1, NULL, 1, 0, m_probe_length[pt]))
-			return 1;
-	} else {
-		short v = rint(pow10(m_cur_par->GetPrec()) * d);
-		if (m_save_param[pt][0]->WriteBuffered(m_dir[pt], m_cur_t[pt], &v, 1, NULL, 1, 0, m_probe_length[pt]))
-			return 1;
+		v1 = *pv >> 16, v2 = *pv & 0xffff;
+	} else	v1 = rint(pow10(m_cur_par->GetPrec()) * d);
+
+	try {
+		m_cache.add(
+			SzProbeCache::Key(
+				m_dir[pt] ,
+				m_save_param[pt][0]->GetName() ,
+				m_probe_length[pt]) ,
+			SzProbeCache::Value( v1 , m_cur_t[pt] ) );
+//                if (m_save_param[pt][0]->WriteBuffered(m_dir[pt], m_cur_t[pt], &v1, 1, NULL, 1, 0, m_probe_length[pt]))
+//                       return 1;
+
+		if (m_save_param[pt][1])
+			m_cache.add(
+				SzProbeCache::Key(
+					m_dir[pt] ,
+					m_save_param[pt][1]->GetName() ,
+					m_probe_length[pt]) ,
+				SzProbeCache::Value( v2 , m_cur_t[pt] ) );
+//                       if (m_save_param[pt][1]->WriteBuffered(m_dir[pt], m_cur_t[pt], &v2, 1, NULL, 1, 0, m_probe_length[pt]))
+//                               return 1;
+	} catch( SzProbeCache::failure& f ) {
+		return 1;
 	}
 
 	/* check for draw's min and max; it's strange but it works ;-) */
@@ -823,10 +846,10 @@ int main(int argc, char *argv[])
 	if(szbw->have_new_params())
 		szbw->saveXML(SC::A2S(ipk_path));
 	
-	sz_log(2, "Completed successfully");
-	
 	delete szbw;
 
+	sz_log(2, "Completed successfully");
+	
 	return 0;
 	
 }

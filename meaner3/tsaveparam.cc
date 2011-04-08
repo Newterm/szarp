@@ -52,14 +52,15 @@
 #include "szbase/szbbase.h"
 
 TSaveParam::TSaveParam(TParam* p) 
+	: fd(-1)
 {
 	this->cname = wchar2szb(p->GetName());
-	this->fd = -1;
 }
 
-TSaveParam::TSaveParam(const std::wstring& name)
+TSaveParam::TSaveParam(const std::wstring& name , bool convert )
+	: fd(-1) , cname(name)
 {
-	this->cname = wchar2szb(name);
+	if( convert ) cname = wchar2szb(cname);
 }
 
 TSaveParam::~TSaveParam()
