@@ -343,7 +343,7 @@ int SzbaseWriter::is_double(const std::wstring& name)
 int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, int year, int month, int day, 
 		int hour, int min, int sec, const std::wstring& data)
 {
-	sz_log(10,"add_data begin: name=%s, data=%s %d-%d-%d %d:%d:%d",SC::S2A(name).c_str(),SC::S2A(data).c_str(),year,month,day,hour,min,sec);
+	sz_log(10,"add_data begin: name=%ls, data=%ls %d-%d-%d %d:%d:%d",name.c_str(),data.c_str(),year,month,day,hour,min,sec);
 
 	std::wstring filename;
 	struct tm tm;
@@ -369,7 +369,7 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	TParam *par = NULL, *par2 = NULL;
 	int prec;
 
-	sz_log(10,"add_data: name=%s, m_cur_name=%s",SC::S2A(name).c_str(),SC::S2A(m_cur_name).c_str());
+	sz_log(10,"add_data: name=%ls, m_cur_name=%ls",name.c_str(),m_cur_name.c_str());
 	
 	if (name != m_cur_name) {
 		for (size_t i = 0; i < m_last_type; i++) {
@@ -477,7 +477,7 @@ int SzbaseWriter::save_data(PROBE_TYPE pt)
 	if (m_dir[pt].empty())
 		return 0;
 
-	sz_log(10,"save_data begin: pt=%d, m_dir[pt]=%s",(int) pt, SC::S2A(m_dir[pt]).c_str());
+	sz_log(10,"save_data begin: pt=%d, m_dir[pt]=%ls",(int) pt, m_dir[pt].c_str());
 	sz_log(10,"save_data %s",!m_cur_cnt[pt] ? "end - NO DATA" : "data exists");
 
 	if (!m_cur_cnt[pt])
