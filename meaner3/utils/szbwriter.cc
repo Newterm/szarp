@@ -142,6 +142,9 @@ protected:
 	int m_fill_how_many;	/**< fill gaps in data when distance between two probes is <=  m_fill_how_many **/
 
 	SzProbeCache m_cache;   /**< cache writing to database */ 
+
+	struct tm m_tm;
+	time_t m_t;
 };
 
 SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _title, 
@@ -340,6 +343,20 @@ int SzbaseWriter::is_double(const std::wstring& name)
 #endif
 }
 
+time_t update_time( struct tm& newtm , time_t oldt , struct tm& oldtm )
+{
+	if( newtm.tm_year != oldtm.tm_year 
+	 || newtm.tm_mon  != oldtm.tm_mon 
+	 || newtm.tm_mday != oldtm.tm_mday )
+		return mktime(&newtm);
+
+	int dh = newtm.tm_hour - oldtm.tm_hour;
+	int dm = newtm.tm_min  - oldtm.tm_min ;
+	int ds = newtm.tm_sec  - oldtm.tm_sec ;
+
+	return oldt + (dh*60+dm)*60+ds;
+}
+
 int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, int year, int month, int day, 
 		int hour, int min, int sec, const std::wstring& data)
 {
@@ -359,11 +376,13 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	tm.tm_sec = sec;
 	tm.tm_isdst = -1;
 	
-	t = mktime(&tm);
+//        t = mktime(&tm);
+	m_t  = t  = update_time(tm,m_t,m_tm);
+	m_tm = tm ;
 
 	gmtime_r(&t, &tm);
-	year = tm.tm_year + 1900;
-	month = tm.tm_mon + 1;
+//        year = tm.tm_year + 1900;
+//        month = tm.tm_mon + 1;
 	
 	is_dbl = is_double(name);
 	TParam *par = NULL, *par2 = NULL;
@@ -420,16 +439,16 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 				m_save_param[i][1] = new TSaveParam(par2);
 			m_cur_sum[i] = 0;
 			m_cur_cnt[i] = 0;
-			sz_log(10,"add_data: (name != n_cur_name) i=%d, t = %ld",i,t);
+			sz_log(10,"add_data: (name != n_cur_name) i=%u, t = %ld",(unsigned)i,t);
 			m_cur_t[i] = t / m_probe_length[i] * m_probe_length[i];
-			sz_log(10,"add_data: (name != n_cur_name) i=%d, m_cur_t[i] = %d",i,m_cur_t[i]);
+			sz_log(10,"add_data: (name != n_cur_name) i=%u, m_cur_t[i] = %d",(unsigned)i,m_cur_t[i]);
 		}
 		m_cur_name = name;
 	}
 
 	for (size_t i = 0; i < m_last_type; i++) {
 
-		sz_log(10,"add_data: i=%d, t=%ld, m_cur_t[i]=%d, t-m_cur=%ld, m_len=%d",i,t,m_cur_t[i],t-m_cur_t[i],m_probe_length[i]);
+		sz_log(10,"add_data: i=%u, t=%ld, m_cur_t[i]=%d, t-m_cur=%ld, m_len=%d",(unsigned)i,t,m_cur_t[i],t-m_cur_t[i],m_probe_length[i]);
 
 		if (m_dir.at(i).empty())
 			continue;
@@ -444,12 +463,12 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 		if (save_data((PROBE_TYPE)i))
 			return 1;
 
-		sz_log(10,"add_data: i=%d,  t = %ld",i,t);
+		sz_log(10,"add_data: i=%u,  t = %ld",(unsigned)i,t);
 		m_cur_t[i] = t / m_probe_length[i] * m_probe_length[i];
-		sz_log(10,"add_data: i=%d,  m_cur_t[i] = %d",i,m_cur_t[i]);
+		sz_log(10,"add_data: i=%u,  m_cur_t[i] = %d",(unsigned)i,m_cur_t[i]);
 
 		int gap = m_cur_t[i] - _time;
-		sz_log(10,"add_data: i=%d, check time gap: %d",i,gap);
+		sz_log(10,"add_data: i=%u, check time gap: %d",(unsigned)i,gap);
 		assert(gap >= 0 && gap >= m_probe_length[i]);
 
 		if ((PROBE_TYPE) i == MIN10 && m_fill_how_many > 0 && m_probe_length[i] < gap && gap <= (m_fill_how_many + 1) * m_probe_length[i])
@@ -780,8 +799,8 @@ int main(int argc, char *argv[])
 	int loglevel;
 	char *ipk_path;
 	char *data_dir;
-	char *cache_dir;
-	char *double_pattern;
+	const char *cache_dir;
+	const char *double_pattern;
 	char *fill_how_many;
 	int fill_how_many_num = 0;
 	struct arguments arguments;
