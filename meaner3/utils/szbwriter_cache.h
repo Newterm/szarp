@@ -10,8 +10,10 @@
 #include "tsaveparam.h"
 
 /** 
- * @brief Class that cache params and write them after specified 
- * probes collected
+ * @brief Class that cache params and write them with delay.
+ *
+ * Data are flushed while specified probes number were collected
+ * or if file would be changed.
  */
 class SzProbeCache {
 public:
@@ -19,24 +21,27 @@ public:
 	 * @brief type that specify param.
 	 *
 	 * Data that can specify param or are constns for param,
-	 * based on szbwriter.cc file * are directory, param name
-	 * and probe length.
+	 * based on szbwriter.cc file are directory, param name
+	 * and probe length, year and month.
 	 */
 	struct Key {
-		Key( const std::wstring& d , const std::wstring& n , int p )
-			: dir(d) , name(n) , probe_length(p)
-		{ // FIXME: speed this up
-			std::locale loc;
-			const std::collate<wchar_t>& coll =
-				std::use_facet<std::collate<wchar_t> >(loc);
-			std::wstring tmp = dir + name;
-			hash_code = coll.hash( tmp.c_str() , tmp.c_str() + tmp.length() );
-		}
+		Key( const std::wstring& d , const std::wstring& n ,
+				int p , int y , int m )
+			: dir(d) , name(n) , probe_length(p) , year(y) , month(m) {}
 		const std::wstring& dir;
 		const std::wstring& name;
 		int probe_length;
+		int year;
+		int month;
 
-		long hash_code;
+//                void operator=(  Key& b )
+//                {
+//                        dir = b.dir;
+//                        name = b.name;
+//                        probe_length = b.probe_length;
+//                        year = b.year;
+//                        month = b.month;
+//                }
 	};
 
 	/** 
@@ -52,18 +57,18 @@ public:
 	typedef std::ofstream::failure failure;
 
 	/** 
-	 * @brief Initilize class with limitations. -1 means 
-	 * limitations -- write while deleted
+	 * @brief Initilize class with limitations.
 	 *
-	 * @todo: unlimited probes caching not implemented
-	 * 
+	 * Largest limitation that make sense is 31 * 24 * 6 = 4464,
+	 * but tests shows that 2048 is better value.
+	 *
 	 * @param probes_num number of probes within one param
 	 * to be cached
 	 * @param params_num number of params to be cached.
 	 * After reaching this number, biggest param will be written
 	 * to file, and deleted.
 	 */
-	SzProbeCache( int probes_num , int params_num );
+	SzProbeCache( int probes_num = 2048 );
 
 	/** 
 	 * @brief Clean up object and write cached data to database
@@ -73,8 +78,8 @@ public:
 	/** 
 	 * @brief Adds probe to param. If necessary creates new param.
 	 * 
-	 * When there is probe missing (time gap) actual cache is
-	 * written to database.
+	 * When there is probe missing (time gap) its filled with
+	 * SZB_FILE_NODATA special value.
 	 * 
 	 * @param k param to wich value should be added
 	 * @param v 
@@ -86,7 +91,7 @@ public:
 	 * 
 	 * @param k
 	 */
-	void flush( const Key& k );
+	void flush();
 	
 private:
 	struct Values {
@@ -94,6 +99,7 @@ private:
 		virtual ~Values();
 		bool add( time_t t , short v , int probe_length );
 		void clear();
+		bool clean();
 
 		short*probes;
 		time_t time;
@@ -102,18 +108,18 @@ private:
 	};
 
 	typedef std::pair<TSaveParam*,Values*> Param;
-	typedef std::map<Key, Param> ParamsMap;
 
 	/**
 	 * @see flush( Key k )
 	 */
 	void flush( Param& p , const Key& k );
 
-	int max_probes , max_params;
-	ParamsMap params;
+	Key*last_key;
+	Param last_param;
 };
 
-bool operator<( const SzProbeCache::Key& a , const SzProbeCache::Key& b );
+bool operator==( const SzProbeCache::Key& a , const SzProbeCache::Key& b );
+bool operator!=( const SzProbeCache::Key& a , const SzProbeCache::Key& b );
 
 #endif /* __SZBWRITER_CACHE_H__ */
 

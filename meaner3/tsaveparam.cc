@@ -113,13 +113,15 @@ int TSaveParam::WriteBuffered(const fs::wpath& directory, time_t t, short int* d
 			status->Incr(TStatus::PT_NNPS);
 		}
 	}
-	sz_log(10, "TSaveParam::Write(): writing '%d' (and %d other elements) to '%ls'", 
-			data[0], data_count - 1, cname.c_str());
 	
 	/* get file name */
 	filename = szb_createfilename_ne(cname, year, month, probe_length == SZBASE_DATA_SPAN ? L".szb" : L".szc");
 	path = (directory / filename).string();
 		
+
+	sz_log(10, "TSaveParam::Write(): writing '%d' (and %d other elements) to '%ls'", 
+			data[0], (int)data_count - 1, path.c_str());
+
 	if (fd == -1 || last_path != path) {
 		CloseFile();
 		/* make sure directory exists */

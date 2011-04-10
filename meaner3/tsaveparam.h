@@ -95,9 +95,9 @@ class TSaveParam {
 
 		const std::wstring& GetName() { return cname; }
 	protected:
+		int fd;			/**< Currently open data file desriptor*/
 		std::wstring cname;	/**< Encoded name of parameter */
 		std::wstring last_path; /**< Last file data was written to*/
-		int fd;			/**< Currently open data file desriptor*/
 };
 
 #endif

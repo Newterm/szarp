@@ -129,10 +129,10 @@ protected:
 	std::wstring m_cur_name;		/**< name of currently opened file;
 					(virtual - real names may be different
 					becasue of low/high words) */
-	int m_cur_t[LAST_PROBE_TYPE];		/**< current time*/
-	double m_cur_sum[LAST_PROBE_TYPE];	/**< sum of values to save */
-	int m_cur_cnt[LAST_PROBE_TYPE];		/**< count of values to save */
-	int m_probe_length[LAST_PROBE_TYPE];		/**< length of probe */
+	int    m_cur_t       [LAST_PROBE_TYPE]; /**< current time*/
+	double m_cur_sum     [LAST_PROBE_TYPE]; /**< sum of values to save */
+	int    m_cur_cnt     [LAST_PROBE_TYPE]; /**< count of values to save */
+	int    m_probe_length[LAST_PROBE_TYPE]; /**< length of probe */
 
 	unordered_map<std::wstring, int> m_draws_count;
 	bool m_add_new_pars; 	/**< flag denoting if we add new pars*/
@@ -141,10 +141,10 @@ protected:
 
 	int m_fill_how_many;	/**< fill gaps in data when distance between two probes is <=  m_fill_how_many **/
 
-	SzProbeCache m_cache;   /**< cache writing to database */ 
+	SzProbeCache m_cache[LAST_PROBE_TYPE];   /**< cache writing to database */ 
 
-	struct tm m_tm;
-	time_t m_t;
+	struct tm m_tm; /**< last time */
+	time_t m_t; /**< last time */
 };
 
 SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _title, 
@@ -156,8 +156,7 @@ SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _ti
 	m_double_pattern(double_pattern),
 	m_add_new_pars(add_new_pars),
 	m_last_type(write_10sec ? LAST_PROBE_TYPE : SEC10),
-	m_fill_how_many(_fill_how_many) ,
-	m_cache(1024,10) // TODO: move this params to config file
+	m_fill_how_many(_fill_how_many)
 {
 	m_dir.push_back(data_dir);
 	m_dir.push_back(cache_dir);
@@ -368,12 +367,12 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	int is_dbl;
 
 	/* get UTC time */
-	tm.tm_year = year - 1900;
-	tm.tm_mon = month - 1;
-	tm.tm_mday = day;
-	tm.tm_hour = hour;
-	tm.tm_min = min;
-	tm.tm_sec = sec;
+	tm.tm_year  = year  - 1900;
+	tm.tm_mon   = month - 1;
+	tm.tm_mday  = day;
+	tm.tm_hour  = hour;
+	tm.tm_min   = min;
+	tm.tm_sec   = sec;
 	tm.tm_isdst = -1;
 	
 //        t = mktime(&tm);
@@ -381,9 +380,7 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	m_tm = tm ;
 
 	gmtime_r(&t, &tm);
-//        year = tm.tm_year + 1900;
-//        month = tm.tm_mon + 1;
-	
+
 	is_dbl = is_double(name);
 	TParam *par = NULL, *par2 = NULL;
 	int prec;
@@ -515,22 +512,29 @@ int SzbaseWriter::save_data(PROBE_TYPE pt)
 		v1 = *pv >> 16, v2 = *pv & 0xffff;
 	} else	v1 = rint(pow10(m_cur_par->GetPrec()) * d);
 
+	int year , month;
+	assert( szb_time2my(m_cur_t[pt], &year, &month) == 0 );
+
 	try {
-		m_cache.add(
-			SzProbeCache::Key(
+		m_cache[pt].add(
+			SzProbeCache::Key( 
 				m_dir[pt] ,
 				m_save_param[pt][0]->GetName() ,
-				m_probe_length[pt]) ,
+				m_probe_length[pt] ,
+				year , 
+				month ),
 			SzProbeCache::Value( v1 , m_cur_t[pt] ) );
 //                if (m_save_param[pt][0]->WriteBuffered(m_dir[pt], m_cur_t[pt], &v1, 1, NULL, 1, 0, m_probe_length[pt]))
 //                       return 1;
 
 		if (m_save_param[pt][1])
-			m_cache.add(
-				SzProbeCache::Key(
+			m_cache[pt].add(
+				SzProbeCache::Key( 
 					m_dir[pt] ,
 					m_save_param[pt][1]->GetName() ,
-					m_probe_length[pt]) ,
+					m_probe_length[pt] ,
+					year , 
+					month ),
 				SzProbeCache::Value( v2 , m_cur_t[pt] ) );
 //                       if (m_save_param[pt][1]->WriteBuffered(m_dir[pt], m_cur_t[pt], &v2, 1, NULL, 1, 0, m_probe_length[pt]))
 //                               return 1;
@@ -872,3 +876,4 @@ int main(int argc, char *argv[])
 	return 0;
 	
 }
+
