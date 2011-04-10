@@ -77,18 +77,9 @@ Package: szarp-mobile
 Files: opt/szarp/bin/mobilemgr
 
 Package: szarp-sssweb
-Files: usr/lib/python2.*/site-packages/sssweb/*.py*
-Files: usr/lib/python2.*/site-packages/sssweb/templates/*.mako
-Files: usr/lib/python2.*/site-packages/sssweb/config/*.py*
-Files: usr/lib/python2.*/site-packages/sssweb/controllers/*.py*
-Files: usr/lib/python2.*/site-packages/sssweb/i18n/pl/LC_MESSAGES/sssweb.*
-Files: usr/lib/python2.*/site-packages/sssweb/lib/*.py*
-Files: usr/lib/python2.*/site-packages/sssweb/model/*.py*
-Files: usr/lib/python2.*/site-packages/sssweb/public/css/*.css
-Files: usr/lib/python2.*/site-packages/sssweb.egg-info/*.txt
-Files: usr/lib/python2.*/site-packages/sssweb.egg-info/PKG-INFO
 Files: var/cache/pylons-sssweb
 Files: etc/szarp/ssweb*
+Files: usr/lib/python*
 
 Package: szarp-nagios
 Files: etc/nagios/szarp*cfg

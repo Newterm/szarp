@@ -43,6 +43,10 @@ export DH_OPTIONS
 DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 
+
+DEB_PYTHON_SYSTEM=pysupport
+DEB_PYTHON_VERSIONS=all
+
 SZARP_VERSION := $(shell cat current_tag)
 
 PREFIX = opt/szarp/
@@ -60,7 +64,6 @@ NO_CB_PACK_OPTS ?= \
 		-pszarp-scripts \
 		-pszarp-server \
 		-pszarp-server-complete \
-		-pszarp-sssweb \
 		-pszarp-terminal \
 		-pszarp-updater \
 		-pszarp-utils \
@@ -79,6 +82,8 @@ else
 	CFLAGS = -O2
 	CXXFLAGS = -O2
 endif
+
+
 
 configure: 
 	./autogen.sh
@@ -115,7 +120,7 @@ build:
 install: 
 	dh_testroot
 	$(MAKE) install DESTDIR=$(CURDIR)/$(INSTALL_DIR)
-	dh_installdirs 
+	dh_installdirs
 	@(cd $(INSTALL_DIR); ../install_gen $(DH_OPTIONS));
 	dh_install -X.svn --sourcedir=$(INSTALL_DIR)
 
@@ -133,7 +138,7 @@ binary-arch-common:
 	dh_testroot
 	dh_link
 	dh_strip
-	dh_compress 
+	dh_compress
 	dh_makeshlibs
 	dh_installinit -udefaults\ 98 --name=parstart
 	dh_installinit -i
@@ -143,7 +148,7 @@ binary-arch-common:
 	dh_installdeb
 	dh_shlibdeps
 	dh_perl
-	dh_installdebconf 
+	dh_installdebconf
 	dh_gencontrol -- -DVersion=$(SZARP_VERSION)
 	dh_md5sums
 	dh_builddeb
@@ -155,6 +160,32 @@ debian/build-doc-pdf:
 debian/build-doc-html:
 	$(MAKE) -C resources/documentation/new html
 	touch $@
+
+debian/build-sssweb: debian/config-status-no-cb
+	$(MAKE) -C www/pylons/sssweb
+	@touch $@
+
+install-sssweb: DH_OPTIONS=-pszarp-sssweb
+install-sssweb:
+	dh_testroot
+	$(MAKE) -C www/pylons/sssweb install DESTDIR=$(CURDIR)/$(INSTALL_DIR)
+	dh_installdirs
+	@(cd $(INSTALL_DIR); ../install_gen $(DH_OPTIONS));
+	dh_install -X.svn --sourcedir=$(INSTALL_DIR)
+
+create-sssweb: DH_OPTIONS=-pszarp-sssweb
+create-sssweb:
+	dh_testroot
+	dh_installinit -i
+	dh_installdocs
+	dh_installlogrotate
+	dh_installdeb
+	dh_pysupport
+	dh_gencontrol -- -DVersion=$(SZARP_VERSION)
+	dh_md5sums
+	dh_builddeb
+
+binary-sssweb: sanity_check configure debian/build-sssweb install-sssweb create-sssweb
 
 binary-arch: binary-no-cb
 
@@ -181,7 +212,7 @@ create-indep:
 	dh_md5sums 
 	dh_builddeb 
 
-binary-indep: build-indep install-indep create-indep
+binary-indep: build-indep install-indep create-indep binary-sssweb
 
 sanity_check:
 	dh_testroot
