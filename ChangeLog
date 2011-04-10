@@ -1,4 +1,6 @@
 2010-04-10	Krzysztof Ga³±zka <kg@newterm.pl>
+	* debian/rules: fix dh_pysupport must be called before dh_installdeb
+2010-04-10	Krzysztof Ga³±zka <kg@newterm.pl>
 	* debian/compat: switch level to 5 because 4 is depreciated
 	* debian/rules: separate rules for building szarp-sssweb (dh_pyshared)
 	* debian/packs.files, www/pylons/sssweb/Makefile.am: fixed rules for packages building
