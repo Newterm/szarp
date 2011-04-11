@@ -1,3 +1,10 @@
+2010-04-10	Krzysztof Ga³±zka <kg@newterm.pl>
+	* debian/rules: fix dh_pysupport must be called before dh_installdeb
+2010-04-10	Krzysztof Ga³±zka <kg@newterm.pl>
+	* debian/compat: switch level to 5 because 4 is depreciated
+	* debian/rules: separate rules for building szarp-sssweb (dh_pyshared)
+	* debian/packs.files, www/pylons/sssweb/Makefile.am: fixed rules for packages building
+	* www/pylons/sssweb/setup.py: getting version from debian/changelog
 2010-04-07	Krzysztof Ga³±zka <kg@newterm.pl>
 	* wx/draw3/drawapp.cpp: proper handling of verbose & debug options
 	* wx/draw3/drawpnl.cpp: broken shift+left/right after adding DECADE

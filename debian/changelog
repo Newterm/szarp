@@ -1,3 +1,15 @@
+szarp (3.1.526) testing; urgency=low
+
+  * building for squeeze
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Sun, 10 Apr 2011 22:06:22 +0200
+
+szarp (3.1.525) testing; urgency=low
+
+  * building for squeeze
+
+ -- Pawel Palucha <pawel@praterm.com.pl>  Sat, 09 Apr 2011 12:38:09 +0200
+
 szarp (3.1.524) unstable; urgency=low
 
   * building unstable
