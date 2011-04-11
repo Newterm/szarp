@@ -1,14 +1,18 @@
-2010-04-10	Krzysztof Ga³±zka <kg@newterm.pl>
+2011-04-11	Krzysztof Golinski <krzgol@newterm.pl>
+	* INSTALL.Windows: updated
+	* wx/sync/Makefile.am: fixed - create *.mo file in a proper place
+	* removed ssc.mo and out-of-data draw3-language2.png
+2011-04-10	Krzysztof Ga³±zka <kg@newterm.pl>
 	* debian/rules: fix dh_pysupport must be called before dh_installdeb
-2010-04-10	Krzysztof Ga³±zka <kg@newterm.pl>
+2011-04-10	Krzysztof Ga³±zka <kg@newterm.pl>
 	* debian/compat: switch level to 5 because 4 is depreciated
 	* debian/rules: separate rules for building szarp-sssweb (dh_pyshared)
 	* debian/packs.files, www/pylons/sssweb/Makefile.am: fixed rules for packages building
 	* www/pylons/sssweb/setup.py: getting version from debian/changelog
-2010-04-07	Krzysztof Ga³±zka <kg@newterm.pl>
+2011-04-07	Krzysztof Ga³±zka <kg@newterm.pl>
 	* wx/draw3/drawapp.cpp: proper handling of verbose & debug options
 	* wx/draw3/drawpnl.cpp: broken shift+left/right after adding DECADE
-2010-04-06	Krzysztof Golinski <krzgol@newterm.pl>
+2011-04-06	Krzysztof Golinski <krzgol@newterm.pl>
 	* wx/common/szapp.cpp: improved initialization of a language
 	* wx/draw3/drawfrm.cpp: removed button "choose language" from toolbar
 	* resources/documentation/new/draw3/draw3.sgml: updated documemtation
