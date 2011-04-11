@@ -58,6 +58,11 @@ struct serial_port_configuration {
 	} parity;
 	int stop_bits;
 	int speed;
+	enum CHAR_SIZE {
+		CS_6,
+		CS_7,
+		CS_8
+	} char_size;
 };
 
 /**common class for types of drivers, actually the only thing they share is a fact
@@ -156,6 +161,7 @@ public:
 	virtual void connection_error(struct bufferevent *bufev) = 0;
 	virtual void data_ready(struct bufferevent* bufev) = 0;
 	virtual void starting_new_cycle() = 0;
+	virtual void finished_cycle() = 0;
 	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration&) = 0;
 };
 
@@ -181,6 +187,9 @@ public:
 	virtual int connection_accepted(struct bufferevent* bufev, int socket, struct sockaddr_in* addr) = 0;
 	/** notifies driver that new cycle was started*/
 	virtual void starting_new_cycle() = 0;
+	/** notifies driver that we are finishing cycle*/
+	virtual void finished_cycle() = 0;
+
 	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send) = 0;
 };
 
@@ -361,6 +370,9 @@ public:
 	int configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols);
 	/**does nothing at this moment*/
 	int initialize();
+
+	void finished_cycle();
+
 	void starting_new_cycle();
 	/**reopen connections at driver requests*/
 	void restart_connection_of_driver(serial_server_driver* driver);
@@ -404,6 +416,7 @@ public:
 	tcp_server_manager(boruta_daemon *boruta) : m_boruta(boruta) {}
 	int configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols);
 	int initialize();
+	void finished_cycle();
 	void starting_new_cycle();
 	static void connection_read_cb(struct bufferevent *ev, void* _tcp_connection);
 	static void connection_error_cb(struct bufferevent *ev, short event, void* _tcp_connection);

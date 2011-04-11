@@ -192,8 +192,10 @@ borutadmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE
 
 sbusdmn_SOURCES = sbusdmn.cc
 
+ddedmn_SOURCES = ddedmn.cc
 ddedmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(XMLRPC_EPI_LIBS) $(CURL_LIBS) -lstdc++
 
+setdmn_SOURCES = setdmn.cc
 setdmn_LDADD = $(LDADD) @EVENT_LIBS@ -lstdc++
 
 iecdmn_SOURCES = iecdmn.cc

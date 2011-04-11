@@ -1,4 +1,54 @@
-
+2011-04-11	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/boruta: added configuratble characters size for
+	serial connections
+2011-04-11	Krzysztof Golinski <krzgol@newterm.pl>
+	* INSTALL.Windows: updated
+	* wx/sync/Makefile.am: fixed - create *.mo file in a proper place
+	* removed ssc.mo and out-of-data draw3-language2.png
+2011-04-10	Krzysztof Ga³±zka <kg@newterm.pl>
+	* debian/rules: fix dh_pysupport must be called before dh_installdeb
+2011-04-10	Krzysztof Ga³±zka <kg@newterm.pl>
+	* debian/compat: switch level to 5 because 4 is depreciated
+	* debian/rules: separate rules for building szarp-sssweb (dh_pyshared)
+	* debian/packs.files, www/pylons/sssweb/Makefile.am: fixed rules for packages building
+	* www/pylons/sssweb/setup.py: getting version from debian/changelog
+2011-04-07	Krzysztof Ga³±zka <kg@newterm.pl>
+	* wx/draw3/drawapp.cpp: proper handling of verbose & debug options
+	* wx/draw3/drawpnl.cpp: broken shift+left/right after adding DECADE
+2011-04-06	Krzysztof Golinski <krzgol@newterm.pl>
+	* wx/common/szapp.cpp: improved initialization of a language
+	* wx/draw3/drawfrm.cpp: removed button "choose language" from toolbar
+	* resources/documentation/new/draw3/draw3.sgml: updated documemtation
+	* resources/documentation/new/draw3/html/pics/*: updated images
+2011-03-30	Krzysztof Golinski <krzgol@newterm.pl>
+	* meaner3/utils/szbwriter.cc: option fill_how_many - added support for
+	10 sec probes
+2011-03-29	Krzysztof Ga³±zka <kg@newterm.pl>
+	* libSzarp2/*, wx/draw3/*: 'DECADE' - new average type in draw3 
+2011-03-25	Krzysztof Golinski <krzgol@newterm.pl>
+	* meaner3/utils/szbwriter.cc: added option fill_how_many - save data in
+	database for 10min probes, added more debug information (level 10)
+2010-03-25	Pawel Palucha <pawel@newterm.pl>
+	* AUTHORS, wx/common/szapp.cpp: updated authors list.
+2010-03-24	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: SetPeriod method was incorrectly used to initialize
+	new Draw objects, the problem was that it rounds provided start time,
+	as a result - new Draw object were sometimes shifted in time
+2010-03-23	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/boruta*: added missing finish_cycle methods for server drivers
+2010-03-23	Krzysztof Golinski <krzygol@newterm.pl>
+	* script/szbwgen.py: Script szbwgen.py added. It generates random data for 
+	szbwriter.
+2010-03-10	Krzysztof Galazka <kg@newterm.pl>
+	* www/pylons/sssweb: major refactoring for pylons 0.10
+	* wx/sync/ssconfd/ssconf.py: missing 'self'
+	* utils/{szrsync,szbpush}: SSH on non-standard port
+2010-02-26	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/execdmn.cc: more logging.
+	* wx/draw3: limit of 12 graphs per window removed
+2010-02-23	Krzysztof Galazka <kg@newterm.pl>
+	* meaner3/tsaveparam.cc: open files with O_CLOEXEC flag to avoid
+	problems with running execute sections.
 2011-02-22	Pawel Palucha <pawel@newterm.pl>
 	* acinclude.m4, */Makefile.am: added depended libraries, required by
 	new ld version from Debian unstable.

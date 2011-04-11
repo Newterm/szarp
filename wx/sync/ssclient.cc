@@ -39,9 +39,6 @@ typedef short int               int16_t;
 #include <functional>
 #include <set>
 
-#include <ares.h>
-#include <ares_dns.h>
-
 namespace fs = boost::filesystem;
 
 #ifndef MINGW32

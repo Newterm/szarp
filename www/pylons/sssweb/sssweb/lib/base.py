@@ -3,12 +3,16 @@
 Provides the BaseController class for subclassing, and other objects
 utilized by Controllers.
 """
-from pylons import c, cache, config, g, request, response, session
+from pylons import tmpl_context as c
+from pylons import app_globals
+from pylons import cache, request, response, session, url
+
 from pylons.controllers import WSGIController
-from pylons.controllers.util import abort, etag_cache, redirect_to
+from pylons.controllers.util import abort, redirect
 from pylons.decorators import jsonify, validate
 from pylons.i18n import _, ungettext, N_
-from pylons.templating import render
+
+from pylons.templating import render_mako as render
 
 import sssweb.lib.helpers as h
 import sssweb.model as model
@@ -20,7 +24,7 @@ class BaseController(WSGIController):
     def __before__(self):
         # Authentication required?
 	if self.requires_auth and 'user' not in session:
-		return redirect_to(h.url_for(controller='login', qualified = True))
+		return redirect(url(controller='login', qualified = True))
 
     def __call__(self, environ, start_response):
         """Invoke the Controller"""

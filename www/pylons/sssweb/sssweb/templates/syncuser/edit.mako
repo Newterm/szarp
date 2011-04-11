@@ -1,6 +1,6 @@
-<%inherit file="admin.mako"/>
+<%inherit file="/admin.mako"/>
 
-${h.form(h.url_for(action='save_user', id = c.user['name'], method='post'))}
+${h.form(h.url_for(method='post'))}
   <p>User name: ${h.text('name', value=c.user['name'], disabled = (len(c.user['name']) > 0))}</p>
 <p>E-mail ${h.text('email', value=c.user['email'])}</p>
 <p>Expire:
@@ -61,10 +61,10 @@ ${h.end_form()}
 
 % if len(c.user['name']) > 0:
 ${h.form(h.url_for(action='reset_password', id=c.user['name'], method='post'))}
-${h.submit('remove', 'Reset password')}
+${h.submit('reset', 'Reset password')}
 ${h.end_form()}
 
-${h.form(h.url_for(action='remove_user', id=c.user['name'], method='post'))}
+${h.form(h.url_for(action='delete', id=c.user['name'], method='post'))}
 ${h.submit('remove', 'Remove user')}
 ${h.end_form()}
 % endif

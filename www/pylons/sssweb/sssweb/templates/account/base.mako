@@ -1,4 +1,4 @@
-<%inherit file="base.mako"/>
+<%inherit file="/base.mako"/>
 
 <div class="links">
 <%
@@ -9,3 +9,4 @@
 </div>
 ${next.body()}
 
+<!-- vim:set ft=mako: -->

@@ -1,3 +1,63 @@
+szarp (3.1.526) testing; urgency=low
+
+  * building for squeeze
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Sun, 10 Apr 2011 22:06:22 +0200
+
+szarp (3.1.525) testing; urgency=low
+
+  * building for squeeze
+
+ -- Pawel Palucha <pawel@praterm.com.pl>  Sat, 09 Apr 2011 12:38:09 +0200
+
+szarp (3.1.524) unstable; urgency=low
+
+  * building unstable
+
+ -- Krzysztof Goliński <krzgol@newterm.pl>  Thu, 07 Apr 2011 20:23:33 +0200
+
+szarp (3.1.523) stable; urgency=low
+
+  * building stable
+
+ -- Pawel Palucha <pawel@newterm.pl>  Tue, 05 Apr 2011 09:17:35 +0200
+
+szarp (3.1.522) unstable; urgency=low
+
+  * building unstable 
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Thu, 31 Mar 2011 21:59:34 +0200
+
+szarp (3.1.521) unstable; urgency=low
+
+  * building unstable 
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Thu, 31 Mar 2011 19:06:05 +0200
+
+szarp (3.1.520) unstable; urgency=low
+
+  * building unstable 
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Thu, 31 Mar 2011 17:52:05 +0200
+
+szarp (3.1.519) unstable; urgency=low
+
+  * building unstable
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Thu, 31 Mar 2011 17:47:24 +0200
+
+szarp (3.1.518) unstable; urgency=low
+
+  * building unstable
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Thu, 24 Mar 2010 15:54:01 +0200
+
+szarp (3.1.516) unstable; urgency=low
+
+  * building unstable
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Thu, 26 Jan 2010 15:54:01 +0200
+
 szarp (3.1.515) testing; urgency=low
 
   * building packages for squeeze - 3

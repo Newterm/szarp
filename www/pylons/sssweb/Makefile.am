@@ -39,16 +39,16 @@ clean:
 	rm -rf sssweb.egg-info
 
 install-data-local:
-	python${PYVER} setup.py install --root $(DESTDIR) --single-version-externally-managed
-	$(INSTALL) -d $(DESTDIR)/var/cache/pylons-sssweb
 	$(INSTALL) -d $(DESTDIR)/etc/szarp
+	$(INSTALL) -d $(DESTDIR)/var/cache/pylons-sssweb
 	$(INSTALL) -m 0644 production.ini $(DESTDIR)/etc/szarp/ssweb.ini
 	$(INSTALL) -m 0644 ssweb-apache.conf $(DESTDIR)/etc/szarp/
-	@if [ -e $(DESTDIR)/usr/local/lib/python$(PYTHON_VERSION)/dist-packages/sssweb ]; then \
-			$(INSTALL) -d $(DESTDIR)/usr/lib/python$(PYTHON_VERSION)/site-packages; \
-			cp -a $(DESTDIR)/usr/local/lib/python$(PYTHON_VERSION)/dist-packages/*  $(DESTDIR)/usr/lib/python$(PYTHON_VERSION)/site-packages; \
-	fi
-	cp -a $(DESTDIR)/usr/lib/python$(PYTHON_VERSION)/site-packages/sssweb-*.egg-info  $(DESTDIR)/usr/lib/python$(PYTHON_VERSION)/site-packages/sssweb.egg-info 
+if DEB_BUILD
+	python${PYVER} setup.py install --root $(DESTDIR) --prefix /usr --single-version-externally-managed
+else
+	python${PYVER} setup.py install --single-version-externally-managed
+endif
+
 update-po:
 	python setup.py extract_messages
 	python setup.py update_catalog

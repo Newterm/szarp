@@ -471,6 +471,7 @@ bool szb_compile_lua_formula(lua_State *lua, const char *formula, const char *fo
 	"	local PT_DAY = ProbeType.PT_DAY"	<< endl <<
 	"	local PT_WEEK = ProbeType.PT_WEEK"	<< endl <<
 	"	local PT_MONTH = ProbeType.PT_MONTH"	<< endl <<
+	"	local PT_YEAR = ProbeType.PT_YEAR"	<< endl <<
 	"	local PT_CUSTOM = ProbeType.PT_CUSTOM"	<< endl <<
 	"	local szb_move_time = szb_move_time"	<< endl <<
 	"	local state = {}"			<< endl <<
@@ -671,6 +672,7 @@ static int InitProbeType(lua_State *lua) {
 	LUA_ENUM(PT_DAY);
 	LUA_ENUM(PT_WEEK);
 	LUA_ENUM(PT_MONTH);
+	LUA_ENUM(PT_YEAR);
 	LUA_ENUM(PT_CUSTOM);
 	
 	lua_setglobal(lua, "ProbeType");

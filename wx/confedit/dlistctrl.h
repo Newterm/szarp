@@ -64,6 +64,8 @@ class DrawsListCtrl : public wxListCtrl {
 	 * @return 0-based position of selected item, -1 if no item is selected
 	 */
 	long GetSelection();
+
+	bool Modified() { return modified; }
   protected:
 	/** Change position of item.
 	 * @param from index of item to move
@@ -74,6 +76,8 @@ class DrawsListCtrl : public wxListCtrl {
 	 * item1 and item2 arguments are really xmlNode pointers
 	 */
 	int static wxCALLBACK sort_callback(long item1, long item2, long ignored);
+
+	bool modified;
 };
 
 

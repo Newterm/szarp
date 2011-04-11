@@ -316,7 +316,13 @@ public:
 
 	void MoveToTime(const DTime& time);
 
+	/**Sets start time and number of values
+	* @param time start time (this time will be rounded to start time for period being set)
+	* @param number_of_values number of values for this period*/
 	void SetPeriod(const DTime& time, size_t number_of_values);
+
+	/** Method similar to @see SetPeriod, but given time is not rounded */
+	void SetStartTimeAndNumberOfValues(const DTime& start_time, size_t number_of_values);
 
 	/**@return @see DrawInfo associtaed with the draw*/
 	DrawInfo* GetDrawInfo() const;

@@ -101,10 +101,10 @@ class SelectDrawValidator : public wxValidator {
 /**
  * Widget for selecting draws.
  */
-class SelectDrawWidget: public wxWindow, public DrawObserver, public ConfigObserver
+class SelectDrawWidget: public wxScrolledWindow, public DrawObserver, public ConfigObserver
 {
 public:
-	SelectDrawWidget() : wxWindow()
+	SelectDrawWidget() : wxScrolledWindow()
 	{ }
 	/**
 	 * @param cfg configuration manager
@@ -152,7 +152,9 @@ protected:
 	/** widget for drawing draws */
 	DrawsWidget *m_draws_wdg;
 	/** array of checkboxes */
-	wxCheckBox m_cb_l[MAX_DRAWS_COUNT];
+	std::vector<wxCheckBox*> m_cb_l;
+
+	int GetCheckBoxWidth();
 
 	/**return number of selected draw*/
 	int GetClicked(wxCommandEvent &event);

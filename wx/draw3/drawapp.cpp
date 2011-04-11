@@ -273,7 +273,7 @@ bool DrawApp::OnInit() {
 	splash->PushStatusText(_("Initializing IPKContainer..."));
 	IPKContainer::Init(GetSzarpDataDir().c_str(), 
 			GetSzarpDir().c_str(), 
-			wxConfig::Get()->Read(_T("LANGUAGE"), _T("pl")).c_str(), 
+			wxConfig::Get()->Read(_T("LANGUAGE"), DEFAULT_LANGUAGE ).c_str(), 
 			new szMutex());
 	m_cfg_mgr = new ConfigManager(this, IPKContainer::GetObject());
 
@@ -407,8 +407,7 @@ void DrawApp::OnInitCmdLine(wxCmdLineParser &parser) {
 		_("open url in existing window"));
 
 
-	parser.AddSwitch(_T("v"), wxEmptyString, 
-		_("verbose logging"));
+	parser.AddSwitch(_T("v"), _T("verbose"), _("verbose logging"));
 
 	parser.AddSwitch(_T("V"), _T("version"), 
 		_("print version number and exit"));
@@ -418,8 +417,7 @@ void DrawApp::OnInitCmdLine(wxCmdLineParser &parser) {
 		_("libparnt value initialization"));
 #endif
 	
-	parser.AddOption(_T("debug"), wxEmptyString,
-		_("debug level"), wxCMD_LINE_VAL_NUMBER);
+	parser.AddOption(_T("d"), _T("debug"), _("debug level"), wxCMD_LINE_VAL_NUMBER);
 	
 
 }

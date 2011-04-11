@@ -47,6 +47,10 @@ endif
 
 WIN_APP_NAME=SSC
 
+CLEANFILES = $(ssc_LOCALES)
+
+EXTRA_DIST = $(sscLOCALES_SRC) $(ssc_LOCALES)
+
 # Creating resources file with icons for Windows
 ICON_SRC := ../../resources/wx/icons/ssc64.xpm
 ICON := $(shell basename $(ICON_SRC) .xpm)

@@ -67,8 +67,6 @@ class SummaryWindow : public wxDialog, public DrawObserver {
 		bool update;
 		/**Indicates if tooltip shall be updated in IDLE event handler*/
 		bool tooltip;
-		/**Indicates if this is a 'hoursum' type of draw. This the only type that is displayed*/
-		bool hoursum;
 		/**Indicates if label is attached to a window*/
 		bool attached;
 	};
@@ -96,6 +94,10 @@ class SummaryWindow : public wxDialog, public DrawObserver {
 	/**Labels displaying values*/
 	TLabelPtrArray m_labels;
 
+	TTLabel* m_no_draws_label;
+
+	wxStaticLine* m_no_draws_line;
+
 	/**Line separating values*/
 	LinePtrArray m_lines;
 
@@ -103,6 +105,8 @@ class SummaryWindow : public wxDialog, public DrawObserver {
 	DrawPanel *draw_panel;
 
 	DrawsController *draws_controller;
+
+	wxBoxSizer* m_values_sizer;
 
 	/**Adjusts window size to the size of a main sizer*/
 	void Resize();
@@ -126,8 +130,6 @@ class SummaryWindow : public wxDialog, public DrawObserver {
 	void OnClose(wxCloseEvent &event);
 
 	void OnHelpButton(wxCommandEvent &event);
-
-	void ResetDraw(Draw *draw);
 
 	void SetDraw(Draw *draw);
 

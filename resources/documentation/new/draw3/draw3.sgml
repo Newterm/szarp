@@ -69,14 +69,14 @@ Ten rozdzia³ opisuje:
 <section id="draw3-base-run">
 <title>Uruchomienie programu</title>
 <para>
-Program bêdziesz zwykle uruchamiaæ pos³uguj±c siê programem Centrum Sterowania Szarp (SCC). Wystarczy klikn±æ lewym przyciskiem myszki na ikonê SCC i wybraæ interesuj±c± nas ciep³owniê lub wêze³ cieplny (wiêcej informacji o SCC mo¿esz znale¼æ w dokumencie <ulink url="http://szarp.com.pl/howto/scc/html/scc.html">Centrum Sterowania SZARP</ulink> [<ulink url="http://szarp.com.pl/howto/_pdf/scc.pdf">pdf</ulink>]). Proces uruchomienia (tutaj na systemie Linux) jest widoczny poni¿ej:
+Program bêdziesz zwykle uruchamiaæ pos³uguj±c siê programem Centrum Sterowania Szarp (SCC). Wystarczy klikn±æ lewym przyciskiem myszki na ikonê SCC i wybraæ interesuj±c± nas ciep³owniê lub wêze³ cieplny (wiêcej informacji o SCC mo¿esz znale¼æ w dokumencie <ulink url="http://szarp.org/szarp/doc/scc/html/scc.html">Centrum Sterowania SZARP</ulink> [<ulink url="http://szarp.org/szarp/doc/pdf/scc-article.pdf">pdf</ulink>]). Proces uruchomienia (tutaj na systemie Linux) jest widoczny poni¿ej:
 <figure> <title>Centrum Sterowania Szarp - uruchomienie programu przegl±daj±cego (pod Linuksem)</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-scc.png"></imageobject>
 </mediaobject></figure>
 <note>
 <para>
-¯eby uruchomiæ program przegl±daj±cy, musisz mieæ dostêp do danych, które bêd± w nim wy¶wietlane. Mo¿esz albo ¶ci±gn±æ dane na dysk poprzez synchronizator danych (wiêcej o synchronizacji w dokumencie <ulink url="http://szarp.com.pl/howto/ssc/html/ssc.html">Synchronizator plików</ulink>), albo zalogowaæ siê do systemu, który takie dane przechowuje. Do systemu mo¿esz siê zalogowaæ bezpo¶rednio (pracuj±c pod Linuksem) lub (w przypadku systemu Windows) za pomoc± emulatora X-terminala (np. Cygwin). Program SCC automatycznie wy¶wietla nazwy wszystkich ciep³owni (lub innych obiektów), dla których dostêpne s± dane.
+¯eby uruchomiæ program przegl±daj±cy, musisz mieæ dostêp do danych, które bêd± w nim wy¶wietlane. Mo¿esz albo ¶ci±gn±æ dane na dysk poprzez synchronizator danych (wiêcej o synchronizacji w dokumencie <ulink url="http://szarp.org/szarp/doc/ssc/html/ssc.html">Synchronizator plików</ulink>), albo zalogowaæ siê do systemu, który takie dane przechowuje. Do systemu mo¿esz siê zalogowaæ bezpo¶rednio (pracuj±c pod Linuksem) lub (w przypadku systemu Windows) za pomoc± emulatora X-terminala (np. Cygwin). Program SCC automatycznie wy¶wietla nazwy wszystkich ciep³owni (lub innych obiektów), dla których dostêpne s± dane.
 </para>
 </note>
 </para>
@@ -129,7 +129,6 @@ oraz ikony skrótów:
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-split_icon.png"></imageobject></inlinemediaobject> - Rozdwojony kursor - wiêcej <xref linkend="draw3-ext-doublecursor"></para></listitem>
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-filtericon.png"></imageobject></inlinemediaobject> - Filtr - wiêcej <xref linkend="draw3-ext-filter"></para></listitem>
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-refresh_icon.png"></imageobject></inlinemediaobject> - Od¶wie¿  - wiêcej <xref linkend="draw3-ext-refresh"></para></listitem>
-<listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-flag_pl_icon.png"></imageobject></inlinemediaobject> - Zmieñ jêzyk programu - wiêcej <xref linkend="draw3-ext-languages"></para></listitem>
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-remark_icon.png"></imageobject></inlinemediaobject> - Poka¿ kometarze dla akutalnej konfiguracji - wiêcej <xref linkend="draw3-ext-remarks"></para></listitem>
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-exit_icon.png"></imageobject></inlinemediaobject> - Wyjd¼ - wyj¶cie z programu</para></listitem>
 </itemizedlist>
@@ -405,7 +404,7 @@ Program przegl±daj±cy potrafi samodzielnie doczytaæ zmieniaj±ce siê wykresy (np.
 <section id="draw3-ext-blockgraphs">
 <title>Blokowanie wykresów</title>
 <para>
-Je¶li chcesz porównaæ warto¶ci parametrów z ró¿nych okresów czasowych (np. temperaturê steruj±c± z marca z temperatur± odniesienia z kwietnia), wykorzystaj funkcjê blokowania wykresu. Kliknij prawym klawiszem na tytu³ wykresu i wybierz <quote>Wykres zablokowany</quote>. Na pokazanym poni¿ej zestawie wykresów zablokowany zosta³ wykres "Temp. steruj±ca":
+Je¶li chcesz porównaæ warto¶ci parametrów z ró¿nych okresów czasowych (np. temperaturê steruj±c± z marca z temperatur± odniesienia z kwietnia), wykorzystaj funkcjê blokowania wykresu. Kliknij prawym klawiszem na tytu³ wykresu i wybierz <quote>Wykres zablokowany</quote>. Na pokazanym poni¿ej zestawie wykresów zablokowany zosta³ wykres "Temp. powrotna":
 <figure><title>Blokowanie wykresu</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-blockgraph.png"></imageobject>
@@ -416,7 +415,7 @@ Je¶li chcesz porównaæ warto¶ci parametrów z ró¿nych okresów czasowych (np. tempe
 Do zablokowania wykresu mo¿esz równie¿ u¿yæ skrótu klawiszowego <keycode>Ctrl + B</keycode>.
 </para>
 <para>
-Po przesuniêciu czasu na marzec, wykres "Temp. steruj±ca" (oznaczony kolorem ¿ó³tym) nie zmieni³ swojego po³o¿enia (zwróæ uwagê, ¿e przy nazwie zablokowanego wykresu pojawi³ siê dopisek <emphasis>[B]</emphasis>):
+Po przesuniêciu czasu z lutego na styczeñ, wykres "Temp. powrotna" (oznaczony kolorem ¿ó³tym) nie zmieni³ swojego po³o¿enia (zwróæ uwagê, ¿e przy nazwie zablokowanego wykresu pojawi³ siê dopisek <emphasis>[B]</emphasis>):
 <figure><title>Zablokowany wykres</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-blockgraph2.png"></imageobject>
@@ -768,17 +767,6 @@ programie.
 </mediaobject></figure>
 </para>
 <para>
-¯eby zmieniæ jêzyk programu, mo¿esz równie¿ klikn±æ ikonê z flag± 
-<inlinemediaobject><imageobject><imagedata align="center" 
-fileref="pics/draw3-flag_pl_icon.png"></imageobject></inlinemediaobject> widoczn± na dole
-g³ównego okna programu i wybraæ odpowiedni jêzyk.
-<figure>
-<title>Zmiana jêzyka programu Draw3</title>
-<mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-language2.png"></imageobject>
-</mediaobject></figure>
-</para>
-<para>
 Po ka¿dej zmianie jêzyka musisz ponownie uruchomiæ program przegl±daj±cy.
 </para>
 </section> <!-- draw3-ext-languages -->
@@ -896,7 +884,7 @@ liczony parametr.
 Sam± formu³ê wstawiamy w okienko formu³y, piszemy j± w jêzyku skryptowym LUA - mo¿esz u¿ywaæ wyra¿eñ arytmetycznych, odwo³ywaæ siê do 
 warto¶ci innych parametrów. Wiêcej na ten temat znajdziesz w rozdziale 
 <xref linkend="draw3-ext-luamath"> oraz w 
-<ulink url="http://www.szarp.com.pl/howto/ipk/html/draw-definable-lua.html">dokumentacji
+<ulink url="http://szarp.org/szarp/doc/ipk/html/draw-definable-lua.html">dokumentacji
 technicznej systemu SZARP</ulink>.
 </para>
 <para>
@@ -1365,7 +1353,7 @@ math.sqrt(100)
 </table>
 </para>
 <para>
-Wiêcej o pisaniu w³asnych funkcji mo¿esz przeczytaæ w rozdziale <ulink url="http://www.szarp.com.pl/howto/ipk/html/draw-definable-lua.html">Parametry definiowalne LUA</ulink> dokumentu <ulink url="http://www.szarp.com.pl/howto/ipk/html/szarp.html">System SZARP - dokumentacja techniczna</ulink>.
+Wiêcej o pisaniu w³asnych funkcji mo¿esz przeczytaæ w rozdziale <ulink url="http://szarp.org/szarp/doc/ipk/html/draw-definable-lua.html">Parametry definiowalne LUA</ulink> dokumentu <ulink url="http://szarp.org/szarp/doc/ipk/html/szarp.html">System SZARP - dokumentacja techniczna</ulink>.
 </para>
 
 </section> <!-- draw3-ext-luamath -->

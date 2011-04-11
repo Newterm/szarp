@@ -232,12 +232,24 @@ time_t szb_round_time(time_t t, SZARP_PROBE_TYPE probe_type, int custom_length)
 			tm.tm_mday = 1;
 			tm.tm_isdst = -1;
 			return mktime(&tm);
+		case PT_YEAR :
+#ifndef HAVE_LOCALTIME_R
+			ptm = localtime(&t);
+			memcpy(&tm, ptm, sizeof(struct tm));
+#else
+			localtime_r(&t, &tm);
+#endif
+			tm.tm_sec = tm.tm_min = tm.tm_hour = 0;
+			tm.tm_mday = 1;
+			tm.tm_mon = 1;
+			tm.tm_isdst = -1;
+			return mktime(&tm);
 	}
 	return -1;
 }
 
-time_t szb_move_time(time_t t, int count, SZARP_PROBE_TYPE probe_type,
-		                int custom_length)
+time_t
+szb_move_time(time_t t, int count, SZARP_PROBE_TYPE probe_type, int custom_length)
 {
 	struct tm tm;
 #ifndef HAVE_LOCALTIME_R
@@ -295,6 +307,16 @@ time_t szb_move_time(time_t t, int count, SZARP_PROBE_TYPE probe_type,
 			localtime_r(&t, &tm);
 #endif
 			tm.tm_mon += count;
+			tm.tm_isdst = -1;
+			return mktime(&tm);
+		case PT_YEAR :
+#ifndef HAVE_LOCALTIME_R
+			ptm = localtime(&t);
+			memcpy(&tm, ptm, sizeof(struct tm));
+#else
+			localtime_r(&t, &tm);
+#endif
+			tm.tm_year += count;
 			tm.tm_isdst = -1;
 			return mktime(&tm);
 	}

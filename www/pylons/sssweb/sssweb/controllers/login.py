@@ -1,9 +1,10 @@
 import logging
+import hashlib
+
+from pylons.i18n import set_lang
+from pylons.decorators import rest
 
 from sssweb.lib.base import *
-import hashlib
-from pylons.i18n import set_lang
-from pylons import config
 
 log = logging.getLogger(__name__)
 
@@ -11,7 +12,7 @@ class LoginController(BaseController):
 
 	def __before__(self):
 		BaseController.__before__(self)
-		set_lang(config['lang'])
+		set_lang(app_globals.config['lang'])
 
 	def index(self):
 		"""
@@ -26,6 +27,7 @@ class LoginController(BaseController):
 		c.error = _("Invalid user/password")
 		return render('/login.mako')
 
+        @rest.restrict('POST')
 	def submit(self):
 		"""
 		Verify username and password
@@ -37,20 +39,20 @@ class LoginController(BaseController):
 		m.update(form_password)
 		passhash = m.hexdigest()
 		# Get user data from database
-		if g.rpcservice.check_admin(form_username, passhash):
+		if app_globals.rpcservice.check_admin(form_username, passhash):
 			# Mark admin as logged in
 			session['user'] = form_username
 			session['passhash'] = passhash
 			session.save()
-			return redirect_to(controller='ssconf', action='index')
+			return redirect(url(controller='syncuser'))
 
-		if g.rpcservice.check_user(form_username, passhash):
+		if app_globals.rpcservice.check_user(form_username, passhash):
 			# Mark user as logged in
 			session['user'] = form_username
 			session['passhash'] = passhash
 			session.save()
-			return redirect_to(controller='user', action='index')
-		return redirect_to(action = 'invalid')
+			return redirect(url(controller='account'))
+		return redirect(h.url_for(action = 'invalid'))
 
 	def logout(self):
 		"""
@@ -60,7 +62,7 @@ class LoginController(BaseController):
 			del session['user']
 			del session['passhash']
 			session.save()
-			return redirect_to(controller='login')
+			return redirect(url(controller='login'))
 
 	def reminder(self):
 		"""
@@ -73,7 +75,7 @@ class LoginController(BaseController):
 		Password remind request submitted.
 		"""
 		user = request.params['username']
-		(key, email) = g.rpcservice.get_password_link(user)
+		(key, email) = app_globals.rpcservice.get_password_link(user)
 
 		if key:
 			msg = _("You (or someone else) requested change of forgotten password to SZARP Synchronization Server.\n\nIf you did not request password change, just ignore this e-mail.\nIf you want to reset your SZARP synchronization password, click (or paste to your WWW browser) following link: \n%s\nLink is valid to the end of current day.\n\nSZARP Synchronization Server\n") % (h.url_for(controller = 'login', action = 'activate_link', qualified = True, user = user, key = key))
@@ -91,7 +93,7 @@ class LoginController(BaseController):
 		"""
 		user = request.params['user']
 		key = request.params['key']
-		(password, email) = g.rpcservice.activate_password_link(user, key)
+		(password, email) = app_globals.rpcservice.activate_password_link(user, key)
 		if password is False:
 			c.error = _("Link is incorrect or outdated!")
 		else:
@@ -101,4 +103,3 @@ class LoginController(BaseController):
 		c.action = "index"
 		return render("/info.mako")
 
-	

@@ -58,8 +58,8 @@
 		extra:proto="modbus"
 			protocol to use for this unit
 		in case of serial line, following self-explanatory attributes are also supported:
-		extra:path, extra:speed, extra:parity, extra:stopbits (all but path are not required, 
-			they have defaults which are 9600, N, 1)
+		extra:path, extra:speed, extra:parity, extra:stopbits, extra:char_size (all but path are not required, 
+			they have defaults which are 9600, N, 1, 8)
 		in case of tcp client mode following attributes are required:
 		extra:tcp-address, extra:tcp-port
 		in case of tcp server mode one need to specify extra:tcp-port attribute
@@ -196,6 +196,25 @@ int get_serial_port_config(xmlNodePtr node, serial_port_configuration &spc) {
 		dolog(0, "Unsupported number of stop bits %s, confiugration invalid (line %ld)!!!", stop_bits.c_str(), xmlGetLineNo(node));
 		return 1;
 	}
+
+	std::string char_size;
+	get_xml_extra_prop(node, "char_size", char_size, true);
+	if (char_size.empty()) {
+		dolog(10, "Serial port configuration, char size not specified, assuming 8 bit char size");
+		spc.char_size = serial_port_configuration::CS_8;
+	} else if (char_size == "8") {
+		dolog(10, "Serial port configuration, setting 8 bit char size");
+		spc.char_size = serial_port_configuration::CS_8;
+	} else if (char_size == "7") {
+		dolog(10, "Serial port configuration, setting 7 bit char size");
+		spc.char_size = serial_port_configuration::CS_7;
+	} else if (char_size == "6") {
+		dolog(10, "Serial port configuration, setting 6 bit char size");
+		spc.char_size = serial_port_configuration::CS_6;
+	} else {
+		dolog(0, "Unsupported char size %s, confiugration invalid (line %ld)!!!", char_size.c_str(), xmlGetLineNo(node));
+		return 1;
+	}
 	return 0;
 }
 
@@ -255,7 +274,19 @@ int set_serial_port_settings(int fd, serial_port_configuration &spc) {
 	ti.c_iflag =
 	ti.c_lflag = 0;
 
-	ti.c_cflag |= CS8 | CREAD | CLOCAL ;
+	ti.c_cflag |= CREAD | CLOCAL ;
+
+	switch (spc.char_size) {
+		case serial_port_configuration::CS_8:
+			ti.c_cflag |= CS8;
+			break;
+		case serial_port_configuration::CS_7:
+			ti.c_cflag |= CS7;
+			break;
+		case serial_port_configuration::CS_6:
+			ti.c_cflag |= CS6;
+			break;
+	}
 
 	if (tcsetattr(fd, TCSANOW, &ti) == -1) {
 		dolog(1,"Cannot set port settings, errno: %d (%s)", errno, strerror(errno));	
@@ -811,6 +842,13 @@ void serial_server_manager::starting_new_cycle() {
 		(*i)->starting_new_cycle();
 }
 
+void serial_server_manager::finished_cycle() {
+	for (std::vector<serial_server_driver*>::iterator i = m_drivers.begin();
+			i != m_drivers.end();
+			i++)
+		(*i)->finished_cycle();
+}
+
 void serial_server_manager::restart_connection_of_driver(serial_server_driver* driver) {
 	std::vector<serial_server_driver*>::iterator i = std::find(m_drivers.begin(), m_drivers.end(), driver);		
 	assert(i != m_drivers.end());
@@ -900,6 +938,13 @@ void tcp_server_manager::starting_new_cycle() {
 		event_add(&i->_event, NULL);
 		event_base_set(m_boruta->get_event_base(), &i->_event);
 	}
+}
+
+void tcp_server_manager::finished_cycle() {
+	for (std::vector<tcp_server_driver*>::iterator i = m_drivers.begin();
+			i != m_drivers.end();
+			i++)
+		(*i)->finished_cycle();
 }
 
 void tcp_server_manager::connection_read_cb(struct bufferevent *bufev, void* _manager) {
@@ -1067,6 +1112,8 @@ void boruta_daemon::cycle_timer_callback(int fd, short event, void* daemon) {
 	boruta_daemon* b = (boruta_daemon*) daemon;
 	b->m_tcp_client_mgr.finished_cycle();
 	b->m_serial_client_mgr.finished_cycle();
+	b->m_tcp_server_mgr.finished_cycle();
+	b->m_serial_server_mgr.finished_cycle();
 	b->m_ipc->GoParcook();
 	b->m_ipc->GoSender();
 	b->m_tcp_client_mgr.starting_new_cycle();

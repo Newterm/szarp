@@ -7,6 +7,33 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+
+** 3.1.522
+# 01.04.2011
+* Przywrócona opcja fill_how_many programu szbwriter, przydatna przy masowym 
+zapisywaniu do bazy systemu SZARP danych z zewnêtrznych systemów, o okresie
+zbierania próbek d³u¿szym ni¿ 10 minut.
+* Dodany nowy tryb prezentacji danych w programie przegl±daj±cym - DEKADA - 
+prezentuj±cy ¶rednie roczne warto¶ci parametrów w okresie 10 lat.
+* Poprawki w funkcjonowaniu trybów serwerowych (TCP Server i RTU client) sterownika 
+protoko³u Modbus meta-sterownika Boruta.
+* Zmiany w interfejsie do zarz±dzania kontami synchronizatora danych SZARP 
+(sssweb) dla nowej wersji frameworku Pylons - 0.10.
+* Dodana mo¿liwo¶æ konfigurowania numeru portu po³±czenia ssh w narzêdziach do
+synchronizacji danych SZARP - szrsync i szbpush.
+
+** 3.1.518
+# 01.03.2011
+* Usuniêty limit 12 wykresów na zestaw w programie przegl±daj±cym.
+* Poprawki w programie Meaner3 dla systemów z otwart± bardzo du¿± ilo¶ci± plików - 
+dodana flaga O_CLOEXEC przy otwieraniu plików.
+* Sterowniki dla meta-demona Boruta przeznaczone do komunikacji za pomoc± ³±cza
+szeregowego mog± byæ obecnie u¿ywane tak¿e przez po³±czenie TCP/IP (fizycznie 
+wymagana jest np. przej¶ciówka Ethernet/RS232).
+* Zmiany pod k±tem uruchamiania SZARP w systemie Debian 6.0 Squeeze, w tym 
+wsparcie dla kodowañ systemowych innych ni¿ ISO-8859-2.
+* Utworzono dla SZARP'a szablon ekranu logowania dla menad¿era logowania gdm.
+
 ** 3.1.514
 # 01.02.2011
 * Dodano do dokumentacji programu przegl±daj±cego opis funkcji wyszukiwania danych.

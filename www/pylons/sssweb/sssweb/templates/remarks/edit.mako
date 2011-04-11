@@ -1,12 +1,12 @@
-<%inherit file="s_base.mako"/>
+<%inherit file="base.mako"/>
 
 <div class="links">
-    <span>${h.link_to('Synchronizer', h.url_for(controller='ssconf', action='index'))}</span>
-    <span>${h.link_to('Remarks', h.url_for(controller='remarks', action='index'))}</span>
-    <span>${h.link_to('Logout', h.url_for(controller='login', action='logout'))}</span>
+    <span>${h.link_to('Synchronizer', url(controller='syncuser', action='index'))}</span>
+    <span>${h.link_to('Remarks', url(controller='remarks', action='index'))}</span>
+    <span>${h.link_to('Logout', url(controller='login', action='logout'))}</span>
 </div>
 
-${h.form(h.url_for(action='save_user', id = c.user.id, method='post'))}
+${h.form(h.url_for(method='post'))}
   <p>Login: ${h.text('name', value=c.user.name, disabled = (len(c.user.name) > 0))}</p>
   <p>User name: ${h.text('real_name', value=c.user.real_name)}</p>
   <p>Password: ${h.password('password', value=c.password)}</p>

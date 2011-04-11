@@ -172,13 +172,13 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 		  id.c_str(), event.GetKeyCode());
 	switch (event.GetKeyCode()) {
 	case WXK_LEFT:
-		if(event.ShiftDown() && panel->tw->GetSelection() == 3)
+		if(event.ShiftDown() && panel->tw->GetSelection() == PERIOD_T_DAY)
 			panel->dw->SetKeyboardAction(CURSOR_LONG_LEFT_KB);
 		else
 			panel->dw->SetKeyboardAction(CURSOR_LEFT_KB);
 		break;
 	case WXK_RIGHT:
-		if (event.ShiftDown() && panel->tw->GetSelection() == 3)
+		if (event.ShiftDown() && panel->tw->GetSelection() == PERIOD_T_DAY)
 			panel->dw->SetKeyboardAction(CURSOR_LONG_RIGHT_KB);
 		else
 			panel->dw->SetKeyboardAction(CURSOR_RIGHT_KB);
@@ -279,8 +279,9 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 		{
 			int index = panel->dw->GetSelectedDrawIndex();
 			if (index >= 0) {
-				for (int i = 0; i < MAX_DRAWS_COUNT; i++) {
-					if (i == index)
+    				DrawSet *selected_set = panel->dw->GetDrawsController()->GetSet();
+				for (size_t i = 0; i < selected_set->GetDraws()->size(); i++) {
+					if (i == size_t(index))
 						continue;
 					panel->dw->SetDrawDisable(i);
 				}
@@ -289,7 +290,8 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 		break;
 	case ']':
 		{
-			for (int i = 0; i < MAX_DRAWS_COUNT; i++) {
+    			DrawSet *selected_set = panel->dw->GetDrawsController()->GetSet();
+			for (size_t i = 0; i < selected_set->GetDraws()->size(); i++) {
 				panel->dw->SetDrawEnable(i);
 			}
 		}
@@ -764,8 +766,11 @@ void DrawPanel::PeriodChanged(Draw *d, PeriodType pt) {
 
 	if (active == false)
 		return;
-	int id;
+	int id = 0;
 	switch (pt) {
+		case PERIOD_T_DECADE:
+			id = XRCID("DECADE_RADIO");
+			break;
 		case PERIOD_T_YEAR:
 			id = XRCID("YEAR_RADIO");
 			break;
@@ -794,7 +799,7 @@ void DrawPanel::PeriodChanged(Draw *d, PeriodType pt) {
 }
 
 void DrawPanel::UpdateFilterMenuItem(int filter) {
-	wxMenuItem *main_menu_item;
+	wxMenuItem *main_menu_item = NULL;
 
 	switch (filter) {
 		case 0:
@@ -824,7 +829,7 @@ void DrawPanel::UpdateFilterMenuItem(int filter) {
 
 void DrawPanel::FilterChanged(DrawsController *d) {
 	int filter = d->GetFilter();
-	wxMenuItem *popup_menu_item;
+	wxMenuItem *popup_menu_item = NULL;
 
 	switch (filter) {
 		case 0:
@@ -962,6 +967,9 @@ void DrawPanel::SetActive(bool _active) {
 
 		wxMenuItem *pmi = NULL;
 		switch (dc->GetPeriod()) {
+			case PERIOD_T_DECADE:
+				pmi = menu_bar->FindItem(XRCID("DECADE_RADIO"));
+				break;
 			case PERIOD_T_YEAR:
 				pmi = menu_bar->FindItem(XRCID("YEAR_RADIO"));
 				break;

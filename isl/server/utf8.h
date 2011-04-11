@@ -23,12 +23,8 @@
  * $Id$
  */
 
-#ifndef __UTF8_H__
-#define __UTF8_H__
-
-
-#include <libxml/parser.h>
-#include "utf8.h"
+#ifndef __UTF8_H_ZAZOLCGESLAJAZN__
+#define __UTF8_H_ZAZOLCGESLAJAZN__
 
 #ifdef __cplusplus
 	extern "C" {

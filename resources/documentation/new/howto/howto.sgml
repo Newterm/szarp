@@ -755,11 +755,7 @@ dwuportow± PCI. Dobrze wspó³pracuj± z Linuksem karty na uk³adzie firmy NetMos
 
 <para>
 Jeszcze innym rozwi±zaniem jest u¿ycie przej¶ciówki USB/RS232. Testowane by³y
-najpopularniejsze przej¶ciówki na uk³adzie PL-2303 formy Prolific. Poprawna
-wspó³praca z przej¶ciówki wymaga patcha do j±dra dostêpnego pod adresem
-<ulink url="http://www.szarp.com.pl/pub/">
-http://www.szarp.com.pl/pub/</ulink> (patch zosta³ w³±czony do j±dra Linuksa
-od wersji 2.6.14).
+najpopularniejsze przej¶ciówki na uk³adzie PL-2303 formy Prolific.
 </para>
 
 </section>
@@ -8276,9 +8272,6 @@ Do uruchomienia go konieczne jest pobranie i zainstalowanie
 firmware'u. Jest on dostêpny na stronie:
 <ulink url="http://eagle-usb.org/ueagle-atm/non-free/">
 http://eagle-usb.org/ueagle-atm/non-free/</ulink>
-Mo¿na te¿ skorzystaæ z paczki dostêpnej na stronie SZARPa
-<ulink url="http://szarp.com.pl/download.php">
-http://szarp.com.pl/download.php</ulink>
 </para>
 <para>
 Za za³adowanie firmware'u potrzebny jest jeszcze <emphasis>udev</emphasis>
@@ -14340,7 +14333,9 @@ skonfigurowaæ i zainstalowaæ ¶rodowisko Cygwin. Pe³n± informacjê o mo¿liwych
 sposobach instalacji cygwina zawiera <xref linkend="cygwin">. Minimalna, w
 pe³ni funkcjonalna wersja (bez obs³ugi polskiej klawiatury), mo¿e byæ
 ¶ci±gniêta ze strony 
-<ulink url="http://www.szarp.com.pl/download.php">www.szarp.com.pl/download.php</ulink>. Przy
+<ulink url="https://sourceforge.net/projects/szarp/files/Cygwin%20X.Org%20Viewer/xorg-setup.exe/download
+">https://sourceforge.net/projects/szarp/files/Cygwin%20X.Org%20Viewer/xorg-setup.exe/download
+</ulink>. Przy
 instalacji pyta siê ona jedynie o adres IP serwera X-ów. Mo¿e byæ tak¿e 
 konieczne zastosowanie opcji <emphasis>-from</emphasis> (zobacz dalej).
 </para>
@@ -14541,7 +14536,7 @@ ssh -x lucek@praterm.com.pl /etc/X11/xinit/xinitrc.d/scc
 ]]>
 </programlisting>
 uruchomi w systemie Windows jedno okno z 
-<ulink url="http://www.szarp.com.pl/howto/scc/html/scc.html">programem SCC</ulink>, 
+<ulink url="http://szarp.org/szarp/doc/ssc/html/ssc.html">programem SCC</ulink>, 
 który pozwoli nam na uruchamianie programów SZARP-a w oddzielnych oknach windowsowych
 (opcja -multiwindow).
 </para></listitem>

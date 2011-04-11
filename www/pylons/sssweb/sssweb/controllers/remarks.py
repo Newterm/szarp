@@ -1,8 +1,9 @@
 import logging
-import md5
+import hashlib
 
-from pylons import request, response, session, tmpl_context as c
-from pylons.controllers.util import abort, redirect_to
+from pylons import request, response, session, url, tmpl_context as c
+from pylons.controllers.util import abort, redirect
+from pylons.decorators import rest
 
 from sssweb.lib.base import BaseController, render
 
@@ -14,33 +15,46 @@ log = logging.getLogger(__name__)
 class RemarksController(BaseController):
 
 	def index(self):
-		c.users_q = meta.Session.query(model.Users)
-		return render('/remarks_users.mako')
+		c.users_q = meta.Session.query(model.Users).order_by('real_name')
+		return render('/remarks/index.mako')
 
-	def user(self, id):
-		users_q = meta.Session.query(model.Users)
+        @rest.dispatch_on(POST='save')
+	def new(self):
+		c.bases_q = [ (p.id, p.prefix) for p in meta.Session.query(model.Prefix) ]
+		c.user = model.Users()
+		c.user.name = ""
+#		c.user.id = None
+		c.user.real_name = ""
+		c.user_ids = []
+		c.password  = ""
+		return render('/remarks/edit.mako')
 
-		c.user = users_q.get(id)
+        @rest.dispatch_on(POST='save')
+	def edit(self, id):
+		c.user = meta.Session.query(model.Users).get(id)
 		c.bases_q = [ (p.id, p.prefix) for p in meta.Session.query(model.Prefix) ]
 		c.password = ""
 		c.user_ids = [ p.prefix.id for p in c.user.base ]
-		return render('/remarks_user.mako')
+		return render('/remarks/edit.mako')
 
-	def save_user(self, id):
+        @rest.restrict('POST')
+	def save(self, id=None):
+                log.info('id: %s', id)
+                user_id = id
 		users_q = meta.Session.query(model.Users)
 
-		if id == None:
+		if user_id is None:
 			user = model.Users()
 			user.name = request.params['name']
 		else:
-			user = users_q.get(id)
+			user = users_q.get(user_id)
 		user.real_name = request.params['real_name']
 		if len(request.params['password']) > 0:
-			m = md5.new()
+			m = hashlib.md5()
 			m.update(request.params['password'])
 			user.password = m.hexdigest()
 
-		if id == None:
+		if user_id is None:
 			meta.Session.add(user)
 			meta.Session.flush()
 
@@ -60,16 +74,12 @@ class RemarksController(BaseController):
 
 		meta.Session.commit()
 
-		return redirect_to(controller='remarks', action='index')
+		return redirect(url(controller='remarks', action='index'))
 
-	def add_user(self):
-		c.bases_q = [ (p.id, p.prefix) for p in meta.Session.query(model.Prefix) ]
-
-		c.user = model.Users()
-		c.user.name = ""
-		c.user.id = None
-		c.user.real_name = ""
-		c.user_ids = []
-		c.password  = ""
-		return render('/remarks_user.mako')
+        def delete(self, id):
+                user = meta.Session.query(model.Users).get(id)
+                meta.Session.query(model.UsersPrefixAssociation).filter_by(user_id=user.id).delete()
+                meta.Session.delete(user)
+                meta.Session.commit()
+                return redirect(url(controller='remarks', action='index'))
 

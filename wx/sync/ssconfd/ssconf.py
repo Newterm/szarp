@@ -314,7 +314,7 @@ class SSConf:
 			raise RuntimeException('server address %s is incorrect' % ip)
 		element.attrib['name'] = server_dict['name']
 		element.attrib['ip'] = server_dict['ip']
-		db.getroot().append(element)
+		self.db.getroot().append(element)
 		self.write_db();
 		return True
 

@@ -20,7 +20,7 @@
 #include <wx/numdlg.h>
 #include <wx/xrc/xmlres.h>
 #include <wx/tokenzr.h>
-
+#include <map>
 #include "cconv.h"
 
 #include "version.h"
@@ -53,16 +53,6 @@
 #include "drawfrm.h"
 #include "drawprint.h"
 #include "probadddiag.h"
-
-#include "bitmaps/flag_de.xpm"
-#include "bitmaps/flag_pl.xpm"
-#include "bitmaps/flag_gb.xpm"
-#include "bitmaps/flag_fr.xpm"
-#include "bitmaps/flag_sr.xpm"
-#include "bitmaps/flag_it.xpm"
-#include "bitmaps/flag_hu.xpm"
-
-
 
 DrawFrame::DrawFrame(FrameManager * fm, DatabaseManager* dm, ConfigManager* cm, RemarksHandler *remarks, wxWindow * parent,
 		     wxWindowID id, const wxString & title, const wxString & name, const wxPoint & pos,
@@ -107,6 +97,11 @@ NumberOfUnitsDialog::NumberOfUnitsDialog(wxWindow *parent, PeriodType pt, size_t
 	wxString text;
 	int min, max;
 	switch (pt) {
+		case PERIOD_T_DECADE:
+			text = _("Select number of displayed years");
+			min = 1;
+			max = 36;
+			break;
 		case PERIOD_T_YEAR:
 			text = _("Select number of displayed months");
 			min = 1;
@@ -657,7 +652,9 @@ void DrawFrame::OnAverageChange(wxCommandEvent& event) {
 
 	PeriodType pt;
 	int id = event.GetId();
-	if (id == XRCID("YEAR_RADIO"))
+	if (id == XRCID("DECADE_RADIO"))
+		pt = PERIOD_T_DECADE;
+	else if (id == XRCID("YEAR_RADIO"))
 		pt = PERIOD_T_YEAR;
 	else if (id == XRCID("MONTH_RADIO"))
 		pt = PERIOD_T_MONTH;
@@ -780,64 +777,44 @@ void DrawFrame::OnUserParams(wxCommandEvent &evt) {
 }
 
 void DrawFrame::OnLanguageChange(wxCommandEvent &e) {
-	wxString lang = wxConfig::Get()->Read(_T("LANGUAGE"), _T("pl"));
+	wxString lang = wxConfig::Get()->Read(_T("LANGUAGE"), DEFAULT_LANGUAGE);
+
+	typedef std::map<wxString, wxString> SMSS;
+	SMSS mapLang;
+
+	// IMPORTANT: sorted by short name
+	mapLang[_T("en")] =  _("English");
+	mapLang[_T("fr")] =  _("French");
+	mapLang[_T("de")] =  _("German");
+	mapLang[_T("hu")] =  _("Hungarian");
+	mapLang[_T("it")] =  _("Italian");
+	mapLang[_T("pl")] =  _("Polish");
+	mapLang[_T("sr")] =  _("Serbian");
 
 	wxArrayString choices;
-	choices.push_back(_("English"));
-	choices.push_back(_("French"));
-	choices.push_back(_("German"));
-	choices.push_back(_("Hungarian"));
-	choices.push_back(_("Italian"));
-	choices.push_back(_("Polish"));
-	choices.push_back(_("Serbian"));
+
+	// init array choices
+	for (SMSS::iterator it = mapLang.begin(); it != mapLang.end(); ++it)
+		choices.push_back(it->second);
 
 	wxString caption = _("Current language is ");
-	if (lang == _T("pl"))
-		caption += _("Polish");
-	else if (lang == _T("en"))
-		caption += _("English");
-	else if (lang == _T("de"))
-		caption += _("German");
-	else if (lang == _T("sr"))
-		caption += _("Serbian");
-	else if (lang == _T("hu"))
-		caption += _("Hungarian");
-	else if (lang == _T("it"))
-		caption += _("Italian");
-	else
-		caption += _("French");
+	caption += mapLang[lang].Len() ? mapLang[lang] : wxString(_("default language"));
 
 	int ret = wxGetSingleChoiceIndex(_("Choose language"), caption, choices, this);
 	if (ret == -1)
 		return;
 
+	// get a short language name - ugly but better than switch :)
 	wxString nl;
-	switch (ret) {
-		case 0:
-			nl = _T("en");
+	for (SMSS::iterator it = mapLang.begin(); it != mapLang.end(); ++it)
+		if (ret == 0) 
+		{
+			nl = it->first;
 			break;
-		case 1:
-			nl = _T("fr");
-			break;
-		case 2:
-			nl = _T("de");
-			break;
-		case 3:
-			nl = _T("hu");
-			break;
-		case 4:
-			nl = _T("it");
-			break;
-		case 5:
-			nl = _T("pl");
-			break;
-		case 6:
-			nl = _T("sr");
-			break;
-		default:
-			return;
-	}
-
+		}
+		else
+			--ret;
+	
 	if (nl == lang)
 		return;
 
@@ -1011,56 +988,6 @@ void DrawFrame::OnShowRemarks(wxCommandEvent &e) {
 	draw_panel->ShowRemarks();	
 }
 
-void DrawFrame::OnLanguageChangeTool(wxCommandEvent &event) {
-	wxMenu *menu = new wxMenu();
-
-
-	wxString lang = wxConfig::Get()->Read(_T("LANGUAGE"), _T("pl"));
-
-	if (lang != _T("sr")) {
-		wxMenuItem *mi = new wxMenuItem(menu, langID_sr, _("Serbian"));
-		mi->SetBitmap(wxBitmap(flag_sr));
-		menu->Append(mi);
-	}
-
-	if (lang != _T("en")) {
-		wxMenuItem *mi = new wxMenuItem(menu, langID_en, _("English"));
-		mi->SetBitmap(wxBitmap(flag_gb));
-		menu->Append(mi);
-	}
-
-	if (lang != _T("fr")) {
-		wxMenuItem *mi = new wxMenuItem(menu, langID_fr, _("French"));
-		mi->SetBitmap(wxBitmap(flag_fr));
-		menu->Append(mi);
-	}
-
-	if (lang != _T("de")) {
-		wxMenuItem *mi = new wxMenuItem(menu, langID_de, _("German"));
-		mi->SetBitmap(wxBitmap(flag_de));
-		menu->Append(mi);
-	}
-
-	if (lang != _T("hu")) {
-		wxMenuItem *mi = new wxMenuItem(menu, langID_hu, _("Hungarian"));
-		mi->SetBitmap(wxBitmap(flag_hu));
-		menu->Append(mi);
-	}
-
-	if (lang != _T("it")) {
-		wxMenuItem *mi = new wxMenuItem(menu, langID_it, _("Italian"));
-		mi->SetBitmap(wxBitmap(flag_it));
-		menu->Append(mi);
-	}
-
-	if (lang != _T("pl")) {
-		wxMenuItem *mi = new wxMenuItem(menu, langID_pl, _("Polish"));
-		mi->SetBitmap(wxBitmap(flag_pl));
-		menu->Append(mi);
-	}
-	PopupMenu(menu);
-}
-
 wxString DrawFrame::GetTitleForPanel(wxString title, int panel_no) {
 	int nr = 1;
 	wxString ret = title;
@@ -1090,51 +1017,6 @@ void DrawFrame::UpdatePanelName(DrawPanel *panel) {
 		return;
 
 	m_notebook->SetPageText(i, GetTitleForPanel(panel->GetConfigName(), i));
-
-}
-
-void DrawFrame::OnLanguageChangeMenuItem(wxCommandEvent &event) {
-	int id = event.GetId();
-	wxString question = _("Do you really want to swich current language to: ");
-	wxString lang, langid;
-	switch (id) {
-		case langID_pl:
-			lang = _("Polish");
-			langid = _T("pl");
-			break;
-		case langID_en:
-			lang = _("English");
-			langid = _T("en");
-			break;
-		case langID_de:
-			lang = _("German");
-			langid = _T("de");
-			break;
-		case langID_hu:
-			lang = _("Hungarian");
-			langid = _T("hu");
-			break;
-		case langID_it:
-			lang = _("Italian");
-			langid = _T("it");
-			break;
-		case langID_sr:
-			lang = _("Serbian");
-			langid = _T("sr");
-			break;
-		default:
-			lang = _("French");
-			langid = _T("fr");
-	}
-
-	question += lang + _T("?");
-
-	if (wxMessageBox(question, _("Question"), wxYES_NO | wxICON_QUESTION, this) != wxYES)
-		return;
-
-	wxConfig::Get()->Write(_T("LANGUAGE"), langid);
-	wxMessageBox(wxString::Format(_("Language changed to: %s. You need restart draw3 for this change to take effect."), lang.c_str()), _("Language changed."), wxOK, this);
-
 
 }
 
@@ -1206,6 +1088,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("FullScreen"), DrawFrame::OnFullScreen)
     EVT_MENU(XRCID("SplitCursor"), DrawFrame::OnSplitCursor)
     EVT_MENU(XRCID("LATEST_DATA_FOLLOW"), DrawFrame::OnLatestDataFollow)
+    EVT_MENU(XRCID("DECADE_RADIO"), DrawFrame::OnAverageChange)
     EVT_MENU(XRCID("YEAR_RADIO"), DrawFrame::OnAverageChange)
     EVT_MENU(XRCID("MONTH_RADIO"), DrawFrame::OnAverageChange)
     EVT_MENU(XRCID("WEEK_RADIO"), DrawFrame::OnAverageChange)
@@ -1230,14 +1113,6 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("ProberAddress"), DrawFrame::OnProberAddresses)
     EVT_MENU(drawTB_EXIT, DrawFrame::OnExit)
     EVT_MENU(drawTB_ABOUT, DrawFrame::OnAbout)
-    EVT_MENU(langID_pl, DrawFrame::OnLanguageChangeMenuItem)
-    EVT_MENU(langID_de, DrawFrame::OnLanguageChangeMenuItem)
-    EVT_MENU(langID_en, DrawFrame::OnLanguageChangeMenuItem)
-    EVT_MENU(langID_fr, DrawFrame::OnLanguageChangeMenuItem)
-    EVT_MENU(langID_it, DrawFrame::OnLanguageChangeMenuItem)
-    EVT_MENU(langID_hu, DrawFrame::OnLanguageChangeMenuItem)
-    EVT_MENU(langID_sr, DrawFrame::OnLanguageChangeMenuItem)
-    EVT_MENU(drawTB_LANGUAGE, DrawFrame::OnLanguageChangeTool)
     EVT_MENU(drawTB_REMARK, DrawFrame::OnShowRemarks)
     EVT_MENU(drawTB_GOTOLATESTDATE, DrawFrame::OnGoToLatestDate)
     EVT_MENU(XRCID("GoToLatestDate"), DrawFrame::OnGoToLatestDate)

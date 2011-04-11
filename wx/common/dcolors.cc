@@ -40,7 +40,7 @@ int DrawDefaultColors::dcolors[][3] = {
 	{ 0xAF, 0xAF, 	0xFF }
 };
 
-int DrawDefaultColors::FindIndex(wxColour& col)
+int DrawDefaultColors::FindIndex(const wxColour& col)
 {
 	for (unsigned i = 0; i < (sizeof dcolors  / sizeof *dcolors); i++) {
 		if ((dcolors[i][0] == col.Red()) and (dcolors[i][1] == col.Green())
@@ -53,19 +53,18 @@ int DrawDefaultColors::FindIndex(wxColour& col)
 
 wxColour DrawDefaultColors::MakeColor(int index)
 {
-	if ((index < 0) or (index >= (int) (sizeof dcolors / sizeof *dcolors))) {
-		wxColour ret;
-		return ret;
+	if (index < 0)
+		return wxColour();
+	else {
+		int d = index % ((int) (sizeof dcolors / sizeof *dcolors));
+		return wxColour(dcolors[d][0], dcolors[d][1], dcolors[d][2]);
 	}
-	wxColour ret(dcolors[index][0], dcolors[index][1], dcolors[index][2]);
-	return ret;
 }
 
 wxString DrawDefaultColors::AsString(int index)
 {
-	if ((index < 0) or (index >= (int) (sizeof dcolors / sizeof *dcolors))) {
+	if (index < 0)
 		return wxEmptyString;
-	}
 	wxColour col = MakeColor(index);
 	return col.GetAsString(wxC2S_NAME | wxC2S_HTML_SYNTAX);
 }

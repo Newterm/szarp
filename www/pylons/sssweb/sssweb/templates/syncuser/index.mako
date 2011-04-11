@@ -1,7 +1,7 @@
-<%inherit file="admin.mako"/>
+<%inherit file="/admin.mako"/>
 
 <p>
-<a href="${h.url_for(action='add_user')}">Add new user</a>
+<a href="${h.url_for(action='new')}">Add new user</a>
 <p>
 
 <table>
@@ -9,7 +9,7 @@
 % for user in c.list:
     <tr>
       <td>
-        <a href="${h.url_for(action='user', id=user['name'])}">${user['name']}</a></td>
+        <a href="${h.url_for(action='edit', id=user['name'])}">${user['name']}</a></td>
       <td>${user['email']}</td>
       <td>${user['server']}</td>
       <td>${printexp(user['expired'])}</td>

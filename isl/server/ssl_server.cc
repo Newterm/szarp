@@ -81,7 +81,7 @@ int SSLServer::init(void)
 	SSL_library_init();
 	SSL_load_error_strings();
 	signal(SIGPIPE, SIG_IGN);
-	meth = SSLv23_server_method();
+	meth = (SSL_METHOD*)SSLv23_server_method();
 	ctx = SSL_CTX_new(meth);
 	if (SSL_CTX_use_certificate_chain_file(ctx, cert) == 0) {
 		sz_log(1, "Can't load certificate file %s: %s", cert, 

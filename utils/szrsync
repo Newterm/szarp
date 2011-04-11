@@ -41,6 +41,7 @@ DELETE="--delete --force"
 USE_SSH=
 BWLIMIT=0
 SERVER=$DEFAULT_SERVER
+SSH_PORT=
 
 ME=`basename $0`
 
@@ -60,13 +61,14 @@ function log {
 function usage {
 	echo "Tool for fetching SZARP bases from remote server."
 	echo "Usage: "
-	echo -e "\t$ME [-a <ADDRESS>] [-n] <BASE> ..."
-	echo -e "\t$ME [-u <USER>] [-H <HOST>] [-n] [-s] <BASE> ..."
+	echo -e "\t$ME [-p <PORT>] [-a <ADDRESS>] [-n] <BASE> ..."
+	echo -e "\t$ME [-p <PORT>] [-u <USER>] [-H <HOST>] [-n] [-s] <BASE> ..."
 	echo -e "\t$ME -h"
 	echo
 	echo -e "\t-a <ADDRESS> address for rsync to connect (user@server)"
 	echo -e "\t-u <USER> user for rsync to connect to server, ignored if -a given"
 	echo -e "\t-H <HOST> server to connect to instead of default one ($DEFAULT_SERVER)"
+	echo -e "\t-p <PORT> port used for SSH connection"
 	echo -e "\t-b speed limit transfer speed to speed kbps"
 	echo -e "\t-n do not delete files"
 	echo -e "\t-s use ssh for getting szbase_stamp date (default curl if -a not given)"
@@ -76,7 +78,7 @@ function usage {
 
 
 # parse options
-OPTS=`getopt -q -o a:u:H:b:hns -n $ME -- "$@"`
+OPTS=`getopt -q -o a:u:H:b:p:hns -n $ME -- "$@"`
 
 if [ $? != 0 ]; then
 	usage
@@ -106,6 +108,10 @@ while true; do
 	-n)
 	    DELETE=
 	    shift
+	    ;;
+	-p)
+	    SSH_PORT="-p $2"
+	    shift 2
 	    ;;
 	-s)
 	    USE_SSH=yes
@@ -182,7 +188,7 @@ function get_remote_stamp {
 		RESULT=`curl -A "szrsync/0.1 ($(hostname -s))" --fail --silent "http://${SERVER}:81/sync.cgi?id=${id}"`
 		SRET=$?
 	else
-		RESULT=`ssh -o StrictHostKeyChecking=no $ADDRESS "stat --format=%Y $1/szbase_stamp" 2>/dev/null`
+		RESULT=`ssh -o StrictHostKeyChecking=no $SSH_PORT $ADDRESS "stat --format=%Y $1/szbase_stamp" 2>/dev/null`
 		# connection failed
 		SRET=$?
 		if [ $SRET -eq 255 ]; then
@@ -238,7 +244,8 @@ function do_rsync () {
 
 	[ $? -eq 0 ] || return
 
-	rsync -az $SZRSYNC_VERBOSE --bwlimit=$BWLIMIT --rsh="ssh -o StrictHostKeyChecking=no" --exclude='.*' --exclude='nohup.out' $DELETE $INC $EXC $ADDRESS:$i /opt/szarp
+	export RSYNC_RSH="ssh -o StrictHostKeyChecking=no $SSH_PORT"
+	rsync -az $SZRSYNC_VERBOSE --bwlimit=$BWLIMIT --exclude='.*' --exclude='nohup.out' $DELETE $INC $EXC $ADDRESS:$i /opt/szarp
 	LAST=$?
 	if [ $LAST -ne 0 -a $CODE -eq 0 ] ; then
 		CODE=$LAST

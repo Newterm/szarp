@@ -136,6 +136,17 @@ void Draw::SetPeriod(const DTime& time, size_t number_of_values) {
 		m_values.Get(i).state = ValueInfo::EMPTY;
 }
 
+void Draw::SetStartTimeAndNumberOfValues(const DTime& start_time, size_t number_of_values) {
+	m_index.SetStartTime(start_time);
+
+	m_values.SetNumberOfValues(number_of_values);
+
+	m_param_has_data = true;
+
+	for (size_t i = 0; i < m_values.len(); ++i)
+		m_values.Get(i).state = ValueInfo::EMPTY;
+}
+
 DTime Draw::GetDTimeOfIndex(int i) const {
 	return m_index.GetTimeOfIndex(i);
 }
@@ -155,6 +166,9 @@ DatabaseQuery* Draw::GetDataToFetch() {
 	DatabaseQuery* q = NULL;
 
 	if (m_draw_info == NULL)
+		return q;
+
+	if (GetEnable() == false)
 		return q;
 
 	bool no_max_probes = m_draw_info->GetParam()->GetIPKParam()->GetFormulaType() == TParam::LUA_AV;

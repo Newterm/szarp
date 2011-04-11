@@ -113,7 +113,7 @@ rozpocz±æ od dodania wpisów do pliku
 <filename>/etc/apt/sources.list</filename>:
 <programlisting>
 deb http://www.szarp.org/debian stable main non-free
-deb http://www.szarp.com.pl/debian unstable main non-free
+deb http://www.szarp.org/debian unstable main non-free
 </programlisting>
 Oczywi¶cie, mo¿emy dodaæ tylko jedn± z w/w linii je¿eli zamierzamy korzystaæ
 tylko i wy³±cznie z jednej wersji SZARPa. Zalecane jest jednak, by plik
@@ -2709,7 +2709,7 @@ Przyk³adowy pocz±tek pliku mo¿e wygl±daæ tak:
 	</para></listitem>
 	<listitem><para><emphasis>documentation_base_url</emphasis> - adres strony WWW serwera wy¶wietlaj±cego
 	opcjonaln± dokumentacjê parametrów SZARP. W przypadku braku atrybutu u¿ywana jest warto¶æ domy¶lna,
-	obecnie <emphasis>http://www.szarp.com.pl</emphasis>, która jednak mo¿e siê zmieniæ w przysz³ej wersji
+	obecnie <emphasis>http://www.szarp.org</emphasis>, która jednak mo¿e siê zmieniæ w przysz³ej wersji
 	oprogramowania. Atrybut jest opcjonalny, ale zaleca siê jego ustawianie.
 	</para></listitem>
 </itemizedlist>
@@ -3823,7 +3823,8 @@ demonów, wiêkszo¶æ z nich u¿ywa przestrzeni nazw
 <![CDATA[
   <device daemon="/opt/szarp/bin/mbrtudmn" path="/dev/ttyA11" 
         xmlns:extra="http://www.praterm.com.pl/SZARP/ipk-extra"
-	extra:docpath="http://www.szarp.com.pl/howto/zethowto/html/other-szarp-devices.html">
+	extra:docpath="http://www.szarp.org/docs/szarp-plc-howto/html/heatmeter-kamstrup-66c.html
+	">
 	....
 ]]>
 </programlisting>
@@ -7025,16 +7026,18 @@ double_match=@(*-energia|*-objetosc)
 Wiêcej informacji o wzorcach pow³oki mo¿na uzyskaæ wydaj±c komendê 
 <command>info fnmatch</command>.
 </para>
-<!--
+
 <para>
 W tej samej sekcji pliku <filename>szarp.cfg</filename> mo¿e siê znajdowaæ
 parametr <emphasis>fill_how_many</emphasis>. Jego warto¶ci± jest liczba,
 okre¶laj±ca ile ewentualnych pustych próbek nale¿y przy zapisie zast±piæ
 aktualnie zapisywan± warto¶ci±. Przydatny jest do likwidowania 'dziur w
 wykresach', wystêpuj±cych w sytuacji gdy przerwy miêdzy danymi wej¶ciowymi
-wynosz± wiêcej ni¿ 10 minut. Domy¶lna warto¶æ parametru to 0.
+wynosz± wiêcej ni¿ 10 minut. Domy¶lna warto¶æ parametru to 0. Oprócz
+wype³niania 10 minutowych luk, uzupe³niane s± równie¿ odpowiadaj±ce im
+10 sekundowe próbki. Mo¿na wy³±czyæ zapisywanie 10 sekundowych próbek, 
+uruchamiaj±c program z parametrem <option>-p</option>.
 </para>
--->
 
 <para>W linii komend mo¿na podaæ jeden, opcjonalny, parametr - nazwê
 konfiguracji. Wykorzystywany jest on tylko, je¿eli konfiguracja opisana

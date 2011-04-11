@@ -26,7 +26,7 @@
 #ifndef MINGW32
 #include <netinet/in.h>
 #else
-#include <winsock.h>
+#include <winsock2.h>
 #include <stdint.h>
 #endif
 

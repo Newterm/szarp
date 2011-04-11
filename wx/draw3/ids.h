@@ -56,17 +56,9 @@ enum { drawID_SELDRAW = wxID_HIGHEST,
 	drawTB_GOTOLATESTDATE, 
 	drawTB_EXIT, 
 	drawTB_FIND,
-	drawTB_LANGUAGE,
 	drawTB_REMARK,
 	drawTB_NEWDRAWVERSION,
 	drawTB_DRAWTREE,
-	langID_pl,
-	langID_en,
-	langID_de,
-	langID_fr,
-	langID_sr,
-	langID_it,
-	langID_hu,
 	drawID_SUMMWIN,
 	seldrawID_CTX_BLOCK_MENU,
 	seldrawID_CTX_DOC_MENU,
@@ -176,13 +168,10 @@ enum ActionKeyboardType {
 #define DRAW3_BG_COLOR wxSystemSettings::GetColour(wxSYS_COLOUR_BACKGROUND) 
 #endif
 
-/** Number of draws per set */
-#define MAX_DRAWS_COUNT 12
-
 #define RIGHT_PANEL_LENGTH	300
 
 /** Enumeration type for period shown on time axis. */
-typedef enum { PERIOD_T_YEAR = 0, PERIOD_T_MONTH, PERIOD_T_WEEK,
+typedef enum { PERIOD_T_DECADE = 0, PERIOD_T_YEAR, PERIOD_T_MONTH, PERIOD_T_WEEK,
 	PERIOD_T_DAY, PERIOD_T_30MINUTE, PERIOD_T_SEASON, PERIOD_T_OTHER, PERIOD_T_LAST } PeriodType;
 
 /**period names*/

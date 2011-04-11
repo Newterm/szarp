@@ -35,11 +35,13 @@
 #include <wx/wx.h>
 #endif
 
+typedef std::vector<DrawInfo*> DrawInfoList;
+
 typedef std::pair<std::vector<double>, std::vector<DTime> > XYPoint;
 
 /**Struct describing parametrs of XY graph*/
 struct XYGraph {
-	std::vector<DrawInfo*> m_di;
+	DrawInfoList m_di;
 
 	std::vector<double> m_dmin;
 
@@ -87,10 +89,9 @@ struct XYGraph {
 
 };
 
-
 /**Fetches and associated corresponding values with each other*/
 class DataMangler : public DBInquirer {
-	std::vector<DrawInfo*> m_di;
+	DrawInfoList m_di;
 	/**Type of probes fetches from database*/
 	PeriodType m_period;
 	/**Start of time range*/
@@ -129,7 +130,7 @@ class DataMangler : public DBInquirer {
 
 	public:
 	DataMangler(DatabaseManager *db, 
-			std::vector<DrawInfo*> di,
+			const DrawInfoList& di,
 			wxDateTime start_time, 
 			wxDateTime end_time,
 			PeriodType pt,
@@ -163,7 +164,7 @@ class XYDialog : public wxDialog, public ConfigObserver
 	/**End of range selected by user*/
 	DTime m_end_time;
 	
-	std::vector<DrawInfo*> m_di;
+	DrawInfoList m_di;
 
 	/**@see DataMangler. Object for data retrival and manipulaton*/
 	DataMangler *m_mangler;

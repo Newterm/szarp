@@ -128,7 +128,7 @@ int TSaveParam::WriteBuffered(const fs::wpath& directory, time_t t, short int* d
 			return 1;
 		}
 		/* open file */
-		fd = open(SC::S2A(path).c_str(), O_RDWR | O_CREAT, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH);
+		fd = open(SC::S2A(path).c_str(), O_RDWR | O_CREAT | O_CLOEXEC, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH);
 		if (fd == -1) {
 			sz_log(1, "TSaveParam::Write(): error opening file '%ls', errno %d",
 				path.c_str(), errno);

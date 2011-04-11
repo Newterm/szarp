@@ -29,7 +29,7 @@
 
 #define _WIN32_IE 0x600
 #include <wx/platform.h>
-#include <winsock.h>
+#include <winsock2.h>
 #include <sys/types.h>
 #include <shlwapi.h>
 
