@@ -1,3 +1,6 @@
+2011-04-11	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/boruta: added configuratble characters size for
+	serial connections
 2011-04-11	Krzysztof Golinski <krzgol@newterm.pl>
 	* INSTALL.Windows: updated
 	* wx/sync/Makefile.am: fixed - create *.mo file in a proper place

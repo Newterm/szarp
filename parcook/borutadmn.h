@@ -58,6 +58,11 @@ struct serial_port_configuration {
 	} parity;
 	int stop_bits;
 	int speed;
+	enum CHAR_SIZE {
+		CS_6,
+		CS_7,
+		CS_8
+	} char_size;
 };
 
 /**common class for types of drivers, actually the only thing they share is a fact
