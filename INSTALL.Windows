@@ -33,7 +33,6 @@ This file describes how to prepare SZARP installation package for Windows.
 3.15. sqlite library.
 3.16. freetype libraray.
 3.17. ftgl libraray.
-3.18 libevent library.
 4. Compiling SZARP.
 5. Installation package.
 
@@ -144,7 +143,7 @@ You should see iconv usage instructions.
 
 3.2. expat library.
 
-wget http://sourceforge.net/projects/expat/files/expat/expat-2.0.1.tar.gz
+wget http://downloads.sourceforge.net/project/expat/expat/2.0.1/expat-2.0.1.tar.gz
 tar xzvf expat-2.0.1.tar.gz
 cd expat-2.0.1
 ./configure --host=i586-mingw32msvc --target=i586-mingw32msvc \
@@ -157,7 +156,7 @@ cp .libs/libexpat-1.dll /usr/local/i586-mingw32msvc/lib/
 
 3.3. zlib library.
 
-wget http://www.zlib.net/zlib-1.2.3.tar.gz
+wget http://sourceforge.net/projects/libpng/files/zlib/1.2.3/zlib-1.2.3.tar.gz
 tar xzvf zlib-1.2.3.tar.gz
 cd zlib-1.2.3
 CC=/usr/bin/i586-mingw32msvc-gcc \
@@ -221,6 +220,12 @@ If you want to edit this script, please do it carefully. It is because, some
 correct (Windows) "end of line" characters will be lost (or changed) and some 
 patch operations (of Gdiplus files) will be failed.
 
+workaround steps:
+tar -xzvf INSTALL.wxWidgets.sh.tgz
+./INSTALL.wxWidgets.sh
+cp wxWidgets-2.8.10/lib/libgdiplus.a /usr/local/i586-mingw32msvc/lib/
+rm -rf wxWidgets-2.8.10*
+./INSTALL.wxWidgets.sh
 
 3.6. libxml2 library.
 
@@ -264,19 +269,57 @@ wine /usr/local/i586-mingw32msvc/bin/xsltproc.exe --version
 
 3.8. OpenSSL library.
 
-You will need 7zip:
+wget http://openssl.org/source/openssl-1.0.0d.tar.gz
+tar -zxvf openssl-1.0.0d.tar.gz
+cd openssl-1.0.0d
 
-apt-get install p7zip
+save a script as mkOpenSSL.sh
+>>>SCRIPT BEGIN
+#!/bin/sh
 
-then:
+# Lazify things a little
+export cross="i586-mingw32msvc-"
 
-wget http://curl.haxx.se/download/openssl_mingw32-0.9.8g.7z
-7zr x openssl_mingw32-0.9.8g.7z
-cd openssl_mingw32-0.9.8g
-cp bin/* /usr/local/i586-mingw32msvc/bin
-cp -a outinc/* /usr/local/i586-mingw32msvc/include
-cp out/* /usr/local/i586-mingw32msvc/lib
-cp bin/*.dll /usr/local/i586-mingw32msvc/lib
+# Generate the dll definitions
+perl util/mkdef.pl no-idea no-mdc2 no-rc5 libeay 32 > ms/libeay32.def
+perl util/mkdef.pl no-idea no-mdc2 no-rc5 ssleay 32 > ms/ssleay32.def
+
+# Remove a check which effs up the cross-sompile
+sed -i -e "/^\$IsMK/d" ./Configure
+
+# Configure for OpenVPN
+./config no-idea no-mdc2 no-rc5 shared mingw:i586-mingw32msvc-gcc
+
+# Fix up the tools and libs
+sed -i -e "s/^EX_LIBS=\(.*\)/EX_LIBS=\1 -lws2_32 -lgdi32/" Makefile
+sed -i -e "s/^CC=.*/CC=${cross}gcc/" Makefile
+sed -i -e "s/^RANLIB=.*/RANLIB=${cross}ranlib/" Makefile
+sed -i -e "s/^AR=.*/AR=${cross}ar r/" Makefile
+sed -i -e "s/^ARD=.*/ARD=${cross}ar d/" Makefile
+
+# Build the whole shebang
+make
+
+# I guess the windows build scripts do this
+if [ ! -d "out" ]; then
+  mkdir out
+fi
+
+# Copy everything to the places OpenVPN expects and generate the dlls
+cp apps/openssl.exe out
+cp *.a out
+i586-mingw32msvc-dllwrap --dllname libeay32.dll --output-lib out/libeay32.a --def ms/libeay32.def out/libcrypto.a -lwsock32 -lgdi32
+i586-mingw32msvc-dllwrap --dllname libssl32.dll --output-lib out/libssl32.a --def ms/ssleay32.def out/libssl.a out/libeay32.a
+cp *.dll out
+<<<SCRIPT END
+
+chmod 700 mkOpenSSL.sh
+./mkOpenSSL.sh
+cp ./out/openssl.exe /usr/local/i586-mingw32msvc/bin/
+cp ./out/*.dll /usr/local/i586-mingw32msvc/lib/
+cp ./out/*.a /usr/local/i586-mingw32msvc/lib/
+mkdir -p /usr/local/i586-mingw32msvc/include/openssl/
+cp ./include/openssl/* /usr/local/i586-mingw32msvc/include/openssl/
 
 Testing:
 
@@ -333,8 +376,8 @@ EOF
 	--with-gnu-ld
 make
 make install
-cp .libs/librsync-1.dll /usr/local/i586-mingw32msvc/lib/
-
+cp .libs/librsync* /usr/local/i586-mingw32msvc/lib/
+cp librsync*.h /usr/local/i586-mingw32msvc/include/
 
 3.11. Lua (LuaJIT) library.
 
@@ -342,7 +385,7 @@ wget http://luajit.org/download/LuaJIT-1.1.5.tar.gz
 tar xzvf LuaJIT-1.1.5.tar.gz
 cd LuaJIT-1.1.5
 
-Now edit src/Makefile and set values or use patch:
+Now edit src/Makefile and set values:
 
 CC= i586-mingw32msvc-gcc
 RANLIB= i586-mingw32msvc-strip
@@ -372,7 +415,7 @@ cd curl-7.19.5
 	--without-random
 make
 make install
-cp bin/curl
+cp src/curl.exe /usr/local/i586-mingw32msvc/bin/
 
 3.13. xmlrpc-epi library.
 
@@ -396,12 +439,22 @@ make install
 In order to build a boost libraries, bjam utility is required. It is
 available in Debian packages.
 
-Download and unpack boost source distribution, enter
-boost source main directory and:
+Download and unpack boost source distribution:
+wget http://downloads.sourceforge.net/project/boost/boost/1.42.0/boost_1_42_0.tar.gz
+tar -zxf boost_1_42_0.tar.gz
+
+enter boost source main directory and:
+cd boost_1_42_0
 
 * add line
 using gcc : m : i586-mingw32msvc-g++ ;
 somethere to tools/build/v2/user-config.jam
+
+* download and apply patch:
+cd tools/build/
+wget https://svn.boost.org/trac/boost/raw-attachment/ticket/4735/build-v2-build-system-jam.patch
+patch -p0 < build-v2-build-system-jam.patch 
+cd ../../
 
 * issue command:
 bjam --layout=system --without-mpi --without-graph --without-graph_parallel --without-iostreams --without-python --without-math  variant=release threading=multi link=shared runtime-link=shared toolset=gcc-mingw target-os=windows threadapi=win32 stage
@@ -412,9 +465,7 @@ in stages/lib. Copy headers to /usr/local/boost/include and librarires to
 
 mkdir -p /usr/local/boost/include
 cp -a boost/ /usr/local/boost/include/
-mkdir -p /usr/local/boost/
 cp -a stage/lib/ /usr/local/boost/
-
 
 3.15. sqlite library.
 
@@ -497,18 +548,10 @@ save following patch into file:
  if test "x$HAVE_GLU" = xyes ; then
 
 patch sources: patch -p0 < file
-./configure --host=i586-mingw32msvc --target=i586-mingw32msvc --with-ft-prefix=/usr/local/i586-mingw32msvc --without-x --prefix=/usr/local/i586-mingw32msvc
+./autogen.sh
+./configure --host=i586-mingw32msvc --target=i586-mingw32msvc --with-ft-prefix=/usr/local/i586-mingw32msvc --without-x --prefix=/usr/local/i586-mingw32msvc --disable-freetypetest
 make ECHO=echo
 make ECHO=echo install
-
-3.18 libevent library.
-
-wget http://downloads.sourceforge.net/project/levent/libevent/libevent-2.0/libevent-2.0.10-stable.tar.gz
-tar -zxvf libevent-2.0.10-stable.tar.gz 
-cd libevent-2.0.10-stable
-./configure --host=i586-mingw32msvc --target=i586-mingw32msvc         --prefix=/usr/local/i586-mingw32msvc
-make
-cp .libs/libevent* /usr/local/i586-mingw32msvc/lib/
 
 4. Compiling SZARP.
 
@@ -524,23 +567,29 @@ cd winbuild
 
 Running configure:
 
-../configure --host=i586-mingw32msvc --target=i586-mingw32msvc \
-    --with-xml-prefix=/usr/local/i586-mingw32msvc \
-    --with-xslt-prefix=/usr/local/i586-mingw32msvc \
-    --with-curl-prefix=/usr/local/i586-mingw32msvc \
-    --with-wx-config=/usr/local/i586-mingw32msvc/lib/wx/config/i586-mingw32msvc-msw-unicode-release-2.8 \
-    --with-ssl-prefix=/usr/local/i586-mingw32msvc \
-    --with-rsync-prefix=/usr/local/i586-mingw32msvc \
-    --with-boost=/usr/local/boost \
-    --with-boost-thread=boost_thread-mt \
-    --with-xmprpc-epi-prefix=/usr/local/i586-mingw32msvc \
-    --with-lua-prefix=/usr/local/i586-mingw32msvc \
-   LDFLAGS=-L/usr/local/i586-mingw32msvc/lib \
-   LIBS="-liconv -lexpat" \
-   CPPFLAGS="-I/usr/local/i586-mingw32msvc/include  -I/usr/local/i586-mingw32msvc/include/freetype2" \
-   CFLAGS=-DCURL_STATICLIB \
-   CXXFLAGS=-DCURL_STATICLIB \
-   PKG_CONFIG_PATH=/usr/local/i586-mingw32msvc/lib/pkgconfig
+../configure --host=i586-mingw32msvc  \
+  --target=i586-mingw32msvc \
+  --with-xml-prefix=/usr/local/i586-mingw32msvc \
+  --with-xslt-prefix=/usr/local/i586-mingw32msvc \
+  --with-curl-prefix=/usr/local/i586-mingw32msvc \
+  --with-wx-config=/usr/local/i586-mingw32msvc/lib/wx/config/msw-unicode-release-2.8 \
+  --with-ssl-prefix=/usr/local/i586-mingw32msvc \
+  --with-rsync-prefix=/usr/local/i586-mingw32msvc \
+  --with-xmprpc-epi-prefix=/usr/local/i586-mingw32msvc \
+  --with-lua-prefix=/usr/local/i586-mingw32msvc \
+  LDFLAGS=-L/usr/local/i586-mingw32msvc/lib    LIBS="-liconv -lexpat" \
+  CPPFLAGS="-O2  -I/usr/local/i586-mingw32msvc/include  -I/usr/local/i586-mingw32msvc/include/freetype2"  \
+  CFLAGS="-DCURL_STATICLIB"    CXXFLAGS="-DCURL_STATICLIB"  \
+  PKG_CONFIG_PATH=/usr/local/i586-mingw32msvc/lib/pkgconfig \
+  --with-xml-exec-prefix=/usr/local/i586-mingw32msvc \
+  --with-boost=/usr/local/boost \
+  --with-boost-thread=boost_thread_win32 \
+  --with-boost-program-options=boost_program_options \
+  --with-boost-date-time=boost_date_time \
+  --with-boost-filesystem=boost_filesystem \
+  --with-boost-system=boost_system  \
+  --disable-xmltest \
+  --with-mingw32
 
 Output should end with something like:
 
@@ -598,10 +647,10 @@ We use NSIS to create installation package, so we need to install it:
 apt-get install nsis
 
 Debian version of nsis does not include some required plugins, so we need
-to download KillProc plugin separately:
-
-wget http://mulder.dummwiedeutsch.de/pub/downloads/testing/NSIS-KillProc-Plugin.2006-12-16.zip
-unzip NSIS-KillProc-Plugin.2006-12-16.zip
+to download KillProc plugin (http://nsis.sourceforge.net/KillProc_plug-in) separately:
+wget http://mulder.googlecode.com/files/NSIS-KillProc-Plugin.2011-04-09.zip
+(old version: wget http://mulder.dummwiedeutsch.de/pub/downloads/testing/NSIS-KillProc-Plugin.2006-12-16.zip)
+unzip NSIS-KillProc-Plugin.2011-04-09.zip
 cp KillProc.dll /usr/share/nsis/Plugins
 
 Then:
