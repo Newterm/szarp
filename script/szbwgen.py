@@ -64,6 +64,11 @@ def main():
 
 	# create begin/end date
 	tmp = opts.beginDate.split('-')
+
+	if len(tmp) < 3 :
+		print 'Wrong data format. Please use YYYY-MM-DD'
+		exit(-1)
+
 	beginTime = datetime.datetime(int (tmp[0]), int (tmp[1]), int (tmp[2]))
 	difference = datetime.timedelta(days=int (opts.days))
 	endTime   = beginTime + difference
