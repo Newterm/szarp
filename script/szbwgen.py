@@ -29,8 +29,11 @@ import random
 import optparse
 
 def main():
+	epilog = """Usage example:
+./szbwgen.py -n "group:unit:param" -b "2011-05-14" -d 1 -p 20
+"""
 
-	parser = optparse.OptionParser()
+	parser = optparse.OptionParser(epilog=epilog)
 	parser.add_option('-n', '--name', help='REQUIRED. Converted name like in SzarpBase: "Group:Unit:Parameter"',dest='name')
 	parser.add_option('-b', '--begin-date', help='REQUIRED. Set begin date for data: "YYYY-MM-DD"', dest='beginDate')
 	parser.add_option('-d', '--days', help='create data for DAYS days. Default value [%default]',
@@ -40,6 +43,7 @@ def main():
 	parser.add_option('-M', '--max', help='Max value for data. Default value [%default]', dest='maxVal', default=100)
 	parser.add_option('-p', '--percent', help='How much percent of data create (0 < PERCENT < 100). Default value [%default]', dest='percent', default=80)
 	parser.add_option('-t', '--type', help='Type of data [ float | int ]. Default value [%default]', dest='type', default='float')
+	parser.add_option('-r', '--regular', help='Regular gaps between data - 10 min [ yes | no ]. Default value [%default]', dest='regular', default='yes')
 
 	(opts, args) = parser.parse_args()
 
@@ -78,6 +82,8 @@ def main():
 	# collect data
 	while len(data) < maxData:
 		r = random.uniform(sBeginTime, sEndTime)
+		if opts.regular == "yes":
+			r = r - r % 600
 		t = datetime.datetime.fromtimestamp(r).strftime('%Y %m %d %H %M')
 		data.add(t)
 
@@ -95,10 +101,11 @@ def main():
 		else:
 			print round(oldValue,2)
 
-		# make step
-		if  random.randint(0,1) == 0:
+		# make step, no changes on 0
+		_step = random.randint(0,2)
+		if _step == 1:
 			tmp = oldValue + opts.step
-		else:
+		elif _step == 2:
 			tmp = oldValue - opts.step
 		
 		if opts.minVal <= tmp and tmp <= opts.maxVal:
