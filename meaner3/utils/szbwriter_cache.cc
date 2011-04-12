@@ -68,10 +68,9 @@ bool SzProbeCache::Values::add( time_t t , short v , int probe_length )
 	// TODO: replace this loop with memcpy
 	while( t > curr_time && length < max_length ) 
 	{
-		curr_time = szb_move_time( curr_time, 1, PT_CUSTOM, probe_length );
-		if( t <= curr_time ) break;
-		sz_log(10,"Writing SZB_FILE_NODATA to %u at %i",length,t);
+		sz_log(10,"Writing SZB_FILE_NODATA to %u at %i",length,curr_time);
 		probes[length++] = SZB_FILE_NODATA;
+		curr_time = szb_move_time( curr_time, 1, PT_CUSTOM, probe_length );
 	}
 
 	if( t != curr_time ) return false;
