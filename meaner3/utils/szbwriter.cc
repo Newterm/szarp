@@ -342,18 +342,25 @@ int SzbaseWriter::is_double(const std::wstring& name)
 #endif
 }
 
-time_t update_time( struct tm& newtm , time_t oldt , struct tm& oldtm )
+/**
+ * incremental evaluating time from tm struct. In first 
+ * version it was also adding hours, but DST was a problem.
+ * Maybe we should all time to DST, not local.
+ */
+time_t update_time( struct tm& newtm , time_t oldt , const struct tm& oldtm )
 {
 	if( newtm.tm_year != oldtm.tm_year 
 	 || newtm.tm_mon  != oldtm.tm_mon 
-	 || newtm.tm_mday != oldtm.tm_mday )
+	 || newtm.tm_mday != oldtm.tm_mday
+	 || newtm.tm_hour != oldtm.tm_hour )
 		return mktime(&newtm);
 
-	int dh = newtm.tm_hour - oldtm.tm_hour;
+//        int dh = newtm.tm_hour - oldtm.tm_hour;
 	int dm = newtm.tm_min  - oldtm.tm_min ;
 	int ds = newtm.tm_sec  - oldtm.tm_sec ;
 
-	return oldt + (dh*60+dm)*60+ds;
+	return oldt + dm*60+ds;
+//        return oldt + (dh*60+dm)*60+ds;
 }
 
 int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, int year, int month, int day, 
@@ -378,6 +385,9 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 //        t = mktime(&tm);
 	m_t  = t  = update_time(tm,m_t,m_tm);
 	m_tm = tm ;
+
+// should be on in debug mode
+//        assert(t == mktime(&tm));
 
 	gmtime_r(&t, &tm);
 
