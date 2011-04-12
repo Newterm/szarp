@@ -24,11 +24,11 @@ msgstr ""
 
 #: sspackexchange.cc:228 ssclient.cc:643
 msgid "connection with server terminated"
-msgstr "po³±czecie z serwerem przerwane"
+msgstr "po³±czenie z serwerem przerwane"
 
 #: sspackexchange.cc:441
 msgid "Connection timeout!"
-msgstr "Przekorczony czas oczekiwania na po³±czenie"
+msgstr "Przekroczony czas oczekiwania na po³±czenie"
 
 #: sspackexchange.cc:624
 msgid ""
@@ -71,15 +71,15 @@ msgid ""
 "Please contact with us."
 msgstr ""
 "SSC wykry³ próbê synchronizacji danych na niezarejestrowanym komputerze."
-"Prosimy o skontakowanie siê z nami."
+"Prosimy o skontaktowanie siê z nami."
 
 #: ssclient.cc:1493
 msgid "Your account expired, contact with us."
-msgstr "Twoje konto straci³o wa¿no¶æ. Skontaktuj sie z nami."
+msgstr "Twoje konto straci³o wa¿no¶æ. Skontaktuj siê z nami."
 
 #: ssclient.cc:1495
 msgid "Incorrect user name or/and password."
-msgstr "Nieprawid³owa nazwa u¿ytkownika lub/i has³o."
+msgstr "Nieprawid³owa nazwa u¿ytkownika i/lub has³o."
 
 #: ssclient.cc:1502
 msgid "Your account is almost expired. Please contact with us."
@@ -138,7 +138,7 @@ msgstr "Synchronizacja zakoñczona (czas trwania %.2d:%.2d:%.2d)"
 msgid ""
 "\n"
 "Following configurations were not synced: "
-msgstr "\nNastêpuj±ce konfiguracje nie zosta³y zsychronizowane:"
+msgstr "\nNastêpuj±ce konfiguracje nie zosta³y zsynchronizowane:"
 
 #: ssclient.cc:2078
 msgid ". Either they do no exsits or you have no access to them."
@@ -240,7 +240,7 @@ msgstr "Serwer ju¿ istnieje"
 #: ssclient.cc:2380
 #, c-format
 msgid "Enter user name for server: %s"
-msgstr "Wprowad¼ nazwê u¿ytkownika do serwwera: %s"
+msgstr "Wprowad¼ nazwê u¿ytkownika dla serwera: %s"
 
 #: ssclient.cc:2381
 msgid "Username"
@@ -257,7 +257,7 @@ msgstr "Has³o"
 
 #: ssclient.cc:2405
 msgid "At least one server must be present."
-msgstr "Przynajmiej jeden serwer musi byæ skonfigurowany."
+msgstr "Przynajmniej jeden serwer musi byæ skonfigurowany."
 
 #: ssclient.cc:2405
 msgid "Error"
@@ -266,7 +266,7 @@ msgstr "B³±d"
 #: ssclient.cc:2410
 #, c-format
 msgid "Do you wish to remove server: %s ?"
-msgstr "Czy chcesz usun±æ serwer; %s ?"
+msgstr "Czy chcesz usun±æ serwer %s ?"
 
 #: ssclient.cc:2411
 msgid "Server removal"
@@ -275,7 +275,7 @@ msgstr "Usuniêcie serwera"
 #: ssclient.cc:2426
 #, c-format
 msgid "Enter new address of server: %s"
-msgstr "Wprowad¼ nowy adress dla serwera: %s"
+msgstr "Wprowad¼ nowy adres dla serwera %s"
 
 #: ssclient.cc:2427
 msgid "Server address"
@@ -315,7 +315,7 @@ msgstr "Synchronizuj wybrane bazy"
 
 #: ssclient.cc:2666
 msgid "Synchronize given database by prefix"
-msgstr "Synchronizuj wybran± baze po prefiksie"
+msgstr "Synchronizuj wybran± bazê po prefiksie"
 
 #: ssclient.cc:2669
 msgid "Help"
@@ -404,7 +404,7 @@ msgstr ""
 "\n"
 "\n"
 "Przed rozpoczêciem u¿ywania programu Synchronizator musisz podaæ\n"
-"swoj± nazwê u¿ytkowika oraz has³o. Te dane s± niezbêdne, \n"
+"swoj± nazwê u¿ytkownika oraz has³o. Te dane s± niezbêdne, \n"
 "by aplikacja mog³a pobieraæ dane z serwera.\n"
 
 #: ssclient.cc:2877
@@ -417,7 +417,7 @@ msgid ""
 "You may click Cancel button to stop configuration process and close the\n"
 "application.\n"
 msgstr ""
-"Je¿eli nie znasz swojej nazwy u¿ytkownika lub has³a skontakuj siê z "
+"Je¿eli nie znasz swojej nazwy u¿ytkownika lub has³a skontaktuj siê z "
 "administratorem\n"
 "serwera.\n"
 "Mo¿esz nacisn±æ przycisk \"Anuluj\", by przerwaæ konfiguracjê i zakoñczyæ "
