@@ -266,7 +266,7 @@ msgstr "B³±d"
 #: ssclient.cc:2410
 #, c-format
 msgid "Do you wish to remove server: %s ?"
-msgstr "Czy chcesz usun±æ serwer; %s ?"
+msgstr "Czy chcesz usun±æ serwer %s ?"
 
 #: ssclient.cc:2411
 msgid "Server removal"
@@ -275,7 +275,7 @@ msgstr "Usuniêcie serwera"
 #: ssclient.cc:2426
 #, c-format
 msgid "Enter new address of server: %s"
-msgstr "Wprowad¼ nowy adres dla serwera: %s"
+msgstr "Wprowad¼ nowy adres dla serwera %s"
 
 #: ssclient.cc:2427
 msgid "Server address"
