@@ -36,14 +36,16 @@ def main():
 	parser = optparse.OptionParser(epilog=epilog)
 	parser.add_option('-n', '--name', help='REQUIRED. Converted name like in SzarpBase: "Group:Unit:Parameter"',dest='name')
 	parser.add_option('-b', '--begin-date', help='REQUIRED. Set begin date for data: "YYYY-MM-DD"', dest='beginDate')
-	parser.add_option('-d', '--days', help='create data for DAYS days. Default value [%default]',
+	parser.add_option('-d', '--days', type='int', help='create data for DAYS days. Default value [%default]',
 		dest='days', default=30)
 	parser.add_option('-s', '--step', help='Step between two samples. Default value [%default]', dest='step', default=1)
 	parser.add_option('-m', '--min', help='Minimal value for data. Default value [%default]', dest='minVal', default=0)
 	parser.add_option('-M', '--max', help='Max value for data. Default value [%default]', dest='maxVal', default=100)
-	parser.add_option('-p', '--percent', help='How much percent of data create (0 < PERCENT < 100). Default value [%default]', dest='percent', default=80)
+	parser.add_option('-p', '--percent', type='int', help='How much percent of data create (0 < PERCENT < 100). Default value [%default]', dest='percent', default=80)
 	parser.add_option('-t', '--type', help='Type of data [ float | int ]. Default value [%default]', dest='type', default='float')
-	parser.add_option('-r', '--regular', help='Regular gaps between data - 10 min [ yes | no ]. Default value [%default]', dest='regular', default='yes')
+	parser.add_option('-r', '--regular', type='int', help='Size of regular gaps between data in minutes. Default value [%default]', dest='regular', default=10)
+	parser.add_option('-i', '--irregular', help='Do not create regular time gaps between two samples. Can not be used with --all-data option', dest='irregular', action="store_true", default=False)
+	parser.add_option('-a', '--all-data', help='Create all data, use a REGULAR value to make a step. Can not be used with --irregular option', dest='allData', action="store_true", default=False)
 
 	(opts, args) = parser.parse_args()
 
@@ -51,6 +53,10 @@ def main():
 	if opts.name is None or opts.beginDate is None:
 		print 'Required option is missing'
 		parser.print_help()
+		exit(-1)
+
+	if opts.irregular and opts.allData:
+		print 'Can not use --irregular and --all-data  together'
 		exit(-1)
 
 	if opts.type == "float":
@@ -74,7 +80,10 @@ def main():
 	endTime   = beginTime + difference
 
 	# max number of samples
-	maxData = int (opts.days) * 6 * 24
+	if opts.irregular:
+		maxData = int (opts.days) * 6 * 24
+	else:
+		maxData = (60 * 24) / int (opts.regular)
 	maxData = int ( (maxData * int (opts.percent) ) / 100 )
 
 	# time in seconds
@@ -85,12 +94,19 @@ def main():
 	random.seed()
 
 	# collect data
-	while len(data) < maxData:
-		r = random.uniform(sBeginTime, sEndTime)
-		if opts.regular == "yes":
-			r = r - r % 600
-		t = datetime.datetime.fromtimestamp(r).strftime('%Y %m %d %H %M')
-		data.add(t)
+	if not opts.allData:
+		while len(data) < maxData:
+			r = random.uniform(sBeginTime, sEndTime)
+			if not opts.irregular:
+				r = r - r % (60 * opts.regular)
+			t = datetime.datetime.fromtimestamp(r).strftime('%Y %m %d %H %M')
+			data.add(t)
+	else:
+		# all data
+		_step = opts.regular * 60
+		for r in range(int(sBeginTime), int (sEndTime), _step):
+			t = datetime.datetime.fromtimestamp(float(r)).strftime('%Y %m %d %H %M')
+			data.add(t)
 
 	# init begin value
 	if opts.type == "float":
