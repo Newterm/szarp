@@ -33,7 +33,8 @@ This file describes how to prepare SZARP installation package for Windows.
 3.15. sqlite library.
 3.16. freetype libraray.
 3.17. ftgl libraray.
-4. Compiling SZARP.
+4.1 Set new version.
+4.2 Compiling SZARP.
 5. Installation package.
 
 
@@ -553,7 +554,13 @@ patch sources: patch -p0 < file
 make ECHO=echo
 make ECHO=echo install
 
-4. Compiling SZARP.
+4.1 Set new version
+Edit file 'version' in main source directory and set a new version and current date.
+Version you can find in the 'debian/changelog' file, take the newest.
+Example content of file 'version':
+3.1.526 2011-04-13
+
+4.2 Compiling SZARP.
 
 In SZARP source directory run:
 
