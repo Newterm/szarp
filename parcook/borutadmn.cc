@@ -260,11 +260,10 @@ int set_serial_port_settings(int fd, serial_port_configuration &spc) {
 		ti.c_cflag |= CSTOPB;
 
 	switch (spc.parity) {
-		case serial_port_configuration::EVEN:
-			ti.c_cflag |= PARENB;
-			break;
 		case serial_port_configuration::ODD:
 			ti.c_cflag |= PARODD;
+		case serial_port_configuration::EVEN:
+			ti.c_cflag |= PARENB;
 			break;
 		case serial_port_configuration::NONE:
 			break;
