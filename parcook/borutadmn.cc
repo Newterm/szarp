@@ -518,7 +518,6 @@ void client_manager::starting_new_cycle() {
 void client_manager::driver_finished_job(client_driver *driver) {
 	size_t connection = driver->id().first;
 	size_t& client = m_current_client.at(connection);
-	dolog(10, "client_manager::connection %zu driver %zu finished", connection, client);
 	if (driver->id().second != client) {
 		dolog(0, "Boruta was notfied by client number %zu (connection %zu) that it has finished it's job!", client, connection);
 		dolog(0, "But this driver in not a current driver for this connection, THIS IS VERY, VERY WRONG (BUGGY DRIVER?)");
@@ -669,7 +668,7 @@ int tcp_client_manager::do_establish_connection(size_t conn_no) {
 
 void tcp_client_manager::do_schedule(size_t conn_no, size_t client_no) {
 	tcp_connection& c = m_tcp_connections.at(conn_no);
-	dolog(8, "tcp_client_manager::scheduling client %zu for address %s - connection no: %zu", client_no, c.address.c_str(), client_no);
+	dolog(8, "tcp_client_manager::scheduling client %zu for address %s", client_no, c.address.c_str());
 	m_connection_client_map.at(conn_no).at(client_no)->scheduled(c.bufev, c.fd);
 }
 
@@ -1107,7 +1106,6 @@ void boruta_daemon::go() {
 }
 
 void boruta_daemon::cycle_timer_callback(int fd, short event, void* daemon) {
-	dolog(10, "boruta_daemon::cycle_timer_callback");
 	boruta_daemon* b = (boruta_daemon*) daemon;
 	b->m_tcp_client_mgr.finished_cycle();
 	b->m_serial_client_mgr.finished_cycle();
