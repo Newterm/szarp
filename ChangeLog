@@ -1,3 +1,6 @@
+2011-04-12	Krzysztof Golinski <krzgol@newterm.pl>
+	* script/szbwgen.py: added "regular", "irregular", "all-data" options
+	and an usage example
 2011-04-11	Darek Marcinkiewicz <reksio@newterm.pl>
 	* parcook/boruta: added configuratble characters size for
 	serial connections
