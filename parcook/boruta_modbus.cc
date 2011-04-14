@@ -2021,7 +2021,7 @@ void serial_ascii_parser::read_data(struct bufferevent* bufev) {
 				m_serial_handler->error(serial_connection_handler::FRAME_ERROR);
 				return;
 			}
-			m_state = FUNC_CODE_1; 
+			m_state = ADDR_1; 
 			break;
 		case ADDR_1:
 			m_previous_char = c;
@@ -2124,10 +2124,10 @@ int serial_ascii_parser::configure(xmlNodePtr node, serial_port_configuration &s
 	m_delay_between_chars = 0;
 	get_xml_extra_prop(node, "read-timeout", m_timeout, true);
 	if (m_timeout == 0) {
-		m_timeout = 1000;
+		m_timeout = 1000000;
 	} else {
 		m_timeout *= 1000;
-		dolog(10, "Serial port configuration, read timeout set to %d miliseconds", m_timeout);
+		dolog(10, "Serial port configuration, read timeout set to %d microseconds", m_timeout);
 	}
 	dolog(9, "serial_parser m_timeout: %d", m_timeout);
 	return 0;
