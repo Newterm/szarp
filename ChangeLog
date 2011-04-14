@@ -1,3 +1,5 @@
+2011-04-14	Krzysztof Golinski <krzgol@newterm.pl>
+	* wx/draw3/xyzgraph.cpp: fixed bug: 0 length axes, divide by 0
 2011-04-12	Krzysztof Golinski <krzgol@newterm.pl>
 	* script/szbwgen.py: added "regular", "irregular", "all-data" options
 	and an usage example

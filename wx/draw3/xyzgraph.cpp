@@ -120,6 +120,7 @@ class XYZCanvas : public wxGLCanvas {
 	bool LookupTriangle(size_t i, size_t& j, size_t &k);
 	size_t XZToIndex(size_t x, size_t z);
 	void IndexToXZ(size_t index, int& x, int& z);
+	bool AreValidAxes();
 
 	enum { TRIANGLES, SINGLE_POINTS } m_graph_type;
 
@@ -584,6 +585,19 @@ void XYZCanvas::IndexToXZ(size_t index, int& x, int& z) {
 	z = index3 / slices_no;
 }
 
+bool XYZCanvas::AreValidAxes() {
+	double & xmin = m_graph -> m_dmin[0];
+	double & xmax = m_graph -> m_dmax[0];
+	double & ymin = m_graph -> m_dmin[1];
+	double & ymax = m_graph -> m_dmax[1];
+	double & zmin = m_graph -> m_dmin[2];
+	double & zmax = m_graph -> m_dmax[2];
+
+	if ( xmax - xmin <= 0 || ymax - ymin <= 0 || zmax - zmin <= 0)
+		return false;
+	return true;
+}
+
 bool XYZCanvas::LookupTriangle(size_t i, size_t& j, size_t &k) {
 	int cx, cz;
 	IndexToXZ(i, cx, cz);
@@ -598,10 +612,10 @@ bool XYZCanvas::LookupTriangle(size_t i, size_t& j, size_t &k) {
 	while (++lookup_radius < (int)slices_no) for (int i = 0; i < 8 * lookup_radius; i++) {
 		int r = i % (2 * lookup_radius);
 		int q = i / (2 * lookup_radius);
-		int x, z;
+		int x = 0, z = 0;
 		switch (q) {
 			case 0:
-				x = cx - lookup_radius + r;		
+				x = cx - lookup_radius + r;
 				z = cz - lookup_radius;
 				break;
 			case 1:
@@ -731,6 +745,10 @@ void XYZCanvas::UpdateArrays() {
 	std::vector<int> counts(slices_no * slices_no, 0);
 
 	for (size_t i = 0; i < m_graph->m_points_values.size(); i++) {
+		// avoid divide by 0
+		assert( xmax - xmin > 0);
+		assert( zmax - zmin > 0);
+
 		int x = (m_graph->m_points_values[i].first[0] - xmin) / (xmax - xmin) * slices_no;
 		int z = (m_graph->m_points_values[i].first[2] - zmin) / (zmax - zmin) * slices_no;
 		int k = XZToIndex(x, z) / 3;
@@ -745,6 +763,10 @@ void XYZCanvas::UpdateArrays() {
 		float v;
 		if (counts[si]) {
 			v = sums[si] / counts[si];
+			// avoid divide by 0
+			assert(ymax - ymin > 0);
+			assert(ymax - ymin > 0);
+
 			m_vertices[vi + 1] = (v - ymin) / (ymax - ymin) * slices_no;
 			m_colors[si * 4] = (v - ymin) / (ymax - ymin) * 255;
 			m_colors[si * 4 + 1] = 0;
@@ -826,16 +848,19 @@ void XYZCanvas::OnSize(wxSizeEvent &e) {
 }
 
 void XYZCanvas::SetGraph(XYGraph *graph) {
-	int x, z;
+	int x = -1, z = 0;
 	m_graph = graph;
-	UpdateArrays();
-	for (x = slices_no - 2; x >= 0; x--)
-		for (z = slices_no - 2; z >= 0; z--) 
-			if (!std::isnan(m_vertices[XZToIndex(x, z) + 1])) {
-				m_cursor_z = z;
-				m_cursor_x = x;
-				goto out;
-			}
+
+	if (AreValidAxes()) {
+		UpdateArrays();
+		for (x = slices_no - 2; x >= 0; x--)
+			for (z = slices_no - 2; z >= 0; z--) 
+				if (!std::isnan(m_vertices[XZToIndex(x, z) + 1])) {
+					m_cursor_z = z;
+					m_cursor_x = x;
+					goto out;
+				}
+	}
 out:
 	if (x < 0) {
 		wxMessageBox(_("No common data found"), _("There is no common data for these params for given time period"), wxICON_HAND);
