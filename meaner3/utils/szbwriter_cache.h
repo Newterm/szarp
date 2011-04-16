@@ -1,3 +1,25 @@
+/* 
+ * SZARP: SCADA software 
+ *
+ * Copyright (C) 
+ * 2011 - Jakub Kotur <qba@newterm.pl>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ */
+
 #ifndef __SZBWRITER_CACHE_H__
 
 #define __SZBWRITER_CACHE_H__
@@ -20,7 +42,7 @@ public:
 	/** 
 	 * @brief type that specify param.
 	 *
-	 * Data that can specify param or are constns for param,
+	 * Data that can specify param or are constants for param,
 	 * based on szbwriter.cc file are directory, param name
 	 * and probe length, year and month.
 	 */
@@ -33,15 +55,6 @@ public:
 		int probe_length;
 		int year;
 		int month;
-
-//                void operator=(  Key& b )
-//                {
-//                        dir = b.dir;
-//                        name = b.name;
-//                        probe_length = b.probe_length;
-//                        year = b.year;
-//                        month = b.month;
-//                }
 	};
 
 	/** 
@@ -54,19 +67,21 @@ public:
 		time_t time;	
 	};
 
+	/** 
+	 * @brief failure exception that is thrown by SzProbeCache when 
+	 * writing to file failed
+	 */
 	typedef std::ofstream::failure failure;
 
 	/** 
-	 * @brief Initilize class with limitations.
+	 * @brief Initialize class with limitations.
 	 *
 	 * Largest limitation that make sense is 31 * 24 * 6 = 4464,
 	 * but tests shows that 2048 is better value.
 	 *
 	 * @param probes_num number of probes within one param
-	 * to be cached
-	 * @param params_num number of params to be cached.
-	 * After reaching this number, biggest param will be written
-	 * to file, and deleted.
+	 * to be cached. After reaching that number, probes are flushed
+	 * into the file.
 	 */
 	SzProbeCache( int probes_num = 2048 );
 
@@ -80,16 +95,20 @@ public:
 	 * 
 	 * When there is probe missing (time gap) its filled with
 	 * SZB_FILE_NODATA special value.
+	 *
+	 * It creates new parameter if file has changed, so file name,
+	 * directory or probe month differ from last time
+	 *
+	 * If new time is older than last time this function does nothing.
 	 * 
-	 * @param k param to wich value should be added
-	 * @param v 
+	 * @param k param to which value should be added
+	 * @param v value that should be added
 	 */
 	void add( const Key& k , const Value& v);
 
 	/** 
-	 * @brief Write cached param to database.
-	 * 
-	 * @param k
+	 * @brief Write cached probes to database, and clear current
+	 * buffer.
 	 */
 	void flush();
 	

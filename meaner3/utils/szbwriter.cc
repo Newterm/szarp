@@ -71,7 +71,7 @@ class SzbaseWriter : public TSzarpConfig {
 public:
 	SzbaseWriter(const std::wstring &ipk_path, const std::wstring& title, const std::wstring &double_pattern,
 			const std::wstring& data_dir, const std::wstring &cache_dir, bool add_new_pars,
-			bool write_10sec, int _fill_how_many);
+			bool write_10sec, int _fill_how_many , int _fill_how_many_sec );
 	~SzbaseWriter();
 	/* Process input. 
 	 * @return 1 on error, 0 on success*/
@@ -139,12 +139,13 @@ protected:
 	bool m_new_par; 	/**< if new parameter was added */
 	size_t m_last_type;	/**< last type of probe to write + 1 */
 
-	int m_fill_how_many;	/**< fill gaps in data when distance between two probes is <=  m_fill_how_many **/
+	int m_fill_how_many[LAST_PROBE_TYPE];	/** fill gaps in data when distance between two probes is <=  m_fill_how_many **/
 
 	SzProbeCache m_cache[LAST_PROBE_TYPE];   /**< cache writing to database */ 
 
 	struct tm m_tm; /**< last time */
 	time_t m_t; /**< last time */
+
 };
 
 SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _title, 
@@ -152,12 +153,14 @@ SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _ti
 		const std::wstring& data_dir, const std::wstring& cache_dir, 
 		bool add_new_pars,
 		bool write_10sec,
-		int _fill_how_many):
+		int _fill_how_many , int _fill_how_many_sec ):
 	m_double_pattern(double_pattern),
 	m_add_new_pars(add_new_pars),
-	m_last_type(write_10sec ? LAST_PROBE_TYPE : SEC10),
-	m_fill_how_many(_fill_how_many)
+	m_last_type(write_10sec ? LAST_PROBE_TYPE : SEC10)
 {
+	m_fill_how_many[MIN10] = _fill_how_many;
+	m_fill_how_many[SEC10] = _fill_how_many_sec;
+
 	m_dir.push_back(data_dir);
 	m_dir.push_back(cache_dir);
 	m_cur_par = NULL;
@@ -478,11 +481,9 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 		sz_log(10,"add_data: i=%u, check time gap: %d",(unsigned)i,gap);
 		assert(gap >= 0 && gap >= m_probe_length[i]);
 
-		if ((PROBE_TYPE) i == MIN10 && m_fill_how_many > 0 && m_probe_length[i] < gap && gap <= (m_fill_how_many + 1) * m_probe_length[i])
-		{
-			if(fill_gaps((PROBE_TYPE)i, _time + m_probe_length[i] , _time + gap ,_sum,_count))
-				return 1;
-		}
+		// if there is a gap bigger than normal probe length, fill gaps
+		if( gap > m_probe_length[i] && fill_gaps((PROBE_TYPE)i, _time + m_probe_length[i] , _time + gap ,_sum,_count) )
+			return 1;
 	}
 
 	for (size_t i = 0; i < m_last_type; i++) {
@@ -581,42 +582,39 @@ int SzbaseWriter::save_data(PROBE_TYPE pt)
 	return 0;
 }
 
+/**
+ * FIXME: What if m_fill_how_many is 0 and end-begin is also 0?
+ *        Now it writes one probe exactly in begin==end.
+ */
 int SzbaseWriter::fill_gaps(PROBE_TYPE pt, int begin, int end, double sum, int count) 
 {
-	if (m_fill_how_many <= 0)
+	if( (end-begin)/m_probe_length[pt] > m_fill_how_many[(int)pt] )
 		return 0;
-
-	assert(pt == MIN10 || pt == SEC10);
 
 	sz_log(10,"fill_gaps begin, pt=%d",(int)pt);
 
 	// save current data
-	int save_time = m_cur_t[pt];
-	int save_cnt = m_cur_cnt[pt];
-	double save_sum = m_cur_sum[pt];
+	int    save_time = m_cur_t  [pt];
+	int    save_cnt  = m_cur_cnt[pt];
+	double save_sum  = m_cur_sum[pt];
 
 	// fill gaps
-	for (int t = begin; t < end; t += m_probe_length[pt])
+	for( int t = begin; t <= end; t += m_probe_length[pt] )
 	{
 		sz_log(10,"fill gap for t=%d",t);
 
-		m_cur_t[pt] = t;
+		m_cur_t  [pt] = t;
 		m_cur_cnt[pt] = count;
 		m_cur_sum[pt] = sum;
 		
-		if (save_data(pt))
+		if( save_data(pt) )
 			return 1;
 	}
 
 	// restore data
-	m_cur_t[pt] = save_time;
+	m_cur_t  [pt] = save_time;
 	m_cur_cnt[pt] = save_cnt;
 	m_cur_sum[pt] = save_sum;
-
-	// call fill_gaps for 10sec
-	if (pt == MIN10 && m_last_type > SEC10)
-		if (fill_gaps(SEC10,begin,end,sum,count))
-			return 1;
 
 	sz_log(10,"fill_gaps end, pt=%d", (int)pt);
 	return 0;
@@ -816,7 +814,9 @@ int main(int argc, char *argv[])
 	const char *cache_dir;
 	const char *double_pattern;
 	char *fill_how_many;
+	char *fill_how_many_sec;
 	int fill_how_many_num = 0;
+	int fill_how_many_sec_num = 0;
 	struct arguments arguments;
 
 	loglevel = loginit_cmdline(2, NULL, &argc, argv);
@@ -833,9 +833,10 @@ int main(int argc, char *argv[])
 
 	if( !(double_pattern = libpar_getpar(SZARP_CFG_SECTION, "double_match" , 0)))
 		double_pattern = "";
-	if( !(fill_how_many  = libpar_getpar(SZARP_CFG_SECTION, "fill_how_many", 0)))
-		fill_how_many_num = 0;
-	else	fill_how_many_num = atoi(fill_how_many);
+	if( (fill_how_many      = libpar_getpar(SZARP_CFG_SECTION, "fill_how_many"    , 0)) )
+		fill_how_many_num     = atoi(fill_how_many    );
+	if( (fill_how_many_sec  = libpar_getpar(SZARP_CFG_SECTION, "fill_how_many_sec", 0)) )
+		fill_how_many_sec_num = atoi(fill_how_many_sec);
 
 	c = libpar_getpar(SZARP_CFG_SECTION, "log_level", 0);
 	if (c == NULL)
@@ -866,7 +867,7 @@ int main(int argc, char *argv[])
 	SzbaseWriter *szbw = new SzbaseWriter(SC::A2S(ipk_path), arguments.title, 
 			SC::A2S(double_pattern) , SC::A2S(data_dir), SC::A2S(cache_dir) ,
 			arguments.add_new_params, not arguments.no_probes,
-			fill_how_many_num);
+			fill_how_many_num,fill_how_many_sec_num);
 	assert (szbw != NULL);
 
 #ifndef FNM_EXTMATCH
