@@ -50,8 +50,8 @@ public:
 		Key( const std::wstring& d , const std::wstring& n ,
 				int p , int y , int m )
 			: dir(d) , name(n) , probe_length(p) , year(y) , month(m) {}
-		const std::wstring& dir;
-		const std::wstring& name;
+		const std::wstring dir;
+		const std::wstring name;
 		int probe_length;
 		int year;
 		int month;
