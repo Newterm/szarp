@@ -60,11 +60,7 @@ void SzProbeCache::add( const Key& k , const Value& v )
 	}
 
 	Values& vs = *last_param.second;
-	if( ! vs.add( v.time , v.probe , k.probe_length ) )
-	{
-		flush();
-		vs.add( v.time , v.probe , k.probe_length );
-	}
+	while( !vs.add( v.time , v.probe , k.probe_length ) ) flush();
 }
 
 void SzProbeCache::flush()
