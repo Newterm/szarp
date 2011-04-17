@@ -82,10 +82,16 @@ class TSaveParam {
 				int overwrite = 0,
 				int force_nodata = 0,
 				time_t probe_length = SZBASE_DATA_SPAN);
-		/** performs @see Write operation but tries minimise opening/closing
-		* of data cache file*/
+		/**
+		 * @brief performs @see Write operation but tries minimise opening/closing
+		 *        of data cache file
+		 * 
+		 * @param force_same_file forcing using same file every write. Creating new file path
+		 * and checking every time string-based if file has changed was pretty heavy. Defaults
+		 * to false to backward compatibility.
+		 */
 		int WriteBuffered(const fs::wpath& directory, time_t t, short int* data, size_t data_count, TStatus *status, 
-		                int overwrite, int force_nodata, time_t probe_length);
+		                int overwrite, int force_nodata, time_t probe_length , bool force_same_file = false );
 		/** Write 10-seconds probe to disk cache.
 		 * @see Write
 		 */
@@ -93,10 +99,27 @@ class TSaveParam {
 		/** Closes currenly open file desctiptor*/
 		void CloseFile();
 
+		/** 
+		 * @brief Creating file path based on necessary informations
+		 * 
+		 * @param dir file base directory
+		 * @param name converted parameter name 
+		 * @param year probe year
+		 * @param month probe month
+		 * @param probe_length probe type
+		 */
+		void CreateFilePath( const fs::wpath& dir , const std::wstring& name , int year , int month , time_t probe_length );
+
+		/** 
+		 * @brief Parameter name getter
+		 * 
+		 * @return return converted parameter name.
+		 */
 		const std::wstring& GetName() { return cname; }
 	protected:
 		int fd;			/**< Currently open data file desriptor*/
 		std::wstring cname;	/**< Encoded name of parameter */
+		std::wstring m_path;      /**< full path to file */
 		std::wstring last_path; /**< Last file data was written to*/
 };
 

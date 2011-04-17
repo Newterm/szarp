@@ -56,6 +56,7 @@ void SzProbeCache::add( const Key& k , const Value& v )
 
 		if( last_param.first ) delete last_param.first;
 		last_param.first = new TSaveParam( k.name , false );
+		last_param.first->CreateFilePath( k.dir , k.name , k.year , k.month , k.probe_length );
 	}
 
 	Values& vs = *last_param.second;
@@ -122,7 +123,7 @@ void SzProbeCache::flush( Param& p , const Key& k )
 	if( p.second->clean() ) return;
 	if( p.first->WriteBuffered(
 			k.dir , p.second->time , p.second->probes , p.second->length
-			, NULL , 1 , 0 , k.probe_length ) )
+			, NULL , 1 , 0 , k.probe_length , true ) )
 		throw failure( "Cannot write to buffer");
 	p.second->clear();
 }
