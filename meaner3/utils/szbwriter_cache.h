@@ -24,12 +24,11 @@
 
 #define __SZBWRITER_CACHE_H__
 
-#include <map>
 #include <string>
-#include <locale>
 #include <fstream>
 
 #include "tsaveparam.h"
+#include "tmmapparam.h"
 
 /** 
  * @brief Class that cache params and write them with delay.
@@ -71,7 +70,8 @@ public:
 	 * @brief failure exception that is thrown by SzProbeCache when 
 	 * writing to file failed
 	 */
-	typedef std::ofstream::failure failure;
+	class failure : public std::ofstream::failure
+	{ public: failure( const char*msg ) : std::ofstream::failure(msg) {} };
 
 	/** 
 	 * @brief Initialize class with limitations.
@@ -93,8 +93,7 @@ public:
 	/** 
 	 * @brief Adds probe to param. If necessary creates new param.
 	 * 
-	 * When there is probe missing (time gap) its filled with
-	 * SZB_FILE_NODATA special value.
+	 * When there is probe missing (time gap) data are flushed to file.
 	 *
 	 * It creates new parameter if file has changed, so file name,
 	 * directory or probe month differ from last time
@@ -126,7 +125,7 @@ private:
 		unsigned int max_length;
 	};
 
-	typedef std::pair<TSaveParam*,Values*> Param;
+	typedef std::pair<TMMapParam*,Values*> Param;
 
 	/**
 	 * @see flush( Key k )

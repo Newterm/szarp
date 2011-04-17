@@ -599,7 +599,7 @@ int SzbaseWriter::fill_gaps(PROBE_TYPE pt, int begin, int end, double sum, int c
 	double save_sum  = m_cur_sum[pt];
 
 	// fill gaps
-	for( int t = begin; t <= end; t += m_probe_length[pt] )
+	for( int t = begin; t < end; t += m_probe_length[pt] )
 	{
 		sz_log(10,"fill gap for t=%d",t);
 

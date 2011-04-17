@@ -23,7 +23,6 @@
 #include "szbwriter_cache.h"
 
 #include <cstring>
-#include <iostream>
 
 #include "liblog.h"
 #include "szbase/szbbase.h"
@@ -55,8 +54,7 @@ void SzProbeCache::add( const Key& k , const Value& v )
 		last_key = new Key(k);
 
 		if( last_param.first ) delete last_param.first;
-		last_param.first = new TSaveParam( k.name , false );
-		last_param.first->CreateFilePath( k.dir , k.name , k.year , k.month , k.probe_length );
+		last_param.first = new TMMapParam( k.dir , k.name , k.year , k.month , k.probe_length );
 	}
 
 	Values& vs = *last_param.second;
@@ -84,15 +82,8 @@ bool SzProbeCache::Values::add( time_t t , short v , int probe_length )
 
 	time_t curr_time = szb_move_time( time , length , PT_CUSTOM , probe_length );
 
-	// TODO: replace this loop with memcpy
-	while( t > curr_time && length < max_length ) 
-	{
-		sz_log(10,"Writing SZB_FILE_NODATA to %u at %i",length,curr_time);
-		probes[length++] = SZB_FILE_NODATA;
-		curr_time = szb_move_time( curr_time, 1, PT_CUSTOM, probe_length );
-	}
-
-	if( t != curr_time ) return false;
+	if( t > curr_time ) return false; // raport time gap
+	if( t < curr_time ) return true ; // do not override data
 
 	sz_log(10,"Writing value %i to %u at %i",v,length,t);
 	probes[length++] = v;
@@ -117,9 +108,10 @@ SzProbeCache::Values::~Values()
 void SzProbeCache::flush( Param& p , const Key& k )
 {
 	if( p.second->clean() ) return;
-	if( p.first->WriteBuffered(
-			k.dir , p.second->time , p.second->probes , p.second->length
-			, NULL , 1 , 0 , k.probe_length , true ) )
+//        if( p.first->WriteBuffered(
+//                        k.dir , p.second->time , p.second->probes , p.second->length
+//                        , NULL , 1 , 0 , k.probe_length , true ) )
+	if( p.first->write( p.second->time , p.second->probes , p.second->length ) )
 		throw failure( "Cannot write to buffer");
 	p.second->clear();
 }
