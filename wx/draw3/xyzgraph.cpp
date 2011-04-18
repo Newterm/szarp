@@ -1310,7 +1310,7 @@ BEGIN_EVENT_TABLE(XYZCanvas, wxGLCanvas)
 END_EVENT_TABLE()
 
 
-XYZFrame::XYZFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigManager *cfgmanager, FrameManager *frame_manager) 
+XYZFrame::XYZFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigManager *cfgmanager, TimeInfo time, FrameManager *frame_manager) 
 	: szFrame(NULL, wxID_ANY, _("XYZ Graph")), m_default_prefix(default_prefix), m_db_manager(dbmanager), m_cfg_manager(cfgmanager), m_frame_manager(frame_manager) {
 
 	m_canvas = new XYZCanvas(this);
@@ -1358,6 +1358,7 @@ XYZFrame::XYZFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigMa
 			m_default_prefix,
 			m_cfg_manager,
 			m_db_manager,
+			time,
 			this);
 	if (m_xydialog->ShowModal() == wxID_OK)
 		SetGraph(m_xydialog->GetGraph());

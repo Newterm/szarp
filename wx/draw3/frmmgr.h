@@ -89,14 +89,16 @@ class FrameManager : public wxEvtHandler {
 	void OnClose(wxCloseEvent &event);
 
 	/**Pops up dialog for choosing xy graph parameters
-	 * @param prefix initial configutation prefix*/
-	void CreateXYGraph(wxString prefix);
+	 * @param prefix initial configutation prefix
+	 * @param time information about time set in current draw*/
+	void CreateXYGraph(wxString prefix, TimeInfo time);
 
-	void CreateXYZGraph(wxString prefix);
+	void CreateXYZGraph(wxString prefix, TimeInfo time);
 
 	/**Shows dialog statistics calculation
-	 * @param prefix initial configuration prefix*/
-	void ShowStatDialog(wxString prefix);
+	 * @param prefix initial configuration prefix
+	 * @param time information about time set in current draw*/
+	void ShowStatDialog(wxString prefix, TimeInfo time);
 
 	/**Find @see DrawFrame with given numer
 	 * @param number number of @see DrawFrame to find

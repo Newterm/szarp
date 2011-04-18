@@ -197,7 +197,7 @@ class XYDialog : public wxDialog, public ConfigObserver
 	void OnHelpButton(wxCommandEvent &event);
 
 	public:	
-	XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, DatabaseManager *db, XFrame *frame);
+	XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, DatabaseManager *db, TimeInfo time, XFrame *frame);
 	/**Called by @see DataMangler when data has been fetched*/
 	void DataFromMangler(XYGraph *graph);
 	/**Start data fetching*/

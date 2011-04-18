@@ -197,24 +197,24 @@ DrawFrame *FrameManager::FindFrame(int number) {
 
 }
 
-void FrameManager::CreateXYGraph(wxString prefix) {
+void FrameManager::CreateXYGraph(wxString prefix,TimeInfo time) {
 	DrawsSets* config = config_manager->GetConfigByPrefix(prefix);
 
-	new XYFrame(config->GetID(), database_manager, config_manager, this);
+	new XYFrame(config->GetID(), database_manager, config_manager, time, this);
 }
 
-void FrameManager::CreateXYZGraph(wxString prefix) {
+void FrameManager::CreateXYZGraph(wxString prefix, TimeInfo time) {
 	DrawsSets* config = config_manager->GetConfigByPrefix(prefix);
 
-	new XYZFrame(config->GetID(), database_manager, config_manager, this);
+	new XYZFrame(config->GetID(), database_manager, config_manager, time, this);
 }
 
-void FrameManager::ShowStatDialog(wxString prefix) {
+void FrameManager::ShowStatDialog(wxString prefix, TimeInfo time) {
 	if (stat_dialog == NULL) {
 
 		DrawsSets* config = config_manager->GetConfigByPrefix(prefix);
 
-		stat_dialog = new StatDialog(NULL, config->GetID(), database_manager, config_manager);
+		stat_dialog = new StatDialog(NULL, config->GetID(), database_manager, config_manager, time);
 	}
 
 	stat_dialog->Show(true);

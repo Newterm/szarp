@@ -347,6 +347,15 @@ DTime Draw::GetLastTime() const {
 	return m_index.GetLastTime();
 }
 
+TimeInfo Draw::GetTimeInfo() const {
+	TimeInfo t;
+	t.begin_time = GetStartTime();
+	t.end_time = GetLastTime();
+	t.period =  GetPeriod();
+
+	return t;
+}
+
 void Draw::SwitchFilter(int f, int t)  {
 	m_values.SwitchFilter(f, t);
 }

@@ -43,7 +43,7 @@
 #include "statdiag.h"
 
 
-StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, ConfigManager *cfg) : 
+StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, ConfigManager *cfg, TimeInfo time) :
 	szFrame(parent, 
 		wxID_ANY, 
 		_("Statistics window"),
@@ -51,10 +51,10 @@ StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, C
 		wxDefaultSize,
 		wxDEFAULT_FRAME_STYLE | wxTAB_TRAVERSAL),
 	DBInquirer(db),
-	m_period(PERIOD_T_DAY), 
-	m_start_time(m_period, wxDateTime::Now()),
-	m_current_time(m_period, wxDateTime::Now()),
-	m_end_time(m_period, wxDateTime::Now()),
+	m_period(time.period),
+	m_start_time(time.begin_time),
+	m_current_time(time.begin_time),
+	m_end_time(time.end_time),
 	m_tofetch(0)
 {
 	SetHelpText(_T("draw3-ext-meanvalues"));
@@ -64,7 +64,7 @@ StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, C
 	wxPanel* panel = new wxPanel(this);
 
 	wxString period_choices[PERIOD_T_SEASON] =
-	{ _("YEAR"), _("MONTH"), _("WEEK"), _("DAY"), _("30 MINUTES") };
+	{ _("DECADE"), _("YEAR"), _("MONTH"), _("WEEK"), _("DAY"), _("30 MINUTES") };
 
 	wxStaticText *label; 
 	wxStaticLine *line;
@@ -173,13 +173,11 @@ StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, C
 
 	SetSize(500, 470);
 
-	m_period_choice->SetSelection(0);
+	// use enum position
+	m_period_choice->SetSelection(time.period);
 
 	DrawInfoDropTarget* dt = new DrawInfoDropTarget(this);
 	SetDropTarget(dt);
-
-	wxCommandEvent evt;
-	OnPeriodChange(evt);
 
 }
 

@@ -505,17 +505,34 @@ void DrawFrame::OnRelWin(wxCommandEvent &event) {
 
 void DrawFrame::OnXYDialog(wxCommandEvent &event) {
 	wxString prefix = draw_panel->GetPrefix();
-	frame_manager->CreateXYGraph(prefix);
+	TimeInfo ti = draw_panel->GetCurrentTimeInfo();
+	frame_manager->CreateXYGraph(prefix,ti);
 }
 
 void DrawFrame::OnXYZDialog(wxCommandEvent &event) {
 	wxString prefix = draw_panel->GetPrefix();
-	frame_manager->CreateXYZGraph(prefix);
+/*
+	PeriodType pt = draw_panel->GetPeriod();
+	DTime date = draw_panel->GetBeginCurrentTime();
+	wxPuts(date.Format(_("%Y %M %D")));
+	DTime d2 = draw_panel->GetEndCurrentTime();
+	wxPuts(d2.Format(_("%Y %M %D")));
+	DrawSet *set = draw_panel->GetSelectedSet();
+	int tmp = set->GetNumber();
+	wxString s;
+	s.Printf(wxT("%d"),tmp);
+	wxPuts(s);
+	for (int i = 0; i < set->GetNumber(); ++i)
+		wxString name = set->GetDrawName(i);
+*/
+	TimeInfo ti = draw_panel->GetCurrentTimeInfo();
+	frame_manager->CreateXYZGraph(prefix,ti);
 }
 
 void DrawFrame::OnStatDialog(wxCommandEvent &event) {
 	wxString prefix = draw_panel->GetPrefix();
-	frame_manager->ShowStatDialog(prefix);
+	TimeInfo ti = draw_panel->GetCurrentTimeInfo();
+	frame_manager->ShowStatDialog(prefix,ti);
 }
 
 bool DrawFrame::Destroy()

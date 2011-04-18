@@ -231,6 +231,15 @@ struct ValuesTable {
 
 };
 
+/**
+* Represents draw time information
+*/
+struct TimeInfo
+{
+	DTime begin_time;
+	DTime end_time;
+	PeriodType period;
+};
 
 /**Represents displayed draw.
  * This class seems to be too large. shall be split, maybe using state pattern*/
@@ -285,6 +294,8 @@ public:
 
 	/**Return last displayed @see DTime object*/
 	DTime GetLastTime() const;
+
+	TimeInfo GetTimeInfo() const;
 
 	const TimeIndex& GetTimeIndex();
 

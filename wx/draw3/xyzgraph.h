@@ -61,7 +61,7 @@ class XYZFrame: public XFrame, public szFrame {
 
 	XYDialog *m_xydialog;
 public:
-	XYZFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigManager *cfgmanager, FrameManager *frame_manager);
+	XYZFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigManager *cfgmanager, TimeInfo time, FrameManager *frame_manager);
 
 	virtual int GetDimCount();
 

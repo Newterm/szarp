@@ -927,6 +927,18 @@ PeriodType DrawPanel::GetPeriod() {
 	return (PeriodType)tw->GetSelection();
 }
 
+DTime DrawPanel::GetBeginCurrentTime() {
+	return dw->GetSelectedDraw()->GetStartTime();
+}
+
+DTime DrawPanel::GetEndCurrentTime() {
+	return dw->GetSelectedDraw()->GetLastTime();
+}
+
+TimeInfo DrawPanel::GetCurrentTimeInfo() {
+	return dw->GetSelectedDraw()->GetTimeInfo();
+}
+
 void DrawPanel::ShowRemarks() {
 	rmf->ShowRemarks();
 }

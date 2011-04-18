@@ -116,4 +116,5 @@ class DrawTreeDialog;
 
 struct XYGraph;
 struct DatabaseQuery;
+struct TimeInfo;
 #endif

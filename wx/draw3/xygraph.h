@@ -151,7 +151,7 @@ public:
 
 	virtual int GetDimCount();
 
-	XYFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigManager *cfgmanager, FrameManager *frame_manager);
+	XYFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigManager *cfgmanager, TimeInfo time, FrameManager *frame_manager);
 
 	virtual ~XYFrame();
 	DECLARE_EVENT_TABLE()

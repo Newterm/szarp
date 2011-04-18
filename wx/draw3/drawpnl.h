@@ -132,6 +132,12 @@ class DrawPanel : public wxPanel, public DrawObserver {
 	
 	PeriodType GetPeriod();
 
+	DTime GetBeginCurrentTime();
+
+	DTime GetEndCurrentTime();
+
+	TimeInfo GetCurrentTimeInfo();
+
 	size_t GetNumberOfUnits();
 
 	void SetNumberOfUnits(size_t);
