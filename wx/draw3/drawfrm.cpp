@@ -506,20 +506,20 @@ void DrawFrame::OnRelWin(wxCommandEvent &event) {
 void DrawFrame::OnXYDialog(wxCommandEvent &event) {
 	wxString prefix = draw_panel->GetPrefix();
 	TimeInfo ti = draw_panel->GetCurrentTimeInfo();
-	std::vector<DrawInfo*> user_draws = draw_panel->GetDrawInfoList();
+	DrawInfoList user_draws = draw_panel->GetDrawInfoList();
 	frame_manager->CreateXYGraph(prefix,ti,user_draws);
 }
 
 void DrawFrame::OnXYZDialog(wxCommandEvent &event) {
 	wxString prefix = draw_panel->GetPrefix();
-	std::vector<DrawInfo*> user_draws = draw_panel->GetDrawInfoList();
+	DrawInfoList user_draws = draw_panel->GetDrawInfoList();
 	TimeInfo ti = draw_panel->GetCurrentTimeInfo();
 	frame_manager->CreateXYZGraph(prefix,ti,user_draws);
 }
 
 void DrawFrame::OnStatDialog(wxCommandEvent &event) {
 	wxString prefix = draw_panel->GetPrefix();
-	std::vector<DrawInfo*> user_draws = draw_panel->GetDrawInfoList();
+	DrawInfoList user_draws = draw_panel->GetDrawInfoList();
 	TimeInfo ti = draw_panel->GetCurrentTimeInfo();
 	frame_manager->ShowStatDialog(prefix,ti,user_draws);
 }

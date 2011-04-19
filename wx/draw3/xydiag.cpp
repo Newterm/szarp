@@ -38,7 +38,7 @@
 #include "xygraph.h"
 #include "incsearch.h"
 
-XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, DatabaseManager *db, TimeInfo time,std::vector<DrawInfo*> user_draws,  XFrame *frame) :
+XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, DatabaseManager *db, TimeInfo time, DrawInfoList user_draws,  XFrame *frame) :
 		wxDialog(parent,
 			wxID_ANY,
 			_("X/Y graph parameters"),

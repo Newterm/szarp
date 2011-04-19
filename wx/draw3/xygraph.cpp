@@ -51,7 +51,7 @@ extern int CursorMovementSpeed[PERIOD_T_LAST];
 
 wxString XYFormatTime(const wxDateTime& time, PeriodType pt);
 
-XYFrame::XYFrame(wxString default_prefix, DatabaseManager *db_manager, ConfigManager *cfgmanager, TimeInfo time, std::vector<DrawInfo*> user_draws, FrameManager *frame_manager) :
+XYFrame::XYFrame(wxString default_prefix, DatabaseManager *db_manager, ConfigManager *cfgmanager, TimeInfo time, DrawInfoList user_draws, FrameManager *frame_manager) :
 	szFrame(NULL, XY_GRAPH_FRAME, _("X/Y graph"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE | wxWANTS_CHARS) {
 
 	m_default_prefix = default_prefix;

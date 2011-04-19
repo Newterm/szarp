@@ -197,17 +197,17 @@ DrawFrame *FrameManager::FindFrame(int number) {
 
 }
 
-void FrameManager::CreateXYGraph(wxString prefix,TimeInfo time, std::vector<DrawInfo*> user_draws) {
+void FrameManager::CreateXYGraph(wxString prefix,TimeInfo time, DrawInfoList user_draws) {
 	DrawsSets* config = config_manager->GetConfigByPrefix(prefix);
 	new XYFrame(config->GetID(), database_manager, config_manager, time, user_draws, this);
 }
 
-void FrameManager::CreateXYZGraph(wxString prefix, TimeInfo time, std::vector<DrawInfo*> user_draws) {
+void FrameManager::CreateXYZGraph(wxString prefix, TimeInfo time, DrawInfoList user_draws) {
 	DrawsSets* config = config_manager->GetConfigByPrefix(prefix);
 	new XYZFrame(config->GetID(), database_manager, config_manager, time, user_draws, this);
 }
 
-void FrameManager::ShowStatDialog(wxString prefix, TimeInfo time, std::vector<DrawInfo*> user_draws) {
+void FrameManager::ShowStatDialog(wxString prefix, TimeInfo time, DrawInfoList user_draws) {
 	DrawsSets* config = config_manager->GetConfigByPrefix(prefix);
 	stat_dialog = new StatDialog(NULL, config->GetID(), database_manager, config_manager, time, user_draws);
 }

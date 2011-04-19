@@ -47,6 +47,8 @@
  * widgets. It can be used as a main frame for program tab or windows.
  */
 
+typedef std::vector<DrawInfo*> DrawInfoList;
+
 class DrawPanel : public wxPanel, public DrawObserver {
 	public:
 	/**
@@ -99,7 +101,7 @@ class DrawPanel : public wxPanel, public DrawObserver {
 	DrawSet* GetSelectedSet();
 
 	/**@return selected by user draws */
-	std::vector<DrawInfo*> GetDrawInfoList();
+	DrawInfoList GetDrawInfoList();
 
 	void SearchDate();
 

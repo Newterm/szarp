@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 */
 /* * draw3
  * SZARP
- 
+
  * Pawe³ Pa³ucha pawel@praterm.com.pl
  *
  * $Id$
@@ -97,50 +97,50 @@ SelectDrawValidator::Copy(const SelectDrawValidator& val)
 bool
 SelectDrawValidator::Validate(wxWindow *parent)
 {
-    return TRUE;
+	return TRUE;
 }
 
 bool
 SelectDrawValidator::TransferToWindow()
 {
-    return TRUE;
+	return TRUE;
 }
 
 bool
 SelectDrawValidator::TransferFromWindow()
 {
-    return TRUE;
-}	
+	return TRUE;
+}
 
 void
 SelectDrawValidator::OnCheck(wxCommandEvent& c)
 {
-    wxLogInfo(_T("DEBUG: OnCheck"));
-    
-    if (c.IsChecked()) 
-	m_draws_wdg->SetDrawEnable(m_index);
-    else if (!m_draws_wdg->SetDrawDisable(m_index))
-	    	((wxCheckBox *)(c.GetEventObject()))->SetValue(TRUE);
+	wxLogInfo(_T("DEBUG: OnCheck"));
+
+	if (c.IsChecked())
+		m_draws_wdg->SetDrawEnable(m_index);
+	else if (!m_draws_wdg->SetDrawDisable(m_index))
+		((wxCheckBox *)(c.GetEventObject()))->SetValue(TRUE);
 }
 
 void
 SelectDrawValidator::OnFocus(wxFocusEvent& c)
 {
 #ifndef __WXMSW__
-    m_draws_wdg->SetFocus();
+	m_draws_wdg->SetFocus();
 #endif
 }
 
-void 
+void
 SelectDrawValidator::OnMouseRightDown(wxMouseEvent &event) {
 
 	delete m_menu;
 	m_menu = new wxMenu();
-	
+
 	DrawParam* dp = m_draws_wdg->GetDrawInfo(m_index)->GetParam();
 	if (dp->GetIPKParam()->GetPSC())
 		m_menu->Append(seldrawID_PSC,_("Set parameter"));
-	
+
 	m_menu->SetClientData(m_cb);
 
 	if (m_draws_wdg->GetDrawBlocked(m_index)) {
@@ -161,7 +161,7 @@ SelectDrawValidator::OnMouseRightDown(wxMouseEvent &event) {
 
 	if (dynamic_cast<DefinedParam*>(dp) != NULL)
 		m_menu->Append(seldrawID_CTX_EDIT_PARAM, _("Edit parameter associated with graph\tCtrl-E"));
-		
+
 	m_cb->PopupMenu(m_menu);
 }
 
@@ -198,47 +198,44 @@ END_EVENT_TABLE()
 
 IMPLEMENT_DYNAMIC_CLASS(SelectDrawWidget, wxWindow)
 
-SelectDrawWidget::SelectDrawWidget(ConfigManager *cfg, DatabaseManager *dbmgr, DrawsWidget *drawswdg,
-		wxWindow* parent, wxWindowID id)
-        : wxScrolledWindow(parent, id, wxDefaultPosition, wxDefaultSize, 
-        wxWANTS_CHARS, _T("SelectDrawWidget"))
+SelectDrawWidget::SelectDrawWidget(ConfigManager *cfg, DatabaseManager *dbmgr, DrawsWidget *drawswdg, wxWindow* parent, wxWindowID id): wxScrolledWindow(parent, id, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS, _T("SelectDrawWidget"))
 {
-    assert (cfg != NULL);
-    m_cfg = cfg;
-    assert(drawswdg != NULL);
-    m_draws_wdg = drawswdg;
-    assert(dbmgr != NULL);
-    m_dbmgr = dbmgr;
+	assert (cfg != NULL);
+	m_cfg = cfg;
+	assert(drawswdg != NULL);
+	m_draws_wdg = drawswdg;
+	assert(dbmgr != NULL);
+	m_dbmgr = dbmgr;
 
-    SetHelpText(_T("draw3-base-hidegraphs"));
-	
-    wxBoxSizer * sizer1 = new wxBoxSizer(wxVERTICAL);
+	SetHelpText(_T("draw3-base-hidegraphs"));
 
-    int width = GetCheckBoxWidth();
-    m_cb_l.resize(MIN_DRAWS_COUNT);
+	wxBoxSizer * sizer1 = new wxBoxSizer(wxVERTICAL);
 
-    for (size_t i = 0; i < MIN_DRAWS_COUNT; i++) {
-	m_cb_l[i] = new wxCheckBox();
-	m_cb_l[i]->Create(this, drawID_SELDRAWCB,
-		wxString::Format(_T("%d."), i + 1),
-		wxDefaultPosition, wxSize(width, -1), 0,
-		SelectDrawValidator(m_draws_wdg, i, m_cb_l[i]));
-	m_cb_l[i]->Enable(FALSE);
+	int width = GetCheckBoxWidth();
+	m_cb_l.resize(MIN_DRAWS_COUNT);
 
-	m_cb_l[i]->SetToolTip(wxEmptyString);
-	m_cb_l[i]->SetBackgroundColour(DRAW3_BG_COLOR);
-	  
+	for (size_t i = 0; i < MIN_DRAWS_COUNT; i++) {
+		m_cb_l[i] = new wxCheckBox();
+		m_cb_l[i]->Create(this, drawID_SELDRAWCB,
+			wxString::Format(_T("%d."), i + 1),
+			wxDefaultPosition, wxSize(width, -1), 0,
+			SelectDrawValidator(m_draws_wdg, i, m_cb_l[i]));
+		m_cb_l[i]->Enable(FALSE);
 
-	sizer1->Add(m_cb_l[i], 0, wxTOP | wxLEFT | wxRIGHT, 1);
-	
+		m_cb_l[i]->SetToolTip(wxEmptyString);
+		m_cb_l[i]->SetBackgroundColour(DRAW3_BG_COLOR);
+
+
+		sizer1->Add(m_cb_l[i], 0, wxTOP | wxLEFT | wxRIGHT, 1);
+
 #ifdef MINGW32
-	m_cb_l[i]->Refresh();
+		m_cb_l[i]->Refresh();
 #endif
-    }
+	}
 
-    SetSizer(sizer1);
-    sizer1->SetSizeHints(this);
-    sizer1->Layout();
+	SetSizer(sizer1);
+	sizer1->SetSizeHints(this);
+	sizer1->Layout();
 
 }
 
@@ -259,83 +256,83 @@ void SelectDrawWidget::SetChecked(int idx, bool checked) {
 void
 SelectDrawWidget::SetChanged(DrawsController *draws_controller)
 {
-    ConfigNameHash& cnm = const_cast<ConfigNameHash&>(m_cfg->GetConfigTitles());
+	ConfigNameHash& cnm = const_cast<ConfigNameHash&>(m_cfg->GetConfigTitles());
 
 	m_dc = draws_controller;
-    DrawSet *selected_set = m_dc->GetSet();
+	DrawSet *selected_set = m_dc->GetSet();
 
-    wxSizer *sizer = GetSizer();
+	wxSizer *sizer = GetSizer();
 
-    for (size_t i = selected_set->GetDraws()->size(); i < MIN_DRAWS_COUNT; i++) {
-	m_cb_l[i]->SetLabel(wxString::Format(_T("%d."), i + 1));
-	m_cb_l[i]->Enable(FALSE);
-	m_cb_l[i]->SetValue(FALSE);
-	m_cb_l[i]->SetToolTip(_T(" "));
-	m_cb_l[i]->SetBackgroundColour(DRAW3_BG_COLOR);
-    }
-
-    for (size_t i = std::max(MIN_DRAWS_COUNT, selected_set->GetDraws()->size()); i < m_cb_l.size(); i++) {
-	sizer->Detach(m_cb_l[i]);
-	m_cb_l[i]->Destroy();
-    }
-
-    size_t prev_checkbox_count = m_cb_l.size();
-    m_cb_l.resize(std::max(MIN_DRAWS_COUNT, selected_set->GetDraws()->size()));
-
-    if (prev_checkbox_count < m_cb_l.size()) {
-	int width = GetCheckBoxWidth();
-	for (size_t i = MIN_DRAWS_COUNT; i < selected_set->GetDraws()->size(); i++) {
-	    m_cb_l[i] = new wxCheckBox();
-	    m_cb_l[i]->Create(this, drawID_SELDRAWCB,
-	    	wxString::Format(_T("%d."), i + 1),
-	    	wxDefaultPosition, wxSize(width, -1), 0,
-	    	SelectDrawValidator(m_draws_wdg, i, m_cb_l[i]));
-	    m_cb_l[i]->Enable(FALSE);
-
-	    m_cb_l[i]->SetToolTip(wxEmptyString);
-	    m_cb_l[i]->SetBackgroundColour(DRAW3_BG_COLOR);
-	      
-	    sizer->Add(m_cb_l[i], 0, wxTOP | wxLEFT | wxRIGHT, 1);
+	for (size_t i = selected_set->GetDraws()->size(); i < MIN_DRAWS_COUNT; i++) {
+		m_cb_l[i]->SetLabel(wxString::Format(_T("%d."), i + 1));
+		m_cb_l[i]->Enable(FALSE);
+		m_cb_l[i]->SetValue(FALSE);
+		m_cb_l[i]->SetToolTip(_T(" "));
+		m_cb_l[i]->SetBackgroundColour(DRAW3_BG_COLOR);
 	}
-    }
 
-    for (size_t i = 0; i < selected_set->GetDraws()->size(); i++) {
-	Draw* draw = m_dc->GetDraw(i);
-	DrawInfo* draw_info = draw->GetDrawInfo();
-	wxString label = wxString::Format(_T("%d."), i + 1) + draw_info->GetName();
-	if (draw_info->GetParam()->GetIPKParam()->GetPSC())
-	    label += _T("*");
-	m_cb_l[i]->Enable(TRUE);
-	m_cb_l[i]->SetValue(draw->GetEnable());
-	m_cb_l[i]->SetToolTip(cnm[draw_info->GetBasePrefix()] + _T(":") + draw_info->GetParamName());
-	if (draw->GetBlocked())
-	    label.Replace(wxString::Format(_T("%d."), i + 1), wxString::Format(_("%d.[B]"), i + 1), false);
-	m_cb_l[i]->SetLabel(label);
+	for (size_t i = std::max(MIN_DRAWS_COUNT, selected_set->GetDraws()->size()); i < m_cb_l.size(); i++) {
+		sizer->Detach(m_cb_l[i]);
+		m_cb_l[i]->Destroy();
+	}
 
-	wxValidator* validator = m_cb_l[i]->GetValidator();
-	if (validator) 
-		dynamic_cast<SelectDrawValidator*>(validator)->Set(m_draws_wdg, i, m_cb_l[i]);
-	else
-		m_cb_l[i]->SetValidator(SelectDrawValidator(m_draws_wdg, i, m_cb_l[i]));
+	size_t prev_checkbox_count = m_cb_l.size();
+	m_cb_l.resize(std::max(MIN_DRAWS_COUNT, selected_set->GetDraws()->size()));
 
-	m_cb_l[i]->SetBackgroundColour(selected_set->GetDrawColor(i));
+	if (prev_checkbox_count < m_cb_l.size()) {
+		int width = GetCheckBoxWidth();
+		for (size_t i = MIN_DRAWS_COUNT; i < selected_set->GetDraws()->size(); i++) {
+			m_cb_l[i] = new wxCheckBox();
+			m_cb_l[i]->Create(this, drawID_SELDRAWCB,
+				wxString::Format(_T("%d."), i + 1),
+				wxDefaultPosition, wxSize(width, -1), 0,
+				SelectDrawValidator(m_draws_wdg, i, m_cb_l[i]));
+			m_cb_l[i]->Enable(FALSE);
+
+			m_cb_l[i]->SetToolTip(wxEmptyString);
+			m_cb_l[i]->SetBackgroundColour(DRAW3_BG_COLOR);
+
+			sizer->Add(m_cb_l[i], 0, wxTOP | wxLEFT | wxRIGHT, 1);
+		}
+	}
+
+	for (size_t i = 0; i < selected_set->GetDraws()->size(); i++) {
+		Draw* draw = m_dc->GetDraw(i);
+		DrawInfo* draw_info = draw->GetDrawInfo();
+		wxString label = wxString::Format(_T("%d."), i + 1) + draw_info->GetName();
+		if (draw_info->GetParam()->GetIPKParam()->GetPSC())
+			label += _T("*");
+		m_cb_l[i]->Enable(TRUE);
+		m_cb_l[i]->SetValue(draw->GetEnable());
+		m_cb_l[i]->SetToolTip(cnm[draw_info->GetBasePrefix()] + _T(":") + draw_info->GetParamName());
+		if (draw->GetBlocked())
+			label.Replace(wxString::Format(_T("%d."), i + 1), wxString::Format(_("%d.[B]"), i + 1), false);
+		m_cb_l[i]->SetLabel(label);
+
+		wxValidator* validator = m_cb_l[i]->GetValidator();
+		if (validator)
+			dynamic_cast<SelectDrawValidator*>(validator)->Set(m_draws_wdg, i, m_cb_l[i]);
+		else
+			m_cb_l[i]->SetValidator(SelectDrawValidator(m_draws_wdg, i, m_cb_l[i]));
+
+		m_cb_l[i]->SetBackgroundColour(selected_set->GetDrawColor(i));
 
 #ifdef MINGW32
-	m_cb_l[i]->Refresh();
+		m_cb_l[i]->Refresh();
 #endif
-    }
+	}
 
-    if (m_cb_l.size() == MIN_DRAWS_COUNT)
-	    SetScrollRate(0, 0);
-    else
-	    SetScrollRate(10, 10);
+	if (m_cb_l.size() == MIN_DRAWS_COUNT)
+		SetScrollRate(0, 0);
+	else
+		SetScrollRate(10, 10);
 
-    sizer->Layout();
-    FitInside(); 
+	sizer->Layout();
+	FitInside();
 }
 
-void 
-SelectDrawWidget::SetDrawEnable(int index, bool enable) 
+void
+SelectDrawWidget::SetDrawEnable(int index, bool enable)
 {
 	assert(index >= 0 && index < int(m_cb_l.size()));
 	m_cb_l[index]->Enable(enable);
@@ -358,7 +355,7 @@ int SelectDrawWidget::GetClicked(wxCommandEvent &event) {
 		return i;
 }
 
-void 
+void
 SelectDrawWidget::OnBlockCheck(wxCommandEvent &event) {
 
 	int i = GetClicked(event);
@@ -370,7 +367,7 @@ SelectDrawWidget::OnBlockCheck(wxCommandEvent &event) {
 #endif
 }
 
-void 
+void
 SelectDrawWidget::BlockedChanged(Draw *draw) {
 	SetBlocked(draw->GetDrawNo(), draw->GetBlocked());
 #ifdef __WXMSW__
@@ -378,7 +375,7 @@ SelectDrawWidget::BlockedChanged(Draw *draw) {
 #endif
 }
 
-void 
+void
 SelectDrawWidget::SetBlocked(int idx, bool blocked) {
 	wxString label = m_cb_l[idx]->GetLabel();
 	if (blocked)
@@ -467,7 +464,7 @@ void SelectDrawWidget::GoToWWWDocumentation(DrawInfo *d) {
 	link << _T("&id=") << sz_md5(tss.str());
 
 #if __WXMSW__
-	if (wxLaunchDefaultBrowser(link) == false) 
+	if (wxLaunchDefaultBrowser(link) == false)
 #else
 	if (wxExecute(wxString::Format(_T("xdg-open %s"), link.c_str())) == 0)
 #endif
@@ -477,7 +474,7 @@ void SelectDrawWidget::GoToWWWDocumentation(DrawInfo *d) {
 }
 
 std::vector< DrawInfo* > SelectDrawWidget::GetDrawInfoList() {
-	std::vector<DrawInfo*> draw_info;
+	DrawInfoList draw_info;
 
 	DrawSet *selected_set = m_dc->GetSet();
 
@@ -503,7 +500,7 @@ void SelectDrawWidget::OpenParameterDoc(int i) {
 
 	if (DefinedParam* dp = dynamic_cast<DefinedParam*>(d->GetParam()))
 		ShowDefinedParamDoc(dp);
-	else 
+	else
 		GoToWWWDocumentation(d);
 #ifdef __WXMSW__
 	m_draws_wdg->SetFocus();

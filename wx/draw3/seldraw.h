@@ -39,6 +39,7 @@
 #endif
 #include <wx/validate.h>
 
+typedef std::vector<DrawInfo*> DrawInfoList;
 
 /** Validator class - checks if draw can be disabled, and inform
  * drawswdg about enabling/disabling widget */
@@ -140,7 +141,7 @@ public:
 	/**
 	* Return selected (checked on m_cb) DrawInfoList
 	*/
-	std::vector<DrawInfo*> GetDrawInfoList();
+	DrawInfoList GetDrawInfoList();
 
 	virtual void DrawInfoChanged(Draw *draw);
 

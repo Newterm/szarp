@@ -39,6 +39,8 @@
 
 #include <vector>
 
+typedef std::vector<DrawInfo*> DrawInfoList;
+
 /**class responsible for creating and managing @see DrawFrame objects*/
 class FrameManager : public wxEvtHandler {
 	WX_DEFINE_ARRAY(DrawFrame*, DrawFramePtrArray);
@@ -93,15 +95,15 @@ class FrameManager : public wxEvtHandler {
 	 * @param prefix initial configutation prefix
 	 * @param time information about time set in current draw
 	 * @param users_draws list of selected draws by user */
-	void CreateXYGraph(wxString prefix, TimeInfo time, std::vector<DrawInfo*> user_draws);
+	void CreateXYGraph(wxString prefix, TimeInfo time, DrawInfoList user_draws);
 
-	void CreateXYZGraph(wxString prefix, TimeInfo time, std::vector<DrawInfo*> user_draws);
+	void CreateXYZGraph(wxString prefix, TimeInfo time, DrawInfoList user_draws);
 
 	/**Shows dialog statistics calculation
 	 * @param prefix initial configuration prefix
 	 * @param time information about time set in current draw
 	 * @param user_draws list of selected draws by user */
-	void ShowStatDialog(wxString prefix, TimeInfo time, std::vector<DrawInfo*> user_draws);
+	void ShowStatDialog(wxString prefix, TimeInfo time, DrawInfoList user_draws);
 
 	/**Find @see DrawFrame with given numer
 	 * @param number number of @see DrawFrame to find

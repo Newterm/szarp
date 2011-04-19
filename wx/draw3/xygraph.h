@@ -151,7 +151,7 @@ public:
 
 	virtual int GetDimCount();
 
-	XYFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigManager *cfgmanager, TimeInfo time, std::vector<DrawInfo*> user_draws, FrameManager *frame_manager);
+	XYFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigManager *cfgmanager, TimeInfo time, DrawInfoList user_draws, FrameManager *frame_manager);
 
 	virtual ~XYFrame();
 	DECLARE_EVENT_TABLE()

@@ -35,6 +35,8 @@
 #include <wx/wx.h>
 #endif
 
+typedef std::vector<DrawInfo*> DrawInfoList;
+
 /**Window calculating statistical values of a param*/
 class StatDialog : public szFrame, public DBInquirer, public DrawInfoDropReceiver, public ConfigObserver {
 	/**Type of period to fetch probes*/
@@ -118,7 +120,7 @@ class StatDialog : public szFrame, public DBInquirer, public DrawInfoDropReceive
 	void OnHelpButton(wxCommandEvent &event);
 
 	public:	
-	StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, ConfigManager *cfg, TimeInfo time, std::vector<DrawInfo*> user_draws);
+	StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, ConfigManager *cfg, TimeInfo time, DrawInfoList user_draws);
 
 	/**not significant in this case: -1 is returned*/
 	virtual time_t GetCurrentTime();
