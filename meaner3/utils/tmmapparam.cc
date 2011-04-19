@@ -13,7 +13,7 @@
 #include "szbase/szbbase.h"
 
 TMMapParam::TMMapParam( const std::wstring& dir , const std::wstring& name , int year , int month , time_t probe_length )
-	: fd(-1) , filemap(NULL) , probe_length( probe_length )
+	: fd(-1) , filemap(NULL) , length(0) , probe_length( probe_length )
 {
 	path = dir + L"/" + szb_createfilename_ne(name, year, month, probe_length == SZBASE_DATA_SPAN ? L".szb" : L".szc");
 
@@ -50,14 +50,29 @@ TMMapParam::TMMapParam( const std::wstring& dir , const std::wstring& name , int
 
 	for( int i = file_size-1 ; i>=0 ; --i )
 		filemap[i] = SZB_FILE_NODATA;
-	// FIXME: why memset dont work?
+	// FIXME: why memset doesn't work?
 //        memset( filemap , (int)SZB_FILE_NODATA , sizeof(short)*file_size );
 }
 
 TMMapParam::~TMMapParam()
 {
+	try {
+		close();
+	} catch( const failure& f ) {
+		sz_log(1,"Cannot truncate file %s\n",SC::S2A(path).c_str());
+		fprintf(stderr,"Cannot truncate file %s\n",SC::S2A(path).c_str());
+		::close( fd );
+	}
+}
+
+int TMMapParam::close()
+{
 	munmap(filemap,sizeof(short)*file_size);
-	close(fd);
+	if( ftruncate(fd,sizeof(short)*length) == -1 )
+		throw failure("Cannot truncate file "+SC::S2A(path)+": "+strerror(errno));
+	::close( fd );
+
+	return 0;
 }
 
 int TMMapParam::write( time_t t , short*probes , unsigned int len ) 
@@ -68,6 +83,8 @@ int TMMapParam::write( time_t t , short*probes , unsigned int len )
 	assert( index+len < file_size );
 
 	memcpy( filemap+index , probes , sizeof(short)*len );
+
+	length = index+len;
 
 	return 0;
 }
