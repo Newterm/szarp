@@ -1157,7 +1157,7 @@ void GLGraphs::InitGL() {
 }
 
 namespace {
-const int PeriodMarkShift[PERIOD_T_LAST] = {0, 0, 1, 3, 3, 0};
+const int PeriodMarkShift[PERIOD_T_LAST] = {0, 0, 0, 1, 3, 3, 0};
 }
 
 
