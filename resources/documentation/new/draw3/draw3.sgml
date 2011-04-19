@@ -191,6 +191,7 @@ Po wybraniu poszukiwanego parametru program wy¶wietli odpowiedni zestaw wykresów
 <para>
 Dane w oknie graficznym s± wy¶wietlane w jednym z trybów:
 <itemizedlist>
+<listitem><para><emphasis>DEKADA</emphasis> - pokazuje ¶rednie roczne - na ekranie widoczne s± ¶rednie z 10 lat</para></listitem>
 <listitem><para><emphasis>ROK</emphasis> - pokazuje ¶rednie miesiêczne - na ekranie widoczne s± ¶rednie z ca³ego roku</para></listitem>
 <listitem><para><emphasis>MIESI¡C</emphasis> - pokazuje ¶rednie dobowe - na ekranie widoczne s± ¶rednie z ca³ego miesi±ca</para></listitem>
 <listitem><para><emphasis>TYDZIEÑ</emphasis> - pokazuje ¶rednie o¶miogodzinne (po 3 na ka¿dy dzieñ) - na ekranie widoczne s± ¶rednie z ca³ego tygodnia</para></listitem>
@@ -549,8 +550,7 @@ do tego zestawienie "Warto¶ci ¶rednie". Pokazuje ono warto¶æ ¶redni±, minimaln±,
 </para>
 <para>
 ¯eby otworzyæ okno z warto¶ciami ¶rednimi, wybierz <guimenu>Plik</guimenu> i <guimenu>Warto¶ci 
-¶rednie</guimenu>. Nastêpnie wybierz nazwê parametru, czas brany pod uwagê przy obliczeniach, 
-rodzaj ¶rednich i kliknij <guibutton>OK</guibutton>. W sekcji <emphasis>Warto¶ci</emphasis> 
+¶rednie</guimenu>. Standardowo, jako wykres do obliczenia ¶rednich, zostanie wybrany pierwszy niewygaszony wykres, z aktualnego zestawu. Równie¿ zakres czasowy domy¶lnie bêdzie ustawiony na warto¶ci pobrane z aktualnego zestawu. Oczywi¶cie, mo¿esz zmieniæ wykres oraz zakres czasowy przed dokonaniem obliczeñ. Po ustawieniu wszystkich warto¶ci kliknij <guibutton>OK</guibutton>. W sekcji <emphasis>Warto¶ci</emphasis> 
 pojawi± siê wyliczone warto¶ci dla danego parametru.
 </para>
 <para>
@@ -569,8 +569,7 @@ pojawi± siê wyliczone warto¶ci dla danego parametru.
 <para>
 W Draw 3 mo¿esz okre¶liæ korelacjê warto¶ci wybranych parametrów. S³u¿± do tego wykresy X/Y. 
 Mo¿esz je utworzyæ wybieraj±c z menu <guimenu>Plik</guimenu> oraz <guimenu>Wykres X/Y</guimenu>.
-Nastêpnie musisz wybraæ wykresy wy¶wietlane na osiach X i Y, zakres czasowy oraz rodzaj 
-¶rednich. 
+Domy¶lnie, jako wykresy X i Y, zostan± wybrane pierwsze dwa niewygaszone wykresu z aktualnego zestawu. Tak¿e zakres czasowy zostanie ustawiony na ten z aktualnego zestawu.
 <figure>
 <title>Tworzenie wykresu X/Y</title>
 <mediaobject>
@@ -645,8 +644,7 @@ wykresu poziomego (z osi X) na maksymalnie 24 obszary, w których warto¶ci Y s± u
 <para>
 Rozszerzenie wykresów X/Y stanowi± wykresy XYZ. Wykresy XYZ pokazuj± zale¿no¶æ miêdzy warto¶ciami trzech
 parametrów równocze¶nie. Aby obejrzeæ wykres XYZ wybierz z menu <guimenu>Plik</guimenu> opcjê <guimenu>Wykres XYZ</guimenu>.
-Po jej wybraniu zobaczysz okno do wyboru parametrów oraz zakresu czasu z jakiego maj± byæ pobrane warto¶ci. Okno to jest bardzo podobne
-do analogicznego okna dla wykresów X/Y.
+Po jej wybraniu zobaczysz okno do wyboru parametrów oraz zakresu czasu z jakiego maj± byæ pobrane warto¶ci. Okno to jest bardzo podobne do analogicznego okna dla wykresów X/Y. Podobnie jak w przypadku dwuwymiarowego wykresu, domy¶lne warto¶ci pól zostan± pobrane z aktualnego zestawu.
 <figure>
 <title>Tworzenie wykresu XYZ</title>
 <mediaobject>
