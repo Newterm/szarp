@@ -179,6 +179,7 @@ StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, C
 	DrawInfoDropTarget* dt = new DrawInfoDropTarget(this);
 	SetDropTarget(dt);
 
+	Show(true);
 }
 
 time_t StatDialog::GetCurrentTime() {
@@ -413,7 +414,7 @@ void StatDialog::OnPeriodChange(wxCommandEvent &event) {
 }
 
 void StatDialog::OnCloseButton(wxCommandEvent &event) {
-	Show(false);
+	Destroy();
 }
 
 void StatDialog::OnCalculate(wxCommandEvent &event) {
@@ -442,11 +443,7 @@ StatDialog::~StatDialog() {
 }
 
 void StatDialog::OnClose(wxCloseEvent &event) {
-	if (event.CanVeto()) {
-		event.Veto();
-		Show(false);
-	} else 
-		Destroy();
+	Destroy();
 }
 
 void StatDialog::ConfigurationIsAboutToReload(wxString prefix) {
