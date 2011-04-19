@@ -261,7 +261,8 @@ SelectDrawWidget::SetChanged(DrawsController *draws_controller)
 {
     ConfigNameHash& cnm = const_cast<ConfigNameHash&>(m_cfg->GetConfigTitles());
 
-    DrawSet *selected_set = draws_controller->GetSet();
+	m_dc = draws_controller;
+    DrawSet *selected_set = m_dc->GetSet();
 
     wxSizer *sizer = GetSizer();
 
@@ -297,9 +298,9 @@ SelectDrawWidget::SetChanged(DrawsController *draws_controller)
 	    sizer->Add(m_cb_l[i], 0, wxTOP | wxLEFT | wxRIGHT, 1);
 	}
     }
-    
+
     for (size_t i = 0; i < selected_set->GetDraws()->size(); i++) {
-	Draw* draw = draws_controller->GetDraw(i);
+	Draw* draw = m_dc->GetDraw(i);
 	DrawInfo* draw_info = draw->GetDrawInfo();
 	wxString label = wxString::Format(_T("%d."), i + 1) + draw_info->GetName();
 	if (draw_info->GetParam()->GetIPKParam()->GetPSC())
@@ -473,6 +474,21 @@ void SelectDrawWidget::GoToWWWDocumentation(DrawInfo *d) {
 		wxMessageBox(_("I was not able to start default browser"), _("Error"), wxICON_ERROR | wxOK, this);
 
 
+}
+
+std::vector< DrawInfo* > SelectDrawWidget::GetDrawInfoList() {
+	std::vector<DrawInfo*> draw_info;
+
+	DrawSet *selected_set = m_dc->GetSet();
+
+	for (size_t i = 0; i < selected_set->GetDraws()->size(); ++i) {
+		if (m_cb_l[i]->GetValue()) {
+			Draw* draw = m_dc->GetDraw(i);
+			draw_info.push_back(draw->GetDrawInfo());
+		}
+	}
+
+	return draw_info;
 }
 
 void SelectDrawWidget::OpenParameterDoc(int i) {

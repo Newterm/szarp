@@ -131,11 +131,16 @@ public:
 
 	void EnableChanged(Draw *draw);
 
-	void OpenParameterDoc(int i = -1);	
+	void OpenParameterDoc(int i = -1);
 
 	void ShowDefinedParamDoc(DefinedParam *param);
 
 	void GoToWWWDocumentation(DrawInfo* d);
+
+	/**
+	* Return selected (checked on m_cb) DrawInfoList
+	*/
+	std::vector<DrawInfo*> GetDrawInfoList();
 
 	virtual void DrawInfoChanged(Draw *draw);
 
@@ -153,6 +158,8 @@ protected:
 	DrawsWidget *m_draws_wdg;
 	/** array of checkboxes */
 	std::vector<wxCheckBox*> m_cb_l;
+
+	DrawsController *m_dc;
 
 	int GetCheckBoxWidth();
 

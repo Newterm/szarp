@@ -40,6 +40,7 @@
 #endif
 
 #include "classes.h"
+#include <vector>
 
 /**
  * This class reprezents panel with all the draws' display and control
@@ -96,6 +97,9 @@ class DrawPanel : public wxPanel, public DrawObserver {
 
 	/**@return currently selected set*/
 	DrawSet* GetSelectedSet();
+
+	/**@return selected by user draws */
+	std::vector<DrawInfo*> GetDrawInfoList();
 
 	void SearchDate();
 

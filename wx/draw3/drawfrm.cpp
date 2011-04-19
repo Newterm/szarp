@@ -511,7 +511,12 @@ void DrawFrame::OnXYDialog(wxCommandEvent &event) {
 
 void DrawFrame::OnXYZDialog(wxCommandEvent &event) {
 	wxString prefix = draw_panel->GetPrefix();
+	std::vector<DrawInfo*> v = draw_panel->GetDrawInfoList();
+	wxString s;
+	s.Printf(wxT("rozmiar %d"),v.size());
+	wxPuts(s);
 /*
+//TODO: remove it
 	PeriodType pt = draw_panel->GetPeriod();
 	DTime date = draw_panel->GetBeginCurrentTime();
 	wxPuts(date.Format(_("%Y %M %D")));

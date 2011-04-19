@@ -907,6 +907,10 @@ DrawSet* DrawPanel::GetSelectedSet() {
 	return dw->GetCurrentDrawSet();
 }
 
+std::vector<DrawInfo*> DrawPanel::GetDrawInfoList() {
+	return sw->GetDrawInfoList();
+}
+
 void DrawPanel::Copy() {
 	dw->CopyToClipboard();
 }

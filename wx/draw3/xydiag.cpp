@@ -38,9 +38,9 @@
 #include "xygraph.h"
 #include "incsearch.h"
 
-XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, DatabaseManager *db, TimeInfo time, XFrame *frame) : 
-		wxDialog(parent, 
-			wxID_ANY, 
+XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, DatabaseManager *db, TimeInfo time, XFrame *frame) :
+		wxDialog(parent,
+			wxID_ANY,
 			_("X/Y graph parameters"),
 			wxDefaultPosition,
 			wxDefaultSize,
@@ -48,8 +48,6 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 		m_period(time.period),
 		m_start_time(time.begin_time),
 		m_end_time(time.end_time)
-//		m_start_time(m_period, wxDateTime::Now()),
-//		m_end_time(m_period, wxDateTime::Now())
 		{
 
 	if (frame->GetDimCount() == 3)
@@ -331,8 +329,6 @@ DataMangler::DataMangler(DatabaseManager* db, const DrawInfoList& di, wxDateTime
 		m_di(di),
 		m_period(period),
 		m_start_time(m_period, start_time),
-//		m_current_time(time.begin_time),
-//		m_end_time(time.end_time) {
 		m_current_time(m_period, start_time),
 		m_end_time(m_period, end_time) {
 
