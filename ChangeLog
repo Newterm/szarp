@@ -1,3 +1,7 @@
+2011-04-19	Krzysztof Golinski <krzgol@newterm.pl>
+	* wx/draw/{drawfrm.cpp, drawpnl.cpp, frmgr.cpp, seldraw.cpp,
+	 xygraph.cpp, wyzgraph.cpp}: xydiag, xyzdiag, statdiag take
+	 information about draws and time from current draw panel
 2011-04-19	Krzysztof Ga³±zka <kg@newterm.pl>
 	* wx/draw3/{drawview.cpp,gcdgraphs.cpp,glgrapsh.cpp}: fixed time axes
 	drawing
