@@ -43,7 +43,7 @@
 #include "statdiag.h"
 
 
-StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, ConfigManager *cfg, TimeInfo time) :
+StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, ConfigManager *cfg, TimeInfo time, std::vector<DrawInfo*> user_draws) :
 	szFrame(parent, 
 		wxID_ANY, 
 		_("Statistics window"),
@@ -164,7 +164,12 @@ StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, C
 	ws->Add(panel, 1, wxEXPAND);
 	SetSizer(ws);
 	
-	m_draw = NULL;
+	if (user_draws.size()) {
+		m_draw = user_draws[0];
+		SetDrawInfo(m_draw);
+	}
+	else
+		m_draw = NULL;
 
 #if 0
 	line = new wxStaticLine(this);

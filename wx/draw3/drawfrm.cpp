@@ -506,38 +506,22 @@ void DrawFrame::OnRelWin(wxCommandEvent &event) {
 void DrawFrame::OnXYDialog(wxCommandEvent &event) {
 	wxString prefix = draw_panel->GetPrefix();
 	TimeInfo ti = draw_panel->GetCurrentTimeInfo();
-	frame_manager->CreateXYGraph(prefix,ti);
+	std::vector<DrawInfo*> user_draws = draw_panel->GetDrawInfoList();
+	frame_manager->CreateXYGraph(prefix,ti,user_draws);
 }
 
 void DrawFrame::OnXYZDialog(wxCommandEvent &event) {
 	wxString prefix = draw_panel->GetPrefix();
-	std::vector<DrawInfo*> v = draw_panel->GetDrawInfoList();
-	wxString s;
-	s.Printf(wxT("rozmiar %d"),v.size());
-	wxPuts(s);
-/*
-//TODO: remove it
-	PeriodType pt = draw_panel->GetPeriod();
-	DTime date = draw_panel->GetBeginCurrentTime();
-	wxPuts(date.Format(_("%Y %M %D")));
-	DTime d2 = draw_panel->GetEndCurrentTime();
-	wxPuts(d2.Format(_("%Y %M %D")));
-	DrawSet *set = draw_panel->GetSelectedSet();
-	int tmp = set->GetNumber();
-	wxString s;
-	s.Printf(wxT("%d"),tmp);
-	wxPuts(s);
-	for (int i = 0; i < set->GetNumber(); ++i)
-		wxString name = set->GetDrawName(i);
-*/
+	std::vector<DrawInfo*> user_draws = draw_panel->GetDrawInfoList();
 	TimeInfo ti = draw_panel->GetCurrentTimeInfo();
-	frame_manager->CreateXYZGraph(prefix,ti);
+	frame_manager->CreateXYZGraph(prefix,ti,user_draws);
 }
 
 void DrawFrame::OnStatDialog(wxCommandEvent &event) {
 	wxString prefix = draw_panel->GetPrefix();
+	std::vector<DrawInfo*> user_draws = draw_panel->GetDrawInfoList();
 	TimeInfo ti = draw_panel->GetCurrentTimeInfo();
-	frame_manager->ShowStatDialog(prefix,ti);
+	frame_manager->ShowStatDialog(prefix,ti,user_draws);
 }
 
 bool DrawFrame::Destroy()

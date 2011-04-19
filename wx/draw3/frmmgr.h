@@ -37,6 +37,7 @@
 #include <wx/datetime.h>
 #endif
 
+#include <vector>
 
 /**class responsible for creating and managing @see DrawFrame objects*/
 class FrameManager : public wxEvtHandler {
@@ -90,15 +91,17 @@ class FrameManager : public wxEvtHandler {
 
 	/**Pops up dialog for choosing xy graph parameters
 	 * @param prefix initial configutation prefix
-	 * @param time information about time set in current draw*/
-	void CreateXYGraph(wxString prefix, TimeInfo time);
+	 * @param time information about time set in current draw
+	 * @param users_draws list of selected draws by user */
+	void CreateXYGraph(wxString prefix, TimeInfo time, std::vector<DrawInfo*> user_draws);
 
-	void CreateXYZGraph(wxString prefix, TimeInfo time);
+	void CreateXYZGraph(wxString prefix, TimeInfo time, std::vector<DrawInfo*> user_draws);
 
 	/**Shows dialog statistics calculation
 	 * @param prefix initial configuration prefix
-	 * @param time information about time set in current draw*/
-	void ShowStatDialog(wxString prefix, TimeInfo time);
+	 * @param time information about time set in current draw
+	 * @param user_draws list of selected draws by user */
+	void ShowStatDialog(wxString prefix, TimeInfo time, std::vector<DrawInfo*> user_draws);
 
 	/**Find @see DrawFrame with given numer
 	 * @param number number of @see DrawFrame to find

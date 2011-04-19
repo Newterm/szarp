@@ -38,7 +38,7 @@
 #include "xygraph.h"
 #include "incsearch.h"
 
-XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, DatabaseManager *db, TimeInfo time, XFrame *frame) :
+XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, DatabaseManager *db, TimeInfo time,std::vector<DrawInfo*> user_draws,  XFrame *frame) :
 		wxDialog(parent,
 			wxID_ANY,
 			_("X/Y graph parameters"),
@@ -83,17 +83,19 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 	sizer->Add(label, 0, wxALIGN_CENTER | wxALL, 5);
 	sizer->Add(line, 0, wxEXPAND, 10);
 
+#define __BUTTON_NAME(N) user_draws.size() >= N ? user_draws[N-1]->GetName() :wxString( _("Choose draw"))
+
 	wxBoxSizer* sizer_1 = new wxBoxSizer(wxHORIZONTAL);
 	label = new wxStaticText(this, wxID_ANY, _("Axis X:"));
 	sizer_1->Add(label, 0, wxALIGN_CENTER | wxALL, 5);
-	button = new wxButton(this, XY_XAXIS_BUTTON, _("Choose draw"));
+	button = new wxButton(this, XY_XAXIS_BUTTON, __BUTTON_NAME(1));
 	sizer_1->Add(button, 1, wxEXPAND);
 	sizer->Add(sizer_1, 0, wxEXPAND | wxALL, 5);
 
 	wxBoxSizer* sizer_2 = new wxBoxSizer(wxHORIZONTAL);
 	label = new wxStaticText(this, wxID_ANY, _("Axis Y:"));
 	sizer_2->Add(label, 0, wxALIGN_CENTER | wxALL, 5);
-	button = new wxButton(this, XY_YAXIS_BUTTON, _("Choose draw"));
+	button = new wxButton(this, XY_YAXIS_BUTTON, __BUTTON_NAME(2));
 	sizer_2->Add(button, 1, wxEXPAND);
 	sizer->Add(sizer_2, 0, wxEXPAND | wxALL, 5);
 
@@ -101,10 +103,12 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 		wxBoxSizer* sizer_3 = new wxBoxSizer(wxHORIZONTAL);
 		label = new wxStaticText(this, wxID_ANY, _("Axis Z:"));
 		sizer_3->Add(label, 0, wxALIGN_CENTER | wxALL, 5);
-		button = new wxButton(this, XY_ZAXIS_BUTTON, _("Choose draw"));
+		button = new wxButton(this, XY_ZAXIS_BUTTON, __BUTTON_NAME(3));
 		sizer_3->Add(button, 1, wxEXPAND);
 		sizer->Add(sizer_3, 0, wxEXPAND | wxALL, 5);
 	} 
+
+#undef __BUTTON_NAME
 
 	line = new wxStaticLine(this);
 	sizer->Add(line, 0, wxEXPAND, 10);
@@ -159,10 +163,13 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 	m_period_choice->SetSelection(m_period);
 	m_period_choice->SetFocus();
 
-	//DrawInfoDropTarget* dt = new DrawInfoDropTarget(this);
-	//SetDropTarget(dt);
-	for (int i = 0; i < m_frame->GetDimCount(); i++)
-		m_di.push_back(NULL);
+	// init draws information
+	for (int i = 0; i < m_frame->GetDimCount(); i++) {
+		if (user_draws.size() -1 >= i)
+			m_di.push_back(user_draws[i]);
+		else
+			m_di.push_back(NULL);
+	}
 
 	if (m_frame->GetDimCount() == 3)
 		SetTitle(_("XYZ Graph"));

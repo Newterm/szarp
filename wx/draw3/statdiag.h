@@ -118,7 +118,7 @@ class StatDialog : public szFrame, public DBInquirer, public DrawInfoDropReceive
 	void OnHelpButton(wxCommandEvent &event);
 
 	public:	
-	StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, ConfigManager *cfg, TimeInfo time);
+	StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, ConfigManager *cfg, TimeInfo time, std::vector<DrawInfo*> user_draws);
 
 	/**not significant in this case: -1 is returned*/
 	virtual time_t GetCurrentTime();
