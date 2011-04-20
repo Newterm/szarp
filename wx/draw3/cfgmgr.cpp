@@ -117,34 +117,34 @@ DrawInfo::DrawInfo() {
 
 DrawInfo::DrawInfo(TDraw *d, DrawParam *p)
 {
-    assert (d != NULL);
-    assert (p != NULL);
+	assert (d != NULL);
+	assert (p != NULL);
 
-    this->d = d;
-    this->p = p;
-    c = wxNullColour;
+	this->d = d;
+	this->p = p;
+	c = wxNullColour;
 
-    if (d->GetColor().empty())
-        return;
+	if (d->GetColor().empty())
+		return;
 
-    wxString s = d->GetColor().c_str();
-    if (s.GetChar(0) != '#') {
-	c = wxColour(s);
-	if (!c.Ok()) {
-	    c = wxNullColour;
+	wxString s = d->GetColor().c_str();
+	if (s.GetChar(0) != '#') {
+		c = wxColour(s);
+		if (!c.Ok()) {
+			c = wxNullColour;
+		}
+		return;
 	}
-	return;
-    }
-    if (s.Len() != 7)
-	return;
-    for (int i = 1; i < 7; i++)
-	if (!isxdigit(s.GetChar(i)))
-	    return;
+	if (s.Len() != 7)
+		return;
+	for (int i = 1; i < 7; i++)
+		if (!isxdigit(s.GetChar(i)))
+			return;
 
-    int r = ctohex(s.GetChar(1)) * 16 + ctohex(s.GetChar(2));
-    int g = ctohex(s.GetChar(3)) * 16 + ctohex(s.GetChar(4));
-    int b = ctohex(s.GetChar(5)) * 16 + ctohex(s.GetChar(6));
-    c = wxColour(r, g, b);
+	int r = ctohex(s.GetChar(1)) * 16 + ctohex(s.GetChar(2));
+	int g = ctohex(s.GetChar(3)) * 16 + ctohex(s.GetChar(4));
+	int b = ctohex(s.GetChar(5)) * 16 + ctohex(s.GetChar(6));
+	c = wxColour(r, g, b);
 }
 
 bool
@@ -162,57 +162,57 @@ DrawInfo::CompareDraws(DrawInfo *first, DrawInfo *second)
 wxString
 DrawInfo::GetBasePrefix()
 {
-    assert (p != NULL);
-    return p->GetBasePrefix();
+	assert (p != NULL);
+	return p->GetBasePrefix();
 }
 
 wxString DrawInfo::GetSetName()
 {
-    assert (d != NULL);
-    return d->GetTranslatedWindow().c_str();
+	assert (d != NULL);
+	return d->GetTranslatedWindow().c_str();
 }
 
 wxString
 DrawInfo::GetName()
 {
-    assert (p != NULL);
-    wxString name = p->GetDrawName().c_str();
-    if (!name.IsEmpty())
-	    return name;
+	assert (p != NULL);
+	wxString name = p->GetDrawName().c_str();
+	if (!name.IsEmpty())
+		return name;
 
-    name = GetParamName();
+	name = GetParamName();
 
-    int cp = name.Find(wxChar(':'), true);
+	int cp = name.Find(wxChar(':'), true);
 
-    if (cp == -1)
-	    return name;
+	if (cp == -1)
+		return name;
 
-    return name.Mid(cp + 1);
+	return name.Mid(cp + 1);
 }
 
 wxString
 DrawInfo::GetParamName()
 {
-    assert (p != NULL);
-    return p->GetParamName();
+	assert (p != NULL);
+	return p->GetParamName();
 }
 
 wxString
 DrawInfo::GetShortName() {
-    assert (p != NULL);
-    return p->GetShortName();
+	assert (p != NULL);
+	return p->GetShortName();
 }
 
 DrawParam*
 DrawInfo::GetParam()
 {
-    return p;
+	return p;
 }
 
 TDraw *
 DrawInfo::GetDraw()
 {
-    return d;
+	return d;
 }
 
 double
@@ -254,19 +254,19 @@ DrawInfo::GetSpecial() {
 wxColour
 DrawInfo::GetDrawColor()
 {
-    return c;
+	return c;
 }
 
 double
 DrawInfo::GetPrior()
 {
-    return (d->GetPrior());
+	return (d->GetPrior());
 }
 
 void
 DrawInfo::SetDrawColor(wxColour color)
 {
-    c = color;
+	c = color;
 }
 
 int
@@ -309,21 +309,21 @@ IPKDrawInfo::GetDrawsSets() {
 
 DrawSet::DrawSet(const DrawSet& drawSet)
 {
-    m_prior = drawSet.m_prior;
-    m_number = drawSet.m_number;
+	m_prior = drawSet.m_prior;
+	m_number = drawSet.m_number;
 
-    m_name = drawSet.m_name;
+	m_name = drawSet.m_name;
 
-    m_draws = drawSet.m_draws;
-    m_cfg = drawSet.m_cfg;
+	m_draws = drawSet.m_draws;
+	m_cfg = drawSet.m_cfg;
 }
 
 DrawSet::~DrawSet()
 {
 	if (m_draws) {
 		for (DrawInfoArray::iterator i = m_draws->begin();
-				i != m_draws->end();
-				i++)
+		        i != m_draws->end();
+		        i++)
 			delete (*i);
 
 		delete m_draws;
@@ -337,16 +337,16 @@ DrawsSets* DrawSet::GetDrawsSets() {
 void
 DrawSet::Add(DrawInfo* drawInfo)
 {
-    m_draws->push_back(drawInfo);
+	m_draws->push_back(drawInfo);
 
-    /* update prior */
-    double prior = drawInfo->GetPrior();
-    if (prior > 0) {
-	if (m_prior > 0)
-	    m_prior = m_prior > prior ? prior : m_prior;
-	else
-	    m_prior = prior;
-    }
+	/* update prior */
+	double prior = drawInfo->GetPrior();
+	if (prior > 0) {
+		if (m_prior > 0)
+			m_prior = m_prior > prior ? prior : m_prior;
+		else
+			m_prior = prior;
+	}
 }
 
 void
@@ -358,141 +358,143 @@ DrawSet::SortDraws()
 int
 DrawSet::CompareSets(DrawSet * d1, DrawSet * d2)
 {
-    double p1 = d1->GetPrior();
-    double p2 = d2->GetPrior();
+	double p1 = d1->GetPrior();
+	double p2 = d2->GetPrior();
 
-    if (p1 < defined_draws_prior_start) {
-       if (p2 < defined_draws_prior_start) {
-	       p1 = fabs(p1);
-	       p2 = fabs(p2);
-       } else
-	       return 1;
-    }
+	if (p1 < defined_draws_prior_start) {
+		if (p2 < defined_draws_prior_start) {
+			p1 = fabs(p1);
+			p2 = fabs(p2);
+		} else
+			return 1;
+	}
 
-    if (p2 < defined_draws_prior_start)
-	return -1;
+	if (p2 < defined_draws_prior_start)
+		return -1;
 
-    if (p1 < 0)
-	p1 = unassigned_prior_value;
+	if (p1 < 0)
+		p1 = unassigned_prior_value;
 
-    if (p2 < 0)
-	p2 = unassigned_prior_value;
+	if (p2 < 0)
+		p2 = unassigned_prior_value;
 
-    if (p2 == p1)
-	return d1->GetNumber() - d2->GetNumber();
+	if (p2 == p1)
+		return d1->GetNumber() - d2->GetNumber();
 
 
-    return (p1 > p2 ? 1 : -1);
+	return (p1 > p2 ? 1 : -1);
 }
 
 double
 DrawSet::GetPrior()
 {
-    double prior = -1;
+	double prior = -1;
 
-    /* find smallest positive prior */
-    for (size_t j = 0; j < m_draws->size(); j++) {
-	double current_prior = m_draws->at(j)->GetPrior();
-	if ( current_prior > 0 && ( current_prior < prior || prior <= 0 ) )
-	    prior = current_prior;
-    }
+	/* find smallest positive prior */
+	for (size_t j = 0; j < m_draws->size(); j++) {
+		double current_prior = m_draws->at(j)->GetPrior();
+		if ( current_prior > 0 && ( current_prior < prior || prior <= 0 ) )
+			prior = current_prior;
+	}
 
-    m_prior = prior;
+	m_prior = prior;
 
-    return m_prior;
+	return m_prior;
 }
 
 wxString &
 DrawSet::GetName()
 {
-    if (!m_name.IsEmpty())
+	if (!m_name.IsEmpty())
+		return m_name;
+
+	if (m_draws->size() == 0) {
+		return m_name;
+	}
+
+	m_name = m_draws->at(0)->GetSetName();
+
 	return m_name;
-
-    if (m_draws->size() == 0) {
-	return m_name;
-    }
-
-    m_name = m_draws->at(0)->GetSetName();
-
-    return m_name;
 }
 
 void
-DrawSet::SetName(const wxString & name) { m_name = name; };
+DrawSet::SetName(const wxString & name) {
+	m_name = name;
+};
 
 void
 DrawSet::InitNullColors()
 {
-    size_t first_free = 0;
+	size_t first_free = 0;
 
-    wxLogInfo(_T("InitNullColors: draws count: %zu"), m_draws->size());
+	wxLogInfo(_T("InitNullColors: draws count: %zu"), m_draws->size());
 
-    std::set<size_t> ex;
+	std::set<size_t> ex;
 
-    for (size_t i = 0; i < m_draws->size(); i++) {
-	if (m_draws->at(i)->GetDrawColor() == wxNullColour)
-		continue;
-	int j = DrawDefaultColors::FindIndex(m_draws->at(i)->GetDrawColor());
-	if (j != -1)
-		ex.insert(j);
-    }
-
-    /* now assign null colors */
-    for (size_t i = 0; i < m_draws->size(); i++) {
-	if (m_draws->at(i)->GetDrawColor() == wxNullColour) {
-	    /* search for next free color */
-	    while (ex.find(first_free) != ex.end()) {
-		first_free++;
-	    }
-	    ex.insert(first_free);
-
-	    /* set color */
-	    m_draws->at(i)->SetDrawColor(DrawDefaultColors::MakeColor(first_free));
+	for (size_t i = 0; i < m_draws->size(); i++) {
+		if (m_draws->at(i)->GetDrawColor() == wxNullColour)
+			continue;
+		int j = DrawDefaultColors::FindIndex(m_draws->at(i)->GetDrawColor());
+		if (j != -1)
+			ex.insert(j);
 	}
-    }
+
+	/* now assign null colors */
+	for (size_t i = 0; i < m_draws->size(); i++) {
+		if (m_draws->at(i)->GetDrawColor() == wxNullColour) {
+			/* search for next free color */
+			while (ex.find(first_free) != ex.end()) {
+				first_free++;
+			}
+			ex.insert(first_free);
+
+			/* set color */
+			m_draws->at(i)->SetDrawColor(DrawDefaultColors::MakeColor(first_free));
+		}
+	}
 }
 
 DrawInfo *
 DrawSet::GetDraw(int index)
 {
-    if (index < (int) m_draws->size())
-	return m_draws->at(index);
-    else
-	return NULL;
+	if (index < (int) m_draws->size())
+		return m_draws->at(index);
+	else
+		return NULL;
 }
 
 wxString
 DrawSet::GetDrawName(int index)
 {
-    if (index < (int) m_draws->size())
-	return m_draws->at(index)->GetName();
-    else
-	return wxEmptyString;
+	if (index < (int) m_draws->size())
+		return m_draws->at(index)->GetName();
+	else
+		return wxEmptyString;
 }
 
 wxString
 DrawSet::GetParamName(int index)
 {
-    if (index < (int) m_draws->size())
-	return m_draws->at(index)->GetParamName();
-    else
-	return wxEmptyString;
+	if (index < (int) m_draws->size())
+		return m_draws->at(index)->GetParamName();
+	else
+		return wxEmptyString;
 }
 
 wxColour
 DrawSet::GetDrawColor(int index)
 {
-    if (index >= (int) m_draws->size())
-	return DRAW3_BG_COLOR;
+	if (index >= (int) m_draws->size())
+		return DRAW3_BG_COLOR;
 
-    wxColour col = m_draws->at(index)->GetDrawColor();
+	wxColour col = m_draws->at(index)->GetDrawColor();
 
-    if (col == wxNullColour) {
-	InitNullColors();
-	col = m_draws->at(index)->GetDrawColor();
-    }
+	if (col == wxNullColour) {
+		InitNullColors();
+		col = m_draws->at(index)->GetDrawColor();
+	}
 
-    return col;
+	return col;
 }
 
 
@@ -552,106 +554,106 @@ ConfigManager::LoadConfig(const wxString& prefix, const wxString &config_path)
 DrawInfo *
 ConfigManager::GetDraw(const wxString prefix, const wxString set, int index)
 {
-    return config_hash[prefix]->GetDrawsSets()[set]->GetDraw(index);
+	return config_hash[prefix]->GetDrawsSets()[set]->GetDraw(index);
 }
 
 wxString
 ConfigManager::GetDrawName(const wxString prefix, const wxString set, int index)
 {
-    return config_hash[prefix]->GetDrawsSets()[set]->GetDrawName(index);
+	return config_hash[prefix]->GetDrawsSets()[set]->GetDrawName(index);
 }
 
 wxString
 ConfigManager::GetParamName(const wxString prefix, const wxString set, int index)
 {
-    return config_hash[prefix]->GetDrawsSets()[set]->GetParamName(index);
+	return config_hash[prefix]->GetDrawsSets()[set]->GetParamName(index);
 }
 
 wxColour
 ConfigManager::GetDrawColor(const wxString prefix, const wxString set, int index)
 {
-    return config_hash[prefix]->GetDrawsSets()[set]->GetDrawColor(index);
+	return config_hash[prefix]->GetDrawsSets()[set]->GetDrawColor(index);
 }
 
 wxString
 IPKConfig::GetID()
 {
-    return m_id;
+	return m_id;
 }
 
 wxString
 IPKConfig::GetPrefix()
 {
-    return m_sc->GetPrefix().c_str();
+	return m_sc->GetPrefix().c_str();
 }
 
 
 IPKConfig::IPKConfig(TSzarpConfig *c, ConfigManager *mgr) : DrawsSets(mgr), defined_attached(false)
 {
-    assert (c != NULL);
+	assert (c != NULL);
 
-    m_sc = c;
+	m_sc = c;
 
-    m_id = c->GetTranslatedTitle();
+	m_id = c->GetTranslatedTitle();
 
-    int drawset_number = 0;
-    DrawSet *pds;
-    DrawInfo *pdi;
-    wxString name;
+	int drawset_number = 0;
+	DrawSet *pds;
+	DrawInfo *pdi;
+	wxString name;
 
-    for (TParam *p = m_sc->GetFirstParam(); p; p = m_sc->GetNextParam(p)) {
-	for (TDraw *d = p->GetDraws(); d; d = d->GetNext()) {
-	    pdi = new IPKDrawInfo(d, p, this);
+	for (TParam *p = m_sc->GetFirstParam(); p; p = m_sc->GetNextParam(p)) {
+		for (TDraw *d = p->GetDraws(); d; d = d->GetNext()) {
+			pdi = new IPKDrawInfo(d, p, this);
 
-	    name = d->GetTranslatedWindow().c_str();
+			name = d->GetTranslatedWindow().c_str();
 
-	    pds = drawSets[name];
+			pds = drawSets[name];
 
-	    if (NULL == pds)
-		pds = new DrawSet(name, drawset_number++, this);
+			if (NULL == pds)
+				pds = new DrawSet(name, drawset_number++, this);
 
-	    pds->Add(pdi);
+			pds->Add(pdi);
 
-	    drawSets[name] = pds;
-	    m_tree_root.AddSet(d, pds);
+			drawSets[name] = pds;
+			m_tree_root.AddSet(d, pds);
+		}
 	}
-    }
 
-    DrawSetsHash::iterator it;
-    /* sort draws */
-    for (it = drawSets.begin(); it != drawSets.end(); ++it) {
-	it->second->SortDraws();
-    }
+	DrawSetsHash::iterator it;
+	/* sort draws */
+	for (it = drawSets.begin(); it != drawSets.end(); ++it) {
+		it->second->SortDraws();
+	}
 
-    /*init null colors*/
-    for (it = drawSets.begin(); it != drawSets.end(); ++it)
-	    it->second->InitNullColors();
+	/*init null colors*/
+	for (it = drawSets.begin(); it != drawSets.end(); ++it)
+		it->second->InitNullColors();
 
-    baseDrawSets = drawSets;
+	baseDrawSets = drawSets;
 
-    m_tree_root.Sort();
+	m_tree_root.Sort();
 }
 
 void IPKConfig::AttachDefined() {
-    if (defined_attached)
-	    return;
+	if (defined_attached)
+		return;
 
-    DefinedDrawsSets *d = m_cfgmgr->GetDefinedDrawsSets();
+	DefinedDrawsSets *d = m_cfgmgr->GetDefinedDrawsSets();
 
-    for (DrawSetsHash::iterator i = d->GetRawDrawsSets().begin();
-	    i != d->GetRawDrawsSets().end();
-	    i++) {
-	DefinedDrawSet *df = dynamic_cast<DefinedDrawSet*>(i->second);
-	SetsNrHash& pc = df->GetPrefixes();
+	for (DrawSetsHash::iterator i = d->GetRawDrawsSets().begin();
+	        i != d->GetRawDrawsSets().end();
+	        i++) {
+		DefinedDrawSet *df = dynamic_cast<DefinedDrawSet*>(i->second);
+		SetsNrHash& pc = df->GetPrefixes();
 
-	if (pc.find(GetPrefix()) == pc.end())
-		continue;
+		if (pc.find(GetPrefix()) == pc.end())
+			continue;
 
-	DrawSet* ds = df->MakeShallowCopy(this);
-	drawSets[df->GetName()] = ds;
-	m_tree_root.AddUserSet(ds);
-    }
-    defined_attached = true;
+		DrawSet* ds = df->MakeShallowCopy(this);
+		drawSets[df->GetName()] = ds;
+		m_tree_root.AddUserSet(ds);
+	}
+	defined_attached = true;
 }
 
 DrawSetsHash&
@@ -667,16 +669,16 @@ IPKConfig::GetDrawsSets(bool all) {
 DrawSetsHash&
 IPKConfig::GetRawDrawsSets() {
 
-    return drawSets;
+	return drawSets;
 }
 
 IPKConfig::~IPKConfig()
 {
 
-    DrawSetsHash::iterator it = baseDrawSets.begin();
-    for (; it != baseDrawSets.end(); it++) {
+	DrawSetsHash::iterator it = baseDrawSets.begin();
+	for (; it != baseDrawSets.end(); it++) {
 		delete it->second;
-    }
+	}
 
 }
 
@@ -688,11 +690,10 @@ bool DrawTreeNodeCmp(const DrawTreeNode* n1, const DrawTreeNode* n2) {
 			return p1 > p2;
 		else
 			return false;
+	else if (p2 < 0)
+		return true;
 	else
-		if (p2 < 0)
-			return true;
-		else
-			return p1 < p2;
+		return p1 < p2;
 }
 
 
@@ -700,7 +701,9 @@ class DrawTreeNodeNameEq {
 	const wxString& m_name;
 public:
 	DrawTreeNodeNameEq(const wxString& name) : m_name(name) {}
-	bool operator()(const DrawTreeNode* node) const { return node->GetName() == m_name; }
+	bool operator()(const DrawTreeNode* node) const {
+		return node->GetName() == m_name;
+	}
 };
 
 DrawTreeNode::DrawTreeNode() {
@@ -736,8 +739,8 @@ DrawTreeNode::ELEMENT_TYPE DrawTreeNode::GetElementType() const {
 
 DrawTreeNode::~DrawTreeNode() {
 	for (std::vector<DrawTreeNode*>::iterator i = m_child_nodev.begin();
-		 	i != m_child_nodev.end();
-			i++)
+		i != m_child_nodev.end();
+		i++)
 		delete *i;
 }
 
@@ -750,7 +753,7 @@ DrawTreeNode* DrawTreeRoot::AddTNode(TTreeNode *tnode) {
 		return this;
 	DrawTreeNode* pnode = AddTNode(tnode->GetParent());
 	std::vector<DrawTreeNode*>::iterator i =
-		std::find_if(pnode->m_child_nodev.begin(), pnode->m_child_nodev.end(), DrawTreeNodeNameEq(tnode->GetName()));
+	    std::find_if(pnode->m_child_nodev.begin(), pnode->m_child_nodev.end(), DrawTreeNodeNameEq(tnode->GetName()));
 	DrawTreeNode* node;
 	if (i == pnode->m_child_nodev.end()) {
 		node = new DrawTreeNode;
@@ -768,8 +771,8 @@ DrawTreeNode* DrawTreeRoot::AddTNode(TTreeNode *tnode) {
 void DrawTreeRoot::AddSet(TDraw* tdraw, DrawSet *drawsset) {
 	const std::vector<TTreeNode*>& tnodev = tdraw->GetTreeNode();
 	for (std::vector<TTreeNode*>::const_iterator i = tnodev.begin();
-			i != tnodev.end();
-			i++) {
+		i != tnodev.end();
+		i++) {
 		DrawTreeNode* pnode = AddTNode(*i);
 		if (pnode->GetElementType() == DrawTreeNode::LEAF)
 			//already present
@@ -784,7 +787,7 @@ void DrawTreeRoot::AddSet(TDraw* tdraw, DrawSet *drawsset) {
 }
 
 void DrawTreeRoot::AddUserSet(DrawSet* drawsset) {
-	if (!m_child_nodev.size()) 
+	if (!m_child_nodev.size())
 		return;
 	if (m_user_subtree == NULL) {
 		m_user_subtree = new DrawTreeNode();
@@ -842,14 +845,14 @@ DrawsSets::DrawsSets(ConfigManager *cfg) : m_cfgmgr(cfg) {}
 SortedSetsArray
 DrawsSets::GetSortedDrawSetsNames(bool all)
 {
-    AttachDefined();
-    SortedSetsArray sorted(DrawSet::CompareSets);
+	AttachDefined();
+	SortedSetsArray sorted(DrawSet::CompareSets);
 
-    for (DrawSetsHash::iterator it = GetDrawsSets(all).begin(); it != GetDrawsSets(all).end(); it++) {
-	sorted.Add(it->second);
-    }
+	for (DrawSetsHash::iterator it = GetDrawsSets(all).begin(); it != GetDrawsSets(all).end(); it++) {
+		sorted.Add(it->second);
+	}
 
-    return sorted;
+	return sorted;
 }
 
 
@@ -858,7 +861,7 @@ DrawsSets::~DrawsSets() {}
 ConfigManager*
 DrawsSets::GetParentManager()
 {
-    return m_cfgmgr;
+	return m_cfgmgr;
 }
 
 DrawTreeNode& DrawsSets::GetDrawTree() {
@@ -892,16 +895,16 @@ void DrawsSets::SubstituteUserSet(wxString oname, DefinedDrawSet *set) {
 DrawsSets*
 ConfigManager::AddConfig(TSzarpConfig *ipk)
 {
-    wxString prefix = ipk->GetPrefix().c_str();
+	wxString prefix = ipk->GetPrefix().c_str();
 
-    if (config_hash.find(prefix) != config_hash.end())
+	if (config_hash.find(prefix) != config_hash.end())
 		delete config_hash[prefix];
 
-    IPKConfig *c = new IPKConfig(ipk, this);
+	IPKConfig *c = new IPKConfig(ipk, this);
 
-    config_hash[prefix] = c;
+	config_hash[prefix] = c;
 
-    return c;
+	return c;
 }
 
 DrawsSets*
@@ -941,8 +944,8 @@ wxString ConfigManager::GetSzarpDir() {
 #endif
 
 ConfigNameHash& ConfigManager::GetConfigTitles() {
-    wxArrayString hidden_databases;
-    wxString tmp;
+	wxArrayString hidden_databases;
+	wxString tmp;
 	wxConfigBase* config = wxConfigBase::Get(true);
 	if (config->Read(_T("HIDDEN_DATABASES"), &tmp))
 	{
@@ -959,7 +962,7 @@ ConfigNameHash& ConfigManager::GetConfigTitles() {
 	if (m_config_names.empty()) {
 		m_config_names = ::GetConfigTitles(m_app->GetSzarpDataDir(), &hidden_databases);
 		m_config_names[DefinedDrawsSets::DEF_PREFIX]
-			= wxGetTranslation(DefinedDrawsSets::DEF_NAME);
+		= wxGetTranslation(DefinedDrawsSets::DEF_NAME);
 	}
 
 	return m_config_names;
@@ -996,57 +999,57 @@ void ConfigManager::DeregisterConfigObserver(ConfigObserver *observer) {
 
 void ConfigManager::NotifySetRemoved(wxString prefix, wxString name) {
 	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
-			i != m_observers.end();
-			i++)
+		i != m_observers.end();
+		i++)
 		(*i)->SetRemoved(prefix, name);
 }
 
 void ConfigManager::NotifyStartConfigurationReload(wxString prefix) {
 	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
-			i != m_observers.end();
-			i++)
+		i != m_observers.end();
+		i++)
 		(*i)->ConfigurationIsAboutToReload(prefix);
 }
 
 void ConfigManager::NotifyEndConfigurationReload(wxString prefix) {
 	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
-			i != m_observers.end();
-			i++)
+		i != m_observers.end();
+		i++)
 		(*i)->ConfigurationWasReloaded(prefix);
 }
 
 void ConfigManager::NotifySetRenamed(wxString prefix, wxString from, wxString to, DrawSet *set) {
 	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
-			i != m_observers.end();
-			i++)
+		i != m_observers.end();
+		i++)
 		(*i)->SetRenamed(prefix, from, to, set);
 }
 
 void ConfigManager::NotifySetModified(wxString prefix, wxString name, DrawSet *set) {
 	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
-			i != m_observers.end();
-			i++)
+		i != m_observers.end();
+		i++)
 		(*i)->SetModified(prefix, name, set);
 }
 
 void ConfigManager::NotifyParamSubsitute(DefinedParam *d, DefinedParam *n) {
 	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
-			i != m_observers.end();
-			i++)
+		i != m_observers.end();
+		i++)
 		(*i)->ParamSubstituted(d, n);
 }
 
 void ConfigManager::NotifyParamDestroy(DefinedParam *d) {
 	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
-			i != m_observers.end();
-			i++)
+		i != m_observers.end();
+		i++)
 		(*i)->ParamDestroyed(d);
 }
 
 void ConfigManager::NotifySetAdded(wxString prefix, wxString name, DrawSet *set) {
 	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
-			i != m_observers.end();
-			i++)
+		i != m_observers.end();
+		i++)
 		(*i)->SetAdded(prefix, name, set);
 }
 
@@ -1072,8 +1075,8 @@ void ConfigManager::FinishConfigurationLoad(wxString prefix) {
 	m_defined_sets->ConfigurationWasLoaded(prefix, &configs_to_load);
 
 	for (std::set<wxString>::iterator i = configs_to_load.begin();
-			i != configs_to_load.end();
-			i++) {
+		i != configs_to_load.end();
+		i++) {
 
 		if (config_hash.find(*i) != config_hash.end())
 			continue;
@@ -1123,9 +1126,9 @@ bool ConfigManager::SaveDefinedDrawsSets() {
 	if (!wxDirExists(sd.GetFullPath()))
 		if (sd.Mkdir() == false) {
 			wxMessageBox(wxString::Format(_("Failed to create directory %s. Defined draws cannot be saved"), sd.GetFullPath().c_str()),
-					_("Error"),
-					wxOK | wxICON_ERROR,
-					wxGetApp().GetTopWindow());
+				_("Error"),
+				wxOK | wxICON_ERROR,
+				wxGetApp().GetTopWindow());
 			return false;
 		}
 
@@ -1141,8 +1144,8 @@ void ConfigManager::SubstituteOrAddDefinedParams(std::vector<DefinedParam*>& dp)
 	std::vector<DefinedParam*> to_rem, to_add, new_pars;
 	std::vector<DefinedParam*>& dps = m_defined_sets->GetDefinedParams();
 	for (std::vector<DefinedParam*>::iterator i = dp.begin();
-			i != dp.end();
-			i++) {
+		i != dp.end();
+		i++) {
 		std::vector<DefinedParam*>::iterator j;
 		for (j = dps.begin(); j != dps.end(); j++)
 			if ((*j)->GetBasePrefix() == (*i)->GetBasePrefix() && (*j)->GetParamName() == (*i)->GetParamName()) {
@@ -1165,8 +1168,8 @@ void ConfigManager::SubstiuteDefinedParams(const std::vector<DefinedParam*>& to_
 	DrawSetsHash& dsh = m_defined_sets->GetRawDrawsSets();
 	for (size_t i = 0; i < to_rem.size(); i++)
 		for (DrawSetsHash::iterator j = dsh.begin();
-				j != dsh.end();
-				j++) {
+			j != dsh.end();
+			j++) {
 			DrawInfoArray* dia = j->second->GetDraws();
 			for (size_t k = 0; k < dia->size(); k++) {
 				DefinedDrawInfo *dp = dynamic_cast<DefinedDrawInfo*>((*dia)[k]);
@@ -1181,8 +1184,8 @@ void ConfigManager::SubstiuteDefinedParams(const std::vector<DefinedParam*>& to_
 	m_db_mgr->AddParams(to_add);
 
 	for (std::map<wxString, bool>::iterator i = us.begin();
-			i != us.end();
-			++i) {
+		i != us.end();
+		++i) {
 		DefinedDrawSet *ds = dynamic_cast<DefinedDrawSet*>(dsh[i->first]);
 		std::vector<DefinedDrawSet*>* c = ds->GetCopies();
 		for (std::vector<DefinedDrawSet*>::iterator j = c->begin(); j != c->end(); j++)
@@ -1193,7 +1196,7 @@ void ConfigManager::SubstiuteDefinedParams(const std::vector<DefinedParam*>& to_
 		m_defined_sets->RemoveParam(to_rem[i]);
 		m_defined_sets->AddDefinedParam(to_add[i]);
 		NotifyParamSubsitute(to_rem[i], to_add[i]);
-		delete to_rem[i];	
+		delete to_rem[i];
 	}
 
 }
@@ -1235,20 +1238,20 @@ void ExportImportSet::ConvertParam(DefinedParam *dp, wxString our_name, std::map
 	wxString formula = dp->GetFormula();
 #ifdef LUA_PARAM_OPTIMISE
 	std::vector<std::wstring> strings;
-	extract_strings_from_formula(formula.c_str(), strings);	
+	extract_strings_from_formula(formula.c_str(), strings);
 	for (size_t i = 0; i < strings.size(); i++) if (DefinedParam* d = FindDefinedParam(strings[i])) {
-		ConvertParam(d, our_name, converted);
-		formula.Replace(_T("\"") + d->GetBasePrefix() + _T(":") + d->GetParamName() + _T("\""),
-				_T("\"") + converted[d]->GetBasePrefix() + _T(":") + converted[d]->GetParamName() + _T("\""));
-	}
+			ConvertParam(d, our_name, converted);
+			formula.Replace(_T("\"") + d->GetBasePrefix() + _T(":") + d->GetParamName() + _T("\""),
+			_T("\"") + converted[d]->GetBasePrefix() + _T(":") + converted[d]->GetParamName() + _T("\""));
+		}
 #endif /* LUA_PARAM_OPTIMISE */
 	np->SetFormula(formula);
 }
 
 void ExportImportSet::ExportSet(DefinedDrawSet *set, wxString our_name) {
 	wxFileDialog dlg(wxGetApp().GetTopWindow(), _("Choose a file"), _T(""), _T(""),
-			_("SZARP draw set (*.xds)|*.xds|All files (*.*)|*.*"),
-			wxSAVE | wxCHANGE_DIR);
+		_("SZARP draw set (*.xds)|*.xds|All files (*.*)|*.*"),
+		wxSAVE | wxCHANGE_DIR);
 	szSetDefFont(&dlg);
 	if (dlg.ShowModal() != wxID_OK)
 		return;
@@ -1272,8 +1275,8 @@ void ExportImportSet::ExportSet(DefinedDrawSet *set, wxString our_name) {
 	}
 	std::vector<DefinedParam*> dpv;
 	for (std::map<DefinedParam*, DefinedParam*>::iterator i = converted_params.begin();
-			i != converted_params.end();
-			i++)
+		i != converted_params.end();
+		i++)
 		dpv.push_back(i->second);
 
 	if (m_def_sets->SaveSets(path, dsv, dpv) == false)
@@ -1297,7 +1300,7 @@ bool ExportImportSet::FindSetName(DefinedDrawSet *ds) {
 			n += 1;
 		}
 		title = wxGetTextFromUser(
-			wxString::Format(_("Set with name %s already exists. Give a name for a set:"), title.c_str()), 
+			wxString::Format(_("Set with name %s already exists. Give a name for a set:"), title.c_str()),
 			_("Set already exists"),
 			ntitle,
 			wxGetApp().GetTopWindow());
@@ -1309,15 +1312,15 @@ bool ExportImportSet::FindSetName(DefinedDrawSet *ds) {
 }
 
 void ExportImportSet::ImportSet() {
-	wxFileDialog dlg(wxGetApp().GetTopWindow(), _("Choose a file"), _T(""), _T(""), 
-				_("SZARP draw set (*.xds)|*.xds|All files (*.*)|*.*"));
+	wxFileDialog dlg(wxGetApp().GetTopWindow(), _("Choose a file"), _T(""), _T(""),
+		_("SZARP draw set (*.xds)|*.xds|All files (*.*)|*.*"));
 	szSetDefFont(&dlg);
 	if (dlg.ShowModal() != wxID_OK)
 		return;
 	wxString path = dlg.GetPath();
 	std::vector<DefinedDrawSet*> draw_sets;
 	std::vector<DefinedParam*> defined_params;
-	if (m_def_sets->LoadSets(path, draw_sets, defined_params) == false || draw_sets.size() == 0) 
+	if (m_def_sets->LoadSets(path, draw_sets, defined_params) == false || draw_sets.size() == 0)
 		goto fail;
 	for (size_t i = 0; i < draw_sets.size(); i++) {
 		std::vector<wxString> removed;
@@ -1344,7 +1347,7 @@ void ExportImportSet::ImportSet() {
 		if (FindSetName(draw_sets[i]) == false)
 			goto clean_up;
 	}
-	
+
 	m_cfg_mgr->SubstituteOrAddDefinedParams(defined_params);
 	for (size_t i = 0; i < draw_sets.size(); i++)
 		m_def_sets->AddSet(draw_sets[i]);

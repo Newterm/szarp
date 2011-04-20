@@ -120,7 +120,7 @@ class XYZCanvas : public wxGLCanvas {
 	bool LookupTriangle(size_t i, size_t& j, size_t &k);
 	size_t XZToIndex(size_t x, size_t z);
 	void IndexToXZ(size_t index, int& x, int& z);
-	bool AreValidAxes();
+	bool AreAxesValid(XYGraph *g);
 
 	enum { TRIANGLES, SINGLE_POINTS } m_graph_type;
 
@@ -585,13 +585,16 @@ void XYZCanvas::IndexToXZ(size_t index, int& x, int& z) {
 	z = index3 / slices_no;
 }
 
-bool XYZCanvas::AreValidAxes() {
-	double & xmin = m_graph -> m_dmin[0];
-	double & xmax = m_graph -> m_dmax[0];
-	double & ymin = m_graph -> m_dmin[1];
-	double & ymax = m_graph -> m_dmax[1];
-	double & zmin = m_graph -> m_dmin[2];
-	double & zmax = m_graph -> m_dmax[2];
+bool XYZCanvas::AreAxesValid(XYGraph *g) {
+	if (g == NULL)
+		return false;
+
+	double & xmin = g -> m_dmin[0];
+	double & xmax = g -> m_dmax[0];
+	double & ymin = g -> m_dmin[1];
+	double & ymax = g -> m_dmax[1];
+	double & zmin = g -> m_dmin[2];
+	double & zmax = g -> m_dmax[2];
 
 	if ( xmax - xmin <= 0 || ymax - ymin <= 0 || zmax - zmin <= 0)
 		return false;
@@ -851,7 +854,7 @@ void XYZCanvas::SetGraph(XYGraph *graph) {
 	int x = -1, z = 0;
 	m_graph = graph;
 
-	if (AreValidAxes()) {
+	if (AreAxesValid(m_graph)) {
 		UpdateArrays();
 		for (x = slices_no - 2; x >= 0; x--)
 			for (z = slices_no - 2; z >= 0; z--) 
@@ -1298,11 +1301,11 @@ BEGIN_EVENT_TABLE(XYZCanvas, wxGLCanvas)
 	EVT_PAINT(XYZCanvas::OnPaint)
 	EVT_SIZE(XYZCanvas::OnSize)
 	EVT_TIMER(wxID_ANY, XYZCanvas::OnTimer)
-    	EVT_KEY_UP(XYZCanvas::OnKeyUp)
-    	EVT_CHAR(XYZCanvas::OnChar)
-    	EVT_LEFT_DOWN(XYZCanvas::OnMouseLeftDown)
-    	EVT_RIGHT_DOWN(XYZCanvas::OnMouseRightDown)
-    	EVT_RIGHT_UP(XYZCanvas::OnMouseRightUp)
+	EVT_KEY_UP(XYZCanvas::OnKeyUp)
+	EVT_CHAR(XYZCanvas::OnChar)
+	EVT_LEFT_DOWN(XYZCanvas::OnMouseLeftDown)
+	EVT_RIGHT_DOWN(XYZCanvas::OnMouseRightDown)
+	EVT_RIGHT_UP(XYZCanvas::OnMouseRightUp)
 	EVT_MOTION(XYZCanvas::OnMouseMotion)
 	EVT_LEAVE_WINDOW(XYZCanvas::OnMouseLeaveWindow)
 	EVT_ERASE_BACKGROUND(XYZCanvas::OnEraseBackground)

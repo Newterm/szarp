@@ -473,17 +473,16 @@ void SelectDrawWidget::GoToWWWDocumentation(DrawInfo *d) {
 
 }
 
-std::vector< DrawInfo* > SelectDrawWidget::GetDrawInfoList() {
+DrawInfoList SelectDrawWidget::GetDrawInfoList() {
 	DrawInfoList draw_info;
 
 	DrawSet *selected_set = m_dc->GetSet();
 
-	for (size_t i = 0; i < selected_set->GetDraws()->size(); ++i) {
+	for (size_t i = 0; i < selected_set->GetDraws()->size(); ++i)
 		if (m_cb_l[i]->GetValue()) {
 			Draw* draw = m_dc->GetDraw(i);
 			draw_info.push_back(draw->GetDrawInfo());
 		}
-	}
 
 	return draw_info;
 }

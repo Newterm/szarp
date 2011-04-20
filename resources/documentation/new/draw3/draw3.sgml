@@ -550,7 +550,7 @@ do tego zestawienie "Warto¶ci ¶rednie". Pokazuje ono warto¶æ ¶redni±, minimaln±,
 </para>
 <para>
 ¯eby otworzyæ okno z warto¶ciami ¶rednimi, wybierz <guimenu>Plik</guimenu> i <guimenu>Warto¶ci 
-¶rednie</guimenu>. Standardowo, jako wykres do obliczenia ¶rednich, zostanie wybrany pierwszy niewygaszony wykres, z aktualnego zestawu. Równie¿ zakres czasowy domy¶lnie bêdzie ustawiony na warto¶ci pobrane z aktualnego zestawu. Oczywi¶cie, mo¿esz zmieniæ wykres oraz zakres czasowy przed dokonaniem obliczeñ. Po ustawieniu wszystkich warto¶ci kliknij <guibutton>OK</guibutton>. W sekcji <emphasis>Warto¶ci</emphasis> 
+¶rednie</guimenu>. Standardowo, jako wykres do obliczenia ¶rednich, zostanie wybrany pierwszy niewygaszony wykres, z aktualnego zestawu. Równie¿ zakres czasowy domy¶lnie bêdzie ustawiony na podstawie aktualnego zestawu. Oczywi¶cie, mo¿esz zmieniæ wykres oraz zakres czasowy przed dokonaniem obliczeñ. Po ustawieniu wszystkich warto¶ci kliknij <guibutton>OK</guibutton>. W sekcji <emphasis>Warto¶ci</emphasis> 
 pojawi± siê wyliczone warto¶ci dla danego parametru.
 </para>
 <para>
@@ -569,7 +569,7 @@ pojawi± siê wyliczone warto¶ci dla danego parametru.
 <para>
 W Draw 3 mo¿esz okre¶liæ korelacjê warto¶ci wybranych parametrów. S³u¿± do tego wykresy X/Y. 
 Mo¿esz je utworzyæ wybieraj±c z menu <guimenu>Plik</guimenu> oraz <guimenu>Wykres X/Y</guimenu>.
-Domy¶lnie, jako wykresy X i Y, zostan± wybrane pierwsze dwa niewygaszone wykresu z aktualnego zestawu. Tak¿e zakres czasowy zostanie ustawiony na ten z aktualnego zestawu.
+Domy¶lnie, jako wykresy X i Y, zostan± wybrane pierwsze dwa niewygaszone wykresy z aktualnego zestawu. Tak¿e zakres czasowy zostanie ustawiony na ten z aktualnego zestawu.
 <figure>
 <title>Tworzenie wykresu X/Y</title>
 <mediaobject>

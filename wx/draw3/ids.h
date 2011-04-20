@@ -176,7 +176,7 @@ typedef enum { PERIOD_T_DECADE = 0, PERIOD_T_YEAR, PERIOD_T_MONTH, PERIOD_T_WEEK
 
 /**period names*/
 const wxString period_names[PERIOD_T_LAST] = 
-	{ _("YEAR"), _("MONTH"), _("WEEK"), _("DAY"), _("30 MINUTES"), _("HOUR"), _("SEASON") };
+	{_("DECADE"),  _("YEAR"), _("MONTH"), _("WEEK"), _("DAY"), _("30 MINUTES"), _("HOUR"), _("SEASON") };
 
 /**Type of database inquires identificators*/
 typedef int InquirerId;

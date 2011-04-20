@@ -165,7 +165,7 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 
 	// init draws information
 	for (int i = 0; i < m_frame->GetDimCount(); i++) {
-		if (user_draws.size() -1 >= i)
+		if ((int) (user_draws.size() -1)  >= i)
 			m_di.push_back(user_draws[i]);
 		else
 			m_di.push_back(NULL);

@@ -57,9 +57,6 @@ class FrameManager : public wxEvtHandler {
 	/**@see RemarksHandler*/
 	RemarksHandler *remarks_handler;
 
-	/**@see StatDialog*/
-	StatDialog *stat_dialog;
-
 	/**@see RemarksFrame*/
 	RemarksFrame *remarks_frame;
 

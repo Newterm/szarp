@@ -1029,8 +1029,6 @@ void StatsCollector::UpdateGraphStats() {
 
 }
 
-	
-	
 BEGIN_EVENT_TABLE(XYGraphWidget, wxWindow)
 	EVT_ERASE_BACKGROUND(XYGraphWidget::OnEraseBackground)
 	EVT_PAINT(XYGraphWidget::OnPaint)
@@ -1051,9 +1049,9 @@ XYPointInfo::XYPointInfo(wxWindow *parent, ConfigManager *cfg_manager, FrameMana
 	m_dx = m_dy = NULL;
 
 	wxBoxSizer *point_date_sizer_v = new wxBoxSizer(wxVERTICAL);
-	
+
 	wxBoxSizer *point_date_sizer_h = new wxBoxSizer(wxHORIZONTAL);
-	
+
 	point_date_sizer_h->Add(new wxStaticText(this, wxID_ANY, _("Points:"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT), 0);
 	m_points_no = new wxStaticText(this, wxID_ANY, _T("(0)"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
 	point_date_sizer_h->Add(m_points_no, 0, wxALIGN_CENTER_VERTICAL | wxALL, 0);
@@ -1099,7 +1097,7 @@ XYPointInfo::XYPointInfo(wxWindow *parent, ConfigManager *cfg_manager, FrameMana
 	sizer->Add(point_date_sizer_v, 0, wxEXPAND | wxALL, 0);
 
 	SetSizer(sizer);
-	
+
 	sizer->SetSizeHints(this);
 
 }
@@ -1111,7 +1109,7 @@ void XYPointInfo::SetGraphInfo(XYGraph *graph) {
 
 	m_px = m_dx->GetPrec();
 	m_py = m_dy->GetPrec();
-	
+
 	m_info_grid->SetCellValue(Xmin, 0, m_dx->GetValueStr(graph->m_min[0], _T("")));
 	m_info_grid->SetCellValue(Xavg, 0, m_dx->GetValueStr(graph->m_avg[0], _T("")));
 	m_info_grid->SetCellValue(Xmax, 0, m_dx->GetValueStr(graph->m_max[0], _T("")));
@@ -1152,15 +1150,15 @@ void XYPointInfo::SetPointInfo(XYGraph *graph, int point_index) {
 
 	wxString str1 = m_dx->GetValueStr(vx, _T(" -- "));
 	str1 +=	wxString(_T(" ")) + m_dx->GetUnit();
-	
+
 	m_info_grid->SetCellValue(Xval, 0, str1);
 
 	wxString str2 = m_dy->GetValueStr(vy, _T(" -- "));
 
 	str2 +=	wxString(_T(" ")) + m_dy->GetUnit();
-	
+
 	m_info_grid->SetCellValue(Yval, 0, str2);
-	
+
 	m_info_grid->AutoSize();
 
 	m_point_dates_choice->Freeze();
@@ -1239,7 +1237,6 @@ KDTree* KDTree::Construct(std::deque<KDTreeEntry*> vals, const Range& range, Piv
 	Range lr = range;
 	Range rr = range;
 
-	
 	switch (pivot) {
 		case XPIVOT:
 			std::sort(vals.begin(), vals.end(), XCoordCmp);

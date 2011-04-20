@@ -64,7 +64,6 @@ FrameManager::FrameManager(DatabaseManager *dmgr, ConfigManager *cfgmgr, Remarks
 	remarks_frame(NULL),
 	free_frame_number(first_frame_id)
 {
-	stat_dialog = NULL;
 }
 
 bool FrameManager::CreateFrame(const wxString &prefix, const wxString& set, PeriodType pt, time_t time, const wxSize& size, const wxPoint &position, int selected_draw, bool try_load_layout) {
@@ -117,8 +116,8 @@ bool FrameManager::OpenInExistingFrame(const wxString &prefix, const wxString& s
 	if (frames.GetCount() == 0) {
 		bool ret = CreateFrame(prefix, set, pt, time, wxDefaultSize, wxDefaultPosition, selected_draw);
 		if (ret) {
-			frames[0]->Show(true);	
-			frames[0]->Raise();	
+			frames[0]->Show(true);
+			frames[0]->Raise();
 		}
 		return ret;
 	}
@@ -128,8 +127,8 @@ bool FrameManager::OpenInExistingFrame(const wxString &prefix, const wxString& s
 		panel->Switch(set, prefix, time, pt, selected_draw);
 	else
 		frame->AddDrawPanel(prefix, set, pt, time, selected_draw);
-	frame->Show(true);	
-	frame->Raise();	
+	frame->Show(true);
+	frame->Raise();
 	return true;
 }
 
@@ -209,7 +208,7 @@ void FrameManager::CreateXYZGraph(wxString prefix, TimeInfo time, DrawInfoList u
 
 void FrameManager::ShowStatDialog(wxString prefix, TimeInfo time, DrawInfoList user_draws) {
 	DrawsSets* config = config_manager->GetConfigByPrefix(prefix);
-	stat_dialog = new StatDialog(NULL, config->GetID(), database_manager, config_manager, time, user_draws);
+	new StatDialog(NULL, config->GetID(), database_manager, config_manager, time, user_draws);
 }
 
 void FrameManager::LoadConfig(DrawFrame *frame) {
