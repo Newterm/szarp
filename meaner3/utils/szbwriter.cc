@@ -58,6 +58,8 @@
 
 #include "conversion.h"
 
+#include "szbwriter_cache.h"
+
 #define SZARP_CFG_SECTION	"szbwriter"
 #define MEANER3_CFG_SECTION	"meaner3"
 #define SZARP_CFG		"/etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg"
@@ -69,7 +71,7 @@ class SzbaseWriter : public TSzarpConfig {
 public:
 	SzbaseWriter(const std::wstring &ipk_path, const std::wstring& title, const std::wstring &double_pattern,
 			const std::wstring& data_dir, const std::wstring &cache_dir, bool add_new_pars,
-			bool write_10sec, int _fill_how_many);
+			bool write_10sec, int _fill_how_many , int _fill_how_many_sec );
 	~SzbaseWriter();
 	/* Process input. 
 	 * @return 1 on error, 0 on success*/
@@ -127,17 +129,23 @@ protected:
 	std::wstring m_cur_name;		/**< name of currently opened file;
 					(virtual - real names may be different
 					becasue of low/high words) */
-	int m_cur_t[LAST_PROBE_TYPE];		/**< current time*/
-	double m_cur_sum[LAST_PROBE_TYPE];	/**< sum of values to save */
-	int m_cur_cnt[LAST_PROBE_TYPE];		/**< count of values to save */
-	int m_probe_length[LAST_PROBE_TYPE];		/**< lenght of probe */
+	int    m_cur_t       [LAST_PROBE_TYPE]; /**< current time*/
+	double m_cur_sum     [LAST_PROBE_TYPE]; /**< sum of values to save */
+	int    m_cur_cnt     [LAST_PROBE_TYPE]; /**< count of values to save */
+	int    m_probe_length[LAST_PROBE_TYPE]; /**< length of probe */
 
 	unordered_map<std::wstring, int> m_draws_count;
-	bool m_add_new_pars; 	/** flag denoting if we add new pars*/
-	bool m_new_par; 	/** if new parameter was added */
-	size_t m_last_type;	/** last type of probe to write + 1 */
+	bool m_add_new_pars; 	/**< flag denoting if we add new pars*/
+	bool m_new_par; 	/**< if new parameter was added */
+	size_t m_last_type;	/**< last type of probe to write + 1 */
 
-	int m_fill_how_many;	/** fill gaps in data when distance between two probes is <=  m_fill_how_many **/
+	int m_fill_how_many[LAST_PROBE_TYPE];	/** fill gaps in data when distance between two probes is <=  m_fill_how_many **/
+
+	SzProbeCache m_cache[LAST_PROBE_TYPE];   /**< cache writing to database */ 
+
+	struct tm m_tm; /**< last time */
+	time_t m_t; /**< last time */
+
 };
 
 SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _title, 
@@ -145,12 +153,14 @@ SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _ti
 		const std::wstring& data_dir, const std::wstring& cache_dir, 
 		bool add_new_pars,
 		bool write_10sec,
-		int _fill_how_many):
+		int _fill_how_many , int _fill_how_many_sec ):
 	m_double_pattern(double_pattern),
 	m_add_new_pars(add_new_pars),
-	m_last_type(write_10sec ? LAST_PROBE_TYPE : SEC10),
-	m_fill_how_many(_fill_how_many)
+	m_last_type(write_10sec ? LAST_PROBE_TYPE : SEC10)
 {
+	m_fill_how_many[MIN10] = _fill_how_many;
+	m_fill_how_many[SEC10] = _fill_how_many_sec;
+
 	m_dir.push_back(data_dir);
 	m_dir.push_back(cache_dir);
 	m_cur_par = NULL;
@@ -335,10 +345,31 @@ int SzbaseWriter::is_double(const std::wstring& name)
 #endif
 }
 
+/**
+ * incremental evaluating time from tm struct. In first 
+ * version it was also adding hours, but DST was a problem.
+ * Maybe we should all time to DST, not local.
+ */
+time_t update_time( struct tm& newtm , time_t oldt , const struct tm& oldtm )
+{
+	if( newtm.tm_year != oldtm.tm_year 
+	 || newtm.tm_mon  != oldtm.tm_mon 
+	 || newtm.tm_mday != oldtm.tm_mday
+	 || newtm.tm_hour != oldtm.tm_hour )
+		return mktime(&newtm);
+
+//        int dh = newtm.tm_hour - oldtm.tm_hour;
+	int dm = newtm.tm_min  - oldtm.tm_min ;
+	int ds = newtm.tm_sec  - oldtm.tm_sec ;
+
+	return oldt + dm*60+ds;
+//        return oldt + (dh*60+dm)*60+ds;
+}
+
 int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, int year, int month, int day, 
 		int hour, int min, int sec, const std::wstring& data)
 {
-	sz_log(10,"add_data begin: name=%s, data=%s %d-%d-%d %d:%d:%d",SC::S2A(name).c_str(),SC::S2A(data).c_str(),year,month,day,hour,min,sec);
+	sz_log(10,"add_data begin: name=%ls, data=%ls %d-%d-%d %d:%d:%d",name.c_str(),data.c_str(),year,month,day,hour,min,sec);
 
 	std::wstring filename;
 	struct tm tm;
@@ -346,25 +377,28 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	int is_dbl;
 
 	/* get UTC time */
-	tm.tm_year = year - 1900;
-	tm.tm_mon = month - 1;
-	tm.tm_mday = day;
-	tm.tm_hour = hour;
-	tm.tm_min = min;
-	tm.tm_sec = sec;
+	tm.tm_year  = year  - 1900;
+	tm.tm_mon   = month - 1;
+	tm.tm_mday  = day;
+	tm.tm_hour  = hour;
+	tm.tm_min   = min;
+	tm.tm_sec   = sec;
 	tm.tm_isdst = -1;
 	
-	t = mktime(&tm);
+//        t = mktime(&tm);
+	m_t  = t  = update_time(tm,m_t,m_tm);
+	m_tm = tm ;
+
+// should be on in debug mode
+//        assert(t == mktime(&tm));
 
 	gmtime_r(&t, &tm);
-	year = tm.tm_year + 1900;
-	month = tm.tm_mon + 1;
-	
+
 	is_dbl = is_double(name);
 	TParam *par = NULL, *par2 = NULL;
 	int prec;
 
-	sz_log(10,"add_data: name=%s, m_cur_name=%s",SC::S2A(name).c_str(),SC::S2A(m_cur_name).c_str());
+	sz_log(10,"add_data: name=%ls, m_cur_name=%ls",name.c_str(),m_cur_name.c_str());
 	
 	if (name != m_cur_name) {
 		for (size_t i = 0; i < m_last_type; i++) {
@@ -415,16 +449,16 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 				m_save_param[i][1] = new TSaveParam(par2);
 			m_cur_sum[i] = 0;
 			m_cur_cnt[i] = 0;
-			sz_log(10,"add_data: (name != n_cur_name) i=%d, t = %ld",i,t);
+			sz_log(10,"add_data: (name != n_cur_name) i=%u, t = %ld",(unsigned)i,t);
 			m_cur_t[i] = t / m_probe_length[i] * m_probe_length[i];
-			sz_log(10,"add_data: (name != n_cur_name) i=%d, m_cur_t[i] = %d",i,m_cur_t[i]);
+			sz_log(10,"add_data: (name != n_cur_name) i=%u, m_cur_t[i] = %d",(unsigned)i,m_cur_t[i]);
 		}
 		m_cur_name = name;
 	}
 
 	for (size_t i = 0; i < m_last_type; i++) {
 
-		sz_log(10,"add_data: i=%d, t=%ld, m_cur_t[i]=%d, t-m_cur=%ld, m_len=%d",i,t,m_cur_t[i],t-m_cur_t[i],m_probe_length[i]);
+		sz_log(10,"add_data: i=%u, t=%ld, m_cur_t[i]=%d, t-m_cur=%ld, m_len=%d",(unsigned)i,t,m_cur_t[i],t-m_cur_t[i],m_probe_length[i]);
 
 		if (m_dir.at(i).empty())
 			continue;
@@ -439,19 +473,17 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 		if (save_data((PROBE_TYPE)i))
 			return 1;
 
-		sz_log(10,"add_data: i=%d,  t = %ld",i,t);
+		sz_log(10,"add_data: i=%u,  t = %ld",(unsigned)i,t);
 		m_cur_t[i] = t / m_probe_length[i] * m_probe_length[i];
-		sz_log(10,"add_data: i=%d,  m_cur_t[i] = %d",i,m_cur_t[i]);
+		sz_log(10,"add_data: i=%u,  m_cur_t[i] = %d",(unsigned)i,m_cur_t[i]);
 
 		int gap = m_cur_t[i] - _time;
-		sz_log(10,"add_data: i=%d, check time gap: %d",i,gap);
+		sz_log(10,"add_data: i=%u, check time gap: %d",(unsigned)i,gap);
 		assert(gap >= 0 && gap >= m_probe_length[i]);
 
-		if ((PROBE_TYPE) i == MIN10 && m_fill_how_many > 0 && m_probe_length[i] < gap && gap <= (m_fill_how_many + 1) * m_probe_length[i])
-		{
-			if(fill_gaps((PROBE_TYPE)i, _time + m_probe_length[i] , _time + gap ,_sum,_count))
-				return 1;
-		}
+		// if there is a gap bigger than normal probe length, fill gaps
+		if( gap > m_probe_length[i] && fill_gaps((PROBE_TYPE)i, _time + m_probe_length[i] , _time + gap ,_sum,_count) )
+			return 1;
 	}
 
 	for (size_t i = 0; i < m_last_type; i++) {
@@ -472,7 +504,7 @@ int SzbaseWriter::save_data(PROBE_TYPE pt)
 	if (m_dir[pt].empty())
 		return 0;
 
-	sz_log(10,"save_data begin: pt=%d, m_dir[pt]=%s",(int) pt, SC::S2A(m_dir[pt]).c_str());
+	sz_log(10,"save_data begin: pt=%d, m_dir[pt]=%ls",(int) pt, m_dir[pt].c_str());
 	sz_log(10,"save_data %s",!m_cur_cnt[pt] ? "end - NO DATA" : "data exists");
 
 	if (!m_cur_cnt[pt])
@@ -482,18 +514,43 @@ int SzbaseWriter::save_data(PROBE_TYPE pt)
 
 	sz_log(10,"save_data: current sum = %lf, current count =%d, current time=%d, value=%G",m_cur_sum[pt],m_cur_cnt[pt],m_cur_t[pt],d);
 
+	// TODO: change m_save_param to names and leave
+	//       TSaveParam handling to SzProbeCache
+	short v1 = 0 , v2 = 0;
 	if (m_save_param[pt][1]) {
 		int v = rint(pow10(m_cur_par->GetPrec()) * d);
 		unsigned *pv = (unsigned*) &v;
-		short v1 = *pv >> 16, v2 = *pv & 0xffff;
-		if (m_save_param[pt][0]->WriteBuffered(m_dir[pt], m_cur_t[pt], &v1, 1, NULL, 1, 0, m_probe_length[pt]))
-			return 1;
-		if (m_save_param[pt][1]->WriteBuffered(m_dir[pt], m_cur_t[pt], &v2, 1, NULL, 1, 0, m_probe_length[pt]))
-			return 1;
-	} else {
-		short v = rint(pow10(m_cur_par->GetPrec()) * d);
-		if (m_save_param[pt][0]->WriteBuffered(m_dir[pt], m_cur_t[pt], &v, 1, NULL, 1, 0, m_probe_length[pt]))
-			return 1;
+		v1 = *pv >> 16, v2 = *pv & 0xffff;
+	} else	v1 = rint(pow10(m_cur_par->GetPrec()) * d);
+
+	int year , month;
+	assert( szb_time2my(m_cur_t[pt], &year, &month) == 0 );
+
+	try {
+		m_cache[pt].add(
+			SzProbeCache::Key( 
+				m_dir[pt] ,
+				m_save_param[pt][0]->GetName() ,
+				m_probe_length[pt] ,
+				year , 
+				month ),
+			SzProbeCache::Value( v1 , m_cur_t[pt] ) );
+//                if (m_save_param[pt][0]->WriteBuffered(m_dir[pt], m_cur_t[pt], &v1, 1, NULL, 1, 0, m_probe_length[pt]))
+//                       return 1;
+
+		if (m_save_param[pt][1])
+			m_cache[pt].add(
+				SzProbeCache::Key( 
+					m_dir[pt] ,
+					m_save_param[pt][1]->GetName() ,
+					m_probe_length[pt] ,
+					year , 
+					month ),
+				SzProbeCache::Value( v2 , m_cur_t[pt] ) );
+//                       if (m_save_param[pt][1]->WriteBuffered(m_dir[pt], m_cur_t[pt], &v2, 1, NULL, 1, 0, m_probe_length[pt]))
+//                               return 1;
+	} catch( SzProbeCache::failure& f ) {
+		return 1;
 	}
 
 	/* check for draw's min and max; it's strange but it works ;-) */
@@ -525,42 +582,39 @@ int SzbaseWriter::save_data(PROBE_TYPE pt)
 	return 0;
 }
 
+/**
+ * FIXME: What if m_fill_how_many is 0 and end-begin is also 0?
+ *        Now it writes one probe exactly in begin==end.
+ */
 int SzbaseWriter::fill_gaps(PROBE_TYPE pt, int begin, int end, double sum, int count) 
 {
-	if (m_fill_how_many <= 0)
+	if( (end-begin)/m_probe_length[pt] > m_fill_how_many[(int)pt] )
 		return 0;
-
-	assert(pt == MIN10 || pt == SEC10);
 
 	sz_log(10,"fill_gaps begin, pt=%d",(int)pt);
 
 	// save current data
-	int save_time = m_cur_t[pt];
-	int save_cnt = m_cur_cnt[pt];
-	double save_sum = m_cur_sum[pt];
+	int    save_time = m_cur_t  [pt];
+	int    save_cnt  = m_cur_cnt[pt];
+	double save_sum  = m_cur_sum[pt];
 
 	// fill gaps
-	for (int t = begin; t < end; t += m_probe_length[pt])
+	for( int t = begin; t < end; t += m_probe_length[pt] )
 	{
 		sz_log(10,"fill gap for t=%d",t);
 
-		m_cur_t[pt] = t;
+		m_cur_t  [pt] = t;
 		m_cur_cnt[pt] = count;
 		m_cur_sum[pt] = sum;
 		
-		if (save_data(pt))
+		if( save_data(pt) )
 			return 1;
 	}
 
 	// restore data
-	m_cur_t[pt] = save_time;
+	m_cur_t  [pt] = save_time;
 	m_cur_cnt[pt] = save_cnt;
 	m_cur_sum[pt] = save_sum;
-
-	// call fill_gaps for 10sec
-	if (pt == MIN10 && m_last_type > SEC10)
-		if (fill_gaps(SEC10,begin,end,sum,count))
-			return 1;
 
 	sz_log(10,"fill_gaps end, pt=%d", (int)pt);
 	return 0;
@@ -757,10 +811,12 @@ int main(int argc, char *argv[])
 	int loglevel;
 	char *ipk_path;
 	char *data_dir;
-	char *cache_dir;
-	char *double_pattern;
+	const char *cache_dir;
+	const char *double_pattern;
 	char *fill_how_many;
+	char *fill_how_many_sec;
 	int fill_how_many_num = 0;
+	int fill_how_many_sec_num = 0;
 	struct arguments arguments;
 
 	loglevel = loginit_cmdline(2, NULL, &argc, argv);
@@ -777,9 +833,10 @@ int main(int argc, char *argv[])
 
 	if( !(double_pattern = libpar_getpar(SZARP_CFG_SECTION, "double_match" , 0)))
 		double_pattern = "";
-	if( !(fill_how_many  = libpar_getpar(SZARP_CFG_SECTION, "fill_how_many", 0)))
-		fill_how_many_num = 0;
-	else	fill_how_many_num = atoi(fill_how_many);
+	if( (fill_how_many      = libpar_getpar(SZARP_CFG_SECTION, "fill_how_many"    , 0)) )
+		fill_how_many_num     = atoi(fill_how_many    );
+	if( (fill_how_many_sec  = libpar_getpar(SZARP_CFG_SECTION, "fill_how_many_sec", 0)) )
+		fill_how_many_sec_num = atoi(fill_how_many_sec);
 
 	c = libpar_getpar(SZARP_CFG_SECTION, "log_level", 0);
 	if (c == NULL)
@@ -810,7 +867,7 @@ int main(int argc, char *argv[])
 	SzbaseWriter *szbw = new SzbaseWriter(SC::A2S(ipk_path), arguments.title, 
 			SC::A2S(double_pattern) , SC::A2S(data_dir), SC::A2S(cache_dir) ,
 			arguments.add_new_params, not arguments.no_probes,
-			fill_how_many_num);
+			fill_how_many_num,fill_how_many_sec_num);
 	assert (szbw != NULL);
 
 #ifndef FNM_EXTMATCH
@@ -823,10 +880,11 @@ int main(int argc, char *argv[])
 	if(szbw->have_new_params())
 		szbw->saveXML(SC::A2S(ipk_path));
 	
-	sz_log(2, "Completed successfully");
-	
 	delete szbw;
 
+	sz_log(2, "Completed successfully");
+	
 	return 0;
 	
 }
+

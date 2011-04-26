@@ -52,14 +52,15 @@
 #include "szbase/szbbase.h"
 
 TSaveParam::TSaveParam(TParam* p) 
+	: fd(-1)
 {
 	this->cname = wchar2szb(p->GetName());
-	this->fd = -1;
 }
 
-TSaveParam::TSaveParam(const std::wstring& name)
+TSaveParam::TSaveParam(const std::wstring& name , bool convert )
+	: fd(-1) , cname(name)
 {
-	this->cname = wchar2szb(name);
+	if( convert ) cname = wchar2szb(cname);
 }
 
 TSaveParam::~TSaveParam()
@@ -72,6 +73,11 @@ int TSaveParam::WriteProbes(const fs::wpath& directory, time_t t, short int* dat
 	return Write(directory, t, data, data_count, NULL, 1, 0, 10);
 }
 
+void TSaveParam::CreateFilePath( const fs::wpath& dir , const std::wstring& name , int year , int month , time_t probe_length )
+{
+	m_path = (dir / szb_createfilename_ne(cname, year, month, probe_length == SZBASE_DATA_SPAN ? L".szb" : L".szc") ).string();
+}
+
 int TSaveParam::Write(const fs::wpath& directory, time_t t, short int data, TStatus *status,
 		                int overwrite, int force_nodata, time_t probe_length)
 {
@@ -79,9 +85,8 @@ int TSaveParam::Write(const fs::wpath& directory, time_t t, short int data, TSta
 }
 
 int TSaveParam::WriteBuffered(const fs::wpath& directory, time_t t, short int* data, size_t data_count, TStatus *status, 
-		int overwrite, int force_nodata, time_t probe_length) {
-	std::wstring filename;  /* name of file */
-	std::wstring path;      /* full path to file */
+		int overwrite, int force_nodata, time_t probe_length , bool force_same_file )
+{
 	int month, year;	/* month and year of save */
 	off_t index;		/* index of save in file */
 	off_t last = -1;	/* last index in file */
@@ -95,7 +100,7 @@ int TSaveParam::WriteBuffered(const fs::wpath& directory, time_t t, short int* d
 
 	ret = szb_time2my(t, &year, &month);
 	assert(ret == 0);
-	
+
 	/* do not write empty values, just count it */ 
 	if (!force_nodata || status) {
 		bool data_found = false;
@@ -112,29 +117,29 @@ int TSaveParam::WriteBuffered(const fs::wpath& directory, time_t t, short int* d
 			status->Incr(TStatus::PT_NNPS);
 		}
 	}
-	sz_log(10, "TSaveParam::Write(): writing '%d' (and %d other elements) to '%ls'", 
-			data[0], data_count - 1, cname.c_str());
 	
 	/* get file name */
-	filename = szb_createfilename_ne(cname, year, month, probe_length == SZBASE_DATA_SPAN ? L".szb" : L".szc");
-	path = (directory / filename).string();
-		
-	if (fd == -1 || last_path != path) {
+	if( !force_same_file ) CreateFilePath( directory , cname , year , month , probe_length );
+
+	sz_log(10, "TSaveParam::Write(): writing '%d' (and %d other elements) to '%ls'", 
+			data[0], (int)data_count - 1, m_path.c_str());
+
+	if (fd == -1 || last_path != m_path) {
 		CloseFile();
 		/* make sure directory exists */
-		if (szb_cc_parent(path)) {
+		if (szb_cc_parent(m_path)) {
 			sz_log(1, "TSaveParam::Write(): error creating directory for file '%ls', errno %d",
-					path.c_str(), errno);
+					m_path.c_str(), errno);
 			return 1;
 		}
 		/* open file */
-		fd = open(SC::S2A(path).c_str(), O_RDWR | O_CREAT | O_CLOEXEC, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH);
+		fd = open(SC::S2A(m_path).c_str(), O_RDWR | O_CREAT | O_CLOEXEC, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH);
 		if (fd == -1) {
 			sz_log(1, "TSaveParam::Write(): error opening file '%ls', errno %d",
-				path.c_str(), errno);
+				m_path.c_str(), errno);
 			return 1;
 		}
-		last_path = path;
+		last_path = m_path;
 	}
 
 	/* check for file size */
@@ -142,7 +147,7 @@ int TSaveParam::WriteBuffered(const fs::wpath& directory, time_t t, short int* d
 	assert(last >= 0);
 	if (last > index && overwrite == 0) {
 		sz_log(1, "TSaveParam::Write(): cannot overwrite data in file '%ls'",
-				path.c_str());
+				m_path.c_str());
 		return 1;
 	}
 
@@ -154,7 +159,7 @@ int TSaveParam::WriteBuffered(const fs::wpath& directory, time_t t, short int* d
 		for ( ; last < index; last++)
 			if (write(fd, &tmp, sizeof(tmp)) == -1) {
 				sz_log(1, "TSaveParam::Write(): error writing (1) to file '%ls', errno %d",
-						path.c_str(), errno);
+						m_path.c_str(), errno);
 				CloseFile();
 				return 1;
 			}
@@ -170,7 +175,7 @@ int TSaveParam::WriteBuffered(const fs::wpath& directory, time_t t, short int* d
 	//TODO if we plan to use bigger data_count, we should put loop here to save all data
 	if (write(fd, data, data_count * sizeof(*data)) != (int)(data_count * sizeof(*data))) {
 		sz_log(1, "TSaveParam::Write(): error writing (2) to file '%ls', errno %d",
-				path.c_str(), errno);
+				m_path.c_str(), errno);
 		CloseFile();
 		return 1;
 	} 
