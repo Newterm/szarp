@@ -9220,6 +9220,53 @@ siê fizycznie na innej maszynie.
 </para>
 </section> <!-- sss-web -->
 
+<section id="remarks">
+<title>Serwer komentarzy (remarks server)</title>
+
+<section id="remarks-config">
+<title>Konfiguracja</title>
+<para>
+Aby uruchomiæ remarks_server.py potrzebny jest plik konfiguracyjny, oraz postgresowa baza danych. Przyk³adowy plik konfiguracyjny wygl±da nastêpuj±co:
+<programlisting>
+<![CDATA[
+[database]
+name=remarks
+user=remarks_server
+password=za¿ó³æ_gê¶l±_ja¼ñ
+server_name=localhost
+[connection]
+host=127.0.0.1
+port=5432
+certfile=/etc/szarp/sss_ca.pem
+keyfile=/etc/szarp/sss_key.pem
+]]>
+</programlisting>
+
+Wszystkie pozycje s± obowiazkowe. Polcany w³a¶ciciel bazy jest taki jak w pliku, poniewa¿ schemat bazy zawiera odwo³ania do tego u¿ytkownika. Podany port jest domy¶lnym portem na którym stawiany jest serwer postgresa.
+</para>
+<para>
+Plik konfiguracyjny powinien nazywaæ siê <filename>/etc/szarp/remark_server_config.ini</filename>
+</para>
+</section> <!-- remarks-config -->
+
+<section id="remarks-db">
+<title>Baza danych</title>
+<para>
+Serwer komentarzy u¿ywa postgresowej bazy danych. Jej schemat jest w repozytorium razem z kodem programu jako <filename>utils/remarks_server/remarks.schema</filename>. Aby uruchomiæ program nale¿y w <filename>/etc/szarp/parstart.cfg</filename> ustawiæ zmienn± <emphasis>REMARKS_SERVER</emphasis> na 1. Specyficznym zachowaniem programu jest to, ¿e nie da siê go wystartowaæ bez wpisu o serwerze do bazy danych.
+</para>
+<para>
+Tak wiêc aby stworzyæ bazê danych nale¿y wykonaæ na bazie nastêpuj±ce polecenia:
+<programlisting>
+<![CDATA[
+createuser -P remarks_server
+createdb -O remarks_server remarks
+psql remarks < remarks.schema
+]]>
+</programlisting>
+</para>
+</section> <!-- remarks-db -->
+</section> <!-- remarks -->
+
 </chapter> <!-- sss -->
 
 <chapter id="mobile">

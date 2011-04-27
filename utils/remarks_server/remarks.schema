@@ -1,0 +1,350 @@
+--
+-- PostgreSQL database dump
+--
+
+SET statement_timeout = 0;
+SET client_encoding = 'SQL_ASCII';
+SET standard_conforming_strings = off;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET escape_string_warning = off;
+
+--
+-- Name: plpgsql; Type: PROCEDURAL LANGUAGE; Schema: -; Owner: postgres
+--
+
+CREATE PROCEDURAL LANGUAGE plpgsql;
+
+
+ALTER PROCEDURAL LANGUAGE plpgsql OWNER TO postgres;
+
+SET search_path = public, pg_catalog;
+
+--
+-- Name: propagate_to_aggregated(); Type: FUNCTION; Schema: public; Owner: remarks_server
+--
+
+CREATE FUNCTION propagate_to_aggregated() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+	aggregated_id integer;
+	r_id integer;
+BEGIN
+     FOR aggregated_id IN SELECT aggregated FROM aggregated_map WHERE prefix = NEW.prefix_id LOOP
+	r_id = nextval('remarks_seq');
+	INSERT INTO
+		remark
+			(content, post_time, id, prefix_id, server_id)
+		VALUES 
+			(NEW.content, NEW.post_time, r_id, aggregated_id, NEW.server_id);
+     END LOOP;
+
+     RETURN NULL;
+END;
+$$;
+
+
+ALTER FUNCTION public.propagate_to_aggregated() OWNER TO remarks_server;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- Name: aggregated_map; Type: TABLE; Schema: public; Owner: remarks_server; Tablespace: 
+--
+
+CREATE TABLE aggregated_map (
+    prefix integer NOT NULL,
+    aggregated integer NOT NULL
+);
+
+
+ALTER TABLE public.aggregated_map OWNER TO remarks_server;
+
+--
+-- Name: prefix; Type: TABLE; Schema: public; Owner: remarks_server; Tablespace: 
+--
+
+CREATE TABLE prefix (
+    id integer NOT NULL,
+    prefix text
+);
+
+
+ALTER TABLE public.prefix OWNER TO remarks_server;
+
+--
+-- Name: prefix_id_seq; Type: SEQUENCE; Schema: public; Owner: remarks_server
+--
+
+CREATE SEQUENCE prefix_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.prefix_id_seq OWNER TO remarks_server;
+
+--
+-- Name: prefix_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: remarks_server
+--
+
+ALTER SEQUENCE prefix_id_seq OWNED BY prefix.id;
+
+
+--
+-- Name: remark; Type: TABLE; Schema: public; Owner: remarks_server; Tablespace: 
+--
+
+CREATE TABLE remark (
+    content text,
+    post_time timestamp without time zone,
+    id integer NOT NULL,
+    server_id integer NOT NULL,
+    prefix_id integer
+);
+
+
+ALTER TABLE public.remark OWNER TO remarks_server;
+
+--
+-- Name: remarks_seq; Type: SEQUENCE; Schema: public; Owner: remarks_server
+--
+
+CREATE SEQUENCE remarks_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.remarks_seq OWNER TO remarks_server;
+
+--
+-- Name: server; Type: TABLE; Schema: public; Owner: remarks_server; Tablespace: 
+--
+
+CREATE TABLE server (
+    id integer NOT NULL,
+    name text
+);
+
+
+ALTER TABLE public.server OWNER TO remarks_server;
+
+--
+-- Name: server_id_seq; Type: SEQUENCE; Schema: public; Owner: remarks_server
+--
+
+CREATE SEQUENCE server_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.server_id_seq OWNER TO remarks_server;
+
+--
+-- Name: server_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: remarks_server
+--
+
+ALTER SEQUENCE server_id_seq OWNED BY server.id;
+
+
+--
+-- Name: user_prefix_access; Type: TABLE; Schema: public; Owner: remarks_server; Tablespace: 
+--
+
+CREATE TABLE user_prefix_access (
+    user_id integer NOT NULL,
+    prefix_id integer NOT NULL,
+    write_access integer
+);
+
+
+ALTER TABLE public.user_prefix_access OWNER TO remarks_server;
+
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: remarks_server; Tablespace: 
+--
+
+CREATE TABLE users (
+    id integer NOT NULL,
+    name text,
+    password text,
+    real_name text
+);
+
+
+ALTER TABLE public.users OWNER TO remarks_server;
+
+--
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: remarks_server
+--
+
+CREATE SEQUENCE users_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.users_id_seq OWNER TO remarks_server;
+
+--
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: remarks_server
+--
+
+ALTER SEQUENCE users_id_seq OWNED BY users.id;
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: remarks_server
+--
+
+ALTER TABLE prefix ALTER COLUMN id SET DEFAULT nextval('prefix_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: remarks_server
+--
+
+ALTER TABLE server ALTER COLUMN id SET DEFAULT nextval('server_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: remarks_server
+--
+
+ALTER TABLE users ALTER COLUMN id SET DEFAULT nextval('users_id_seq'::regclass);
+
+
+--
+-- Name: aggregated_map_pkey; Type: CONSTRAINT; Schema: public; Owner: remarks_server; Tablespace: 
+--
+
+ALTER TABLE ONLY aggregated_map
+    ADD CONSTRAINT aggregated_map_pkey PRIMARY KEY (prefix, aggregated);
+
+
+--
+-- Name: prefix_pkey; Type: CONSTRAINT; Schema: public; Owner: remarks_server; Tablespace: 
+--
+
+ALTER TABLE ONLY prefix
+    ADD CONSTRAINT prefix_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: remark_pkey; Type: CONSTRAINT; Schema: public; Owner: remarks_server; Tablespace: 
+--
+
+ALTER TABLE ONLY remark
+    ADD CONSTRAINT remark_pkey PRIMARY KEY (id, server_id);
+
+
+--
+-- Name: server_pkey; Type: CONSTRAINT; Schema: public; Owner: remarks_server; Tablespace: 
+--
+
+ALTER TABLE ONLY server
+    ADD CONSTRAINT server_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_prefix_access_pkey; Type: CONSTRAINT; Schema: public; Owner: remarks_server; Tablespace: 
+--
+
+ALTER TABLE ONLY user_prefix_access
+    ADD CONSTRAINT user_prefix_access_pkey PRIMARY KEY (user_id, prefix_id);
+
+
+--
+-- Name: users_pkey; Type: CONSTRAINT; Schema: public; Owner: remarks_server; Tablespace: 
+--
+
+ALTER TABLE ONLY users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: aggregate_propagation; Type: TRIGGER; Schema: public; Owner: remarks_server
+--
+
+CREATE TRIGGER aggregate_propagation
+    AFTER INSERT ON remark
+    FOR EACH ROW
+    EXECUTE PROCEDURE propagate_to_aggregated();
+
+
+--
+-- Name: aggregated_map_aggregated_fkey; Type: FK CONSTRAINT; Schema: public; Owner: remarks_server
+--
+
+ALTER TABLE ONLY aggregated_map
+    ADD CONSTRAINT aggregated_map_aggregated_fkey FOREIGN KEY (aggregated) REFERENCES prefix(id);
+
+
+--
+-- Name: aggregated_map_prefix_fkey; Type: FK CONSTRAINT; Schema: public; Owner: remarks_server
+--
+
+ALTER TABLE ONLY aggregated_map
+    ADD CONSTRAINT aggregated_map_prefix_fkey FOREIGN KEY (prefix) REFERENCES prefix(id);
+
+
+--
+-- Name: remark_prefix_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: remarks_server
+--
+
+ALTER TABLE ONLY remark
+    ADD CONSTRAINT remark_prefix_id_fkey FOREIGN KEY (prefix_id) REFERENCES prefix(id);
+
+
+--
+-- Name: remark_server_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: remarks_server
+--
+
+ALTER TABLE ONLY remark
+    ADD CONSTRAINT remark_server_id_fkey FOREIGN KEY (server_id) REFERENCES server(id);
+
+
+--
+-- Name: user_prefix_access_prefix_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: remarks_server
+--
+
+ALTER TABLE ONLY user_prefix_access
+    ADD CONSTRAINT user_prefix_access_prefix_id_fkey FOREIGN KEY (prefix_id) REFERENCES prefix(id);
+
+
+--
+-- Name: user_prefix_access_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: remarks_server
+--
+
+ALTER TABLE ONLY user_prefix_access
+    ADD CONSTRAINT user_prefix_access_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id);
+
+
+--
+-- Name: public; Type: ACL; Schema: -; Owner: postgres
+--
+
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM postgres;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO remarks_server;
+GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
