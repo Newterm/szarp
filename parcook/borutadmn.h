@@ -79,6 +79,7 @@ and respond to connection_error 'event'*/
 class server_driver : public boruta_driver {
 	size_t m_id;
 public:
+	const virtual std::string& proto() = 0;
 	virtual void connection_error(struct bufferevent *bufev) = 0;
 	size_t& id();
 };
@@ -127,7 +128,7 @@ public:
 /**client driver operating over serial line*/
 class serial_client_driver : public client_driver {
 public:
-	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration& spc) = 0;
+	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration* spc) = 0;
 };
 
 /**client driver operating over tcp connection that pretends */
@@ -156,13 +157,16 @@ class serial_server_manager;
 class serial_server_driver : public server_driver {
 protected:
 	serial_server_manager* m_manager;
+	serial_port_configuration* m_spc;
 public:
 	void set_manager(serial_server_manager* manager);
+	serial_port_configuration * get_serial_port_configuration();
+	void set_serial_port_configuration(serial_port_configuration* spc);
 	virtual void connection_error(struct bufferevent *bufev) = 0;
 	virtual void data_ready(struct bufferevent* bufev) = 0;
 	virtual void starting_new_cycle() = 0;
 	virtual void finished_cycle() = 0;
-	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration&) = 0;
+	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration*) = 0;
 };
 
 class tcp_server_manager;
@@ -211,8 +215,6 @@ class protocols {
 	typedef std::map<std::string, serial_server_driver* (*)()> serial_server_factories_table;
 	serial_server_factories_table m_serial_server_factories;
 
-	/**retrives protocol name from unit node*/
-	std::string get_proto_name(xmlNodePtr node);
 public:
 	protocols();
 	/**following four methods create appropriate driver as specified in the node*/
@@ -220,6 +222,8 @@ public:
 	serial_client_driver* create_serial_client_driver(xmlNodePtr node);
 	tcp_server_driver* create_tcp_server_driver(xmlNodePtr node);
 	serial_server_driver* create_serial_server_driver(xmlNodePtr node);
+	/**retrives protocol name from unit node*/
+	static std::string get_proto_name(xmlNodePtr node);
 };
 
 class serial_connection;
@@ -337,7 +341,7 @@ public:
 class serial_client_manager : public serial_connection_manager, public client_manager {
 	boruta_daemon *m_boruta;
 	/**confiugrations of serial port for each driver*/
-	std::vector<std::vector<serial_port_configuration> > m_configurations;
+	std::vector<std::vector<serial_port_configuration*> > m_configurations;
 	/**maps serial port paths to a connection number*/
 	std::map<std::string, size_t> m_ports_client_no_map;
 	/**list of @see serial_connection managed by this class*/
@@ -363,7 +367,7 @@ class serial_server_manager : public serial_connection_manager {
 	/**connections for each path*/
 	std::vector<serial_connection> m_connections;
 	/**connections settings associated with each path*/
-	std::vector<serial_port_configuration> m_configurations;
+	std::vector<serial_port_configuration*> m_configurations;
 public:
 	serial_server_manager(boruta_daemon *boruta) : m_boruta(boruta) {}
 	/**configures unit*/
@@ -449,6 +453,8 @@ public:
 serial_client_driver* create_zet_serial_client();
 tcp_client_driver* create_zet_tcp_client();
 
+serial_server_driver* create_zet_passive_serial_server();
+
 serial_client_driver* create_modbus_serial_client();
 tcp_client_driver* create_modbus_tcp_client();
 
@@ -460,9 +466,9 @@ serial_client_driver* create_fp210_serial_client();
 void dolog(int level, const char * fmt, ...)
   __attribute__ ((format (printf, 2, 3)));
 
-int get_serial_port_config(xmlNodePtr node, serial_port_configuration &spc);
+serial_port_configuration * get_serial_port_config(xmlNodePtr node);
 
-int set_serial_port_settings(int fd, serial_port_configuration &sc);
+int set_serial_port_settings(int fd, serial_port_configuration *sc);
 
 
 template<class T> int get_xml_extra_prop(xmlNodePtr node, const char* pname, T& value, bool optional = false) {

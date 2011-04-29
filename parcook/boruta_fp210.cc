@@ -188,7 +188,7 @@ public:
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void data_ready(struct bufferevent* bufev, int fd);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
-	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration& spc);
+	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration* spc);
 	static void timeout_cb(int fd, short event, void *fp210_driver);
 };
 
@@ -312,7 +312,7 @@ void fp210_driver::scheduled(struct bufferevent* bufev, int fd) {
 	send_flow_query(bufev);
 }
 
-int fp210_driver::configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration &spc) {
+int fp210_driver::configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration *spc) {
 	if (get_xml_extra_prop(node, "id", m_id))
 		return 1;
 	m_read_count = unit->GetParamsCount();

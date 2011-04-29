@@ -216,13 +216,17 @@ protected:
 	virtual void driver_finished_job();
 	virtual void terminate_connection();
 	struct event_base* get_event_base();
+	const static std::string m_proto;
 public:
 	virtual void starting_new_cycle();
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
 	virtual void data_ready(struct bufferevent* bufev, int fd);
-	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration& spc);
+	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration* spc);
+	const std::string& proto() { return m_proto; };
 };
+
+const std::string zet_proto_serial::m_proto = std::string("zet");
 
 void zet_proto_impl::set_no_data() {
 	for (size_t i = 0; i < m_read_count; i++)
@@ -436,9 +440,10 @@ void zet_proto_serial::data_ready(struct bufferevent* bufev, int fd) {
 	zet_proto_impl::data_ready(bufev, fd);
 }
 
-int zet_proto_serial::configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration& spc) {
+int zet_proto_serial::configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration* spc) {
 	return zet_proto_impl::configure(unit, node, read, send);
 }
+
 
 serial_client_driver* create_zet_serial_client() {
 	return new zet_proto_serial();
@@ -447,3 +452,192 @@ serial_client_driver* create_zet_serial_client() {
 tcp_client_driver* create_zet_tcp_client() {
 	return new zet_proto_tcp();
 }
+
+class zet_passive_unit {
+    public:
+	char m_id;
+	short *m_read;
+	size_t m_read_count;
+	size_t m_timeout_count;
+
+	zet_passive_unit(char id) : m_id(id) {} ;
+	int configure(TUnit* unit, xmlNodePtr node, short* read, short *send);
+	void set_no_data();
+};
+
+void zet_passive_unit::set_no_data() {
+	for (size_t i = 0; i < m_read_count; i++)
+		m_read[i] = SZARP_NO_DATA;
+}
+
+int zet_passive_unit::configure(TUnit* unit, xmlNodePtr node, short* read, short *send) {
+	m_read_count = unit->GetParamsCount();
+	m_read = read;
+	m_timeout_count = 0;
+	return 0;
+}
+
+typedef std::map<char, zet_passive_unit *> zet_units_map;
+
+class zet_passive_serial_server : public serial_server_driver {
+	const static std::string m_proto;
+	size_t m_data_in_buffer;
+	struct event m_timer;
+	bool m_timer_set;
+	std::vector<char> m_buffer;
+
+	zet_units_map m_units;
+
+	enum PLC_TYPE { ZET, SK } m_plc_type;
+	void start_timer();
+	void stop_timer();
+public:
+	const std::string& proto() { return m_proto; };
+
+	virtual int configure(TUnit *unit, xmlNodePtr node, short *read, short *send, serial_port_configuration *spc);
+	virtual int initialize();
+
+	virtual void connection_error(struct bufferevent* bufev);
+	virtual void data_ready(struct bufferevent* bufev);
+	virtual void starting_new_cycle();
+	virtual void finished_cycle();
+	static void timeout_cb(int fd, short event, void *zet_passive_serial_server);
+};
+
+const std::string zet_passive_serial_server::m_proto = std::string("zet-passive");
+
+int zet_passive_serial_server::configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration* spc) {
+	evtimer_set(&m_timer, timeout_cb, this);
+	char id = unit->GetId();
+	if (m_units.find(id) != m_units.end()) {
+		dolog(2, "ERROR Already configured unit with id %d", id);
+	       return 1;
+	}
+	std::string plc;
+	if (get_xml_extra_prop(node, "plc", plc))
+		return 1;
+	if (plc == "sk") {
+		m_plc_type = SK;
+	} else if (plc == "zet") {
+		m_plc_type = ZET;
+	} else {
+		dolog(0, "Invalid value of plc attribute %s, line:%ld", plc.c_str(), xmlGetLineNo(node));
+		return 1;
+	}
+	m_units[id] = new zet_passive_unit(id);
+	m_units[id]->configure(unit, node, read, send);
+	return 0;
+}
+
+int zet_passive_serial_server::initialize() {
+
+	m_timer_set = false;
+	for (zet_units_map::iterator it = m_units.begin(); it != m_units.end(); ++it) {
+		it->second->set_no_data();
+		it->second->m_timeout_count = 0;
+	}
+	return 0;
+}
+
+void zet_passive_serial_server::data_ready(struct bufferevent* bufev) {
+	size_t ret;
+	if (m_data_in_buffer + 1 > m_buffer.size() / 2)
+		m_buffer.resize(m_buffer.size() * 2);
+
+	ret = bufferevent_read(bufev, &m_buffer.at(m_data_in_buffer), m_buffer.size() - m_data_in_buffer - 1);
+	m_data_in_buffer += ret;
+	try {
+		if (m_buffer.at(m_data_in_buffer - 1) != '\r'
+				|| m_buffer.at(m_data_in_buffer - 2) != '\r'
+				|| (m_plc_type == SK
+					&& m_buffer.at(m_data_in_buffer - 3) != '\r'))
+			return;
+	} catch (std::out_of_range) {
+		return;
+	}
+
+	stop_timer();
+	zet_units_map::iterator current_unit = m_units.end();
+	try {
+		m_buffer.at(m_data_in_buffer) = '\0';
+		char **toks;
+		int tokc = 0;
+		tokenize_d(&m_buffer[0], &toks, &tokc, "\r");
+		if (tokc < 3) {
+			tokenize_d(NULL, &toks, &tokc, NULL);
+			dolog(5, "Unable to parse response from ZET/SK, it is invalid");
+			throw std::invalid_argument("Wrong response format");
+		}
+
+		char id = toks[2][0];
+		current_unit = m_units.find(id);
+		if (current_unit == m_units.end()) {
+			dolog(0, "ERROR no unit with id: %c configured", id);
+			tokenize_d(NULL, &toks, &tokc, NULL);
+			throw std::invalid_argument("Wrong id in response");
+		}
+
+
+		size_t params_count = tokc - 5;
+		if (params_count != current_unit->second->m_read_count) {
+			dolog(5, "Invalid number of values received, expected: %zu, got: %zu", current_unit->second->m_read_count, params_count);
+			tokenize_d(NULL, &toks, &tokc, NULL);
+			throw std::invalid_argument("Wrong number or values");
+		}
+		int checksum = 0;
+		for (size_t j = 0; j < m_data_in_buffer; j++)
+			checksum += (uint) m_buffer[j];
+		/* Checksum without checksum ;-) and last empty lines */
+		for (char *c = toks[tokc-1]; *c; c++)
+			checksum -= (uint) *c;
+		for (char *c = &m_buffer[m_data_in_buffer - 1]; *c == '\r'; c--) 
+			checksum -= (uint) *c;
+		if (checksum != atoi(toks[tokc-1])) {
+			dolog(4, "ZET/SK driver, wrong checksum");
+			tokenize_d(NULL, &toks, &tokc, NULL);
+			throw std::invalid_argument("Wrong checksum");
+		}
+		for (size_t i = 0; i < current_unit->second->m_read_count; i++)
+			current_unit->second->m_read[i] = atoi(toks[i+4]);
+		tokenize_d(NULL, &toks, &tokc, NULL);
+	} catch (const std::invalid_argument&) {
+		if (current_unit != m_units.end())
+			current_unit->second->set_no_data();
+	}
+}
+
+void zet_passive_serial_server::starting_new_cycle() {
+	m_data_in_buffer = 0;
+	m_buffer.resize(1000);
+	start_timer();
+}
+
+void zet_passive_serial_server::finished_cycle() {
+}
+
+void zet_passive_serial_server::connection_error(struct bufferevent* bufev) {
+	dolog(0, "zet_passive_serial_server::connection_error");
+}
+
+void zet_passive_serial_server::start_timer() {
+	if (m_timer_set)
+		return;
+	struct timeval tv;
+	tv.tv_sec = 10;
+	tv.tv_usec = 0;
+	evtimer_add(&m_timer, &tv); 
+	m_timer_set = true;
+}
+
+void zet_passive_serial_server::stop_timer() {
+	event_del(&m_timer);
+	m_timer_set = false;
+}
+
+void zet_passive_serial_server::timeout_cb(int fd, short event, void *_zet_passive_server) {
+}
+
+serial_server_driver* create_zet_passive_serial_server() {
+	return new zet_passive_serial_server();
+}
+

@@ -147,11 +147,14 @@ bool operator==(const sockaddr_in &s1, const sockaddr_in &s2) {
 	return s1.sin_addr.s_addr == s2.sin_addr.s_addr && s1.sin_port == s2.sin_port;
 }
 
-int get_serial_port_config(xmlNodePtr node, serial_port_configuration &spc) {
+serial_port_configuration* get_serial_port_config(xmlNodePtr node) {
+	serial_port_configuration * spc = new serial_port_configuration();
 	std::string path;
-	if (get_xml_extra_prop(node, "path", path))
-		return 1;
-	spc.path = path;
+	if (get_xml_extra_prop(node, "path", path)) {
+		delete spc;
+		return NULL;
+	}
+	spc->path = path;
 
 	int speed = 0;
 	get_xml_extra_prop(node, "speed", speed, true);
@@ -160,73 +163,77 @@ int get_serial_port_config(xmlNodePtr node, serial_port_configuration &spc) {
 		speed = 9600;
 	}
 	dolog(10, "Serial port configuration, speed: %d", speed);
-	spc.speed = speed;
+	spc->speed = speed;
 
 	std::string parity;
 	get_xml_extra_prop(node, "parity", parity, true);
 	if (parity.empty()) {
 		dolog(10, "Serial port configuration, parity not specified, assuming no parity");
-		spc.parity = serial_port_configuration::NONE;
+		spc->parity = serial_port_configuration::NONE;
 	} else if (parity == "none") {
 		dolog(10, "Serial port configuration, none parity");
-		spc.parity = serial_port_configuration::NONE;
+		spc->parity = serial_port_configuration::NONE;
 	} else if (parity == "even") {
 		dolog(10, "Serial port configuration, even parity");
-		spc.parity = serial_port_configuration::EVEN;
+		spc->parity = serial_port_configuration::EVEN;
 	} else if (parity == "odd") {
 		dolog(10, "Serial port configuration, odd parity");
-		spc.parity = serial_port_configuration::ODD;
+		spc->parity = serial_port_configuration::ODD;
 	} else {
 		dolog(0, "Unsupported parity %s, confiugration invalid (line %ld)!!!", parity.c_str(), xmlGetLineNo(node));
-		return 1;	
+		delete spc;
+		return NULL;
 	}
 
 	std::string stop_bits;
 	get_xml_extra_prop(node, "stopbits", stop_bits, true);
 	if (stop_bits.empty()) {
 		dolog(10, "Serial port configuration, stop bits not specified, assuming 1 stop bit");
-		spc.stop_bits = 1;
+		spc->stop_bits = 1;
 	} else if (stop_bits == "1") {
 		dolog(10, "Serial port configuration, setting one stop bit");
-		spc.stop_bits = 1;
+		spc->stop_bits = 1;
 	} else if (stop_bits == "2") {
 		dolog(10, "Serial port configuration, setting two stop bits");
-		spc.stop_bits = 2;
+		spc->stop_bits = 2;
 	} else {
 		dolog(0, "Unsupported number of stop bits %s, confiugration invalid (line %ld)!!!", stop_bits.c_str(), xmlGetLineNo(node));
-		return 1;
+		delete spc;
+		return NULL;
 	}
 
 	std::string char_size;
 	get_xml_extra_prop(node, "char_size", char_size, true);
 	if (char_size.empty()) {
 		dolog(10, "Serial port configuration, char size not specified, assuming 8 bit char size");
-		spc.char_size = serial_port_configuration::CS_8;
+		spc->char_size = serial_port_configuration::CS_8;
 	} else if (char_size == "8") {
 		dolog(10, "Serial port configuration, setting 8 bit char size");
-		spc.char_size = serial_port_configuration::CS_8;
+		spc->char_size = serial_port_configuration::CS_8;
 	} else if (char_size == "7") {
 		dolog(10, "Serial port configuration, setting 7 bit char size");
-		spc.char_size = serial_port_configuration::CS_7;
+		spc->char_size = serial_port_configuration::CS_7;
 	} else if (char_size == "6") {
 		dolog(10, "Serial port configuration, setting 6 bit char size");
-		spc.char_size = serial_port_configuration::CS_6;
+		spc->char_size = serial_port_configuration::CS_6;
 	} else {
 		dolog(0, "Unsupported char size %s, confiugration invalid (line %ld)!!!", char_size.c_str(), xmlGetLineNo(node));
-		return 1;
+		delete spc;
+		return NULL;
 	}
-	return 0;
+
+	return spc;
 }
 
-int set_serial_port_settings(int fd, serial_port_configuration &spc) {
+int set_serial_port_settings(int fd, serial_port_configuration *spc) {
 	struct termios ti;
 	if (tcgetattr(fd, &ti) == -1) {
 		dolog(1, "Cannot retrieve port settings, errno:%d (%s)", errno, strerror(errno));
 		return 1;
 	}
 
-	dolog(8, "setting port speed to %d", spc.speed);
-	switch (spc.speed) {
+	dolog(8, "setting port speed to %d", spc->speed);
+	switch (spc->speed) {
 		case 300:
 			ti.c_cflag = B300;
 			break;
@@ -256,10 +263,10 @@ int set_serial_port_settings(int fd, serial_port_configuration &spc) {
 			dolog(8, "setting port speed to default value 9600");
 	}
 
-	if (spc.stop_bits == 2)
+	if (spc->stop_bits == 2)
 		ti.c_cflag |= CSTOPB;
 
-	switch (spc.parity) {
+	switch (spc->parity) {
 		case serial_port_configuration::ODD:
 			ti.c_cflag |= PARODD;
 		case serial_port_configuration::EVEN:
@@ -275,7 +282,7 @@ int set_serial_port_settings(int fd, serial_port_configuration &spc) {
 
 	ti.c_cflag |= CREAD | CLOCAL ;
 
-	switch (spc.char_size) {
+	switch (spc->char_size) {
 		case serial_port_configuration::CS_8:
 			ti.c_cflag |= CS8;
 			break;
@@ -342,8 +349,8 @@ void tcp_proxy_2_serial_client::starting_new_cycle() {
 }
 
 int tcp_proxy_2_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, short *send) {
-	serial_port_configuration spc;
-	if (get_serial_port_config(node, spc)) {
+	serial_port_configuration * spc = get_serial_port_config(node);
+	if (NULL == spc) {
 		dolog(1, "tcp_proxy_2_serial_client: failed to get serial port settings for tcp_proxy_2_serial_client");
 		return 1;
 	}
@@ -359,6 +366,15 @@ void serial_server_driver::set_manager(serial_server_manager* manager) {
 	m_manager = manager;
 }
 
+serial_port_configuration* serial_server_driver::get_serial_port_configuration() {
+	return m_spc;
+}
+
+void serial_server_driver::set_serial_port_configuration(serial_port_configuration * spc) {
+	m_spc = spc;
+}
+
+
 void tcp_server_driver::set_manager(tcp_server_manager* manager) {
 	m_manager = manager;
 }
@@ -366,6 +382,7 @@ void tcp_server_driver::set_manager(tcp_server_manager* manager) {
 protocols::protocols() {
 	m_tcp_client_factories["zet"] = create_zet_tcp_client;
 	m_serial_client_factories["zet"] = create_zet_serial_client;
+	m_serial_server_factories["zet-passive"] = create_zet_passive_serial_server;
 	m_tcp_client_factories["modbus"] = create_modbus_tcp_client;
 	m_serial_client_factories["modbus"] = create_modbus_serial_client;
 	m_tcp_server_factories["modbus"] = create_modbus_tcp_server;
@@ -745,7 +762,7 @@ void serial_client_manager::do_terminate_connection(size_t conn_no) {
 }
 
 int serial_client_manager::do_establish_connection(size_t conn_no) {
-	const std::string path = m_configurations.at(conn_no).at(0).path;
+	const std::string path = m_configurations.at(conn_no).at(0)->path;
 	return m_serial_connections.at(conn_no).open_connection(path, m_boruta->get_event_base());
 }
 
@@ -758,25 +775,28 @@ void serial_client_manager::do_schedule(size_t conn_no, size_t client_no) {
 }
 
 int serial_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols) {
-	serial_port_configuration spc;
-	if (get_serial_port_config(node, spc))
+	serial_port_configuration * spc = get_serial_port_config(node);
+	if (NULL == spc)
 		return 1;
 	serial_client_driver* driver = _protocols.create_serial_client_driver(node);
-	if (driver == NULL)
+	if (driver == NULL) {
+		delete spc;
 		return 1;
+	}
 	driver->set_manager(this);
 	driver->set_event_base(m_boruta->get_event_base());
 	if (driver->configure(unit, node, read, send, spc)) {
+		delete spc;
 		delete driver;
 		return 1;
 	}
-	std::map<std::string, size_t>::iterator i = m_ports_client_no_map.find(spc.path);
+	std::map<std::string, size_t>::iterator i = m_ports_client_no_map.find(spc->path);
 	size_t j;	
 	if (i == m_ports_client_no_map.end()) {
 		j = m_connection_client_map.size();
 		m_connection_client_map.push_back(std::vector<client_driver*>());
 		m_configurations.resize(m_configurations.size() + 1);
-		m_ports_client_no_map[spc.path] = j;
+		m_ports_client_no_map[spc->path] = j;
 		m_serial_connections.push_back(serial_connection(j, this));
 	} else {
 		j = i->second;
@@ -803,22 +823,61 @@ void serial_client_manager::connection_error_cb(serial_connection* c) {
 }
 
 int serial_server_manager::configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols) {
-	serial_port_configuration spc;
-	if (get_serial_port_config(node, spc))
+	serial_port_configuration * spc = get_serial_port_config(node);
+	if (NULL == spc) {
+		delete spc;
 		return 1;
-	serial_server_driver* driver = _protocols.create_serial_server_driver(node);
-	if (driver == NULL)
-		return 1;
-	driver->set_manager(this);
-	driver->set_event_base(m_boruta->get_event_base());
+	}
+
+	serial_server_driver* driver = NULL;
+
+	bool new_driver = true;
+	std::string proto = protocols::get_proto_name(node);
+	dolog(0, "configure: proto: %s, path: %s, size: %d", proto.c_str(), spc->path.c_str(), m_drivers.size());
+	for (std::vector<serial_server_driver*>::size_type i = 0; i < m_drivers.size(); ++i) {
+		dolog(0, "configure: i: %d, proto: %s, path: %s",
+			i, m_drivers[i]->proto().c_str(), m_drivers[i]->get_serial_port_configuration()->path.c_str());
+		if (m_drivers[i]->get_serial_port_configuration()->path == spc->path) {
+			dolog(2, "INFO Already configured server on port %s, adding unit", spc->path.c_str());
+			if (m_drivers[i]->proto() != proto) {
+				dolog(0, "ERROR Already configured server with different protocol (%s) on port %s",
+					m_drivers[i]->proto().c_str(), spc->path.c_str());
+				delete spc;
+				return 1;
+			}
+			driver = m_drivers[i];
+			new_driver = false;
+		}
+	}
+
+	if (new_driver) {
+		driver = _protocols.create_serial_server_driver(node);
+		if (driver == NULL) {
+			dolog(0, "ERROR create_serial_server_driver failed");
+			delete spc;
+			return 1;
+		}
+		driver->set_manager(this);
+		driver->set_event_base(m_boruta->get_event_base());
+		driver->set_serial_port_configuration(spc);
+	}
+
 	if (driver->configure(unit, node, read, send, spc)) {
+		dolog(0, "ERROR driver->configure failed");
+		delete spc;
 		delete driver;
 		return 1;
 	}
-	driver->id() = m_drivers.size();
-	m_drivers.push_back(driver);
-	m_connections.push_back(serial_connection(m_connections.size(), this));
-	m_configurations.push_back(spc);
+
+	if (new_driver) {
+		driver->id() = m_drivers.size();
+		m_drivers.push_back(driver);
+		m_connections.push_back(serial_connection(m_connections.size(), this));
+		m_configurations.push_back(spc);
+	}
+	else {
+		delete spc;
+	}
 	return 0;
 }
 
@@ -829,7 +888,7 @@ int serial_server_manager::initialize() {
 void serial_server_manager::starting_new_cycle() {
 	for (size_t i = 0; i < m_connections.size(); i++)
 		if (m_connections[i].fd < 0) {
-			if (m_connections[i].open_connection(m_configurations.at(i).path, m_boruta->get_event_base()))
+			if (m_connections[i].open_connection(m_configurations.at(i)->path, m_boruta->get_event_base()))
 				m_connections[i].close_connection();
 			else
 				set_serial_port_settings(m_connections[i].fd, m_configurations.at(i));

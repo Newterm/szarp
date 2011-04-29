@@ -419,6 +419,7 @@ class tcp_server : public modbus_unit, public tcp_connection_handler, public tcp
 	std::map<struct bufferevent*, tcp_parser*> m_parsers;
 
 	bool ip_allowed(struct sockaddr_in* addr);
+	const static std::string m_proto;
 public:
 	virtual void frame_parsed(TCPADU &adu, struct bufferevent* bufev);
 	virtual int configure(TUnit* unit, xmlNodePtr node, short *read, short *send);
@@ -428,7 +429,10 @@ public:
 	virtual int connection_accepted(struct bufferevent* bufev, int socket, struct sockaddr_in *addr);
 	virtual void starting_new_cycle();
 	virtual void finished_cycle();
+	const std::string& proto() { return m_proto; };
 };
+
+const std::string tcp_server::m_proto = std::string("modbus");
 
 class modbus_client : public modbus_unit {
 protected:
@@ -523,7 +527,7 @@ protected:
 	virtual void write_timer_event();
 public:
 	serial_parser(serial_connection_handler *serial_handler);
-	virtual int configure(xmlNodePtr node, serial_port_configuration &spc) = 0;
+	virtual int configure(xmlNodePtr node, serial_port_configuration *spc) = 0;
 	virtual void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev) = 0;
 	virtual void read_data(struct bufferevent *bufev) = 0;
 	virtual void write_finished(struct bufferevent *bufev);
@@ -551,7 +555,7 @@ public:
 	void read_data(struct bufferevent *bufev);
 	void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev);
 	void reset();
-	virtual int configure(xmlNodePtr node, serial_port_configuration &spc);
+	virtual int configure(xmlNodePtr node, serial_port_configuration *spc);
 
 	static const int max_frame_size = 256;
 };
@@ -575,7 +579,7 @@ public:
 	serial_ascii_parser(serial_connection_handler *serial_handler);
 	void read_data(struct bufferevent *bufev);
 	void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev);
-	virtual int configure(xmlNodePtr node, serial_port_configuration &spc);
+	virtual int configure(xmlNodePtr node, serial_port_configuration *spc);
 };
 
 class modbus_serial_client : public serial_connection_handler, public serial_client_driver, public modbus_client {
@@ -592,7 +596,7 @@ public:
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
 	virtual void data_ready(struct bufferevent* bufev, int fd);
-	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration &spc);
+	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration *spc);
 	virtual void frame_parsed(SDU &adu, struct bufferevent* bufev);
 	virtual void error(ERROR_CONDITION error);
 	virtual struct event_base* get_event_base();
@@ -605,9 +609,9 @@ bool serial_rtu_parser::crc_table_calculated = false;
 class serial_server : public modbus_unit, public serial_connection_handler, public serial_server_driver {
 	serial_parser* m_parser;
 	struct bufferevent *m_bufev;
-
+	const static std::string m_proto;
 public:
-	virtual int configure(TUnit *unit, xmlNodePtr node, short *read, short *send, serial_port_configuration &spc);
+	virtual int configure(TUnit *unit, xmlNodePtr node, short *read, short *send, serial_port_configuration *spc);
 	virtual int initialize();
 	virtual void frame_parsed(SDU &sdu, struct bufferevent* bufev);
 	virtual struct bufferevent* get_buffer_event();
@@ -618,7 +622,10 @@ public:
 	virtual void error(serial_connection_handler::ERROR_CONDITION error);
 	virtual void starting_new_cycle();
 	virtual void finished_cycle();
+	const std::string& proto() { return m_proto; };
 };
+
+const std::string serial_server::m_proto = std::string("modbus");
 
 class short_parcook_modbus_val_op : public parcook_modbus_val_op {
 	modbus_register* m_reg;
@@ -1689,7 +1696,7 @@ void modbus_serial_client::data_ready(struct bufferevent* bufev, int fd) {
 	m_parser->read_data(bufev);
 }
 
-int modbus_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration &spc) {
+int modbus_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration *spc) {
 	if (modbus_unit::configure(unit, node, read, send))
 		return 1;
 	std::string protocol;
@@ -1842,7 +1849,7 @@ serial_rtu_parser::serial_rtu_parser(serial_connection_handler *serial_handler) 
 	reset();
 }
 
-int serial_rtu_parser::configure(xmlNodePtr node, serial_port_configuration &spc) {
+int serial_rtu_parser::configure(xmlNodePtr node, serial_port_configuration *spc) {
 	m_delay_between_chars = 0;
 	get_xml_extra_prop(node, "out-intra-character-delay", m_delay_between_chars, true);
 	if (m_delay_between_chars == 0)
@@ -1862,8 +1869,8 @@ int serial_rtu_parser::configure(xmlNodePtr node, serial_port_configuration &spc
 	 * delay cannot exceed 1.5 * (time of transmittion of one character),
 	 * we will make it double to be on safe side */
 	if (m_timeout == 0) {
-		if (spc.speed)
-			m_timeout = 5 * 1000000 / (spc.speed / 10);
+		if (spc->speed)
+			m_timeout = 5 * 1000000 / (spc->speed / 10);
 		else
 			m_timeout = 100000;
 	}
@@ -2120,7 +2127,7 @@ void serial_ascii_parser::send_sdu(unsigned char unit_id, PDU &pdu, struct buffe
 	bufferevent_write(bufev, const_cast<char*>("\n"), 1);
 }
 
-int serial_ascii_parser::configure(xmlNodePtr node, serial_port_configuration &spc) {
+int serial_ascii_parser::configure(xmlNodePtr node, serial_port_configuration *spc) {
 	m_delay_between_chars = 0;
 	get_xml_extra_prop(node, "read-timeout", m_timeout, true);
 	if (m_timeout == 0) {
@@ -2137,7 +2144,7 @@ void serial_ascii_parser::reset() {
 	m_state = COLON;
 }
 
-int serial_server::configure(TUnit *unit, xmlNodePtr node, short *read, short *send, serial_port_configuration &spc) {
+int serial_server::configure(TUnit *unit, xmlNodePtr node, short *read, short *send, serial_port_configuration *spc) {
 	if (modbus_unit::configure(unit, node, read, send))
 		return 1;
 	std::string protocol;
