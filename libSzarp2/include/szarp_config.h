@@ -37,7 +37,7 @@
 #include <boost/filesystem/path.hpp>
 
 #include "szbase/szbdefines.h"
-
+#include <libxml/xmlreader.h>
 
 #define IPK_NAMESPACE_STRING L"http://www.praterm.com.pl/SZARP/ipk"
 
@@ -151,6 +151,10 @@ public:
 	 * see line numbers in error messages)
 	 */
 	int parseXML(xmlDocPtr doc);
+//TODO: change name? and add description
+	int parseReader(const std::wstring& path);
+//TODO: change name? and add description
+	void processNodeReader(xmlTextReaderPtr reader);
 	/**
 	 * Initalize definable parameters.
 	 * Creates formula cache, checks for N function and const params.

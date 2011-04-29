@@ -290,6 +290,7 @@ TSzarpConfig::saveXML(const std::wstring &path)
 int
 TSzarpConfig::loadXML(const std::wstring &path, const std::wstring &prefix)
 {
+
     xmlDocPtr doc;
     int ret;
 
@@ -301,10 +302,201 @@ TSzarpConfig::loadXML(const std::wstring &path, const std::wstring &prefix)
 	sz_log(1, "XML document not wellformed\n");
 	return 1;
     }
+//TODO: remove it
+	parseReader(path);
+
     ret = parseXML(doc);
     xmlFreeDoc(doc);
 
     return ret;
+}
+
+void
+TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
+{
+//TODO: remove all printf
+
+	xmlChar *name = xmlTextReaderName(reader);
+
+	if (name == NULL)
+		name = xmlStrdup(BAD_CAST "--");
+
+	xmlChar *value = xmlTextReaderValue(reader);
+	xmlChar *attr = NULL;
+
+	printf(">>>> new node <<<\n");
+	printf("%d %d %s\n",
+		xmlTextReaderDepth(reader),
+		xmlTextReaderNodeType(reader),
+		name);
+
+
+#define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
+#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
+#define DELATTR printf("delete: %s\n", attr); xmlFree(attr)
+
+	IFNAME("params") {
+		printf("name: params\n");
+		IFATTR("xmlns") {
+			DELATTR;
+		}
+		IFATTR("version") {
+			DELATTR;
+		}
+		IFATTR("read_freq") {
+			DELATTR;
+		}
+		IFATTR("send_freq") {
+			DELATTR;
+		}
+		IFATTR("title") {
+			DELATTR;
+		}
+	} else
+	IFNAME("device") {
+		printf("name: device\n");
+		IFATTR("daemon") {
+			DELATTR;
+		}
+		IFATTR("path") {
+			DELATTR;
+		}
+	} else
+	IFNAME("unit") {
+		printf("name: unit\n");
+		IFATTR("id") {
+			DELATTR;
+		}
+		IFATTR("type") {
+			DELATTR;
+		}
+		IFATTR("subtype") {
+			DELATTR;
+		}
+		IFATTR("bufsize") {
+			DELATTR;
+		}
+	} else
+	IFNAME("param") {
+		printf("name: param\n");
+		IFATTR("name") {
+			DELATTR;
+		}
+		IFATTR("short_name") {
+			DELATTR;
+		}
+		IFATTR("draw_name") {
+			DELATTR;
+		}
+		IFATTR("prec") {
+			DELATTR;
+		}
+		IFATTR("prec") {
+			DELATTR;
+		}
+		IFATTR("base_id") {
+			DELATTR;
+		}
+	} else
+	IFNAME("raport") {
+		printf("name: raport\n");
+		IFATTR("title") {
+			DELATTR;
+		}
+		IFATTR("order") {
+			DELATTR;
+		}
+		IFATTR("description") {
+			DELATTR;
+		}
+	} else
+	IFNAME("draw") {
+		printf("name: draw\n");
+		IFATTR("title") {
+			DELATTR;
+		}
+		IFATTR("prior") {
+			DELATTR;
+		}
+		IFATTR("color") {
+			DELATTR;
+		}
+		IFATTR("min") {
+			DELATTR;
+		}
+		IFATTR("max") {
+			DELATTR;
+		}
+	} else
+	IFNAME("define") {
+		printf("name: define\n");
+		IFATTR("type") {
+			DELATTR;
+		}
+		IFATTR("formula") {
+			DELATTR;
+		}
+		IFATTR("lua_formula") {
+			DELATTR;
+		}
+	} else
+	IFNAME("defined") {
+		printf("name: defined\n");
+	} else
+	IFNAME("drawdefinable") {
+		printf("name: drawdefinable\n");
+	} else
+	IFNAME("seasons") {
+		printf("name: seasons\n");
+		IFATTR("month_start") {
+			DELATTR;
+		}
+		IFATTR("day_start") {
+			DELATTR;
+		}
+		IFATTR("month_end") {
+			DELATTR;
+		}
+		IFATTR("day_end") {
+			DELATTR;
+		}
+	} else
+	IFNAME("send") {
+		printf("name: send\n");
+	} else
+		assert(name != NULL && "not known name!");
+
+#undef IFNAME
+#undef IFATTR
+#undef DELATTR
+
+	if (name) xmlFree(name);
+	if (value) xmlFree(value);
+}
+
+int
+TSzarpConfig::parseReader(const std::wstring &path)
+{
+/*TODO:remove*/	printf("NEW PARSER\n");
+	int ret = 0;
+	xmlTextReaderPtr reader;
+
+	reader = xmlNewTextReaderFilename(SC::S2A(path).c_str());
+	if (reader != NULL) {
+		ret = xmlTextReaderRead(reader);
+		while (ret == 1) {
+			processNodeReader(reader);
+			ret = xmlTextReaderRead(reader);
+		}
+		xmlFreeTextReader(reader);
+		if (ret != 0) {
+			sz_log(1, "Failed to parse xml file\n");
+		}
+	} else
+		sz_log(1,"Unable to open params.xml\n");
+
+/*TODO:remove*/ printf("END NEW PARSER\n");
+	return ret;
 }
 
 int
