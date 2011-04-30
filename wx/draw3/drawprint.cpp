@@ -608,7 +608,7 @@ bool DrawsPrintout::OnPrintPage(int page) {
 	GetPageSizePixels(&pw, &ph);
 	dc->SetUserScale((float)w / (float)pw, (float)h / (float)ph);
 
-	BackgroundPrinter bp(0, 0, topmargin, bottommargin);
+	BackgroundPrinter bp(0, rightmargin, topmargin, bottommargin);
 	bp.SetFont(f);
 	bp.SetSize(pw - print_left_margin - lorigin, (ph - print_top_margin - torigin) * 2 / 3);
 
