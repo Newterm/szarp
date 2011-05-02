@@ -302,8 +302,6 @@ TSzarpConfig::loadXML(const std::wstring &path, const std::wstring &prefix)
 	sz_log(1, "XML document not wellformed\n");
 	return 1;
     }
-//TODO: remove it
-	parseReader(path);
 
     ret = parseXML(doc);
     xmlFreeDoc(doc);
@@ -311,59 +309,117 @@ TSzarpConfig::loadXML(const std::wstring &path, const std::wstring &prefix)
     return ret;
 }
 
-void
+int
 TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 {
 //TODO: remove all printf
 
-	xmlChar *name = xmlTextReaderName(reader);
+#define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
+#define NEXTTAG if(name) xmlFree(name);\
+	if (xmlTextReaderRead(reader) != 1) \
+		return 0; \
+	goto begin_process_node;
 
+	int i = 0;
+	TDevice *td = NULL;
+	xmlChar *attr = NULL;
+	xmlChar *name =NULL;
+
+begin_process_node:
+
+	name = xmlTextReaderName(reader);
 	if (name == NULL)
 		name = xmlStrdup(BAD_CAST "--");
 
-	xmlChar *value = xmlTextReaderValue(reader);
-	xmlChar *attr = NULL;
+	IFNAME("#text") {
+		NEXTTAG
+	}
 
+//	xmlChar *value = xmlTextReaderValue(reader);
+
+/*
 	printf(">>>> new node <<<\n");
 	printf("%d %d %s\n",
 		xmlTextReaderDepth(reader),
 		xmlTextReaderNodeType(reader),
 		name);
+*/
 
-
-#define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
+#define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
+	if (attr == NULL) { \
+		sz_log(1, "XML parsing error: expected '%s' (line %d)", ATT, xmlTextReaderGetParserLineNumber(reader)); \
+		return 1; \
+	}
 #define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
-#define DELATTR printf("delete: %s\n", attr); xmlFree(attr)
+//#define DELATTR printf("delete: %s\n", attr); xmlFree(attr)
+#define DELATTR xmlFree(attr)
+#define XMLLINE xmlTextReaderGetParserLineNumber(reader)
+#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader)); \
+	xmlFree(attr);
+#define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
+#define IFENDTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT)
+#define GETNODE xmlTextReaderExpand(reader)
+#define XMLNEXT xmlTextReaderNext(reader)
 
 	IFNAME("params") {
-		printf("name: params\n");
-		IFATTR("xmlns") {
+		IFBEGINTAG {
+			printf("name: params\n");
+
+			NEEDATTR("read_freq")
+			if ((i = atoi((char*)attr)) <= 0) {
+				XMLERROR("read_freq attribute <= 0");
+				return 0;
+			}
 			DELATTR;
-		}
-		IFATTR("version") {
+
+			NEEDATTR("send_freq")
+			if ((i = atoi((char*)attr)) <= 0) {
+				XMLERROR("send_freq attribute <= 0");
+				return 0;
+			}
 			DELATTR;
-		}
-		IFATTR("read_freq") {
+
+			NEEDATTR("version")
+			if (!xmlStrEqual(attr, (unsigned char*) "1.0")) {
+				XMLERROR("incorrect version (1.0 expected)");
+				return 0;
+			}
 			DELATTR;
-		}
-		IFATTR("send_freq") {
-			DELATTR;
-		}
-		IFATTR("title") {
-			DELATTR;
+
+			IFATTR("xmlns") {
+				DELATTR;
+			}
+			IFATTR("title") {
+				title = SC::U2S(attr);
+				DELATTR;
+			}
+			NEXTTAG
 		}
 	} else
 	IFNAME("device") {
-		printf("name: device\n");
-		IFATTR("daemon") {
-			DELATTR;
+		IFBEGINTAG {
+			printf("name: device\n");
+
+			if (devices == NULL)
+				devices = td = new TDevice(this);
+			else
+				td = td->Append(new TDevice(this));
+			assert(devices != NULL);
+			td->parseXML(reader);
 		}
-		IFATTR("path") {
-			DELATTR;
-		}
+		NEXTTAG
 	} else
 	IFNAME("unit") {
-		printf("name: unit\n");
+/*
+		IFBEGINTAG {
+			printf("name: unit\n");
+//TODO: check it
+			TUnit *unit = new TUnit(this);
+			unit->parseXML(reader);
+		}
+		NEXTTAG
+*/
+
 		IFATTR("id") {
 			DELATTR;
 		}
@@ -376,9 +432,10 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 		IFATTR("bufsize") {
 			DELATTR;
 		}
+
 	} else
 	IFNAME("param") {
-		printf("name: param\n");
+//		printf("name: param\n");
 		IFATTR("name") {
 			DELATTR;
 		}
@@ -399,7 +456,7 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 		}
 	} else
 	IFNAME("raport") {
-		printf("name: raport\n");
+//		printf("name: raport\n");
 		IFATTR("title") {
 			DELATTR;
 		}
@@ -411,7 +468,7 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 		}
 	} else
 	IFNAME("draw") {
-		printf("name: draw\n");
+//		printf("name: draw\n");
 		IFATTR("title") {
 			DELATTR;
 		}
@@ -429,7 +486,7 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 		}
 	} else
 	IFNAME("define") {
-		printf("name: define\n");
+//		printf("name: define\n");
 		IFATTR("type") {
 			DELATTR;
 		}
@@ -441,13 +498,13 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 		}
 	} else
 	IFNAME("defined") {
-		printf("name: defined\n");
+//		printf("name: defined\n");
 	} else
 	IFNAME("drawdefinable") {
-		printf("name: drawdefinable\n");
+//		printf("name: drawdefinable\n");
 	} else
 	IFNAME("seasons") {
-		printf("name: seasons\n");
+//		printf("name: seasons\n");
 		IFATTR("month_start") {
 			DELATTR;
 		}
@@ -462,22 +519,32 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 		}
 	} else
 	IFNAME("send") {
-		printf("name: send\n");
+//		printf("name: send\n");
 	} else
 		assert(name != NULL && "not known name!");
 
 #undef IFNAME
+#undef IFBEGINTAG
+#undef IFENDTAG
 #undef IFATTR
 #undef DELATTR
+#undef NEEDATTR
+#undef XMLLINE
+#undef XMLERROR
+#undef GETNODE
+#undef XMLNEXT
 
 	if (name) xmlFree(name);
-	if (value) xmlFree(value);
+//	if (value) xmlFree(value);
+
+	return 0;
 }
 
 int
 TSzarpConfig::parseReader(const std::wstring &path)
 {
-/*TODO:remove*/	printf("NEW PARSER\n");
+//TODO: remove printf
+printf("NEW PARSER\n");
 	int ret = 0;
 	xmlTextReaderPtr reader;
 
@@ -485,7 +552,9 @@ TSzarpConfig::parseReader(const std::wstring &path)
 	if (reader != NULL) {
 		ret = xmlTextReaderRead(reader);
 		while (ret == 1) {
-			processNodeReader(reader);
+			ret = processNodeReader(reader);
+			if (ret != 1)
+				break;
 			ret = xmlTextReaderRead(reader);
 		}
 		xmlFreeTextReader(reader);
@@ -495,7 +564,7 @@ TSzarpConfig::parseReader(const std::wstring &path)
 	} else
 		sz_log(1,"Unable to open params.xml\n");
 
-/*TODO:remove*/ printf("END NEW PARSER\n");
+printf("END NEW PARSER\n");
 	return ret;
 }
 

@@ -34,6 +34,94 @@ using namespace std;
 
 #define FREE(x)	if (x != NULL) free(x)
 
+int TUnit::parseXML(xmlTextReaderPtr reader)
+{
+	xmlChar *attr = NULL;
+	xmlChar *name = NULL;
+
+#define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
+#define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
+	if (attr == NULL) { \
+		sz_log(1, "XML parsing error: expected '%s' (line %d)", ATT, xmlTextReaderGetParserLineNumber(reader)); \
+		return 1; \
+	}
+#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
+#define DELATTR xmlFree(attr)
+#define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
+#define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
+//TODO: check return value - 0 or 1 - in all files 
+#define NEXTTAG if(name) xmlFree(name);\
+	if (xmlTextReaderRead(reader) != 1) \
+	return 1; \
+	goto begin_process_tunit;
+#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader)); \
+	xmlFree(attr);
+
+
+	NEEDATTR("id")
+	if (xmlStrlen(attr) != 1) {
+		XMLERROR("attribute 'id' should be one ASCII");
+		return 1;
+	}
+	id = SC::U2S(attr)[0];
+	DELATTR;
+
+	NEEDATTR("type")
+	type = atoi((char*) attr);
+	DELATTR;
+	NEEDATTR("subtype")
+	subtype = atoi((char*) attr);
+	DELATTR;
+	NEEDATTR("bufsize")
+	bufsize = atoi((char*) attr);
+	DELATTR;
+	IFATTR("name") {
+//TODO: solve it
+//		name = SC::U2S(attr);
+		DELATTR;
+	}
+
+	assert (params == NULL);
+	assert (sendParams == NULL);
+
+	TParam* p = NULL;
+
+	NEXTTAG
+
+begin_process_tunit:
+	name = xmlTextReaderName(reader);
+	IFNAME("#text") {
+		NEXTTAG
+	}
+
+	IFNAME("param") {
+		IFBEGINTAG {
+			if (params == NULL)
+				p = params = new TParam(this);
+			else
+				p = p->Append(new TParam(this));
+			if (p->parseXML(reader))
+				return 1;
+		}
+		NEXTTAG
+	} else
+	IFNAME("unit") {
+	}
+	else
+		assert("not known tag");
+
+#undef IFNAME
+#undef NEEDATTR
+#undef IFATTR
+#undef DELATTR
+#undef IFBEGINTAG
+#undef IFENDTAG
+#undef NEXTTAG
+#undef XMLERROR
+
+	return 0;
+}
+
 int TUnit::parseXML(xmlNodePtr node)
 {
 	unsigned char* c = NULL;

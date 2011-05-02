@@ -121,6 +121,14 @@ TParam::AddAnalysis(TAnalysis* a)
 	return _analysis->Append(a);
 }
 
+int TParam::parseXML(xmlTextReaderPtr reader)
+{
+//TODO: make it
+//TODO: remove printf
+	printf("name: param\n");
+	return 0;
+}
+
 int
 TParam::parseXML(xmlNodePtr node)
 {

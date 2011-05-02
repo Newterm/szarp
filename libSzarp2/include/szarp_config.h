@@ -154,7 +154,7 @@ public:
 //TODO: change name? and add description
 	int parseReader(const std::wstring& path);
 //TODO: change name? and add description
-	void processNodeReader(xmlTextReaderPtr reader);
+	int processNodeReader(xmlTextReaderPtr reader);
 	/**
 	 * Initalize definable parameters.
 	 * Creates formula cache, checks for N function and const params.
@@ -487,6 +487,12 @@ public:
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlNodePtr node);
+	/**
+	 * Loads information parsed from XML file.
+	 * @param node XML node with device configuration info
+	 * @return 0 on success, 1 on error
+	 */
+	int parseXML(xmlTextReaderPtr reader);
 protected:
 	/**
 	 * Returns num'th param from device line.
@@ -679,6 +685,12 @@ public:
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlNodePtr node);
+	/**
+	 * Loads information parsed from XML file.
+	 * @param node XML node with device configuration info
+	 * @return 0 on success, 1 on error
+	 */
+	int parseXML(xmlTextReaderPtr node);
 	/** @return pointer to parent radio object */
 	TRadio* GetRadio()
 	{
@@ -1019,6 +1031,12 @@ public:
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlNodePtr node);
+	/**
+	 * Loads information parsed from XML file.
+	 * @param node XML node with device configuration info
+	 * @return 0 on success, 1 on error
+	 */
+	int parseXML(xmlTextReaderPtr node);
 
 	/**
 	 * Get next param in list.

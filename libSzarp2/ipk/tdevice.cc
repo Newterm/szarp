@@ -109,6 +109,60 @@ device with radio modems (line %ld)",
 #undef X 
 }
 
+
+int TDevice::parseXML(xmlTextReaderPtr reader)
+{
+
+	xmlChar *attr = NULL;
+	xmlChar *name = NULL;
+
+#define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
+#define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
+	if (attr == NULL) { \
+		sz_log(1, "XML parsing error: expected '%s' (line %d)", ATT, xmlTextReaderGetParserLineNumber(reader)); \
+		return 1; \
+	}
+#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
+#define DELATTR printf("delete: %s\n", attr); xmlFree(attr)
+#define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
+
+	NEEDATTR("daemon")
+	daemon = SC::U2S(attr);
+	DELATTR;
+
+	NEEDATTR("path")
+	path = SC::U2S(attr);
+	DELATTR;
+
+	IFATTR("speed") {
+		speed = atoi((char*) attr);
+		DELATTR;
+	}
+
+	IFATTR("stop") {
+		stop = atoi((char*) attr);
+		DELATTR;
+	}
+
+	IFATTR("protocol") {
+		protocol = atoi((char*) attr);
+		DELATTR;
+	}
+
+	IFATTR("options") {
+		options = SC::U2S(attr);
+		DELATTR;
+	}
+
+#undef IFNAME
+#undef IFATTR
+#undef DELATTR
+#undef NEEDATTR
+#undef IFENDTAG
+
+	return 0;
+}
+
 TUnit* TDevice::searchUnitById(const wchar_t id, int uniq)
 {
 	TUnit *u = NULL;
