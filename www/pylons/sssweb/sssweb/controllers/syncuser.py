@@ -9,6 +9,8 @@ from pylons.decorators import rest
 
 from sssweb.lib.base import *
 
+logging.basicConfig(level=logging.DEBUG)
+
 log = logging.getLogger(__name__)
 
 class SyncuserController(BaseController):
@@ -32,7 +34,7 @@ class SyncuserController(BaseController):
             c.list = app_globals.rpcservice.list_users(session['user'], session['passhash'])
             return render('/syncuser/index.mako')
 
-        @rest.dispatch_on(POST='save')
+	@rest.dispatch_on(POST='save')
 	def new(self):
             c.all_bases = app_globals.rpcservice.get_available_bases(session['user'], session['passhash'])
             c.servers = map(lambda x: x['name'], app_globals.rpcservice.list_servers(session['user'], session['passhash']))
@@ -46,43 +48,43 @@ class SyncuserController(BaseController):
             c.user['comment'] = ''
             return render('/syncuser/edit.mako')
 
-        @rest.dispatch_on(POST='save')
+	@rest.dispatch_on(POST='save')
 	def edit(self, id):
-            c.user = app_globals.rpcservice.get_user(session['user'], session['passhash'], id)
-            c.all_bases = app_globals.rpcservice.get_available_bases(session['user'], session['passhash'])
-            c.servers = map(lambda x: x['name'], app_globals.rpcservice.list_servers(session['user'], session['passhash']))
-            return render('/syncuser/edit.mako')
+		c.user = app_globals.rpcservice.get_user(session['user'], session['passhash'], id)
+		c.all_bases = app_globals.rpcservice.get_available_bases(session['user'], session['passhash'])
+		c.servers = map(lambda x: x['name'], app_globals.rpcservice.list_servers(session['user'], session['passhash']))
+		return render('/syncuser/edit.mako')
 
-        @rest.restrict('POST')
-        def save(self, id=None):
-            log.debug('save: id %s params %s', id, str(request.params))
-            user = dict()
-            if id is None:
-                user['name'] = request.params['name']
-            else:
-                user['name'] = id
+	@rest.restrict('POST')
+	def save(self, id=None):
+		log.debug('save: id %s params %s', id, str(request.params))
+		user = dict()
+		if id is None:
+			user['name'] = request.params['name']
+		else:
+			user['name'] = id
 
-            for f in ('email', 'server', 'hwkey', 'comment'):
-                user[f] = request.params[f]
+		for f in ('email', 'server', 'hwkey', 'comment'):
+			user[f] = request.params[f]
 
-            user['sync'] = self._get_selected_bases(request)
+		user['sync'] = self._get_selected_bases(request)
 
-            if request.params['exp'] == 'date':
-                user['expired'] = request.params['expired']
-            else:
-                user['expired'] = '-1'
-            if id is None:
-                try:
-                    password = app_globals.rpcservice.add_user(session['user'], session['passhash'], user)
-                    msg = _("Your SZARP Synchronization account has been created.\n\nYour login: %s\nYour password: %s\nVisist %s to change your password and view your settings.\n\nSZARP Synchronization Server\n") % (user['name'], password, h.url_for(controller = '/', qualified = True))
-                    h.send_email(user['email'], _("SZARP sync new account"), msg)
-                except Exception, e:
-                    log.error(str(e))
-                    raise e
-                return redirect(url(controller='syncuser', action='edit', id=user['name']))
-            else:
-                app_globals.rpcservice.set_user(session['user'], session['passhash'], user)
-            return redirect(url(controller='syncuser', action='index'))
+		if request.params['exp'] == 'date':
+			user['expired'] = request.params['expired']
+		else:
+			user['expired'] = '-1'
+		if id is None:
+			try:
+				password = app_globals.rpcservice.add_user(session['user'], session['passhash'], user)
+				msg = _("Your SZARP Synchronization account has been created.\n\nYour login: %s\nYour password: %s\nVisist %s to change your password and view your settings.\n\nSZARP Synchronization Server\n") % (user['name'], password, h.url_for(controller = '/', qualified = True))
+				h.send_email(user['email'], _("SZARP sync new account"), msg)
+			except Exception, e:
+				log.error(str(e))
+				raise e
+			return redirect(url(controller='syncuser', action='edit', id=user['name']))
+		else:
+			app_globals.rpcservice.set_user(session['user'], session['passhash'], user)
+		return redirect(url(controller='syncuser', action='index'))
 
 	def reset_password(self, **kwargs):
 		"""
@@ -91,10 +93,10 @@ class SyncuserController(BaseController):
 		c.id = kwargs.get('id')
 		c.message = "Are you sure you want to reset password for user %s?" % c.id
 		c.action = "reset_password_confirmed"
-		c.no_action = "edit"
+		c.no_action = "index"
 		return render('/confirm.mako')
 
-        @rest.restrict('POST')
+	@rest.restrict('POST')
 	def reset_password_confirmed(self, id):
 		"""
 		Reset user password and send e-mail with password.
@@ -109,15 +111,15 @@ class SyncuserController(BaseController):
 		return render('/info.mako')
 
 	def delete(self, **kwargs):
-                if not kwargs.has_key('id'):
-                    return redirect(h.url_for(action='index'))
+		if not kwargs.has_key('id'):
+			return redirect(url(controller='syncuser',action='index'))
 		c.id = kwargs.get('id')
 		c.message = "Are you sure you want to remove user %s?" % c.id
 		c.action = "delete_confirmed"
 		c.no_action = "index"
 		return render('/confirm.mako')
 
-        @rest.restrict('POST')
+	@rest.restrict('POST')
 	def delete_confirmed(self, id):
 		app_globals.rpcservice.remove_user(session['user'], session['passhash'], id)
 		return redirect(url(controller='syncuser', action='index'))

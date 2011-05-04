@@ -46,7 +46,7 @@ install-data-local:
 if DEB_BUILD
 	python${PYVER} setup.py install --root $(DESTDIR) --prefix /usr --single-version-externally-managed
 else
-	python${PYVER} setup.py install --single-version-externally-managed
+	python${PYVER} setup.py install 
 endif
 
 update-po:

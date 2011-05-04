@@ -64,4 +64,5 @@ class SyncserverController(BaseController):
     @rest.restrict('POST')
     def delete_confirmed(self, id):
         app_globals.rpcservice.remove_server(session['user'], session['passhash'], id)
-        return h.redirect(url(action='index'))
+        return redirect(url(controller='syncserver', action='index'))
+
