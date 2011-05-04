@@ -69,13 +69,14 @@ int parseFile(const wstring &file) {
 
 int main() {
 	cout <<"begin test" << endl;
-	wstring path = L"/opt/szarp/snew/config/params.xml";
+	wstring path = L"/opt/szarp/debian/config/params.xml";
+//	wstring path = L"/opt/szarp/snew/config/params.xml";
 //	wstring path = L"/root/zamX.xml";
 //	parseFile(path);
 
 	TSzarpConfig conf;
-//	conf.loadXML(path,L"zamX");
+//	conf.loadXML(path,L"debian");
 	conf.parseReader(path);
-
+//	conf.saveXML(L"/tmp/out.xml");
 	return 0;
 }

@@ -321,9 +321,13 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 	goto begin_process_node;
 
 	int i = 0;
+	TParam *p = NULL;
 	TDevice *td = NULL;
 	xmlChar *attr = NULL;
 	xmlChar *name =NULL;
+
+	assert(devices == NULL);
+	assert(defined == NULL);
 
 begin_process_node:
 
@@ -409,30 +413,12 @@ begin_process_node:
 		}
 		NEXTTAG
 	} else
-	IFNAME("unit") {
 /*
+	IFNAME("unit") {
+//TODO
 		IFBEGINTAG {
-			printf("name: unit\n");
-//TODO: check it
-			TUnit *unit = new TUnit(this);
-			unit->parseXML(reader);
 		}
 		NEXTTAG
-*/
-
-		IFATTR("id") {
-			DELATTR;
-		}
-		IFATTR("type") {
-			DELATTR;
-		}
-		IFATTR("subtype") {
-			DELATTR;
-		}
-		IFATTR("bufsize") {
-			DELATTR;
-		}
-
 	} else
 	IFNAME("param") {
 //		printf("name: param\n");
@@ -454,36 +440,8 @@ begin_process_node:
 		IFATTR("base_id") {
 			DELATTR;
 		}
-	} else
-	IFNAME("raport") {
-//		printf("name: raport\n");
-		IFATTR("title") {
-			DELATTR;
-		}
-		IFATTR("order") {
-			DELATTR;
-		}
-		IFATTR("description") {
-			DELATTR;
-		}
-	} else
-	IFNAME("draw") {
-//		printf("name: draw\n");
-		IFATTR("title") {
-			DELATTR;
-		}
-		IFATTR("prior") {
-			DELATTR;
-		}
-		IFATTR("color") {
-			DELATTR;
-		}
-		IFATTR("min") {
-			DELATTR;
-		}
-		IFATTR("max") {
-			DELATTR;
-		}
+//TODO
+		NEXTTAG
 	} else
 	IFNAME("define") {
 //		printf("name: define\n");
@@ -497,31 +455,35 @@ begin_process_node:
 			DELATTR;
 		}
 	} else
+*/
 	IFNAME("defined") {
-//		printf("name: defined\n");
+		IFBEGINTAG {
+			printf("name: defined\n");
+			TParam * _par = TDefined::parseXML(reader,this);
+			if (_par)
+				defined = _par;
+		}
+		NEXTTAG
 	} else
 	IFNAME("drawdefinable") {
 //		printf("name: drawdefinable\n");
 	} else
 	IFNAME("seasons") {
-//		printf("name: seasons\n");
-		IFATTR("month_start") {
-			DELATTR;
+		IFBEGINTAG {
+			printf("name: seasons\n");
+			seasons = new TSSeason();
+			if (seasons->parseXML(reader)) {
+				delete seasons;
+				seasons = NULL;
+//TODO: return error
+			}
 		}
-		IFATTR("day_start") {
-			DELATTR;
-		}
-		IFATTR("month_end") {
-			DELATTR;
-		}
-		IFATTR("day_end") {
-			DELATTR;
-		}
-	} else
-	IFNAME("send") {
-//		printf("name: send\n");
-	} else
-		assert(name != NULL && "not known name!");
+		NEXTTAG
+	} else {
+		if (name)
+			printf("ERROR: not known : %s\n",name);
+		assert(name == NULL);
+	}
 
 #undef IFNAME
 #undef IFBEGINTAG

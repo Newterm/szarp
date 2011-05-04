@@ -68,6 +68,146 @@ int TDraw::GetCount()
 	return i;
 }
 
+TDraw* TDraw::parseXML(xmlTextReaderPtr reader)
+{
+printf("name draw xmlParser\n");
+
+#define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
+#define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
+	if (attr == NULL) { \
+		sz_log(1, "XML parsing error: expected '%s' (line %d)", ATT, xmlTextReaderGetParserLineNumber(reader)); \
+		return 1; \
+	}
+#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
+#define DELATTR xmlFree(attr)
+#define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
+#define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
+//TODO: check return value - 0 or 1 - in all files 
+#define NEXTTAG if(name) xmlFree(name);\
+	if (xmlTextReaderRead(reader) != 1) \
+	return 1; \
+	goto begin_process_tdraw;
+#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
+
+	xmlChar *attr = NULL;
+	xmlChar *name = NULL;
+	unsigned char *w = NULL, *c = NULL;
+	double p, o, min, max, smin = 0, smax = 0;
+	int sc;
+
+#define CONVERT(FROM, TO) { \
+	std::wstringstream ss;	\
+	ss.imbue(locale("C"));	\
+	ss << FROM;		\
+	ss >> TO; 		\
+	}
+
+	SPECIAL_TYPES sp;
+
+	IFATTR("title") {
+		w = attr;
+	} else {
+		XMLERROR("Attribute 'title' on element 'draw' not found");
+		return NULL;
+	}
+
+	IFATTR("color")
+		c = attr;
+
+	IFATTR("prior") {
+		CONVERT(SC::U2S(attr), p);
+		DELATTR;
+	} else
+		p = -1.0;
+
+	IFATTR("order") {
+		CONVERT(SC::U2S(attr), o);
+		DELATTR;
+	} else
+		o = -1.0;
+
+	IFATTR("max") {
+		CONVERT(SC::U2S(attr), max);
+		DELATTR;
+		IFATTR("min") {
+			CONVERT(SC::U2S(attr), min);
+			DELATTR;
+		} else
+			min = 0.0;
+	} else {
+		min = 0.0;
+		max = -1.0;
+	}
+
+	IFATTR("scale") {
+		CONVERT(SC::U2S(attr), sc);
+		DELATTR;
+		if (sc > 0) {
+			IFATTR("minscale") {
+				CONVERT(SC::U2S(attr), smin);
+				DELATTR;
+			}
+			IFATTR("maxscale") {
+				CONVERT(SC::U2S(attr),smax);
+				DELATTR;
+				if (smax < smin)
+					sc = 0;
+			}
+		}
+	} else
+		sc = 0;
+
+	sp = NONE;
+	IFATTR("special") {
+		for (unsigned i = 0; i < sizeof(SPECIAL_TYPES_STR) / sizeof(wchar_t*); i++)
+			if (SC::U2S(attr) == SPECIAL_TYPES_STR[i]) {
+				sp = (SPECIAL_TYPES)i;
+				break;
+			}
+		DELATTR;
+	}
+	TDraw* ret = new TDraw(c == NULL ? std::wstring() : SC::U2S(c), 
+			SC::U2S(w), 
+			p, 
+			o, 
+			min, 
+			max, 
+			sc, 
+			smin, 
+			smax, 
+			sp);
+
+	xmlFree(c);
+	xmlFree(w);
+
+//TODO: make me
+/*
+	for (xmlNodePtr ch = node->children; ch; ch = ch->next) if (!strcmp((const char*) ch->name, "treenode")) {
+		TTreeNode* node = new TTreeNode();
+		if (node->parseXML(ch)) {
+			delete ret;	
+			return NULL;
+		}
+		ret->_tree_nodev.push_back(node);
+	}
+*/
+
+#undef CONVERT
+
+#undef IFNAME
+#undef NEEDATTR
+#undef IFATTR
+#undef DELATTR
+#undef IFBEGINTAG
+#undef IFENDTAG
+#undef NEXTTAG
+#undef XMLERROR
+
+printf("name draw parseXML END\n");
+
+	return ret;
+}
+
 TDraw* TDraw::parseXML(xmlNodePtr node)
 {
 	unsigned char *ch = NULL;

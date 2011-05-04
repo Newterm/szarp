@@ -125,7 +125,160 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 {
 //TODO: make it
 //TODO: remove printf
-	printf("name: param\n");
+	printf("name: param parseXML\n");
+
+	xmlChar *attr = NULL;
+	xmlChar *name = NULL;
+
+#define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
+#define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
+	if (attr == NULL) { \
+		sz_log(1, "XML parsing error: expected '%s' (line %d)", ATT, xmlTextReaderGetParserLineNumber(reader)); \
+		return 1; \
+	}
+#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
+#define DELATTR xmlFree(attr)
+#define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
+#define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
+//TODO: check return value - 0 or 1 - in all files 
+#define NEXTTAG if(name) xmlFree(name);\
+	if (xmlTextReaderRead(reader) != 1) \
+	return 1; \
+	goto begin_process_tparam;
+#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader)); \
+	xmlFree(attr);
+
+
+	NEEDATTR("name");
+	_name = SC::U2S(attr);
+	DELATTR;
+
+	IFATTR("short_name") {
+		_shortName = SC::U2S(attr);
+		DELATTR;
+	}
+
+	IFATTR("draw_name") {
+		_drawName = SC::U2S(attr);
+		DELATTR;
+	}
+
+	IFATTR("unit") {
+		_unit = SC::U2S(attr);
+		DELATTR;
+	}
+
+	IFATTR("sum_unit") {
+		_sum_unit = SC::U2S(attr);
+	}
+
+	IFATTR("sum_divisor") {
+		wstringstream ss;
+		ss.imbue(locale("C"));
+		ss << SC::U2S(attr);
+		ss >> _sum_divisor;
+		DELATTR;
+	}
+
+	IFATTR("period") {
+		int tmp = atoi((char*)attr);
+		if (tmp <= 0) {
+			XMLERROR("invalid value of period attribute");
+		}
+		else {
+			SetPeriod(tmp);
+			DELATTR;
+		}
+	}
+
+	IFATTR("base_ind") {
+		if (!strcmp((char*)attr, "auto"))
+			SetAutoBase();
+		else
+			SetBaseInd(atoi((char*)attr));
+		DELATTR;
+		attr = NULL;
+	}
+
+
+	NEXTTAG
+
+begin_process_tparam:
+
+	name = xmlTextReaderName(reader);
+	IFNAME("#text") {
+		NEXTTAG
+	}
+
+	IFNAME("raport") {
+		IFBEGINTAG {
+			double o = -1.0;
+			IFATTR("order") {
+				wstringstream ss;
+				ss.imbue(locale("C"));
+				ss << SC::U2S(attr);
+				ss >> o;
+				DELATTR;
+			}
+			NEEDATTR("title");
+			xmlChar* d = xmlTextReaderGetAttribute(reader, (unsigned char*)"description");
+			xmlChar* f = xmlTextReaderGetAttribute(reader, (unsigned char*)"filename");
+			AddRaport(SC::U2S(attr),
+				d != NULL ? SC::U2S(d) : std::wstring(),
+				f != NULL ? SC::U2S(f) : std::wstring(),
+				o);
+			DELATTR;
+			xmlFree(d);
+			xmlFree(f);
+		}
+		NEXTTAG
+	} else
+	IFNAME("draw") {
+		IFBEGINTAG {
+			TDraw *d = TDraw::parseXML(reader);
+		if (d != NULL)
+			AddDraw(d);
+		}
+		NEXTTAG
+	} else
+	IFNAME("define") {
+		IFBEGINTAG {
+			_param_type = TParam::P_REAL;
+			NEEDATTR("type");
+			if (!strcmp((char*)attr, "RPN")) {
+				_ftype = RPN;
+			}else 
+			if (!strcmp((char*)attr, "DRAWDEFINABLE")) {
+				_ftype = DEFINABLE;
+				_param_type = TParam::P_DEFINABLE;
+			}
+		}
+		NEXTTAG
+	} else
+
+/*
+	IFNAME("") {
+		IFBEGINTAG {
+		}
+		NEXTTAG
+	} else
+*/
+	IFNAME("param") {
+	}
+	else {
+		printf("ERROR: not known name:%s\n",name);
+		assert(0 == 1 && "not known name");
+	}
+
+
+#undef IFNAME
+#undef NEEDATTR
+#undef IFATTR
+#undef DELATTR
+#undef IFBEGINTAG
+#undef IFENDTAG
+#undef NEXTTAG
+#undef XMLERROR
 	return 0;
 }
 

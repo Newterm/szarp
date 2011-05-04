@@ -589,6 +589,12 @@ public:
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlNodePtr node);
+	/**
+	 * Loads information parsed from XML file.
+	 * @param node XML node with device configuration info
+	 * @return 0 on success, 1 on error
+	 */
+	int parseXML(xmlTextReaderPtr reader);
 protected:
 	TDevice *parentDevice;
 			/**< Pointer to parent device object. */
@@ -1216,6 +1222,20 @@ protected:
 
 };
 
+
+/**
+ * Info about single param defined.
+ */
+class TDefined {
+public:
+	/** Parses XML node and returns pointer to new TDraw object.
+	 * @param node XML node with draw description
+	 * @return NULL on error, pointer to newly created TDraw object on
+	 * success.
+	 */
+	static TParam* parseXML(xmlTextReaderPtr reader,TSzarpConfig *tszarp);
+};
+
 /**
  * Info about single param draw.
  */
@@ -1240,6 +1260,12 @@ public:
 	 * success.
 	 */
 	static TDraw* parseXML(xmlNodePtr node);
+	/** Parses XML node and returns pointer to new TDraw object.
+	 * @param node XML node with draw description
+	 * @return NULL on error, pointer to newly created TDraw object on
+	 * success.
+	 */
+	static TDraw* parseXML(xmlTextReaderPtr reader);
 	/**
 	 * Return special attribute for draw.
 	 */
@@ -2016,6 +2042,9 @@ public:
 	/**parses XML node describing seasons
 	@return 0 if node was successfully parsed, 0 otherwise*/
 	int parseXML(xmlNodePtr p);
+	/**parses XML node describing seasons
+	@return 0 if node was successfully parsed, 0 otherwise*/
+	int parseXML(xmlTextReaderPtr reader);
 
 	/**generates XML node describing seasons
 	 * @return xml node ptr*/

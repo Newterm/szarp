@@ -82,6 +82,7 @@ libSzarp2_a_SOURCES = \
 			$(IPK_DIR)/tdictionary.cc \
 			$(IPK_DIR)/ttreenode.cc \
 			$(IPK_DIR)/dmncfg.cc \
+			$(IPK_DIR)/tdefined.cc \
 			$(DMN_DIR)/ipchandler.cc \
 			$(SOURCE_DIR)/misc/convuri.cc \
 			$(SOURCE_DIR)/misc/crontime.h \

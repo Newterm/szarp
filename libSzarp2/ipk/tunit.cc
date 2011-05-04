@@ -39,6 +39,9 @@ int TUnit::parseXML(xmlTextReaderPtr reader)
 	xmlChar *attr = NULL;
 	xmlChar *name = NULL;
 
+//TODO: remove all printf
+printf("name: unit parseXML\n");
+
 #define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
 #define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
 	if (attr == NULL) { \

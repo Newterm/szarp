@@ -16,6 +16,136 @@
 #include "szarp_config.h"
 #include "liblog.h"
 
+int TSSeason::parseXML(xmlTextReaderPtr reader) {
+
+//TODO: remove all printf
+printf("name seasons: parseXML\n");
+
+	xmlChar *attr = NULL;
+	xmlChar *name = NULL;
+
+#define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
+#define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
+	if (attr == NULL) { \
+		sz_log(1, "XML parsing error: expected '%s' (line %d)", ATT, xmlTextReaderGetParserLineNumber(reader)); \
+		return 1; \
+	}
+#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
+#define DELATTR xmlFree(attr)
+#define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
+#define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
+//TODO: check return value - 0 or 1 - in all files 
+#define NEXTTAG if(name) xmlFree(name);\
+	if (xmlTextReaderRead(reader) != 1) \
+	return 1; \
+	goto begin_process_tseasons;
+#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader)); \
+	xmlFree(attr);
+
+	NEEDATTR("month_start");
+	if (sscanf((const char*) attr, "%d", &defs.month_start) != 1) {
+		XMLERROR("Invalid start date of default summer season definition");
+		return 1;
+	}
+	DELATTR;
+
+	NEEDATTR("day_start");
+	if (sscanf((const char*) attr, "%d", &defs.day_start) != 1) {
+		XMLERROR("Invalid start date of default summer season definition");
+		return 1;
+	}
+	DELATTR;
+
+	NEEDATTR("month_end");
+	if (sscanf((const char*) attr, "%d", &defs.month_end) != 1) {
+		XMLERROR("Invalid end date of default summer season definition");
+		return 1;
+	}
+	DELATTR;
+
+	NEEDATTR("day_end");
+	if (sscanf((const char*) attr, "%d", &defs.day_end) != 1) {
+		XMLERROR("Invalid end date of default summer season definition");
+		return 1;
+	}
+	DELATTR;
+
+	NEXTTAG
+
+begin_process_tseasons:
+
+	name = xmlTextReaderName(reader);
+	IFNAME("#text") {
+		NEXTTAG
+	}
+
+	IFNAME("season") {
+		IFBEGINTAG {
+
+			int year;
+			NEEDATTR("year");
+			if (sscanf((const char*) attr, "%d", &year) != 1) {
+				XMLERROR("Invalid year definition");
+				return 1;
+			}
+			DELATTR;
+
+			Season s;
+			NEEDATTR("month_start");
+			if (sscanf((const char*) attr, "%d", &s.month_start) != 1) {
+				XMLERROR("Invalid start date of summer season definition");
+				return 1;
+			}
+			DELATTR;
+
+			NEEDATTR("day_start");
+			if (sscanf((const char*) attr, "%d", &s.day_start) != 1) {
+				XMLERROR("Invalid start date of summer season definition");
+				return 1;
+			}
+			DELATTR;
+
+			NEEDATTR("month_end");
+			if (sscanf((const char*) attr, "%d", &s.month_end) != 1) {
+				XMLERROR("Invalid end date of summer season definition");
+				return 1;
+			}
+			DELATTR;
+
+			NEEDATTR("day_end");
+			if (sscanf((const char*) attr, "%d", &s.day_end) != 1) {
+				XMLERROR("Invalid end date of summer season definition");
+				return 1;
+			}
+			DELATTR;
+
+			seasons[year] = s;
+
+		}
+		NEXTTAG
+	} else
+	IFNAME("seasons") {
+	}
+	else {
+		printf("ERROR: not know name = %s\n",name);
+		assert(name == NULL && "not know name");
+	}
+
+printf("name seasons parseXML END\n");
+
+#undef IFNAME
+#undef NEEDATTR
+#undef IFATTR
+#undef DELATTR
+#undef IFBEGINTAG
+#undef IFENDTAG
+#undef NEXTTAG
+#undef XMLERROR
+
+	return 0;
+
+}
+
 int TSSeason::parseXML(xmlNodePtr node) {
 
 	char *c = NULL;
