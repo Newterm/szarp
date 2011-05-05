@@ -7,6 +7,32 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.528
+#01.05.2011
+* Usuniêto z paska ikon w programie przegl±daj±cym ikonê zmiany jêzyka; 
+inicjalizacja ustawieñ jêzykowych programu zosta³a usprawniona, dodano
+mo¿liwo¶æ automatycznego wykrywania jêzyka na podstawie ustawieñ systemu.
+* Program do masowego zapisu danych do bazy SZARP (szbwriter) uzyska³ now±
+opcjê w pliku konfiguracyjnym (fill_how_many_sec) pozwalaj±c± na automatyczne 
+uzupe³nianie przerw w plikach z próbkami 10-sekundowymi. Praca programu 
+zosta³a tak¿e kilkukrotnie przyspieszona, przy jednoczesnym zmniejszeniu 
+obci±¿enia procesora.
+* U³atwiono korzystanie z okien Warto¶ci ¶rednie, Wykres XY i Wykres XYZ w 
+programie przegl±daj±cym - wykresy i okres do wy¶wietlenia s± ustalane na 
+podstawie aktualnie wy¶wietlanego zestawu w g³ównym oknie programu. Jest to
+szybsze i wygodniejsze ni¿ dotychczasowa konieczno¶æ wybierania wykresów z
+listy, a czasu z kalendarza.
+* Wiele drobnych poprawek w programie przegl±daj±cym: poprawki w drukowaniu,
+poprawione rysowanie osi czasu, usuniêta awaria programu przy wy¶wietlaniu
+wykresu XYZ, poprawka przesuwania kursora za pomoc± klawiszy strza³ek przy
+wci¶niêtym klawiszu Shift.
+* Poprawki i usprawnienia w meta-demonie boruta: poprawki w ustawianiu 
+parzysto¶ci i ustawianie maski wielko¶ci znaków (character size) portu 
+szeregowego, poprawki w obs³udze trybu Modbus ASCII, poprawki w zale¿no¶ciach
+czasowych w sterowniku protoko³u ZET.
+* Zaktualizowano zestaw bibliotek wykorzystywanych do kross-kompilacji 
+programów SZARP dla systemu Windows. Poprawiona wersja usuwa kilka b³êdów 
+wystêpuj±cych przy uruchamianiu systemu na Windows 7.
 
 ** 3.1.522
 # 01.04.2011
