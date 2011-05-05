@@ -1,5 +1,10 @@
 2011-04-30	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3/drawprint.cpp: printing fix
+2011-04-26	Jakub Kotur <qba@newterm.pl>
+	* meaner3/: optimization of szbwriter. No it uses mmap, and cache
+	specified probes number before writing. Final results with 50MB are:
+	original :  11,77s user 20,88s system 99% cpu 32,782 total
+	optimized:   2,72s user  0,18s system 30% cpu 10,397 total
 2011-04-19	Krzysztof Golinski <krzgol@newterm.pl>
 	* wx/draw/{drawfrm.cpp, drawpnl.cpp, frmgr.cpp, seldraw.cpp,
 	 xygraph.cpp, wyzgraph.cpp}: xydiag, xyzdiag, statdiag take
