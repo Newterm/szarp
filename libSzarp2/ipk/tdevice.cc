@@ -115,7 +115,8 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 //TODO: remove all printf
 printf("name device: parseXML\n");
 
-	xmlChar *attr = NULL;
+	const xmlChar *attr_name = NULL;
+	const xmlChar *attr = NULL;
 	xmlChar *name = NULL;
 
 #define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
@@ -124,7 +125,8 @@ printf("name device: parseXML\n");
 		sz_log(1, "XML parsing error: expected '%s' (line %d)", ATT, xmlTextReaderGetParserLineNumber(reader)); \
 		return 1; \
 	}
-#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
+//#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
+#define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
 #define DELATTR xmlFree(attr)
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
 #define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
@@ -133,37 +135,45 @@ printf("name device: parseXML\n");
 	if (xmlTextReaderRead(reader) != 1) \
 	return 1; \
 	goto begin_process_tdevice;
-#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader)); \
-	xmlFree(attr);
-
-	NEEDATTR("daemon")
-	daemon = SC::U2S(attr);
-	DELATTR;
-
-	NEEDATTR("path")
-	path = SC::U2S(attr);
-	DELATTR;
-
-	IFATTR("speed") {
-		speed = atoi((char*) attr);
-		DELATTR;
+#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
+#define XMLERRORATTR(ATT) sz_log(1,"XML parsing error: expected attribute '%s' (line: %d)", ATT, xmlTextReaderGetParserLineNumber(reader));
+#define FORALLATTR for (int __atr = xmlTextReaderMoveToFirstAttribute(reader); __atr > 0; __atr =  xmlTextReaderMoveToNextAttribute(reader) )
+#define GETATTR attr_name = xmlTextReaderConstLocalName(reader); attr = xmlTextReaderConstValue(reader);
+#define CHECKNEEDEDATTR(LIST) \
+	if (sizeof(LIST) > 0) { \
+		std::set<string> __tmpattr(LIST, LIST + (sizeof(LIST) / sizeof(LIST[0]))); \
+		FORALLATTR { GETATTR; __tmpattr.erase((const char*) attr_name); } \
+		if (__tmpattr.size() > 0) { XMLERRORATTR(__tmpattr.begin()->c_str()); return 1; } \
 	}
 
-	IFATTR("stop") {
-		stop = atoi((char*) attr);
-		DELATTR;
-	}
+	const char* need_attr[] = { "daemon", "path" };
+	CHECKNEEDEDATTR(need_attr);
 
-	IFATTR("protocol") {
-		protocol = atoi((char*) attr);
-		DELATTR;
-	}
+	FORALLATTR {
+		GETATTR
 
-	IFATTR("options") {
-		options = SC::U2S(attr);
-		DELATTR;
+		IFATTR("daemon") {
+			daemon = SC::U2S(attr);
+		} else
+		IFATTR("path") {
+			path = SC::U2S(attr);
+		} else
+		IFATTR("speed") {
+			speed = atoi((const char*) attr);
+		} else
+		IFATTR("stop") {
+			stop = atoi((const char*) attr);
+		} else
+		IFATTR("protocol") {
+			protocol = atoi((const char*) attr);
+		} else
+		IFATTR("options") {
+			options = SC::U2S(attr);
+		} else {
+			printf("not known attr: %s\n", attr_name);
+			assert( 0 == 1 && "not known attribute");
+		}
 	}
-
 
 	NEXTTAG
 
@@ -190,7 +200,6 @@ begin_process_tdevice:
 	}
 
 printf("name device parseXML END\n");
-
 #undef IFNAME
 #undef NEEDATTR
 #undef IFATTR
@@ -199,6 +208,9 @@ printf("name device parseXML END\n");
 #undef IFENDTAG
 #undef NEXTTAG
 #undef XMLERROR
+#undef FORALLATTR
+#undef GETATTR
+#undef CHECKNEEDEDATTR
 
 	return 0;
 }

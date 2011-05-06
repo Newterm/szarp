@@ -21,7 +21,8 @@ int TSSeason::parseXML(xmlTextReaderPtr reader) {
 //TODO: remove all printf
 printf("name seasons: parseXML\n");
 
-	xmlChar *attr = NULL;
+	const xmlChar *attr_name = NULL;
+	const xmlChar *attr = NULL;
 	xmlChar *name = NULL;
 
 #define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
@@ -30,7 +31,8 @@ printf("name seasons: parseXML\n");
 		sz_log(1, "XML parsing error: expected '%s' (line %d)", ATT, xmlTextReaderGetParserLineNumber(reader)); \
 		return 1; \
 	}
-#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
+//#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
+#define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
 #define DELATTR xmlFree(attr)
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
 #define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
@@ -39,36 +41,51 @@ printf("name seasons: parseXML\n");
 	if (xmlTextReaderRead(reader) != 1) \
 	return 1; \
 	goto begin_process_tseasons;
-#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader)); \
-	xmlFree(attr);
-
-	NEEDATTR("month_start");
-	if (sscanf((const char*) attr, "%d", &defs.month_start) != 1) {
-		XMLERROR("Invalid start date of default summer season definition");
-		return 1;
+#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
+#define XMLERRORATTR(ATT) sz_log(1,"XML parsing error: expected attribute '%s' (line: %d)", ATT, xmlTextReaderGetParserLineNumber(reader));
+#define FORALLATTR for (int __atr = xmlTextReaderMoveToFirstAttribute(reader); __atr > 0; __atr =  xmlTextReaderMoveToNextAttribute(reader) )
+#define GETATTR attr_name = xmlTextReaderConstLocalName(reader); attr = xmlTextReaderConstValue(reader);
+#define CHECKNEEDEDATTR(LIST) \
+	if (sizeof(LIST) > 0) { \
+		std::set<std::string> __tmpattr(LIST, LIST + (sizeof(LIST) / sizeof(LIST[0]))); \
+		FORALLATTR { GETATTR; __tmpattr.erase((const char*) attr_name); } \
+		if (__tmpattr.size() > 0) { XMLERRORATTR(__tmpattr.begin()->c_str()); return 1; } \
 	}
-	DELATTR;
 
-	NEEDATTR("day_start");
-	if (sscanf((const char*) attr, "%d", &defs.day_start) != 1) {
-		XMLERROR("Invalid start date of default summer season definition");
-		return 1;
-	}
-	DELATTR;
+	const char* need_attr[] = { "month_start", "day_start", "month_end", "day_end" };
+	CHECKNEEDEDATTR(need_attr);
 
-	NEEDATTR("month_end");
-	if (sscanf((const char*) attr, "%d", &defs.month_end) != 1) {
-		XMLERROR("Invalid end date of default summer season definition");
-		return 1;
-	}
-	DELATTR;
+	FORALLATTR {
+		GETATTR
 
-	NEEDATTR("day_end");
-	if (sscanf((const char*) attr, "%d", &defs.day_end) != 1) {
-		XMLERROR("Invalid end date of default summer season definition");
-		return 1;
-	}
-	DELATTR;
+		IFATTR("month_start") {
+			if (sscanf((const char*) attr, "%d", &defs.month_start) != 1) {
+				XMLERROR("Invalid start date of default summer season definition");
+				return 1;
+			}
+		} else
+		IFATTR("day_start") {
+			if (sscanf((const char*) attr, "%d", &defs.day_start) != 1) {
+				XMLERROR("Invalid start date of default summer season definition");
+				return 1;
+			}
+		} else
+		IFATTR("month_end") {
+			if (sscanf((const char*) attr, "%d", &defs.month_end) != 1) {
+				XMLERROR("Invalid end date of default summer season definition");
+				return 1;
+			}
+		} else
+		IFATTR("day_end") {
+			if (sscanf((const char*) attr, "%d", &defs.day_end) != 1) {
+				XMLERROR("Invalid end date of default summer season definition");
+				return 1;
+			}
+		} else {
+			printf("not known attr: %s\n",attr_name);
+			assert(0 == 1 && "not known attr");
+		}
+	} // FORALLATTR
 
 	NEXTTAG
 
@@ -83,41 +100,48 @@ begin_process_tseasons:
 		IFBEGINTAG {
 
 			int year;
-			NEEDATTR("year");
-			if (sscanf((const char*) attr, "%d", &year) != 1) {
-				XMLERROR("Invalid year definition");
-				return 1;
-			}
-			DELATTR;
-
 			Season s;
-			NEEDATTR("month_start");
-			if (sscanf((const char*) attr, "%d", &s.month_start) != 1) {
-				XMLERROR("Invalid start date of summer season definition");
-				return 1;
-			}
-			DELATTR;
 
-			NEEDATTR("day_start");
-			if (sscanf((const char*) attr, "%d", &s.day_start) != 1) {
-				XMLERROR("Invalid start date of summer season definition");
-				return 1;
-			}
-			DELATTR;
+			const char* need_attr_seasn[] = {"year", "month_start",  "month_end", "day_start", "day_end" };
+			CHECKNEEDEDATTR(need_attr_seasn);
 
-			NEEDATTR("month_end");
-			if (sscanf((const char*) attr, "%d", &s.month_end) != 1) {
-				XMLERROR("Invalid end date of summer season definition");
-				return 1;
-			}
-			DELATTR;
+			FORALLATTR {
+				GETATTR
 
-			NEEDATTR("day_end");
-			if (sscanf((const char*) attr, "%d", &s.day_end) != 1) {
-				XMLERROR("Invalid end date of summer season definition");
-				return 1;
-			}
-			DELATTR;
+				IFATTR("year") {
+					if (sscanf((const char*) attr, "%d", &year) != 1) {
+						XMLERROR("Invalid year definition");
+						return 1;
+					}
+				} else
+				IFATTR("month_start") {
+					if (sscanf((const char*) attr, "%d", &s.month_start) != 1) {
+						XMLERROR("Invalid start date of summer season definition");
+						return 1;
+					}
+				} else
+				IFATTR("day_start") {
+					if (sscanf((const char*) attr, "%d", &s.day_start) != 1) {
+						XMLERROR("Invalid start date of summer season definition");
+					return 1;
+					}
+				} else
+				IFATTR("month_end") {
+					if (sscanf((const char*) attr, "%d", &s.month_end) != 1) {
+						XMLERROR("Invalid end date of summer season definition");
+						return 1;
+					}
+				}
+				IFATTR("day_end") {
+					if (sscanf((const char*) attr, "%d", &s.day_end) != 1) {
+						XMLERROR("Invalid end date of summer season definition");
+						return 1;
+					}
+				} else {
+					printf("not known attr=%s\n",attr_name);
+					assert(0 == 1 && "not known attr");
+				}
+			} // FORALLATTR
 
 			seasons[year] = s;
 
@@ -141,6 +165,9 @@ printf("name seasons parseXML END\n");
 #undef IFENDTAG
 #undef NEXTTAG
 #undef XMLERROR
+#undef FORALLATTR
+#undef GETATTR
+#undef CHECKNEEDEDATTR
 
 	return 0;
 

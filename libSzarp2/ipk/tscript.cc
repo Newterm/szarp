@@ -7,7 +7,7 @@
  *
  * Krzysztof Goliñski <krzgol@newterm.pl>
  *
- * IPK 'TDefined' class implementation.
+ * IPK 'TDrawdefinable' class implementation.
  *
  * $Id$
  */
@@ -33,47 +33,40 @@
 
 using namespace std;
 
-
-TParam* TDefined::parseXML(xmlTextReaderPtr reader, TSzarpConfig *tszarp)
+unsigned char* TScript::parseXML(xmlTextReaderPtr reader)
 {
 
-printf("name defined xmlParser\n");
+printf("name script xmlParser\n");
 
 #define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
 #define NEXTTAG if(name) xmlFree(name);\
 	if (xmlTextReaderRead(reader) != 1) \
 	return NULL; \
-	goto begin_process_tdefined;
+	goto begin_process_tscript;
 
 	xmlChar *name = NULL;
-	TParam *params = NULL, *p = NULL;
+	unsigned char *script = NULL;
 
 	NEXTTAG
 
-begin_process_tdefined:
+begin_process_tscript:
 
 	name = xmlTextReaderName(reader);
 	if (name == NULL)
-		name = xmlStrdup(BAD_CAST "--");
+		return NULL;
 
 	IFNAME("#text") {
 		NEXTTAG
 	} else
-	IFNAME("param") {
+	IFNAME("script") {
 		IFBEGINTAG {
-			if (params == NULL) {
-				params = p = new TParam(NULL,tszarp);
-			} else {
-				p = p->Append(new TParam(NULL,tszarp));
-			}
-			if (p->parseXML(reader))
-				return NULL;
+			NEXTTAG
 		}
-		NEXTTAG
 	} else
-	IFNAME("defined") {
-
+	IFNAME("#cdata-section") {
+		script = (unsigned char*) xmlTextReaderValue(reader);
+		NEXTTAG
 	} else {
 		printf("ERROR: not known name: %s\n",name);
 		assert(0 == 1 && "not know name");
@@ -84,8 +77,8 @@ begin_process_tdefined:
 #undef IFBEGINTAG
 #undef NEXTTAG
 
-printf("name  defined parseXML END\n");
+printf("name script parseXML END\n");
 
-return params;
+return script;
 
 }

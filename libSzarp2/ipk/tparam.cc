@@ -127,7 +127,8 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 //TODO: remove printf
 	printf("name: param parseXML\n");
 
-	xmlChar *attr = NULL;
+	const xmlChar *attr_name = NULL;
+	const xmlChar *attr = NULL;
 	xmlChar *name = NULL;
 
 #define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
@@ -136,7 +137,8 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 		sz_log(1, "XML parsing error: expected '%s' (line %d)", ATT, xmlTextReaderGetParserLineNumber(reader)); \
 		return 1; \
 	}
-#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
+//#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
+#define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
 #define DELATTR xmlFree(attr)
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
 #define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
@@ -145,61 +147,68 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 	if (xmlTextReaderRead(reader) != 1) \
 	return 1; \
 	goto begin_process_tparam;
-#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader)); \
-	xmlFree(attr);
-
-
-	NEEDATTR("name");
-	_name = SC::U2S(attr);
-	DELATTR;
-
-	IFATTR("short_name") {
-		_shortName = SC::U2S(attr);
-		DELATTR;
+#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
+#define XMLERRORATTR(ATT) sz_log(1,"XML parsing error: expected attribute '%s' (line: %d)", ATT, xmlTextReaderGetParserLineNumber(reader));
+#define FORALLATTR for (int __atr = xmlTextReaderMoveToFirstAttribute(reader); __atr > 0; __atr =  xmlTextReaderMoveToNextAttribute(reader) )
+#define GETATTR attr_name = xmlTextReaderConstLocalName(reader); attr = xmlTextReaderConstValue(reader);
+#define CHECKNEEDEDATTR(LIST) \
+	if (sizeof(LIST) > 0) { \
+		std::set<std::string> __tmpattr(LIST, LIST + (sizeof(LIST) / sizeof(LIST[0]))); \
+		FORALLATTR { GETATTR; __tmpattr.erase((const char*) attr_name); } \
+		if (__tmpattr.size() > 0) { XMLERRORATTR(__tmpattr.begin()->c_str()); return 1; } \
 	}
 
-	IFATTR("draw_name") {
-		_drawName = SC::U2S(attr);
-		DELATTR;
-	}
+	const char* need_attr_param[] = { "name" };
+	CHECKNEEDEDATTR(need_attr_param);
 
-	IFATTR("unit") {
-		_unit = SC::U2S(attr);
-		DELATTR;
-	}
+	bool isPrecAttr = false;
 
-	IFATTR("sum_unit") {
-		_sum_unit = SC::U2S(attr);
-	}
+	FORALLATTR {
+		GETATTR
 
-	IFATTR("sum_divisor") {
-		wstringstream ss;
-		ss.imbue(locale("C"));
-		ss << SC::U2S(attr);
-		ss >> _sum_divisor;
-		DELATTR;
-	}
-
-	IFATTR("period") {
-		int tmp = atoi((char*)attr);
-		if (tmp <= 0) {
-			XMLERROR("invalid value of period attribute");
+		IFATTR("name") {
+			_name = SC::U2S(attr);
+		} else
+		IFATTR("short_name") {
+			_shortName = SC::U2S(attr);
+		} else
+		IFATTR("draw_name") {
+			_drawName = SC::U2S(attr);
+		} else
+		IFATTR("unit") {
+			_unit = SC::U2S(attr);
+		} else
+		IFATTR("sum_unit") {
+			_sum_unit = SC::U2S(attr);
+		} else
+		IFATTR("sum_divisor") {
+			wstringstream ss;
+			ss.imbue(locale("C"));
+			ss << SC::U2S(attr);
+			ss >> _sum_divisor;
+		} else
+		IFATTR("period") {
+			int tmp = atoi((char*)attr);
+			if (tmp <= 0) {
+				XMLERROR("invalid value of period attribute");
+			}
+			else 
+				SetPeriod(tmp);
+		} else
+		IFATTR("base_ind") {
+			if (!strcmp((char*)attr, "auto"))
+				SetAutoBase();
+			else
+				SetBaseInd(atoi((char*)attr));
+		} else
+		IFATTR("prec") {
+			_prec = atoi((const char*) attr);
+			isPrecAttr = true;
+		} else {
+			printf("ERROR: not known attr:%s\n",attr_name);
+			assert(0 == 1 && "not known attr");
 		}
-		else {
-			SetPeriod(tmp);
-			DELATTR;
-		}
-	}
-
-	IFATTR("base_ind") {
-		if (!strcmp((char*)attr, "auto"))
-			SetAutoBase();
-		else
-			SetBaseInd(atoi((char*)attr));
-		DELATTR;
-		attr = NULL;
-	}
-
+	} // FORALLATTR
 
 	NEXTTAG
 
@@ -213,23 +222,38 @@ begin_process_tparam:
 	IFNAME("raport") {
 		IFBEGINTAG {
 			double o = -1.0;
-			IFATTR("order") {
-				wstringstream ss;
-				ss.imbue(locale("C"));
-				ss << SC::U2S(attr);
-				ss >> o;
-				DELATTR;
-			}
-			NEEDATTR("title");
-			xmlChar* d = xmlTextReaderGetAttribute(reader, (unsigned char*)"description");
-			xmlChar* f = xmlTextReaderGetAttribute(reader, (unsigned char*)"filename");
-			AddRaport(SC::U2S(attr),
-				d != NULL ? SC::U2S(d) : std::wstring(),
-				f != NULL ? SC::U2S(f) : std::wstring(),
+			std::wstring strw_title, strw_desc, strw_filen;
+
+			const char* need_attr_raport[] = { "title" };
+			CHECKNEEDEDATTR(need_attr_raport);
+
+			FORALLATTR {
+				GETATTR
+
+				IFATTR("order") {
+					wstringstream ss;
+					ss.imbue(locale("C"));
+					ss << SC::U2S(attr);
+					ss >> o;
+				} else
+				IFATTR("title") {
+					strw_title = SC::U2S(attr);
+				} else
+				IFATTR("description") {
+					strw_desc = SC::U2S(attr);
+				} else
+				IFATTR("filename") {
+					strw_filen = SC::U2S(attr);
+				} else {
+					printf("ERROR: not known attr:%s\n",attr_name);
+					assert(0 == 1 && "not known attr");
+				}
+			} // FORALLATTR
+
+			AddRaport(strw_title,
+				strw_desc,
+				strw_filen,
 				o);
-			DELATTR;
-			xmlFree(d);
-			xmlFree(f);
 		}
 		NEXTTAG
 	} else
@@ -244,18 +268,83 @@ begin_process_tparam:
 	IFNAME("define") {
 		IFBEGINTAG {
 			_param_type = TParam::P_REAL;
-			NEEDATTR("type");
-			if (!strcmp((char*)attr, "RPN")) {
-				_ftype = RPN;
-			}else 
-			if (!strcmp((char*)attr, "DRAWDEFINABLE")) {
-				_ftype = DEFINABLE;
-				_param_type = TParam::P_DEFINABLE;
-			}
+
+			const char* need_attr_def[] = { "type" };
+			CHECKNEEDEDATTR(need_attr_def);
+
+			FORALLATTR {
+				GETATTR
+
+				IFATTR("type") {
+					if (!strcmp((char*)attr, "RPN")) {
+						_ftype = RPN;
+					}else 
+					if (!strcmp((char*)attr, "DRAWDEFINABLE")) {
+						_ftype = DEFINABLE;
+						_param_type = TParam::P_DEFINABLE;
+					}
+#ifndef NO_LUA
+					else
+					 if (!strcmp((char*)attr, "LUA")) {
+						_param_type = TParam::P_LUA;
+					}
+				} else // end "type"
+//TODO: lua_formula is NEEDEDATTR - check it
+				IFATTR("lua_formula") {
+					if (!strcmp((char*)attr, "va"))
+						_ftype = LUA_VA;
+					else if (!strcmp((char*)attr, "av"))
+						_ftype = LUA_AV;
+					else if (!strcmp((char*)attr, "ipc"))
+						_ftype = LUA_IPC;
+					else {
+						XMLERROR("XML file error: unknown value for 'lua_formula' attribute");
+						return 1;
+					}
+				} else
+				IFATTR("lua_start_offset") {
+					_lua_start_offset = atoi ((char*) attr);
+				} else
+				IFATTR("lua_end_offset") {
+					_lua_end_offset = atoi ((char*)attr);
+				} else
+				IFATTR("lua_start_date_time") {
+					boost::posix_time::ptime star_date_time = boost::posix_time::not_a_date_time;
+					try {
+						star_date_time = boost::posix_time::time_from_string((char *)attr);
+					} catch(std::exception e) {
+						star_date_time = boost::posix_time::not_a_date_time;
+					}
+
+					if (star_date_time == boost::posix_time::not_a_date_time) {
+						XMLERROR("XML file error: lua_start_date_time attribute has invalid value - expected format \"YYYY-MM-DD hh:mm\"");
+					} else {
+						struct tm t = to_tm(star_date_time);
+						_lua_start_date_time = timegm(&t);
+					}
+
+#endif // NO_LUA
+				} // end "lua_end_offset" | "type"
+				else
+				IFATTR("formula") {
+					_formula = SC::U2S(attr);
+				} else
+				IFATTR("new_def") {
+					_is_new_def = xmlStrEqual(attr, (xmlChar *) "yes");
+				}else 	{
+					printf("ERROR: not known attr=%s\n",attr_name);
+					assert(0 == 1 && "not known attr");
+				}
+			} // end FORALLATTR
+		} // end "define"
+		NEXTTAG
+	} else
+	IFNAME("script") {
+		IFBEGINTAG {
+			_script = TScript::parseXML(reader);
 		}
 		NEXTTAG
 	} else
-
 /*
 	IFNAME("") {
 		IFBEGINTAG {
@@ -270,6 +359,11 @@ begin_process_tparam:
 		assert(0 == 1 && "not known name");
 	}
 
+	if (!isPrecAttr && !_values) {
+		XMLERROR("Attribute 'prec' in 'param'");
+		return 1;
+	}
+
 
 #undef IFNAME
 #undef NEEDATTR
@@ -279,6 +373,10 @@ begin_process_tparam:
 #undef IFENDTAG
 #undef NEXTTAG
 #undef XMLERROR
+#undef FORALLATTR
+#undef GETATTR
+#undef CHECKNEEDEDATTR
+
 	return 0;
 }
 

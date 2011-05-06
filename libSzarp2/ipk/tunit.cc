@@ -36,11 +36,12 @@ using namespace std;
 
 int TUnit::parseXML(xmlTextReaderPtr reader)
 {
-	xmlChar *attr = NULL;
-	xmlChar *name = NULL;
-
 //TODO: remove all printf
 printf("name: unit parseXML\n");
+
+	const xmlChar *attr_name = NULL;
+	const xmlChar *attr = NULL;
+	xmlChar *name = NULL;
 
 #define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
 #define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
@@ -48,40 +49,54 @@ printf("name: unit parseXML\n");
 		sz_log(1, "XML parsing error: expected '%s' (line %d)", ATT, xmlTextReaderGetParserLineNumber(reader)); \
 		return 1; \
 	}
-#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
+#define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
 #define DELATTR xmlFree(attr)
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
-#define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
+#define IFENDTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT)
 //TODO: check return value - 0 or 1 - in all files 
 #define NEXTTAG if(name) xmlFree(name);\
 	if (xmlTextReaderRead(reader) != 1) \
 	return 1; \
 	goto begin_process_tunit;
-#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader)); \
-	xmlFree(attr);
-
-
-	NEEDATTR("id")
-	if (xmlStrlen(attr) != 1) {
-		XMLERROR("attribute 'id' should be one ASCII");
-		return 1;
+#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
+#define XMLERRORATTR(ATT) sz_log(1,"XML parsing error: expected attribute '%s' (line: %d)", ATT, xmlTextReaderGetParserLineNumber(reader));
+#define FORALLATTR for (int __atr = xmlTextReaderMoveToFirstAttribute(reader); __atr > 0; __atr =  xmlTextReaderMoveToNextAttribute(reader) )
+#define GETATTR attr_name = xmlTextReaderConstLocalName(reader); attr = xmlTextReaderConstValue(reader);
+#define CHECKNEEDEDATTR(LIST) \
+	if (sizeof(LIST) > 0) { \
+		std::set<std::string> __tmpattr(LIST, LIST + (sizeof(LIST) / sizeof(LIST[0]))); \
+		FORALLATTR { GETATTR; __tmpattr.erase((const char*) attr_name); } \
+		if (__tmpattr.size() > 0) { XMLERRORATTR(__tmpattr.begin()->c_str()); return 1; } \
 	}
-	id = SC::U2S(attr)[0];
-	DELATTR;
 
-	NEEDATTR("type")
-	type = atoi((char*) attr);
-	DELATTR;
-	NEEDATTR("subtype")
-	subtype = atoi((char*) attr);
-	DELATTR;
-	NEEDATTR("bufsize")
-	bufsize = atoi((char*) attr);
-	DELATTR;
-	IFATTR("name") {
-//TODO: solve it
-//		name = SC::U2S(attr);
-		DELATTR;
+	const char* need_attr[] = { "id", "type", "subtype", "bufsize" };
+	CHECKNEEDEDATTR(need_attr);
+
+	FORALLATTR {
+		GETATTR
+
+		IFATTR("id") {
+			if (xmlStrlen(attr) != 1) {
+				XMLERROR("attribute 'id' should be one ASCII");
+				return 1;
+			}
+			id = SC::U2S(attr)[0];
+		} else
+		IFATTR("type") {
+			type = atoi ((const char*) attr);
+		} else
+		IFATTR("subtype") {
+			subtype = atoi((const char*) attr);
+		} else
+		IFATTR("bufsize") {
+			bufsize = atoi((const char*) attr);
+		} else
+		IFATTR("name") {
+			TUnit::name = SC::U2S(attr);
+		} else {
+			printf("not known attr: %s\n", attr_name);
+			assert( 0 == 1 && "not known attribute");
+		}
 	}
 
 	assert (params == NULL);
@@ -110,8 +125,12 @@ begin_process_tunit:
 	} else
 	IFNAME("unit") {
 	}
-	else
-		assert("not known tag");
+	else {
+		if (name != NULL)
+			printf("ERROR: not known tag: %s\n",name);
+//TODO: uncomment assert, and dont cry when a break occur :)
+//		assert( 0 == 1 && "not known tag");
+	}
 
 #undef IFNAME
 #undef NEEDATTR
@@ -121,6 +140,9 @@ begin_process_tunit:
 #undef IFENDTAG
 #undef NEXTTAG
 #undef XMLERROR
+#undef FORALLATTR
+#undef GETATTR
+#undef CHECKNEEDEDATTR
 
 	return 0;
 }

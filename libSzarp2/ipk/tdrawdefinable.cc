@@ -7,7 +7,7 @@
  *
  * Krzysztof Goliñski <krzgol@newterm.pl>
  *
- * IPK 'TDefined' class implementation.
+ * IPK 'TDrawdefinable' class implementation.
  *
  * $Id$
  */
@@ -34,28 +34,28 @@
 using namespace std;
 
 
-TParam* TDefined::parseXML(xmlTextReaderPtr reader, TSzarpConfig *tszarp)
+TParam* TDrawdefinable::parseXML(xmlTextReaderPtr reader, TSzarpConfig *tszarp)
 {
 
-printf("name defined xmlParser\n");
+printf("name drawdefinable xmlParser\n");
 
 #define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
 #define NEXTTAG if(name) xmlFree(name);\
 	if (xmlTextReaderRead(reader) != 1) \
 	return NULL; \
-	goto begin_process_tdefined;
+	goto begin_process_tdrawdef;
 
 	xmlChar *name = NULL;
 	TParam *params = NULL, *p = NULL;
 
 	NEXTTAG
 
-begin_process_tdefined:
+begin_process_tdrawdef:
 
 	name = xmlTextReaderName(reader);
 	if (name == NULL)
-		name = xmlStrdup(BAD_CAST "--");
+		return NULL;
 
 	IFNAME("#text") {
 		NEXTTAG
@@ -72,7 +72,7 @@ begin_process_tdefined:
 		}
 		NEXTTAG
 	} else
-	IFNAME("defined") {
+	IFNAME("drawdefinable") {
 
 	} else {
 		printf("ERROR: not known name: %s\n",name);
@@ -84,7 +84,7 @@ begin_process_tdefined:
 #undef IFBEGINTAG
 #undef NEXTTAG
 
-printf("name  defined parseXML END\n");
+printf("name drawdefinable parseXML END\n");
 
 return params;
 

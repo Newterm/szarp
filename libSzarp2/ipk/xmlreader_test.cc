@@ -77,6 +77,6 @@ int main() {
 	TSzarpConfig conf;
 //	conf.loadXML(path,L"debian");
 	conf.parseReader(path);
-//	conf.saveXML(L"/tmp/out.xml");
+	conf.saveXML(L"/tmp/out.xml");
 	return 0;
 }

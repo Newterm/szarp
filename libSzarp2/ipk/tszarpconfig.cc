@@ -313,18 +313,40 @@ int
 TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 {
 //TODO: remove all printf
+//TODO: check return value in function
 
 #define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
+#define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
+	if (attr == NULL) { \
+		sz_log(1, "XML parsing error: expected '%s' (line %d)", ATT, xmlTextReaderGetParserLineNumber(reader)); \
+		return 1; \
+	}
+#define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
+#define DELATTR xmlFree(attr)
+#define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
+#define IFENDTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT)
+//TODO: check return value - 0 or 1 - in all files 
 #define NEXTTAG if(name) xmlFree(name);\
 	if (xmlTextReaderRead(reader) != 1) \
-		return 0; \
+	return 1; \
 	goto begin_process_node;
+#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
+#define XMLERRORATTR(ATT) sz_log(1,"XML parsing error: expected attribute '%s' (line: %d)", ATT, xmlTextReaderGetParserLineNumber(reader));
+#define FORALLATTR for (int __atr = xmlTextReaderMoveToFirstAttribute(reader); __atr > 0; __atr =  xmlTextReaderMoveToNextAttribute(reader) )
+#define GETATTR attr_name = xmlTextReaderConstLocalName(reader); attr = xmlTextReaderConstValue(reader);
+#define CHECKNEEDEDATTR(LIST) \
+	if (sizeof(LIST) > 0) { \
+		std::set<std::string> __tmpattr(LIST, LIST + (sizeof(LIST) / sizeof(LIST[0]))); \
+		FORALLATTR { GETATTR; __tmpattr.erase((const char*) attr_name); } \
+		if (__tmpattr.size() > 0) { XMLERRORATTR(__tmpattr.begin()->c_str()); return 1; } \
+	}
 
 	int i = 0;
 	TParam *p = NULL;
 	TDevice *td = NULL;
-	xmlChar *attr = NULL;
-	xmlChar *name =NULL;
+	const xmlChar *attr_name = NULL;
+	const xmlChar *attr = NULL;
+	xmlChar *name = NULL;
 
 	assert(devices == NULL);
 	assert(defined == NULL);
@@ -349,54 +371,47 @@ begin_process_node:
 		name);
 */
 
-#define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
-	if (attr == NULL) { \
-		sz_log(1, "XML parsing error: expected '%s' (line %d)", ATT, xmlTextReaderGetParserLineNumber(reader)); \
-		return 1; \
-	}
-#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
-//#define DELATTR printf("delete: %s\n", attr); xmlFree(attr)
-#define DELATTR xmlFree(attr)
-#define XMLLINE xmlTextReaderGetParserLineNumber(reader)
-#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader)); \
-	xmlFree(attr);
-#define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
-#define IFENDTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT)
-#define GETNODE xmlTextReaderExpand(reader)
-#define XMLNEXT xmlTextReaderNext(reader)
 
 	IFNAME("params") {
 		IFBEGINTAG {
 			printf("name: params\n");
 
-			NEEDATTR("read_freq")
-			if ((i = atoi((char*)attr)) <= 0) {
-				XMLERROR("read_freq attribute <= 0");
-				return 0;
-			}
-			DELATTR;
+			const char* need_attr_params[] = { "read_freq" , "send_freq", "version" };
+			CHECKNEEDEDATTR(need_attr_params);
 
-			NEEDATTR("send_freq")
-			if ((i = atoi((char*)attr)) <= 0) {
-				XMLERROR("send_freq attribute <= 0");
-				return 0;
-			}
-			DELATTR;
+			FORALLATTR {
+				GETATTR
 
-			NEEDATTR("version")
-			if (!xmlStrEqual(attr, (unsigned char*) "1.0")) {
-				XMLERROR("incorrect version (1.0 expected)");
-				return 0;
-			}
-			DELATTR;
+				IFATTR("read_freq") {
+					if ((i = atoi((const char*)attr)) <= 0) {
+						XMLERROR("read_freq attribute <= 0");
+						return 0;
+					}
+					read_freq = i;
+				} else
+				IFATTR("send_freq") {
+					if ((i = atoi((const char*)attr)) <= 0) {
+						XMLERROR("send_freq attribute <= 0");
+						return 0;
+					}
+					send_freq = i;
+				} else
+				IFATTR("version") {
+					if (!xmlStrEqual(attr, (unsigned char*) "1.0")) {
+						XMLERROR("incorrect version (1.0 expected)");
+						return 0;
+					}
+				} else
+				IFATTR("title") {
+					title = SC::U2S(attr);
+				} else
+					IFATTR("xmlns") {
+				} else {
+					printf("ERROR: not known attr: %s\n",attr_name);
+					assert(0 == 1 && "not known attr");
+				}
+			} // FORALLATTR
 
-			IFATTR("xmlns") {
-				DELATTR;
-			}
-			IFATTR("title") {
-				title = SC::U2S(attr);
-				DELATTR;
-			}
 			NEXTTAG
 		}
 	} else
@@ -466,7 +481,12 @@ begin_process_node:
 		NEXTTAG
 	} else
 	IFNAME("drawdefinable") {
-//		printf("name: drawdefinable\n");
+		IFBEGINTAG {
+			printf("name: drawdefinable\n");
+			TParam * _par = TDrawdefinable::parseXML(reader,this);
+			if (_par)
+				drawdefinable = _par;
+		}
 	} else
 	IFNAME("seasons") {
 		IFBEGINTAG {
@@ -486,15 +506,16 @@ begin_process_node:
 	}
 
 #undef IFNAME
-#undef IFBEGINTAG
-#undef IFENDTAG
+#undef NEEDATTR
 #undef IFATTR
 #undef DELATTR
-#undef NEEDATTR
-#undef XMLLINE
+#undef IFBEGINTAG
+#undef IFENDTAG
+#undef NEXTTAG
 #undef XMLERROR
-#undef GETNODE
-#undef XMLNEXT
+#undef FORALLATTR
+#undef GETATTR
+#undef CHECKNEEDEDATTR
 
 	if (name) xmlFree(name);
 //	if (value) xmlFree(value);

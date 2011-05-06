@@ -26,6 +26,7 @@
 #include <tr1/unordered_map>
 
 #include <string>
+#include <set>
 
 #include <stdio.h>
 #include <assert.h>
@@ -1222,15 +1223,41 @@ protected:
 
 };
 
+/**
+ * Info about single node script.
+ */
+class TScript {
+public:
+	/** Parses XML node (current set in reader on script) and returns pointer to script.
+	 * @param reader XML reader set on TScript
+	 * @return script on success or NULL if empty
+	 */
+	static unsigned char* parseXML(xmlTextReaderPtr reader);
+};
 
 /**
- * Info about single param defined.
+ * Info about single node drawdefinable.
+ */
+class TDrawdefinable {
+public:
+	/** Parses XML node (current set in reader) and returns pointer to new TParam object.
+	 * @param reader XML reader set on TDrawdefinable
+	 * @param tszarp pointer to actual TSzarpConfig
+	 * @return NULL on error, pointer to newly created TParam object on
+	 * success.
+	 */
+	static TParam* parseXML(xmlTextReaderPtr reader,TSzarpConfig *tszarp);
+};
+
+/**
+ * Info about single node defined.
  */
 class TDefined {
 public:
-	/** Parses XML node and returns pointer to new TDraw object.
-	 * @param node XML node with draw description
-	 * @return NULL on error, pointer to newly created TDraw object on
+	/** Parses XML node (current set in reader) and returns pointer to new TParam object.
+	 * @param reader XML reader set on TDefined node
+	 * @param tszarp pointer to actual TSzarpConfig
+	 * @return NULL on error, pointer to newly created TParam object on
 	 * success.
 	 */
 	static TParam* parseXML(xmlTextReaderPtr reader,TSzarpConfig *tszarp);
