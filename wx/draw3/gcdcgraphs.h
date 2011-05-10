@@ -111,6 +111,7 @@ class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver
 
 	int GetRemarkClickedIndex(int x, int y);
 
+	void DrawParamName(wxGraphicsContext &dc);
 public:
         GCDCGraphs(wxWindow* parent, ConfigManager *cfg);
 

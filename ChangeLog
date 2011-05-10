@@ -1,3 +1,7 @@
+2011-05-10	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: speedup period switching on sets
+	with large number of graphs, add param name
+	drawing when ? key is pressed
 2011-05-10	Krzysztof Ga³±zka <kg@newterm.pl>
 	* debian/control: missing python-support in BuildDeps
 2011-04-30	Darek Marcinkiewicz <reksio@newterm.pl>

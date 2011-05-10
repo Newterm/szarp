@@ -581,6 +581,36 @@ void GCDCGraphs::DrawCursor(wxGraphicsContext &dc, Draw* d) {
 	dc.DrawRectangle(x - 4, y - 4, 9, 9);
 }
 
+void GCDCGraphs::DrawParamName(wxGraphicsContext &dc) {
+	DrawInfo *di = m_draws_wdg->GetCurrentDrawInfo();
+	if (di == NULL)
+		return;
+
+	dc.SetBrush(*wxBLACK_BRUSH);
+	dc.SetPen(*wxWHITE_PEN);
+
+	wxFont f = GetFont();
+	int ps = f.GetPointSize();
+	int fw = f.GetWeight();
+	f.SetWeight(wxFONTWEIGHT_BOLD);
+	f.SetPointSize(ps * 1.25);
+	dc.SetFont(f, di->GetDrawColor());
+
+	int w, h;
+	GetSize(&w, &h);
+
+	wxString text = m_cfg_mgr->GetConfigTitles()[di->GetBasePrefix()] + _T(":") + di->GetParamName();
+
+	double tw, th, _th, _ts;
+	dc.GetTextExtent(text, &tw, &th, &_th, &_ts);
+
+	dc.DrawRectangle(w / 2 - tw / 2 - 1, h / 2 - th / 2 - 1, tw + 2, th + 2);
+	dc.DrawText(text, w / 2 - tw / 2, h / 2 - th / 2);
+
+	f.SetPointSize(ps);
+	f.SetWeight(fw);
+}
+
 void GCDCGraphs::OnPaint(wxPaintEvent& e) {
 	if (m_draws_wdg->GetSelectedDraw() == NULL)
 		return;
@@ -607,6 +637,9 @@ void GCDCGraphs::OnPaint(wxPaintEvent& e) {
 	else
 		DrawGraphs(*dc);
 	DrawRemarksBitmaps(*dc);
+
+	if (m_draw_param_name) 
+		DrawParamName(*dc);
 
 	delete dc;
 }

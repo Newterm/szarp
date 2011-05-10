@@ -132,6 +132,8 @@ void InfoWidget::DrawInfoChanged(Draw *draw) {
 }
 
 void InfoWidget::PeriodChanged(Draw *draw, PeriodType period) {
+	if (draw->GetSelected() == false)
+		return;
 	m_period = period;
 	m_update_values = true;
 	m_update_current_value = true;
