@@ -117,7 +117,7 @@ printf("name device: parseXML\n");
 
 	const xmlChar *attr_name = NULL;
 	const xmlChar *attr = NULL;
-	xmlChar *name = NULL;
+	const xmlChar *name = NULL;
 
 #define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
 #define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
@@ -131,8 +131,7 @@ printf("name device: parseXML\n");
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
 #define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
 //TODO: check return value - 0 or 1 - in all files 
-#define NEXTTAG if(name) xmlFree(name);\
-	if (xmlTextReaderRead(reader) != 1) \
+#define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
 	return 1; \
 	goto begin_process_tdevice;
 #define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
@@ -145,8 +144,11 @@ printf("name device: parseXML\n");
 		FORALLATTR { GETATTR; __tmpattr.erase((const char*) attr_name); } \
 		if (__tmpattr.size() > 0) { XMLERRORATTR(__tmpattr.begin()->c_str()); return 1; } \
 	}
+#define TAGINFO name = xmlTextReaderName(reader); printf("tag=%s, type=%d, isEmpty=%d\n",name, xmlTextReaderNodeType(reader), xmlTextReaderIsEmptyElement(reader));
 
-	const char* need_attr[] = { "daemon", "path" };
+	TAGINFO;
+
+	const char* need_attr[] = { "daemon" }; //TODO: ckeck it, "path" };
 	CHECKNEEDEDATTR(need_attr);
 
 	FORALLATTR {
@@ -171,7 +173,7 @@ printf("name device: parseXML\n");
 			options = SC::U2S(attr);
 		} else {
 			printf("not known attr: %s\n", attr_name);
-			assert( 0 == 1 && "not known attribute");
+//			assert( 0 == 1 && "not known attribute");
 		}
 	}
 
@@ -179,10 +181,12 @@ printf("name device: parseXML\n");
 
 begin_process_tdevice:
 
-	name = xmlTextReaderName(reader);
+	name = xmlTextReaderConstName(reader);
 	IFNAME("#text") {
 		NEXTTAG
 	}
+
+	TAGINFO;
 
 	IFNAME("unit") {
 		IFBEGINTAG {
@@ -205,6 +209,7 @@ printf("name device parseXML END\n");
 #undef IFATTR
 #undef DELATTR
 #undef IFBEGINTAG
+#undef TAGINFO
 #undef IFENDTAG
 #undef NEXTTAG
 #undef XMLERROR

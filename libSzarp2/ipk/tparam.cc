@@ -129,7 +129,8 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 
 	const xmlChar *attr_name = NULL;
 	const xmlChar *attr = NULL;
-	xmlChar *name = NULL;
+	const xmlChar *name = NULL;
+	TValue* v = NULL;
 
 #define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
 #define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
@@ -142,9 +143,9 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 #define DELATTR xmlFree(attr)
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
 #define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
+#define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
 //TODO: check return value - 0 or 1 - in all files 
-#define NEXTTAG if(name) xmlFree(name);\
-	if (xmlTextReaderRead(reader) != 1) \
+#define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
 	return 1; \
 	goto begin_process_tparam;
 #define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
@@ -157,6 +158,12 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 		FORALLATTR { GETATTR; __tmpattr.erase((const char*) attr_name); } \
 		if (__tmpattr.size() > 0) { XMLERRORATTR(__tmpattr.begin()->c_str()); return 1; } \
 	}
+#define TAGINFO name = xmlTextReaderName(reader); printf("tag=%s, type=%d, isEmpty=%d\n",name, xmlTextReaderNodeType(reader), xmlTextReaderIsEmptyElement(reader));
+
+	if (xmlTextReaderIsEmptyElement(reader))
+		return 0;
+
+	TAGINFO;
 
 	const char* need_attr_param[] = { "name" };
 	CHECKNEEDEDATTR(need_attr_param);
@@ -168,6 +175,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 
 		IFATTR("name") {
 			_name = SC::U2S(attr);
+/**/printf("param name=%s\n",attr);
 		} else
 		IFATTR("short_name") {
 			_shortName = SC::U2S(attr);
@@ -206,7 +214,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 			isPrecAttr = true;
 		} else {
 			printf("ERROR: not known attr:%s\n",attr_name);
-			assert(0 == 1 && "not known attr");
+//			assert(0 == 1 && "not known attr");
 		}
 	} // FORALLATTR
 
@@ -214,8 +222,11 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 
 begin_process_tparam:
 
-	name = xmlTextReaderName(reader);
+	name = xmlTextReaderConstName(reader);
 	IFNAME("#text") {
+		NEXTTAG
+	}
+	IFCOMMENT {
 		NEXTTAG
 	}
 
@@ -254,6 +265,31 @@ begin_process_tparam:
 				strw_desc,
 				strw_filen,
 				o);
+		}
+		NEXTTAG
+	} else
+	IFNAME("value") {
+		IFBEGINTAG {
+			const char* need_attr_value[] = { "int", "name" };
+			CHECKNEEDEDATTR(need_attr_value);
+			std::wstring wstr_name;
+			int i = 0;
+
+			FORALLATTR {
+				GETATTR
+
+				IFATTR("int") {
+					i = atoi((const char*) attr);
+				} else
+				IFATTR("name") {
+					wstr_name = SC::U2S(attr);
+				}
+			}
+
+			if (v == NULL)
+				_values = v = new TValue(i, wstr_name, NULL);
+			else
+				v = v->Append(new TValue(i, wstr_name, NULL));
 		}
 		NEXTTAG
 	} else
@@ -355,7 +391,7 @@ begin_process_tparam:
 	IFNAME("param") {
 	}
 	else {
-		printf("ERROR: not known name:%s\n",name);
+		printf("ERROR<param>: not known name:%s\n",name);
 		assert(0 == 1 && "not known name");
 	}
 
@@ -371,6 +407,7 @@ begin_process_tparam:
 #undef DELATTR
 #undef IFBEGINTAG
 #undef IFENDTAG
+#undef IFCOMMENT
 #undef NEXTTAG
 #undef XMLERROR
 #undef FORALLATTR

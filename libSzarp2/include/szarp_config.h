@@ -1552,6 +1552,12 @@ public:
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlNodePtr node);
+	/**
+	 * Loads information parsed from XML file.
+	 * @param reader XML reader set on "send"
+	 * @return 0 on success, 1 on error
+	 */
+	int parseXML(xmlTextReaderPtr reader);
 protected:
 	TUnit *parentUnit;
 			/**< Pointer to parent TUnit object. */

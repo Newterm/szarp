@@ -41,7 +41,7 @@ printf("name: unit parseXML\n");
 
 	const xmlChar *attr_name = NULL;
 	const xmlChar *attr = NULL;
-	xmlChar *name = NULL;
+	const xmlChar *name = NULL;
 
 #define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
 #define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
@@ -53,9 +53,9 @@ printf("name: unit parseXML\n");
 #define DELATTR xmlFree(attr)
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
 #define IFENDTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT)
+#define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
 //TODO: check return value - 0 or 1 - in all files 
-#define NEXTTAG if(name) xmlFree(name);\
-	if (xmlTextReaderRead(reader) != 1) \
+#define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
 	return 1; \
 	goto begin_process_tunit;
 #define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
@@ -95,7 +95,7 @@ printf("name: unit parseXML\n");
 			TUnit::name = SC::U2S(attr);
 		} else {
 			printf("not known attr: %s\n", attr_name);
-			assert( 0 == 1 && "not known attribute");
+//			assert( 0 == 1 && "not known attribute");
 		}
 	}
 
@@ -103,12 +103,16 @@ printf("name: unit parseXML\n");
 	assert (sendParams == NULL);
 
 	TParam* p = NULL;
+	TSendParam *sp = NULL;
 
 	NEXTTAG
 
 begin_process_tunit:
-	name = xmlTextReaderName(reader);
+	name = xmlTextReaderConstName(reader);
 	IFNAME("#text") {
+		NEXTTAG
+	}
+	IFCOMMENT {
 		NEXTTAG
 	}
 
@@ -124,10 +128,21 @@ begin_process_tunit:
 		NEXTTAG
 	} else
 	IFNAME("unit") {
+	} else
+	IFNAME("send") {
+		IFBEGINTAG {
+			if (sendParams == NULL)
+				sp = sendParams = new TSendParam(this);
+			else
+				sp = sp->Append(new TSendParam(this));
+			if (sp->parseXML(reader))
+				return 1;
+		}
+		NEXTTAG
 	}
 	else {
 		if (name != NULL)
-			printf("ERROR: not known tag: %s\n",name);
+			printf("ERROR<unit>: not known tag: %s\n",name);
 //TODO: uncomment assert, and dont cry when a break occur :)
 //		assert( 0 == 1 && "not known tag");
 	}
@@ -138,11 +153,14 @@ begin_process_tunit:
 #undef DELATTR
 #undef IFBEGINTAG
 #undef IFENDTAG
+#undef IFCOMMENT
 #undef NEXTTAG
 #undef XMLERROR
 #undef FORALLATTR
 #undef GETATTR
 #undef CHECKNEEDEDATTR
+
+printf("name: unit parseXML END\n");
 
 	return 0;
 }

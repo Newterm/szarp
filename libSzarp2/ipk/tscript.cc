@@ -40,19 +40,18 @@ printf("name script xmlParser\n");
 
 #define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
-#define NEXTTAG if(name) xmlFree(name);\
-	if (xmlTextReaderRead(reader) != 1) \
+#define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
 	return NULL; \
 	goto begin_process_tscript;
 
-	xmlChar *name = NULL;
+	const xmlChar *name = NULL;
 	unsigned char *script = NULL;
 
 	NEXTTAG
 
 begin_process_tscript:
 
-	name = xmlTextReaderName(reader);
+	name = xmlTextReaderConstName(reader);
 	if (name == NULL)
 		return NULL;
 
@@ -68,7 +67,7 @@ begin_process_tscript:
 		script = (unsigned char*) xmlTextReaderValue(reader);
 		NEXTTAG
 	} else {
-		printf("ERROR: not known name: %s\n",name);
+		printf("ERROR<script>: not known name: %s\n",name);
 		assert(0 == 1 && "not know name");
 	}
 

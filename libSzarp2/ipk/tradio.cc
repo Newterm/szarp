@@ -48,8 +48,9 @@ int TRadio::parseXML(xmlTextReaderPtr reader)
 //TODO: remove printf
 	printf("name: radio parseXML\n");
 
-	xmlChar *attr = NULL;
-	xmlChar *name = NULL;
+	const xmlChar *attr = NULL;
+	const xmlChar *attr_name = NULL;
+	const xmlChar *name = NULL;
 
 #define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
 #define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
@@ -57,26 +58,31 @@ int TRadio::parseXML(xmlTextReaderPtr reader)
 		sz_log(1, "XML parsing error: expected '%s' (line %d)", ATT, xmlTextReaderGetParserLineNumber(reader)); \
 		return 1; \
 	}
-#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
+//#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
+#define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
 #define DELATTR xmlFree(attr)
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
 #define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
 //TODO: check return value - 0 or 1 - in all files 
-#define NEXTTAG if(name) xmlFree(name);\
-	if (xmlTextReaderRead(reader) != 1) \
+#define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
 	return 1; \
 	goto begin_process_tradio;
 #define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
+#define FORALLATTR for (int __atr = xmlTextReaderMoveToFirstAttribute(reader); __atr > 0; __atr =  xmlTextReaderMoveToNextAttribute(reader) )
+#define GETATTR attr_name = xmlTextReaderConstLocalName(reader); attr = xmlTextReaderConstValue(reader);
+#define CHECKNEEDEDATTR(LIST) \
+	if (sizeof(LIST) > 0) { \
+		std::set<std::string> __tmpattr(LIST, LIST + (sizeof(LIST) / sizeof(LIST[0]))); \
+		FORALLATTR { GETATTR; __tmpattr.erase((const char*) attr_name); } \
+		if (__tmpattr.size() > 0) { XMLERRORATTR(__tmpattr.begin()->c_str()); return 1; } \
+	}
 
 	assert(units == NULL);
 	TUnit* u = NULL;
 
-	name = xmlTextReaderName(reader);
-
-
 begin_process_tradio:
 
-	name = xmlTextReaderName(reader);
+	name = xmlTextReaderConstName(reader);
 	IFNAME("#text") {
 		NEXTTAG
 	}
@@ -94,11 +100,15 @@ begin_process_tradio:
 				return 1;
 			NEXTTAG
 		}
+	} else
+	IFNAME("device") {
+		IFENDTAG {
+		} else
+			assert(0 ==1  && "workaound parser problem");
 	} else {
-		printf("ERROR: not known name = %s\n",name);
+		printf("ERROR<radio>: not known name = %s\n",name);
 		assert(0 == 1 &&"not known tag");
 	}
-
 
 #undef IFNAME
 #undef NEEDATTR

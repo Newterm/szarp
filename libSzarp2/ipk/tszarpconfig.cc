@@ -325,9 +325,9 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 #define DELATTR xmlFree(attr)
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
 #define IFENDTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT)
+#define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
 //TODO: check return value - 0 or 1 - in all files 
-#define NEXTTAG if(name) xmlFree(name);\
-	if (xmlTextReaderRead(reader) != 1) \
+#define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
 	return 1; \
 	goto begin_process_node;
 #define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
@@ -346,18 +346,22 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 	TDevice *td = NULL;
 	const xmlChar *attr_name = NULL;
 	const xmlChar *attr = NULL;
-	xmlChar *name = NULL;
+	const xmlChar *name = NULL;
 
 	assert(devices == NULL);
 	assert(defined == NULL);
 
 begin_process_node:
 
-	name = xmlTextReaderName(reader);
+	name = xmlTextReaderConstName(reader);
+//TODO:check return value
 	if (name == NULL)
-		name = xmlStrdup(BAD_CAST "--");
+		return 1;
 
 	IFNAME("#text") {
+		NEXTTAG
+	}
+	IFCOMMENT {
 		NEXTTAG
 	}
 
@@ -374,7 +378,7 @@ begin_process_node:
 
 	IFNAME("params") {
 		IFBEGINTAG {
-			printf("name: params\n");
+			printf("-- name: params\n");
 
 			const char* need_attr_params[] = { "read_freq" , "send_freq", "version" };
 			CHECKNEEDEDATTR(need_attr_params);
@@ -405,10 +409,13 @@ begin_process_node:
 				IFATTR("title") {
 					title = SC::U2S(attr);
 				} else
-					IFATTR("xmlns") {
+				IFATTR("documentation_base_url") {
+					documentation_base_url = SC::U2S(attr);
+				} else
+				IFATTR("xmlns") {
 				} else {
 					printf("ERROR: not known attr: %s\n",attr_name);
-					assert(0 == 1 && "not known attr");
+//					assert(0 == 1 && "not known attr");
 				}
 			} // FORALLATTR
 
@@ -417,7 +424,7 @@ begin_process_node:
 	} else
 	IFNAME("device") {
 		IFBEGINTAG {
-			printf("name: device\n");
+			printf("-- name: device\n");
 
 			if (devices == NULL)
 				devices = td = new TDevice(this);
@@ -428,52 +435,9 @@ begin_process_node:
 		}
 		NEXTTAG
 	} else
-/*
-	IFNAME("unit") {
-//TODO
-		IFBEGINTAG {
-		}
-		NEXTTAG
-	} else
-	IFNAME("param") {
-//		printf("name: param\n");
-		IFATTR("name") {
-			DELATTR;
-		}
-		IFATTR("short_name") {
-			DELATTR;
-		}
-		IFATTR("draw_name") {
-			DELATTR;
-		}
-		IFATTR("prec") {
-			DELATTR;
-		}
-		IFATTR("prec") {
-			DELATTR;
-		}
-		IFATTR("base_id") {
-			DELATTR;
-		}
-//TODO
-		NEXTTAG
-	} else
-	IFNAME("define") {
-//		printf("name: define\n");
-		IFATTR("type") {
-			DELATTR;
-		}
-		IFATTR("formula") {
-			DELATTR;
-		}
-		IFATTR("lua_formula") {
-			DELATTR;
-		}
-	} else
-*/
 	IFNAME("defined") {
 		IFBEGINTAG {
-			printf("name: defined\n");
+			printf("-- name: defined\n");
 			TParam * _par = TDefined::parseXML(reader,this);
 			if (_par)
 				defined = _par;
@@ -482,15 +446,16 @@ begin_process_node:
 	} else
 	IFNAME("drawdefinable") {
 		IFBEGINTAG {
-			printf("name: drawdefinable\n");
+			printf("-- name: drawdefinable\n");
 			TParam * _par = TDrawdefinable::parseXML(reader,this);
 			if (_par)
 				drawdefinable = _par;
 		}
+		NEXTTAG
 	} else
 	IFNAME("seasons") {
 		IFBEGINTAG {
-			printf("name: seasons\n");
+			printf("-- name: seasons\n");
 			seasons = new TSSeason();
 			if (seasons->parseXML(reader)) {
 				delete seasons;
@@ -499,9 +464,14 @@ begin_process_node:
 			}
 		}
 		NEXTTAG
+	} else
+	IFNAME("checker:rules") {
+		// omit all tree
+		xmlTextReaderNext(reader);
+		goto begin_process_node;
 	} else {
 		if (name)
-			printf("ERROR: not known : %s\n",name);
+			printf("ERROR<szarpconfig>: not known tag: %s\n",name);
 		assert(name == NULL);
 	}
 
@@ -511,13 +481,17 @@ begin_process_node:
 #undef DELATTR
 #undef IFBEGINTAG
 #undef IFENDTAG
+#undef IFCOMMENT
 #undef NEXTTAG
 #undef XMLERROR
 #undef FORALLATTR
 #undef GETATTR
 #undef CHECKNEEDEDATTR
 
-	if (name) xmlFree(name);
+// why? copy/paste from parse reader
+	if (seasons == NULL)
+		seasons = new TSSeason();
+
 //	if (value) xmlFree(value);
 
 	return 0;

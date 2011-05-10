@@ -23,7 +23,8 @@ printf("name seasons: parseXML\n");
 
 	const xmlChar *attr_name = NULL;
 	const xmlChar *attr = NULL;
-	xmlChar *name = NULL;
+	const xmlChar *name = NULL;
+	bool isEmpty = false;
 
 #define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
 #define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
@@ -35,10 +36,10 @@ printf("name seasons: parseXML\n");
 #define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
 #define DELATTR xmlFree(attr)
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
+#define IFISEMPTYELEM if (xmlTextReaderIsEmptyElement(reader))
 #define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
 //TODO: check return value - 0 or 1 - in all files 
-#define NEXTTAG if(name) xmlFree(name);\
-	if (xmlTextReaderRead(reader) != 1) \
+#define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
 	return 1; \
 	goto begin_process_tseasons;
 #define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
@@ -50,6 +51,10 @@ printf("name seasons: parseXML\n");
 		std::set<std::string> __tmpattr(LIST, LIST + (sizeof(LIST) / sizeof(LIST[0]))); \
 		FORALLATTR { GETATTR; __tmpattr.erase((const char*) attr_name); } \
 		if (__tmpattr.size() > 0) { XMLERRORATTR(__tmpattr.begin()->c_str()); return 1; } \
+	}
+
+	IFISEMPTYELEM {
+		isEmpty = true;
 	}
 
 	const char* need_attr[] = { "month_start", "day_start", "month_end", "day_end" };
@@ -87,11 +92,14 @@ printf("name seasons: parseXML\n");
 		}
 	} // FORALLATTR
 
+	if (isEmpty)
+		return 0;
+
 	NEXTTAG
 
 begin_process_tseasons:
 
-	name = xmlTextReaderName(reader);
+	name = xmlTextReaderConstName(reader);
 	IFNAME("#text") {
 		NEXTTAG
 	}
@@ -162,6 +170,7 @@ printf("name seasons parseXML END\n");
 #undef IFATTR
 #undef DELATTR
 #undef IFBEGINTAG
+#undef IFISEMPTYELEM
 #undef IFENDTAG
 #undef NEXTTAG
 #undef XMLERROR

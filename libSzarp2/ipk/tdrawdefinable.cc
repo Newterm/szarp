@@ -41,25 +41,29 @@ printf("name drawdefinable xmlParser\n");
 
 #define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
-#define NEXTTAG if(name) xmlFree(name);\
-	if (xmlTextReaderRead(reader) != 1) \
+#define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
+#define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
 	return NULL; \
 	goto begin_process_tdrawdef;
 
-	xmlChar *name = NULL;
+	const xmlChar *name = NULL;
 	TParam *params = NULL, *p = NULL;
 
 	NEXTTAG
 
 begin_process_tdrawdef:
 
-	name = xmlTextReaderName(reader);
+	name = xmlTextReaderConstName(reader);
 	if (name == NULL)
 		return NULL;
 
 	IFNAME("#text") {
 		NEXTTAG
-	} else
+	}
+	IFCOMMENT {
+		NEXTTAG
+	}
+
 	IFNAME("param") {
 		IFBEGINTAG {
 			if (params == NULL) {
@@ -75,13 +79,14 @@ begin_process_tdrawdef:
 	IFNAME("drawdefinable") {
 
 	} else {
-		printf("ERROR: not known name: %s\n",name);
+		printf("ERROR<drawdefinable>: not known name: %s\n",name);
 		assert(0 == 1 && "not know name");
 	}
 
 
 #undef IFNAME
 #undef IFBEGINTAG
+#undef IFCOMMENT
 #undef NEXTTAG
 
 printf("name drawdefinable parseXML END\n");
