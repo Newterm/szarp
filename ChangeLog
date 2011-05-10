@@ -1,3 +1,5 @@
+2011-05-10	Krzysztof Ga³±zka <kg@newterm.pl>
+	* debian/control: missing python-support in BuildDeps
 2011-04-30	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3/drawprint.cpp: printing fix
 2011-04-26	Jakub Kotur <qba@newterm.pl>
