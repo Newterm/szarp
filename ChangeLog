@@ -1,3 +1,6 @@
+2011-05-11	Krzysztof Golinski <krzgol@newterm.pl>
+	* script/szbchecknames.py: A script looking for names
+	which are in database but not in params.xml
 2011-05-10	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: speedup period switching on sets
 	with large number of graphs, add param name
