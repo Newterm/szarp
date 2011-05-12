@@ -1,3 +1,7 @@
+2011-06-12	Krzysztof Golinski <krzgol@newterm.pl>
+	* wx/common/szapp{.h,.cpp}, wx/draw3/{drawapp.cpp,drawfrm.cpp}:
+	added "auto" language; added button "automatic" in "choose 
+	language window"
 2011-05-11	Krzysztof Golinski <krzgol@newterm.pl>
 	* script/szbchecknames.py: A script looking for names
 	which are in database but not in params.xml

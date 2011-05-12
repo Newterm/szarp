@@ -39,7 +39,7 @@
 #include <wx/cmdline.h>
 
 #include "config.h"
-
+#define AUTO_LANGUAGE wxT("auto")
 #define DEFAULT_LANGUAGE wxLocale::GetLanguageInfo(wxLocale::GetSystemLanguage() == wxLANGUAGE_UNKNOWN ? wxLANGUAGE_ENGLISH_UK : wxLocale::GetSystemLanguage())->CanonicalName.Left(2)
 
 class szAppImpl {

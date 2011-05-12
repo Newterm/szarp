@@ -783,7 +783,7 @@ void DrawFrame::OnUserParams(wxCommandEvent &evt) {
 }
 
 void DrawFrame::OnLanguageChange(wxCommandEvent &e) {
-	wxString lang = wxConfig::Get()->Read(_T("LANGUAGE"), DEFAULT_LANGUAGE);
+	wxString lang = wxConfig::Get()->Read(_T("LANGUAGE"), AUTO_LANGUAGE);
 
 	typedef std::map<wxString, wxString> SMSS;
 	SMSS mapLang;
@@ -800,11 +800,13 @@ void DrawFrame::OnLanguageChange(wxCommandEvent &e) {
 	wxArrayString choices;
 
 	// init array choices
+	choices.push_back(_("automatic"));
+
 	for (SMSS::iterator it = mapLang.begin(); it != mapLang.end(); ++it)
 		choices.push_back(it->second);
 
 	wxString caption = _("Current language is ");
-	caption += mapLang[lang].Len() ? mapLang[lang] : wxString(_("default language"));
+	caption += lang == AUTO_LANGUAGE ? wxString(_("automatic")) : mapLang[lang];
 
 	int ret = wxGetSingleChoiceIndex(_("Choose language"), caption, choices, this);
 	if (ret == -1)
@@ -812,15 +814,21 @@ void DrawFrame::OnLanguageChange(wxCommandEvent &e) {
 
 	// get a short language name - ugly but better than switch :)
 	wxString nl;
-	for (SMSS::iterator it = mapLang.begin(); it != mapLang.end(); ++it)
-		if (ret == 0) 
-		{
-			nl = it->first;
-			break;
-		}
-		else
-			--ret;
-	
+
+	if (ret == 0) {
+		nl = AUTO_LANGUAGE;
+	} else {
+		--ret;
+		for (SMSS::iterator it = mapLang.begin(); it != mapLang.end(); ++it)
+			if (ret == 0) 
+			{
+				nl = it->first;
+				break;
+			}
+			else
+				--ret;
+	}
+
 	if (nl == lang)
 		return;
 

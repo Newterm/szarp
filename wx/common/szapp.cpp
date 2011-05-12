@@ -182,7 +182,9 @@ wxString szAppImpl::GetSzarpDataDir() {
 
 void szAppImpl::InitializeLocale(wxArrayString &catalogs, wxLocale &locale) {
 
-	wxString lang = wxConfig::Get()->Read(_T("LANGUAGE"), DEFAULT_LANGUAGE);
+	wxString lang = wxConfig::Get()->Read(_T("LANGUAGE"), AUTO_LANGUAGE);
+	if (lang == AUTO_LANGUAGE)
+		lang = DEFAULT_LANGUAGE;
 
 	const wxLanguageInfo *info = wxLocale::FindLanguageInfo(lang);
 
