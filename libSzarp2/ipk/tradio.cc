@@ -63,6 +63,7 @@ int TRadio::parseXML(xmlTextReaderPtr reader)
 #define DELATTR xmlFree(attr)
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
 #define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
+#define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
 //TODO: check return value - 0 or 1 - in all files 
 #define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
 	return 1; \
@@ -86,7 +87,9 @@ begin_process_tradio:
 	IFNAME("#text") {
 		NEXTTAG
 	}
-
+	IFCOMMENT {
+		NEXTTAG
+	}
 
 	IFNAME("unit") {
 		IFBEGINTAG {
@@ -116,6 +119,7 @@ begin_process_tradio:
 #undef DELATTR
 #undef IFBEGINTAG
 #undef IFENDTAG
+#undef IFCOMMENT
 #undef NEXTTAG
 #undef XMLERROR
 

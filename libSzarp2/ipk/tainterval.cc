@@ -18,6 +18,69 @@ extern "C" {
 #include "szarp_config.h"
 
 
+TAnalysisInterval* TAnalysisInterval::parseXML(xmlTextReaderPtr reader) {
+
+	printf("name interval: parseXML\n");
+	const xmlChar *attr_name = NULL;
+	const xmlChar *attr = NULL;
+	const xmlChar *name = NULL;
+
+#define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
+#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
+#define XMLERRORATTR(ATT) sz_log(1,"XML parsing error: expected attribute '%s' (line: %d)", ATT, xmlTextReaderGetParserLineNumber(reader));
+#define FORALLATTR for (int __atr = xmlTextReaderMoveToFirstAttribute(reader); __atr > 0; __atr =  xmlTextReaderMoveToNextAttribute(reader) )
+#define GETATTR attr_name = xmlTextReaderConstName(reader); attr = xmlTextReaderConstValue(reader);
+#define CHECKNEEDEDATTR(LIST) \
+	if (sizeof(LIST) > 0) { \
+		std::set<std::string> __tmpattr(LIST, LIST + (sizeof(LIST) / sizeof(LIST[0]))); \
+		FORALLATTR { GETATTR; __tmpattr.erase((const char*) attr_name); } \
+		if (__tmpattr.size() > 0) { XMLERRORATTR(__tmpattr.begin()->c_str()); return NULL; } \
+	}
+
+	int duration;
+	int grate_speed_upper;
+	int grate_speed_lower;
+
+	const char* need_attr[] = { "duration", "grate_speed_upper", "grate_speed_lower"}; //TODO: ckeck it, "path" };
+	CHECKNEEDEDATTR(need_attr);
+
+	FORALLATTR {
+		GETATTR
+
+		IFATTR("duration") {
+			if ((sscanf((const char*)attr,"%d",&duration) != 1) || (duration < 0)) {
+				XMLERROR("Invalid 'duration' attribute on element 'interval'");
+				return NULL;
+			}
+		} else
+		IFATTR("grate_speed_upper") {
+			if ((sscanf((const char*) attr,"%d",&grate_speed_upper) != 1) || (grate_speed_upper< 0)) {
+				XMLERROR("Invalid 'grate_speed_upper' attribute on element 'interval'");
+				return NULL;
+			}
+		} else
+		IFATTR("grate_speed_lower") {
+			if ((sscanf((const char*) attr, "%d", &grate_speed_lower) != 1) || (grate_speed_lower < 0)) {
+				XMLERROR("Invalid 'grate_speed_lower' attribute on element 'interval'");
+				return NULL;
+			}
+		} else {
+			printf("<interval> not known attr: %s\n", attr_name);
+		}
+	}
+
+#undef IFATTR
+#undef XMLERROR
+#undef XMLERRORATTR
+#undef FORALLATTR
+#undef GETATTR
+#undef CHECKNEEDEDATTR
+
+	printf("name interval: parseXML\n");
+	return new TAnalysisInterval(grate_speed_lower, grate_speed_upper, duration);
+
+}
+
 TAnalysisInterval* TAnalysisInterval::parseXML(xmlNodePtr node) {
 #define NOATR(p, n) \
 	{ \

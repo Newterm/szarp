@@ -129,7 +129,8 @@ printf("name device: parseXML\n");
 #define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
 #define DELATTR xmlFree(attr)
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
-#define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
+#define IFENDTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT)
+#define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
 //TODO: check return value - 0 or 1 - in all files 
 #define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
 	return 1; \
@@ -137,7 +138,7 @@ printf("name device: parseXML\n");
 #define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
 #define XMLERRORATTR(ATT) sz_log(1,"XML parsing error: expected attribute '%s' (line: %d)", ATT, xmlTextReaderGetParserLineNumber(reader));
 #define FORALLATTR for (int __atr = xmlTextReaderMoveToFirstAttribute(reader); __atr > 0; __atr =  xmlTextReaderMoveToNextAttribute(reader) )
-#define GETATTR attr_name = xmlTextReaderConstLocalName(reader); attr = xmlTextReaderConstValue(reader);
+#define GETATTR attr_name = xmlTextReaderConstName(reader); attr = xmlTextReaderConstValue(reader);
 #define CHECKNEEDEDATTR(LIST) \
 	if (sizeof(LIST) > 0) { \
 		std::set<string> __tmpattr(LIST, LIST + (sizeof(LIST) / sizeof(LIST[0]))); \
@@ -172,7 +173,7 @@ printf("name device: parseXML\n");
 		IFATTR("options") {
 			options = SC::U2S(attr);
 		} else {
-			printf("not known attr: %s\n", attr_name);
+			printf("<device> not known attr: %s\n", attr_name);
 //			assert( 0 == 1 && "not known attribute");
 		}
 	}
@@ -183,6 +184,9 @@ begin_process_tdevice:
 
 	name = xmlTextReaderConstName(reader);
 	IFNAME("#text") {
+		NEXTTAG
+	}
+	IFCOMMENT {
 		NEXTTAG
 	}
 
@@ -199,7 +203,7 @@ begin_process_tdevice:
 	IFNAME("device") {
 	}
 	else {
-		printf("ERROR: not know name = %s\n",name);
+		printf("ERROR<device>: not know name = %s\n",name);
 		assert(name == NULL && "not know name");
 	}
 
@@ -211,6 +215,7 @@ printf("name device parseXML END\n");
 #undef IFBEGINTAG
 #undef TAGINFO
 #undef IFENDTAG
+#undef IFCOMMENT
 #undef NEXTTAG
 #undef XMLERROR
 #undef FORALLATTR

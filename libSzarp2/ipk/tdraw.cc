@@ -156,8 +156,8 @@ printf("name draw xmlParser\n");
 					break;
 			}
 		} else {
-			printf("not known attr: %s\n",attr_name);
-			assert(0 ==1 && "not known attr");
+			printf("not known attr<draw>: %s\n",attr_name);
+//			assert(0 ==1 && "not known attr");
 		}
 	} // FORALLATTR
 

@@ -53,7 +53,7 @@ printf("name drawdefinable xmlParser\n");
 
 begin_process_tdrawdef:
 
-	name = xmlTextReaderConstName(reader);
+	name = xmlTextReaderConstLocalName(reader);
 	if (name == NULL)
 		return NULL;
 

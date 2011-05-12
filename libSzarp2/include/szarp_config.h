@@ -59,7 +59,9 @@ class TAnalysisParam;
 class TSSeason;
 class TDictionary;
 class TTreeNode;
-
+class TDrawdefinable;
+class TScript;
+class TDefined;
 
 /** SZARP system configuration */
 class TSzarpConfig {
@@ -1774,6 +1776,11 @@ public:
 	 * @return pointer to TAnalysis object, NULL if error ocurred*/
 	static TAnalysis* parseXML(xmlNodePtr node);
 
+	/**Converts xml node to TAanalis object
+	 * @param reader set on analysis element
+	 * @return pointer to TAnalysis object, NULL if error ocurred*/
+	static TAnalysis* parseXML(xmlTextReaderPtr reader);
+
 	/**Creates xml node describing this object
 	 * @return pointer to a node*/
 	xmlNodePtr generateXMLNode(void);
@@ -1881,6 +1888,11 @@ class TAnalysisInterval {
 	 * @param node with interval element
 	 * @return pointer to TAnalysisInterval object, NULL if error ocurred*/
 	static TAnalysisInterval* parseXML(xmlNodePtr node);
+
+	/**Converts xml node to TAnalysisInterval object
+	 * @param reader set on interval element
+	 * @return pointer to TAnalysisInterval object, NULL if error ocurred*/
+	static TAnalysisInterval* parseXML(xmlTextReaderPtr reader);
 
 	/**Creates xml node describing this object
 	 * @return pointer to a node*/
@@ -2000,6 +2012,11 @@ public:
 	 * @param boiler element to be added
 	 * @return appended element*/
 	TBoiler* Append(TBoiler* boiler);
+
+	/**Converts xml node to TBoiler object
+	 * @param reader set on boiler element
+	 * @return pointer to TABoiler object, NULL if error ocurred*/
+	static TBoiler* parseXML(xmlTextReaderPtr reader);
 
 	/**Converts xml node to TBoiler object
 	 * @param node with boiler element

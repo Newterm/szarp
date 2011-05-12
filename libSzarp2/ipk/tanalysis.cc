@@ -89,6 +89,61 @@ xmlNodePtr TAnalysis::generateXMLNode() {
 #undef X
 }
 
+TAnalysis* TAnalysis::parseXML(xmlTextReaderPtr reader) {
+
+	printf("analysis: param parseXML\n");
+
+	const xmlChar *attr_name = NULL;
+	const xmlChar *attr = NULL;
+
+#define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
+#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
+#define XMLERRORATTR(ATT) sz_log(1,"XML parsing error: expected attribute '%s' (line: %d)", ATT, xmlTextReaderGetParserLineNumber(reader));
+#define FORALLATTR for (int __atr = xmlTextReaderMoveToFirstAttribute(reader); __atr > 0; __atr =  xmlTextReaderMoveToNextAttribute(reader) )
+#define GETATTR attr_name = xmlTextReaderConstName(reader); attr = xmlTextReaderConstValue(reader);
+#define CHECKNEEDEDATTR(LIST) \
+	if (sizeof(LIST) > 0) { \
+		std::set<std::string> __tmpattr(LIST, LIST + (sizeof(LIST) / sizeof(LIST[0]))); \
+		FORALLATTR { GETATTR; __tmpattr.erase((const char*) attr_name); } \
+		if (__tmpattr.size() > 0) { XMLERRORATTR(__tmpattr.begin()->c_str()); return NULL; } \
+	}
+
+	const char* need_attr_param[] = { "boiler_no","param_type" };
+	CHECKNEEDEDATTR(need_attr_param);
+
+	int bnr = 0;
+	TAnalysis::AnalysisParam param ; 
+
+	FORALLATTR {
+		GETATTR
+
+		IFATTR("boiler_no") {
+			bnr = atoi((const char*) attr);
+		} else
+		IFATTR("param_type") {
+			param = GetTypeForParamName(SC::U2S((unsigned char*)attr));
+		} else {
+			printf("ERROR<analysis>: not known attr:%s\n",attr_name);
+		}
+	}
+	if (param == TAnalysis::INVALID) {
+		XMLERROR("Incorrect value of 'param_type' attribute on element 'analysis'");
+		return NULL;
+	}
+
+	printf("analysis: param parseXML END\n");
+
+#undef IFATTR
+#undef XMLERROR
+#undef XMLERRORATTR
+#undef FORALLATTR
+#undef GETATTR
+#undef CHECKNEEDEDATTR
+
+
+	return new TAnalysis(bnr, param);
+}
+
 TAnalysis* TAnalysis::parseXML(xmlNodePtr node) {
 #define X (const xmlChar*)
 

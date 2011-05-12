@@ -38,6 +38,7 @@ printf("name seasons: parseXML\n");
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
 #define IFISEMPTYELEM if (xmlTextReaderIsEmptyElement(reader))
 #define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
+#define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
 //TODO: check return value - 0 or 1 - in all files 
 #define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
 	return 1; \
@@ -87,8 +88,8 @@ printf("name seasons: parseXML\n");
 				return 1;
 			}
 		} else {
-			printf("not known attr: %s\n",attr_name);
-			assert(0 == 1 && "not known attr");
+			printf("<seasons> not known attr: %s\n",attr_name);
+//			assert(0 == 1 && "not known attr");
 		}
 	} // FORALLATTR
 
@@ -99,8 +100,11 @@ printf("name seasons: parseXML\n");
 
 begin_process_tseasons:
 
-	name = xmlTextReaderConstName(reader);
+	name = xmlTextReaderConstLocalName(reader);
 	IFNAME("#text") {
+		NEXTTAG
+	}
+	IFCOMMENT {
 		NEXTTAG
 	}
 
@@ -139,7 +143,7 @@ begin_process_tseasons:
 						XMLERROR("Invalid end date of summer season definition");
 						return 1;
 					}
-				}
+				} else
 				IFATTR("day_end") {
 					if (sscanf((const char*) attr, "%d", &s.day_end) != 1) {
 						XMLERROR("Invalid end date of summer season definition");
@@ -172,6 +176,7 @@ printf("name seasons parseXML END\n");
 #undef IFBEGINTAG
 #undef IFISEMPTYELEM
 #undef IFENDTAG
+#undef IFCOMMENT
 #undef NEXTTAG
 #undef XMLERROR
 #undef FORALLATTR

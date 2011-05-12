@@ -151,7 +151,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 #define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
 #define XMLERRORATTR(ATT) sz_log(1,"XML parsing error: expected attribute '%s' (line: %d)", ATT, xmlTextReaderGetParserLineNumber(reader));
 #define FORALLATTR for (int __atr = xmlTextReaderMoveToFirstAttribute(reader); __atr > 0; __atr =  xmlTextReaderMoveToNextAttribute(reader) )
-#define GETATTR attr_name = xmlTextReaderConstLocalName(reader); attr = xmlTextReaderConstValue(reader);
+#define GETATTR attr_name = xmlTextReaderConstName(reader); attr = xmlTextReaderConstValue(reader);
 #define CHECKNEEDEDATTR(LIST) \
 	if (sizeof(LIST) > 0) { \
 		std::set<std::string> __tmpattr(LIST, LIST + (sizeof(LIST) / sizeof(LIST[0]))); \
@@ -213,7 +213,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 			_prec = atoi((const char*) attr);
 			isPrecAttr = true;
 		} else {
-			printf("ERROR: not known attr:%s\n",attr_name);
+			printf("ERROR<param> not known attr:%s\n",attr_name);
 //			assert(0 == 1 && "not known attr");
 		}
 	} // FORALLATTR
@@ -222,7 +222,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 
 begin_process_tparam:
 
-	name = xmlTextReaderConstName(reader);
+	name = xmlTextReaderConstLocalName(reader);
 	IFNAME("#text") {
 		NEXTTAG
 	}
@@ -301,6 +301,14 @@ begin_process_tparam:
 		}
 		NEXTTAG
 	} else
+	IFNAME("analysis") {
+		IFBEGINTAG {
+		TAnalysis* a = TAnalysis::parseXML(reader);
+		if (a != NULL)
+			AddAnalysis(a);
+		}
+		NEXTTAG
+	} else
 	IFNAME("define") {
 		IFBEGINTAG {
 			_param_type = TParam::P_REAL;
@@ -368,12 +376,25 @@ begin_process_tparam:
 				IFATTR("new_def") {
 					_is_new_def = xmlStrEqual(attr, (xmlChar *) "yes");
 				}else 	{
-					printf("ERROR: not known attr=%s\n",attr_name);
-					assert(0 == 1 && "not known attr");
+					printf("ERROR: not known attr<param>:%s\n",attr_name);
+//					assert(0 == 1 && "not known attr");
 				}
 			} // end FORALLATTR
 		} // end "define"
 		NEXTTAG
+	} else
+	IFNAME("doc") {
+//TODO: use in a future without goto ; goto -> while
+		// omit all tree
+		xmlTextReaderNext(reader);
+		goto begin_process_tparam;
+	} else
+	IFNAME("editable") {
+//TODO: I don't known what to do with "editable"
+//TODO: use in a future without goto ; goto -> while
+		// omit all tree
+		xmlTextReaderNext(reader);
+		goto begin_process_tparam;
 	} else
 	IFNAME("script") {
 		IFBEGINTAG {

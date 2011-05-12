@@ -461,6 +461,20 @@ begin_process_node:
 				delete seasons;
 				seasons = NULL;
 //TODO: return error
+				printf("FATAL ERROR <seasons>\n");
+			}
+		}
+		NEXTTAG
+	} else
+	IFNAME("boilers") {
+		IFBEGINTAG {
+			TBoiler* boiler = TBoiler::parseXML(reader);
+			if (!boiler) {
+//TODO: return error
+				printf("FATAL ERROR <boilers>\n");
+			} else {
+				boiler->SetParent(this);
+				AddBoiler(boiler);
 			}
 		}
 		NEXTTAG
@@ -468,6 +482,7 @@ begin_process_node:
 	IFNAME("checker:rules") {
 		// omit all tree
 		xmlTextReaderNext(reader);
+//TODO: make it without goto; goto - > while or better
 		goto begin_process_node;
 	} else {
 		if (name)
