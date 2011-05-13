@@ -105,7 +105,6 @@ printf("name boiler: parseXML\n");
 	}
 
 	TBoiler *boiler = NULL;
-	
 	int boiler_no;
 	float grate_speed;
 	float coal_gate_height;

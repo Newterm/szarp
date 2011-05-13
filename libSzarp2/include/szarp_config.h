@@ -62,6 +62,7 @@ class TTreeNode;
 class TDrawdefinable;
 class TScript;
 class TDefined;
+class TBoilers;
 
 /** SZARP system configuration */
 class TSzarpConfig {
@@ -1243,12 +1244,26 @@ public:
 class TDrawdefinable {
 public:
 	/** Parses XML node (current set in reader) and returns pointer to new TParam object.
-	 * @param reader XML reader set on TDrawdefinable
+	 * @param reader XML reader set on Drawdefinable
 	 * @param tszarp pointer to actual TSzarpConfig
 	 * @return NULL on error, pointer to newly created TParam object on
 	 * success.
 	 */
 	static TParam* parseXML(xmlTextReaderPtr reader,TSzarpConfig *tszarp);
+};
+
+/**
+ * Info about single node boilers.
+ */
+class TBoilers {
+public:
+	/** Parses XML node (current set in reader) and returns pointer to new TBoiler object.
+	 * @param reader XML reader set on boilers
+	 * @param tszarp pointer to actual TSzarpConfig
+	 * @return NULL on error, pointer to newly created TBoiler object on
+	 * success.
+	 */
+	static TBoiler* parseXML(xmlTextReaderPtr reader, TSzarpConfig *tszarp);
 };
 
 /**
@@ -1463,6 +1478,11 @@ public:
 	TTreeNode();
 	xmlNodePtr generateXML();
 	int parseXML(xmlNodePtr node);
+	/** Parses XML node (current set in reader)
+	 * @param reader XML reader set on treenode node
+	 * @return 0 on success, 1 on error
+	 */
+	int parseXML(xmlTextReaderPtr reader);
 	double GetPrior() { return _prior; }
 	double GetDrawPrior() { return _draw_prior; }
 	std::wstring GetName() { return _name; }

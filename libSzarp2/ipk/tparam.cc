@@ -142,7 +142,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 #define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
 #define DELATTR xmlFree(attr)
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
-#define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
+#define IFENDTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT)
 #define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
 //TODO: check return value - 0 or 1 - in all files 
 #define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
@@ -160,10 +160,12 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 	}
 #define TAGINFO name = xmlTextReaderName(reader); printf("tag=%s, type=%d, isEmpty=%d\n",name, xmlTextReaderNodeType(reader), xmlTextReaderIsEmptyElement(reader));
 
-	if (xmlTextReaderIsEmptyElement(reader))
-		return 0;
+//	TAGINFO;
 
-	TAGINFO;
+	bool isEmptyTag = false;
+	if (xmlTextReaderIsEmptyElement(reader)) {
+		isEmptyTag = true;
+	}
 
 	const char* need_attr_param[] = { "name" };
 	CHECKNEEDEDATTR(need_attr_param);
@@ -218,6 +220,9 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 		}
 	} // FORALLATTR
 
+	if (isEmptyTag)
+		return 0;
+
 	NEXTTAG
 
 begin_process_tparam:
@@ -256,8 +261,8 @@ begin_process_tparam:
 				IFATTR("filename") {
 					strw_filen = SC::U2S(attr);
 				} else {
-					printf("ERROR: not known attr:%s\n",attr_name);
-					assert(0 == 1 && "not known attr");
+					printf("ERROR<param>: not known attr:%s\n",attr_name);
+//					assert(0 == 1 && "not known attr");
 				}
 			} // FORALLATTR
 

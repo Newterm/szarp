@@ -82,11 +82,11 @@ printf("name draw xmlParser\n");
 #define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
 #define DELATTR xmlFree(attr)
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
-#define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
+#define IFENDTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT)
+#define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
 //TODO: check return value - 0 or 1 - in all files 
-#define NEXTTAG if(name) xmlFree(name);\
-	if (xmlTextReaderRead(reader) != 1) \
-	return 1; \
+#define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
+	return NULL; \
 	goto begin_process_tdraw;
 #define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
 #define XMLERRORATTR(ATT) sz_log(1,"XML parsing error: expected attribute '%s' (line: %d)", ATT, xmlTextReaderGetParserLineNumber(reader));
@@ -110,11 +110,16 @@ printf("name draw xmlParser\n");
 
 	const xmlChar *attr_name = NULL;
 	const xmlChar *attr = NULL;
-	xmlChar *name = NULL;
+	const xmlChar *name = NULL;
 	double p = -1.0, o = -1.0, min = 0.0, max = UNDEFVAL, smin = UNDEFVAL, smax = UNDEFVAL;
 	int sc = 0;
 	SPECIAL_TYPES sp = NONE;
 	std::wstring strw_c, strw_w;
+
+	bool isEmptyTag = false;
+	if (xmlTextReaderIsEmptyElement(reader)) {
+		isEmptyTag = true;
+	}
 
 	const char* need_attr[] = { "title" };
 	CHECKNEEDEDATTR(need_attr);
@@ -180,6 +185,40 @@ printf("name draw xmlParser\n");
 			smax, 
 			sp);
 
+	if (isEmptyTag) {
+		printf("name draw parseXML END\n");
+		return ret;
+	}
+
+	NEXTTAG
+
+begin_process_tdraw:
+
+	name = xmlTextReaderConstLocalName(reader);
+	IFNAME("#text") {
+		NEXTTAG
+	}
+	IFCOMMENT {
+		NEXTTAG
+	}
+
+	IFNAME("treenode") {
+		IFBEGINTAG {
+			TTreeNode* node = new TTreeNode();
+			if (node->parseXML(reader)) {
+				delete ret;
+				return NULL;
+			}
+			ret->_tree_nodev.push_back(node);
+		}
+		NEXTTAG
+	} else
+	IFNAME("draw") {
+
+	} else {
+		printf("ERROR<tdraw>: not known name:%s\n",name);
+		assert(0 == 1 && "not known name");
+	}
 //TODO: make me
 /*
 	for (xmlNodePtr ch = node->children; ch; ch = ch->next) if (!strcmp((const char*) ch->name, "treenode")) {
@@ -201,13 +240,14 @@ printf("name draw xmlParser\n");
 #undef DELATTR
 #undef IFBEGINTAG
 #undef IFENDTAG
+#undef IFCOMMENT
 #undef NEXTTAG
 #undef XMLERROR
 #undef FORALLATTR
 #undef GETATTR
 #undef CHECKNEEDEDATTR
 
-printf("name draw parseXML END\n");
+	printf("name draw parseXML END\n");
 
 	return ret;
 }

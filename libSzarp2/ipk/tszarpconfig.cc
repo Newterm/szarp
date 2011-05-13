@@ -466,18 +466,25 @@ begin_process_node:
 		}
 		NEXTTAG
 	} else
+
+
 	IFNAME("boilers") {
 		IFBEGINTAG {
-			TBoiler* boiler = TBoiler::parseXML(reader);
-			if (!boiler) {
+			printf("-- name: boilers\n");
+			TBoiler * _b = TBoilers::parseXML(reader,this);
+			if (_b)
+				AddBoiler(_b);
+			else {
 //TODO: return error
 				printf("FATAL ERROR <boilers>\n");
-			} else {
-				boiler->SetParent(this);
-				AddBoiler(boiler);
 			}
 		}
 		NEXTTAG
+	} else
+	IFNAME("mobile") {
+		// omit all tree
+		xmlTextReaderNext(reader);
+		goto begin_process_node;
 	} else
 	IFNAME("checker:rules") {
 		// omit all tree

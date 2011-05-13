@@ -62,7 +62,7 @@ int TRadio::parseXML(xmlTextReaderPtr reader)
 #define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
 #define DELATTR xmlFree(attr)
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
-#define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
+#define IFENDTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT)
 #define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
 //TODO: check return value - 0 or 1 - in all files 
 #define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
@@ -91,6 +91,12 @@ begin_process_tradio:
 		NEXTTAG
 	}
 
+	IFNAME("rate:period") {
+//TODO: you know what to do with goto
+		// omit all tree
+		xmlTextReaderNext(reader);
+		goto begin_process_tradio;
+	} else
 	IFNAME("unit") {
 		IFBEGINTAG {
 			if (units == NULL)

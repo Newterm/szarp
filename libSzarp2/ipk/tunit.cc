@@ -116,8 +116,14 @@ begin_process_tunit:
 		NEXTTAG
 	}
 
+
+#define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
+#define IFENDTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT)
+
 	IFNAME("param") {
-		IFBEGINTAG {
+		if ((xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT) || 
+			( (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT) && ( xmlTextReaderIsEmptyElement(reader) == 0)  ) ) {
+//		IFBEGINTAG {
 			if (params == NULL)
 				p = params = new TParam(this);
 			else

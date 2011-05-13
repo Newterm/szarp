@@ -131,6 +131,7 @@ printf("name send: parseXML\n");
 		} else
 		IFATTR("value") {
 			isValue = true;
+			value = atoi((const char*) attr);
 		} else
 		IFATTR("repeat") {
 			repeat = atoi((const char*) attr);
