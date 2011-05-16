@@ -116,6 +116,9 @@ printf("name send: parseXML\n");
 
 #define X (unsigned char *)
 
+	if (xmlTextReaderIsEmptyElement(reader) && !xmlTextReaderHasAttributes(reader) )
+		return 0;
+
 	const char* need_attr_send[] = { "repeat" , "type" };
 	CHECKNEEDEDATTR(need_attr_send);
 
@@ -135,6 +138,9 @@ printf("name send: parseXML\n");
 		} else
 		IFATTR("repeat") {
 			repeat = atoi((const char*) attr);
+		} else
+		IFATTR("send_no_data") {
+			sendNoData = 1;
 		} else
 		IFATTR("type") {
 			if (!xmlStrcmp(attr, X"probe"))

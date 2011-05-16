@@ -47,7 +47,7 @@ printf("name script xmlParser\n");
 	const xmlChar *name = NULL;
 	unsigned char *script = NULL;
 
-	NEXTTAG
+//	NEXTTAG
 
 begin_process_tscript:
 
@@ -60,11 +60,12 @@ begin_process_tscript:
 	} else
 	IFNAME("script") {
 		IFBEGINTAG {
+			script = xmlTextReaderReadString(reader);
 			NEXTTAG
 		}
 	} else
 	IFNAME("#cdata-section") {
-		script = (unsigned char*) xmlTextReaderValue(reader);
+//		script = (unsigned char*) xmlTextReaderValue(reader);
 		NEXTTAG
 	} else {
 		printf("ERROR<script>: not known name: %s\n",name);

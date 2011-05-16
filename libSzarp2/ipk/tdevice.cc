@@ -170,6 +170,10 @@ printf("name device: parseXML\n");
 		IFATTR("protocol") {
 			protocol = atoi((const char*) attr);
 		} else
+		IFATTR("special") {
+			special = 1;
+			special_value = atoi((const char*) attr);
+		} else
 		IFATTR("options") {
 			options = SC::U2S(attr);
 		} else {

@@ -223,6 +223,8 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 	if (isEmptyTag)
 		return 0;
 
+	bool isFormula = false;
+
 	NEXTTAG
 
 begin_process_tparam:
@@ -376,7 +378,11 @@ begin_process_tparam:
 				} // end "lua_end_offset" | "type"
 				else
 				IFATTR("formula") {
-					_formula = SC::U2S(attr);
+//TODO: workaround - take only one attr. "formula" when occur more than one <define>
+					if (!isFormula) {
+						_formula = SC::U2S(attr);
+						isFormula = true;
+					}
 				} else
 				IFATTR("new_def") {
 					_is_new_def = xmlStrEqual(attr, (xmlChar *) "yes");
@@ -758,6 +764,7 @@ TParam::generateXMLNode(void)
 			assert(false);
 	}
 	c = xmlNewChild(c, NULL, X "script", NULL);
+	assert(_script != NULL);
 	xmlNodePtr cd = xmlNewCDataBlock(r->doc, _script, strlen((char*)_script));
 	xmlAddChild(c, cd);
     } else
