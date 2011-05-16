@@ -94,6 +94,8 @@ private:
 	short*filemap;
 	std::wstring path;
 	unsigned int length;
+	unsigned int begin;
+
 
 	unsigned int file_size;
 	time_t probe_length;
