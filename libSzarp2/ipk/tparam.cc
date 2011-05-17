@@ -446,6 +446,8 @@ begin_process_tparam:
 #undef GETATTR
 #undef CHECKNEEDEDATTR
 
+printf("name: param parseXML END\n");
+
 	return 0;
 }
 

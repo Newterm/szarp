@@ -123,7 +123,6 @@ begin_process_tunit:
 	IFNAME("param") {
 		if ((xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT) || 
 			( (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT) && ( xmlTextReaderIsEmptyElement(reader) == 0)  ) ) {
-//		IFBEGINTAG {
 			if (params == NULL)
 				p = params = new TParam(this);
 			else
@@ -145,12 +144,17 @@ begin_process_tunit:
 				return 1;
 		}
 		NEXTTAG
+	} else
+	IFNAME("rate:period") {
+		// omit all tree
+		xmlTextReaderNext(reader);
+		goto begin_process_tunit;
 	}
 	else {
 		if (name != NULL)
 			printf("ERROR<unit>: not known tag: %s\n",name);
 //TODO: uncomment assert, and dont cry when a break occur :)
-//		assert( 0 == 1 && "not known tag");
+		assert( 0 == 1 && "not known tag");
 	}
 
 #undef IFNAME

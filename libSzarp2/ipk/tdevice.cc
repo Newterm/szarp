@@ -147,6 +147,8 @@ printf("name device: parseXML\n");
 	}
 #define TAGINFO name = xmlTextReaderName(reader); printf("tag=%s, type=%d, isEmpty=%d\n",name, xmlTextReaderNodeType(reader), xmlTextReaderIsEmptyElement(reader));
 
+	TRadio* r = NULL;
+
 	TAGINFO;
 
 	const char* need_attr[] = { "daemon" }; //TODO: ckeck it, "path" };
@@ -196,13 +198,47 @@ begin_process_tdevice:
 
 	TAGINFO;
 
-	IFNAME("unit") {
+/*
+			if (radios == NULL) {
+				r = radios = new TRadio(this);
+			} else {
+				r = r->Append(new TRadio(this));
+			}
+			assert(r != NULL);
+			if (r->parseXML(ch))
+				return 1;
+*/
+
+
+	IFNAME("radio") {
+/**/ printf("device -> radio\n");
 		IFBEGINTAG {
-			radios = new TRadio(this);
-			assert (radios != NULL);
-			return radios->parseXML(reader);
+			if (radios == NULL) {
+				r = radios = new TRadio(this);
+			} else {
+				r = r->Append(new TRadio(this));
+			}
+			assert (r != NULL);
+			if(r->parseXML(reader))
+				return 1;
 		}
+/**/ printf("device -> radio END\n");
 		NEXTTAG
+	} else
+	IFNAME("unit") {
+/**/ printf("device -> unit\n");
+		IFBEGINTAG {
+			if (radios == NULL) {
+				r = radios = new TRadio(this);
+			} else {
+				r = r->Append(new TRadio(this));
+			}
+			assert (r != NULL);
+			if(r->parseXML(reader))
+				return 1;
+		}
+/**/ printf("device -> unit END\n");
+//		NEXTTAG // don't take next tag - <unit> set it
 	} else
 	IFNAME("device") {
 	}

@@ -53,14 +53,7 @@ int TRadio::parseXML(xmlTextReaderPtr reader)
 	const xmlChar *name = NULL;
 
 #define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
-#define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
-	if (attr == NULL) { \
-		sz_log(1, "XML parsing error: expected '%s' (line %d)", ATT, xmlTextReaderGetParserLineNumber(reader)); \
-		return 1; \
-	}
-//#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
 #define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
-#define DELATTR xmlFree(attr)
 #define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
 #define IFENDTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT)
 #define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
@@ -69,6 +62,7 @@ int TRadio::parseXML(xmlTextReaderPtr reader)
 	return 1; \
 	goto begin_process_tradio;
 #define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
+#define XMLERRORATTR(ATT) sz_log(1,"XML parsing error: expected attribute '%s' (line: %d)", ATT, xmlTextReaderGetParserLineNumber(reader));
 #define FORALLATTR for (int __atr = xmlTextReaderMoveToFirstAttribute(reader); __atr > 0; __atr =  xmlTextReaderMoveToNextAttribute(reader) )
 #define GETATTR attr_name = xmlTextReaderConstLocalName(reader); attr = xmlTextReaderConstValue(reader);
 #define CHECKNEEDEDATTR(LIST) \
@@ -80,6 +74,8 @@ int TRadio::parseXML(xmlTextReaderPtr reader)
 
 	assert(units == NULL);
 	TUnit* u = NULL;
+
+	bool isRadio = false;
 
 begin_process_tradio:
 
@@ -97,7 +93,27 @@ begin_process_tradio:
 		xmlTextReaderNext(reader);
 		goto begin_process_tradio;
 	} else
+	IFNAME("radio") {
+		IFBEGINTAG {
+			isRadio = true;
+			const char *need_attr[] = { "id" };
+			CHECKNEEDEDATTR(need_attr);
+
+			FORALLATTR {
+				GETATTR
+
+				IFATTR("id") {
+					id = SC::U2S(attr)[0];
+				} else {
+					printf("ERROR<radio>: not known attr: %s\n",attr_name);
+				}
+			}
+				NEXTTAG
+		}
+
+	} else
 	IFNAME("unit") {
+printf("radio->unit\n");
 		IFBEGINTAG {
 			if (units == NULL)
 				units = u = new TUnit(this);
@@ -107,8 +123,12 @@ begin_process_tradio:
 			assert(u != NULL);
 			if (u->parseXML(reader))
 				return 1;
-			NEXTTAG
+
+//			if (isRadio) {
+//				NEXTTAG
+//			}
 		}
+		NEXTTAG
 	} else
 	IFNAME("device") {
 		IFENDTAG {
@@ -119,15 +139,22 @@ begin_process_tradio:
 		assert(0 == 1 &&"not known tag");
 	}
 
+	if (units == NULL) {
+		XMLERROR("no 'unit' elements found in 'device' element");
+		return 1;
+	}
+
 #undef IFNAME
-#undef NEEDATTR
 #undef IFATTR
-#undef DELATTR
 #undef IFBEGINTAG
 #undef IFENDTAG
 #undef IFCOMMENT
 #undef NEXTTAG
 #undef XMLERROR
+#undef XMLERRORATTR
+#undef FORALLATTR
+#undef GETATTR
+#undef CHECKNEEDEDATTR
 
 printf("name radio parseXML END\n");
 

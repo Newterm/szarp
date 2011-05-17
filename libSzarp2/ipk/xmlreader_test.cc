@@ -69,13 +69,12 @@ int parseFile(const wstring &file) {
 int main() {
 
 // removed bilg from tests
-wstring pathes[] = { 
-L"/root/xml/gcie.xml", // ???
-/*
-//L"/root/xml/gliw.xml", // <radio> inside <device>
+wstring pathes[] = {
+//L"/root/xml/gcie.xml", // not valid - no "id" in meny <unit> tags
 //L"/root/xml/poligon.xml", // more "speed" in old parser ->  modbus:speed
 //L"/root/xml/jgor.xml", // more "speed" in old parser ->  modbus:speed
 //L"/root/xml/leg1.xml", // more "speed" in old parser ->  modbus:speed
+L"/root/xml/gliw.xml", // identical only one configuration with <radio> inside <device>
 L"/root/xml/test1.xml", // identical (workaround: <define>)
 L"/root/xml/page.xml", // identical (workaround: <define>)
 L"/root/xml/sosn.xml", // identical (workaround: <define>)
@@ -102,7 +101,7 @@ L"/root/xml/rww1.xml", // identical
 L"/root/xml/ldw2.xml", // identical
 L"/root/xml/star.xml", // identical
 L"/root/xml/rww10.xml", // identical
-L"/root/xml/kato.xml", // identical
+L"/root/xml/kato.xml", // identical - raport inside unit - line 3428 <fix on server>
 L"/root/xml/tgw7.xml", // identical
 L"/root/xml/orzy.xml", // identical
 L"/root/xml/btw5.xml", // identical
@@ -227,11 +226,10 @@ L"/root/xml/psw1.xml", // identical
 L"/root/xml/sunc.xml", // identical
 L"/root/xml/rcw1.xml", // identical
 L"/root/xml/prat.xml", // identical
-*/
 		};
 
 	for (int i =0 ; i < sizeof(pathes)/ sizeof(pathes[0]) ; ++i) {
-//		std::wcout << L"------------ " << pathes[i] << L" ----------------" << endl;
+		std::wcout << L"------------ " << pathes[i] << L" ----------------" << endl;
 		TSzarpConfig confOld;
 		confOld.loadXML(pathes[i],L"debian");
 		confOld.saveXML(L"/tmp/outOld.xml");
