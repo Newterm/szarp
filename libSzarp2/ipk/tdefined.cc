@@ -36,59 +36,41 @@ using namespace std;
 
 TParam* TDefined::parseXML(xmlTextReaderPtr reader, TSzarpConfig *tszarp)
 {
-
+//TODO: remove
 printf("name defined xmlParser\n");
 
-#define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
-#define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
-#define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
-#define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
-	return NULL; \
-	goto begin_process_tdefined;
-
-	const xmlChar *name = NULL;
 	TParam *params = NULL, *p = NULL;
 
-	NEXTTAG
+	XMLWrapper xw(reader);
 
-begin_process_tdefined:
+	const char* ignored_tags[] = { "#text", "#comment", 0 };
+	xw.SetIgnoredTags(ignored_tags);
 
-	name = xmlTextReaderConstName(reader);
-	if (name == NULL)
+	if (!xw.NextTag())
 		return NULL;
 
-	IFNAME("#text") {
-		NEXTTAG
-	}
-
-	IFCOMMENT {
-		NEXTTAG
-	}
-
-	IFNAME("param") {
-		IFBEGINTAG {
-			if (params == NULL) {
-				params = p = new TParam(NULL,tszarp);
-			} else {
-				p = p->Append(new TParam(NULL,tszarp));
+	for (;;) {
+		if (xw.IsTag("param")) {
+			if (xw.IsBeginTag()) {
+				if (params == NULL) {
+					params = p = new TParam(NULL,tszarp);
+				} else {
+					p = p->Append(new TParam(NULL,tszarp));
+				}
+				if (p->parseXML(reader))
+					return NULL;
 			}
-			if (p->parseXML(reader))
-				return NULL;
+			xw.NextTag();
+		} else
+		if (xw.IsTag("defined")) {
+			return params;
+		} else {
+			printf("ERROR<defined>: not known name: %s\n",xw.GetTagName());
+			assert(0 == 1 && "not know name");
 		}
-		NEXTTAG
-	} else
-	IFNAME("defined") {
-
-	} else {
-		printf("ERROR<defined>: not known name: %s\n",name);
-		assert(0 == 1 && "not know name");
 	}
 
-#undef IFNAME
-#undef IFBEGINTAG
-#undef IFCOMMENT
-#undef NEXTTAG
-
+//TODO: remove
 printf("name  defined parseXML END\n");
 
 return params;

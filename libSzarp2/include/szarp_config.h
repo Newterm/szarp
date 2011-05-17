@@ -63,6 +63,7 @@ class TDrawdefinable;
 class TScript;
 class TDefined;
 class TBoilers;
+class XMLWrapper;
 
 /** SZARP system configuration */
 class TSzarpConfig {
@@ -2235,6 +2236,35 @@ public:
 	TDictionary(const std::wstring& szarp_dir);
 	void TranslateIPK(TSzarpConfig *ipk, const std::wstring& tolang);
 
+};
+
+class XMLWrapper {
+private:
+	xmlTextReaderPtr &r;
+	const xmlChar* name;
+	const xmlChar* attr_name;
+	const xmlChar* attr;
+	std::set<std::string> ignoredTags;
+	std::set<std::string> ignoredTrees;
+	std::set<std::string> neededAttr;
+
+public:
+	XMLWrapper(xmlTextReaderPtr &_r): r(_r), name(NULL), attr_name(NULL), attr(NULL)  {name = xmlTextReaderConstName(r);}
+	void SetIgnoredTags(const char *i_list[]);
+	void SetIgnoredTrees(const char *i_list[]);
+	bool AreValidAttr(const char* attr_list[]);
+	bool NextTag();
+	bool IsTag(const char* n);
+	bool IsAttr(const char* a);
+	bool IsFirstAttr();
+	bool IsNextAttr();
+	bool IsBeginTag();
+	bool IsEndTag();
+	bool IsEmptyTag();
+	const xmlChar* GetAttr();
+	const xmlChar* GetAttrName();
+	const xmlChar* GetTagName();
+	void XMLError(const char *text, int prior = 1);
 };
 
 #endif /* __SZARP_CONFIG_H__ */

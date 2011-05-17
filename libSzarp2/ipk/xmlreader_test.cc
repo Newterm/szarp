@@ -70,10 +70,12 @@ int main() {
 
 // removed bilg from tests
 wstring pathes[] = {
+/*
 //L"/root/xml/gcie.xml", // not valid - no "id" in meny <unit> tags
 //L"/root/xml/poligon.xml", // more "speed" in old parser ->  modbus:speed
 //L"/root/xml/jgor.xml", // more "speed" in old parser ->  modbus:speed
 //L"/root/xml/leg1.xml", // more "speed" in old parser ->  modbus:speed
+*/
 L"/root/xml/gliw.xml", // identical only one configuration with <radio> inside <device>
 L"/root/xml/test1.xml", // identical (workaround: <define>)
 L"/root/xml/page.xml", // identical (workaround: <define>)

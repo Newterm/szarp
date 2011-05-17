@@ -70,39 +70,8 @@ TParam* TBoiler::GetParam(TAnalysis::AnalysisParam param_type) {
 }
 
 TBoiler* TBoiler::parseXML(xmlTextReaderPtr reader) {
-
+//TODO: remove 
 printf("name boiler: parseXML\n");
-
-	const xmlChar *attr_name = NULL;
-	const xmlChar *attr = NULL;
-	const xmlChar *name = NULL;
-
-#define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
-#define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
-	if (attr == NULL) { \
-		sz_log(1, "XML parsing error: expected '%s' (line %d)", ATT, xmlTextReaderGetParserLineNumber(reader)); \
-		return 1; \
-	}
-//#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
-#define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
-#define DELATTR xmlFree(attr)
-#define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
-#define IFENDTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT)
-#define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
-//TODO: check return value - 0 or 1 - in all files 
-#define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
-	return NULL; \
-	goto begin_process_tboiler;
-#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
-#define XMLERRORATTR(ATT) sz_log(1,"XML parsing error: expected attribute '%s' (line: %d)", ATT, xmlTextReaderGetParserLineNumber(reader));
-#define FORALLATTR for (int __atr = xmlTextReaderMoveToFirstAttribute(reader); __atr > 0; __atr =  xmlTextReaderMoveToNextAttribute(reader) )
-#define GETATTR attr_name = xmlTextReaderConstName(reader); attr = xmlTextReaderConstValue(reader);
-#define CHECKNEEDEDATTR(LIST) \
-	if (sizeof(LIST) > 0) { \
-		std::set<std::string> __tmpattr(LIST, LIST + (sizeof(LIST) / sizeof(LIST[0]))); \
-		FORALLATTR { GETATTR; __tmpattr.erase((const char*) attr_name); } \
-		if (__tmpattr.size() > 0) { XMLERRORATTR(__tmpattr.begin()->c_str()); return NULL; } \
-	}
 
 	TBoiler *boiler = NULL;
 	int boiler_no;
@@ -110,88 +79,76 @@ printf("name boiler: parseXML\n");
 	float coal_gate_height;
 	BoilerType boiler_type;
 
-	const char* need_attr[] = { "boiler_no" , "grate_speed", "coal_gate_height", "boiler_type"};
-	CHECKNEEDEDATTR(need_attr);
+	XMLWrapper xw(reader);
 
-	FORALLATTR {
-		GETATTR
+	const char* need_attr[] = { "boiler_no" , "grate_speed", "coal_gate_height", "boiler_type", 0};
+	xw.AreValidAttr(need_attr);
 
-		IFATTR("boiler_no") {
+	const char* ignored_tags[] = { "#text", "#comment", 0 };
+	xw.SetIgnoredTags(ignored_tags);
+
+	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+
+		const xmlChar* attr = xw.GetAttr();
+
+		if (xw.IsAttr("boiler_no")) {
 			if ((sscanf((const char*)attr,"%d",&boiler_no) != 1) || (boiler_no < 0)) {
-				XMLERROR("Invalid 'boiler_no' attribute on element 'boiler'");
+				xw.XMLError("Invalid 'boiler_no' attribute on element 'boiler'");
 				return NULL;
 			}
 		} else
-		IFATTR("grate_speed") {
+		if (xw.IsAttr("grate_speed")) {
 			if ((sscanf((const char*)attr,"%f",&grate_speed) != 1) || (grate_speed < 0)) {
-				XMLERROR("Invalid 'grate_speed' attribute on element 'boiler'");
+				xw.XMLError("Invalid 'grate_speed' attribute on element 'boiler'");
 				return NULL;
 			}
 		} else
-		IFATTR("coal_gate_height") {
+		if (xw.IsAttr("coal_gate_height")) {
 			if ((sscanf((const char*)attr,"%f",&coal_gate_height) != 1) || (coal_gate_height < 0)) {
-				XMLERROR("Invalid 'max_coal_gate_height_change' attribute on element 'boiler'");
+				xw.XMLError("Invalid 'max_coal_gate_height_change' attribute on element 'boiler'");
 				return NULL;
 			}
 		} else
-		IFATTR("boiler_type") {
+		if (xw.IsAttr("boiler_type")) {
 			boiler_type = GetTypeForBoilerName(SC::U2S((const unsigned char*)attr));
 			if (boiler_type == INVALID ) {
-				XMLERROR("Invalid 'boiler_type' attribute on element 'boiler'");
+				xw.XMLError("Invalid 'boiler_type' attribute on element 'boiler'");
 				return NULL;
 			}
 		} else {
-			printf("<boiler> not known attr: %s\n",attr_name);
+//TODO: make it xmlerrorattr or sth simmilar
+			printf("<boiler> not known attr: %s\n",xw.GetAttrName());
 		}
 
 	}
 
 	boiler = new TBoiler(boiler_no, grate_speed, coal_gate_height, boiler_type);
 
-	NEXTTAG
+	xw.NextTag();
 
-begin_process_tboiler:
-	name = xmlTextReaderConstName(reader);
-	IFNAME("#text") {
-		NEXTTAG
-	}
-	IFCOMMENT {
-		NEXTTAG
-	}
-
-	IFNAME("interval") {
-		IFBEGINTAG {
-			TAnalysisInterval *interval = TAnalysisInterval::parseXML(reader);
-			if (!interval) {
-				delete boiler;
-				return NULL;
+	for (;;) {
+		if (xw.IsTag("interval")) {
+			if (xw.IsBeginTag()) {
+				TAnalysisInterval *interval = TAnalysisInterval::parseXML(reader);
+				if (!interval) {
+					delete boiler;
+					return NULL;
+				}
+				boiler->AddInterval(interval);
 			}
-			boiler->AddInterval(interval);
+			xw.NextTag();
+		} else
+		if (xw.IsTag("boiler")) {
+			return boiler;
 		}
-		NEXTTAG
-	} else
-	IFNAME("boiler") {
-	}
-	else {
-		printf("ERROR<boiler>: not know name = %s\n",name);
-		assert(name == NULL && "not know name");
+		else {
+	//TODO: make it better
+			printf("ERROR<boiler>: not know name = %s\n",xw.GetTagName());
+			assert(xw.GetTagName() == NULL && "not know name");
+		}
 	}
 
 printf("name boiler parseXML END\n");
-
-#undef IFNAME
-#undef NEEDATTR
-#undef IFATTR
-#undef DELATTR
-#undef IFBEGINTAG
-#undef TAGINFO
-#undef IFENDTAG
-#undef IFCOMMENT
-#undef NEXTTAG
-#undef XMLERROR
-#undef FORALLATTR
-#undef GETATTR
-#undef CHECKNEEDEDATTR
 
 	return boiler;
 }

@@ -83,6 +83,7 @@ libSzarp2_a_SOURCES = \
 			$(IPK_DIR)/ttreenode.cc \
 			$(IPK_DIR)/dmncfg.cc \
 			$(IPK_DIR)/tdefined.cc \
+			$(IPK_DIR)/xmlwrapper.cc \
 			$(IPK_DIR)/tdrawdefinable.cc \
 			$(IPK_DIR)/tboilers.cc \
 			$(IPK_DIR)/tscript.cc \
