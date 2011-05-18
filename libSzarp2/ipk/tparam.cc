@@ -468,38 +468,38 @@ TParam::parseXML(xmlNodePtr node)
 	}
 #define NEEDATR(p, n) \
 	if (c) xmlFree(c); \
-	c = xmlGetProp(p, (xmlChar *)n); \
+	c = xmlGetNoNsProp(p, (xmlChar *)n); \
 	if (!c) NOATR(p, n);
 #define X (xmlChar*)
 
     NEEDATR(node, "name");
     _name = SC::U2S(c);
     
-    c = xmlGetProp(node, X "short_name");
+    c = xmlGetNoNsProp(node, X "short_name");
     if (c) {
 	    _shortName = SC::U2S(c);
 	    xmlFree(c);
     }
 
-    c = xmlGetProp(node, X "draw_name");
+    c = xmlGetNoNsProp(node, X "draw_name");
     if (c) {
 	    _drawName = SC::U2S(c);
 	    xmlFree(c);
     }
 
-    c = xmlGetProp(node, X "unit");
+    c = xmlGetNoNsProp(node, X "unit");
     if (c) {
 	    _unit = SC::U2S(c);
 	    xmlFree(c);
     }
 
-    c = xmlGetProp(node, X "sum_unit");
+    c = xmlGetNoNsProp(node, X "sum_unit");
     if (c) {
 	    _sum_unit = SC::U2S(c);
 	    xmlFree(c);
     }
 
-    c = xmlGetProp(node, X "sum_divisor");
+    c = xmlGetNoNsProp(node, X "sum_divisor");
     if (c) {
 	    wstringstream ss;
 	    ss.imbue(locale("C"));
@@ -508,7 +508,7 @@ TParam::parseXML(xmlNodePtr node)
 	    xmlFree(c);
     }
 
-    c = xmlGetProp(node, X "period"); 
+    c = xmlGetNoNsProp(node, X "period"); 
     if (c) {
 	int tmp = atoi((char*)c);
         if (tmp <= 0)
@@ -521,7 +521,7 @@ TParam::parseXML(xmlNodePtr node)
 	xmlFree(c);
     }
 
-    c = xmlGetProp(node, X "base_ind");
+    c = xmlGetNoNsProp(node, X "base_ind");
     if (c) {
 	if (!strcmp((char*)c, "auto"))
 	    SetAutoBase();
@@ -546,7 +546,7 @@ TParam::parseXML(xmlNodePtr node)
 	}
 	else if (!strcmp((char *) ch->name, "raport")) {
 	    double o = -1.0;
-	    c = xmlGetProp(ch, X "order");
+	    c = xmlGetNoNsProp(ch, X "order");
 	    if (c) {
 		wstringstream ss;
 		ss.imbue(locale("C"));
@@ -554,8 +554,8 @@ TParam::parseXML(xmlNodePtr node)
 		ss >> o;
 	    }
 	    NEEDATR(ch, "title");
-	    xmlChar* d = xmlGetProp(ch, X"description");
-	    xmlChar* f = xmlGetProp(ch, X"filename");
+	    xmlChar* d = xmlGetNoNsProp(ch, X"description");
+	    xmlChar* f = xmlGetNoNsProp(ch, X"filename");
 
 	    AddRaport(SC::U2S(c),
 			d != NULL ? SC::U2S(d) : std::wstring(),
@@ -624,19 +624,19 @@ sz_log(1,
 	}
 
 	if (_ftype == LUA_VA || _ftype == LUA_AV) {
-		xmlChar* offset = xmlGetProp(ch, X "lua_start_offset");
+		xmlChar* offset = xmlGetNoNsProp(ch, X "lua_start_offset");
 		if (offset) {
 			_lua_start_offset = atoi((char*) offset);
 			xmlFree(offset);
 		}
-		offset = xmlGetProp(ch, X "lua_end_offset");
+		offset = xmlGetNoNsProp(ch, X "lua_end_offset");
 		if (offset) {
 			_lua_end_offset = atoi((char*) offset);
 			xmlFree(offset);
 		}
 
 
-		xmlChar *start_dt = xmlGetProp(ch, X "lua_start_date_time");
+		xmlChar *start_dt = xmlGetNoNsProp(ch, X "lua_start_date_time");
 		if (start_dt) {
 				boost::posix_time::ptime star_date_time = boost::posix_time::not_a_date_time;
 				try {
@@ -677,7 +677,7 @@ sz_log(1,
     if (cld != NULL) {
 	if (cld->children != NULL) {
 	    _script = xmlNodeListGetString(cld->doc, cld->children, 1);
-	    xmlChar * ndef = xmlGetProp(ch, (xmlChar *) "new_def");
+	    xmlChar * ndef = xmlGetNoNsProp(ch, (xmlChar *) "new_def");
             if (NULL != ndef) {
   	        _is_new_def = xmlStrEqual(ndef, (xmlChar *) "yes");
 	    	xmlFree(ndef);
@@ -698,7 +698,7 @@ sz_log(1,
      c = NULL;
 
      if (DEFINABLE == _ftype) {
-	xmlChar * ndef = xmlGetProp(ch, (xmlChar *) "new_def");
+	xmlChar * ndef = xmlGetNoNsProp(ch, (xmlChar *) "new_def");
        	if (NULL != ndef) {
 	    _is_new_def = xmlStrEqual(ndef, (xmlChar *) "yes");
 	    xmlFree(ndef);

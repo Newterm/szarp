@@ -26,13 +26,13 @@ int TTreeNode::parseXML(xmlNodePtr node) {
 	}
 #define NEEDATR(p, n) \
 	if (c) xmlFree(c); \
-	c = xmlGetProp(p, (xmlChar *)n); \
+	c = xmlGetNoNsProp(p, (xmlChar *)n); \
 	if (!c) NOATR(p, n);
 #define X (xmlChar*)
 
 	NEEDATR(node, "name"); 
 	_name = SC::U2S(c);
-	c = xmlGetProp(node, X "prior");
+	c = xmlGetNoNsProp(node, X "prior");
 	if (c) {
 		std::wstringstream ss;
 		ss.imbue(std::locale("C"));
@@ -40,7 +40,7 @@ int TTreeNode::parseXML(xmlNodePtr node) {
 		ss >> _prior;
 		xmlFree(c);
 	}
-	c = xmlGetProp(node, X "draw_prior");
+	c = xmlGetNoNsProp(node, X "draw_prior");
 	if (c) {
 		std::wstringstream ss;
 		ss.imbue(std::locale("C"));

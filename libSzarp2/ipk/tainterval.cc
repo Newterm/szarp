@@ -74,7 +74,7 @@ TAnalysisInterval* TAnalysisInterval::parseXML(xmlNodePtr node) {
 	}
 #define NEEDATR(p, n) \
 	if (c) xmlFree(c); \
-	c = (char *)xmlGetProp(p, (xmlChar *)n); \
+	c = (char *)xmlGetNoNsProp(p, (xmlChar *)n); \
 	if (!c) NOATR(p, n);
 	assert(node != NULL);
 	char *c = NULL;

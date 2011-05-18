@@ -40,39 +40,39 @@ int TDevice::parseXML(xmlNodePtr node)
 	int i;
 	xmlNodePtr ch;
 	
-	c = xmlGetProp(node, X"daemon");
+	c = xmlGetNoNsProp(node, X"daemon");
 	if (!c)
 		goto inside;
 	daemon = SC::U2S(c);
 	xmlFree(c);
 
-	c = xmlGetProp(node, X"options");
+	c = xmlGetNoNsProp(node, X"options");
 	if (c) {
 		options = SC::U2S(c);
 		xmlFree(c);
 	}
-	c = xmlGetProp(node, X"path");
+	c = xmlGetNoNsProp(node, X"path");
 	if (!c)
 		goto inside;
 	path = SC::U2S(c);
 	xmlFree(c);
-	c = xmlGetProp(node, X"speed");
+	c = xmlGetNoNsProp(node, X"speed");
 	if (!c)
 		goto inside;
 	speed = atoi((char*) c);
 	xmlFree(c);
-	c = xmlGetProp(node, X"stop");
+	c = xmlGetNoNsProp(node, X"stop");
 	if (!c)
 		goto inside;
 	stop = atoi((char*) c);
 	xmlFree(c);
-	c = xmlGetProp(node, X"protocol");
+	c = xmlGetNoNsProp(node, X"protocol");
 	if (!c)
 		goto inside;
 	protocol = atoi((char*)(c));
 	xmlFree(c);
 inside:
-	c = xmlGetProp(node, X"special");
+	c = xmlGetNoNsProp(node, X"special");
 	if (c) {
 		special = 1;
 		special_value = atoi((char*)c);

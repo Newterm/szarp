@@ -176,7 +176,7 @@ int TRadio::parseXML(xmlNodePtr node)
 	}
 #define NEEDATR(p, n) \
 	if (c) free(c); \
-	c = xmlGetProp(p, (xmlChar *)n); \
+	c = xmlGetNoNsProp(p, (xmlChar *)n); \
 	if (!c) NOATR(p, n);
 #define X (xmlChar *)
 	if (!strcmp((char *)node->name, "radio")) {

@@ -160,7 +160,7 @@ int TSSeason::parseXML(xmlNodePtr node) {
 	}
 #define NEEDATR(p, n) \
 	if (c) free(c); \
-	c = (char *)xmlGetProp(p, (xmlChar *)n); \
+	c = (char *)xmlGetNoNsProp(p, (xmlChar *)n); \
 	if (!c) NOATR(p, n);
 #define X (xmlChar*)
 

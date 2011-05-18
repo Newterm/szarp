@@ -211,34 +211,34 @@ TDraw* TDraw::parseXML(xmlNodePtr node)
 
 	SPECIAL_TYPES sp;
 	
-	w = xmlGetProp(node, (xmlChar*)"title");
+	w = xmlGetNoNsProp(node, (xmlChar*)"title");
 	if (w == NULL) {
 		sz_log(1, "Attribute 'title' on element 'draw' not found (line %ld)", 
 			xmlGetLineNo(node));
 		return NULL;
 	}
 
-	c = xmlGetProp(node, (xmlChar*)"color");
+	c = xmlGetNoNsProp(node, (xmlChar*)"color");
 
-	ch = xmlGetProp(node, (xmlChar*)"prior");
+	ch = xmlGetNoNsProp(node, (xmlChar*)"prior");
 	if (ch) {
 		CONVERT(SC::U2S(ch), p);
 		xmlFree(ch);
 	} else
 		p = -1.0;
 
-	ch = xmlGetProp(node, (xmlChar*)"order");
+	ch = xmlGetNoNsProp(node, (xmlChar*)"order");
 	if (ch) {
 		CONVERT(SC::U2S(ch), o);
 		xmlFree(ch);
 	} else
 		o = -1.0;
 
-	ch = xmlGetProp(node, (xmlChar*)"max");
+	ch = xmlGetNoNsProp(node, (xmlChar*)"max");
 	if (ch) {
 		CONVERT(SC::U2S(ch), max);
 		xmlFree(ch);
-		ch = xmlGetProp(node, (xmlChar*)"min");
+		ch = xmlGetNoNsProp(node, (xmlChar*)"min");
 		if (ch) {
 			CONVERT(SC::U2S(ch), min);
 			xmlFree(ch);
@@ -249,18 +249,18 @@ TDraw* TDraw::parseXML(xmlNodePtr node)
 		max = -1.0;
 	}
 
-	ch = xmlGetProp(node, (xmlChar*)"scale");
+	ch = xmlGetNoNsProp(node, (xmlChar*)"scale");
 	if (ch) {
 		CONVERT(SC::U2S(ch), sc);
 		xmlFree(ch);
 		if (sc > 0)
-			ch = xmlGetProp(node, (xmlChar*)"minscale");
+			ch = xmlGetNoNsProp(node, (xmlChar*)"minscale");
 		else
 			ch = NULL;
 		if (ch) {
 			CONVERT(SC::U2S(ch), smin);
 			xmlFree(ch);
-			ch = xmlGetProp(node, (xmlChar*)"maxscale");
+			ch = xmlGetNoNsProp(node, (xmlChar*)"maxscale");
 		} 
 		if (ch) {
 			CONVERT(SC::U2S(ch), smax);
@@ -273,7 +273,7 @@ TDraw* TDraw::parseXML(xmlNodePtr node)
 	}
 	
 	sp = NONE;
-	ch = xmlGetProp(node, (xmlChar*)"special");
+	ch = xmlGetNoNsProp(node, (xmlChar*)"special");
 	if (ch) {
 		for (unsigned i = 0; i < sizeof(SPECIAL_TYPES_STR) / sizeof(wchar_t*); i++)
 			if (SC::U2S(ch) == SPECIAL_TYPES_STR[i]) {

@@ -129,7 +129,7 @@ TAnalysis* TAnalysis::parseXML(xmlNodePtr node) {
 
 	char *ch = NULL;
 	
-	ch = (char*)xmlGetProp(node, X"boiler_no");
+	ch = (char*)xmlGetNoNsProp(node, X"boiler_no");
 
 	if (!ch) {
 		sz_log(1, "Attribute 'boiler_no' on 'analysis' element not found (line %ld)",
@@ -139,7 +139,7 @@ TAnalysis* TAnalysis::parseXML(xmlNodePtr node) {
 	int boiler_no = atoi(ch);
 	xmlFree(ch);
 
-	ch = (char*)xmlGetProp(node, X"param_type");
+	ch = (char*)xmlGetNoNsProp(node, X"param_type");
 	if (!ch) {
 		sz_log(1, "Attribute 'param_type' on 'analysis' element not found (line %ld)",
 				xmlGetLineNo(node));

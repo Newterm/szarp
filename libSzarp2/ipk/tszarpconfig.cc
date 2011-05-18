@@ -573,7 +573,7 @@ TSzarpConfig::parseXML(xmlDocPtr doc)
 	}
 #define NEEDATR(p, n) \
 	if (c) free(c); \
-	c = xmlGetProp(p, (xmlChar *)n); \
+	c = xmlGetNoNsProp(p, (xmlChar *)n); \
 	if (!c) NOATR(p, n);
 #define X (xmlChar *)
 
@@ -589,7 +589,7 @@ TSzarpConfig::parseXML(xmlDocPtr doc)
     NEED(node, "params");
     NEEDATR(node, "version");
 
-    unsigned char* _language = xmlGetProp(node, X "language");
+    unsigned char* _language = xmlGetNoNsProp(node, X "language");
     if (_language) {
 	nativeLanguage = SC::U2S(_language);
 	xmlFree(_language);
@@ -597,7 +597,7 @@ TSzarpConfig::parseXML(xmlDocPtr doc)
     	nativeLanguage = L"pl";
 	 
 
-    unsigned char* _title = xmlGetProp(node, X "title");
+    unsigned char* _title = xmlGetNoNsProp(node, X "title");
     title = U2S(_title);
     xmlFree(_title);
 
@@ -606,14 +606,14 @@ sz_log(1, "XML parsing error: incorrect version (1.0 expected) (line %ld)", xmlG
 	goto at_end;
     }
 
-    _documenation_base_url = xmlGetProp(node, X "documentation_base_url");
+    _documenation_base_url = xmlGetNoNsProp(node, X "documentation_base_url");
     if (_documenation_base_url) {
 	    documentation_base_url = U2S(_documenation_base_url);
 	    xmlFree(_documenation_base_url);
     }
 
-    _ps_addres =  xmlGetProp(node, X "ps_address");
-    _ps_port = xmlGetProp(node, X "ps_port");
+    _ps_addres =  xmlGetNoNsProp(node, X "ps_address");
+    _ps_port = xmlGetNoNsProp(node, X "ps_port");
     if (_ps_addres)
 	    ps_address =  U2S(_ps_addres);
     if (_ps_port)

@@ -159,13 +159,13 @@ int TSendParam::parseXML(xmlNodePtr node)
 	}
 #define NEEDATR(p, n) \
 	if (c) free(c); \
-	c = xmlGetProp(p, (xmlChar *)n); \
+	c = xmlGetNoNsProp(p, (xmlChar *)n); \
 	if (!c) NOATR(p, n);
 #define X (unsigned char *)
 	
-	unsigned char* _pn = xmlGetProp(node, X"param");
+	unsigned char* _pn = xmlGetNoNsProp(node, X"param");
 	if (_pn == NULL) {
-		c = xmlGetProp(node, X"value");
+		c = xmlGetNoNsProp(node, X"value");
 		if (c == NULL) 
 			return 0;
 		value = atoi((char*)c);
@@ -180,7 +180,7 @@ int TSendParam::parseXML(xmlNodePtr node)
 	repeat = atoi((char*)c);
 	free(c);
 	c = NULL;
-	if ((c = xmlGetProp(node, X"send_no_data"))) {
+	if ((c = xmlGetNoNsProp(node, X"send_no_data"))) {
 		sendNoData = 1;
 	}
 	free(c);
