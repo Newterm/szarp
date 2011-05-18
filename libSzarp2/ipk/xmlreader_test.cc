@@ -118,14 +118,12 @@ int parseFile(const wstring &file) {
 
 int main() {
 
-// removed bilg from tests
 const char* pathes[] = {
-/*
-//"/root/xml/gcie.xml", // not valid - no "id" in meny <unit> tags
-//"/root/xml/poligon.xml", // more "speed" in old parser ->  modbus:speed
-//"/root/xml/jgor.xml", // more "speed" in old parser ->  modbus:speed
-//"/root/xml/leg1.xml", // more "speed" in old parser ->  modbus:speed
-*/
+"/root/xml/bilg.xml", // identical after fix (set "prec" = "dde:prec", prec before dde:prec)
+"/root/xml/gcie.xml", // identical after fix (added missing IDs ( moved on front ) )
+"/root/xml/poligon.xml", // identical after fix (added "speed" before "modbus:speed" )
+"/root/xml/jgor.xml", // identical after fix (added "speed" before "modbus:speed")
+"/root/xml/leg1.xml", // identical after fix (added "speed" before "modbus:speed")
 "/root/xml/gliw.xml", // identical only one configuration with <radio> inside <device>
 "/root/xml/test1.xml", // identical (workaround: <define>)
 "/root/xml/page.xml", // identical (workaround: <define>)
