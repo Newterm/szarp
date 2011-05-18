@@ -21,70 +21,45 @@ int TSSeason::parseXML(xmlTextReaderPtr reader) {
 //TODO: remove all printf
 printf("name seasons: parseXML\n");
 
-	const xmlChar *attr_name = NULL;
-	const xmlChar *attr = NULL;
-	const xmlChar *name = NULL;
 	bool isEmpty = false;
 
-#define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
-#define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
-	if (attr == NULL) { \
-		sz_log(1, "XML parsing error: expected '%s' (line %d)", ATT, xmlTextReaderGetParserLineNumber(reader)); \
-		return 1; \
-	}
-//#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
-#define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
-#define DELATTR xmlFree(attr)
-#define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
-#define IFISEMPTYELEM if (xmlTextReaderIsEmptyElement(reader))
-#define IFENDTAG if (xmlTextReaderNodeType(reader) == 15)
-#define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
-//TODO: check return value - 0 or 1 - in all files 
-#define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
-	return 1; \
-	goto begin_process_tseasons;
-#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
-#define XMLERRORATTR(ATT) sz_log(1,"XML parsing error: expected attribute '%s' (line: %d)", ATT, xmlTextReaderGetParserLineNumber(reader));
-#define FORALLATTR for (int __atr = xmlTextReaderMoveToFirstAttribute(reader); __atr > 0; __atr =  xmlTextReaderMoveToNextAttribute(reader) )
-#define GETATTR attr_name = xmlTextReaderConstLocalName(reader); attr = xmlTextReaderConstValue(reader);
-#define CHECKNEEDEDATTR(LIST) \
-	if (sizeof(LIST) > 0) { \
-		std::set<std::string> __tmpattr(LIST, LIST + (sizeof(LIST) / sizeof(LIST[0]))); \
-		FORALLATTR { GETATTR; __tmpattr.erase((const char*) attr_name); } \
-		if (__tmpattr.size() > 0) { XMLERRORATTR(__tmpattr.begin()->c_str()); return 1; } \
-	}
+	XMLWrapper xw(reader);
 
-	IFISEMPTYELEM {
+	if (xw.IsEmptyTag())
 		isEmpty = true;
-	}
 
-	const char* need_attr[] = { "month_start", "day_start", "month_end", "day_end" };
-	CHECKNEEDEDATTR(need_attr);
+	const char* need_attr[] = { "month_start", "day_start", "month_end", "day_end", 0 };
+	xw.AreValidAttr(need_attr);
 
-	FORALLATTR {
-		GETATTR
+	const char* ignored_tags[] = { "#text", "#comment", 0 };
+	xw.SetIgnoredTags(ignored_tags);
 
-		IFATTR("month_start") {
+	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+		const xmlChar* attr = xw.GetAttr();
+		const xmlChar* attr_name = xw.GetAttrName();
+
+//TODO: make it better - atoi or map with pointers to function
+		if (xw.IsAttr("month_start")) {
 			if (sscanf((const char*) attr, "%d", &defs.month_start) != 1) {
-				XMLERROR("Invalid start date of default summer season definition");
+				xw.XMLError("Invalid start date of default summer season definition");
 				return 1;
 			}
 		} else
-		IFATTR("day_start") {
+		if (xw.IsAttr("day_start")) {
 			if (sscanf((const char*) attr, "%d", &defs.day_start) != 1) {
-				XMLERROR("Invalid start date of default summer season definition");
+				xw.XMLError("Invalid start date of default summer season definition");
 				return 1;
 			}
 		} else
-		IFATTR("month_end") {
+		if (xw.IsAttr("month_end")) {
 			if (sscanf((const char*) attr, "%d", &defs.month_end) != 1) {
-				XMLERROR("Invalid end date of default summer season definition");
+				xw.XMLError("Invalid end date of default summer season definition");
 				return 1;
 			}
 		} else
-		IFATTR("day_end") {
+		if (xw.IsAttr("day_end")) {
 			if (sscanf((const char*) attr, "%d", &defs.day_end) != 1) {
-				XMLERROR("Invalid end date of default summer season definition");
+				xw.XMLError("Invalid end date of default summer season definition");
 				return 1;
 			}
 		} else {
@@ -96,92 +71,77 @@ printf("name seasons: parseXML\n");
 	if (isEmpty)
 		return 0;
 
-	NEXTTAG
+	xw.NextTag();
 
-begin_process_tseasons:
+	for (;;) {
 
-	name = xmlTextReaderConstLocalName(reader);
-	IFNAME("#text") {
-		NEXTTAG
-	}
-	IFCOMMENT {
-		NEXTTAG
-	}
+		if(xw.IsTag("season")) {
+			if (xw.IsBeginTag()) {
 
-	IFNAME("season") {
-		IFBEGINTAG {
+				int year;
+				Season s;
 
-			int year;
-			Season s;
+				XMLWrapper xwseason(reader);
+				const char* need_attr_seasn[] = {"year", "month_start",  "month_end", "day_start", "day_end", 0 };
 
-			const char* need_attr_seasn[] = {"year", "month_start",  "month_end", "day_start", "day_end" };
-			CHECKNEEDEDATTR(need_attr_seasn);
+				xwseason.AreValidAttr(need_attr_seasn);
 
-			FORALLATTR {
-				GETATTR
+				for (bool isAttr = xwseason.IsFirstAttr(); isAttr == true; isAttr = xwseason.IsNextAttr()) {
+					const xmlChar* attr = xwseason.GetAttr();
+					const xmlChar* attr_name = xwseason.GetTagName();
 
-				IFATTR("year") {
-					if (sscanf((const char*) attr, "%d", &year) != 1) {
-						XMLERROR("Invalid year definition");
+					if (xwseason.IsAttr("year")) {
+						if (sscanf((const char*) attr, "%d", &year) != 1) {
+							xwseason.XMLError("Invalid year definition");
+							return 1;
+						}
+					} else
+					if (xwseason.IsAttr("month_start")) {
+						if (sscanf((const char*) attr, "%d", &s.month_start) != 1) {
+							xwseason.XMLError("Invalid start date of summer season definition");
+							return 1;
+						}
+					} else
+					if (xwseason.IsAttr("day_start")) {
+						if (sscanf((const char*) attr, "%d", &s.day_start) != 1) {
+							xwseason.XMLError("Invalid start date of summer season definition");
 						return 1;
+						}
+					} else
+					if (xwseason.IsAttr("month_end")) {
+						if (sscanf((const char*) attr, "%d", &s.month_end) != 1) {
+							xwseason.XMLError("Invalid end date of summer season definition");
+							return 1;
+						}
+					} else
+					if (xwseason.IsAttr("day_end")) {
+						if (sscanf((const char*) attr, "%d", &s.day_end) != 1) {
+							xwseason.XMLError("Invalid end date of summer season definition");
+							return 1;
+						}
+					} else {
+						printf("not known attr=%s\n",attr_name);
+						assert(0 == 1 && "not known attr");
 					}
-				} else
-				IFATTR("month_start") {
-					if (sscanf((const char*) attr, "%d", &s.month_start) != 1) {
-						XMLERROR("Invalid start date of summer season definition");
-						return 1;
-					}
-				} else
-				IFATTR("day_start") {
-					if (sscanf((const char*) attr, "%d", &s.day_start) != 1) {
-						XMLERROR("Invalid start date of summer season definition");
-					return 1;
-					}
-				} else
-				IFATTR("month_end") {
-					if (sscanf((const char*) attr, "%d", &s.month_end) != 1) {
-						XMLERROR("Invalid end date of summer season definition");
-						return 1;
-					}
-				} else
-				IFATTR("day_end") {
-					if (sscanf((const char*) attr, "%d", &s.day_end) != 1) {
-						XMLERROR("Invalid end date of summer season definition");
-						return 1;
-					}
-				} else {
-					printf("not known attr=%s\n",attr_name);
-					assert(0 == 1 && "not known attr");
-				}
-			} // FORALLATTR
+				} // FORALLATTR
 
-			seasons[year] = s;
+				seasons[year] = s;
 
+			}
+			xw.NextTag();
+		} else
+		if(xw.IsTag("seasons")) {
+			break;
 		}
-		NEXTTAG
-	} else
-	IFNAME("seasons") {
-	}
-	else {
-		printf("ERROR: not know name = %s\n",name);
-		assert(name == NULL && "not know name");
+		else {
+//TODO: make it better
+			const xmlChar* name = xw.GetTagName();
+			printf("ERROR: not know name = %s\n",name);
+			assert(name == NULL && "not know name");
+		}
 	}
 
 printf("name seasons parseXML END\n");
-
-#undef IFNAME
-#undef NEEDATTR
-#undef IFATTR
-#undef DELATTR
-#undef IFBEGINTAG
-#undef IFISEMPTYELEM
-#undef IFENDTAG
-#undef IFCOMMENT
-#undef NEXTTAG
-#undef XMLERROR
-#undef FORALLATTR
-#undef GETATTR
-#undef CHECKNEEDEDATTR
 
 	return 0;
 

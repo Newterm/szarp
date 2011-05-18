@@ -121,6 +121,10 @@ bool XMLWrapper::IsEmptyTag() {
 	return xmlTextReaderIsEmptyElement(r);
 }
 
+bool XMLWrapper::HasAttr() {
+	return xmlTextReaderHasAttributes(r) > 0;
+}
+
 const xmlChar* XMLWrapper::GetAttr() {
 	return attr;
 }

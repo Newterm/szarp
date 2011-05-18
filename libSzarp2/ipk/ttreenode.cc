@@ -65,30 +65,6 @@ int TTreeNode::parseXML(xmlTextReaderPtr reader) {
 
 	printf("name treenode xmlParser\n");
 
-	const xmlChar *attr_name = NULL;
-	const xmlChar *attr = NULL;
-	const xmlChar *name = NULL;
-
-#define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
-#define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
-#define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
-#define IFENDTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT)
-#define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
-//TODO: check return value - 0 or 1 - in all files 
-#define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
-	return NULL; \
-	goto begin_process_ttreenode;
-#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
-#define XMLERRORATTR(ATT) sz_log(1,"XML parsing error: expected attribute '%s' (line: %d)", ATT, xmlTextReaderGetParserLineNumber(reader));
-#define FORALLATTR for (int __atr = xmlTextReaderMoveToFirstAttribute(reader); __atr > 0; __atr =  xmlTextReaderMoveToNextAttribute(reader) )
-#define GETATTR attr_name = xmlTextReaderConstLocalName(reader); attr = xmlTextReaderConstValue(reader);
-#define CHECKNEEDEDATTR(LIST) \
-	if (sizeof(LIST) > 0) { \
-		std::set<std::string> __tmpattr(LIST, LIST + (sizeof(LIST) / sizeof(LIST[0]))); \
-		FORALLATTR { GETATTR; __tmpattr.erase((const char*) attr_name); } \
-		if (__tmpattr.size() > 0) { XMLERRORATTR(__tmpattr.begin()->c_str()); return NULL; } \
-	}
-
 #define CONVERT(FROM, TO) { \
 	std::wstringstream ss;	\
 	ss.imbue(std::locale("C"));	\
@@ -97,25 +73,27 @@ int TTreeNode::parseXML(xmlTextReaderPtr reader) {
 	}
 
 	int depth = xmlTextReaderDepth(reader);
+	XMLWrapper xw(reader);
 
-	bool isEmptyTag = false;
-	if (xmlTextReaderIsEmptyElement(reader)) {
-		isEmptyTag = true;
-	}
+	bool isEmptyTag = xw.IsEmptyTag();
 
-	const char* need_attr[] = { "name" };
-	CHECKNEEDEDATTR(need_attr);
+	const char* need_attr[] = { "name", 0 };
+	xw.AreValidAttr(need_attr);
 
-	FORALLATTR {
-		GETATTR
+	const char* ignored_tags[] = { "#text", "#comment", 0 };
+	xw.SetIgnoredTags(ignored_tags);
 
-		IFATTR("name") {
+	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+		const xmlChar *attr = xw.GetAttr();
+		const xmlChar *name = xw.GetTagName();
+
+		if (xw.IsAttr("name")) {
 			_name = SC::U2S(attr);
 		} else
-		IFATTR("prior") {
+		if (xw.IsAttr("prior")) {
 			CONVERT(SC::U2S(attr), _prior);
 		} else
-		IFATTR("draw_prior") {
+		if (xw.IsAttr("draw_prior")) {
 			CONVERT(SC::U2S(attr), _draw_prior);
 		} else {
 		printf("<treenode>: not known attr:%s\n",name);
@@ -125,43 +103,22 @@ int TTreeNode::parseXML(xmlTextReaderPtr reader) {
 	if (isEmptyTag)
 		return 0;
 
-	NEXTTAG
+	xw.NextTag();
 
-begin_process_ttreenode:
-
-	name = xmlTextReaderConstLocalName(reader);
-	IFNAME("#text") {
-		NEXTTAG
-	}
-	IFCOMMENT {
-		NEXTTAG
-	}
-
-	IFNAME("treenode") {
-		IFBEGINTAG {
+	if(xw.IsTag("treenode")) {
+		if (xw.IsBeginTag()) {
 			_parent = new TTreeNode();
 			if (_parent->parseXML(reader))
 				return 1;
-			NEXTTAG
+			xw.NextTag();
 		}
-		IFENDTAG {
+		if (xw.IsEndTag()) {
 			int _tmp = xmlTextReaderDepth(reader);
 			assert( _tmp == depth);
 		}
 	}
 
 #undef CONVERT
-
-#undef IFNAME
-#undef IFATTR
-#undef IFBEGINTAG
-#undef IFENDTAG
-#undef IFCOMMENT
-#undef NEXTTAG
-#undef XMLERROR
-#undef FORALLATTR
-#undef GETATTR
-#undef CHECKNEEDEDATTR
 
 	printf("name treenode parseXML END\n");
 	return 0;

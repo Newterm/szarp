@@ -2261,6 +2261,7 @@ public:
 	bool IsBeginTag();
 	bool IsEndTag();
 	bool IsEmptyTag();
+	bool HasAttr();
 	const xmlChar* GetAttr();
 	const xmlChar* GetAttrName();
 	const xmlChar* GetTagName();

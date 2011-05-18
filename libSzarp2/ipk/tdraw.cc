@@ -72,33 +72,6 @@ TDraw* TDraw::parseXML(xmlTextReaderPtr reader)
 {
 printf("name draw xmlParser\n");
 
-#define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
-#define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
-	if (attr == NULL) { \
-		sz_log(1, "XML parsing error: expected '%s' (line %d)", ATT, xmlTextReaderGetParserLineNumber(reader)); \
-		return 1; \
-	}
-//#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
-#define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
-#define DELATTR xmlFree(attr)
-#define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
-#define IFENDTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT)
-#define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
-//TODO: check return value - 0 or 1 - in all files 
-#define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
-	return NULL; \
-	goto begin_process_tdraw;
-#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
-#define XMLERRORATTR(ATT) sz_log(1,"XML parsing error: expected attribute '%s' (line: %d)", ATT, xmlTextReaderGetParserLineNumber(reader));
-#define FORALLATTR for (int __atr = xmlTextReaderMoveToFirstAttribute(reader); __atr > 0; __atr =  xmlTextReaderMoveToNextAttribute(reader) )
-#define GETATTR attr_name = xmlTextReaderConstLocalName(reader); attr = xmlTextReaderConstValue(reader);
-#define CHECKNEEDEDATTR(LIST) \
-	if (sizeof(LIST) > 0) { \
-		std::set<string> __tmpattr(LIST, LIST + (sizeof(LIST) / sizeof(LIST[0]))); \
-		FORALLATTR { GETATTR; __tmpattr.erase((const char*) attr_name); } \
-		if (__tmpattr.size() > 0) { XMLERRORATTR(__tmpattr.begin()->c_str()); return NULL; } \
-	}
-
 #define CONVERT(FROM, TO) { \
 	std::wstringstream ss;	\
 	ss.imbue(locale("C"));	\
@@ -108,63 +81,64 @@ printf("name draw xmlParser\n");
 
 #define UNDEFVAL -1234.5
 
-	const xmlChar *attr_name = NULL;
-	const xmlChar *attr = NULL;
-	const xmlChar *name = NULL;
 	double p = -1.0, o = -1.0, min = 0.0, max = UNDEFVAL, smin = UNDEFVAL, smax = UNDEFVAL;
 	int sc = 0;
 	SPECIAL_TYPES sp = NONE;
 	std::wstring strw_c, strw_w;
 
-	bool isEmptyTag = false;
-	if (xmlTextReaderIsEmptyElement(reader)) {
-		isEmptyTag = true;
-	}
+	XMLWrapper xw(reader);
 
-	const char* need_attr[] = { "title" };
-	CHECKNEEDEDATTR(need_attr);
+	bool isEmptyTag = xw.IsEmptyTag();
 
-	FORALLATTR {
-		GETATTR
+	const char* need_attr[] = { "title", 0 };
+	xw.AreValidAttr(need_attr);
 
-		IFATTR("title") {
+	const char* ignored_tags[] = { "#text", "#comment", 0 };
+	xw.SetIgnoredTags(ignored_tags);
+
+	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+		const xmlChar *attr = xw.GetAttr();
+		const xmlChar *attr_name = xw.GetAttrName();
+
+		if (xw.IsAttr("title")) {
 			strw_w = SC::U2S(attr);
 		} else
-		IFATTR("color") {
+		if (xw.IsAttr("color")) {
 			strw_c = SC::U2S(attr);
 		} else
-		IFATTR("prior") {
+		if (xw.IsAttr("prior")) {
 			CONVERT(SC::U2S(attr), p);
 		} else
-		IFATTR("order") {
+		if (xw.IsAttr("order")) {
 			CONVERT(SC::U2S(attr), o);
 		} else
-		IFATTR("max") {
+		if (xw.IsAttr("max")) {
 			CONVERT(SC::U2S(attr), max);
 		} else
-		IFATTR("min") {
+		if (xw.IsAttr("min")) {
 			CONVERT(SC::U2S(attr), min);
 		} else
-		IFATTR("scale") {
+		if (xw.IsAttr("scale")) {
 			CONVERT(SC::U2S(attr), sc);
 		} else
-		IFATTR("minscale") {
+		if (xw.IsAttr("minscale")) {
 			CONVERT(SC::U2S(attr), smin);
 		} else
-		IFATTR("maxscale") {
+		if (xw.IsAttr("maxscale")) {
 			CONVERT(SC::U2S(attr),smax);
 		} else
-		IFATTR("special") {
+		if (xw.IsAttr("special")) {
 			for (unsigned i = 0; i < sizeof(SPECIAL_TYPES_STR) / sizeof(wchar_t*); i++)
 				if (SC::U2S(attr) == SPECIAL_TYPES_STR[i]) {
 					sp = (SPECIAL_TYPES)i;
 					break;
 			}
 		} else {
+//TODO: make it better
 			printf("not known attr<draw>: %s\n",attr_name);
 //			assert(0 ==1 && "not known attr");
 		}
-	} // FORALLATTR
+	} // for all attr
 
 	if (max == UNDEFVAL) {
 		min = 0.0;
@@ -190,62 +164,31 @@ printf("name draw xmlParser\n");
 		return ret;
 	}
 
-	NEXTTAG
+	xw.NextTag();
 
-begin_process_tdraw:
-
-	name = xmlTextReaderConstLocalName(reader);
-	IFNAME("#text") {
-		NEXTTAG
-	}
-	IFCOMMENT {
-		NEXTTAG
-	}
-
-	IFNAME("treenode") {
-		IFBEGINTAG {
-			TTreeNode* node = new TTreeNode();
-			if (node->parseXML(reader)) {
-				delete ret;
-				return NULL;
+	for (;;) {
+		if(xw.IsTag("treenode")) {
+			if (xw.IsBeginTag()) {
+				TTreeNode* node = new TTreeNode();
+				if (node->parseXML(reader)) {
+					delete ret;
+					return NULL;
+				}
+				ret->_tree_nodev.push_back(node);
 			}
-			ret->_tree_nodev.push_back(node);
+			xw.NextTag();
+		} else
+		if(xw.IsTag("draw")) {
+			break;
+		} else {
+			const xmlChar *name = xw.GetTagName();
+			printf("ERROR<tdraw>: not known name:%s\n",name);
+			assert(0 == 1 && "not known name");
 		}
-		NEXTTAG
-	} else
-	IFNAME("draw") {
-
-	} else {
-		printf("ERROR<tdraw>: not known name:%s\n",name);
-		assert(0 == 1 && "not known name");
 	}
-//TODO: make me
-/*
-	for (xmlNodePtr ch = node->children; ch; ch = ch->next) if (!strcmp((const char*) ch->name, "treenode")) {
-		TTreeNode* node = new TTreeNode();
-		if (node->parseXML(ch)) {
-			delete ret;	
-			return NULL;
-		}
-		ret->_tree_nodev.push_back(node);
-	}
-*/
 
 #undef CONVERT
 #undef UNDEFVAL
-
-#undef IFNAME
-#undef NEEDATTR
-#undef IFATTR
-#undef DELATTR
-#undef IFBEGINTAG
-#undef IFENDTAG
-#undef IFCOMMENT
-#undef NEXTTAG
-#undef XMLERROR
-#undef FORALLATTR
-#undef GETATTR
-#undef CHECKNEEDEDATTR
 
 	printf("name draw parseXML END\n");
 
