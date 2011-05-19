@@ -2842,10 +2842,10 @@ czyli element <emphasis>radio</emphasis>. Wtedy struktura elementu
 
 <para>
 Element <emphasis>radio</emphasis> ma tylko jeden atrybut
-<emphasis>id</emphasis> - tekstowy identyfikator linii radiowej. Przyk³adowa
+<emphasis>id</emphasis> - tekstowy identyfikator linii radiowej, w postaci jednego znaku ASCII, nie mo¿e siê powtarzaæ w ramach linii komunikacyjnej. Przyk³adowa
 deklaracja:
 <programlisting>
-        &lt;radio id="Wolek"&gt;
+        &lt;radio id="W"&gt;
 	    ...
         &lt;/radio&gt;
 </programlisting>
