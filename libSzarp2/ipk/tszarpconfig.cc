@@ -312,209 +312,140 @@ TSzarpConfig::loadXML(const std::wstring &path, const std::wstring &prefix)
 int
 TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 {
-//TODO: remove all printf
-//TODO: check return value in function
-
-#define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
-#define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
-	if (attr == NULL) { \
-		sz_log(1, "XML parsing error: expected '%s' (line %d)", ATT, xmlTextReaderGetParserLineNumber(reader)); \
-		return 1; \
-	}
-#define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
-#define DELATTR xmlFree(attr)
-#define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
-#define IFENDTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT)
-#define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
-//TODO: check return value - 0 or 1 - in all files 
-#define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
-	return 1; \
-	goto begin_process_node;
-#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
-#define XMLERRORATTR(ATT) sz_log(1,"XML parsing error: expected attribute '%s' (line: %d)", ATT, xmlTextReaderGetParserLineNumber(reader));
-#define FORALLATTR for (int __atr = xmlTextReaderMoveToFirstAttribute(reader); __atr > 0; __atr =  xmlTextReaderMoveToNextAttribute(reader) )
-#define GETATTR attr_name = xmlTextReaderConstLocalName(reader); attr = xmlTextReaderConstValue(reader);
-#define CHECKNEEDEDATTR(LIST) \
-	if (sizeof(LIST) > 0) { \
-		std::set<std::string> __tmpattr(LIST, LIST + (sizeof(LIST) / sizeof(LIST[0]))); \
-		FORALLATTR { GETATTR; __tmpattr.erase((const char*) attr_name); } \
-		if (__tmpattr.size() > 0) { XMLERRORATTR(__tmpattr.begin()->c_str()); return 1; } \
-	}
 
 	int i = 0;
-	TParam *p = NULL;
 	TDevice *td = NULL;
-	const xmlChar *attr_name = NULL;
-	const xmlChar *attr = NULL;
-	const xmlChar *name = NULL;
 
 	assert(devices == NULL);
 	assert(defined == NULL);
 
-begin_process_node:
+	XMLWrapper xw(reader);
 
-	name = xmlTextReaderConstName(reader);
-//TODO:check return value
-	if (name == NULL)
-		return 1;
+	const char* ignored_tags[] = { "#text", "#comment", 0 };
+	xw.SetIgnoredTags(ignored_tags);
 
-	IFNAME("#text") {
-		NEXTTAG
-	}
-	IFCOMMENT {
-		NEXTTAG
-	}
+	const char* ignored_trees[] = { "mobile", "checker:rules",  0 };
+	xw.SetIgnoredTrees(ignored_trees);
 
-//	xmlChar *value = xmlTextReaderValue(reader);
+	for (;;) {
+		const xmlChar *name = xw.GetTagName();
 
-/*
-	printf(">>>> new node <<<\n");
-	printf("%d %d %s\n",
-		xmlTextReaderDepth(reader),
-		xmlTextReaderNodeType(reader),
-		name);
-*/
+		if(xw.IsTag("params")) {
+			if (xw.IsBeginTag()) {
+				printf("-- name: params\n");
 
+				const char* need_attr_params[] = { "read_freq" , "send_freq", "version", 0 };
+				xw.AreValidAttr(need_attr_params);
 
-	IFNAME("params") {
-		IFBEGINTAG {
-			printf("-- name: params\n");
+				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+					const xmlChar *attr = xw.GetAttr();
+					const xmlChar *attr_name = xw.GetAttrName();
 
-			const char* need_attr_params[] = { "read_freq" , "send_freq", "version" };
-			CHECKNEEDEDATTR(need_attr_params);
-
-			FORALLATTR {
-				GETATTR
-
-				IFATTR("read_freq") {
-					if ((i = atoi((const char*)attr)) <= 0) {
-						XMLERROR("read_freq attribute <= 0");
-						return 0;
+					if (xw.IsAttr("read_freq")) {
+						if ((i = atoi((const char*)attr)) <= 0) {
+							xw.XMLError("read_freq attribute <= 0");
+							return 0;
+						}
+						read_freq = i;
+					} else
+					if (xw.IsAttr("send_freq")) {
+						if ((i = atoi((const char*)attr)) <= 0) {
+							xw.XMLError("send_freq attribute <= 0");
+							return 0;
+						}
+						send_freq = i;
+					} else
+					if (xw.IsAttr("version")) {
+						if (!xmlStrEqual(attr, (unsigned char*) "1.0")) {
+							xw.XMLError("incorrect version (1.0 expected)");
+							return 0;
+						}
+					} else
+					if (xw.IsAttr("title")) {
+						title = SC::U2S(attr);
+					} else
+					if (xw.IsAttr("documentation_base_url")) {
+						documentation_base_url = SC::U2S(attr);
+					} else
+					if (xw.IsAttr("xmlns")) {
+					} else {
+						printf("ERROR: not known attr: %s\n",attr_name);
+	//					assert(0 == 1 && "not known attr");
 					}
-					read_freq = i;
-				} else
-				IFATTR("send_freq") {
-					if ((i = atoi((const char*)attr)) <= 0) {
-						XMLERROR("send_freq attribute <= 0");
-						return 0;
-					}
-					send_freq = i;
-				} else
-				IFATTR("version") {
-					if (!xmlStrEqual(attr, (unsigned char*) "1.0")) {
-						XMLERROR("incorrect version (1.0 expected)");
-						return 0;
-					}
-				} else
-				IFATTR("title") {
-					title = SC::U2S(attr);
-				} else
-				IFATTR("documentation_base_url") {
-					documentation_base_url = SC::U2S(attr);
-				} else
-				IFATTR("xmlns") {
-				} else {
-					printf("ERROR: not known attr: %s\n",attr_name);
-//					assert(0 == 1 && "not known attr");
+				} 
+
+				xw.NextTag();
+			} else {
+				break;
+			}
+		} else
+		if(xw.IsTag("device")) {
+			if (xw.IsBeginTag()) {
+				printf("-- name: device\n");
+
+				if (devices == NULL)
+					devices = td = new TDevice(this);
+				else
+					td = td->Append(new TDevice(this));
+				assert(devices != NULL);
+				td->parseXML(reader);
+			}
+			xw.NextTag();
+		} else
+		if(xw.IsTag("defined")) {
+			if (xw.IsBeginTag()) {
+				printf("-- name: defined\n");
+				TParam * _par = TDefined::parseXML(reader,this);
+				if (_par)
+					defined = _par;
+			}
+			xw.NextTag();
+		} else
+		if(xw.IsTag("drawdefinable")) {
+			if (xw.IsBeginTag()) {
+				printf("-- name: drawdefinable\n");
+				TParam * _par = TDrawdefinable::parseXML(reader,this);
+				if (_par)
+					drawdefinable = _par;
+			}
+			xw.NextTag();
+		} else
+		if(xw.IsTag("seasons")) {
+			if (xw.IsBeginTag()) {
+				printf("-- name: seasons\n");
+				seasons = new TSSeason();
+				if (seasons->parseXML(reader)) {
+					delete seasons;
+					seasons = NULL;
+	//TODO: return error
+					printf("FATAL ERROR <seasons>\n");
 				}
-			} // FORALLATTR
-
-			NEXTTAG
-		}
-	} else
-	IFNAME("device") {
-		IFBEGINTAG {
-			printf("-- name: device\n");
-
-			if (devices == NULL)
-				devices = td = new TDevice(this);
-			else
-				td = td->Append(new TDevice(this));
-			assert(devices != NULL);
-			td->parseXML(reader);
-		}
-		NEXTTAG
-	} else
-	IFNAME("defined") {
-		IFBEGINTAG {
-			printf("-- name: defined\n");
-			TParam * _par = TDefined::parseXML(reader,this);
-			if (_par)
-				defined = _par;
-		}
-		NEXTTAG
-	} else
-	IFNAME("drawdefinable") {
-		IFBEGINTAG {
-			printf("-- name: drawdefinable\n");
-			TParam * _par = TDrawdefinable::parseXML(reader,this);
-			if (_par)
-				drawdefinable = _par;
-		}
-		NEXTTAG
-	} else
-	IFNAME("seasons") {
-		IFBEGINTAG {
-			printf("-- name: seasons\n");
-			seasons = new TSSeason();
-			if (seasons->parseXML(reader)) {
-				delete seasons;
-				seasons = NULL;
-//TODO: return error
-				printf("FATAL ERROR <seasons>\n");
 			}
-		}
-		NEXTTAG
-	} else
-
-
-	IFNAME("boilers") {
-		IFBEGINTAG {
-			printf("-- name: boilers\n");
-			TBoiler * _b = TBoilers::parseXML(reader,this);
-			if (_b)
-				AddBoiler(_b);
-			else {
-//TODO: return error
-				printf("FATAL ERROR <boilers>\n");
+			xw.NextTag();
+		} else
+		if(xw.IsTag("boilers")) {
+			if (xw.IsBeginTag()) {
+				printf("-- name: boilers\n");
+				TBoiler * _b = TBoilers::parseXML(reader,this);
+				if (_b)
+					AddBoiler(_b);
+				else {
+	//TODO: return error
+					printf("FATAL ERROR <boilers>\n");
+				}
 			}
+			xw.NextTag();
+		} else {
+			if (name)
+				printf("ERROR<szarpconfig>: not known tag: %s\n",name);
+			assert(name == NULL);
 		}
-		NEXTTAG
-	} else
-	IFNAME("mobile") {
-		// omit all tree
-		xmlTextReaderNext(reader);
-		goto begin_process_node;
-	} else
-	IFNAME("checker:rules") {
-		// omit all tree
-		xmlTextReaderNext(reader);
-//TODO: make it without goto; goto - > while or better
-		goto begin_process_node;
-	} else {
-		if (name)
-			printf("ERROR<szarpconfig>: not known tag: %s\n",name);
-		assert(name == NULL);
+
 	}
-
-#undef IFNAME
-#undef NEEDATTR
-#undef IFATTR
-#undef DELATTR
-#undef IFBEGINTAG
-#undef IFENDTAG
-#undef IFCOMMENT
-#undef NEXTTAG
-#undef XMLERROR
-#undef FORALLATTR
-#undef GETATTR
-#undef CHECKNEEDEDATTR
 
 // why? copy/paste from parse reader
 	if (seasons == NULL)
 		seasons = new TSSeason();
-
-//	if (value) xmlFree(value);
 
 	return 0;
 }
