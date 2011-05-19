@@ -76,7 +76,7 @@ bool XMLWrapper::NextTag() {
 		ans = xmlTextReaderRead(r);
 		if (ans != 1)
 			return false;
-		name = xmlTextReaderConstName(r);
+		name = (isLocal) ? xmlTextReaderConstLocalName(r) : xmlTextReaderConstName(r);
 		if (ignoredTags.find(std::string((const char*) name)) == ignoredTags.end()) {
 			if (ignoredTrees.find(std::string((const char*) name)) == ignoredTrees.end()) {
 				return true;

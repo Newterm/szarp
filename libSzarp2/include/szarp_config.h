@@ -2247,9 +2247,10 @@ private:
 	std::set<std::string> ignoredTags;
 	std::set<std::string> ignoredTrees;
 	std::set<std::string> neededAttr;
+	bool isLocal;
 
 public:
-	XMLWrapper(xmlTextReaderPtr &_r): r(_r), name(NULL), attr_name(NULL), attr(NULL)  {name = xmlTextReaderConstName(r);}
+	XMLWrapper(xmlTextReaderPtr &_r, bool local = false): r(_r), name(NULL), attr_name(NULL), attr(NULL), isLocal(local)  {name = xmlTextReaderConstName(r);}
 	void SetIgnoredTags(const char *i_list[]);
 	void SetIgnoredTrees(const char *i_list[]);
 	bool AreValidAttr(const char* attr_list[]);

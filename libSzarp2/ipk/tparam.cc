@@ -127,324 +127,272 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 //TODO: remove printf
 	printf("name: param parseXML\n");
 
-	const xmlChar *attr_name = NULL;
-	const xmlChar *attr = NULL;
-	const xmlChar *name = NULL;
 	TValue* v = NULL;
 
-#define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
-#define NEEDATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); \
-	if (attr == NULL) { \
-		sz_log(1, "XML parsing error: expected '%s' (line %d)", ATT, xmlTextReaderGetParserLineNumber(reader)); \
-		return 1; \
-	}
-//#define IFATTR(ATT) attr = xmlTextReaderGetAttribute(reader, (unsigned char*) ATT); if (attr != NULL)
-#define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
-#define DELATTR xmlFree(attr)
-#define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
-#define IFENDTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT)
-#define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
-//TODO: check return value - 0 or 1 - in all files 
-#define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
-	return 1; \
-	goto begin_process_tparam;
-#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
-#define XMLERRORATTR(ATT) sz_log(1,"XML parsing error: expected attribute '%s' (line: %d)", ATT, xmlTextReaderGetParserLineNumber(reader));
-#define FORALLATTR for (int __atr = xmlTextReaderMoveToFirstAttribute(reader); __atr > 0; __atr =  xmlTextReaderMoveToNextAttribute(reader) )
-#define GETATTR attr_name = xmlTextReaderConstName(reader); attr = xmlTextReaderConstValue(reader);
-#define CHECKNEEDEDATTR(LIST) \
-	if (sizeof(LIST) > 0) { \
-		std::set<std::string> __tmpattr(LIST, LIST + (sizeof(LIST) / sizeof(LIST[0]))); \
-		FORALLATTR { GETATTR; __tmpattr.erase((const char*) attr_name); } \
-		if (__tmpattr.size() > 0) { XMLERRORATTR(__tmpattr.begin()->c_str()); return 1; } \
-	}
-#define TAGINFO name = xmlTextReaderName(reader); printf("tag=%s, type=%d, isEmpty=%d\n",name, xmlTextReaderNodeType(reader), xmlTextReaderIsEmptyElement(reader));
+	XMLWrapper xw(reader,true);
 
-//	TAGINFO;
+	const char* ignored_tags[] = { "#text", "#comment", 0 };
+	xw.SetIgnoredTags(ignored_tags);
 
-	bool isEmptyTag = false;
-	if (xmlTextReaderIsEmptyElement(reader)) {
-		isEmptyTag = true;
+	const char* ignored_trees[] = { "doc", "editable", 0 };
+	xw.SetIgnoredTrees(ignored_trees);
+
+	bool isEmptyTag = xw.IsEmptyTag();
+
+	const char* need_attr_param[] = { "name", 0 };
+	if (!xw.AreValidAttr(need_attr_param)) {
+//TODO: check it: ommit all tree?
+		return 1;
 	}
-
-	const char* need_attr_param[] = { "name" };
-	CHECKNEEDEDATTR(need_attr_param);
 
 	bool isPrecAttr = false;
 
-	FORALLATTR {
-		GETATTR
+	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+		const xmlChar *attr = xw.GetAttr();
+		const xmlChar *attr_name = xw.GetAttrName();
 
-		IFATTR("name") {
+		if (xw.IsAttr("name")) {
 			_name = SC::U2S(attr);
 /**/printf("param name=%s\n",attr);
 		} else
-		IFATTR("short_name") {
+		if (xw.IsAttr("short_name")) {
 			_shortName = SC::U2S(attr);
 		} else
-		IFATTR("draw_name") {
+		if (xw.IsAttr("draw_name")) {
 			_drawName = SC::U2S(attr);
 		} else
-		IFATTR("unit") {
+		if (xw.IsAttr("unit")) {
 			_unit = SC::U2S(attr);
 		} else
-		IFATTR("sum_unit") {
+		if (xw.IsAttr("sum_unit")) {
 			_sum_unit = SC::U2S(attr);
 		} else
-		IFATTR("sum_divisor") {
+		if (xw.IsAttr("sum_divisor")) {
 			wstringstream ss;
 			ss.imbue(locale("C"));
 			ss << SC::U2S(attr);
 			ss >> _sum_divisor;
 		} else
-		IFATTR("period") {
+		if (xw.IsAttr("period")) {
 			int tmp = atoi((char*)attr);
 			if (tmp <= 0) {
-				XMLERROR("invalid value of period attribute");
+				xw.XMLError("invalid value of period attribute");
 			}
 			else 
 				SetPeriod(tmp);
 		} else
-		IFATTR("base_ind") {
+		if (xw.IsAttr("base_ind")) {
 			if (!strcmp((char*)attr, "auto"))
 				SetAutoBase();
 			else
 				SetBaseInd(atoi((char*)attr));
 		} else
-		IFATTR("prec") {
+		if (xw.IsAttr("prec")) {
 			_prec = atoi((const char*) attr);
 			isPrecAttr = true;
 		} else {
 			printf("ERROR<param> not known attr:%s\n",attr_name);
 //			assert(0 == 1 && "not known attr");
 		}
-	} // FORALLATTR
+	}
 
 	if (isEmptyTag)
 		return 0;
 
 	bool isFormula = false;
 
-	NEXTTAG
+	xw.NextTag();
 
-begin_process_tparam:
+	for (;;) {
+		if(xw.IsTag("raport")) {
+			if (xw.IsBeginTag()) {
+				double o = -1.0;
+				std::wstring strw_title, strw_desc, strw_filen;
 
-	name = xmlTextReaderConstLocalName(reader);
-	IFNAME("#text") {
-		NEXTTAG
-	}
-	IFCOMMENT {
-		NEXTTAG
-	}
-
-	IFNAME("raport") {
-		IFBEGINTAG {
-			double o = -1.0;
-			std::wstring strw_title, strw_desc, strw_filen;
-
-			const char* need_attr_raport[] = { "title" };
-			CHECKNEEDEDATTR(need_attr_raport);
-
-			FORALLATTR {
-				GETATTR
-
-				IFATTR("order") {
-					wstringstream ss;
-					ss.imbue(locale("C"));
-					ss << SC::U2S(attr);
-					ss >> o;
-				} else
-				IFATTR("title") {
-					strw_title = SC::U2S(attr);
-				} else
-				IFATTR("description") {
-					strw_desc = SC::U2S(attr);
-				} else
-				IFATTR("filename") {
-					strw_filen = SC::U2S(attr);
-				} else {
-					printf("ERROR<param>: not known attr:%s\n",attr_name);
-//					assert(0 == 1 && "not known attr");
+				const char* need_attr_raport[] = { "title",0  };
+				if (!xw.AreValidAttr(need_attr_raport)) {
+	//TODO: check it: ommit all tree?
+					return 1;
 				}
-			} // FORALLATTR
 
-			AddRaport(strw_title,
-				strw_desc,
-				strw_filen,
-				o);
-		}
-		NEXTTAG
-	} else
-	IFNAME("value") {
-		IFBEGINTAG {
-			const char* need_attr_value[] = { "int", "name" };
-			CHECKNEEDEDATTR(need_attr_value);
-			std::wstring wstr_name;
-			int i = 0;
+				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+					const xmlChar *attr = xw.GetAttr();
+					const xmlChar *attr_name = xw.GetAttrName();
 
-			FORALLATTR {
-				GETATTR
-
-				IFATTR("int") {
-					i = atoi((const char*) attr);
-				} else
-				IFATTR("name") {
-					wstr_name = SC::U2S(attr);
-				}
-			}
-
-			if (v == NULL)
-				_values = v = new TValue(i, wstr_name, NULL);
-			else
-				v = v->Append(new TValue(i, wstr_name, NULL));
-		}
-		NEXTTAG
-	} else
-	IFNAME("draw") {
-		IFBEGINTAG {
-			TDraw *d = TDraw::parseXML(reader);
-		if (d != NULL)
-			AddDraw(d);
-		}
-		NEXTTAG
-	} else
-	IFNAME("analysis") {
-		IFBEGINTAG {
-		TAnalysis* a = TAnalysis::parseXML(reader);
-		if (a != NULL)
-			AddAnalysis(a);
-		}
-		NEXTTAG
-	} else
-	IFNAME("define") {
-		IFBEGINTAG {
-			_param_type = TParam::P_REAL;
-
-			const char* need_attr_def[] = { "type" };
-			CHECKNEEDEDATTR(need_attr_def);
-
-			FORALLATTR {
-				GETATTR
-
-				IFATTR("type") {
-					if (!strcmp((char*)attr, "RPN")) {
-						_ftype = RPN;
-					}else 
-					if (!strcmp((char*)attr, "DRAWDEFINABLE")) {
-						_ftype = DEFINABLE;
-						_param_type = TParam::P_DEFINABLE;
-					}
-#ifndef NO_LUA
-					else
-					 if (!strcmp((char*)attr, "LUA")) {
-						_param_type = TParam::P_LUA;
-					}
-				} else // end "type"
-//TODO: lua_formula is NEEDEDATTR - check it
-				IFATTR("lua_formula") {
-					if (!strcmp((char*)attr, "va"))
-						_ftype = LUA_VA;
-					else if (!strcmp((char*)attr, "av"))
-						_ftype = LUA_AV;
-					else if (!strcmp((char*)attr, "ipc"))
-						_ftype = LUA_IPC;
-					else {
-						XMLERROR("XML file error: unknown value for 'lua_formula' attribute");
-						return 1;
-					}
-				} else
-				IFATTR("lua_start_offset") {
-					_lua_start_offset = atoi ((char*) attr);
-				} else
-				IFATTR("lua_end_offset") {
-					_lua_end_offset = atoi ((char*)attr);
-				} else
-				IFATTR("lua_start_date_time") {
-					boost::posix_time::ptime star_date_time = boost::posix_time::not_a_date_time;
-					try {
-						star_date_time = boost::posix_time::time_from_string((char *)attr);
-					} catch(std::exception e) {
-						star_date_time = boost::posix_time::not_a_date_time;
-					}
-
-					if (star_date_time == boost::posix_time::not_a_date_time) {
-						XMLERROR("XML file error: lua_start_date_time attribute has invalid value - expected format \"YYYY-MM-DD hh:mm\"");
+					if (xw.IsAttr("order")) {
+						wstringstream ss;
+						ss.imbue(locale("C"));
+						ss << SC::U2S(attr);
+						ss >> o;
+					} else
+					if (xw.IsAttr("title")) {
+						strw_title = SC::U2S(attr);
+					} else
+					if (xw.IsAttr("description")) {
+						strw_desc = SC::U2S(attr);
+					} else
+					if (xw.IsAttr("filename")) {
+						strw_filen = SC::U2S(attr);
 					} else {
-						struct tm t = to_tm(star_date_time);
-						_lua_start_date_time = timegm(&t);
+						printf("ERROR<param>: not known attr:%s\n",attr_name);
+	//					assert(0 == 1 && "not known attr");
 					}
-
-#endif // NO_LUA
-				} // end "lua_end_offset" | "type"
-				else
-				IFATTR("formula") {
-//TODO: workaround - take only one attr. "formula" when occur more than one <define>
-					if (!isFormula) {
-						_formula = SC::U2S(attr);
-						isFormula = true;
-					}
-				} else
-				IFATTR("new_def") {
-					_is_new_def = xmlStrEqual(attr, (xmlChar *) "yes");
-				}else 	{
-					printf("ERROR: not known attr<param>:%s\n",attr_name);
-//					assert(0 == 1 && "not known attr");
 				}
-			} // end FORALLATTR
-		} // end "define"
-		NEXTTAG
-	} else
-	IFNAME("doc") {
-//TODO: use in a future without goto ; goto -> while
-		// omit all tree
-		xmlTextReaderNext(reader);
-		goto begin_process_tparam;
-	} else
-	IFNAME("editable") {
-//TODO: I don't known what to do with "editable"
-//TODO: use in a future without goto ; goto -> while
-		// omit all tree
-		xmlTextReaderNext(reader);
-		goto begin_process_tparam;
-	} else
-	IFNAME("script") {
-		IFBEGINTAG {
-			_script = TScript::parseXML(reader);
+
+				AddRaport(strw_title,
+					strw_desc,
+					strw_filen,
+					o);
+			}
+			xw.NextTag();
+		} else
+		if(xw.IsTag("value")) {
+			if (xw.IsBeginTag()) {
+				const char* need_attr_value[] = { "int", "name", 0 };
+				if (!xw.AreValidAttr(need_attr_value)) {
+	//TODO: check it: ommit all tree?
+					return 1;
+				}
+
+				std::wstring wstr_name;
+				int i = 0;
+
+				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+					const xmlChar *attr = xw.GetAttr();
+
+					if (xw.IsAttr("int")) {
+						i = atoi((const char*) attr);
+					} else
+					if (xw.IsAttr("name")) {
+						wstr_name = SC::U2S(attr);
+					}
+				}
+
+				if (v == NULL)
+					_values = v = new TValue(i, wstr_name, NULL);
+				else
+					v = v->Append(new TValue(i, wstr_name, NULL));
+			}
+			xw.NextTag();
+		} else
+		if(xw.IsTag("draw")) {
+			if (xw.IsBeginTag()) {
+				TDraw *d = TDraw::parseXML(reader);
+			if (d != NULL)
+				AddDraw(d);
+			}
+			xw.NextTag();
+		} else
+		if(xw.IsTag("analysis")) {
+			if (xw.IsBeginTag()) {
+			TAnalysis* a = TAnalysis::parseXML(reader);
+			if (a != NULL)
+				AddAnalysis(a);
+			}
+			xw.NextTag();
+		} else
+		if(xw.IsTag("define")) {
+			if (xw.IsBeginTag()) {
+				_param_type = TParam::P_REAL;
+
+				const char* need_attr_def[] = { "type", 0 };
+				if (!xw.AreValidAttr(need_attr_def)) {
+	//TODO: check it: ommit all tree?
+					return 1;
+				}
+
+				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+					const xmlChar *attr = xw.GetAttr();
+					const xmlChar *attr_name = xw.GetAttrName();
+
+					if (xw.IsAttr("type")) {
+						if (!strcmp((char*)attr, "RPN")) {
+							_ftype = RPN;
+						}else 
+						if (!strcmp((char*)attr, "DRAWDEFINABLE")) {
+							_ftype = DEFINABLE;
+							_param_type = TParam::P_DEFINABLE;
+						}
+	#ifndef NO_LUA
+						else
+						 if (!strcmp((char*)attr, "LUA")) {
+							_param_type = TParam::P_LUA;
+						}
+					} else // end "type"
+	//TODO: lua_formula is NEEDEDATTR - check it
+					if (xw.IsAttr("lua_formula")) {
+						if (!strcmp((char*)attr, "va"))
+							_ftype = LUA_VA;
+						else if (!strcmp((char*)attr, "av"))
+							_ftype = LUA_AV;
+						else if (!strcmp((char*)attr, "ipc"))
+							_ftype = LUA_IPC;
+						else {
+							xw.XMLError("XML file error: unknown value for 'lua_formula' attribute");
+							return 1;
+						}
+					} else
+					if (xw.IsAttr("lua_start_offset")) {
+						_lua_start_offset = atoi ((char*) attr);
+					} else
+					if (xw.IsAttr("lua_end_offset")) {
+						_lua_end_offset = atoi ((char*)attr);
+					} else
+					if (xw.IsAttr("lua_start_date_time")) {
+						boost::posix_time::ptime star_date_time = boost::posix_time::not_a_date_time;
+						try {
+							star_date_time = boost::posix_time::time_from_string((char *)attr);
+						} catch(std::exception e) {
+							star_date_time = boost::posix_time::not_a_date_time;
+						}
+
+						if (star_date_time == boost::posix_time::not_a_date_time) {
+							xw.XMLError("XML file error: lua_start_date_time attribute has invalid value - expected format \"YYYY-MM-DD hh:mm\"");
+						} else {
+							struct tm t = to_tm(star_date_time);
+							_lua_start_date_time = timegm(&t);
+						}
+
+	#endif // NO_LUA
+					} // end "lua_end_offset" | "type"
+					else
+					if (xw.IsAttr("formula")) {
+	//TODO: workaround - take only one attr. "formula" when occur more than one <define>
+						if (!isFormula) {
+							_formula = SC::U2S(attr);
+							isFormula = true;
+						}
+					} else
+					if (xw.IsAttr("new_def")) {
+						_is_new_def = xmlStrEqual(attr, (xmlChar *) "yes");
+					}else 	{
+						printf("ERROR: not known attr<param>:%s\n",attr_name);
+	//					assert(0 == 1 && "not known attr");
+					}
+				} // end FORALLATTR
+			} // end "define"
+			xw.NextTag();
+		} else
+		if(xw.IsTag("script")) {
+			if (xw.IsBeginTag()) {
+				_script = TScript::parseXML(reader);
+			}
+			xw.NextTag();
+		} else
+		if(xw.IsTag("param")) {
+			break;
 		}
-		NEXTTAG
-	} else
-/*
-	IFNAME("") {
-		IFBEGINTAG {
+		else {
+			const xmlChar *name = xw.GetTagName();
+			printf("ERROR<param>: not known name:%s\n",name);
+			assert(0 == 1 && "not known name");
 		}
-		NEXTTAG
-	} else
-*/
-	IFNAME("param") {
-	}
-	else {
-		printf("ERROR<param>: not known name:%s\n",name);
-		assert(0 == 1 && "not known name");
 	}
 
 	if (!isPrecAttr && !_values) {
-		XMLERROR("Attribute 'prec' in 'param'");
+		xw.XMLError("Attribute 'prec' in 'param'");
 		return 1;
 	}
-
-
-#undef IFNAME
-#undef NEEDATTR
-#undef IFATTR
-#undef DELATTR
-#undef IFBEGINTAG
-#undef IFENDTAG
-#undef IFCOMMENT
-#undef NEXTTAG
-#undef XMLERROR
-#undef FORALLATTR
-#undef GETATTR
-#undef CHECKNEEDEDATTR
 
 printf("name: param parseXML END\n");
 
