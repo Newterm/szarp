@@ -50,13 +50,25 @@ void XMLWrapper::SetIgnoredTrees(const char *i_list[]) {
 }
 
 bool XMLWrapper::AreValidAttr(const char* attr_list[]) {
-
+	// make set all needed attributes
 	while (*attr_list) {
 		neededAttr.insert(*attr_list);
 		++attr_list;
 	}
 
-	return true;
+	// remove from set all found attributes
+	for (bool isAttr = IsFirstAttr(); isAttr == true; isAttr = IsNextAttr())
+		neededAttr.erase((const char*) attr_name);
+
+	// set contains all not found attributes
+	bool ans = neededAttr.size() == 0;
+
+	if (!ans)
+		for (std::set<std::string>::iterator it = neededAttr.begin(); it != neededAttr.end(); ++it)
+			XMLErrorAttr(name, it->c_str());
+
+	neededAttr.clear();
+	return ans;
 }
 bool XMLWrapper::NextTag() {
 	int ans = 0;
@@ -138,4 +150,9 @@ const xmlChar* XMLWrapper::GetTagName() {
 
 void XMLWrapper::XMLError(const char *text, int prior) {
 	sz_log(prior,"XML file error: %s (line,%d)", text, xmlTextReaderGetParserLineNumber(r));
+}
+
+void XMLWrapper::XMLErrorAttr(const xmlChar* tag_name, const char* attr_name) {
+	sz_log(1, "XML file error: not found attribute: '%s' in '<%s>' (line,%d)", attr_name, tag_name,
+		xmlTextReaderGetParserLineNumber(r));
 }

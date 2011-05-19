@@ -2266,6 +2266,7 @@ public:
 	const xmlChar* GetAttrName();
 	const xmlChar* GetTagName();
 	void XMLError(const char *text, int prior = 1);
+	void XMLErrorAttr(const xmlChar* tag_name, const char* attr_name);
 };
 
 #endif /* __SZARP_CONFIG_H__ */

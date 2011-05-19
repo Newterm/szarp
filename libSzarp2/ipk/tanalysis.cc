@@ -96,7 +96,10 @@ TAnalysis* TAnalysis::parseXML(xmlTextReaderPtr reader) {
 	XMLWrapper xw(reader);
 
 	const char* need_attr_param[] = { "boiler_no","param_type", 0 };
-	xw.AreValidAttr(need_attr_param);
+	if (!xw.AreValidAttr(need_attr_param)) {
+//TODO: check it: ommit all tree?
+		return NULL;
+	}
 
 	int bnr = 0;
 	TAnalysis::AnalysisParam param ;

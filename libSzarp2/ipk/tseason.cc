@@ -29,7 +29,10 @@ printf("name seasons: parseXML\n");
 		isEmpty = true;
 
 	const char* need_attr[] = { "month_start", "day_start", "month_end", "day_end", 0 };
-	xw.AreValidAttr(need_attr);
+	if (!xw.AreValidAttr(need_attr)) {
+//TODO: check it: ommit all tree?
+		return 1;
+	}
 
 	const char* ignored_tags[] = { "#text", "#comment", 0 };
 	xw.SetIgnoredTags(ignored_tags);
@@ -84,7 +87,10 @@ printf("name seasons: parseXML\n");
 				XMLWrapper xwseason(reader);
 				const char* need_attr_seasn[] = {"year", "month_start",  "month_end", "day_start", "day_end", 0 };
 
-				xwseason.AreValidAttr(need_attr_seasn);
+				if (!xwseason.AreValidAttr(need_attr_seasn)) {
+//TODO: check it: ommit all tree?
+					return 1;
+				}
 
 				for (bool isAttr = xwseason.IsFirstAttr(); isAttr == true; isAttr = xwseason.IsNextAttr()) {
 					const xmlChar* attr = xwseason.GetAttr();

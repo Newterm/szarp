@@ -90,7 +90,10 @@ printf("name send: parseXML\n");
 		return 0;
 
 	const char* need_attr_send[] = { "repeat" , "type", 0 };
-	xw.AreValidAttr(need_attr_send);
+	if (!xw.AreValidAttr(need_attr_send)) {
+//TODO: check it: ommit all tree?
+		return 1;
+	}
 
 	bool isValue = false;
 	bool isParam = false;

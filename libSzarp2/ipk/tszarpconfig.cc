@@ -335,7 +335,11 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 				printf("-- name: params\n");
 
 				const char* need_attr_params[] = { "read_freq" , "send_freq", "version", 0 };
-				xw.AreValidAttr(need_attr_params);
+				if (!xw.AreValidAttr(need_attr_params)) {
+//TODO: check it: ommit all tree?
+					return 1;
+
+				}
 
 				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 					const xmlChar *attr = xw.GetAttr();
@@ -344,21 +348,21 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 					if (xw.IsAttr("read_freq")) {
 						if ((i = atoi((const char*)attr)) <= 0) {
 							xw.XMLError("read_freq attribute <= 0");
-							return 0;
+							return 1;
 						}
 						read_freq = i;
 					} else
 					if (xw.IsAttr("send_freq")) {
 						if ((i = atoi((const char*)attr)) <= 0) {
 							xw.XMLError("send_freq attribute <= 0");
-							return 0;
+							return 1;
 						}
 						send_freq = i;
 					} else
 					if (xw.IsAttr("version")) {
 						if (!xmlStrEqual(attr, (unsigned char*) "1.0")) {
 							xw.XMLError("incorrect version (1.0 expected)");
-							return 0;
+							return 1;
 						}
 					} else
 					if (xw.IsAttr("title")) {

@@ -29,7 +29,11 @@ TAnalysisInterval* TAnalysisInterval::parseXML(xmlTextReaderPtr reader) {
 	XMLWrapper xw(reader);
 
 	const char* need_attr[] = { "duration", "grate_speed_upper", "grate_speed_lower", 0 };
-	xw.AreValidAttr(need_attr);
+	if (!xw.AreValidAttr(need_attr)) {
+//TODO: check it: ommit all tree?
+		return NULL;
+	}
+
 
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 

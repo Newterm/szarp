@@ -78,7 +78,10 @@ int TTreeNode::parseXML(xmlTextReaderPtr reader) {
 	bool isEmptyTag = xw.IsEmptyTag();
 
 	const char* need_attr[] = { "name", 0 };
-	xw.AreValidAttr(need_attr);
+	if (!xw.AreValidAttr(need_attr)) {
+//TODO: check it: ommit all tree?
+		return 1;
+	}
 
 	const char* ignored_tags[] = { "#text", "#comment", 0 };
 	xw.SetIgnoredTags(ignored_tags);

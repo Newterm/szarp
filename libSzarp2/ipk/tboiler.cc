@@ -82,7 +82,10 @@ printf("name boiler: parseXML\n");
 	XMLWrapper xw(reader);
 
 	const char* need_attr[] = { "boiler_no" , "grate_speed", "coal_gate_height", "boiler_type", 0};
-	xw.AreValidAttr(need_attr);
+	if (!xw.AreValidAttr(need_attr)) {
+//TODO: check it: ommit all tree?
+		return NULL;
+	}
 
 	const char* ignored_tags[] = { "#text", "#comment", 0 };
 	xw.SetIgnoredTags(ignored_tags);
