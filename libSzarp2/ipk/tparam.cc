@@ -123,7 +123,6 @@ TParam::AddAnalysis(TAnalysis* a)
 
 int TParam::parseXML(xmlTextReaderPtr reader)
 {
-//TODO: make it
 //TODO: remove printf
 	printf("name: param parseXML\n");
 
@@ -307,13 +306,12 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 							_ftype = DEFINABLE;
 							_param_type = TParam::P_DEFINABLE;
 						}
-	#ifndef NO_LUA
+#ifndef NO_LUA
 						else
 						 if (!strcmp((char*)attr, "LUA")) {
 							_param_type = TParam::P_LUA;
 						}
 					} else // end "type"
-	//TODO: lua_formula is NEEDEDATTR - check it
 					if (xw.IsAttr("lua_formula")) {
 						if (!strcmp((char*)attr, "va"))
 							_ftype = LUA_VA;
@@ -347,11 +345,11 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 							_lua_start_date_time = timegm(&t);
 						}
 
-	#endif // NO_LUA
+#endif // NO_LUA
 					} // end "lua_end_offset" | "type"
 					else
 					if (xw.IsAttr("formula")) {
-	//TODO: workaround - take only one attr. "formula" when occur more than one <define>
+					// workaround - take only one attr. "formula" when occur more than one <define>
 						if (!isFormula) {
 							_formula = SC::U2S(attr);
 							isFormula = true;

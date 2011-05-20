@@ -280,24 +280,35 @@ const char* pathes[] = {
 
 	for (int i =0 ; i < sizeof(pathes)/ sizeof(pathes[0]) ; ++i) {
 		std::wcout << L"------------ " << char2wstr(pathes[i]) << L" ----------------" << endl;
-		TSzarpConfig confOld;
-//TODO: take tmp file from system
+
+
 		const char* outOld = "/tmp/outOld.xml";
+//		const char *outOld = tmpnam(NULL);
+
+		// make output old parser
+		TSzarpConfig confOld;
 		confOld.loadXML(char2wstr(pathes[i]),L"test");
 		confOld.saveXML(char2wstr(outOld));
 
-//TODO: take tmp file from system,
 		const char* outNew = "/tmp/outNew.xml";
+//		const char* outNew = tmpnam(NULL);
+
+		// make output new parser
 		TSzarpConfig confNew;
 		confNew.parseReader(char2wstr(pathes[i]));
 		confNew.saveXML(char2wstr(outNew));
 
+		// create crc 2 files
 		boost::crc_32_type crc1 = getCRC(outOld);
 		boost::crc_32_type crc2 = getCRC(outNew);
 
 		if (crc1.checksum() != crc2.checksum()) {
-		std::wcout << L"DIFFERENT CRC!" << endl;
+			std::wcout << L"DIFFERENT CRC!" << endl;
 		}
+
+		// don't work?!
+		remove(outOld);
+		remove(outNew);
 	}
 
 //	while(1) {}

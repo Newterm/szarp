@@ -148,7 +148,7 @@ printf("name device: parseXML\n");
 
 	TRadio* r = NULL;
 
-	const char* need_attr[] = { "daemon" }; //TODO: ckeck it, "path" };
+	const char* need_attr[] = { "daemon" };
 	CHECKNEEDEDATTR(need_attr);
 
 	FORALLATTR {

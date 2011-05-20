@@ -80,48 +80,47 @@ printf("name seasons: parseXML\n");
 				int year;
 				Season s;
 
-				XMLWrapper xwseason(reader);
 				const char* need_attr_seasn[] = {"year", "month_start",  "month_end", "day_start", "day_end", 0 };
 
-				if (!xwseason.AreValidAttr(need_attr_seasn)) {
+				if (!xw.AreValidAttr(need_attr_seasn)) {
 //TODO: check it: ommit all tree?
 					return 1;
 				}
 
-				for (bool isAttr = xwseason.IsFirstAttr(); isAttr == true; isAttr = xwseason.IsNextAttr()) {
-					const xmlChar* attr = xwseason.GetAttr();
+				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+					const xmlChar* attr = xw.GetAttr();
 
-					if (xwseason.IsAttr("year")) {
+					if (xw.IsAttr("year")) {
 						if (sscanf((const char*) attr, "%d", &year) != 1) {
-							xwseason.XMLError("Invalid year definition");
+							xw.XMLError("Invalid year definition");
 							return 1;
 						}
 					} else
-					if (xwseason.IsAttr("month_start")) {
+					if (xw.IsAttr("month_start")) {
 						if (sscanf((const char*) attr, "%d", &s.month_start) != 1) {
-							xwseason.XMLError("Invalid start date of summer season definition");
+							xw.XMLError("Invalid start date of summer season definition");
 							return 1;
 						}
 					} else
-					if (xwseason.IsAttr("day_start")) {
+					if (xw.IsAttr("day_start")) {
 						if (sscanf((const char*) attr, "%d", &s.day_start) != 1) {
-							xwseason.XMLError("Invalid start date of summer season definition");
+							xw.XMLError("Invalid start date of summer season definition");
 						return 1;
 						}
 					} else
-					if (xwseason.IsAttr("month_end")) {
+					if (xw.IsAttr("month_end")) {
 						if (sscanf((const char*) attr, "%d", &s.month_end) != 1) {
-							xwseason.XMLError("Invalid end date of summer season definition");
+							xw.XMLError("Invalid end date of summer season definition");
 							return 1;
 						}
 					} else
-					if (xwseason.IsAttr("day_end")) {
+					if (xw.IsAttr("day_end")) {
 						if (sscanf((const char*) attr, "%d", &s.day_end) != 1) {
-							xwseason.XMLError("Invalid end date of summer season definition");
+							xw.XMLError("Invalid end date of summer season definition");
 							return 1;
 						}
 					} else {
-						xwseason.XMLErrorNotKnownAttr();
+						xw.XMLErrorNotKnownAttr();
 //						assert(0 == 1 && "not known attr");
 					}
 				} // FORALLATTR

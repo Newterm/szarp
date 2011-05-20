@@ -98,7 +98,6 @@ printf("name draw xmlParser\n");
 
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 		const xmlChar *attr = xw.GetAttr();
-		const xmlChar *attr_name = xw.GetAttrName();
 
 		if (xw.IsAttr("title")) {
 			strw_w = SC::U2S(attr);
@@ -134,8 +133,7 @@ printf("name draw xmlParser\n");
 					break;
 			}
 		} else {
-//TODO: make it better
-			printf("not known attr<draw>: %s\n",attr_name);
+			xw.XMLErrorNotKnownAttr();
 //			assert(0 ==1 && "not known attr");
 		}
 	} // for all attr

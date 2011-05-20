@@ -97,7 +97,7 @@ printf("name: unit parseXML\n");
 			xw.NextTag();
 		} else
 		if (xw.IsTag("unit")) {
-			return 0;
+			break;
 		} else
 		if (xw.IsTag("send")) {
 			if(xw.IsBeginTag()) {
@@ -112,8 +112,7 @@ printf("name: unit parseXML\n");
 		}
 		else {
 			if (xw.GetTagName() != NULL)
-				printf("ERROR<unit>: not known tag: %s\n",xw.GetTagName());
-	//TODO: uncomment assert, and dont cry when a break occur :)
+				xw.XMLErrorNotKnownTag("unit");
 			assert( 0 == 1 && "not known tag");
 		}
 	}

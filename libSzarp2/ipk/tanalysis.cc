@@ -111,8 +111,7 @@ TAnalysis* TAnalysis::parseXML(xmlTextReaderPtr reader) {
 		if (xw.IsAttr("param_type")) {
 			param = GetTypeForParamName(SC::U2S((unsigned char*)xw.GetAttr()));
 		} else {
-//TODO: make it 
-//			xw.XMLError("ERROR<analysis>: not known attr:%s\n",xw.GetAttrName(),10);
+			xw.XMLErrorNotKnownAttr();
 		}
 	}
 

@@ -418,8 +418,8 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 				if (seasons->parseXML(reader)) {
 					delete seasons;
 					seasons = NULL;
-	//TODO: return error
-					printf("FATAL ERROR <seasons>\n");
+					xw.XMLError("'<seasons>' parse problem");
+					assert(0 == 1 && "<seasons> parse problem");
 				}
 			}
 			xw.NextTag();
@@ -431,8 +431,10 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 				if (_b)
 					AddBoiler(_b);
 				else {
-	//TODO: return error
-					printf("FATAL ERROR <boilers>\n");
+					delete boilers;
+					boilers = NULL;
+					xw.XMLError("'<boilers>' parser problem");
+					assert(0 == 1 && "<boilers> parse problem");
 				}
 			}
 			xw.NextTag();

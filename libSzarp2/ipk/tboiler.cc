@@ -116,8 +116,7 @@ printf("name boiler: parseXML\n");
 				return NULL;
 			}
 		} else {
-//TODO: make it xmlerrorattr or sth simmilar
-			printf("<boiler> not known attr: %s\n",xw.GetAttrName());
+			xw.XMLErrorNotKnownAttr();
 		}
 
 	}
