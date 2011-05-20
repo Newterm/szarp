@@ -132,8 +132,7 @@ printf("name send: parseXML\n");
 				return 1;
 			}
 		} else {
-//TODO: make it better
-			printf("ERROR: not known attr: %s\n",attr_name);
+			xw.XMLErrorNotKnownAttr();
 //			assert(attr == NULL && "not known attr");
 		}
 	}

@@ -131,9 +131,6 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 
 	XMLWrapper xw(reader,true);
 
-	const char* ignored_tags[] = { "#text", "#comment", 0 };
-	xw.SetIgnoredTags(ignored_tags);
-
 	const char* ignored_trees[] = { "doc", "editable", 0 };
 	xw.SetIgnoredTrees(ignored_trees);
 
@@ -149,7 +146,6 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 		const xmlChar *attr = xw.GetAttr();
-		const xmlChar *attr_name = xw.GetAttrName();
 
 		if (xw.IsAttr("name")) {
 			_name = SC::U2S(attr);
@@ -191,7 +187,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 			_prec = atoi((const char*) attr);
 			isPrecAttr = true;
 		} else {
-			printf("ERROR<param> not known attr:%s\n",attr_name);
+			xw.XMLErrorNotKnownAttr();
 //			assert(0 == 1 && "not known attr");
 		}
 	}
@@ -217,7 +213,6 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 
 				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 					const xmlChar *attr = xw.GetAttr();
-					const xmlChar *attr_name = xw.GetAttrName();
 
 					if (xw.IsAttr("order")) {
 						wstringstream ss;
@@ -234,7 +229,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 					if (xw.IsAttr("filename")) {
 						strw_filen = SC::U2S(attr);
 					} else {
-						printf("ERROR<param>: not known attr:%s\n",attr_name);
+						xw.XMLErrorNotKnownAttr();
 	//					assert(0 == 1 && "not known attr");
 					}
 				}
@@ -303,7 +298,6 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 
 				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 					const xmlChar *attr = xw.GetAttr();
-					const xmlChar *attr_name = xw.GetAttrName();
 
 					if (xw.IsAttr("type")) {
 						if (!strcmp((char*)attr, "RPN")) {
@@ -366,7 +360,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 					if (xw.IsAttr("new_def")) {
 						_is_new_def = xmlStrEqual(attr, (xmlChar *) "yes");
 					}else 	{
-						printf("ERROR: not known attr<param>:%s\n",attr_name);
+						xw.XMLErrorNotKnownAttr();
 	//					assert(0 == 1 && "not known attr");
 					}
 				} // end FORALLATTR
@@ -383,8 +377,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 			break;
 		}
 		else {
-			const xmlChar *name = xw.GetTagName();
-			printf("ERROR<param>: not known name:%s\n",name);
+			xw.XMLErrorNotKnownTag("param");
 			assert(0 == 1 && "not known name");
 		}
 	}

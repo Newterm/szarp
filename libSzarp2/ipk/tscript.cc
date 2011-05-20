@@ -41,9 +41,6 @@ printf("name script xmlParser\n");
 
 	XMLWrapper xw(reader);
 
-	const char* ignored_tags[] = { "#text", "#comment", 0 };
-	xw.SetIgnoredTags(ignored_tags);
-
 	for (;;) {
 		if(xw.IsTag("script")) {
 			if (xw.IsBeginTag()) {
@@ -55,8 +52,7 @@ printf("name script xmlParser\n");
 		if(xw.IsTag("#cdata-section")) {
 			xw.NextTag();
 		} else {
-			const xmlChar *name = xw.GetTagName();
-			printf("ERROR<script>: not known name: %s\n",name);
+			xw.XMLErrorNotKnownTag("script");
 			assert(0 == 1 && "not know name");
 		}
 	}

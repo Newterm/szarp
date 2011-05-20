@@ -63,8 +63,7 @@ TBoiler* TBoilers::parseXML(xmlTextReaderPtr reader, TSzarpConfig *tszarp)
 		if(xw.IsTag("boilers")) {
 			break;
 		} else {
-			const xmlChar *name = xw.GetTagName();
-			printf("ERROR<boilers>: not known name: %s\n",name);
+			xw.XMLErrorNotKnownTag("boilers");
 			assert(0 == 1 && "not know name");
 		}
 	}

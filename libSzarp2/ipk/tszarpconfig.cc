@@ -322,9 +322,6 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 
 	XMLWrapper xw(reader);
 
-	const char* ignored_tags[] = { "#text", "#comment", 0 };
-	xw.SetIgnoredTags(ignored_tags);
-
 	const char* ignored_trees[] = { "mobile", "checker:rules",  0 };
 	xw.SetIgnoredTrees(ignored_trees);
 
@@ -344,7 +341,6 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 
 				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 					const xmlChar *attr = xw.GetAttr();
-					const xmlChar *attr_name = xw.GetAttrName();
 
 					if (xw.IsAttr("read_freq")) {
 						if ((i = atoi((const char*)attr)) <= 0) {
@@ -374,7 +370,7 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 					} else
 					if (xw.IsAttr("xmlns")) {
 					} else {
-						printf("ERROR: not known attr: %s\n",attr_name);
+						xw.XMLErrorNotKnownAttr();
 	//					assert(0 == 1 && "not known attr");
 					}
 				} 
@@ -442,7 +438,7 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 			xw.NextTag();
 		} else {
 			if (name)
-				printf("ERROR<szarpconfig>: not known tag: %s\n",name);
+				xw.XMLErrorNotKnownTag("params");
 			assert(name == NULL);
 		}
 

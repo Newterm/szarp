@@ -33,6 +33,14 @@
 
 using namespace std;
 
+
+XMLWrapper::XMLWrapper(xmlTextReaderPtr &_r, bool local): r(_r), name(NULL), attr_name(NULL), attr(NULL), isLocal(local)  {
+	name = xmlTextReaderConstName(r);
+	const char* ignored_tags[] = { "#text", "#comment", 0 };
+	SetIgnoredTags(ignored_tags);
+}
+
+
 void XMLWrapper::SetIgnoredTags(const char *i_list[]) {
 
 	while (*i_list) {
@@ -156,3 +164,15 @@ void XMLWrapper::XMLErrorAttr(const xmlChar* tag_name, const char* attr_name) {
 	sz_log(1, "XML file error: not found attribute: '%s' in '<%s>' (line,%d)", attr_name, tag_name,
 		xmlTextReaderGetParserLineNumber(r));
 }
+
+void XMLWrapper::XMLErrorNotKnownTag(const char* current_tag) {
+	sz_log(1, "XML file error: not known tag <%s> was found inside '<%s>' (line,%d)", name, current_tag,
+		xmlTextReaderGetParserLineNumber(r));
+}
+
+void XMLWrapper::XMLErrorNotKnownAttr() {
+	sz_log(10, "XML file error: not known attribute '%s' was found in '<%s>' (line,%d)", attr_name, name,
+		xmlTextReaderGetParserLineNumber(r));
+
+}
+

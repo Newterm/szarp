@@ -2250,7 +2250,7 @@ private:
 	bool isLocal;
 
 public:
-	XMLWrapper(xmlTextReaderPtr &_r, bool local = false): r(_r), name(NULL), attr_name(NULL), attr(NULL), isLocal(local)  {name = xmlTextReaderConstName(r);}
+	XMLWrapper(xmlTextReaderPtr &_r, bool local = false);
 	void SetIgnoredTags(const char *i_list[]);
 	void SetIgnoredTrees(const char *i_list[]);
 	bool AreValidAttr(const char* attr_list[]);
@@ -2268,6 +2268,8 @@ public:
 	const xmlChar* GetTagName();
 	void XMLError(const char *text, int prior = 1);
 	void XMLErrorAttr(const xmlChar* tag_name, const char* attr_name);
+	void XMLErrorNotKnownTag(const char* current_tag);
+	void XMLErrorNotKnownAttr();
 };
 
 #endif /* __SZARP_CONFIG_H__ */

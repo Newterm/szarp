@@ -34,12 +34,8 @@ printf("name seasons: parseXML\n");
 		return 1;
 	}
 
-	const char* ignored_tags[] = { "#text", "#comment", 0 };
-	xw.SetIgnoredTags(ignored_tags);
-
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 		const xmlChar* attr = xw.GetAttr();
-		const xmlChar* attr_name = xw.GetAttrName();
 
 //TODO: make it better - atoi or map with pointers to function
 		if (xw.IsAttr("month_start")) {
@@ -66,7 +62,7 @@ printf("name seasons: parseXML\n");
 				return 1;
 			}
 		} else {
-			printf("<seasons> not known attr: %s\n",attr_name);
+			xw.XMLErrorNotKnownAttr();
 //			assert(0 == 1 && "not known attr");
 		}
 	} // FORALLATTR
@@ -94,7 +90,6 @@ printf("name seasons: parseXML\n");
 
 				for (bool isAttr = xwseason.IsFirstAttr(); isAttr == true; isAttr = xwseason.IsNextAttr()) {
 					const xmlChar* attr = xwseason.GetAttr();
-					const xmlChar* attr_name = xwseason.GetTagName();
 
 					if (xwseason.IsAttr("year")) {
 						if (sscanf((const char*) attr, "%d", &year) != 1) {
@@ -126,8 +121,8 @@ printf("name seasons: parseXML\n");
 							return 1;
 						}
 					} else {
-						printf("not known attr=%s\n",attr_name);
-						assert(0 == 1 && "not known attr");
+						xwseason.XMLErrorNotKnownAttr();
+//						assert(0 == 1 && "not known attr");
 					}
 				} // FORALLATTR
 
@@ -140,10 +135,8 @@ printf("name seasons: parseXML\n");
 			break;
 		}
 		else {
-//TODO: make it better
-			const xmlChar* name = xw.GetTagName();
-			printf("ERROR: not know name = %s\n",name);
-			assert(name == NULL && "not know name");
+			xw.XMLErrorNotKnownTag("seasons");
+			assert(0 == 1  && "not know name");
 		}
 	}
 

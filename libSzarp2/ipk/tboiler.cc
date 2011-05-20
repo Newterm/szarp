@@ -87,9 +87,6 @@ printf("name boiler: parseXML\n");
 		return NULL;
 	}
 
-	const char* ignored_tags[] = { "#text", "#comment", 0 };
-	xw.SetIgnoredTags(ignored_tags);
-
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 
 		const xmlChar* attr = xw.GetAttr();
@@ -145,8 +142,7 @@ printf("name boiler: parseXML\n");
 			return boiler;
 		}
 		else {
-	//TODO: make it better
-			printf("ERROR<boiler>: not know name = %s\n",xw.GetTagName());
+			xw.XMLErrorNotKnownTag("boiler");
 			assert(xw.GetTagName() == NULL && "not know name");
 		}
 	}

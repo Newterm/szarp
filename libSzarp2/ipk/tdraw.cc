@@ -96,9 +96,6 @@ printf("name draw xmlParser\n");
 		return NULL;
 	}
 
-	const char* ignored_tags[] = { "#text", "#comment", 0 };
-	xw.SetIgnoredTags(ignored_tags);
-
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 		const xmlChar *attr = xw.GetAttr();
 		const xmlChar *attr_name = xw.GetAttrName();

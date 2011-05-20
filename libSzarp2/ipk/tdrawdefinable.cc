@@ -43,9 +43,6 @@ printf("name drawdefinable xmlParser\n");
 
 	XMLWrapper xw(reader,true);
 
-	const char* ignored_tags[] = { "#text", "#comment", 0 };
-	xw.SetIgnoredTags(ignored_tags);
-
 	xw.NextTag();
 
 	for (;;) {
@@ -64,8 +61,7 @@ printf("name drawdefinable xmlParser\n");
 		if(xw.IsTag("drawdefinable")) {
 			break;
 		} else {
-			const xmlChar* name = xw.GetTagName();
-			printf("ERROR<drawdefinable>: not known name: %s\n",name);
+			xw.XMLErrorNotKnownTag("drawdefinable");
 			assert(0 == 1 && "not know name");
 		}
 	}

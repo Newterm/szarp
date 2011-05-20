@@ -50,9 +50,6 @@ printf("name: unit parseXML\n");
 		return 1;
 	}
 
-	const char* ignored_tags[] = { "#text", "#comment", 0 };
-	xw.SetIgnoredTags(ignored_tags);
-
 	const char* ignored_trees[] = { "rate:period", 0 };
 	xw.SetIgnoredTrees(ignored_trees);
 

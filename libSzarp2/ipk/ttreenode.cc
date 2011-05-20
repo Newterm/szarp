@@ -87,12 +87,8 @@ int TTreeNode::parseXML(xmlTextReaderPtr reader) {
 		return 1;
 	}
 
-	const char* ignored_tags[] = { "#text", "#comment", 0 };
-	xw.SetIgnoredTags(ignored_tags);
-
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 		const xmlChar *attr = xw.GetAttr();
-		const xmlChar *name = xw.GetTagName();
 
 		if (xw.IsAttr("name")) {
 			_name = SC::U2S(attr);
@@ -103,7 +99,7 @@ int TTreeNode::parseXML(xmlTextReaderPtr reader) {
 		if (xw.IsAttr("draw_prior")) {
 			CONVERT(SC::U2S(attr), _draw_prior);
 		} else {
-		printf("<treenode>: not known attr:%s\n",name);
+			xw.XMLErrorNotKnownAttr();
 		}
 	}
 

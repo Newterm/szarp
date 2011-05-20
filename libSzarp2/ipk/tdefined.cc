@@ -43,9 +43,6 @@ printf("name defined xmlParser\n");
 
 	XMLWrapper xw(reader);
 
-	const char* ignored_tags[] = { "#text", "#comment", 0 };
-	xw.SetIgnoredTags(ignored_tags);
-
 	if (!xw.NextTag())
 		return NULL;
 
@@ -65,7 +62,7 @@ printf("name defined xmlParser\n");
 		if (xw.IsTag("defined")) {
 			return params;
 		} else {
-			printf("ERROR<defined>: not known name: %s\n",xw.GetTagName());
+			xw.XMLErrorNotKnownTag("defined");
 			assert(0 == 1 && "not know name");
 		}
 	}
