@@ -36,61 +36,38 @@ using namespace std;
 
 TBoiler* TBoilers::parseXML(xmlTextReaderPtr reader, TSzarpConfig *tszarp)
 {
-
 	printf("name boilers xmlParser\n");
 
-#define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
-#define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
-#define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
-#define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
-	return NULL; \
-	goto begin_process_tboilers;
-
-	const xmlChar *name = NULL;
 	TBoiler *boilers= NULL, *b = NULL;
 
-	NEXTTAG
+	XMLWrapper xw(reader);
+	const char* ignored_tags[] = { "#text", "#comment", 0 };
+	xw.SetIgnoredTags(ignored_tags);
 
-begin_process_tboilers:
+	xw.NextTag();
 
-	name = xmlTextReaderConstLocalName(reader);
-	if (name == NULL)
-		return NULL;
-
-	IFNAME("#text") {
-		NEXTTAG
-	}
-	IFCOMMENT {
-		NEXTTAG
-	}
-
-	IFNAME("boiler") {
-		IFBEGINTAG {
-			if (boilers== NULL) {
-				boilers = b = TBoiler::parseXML(reader);
-				b->SetParent(tszarp);
-			} else {
-				TBoiler* _tmp = TBoiler::parseXML(reader);
-				_tmp->SetParent(tszarp);
-				b = b->Append(_tmp);
+	for (;;) {
+		if(xw.IsTag("boiler")) {
+			if (xw.IsBeginTag()) {
+				if (boilers== NULL) {
+					boilers = b = TBoiler::parseXML(reader);
+					b->SetParent(tszarp);
+				} else {
+					TBoiler* _tmp = TBoiler::parseXML(reader);
+					_tmp->SetParent(tszarp);
+					b = b->Append(_tmp);
+				}
 			}
-//			if (b->parseXML(reader))
-//				return NULL;
+			xw.NextTag();
+		} else
+		if(xw.IsTag("boilers")) {
+			break;
+		} else {
+			const xmlChar *name = xw.GetTagName();
+			printf("ERROR<boilers>: not known name: %s\n",name);
+			assert(0 == 1 && "not know name");
 		}
-		NEXTTAG
-	} else
-	IFNAME("boilers") {
-
-	} else {
-		printf("ERROR<boilers>: not known name: %s\n",name);
-		assert(0 == 1 && "not know name");
 	}
-
-
-#undef IFNAME
-#undef IFBEGINTAG
-#undef IFCOMMENT
-#undef NEXTTAG
 
 	printf("name boilers parseXML END\n");
 

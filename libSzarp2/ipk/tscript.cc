@@ -35,47 +35,31 @@ using namespace std;
 
 unsigned char* TScript::parseXML(xmlTextReaderPtr reader)
 {
-
 printf("name script xmlParser\n");
 
-#define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
-#define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
-#define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
-	return NULL; \
-	goto begin_process_tscript;
-
-	const xmlChar *name = NULL;
 	unsigned char *script = NULL;
 
-//	NEXTTAG
+	XMLWrapper xw(reader);
 
-begin_process_tscript:
+	const char* ignored_tags[] = { "#text", "#comment", 0 };
+	xw.SetIgnoredTags(ignored_tags);
 
-	name = xmlTextReaderConstName(reader);
-	if (name == NULL)
-		return NULL;
-
-	IFNAME("#text") {
-		NEXTTAG
-	} else
-	IFNAME("script") {
-		IFBEGINTAG {
-			script = xmlTextReaderReadString(reader);
-			NEXTTAG
+	for (;;) {
+		if(xw.IsTag("script")) {
+			if (xw.IsBeginTag()) {
+				script = xmlTextReaderReadString(reader);
+				xw.NextTag();
+			} else
+				break;
+		} else
+		if(xw.IsTag("#cdata-section")) {
+			xw.NextTag();
+		} else {
+			const xmlChar *name = xw.GetTagName();
+			printf("ERROR<script>: not known name: %s\n",name);
+			assert(0 == 1 && "not know name");
 		}
-	} else
-	IFNAME("#cdata-section") {
-//		script = (unsigned char*) xmlTextReaderValue(reader);
-		NEXTTAG
-	} else {
-		printf("ERROR<script>: not known name: %s\n",name);
-		assert(0 == 1 && "not know name");
 	}
-
-
-#undef IFNAME
-#undef IFBEGINTAG
-#undef NEXTTAG
 
 printf("name script parseXML END\n");
 
