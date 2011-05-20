@@ -145,11 +145,8 @@ printf("name device: parseXML\n");
 		FORALLATTR { GETATTR; __tmpattr.erase((const char*) attr_name); } \
 		if (__tmpattr.size() > 0) { XMLERRORATTR(__tmpattr.begin()->c_str()); return 1; } \
 	}
-#define TAGINFO name = xmlTextReaderName(reader); printf("tag=%s, type=%d, isEmpty=%d\n",name, xmlTextReaderNodeType(reader), xmlTextReaderIsEmptyElement(reader));
 
 	TRadio* r = NULL;
-
-	TAGINFO;
 
 	const char* need_attr[] = { "daemon" }; //TODO: ckeck it, "path" };
 	CHECKNEEDEDATTR(need_attr);
@@ -196,7 +193,6 @@ begin_process_tdevice:
 		NEXTTAG
 	}
 
-	TAGINFO;
 
 /*
 			if (radios == NULL) {

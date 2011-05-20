@@ -196,6 +196,11 @@ int TRadio::parseXML(xmlNodePtr node)
 			if (u->parseXML(ch))
 				return 1;
 		}
+
+	if (c) {
+		xmlFree(c);
+	}
+
 	if (units == NULL) {
 		sz_log(1, "XML file error: no 'unit' elements found in 'device' \
 element (line %ld)",

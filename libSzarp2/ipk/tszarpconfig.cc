@@ -138,10 +138,11 @@ swap_draws(int a, int b, void *data)
 
 TSzarpConfig::~TSzarpConfig(void)
 {
-    delete devices;
-    delete defined;
-    delete drawdefinable;
-    delete seasons;
+	delete devices;
+	delete defined;
+	delete drawdefinable;
+	delete seasons;
+	delete boilers;
 }
 
 const std::wstring&

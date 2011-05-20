@@ -32,6 +32,9 @@ int TTreeNode::parseXML(xmlNodePtr node) {
 
 	NEEDATR(node, "name"); 
 	_name = SC::U2S(c);
+	xmlFree(c);
+	c = NULL;
+
 	c = xmlGetNoNsProp(node, X "prior");
 	if (c) {
 		std::wstringstream ss;
@@ -46,6 +49,7 @@ int TTreeNode::parseXML(xmlNodePtr node) {
 		ss.imbue(std::locale("C"));
 		ss << SC::U2S(c);
 		ss >> _draw_prior;
+		xmlFree(c);
 	}
     	for (ch = node->children; ch; ch = ch->next)
 		if (!strcmp((char*) ch->name, "treenode"))

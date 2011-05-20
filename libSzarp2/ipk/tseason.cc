@@ -203,6 +203,10 @@ int TSSeason::parseXML(xmlNodePtr node) {
 		return 1;
 
 	}
+	if (c) {
+		xmlFree(c);
+		c = NULL;
+	}
 
 	for (node = node->children; node; node = node->next) {
 		if (strcmp((char*)node->name, "season"))

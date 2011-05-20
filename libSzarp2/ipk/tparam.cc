@@ -422,6 +422,7 @@ TParam::parseXML(xmlNodePtr node)
 
     NEEDATR(node, "name");
     _name = SC::U2S(c);
+	xmlFree(c);
     
     c = xmlGetNoNsProp(node, X "short_name");
     if (c) {
@@ -608,6 +609,10 @@ sz_log(1,
 	}
     }
 #endif
+	if (c) {
+		xmlFree(c);
+		c = NULL;
+	}
 
     else { // unknown type
 sz_log(1,
@@ -962,10 +967,11 @@ TParam::Configure(const std::wstring name, const std::wstring shortName, const s
 
 TParam::~TParam()
 {
-    delete _next;
-    delete _raports;
-    delete _draws;
-    delete _values;
+	delete _next;
+	delete _raports;
+	delete _draws;
+	delete _values;
+	delete _analysis;
 
     xmlFree(_script);
 }
