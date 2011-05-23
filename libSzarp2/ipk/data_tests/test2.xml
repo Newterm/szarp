@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="ISO-8859-2"?>
+<params xmlns="http://www.praterm.com.pl/SZARP/ipk" xmlns:checker="http://www.praterm.com.pl/SZARP/ipk-checker" version="1.0" read_freq="10" send_freq="10" title="test 2 - test radio" documentation_base_url="http://www.szarp.com">
+  <device daemon="/opt/szarp/bin/linedmn" path="/dev/ttyMX1">
+    <radio id="W">
+      <unit id="5" type="1" subtype="2" bufsize="3">
+        <param name="Grupa:Jednostka:Temp" short_name="T" draw_name="Temp zewnętrzna" unit="°C" prec="1" base_ind="auto">
+          <raport title="BILANS TEMP" description="Temperatura zewnętrzna" filename="bilansT.rap" order="8"/>
+          <raport title="RAPORT TESTOWY" description="test 1" filename="test.rap" order="6"/>
+          <raport title="TEST - PANEL" filename="test2.rap" order="1"/>
+          <draw title="Wydajności" order="4" color="red" min="-40" max="50"/>
+        </param>
+        <param name="Grupa:Magistrala:Temperatura wody zasilającej" short_name="Tzas" draw_name="Zasilanie główne" unit="°C" prec="1" base_ind="auto">
+          <raport title="BILANS TEMPERATUR" description="Temperatura zasilania" filename="bilans.rap" order="9"/>
+          <draw title="Grupa Temperatury" prior="7" order="1" color="magenta" min="0" max="200"/>
+        </param>
+      </unit>
+      <unit id="6" type="2" subtype="2" bufsize="3">
+        <param name="Grupa:Magistrala:Temperatura wody zasilającej" short_name="Tzas" draw_name="+" unit="°C" prec="1" base_ind="auto">
+          <raport title="RAPORT TESTOWY" description="Grupa - magistrala" filename="test.rap" order="7"/>
+        </param>
+      </unit>
+    </radio>
+    <radio id="U">
+      <unit id="1" type="17" subtype="1" bufsize="7">
+        <param name="Węzeł:Sterownik:Temperatura zadana" short_name="Tzad" draw_name="Temp. zad" unit="°C" prec="1" base_ind="auto">
+          <raport title="STEROWNIK WĘZŁA" filename="ster.rap" order="1"/>
+        </param>
+	</unit>
+    </radio>
+  </device>
+  <device daemon="/opt/szarp/bin/rsdmn" path="/dev/ttyMX2" speed="9600">
+    <unit id="C" type="1" subtype="5" bufsize="3">
+      <param name="Grupa:Magistrala zasilająca:Temperatura" short_name="Tzew" draw_name="Temp. zewnętrzna" unit="°C" prec="1" base_ind="auto">
+        <raport title="RAPORT TESTOWY" description="magistrala zasilająca" filename="test.rap" order="14"/>
+        <draw title="Wydajności" order="3" color="red" min="-40" max="50" special="piedraw"/>
+      </param>
+    </unit>
+  </device>
+    <defined>
+    <param name="Prognoza::Temperatura zasilania" short_name="Tpz" draw_name="Temp. zasilania" unit="°C" prec="1" base_ind="auto">
+      <define type="RPN" formula="null "/>
+      <draw title="Prognozy" prior="42" order="1" color="red" min="0" max="200"/>
+    </param>
+  </defined>
+  <drawdefinable>
+    <param name="Grupa:Jednostka:licznik wody" short_name="Vwj" draw_name="Woda" unit="m3" prec="0">
+      <define type="DRAWDEFINABLE" formula="(*:*:licznik wody lsw) (*:*:licznik wody msw) :"/>
+      <draw title="liczniki" min="0" max="50000"/>
+    </param>
+  </drawdefinable>
+</params>

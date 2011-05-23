@@ -77,6 +77,67 @@ xmlNodePtr TSendParam::generateXMLNode(void)
 #undef BUF
 }
 
+
+int TSendParam::parseXML(xmlTextReaderPtr reader) {
+
+#define X (unsigned char *)
+
+	XMLWrapper xw(reader);
+	if (xw.IsEmptyTag() && !xw.HasAttr())
+		return 0;
+
+	const char* need_attr_send[] = { "repeat" , "type", 0 };
+	if (!xw.AreValidAttr(need_attr_send)) {
+		throw XMLWrapperException();
+	}
+
+	bool isValue = false;
+	bool isParam = false;
+
+	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+		const xmlChar *attr = xw.GetAttr();
+
+		if (xw.IsAttr("param")) {
+			isParam = true;
+			paramName = SC::U2S(attr).c_str();
+		} else
+		if (xw.IsAttr("value")) {
+			isValue = true;
+			value = atoi((const char*) attr);
+		} else
+		if (xw.IsAttr("repeat")) {
+			repeat = atoi((const char*) attr);
+		} else
+		if (xw.IsAttr("send_no_data")) {
+			sendNoData = 1;
+		} else
+		if (xw.IsAttr("type")) {
+			if (!xmlStrcmp(attr, X"probe"))
+				type = PROBE;
+			else if (!xmlStrcmp(attr, X"min"))
+				type = MIN;
+			else if (!xmlStrcmp(attr, X"min10"))
+				type = MIN10;
+			else if (!xmlStrcmp(attr, X"hour"))
+				type = HOUR;
+			else if (!xmlStrcmp(attr, X"day"))
+				type = DAY;
+			else {
+				xw.XMLError("Unknown value for attribute 'type' in element <send>");
+				return 1;
+			}
+		} else {
+			xw.XMLWarningNotKnownAttr();
+		}
+	}
+
+	if (isParam || isValue)
+		configured = 1;
+
+#undef X
+	return 0;
+}
+
 int TSendParam::parseXML(xmlNodePtr node)
 {
 
@@ -91,13 +152,13 @@ int TSendParam::parseXML(xmlNodePtr node)
 	}
 #define NEEDATR(p, n) \
 	if (c) free(c); \
-	c = xmlGetProp(p, (xmlChar *)n); \
+	c = xmlGetNoNsProp(p, (xmlChar *)n); \
 	if (!c) NOATR(p, n);
 #define X (unsigned char *)
 	
-	unsigned char* _pn = xmlGetProp(node, X"param");
+	unsigned char* _pn = xmlGetNoNsProp(node, X"param");
 	if (_pn == NULL) {
-		c = xmlGetProp(node, X"value");
+		c = xmlGetNoNsProp(node, X"value");
 		if (c == NULL) 
 			return 0;
 		value = atoi((char*)c);
@@ -112,7 +173,7 @@ int TSendParam::parseXML(xmlNodePtr node)
 	repeat = atoi((char*)c);
 	free(c);
 	c = NULL;
-	if ((c = xmlGetProp(node, X"send_no_data"))) {
+	if ((c = xmlGetNoNsProp(node, X"send_no_data"))) {
 		sendNoData = 1;
 	}
 	free(c);

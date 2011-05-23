@@ -121,6 +121,265 @@ TParam::AddAnalysis(TAnalysis* a)
 	return _analysis->Append(a);
 }
 
+int TParam::parseXML(xmlTextReaderPtr reader)
+{
+	TValue* v = NULL;
+
+	XMLWrapper xw(reader,true);
+
+	const char* ignored_trees[] = { "doc", "editable", 0 };
+	xw.SetIgnoredTrees(ignored_trees);
+
+	bool isEmptyTag = xw.IsEmptyTag();
+
+	const char* need_attr_param[] = { "name", 0 };
+	if (!xw.AreValidAttr(need_attr_param)) {
+		throw XMLWrapperException();
+	}
+
+	bool isPrecAttr = false;
+
+	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+		const xmlChar *attr = xw.GetAttr();
+
+		if (xw.IsAttr("name")) {
+			_name = SC::U2S(attr);
+		} else
+		if (xw.IsAttr("short_name")) {
+			_shortName = SC::U2S(attr);
+		} else
+		if (xw.IsAttr("draw_name")) {
+			_drawName = SC::U2S(attr);
+		} else
+		if (xw.IsAttr("unit")) {
+			_unit = SC::U2S(attr);
+		} else
+		if (xw.IsAttr("sum_unit")) {
+			_sum_unit = SC::U2S(attr);
+		} else
+		if (xw.IsAttr("sum_divisor")) {
+			wstringstream ss;
+			ss.imbue(locale("C"));
+			ss << SC::U2S(attr);
+			ss >> _sum_divisor;
+		} else
+		if (xw.IsAttr("period")) {
+			int tmp = atoi((char*)attr);
+			if (tmp <= 0) {
+				xw.XMLError("invalid value of period attribute");
+			}
+			else 
+				SetPeriod(tmp);
+		} else
+		if (xw.IsAttr("base_ind")) {
+			if (!strcmp((char*)attr, "auto"))
+				SetAutoBase();
+			else
+				SetBaseInd(atoi((char*)attr));
+		} else
+		if (xw.IsAttr("prec")) {
+			_prec = atoi((const char*) attr);
+			isPrecAttr = true;
+		} else {
+			xw.XMLWarningNotKnownAttr();
+//			assert(0 == 1 && "not known attr");
+		}
+	}
+
+	if (isEmptyTag)
+		return 0;
+
+	bool isFormula = false;
+
+	xw.NextTag();
+
+	for (;;) {
+		if(xw.IsTag("raport")) {
+			if (xw.IsBeginTag()) {
+				double o = -1.0;
+				std::wstring strw_title, strw_desc, strw_filen;
+
+				const char* need_attr_raport[] = { "title",0  };
+				if (!xw.AreValidAttr(need_attr_raport)) {
+					throw XMLWrapperException();
+				}
+
+				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+					const xmlChar *attr = xw.GetAttr();
+
+					if (xw.IsAttr("order")) {
+						wstringstream ss;
+						ss.imbue(locale("C"));
+						ss << SC::U2S(attr);
+						ss >> o;
+					} else
+					if (xw.IsAttr("title")) {
+						strw_title = SC::U2S(attr);
+					} else
+					if (xw.IsAttr("description")) {
+						strw_desc = SC::U2S(attr);
+					} else
+					if (xw.IsAttr("filename")) {
+						strw_filen = SC::U2S(attr);
+					} else {
+						xw.XMLWarningNotKnownAttr();
+	//					assert(0 == 1 && "not known attr");
+					}
+				}
+
+				AddRaport(strw_title,
+					strw_desc,
+					strw_filen,
+					o);
+			}
+			xw.NextTag();
+		} else
+		if(xw.IsTag("value")) {
+			if (xw.IsBeginTag()) {
+				const char* need_attr_value[] = { "int", "name", 0 };
+				if (!xw.AreValidAttr(need_attr_value)) {
+					throw XMLWrapperException();
+				}
+
+				std::wstring wstr_name;
+				int i = 0;
+
+				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+					const xmlChar *attr = xw.GetAttr();
+
+					if (xw.IsAttr("int")) {
+						i = atoi((const char*) attr);
+					} else
+					if (xw.IsAttr("name")) {
+						wstr_name = SC::U2S(attr);
+					}
+				}
+
+				if (v == NULL)
+					_values = v = new TValue(i, wstr_name, NULL);
+				else
+					v = v->Append(new TValue(i, wstr_name, NULL));
+			}
+			xw.NextTag();
+		} else
+		if(xw.IsTag("draw")) {
+			if (xw.IsBeginTag()) {
+				TDraw *d = TDraw::parseXML(reader);
+			if (d != NULL)
+				AddDraw(d);
+			}
+			xw.NextTag();
+		} else
+		if(xw.IsTag("analysis")) {
+			if (xw.IsBeginTag()) {
+			TAnalysis* a = TAnalysis::parseXML(reader);
+			if (a != NULL)
+				AddAnalysis(a);
+			}
+			xw.NextTag();
+		} else
+		if(xw.IsTag("define")) {
+			if (xw.IsBeginTag()) {
+				_param_type = TParam::P_REAL;
+
+				const char* need_attr_def[] = { "type", 0 };
+				if (!xw.AreValidAttr(need_attr_def)) {
+					throw XMLWrapperException();
+				}
+
+				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+					const xmlChar *attr = xw.GetAttr();
+
+					if (xw.IsAttr("type")) {
+						if (!strcmp((char*)attr, "RPN")) {
+							_ftype = RPN;
+						}else 
+						if (!strcmp((char*)attr, "DRAWDEFINABLE")) {
+							_ftype = DEFINABLE;
+							_param_type = TParam::P_DEFINABLE;
+						}
+#ifndef NO_LUA
+						else
+						 if (!strcmp((char*)attr, "LUA")) {
+							_param_type = TParam::P_LUA;
+						}
+					} else // end "type"
+					if (xw.IsAttr("lua_formula")) {
+						if (!strcmp((char*)attr, "va"))
+							_ftype = LUA_VA;
+						else if (!strcmp((char*)attr, "av"))
+							_ftype = LUA_AV;
+						else if (!strcmp((char*)attr, "ipc"))
+							_ftype = LUA_IPC;
+						else {
+							xw.XMLError("XML file error: unknown value for 'lua_formula' attribute");
+							return 1;
+						}
+					} else
+					if (xw.IsAttr("lua_start_offset")) {
+						_lua_start_offset = atoi ((char*) attr);
+					} else
+					if (xw.IsAttr("lua_end_offset")) {
+						_lua_end_offset = atoi ((char*)attr);
+					} else
+					if (xw.IsAttr("lua_start_date_time")) {
+						boost::posix_time::ptime star_date_time = boost::posix_time::not_a_date_time;
+						try {
+							star_date_time = boost::posix_time::time_from_string((char *)attr);
+						} catch(std::exception e) {
+							star_date_time = boost::posix_time::not_a_date_time;
+						}
+
+						if (star_date_time == boost::posix_time::not_a_date_time) {
+							xw.XMLError("XML file error: lua_start_date_time attribute has invalid value - expected format \"YYYY-MM-DD hh:mm\"");
+						} else {
+							struct tm t = to_tm(star_date_time);
+							_lua_start_date_time = timegm(&t);
+						}
+
+#endif // NO_LUA
+					} // end "lua_end_offset" | "type"
+					else
+					if (xw.IsAttr("formula")) {
+					// workaround - take only one attr. "formula" when occur more than one <define>
+						if (!isFormula) {
+							_formula = SC::U2S(attr);
+							isFormula = true;
+						}
+					} else
+					if (xw.IsAttr("new_def")) {
+						_is_new_def = xmlStrEqual(attr, (xmlChar *) "yes");
+					}else 	{
+						xw.XMLWarningNotKnownAttr();
+	//					assert(0 == 1 && "not known attr");
+					}
+				} // end FORALLATTR
+			} // end "define"
+			xw.NextTag();
+		} else
+		if(xw.IsTag("script")) {
+			if (xw.IsBeginTag()) {
+				_script = TScript::parseXML(reader);
+			}
+			xw.NextTag();
+		} else
+		if(xw.IsTag("param")) {
+			break;
+		}
+		else {
+			xw.XMLErrorNotKnownTag("param");
+			assert(0 == 1 && "not known name");
+		}
+	}
+
+	if (!isPrecAttr && !_values) {
+		xw.XMLError("Attribute 'prec' in 'param'");
+		return 1;
+	}
+
+	return 0;
+}
+
 int
 TParam::parseXML(xmlNodePtr node)
 {
@@ -138,38 +397,39 @@ TParam::parseXML(xmlNodePtr node)
 	}
 #define NEEDATR(p, n) \
 	if (c) xmlFree(c); \
-	c = xmlGetProp(p, (xmlChar *)n); \
+	c = xmlGetNoNsProp(p, (xmlChar *)n); \
 	if (!c) NOATR(p, n);
 #define X (xmlChar*)
 
     NEEDATR(node, "name");
     _name = SC::U2S(c);
+	xmlFree(c);
     
-    c = xmlGetProp(node, X "short_name");
+    c = xmlGetNoNsProp(node, X "short_name");
     if (c) {
 	    _shortName = SC::U2S(c);
 	    xmlFree(c);
     }
 
-    c = xmlGetProp(node, X "draw_name");
+    c = xmlGetNoNsProp(node, X "draw_name");
     if (c) {
 	    _drawName = SC::U2S(c);
 	    xmlFree(c);
     }
 
-    c = xmlGetProp(node, X "unit");
+    c = xmlGetNoNsProp(node, X "unit");
     if (c) {
 	    _unit = SC::U2S(c);
 	    xmlFree(c);
     }
 
-    c = xmlGetProp(node, X "sum_unit");
+    c = xmlGetNoNsProp(node, X "sum_unit");
     if (c) {
 	    _sum_unit = SC::U2S(c);
 	    xmlFree(c);
     }
 
-    c = xmlGetProp(node, X "sum_divisor");
+    c = xmlGetNoNsProp(node, X "sum_divisor");
     if (c) {
 	    wstringstream ss;
 	    ss.imbue(locale("C"));
@@ -178,7 +438,7 @@ TParam::parseXML(xmlNodePtr node)
 	    xmlFree(c);
     }
 
-    c = xmlGetProp(node, X "period"); 
+    c = xmlGetNoNsProp(node, X "period"); 
     if (c) {
 	int tmp = atoi((char*)c);
         if (tmp <= 0)
@@ -191,7 +451,7 @@ TParam::parseXML(xmlNodePtr node)
 	xmlFree(c);
     }
 
-    c = xmlGetProp(node, X "base_ind");
+    c = xmlGetNoNsProp(node, X "base_ind");
     if (c) {
 	if (!strcmp((char*)c, "auto"))
 	    SetAutoBase();
@@ -216,7 +476,7 @@ TParam::parseXML(xmlNodePtr node)
 	}
 	else if (!strcmp((char *) ch->name, "raport")) {
 	    double o = -1.0;
-	    c = xmlGetProp(ch, X "order");
+	    c = xmlGetNoNsProp(ch, X "order");
 	    if (c) {
 		wstringstream ss;
 		ss.imbue(locale("C"));
@@ -224,8 +484,8 @@ TParam::parseXML(xmlNodePtr node)
 		ss >> o;
 	    }
 	    NEEDATR(ch, "title");
-	    xmlChar* d = xmlGetProp(ch, X"description");
-	    xmlChar* f = xmlGetProp(ch, X"filename");
+	    xmlChar* d = xmlGetNoNsProp(ch, X"description");
+	    xmlChar* f = xmlGetNoNsProp(ch, X"filename");
 
 	    AddRaport(SC::U2S(c),
 			d != NULL ? SC::U2S(d) : std::wstring(),
@@ -294,19 +554,19 @@ sz_log(1,
 	}
 
 	if (_ftype == LUA_VA || _ftype == LUA_AV) {
-		xmlChar* offset = xmlGetProp(ch, X "lua_start_offset");
+		xmlChar* offset = xmlGetNoNsProp(ch, X "lua_start_offset");
 		if (offset) {
 			_lua_start_offset = atoi((char*) offset);
 			xmlFree(offset);
 		}
-		offset = xmlGetProp(ch, X "lua_end_offset");
+		offset = xmlGetNoNsProp(ch, X "lua_end_offset");
 		if (offset) {
 			_lua_end_offset = atoi((char*) offset);
 			xmlFree(offset);
 		}
 
 
-		xmlChar *start_dt = xmlGetProp(ch, X "lua_start_date_time");
+		xmlChar *start_dt = xmlGetNoNsProp(ch, X "lua_start_date_time");
 		if (start_dt) {
 				boost::posix_time::ptime star_date_time = boost::posix_time::not_a_date_time;
 				try {
@@ -330,6 +590,10 @@ sz_log(1,
 	}
     }
 #endif
+	if (c) {
+		xmlFree(c);
+		c = NULL;
+	}
 
     else { // unknown type
 sz_log(1,
@@ -347,7 +611,7 @@ sz_log(1,
     if (cld != NULL) {
 	if (cld->children != NULL) {
 	    _script = xmlNodeListGetString(cld->doc, cld->children, 1);
-	    xmlChar * ndef = xmlGetProp(ch, (xmlChar *) "new_def");
+	    xmlChar * ndef = xmlGetNoNsProp(ch, (xmlChar *) "new_def");
             if (NULL != ndef) {
   	        _is_new_def = xmlStrEqual(ndef, (xmlChar *) "yes");
 	    	xmlFree(ndef);
@@ -368,7 +632,7 @@ sz_log(1,
      c = NULL;
 
      if (DEFINABLE == _ftype) {
-	xmlChar * ndef = xmlGetProp(ch, (xmlChar *) "new_def");
+	xmlChar * ndef = xmlGetNoNsProp(ch, (xmlChar *) "new_def");
        	if (NULL != ndef) {
 	    _is_new_def = xmlStrEqual(ndef, (xmlChar *) "yes");
 	    xmlFree(ndef);
@@ -436,6 +700,7 @@ TParam::generateXMLNode(void)
 			assert(false);
 	}
 	c = xmlNewChild(c, NULL, X "script", NULL);
+	assert(_script != NULL);
 	xmlNodePtr cd = xmlNewCDataBlock(r->doc, _script, strlen((char*)_script));
 	xmlAddChild(c, cd);
     } else
@@ -683,10 +948,11 @@ TParam::Configure(const std::wstring name, const std::wstring shortName, const s
 
 TParam::~TParam()
 {
-    delete _next;
-    delete _raports;
-    delete _draws;
-    delete _values;
+	delete _next;
+	delete _raports;
+	delete _draws;
+	delete _values;
+	delete _analysis;
 
     xmlFree(_script);
 }

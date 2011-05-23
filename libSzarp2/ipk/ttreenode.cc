@@ -26,13 +26,16 @@ int TTreeNode::parseXML(xmlNodePtr node) {
 	}
 #define NEEDATR(p, n) \
 	if (c) xmlFree(c); \
-	c = xmlGetProp(p, (xmlChar *)n); \
+	c = xmlGetNoNsProp(p, (xmlChar *)n); \
 	if (!c) NOATR(p, n);
 #define X (xmlChar*)
 
 	NEEDATR(node, "name"); 
 	_name = SC::U2S(c);
-	c = xmlGetProp(node, X "prior");
+	xmlFree(c);
+	c = NULL;
+
+	c = xmlGetNoNsProp(node, X "prior");
 	if (c) {
 		std::wstringstream ss;
 		ss.imbue(std::locale("C"));
@@ -40,12 +43,13 @@ int TTreeNode::parseXML(xmlNodePtr node) {
 		ss >> _prior;
 		xmlFree(c);
 	}
-	c = xmlGetProp(node, X "draw_prior");
+	c = xmlGetNoNsProp(node, X "draw_prior");
 	if (c) {
 		std::wstringstream ss;
 		ss.imbue(std::locale("C"));
 		ss << SC::U2S(c);
 		ss >> _draw_prior;
+		xmlFree(c);
 	}
     	for (ch = node->children; ch; ch = ch->next)
 		if (!strcmp((char*) ch->name, "treenode"))
@@ -59,6 +63,64 @@ int TTreeNode::parseXML(xmlNodePtr node) {
 #undef X
 #undef NEEDATR
 #undef NOATR
+}
+
+int TTreeNode::parseXML(xmlTextReaderPtr reader) {
+
+#define CONVERT(FROM, TO) { \
+	std::wstringstream ss;	\
+	ss.imbue(std::locale("C"));	\
+	ss << FROM;		\
+	ss >> TO; 		\
+	}
+
+	int depth = xmlTextReaderDepth(reader);
+	XMLWrapper xw(reader);
+
+	bool isEmptyTag = xw.IsEmptyTag();
+
+	const char* need_attr[] = { "name", 0 };
+	if (!xw.AreValidAttr(need_attr)) {
+		throw XMLWrapperException();
+	}
+
+	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+		const xmlChar *attr = xw.GetAttr();
+
+		if (xw.IsAttr("name")) {
+			_name = SC::U2S(attr);
+		} else
+		if (xw.IsAttr("prior")) {
+			CONVERT(SC::U2S(attr), _prior);
+		} else
+		if (xw.IsAttr("draw_prior")) {
+			CONVERT(SC::U2S(attr), _draw_prior);
+		} else {
+			xw.XMLWarningNotKnownAttr();
+		}
+	}
+
+	if (isEmptyTag)
+		return 0;
+
+	xw.NextTag();
+
+	if(xw.IsTag("treenode")) {
+		if (xw.IsBeginTag()) {
+			_parent = new TTreeNode();
+			if (_parent->parseXML(reader))
+				return 1;
+			xw.NextTag();
+		}
+		if (xw.IsEndTag()) {
+			int _tmp = xmlTextReaderDepth(reader);
+			assert( _tmp == depth && "treenode recurention problem");
+		}
+	}
+
+#undef CONVERT
+
+	return 0;
 }
 
 xmlNodePtr TTreeNode::generateXML() {

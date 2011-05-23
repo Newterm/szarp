@@ -40,39 +40,39 @@ int TDevice::parseXML(xmlNodePtr node)
 	int i;
 	xmlNodePtr ch;
 	
-	c = xmlGetProp(node, X"daemon");
+	c = xmlGetNoNsProp(node, X"daemon");
 	if (!c)
 		goto inside;
 	daemon = SC::U2S(c);
 	xmlFree(c);
 
-	c = xmlGetProp(node, X"options");
+	c = xmlGetNoNsProp(node, X"options");
 	if (c) {
 		options = SC::U2S(c);
 		xmlFree(c);
 	}
-	c = xmlGetProp(node, X"path");
+	c = xmlGetNoNsProp(node, X"path");
 	if (!c)
 		goto inside;
 	path = SC::U2S(c);
 	xmlFree(c);
-	c = xmlGetProp(node, X"speed");
+	c = xmlGetNoNsProp(node, X"speed");
 	if (!c)
 		goto inside;
 	speed = atoi((char*) c);
 	xmlFree(c);
-	c = xmlGetProp(node, X"stop");
+	c = xmlGetNoNsProp(node, X"stop");
 	if (!c)
 		goto inside;
 	stop = atoi((char*) c);
 	xmlFree(c);
-	c = xmlGetProp(node, X"protocol");
+	c = xmlGetNoNsProp(node, X"protocol");
 	if (!c)
 		goto inside;
 	protocol = atoi((char*)(c));
 	xmlFree(c);
 inside:
-	c = xmlGetProp(node, X"special");
+	c = xmlGetNoNsProp(node, X"special");
 	if (c) {
 		special = 1;
 		special_value = atoi((char*)c);
@@ -107,6 +107,88 @@ device with radio modems (line %ld)",
 		}
 	return 0;
 #undef X 
+}
+
+
+int TDevice::parseXML(xmlTextReaderPtr reader)
+{
+	TRadio* r = NULL;
+
+	XMLWrapper xw(reader);
+
+	const char* need_attr[] = { "daemon", 0 };
+	if (!xw.AreValidAttr(need_attr)) {
+		throw XMLWrapperException();
+	}
+
+	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+		const xmlChar *attr = xw.GetAttr();
+
+		if (xw.IsAttr("daemon")) {
+			daemon = SC::U2S(attr);
+		} else
+		if (xw.IsAttr("path")) {
+			path = SC::U2S(attr);
+		} else
+		if (xw.IsAttr("speed")) {
+			speed = atoi((const char*) attr);
+		} else
+		if (xw.IsAttr("stop")) {
+			stop = atoi((const char*) attr);
+		} else
+		if (xw.IsAttr("protocol")) {
+			protocol = atoi((const char*) attr);
+		} else
+		if (xw.IsAttr("special")) {
+			special = 1;
+			special_value = atoi((const char*) attr);
+		} else
+		if (xw.IsAttr("options")) {
+			options = SC::U2S(attr);
+		} else {
+		xw.XMLWarningNotKnownAttr();
+		}
+	}
+
+	xw.NextTag();
+
+	for (;;) {
+		if(xw.IsTag("radio")) {
+			if (xw.IsBeginTag()) {
+				if (radios == NULL) {
+					r = radios = new TRadio(this);
+				} else {
+					r = r->Append(new TRadio(this));
+				}
+				assert (r != NULL);
+				if(r->parseXML(reader))
+					return 1;
+			}
+			xw.NextTag();
+		} else
+		if(xw.IsTag("unit")) {
+			if (xw.IsBeginTag()) {
+				if (radios == NULL) {
+					r = radios = new TRadio(this);
+				} else {
+					r = r->Append(new TRadio(this));
+				}
+				assert (r != NULL);
+				if(r->parseXML(reader))
+					return 1;
+			}
+		break;
+//			xw.NextTag(); // don't take next tag - <unit> set it
+		} else
+		if(xw.IsTag("device")) {
+			break;
+		}
+		else {
+			xw.XMLErrorNotKnownTag("device");
+		}
+	}
+
+	return 0;
 }
 
 TUnit* TDevice::searchUnitById(const wchar_t id, int uniq)

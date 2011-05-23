@@ -26,6 +26,7 @@
 #include <tr1/unordered_map>
 
 #include <string>
+#include <set>
 
 #include <stdio.h>
 #include <assert.h>
@@ -37,7 +38,7 @@
 #include <boost/filesystem/path.hpp>
 
 #include "szbase/szbdefines.h"
-
+#include <libxml/xmlreader.h>
 
 #define IPK_NAMESPACE_STRING L"http://www.praterm.com.pl/SZARP/ipk"
 
@@ -58,7 +59,12 @@ class TAnalysisParam;
 class TSSeason;
 class TDictionary;
 class TTreeNode;
-
+class TDrawdefinable;
+class TScript;
+class TDefined;
+class TBoilers;
+class XMLWrapper;
+class XMLWrapperException;
 
 /** SZARP system configuration */
 class TSzarpConfig {
@@ -141,9 +147,17 @@ public:
 	/**
 	 * Loads config information from XML file.
 	 * @param path to input file
+	 * @param prefix prefix name of configuration
 	 * @return 0 on success, 1 on error
 	 */
 	int loadXML(const std::wstring& path, const std::wstring& prefix = std::wstring());
+	/**
+	 * Loads config information from XML file.
+	 * @param path to input file
+	 * @param prefix prefix name ofconfiguration
+	 * @return 0 on success, 1 on error
+	 */
+	int loadXMLReader(const std::wstring& path, const std::wstring& prefix = std::wstring());
 	/**
 	 * Load configuration from already parsed XML document.
 	 * @param doc parsed XML document
@@ -151,6 +165,11 @@ public:
 	 * see line numbers in error messages)
 	 */
 	int parseXML(xmlDocPtr doc);
+	/** Parses XML node (current set in reader).
+	 * @param reader XML reader set on params
+	 * @return 0 on success, 1 on error
+	 */
+	int parseXML(xmlTextReaderPtr reader);
 	/**
 	 * Initalize definable parameters.
 	 * Creates formula cache, checks for N function and const params.
@@ -483,6 +502,11 @@ public:
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlNodePtr node);
+	/** Parses XML node (current set in reader).
+	 * @param reader XML reader set on device
+	 * @return 0 on success, 1 on error
+	 */
+	int parseXML(xmlTextReaderPtr reader);
 protected:
 	/**
 	 * Returns num'th param from device line.
@@ -579,6 +603,11 @@ public:
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlNodePtr node);
+	/** Parses XML node (current set in reader)
+	 * @param reader XML reader set on  "radio"
+	 * @return 0 on success, 1 on error
+	 */
+	int parseXML(xmlTextReaderPtr reader);
 protected:
 	TDevice *parentDevice;
 			/**< Pointer to parent device object. */
@@ -675,6 +704,11 @@ public:
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlNodePtr node);
+	/** Parses XML node (current set in reader)
+	 * @param reader XML reader set on "unit"
+	 * @return 0 on success, 1 on error
+	 */
+	int parseXML(xmlTextReaderPtr node);
 	/** @return pointer to parent radio object */
 	TRadio* GetRadio()
 	{
@@ -1015,6 +1049,11 @@ public:
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlNodePtr node);
+	/** Parses XML node (current set in reader)
+	 * @param reader XML reader set on "param"
+	 * @return 0 on success, 1 on error
+	 */
+	int parseXML(xmlTextReaderPtr node);
 
 	/**
 	 * Get next param in list.
@@ -1195,6 +1234,60 @@ protected:
 };
 
 /**
+ * Info about single node script.
+ */
+class TScript {
+public:
+	/** Parses XML node (current set in reader on script) and returns pointer to script.
+	 * @param reader XML reader set on "script"
+	 * @return script on success or NULL if empty
+	 */
+	static unsigned char* parseXML(xmlTextReaderPtr reader);
+};
+
+/**
+ * Info about single node drawdefinable.
+ */
+class TDrawdefinable {
+public:
+	/** Parses XML node (current set in reader) and returns pointer to new TParam object.
+	 * @param reader XML reader set on "drawdefinable"
+	 * @param tszarp pointer to actual TSzarpConfig
+	 * @return NULL on error, pointer to newly created TParam object on
+	 * success.
+	 */
+	static TParam* parseXML(xmlTextReaderPtr reader,TSzarpConfig *tszarp);
+};
+
+/**
+ * Info about single node boilers.
+ */
+class TBoilers {
+public:
+	/** Parses XML node (current set in reader) and returns pointer to new TBoiler object.
+	 * @param reader XML reader set on "boilers"
+	 * @param tszarp pointer to actual TSzarpConfig
+	 * @return NULL on error, pointer to newly created TBoiler object on
+	 * success.
+	 */
+	static TBoiler* parseXML(xmlTextReaderPtr reader, TSzarpConfig *tszarp);
+};
+
+/**
+ * Info about single node defined.
+ */
+class TDefined {
+public:
+	/** Parses XML node (current set in reader) and returns pointer to new TParam object.
+	 * @param reader XML reader set on "defined" node
+	 * @param tszarp pointer to actual TSzarpConfig
+	 * @return NULL on error, pointer to newly created TParam object on
+	 * success.
+	 */
+	static TParam* parseXML(xmlTextReaderPtr reader,TSzarpConfig *tszarp);
+};
+
+/**
  * Info about single param draw.
  */
 class TDraw {
@@ -1218,6 +1311,11 @@ public:
 	 * success.
 	 */
 	static TDraw* parseXML(xmlNodePtr node);
+	/** Parses XML node (current set in reader) and returns pointer to new TDraw object.
+	 * @param reader XML reader set on "draw"
+	 * @return 0 on success, 1 on error
+	 */
+	static TDraw* parseXML(xmlTextReaderPtr reader);
 	/**
 	 * Return special attribute for draw.
 	 */
@@ -1386,6 +1484,11 @@ public:
 	TTreeNode();
 	xmlNodePtr generateXML();
 	int parseXML(xmlNodePtr node);
+	/** Parses XML node (current set in reader)
+	 * @param reader XML reader set on "treenode" node
+	 * @return 0 on success, 1 on error
+	 */
+	int parseXML(xmlTextReaderPtr reader);
 	double GetPrior() { return _prior; }
 	double GetDrawPrior() { return _draw_prior; }
 	std::wstring GetName() { return _name; }
@@ -1477,6 +1580,12 @@ public:
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlNodePtr node);
+	/**
+	 * Loads information parsed from XML file.
+	 * @param reader XML reader set on "send"
+	 * @return 0 on success, 1 on error
+	 */
+	int parseXML(xmlTextReaderPtr reader);
 protected:
 	TUnit *parentUnit;
 			/**< Pointer to parent TUnit object. */
@@ -1693,6 +1802,11 @@ public:
 	 * @return pointer to TAnalysis object, NULL if error ocurred*/
 	static TAnalysis* parseXML(xmlNodePtr node);
 
+	/**Converts xml node to TAanalis object
+	 * @param reader set on "analysis" element
+	 * @return pointer to TAnalysis object, NULL if error ocurred*/
+	static TAnalysis* parseXML(xmlTextReaderPtr reader);
+
 	/**Creates xml node describing this object
 	 * @return pointer to a node*/
 	xmlNodePtr generateXMLNode(void);
@@ -1800,6 +1914,11 @@ class TAnalysisInterval {
 	 * @param node with interval element
 	 * @return pointer to TAnalysisInterval object, NULL if error ocurred*/
 	static TAnalysisInterval* parseXML(xmlNodePtr node);
+
+	/**Converts xml node to TAnalysisInterval object
+	 * @param reader set on "interval" element
+	 * @return pointer to TAnalysisInterval object, NULL if error ocurred*/
+	static TAnalysisInterval* parseXML(xmlTextReaderPtr reader);
 
 	/**Creates xml node describing this object
 	 * @return pointer to a node*/
@@ -1921,6 +2040,11 @@ public:
 	TBoiler* Append(TBoiler* boiler);
 
 	/**Converts xml node to TBoiler object
+	 * @param reader set on "boiler" element
+	 * @return pointer to TABoiler object, NULL if error ocurred*/
+	static TBoiler* parseXML(xmlTextReaderPtr reader);
+
+	/**Converts xml node to TBoiler object
 	 * @param node with boiler element
 	 * @return pointer to TABoiler object, NULL if error ocurred*/
 	static TBoiler* parseXML(xmlNodePtr node);
@@ -1994,6 +2118,9 @@ public:
 	/**parses XML node describing seasons
 	@return 0 if node was successfully parsed, 0 otherwise*/
 	int parseXML(xmlNodePtr p);
+	/**parses XML node describing seasons
+	@return 0 if node was successfully parsed, 0 otherwise*/
+	int parseXML(xmlTextReaderPtr reader);
 
 	/**generates XML node describing seasons
 	 * @return xml node ptr*/
@@ -2115,6 +2242,42 @@ public:
 	void TranslateIPK(TSzarpConfig *ipk, const std::wstring& tolang);
 
 };
+
+class XMLWrapper {
+private:
+	xmlTextReaderPtr &r;
+	const xmlChar* name;
+	const xmlChar* attr_name;
+	const xmlChar* attr;
+	std::set<std::string> ignoredTags;
+	std::set<std::string> ignoredTrees;
+	std::set<std::string> neededAttr;
+	bool isLocal;
+
+public:
+	XMLWrapper(xmlTextReaderPtr &_r, bool local = false);
+	void SetIgnoredTags(const char *i_list[]);
+	void SetIgnoredTrees(const char *i_list[]);
+	bool AreValidAttr(const char* attr_list[]);
+	bool NextTag();
+	bool IsTag(const char* n);
+	bool IsAttr(const char* a);
+	bool IsFirstAttr();
+	bool IsNextAttr();
+	bool IsBeginTag();
+	bool IsEndTag();
+	bool IsEmptyTag();
+	bool HasAttr();
+	const xmlChar* GetAttr();
+	const xmlChar* GetAttrName();
+	const xmlChar* GetTagName();
+	void XMLError(const char *text, int prior = 1);
+	void XMLErrorAttr(const xmlChar* tag_name, const char* attr_name);
+	void XMLErrorNotKnownTag(const char* current_tag);
+	void XMLWarningNotKnownAttr();
+};
+
+class XMLWrapperException {};
 
 #endif /* __SZARP_CONFIG_H__ */
 

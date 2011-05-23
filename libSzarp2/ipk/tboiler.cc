@@ -69,6 +69,78 @@ TParam* TBoiler::GetParam(TAnalysis::AnalysisParam param_type) {
 	return NULL;
 }
 
+TBoiler* TBoiler::parseXML(xmlTextReaderPtr reader) {
+
+	TBoiler *boiler = NULL;
+	int boiler_no;
+	float grate_speed;
+	float coal_gate_height;
+	BoilerType boiler_type = INVALID;
+
+	XMLWrapper xw(reader);
+
+	const char* need_attr[] = { "boiler_no" , "grate_speed", "coal_gate_height", "boiler_type", 0};
+	if (!xw.AreValidAttr(need_attr)) {
+		throw XMLWrapperException();
+	}
+
+	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+
+		const xmlChar* attr = xw.GetAttr();
+
+		if (xw.IsAttr("boiler_no")) {
+			if ((sscanf((const char*)attr,"%d",&boiler_no) != 1) || (boiler_no < 0)) {
+				xw.XMLError("Invalid 'boiler_no' attribute on element 'boiler'");
+			}
+		} else
+		if (xw.IsAttr("grate_speed")) {
+			if ((sscanf((const char*)attr,"%f",&grate_speed) != 1) || (grate_speed < 0)) {
+				xw.XMLError("Invalid 'grate_speed' attribute on element 'boiler'");
+			}
+		} else
+		if (xw.IsAttr("coal_gate_height")) {
+			if ((sscanf((const char*)attr,"%f",&coal_gate_height) != 1) || (coal_gate_height < 0)) {
+				xw.XMLError("Invalid 'max_coal_gate_height_change' attribute on element 'boiler'");
+			}
+		} else
+		if (xw.IsAttr("boiler_type")) {
+			boiler_type = GetTypeForBoilerName(SC::U2S((const unsigned char*)attr));
+			if (boiler_type == INVALID ) {
+				xw.XMLError("Invalid 'boiler_type' attribute on element 'boiler'");
+			}
+		} else {
+			xw.XMLWarningNotKnownAttr();
+		}
+
+	}
+
+	boiler = new TBoiler(boiler_no, grate_speed, coal_gate_height, boiler_type);
+
+	xw.NextTag();
+
+	for (;;) {
+		if (xw.IsTag("interval")) {
+			if (xw.IsBeginTag()) {
+				TAnalysisInterval *interval = TAnalysisInterval::parseXML(reader);
+				if (!interval) {
+					delete boiler;
+					return NULL;
+				}
+				boiler->AddInterval(interval);
+			}
+			xw.NextTag();
+		} else
+		if (xw.IsTag("boiler")) {
+			return boiler;
+		}
+		else {
+			xw.XMLErrorNotKnownTag("boiler");
+		}
+	}
+
+	return boiler;
+}
+
 TBoiler* TBoiler::parseXML(xmlNodePtr node) {
 
 #define NOATR(p, n) \
@@ -80,7 +152,7 @@ TBoiler* TBoiler::parseXML(xmlNodePtr node) {
 	}
 #define NEEDATR(p, n) \
 	if (c) xmlFree(c); \
-	c = (char *)xmlGetProp(p, (xmlChar *)n); \
+	c = (char *)xmlGetNoNsProp(p, (xmlChar *)n); \
 	if (!c) NOATR(p, n);
 
 	char *c = NULL;

@@ -31,12 +31,17 @@ INCLUDES = @XML_CFLAGS@ @XSLT_CFLAGS@ @CURL_CFLAGS@ @LUA_CFLAGS@ \
 
 noinst_LIBRARIES = libSzarp2.a
 
-EXTRA_PROGRAMS = szbtest lua_parser_test
+EXTRA_PROGRAMS = szbtest lua_parser_test xmlreader_test
 szbtest_SOURCES = $(SZBASE_DIR)/szbtest.cc
 
 lua_parser_test_INCLUDES = $(INCLUDES)
 lua_parser_test_LDADD = $(LDADD) ../libSzarp/libSzarp.a libSzarp2.a
 lua_parser_test_SOURCES = $(SZBASE_DIR)/lua_parser_test.cc
+
+xmlreader_test_INCLUDES = $(INCLUDES)
+xmlreader_test_LDADD = $(LDADD) ../libSzarp/libSzarp.a libSzarp2.a $(BOOST_LDFLAGS) $(BOOST_SYSTEM_LIB) $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_REGEX_LIB) $(BOOST_DATE_TIME_LIB)  ../libSzarp/liblog.o
+xmlreader_test_SOURCES = $(IPK_DIR)/xmlreader_test.cc
+
 
 test: szbtest
 	./szbtest
@@ -77,6 +82,11 @@ libSzarp2_a_SOURCES = \
 			$(IPK_DIR)/tdictionary.cc \
 			$(IPK_DIR)/ttreenode.cc \
 			$(IPK_DIR)/dmncfg.cc \
+			$(IPK_DIR)/tdefined.cc \
+			$(IPK_DIR)/xmlwrapper.cc \
+			$(IPK_DIR)/tdrawdefinable.cc \
+			$(IPK_DIR)/tboilers.cc \
+			$(IPK_DIR)/tscript.cc \
 			$(DMN_DIR)/ipchandler.cc \
 			$(SOURCE_DIR)/misc/convuri.cc \
 			$(SOURCE_DIR)/misc/crontime.h \

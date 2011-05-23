@@ -37,7 +37,7 @@ void TDictionary::LoadDictionary(const std::wstring &from_lang, const std::wstri
 				if (xmlStrcmp(n3->name, BAD_CAST "translation"))
 					continue;
 
-				xmlChar* _lang = xmlGetProp(n3, BAD_CAST "lang");
+				xmlChar* _lang = xmlGetNoNsProp(n3, BAD_CAST "lang");
 				assert(_lang);
 
 				std::wstring lang = SC::U2S(_lang);
@@ -45,7 +45,7 @@ void TDictionary::LoadDictionary(const std::wstring &from_lang, const std::wstri
 				if (from_lang == lang
 						|| to_lang == lang) {
 
-					xmlChar *v = xmlGetProp(n3, BAD_CAST "value");
+					xmlChar *v = xmlGetNoNsProp(n3, BAD_CAST "value");
 
 					if (from_lang == lang) {
 						f = true;

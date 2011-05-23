@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="ISO-8859-2"?>
+<params xmlns="http://www.praterm.com.pl/SZARP/ipk" xmlns:modbus="http://www.praterm.com.pl/SZARP/ipk-extra" xmlns:checker="http://www.praterm.com.pl/SZARP/ipk-checker" version="1.0" read_freq="10" send_freq="10" title="Test1" ps_address="fake.com.pl" ps_port="1234">
+<device daemon="/opt/szarp/bin/rsdmn" path="/dev/ttyA11">
+	<unit id="5" type="2" subtype="1" bufsize="1">
+		<param name="Grupa:Jednostka:Parametr 1" short_name="P1" draw_name="Param 1" unit="°C" prec="1" base_ind="auto"/>
+		<param name="Grupa:Jednostka:Param 2" short_name="P2" draw_name="Param 2" unit="°C" prec="1" base_ind="auto">
+				<raport title="Temperatury" order="2"/>
+				<raport title="RAPORT TESTOWY" description="Param 2 z grupa jednostka" order="10"/>
+				<draw title="Param 2" color="cyan" min="0" max="150" order="3"/>
+				<draw title="Odpżyw" min="0" max="150" prior="1234" order="1">
+					<treenode draw_prior="5" prior="12" name="Sież">
+						<treenode prior="1" name="Blok"/>
+					</treenode>
+				</draw>
+			</param>
+		</unit>
+	<unit id="3" type="2" subtype="1" bufsize="1">
+			<param name="Grupa:Jednostka:Parametr 3" short_name="P3" draw_name="Param 3" unit="°C" prec="1" base_ind="auto"/>
+	</unit>
+  </device>
+  <device daemon="/opt/szarp/bin/rsdmn" path="/dev/ttyA26">
+    <unit id="1" type="2" subtype="1" bufsize="1">
+      <param name="Grupa:Jednostka 2:Moc pompy" short_name="MP" draw_name="Moc pompy" unit="kW" prec="3" base_ind="auto">
+        <raport title="Panel DP3" order="1"/>
+        <raport title="RAPORT TESTOWY" description="Panel DP3" filename="test.rap" order="14"/>
+        <draw title="Moce pomp" min="0" max="7.5" order="3"/>
+      </param>
+    </unit>
+  </device>
+  <defined>
+    <param name="Kocioł 5:Analiza:Strumień powietrza" short_name="SP" draw_name="Strum. pow. w analizie" unit="%" prec="1" base_ind="auto">
+	    <define type="RPN" formula="1000 (*:*:Stan wejść) 7 2 7 $ * "/>
+      <raport title="Kocioł 5" order="24"/>
+      <draw title="Kocioł nr 5" color="cyan" min="50" max="150" order="3"/>
+      <analysis boiler_no="5" param_type="air_stream_result"/>
+    </param>
+    <param name="Wentylatory:Kanał 5:Kasowanie awarii" short_name="Ks" draw_name="-" unit="-">
+	    <value int="0" name="Nie"/>
+	    <value int="1" name="Tak"/>
+	    <define type="RPN" formula="1000 (*:*:Stan wejść) 7 2 7 $ * "/>
+	    <raport title="Wentylatory 3" order="11"/>
+	    <raport title="Wentylatory 4" order="11"/>
+	    <raport title="Wentylatory 5" order="11"/>
+    </param><param xmlns="http://www.praterm.com.pl/SZARP/ipk" name="Grupa:Jednostka 3:Param 1" short_name="G" draw_name="Param 1 główny" unit="t/h" prec="0" base_ind="auto">
+		<value int="0" name="Nie"/>
+          <define type="RPN" formula="(*:*:Przepływ) (*:*:Temperatura wody) 2 6 $ "/>
+          
+          <draw title="Przepływy" prior="123" order="1" color="green" min="0" max="5000"/>
+        </param>
+  </defined>
+  
+  <drawdefinable>
+    <param name="Kocioł:Sterownik:Delta Temperatur" short_name="dT" draw_name="Delta Temp" unit="°C" prec="1">
+	    <define type="DRAWDEFINABLE" new_def="yes" formula="(*:Panel:Temperatura) (*:*:Temperatura wody) 0 N -"/>
+	    <draw title="Kocioł - różnica" min="0" max="100" order="2"/>
+    </param>
+    <param name="Sieć:Sterownik:Stopniodni" short_name="StD" draw_name="Stopniodni" unit="-" prec="1">
+            <define type="LUA" lua_formula="va">
+                    <script><![CDATA[
+                            local ct
+                            ct = p("abc:Sieć:Sterownik:Temperatura", t, PT_DAY)
+                            if not(in_season("abc", t)) and ct < 18 then
+                                v = 18 - ct
+                            else
+                                v = 0
+                            end
+                    ]]></script>
+            </define>
+            <draw title="Stopniodni" min = "0" max = "30" special="hoursum"/>
+    </param>  
+  
+  </drawdefinable>
+  <seasons day_start="15" month_start="4" day_end="15" month_end="10">
+   <season year="2006" day_start="15" month_start="4" day_end="11" month_end="10"/>
+   <season year="2007" day_start="26" month_start="4" day_end="15" month_end="10"/>
+   <season year="2008" day_start="15" month_start="4" day_end="18" month_end="9"/>
+  </seasons>
+  <boilers>
+    <boiler boiler_no="5" grate_speed="15.00" coal_gate_height="4.00" boiler_type="WR-5">
+      <interval duration="10800" grate_speed_lower="1000" grate_speed_upper="5000"/>
+      <interval duration="8040" grate_speed_lower="4000" grate_speed_upper="6000"/>
+      <interval duration="7200" grate_speed_lower="5000" grate_speed_upper="9000"/>
+    </boiler>
+  </boilers>
+</params>
