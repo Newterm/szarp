@@ -63,7 +63,6 @@ TBoiler* TBoilers::parseXML(xmlTextReaderPtr reader, TSzarpConfig *tszarp)
 			break;
 		} else {
 			xw.XMLErrorNotKnownTag("boilers");
-			assert(0 == 1 && "not know name");
 		}
 	}
 

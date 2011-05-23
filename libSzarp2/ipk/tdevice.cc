@@ -117,7 +117,9 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 	XMLWrapper xw(reader);
 
 	const char* need_attr[] = { "daemon", 0 };
-	xw.AreValidAttr(need_attr);
+	if (!xw.AreValidAttr(need_attr)) {
+		throw XMLWrapperException();
+	}
 
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 		const xmlChar *attr = xw.GetAttr();
@@ -144,8 +146,7 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 		if (xw.IsAttr("options")) {
 			options = SC::U2S(attr);
 		} else {
-		xw.XMLErrorNotKnownAttr();
-//			assert( 0 == 1 && "not known attribute");
+		xw.XMLWarningNotKnownAttr();
 		}
 	}
 
@@ -184,7 +185,6 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 		}
 		else {
 			xw.XMLErrorNotKnownTag("device");
-//			assert(name == NULL && "not know name");
 		}
 	}
 

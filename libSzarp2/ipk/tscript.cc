@@ -52,7 +52,6 @@ unsigned char* TScript::parseXML(xmlTextReaderPtr reader)
 			xw.NextTag();
 		} else {
 			xw.XMLErrorNotKnownTag("script");
-			assert(0 == 1 && "not know name");
 		}
 	}
 

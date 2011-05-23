@@ -81,8 +81,7 @@ TBoiler* TBoiler::parseXML(xmlTextReaderPtr reader) {
 
 	const char* need_attr[] = { "boiler_no" , "grate_speed", "coal_gate_height", "boiler_type", 0};
 	if (!xw.AreValidAttr(need_attr)) {
-//TODO: check it: ommit all tree?
-		return NULL;
+		throw XMLWrapperException();
 	}
 
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
@@ -92,29 +91,25 @@ TBoiler* TBoiler::parseXML(xmlTextReaderPtr reader) {
 		if (xw.IsAttr("boiler_no")) {
 			if ((sscanf((const char*)attr,"%d",&boiler_no) != 1) || (boiler_no < 0)) {
 				xw.XMLError("Invalid 'boiler_no' attribute on element 'boiler'");
-				return NULL;
 			}
 		} else
 		if (xw.IsAttr("grate_speed")) {
 			if ((sscanf((const char*)attr,"%f",&grate_speed) != 1) || (grate_speed < 0)) {
 				xw.XMLError("Invalid 'grate_speed' attribute on element 'boiler'");
-				return NULL;
 			}
 		} else
 		if (xw.IsAttr("coal_gate_height")) {
 			if ((sscanf((const char*)attr,"%f",&coal_gate_height) != 1) || (coal_gate_height < 0)) {
 				xw.XMLError("Invalid 'max_coal_gate_height_change' attribute on element 'boiler'");
-				return NULL;
 			}
 		} else
 		if (xw.IsAttr("boiler_type")) {
 			boiler_type = GetTypeForBoilerName(SC::U2S((const unsigned char*)attr));
 			if (boiler_type == INVALID ) {
 				xw.XMLError("Invalid 'boiler_type' attribute on element 'boiler'");
-				return NULL;
 			}
 		} else {
-			xw.XMLErrorNotKnownAttr();
+			xw.XMLWarningNotKnownAttr();
 		}
 
 	}
@@ -140,7 +135,6 @@ TBoiler* TBoiler::parseXML(xmlTextReaderPtr reader) {
 		}
 		else {
 			xw.XMLErrorNotKnownTag("boiler");
-			assert(xw.GetTagName() == NULL && "not know name");
 		}
 	}
 

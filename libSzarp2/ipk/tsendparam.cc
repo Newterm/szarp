@@ -88,8 +88,7 @@ int TSendParam::parseXML(xmlTextReaderPtr reader) {
 
 	const char* need_attr_send[] = { "repeat" , "type", 0 };
 	if (!xw.AreValidAttr(need_attr_send)) {
-//TODO: check it: ommit all tree?
-		return 1;
+		throw XMLWrapperException();
 	}
 
 	bool isValue = false;
@@ -128,7 +127,7 @@ int TSendParam::parseXML(xmlTextReaderPtr reader) {
 				return 1;
 			}
 		} else {
-			xw.XMLErrorNotKnownAttr();
+			xw.XMLWarningNotKnownAttr();
 		}
 	}
 

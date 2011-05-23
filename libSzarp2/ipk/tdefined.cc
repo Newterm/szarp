@@ -61,7 +61,6 @@ TParam* TDefined::parseXML(xmlTextReaderPtr reader, TSzarpConfig *tszarp)
 			return params;
 		} else {
 			xw.XMLErrorNotKnownTag("defined");
-			assert(0 == 1 && "not know name");
 		}
 	}
 

@@ -81,8 +81,7 @@ int TTreeNode::parseXML(xmlTextReaderPtr reader) {
 
 	const char* need_attr[] = { "name", 0 };
 	if (!xw.AreValidAttr(need_attr)) {
-//TODO: check it: ommit all tree?
-		return 1;
+		throw XMLWrapperException();
 	}
 
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
@@ -97,7 +96,7 @@ int TTreeNode::parseXML(xmlTextReaderPtr reader) {
 		if (xw.IsAttr("draw_prior")) {
 			CONVERT(SC::U2S(attr), _draw_prior);
 		} else {
-			xw.XMLErrorNotKnownAttr();
+			xw.XMLWarningNotKnownAttr();
 		}
 	}
 
@@ -115,7 +114,7 @@ int TTreeNode::parseXML(xmlTextReaderPtr reader) {
 		}
 		if (xw.IsEndTag()) {
 			int _tmp = xmlTextReaderDepth(reader);
-			assert( _tmp == depth);
+			assert( _tmp == depth && "treenode recurention problem");
 		}
 	}
 

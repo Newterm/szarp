@@ -123,9 +123,6 @@ TParam::AddAnalysis(TAnalysis* a)
 
 int TParam::parseXML(xmlTextReaderPtr reader)
 {
-//TODO: remove printf
-	printf("name: param parseXML\n");
-
 	TValue* v = NULL;
 
 	XMLWrapper xw(reader,true);
@@ -137,8 +134,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 
 	const char* need_attr_param[] = { "name", 0 };
 	if (!xw.AreValidAttr(need_attr_param)) {
-//TODO: check it: ommit all tree?
-		return 1;
+		throw XMLWrapperException();
 	}
 
 	bool isPrecAttr = false;
@@ -148,7 +144,6 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 
 		if (xw.IsAttr("name")) {
 			_name = SC::U2S(attr);
-/**/printf("param name=%s\n",attr);
 		} else
 		if (xw.IsAttr("short_name")) {
 			_shortName = SC::U2S(attr);
@@ -186,7 +181,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 			_prec = atoi((const char*) attr);
 			isPrecAttr = true;
 		} else {
-			xw.XMLErrorNotKnownAttr();
+			xw.XMLWarningNotKnownAttr();
 //			assert(0 == 1 && "not known attr");
 		}
 	}
@@ -206,8 +201,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 
 				const char* need_attr_raport[] = { "title",0  };
 				if (!xw.AreValidAttr(need_attr_raport)) {
-	//TODO: check it: ommit all tree?
-					return 1;
+					throw XMLWrapperException();
 				}
 
 				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
@@ -228,7 +222,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 					if (xw.IsAttr("filename")) {
 						strw_filen = SC::U2S(attr);
 					} else {
-						xw.XMLErrorNotKnownAttr();
+						xw.XMLWarningNotKnownAttr();
 	//					assert(0 == 1 && "not known attr");
 					}
 				}
@@ -244,8 +238,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 			if (xw.IsBeginTag()) {
 				const char* need_attr_value[] = { "int", "name", 0 };
 				if (!xw.AreValidAttr(need_attr_value)) {
-	//TODO: check it: ommit all tree?
-					return 1;
+					throw XMLWrapperException();
 				}
 
 				std::wstring wstr_name;
@@ -291,8 +284,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 
 				const char* need_attr_def[] = { "type", 0 };
 				if (!xw.AreValidAttr(need_attr_def)) {
-	//TODO: check it: ommit all tree?
-					return 1;
+					throw XMLWrapperException();
 				}
 
 				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
@@ -358,7 +350,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 					if (xw.IsAttr("new_def")) {
 						_is_new_def = xmlStrEqual(attr, (xmlChar *) "yes");
 					}else 	{
-						xw.XMLErrorNotKnownAttr();
+						xw.XMLWarningNotKnownAttr();
 	//					assert(0 == 1 && "not known attr");
 					}
 				} // end FORALLATTR
@@ -384,8 +376,6 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 		xw.XMLError("Attribute 'prec' in 'param'");
 		return 1;
 	}
-
-printf("name: param parseXML END\n");
 
 	return 0;
 }

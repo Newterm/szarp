@@ -64,6 +64,7 @@ class TScript;
 class TDefined;
 class TBoilers;
 class XMLWrapper;
+class XMLWrapperException;
 
 /** SZARP system configuration */
 class TSzarpConfig {
@@ -146,9 +147,17 @@ public:
 	/**
 	 * Loads config information from XML file.
 	 * @param path to input file
+	 * @param prefix prefix name of configuration
 	 * @return 0 on success, 1 on error
 	 */
 	int loadXML(const std::wstring& path, const std::wstring& prefix = std::wstring());
+	/**
+	 * Loads config information from XML file.
+	 * @param path to input file
+	 * @param prefix prefix name ofconfiguration
+	 * @return 0 on success, 1 on error
+	 */
+	int loadXMLReader(const std::wstring& path, const std::wstring& prefix = std::wstring());
 	/**
 	 * Load configuration from already parsed XML document.
 	 * @param doc parsed XML document
@@ -156,10 +165,11 @@ public:
 	 * see line numbers in error messages)
 	 */
 	int parseXML(xmlDocPtr doc);
-//TODO: change name? and add description
-	int parseReader(const std::wstring& path);
-//TODO: change name? and add description
-	int processNodeReader(xmlTextReaderPtr reader);
+	/** Parses XML node (current set in reader).
+	 * @param reader XML reader set on params
+	 * @return 0 on success, 1 on error
+	 */
+	int parseXML(xmlTextReaderPtr reader);
 	/**
 	 * Initalize definable parameters.
 	 * Creates formula cache, checks for N function and const params.
@@ -492,9 +502,8 @@ public:
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlNodePtr node);
-	/**
-	 * Loads information parsed from XML file.
-	 * @param node XML node with device configuration info
+	/** Parses XML node (current set in reader).
+	 * @param reader XML reader set on device
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlTextReaderPtr reader);
@@ -594,9 +603,8 @@ public:
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlNodePtr node);
-	/**
-	 * Loads information parsed from XML file.
-	 * @param node XML node with device configuration info
+	/** Parses XML node (current set in reader)
+	 * @param reader XML reader set on  "radio"
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlTextReaderPtr reader);
@@ -696,9 +704,8 @@ public:
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlNodePtr node);
-	/**
-	 * Loads information parsed from XML file.
-	 * @param node XML node with device configuration info
+	/** Parses XML node (current set in reader)
+	 * @param reader XML reader set on "unit"
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlTextReaderPtr node);
@@ -1042,9 +1049,8 @@ public:
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlNodePtr node);
-	/**
-	 * Loads information parsed from XML file.
-	 * @param node XML node with device configuration info
+	/** Parses XML node (current set in reader)
+	 * @param reader XML reader set on "param"
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlTextReaderPtr node);
@@ -1233,7 +1239,7 @@ protected:
 class TScript {
 public:
 	/** Parses XML node (current set in reader on script) and returns pointer to script.
-	 * @param reader XML reader set on TScript
+	 * @param reader XML reader set on "script"
 	 * @return script on success or NULL if empty
 	 */
 	static unsigned char* parseXML(xmlTextReaderPtr reader);
@@ -1245,7 +1251,7 @@ public:
 class TDrawdefinable {
 public:
 	/** Parses XML node (current set in reader) and returns pointer to new TParam object.
-	 * @param reader XML reader set on Drawdefinable
+	 * @param reader XML reader set on "drawdefinable"
 	 * @param tszarp pointer to actual TSzarpConfig
 	 * @return NULL on error, pointer to newly created TParam object on
 	 * success.
@@ -1259,7 +1265,7 @@ public:
 class TBoilers {
 public:
 	/** Parses XML node (current set in reader) and returns pointer to new TBoiler object.
-	 * @param reader XML reader set on boilers
+	 * @param reader XML reader set on "boilers"
 	 * @param tszarp pointer to actual TSzarpConfig
 	 * @return NULL on error, pointer to newly created TBoiler object on
 	 * success.
@@ -1273,7 +1279,7 @@ public:
 class TDefined {
 public:
 	/** Parses XML node (current set in reader) and returns pointer to new TParam object.
-	 * @param reader XML reader set on TDefined node
+	 * @param reader XML reader set on "defined" node
 	 * @param tszarp pointer to actual TSzarpConfig
 	 * @return NULL on error, pointer to newly created TParam object on
 	 * success.
@@ -1305,10 +1311,9 @@ public:
 	 * success.
 	 */
 	static TDraw* parseXML(xmlNodePtr node);
-	/** Parses XML node and returns pointer to new TDraw object.
-	 * @param node XML node with draw description
-	 * @return NULL on error, pointer to newly created TDraw object on
-	 * success.
+	/** Parses XML node (current set in reader) and returns pointer to new TDraw object.
+	 * @param reader XML reader set on "draw"
+	 * @return 0 on success, 1 on error
 	 */
 	static TDraw* parseXML(xmlTextReaderPtr reader);
 	/**
@@ -1480,7 +1485,7 @@ public:
 	xmlNodePtr generateXML();
 	int parseXML(xmlNodePtr node);
 	/** Parses XML node (current set in reader)
-	 * @param reader XML reader set on treenode node
+	 * @param reader XML reader set on "treenode" node
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlTextReaderPtr reader);
@@ -1798,7 +1803,7 @@ public:
 	static TAnalysis* parseXML(xmlNodePtr node);
 
 	/**Converts xml node to TAanalis object
-	 * @param reader set on analysis element
+	 * @param reader set on "analysis" element
 	 * @return pointer to TAnalysis object, NULL if error ocurred*/
 	static TAnalysis* parseXML(xmlTextReaderPtr reader);
 
@@ -1911,7 +1916,7 @@ class TAnalysisInterval {
 	static TAnalysisInterval* parseXML(xmlNodePtr node);
 
 	/**Converts xml node to TAnalysisInterval object
-	 * @param reader set on interval element
+	 * @param reader set on "interval" element
 	 * @return pointer to TAnalysisInterval object, NULL if error ocurred*/
 	static TAnalysisInterval* parseXML(xmlTextReaderPtr reader);
 
@@ -2035,7 +2040,7 @@ public:
 	TBoiler* Append(TBoiler* boiler);
 
 	/**Converts xml node to TBoiler object
-	 * @param reader set on boiler element
+	 * @param reader set on "boiler" element
 	 * @return pointer to TABoiler object, NULL if error ocurred*/
 	static TBoiler* parseXML(xmlTextReaderPtr reader);
 
@@ -2269,8 +2274,10 @@ public:
 	void XMLError(const char *text, int prior = 1);
 	void XMLErrorAttr(const xmlChar* tag_name, const char* attr_name);
 	void XMLErrorNotKnownTag(const char* current_tag);
-	void XMLErrorNotKnownAttr();
+	void XMLWarningNotKnownAttr();
 };
+
+class XMLWrapperException {};
 
 #endif /* __SZARP_CONFIG_H__ */
 

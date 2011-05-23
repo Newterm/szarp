@@ -28,8 +28,7 @@ TAnalysisInterval* TAnalysisInterval::parseXML(xmlTextReaderPtr reader) {
 
 	const char* need_attr[] = { "duration", "grate_speed_upper", "grate_speed_lower", 0 };
 	if (!xw.AreValidAttr(need_attr)) {
-//TODO: check it: ommit all tree?
-		return NULL;
+		throw XMLWrapperException();
 	}
 
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
@@ -39,22 +38,19 @@ TAnalysisInterval* TAnalysisInterval::parseXML(xmlTextReaderPtr reader) {
 		if(xw.IsAttr("duration")) {
 			if ((sscanf((const char*)attr,"%d",&duration) != 1) || (duration < 0)) {
 				xw.XMLError("Invalid 'duration' attribute on element 'interval'");
-				return NULL;
 			}
 		} else
 		if(xw.IsAttr("grate_speed_upper")) {
 			if ((sscanf((const char*) attr,"%d",&grate_speed_upper) != 1) || (grate_speed_upper< 0)) {
 				xw.XMLError("Invalid 'grate_speed_upper' attribute on element 'interval'");
-				return NULL;
 			}
 		} else
 		if(xw.IsAttr("grate_speed_lower")) {
 			if ((sscanf((const char*) attr, "%d", &grate_speed_lower) != 1) || (grate_speed_lower < 0)) {
 				xw.XMLError("Invalid 'grate_speed_lower' attribute on element 'interval'");
-				return NULL;
 			}
 		} else {
-			xw.XMLErrorNotKnownAttr();
+			xw.XMLWarningNotKnownAttr();
 		}
 	}
 

@@ -121,6 +121,7 @@ int main() {
 const char* pathes[] = {
 "./ipk/data_tests/test1.xml", // identical (workaround: <define>)
 "./ipk/data_tests/test2.xml", // identical (<radio> inside <device>)
+/*
 "/root/xml/bilg.xml", // identical after fix (set "prec" = "dde:prec", prec before dde:prec)
 "/root/xml/gcie.xml", // identical after fix (added missing IDs ( moved on front ) )
 "/root/xml/poligon.xml", // identical after fix (added "speed" before "modbus:speed" )
@@ -274,34 +275,46 @@ const char* pathes[] = {
 "/root/xml/sunc.xml", // identical
 "/root/xml/rcw1.xml", // identical
 "/root/xml/prat.xml", // identical
+*/
 		};
 
-	for (int i =0 ; i < sizeof(pathes)/ sizeof(pathes[0]) ; ++i) {
-		std::wcout << L"------------ " << char2wstr(pathes[i]) << L" ------------"<< endl;
+	for (unsigned int i =0 ; i < sizeof(pathes)/ sizeof(pathes[0]) ; ++i) {
+		std::cout << "------------ " << pathes[i] << " ------------"<< endl;
 
+		int ansOld = 0, ansNew = 0;
 
 		const char* outOld = "outOld.xml";
 //		const char *outOld = tmpnam(NULL);
 
 		// make output old parser
 		TSzarpConfig confOld;
-		confOld.loadXML(char2wstr(pathes[i]),L"test");
-		confOld.saveXML(char2wstr(outOld));
+		ansOld = confOld.loadXML(char2wstr(pathes[i]),L"test");
+
+		if (ansOld == 0)
+			confOld.saveXML(char2wstr(outOld));
+		else
+			cout << "OLD PARSER: ERROR" << endl;
 
 		const char* outNew = "outNew.xml";
 //		const char* outNew = tmpnam(NULL);
 
 		// make output new parser
 		TSzarpConfig confNew;
-		confNew.parseReader(char2wstr(pathes[i]));
-		confNew.saveXML(char2wstr(outNew));
+		ansNew = confNew.loadXMLReader(char2wstr(pathes[i]));
+		if (ansNew == 0)
+			confNew.saveXML(char2wstr(outNew));
+		else
+			cout << "NEW PARSER: ERROR" << endl;
 
-		// create crc 2 files
-		boost::crc_32_type crc1 = getCRC(outOld);
-		boost::crc_32_type crc2 = getCRC(outNew);
+		if (!ansOld && !ansNew) {
+			// create crc 2 files
+			boost::crc_32_type crc1 = getCRC(outOld);
+			boost::crc_32_type crc2 = getCRC(outNew);
 
-		if (crc1.checksum() != crc2.checksum()) {
-			std::wcout << L"DIFFERENT CRC!" << endl;
+			if (crc1.checksum() != crc2.checksum()) 
+				std::cout << "DIFFERENT CRC!" << endl;
+			else
+				std::cout << "OK" << endl;
 		}
 
 		// don't work with tpmnam?!

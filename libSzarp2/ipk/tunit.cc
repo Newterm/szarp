@@ -44,8 +44,7 @@ int TUnit::parseXML(xmlTextReaderPtr reader)
 
 	const char* need_attr[] = { "id", "type", "subtype", "bufsize", 0 };
 	if (!xw.AreValidAttr(need_attr)) {
-//TODO: check it: ommit all tree?
-		return 1;
+		throw XMLWrapperException();
 	}
 
 	const char* ignored_trees[] = { "rate:period", 0 };
@@ -56,7 +55,6 @@ int TUnit::parseXML(xmlTextReaderPtr reader)
 		if (xw.IsAttr("id")) {
 			if (xmlStrlen(xw.GetAttr()) != 1) {
 				xw.XMLError("attribute 'id' should be one ASCII");
-				return 1;
 			}
 			id = SC::U2S(xw.GetAttr())[0];
 		} else
@@ -72,7 +70,7 @@ int TUnit::parseXML(xmlTextReaderPtr reader)
 		if (xw.IsAttr("name")) {
 			TUnit::name = SC::U2S(xw.GetAttr());
 		} else {
-			xw.XMLErrorNotKnownAttr();
+			xw.XMLWarningNotKnownAttr();
 		}
 	}
 
@@ -110,7 +108,6 @@ int TUnit::parseXML(xmlTextReaderPtr reader)
 		else {
 			if (xw.GetTagName() != NULL)
 				xw.XMLErrorNotKnownTag("unit");
-			assert( 0 == 1 && "not known tag");
 		}
 	}
 

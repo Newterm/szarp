@@ -33,14 +33,11 @@
 
 using namespace std;
 
-
 TParam* TDrawdefinable::parseXML(xmlTextReaderPtr reader, TSzarpConfig *tszarp)
 {
 
 	TParam *params = NULL, *p = NULL;
-
 	XMLWrapper xw(reader,true);
-
 	xw.NextTag();
 
 	for (;;) {
@@ -60,7 +57,6 @@ TParam* TDrawdefinable::parseXML(xmlTextReaderPtr reader, TSzarpConfig *tszarp)
 			break;
 		} else {
 			xw.XMLErrorNotKnownTag("drawdefinable");
-			assert(0 == 1 && "not know name");
 		}
 	}
 

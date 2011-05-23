@@ -91,8 +91,7 @@ TDraw* TDraw::parseXML(xmlTextReaderPtr reader)
 
 	const char* need_attr[] = { "title", 0 };
 	if (!xw.AreValidAttr(need_attr) ) {
-//TODO: check it: ommit all tree?
-		return NULL;
+		throw XMLWrapperException();
 	}
 
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
@@ -132,8 +131,7 @@ TDraw* TDraw::parseXML(xmlTextReaderPtr reader)
 					break;
 			}
 		} else {
-			xw.XMLErrorNotKnownAttr();
-//			assert(0 ==1 && "not known attr");
+			xw.XMLWarningNotKnownAttr();
 		}
 	} // for all attr
 
@@ -178,7 +176,6 @@ TDraw* TDraw::parseXML(xmlTextReaderPtr reader)
 			break;
 		} else {
 			xw.XMLErrorNotKnownTag("draw");
-			assert(0 == 1 && "not known name");
 		}
 	}
 

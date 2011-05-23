@@ -158,19 +158,22 @@ const xmlChar* XMLWrapper::GetTagName() {
 
 void XMLWrapper::XMLError(const char *text, int prior) {
 	sz_log(prior,"XML file error: %s (line,%d)", text, xmlTextReaderGetParserLineNumber(r));
+	throw XMLWrapperException();
 }
 
 void XMLWrapper::XMLErrorAttr(const xmlChar* tag_name, const char* attr_name) {
 	sz_log(1, "XML file error: not found attribute: '%s' in '<%s>' (line,%d)", attr_name, tag_name,
 		xmlTextReaderGetParserLineNumber(r));
+	throw XMLWrapperException();
 }
 
 void XMLWrapper::XMLErrorNotKnownTag(const char* current_tag) {
 	sz_log(1, "XML file error: not known tag <%s> was found inside '<%s>' (line,%d)", name, current_tag,
 		xmlTextReaderGetParserLineNumber(r));
+	throw XMLWrapperException();
 }
 
-void XMLWrapper::XMLErrorNotKnownAttr() {
+void XMLWrapper::XMLWarningNotKnownAttr() {
 	sz_log(10, "XML file error: not known attribute '%s' was found in '<%s>' (line,%d)", attr_name, name,
 		xmlTextReaderGetParserLineNumber(r));
 

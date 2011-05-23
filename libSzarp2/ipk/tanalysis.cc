@@ -95,8 +95,7 @@ TAnalysis* TAnalysis::parseXML(xmlTextReaderPtr reader) {
 
 	const char* need_attr_param[] = { "boiler_no","param_type", 0 };
 	if (!xw.AreValidAttr(need_attr_param)) {
-//TODO: check it: ommit all tree?
-		return NULL;
+		throw XMLWrapperException();
 	}
 
 	int bnr = 0;
@@ -109,7 +108,7 @@ TAnalysis* TAnalysis::parseXML(xmlTextReaderPtr reader) {
 		if (xw.IsAttr("param_type")) {
 			param = GetTypeForParamName(SC::U2S((unsigned char*)xw.GetAttr()));
 		} else {
-			xw.XMLErrorNotKnownAttr();
+			xw.XMLWarningNotKnownAttr();
 		}
 	}
 

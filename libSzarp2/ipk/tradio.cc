@@ -62,8 +62,7 @@ int TRadio::parseXML(xmlTextReaderPtr reader)
 				isRadio = true;
 				const char *need_attr[] = { "id", 0 };
 				if (!xw.AreValidAttr(need_attr)) {
-//TODO: check it: ommit all tree?
-					return 1;
+					throw XMLWrapperException();
 				}
 
 				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
@@ -72,7 +71,7 @@ int TRadio::parseXML(xmlTextReaderPtr reader)
 					if (xw.IsAttr("id")) {
 						id = SC::U2S(attr)[0];
 					} else {
-						xw.XMLErrorNotKnownAttr();
+						xw.XMLWarningNotKnownAttr();
 					}
 				}
 					xw.NextTag();

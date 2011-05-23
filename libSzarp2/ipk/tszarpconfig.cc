@@ -311,7 +311,7 @@ TSzarpConfig::loadXML(const std::wstring &path, const std::wstring &prefix)
 }
 
 int
-TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
+TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 {
 
 	int i = 0;
@@ -326,16 +326,12 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 	xw.SetIgnoredTrees(ignored_trees);
 
 	for (;;) {
-		const xmlChar *name = xw.GetTagName();
-
 		if(xw.IsTag("params")) {
 			if (xw.IsBeginTag()) {
 
 				const char* need_attr_params[] = { "read_freq" , "send_freq", "version", 0 };
 				if (!xw.AreValidAttr(need_attr_params)) {
-//TODO: check it: ommit all tree?
-					return 1;
-
+					throw XMLWrapperException();
 				}
 
 				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
@@ -344,21 +340,18 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 					if (xw.IsAttr("read_freq")) {
 						if ((i = atoi((const char*)attr)) <= 0) {
 							xw.XMLError("read_freq attribute <= 0");
-							return 1;
 						}
 						read_freq = i;
 					} else
 					if (xw.IsAttr("send_freq")) {
 						if ((i = atoi((const char*)attr)) <= 0) {
 							xw.XMLError("send_freq attribute <= 0");
-							return 1;
 						}
 						send_freq = i;
 					} else
 					if (xw.IsAttr("version")) {
 						if (!xmlStrEqual(attr, (unsigned char*) "1.0")) {
 							xw.XMLError("incorrect version (1.0 expected)");
-							return 1;
 						}
 					} else
 					if (xw.IsAttr("title")) {
@@ -369,8 +362,7 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 					} else
 					if (xw.IsAttr("xmlns")) {
 					} else {
-						xw.XMLErrorNotKnownAttr();
-	//					assert(0 == 1 && "not known attr");
+						xw.XMLWarningNotKnownAttr();
 					}
 				} 
 
@@ -413,7 +405,6 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 					delete seasons;
 					seasons = NULL;
 					xw.XMLError("'<seasons>' parse problem");
-					assert(0 == 1 && "<seasons> parse problem");
 				}
 			}
 			xw.NextTag();
@@ -427,14 +418,11 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 					delete boilers;
 					boilers = NULL;
 					xw.XMLError("'<boilers>' parser problem");
-					assert(0 == 1 && "<boilers> parse problem");
 				}
 			}
 			xw.NextTag();
 		} else {
-			if (name)
-				xw.XMLErrorNotKnownTag("params");
-			assert(name == NULL);
+			xw.XMLErrorNotKnownTag("params");
 		}
 
 	}
@@ -447,29 +435,37 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 }
 
 int
-TSzarpConfig::parseReader(const std::wstring &path)
+TSzarpConfig::loadXMLReader(const std::wstring &path, const std::wstring& prefix)
 {
-//TODO: make better: output logs
-	int ret = 0;
-	xmlTextReaderPtr reader;
+	this->prefix = prefix;
+	xmlTextReaderPtr reader = xmlNewTextReaderFilename(SC::S2A(path).c_str());
 
-	reader = xmlNewTextReaderFilename(SC::S2A(path).c_str());
-	if (reader != NULL) {
-		ret = xmlTextReaderRead(reader);
-		while (ret == 1) {
-			ret = processNodeReader(reader);
-			if (ret != 1)
-				break;
+	try {
+		int ret = 0;
+		if (reader != NULL) {
 			ret = xmlTextReaderRead(reader);
-		}
-		xmlFreeTextReader(reader);
-		if (ret != 0) {
-			sz_log(1, "Failed to parse xml file\n");
-		}
-	} else
-		sz_log(1,"Unable to open params.xml\n");
 
-	return ret;
+			if (ret == 1)
+				ret = parseXML(reader);
+			else
+				ret = 1;
+
+			xmlFreeTextReader(reader);
+			if (ret != 0) {
+				sz_log(1, "XML document not wellformed\n");
+			}
+		} else
+			sz_log(1,"Unable to open XML document\n");
+
+		return ret;
+
+	} catch (XMLWrapperException) {
+		xmlFreeTextReader(reader);
+		sz_log(1, "XML document not wellformed, look at previous logs\n");
+		return 1;
+	}
+
+	return 0;
 }
 
 int
