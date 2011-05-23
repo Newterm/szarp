@@ -45,118 +45,69 @@ TUnit* TRadio::unitById(wchar_t id)
 
 int TRadio::parseXML(xmlTextReaderPtr reader)
 {
-//TODO: remove printf
-	printf("name: radio parseXML\n");
-
-	const xmlChar *attr = NULL;
-	const xmlChar *attr_name = NULL;
-	const xmlChar *name = NULL;
-
-#define IFNAME(N) if (xmlStrEqual( name , (unsigned char*) N ) )
-#define IFATTR(ATT) if (xmlStrEqual(attr_name, (unsigned char*) ATT) )
-#define IFBEGINTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_ELEMENT)
-#define IFENDTAG if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_END_ELEMENT)
-#define IFCOMMENT if (xmlTextReaderNodeType(reader) == XML_READER_TYPE_COMMENT)
-//TODO: check return value - 0 or 1 - in all files 
-#define NEXTTAG if (xmlTextReaderRead(reader) != 1) \
-	return 1; \
-	goto begin_process_tradio;
-#define XMLERROR(STR) sz_log(1,"XML file error: %s (line,%d)", STR, xmlTextReaderGetParserLineNumber(reader));
-#define XMLERRORATTR(ATT) sz_log(1,"XML parsing error: expected attribute '%s' (line: %d)", ATT, xmlTextReaderGetParserLineNumber(reader));
-#define FORALLATTR for (int __atr = xmlTextReaderMoveToFirstAttribute(reader); __atr > 0; __atr =  xmlTextReaderMoveToNextAttribute(reader) )
-#define GETATTR attr_name = xmlTextReaderConstLocalName(reader); attr = xmlTextReaderConstValue(reader);
-#define CHECKNEEDEDATTR(LIST) \
-	if (sizeof(LIST) > 0) { \
-		std::set<std::string> __tmpattr(LIST, LIST + (sizeof(LIST) / sizeof(LIST[0]))); \
-		FORALLATTR { GETATTR; __tmpattr.erase((const char*) attr_name); } \
-		if (__tmpattr.size() > 0) { XMLERRORATTR(__tmpattr.begin()->c_str()); return 1; } \
-	}
-
 	assert(units == NULL);
 	TUnit* u = NULL;
 
 	bool isRadio = false;
 
-begin_process_tradio:
+	XMLWrapper xw(reader);
 
-	name = xmlTextReaderConstName(reader);
-	IFNAME("#text") {
-		NEXTTAG
-	}
-	IFCOMMENT {
-		NEXTTAG
-	}
+	const char* ignored_trees[] = { "rate:period", 0 };
+	xw.SetIgnoredTrees(ignored_trees);
 
-	IFNAME("rate:period") {
-//TODO: you know what to do with goto
-		// omit all tree
-		xmlTextReaderNext(reader);
-		goto begin_process_tradio;
-	} else
-	IFNAME("radio") {
-		IFBEGINTAG {
-			isRadio = true;
-			const char *need_attr[] = { "id" };
-			CHECKNEEDEDATTR(need_attr);
+	for (;;) {
 
-			FORALLATTR {
-				GETATTR
-
-				IFATTR("id") {
-					id = SC::U2S(attr)[0];
-				} else {
-					printf("ERROR<radio>: not known attr: %s\n",attr_name);
+		if(xw.IsTag("radio")) {
+			if (xw.IsBeginTag()) {
+				isRadio = true;
+				const char *need_attr[] = { "id", 0 };
+				if (!xw.AreValidAttr(need_attr)) {
+//TODO: check it: ommit all tree?
+					return 1;
 				}
-			}
-				NEXTTAG
-		}
 
-	} else
-	IFNAME("unit") {
-printf("radio->unit\n");
-		IFBEGINTAG {
-			if (units == NULL)
-				units = u = new TUnit(this);
-			else {
-				u = u->Append(new TUnit(this));
-			}
-			assert(u != NULL);
-			if (u->parseXML(reader))
-				return 1;
+				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+					const xmlChar *attr = xw.GetAttr();
 
-//			if (isRadio) {
-//				NEXTTAG
-//			}
-		}
-		NEXTTAG
-	} else
-	IFNAME("device") {
-		IFENDTAG {
+					if (xw.IsAttr("id")) {
+						id = SC::U2S(attr)[0];
+					} else {
+						xw.XMLErrorNotKnownAttr();
+					}
+				}
+					xw.NextTag();
+			} else {
+				break;
+			}
 		} else
-			assert(0 ==1  && "workaound parser problem");
-	} else {
-		printf("ERROR<radio>: not known name = %s\n",name);
-		assert(0 == 1 &&"not known tag");
+		if(xw.IsTag("unit")) {
+			if (xw.IsBeginTag()) {
+				if (units == NULL)
+					units = u = new TUnit(this);
+				else {
+					u = u->Append(new TUnit(this));
+				}
+				assert(u != NULL);
+				if (u->parseXML(reader))
+					return 1;
+			}
+			xw.NextTag();
+		} else
+		if(xw.IsTag("device")) {
+			if (xw.IsEndTag()) {
+				break;
+			} else
+				assert(0 ==1  && "workaound parser problem");
+		} else {
+			xw.XMLErrorNotKnownTag("radio");
+			assert(0 == 1 &&"not known tag");
+		}
 	}
 
 	if (units == NULL) {
-		XMLERROR("no 'unit' elements found in 'device' element");
+		xw.XMLError("no 'unit' elements found in 'device' element");
 		return 1;
 	}
-
-#undef IFNAME
-#undef IFATTR
-#undef IFBEGINTAG
-#undef IFENDTAG
-#undef IFCOMMENT
-#undef NEXTTAG
-#undef XMLERROR
-#undef XMLERRORATTR
-#undef FORALLATTR
-#undef GETATTR
-#undef CHECKNEEDEDATTR
-
-printf("name radio parseXML END\n");
 
 	return 0;
 }

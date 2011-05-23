@@ -36,8 +36,6 @@ using namespace std;
 
 int TUnit::parseXML(xmlTextReaderPtr reader)
 {
-//TODO: remove all printf
-printf("name: unit parseXML\n");
 
 	TParam* p = NULL;
 	TSendParam *sp = NULL;
@@ -74,8 +72,7 @@ printf("name: unit parseXML\n");
 		if (xw.IsAttr("name")) {
 			TUnit::name = SC::U2S(xw.GetAttr());
 		} else {
-			printf("not known attr: %s\n", xw.GetAttrName());
-//			assert( 0 == 1 && "not known attribute");
+			xw.XMLErrorNotKnownAttr();
 		}
 	}
 
@@ -116,8 +113,6 @@ printf("name: unit parseXML\n");
 			assert( 0 == 1 && "not known tag");
 		}
 	}
-
-printf("name: unit parseXML END\n");
 
 	return 0;
 }

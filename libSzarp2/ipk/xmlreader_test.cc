@@ -119,13 +119,14 @@ int parseFile(const wstring &file) {
 int main() {
 
 const char* pathes[] = {
+"./ipk/data_tests/test1.xml", // identical (workaround: <define>)
+"./ipk/data_tests/test2.xml", // identical (<radio> inside <device>)
 "/root/xml/bilg.xml", // identical after fix (set "prec" = "dde:prec", prec before dde:prec)
 "/root/xml/gcie.xml", // identical after fix (added missing IDs ( moved on front ) )
 "/root/xml/poligon.xml", // identical after fix (added "speed" before "modbus:speed" )
 "/root/xml/jgor.xml", // identical after fix (added "speed" before "modbus:speed")
 "/root/xml/leg1.xml", // identical after fix (added "speed" before "modbus:speed")
 "/root/xml/gliw.xml", // identical only one configuration with <radio> inside <device>
-"/root/xml/test1.xml", // identical (workaround: <define>)
 "/root/xml/page.xml", // identical (workaround: <define>)
 "/root/xml/sosn.xml", // identical (workaround: <define>)
 "/root/xml/glwX.xml", // identical (workaround: <define>)
@@ -142,9 +143,6 @@ const char* pathes[] = {
 "/root/xml/legX.xml", // identical (workaround: <define>)
 "/root/xml/sunX.xml", // identical (workaround: <define>)
 "/root/xml/sun.xml", // identical
-"/opt/szarp/debian/config/params.xml", // identical
-"/opt/szarp/snew/config/params.xml", // identical
-"/opt/szarp/gcwp/config/params.xml", // identical
 "/root/xml/stpd.xml", // identical
 "/root/xml/rww6.xml", // identical
 "/root/xml/rww1.xml", // identical
@@ -279,10 +277,10 @@ const char* pathes[] = {
 		};
 
 	for (int i =0 ; i < sizeof(pathes)/ sizeof(pathes[0]) ; ++i) {
-		std::wcout << L"------------ " << char2wstr(pathes[i]) << L" ----------------" << endl;
+		std::wcout << L"------------ " << char2wstr(pathes[i]) << L" ------------"<< endl;
 
 
-		const char* outOld = "/tmp/outOld.xml";
+		const char* outOld = "outOld.xml";
 //		const char *outOld = tmpnam(NULL);
 
 		// make output old parser
@@ -290,7 +288,7 @@ const char* pathes[] = {
 		confOld.loadXML(char2wstr(pathes[i]),L"test");
 		confOld.saveXML(char2wstr(outOld));
 
-		const char* outNew = "/tmp/outNew.xml";
+		const char* outNew = "outNew.xml";
 //		const char* outNew = tmpnam(NULL);
 
 		// make output new parser
@@ -306,12 +304,10 @@ const char* pathes[] = {
 			std::wcout << L"DIFFERENT CRC!" << endl;
 		}
 
-		// don't work?!
+		// don't work with tpmnam?!
 		remove(outOld);
 		remove(outNew);
 	}
-
-//	while(1) {}
 
 	return 0;
 }

@@ -36,7 +36,6 @@ using namespace std;
 
 TBoiler* TBoilers::parseXML(xmlTextReaderPtr reader, TSzarpConfig *tszarp)
 {
-	printf("name boilers xmlParser\n");
 
 	TBoiler *boilers= NULL, *b = NULL;
 
@@ -67,8 +66,6 @@ TBoiler* TBoilers::parseXML(xmlTextReaderPtr reader, TSzarpConfig *tszarp)
 			assert(0 == 1 && "not know name");
 		}
 	}
-
-	printf("name boilers parseXML END\n");
 
 	return boilers;
 

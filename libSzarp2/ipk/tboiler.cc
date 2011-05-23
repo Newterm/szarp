@@ -70,14 +70,12 @@ TParam* TBoiler::GetParam(TAnalysis::AnalysisParam param_type) {
 }
 
 TBoiler* TBoiler::parseXML(xmlTextReaderPtr reader) {
-//TODO: remove 
-printf("name boiler: parseXML\n");
 
 	TBoiler *boiler = NULL;
 	int boiler_no;
 	float grate_speed;
 	float coal_gate_height;
-	BoilerType boiler_type;
+	BoilerType boiler_type = INVALID;
 
 	XMLWrapper xw(reader);
 
@@ -145,8 +143,6 @@ printf("name boiler: parseXML\n");
 			assert(xw.GetTagName() == NULL && "not know name");
 		}
 	}
-
-printf("name boiler parseXML END\n");
 
 	return boiler;
 }

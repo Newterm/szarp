@@ -35,7 +35,6 @@ using namespace std;
 
 unsigned char* TScript::parseXML(xmlTextReaderPtr reader)
 {
-printf("name script xmlParser\n");
 
 	unsigned char *script = NULL;
 
@@ -56,8 +55,6 @@ printf("name script xmlParser\n");
 			assert(0 == 1 && "not know name");
 		}
 	}
-
-printf("name script parseXML END\n");
 
 return script;
 

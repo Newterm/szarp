@@ -20,8 +20,6 @@ extern "C" {
 
 TAnalysisInterval* TAnalysisInterval::parseXML(xmlTextReaderPtr reader) {
 
-	printf("name interval: parseXML\n");
-
 	int duration;
 	int grate_speed_upper;
 	int grate_speed_lower;
@@ -34,13 +32,10 @@ TAnalysisInterval* TAnalysisInterval::parseXML(xmlTextReaderPtr reader) {
 		return NULL;
 	}
 
-
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 
 		const xmlChar* attr = xw.GetAttr();
-		const xmlChar* attr_name = xw.GetAttrName();
 
-//TODO: change on atoi or function ?
 		if(xw.IsAttr("duration")) {
 			if ((sscanf((const char*)attr,"%d",&duration) != 1) || (duration < 0)) {
 				xw.XMLError("Invalid 'duration' attribute on element 'interval'");
@@ -59,11 +54,10 @@ TAnalysisInterval* TAnalysisInterval::parseXML(xmlTextReaderPtr reader) {
 				return NULL;
 			}
 		} else {
-			printf("<interval> not known attr: %s\n", attr_name);
+			xw.XMLErrorNotKnownAttr();
 		}
 	}
 
-	printf("name interval: parseXML\n");
 	return new TAnalysisInterval(grate_speed_lower, grate_speed_upper, duration);
 
 }

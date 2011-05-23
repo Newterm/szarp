@@ -330,7 +330,6 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 
 		if(xw.IsTag("params")) {
 			if (xw.IsBeginTag()) {
-				printf("-- name: params\n");
 
 				const char* need_attr_params[] = { "read_freq" , "send_freq", "version", 0 };
 				if (!xw.AreValidAttr(need_attr_params)) {
@@ -382,8 +381,6 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 		} else
 		if(xw.IsTag("device")) {
 			if (xw.IsBeginTag()) {
-				printf("-- name: device\n");
-
 				if (devices == NULL)
 					devices = td = new TDevice(this);
 				else
@@ -395,7 +392,6 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 		} else
 		if(xw.IsTag("defined")) {
 			if (xw.IsBeginTag()) {
-				printf("-- name: defined\n");
 				TParam * _par = TDefined::parseXML(reader,this);
 				if (_par)
 					defined = _par;
@@ -404,7 +400,6 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 		} else
 		if(xw.IsTag("drawdefinable")) {
 			if (xw.IsBeginTag()) {
-				printf("-- name: drawdefinable\n");
 				TParam * _par = TDrawdefinable::parseXML(reader,this);
 				if (_par)
 					drawdefinable = _par;
@@ -413,7 +408,6 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 		} else
 		if(xw.IsTag("seasons")) {
 			if (xw.IsBeginTag()) {
-				printf("-- name: seasons\n");
 				seasons = new TSSeason();
 				if (seasons->parseXML(reader)) {
 					delete seasons;
@@ -426,7 +420,6 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 		} else
 		if(xw.IsTag("boilers")) {
 			if (xw.IsBeginTag()) {
-				printf("-- name: boilers\n");
 				TBoiler * _b = TBoilers::parseXML(reader,this);
 				if (_b)
 					AddBoiler(_b);
@@ -456,8 +449,7 @@ TSzarpConfig::processNodeReader(xmlTextReaderPtr reader)
 int
 TSzarpConfig::parseReader(const std::wstring &path)
 {
-//TODO: remove printf
-printf("NEW PARSER\n");
+//TODO: make better: output logs
 	int ret = 0;
 	xmlTextReaderPtr reader;
 
@@ -477,7 +469,6 @@ printf("NEW PARSER\n");
 	} else
 		sz_log(1,"Unable to open params.xml\n");
 
-printf("END NEW PARSER\n");
 	return ret;
 }
 

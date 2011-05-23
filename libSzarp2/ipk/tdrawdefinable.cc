@@ -37,8 +37,6 @@ using namespace std;
 TParam* TDrawdefinable::parseXML(xmlTextReaderPtr reader, TSzarpConfig *tszarp)
 {
 
-printf("name drawdefinable xmlParser\n");
-
 	TParam *params = NULL, *p = NULL;
 
 	XMLWrapper xw(reader,true);
@@ -65,8 +63,6 @@ printf("name drawdefinable xmlParser\n");
 			assert(0 == 1 && "not know name");
 		}
 	}
-
-printf("name drawdefinable parseXML END\n");
 
 return params;
 

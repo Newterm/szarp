@@ -36,8 +36,6 @@ using namespace std;
 
 TParam* TDefined::parseXML(xmlTextReaderPtr reader, TSzarpConfig *tszarp)
 {
-//TODO: remove
-printf("name defined xmlParser\n");
 
 	TParam *params = NULL, *p = NULL;
 
@@ -67,9 +65,5 @@ printf("name defined xmlParser\n");
 		}
 	}
 
-//TODO: remove
-printf("name  defined parseXML END\n");
-
 return params;
-
 }

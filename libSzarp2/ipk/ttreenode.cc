@@ -67,8 +67,6 @@ int TTreeNode::parseXML(xmlNodePtr node) {
 
 int TTreeNode::parseXML(xmlTextReaderPtr reader) {
 
-	printf("name treenode xmlParser\n");
-
 #define CONVERT(FROM, TO) { \
 	std::wstringstream ss;	\
 	ss.imbue(std::locale("C"));	\
@@ -123,7 +121,6 @@ int TTreeNode::parseXML(xmlTextReaderPtr reader) {
 
 #undef CONVERT
 
-	printf("name treenode parseXML END\n");
 	return 0;
 }
 

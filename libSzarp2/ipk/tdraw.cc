@@ -70,7 +70,6 @@ int TDraw::GetCount()
 
 TDraw* TDraw::parseXML(xmlTextReaderPtr reader)
 {
-printf("name draw xmlParser\n");
 
 #define CONVERT(FROM, TO) { \
 	std::wstringstream ss;	\
@@ -158,7 +157,6 @@ printf("name draw xmlParser\n");
 			sp);
 
 	if (isEmptyTag) {
-		printf("name draw parseXML END\n");
 		return ret;
 	}
 
@@ -179,16 +177,13 @@ printf("name draw xmlParser\n");
 		if(xw.IsTag("draw")) {
 			break;
 		} else {
-			const xmlChar *name = xw.GetTagName();
-			printf("ERROR<tdraw>: not known name:%s\n",name);
+			xw.XMLErrorNotKnownTag("draw");
 			assert(0 == 1 && "not known name");
 		}
 	}
 
 #undef CONVERT
 #undef UNDEFVAL
-
-	printf("name draw parseXML END\n");
 
 	return ret;
 }

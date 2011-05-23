@@ -80,9 +80,6 @@ xmlNodePtr TSendParam::generateXMLNode(void)
 
 int TSendParam::parseXML(xmlTextReaderPtr reader) {
 
-//TODO: remove all printf
-printf("name send: parseXML\n");
-
 #define X (unsigned char *)
 
 	XMLWrapper xw(reader);
@@ -100,7 +97,6 @@ printf("name send: parseXML\n");
 
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 		const xmlChar *attr = xw.GetAttr();
-		const xmlChar *attr_name = xw.GetAttrName();
 
 		if (xw.IsAttr("param")) {
 			isParam = true;
@@ -133,17 +129,13 @@ printf("name send: parseXML\n");
 			}
 		} else {
 			xw.XMLErrorNotKnownAttr();
-//			assert(attr == NULL && "not known attr");
 		}
 	}
 
 	if (isParam || isValue)
 		configured = 1;
 
-printf("name send parseXML END\n");
-
 #undef X
-
 	return 0;
 }
 

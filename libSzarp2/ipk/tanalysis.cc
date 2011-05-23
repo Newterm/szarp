@@ -90,8 +90,6 @@ xmlNodePtr TAnalysis::generateXMLNode() {
 }
 
 TAnalysis* TAnalysis::parseXML(xmlTextReaderPtr reader) {
-//TODO: remove
-	printf("analysis: param parseXML\n");
 
 	XMLWrapper xw(reader);
 
@@ -119,9 +117,6 @@ TAnalysis* TAnalysis::parseXML(xmlTextReaderPtr reader) {
 		xw.XMLError("Incorrect value of 'param_type' attribute on element 'analysis'");
 		return NULL;
 	}
-
-//TODO: remove
-	printf("analysis: param parseXML END\n");
 
 	return new TAnalysis(bnr, param);
 }
