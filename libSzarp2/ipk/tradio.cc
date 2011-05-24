@@ -1,6 +1,19 @@
 /* 
   SZARP: SCADA software 
 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
  * IPK
@@ -57,7 +70,7 @@ int TRadio::parseXML(xmlTextReaderPtr reader)
 
 	for (;;) {
 
-		if(xw.IsTag("radio")) {
+		if (xw.IsTag("radio")) {
 			if (xw.IsBeginTag()) {
 				isRadio = true;
 				const char *need_attr[] = { "id", 0 };
@@ -79,7 +92,7 @@ int TRadio::parseXML(xmlTextReaderPtr reader)
 				break;
 			}
 		} else
-		if(xw.IsTag("unit")) {
+		if (xw.IsTag("unit")) {
 			if (xw.IsBeginTag()) {
 				if (units == NULL)
 					units = u = new TUnit(this);
@@ -92,20 +105,18 @@ int TRadio::parseXML(xmlTextReaderPtr reader)
 			}
 			xw.NextTag();
 		} else
-		if(xw.IsTag("device")) {
+		if (xw.IsTag("device")) {
 			if (xw.IsEndTag()) {
 				break;
 			} else
 				assert(0 ==1  && "workaound parser problem");
 		} else {
 			xw.XMLErrorNotKnownTag("radio");
-			assert(0 == 1 &&"not known tag");
 		}
 	}
 
 	if (units == NULL) {
 		xw.XMLError("no 'unit' elements found in 'device' element");
-		return 1;
 	}
 
 	return 0;

@@ -1,3 +1,32 @@
+/* 
+  SZARP: SCADA software 
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+*/
+/* 
+ * IPK
+ *
+ * Krzysztof Golinski <krzgol@newterm.pl>
+ * xmlreader_test implementation
+ * program compares output loadXML and loadXMLReader for selected configuration files
+ * list of files to compare set in array 'paths' in main function
+ *
+ * $Id$
+ */
+
+
 #include <iostream>
 #include <string>
 #include "conversion.h"
@@ -118,7 +147,7 @@ int parseFile(const wstring &file) {
 
 int main() {
 
-const char* pathes[] = {
+const char* paths[] = {
 "./ipk/data_tests/test1.xml", // identical (workaround: <define>)
 "./ipk/data_tests/test2.xml", // identical (<radio> inside <device>)
 /*
@@ -278,8 +307,8 @@ const char* pathes[] = {
 */
 		};
 
-	for (unsigned int i =0 ; i < sizeof(pathes)/ sizeof(pathes[0]) ; ++i) {
-		std::cout << "------------ " << pathes[i] << " ------------"<< endl;
+	for (unsigned int i =0 ; i < sizeof(paths)/ sizeof(paths[0]) ; ++i) {
+		std::cout << "------------ " << paths[i] << " ------------"<< endl;
 
 		int ansOld = 0, ansNew = 0;
 
@@ -288,7 +317,7 @@ const char* pathes[] = {
 
 		// make output old parser
 		TSzarpConfig confOld;
-		ansOld = confOld.loadXML(char2wstr(pathes[i]),L"test");
+		ansOld = confOld.loadXML(char2wstr(paths[i]),L"test");
 
 		if (ansOld == 0)
 			confOld.saveXML(char2wstr(outOld));
@@ -300,7 +329,7 @@ const char* pathes[] = {
 
 		// make output new parser
 		TSzarpConfig confNew;
-		ansNew = confNew.loadXMLReader(char2wstr(pathes[i]));
+		ansNew = confNew.loadXMLReader(char2wstr(paths[i]));
 		if (ansNew == 0)
 			confNew.saveXML(char2wstr(outNew));
 		else

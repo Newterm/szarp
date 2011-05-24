@@ -1,6 +1,19 @@
 /*
   SZARP: SCADA software
 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
  * SZARP IPK header file
@@ -2243,40 +2256,127 @@ public:
 
 };
 
+/** xmlTextReaderPtr wrapper */
 class XMLWrapper {
 private:
+	/** reference to wrapped reader */
 	xmlTextReaderPtr &r;
+	/** current tag name */
 	const xmlChar* name;
+	/** current attribute name */
 	const xmlChar* attr_name;
+	/** value of current attribute */
 	const xmlChar* attr;
+	/** list of ignored tags */
 	std::set<std::string> ignoredTags;
+	/** list of ignored xml trees */
 	std::set<std::string> ignoredTrees;
+	/** list of needed attributes */
 	std::set<std::string> neededAttr;
+	/** flag - use local namespace */
 	bool isLocal;
 
 public:
+	/**
+	 * Create XMLWrapper and load tag name
+	 * @param _r reference to xmlTextReaderPtr
+	 * @param  local flag - use local names in tags
+	 */
 	XMLWrapper(xmlTextReaderPtr &_r, bool local = false);
+	/**
+	 * Set list of ignored tags.
+	 * @param i_list pointer to list of ignored tags. The last position of list have to be 0.
+	 */
 	void SetIgnoredTags(const char *i_list[]);
+	/**
+	 * Set list of ignored trees.
+	 * @param i_list pointer to list of ignored xml trees. The last position of list have to be 0.
+	 */
 	void SetIgnoredTrees(const char *i_list[]);
+	/**
+	 * Check are exist all needed attributes in current tag
+	 * @param attr_list pointer to list of needed attributes. The last position of list have to be 0.
+	 * @return return true if exists all needed attributes, otherwise return false
+	 */
 	bool AreValidAttr(const char* attr_list[]);
+	/**
+	 * Take a next tag in param. Omit all tags listed in 'ingnoredTags', and 'ignoredTrees'.
+	 * @return return true if exists next tag, otherwise return false
+	 */
 	bool NextTag();
+	/**
+	 * @param n name of tag
+	 * @return true if current tag is equel n, otherwise return false
+	 */
 	bool IsTag(const char* n);
+	/**
+	 * @param a name of attribute
+	 * @return true if current attribute name is equal a, otherwise return false
+	 */
 	bool IsAttr(const char* a);
+	/**
+	 * If a tag has the first attribute than set 'attr_name' and 'attr' value.
+	 * @return true if tag has attribute, otherwise return false
+	 */
 	bool IsFirstAttr();
+	/**
+	 * If a tag has attributes than move to the next one and set 'attr_name' and 'attr' value. IMPORTANT: use IsFirstAttr before.
+	 * @return true if moved to next attribute, otherwise return false
+	 */
 	bool IsNextAttr();
+	/**
+	 * @return true if current tag is begin tag, otherwise return false
+	 */
 	bool IsBeginTag();
+	/**
+	 * @return true if current tag is end tag, otherwise return false
+	 */
 	bool IsEndTag();
+	/**
+	 * @return true if current tag is empty tag, otherwise return false
+	 */
 	bool IsEmptyTag();
+	/**
+	 * @return true if current tag has attribute/s, otherwise return false
+	 */
 	bool HasAttr();
+	/**
+	 * 
+	 * @return value of current attribute
+	 */
 	const xmlChar* GetAttr();
+	/**
+	 * @return name of current attribute
+	 */
 	const xmlChar* GetAttrName();
+	/**
+	 * @return current tag name
+	 */
 	const xmlChar* GetTagName();
+	/**
+	 * write a message error into log file and throw XMLWrapperException
+	 * @param text message error
+	 * @param prior priority of log message (like in sz_log)
+	 */
 	void XMLError(const char *text, int prior = 1);
+	/**
+	 * write a message error into a log file that a attribute was not found in a tag; throw XMLWrapperException
+	 * @param tag_name name of tag
+	 * @param attr_name name of attribute (which was not found)
+	 */
 	void XMLErrorAttr(const xmlChar* tag_name, const char* attr_name);
+	/**
+	 * write a message error into a log file that was found not known tag inside current tag tree; throw XMLWrapperException
+	 * @param current_tag name of a current tag tree where the error occurred
+	 */
 	void XMLErrorNotKnownTag(const char* current_tag);
+	/**
+	 * @param write a message into a log file that 'attr_name' is not known in current tag 'name'
+	 */
 	void XMLWarningNotKnownAttr();
 };
 
+/** An exception class for XMLWrapper */
 class XMLWrapperException {};
 
 #endif /* __SZARP_CONFIG_H__ */

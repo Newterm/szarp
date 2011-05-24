@@ -1,6 +1,19 @@
 /* 
   SZARP: SCADA software 
 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /* 
  * IPK
@@ -326,7 +339,7 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 	xw.SetIgnoredTrees(ignored_trees);
 
 	for (;;) {
-		if(xw.IsTag("params")) {
+		if (xw.IsTag("params")) {
 			if (xw.IsBeginTag()) {
 
 				const char* need_attr_params[] = { "read_freq" , "send_freq", "version", 0 };
@@ -371,7 +384,7 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 				break;
 			}
 		} else
-		if(xw.IsTag("device")) {
+		if (xw.IsTag("device")) {
 			if (xw.IsBeginTag()) {
 				if (devices == NULL)
 					devices = td = new TDevice(this);
@@ -382,7 +395,7 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 			}
 			xw.NextTag();
 		} else
-		if(xw.IsTag("defined")) {
+		if (xw.IsTag("defined")) {
 			if (xw.IsBeginTag()) {
 				TParam * _par = TDefined::parseXML(reader,this);
 				if (_par)
@@ -390,7 +403,7 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 			}
 			xw.NextTag();
 		} else
-		if(xw.IsTag("drawdefinable")) {
+		if (xw.IsTag("drawdefinable")) {
 			if (xw.IsBeginTag()) {
 				TParam * _par = TDrawdefinable::parseXML(reader,this);
 				if (_par)
@@ -398,7 +411,7 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 			}
 			xw.NextTag();
 		} else
-		if(xw.IsTag("seasons")) {
+		if (xw.IsTag("seasons")) {
 			if (xw.IsBeginTag()) {
 				seasons = new TSSeason();
 				if (seasons->parseXML(reader)) {
@@ -409,7 +422,7 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 			}
 			xw.NextTag();
 		} else
-		if(xw.IsTag("boilers")) {
+		if (xw.IsTag("boilers")) {
 			if (xw.IsBeginTag()) {
 				TBoiler * _b = TBoilers::parseXML(reader,this);
 				if (_b)

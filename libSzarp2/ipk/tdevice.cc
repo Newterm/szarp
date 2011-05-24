@@ -1,6 +1,19 @@
 /* 
   SZARP: SCADA software 
 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
  * IPK
@@ -146,14 +159,14 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 		if (xw.IsAttr("options")) {
 			options = SC::U2S(attr);
 		} else {
-		xw.XMLWarningNotKnownAttr();
+			xw.XMLWarningNotKnownAttr();
 		}
 	}
 
 	xw.NextTag();
 
 	for (;;) {
-		if(xw.IsTag("radio")) {
+		if (xw.IsTag("radio")) {
 			if (xw.IsBeginTag()) {
 				if (radios == NULL) {
 					r = radios = new TRadio(this);
@@ -161,12 +174,12 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 					r = r->Append(new TRadio(this));
 				}
 				assert (r != NULL);
-				if(r->parseXML(reader))
+				if (r->parseXML(reader))
 					return 1;
 			}
 			xw.NextTag();
 		} else
-		if(xw.IsTag("unit")) {
+		if (xw.IsTag("unit")) {
 			if (xw.IsBeginTag()) {
 				if (radios == NULL) {
 					r = radios = new TRadio(this);
@@ -174,13 +187,13 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 					r = r->Append(new TRadio(this));
 				}
 				assert (r != NULL);
-				if(r->parseXML(reader))
+				if (r->parseXML(reader))
 					return 1;
 			}
 		break;
 //			xw.NextTag(); // don't take next tag - <unit> set it
 		} else
-		if(xw.IsTag("device")) {
+		if (xw.IsTag("device")) {
 			break;
 		}
 		else {

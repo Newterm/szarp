@@ -1,6 +1,19 @@
 /* 
   SZARP: SCADA software 
 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
  * IPK
@@ -35,17 +48,17 @@ TAnalysisInterval* TAnalysisInterval::parseXML(xmlTextReaderPtr reader) {
 
 		const xmlChar* attr = xw.GetAttr();
 
-		if(xw.IsAttr("duration")) {
+		if (xw.IsAttr("duration")) {
 			if ((sscanf((const char*)attr,"%d",&duration) != 1) || (duration < 0)) {
 				xw.XMLError("Invalid 'duration' attribute on element 'interval'");
 			}
 		} else
-		if(xw.IsAttr("grate_speed_upper")) {
+		if (xw.IsAttr("grate_speed_upper")) {
 			if ((sscanf((const char*) attr,"%d",&grate_speed_upper) != 1) || (grate_speed_upper< 0)) {
 				xw.XMLError("Invalid 'grate_speed_upper' attribute on element 'interval'");
 			}
 		} else
-		if(xw.IsAttr("grate_speed_lower")) {
+		if (xw.IsAttr("grate_speed_lower")) {
 			if ((sscanf((const char*) attr, "%d", &grate_speed_lower) != 1) || (grate_speed_lower < 0)) {
 				xw.XMLError("Invalid 'grate_speed_lower' attribute on element 'interval'");
 			}
