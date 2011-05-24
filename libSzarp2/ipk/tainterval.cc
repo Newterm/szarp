@@ -33,9 +33,9 @@ extern "C" {
 
 TAnalysisInterval* TAnalysisInterval::parseXML(xmlTextReaderPtr reader) {
 
-	int duration;
-	int grate_speed_upper;
-	int grate_speed_lower;
+	int duration = 0;
+	int grate_speed_upper = 0;
+	int grate_speed_lower = 0;
 
 	XMLWrapper xw(reader);
 
@@ -45,25 +45,21 @@ TAnalysisInterval* TAnalysisInterval::parseXML(xmlTextReaderPtr reader) {
 	}
 
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
-
 		const xmlChar* attr = xw.GetAttr();
-
-		if (xw.IsAttr("duration")) {
-			if ((sscanf((const char*)attr,"%d",&duration) != 1) || (duration < 0)) {
-				xw.XMLError("Invalid 'duration' attribute on element 'interval'");
+		try {
+			if (xw.IsAttr("duration")) {
+				duration = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("grate_speed_upper")) {
+				grate_speed_upper = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("grate_speed_lower")) {
+				grate_speed_lower = boost::lexical_cast<int>(attr);
+			} else {
+				xw.XMLWarningNotKnownAttr();
 			}
-		} else
-		if (xw.IsAttr("grate_speed_upper")) {
-			if ((sscanf((const char*) attr,"%d",&grate_speed_upper) != 1) || (grate_speed_upper< 0)) {
-				xw.XMLError("Invalid 'grate_speed_upper' attribute on element 'interval'");
-			}
-		} else
-		if (xw.IsAttr("grate_speed_lower")) {
-			if ((sscanf((const char*) attr, "%d", &grate_speed_lower) != 1) || (grate_speed_lower < 0)) {
-				xw.XMLError("Invalid 'grate_speed_lower' attribute on element 'interval'");
-			}
-		} else {
-			xw.XMLWarningNotKnownAttr();
+		} catch (boost::bad_lexical_cast &)  {
+			xw.XMLErrorWrongAttrValue();
 		}
 	}
 

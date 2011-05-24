@@ -42,28 +42,23 @@ int TSSeason::parseXML(xmlTextReaderPtr reader) {
 
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 		const xmlChar* attr = xw.GetAttr();
-
-		if (xw.IsAttr("month_start")) {
-			if (sscanf((const char*) attr, "%d", &defs.month_start) != 1) {
-				xw.XMLError("Invalid start date of default summer season definition");
+		try {
+			if (xw.IsAttr("month_start")) {
+				defs.month_start = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("day_start")) {
+				defs.day_start = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("month_end")) {
+				defs.month_end = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("day_end")) {
+				defs.day_end = boost::lexical_cast<int>(attr);
+			} else {
+				xw.XMLWarningNotKnownAttr();
 			}
-		} else
-		if (xw.IsAttr("day_start")) {
-			if (sscanf((const char*) attr, "%d", &defs.day_start) != 1) {
-				xw.XMLError("Invalid start date of default summer season definition");
-			}
-		} else
-		if (xw.IsAttr("month_end")) {
-			if (sscanf((const char*) attr, "%d", &defs.month_end) != 1) {
-				xw.XMLError("Invalid end date of default summer season definition");
-			}
-		} else
-		if (xw.IsAttr("day_end")) {
-			if (sscanf((const char*) attr, "%d", &defs.day_end) != 1) {
-				xw.XMLError("Invalid end date of default summer season definition");
-			}
-		} else {
-			xw.XMLWarningNotKnownAttr();
+		} catch (boost::bad_lexical_cast &) {
+			xw.XMLErrorWrongAttrValue();
 		}
 	}
 
@@ -88,33 +83,26 @@ int TSSeason::parseXML(xmlTextReaderPtr reader) {
 
 				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 					const xmlChar* attr = xw.GetAttr();
-
-					if (xw.IsAttr("year")) {
-						if (sscanf((const char*) attr, "%d", &year) != 1) {
-							xw.XMLError("Invalid year definition");
+					try {
+						if (xw.IsAttr("year")) {
+							year = boost::lexical_cast<int>(attr);
+						} else
+						if (xw.IsAttr("month_start")) {
+							s.month_start = boost::lexical_cast<int>(attr);
+						} else
+						if (xw.IsAttr("day_start")) {
+							s.day_start = boost::lexical_cast<int>(attr);
+						} else
+						if (xw.IsAttr("month_end")) {
+							s.month_end = boost::lexical_cast<int>(attr);
+						} else
+						if (xw.IsAttr("day_end")) {
+							s.day_end = boost::lexical_cast<int>(attr);
+						} else {
+							xw.XMLWarningNotKnownAttr();
 						}
-					} else
-					if (xw.IsAttr("month_start")) {
-						if (sscanf((const char*) attr, "%d", &s.month_start) != 1) {
-							xw.XMLError("Invalid start date of summer season definition");
-						}
-					} else
-					if (xw.IsAttr("day_start")) {
-						if (sscanf((const char*) attr, "%d", &s.day_start) != 1) {
-							xw.XMLError("Invalid start date of summer season definition");
-						}
-					} else
-					if (xw.IsAttr("month_end")) {
-						if (sscanf((const char*) attr, "%d", &s.month_end) != 1) {
-							xw.XMLError("Invalid end date of summer season definition");
-						}
-					} else
-					if (xw.IsAttr("day_end")) {
-						if (sscanf((const char*) attr, "%d", &s.day_end) != 1) {
-							xw.XMLError("Invalid end date of summer season definition");
-						}
-					} else {
-						xw.XMLWarningNotKnownAttr();
+					} catch (boost::bad_lexical_cast &) {
+						xw.XMLErrorWrongAttrValue();
 					}
 				}
 				seasons[year] = s;

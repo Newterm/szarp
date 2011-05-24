@@ -49,6 +49,7 @@
 #endif
 
 #include <boost/filesystem/path.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "szbase/szbdefines.h"
 #include <libxml/xmlreader.h>
@@ -2371,7 +2372,11 @@ public:
 	 */
 	void XMLErrorNotKnownTag(const char* current_tag);
 	/**
-	 * @param write a message into a log file that 'attr_name' is not known in current tag 'name'
+	 * write a message error into a log file that a attribute 'attr_name' has wrong value; throw XMLWrapperException
+	 */
+	void XMLErrorWrongAttrValue();
+	/**
+	 * write a message into a log file that 'attr_name' is not known in current tag 'name'
 	 */
 	void XMLWarningNotKnownAttr();
 };

@@ -154,48 +154,42 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 		const xmlChar *attr = xw.GetAttr();
-
-		if (xw.IsAttr("name")) {
-			_name = SC::U2S(attr);
-		} else
-		if (xw.IsAttr("short_name")) {
-			_shortName = SC::U2S(attr);
-		} else
-		if (xw.IsAttr("draw_name")) {
-			_drawName = SC::U2S(attr);
-		} else
-		if (xw.IsAttr("unit")) {
-			_unit = SC::U2S(attr);
-		} else
-		if (xw.IsAttr("sum_unit")) {
-			_sum_unit = SC::U2S(attr);
-		} else
-		if (xw.IsAttr("sum_divisor")) {
-			wstringstream ss;
-			ss.imbue(locale("C"));
-			ss << SC::U2S(attr);
-			ss >> _sum_divisor;
-		} else
-		if (xw.IsAttr("period")) {
-			int tmp = atoi((char*)attr);
-			if (tmp <= 0) {
-				xw.XMLError("invalid value of period attribute");
+		try {
+			if (xw.IsAttr("name")) {
+				_name = SC::U2S(attr);
+			} else
+			if (xw.IsAttr("short_name")) {
+				_shortName = SC::U2S(attr);
+			} else
+			if (xw.IsAttr("draw_name")) {
+				_drawName = SC::U2S(attr);
+			} else
+			if (xw.IsAttr("unit")) {
+				_unit = SC::U2S(attr);
+			} else
+			if (xw.IsAttr("sum_unit")) {
+				_sum_unit = SC::U2S(attr);
+			} else
+			if (xw.IsAttr("sum_divisor")) {
+				_sum_divisor = boost::lexical_cast<double>(attr);
+			} else
+			if (xw.IsAttr("period")) {
+				SetPeriod(boost::lexical_cast<int>(attr));
+			} else
+			if (xw.IsAttr("base_ind")) {
+				if (!strcmp((char*)attr, "auto"))
+					SetAutoBase();
+				else
+					SetBaseInd(boost::lexical_cast<int>(attr));
+			} else
+			if (xw.IsAttr("prec")) {
+				_prec = boost::lexical_cast<int>(attr);
+				isPrecAttr = true;
+			} else {
+				xw.XMLWarningNotKnownAttr();
 			}
-			else 
-				SetPeriod(tmp);
-		} else
-		if (xw.IsAttr("base_ind")) {
-			if (!strcmp((char*)attr, "auto"))
-				SetAutoBase();
-			else
-				SetBaseInd(atoi((char*)attr));
-		} else
-		if (xw.IsAttr("prec")) {
-			_prec = atoi((const char*) attr);
-			isPrecAttr = true;
-		} else {
-			xw.XMLWarningNotKnownAttr();
-//			assert(0 == 1 && "not known attr");
+		} catch (boost::bad_lexical_cast &) {
+			xw.XMLErrorWrongAttrValue();
 		}
 	}
 
@@ -220,23 +214,23 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 					const xmlChar *attr = xw.GetAttr();
 
-					if (xw.IsAttr("order")) {
-						wstringstream ss;
-						ss.imbue(locale("C"));
-						ss << SC::U2S(attr);
-						ss >> o;
-					} else
-					if (xw.IsAttr("title")) {
-						strw_title = SC::U2S(attr);
-					} else
-					if (xw.IsAttr("description")) {
-						strw_desc = SC::U2S(attr);
-					} else
-					if (xw.IsAttr("filename")) {
-						strw_filen = SC::U2S(attr);
-					} else {
-						xw.XMLWarningNotKnownAttr();
-	//					assert(0 == 1 && "not known attr");
+					try {
+						if (xw.IsAttr("order")) {
+							o = boost::lexical_cast<double>(attr);
+						} else
+						if (xw.IsAttr("title")) {
+							strw_title = SC::U2S(attr);
+						} else
+						if (xw.IsAttr("description")) {
+							strw_desc = SC::U2S(attr);
+						} else
+						if (xw.IsAttr("filename")) {
+							strw_filen = SC::U2S(attr);
+						} else {
+							xw.XMLWarningNotKnownAttr();
+						}
+					} catch (boost::bad_lexical_cast &) {
+						xw.XMLErrorWrongAttrValue();
 					}
 				}
 
@@ -260,11 +254,15 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 					const xmlChar *attr = xw.GetAttr();
 
-					if (xw.IsAttr("int")) {
-						i = atoi((const char*) attr);
-					} else
-					if (xw.IsAttr("name")) {
-						wstr_name = SC::U2S(attr);
+					try {
+						if (xw.IsAttr("int")) {
+							i = boost::lexical_cast<int>(attr);
+						} else
+						if (xw.IsAttr("name")) {
+							wstr_name = SC::U2S(attr);
+						}
+					} catch (boost::bad_lexical_cast &) {
+						xw.XMLErrorWrongAttrValue();
 					}
 				}
 
@@ -302,67 +300,70 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 
 				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 					const xmlChar *attr = xw.GetAttr();
-
-					if (xw.IsAttr("type")) {
-						if (!strcmp((char*)attr, "RPN")) {
-							_ftype = RPN;
-						}else 
-						if (!strcmp((char*)attr, "DRAWDEFINABLE")) {
-							_ftype = DEFINABLE;
-							_param_type = TParam::P_DEFINABLE;
-						}
+					try {
+						if (xw.IsAttr("type")) {
+							if (!strcmp((char*)attr, "RPN")) {
+								_ftype = RPN;
+							}else 
+							if (!strcmp((char*)attr, "DRAWDEFINABLE")) {
+								_ftype = DEFINABLE;
+								_param_type = TParam::P_DEFINABLE;
+							}
 #ifndef NO_LUA
-						else
-						 if (!strcmp((char*)attr, "LUA")) {
-							_param_type = TParam::P_LUA;
-						}
-					} else // end "type"
-					if (xw.IsAttr("lua_formula")) {
-						if (!strcmp((char*)attr, "va"))
-							_ftype = LUA_VA;
-						else if (!strcmp((char*)attr, "av"))
-							_ftype = LUA_AV;
-						else if (!strcmp((char*)attr, "ipc"))
-							_ftype = LUA_IPC;
-						else {
-							xw.XMLError("XML file error: unknown value for 'lua_formula' attribute");
-						}
-					} else
-					if (xw.IsAttr("lua_start_offset")) {
-						_lua_start_offset = atoi ((char*) attr);
-					} else
-					if (xw.IsAttr("lua_end_offset")) {
-						_lua_end_offset = atoi ((char*)attr);
-					} else
-					if (xw.IsAttr("lua_start_date_time")) {
-						boost::posix_time::ptime star_date_time = boost::posix_time::not_a_date_time;
-						try {
-							star_date_time = boost::posix_time::time_from_string((char *)attr);
-						} catch(std::exception e) {
-							star_date_time = boost::posix_time::not_a_date_time;
-						}
+							else
+							 if (!strcmp((char*)attr, "LUA")) {
+								_param_type = TParam::P_LUA;
+							}
+						} else // end "type"
+						if (xw.IsAttr("lua_formula")) {
+							if (!strcmp((char*)attr, "va"))
+								_ftype = LUA_VA;
+							else if (!strcmp((char*)attr, "av"))
+								_ftype = LUA_AV;
+							else if (!strcmp((char*)attr, "ipc"))
+								_ftype = LUA_IPC;
+							else {
+								xw.XMLError("XML file error: unknown value for 'lua_formula' attribute");
+							}
+						} else
+						if (xw.IsAttr("lua_start_offset")) {
+							_lua_start_offset = boost::lexical_cast<int>(attr);
+						} else
+						if (xw.IsAttr("lua_end_offset")) {
+							_lua_end_offset = boost::lexical_cast<int>(attr);
+						} else
+						if (xw.IsAttr("lua_start_date_time")) {
+							boost::posix_time::ptime star_date_time = boost::posix_time::not_a_date_time;
+							try {
+								star_date_time = boost::posix_time::time_from_string((char *)attr);
+							} catch(std::exception e) {
+								star_date_time = boost::posix_time::not_a_date_time;
+							}
 
-						if (star_date_time == boost::posix_time::not_a_date_time) {
-							xw.XMLError("XML file error: lua_start_date_time attribute has invalid value - expected format \"YYYY-MM-DD hh:mm\"");
-						} else {
-							struct tm t = to_tm(star_date_time);
-							_lua_start_date_time = timegm(&t);
-						}
+							if (star_date_time == boost::posix_time::not_a_date_time) {
+								xw.XMLError("XML file error: lua_start_date_time attribute has invalid value - expected format \"YYYY-MM-DD hh:mm\"");
+							} else {
+								struct tm t = to_tm(star_date_time);
+								_lua_start_date_time = timegm(&t);
+							}
 
 #endif // NO_LUA
-					} // end "lua_end_offset" | "type"
-					else
-					if (xw.IsAttr("formula")) {
-					// workaround - take only one attr. "formula" when occur more than one <define>
-						if (!isFormula) {
-							_formula = SC::U2S(attr);
-							isFormula = true;
+						} // end "lua_end_offset" | "type"
+						else
+						if (xw.IsAttr("formula")) {
+						// workaround - take only one attr. "formula" when occur more than one <define>
+							if (!isFormula) {
+								_formula = SC::U2S(attr);
+								isFormula = true;
+							}
+						} else
+						if (xw.IsAttr("new_def")) {
+							_is_new_def = xmlStrEqual(attr, (xmlChar *) "yes");
+						}else 	{
+							xw.XMLWarningNotKnownAttr();
 						}
-					} else
-					if (xw.IsAttr("new_def")) {
-						_is_new_def = xmlStrEqual(attr, (xmlChar *) "yes");
-					}else 	{
-						xw.XMLWarningNotKnownAttr();
+					} catch (boost::bad_lexical_cast &) {
+						xw.XMLErrorWrongAttrValue();
 					}
 				} // end FORALLATTR
 			} // end "define"

@@ -326,8 +326,6 @@ TSzarpConfig::loadXML(const std::wstring &path, const std::wstring &prefix)
 int
 TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 {
-
-	int i = 0;
 	TDevice *td = NULL;
 
 	assert(devices == NULL);
@@ -349,33 +347,34 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 
 				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 					const xmlChar *attr = xw.GetAttr();
-
-					if (xw.IsAttr("read_freq")) {
-						if ((i = atoi((const char*)attr)) <= 0) {
-							xw.XMLError("read_freq attribute <= 0");
+					try {
+						if (xw.IsAttr("read_freq")) {
+							read_freq = boost::lexical_cast<int>(attr);
+							if (read_freq <= 0)
+								xw.XMLError("read_freq attribute <= 0");
+						} else
+						if (xw.IsAttr("send_freq")) {
+							send_freq = boost::lexical_cast<int>(attr);
+							if (send_freq <= 0)
+								xw.XMLError("send_freq attribute <= 0");
+						} else
+						if (xw.IsAttr("version")) {
+							if (!xmlStrEqual(attr, (unsigned char*) "1.0")) {
+								xw.XMLError("incorrect version (1.0 expected)");
+							}
+						} else
+						if (xw.IsAttr("title")) {
+							title = SC::U2S(attr);
+						} else
+						if (xw.IsAttr("documentation_base_url")) {
+							documentation_base_url = SC::U2S(attr);
+						} else
+						if (xw.IsAttr("xmlns")) {
+						} else {
+							xw.XMLWarningNotKnownAttr();
 						}
-						read_freq = i;
-					} else
-					if (xw.IsAttr("send_freq")) {
-						if ((i = atoi((const char*)attr)) <= 0) {
-							xw.XMLError("send_freq attribute <= 0");
-						}
-						send_freq = i;
-					} else
-					if (xw.IsAttr("version")) {
-						if (!xmlStrEqual(attr, (unsigned char*) "1.0")) {
-							xw.XMLError("incorrect version (1.0 expected)");
-						}
-					} else
-					if (xw.IsAttr("title")) {
-						title = SC::U2S(attr);
-					} else
-					if (xw.IsAttr("documentation_base_url")) {
-						documentation_base_url = SC::U2S(attr);
-					} else
-					if (xw.IsAttr("xmlns")) {
-					} else {
-						xw.XMLWarningNotKnownAttr();
+					} catch (boost::bad_lexical_cast &) {
+						xw.XMLErrorWrongAttrValue();
 					}
 				} 
 

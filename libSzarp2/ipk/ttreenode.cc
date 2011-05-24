@@ -81,13 +81,6 @@ int TTreeNode::parseXML(xmlNodePtr node) {
 
 int TTreeNode::parseXML(xmlTextReaderPtr reader) {
 
-#define CONVERT(FROM, TO) { \
-	std::wstringstream ss;	\
-	ss.imbue(std::locale("C"));	\
-	ss << FROM;		\
-	ss >> TO; 		\
-	}
-
 	int depth = xmlTextReaderDepth(reader);
 	XMLWrapper xw(reader);
 
@@ -100,17 +93,20 @@ int TTreeNode::parseXML(xmlTextReaderPtr reader) {
 
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 		const xmlChar *attr = xw.GetAttr();
-
-		if (xw.IsAttr("name")) {
-			_name = SC::U2S(attr);
-		} else
-		if (xw.IsAttr("prior")) {
-			CONVERT(SC::U2S(attr), _prior);
-		} else
-		if (xw.IsAttr("draw_prior")) {
-			CONVERT(SC::U2S(attr), _draw_prior);
-		} else {
-			xw.XMLWarningNotKnownAttr();
+		try {
+			if (xw.IsAttr("name")) {
+				_name = SC::U2S(attr);
+			} else
+			if (xw.IsAttr("prior")) {
+				_prior = boost::lexical_cast<double>(attr);
+			} else
+			if (xw.IsAttr("draw_prior")) {
+				_draw_prior = boost::lexical_cast<double>(attr);
+			} else {
+				xw.XMLWarningNotKnownAttr();
+			}
+		} catch (boost::bad_lexical_cast &) {
+			xw.XMLErrorWrongAttrValue();
 		}
 	}
 
@@ -131,8 +127,6 @@ int TTreeNode::parseXML(xmlTextReaderPtr reader) {
 			assert( _tmp == depth && "treenode recurrent problem");
 		}
 	}
-
-#undef CONVERT
 
 	return 0;
 }

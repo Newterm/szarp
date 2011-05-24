@@ -161,6 +161,7 @@ bool XMLWrapper::HasAttr() {
 const xmlChar* XMLWrapper::GetAttr() {
 	return attr;
 }
+
 const xmlChar* XMLWrapper::GetAttrName() {
 	return attr_name;
 }
@@ -186,9 +187,16 @@ void XMLWrapper::XMLErrorNotKnownTag(const char* current_tag) {
 	throw XMLWrapperException();
 }
 
+void XMLWrapper::XMLErrorWrongAttrValue() {
+	sz_log(1, "XML file error: wrong value of attribute '%s' (value=%s) was found in '<%s>' (line,%d)", attr_name, attr, name,
+		xmlTextReaderGetParserLineNumber(r));
+// cout << "XML file error: wrong value of attribute '" << attr_name << "'= (" <<  attr  << ") was found in '<" << name <<
+	">' (line, " << xmlTextReaderGetParserLineNumber(r) << ")" << endl;
+	throw XMLWrapperException();
+}
+
 void XMLWrapper::XMLWarningNotKnownAttr() {
 	sz_log(10, "XML file error: not known attribute '%s' was found in '<%s>' (line,%d)", attr_name, name,
 		xmlTextReaderGetParserLineNumber(r));
-
 }
 

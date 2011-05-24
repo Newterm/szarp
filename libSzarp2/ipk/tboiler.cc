@@ -85,9 +85,9 @@ TParam* TBoiler::GetParam(TAnalysis::AnalysisParam param_type) {
 TBoiler* TBoiler::parseXML(xmlTextReaderPtr reader) {
 
 	TBoiler *boiler = NULL;
-	int boiler_no;
-	float grate_speed;
-	float coal_gate_height;
+	int boiler_no = 0;
+	float grate_speed = 0;
+	float coal_gate_height = 0;
 	BoilerType boiler_type = INVALID;
 
 	XMLWrapper xw(reader);
@@ -100,31 +100,27 @@ TBoiler* TBoiler::parseXML(xmlTextReaderPtr reader) {
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 
 		const xmlChar* attr = xw.GetAttr();
-
-		if (xw.IsAttr("boiler_no")) {
-			if ((sscanf((const char*)attr,"%d",&boiler_no) != 1) || (boiler_no < 0)) {
-				xw.XMLError("Invalid 'boiler_no' attribute on element 'boiler'");
+		try {
+			if (xw.IsAttr("boiler_no")) {
+				boiler_no = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("grate_speed")) {
+				grate_speed = boost::lexical_cast<float>(attr);
+			} else
+			if (xw.IsAttr("coal_gate_height")) {
+				coal_gate_height = boost::lexical_cast<float>(attr);
+			} else
+			if (xw.IsAttr("boiler_type")) {
+				boiler_type = GetTypeForBoilerName(SC::U2S((const unsigned char*)attr));
+				if (boiler_type == INVALID ) {
+					xw.XMLError("Invalid 'boiler_type' attribute on element 'boiler'");
+				}
+			} else {
+				xw.XMLWarningNotKnownAttr();
 			}
-		} else
-		if (xw.IsAttr("grate_speed")) {
-			if ((sscanf((const char*)attr,"%f",&grate_speed) != 1) || (grate_speed < 0)) {
-				xw.XMLError("Invalid 'grate_speed' attribute on element 'boiler'");
-			}
-		} else
-		if (xw.IsAttr("coal_gate_height")) {
-			if ((sscanf((const char*)attr,"%f",&coal_gate_height) != 1) || (coal_gate_height < 0)) {
-				xw.XMLError("Invalid 'max_coal_gate_height_change' attribute on element 'boiler'");
-			}
-		} else
-		if (xw.IsAttr("boiler_type")) {
-			boiler_type = GetTypeForBoilerName(SC::U2S((const unsigned char*)attr));
-			if (boiler_type == INVALID ) {
-				xw.XMLError("Invalid 'boiler_type' attribute on element 'boiler'");
-			}
-		} else {
-			xw.XMLWarningNotKnownAttr();
+		} catch (boost::bad_lexical_cast &) {
+			xw.XMLErrorWrongAttrValue();
 		}
-
 	}
 
 	boiler = new TBoiler(boiler_no, grate_speed, coal_gate_height, boiler_type);

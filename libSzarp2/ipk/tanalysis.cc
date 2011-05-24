@@ -112,22 +112,26 @@ TAnalysis* TAnalysis::parseXML(xmlTextReaderPtr reader) {
 	}
 
 	int bnr = 0;
-	TAnalysis::AnalysisParam param ;
+	TAnalysis::AnalysisParam param = INVALID;
 
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
-		if (xw.IsAttr("boiler_no")) {
-			bnr = atoi((const char*) xw.GetAttr());
-		} else
-		if (xw.IsAttr("param_type")) {
-			param = GetTypeForParamName(SC::U2S((unsigned char*)xw.GetAttr()));
-		} else {
-			xw.XMLWarningNotKnownAttr();
+		try {
+			const xmlChar *attr = xw.GetAttr();
+			if (xw.IsAttr("boiler_no")) {
+				bnr = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("param_type")) {
+				param = GetTypeForParamName(SC::U2S((unsigned char*) attr));
+			} else {
+				xw.XMLWarningNotKnownAttr();
+			}
+		} catch (boost::bad_lexical_cast &) {
+			xw.XMLErrorWrongAttrValue();
 		}
 	}
 
 	if (param == TAnalysis::INVALID) {
 		xw.XMLError("Incorrect value of 'param_type' attribute on element 'analysis'");
-		return NULL;
 	}
 
 	return new TAnalysis(bnr, param);

@@ -83,15 +83,7 @@ int TDraw::GetCount()
 
 TDraw* TDraw::parseXML(xmlTextReaderPtr reader)
 {
-
-#define CONVERT(FROM, TO) { \
-	std::wstringstream ss;	\
-	ss.imbue(locale("C"));	\
-	ss << FROM;		\
-	ss >> TO; 		\
-	}
-
-#define UNDEFVAL -1234.5
+	const double UNDEFVAL= -1234.5;
 
 	double p = -1.0, o = -1.0, min = 0.0, max = UNDEFVAL, smin = UNDEFVAL, smax = UNDEFVAL;
 	int sc = 0;
@@ -110,41 +102,45 @@ TDraw* TDraw::parseXML(xmlTextReaderPtr reader)
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 		const xmlChar *attr = xw.GetAttr();
 
-		if (xw.IsAttr("title")) {
-			strw_w = SC::U2S(attr);
-		} else
-		if (xw.IsAttr("color")) {
-			strw_c = SC::U2S(attr);
-		} else
-		if (xw.IsAttr("prior")) {
-			CONVERT(SC::U2S(attr), p);
-		} else
-		if (xw.IsAttr("order")) {
-			CONVERT(SC::U2S(attr), o);
-		} else
-		if (xw.IsAttr("max")) {
-			CONVERT(SC::U2S(attr), max);
-		} else
-		if (xw.IsAttr("min")) {
-			CONVERT(SC::U2S(attr), min);
-		} else
-		if (xw.IsAttr("scale")) {
-			CONVERT(SC::U2S(attr), sc);
-		} else
-		if (xw.IsAttr("minscale")) {
-			CONVERT(SC::U2S(attr), smin);
-		} else
-		if (xw.IsAttr("maxscale")) {
-			CONVERT(SC::U2S(attr),smax);
-		} else
-		if (xw.IsAttr("special")) {
-			for (unsigned i = 0; i < sizeof(SPECIAL_TYPES_STR) / sizeof(wchar_t*); i++)
-				if (SC::U2S(attr) == SPECIAL_TYPES_STR[i]) {
-					sp = (SPECIAL_TYPES)i;
-					break;
+		try {
+			if (xw.IsAttr("title")) {
+				strw_w = SC::U2S(attr);
+			} else
+			if (xw.IsAttr("color")) {
+				strw_c = SC::U2S(attr);
+			} else
+			if (xw.IsAttr("prior")) {
+				p = boost::lexical_cast<double>(attr);
+			} else
+			if (xw.IsAttr("order")) {
+				o = boost::lexical_cast<double>(attr);
+			} else
+			if (xw.IsAttr("max")) {
+				max = boost::lexical_cast<double>(attr);
+			} else
+			if (xw.IsAttr("min")) {
+				min = boost::lexical_cast<double>(attr);
+			} else
+			if (xw.IsAttr("scale")) {
+				sc = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("minscale")) {
+				smin = boost::lexical_cast<double>(attr);
+			} else
+			if (xw.IsAttr("maxscale")) {
+				smax = boost::lexical_cast<double>(attr);
+			} else
+			if (xw.IsAttr("special")) {
+				for (unsigned i = 0; i < sizeof(SPECIAL_TYPES_STR) / sizeof(wchar_t*); i++)
+					if (SC::U2S(attr) == SPECIAL_TYPES_STR[i]) {
+						sp = (SPECIAL_TYPES)i;
+						break;
+				}
+			} else {
+				xw.XMLWarningNotKnownAttr();
 			}
-		} else {
-			xw.XMLWarningNotKnownAttr();
+		} catch (boost::bad_lexical_cast &) {
+			xw.XMLErrorWrongAttrValue();
 		}
 	} // for all attr
 
@@ -191,9 +187,6 @@ TDraw* TDraw::parseXML(xmlTextReaderPtr reader)
 			xw.XMLErrorNotKnownTag("draw");
 		}
 	}
-
-#undef CONVERT
-#undef UNDEFVAL
 
 	return ret;
 }

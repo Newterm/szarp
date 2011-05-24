@@ -144,17 +144,17 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 			path = SC::U2S(attr);
 		} else
 		if (xw.IsAttr("speed")) {
-			speed = atoi((const char*) attr);
+			speed = boost::lexical_cast<int>(attr);
 		} else
 		if (xw.IsAttr("stop")) {
-			stop = atoi((const char*) attr);
+			stop = boost::lexical_cast<int>(attr);
 		} else
 		if (xw.IsAttr("protocol")) {
-			protocol = atoi((const char*) attr);
+			protocol = boost::lexical_cast<int>(attr);
 		} else
 		if (xw.IsAttr("special")) {
 			special = 1;
-			special_value = atoi((const char*) attr);
+			special_value = boost::lexical_cast<int>(attr);
 		} else
 		if (xw.IsAttr("options")) {
 			options = SC::U2S(attr);

@@ -64,26 +64,30 @@ int TUnit::parseXML(xmlTextReaderPtr reader)
 	xw.SetIgnoredTrees(ignored_trees);
 
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
-
-		if (xw.IsAttr("id")) {
-			if (xmlStrlen(xw.GetAttr()) != 1) {
-				xw.XMLError("attribute 'id' should be one ASCII");
+		const xmlChar *attr = xw.GetAttr();
+		try {
+			if (xw.IsAttr("id")) {
+				if (xmlStrlen(attr) != 1) {
+					xw.XMLError("attribute 'id' should be one ASCII");
+				}
+				id = SC::U2S(attr)[0];
+			} else
+			if (xw.IsAttr("type")) {
+				type = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("subtype")) {
+				subtype = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("bufsize")) {
+				bufsize = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("name")) {
+				TUnit::name = SC::U2S(attr);
+			} else {
+				xw.XMLWarningNotKnownAttr();
 			}
-			id = SC::U2S(xw.GetAttr())[0];
-		} else
-		if (xw.IsAttr("type")) {
-			type = atoi ((const char*) xw.GetAttr());
-		} else
-		if (xw.IsAttr("subtype")) {
-			subtype = atoi((const char*) xw.GetAttr());
-		} else
-		if (xw.IsAttr("bufsize")) {
-			bufsize = atoi((const char*) xw.GetAttr());
-		} else
-		if (xw.IsAttr("name")) {
-			TUnit::name = SC::U2S(xw.GetAttr());
-		} else {
-			xw.XMLWarningNotKnownAttr();
+		} catch (boost::bad_lexical_cast &)  {
+			xw.XMLErrorWrongAttrValue();
 		}
 	}
 

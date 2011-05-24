@@ -109,38 +109,40 @@ int TSendParam::parseXML(xmlTextReaderPtr reader) {
 
 	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 		const xmlChar *attr = xw.GetAttr();
-
-		if (xw.IsAttr("param")) {
-			isParam = true;
-			paramName = SC::U2S(attr).c_str();
-		} else
-		if (xw.IsAttr("value")) {
-			isValue = true;
-			value = atoi((const char*) attr);
-		} else
-		if (xw.IsAttr("repeat")) {
-			repeat = atoi((const char*) attr);
-		} else
-		if (xw.IsAttr("send_no_data")) {
-			sendNoData = 1;
-		} else
-		if (xw.IsAttr("type")) {
-			if (!xmlStrcmp(attr, X"probe"))
-				type = PROBE;
-			else if (!xmlStrcmp(attr, X"min"))
-				type = MIN;
-			else if (!xmlStrcmp(attr, X"min10"))
-				type = MIN10;
-			else if (!xmlStrcmp(attr, X"hour"))
-				type = HOUR;
-			else if (!xmlStrcmp(attr, X"day"))
-				type = DAY;
-			else {
-				xw.XMLError("Unknown value for attribute 'type' in element <send>");
-				return 1;
+		try {
+			if (xw.IsAttr("param")) {
+				isParam = true;
+				paramName = SC::U2S(attr).c_str();
+			} else
+			if (xw.IsAttr("value")) {
+				isValue = true;
+				value = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("repeat")) {
+				repeat = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("send_no_data")) {
+				sendNoData = 1;
+			} else
+			if (xw.IsAttr("type")) {
+				if (!xmlStrcmp(attr, X"probe"))
+					type = PROBE;
+				else if (!xmlStrcmp(attr, X"min"))
+					type = MIN;
+				else if (!xmlStrcmp(attr, X"min10"))
+					type = MIN10;
+				else if (!xmlStrcmp(attr, X"hour"))
+					type = HOUR;
+				else if (!xmlStrcmp(attr, X"day"))
+					type = DAY;
+				else {
+					xw.XMLError("Unknown value for attribute 'type' in element <send>");
+				}
+			} else {
+				xw.XMLWarningNotKnownAttr();
 			}
-		} else {
-			xw.XMLWarningNotKnownAttr();
+		} catch (boost::bad_lexical_cast &) {
+			xw.XMLErrorWrongAttrValue();
 		}
 	}
 
