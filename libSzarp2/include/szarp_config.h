@@ -166,7 +166,14 @@ public:
 	 */
 	int loadXML(const std::wstring& path, const std::wstring& prefix = std::wstring());
 	/**
-	 * Loads config information from XML file.
+	 * Loads config information from XML file - uses XML DOM.
+	 * @param path to input file
+	 * @param prefix prefix name of configuration
+	 * @return 0 on success, 1 on error
+	 */
+	int loadXMLDOM(const std::wstring& path, const std::wstring& prefix = std::wstring());
+	/**
+	 * Loads config information from XML file - uses xmlTextReaderPtr.
 	 * @param path to input file
 	 * @param prefix prefix name ofconfiguration
 	 * @return 0 on success, 1 on error

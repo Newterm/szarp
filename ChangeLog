@@ -1,4 +1,11 @@
-2011-06-23>	Krzysztof Golinski <krzgol@newterm.pl>
+2011-05-25	Krzysztof Golinski <krzgol@newterm.pl>
+	* configure.in: added flag "--with-xmlreader". When is set
+	libszarp2 uses xmlTextReaderPtr instead of XML DOM. Default is not
+	set.
+	* libSzarp2/ipk/tszarpconfig.cc: moved LoadXML into LoadXMLDOM
+	Current LoadXML calls LoadXMLDOM or LoadXMLReader - it depends on
+	configure flag "--with-xmlreader"
+2011-05-23	Krzysztof Golinski <krzgol@newterm.pl>
 	* libszarp2/ipk/: added methods parseXML() (in ipk classes) which
 	use xmlTextReaderPtr to load configuration
 	* libszarp2/ipk/tszarpconfig.cc: added method loadXMLReader
@@ -7,7 +14,7 @@
 	to use reader
 	* libszarp2/ipk/xmlreader_test.cc: added program to compare output
 	loadXML and output loadXMLReader
-2011-06-12	Krzysztof Golinski <krzgol@newterm.pl>
+2011-05-12	Krzysztof Golinski <krzgol@newterm.pl>
 	* wx/common/szapp{.h,.cpp}, wx/draw3/{drawapp.cpp,drawfrm.cpp}:
 	added "auto" language; added button "automatic" in "choose 
 	language window"

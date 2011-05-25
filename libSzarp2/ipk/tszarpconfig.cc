@@ -302,25 +302,68 @@ TSzarpConfig::saveXML(const std::wstring &path)
 }
 
 int
+TSzarpConfig::loadXMLDOM(const std::wstring& path, const std::wstring& prefix) {
+
+	xmlDocPtr doc;
+	int ret;
+
+	this->prefix = prefix;
+
+	xmlLineNumbersDefault(1);
+	doc = xmlParseFile(SC::S2A(path).c_str());
+	if (doc == NULL) {
+		sz_log(1, "XML document not wellformed\n");
+		return 1;
+	}
+
+	ret = parseXML(doc);
+	xmlFreeDoc(doc);
+
+	return ret;
+}
+
+int
+TSzarpConfig::loadXMLReader(const std::wstring &path, const std::wstring& prefix)
+{
+	this->prefix = prefix;
+	xmlTextReaderPtr reader = xmlNewTextReaderFilename(SC::S2A(path).c_str());
+
+	try {
+		int ret = 0;
+		if (reader != NULL) {
+			ret = xmlTextReaderRead(reader);
+
+			if (ret == 1)
+				ret = parseXML(reader);
+			else
+				ret = 1;
+
+			xmlFreeTextReader(reader);
+			if (ret != 0) {
+				sz_log(1, "XML document not wellformed\n");
+			}
+		} else
+			sz_log(1,"Unable to open XML document\n");
+
+		return ret;
+
+	} catch (XMLWrapperException) {
+		xmlFreeTextReader(reader);
+		sz_log(1, "XML document not wellformed, look at previous logs\n");
+		return 1;
+	}
+
+	return 0;
+}
+
+int
 TSzarpConfig::loadXML(const std::wstring &path, const std::wstring &prefix)
 {
-
-    xmlDocPtr doc;
-    int ret;
-
-    this->prefix = prefix;
-
-    xmlLineNumbersDefault(1);
-    doc = xmlParseFile(SC::S2A(path).c_str());
-    if (doc == NULL) {
-	sz_log(1, "XML document not wellformed\n");
-	return 1;
-    }
-
-    ret = parseXML(doc);
-    xmlFreeDoc(doc);
-
-    return ret;
+#ifdef USE_XMLREADER
+	return loadXMLReader(path,prefix);
+#else
+	return loadXMLDOM(path,prefix);
+#endif
 }
 
 int
@@ -446,39 +489,6 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 	return 0;
 }
 
-int
-TSzarpConfig::loadXMLReader(const std::wstring &path, const std::wstring& prefix)
-{
-	this->prefix = prefix;
-	xmlTextReaderPtr reader = xmlNewTextReaderFilename(SC::S2A(path).c_str());
-
-	try {
-		int ret = 0;
-		if (reader != NULL) {
-			ret = xmlTextReaderRead(reader);
-
-			if (ret == 1)
-				ret = parseXML(reader);
-			else
-				ret = 1;
-
-			xmlFreeTextReader(reader);
-			if (ret != 0) {
-				sz_log(1, "XML document not wellformed\n");
-			}
-		} else
-			sz_log(1,"Unable to open XML document\n");
-
-		return ret;
-
-	} catch (XMLWrapperException) {
-		xmlFreeTextReader(reader);
-		sz_log(1, "XML document not wellformed, look at previous logs\n");
-		return 1;
-	}
-
-	return 0;
-}
 
 int
 TSzarpConfig::parseXML(xmlDocPtr doc)

@@ -190,8 +190,6 @@ void XMLWrapper::XMLErrorNotKnownTag(const char* current_tag) {
 void XMLWrapper::XMLErrorWrongAttrValue() {
 	sz_log(1, "XML file error: wrong value of attribute '%s' (value=%s) was found in '<%s>' (line,%d)", attr_name, attr, name,
 		xmlTextReaderGetParserLineNumber(r));
-// cout << "XML file error: wrong value of attribute '" << attr_name << "'= (" <<  attr  << ") was found in '<" << name <<
-	">' (line, " << xmlTextReaderGetParserLineNumber(r) << ")" << endl;
 	throw XMLWrapperException();
 }
 
