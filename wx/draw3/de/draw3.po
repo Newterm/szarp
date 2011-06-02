@@ -1442,8 +1442,8 @@ msgstr ""
 # "Procent próbek zawieraj±cych dane: %.0f%%"
 #: summwin.cpp:280
 #, c-format
-msgid "Data contains %.0f%% probes from current period"
-msgstr "Der Anteil der Proben mit Daten: %.0f%%"
+msgid "Data contains %.2f%% probes from current period"
+msgstr "Der Anteil der Proben mit Daten: %.2f%%"
 
 # "tydz."
 #: timeformat.cpp:42 timeformat.cpp:58 timeformat.cpp:62 timeformat.cpp:83

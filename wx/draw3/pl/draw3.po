@@ -1396,8 +1396,8 @@ msgstr "To okno nie zawiera wykresów, dla których liczone s± warto¶ci sumaryczne
 
 #: summwin.cpp:280
 #, c-format
-msgid "Data contains %.0f%% probes from current period"
-msgstr "Procent próbek z aktualnego okresu, zawieraj±cych dane: %.0f%%"
+msgid "Data contains %.2f%% probes from current period"
+msgstr "Procent próbek z aktualnego okresu, zawieraj±cych dane: %.2f%%"
 
 #: timeformat.cpp:42
 #: timeformat.cpp:58

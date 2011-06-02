@@ -277,7 +277,7 @@ void SummaryWindow::OnIdle(wxIdleEvent &event) {
 		double data_percentage = od->draw->GetValuesTable().m_data_probes_ratio;
 		if (std::isnan(data_percentage))
 			data_percentage = 0;
-		tooltip += _T("\n\n") + wxString::Format(_("Data contains %.0f%% probes from current period"), data_percentage * 100);
+		tooltip += _T("\n\n") + wxString::Format(_("Data contains %.2f%% probes from current period"), data_percentage * 100);
 
 		m_labels[i]->SetToolTip(tooltip);
 

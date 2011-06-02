@@ -1294,7 +1294,7 @@ msgstr ""
 
 #: summwin.cpp:280
 #, c-format
-msgid "Data contains %.0f%% probes from current period"
+msgid "Data contains %.2f%% probes from current period"
 msgstr "Les données contiennent %.de%% d'échantillons pour la période en cours"
 
 #: timeformat.cpp:42 timeformat.cpp:58 timeformat.cpp:62 timeformat.cpp:83
