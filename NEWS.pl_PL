@@ -7,6 +7,17 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.533
+#01.06.2011
+* Poprawka w programie przegl±daj±cym w obs³udze automatycznego wykrywania 
+jêzyka - dodano opcjê "automatycznie" do menu wyboru jêzyka.
+* Przyspieszono w programie przegl±daj±cym zmianê okresu dla zestawów z du¿±
+ilo¶ci± wykresów.
+* Dodano nowy skrót klawiszowy "?" w programie przegl±daj±cym, wy¶wietlaj±cy
+pe³n± nazwê aktywnego parametru.
+* Dodano eksperymentalny szybszy parser XML do biblioteki IPK - powinno to 
+przyspieszyæ uruchamianie programów SZARP oraz zmniejszyæ zu¿ycie pamiêci.
+
 ** 3.1.528
 #01.05.2011
 * Usuniêto z paska ikon w programie przegl±daj±cym ikonê zmiany jêzyka; 

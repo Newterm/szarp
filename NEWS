@@ -6,6 +6,15 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.533
+#01.06.2011
+* Fix in draw3 automatic language settings - added proper item to language 
+selection menu.
+* Speedup period switching in draw3 on sets with large number of graphs.
+* Added displaying name of current parameter in draw3 after pressing '?'.
+* Added experimental faster XML parser for IPK library - should speed up 
+starting of SZARP program and reduce memory usage.
+
 ** 3.1.528
 #01.05.2011
 * Language change icon remove from Draw3 toolbar, added 'automatic' language
