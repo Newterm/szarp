@@ -1,3 +1,6 @@
+2011-06-09	Pawel Palucha <pawel@newterm.pl>
+	* script/set2params.py: script for converting draw3 sets to
+	params.xml.
 2011-06-02	Krzysztof Ga³±zka <kg@newterm.pl>
 	* summwin.cpp {de,fr,pl}/draw3.po: fix of procentage display
 	in tooltip in Summary Window
