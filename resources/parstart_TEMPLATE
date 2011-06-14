@@ -33,8 +33,16 @@ stlog() {
 	log_daemon_msg "Stopping SZARP" $DAEMON
 }
 
+setulimit() {
+	if [ $1 ]; then
+	    ulimit -n $1
+	fi
+}
+
 case "$1" in
     start)
+        setulimit $NOFILE_LIMIT
+
 	if [ x$PARCOOK = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/bin/parcook 
 	    szlog
