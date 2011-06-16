@@ -96,7 +96,6 @@ draw3_SOURCES = \
 		triangulation.h triangulation.cpp \
 		probadddiag.h probadddiag.cpp \
 		drawtreedialog.h drawtreedialog.cpp \
-		wxlogging.h wxlogging.cpp \
 		GUI/resource.cpp
 
 draw3_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) $(LIBWXSCINTILLA)

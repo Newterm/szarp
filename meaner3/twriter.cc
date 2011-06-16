@@ -37,7 +37,7 @@
 TWriter::TWriter(ProbesType type)
 {
 	parcook = new TParcook(type);
-	config = new TSzarpConfig( true );
+	config = new TSzarpConfig();
 	params = NULL;
 	params_len = 0;
 }
