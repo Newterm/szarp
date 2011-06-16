@@ -38,12 +38,30 @@
 const int DEFAULT_EXPIRE = 660;	/* 11 minutes */
 const int DAEMON_INTERVAL = 10;
 
+/** 
+ * @brief Base class for line daemons
+ *
+ * This class provides core functionality for implementing
+ * parcook line demons
+ */
 class BaseDaemon {
 public:
+	/** 
+	 * @brief Constructs class with name
+	 * 
+	 * @param name this name will be used by logger
+	 */
 	BaseDaemon( const char* name );
 	virtual ~BaseDaemon();
 
-
+	/** 
+	 * @brief Initialize class with command line arguments
+	 * 
+	 * @param argc arguments count
+	 * @param argv arguments
+	 * 
+	 * @return 0 on success, 1 otherwise
+	 */
 	int Init(int argc, const char *argv[]);
 
 	/** 
@@ -51,21 +69,82 @@ public:
 	 */
 	virtual void Wait();
 
+	/** 
+	 * @brief Reads data from device
+	 */
 	virtual void Read() = 0;
-	virtual int ParseConfig(DaemonConfig * cfg) = 0;
 
+	/** 
+	 * @brief Transfer data to parcook
+	 */
 	virtual void Transfer();
 
 	const char* Name() { return name; }
 
 protected:
+	/** 
+	 * @brief Initialize daemon
+	 * 
+	 * @param name daemon name -- used by logger
+	 * @param argc arguments count
+	 * @param argv arguments values
+	 * 
+	 * @return 0 on success, 1 otherwise
+	 */
 	int Init( const char*name , int argc, const char *argv[] );
+	/** 
+	 * @brief Creates and initialize DaemonConfig member
+	 * 
+	 * @param name daemon name -- used by logger
+	 * @param argc arguments count
+	 * @param argv arguments values
+	 * 
+	 * @return 0 on success, 1 otherwise
+	 */
 	virtual int InitConfig( const char*name , int argc, const char *argv[] );
+	/** 
+	 * @brief Creates and initialize IPCHandler member
+	 * 
+	 * @return 0 on success, 1 otherwise
+	 */
 	virtual int InitIPC();
+	/** 
+	 * @brief Defines signals handlers and masks
+	 * 
+	 * @return 0 on success, 1 otherwise
+	 */
 	virtual int InitSignals();
 
-	unsigned int Length();
+	/** 
+	 * @brief Parse daemon configuration 
+	 *
+	 * This function is called at initialization with 
+	 * previously constructed DaemonConfig
+	 * 
+	 * @param cfg daemon configuration 
+	 * 
+	 * @return 0 on success, 1 otherwise
+	 */
+	virtual int ParseConfig(DaemonConfig * cfg) = 0;
+
+	/** 
+	 * @return length of parameters
+	 */
+	unsigned int Count();
+	/** 
+	 * @brief values setter
+	 * 
+	 * @param i index of parameter
+	 * @param val value of parameter
+	 */
 	void Set( unsigned int i , short val );
+	/** 
+	 * @brief values getter
+	 *
+	 * @param i index of parameter
+	 * 
+	 * @return value of parameter
+	 */
 	short At( unsigned int i );
 
 	DaemonConfig *cfg;

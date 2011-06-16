@@ -142,7 +142,7 @@ short BaseDaemon::At( unsigned int i )
 	return ipc->m_read[i];
 }
 
-unsigned int BaseDaemon::Length()
+unsigned int BaseDaemon::Count()
 {
 	return ipc->m_params_count;
 }

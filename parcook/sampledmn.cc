@@ -20,7 +20,7 @@
  * 
  */
  /** 
- * @file logdmn.cc
+ * @file sampledmn.cc
  * @brief Daemon for remote logging users activity.
  * @author Jakub Kotur <qba@newterm.pl>
  * @version 0.1
@@ -47,10 +47,11 @@ public:
 
 	virtual void Read()
 	{
-		for( unsigned int i=0 ; i<Length() ; ++i )
+		for( unsigned int i=0 ; i<Count() ; ++i )
 			Set( i , 1 );
 	}
 
+protected :
 	virtual int ParseConfig(DaemonConfig * cfg)
 	{
 		return 0;
@@ -62,7 +63,7 @@ int main(int argc, const char *argv[])
 	SampleDaemon dmn;
 
 	if( dmn.Init( argc , argv ) ) {
-		sz_log(0,"Cannot start daemon");
+		sz_log(0,"Cannot start %s daemon",dmn.Name());
 		return 1;
 	}
 
