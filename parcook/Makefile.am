@@ -86,7 +86,7 @@ bin_PROGRAMS = \
 
 EXTRA_PROGRAMS = psetd ddedmn unitedmn dlmsdmn
 
-basedmn_SOURCES = basedmn.cc basedmn.h
+basedmn_SOURCES = base_daemon.cc base_daemon.h
 
 dpafdmn_SOURCES = dpafdmn.cc
 

@@ -35,7 +35,7 @@
 
 #include <liblog.h>
 
-#include "basedmn.h"
+#include "base_daemon.h"
 
 BaseDaemon::BaseDaemon( const char* name )
 	: m_last(0) , name(name) 

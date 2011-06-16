@@ -26,6 +26,17 @@
  * @version 0.1
  * @date 2011-06-15
  */
+/*
+ @description_start
+ @class 4
+
+ @devices None -- always outputs 1
+ @devices.pl Żaden -- jedynie wypluwa 1
+ @config None
+ @config.pl Żadna
+
+ @description_end
+ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -33,7 +44,7 @@
 
 #include <liblog.h>
 
-#include "basedmn.h"
+#include "base_daemon.h"
 
 class SampleDaemon : public BaseDaemon {
 public:
