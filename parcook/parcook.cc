@@ -39,6 +39,7 @@
 #include <sys/sem.h>
 #include <sys/msg.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -866,6 +867,19 @@ RETSIGTYPE CriticalHandler(int sig)
 	raise(sig);
 }
 
+RETSIGTYPE ChildDied(int sig)
+{
+	int stat;
+	pid_t pid = waitpid(-1,&stat,WNOHANG);
+
+	if( pid == -1 )
+		sz_log(0,"Waiting for process on SIGCHLD: %s",strerror(errno));
+	else if( pid == 0 )
+		sz_log(1,"No process died after waiting on SIGCHLD: strange");
+	else
+		sz_log(WIFEXITED(stat)&&!WEXITSTATUS(stat)?10:1,"Process %i ended with code %i",pid,WEXITSTATUS(stat));
+}
+
 int InitSignals()
 {
 	int ret;
@@ -900,6 +914,12 @@ int InitSignals()
 	assert(ret == 0);
 	ret = sigaction(SIGHUP, &sa, NULL);
 	assert(ret == 0);
+
+	sa.sa_handler = ChildDied;
+	sa.sa_flags = 0;
+	ret = sigaction(SIGCHLD, &sa , NULL );
+	assert(ret == 0);
+
 	return 0;
 }
 
@@ -918,8 +938,8 @@ void CreateSemMsg(void)
 	SemDes = semget(key, SEM_LINE + NumberOfLines * 2, IPC_CREAT | 00666);
 	if (SemDes == -1) {
 		sz_log(0,
-		    "parcook: cannot get semaphore descriptor, errno %d, exiting",
-		    errno);
+		    "parcook: cannot get semaphore descriptor (%d,%d), errno %d, exiting",
+		    key , SEM_LINE + NumberOfLines * 2 , errno);
 		exit(1);
 	} else {
 		sz_log(10, "parcook: semget(%x, %d) successfull", key, 
@@ -1135,9 +1155,6 @@ void LanchDaemon(int i, char* linedmnpat)
 	struct stat sstat;
 	key_t key;
 
-	sz_log(10, "parcook: starting daemon index: %d LineNum: %d ParTotal: %d Daemon: %ls Device: %ls Options: %ls\n",
-			i, LinesInfo[i].LineNum, LinesInfo[i].ParTotal, LinesInfo[i].daemon.c_str(), LinesInfo[i].device.c_str(), LinesInfo[i].options.c_str());
-
 	/* set number of first param */
 	LinesInfo[i].ParBase = VTlen;
 	/* increase global params count */
@@ -1149,7 +1166,7 @@ void LanchDaemon(int i, char* linedmnpat)
 				linedmnpat, LinesInfo[i].LineNum, i + 1, errno);
 		exit(1);
 	}
-	sz_log(10, "parcook: creating segment: key %08x\n", key);
+	sz_log(10, "parcook: creating segment: key %08x", key);
 
 	/* create segment for communicating with daemon */
 	if ((LinesInfo[i].ShmDes = shmget(key,
@@ -1166,6 +1183,9 @@ void LanchDaemon(int i, char* linedmnpat)
 	/* fork to run line daemon */
 	if ((pid = fork()) > 0) {
 		/* parent, do nothing */
+		sz_log(10, "parcook: starting daemon\nIndex: %d\nLineNum: %d\nParTotal: %d\nDaemon: %ls\nDevice: %ls\nOptions: %ls\nPID: %d",
+			i, LinesInfo[i].LineNum, LinesInfo[i].ParTotal, LinesInfo[i].daemon.c_str(), LinesInfo[i].device.c_str(), LinesInfo[i].options.c_str(),pid);
+
 		return;
 	} else if (pid < 0) {
 		/* parent, error */
