@@ -148,14 +148,22 @@ swap_draws(int a, int b, void *data)
 }
 
 
+TSzarpConfig::TSzarpConfig( bool logparams ) :
+	read_freq(0), send_freq(0),
+	devices(NULL), defined(NULL),
+	drawdefinable(NULL), title(),
+	prefix(), boilers(NULL), seasons(NULL) ,
+	logparams(logparams)
+{
+}
 
 TSzarpConfig::~TSzarpConfig(void)
 {
-	delete devices;
-	delete defined;
-	delete drawdefinable;
-	delete seasons;
-	delete boilers;
+	if( devices )       delete devices      ;
+	if( defined )       delete defined      ;
+	if( drawdefinable ) delete drawdefinable;
+	if( seasons )       delete seasons      ;
+	if( boilers )       delete boilers      ;
 }
 
 const std::wstring&
@@ -360,10 +368,13 @@ int
 TSzarpConfig::loadXML(const std::wstring &path, const std::wstring &prefix)
 {
 #ifdef USE_XMLREADER
-	return loadXMLReader(path,prefix);
+	int res = loadXMLReader(path,prefix);
 #else
-	return loadXMLDOM(path,prefix);
+	int res = loadXMLDOM(path,prefix);
 #endif
+	if( res ) return res;
+
+	if( logparams ) CreateLogParams();
 }
 
 int
@@ -1023,6 +1034,28 @@ TSzarpConfig::GetMaxBaseInd()
 	    m = n;
     }
     return m;
+}
+
+void
+TSzarpConfig::CreateLogParams()
+{
+	sz_log(10, "TSzarpConfig: beg");
+
+	TDevice* d = new TDevice(this,L"/opt/szarp/bin/logdmn");
+	TRadio * r = new TRadio ( d );
+	TUnit  * u = new TUnit  ( r );
+	TParam * p = new TParam ( u );
+
+	   AddDevice( d );
+	d->AddRadio ( r );
+	r->AddUnit  ( u );
+	u->AddParam ( p );
+
+//        p->SetFormula(L"fake");
+	p->Configure(L"Logging:Draw3:Button", L"btn", L"Button 3" , L"-" , NULL , 0 , -1 , 1 );
+//        p->SetAutoBase();
+
+	sz_log(10, "TSzarpConfig: end");
 }
 
 TParam *

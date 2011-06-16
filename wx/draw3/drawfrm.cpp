@@ -53,6 +53,10 @@
 #include "drawfrm.h"
 #include "drawprint.h"
 #include "probadddiag.h"
+#include "wxlogging.h"
+
+typedef void (DrawFrame::*tmpdef1)(wxCloseEvent&);
+typedef void (wxEvtHandler::*tmpdef2)(wxCloseEvent&);
 
 DrawFrame::DrawFrame(FrameManager * fm, DatabaseManager* dm, ConfigManager* cm, RemarksHandler *remarks, wxWindow * parent,
 		     wxWindowID id, const wxString & title, const wxString & name, const wxPoint & pos,
@@ -60,6 +64,9 @@ DrawFrame::DrawFrame(FrameManager * fm, DatabaseManager* dm, ConfigManager* cm, 
 :szFrame(parent, id, title, pos, size, style | wxFRAME_FLOAT_ON_PARENT, name), m_name(name), frame_manager(fm), config_manager(cm),
 database_manager(dm), m_notebook(NULL), draw_panel(NULL), remarks_handler(remarks)
 {
+
+	wxCloseEventFunction wcef;
+	tmpdef2 tf = static_cast<tmpdef2>(static_cast<tmpdef1>(&DrawFrame::__wx_log));
 
 	wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -1131,7 +1138,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(drawTB_GOTOLATESTDATE, DrawFrame::OnGoToLatestDate)
     EVT_MENU(XRCID("GoToLatestDate"), DrawFrame::OnGoToLatestDate)
     EVT_MENU(XRCID("SearchDate"), DrawFrame::OnSearchDate)
-    EVT_CLOSE(DrawFrame::OnClose)
+//    LOG_EVT( EVT_CLOSE , DrawFrame , OnClose )
     EVT_IDLE(DrawFrame::OnIdle)
     EVT_ACTIVATE(DrawFrame::OnActivate)
 END_EVENT_TABLE()

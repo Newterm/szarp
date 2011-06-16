@@ -35,6 +35,8 @@
 #include <wx/wx.h>
 #endif
 
+#include "wxlogging.h"
+
 typedef std::vector<DrawInfo*> DrawInfoList;
 
 typedef std::pair<std::vector<double>, std::vector<DTime> > XYPoint;
@@ -224,6 +226,8 @@ class XYDialog : public wxDialog, public ConfigObserver
 	XYGraph* GetGraph();
 
 	virtual ~XYDialog();
+
+	DECLARE_LOGGER("xydialog\n")
 
 	DECLARE_EVENT_TABLE()
 };

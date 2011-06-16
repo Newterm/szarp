@@ -81,9 +81,12 @@ bin_PROGRAMS = \
 	      testdmn \
 	      @UNITEDMN@ \
 	      wlkdmn \
-              zmddmn 
+              zmddmn \
+	      logdmn
 
 EXTRA_PROGRAMS = psetd ddedmn unitedmn dlmsdmn
+
+basedmn_SOURCES = basedmn.h basedmn.cc
 
 dpafdmn_SOURCES = dpafdmn.cc
 
@@ -164,6 +167,8 @@ tcpdmn_SOURCES = tcpdmn.cc
 testdmn_SOURCES = testdmn.cc
 
 zmddmn_SOURCES = zmddmn.cc
+
+logdmn_SOURCES = logdmn.cc $(basedmn_SOURCES)
 
 parcook_SOURCES = parcook.cc funtable.cc funtable.h
 

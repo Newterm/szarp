@@ -44,7 +44,7 @@ TMeaner::TMeaner(TStatus *status) : TWriter(min10)
 {
 	assert (status != NULL);
 	executer = new TExecute(status);
-	config = new TSzarpConfig();
+	config = new TSzarpConfig( true );
 	sparams = NULL;
 	sparams_len = 0;
 	this->status = status;
@@ -113,6 +113,7 @@ void TMeaner::WriteParams()
 	
 	for (int i = 0; i < params_len; i++) {
 		if (params[i] != NULL) {
+			sz_log(10,"TMeaner: writing param %ls with value %d",params[i]->GetName().c_str() , parcook->GetData(i));
 			if (params[i]->Write(fs::wpath(data_dir), t, parcook->GetData(i),
 						status) != 0) {
 				err++;

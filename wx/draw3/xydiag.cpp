@@ -37,6 +37,7 @@
 #include "cfgmgr.h"
 #include "xygraph.h"
 #include "incsearch.h"
+#include "wxlogging.h"
 
 XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, DatabaseManager *db, TimeInfo time, DrawInfoList user_draws,  XFrame *frame) :
 		wxDialog(parent,
@@ -635,7 +636,7 @@ BEGIN_EVENT_TABLE(XYDialog, wxDialog)
 	EVT_BUTTON(wxID_HELP, XYDialog::OnHelpButton)
 	EVT_BUTTON(XY_END_TIME, XYDialog::OnDateChange)
 	EVT_CHOICE(XY_CHOICE_PERIOD, XYDialog::OnPeriodChange)
-	EVT_BUTTON(XY_XAXIS_BUTTON, XYDialog::OnDrawChange)
+//        LOG_EVT1( EVT_BUTTON , XY_XAXIS_BUTTON , XYDialog , OnDrawChange )
 	EVT_BUTTON(XY_YAXIS_BUTTON, XYDialog::OnDrawChange)
 	EVT_BUTTON(XY_ZAXIS_BUTTON, XYDialog::OnDrawChange)
 END_EVENT_TABLE()

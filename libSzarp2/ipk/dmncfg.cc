@@ -48,6 +48,7 @@ DaemonConfig::DaemonConfig(const char *name)
 	m_daemon_name = name;
 	assert (!m_daemon_name.empty());
 	m_load_called = 0;
+	m_load_xml_called = 0;
 	m_ipk_doc = NULL;
 	m_ipk_device = NULL;
 	m_ipk = NULL;
@@ -101,7 +102,7 @@ void DaemonConfig::SetUsageFooter(const char *footer)
 		m_usage_footer.clear();
 }
 
-int DaemonConfig::Load(int *argc, char **argv, int libpardone)
+int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz_cfg )
 {
 	char *c;
 	int l;
@@ -157,13 +158,16 @@ int DaemonConfig::Load(int *argc, char **argv, int libpardone)
 	if (libpardone)
 		libpar_done();
 
-	
+		
+	/* do not load params.xml */
+	if( sz_cfg )
+		LoadNotXML( sz_cfg );
 	/* load params.xml */
-	if (LoadXML(ipk_path)) {
+	else if (LoadXML(ipk_path)) {
 		free(ipk_path);
 		return 1;
 	}
-	
+		
 	free(ipk_path);
 
 	m_load_called = 1;
@@ -379,7 +383,7 @@ int DaemonConfig::LoadXML(char *path)
 
 	doc = xmlParseFile(path);
 	if (doc == NULL) {
-	sz_log(1, "XML document '%s' not wellformed", path);
+		sz_log(1, "XML document '%s' not wellformed", path);
 		return 1;
 	}
 	m_ipk_doc = doc;
@@ -387,12 +391,12 @@ int DaemonConfig::LoadXML(char *path)
 	/* check root element */
 	node = doc->children;
 	if (node == NULL) {
-	sz_log(1, "XML document '%s' empty", path);
+		sz_log(1, "XML document '%s' empty", path);
 		return 1;
 	}
 	if (strcmp((char *)node->name, "params") || (!node->ns) || 
 			strcmp((char *)node->ns->href, (char *)SC::S2U(IPK_NAMESPACE_STRING).c_str())) {
-	sz_log(1, "Element ipk:params expected at line %ld of file %s", xmlGetLineNo(node),
+		sz_log(1, "Element ipk:params expected at line %ld of file %s", xmlGetLineNo(node),
 				path);
 		return 1;
 	}
@@ -406,7 +410,7 @@ int DaemonConfig::LoadXML(char *path)
 			break;
 	}
 	if (node == NULL) {
-	sz_log(1, "Device element number %d not exists in %s (only %d found)",
+		sz_log(1, "Device element number %d not exists in %s (only %d found)",
 				m_device, path, i);
 		return 1;
 	}
@@ -420,7 +424,17 @@ int DaemonConfig::LoadXML(char *path)
 	m_device_obj = m_ipk->DeviceById(m_device);
 	if (m_device_obj == NULL)
 		return 1;
+
+	m_load_xml_called = 1;
 		
+	return 0;
+}
+
+int DaemonConfig::LoadNotXML( TSzarpConfig* cfg )
+{
+	m_ipk = cfg;
+	m_device_obj = m_ipk->DeviceById(m_device);
+	if( m_device_obj == NULL ) return 1;
 	return 0;
 }
 
@@ -446,13 +460,13 @@ TDevice* DaemonConfig::GetDevice()
 
 xmlDocPtr DaemonConfig::GetXMLDoc()
 {
-	assert (m_load_called != 0);
+	assert (m_load_xml_called != 0);
 	return m_ipk_doc;
 }
 
 xmlNodePtr DaemonConfig::GetXMLDevice()
 {
-	assert (m_load_called != 0);
+	assert (m_load_xml_called != 0);
 	return m_ipk_device;
 }
 

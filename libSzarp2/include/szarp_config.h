@@ -83,13 +83,14 @@ class XMLWrapperException;
 /** SZARP system configuration */
 class TSzarpConfig {
 public:
-	TSzarpConfig(void) :
-		read_freq(0), send_freq(0),
-		devices(NULL), defined(NULL),
-		drawdefinable(NULL), title(),
-		prefix(), boilers(NULL), seasons(NULL)
-	{ }
-	~TSzarpConfig(void);
+	/** 
+	 * @brief constructs empty configuration. 
+	 * 
+	 * @param logparams if true virtual logging parameters
+	 * will be created while loading XML
+	 */
+	TSzarpConfig( bool logparams = true );
+	virtual ~TSzarpConfig(void);
 	/**
 	 * Saves configuration in SZARP 2.1 format.
 	 * @param directory directory where to place output files (PTT.act,
@@ -124,6 +125,12 @@ public:
 	 * @param prefix set prefix of configuration.
 	 */
 	void SetName(const std::wstring& title, const std::wstring& prefix);
+
+	/** 
+	 * @brief Specify if loggerparams should be added after XML load
+	 * @param _logparams if true, params will be added
+	 */
+	void SetLogParams( bool _logparams ) { logparams = _logparams; }
 
 	/**
 	 * @return prefix of configuration
@@ -381,6 +388,8 @@ protected:
 	int transformSzarpFormula(const std::wstring &f);
 #endif
 
+	void CreateLogParams();
+
 	int read_freq;	/**< Param reading frequency (in seconds) */
 	int send_freq;
 			/**< Param send frequency (in seconds) */
@@ -408,6 +417,7 @@ protected:
 
 	std::wstring ps_port;	/**< Parameter Setting server port*/
 
+	bool logparams; /**< specify if logging parameters should be created */
 };
 
 
