@@ -99,6 +99,11 @@
 		        "0" (never expire)
 		extra:nodata-value="-1"
 			value send when no parameter value is not available, default is 0	
+		extra:read-timeout="35"
+			time (in miliseconds) gap between last and first byte of two frames in rtu data transfer
+			protocol. Very important is to set this to proper value, cause daemon not always calculates
+			this correctly. According to modbus rtu documentation good value is 3.5 times time between 
+			two bytes in frame. Based on our experience 35ms is usually good value.
         >
 	<param
 		param elements denote values that can be send or read from device to SZARP
@@ -1767,6 +1772,10 @@ bool serial_rtu_parser::check_crc() {
 		crc = update_crc(crc, m_sdu.pdu.data[i]);
 
 	unsigned short frame_crc = d[m_data_read - 2] | (d[m_data_read - 1] << 8);
+
+	dolog(9,"Unit ID = %hx",m_sdu.unit_id);
+	dolog(9,"Func code = %hx",m_sdu.pdu.func_code);
+	for (size_t i = 0; i < m_data_read ; i++) dolog(9,"Data[%d] = %hx",i,d[i]);
 	dolog(9, "Checking crc, result: %s, unit_id: %d, caluclated crc: %hx, frame crc: %hx",
 	       	(crc == frame_crc ? "OK" : "ERROR"), m_sdu.unit_id, crc, frame_crc);
 	return crc == frame_crc;
