@@ -146,6 +146,8 @@ class SummaryWindow : public wxDialog, public DrawObserver {
 	/**Causes recalulation of summary values of notifing draw (in OnIdle handler)*/
 	virtual void DrawInfoChanged(Draw *draw);
 
+	virtual void DrawsSorted(DrawsController* controller);
+
 	/**Causes refresh of summary values of notifing draw (in OnIdle handler)*/
 	virtual void PeriodChanged(Draw *draw, PeriodType period);
 

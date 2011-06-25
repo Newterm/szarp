@@ -1040,16 +1040,22 @@ void GCDCGraphs::NoData(DrawsController *d) {
 	m_refresh = true;
 }
 
-void GCDCGraphs::DrawInfoChanged(Draw *draw) { 
-	if (draw->GetSelected()) {
-		m_draws.resize(0);
-		DrawsController* controller = draw->GetDrawsController();
-		for (size_t i = 0; i < controller->GetDrawsCount(); i++)
-			m_draws.push_back(controller->GetDraw(i));
+void GCDCGraphs::ResetGraphs(DrawsController *controller) {
+	m_draws.resize(0);
+	for (size_t i = 0; i < controller->GetDrawsCount(); i++)
+		m_draws.push_back(controller->GetDraw(i));
 
-		m_recalulate_margins = true;
-		Refresh();
-	}
+	m_recalulate_margins = true;
+	Refresh();
+}
+
+void GCDCGraphs::DrawsSorted(DrawsController* d) {
+	ResetGraphs(d);
+}
+
+void GCDCGraphs::DrawInfoChanged(Draw *draw) { 
+	if (draw->GetSelected())
+		ResetGraphs(draw->GetDrawsController());
 }
 
 GCDCGraphs::~GCDCGraphs() {

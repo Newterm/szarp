@@ -1,3 +1,7 @@
+2011-06-26	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: added simple option to sort draws in currect
+	set by ther maximum/minimum/hoursum/average value (from current
+	view or time range marked by double cursor)
 2011-06-09	Pawel Palucha <pawel@newterm.pl>
 	* script/set2params.py: script for converting draw3 sets to
 	params.xml.

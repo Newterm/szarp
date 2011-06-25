@@ -74,6 +74,7 @@ public:
 	virtual void PeriodChanged(Draw *draw, PeriodType pt);
 
 	virtual void DrawInfoChanged(Draw *draw);
+
 protected:
 	DrawsWidget* m_draws_widget;      /**< Corresponding draws widget. */
         int m_previous;			/**< Previously selected item. */

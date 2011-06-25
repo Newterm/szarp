@@ -740,6 +740,10 @@ void DrawPanel::Print(bool preview) {
 	dw->Print(preview);
 }
 
+DrawsController* DrawPanel::GetDrawsController() {
+	return dw->GetDrawsController();
+}
+
 void DrawPanel::DrawInfoChanged(Draw *d) {
 	if (d->GetSelected()) {
 		prefix = d->GetDrawsController()->GetSet()->GetDrawsSets()->GetPrefix();

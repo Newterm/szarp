@@ -67,6 +67,7 @@ bool ValueInfo::MayHaveData() const {
 
 Draw::Draw(DrawsController* draws_controller, DrawsObservers *observers, int draw_no) : 
 	m_draw_no(draw_no),
+	m_initial_draw_no(draw_no),
 	m_draws_controller(draws_controller), 
 	m_draw_info(NULL),
 	m_blocked(false),
@@ -232,6 +233,18 @@ void Draw::SetEnable(bool enable) {
 
 int Draw::GetDrawNo() const {
 	return m_draw_no;
+}
+
+int Draw::GetInitialDrawNo() const {
+	return m_initial_draw_no;
+}
+
+void Draw::SetDrawNo(int draw_no) {
+	m_draw_no = draw_no;
+}
+
+void Draw::SetInitialDrawNo(int draw_no) {
+	m_initial_draw_no = draw_no;
 }
 
 bool Draw::GetNoData() const {

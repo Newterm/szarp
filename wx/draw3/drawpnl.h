@@ -183,6 +183,8 @@ class DrawPanel : public wxPanel, public DrawObserver {
 
 	void GoToLatestDate();
 
+	DrawsController* GetDrawsController();
+
 	virtual void DrawInfoChanged(Draw *d);
 
 	virtual void FilterChanged(DrawsController *draws_ctrl);

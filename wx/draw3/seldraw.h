@@ -148,6 +148,8 @@ public:
 	virtual void PeriodChanged(Draw *draw, PeriodType period);
 
 	virtual void NoData(Draw *d);
+
+	virtual void DrawsSorted(DrawsController *controller);
 protected:
 	/** configuration manager */
 	ConfigManager *m_cfg;	

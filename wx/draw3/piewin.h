@@ -137,6 +137,7 @@ class PieWindow : public wxFrame, public DrawObserver {
 
 	void DoubleCursorChanged(DrawsController *draws_controller);
 
+
 	virtual ~PieWindow();
 
 	DECLARE_EVENT_TABLE()

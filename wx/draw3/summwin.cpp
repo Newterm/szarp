@@ -408,6 +408,11 @@ void SummaryWindow::DrawInfoChanged(Draw *draw) {
 	}
 }
 
+void SummaryWindow::DrawsSorted(DrawsController *) {
+	Deactivate();
+	Activate();
+}
+
 void SummaryWindow::UpdateDraw(Draw *draw) {
 	int no = draw->GetDrawNo();
 

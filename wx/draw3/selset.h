@@ -71,6 +71,7 @@ public:
 
     virtual void DrawInfoReloaded(Draw *draw);
 
+
     virtual void Attach(DrawsController *draws_controller);
 
     virtual void SetRemoved(wxString prefix, wxString name);

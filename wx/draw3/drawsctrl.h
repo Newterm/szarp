@@ -55,6 +55,7 @@ public:
 	void NotifyDoubleCursorChanged(DrawsController *draws_controller);
 	void NotifyFilterChanged(DrawsController *draws_controller);
 	void NotifyNumberOfValuesChanged(DrawsController *draws_controller);
+	void NotifyDrawsSorted(DrawsController *draws_controller);
 
 };
 
@@ -366,6 +367,16 @@ public:
 	bool GetNoData();
 
 	static szb_nan_search_condition search_condition;
+
+	enum SORTING_CRITERIA {
+		NO_SORT,
+		BY_AVERAGE,
+		BY_MAX,	
+		BY_MIN,
+		BY_HOURSUM
+	};
+
+	 void SortDraws(SORTING_CRITERIA criteria);
 
 };
 

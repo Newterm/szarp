@@ -163,6 +163,8 @@ class GLGraphs : public wxGLCanvas, public DrawGraphs, public SetInfoDropReceive
 
 	void DrawCurrentParamName();
 
+	void ResetGraphs(DrawsController* controller);
+
 	bool m_draw_current_draw_name;
 public:
 
@@ -236,6 +238,8 @@ public:
 	virtual void DrawInfoChanged(Draw *draw);
 
 	virtual void DrawSelected(Draw *draw);
+
+	virtual void DrawsSorted(DrawsController* controller);
 
 	virtual ~GLGraphs();
 

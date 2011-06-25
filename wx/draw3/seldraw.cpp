@@ -299,14 +299,14 @@ SelectDrawWidget::SetChanged(DrawsController *draws_controller)
 	for (size_t i = 0; i < selected_set->GetDraws()->size(); i++) {
 		Draw* draw = m_dc->GetDraw(i);
 		DrawInfo* draw_info = draw->GetDrawInfo();
-		wxString label = wxString::Format(_T("%d."), i + 1) + draw_info->GetName();
+		wxString label = wxString::Format(_T("%d."), draw->GetInitialDrawNo() + 1) + draw_info->GetName();
 		if (draw_info->GetParam()->GetIPKParam()->GetPSC())
 			label += _T("*");
 		m_cb_l[i]->Enable(TRUE);
 		m_cb_l[i]->SetValue(draw->GetEnable());
 		m_cb_l[i]->SetToolTip(cnm[draw_info->GetBasePrefix()] + _T(":") + draw_info->GetParamName());
 		if (draw->GetBlocked())
-			label.Replace(wxString::Format(_T("%d."), i + 1), wxString::Format(_("%d.[B]"), i + 1), false);
+			label.Replace(wxString::Format(_T("%d."), draw->GetInitialDrawNo() + 1), wxString::Format(_("%d.[B]"), i + 1), false);
 		m_cb_l[i]->SetLabel(label);
 
 		wxValidator* validator = m_cb_l[i]->GetValidator();
@@ -378,10 +378,12 @@ SelectDrawWidget::BlockedChanged(Draw *draw) {
 void
 SelectDrawWidget::SetBlocked(int idx, bool blocked) {
 	wxString label = m_cb_l[idx]->GetLabel();
-	if (blocked)
-		label.Replace(wxString::Format(_T("%d."), idx + 1), wxString::Format(_("%d.[B]"), idx + 1), false);
-	else
+	if (blocked) {
+		int draw_no = m_dc->GetDraw(idx)->GetInitialDrawNo();
+		label.Replace(wxString::Format(_T("%d."), draw_no + 1), wxString::Format(_("%d.[B]"), draw_no + 1), false);
+	} else {
 		label.Replace(_T("[B]"), _T(""), false);
+	}
 	m_cb_l[idx]->SetLabel(label);
 
 }
@@ -518,6 +520,10 @@ void SelectDrawWidget::PeriodChanged(Draw *draw, PeriodType period) {
 	if (draw->GetSelected())
 		for (size_t i = 0; i < draw->GetDrawsController()->GetDrawsCount(); i++)
 			m_cb_l[i]->Enable(true);
+}
+
+void SelectDrawWidget::DrawsSorted(DrawsController *controller) {
+	SetChanged(controller);
 }
 
 void SelectDrawWidget::DrawInfoChanged(Draw *draw) {

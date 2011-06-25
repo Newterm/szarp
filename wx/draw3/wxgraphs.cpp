@@ -92,13 +92,8 @@ WxGraphs::WxGraphs(wxWindow *parent, ConfigManager *cfg) : wxWindow(parent, wxID
 
 }
 
-	/**Redraws view*/
-void WxGraphs::DrawInfoChanged(Draw *draw) {
-	if (!draw->GetSelected())
-		return;
-
+void WxGraphs::ResetDraws(DrawsController *controller) {
 	m_draws.resize(0);
-	DrawsController* controller = draw->GetDrawsController();
 	for (size_t i = 0; i < controller->GetDrawsCount(); i++)
 		m_draws.push_back(controller->GetDraw(i));
 
@@ -113,7 +108,9 @@ void WxGraphs::DrawInfoChanged(Draw *draw) {
 		m_graphs.at(i)->DrawAll();
 	}
 
-	m_bg_view->Attach(m_draws[draw->GetDrawNo()]);
+	Draw* d = controller->GetSelectedDraw();
+	if (d)
+		m_bg_view->Attach(m_draws[d->GetDrawNo()]);
 
 	for (size_t i = 0; i < std::min(pc, m_graphs.size()); i++)
 		m_graphs.at(i)->DrawInfoChanged(m_draws[i]);
@@ -122,6 +119,17 @@ void WxGraphs::DrawInfoChanged(Draw *draw) {
 	SetMargins();
 
 	Refresh();
+
+}
+
+	/**Redraws view*/
+void WxGraphs::DrawInfoChanged(Draw *draw) {
+	if (draw->GetSelected())
+		ResetDraws(draw->GetDrawsController());
+}
+
+void WxGraphs::DrawsSorted(DrawsController *controller) {
+	ResetDraws(controller);
 }
 
 void WxGraphs::OnIdle(wxIdleEvent & event)

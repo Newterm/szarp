@@ -112,6 +112,8 @@ class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver
 	int GetRemarkClickedIndex(int x, int y);
 
 	void DrawParamName(wxGraphicsContext &dc);
+
+	void ResetGraphs(DrawsController* controller);
 public:
         GCDCGraphs(wxWindow* parent, ConfigManager *cfg);
 
@@ -184,6 +186,8 @@ public:
 	virtual void EnableChanged(Draw *draw) { Refresh(); }
 
 //	virtual void NewRemarks(Draw *draw);
+
+	virtual void DrawsSorted(DrawsController* controller);
 
 
 	virtual ~GCDCGraphs();

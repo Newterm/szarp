@@ -1034,6 +1034,24 @@ void DrawFrame::UpdatePanelName(DrawPanel *panel) {
 
 }
 
+void DrawFrame::OnSortGraph(wxCommandEvent &event) {
+
+	int id = event.GetId();
+
+	DrawsController* controller = draw_panel->GetDrawsController();
+
+	if (id == XRCID("SORT_BY_AVG_VALUE"))
+		controller->SortDraws(DrawsController::BY_AVERAGE);
+	else if (id == XRCID("SORT_BY_MAX_VALUE"))
+		controller->SortDraws(DrawsController::BY_MAX);
+	else if (id == XRCID("SORT_BY_MIN_VALUE"))
+		controller->SortDraws(DrawsController::BY_MIN);
+	else if (id == XRCID("SORT_BY_HSUM_VALUE"))
+		controller->SortDraws(DrawsController::BY_HOURSUM);
+	else if (id == XRCID("SORT_BY_DRAW_NO"))
+		controller->SortDraws(DrawsController::NO_SORT);
+}
+
 void DrawFrame::OnProberAddresses(wxCommandEvent &event) {
 	std::map<wxString, std::pair<wxString, wxString> > addresses = wxGetApp().GetProbersAddresses();
 
@@ -1125,8 +1143,14 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("RemarksConfiguration"), DrawFrame::OnConfigureRemarks)
     EVT_MENU(XRCID("PageSetup"), DrawFrame::OnPrintPageSetup)
     EVT_MENU(XRCID("ProberAddress"), DrawFrame::OnProberAddresses)
+    EVT_MENU(XRCID("SORT_BY_AVG_VALUE"), DrawFrame::OnSortGraph)
+    EVT_MENU(XRCID("SORT_BY_MAX_VALUE"), DrawFrame::OnSortGraph)
+    EVT_MENU(XRCID("SORT_BY_MIN_VALUE"), DrawFrame::OnSortGraph)
+    EVT_MENU(XRCID("SORT_BY_HSUM_VALUE"), DrawFrame::OnSortGraph)
+    EVT_MENU(XRCID("SORT_BY_DRAW_NO"), DrawFrame::OnSortGraph)
     EVT_MENU(drawTB_EXIT, DrawFrame::OnExit)
     EVT_MENU(drawTB_ABOUT, DrawFrame::OnAbout)
+
     EVT_MENU(drawTB_REMARK, DrawFrame::OnShowRemarks)
     EVT_MENU(drawTB_GOTOLATESTDATE, DrawFrame::OnGoToLatestDate)
     EVT_MENU(XRCID("GoToLatestDate"), DrawFrame::OnGoToLatestDate)

@@ -250,8 +250,12 @@ public:
 private:
 	/**For debugging purposes not used in the code*/
 	static void PrintTime(const DTime &time);
+
 	/**Draw number*/
 	int m_draw_no;
+
+	/**Draw number*/
+	int m_initial_draw_no;
 
 	/**Parent @see DrawsWidget.*/
 	DrawsController* m_draws_controller;
@@ -355,6 +359,12 @@ public:
 
 	/**return draw ordinal number*/
 	int GetDrawNo() const;
+
+	int GetInitialDrawNo() const;
+
+	void SetDrawNo(int draw_no);
+
+	void SetInitialDrawNo(int draw_no);
 
 	/**sets double cursor
 	 * @return true if double cursor was successfully set*/
