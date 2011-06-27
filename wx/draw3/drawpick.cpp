@@ -564,7 +564,7 @@ void DrawPicker::OnAddDraw(wxCommandEvent & event)
 	for (std::vector<DrawInfo*>::iterator i = to_add.begin();
 			i != to_add.end();
 			i++)
-		m_defined_set->Add(*i);
+		m_defined_set->Add(*i, true);
 	number += to_add.size();
 	m_modified = true;
 

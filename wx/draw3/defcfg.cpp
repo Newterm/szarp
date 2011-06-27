@@ -825,8 +825,90 @@ void DefinedDrawSet::Replace(int idx, DefinedDrawInfo * ndi)
 	m_draws->at(idx) = ndi;
 }
 
-void DefinedDrawSet::Add(DrawInfo *di) {
+namespace {
+
+bool color_clash(DrawInfoArray& draws, DefinedDrawInfo *di) {
+	for (DrawInfoArray::iterator i = draws.begin(); i != draws.end(); i++)
+		if ((*i)->GetDrawColor() == di->GetDrawColor())
+			return true;
+	return false;
+}
+
+
+std::set<double> get_draw_hues(DrawInfoArray& draws) {
+	std::set<double> r;
+	for (DrawInfoArray::iterator i = draws.begin(); i != draws.end(); i++) {
+		wxColor c = (*i)->GetDrawColor();
+		wxImage::HSVValue hsv = wxImage::RGBtoHSV(wxImage::RGBValue(c.Red(), c.Green(), c.Blue()));
+		r.insert(hsv.hue);
+	}
+	return r;
+}
+
+double index2hue(size_t index) {
+	unsigned divisor = 1;
+	double ret = 0;
+	while (index) {
+		if (index & 1)
+			ret += (.5 / divisor);
+		divisor <<= 1;
+		index >>= 1;
+	}
+	return ret;
+}
+
+bool sufficiently_distant(std::set<double>& hues, double val, double allowed_distance) {
+	double v1;
+	double v2;
+
+	std::set<double>::iterator i = hues.lower_bound(val);
+
+	if (i == hues.end()) {
+		v1 = *(--i);
+		v2 = *(hues.begin());
+	} else if (i == hues.begin()) {
+		v1 = *i;
+		v2 = *(--hues.end());
+	} else {
+		v1 = *i;
+		v2 = *(--i);
+	}
+
+	if (fabs(v1 - val) < allowed_distance || fabs(1 - (v1 - val)) < allowed_distance)
+		return false;	
+
+	if (fabs(v2 - val) < allowed_distance || fabs(1 - (v2 - val)) < allowed_distance)
+		return false;	
+	
+	return true;
+}
+
+void make_color_unique(DrawInfoArray& draws, DefinedDrawInfo* di) {
+	if (!color_clash(draws, di))
+		return;
+
+	double allowed_distance = .5 / draws.size();
+
+	std::set<double> hues = get_draw_hues(draws);
+
+	size_t color_index = 0;
+	double hue = index2hue(color_index);
+	while (!sufficiently_distant(hues, hue, allowed_distance))
+		hue = index2hue(++color_index);
+
+	wxImage::HSVValue hsv(hue, 1, 1);
+	wxImage::RGBValue rgb = wxImage::HSVtoRGB(hsv);
+
+	di->SetDrawColor(wxColor(rgb.red, rgb.green, rgb.blue));
+
+}
+
+}
+
+void DefinedDrawSet::Add(DrawInfo *di, bool color_unique) {
 	DefinedDrawInfo* ddi = new DefinedDrawInfo(di, m_ds);
+	if (color_unique) 
+		make_color_unique(*m_draws, ddi);
 	Add(ddi);
 }
 
