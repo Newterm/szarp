@@ -1,3 +1,6 @@
+2011-07-02	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: some behaviour improvements in dealing
+	with large draw sets
 2011-06-27	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: added automatic assignment of colors 
 	for arbitrary number of draws - works almost perfectly ;)

@@ -194,6 +194,7 @@ BEGIN_EVENT_TABLE(SelectDrawWidget, wxWindow)
 	EVT_MENU(seldrawID_PSC, SelectDrawWidget::OnPSC)
 	EVT_MENU(seldrawID_CTX_DOC_MENU, SelectDrawWidget::OnDocs)
 	EVT_MENU(seldrawID_CTX_EDIT_PARAM, SelectDrawWidget::OnEditParam)
+	EVT_TIMER(wxID_ANY, SelectDrawWidget::OnTimer)
 END_EVENT_TABLE()
 
 IMPLEMENT_DYNAMIC_CLASS(SelectDrawWidget, wxWindow)
@@ -237,6 +238,8 @@ SelectDrawWidget::SelectDrawWidget(ConfigManager *cfg, DatabaseManager *dbmgr, D
 	sizer1->SetSizeHints(this);
 	sizer1->Layout();
 
+	m_timer = new wxTimer(this, wxID_ANY);
+
 }
 
 int SelectDrawWidget::GetCheckBoxWidth() {
@@ -253,50 +256,27 @@ void SelectDrawWidget::SetChecked(int idx, bool checked) {
 		m_cb_l[idx]->SetValue(checked);
 }
 
-void
-SelectDrawWidget::SetChanged(DrawsController *draws_controller)
-{
+void SelectDrawWidget::InsertSomeDraws(size_t start, size_t count) {
+	wxSizer *sizer = GetSizer();
+	DrawSet *selected_set = m_dc->GetSet();
+	int width = GetCheckBoxWidth();
 	ConfigNameHash& cnm = const_cast<ConfigNameHash&>(m_cfg->GetConfigTitles());
 
-	m_dc = draws_controller;
-	DrawSet *selected_set = m_dc->GetSet();
-
-	wxSizer *sizer = GetSizer();
-
-	for (size_t i = selected_set->GetDraws()->size(); i < MIN_DRAWS_COUNT; i++) {
-		m_cb_l[i]->SetLabel(wxString::Format(_T("%d."), i + 1));
-		m_cb_l[i]->Enable(FALSE);
-		m_cb_l[i]->SetValue(FALSE);
-		m_cb_l[i]->SetToolTip(_T(" "));
-		m_cb_l[i]->SetBackgroundColour(DRAW3_BG_COLOR);
-	}
-
-	for (size_t i = std::max(MIN_DRAWS_COUNT, selected_set->GetDraws()->size()); i < m_cb_l.size(); i++) {
-		sizer->Detach(m_cb_l[i]);
-		m_cb_l[i]->Destroy();
-	}
-
-	size_t prev_checkbox_count = m_cb_l.size();
-	m_cb_l.resize(std::max(MIN_DRAWS_COUNT, selected_set->GetDraws()->size()));
-
-	if (prev_checkbox_count < m_cb_l.size()) {
-		int width = GetCheckBoxWidth();
-		for (size_t i = MIN_DRAWS_COUNT; i < selected_set->GetDraws()->size(); i++) {
-			m_cb_l[i] = new wxCheckBox();
+	for (size_t i = start; count; count--, i++) {
+		if (i >= m_cb_l.size()) {
+			i = m_cb_l.size();
+			m_cb_l.push_back(new wxCheckBox());
 			m_cb_l[i]->Create(this, drawID_SELDRAWCB,
 				wxString::Format(_T("%d."), i + 1),
 				wxDefaultPosition, wxSize(width, -1), 0,
 				SelectDrawValidator(m_draws_wdg, i, m_cb_l[i]));
 			m_cb_l[i]->Enable(FALSE);
-
 			m_cb_l[i]->SetToolTip(wxEmptyString);
 			m_cb_l[i]->SetBackgroundColour(DRAW3_BG_COLOR);
 
 			sizer->Add(m_cb_l[i], 0, wxTOP | wxLEFT | wxRIGHT, 1);
 		}
-	}
 
-	for (size_t i = 0; i < selected_set->GetDraws()->size(); i++) {
 		Draw* draw = m_dc->GetDraw(i);
 		DrawInfo* draw_info = draw->GetDrawInfo();
 		wxString label = wxString::Format(_T("%d."), draw->GetInitialDrawNo() + 1) + draw_info->GetName();
@@ -320,22 +300,69 @@ SelectDrawWidget::SetChanged(DrawsController *draws_controller)
 #ifdef MINGW32
 		m_cb_l[i]->Refresh();
 #endif
+
 	}
 
-	if (m_cb_l.size() == MIN_DRAWS_COUNT)
-		SetScrollRate(0, 0);
-	else
+	if (m_cb_l.size() > MIN_DRAWS_COUNT)
 		SetScrollRate(10, 10);
+	else
+		SetScrollRate(0, 0);
 
 	sizer->Layout();
+}
+
+void
+SelectDrawWidget::SetChanged(DrawsController *draws_controller)
+{
+	m_dc = draws_controller;
+	DrawSet *selected_set = m_dc->GetSet();
+
+	wxSizer *sizer = GetSizer();
+
+	for (size_t i = selected_set->GetDraws()->size(); i < MIN_DRAWS_COUNT; i++) {
+		m_cb_l[i]->SetLabel(wxString::Format(_T("%d."), i + 1));
+		m_cb_l[i]->Enable(FALSE);
+		m_cb_l[i]->SetValue(FALSE);
+		m_cb_l[i]->SetToolTip(_T(" "));
+		m_cb_l[i]->SetBackgroundColour(DRAW3_BG_COLOR);
+	}
+
+	for (size_t i = std::max(MIN_DRAWS_COUNT, selected_set->GetDraws()->size()); i < m_cb_l.size(); i++) {
+		sizer->Detach(m_cb_l[i]);
+		m_cb_l[i]->Destroy();
+	}
+
+	m_cb_l.resize(MIN_DRAWS_COUNT);
+
+	InsertSomeDraws(0, std::min(selected_set->GetDraws()->size(), MIN_DRAWS_COUNT));
+
+	if (selected_set->GetDraws()->size() > MIN_DRAWS_COUNT && !m_timer->IsRunning())
+		m_timer->Start(250, true);		
+
+	FitInside();
+}
+
+void SelectDrawWidget::OnTimer(wxTimerEvent&) {
+	DrawSet *selected_set = m_dc->GetSet();
+	if (!selected_set)
+		return;
+
+	if (selected_set->GetDraws()->size() <= m_cb_l.size())
+		return;
+
+	InsertSomeDraws(m_cb_l.size(), std::min(MIN_DRAWS_COUNT, selected_set->GetDraws()->size() - m_cb_l.size()));
+
+	if (selected_set->GetDraws()->size() > m_cb_l.size())
+		m_timer->Start(250, true);		
+
 	FitInside();
 }
 
 void
 SelectDrawWidget::SetDrawEnable(int index, bool enable)
 {
-	assert(index >= 0 && index < int(m_cb_l.size()));
-	m_cb_l[index]->Enable(enable);
+	if (index >= 0 && index < int(m_cb_l.size()));
+		m_cb_l[index]->Enable(enable);
 }
 
 int SelectDrawWidget::GetClicked(wxCommandEvent &event) {
@@ -377,6 +404,9 @@ SelectDrawWidget::BlockedChanged(Draw *draw) {
 
 void
 SelectDrawWidget::SetBlocked(int idx, bool blocked) {
+	if (idx >= int(m_cb_l.size()))
+		return;
+
 	wxString label = m_cb_l[idx]->GetLabel();
 	if (blocked) {
 		int draw_no = m_dc->GetDraw(idx)->GetInitialDrawNo();

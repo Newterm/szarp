@@ -883,15 +883,17 @@ bool sufficiently_distant(std::set<double>& hues, double val, double allowed_dis
 	return true;
 }
 
-void make_color_unique(DrawInfoArray& draws, DefinedDrawInfo* di) {
+void make_color_unique(DrawInfoArray& draws, DefinedDrawInfo* di, size_t& color_index) {
 	if (!color_clash(draws, di))
 		return;
 
 	double allowed_distance = .5 / draws.size();
 
+	if (allowed_distance < 1. / 360)
+		return;
+
 	std::set<double> hues = get_draw_hues(draws);
 
-	size_t color_index = 0;
 	double hue = index2hue(color_index);
 	while (!sufficiently_distant(hues, hue, allowed_distance))
 		hue = index2hue(++color_index);
@@ -905,11 +907,16 @@ void make_color_unique(DrawInfoArray& draws, DefinedDrawInfo* di) {
 
 }
 
-void DefinedDrawSet::Add(DrawInfo *di, bool color_unique) {
-	DefinedDrawInfo* ddi = new DefinedDrawInfo(di, m_ds);
-	if (color_unique) 
-		make_color_unique(*m_draws, ddi);
-	Add(ddi);
+void DefinedDrawSet::Add(const std::vector<DrawInfo*>& draws, bool color_unique) {
+
+	size_t color_index = 0;
+
+	for (std::vector<DrawInfo*>::const_iterator i = draws.begin(); i != draws.end(); i++) {
+		DefinedDrawInfo* ddi = new DefinedDrawInfo(*i, m_ds);
+		if (color_unique) 
+			make_color_unique(*m_draws, ddi, color_index);
+		Add(ddi);
+	}
 }
 
 void DefinedDrawSet::Add(DefinedDrawInfo *ddi) {

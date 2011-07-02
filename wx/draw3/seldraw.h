@@ -93,8 +93,9 @@ class SelectDrawValidator : public wxValidator {
 	wxMenu *m_menu;		/**menu with item allowing user to block a draw*/
 
 	wxCheckBox *m_cb;	/**poineter do draw's checkbox, for menu popup*/
-	
+
 	DrawsWidget *m_draws_wdg;/** pointer to draws widget, we have to communicate with this object */
+
 	int m_index;		/** index of draw to validate */
    
 };
@@ -138,6 +139,8 @@ public:
 
 	void GoToWWWDocumentation(DrawInfo* d);
 
+	void InsertSomeDraws(size_t start, size_t count);
+
 	/**
 	* Return selected (checked on m_cb) DrawInfoList
 	*/
@@ -164,6 +167,8 @@ protected:
 
 	DrawsController *m_dc;
 
+	wxTimer *m_timer;
+
 	int GetCheckBoxWidth();
 
 	/**return number of selected draw*/
@@ -182,6 +187,8 @@ protected:
 
 	/** edit parametr */
 	void OnEditParam(wxCommandEvent &event);
+
+	void OnTimer(wxTimerEvent&);
 
         DECLARE_DYNAMIC_CLASS(SelectDrawWidget)
         DECLARE_EVENT_TABLE()

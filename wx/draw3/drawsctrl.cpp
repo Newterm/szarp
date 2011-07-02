@@ -327,9 +327,15 @@ void DrawsController::HandleDataResponse(DatabaseQuery *query) {
 
 	int draw_no = query->draw_no;
 
+	if (size_t(draw_no) >= m_draws.size()) {
+		delete query;
+		return;
+	}
+
 	bool data_within_view = false;
 
 	bool no_data = m_draws.at(draw_no)->GetNoData();
+
 	m_draws[draw_no]->AddData(query, data_within_view);
 	if (no_data)
 		m_observers.NotifyNoData(m_draws[draw_no]);
@@ -1434,23 +1440,26 @@ namespace {
 }
 
 void DrawsController::SortDraws(SORTING_CRITERIA criteria) {
+	bool (*cmp_func)(const Draw*, const Draw*);
 	switch (criteria) {
 		case NO_SORT:
-			std::sort(m_draws.begin(), m_draws.end(), cmp_dno);
+			cmp_func = cmp_dno;
 			break;
 		case BY_AVERAGE:
-			std::sort(m_draws.begin(), m_draws.end(), cmp_avg);
+			cmp_func = cmp_avg;
 			break;
 		case BY_MAX:
-			std::sort(m_draws.begin(), m_draws.end(), cmp_max);
+			cmp_func = cmp_max;
 			break;
 		case BY_MIN:
-			std::sort(m_draws.begin(), m_draws.end(), cmp_min);
+			cmp_func = cmp_min;
 			break;
 		case BY_HOURSUM:
-			std::sort(m_draws.begin(), m_draws.end(), cmp_hsum);
+			cmp_func = cmp_hsum;
 			break;
 	}
+
+	std::sort(m_draws.begin(), m_draws.end(), cmp_func);
 
 	Draw* d = GetSelectedDraw();
 	for (size_t i = 0; i < m_draws.size(); i++) {

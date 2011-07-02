@@ -347,7 +347,7 @@ public:
 	/** Replaces draw info at given index with the one provieded as argument*/
 	void Replace(int idx, DefinedDrawInfo * ndi);
 
-	void Add(DrawInfo *i, bool make_color_uniqe = false);
+	void Add(const std::vector<DrawInfo*>& draws, bool make_color_uniqe = false);
 
 	void Add(DefinedDrawInfo *i);
 
