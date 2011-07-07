@@ -7,6 +7,19 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.544
+#01.07.2011
+* W programie przegl±daj±cym dodano automatyczne przydzielanie kolorów 
+wykresów dla zestawów o du¿ej ilo¶ci wykresów.
+* W programie przegl±daj±cym dodano opcjê sortowania wykresów z aktualnego 
+zestawu wzglêdem ich warto¶ci minimalnej/maksymalnej/¶redniej lub warto¶ci
+z sumowania godzinowego. Sortowanie uwzglêdnia okres aktualnie wy¶wietlany lub
+zaznaczony za pomoc± rozdwojonego kursora.
+* Poprawki w wy¶wietlaniu udzia³u procentowego w tooltipie okna warto¶ci 
+sumarycznych w programie przegl±daj±cym.
+* Poprawki zachowania programu przegl±daj±cego dla zestawów z du¿± ilo¶ci±
+wykresów.
+
 ** 3.1.533
 #01.06.2011
 * Poprawka w programie przegl±daj±cym w obs³udze automatycznego wykrywania 

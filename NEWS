@@ -6,6 +6,16 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.544
+#01.07.2011
+* Added automatic assignment of colors for arbitrary number of draws in draw3
+ program.
+* Behaviour improvements in dealing with large draw sets in draw3 program.
+* Added option in draw3 program to sort draws in current set by ther 
+maximum/minimum/hoursum/average value (from current view or time range marked 
+by double cursor).
+* Fix of percentage display in tooltip in Summary Window of draw3 program.
+
 ** 3.1.533
 #01.06.2011
 * Fix in draw3 automatic language settings - added proper item to language 
