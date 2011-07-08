@@ -91,7 +91,7 @@ class DDESpy:
               
 	def get_values(self, params):
                 if self.appname == "":
-                        self.set_appname(__DEFAULT_APPNAME__);                        
+                        self.set_appname(__DEFAULT_APPNAME__);
 		v = [];
 		for topic, items in params.iteritems():
                         if topic == '':
@@ -108,7 +108,7 @@ class DDESpy:
                                 self.lasttopic = ""
                                 ret = self.convers.Request(str(item)).rstrip("\0")
                                 self.lasttopic = topic
-                                v.append(ret)                      
+                                v.append(ret)
 
 		return v;
 

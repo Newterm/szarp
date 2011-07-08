@@ -17,15 +17,26 @@ mfcfiles = map(lambda x: mfcdir + x, ["mfc90.dll", "mfc90u.dll", "mfcm90.dll",
 
 data_files = [ ("Microsoft.VC90.MFC", mfcfiles), ]
 
-setup(
+ 
+class Target:
+        def __init__(self,**kw):
+                        self.__dict__.update(kw)
+                        self.version        = "1.00.00"
+                        self.compay_name    = "szarp.org"
+                        self.copyright      = "(c) 2011, Newterm"
+
+ddeproxy = Target(
     # The first three parameters are not required, if at least a
     # 'version' is given, then a versioninfo resource is built from
     # them and added to the executables.
     data_files = data_files,
-    version = "0.1",
+    version = "0.2",
     description = "SZARP DDE Proxy",
     name = "ddeproxy",
 
     # targets to build
-    windows = ["ddeproxy.py"],
+    modules = ["ddeproxy"],
     )
+
+setup(service = [ddeproxy])
+
