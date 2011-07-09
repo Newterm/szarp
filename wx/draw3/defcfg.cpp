@@ -1397,12 +1397,11 @@ void DefinedDrawsSets::RemoveSet(wxString name) {
 
 	m_cfgmgr->NotifySetRemoved(DEF_PREFIX, name);
 
-	delete s;
 	for (std::vector<DrawSet*>::iterator i = copies_to_delete.begin();
 			i != copies_to_delete.end();
 			i++)
 		delete *i;
-
+	delete s;
 }
 
 void DefinedDrawsSets::AttachDefined() {

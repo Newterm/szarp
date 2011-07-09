@@ -1,3 +1,5 @@
+2011-07-09	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: two bug fixes
 2011-07-02	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: some behaviour improvements in dealing
 	with large draw sets
