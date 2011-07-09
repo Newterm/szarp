@@ -270,10 +270,14 @@ bool DrawApp::OnInit() {
 
 	splash->PushStatusText(_("Reading params from szarp.cfg..."));
 
+	wxString _lang = wxConfig::Get()->Read(_T("LANGUAGE"), AUTO_LANGUAGE);
+	if (_lang == AUTO_LANGUAGE)
+		_lang = DEFAULT_LANGUAGE;
+
 	splash->PushStatusText(_("Initializing IPKContainer..."));
 	IPKContainer::Init(GetSzarpDataDir().c_str(), 
 			GetSzarpDir().c_str(), 
-			wxConfig::Get()->Read(_T("LANGUAGE"), DEFAULT_LANGUAGE ).c_str(), 
+			_lang.c_str(),
 			new szMutex());
 	m_cfg_mgr = new ConfigManager(this, IPKContainer::GetObject());
 

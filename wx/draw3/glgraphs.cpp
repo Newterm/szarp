@@ -1541,23 +1541,32 @@ void GLGraphs::DrawSelected(Draw *draw) {
 	Refresh();
 }
 
-void GLGraphs::DrawInfoChanged(Draw *draw) { 
-	if (draw->GetSelected()) {
-		m_draws.resize(0);
+void GLGraphs::ResetGraphs(DrawsController* controller) {
 
-		DrawsController* controller = draw->GetDrawsController();
-		for (size_t i = 0; i < controller->GetDrawsCount(); i++)
-			m_draws.push_back(controller->GetDraw(i));
+	m_draws.resize(0);
 
-		m_graphs_states.resize(m_draws.size());
-		for (size_t i = 0; i < m_graphs_states.size(); i++) {
-			m_graphs_states[i].fade_state = GraphState::STILL;
-			m_graphs_states[i].fade_level = 1;
-		}
+	for (size_t i = 0; i < controller->GetDrawsCount(); i++)
+		m_draws.push_back(controller->GetDraw(i));
 
-		m_recalulate_margins = true;
-		Refresh();
+	m_graphs_states.resize(m_draws.size());
+	for (size_t i = 0; i < m_graphs_states.size(); i++) {
+		m_graphs_states[i].fade_state = GraphState::STILL;
+		m_graphs_states[i].fade_level = 1;
 	}
+
+	m_recalulate_margins = true;
+	Refresh();
+
+}
+
+void GLGraphs::DrawsSorted(DrawsController* controller) {
+	ResetGraphs(controller);
+}
+
+
+void GLGraphs::DrawInfoChanged(Draw *draw) { 
+	if (draw->GetSelected())
+		ResetGraphs(draw->GetDrawsController());
 }
 
 #endif

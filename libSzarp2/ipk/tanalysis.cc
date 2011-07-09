@@ -1,6 +1,19 @@
 /* 
   SZARP: SCADA software 
 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
  * IPK
@@ -89,12 +102,47 @@ xmlNodePtr TAnalysis::generateXMLNode() {
 #undef X
 }
 
+TAnalysis* TAnalysis::parseXML(xmlTextReaderPtr reader) {
+
+	XMLWrapper xw(reader);
+
+	const char* need_attr_param[] = { "boiler_no","param_type", 0 };
+	if (!xw.AreValidAttr(need_attr_param)) {
+		throw XMLWrapperException();
+	}
+
+	int bnr = 0;
+	TAnalysis::AnalysisParam param = INVALID;
+
+	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+		try {
+			const xmlChar *attr = xw.GetAttr();
+			if (xw.IsAttr("boiler_no")) {
+				bnr = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("param_type")) {
+				param = GetTypeForParamName(SC::U2S((unsigned char*) attr));
+			} else {
+				xw.XMLWarningNotKnownAttr();
+			}
+		} catch (boost::bad_lexical_cast &) {
+			xw.XMLErrorWrongAttrValue();
+		}
+	}
+
+	if (param == TAnalysis::INVALID) {
+		xw.XMLError("Incorrect value of 'param_type' attribute on element 'analysis'");
+	}
+
+	return new TAnalysis(bnr, param);
+}
+
 TAnalysis* TAnalysis::parseXML(xmlNodePtr node) {
 #define X (const xmlChar*)
 
 	char *ch = NULL;
 	
-	ch = (char*)xmlGetProp(node, X"boiler_no");
+	ch = (char*)xmlGetNoNsProp(node, X"boiler_no");
 
 	if (!ch) {
 		sz_log(1, "Attribute 'boiler_no' on 'analysis' element not found (line %ld)",
@@ -104,7 +152,7 @@ TAnalysis* TAnalysis::parseXML(xmlNodePtr node) {
 	int boiler_no = atoi(ch);
 	xmlFree(ch);
 
-	ch = (char*)xmlGetProp(node, X"param_type");
+	ch = (char*)xmlGetNoNsProp(node, X"param_type");
 	if (!ch) {
 		sz_log(1, "Attribute 'param_type' on 'analysis' element not found (line %ld)",
 				xmlGetLineNo(node));

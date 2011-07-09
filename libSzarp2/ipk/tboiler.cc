@@ -1,6 +1,19 @@
 /* 
   SZARP: SCADA software 
 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
  * IPK
@@ -69,6 +82,74 @@ TParam* TBoiler::GetParam(TAnalysis::AnalysisParam param_type) {
 	return NULL;
 }
 
+TBoiler* TBoiler::parseXML(xmlTextReaderPtr reader) {
+
+	TBoiler *boiler = NULL;
+	int boiler_no = 0;
+	float grate_speed = 0;
+	float coal_gate_height = 0;
+	BoilerType boiler_type = INVALID;
+
+	XMLWrapper xw(reader);
+
+	const char* need_attr[] = { "boiler_no" , "grate_speed", "coal_gate_height", "boiler_type", 0};
+	if (!xw.AreValidAttr(need_attr)) {
+		throw XMLWrapperException();
+	}
+
+	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+
+		const xmlChar* attr = xw.GetAttr();
+		try {
+			if (xw.IsAttr("boiler_no")) {
+				boiler_no = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("grate_speed")) {
+				grate_speed = boost::lexical_cast<float>(attr);
+			} else
+			if (xw.IsAttr("coal_gate_height")) {
+				coal_gate_height = boost::lexical_cast<float>(attr);
+			} else
+			if (xw.IsAttr("boiler_type")) {
+				boiler_type = GetTypeForBoilerName(SC::U2S((const unsigned char*)attr));
+				if (boiler_type == INVALID ) {
+					xw.XMLError("Invalid 'boiler_type' attribute on element 'boiler'");
+				}
+			} else {
+				xw.XMLWarningNotKnownAttr();
+			}
+		} catch (boost::bad_lexical_cast &) {
+			xw.XMLErrorWrongAttrValue();
+		}
+	}
+
+	boiler = new TBoiler(boiler_no, grate_speed, coal_gate_height, boiler_type);
+
+	xw.NextTag();
+
+	for (;;) {
+		if (xw.IsTag("interval")) {
+			if (xw.IsBeginTag()) {
+				TAnalysisInterval *interval = TAnalysisInterval::parseXML(reader);
+				if (!interval) {
+					delete boiler;
+					return NULL;
+				}
+				boiler->AddInterval(interval);
+			}
+			xw.NextTag();
+		} else
+		if (xw.IsTag("boiler")) {
+			return boiler;
+		}
+		else {
+			xw.XMLErrorNotKnownTag("boiler");
+		}
+	}
+
+	return boiler;
+}
+
 TBoiler* TBoiler::parseXML(xmlNodePtr node) {
 
 #define NOATR(p, n) \
@@ -80,7 +161,7 @@ TBoiler* TBoiler::parseXML(xmlNodePtr node) {
 	}
 #define NEEDATR(p, n) \
 	if (c) xmlFree(c); \
-	c = (char *)xmlGetProp(p, (xmlChar *)n); \
+	c = (char *)xmlGetNoNsProp(p, (xmlChar *)n); \
 	if (!c) NOATR(p, n);
 
 	char *c = NULL;

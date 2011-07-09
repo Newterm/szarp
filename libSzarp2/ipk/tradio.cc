@@ -1,6 +1,19 @@
 /* 
   SZARP: SCADA software 
 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
  * IPK
@@ -43,6 +56,72 @@ TUnit* TRadio::unitById(wchar_t id)
 	return NULL;
 }
 
+int TRadio::parseXML(xmlTextReaderPtr reader)
+{
+	assert(units == NULL);
+	TUnit* u = NULL;
+
+	bool isRadio = false;
+
+	XMLWrapper xw(reader);
+
+	const char* ignored_trees[] = { "rate:period", 0 };
+	xw.SetIgnoredTrees(ignored_trees);
+
+	for (;;) {
+
+		if (xw.IsTag("radio")) {
+			if (xw.IsBeginTag()) {
+				isRadio = true;
+				const char *need_attr[] = { "id", 0 };
+				if (!xw.AreValidAttr(need_attr)) {
+					throw XMLWrapperException();
+				}
+
+				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+					const xmlChar *attr = xw.GetAttr();
+
+					if (xw.IsAttr("id")) {
+						id = SC::U2S(attr)[0];
+					} else {
+						xw.XMLWarningNotKnownAttr();
+					}
+				}
+					xw.NextTag();
+			} else {
+				break;
+			}
+		} else
+		if (xw.IsTag("unit")) {
+			if (xw.IsBeginTag()) {
+				if (units == NULL)
+					units = u = new TUnit(this);
+				else {
+					u = u->Append(new TUnit(this));
+				}
+				assert(u != NULL);
+				if (u->parseXML(reader))
+					return 1;
+			}
+			xw.NextTag();
+		} else
+		if (xw.IsTag("device")) {
+			if (xw.IsEndTag()) {
+				break;
+			} else
+				assert(0 ==1  && "workaound parser problem");
+		} else {
+			xw.XMLErrorNotKnownTag("radio");
+		}
+	}
+
+	if (units == NULL) {
+		xw.XMLError("no 'unit' elements found in 'device' element");
+	}
+
+	return 0;
+}
+
 int TRadio::parseXML(xmlNodePtr node)
 {
 	unsigned char *c = NULL;
@@ -58,7 +137,7 @@ int TRadio::parseXML(xmlNodePtr node)
 	}
 #define NEEDATR(p, n) \
 	if (c) free(c); \
-	c = xmlGetProp(p, (xmlChar *)n); \
+	c = xmlGetNoNsProp(p, (xmlChar *)n); \
 	if (!c) NOATR(p, n);
 #define X (xmlChar *)
 	if (!strcmp((char *)node->name, "radio")) {
@@ -78,6 +157,11 @@ int TRadio::parseXML(xmlNodePtr node)
 			if (u->parseXML(ch))
 				return 1;
 		}
+
+	if (c) {
+		xmlFree(c);
+	}
+
 	if (units == NULL) {
 		sz_log(1, "XML file error: no 'unit' elements found in 'device' \
 element (line %ld)",

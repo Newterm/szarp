@@ -1200,8 +1200,8 @@ void XYPointInfo::OnGoToGraph(wxCommandEvent &event) {
 	DefinedDrawSet *dset = new DefinedDrawSet(m_config_manager->GetDefinedDrawsSets());
 	dset->SetTemporary(true);
 	dset->SetName(wxString(_T("X/Y")));
-	dset->Add(m_dx);
-	dset->Add(m_dy);
+	dset->Add(std::vector<DrawInfo*>(1, m_dx));
+	dset->Add(std::vector<DrawInfo*>(1, m_dy));
 
 	m_config_manager->GetDefinedDrawsSets()->AddSet(dset);
 

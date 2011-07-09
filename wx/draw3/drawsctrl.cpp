@@ -327,9 +327,15 @@ void DrawsController::HandleDataResponse(DatabaseQuery *query) {
 
 	int draw_no = query->draw_no;
 
+	if (size_t(draw_no) >= m_draws.size()) {
+		delete query;
+		return;
+	}
+
 	bool data_within_view = false;
 
 	bool no_data = m_draws.at(draw_no)->GetNoData();
+
 	m_draws[draw_no]->AddData(query, data_within_view);
 	if (no_data)
 		m_observers.NotifyNoData(m_draws[draw_no]);
@@ -678,6 +684,12 @@ void DrawsController::DoSet(DrawSet *set) {
 
 	m_active_draws_count = draws->size();
 	m_draws.resize(m_active_draws_count);
+
+	for (size_t i = 0; i < m_draws.size(); i++) {
+		m_draws[i]->SetDrawNo(i);
+		m_draws[i]->SetInitialDrawNo(i);
+	}
+
 }
 
 void DrawsController::ConfigurationWasReloaded(wxString prefix) {
@@ -1368,6 +1380,97 @@ void DrawsController::DetachObserver(DrawObserver *observer) {
 	m_observers.DetachObserver(observer);
 }
 
+namespace {
+	bool both_enabled(const Draw* d1, const Draw* d2, bool& ret) {
+		if (d1->GetEnable())
+			if (d2->GetEnable())
+				return true;
+			else
+				ret = true;
+		else
+			if (d2->GetEnable())
+				ret = false;
+			else
+				ret = false;
+		return false;
+	}
+
+	bool cmp_avg(const Draw* d1, const Draw* d2) {
+		bool r;
+		if (!both_enabled(d1, d2, r))
+			return r;
+
+		const Draw::VT& vt1 = d1->GetValuesTable();
+		const Draw::VT& vt2 = d2->GetValuesTable();
+
+		if (vt1.m_number_of_values == 0 || vt2.m_number_of_values == 0)
+			return false;
+
+		return vt1.m_sum / vt1.m_number_of_values > vt2.m_sum / vt2.m_number_of_values;
+	}
+
+	bool cmp_min(const Draw* d1, const Draw* d2) {
+		bool r;
+		if (!both_enabled(d1, d2, r))
+			return r;
+
+		return d1->GetValuesTable().m_min > d2->GetValuesTable().m_min;
+	}
+
+	bool cmp_max(const Draw* d1, const Draw* d2) {
+		bool r;
+		if (!both_enabled(d1, d2, r))
+			return r;
+
+		return d1->GetValuesTable().m_max > d2->GetValuesTable().m_max;
+	}
+
+	bool cmp_hsum(const Draw* d1, const Draw* d2) {
+		bool r;
+		if (!both_enabled(d1, d2, r))
+			return r;
+
+		return d1->GetValuesTable().m_hsum > d2->GetValuesTable().m_hsum;
+	}
+
+	bool cmp_dno(const Draw* d1, const Draw* d2) {
+		return d1->GetInitialDrawNo() < d2->GetInitialDrawNo();
+	}
+
+}
+
+void DrawsController::SortDraws(SORTING_CRITERIA criteria) {
+	bool (*cmp_func)(const Draw*, const Draw*);
+	switch (criteria) {
+		case NO_SORT:
+			cmp_func = cmp_dno;
+			break;
+		case BY_AVERAGE:
+			cmp_func = cmp_avg;
+			break;
+		case BY_MAX:
+			cmp_func = cmp_max;
+			break;
+		case BY_MIN:
+			cmp_func = cmp_min;
+			break;
+		case BY_HOURSUM:
+			cmp_func = cmp_hsum;
+			break;
+	}
+
+	std::sort(m_draws.begin(), m_draws.end(), cmp_func);
+
+	Draw* d = GetSelectedDraw();
+	for (size_t i = 0; i < m_draws.size(); i++) {
+		m_draws[i]->SetDrawNo(i);
+		if (d == m_draws[i])
+			m_selected_draw = i;
+	}
+
+	m_observers.NotifyDrawsSorted(this);
+}
+
 void DrawsObservers::AttachObserver(DrawObserver *observer) {
 	m_observers.push_back(observer);
 }
@@ -1391,24 +1494,15 @@ void DrawsObservers::NotifyNewData(Draw *draw, int idx) {
 }
 
 void DrawsObservers::NotifyEnableChanged(Draw *draw) {
-	for (std::vector<DrawObserver*>::iterator i = m_observers.begin();
-			i != m_observers.end();
-			++i) 
-		(*i)->EnableChanged(draw);
+	std::for_each(m_observers.begin(), m_observers.end(), std::bind2nd(std::mem_fun(&DrawObserver::EnableChanged), draw));
 }
 
 void DrawsObservers::NotifyNewRemarks(Draw *draw) {
-	for (std::vector<DrawObserver*>::iterator i = m_observers.begin();
-			i != m_observers.end();
-			++i) 
-		(*i)->NewRemarks(draw);
+	std::for_each(m_observers.begin(), m_observers.end(), std::bind2nd(std::mem_fun(&DrawObserver::NewRemarks), draw));
 }
 
 void DrawsObservers::NotifyStatsChanged(Draw *draw) {
-	for (std::vector<DrawObserver*>::iterator i = m_observers.begin();
-			i != m_observers.end();
-			++i) 
-		(*i)->StatsChanged(draw);
+	std::for_each(m_observers.begin(), m_observers.end(), std::bind2nd(std::mem_fun(&DrawObserver::StatsChanged), draw));
 }
 
 void DrawsObservers::NotifyDrawMoved(Draw *draw, const wxDateTime &start_date) {
@@ -1440,34 +1534,19 @@ void DrawsObservers::NotifyNoData(DrawsController *draws_controller) {
 }
 
 void DrawsObservers::NotifyDrawDeselected(Draw* draw) {
-	for (std::vector<DrawObserver*>::iterator i = m_observers.begin();
-			i != m_observers.end();
-			++i)
-		(*i)->DrawDeselected(draw);
+	std::for_each(m_observers.begin(), m_observers.end(), std::bind2nd(std::mem_fun(&DrawObserver::DrawDeselected), draw));
 }
 
 void DrawsObservers::NotifyDrawInfoChanged(Draw* draw) {
-	for (std::vector<DrawObserver*>::iterator i = m_observers.begin();
-			i != m_observers.end();
-			++i)
-		(*i)->DrawInfoChanged(draw);
+	std::for_each(m_observers.begin(), m_observers.end(), std::bind2nd(std::mem_fun(&DrawObserver::DrawInfoChanged), draw));
 }
 
 void DrawsObservers::NotifyDrawInfoReloaded(Draw* draw) {
 	std::for_each(m_observers.begin(), m_observers.end(), std::bind2nd(std::mem_fun(&DrawObserver::DrawInfoReloaded), draw));
-#if 0
-	for (std::vector<DrawObserver*>::iterator i = m_observers.begin();
-			i != m_observers.end();
-			++i)
-		(*i)->DrawInfoReloaded(draw);
-#endif
 }
 
 void DrawsObservers::NotifyDrawSelected(Draw* draw) {
-	for (std::vector<DrawObserver*>::iterator i = m_observers.begin();
-			i != m_observers.end();
-			++i)
-		(*i)->DrawSelected(draw);
+	std::for_each(m_observers.begin(), m_observers.end(), std::bind2nd(std::mem_fun(&DrawObserver::DrawSelected), draw));
 }
 
 void DrawsObservers::NotifyPeriodChanged(Draw* draw, PeriodType pt) {
@@ -1478,29 +1557,21 @@ void DrawsObservers::NotifyPeriodChanged(Draw* draw, PeriodType pt) {
 }
 
 void DrawsObservers::NotifyFilterChanged(DrawsController* draws_controller) {
-	for (std::vector<DrawObserver*>::iterator i = m_observers.begin();
-			i != m_observers.end();
-			++i)
-		(*i)->FilterChanged(draws_controller);
+	std::for_each(m_observers.begin(), m_observers.end(), std::bind2nd(std::mem_fun(&DrawObserver::FilterChanged), draws_controller));
 }
 
 void DrawsObservers::NotifyDoubleCursorChanged(DrawsController* draws_controller) {
-	for (std::vector<DrawObserver*>::iterator i = m_observers.begin();
-			i != m_observers.end();
-			++i)
-		(*i)->DoubleCursorChanged(draws_controller);
+	std::for_each(m_observers.begin(), m_observers.end(), std::bind2nd(std::mem_fun(&DrawObserver::DoubleCursorChanged), draws_controller));
 }
 
 void DrawsObservers::NotifyNumberOfValuesChanged(DrawsController *draws_controller) {
-	for (std::vector<DrawObserver*>::iterator i = m_observers.begin();
-			i != m_observers.end();
-			++i)
-		(*i)->NumberOfValuesChanged(draws_controller);
+	std::for_each(m_observers.begin(), m_observers.end(), std::bind2nd(std::mem_fun(&DrawObserver::NumberOfValuesChanged), draws_controller));
 }
 
 void DrawsObservers::NotifyBlockedChanged(Draw* draw) {
-	for (std::vector<DrawObserver*>::iterator i = m_observers.begin();
-			i != m_observers.end();
-			++i)
-		(*i)->BlockedChanged(draw);
+	std::for_each(m_observers.begin(), m_observers.end(), std::bind2nd(std::mem_fun(&DrawObserver::BlockedChanged), draw));
+}
+
+void DrawsObservers::NotifyDrawsSorted(DrawsController* controller) {
+	std::for_each(m_observers.begin(), m_observers.end(), std::bind2nd(std::mem_fun(&DrawObserver::DrawsSorted), controller));
 }

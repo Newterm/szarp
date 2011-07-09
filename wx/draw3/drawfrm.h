@@ -176,6 +176,8 @@ public:
 
 	void OnGoToLatestDate(wxCommandEvent &e);
 
+	void OnSortGraph(wxCommandEvent &e);
+
 	/**Schedules removal of a panel (at next Idle event)*/
 	void RemovePanel(DrawPanel *panel);
 

@@ -78,6 +78,8 @@ class DrawObserver {
 	virtual void NoData(Draw *d) {}
 	/**Norifies that whole draws do not have any data*/
 	virtual void NoData(DrawsController *d) {}
+	/**Notifies that draw list has been resorted*/
+	virtual void DrawsSorted(DrawsController *draws_controller) {}
 
 	virtual ~DrawObserver() = 0;
 };

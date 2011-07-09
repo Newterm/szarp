@@ -1,5 +1,55 @@
+2011-07-02	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: some behaviour improvements in dealing
+	with large draw sets
+2011-06-27	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: added automatic assignment of colors 
+	for arbitrary number of draws - works almost perfectly ;)
+2011-06-26	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: added simple option to sort draws in currect
+	set by ther maximum/minimum/hoursum/average value (from current
+	view or time range marked by double cursor)
+2011-06-09	Pawel Palucha <pawel@newterm.pl>
+	* script/set2params.py: script for converting draw3 sets to
+	params.xml.
+2011-06-02	Krzysztof Ga³±zka <kg@newterm.pl>
+	* summwin.cpp {de,fr,pl}/draw3.po: fix of procentage display
+	in tooltip in Summary Window
+2011-05-25	Krzysztof Golinski <krzgol@newterm.pl>
+	* configure.in: added flag "--with-xmlreader". When is set
+	libszarp2 uses xmlTextReaderPtr instead of XML DOM. Default is not
+	set.
+	* libSzarp2/ipk/tszarpconfig.cc: moved LoadXML into LoadXMLDOM
+	Current LoadXML calls LoadXMLDOM or LoadXMLReader - it depends on
+	configure flag "--with-xmlreader"
+2011-05-23	Krzysztof Golinski <krzgol@newterm.pl>
+	* libszarp2/ipk/: added methods parseXML() (in ipk classes) which
+	use xmlTextReaderPtr to load configuration
+	* libszarp2/ipk/tszarpconfig.cc: added method loadXMLReader
+	which use xmlTextReaderPtr to parse configuration file
+	* libszarp2/ipk/xmlwrapper.cc: added class XMLWrapper which helps
+	to use reader
+	* libszarp2/ipk/xmlreader_test.cc: added program to compare output
+	loadXML and output loadXMLReader
+2011-05-12	Krzysztof Golinski <krzgol@newterm.pl>
+	* wx/common/szapp{.h,.cpp}, wx/draw3/{drawapp.cpp,drawfrm.cpp}:
+	added "auto" language; added button "automatic" in "choose 
+	language window"
+2011-05-11	Krzysztof Golinski <krzgol@newterm.pl>
+	* script/szbchecknames.py: A script looking for names
+	which are in database but not in params.xml
+2011-05-10	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: speedup period switching on sets
+	with large number of graphs, add param name
+	drawing when ? key is pressed
+2011-05-10	Krzysztof Ga³±zka <kg@newterm.pl>
+	* debian/control: missing python-support in BuildDeps
 2011-04-30	Darek Marcinkiewicz <reksio@newterm.pl>
-	* wx/draw3/drawprint.cpp - printing fix
+	* wx/draw3/drawprint.cpp: printing fix
+2011-04-26	Jakub Kotur <qba@newterm.pl>
+	* meaner3/: optimization of szbwriter. No it uses mmap, and cache
+	specified probes number before writing. Final results with 50MB are:
+	original :  11,77s user 20,88s system 99% cpu 32,782 total
+	optimized:   2,72s user  0,18s system 30% cpu 10,397 total
 2011-04-19	Krzysztof Golinski <krzgol@newterm.pl>
 	* wx/draw/{drawfrm.cpp, drawpnl.cpp, frmgr.cpp, seldraw.cpp,
 	 xygraph.cpp, wyzgraph.cpp}: xydiag, xyzdiag, statdiag take
@@ -11,17 +61,17 @@
 	* wx/draw3/xyzgraph.cpp: fixed bug: 0 length axes, divide by 0
 2011-04-13	Darek Marcinkiewicz <reksio@newterm.pl>
 	* parcook/boruta: odd parity setting fix and small fix
-	is modbus ascii parser
+	in modbus ascii parser
 2011-04-12	Krzysztof Golinski <krzgol@newterm.pl>
 	* script/szbwgen.py: added "regular", "irregular", "all-data" options
 	and an usage example
 2011-04-11	Darek Marcinkiewicz <reksio@newterm.pl>
-	* parcook/boruta: added configuratble characters size for
+	* parcook/boruta: added configurable characters size for
 	serial connections
 2011-04-11	Krzysztof Golinski <krzgol@newterm.pl>
 	* INSTALL.Windows: updated
 	* wx/sync/Makefile.am: fixed - create *.mo file in a proper place
-	* removed ssc.mo and out-of-data draw3-language2.png
+	* ssc.mo, draw3-language2.png: removed
 2011-04-10	Krzysztof Ga³±zka <kg@newterm.pl>
 	* debian/rules: fix dh_pysupport must be called before dh_installdeb
 2011-04-10	Krzysztof Ga³±zka <kg@newterm.pl>
@@ -35,7 +85,7 @@
 2011-04-06	Krzysztof Golinski <krzgol@newterm.pl>
 	* wx/common/szapp.cpp: improved initialization of a language
 	* wx/draw3/drawfrm.cpp: removed button "choose language" from toolbar
-	* resources/documentation/new/draw3/draw3.sgml: updated documemtation
+	* resources/documentation/new/draw3/draw3.sgml: updated documentation
 	* resources/documentation/new/draw3/html/pics/*: updated images
 2011-03-30	Krzysztof Golinski <krzgol@newterm.pl>
 	* meaner3/utils/szbwriter.cc: option fill_how_many - added support for

@@ -71,6 +71,7 @@ bin_PROGRAMS = \
 	      @PSETD@ \
 	      ratedmn \
               rsdmn \
+	      sampledmn \
 	      sbusdmn \
 	      setdmn \
 	      iecdmn \
@@ -84,6 +85,8 @@ bin_PROGRAMS = \
               zmddmn 
 
 EXTRA_PROGRAMS = psetd ddedmn unitedmn dlmsdmn
+
+basedmn_SOURCES = base_daemon.cc base_daemon.h
 
 dpafdmn_SOURCES = dpafdmn.cc
 
@@ -189,6 +192,8 @@ mbdmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIM
 
 borutadmn_SOURCES = borutadmn.cc borutadmn.h boruta_zet.cc boruta_modbus.cc boruta_fp210.cc
 borutadmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
+
+sampledmn_SOURCES = sampledmn.cc $(basedmn_SOURCES)
 
 sbusdmn_SOURCES = sbusdmn.cc
 

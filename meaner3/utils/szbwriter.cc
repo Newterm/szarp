@@ -479,7 +479,6 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 
 		int gap = m_cur_t[i] - _time;
 		sz_log(10,"add_data: i=%u, check time gap: %d",(unsigned)i,gap);
-		assert(gap >= 0 && gap >= m_probe_length[i]);
 
 		// if there is a gap bigger than normal probe length, fill gaps
 		if( gap > m_probe_length[i] && fill_gaps((PROBE_TYPE)i, _time + m_probe_length[i] , _time + gap ,_sum,_count) )

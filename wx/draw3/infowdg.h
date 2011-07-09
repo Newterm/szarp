@@ -68,6 +68,7 @@ class InfoWidget : public wxPanel, public DrawObserver {
 
 		virtual void NumberOfValuesChanged(DrawsController *draws_controller);
 
+
 		void DoubleCursorMode(bool set);
 	protected:
 		/**Clears all child widgets and values*/

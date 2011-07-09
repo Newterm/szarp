@@ -1,6 +1,19 @@
 /* 
   SZARP: SCADA software 
 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /* 
  * IPK
@@ -16,6 +29,97 @@
 #include "szarp_config.h"
 #include "liblog.h"
 
+int TSSeason::parseXML(xmlTextReaderPtr reader) {
+
+	XMLWrapper xw(reader);
+	bool isEmpty = xw.IsEmptyTag();
+
+	const char* need_attr[] = { "month_start", "day_start", "month_end", "day_end", 0 };
+
+	if (!xw.AreValidAttr(need_attr)) {
+		throw XMLWrapperException();
+	}
+
+	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+		const xmlChar* attr = xw.GetAttr();
+		try {
+			if (xw.IsAttr("month_start")) {
+				defs.month_start = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("day_start")) {
+				defs.day_start = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("month_end")) {
+				defs.month_end = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("day_end")) {
+				defs.day_end = boost::lexical_cast<int>(attr);
+			} else {
+				xw.XMLWarningNotKnownAttr();
+			}
+		} catch (boost::bad_lexical_cast &) {
+			xw.XMLErrorWrongAttrValue();
+		}
+	}
+
+	if (isEmpty)
+		return 0;
+
+	xw.NextTag();
+
+	for (;;) {
+
+		if (xw.IsTag("season")) {
+			if (xw.IsBeginTag()) {
+
+				int year;
+				Season s;
+
+				const char* need_attr_seasn[] = {"year", "month_start",  "month_end", "day_start", "day_end", 0 };
+
+				if (!xw.AreValidAttr(need_attr_seasn)) {
+					throw XMLWrapperException();
+				}
+
+				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+					const xmlChar* attr = xw.GetAttr();
+					try {
+						if (xw.IsAttr("year")) {
+							year = boost::lexical_cast<int>(attr);
+						} else
+						if (xw.IsAttr("month_start")) {
+							s.month_start = boost::lexical_cast<int>(attr);
+						} else
+						if (xw.IsAttr("day_start")) {
+							s.day_start = boost::lexical_cast<int>(attr);
+						} else
+						if (xw.IsAttr("month_end")) {
+							s.month_end = boost::lexical_cast<int>(attr);
+						} else
+						if (xw.IsAttr("day_end")) {
+							s.day_end = boost::lexical_cast<int>(attr);
+						} else {
+							xw.XMLWarningNotKnownAttr();
+						}
+					} catch (boost::bad_lexical_cast &) {
+						xw.XMLErrorWrongAttrValue();
+					}
+				}
+				seasons[year] = s;
+			}
+			xw.NextTag();
+		} else
+		if (xw.IsTag("seasons")) {
+			break;
+		}
+		else {
+			xw.XMLErrorNotKnownTag("seasons");
+		}
+	}
+
+	return 0;
+}
+
 int TSSeason::parseXML(xmlNodePtr node) {
 
 	char *c = NULL;
@@ -29,7 +133,7 @@ int TSSeason::parseXML(xmlNodePtr node) {
 	}
 #define NEEDATR(p, n) \
 	if (c) free(c); \
-	c = (char *)xmlGetProp(p, (xmlChar *)n); \
+	c = (char *)xmlGetNoNsProp(p, (xmlChar *)n); \
 	if (!c) NOATR(p, n);
 #define X (xmlChar*)
 
@@ -65,6 +169,10 @@ int TSSeason::parseXML(xmlNodePtr node) {
 		free(c);
 		return 1;
 
+	}
+	if (c) {
+		xmlFree(c);
+		c = NULL;
 	}
 
 	for (node = node->children; node; node = node->next) {

@@ -108,6 +108,8 @@ class WxGraphs : public wxWindow, public DrawGraphs, public SetInfoDropReceiver 
 	void SetMargins();
 
 	void DrawCurrentParamName(wxDC *dc);
+
+	void ResetDraws(DrawsController *controller);
 public:
         WxGraphs(wxWindow* parent, ConfigManager *cfg);
 
@@ -151,6 +153,8 @@ public:
 	virtual void DoubleCursorChanged(DrawsController *draws_controller);
 
 	virtual void CurrentProbeChanged(Draw* draw, int pi, int ni, int d);
+
+	virtual void DrawsSorted(DrawsController* controller);
 
 	void OnPaint(wxPaintEvent&);
 

@@ -561,10 +561,7 @@ void DrawPicker::OnAddDraw(wxCommandEvent & event)
 		to_add.push_back(draw);
 		draw = m_inc_search->GetDrawInfo(&prev);
 	}
-	for (std::vector<DrawInfo*>::iterator i = to_add.begin();
-			i != to_add.end();
-			i++)
-		m_defined_set->Add(*i);
+	m_defined_set->Add(to_add, true);
 	number += to_add.size();
 	m_modified = true;
 
@@ -614,6 +611,8 @@ void DrawPicker::OnAddParameter(wxCommandEvent& event) {
 
 void DrawPicker::RefreshData(bool update_title)
 {
+	Freeze();
+
 	m_list->DeleteAllItems();
 
 	for (size_t i = 0; i < m_defined_set->GetDraws()->size(); i++)
@@ -624,6 +623,8 @@ void DrawPicker::RefreshData(bool update_title)
 		m_title_input->SetValue(title) ;
 		SetTitle(_("Editing parameter set ") + title);
 	}
+
+	Thaw();
 
 }
 
@@ -820,7 +821,7 @@ int DrawPicker::EditAsNew(DrawSet *set, wxString prefix) {
 		if (DefinedDrawInfo* d = dynamic_cast<DefinedDrawInfo*>(*i))
 			m_defined_set->Add(new DefinedDrawInfo(*d));
 		else
-			m_defined_set->Add(*i);
+			m_defined_set->Add(std::vector<DrawInfo*>(1, *i));
 	}
 
 	wxString cn = m_config_mgr->GetConfigByPrefix(prefix)->GetID();

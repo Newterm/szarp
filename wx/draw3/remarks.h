@@ -508,6 +508,7 @@ public:
 
 	virtual void DrawInfoChanged(Draw *draw);
 
+
 	virtual void Attach(DrawsController *d);
 
 	virtual void Detach(DrawsController *d);

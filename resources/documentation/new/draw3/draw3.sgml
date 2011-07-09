@@ -752,12 +752,13 @@ Efektem wywo³ania dokumentacji parametru bêdzie otworzenie, w domy¶lnej przegl±d
 <section id="draw3-ext-languages">
 <title>Zmiana jêzyka programu Draw3</title>
 <para>
+Podczas pierwszego uruchomienia Draw3, b±d¼ je¶li jêzyk nigdy nie zosta³ wybrany, domy¶lnym jêzykiem programu jest jêzyk <quote>automatyczny</quote> -  u¿ywany w systemie. 
 Program Draw3 pozwala na zmianê jêzyka, w którym wy¶wietlane s± tak komunikaty i menu
 programu, jak i nazwy parametrów. Nazwy parametrów s± t³umaczone dynamicznie na podstawie specjalnego s³ownika (je¶li nazwa parametru nie wystêpuje w s³owniku, wy¶wietlana jest nieprzet³umaczona nazwa parametru).</para>
 <para>
 W celu zmiany jêzyka z menu wybierz <guimenu>Narzêdzia</guimenu>,
 <guimenu>Ustawienia</guimenu> i <guimenu>jêzyk</guimenu>.  Pojawi siê okno, w którym mo¿esz zmieniæ jêzyk u¿ywany w
-programie.
+programie. Je¶li wybierzesz konkretny jêzyk np. Polski, program Draw3 bêdzie t³umaczy³ wszystkie komunikaty i menu na jêzyk Polski, nawet je¶li system domy¶lnie ma ustawiony inny jêzyk. Wybranie jêzyka <quote>automatyczny</quote> spowoduje, ¿e jêzyk bêdzie zawsze odpowiada³ temu, jaki jest wybrany w ca³ym systemie.
 <figure>
 <title>Zmiana jêzyka w programie Draw3</title>
 <mediaobject>

@@ -6,6 +6,31 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.533
+#01.06.2011
+* Fix in draw3 automatic language settings - added proper item to language 
+selection menu.
+* Speedup period switching in draw3 on sets with large number of graphs.
+* Added displaying name of current parameter in draw3 after pressing '?'.
+* Added experimental faster XML parser for IPK library - should speed up 
+starting of SZARP program and reduce memory usage.
+
+** 3.1.528
+#01.05.2011
+* Language change icon remove from Draw3 toolbar, added 'automatic' language
+setting - based on current system locale.
+* Added fill_how_many_sec options to szbwriter, allowing to fill gaps in 
+10-second probes; program also works few times faster and with lower CPU load.
+* Using statistics, XY and XYZ windows in Draw3 is now easier - program picks 
+draws and period to show from current state of main window.
+* Many small fixes in Draw3: axis printing, time axis drawing, crash in XYZ 
+draws displaying, shift left/right keys behaviour.
+* Fixes and improvements in boruta daemon - parity setting and Modbus ASCII 
+fix, added configurable character size mask for serial port, fixed timing issues 
+in ZET sub-driver.
+* Updated libraries used for cross-compiling of Windows version; results in 
+better behaviour under Windows 7.
+
 ** 3.1.522
 # 01.04.2011
 * Restored fill_how_many option of szbwriter.

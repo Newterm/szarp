@@ -83,7 +83,7 @@ bool SzProbeCache::Values::add( time_t t , short v , int probe_length )
 	time_t curr_time = szb_move_time( time , length , PT_CUSTOM , probe_length );
 
 	if( t > curr_time ) return false; // raport time gap
-	if( t < curr_time ) return true ; // do not override data
+	if( t < curr_time ) return false; // override data. Return true otherwise
 
 	sz_log(10,"Writing value %i to %u at %i",v,length,t);
 	probes[length++] = v;

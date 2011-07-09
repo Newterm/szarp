@@ -1,6 +1,19 @@
 /* 
   SZARP: SCADA software 
 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /* 
  * IPK
@@ -138,10 +151,11 @@ swap_draws(int a, int b, void *data)
 
 TSzarpConfig::~TSzarpConfig(void)
 {
-    delete devices;
-    delete defined;
-    delete drawdefinable;
-    delete seasons;
+	delete devices;
+	delete defined;
+	delete drawdefinable;
+	delete seasons;
+	delete boilers;
 }
 
 const std::wstring&
@@ -288,24 +302,193 @@ TSzarpConfig::saveXML(const std::wstring &path)
 }
 
 int
+TSzarpConfig::loadXMLDOM(const std::wstring& path, const std::wstring& prefix) {
+
+	xmlDocPtr doc;
+	int ret;
+
+	this->prefix = prefix;
+
+	xmlLineNumbersDefault(1);
+	doc = xmlParseFile(SC::S2A(path).c_str());
+	if (doc == NULL) {
+		sz_log(1, "XML document not wellformed\n");
+		return 1;
+	}
+
+	ret = parseXML(doc);
+	xmlFreeDoc(doc);
+
+	return ret;
+}
+
+int
+TSzarpConfig::loadXMLReader(const std::wstring &path, const std::wstring& prefix)
+{
+	this->prefix = prefix;
+	xmlTextReaderPtr reader = xmlNewTextReaderFilename(SC::S2A(path).c_str());
+
+	try {
+		int ret = 0;
+		if (reader != NULL) {
+			ret = xmlTextReaderRead(reader);
+
+			if (ret == 1)
+				ret = parseXML(reader);
+			else
+				ret = 1;
+
+			xmlFreeTextReader(reader);
+			if (ret != 0) {
+				sz_log(1, "XML document not wellformed\n");
+			}
+		} else
+			sz_log(1,"Unable to open XML document\n");
+
+		return ret;
+
+	} catch (XMLWrapperException) {
+		xmlFreeTextReader(reader);
+		sz_log(1, "XML document not wellformed, look at previous logs\n");
+		return 1;
+	}
+
+	return 0;
+}
+
+int
 TSzarpConfig::loadXML(const std::wstring &path, const std::wstring &prefix)
 {
-    xmlDocPtr doc;
-    int ret;
-
-    this->prefix = prefix;
-
-    xmlLineNumbersDefault(1);
-    doc = xmlParseFile(SC::S2A(path).c_str());
-    if (doc == NULL) {
-	sz_log(1, "XML document not wellformed\n");
-	return 1;
-    }
-    ret = parseXML(doc);
-    xmlFreeDoc(doc);
-
-    return ret;
+#ifdef USE_XMLREADER
+	return loadXMLReader(path,prefix);
+#else
+	return loadXMLDOM(path,prefix);
+#endif
 }
+
+int
+TSzarpConfig::parseXML(xmlTextReaderPtr reader)
+{
+	TDevice *td = NULL;
+
+	assert(devices == NULL);
+	assert(defined == NULL);
+
+	XMLWrapper xw(reader);
+
+	const char* ignored_trees[] = { "mobile", "checker:rules",  0 };
+	xw.SetIgnoredTrees(ignored_trees);
+
+	for (;;) {
+		if (xw.IsTag("params")) {
+			if (xw.IsBeginTag()) {
+
+				const char* need_attr_params[] = { "read_freq" , "send_freq", "version", 0 };
+				if (!xw.AreValidAttr(need_attr_params)) {
+					throw XMLWrapperException();
+				}
+
+				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+					const xmlChar *attr = xw.GetAttr();
+					try {
+						if (xw.IsAttr("read_freq")) {
+							read_freq = boost::lexical_cast<int>(attr);
+							if (read_freq <= 0)
+								xw.XMLError("read_freq attribute <= 0");
+						} else
+						if (xw.IsAttr("send_freq")) {
+							send_freq = boost::lexical_cast<int>(attr);
+							if (send_freq <= 0)
+								xw.XMLError("send_freq attribute <= 0");
+						} else
+						if (xw.IsAttr("version")) {
+							if (!xmlStrEqual(attr, (unsigned char*) "1.0")) {
+								xw.XMLError("incorrect version (1.0 expected)");
+							}
+						} else
+						if (xw.IsAttr("title")) {
+							title = SC::U2S(attr);
+						} else
+						if (xw.IsAttr("documentation_base_url")) {
+							documentation_base_url = SC::U2S(attr);
+						} else
+						if (xw.IsAttr("xmlns")) {
+						} else {
+							xw.XMLWarningNotKnownAttr();
+						}
+					} catch (boost::bad_lexical_cast &) {
+						xw.XMLErrorWrongAttrValue();
+					}
+				} 
+
+				xw.NextTag();
+			} else {
+				break;
+			}
+		} else
+		if (xw.IsTag("device")) {
+			if (xw.IsBeginTag()) {
+				if (devices == NULL)
+					devices = td = new TDevice(this);
+				else
+					td = td->Append(new TDevice(this));
+				assert(devices != NULL);
+				td->parseXML(reader);
+			}
+			xw.NextTag();
+		} else
+		if (xw.IsTag("defined")) {
+			if (xw.IsBeginTag()) {
+				TParam * _par = TDefined::parseXML(reader,this);
+				if (_par)
+					defined = _par;
+			}
+			xw.NextTag();
+		} else
+		if (xw.IsTag("drawdefinable")) {
+			if (xw.IsBeginTag()) {
+				TParam * _par = TDrawdefinable::parseXML(reader,this);
+				if (_par)
+					drawdefinable = _par;
+			}
+			xw.NextTag();
+		} else
+		if (xw.IsTag("seasons")) {
+			if (xw.IsBeginTag()) {
+				seasons = new TSSeason();
+				if (seasons->parseXML(reader)) {
+					delete seasons;
+					seasons = NULL;
+					xw.XMLError("'<seasons>' parse problem");
+				}
+			}
+			xw.NextTag();
+		} else
+		if (xw.IsTag("boilers")) {
+			if (xw.IsBeginTag()) {
+				TBoiler * _b = TBoilers::parseXML(reader,this);
+				if (_b)
+					AddBoiler(_b);
+				else {
+					delete boilers;
+					boilers = NULL;
+					xw.XMLError("'<boilers>' parser problem");
+				}
+			}
+			xw.NextTag();
+		} else {
+			xw.XMLErrorNotKnownTag("params");
+		}
+
+	}
+
+// why? copy/paste from parse reader
+	if (seasons == NULL)
+		seasons = new TSSeason();
+
+	return 0;
+}
+
 
 int
 TSzarpConfig::parseXML(xmlDocPtr doc)
@@ -333,7 +516,7 @@ TSzarpConfig::parseXML(xmlDocPtr doc)
 	}
 #define NEEDATR(p, n) \
 	if (c) free(c); \
-	c = xmlGetProp(p, (xmlChar *)n); \
+	c = xmlGetNoNsProp(p, (xmlChar *)n); \
 	if (!c) NOATR(p, n);
 #define X (xmlChar *)
 
@@ -349,7 +532,7 @@ TSzarpConfig::parseXML(xmlDocPtr doc)
     NEED(node, "params");
     NEEDATR(node, "version");
 
-    unsigned char* _language = xmlGetProp(node, X "language");
+    unsigned char* _language = xmlGetNoNsProp(node, X "language");
     if (_language) {
 	nativeLanguage = SC::U2S(_language);
 	xmlFree(_language);
@@ -357,7 +540,7 @@ TSzarpConfig::parseXML(xmlDocPtr doc)
     	nativeLanguage = L"pl";
 	 
 
-    unsigned char* _title = xmlGetProp(node, X "title");
+    unsigned char* _title = xmlGetNoNsProp(node, X "title");
     title = U2S(_title);
     xmlFree(_title);
 
@@ -366,14 +549,14 @@ sz_log(1, "XML parsing error: incorrect version (1.0 expected) (line %ld)", xmlG
 	goto at_end;
     }
 
-    _documenation_base_url = xmlGetProp(node, X "documentation_base_url");
+    _documenation_base_url = xmlGetNoNsProp(node, X "documentation_base_url");
     if (_documenation_base_url) {
 	    documentation_base_url = U2S(_documenation_base_url);
 	    xmlFree(_documenation_base_url);
     }
 
-    _ps_addres =  xmlGetProp(node, X "ps_address");
-    _ps_port = xmlGetProp(node, X "ps_port");
+    _ps_addres =  xmlGetNoNsProp(node, X "ps_address");
+    _ps_port = xmlGetNoNsProp(node, X "ps_port");
     if (_ps_addres)
 	    ps_address =  U2S(_ps_addres);
     if (_ps_port)

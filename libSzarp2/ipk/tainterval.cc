@@ -1,6 +1,19 @@
 /* 
   SZARP: SCADA software 
 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
  * IPK
@@ -18,6 +31,42 @@ extern "C" {
 #include "szarp_config.h"
 
 
+TAnalysisInterval* TAnalysisInterval::parseXML(xmlTextReaderPtr reader) {
+
+	int duration = 0;
+	int grate_speed_upper = 0;
+	int grate_speed_lower = 0;
+
+	XMLWrapper xw(reader);
+
+	const char* need_attr[] = { "duration", "grate_speed_upper", "grate_speed_lower", 0 };
+	if (!xw.AreValidAttr(need_attr)) {
+		throw XMLWrapperException();
+	}
+
+	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+		const xmlChar* attr = xw.GetAttr();
+		try {
+			if (xw.IsAttr("duration")) {
+				duration = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("grate_speed_upper")) {
+				grate_speed_upper = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("grate_speed_lower")) {
+				grate_speed_lower = boost::lexical_cast<int>(attr);
+			} else {
+				xw.XMLWarningNotKnownAttr();
+			}
+		} catch (boost::bad_lexical_cast &)  {
+			xw.XMLErrorWrongAttrValue();
+		}
+	}
+
+	return new TAnalysisInterval(grate_speed_lower, grate_speed_upper, duration);
+
+}
+
 TAnalysisInterval* TAnalysisInterval::parseXML(xmlNodePtr node) {
 #define NOATR(p, n) \
 	{ \
@@ -28,7 +77,7 @@ TAnalysisInterval* TAnalysisInterval::parseXML(xmlNodePtr node) {
 	}
 #define NEEDATR(p, n) \
 	if (c) xmlFree(c); \
-	c = (char *)xmlGetProp(p, (xmlChar *)n); \
+	c = (char *)xmlGetNoNsProp(p, (xmlChar *)n); \
 	if (!c) NOATR(p, n);
 	assert(node != NULL);
 	char *c = NULL;

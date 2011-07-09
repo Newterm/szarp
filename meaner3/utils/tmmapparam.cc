@@ -1,5 +1,7 @@
 #include "tmmapparam.h"
 
+#include <algorithm>
+
 #include <sys/mman.h>
 
 #include <sys/types.h>
@@ -31,6 +33,12 @@ TMMapParam::TMMapParam( const std::wstring& dir , const std::wstring& name , int
 	if( fd == -1 )
 		throw failure("Cannot open file "+SC::S2A(path)+" to write: "+strerror(errno));
 
+	// save end of old data
+	if( (begin=lseek(fd,0,SEEK_END)) == (off_t)-1 )
+		throw failure("Cannot seek trough file "+SC::S2A(path)+": "+strerror(errno));
+	sz_log(10,"Last file index: %d",begin);
+	begin /= sizeof(short);
+
 	// seek to last short in the file
 	if( lseek(fd,sizeof(short)*max_file_size-1,SEEK_SET) == (off_t)-1 )
 		throw failure("Cannot seek trough file "+SC::S2A(path)+": "+strerror(errno));
@@ -48,7 +56,8 @@ TMMapParam::TMMapParam( const std::wstring& dir , const std::wstring& name , int
 	if( filemap == MAP_FAILED )
 		throw failure("Cannot map file "+SC::S2A(path)+" to memory: "+strerror(errno));
 
-	for( int i = file_size-1 ; i>=0 ; --i )
+	sz_log(10,"Clearing data from %d to %d",begin,file_size);
+	for( int i = begin ; i<file_size ; ++i )
 		filemap[i] = SZB_FILE_NODATA;
 	// FIXME: why memset doesn't work?
 //        memset( filemap , (int)SZB_FILE_NODATA , sizeof(short)*file_size );
@@ -68,7 +77,7 @@ TMMapParam::~TMMapParam()
 int TMMapParam::close()
 {
 	munmap(filemap,sizeof(short)*file_size);
-	if( ftruncate(fd,sizeof(short)*length) == -1 )
+	if( ftruncate(fd,sizeof(short)*std::max(begin,length)) == -1 )
 		throw failure("Cannot truncate file "+SC::S2A(path)+": "+strerror(errno));
 	::close( fd );
 
@@ -78,6 +87,8 @@ int TMMapParam::close()
 int TMMapParam::write( time_t t , short*probes , unsigned int len ) 
 {
 	unsigned int index = szb_probeind(t, probe_length);
+
+	sz_log(10,"Writing %d probes at index: %d",len,index);
 
 	assert( index >=0 );
 	assert( index+len < file_size );

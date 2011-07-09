@@ -1,6 +1,19 @@
 /* 
   SZARP: SCADA software 
 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
  * IPK
@@ -34,6 +47,89 @@ using namespace std;
 
 #define FREE(x)	if (x != NULL) free(x)
 
+int TUnit::parseXML(xmlTextReaderPtr reader)
+{
+
+	TParam* p = NULL;
+	TSendParam *sp = NULL;
+
+	XMLWrapper xw(reader);
+
+	const char* need_attr[] = { "id", "type", "subtype", "bufsize", 0 };
+	if (!xw.AreValidAttr(need_attr)) {
+		throw XMLWrapperException();
+	}
+
+	const char* ignored_trees[] = { "rate:period", 0 };
+	xw.SetIgnoredTrees(ignored_trees);
+
+	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+		const xmlChar *attr = xw.GetAttr();
+		try {
+			if (xw.IsAttr("id")) {
+				if (xmlStrlen(attr) != 1) {
+					xw.XMLError("attribute 'id' should be one ASCII");
+				}
+				id = SC::U2S(attr)[0];
+			} else
+			if (xw.IsAttr("type")) {
+				type = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("subtype")) {
+				subtype = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("bufsize")) {
+				bufsize = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("name")) {
+				TUnit::name = SC::U2S(attr);
+			} else {
+				xw.XMLWarningNotKnownAttr();
+			}
+		} catch (boost::bad_lexical_cast &)  {
+			xw.XMLErrorWrongAttrValue();
+		}
+	}
+
+	assert (params == NULL);
+	assert (sendParams == NULL);
+
+	xw.NextTag();
+
+	for (;;) {
+		if (xw.IsTag("param")) {
+			if (xw.IsBeginTag() || ( xw.IsEndTag() && !xw.IsEmptyTag()) ) {
+				if (params == NULL)
+					p = params = new TParam(this);
+				else
+					p = p->Append(new TParam(this));
+				if (p->parseXML(reader))
+					return 1;
+			}
+			xw.NextTag();
+		} else
+		if (xw.IsTag("unit")) {
+			break;
+		} else
+		if (xw.IsTag("send")) {
+			if (xw.IsBeginTag()) {
+				if (sendParams == NULL)
+					sp = sendParams = new TSendParam(this);
+				else
+					sp = sp->Append(new TSendParam(this));
+				if (sp->parseXML(reader))
+					return 1;
+			}
+			xw.NextTag();
+		}
+		else {
+			xw.XMLErrorNotKnownTag("unit");
+		}
+	}
+
+	return 0;
+}
+
 int TUnit::parseXML(xmlNodePtr node)
 {
 	unsigned char* c = NULL;
@@ -48,7 +144,7 @@ int TUnit::parseXML(xmlNodePtr node)
 	}
 #define NEEDATR(p, n) \
 	if (c) free(c); \
-	c = xmlGetProp(p, (xmlChar *)n); \
+	c = xmlGetNoNsProp(p, (xmlChar *)n); \
 	if (!c) NOATR(p, n);
 #define X (xmlChar *)
 	NEEDATR(node, "id");
@@ -66,7 +162,7 @@ int TUnit::parseXML(xmlNodePtr node)
 	NEEDATR(node, "bufsize");
 	bufsize = atoi((char*)c);
 	free(c);
-	c = xmlGetProp(node, (xmlChar *) "name");
+	c = xmlGetNoNsProp(node, (xmlChar *) "name");
 	if (c) {
 		name = SC::U2S(c);
 		free(c);

@@ -1,6 +1,19 @@
 /* 
   SZARP: SCADA software 
 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
  * IPK
@@ -68,6 +81,116 @@ int TDraw::GetCount()
 	return i;
 }
 
+TDraw* TDraw::parseXML(xmlTextReaderPtr reader)
+{
+	const double UNDEFVAL= -1234.5;
+
+	double p = -1.0, o = -1.0, min = 0.0, max = UNDEFVAL, smin = UNDEFVAL, smax = UNDEFVAL;
+	int sc = 0;
+	SPECIAL_TYPES sp = NONE;
+	std::wstring strw_c, strw_w;
+
+	XMLWrapper xw(reader);
+
+	bool isEmptyTag = xw.IsEmptyTag();
+
+	const char* need_attr[] = { "title", 0 };
+	if (!xw.AreValidAttr(need_attr) ) {
+		throw XMLWrapperException();
+	}
+
+	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
+		const xmlChar *attr = xw.GetAttr();
+
+		try {
+			if (xw.IsAttr("title")) {
+				strw_w = SC::U2S(attr);
+			} else
+			if (xw.IsAttr("color")) {
+				strw_c = SC::U2S(attr);
+			} else
+			if (xw.IsAttr("prior")) {
+				p = boost::lexical_cast<double>(attr);
+			} else
+			if (xw.IsAttr("order")) {
+				o = boost::lexical_cast<double>(attr);
+			} else
+			if (xw.IsAttr("max")) {
+				max = boost::lexical_cast<double>(attr);
+			} else
+			if (xw.IsAttr("min")) {
+				min = boost::lexical_cast<double>(attr);
+			} else
+			if (xw.IsAttr("scale")) {
+				sc = boost::lexical_cast<int>(attr);
+			} else
+			if (xw.IsAttr("minscale")) {
+				smin = boost::lexical_cast<double>(attr);
+			} else
+			if (xw.IsAttr("maxscale")) {
+				smax = boost::lexical_cast<double>(attr);
+			} else
+			if (xw.IsAttr("special")) {
+				for (unsigned i = 0; i < sizeof(SPECIAL_TYPES_STR) / sizeof(wchar_t*); i++)
+					if (SC::U2S(attr) == SPECIAL_TYPES_STR[i]) {
+						sp = (SPECIAL_TYPES)i;
+						break;
+				}
+			} else {
+				xw.XMLWarningNotKnownAttr();
+			}
+		} catch (boost::bad_lexical_cast &) {
+			xw.XMLErrorWrongAttrValue();
+		}
+	} // for all attr
+
+	if (max == UNDEFVAL) {
+		min = 0.0;
+		max = -1.0;
+	}
+	if (sc > 0)
+		if (smax < smin)
+			sc = 0;
+
+	TDraw* ret = new TDraw(strw_c, 
+			strw_w, 
+			p, 
+			o, 
+			min, 
+			max, 
+			sc, 
+			smin, 
+			smax, 
+			sp);
+
+	if (isEmptyTag) {
+		return ret;
+	}
+
+	xw.NextTag();
+
+	for (;;) {
+		if (xw.IsTag("treenode")) {
+			if (xw.IsBeginTag()) {
+				TTreeNode* node = new TTreeNode();
+				if (node->parseXML(reader)) {
+					delete ret;
+					return NULL;
+				}
+				ret->_tree_nodev.push_back(node);
+			}
+			xw.NextTag();
+		} else
+		if (xw.IsTag("draw")) {
+			break;
+		} else {
+			xw.XMLErrorNotKnownTag("draw");
+		}
+	}
+
+	return ret;
+}
+
 TDraw* TDraw::parseXML(xmlNodePtr node)
 {
 	unsigned char *ch = NULL;
@@ -84,34 +207,34 @@ TDraw* TDraw::parseXML(xmlNodePtr node)
 
 	SPECIAL_TYPES sp;
 	
-	w = xmlGetProp(node, (xmlChar*)"title");
+	w = xmlGetNoNsProp(node, (xmlChar*)"title");
 	if (w == NULL) {
 		sz_log(1, "Attribute 'title' on element 'draw' not found (line %ld)", 
 			xmlGetLineNo(node));
 		return NULL;
 	}
 
-	c = xmlGetProp(node, (xmlChar*)"color");
+	c = xmlGetNoNsProp(node, (xmlChar*)"color");
 
-	ch = xmlGetProp(node, (xmlChar*)"prior");
+	ch = xmlGetNoNsProp(node, (xmlChar*)"prior");
 	if (ch) {
 		CONVERT(SC::U2S(ch), p);
 		xmlFree(ch);
 	} else
 		p = -1.0;
 
-	ch = xmlGetProp(node, (xmlChar*)"order");
+	ch = xmlGetNoNsProp(node, (xmlChar*)"order");
 	if (ch) {
 		CONVERT(SC::U2S(ch), o);
 		xmlFree(ch);
 	} else
 		o = -1.0;
 
-	ch = xmlGetProp(node, (xmlChar*)"max");
+	ch = xmlGetNoNsProp(node, (xmlChar*)"max");
 	if (ch) {
 		CONVERT(SC::U2S(ch), max);
 		xmlFree(ch);
-		ch = xmlGetProp(node, (xmlChar*)"min");
+		ch = xmlGetNoNsProp(node, (xmlChar*)"min");
 		if (ch) {
 			CONVERT(SC::U2S(ch), min);
 			xmlFree(ch);
@@ -122,18 +245,18 @@ TDraw* TDraw::parseXML(xmlNodePtr node)
 		max = -1.0;
 	}
 
-	ch = xmlGetProp(node, (xmlChar*)"scale");
+	ch = xmlGetNoNsProp(node, (xmlChar*)"scale");
 	if (ch) {
 		CONVERT(SC::U2S(ch), sc);
 		xmlFree(ch);
 		if (sc > 0)
-			ch = xmlGetProp(node, (xmlChar*)"minscale");
+			ch = xmlGetNoNsProp(node, (xmlChar*)"minscale");
 		else
 			ch = NULL;
 		if (ch) {
 			CONVERT(SC::U2S(ch), smin);
 			xmlFree(ch);
-			ch = xmlGetProp(node, (xmlChar*)"maxscale");
+			ch = xmlGetNoNsProp(node, (xmlChar*)"maxscale");
 		} 
 		if (ch) {
 			CONVERT(SC::U2S(ch), smax);
@@ -146,7 +269,7 @@ TDraw* TDraw::parseXML(xmlNodePtr node)
 	}
 	
 	sp = NONE;
-	ch = xmlGetProp(node, (xmlChar*)"special");
+	ch = xmlGetNoNsProp(node, (xmlChar*)"special");
 	if (ch) {
 		for (unsigned i = 0; i < sizeof(SPECIAL_TYPES_STR) / sizeof(wchar_t*); i++)
 			if (SC::U2S(ch) == SPECIAL_TYPES_STR[i]) {

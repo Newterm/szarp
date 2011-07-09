@@ -4,6 +4,11 @@
 # that starts and stops SZARP daemons. 
 # This file is included to parstart script, so use shell syntax.
 
+# Maximum file limit set at deamons start. If not set default kernel
+# limit is used.
+
+NOFILE_LIMIT=
+
 # Set configuration prefix
 
 # HOST=`hostname -s`

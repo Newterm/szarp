@@ -783,7 +783,7 @@ void DrawFrame::OnUserParams(wxCommandEvent &evt) {
 }
 
 void DrawFrame::OnLanguageChange(wxCommandEvent &e) {
-	wxString lang = wxConfig::Get()->Read(_T("LANGUAGE"), DEFAULT_LANGUAGE);
+	wxString lang = wxConfig::Get()->Read(_T("LANGUAGE"), AUTO_LANGUAGE);
 
 	typedef std::map<wxString, wxString> SMSS;
 	SMSS mapLang;
@@ -800,11 +800,13 @@ void DrawFrame::OnLanguageChange(wxCommandEvent &e) {
 	wxArrayString choices;
 
 	// init array choices
+	choices.push_back(_("automatic"));
+
 	for (SMSS::iterator it = mapLang.begin(); it != mapLang.end(); ++it)
 		choices.push_back(it->second);
 
 	wxString caption = _("Current language is ");
-	caption += mapLang[lang].Len() ? mapLang[lang] : wxString(_("default language"));
+	caption += lang == AUTO_LANGUAGE ? wxString(_("automatic")) : mapLang[lang];
 
 	int ret = wxGetSingleChoiceIndex(_("Choose language"), caption, choices, this);
 	if (ret == -1)
@@ -812,15 +814,21 @@ void DrawFrame::OnLanguageChange(wxCommandEvent &e) {
 
 	// get a short language name - ugly but better than switch :)
 	wxString nl;
-	for (SMSS::iterator it = mapLang.begin(); it != mapLang.end(); ++it)
-		if (ret == 0) 
-		{
-			nl = it->first;
-			break;
-		}
-		else
-			--ret;
-	
+
+	if (ret == 0) {
+		nl = AUTO_LANGUAGE;
+	} else {
+		--ret;
+		for (SMSS::iterator it = mapLang.begin(); it != mapLang.end(); ++it)
+			if (ret == 0) 
+			{
+				nl = it->first;
+				break;
+			}
+			else
+				--ret;
+	}
+
 	if (nl == lang)
 		return;
 
@@ -1026,6 +1034,24 @@ void DrawFrame::UpdatePanelName(DrawPanel *panel) {
 
 }
 
+void DrawFrame::OnSortGraph(wxCommandEvent &event) {
+
+	int id = event.GetId();
+
+	DrawsController* controller = draw_panel->GetDrawsController();
+
+	if (id == XRCID("SORT_BY_AVG_VALUE"))
+		controller->SortDraws(DrawsController::BY_AVERAGE);
+	else if (id == XRCID("SORT_BY_MAX_VALUE"))
+		controller->SortDraws(DrawsController::BY_MAX);
+	else if (id == XRCID("SORT_BY_MIN_VALUE"))
+		controller->SortDraws(DrawsController::BY_MIN);
+	else if (id == XRCID("SORT_BY_HSUM_VALUE"))
+		controller->SortDraws(DrawsController::BY_HOURSUM);
+	else if (id == XRCID("SORT_BY_DRAW_NO"))
+		controller->SortDraws(DrawsController::NO_SORT);
+}
+
 void DrawFrame::OnProberAddresses(wxCommandEvent &event) {
 	std::map<wxString, std::pair<wxString, wxString> > addresses = wxGetApp().GetProbersAddresses();
 
@@ -1117,8 +1143,14 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("RemarksConfiguration"), DrawFrame::OnConfigureRemarks)
     EVT_MENU(XRCID("PageSetup"), DrawFrame::OnPrintPageSetup)
     EVT_MENU(XRCID("ProberAddress"), DrawFrame::OnProberAddresses)
+    EVT_MENU(XRCID("SORT_BY_AVG_VALUE"), DrawFrame::OnSortGraph)
+    EVT_MENU(XRCID("SORT_BY_MAX_VALUE"), DrawFrame::OnSortGraph)
+    EVT_MENU(XRCID("SORT_BY_MIN_VALUE"), DrawFrame::OnSortGraph)
+    EVT_MENU(XRCID("SORT_BY_HSUM_VALUE"), DrawFrame::OnSortGraph)
+    EVT_MENU(XRCID("SORT_BY_DRAW_NO"), DrawFrame::OnSortGraph)
     EVT_MENU(drawTB_EXIT, DrawFrame::OnExit)
     EVT_MENU(drawTB_ABOUT, DrawFrame::OnAbout)
+
     EVT_MENU(drawTB_REMARK, DrawFrame::OnShowRemarks)
     EVT_MENU(drawTB_GOTOLATESTDATE, DrawFrame::OnGoToLatestDate)
     EVT_MENU(XRCID("GoToLatestDate"), DrawFrame::OnGoToLatestDate)
