@@ -101,9 +101,9 @@ class DaemonClass{
 		int _m_paramscount, char *_path_to_device)\
 		{Simple = _m_single; Diagno = _m_diagno; \
 		if (Simple) Diagno=1; m_paramscount = _m_paramscount;\
-		path_to_device=(char *)malloc(sizeof(char));\
-		memcpy(&path_to_device,&_path_to_device,\
-		strlen(_path_to_device));assert(path_to_device!=NULL);\
+		path_to_device=(char *)malloc(strlen(_path_to_device) + 1);\
+		memcpy(path_to_device,_path_to_device,\
+		strlen(_path_to_device) + 1);assert(path_to_device!=NULL);\
 		LineDes=0;};
 		void ReadData();
 		int ReadOutput(int *buf, unsigned short *size);

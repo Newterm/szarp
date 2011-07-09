@@ -865,7 +865,7 @@ void modbus_unit::consume_read_regs_response(unsigned char& uid, unsigned short 
 
 	for (size_t addr = start_addr; addr < start_addr + regs_count; addr++, data_index += 2) {
 		RMAP::iterator j = unit.find(addr);
-		unsigned short v = (pdu.data.at(data_index) << 8) | pdu.data.at(data_index + 1);
+		unsigned short v = ((unsigned short)(pdu.data.at(data_index)) << 8) | pdu.data.at(data_index + 1);
 		dolog(7, "Setting register unit_id: %d, address: %hu, value: %hu", (int) uid, addr, v);
 		j->second->set_val(v, m_current_time);
 	}
@@ -1575,6 +1575,11 @@ void modbus_client::find_continuous_reg_block(RSET::iterator &i, RSET &regs) {
 }
 
 void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
+	if (u != m_unit) {
+		dolog(1, "Received PDU from unit %d while we wait for response from unit %d, ignoring it!", (int)u, (int)m_unit);
+		return;
+	}
+	
 	switch (m_state) {
 		case READ_QUERY_SENT:
 			try {

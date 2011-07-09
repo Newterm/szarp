@@ -299,8 +299,12 @@ void boruta_driver::set_event_base(struct event_base* ev_base)
 	m_event_base = ev_base;
 }
 
-std::pair<size_t, size_t> & client_driver::id() {
+const std::pair<size_t, size_t> & client_driver::id() {
 	return m_id;
+}
+
+void client_driver::set_id(std::pair<size_t, size_t> id) {
+	m_id = id;
 }
 
 void client_driver::set_manager(client_manager* manager) {
@@ -320,6 +324,22 @@ size_t& server_driver::id() {
 }
 
 tcp_proxy_2_serial_client::tcp_proxy_2_serial_client(serial_client_driver* _serial_client) : m_serial_client(_serial_client) { }
+
+const std::pair<size_t, size_t> & tcp_proxy_2_serial_client::id() {
+	return m_serial_client->id();
+}
+
+void tcp_proxy_2_serial_client::set_id(std::pair<size_t, size_t> id) {
+	m_serial_client->set_id(id);
+}
+
+void tcp_proxy_2_serial_client::set_manager(client_manager* manager) {
+	m_serial_client->set_manager(manager);
+}
+
+void tcp_proxy_2_serial_client::set_event_base(struct event_base* ev_base) {
+	m_serial_client->set_event_base(ev_base);
+}
 
 void tcp_proxy_2_serial_client::connection_error(struct bufferevent *bufev) {
 	m_serial_client->connection_error(bufev);
@@ -697,7 +717,7 @@ int tcp_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, sho
 	} else {
 		assert(false);
 	}
-	driver->id() = std::make_pair(i, m_connection_client_map[i].size());
+	driver->set_id(std::make_pair(i, m_connection_client_map[i].size()));
 	m_connection_client_map[i].push_back(driver);
 	return 0;
 }
@@ -783,7 +803,7 @@ int serial_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, 
 	}
 	m_connection_client_map.at(j).push_back(driver);
 	m_configurations.at(j).push_back(spc);
-	driver->id() = std::make_pair(j, m_connection_client_map.at(j).size() - 1);
+	driver->set_id(std::make_pair(j, m_connection_client_map.at(j).size() - 1));
 	return 0;
 }
 
