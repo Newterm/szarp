@@ -270,6 +270,7 @@ void szAppImpl::ShowAbout() {
 	authors.Add(L"Stanis\u0142aw K\u0142osi\u0144ski");
 	authors.Add(L"Pawe\u0142 Kolega");
 	authors.Add(L"Jakub Kotur");
+	authors.Add(L"Daniel Majewski");
 	authors.Add(L"Dariusz Marcinkiewicz");
 	authors.Add(L"Maciej Mochol");
 	authors.Add(L"Jaros\u0142aw Nowisz");
