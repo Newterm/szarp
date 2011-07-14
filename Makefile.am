@@ -23,7 +23,7 @@ doc documentation:
 version: 
 	@install -d $(DESTDIR)@prefix@/resources
 	@echo "Creating version info..."
-	@cat @srcdir@/version > $(DESTDIR)@prefix@/resources/version.info
+	@ @srcdir@/script/version-info @srcdir@/debian/changelog > $(DESTDIR)@prefix@/resources/version.info
 
 install_scripts:
 	${MAKE} -C script install_scripts

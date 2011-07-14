@@ -47,8 +47,6 @@ DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 DEB_PYTHON_SYSTEM=pysupport
 DEB_PYTHON_VERSIONS=all
 
-SZARP_VERSION := $(shell cat current_tag)
-
 PREFIX = opt/szarp/
 
 INSTALL_DIR = debian/tmp
@@ -149,7 +147,7 @@ binary-arch-common:
 	dh_shlibdeps
 	dh_perl
 	dh_installdebconf
-	dh_gencontrol -- -DVersion=$(SZARP_VERSION)
+	dh_gencontrol
 	dh_md5sums
 	dh_builddeb
 
@@ -181,7 +179,7 @@ create-sssweb:
 	dh_installdocs
 	dh_installlogrotate
 	dh_installdeb
-	dh_gencontrol -- -DVersion=$(SZARP_VERSION)
+	dh_gencontrol
 	dh_md5sums
 	dh_builddeb
 
@@ -208,7 +206,7 @@ install-indep: install-doc-pdf install-doc-html
 
 create-indep: DH_OPTIONS=$(DOC_PACKAGES)
 create-indep: 
-	dh_gencontrol -- -DVersion=$(SZARP_VERSION)
+	dh_gencontrol
 	dh_md5sums 
 	dh_builddeb 
 
@@ -221,7 +219,7 @@ sanity_check:
 binary: sanity_check configure binary-arch binary-indep
 	
 source: sanity_check clean
-	@(cd ..; dpkg-source -b -DVersion=$(SZARP_VERSION) szarp)
+	@(cd ..; dpkg-source -b szarp)
 
 all: source binary
 
