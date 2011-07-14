@@ -2,6 +2,9 @@
 	* script/version-info, Makefile.am, debian/rules: file 'current_tag'
 	not needed in building process, generation of version.info moved to
 	'make install' from external building script
+	* configure.in, debian/control,
+	resources/documentation/new/Makefile.am: fixed building pdfs when
+	LC_ALL is UTF-8
 2011-07-12	Krzysztof O³owski <kolowski@dalkiaterm.pl>
 	* AUTHORS: add Daniel Majewski as a brand new developer
 2011-07-12	Krzysztof Ga³±zka <kg@newterm.pl>
