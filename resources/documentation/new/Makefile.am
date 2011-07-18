@@ -92,7 +92,7 @@ SGMLHELP=../../../../script/sgml2hlpctrl.pl
 	cd $(dir $<)pdf; $(JADE) -d $(STYLE)\#print -t tex \
 	-o $(notdir $(basename $<).tex) ../$(notdir $<); \
 	cat $(notdir $(basename $<).tex) \
-	| konwert iso2-ascii/tex > \
+	| ../../../../../script/change-tex-pl-entities.sh > \
 	polish-ent.tex.tmp; mv polish-ent.tex.tmp $(notdir $(basename $<).tex); \
 	pdfjadetex $(notdir $(basename $<).tex) 2>&1 >/dev/null; \
 	pdfjadetex $(notdir $(basename $<).tex) 2>&1 >/dev/null; \
