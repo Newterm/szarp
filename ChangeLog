@@ -1,3 +1,6 @@
+2011-07-15	Krzysztof Ga³±zka <kg@newterm.pl>
+	* utils/ddeproxy: rewrite setup.py to build service, added README.txt
+	with instalation instructions
 2011-07-14	Krzysztof Ga³±zka <kg@newterm.pl>
 	* script/version-info, Makefile.am, debian/rules: file 'current_tag'
 	not needed in building process, generation of version.info moved to
