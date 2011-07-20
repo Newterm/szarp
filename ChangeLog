@@ -1,3 +1,7 @@
+2011-07-20	Krzysztof Ga³±zka <kg@newterm.pl>
+	* resources/documentation/new/Makefile.am,
+	script/change-tex-pl-entities2.sh: pdf building fix - konwert doesnt
+	work properly
 2011-07-15	Krzysztof Ga³±zka <kg@newterm.pl>
 	* utils/ddeproxy: rewrite setup.py to build service, added README.txt
 	with instalation instructions
