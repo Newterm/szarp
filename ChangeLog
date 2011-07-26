@@ -1,3 +1,20 @@
+
+2011-07-26	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2/ipk/tparam.cc: fix in automatic setting of hoursum attribute
+	* wx/draw3: it is now possible to configure graph scaling for user defined
+	draws
+	* wx/draw3: addition to x/y graphs - points on a graph are surrounded
+	by circles with radius proportional to log2(number of data points
+	covered by the point on a graph)
+	* wx/draw3: a fix in program behviour on set switch, previous behaviour ex.:
+	1. the 2nd graph is selected as current draw
+	2. the user switches to some other draws' set where 2nd graph is disabled
+	3. draw3 enables 2nd graph and keeps 2nd graph the current graph
+	current behaviour:
+	steps 1,2 as before
+	3. draw3 looks for first graph enabled in new set and sets is as current
+	* wx/draw3: code for calculation of Y point position for all view
+	types moved to graphsutils.cpp
 2011-07-20	Krzysztof Ga³±zka <kg@newterm.pl>
 	* resources/documentation/new/Makefile.am,
 	script/change-tex-pl-entities2.sh: pdf building fix - konwert doesnt
