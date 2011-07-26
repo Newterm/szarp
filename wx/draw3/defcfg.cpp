@@ -76,8 +76,11 @@ DefinedDrawInfo::DefinedDrawInfo(DrawInfo *di, DefinedDrawsSets* ds)
 	m_short_changed = false;
 	m_min_changed = false;
 	m_max_changed = false;
-	m_col_changed = false;
 	m_special_changed = false;
+	m_scale_changed = false;
+	m_min_scale_changed = false;
+	m_max_scale_changed = false;
+	m_col_changed = false;
 	m_unit_changed = false;
 
 	m_base_draw = di->GetDraw()->GetWindow();
@@ -94,6 +97,9 @@ DefinedDrawInfo::DefinedDrawInfo(DefinedDrawsSets* ds)
 	m_short_changed = false;
 	m_min_changed = false;
 	m_max_changed = false;
+	m_scale_changed = false;
+	m_min_scale_changed = false;
+	m_max_scale_changed = false;
 	m_col_changed = false;
 	m_special_changed = false;
 	m_unit_changed = false;
@@ -109,6 +115,9 @@ DefinedDrawInfo::DefinedDrawInfo(EkrnDefDraw &edd, DefinedDrawsSets* ds) :
 	m_short_changed = false;
 	m_min_changed = false;
 	m_max_changed = false;
+	m_scale_changed = false;
+	m_min_scale_changed = false;
+	m_max_scale_changed = false;
 	m_col_changed = false;
 	m_special_changed = false;
 	m_unit_changed = false;
@@ -144,6 +153,9 @@ DefinedDrawInfo::DefinedDrawInfo(wxString draw_name,
 	m_short_changed = true;
 	m_min_changed = true;
 	m_max_changed = true;
+	m_scale_changed = false;
+	m_min_scale_changed = false;
+	m_max_scale_changed = false;
 	m_col_changed = true;
 	m_special_changed = true;
 	m_unit_changed = true;
@@ -171,11 +183,58 @@ void DefinedParam::CreateParam() {
 	m_param->SetLuaStartDateTime(m_start_time);
 }
 
+void DefinedDrawInfo::SetScale(int scale) {
+	if (scale == GetScale())
+		return;
+
+	m_ds->SetModified();
+
+	m_scale_changed = true;
+	m_scale = scale;
+}
+
 int DefinedDrawInfo::GetScale() {
+	if (m_scale_changed)
+		return m_scale;
+
 	if (d == NULL)
 		return 0;
 	else
 		return DrawInfo::GetScale();
+}
+
+void DefinedDrawInfo::SetScaleMin(double min_scale) {
+	if (GetScaleMin() == min_scale)
+		return;
+	
+	m_ds->SetModified();
+
+	m_min_scale_changed = true;	
+	m_min_scale = min_scale;
+}
+
+double DefinedDrawInfo::GetScaleMin() {
+	if (m_min_scale_changed)
+		return m_min_scale;
+
+	return DrawInfo::GetScaleMin();
+}
+
+void DefinedDrawInfo::SetScaleMax(double max_scale) {
+	if (GetScaleMax() == max_scale)
+		return;
+	
+	m_ds->SetModified();
+
+	m_max_scale_changed = true;	
+	m_max_scale = max_scale;
+}
+
+double DefinedDrawInfo::GetScaleMax() {
+	if (m_max_scale_changed)
+		return m_max_scale;
+
+	return DrawInfo::GetScaleMax();
 }
 
 wxString DefinedDrawInfo::GetParamName() {
@@ -378,6 +437,21 @@ void DefinedDrawInfo::GenerateXML(xmlNodePtr parent) {
 
 	if (m_unit_changed) {
 		xmlSetProp(draw, X "unit", SC::S2U(m_unit).c_str());
+		any = true;
+	}
+
+	if (m_scale_changed) {
+		xmlSetProp(draw, X "scale",(const xmlChar*) ((std::stringstream&)(std::stringstream() << m_scale)).str().c_str()); 
+		any = true;
+	}
+
+	if (m_min_scale_changed) {
+		xmlSetProp(draw, X "min_scale",(const xmlChar*) ((std::stringstream&)(std::stringstream() << m_min_scale)).str().c_str()); 
+		any = true;
+	}
+
+	if (m_max_scale_changed) {
+		xmlSetProp(draw, X "max_scale",(const xmlChar*) ((std::stringstream&)(std::stringstream() << m_max_scale)).str().c_str()); 
 		any = true;
 	}
 
@@ -592,6 +666,42 @@ void DefinedDrawInfo::ParseDrawElement(xmlNodePtr d) {
 		xmlFree(a_min);
 
 		m_min_changed = true;
+	}
+
+	xmlChar *a_scale = xmlGetProp(d, X "scale");
+	if (a_scale != NULL) {
+		std::wstringstream ss;
+
+		ss << SC::U2S(a_scale);
+		ss >> m_scale;
+
+		xmlFree(a_scale);
+
+		m_scale_changed = true;
+	}
+
+	xmlChar *a_min_scale = xmlGetProp(d, X "min_scale");
+	if (a_min_scale != NULL) {
+		std::wstringstream ss;
+
+		ss << SC::U2S(a_min_scale);
+		ss >> m_min_scale;
+
+		xmlFree(a_min_scale);
+
+		m_min_scale_changed = true;
+	}
+
+	xmlChar *a_max_scale = xmlGetProp(d, X "max_scale");
+	if (a_max_scale != NULL) {
+		std::wstringstream ss;
+
+		ss << SC::U2S(a_max_scale);
+		ss >> m_max_scale;
+
+		xmlFree(a_max_scale);
+
+		m_max_scale_changed = true;
 	}
 
 	xmlChar *a_unit = xmlGetProp(d, X "unit");

@@ -54,6 +54,8 @@ public:
 
 	void OnCancel(wxCommandEvent & event);
 
+	void OnScaleValueChanged(wxCommandEvent& event);
+
 	/**Start edition of e draw*/
 	int Edit(DefinedDrawInfo * draw);
 
@@ -68,6 +70,12 @@ public:
 	double GetMin();
 
 	double GetMax();
+
+	int GetScale();
+
+	double GetScaleMin();
+
+	double GetScaleMax();
 
 	wxColour GetColor();
 
@@ -102,6 +110,15 @@ private:
 		/** Max value input */
 	wxTextCtrl *m_max_input;
 
+		/** Scale input */
+	wxTextCtrl *m_scale_input;
+
+		/** Min scale value input */
+	wxTextCtrl *m_min_scale_input;
+
+		/** Max scale value input */
+	wxTextCtrl *m_max_scale_input;
+
 	wxTextCtrl *m_unit_input;
 
 	wxCheckBox *m_summary_checkbox;
@@ -111,6 +128,15 @@ private:
 
 	/** Max value */
 	double m_max;
+
+	/** Scale value */	
+	int m_scale;
+
+	/** Min scale value */	
+	double m_min_scale;	
+
+	/** Mac scale value */	
+	double m_max_scale;	
 
 	bool m_color_set;
 

@@ -95,13 +95,21 @@ void DrawsController::DisableDisabledDraws() {
 		if (di != NULL &&
 				m_disabled_draws.find(std::make_pair(di->GetSetName(), std::make_pair(di->GetName(), (*i)->GetDrawNo()))) 
 					!= m_disabled_draws.end()) {
-			if (m_selected_draw != int(std::distance(m_draws.begin(), i))) 
-				(*i)->SetEnable(false);
+			(*i)->SetEnable(false);
 			any_disabled_draw_present = true;
 		} else {
 			(*i)->SetEnable(true);
 		}
 	}
+
+	if (m_draws[m_selected_draw]->GetEnable() == false) for (std::vector<Draw*>::iterator i = m_draws.begin(); i != m_draws.end(); i++) 
+		if ((*i)->GetEnable()) {
+			m_selected_draw = std::distance(m_draws.begin(), i);
+			break;
+		}
+
+	if (m_draws[m_selected_draw]->GetEnable() == false)
+		m_draws[m_selected_draw]->SetEnable(true);
 	
 	if (!any_disabled_draw_present) for (size_t i = MAXIMUM_NUMBER_OF_INITIALLY_ENABLED_DRAWS; i < m_draws.size(); i++) {
 		DrawInfo *di = m_draws[i]->GetDrawInfo();

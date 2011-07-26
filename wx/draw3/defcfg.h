@@ -219,6 +219,18 @@ private:
 	/** User chagned draw unit*/
 	bool m_unit_changed;
 
+	bool m_scale_changed;
+
+	double m_scale;	
+
+	bool m_min_scale_changed;
+
+	double m_min_scale;	
+
+	bool m_max_scale_changed;
+
+	double m_max_scale;
+
 	wxString m_param_name;
 
 	wxString m_base_prefix;
@@ -275,8 +287,6 @@ public:
 
 	void SetColorFromBaseDrawInfo(const wxColour &color);
 
-	virtual int GetScale();
-
 	void SetParam(DrawParam *d);
 
 	/** @return declared minimal value for draw */
@@ -299,6 +309,19 @@ public:
 	void SetShortName(wxString name);
 
 	void SetSetName(wxString window);
+
+	void SetScale(int scale);
+
+	int GetScale();
+
+	void SetScaleMin(double scale);
+
+	double GetScaleMin();
+
+	void SetScaleMax(double scale);
+
+	double GetScaleMax();
+
 	/** User changed long name (title in draw) */
 	void SetUnit(wxString unit);
 

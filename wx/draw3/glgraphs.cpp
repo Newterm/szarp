@@ -373,41 +373,12 @@ float GLGraphs::GetX(int i, const size_t& pc) {
 }
 
 float GLGraphs::GetY(double value, DrawInfo *di) {
-	double max = di->GetMax();
-	double min = di->GetMin();
 
-	double dmax = max - min;
-	double dmin = 0;
-
-	double smin = 0;
-	double smax = 0;
-	double k = 0;
-
-	int sc = di->GetScale();
-	if (sc) {
-		smin = di->GetScaleMin() - min;
-		smax = di->GetScaleMax() - min;
-		assert(smax > smin);
-		k = sc / 100. * (dmax - dmin) / (smax - smin);
-		dmax += (k - 1) * (smax - smin);
-	}
-
-	double dif = dmax - dmin;
-	if (dif <= 0) {
-		wxLogError(_T("%s %f %f"), di->GetName().c_str(), min, max);
-		assert(false);
-	}
-
-	double dvalue = value - min;
-
-	double scaled = 
-		wxMax(dvalue - smax, 0) +
-		wxMax(wxMin(dvalue - smin, smax - smin), 0) * k +
-		wxMax(wxMin(dvalue - dmin, smin), 0);
+	double y = get_y_position(value, di);
 
 	int height = m_size.GetHeight() - m_screen_margins.topmargin - m_screen_margins.bottommargin;
 
-	float ret = height * scaled / dif + m_screen_margins.bottommargin;
+	float ret = height * y + m_screen_margins.bottommargin;
 
 	ret = wxMin(ret, m_size.GetHeight() - m_screen_margins.topmargin);
 

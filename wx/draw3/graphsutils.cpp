@@ -159,3 +159,41 @@ wxString get_date_string(PeriodType period, const wxDateTime& prev_date, const w
 	}
 	return ret;
 }
+
+double get_y_position(const double& value, DrawInfo* di) {
+	double max = di->GetMax();
+	double min = di->GetMin();
+
+	double dif = max - min;
+
+	if (dif <= 0) {
+		wxLogInfo(_T("%s %f %f"), di->GetName().c_str(), min, max);
+		assert(false);
+	}
+
+	int sc = di->GetScale();
+	double ret;
+	if (sc) {
+		double smin, smax, sdif, k;
+
+		smin = di->GetScaleMin();
+		smax = di->GetScaleMax();
+
+		assert(smax > smin);
+		
+		sdif = smax - smin;
+
+		k = (dif - sdif) / sdif / (1 / (sc / 100.) - 1);
+
+		double scaled = wxMax(value - smax, 0) +
+			wxMax(wxMin(value - smin, smax - smin), 0) * k +
+			wxMax(wxMin(value - min, smin), 0);
+
+		ret = scaled / (dif + (k - 1) * sdif);
+
+	} else {
+		ret = value / dif;
+	}
+
+	return ret;
+}

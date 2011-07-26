@@ -107,6 +107,12 @@ DrawEdit::DrawEdit(wxWindow * parent, wxWindowID id, const wxString title,
 	// max value input
 	m_max_input = XRCCTRL(*this, "text_ctrl_max", wxTextCtrl);
 
+	m_scale_input = XRCCTRL(*this, "text_ctrl_scale_percentage", wxTextCtrl);
+
+	m_min_scale_input = XRCCTRL(*this, "text_ctrl_scale_min_value", wxTextCtrl);
+
+	m_max_scale_input = XRCCTRL(*this, "text_ctrl_scale_max_value", wxTextCtrl);
+
 	// SimleColorPicker calling button
 	m_color_button = XRCCTRL(*this, "button_colour", wxButton);
 
@@ -191,6 +197,30 @@ void DrawEdit::OnOK(wxCommandEvent & event)
 		return;
 	}
 
+	std::wistringstream sss(m_scale_input->GetValue().c_str());
+	sss >> m_scale;
+	if (!sss.eof() || sss.fail() || m_scale < 0) {
+		wxMessageBox(_("Invalid value of scale percentage, must be a positive integer."), _("Wrong value"),
+			     wxOK | wxICON_ERROR, this);
+		return;
+	}
+
+	std::wistringstream masss(m_max_scale_input->GetValue().c_str());
+	masss >> m_max_scale;
+	if (!masss.eof() || masss.fail() || m_max_scale > m_max || m_max_scale < m_min) {
+		wxMessageBox(_("Invalid value of max percentage, must be a number falling within min and max values."), _("Wrong value"),
+			     wxOK | wxICON_ERROR, this);
+		return;
+	}
+
+	std::wistringstream misss(m_min_scale_input->GetValue().c_str());
+	misss >> m_min_scale;
+	if (!misss.eof() || misss.fail() || m_min_scale >= m_max_scale || m_min_scale < m_min) {
+		wxMessageBox(_("Invalid value of min percentage, must be a number greter than or equal to min value and less than max scale value."), _("Wrong value"),
+			     wxOK | wxICON_ERROR, this);
+		return;
+	}
+
 	Close();
 }
 
@@ -200,6 +230,18 @@ void DrawEdit::OnCancel(wxCommandEvent & event) {
 	else {
 		SetReturnCode(wxID_CANCEL);
 		Show(false);
+	}
+}
+
+void DrawEdit::OnScaleValueChanged(wxCommandEvent& e) {
+	wxString scale_value = m_scale_input->GetValue();
+	long value;
+	if (!scale_value.ToLong(&value) || value <= 0 || value > 99) {
+		m_min_scale_input->Enable(false);
+		m_max_scale_input->Enable(false);
+	} else {
+		m_min_scale_input->Enable(true);
+		m_max_scale_input->Enable(true);
 	}
 }
 
@@ -233,8 +275,14 @@ int DrawEdit::Edit(DefinedDrawInfo * draw)
 
 	m_long_txt->SetValue(old_long_name);
 	m_short_txt->SetValue(old_short_name);
+
 	m_min_input->SetValue(draw->GetValueStr(draw->GetMin(), _T("")));
 	m_max_input->SetValue(draw->GetValueStr(draw->GetMax(), _T("")));
+
+	m_scale_input->SetValue(wxString::Format(_T("%d"), draw->GetScale()));
+	m_min_scale_input->SetValue(draw->GetValueStr(draw->GetScaleMin(), _T("")));
+	m_max_scale_input->SetValue(draw->GetValueStr(draw->GetScaleMax(), _T("")));
+
 	m_color_button->SetBackgroundColour(old_color);
 	m_color_set = true;
 
@@ -277,6 +325,18 @@ wxString DrawEdit::GetUnit() {
 
 double DrawEdit::GetMax() {
 	return m_max;
+}
+
+int DrawEdit::GetScale() {
+	return m_scale;
+}
+
+double DrawEdit::GetScaleMin() {
+	return m_min_scale;
+}
+
+double DrawEdit::GetScaleMax() {
+	return m_max_scale;
 }
 
 DrawPicker::DrawPicker(wxWindow* parent, ConfigManager * cfg, DatabaseManager *dbmgr)
@@ -503,6 +563,10 @@ void DrawPicker::Edit()
 
 	draw->SetMax(m_draw_edit->GetMax());
 	draw->SetMin(m_draw_edit->GetMin());
+
+	draw->SetScale(m_draw_edit->GetScale());
+	draw->SetScaleMin(m_draw_edit->GetScaleMin());
+	draw->SetScaleMax(m_draw_edit->GetScaleMax());
 		
 	m_modified = true;
 
@@ -921,6 +985,7 @@ BEGIN_EVENT_TABLE(DrawEdit, wxDialog)
     EVT_BUTTON(wxID_OK, DrawEdit::OnOK)
     EVT_BUTTON(wxID_CANCEL, DrawEdit::OnCancel)
     EVT_BUTTON(XRCID("button_colour"), DrawEdit::OnColor)
+    EVT_TEXT(XRCID("text_ctrl_scale_percentage"), DrawEdit::OnScaleValueChanged)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(DrawPicker, wxDialog)

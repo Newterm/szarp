@@ -1655,11 +1655,8 @@ void XYGraphPainter::DrawGraph(wxDC *dc) {
 	m_graph->point2group.clear();
 	m_graph->points_groups.clear();
 
-	std::map< int, std::map<int, std::list<int> > > points;
-
-	wxPen pen = dc->GetPen();
-	pen.SetColour(m_graph->m_di[1]->GetDrawColor());
-	dc->SetPen(pen);
+	std::map<int,std::map<int, std::list<int> > > points;
+	std::map<int,std::map<int, int> > data_points_count;
 
 	for (size_t i = 0; i < m_graph->m_visible_points.size(); ++i) {
 		int x,y;
@@ -1667,9 +1664,11 @@ void XYGraphPainter::DrawGraph(wxDC *dc) {
 
 		points[x][y].push_front(i);
 
-		dc->DrawPoint(x, y);
-		if (m_graph->m_averaged) 
-			dc->DrawCircle(x, y, 2);
+		if (data_points_count.find(x) == data_points_count.end() || data_points_count[x].find(y) == data_points_count[x].end())
+			data_points_count[x][y] = m_graph->ViewPoint(i).second.size();
+		else
+			data_points_count[x][y] += m_graph->ViewPoint(i).second.size();
+
 	}
 
 	int groups = 0;
@@ -1677,21 +1676,51 @@ void XYGraphPainter::DrawGraph(wxDC *dc) {
 	std::map<int, std::list<int> >::iterator j;
 	std::list<int>::iterator iter;
 
-	for(i = points.begin(); i != points.end(); i++) {
-		for(j = i->second.begin(); j != i->second.end(); j++) {
+	for (i = points.begin(); i != points.end(); i++) for (j = i->second.begin(); j != i->second.end(); j++) {
 
-			if(j->second.size() > 1) {
+		if (j->second.size() <= 1)
+			continue;
 
-				m_graph->points_groups.push_back(j->second);
+		m_graph->points_groups.push_back(j->second);
 
-				for(iter = m_graph->points_groups[groups].begin(); iter != m_graph->points_groups[groups].end(); iter++) {
-					m_graph->point2group[*iter] = groups;
+		for (iter = m_graph->points_groups[groups].begin(); iter != m_graph->points_groups[groups].end(); iter++) 
+			m_graph->point2group[*iter] = groups;
+
+		groups++;
+	}
+
+	wxColour col = m_graph->m_di[1]->GetDrawColor();
+	wxPen pen = dc->GetPen();
+
+	if (!m_graph->m_averaged) {
+		wxColour col2(col.Red() / 2, col.Green() / 2, col.Blue() / 2);
+		dc->SetBrush(col2);
+
+		pen.SetColour(col2);
+		dc->SetPen(pen);
+
+		for (std::map<int, std::map<int, int> >::iterator i = data_points_count.begin(); i != data_points_count.end(); i++)
+			for (std::map<int, int>::iterator j = i->second.begin(); j != i->second.end(); j++) {
+				if (j->second <= 1)
+					continue;
+				int r = log(j->second) / log(2);
+				if (r > 1) {
+					if (r > 20)
+						r = 20;
+					dc->DrawCircle(i->first, j->first, r);
 				}
-				groups++;
 			}
+	}
 
-		}
+	dc->SetBrush(wxNullBrush);
 
+	pen.SetColour(col);
+	dc->SetPen(pen);
+
+	for (i = points.begin(); i != points.end(); i++) for (j = i->second.begin(); j != i->second.end(); j++) {
+		dc->DrawPoint(i->first, j->first);
+		if (m_graph->m_averaged) 
+			dc->DrawCircle(i->first, j->first, 2);
 	}
 
 }
