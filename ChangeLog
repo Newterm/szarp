@@ -1,3 +1,21 @@
+2011-07-20	Krzysztof Ga³±zka <kg@newterm.pl>
+	* resources/documentation/new/Makefile.am,
+	script/change-tex-pl-entities2.sh: pdf building fix - konwert doesnt
+	work properly
+2011-07-15	Krzysztof Ga³±zka <kg@newterm.pl>
+	* utils/ddeproxy: rewrite setup.py to build service, added README.txt
+	with instalation instructions
+2011-07-14	Krzysztof Ga³±zka <kg@newterm.pl>
+	* script/version-info, Makefile.am, debian/rules: file 'current_tag'
+	not needed in building process, generation of version.info moved to
+	'make install' from external building script
+	* configure.in, debian/control,
+	resources/documentation/new/Makefile.am: fixed building pdfs when
+	LC_ALL is UTF-8
+2011-07-12	Krzysztof O³owski <kolowski@dalkiaterm.pl>
+	* AUTHORS: add Daniel Majewski as a brand new developer
+2011-07-12	Krzysztof Ga³±zka <kg@newterm.pl>
+	* wx/common/szapp.cpp: Adding D. Majewski to Authors
 2011-07-09	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: two bug fixes
 2011-07-02	Darek Marcinkiewicz <reksio@newterm.pl>
