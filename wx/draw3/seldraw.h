@@ -184,6 +184,8 @@ protected:
 
 	/**Blocks, unblocks a draw*/
 	void OnDocs(wxCommandEvent &event);
+	
+	void OnCopyParamName(wxCommandEvent &event);
 
 	/** edit parametr */
 	void OnEditParam(wxCommandEvent &event);
