@@ -1,3 +1,5 @@
+2011-07-28	Krzysztof Ga³±zka <kg@newterm.pl>
+	* debian/control: fixed Build-Depends for unstable
 2011-07-28	Darek Marcinkiewicz <reksio@newterm.pl>
 	* debian/control: added package szarp-dbg-symbols, this package
 	contains all szarp binaries with debug symbols included, useful
