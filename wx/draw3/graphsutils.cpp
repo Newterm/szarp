@@ -187,12 +187,12 @@ double get_y_position(const double& value, DrawInfo* di) {
 
 		double scaled = wxMax(value - smax, 0) +
 			wxMax(wxMin(value - smin, smax - smin), 0) * k +
-			wxMax(wxMin(value - min, smin), 0);
+			wxMax(wxMin(value - min, smin - min), 0);
 
 		ret = scaled / (dif + (k - 1) * sdif);
 
 	} else {
-		ret = value / dif;
+		ret = (value - min) / dif;
 	}
 
 	return ret;

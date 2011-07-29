@@ -208,17 +208,25 @@ void DrawEdit::OnOK(wxCommandEvent & event)
 	std::wistringstream masss(m_max_scale_input->GetValue().c_str());
 	masss >> m_max_scale;
 	if (!masss.eof() || masss.fail() || m_max_scale > m_max || m_max_scale < m_min) {
-		wxMessageBox(_("Invalid value of max percentage, must be a number falling within min and max values."), _("Wrong value"),
+		if (m_scale) {
+			wxMessageBox(_("Invalid value of max percentage, must be a number falling within min and max values."), _("Wrong value"),
 			     wxOK | wxICON_ERROR, this);
-		return;
+			return;
+		} else {
+			m_max_scale = 0;
+		}
 	}
 
 	std::wistringstream misss(m_min_scale_input->GetValue().c_str());
 	misss >> m_min_scale;
 	if (!misss.eof() || misss.fail() || m_min_scale >= m_max_scale || m_min_scale < m_min) {
-		wxMessageBox(_("Invalid value of min percentage, must be a number greter than or equal to min value and less than max scale value."), _("Wrong value"),
-			     wxOK | wxICON_ERROR, this);
-		return;
+		if (m_scale) {
+			wxMessageBox(_("Invalid value of min percentage, must be a number greter than or equal to min value and less than max scale value."), _("Wrong value"),
+				     wxOK | wxICON_ERROR, this);
+			return;
+		} else {
+			m_min_scale = 0;
+		}
 	}
 
 	Close();

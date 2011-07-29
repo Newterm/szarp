@@ -216,8 +216,10 @@ void DefinedDrawInfo::SetScaleMin(double min_scale) {
 double DefinedDrawInfo::GetScaleMin() {
 	if (m_min_scale_changed)
 		return m_min_scale;
-
-	return DrawInfo::GetScaleMin();
+	else if (d)
+		return DrawInfo::GetScaleMin();
+	else
+		return 0;
 }
 
 void DefinedDrawInfo::SetScaleMax(double max_scale) {
@@ -233,8 +235,10 @@ void DefinedDrawInfo::SetScaleMax(double max_scale) {
 double DefinedDrawInfo::GetScaleMax() {
 	if (m_max_scale_changed)
 		return m_max_scale;
-
-	return DrawInfo::GetScaleMax();
+	else if (d)
+		return DrawInfo::GetScaleMax();
+	else
+		return 0;
 }
 
 wxString DefinedDrawInfo::GetParamName() {
