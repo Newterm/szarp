@@ -89,39 +89,9 @@ long int View::GetY(double value) const {
 
 	h -= m_bottommargin + m_topmargin;
 
-	double max = m_draw->GetDrawInfo()->GetMax();
-	double min = m_draw->GetDrawInfo()->GetMin();
+	double y = get_y_position(value, m_draw->GetDrawInfo());
 
-	double dmax = max - min;
-	double dmin = 0;
-
-	double smin = 0;
-	double smax = 0;
-	double k = 0;
-
-	int sc = m_draw->GetDrawInfo()->GetScale();
-	if (sc) {
-		smin = m_draw->GetDrawInfo()->GetScaleMin() - min;
-		smax = m_draw->GetDrawInfo()->GetScaleMax() - min;
-		assert(smax > smin);
-		k = sc / 100. * (dmax - dmin) / (smax - smin);
-		dmax += (k - 1) * (smax - smin);
-	}
-
-	double dif = dmax - dmin;
-	if (dif <= 0) {
-		wxLogInfo(_T("%s %f %f"), m_draw->GetDrawInfo()->GetName().c_str(), min, max);
-		assert(false);
-	}
-
-	double dvalue = value - min;
-
-	double scaled = 
-		wxMax(dvalue - smax, 0) +
-		wxMax(wxMin(dvalue - smin, smax - smin), 0) * k +
-		wxMax(wxMin(dvalue - dmin, smin), 0);
-
-	int ret = int(h - scaled * h / dif) + m_topmargin;
+	int ret = int(h - y * h) + m_topmargin;
 
 	if (ret < m_topmargin)
 		ret = m_topmargin;

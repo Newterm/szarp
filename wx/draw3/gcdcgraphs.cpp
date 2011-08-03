@@ -83,39 +83,9 @@ double GCDCGraphs::GetY(double value, DrawInfo *di) {
 
 	h -= m_screen_margins.bottommargin + m_screen_margins.topmargin;
 
-	double max = di->GetMax();
-	double min = di->GetMin();
+	double y = get_y_position(value, di);
 
-	double dmax = max - min;
-	double dmin = 0;
-
-	double smin = 0;
-	double smax = 0;
-	double k = 0;
-
-	int sc = di->GetScale();
-	if (sc) {
-		smin = di->GetScaleMin() - min;
-		smax = di->GetScaleMax() - min;
-		assert(smax > smin);
-		k = sc / 100. * (dmax - dmin) / (smax - smin);
-		dmax += (k - 1) * (smax - smin);
-	}
-
-	double dif = dmax - dmin;
-	if (dif <= 0) {
-		wxLogInfo(_T("%s %f %f"), di->GetName().c_str(), min, max);
-		assert(false);
-	}
-
-	double dvalue = value - min;
-
-	double scaled = 
-		wxMax(dvalue - smax, 0) +
-		wxMax(wxMin(dvalue - smin, smax - smin), 0) * k +
-		wxMax(wxMin(dvalue - dmin, smin), 0);
-
-	double ret = h - scaled * h / dif + m_screen_margins.topmargin;
+	double ret = h - y * h  + m_screen_margins.topmargin;
 
 	if (ret < m_screen_margins.topmargin)
 		ret = m_screen_margins.topmargin;

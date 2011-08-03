@@ -71,7 +71,7 @@ class boruta_driver {
 protected:
 	struct event_base* m_event_base;
 public:
-	void set_event_base(struct event_base* ev_base);
+	virtual void set_event_base(struct event_base* ev_base);
 };
 
 /**base class for server drivers, server drivers have a single numeric identifier,
@@ -93,8 +93,11 @@ class client_driver : public boruta_driver {
 protected:
 	client_manager* m_manager;
 public:
-	std::pair<size_t, size_t> & id();
-	void set_manager(client_manager* manager);
+	virtual const std::pair<size_t, size_t> & id();
+
+	virtual void set_id(std::pair<size_t, size_t> id);
+
+	virtual void set_manager(client_manager* manager);
 	/** through this method manager informs a driver that there was
 	 * problem with connection, if a connection could not be established,
 	 * bufev will be set to NULL, otherwise it will point to a buffer
@@ -135,6 +138,14 @@ class tcp_proxy_2_serial_client : public tcp_client_driver {
 	serial_client_driver* m_serial_client;
 public:
 	tcp_proxy_2_serial_client(serial_client_driver* _client_driver);
+
+	const std::pair<size_t, size_t> & id();
+
+	void set_id(std::pair<size_t, size_t> id);
+
+	void set_manager(client_manager* manager);
+
+	void set_event_base(struct event_base* ev_base);
 
 	virtual void connection_error(struct bufferevent *bufev);
 

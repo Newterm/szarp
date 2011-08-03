@@ -258,7 +258,6 @@ void SelectDrawWidget::SetChecked(int idx, bool checked) {
 
 void SelectDrawWidget::InsertSomeDraws(size_t start, size_t count) {
 	wxSizer *sizer = GetSizer();
-	DrawSet *selected_set = m_dc->GetSet();
 	int width = GetCheckBoxWidth();
 	ConfigNameHash& cnm = const_cast<ConfigNameHash&>(m_cfg->GetConfigTitles());
 
@@ -295,7 +294,7 @@ void SelectDrawWidget::InsertSomeDraws(size_t start, size_t count) {
 		else
 			m_cb_l[i]->SetValidator(SelectDrawValidator(m_draws_wdg, i, m_cb_l[i]));
 
-		m_cb_l[i]->SetBackgroundColour(selected_set->GetDrawColor(i));
+		m_cb_l[i]->SetBackgroundColour(draw_info->GetDrawColor());
 
 #ifdef MINGW32
 		m_cb_l[i]->Refresh();

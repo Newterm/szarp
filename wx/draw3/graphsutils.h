@@ -41,5 +41,6 @@ wxString get_date_string(PeriodType period, const wxDateTime& prev_date, const w
 
 wxString get_short_day_name(wxDateTime::WeekDay day);
 
+double get_y_position(const double& value, DrawInfo* di);
 
 #endif

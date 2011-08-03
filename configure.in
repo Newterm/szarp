@@ -100,6 +100,13 @@ if test "x$CONVERT" = "x" ; then
                      ])
 fi
 
+AC_CHECK_PROG([KONWERT], [konwert], [konwert], [])
+if test "x$KONWERT" = "x" ; then
+        AC_MSG_WARN([
+                      konwert program not found - docs generation won't work
+                     ])
+fi
+
 AC_CHECK_PROG([PDFJADETEX], [pdfjadetex], [pdfjadetex], [])
 if test "x$PDFJADETEX" = "x" ; then
         AC_MSG_WARN([
