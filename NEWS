@@ -6,6 +6,19 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.552
+#01.08.2011
+* Added debian package szarp-dbg-symbols, this package contains all szarp 
+binaries with debug symbols included, useful e.g. for analyzing cores from
+production machines.
+* Ability to configure graph scaling for user defined draws in draw3 program.
+* New feature for x/y graphs in draw3 program - points on a graph are 
+surrounded by circles with radius proportional to log2(number of data points
+covered by the point on a graph).
+* Fixes in draw3: fix in automatic setting of hoursum attribute, fix in 
+behaviour on switching to set with some draws disabled, fix in dealing
+with large draw sets.
+
 ** 3.1.544
 #01.07.2011
 * Added automatic assignment of colors for arbitrary number of draws in draw3

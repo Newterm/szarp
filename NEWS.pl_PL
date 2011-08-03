@@ -7,6 +7,21 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.552
+#01.08.2011
+* Dodana nowa paczka debianowa szarp-dbg-symbols, zawieraj±ca wszystkie 
+programy z do³±czonymi symbolami do ¶ledzenia b³êdów; przydatna przy analizie 
+zrzutów pamiêci z maszyn produkcyjnych.
+* Mo¿liwo¶æ konfiguracji skalowania osi wykresów w zestawach definiowalnych
+w programie przegl±daj±cym.
+* W wykresach X/Y w programie przegl±daj±cym punkty wykresu otoczone s± 
+okrêgami o promieniu proporcjonalnym do logarytmu z ilo¶ci pomiarów 
+odpowiadaj±cych danemu punktowi na wykresie.
+* Poprawki w programie przegl±daj±cym: poprawka w automatycznym ustawianiu
+sumowania godzinowego dla wykresów, poprawka przy prze³±czaniu na zestaw z
+wy³±czonymi niektórymi wykresami, poprawka w obs³udze zestawów z du¿± ilo¶ci±
+wykresów.
+
 ** 3.1.544
 #01.07.2011
 * W programie przegl±daj±cym dodano automatyczne przydzielanie kolorów 
