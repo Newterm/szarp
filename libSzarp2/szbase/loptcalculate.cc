@@ -1310,10 +1310,10 @@ szb_block_t* ExecutionEngine::GetBlock(size_t param_index,
 	}
 }
 
-double ExecutionEngine::ValueBlock(size_t param_index, const time_t& time, SZB_BLOCK_TYPE block_type) {
+double ExecutionEngine::ValueBlock(ParamRef& ref, const time_t& time, SZB_BLOCK_TYPE block_type) {
 	double ret;
 
-	szb_block_t* block = GetBlock(param_index, time, block_type);
+	szb_block_t* block = GetBlock(ref.m_param_index, time, block_type);
 	if (block) {
 		time_t timediff = time - block->GetStartTime();
 		int probe_index;
@@ -1344,11 +1344,10 @@ double ExecutionEngine::ValueBlock(size_t param_index, const time_t& time, SZB_B
 	return ret;
 }
 
-double ExecutionEngine::ValueAvg(size_t param_index, const time_t& time, const double& period_type) {
+double ExecutionEngine::ValueAvg(ParamRef& ref, const time_t& time, const double& period_type) {
 	bool fixed;
-	ParamRef& v = m_param->m_par_refs[param_index];	
 	time_t ptime = szb_round_time(time, (SZARP_PROBE_TYPE) period_type, 0);
-	double ret = szb_get_avg(v.m_buffer, v.m_param, ptime, szb_move_time(ptime, 1, (SZARP_PROBE_TYPE)period_type, 0), NULL, NULL, (SZARP_PROBE_TYPE)period_type, &fixed);
+	double ret = szb_get_avg(ref.m_buffer, ref.m_param, ptime, szb_move_time(ptime, 1, (SZARP_PROBE_TYPE)period_type, 0), NULL, NULL, (SZARP_PROBE_TYPE)period_type, &fixed);
 	if (!fixed)
 		m_fixed = false;
 	return ret;
@@ -1357,13 +1356,18 @@ double ExecutionEngine::ValueAvg(size_t param_index, const time_t& time, const d
 double ExecutionEngine::Value(size_t param_index, const double& time_, const double& period_type) {
 	time_t time = time_;
 
+	ParamRef& ref = m_param->m_par_refs[param_index];
+
+	if (ref.m_param->GetFormulaType() == TParam::LUA_AV)
+		return ValueAvg(ref, time, period_type);
+
 	switch ((SZARP_PROBE_TYPE) period_type) {
 		case PT_MIN10: 
-			return ValueBlock(param_index, time, MIN10_BLOCK);
+			return ValueBlock(ref, time, MIN10_BLOCK);
 		case PT_SEC10:
-			return ValueBlock(param_index, time, SEC10_BLOCK);
+			return ValueBlock(ref, time, SEC10_BLOCK);
 		default: 
-			return ValueAvg(param_index, time, period_type);
+			return ValueAvg(ref, time, period_type);
 	}
 }
 

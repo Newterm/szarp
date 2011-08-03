@@ -104,8 +104,8 @@ public:
 	void CalculateValue(time_t t, SZARP_PROBE_TYPE probe_type, double &val, bool &fixed);
 
 	double Value(size_t param_index, const double& time, const double& period_type);
-	double ValueBlock(size_t param_index, const time_t& time, SZB_BLOCK_TYPE block_type);
-	double ValueAvg(size_t param_index, const time_t& time, const double& period_type);
+	double ValueBlock(ParamRef& ref, const time_t& time, SZB_BLOCK_TYPE block_type);
+	double ValueAvg(ParamRef& ref, const time_t& time, const double& period_type);
 
 	std::vector<double>& Vars();
 

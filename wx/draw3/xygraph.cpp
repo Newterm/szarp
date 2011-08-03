@@ -1671,58 +1671,45 @@ void XYGraphPainter::DrawGraph(wxDC *dc) {
 
 	}
 
+	wxColour col = m_graph->m_di[1]->GetDrawColor();
+
+	wxPen pen = dc->GetPen();
+	pen.SetColour(col);
+
+	dc->SetPen(pen);
+	dc->SetBrush(wxNullBrush);
+
 	int groups = 0;
 	std::map< int, std::map<int, std::list<int> > >::iterator i;
 	std::map<int, std::list<int> >::iterator j;
 	std::list<int>::iterator iter;
 
 	for (i = points.begin(); i != points.end(); i++) for (j = i->second.begin(); j != i->second.end(); j++) {
+		if (j->second.size() > 1) {
+			m_graph->points_groups.push_back(j->second);
 
-		if (j->second.size() <= 1)
-			continue;
+			for (iter = m_graph->points_groups[groups].begin(); iter != m_graph->points_groups[groups].end(); iter++) 
+				m_graph->point2group[*iter] = groups;
 
-		m_graph->points_groups.push_back(j->second);
+			groups++;
+		}
 
-		for (iter = m_graph->points_groups[groups].begin(); iter != m_graph->points_groups[groups].end(); iter++) 
-			m_graph->point2group[*iter] = groups;
+		if (m_graph->m_averaged) {
+			int radius = 2; 
+			int data_points = data_points_count[i->first][j->first];
 
-		groups++;
-	}
-
-	wxColour col = m_graph->m_di[1]->GetDrawColor();
-	wxPen pen = dc->GetPen();
-
-	if (!m_graph->m_averaged) {
-		wxColour col2(col.Red() / 2, col.Green() / 2, col.Blue() / 2);
-		dc->SetBrush(col2);
-
-		pen.SetColour(col2);
-		dc->SetPen(pen);
-
-		for (std::map<int, std::map<int, int> >::iterator i = data_points_count.begin(); i != data_points_count.end(); i++)
-			for (std::map<int, int>::iterator j = i->second.begin(); j != i->second.end(); j++) {
-				if (j->second <= 1)
-					continue;
-				int r = log(j->second) / log(2);
+			if (data_points > 1) {
+				int r = log(data_points) / log(2);
 				if (r > 1) {
 					if (r > 20)
 						r = 20;
-					dc->DrawCircle(i->first, j->first, r);
+					radius += r;
 				}
 			}
-	}
-
-	dc->SetBrush(wxNullBrush);
-
-	pen.SetColour(col);
-	dc->SetPen(pen);
-
-	for (i = points.begin(); i != points.end(); i++) for (j = i->second.begin(); j != i->second.end(); j++) {
+			dc->DrawCircle(i->first, j->first, radius);
+		}
 		dc->DrawPoint(i->first, j->first);
-		if (m_graph->m_averaged) 
-			dc->DrawCircle(i->first, j->first, 2);
 	}
-
 }
 
 void XYGraphPainter::DrawDrawsInfo(wxDC *dc, int xdisp, int y) {

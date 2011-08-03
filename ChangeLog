@@ -1,3 +1,10 @@
+2011-08-03	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2/szbase: there was a problem with
+	calculatig optimized LUA params - when such param
+	was referencing LUA_AV parameter, 'no data' was always
+	returned
+	* wx/draw3: x/y graph - circles around points drawn
+	in points averaging mode
 2011-07-29	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: 3 minor bugfixes
 2011-07-28	Krzysztof Ga³±zka <kg@newterm.pl>
