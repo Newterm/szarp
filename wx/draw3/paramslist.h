@@ -91,6 +91,8 @@ public:
 
 	void SelectCurrentParam();
 
+	int ShowModal();
+
 	DefinedParam* GetSelectedParam();
 
 	DECLARE_EVENT_TABLE()

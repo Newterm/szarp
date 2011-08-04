@@ -1,3 +1,9 @@
+2011-08-04	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: params' list dialog wasn't refreshed properly
+	when a user param was changed from 'edit user param' option
+	on draws' list in main window - it lead to program crash
+	when an attempt was made to later edit such param from params'
+	list dialog
 2011-08-04	Pawel Palucha <pawel@newterm.pl>
 	* libSzarp2/ipk/tparam.cc: fixed possible segfault when accessing null
 	name member of no-element xml node structure.

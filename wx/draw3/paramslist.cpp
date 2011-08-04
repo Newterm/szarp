@@ -358,6 +358,11 @@ void ParamsListDialog::SelectCurrentParam() {
 	}
 }
 
+int ParamsListDialog::ShowModal() {
+	LoadParams();
+	return wxDialog::ShowModal();
+}
+
 void ParamsListDialog::OnListItemActivated(wxListEvent &e) {
 	m_selected_index = e.GetIndex();
 	SelectCurrentParam();
