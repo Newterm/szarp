@@ -473,6 +473,9 @@ TParam::parseXML(xmlNodePtr node)
     
 
     for (ch = node->children; ch; ch = ch->next)
+	if (ch->type != XML_ELEMENT_NODE) {
+		continue;
+	}
 	if (!strcmp((char *) ch->name, "value")) {
 	    NEEDATR(ch, "int");
 	    i = atoi((char*)c);
