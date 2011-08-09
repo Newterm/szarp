@@ -472,7 +472,7 @@ TParam::parseXML(xmlNodePtr node)
     }
     
 
-    for (ch = node->children; ch; ch = ch->next)
+    for (ch = node->children; ch; ch = ch->next) {
 	if (ch->type != XML_ELEMENT_NODE) {
 		continue;
 	}
@@ -520,6 +520,7 @@ TParam::parseXML(xmlNodePtr node)
 	    if (a != NULL)
 		AddAnalysis(a);
 	}
+    }
 
     if (!_values) {
 	NEEDATR(node, "prec"); _prec = atoi((char*)c);

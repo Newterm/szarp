@@ -1,3 +1,5 @@
+2011-08-09	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2/ipk/tparam.cc: fix of a fix
 2011-08-04	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: params' list dialog wasn't refreshed properly
 	when a user param was changed from 'edit user param' option
