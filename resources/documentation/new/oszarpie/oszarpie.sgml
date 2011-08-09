@@ -830,7 +830,24 @@ zbierania, archiwizacji i prezentacji danych w ciep³ownictwie.
  <entry>Proces warstwy u¿ytkowej uruchamiany na komputerze centralnym,
  dostêpny z poziomu u¿ytkownika w lokalnej sieci Xterminali, a tak¿e zdalnie
  za pomoc± ³±cza modemowego w oparciu o publiczn± komutowan± sieæ
- telefoniczn±.</entry>
+ telefoniczn±.
+ Raporter pobiera dane z serwera w nastêpuj±cey sposób: na pocz±tku demony
+ linii pobieraj± dane z poszczególnych urz±dzeñ i przekazuj± je do parcooka,
+ który to zarz±dza wszystkimi demonami, pobieraj±c od nich dane. Program
+ paramd jest serwerem HTTP, który pobiera dane od parcooka i
+ udostêpnia  zebrane informacje o warto¶ciach parametrów zbieranych przez
+ system SZARP w postaci gotowych dokumentów XML lub HTML. Na koñcu program
+ raporter wy¶wietla powy¿sze dane.
+ Prgram raporter komunikuje siê z serwerem za po¶rednictwem protoko³u TCP/IP.
+ Do uruchomienia programu raporter potrzebny nam jest adres serwera, z którego
+ proram ma pobraæ dane, a tak¿e port, przez który program siê komunikuje
+ z serwerem. Z regu³y jest to port 8081.
+ Mo¿liwe jest uruchomiene programu raporter w systemie Windows bez podanego
+ serwera i nazwy raportu, np. z menu Start w systemie Windows. W takiej
+ sytuacji program przy starcie spyta siê o adres serwera, a nastêpnie o wybór
+ wzorca. Mo¿emy tak¿e uruchomiæ program raporter z przegl±darki internetowej.
+ W tym celu nale¿y w pole adresu wpisaæ adres serwera oraz port, przez króry
+ program raporter bêdzie móg³ siê po³±czyæ z serwerem i pobraæ dane z niego.</entry>
 </row>
 <row>
  <entry>Przeznaczenie</entry>
