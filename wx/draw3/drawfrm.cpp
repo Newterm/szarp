@@ -629,6 +629,10 @@ void DrawFrame::OnPaste(wxCommandEvent &event) {
 	draw_panel->Paste();
 }
 
+void DrawFrame::OnCopyParamName(wxCommandEvent &event) {
+	draw_panel->OnCopyParamName(event);
+}
+
 void DrawFrame::OnClearCache(wxCommandEvent &event) {
 	draw_panel->ClearCache();
 }
@@ -1129,6 +1133,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("SEASON_RADIO"), DrawFrame::OnAverageChange)
     EVT_MENU(XRCID("Copy"), DrawFrame::OnCopy)
     EVT_MENU(XRCID("Paste"), DrawFrame::OnPaste)
+    EVT_MENU(XRCID("OnCopyParamName"), DrawFrame::OnCopyParamName)
     EVT_MENU(XRCID("ImportDraw2"), DrawFrame::OnImportDraw2Def)
     EVT_MENU(XRCID("ReloadConfiguration"), DrawFrame::OnReloadConfig)
     EVT_MENU(XRCID("ShowErrorWindow"), DrawFrame::OnErrorFrame)

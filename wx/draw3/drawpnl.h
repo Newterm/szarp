@@ -85,6 +85,8 @@ class DrawPanel : public wxPanel, public DrawObserver {
 	/**Show/hides summary window, toolbar icon event handler*/
 	void OnSummaryWindow(wxCommandEvent &event);
 
+	void OnCopyParamName(wxCommandEvent &event);
+
 	/**Activates/deacivates panel, if panel is deactivated all extra windows
 	 * (@see RelWindow, @see PieWindow, @see SummaryWindow) are hiden. If panel
 	 * is activated all extra windows that were hidding while panlel was deacivated,

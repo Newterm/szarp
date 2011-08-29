@@ -8,14 +8,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-06-25 21:51+0100\n"
+"POT-Creation-Date: 2011-08-29 11:09+0200\n"
 "PO-Revision-Date: 2008-07-16 11:40+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: \n"
 
 # "Wczytywanie konfiguracji: "
 #: cfgmgr.cpp:530
@@ -38,10 +38,10 @@ msgstr ""
 "gespeichert weden."
 
 # "B³±d"
-#: cfgmgr.cpp:1129 drawfrm.cpp:646 drawpsc.cpp:424 drawpsc.cpp:437
+#: cfgmgr.cpp:1129 drawfrm.cpp:650 drawpsc.cpp:424 drawpsc.cpp:437
 #: drawpsc.cpp:446 drawpsc.cpp:455 paramslist.cpp:290 paramslist.cpp:330
 #: paramslist.cpp:347 paredit.cpp:213 remarks.cpp:803 remarks.cpp:1055
-#: seldraw.cpp:473
+#: seldraw.cpp:509
 msgid "Error"
 msgstr "Fehler"
 
@@ -66,7 +66,7 @@ msgid "Export of set to file: %s failed"
 msgstr ""
 
 # msgstr "B³±d"
-#: cfgmgr.cpp:1283 defcfg.cpp:1549 defcfg.cpp:1556 paramslist.cpp:240
+#: cfgmgr.cpp:1283 defcfg.cpp:1637 defcfg.cpp:1644 paramslist.cpp:240
 #: paramslist.cpp:284 paramslist.cpp:323
 msgid "Error!"
 msgstr "Fehler!"
@@ -134,7 +134,7 @@ msgid "Failed to import set from file: %s"
 msgstr "Fehler beim Import die Fenster von Datei."
 
 # "Operacja siê nie powiod³a."
-#: cfgmgr.cpp:1357 defcfg.cpp:1119
+#: cfgmgr.cpp:1357 defcfg.cpp:1208
 msgid "Operation failed."
 msgstr "Vorgang ist fehlgeschlagen."
 
@@ -166,34 +166,34 @@ msgid "User defined"
 msgstr "Benutzerdefinierte"
 
 # "Nie uda³o siê zapisaæ pliku z zestawami u¿ytkownika."
-#: defcfg.cpp:1118
+#: defcfg.cpp:1207
 msgid "Failed to save file with users sets."
 msgstr "Die Datei mit den Sätzen der Benutzer wurde nicht gespeichert."
 
-#: defcfg.cpp:1149 defcfg.cpp:1245
+#: defcfg.cpp:1238 defcfg.cpp:1334
 #, c-format
 msgid "Defined set %s was removed because all draws in this set were removed"
 msgstr ""
 
-#: defcfg.cpp:1153
+#: defcfg.cpp:1242
 #, c-format
 msgid ""
 "Draw %s removed from set %s, it relates to non-existent parameter or graph"
 msgstr ""
 
-#: defcfg.cpp:1221
+#: defcfg.cpp:1310
 #, c-format
 msgid "Draw %s removed from set %s, it relates to non-existent configuration"
 msgstr ""
 
 # "Wybierz plik do zaimportowania"
-#: defcfg.cpp:1527
+#: defcfg.cpp:1615
 msgid "Choose file to import"
 msgstr "Wählen Sie Draw2-Datei zu importieren"
 
 # "Nie uda³o siê automatycznie wykryæ prefiksu konfiguracji. Wprowad¼ prefiks "
 # "rêcznie."
-#: defcfg.cpp:1538
+#: defcfg.cpp:1626
 msgid ""
 "Unable to perform automatic detection of configuration's prefix for this "
 "file. Please enter prefix of this configuration"
@@ -202,12 +202,12 @@ msgstr ""
 "Datei.Bitte geben Sie Präfix dieser Konfiguration"
 
 # msgstr "Nie uda³o siê wykryæ prefiksu konfiguracji."
-#: defcfg.cpp:1539
+#: defcfg.cpp:1627
 msgid "Unable to detect prefix"
 msgstr "Nicht in der Lage zu erkennen Präfix"
 
 # "Nie uda³o siê za³adowaæ konfiguracji %s. Nie mogê zaimportowaæ wykresów."
-#: defcfg.cpp:1549
+#: defcfg.cpp:1637
 #, fuzzy, c-format
 msgid "Failed to load configuration of prefix %s. Unable to import draws."
 msgstr ""
@@ -215,19 +215,19 @@ msgstr ""
 "werden."
 
 # "Import plików nie powiód³ siê."
-#: defcfg.cpp:1556
+#: defcfg.cpp:1644
 #, fuzzy
 msgid "Failed to import draws from file."
 msgstr "Fehler beim Import die Fenster von Datei."
 
 # "Operacja importu plików zakoñczy³a siê poprawnie."
-#: defcfg.cpp:1576
+#: defcfg.cpp:1664
 #, fuzzy
 msgid "Draws imported successfully."
 msgstr "Die Fenster wurden erfolgreich importiert."
 
 # "Ok!"
-#: defcfg.cpp:1576
+#: defcfg.cpp:1664
 msgid "Ok!"
 msgstr "Ok!"
 
@@ -503,112 +503,112 @@ msgstr "Anzahl der Achsen:"
 msgid "Printing"
 msgstr "Drucken"
 
-#: drawfrm.cpp:645
+#: drawfrm.cpp:649
 #, c-format
 msgid ""
 "Configuration '%s' cannot be reloaded, probably new version of this "
 "configuration contatins errors."
 msgstr ""
 
-#: drawfrm.cpp:792
+#: drawfrm.cpp:796
 msgid "English"
 msgstr "Englisch"
 
-#: drawfrm.cpp:793
+#: drawfrm.cpp:797
 msgid "French"
 msgstr "Französisch"
 
-#: drawfrm.cpp:794
+#: drawfrm.cpp:798
 msgid "German"
 msgstr "Deutsch"
 
-#: drawfrm.cpp:795
+#: drawfrm.cpp:799
 msgid "Hungarian"
 msgstr ""
 
-#: drawfrm.cpp:796
+#: drawfrm.cpp:800
 msgid "Italian"
 msgstr ""
 
-#: drawfrm.cpp:797
+#: drawfrm.cpp:801
 msgid "Polish"
 msgstr "Polnish"
 
-#: drawfrm.cpp:798
+#: drawfrm.cpp:802
 msgid "Serbian"
 msgstr ""
 
-#: drawfrm.cpp:803 drawfrm.cpp:809
+#: drawfrm.cpp:807 drawfrm.cpp:813
 msgid "automatic"
 msgstr ""
 
-#: drawfrm.cpp:808
+#: drawfrm.cpp:812
 msgid "Current language is "
 msgstr "Aktuelle Sprache ist "
 
-#: drawfrm.cpp:811
+#: drawfrm.cpp:815
 msgid "Choose language"
 msgstr "Wählen Sie die Sprache"
 
-#: drawfrm.cpp:837
+#: drawfrm.cpp:841
 msgid "Current language has been changed. You have to restart draw3"
 msgstr "Aktuelle Sprache is geändert worden. Sie müssen draw3 neustarten."
 
-#: drawfrm.cpp:838
+#: drawfrm.cpp:842
 msgid "Language changed"
 msgstr "Die Sprache wurde geändert"
 
-#: drawfrm.cpp:846
+#: drawfrm.cpp:850
 msgid "Classic"
 msgstr ""
 
-#: drawfrm.cpp:847
+#: drawfrm.cpp:851
 msgid "'3D'"
 msgstr ""
 
-#: drawfrm.cpp:848
+#: drawfrm.cpp:852
 msgid "Antialiased"
 msgstr ""
 
 # "Not translated"
-#: drawfrm.cpp:859
+#: drawfrm.cpp:863
 #, fuzzy
 msgid "currently selected"
 msgstr "no current article has been selected"
 
 # "Wybierz parametry wykresu"
-#: drawfrm.cpp:861
+#: drawfrm.cpp:865
 #, fuzzy
 msgid "Choose graphs window style"
 msgstr "Wählen Sie Parameter des Schaubilds"
 
-#: drawfrm.cpp:867 drawfrm.cpp:871 drawfrm.cpp:875
+#: drawfrm.cpp:871 drawfrm.cpp:875 drawfrm.cpp:879
 msgid "You need to restart application for this change to take effect."
 msgstr ""
 
-#: drawfrm.cpp:867 drawfrm.cpp:871 drawfrm.cpp:875
+#: drawfrm.cpp:871 drawfrm.cpp:875 drawfrm.cpp:879
 #, fuzzy
 msgid "Graphs view changed."
 msgstr "Schaubild"
 
-#: drawfrm.cpp:886 drawfrm.cpp:910
+#: drawfrm.cpp:890 drawfrm.cpp:914
 msgid ""
 "Remarks sending not configured, You should set username, password, and "
 "remarks server adddress"
 msgstr ""
 
-#: drawfrm.cpp:886 drawfrm.cpp:910
+#: drawfrm.cpp:890 drawfrm.cpp:914
 msgid "Remarks not configured."
 msgstr ""
 
 # "Has³o:"
-#: drawfrm.cpp:962
+#: drawfrm.cpp:966
 #, fuzzy
 msgid "Enter password:"
 msgstr "Passwort:"
 
 # Has³o
-#: drawfrm.cpp:963
+#: drawfrm.cpp:967
 #, fuzzy
 msgid "New password"
 msgstr "Passwort"
@@ -714,11 +714,11 @@ msgid "Removal"
 msgstr "Entfernen"
 
 # "Edycja zestawu parametrów"
-#: drawpick.cpp:625 drawpick.cpp:779 drawpick.cpp:838
+#: drawpick.cpp:624 drawpick.cpp:780 drawpick.cpp:839
 msgid "Editing parameter set "
 msgstr "Bearbeite von einer Reihe von Parametern"
 
-#: drawpick.cpp:691
+#: drawpick.cpp:692
 #, c-format
 msgid ""
 "The set with given name '%s' already exists.\n"
@@ -727,30 +727,30 @@ msgid ""
 "title."
 msgstr ""
 
-#: drawpick.cpp:696
+#: drawpick.cpp:697
 msgid "Set name already exists."
 msgstr ""
 
 # "Zestaw musi zawieraæ conajmniej jeden wykres."
-#: drawpick.cpp:713
+#: drawpick.cpp:714
 msgid "You must add at least one draw."
 msgstr "Sie müssen mindestens ein Schaubild hinzufügen"
 
 # "Brak wykresów"
-#: drawpick.cpp:714
+#: drawpick.cpp:715
 msgid "No draws"
 msgstr "Keiner Schaubilder"
 
-#: drawpick.cpp:725
+#: drawpick.cpp:726
 msgid "You must set the title."
 msgstr "Sie müsssen den Titel festlegen"
 
-#: drawpick.cpp:725
+#: drawpick.cpp:726
 msgid "No title"
 msgstr "Ohne Titel"
 
 # Szukaj
-#: drawpick.cpp:771 drawpick.cpp:829 drawpick.cpp:859 drawpnl.cpp:569
+#: drawpick.cpp:772 drawpick.cpp:830 drawpick.cpp:860 drawpnl.cpp:569
 #: drawpnl.cpp:604 drawtb.cpp:57 paredit.cpp:622
 msgid "Find"
 msgstr "Suche"
@@ -1263,31 +1263,37 @@ msgid "Title"
 msgstr "Titel"
 
 # "Ustawienia parametru"
-#: seldraw.cpp:142
+#: seldraw.cpp:144
 msgid "Set parameter"
 msgstr "Einstellungen des Parameters"
 
 # "Wykres zablokowany"
-#: seldraw.cpp:147 seldraw.cpp:157
+#: seldraw.cpp:149 seldraw.cpp:159
 msgid "Draw blocked\tCtrl-B"
 msgstr "Schaubild gesperrt\tCtrl-B"
 
 # "Dokumentacja parametru"
-#: seldraw.cpp:160
+#: seldraw.cpp:162
 msgid "Parameter documentation\tCtrl-H"
 msgstr "Dokumentation des Parameters\tCtrl-H"
 
+# "Nazwa parametru:"
 #: seldraw.cpp:163
+#, fuzzy
+msgid "Copy parameter name"
+msgstr "Kopier der Name des Parameters"
+
+#: seldraw.cpp:166
 msgid "Edit parameter associated with graph\tCtrl-E"
 msgstr ""
 
-#: seldraw.cpp:309 seldraw.cpp:383
+#: seldraw.cpp:292 seldraw.cpp:416
 #, c-format
 msgid "%d.[B]"
 msgstr "%d.[B]"
 
 # "Uruchomienie przegl±darki nie powiod³o siê"
-#: seldraw.cpp:473
+#: seldraw.cpp:509
 msgid "I was not able to start default browser"
 msgstr "Ich könnte nicht Standard-Browser laufen."
 
@@ -1305,27 +1311,27 @@ msgstr "Ich starte draw3..."
 msgid "Statistics window"
 msgstr "Statistik-Fenster"
 
-#: statdiag.cpp:67 timewdg.cpp:54 xydiag.cpp:60 ids.h:179
+#: statdiag.cpp:67 timewdg.cpp:54 xydiag.cpp:60 ids.h:180
 msgid "DECADE"
 msgstr ""
 
-#: statdiag.cpp:67 timewdg.cpp:55 xydiag.cpp:60 ids.h:179
+#: statdiag.cpp:67 timewdg.cpp:55 xydiag.cpp:60 ids.h:180
 msgid "YEAR"
 msgstr "JAHR"
 
-#: statdiag.cpp:67 timewdg.cpp:56 xydiag.cpp:60 ids.h:179
+#: statdiag.cpp:67 timewdg.cpp:56 xydiag.cpp:60 ids.h:180
 msgid "MONTH"
 msgstr "MONAT"
 
-#: statdiag.cpp:67 timewdg.cpp:57 xydiag.cpp:60 ids.h:179
+#: statdiag.cpp:67 timewdg.cpp:57 xydiag.cpp:60 ids.h:180
 msgid "WEEK"
 msgstr "WOCHE"
 
-#: statdiag.cpp:67 timewdg.cpp:58 xydiag.cpp:60 ids.h:179
+#: statdiag.cpp:67 timewdg.cpp:58 xydiag.cpp:60 ids.h:180
 msgid "DAY"
 msgstr "TAG"
 
-#: statdiag.cpp:67 timewdg.cpp:59 xydiag.cpp:60 ids.h:179
+#: statdiag.cpp:67 timewdg.cpp:59 xydiag.cpp:60 ids.h:180
 msgid "30 MINUTES"
 msgstr ""
 
@@ -1464,7 +1470,7 @@ msgid " %R"
 msgstr "%R"
 
 # SEZON#
-#: timewdg.cpp:60 ids.h:179
+#: timewdg.cpp:60 ids.h:180
 msgid "SEASON"
 msgstr "SAISON"
 
@@ -1691,7 +1697,7 @@ msgstr "Fehlende daten"
 msgid "There is no common data for these params for given time period"
 msgstr "Es ist nicht gemeinsam daten fur wählen Schaubilder in Zeitraum"
 
-#: ids.h:179
+#: ids.h:180
 msgid "HOUR"
 msgstr ""
 

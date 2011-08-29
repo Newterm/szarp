@@ -201,6 +201,10 @@ public:
 	/**ask user for a date to jump, and then performes a jump*/
 	void OnJumpToDate();
 
+	void OnCopyParamName(wxCommandEvent &event);
+
+	void CopyParamName(DrawInfo *di);
+
 	/**Turns off/on double cursor mode
 	 * @return true if after the operation double cursor is set, false otherwise*/
 	bool ToggleSplitCursor();

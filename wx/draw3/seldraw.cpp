@@ -160,7 +160,7 @@ SelectDrawValidator::OnMouseRightDown(wxMouseEvent &event) {
 	}
 
 	m_menu->Append(seldrawID_CTX_DOC_MENU, _("Parameter documentation\tCtrl-H"));
-	m_menu->Append(seldrawID_CTX_COPY_PARAM_NAME_MENU, _("Copy parameter name"));
+	m_menu->Append(seldrawID_CTX_COPY_PARAM_NAME_MENU, _("Copy parameter name\tCtrl-Shift-C"));
 
 	if (dynamic_cast<DefinedParam*>(dp) != NULL)
 		m_menu->Append(seldrawID_CTX_EDIT_PARAM, _("Edit parameter associated with graph\tCtrl-E"));
@@ -453,26 +453,18 @@ void SelectDrawWidget::OnEditParam(wxCommandEvent &event) {
 }
 
 void SelectDrawWidget::OnCopyParamName(wxCommandEvent &event) {
-	if (wxTheClipboard->Open() == false)
-		return;
-
 	int i = GetClicked(event);
 	if (-1 == i)
 		return;
 
 	DrawInfo *d = m_draws_wdg->GetDrawInfo(i);
-
-	wxTheClipboard->SetData(new wxTextDataObject(d->GetParamName()));
-	wxTheClipboard->Close();
+	m_draws_wdg->CopyParamName(d);
 }
 
 void SelectDrawWidget::OnDocs(wxCommandEvent &event) {
 	int i = GetClicked(event);
 	if (i == -1)
 		return;
-
-	DrawInfo *d = m_draws_wdg->GetDrawInfo(i);
-
 
 	OpenParameterDoc(i);
 }

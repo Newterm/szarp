@@ -263,6 +263,9 @@ protected:
 	/**Pastes current panel reference from a clipboard to a current panel.*/
 	void OnPaste(wxCommandEvent &event);
 
+	/**Copies current draw param name to a clipboard*/
+	void OnCopyParamName(wxCommandEvent &event);
+
 	/**Clears cache.*/
 	void OnClearCache(wxCommandEvent &event);
 

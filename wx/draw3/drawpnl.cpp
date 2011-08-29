@@ -923,6 +923,10 @@ void DrawPanel::Paste() {
 	dw->PasteFromClipboard();
 }
 
+void DrawPanel::OnCopyParamName(wxCommandEvent &event) {
+	dw->OnCopyParamName(event);
+}
+
 size_t DrawPanel::GetNumberOfUnits() {
 	return dw->GetNumberOfUnits();
 }
