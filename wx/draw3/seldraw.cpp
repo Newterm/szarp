@@ -160,7 +160,7 @@ SelectDrawValidator::OnMouseRightDown(wxMouseEvent &event) {
 	}
 
 	m_menu->Append(seldrawID_CTX_DOC_MENU, _("Parameter documentation\tCtrl-H"));
-	m_menu->Append(seldrawID_CTX_COPY_PARAM_NAME_MENU, _("Copy parameter name\tCtrl-Shift-C"));
+	m_menu->Append(seldrawID_CTX_COPY_PARAM_NAME_MENU, _("Copy parameter name\tCtrl+Shift+C"));
 
 	if (dynamic_cast<DefinedParam*>(dp) != NULL)
 		m_menu->Append(seldrawID_CTX_EDIT_PARAM, _("Edit parameter associated with graph\tCtrl-E"));
