@@ -30,6 +30,8 @@
 #endif
 
 #include <wx/config.h>
+#include <wx/clipbrd.h>
+
 #include <sstream>
 
 #include "cconv.h"
@@ -158,6 +160,7 @@ SelectDrawValidator::OnMouseRightDown(wxMouseEvent &event) {
 	}
 
 	m_menu->Append(seldrawID_CTX_DOC_MENU, _("Parameter documentation\tCtrl-H"));
+	m_menu->Append(seldrawID_CTX_COPY_PARAM_NAME_MENU, _("Copy parameter name\tCtrl-Shift-C"));
 
 	if (dynamic_cast<DefinedParam*>(dp) != NULL)
 		m_menu->Append(seldrawID_CTX_EDIT_PARAM, _("Edit parameter associated with graph\tCtrl-E"));
@@ -193,6 +196,7 @@ BEGIN_EVENT_TABLE(SelectDrawWidget, wxWindow)
 	EVT_MENU(seldrawID_CTX_BLOCK_MENU, SelectDrawWidget::OnBlockCheck)
 	EVT_MENU(seldrawID_PSC, SelectDrawWidget::OnPSC)
 	EVT_MENU(seldrawID_CTX_DOC_MENU, SelectDrawWidget::OnDocs)
+	EVT_MENU(seldrawID_CTX_COPY_PARAM_NAME_MENU, SelectDrawWidget::OnCopyParamName)
 	EVT_MENU(seldrawID_CTX_EDIT_PARAM, SelectDrawWidget::OnEditParam)
 	EVT_TIMER(wxID_ANY, SelectDrawWidget::OnTimer)
 END_EVENT_TABLE()
@@ -448,16 +452,19 @@ void SelectDrawWidget::OnEditParam(wxCommandEvent &event) {
 
 }
 
+void SelectDrawWidget::OnCopyParamName(wxCommandEvent &event) {
+	int i = GetClicked(event);
+	if (-1 == i)
+		return;
+
+	DrawInfo *d = m_draws_wdg->GetDrawInfo(i);
+	m_draws_wdg->CopyParamName(d);
+}
+
 void SelectDrawWidget::OnDocs(wxCommandEvent &event) {
-	wxMenu *menu = wxDynamicCast(event.GetEventObject(), wxMenu);
-	assert(menu);
-
-	wxCheckBox* cb = (wxCheckBox*) menu->GetClientData();
-
-	size_t i = 0;
-	for (; i < MIN_DRAWS_COUNT; ++i)
-		if (cb == m_cb_l[i])
-			break;
+	int i = GetClicked(event);
+	if (i == -1)
+		return;
 
 	OpenParameterDoc(i);
 }

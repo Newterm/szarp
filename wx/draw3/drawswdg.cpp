@@ -528,6 +528,28 @@ void DrawsWidget::PasteFromClipboard() {
 
 }
 
+
+void DrawsWidget::OnCopyParamName(wxCommandEvent &event) {
+	Draw *d = m_draws_controller->GetSelectedDraw();
+
+	if (d == NULL)
+		return;
+
+	CopyParamName(d->GetDrawInfo());
+}
+
+void DrawsWidget::CopyParamName(DrawInfo *di) {
+	if (di == NULL)
+		return;
+
+	if (wxTheClipboard->Open() == false)
+		return;
+
+	wxTheClipboard->SetData(new wxTextDataObject(di->GetParamName()));
+	wxTheClipboard->Close();
+}
+
+
 wxString DrawsWidget::GetUrl(bool with_infinity) {
 	Draw* d = m_draws_controller->GetSelectedDraw();
 	if (d == NULL)

@@ -160,7 +160,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 
 std::string format_time(time_t t) {
 	char tbuf[40];
-	strftime(tbuf, sizeof(tbuf), "%Y-%d-%m %H:%M", localtime(&t));
+	strftime(tbuf, sizeof(tbuf), "%Y-%m-%d %H:%M", localtime(&t));
 	return tbuf;
 }
 

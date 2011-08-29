@@ -108,6 +108,7 @@ class SelectDrawWidget: public wxScrolledWindow, public DrawObserver, public Con
 public:
 	SelectDrawWidget() : wxScrolledWindow()
 	{ }
+
 	/**
 	 * @param cfg configuration manager
 	 * @param confid identifier (title) of configuration
@@ -118,11 +119,11 @@ public:
 	 * @param widget id
 	 */
 	SelectDrawWidget(ConfigManager *cfg, DatabaseManager *dbmgr, DrawsWidget *drawswdg, wxWindow *parent, wxWindowID id = -1);
+
 	/**
 	 * Enables/disables draw
 	 * @param index draw index 
 	 * @param enable if true draw will be enabled, if false disabled*/
-
 	void SetDrawEnable(int index, bool enable);
 	
 	void SetChecked(int idx, bool checked);
@@ -184,6 +185,8 @@ protected:
 
 	/**Blocks, unblocks a draw*/
 	void OnDocs(wxCommandEvent &event);
+	
+	void OnCopyParamName(wxCommandEvent &event);
 
 	/** edit parametr */
 	void OnEditParam(wxCommandEvent &event);

@@ -1,3 +1,6 @@
+2011-08-29	Krzysztof Galazka <kg@newterm.pl>
+	* meaner3/utils/szbndremover.cc: fix in date formating
+	* wx/draw3: coping parameter name of selected draw
 2011-08-11	Daniel Majewski <dmajewski@dalkiaterm.pl>
 	* oszarpie.sgml: added description about raporter,
 	communication with server, Capabilities of start-ups on 
