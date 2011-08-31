@@ -26,12 +26,26 @@ from lxml import etree
 from lxml.etree import XSLT
 from StringIO import StringIO
 
+
+class HttpResolver(etree.Resolver):
+    def resolve(self, url, id, context):
+        if url.startswith('http://'):
+            return self.resolve_filename(url, context)
+        else:
+            return super(HttpResolver, self).resolve(url, id, context)
+
+resolver = HttpResolver()
+parser = etree.XMLParser()
+parser.resolvers.add(resolver)
+
 # load XSLT only once - at module initialization; cannot create
 # stylesheet objects because of some threading issues
 svg_stylesheet = etree.parse(
-		'/opt/szarp/resources/xsltd/stylesheets/isl2svg.xsl')
+                    '/opt/szarp/resources/xsltd/stylesheets/isl2svg.xsl',
+                    parser)
 defs_stylesheet = etree.parse(
-		'/opt/szarp/resources/xsltd/stylesheets/isl2defs.xsl')
+                    '/opt/szarp/resources/xsltd/stylesheets/isl2defs.xsl',
+                    parser)
 
 class XsltHandler:
 	"""
@@ -50,29 +64,23 @@ class XsltHandler:
 		"""
 		global svg_stylesheet
 		global defs_stylesheet
-		
+
 		fc = util.FieldStorage(self.req)
-		type = fc.getfirst('type')
-		if type == 'defs':
+		req_type = fc.getfirst('type')
+		if req_type == 'defs':
 			stylesheet = XSLT(defs_stylesheet)
 		else:
 			stylesheet = XSLT(svg_stylesheet)
+
 		# this should be set in Apache configuration file using
 		# PythonOption directive, for example:
 		#   PythonOption szarp.paramd.uri "http://localhost:8081/"
 		paramd_uri = self.req.get_options()['szarp.paramd.uri']
 
-		fname = '/etc/szarp/default/config' + self.req.parsed_uri[apache.URI_PATH]
+                fname = 'file:///etc/szarp/default/config' + self.req.parsed_uri[apache.URI_PATH]
 
-		# Following code should look like:
-		#  doc = etree.parse(fname)
-		# but there's a bug and parsed files are never closed. This bug
-		# is fixed in lxml 1.1.2 but there's no packages of that version
-		# available for Debian stable.
-		fd = file(fname, "r")
-		doc = etree.parse(StringIO(fd.read()))
-		fd.close()
-		
+		doc = etree.parse(fname, parser)
+
 		self.req.content_type= 'image/svg+xml'
 		self.req.send_http_header()
 		self.req.write(str(stylesheet(doc, uri = "'" + paramd_uri + "'")))
@@ -84,4 +92,4 @@ def handler(req):
 	h = XsltHandler(req)
 	h.content()
 	return apache.OK
-			
+
