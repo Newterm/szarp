@@ -7,6 +7,23 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.558
+#01.09.2011
+* Dodana w programie przegl±daj±cym mo¿liwo¶æ kopiowania nazwy aktualnie 
+wybranego parametru do schowka.
+* Okrêgi wokó³ punktów wykresu X/Y w programie przegl±daj±cym rysowane s±
+tak¿e w trybie u¶redniania warto¶ci.
+* Poprawki w szablonach XSLT synoptyki ISL dla biblioteki python-lxml w 
+wersjach powy¿ej 2.2.8.2.
+* Poprawki w formacie danych dla szndremover - narzêdzia do maskowania przerw
+w zbieranych przez SZARP danych.
+* Poprawki w programie przegl±daj±cym - prawid³owe od¶wie¿anie listy 
+parametrów w oknie edycji parametrów u¿ytkownika.
+* Usuniêta awaria programów przy ³adowaniu b³êdnego pliku konfiguracyjnego
+params.xml.
+* Poprawka w obliczeniu warto¶ci "zoptymalizowanych" parametrów LUA 
+odnosz±cych siê do parametrów o typie LUA_AV (¶rednia z warto¶ci).
+
 ** 3.1.552
 #01.08.2011
 * Dodana nowa paczka debianowa szarp-dbg-symbols, zawieraj±ca wszystkie 

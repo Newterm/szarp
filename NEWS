@@ -6,6 +6,21 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.558
+#01.09.2011
+* Added option of copying name of selected parameter in draw3 to clipboard.
+* Circles around points in X/Y graphs in draw3 are drawn also in points 
+averaging mode.
+* Fixes in XSLT transformation for ISL when using python-lxml version newer 
+then 2.2.8.2.
+* Fixes in date handling of szbndremover - tool for filling gaps in SZARP
+data.
+* Fixes in draw3: fix in refreshing parameters' list in edit user parameter
+dialog.
+* Fixed segfault when loading incorrect params.xml configuration file.
+* Fix in calculating values of "optimized" LUA parameters referencing 
+LUA_AV-type parameters.
+
 ** 3.1.552
 #01.08.2011
 * Added debian package szarp-dbg-symbols, this package contains all szarp 
