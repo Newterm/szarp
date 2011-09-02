@@ -6,8 +6,7 @@
 	* wx/draw3: coping parameter name of selected draw
 2011-08-11	Daniel Majewski <dmajewski@dalkiaterm.pl>
 	* oszarpie.sgml: added description about raporter,
-	communication with server, Capabilities of start-ups on 
-	windows section: lokalizacja 
+	communication with server and starting program standalone
 2011-08-09	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2/ipk/tparam.cc: fix of a fix
 2011-08-04	Darek Marcinkiewicz <reksio@newterm.pl>
@@ -21,7 +20,7 @@
 	name member of no-element xml node structure.
 2011-08-03	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2/szbase: there was a problem with
-	calculatig optimized LUA params - when such param
+	calculating optimized LUA params - when such param
 	was referencing LUA_AV parameter, 'no data' was always
 	returned
 	* wx/draw3: x/y graph - circles around points drawn
