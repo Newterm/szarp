@@ -201,59 +201,42 @@ void DateChooserWidget::onHourChange(wxSpinEvent &event)
 {
 }
 
-void DateChooserWidget::onMinuteChange(wxSpinEvent &event)
+int DateChooserWidget::MoveTimeWithQuantum(int current, int quantum, int position)
 {
-	if (abs(event.GetPosition() - current_minute) == 1 || abs(event.GetPosition() - current_minute) == 59) {
-		
-		if (event.GetPosition() > current_minute && event.GetPosition() < 60 - minute_quantum + 1) 
-			current_minute += minute_quantum;
-		else if (event.GetPosition() < current_minute && event.GetPosition() != 0) 
-			current_minute -= minute_quantum;
-		else if (current_minute == 0 && event.GetPosition() == 59) 
-			current_minute = (60 / minute_quantum - 1) * minute_quantum;
-		else if (event.GetPosition() == current_minute)
-			; // do nothing
+	if (abs(position - current) == 1 || abs(position - current) == 59) {
+		if (position == current)
+			return current; // do nothing
+		else if (current == 0 && position == 59) 
+			current = (60 / quantum - 1) * quantum;
+		else if (position > current && position < 60 - quantum + 1) 
+			current += quantum;
+		else if (position < current && position != 0) 
+			current -= quantum;
 		else
-			current_minute = 0;
+			return 0;
 
 	} else {
-		int p = event.GetPosition();
-		current_minute = p % minute_quantum <= minute_quantum / 2 ? 
-				(p / minute_quantum) * minute_quantum : 
-				(p / minute_quantum + 1) * minute_quantum;
-		if (current_minute >= 60)
-			current_minute = 0;
+		current = position % quantum <= quantum / 2 ? 
+				(position / quantum) * quantum : 
+				(position / quantum + 1) * quantum;
+		if (current >= 60)
+			current = 0;
 	}
+	return current;
+}
+
+void DateChooserWidget::onMinuteChange(wxSpinEvent &event)
+{
+	current_minute = MoveTimeWithQuantum(current_minute, minute_quantum, event.GetPosition());
 
 	minute_control->SetValue(current_minute);
 }
 
-void DateChooserWidget::onSecondChange(wxSpinEvent &event) {
-
-	if (abs(event.GetPosition() - current_second) == 1 || abs(event.GetPosition() - current_second) == 59) {
-		
-		if (event.GetPosition() > current_second && event.GetPosition() < 60 - second_quantum + 1) 
-			current_second += second_quantum;
-		else if (event.GetPosition() < current_second && event.GetPosition() != 0) 
-			current_second -= second_quantum;
-		else if (current_second == 0 && event.GetPosition() == 59) 
-			current_second = (60 / second_quantum - 1) * second_quantum;
-		else if (event.GetPosition() == current_second)
-			; // do nothing
-		else
-			current_second = 0;
-
-	} else {
-		int p = event.GetPosition();
-		current_second = p % second_quantum <= second_quantum / 2 ? 
-				(p / second_quantum) * second_quantum : 
-				(p / second_quantum + 1) * second_quantum;
-		if (current_second >= 60)
-			current_second = 0;
-	}
+void DateChooserWidget::onSecondChange(wxSpinEvent &event)
+{
+	current_second = MoveTimeWithQuantum(current_second, second_quantum, event.GetPosition());
 
 	second_control->SetValue(current_second);
-
 }
 
 DateChooserWidget::~DateChooserWidget()
