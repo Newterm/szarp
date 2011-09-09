@@ -1,3 +1,5 @@
+2011-09-09      Daniel Majewski <dmajewski@dalkiaterm.pl>
+ 	* ipk.sgml: added description about DDE Proxy install for Windows
 2011-09-07	Krzysztof Galazka <kg@newterm.pl>
 	* wx/common/datechooser.*: fix in min/sec decrementation
 	* wx/sync/ssserver.*: logging IP of incomming connections

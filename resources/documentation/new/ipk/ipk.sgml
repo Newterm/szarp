@@ -22,6 +22,7 @@
 <author><firstname>Marcin</firstname><surname>Goliszewski</surname></author>
 <author><firstname>Jaros³aw</firstname><surname>Janik</surname></author>
 <author><firstname>Pawe³</firstname><surname>Kolega</surname></author>
+<author><firstname>Daniel</firstname><surname>Majewski</surname></author>
 <author><firstname>Dariusz</firstname><surname>Marcinkiewicz</surname></author>
 <author><firstname>Pawe³</firstname><surname>Pa³ucha</surname></author>
 <author><firstname>Adam</firstname><surname>Smyk</surname></author>
@@ -10162,6 +10163,38 @@ komputer przeno¶ny, w przeciwnym wypadku wybraæ pole "Dodaj now± nazwê". W przys
 
 </tbody>
 </table>
+</chapter>
+
+<chapter id="DDEPROXY-INSTALL-WINDOWS">
+<title>Instalacja DDE Proxy w systemie Windows</title>
+<section id="DDE-install">
+<title>Opis instalacji aplikacji DDE Proxy na platformie Windows</title>
+<para>
+1. Rozpakowaæ archiwum np do C:\ddeproxy
+2. Uruchomiæ wiersz poleceñ z prawami administratora:
+Start->Uruchom:
+runas /user:localhost\administrator cmd
+
+3. W cmd:
+cd c:\ddeproxy
+ddeproxy.exe -install
+
+(to zainstaluje proxy jako us³ugê windows).
+
+4. Start->Panel sterownia->Narzedzia administracyjne->Uslugi
+(uwaga ta sciezka do pod xp dla 2000 moze byc inna), prawym na DDE
+proxy service, i w zak³adce Logowanie proszê zaznaczyæ
+'Zezwalaj na wspó³dzialanie z pulpitem' oraz ustawiæ ¿eby us³uga
+startowa³a automatycznie.
+
+5. Aby zmiana ustawieñ z pkt 4 zosta³a uwzglêdniona nale¿y
+zatrzymaæ us³ugê a nastêpnie uruchomiæ j± ponownie.
+
+Us³uga standardowo nas³uchuje po³±czeñ na porcie 8080. Je¶li komputer
+ma uruchomion± zaporê albo zainstalowanego jakiego¶ firewalla
+proszê odblokowaæ po³±czenia przychodz±ce na ten port.
+</para>
+</section> <!-- DDE-install -->
 </chapter>
 
 </book>

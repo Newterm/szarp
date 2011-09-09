@@ -1,3 +1,10 @@
+szarp (3.1.559) unstable; urgency=low
+
+  * building unstable
+  * added description about DDE Proxy install for Windows.
+
+ -- Daniel Majewski <dmajewski@dalkiaterm.pl>  Fri, 09 Sep 2011 10:41:13 +0200
+
 szarp (3.1.558) natty; urgency=low
 
   * building natty 
