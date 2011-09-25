@@ -32,6 +32,7 @@
 #include "szarp_config.h"
 #include "htmlview.h"
 #include "cconv.h"
+#include <string>
 
 #include <sstream>
 #include <libxml/valid.h>
@@ -186,34 +187,57 @@ ConfFrame::ConfFrame(wxString _filename, const wxPoint& pos, const wxSize& size)
         notebook = new wxNotebook(this, -1);
         
         wxPanel* raptab = new wxPanel(notebook, -1);
+        /* Nowa zakladka */
+	wxPanel* raptab_1 = new wxPanel(notebook, -1);
+
         notebook->AddPage(raptab, _("Raports"));
+
+        notebook->AddPage(raptab_1, _("Missing Draws"));
+ 
         wxBoxSizer *raptab_sizer = new wxBoxSizer(wxHORIZONTAL);
+        
+        /* My wxBox */
+	wxBoxSizer *raptab_sizer_1 = new wxBoxSizer(wxHORIZONTAL);
         
         raplist = new wxListBox(raptab, ID_RapList, wxDefaultPosition,
                         wxSize(150, 300));
-        raptab_sizer->Add(raplist, 2, wxEXPAND | wxALL, 10);
+        
+        raplist_1 = new wxListBox(raptab_1, ID_RapList, wxDefaultPosition,
+                        wxSize(150, 300));
+	
+	raptab_sizer->Add(raplist, 2, wxEXPAND | wxALL, 10);
+        /* My raptab_sizer */
+	raptab_sizer_1->Add(raplist_1, 2, wxEXPAND | wxALL, 10);
 
         ritemslist = new wxListBox(raptab, -1, wxDefaultPosition,
                         wxSize(150, 300));
-        raptab_sizer->Add(ritemslist, 3, wxEXPAND | wxTOP | wxBOTTOM | wxRIGHT,
+       
+	raptab_sizer->Add(ritemslist, 3, wxEXPAND | wxTOP | wxBOTTOM | wxRIGHT,
                         10);
-        
-        raptab->SetAutoLayout(TRUE);
+	
+	raptab->SetAutoLayout(TRUE);
         raptab->SetSizer(raptab_sizer);
+        raptab_1->SetSizer(raptab_sizer_1);
+	raptab_1->SetAutoLayout(TRUE);
+        
 
-        wxPanel* drawtab = new wxPanel(notebook, -1);
-        notebook->AddPage(drawtab, _("Draws"));
-        wxBoxSizer *drawtab_sizer = new wxBoxSizer(wxHORIZONTAL);
+	wxPanel* drawtab = new wxPanel(notebook, -1);
+        
+	notebook->AddPage(drawtab, _("Draws"));
+        
+	wxBoxSizer *drawtab_sizer = new wxBoxSizer(wxHORIZONTAL);
 
         drawlist = new wxListBox(drawtab, ID_DrawList, wxDefaultPosition,
                         wxSize(150, 300));
+
         drawtab_sizer->Add(drawlist, 1, wxEXPAND | wxALL, 10);
 
         ditemslist = new DrawsListCtrl(drawtab, ID_DrawItems, wxDefaultPosition,
                         wxSize(300, 300));
         drawtab_sizer->Add(ditemslist, 1, wxEXPAND | wxTOP | wxBOTTOM | wxRIGHT,
                         10);
-        drawtab->SetAutoLayout(TRUE);
+        
+	drawtab->SetAutoLayout(TRUE);
         drawtab->SetSizer(drawtab_sizer);
 
         notebook->SetAutoLayout(TRUE);
@@ -239,8 +263,9 @@ ConfFrame::~ConfFrame()
         delete raplist;
         delete ritemslist;
         delete drawlist;
-        delete ditemslist;	
+        delete ditemslist;     
 }
+
 
 void ConfFrame::OnExit(wxCommandEvent& WXUNUSED(event))
 {
@@ -368,7 +393,7 @@ int ConfFrame::SaveFile(wxString path)
 
 int ConfFrame::AskForSave(void)
 {
-	if (!modified && !ditemslist->Modified() )
+	if (!modified)
 		return 0;
 	int ret = wxMessageBox(_("File was modified. Save changes ?"),
 			_("Save changes ?"), wxYES_NO | wxCANCEL | 
@@ -411,8 +436,33 @@ void ConfFrame::ReloadParams(void)
         ditemslist->DeleteAllItems();
       
         FindElements(params->children);
+	AddNewElements(params->children);
+
 }
 
+void ConfFrame::AddNewElements(xmlNodePtr node)
+{
+       int licz=0;
+	
+	if (node == NULL)
+                return;
+        if ((node->type == XML_ELEMENT_NODE) && node->ns && !strcmp((char *)node->name, "param")) 
+	{
+                for (xmlNodePtr n = node->children; n; n = n->next)
+		{
+			if ((!strcmp((char *)n->name, "draw")))
+                        {
+				licz = licz + 1 ;
+				break;
+			}
+       		}
+		if (licz==0) 
+			AddMissingDraw(node);
+	
+	}
+        for (xmlNodePtr n = node->children; n; n = n->next)
+                AddNewElements(n);
+}
 
 void ConfFrame::AddRaport(xmlNodePtr node)
 {
@@ -456,6 +506,16 @@ void ConfFrame::AddRaport(xmlNodePtr node)
 #define prior_greater(a, b) \
         (((a * b) > 0) ? (a < b) : (a > 0))
 
+void ConfFrame::AddMissingDraw(xmlNodePtr node)
+{
+
+        xmlChar* name = xmlGetProp (node, (xmlChar*)"name");
+
+	std::wstring name_1 = SC::U2S(name);		
+
+	raplist_1->Append(name_1);
+
+}
 void ConfFrame::AddDraw(xmlNodePtr node)
 {
         /* get window title */
@@ -649,13 +709,13 @@ void ConfFrame::DownPressed(wxCommandEvent& event)
 {
         wxString page_title = notebook->GetPageText(notebook->GetSelection());
         if (!page_title.Cmp(_("Raports")) && 
-                (ritemslist->GetSelection() >= 0) &&
+                (ritemslist->GetSelection() > 0) &&
                 (ritemslist->GetSelection() < (static_cast<int>(ritemslist->GetCount()) - 1)) )
                 MoveRapItemDown();
         else if (!page_title.Cmp(_("Draws"))) {
 		if (ditemslist->GetSelection() >= 0) {
 			MoveDrawItemDown();
-		} else if ((drawlist->GetSelection() >= 0) 
+		} else if ((drawlist->GetSelection() > 0) 
 				and (drawlist->GetSelection() < static_cast<int>(drawlist->GetCount() - 1))) {
                         MoveDrawDown();
 		}

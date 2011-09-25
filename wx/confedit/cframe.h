@@ -126,6 +126,9 @@ private:
          * 'AddRaport' methods. 
          * @param node XML node to search */
         void FindElements(xmlNodePtr node);
+	
+	void AddNewElements(xmlNodePtr node);
+	void AddMissingDraw(xmlNodePtr node);
         /** Add raport to raplist. */
         void AddRaport(xmlNodePtr node);
         /** Add draw to drawlist. */
@@ -190,13 +193,20 @@ private:
         wxListBox* raplist;     /**< List of raports. Each raport has a list
                                   of XML nodes with raport items attached as
                                   client data. */
-        wxListBox* ritemslist;  /**< List of raport items. Content of this 
+	
+        wxListBox* raplist_1;     /* */
+        
+	wxListBox* ritemslist;  /**< List of raport items. Content of this 
                                   listbox is generated from raplist client
                                   data. */
-        wxListBox* drawlist;	/**< List of draws (draw's windows or sets 
+        
+	wxListBox* ritemslist_1;  /* */ 
+	
+	wxListBox* drawlist;	/**< List of draws (draw's windows or sets 
 				  really). List of draw items is attached to 
 				  each window as client data. */
-        DrawsListCtrl* ditemslist;	
+        
+	DrawsListCtrl* ditemslist;	
 				/**< List of draw items. Content of this
 				  list control is generated from drawlist client
 				  data. */
