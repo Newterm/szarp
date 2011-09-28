@@ -35,13 +35,14 @@
 # Exit code is 1 in case of incorrect parameters, otherwise it returns return code
 # from first unsuccesfull rsync or 0 on success.
 
-DEFAULT_SERVER=praterm
 ADDRESS=
 DELETE="--delete --force"
 USE_SSH=
 BWLIMIT=0
-SERVER=$DEFAULT_SERVER
 SSH_PORT=
+
+# use SZRSYNC_SERVER variable or substitute 'praterm' if missing
+SERVER=${SZRSYNC_SERVER:-praterm}
 
 ME=`basename $0`
 
