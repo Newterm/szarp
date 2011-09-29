@@ -772,7 +772,7 @@ zbierania, archiwizacji i prezentacji danych w ciep³ownictwie.
 <tbody valign="top">
 <row>
  <entry>Nazwa</entry>
- <entry>Proces  u¶redniaj±cy i zapisuj±cy do bazy parametry Meaner [czyt.
+ <entry>Proces u¶redniaj±cy i zapisuj±cy do bazy parametry Meaner [czyt.
  miner].</entry>
 </row>
 <row>
@@ -782,7 +782,8 @@ zbierania, archiwizacji i prezentacji danych w ciep³ownictwie.
 <row>
  <entry>Przeznaczenie</entry>
  <entry>Odczytuje warto¶ci ¶rednich 10-cio minutowych dostarczanych przez
- <link linkend="p02">parcooka</link>, wylicza ¶rednie d³ugoterminowe:
+ <link linkend="p02">parcooka</link> i korzystaj±c z pamiêci dzielonej
+ wylicza ¶rednie d³ugoterminowe:
  o¶miogodzinne, dobowe, tygodniowe i miesiêczne, oraz zapisuje je do
  specjalizowanego systemu bazy danych. Meaner kontroluje dostêp do bazy przez
  inne programy u¿ytkowe. W systemie, w którym istnieje <link
