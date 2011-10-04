@@ -133,6 +133,7 @@ class DateChooserWidget : public wxDialog
 		void onSecondChange(wxSpinEvent &event);
 
 	private:
+    		int MoveTimeWithQuantum(int current, int quantum, int position);
 		DECLARE_EVENT_TABLE()
 };
 

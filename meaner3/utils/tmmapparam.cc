@@ -34,8 +34,10 @@ TMMapParam::TMMapParam( const std::wstring& dir , const std::wstring& name , int
 		throw failure("Cannot open file "+SC::S2A(path)+" to write: "+strerror(errno));
 
 	// save end of old data
-	if( (begin=lseek(fd,0,SEEK_END)) == (off_t)-1 )
+	int err;
+	if( (err=lseek(fd,0,SEEK_END)) == (off_t)-1 )
 		throw failure("Cannot seek trough file "+SC::S2A(path)+": "+strerror(errno));
+	begin = (unsigned int)err;
 	sz_log(10,"Last file index: %d",begin);
 	begin /= sizeof(short);
 
@@ -57,7 +59,7 @@ TMMapParam::TMMapParam( const std::wstring& dir , const std::wstring& name , int
 		throw failure("Cannot map file "+SC::S2A(path)+" to memory: "+strerror(errno));
 
 	sz_log(10,"Clearing data from %d to %d",begin,file_size);
-	for( int i = begin ; i<file_size ; ++i )
+	for( unsigned int i = begin ; i<file_size ; ++i )
 		filemap[i] = SZB_FILE_NODATA;
 	// FIXME: why memset doesn't work?
 //        memset( filemap , (int)SZB_FILE_NODATA , sizeof(short)*file_size );
@@ -91,7 +93,7 @@ int TMMapParam::write( time_t t , short*probes , unsigned int len )
 	sz_log(10,"Writing %d probes at index: %d",len,index);
 
 	assert( index >=0 );
-	assert( index+len < file_size );
+	assert( index+len <= file_size );
 
 	memcpy( filemap+index , probes , sizeof(short)*len );
 

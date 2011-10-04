@@ -234,6 +234,8 @@ class Server {
 		~SynchronizationInfo();
 	};
 
+	char * m_client_addr;
+
 	/**@see object for accessing network connection*/
 	PacketExchanger* m_exchanger;
 	/**users' database*/

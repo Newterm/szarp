@@ -18,9 +18,11 @@
 */
 #pragma implementation
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <pwd.h>
 #include <unistd.h>
 #include <time.h>
+#include <arpa/inet.h>
 #include "libpar.h"
 #include "ssutil.h"
 #include "ssserver.h"
@@ -514,9 +516,9 @@ Server::SynchronizationInfo Server::Authenticate() {
 			char *msg;
 			
 			key = rmsg.GetString();
-			ssserver = m_userdb->CheckUser(ver,user,password,key,&msg);
+			ssserver = m_userdb->CheckUser(ver, user, password, key, &msg);
 			MessageSender smsg(m_exchanger);
-			sz_log(1,"HWKEY: %s USER: %s",key,user);
+			sz_log(1,"HWKEY: %s USER: %s, IP: %s", key, user, m_client_addr);
 			
 			if (!auth_ok) {
 				smsg.PutUInt16(Message::AUTH_FAILURE);
@@ -771,6 +773,21 @@ void Server::SynchronizeFiles(std::vector<TPath>& file_list, TPath path) {
 
 Server::Server(int socket, SSL_CTX* ctx, UserDB* db) 
 	: m_userdb(db) {
+
+	m_client_addr = (char *)malloc(INET_ADDRSTRLEN);
+	if (NULL == m_client_addr)
+	    throw AppException(ssstring(_("Cannot allocate memory for client address info")));
+
+	struct sockaddr_in addr_inet;
+	socklen_t addr_inet_len = sizeof(addr_inet);
+
+	if (-1 == getpeername(socket, (struct sockaddr *)&addr_inet, &addr_inet_len)) 
+	    throw IOException(ssstring(_("Cannot get client address:")) + csconv(strerror(errno)));
+	
+	if (NULL == inet_ntop(AF_INET, &addr_inet.sin_addr, m_client_addr, INET_ADDRSTRLEN))
+	    throw IOException(ssstring(_("Cannot get client address:")) + csconv(strerror(errno)));
+	
+	
 	BIO* bio = BIO_new_socket(socket, BIO_CLOSE);
 	SSL* ssl = SSL_new(ctx);
 	if (!ssl || !bio) 

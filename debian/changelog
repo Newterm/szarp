@@ -1,3 +1,28 @@
+szarp (3.1.562) natty; urgency=low
+
+  * building natty 
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Wed, 28 Sep 2011 12:20:43 +0200
+
+szarp (3.1.561) natty; urgency=low
+
+  * building natty 
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Wed, 28 Sep 2011 12:02:20 +0200
+
+szarp (3.1.560) stable; urgency=low
+
+  * building stable 
+
+ -- Jakub Kotur <qba@bender>  Thu, 22 Sep 2011 16:19:31 +0200
+
+szarp (3.1.559) unstable; urgency=low
+
+  * building unstable
+  * added description about DDE Proxy install for Windows.
+
+ -- Daniel Majewski <dmajewski@dalkiaterm.pl>  Fri, 09 Sep 2011 10:41:13 +0200
+
 szarp (3.1.558) natty; urgency=low
 
   * building natty 
