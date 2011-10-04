@@ -6,6 +6,15 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.562
+#01.10.2011
+* Added support for setting server address with SZRSYNC_SERVER variable 
+in szrsync script.
+* Assertion fix in szbwriter.
+* Logging of incoming connections IP numbers in SSS server.
+* Documentation of installing DDE Proxy under Windows.
+* Fix in date chooser dialog for SZARP wxWidgets applications.
+
 ** 3.1.558
 #01.09.2011
 * Added option of copying name of selected parameter in draw3 to clipboard.

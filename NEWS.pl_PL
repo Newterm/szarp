@@ -7,6 +7,15 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.562
+#01.10.2011
+* Dodana mo¿liwo¶æ ustawiania adresu serwera w skrypcie szrsync przez 
+zmienn± ¶rodowiskow± SZRSYNC_SERVER.
+* Poprawka b³êdu w aplikacji szbwriter (nieprawid³owa asercja).
+* Dodane logowanie adresów IP po³±czeñ do serwera synchronizacji SZARP.
+* Dodana dokumentacja instalacji po¶rednika dla protoko³u DDE pod Windows.
+* Poprawki w oknie wyboru daty w aplikacjach SZARP.
+
 ** 3.1.558
 #01.09.2011
 * Dodana w programie przegl±daj±cym mo¿liwo¶æ kopiowania nazwy aktualnie 
