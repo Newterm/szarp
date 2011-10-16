@@ -3414,7 +3414,7 @@ max="150" order="2">
 ]]>
 </programlisting>
 W tym wypadku w programie przegl±daj±cym jako dziecko korzenia drzewa zostanie dodany element
-"Kocio³ WR 5", którego potomkiem bêdzie wêze³ "Kocio³ WR 5 - temperatory".
+"Kocio³ WR 5", którego potomkiem bêdzie wêze³ "Kocio³ WR 5 - temperatury".
 </para>
 <para>
 Przyk³ad kolejny:
@@ -3454,7 +3454,7 @@ Przyk³ad:
 	</draw>
 ]]>
 </programlisting>
-Taka konfiguracja oznacze ¿e w wêze³ "Kocio³ WR 4" bêdzie znajdowa³ siê przed wêz³em "Kocio³ WR 5".
+Taka konfiguracja oznacza ¿e wêze³ "Kocio³ WR 4" bêdzie znajdowa³ siê przed wêz³em "Kocio³ WR 5".
 </para></listitem>
 <listitem><para>
 <emphasis>draw_order</emphasis> - okre¶la on po³o¿enie li¶cia <emphasis>draw</emphasis> w danym elemencie <emphasis>treenode</emphasis>.
@@ -4322,7 +4322,7 @@ Zagadnieniem mog±cym sprawiaæ te¿ problemy jest ustalanie kolejno¶ci wykresów
 przy korzystaniu z szablonów. Polecanym rozwi±zaniem jest edycja szablonu
 tak, aby wszystkie wykresy mia³y priorytety ustalone jako liczby z zakresu od 1
 do 2, czyli np. 1.10, 1.23 itp. Czê¶æ u³amkowa okre¶la kolejno¶æ wykresów
-wewn±trz szablonu. Nastêpnie, przed dodaniem szablonu do do konfiguracji nale¿y
+wewn±trz szablonu. Nastêpnie, przed dodaniem szablonu do konfiguracji nale¿y
 zwiêkszyæ wszystkie priorytety, tak aby ustaliæ ich po³o¿enie wzglêdem innych
 parametrów ju¿ obecnych w konfiguracji. Pomocny w tym mo¿e byæ szablon XSLT
 <filename>move_draw.xsl</filename>. Pozwala on wybraæ z konfiguracji (lub
@@ -6370,7 +6370,7 @@ czê¶æ opisów mo¿e byæ te¿ dostêpna jedynie w jêzyku angielskim.
 </para>
 <para>
 	Specyfikacja w opisie sterownika oznacza zgodno¶æ z dan± klas± specyfikacji, gdzie wy¿szy
-	numer oznacza nowszê klasê.  Poszczególne klasy to:
+	numer oznacza nowsz± klasê.  Poszczególne klasy to:
 <itemizedlist>
 	<listitem><para>4 - sterownik wykorzystuje API DaemonConfig do konfiguracji i IPCHandler
 	do komunikacji z systemem SZARP.</para></listitem>
@@ -7231,7 +7231,7 @@ nastêpnych cyklach, o ile zostanie to skonfigurowane.
 </para>
 <para>
 Je¿eli sekcja nie ma limitu czasowego lub jej limit czasowy jest na tyle du¿y,
-¿e jest nadal wykonywane w trakcie kolejnego cyklu w którym powinna byæ
+¿e jest nadal wykonywana w trakcie kolejnego cyklu w którym powinna byæ
 uruchomiona, jest ignorowana.
 </para>
 <para>

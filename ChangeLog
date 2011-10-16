@@ -1,3 +1,5 @@
+2011-10-16	Aleksy Barcz <abarcz@newterm.pl>
+	* ipk.sgml: corrected 6 typos
 2011-09-28	Krzysztof Galazka <kg@newterm.pl>
 	* szrsync: added support for setting server addres with SZRSYNC_SERVER
 	variable
