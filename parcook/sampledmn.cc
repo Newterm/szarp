@@ -31,9 +31,9 @@
  @class 4
 
  @devices None -- always outputs 1
- @devices.pl Å»aden -- jedynie wypluwa 1
+ @devices.pl ¿adne -- jedynie wypluwa 1
  @config None
- @config.pl Å»adna
+ @config.pl ¿adna
 
  @description_end
  */

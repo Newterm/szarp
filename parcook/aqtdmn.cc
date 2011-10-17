@@ -30,7 +30,7 @@
  @devices SuperCal Aquatherm 431 and 432 heatmeters
  @devices.pl Ciep這mierze SuperCal Aquatherm 431/432
 
- @comment.pl Sczytywane parametry: Energia MSB, Energia LSB, Przep造w zliczony MSB, Przep造w zlicozny LSB,
+ @comment.pl Sczytywane parametry: Energia MSB, Energia LSB, Przep造w zliczony MSB, Przep造w zliczony LSB,
  Temperatura zasilania MSB, Temperatura zasilania LSB, Temperatura powrotu MSB, Temperatura powrotu LSB,
  Przep造w aktualny MSB, Przep造w aktualny LSB  
 

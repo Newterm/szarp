@@ -34,7 +34,7 @@
 
  @comment This daemon is obsolete - the same effect can be easier obtained using Lua scriptable
  parameters.
- @comment.pl Ten demon jest zdeaktualizowany - ten sam efekt mo¿e byæ uzyskany za pomoc± parametrów w
+ @comment.pl Ten demon jest zdezaktualizowany - ten sam efekt mo¿e byæ uzyskany za pomoc± parametrów w
  jêzyku skryptowym Lua.
 
  @description_end
