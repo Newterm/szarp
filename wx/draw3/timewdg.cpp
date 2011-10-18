@@ -62,7 +62,7 @@ TimeWidget::TimeWidget(wxWindow* parent, DrawsWidget *draws_widget, PeriodType p
         Create(parent, wxID_ANY, 
 			_T(""), // label
 			wxDefaultPosition, wxDefaultSize,
-			6, // number of options
+			7, // number of options
 			time_wdg_choices, // options strings array
 			1, // number of columns
 			wxRA_SPECIFY_COLS | // vertical
