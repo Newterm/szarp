@@ -43,6 +43,8 @@
 #include "version.h"
 #include "cconv.h"
 
+#include "wxlogging.h"
+
 
 /**
  * DrawToolBar with most used buttons...
@@ -73,6 +75,7 @@ public:
 	void NewVersionToolClicked(wxCommandEvent &e);
 
 	DECLARE_EVENT_TABLE();
+
 };
 #endif
 

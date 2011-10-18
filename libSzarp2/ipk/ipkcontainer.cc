@@ -98,7 +98,7 @@ TParam* IPKContainer::GetParam(const std::wstring& global_param_name) {
 	return szarp_config->getParamByName(lpname);
 }
 
-bool IPKContainer::ReadyConfigurationForLoad(const std::wstring &prefix) {
+bool IPKContainer::ReadyConfigurationForLoad(const std::wstring &prefix, bool logparams) { 
 	TSMutexLocker locker(mutex);
 
 	if (configs_ready_for_load.find(prefix) != configs_ready_for_load.end())
@@ -107,7 +107,7 @@ bool IPKContainer::ReadyConfigurationForLoad(const std::wstring &prefix) {
 	boost::filesystem::wpath _file;
 	_file = szarp_data_dir / prefix / L"config" / L"params.xml";
 
-	TSzarpConfig* ipk = new TSzarpConfig(); 
+	TSzarpConfig* ipk = new TSzarpConfig(logparams); 
 
 	if (ipk->loadXML(_file.file_string(), prefix)) {
 			sz_log(2, "Unable to load config from file:%ls", _file.file_string().c_str());
@@ -143,7 +143,7 @@ void IPKContainer::RemoveExtraParam(const std::wstring& prefix, TParam *p) {
 	delete p;
 }
 
-TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wstring &file) {
+TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wstring &file, bool logparams ) {
 
 	boost::filesystem::wpath _file;
 	TSzarpConfig* ipk; 
@@ -151,7 +151,7 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 		ipk = configs_ready_for_load[prefix];
 		configs_ready_for_load.erase(prefix);
 	} else {
-		ipk = new TSzarpConfig();
+		ipk = new TSzarpConfig(logparams);
 
 		if (file.empty())
 			_file = szarp_data_dir / prefix / L"config" / L"params.xml";
@@ -178,9 +178,9 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 
 }
 
-TSzarpConfig* IPKContainer::LoadConfig(const std::wstring& prefix, const std::wstring& file) {
+TSzarpConfig* IPKContainer::LoadConfig(const std::wstring& prefix, const std::wstring& file , bool logparams) {
 	TSMutexLocker locker(mutex);
-	return AddConfig(prefix, file);
+	return AddConfig(prefix, file, logparams);
 }
 
 void IPKContainer::Destroy() {

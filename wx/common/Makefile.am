@@ -63,7 +63,8 @@ libwxcommon_a_SOURCES = \
 		$(SOURCE_DIR)/helpctrlex/helpctrlex.cpp $(SOURCE_DIR)/helpctrlex/helpctrlex.h \
 		$(SOURCE_DIR)/helpctrlex/helpdlgex.cpp $(SOURCE_DIR)/helpctrlex/helpdlgex.h \
 		$(SOURCE_DIR)/helpctrlex/helpfrmex.cpp $(SOURCE_DIR)/helpctrlex/helpfrmex.h \
-		$(SOURCE_DIR)/helpctrlex/helpwinex.cpp $(SOURCE_DIR)/helpctrlex/helpwinex.h
+		$(SOURCE_DIR)/helpctrlex/helpwinex.cpp $(SOURCE_DIR)/helpctrlex/helpwinex.h \
+		$(SOURCE_DIR)/wxlogging.cpp $(SOURCE_DIR)/wxlogging.h
 
 
 

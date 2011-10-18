@@ -29,6 +29,8 @@
 
 #include "pscgui.h"
 
+#include "wxlogging.h"
+
 class DrawPscSystemConfigurationEditor {
 	wxString m_address;
 	wxString m_port;

@@ -38,11 +38,13 @@
 #include <wx/textctrl.h>
 #include <wx/listctrl.h>
 
+#include "wxlogging.h"
+
 /**
  * Widget "Incremental Search" for looking params and windows.
  */
 class IncSearch : public wxDialog, public ConfigObserver {
-	 DECLARE_DYNAMIC_CLASS(IncSearch)
+	DECLARE_DYNAMIC_CLASS(IncSearch)
 public:
 	/**
 	 * Two step constructor???
@@ -274,5 +276,6 @@ protected:
 	 * Button Events
 	 */
 	DECLARE_EVENT_TABLE()	  
+
 };
 #endif // _INCSEARCH_H

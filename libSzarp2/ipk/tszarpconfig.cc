@@ -58,6 +58,11 @@
 #include "conversion.h"
 #include "definable_parser.h"
 
+#include "log_params.h"
+#define LOG_PREFIX_LEN 8
+#define LOG_PREFIX L"Activity"
+
+
 using namespace std;
 
 #define FREE(x)	if (x != NULL) free(x)
@@ -148,14 +153,22 @@ swap_draws(int a, int b, void *data)
 }
 
 
+TSzarpConfig::TSzarpConfig( bool logparams ) :
+	read_freq(0), send_freq(0),
+	devices(NULL), defined(NULL),
+	drawdefinable(NULL), title(),
+	prefix(), boilers(NULL), seasons(NULL) ,
+	logparams(logparams)
+{
+}
 
 TSzarpConfig::~TSzarpConfig(void)
 {
-	delete devices;
-	delete defined;
-	delete drawdefinable;
-	delete seasons;
-	delete boilers;
+	if( devices )       delete devices      ;
+	if( defined )       delete defined      ;
+	if( drawdefinable ) delete drawdefinable;
+	if( seasons )       delete seasons      ;
+	if( boilers )       delete boilers      ;
 }
 
 const std::wstring&
@@ -360,10 +373,15 @@ int
 TSzarpConfig::loadXML(const std::wstring &path, const std::wstring &prefix)
 {
 #ifdef USE_XMLREADER
-	return loadXMLReader(path,prefix);
+	int res = loadXMLReader(path,prefix);
 #else
-	return loadXMLDOM(path,prefix);
+	int res = loadXMLDOM(path,prefix);
 #endif
+	if( res ) return res;
+
+	if( logparams ) CreateLogParams();
+
+	return 0;
 }
 
 int
@@ -1023,6 +1041,40 @@ TSzarpConfig::GetMaxBaseInd()
 	    m = n;
     }
     return m;
+}
+
+void
+TSzarpConfig::CreateLogParams()
+{
+	TDevice* d = new TDevice(this,L"/opt/szarp/bin/logdmn");
+	TRadio * r = new TRadio ( d );
+	TUnit  * u = new TUnit  ( r );
+	TParam * p;
+	TDraw  * w;
+
+	   AddDevice( d );
+	d->AddRadio ( r );
+	r->AddUnit  ( u );
+
+	std::wstringstream wss;
+	for( int i=0 ; i<LOG_PARAMS_NUMBER ; ++i )
+	{
+		p = new TParam ( u );
+		p->Configure( LOG_PARAMS[i][0] ,
+		              LOG_PARAMS[i][1] ,
+		              LOG_PARAMS[i][2] ,
+		              L"-" , NULL , 0 , -1 , 1 );
+
+		if( i % 12 == 0 ) {
+			wss.str(L"");
+			wss << LOG_PREFIX << " " << i/12 + 1;
+		}
+
+		w = new TDraw( L"" , wss.str() , -1 , i , 0 , 100 , 1 , .5 , 2 );
+
+		u->AddParam( p );
+		p->AddDraw ( w );
+	}
 }
 
 TParam *

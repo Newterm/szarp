@@ -32,6 +32,8 @@
 
 #include <ctime>
 
+#include <szarp_config.h>
+
 #include <dmncfg.h>
 #include <ipchandler.h>
 
@@ -62,23 +64,37 @@ public:
 	 * 
 	 * @return 0 on success, 1 otherwise
 	 */
-	int Init(int argc, const char *argv[]);
+	virtual int Init(int argc, const char *argv[] , TSzarpConfig*sz_cfg = NULL , int dev_index = -1 );
 
 	/** 
 	 * @brief Wait for next cycle. 
 	 */
-	virtual void Wait();
+	virtual void Wait( time_t interval = DAEMON_INTERVAL );
 
 	/** 
 	 * @brief Reads data from device
 	 */
-	virtual void Read() = 0;
+	virtual int Read() = 0;
 
 	/** 
 	 * @brief Transfer data to parcook
 	 */
 	virtual void Transfer();
 
+	/** 
+	 * @brief clears all parameters with 0
+	 */
+	void Clear();
+	/** 
+	 * @brief sets all parameters to specified value.
+	 * 
+	 * @param val value to set
+	 */
+	void Clear( short val );
+
+	/** 
+	 * @return daemon name
+	 */
 	const char* Name() { return name; }
 
 protected:
@@ -88,10 +104,11 @@ protected:
 	 * @param name daemon name -- used by logger
 	 * @param argc arguments count
 	 * @param argv arguments values
+	 * @param sz_cfg szarp configuration, if null read from file
 	 * 
 	 * @return 0 on success, 1 otherwise
 	 */
-	int Init( const char*name , int argc, const char *argv[] );
+	virtual int Init( const char*name , int argc, const char *argv[], TSzarpConfig* sz_cfg = NULL , int dev_index = -1 );
 	/** 
 	 * @brief Creates and initialize DaemonConfig member
 	 * 
@@ -101,7 +118,7 @@ protected:
 	 * 
 	 * @return 0 on success, 1 otherwise
 	 */
-	virtual int InitConfig( const char*name , int argc, const char *argv[] );
+	virtual int InitConfig( const char*name , int argc, const char *argv[], TSzarpConfig*sz_cfg , int dev_index = -1 );
 	/** 
 	 * @brief Creates and initialize IPCHandler member
 	 * 

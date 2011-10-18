@@ -63,10 +63,11 @@ public:
 private:
 	ParamsListDialog* m_pld;
 	DECLARE_EVENT_TABLE()
+
 };
 
 BEGIN_EVENT_TABLE(ParamsDialogKeyboardHandler, wxEvtHandler)
-	EVT_CHAR(ParamsDialogKeyboardHandler::OnChar)
+	LOG_EVT_CHAR(ParamsDialogKeyboardHandler , OnChar, "paramlist:char" )
 END_EVENT_TABLE()
 
 ParamsListDialog::ParamsListDialog(wxWindow *parent, DefinedDrawsSets *dds, DatabaseManager *dbmgr, bool search_mode) {
@@ -373,19 +374,19 @@ void ParamsListDialog::OnHelpButton(wxCommandEvent &event) {
 }
 
 BEGIN_EVENT_TABLE(ParamsListDialog, wxDialog)
-	EVT_TEXT(XRCID("PARAM_SEARCH"), ParamsListDialog::OnSerachTextChanged)
-	EVT_MENU(XRCID("ADD_PARAMETER"), ParamsListDialog::OnAdd)
-	EVT_MENU(XRCID("REMOVE_PARAMETER"), ParamsListDialog::OnRemove)
-	EVT_MENU(XRCID("EDIT_PARAMETER"), ParamsListDialog::OnEdit)
-	EVT_BUTTON(XRCID("NEW_BUTTON"), ParamsListDialog::OnAdd)
-	EVT_BUTTON(XRCID("DELETE_BUTTON"), ParamsListDialog::OnRemove)
-	EVT_BUTTON(XRCID("EDIT_BUTTON"), ParamsListDialog::OnEdit)
-	EVT_BUTTON(XRCID("OK_BUTTON"), ParamsListDialog::OnOKButton)
-	EVT_BUTTON(wxID_OK, ParamsListDialog::OnOKButton)
-	EVT_BUTTON(wxID_HELP, ParamsListDialog::OnHelpButton)
-	EVT_BUTTON(wxID_CANCEL, ParamsListDialog::OnCancelButton)
-	EVT_BUTTON(wxID_CLOSE, ParamsListDialog::OnCancelButton)
-	EVT_CLOSE(ParamsListDialog::OnClose)
+	EVT_TEXT(XRCID("PARAM_SEARCH"), ParamsListDialog::OnSerachTextChanged )
+	LOG_EVT_MENU(XRCID("ADD_PARAMETER"), ParamsListDialog , OnAdd, "paramlist:add" )
+	LOG_EVT_MENU(XRCID("REMOVE_PARAMETER"), ParamsListDialog , OnRemove, "paramlist:remove" )
+	LOG_EVT_MENU(XRCID("EDIT_PARAMETER"), ParamsListDialog , OnEdit, "paramlist:edit" )
+	LOG_EVT_BUTTON(XRCID("NEW_BUTTON"), ParamsListDialog , OnAdd, "paramlist:new" )
+	LOG_EVT_BUTTON(XRCID("DELETE_BUTTON"), ParamsListDialog , OnRemove, "paramlist:delete" )
+	LOG_EVT_BUTTON(XRCID("EDIT_BUTTON"), ParamsListDialog , OnEdit, "paramlist:edit_but" )
+	LOG_EVT_BUTTON(XRCID("OK_BUTTON"), ParamsListDialog , OnOKButton, "paramlist:ok_but" )
+	LOG_EVT_BUTTON(wxID_OK, ParamsListDialog , OnOKButton, "paramlist:ok" )
+	LOG_EVT_BUTTON(wxID_HELP, ParamsListDialog , OnHelpButton, "paramlist:help" )
+	LOG_EVT_BUTTON(wxID_CANCEL, ParamsListDialog , OnCancelButton, "paramlist:cancel" )
+	LOG_EVT_BUTTON(wxID_CLOSE, ParamsListDialog , OnCancelButton, "paramlist:close_but" )
+	LOG_EVT_CLOSE(ParamsListDialog , OnClose, "paramlist:close" )
 	EVT_LIST_ITEM_SELECTED(XRCID("PARAM_LIST_CTRL"), ParamsListDialog::OnListItemSelected)
 	EVT_LIST_ITEM_ACTIVATED(XRCID("PARAM_LIST_CTRL"), ParamsListDialog::OnListItemActivated)
 	EVT_LIST_ITEM_RIGHT_CLICK(XRCID("PARAM_LIST_CTRL"), ParamsListDialog::OnListItemClick)

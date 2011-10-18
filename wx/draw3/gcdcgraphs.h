@@ -43,6 +43,8 @@
 #include <wx/graphics.h>
 #include <wx/dynarray.h>
 
+#include "wxlogging.h"
+
 class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver  {
 
 	bool m_draw_param_name;
@@ -193,6 +195,7 @@ public:
 	virtual ~GCDCGraphs();
 
 	DECLARE_EVENT_TABLE()
+
 };
 
 #endif

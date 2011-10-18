@@ -95,13 +95,14 @@ class DrawPanelKeyboardHandler : public wxEvtHandler {
 	}
 
       protected:
-	 DECLARE_EVENT_TABLE()
-	 DrawPanel *panel;	/**< pointer to panel */
-	 wxString id;		/**< debug identifier */
+	DECLARE_EVENT_TABLE()
+
+	DrawPanel *panel;	/**< pointer to panel */
+	wxString id;		/**< debug identifier */
 };
 
 BEGIN_EVENT_TABLE(DrawPanelKeyboardHandler, wxEvtHandler)
-    EVT_CHAR(DrawPanelKeyboardHandler::OnChar)
+    LOG_EVT_CHAR(DrawPanelKeyboardHandler , OnChar, "drawpnl:key_char" )
     //EVT_KEY_DOWN(DrawPanelKeyboardHandler::OnKeyDown)
     EVT_KEY_UP(DrawPanelKeyboardHandler::OnKeyUp)
 END_EVENT_TABLE()
@@ -1044,16 +1045,16 @@ void DrawPanel::SearchDate() {
 }
 
 BEGIN_EVENT_TABLE(DrawPanel, wxPanel)
-    EVT_MENU(drawTB_REFRESH, DrawPanel::OnRefresh)
-    EVT_MENU(drawTB_FIND, DrawPanel::OnFind)
-    EVT_MENU(drawTB_SUMWIN, DrawPanel::OnSummaryWindow)
-    EVT_MENU(XRCID("ContextF0"), DrawPanel::OnFilterChange)
-    EVT_MENU(XRCID("ContextF1"), DrawPanel::OnFilterChange)
-    EVT_MENU(XRCID("ContextF2"), DrawPanel::OnFilterChange)
-    EVT_MENU(XRCID("ContextF3"), DrawPanel::OnFilterChange)
-    EVT_MENU(XRCID("ContextF4"), DrawPanel::OnFilterChange)
-    EVT_MENU(XRCID("ContextF5"), DrawPanel::OnFilterChange)
-    EVT_MENU(drawTB_SPLTCRS, DrawPanel::ToggleSplitCursor)
-    EVT_MENU(drawTB_FILTER, DrawPanel::OnToolFilterMenu)
-    EVT_MENU(drawTB_DRAWTREE, DrawPanel::OnDrawTree)
+    LOG_EVT_MENU(drawTB_REFRESH, DrawPanel , OnRefresh, "drawpnl:refresh" )
+    LOG_EVT_MENU(drawTB_FIND, DrawPanel , OnFind, "drawpnl:find" )
+    LOG_EVT_MENU(drawTB_SUMWIN, DrawPanel , OnSummaryWindow, "drawpnl:summary" )
+    LOG_EVT_MENU(XRCID("ContextF0"), DrawPanel , OnFilterChange, "drawpnl:f0" )
+    LOG_EVT_MENU(XRCID("ContextF1"), DrawPanel , OnFilterChange, "drawpnl:f1" )
+    LOG_EVT_MENU(XRCID("ContextF2"), DrawPanel , OnFilterChange, "drawpnl:f2" )
+    LOG_EVT_MENU(XRCID("ContextF3"), DrawPanel , OnFilterChange, "drawpnl:f3" )
+    LOG_EVT_MENU(XRCID("ContextF4"), DrawPanel , OnFilterChange, "drawpnl:f4" )
+    LOG_EVT_MENU(XRCID("ContextF5"), DrawPanel , OnFilterChange, "drawpnl:f5" )
+    LOG_EVT_MENU(drawTB_SPLTCRS, DrawPanel , ToggleSplitCursor, "drawpnl:tb_spltcrs" )
+    LOG_EVT_MENU(drawTB_FILTER, DrawPanel , OnToolFilterMenu, "drawpnl:tb_filter" )
+    LOG_EVT_MENU(drawTB_DRAWTREE, DrawPanel , OnDrawTree, "drawpnl:drawtree" )
 END_EVENT_TABLE()

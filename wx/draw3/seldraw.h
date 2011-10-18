@@ -39,6 +39,8 @@
 #endif
 #include <wx/validate.h>
 
+#include "wxlogging.h"
+
 typedef std::vector<DrawInfo*> DrawInfoList;
 
 /** Validator class - checks if draw can be disabled, and inform
@@ -195,6 +197,7 @@ protected:
 
         DECLARE_DYNAMIC_CLASS(SelectDrawWidget)
         DECLARE_EVENT_TABLE()
+
 };
 
 

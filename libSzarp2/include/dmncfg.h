@@ -78,7 +78,7 @@ public:
 
 	/** Default constructor. 
 	 * @param daemon name, used for logging and as a szarp.cfg section
-	 * name, may not be NULL; string is copied and deleted in 
+	 * name, cannot be NULL; string is copied and deleted in 
 	 * destructor, so you can free memory. */
 	DaemonConfig(const char *);
 	/** Destructor. */
@@ -107,12 +107,17 @@ public:
 	 * @param argc pointer to main() argc argument
 	 * @param argv main() argv argument
 	 * @param libpardone should we call libpar_done() ? - use 0 if you
+	 * @param sz_cfg pointer to szarp configuration. If NULL, configuration
+	 * is read from file
+	 * @param force_device_index if >=0 device index is not taken from
+	 * command line but set to force_device_index. Works only for LoadNotXML
+	 *
 	 * want to read extra libpar params - you need to call libpar_done
 	 * on your own
 	 * @return 0 on success, 1 on error (you should exit), 2 if usage
 	 * info was printed (you should exit)
 	 */
-	virtual int Load(int *argc, char **argv, int libpardone = 1);
+	virtual int Load(int *argc, char **argv, int libpardone = 1 , TSzarpConfig* sz_cfg = NULL , int force_device_index = -1 );
 	/** Returns number of daemon's line. All Get* functions must be called
 	 * AFTER successfull call to Load() - otherwise assertion fails. */
 	int GetLineNumber();
@@ -194,6 +199,20 @@ protected:
 	 * @return 0 on success, 1 on error
 	 */
 	int LoadXML(char *path);
+	/** 
+	 * @brief Tries to load DaemonConfig not from XML file.
+	 *
+	 * After calling this method DaemonConfig will be loaded
+	 * as much as possible without reading XML file. Not all
+	 * functions will be available after loading in such way
+	 * some of them may fail at assert.
+	 * 
+	 * @param cfg previously loaded szarp configuration
+	 * @param device_id id of device that should be loaded
+	 * 
+	 * @return 0 on success and 1 on error
+	 */
+	int LoadNotXML( TSzarpConfig* cfg , int device_id );
 
 	/**Inits UnitsInfo. IPK shall be loaded when this method is called*/
 	void InitUnits();
@@ -208,6 +227,7 @@ private:
 	std::string m_usage_footer;	/**< string printed at the end of usage info */
 
 	bool m_load_called;	/**< true if Load() method was already called */
+	bool m_load_xml_called;	/**< true if LoadXML() method was already called */
 
 	std::string m_parcook_path;	/**< path to parcook config file, used for IPC
 				  identifiers */

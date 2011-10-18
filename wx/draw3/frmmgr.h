@@ -39,6 +39,8 @@
 
 #include <vector>
 
+#include "wxlogging.h"
+
 typedef std::vector<DrawInfo*> DrawInfoList;
 
 /**class responsible for creating and managing @see DrawFrame objects*/
@@ -110,6 +112,7 @@ class FrameManager : public wxEvtHandler {
 	void LoadConfig(DrawFrame *frame);
 
 	DECLARE_EVENT_TABLE()
+
 };
 
 #endif	

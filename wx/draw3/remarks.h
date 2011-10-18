@@ -43,6 +43,8 @@
 
 #include "biowxsock.h"
 
+#include "wxlogging.h"
+
 class Remark {
 public:
 	typedef std::pair<int, int> ID;
@@ -457,6 +459,7 @@ public:
 	void OnHelpButton(wxCommandEvent &event);
 
 	DECLARE_EVENT_TABLE()
+
 };
 
 
@@ -486,6 +489,7 @@ public:
 	void OnHelpButton(wxCommandEvent &event);
 
 	DECLARE_EVENT_TABLE()
+
 };
 
 class RemarksFetcher : public wxEvtHandler, public DrawObserver {

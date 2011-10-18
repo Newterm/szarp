@@ -150,6 +150,7 @@ class StatDialog : public szFrame, public DBInquirer, public DrawInfoDropReceive
 	virtual ~StatDialog();
 
 	DECLARE_EVENT_TABLE()
+
 };
 
 #endif

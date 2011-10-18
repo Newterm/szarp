@@ -31,6 +31,7 @@
 #include <wx/wx.h>
 #endif
 
+#include "wxlogging.h"
 
 class ErrorFrame : public wxFrame {
 	void OnHide(wxCommandEvent &event);
@@ -50,6 +51,7 @@ class ErrorFrame : public wxFrame {
 
 	void OnHelpButton(wxCommandEvent &event);
 	DECLARE_EVENT_TABLE()
+
 public:
 	ErrorFrame();
 	virtual ~ErrorFrame();

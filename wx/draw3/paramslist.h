@@ -33,6 +33,8 @@
 #include <wx/listctrl.h>
 #endif
 
+#include "wxlogging.h"
+
 class ParamsListDialog : public wxDialog {
 	friend class PickKeyboardHandler;
 

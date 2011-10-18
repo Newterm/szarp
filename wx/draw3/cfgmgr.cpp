@@ -524,7 +524,7 @@ DefinedDrawsSets* ConfigManager::GetDefinedDrawsSets() {
 }
 
 DrawsSets *
-ConfigManager::LoadConfig(const wxString& prefix, const wxString &config_path)
+ConfigManager::LoadConfig(const wxString& prefix, const wxString &config_path, bool logparams )
 {
 	if(splashscreen != NULL) {
 		wxString msg = _("Loading configuration: ");
@@ -534,7 +534,7 @@ ConfigManager::LoadConfig(const wxString& prefix, const wxString &config_path)
 
 	TSzarpConfig *ipk = NULL;
 	if (config_path == wxEmptyString)
-		ipk = m_ipks->GetConfig(prefix.c_str());
+		ipk = m_ipks->LoadConfig(prefix.c_str(),std::wstring(),logparams);
 
 	DrawsSets* ret;
 	if (ipk == NULL)

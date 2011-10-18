@@ -46,23 +46,24 @@ BaseDaemon::~BaseDaemon()
 {
 }
 
-int BaseDaemon::Init(int argc, const char *argv[]) 
+int BaseDaemon::Init(int argc, const char *argv[], TSzarpConfig*sz_cfg , int dev_index )
 {
-	return Init(name,argc,argv);
+	return Init(name,argc,argv,sz_cfg,dev_index);
 }
 
-int BaseDaemon::Init( const char*name , int argc, const char *argv[] )
+int BaseDaemon::Init( const char*name , int argc, const char *argv[], TSzarpConfig*sz_cfg , int dev_index )
 {
-	return InitConfig(name,argc,argv)
+	return InitConfig(name,argc,argv,sz_cfg,dev_index)
 	    || InitIPC()
 	    || InitSignals();
 }
 
-int BaseDaemon::InitConfig( const char*name , int argc, const char *argv[] )
+int BaseDaemon::InitConfig( const char*name , int argc, const char *argv[] , TSzarpConfig* sz_cfg , int dev_index )
 {
 	assert( cfg = new DaemonConfig(name) );
 
-	if( cfg->Load(&argc, const_cast<char**>(argv)) ) {
+	if( cfg->Load(&argc, const_cast<char**>(argv), 1, sz_cfg, dev_index) ) {
+		sz_log(1,"Cannot load dmn cfg");
 		return 1;
 	}
 
@@ -78,6 +79,7 @@ int BaseDaemon::InitIPC()
 	assert( ipc = new IPCHandler(cfg) );
 
 	if( !cfg->GetSingle() && ipc->Init() ) {
+		sz_log(1,"Cannot init ipc");
 		return 1;
 	}
 
@@ -112,13 +114,13 @@ int BaseDaemon::InitSignals()
 	return 0;
 }
 
-void BaseDaemon::Wait()
+void BaseDaemon::Wait( time_t interval )
 {
 	time_t t;
 	t = time(NULL);
 	
-	if (t - m_last < DAEMON_INTERVAL) {
-		int i = DAEMON_INTERVAL - (t - m_last);
+	if (t - m_last < interval ) {
+		int i = interval - (t - m_last);
 		while (i > 0) {
 			i = sleep(i);
 		}
@@ -140,6 +142,16 @@ void BaseDaemon::Set( unsigned int i , short val )
 short BaseDaemon::At( unsigned int i )
 {
 	return ipc->m_read[i];
+}
+
+void BaseDaemon::Clear()
+{
+	memset(ipc->m_read,0,sizeof(short)*Count());
+}
+
+void BaseDaemon::Clear( short val )
+{
+	for( int i=Count()-1 ; i>=0 ; --i ) ipc->m_read[i] = val;
 }
 
 unsigned int BaseDaemon::Count()

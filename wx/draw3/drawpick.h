@@ -36,6 +36,8 @@
 #include <wx/textctrl.h>
 #include <wx/colordlg.h>
 
+#include "wxlogging.h"
+
 /**
  * Widget for editing draw properties.
  */
@@ -153,6 +155,7 @@ private:
 
 		/** Event table - button clicked */
 	DECLARE_EVENT_TABLE();
+
 };
 
 /**
@@ -310,5 +313,6 @@ private:
 	wxString m_prefix;
 
 	DECLARE_EVENT_TABLE();
+
 };
 #endif				// _PARPICK_H

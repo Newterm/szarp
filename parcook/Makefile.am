@@ -54,6 +54,7 @@ bin_PROGRAMS = \
 	      lecmdmn \
               linedmn \
 	      lmldmn \
+	      logdmn \
 	      mbdmn \
 	      borutadmn \
 	      mbrtudmn \
@@ -119,6 +120,8 @@ kwmsdmn_SOURCES = kwmsdmn.cc
 linedmn_SOURCES = linedmn.cc
 
 lmldmn_SOURCES = lmldmn.cc
+
+logdmn_SOURCES = logdmn.cc $(basedmn_SOURCES)
 
 mbrtudmn_SOURCES = mbrtudmn.cc
 

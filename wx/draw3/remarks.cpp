@@ -1901,11 +1901,11 @@ void RemarkViewDialog::RemarkSent(bool ok, wxString error) {
 }
 
 BEGIN_EVENT_TABLE(RemarkViewDialog, wxDialog)
-	EVT_BUTTON(wxID_CLOSE, RemarkViewDialog::OnCloseButton)
-	EVT_BUTTON(wxID_CANCEL, RemarkViewDialog::OnCancelButton)
-	EVT_BUTTON(wxID_HELP, RemarkViewDialog::OnHelpButton)
-	EVT_BUTTON(XRCID("GOTO_BUTTON"), RemarkViewDialog::OnGoToButton)
-	EVT_BUTTON(wxID_ADD, RemarkViewDialog::OnAddButton)
+	LOG_EVT_BUTTON(wxID_CLOSE, RemarkViewDialog , OnCloseButton, "remarksview:close" )
+	LOG_EVT_BUTTON(wxID_CANCEL, RemarkViewDialog , OnCancelButton, "remarksview:cancel" )
+	LOG_EVT_BUTTON(wxID_HELP, RemarkViewDialog , OnHelpButton, "remarksview:help" )
+	LOG_EVT_BUTTON(XRCID("GOTO_BUTTON"), RemarkViewDialog , OnGoToButton, "remarksview:goto" )
+	LOG_EVT_BUTTON(wxID_ADD, RemarkViewDialog , OnAddButton, "remarksview:add" )
 END_EVENT_TABLE()
 
 RemarksListDialog::RemarksListDialog(DrawFrame* parent, RemarksHandler *remarks_handler) {
@@ -2002,10 +2002,10 @@ void RemarksListDialog::OnHelpButton(wxCommandEvent &event) {
 }
 
 BEGIN_EVENT_TABLE(RemarksListDialog, wxDialog)
-	EVT_BUTTON(wxID_OPEN, RemarksListDialog::OnOpenButton)
-	EVT_BUTTON(wxID_CLOSE, RemarksListDialog::OnCloseButton)
-	EVT_BUTTON(wxID_HELP, RemarksListDialog::OnHelpButton)
-	EVT_CLOSE(RemarksListDialog::OnClose)
+	LOG_EVT_BUTTON(wxID_OPEN, RemarksListDialog , OnOpenButton, "remarks:open" )
+	LOG_EVT_BUTTON(wxID_CLOSE, RemarksListDialog , OnCloseButton, "remarks:close" )
+	LOG_EVT_BUTTON(wxID_HELP, RemarksListDialog , OnHelpButton, "remarks:help" )
+	LOG_EVT_CLOSE(RemarksListDialog , OnClose , "remarks:close")
 	EVT_LIST_ITEM_ACTIVATED(XRCID("RemarksListCtrl"), RemarksListDialog::OnRemarkItemActivated)
 END_EVENT_TABLE()
 

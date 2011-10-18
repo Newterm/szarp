@@ -56,10 +56,11 @@ public:
 	{
 	}
 
-	virtual void Read()
+	virtual int Read()
 	{
 		for( unsigned int i=0 ; i<Count() ; ++i )
 			Set( i , 1 );
+		return 0;
 	}
 
 protected :

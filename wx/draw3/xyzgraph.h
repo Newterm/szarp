@@ -84,6 +84,7 @@ public:
 	virtual ~XYZFrame();
 
 	DECLARE_EVENT_TABLE()
+
 };
 
 #endif

@@ -40,6 +40,8 @@
 
 #include <vector>
 
+#include "wxlogging.h"
+
 /**
  * Draw Frame class. It's responsible for remember frame size and positions.
  */
@@ -314,7 +316,6 @@ protected:
 	bool panel_is_added;
 
 	DECLARE_EVENT_TABLE();
-
 };
 
 #endif

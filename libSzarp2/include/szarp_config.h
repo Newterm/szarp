@@ -83,13 +83,14 @@ class XMLWrapperException;
 /** SZARP system configuration */
 class TSzarpConfig {
 public:
-	TSzarpConfig(void) :
-		read_freq(0), send_freq(0),
-		devices(NULL), defined(NULL),
-		drawdefinable(NULL), title(),
-		prefix(), boilers(NULL), seasons(NULL)
-	{ }
-	~TSzarpConfig(void);
+	/** 
+	 * @brief constructs empty configuration. 
+	 * 
+	 * @param logparams if true virtual logging parameters
+	 * will be created while loading XML
+	 */
+	TSzarpConfig( bool logparams = true );
+	virtual ~TSzarpConfig(void);
 	/**
 	 * Saves configuration in SZARP 2.1 format.
 	 * @param directory directory where to place output files (PTT.act,
@@ -124,6 +125,12 @@ public:
 	 * @param prefix set prefix of configuration.
 	 */
 	void SetName(const std::wstring& title, const std::wstring& prefix);
+
+	/** 
+	 * @brief Specify if loggerparams should be added after XML load
+	 * @param _logparams if true, params will be added
+	 */
+	void SetLogParams( bool _logparams ) { logparams = _logparams; }
 
 	/**
 	 * @return prefix of configuration
@@ -317,6 +324,8 @@ public:
 	/** TODO: comment */
 	const std::wstring& GetPSPort() { return ps_port; }
 
+	void CreateLogParams();
+
 protected:
 	/**
 	 * Creates parcook.cfg file.
@@ -408,6 +417,7 @@ protected:
 
 	std::wstring ps_port;	/**< Parameter Setting server port*/
 
+	bool logparams; /**< specify if logging parameters should be created */
 };
 
 
@@ -2219,12 +2229,14 @@ class IPKContainer {
 
 	/**Adds configuration to the the container
 	 * @param prefix configuration prefix
-	 * @param file path to the file with the configuration*/
-	TSzarpConfig* AddConfig(const std::wstring& prefix, const std::wstring& file = std::wstring());
+	 * @param file path to the file with the configuration
+	 * @param logparams defines if logging params should be generated
+	 */
+	TSzarpConfig* AddConfig(const std::wstring& prefix, const std::wstring& file = std::wstring() , bool logparams = true );
 public:
 	void RemoveExtraParam(const std::wstring& prefix, TParam *param);
 
-	bool ReadyConfigurationForLoad(const std::wstring &prefix);
+	bool ReadyConfigurationForLoad(const std::wstring &prefix, bool logparams = true );
 
 	TParam* GetParam(const std::wstring& global_param_name);
 
@@ -2235,7 +2247,7 @@ public:
 	TSzarpConfig *GetConfig(const std::wstring& prefix);
 	/**Loads config into the container
 	 * @return loaded config object, NULL if error occured during configuration load*/
-	TSzarpConfig *LoadConfig(const std::wstring& prefix, const std::wstring& file = std::wstring());
+	TSzarpConfig *LoadConfig(const std::wstring& prefix, const std::wstring& file = std::wstring(), bool logparams = true );
 	/**@return the container object*/
 	static IPKContainer* GetObject();
 	/**Inits the container

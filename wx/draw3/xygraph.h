@@ -155,6 +155,7 @@ public:
 
 	virtual ~XYFrame();
 	DECLARE_EVENT_TABLE()
+
 };
 
 class XYPanel : public wxPanel {
@@ -424,5 +425,6 @@ class XYPointInfo : public wxPanel {
 	/**Set @see XYGraph info of current graph*/
 	void SetGraphInfo(XYGraph *graph);
 	DECLARE_EVENT_TABLE()
+
 };
 #endif

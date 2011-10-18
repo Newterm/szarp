@@ -35,6 +35,8 @@
 #include <wx/spinctrl.h>
 #include <wx/datectrl.h>
 
+#include "wxlogging.h"
+
 /**
  * Widget for editing param properties and also for searching data given a formula.
  */
@@ -219,6 +221,7 @@ private:
 
 		/** Event table - button clicked */
 	DECLARE_EVENT_TABLE();
+
 };
 
 #endif

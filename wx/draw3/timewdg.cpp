@@ -39,6 +39,8 @@
 #include "timewdg.h"
 #include <wx/intl.h>
 
+#include "wxlogging.h"
+
 
 BEGIN_EVENT_TABLE(TimeWidget, wxRadioBox)
         EVT_RADIOBOX(wxID_ANY, TimeWidget::OnRadioSelected)
@@ -105,6 +107,11 @@ void TimeWidget::Select(int item, bool refresh)
 {
 	m_previous = m_selected;
 	SetSelection(item);
+
+	char buf[128];
+	snprintf(buf,128,"timewdg:%s",(const char*)period_names[item].mb_str(wxConvUTF8));
+	UDPLogger::LogEvent( buf );
+
 	if (refresh) {
 		m_draws_widget->SetPeriod((PeriodType)item);
 	}
