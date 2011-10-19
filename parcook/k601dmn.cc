@@ -636,9 +636,15 @@ Unique registers (read params): %d\n\
 			MyKMPSendClass->CreateQuery(0x10, 0x3F,
 						    actual_register);
 			if (MySerialPort->PutFD() < 0) {
-				sz_log(2, "Can't open serial port");
-				return 0;
+				sz_log(3, "Can't open serial port");
+#ifndef STRONG_DEBUG
+				if (cfg->GetSingle())
+					printf("\n");
+				sleep(60);
+#endif
+				continue;
 			}
+
 			MyKMPSendClass->SendQuery(MySerialPort->PutFD());
 
 			destroySend(MyKMPSendClass);
@@ -692,8 +698,8 @@ Unique registers (read params): %d\n\
 						}
 #ifndef STRONG_DEBUG
 						if (cfg->GetSingle())
-							printf("Value: %d\n",
-							       tmp_int_value);
+							printf("Value[%d]: %d\n",
+							       i,tmp_int_value);
 #endif
 					} else {
 						switch (register_type) {
@@ -723,7 +729,7 @@ Unique registers (read params): %d\n\
 #ifndef STRONG_DEBUG
 						if (cfg->GetSingle())
 							printf
-							    ("Value: SZARP_NO_DATA (BAD CONVERT)\n");
+							    ("Value[%d]: SZARP_NO_DATA (BAD CONVERT)\n",i);
 #endif
 					}
 
@@ -754,7 +760,7 @@ Unique registers (read params): %d\n\
 #ifndef STRONG_DEBUG
 					if (cfg->GetSingle())
 						printf
-						    ("Value: SZARP_NO_DATA (INCORRECT RESPONSE)\n");
+						    ("Value[%d]: SZARP_NO_DATA (INCORRECT RESPONSE)\n",i);
 #endif
 
 				}
@@ -783,7 +789,7 @@ Unique registers (read params): %d\n\
 #ifndef STRONG_DEBUG
 				if (cfg->GetSingle())
 					printf
-					    ("Value: SZARP_NO_DATA (BAD RESPONSE, SELECT)\n");
+					    ("Value[%d]: SZARP_NO_DATA (BAD RESPONSE, SELECT)\n",i);
 #endif
 			}
 
