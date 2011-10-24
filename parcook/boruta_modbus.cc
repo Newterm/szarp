@@ -2091,9 +2091,9 @@ void serial_ascii_parser::read_data(struct bufferevent* bufev) {
 				return;
 			}
 			if (check_crc()) 
-				m_serial_handler->error(serial_connection_handler::CRC_ERROR);
-			else 
 				m_serial_handler->frame_parsed(m_sdu, bufev);
+			else 
+				m_serial_handler->error(serial_connection_handler::CRC_ERROR);
 			m_state = COLON;
 			return;
 	}
