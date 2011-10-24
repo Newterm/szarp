@@ -714,8 +714,6 @@ int tcp_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, sho
 		m_addresses.push_back(addr);
 		m_connection_client_map.push_back(std::vector<client_driver*>());
 		m_tcp_connections.push_back(tcp_connection(this, i, sock_addr_to_string(addr)));
-	} else {
-		assert(false);
 	}
 	driver->set_id(std::make_pair(i, m_connection_client_map[i].size()));
 	m_connection_client_map[i].push_back(driver);
