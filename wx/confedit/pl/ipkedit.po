@@ -176,6 +176,9 @@ msgstr "Raporty"
 msgid "Draws"
 msgstr "Wykresy"
 
+msgid "Missing Draws"
+msgstr "Brakuj±ce wykresy"
+
 #: cframe.cpp:230
 msgid "SZARP IPK editor"
 msgstr "Edytor SZARP IPK"
