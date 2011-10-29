@@ -89,6 +89,9 @@ private:
         /** Event handler, called when raport is selected. Updates list of
          * raport's items. */
         void RaportSelected(wxCommandEvent& event);
+	/** Event handler, called when Find parameters without Raports is selected,
+	 * check parameters which has no child for Raporter application. */
+	void FindParametersWithoutRaports(wxCommandEvent& event);
         /** Event handler, called when draw window is selected. Updates list of
          * draws. */
         void DrawSelected(wxCommandEvent& event);
@@ -129,8 +132,16 @@ private:
 	
 	void AddNewElements(xmlNodePtr node);
 	void AddMissingDraw(xmlNodePtr node);
+
+	/* Searches XML param nodes without 'report' children.
+	* @param node XML node to search
+	*/
+	void FindParametersWithoutReports(xmlNodePtr node);
+
         /** Add raport to raplist. */
         void AddRaport(xmlNodePtr node);
+	/** Add parameters without reports to list*/
+	void AddParamWithoutRaport(xmlNodePtr node);
         /** Add draw to drawlist. */
         void AddDraw(xmlNodePtr node);
         
@@ -196,7 +207,9 @@ private:
 	
         wxListBox* raplist_1;     /* */
         
-	wxListBox* ritemslist;  /**< List of raport items. Content of this 
+	wxListBox* parametersWithoutRaportsList; /**< List of parameters which
+				are not shown in raports */
+        wxListBox* ritemslist;  /**< List of raport items. Content of this 
                                   listbox is generated from raplist client
                                   data. */
         

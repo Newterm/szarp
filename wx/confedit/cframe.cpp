@@ -79,6 +79,8 @@ enum {
         ID_tbUp,
         ID_tbDown,
         ID_RapList,
+	ID_ParametersList,
+	ID_ParametersWithoutRaportsList,
         ID_DrawList,
 	ID_DrawItems,
 	ID_MenuDown,
@@ -107,6 +109,7 @@ BEGIN_EVENT_TABLE(ConfFrame, szFrame)
 	EVT_MENU(ID_Clear, ConfFrame::OnClear)
 	EVT_MENU(ID_Help, ConfFrame::OnHelp)
 	EVT_MENU(ID_About, ConfFrame::OnAbout)
+//        EVT_LISTBOX(ID_ParametersWithoutRaportsList, ConfFrame::FindParametersWithoutRaports)
         EVT_LISTBOX(ID_RapList, ConfFrame::RaportSelected)
 END_EVENT_TABLE()
 
@@ -186,11 +189,29 @@ ConfFrame::ConfFrame(wxString _filename, const wxPoint& pos, const wxSize& size)
 
         notebook = new wxNotebook(this, -1);
         
+        wxPanel* drawtab = new wxPanel(notebook, -1);
+        wxBoxSizer *drawtab_sizer = new wxBoxSizer(wxHORIZONTAL);
+
+        drawlist = new wxListBox(drawtab, ID_DrawList, wxDefaultPosition,
+                        wxSize(150, 300));
+
+        drawtab_sizer->Add(drawlist, 1, wxEXPAND | wxALL, 10);
+
+        ditemslist = new DrawsListCtrl(drawtab, ID_DrawItems, wxDefaultPosition,
+                        wxSize(300, 300));
+        drawtab_sizer->Add(ditemslist, 1, wxEXPAND | wxTOP | wxBOTTOM | wxRIGHT,
+                        10);
+        
+	drawtab->SetAutoLayout(TRUE);
+        drawtab->SetSizer(drawtab_sizer);
+
         wxPanel* raptab = new wxPanel(notebook, -1);
         /* Nowa zakladka */
 	wxPanel* raptab_1 = new wxPanel(notebook, -1);
 
         notebook->AddPage(raptab, _("Raports"));
+
+        notebook->AddPage(drawtab, _("Draws"));
 
         notebook->AddPage(raptab_1, _("Missing Draws"));
  
@@ -221,24 +242,19 @@ ConfFrame::ConfFrame(wxString _filename, const wxPoint& pos, const wxSize& size)
 	raptab_1->SetAutoLayout(TRUE);
         
 
-	wxPanel* drawtab = new wxPanel(notebook, -1);
+        wxPanel* parametersTab = new wxPanel(notebook, -1);
+        notebook->AddPage(parametersTab, _("Missing raports"));
+        wxBoxSizer *parametersTab_sizer = new wxBoxSizer(wxHORIZONTAL);
         
-	notebook->AddPage(drawtab, _("Draws"));
-        
-	wxBoxSizer *drawtab_sizer = new wxBoxSizer(wxHORIZONTAL);
-
-        drawlist = new wxListBox(drawtab, ID_DrawList, wxDefaultPosition,
+        parametersWithoutRaportsList = new wxListBox(parametersTab, ID_ParametersWithoutRaportsList, wxDefaultPosition,
                         wxSize(150, 300));
-
-        drawtab_sizer->Add(drawlist, 1, wxEXPAND | wxALL, 10);
-
-        ditemslist = new DrawsListCtrl(drawtab, ID_DrawItems, wxDefaultPosition,
-                        wxSize(300, 300));
-        drawtab_sizer->Add(ditemslist, 1, wxEXPAND | wxTOP | wxBOTTOM | wxRIGHT,
-                        10);
+        parametersTab_sizer->Add(parametersWithoutRaportsList, 2, wxEXPAND | wxALL, 10);
         
-	drawtab->SetAutoLayout(TRUE);
-        drawtab->SetSizer(drawtab_sizer);
+        parametersTab->SetAutoLayout(TRUE);
+        parametersTab->SetSizer(parametersTab_sizer);
+
+
+
 
         notebook->SetAutoLayout(TRUE);
         
@@ -437,7 +453,7 @@ void ConfFrame::ReloadParams(void)
       
         FindElements(params->children);
 	AddNewElements(params->children);
-
+	FindParametersWithoutReports(params->children);
 }
 
 void ConfFrame::AddNewElements(xmlNodePtr node)
@@ -462,6 +478,11 @@ void ConfFrame::AddNewElements(xmlNodePtr node)
 	}
         for (xmlNodePtr n = node->children; n; n = n->next)
                 AddNewElements(n);
+}
+
+void ConfFrame::AddParamWithoutRaport(xmlNodePtr node){
+	xmlChar* name = xmlGetProp(node, (xmlChar *)"name");
+	parametersWithoutRaportsList->Append(SC::U2S(name));
 }
 
 void ConfFrame::AddRaport(xmlNodePtr node)
@@ -636,9 +657,10 @@ void ConfFrame::AddDraw(xmlNodePtr node)
 
 void ConfFrame::FindElements(xmlNodePtr node)
 {
-        if (node == NULL)
+	// for example <chacker:name/> tag has no name
+        if( node == NULL || node->name == NULL )
                 return;
-        if ((node->type == XML_ELEMENT_NODE) && node->ns) {
+        if( (node->type == XML_ELEMENT_NODE) && node->ns) {
                 if (!strcmp((char *)node->name, "draw")
                         && !strcmp((char *)node->ns->href, 
                                 (char *)SC::S2U(std::wstring(IPK_NAMESPACE_STRING)).c_str()))
@@ -652,6 +674,37 @@ void ConfFrame::FindElements(xmlNodePtr node)
                 FindElements(n);
 }
                 
+void ConfFrame::FindParametersWithoutReports(xmlNodePtr node)
+{
+	int raportExists;
+	//checking if node is not NULL or drawdefinable, drawdefinable and it's children are skipped
+	// for example <chacker:name/> tag has no name
+        if( node == NULL
+	 || node->name == NULL
+	 || strcmp((char *) node->name, "drawdefinable") == 0 )
+                return;
+	if( node->type == XML_ELEMENT_NODE
+	 && node->ns
+	 && !strcmp((char *) node->name, "param")) {
+		raportExists = 0;
+		//loop for children of param node
+		for (xmlNodePtr m = node->children; m; m = m->next)
+		{
+			if( !strcmp((char *)m->name, "raport")
+			 && !strcmp((char *)node->ns->href, (char *)SC::S2U(std::wstring(IPK_NAMESPACE_STRING)).c_str())) {
+				raportExists+=1;
+				break;
+			}
+        	}
+		if (!raportExists)
+			AddParamWithoutRaport(node);
+	}
+
+        for (xmlNodePtr n = node->children; n; n = n->next)
+		FindParametersWithoutReports(n);
+}
+
+
 void ConfFrame::RaportSelected(wxCommandEvent& event)
 {
         ritemslist->Clear();
@@ -674,6 +727,13 @@ void ConfFrame::RaportSelected(wxCommandEvent& event)
 		}
 	}
 }
+
+/*void ConfFrame::FindParametersWithoutRaports(wxCommandEvent& event)
+{
+	int sss = 0;
+	//exit 0;
+}
+*/
 
 void ConfFrame::DrawSelected(wxCommandEvent& event)
 {
