@@ -415,7 +415,7 @@ void DrawPanel::CreateChildren(const wxString& set, PeriodType pt, time_t time, 
 			drawID_SELSET,
 			width);
 
-	sw = new SelectDrawWidget(cfg, db_mgr, dw,
+	sw = new SelectDrawWidget(cfg, db_mgr, dw, rh,
 #ifdef WXAUI_IN_PANEL
 			vpanel,
 #else
@@ -567,7 +567,7 @@ void DrawPanel::StartDrawSearch()
 		while (parent && (frame = wxDynamicCast(parent, wxFrame)) == NULL)
 			parent = parent->GetParent();
 
-		dinc = new IncSearch(cfg, GetConfigName(), (wxFrame *) tlw, incsearch_DIALOG, _("Find"), false, true, false);
+		dinc = new IncSearch(cfg, rh, GetConfigName(), (wxFrame *) tlw, incsearch_DIALOG, _("Find"), false, true, false);
 	}
 
 	DrawInfo* di = dw->GetCurrentDrawInfo();
@@ -602,7 +602,7 @@ void DrawPanel::StartSetSearch() {
 		while (parent && (frame = wxDynamicCast(parent, wxFrame)) == NULL)
 			parent = parent->GetParent();
 
-		sinc = new IncSearch(cfg, GetConfigName(), (wxFrame *) tlw, incsearch_DIALOG, _("Find"), true, true, false);
+		sinc = new IncSearch(cfg, rh, GetConfigName(), (wxFrame *) tlw, incsearch_DIALOG, _("Find"), true, true, false);
 	}
 
 	sinc->StartWith(dw->GetCurrentDrawSet());

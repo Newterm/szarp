@@ -51,7 +51,7 @@ extern int CursorMovementSpeed[PERIOD_T_LAST];
 
 wxString XYFormatTime(const wxDateTime& time, PeriodType pt);
 
-XYFrame::XYFrame(wxString default_prefix, DatabaseManager *db_manager, ConfigManager *cfgmanager, TimeInfo time, DrawInfoList user_draws, FrameManager *frame_manager) :
+XYFrame::XYFrame(wxString default_prefix, DatabaseManager *db_manager, ConfigManager *cfgmanager, RemarksHandler *remarks_handler, TimeInfo time, DrawInfoList user_draws, FrameManager *frame_manager) :
 	szFrame(NULL, XY_GRAPH_FRAME, _("X/Y graph"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE | wxWANTS_CHARS) {
 
 	m_default_prefix = default_prefix;
@@ -59,6 +59,8 @@ XYFrame::XYFrame(wxString default_prefix, DatabaseManager *db_manager, ConfigMan
 	m_cfg_manager = cfgmanager;
 
 	m_db_manager = db_manager;
+
+	m_remarks_handler = remarks_handler;
 
 	wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);	
 	m_panel = new XYPanel(this, db_manager, cfgmanager, frame_manager, default_prefix);
@@ -92,6 +94,7 @@ XYFrame::XYFrame(wxString default_prefix, DatabaseManager *db_manager, ConfigMan
 			m_default_prefix,
 			m_cfg_manager,
 			m_db_manager,
+			m_remarks_handler,	
 			time,
 			user_draws,
 			this);
@@ -1198,7 +1201,7 @@ void XYPointInfo::SetPointInfo(XYGraph *graph, int point_index) {
 
 void XYPointInfo::OnGoToGraph(wxCommandEvent &event) {
 
-	DefinedDrawSet *dset = new DefinedDrawSet(m_config_manager->GetDefinedDrawsSets());
+	DefinedDrawSet *dset = new DefinedDrawSet(m_config_manager->GetDefinedDrawsSets(), false);
 	dset->SetTemporary(true);
 	dset->SetName(wxString(_T("X/Y")));
 	dset->Add(std::vector<DrawInfo*>(1, m_dx));

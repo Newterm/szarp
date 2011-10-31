@@ -36,16 +36,17 @@
 #include <wx/datectrl.h>
 
 #include "wxlogging.h"
+#include "parameditctrl.h"
 
 /**
  * Widget for editing param properties and also for searching data given a formula.
  */
-class ParamEdit : public wxDialog, public DBInquirer {
+class ParamEdit : public wxDialog, public DBInquirer, public ParamEditControl {
 
 public:
 		/** Widget constructor
 		 */
-	ParamEdit(wxWindow *parent, ConfigManager* cfg, DatabaseManager *db);
+	ParamEdit(wxWindow *parent, ConfigManager* cfg, DatabaseManager *db, RemarksHandler* remarks_handler);
 
 		/** Widget constructor, starts widget in param searching mode
 		*/
@@ -62,7 +63,7 @@ public:
 	int View(DefinedParam * param);
 
 	/**Starts new parameter*/
-	int StartNewParameter();
+	int StartNewParameter(bool network_param = false);
 
 	wxString GetBasePrefix();
 
@@ -131,14 +132,18 @@ public:
 
 	void ResetStartDate();
 
+	wxString GetParamNameFirstAndSecondPart();
+
+	void ParamInsertUpdateError(wxString error);
+
+	void ParamInsertUpdateFinished(bool ok);
+
 	~ParamEdit();
 
 private:
 	void Close();
 
 	void OnIdle(wxIdleEvent &e);
-
-	void ApplyModifications();
 
 	void TransferToWindow(DefinedParam *param);
 
@@ -151,6 +156,8 @@ private:
 	void InitWidget(wxWindow *parent);
 
 	void SendCompileFormulaQuery();
+
+	void CreateDefinedParam();
 
 	CodeEditor *m_formula_input;
 
@@ -190,6 +197,8 @@ private:
 
 	bool m_creating_new;
 
+	bool m_network_param;
+
 	bool m_error;
 
 	enum WIDGET_MODE {
@@ -218,6 +227,8 @@ private:
 	wxString m_base_prefix;
 
 	IncSearch *m_inc_search;
+
+	RemarksHandler *m_remarks_handler;
 
 		/** Event table - button clicked */
 	DECLARE_EVENT_TABLE();

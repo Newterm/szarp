@@ -38,7 +38,7 @@
 #include "xygraph.h"
 #include "incsearch.h"
 
-XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, DatabaseManager *db, TimeInfo time, DrawInfoList user_draws,  XFrame *frame) :
+XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, DatabaseManager *db, RemarksHandler *rh, TimeInfo time, DrawInfoList user_draws,  XFrame *frame) :
 		wxDialog(parent,
 			wxID_ANY,
 			_("X/Y graph parameters"),
@@ -70,11 +70,13 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 	
 	m_database_manager = db;
 
+	m_remarks_handler = rh;
+
 	m_mangler = NULL;
 
 	m_frame = frame;
 
-	m_draw_search = new IncSearch(m_config_manager, prefix, this, incsearch_DIALOG, _("Choose draw"), false, true, true, m_database_manager);
+	m_draw_search = new IncSearch(m_config_manager, m_remarks_handler, prefix, this, incsearch_DIALOG, _("Choose draw"), false, true, true, m_database_manager);
 
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	label = new wxStaticText(this, wxID_ANY, _("Choose graph parameters:"));

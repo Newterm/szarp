@@ -81,6 +81,7 @@ public:
 	virtual bool OnCmdLineParsed(wxCmdLineParser &parser) { return true;}
 
 	virtual void OnInitCmdLine(wxCmdLineParser &parser) { }
+
 protected:
 	/** Retrives szarp data directory location*/
 	void InitSzarpDataDir();

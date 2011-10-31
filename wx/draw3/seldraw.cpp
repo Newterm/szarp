@@ -58,6 +58,7 @@
 #include "paredit.h"
 #include "seldraw.h"
 #include "paredit.h"
+#include "remarks.h"
 
 //IMPLEMENT_DYNAMIC_CLASS(SelectDrawValidator, wxValidator)
 
@@ -203,7 +204,7 @@ END_EVENT_TABLE()
 
 IMPLEMENT_DYNAMIC_CLASS(SelectDrawWidget, wxWindow)
 
-SelectDrawWidget::SelectDrawWidget(ConfigManager *cfg, DatabaseManager *dbmgr, DrawsWidget *drawswdg, wxWindow* parent, wxWindowID id): wxScrolledWindow(parent, id, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS, _T("SelectDrawWidget"))
+SelectDrawWidget::SelectDrawWidget(ConfigManager *cfg, DatabaseManager *dbmgr, DrawsWidget *drawswdg, RemarksHandler *remarks_handler, wxWindow* parent, wxWindowID id): wxScrolledWindow(parent, id, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS, _T("SelectDrawWidget")), m_remarks_handler(remarks_handler)
 {
 	assert (cfg != NULL);
 	m_cfg = cfg;
@@ -445,7 +446,7 @@ void SelectDrawWidget::OnEditParam(wxCommandEvent &event) {
 	while (!w->IsTopLevel())
 		w = w->GetParent();
 
-	ParamEdit* pe = new ParamEdit(w, m_cfg, m_dbmgr);
+	ParamEdit* pe = new ParamEdit(w, m_cfg, m_dbmgr, m_remarks_handler);
 	pe->SetCurrentConfig(d->GetBasePrefix());
 	pe->Edit(dp);
 	delete pe;
@@ -470,7 +471,7 @@ void SelectDrawWidget::OnDocs(wxCommandEvent &event) {
 }
 
 void SelectDrawWidget::ShowDefinedParamDoc(DefinedParam *param) {
-	ParamEdit* pe = new ParamEdit(this, m_cfg, m_dbmgr);
+	ParamEdit* pe = new ParamEdit(this, m_cfg, m_dbmgr, m_remarks_handler);
 	pe->View(param);
 	delete pe;
 }

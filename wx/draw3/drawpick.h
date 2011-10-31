@@ -161,9 +161,9 @@ private:
 /**
  * "Draw Picker" Widget - selects draw to be shown on new defined window.
  */
-class DrawPicker : public wxDialog, public ConfigObserver {
+class DrawPicker : public wxDialog, public ConfigObserver, public SetEditControl, public SetsParamsReceivedEvent {
 public:
-	DrawPicker(wxWindow* parent, ConfigManager * cfg, DatabaseManager *dbmgr);
+	DrawPicker(wxWindow* parent, ConfigManager * cfg, DatabaseManager *dbmgr, RemarksHandler* remarks_handler);
 
 		/** Creates (if needed) and shows popup menu */
 	void OnContextMenu(wxListEvent & event);
@@ -196,13 +196,13 @@ public:
 
 	int EditDraw(DefinedDrawInfo *di, wxString prefix);
 
-	int EditAsNew(DrawSet *set, wxString prefix);
+	int EditAsNew(DrawSet *set, wxString prefix, bool network);
 
 	int EditSet(DefinedDrawSet *set, wxString prefix);
 		/** Starts editing of new window. 
 		 * @param prefix - prefix, of start base
 		 * @return wxID_OK if set was created*/
-	int NewSet(wxString prefix);
+	int NewSet(wxString prefix, bool network_set);
 
 		/** Removing draw */
 	void OnRemove(wxCommandEvent & event);
@@ -231,6 +231,8 @@ public:
 
 	wxString GetUniqueTitle(wxString user_title);
 
+	wxString AppendTitlePrefix(wxString title);
+
 	bool FindTitle(wxString& user_title);
 		/** Saves user data and cretates new configuration (@see CreateConfig()) if necessary
 		 * @ returns false if user data is incorrect */
@@ -246,6 +248,14 @@ public:
 	virtual void ParamSubstituted(DefinedParam *d, DefinedParam *p);
 
 	wxString GetNewSetName();
+
+	void SetsParamsReceiveError(wxString error);
+
+	void SetsParamsReceived(bool);
+
+	void SetInsertUpdateError(wxString error);
+
+	void SetInsertUpdateFinished(bool ok);
 
 	~DrawPicker();
 
@@ -306,11 +316,13 @@ private:
 	 * @see defwin */
 	void RefreshData(bool update_title = true);
 
-	void StartNewSet();
+	void StartNewSet(bool network_set);
 
 	ParamsListDialog *m_paramslist;
 
 	wxString m_prefix;
+
+	RemarksHandler* m_remarks_handler;
 
 	DECLARE_EVENT_TABLE();
 

@@ -14,7 +14,7 @@
 
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USAjj
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 
 from twisted.application import internet, service
 from twisted.internet import protocol, reactor, defer
@@ -33,7 +33,7 @@ import random
 import time
 import calendar
 
-__CONFIG_FILE__ = "/etc/szarp/remark_server_config.ini"
+__CONFIG_FILE__ = "remark_server_config.ini"
 
 NOBODY_UID = 65534
 NOGROUP_GID = 65534
@@ -63,11 +63,11 @@ class Sessions:
 		self.min_token_id	= 1			# Min of token Id
 		self.max_token_id	= 100000	# Max of token Id (max - min > 10)
 
-	def new(self, user_id, user_name):
+	def new(self, user_id, username):
 		"""Create new session, return token for new session.
 		"""
 		token = self.new_token()
-		self.data[token] = (time.time(), "", user_id, user_name) # (access time, last error string)
+		self.data[token] = (time.time(), "", user_id, username) # (access time, last error string)
 		self.otokens.append(token)
 		return token
 
@@ -92,7 +92,7 @@ class Sessions:
 		tokens = deque()
 		for token in self.otokens:
 			if self.data.has_key(token):
-				(atime, errstr, user_id, user_name) = self.data[token]
+				(atime, errstr, user_id, username) = self.data[token]
 				if time.time() - atime > self.expir:
 					del self.data[token]
 				else:
@@ -118,11 +118,108 @@ class Sessions:
 			# try one more time
 			token = random.randint(self.min_token_id, self.max_token_id)
 
+class UserParam: 
+	def __init__(self):
+		self.name = ""
+		self.prefix = ""
+		self.source = ""
+		self.type = ""
+		self.unit = ""
+		self.start_date = ""
+		self.prec = ""
+		
+	def parse_xml(self, p_string, u_name):
+
+		p_xml = etree.fromstring(p_string)
+
+		p_node = p_xml.xpath("/param")[0]
+
+		self.prefix = p_node.attrib["base"]
+		self.name = p_node.attrib["name"]
+		self.type = p_node.attrib["type"]
+		self.unit = p_node.attrib["unit"]
+		self.prec = p_node.attrib["prec"]
+
+		start_date = p_node.attrib["start_date"]
+		if not start_date == "-1":
+			start_date = start_date
+		else:
+			start_date = None
+		self.start_date = start_date
+
+		self.formula = p_node.text
+
+		
+	
+class UserSet:
+	def __init__(self):
+		self.name = None
+		self.prefixes = []
+		self.draws = []
+
+	def parse_xml(self, u_string, u_name):
+		u_xml = etree.fromstring(u_string)
+
+		self.name = str(u_xml.xpath("/window/@title")[0])
+
+		for u_draw in u_xml.xpath("/window/param"):
+
+			draw = {}
+
+			draw["name"] = u_draw.attrib["name"]
+
+			prefix = u_draw.attrib["source"]
+			draw["source"] = prefix
+			self.prefixes.append(prefix)
+
+			draw["hoursum"] = True if "hoursum" in u_draw.attrib else None
+			draw["draw"] = u_draw.attrib["draw"]
+
+			draw["max"] = None
+			draw["min"] = None
+			draw["color"] = None
+			draw["title"] = None
+			draw["sname"] = None
+			draw["scale"] = None
+			draw["min_scale"] = None
+			draw["max_scale"] = None
+
+			draws = u_draw.xpath("draw")
+			if len(draws):
+				u_draw = draws[0]
+				if "color" in u_draw.attrib:
+					draw["color"] = u_draw.attrib["color"]
+
+				if "min" in u_draw.attrib:
+					draw["min"] = u_draw.attrib["min"]
+
+				if "max" in u_draw.attrib:
+					draw["max"] = u_draw.attrib["max"]
+
+				if "title" in u_draw.attrib:
+					draw["title"] = u_draw.attrib["title"]
+	
+				if "sname" in u_draw.attrib:
+					draw["sname"] = u_draw.attrib["sname"]
+
+				if "scale" in u_draw.attrib:
+					draw["scale"] = u_draw.attrib["scale"]
+
+				if "min_scale" in u_draw.attrib:
+					draw["min_scale"] = u_draw.attrib["scale"]
+
+				if "max_scale" in u_draw.attrib:
+					draw["max_scale"] = u_draw.attrib["scale"]
+
+
+			self.draws.append(draw)
+
+
 
 class RemarksXMLRPCServer(xmlrpc.XMLRPC):
 	"""Main object communicating with the user"""
 	def __init__(self, service):
-		xmlrpc.XMLRPC.__init__(self)
+		xmlrpc.XMLRPC.__init__(self, allowNone=True)
 
 		self.service = service
 
@@ -137,7 +234,7 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
 
 	def xmlrpc_login(self, user, password):
 
-		def login_query_callback(result):
+		def login_callback(result):
 			ok, user_id, username = result
 			if not ok:
 				raise xmlrpc.Fault(-1, "Incorrect username and password")
@@ -146,8 +243,8 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
 
 			return token
 
-		defer = self.service.db.login_query(user, password)
-		defer.addCallback(login_query_callback)
+		defer = self.service.db.login(user, password)
+		defer.addCallback(login_callback)
 		return defer
 
 	def xmlrpc_post_remark(self, token, remark):
@@ -163,19 +260,13 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
 			if not ok:
 				raise xmlrpc.Fault(-1, "User is not allowed to send remarks for this base")
 			
-			defer = self.service.db.get_next_remark_id_query()
-			defer.addCallback(get_next_remark_id_callback)
-			return defer
-
-		def get_next_remark_id_callback(id):
-			defer = self.service.db.put_remark_into_db_query(etree.tostring(tree),
+			defer = self.service.db.put_remark_into_db(etree.tostring(tree),
 						id,
 						remark_node.attrib['prefix'])
 
 			defer.addCallback(lambda x: True)
-			return defer
 
-		defer = self.service.db.can_post_remark_query(prefix, self.user_id)
+		defer = self.service.db.has_access_to_prefix(prefix, self.user_id)
 		defer.addCallback(can_post_remark_callback)
 		return defer
 
@@ -183,10 +274,244 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
 
 		self.check_token(token)
 
-		defer = self.service.db.get_remarks_query(xmlrpc_time.value, prefixes, self.user_id)
+		defer = self.service.db.get_remarks(xmlrpc_time.value, prefixes, self.user_id)
 		defer.addCallback(lambda rows : [ (xmlrpc.Binary(row[0]), row[1], row[2], row[3]) for row in rows] ) 
 		return defer
 
+	def xmlrpc_update_params(self, token, params):
+
+		self.check_token(token)
+
+		params_manager = ParamsManager(self.service.db, self.user_id, self.username)
+
+		return params_manager.insert_or_update(params)
+
+	def xmlrpc_remove_params(self, token, params):
+
+		self.check_token(token)
+
+		params_manager = ParamsManager(self.service.db, self.user_id, self.username)
+
+		return params_manager.remove_params(params)
+
+	def xmlrpc_update_sets(self, token, sets):
+
+		self.check_token(token)
+
+		sets_manager = UserSetsManager(self.service.db, self.user_id, self.username)
+
+		return sets_manager.insert_or_update_sets(sets)
+
+	def xmlrpc_remove_sets(self, token, sets):
+
+		self.check_token(token)
+
+		sets_manager = UserSetsManager(self.service.db, self.user_id, self.username)
+
+		return sets_manager.remove_sets(sets)
+
+	def xmlrpc_get_params_and_sets(self, token, xmlrpc_time, prefixes):
+
+		self.check_token(token)
+
+		fetcher = ParamsAndSetsFetcher(self.service.db, self.user_id, xmlrpc_time.value, prefixes)
+
+		return fetcher.do_it()
+
+
+class ParamsAndSetsFetcher:
+	def __init__(self, database, user_id, time, prefixes):
+		self.db = database
+		self.user_id = user_id
+		self.prefixes = prefixes
+		self.time = time
+
+	def do_it(self):
+		return self.db.dbpool.runInteraction(self._do_it_interaction)
+
+	def _do_it_interaction(self, trans):
+		tdb = TransDbAccess(self.db, trans)
+
+		self.get_prefixes(tdb)
+		self.get_params(tdb)
+		self.get_sets(tdb)
+
+		return (self.params, self.sets)
+
+	def get_prefixes(self, tdb):
+		prefixes_ids = tdb.get_prefix_ids_for_names(self.prefixes);
+		user_prefixes = tdb.get_user_prefixes(self.user_id)
+
+		self.first_time_fetched_prefixes = user_prefixes - prefixes_ids
+		self.already_fetched_prefixes = user_prefixes & prefixes_ids
+		
+	def get_params(self, tbd):
+		params = []
+
+		params.extend(tbd.get_params(self.already_fetched_prefixes, self.time))
+		params.extend(tbd.get_params(self.first_time_fetched_prefixes, psycopg2.TimestampFromTicks(0)))
+
+		self.params = params
+
+	def get_sets(self, tdb):
+
+		s1 = tdb.get_draws(self.already_fetched_prefixes, self.time)
+		s2 = tdb.get_draws(self.first_time_fetched_prefixes, psycopg2.TimestampFromTicks(0))
+
+		for k, v in s2.iteritems():
+			if not k in s1:
+				s1[k] = v
+			else:
+				if v[0] == False:
+					continue
+				else:
+					s1[k][1].extend(v[1])
+
+		set_names = {}
+
+		for set_id in s1.keys():
+			set_names[set_id] = tdb.get_set_name(set_id)
+
+		sets = []
+
+		for k, v in s1.iteritems():
+			sets.append((set_names[k], v))
+
+		self.sets = sets
+
+class UserSetsManager:
+	def __init__(self, database, user_id, username):
+		self.db = database
+		self.user_id = user_id
+		self.username = username
+
+	def insert_or_update_sets(self, sets):
+		return self.db.dbpool.runInteraction(self._insert_or_update_sets_interaction, sets)
+
+	def _insert_or_update_set(self, user_set, tdb):
+
+		prefix_map = {}
+
+		for d in user_set.draws:
+			prefix = d["source"]
+			if not prefix in prefix_map:
+				prefix_id = tdb.access_to_prefix(prefix, self.user_id)
+				if prefix_id is None:
+					return False
+				prefix_map[prefix] = prefix_id
+
+			d["prefix_id"] = prefix_map[prefix]
+
+		set_id = tdb.get_set_id(user_set.name, self.user_id)
+
+		if set_id is None:
+			set_id = tdb.insert_set(user_set.name, self.user_id)
+		else:
+			tdb.remove_draws_from_set(set_id)
+
+		i = 0
+		while i < len(user_set.draws):
+			tdb.insert_set_draw(set_id, user_set.draws[i], i)
+			i += 1
+				
+		tdb.update_set_mod_time(set_id, deleted=False)
+
+		return True
+
+
+	def _insert_or_update_sets_interaction(self, trans, sets):
+		tdb = TransDbAccess(self.db, trans)
+	
+		r = []
+
+		for s in sets:
+			user_set = UserSet();
+			user_set.parse_xml(str(s), self.username)
+
+			ret = self._insert_or_update_set(user_set, tdb)
+
+			r.append(ret)
+
+		return r
+		
+	def remove_sets(self, sets):
+		return self.db.dbpool.runInteraction(self._remove_sets_interaction, sets)
+				
+	def _remove_sets_interaction(self, trans, sets):
+		tdb = TransDbAccess(self.db, trans)
+
+		r = []
+
+		for s in sets:
+			user_set = UserSet();
+
+			user_set.parse_xml(str(s), self.username)
+
+			if not tdb.has_access_to_prefix(user_set.prefix):
+				r.append(False)
+				continue
+
+			set_id = td.get_set_id(user_set.name, self.user_id)
+
+			tdb.remove_draw_from_set(set_id)
+
+			tdb.update_set_mod_time(set_id, prefix, deleted=True)
+			
+			r.append(True)
+
+		return r
+
+
+class ParamsManager:
+	def __init__(self, database, user_id, username):
+		self.db = database
+		self.user_id = user_id
+		self.username = username
+
+	def _insert_or_update_interaction(self, trans, params):
+		tdb = TransDbAccess(self.db, trans)
+		r = []
+
+		for p in params:
+			param = UserParam()
+			param.parse_xml(str(p), self.username)
+
+			prefix_id = tdb.access_to_prefix(param.prefix, self.user_id)
+			if prefix_id is None:
+				r.append(False)
+				continue
+
+			param_id = tdb.get_param_id(param.name, self.user_id)
+
+			if param_id is None:
+				tdb.insert_param(param, self.user_id, prefix_id)
+			else:
+				tdb.update_param(param, param_id, prefix_id, self.user_id)
+			r.append(True)
+
+		return r
+			
+	def insert_or_update(self, params):
+		return self.db.dbpool.runInteraction(self._insert_or_update_interaction, params)
+
+	def remove_params(self, params):
+		return self.db.dbpool.runInteraction(self._remove_interaction, params)
+
+	def _remove_interaction(self, trans, params):
+		r = []
+		tdb = TransDbAccess(self.db, trans)
+		for p in params:
+			param = UserParam()
+			param.parse_xml(p, self.username)
+
+			if not tbd.has_access_to_prefix(param.prefix, self.user_id):
+				r.append(False)
+				continue
+
+			tbd.remove_param(param.prefix, param.name, self.user_id)
+
+			r.append(True)
+		return r
 
 class Database:
 
@@ -213,7 +538,7 @@ class Database:
 		connection.close()
 		
 
-	def login_query(self, user, password):
+	def login(self, user, password):
 		def callback(result):
 			if len(result):
 				return True, result[0][0], result[0][1]
@@ -232,8 +557,8 @@ class Database:
 
 		defer.addCallback(callback)
 		return defer
-	
-	def get_remarks_query(self, time, prefixes, id):
+
+	def get_remarks(self, time, prefixes, id):
 	
 		defer = self.dbpool.runQuery("""
 			SELECT 
@@ -284,10 +609,10 @@ class Database:
 
 		return defer
 
-	def can_post_remark_query(self, prefix, user_id):
-		defer = self.dbpool.runQuery("""
+	def has_access_to_prefix_query(self, prefix, user_id):
+		return ("""
 			SELECT
-				COUNT(*)
+				prefix_id
 			FROM 
 				prefix
 			JOIN
@@ -303,29 +628,290 @@ class Database:
 
 			""",  { 'prefix' : prefix, 'user_id': user_id })
 
-		defer.addCallback(lambda result: True if result[0][0] > 0 else False)
+	def has_access_to_prefix(self, prefix, user_id):
+		defer = self.dbpool.runQuery(*self.has_access_to_prefix_query(prefix,user_id))
+
+		defer.addCallback(lambda result: True if len(result[0]) > 0 else None)
 		return defer
 
-	def put_remark_into_db_query(self, remark, id, prefix): 
+	def put_remark_into_db(self, remark, prefix): 
 		defer = self.dbpool.runOperation("""
 			INSERT INTO 
 				remark 
 					(content, post_time, id, prefix_id, server_id)
 				values
-					(%(content)s, %(time)s, %(id)s, (select id from prefix where prefix = %(prefix)s), %(server_id)s)""",
+					(%(content)s, %(time)s, (select nextval('remarks_seq')), (select id from prefix where prefix = %(prefix)s), %(server_id)s)""",
 				{ 'content' : remark,
 					'time' : psycopg2.TimestampFromTicks(time.time()),
-					'id': id,
 					'prefix' : prefix,
 					'server_id' : self.server_id})
 
 		defer.addCallback(lambda x: True)
 		return defer
 
-	def get_next_remark_id_query(self):
-		defer = self.dbpool.runQuery("SELECT nextval('remarks_seq')")
-		defer.addCallback(lambda result: str(result[0][0]))
-		return defer
+class TransDbAccess:
+	def __init__(self, db, trans):
+		self.db = db
+		self.trans = trans
+
+	def access_to_prefix(self, prefix, user_id):
+		query = self.db.has_access_to_prefix_query(prefix, user_id)
+		self.trans.execute(*query)
+		r = self.trans.fetchall()
+		return r[0][0] if len(r) > 0 else None
+
+	def has_access_to_prefix(self, prefix, user_id):
+		return True if self.access_to_prefix(prefix, user_id) is not None else False
+
+	def update_param(self, param, param_id, prefix_id, user_id):
+		self.trans.execute("""
+			UPDATE
+				param
+			SET
+				prefix_id = %(prefix_id)s, formula = %(formula)s, type=%(type)s, unit=%(unit)s, start_date=%(start_date)s, prec=%(prec)s, mod_time = %(mod_time)s
+			WHERE
+				id = %(id)s AND user_id=%(user_id)s""",
+			{ 'prefix_id' : prefix_id,
+				'type' : param.type,
+				'unit' : param.unit,
+				'start_date' : param.start_date,
+				'prec' : param.prec,
+				'formula' : param.formula,
+				'mod_time' : psycopg2.TimestampFromTicks(time.time()),
+				'id' : param_id,
+				'user_id' : user_id
+				})
+
+	def insert_param(self, param, user_id, prefix_id):
+		self.trans.execute("""
+			INSERT INTO
+				param
+					(pname, prefix_id, type, unit, formula, start_date, prec, mod_time, user_id)
+			VALUES
+				(%(pname)s, %(prefix_id)s, %(type)s, %(unit)s, %(formula)s, %(start_date)s, %(prec)s, %(mod_time)s, %(user_id)s)""",
+			{
+				'pname' : param.name,
+				'prefix_id' : prefix_id,
+				'type' : param.type,
+				'unit' : param.unit,
+				'formula' : param.formula,
+				'start_date' : param.start_date,
+				'prec' : param.prec,
+				'mod_time' : psycopg2.TimestampFromTicks(time.time()),
+				'user_id' : user_id
+				})
+
+	def insert_set(self, name, user_id):
+		self.trans.execute("select  nextval('set_seq')");
+		set_id = self.trans.fetchall()[0][0]
+
+		self.trans.execute("""
+			INSERT INTO
+				draw_set (set_id, name, user_id)
+			VALUES
+				(%(set_id)s, %(name)s, %(user_id)s)
+			""", { 'set_id' : set_id, 'name' : name, 'user_id' : user_id})
+				
+		return set_id
+
+	def remove_draws_from_set(self, set_id):
+		self.trans.execute("""
+			DELETE FROM
+				draw
+			WHERE
+				set_id = %(set_id)s""",
+			{ 'set_id' : set_id })
+
+	def insert_set_draw(self, set_id, draw, draw_order):
+		draw["set_id"] = set_id
+		draw["draw_order"] = draw_order
+
+		self.trans.execute("""
+			INSERT INTO
+				draw (set_id, name, draw, title, sname, prefix_id, hoursum, color, draw_min, draw_max, scale, min_scale, max_scale, draw_order)
+			VALUES
+				(%(set_id)s, %(name)s, %(draw)s, %(title)s, %(sname)s, %(prefix_id)s, %(hoursum)s, %(color)s, %(min)s, %(max)s, %(scale)s, %(min_scale)s, %(max_scale)s, %(draw_order)s)""",
+			draw)
+
+		del draw["set_id"]
+		del draw["draw_order"]
+
+	def update_set_mod_time(self, set_id, deleted):
+		self.trans.execute("""
+			UPDATE
+				draw_set
+			SET
+				mod_time = %(time)s, deleted = %(deleted)s
+			WHERE
+				set_id = %(set_id)s""",
+			{ 'set_id' : set_id, 'time' : psycopg2.TimestampFromTicks(time.time()), 'deleted' : deleted } )
+				
+			
+	def get_param_id(self, param, user_id):
+		self.trans.execute("""
+			SELECT
+				id
+			FROM	
+				param
+			WHERE
+				pname = %(pname)s AND user_id = %(user_id)s
+			""", { 'pname' : param, 'user_id' : user_id })
+		r = self.trans.fetchall()
+		return r[0][0] if len(r) > 0 else None
+	
+
+	def remove_param(self, prefix, name, user_id):
+		self.trans.execute("""
+			UPDATE	
+				param
+			SET
+				deleted = 1,
+				mod_time = %(mod_time)s
+			WHERE
+				prefix_id = (SELECT id FROM prefix WHERE prefix = %(prefix)s) AND pname = %(pname)s AND user_id = %(user_id)s""",
+			{ 'mod_time' : psycopg2.TimestampFromTicks(time.time()), 'prefix' : prefix, 'pname' : name, 'user_id' : user_id})
+
+	def get_prefixes(self):
+		self.trans.execute("""
+			SELECT
+				prefix_id
+			FROM
+				prefix""")
+
+		ret = []
+
+		row = self.trans.fetchone()
+		while row:
+			ret.append(int(row[0]))
+			row.trans.fetchone()
+		
+		return ret
+
+	def get_prefix_ids_for_names(self, names):
+		self.trans.execute("""
+			SELECT
+				id
+			FROM
+				prefix
+			WHERE prefix IN %(names)s""",
+			{ 'names' : names } )
+		
+		r = set()
+		
+		row = self.trans.fetchone()
+		while row:
+			r.add(row[0])
+			row = self.trans.fetchone()
+
+		return r
+
+	def get_user_prefixes(self, user_id):
+		self.trans.execute("""	
+				SELECT
+					prefix_id
+				FROM
+					user_prefix_access
+				WHERE
+					user_id = %(id)s
+			""", { 'id' : user_id })
+
+		ret = set()
+
+		row = self.trans.fetchone()
+		while row:
+			ret.add(row[0])
+			row = self.trans.fetchone()
+		
+		return ret
+
+	def get_params(self, prefixes, time):
+		self.trans.execute("""	
+				SELECT
+					p.pname, r.prefix, p.formula, p.type, p.unit, p.start_date, p.prec, p.deleted
+				FROM
+					param as p
+				JOIN
+					prefix as r
+				ON
+					(p.prefix_id = r.id)
+				WHERE
+					p.prefix_id IN %(prefixes)s and p.mod_time >= %(time)s
+			""", { 'time' : time, 'prefixes' : prefixes })
+
+		ret = []
+		row = self.trans.fetchone()
+		while row:
+			ret.append(row)
+			row = self.trans.fetchone()
+		return ret
+
+	def get_set_id(self, set_name, user_id):
+		self.trans.execute("""
+			SELECT
+				set_id
+			FROM
+				draw_set
+			WHERE
+				name = %(set_name)s and user_id = %(user_id)s""",
+			{ 'set_name' : set_name, 'user_id' : user_id })
+
+		row = self.trans.fetchone()
+		if row:
+			return row[0]
+		else:
+			return None
+
+	def get_set_name(self, set_id):
+		self.trans.execute("""
+			SELECT
+				name
+			FROM
+				draw_set
+			WHERE
+				set_id = %(set_id)s""",
+			{ 'set_id' : set_id} )
+
+		row = self.trans.fetchone()
+		return row[0]
+
+
+	def get_draws(self, prefixes, time):
+		self.trans.execute("""
+			SELECT 
+				d.set_id, p.prefix, d.name, d.draw, d.title, d.sname, d.hoursum, d.color, d.draw_min, d.draw_max, d.scale, d.min_scale, d.max_scale, ds.deleted
+			FROM
+				draw as d
+			JOIN
+				draw_set as ds
+			ON
+				(d.set_id = d.set_id)
+			JOIN
+				prefix as p
+			ON
+				(d.prefix_id = p.id)
+			WHERE
+				ds.mod_time >= %(time)s AND d.prefix_id IN %(prefixes)s
+			ORDER BY
+				d.draw_order""",
+			{ 'time' : time, 'prefixes' : prefixes })
+
+		ret = {}
+
+		row = self.trans.fetchone()
+		while row:
+			set_id = row[0]
+			draw = row[1:12]
+			deleted = row[13]
+
+			if set_id in ret and not deleted:
+				ret[set_id][1].append(draw)
+			else:
+				ret[set_id] = (True, [draw]) if not deleted else (False,)
+
+			row = self.trans.fetchone()
+
+		return ret
+
 
 class RemarksService(service.Service):
 
@@ -334,35 +920,36 @@ class RemarksService(service.Service):
 		self.db = Database(config)
 	
 class SQL_IN(object):
-    """Adapt a tuple to an SQL quotable object."""
-    
-    def __init__(self, seq):
-	self._seq = seq
+	"""Adapt a tuple to an SQL quotable object."""
+	def __init__(self, seq):
+		self._seq = seq
 
-    def prepare(self, conn):
-        pass
+	def prepare(self, conn):
+		pass
 
-    def getquoted(self):
-        # this is the important line: note how every object in the
-        # list is adapted and then how getquoted() is called on it
+	def getquoted(self):
+		# this is the important line: note how every object in the
+		# list is adapted and then how getquoted() is called on it
 
-	qobjs = [str(psycoadapt(o).getquoted()) for o in self._seq]
+		qobjs = [str(psycoadapt(o).getquoted()) for o in self._seq]
 
-	if len(qobjs):
-		return '(' + ', '.join(qobjs) + ')'
-	else:
-		#blah
-		return '(NULL)'
+		if len(qobjs):
+			return '(' + ', '.join(qobjs) + ')'
+		else:
+			#blah
+			return '(NULL)'
 	
-    __str__ = getquoted
+	__str__ = getquoted
 
 register_adapter(tuple, SQL_IN)
 register_adapter(list, SQL_IN)
+register_adapter(set, SQL_IN)
 
 config = ConfigParser.ConfigParser()
 config.read(__CONFIG_FILE__)
 
-application = service.Application('remarks_server', uid=NOBODY_UID, gid=NOGROUP_GID)
+#application = service.Application('remarks_server', uid=NOBODY_UID, gid=NOGROUP_GID)
+application = service.Application('remarks_server')
 serviceCollection = service.IServiceCollection(application)
 
 remarks_service = RemarksService(config)

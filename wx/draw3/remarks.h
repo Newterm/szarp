@@ -138,7 +138,7 @@ public:
 
 	void OnSocketEvent(wxSocketEvent& e);
 
-	void SetIPAddress(wxString &ip);
+	void SetIPAddress(const wxString &ip);
 
 	~XMLRPCConnection();
 
@@ -179,54 +179,116 @@ class RemarksConnection : public wxEvtHandler {
 
 	XMLRPCConnection *m_xmlrpc_connection;
 
+	ConfigManager *m_config_manager;
+
 	wxString m_address;
 
-	enum {
-		NONE, 
-		FETCHING_REMARKS,
-		POSTING_REMARK } m_current_action;
+	class Command {
+	protected:
+		RemarksConnection* m_connection;
+	public:
+		Command(RemarksConnection* connection);
+		virtual void Error(wxString error) = 0;
+		virtual void Send() = 0;
+		virtual void HandleResponse(XMLRPC_REQUEST) = 0;
+	};
 
-	bool m_pending_remarks_fetch;
+	class FetchRemarksCommand : public Command {
+		RemarksHandler* m_remarks_handler;
+		bool m_manually_triggered;
+		time_t m_retrieval_time;
+	public:
+		FetchRemarksCommand(RemarksConnection* connection, RemarksHandler* remarks_handler, bool manually_triggered);
+		virtual void Error(wxString error);
+		virtual void Send();
+		virtual void HandleResponse(XMLRPC_REQUEST);
+	};
 
-	bool m_pending_remark_post;
+	class PostRemarkCommand : public Command {
+		Remark m_remark;
+		RemarkViewDialog *m_remark_view_dialog;
+	public:
+		PostRemarkCommand(RemarksConnection* connection, const Remark& remark, RemarkViewDialog *remark_view_dialog);
+		virtual void Error(wxString error);
+		virtual void Send();
+		virtual void HandleResponse(XMLRPC_REQUEST);
+	};
 
-	bool m_inform_about_successful_fetch;
+	class InsertOrUpdateParamCommand : public Command {
+		xmlDocPtr m_param_xml;
+		ParamEditControl *m_control;
+		bool m_del;
+	public:
+		InsertOrUpdateParamCommand(RemarksConnection* connection, DefinedParam *param, ParamEditControl *control, bool del);
+		virtual void Error(wxString error);
+		virtual void Send();
+		virtual void HandleResponse(XMLRPC_REQUEST);
+		virtual ~InsertOrUpdateParamCommand();
+	};
+
+	class InsertOrUpdateSetCommand : public Command {
+		xmlDocPtr m_set_xml;
+		SetEditControl *m_control;
+		bool m_del;
+	public:
+		InsertOrUpdateSetCommand(RemarksConnection* connection, DefinedDrawSet *param, SetEditControl *control, bool del);
+		virtual void Error(wxString error);
+		virtual void Send();
+		virtual void HandleResponse(XMLRPC_REQUEST);
+		virtual ~InsertOrUpdateSetCommand();
+	};
+
+	class FetchParamsAndSetsCommand : public Command {
+		ConfigManager* m_cfg_mgr;
+		SetsParamsReceivedEvent* m_event;
+		time_t m_fetch_time;
+
+		void ProcessParams(XMLRPC_VALUE vs, bool& params_updated);
+		DefinedDrawInfo* ProcessDrawInfo(XMLRPC_VALUE vdi);
+		void ProcessSets(XMLRPC_VALUE ss, bool& sets_updated);
+		bool AddSet(DefinedDrawSet *set);
+	public:
+		FetchParamsAndSetsCommand(RemarksConnection* connection, ConfigManager* cfg_mgr, SetsParamsReceivedEvent *m_event = NULL);
+		virtual void Error(wxString error);
+		virtual void Send();
+		virtual void HandleResponse(XMLRPC_REQUEST);
+	};
+
+	std::list<boost::shared_ptr<Command> > m_command_list;
 
 	bool m_address_resolved;
 
 	time_t m_retrieval_time;
 
-	Remark m_remark_to_send;
-
-	RemarkViewDialog *m_remark_add_dialog;
-
 	RemarksHandler *m_remarks_handler;
 
 	XMLRPC_REQUEST CreateMethodCallRequest(const char* method_name);
 
-	XMLRPC_REQUEST CreateLoginRequest();
-	XMLRPC_REQUEST CreateGetRemarksRequest();
-	XMLRPC_REQUEST CreatePostRemarkRequest();
+	XMLRPC_REQUEST CreateMethodCallRequestWithToken(const char* method_name);
 
-	void HandleRemarksResponse(XMLRPC_REQUEST response);
+	XMLRPC_REQUEST CreateLoginRequest();
+
 	void HandleLoginResponse(XMLRPC_REQUEST response);
-	void HandlePostMessageResponse(XMLRPC_REQUEST response);
-	bool HandleFault(XMLRPC_REQUEST response);
+	void HandleFault(XMLRPC_REQUEST response);
 
 	void PostRequest(XMLRPC_REQUEST request);
+	void SendCommand();
 
 public:
-	RemarksConnection(wxString &address, RemarksHandler *handler);
+	RemarksConnection(wxString &address, RemarksHandler *handler, ConfigManager *config_manager);
 	bool Busy();
-	void SetRemarkAddDialog(RemarkViewDialog *add_dialog);
 	void OnXMLRPCResponse(XMLRPCResponseEvent &event);
 	void OnDNSResponse(DNSResponseEvent &event);
 	void SetIPAddress(wxString &ip);
 	void SetUsernamePassword(wxString username, wxString password);
 	void SetRemarksAddDialog(RemarkViewDialog *dialog);
 	void FetchNewRemarks(bool notify_about_success = true);
-	void PostRemark(Remark &remark);
-	void RemarksStored(const std::vector<Remark>& rms);
+	void FetchNewParamsAndSets(SetsParamsReceivedEvent *event = NULL);
+	void PostRemark(Remark &remark, RemarkViewDialog *remark_view_dialog);
+	void InsertOrUpdateParam(DefinedParam *param, ParamEditControl* control, bool del);
+	void InsertOrUpdateSet(DefinedDrawSet *set, SetEditControl* control, bool del);
+	void Login();
+	void TriggerRequest();
 
 	~RemarksConnection();
 
@@ -254,9 +316,14 @@ DECLARE_EVENT_TYPE(REMARKSRESPONSE_EVENT, -1)
 
 class RemarksStoredEvent : public wxCommandEvent {
 	std::vector<Remark> m_remarks;
+	time_t m_fetch_time;
+	bool m_manually_triggered;
 public:
-	RemarksStoredEvent(std::vector<Remark> remarks);
+	RemarksStoredEvent(std::vector<Remark> remarks, time_t fetch_time, bool manually_triggered);
 	std::vector<Remark>& GetRemarks();
+	time_t GetFetchTime();
+	bool GetManuallyTriggered();
+	
 	wxEvent* Clone() const;
 };
 
@@ -274,8 +341,10 @@ class RemarksStorage : public wxThread {
 
 	class StoreRemarksQuery : public Query {
 		std::vector<Remark> m_remarks;
+		time_t m_fetch_time;
+		bool m_manually_triggered;
 	public:
-		StoreRemarksQuery(RemarksStorage* storage, std::vector<Remark> &remarks);
+		StoreRemarksQuery(RemarksStorage* storage, std::vector<Remark> &remarks, time_t fetch_time, bool manually_triggered);
 		virtual void Execute();
 		virtual ~StoreRemarksQuery() {};
 	};
@@ -339,7 +408,7 @@ class RemarksStorage : public wxThread {
 	void PrepareQuery();
 
 	void AddPrefix(std::wstring prefix);
-	void ExecuteStoreRemarks(std::vector<Remark>& remarks);
+	void ExecuteStoreRemarks(std::vector<Remark>& remarks, time_t fetch_time, bool manually_triggered);
 	std::vector<Remark> ExecuteGetRemarks(const std::wstring& prefix, const std::wstring& set, const time_t& start_date, const time_t &end_date);
 	std::vector<Remark> ExecuteGetAllRemarks(const std::wstring& prefix);
 
@@ -355,7 +424,7 @@ public:
 
 	std::set<std::wstring> GetPrefixes();
 
-	void StoreRemarks(std::vector<Remark>& remarks);
+	void StoreRemarks(std::vector<Remark>& remarks, time_t fetch_time, bool manually_triggered);
 
 	void GetRemarks(const wxString& prefix,
 			const wxString& set,
@@ -378,6 +447,7 @@ class RemarksHandler : public wxEvtHandler {
 
 	RemarksConnection* m_connection;
 	RemarksStorage* m_storage;
+	ConfigManager* m_config_manager;
 
 	std::vector<RemarksFetcher*> m_fetchers;
 
@@ -385,13 +455,13 @@ class RemarksHandler : public wxEvtHandler {
 
 	void GetConfigurationFromSSCConfig();
 public:
-	RemarksHandler();
+	RemarksHandler(ConfigManager *config_manager);
 
 	void AddRemarkFetcher(RemarksFetcher* fetcher);
 
 	void RemoveRemarkFetcher(RemarksFetcher* fetcher);
 
-	void NewRemarks(std::vector<Remark>& remarks);
+	void NewRemarks(std::vector<Remark>& remarks, time_t fetch_time, bool manually_triggered);
 
 	void Start();
 
@@ -402,6 +472,8 @@ public:
 	bool Configured();
 
 	void GetConfiguration(wxString& username, wxString& password, wxString &server, bool& autofetch);
+
+	wxString GetUsername() const;
 
 	void SetConfiguration(wxString username, wxString password, wxString server, bool autofetch);
 
@@ -511,7 +583,6 @@ public:
 	virtual void ScreenMoved(Draw* draw, const wxDateTime &start_time);
 
 	virtual void DrawInfoChanged(Draw *draw);
-
 
 	virtual void Attach(DrawsController *d);
 

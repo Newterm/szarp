@@ -116,11 +116,12 @@ public:
 	 * @param confid identifier (title) of configuration
 	 * @param widget for selecting set of draws, needed for getting
 	 * currently selected set
+	 * @param RemarksHandler needed for netowrk param editing
 	 * @param widget for drawing draws
 	 * @param parent parent widget
 	 * @param widget id
 	 */
-	SelectDrawWidget(ConfigManager *cfg, DatabaseManager *dbmgr, DrawsWidget *drawswdg, wxWindow *parent, wxWindowID id = -1);
+	SelectDrawWidget(ConfigManager *cfg, DatabaseManager *dbmgr, DrawsWidget *drawswdg, RemarksHandler *remarks_handler, wxWindow *parent, wxWindowID id = -1);
 
 	/**
 	 * Enables/disables draw
@@ -165,6 +166,8 @@ protected:
 	wxString m_prefix;
 	/** widget for drawing draws */
 	DrawsWidget *m_draws_wdg;
+
+	RemarksHandler *m_remarks_handler;
 	/** array of checkboxes */
 	std::vector<wxCheckBox*> m_cb_l;
 

@@ -120,7 +120,7 @@ class StatDialog : public szFrame, public DBInquirer, public DrawInfoDropReceive
 	void OnHelpButton(wxCommandEvent &event);
 
 	public:	
-	StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, ConfigManager *cfg, TimeInfo time, DrawInfoList user_draws);
+	StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, ConfigManager *cfg, RemarksHandler *rh, TimeInfo time, DrawInfoList user_draws);
 
 	/**not significant in this case: -1 is returned*/
 	virtual time_t GetCurrentTime();

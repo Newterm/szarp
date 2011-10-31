@@ -57,11 +57,13 @@ class XYZFrame: public XFrame, public szFrame {
 	/**@see ConfigManager*/
 	ConfigManager *m_cfg_manager;
 
+	RemarksHandler *m_remarks_handler;
+
 	FrameManager *m_frame_manager;
 
 	XYDialog *m_xydialog;
 public:
-	XYZFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigManager *cfgmanager, TimeInfo time, DrawInfoList user_draws, FrameManager *frame_manager);
+	XYZFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigManager *cfgmanager, RemarksHandler *remarks_handler, TimeInfo time, DrawInfoList user_draws, FrameManager *frame_manager);
 
 	virtual int GetDimCount();
 

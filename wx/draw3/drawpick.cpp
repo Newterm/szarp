@@ -46,6 +46,9 @@
 #include "ids.h"
 #include "classes.h"
 #include "coobs.h"
+#include "parameditctrl.h"
+#include "seteditctrl.h"
+#include "sprecivedevnt.h"
 #include "drawobs.h"
 #include "dbinquirer.h"
 #include "codeeditor.h"
@@ -56,6 +59,7 @@
 #include "paramslist.h"
 #include "paredit.h"
 #include "incsearch.h"
+#include "remarks.h"
 
 class PickKeyboardHandler: public wxEvtHandler
 {
@@ -350,7 +354,7 @@ double DrawEdit::GetScaleMax() {
 	return m_max_scale;
 }
 
-DrawPicker::DrawPicker(wxWindow* parent, ConfigManager * cfg, DatabaseManager *dbmgr)
+DrawPicker::DrawPicker(wxWindow* parent, ConfigManager * cfg, DatabaseManager *dbmgr, RemarksHandler* remarks_handler)
 		: m_modified(false)
 {
 	cfg->RegisterConfigObserver(this);
@@ -365,6 +369,8 @@ DrawPicker::DrawPicker(wxWindow* parent, ConfigManager * cfg, DatabaseManager *d
 	m_draw_edit = new DrawEdit(this, -1, _("Edit"), cfg);
 
 	m_database_manager = dbmgr;
+
+	m_remarks_handler = remarks_handler;
 
 	m_context = NULL;
 	m_title_input = XRCCTRL(*this,"text_title",wxTextCtrl);
@@ -649,7 +655,7 @@ void DrawPicker::OnAddDraw(wxCommandEvent & event)
 void DrawPicker::OnAddParameter(wxCommandEvent& event) {
 	
 	if (m_paramslist == NULL)
-		m_paramslist = new ParamsListDialog(this, m_config_mgr->GetDefinedDrawsSets(), m_database_manager, true);
+		m_paramslist = new ParamsListDialog(this, m_config_mgr->GetDefinedDrawsSets(), m_database_manager, m_remarks_handler, true);
 
 	m_paramslist->SetCurrentPrefix(m_prefix);
 	if (m_paramslist->ShowModal() != wxID_OK) {
@@ -759,7 +765,7 @@ wxString DrawPicker::GetUniqueTitle(wxString user_title) {
 bool DrawPicker::FindTitle(wxString& user_title) {
 	DefinedDrawsSets *dds = m_config_mgr->GetDefinedDrawsSets();
 
-	if (dds->GetRawDrawsSets()[user_title] == NULL) 
+	if (dds->GetRawDrawsSets().find(user_title) == dds->GetRawDrawsSets().end())
 		return true;
 
 	wxString suggested_title = GetUniqueTitle(user_title);
@@ -803,8 +809,7 @@ bool DrawPicker::Accept()
 		return false;
 	}
 
-	if (title[0] != wxChar('*'))
-		title = _T("*") + title;
+	title = AppendTitlePrefix(title);
 
 	if (old_title != title || !m_editing_existing)
 		if (!FindTitle(title))
@@ -815,36 +820,67 @@ bool DrawPicker::Accept()
 	if (old_title != title)
 		m_modified = true;
 
-	if (m_editing_existing) {	// only modyfing
+	m_created_set_name = title;
 
-		if (m_modified == false) {
-			delete m_defined_set;
-			m_defined_set = NULL;
-			return true;
+	if (!m_defined_set->IsNetworkSet()) {
+
+		if (m_editing_existing) {	// only modyfing
+
+			if (m_modified == false) {
+				delete m_defined_set;
+				m_defined_set = NULL;
+				return true;
+			}
+
+			DefinedDrawSet *nds = m_defined_set;
+			dds->SubstituteSet(old_title, nds);
+
+		} else {	// adding new
+
+			DefinedDrawSet *nds = m_defined_set;
+			dds->AddSet(nds);
+
 		}
 
-		DefinedDrawSet *nds = m_defined_set;
-		dds->SubstituteSet(old_title, nds);
+		return true;
 
-	} else {	// adding new
+	} else {
+		m_remarks_handler->GetConnection()->InsertOrUpdateSet(m_defined_set, this, false);
 
-		DefinedDrawSet *nds = m_defined_set;
-		dds->AddSet(nds);
-
-		m_created_set_name = title;
-
+		//not yet
+		return false;
 	}
-
-	return true;
 }
 
-int DrawPicker::NewSet(wxString prefix) {
+void DrawPicker::SetInsertUpdateError(wxString error) {
+	wxMessageBox(_("Error while editing network set: ") + error, _("Editing network set error"),
+		wxOK | wxICON_ERROR, this);
+}
+
+void DrawPicker::SetInsertUpdateFinished(bool ok) {
+	if (ok)
+		m_remarks_handler->GetConnection()->FetchNewParamsAndSets(this);
+	else
+		wxMessageBox(_("You don't have sufficient privileges too insert this set."), _("Insufficient privileges"),
+			wxOK | wxICON_ERROR, this);
+}
+
+void DrawPicker::SetsParamsReceiveError(wxString error) {
+	wxMessageBox(_("Failed to fetch new sets: ") + error, _("Failed to fetch network sets"),
+		wxOK | wxICON_ERROR, this);
+}
+
+void DrawPicker::SetsParamsReceived(bool) {
+	EndModal(wxID_OK);
+}
+
+int DrawPicker::NewSet(wxString prefix, bool network_set) {
 
 	m_prefix = prefix;
 	wxString id = m_config_mgr->GetConfigByPrefix(prefix)->GetID();
 
 	if (m_inc_search == NULL)
-		m_inc_search = new IncSearch(m_config_mgr, id, this, incsearch_DIALOG, _("Find"), false, false, true, m_database_manager);
+		m_inc_search = new IncSearch(m_config_mgr, m_remarks_handler, id, this, incsearch_DIALOG, _("Find"), false, false, true, m_database_manager);
 	else
 		m_inc_search->SetConfigName(id);
 
@@ -854,7 +890,7 @@ int DrawPicker::NewSet(wxString prefix) {
 
 	SetTitle(_("Editing parameter set "));
 
-	StartNewSet();
+	StartNewSet(network_set);
 
 	m_title_input->SetFocus();
 
@@ -862,12 +898,12 @@ int DrawPicker::NewSet(wxString prefix) {
 
 }
 
-void DrawPicker::StartNewSet() {
+void DrawPicker::StartNewSet(bool network_set) {
 	Clear();
 	delete m_defined_set;
 
 	DefinedDrawsSets *c = m_config_mgr->GetDefinedDrawsSets();
-	m_defined_set = new DefinedDrawSet(c);
+	m_defined_set = new DefinedDrawSet(c, network_set);
 }
 
 int DrawPicker::EditDraw(DefinedDrawInfo *di, wxString prefix) {
@@ -878,7 +914,24 @@ wxString DrawPicker::GetNewSetName() {
 	return m_created_set_name;
 }
 
-int DrawPicker::EditAsNew(DrawSet *set, wxString prefix) {
+wxString DrawPicker::AppendTitlePrefix(wxString title) {
+	if (m_defined_set->IsNetworkSet()) {
+		wxString username, password, server;
+		bool autofetch;
+		m_remarks_handler->GetConfiguration(username, password, server, autofetch);
+		if (!title.StartsWith((L"@" + username + L"@").c_str()))
+			return  L"@" + username + L"@" + title;
+		else
+			return title;
+	} else {
+		if (!title.StartsWith(L"*"))
+			return L"*" + title;
+		else
+			return title;
+	}
+}
+
+int DrawPicker::EditAsNew(DrawSet *set, wxString prefix, bool network) {
 	m_editing_existing = false;
 
 	m_modified = true;
@@ -888,7 +941,7 @@ int DrawPicker::EditAsNew(DrawSet *set, wxString prefix) {
 	Clear();
 
 	DefinedDrawsSets *c = m_config_mgr->GetDefinedDrawsSets();
-	m_defined_set = new DefinedDrawSet(c);
+	m_defined_set = new DefinedDrawSet(c, network);
 
 	for (DrawInfoArray::iterator i = set->GetDraws()->begin();
 			i != set->GetDraws()->end();
@@ -902,13 +955,11 @@ int DrawPicker::EditAsNew(DrawSet *set, wxString prefix) {
 	wxString cn = m_config_mgr->GetConfigByPrefix(prefix)->GetID();
 
 	if (m_inc_search == NULL)
-		m_inc_search = new IncSearch(m_config_mgr, cn, static_cast<wxWindow*>(this), incsearch_DIALOG, _("Find"), false, false, true, m_database_manager);
+		m_inc_search = new IncSearch(m_config_mgr, m_remarks_handler, cn, static_cast<wxWindow*>(this), incsearch_DIALOG, _("Find"), false, false, true, m_database_manager);
 	else
 		m_inc_search->SetConfigName(cn);
 
-	wxString title = set->GetName();
-	if (!title.size() || title[0] != L'*')
-		title = L"*" + title;
+	wxString title = AppendTitlePrefix(set->GetName());
 	title = GetUniqueTitle(title);
 	m_title_input->SetValue(title) ;
 	SetTitle(_("Editing parameter set ") + title);
@@ -932,7 +983,7 @@ int DrawPicker::EditSet(DefinedDrawSet *set, wxString prefix) {
 	wxString cn = m_config_mgr->GetConfigByPrefix(prefix)->GetID();
 
 	if (m_inc_search == NULL)
-		m_inc_search = new IncSearch(m_config_mgr, cn, static_cast<wxWindow*>(this), incsearch_DIALOG, _("Find"), false, false, true, m_database_manager);
+		m_inc_search = new IncSearch(m_config_mgr, m_remarks_handler, cn, static_cast<wxWindow*>(this), incsearch_DIALOG, _("Find"), false, false, true, m_database_manager);
 	else
 		m_inc_search->SetConfigName(cn);
 
@@ -959,7 +1010,7 @@ void DrawPicker::ParamSubstituted(DefinedParam *d, DefinedParam *p) {
 void DrawPicker::OnEditParam(wxCommandEvent &e) {
 	DefinedDrawInfo* ddi = m_defined_set->GetDraw(m_selected);
 	DefinedParam *dp = dynamic_cast<DefinedParam*>(ddi->GetParam());
-	ParamEdit* pe = new ParamEdit(this, m_config_mgr, m_database_manager);
+	ParamEdit* pe = new ParamEdit(this, m_config_mgr, m_database_manager, m_remarks_handler);
 	int ret = pe->Edit(dp);
 	if (ret == wxID_OK &&
 			!m_editing_existing) {

@@ -113,6 +113,10 @@ class DrawPscSystemConfigurationEditor;
 class CodeEditor;
 class VersionChecker;
 class DrawTreeDialog;
+class DelQueueItem;
+class ParamEditControl;
+class SetEditControl;
+class SetsParamsReceivedEvent;
 
 struct XYGraph;
 struct DatabaseQuery;

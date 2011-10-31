@@ -148,8 +148,9 @@ class DrawInfo
 
 	wxString GetValueStr(const double &val, const wxString &no_data_str = L"-");
 
+	virtual bool IsValid() const;
+
 	virtual ~DrawInfo() { }
-	
     protected:
 	TDraw *d;	/**< Pointer to draw. */
 	
@@ -373,12 +374,13 @@ class IPKConfig : public DrawsSets
 	/** @return @see TSzarpConfig associated with this draw*/
 	TSzarpConfig* GetTSzarpConfig() { return m_sc; }
 
+	void AttachDefinedSet(DefinedDrawSet *set);
+
 	virtual void AttachDefined();
 
 	virtual DrawSetsHash& GetDrawsSets(bool all = true);
 
 	virtual DrawSetsHash& GetRawDrawsSets();
-
 protected:
 	wxString m_id;	/**< Configuration ID (title) */
 
@@ -410,7 +412,7 @@ class ConfigManager
 	DrawsSets *LoadConfig(const wxString& prefix, const wxString& config_path = wxEmptyString, bool logparams = false );
 	
 	/** @return configuration object for given prefix, NULL if configuration cannot be laoded*/
-	DrawsSets *GetConfigByPrefix(const wxString& prefix);
+	DrawsSets *GetConfigByPrefix(const wxString& prefix, bool load = true);
 
 	/** @return configuration object for given id(configuration name), NULL if configuration cannot be laoded*/
 	DrawsSets *GetConfig(const wxString& id);
@@ -432,27 +434,9 @@ class ConfigManager
 	 * @return pointer to draw info */
 	DrawInfo *GetDraw(const wxString id, const wxString set, int index);
 	
-	
-	/**
-	 * @param id configuration identifier
-	 * @param set name of draws set
-	 * @param index index of draw in set
-	 * @return name of draw */
-	wxString GetDrawName(const wxString id, const wxString set, int index);
-	
-	/**
-	 * @param id configuration identifier
-	 * @param set name of draws set
-	 * @param index index of draw in set
-	 * @return name of param */
-	wxString GetParamName(const wxString id, const wxString set, int index);
-	
-	/**
-	 * @param id configuration identifier
-	 * @param set name of draws set
-	 * @param index index of draw in set
-	 * @return colur of draw */
-	wxColour GetDrawColor(const wxString id, const wxString set, int index);
+	bool RemoveDefinedParam(DefinedParam *p);
+
+	bool RemoveDefinedParam(wxString prefix, wxString name);
 
 	/**@return all available onfigurations*/
 	DrawsSetsHash& GetConfigurations();
@@ -521,8 +505,6 @@ class ConfigManager
 	/**Loads defined draws set from file*/
 	bool SaveDefinedDrawsSets();
 
-	void LoadConfigsRequiredByDefinedSets(wxString prefix);
-
 	bool IsPSC(wxString prefix);
 
 	void EditPSC(wxString prefix, wxString param = wxString());
@@ -531,7 +513,9 @@ class ConfigManager
 
 	void ExportSet(DefinedDrawSet *set, wxString our_name);
 
-	void SubstituteOrAddDefinedParams(std::vector<DefinedParam*>& dp);
+	void RemoveDefinedParams(std::vector<DefinedParam*>& dp);
+
+	bool SubstituteOrAddDefinedParams(const std::vector<DefinedParam*>& dp);
 
 	void SubstiuteDefinedParams(const std::vector<DefinedParam*>& to_rem, const std::vector<DefinedParam*>& to_add);
 	

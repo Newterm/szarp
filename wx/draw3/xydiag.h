@@ -178,6 +178,8 @@ class XYDialog : public wxDialog, public ConfigObserver
 	ConfigManager* m_config_manager;
 	/**@see DatabaseManager*/
 	DatabaseManager* m_database_manager;
+
+	RemarksHandler* m_remarks_handler;	
 	/**Checkbox for choosing if data on X axis shall be aveaged*/
 	wxCheckBox* m_avg_check;
 	/**@see IncSearch. Window for choosing search*/
@@ -199,7 +201,7 @@ class XYDialog : public wxDialog, public ConfigObserver
 	void OnHelpButton(wxCommandEvent &event);
 
 	public:	
-	XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, DatabaseManager *db, TimeInfo time, DrawInfoList user_draws,  XFrame *frame);
+	XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, DatabaseManager *db, RemarksHandler *rh, TimeInfo time, DrawInfoList user_draws,  XFrame *frame);
 	/**Called by @see DataMangler when data has been fetched*/
 	void DataFromMangler(XYGraph *graph);
 	/**Start data fetching*/

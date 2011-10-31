@@ -45,7 +45,7 @@
 /**
  * Draw Frame class. It's responsible for remember frame size and positions.
  */
-class DrawFrame : public szFrame {
+class DrawFrame : public szFrame, public SetsParamsReceivedEvent {
 public:
 	/**
 	 * It's orginal constructor from wxFrame.
@@ -196,6 +196,9 @@ public:
 
 	DrawPanel *GetCurrentPanel();
 
+	void SetsParamsReceiveError(wxString error);
+
+	void SetsParamsReceived(bool);
 protected:
 	wxString m_name;
 
@@ -275,6 +278,8 @@ protected:
 	void OnImportDraw2Def(wxCommandEvent &event);
 
 	void OnProberAddresses(wxCommandEvent &event);
+
+	void OnFetchNewNetworkParamsAndSets(wxCommandEvent &e);
 
 	void OnSearchDate(wxCommandEvent &event);
 

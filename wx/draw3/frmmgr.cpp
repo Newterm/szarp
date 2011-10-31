@@ -34,6 +34,9 @@
 
 #include "drawtime.h"
 #include "coobs.h"
+#include "sprecivedevnt.h"
+#include "parameditctrl.h"
+#include "seteditctrl.h"
 #include "remarks.h"
 #include "drawpick.h"
 #include "drawfrm.h"
@@ -198,17 +201,17 @@ DrawFrame *FrameManager::FindFrame(int number) {
 
 void FrameManager::CreateXYGraph(wxString prefix,TimeInfo time, DrawInfoList user_draws) {
 	DrawsSets* config = config_manager->GetConfigByPrefix(prefix);
-	new XYFrame(config->GetID(), database_manager, config_manager, time, user_draws, this);
+	new XYFrame(config->GetID(), database_manager, config_manager, remarks_handler, time, user_draws, this);
 }
 
 void FrameManager::CreateXYZGraph(wxString prefix, TimeInfo time, DrawInfoList user_draws) {
 	DrawsSets* config = config_manager->GetConfigByPrefix(prefix);
-	new XYZFrame(config->GetID(), database_manager, config_manager, time, user_draws, this);
+	new XYZFrame(config->GetID(), database_manager, config_manager, remarks_handler, time, user_draws, this);
 }
 
 void FrameManager::ShowStatDialog(wxString prefix, TimeInfo time, DrawInfoList user_draws) {
 	DrawsSets* config = config_manager->GetConfigByPrefix(prefix);
-	new StatDialog(NULL, config->GetID(), database_manager, config_manager, time, user_draws);
+	new StatDialog(NULL, config->GetID(), database_manager, config_manager, remarks_handler, time, user_draws);
 }
 
 void FrameManager::LoadConfig(DrawFrame *frame) {
@@ -227,8 +230,8 @@ void FrameManager::LoadConfig(DrawFrame *frame) {
 		if (cfg == NULL || cfg->GetDrawsSets().size() == 0) {
 			int ret = wxMessageBox(_("The are no user defined sets. Do you want to create one?"), _("Question"), wxICON_QUESTION | wxOK | wxCANCEL, frame);
 			if (ret == wxOK)  {
-				DrawPicker* dp = new DrawPicker(frame, config_manager, database_manager);
-				if (dp->NewSet(prefix) == wxID_OK)
+				DrawPicker* dp = new DrawPicker(frame, config_manager, database_manager, remarks_handler);
+				if (dp->NewSet(prefix, false) == wxID_OK)
 					frame->AddDrawPanel(prefix, wxEmptyString, PERIOD_T_YEAR, 0);
 				dp->Destroy();
 			}

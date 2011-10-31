@@ -3,7 +3,7 @@
 --
 
 SET statement_timeout = 0;
-SET client_encoding = 'SQL_ASCII';
+SET client_encoding = 'UTF8';
 SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
@@ -62,6 +62,87 @@ CREATE TABLE aggregated_map (
 
 
 ALTER TABLE public.aggregated_map OWNER TO remarks_server;
+
+--
+-- Name: draw; Type: TABLE; Schema: public; Owner: remarks_server; Tablespace: 
+--
+
+CREATE TABLE draw (
+    set_id integer,
+    name text,
+    hoursum integer,
+    color text,
+    draw_min double precision,
+    draw_max double precision,
+    title text,
+    sname text,
+    draw text DEFAULT ''::text NOT NULL,
+    scale integer,
+    min_scale double precision,
+    max_scale double precision,
+    prefix_id integer,
+    draw_order integer NOT NULL
+);
+
+
+ALTER TABLE public.draw OWNER TO remarks_server;
+
+--
+-- Name: draw_set; Type: TABLE; Schema: public; Owner: remarks_server; Tablespace: 
+--
+
+CREATE TABLE draw_set (
+    mod_time timestamp without time zone DEFAULT '2011-10-27 08:47:03.973091'::timestamp without time zone,
+    name text,
+    set_id integer NOT NULL,
+    deleted boolean DEFAULT false NOT NULL,
+    user_id integer
+);
+
+
+ALTER TABLE public.draw_set OWNER TO remarks_server;
+
+--
+-- Name: param; Type: TABLE; Schema: public; Owner: remarks_server; Tablespace: 
+--
+
+CREATE TABLE param (
+    pname text,
+    prefix_id integer,
+    type text,
+    unit text,
+    start_date timestamp without time zone,
+    prec integer,
+    mod_time timestamp without time zone DEFAULT '2011-10-28 07:32:28.361442'::timestamp without time zone,
+    user_id integer,
+    deleted boolean DEFAULT false NOT NULL,
+    id integer NOT NULL,
+    formula text NOT NULL
+);
+
+
+ALTER TABLE public.param OWNER TO remarks_server;
+
+--
+-- Name: param_id_seq; Type: SEQUENCE; Schema: public; Owner: remarks_server
+--
+
+CREATE SEQUENCE param_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.param_id_seq OWNER TO remarks_server;
+
+--
+-- Name: param_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: remarks_server
+--
+
+ALTER SEQUENCE param_id_seq OWNED BY param.id;
+
 
 --
 -- Name: prefix; Type: TABLE; Schema: public; Owner: remarks_server; Tablespace: 
@@ -159,6 +240,20 @@ ALTER SEQUENCE server_id_seq OWNED BY server.id;
 
 
 --
+-- Name: set_seq; Type: SEQUENCE; Schema: public; Owner: remarks_server
+--
+
+CREATE SEQUENCE set_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.set_seq OWNER TO remarks_server;
+
+--
 -- Name: user_prefix_access; Type: TABLE; Schema: public; Owner: remarks_server; Tablespace: 
 --
 
@@ -210,6 +305,13 @@ ALTER SEQUENCE users_id_seq OWNED BY users.id;
 -- Name: id; Type: DEFAULT; Schema: public; Owner: remarks_server
 --
 
+ALTER TABLE param ALTER COLUMN id SET DEFAULT nextval('param_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: remarks_server
+--
+
 ALTER TABLE prefix ALTER COLUMN id SET DEFAULT nextval('prefix_id_seq'::regclass);
 
 
@@ -233,6 +335,22 @@ ALTER TABLE users ALTER COLUMN id SET DEFAULT nextval('users_id_seq'::regclass);
 
 ALTER TABLE ONLY aggregated_map
     ADD CONSTRAINT aggregated_map_pkey PRIMARY KEY (prefix, aggregated);
+
+
+--
+-- Name: draw_set_pkey; Type: CONSTRAINT; Schema: public; Owner: remarks_server; Tablespace: 
+--
+
+ALTER TABLE ONLY draw_set
+    ADD CONSTRAINT draw_set_pkey PRIMARY KEY (set_id);
+
+
+--
+-- Name: param_pkey; Type: CONSTRAINT; Schema: public; Owner: remarks_server; Tablespace: 
+--
+
+ALTER TABLE ONLY param
+    ADD CONSTRAINT param_pkey PRIMARY KEY (id);
 
 
 --
@@ -299,6 +417,46 @@ ALTER TABLE ONLY aggregated_map
 
 ALTER TABLE ONLY aggregated_map
     ADD CONSTRAINT aggregated_map_prefix_fkey FOREIGN KEY (prefix) REFERENCES prefix(id);
+
+
+--
+-- Name: draw_prefix_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: remarks_server
+--
+
+ALTER TABLE ONLY draw
+    ADD CONSTRAINT draw_prefix_id_fkey FOREIGN KEY (prefix_id) REFERENCES prefix(id);
+
+
+--
+-- Name: draw_set_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: remarks_server
+--
+
+ALTER TABLE ONLY draw
+    ADD CONSTRAINT draw_set_id_fkey FOREIGN KEY (set_id) REFERENCES draw_set(set_id);
+
+
+--
+-- Name: draw_set_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: remarks_server
+--
+
+ALTER TABLE ONLY draw_set
+    ADD CONSTRAINT draw_set_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id);
+
+
+--
+-- Name: param_prefix_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: remarks_server
+--
+
+ALTER TABLE ONLY param
+    ADD CONSTRAINT param_prefix_id_fkey FOREIGN KEY (prefix_id) REFERENCES prefix(id);
+
+
+--
+-- Name: param_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: remarks_server
+--
+
+ALTER TABLE ONLY param
+    ADD CONSTRAINT param_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id);
 
 
 --

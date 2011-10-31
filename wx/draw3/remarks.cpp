@@ -45,6 +45,9 @@
 #include <iostream>
 #include <functional>
 #include <ios>
+
+#include <boost/make_shared.hpp>
+
 #include <wx/file.h>
 #include <wx/dir.h>
 #include <wx/config.h>
@@ -56,6 +59,9 @@
 
 #include "ids.h"
 #include "classes.h"
+#include "sprecivedevnt.h"
+#include "parameditctrl.h"
+#include "seteditctrl.h"
 #include "drawapp.h"
 #include "drawobs.h"
 #include "drawtime.h"
@@ -72,6 +78,7 @@
 #include "md5.h"
 #include "drawsctrl.h"
 #include "remarks.h"
+#include "defcfg.h"
 
 #include "timeformat.h"
 
@@ -86,12 +93,23 @@ typedef void (wxEvtHandler::*RemarksStoredEventFunction)(RemarksStoredEvent&);
     (wxObjectEventFunction) (wxEventFunction) (wxCommandEventFunction) \
     wxStaticCastEvent( RemarksStoredEventFunction, & fn ), (wxObject *) NULL ),
 
-RemarksStoredEvent::RemarksStoredEvent(std::vector<Remark> remarks) : wxCommandEvent(REMARKSSTORED_EVENT, wxID_ANY) {
+RemarksStoredEvent::RemarksStoredEvent(std::vector<Remark> remarks, time_t fetch_time, bool manually_triggered)
+		: wxCommandEvent(REMARKSSTORED_EVENT, wxID_ANY) {
 	m_remarks = remarks;
+	m_fetch_time = fetch_time;
+	m_manually_triggered = manually_triggered;
 }
 
 std::vector<Remark>& RemarksStoredEvent::GetRemarks() {
 	return m_remarks;
+}
+
+time_t RemarksStoredEvent::GetFetchTime() {
+	return m_fetch_time;
+}
+
+bool RemarksStoredEvent::GetManuallyTriggered() {
+	return m_manually_triggered;
 }
 
 wxEvent* RemarksStoredEvent::Clone() const {
@@ -100,7 +118,7 @@ wxEvent* RemarksStoredEvent::Clone() const {
 
 const int REMARKS_SERVER_PORT = 7998;
 
-RemarksHandler::RemarksHandler() {
+RemarksHandler::RemarksHandler(ConfigManager *config_manager) : m_config_manager(config_manager) {
 
 	wxConfigBase* config = wxConfig::Get();
 
@@ -180,8 +198,8 @@ void RemarksHandler::RemoveRemarkFetcher(RemarksFetcher* fetcher) {
 	m_fetchers.erase(i, m_fetchers.end());
 }
 
-void RemarksHandler::NewRemarks(std::vector<Remark>& remarks) {
-	m_storage->StoreRemarks(remarks);
+void RemarksHandler::NewRemarks(std::vector<Remark>& remarks, time_t fetch_time, bool manually_triggered) {
+	m_storage->StoreRemarks(remarks, fetch_time, manually_triggered);
 }
 
 void RemarksHandler::OnRemarksStored(RemarksStoredEvent &event) {
@@ -192,9 +210,20 @@ void RemarksHandler::OnRemarksStored(RemarksStoredEvent &event) {
 			i++)
 		(*i)->RemarksReceived(remarks);
 
-	m_connection->RemarksStored(remarks);
 
+	if (remarks.size()) {
+		wxConfig::Get()->Write(_T("RemarksLatestRetrieval"), long(event.GetFetchTime()));
+		wxConfig::Get()->Flush();
+	}
 
+	if (event.GetManuallyTriggered()) {
+		if (remarks.size())
+			wxMessageBox(_("New remarks received"), _("New remarks"), wxICON_INFORMATION,
+					wxGetApp().GetTopWindow());
+		else
+			wxMessageBox(_("No new remarks"), _("Remarks"), wxICON_INFORMATION,
+					wxGetApp().GetTopWindow());
+	}
 }
 
 void RemarksHandler::Start() {
@@ -213,7 +242,7 @@ RemarksConnection* RemarksHandler::GetConnection() {
 		return NULL;
 
 	if (m_connection == NULL) {
-		m_connection = new RemarksConnection(m_server, this);
+		m_connection = new RemarksConnection(m_server, this, m_config_manager);
 		m_connection->SetUsernamePassword(m_username, m_password);
 	}
 
@@ -230,6 +259,10 @@ void RemarksHandler::GetConfiguration(wxString& username, wxString& password, wx
 	password = m_password;
 	server = m_server;
 	autofetch = m_auto_fetch;
+}
+
+wxString RemarksHandler::GetUsername() const {
+	return m_username;
 }
 
 void RemarksHandler::SetConfiguration(wxString username, wxString password, wxString server, bool autofetch) {
@@ -315,7 +348,7 @@ XMLRPCConnection::XMLRPCConnection(wxString& address, wxEvtHandler *event_handle
 	m_socket = new SSLSocketConnection(ipaddress, this);
 }
 
-void XMLRPCConnection::SetIPAddress(wxString &ip) {
+void XMLRPCConnection::SetIPAddress(const wxString &ip) {
 
 	wxIPV4address address;
 	address.Service(REMARKS_SERVER_PORT);
@@ -453,11 +486,12 @@ void XMLRPCConnection::ReadHeaders(bool& more_data) {
 
 void XMLRPCConnection::ReadContent(bool& more_data) {
 	if (m_read_buf_write_pos - m_read_buf_read_pos == m_content_length) {
-		ReturnResponse();
-
 		m_read_state = CLOSED;
 		m_socket->Disconnect();
+
 		more_data = false;
+
+		ReturnResponse();
 	} else {
 		more_data = true;
 	}
@@ -545,7 +579,11 @@ void XMLRPCConnection::OnSocketEvent(wxSocketEvent &event) {
 }
 
 void XMLRPCConnection::PostRequest(XMLRPC_REQUEST request) {
-	assert(m_read_state == CLOSED);
+
+	if (m_read_state != CLOSED) {
+		std::cout << "m_read_state:" << (int) m_read_state << std::endl;
+		assert(m_read_state == CLOSED);
+	}
 
 	m_write_buf_pos = 0;
 	m_write_buf = CreateHTTPRequest(request);
@@ -729,9 +767,9 @@ void DNSResolver::DoResolve() {
 		std::wstringstream oss;
 
 		oss << (hresult >> 24) << L".";
-		oss << ((hresult >> 16) && 0xffu) << L".";
-		oss << ((hresult >> 8) && 0xffu) << L".";
-		oss << (hresult && 0xffu);
+		oss << ((hresult >> 16) & 0xffu) << L".";
+		oss << ((hresult >> 8) & 0xffu) << L".";
+		oss << (hresult & 0xffu);
 
 		DNSResponseEvent event(oss.str());
 		wxPostEvent(m_response_handler, event);
@@ -758,22 +796,12 @@ void* DNSResolver::Entry() {
 	}
 }
 
-RemarksConnection::RemarksConnection(wxString &address, RemarksHandler *handler) : m_resolver(this) {
+RemarksConnection::RemarksConnection(wxString &address, RemarksHandler *handler, ConfigManager *config_manager) : m_resolver(this), m_config_manager(config_manager) {
 	m_remarks_handler = handler;
 
 	m_address = address;
 
-	m_pending_remarks_fetch = false;
-
-	m_pending_remark_post = false;
-
-	m_inform_about_successful_fetch = false;
-
-	m_current_action = NONE;
-
 	m_xmlrpc_connection = new XMLRPCConnection(address, this);
-
-	m_remark_add_dialog = NULL;
 
 	m_address_resolved = false;
 
@@ -785,106 +813,82 @@ RemarksConnection::RemarksConnection(wxString &address, RemarksHandler *handler)
 }
 
 bool RemarksConnection::Busy() {
-	return m_current_action == NONE;
+	return m_command_list.size() > 0;
 }
 
 void RemarksConnection::SetIPAddress(wxString &ip) {
 	m_address_resolved = false;
-	m_xmlrpc_connection->SetIPAddress(ip);
+	m_address = ip;
 }
 
-void RemarksConnection::SetRemarkAddDialog(RemarkViewDialog *dialog) {
-	m_remark_add_dialog = dialog;
+void RemarksConnection::Login() {
+	PostRequest(CreateLoginRequest());
 }
 
 void RemarksConnection::OnDNSResponse(DNSResponseEvent &event) {
-	if (event.GetAddress().empty()) {
-		if (m_inform_about_successful_fetch) {
-			wxMessageBox(wxString::Format(_("Failed to fetch remarks, failed to resolve address: %s"), m_address.c_str()), _("Error"), wxICON_ERROR,
-					wxGetApp().GetTopWindow());
-			m_inform_about_successful_fetch = false;
-		}
-		return;
+	if (!event.GetAddress().empty()) {
+		m_address_resolved = true;
+		m_xmlrpc_connection->SetIPAddress(event.GetAddress());
+
+		SendCommand();
+	} else {
+		wxString error = wxString::Format(_("Failed to resolve address: %ls"), m_address.c_str());
+		for (std::list<boost::shared_ptr<Command> >::iterator i = m_command_list.begin();
+				i != m_command_list.end();
+				i++)
+			(*i)->Error(error);
+
+		m_command_list.clear();
 	}
-
-	m_address_resolved = true;
-
-	switch (m_current_action) {
-		case FETCHING_REMARKS:
-			m_retrieval_time = wxDateTime::Now().GetTicks();
-
-			if (m_token == -1)
-				PostRequest(CreateLoginRequest());
-			else
-				PostRequest(CreateGetRemarksRequest());
-
-			break;
-		case POSTING_REMARK:
-			if (m_token == -1)
-				PostRequest(CreateLoginRequest());
-			else
-				PostRequest(CreateGetRemarksRequest());
-
-			break;
-		case NONE:
-			break;
-	}
-
 }
 
 void RemarksConnection::FetchNewRemarks(bool notify_about_success) {
-	switch (m_current_action) {
-		case FETCHING_REMARKS:
-			return;
-		case POSTING_REMARK:
-			m_pending_remarks_fetch = true;
-			break;
-		case NONE:
-			m_current_action = FETCHING_REMARKS;
-			if (m_address_resolved) {
-				if (m_token == -1)
-					PostRequest(CreateLoginRequest());
-				else
-					PostRequest(CreateGetRemarksRequest());
-			} else {
-				m_resolver.Resolve(m_address);	
-			}
-	}
+	m_command_list.push_back(boost::make_shared<FetchRemarksCommand>(this, m_remarks_handler, notify_about_success));
+	TriggerRequest();
+}
 
-	m_inform_about_successful_fetch = notify_about_success;
+void RemarksConnection::FetchNewParamsAndSets(SetsParamsReceivedEvent *event) {
+	m_command_list.push_back(boost::make_shared<FetchParamsAndSetsCommand>(this, m_config_manager, event));
+	TriggerRequest();
 }
 
 void RemarksConnection::PostRequest(XMLRPC_REQUEST request) {
 	m_xmlrpc_connection->PostRequest(request);
+	XMLRPC_RequestFree(request, 1);
 }
 
-void RemarksConnection::PostRemark(Remark& remark) {
-	switch (m_current_action) {
-		case FETCHING_REMARKS:
-			m_pending_remark_post = true;
-			m_remark_to_send = remark;
-			break;
-		case NONE:
-			m_current_action = POSTING_REMARK;
+void RemarksConnection::PostRemark(Remark& remark, RemarkViewDialog* remark_view_dialog) {
+	m_command_list.push_back(boost::make_shared<PostRemarkCommand>(this, remark, remark_view_dialog));
+	TriggerRequest();
+}
 
-			m_remark_to_send = remark;
+void RemarksConnection::InsertOrUpdateParam(DefinedParam *param, ParamEditControl* control, bool del) {
+	m_command_list.push_back(boost::make_shared<InsertOrUpdateParamCommand>(this, param, control, del));
+	TriggerRequest();
+}
 
-			if (m_address_resolved) {
-				if (m_token == -1)
-					PostRequest(CreateLoginRequest());
-				else
-					PostRequest(CreatePostRemarkRequest());
-			} else {
-				m_resolver.Resolve(m_address);	
-			}
-			break;
-		case POSTING_REMARK:
-			//this shouldn't happen
-			assert(false);
-	}
+void RemarksConnection::InsertOrUpdateSet(DefinedDrawSet *set, SetEditControl* control, bool del) {
+	m_command_list.push_back(boost::make_shared<InsertOrUpdateSetCommand>(this, set, control, del));
+	TriggerRequest();
+}
+
+void RemarksConnection::TriggerRequest() {
+	if (m_command_list.size() != 1)
+		return;
+
+	if (m_address_resolved == false)
+		m_resolver.Resolve(m_address);
+	else if (m_token == -1)
+		Login();
+	else 
+		SendCommand();	
 
 }
 
+void RemarksConnection::SendCommand() {
+	if (m_command_list.size())
+		m_command_list.front()->Send();
+}
 
 XMLRPC_REQUEST RemarksConnection::CreateMethodCallRequest(const char* method_name) {
 	XMLRPC_REQUEST request = XMLRPC_RequestNew();
@@ -892,6 +896,15 @@ XMLRPC_REQUEST RemarksConnection::CreateMethodCallRequest(const char* method_nam
 	XMLRPC_RequestSetRequestType(request, xmlrpc_request_call);
 
 	XMLRPC_RequestSetData(request, XMLRPC_CreateVector(NULL, xmlrpc_vector_array));
+
+	return request;
+}
+
+XMLRPC_REQUEST RemarksConnection::CreateMethodCallRequestWithToken(const char* method_name) {
+	XMLRPC_REQUEST request = CreateMethodCallRequest(method_name);
+
+	XMLRPC_VALUE v = XMLRPC_RequestGetData(request);
+	XMLRPC_VectorAppendInt(v, NULL, m_token);
 
 	return request;
 }
@@ -906,8 +919,103 @@ XMLRPC_REQUEST RemarksConnection::CreateLoginRequest() {
 	return request;
 }
 
-XMLRPC_REQUEST RemarksConnection::CreateGetRemarksRequest() {
+void RemarksConnection::HandleLoginResponse(XMLRPC_REQUEST response) {
+	XMLRPC_VALUE i = XMLRPC_RequestGetData(response);
+	m_token = XMLRPC_GetValueInt(i);
+	//fprintf(stdout, "token: %ld value_type:%d\n", m_token, XMLRPC_GetValueType(i));
+}
 
+wxString translate_error_message(wxString str) {
+
+	if (str == _T("Server connection failure"))
+		return _("Server connection failure");
+
+	if (str == _T("Server communication error"))
+		return _("Server communication error");
+
+	if (str == _T("User is not allowed to send remarks for this base"))
+		return _("User is not allowed to send remarks for this base");
+
+	if (str == _T("Invalid response from server"))
+		return _("Invalid response from server");
+
+	if (str == _T("Incorrect username and password"))
+		return _("Incorrect username and password");
+
+	return str;
+}
+
+void RemarksConnection::HandleFault(XMLRPC_REQUEST response) {
+	std::wstring fault_string;
+
+	const char *_fault_string = XMLRPC_GetResponseFaultString(response);
+	if (_fault_string)
+		fault_string = SC::U2S((const unsigned char*) _fault_string);
+
+	if (fault_string == L"Incorrect session token") {
+		m_token = -1;
+		Login();
+		return;
+	}
+
+	wxString error = translate_error_message(fault_string);
+
+	if (m_command_list.size()) {
+
+		boost::shared_ptr<Command> command = m_command_list.front();
+		m_command_list.pop_front();
+
+		command->Error(error);
+
+		SendCommand();	
+	}
+}
+
+void RemarksConnection::OnXMLRPCResponse(XMLRPCResponseEvent &event) {
+
+	XMLRPC_REQUEST response = event.GetRequest().get();
+
+	if (XMLRPC_ResponseIsFault(response)) {
+		HandleFault(response);
+		return;
+	}
+
+	if (m_token == -1) {
+		HandleLoginResponse(response);
+		SendCommand();
+	} else {
+		boost::shared_ptr<Command> command = m_command_list.front();
+		m_command_list.pop_front();
+
+		size_t size = m_command_list.size();
+
+		command->HandleResponse(response);
+
+		if (size > 1 || size == 1 && m_command_list.size() == 1)
+			SendCommand();
+	}
+}
+
+void RemarksConnection::SetUsernamePassword(wxString username, wxString password) {
+	m_username = username;
+	m_password = password;
+}
+
+RemarksConnection::Command::Command(RemarksConnection* connection) : m_connection(connection) {}
+
+RemarksConnection::FetchRemarksCommand::FetchRemarksCommand(RemarksConnection* connection, RemarksHandler* remarks_handler, bool manually_triggered)
+	: Command(connection), m_remarks_handler(remarks_handler), m_manually_triggered(manually_triggered)
+{}
+
+void RemarksConnection::FetchRemarksCommand::Error(wxString error) {
+	if (m_manually_triggered)
+		wxMessageBox(wxString::Format(_("Failed to fetch remarks: %s"), error.c_str()), _("Error"), wxICON_ERROR,
+			wxGetApp().GetTopWindow());
+	else
+		ErrorFrame::NotifyError(wxString::Format(_("Failed to fetch remarks: %s"), error.c_str()));
+}
+
+void RemarksConnection::FetchRemarksCommand::Send() {
 	long lt = 0;
 	wxConfig::Get()->Read(_T("RemarksLatestRetrieval"), &lt);
 
@@ -916,10 +1024,9 @@ XMLRPC_REQUEST RemarksConnection::CreateGetRemarksRequest() {
 
 	m_retrieval_time = time(NULL);
 
-	XMLRPC_REQUEST request = CreateMethodCallRequest("get_remarks");
+	XMLRPC_REQUEST request = m_connection->CreateMethodCallRequestWithToken("get_remarks");
 	XMLRPC_VALUE v = XMLRPC_RequestGetData(request);
 	
-	XMLRPC_VectorAppendInt(v, NULL, m_token);
 	XMLRPC_VectorAppendDateTime(v, NULL, lt);
 	
 	XMLRPC_VALUE vp = XMLRPC_CreateVector(NULL, xmlrpc_vector_array);
@@ -932,27 +1039,10 @@ XMLRPC_REQUEST RemarksConnection::CreateGetRemarksRequest() {
 
 	XMLRPC_AddValueToVector(v, vp);
 
-	return request;
-
+	m_connection->PostRequest(request);
 }
 
-XMLRPC_REQUEST RemarksConnection::CreatePostRemarkRequest() {
-	XMLRPC_REQUEST request = CreateMethodCallRequest("post_remark");
-	XMLRPC_VALUE v = XMLRPC_RequestGetData(request);
-
-	XMLRPC_VectorAppendInt(v, NULL, m_token);
-
-	xmlChar* dumped;
-	int size;
-	xmlDocDumpMemory(m_remark_to_send.GetXML(), &dumped, &size);
-	XMLRPC_VectorAppendBase64(v, NULL, (const char*) dumped, size);
-	xmlFree(dumped);
-	return request;
-
-}
-
-void RemarksConnection::HandleRemarksResponse(XMLRPC_REQUEST response) {
-
+void RemarksConnection::FetchRemarksCommand::HandleResponse(XMLRPC_REQUEST response) {
 	std::vector<Remark> rms;
 
 	for (XMLRPC_VALUE i = XMLRPC_VectorRewind(XMLRPC_RequestGetData(response)); 
@@ -981,151 +1071,259 @@ void RemarksConnection::HandleRemarksResponse(XMLRPC_REQUEST response) {
 		rms.push_back(r);
 	}
 
-	m_remarks_handler->NewRemarks(rms);
+	m_remarks_handler->NewRemarks(rms, m_retrieval_time, m_manually_triggered);
+}
+
+RemarksConnection::PostRemarkCommand::PostRemarkCommand(RemarksConnection *connection, const Remark& remark, RemarkViewDialog* remark_view_dialog)
+	: Command(connection), m_remark(remark), m_remark_view_dialog(remark_view_dialog) {}
+
+void RemarksConnection::PostRemarkCommand::Error(wxString error) {
+	m_remark_view_dialog->RemarkSent(false, error);
+}
+
+void RemarksConnection::PostRemarkCommand::Send() {
+	XMLRPC_REQUEST request = m_connection->CreateMethodCallRequestWithToken("post_remark");
+	XMLRPC_VALUE v = XMLRPC_RequestGetData(request);
+
+	xmlChar* dumped;
+	int size;
+	xmlDocDumpMemory(m_remark.GetXML(), &dumped, &size);
+	XMLRPC_VectorAppendBase64(v, NULL, (const char*) dumped, size);
+	xmlFree(dumped);
+
+	m_connection->PostRequest(request);
+}
+
+void RemarksConnection::PostRemarkCommand::HandleResponse(XMLRPC_REQUEST request) {
+	m_remark_view_dialog->RemarkSent(true);
+}
+
+RemarksConnection::InsertOrUpdateParamCommand::InsertOrUpdateParamCommand(RemarksConnection* connection, DefinedParam* param, ParamEditControl* control, bool del) :
+		Command(connection), m_control(control), m_del(del) { 
+	
+	m_param_xml = xmlNewDoc((const xmlChar*) "1.0");
+	m_param_xml->children = param->GenerateXML(m_param_xml);
 
 }
 
-void RemarksConnection::RemarksStored(const std::vector<Remark>& rms) {
-	if (rms.size()) {
-		wxConfig::Get()->Write(_T("RemarksLatestRetrieval"), long(m_retrieval_time));
-		wxConfig::Get()->Flush();
-		if (m_inform_about_successful_fetch) {
-			wxMessageBox(_("New remarks received"), _("New remarks"), wxICON_INFORMATION,
-					wxGetApp().GetTopWindow());
-			m_inform_about_successful_fetch = false;
-		}
-	} else 
-		if (m_inform_about_successful_fetch) {
-			wxMessageBox(_("No new remarks"), _("Remarks"), wxICON_INFORMATION,
-					wxGetApp().GetTopWindow());
-			m_inform_about_successful_fetch = false;
-		}
+void RemarksConnection::InsertOrUpdateParamCommand::Error(wxString error) {
+	if (m_control)
+		m_control->ParamInsertUpdateError(error);
+	else
+		wxLogError(_T("RemarksConnection::InsertOrUpdateParamCommand::Error: %s"), error.c_str());
 }
 
-void RemarksConnection::HandleLoginResponse(XMLRPC_REQUEST response) {
-	XMLRPC_VALUE i = XMLRPC_RequestGetData(response);
-	m_token = XMLRPC_GetValueInt(i);
-	//fprintf(stdout, "token: %ld value_type:%d\n", m_token, XMLRPC_GetValueType(i));
+void RemarksConnection::InsertOrUpdateParamCommand::Send() {
+	XMLRPC_REQUEST request;
+	if (m_del)
+		request = m_connection->CreateMethodCallRequestWithToken("remove_params");
+	else
+		request = m_connection->CreateMethodCallRequestWithToken("update_params");
+
+	XMLRPC_VALUE v = XMLRPC_RequestGetData(request);
+
+	xmlChar* dumped;
+	int size;
+	xmlDocDumpMemory(m_param_xml, &dumped, &size);
+
+	XMLRPC_VALUE vp = XMLRPC_CreateVector(NULL, xmlrpc_vector_array);
+	XMLRPC_VectorAppendBase64(vp, NULL, (const char*) dumped, size);
+	XMLRPC_AddValueToVector(v, vp);
+
+	xmlFree(dumped);
+	m_connection->PostRequest(request);
 }
 
-void RemarksConnection::HandlePostMessageResponse(XMLRPC_REQUEST response) {
-	m_remark_to_send = NULL;
-	m_current_action = NONE;
-
-	m_remark_add_dialog->RemarkSent(true);
+void RemarksConnection::InsertOrUpdateParamCommand::HandleResponse(XMLRPC_REQUEST response) {
+	XMLRPC_VALUE i = XMLRPC_VectorRewind(XMLRPC_RequestGetData(response)); 
+	int v = XMLRPC_GetValueBoolean(i);	
+	m_control->ParamInsertUpdateFinished(v != 0);
 }
 
-wxString translate_error_message(wxString str) {
-
-	if (str == _T("Server connection failure"))
-		return _("Server connection failure");
-
-	if (str == _T("Server communication error"))
-		return _("Server communication error");
-
-	if (str == _T("User is not allowed to send remarks for this base"))
-		return _("User is not allowed to send remarks for this base");
-
-	if (str == _T("Invalid response from server"))
-		return _("Invalid response from server");
-
-	if (str == _T("Incorrect username and password"))
-		return _("Incorrect username and password");
-	return str;
+RemarksConnection::InsertOrUpdateParamCommand::~InsertOrUpdateParamCommand() {
+	xmlFree(m_param_xml);
 }
 
-bool RemarksConnection::HandleFault(XMLRPC_REQUEST response) {
-	if (XMLRPC_ResponseIsFault(response)) {
-		std::wstring fault_string;
 
-		const char *_fault_string = XMLRPC_GetResponseFaultString(response);
-		if (_fault_string)
-			fault_string = SC::U2S((const unsigned char*) _fault_string);
+RemarksConnection::InsertOrUpdateSetCommand::InsertOrUpdateSetCommand(RemarksConnection* connection, DefinedDrawSet *set, SetEditControl *control, bool del) :
+		Command(connection), m_control(control), m_del(del) {
 
-		if (fault_string == L"Incorrect session token") {
-			m_token = -1;
-
-			XMLRPC_REQUEST request = CreateLoginRequest();
-			PostRequest(request);
-			return true;
-		} else {
-			if (m_current_action == POSTING_REMARK || m_pending_remark_post)
-				m_remark_add_dialog->RemarkSent(false, translate_error_message(fault_string));
-			else if (m_inform_about_successful_fetch)
-				wxMessageBox(wxString::Format(_("Failed to fetch remarks: %s"), translate_error_message(fault_string).c_str()), _("Error"), wxICON_ERROR,
-						wxGetApp().GetTopWindow());
-			else
-				ErrorFrame::NotifyError(wxString::Format(_("Failed to fetch remarks: %s"), translate_error_message(fault_string).c_str()));
-
-			m_pending_remark_post = false;
-			m_pending_remarks_fetch = false;
-			m_inform_about_successful_fetch = false;
-
-			m_current_action = NONE;
-
-			return true;
-		}
-	} else
-		return false;
-
-
+	m_set_xml = xmlNewDoc((const xmlChar*) "1.0");
+	m_set_xml->children = set->GenerateXML(m_set_xml);
 }
 
-void RemarksConnection::OnXMLRPCResponse(XMLRPCResponseEvent &event) {
+void RemarksConnection::InsertOrUpdateSetCommand::Error(wxString error) {
+	m_control->SetInsertUpdateError(error);
+}
 
-	XMLRPC_REQUEST response = event.GetRequest().get();
+void RemarksConnection::InsertOrUpdateSetCommand::Send() {
+	XMLRPC_REQUEST request;
+	if (m_del)
+		request = m_connection->CreateMethodCallRequestWithToken("remove_sets");
+	else
+		request = m_connection->CreateMethodCallRequestWithToken("update_sets");
 
-	if (HandleFault(response))
-		return;
+	XMLRPC_VALUE v = XMLRPC_RequestGetData(request);
 
-	if (m_token == -1) {
-		HandleLoginResponse(response);
+	xmlChar* dumped;
+	int size;
+	xmlDocDumpMemory(m_set_xml, &dumped, &size);
 
-		XMLRPC_REQUEST request = NULL;
+	XMLRPC_VALUE vp = XMLRPC_CreateVector(NULL, xmlrpc_vector_array);
+	XMLRPC_VectorAppendBase64(vp, NULL, (const char*) dumped, size);
+	XMLRPC_AddValueToVector(v, vp);
 
-		switch (m_current_action) {
-			case FETCHING_REMARKS:
-				request = CreateGetRemarksRequest();
-				break;
-			case POSTING_REMARK:
-				request = CreatePostRemarkRequest();
-				break;
-			case NONE:
-				assert(false);
-		}
+	xmlFree(dumped);
 
-		PostRequest(request);
-	} else {
-		switch (m_current_action) {
-			case FETCHING_REMARKS:
-				HandleRemarksResponse(response);
-				m_pending_remarks_fetch = false;
+	m_connection->PostRequest(request);
+}
 
-				if (m_pending_remark_post) {
-					PostRequest(CreatePostRemarkRequest());
-					m_current_action = POSTING_REMARK;
-				} else {
-					m_current_action = NONE;
-				}
-				break;
-			case POSTING_REMARK:
-				HandlePostMessageResponse(response);
-				m_pending_remark_post = false;
+void RemarksConnection::InsertOrUpdateSetCommand::HandleResponse(XMLRPC_REQUEST response) {
+	XMLRPC_VALUE i = XMLRPC_VectorRewind(XMLRPC_RequestGetData(response)); 
+	int v = XMLRPC_GetValueBoolean(i);	
+	m_control->SetInsertUpdateFinished(v != 0);
+}
 
-				m_current_action = NONE;
-				PostRequest(CreateGetRemarksRequest());
-				m_retrieval_time = wxDateTime::Now().GetTicks();
-				m_current_action = FETCHING_REMARKS;
-				break;
-			case NONE:
-				assert(false);
-		}
+RemarksConnection::InsertOrUpdateSetCommand::~InsertOrUpdateSetCommand() {
+	xmlFreeDoc(m_set_xml);
+}
+
+
+RemarksConnection::FetchParamsAndSetsCommand::FetchParamsAndSetsCommand(RemarksConnection* connection, ConfigManager* cfg_mgr, SetsParamsReceivedEvent *event) 
+		: Command(connection), m_cfg_mgr(cfg_mgr), m_event(event) {}
+
+void RemarksConnection::FetchParamsAndSetsCommand::Error(wxString error) {
+	if (m_event) {
+		m_event->SetsParamsReceiveError(error);
+#if 0
+		wxMessageBox(wxString::Format(_("Failed to fetch params and sets: %s"), error.c_str()), _("Error"), wxICON_ERROR,
+			wxGetApp().GetTopWindow());
+#endif
 	}
 }
 
-void RemarksConnection::SetUsernamePassword(wxString username, wxString password) {
-	m_username = username;
-	m_password = password;
+void RemarksConnection::FetchParamsAndSetsCommand::Send() {
+	long fetch_time = 0;
+	wxConfig::Get()->Read(_T("NetworkParamsAndSetsLatestRetrieval"), &fetch_time);
+	m_fetch_time = fetch_time;
+
+	XMLRPC_REQUEST request = m_connection->CreateMethodCallRequestWithToken("get_params_and_sets");
+
+	const std::set<wxString>& prefixes = m_cfg_mgr->GetDefinedDrawsSets()->GetNetworkParamAndSetsPrefixes();
+
+	XMLRPC_VectorAppendDateTime(XMLRPC_RequestGetData(request), NULL, m_fetch_time ? m_fetch_time - 3600 : 0);
+
+	XMLRPC_VALUE vp = XMLRPC_CreateVector(NULL, xmlrpc_vector_array);
+	for (std::set<wxString>::const_iterator i = prefixes.begin();
+			i != prefixes.end();
+			i++)
+		XMLRPC_VectorAppendString(vp, NULL, (const char*) SC::S2U(*i).c_str(), 0);
+
+	XMLRPC_AddValueToVector(XMLRPC_RequestGetData(request), vp);
+
+	m_connection->PostRequest(request);
+}
+
+void RemarksConnection::FetchParamsAndSetsCommand::ProcessParams(XMLRPC_VALUE vs, bool& params_updated) {
+	for (XMLRPC_VALUE p = XMLRPC_VectorRewind(vs); p; p = XMLRPC_VectorNext(vs)) {
+
+		DefinedParam *dp = new DefinedParam();
+		dp->ParseXMLRPCValue(p);
+
+		XMLRPC_VALUE v = XMLRPC_VectorNext(p);
+		int d = XMLRPC_GetValueBoolean(v);
+
+		bool updated;
+
+		if (!d)
+			updated = m_cfg_mgr->SubstituteOrAddDefinedParams(std::vector<DefinedParam*>(1, dp));
+		else
+			updated = m_cfg_mgr->RemoveDefinedParam(dp->GetBasePrefix(), dp->GetParamName());
+
+		if (updated)
+			params_updated = true;
+
+	}
+}
+
+DefinedDrawInfo* RemarksConnection::FetchParamsAndSetsCommand::ProcessDrawInfo(XMLRPC_VALUE vdi) {
+	DefinedDrawInfo* ddi = new DefinedDrawInfo(m_cfg_mgr->GetDefinedDrawsSets());
+	ddi->ParseXMLRPCValue(vdi);
+	return ddi;
+}
+
+void RemarksConnection::FetchParamsAndSetsCommand::ProcessSets(XMLRPC_VALUE ss, bool& sets_updated) {
+	for (XMLRPC_VALUE s = XMLRPC_VectorRewind(ss); s; s = XMLRPC_VectorNext(ss)) {
+		bool updated;
+
+		XMLRPC_VALUE v = XMLRPC_VectorRewind(s);
+		std::wstring sname = SC::U2S((const unsigned char*) XMLRPC_GetValueString(v));
+
+		v = XMLRPC_VectorNext(s);
+		XMLRPC_VALUE dv = XMLRPC_VectorRewind(v);
+		if (XMLRPC_GetValueBoolean(dv)) {
+			DefinedDrawSet* set = new DefinedDrawSet(m_cfg_mgr->GetDefinedDrawsSets(), true);
+			set->SetName(sname);
+
+			std::vector<DefinedDrawInfo*> draws;
+			dv = XMLRPC_VectorNext(v);
+			for (XMLRPC_VALUE i = XMLRPC_VectorRewind(dv);
+					i;
+					i = XMLRPC_VectorNext(dv))
+				set->Add(ProcessDrawInfo(i));
+
+			v = XMLRPC_VectorNext(v);
+			set->SetModificationTime(XMLRPC_GetValueInt(v));
+
+			updated = AddSet(set);
+		} else {
+			updated = m_cfg_mgr->GetDefinedDrawsSets()->RemoveSet(sname);
+		}
+
+		if (updated)
+			sets_updated = true;
+	}
+}
+
+bool RemarksConnection::FetchParamsAndSetsCommand::AddSet(DefinedDrawSet *set) {
+	DefinedDrawsSets* def_sets = m_cfg_mgr->GetDefinedDrawsSets();
+
+	SetsNrHash prefixes = set->GetPrefixes();
+	std::set<wxString> missing_prefixes;
+
+	for (SetsNrHash::iterator i = prefixes.begin(); i != prefixes.end(); i++)
+		if (m_cfg_mgr->GetConfigByPrefix(i->first, false) == NULL)
+			missing_prefixes.insert(i->first);
+
+	if (missing_prefixes.size() != prefixes.size()) {
+		for (std::set<wxString>::iterator i = missing_prefixes.begin(); i != missing_prefixes.end(); i++)
+			m_cfg_mgr->GetConfigByPrefix(*i, true);
+
+		for (SetsNrHash::iterator i = prefixes.begin(); i != prefixes.end(); i++)
+			set->SyncWithPrefix(i->first);
+	}
+
+	return def_sets->AddSet(set);
+
+}
+
+void RemarksConnection::FetchParamsAndSetsCommand::HandleResponse(XMLRPC_REQUEST request) {
+	XMLRPC_VALUE params  = XMLRPC_VectorRewind(XMLRPC_RequestGetData(request));
+
+	bool params_updated = false;
+	ProcessParams(params, params_updated);
+
+	XMLRPC_VALUE sets = XMLRPC_VectorNext(XMLRPC_RequestGetData(request));
+
+	bool sets_updated = false;
+	ProcessSets(sets, sets_updated);
+
+	wxConfig::Get()->Write(_T("NetworkParamsAndSetsLatestRetrieval"), long(m_fetch_time));
+	wxConfig::Get()->Flush();
+
+	if (m_event)
+		m_event->SetsParamsReceived(params_updated || sets_updated);
+
 }
 
 RemarksConnection::~RemarksConnection() {
@@ -1169,10 +1367,10 @@ wxEvent* RemarksResponseEvent::Clone() const {
 
 RemarksStorage::Query::Query(RemarksStorage* storage) : m_storage(storage) {}
 
-RemarksStorage::StoreRemarksQuery::StoreRemarksQuery(RemarksStorage *storage, std::vector<Remark> &remarks) : Query(storage), m_remarks(remarks) {}
+RemarksStorage::StoreRemarksQuery::StoreRemarksQuery(RemarksStorage *storage, std::vector<Remark> &remarks, time_t fetch_time, bool manually_triggered) : Query(storage), m_remarks(remarks), m_fetch_time(fetch_time), m_manually_triggered(manually_triggered) {}
 
 void RemarksStorage::StoreRemarksQuery::Execute() {
-	m_storage->ExecuteStoreRemarks(m_remarks);
+	m_storage->ExecuteStoreRemarks(m_remarks, m_fetch_time, m_manually_triggered);
 }
 
 RemarksStorage::FetchAllRemarksQuery::FetchAllRemarksQuery(RemarksStorage *storage, std::wstring prefix, wxEvtHandler *receiver) :
@@ -1374,7 +1572,7 @@ void RemarksStorage::AddPrefix(std::wstring prefix) {
 
 }
 
-void RemarksStorage::ExecuteStoreRemarks(std::vector<Remark>& remarks) {
+void RemarksStorage::ExecuteStoreRemarks(std::vector<Remark>& remarks, time_t fetch_time, bool manually_triggered) {
 	int ret;
 
 	wxMutexLocker lock(m_prefixes_mutex);
@@ -1451,7 +1649,7 @@ void RemarksStorage::ExecuteStoreRemarks(std::vector<Remark>& remarks) {
 		sqlite3_clear_bindings(m_store_remark_query);
 	}
 
-	RemarksStoredEvent event(added_remarks);
+	RemarksStoredEvent event(added_remarks, fetch_time, manually_triggered);
 	wxPostEvent(m_remarks_handler, event);
 }
 
@@ -1481,10 +1679,10 @@ void RemarksStorage::GetAllRemarks(const wxString& prefix, wxEvtHandler *handler
 	m_semaphore.Post();
 }
 
-void RemarksStorage::StoreRemarks(std::vector<Remark>& remarks) { 
+void RemarksStorage::StoreRemarks(std::vector<Remark>& remarks, time_t fetch_time, bool manually_triggered) { 
 	wxMutexLocker lock(m_queue_mutex);
 
-	m_queries.push_back(new StoreRemarksQuery(this, remarks));
+	m_queries.push_back(new StoreRemarksQuery(this, remarks, fetch_time, manually_triggered));
 
 	m_semaphore.Post();
 }
@@ -1879,9 +2077,7 @@ void RemarkViewDialog::OnAddButton(wxCommandEvent &event) {
 	r.SetTitle(GetRemarkTitle().c_str());
 	r.SetContent(GetRemarkContent().c_str());
 
-	m_remark_connection->SetRemarkAddDialog(this);
-
-	m_remark_connection->PostRemark(r);
+	m_remark_connection->PostRemark(r, this);
 
 	Disable();
 
@@ -2173,7 +2369,6 @@ void RemarksFetcher::ShowRemarks(const wxDateTime& from_time, const wxDateTime &
 	d->SetViewedRemarks(remarks);
 	d->ShowModal();
 	d->Destroy();
-
 
 }
 

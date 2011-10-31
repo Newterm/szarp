@@ -35,7 +35,7 @@
 
 #include "wxlogging.h"
 
-class ParamsListDialog : public wxDialog {
+class ParamsListDialog : public wxDialog, public ParamEditControl, public SetsParamsReceivedEvent  {
 	friend class PickKeyboardHandler;
 
 	wxString m_prefix;
@@ -53,6 +53,8 @@ class ParamsListDialog : public wxDialog {
 	long m_selected_index;
 
 	DatabaseManager *m_db_mgr;
+
+	RemarksHandler *m_remarks_handler;
 
 	void OnAdd(wxCommandEvent &e);
 
@@ -83,7 +85,7 @@ class ParamsListDialog : public wxDialog {
 	bool m_search_mode;
 
 public:
-	ParamsListDialog(wxWindow *parent, DefinedDrawsSets *dds, DatabaseManager *dbmgr, bool search_mode);
+	ParamsListDialog(wxWindow *parent, DefinedDrawsSets *dds, DatabaseManager *dbmgr, RemarksHandler *remarks, bool search_mode);
 
 	void SetCurrentPrefix(wxString prefix);
 
@@ -95,7 +97,15 @@ public:
 
 	int ShowModal();
 
+	void SetsParamsReceiveError(wxString error);
+
+	void SetsParamsReceived(bool);
+
 	DefinedParam* GetSelectedParam();
+
+	void ParamInsertUpdateError(wxString error);
+
+	void ParamInsertUpdateFinished(bool ok);
 
 	DECLARE_EVENT_TABLE()
 

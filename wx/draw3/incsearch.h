@@ -39,12 +39,14 @@
 #include <wx/listctrl.h>
 
 #include "wxlogging.h"
+#include "sprecivedevnt.h"
+#include "seteditctrl.h"
 
 /**
  * Widget "Incremental Search" for looking params and windows.
  */
-class IncSearch : public wxDialog, public ConfigObserver {
-	DECLARE_DYNAMIC_CLASS(IncSearch)
+class IncSearch : public wxDialog, public ConfigObserver, public SetsParamsReceivedEvent, public SetEditControl {
+	 DECLARE_DYNAMIC_CLASS(IncSearch)
 public:
 	/**
 	 * Two step constructor???
@@ -59,7 +61,7 @@ public:
 	 * @param id window id
 	 * @param title title of incremetal search window
 	 */
-	IncSearch(ConfigManager *cfg, const wxString& confname, wxWindow* parent, wxWindowID id, 
+	IncSearch(ConfigManager *cfg, RemarksHandler *remarks_handler, const wxString& confname, wxWindow* parent, wxWindowID id, 
 		const wxString& title, bool window_search = false, bool show_defined = false, bool conf_pick = true, DatabaseManager *db_mgr = NULL);
 	/**
 	 * Method call when we press Ok button
@@ -179,7 +181,13 @@ public:
 
 	DrawSet* GetSelectedSet();
 
-	void AddExtraDrawInfos(std::map<wxString, std::pair<wxString, std::vector<DrawInfo*> > > extra);
+	void SetInsertUpdateError(wxString error);
+
+	void SetInsertUpdateFinished(bool ok);
+
+	void SetsParamsReceiveError(wxString error);
+
+	void SetsParamsReceived(bool);
 
 private:
 	void SyncToStartDraw();
@@ -247,6 +255,8 @@ private:
 	/** Flag indicating if defined params belonging to configuration shaal be shown*/
 	bool m_show_defined;
 
+	RemarksHandler *m_remarks_handler;
+
 	/** Fills widget with values that match current search criteria*/
 	void Search();
 
@@ -270,8 +280,6 @@ protected:
 	ConfigManager *cfg; /**< ConfigManager */
 	wxString confid; /**< Configuration id */
 
-	std::map<wxString, std::pair<wxString, std::vector<DrawInfo*> > > extra_infos;
-	
 	/**
 	 * Button Events
 	 */

@@ -1314,8 +1314,8 @@ BEGIN_EVENT_TABLE(XYZCanvas, wxGLCanvas)
 END_EVENT_TABLE()
 
 
-XYZFrame::XYZFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigManager *cfgmanager, TimeInfo time, DrawInfoList user_draws, FrameManager *frame_manager) 
-	: szFrame(NULL, wxID_ANY, _("XYZ Graph")), m_default_prefix(default_prefix), m_db_manager(dbmanager), m_cfg_manager(cfgmanager), m_frame_manager(frame_manager) {
+XYZFrame::XYZFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigManager *cfgmanager, RemarksHandler *remarks_handler, TimeInfo time, DrawInfoList user_draws, FrameManager *frame_manager) 
+	: szFrame(NULL, wxID_ANY, _("XYZ Graph")), m_default_prefix(default_prefix), m_db_manager(dbmanager), m_cfg_manager(cfgmanager), m_remarks_handler(remarks_handler), m_frame_manager(frame_manager) {
 
 	m_canvas = new XYZCanvas(this);
 
@@ -1362,6 +1362,7 @@ XYZFrame::XYZFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigMa
 			m_default_prefix,
 			m_cfg_manager,
 			m_db_manager,
+			m_remarks_handler,
 			time,
 			user_draws,
 			this);

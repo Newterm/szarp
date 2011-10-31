@@ -40,6 +40,9 @@
 #include "defcfg.h"
 
 #include "drawobs.h"
+#include "sprecivedevnt.h"
+#include "parameditctrl.h"
+#include "seteditctrl.h"
 #include "drawapp.h"
 #include "frmmgr.h"
 #include "drawpick.h"
@@ -53,6 +56,7 @@
 #include "drawfrm.h"
 #include "drawprint.h"
 #include "probadddiag.h"
+#include "delqitem.h"
 
 #include "wxlogging.h"
 
@@ -198,7 +202,7 @@ void DrawFrame::OnSave(wxCommandEvent & event)
 void DrawFrame::OnEdit(wxCommandEvent & event)
 {
 	if (draw_panel->IsUserDefined())  {
-		DrawPicker *dp = new DrawPicker(this, config_manager, database_manager);
+		DrawPicker *dp = new DrawPicker(this, config_manager, database_manager, remarks_handler);
 		dp->EditSet(dynamic_cast<DefinedDrawSet*>(draw_panel->GetSelectedSet()), draw_panel->GetPrefix());
 		dp->Destroy();
 	} else
@@ -208,8 +212,10 @@ void DrawFrame::OnEdit(wxCommandEvent & event)
 }
 
 void DrawFrame::OnEditSetAsNew(wxCommandEvent &e) {
-	DrawPicker *dp = new DrawPicker(this, config_manager, database_manager);
-	if (dp->EditAsNew(draw_panel->GetSelectedSet(), draw_panel->GetPrefix()) == wxID_OK) {
+	bool network_set = e.GetId() == XRCID("EditAsNewNewtwork");
+
+	DrawPicker *dp = new DrawPicker(this, config_manager, database_manager, remarks_handler);
+	if (dp->EditAsNew(draw_panel->GetSelectedSet(), draw_panel->GetPrefix(), network_set) == wxID_OK) {
 		DrawsSets* dss = config_manager->GetConfigByPrefix(draw_panel->GetPrefix());
 		DrawSet* ds = dss->GetDrawsSets()[dp->GetNewSetName()];
 		draw_panel->SelectSet(ds);
@@ -247,8 +253,10 @@ void DrawFrame::OnDel(wxCommandEvent & event)
 
 void DrawFrame::OnAdd(wxCommandEvent& event)
 {
-	DrawPicker *dp = new DrawPicker(this, config_manager, database_manager);
-	if (dp->NewSet(draw_panel->GetPrefix()) == wxID_OK) {
+	bool network_set = event.GetId() == XRCID("NewNetworkSet");
+
+	DrawPicker *dp = new DrawPicker(this, config_manager, database_manager, remarks_handler);
+	if (dp->NewSet(draw_panel->GetPrefix(), network_set) == wxID_OK) {
 		DrawsSets* dss = config_manager->GetConfigByPrefix(draw_panel->GetPrefix());
 		DrawSet* ds = dss->GetDrawsSets()[dp->GetNewSetName()];
 		draw_panel->SelectSet(ds);
@@ -622,6 +630,8 @@ void DrawFrame::OnIdle(wxIdleEvent &event) {
 		return;
 	if (m_notebook && m_notebook->GetPageCount() == 1)
 		DetachFromNotebook();
+
+	DelQueueItem::CleanDelQueue();
 }
 
 void DrawFrame::OnCopy(wxCommandEvent &event) {
@@ -783,7 +793,7 @@ DrawFrame::LoadLayout() {
 
 void DrawFrame::OnUserParams(wxCommandEvent &evt) {
 	if (params_dialog == NULL)
-		params_dialog = new ParamsListDialog(this, config_manager->GetDefinedDrawsSets(), database_manager, false);
+		params_dialog = new ParamsListDialog(this, config_manager->GetDefinedDrawsSets(), database_manager, remarks_handler, false);
 
 	params_dialog->SetCurrentPrefix(draw_panel->GetPrefix());
 	params_dialog->ShowModal();
@@ -922,7 +932,7 @@ void DrawFrame::OnFetchRemarks(wxCommandEvent &event) {
 		return;
 
 	RemarksConnection* connection = remarks_handler->GetConnection();
-	connection->FetchNewRemarks();
+	connection->FetchNewRemarks(true);
 }
 
 class RemarksConfigurationDialog : public wxDialog {
@@ -1082,9 +1092,29 @@ void DrawFrame::OnProberAddresses(wxCommandEvent &event) {
 
 }
 
+void DrawFrame::OnFetchNewNetworkParamsAndSets(wxCommandEvent &e) {
+	remarks_handler->GetConnection()->FetchNewParamsAndSets(this);
+}
+
 DrawPanel* DrawFrame::GetCurrentPanel() {
 	return draw_panel;
 }
+
+void DrawFrame::SetsParamsReceiveError(wxString error) {
+	wxMessageBox(_("Error in communicatoin with server: ") + error, _("Failed to update paramaters"),
+		wxOK | wxICON_ERROR, this);
+}
+
+void DrawFrame::SetsParamsReceived(bool new_params_or_sets) {
+	if (new_params_or_sets) {
+		wxMessageBox(_("Network params and sets were updated"), _("Params and sets updated."),
+			wxOK | wxICON_INFORMATION, this);
+	} else {
+		wxMessageBox(_("There are no new network params or sets"), _("No new params and sets."),
+			wxOK | wxICON_INFORMATION, this);
+	}
+}
+
 
 void DrawFrame::OnSearchDate(wxCommandEvent &event) {
 	draw_panel->SearchDate();
@@ -1103,10 +1133,12 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     LOG_EVT_MENU(XRCID("ClearCache"), DrawFrame , OnClearCache, "drawfrm:clearcache" )
     LOG_EVT_MENU(XRCID("EditSet"), DrawFrame , OnEdit, "drawfrm:editset" )
     LOG_EVT_MENU(XRCID("EditAsNew"), DrawFrame , OnEditSetAsNew, "drawfrm:editasnew" )
+    LOG_EVT_MENU(XRCID("EditAsNewNewtwork"), DrawFrame , OnEditSetAsNew, "drawfrm:editasnew" )
     LOG_EVT_MENU(XRCID("ImportSet"), DrawFrame , OnImportSet, "drawfrm:importset" )
     LOG_EVT_MENU(XRCID("ExportSet"), DrawFrame , OnExportSet, "drawfrm:exportset" )
     LOG_EVT_MENU(XRCID("DelSet"), DrawFrame , OnDel, "drawfrm:delset" )
     LOG_EVT_MENU(XRCID("NewSet"), DrawFrame , OnAdd, "drawfrm:newset" )
+    LOG_EVT_MENU(XRCID("NewNetworkSet"), DrawFrame , OnAdd, "drawfrm:newset" )
     LOG_EVT_MENU(XRCID("Save"), DrawFrame , OnSave, "drawfrm:save" )
     LOG_EVT_MENU(XRCID("NewWindow"), DrawFrame , OnLoadConfig, "drawfrm:newwindow" )
     LOG_EVT_MENU(XRCID("NewTab"), DrawFrame , OnLoadConfig, "drawfrm:newtab" )
@@ -1157,12 +1189,13 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     LOG_EVT_MENU(XRCID("RemarksConfiguration"), DrawFrame , OnConfigureRemarks, "drawfrm:remarks_config" )
     LOG_EVT_MENU(XRCID("PageSetup"), DrawFrame , OnPrintPageSetup, "drawfrm:page_setup" )
     LOG_EVT_MENU(XRCID("ProberAddress"), DrawFrame , OnProberAddresses, "drawfrm:prober_adress" )
+    LOG_EVT_MENU(XRCID("FetchNewNetworkParametersAndSets"), DrawFrame, OnFetchNewNetworkParamsAndSets, "drawfrm:fetch_network_params_and_sets") 
     EVT_MENU(XRCID("SORT_BY_AVG_VALUE"), DrawFrame::OnSortGraph)
     EVT_MENU(XRCID("SORT_BY_MAX_VALUE"), DrawFrame::OnSortGraph)
     EVT_MENU(XRCID("SORT_BY_MIN_VALUE"), DrawFrame::OnSortGraph)
     EVT_MENU(XRCID("SORT_BY_HSUM_VALUE"), DrawFrame::OnSortGraph)
     EVT_MENU(XRCID("SORT_BY_DRAW_NO"), DrawFrame::OnSortGraph)
-
+    EVT_MENU(XRCID("SORT_BY_DRAW_NO"), DrawFrame::OnSortGraph)
     LOG_EVT_MENU(drawTB_EXIT, DrawFrame , OnExit, "drawfrm:tb_exit" )
     LOG_EVT_MENU(drawTB_ABOUT, DrawFrame , OnAbout, "drawfrm:tb_about" )
     LOG_EVT_MENU(drawTB_REMARK, DrawFrame , OnShowRemarks, "drawfrm:tb_remark" )

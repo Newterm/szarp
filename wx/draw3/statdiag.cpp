@@ -43,7 +43,7 @@
 #include "statdiag.h"
 
 
-StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, ConfigManager *cfg, TimeInfo time, std::vector<DrawInfo*> user_draws) :
+StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, ConfigManager *cfg, RemarksHandler *rh, TimeInfo time, std::vector<DrawInfo*> user_draws) :
 	szFrame(parent, 
 		wxID_ANY, 
 		_("Statistics window"),
@@ -73,7 +73,7 @@ StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, C
 	m_config_manager = cfg;
 	m_database_manager = db;
 
-	m_draw_search = new IncSearch(m_config_manager, prefix, this, wxID_ANY, _("Choose draw"), false, true, true, m_database_manager);
+	m_draw_search = new IncSearch(m_config_manager, rh, prefix, this, wxID_ANY, _("Choose draw"), false, true, true, m_database_manager);
 
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	label = new wxStaticText(panel, wxID_ANY, wxString(_T(" ")) + _("Choose graph parameters") + _T(": "));

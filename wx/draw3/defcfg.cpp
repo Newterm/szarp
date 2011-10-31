@@ -43,7 +43,6 @@
 
 #include <wx/config.h>
 
-
 #include "cconv.h"
 #include "szarp_config.h"
 
@@ -384,9 +383,9 @@ void DefinedDrawInfo::SetUnit(wxString unit) {
 	m_unit_changed = true;
 }
 
-void DefinedDrawInfo::GenerateXML(xmlNodePtr parent) {
+xmlNodePtr DefinedDrawInfo::GenerateXML(xmlDocPtr doc) {
 
-	xmlNodePtr param = xmlNewChild(parent, NULL, X "param", NULL);
+	xmlNodePtr param = xmlNewDocNode(doc, NULL, X "param", NULL);
 
 	xmlSetProp(param, X "name",
 		   SC::S2U(m_param_name).c_str());
@@ -465,10 +464,19 @@ void DefinedDrawInfo::GenerateXML(xmlNodePtr parent) {
 		xmlFreeNode(draw);
 	}
 
+	return param;
 }
 
-void DefinedParam::GenerateXML(xmlNodePtr parent) {
-	xmlNodePtr f = xmlNewChild(parent, NULL, X "param", NULL);
+bool DefinedDrawInfo::GetValid() const {
+	return m_valid;
+}
+
+void DefinedDrawInfo::SetValid(bool valid) {
+	m_valid = valid;
+}
+
+xmlNodePtr DefinedParam::GenerateXML(xmlDocPtr doc) {
+	xmlNodePtr f = xmlNewDocNode(doc, NULL, X "param", NULL);
 
 	xmlChar *c =xmlStrdup(SC::S2U(m_formula).c_str());
 	xmlNodePtr cd = xmlNewCDataBlock(f->doc, c, strlen((char*)c));
@@ -495,6 +503,13 @@ void DefinedParam::GenerateXML(xmlNodePtr parent) {
 	xmlSetProp(f, X "unit", SC::S2U(m_unit).c_str());
 		
 	xmlSetProp(f, X "start_date", (const xmlChar*)((std::stringstream&)(std::stringstream() << m_start_time)).str().c_str());
+
+	if (m_network_param) {
+		xmlSetProp(f, X "network_param", X"yes");
+		xmlSetProp(f, X "mod_time", (const xmlChar*) ((std::stringstream&)(std::ostringstream() << m_modification_time)).str().c_str());
+	}
+
+	return f;
 		
 }
 
@@ -504,7 +519,8 @@ DefinedParam::DefinedParam(wxString base_prefix,
 				wxString formula,
 				int prec,
 				TParam::FormulaType type,
-				time_t start_time) {
+				time_t start_time,
+				bool network_param) {
 
 	m_base_prefix = base_prefix;
 	m_formula = formula;
@@ -513,6 +529,7 @@ DefinedParam::DefinedParam(wxString base_prefix,
 	m_prec = prec;
 	m_type = type;
 	m_start_time = start_time;
+	m_network_param = network_param;
 
 }
 
@@ -573,6 +590,76 @@ void DefinedDrawInfo::ParseXML(xmlNodePtr node) {
 			ParseDrawElement(d);
 }
 
+void DefinedDrawInfo::ParseXMLRPCValue(XMLRPC_VALUE v) {
+	XMLRPC_VALUE d = XMLRPC_VectorRewind(v);
+	m_base_prefix = SC::U2S((const unsigned char*) XMLRPC_GetValueString(d));
+
+	d = XMLRPC_VectorNext(v);
+	m_param_name = SC::U2S((const unsigned char*) XMLRPC_GetValueString(d));
+
+	d = XMLRPC_VectorNext(v);
+	m_base_draw = SC::U2S((const unsigned char*) XMLRPC_GetValueString(d));
+
+	d = XMLRPC_VectorNext(v);
+	if (xmlrpc_type_string == XMLRPC_GetValueTypeEasy(d)) {
+		m_long_changed = true;
+		m_name = SC::U2S((const unsigned char*) XMLRPC_GetValueString(d));
+	}
+
+	d = XMLRPC_VectorNext(v);
+	if (xmlrpc_type_string == XMLRPC_GetValueTypeEasy(d)) {
+		m_short_changed = true;
+		m_short_name = SC::U2S((const unsigned char*) XMLRPC_GetValueString(d));
+	}
+
+	d = XMLRPC_VectorNext(v);
+	if (xmlrpc_type_int == XMLRPC_GetValueTypeEasy(d)) {
+		m_special_changed = true;
+		if (XMLRPC_GetValueInt(d)) 
+			m_sp = TDraw::HOURSUM;
+		else
+			m_sp = TDraw::NONE;
+	}
+
+	d = XMLRPC_VectorNext(v);
+	if (xmlrpc_type_string == XMLRPC_GetValueTypeEasy(d)) {
+		c = wxColour(SC::U2S((const unsigned char*) XMLRPC_GetValueString(d)));
+		m_col_changed = true;
+	}
+
+	d = XMLRPC_VectorNext(v);
+	if (xmlrpc_type_double == XMLRPC_GetValueTypeEasy(d)) {
+		m_min_changed = true;
+		m_min = XMLRPC_GetValueDouble(d);
+	}
+
+	d = XMLRPC_VectorNext(v);
+	if (xmlrpc_type_double == XMLRPC_GetValueTypeEasy(d)) {
+		m_max_changed = true;
+		m_max = XMLRPC_GetValueDouble(d);
+	}
+
+	d = XMLRPC_VectorNext(v);
+	if (xmlrpc_type_int == XMLRPC_GetValueTypeEasy(d)) {
+		m_scale_changed = true;
+		m_scale = XMLRPC_GetValueInt(d);
+	}
+
+	d = XMLRPC_VectorNext(v);
+	if (xmlrpc_type_double == XMLRPC_GetValueTypeEasy(d)) {
+		m_min_scale_changed = true;
+		m_min_scale = XMLRPC_GetValueDouble(d);
+	}
+
+	d = XMLRPC_VectorNext(v);
+	if (xmlrpc_type_double == XMLRPC_GetValueTypeEasy(d)) {
+		m_max_scale_changed = true;
+		m_max_scale = XMLRPC_GetValueDouble(d);
+	}
+
+}
+
+
 void DefinedParam::ParseXML(xmlNodePtr d) {
 	xmlChar *_script = xmlNodeListGetString(d->doc, d->children, 1);
 	m_formula = SC::U2S(_script);
@@ -588,6 +675,22 @@ void DefinedParam::ParseXML(xmlNodePtr d) {
 	xmlChar *prec = xmlGetProp(d, BAD_CAST "prec");
 	m_prec = wcstol(SC::U2S(prec).c_str(), NULL, 10);
 	xmlFree(prec);
+
+	xmlChar* _network_param = xmlGetProp(d, X "network_param");
+	if (_network_param && !xmlStrcmp(_network_param, X"yes")) {
+		m_network_param = true;
+
+		xmlChar* _modification_time = xmlGetProp(d, X "modification_time");	
+		if (_modification_time)
+			std::stringstream((const char*)_modification_time) >> m_modification_time;
+		else
+			m_modification_time = 0;
+
+		xmlFree(_modification_time);
+	} else {
+		m_network_param = false;
+	}
+	xmlFree(_network_param);
 
 	xmlChar *type = xmlGetProp(d, BAD_CAST "type");
 	if (type && !xmlStrcmp(type, BAD_CAST "av"))
@@ -611,6 +714,43 @@ void DefinedParam::ParseXML(xmlNodePtr d) {
 	
 	CreateParam();
 
+}
+
+void DefinedParam::ParseXMLRPCValue(XMLRPC_VALUE p) {
+	XMLRPC_VALUE v = XMLRPC_VectorRewind(p);
+	m_param_name = SC::U2S((const unsigned char*) XMLRPC_GetValueString(v));
+
+	v = XMLRPC_VectorNext(p);
+	m_base_prefix = SC::U2S((const unsigned char*) XMLRPC_GetValueString(v));
+
+	v = XMLRPC_VectorNext(p);
+	m_formula = SC::U2S((const unsigned char*) XMLRPC_GetValueString(v));
+
+	v = XMLRPC_VectorNext(p);
+	std::wstring sftype = SC::U2S((const unsigned char*) XMLRPC_GetValueString(v));
+	if (sftype == L"av") 
+		m_type = TParam::LUA_AV;
+	else
+		m_type = TParam::LUA_VA;
+	
+	v = XMLRPC_VectorNext(p);
+	m_unit = SC::U2S((const unsigned char*) XMLRPC_GetValueString(v));
+
+	v = XMLRPC_VectorNext(p);
+	if (XMLRPC_GetValueTypeEasy(v) == xmlrpc_type_datetime)
+		m_start_time = XMLRPC_GetValueDateTime(v);
+	else
+		m_start_time = -1;
+
+	v = XMLRPC_VectorNext(p);
+	m_prec = XMLRPC_GetValueInt(v);
+
+	m_network_param = true;
+
+	v = XMLRPC_VectorNext(p);
+	m_modification_time = XMLRPC_GetValueInt(v);
+
+	CreateParam();
 }
 
 int DefinedParam::GetPrec() {
@@ -763,6 +903,14 @@ wxString DefinedParam::GetBasePrefix() {
 	return m_base_prefix;
 }
 
+bool DefinedParam::IsNetworkParam() const {
+	return m_network_param;
+}
+
+time_t DefinedParam::GetModificationTime() const {
+	return m_modification_time;
+}
+
 DefinedDrawSet::DefinedDrawSet(DrawsSets* parent,
 		DefinedDrawSet *ds) : DrawSet(parent) {
 
@@ -775,6 +923,7 @@ DefinedDrawSet::DefinedDrawSet(DrawsSets* parent,
 	m_name = ds->m_name;
 	m_prior = ds->m_prior;
 	m_number = ds->m_number;
+	m_network_set = ds->m_network_set;
 
 	m_copies->push_back(this);
 
@@ -782,7 +931,7 @@ DefinedDrawSet::DefinedDrawSet(DrawsSets* parent,
 	m_copy = true;
 }
 
-DefinedDrawSet::DefinedDrawSet(DefinedDrawsSets *ds) : DrawSet(ds) {
+DefinedDrawSet::DefinedDrawSet(DefinedDrawsSets *ds, bool network) : DrawSet(ds), m_network_set(network) {
 	m_ds = ds;
 	m_temporary = false;
 	m_copies = new std::vector<DefinedDrawSet*>(1, this);
@@ -793,6 +942,17 @@ std::vector<DefinedDrawSet*>* DefinedDrawSet::GetCopies() {
 	return m_copies;
 }
 
+bool DefinedDrawSet::IsNetworkSet() const {
+	return m_network_set;
+}
+
+time_t DefinedDrawSet::GetModificationTime() const {
+	return m_modification_time;
+}
+
+void DefinedDrawSet::SetModificationTime(time_t modification_time) {
+	m_modification_time = modification_time;
+}
 
 double DefinedDrawSet::GetPrior() {
 	return m_prior;
@@ -810,6 +970,7 @@ DefinedDrawSet::DefinedDrawSet(DefinedDrawsSets *ds, wxString title, std::vector
 	m_copy = false;
 	m_ds = ds;
 	m_temporary = false;
+	m_network_set = false;
 
 	for (size_t i = 0; i < v.size(); ++i) {
 		DefinedDrawInfo::EkrnDefDraw& ed = v[i];
@@ -840,18 +1001,27 @@ DefinedDrawSet::~DefinedDrawSet()
 	}
 }
 
-void DefinedDrawSet::GenerateXML(xmlNodePtr root)
+xmlNodePtr DefinedDrawSet::GenerateXML(xmlDocPtr doc)
 {
 	if (m_draws->size() == 0 || this->IsTemporary())
-		return;
+		return NULL;
 
-	xmlNodePtr win = xmlNewChild(root, NULL, X "window", NULL);
-	xmlSetProp(win, X "title", SC::S2U(m_name).c_str());
+	xmlNodePtr set = xmlNewDocNode(doc, NULL, X "window", NULL);
+
+	xmlSetProp(set, X "title", SC::S2U(m_name).c_str());
 
 	for (size_t i = 0; i < m_draws->size(); i++) {
 		DefinedDrawInfo *di = dynamic_cast<DefinedDrawInfo*>(m_draws->at(i));
-		di->GenerateXML(win);
+		xmlAddChild(set, di->GenerateXML(doc));
 	}
+
+	if (m_network_set) {
+		xmlSetProp(set, X "network_set", X"yes");
+		xmlSetProp(set, X "mod_time", (const xmlChar*) ((std::stringstream&)(std::ostringstream() << m_modification_time)).str().c_str());
+	}
+
+	return set;
+
 }
 
 namespace {
@@ -879,6 +1049,11 @@ void DefinedDrawSet::ParseXML(xmlNodePtr node)
 	SetName(SC::U2S(_title));
 	xmlFree(_title);
 
+	xmlChar* _network_set = xmlGetProp(node, X "network_set");
+	if (_network_set && !xmlStrcmp(_network_set, X "yes"))
+		m_network_set = true;
+	xmlFree(_network_set);
+
 	for (xmlNodePtr p = node->xmlChildrenNode; p != NULL; p = p->next) {
 		if ((xmlStrcmp(p->name, X "param")))
 			continue;
@@ -895,6 +1070,18 @@ void DefinedDrawSet::Swap(int a, int b)
 	DrawInfo *tmp = m_draws->at(a);
 	m_draws->at(a) = m_draws->at(b);
 	m_draws->at(b) = tmp;
+}
+
+void DefinedDrawSet::Remove(DefinedDrawInfo* di) {
+	size_t idx;
+	for (idx = 0; idx < m_draws->size(); idx++)
+		if (m_draws->at(idx) == di)
+			break;
+
+	if (idx == m_draws->size())
+		return;
+
+	Remove(idx);
 }
 
 void DefinedDrawSet::Remove(int idx)
@@ -1092,7 +1279,7 @@ DefinedDrawSet* DefinedDrawSet::MakeShallowCopy(DrawsSets* parent) {
 }
 
 DefinedDrawSet* DefinedDrawSet::MakeDeepCopy() {
-	DefinedDrawSet *ret = new DefinedDrawSet(m_ds);
+	DefinedDrawSet *ret = new DefinedDrawSet(m_ds, m_network_set);
 	ret->m_sets_nr = m_sets_nr;
 
 	DrawInfoArray *ds = ret->GetDraws();
@@ -1150,15 +1337,12 @@ void DefinedDrawSet::SyncWithAllPrefixes() {
 		SyncWithPrefix(i->first);
 }
 
-bool DefinedDrawSet::SyncWithPrefix(wxString prefix) {
-	std::vector<wxString> removed;
-	return SyncWithPrefix(prefix, removed, m_ds->GetDefinedParams());
+void DefinedDrawSet::SyncWithPrefix(wxString prefix) {
+	SyncWithPrefix(prefix, m_ds->GetDefinedParams());
 }
 
-bool DefinedDrawSet::SyncWithPrefix(wxString prefix, std::vector<wxString>& removed, const std::vector<DefinedParam*>& defined_params) {
+void DefinedDrawSet::SyncWithPrefix(wxString prefix, const std::vector<DefinedParam*>& defined_params) {
 	IPKConfig *bc = dynamic_cast<IPKConfig*>(m_ds->GetParentManager()->GetConfigByPrefix(prefix));
-
-	std::vector<size_t> tr;
 
 	for (size_t j = 0; j < m_draws->size(); ++j) {
 		DefinedDrawInfo* dw = dynamic_cast<DefinedDrawInfo*>(m_draws->at(j));
@@ -1166,20 +1350,19 @@ bool DefinedDrawSet::SyncWithPrefix(wxString prefix, std::vector<wxString>& remo
 		if (dw->GetBasePrefix() != prefix)
 			continue;
 
+		dw->SetValid(false);
+
 		if (dw->GetBaseDraw().IsEmpty()) {
 			DefinedParam* tp = LookupDefinedParam(dw->GetBasePrefix(), dw->GetParamName(), defined_params);
-			if (tp == NULL) 
-				tr.push_back(j);
-			else
+			if (tp != NULL) 
 				dw->SetParam(tp);
-			continue;
+			else
+				continue;
 		}
 
 		if (bc->GetRawDrawsSets().find(dw->GetBaseDraw()) 
-				== bc->GetRawDrawsSets().end()) {
-			tr.push_back(j);
+				== bc->GetRawDrawsSets().end())
 			continue;
-		}
 
 		DrawSet* bds = bc->GetRawDrawsSets()[dw->GetBaseDraw()];
 		for (size_t k = 0; k < bds->GetDraws()->size(); ++k) {
@@ -1188,24 +1371,14 @@ bool DefinedDrawSet::SyncWithPrefix(wxString prefix, std::vector<wxString>& remo
 				dw->SetDraw(di->GetDraw());
 				dw->SetParam(di->GetParam());
 				dw->SetColorFromBaseDrawInfo(di->GetDrawColor());
-				goto out;
+				dw->SetValid(true);
+				break;
 			}
 
 		}
 
-		removed.push_back(dw->GetBaseDraw());
-		tr.push_back(j);
-out:;
 	}
 
-	if (tr.size() == 0)
-		return false;
-
-	for (size_t i = 0; i < tr.size(); ++i) {
-		Remove(tr[i] - i);
-	}
-
-	return true;
 }
 
 DefinedDrawsSets::DefinedDrawsSets(ConfigManager *cfg) : DrawsSets(cfg), m_prior(DrawSet::defined_draws_prior_start - 1), m_modified(false), m_params_attached(false) {
@@ -1256,9 +1429,16 @@ void DefinedDrawsSets::LoadSets(wxString path) {
 	for (size_t i = 0; i < draw_sets.size(); i++) {
 		DefinedDrawSet *ds = draw_sets[i];
 		drawsSets[ds->GetName()] = ds;
+		if (ds->IsNetworkSet())
+			for (SetsNrHash::iterator i = ds->GetPrefixes().begin(); i != ds->GetPrefixes().end(); i++)
+				m_network_param_and_set_prefixes.insert(i->first);
 	}
-	for (size_t i = 0; i < defined_params.size(); i++)
-		definedParams.push_back(defined_params[i]);
+	for (size_t i = 0; i < defined_params.size(); i++) {
+		DefinedParam* param = defined_params[i];
+		definedParams.push_back(param);
+		if (param->IsNetworkParam())
+			m_network_param_and_set_prefixes.insert(param->GetBasePrefix());
+	}
 }
 
 bool DefinedDrawsSets::LoadSets(wxString path, std::vector<DefinedDrawSet*>& draw_sets, std::vector<DefinedParam*>& defined_params) {
@@ -1270,7 +1450,7 @@ bool DefinedDrawsSets::LoadSets(wxString path, std::vector<DefinedDrawSet*>& dra
 	xmlNodePtr cur = root->xmlChildrenNode;
 	for (cur = cur->xmlChildrenNode; cur != NULL; cur = cur->next) {
 		if (!xmlStrcmp(cur->name, X "window")) {
-			DefinedDrawSet* ds = new DefinedDrawSet(this);
+			DefinedDrawSet* ds = new DefinedDrawSet(this, false);
 			ds->ParseXML(cur);
 			ds->SetPrior(m_prior--);
 			draw_sets.push_back(ds);
@@ -1291,9 +1471,9 @@ bool DefinedDrawsSets::SaveSets(wxString path, const std::vector<DefinedDrawSet*
 	xmlNewNs(doc->children, X "http://www.praterm.com.pl/SZARP/draw3", NULL);
 
 	for (std::vector<DefinedDrawSet*>::const_iterator i = ds.begin(); i != ds.end(); i++)
-		(*i)->GenerateXML(doc->children);
+		xmlAddChild(doc->children, (*i)->GenerateXML(doc));
 	for (std::vector<DefinedParam*>::const_iterator i = dp.begin(); i != dp.end(); i++)
-		(*i)->GenerateXML(doc->children);
+		xmlAddChild(doc->children, (*i)->GenerateXML(doc));
 
 	bool ret = true;
 	if (xmlSaveFormatFileEnc(SC::S2A(path).c_str(), doc, "UTF-8", 1) == -1)
@@ -1342,23 +1522,7 @@ void DefinedDrawsSets::AddDrawsToConfig(wxString prefix, std::set<wxString> *con
 		std::set<wxString> ur = df->GetUnresolvedPrefixes();
 		missing_prefixes.insert(ur.begin(), ur.end());
 
-		std::vector<wxString> removed_draws;
-		bool changed = df->SyncWithPrefix(prefix, removed_draws, definedParams);
-		if (!changed)
-			continue;
-
-		if (df->GetDraws()->size() == 0) {
-			wxLogInfo(_T("Defined window %s was removed"), i->first.c_str());
-			ErrorFrame::NotifyError(wxString::Format(_("Defined set %s was removed because all draws in this set were removed"), i->first.c_str()));
-			removed.insert(i->first);
-		} else {
-			for (size_t j = 0; j < removed_draws.size(); j++)
-				ErrorFrame::NotifyError(wxString::Format(_("Draw %s removed from set %s, it relates to non-existent parameter or graph"),
-								removed_draws[j].c_str(),
-								df->GetName().c_str()));
-			wxLogInfo(_T("Defined window %s was modified"), i->first.c_str());
-			modified.insert(i->first);
-		}
+		df->SyncWithPrefix(prefix, definedParams);
 	}
 
 	if (configs_to_load)
@@ -1464,7 +1628,12 @@ void DefinedDrawsSets::RemoveAllRelatedToPrefix(wxString prefix) {
 
 }
 
-void DefinedDrawsSets::AddSet(DefinedDrawSet *s) {
+bool DefinedDrawsSets::AddSet(DefinedDrawSet *s) {
+	if (drawsSets.find(s->GetName()) != drawsSets.end()) {
+		return SubstituteSet(s->GetName(), s);
+	}
+
+
 	drawsSets[s->GetName()] = s;
 	s->SetPrior(m_prior--);
 
@@ -1473,8 +1642,11 @@ void DefinedDrawsSets::AddSet(DefinedDrawSet *s) {
 	for (SetsNrHash::iterator i = snh.begin();
 			i != snh.end();
 			i++) {
-		IPKConfig *c = dynamic_cast<IPKConfig*>(m_cfgmgr->GetConfigByPrefix(i->first));
-		assert(c);
+		m_network_param_and_set_prefixes.insert(i->first);
+
+		IPKConfig *c = dynamic_cast<IPKConfig*>(m_cfgmgr->GetConfigByPrefix(i->first, false));
+		if (c == NULL)
+			continue;
 
 		DefinedDrawSet* nc = s->MakeShallowCopy(c);
 		c->AddUserSet(nc);
@@ -1484,11 +1656,15 @@ void DefinedDrawsSets::AddSet(DefinedDrawSet *s) {
 
 	m_cfgmgr->NotifySetAdded(DEF_PREFIX, s->GetName(), s);
 
+	return true;
+
 }
 
-void DefinedDrawsSets::RemoveSet(wxString name) {
+bool DefinedDrawsSets::RemoveSet(wxString name) {
 	if (drawsSets.find(name) == drawsSets.end())
-		return;
+		return false;
+
+	std::cout << SC::S2A(name) << " " << drawsSets.find(name)->second << std::endl;
 	
 	std::vector<DrawSet*> copies_to_delete;
 	DefinedDrawSet *s = dynamic_cast<DefinedDrawSet*>(drawsSets[name]);
@@ -1516,6 +1692,8 @@ void DefinedDrawsSets::RemoveSet(wxString name) {
 			i++)
 		delete *i;
 	delete s;
+
+	return true;
 }
 
 void DefinedDrawsSets::AttachDefined() {
@@ -1527,17 +1705,9 @@ void DefinedDrawsSets::RemoveDrawFromSet(DefinedDrawInfo *di) {
 
 	DrawSet* ods = NULL;
 
-	size_t idx;
-	for (idx = 0; idx < ds->GetDraws()->size(); idx++)
-		if (ds->GetDraws()->at(idx) == di)
-			break;
-
-	if (idx == ds->GetDraws()->size())
-		return;
-
 	wxString prefix = di->GetBasePrefix();
 
-	ds->Remove(idx);
+	ds->Remove(di);
 
 	if (ds->GetPrefixes().find(prefix) == ds->GetPrefixes().end()) {
 		DrawsSets *c = m_cfgmgr->GetConfigByPrefix(prefix);
@@ -1555,9 +1725,14 @@ void DefinedDrawsSets::RemoveDrawFromSet(DefinedDrawInfo *di) {
 
 }
 
-void DefinedDrawsSets::SubstituteSet(wxString name, DefinedDrawSet *s) {
+bool DefinedDrawsSets::SubstituteSet(wxString name, DefinedDrawSet *s) {
 	DefinedDrawSet* ods = dynamic_cast<DefinedDrawSet*>(drawsSets[name]);
 	assert(ods);
+
+	if (ods->IsNetworkSet() && s->IsNetworkSet() && ods->GetModificationTime() == s->GetModificationTime()) {
+		delete s;
+		return false;
+	}
 
 	std::set<wxString> added_prefixes;
 	std::set<wxString> removed_prefixes;
@@ -1649,6 +1824,8 @@ void DefinedDrawsSets::SubstituteSet(wxString name, DefinedDrawSet *s) {
 		delete *i;
 
 	delete ods;
+
+	return true;
 }
 
 namespace EkrnDefConv {
@@ -1716,12 +1893,22 @@ void DefinedDrawsSets::AddDefinedParam(DefinedParam *dp) {
 	definedParams.push_back(dp);
 }
 
-void DefinedDrawsSets::RemoveParam(DefinedParam *dp) {
+bool DefinedDrawsSets::RemoveParam(DefinedParam *dp) {
+	bool deleted = false;
+
 	std::vector<DefinedParam*> n;
 	for (size_t i = 0; i < definedParams.size(); i++)
-		if (definedParams[i] != dp)
+		if (definedParams[i] != dp) 
 			n.push_back(definedParams[i]);
+		else
+			deleted = true;
 	definedParams = n;
+	
+	return deleted;
+}
+
+const std::set<wxString>& DefinedDrawsSets::GetNetworkParamAndSetsPrefixes() const {
+	return m_network_param_and_set_prefixes;
 }
 
 void DefinedDrawsSets::LoadDraw2File() {

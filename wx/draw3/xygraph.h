@@ -145,13 +145,15 @@ class XYFrame : public szFrame, public XFrame {
 	DatabaseManager *m_db_manager;
 	/**@see ConfigManager*/
 	ConfigManager *m_cfg_manager;
+
+	RemarksHandler *m_remarks_handler;
 public:
 	/**Sets parameters of displayed graphs*/
 	virtual void SetGraph(XYGraph *graph);
 
 	virtual int GetDimCount();
 
-	XYFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigManager *cfgmanager, TimeInfo time, DrawInfoList user_draws, FrameManager *frame_manager);
+	XYFrame(wxString default_prefix, DatabaseManager *dbmanager, ConfigManager *cfgmanager, RemarksHandler *remarks_handler, TimeInfo time, DrawInfoList user_draws, FrameManager *frame_manager);
 
 	virtual ~XYFrame();
 	DECLARE_EVENT_TABLE()

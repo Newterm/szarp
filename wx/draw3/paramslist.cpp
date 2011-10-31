@@ -31,6 +31,9 @@
 
 #include "ids.h"
 #include "classes.h"
+#include "sprecivedevnt.h"
+#include "parameditctrl.h"
+#include "seteditctrl.h"
 #include "dbinquirer.h"
 #include "database.h"
 #include "dbmgr.h"
@@ -41,6 +44,7 @@
 #include "codeeditor.h"
 #include "defcfg.h"
 #include "paredit.h"
+#include "remarks.h"
 
 
 class ParamsDialogKeyboardHandler: public wxEvtHandler
@@ -70,7 +74,7 @@ BEGIN_EVENT_TABLE(ParamsDialogKeyboardHandler, wxEvtHandler)
 	LOG_EVT_CHAR(ParamsDialogKeyboardHandler , OnChar, "paramlist:char" )
 END_EVENT_TABLE()
 
-ParamsListDialog::ParamsListDialog(wxWindow *parent, DefinedDrawsSets *dds, DatabaseManager *dbmgr, bool search_mode) {
+ParamsListDialog::ParamsListDialog(wxWindow *parent, DefinedDrawsSets *dds, DatabaseManager *dbmgr, RemarksHandler* remarks_handler, bool search_mode) {
 
 	SetHelpText(_T("draw3-ext-parametersset"));
 
@@ -122,6 +126,8 @@ ParamsListDialog::ParamsListDialog(wxWindow *parent, DefinedDrawsSets *dds, Data
 	m_param_list->InsertColumn(0, _("Parameters"), wxLIST_FORMAT_LEFT, w - 10);
 
 	m_search_text->SetFocus();
+
+	m_remarks_handler = remarks_handler;
 
 	LoadParams();
 }
@@ -208,31 +214,27 @@ void ParamsListDialog::OnListItemSelected(wxListEvent& e) {
 }
 
 void ParamsListDialog::OnAdd(wxCommandEvent &e) {
-	ParamEdit *pe = new ParamEdit(this, m_def_sets->GetParentManager(), m_dbmgr);
+	ParamEdit pe(this, m_def_sets->GetParentManager(), m_dbmgr, m_remarks_handler);
 
 	assert(m_prefix.IsEmpty() == false);
+	pe.SetCurrentConfig(m_prefix);
 
-	pe->SetCurrentConfig(m_prefix);
+	bool network_param;
+	if (e.GetId() == XRCID("ADD_PARAMETER") || e.GetId() == XRCID("NEW_BUTTON"))
+		network_param = false;
+	else if (e.GetId() == XRCID("ADD_NETWORK_PARAMETER") || e.GetId() == XRCID("NEW_NETWORK_BUTTON"))
+		network_param = true;
+	else
+		assert(false);
 
-	if (pe->StartNewParameter() == wxID_OK) {
-		DefinedParam* dp = new DefinedParam(pe->GetBasePrefix(),
-							wxString(_("User:Param:")) +  pe->GetParamName(),
-							pe->GetUnit(),
-							pe->GetFormula(),
-							pe->GetPrec(),
-							pe->GetFormulaType(),
-							pe->GetStartTime());
-		m_def_sets->AddDefinedParam(dp);
+	if (pe.StartNewParameter(network_param) != wxID_OK)
+		return;
 
-		dp->CreateParam();
-		std::vector<DefinedParam*> dbv;
-		dbv.push_back(dp);
-		m_dbmgr->AddParams(dbv);
-	}
+	if (network_param)
+		m_remarks_handler->GetConnection()->FetchNewParamsAndSets(this);
+	else 
+		LoadParams();
 
-	delete pe;
-
-	LoadParams();
 }
 
 void ParamsListDialog::OnRemove(wxCommandEvent &e) {
@@ -246,36 +248,12 @@ void ParamsListDialog::OnRemove(wxCommandEvent &e) {
 	if (ret != wxOK)
 		return;
 
-	DrawSetsHash& dsh = m_def_sets->GetRawDrawsSets();
-	
-	std::vector<DefinedDrawInfo*> ddiv;
-
-	for (DrawSetsHash::iterator i = dsh.begin();
-			i != dsh.end();
-			i++) {
-		DefinedDrawSet* ds = dynamic_cast<DefinedDrawSet*>(i->second);
-		assert(ds);
-		DrawInfoArray* dia = ds->GetDraws();
-		for (size_t j = 0; j < dia->size(); j++) {
-			DefinedDrawInfo *dp = dynamic_cast<DefinedDrawInfo*>((*dia)[j]);
-			assert(dp);
-
-			if (dp->GetParam() == p)
-				ddiv.push_back(dp);
-		}
+	if (p->IsNetworkParam()) {
+		m_remarks_handler->GetConnection()->InsertOrUpdateParam(p, this, true);
+	} else {
+		m_def_sets->GetParentManager()->RemoveDefinedParam(p);
+		LoadParams();
 	}
-
-	m_dbmgr->RemoveParams(std::vector<DefinedParam*>(1, p));
-	m_def_sets->RemoveParam(p);
-	m_def_sets->GetParentManager()->NotifyParamDestroy(p);
-	delete p;
-
-	for (std::vector<DefinedDrawInfo*>::iterator i = ddiv.begin();
-			i != ddiv.end();
-			i++)
-		m_def_sets->RemoveDrawFromSet(*i);
-
-	LoadParams();	
 }
 
 void ParamsListDialog::OnEdit(wxCommandEvent &e) {
@@ -292,14 +270,29 @@ void ParamsListDialog::OnEdit(wxCommandEvent &e) {
 		return;
 	}
 
-	ParamEdit *pe = new ParamEdit(this, m_def_sets->GetParentManager(), m_dbmgr);
-	pe->SetCurrentConfig(m_prefix);
-	int ret = pe->Edit(p);
-	delete pe;
-
-	if (ret != wxID_OK)
+	ParamEdit pe(this, m_def_sets->GetParentManager(), m_dbmgr, m_remarks_handler);
+	pe.SetCurrentConfig(m_prefix);
+	if (pe.Edit(p) != wxID_OK) 
 		return;
-	LoadParams();	
+
+	DefinedParam *np = new DefinedParam(pe.GetBasePrefix(),
+			pe.GetParamNameFirstAndSecondPart() + pe.GetParamName(),
+			pe.GetUnit(),
+			pe.GetFormula(),
+			pe.GetPrec(),
+			pe.GetFormulaType(),
+			pe.GetStartTime(),
+			p->IsNetworkParam());
+
+	np->CreateParam();
+	if (np->IsNetworkParam()) {
+		m_remarks_handler->GetConnection()->InsertOrUpdateParam(np, this, false);
+		//now remove the param, we will get one from server
+		delete np;
+	} else {
+		m_def_sets->GetParentManager()->SubstiuteDefinedParams(std::vector<DefinedParam*>(1, p), std::vector<DefinedParam*>(1, np));
+		LoadParams();
+	}
 
 }
 
@@ -342,14 +335,14 @@ void ParamsListDialog::OnCancelButton(wxCommandEvent &e) {
 void ParamsListDialog::SelectCurrentParam() {
 	if (m_search_mode) {
 		if (m_selected_index >= 0) {
-				DefinedParam *param = (DefinedParam*) m_param_list->GetItemData(m_selected_index);
-				if (m_def_sets->GetParentManager()->GetConfigByPrefix(param->GetBasePrefix()) == NULL) {
-					wxMessageBox(wxString::Format(_("Configuration that this param refers to - '%s' is not present, parameter is not accesible."), param->GetBasePrefix().c_str()), 
-							_("Error"),
-   							wxOK | wxICON_ERROR,
-							this);
-					return;
-				}
+			DefinedParam *param = (DefinedParam*) m_param_list->GetItemData(m_selected_index);
+			if (m_def_sets->GetParentManager()->GetConfigByPrefix(param->GetBasePrefix()) == NULL) {
+				wxMessageBox(wxString::Format(_("Configuration that this param refers to - '%s' is not present, parameter is not accesible."), param->GetBasePrefix().c_str()), 
+						_("Error"),
+   						wxOK | wxICON_ERROR,
+						this);
+				return;
+			}
 			EndModal(wxID_OK);
 		} else
 			EndModal(wxID_CANCEL);
@@ -373,12 +366,36 @@ void ParamsListDialog::OnHelpButton(wxCommandEvent &event) {
 	wxHelpProvider::Get()->ShowHelp(this);
 }
 
+void ParamsListDialog::SetsParamsReceiveError(wxString error) {
+	wxMessageBox(_("Error in communicatoin with server: ") + error, _("Failed to update paramaters"),
+		wxOK | wxICON_ERROR, this);
+}
+
+void ParamsListDialog::SetsParamsReceived(bool) {
+	LoadParams();
+}
+
+void ParamsListDialog::ParamInsertUpdateError(wxString error) {
+	wxMessageBox(_("Failed to remove parameter, error: ") + error, _("Failed to remove paramater"),
+		wxOK | wxICON_ERROR, this);
+}
+
+void ParamsListDialog::ParamInsertUpdateFinished(bool ok) {
+	if (ok)
+		m_remarks_handler->GetConnection()->FetchNewParamsAndSets(this);
+	else
+		wxMessageBox(_("You are not allowed to remove this paramter"), _("Failed to remove paramater"),
+			wxOK | wxICON_ERROR, this);
+}
+
 BEGIN_EVENT_TABLE(ParamsListDialog, wxDialog)
 	EVT_TEXT(XRCID("PARAM_SEARCH"), ParamsListDialog::OnSerachTextChanged )
 	LOG_EVT_MENU(XRCID("ADD_PARAMETER"), ParamsListDialog , OnAdd, "paramlist:add" )
+	LOG_EVT_MENU(XRCID("ADD_NETWORK_PARAMETER"), ParamsListDialog , OnAdd, "paramlist:add" )
 	LOG_EVT_MENU(XRCID("REMOVE_PARAMETER"), ParamsListDialog , OnRemove, "paramlist:remove" )
 	LOG_EVT_MENU(XRCID("EDIT_PARAMETER"), ParamsListDialog , OnEdit, "paramlist:edit" )
 	LOG_EVT_BUTTON(XRCID("NEW_BUTTON"), ParamsListDialog , OnAdd, "paramlist:new" )
+	LOG_EVT_BUTTON(XRCID("NEW_NETWORK_BUTTON"), ParamsListDialog , OnAdd, "paramlist:new" )
 	LOG_EVT_BUTTON(XRCID("DELETE_BUTTON"), ParamsListDialog , OnRemove, "paramlist:delete" )
 	LOG_EVT_BUTTON(XRCID("EDIT_BUTTON"), ParamsListDialog , OnEdit, "paramlist:edit_but" )
 	LOG_EVT_BUTTON(XRCID("OK_BUTTON"), ParamsListDialog , OnOKButton, "paramlist:ok_but" )

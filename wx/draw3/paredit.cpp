@@ -19,11 +19,6 @@
 /* 
  * draw3
  * SZARP
-
- *
- * $Id$
- *
- * Creating new defined window
  */
 
 #include <wx/colordlg.h>
@@ -42,6 +37,10 @@
 #include "ids.h"
 #include "classes.h"
 #include "coobs.h"
+#include "drawobs.h"
+#include "sprecivedevnt.h"
+#include "parameditctrl.h"
+#include "seteditctrl.h"
 #include "drawpick.h"
 #include "dbinquirer.h"
 #include "database.h"
@@ -57,6 +56,7 @@
 #include "drawsctrl.h"
 #include "timeformat.h"
 #include "drawtime.h"
+#include "remarks.h"
 
 #include "codeeditor.h"
 
@@ -71,7 +71,7 @@ public:
 	bool operator()(const double& v) const { return std::isnan(v) ? false : v ; }
 };
 
-ParamEdit::ParamEdit(wxWindow *parent, ConfigManager *cfg, DatabaseManager *dbmgr) : DBInquirer(dbmgr)
+ParamEdit::ParamEdit(wxWindow *parent, ConfigManager *cfg, DatabaseManager *dbmgr, RemarksHandler* remarks_handler) : DBInquirer(dbmgr)
 {
 	SetHelpText(_T("draw3-ext-parametersset"));
 	
@@ -79,6 +79,7 @@ ParamEdit::ParamEdit(wxWindow *parent, ConfigManager *cfg, DatabaseManager *dbmg
 
 	m_cfg_mgr = cfg;
 	m_draws_ctrl = NULL;
+	m_remarks_handler = remarks_handler;
 
 	InitWidget(parent);
 
@@ -208,15 +209,18 @@ void ParamEdit::InitWidget(wxWindow *parent) {
 }
 
 void ParamEdit::OnIdle(wxIdleEvent &e) {
+	wxMessageDialog *dlg = NULL;
+
 	if (m_error) {
 		m_error = false;
-		wxMessageDialog* dlg = new wxMessageDialog(this, m_error_string, _("Error"), wxOK);
-		dlg->ShowModal();
-		delete dlg;
+		dlg = new wxMessageDialog(this, m_error_string, _("Error"), wxOK);
 	} else if (m_info_string.size()) {
 		wxString s = m_info_string;
 		m_info_string = wxString();
-		wxMessageDialog* dlg = new wxMessageDialog(this, s, _("Information"), wxOK);
+		dlg = new wxMessageDialog(this, s, _("Information"), wxOK);
+	}
+
+	if (dlg) {
 		dlg->ShowModal();
 		delete dlg;
 	}
@@ -248,6 +252,34 @@ void ParamEdit::Close() {
 		SetReturnCode(wxID_OK);
 		Show(false);
 	}
+}
+
+void ParamEdit::CreateDefinedParam() {
+
+	DefinedParam *np = new DefinedParam(GetBasePrefix(),
+			GetParamNameFirstAndSecondPart() + GetParamName(),
+			GetUnit(),
+			GetFormula(),
+			GetPrec(),
+			GetFormulaType(),
+			GetStartTime(),
+			m_network_param);
+	np->CreateParam();
+
+	if (m_network_param) {
+		if (!m_creating_new)
+			m_remarks_handler->GetConnection()->InsertOrUpdateParam(m_edited_param, NULL, true);
+		m_remarks_handler->GetConnection()->InsertOrUpdateParam(np, this, false);
+		delete np;
+	} else {
+		if (!m_creating_new) {
+			m_cfg_mgr->SubstiuteDefinedParams(std::vector<DefinedParam*>(1, m_edited_param), std::vector<DefinedParam*>(1, np));
+		} else {
+			m_cfg_mgr->GetDefinedDrawsSets()->AddDefinedParam(m_edited_param);
+			m_database_manager->AddParams(std::vector<DefinedParam*>(1, np));
+		}
+	}
+
 }
 
 void ParamEdit::OnOK(wxCommandEvent &e) {
@@ -282,12 +314,12 @@ void ParamEdit::OnOK(wxCommandEvent &e) {
 	}
 
 	if (m_formula_input->GetModify() == false) {
-		if (m_creating_new == false)
-			ApplyModifications();
-		EndModal(wxID_OK);
+		CreateDefinedParam();
+		if (m_network_param == false)
+			EndModal(wxID_OK);
+	} else {
+		SendCompileFormulaQuery();
 	}
-
-	SendCompileFormulaQuery();
 }
 
 void ParamEdit::OnCancel(wxCommandEvent & event) {
@@ -305,7 +337,7 @@ void ParamEdit::TransferToWindow(DefinedParam *param) {
 	m_button_base_config->SetLabel(ds->GetID());
 	m_prec_spin->SetValue(param->GetPrec());
  	m_formula_input->SetText(param->GetFormula());
-	m_user_param_label->SetLabel(param->GetParamName().BeforeLast(L':'));
+	m_user_param_label->SetLabel(param->GetParamName().BeforeLast(L':') + L':');
 	m_param_name_input->SetValue(param->GetParamName().AfterLast(L':'));
 	m_unit_input->SetValue(param->GetUnit());
 	m_formula_type_choice->SetSelection(param->GetFormulaType() == TParam::LUA_VA ? 0 : 1);
@@ -340,6 +372,8 @@ int ParamEdit::Edit(DefinedParam * param)
 	m_creating_new = false;
 
 	m_button_base_config->Disable();
+
+	m_network_param = param->IsNetworkParam();
 
 	int ret = ShowModal();
 
@@ -444,20 +478,8 @@ time_t ParamEdit::GetStartTime() {
 	}
 }
 
-void ParamEdit::ApplyModifications() {
-	assert(m_edited_param);
-
-	DefinedParam *np = new DefinedParam(GetBasePrefix(),
-				m_user_param_label->GetLabel() + _T(":") + GetParamName(),
-				GetUnit(),
-				GetFormula(),
-				GetPrec(),
-				GetFormulaType(),
-				GetStartTime());
-	np->CreateParam();
-	m_cfg_mgr->SubstiuteDefinedParams(std::vector<DefinedParam*>(1, m_edited_param), std::vector<DefinedParam*>(1, np));
-
-	m_edited_param = np;
+wxString ParamEdit::GetParamNameFirstAndSecondPart() {
+	return m_user_param_label->GetLabel();
 }
 
 void ParamEdit::FormulaCompiledForParam(DatabaseQuery *q) {
@@ -473,12 +495,13 @@ void ParamEdit::FormulaCompiledForParam(DatabaseQuery *q) {
 	free(cf.formula);
 	free(cf.error);
 
-	if (ok) {
-		if (m_creating_new == false)
-			ApplyModifications();
-		EndModal(wxID_OK);
-	}
 	delete q;
+
+	if (ok) {
+		CreateDefinedParam();
+		if (!m_network_param)
+			EndModal(wxID_OK);
+	}
 }
 
 void ParamEdit::FormulaCompiledForExpression(DatabaseQuery *q) {
@@ -586,7 +609,7 @@ wxString ParamEdit::GetBasePrefix() {
 	return m_base_prefix;
 }
 
-int ParamEdit::StartNewParameter() {
+int ParamEdit::StartNewParameter(bool network_param) {
 
 	m_formula_input->AppendText(_T("v = "));
 
@@ -596,9 +619,16 @@ int ParamEdit::StartNewParameter() {
 
 	m_creating_new = true;
 
+	m_network_param = network_param;
+
 	m_edited_param = NULL;
 
-	m_user_param_label->SetLabel(_("User:Param:"));
+	if (network_param) {
+		wxString user_name = m_remarks_handler->GetUsername();
+		m_user_param_label->SetLabel(wxString::Format(_("User:%s:"), user_name.c_str()));
+	} else {
+		m_user_param_label->SetLabel(_("User:Param:"));
+	}
 
 	return ShowModal();
 
@@ -619,7 +649,7 @@ void ParamEdit::OnFormulaInsertParam(wxCommandEvent &event) {
 	wxString ct = drawsets->GetID();
 
 	if (m_inc_search == NULL)
-		m_inc_search = new IncSearch(m_cfg_mgr, ct, this, -1, _("Find"), false, false);
+		m_inc_search = new IncSearch(m_cfg_mgr, m_remarks_handler, ct, this, -1, _("Find"), false, false);
 	else
 		m_inc_search->SetConfigName(ct);
 	
@@ -640,7 +670,7 @@ void ParamEdit::OnFormulaInsertParam(wxCommandEvent &event) {
 void ParamEdit::OnFormulaInsertUserParam(wxCommandEvent &event) {
 
 	if (m_params_list == NULL)
-		m_params_list = new ParamsListDialog(this, m_cfg_mgr->GetDefinedDrawsSets(), m_database_manager, true);
+		m_params_list = new ParamsListDialog(this, m_cfg_mgr->GetDefinedDrawsSets(), m_database_manager, m_remarks_handler, true);
 
 	m_params_list->SetCurrentPrefix(m_base_prefix);
 	if (m_params_list->ShowModal() != wxID_OK) {
@@ -651,10 +681,7 @@ void ParamEdit::OnFormulaInsertUserParam(wxCommandEvent &event) {
 	
 	wxString pname = p->GetParamName();
 
-// 	wxTextAttr ds = m_formula_input->GetDefaultStyle();
-// 	m_formula_input->SetDefaultStyle(wxTextAttr(*wxRED));
 	m_formula_input->AddText(wxString::Format(_T("p(\"%s:%s\", t, pt) "), p->GetBasePrefix().c_str(), pname.c_str()));
-// 	m_formula_input->SetDefaultStyle(ds);
 
 }
 
@@ -745,6 +772,19 @@ void ParamEdit::OnBackwardButton(wxCommandEvent& event) {
 
 void ParamEdit::OnCloseButton(wxCommandEvent& event) {
 	Show(false);
+}
+
+void ParamEdit::ParamInsertUpdateError(wxString error) {
+	wxMessageBox(_("Error while editing network set: ") + error, _("Editing network set error"),
+		wxOK | wxICON_ERROR, this);
+}
+
+void ParamEdit::ParamInsertUpdateFinished(bool ok) {
+	if (ok)
+		EndModal(wxID_OK);
+	else
+		wxMessageBox(_("You don't have sufficient privileges too insert this set."), _("Insufficient privileges"),
+			wxOK | wxICON_ERROR, this);
 }
 
 BEGIN_EVENT_TABLE(ParamEdit, wxDialog)

@@ -40,12 +40,18 @@
 
 #include "ids.h"
 #include "classes.h"
+#include "drawobs.h"
+#include "seteditctrl.h"
+#include "parameditctrl.h"
+#include "seteditctrl.h"
+#include "sprecivedevnt.h"
 #include "cfgmgr.h"
 #include "coobs.h"
 #include "cfgnames.h"
 #include "defcfg.h"
 #include "drawpick.h"
 #include "incsearch.h"
+#include "remarks.h"
 
 class IncKeyboardHandler: public wxEvtHandler
 {
@@ -93,7 +99,7 @@ wxString IncSearch::ListCtrl::OnGetItemText(long item, long column) const
 	return (*m_cur_items)[item]->GetName();
 }
 
-IncSearch::IncSearch(ConfigManager * _cfg, const wxString & _confname,
+IncSearch::IncSearch(ConfigManager * _cfg, RemarksHandler* remarks_handler, const wxString & _confname,
 		     wxWindow * parent, wxWindowID id, const wxString & title,
 		     bool window_search, bool show_defined, bool conf_pick, DatabaseManager *_db_mgr)
 :  wxDialog(parent, id, title, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
@@ -187,6 +193,8 @@ IncSearch::IncSearch(ConfigManager * _cfg, const wxString & _confname,
 	reset_button->PushEventHandler(new IncKeyboardHandler(this, true));
 	ok_button->PushEventHandler(new IncKeyboardHandler(this, true));
 	close_button->PushEventHandler(new IncKeyboardHandler(this, true));
+
+	m_remarks_handler = remarks_handler;
 
 	cfg->RegisterConfigObserver(this);
 
@@ -347,10 +355,6 @@ void IncSearch::OnReset(wxCommandEvent & evt)
 	OnSearch(evt);
 
 	UpdateItemList();
-}
-
-void IncSearch::AddExtraDrawInfos(std::map<wxString, std::pair<wxString, std::vector<DrawInfo*> > > extra) {
-
 }
 
 void IncSearch::AddWindowItems(SortedSetsArray *sorted) {
@@ -719,7 +723,7 @@ void IncSearch::OnEditMenu(wxCommandEvent &e) {
 		return;
 
 	if (m_window_search) {
-		DrawPicker *dp = new DrawPicker(this, cfg, db_mgr);
+		DrawPicker *dp = new DrawPicker(this, cfg, db_mgr, m_remarks_handler);
 		dp->EditSet(ds, confid);
 		dp->Destroy();
 	} else {
@@ -727,7 +731,7 @@ void IncSearch::OnEditMenu(wxCommandEvent &e) {
 		if (di == NULL)
 			return;
 
-		DrawPicker *dp = new DrawPicker(this, cfg, db_mgr);
+		DrawPicker *dp = new DrawPicker(this, cfg, db_mgr, m_remarks_handler);
 		dp->EditDraw(di, confid);
 		dp->Destroy();
 	}
@@ -749,7 +753,11 @@ void IncSearch::OnRemoveMenu(wxCommandEvent &e) {
 		if (answer != wxYES)
 			return;
 
-		dds->RemoveSet(i->draw_set->GetName());
+		if (ds->IsNetworkSet())
+			m_remarks_handler->GetConnection()->InsertOrUpdateSet(ds, this, true);
+		else
+			dds->RemoveSet(i->draw_set->GetName());
+		
 	} else {
 		int answer = wxMessageBox(_("Do you really want to remove this graph?"),
 			     _("Graph removal"), wxYES_NO | wxICON_QUESTION, this);
@@ -759,7 +767,23 @@ void IncSearch::OnRemoveMenu(wxCommandEvent &e) {
 		DefinedDrawInfo *di = dynamic_cast<DefinedDrawInfo*>(i->draw_info);
 		if (di == NULL)
 			return;
-		dds->RemoveDrawFromSet(di);
+		if (ds->IsNetworkSet()) {
+			size_t idx;
+			for (idx = 0; idx < ds->GetDraws()->size(); idx++)
+				if (ds->GetDraws()->at(idx) == di)
+					break;
+
+			if (idx == ds->GetDraws()->size())
+				return;
+
+			DefinedDrawSet* s = ds->MakeDeepCopy();
+			s->Remove(idx);
+			m_remarks_handler->GetConnection()->InsertOrUpdateSet(s, this, true);
+
+			delete s;
+		} else {
+			dds->RemoveDrawFromSet(di);
+		}
 	}
 
 
@@ -768,6 +792,29 @@ void IncSearch::OnRemoveMenu(wxCommandEvent &e) {
 void IncSearch::OnHelpButton(wxCommandEvent &event) {
 	wxHelpProvider::Get()->ShowHelp(this);
 }
+
+void IncSearch::SetInsertUpdateError(wxString error) {
+	wxMessageBox(_("Error in communicatoin with server: ") + error, _("Failed to update paramaters"),
+		wxOK | wxICON_ERROR, this);
+}
+
+void IncSearch::SetInsertUpdateFinished(bool ok) {
+	if (ok)
+		m_remarks_handler->GetConnection()->FetchNewParamsAndSets(this);
+	else
+		wxMessageBox(_("You are not allowed to remove this set"), _("Failed to remove paramater"),
+			wxOK | wxICON_ERROR, this);
+}
+
+void IncSearch::SetsParamsReceiveError(wxString error) {
+	wxMessageBox(_("Error in communicatoin with server: ") + error, _("Failed to update paramaters"),
+		wxOK | wxICON_ERROR, this);
+}
+
+void IncSearch::SetsParamsReceived(bool) {
+
+}
+
 
 IncSearch::~IncSearch()
 {

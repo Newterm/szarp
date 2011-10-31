@@ -368,7 +368,7 @@ bool DrawApp::OnInit() {
 
 	splash->PushStatusText(_("Initizalizing remarks..."));
 	
-	m_remarks_handler = new RemarksHandler();
+	m_remarks_handler = new RemarksHandler(m_cfg_mgr);
 	m_remarks_handler->Start();
 	
 	splash->PushStatusText(_("Creating Frame Manager..."));

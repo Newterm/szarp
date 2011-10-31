@@ -34,6 +34,8 @@
 #endif
 #include <wx/dynarray.h>
 
+#include <xmlrpc-epi/xmlrpc.h>
+
 #include <vector>
 #include <set>
 
@@ -52,19 +54,24 @@ class DefinedParam : public DrawParam {
 
 	TParam::FormulaType m_type;
 
+	bool m_network_param;
+
+	time_t m_modification_time;
 public:
-	DefinedParam() : m_start_time(-1) {
+	DefinedParam(bool network_param = false) : m_start_time(-1), m_network_param(network_param) {
 	}
 	;
 
 	DefinedParam(wxString base_prefix, wxString name, wxString unit, wxString formula, int prec,
-			TParam::FormulaType type, time_t start_time);
+			TParam::FormulaType type, time_t start_time, bool network_param = false);
 
 	void SetParamName(wxString pn);
 
 	void ParseXML(xmlNodePtr node);
 
-	void GenerateXML(xmlNodePtr parent);
+	void ParseXMLRPCValue(XMLRPC_VALUE p);
+
+	xmlNodePtr GenerateXML(xmlDocPtr doc);
 
 	void SetPrec(int prec);
 
@@ -91,6 +98,10 @@ public:
 	time_t GetStartTime();
 
 	void CreateParam();
+
+	bool IsNetworkParam() const;
+
+	time_t GetModificationTime() const;
 
 };
 
@@ -124,15 +135,15 @@ public:
 
 	void SaveSets(wxString path);
 
-	void AddSet(DefinedDrawSet *set);
+	bool AddSet(DefinedDrawSet *set);
 
-	void SubstituteSet(wxString name, DefinedDrawSet *set);
+	bool SubstituteSet(wxString name, DefinedDrawSet *set);
 
 	static const wxChar* const DEF_PREFIX;
 
 	static const wxChar* const DEF_NAME;
 
-	void RemoveSet(wxString name);
+	bool RemoveSet(wxString name);
 
 	void LoadDraw2File();
 
@@ -152,9 +163,11 @@ public:
 
 	void AddDefinedParam(DefinedParam *dp);
 
-	void RemoveParam(DefinedParam *dp);
+	bool RemoveParam(DefinedParam *dp);
 
 	void RemoveDrawFromSet(DefinedDrawInfo *di);
+
+	const std::set<wxString>& GetNetworkParamAndSetsPrefixes() const;
 protected:
 	void AddDrawsToConfig(wxString prefix, std::set<wxString> *configs_to_load);
 
@@ -173,6 +186,7 @@ protected:
 	/** Defined draws info*/
 	bool m_params_attached;
 
+	std::set<wxString> m_network_param_and_set_prefixes;
 };
 
 /**
@@ -238,6 +252,8 @@ private:
 	wxString m_base_draw;
 
 	wxString m_title;
+
+	bool m_valid;
 
 	void ParseDrawElement(xmlNodePtr d);
 
@@ -327,7 +343,13 @@ public:
 
 	void ParseXML(xmlNodePtr node);
 
-	void GenerateXML(xmlNodePtr parent);
+	void ParseXMLRPCValue(XMLRPC_VALUE v);
+
+	xmlNodePtr GenerateXML(xmlDocPtr parent);
+
+	bool GetValid() const;
+
+	void SetValid(bool);
 
 };
 
@@ -348,7 +370,7 @@ public:
 	 * @param config ConfigManager */
 	DefinedDrawSet(DefinedDrawsSets *cfg, wxString title);
 
-	DefinedDrawSet(DefinedDrawsSets* cfg);
+	DefinedDrawSet(DefinedDrawsSets* cfg, bool network);
 
 	DefinedDrawSet(DefinedDrawsSets *cfg, wxString title, std::vector<DefinedDrawInfo::EkrnDefDraw>& v);
 
@@ -361,6 +383,8 @@ public:
 	 * @param row draw id - index in list
 	 */
 	void Remove(int idx);
+
+	void Remove(DefinedDrawInfo *di);
 	/** Returns given draw
 	 * @param row draw id - index in list
 	 * @return draw
@@ -382,8 +406,8 @@ public:
 
 	/** Removes all elemets */
 	void Clear();
-	/** Adds data to XML tree */
-	void GenerateXML(xmlNodePtr root);
+
+	xmlNodePtr GenerateXML(xmlDocPtr doc);
 
 	/**
 	 * Parses XML tree to get DrawInfo data*/
@@ -407,7 +431,9 @@ public:
 
 	DefinedParam* LookupDefinedParam(wxString prefix, wxString param_name, const std::vector<DefinedParam*>& defined_params);
 
-	bool SyncWithPrefix(wxString prefix);
+	void SyncWithPrefix(wxString prefix);
+
+	void SyncWithPrefix(wxString prefix, const std::vector<DefinedParam*>& defined_params);
 
 	void SyncWithAllPrefixes();
 
@@ -430,6 +456,12 @@ public:
 	}
 
 	std::vector<DefinedDrawSet*>* GetCopies();
+
+	bool IsNetworkSet() const;
+
+	time_t GetModificationTime() const;
+
+	void SetModificationTime(time_t modification_time);
 protected:
 	/**Object this sets belongs to*/
 	DefinedDrawsSets *m_ds;
@@ -446,6 +478,10 @@ protected:
 	bool m_copy;
 
 	std::vector<DefinedDrawSet*> *m_copies;
+
+	bool m_network_set;
+
+	time_t m_modification_time;
 
 };
 

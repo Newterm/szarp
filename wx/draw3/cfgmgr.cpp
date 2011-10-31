@@ -292,6 +292,10 @@ DrawInfo::GetSumDivisor() {
 	return p->GetSumDivisor();
 }
 
+bool DrawInfo::IsValid() const {
+	return true;
+}
+
 wxString
 DrawInfo::GetValueStr(const double &val, const wxString& no_data_str) {
 	assert (p != NULL);
@@ -557,6 +561,7 @@ ConfigManager::GetDraw(const wxString prefix, const wxString set, int index)
 	return config_hash[prefix]->GetDrawsSets()[set]->GetDraw(index);
 }
 
+#if 0
 wxString
 ConfigManager::GetDrawName(const wxString prefix, const wxString set, int index)
 {
@@ -574,6 +579,7 @@ ConfigManager::GetDrawColor(const wxString prefix, const wxString set, int index
 {
 	return config_hash[prefix]->GetDrawsSets()[set]->GetDrawColor(index);
 }
+#endif
 
 wxString
 IPKConfig::GetID()
@@ -634,6 +640,12 @@ IPKConfig::IPKConfig(TSzarpConfig *c, ConfigManager *mgr) : DrawsSets(mgr), defi
 	m_tree_root.Sort();
 }
 
+void IPKConfig::AttachDefinedSet(DefinedDrawSet* set) {
+	DrawSet* ds = set->MakeShallowCopy(this);
+	drawSets[set->GetName()] = ds;
+	m_tree_root.AddUserSet(ds);
+}
+
 void IPKConfig::AttachDefined() {
 	if (defined_attached)
 		return;
@@ -641,17 +653,16 @@ void IPKConfig::AttachDefined() {
 	DefinedDrawsSets *d = m_cfgmgr->GetDefinedDrawsSets();
 
 	for (DrawSetsHash::iterator i = d->GetRawDrawsSets().begin();
-	        i != d->GetRawDrawsSets().end();
-	        i++) {
+		        i != d->GetRawDrawsSets().end();
+		        i++) {
 		DefinedDrawSet *df = dynamic_cast<DefinedDrawSet*>(i->second);
 		SetsNrHash& pc = df->GetPrefixes();
 
 		if (pc.find(GetPrefix()) == pc.end())
 			continue;
 
-		DrawSet* ds = df->MakeShallowCopy(this);
-		drawSets[df->GetName()] = ds;
-		m_tree_root.AddUserSet(ds);
+		AttachDefinedSet(df);
+
 	}
 	defined_attached = true;
 }
@@ -908,15 +919,17 @@ ConfigManager::AddConfig(TSzarpConfig *ipk)
 }
 
 DrawsSets*
-ConfigManager::GetConfigByPrefix(const wxString& prefix)
+ConfigManager::GetConfigByPrefix(const wxString& prefix, bool load)
 {
 	DrawsSetsHash::iterator i = config_hash.find(prefix);
-	if (i == config_hash.end()) {
-		DrawsSets *s = LoadConfig(prefix);
-		return s;
-	}
-
-	return i->second;
+	if (i == config_hash.end())
+		if (load)
+			return LoadConfig(prefix);
+		else
+			return NULL;
+	else
+		return i->second;
+	
 }
 
 DrawsSets*
@@ -1006,50 +1019,50 @@ void ConfigManager::NotifySetRemoved(wxString prefix, wxString name) {
 
 void ConfigManager::NotifyStartConfigurationReload(wxString prefix) {
 	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
-		i != m_observers.end();
-		i++)
+			i != m_observers.end();
+			i++)
 		(*i)->ConfigurationIsAboutToReload(prefix);
 }
 
 void ConfigManager::NotifyEndConfigurationReload(wxString prefix) {
 	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
-		i != m_observers.end();
-		i++)
+			i != m_observers.end();
+			i++)
 		(*i)->ConfigurationWasReloaded(prefix);
 }
 
 void ConfigManager::NotifySetRenamed(wxString prefix, wxString from, wxString to, DrawSet *set) {
 	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
-		i != m_observers.end();
-		i++)
+			i != m_observers.end();
+			i++)
 		(*i)->SetRenamed(prefix, from, to, set);
 }
 
 void ConfigManager::NotifySetModified(wxString prefix, wxString name, DrawSet *set) {
 	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
-		i != m_observers.end();
-		i++)
+			i != m_observers.end();
+			i++)
 		(*i)->SetModified(prefix, name, set);
 }
 
 void ConfigManager::NotifyParamSubsitute(DefinedParam *d, DefinedParam *n) {
 	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
-		i != m_observers.end();
-		i++)
+			i != m_observers.end();
+			i++)
 		(*i)->ParamSubstituted(d, n);
 }
 
 void ConfigManager::NotifyParamDestroy(DefinedParam *d) {
 	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
-		i != m_observers.end();
-		i++)
+			i != m_observers.end();
+			i++)
 		(*i)->ParamDestroyed(d);
 }
 
 void ConfigManager::NotifySetAdded(wxString prefix, wxString name, DrawSet *set) {
 	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
-		i != m_observers.end();
-		i++)
+			i != m_observers.end();
+			i++)
 		(*i)->SetAdded(prefix, name, set);
 }
 
@@ -1140,17 +1153,74 @@ bool ConfigManager::SaveDefinedDrawsSets() {
 
 }
 
-void ConfigManager::SubstituteOrAddDefinedParams(std::vector<DefinedParam*>& dp) {
+bool ConfigManager::RemoveDefinedParam(DefinedParam *p) {
+	DrawSetsHash& dsh = m_defined_sets->GetRawDrawsSets();
+	std::vector<DefinedDrawInfo*> ddiv;
+
+	for (DrawSetsHash::iterator i = dsh.begin();
+			i != dsh.end();
+			i++) {
+		DefinedDrawSet* ds = dynamic_cast<DefinedDrawSet*>(i->second);
+		assert(ds);
+		DrawInfoArray* dia = ds->GetDraws();
+		for (size_t j = 0; j < dia->size(); j++) {
+			DefinedDrawInfo *dp = dynamic_cast<DefinedDrawInfo*>((*dia)[j]);
+			assert(dp);
+
+			if (dp->GetParam() == p)
+				ddiv.push_back(dp);
+		}
+	}
+
+	m_db_mgr->RemoveParams(std::vector<DefinedParam*>(1, p));
+	bool deleted = m_defined_sets->RemoveParam(p);
+	m_defined_sets->GetParentManager()->NotifyParamDestroy(p);
+
+	delete p;
+
+	for (std::vector<DefinedDrawInfo*>::iterator i = ddiv.begin();
+			i != ddiv.end();
+			i++)
+		m_defined_sets->RemoveDrawFromSet(*i);
+
+	return deleted;
+}
+
+bool ConfigManager::RemoveDefinedParam(wxString prefix, wxString name) {
+	std::vector<DefinedParam*>& dps = m_defined_sets->GetDefinedParams();
+
+	std::vector<DefinedParam*>::iterator i;
+	for (i = dps.begin(); i != dps.end(); i++)
+		if ((*i)->GetBasePrefix() == prefix && (*i)->GetParamName() == name) {
+			break;
+	}
+
+	if (i != dps.end())
+		return RemoveDefinedParam(*i);
+	else
+		return false;
+}
+
+void ConfigManager::RemoveDefinedParams(std::vector<DefinedParam*>& dp) {
+	for (std::vector<DefinedParam*>::iterator i = dp.begin();
+			i != dp.end();
+			i++)
+		RemoveDefinedParam((*i)->GetBasePrefix(), (*i)->GetParamName());
+}
+
+bool ConfigManager::SubstituteOrAddDefinedParams(const std::vector<DefinedParam*>& dp) {
 	std::vector<DefinedParam*> to_rem, to_add, new_pars;
 	std::vector<DefinedParam*>& dps = m_defined_sets->GetDefinedParams();
-	for (std::vector<DefinedParam*>::iterator i = dp.begin();
-		i != dp.end();
-		i++) {
+	for (std::vector<DefinedParam*>::const_iterator i = dp.begin();
+			i != dp.end();
+			i++) {
 		std::vector<DefinedParam*>::iterator j;
 		for (j = dps.begin(); j != dps.end(); j++)
 			if ((*j)->GetBasePrefix() == (*i)->GetBasePrefix() && (*j)->GetParamName() == (*i)->GetParamName()) {
-				to_rem.push_back(*j);
-				to_add.push_back(*i);
+				if (!((*i)->IsNetworkParam() && (*j)->IsNetworkParam() && (*i)->GetModificationTime() == (*j)->GetModificationTime())) {
+					to_rem.push_back(*j);
+					to_add.push_back(*i);
+				}
 				break;
 			}
 		if (j == dps.end())
@@ -1159,6 +1229,8 @@ void ConfigManager::SubstituteOrAddDefinedParams(std::vector<DefinedParam*>& dp)
 	dps.insert(dps.end(), new_pars.begin(), new_pars.end());
 	m_db_mgr->AddParams(new_pars);
 	SubstiuteDefinedParams(to_rem, to_add);
+
+	return to_add.size() > 0 || new_pars.size() > 0;
 }
 
 void ConfigManager::SubstiuteDefinedParams(const std::vector<DefinedParam*>& to_rem, const std::vector<DefinedParam*>& to_add) {
@@ -1184,8 +1256,8 @@ void ConfigManager::SubstiuteDefinedParams(const std::vector<DefinedParam*>& to_
 	m_db_mgr->AddParams(to_add);
 
 	for (std::map<wxString, bool>::iterator i = us.begin();
-		i != us.end();
-		++i) {
+			i != us.end();
+			++i) {
 		DefinedDrawSet *ds = dynamic_cast<DefinedDrawSet*>(dsh[i->first]);
 		std::vector<DefinedDrawSet*>* c = ds->GetCopies();
 		for (std::vector<DefinedDrawSet*>::iterator j = c->begin(); j != c->end(); j++)
@@ -1327,21 +1399,20 @@ void ExportImportSet::ImportSet() {
 		DefinedDrawSet* ds = draw_sets[i];
 		ErrorFrame::NotifyError(wxString::Format(_("Importing set: %s"), ds->GetName().c_str()));
 		SetsNrHash& prefixes = ds->GetPrefixes();
+
 		for (SetsNrHash::iterator i = prefixes.begin(); i != prefixes.end(); i++) {
 			DrawsSetsHash& config_hash = m_cfg_mgr->GetConfigurations();
 			if (config_hash.find(i->first) != config_hash.end())
 				continue;
+
 			ErrorFrame::NotifyError(wxString::Format(_("Need to load configuration for prefix: %s"), i->first.c_str()));
 			if (m_cfg_mgr->GetConfigByPrefix(i->first) == NULL) {
 				ErrorFrame::NotifyError(wxString::Format(_("Failed to load configuration: %s"), i->first.c_str()));
 				goto fail;
 			}
 		}
-		for (SetsNrHash::iterator i = prefixes.begin(); i != prefixes.end(); i++)
-			if (ds->SyncWithPrefix(i->first, removed, defined_params)) {
-				ErrorFrame::NotifyError(wxString::Format(_("Set %s cannot be imported, because it refers to unknonwn draws/parametrs"), ds->GetName().c_str()));
-				goto fail;
-			}
+
+		ds->SyncWithAllPrefixes();
 	}
 	for (size_t i = 0; i < draw_sets.size(); i++) {
 		if (FindSetName(draw_sets[i]) == false)
