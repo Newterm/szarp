@@ -44,9 +44,18 @@ void strset( std::string& out , const char* in )
 	out.replace(0,l,in);
 }
 
+enum UDPLogger::states UDPLogger::state = UNINIT;
+
 std::string UDPLogger::appname("szarp");
 std::string UDPLogger::address("localhost");
 std::string UDPLogger::port   ("7777");
+
+boost::asio::io_service* UDPLogger::io_service = NULL;
+udp::socket*             UDPLogger::s          = NULL;
+udp::resolver*           UDPLogger::resolver   = NULL;
+udp::resolver::query*    UDPLogger::query      = NULL;
+
+udp::resolver::iterator  UDPLogger::resolver_results;
 
 void UDPLogger::HandleEvent(wxEvtHandler *handler, wxEventFunction func, wxEvent& event)
 {
@@ -57,19 +66,38 @@ void UDPLogger::HandleEvent(wxEvtHandler *handler, wxEventFunction func, wxEvent
 
 void UDPLogger::LogEvent( const char * msg )
 {
-	boost::asio::io_service  io_service;
-	udp::socket   s( io_service, udp::endpoint(udp::v4(), 0) );
-	udp::resolver resolver( io_service );
-	udp::resolver::query query( udp::v4() , UDPLogger::address , UDPLogger::port );
+	if( state == BROKEN || (state == UNINIT && ResolveAdress()) ) return;
 
 	char buf[4096];
 	int len = snprintf(buf,4096,"%s:%s",appname.c_str(),msg);
 
 	try {
-		udp::resolver::iterator iterator = resolver.resolve(query);
-		s.send_to(boost::asio::buffer(buf, len), *iterator);
+		s->send_to(boost::asio::buffer(buf, len), *resolver_results);
 	} catch( std::exception& e ) {
-		wxLogWarning(_T("UDPLogger::send_param exception: %s"),wxString(e.what(),wxConvUTF8).wc_str());
+		wxLogWarning(_T("UDPLogger::LogEvent exception: %s"),wxString(e.what(),wxConvUTF8).wc_str());
 	}
+}
+
+int UDPLogger::ResolveAdress()
+{
+	if( io_service ) delete io_service;
+	if( s ) delete s;
+	if( resolver ) delete resolver;
+	if( query ) delete query;
+	
+	io_service = new boost::asio::io_service();
+	s = new udp::socket( *io_service, udp::endpoint(udp::v4(), 0) );
+	resolver = new udp::resolver( *io_service );
+	query = new udp::resolver::query( udp::v4() , UDPLogger::address , UDPLogger::port );
+
+	try {
+		resolver_results = resolver->resolve(*query);
+	} catch( std::exception& e ) {
+		wxLogWarning(_T("UDPLogger::ResolveAdress exception: %s"),wxString(e.what(),wxConvUTF8).wc_str());
+		state = BROKEN;
+		return -1;
+	}
+	state = WORKING;
+	return 0;
 }
 

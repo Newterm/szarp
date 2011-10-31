@@ -53,9 +53,13 @@
 
 #include <string>
 
+#include <boost/asio.hpp>
+
 #include <wx/event.h>
 
 #include "liblog.h"
+
+using boost::asio::ip::udp;
 
 /** 
  * @brief sets const char* string in std::string
@@ -113,10 +117,25 @@ public:
 	 * @param msg name of parameter
 	 */
 	static void LogEvent( const char * msg );
+	static int ResolveAdress();
 private:
+	enum states {
+		UNINIT ,
+		WORKING ,
+		BROKEN ,
+	};
+
+	static enum states state;
+
 	static std::string appname;
 	static std::string address;
 	static std::string port;
+
+	static boost::asio::io_service* io_service;
+	static udp::socket* s;
+	static udp::resolver* resolver;
+	static udp::resolver::query* query;
+	static udp::resolver::iterator resolver_results;
 };
 
 // Events macros copied from wx/event.h (wx-2.8)
