@@ -1,3 +1,5 @@
+2011-11-05	Darek Marcinkiewicz <reksio@newterm.pl>
+	* utils/remarks_server: minor adjustements
 2011-11-31	Darek Marcinkiewicz <reksio@newterm.pl>
 	* utils/remarks_server && wx/draw3: support for
 	network params and sets

@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- encoding: utf-8 -*-
 
 #  SZARP: SCADA software 
 
@@ -33,7 +34,7 @@ import random
 import time
 import calendar
 
-__CONFIG_FILE__ = "remark_server_config.ini"
+__CONFIG_FILE__ = "/etc/szarp/remark_server_config.ini"
 
 NOBODY_UID = 65534
 NOGROUP_GID = 65534
@@ -520,12 +521,15 @@ class Database:
 		db_args['database'] = config.get("database", "name")
 		db_args['user'] = config.get("database", "user")
 		db_args['password'] = config.get("database", "password")
+		db_args['cp_openfun'] = lambda conn : conn.set_client_encoding('utf-8')
 
 		if config.has_option("database", "host"):
 			db_args['host'] = config.get("database", "host")
 
 
 		self.dbpool = adbapi.ConnectionPool("psycopg2", **db_args)
+
+		del db_args['cp_openfun']
 
 		server_name = config.get("database", "server_name")
 		connection = psycopg2.connect(**db_args)
@@ -683,7 +687,7 @@ class TransDbAccess:
 				})
 
 	def insert_param(self, param, user_id, prefix_id):
-		self.trans.execute("""
+		self.trans.execute(u"""
 			INSERT INTO
 				param
 					(pname, prefix_id, type, unit, formula, start_date, prec, mod_time, user_id)
@@ -726,12 +730,13 @@ class TransDbAccess:
 		draw["set_id"] = set_id
 		draw["draw_order"] = draw_order
 
-		self.trans.execute("""
+		query = u"""
 			INSERT INTO
 				draw (set_id, name, draw, title, sname, prefix_id, hoursum, color, draw_min, draw_max, scale, min_scale, max_scale, draw_order)
 			VALUES
-				(%(set_id)s, %(name)s, %(draw)s, %(title)s, %(sname)s, %(prefix_id)s, %(hoursum)s, %(color)s, %(min)s, %(max)s, %(scale)s, %(min_scale)s, %(max_scale)s, %(draw_order)s)""",
-			draw)
+				(%(set_id)s, %(name)s, %(draw)s, %(title)s, %(sname)s, %(prefix_id)s, %(hoursum)s, %(color)s, %(min)s, %(max)s, %(scale)s, %(min_scale)s, %(max_scale)s, %(draw_order)s)"""
+
+		self.trans.execute(query, draw)
 
 		del draw["set_id"]
 		del draw["draw_order"]
