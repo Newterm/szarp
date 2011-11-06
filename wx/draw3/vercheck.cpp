@@ -19,6 +19,8 @@
 
 #include <algorithm>
 
+#include <iostream>
+
 #include <wx/txtstrm.h>
 
 #include "version.h"
@@ -46,14 +48,32 @@ VersionChecker::VersionChecker(wxString draw3_path) :
 	_toolbars_list = new std::vector<DrawToolBar*>;
 }
 
+void VersionChecker::DumpStream( wxInputStream * s ) {
+	char c;
+	std::wcerr << "'''" << std::endl;
+	while( !s->Eof() ) {
+		s->Read(&c,1);
+		std::wcerr << c << std::flush;
+	}
+	std::wcerr << "'''" << std::endl;
+}
+
 void VersionChecker::OnTerminate(wxProcessEvent& e) {
 	assert(m_process);
 
-	if (m_process->IsInputAvailable()) {
+	// if version check returned correctly and print sth. 
+	// otherwise there is a bug!
+	if( e.GetExitCode() == 255 && m_process->IsInputAvailable()) {
 		wxTextInputStream is(*m_process->GetInputStream());
 		wxString version = is.ReadLine();
 		if (version != SC::A2S(SZARP_VERSION))
 			m_is_new_version = true;
+	} else {
+		wxLogError( _("This should never happen. Probably there is a bug in version checking.") );
+		std::wcerr << "Dump stdout:" << std::endl;
+		DumpStream( m_process->GetInputStream() );
+		std::wcerr << "Dump stderr:" << std::endl;
+		DumpStream( m_process->GetErrorStream() );
 	}
 
 	delete m_process;

@@ -220,10 +220,17 @@ void szAppImpl::InitializeLocale(wxArrayString &catalogs, wxLocale &locale) {
 		locale.AddCatalog(catalogs[i]);
 
 #ifdef __WXGTK__
-	if (!locale.IsOk())
+	if (!locale.IsOk()) {
+		wxLogInfo(_("Setting locale to \"C\""));
 		setenv("LC_ALL", "C", 1);
-	else
-		setenv("LC_ALL", SC::S2A(info->CanonicalName).c_str(), 1);
+	} else if( locale.GetSystemEncodingName() == _("") ) { // this probably doesn't happen on unix machines 
+		wxLogInfo(_("wx: Setting locale to \"") + locale.GetCanonicalName() + _("\""));
+		setenv("LC_ALL", SC::S2A(locale.GetCanonicalName()).c_str(), 1);
+	} else {
+		wxString localename = locale.GetCanonicalName() + _(".") + locale.GetSystemEncodingName();
+		wxLogInfo(_("wx: Setting locale to \"") + localename + _("\""));
+		setenv("LC_ALL", SC::S2A(localename).c_str(), 1);
+	}
 #endif
 
 }

@@ -27,6 +27,8 @@ class VersionChecker : public wxEvtHandler {
 	wxTimer* m_timer;
 	bool m_is_new_version;
 
+	void DumpStream( wxInputStream * s );
+
 	static std::vector<DrawToolBar*>* _toolbars_list;
 	static VersionChecker *_version_checker;
 public:
