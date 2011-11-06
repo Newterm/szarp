@@ -1,3 +1,7 @@
+2011-11-06	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: removed segfault on accessing network
+	sets/params without configured remarks server
+	connection
 2011-11-05	Darek Marcinkiewicz <reksio@newterm.pl>
 	* utils/remarks_server: minor adjustements
 2011-11-31	Darek Marcinkiewicz <reksio@newterm.pl>

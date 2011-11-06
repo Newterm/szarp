@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-31 18:34+0000\n"
-"PO-Revision-Date: 2011-10-31 21:05+0100\n"
+"POT-Creation-Date: 2011-11-06 08:46+0000\n"
+"PO-Revision-Date: 2011-11-06 08:47+0100\n"
 "Last-Translator: Darek Marcinkiewicz <reksio@newterm.pl>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -31,7 +31,7 @@ msgid "Failed to create directory %s. Defined draws cannot be saved"
 msgstr "Nie uda³o siê stworzyæ katalogu %s. Zestawy definiowane nie mog± zostaæ zapisane."
 
 #: cfgmgr.cpp:1142
-#: drawfrm.cpp:664
+#: drawfrm.cpp:663
 #: drawfrm.cpp.BACKUP.4767.cpp:663
 #: drawfrm.cpp.BASE.4767.cpp:652
 #: drawfrm.cpp.LOCAL.4767.cpp:655
@@ -56,8 +56,8 @@ msgstr "Nie uda³o siê stworzyæ katalogu %s. Zestawy definiowane nie mog± zostaæ 
 #: paramslist.cpp.REMOTE.5088.cpp:318
 #: paramslist.cpp.REMOTE.5088.cpp:335
 #: paredit.cpp:216
-#: remarks.cpp:1012
-#: remarks.cpp:1199
+#: remarks.cpp:1020
+#: remarks.cpp:1207
 #: seldraw.cpp:510
 msgid "Error"
 msgstr "B³±d"
@@ -530,7 +530,7 @@ msgstr "Czy na pewno chcesz usun±æ ten zestawy?"
 msgid "Set removal"
 msgstr "Usuniêcie zestawu"
 
-#: drawfrm.cpp:282
+#: drawfrm.cpp:281
 #: drawfrm.cpp.BACKUP.4767.cpp:281
 #: drawfrm.cpp.BASE.4767.cpp:270
 #: drawfrm.cpp.LOCAL.4767.cpp:273
@@ -538,7 +538,7 @@ msgstr "Usuniêcie zestawu"
 msgid "SZARP Draw"
 msgstr "Program przegl±daj±cy"
 
-#: drawfrm.cpp:296
+#: drawfrm.cpp:295
 #: drawfrm.cpp.BACKUP.4767.cpp:295
 #: drawfrm.cpp.BASE.4767.cpp:284
 #: drawfrm.cpp.LOCAL.4767.cpp:287
@@ -546,7 +546,7 @@ msgstr "Program przegl±daj±cy"
 msgid "No sets in configuration"
 msgstr "Brak zestawów w konfiguracji:"
 
-#: drawfrm.cpp:296
+#: drawfrm.cpp:295
 #: drawfrm.cpp.BACKUP.4767.cpp:295
 #: drawfrm.cpp.BASE.4767.cpp:284
 #: drawfrm.cpp.LOCAL.4767.cpp:287
@@ -554,7 +554,7 @@ msgstr "Brak zestawów w konfiguracji:"
 msgid "No sets"
 msgstr "Brak zestawów"
 
-#: drawfrm.cpp:487
+#: drawfrm.cpp:486
 #: drawfrm.cpp.BACKUP.4767.cpp:486
 #: drawfrm.cpp.BASE.4767.cpp:475
 #: drawfrm.cpp.LOCAL.4767.cpp:478
@@ -562,7 +562,7 @@ msgstr "Brak zestawów"
 msgid "Maximum number of printed vertical axes"
 msgstr "Maksymalna ilo¶æ drukowanych osi"
 
-#: drawfrm.cpp:488
+#: drawfrm.cpp:487
 #: drawfrm.cpp.BACKUP.4767.cpp:487
 #: drawfrm.cpp.BASE.4767.cpp:476
 #: drawfrm.cpp.LOCAL.4767.cpp:479
@@ -570,7 +570,7 @@ msgstr "Maksymalna ilo¶æ drukowanych osi"
 msgid "Number of axes:"
 msgstr "Ilo¶æ osi:"
 
-#: drawfrm.cpp:489
+#: drawfrm.cpp:488
 #: drawfrm.cpp.BACKUP.4767.cpp:488
 #: drawfrm.cpp.BASE.4767.cpp:477
 #: drawfrm.cpp.LOCAL.4767.cpp:480
@@ -578,7 +578,7 @@ msgstr "Ilo¶æ osi:"
 msgid "Printing"
 msgstr "Drukowanie"
 
-#: drawfrm.cpp:663
+#: drawfrm.cpp:662
 #: drawfrm.cpp.BACKUP.4767.cpp:662
 #: drawfrm.cpp.BASE.4767.cpp:651
 #: drawfrm.cpp.LOCAL.4767.cpp:654
@@ -587,7 +587,7 @@ msgstr "Drukowanie"
 msgid "Configuration '%s' cannot be reloaded, probably new version of this configuration contatins errors."
 msgstr "Konfiguracja '%s' nie mo¿e zostaæ prze³adowana. Przypuszczalnie nowa wersja konfiguracji zawiera b³êdy."
 
-#: drawfrm.cpp:810
+#: drawfrm.cpp:809
 #: drawfrm.cpp.BACKUP.4767.cpp:809
 #: drawfrm.cpp.BASE.4767.cpp:798
 #: drawfrm.cpp.LOCAL.4767.cpp:801
@@ -595,7 +595,7 @@ msgstr "Konfiguracja '%s' nie mo¿e zostaæ prze³adowana. Przypuszczalnie nowa wer
 msgid "English"
 msgstr "Angielski"
 
-#: drawfrm.cpp:811
+#: drawfrm.cpp:810
 #: drawfrm.cpp.BACKUP.4767.cpp:810
 #: drawfrm.cpp.BASE.4767.cpp:799
 #: drawfrm.cpp.LOCAL.4767.cpp:802
@@ -603,7 +603,7 @@ msgstr "Angielski"
 msgid "French"
 msgstr "Francuski"
 
-#: drawfrm.cpp:812
+#: drawfrm.cpp:811
 #: drawfrm.cpp.BACKUP.4767.cpp:811
 #: drawfrm.cpp.BASE.4767.cpp:800
 #: drawfrm.cpp.LOCAL.4767.cpp:803
@@ -611,7 +611,7 @@ msgstr "Francuski"
 msgid "German"
 msgstr "Niemiecki"
 
-#: drawfrm.cpp:813
+#: drawfrm.cpp:812
 #: drawfrm.cpp.BACKUP.4767.cpp:812
 #: drawfrm.cpp.BASE.4767.cpp:801
 #: drawfrm.cpp.LOCAL.4767.cpp:804
@@ -619,7 +619,7 @@ msgstr "Niemiecki"
 msgid "Hungarian"
 msgstr "Wêgierski"
 
-#: drawfrm.cpp:814
+#: drawfrm.cpp:813
 #: drawfrm.cpp.BACKUP.4767.cpp:813
 #: drawfrm.cpp.BASE.4767.cpp:802
 #: drawfrm.cpp.LOCAL.4767.cpp:805
@@ -627,7 +627,7 @@ msgstr "Wêgierski"
 msgid "Italian"
 msgstr "W³oski"
 
-#: drawfrm.cpp:815
+#: drawfrm.cpp:814
 #: drawfrm.cpp.BACKUP.4767.cpp:814
 #: drawfrm.cpp.BASE.4767.cpp:803
 #: drawfrm.cpp.LOCAL.4767.cpp:806
@@ -635,7 +635,7 @@ msgstr "W³oski"
 msgid "Polish"
 msgstr "Polski"
 
-#: drawfrm.cpp:816
+#: drawfrm.cpp:815
 #: drawfrm.cpp.BACKUP.4767.cpp:815
 #: drawfrm.cpp.BASE.4767.cpp:804
 #: drawfrm.cpp.LOCAL.4767.cpp:807
@@ -643,8 +643,8 @@ msgstr "Polski"
 msgid "Serbian"
 msgstr "Serbski"
 
-#: drawfrm.cpp:821
-#: drawfrm.cpp:827
+#: drawfrm.cpp:820
+#: drawfrm.cpp:826
 #: drawfrm.cpp.BACKUP.4767.cpp:820
 #: drawfrm.cpp.BACKUP.4767.cpp:826
 #: drawfrm.cpp.BASE.4767.cpp:809
@@ -656,7 +656,7 @@ msgstr "Serbski"
 msgid "automatic"
 msgstr "automatyczny"
 
-#: drawfrm.cpp:826
+#: drawfrm.cpp:825
 #: drawfrm.cpp.BACKUP.4767.cpp:825
 #: drawfrm.cpp.BASE.4767.cpp:814
 #: drawfrm.cpp.LOCAL.4767.cpp:817
@@ -664,7 +664,7 @@ msgstr "automatyczny"
 msgid "Current language is "
 msgstr "Obecny jêzyk to "
 
-#: drawfrm.cpp:829
+#: drawfrm.cpp:828
 #: drawfrm.cpp.BACKUP.4767.cpp:828
 #: drawfrm.cpp.BASE.4767.cpp:817
 #: drawfrm.cpp.LOCAL.4767.cpp:820
@@ -672,7 +672,7 @@ msgstr "Obecny jêzyk to "
 msgid "Choose language"
 msgstr "Wybierz jêzyk"
 
-#: drawfrm.cpp:855
+#: drawfrm.cpp:854
 #: drawfrm.cpp.BACKUP.4767.cpp:854
 #: drawfrm.cpp.BASE.4767.cpp:843
 #: drawfrm.cpp.LOCAL.4767.cpp:846
@@ -680,7 +680,7 @@ msgstr "Wybierz jêzyk"
 msgid "Current language has been changed. You have to restart draw3"
 msgstr "Aktualny jêzyk zosta³ zmieniony. Musisz zrestartowaæ program draw3"
 
-#: drawfrm.cpp:856
+#: drawfrm.cpp:855
 #: drawfrm.cpp.BACKUP.4767.cpp:855
 #: drawfrm.cpp.BASE.4767.cpp:844
 #: drawfrm.cpp.LOCAL.4767.cpp:847
@@ -688,7 +688,7 @@ msgstr "Aktualny jêzyk zosta³ zmieniony. Musisz zrestartowaæ program draw3"
 msgid "Language changed"
 msgstr "Jêzyk zmieniony"
 
-#: drawfrm.cpp:864
+#: drawfrm.cpp:863
 #: drawfrm.cpp.BACKUP.4767.cpp:863
 #: drawfrm.cpp.BASE.4767.cpp:852
 #: drawfrm.cpp.LOCAL.4767.cpp:855
@@ -696,7 +696,7 @@ msgstr "Jêzyk zmieniony"
 msgid "Classic"
 msgstr "Klasyczny"
 
-#: drawfrm.cpp:865
+#: drawfrm.cpp:864
 #: drawfrm.cpp.BACKUP.4767.cpp:864
 #: drawfrm.cpp.BASE.4767.cpp:853
 #: drawfrm.cpp.LOCAL.4767.cpp:856
@@ -704,7 +704,7 @@ msgstr "Klasyczny"
 msgid "'3D'"
 msgstr ""
 
-#: drawfrm.cpp:866
+#: drawfrm.cpp:865
 #: drawfrm.cpp.BACKUP.4767.cpp:865
 #: drawfrm.cpp.BASE.4767.cpp:854
 #: drawfrm.cpp.LOCAL.4767.cpp:857
@@ -712,7 +712,7 @@ msgstr ""
 msgid "Antialiased"
 msgstr "Wykresy antyaliasowane"
 
-#: drawfrm.cpp:877
+#: drawfrm.cpp:876
 #: drawfrm.cpp.BACKUP.4767.cpp:876
 #: drawfrm.cpp.BASE.4767.cpp:865
 #: drawfrm.cpp.LOCAL.4767.cpp:868
@@ -720,7 +720,7 @@ msgstr "Wykresy antyaliasowane"
 msgid "currently selected"
 msgstr "aktualnie wybrany"
 
-#: drawfrm.cpp:879
+#: drawfrm.cpp:878
 #: drawfrm.cpp.BACKUP.4767.cpp:878
 #: drawfrm.cpp.BASE.4767.cpp:867
 #: drawfrm.cpp.LOCAL.4767.cpp:870
@@ -728,9 +728,9 @@ msgstr "aktualnie wybrany"
 msgid "Choose graphs window style"
 msgstr "Wybierz styl okna z wykresami"
 
-#: drawfrm.cpp:885
-#: drawfrm.cpp:889
-#: drawfrm.cpp:893
+#: drawfrm.cpp:884
+#: drawfrm.cpp:888
+#: drawfrm.cpp:892
 #: drawfrm.cpp.BACKUP.4767.cpp:884
 #: drawfrm.cpp.BACKUP.4767.cpp:888
 #: drawfrm.cpp.BACKUP.4767.cpp:892
@@ -746,9 +746,9 @@ msgstr "Wybierz styl okna z wykresami"
 msgid "You need to restart application for this change to take effect."
 msgstr "Musisz ponownie uruchomiæ program draw3, by ta zmiana odnios³a skutek."
 
-#: drawfrm.cpp:885
-#: drawfrm.cpp:889
-#: drawfrm.cpp:893
+#: drawfrm.cpp:884
+#: drawfrm.cpp:888
+#: drawfrm.cpp:892
 #: drawfrm.cpp.BACKUP.4767.cpp:884
 #: drawfrm.cpp.BACKUP.4767.cpp:888
 #: drawfrm.cpp.BACKUP.4767.cpp:892
@@ -764,8 +764,8 @@ msgstr "Musisz ponownie uruchomiæ program draw3, by ta zmiana odnios³a skutek."
 msgid "Graphs view changed."
 msgstr "Widok okna wykresów zmieniony."
 
-#: drawfrm.cpp:904
-#: drawfrm.cpp:928
+#: drawfrm.cpp:903
+#: drawfrm.cpp:927
 #: drawfrm.cpp.BACKUP.4767.cpp:903
 #: drawfrm.cpp.BACKUP.4767.cpp:927
 #: drawfrm.cpp.BASE.4767.cpp:892
@@ -777,8 +777,8 @@ msgstr "Widok okna wykresów zmieniony."
 msgid "Remarks sending not configured, You should set username, password, and remarks server adddress"
 msgstr "Us³uga komentarzy nie zosta³a skonfigurowana. Musisz podaæ nazwê u¿ytkownika has³o i adres serwera by móc korzystaæ z komentarzy."
 
-#: drawfrm.cpp:904
-#: drawfrm.cpp:928
+#: drawfrm.cpp:903
+#: drawfrm.cpp:927
 #: drawfrm.cpp.BACKUP.4767.cpp:903
 #: drawfrm.cpp.BACKUP.4767.cpp:927
 #: drawfrm.cpp.BASE.4767.cpp:892
@@ -790,7 +790,7 @@ msgstr "Us³uga komentarzy nie zosta³a skonfigurowana. Musisz podaæ nazwê u¿ytkow
 msgid "Remarks not configured."
 msgstr "Komentarze nie s± skonfigurowane."
 
-#: drawfrm.cpp:980
+#: drawfrm.cpp:979
 #: drawfrm.cpp.BACKUP.4767.cpp:979
 #: drawfrm.cpp.BASE.4767.cpp:968
 #: drawfrm.cpp.LOCAL.4767.cpp:971
@@ -798,7 +798,7 @@ msgstr "Komentarze nie s± skonfigurowane."
 msgid "Enter password:"
 msgstr "Wprowad¼ has³o:"
 
-#: drawfrm.cpp:981
+#: drawfrm.cpp:980
 #: drawfrm.cpp.BACKUP.4767.cpp:980
 #: drawfrm.cpp.BASE.4767.cpp:969
 #: drawfrm.cpp.LOCAL.4767.cpp:972
@@ -806,7 +806,7 @@ msgstr "Wprowad¼ has³o:"
 msgid "New password"
 msgstr "Nowe has³o"
 
-#: drawfrm.cpp:1105
+#: drawfrm.cpp:1104
 #: incsearch.cpp:797
 #: incsearch.cpp:810
 #: paramslist.cpp:370
@@ -815,7 +815,7 @@ msgstr "Nowe has³o"
 msgid "Error in communicatoin with server: "
 msgstr "B³ad komunikacji z serwerem: %s"
 
-#: drawfrm.cpp:1105
+#: drawfrm.cpp:1104
 #: incsearch.cpp:797
 #: incsearch.cpp:810
 #: paramslist.cpp:370
@@ -824,19 +824,19 @@ msgstr "B³ad komunikacji z serwerem: %s"
 msgid "Failed to update paramaters"
 msgstr "Nie uda³o siê zmieniæ parametru"
 
-#: drawfrm.cpp:1111
+#: drawfrm.cpp:1110
 msgid "Network params and sets were updated"
 msgstr "Parametry i/lub zestawy sieciowe zosta³y zaktualizowane"
 
-#: drawfrm.cpp:1111
+#: drawfrm.cpp:1110
 msgid "Params and sets updated."
 msgstr "Parametry i zestawy zaktualizowane."
 
-#: drawfrm.cpp:1114
+#: drawfrm.cpp:1113
 msgid "There are no new network params or sets"
 msgstr "Nie ma nowych parametrów/zestawów sieciowych"
 
-#: drawfrm.cpp:1114
+#: drawfrm.cpp:1113
 msgid "No new params and sets."
 msgstr "Brak nowych parametrów/zestawów."
 
@@ -1527,64 +1527,68 @@ msgstr "Nowe komentarze"
 msgid "No new remarks"
 msgstr "Brak nowych komentarzy"
 
-#: remarks.cpp:835
+#: remarks.cpp:840
 #, c-format
 msgid "Failed to resolve address: %ls"
 msgstr "Nie znaleziono adresu: %ls"
 
-#: remarks.cpp:931
+#: remarks.cpp:883
+msgid "Connection with remarks and network sets and params server not configured"
+msgstr "Po³±czenie z serwerem komentarzy i zestawów/parametrów sieciowych nie skonfigurowane."
+
+#: remarks.cpp:939
 msgid "Server connection failure"
 msgstr "Nie uda³o siê po³±czyæ z serwerem"
 
-#: remarks.cpp:934
+#: remarks.cpp:942
 msgid "Server communication error"
 msgstr "B³±d komunikacji z serwerem"
 
-#: remarks.cpp:937
+#: remarks.cpp:945
 msgid "User is not allowed to send remarks for this base"
 msgstr "Nie masz uprawnieñ by wysy³aæ komentarze do tej konfiguracji"
 
-#: remarks.cpp:940
+#: remarks.cpp:948
 msgid "Invalid response from server"
 msgstr "Niepoprawna odpowied¼ od serwera"
 
-#: remarks.cpp:943
+#: remarks.cpp:951
 msgid "Incorrect username and password"
 msgstr "Niepoprawna nazwa u¿ytkownika i has³o"
 
-#: remarks.cpp:1012
-#: remarks.cpp:1015
+#: remarks.cpp:1020
+#: remarks.cpp:1023
 #, c-format
 msgid "Failed to fetch remarks: %s"
 msgstr "Nie uda³o siê pobraæ komentarzy: %s"
 
-#: remarks.cpp:1199
+#: remarks.cpp:1207
 #, c-format
 msgid "Failed to fetch params and sets: %s"
 msgstr "Nie uda³o siê pobraæ zestawów i parametrów sieciowych: %s"
 
-#: remarks.cpp:2090
+#: remarks.cpp:2098
 msgid "Remark sent successfully."
 msgstr "Komentarz zosta³ wys³any."
 
-#: remarks.cpp:2090
+#: remarks.cpp:2098
 msgid "Remark sent."
 msgstr "Komentarze wys³any."
 
-#: remarks.cpp:2094
+#: remarks.cpp:2102
 #, c-format
 msgid "There was an error sending remark:'%s'."
 msgstr "Wyst±pi³ b³±d podczas wysy³ania komentarza:'%s'."
 
-#: remarks.cpp:2094
+#: remarks.cpp:2102
 msgid "Error."
 msgstr "B³±d."
 
-#: remarks.cpp:2120
+#: remarks.cpp:2128
 msgid "Date"
 msgstr "Data"
 
-#: remarks.cpp:2121
+#: remarks.cpp:2129
 #: XRC_gettext_file.h:29
 msgid "Title"
 msgstr "Tytu³"

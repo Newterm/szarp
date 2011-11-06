@@ -279,6 +279,7 @@ public:
 	bool Busy();
 	void OnXMLRPCResponse(XMLRPCResponseEvent &event);
 	void OnDNSResponse(DNSResponseEvent &event);
+	void NotifyAllCommandsAboutError(const wxString &error);
 	void SetIPAddress(wxString &ip);
 	void SetUsernamePassword(wxString username, wxString password);
 	void SetRemarksAddDialog(RemarkViewDialog *dialog);

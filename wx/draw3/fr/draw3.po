@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-31 18:34+0000\n"
+"POT-Creation-Date: 2011-11-06 08:46+0000\n"
 "PO-Revision-Date: 2008-06-11 17:54+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -31,7 +31,7 @@ msgid "Failed to create directory %s. Defined draws cannot be saved"
 msgstr ""
 "Echec de la création du répertoire %s. Les draws n'ont pas été sauvegardés"
 
-#: cfgmgr.cpp:1142 drawfrm.cpp:664 drawfrm.cpp.BACKUP.4767.cpp:663
+#: cfgmgr.cpp:1142 drawfrm.cpp:663 drawfrm.cpp.BACKUP.4767.cpp:663
 #: drawfrm.cpp.BASE.4767.cpp:652 drawfrm.cpp.LOCAL.4767.cpp:655
 #: drawfrm.cpp.REMOTE.4767.cpp:660 drawpsc.cpp:424 drawpsc.cpp:437
 #: drawpsc.cpp:446 drawpsc.cpp:455 paramslist.cpp:269 paramslist.cpp:324
@@ -41,8 +41,8 @@ msgstr ""
 #: paramslist.cpp.BASE.5088.cpp:320 paramslist.cpp.LOCAL.5088.cpp:264
 #: paramslist.cpp.LOCAL.5088.cpp:304 paramslist.cpp.LOCAL.5088.cpp:321
 #: paramslist.cpp.REMOTE.5088.cpp:263 paramslist.cpp.REMOTE.5088.cpp:318
-#: paramslist.cpp.REMOTE.5088.cpp:335 paredit.cpp:216 remarks.cpp:1012
-#: remarks.cpp:1199 seldraw.cpp:510
+#: paramslist.cpp.REMOTE.5088.cpp:335 paredit.cpp:216 remarks.cpp:1020
+#: remarks.cpp:1207 seldraw.cpp:510
 msgid "Error"
 msgstr "Echec"
 
@@ -449,43 +449,43 @@ msgstr "Souhaitez-vous vraiment supprimer cette courbe?"
 msgid "Set removal"
 msgstr "Suppression du package"
 
-#: drawfrm.cpp:282 drawfrm.cpp.BACKUP.4767.cpp:281
+#: drawfrm.cpp:281 drawfrm.cpp.BACKUP.4767.cpp:281
 #: drawfrm.cpp.BASE.4767.cpp:270 drawfrm.cpp.LOCAL.4767.cpp:273
 #: drawfrm.cpp.REMOTE.4767.cpp:278
 msgid "SZARP Draw"
 msgstr "SZARP Draw"
 
-#: drawfrm.cpp:296 drawfrm.cpp.BACKUP.4767.cpp:295
+#: drawfrm.cpp:295 drawfrm.cpp.BACKUP.4767.cpp:295
 #: drawfrm.cpp.BASE.4767.cpp:284 drawfrm.cpp.LOCAL.4767.cpp:287
 #: drawfrm.cpp.REMOTE.4767.cpp:292
 msgid "No sets in configuration"
 msgstr "Pas de données dans la configuration"
 
-#: drawfrm.cpp:296 drawfrm.cpp.BACKUP.4767.cpp:295
+#: drawfrm.cpp:295 drawfrm.cpp.BACKUP.4767.cpp:295
 #: drawfrm.cpp.BASE.4767.cpp:284 drawfrm.cpp.LOCAL.4767.cpp:287
 #: drawfrm.cpp.REMOTE.4767.cpp:292
 msgid "No sets"
 msgstr "Manque de données"
 
-#: drawfrm.cpp:487 drawfrm.cpp.BACKUP.4767.cpp:486
+#: drawfrm.cpp:486 drawfrm.cpp.BACKUP.4767.cpp:486
 #: drawfrm.cpp.BASE.4767.cpp:475 drawfrm.cpp.LOCAL.4767.cpp:478
 #: drawfrm.cpp.REMOTE.4767.cpp:483
 msgid "Maximum number of printed vertical axes"
 msgstr "Quantité maximale des axes imprimés"
 
-#: drawfrm.cpp:488 drawfrm.cpp.BACKUP.4767.cpp:487
+#: drawfrm.cpp:487 drawfrm.cpp.BACKUP.4767.cpp:487
 #: drawfrm.cpp.BASE.4767.cpp:476 drawfrm.cpp.LOCAL.4767.cpp:479
 #: drawfrm.cpp.REMOTE.4767.cpp:484
 msgid "Number of axes:"
 msgstr "Nombre d'axes:"
 
-#: drawfrm.cpp:489 drawfrm.cpp.BACKUP.4767.cpp:488
+#: drawfrm.cpp:488 drawfrm.cpp.BACKUP.4767.cpp:488
 #: drawfrm.cpp.BASE.4767.cpp:477 drawfrm.cpp.LOCAL.4767.cpp:480
 #: drawfrm.cpp.REMOTE.4767.cpp:485
 msgid "Printing"
 msgstr "Impression"
 
-#: drawfrm.cpp:663 drawfrm.cpp.BACKUP.4767.cpp:662
+#: drawfrm.cpp:662 drawfrm.cpp.BACKUP.4767.cpp:662
 #: drawfrm.cpp.BASE.4767.cpp:651 drawfrm.cpp.LOCAL.4767.cpp:654
 #: drawfrm.cpp.REMOTE.4767.cpp:659
 #, c-format
@@ -494,49 +494,49 @@ msgid ""
 "configuration contatins errors."
 msgstr ""
 
-#: drawfrm.cpp:810 drawfrm.cpp.BACKUP.4767.cpp:809
+#: drawfrm.cpp:809 drawfrm.cpp.BACKUP.4767.cpp:809
 #: drawfrm.cpp.BASE.4767.cpp:798 drawfrm.cpp.LOCAL.4767.cpp:801
 #: drawfrm.cpp.REMOTE.4767.cpp:806
 msgid "English"
 msgstr "Anglais"
 
-#: drawfrm.cpp:811 drawfrm.cpp.BACKUP.4767.cpp:810
+#: drawfrm.cpp:810 drawfrm.cpp.BACKUP.4767.cpp:810
 #: drawfrm.cpp.BASE.4767.cpp:799 drawfrm.cpp.LOCAL.4767.cpp:802
 #: drawfrm.cpp.REMOTE.4767.cpp:807
 msgid "French"
 msgstr "Français"
 
-#: drawfrm.cpp:812 drawfrm.cpp.BACKUP.4767.cpp:811
+#: drawfrm.cpp:811 drawfrm.cpp.BACKUP.4767.cpp:811
 #: drawfrm.cpp.BASE.4767.cpp:800 drawfrm.cpp.LOCAL.4767.cpp:803
 #: drawfrm.cpp.REMOTE.4767.cpp:808
 msgid "German"
 msgstr ""
 
-#: drawfrm.cpp:813 drawfrm.cpp.BACKUP.4767.cpp:812
+#: drawfrm.cpp:812 drawfrm.cpp.BACKUP.4767.cpp:812
 #: drawfrm.cpp.BASE.4767.cpp:801 drawfrm.cpp.LOCAL.4767.cpp:804
 #: drawfrm.cpp.REMOTE.4767.cpp:809
 msgid "Hungarian"
 msgstr ""
 
-#: drawfrm.cpp:814 drawfrm.cpp.BACKUP.4767.cpp:813
+#: drawfrm.cpp:813 drawfrm.cpp.BACKUP.4767.cpp:813
 #: drawfrm.cpp.BASE.4767.cpp:802 drawfrm.cpp.LOCAL.4767.cpp:805
 #: drawfrm.cpp.REMOTE.4767.cpp:810
 msgid "Italian"
 msgstr ""
 
-#: drawfrm.cpp:815 drawfrm.cpp.BACKUP.4767.cpp:814
+#: drawfrm.cpp:814 drawfrm.cpp.BACKUP.4767.cpp:814
 #: drawfrm.cpp.BASE.4767.cpp:803 drawfrm.cpp.LOCAL.4767.cpp:806
 #: drawfrm.cpp.REMOTE.4767.cpp:811
 msgid "Polish"
 msgstr "Polonais"
 
-#: drawfrm.cpp:816 drawfrm.cpp.BACKUP.4767.cpp:815
+#: drawfrm.cpp:815 drawfrm.cpp.BACKUP.4767.cpp:815
 #: drawfrm.cpp.BASE.4767.cpp:804 drawfrm.cpp.LOCAL.4767.cpp:807
 #: drawfrm.cpp.REMOTE.4767.cpp:812
 msgid "Serbian"
 msgstr ""
 
-#: drawfrm.cpp:821 drawfrm.cpp:827 drawfrm.cpp.BACKUP.4767.cpp:820
+#: drawfrm.cpp:820 drawfrm.cpp:826 drawfrm.cpp.BACKUP.4767.cpp:820
 #: drawfrm.cpp.BACKUP.4767.cpp:826 drawfrm.cpp.BASE.4767.cpp:809
 #: drawfrm.cpp.BASE.4767.cpp:815 drawfrm.cpp.LOCAL.4767.cpp:812
 #: drawfrm.cpp.LOCAL.4767.cpp:818 drawfrm.cpp.REMOTE.4767.cpp:817
@@ -544,62 +544,62 @@ msgstr ""
 msgid "automatic"
 msgstr ""
 
-#: drawfrm.cpp:826 drawfrm.cpp.BACKUP.4767.cpp:825
+#: drawfrm.cpp:825 drawfrm.cpp.BACKUP.4767.cpp:825
 #: drawfrm.cpp.BASE.4767.cpp:814 drawfrm.cpp.LOCAL.4767.cpp:817
 #: drawfrm.cpp.REMOTE.4767.cpp:822
 msgid "Current language is "
 msgstr "La langue en cours est "
 
-#: drawfrm.cpp:829 drawfrm.cpp.BACKUP.4767.cpp:828
+#: drawfrm.cpp:828 drawfrm.cpp.BACKUP.4767.cpp:828
 #: drawfrm.cpp.BASE.4767.cpp:817 drawfrm.cpp.LOCAL.4767.cpp:820
 #: drawfrm.cpp.REMOTE.4767.cpp:825
 msgid "Choose language"
 msgstr "Choisir une langue"
 
-#: drawfrm.cpp:855 drawfrm.cpp.BACKUP.4767.cpp:854
+#: drawfrm.cpp:854 drawfrm.cpp.BACKUP.4767.cpp:854
 #: drawfrm.cpp.BASE.4767.cpp:843 drawfrm.cpp.LOCAL.4767.cpp:846
 #: drawfrm.cpp.REMOTE.4767.cpp:851
 msgid "Current language has been changed. You have to restart draw3"
 msgstr "Modification de la langue en cours. Redémarrer draw 3"
 
-#: drawfrm.cpp:856 drawfrm.cpp.BACKUP.4767.cpp:855
+#: drawfrm.cpp:855 drawfrm.cpp.BACKUP.4767.cpp:855
 #: drawfrm.cpp.BASE.4767.cpp:844 drawfrm.cpp.LOCAL.4767.cpp:847
 #: drawfrm.cpp.REMOTE.4767.cpp:852
 msgid "Language changed"
 msgstr "Langue modifiée"
 
-#: drawfrm.cpp:864 drawfrm.cpp.BACKUP.4767.cpp:863
+#: drawfrm.cpp:863 drawfrm.cpp.BACKUP.4767.cpp:863
 #: drawfrm.cpp.BASE.4767.cpp:852 drawfrm.cpp.LOCAL.4767.cpp:855
 #: drawfrm.cpp.REMOTE.4767.cpp:860
 msgid "Classic"
 msgstr ""
 
-#: drawfrm.cpp:865 drawfrm.cpp.BACKUP.4767.cpp:864
+#: drawfrm.cpp:864 drawfrm.cpp.BACKUP.4767.cpp:864
 #: drawfrm.cpp.BASE.4767.cpp:853 drawfrm.cpp.LOCAL.4767.cpp:856
 #: drawfrm.cpp.REMOTE.4767.cpp:861
 msgid "'3D'"
 msgstr ""
 
-#: drawfrm.cpp:866 drawfrm.cpp.BACKUP.4767.cpp:865
+#: drawfrm.cpp:865 drawfrm.cpp.BACKUP.4767.cpp:865
 #: drawfrm.cpp.BASE.4767.cpp:854 drawfrm.cpp.LOCAL.4767.cpp:857
 #: drawfrm.cpp.REMOTE.4767.cpp:862
 msgid "Antialiased"
 msgstr ""
 
-#: drawfrm.cpp:877 drawfrm.cpp.BACKUP.4767.cpp:876
+#: drawfrm.cpp:876 drawfrm.cpp.BACKUP.4767.cpp:876
 #: drawfrm.cpp.BASE.4767.cpp:865 drawfrm.cpp.LOCAL.4767.cpp:868
 #: drawfrm.cpp.REMOTE.4767.cpp:873
 msgid "currently selected"
 msgstr ""
 
-#: drawfrm.cpp:879 drawfrm.cpp.BACKUP.4767.cpp:878
+#: drawfrm.cpp:878 drawfrm.cpp.BACKUP.4767.cpp:878
 #: drawfrm.cpp.BASE.4767.cpp:867 drawfrm.cpp.LOCAL.4767.cpp:870
 #: drawfrm.cpp.REMOTE.4767.cpp:875
 #, fuzzy
 msgid "Choose graphs window style"
 msgstr "Choisir les paramètres des graphiques"
 
-#: drawfrm.cpp:885 drawfrm.cpp:889 drawfrm.cpp:893
+#: drawfrm.cpp:884 drawfrm.cpp:888 drawfrm.cpp:892
 #: drawfrm.cpp.BACKUP.4767.cpp:884 drawfrm.cpp.BACKUP.4767.cpp:888
 #: drawfrm.cpp.BACKUP.4767.cpp:892 drawfrm.cpp.BASE.4767.cpp:873
 #: drawfrm.cpp.BASE.4767.cpp:877 drawfrm.cpp.BASE.4767.cpp:881
@@ -609,7 +609,7 @@ msgstr "Choisir les paramètres des graphiques"
 msgid "You need to restart application for this change to take effect."
 msgstr ""
 
-#: drawfrm.cpp:885 drawfrm.cpp:889 drawfrm.cpp:893
+#: drawfrm.cpp:884 drawfrm.cpp:888 drawfrm.cpp:892
 #: drawfrm.cpp.BACKUP.4767.cpp:884 drawfrm.cpp.BACKUP.4767.cpp:888
 #: drawfrm.cpp.BACKUP.4767.cpp:892 drawfrm.cpp.BASE.4767.cpp:873
 #: drawfrm.cpp.BASE.4767.cpp:877 drawfrm.cpp.BASE.4767.cpp:881
@@ -620,7 +620,7 @@ msgstr ""
 msgid "Graphs view changed."
 msgstr "Graphique"
 
-#: drawfrm.cpp:904 drawfrm.cpp:928 drawfrm.cpp.BACKUP.4767.cpp:903
+#: drawfrm.cpp:903 drawfrm.cpp:927 drawfrm.cpp.BACKUP.4767.cpp:903
 #: drawfrm.cpp.BACKUP.4767.cpp:927 drawfrm.cpp.BASE.4767.cpp:892
 #: drawfrm.cpp.BASE.4767.cpp:916 drawfrm.cpp.LOCAL.4767.cpp:895
 #: drawfrm.cpp.LOCAL.4767.cpp:919 drawfrm.cpp.REMOTE.4767.cpp:900
@@ -630,7 +630,7 @@ msgid ""
 "remarks server adddress"
 msgstr ""
 
-#: drawfrm.cpp:904 drawfrm.cpp:928 drawfrm.cpp.BACKUP.4767.cpp:903
+#: drawfrm.cpp:903 drawfrm.cpp:927 drawfrm.cpp.BACKUP.4767.cpp:903
 #: drawfrm.cpp.BACKUP.4767.cpp:927 drawfrm.cpp.BASE.4767.cpp:892
 #: drawfrm.cpp.BASE.4767.cpp:916 drawfrm.cpp.LOCAL.4767.cpp:895
 #: drawfrm.cpp.LOCAL.4767.cpp:919 drawfrm.cpp.REMOTE.4767.cpp:900
@@ -638,45 +638,45 @@ msgstr ""
 msgid "Remarks not configured."
 msgstr ""
 
-#: drawfrm.cpp:980 drawfrm.cpp.BACKUP.4767.cpp:979
+#: drawfrm.cpp:979 drawfrm.cpp.BACKUP.4767.cpp:979
 #: drawfrm.cpp.BASE.4767.cpp:968 drawfrm.cpp.LOCAL.4767.cpp:971
 #: drawfrm.cpp.REMOTE.4767.cpp:976
 #, fuzzy
 msgid "Enter password:"
 msgstr "Mot de passe"
 
-#: drawfrm.cpp:981 drawfrm.cpp.BACKUP.4767.cpp:980
+#: drawfrm.cpp:980 drawfrm.cpp.BACKUP.4767.cpp:980
 #: drawfrm.cpp.BASE.4767.cpp:969 drawfrm.cpp.LOCAL.4767.cpp:972
 #: drawfrm.cpp.REMOTE.4767.cpp:977
 #, fuzzy
 msgid "New password"
 msgstr "Mot de passe"
 
-#: drawfrm.cpp:1105 incsearch.cpp:797 incsearch.cpp:810 paramslist.cpp:370
+#: drawfrm.cpp:1104 incsearch.cpp:797 incsearch.cpp:810 paramslist.cpp:370
 #: paramslist.cpp.BACKUP.5088.cpp:365 paramslist.cpp.REMOTE.5088.cpp:364
 #, fuzzy
 msgid "Error in communicatoin with server: "
 msgstr "Message d'erreur du régulateur"
 
-#: drawfrm.cpp:1105 incsearch.cpp:797 incsearch.cpp:810 paramslist.cpp:370
+#: drawfrm.cpp:1104 incsearch.cpp:797 incsearch.cpp:810 paramslist.cpp:370
 #: paramslist.cpp.BACKUP.5088.cpp:365 paramslist.cpp.REMOTE.5088.cpp:364
 #, fuzzy
 msgid "Failed to update paramaters"
 msgstr "Impossibilité de connection avec le serveur"
 
-#: drawfrm.cpp:1111
+#: drawfrm.cpp:1110
 msgid "Network params and sets were updated"
 msgstr ""
 
-#: drawfrm.cpp:1111
+#: drawfrm.cpp:1110
 msgid "Params and sets updated."
 msgstr ""
 
-#: drawfrm.cpp:1114
+#: drawfrm.cpp:1113
 msgid "There are no new network params or sets"
 msgstr ""
 
-#: drawfrm.cpp:1114
+#: drawfrm.cpp:1113
 #, fuzzy
 msgid "No new params and sets."
 msgstr "Impossibilité de connection avec le serveur"
@@ -1308,70 +1308,76 @@ msgstr "Remarques"
 msgid "No new remarks"
 msgstr "Remarques"
 
-#: remarks.cpp:835
+#: remarks.cpp:840
 #, fuzzy, c-format
 msgid "Failed to resolve address: %ls"
 msgstr "Impossibilité de créer le catalogue: "
 
-#: remarks.cpp:931
+#: remarks.cpp:883
+#, fuzzy
+msgid ""
+"Connection with remarks and network sets and params server not configured"
+msgstr "Erreur de connection avec le serveur"
+
+#: remarks.cpp:939
 #, fuzzy
 msgid "Server connection failure"
 msgstr "Message d'erreur du régulateur"
 
-#: remarks.cpp:934
+#: remarks.cpp:942
 #, fuzzy
 msgid "Server communication error"
 msgstr "Message d'erreur du régulateur"
 
-#: remarks.cpp:937
+#: remarks.cpp:945
 msgid "User is not allowed to send remarks for this base"
 msgstr ""
 
-#: remarks.cpp:940
+#: remarks.cpp:948
 msgid "Invalid response from server"
 msgstr ""
 
-#: remarks.cpp:943
+#: remarks.cpp:951
 #, fuzzy
 msgid "Incorrect username and password"
 msgstr "Entrez votre compte et mot de passe"
 
-#: remarks.cpp:1012 remarks.cpp:1015
+#: remarks.cpp:1020 remarks.cpp:1023
 #, fuzzy, c-format
 msgid "Failed to fetch remarks: %s"
 msgstr "Impossibilité de connection avec le serveur"
 
-#: remarks.cpp:1199
+#: remarks.cpp:1207
 #, fuzzy, c-format
 msgid "Failed to fetch params and sets: %s"
 msgstr "Impossibilité de connection avec le serveur"
 
-#: remarks.cpp:2090
+#: remarks.cpp:2098
 #, fuzzy
 msgid "Remark sent successfully."
 msgstr "Succès de l'importation de draws."
 
-#: remarks.cpp:2090
+#: remarks.cpp:2098
 #, fuzzy
 msgid "Remark sent."
 msgstr "Remarques"
 
-#: remarks.cpp:2094
+#: remarks.cpp:2102
 #, c-format
 msgid "There was an error sending remark:'%s'."
 msgstr ""
 
-#: remarks.cpp:2094
+#: remarks.cpp:2102
 #, fuzzy
 msgid "Error."
 msgstr "Echec"
 
-#: remarks.cpp:2120
+#: remarks.cpp:2128
 #, fuzzy
 msgid "Date"
 msgstr "Supprimer"
 
-#: remarks.cpp:2121 XRC_gettext_file.h:29
+#: remarks.cpp:2129 XRC_gettext_file.h:29
 msgid "Title"
 msgstr "Titre"
 

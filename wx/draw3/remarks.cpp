@@ -238,8 +238,6 @@ void RemarksHandler::Stop() {
 }
 
 RemarksConnection* RemarksHandler::GetConnection() {
-	if (!Configured())
-		return NULL;
 
 	if (m_connection == NULL) {
 		m_connection = new RemarksConnection(m_server, this, m_config_manager);
@@ -825,6 +823,13 @@ void RemarksConnection::Login() {
 	PostRequest(CreateLoginRequest());
 }
 
+void RemarksConnection::NotifyAllCommandsAboutError(const wxString& error) {
+	for (std::list<boost::shared_ptr<Command> >::iterator i = m_command_list.begin();
+			i != m_command_list.end();
+			i++)
+		(*i)->Error(error);
+}
+
 void RemarksConnection::OnDNSResponse(DNSResponseEvent &event) {
 	if (!event.GetAddress().empty()) {
 		m_address_resolved = true;
@@ -832,12 +837,7 @@ void RemarksConnection::OnDNSResponse(DNSResponseEvent &event) {
 
 		SendCommand();
 	} else {
-		wxString error = wxString::Format(_("Failed to resolve address: %ls"), m_address.c_str());
-		for (std::list<boost::shared_ptr<Command> >::iterator i = m_command_list.begin();
-				i != m_command_list.end();
-				i++)
-			(*i)->Error(error);
-
+		NotifyAllCommandsAboutError(wxString::Format(_("Failed to resolve address: %ls"), m_address.c_str()));
 		m_command_list.clear();
 	}
 }
@@ -876,12 +876,20 @@ void RemarksConnection::TriggerRequest() {
 	if (m_command_list.size() != 1)
 		return;
 
-	if (m_address_resolved == false)
-		m_resolver.Resolve(m_address);
-	else if (m_token == -1)
+	if (m_address_resolved == false) {
+		if (!m_address.IsEmpty()) {
+			m_resolver.Resolve(m_address);
+		} else {
+			NotifyAllCommandsAboutError(_("Connection with remarks and network sets and params server not configured"));
+			m_command_list.clear();
+		}
+
+		m_command_list.clear();
+	} else if (m_token == -1) {
 		Login();
-	else 
+	} else {
 		SendCommand();	
+	}
 
 }
 
