@@ -1,4 +1,5 @@
 2011-11-06	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: fix of stupid bug
 	* wx/draw3: removed segfault on accessing network
 	sets/params without configured remarks server
 	connection
