@@ -536,6 +536,8 @@ ConfigManager::LoadConfig(const wxString& prefix, const wxString &config_path, b
 		splashscreen->PushStatusText(msg);
 	}
 
+	m_logparams = logparams;
+
 	TSzarpConfig *ipk = NULL;
 	if (config_path == wxEmptyString)
 		ipk = m_ipks->LoadConfig(prefix.c_str(),std::wstring(),logparams);
@@ -1074,7 +1076,7 @@ void ConfigManager::SetDatabaseManager(DatabaseManager *db_mgr) {
 bool ConfigManager::ReloadConfiguration(wxString prefix) {
 	wxCriticalSectionLocker locker(m_reload_config_CS);
 	std::wstring wprefix = prefix.c_str();
-	if (m_ipks->ReadyConfigurationForLoad(wprefix) == false)
+	if (m_ipks->ReadyConfigurationForLoad(wprefix,m_logparams) == false)
 		return false;
 	m_db_mgr->InitiateConfigurationReload(prefix);
 

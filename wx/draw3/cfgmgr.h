@@ -552,6 +552,7 @@ protected:
 
 	DrawPsc *psc;
 
+	bool m_logparams;
 };
 
 #endif
