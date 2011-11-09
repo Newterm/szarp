@@ -111,6 +111,8 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 	} else {
 		if (last_update_time > GetEndTime())
 			probes_to_compute = fixed_probes_count = max_probes;
+		else if (GetStartTime() > last_update_time)
+			probes_to_compute = fixed_probes_count = 0;
 		else
 			probes_to_compute = szb_probeind(last_update_time) + 1;
 	}
