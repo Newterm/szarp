@@ -4,6 +4,8 @@
 
 import unittest
 
+import sys
+
 from libipk.plugin import Plugin
 
 class TestPlugin( unittest.TestCase ) :
@@ -14,11 +16,13 @@ class TestPlugin( unittest.TestCase ) :
 	def tearDown( self ) :
 		pass
 
+	@unittest.skipIf( sys.version_info < (3,0) ,
+			"Seems that python2 allows property writing"  )
 	def test_xpath_write( self ) :
 		try :
 			self.plugin.xpath = '/new'
-		except AttributeError :
-			self.assertTrue( True )
+		except Exception as e :
+			self.assertIsInstance( e , AttributeError )
 		else :
 			self.assertTrue( False )
 

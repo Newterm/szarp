@@ -53,7 +53,7 @@ class App :
 	def print_plugin_list( self ) :
 		if self.options.list_plugins :
 			print("Available plugins:")
-			print()
+			print("")
 			for n in self.plugins.names() :
 				print("  %s    \t%s" % ( n , self.plugins.help(n).splitlines()[0] ) )
 			sys.exit(0)
@@ -88,7 +88,10 @@ class App :
 	def ask_for_args( self , args ) :
 		res = {}
 		for a in args :
-			res[a] = input(a + ":  ")
+			if sys.version_info < (3,0) :
+				res[a] = raw_input(a + ": ")
+			else :
+				res[a] = input(a + ":  ")
 		return res
 
 	def run( self ) :

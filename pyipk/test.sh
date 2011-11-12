@@ -1,2 +1,2 @@
 #!/bin/bash
-env PYTHONPATH="${PYTHONPATH}:." python3 -m unittest discover
+env PYTHONPATH="${PYTHONPATH}:." python -m unittest discover
