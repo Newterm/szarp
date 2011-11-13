@@ -9,7 +9,7 @@ from optparse import OptionParser , OptionGroup
 from libipk.params import Params
 from libipk.plugins import Plugins
 
-DEFAULT_PLUGINS = 'plugins/'
+DEFAULT_PLUGINS = '/usr/share/libipk/'
 
 class App :
 	def __init__( self ) :
@@ -61,7 +61,7 @@ class App :
 	def print_plugin_help( self ) :
 		if self.options.help_plugin :
 			print( 'Help for %s:' % self.plgname )
-			print()
+			print( '' )
 			for h in self.plugins.help(self.plgname).splitlines() :
 				print("  %s" % h )
 			sys.exit(0)
@@ -95,7 +95,12 @@ class App :
 		return res
 
 	def run( self ) :
-		self.plugins.load(self.options.load)
+		try :
+			self.plugins.load( self.options.load )
+		except OSError :
+			print('Improper plugins directory: %s' % self.options.load )
+		except ImportError as e :
+			print('Cannot load plugin: %s' % repr(e) )
 
 		self.print_plugin_list()
 
