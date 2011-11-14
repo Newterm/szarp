@@ -189,3 +189,12 @@ Architecture: any
 Description: Debug symbols for szarp binaries
  Contains debug symbols for szarp binaries.
 
+Package: szarp-pyipk
+Section: x11
+Architecture: all
+Depends: python (>= 2.5), ${python:Depends}, python-lxml
+XS-Python-Version: ${python:Versions}
+Description: Sets of scripts and libraries to easily manage params.xml file
+ This package contains sets of plugins to manage params.xml file, and both
+ graphical and command line application to use them.
+

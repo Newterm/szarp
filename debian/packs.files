@@ -49,6 +49,11 @@ Files: etc/pam.d/paramd
 Files: opt/szarp/bin/paramd
 Files: opt/szarp/resources/paramd_access.conf
 
+Package: szarp-pyipk
+Files: usr/bin/ipkcmd
+Files: usr/share/libipk
+Files: usr/lib/python*/site-packages/libipk*
+
 Package: szarp-xsltd
 Files: opt/szarp/resources/xsltd
 Files: opt/szarp/bin/xslt_handler.py
@@ -79,7 +84,7 @@ Files: opt/szarp/bin/mobilemgr
 Package: szarp-sssweb
 Files: var/cache/pylons-sssweb
 Files: etc/szarp/ssweb*
-Files: usr/lib/python*
+Files: usr/lib/python*/site-packages/sssweb*
 
 Package: szarp-nagios
 Files: etc/nagios/szarp*cfg

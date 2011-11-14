@@ -59,6 +59,7 @@ NO_CB_PACK_OPTS ?= \
 		-pszarp-koper \
 		-pszarp-nagios \
 		-pszarp-paramd \
+		-pszarp-pyipk \
 		-pszarp-scripts \
 		-pszarp-server \
 		-pszarp-server-complete \
