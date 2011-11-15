@@ -1,3 +1,9 @@
+szarp (3.1.574) testing; urgency=low
+
+  * building squeeze 
+
+ -- Jakub Kotur <qba@localhost>  Tue, 15 Nov 2011 12:46:46 +0000
+
 szarp (3.1.572) stable; urgency=low
 
   * building stable 
