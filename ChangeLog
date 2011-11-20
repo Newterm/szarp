@@ -1,3 +1,21 @@
+2011-11-20	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/boruta_modbus.cc: number of silly mistakes
+	I was able to to make in modbus-ascii code is just embarassing...
+2011-11-09	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: removed superfluous menu item called "item"
+	* libSzarp2/szbase: bugfix (I had deja vu fixing this...)
+2011-11-06	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: fix of stupid bug
+	* wx/draw3: removed segfault on accessing network
+	sets/params without configured remarks server
+	connection
+2011-11-05	Darek Marcinkiewicz <reksio@newterm.pl>
+	* utils/remarks_server: minor adjustements
+2011-11-31	Darek Marcinkiewicz <reksio@newterm.pl>
+	* utils/remarks_server && wx/draw3: support for
+	network params and sets
+2011-11-24	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/bortuadmn: 2 small fixes
 2011-10-17	Aleksy Barcz <abarcz@newterm.pl>
 	* aqtdmn.cc: corrected a typo in deamon description
 	* calcdmn.cc: as before
