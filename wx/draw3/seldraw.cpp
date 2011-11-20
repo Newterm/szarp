@@ -136,11 +136,14 @@ SelectDrawValidator::OnFocus(wxFocusEvent& c)
 
 void
 SelectDrawValidator::OnMouseRightDown(wxMouseEvent &event) {
+	DrawInfo* di = m_draws_wdg->GetDrawInfo(m_index);
+	if (di == NULL)
+		return;
 
 	delete m_menu;
 	m_menu = new wxMenu();
 
-	DrawParam* dp = m_draws_wdg->GetDrawInfo(m_index)->GetParam();
+	DrawParam* dp = di->GetParam();
 	if (dp->GetIPKParam()->GetPSC())
 		m_menu->Append(seldrawID_PSC,_("Set parameter"));
 
@@ -331,7 +334,7 @@ SelectDrawWidget::SetChanged(DrawsController *draws_controller)
 		m_cb_l[i]->SetBackgroundColour(DRAW3_BG_COLOR);
 	}
 
-	for (size_t i = std::max(MIN_DRAWS_COUNT, selected_set->GetDraws()->size()); i < m_cb_l.size(); i++) {
+	for (size_t i = MIN_DRAWS_COUNT; i < m_cb_l.size(); i++) {
 		sizer->Detach(m_cb_l[i]);
 		m_cb_l[i]->Destroy();
 	}

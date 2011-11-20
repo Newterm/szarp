@@ -229,6 +229,10 @@
                 </item>
                 <item>
                     <label>Edit as new defined\tCtrl+Shift+Alt+E</label>
+                    <name>EditAsNew</name>
+                </item>
+                <item>
+                    <label>Edit as new network defined\tCtrl+Shift+Alt+N</label>
                     <name>EditAsNewNetwork</name>
                 </item>
                 <item>
