@@ -1,19 +1,14 @@
 #! /bin/sh
 # $Id: szarp-xsltd.prerm 2958 2006-02-07 12:27:51Z pawel $
-#
 
-[ -x /etc/init.d/apache2 ] && {
-	/etc/init.d/apache2 stop
-}
-	
-[ -x /usr/sbin/a2dissite ] && /usr/sbin/a2dissite szarp
 
-[ -e /etc/apache2/sites-available/szarp ] && rm /etc/apache2/sites-available/szarp
-	
-[ -x /etc/init.d/apache2 ] && {
-	/etc/init.d/apache2 start
-}
-	
+if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
+	[ -x /usr/sbin/a2dissite ] && /usr/sbin/a2dissite szarp
+	[ -e /etc/apache2/sites-available/szarp ] &&  {
+		ucf --purge /etc/apache2/sites-available/szarp
+		ucfr --purge szarp-xsltd /etc/apache2/sites-available/szarp
+	}	
+fi
 
 #DEBHELPER#
 
