@@ -1977,7 +1977,7 @@ bool serial_ascii_parser::check_crc() {
 	crc = update_crc(crc, m_sdu.pdu.func_code);
 	if (d.size() == 0)
 		return false;
-	for (size_t i = 0; i < d.size() - 2; i++)
+	for (size_t i = 0; i < d.size() - 1; i++)
 		crc = update_crc(crc, d[i]);
 	crc = finish_crc(crc);
 	unsigned char frame_crc = d[d.size() - 1];
