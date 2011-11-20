@@ -1,3 +1,6 @@
+2011-11-20	Krzysztof Galazka <kg@newterm.pl>
+	* debian/szarp-xsltd.*: fix overwriting config on package upgrade
+	* debian/contol: correnct dependencies of szarp-filler for squeeze
 2011-11-09	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: removed superfluous menu item called "item"
 	* libSzarp2/szbase: bugfix (I had deja vu fixing this...)
