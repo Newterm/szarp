@@ -1,3 +1,9 @@
+szarp (3.1.576) testing; urgency=low
+
+  * building squeeze
+
+ -- Jakub Kotur <qba@newterm.pl>  Wed, 30 Nov 2011 15:05:01 +0100
+
 szarp (3.1.574) testing; urgency=low
 
   * building squeeze 
