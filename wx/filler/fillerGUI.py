@@ -19,8 +19,9 @@
 # setting gettext - translates EN -> PL
 import gettext
 gettext.bindtextdomain('filler', '/opt/szarp/resources/locales')
+gettext.bind_textdomain_codeset('filler','utf-8')
 gettext.textdomain('filler')
-_ = gettext.gettext
+_ = lambda s : gettext.gettext(s).decode('utf-8')
 
 import sys
 import os
@@ -186,7 +187,7 @@ class ParamList(wx.ListCtrl):
 				self.szDialog(_('Database'),
 				wx.OK|wx.ICON_ERROR, \
 				_('Error writing database:'),' ','szbwriter',\
-				' ',_('returned'),' ', result,'.\n',\
+				' ',_('returned'),' ', result ,'.\n',\
 				_('For more informations see'),' ',\
 				'/tmp/szbwriter-by-filler',' ', _('log file'),'.')
 
@@ -208,7 +209,7 @@ class MainFrame(wx.Frame):
 	def __init__(self, *args, **kwds):
 		okParams=True # file prams.xml was read without problems
 		curParamName='' # chosen param name
-		
+
 		self.focusList=list()
 
 		CLP=CommandLineParser(sys.argv,len(sys.argv))
@@ -438,7 +439,7 @@ class MainFrame(wx.Frame):
 			_('Filler version'),': ', getVersion(), '\n',
 			u'SZARP Scada System', '\n',
 			_('Author'),
-			': Maciej Zbiñkowski <maciek@praterm.com.pl>') 
+			u': Maciej Zbi\u0144kowski <maciek@praterm.com.pl>')
 	# exit
 	def closeWindow(self, event):
 		if self.paramList.size()>0:
@@ -676,17 +677,7 @@ class MainFrame(wx.Frame):
 	# arguments, which are glued together. Dialog is shown, and
 	# destroyed after getting answer form user.
 	def szDialog(self, title, flags, *txts):
-		t=u''
-		for tmp in txts:
-			try:
-				t+=unicode(tmp, 'iso8859-2')
-			except: # is unicode
-				try:
-					t+=tmp
-				except: # is number
-					t+=str(tmp)
-
-		dia=wx.MessageDialog(self,t ,title, flags )
+		dia=wx.MessageDialog(self, ''.join(map(unicode,txts)) ,title, flags )
 		ans = dia.ShowModal() # pokazanie dialogu
 		dia.Destroy() # zniszczenie dialogu
 		return ans

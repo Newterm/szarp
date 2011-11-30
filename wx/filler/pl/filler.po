@@ -3,17 +3,17 @@
 # This file is distributed under the same license as the szarp-filler
 # package.
 #
-# Maciej Zbiñkowski <maciek@praterm.com.pl>, 2006, 2007.
+# Maciej ZbiÅ„kowski <maciek@praterm.com.pl>, 2006, 2007.
 msgid ""
 msgstr ""
 "Project-Id-Version: filler\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2007-02-03 14:47+0100\n"
 "PO-Revision-Date: 2007-02-03 14:50+0100\n"
-"Last-Translator: Maciej Zbiñkowski <maciek@praterm.com.pl>\n"
+"Last-Translator: Maciej ZbiÅ„kowski <maciek@praterm.com.pl>\n"
 "Language-Team: Polski\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO-8859-2\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
 
@@ -27,7 +27,7 @@ msgstr "Minuta"
 
 #: DateDialog.py:47
 msgid "Date and time picker"
-msgstr "Wybór daty i godziny"
+msgstr "WybÃ³r daty i godziny"
 
 #: fillerGUI.py:42 fillerGUI.py:111
 msgid "Question"
@@ -35,15 +35,15 @@ msgstr "Pytanie"
 
 #: fillerGUI.py:43
 msgid "Do you really want to delete selected data?"
-msgstr "Czy na pewno chcesz usun±æ zaznaczone dane?"
+msgstr "Czy na pewno chcesz usunÄ…Ä‡ zaznaczone dane?"
 
 #: fillerGUI.py:82
 msgid "Remove"
-msgstr "Usuñ"
+msgstr "UsuÅ„"
 
 #: fillerGUI.py:112
 msgid "Do you really want to delete all data?"
-msgstr "Czy na pewno chcesz usun±æ wszystkie dane?"
+msgstr "Czy na pewno chcesz usunÄ…Ä‡ wszystkie dane?"
 
 #: fillerGUI.py:139
 msgid "No data"
@@ -59,7 +59,7 @@ msgstr "Na pewno?"
 
 #: fillerGUI.py:140
 msgid "Do you really want to write all data to database"
-msgstr "Czy na pewno chcesz zapisaæ wszystkie dane?"
+msgstr "Czy na pewno chcesz zapisaÄ‡ wszystkie dane?"
 
 #: fillerGUI.py:148
 msgid "Temporary file"
@@ -67,7 +67,7 @@ msgstr "Plik tymczasowy"
 
 #: fillerGUI.py:148
 msgid "Cannot open temporary file"
-msgstr "Nie uda³o siê otworzyæ pliku tymczasowego"
+msgstr "Nie udaÅ‚o siÄ™ otworzyÄ‡ pliku tymczasowego"
 
 #: fillerGUI.py:166 fillerGUI.py:170 fillerGUI.py:178
 msgid "Database"
@@ -75,19 +75,19 @@ msgstr "Baza danych"
 
 #: fillerGUI.py:167
 msgid "Data was successfully written to database."
-msgstr "Dane zosta³y pomy¶lnie zapisane do bazy."
+msgstr "Dane zostaÅ‚y pomyÅ›lnie zapisane do bazy."
 
 #: fillerGUI.py:172
 msgid "Error writing database:"
-msgstr "B³±d podczas zapisu do bazy:"
+msgstr "BÅ‚Ä…d podczas zapisu do bazy:"
 
 #: fillerGUI.py:173
 msgid "returned"
-msgstr "zwróci³"
+msgstr "zwrÃ³ciÅ‚"
 
 #: fillerGUI.py:174
 msgid "For more informations see"
-msgstr "Wiêcej informacji znajdziesz w pliku"
+msgstr "WiÄ™cej informacji znajdziesz w pliku"
 
 #: fillerGUI.py:175
 msgid "log file"
@@ -95,15 +95,15 @@ msgstr " "
 
 #: fillerGUI.py:224 fillerGUI.py:225 fillerGUI.py:640
 msgid "Choose from date"
-msgstr "Wybierz datê pocz±tkow±"
+msgstr "Wybierz datÄ™ poczÄ…tkowÄ…"
 
 #: fillerGUI.py:230 fillerGUI.py:231 fillerGUI.py:641
 msgid "Choose till date"
-msgstr "Wybierz datê koñcow±"
+msgstr "Wybierz datÄ™ koÅ„cowÄ…"
 
 #: fillerGUI.py:238
 msgid "Choose value"
-msgstr "Wybierz warto¶æ"
+msgstr "Wybierz wartoÅ›Ä‡"
 
 #: fillerGUI.py:246
 msgid "Add"
@@ -115,11 +115,11 @@ msgstr "&Zapisz\tCtrl+W"
 
 #: fillerGUI.py:276
 msgid "&Clear\tCtrl+C"
-msgstr "&Wyczy¶æ\tCtrl+C"
+msgstr "&WyczyÅ›Ä‡\tCtrl+C"
 
 #: fillerGUI.py:278
 msgid "&Exit\tCtrl+Q"
-msgstr "&Wyjd¼\tCtrl+Q"
+msgstr "&WyjdÅº\tCtrl+Q"
 
 #: fillerGUI.py:279
 msgid "&File"
@@ -127,7 +127,7 @@ msgstr "&Plik"
 
 #: fillerGUI.py:282
 msgid "Table of contents\tF1"
-msgstr "Spis tre¶ci\tF1"
+msgstr "Spis treÅ›ci\tF1"
 
 #: fillerGUI.py:283
 msgid "Context help\tShift+F1"
@@ -143,7 +143,7 @@ msgstr "Po&moc"
 
 #: fillerGUI.py:303
 msgid "Clear"
-msgstr "Wyczy¶æ"
+msgstr "WyczyÅ›Ä‡"
 
 #: fillerGUI.py:303
 msgid "Clears all selected parameters."
@@ -179,7 +179,7 @@ msgstr "Parametr"
 
 #: fillerGUI.py:369
 msgid "Value"
-msgstr "Warto¶æ"
+msgstr "WartoÅ›Ä‡"
 
 #: fillerGUI.py:411
 msgid "Filler version"
@@ -191,7 +191,7 @@ msgstr "Autor"
 
 #: fillerGUI.py:419
 msgid "Exit"
-msgstr "Wyj¶cie"
+msgstr "WyjÅ›cie"
 
 #: fillerGUI.py:420
 msgid "You will lose all not saved data"
@@ -199,7 +199,7 @@ msgstr "Stracisz wszystkie nie zapisane dane"
 
 #: fillerGUI.py:421
 msgid "Are you sure you want to exit?"
-msgstr "Na pewno chcesz wyj¶æ?"
+msgstr "Na pewno chcesz wyjÅ›Ä‡?"
 
 #: fillerGUI.py:435 fillerGUI.py:536
 msgid "Choose parameter first."
@@ -207,11 +207,11 @@ msgstr "Najpierw wybierz parametr."
 
 #: fillerGUI.py:465
 msgid "Wrong range"
-msgstr "Z³y zakres"
+msgstr "ZÅ‚y zakres"
 
 #: fillerGUI.py:467
 msgid "You must choose date between"
-msgstr "Musisz wybraæ datê miêdzy"
+msgstr "Musisz wybraÄ‡ datÄ™ miÄ™dzy"
 
 #: fillerGUI.py:469 fillerGUI.py:566
 msgid "and"
@@ -219,15 +219,15 @@ msgstr "a"
 
 #: fillerGUI.py:477 fillerGUI.py:487 fillerGUI.py:559
 msgid "Wrong date"
-msgstr "Z³a data"
+msgstr "ZÅ‚a data"
 
 #: fillerGUI.py:480
 msgid "Till date cannot be greater then from date."
-msgstr "Data koñcowa nie mo¿e byæ wiêksza od pocz±tkowej."
+msgstr "Data koÅ„cowa nie moÅ¼e byÄ‡ wiÄ™ksza od poczÄ…tkowej."
 
 #: fillerGUI.py:487
 msgid "From date can not be greater then till date."
-msgstr "Data pocz±tkowa nie mo¿e byæ wiêksza od koñcowej."
+msgstr "Data poczÄ…tkowa nie moÅ¼e byÄ‡ wiÄ™ksza od koÅ„cowej."
 
 #: fillerGUI.py:535 fillerGUI.py:540
 msgid "Warning"
@@ -239,29 +239,29 @@ msgstr "Najpierw wybierz obydwie daty."
 
 #: fillerGUI.py:545 fillerGUI.py:563
 msgid "Wrong value"
-msgstr "Z³a warto¶æ"
+msgstr "ZÅ‚a wartoÅ›Ä‡"
 
 #: fillerGUI.py:545
 msgid "Value must be float."
-msgstr "Warto¶æ musi byæ liczb±"
+msgstr "WartoÅ›Ä‡ musi byÄ‡ liczbÄ…"
 
 #: fillerGUI.py:561
 msgid "This date range has aleady been used"
-msgstr "Ten zakres dat zosta³ ju¿ u¿yty"
+msgstr "Ten zakres dat zostaÅ‚ juÅ¼ uÅ¼yty"
 
 #: fillerGUI.py:565
 msgid "Choose value between"
-msgstr "Wybierz warto¶æ miêdzy"
+msgstr "Wybierz wartoÅ›Ä‡ miÄ™dzy"
 
 #: fillerGUI.py:576
 msgid "Can't find file \"params.xml\"."
-msgstr "Nie mogê znale¼æ pliku \"params.xml\"."
+msgstr "Nie mogÄ™ znaleÅºÄ‡ pliku \"params.xml\"."
 
 #: fillerGUI.py:583 fillerGUI.py:588 fillerGUI.py:593 fillerGUI.py:599
 #: fillerGUI.py:605 fillerGUI.py:611 fillerGUI.py:617 fillerGUI.py:623
 #: fillerGUI.py:629
 msgid "Error in params.xml"
-msgstr "B³±d w pliku params.xml"
+msgstr "BÅ‚Ä…d w pliku params.xml"
 
 #: fillerGUI.py:585
 msgid "No params in params.xml"
@@ -269,7 +269,7 @@ msgstr "Brak elementu 'param' w params.xml"
 
 #: fillerGUI.py:590
 msgid "No editable parameters in params.xml"
-msgstr "Brak edytowalnych parametrów w params.xml"
+msgstr "Brak edytowalnych parametrÃ³w w params.xml"
 
 #: fillerGUI.py:595 filler.py:79
 msgid "params.xml is not an XML file."
@@ -286,15 +286,15 @@ msgstr "w parametrze"
 
 #: fillerGUI.py:607
 msgid "Incorrect value of attribute"
-msgstr "Niepoprawna warto¶æ atrybutu"
+msgstr "Niepoprawna wartoÅ›Ä‡ atrybutu"
 
 #: fillerGUI.py:613
 msgid "Non-Positive value of attribute"
-msgstr "Nie dodatnia warto¶æ atrybutu"
+msgstr "Nie dodatnia wartoÅ›Ä‡ atrybutu"
 
 #: fillerGUI.py:619
 msgid "Negative value of attribute"
-msgstr "Ujemna warto¶æ atrybutu"
+msgstr "Ujemna wartoÅ›Ä‡ atrybutu"
 
 #: fillerGUI.py:625
 msgid "\"min\" attribute is not less then \"max\" in parameter."
@@ -302,15 +302,15 @@ msgstr "Atrybut \"min\" nie jest mniejszy od \"max\" w parametrze"
 
 #: fillerGUI.py:631 filler.py:117
 msgid "\"unit\" attribute is not in"
-msgstr "Warto¶æ atrybutu \"unit\" nie zawiera siê w"
+msgstr "WartoÅ›Ä‡ atrybutu \"unit\" nie zawiera siÄ™ w"
 
 #: filler.py:70
 msgid "No params in params.xml."
-msgstr "Brak parametrów w params.xml."
+msgstr "Brak parametrÃ³w w params.xml."
 
 #: filler.py:75
 msgid "No editable parameters in params.xml."
-msgstr "Brak edytowalnych parametrów w params.xml."
+msgstr "Brak edytowalnych parametrÃ³w w params.xml."
 
 #: filler.py:92
 msgid "has negative value"
@@ -322,7 +322,7 @@ msgstr "nie jest obecny"
 
 #: filler.py:109
 msgid "has non-positive value"
-msgstr "ma niedodatni± warto¶æ"
+msgstr "ma niedodatniÄ… wartoÅ›Ä‡"
 
 #: filler.py:117 filler.py:133
 msgid "in"
@@ -330,13 +330,13 @@ msgstr "w"
 
 #: filler.py:125
 msgid "has wrong value"
-msgstr "ma niepoprawn± warto¶æ"
+msgstr "ma niepoprawnÄ… wartoÅ›Ä‡"
 
 #: filler.py:133
 msgid "\"min\" is greater then \"max\"."
-msgstr "\"min\" jest wiêkszy od \"max\"."
+msgstr "\"min\" jest wiÄ™kszy od \"max\"."
 
 #: filler.py:141
 msgid "Error while parsing resource file"
-msgstr "B³±d podczas parsowania pliku z zasobami"
+msgstr "BÅ‚Ä…d podczas parsowania pliku z zasobami"
 
