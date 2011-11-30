@@ -29,6 +29,7 @@ _ = gettext.gettext
 # SAX parser
 from xml.sax import make_parser
 from xml.sax.handler import feature_namespaces
+from xml.sax.handler import ContentHandler
 from xml.sax import saxutils
 from xml.sax import SAXException
 
@@ -163,7 +164,7 @@ def readParamsFromFile(xmlFile):
 	extrans = "http://www.praterm.com.pl/SZARP/ipk-extra"
 
 	# finds param with 'editable' element
-	class findEditable(saxutils.DefaultHandler):
+	class findEditable(ContentHandler):
 		def __init__(self):
 			self.noParams=True
 			self.noEditables=True
