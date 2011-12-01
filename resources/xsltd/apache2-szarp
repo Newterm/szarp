@@ -26,6 +26,8 @@ NameVirtualHost *:8084
 
 	# ISL documents
 	RewriteRule ^/isl/([A-Za-z0-9]*)\.isl$ /default/config/isl/$1.isl [L]
+	# Fire and other special effects
+	RewriteRule ^/isl/([A-Za-z0-9]*)\.png$ /default/config/isl/$1.png [L]
 
 	# Everything else is forbidden
 	RewriteRule .* / [F]
