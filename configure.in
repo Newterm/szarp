@@ -842,12 +842,12 @@ AC_ARG_ENABLE([deb-build],
 AM_CONDITIONAL(DEB_BUILD, test x$deb_build = xyes)
 
 # xmlTextReader conditional building
-AC_ARG_WITH([xmlreader], 
-	AC_HELP_STRING([--with-xmlreader], 
-		[Use xmlTextReader instead of XML DOM]),
-		yes_reader=yes, )
+AC_ARG_WITH([xmldom], 
+	AC_HELP_STRING([--with-xmldom], 
+		[Use legacy XML DOM instead of xmlTextReader]),
+		yes_xmldom=yes, )
 
-if test "x$yes_reader" = "xyes"
+if test "x$yes_xmldom" != "xyes"
 then
 	AC_DEFINE(USE_XMLREADER, 1, [ Define to 1 when use xmlTextReader instead of XML DOM])
 fi

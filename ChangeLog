@@ -1,3 +1,5 @@
+2011-12-02	Aleksy Barcz <abarcz@newterm.pl>
+	* configure.in: xmlTextReader set as default ipk parser
 2011-12-01	Krzysztof Galazka <kg@newterm.pl>
 	* resources/xsltd/apache2-szarp: rewrite rule for png files (fire)
 2011-11-20	Krzysztof Galazka <kg@newterm.pl>
