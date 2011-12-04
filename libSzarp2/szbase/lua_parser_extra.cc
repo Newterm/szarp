@@ -111,11 +111,6 @@ chunk::chunk() {}
 
 chunk::chunk(const block& block_) : stats(block_.chunk_.get().stats), laststat_(block_.chunk_.get().laststat_) {}
 
-expression& expression::operator=(const or_exp& o_) {
-	o = o_;
-	return *this;
-}
-
 namelist& namelist::operator=(const namelist& v) {
 	namelist_ = v.namelist_;
 	return *this;
@@ -237,9 +232,9 @@ std::ostream& operator<< (std::ostream& os, const cmp_exp& e) {
 }
 
 std::ostream& operator<< (std::ostream& os, const and_exp& e) {
-	os << e[0];
+	os << e[0].get();
 	for (size_t i = 1; i < e.size(); i++)
-		os << " and " << e[i];
+		os << " and " << e[i].get();
 	return os;
 }
 
@@ -248,10 +243,6 @@ std::ostream& operator<< (std::ostream& os, const or_exp& e) {
 	for (size_t i = 1; i < e.size(); i++)
 		os << " or " << e[i];
 	return os;
-}
-
-std::ostream& operator<< (std::ostream& os, const expression& e) {
-	return os << e.o;
 }
 
 std::ostream& operator<< (std::ostream& os, const boost::tuple<expression, expression> & t) {

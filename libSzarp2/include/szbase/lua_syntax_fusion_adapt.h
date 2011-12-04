@@ -85,11 +85,6 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-	lua_grammar::expression,
-	(lua_grammar::or_exp, o)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
 	lua_grammar::assignment,
 	(std::vector<lua_grammar::var>, varlist)
 	(std::vector<lua_grammar::expression>, explist)

@@ -87,13 +87,17 @@ namespace lua_grammar {
 		boost::recursive_wrapper<chunk> chunk_;
 	};
 
-	struct expression;
-	typedef boost::recursive_wrapper<expression> expf;
+	struct cmp_exp;
+	typedef std::vector<boost::recursive_wrapper<cmp_exp> > and_exp;
+
+	typedef std::vector<and_exp> or_exp;
+
+	typedef or_exp expression;
 
 	typedef boost::variant<
 		boost::recursive_wrapper<boost::tuple<expression, expression> >,
 		boost::recursive_wrapper<boost::tuple<identifier, expression> >,
-		expf> field;
+		expression> field;
 
 	struct tableconstructor {
 		std::vector<field> tableconstructor_;
@@ -107,7 +111,7 @@ namespace lua_grammar {
 		std::wstring> args;
 
 	typedef boost::variant<
-		expf,
+		expression,
 		identifier> exp_identifier;
 
 	typedef boost::variant<
@@ -145,12 +149,12 @@ namespace lua_grammar {
 		nil,
 		bool,
 		double,
-		std::wstring,
+		identifier,
 		threedots,
 		funcbody,
 		postfixexp,
 		tableconstructor,
-		expf> term;
+		expression> term;
 
 	typedef std::vector<term> pow_exp;
 
@@ -172,17 +176,10 @@ namespace lua_grammar {
 
 	typedef std::vector<boost::tuple<cmp_op, concat_exp> > cmp_list;
 	struct cmp_exp {
+		cmp_exp() {}
+		cmp_exp(const boost::recursive_wrapper<cmp_exp>& o) : concat(o.get().concat), cmps(o.get().cmps) {}
 		concat_exp concat;
 		cmp_list cmps;
-	};
-
-	typedef std::vector<cmp_exp> and_exp;
-
-	typedef std::vector<and_exp> or_exp;
-
-	struct expression {
-		expression& operator=(const or_exp&);
-		or_exp o;
 	};
 
 	struct while_loop {

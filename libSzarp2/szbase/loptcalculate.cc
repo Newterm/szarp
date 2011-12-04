@@ -825,7 +825,7 @@ PExpression ExpressionConverter::ConvertExpression(const expression& expression_
 #ifdef LUA_OPTIMIZER_DEBUG
 	lua_opt_debug_stream << "Converting expression" << std::endl;
 #endif
-	return ConvertOr(expression_.o);
+	return ConvertOr(expression_);
 }
 
 PExpression TermConverter::operator()(const nil& nil_) {
@@ -951,7 +951,7 @@ PExpression NanConverter::Convert(const std::vector<expression>& expressions) {
 
 std::wstring get_string_expression(const expression &e) {
 #define ERROR throw ParamConversionException(L"Expression is not string")
-	const or_exp& or_exp_ = e.o;
+	const or_exp& or_exp_ = e;
 	if (or_exp_.size() != 1)
 		ERROR;
 

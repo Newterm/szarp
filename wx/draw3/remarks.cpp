@@ -883,8 +883,6 @@ void RemarksConnection::TriggerRequest() {
 			NotifyAllCommandsAboutError(_("Connection with remarks and network sets and params server not configured"));
 			m_command_list.clear();
 		}
-
-		m_command_list.clear();
 	} else if (m_token == -1) {
 		Login();
 	} else {

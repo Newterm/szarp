@@ -1,3 +1,11 @@
+2011-12-04	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2: make lua parser compile with latest boost,
+	for some reason spirit started to freak out on fusion
+	adapted one element structs, so I needed to adjust
+	the grammar data structes a little so we don't use them
+	- I think this is a bug in boost::spirit
+	* wx/remarks.cpp: don't remove a command queue
+	on reception of DSN response event...
 2011-12-02	Aleksy Barcz <abarcz@newterm.pl>
 	* configure.in: xmlTextReader set as default ipk parser
 2011-12-01	Krzysztof Galazka <kg@newterm.pl>
