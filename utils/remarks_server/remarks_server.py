@@ -527,7 +527,7 @@ class Database:
 			db_args['host'] = config.get("database", "host")
 
 
-		self.dbpool = adbapi.ConnectionPool("psycopg2", **db_args)
+		self.dbpool = adbapi.ConnectionPool("psycopg2", cp_reconnect = True , **db_args)
 
 		del db_args['cp_openfun']
 
