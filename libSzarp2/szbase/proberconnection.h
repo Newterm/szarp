@@ -65,7 +65,7 @@ public:
 
 	void ResetBuffers();
 
-	void HandleResolve(const boost::system::error_code& error, boost::asio::ip::tcp::resolver::iterator &i);
+	void HandleResolve(const boost::system::error_code& error, boost::asio::ip::tcp::resolver::iterator i);
 
 	void SendSearchQuery();
 

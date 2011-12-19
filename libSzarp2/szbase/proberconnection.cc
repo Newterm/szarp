@@ -61,7 +61,7 @@ void ProberConnection::ResetBuffers() {
 	m_output_buffer.consume(m_output_buffer.size());
 }
 
-void ProberConnection::HandleResolve(const boost::system::error_code& error, boost::asio::ip::tcp::resolver::iterator &i) {
+void ProberConnection::HandleResolve(const boost::system::error_code& error, boost::asio::ip::tcp::resolver::iterator i) {
 	if (error == boost::asio::error::operation_aborted)
 		return;
 	if (error) {

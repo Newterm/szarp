@@ -12,6 +12,7 @@ MAINTAINERCLEANFILES = Makefile.in
 # Compilations flags
 INCLUDES = @LUA_CFLAGS@ \
 	   @XML_CFLAGS@ \
+	   @BOOST_CPPFLAGS@ \
 	   -I@srcdir@/../libSzarp/include \
 	   -I@srcdir@/../libSzarp2/include \
 	   -DPREFIX=\"@prefix@\"
@@ -19,7 +20,7 @@ INCLUDES = @LUA_CFLAGS@ \
 LIBSZARP=../libSzarp/libSzarp.a \
 	../libSzarp2/libSzarp2.a
 
-LDADD = $(LIBSZARP) @XML_LIBS@ @BOOST_LDFLAGS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_THREAD_LIB@ @BOOST_DATE_TIME_LIB@
+LDADD = $(LIBSZARP) @XML_LIBS@ @BOOST_LDFLAGS@ @BOOST_FILESYSTEM_LIB@ @BOOST_THREAD_LIB@ @BOOST_DATE_TIME_LIB@ @BOOST_SYSTEM_LIB@
 
 # Programs to create
 

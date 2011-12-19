@@ -20,6 +20,7 @@
  * Pawe³ Pa³ucha pawel@praterm.com.pl
  */
 
+#include "config.h"
 #include "fileremover.h"
 #include "liblog.h"
 
