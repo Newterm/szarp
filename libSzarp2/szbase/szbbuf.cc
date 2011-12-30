@@ -593,8 +593,6 @@ szb_create_buffer(Szbase *szbase, const std::wstring &directory, int num, TSzarp
 
 	ret->szbase = szbase;
 
-	ipk->PrepareDrawDefinable();
-
 	fs::wpath rootpath(directory);
 	ret->rootdir = rootpath.string();
 

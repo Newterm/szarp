@@ -490,12 +490,16 @@ void DrawPicker::OnContextMenu(wxListEvent & event)
 
 	DefinedDrawInfo* ddi = m_defined_set->GetDraw(m_selected);
 
-	DefinedParam *dp = dynamic_cast<DefinedParam*>(ddi->GetParam());
-	if (dp)
-		m_context->Enable(drawpickTB_PARAM_EDIT, true);
-	else
+	if (ddi->IsValid()) {
+		DefinedParam *dp = dynamic_cast<DefinedParam*>(ddi->GetParam());
+		if (dp)
+			m_context->Enable(drawpickTB_PARAM_EDIT, true);
+		else
+			m_context->Enable(drawpickTB_PARAM_EDIT, false);
+	} else {
 		m_context->Enable(drawpickTB_PARAM_EDIT, false);
-
+		m_context->Enable(drawpickTB_EDIT, false);
+	}
 
 	PopupMenu(m_context);	// show menu
 }
@@ -565,6 +569,9 @@ void DrawPicker::Edit()
 	}
 
 	DefinedDrawInfo *draw = dynamic_cast<DefinedDrawInfo*>(m_defined_set->GetDraw(m_selected));
+	if (draw->IsValid() == false)
+		return;
+
 	if (m_draw_edit->Edit(draw) != wxID_OK)
 		return;
 

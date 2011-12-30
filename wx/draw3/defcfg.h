@@ -288,6 +288,8 @@ public:
 
 	DefinedDrawInfo(DefinedDrawsSets* ds);
 
+	virtual wxString GetValueStr(const double &val, const wxString &no_data_str = L"-");
+
 	virtual DefinedDrawsSets* GetDrawsSets();
 
 	/** @return name of draw */
@@ -330,6 +332,8 @@ public:
 
 	int GetScale();
 
+	int GetPrec();
+
 	void SetScaleMin(double scale);
 
 	double GetScaleMin();
@@ -347,7 +351,7 @@ public:
 
 	xmlNodePtr GenerateXML(xmlDocPtr parent);
 
-	bool GetValid() const;
+	bool IsValid() const;
 
 	void SetValid(bool);
 

@@ -119,13 +119,15 @@ void* QueryExecutor::Entry() {
 			free(q->prober_address.port);
 			post_response = false;
 		} else {
-
-			TParam *p = q->draw_info->GetParam()->GetIPKParam();
-			TSzarpConfig *cfg = p->GetSzarpConfig();
-
-			assert(cfg);
-
-			szb_buffer_t *szb = szbase->GetBuffer(cfg->GetPrefix());
+			TParam *p = NULL; 
+			TSzarpConfig *cfg = NULL;
+			szb_buffer_t *szb = NULL;
+			
+			if (q->draw_info->IsValid()) {
+				p = q->draw_info->GetParam()->GetIPKParam();
+				cfg = p->GetSzarpConfig();
+				szb = szbase->GetBuffer(cfg->GetPrefix());
+			}
 
 			switch (q->type) {
 				case DatabaseQuery::SEARCH_DATA: 
@@ -139,10 +141,12 @@ void* QueryExecutor::Entry() {
 					post_response = false;
 					break;
 				case DatabaseQuery::RESET_BUFFER:
-					szb_reset_buffer(szb);
+					if (szb)
+						szb_reset_buffer(szb);
 					break;
 				case DatabaseQuery::CLEAR_CACHE:
-					szbase->ClearCacheDir(cfg->GetPrefix().c_str());
+					if (cfg)
+						szbase->ClearCacheDir(cfg->GetPrefix().c_str());
 					break;
 				default:
 					break;
@@ -208,24 +212,30 @@ void QueryExecutor::ExecuteDataQuery(szb_buffer_t* szb, TParam* p, DatabaseQuery
 		}
 
 		time_t end = szb_move_time(i->time, 1, pt, i->custom_length);
-		i->response = 
-			szb_get_avg(szb, 
-				p, 
-				i->time,
-				end,
-				&i->sum,
-				&i->count,
-				pt);
+		if (p && szb) {
+			i->response = szb_get_avg(szb, 
+					p, 
+					i->time,
+					end,
+					&i->sum,
+					&i->count,
+					pt);
 
-		if (szb->last_err != SZBE_OK) {
-			i->ok = false;
-			i->error = szb->last_err;
-			i->error_str = wcsdup(szb->last_err_string.c_str());
+			if (szb->last_err != SZBE_OK) {
+				i->ok = false;
+				i->error = szb->last_err;
+				i->error_str = wcsdup(szb->last_err_string.c_str());
 
-			szb->last_err = SZBE_OK;
-			szb->last_err_string = std::wstring();
-		} else
+				szb->last_err = SZBE_OK;
+				szb->last_err_string = std::wstring();
+			} else {
+				i->ok = true;
+			}
+
+		} else {
+			i->response = nan("");
 			i->ok = true;
+		}
 
 		rq->value_data.vv->push_back(*i);
 
@@ -247,6 +257,11 @@ void QueryExecutor::StopSearch() {
 }
 
 void QueryExecutor::ExecuteSearchQuery(szb_buffer_t* szb, TParam *p, DatabaseQuery::SearchData& sd) {
+	if (szb == NULL) {
+		sd.ok = true;
+		sd.response = -1;
+		return;
+	}
 
 #ifndef NO_LUA
 	if (p->GetType() == TParam::P_LUA && p->GetFormulaType() == TParam::LUA_AV) {

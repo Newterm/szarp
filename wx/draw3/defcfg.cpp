@@ -221,6 +221,13 @@ double DefinedDrawInfo::GetScaleMin() {
 		return 0;
 }
 
+int DefinedDrawInfo::GetPrec() {
+	if (IsValid() == false)
+		return 0;
+
+	return DrawInfo::GetPrec();
+}
+
 void DefinedDrawInfo::SetScaleMax(double max_scale) {
 	if (GetScaleMax() == max_scale)
 		return;
@@ -257,6 +264,9 @@ void DefinedDrawInfo::SetParamName(wxString param_name) {
 }
 
 wxString DefinedDrawInfo::GetName() {
+	if (IsValid() == false)
+		return wxString();
+
 	if (m_long_changed)
 		return m_name;
 	else
@@ -264,6 +274,9 @@ wxString DefinedDrawInfo::GetName() {
 }
 
 wxString DefinedDrawInfo::GetShortName() {
+	if (IsValid() == false)
+		return wxString();
+
 	if (m_short_changed)
 		return m_short_name;
 	else
@@ -271,6 +284,9 @@ wxString DefinedDrawInfo::GetShortName() {
 }
 
 TDraw::SPECIAL_TYPES DefinedDrawInfo::GetSpecial() {
+	if (IsValid() == false)
+		return TDraw::NONE;
+
 	if (m_special_changed)
 		return m_sp;
 	else
@@ -298,6 +314,9 @@ void DefinedDrawInfo::SetDrawColor(wxColour color) {
 }
 
 double DefinedDrawInfo::GetMin() {
+	if (IsValid() == false)
+		return -2;
+
 	if (m_min_changed)
 		return m_min;
 	else
@@ -362,6 +381,9 @@ void DefinedDrawInfo::SetShortName(wxString name) {
 }
 
 double DefinedDrawInfo::GetMax() {
+	if (IsValid() == false)
+		return -1;
+
 	if (m_max_changed)
 		return m_max;
 	else
@@ -369,6 +391,9 @@ double DefinedDrawInfo::GetMax() {
 }
 
 wxString DefinedDrawInfo::GetUnit() {
+	if (IsValid() == false)
+		return wxString();
+
 	if (m_unit_changed)
 		return m_unit;
 	else
@@ -467,7 +492,7 @@ xmlNodePtr DefinedDrawInfo::GenerateXML(xmlDocPtr doc) {
 	return param;
 }
 
-bool DefinedDrawInfo::GetValid() const {
+bool DefinedDrawInfo::IsValid() const {
 	return m_valid;
 }
 
@@ -552,6 +577,14 @@ wxString DefinedDrawInfo::GetBaseParam() {
 DefinedDrawsSets* DefinedDrawInfo::GetDrawsSets() {
 	return m_ds;
 }
+
+wxString DefinedDrawInfo::GetValueStr(const double &val, const wxString& no_data_str) {
+	if (IsValid())
+		return DrawInfo::GetValueStr(val, no_data_str);
+	else
+		return no_data_str;
+}
+
 
 void DefinedDrawInfo::ParseXML(xmlNodePtr node) {
 
@@ -1354,10 +1387,12 @@ void DefinedDrawSet::SyncWithPrefix(wxString prefix, const std::vector<DefinedPa
 
 		if (dw->GetBaseDraw().IsEmpty()) {
 			DefinedParam* tp = LookupDefinedParam(dw->GetBasePrefix(), dw->GetParamName(), defined_params);
-			if (tp != NULL) 
+			if (tp != NULL)  {
 				dw->SetParam(tp);
-			else
+				dw->SetValid(true);
+			} else {
 				continue;
+			}
 		}
 
 		if (bc->GetRawDrawsSets().find(dw->GetBaseDraw()) 

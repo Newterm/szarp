@@ -1363,7 +1363,7 @@ TParam::PrepareDefinable()
     if (_prepared)
 	return;
 
-    sz_log(9, "\n\n|| Preparing param: (%p) %s", this, SC::S2A(_name).c_str());
+    sz_log(9, "\n\n|| Preparing param: (%p) %ls", this, _name.c_str());
 
     _prepared = true;
 
@@ -1380,7 +1380,7 @@ TParam::PrepareDefinable()
     TParam * tp = NULL;
 
     if (_formula.empty()) {
-	sz_log(0, "No formula for param = %s", SC::S2A(_name).c_str());
+	sz_log(0, "No formula for param = %ls", _name.c_str());
 	return;
     }
 
@@ -1399,7 +1399,7 @@ TParam::PrepareDefinable()
 
 	std::wstring absolute_name = _parentSzarpConfig->absoluteName(_formula.substr(sch, ech - sch), _name);
 
-	sz_log(9, "absoluteName: %s", SC::S2A(absolute_name).c_str());
+	sz_log(9, "absoluteName: %ls", absolute_name.c_str());
 
 	tp = _parentSzarpConfig->getParamByName(absolute_name);
 	if (NULL == tp) {
@@ -1413,9 +1413,9 @@ TParam::PrepareDefinable()
 
 	    if (tp->IsConst()) {
 		// replace param with const
-		sz_log(9, "\nPARAM: %s", SC::S2A(_name).c_str());
-		sz_log(9, " FORM: %s", SC::S2A(_formula).c_str());
-		sz_log(9, " >> replace (%s) with const [%f]", SC::S2A(tp->GetName()).c_str(), tp->GetConstValue());
+		sz_log(9, "\nPARAM: %ls", _name.c_str());
+		sz_log(9, " FORM: %ls", _formula.c_str());
+		sz_log(9, " >> replace (%ls) with const [%f]", tp->GetName().c_str(), tp->GetConstValue());
 
 		std::wstringstream wss;
 		wss << (int) rint(tp->GetConstValue() * pow(10.0, tp->GetPrec()));
@@ -1424,7 +1424,7 @@ TParam::PrepareDefinable()
 		_formula.replace(sch - 1, ech - sch + 2, cv);
 		sch += cv.length();
 
-		sz_log(9, " NFORM: %s", SC::S2A(_formula).c_str());
+		sz_log(9, " NFORM: %ls", _formula.c_str());
 	    }
 	    else {
 		_f_cache.push_back(tp);
@@ -1443,7 +1443,7 @@ TParam::PrepareDefinable()
 	    // one value
 	    _f_const_value = wcstod(_formula.c_str(), NULL) / pow(10.0, GetPrec());
 	    _f_const = true;
-	    sz_log(9, "Const (%s), value: %f", SC::S2A(_name).c_str(), _f_const_value);
+	    sz_log(9, "Const (%ls), value: %f", _name.c_str(), _f_const_value);
 	}
 	else {
 	    // equation, calculate it
@@ -1455,8 +1455,8 @@ TParam::PrepareDefinable()
 
     _parsed_formula = GetDrawFormula();
     
-    sz_log(9, "F: _formula: %s\nP: _parsed_formula: %s\nN: params count: %zd",
-	    SC::S2A(_formula).c_str(), SC::S2A(_parsed_formula).c_str(), _f_cache.size());
+    sz_log(9, "F: _formula: %ls\nP: _parsed_formula: %ls\nN: params count: %zd",
+	    _formula.c_str(), _parsed_formula.c_str(), _f_cache.size());
 	
     // check if N function used
     if (_parsed_formula.find(L'N') != std::wstring::npos)

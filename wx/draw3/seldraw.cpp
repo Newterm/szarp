@@ -144,7 +144,7 @@ SelectDrawValidator::OnMouseRightDown(wxMouseEvent &event) {
 	m_menu = new wxMenu();
 
 	DrawParam* dp = di->GetParam();
-	if (dp->GetIPKParam()->GetPSC())
+	if (di->IsValid() && dp->GetIPKParam()->GetPSC())
 		m_menu->Append(seldrawID_PSC,_("Set parameter"));
 
 	m_menu->SetClientData(m_cb);
@@ -286,14 +286,20 @@ void SelectDrawWidget::InsertSomeDraws(size_t start, size_t count) {
 
 		Draw* draw = m_dc->GetDraw(i);
 		DrawInfo* draw_info = draw->GetDrawInfo();
-		wxString label = wxString::Format(_T("%d."), draw->GetInitialDrawNo() + 1) + draw_info->GetName();
-		if (draw_info->GetParam()->GetIPKParam()->GetPSC())
-			label += _T("*");
-		m_cb_l[i]->Enable(TRUE);
-		m_cb_l[i]->SetValue(draw->GetEnable());
-		m_cb_l[i]->SetToolTip(cnm[draw_info->GetBasePrefix()] + _T(":") + draw_info->GetParamName());
-		if (draw->GetBlocked())
-			label.Replace(wxString::Format(_T("%d."), draw->GetInitialDrawNo() + 1), wxString::Format(_("%d.[B]"), i + 1), false);
+		wxString label;
+		if (draw_info->IsValid()) {
+			m_cb_l[i]->Enable(TRUE);
+			m_cb_l[i]->SetValue(draw->GetEnable());
+			m_cb_l[i]->SetToolTip(cnm[draw_info->GetBasePrefix()] + _T(":") + draw_info->GetParamName());
+
+			label = wxString::Format(_T("%d."), draw->GetInitialDrawNo() + 1) + draw_info->GetName();
+			if (draw_info->GetParam()->GetIPKParam()->GetPSC())
+				label += _T("*");
+			if (draw->GetBlocked())
+				label.Replace(wxString::Format(_T("%d."), draw->GetInitialDrawNo() + 1), wxString::Format(_("%d.[B]"), i + 1), false);
+		} else {
+			label = _T("***");
+		}
 		m_cb_l[i]->SetLabel(label);
 
 		wxValidator* validator = m_cb_l[i]->GetValidator();
@@ -480,6 +486,8 @@ void SelectDrawWidget::ShowDefinedParamDoc(DefinedParam *param) {
 }
 
 void SelectDrawWidget::GoToWWWDocumentation(DrawInfo *d) {
+	if (d->IsValid() == false)
+		return;
 	TParam *p = d->GetParam()->GetIPKParam();
 	TSzarpConfig* sc = p->GetSzarpConfig();
 

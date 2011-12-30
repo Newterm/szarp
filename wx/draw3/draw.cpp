@@ -172,7 +172,7 @@ DatabaseQuery* Draw::GetDataToFetch() {
 	if (GetEnable() == false)
 		return q;
 
-	bool no_max_probes = m_draw_info->GetParam()->GetIPKParam()->GetFormulaType() == TParam::LUA_AV;
+	bool no_max_probes = !m_draw_info->IsValid() || m_draw_info->GetParam()->GetIPKParam()->GetFormulaType() == TParam::LUA_AV;
 	for (size_t i = 0; i < m_values.len(); ++i) {
 		ValueInfo &v = m_values.Get(i);
 

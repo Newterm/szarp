@@ -146,7 +146,7 @@ class DrawInfo
 
 	virtual DrawsSets* GetDrawsSets() = 0;
 
-	wxString GetValueStr(const double &val, const wxString &no_data_str = L"-");
+	virtual wxString GetValueStr(const double &val, const wxString &no_data_str = L"-");
 
 	virtual bool IsValid() const;
 

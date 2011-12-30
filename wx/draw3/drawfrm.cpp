@@ -212,7 +212,7 @@ void DrawFrame::OnEdit(wxCommandEvent & event)
 }
 
 void DrawFrame::OnEditSetAsNew(wxCommandEvent &e) {
-	bool network_set = e.GetId() == XRCID("EditAsNewNewtwork");
+	bool network_set = e.GetId() == XRCID("EditAsNewNetwork");
 
 	DrawPicker *dp = new DrawPicker(this, config_manager, database_manager, remarks_handler);
 	if (dp->EditAsNew(draw_panel->GetSelectedSet(), draw_panel->GetPrefix(), network_set) == wxID_OK) {
@@ -1133,7 +1133,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     LOG_EVT_MENU(XRCID("ClearCache"), DrawFrame , OnClearCache, "drawfrm:clearcache" )
     LOG_EVT_MENU(XRCID("EditSet"), DrawFrame , OnEdit, "drawfrm:editset" )
     LOG_EVT_MENU(XRCID("EditAsNew"), DrawFrame , OnEditSetAsNew, "drawfrm:editasnew" )
-    LOG_EVT_MENU(XRCID("EditAsNewNewtwork"), DrawFrame , OnEditSetAsNew, "drawfrm:editasnew" )
+    LOG_EVT_MENU(XRCID("EditAsNewNetwork"), DrawFrame , OnEditSetAsNew, "drawfrm:editasnew" )
     LOG_EVT_MENU(XRCID("ImportSet"), DrawFrame , OnImportSet, "drawfrm:importset" )
     LOG_EVT_MENU(XRCID("ExportSet"), DrawFrame , OnExportSet, "drawfrm:exportset" )
     LOG_EVT_MENU(XRCID("DelSet"), DrawFrame , OnDel, "drawfrm:delset" )
