@@ -642,8 +642,21 @@ wykresu poziomego (z osi X) na maksymalnie 24 obszary, w których warto¶ci Y s± u
 <section id="draw3-ext-chartxyz">
 <title>Zale¿no¶ci pomiêdzy parametrami - wykres XYZ</title>
 <para>
-Rozszerzenie wykresów X/Y stanowi± wykresy XYZ. Wykresy XYZ pokazuj± zale¿no¶æ miêdzy warto¶ciami trzech
-parametrów równocze¶nie. Aby obejrzeæ wykres XYZ wybierz z menu <guimenu>Plik</guimenu> opcjê <guimenu>Wykres XYZ</guimenu>.
+Rozszerzenie wykresów X/Y stanowi± wykresy XYZ. Wykresy XYZ pokazuj± zale¿no¶æ miêdzy
+warto¶ciami trzech parametrów równocze¶nie. Dla podanego okresu czasu i ¶redniej program
+draw3 zbiera warto¶ci 3 wybranych parametrów dla ka¿dego z punktów w czasie z podanego
+przedzia³u (np. dla ¶redniej dzieñ bêd± to ¶redniej dla ka¿dej godziny z wybranego
+zakresu). Tak wybrane trójki warto¶ci stanowi± punkty w przestrzni trójwymiarowej
+stanowi±ce bazê budowanego wykresu. Punkty te s± nastêpnie rozpinane na siatce 24 na 24 
+oczka, punktami wygenerowango wykresu bêd± punkty o wspó³rzêdnych Xo, Y¶r, Yo. Gdzie  
+Xo i Zo to odpowiednio wspó³rzêdne x i z ¶rodka danego oczka, a Y¶r to ¶rednia warto¶æ
+y wszystkich punktów które zawieraj± siê w danym oczku (jest to odpowienik u¶redniania
+dla wykresu XY). Wykresy 3D maj± dwie postacie - punktow± oraz 'p³aszczyznow±', wykres
+punktowy to taki w którym draw3 rysje po prostu dany wykres, a wykres 'p³aszczynowy'
+to wykres w którym program dodatkowo do samych punktów rysuje triangulacje tych
+punktów (w ka¿dej chwili w trakcie ogl±dania wykresu mo¿na siê prze³±czyæ miêdzy
+tymi dwoma trybami naciskaj±c klawisz <keycode>spacja</keycode>.
+Aby obejrzeæ wykres XYZ wybierz z menu <guimenu>Plik</guimenu> opcjê <guimenu>Wykres XYZ</guimenu>.
 Po jej wybraniu zobaczysz okno do wyboru parametrów oraz zakresu czasu z jakiego maj± byæ pobrane warto¶ci. Okno to jest bardzo podobne do analogicznego okna dla wykresów X/Y. Podobnie jak w przypadku dwuwymiarowego wykresu, domy¶lne warto¶ci pól zostan± pobrane z aktualnego zestawu.
 <figure>
 <title>Tworzenie wykresu XYZ</title>
@@ -655,12 +668,12 @@ Po jej wybraniu zobaczysz okno do wyboru parametrów oraz zakresu czasu z jakiego
 Gdy okre¶lisz parametry oraz przedzia³ czasowy naci¶nij przycisk OK. Powinno to spowodowaæ pobranie danych z bazy oraz otwartcie okna z wykresem.
 </para>
 <para>
-Na górze okna znajduje siê menu z opcjami pozwalaj±cymi z opcjami pozwalaj±cymi: zmianê akutalnych parametrów wykresu, wydruk wykresu, podgl±d wydruku
+Na górze okna znajduje siê menu z opcjami pozwalaj±cymi na: zmianê akutalnych parametrów wykresu, wydruk wykresu, podgl±d wydruku
 oraz zamkniêcie aktualnego okna.
 </para>
 <para>
 Poni¿ej menu znajdziesz g³ówn± cze¶æ okna, zawieraj±ca w³a¶ciwy wykres. W lewym-górnym rogu okna wy¶wietlana jest
-informacja o akutalnej pozycji kursorsa. Kursor reprezentowany jest na wykresie jako bia³y sze¶æian, którego pozycjê mo¿na zmieniaæ za pomoc± klawiszy kursora.
+informacja o akutalnej pozycji kursora. Kursor reprezentowany jest na wykresie jako bia³y sze¶æian, którego pozycjê mo¿na zmieniaæ za pomoc± klawiszy kursora.
 Mo¿esz te¿ spowodowaæ ustawienie siê kursora na konkretnym punkcie, klikaj±c na ten punkt lewym klawisem myszy.
 <figure>
 <title>Wykres XYZ</title>
