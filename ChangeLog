@@ -1,6 +1,12 @@
+2012-01-01	Darek Marcinkiewicz <reksio@newterm.pl>
+	* update of xyz graphs documentation
+	* fix in handling of incorectly defined sets
+	(after regression introduced by changes made for
+	network params/sets)	
+	* speedup in large params.xml loading
 2011-12-09	Darek Marcinkiewicz <reksio@newterm.pl>
 	* make szarp compile with more recent version of boost
-	than 1.42
+	than 1.42 
 2011-12-04	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2: make lua parser compile with latest boost,
 	for some reason spirit started to freak out on fusion
