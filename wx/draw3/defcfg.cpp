@@ -81,6 +81,7 @@ DefinedDrawInfo::DefinedDrawInfo(DrawInfo *di, DefinedDrawsSets* ds)
 	m_max_scale_changed = false;
 	m_col_changed = false;
 	m_unit_changed = false;
+	m_valid = true;
 
 	m_base_draw = di->GetDraw()->GetWindow();
 	m_param_name = di->GetParam()->GetParamName();
@@ -102,6 +103,7 @@ DefinedDrawInfo::DefinedDrawInfo(DefinedDrawsSets* ds)
 	m_col_changed = false;
 	m_special_changed = false;
 	m_unit_changed = false;
+	m_valid = true;
 }
 
 
@@ -120,6 +122,7 @@ DefinedDrawInfo::DefinedDrawInfo(EkrnDefDraw &edd, DefinedDrawsSets* ds) :
 	m_col_changed = false;
 	m_special_changed = false;
 	m_unit_changed = false;
+	m_valid = true;
 
 	m_base_draw = edd.di->GetDraw()->GetWindow();
 	m_param_name = edd.di->GetParam()->GetParamName();
@@ -158,6 +161,7 @@ DefinedDrawInfo::DefinedDrawInfo(wxString draw_name,
 	m_col_changed = true;
 	m_special_changed = true;
 	m_unit_changed = true;
+	m_valid = true;
 
 	d = NULL;
 	p = dp;
