@@ -1,0 +1,53 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+from PyQt4 import QtGui , QtCore
+
+from xml_view import XmlView
+from plug_diag import PluginsDialog
+
+from utils import *
+
+from libipk.params import Params
+from libipk.plugins import Plugins
+
+from ui.main_win import Ui_MainWindow
+
+DEFAULT_PLUGINS = u'./plugins/'
+
+class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
+	def __init__( self ) :
+		QtGui.QMainWindow.__init__( self )
+		self.setupUi( self )
+
+		self.view_full = XmlView( self.centralwidget )
+		self.hlay_xml.addWidget( self.view_full )
+
+		self.view_result = XmlView( self.centralwidget )
+		self.hlay_xml.addWidget( self.view_result )
+
+		self.params = None
+		self.plugins = Plugins()
+		self.plugins.load(DEFAULT_PLUGINS)
+
+	def openParamsDialog( self ) :
+		fn = QtGui.QFileDialog.getOpenFileNameAndFilter( self ,
+				u'Open File' , u'.' ,
+				u'XML Files (*.xml);;All (*)' )
+
+		if fn[0] != '' :
+			self.openParams( unicode(fn[0]) )
+
+	def openParams( self , filename ) :
+		self.params = Params( filename )
+		self.view_full.clear()
+		self.view_result.clear()
+		self.view_full.add_node( self.params.root )
+
+	def openRunDialog( self ) :
+		diag = PluginsDialog( self , self.plugins )
+		if diag.exec_() == QtGui.QDialog.Accepted :
+			plug = self.plugins.get( diag.selected_name() )
+			self.params.apply( plug.xpath , plug.process , diag.selected_args() )
+			self.view_result.xml.setText( fromUtf8(plug.result_pretty()) )
+
