@@ -1,6 +1,8 @@
 
 from PyQt4 import QtGui , QtCore
 
+from PyQt4.QtCore import QStringList
+
 from libipk.plugins import Plugins
 
 from ui.plug_diag import Ui_PluginsDialog
@@ -21,7 +23,7 @@ class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog ) :
 		self.ents = []
 
 	def fill( self , plugins ) :
-		self.names = QtCore.QStringList( plugins.names() )
+		self.names = QStringList( plugins.names() )
 		self.names.sort()
 		self.listView.setModel( QtGui.QStringListModel( self.names ) )
 

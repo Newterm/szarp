@@ -13,30 +13,32 @@ from libipk.plugins import Plugins
 
 from ui.main_win import Ui_MainWindow
 
-DEFAULT_PLUGINS = u'./plugins/'
+DEFAULT_PLUGINS = './plugins/'
 
 class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 	def __init__( self ) :
 		QtGui.QMainWindow.__init__( self )
 		self.setupUi( self )
 
-		self.view_full = XmlView( self.centralwidget )
+		self.view_full = XmlView( 'params' , self.centralwidget )
 		self.hlay_xml.addWidget( self.view_full )
 
-		self.view_result = XmlView( self.centralwidget )
+		self.view_result = XmlView( 'result' , self.centralwidget )
 		self.hlay_xml.addWidget( self.view_result )
 
 		self.params = None
 		self.plugins = Plugins()
 		self.plugins.load(DEFAULT_PLUGINS)
 
+#        self.openParams( './tests/params.xml' )
+
 	def openParamsDialog( self ) :
 		fn = QtGui.QFileDialog.getOpenFileNameAndFilter( self ,
-				u'Open File' , u'.' ,
-				u'XML Files (*.xml);;All (*)' )
+				'Open File' , '.' ,
+				'XML Files (*.xml);;All (*)' )
 
 		if fn[0] != '' :
-			self.openParams( unicode(fn[0]) )
+			self.openParams( toUtf8(fn[0]) )
 
 	def openParams( self , filename ) :
 		self.params = Params( filename )
