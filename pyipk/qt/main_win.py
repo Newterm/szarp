@@ -30,8 +30,6 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 		self.plugins = Plugins()
 		self.plugins.load(DEFAULT_PLUGINS)
 
-#        self.openParams( './tests/params.xml' )
-
 	def openParamsDialog( self ) :
 		fn = QtGui.QFileDialog.getOpenFileNameAndFilter( self ,
 				'Open File' , '.' ,
