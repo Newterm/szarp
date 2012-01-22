@@ -24,8 +24,8 @@ clean:
 
 install:
 if DEB_BUILD
-	python${PYVER} setup.py install --root $(DESTDIR) --prefix /usr --install-layout=deb
+	python${PYVER} setup.py install --root $(DESTDIR) --prefix /opt/szarp/ --install-layout=deb
 else
-	python${PYVER} setup.py install 
+	python${PYVER} setup.py install --prefix /opt/szarp/
 endif
 

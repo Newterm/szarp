@@ -24,8 +24,8 @@ setup(name='pyipkedit',
       author='Jakub Kotur',
       author_email='qba@newterm.pl',
 	  url='http://www.newterm.pl',
-      packages=['libipk'] ,
-	  scripts=['cmdline/ipkcmd'],
-	  data_files=[ ('/usr/share/libipk' , [ 'plugins/' + f for f in os.listdir('plugins') if f.endswith('plg.py') ] ) ]
+      packages=['libipk','qtipk'],
+	  scripts=['bin/ipkcmd' , 'bin/ipkqt'],
+	  data_files=[ ('/opt/szarp/lib/plugins/' , [ 'plugins/' + f for f in os.listdir('plugins') if f.endswith('plg.py') ] ) ]
      )
 

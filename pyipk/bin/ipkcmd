@@ -9,7 +9,7 @@ from optparse import OptionParser , OptionGroup
 from libipk.params import Params
 from libipk.plugins import Plugins
 
-DEFAULT_PLUGINS = '/usr/share/libipk/'
+DEFAULT_PLUGINS = '/opt/szarp/lib/plugins/'
 
 class App :
 	def __init__( self ) :

@@ -13,10 +13,8 @@ from libipk.plugins import Plugins
 
 from ui.main_win import Ui_MainWindow
 
-DEFAULT_PLUGINS = './plugins/'
-
 class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
-	def __init__( self ) :
+	def __init__( self , plugins ) :
 		QtGui.QMainWindow.__init__( self )
 		self.setupUi( self )
 
@@ -29,7 +27,7 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 
 		self.params = None
 		self.plugins = Plugins()
-		self.plugins.load(DEFAULT_PLUGINS)
+		self.plugins.load(plugins)
 
 	def touch_params( self ) :
 		if self.params != None : self.params.touch()

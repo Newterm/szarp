@@ -1,0 +1,13 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import sys
+
+from qtipk.app import QtApp
+
+DEFAULT_PLUGINS = '/opt/szarp/lib/plugins/'
+
+if __name__ == '__main__' :
+	app = QtApp( sys.argv , DEFAULT_PLUGINS )
+	sys.exit( app.run() )
+

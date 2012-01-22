@@ -1,2 +1,2 @@
 #!/bin/bash
-env PYTHONPATH="${PYTHONPATH}:." python ./qt/ipkqt
+env PYTHONPATH="${PYTHONPATH}:." python ./bin/ipkqt

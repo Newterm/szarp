@@ -1,3 +1,3 @@
 #!/bin/bash
-env PYTHONPATH="${PYTHONPATH}:." python cmdline/ipkcmd --load 'plugins' $@
+env PYTHONPATH="${PYTHONPATH}:." python ./bin/ipkcmd --load 'plugins' $@
 
