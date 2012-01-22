@@ -14,12 +14,15 @@ except:
 from utils import * 
 
 class XmlView( QtGui.QWidget , Ui_XmlView ) :
+	changedSig = QtCore.pyqtSignal()
+
 	def __init__( self , name , parent ) :
 		QtGui.QWidget.__init__( self , parent )
 		self.setupUi(self)
 
 		self.model = XmlTreeModel()
 		self.view.setModel( self.model )
+		self.model.changedSig.connect(self.changedSig)
 
 		self.set_name( name )
 
@@ -47,6 +50,8 @@ class DragInfo :
 		self.parentid = parentid
 
 class XmlTreeModel(QtCore.QAbstractItemModel):
+	changedSig = QtCore.pyqtSignal()
+
 	def __init__(self):
 		QtCore.QAbstractItemModel.__init__(self)
 		self.nodes = []
@@ -126,7 +131,6 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 		mime.setData('pyipk/indexes','')
 		return mime
 
-
 	def dropMimeData(self, data, action, row, column, parent):
 		if not data.hasFormat('pyipk/indexes') : return False
 
@@ -151,6 +155,8 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 			parentinfo.node.insert(row,d.nodeinfo.node)
 			self.endInsertRows()
 		del self.drag[:]
+
+		self.changedSig.emit()
 
 		return True
 

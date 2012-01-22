@@ -22,6 +22,7 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 
 		self.view_full = XmlView( 'params' , self.centralwidget )
 		self.hlay_xml.addWidget( self.view_full )
+		self.view_full.changedSig.connect( self.touch_params )
 
 		self.view_result = XmlView( 'result' , self.centralwidget )
 		self.hlay_xml.addWidget( self.view_result )
@@ -29,6 +30,41 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 		self.params = None
 		self.plugins = Plugins()
 		self.plugins.load(DEFAULT_PLUGINS)
+
+	def touch_params( self ) :
+		if self.params != None : self.params.touch()
+
+	def rlyClose( self ) :
+		if self.params == None or self.params.close() :
+			return True
+		else :
+			reply = QtGui.QMessageBox.question(self, 'Message',
+				"Params not saved. Are you sure to quit?",
+				QtGui.QMessageBox.Yes | QtGui.QMessageBox.No,
+				QtGui.QMessageBox.No)
+
+			if reply == QtGui.QMessageBox.Yes:
+				return True
+			else :
+				return False
+
+	def closeEvent(self, event):
+		if self.rlyClose() :
+			event.accept()
+		else :
+			event.ignore()
+
+	def save( self ) :
+		if self.params != None :
+			self.params.save()
+
+	def saveAs( self ) :
+		fn = QtGui.QFileDialog.getSaveFileNameAndFilter( self , 
+				'Save File' , '.' ,
+				'XML Files (*.xml);;All (*)' )
+
+		if fn[0] != '' and self.params != None :
+			self.params.save( toUtf8(fn[0]) )
 
 	def openParamsDialog( self ) :
 		fn = QtGui.QFileDialog.getOpenFileNameAndFilter( self ,

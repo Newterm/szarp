@@ -17,7 +17,7 @@ class Plugin :
 		raise NotImplementedError('You must implement precess method')
 
 	def result( self ) :
-		return None
+		raise NotImplementedError('You must implement result method')
 
 	def result_pretty( self ) :
 		return repr(self.result())

@@ -11,6 +11,7 @@ from lxml import etree
 class Params :
 	def __init__( self , filename = None , mode = None , namespaces = None ) :
 		self.filename = filename
+		self.changed = False
 		self.doc = None
 		self.nsmap = {}
 		if filename :
@@ -21,13 +22,22 @@ class Params :
 			raise IOError('File already opened')
 		self.doc = etree.parse( filename )
 		self.root = self.doc.getroot()
+		self.changed = False
 
 		# add default params.xml namespace
 		if namespaces == None :
 			self.add_namespace( 'ipk' , 'http://www.praterm.com.pl/SZARP/ipk' )
 
+	def touch( self ) :
+		self.changed = True
+
+	def save( self , fn = None ) :
+		if fn == None : fn = self.filename
+		self.doc.write( fn , pretty_print=True )
+		self.changed = False
+
 	def close( self ) :
-		pass
+		return not self.changed 
 
 	def add_namespace( self , name , url ) :
 		self.nsmap[name] = url
