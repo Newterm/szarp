@@ -5,7 +5,7 @@
 
 SUBDIRS = 
 
-LDADD=../../libSzarp/libSzarp.a @SSL_LIBS@ @PAM_LIBS@ @XML_LIBS@
+LDADD=../../libSzarp/libSzarp.la @SSL_LIBS@ @PAM_LIBS@ @XML_LIBS@
 INCLUDES=\
 	-I@srcdir@/../../include		\
 	-I@srcdir@/../../libSzarp/include	\

@@ -7,8 +7,8 @@ SUBDIRS =
 
 SOURCE_DIR=@srcdir@
 
-LDADD=@WX_LIBS@ ../../libSzarp2/libSzarp2.a @XML_LIBS@ \
-	../../libSzarp/libSzarp.a @CURL_LIBS@ @LDADD@ @LUA_LIBS@
+LDADD=@WX_LIBS@ ../../libSzarp2/libSzarp2.la @XML_LIBS@ \
+	../../libSzarp/libSzarp.la @CURL_LIBS@ @LDADD@ @LUA_LIBS@
 INCLUDES=\
 	-I $(SOURCE_DIR)/../../include \
 	-I $(SOURCE_DIR)/../../libSzarp2/include \

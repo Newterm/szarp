@@ -14,12 +14,12 @@ INCLUDES=-I$(INCLUDE_DIR) @BOOST_CPPFLAGS@ @XML_CFLAGS@
 
 LEX=@LEX@
 
-noinst_LIBRARIES = libSzarp.a
+noinst_LTLIBRARIES = libSzarp.la
 
 libparnt.yy.cc: libparnt.lex $(INCLUDE_DIR)/libpar_int.h $(INCLUDE_DIR)/libparnt.parse.h
 	$(LEX) -o$@ $<
 
-libSzarp_a_SOURCES = \
+libSzarp_la_SOURCES = \
                       libparnt.yy.cc \
                       libparnt.cc \
                       libparnt.parse.cc \

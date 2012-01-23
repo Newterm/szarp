@@ -40,6 +40,8 @@ AC_PROG_CPP
 AC_PROG_CXX([g++3 g++-3 g++])
 # C++ preprocesor (sets CXXCPP)
 AC_PROG_CXXCPP
+#libtool
+LT_INIT
 #enable exe extensions in conditionaly built programs on pre 2.50 autoconf's
 AC_EXEEXT
 # we use pkg-config for configure, so check it first
@@ -58,9 +60,6 @@ AC_CHECK_YYLEX_DESTROY()
 
 # ln -s (sets LN_S)
 AC_PROG_LN_S
-
-# ranlib (sets RANLIB)
-AC_PROG_RANLIB
 
 # bison (sets YACC)
 AC_CHECK_PROG([YACC], [bison], [bison], [])
@@ -742,6 +741,10 @@ if test $no_boost_base = "no" ; then
 	AX_BOOST_PROGRAM_OPTIONS([no_boost_program_options="no"], [no_boost_program_options="yes"])
 
 	AC_DEFINE(BOOST_FILESYSTEM_VERSION, 2, [Out code is compatible with version 2 of boost::filesysstem])
+
+	AX_PYTHON
+	AX_BOOST_PYTHON
+
 fi
 
 #Check for LIBEVENT
@@ -932,7 +935,7 @@ CXXFLAGS="$CXXFLAGS -Wall"
 SUBDIRS=""
 
 # Always included
-SUBDIRS="$SUBDIRS libSzarp libSzarp2"
+SUBDIRS="$SUBDIRS libSzarp libSzarp2 python"
 
 # Included under linux
 if test x$with_mingw32 != xyes ; then
@@ -1088,6 +1091,8 @@ AC_OUTPUT( \
 	libSzarp/Makefile \
 	libSzarp2/Makefile \
 	libSzarp2/tools/ipk_config \
+	python/Makefile \
+	python/pyszbase/Makefile \
 	meaner3/Makefile \
 	parcook/Makefile \
 	parcook/analiza/Makefile \

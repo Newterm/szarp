@@ -1,3 +1,11 @@
+2012-01-23	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libtoolization
+	* python module for accessing szbase, example session:
+		>>> import libpyszbase
+		>>> libpyszbase.init("/opt/szarp", "pl")
+		>>> t = libpyszbase.search_last(u"gcie:Kocio³ 3:Sterownik:Temperatura zadana")
+		>>> libpyszbase.get_value(u"gcie:Kocio³ 3:Sterownik:Temperatura zadana", t, libpyszbase.PROBE_TYPE.PT_MIN10)
+		130.0
 2012-01-01	Darek Marcinkiewicz <reksio@newterm.pl>
 	* update of xyz graphs documentation
 	* fix in handling of incorectly defined sets

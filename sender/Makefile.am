@@ -17,8 +17,8 @@ INCLUDES = @LUA_CFLAGS@ \
 	   -I@srcdir@/../libSzarp2/include \
 	   -DPREFIX=\"@prefix@\"
 
-LIBSZARP=../libSzarp/libSzarp.a \
-	../libSzarp2/libSzarp2.a
+LIBSZARP=../libSzarp/libSzarp.la \
+	../libSzarp2/libSzarp2.la
 
 LDADD = $(LIBSZARP) @XML_LIBS@ @BOOST_LDFLAGS@ @BOOST_FILESYSTEM_LIB@ @BOOST_THREAD_LIB@ @BOOST_DATE_TIME_LIB@ @BOOST_SYSTEM_LIB@
 

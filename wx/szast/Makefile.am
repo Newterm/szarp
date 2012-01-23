@@ -16,8 +16,8 @@ INCLUDES = @WX_CXXFLAGS@ @XML_CFLAGS@ @BOOST_CPPFLAGS@ \
         -DINSTALL_PREFIX='"@prefix@"' \
 	@LUA_CFLAGS@
 
-LIBSZARP=../../libSzarp/libSzarp.a
-LIBSZARP2=../../libSzarp2/libSzarp2.a
+LIBSZARP=../../libSzarp/libSzarp.la
+LIBSZARP2=../../libSzarp2/libSzarp2.la
 LIBWXCOMMON=../common/libwxcommon.a
 
 # Program to create

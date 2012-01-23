@@ -23,8 +23,8 @@ INCLUDES = @GDK_CFLAGS@ @GTK_CFLAGS@ @WX_CXXFLAGS@ @XML_CFLAGS@ @RSYNC_CFLAGS@ @
 	-I@srcdir@/../../libSzarp2/misc \
 	-DPREFIX=\"@prefix@\"
 
-LIBSZARP=../../libSzarp/libSzarp.a
-LIBSZARP2=../../libSzarp2/libSzarp2.a
+LIBSZARP=../../libSzarp/libSzarp.la
+LIBSZARP2=../../libSzarp2/libSzarp2.la
 LIBWXCOMMON=../common/libwxcommon.a
 
 ssc_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2)

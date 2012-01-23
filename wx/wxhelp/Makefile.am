@@ -14,7 +14,7 @@ INCLUDES = @WX_CXXFLAGS@ -I@srcdir@/../common -DPREFIX=\"@prefix@\" \
 	-I@srcdir@/../../libSzarp/include
 
 LIBWXCOMMON=../common/libwxcommon.a
-LIBSZARP=../../libSzarp/libSzarp.a
+LIBSZARP=../../libSzarp/libSzarp.la
 
 # Program to create
 

@@ -19,7 +19,7 @@ XSLT_DIR=$(SOURCE_DIR)/xslt
 
 LDADD = @LEXLIB@ @CURL_LIBS@ @XSLT_LIBS@ @XML_LIBS@ @LUA_LIBS@ 
 	@ZIP_FLAGS@ \
-	libSzarp2.a ../libSzarp/libSzarp.a 
+	libSzarp2.la ../libSzarp/libSzarp.la 
 
 INCLUDES = @XML_CFLAGS@ @XSLT_CFLAGS@ @CURL_CFLAGS@ @LUA_CFLAGS@ \
 	   @BOOST_CPPFLAGS@ @ZIP_CFLAGS@ \
@@ -29,17 +29,17 @@ INCLUDES = @XML_CFLAGS@ @XSLT_CFLAGS@ @CURL_CFLAGS@ @LUA_CFLAGS@ \
 	-I$(SZBASE_DIR)					\
 	-DPREFIX=\"@prefix@\"
 
-noinst_LIBRARIES = libSzarp2.a
+noinst_LTLIBRARIES = libSzarp2.la
 
 EXTRA_PROGRAMS = szbtest lua_parser_test xmlreader_test
 szbtest_SOURCES = $(SZBASE_DIR)/szbtest.cc
 
 lua_parser_test_INCLUDES = $(INCLUDES)
-lua_parser_test_LDADD = $(LDADD) ../libSzarp/libSzarp.a libSzarp2.a
+lua_parser_test_LDADD = $(LDADD) ../libSzarp/libSzarp.la libSzarp2.la
 lua_parser_test_SOURCES = $(SZBASE_DIR)/lua_parser_test.cc
 
 xmlreader_test_INCLUDES = $(INCLUDES)
-xmlreader_test_LDADD = $(LDADD) ../libSzarp/libSzarp.a libSzarp2.a $(BOOST_LDFLAGS) $(BOOST_SYSTEM_LIB) $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_REGEX_LIB) $(BOOST_DATE_TIME_LIB)  ../libSzarp/liblog.o
+xmlreader_test_LDADD = $(LDADD) ../libSzarp/libSzarp.la libSzarp2.la $(BOOST_LDFLAGS) $(BOOST_SYSTEM_LIB) $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_REGEX_LIB) $(BOOST_DATE_TIME_LIB)  ../libSzarp/liblog.o
 xmlreader_test_SOURCES = $(IPK_DIR)/xmlreader_test.cc
 
 
@@ -64,7 +64,7 @@ else
 INCLUDE_PARSERS = $(PARSERS_FILES)
 endif
 
-libSzarp2_a_SOURCES = \
+libSzarp2_la_SOURCES = \
 			$(IPK_DIR)/tdevice.cc \
 			$(IPK_DIR)/tdraw.cc \
 			$(IPK_DIR)/tparam.cc \
@@ -119,14 +119,12 @@ libSzarp2_a_SOURCES = \
 			$(SZBASE_DIR)/luadatablock.cc $(SZBASE_DIR)/luadatablock.h \
 			$(SZBASE_DIR)/szbhash.cc $(SZBASE_DIR)/szbhash.h \
 			$(SZBASE_DIR)/szbdatablock.cc $(SZBASE_DIR)/szbdatablock.h \
-			$(SZBASE_DIR)/szbdatablock.cc $(SZBASE_DIR)/szbdatablock.h \
 			$(SZBASE_DIR)/szbfilewatcher.cc $(INCLUDE_DIR)/szbase/szbfilewatcher.h \
 			$(SZBASE_DIR)/szbcancelhandle.cc $(INCLUDE_DIR)/szbase/szbcancelhandle.h \
 			$(SZBASE_DIR)/loptdatablock.cc $(SZBASE_DIR)/loptdatablock.h \
 			$(SZBASE_DIR)/lua_parser_extra.cc $(SZBASE_DIR)/lua_parser_extra.h \
 			$(SZBASE_DIR)/lua_parser.cc $(INCLUDE_DIR)/szbase/lua_syntax.h \
 			$(SZBASE_DIR)/proberconnection.cc $(SZBASE_DIR)/proberconnection.h \
-			$(SZBASE_DIR)/luacalculate.cc $(SZBASE_DIR)/luacalculate.h \
 			$(SZBASE_DIR)/luacalculate.cc $(SZBASE_DIR)/luacalculate.h \
 			$(SZBASE_DIR)/loptcalculate.cc $(SZBASE_DIR)/loptcalculate.h \
 			$(SZBASE_DIR)/probeblock.cc \

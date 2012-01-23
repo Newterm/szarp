@@ -14,8 +14,8 @@ INCLUDES = @WX_CXXFLAGS@ @XML_CFLAGS@ @LUA_CFLAGS@ @BOOST_CPPFLAGS@ \
 	-I@srcdir@/../../libSzarp2/include \
         -I@srcdir@/../../include -I@srcdir@/../common 
 
-LIBSZARP=../../libSzarp/libSzarp.a
-LIBSZARP2=../../libSzarp2/libSzarp2.a 
+LIBSZARP=../../libSzarp/libSzarp.la
+LIBSZARP2=../../libSzarp2/libSzarp2.la 
 LIBWXCOMMON=../common/libwxcommon.a
 
 # Program to create

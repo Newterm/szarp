@@ -25,8 +25,8 @@ INCLUDES = @WX_CXXFLAGS@ @XML_CFLAGS@ @LUA_CFLAGS@ @SSL_CFLAGS@ @BOOST_CPPFLAGS@
 	   -I@srcdir@/../../extern/wxscintilla/include \
 	   -DPREFIX=\"@prefix@\"
 	
-LIBSZARP=../../libSzarp/libSzarp.a
-LIBSZARP2=../../libSzarp2/libSzarp2.a
+LIBSZARP=../../libSzarp/libSzarp.la
+LIBSZARP2=../../libSzarp2/libSzarp2.la
 LIBWXCOMMON=../common/libwxcommon.a
 LIBWXSCINTILLA=../../extern/wxscintilla/libwxscintilla.a
 GUIDIR=GUI/
