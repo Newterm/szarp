@@ -50,9 +50,11 @@ Files: opt/szarp/bin/paramd
 Files: opt/szarp/resources/paramd_access.conf
 
 Package: szarp-pyipk
-Files: usr/bin/ipkcmd
-Files: usr/share/libipk
-Files: usr/lib/python*/site-packages/libipk*
+Files: opt/szarp/bin/ipkcmd
+Files: opt/szarp/bin/ipkqt
+Files: opt/szarp/lib/plugins
+Files: opt/szarp/lib/python*/dist-packages/libipk*
+Files: opt/szarp/lib/python*/dist-packages/qtipk*
 
 Package: szarp-xsltd
 Files: opt/szarp/resources/xsltd
