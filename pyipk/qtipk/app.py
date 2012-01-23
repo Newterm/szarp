@@ -1,9 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import sip
+sip.setapi('QString', 2)
+
 from PyQt4 import QtGui
 
-from main_win import MainWindow
+from .main_win import MainWindow
 
 class QtApp( QtGui.QApplication ) :
 	def __init__( self , argv , plugins ) :

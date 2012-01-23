@@ -1,11 +1,14 @@
 
-from PyQt4 import QtGui , QtCore
+import sip
+sip.setapi('QString', 2)
 
-from PyQt4.QtCore import QStringList
+from PyQt4 import QtGui , QtCore
 
 from libipk.plugins import Plugins
 
-from ui.plug_diag import Ui_PluginsDialog
+from .utils import toUtf8
+
+from .ui.plug_diag import Ui_PluginsDialog
 
 class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog ) :
 	def __init__( self , parent , plugins ) :
@@ -23,7 +26,7 @@ class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog ) :
 		self.ents = []
 
 	def fill( self , plugins ) :
-		self.names = QStringList( plugins.names() )
+		self.names = list( plugins.names() )
 		self.names.sort()
 		self.listView.setModel( QtGui.QStringListModel( self.names ) )
 
@@ -31,15 +34,15 @@ class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog ) :
 		return self.listView.currentIndex().row()
 
 	def selected_name( self ) :
-		return unicode(self.names[ self.listView.currentIndex().row() ])
+		return toUtf8(self.names[ self.listView.currentIndex().row() ])
 
 	def selected_args( self ) :
-		return dict( zip( self.args , [ unicode(e.text()) for e in self.ents ] ) )
+		return dict( zip( self.args , [ toUtf8(e.text()) for e in self.ents ] ) )
 
 	def pluginSelected( self , index ) :
 		# FIXME: Plugins.get creates new plugin object
 		#        this may be expensive in future
-		self.args = self.plugins.get( unicode(self.names[ index.row() ]) ).get_args()
+		self.args = self.plugins.get( toUtf8(self.names[ index.row() ]) ).get_args()
 
 		for l in self.lays : self.vlay_args.removeItem( l )
 		for l in self.labs : l.close()

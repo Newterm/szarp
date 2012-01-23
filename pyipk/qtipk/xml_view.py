@@ -1,17 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import sip
+sip.setapi('QString', 2)
+
 from PyQt4 import QtGui , QtCore
 
 from lxml import etree
-from ui.xml_view import Ui_XmlView
 
-try:
-    import cPickle as pickle
-except:
-    import pickle
+from .utils import * 
 
-from utils import * 
+from .ui.xml_view import Ui_XmlView
 
 class XmlView( QtGui.QWidget , Ui_XmlView ) :
 	changedSig = QtCore.pyqtSignal()
@@ -90,12 +89,12 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 		return 1
 
 	def data(self, index, role):
-		if not index.isValid() : return QtCore.QVariant()
+		if not index.isValid() : return None
 
 		if role == QtCore.Qt.DisplayRole :
 			return index.internalPointer().node.tag
 		else:
-			return QtCore.QVariant()
+			return None
 
 	def supportedDropActions(self): 
 		return QtCore.Qt.MoveAction | QtCore.Qt.IgnoreAction

@@ -1,17 +1,20 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import sip
+sip.setapi('QString', 2)
+
 from PyQt4 import QtGui , QtCore
-
-from xml_view import XmlView
-from plug_diag import PluginsDialog
-
-from utils import *
 
 from libipk.params import Params
 from libipk.plugins import Plugins
 
-from ui.main_win import Ui_MainWindow
+from .xml_view import XmlView
+from .plug_diag import PluginsDialog
+
+from .utils import *
+
+from .ui.main_win import Ui_MainWindow
 
 class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 	def __init__( self , plugins ) :
