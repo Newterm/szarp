@@ -24,10 +24,6 @@ class Params :
 		self.root = self.doc.getroot()
 		self.changed = False
 
-		# add default params.xml namespace
-		if namespaces == None :
-			self.add_namespace( 'ipk' , 'http://www.praterm.com.pl/SZARP/ipk' )
-
 	def touch( self ) :
 		self.changed = True
 
@@ -38,14 +34,4 @@ class Params :
 
 	def close( self ) :
 		return not self.changed 
-
-	def add_namespace( self , name , url ) :
-		self.nsmap[name] = url
-
-	def set_namespaces( self , namespaces ) :
-		self.nsmap = namespaces
-
-	def apply( self , xpath , func , args = {} ) :
-		for node in self.doc.xpath( xpath , namespaces = self.nsmap ) :
-			func( node , **args )
 

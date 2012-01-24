@@ -34,9 +34,15 @@ class Plugins :
 				   else :
 					   self.plugins[c[0]] = c[1]
 
-	def get( self , name ) :
+	def get( self , name , args ) :
 		try :
-			return self.plugins[name]()
+			return self.plugins[name]( **args )
+		except KeyError as e :
+			raise errors.NoSuchPlugin(name)
+
+	def get_args( self , name ) :
+		try :
+			return self.plugins[name].get_args()
 		except KeyError as e :
 			raise errors.NoSuchPlugin(name)
 

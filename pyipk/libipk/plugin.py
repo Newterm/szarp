@@ -3,14 +3,17 @@
 # vim: set fileencoding=utf-8 :
 
 class Plugin :
-	def __init__( self , xpath = '/' ) :
-		self._xpath = xpath
+	def __init__( self , **args ) :
+		try :
+			self.set_args( **args )
+		except KeyError as e:
+			raise ValueError('%s: Your argument is invalid: %s' % (self.__class__.__name__,repr(e)) )
 
-	@property
-	def xpath( self ) :
-		return self._xpath 
+	def set_args( self ) :
+		pass
 
-	def get_args( self ) :
+	@staticmethod
+	def get_args() :
 		return []
 
 	def process( self , node , **args ) :
@@ -18,7 +21,4 @@ class Plugin :
 
 	def result( self ) :
 		raise NotImplementedError('You must implement result method')
-
-	def result_pretty( self ) :
-		return repr(self.result())
 

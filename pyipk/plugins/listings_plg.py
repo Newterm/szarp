@@ -8,48 +8,39 @@ from lxml import etree
 
 class CountSubTag( Plugin ) :
 	'''counts specified sub tag in param tag'''
-	def __init__( self ) :
-		Plugin.__init__( self , '//ipk:param' )
+	def __init__( self , **args ) :
+		Plugin.__init__( self , **args )
 		self.params = {} 
 
-	def get_args( self ) :
-		return [ 'tagname' ]
+	def set_args( self , **args ) :
+		self.tag    = args['tag']
+		self.subtag = args['subtag']
+		self.count  = int(args['count'])
 
-	def process( self , node , **args ) :
-		exists = False
-		try :
-			tagname = args['tagname']
-		except KeyError :
-			raise ValueError('MissingSubTag require tag name argument')
-		if node not in self.params :
-			self.params[ node ] = 0
-		tag = '{' + node.nsmap[None] + '}' + tagname
-		for child in node :
-			if child.tag == tag :
-				exists = True
-				break
-		if exists :
-			self.params[ node ] += 1
+	@staticmethod
+	def get_args() :
+		return [ 'tag' , 'subtag' , 'count' ]
+
+	def process( self , root ) :
+		for node in root.xpath( './/default:%s' % self.tag , namespaces = { 'default' : root.nsmap[None] } ) :
+			if node not in self.params :
+				self.params[ node ] = 0
+			tagname = '{' + node.nsmap[None] + '}' + self.subtag
+			for child in node :
+				if child.tag == tagname :
+					self.params[ node ] += 1
 
 	def result( self ) :
-		return self.params
-
-	def result_pretty( self ) :
-		out = ''
-		for p in self.params :
-			out += '%i  :  %s\n' % ( self.params[p] , p.get('name') )
-		return out[:-1]
+		return [ k for k in self.params if self.params[k] == self.count ]
 
 class MissingSubTag( CountSubTag ) :
 	'''lists param tags with no specified sub tag'''
-	def result( self ) :
-		return [ k for k in self.params if self.params[k] == 0 ]
+	def set_args( self , **args ) :
+		CountSubTag.set_args( self , count = 0 , **args )
 
-	def result_pretty( self ) :
-		out = ''
-		for p in self.params :
-			if self.params[p] == 0 :
-				out += p.get('name') + '\n'
-		return out[:-1]
-
+	@staticmethod
+	def get_args() :
+		args = CountSubTag.get_args()
+		args.remove('count')
+		return args
 
