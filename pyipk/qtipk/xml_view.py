@@ -14,6 +14,7 @@ from .ui.xml_view import Ui_XmlView
 
 class XmlView( QtGui.QWidget , Ui_XmlView ) :
 	changedSig = QtCore.pyqtSignal()
+	runSig = QtCore.pyqtSignal( list )
 
 	def __init__( self , name , parent ) :
 		QtGui.QWidget.__init__( self , parent )
@@ -24,6 +25,19 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 		self.model.changedSig.connect(self.changedSig)
 
 		self.set_name( name )
+	
+	def contextMenuEvent(self, event):
+		idxes = self.view.selectedIndexes()
+		print [ i.internalPointer().node for i in idxes ] 
+
+		if len( idxes ) == 0 : return
+		menu = QtGui.QMenu(self)
+
+		runAction = menu.addAction("Run")
+		action = menu.exec_(self.mapToGlobal(event.pos()))
+
+		if action == runAction :
+			self.runSig.emit( [ i.internalPointer().node for i in idxes ] )
 
 	def set_name( self , name ) :
 		pass

@@ -42,7 +42,7 @@ class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog ) :
 	def pluginSelected( self , index ) :
 		# FIXME: Plugins.get creates new plugin object
 		#        this may be expensive in future
-		self.args = self.plugins.get( toUtf8(self.names[ index.row() ]) ).get_args()
+		self.args = self.plugins.get_args( toUtf8(self.names[ index.row() ]) )
 
 		for l in self.lays : self.vlay_args.removeItem( l )
 		for l in self.labs : l.close()

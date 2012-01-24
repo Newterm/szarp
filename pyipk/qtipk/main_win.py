@@ -24,6 +24,7 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 		self.view_full = XmlView( 'params' , self.centralwidget )
 		self.hlay_xml.addWidget( self.view_full )
 		self.view_full.changedSig.connect( self.touch_params )
+		self.view_full.runSig.connect( self.runOnNodes )
 
 		self.view_result = XmlView( 'result' , self.centralwidget )
 		self.hlay_xml.addWidget( self.view_result )
@@ -81,10 +82,24 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 		self.view_result.clear()
 		self.view_full.add_node( self.params.root )
 
+	def runOnNodes( self , nodes ) :
+		result = self.openRunDialog()
+		if result == None : return
+
+		plug = self.plugins.get( result[0] , result[1] )
+
+		self.view_result.clear()
+
+		for n in nodes :
+			plug.process( n )
+			res_nodes = plug.result()
+			for r in res_nodes :
+				self.view_result.add_node( r )
+
+
 	def openRunDialog( self ) :
 		diag = PluginsDialog( self , self.plugins )
 		if diag.exec_() == QtGui.QDialog.Accepted :
-			plug = self.plugins.get( diag.selected_name() )
-			self.params.apply( plug.xpath , plug.process , diag.selected_args() )
-			self.view_result.xml.setText( fromUtf8(plug.result_pretty()) )
+			return ( diag.selected_name() , diag.selected_args() )
+		return None
 

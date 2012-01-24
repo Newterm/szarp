@@ -26,17 +26,16 @@
      <x>0</x>
      <y>0</y>
      <width>364</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="actionRun"/>
+    <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_As"/>
-    <addaction name="actionOpen"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
