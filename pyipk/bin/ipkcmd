@@ -9,6 +9,8 @@ from optparse import OptionParser , OptionGroup
 from libipk.params import Params
 from libipk.plugins import Plugins
 
+from lxml import etree
+
 DEFAULT_PLUGINS = '/opt/szarp/lib/plugins/'
 
 class App :
@@ -37,9 +39,6 @@ class App :
 		self.parser.add_option("-b" , "--base" ,
 				metavar="<prefix>" ,
 				help = "SZARP base prefix" )
-		self.parser.add_option("-x" , "--xpath" ,
-				metavar="<xpath>" ,
-				help = "xpath on witch plugin should operate" )
 		self.parser.add_option("-r" , "--read-only" ,
 				action="store_true" ,
 				help = "turn read-only mode (not implemented yet)" )
@@ -94,6 +93,11 @@ class App :
 				res[a] = input(a + ":  ")
 		return res
 
+	def print_result( self , nodes ) :
+		for n in nodes :
+			print('')
+			print( '    ' + etree.tostring( n , encoding = 'utf8' , pretty_print = True ) )
+
 	def run( self ) :
 		try :
 			self.plugins.load( self.options.load )
@@ -110,11 +114,9 @@ class App :
 
 		self.validate_options()
 
-		plg = self.plugins.get( self.plgname )
+		args = self.ask_for_args( self.plugins.get_args(self.plgname) )
 
-		args = self.ask_for_args( plg.get_args() )
-
-		xpath = self.options.xpath if self.options.xpath != None else plg.xpath
+		plg = self.plugins.get( self.plgname , args )
 
 		if self.options.params : 
 			paramsfile = self.options.params 
@@ -124,9 +126,9 @@ class App :
 
 		self.params = Params(paramsfile)
 
-		self.params.apply( xpath , plg.process , args )
-		
-		print( plg.result_pretty() )
+		plg.process( self.params.root )
+
+		self.print_result( plg.result() )
 
 		self.params.close()
 
