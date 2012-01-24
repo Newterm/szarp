@@ -341,6 +341,28 @@ time_t Szbase::SearchLast(const std::basic_string<unsigned char>& param, bool &o
 	return szb_search_last(bp.first, bp.second);
 }
 
+time_t Szbase::Search(const std::wstring& param, time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe, bool &ok, std::wstring& error) {
+	std::pair<szb_buffer_t*, TParam*> bp;
+
+	ok = FindParam(param, bp);
+	if (!ok) {
+		error = L"Param " + error + L" not found";
+		return -1;
+	}
+
+	time_t t = szb_search(bp.first, bp.second, start, end, direction, probe);
+
+	if (bp.first->last_err == SZBE_OK) 
+		ok = true;
+	else {
+		ok = false;
+		error = bp.first->last_err_string;
+		bp.first->last_err = SZBE_OK;
+	}
+
+	return t;
+}
+
 double Szbase::GetValue(std::pair<szb_buffer_t*, TParam*>& bp, time_t time, SZARP_PROBE_TYPE probe_type, int custom_length, bool *is_fixed, bool &ok, std::wstring &error) {
 
 	time_t end = szb_move_time(time, 1, probe_type, custom_length);

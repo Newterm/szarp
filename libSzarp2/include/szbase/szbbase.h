@@ -122,6 +122,7 @@ public:
 	time_t SearchFirst(const std::basic_string<unsigned char> & param, bool &ok);
 	time_t SearchLast(const std::wstring& param, bool &ok);
 	time_t SearchLast(const std::basic_string<unsigned char>& param, bool &ok);
+	time_t Search(const std::wstring& param, time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe, bool &ok, std::wstring& error);
 	/**Add user defined param to object*/
 	void AddExtraParam(const std::wstring& prefix, TParam *param);
 #ifndef NO_LUA

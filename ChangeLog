@@ -1,3 +1,7 @@
+2012-01-24	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2/szbase: Search method added to main Szbase class
+	* python/pyszbase: two more functions exported into python
+	library - search and set_prober_server_address
 2012-01-23	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libtoolization
 	* python module for accessing szbase, example session:
