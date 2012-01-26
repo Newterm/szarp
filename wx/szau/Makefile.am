@@ -19,7 +19,7 @@ INCLUDES = @WX_CXXFLAGS@ @CURL_CFLAGS@ @SSL_CFLAGS@ @XML_CFLAGS@ @BOOST_CPPFLAGS
 
 LIBSZARP=../../libSzarp/libSzarp.la
 LIBSZARP2=../../libSzarp2/libSzarp2.la
-LIBWXCOMMON=../common/libwxcommon.a
+LIBWXCOMMON=../common/libwxcommon.la
 
 DISTRO=@distro@
 

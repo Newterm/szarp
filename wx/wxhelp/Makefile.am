@@ -13,7 +13,7 @@ MAINTAINERCLEANFILES = Makefile.in
 INCLUDES = @WX_CXXFLAGS@ -I@srcdir@/../common -DPREFIX=\"@prefix@\" \
 	-I@srcdir@/../../libSzarp/include
 
-LIBWXCOMMON=../common/libwxcommon.a
+LIBWXCOMMON=../common/libwxcommon.la
 LIBSZARP=../../libSzarp/libSzarp.la
 
 # Program to create

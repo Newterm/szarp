@@ -23,13 +23,13 @@ GUIFILES=xrc
 TMP_GETTEXT=XRC_gettext_file
 
 
-noinst_LIBRARIES = libwxcommon.a
+noinst_LTLIBRARIES = libwxcommon.la
 
 WIN_APP_NAME=Szarp
 
 BUILT_SOURCES=version.h
 
-libwxcommon_a_SOURCES = \
+libwxcommon_la_SOURCES = \
 		$(SOURCE_DIR)/version.h \
 		$(SOURCE_DIR)/cconv.cc $(SOURCE_DIR)/cconv.h \
 		$(SOURCE_DIR)/datechooser.cpp $(SOURCE_DIR)/datechooser.h \
@@ -104,7 +104,7 @@ install-data-local: fr/common.mo pl/common.mo pl/wx.mo fr/wx.mo de/wx.mo de/comm
 
 update-po:
 	@WXRC@ -g @srcdir@/$(GUIDIR)*.$(GUIFILES) > @srcdir@/$(TMP_GETTEXT).h
-	@XGETTEXT@ -o $(common_LOCALES_TMP) -L C++ --from-code=UTF-8 --keyword=_  $(libwxcommon_a_SOURCES) @srcdir@/$(TMP_GETTEXT).h
+	@XGETTEXT@ -o $(common_LOCALES_TMP) -L C++ --from-code=UTF-8 --keyword=_  $(libwxcommon_la_SOURCES) @srcdir@/$(TMP_GETTEXT).h
 	@MSGMERGE@ -U pl/common.po $(common_LOCALES_TMP)
 	@MSGMERGE@ -U fr/common.po $(common_LOCALES_TMP)
 	@MSGMERGE@ -U de/common.po $(common_LOCALES_TMP)

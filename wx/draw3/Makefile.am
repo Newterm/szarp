@@ -27,7 +27,7 @@ INCLUDES = @WX_CXXFLAGS@ @XML_CFLAGS@ @LUA_CFLAGS@ @SSL_CFLAGS@ @BOOST_CPPFLAGS@
 	
 LIBSZARP=../../libSzarp/libSzarp.la
 LIBSZARP2=../../libSzarp2/libSzarp2.la
-LIBWXCOMMON=../common/libwxcommon.a
+LIBWXCOMMON=../common/libwxcommon.la
 LIBWXSCINTILLA=../../extern/wxscintilla/libwxscintilla.a
 GUIDIR=GUI/
 GUIFILES=xrc

@@ -18,7 +18,7 @@ INCLUDES = @WX_CXXFLAGS@ @XML_CFLAGS@ -I@srcdir@/../../libSzarp2/include \
 
 LIBSZARP=../../libSzarp/libSzarp.la
 LIBSZARP2=../../libSzarp2/libSzarp2.la
-LIBWXCOMMON=../common/libwxcommon.a
+LIBWXCOMMON=../common/libwxcommon.la
 
 # Program to create
 

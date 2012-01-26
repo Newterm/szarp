@@ -25,7 +25,7 @@ INCLUDES = @GDK_CFLAGS@ @GTK_CFLAGS@ @WX_CXXFLAGS@ @XML_CFLAGS@ @RSYNC_CFLAGS@ @
 
 LIBSZARP=../../libSzarp/libSzarp.la
 LIBSZARP2=../../libSzarp2/libSzarp2.la
-LIBWXCOMMON=../common/libwxcommon.a
+LIBWXCOMMON=../common/libwxcommon.la
 
 ssc_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2)
 ssc_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) \
