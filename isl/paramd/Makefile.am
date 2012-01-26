@@ -12,7 +12,7 @@ INCLUDES = -I@srcdir@/../../include \
 	   -I@srcdir@/../server @XML_CFLAGS@ @PTHREAD_CFLAGS@ @LUA_CFLAGS@ \
 	   -DPREFIX=\"@prefix@\"
 
-LDADD=../server/libserver.a \
+LDADD=../server/libserver.la \
       ../../libSzarp/libSzarp.la    \
       ../../libSzarp2/libSzarp2.la  \
       @SSL_LIBS@ @PAM_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ @PTHREAD_LIBS@ @LUA_LIBS@ @BOOST_SYSTEM_LIB@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_FILESYSTEM_LIB@

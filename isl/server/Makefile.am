@@ -12,9 +12,9 @@ INCLUDES=\
 	-I@srcdir@/../../libSzarp2/include	\
 	@XML_CFLAGS@ -DPREFIX=\"@prefix@\"
 	
-noinst_LIBRARIES = libserver.a
+noinst_LTLIBRARIES = libserver.la
 
-libserver_a_SOURCES = \
+libserver_la_SOURCES = \
 	access.cc \
 	access.h \
 	auth_server.cc \

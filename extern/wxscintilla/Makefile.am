@@ -19,9 +19,9 @@ INCLUDES = \
 	   $(SCINTILLA_DEF)
 LDADD = @WX_LIBS@ @LDADD@
 
-noinst_LIBRARIES = libwxscintilla.a
+noinst_LTLIBRARIES = libwxscintilla.la
 
-libwxscintilla_a_SOURCES = \
+libwxscintilla_la_SOURCES = \
 			src/PlatWX.cpp \
 			src/ScintillaWX.cpp \
 			src/wxscintilla.cpp \
@@ -108,6 +108,6 @@ libwxscintilla_a_SOURCES = \
 			src/scintilla/src/XPM.cxx 
 
 test:
-	echo $(libwxscintilla_a_SOURCES)
+	echo $(libwxscintilla_la_SOURCES)
 
 MAINTAINERCLEANFILES = Makefile.in
