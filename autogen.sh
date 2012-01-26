@@ -5,6 +5,8 @@ echo "Running autoheader"
 autoheader
 echo "Running aclocal"
 aclocal -I /usr/share/aclocal
+echo "Running libtoolize"
+libtoolize
 echo "Running automake"
 automake -a -c
 echo "Running autoconf"
