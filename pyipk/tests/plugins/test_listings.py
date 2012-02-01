@@ -14,55 +14,65 @@ sys.path.pop()
 
 class TestMissingSubTag( unittest.TestCase ) :
 	def setUp( self ) :
-		self.plg = MissingSubTag()
 		self.doc = etree.parse( 'tests/params.xml' )
-		self.nsmap = { 'ipk' : 'http://www.praterm.com.pl/SZARP/ipk' }
 
 	def tearDown( self ) :
 		pass
 
 	def test_args( self ) :
-		self.assertListEqual( self.plg.get_args() , ['tagname'] )
+		self.assertListEqual( MissingSubTag.get_args() , ['tag','subtag'] )
+
+	def test_proper_args( self ) :
+		args = {'tag':'a','subtag':'b'}
+		plg = MissingSubTag( **args )
+		plg.set_args( **args )
 
 	def test_wrong_args( self ) :
-		self.assertRaises( ValueError , self.plg.process , None )
+		args = {'tag':'a'}
+		plg = MissingSubTag( subtag = 'b' , **args )
+		self.assertRaises( ValueError , MissingSubTag , **args )
+		self.assertRaises( KeyError , plg.set_args , **args )
 
 	def test_no_draw( self ) :
-		for node in self.doc.xpath( self.plg.xpath , namespaces = self.nsmap ) :
-			self.plg.process( node , tagname = 'draw' )
-		self.assertEqual( len(self.plg.result()) , 1 )
-		self.assertEqual( self.plg.result_pretty() , 'empty:empty:empty' )
+		args = {'tag':'param','subtag':'draw'}
+		plg = MissingSubTag( **args )
+		plg.process( self.doc.getroot() )
+		self.assertEqual( len(plg.result()) , 1 )
 
 
 	def test_no_report( self ) :
-		for node in self.doc.xpath( self.plg.xpath , namespaces = self.nsmap ) :
-			self.plg.process( node , tagname = 'report' )
-		self.assertEqual( len(self.plg.result()) , 80 )
+		args = {'tag':'param','subtag':'raport'}
+		plg = MissingSubTag( **args )
+		plg.process( self.doc.getroot() )
+		self.assertEqual( len(plg.result()) , 71 )
 
 
 class TestCountSubTag( unittest.TestCase ) :
 	def setUp( self ) :
-		self.plg = CountSubTag()
 		self.doc = etree.parse( 'tests/params.xml' )
-		self.nsmap = { 'ipk' : 'http://www.praterm.com.pl/SZARP/ipk' }
 
 	def tearDown( self ) :
 		pass
 
 	def test_args( self ) :
-		self.assertListEqual( self.plg.get_args() , ['tagname'] )
+		self.assertListEqual( CountSubTag.get_args() , ['tag','subtag','count'] )
 
 	def test_count_draws( self ) :
-		for node in self.doc.xpath( self.plg.xpath , namespaces = self.nsmap ) :
-			self.plg.process( node , tagname = 'draw' )
-		res = self.plg.result()
-		zero = [ r for r in res if res[r] == 0 ]
-		one  = [ r for r in res if res[r] == 1 ]
+		args = {}
+		args['tag'] = 'param'
+		args['subtag'] = 'draw'
+		args['count'] = '0'
+
+		plg = CountSubTag( **args )
+		plg.process( self.doc.getroot() )
+		zero = plg.result()
+
+		args['count'] = '1'
+
+		plg = CountSubTag( **args )
+		plg.process( self.doc.getroot() )
+		one = plg.result()
+
 		self.assertEqual( len(zero) , 1 )
 		self.assertEqual( len(one) , 79 )
-
-	def test_count_reports( self ) :
-		for node in self.doc.xpath( self.plg.xpath , namespaces = self.nsmap ) :
-			self.plg.process( node , tagname = 'report' )
-		self.assertEqual( len(self.plg.result_pretty().splitlines()) , 80 )
 

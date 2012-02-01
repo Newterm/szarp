@@ -34,7 +34,7 @@ class Plugins :
 				   else :
 					   self.plugins[c[0]] = c[1]
 
-	def get( self , name , args ) :
+	def get( self , name , args = {} ) :
 		try :
 			return self.plugins[name]( **args )
 		except KeyError as e :

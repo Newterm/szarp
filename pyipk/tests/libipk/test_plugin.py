@@ -11,21 +11,12 @@ from libipk.plugin import Plugin
 class TestPlugin( unittest.TestCase ) :
 	
 	def setUp( self ) :
-		self.plugin = Plugin( '//ipk:test' )
+		self.plugin = Plugin()
 
 	def tearDown( self ) :
 		pass
 
-	@unittest.skipIf( sys.version_info < (3,0) ,
-			"Seems that python2 allows property writing"  )
-	def test_xpath_write( self ) :
-		try :
-			self.plugin.xpath = '/new'
-		except Exception as e :
-			self.assertIsInstance( e , AttributeError )
-		else :
-			self.assertTrue( False )
-
-	def test_process( self ) :
+	def test_not_implemented( self ) :
 		self.assertRaises( NotImplementedError , self.plugin.process , None )
+		self.assertRaises( NotImplementedError , self.plugin.result )
 

@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="ISO-8859-2"?>
 <params xmlns="http://www.praterm.com.pl/SZARP/ipk" version="1.0" read_freq="10" send_freq="10" title="SZARP Server Example">
   <device daemon="/opt/szarp/bin/execdmn" path="/opt/szarp/stat/nutdump.sh">
     <unit id="1" type="1" subtype="1" bufsize="1">
@@ -19,7 +18,7 @@
         <raport title="Power status (UPS)" order="4"/>
         <draw title="UPS status" order="4" min="0" max="300"/>
       </param>
-      <param name="Status:UPS:temperature" short_name="Temp" draw_name="UPS temp." unit="°C" prec="1" base_ind="auto">
+      <param name="Status:UPS:temperature" short_name="Temp" draw_name="UPS temp." unit="&#176;C" prec="1" base_ind="auto">
         <raport title="Power status (UPS)" order="5"/>
         <draw title="UPS status" order="5" min="0" max="100"/>
       </param>
@@ -47,93 +46,93 @@
     </unit>
   </device>
   <defined>
-    <param name="Ciepłownia:sterownik:temperatura zasilania" short_name="zasi" unit="C" prec="0" base_ind="auto">
+    <param name="Ciep&#322;ownia:sterownik:temperatura zasilania" short_name="zasi" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Ciepłownia:sterownik:temperatura zasilania" min="0" max="1000"/>
+      <draw title="Ciep&#322;ownia:sterownik:temperatura zasilania" min="0" max="1000"/>
     </param>
-    <param name="Ciepłownia:sterownik:temperatura zasilania" short_name="zasi" unit="C" prec="0" base_ind="auto">
+    <param name="Ciep&#322;ownia:sterownik:temperatura zasilania" short_name="zasi" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Ciepłownia:sterownik:temperatura zasilania" min="0" max="1"/>
+      <draw title="Ciep&#322;ownia:sterownik:temperatura zasilania" min="0" max="1"/>
     </param>
-    <param name="Kocioł 1:sterownik:temperatura wody przed kotłem" short_name="kotł" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 1:sterownik:temperatura wody przed kot&#322;em" short_name="kot&#322;" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 1:sterownik:temperatura wody przed kotłem" min="0" max="1000"/>
+      <draw title="Kocio&#322; 1:sterownik:temperatura wody przed kot&#322;em" min="0" max="1000"/>
     </param>
-    <param name="Kocioł 1:sterownik:temperatura wody przed kotłem" short_name="kotł" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 1:sterownik:temperatura wody przed kot&#322;em" short_name="kot&#322;" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 1:sterownik:temperatura wody przed kotłem" min="0" max="1"/>
+      <draw title="Kocio&#322; 1:sterownik:temperatura wody przed kot&#322;em" min="0" max="1"/>
     </param>
-    <param name="Kocioł 1:sterownik:temperatura wody za kotłem" short_name="kotł" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 1:sterownik:temperatura wody za kot&#322;em" short_name="kot&#322;" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 1:sterownik:temperatura wody za kotłem" min="0" max="1000"/>
+      <draw title="Kocio&#322; 1:sterownik:temperatura wody za kot&#322;em" min="0" max="1000"/>
     </param>
-    <param name="Kocioł 1:sterownik:temperatura wody za kotłem" short_name="kotł" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 1:sterownik:temperatura wody za kot&#322;em" short_name="kot&#322;" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 1:sterownik:temperatura wody za kotłem" min="0" max="1"/>
+      <draw title="Kocio&#322; 1:sterownik:temperatura wody za kot&#322;em" min="0" max="1"/>
     </param>
-    <param name="Kocioł 1:sterownik:temperatura sklepienia" short_name="skle" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 1:sterownik:temperatura sklepienia" short_name="skle" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 1:sterownik:temperatura sklepienia" min="0" max="1000"/>
+      <draw title="Kocio&#322; 1:sterownik:temperatura sklepienia" min="0" max="1000"/>
     </param>
-    <param name="Kocioł 1:sterownik:temperatura sklepienia" short_name="skle" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 1:sterownik:temperatura sklepienia" short_name="skle" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 1:sterownik:temperatura sklepienia" min="0" max="1"/>
+      <draw title="Kocio&#322; 1:sterownik:temperatura sklepienia" min="0" max="1"/>
     </param>
-    <param name="Kocioł 1:sterownik:temperatura spalin" short_name="spal" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 1:sterownik:temperatura spalin" short_name="spal" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 1:sterownik:temperatura spalin" min="0" max="1000"/>
+      <draw title="Kocio&#322; 1:sterownik:temperatura spalin" min="0" max="1000"/>
     </param>
-    <param name="Kocioł 1:sterownik:temperatura spalin" short_name="spal" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 1:sterownik:temperatura spalin" short_name="spal" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 1:sterownik:temperatura spalin" min="0" max="1"/>
+      <draw title="Kocio&#322; 1:sterownik:temperatura spalin" min="0" max="1"/>
     </param>
-    <param name="Kocioł 2:sterownik:temperatura spalin" short_name="spal" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 2:sterownik:temperatura spalin" short_name="spal" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 2:sterownik:temperatura spalin" min="0" max="1000"/>
+      <draw title="Kocio&#322; 2:sterownik:temperatura spalin" min="0" max="1000"/>
     </param>
-    <param name="Kocioł 2:sterownik:temperatura spalin" short_name="spal" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 2:sterownik:temperatura spalin" short_name="spal" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 2:sterownik:temperatura spalin" min="0" max="1"/>
+      <draw title="Kocio&#322; 2:sterownik:temperatura spalin" min="0" max="1"/>
     </param>
-    <param name="Kocioł 2:sterownik:temperatura wody przed kotłem" short_name="kotł" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 2:sterownik:temperatura wody przed kot&#322;em" short_name="kot&#322;" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 2:sterownik:temperatura wody przed kotłem" min="0" max="1000"/>
+      <draw title="Kocio&#322; 2:sterownik:temperatura wody przed kot&#322;em" min="0" max="1000"/>
     </param>
-    <param name="Kocioł 2:sterownik:temperatura wody przed kotłem" short_name="kotł" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 2:sterownik:temperatura wody przed kot&#322;em" short_name="kot&#322;" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 2:sterownik:temperatura wody przed kotłem" min="0" max="1"/>
+      <draw title="Kocio&#322; 2:sterownik:temperatura wody przed kot&#322;em" min="0" max="1"/>
     </param>
-    <param name="Kocioł 2:sterownik:temperatura wody za kotłem" short_name="kotł" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 2:sterownik:temperatura wody za kot&#322;em" short_name="kot&#322;" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 2:sterownik:temperatura wody za kotłem" min="0" max="1000"/>
+      <draw title="Kocio&#322; 2:sterownik:temperatura wody za kot&#322;em" min="0" max="1000"/>
     </param>
-    <param name="Kocioł 2:sterownik:temperatura wody za kotłem" short_name="kotł" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 2:sterownik:temperatura wody za kot&#322;em" short_name="kot&#322;" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 2:sterownik:temperatura wody za kotłem" min="0" max="1"/>
+      <draw title="Kocio&#322; 2:sterownik:temperatura wody za kot&#322;em" min="0" max="1"/>
     </param>
-    <param name="Kocioł 3:sterownik:temperatura spalin" short_name="spal" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 3:sterownik:temperatura spalin" short_name="spal" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 3:sterownik:temperatura spalin" min="0" max="100"/>
+      <draw title="Kocio&#322; 3:sterownik:temperatura spalin" min="0" max="100"/>
     </param>
-    <param name="Kocioł 3:sterownik:temperatura spalin" short_name="spal" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 3:sterownik:temperatura spalin" short_name="spal" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 3:sterownik:temperatura spalin" min="0" max="1"/>
+      <draw title="Kocio&#322; 3:sterownik:temperatura spalin" min="0" max="1"/>
     </param>
-    <param name="Kocioł 3:sterownik:temperatura wody przed kotłem" short_name="kotł" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 3:sterownik:temperatura wody przed kot&#322;em" short_name="kot&#322;" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 3:sterownik:temperatura wody przed kotłem" min="0" max="100"/>
+      <draw title="Kocio&#322; 3:sterownik:temperatura wody przed kot&#322;em" min="0" max="100"/>
     </param>
-    <param name="Kocioł 3:sterownik:temperatura wody przed kotłem" short_name="kotł" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 3:sterownik:temperatura wody przed kot&#322;em" short_name="kot&#322;" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 3:sterownik:temperatura wody przed kotłem" min="0" max="1"/>
+      <draw title="Kocio&#322; 3:sterownik:temperatura wody przed kot&#322;em" min="0" max="1"/>
     </param>
-    <param name="Kocioł 3:sterownik:temperatura wody" short_name="wody" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 3:sterownik:temperatura wody" short_name="wody" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 3:sterownik:temperatura wody" min="0" max="1000"/>
+      <draw title="Kocio&#322; 3:sterownik:temperatura wody" min="0" max="1000"/>
     </param>
-    <param name="Kocioł 3:sterownik:temperatura wody" short_name="wody" unit="C" prec="0" base_ind="auto">
+    <param name="Kocio&#322; 3:sterownik:temperatura wody" short_name="wody" unit="C" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Kocioł 3:sterownik:temperatura wody" min="0" max="1"/>
+      <draw title="Kocio&#322; 3:sterownik:temperatura wody" min="0" max="1"/>
     </param>
     <param name="A:B:C" short_name="A:B:" unit="-" prec="1" base_ind="auto">
       <define type="RPN" formula="null "/>
@@ -207,117 +206,117 @@
       <define type="RPN" formula="null "/>
       <draw title="Samsony:ZWM8:Uzup-obj" min="0" max="1"/>
     </param>
-    <param name="Status:Execute:iloďż˝ďż˝ sekcji do uruchomienia w cyklu" short_name="cykl" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji do uruchomienia w cyklu" short_name="cykl" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Execute:iloďż˝ďż˝ sekcji do uruchomienia w cyklu" min="0" max="1"/>
+      <draw title="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji do uruchomienia w cyklu" min="0" max="1"/>
     </param>
-    <param name="Status:Execute:iloďż˝ďż˝ sekcji do uruchomienia w cyklu" short_name="cykl" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji do uruchomienia w cyklu" short_name="cykl" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Execute:iloďż˝ďż˝ sekcji do uruchomienia w cyklu" min="0" max="1"/>
+      <draw title="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji do uruchomienia w cyklu" min="0" max="1"/>
     </param>
-    <param name="Status:Execute:iloďż˝ďż˝ sekcji przerwanych" short_name="prze" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji przerwanych" short_name="prze" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Execute:iloďż˝ďż˝ sekcji przerwanych" min="0" max="1"/>
+      <draw title="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji przerwanych" min="0" max="1"/>
     </param>
-    <param name="Status:Execute:iloďż˝ďż˝ sekcji przerwanych" short_name="prze" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji przerwanych" short_name="prze" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Execute:iloďż˝ďż˝ sekcji przerwanych" min="0" max="1"/>
+      <draw title="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji przerwanych" min="0" max="1"/>
     </param>
-    <param name="Status:Execute:iloďż˝ďż˝ sekcji uruchomionych w cyklu" short_name="cykl" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji uruchomionych w cyklu" short_name="cykl" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Execute:iloďż˝ďż˝ sekcji uruchomionych w cyklu" min="0" max="1"/>
+      <draw title="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji uruchomionych w cyklu" min="0" max="1"/>
     </param>
-    <param name="Status:Execute:iloďż˝ďż˝ sekcji uruchomionych w cyklu" short_name="cykl" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji uruchomionych w cyklu" short_name="cykl" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Execute:iloďż˝ďż˝ sekcji uruchomionych w cyklu" min="0" max="1"/>
+      <draw title="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji uruchomionych w cyklu" min="0" max="1"/>
     </param>
-    <param name="Status:Execute:iloďż˝ďż˝ sekcji zakoďż˝czonych z bďż˝ďż˝dem" short_name="bďż˝" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji zako&#271;&#380;&#733;czonych z b&#271;&#380;&#733;&#271;&#380;&#733;dem" short_name="b&#271;&#380;&#733;" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Execute:iloďż˝ďż˝ sekcji zakoďż˝czonych z bďż˝ďż˝dem" min="0" max="1"/>
+      <draw title="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji zako&#271;&#380;&#733;czonych z b&#271;&#380;&#733;&#271;&#380;&#733;dem" min="0" max="1"/>
     </param>
-    <param name="Status:Execute:iloďż˝ďż˝ sekcji zakoďż˝czonych z bďż˝ďż˝dem" short_name="bďż˝" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji zako&#271;&#380;&#733;czonych z b&#271;&#380;&#733;&#271;&#380;&#733;dem" short_name="b&#271;&#380;&#733;" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Execute:iloďż˝ďż˝ sekcji zakoďż˝czonych z bďż˝ďż˝dem" min="0" max="1"/>
+      <draw title="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji zako&#271;&#380;&#733;czonych z b&#271;&#380;&#733;&#271;&#380;&#733;dem" min="0" max="1"/>
     </param>
-    <param name="Status:Execute:iloďż˝ďż˝ sekcji zakoďż˝czonych z sukcesem" short_name="sukc" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji zako&#271;&#380;&#733;czonych z sukcesem" short_name="sukc" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Execute:iloďż˝ďż˝ sekcji zakoďż˝czonych z sukcesem" min="0" max="1"/>
+      <draw title="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji zako&#271;&#380;&#733;czonych z sukcesem" min="0" max="1"/>
     </param>
-    <param name="Status:Execute:iloďż˝ďż˝ sekcji zakoďż˝czonych z sukcesem" short_name="sukc" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji zako&#271;&#380;&#733;czonych z sukcesem" short_name="sukc" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Execute:iloďż˝ďż˝ sekcji zakoďż˝czonych z sukcesem" min="0" max="1"/>
+      <draw title="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; sekcji zako&#271;&#380;&#733;czonych z sukcesem" min="0" max="1"/>
     </param>
-    <param name="Status:Execute:iloďż˝ďż˝ skonfigurowanych sekcji" short_name="sekc" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; skonfigurowanych sekcji" short_name="sekc" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Execute:iloďż˝ďż˝ skonfigurowanych sekcji" min="0" max="1"/>
+      <draw title="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; skonfigurowanych sekcji" min="0" max="1"/>
     </param>
-    <param name="Status:Execute:iloďż˝ďż˝ skonfigurowanych sekcji" short_name="sekc" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; skonfigurowanych sekcji" short_name="sekc" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Execute:iloďż˝ďż˝ skonfigurowanych sekcji" min="0" max="1"/>
+      <draw title="Status:Execute:ilo&#271;&#380;&#733;&#271;&#380;&#733; skonfigurowanych sekcji" min="0" max="1"/>
     </param>
-    <param name="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w" short_name="para" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w" short_name="para" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w" min="0" max="100"/>
+      <draw title="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w" min="0" max="100"/>
     </param>
-    <param name="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w" short_name="para" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w" short_name="para" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w" min="0" max="1"/>
+      <draw title="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w" min="0" max="1"/>
     </param>
-    <param name="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w definiowalnych przeglďż˝dajďż˝cego" short_name="prze" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w definiowalnych przegl&#271;&#380;&#733;daj&#271;&#380;&#733;cego" short_name="prze" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w definiowalnych przeglďż˝dajďż˝cego" min="0" max="1"/>
+      <draw title="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w definiowalnych przegl&#271;&#380;&#733;daj&#271;&#380;&#733;cego" min="0" max="1"/>
     </param>
-    <param name="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w definiowalnych przeglďż˝dajďż˝cego" short_name="prze" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w definiowalnych przegl&#271;&#380;&#733;daj&#271;&#380;&#733;cego" short_name="prze" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w definiowalnych przeglďż˝dajďż˝cego" min="0" max="1"/>
+      <draw title="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w definiowalnych przegl&#271;&#380;&#733;daj&#271;&#380;&#733;cego" min="0" max="1"/>
     </param>
-    <param name="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w definiowanych" short_name="defi" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w definiowanych" short_name="defi" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w definiowanych" min="0" max="1"/>
+      <draw title="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w definiowanych" min="0" max="1"/>
     </param>
-    <param name="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w definiowanych" short_name="defi" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w definiowanych" short_name="defi" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w definiowanych" min="0" max="1"/>
+      <draw title="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w definiowanych" min="0" max="1"/>
     </param>
-    <param name="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w poprawnie zapisanych" short_name="zapi" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w poprawnie zapisanych" short_name="zapi" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w poprawnie zapisanych" min="0" max="1"/>
+      <draw title="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w poprawnie zapisanych" min="0" max="1"/>
     </param>
-    <param name="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w poprawnie zapisanych" short_name="zapi" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w poprawnie zapisanych" short_name="zapi" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w poprawnie zapisanych" min="0" max="1"/>
+      <draw title="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w poprawnie zapisanych" min="0" max="1"/>
     </param>
-    <param name="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w zapisanych z bďż˝ďż˝dem" short_name="bďż˝" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w zapisanych z b&#271;&#380;&#733;&#271;&#380;&#733;dem" short_name="b&#271;&#380;&#733;" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w zapisanych z bďż˝ďż˝dem" min="0" max="1"/>
+      <draw title="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w zapisanych z b&#271;&#380;&#733;&#271;&#380;&#733;dem" min="0" max="1"/>
     </param>
-    <param name="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w zapisanych z bďż˝ďż˝dem" short_name="bďż˝" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w zapisanych z b&#271;&#380;&#733;&#271;&#380;&#733;dem" short_name="b&#271;&#380;&#733;" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w zapisanych z bďż˝ďż˝dem" min="0" max="1"/>
+      <draw title="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w zapisanych z b&#271;&#380;&#733;&#271;&#380;&#733;dem" min="0" max="1"/>
     </param>
-    <param name="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w zapisywanych do bazy" short_name="bazy" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w zapisywanych do bazy" short_name="bazy" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w zapisywanych do bazy" min="0" max="1"/>
+      <draw title="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w zapisywanych do bazy" min="0" max="1"/>
     </param>
-    <param name="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w zapisywanych do bazy" short_name="bazy" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w zapisywanych do bazy" short_name="bazy" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w zapisywanych do bazy" min="0" max="1"/>
+      <draw title="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w zapisywanych do bazy" min="0" max="1"/>
     </param>
-    <param name="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w zapisywanych niepustych" short_name="niep" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w zapisywanych niepustych" short_name="niep" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w zapisywanych niepustych" min="0" max="1"/>
+      <draw title="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w zapisywanych niepustych" min="0" max="1"/>
     </param>
-    <param name="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w zapisywanych niepustych" short_name="niep" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w zapisywanych niepustych" short_name="niep" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w zapisywanych niepustych" min="0" max="1"/>
+      <draw title="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w zapisywanych niepustych" min="0" max="1"/>
     </param>
-    <param name="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w ze sterownikďż˝w" short_name="ster" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w ze sterownik&#271;&#380;&#733;w" short_name="ster" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w ze sterownikďż˝w" min="0" max="1"/>
+      <draw title="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w ze sterownik&#271;&#380;&#733;w" min="0" max="1"/>
     </param>
-    <param name="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w ze sterownikďż˝w" short_name="ster" unit="-" prec="0" base_ind="auto">
+    <param name="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w ze sterownik&#271;&#380;&#733;w" short_name="ster" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>
-      <draw title="Status:Meaner3:iloďż˝ďż˝ parametrďż˝w ze sterownikďż˝w" min="0" max="1"/>
+      <draw title="Status:Meaner3:ilo&#271;&#380;&#733;&#271;&#380;&#733; parametr&#271;&#380;&#733;w ze sterownik&#271;&#380;&#733;w" min="0" max="1"/>
     </param>
     <param name="Status:Meaner3:program uruchomiony" short_name="uruc" unit="-" prec="0" base_ind="auto">
       <define type="RPN" formula="null "/>

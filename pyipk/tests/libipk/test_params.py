@@ -4,9 +4,13 @@
 
 import unittest
 
+import os , filecmp
+
 from lxml import etree
 
 import libipk.params
+
+TMP_FILE = '/tmp/test_pyipk_params.xml'
 
 class TestOpen( unittest.TestCase ) :
 
@@ -28,17 +32,34 @@ class TestOpen( unittest.TestCase ) :
 		params = libipk.params.Params()
 		self.assertRaises( IOError , params.open , "unknown.xml" )
 
-class TestApply( unittest.TestCase ) :
+class TestTouching( unittest.TestCase ) :
 	def setUp( self ) :
 		self.params = libipk.params.Params('tests/params.xml')
 
 	def tearDown( self ) :
 		pass
 
-	def test_dummy( self ) :
-		doc = etree.parse( 'tests/params.xml' )
-		l1 = doc.xpath( '//ipk:unit' , namespaces = { 'ipk' : 'http://www.praterm.com.pl/SZARP/ipk' } )
-		l2 = []
-		self.params.apply( '//ipk:unit' , lambda x : l2.append(x) )
-		self.assertEqual( len(l1) , len(l2) )
+	def test_not_touched( self ) :
+		self.assertTrue( self.params.close() )
+
+	def test_touch( self ) :
+		self.params.touch()
+		self.assertFalse( self.params.close() )
+
+	def test_save( self ) :
+		self.params.touch()
+		self.assertFalse( self.params.close() )
+		self.params.save()
+		self.assertTrue( self.params.close() )
+
+class TestSave( unittest.TestCase ) :
+	def setUp( self ) :
+		self.params = libipk.params.Params('tests/params.xml')
+
+	def tearDown( self ) :
+		os.remove( TMP_FILE )
+
+	def test_save_same( self ) :
+		self.params.save( TMP_FILE )
+		filecmp.cmp( 'tests/params.xml' , TMP_FILE )
 
