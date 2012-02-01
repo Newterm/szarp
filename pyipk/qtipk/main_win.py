@@ -10,6 +10,7 @@ from libipk.params import Params
 from libipk.plugins import Plugins
 
 from .xml_view import XmlView
+from .xml_diag import XmlDialog
 from .plug_diag import PluginsDialog
 
 from .utils import *
@@ -25,8 +26,11 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 		self.hlay_xml.addWidget( self.view_full )
 		self.view_full.changedSig.connect( self.touch_params )
 		self.view_full.runSig.connect( self.runOnNodes )
+		self.view_full.showSig.connect( self.showOnNodes )
 
 		self.view_result = XmlView( 'result' , self.centralwidget )
+		self.view_result.showSig.connect( self.showOnNodes )
+
 		self.hlay_xml.addWidget( self.view_result )
 
 		self.params = None
@@ -96,6 +100,10 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 			for r in res_nodes :
 				self.view_result.add_node( r )
 
+	def showOnNodes( self , nodes ) :
+		diag = XmlDialog( self )
+		diag.add_nodes( nodes )
+		diag.exec_()
 
 	def openRunDialog( self ) :
 		diag = PluginsDialog( self , self.plugins )
