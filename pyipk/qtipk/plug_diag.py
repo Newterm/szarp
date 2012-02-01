@@ -21,7 +21,6 @@ class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog ) :
 				QtGui.QItemSelectionModel.Select )
 
 		self.args = None
-		self.lays = []
 		self.labs = []
 		self.ents = []
 
@@ -44,19 +43,17 @@ class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog ) :
 		#        this may be expensive in future
 		self.args = self.plugins.get_args( toUtf8(self.names[ index.row() ]) )
 
-		for l in self.lays : self.vlay_args.removeItem( l )
 		for l in self.labs : l.close()
 		for e in self.ents : e.close()
 
-		del self.lays[:]
 		del self.labs[:]
 		del self.ents[:]
 		
+		row = 0
 		for arg in self.args :
-			self.lays.append( QtGui.QHBoxLayout() )
 			self.labs.append( QtGui.QLabel( arg ) )
 			self.ents.append( QtGui.QLineEdit() )
-			self.lays[-1].addWidget( self.labs[-1] )
-			self.lays[-1].addWidget( self.ents[-1] )
-			self.vlay_args.addLayout( self.lays[-1] )
+			self.glay_args.addWidget( self.labs[-1] , row , 0 )
+			self.glay_args.addWidget( self.ents[-1] , row , 1 )
+			row += 1
 

@@ -28,7 +28,6 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 	
 	def contextMenuEvent(self, event):
 		idxes = self.view.selectedIndexes()
-		print [ i.internalPointer().node for i in idxes ] 
 
 		if len( idxes ) == 0 : return
 		menu = QtGui.QMenu(self)
@@ -77,7 +76,9 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 		self.endInsertRows()
 
 	def clear( self ) :
+		self.beginRemoveRows( QtCore.QModelIndex() , 0 , len(self.nodes) )
 		self.nodes = []
+		self.endRemoveRows()
 
 	def index(self, row, column, parent):
 		ptr = parent.internalPointer()
@@ -106,7 +107,9 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 		if not index.isValid() : return None
 
 		if role == QtCore.Qt.DisplayRole :
-			return index.internalPointer().node.tag
+			# FIXME: this method is probably to havy for lage xml files
+			lines = etree.tostring( index.internalPointer().node , pretty_print = True , encoding = 'utf8' , method = 'xml' )
+			return lines.partition('\n')[0]
 		else:
 			return None
 

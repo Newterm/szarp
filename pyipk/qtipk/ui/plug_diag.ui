@@ -32,6 +32,9 @@
      <item>
       <layout class="QVBoxLayout" name="vlay_args"/>
      </item>
+     <item>
+      <layout class="QGridLayout" name="glay_args"/>
+     </item>
     </layout>
    </item>
    <item>
