@@ -2,6 +2,8 @@
 *.mo
 *.pyc
 *.a
+*.lo
+*.la
 *~
 *.swp
 .deps
