@@ -33,15 +33,15 @@ class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog ) :
 		return self.listView.currentIndex().row()
 
 	def selected_name( self ) :
-		return toUtf8(self.names[ self.listView.currentIndex().row() ])
+		return self.names[ self.listView.currentIndex().row() ]
 
 	def selected_args( self ) :
-		return dict( zip( self.args , [ toUtf8(e.text()) for e in self.ents ] ) )
+		return dict( zip( self.args , [ e.text() for e in self.ents ] ) )
 
 	def pluginSelected( self , index ) :
 		# FIXME: Plugins.get creates new plugin object
 		#        this may be expensive in future
-		self.args = self.plugins.get_args( toUtf8(self.names[ index.row() ]) )
+		self.args = self.plugins.get_args( self.names[ index.row() ] )
 
 		for l in self.labs : l.close()
 		for e in self.ents : e.close()

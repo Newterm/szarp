@@ -115,7 +115,7 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 
 		if role == QtCore.Qt.DisplayRole :
 			# FIXME: this method is probably to havy for lage xml files
-			lines = etree.tostring( index.internalPointer().node , pretty_print = True , encoding = 'utf8' , method = 'xml' )
+			lines = toUtf8( etree.tostring( index.internalPointer().node , pretty_print = True , encoding = 'utf8' , method = 'xml' ) )
 			return lines.partition('\n')[0]
 		else:
 			return None

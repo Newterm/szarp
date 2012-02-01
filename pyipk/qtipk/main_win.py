@@ -70,7 +70,7 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 				'XML Files (*.xml);;All (*)' )
 
 		if fn[0] != '' and self.params != None :
-			self.params.save( toUtf8(fn[0]) )
+			self.params.save( fromUtf8(fn[0]) )
 
 	def openParamsDialog( self ) :
 		fn = QtGui.QFileDialog.getOpenFileNameAndFilter( self ,
@@ -78,7 +78,7 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 				'XML Files (*.xml);;All (*)' )
 
 		if fn[0] != '' :
-			self.openParams( toUtf8(fn[0]) )
+			self.openParams( fromUtf8(fn[0]) )
 
 	def openParams( self , filename ) :
 		self.params = Params( filename )

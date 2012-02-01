@@ -22,7 +22,7 @@ class XmlDialog( QtGui.QDialog , Ui_XmlDialog ) :
 		s = self.xml.toPlainText()
 
 		for n in nodes :
-			s += fromUtf8( etree.tostring( n , pretty_print = True , encoding='utf8' , method = 'xml' , xml_declaration=True ) )
+			s += toUtf8( etree.tostring( n , pretty_print = True , encoding='utf8' , method = 'xml' , xml_declaration=True ) )
 
 		self.xml.setPlainText( s )
 
