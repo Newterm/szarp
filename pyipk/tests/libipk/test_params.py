@@ -49,7 +49,7 @@ class TestTouching( unittest.TestCase ) :
 	def test_save( self ) :
 		self.params.touch()
 		self.assertFalse( self.params.close() )
-		self.params.save()
+		self.params.save( TMP_FILE )
 		self.assertTrue( self.params.close() )
 
 class TestSave( unittest.TestCase ) :
@@ -61,5 +61,5 @@ class TestSave( unittest.TestCase ) :
 
 	def test_save_same( self ) :
 		self.params.save( TMP_FILE )
-		filecmp.cmp( 'tests/params.xml' , TMP_FILE )
+		self.assertTrue( filecmp.cmp( 'tests/params.xml' , TMP_FILE ) )
 

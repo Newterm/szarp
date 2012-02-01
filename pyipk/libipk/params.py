@@ -29,7 +29,7 @@ class Params :
 
 	def save( self , fn = None ) :
 		if fn == None : fn = self.filename
-		self.doc.write( fn , pretty_print=True )
+		self.doc.write( fn , pretty_print=True , method = 'xml' , xml_declaration=True , encoding=self.doc.docinfo.encoding )
 		self.changed = False
 
 	def close( self ) :
