@@ -39,7 +39,7 @@ public:
     virtual char GetRESPONSE_OK() = 0;
     virtual char GetCONVERT_OK() = 0;
     KMPReceiveInterface() { } ;
-    ~KMPReceiveInterface() { } ;
+    virtual ~KMPReceiveInterface() { } ;
     virtual void KMPPutResponse (unsigned char *_ReceiveBuffer, unsigned short _RSize) = 0;
     virtual unsigned short ReceiveSize () = 0;
     virtual unsigned short UnStuffedReceiveSize () = 0;

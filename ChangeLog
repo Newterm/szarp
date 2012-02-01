@@ -1,3 +1,5 @@
+2012-02-01	Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/k601-prop-plugin.h: bugfix, destructor has to be virutal
 2012-01-24	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2/szbase: Search method added to main Szbase class
 	* python/pyszbase: two more functions exported into python
