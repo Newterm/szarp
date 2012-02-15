@@ -183,12 +183,6 @@ Description: Nagios plugin to monitor SZARP servers.
  SZARP servers is synchronized on time. It can also discover problems
  with individual devices monitored by SZARP and with VPN hosts accessibility.
 
-Package: szarp-dbg-symbols
-Section: misc
-Architecture: any
-Description: Debug symbols for szarp binaries
- Contains debug symbols for szarp binaries.
-
 Package: szarp-pyipk
 Section: x11
 Architecture: all
