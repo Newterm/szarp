@@ -1,5 +1,9 @@
 2012-02-15	Darek Marcinkiewicz <reksio@newterm.pl>
 	* acinlude.m4 - make latest autoconf happy 
+	* debian/control: removed dbg package building,
+	it is not possible to build lua_parser.cc with
+	debug symbols on x86 machine using g++ 4.6
+	and boost-1.48
 2012-02-01	Darek Marcinkiewicz <reksio@newterm.pl>
 	* parcook/k601-prop-plugin.h: bugfix, destructor has to be virutal
 2012-01-24	Darek Marcinkiewicz <reksio@newterm.pl>
