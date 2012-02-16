@@ -304,7 +304,7 @@ public:
 	DrawTreeRoot();
 	void AddSet(TDraw* d, DrawSet *node);
 	void AddUserSet(DrawSet* darwset);
-	void RemoveUserSet(wxString name);
+	void RemoveUserSet(wxString name, DrawSet *set);
 	void RenameUserSet(wxString oname, DrawSet *set);
 	void SubstituteUserSet(wxString name, DrawSet *set);
 };

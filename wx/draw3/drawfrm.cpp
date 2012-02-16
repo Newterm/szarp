@@ -237,7 +237,8 @@ void DrawFrame::OnExportSet(wxCommandEvent &event) {
 
 void DrawFrame::OnDel(wxCommandEvent & event)
 {
-	if (!draw_panel->IsUserDefined())
+	DefinedDrawSet *draw_set = dynamic_cast<DefinedDrawSet*>(draw_panel->GetSelectedSet());
+	if (draw_set == NULL)
 		wxMessageBox(_("You may only remove user defined sets."),
 			     _("Not user defined"), wxOK | wxICON_ERROR, this);
 	else {
@@ -246,7 +247,11 @@ void DrawFrame::OnDel(wxCommandEvent & event)
 		if (answer != wxYES)
 			return;
 		DefinedDrawsSets *d = config_manager->GetDefinedDrawsSets();
-		d->RemoveSet(draw_panel->GetSelectedSet()->GetName());
+		if (draw_set->IsNetworkSet()) {
+			remarks_handler->GetConnection()->InsertOrUpdateSet(draw_set, NULL, true);
+		} else {
+			d->RemoveSet(draw_panel->GetSelectedSet()->GetName());
+		}
 	}
 
 }

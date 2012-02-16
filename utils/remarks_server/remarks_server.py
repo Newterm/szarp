@@ -366,7 +366,7 @@ class ParamsAndSetsFetcher:
 				if v[0] == False:
 					continue
 				else:
-					s1[k][1].extend(v[1])
+					s1[k][3].extend(v[3])
 
 		set_names = {}
 
@@ -448,15 +448,13 @@ class UserSetsManager:
 
 			user_set.parse_xml(str(s), self.username)
 
-			if not tdb.has_access_to_prefix(user_set.prefix):
+			if not all([tdb.has_access_to_prefix(p, self.user_id) for p in set(user_set.prefixes)]):
 				r.append(False)
 				continue
 
-			set_id = td.get_set_id(user_set.name, self.user_id)
+			set_id = tdb.get_set_id(user_set.name, self.user_id)
 
-			tdb.remove_draw_from_set(set_id)
-
-			tdb.update_set_mod_time(set_id, prefix, deleted=True)
+			tdb.update_set_mod_time(set_id, deleted=True)
 			
 			r.append(True)
 
@@ -503,13 +501,13 @@ class ParamsManager:
 		tdb = TransDbAccess(self.db, trans)
 		for p in params:
 			param = UserParam()
-			param.parse_xml(p, self.username)
+			param.parse_xml(str(p), self.username)
 
-			if not tbd.has_access_to_prefix(param.prefix, self.user_id):
+			if not tdb.has_access_to_prefix(param.prefix, self.user_id):
 				r.append(False)
 				continue
 
-			tbd.remove_param(param.prefix, param.name, self.user_id)
+			tdb.remove_param(param.prefix, param.name, self.user_id)
 
 			r.append(True)
 		return r
@@ -770,7 +768,7 @@ class TransDbAccess:
 			UPDATE	
 				param
 			SET
-				deleted = 1,
+				deleted = 't',
 				mod_time = %(mod_time)s
 			WHERE
 				prefix_id = (SELECT id FROM prefix WHERE prefix = %(prefix)s) AND pname = %(pname)s AND user_id = %(user_id)s""",
@@ -832,7 +830,7 @@ class TransDbAccess:
 	def get_params(self, prefixes, time):
 		self.trans.execute("""	
 				SELECT
-					p.pname, r.prefix, p.formula, p.type, p.unit, p.start_date, p.prec, p.deleted
+					p.pname, r.prefix, p.formula, p.type, p.unit, p.start_date, p.prec, p.mod_time, p.deleted 
 				FROM
 					param as p
 				JOIN
@@ -883,17 +881,21 @@ class TransDbAccess:
 	def get_draws(self, prefixes, time):
 		self.trans.execute("""
 			SELECT 
-				d.set_id, p.prefix, d.name, d.draw, d.title, d.sname, d.hoursum, d.color, d.draw_min, d.draw_max, d.scale, d.min_scale, d.max_scale, ds.deleted
+				d.set_id, p.prefix, d.name, d.draw, d.title, d.sname, d.hoursum, d.color, d.draw_min, d.draw_max, d.scale, d.min_scale, d.max_scale, ds.deleted, u.name, ds.mod_time
 			FROM
 				draw as d
 			JOIN
 				draw_set as ds
 			ON
-				(d.set_id = d.set_id)
+				(d.set_id = ds.set_id)
 			JOIN
 				prefix as p
 			ON
 				(d.prefix_id = p.id)
+			JOIN
+				users as u
+			ON
+				(ds.user_id = u.id) 
 			WHERE
 				ds.mod_time >= %(time)s AND d.prefix_id IN %(prefixes)s
 			ORDER BY
@@ -907,11 +909,16 @@ class TransDbAccess:
 			set_id = row[0]
 			draw = row[1:12]
 			deleted = row[13]
+			user_name = row[14]
+			mod_time = row[15]
 
-			if set_id in ret and not deleted:
-				ret[set_id][1].append(draw)
+			if deleted:
+				ret[set_id] = (False,)
 			else:
-				ret[set_id] = (True, [draw]) if not deleted else (False,)
+				if set_id in ret:
+					ret[set_id][3].append(draw)
+				else:
+					ret[set_id] = (True, user_name, mod_time, [draw])
 
 			row = self.trans.fetchone()
 

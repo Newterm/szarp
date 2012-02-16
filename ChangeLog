@@ -1,3 +1,14 @@
+2012-02-16	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2/szbase.cc: for lua params - also
+	properly handle return values of boolean type
+	(previously we were always returning 0 for them)
+	* wx/draw3: small tweak to 'search date', currently
+	selected draw in automatically inserted into
+	the formula - should be faster to use
+	* wx/draw3: added missing Polish translations
+	* wx/draw3: solid chunk of improvemnts to network
+	param and sets support, much more usable now, quite
+	a few crashing scenarios fixed
 2012-02-15	Darek Marcinkiewicz <reksio@newterm.pl>
 	* acinlude.m4 - make latest autoconf happy 
 	* debian/control: removed dbg package building,

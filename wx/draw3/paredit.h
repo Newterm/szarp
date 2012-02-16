@@ -100,6 +100,8 @@ public:
 
 	void OnFormulaRedo(wxCommandEvent &event);
 
+	void PrepareSearchFormula();
+
 	void OnFormulaInsertParam(wxCommandEvent &event);
 
 	void OnFormulaInsertUserParam(wxCommandEvent &event);
@@ -207,8 +209,9 @@ private:
 	} m_widget_mode;
 
 	enum WIDGET_SERACH_DIRECTION {
+		NOT_SEARCHING,
 		SEARCHING_LEFT,
-		SEARCHING_RIGHT
+		SEARCHING_RIGHT,
 	} m_search_direction;
 
 	wxDateTime m_current_search_date;

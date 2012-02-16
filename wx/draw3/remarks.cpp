@@ -579,7 +579,6 @@ void XMLRPCConnection::OnSocketEvent(wxSocketEvent &event) {
 void XMLRPCConnection::PostRequest(XMLRPC_REQUEST request) {
 
 	if (m_read_state != CLOSED) {
-		std::cout << "m_read_state:" << (int) m_read_state << std::endl;
 		assert(m_read_state == CLOSED);
 	}
 
@@ -1116,7 +1115,8 @@ void RemarksConnection::InsertOrUpdateParamCommand::Error(wxString error) {
 	if (m_control)
 		m_control->ParamInsertUpdateError(error);
 	else
-		wxLogError(_T("RemarksConnection::InsertOrUpdateParamCommand::Error: %s"), error.c_str());
+		wxMessageBox(wxString::Format(_("Network operation failed: %s"), error.c_str()), _("Error"), wxICON_ERROR,
+			wxGetApp().GetTopWindow());
 }
 
 void RemarksConnection::InsertOrUpdateParamCommand::Send() {
@@ -1159,7 +1159,11 @@ RemarksConnection::InsertOrUpdateSetCommand::InsertOrUpdateSetCommand(RemarksCon
 }
 
 void RemarksConnection::InsertOrUpdateSetCommand::Error(wxString error) {
-	m_control->SetInsertUpdateError(error);
+	if (m_control)
+		m_control->SetInsertUpdateError(error);
+	else
+		wxMessageBox(wxString::Format(_("Network operation failed: %s"), error.c_str()), _("Error"), wxICON_ERROR,
+			wxGetApp().GetTopWindow());
 }
 
 void RemarksConnection::InsertOrUpdateSetCommand::Send() {
@@ -1187,7 +1191,8 @@ void RemarksConnection::InsertOrUpdateSetCommand::Send() {
 void RemarksConnection::InsertOrUpdateSetCommand::HandleResponse(XMLRPC_REQUEST response) {
 	XMLRPC_VALUE i = XMLRPC_VectorRewind(XMLRPC_RequestGetData(response)); 
 	int v = XMLRPC_GetValueBoolean(i);	
-	m_control->SetInsertUpdateFinished(v != 0);
+	if (m_control)
+		m_control->SetInsertUpdateFinished(v != 0);
 }
 
 RemarksConnection::InsertOrUpdateSetCommand::~InsertOrUpdateSetCommand() {
@@ -1271,15 +1276,19 @@ void RemarksConnection::FetchParamsAndSetsCommand::ProcessSets(XMLRPC_VALUE ss, 
 			DefinedDrawSet* set = new DefinedDrawSet(m_cfg_mgr->GetDefinedDrawsSets(), true);
 			set->SetName(sname);
 
+			dv = XMLRPC_VectorNext(v);
+			std::wstring uname = SC::U2S((const unsigned char*) XMLRPC_GetValueString(dv));
+			set->SetUserName(uname);
+
+			dv = XMLRPC_VectorNext(v);
+			set->SetModificationTime(XMLRPC_GetValueDateTime(dv));
+
 			std::vector<DefinedDrawInfo*> draws;
 			dv = XMLRPC_VectorNext(v);
 			for (XMLRPC_VALUE i = XMLRPC_VectorRewind(dv);
 					i;
 					i = XMLRPC_VectorNext(dv))
 				set->Add(ProcessDrawInfo(i));
-
-			v = XMLRPC_VectorNext(v);
-			set->SetModificationTime(XMLRPC_GetValueInt(v));
 
 			updated = AddSet(set);
 		} else {
@@ -1324,7 +1333,7 @@ void RemarksConnection::FetchParamsAndSetsCommand::HandleResponse(XMLRPC_REQUEST
 	bool sets_updated = false;
 	ProcessSets(sets, sets_updated);
 
-	wxConfig::Get()->Write(_T("NetworkParamsAndSetsLatestRetrieval"), long(m_fetch_time));
+	wxConfig::Get()->Write(_T("NetworkParamsAndSetsLatestRetrieval"), long(time(NULL)));
 	wxConfig::Get()->Flush();
 
 	if (m_event)

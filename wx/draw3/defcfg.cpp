@@ -785,7 +785,7 @@ void DefinedParam::ParseXMLRPCValue(XMLRPC_VALUE p) {
 	m_network_param = true;
 
 	v = XMLRPC_VectorNext(p);
-	m_modification_time = XMLRPC_GetValueInt(v);
+	m_modification_time = XMLRPC_GetValueDateTime(v);
 
 	CreateParam();
 }
@@ -961,6 +961,8 @@ DefinedDrawSet::DefinedDrawSet(DrawsSets* parent,
 	m_prior = ds->m_prior;
 	m_number = ds->m_number;
 	m_network_set = ds->m_network_set;
+	m_user_name = ds->m_user_name;
+	m_modification_time = ds->m_modification_time;
 
 	m_copies->push_back(this);
 
@@ -981,6 +983,14 @@ std::vector<DefinedDrawSet*>* DefinedDrawSet::GetCopies() {
 
 bool DefinedDrawSet::IsNetworkSet() const {
 	return m_network_set;
+}
+
+wxString DefinedDrawSet::GetUserName() const {
+	return m_user_name;
+}
+
+void DefinedDrawSet::SetUserName(wxString user_name) {
+	m_user_name = user_name;	
 }
 
 time_t DefinedDrawSet::GetModificationTime() const {
@@ -1055,6 +1065,7 @@ xmlNodePtr DefinedDrawSet::GenerateXML(xmlDocPtr doc)
 	if (m_network_set) {
 		xmlSetProp(set, X "network_set", X"yes");
 		xmlSetProp(set, X "mod_time", (const xmlChar*) ((std::stringstream&)(std::ostringstream() << m_modification_time)).str().c_str());
+		xmlSetProp(set, X "user_name", SC::S2U(m_user_name).c_str());
 	}
 
 	return set;
@@ -1090,6 +1101,20 @@ void DefinedDrawSet::ParseXML(xmlNodePtr node)
 	if (_network_set && !xmlStrcmp(_network_set, X "yes"))
 		m_network_set = true;
 	xmlFree(_network_set);
+
+	if (m_network_set) {
+		xmlChar* _modification_time = xmlGetProp(node, X "modification_time");
+		if (_modification_time)
+			std::wstringstream(SC::U2S(_modification_time)) >> m_modification_time;
+		else
+			m_modification_time = 0;
+		xmlFree(_modification_time);
+
+		xmlChar* _user_name = xmlGetProp(node, X "user_name");
+		if (_user_name)
+			m_user_name = SC::U2S(_user_name);
+		xmlFree(_user_name);
+	}
 
 	for (xmlNodePtr p = node->xmlChildrenNode; p != NULL; p = p->next) {
 		if ((xmlStrcmp(p->name, X "param")))
@@ -1318,6 +1343,10 @@ DefinedDrawSet* DefinedDrawSet::MakeShallowCopy(DrawsSets* parent) {
 DefinedDrawSet* DefinedDrawSet::MakeDeepCopy() {
 	DefinedDrawSet *ret = new DefinedDrawSet(m_ds, m_network_set);
 	ret->m_sets_nr = m_sets_nr;
+	ret->m_network_set = m_network_set;
+	ret->m_user_name = m_user_name;
+	ret->m_modification_time = m_modification_time;
+	ret->m_prior = m_prior;
 
 	DrawInfoArray *ds = ret->GetDraws();
 
@@ -1703,8 +1732,6 @@ bool DefinedDrawsSets::RemoveSet(wxString name) {
 	if (drawsSets.find(name) == drawsSets.end())
 		return false;
 
-	std::cout << SC::S2A(name) << " " << drawsSets.find(name)->second << std::endl;
-	
 	std::vector<DrawSet*> copies_to_delete;
 	DefinedDrawSet *s = dynamic_cast<DefinedDrawSet*>(drawsSets[name]);
 	assert(s);
