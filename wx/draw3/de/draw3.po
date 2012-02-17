@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-02-16 18:00+0100\n"
+"POT-Creation-Date: 2012-02-17 14:07+0100\n"
 "PO-Revision-Date: 2008-07-16 11:40+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -28,13 +28,13 @@ msgstr "Lade Konfiguration: "
 msgid "Users' sets"
 msgstr "Benutzerdefinierte Sätze"
 
-#: cfgmgr.cpp:818 cfgmgr.cpp:853 cfgmgr.cpp:877
+#: cfgmgr.cpp:818 cfgmgr.cpp:853 cfgmgr.cpp:877 cfgmgr.cpp:901
 msgid "Local sets"
 msgstr ""
 
 # "Nie uda³o siê stworzyæ katalogu %s. Zestawy definiowane nie mog± zostaæ "
 # "zapisane."
-#: cfgmgr.cpp:1191
+#: cfgmgr.cpp:1204
 #, c-format
 msgid "Failed to create directory %s. Defined draws cannot be saved"
 msgstr ""
@@ -42,97 +42,97 @@ msgstr ""
 "gespeichert weden."
 
 # "B³±d"
-#: cfgmgr.cpp:1192 drawfrm.cpp:668 drawpsc.cpp:424 drawpsc.cpp:437
+#: cfgmgr.cpp:1205 drawfrm.cpp:668 drawpsc.cpp:424 drawpsc.cpp:437
 #: drawpsc.cpp:446 drawpsc.cpp:455 paramslist.cpp:269 paramslist.cpp:324
-#: paramslist.cpp:341 paredit.cpp:218 remarks.cpp:1017 remarks.cpp:1118
-#: remarks.cpp:1165 remarks.cpp:1210 seldraw.cpp:521
+#: paramslist.cpp:341 paredit.cpp:218 remarks.cpp:1015 remarks.cpp:1116
+#: remarks.cpp:1162 remarks.cpp:1210 seldraw.cpp:521
 msgid "Error"
 msgstr "Fehler"
 
 # "Parametr:U¿ytkownika:"
-#: cfgmgr.cpp:1361 paredit.cpp:637 XRC_gettext_file.h:174
+#: cfgmgr.cpp:1374 paredit.cpp:638 XRC_gettext_file.h:174
 msgid "User:Param:"
 msgstr "Benutzer:Parameter:"
 
 # "Wybierz minutê"
-#: cfgmgr.cpp:1379 cfgmgr.cpp:1442
+#: cfgmgr.cpp:1392 cfgmgr.cpp:1455
 #, fuzzy
 msgid "Choose a file"
 msgstr "Wählen Sie eine Start Minute"
 
-#: cfgmgr.cpp:1380 cfgmgr.cpp:1443
+#: cfgmgr.cpp:1393 cfgmgr.cpp:1456
 msgid "SZARP draw set (*.xds)|*.xds|All files (*.*)|*.*"
 msgstr ""
 
-#: cfgmgr.cpp:1410
+#: cfgmgr.cpp:1423
 #, c-format
 msgid "Export of set to file: %s failed"
 msgstr ""
 
 # msgstr "B³±d"
-#: cfgmgr.cpp:1410 defcfg.cpp:2004 defcfg.cpp:2011 paramslist.cpp:243
+#: cfgmgr.cpp:1423 defcfg.cpp:2006 defcfg.cpp:2013 paramslist.cpp:243
 #: paramslist.cpp:263 paramslist.cpp:317
 msgid "Error!"
 msgstr "Fehler!"
 
-#: cfgmgr.cpp:1424
+#: cfgmgr.cpp:1437
 #, fuzzy, c-format
 msgid "%s (%s)"
 msgstr "%.*f %s (%s)"
 
-#: cfgmgr.cpp:1424 cfgmgr.cpp:1426 cfgmgr.cpp:1495
+#: cfgmgr.cpp:1437 cfgmgr.cpp:1439 cfgmgr.cpp:1508
 msgid "imported"
 msgstr ""
 
-#: cfgmgr.cpp:1426
+#: cfgmgr.cpp:1439
 #, c-format
 msgid "%s (%s <%d>)"
 msgstr ""
 
-#: cfgmgr.cpp:1430
+#: cfgmgr.cpp:1443
 #, c-format
 msgid "Set with name %s already exists. Give a name for a set:"
 msgstr ""
 
-#: cfgmgr.cpp:1431
+#: cfgmgr.cpp:1444
 msgid "Set already exists"
 msgstr ""
 
-#: cfgmgr.cpp:1455
+#: cfgmgr.cpp:1468
 #, c-format
 msgid "Importing set: %s"
 msgstr ""
 
-#: cfgmgr.cpp:1463
+#: cfgmgr.cpp:1476
 #, fuzzy, c-format
 msgid "Need to load configuration for prefix: %s"
 msgstr "B³±d podczas ³adowania konfiguracji dla bazy: "
 
 # "Wczytywanie konfiguracji: "
-#: cfgmgr.cpp:1465
+#: cfgmgr.cpp:1478
 #, fuzzy, c-format
 msgid "Failed to load configuration: %s"
 msgstr "Lade Konfiguration: "
 
-#: cfgmgr.cpp:1480
+#: cfgmgr.cpp:1493
 #, c-format
 msgid "Operation completed successfully, set %s imported"
 msgstr ""
 
 # "Operacja siê nie powiod³a."
-#: cfgmgr.cpp:1480
+#: cfgmgr.cpp:1493
 #, fuzzy
 msgid "Operation successful."
 msgstr "Vorgang ist fehlgeschlagen."
 
 # "Import plików nie powiód³ siê."
-#: cfgmgr.cpp:1483
+#: cfgmgr.cpp:1496
 #, fuzzy, c-format
 msgid "Failed to import set from file: %s"
 msgstr "Fehler beim Import die Fenster von Datei."
 
 # "Operacja siê nie powiod³a."
-#: cfgmgr.cpp:1483 defcfg.cpp:1570
+#: cfgmgr.cpp:1496 defcfg.cpp:1570
 msgid "Operation failed."
 msgstr "Vorgang ist fehlgeschlagen."
 
@@ -179,13 +179,13 @@ msgid "Defined set %s was removed because all draws in this set were removed"
 msgstr ""
 
 # "Wybierz plik do zaimportowania"
-#: defcfg.cpp:1982
+#: defcfg.cpp:1984
 msgid "Choose file to import"
 msgstr "Wählen Sie Draw2-Datei zu importieren"
 
 # "Nie uda³o siê automatycznie wykryæ prefiksu konfiguracji. Wprowad¼ prefiks "
 # "rêcznie."
-#: defcfg.cpp:1993
+#: defcfg.cpp:1995
 msgid ""
 "Unable to perform automatic detection of configuration's prefix for this "
 "file. Please enter prefix of this configuration"
@@ -194,12 +194,12 @@ msgstr ""
 "Datei.Bitte geben Sie Präfix dieser Konfiguration"
 
 # msgstr "Nie uda³o siê wykryæ prefiksu konfiguracji."
-#: defcfg.cpp:1994
+#: defcfg.cpp:1996
 msgid "Unable to detect prefix"
 msgstr "Nicht in der Lage zu erkennen Präfix"
 
 # "Nie uda³o siê za³adowaæ konfiguracji %s. Nie mogê zaimportowaæ wykresów."
-#: defcfg.cpp:2004
+#: defcfg.cpp:2006
 #, fuzzy, c-format
 msgid "Failed to load configuration of prefix %s. Unable to import draws."
 msgstr ""
@@ -207,19 +207,19 @@ msgstr ""
 "werden."
 
 # "Import plików nie powiód³ siê."
-#: defcfg.cpp:2011
+#: defcfg.cpp:2013
 #, fuzzy
 msgid "Failed to import draws from file."
 msgstr "Fehler beim Import die Fenster von Datei."
 
 # "Operacja importu plików zakoñczy³a siê poprawnie."
-#: defcfg.cpp:2031
+#: defcfg.cpp:2033
 #, fuzzy
 msgid "Draws imported successfully."
 msgstr "Die Fenster wurden erfolgreich importiert."
 
 # "Ok!"
-#: defcfg.cpp:2031
+#: defcfg.cpp:2033
 msgid "Ok!"
 msgstr "Ok!"
 
@@ -751,7 +751,7 @@ msgid "Removal"
 msgstr "Entfernen"
 
 # "Edycja zestawu parametrów"
-#: drawpick.cpp:712 drawpick.cpp:898 drawpick.cpp:972
+#: drawpick.cpp:712 drawpick.cpp:900 drawpick.cpp:979
 msgid "Editing parameter set "
 msgstr "Bearbeite von einer Reihe von Parametern"
 
@@ -786,22 +786,22 @@ msgstr "Sie müsssen den Titel festlegen"
 msgid "No title"
 msgstr "Ohne Titel"
 
-#: drawpick.cpp:863 paredit.cpp:805
+#: drawpick.cpp:863 paredit.cpp:806
 #, fuzzy
 msgid "Error while editing network set: "
 msgstr "Fehler beim Kompilieren des Parameters %s"
 
 # "Edycja zestawu parametrów"
-#: drawpick.cpp:863 paredit.cpp:805
+#: drawpick.cpp:863 paredit.cpp:806
 #, fuzzy
 msgid "Editing network set error"
 msgstr "Bearbeite von einer Reihe von Parametern"
 
-#: drawpick.cpp:871 paredit.cpp:814
-msgid "You don't have sufficient privileges too insert this set."
+#: drawpick.cpp:871
+msgid "You don't have sufficient privileges too insert/modify this set."
 msgstr ""
 
-#: drawpick.cpp:871 paredit.cpp:814
+#: drawpick.cpp:871 paredit.cpp:815 remarks.cpp:1194
 msgid "Insufficient privileges"
 msgstr ""
 
@@ -816,8 +816,8 @@ msgid "Failed to fetch network sets"
 msgstr "Fehler beim Verbindung mit dem Server."
 
 # Szukaj
-#: drawpick.cpp:890 drawpick.cpp:965 drawpick.cpp:993 drawpnl.cpp:570
-#: drawpnl.cpp:605 drawtb.cpp:57 paredit.cpp:673
+#: drawpick.cpp:890 drawpick.cpp:972 drawpick.cpp:1002 drawpnl.cpp:570
+#: drawpnl.cpp:605 drawtb.cpp:57 paredit.cpp:674
 msgid "Find"
 msgstr "Suche"
 
@@ -977,7 +977,7 @@ msgid "Go to latest date"
 msgstr ""
 
 # "Uwagi"
-#: drawtb.cpp:64 remarks.cpp:224 XRC_gettext_file.h:9 XRC_gettext_file.h:10
+#: drawtb.cpp:64 remarks.cpp:223 XRC_gettext_file.h:9 XRC_gettext_file.h:10
 #: XRC_gettext_file.h:48 XRC_gettext_file.h:131 XRC_gettext_file.h:150
 msgid "Remarks"
 msgstr "Kommentare"
@@ -1183,27 +1183,31 @@ msgid "Invalid expression %s"
 msgstr "unrecognized response from server"
 
 # "Koniec:"
-#: paredit.cpp:579
+#: paredit.cpp:580
 #, fuzzy, c-format
 msgid "Found time: %s"
 msgstr "Das Ende der Zeit:"
 
-#: paredit.cpp:581
+#: paredit.cpp:582
 #, c-format
 msgid "%s"
 msgstr ""
 
 # "Brak danych"
-#: paredit.cpp:581
+#: paredit.cpp:582
 #, fuzzy
 msgid "No date found"
 msgstr "Fehlende daten"
 
 # "Parametr:U¿ytkownika:"
-#: paredit.cpp:635
+#: paredit.cpp:636
 #, fuzzy, c-format
 msgid "User:%s:"
 msgstr "Benutzer:Parameter:"
+
+#: paredit.cpp:815
+msgid "You don't have sufficient privileges too insert/update this param."
+msgstr ""
 
 # Rozk³ad procentowy
 #: piewin.cpp:76
@@ -1277,62 +1281,66 @@ msgid "New remarks"
 msgstr "Kommentare"
 
 # "Uwagi"
-#: remarks.cpp:224
+#: remarks.cpp:223
 #, fuzzy
 msgid "No new remarks"
 msgstr "Kommentare"
 
 # "Not translated"
-#: remarks.cpp:839
+#: remarks.cpp:837
 #, fuzzy, c-format
 msgid "Failed to resolve address: %ls"
 msgstr "Failed to create dir: "
 
 # "B³±d po³±czenia z serwerem"
-#: remarks.cpp:882
+#: remarks.cpp:880
 #, fuzzy
 msgid ""
 "Connection with remarks and network sets and params server not configured"
 msgstr "Es könnte keine Verbindung zum Server"
 
 # "B³±d komunikacji z regulatorem"
-#: remarks.cpp:936
+#: remarks.cpp:934
 #, fuzzy
 msgid "Server connection failure"
 msgstr "Regulator Kommunikationsfehler"
 
 # "B³±d komunikacji z regulatorem"
-#: remarks.cpp:939
+#: remarks.cpp:937
 #, fuzzy
 msgid "Server communication error"
 msgstr "Regulator Kommunikationsfehler"
 
-#: remarks.cpp:942
+#: remarks.cpp:940
 msgid "User is not allowed to send remarks for this base"
 msgstr ""
 
 # "Not translated"
-#: remarks.cpp:945
+#: remarks.cpp:943
 #, fuzzy
 msgid "Invalid response from server"
 msgstr "unrecognized response from server"
 
 # "Wpisz nazwê u¿ytkownika i has³o:"
-#: remarks.cpp:948
+#: remarks.cpp:946
 #, fuzzy
 msgid "Incorrect username and password"
 msgstr "Geben Sie Ihren Benutzernamen und Ihr Passwort ein:"
 
-#: remarks.cpp:1017 remarks.cpp:1020
+#: remarks.cpp:1015 remarks.cpp:1018
 #, fuzzy, c-format
 msgid "Failed to fetch remarks: %s"
 msgstr "Fehler beim Verbindung mit dem Server."
 
 # "Operacja siê nie powiod³a."
-#: remarks.cpp:1118 remarks.cpp:1165
+#: remarks.cpp:1116 remarks.cpp:1162
 #, fuzzy, c-format
 msgid "Network operation failed: %s"
 msgstr "Vorgang ist fehlgeschlagen."
+
+#: remarks.cpp:1194
+msgid "You don't have sufficient privileges to update this set."
+msgstr ""
 
 #: remarks.cpp:1210
 #, fuzzy, c-format

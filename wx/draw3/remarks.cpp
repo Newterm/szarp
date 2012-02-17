@@ -218,11 +218,9 @@ void RemarksHandler::OnRemarksStored(RemarksStoredEvent &event) {
 
 	if (event.GetManuallyTriggered()) {
 		if (remarks.size())
-			wxMessageBox(_("New remarks received"), _("New remarks"), wxICON_INFORMATION,
-					wxGetApp().GetTopWindow());
+			wxMessageBox(_("New remarks received"), _("New remarks"), wxICON_INFORMATION);
 		else
-			wxMessageBox(_("No new remarks"), _("Remarks"), wxICON_INFORMATION,
-					wxGetApp().GetTopWindow());
+			wxMessageBox(_("No new remarks"), _("Remarks"), wxICON_INFORMATION);
 	}
 }
 
@@ -996,7 +994,7 @@ void RemarksConnection::OnXMLRPCResponse(XMLRPCResponseEvent &event) {
 
 		command->HandleResponse(response);
 
-		if (size > 1 || size == 1 && m_command_list.size() == 1)
+		if (size > 1 || (size == 1 && m_command_list.size() == 1))
 			SendCommand();
 	}
 }
@@ -1014,8 +1012,8 @@ RemarksConnection::FetchRemarksCommand::FetchRemarksCommand(RemarksConnection* c
 
 void RemarksConnection::FetchRemarksCommand::Error(wxString error) {
 	if (m_manually_triggered)
-		wxMessageBox(wxString::Format(_("Failed to fetch remarks: %s"), error.c_str()), _("Error"), wxICON_ERROR,
-			wxGetApp().GetTopWindow());
+		wxMessageBox(wxString::Format(_("Failed to fetch remarks: %s"), error.c_str()), _("Error"), wxICON_ERROR);
+			
 	else
 		ErrorFrame::NotifyError(wxString::Format(_("Failed to fetch remarks: %s"), error.c_str()));
 }
@@ -1115,8 +1113,7 @@ void RemarksConnection::InsertOrUpdateParamCommand::Error(wxString error) {
 	if (m_control)
 		m_control->ParamInsertUpdateError(error);
 	else
-		wxMessageBox(wxString::Format(_("Network operation failed: %s"), error.c_str()), _("Error"), wxICON_ERROR,
-			wxGetApp().GetTopWindow());
+		wxMessageBox(wxString::Format(_("Network operation failed: %s"), error.c_str()), _("Error"), wxICON_ERROR);
 }
 
 void RemarksConnection::InsertOrUpdateParamCommand::Send() {
@@ -1162,8 +1159,7 @@ void RemarksConnection::InsertOrUpdateSetCommand::Error(wxString error) {
 	if (m_control)
 		m_control->SetInsertUpdateError(error);
 	else
-		wxMessageBox(wxString::Format(_("Network operation failed: %s"), error.c_str()), _("Error"), wxICON_ERROR,
-			wxGetApp().GetTopWindow());
+		wxMessageBox(wxString::Format(_("Network operation failed: %s"), error.c_str()), _("Error"), wxICON_ERROR);
 }
 
 void RemarksConnection::InsertOrUpdateSetCommand::Send() {
@@ -1190,9 +1186,13 @@ void RemarksConnection::InsertOrUpdateSetCommand::Send() {
 
 void RemarksConnection::InsertOrUpdateSetCommand::HandleResponse(XMLRPC_REQUEST response) {
 	XMLRPC_VALUE i = XMLRPC_VectorRewind(XMLRPC_RequestGetData(response)); 
-	int v = XMLRPC_GetValueBoolean(i);	
+	bool ok = XMLRPC_GetValueBoolean(i) != 0;
 	if (m_control)
-		m_control->SetInsertUpdateFinished(v != 0);
+		m_control->SetInsertUpdateFinished(ok);
+	else 
+		if (!ok)
+			wxMessageBox(_("You don't have sufficient privileges to update this set."), _("Insufficient privileges"),
+				wxOK | wxICON_ERROR);
 }
 
 RemarksConnection::InsertOrUpdateSetCommand::~InsertOrUpdateSetCommand() {

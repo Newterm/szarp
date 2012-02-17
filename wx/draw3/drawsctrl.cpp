@@ -306,6 +306,7 @@ void DrawsController::SendSearchQuery(const wxDateTime& start, const wxDateTime&
 	DatabaseQuery *q = new DatabaseQuery();
 	q->type = DatabaseQuery::SEARCH_DATA;
 	q->draw_info = m_draws[m_selected_draw]->GetDrawInfo();
+	q->param = m_draws[m_selected_draw]->GetDrawInfo()->GetParam()->GetIPKParam();
 	q->draw_no = m_selected_draw;
 	q->search_data.start = t1;
 	q->search_data.end = t2;
@@ -1305,6 +1306,7 @@ void DrawsController::SendQueryForEachPrefix(DatabaseQuery::QueryType qt) {
 			DatabaseQuery* q = new DatabaseQuery;
 			q->type = qt;
 			q->draw_info = di;
+			q->param = di->GetParam()->GetIPKParam();
 			QueryDatabase(q);
 
 			di = _di;
@@ -1314,6 +1316,7 @@ void DrawsController::SendQueryForEachPrefix(DatabaseQuery::QueryType qt) {
 	DatabaseQuery* q = new DatabaseQuery;
 	q->type = qt;
 	q->draw_info = di;
+	q->param = di->GetParam()->GetIPKParam();
 	QueryDatabase(q);
 }
 

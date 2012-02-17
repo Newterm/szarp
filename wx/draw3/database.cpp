@@ -123,8 +123,8 @@ void* QueryExecutor::Entry() {
 			TSzarpConfig *cfg = NULL;
 			szb_buffer_t *szb = NULL;
 			
-			if (q->draw_info->IsValid()) {
-				p = q->draw_info->GetParam()->GetIPKParam();
+			if (q->param) {
+				p = q->param;
 				cfg = p->GetSzarpConfig();
 				szb = szbase->GetBuffer(cfg->GetPrefix());
 			}
@@ -206,9 +206,8 @@ void QueryExecutor::ExecuteDataQuery(szb_buffer_t* szb, TParam* p, DatabaseQuery
 		}
 
 		if (rq == NULL) {
-			rq = CreateDataQuery(q->draw_info, vd.period_type, q->draw_no);
+			rq = CreateDataQuery(q->draw_info, q->param, vd.period_type, q->draw_no);
 			rq->inquirer_id = q->inquirer_id;
-			rq->draw_info = q->draw_info;
 		}
 
 		time_t end = szb_move_time(i->time, 1, pt, i->custom_length);
@@ -480,11 +479,12 @@ void DatabaseQueryQueue::SetDatabaseManager(DatabaseManager *manager) {
 	database_manager = manager;
 }
 
-DatabaseQuery* CreateDataQuery(DrawInfo* di, PeriodType pt, int draw_no) {
+DatabaseQuery* CreateDataQuery(DrawInfo* di, TParam *param, PeriodType pt, int draw_no) {
 
 	DatabaseQuery *q = new DatabaseQuery();
 	q->type = DatabaseQuery::GET_DATA;
 	q->draw_info = di;
+	q->param = param;
 	q->draw_no = draw_no;
 	q->value_data.period_type = pt;
 	q->value_data.vv = new std::vector<DatabaseQuery::ValueData::V>();

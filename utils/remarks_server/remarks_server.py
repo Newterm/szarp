@@ -161,7 +161,7 @@ class UserSet:
 	def parse_xml(self, u_string, u_name):
 		u_xml = etree.fromstring(u_string)
 
-		self.name = str(u_xml.xpath("/window/@title")[0])
+		self.name = u_xml.xpath("/window")[0].attrib["title"]
 
 		for u_draw in u_xml.xpath("/window/param"):
 
@@ -403,12 +403,14 @@ class UserSetsManager:
 
 			d["prefix_id"] = prefix_map[prefix]
 
-		set_id = tdb.get_set_id(user_set.name, self.user_id)
+		set_id, set_user_id = tdb.get_set_id(user_set.name)
 
 		if set_id is None:
 			set_id = tdb.insert_set(user_set.name, self.user_id)
-		else:
+		elif set_user_id == self.user_id:
 			tdb.remove_draws_from_set(set_id)
+		else:
+			return False
 
 		i = 0
 		while i < len(user_set.draws):
@@ -452,11 +454,12 @@ class UserSetsManager:
 				r.append(False)
 				continue
 
-			set_id = tdb.get_set_id(user_set.name, self.user_id)
-
-			tdb.update_set_mod_time(set_id, deleted=True)
-			
-			r.append(True)
+			set_id, set_user_id = tdb.get_set_id(user_set.name)
+			if self.user_id == set_user_id:
+				tdb.update_set_mod_time(set_id, deleted=True)
+				r.append(True)
+			else:
+				r.append(False)
 
 		return r
 
@@ -480,13 +483,16 @@ class ParamsManager:
 				r.append(False)
 				continue
 
-			param_id = tdb.get_param_id(param.name, self.user_id)
+			param_id, param_user_id = tdb.get_param_id(param.name)
 
 			if param_id is None:
 				tdb.insert_param(param, self.user_id, prefix_id)
-			else:
+				r.append(True)
+			elif param_user_id == self.user_id:
 				tdb.update_param(param, param_id, prefix_id, self.user_id)
-			r.append(True)
+				r.append(True)
+			else:
+				r.append(False)
 
 		return r
 			
@@ -507,9 +513,8 @@ class ParamsManager:
 				r.append(False)
 				continue
 
-			tdb.remove_param(param.prefix, param.name, self.user_id)
+			r.append(tdb.remove_param(param.prefix, param.name, self.user_id))
 
-			r.append(True)
 		return r
 
 class Database:
@@ -750,17 +755,17 @@ class TransDbAccess:
 			{ 'set_id' : set_id, 'time' : psycopg2.TimestampFromTicks(time.time()), 'deleted' : deleted } )
 				
 			
-	def get_param_id(self, param, user_id):
+	def get_param_id(self, param):
 		self.trans.execute("""
 			SELECT
-				id
+				id, user_id
 			FROM	
 				param
 			WHERE
-				pname = %(pname)s AND user_id = %(user_id)s
-			""", { 'pname' : param, 'user_id' : user_id })
+				pname = %(pname)s
+			""", { 'pname' : param })
 		r = self.trans.fetchall()
-		return r[0][0] if len(r) > 0 else None
+		return r[0][0:2] if len(r) > 0 else (None, None)
 	
 
 	def remove_param(self, prefix, name, user_id):
@@ -773,6 +778,7 @@ class TransDbAccess:
 			WHERE
 				prefix_id = (SELECT id FROM prefix WHERE prefix = %(prefix)s) AND pname = %(pname)s AND user_id = %(user_id)s""",
 			{ 'mod_time' : psycopg2.TimestampFromTicks(time.time()), 'prefix' : prefix, 'pname' : name, 'user_id' : user_id})
+		return self.trans.rowcount > 0
 
 	def get_prefixes(self):
 		self.trans.execute("""
@@ -848,21 +854,21 @@ class TransDbAccess:
 			row = self.trans.fetchone()
 		return ret
 
-	def get_set_id(self, set_name, user_id):
+	def get_set_id(self, set_name):
 		self.trans.execute("""
 			SELECT
-				set_id
+				set_id, user_id
 			FROM
 				draw_set
 			WHERE
-				name = %(set_name)s and user_id = %(user_id)s""",
-			{ 'set_name' : set_name, 'user_id' : user_id })
+				name = %(set_name)s""",
+			{ 'set_name' : set_name})
 
 		row = self.trans.fetchone()
 		if row:
-			return row[0]
+			return row[0:2]
 		else:
-			return None
+			return (None, None)
 
 	def get_set_name(self, set_id):
 		self.trans.execute("""

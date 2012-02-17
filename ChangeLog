@@ -1,3 +1,6 @@
+2012-02-17	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: more network params/sets related fixes
+	and improvements
 2012-02-16	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2/szbase.cc: for lua params - also
 	properly handle return values of boolean type

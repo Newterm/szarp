@@ -1800,6 +1800,8 @@ bool DefinedDrawsSets::SubstituteSet(wxString name, DefinedDrawSet *s) {
 		return false;
 	}
 
+	s->SetPrior(ods->GetPrior());
+
 	std::set<wxString> added_prefixes;
 	std::set<wxString> removed_prefixes;
 

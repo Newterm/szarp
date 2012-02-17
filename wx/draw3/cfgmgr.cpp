@@ -890,13 +890,26 @@ void DrawTreeRoot::RenameUserSet(wxString oname, DrawSet *set) {
 }
 
 void DrawTreeRoot::SubstituteUserSet(wxString oname, DrawSet *set) {
-	if (m_user_subtree == NULL)
+	DefinedDrawSet* draw_set = dynamic_cast<DefinedDrawSet*>(set);
+	if (m_user_subtree == NULL || set == NULL)
 		return;
+
+	wxString nname;
+	if (draw_set->IsNetworkSet())
+		nname = draw_set->GetUserName();
+	else
+		nname = _("Local sets");
+
 	std::vector<DrawTreeNode*>::iterator i;
-	i = std::find_if(m_user_subtree->m_child_nodev.begin(), m_user_subtree->m_child_nodev.end(), DrawTreeNodeNameEq(oname));
-	if (i != m_user_subtree->m_child_nodev.end()) {
-		(*i)->m_name = set->GetName();
-		(*i)->m_child_set = set;
+	i = std::find_if(m_user_subtree->m_child_nodev.begin(), m_user_subtree->m_child_nodev.end(), DrawTreeNodeNameEq(nname));
+	if (i == m_user_subtree->m_child_nodev.end())
+		return;
+
+	std::vector<DrawTreeNode*>::iterator j;
+	j = std::find_if((*i)->m_child_nodev.begin(), (*i)->m_child_nodev.end(), DrawTreeNodeNameEq(oname));
+	if (j != (*i)->m_child_nodev.end()) {
+		(*j)->m_name = set->GetName();
+		(*j)->m_child_set = set;
 	}
 }
 

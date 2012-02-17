@@ -547,6 +547,7 @@ void ParamEdit::FormulaCompiledForExpression(DatabaseQuery *q) {
 	q = new DatabaseQuery();
 	q->type = DatabaseQuery::SEARCH_DATA;
 	q->draw_info = ddi;
+	q->param = param->GetIPKParam();
 	q->draw_no = -1;
 	q->search_data.end = -1;
 	q->search_data.period_type = m_draws_ctrl->GetPeriod();
@@ -811,7 +812,7 @@ void ParamEdit::ParamInsertUpdateFinished(bool ok) {
 		m_remarks_handler->GetConnection()->FetchNewParamsAndSets(NULL);
 		EndModal(wxID_OK);
 	} else {
-		wxMessageBox(_("You don't have sufficient privileges too insert this set."), _("Insufficient privileges"),
+		wxMessageBox(_("You don't have sufficient privileges too insert/update this param."), _("Insufficient privileges"),
 			wxOK | wxICON_ERROR, this);
 	}
 }

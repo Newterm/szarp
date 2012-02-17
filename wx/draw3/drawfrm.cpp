@@ -249,6 +249,7 @@ void DrawFrame::OnDel(wxCommandEvent & event)
 		DefinedDrawsSets *d = config_manager->GetDefinedDrawsSets();
 		if (draw_set->IsNetworkSet()) {
 			remarks_handler->GetConnection()->InsertOrUpdateSet(draw_set, NULL, true);
+			remarks_handler->GetConnection()->FetchNewParamsAndSets(NULL);
 		} else {
 			d->RemoveSet(draw_panel->GetSelectedSet()->GetName());
 		}
