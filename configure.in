@@ -935,10 +935,11 @@ CXXFLAGS="$CXXFLAGS -Wall"
 SUBDIRS=""
 
 # Always included
-SUBDIRS="$SUBDIRS libSzarp libSzarp2 python"
+SUBDIRS="$SUBDIRS libSzarp libSzarp2"
 
 # Included under linux
 if test x$with_mingw32 != xyes ; then
+        SUBDIRS="$SUBDIRS python"
 	EXTRSZB=extrszb
 fi
 

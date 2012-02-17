@@ -1,4 +1,6 @@
 2012-02-17	Darek Marcinkiewicz <reksio@newterm.pl>
+	* configure.in: make descends into python dir
+	only for non-migw32 build
 	* wx/draw3: more deleting params fixes
 	* wx/draw3: more network params/sets related fixes
 	and improvements
