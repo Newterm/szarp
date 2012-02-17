@@ -192,7 +192,7 @@ DatabaseQuery* Draw::GetDataToFetch() {
 		v.state = ValueInfo::PENDING;
 		
 		if (q == NULL)
-			q = CreateDataQuery(m_draw_info, m_draw_info->GetParam()->GetIPKParam(), period, m_draw_no);
+			q = CreateDataQuery(m_draw_info, period, m_draw_no);
 		AddTimeToDataQuery(q, pt.GetTime().GetTicks());
 	}
 

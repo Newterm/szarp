@@ -244,7 +244,7 @@ public:
 };
 
 
-DatabaseQuery* CreateDataQuery(DrawInfo* di, TParam* param, PeriodType pt, int draw_no = -1);
+DatabaseQuery* CreateDataQuery(DrawInfo* di, PeriodType pt, int draw_no = -1);
 
 void AddTimeToDataQuery(DatabaseQuery *q, time_t time);
 

@@ -376,7 +376,7 @@ void DataMangler::ProgressFetch() {
 
 	std::vector<DatabaseQuery*> queries;
 	for (size_t i = 0; i < m_di.size(); i++)
-		queries.push_back(CreateDataQuery(m_di[i], m_di[i]->GetParam()->GetIPKParam(), m_period, i));
+		queries.push_back(CreateDataQuery(m_di[i], m_period, i));
 
 	while (m_pending < 200 && m_current_time <= m_end_time) {
 		for (size_t i = 0; i < m_di.size(); i++)

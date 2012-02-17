@@ -316,7 +316,7 @@ void StatDialog::ProgressFetch() {
 
 	TimeIndex idx(m_period);
 
-	DatabaseQuery* q = CreateDataQuery(m_draw, m_draw->GetParam()->GetIPKParam(), m_period);
+	DatabaseQuery* q = CreateDataQuery(m_draw, m_period);
 
 	while (m_current_time <= m_end_time && m_pending < 200) {
 		AddTimeToDataQuery(q, m_current_time.GetTime().GetTicks());

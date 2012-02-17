@@ -306,7 +306,10 @@ void DrawsController::SendSearchQuery(const wxDateTime& start, const wxDateTime&
 	DatabaseQuery *q = new DatabaseQuery();
 	q->type = DatabaseQuery::SEARCH_DATA;
 	q->draw_info = m_draws[m_selected_draw]->GetDrawInfo();
-	q->param = m_draws[m_selected_draw]->GetDrawInfo()->GetParam()->GetIPKParam();
+	if (q->draw_info->IsValid())
+		q->param = m_draws[m_selected_draw]->GetDrawInfo()->GetParam()->GetIPKParam();
+	else 
+		q->param = NULL;
 	q->draw_no = m_selected_draw;
 	q->search_data.start = t1;
 	q->search_data.end = t2;
@@ -1302,6 +1305,8 @@ void DrawsController::SendQueryForEachPrefix(DatabaseQuery::QueryType qt) {
 	DrawInfo *di = m_draws.at(0)->GetDrawInfo();
 	for (int i = 1; i < m_active_draws_count; ++i) {
 		DrawInfo *_di = m_draws[i]->GetDrawInfo();
+		if (_di->IsValid() == false)
+			continue;
 		if (di->GetBasePrefix() != _di->GetBasePrefix()) {
 			DatabaseQuery* q = new DatabaseQuery;
 			q->type = qt;
@@ -1312,6 +1317,9 @@ void DrawsController::SendQueryForEachPrefix(DatabaseQuery::QueryType qt) {
 			di = _di;
 		}
 	}
+
+	if (!di->IsValid())
+		return;
 
 	DatabaseQuery* q = new DatabaseQuery;
 	q->type = qt;

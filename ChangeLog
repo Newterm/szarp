@@ -1,4 +1,5 @@
 2012-02-17	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: more deleting params fixes
 	* wx/draw3: more network params/sets related fixes
 	and improvements
 2012-02-16	Darek Marcinkiewicz <reksio@newterm.pl>
