@@ -1,3 +1,9 @@
+szarp (3.1.595) natty; urgency=low
+
+  * building natty
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Thu, 17 Feb 2012 08:21:04 +0200
+
 szarp (3.1.594) unstable; urgency=low
 
   * building unstable 
