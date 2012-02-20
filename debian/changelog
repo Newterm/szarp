@@ -1,8 +1,8 @@
-szarp (3.1.600) stable; urgency=low
+szarp (3.1.601) stable; urgency=low
 
   * building stable
 
- --  Darek Marcinkiewicz <reksio@newterm.pl> Fri, 20 Feb 2012 08:23:04 +0200
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Mon, 20 Feb 2012 12:43:55 +0100
 
 szarp (3.1.597) natty; urgency=low
 
