@@ -1,6 +1,6 @@
-szarp (3.1.602) stable; urgency=low
+szarp (3.1.603) testing; urgency=low
 
-  * building stable
+  * building squeeze
 
  -- Darek Marcinkiewicz <reksio@newterm.pl>  Mon, 20 Feb 2012 12:43:55 +0100
 
