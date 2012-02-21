@@ -44,7 +44,6 @@ public:
 	void OnEditCut (wxCommandEvent &event);
 	void OnEditCopy (wxCommandEvent &event);
 	void OnEditPaste (wxCommandEvent &event);
-	void OnBraceMatch (wxCommandEvent &event);
 	void OnEditIndentInc (wxCommandEvent &event);
 	void OnEditIndentRed (wxCommandEvent &event);
 	void OnEditSelectAll (wxCommandEvent &event);
@@ -59,7 +58,7 @@ public:
 	void OnWrapmodeOn (wxCommandEvent &event);
 	void OnMarginClick (wxScintillaEvent &event);
 	void OnCharAdded  (wxScintillaEvent &event);
-
+	void OnUpdate (wxUpdateUIEvent &event);
 	bool InitializePrefs (const wxString &name);
 
 private:

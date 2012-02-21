@@ -40,7 +40,6 @@ BEGIN_EVENT_TABLE (CodeEditor, wxScintilla)
     LOG_EVT_MENU (codeEditorID_SELECTLINE,         CodeEditor , OnEditSelectLine, "codeedit:selectline" )
     LOG_EVT_MENU (wxID_REDO,               CodeEditor , OnEditRedo, "codeedit:redo" )
     LOG_EVT_MENU (wxID_UNDO,               CodeEditor , OnEditUndo, "codeedit:undo" )
-    LOG_EVT_MENU (codeEditorID_BRACEMATCH,         CodeEditor , OnBraceMatch, "codeedit:bracematch" )
     LOG_EVT_MENU (codeEditorID_INDENTGUIDE,        CodeEditor , OnIndentGuide, "codeedit:indentguide" )
     LOG_EVT_MENU (codeEditorID_LINENUMBER,         CodeEditor , OnLineNumber, "codeedit:linenumber" )
     LOG_EVT_MENU (codeEditorID_LONGLINEON,         CodeEditor , OnLongLineOn, "codeedit:longlineon" )
@@ -49,9 +48,11 @@ BEGIN_EVENT_TABLE (CodeEditor, wxScintilla)
     LOG_EVT_MENU (codeEditorID_OVERTYPE,           CodeEditor , OnSetOverType, "codeedit:overtype" )
     LOG_EVT_MENU (codeEditorID_READONLY,           CodeEditor , OnSetReadOnly, "codeedit:readonly" )
     LOG_EVT_MENU (codeEditorID_WRAPMODEON,         CodeEditor , OnWrapmodeOn, "codeedit:wrapmodeon" )
+    EVT_UPDATE_UI(wxID_ANY, CodeEditor::OnUpdate)
 //    LOG_EVT_SCI_MARGINCLICK (-1,           CodeEditor , OnMarginClick, "codeedit:" )
 //    LOG_EVT_SCI_CHARADDED (-1,             CodeEditor , OnCharAdded, "codeedit:" )
 END_EVENT_TABLE()
+
 
 CodeEditor::CodeEditor (wxWindow *parent, wxWindowID id,
             const wxPoint &pos,
@@ -174,17 +175,6 @@ void CodeEditor::OnEditPaste (wxCommandEvent &WXUNUSED(event)) {
     Paste ();
 }
 
-void CodeEditor::OnBraceMatch (wxCommandEvent &WXUNUSED(event)) {
-    int min = GetCurrentPos ();
-    int max = BraceMatch (min);
-    if (max > (min+1)) {
-        BraceHighlight (min+1, max);
-        SetSelection (min+1, max);
-    }else{
-        BraceBadLight (min);
-    }
-}
-
 void CodeEditor::OnEditIndentInc (wxCommandEvent &WXUNUSED(event)) {
     CmdKeyExecute (wxSCI_CMD_TAB);
 }
@@ -246,6 +236,28 @@ void CodeEditor::OnMarginClick (wxScintillaEvent &event) {
             ToggleFold (lineClick);
         }
     }
+}
+
+void CodeEditor::OnUpdate (wxUpdateUIEvent &event) {
+    int currPos = GetCurrentPos();
+    if (currPos == 0) {
+        return;
+    } 
+    int leftFromCursor = currPos - 1;
+    char currChar = (char)GetCharAt(leftFromCursor);
+    wxString braces(wxT("()[]{}"));
+    if (braces.Find(currChar) != wxNOT_FOUND) {
+        int matchingBracePos = BraceMatch(leftFromCursor);
+        if (matchingBracePos == wxSCI_INVALID_POSITION) {
+            BraceBadLight(leftFromCursor);
+        } else {
+            BraceHighlight(leftFromCursor, matchingBracePos);
+        }
+    } else {
+        // clear highlights
+        BraceBadLight(wxSCI_INVALID_POSITION);
+    }
+    event.Skip();
 }
 
 void CodeEditor::OnCharAdded (wxScintillaEvent &event) {
@@ -387,6 +399,32 @@ bool CodeEditor::InitializePrefs (const wxString &name) {
 		wxFont font (10, wxTELETYPE, wxNORMAL, wxNORMAL, false);
 		StyleSetFont (Nr, font);
 		StyleSetForeground (Nr, wxColour (_T("YELLOW")));
+		StyleSetBold (Nr, 1);
+		StyleSetItalic (Nr, 0);
+		StyleSetUnderline (Nr, 0);
+		StyleSetVisible (Nr, 1);
+		StyleSetCase (Nr, 0);
+		pwords = _T("* / - + ^ % : #");
+		SetKeyWords (keywordnr, pwords);
+	}
+    Nr = 34;    // BRACEHIGHLIGHT, should be default but is not defined
+	{
+		wxFont font (10, wxTELETYPE, wxNORMAL, wxNORMAL, false);
+		StyleSetFont (Nr, font);
+		StyleSetForeground (Nr, wxColour (_T("BLACK")));
+		StyleSetBold (Nr, 1);
+		StyleSetItalic (Nr, 0);
+		StyleSetUnderline (Nr, 0);
+		StyleSetVisible (Nr, 1);
+		StyleSetCase (Nr, 0);
+		pwords = _T("* / - + ^ % : #");
+		SetKeyWords (keywordnr, pwords);
+	}
+    Nr = 35;    // BRACEBADLIGHT
+	{
+		wxFont font (10, wxTELETYPE, wxNORMAL, wxNORMAL, false);
+		StyleSetFont (Nr, font);
+		StyleSetForeground (Nr, wxColour (_T("RED")));
 		StyleSetBold (Nr, 1);
 		StyleSetItalic (Nr, 0);
 		StyleSetUnderline (Nr, 0);
