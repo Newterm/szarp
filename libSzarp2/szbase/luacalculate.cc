@@ -12,13 +12,19 @@ void lua_get_val(lua_State* lua, szb_buffer_t *buffer, time_t start, SZARP_PROBE
 	lua_pushnumber(lua, start);
 	lua_pushnumber(lua, probe_type);
 	lua_pushnumber(lua, custom_length);
-	int _ret = lua_pcall(lua, 3, 1, 0);
-	if (_ret != 0) {
+	int ret = lua_pcall(lua, 3, 1, 0);
+	if (ret == 0) {
+		if (lua_isnumber(lua, -1))
+			result = lua_tonumber(lua, -1);
+		else if (lua_isboolean(lua, -1))
+			result = lua_toboolean(lua, -1);
+		else
+			result = SZB_NODATA;
+	} else {
 		result = SZB_NODATA;
 		buffer->last_err = SZBE_LUA_ERROR;
 		buffer->last_err_string = SC::U2S((const unsigned char*)lua_tostring(lua, -1));	
-	} else 
-		result = lua_tonumber(lua, -1);
+	}
 	lua_pop(lua, 1);
 }
 

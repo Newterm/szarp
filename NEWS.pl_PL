@@ -7,6 +7,77 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.590
+#01.02.2012
+* Do systemu SZARP dodano bibliotekê libpyszbase. Biblioteka ta pozwala na
+dostêp do bazy danych SZARPa z poziomo jêzyka Python. W bibliotece znajduj± siê
+funkcje s³u¿±ce do wyszkuwania danych oraz pobierania warto¶ci parametrów.
+Mo¿liwy jest dostêp do dowolnych rodzajów ¶rednich (wliczaj±c w to próbki
+10-sekundowe). Jednym z celów wprowadzenia tej biblioteki by³o u³atwienie
+integracji systemu SZARP z innymi systemami informatycznymi. Bardzo czêsto
+zachodzi potrzeba eksportu danych z SZARPa do innego systemu w jakim¶
+specyficznym formacie. Dotychczas sprowadza³o siê to do pisania skrytpów
+które wywo³ywa³y istniej±ce aplikacje systemu SZARP by pobraæ dane z bazy
+szbase, by³o to rozwi±zanie pod kilkoma wzglêdami nieoptymale - np. wymaga³o 
+pisania kodu parsuj±cego wyj¶cie istniej±cych narzêdzi szarpa, teraz dostêp do
+bazy szbase odbywa siê w sposób natywny dla jêzyka Python.
+* W najnowszej wersji szarpa dodano now± aplikacjê o nazwie pyipk. W tej chwili 
+pozwala ona na wygodne przegl±danie plików konfiguracyjnych szarpa oraz 
+edytowanie ich przy pomocy metody drag'n'drop. Docelowo program ma pozwoliæ na 
+generowanie konfiguracji od zera
+* Poprawiono b³±d w demonie k601dmn.
+
+** 3.1.568
+#01.01.2012
+* Poprawiono stabilno¶æ dzia³ania serwera komentarzy - serwer komentarzy
+automatycznie wznawia po³aczenie z baz± danych gdy zostanie ono zerwane
+* Wprowadzono umo¿liwiaj±ce kompilacjê SZARPa z nowsz± wersj± biblioteki
+boost, dziêki czemu SZARP mo¿e korzystaæ z wersji tych bibliotek dostêpnych
+w standardowych repozytoriach debiana/ubuntu
+* Zmiany w obs³udze niepoprawnie/niekompletych zestawów u¿ytkownika,
+jest to konsekwencja wprowadzenia obs³ugi zestawów sieciowych - wykresy
+odnosz±ce siê do nieistniej±cych parametrów nie s± automatycznie usuwane,
+a pojawiaj± siê w programie przegl±daj±cym z oznaczeniem '***', u¿ytkownik
+mo¿e je usun±c samodzielnie
+* Przy¶pieszono inicjazlizacjê bazy szbase dla konfigruacji zawieraj±cych du¿±
+ilo¶æ parametrów drawdefinable korzystaj±cych z formu³ RPN
+* Rozbudowano dokumentacjê wykresów XYZ o opis 2 wariantów tych wykresów,
+dodano tak¿e wyja¶nienie w jaki sposób wykresy te s± generowane z warto¶ci
+parametrów
+
+** 3.1.568
+#01.12.2011
+* Poprawiono system logowania zdarzeñ w programie przegl±daj±cym ¿eby
+nie blokowa³ programu w wypadku braku po³±czenia sieciowego.
+* Usuniêto b³±d powoduj±cy wy³±czanie siê programu przegl±daj±cego
+przy u¿ywaniu parametrów i zestawów sieciowych w przypadku nie skonfigurowanego
+serwera komentarzy.
+* Poprawiono wy¶wietlanie informacji o dostêpno¶ci nowej wersji programu
+przegl±daj±cego.
+* Usuniêto b³±d w menu programu przegl±daj±cego.
+* Poprawiono wsparcie dla pythona2.x w skryptach wykorzystuj±cych ten jêzyk.
+* Dodano now± aplikacjê do edycji konfiguracji - pyipk.
+* Poprawiono skrypty instalacyjne pakietu szarp-xsltd aby nie nadpisywa³
+konfiguracji przy aktualizacji.
+* Poprawiono wsparcie dla protoko³u Modbus ASCII w daemonie boruta.
+* Usprawniono obs³ugê zestawów zawieraj±cych wiêcej ni¿ 12 wykresów
+w programie przegl±dajacym
+* Poprawiono program filer aby poprawnie zachowywa³ siê na Debianie Squeeze.
+* Zmieniono domy¶lnie u¿ywany parser konfiguracji na xmlReader.
+
+
+** 3.1.563
+#01.11.2011
+* Uzupe³niono dokumentacjê daemona u¶redniaj±cego meaner3.
+* Przywrócono przycisk 'SEZON' w interfejsie programu przegl±daj±cego.
+* Poprawiono obs³ugê kodowania ISO-8859-2 w programie raporter.py.
+* W daemonie k601dmn dodano zabezpieczenie na wypadek braku dostêpu
+do portu szeregowego. Program bêdzie próbowa³ odzyskaæ po³±czenie
+co minutê.
+* Poprawiono dwa drobne b³êdy we wtyczce modbus do daemona boruta.
+* Dodano funkcjê logowania aktywno¶ci programu przegl±daj±cego
+pozwalaj±c± na lepsze dostosowanie aplikacji do potrzeb u¿ytkowników
+
 ** 3.1.562
 #01.10.2011
 * Dodana mo¿liwo¶æ ustawiania adresu serwera w skrypcie szrsync przez 

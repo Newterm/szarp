@@ -1036,10 +1036,12 @@ DrawPanel::GetUrl(bool with_infinity) {
 
 void DrawPanel::SearchDate() {
 	if (ee) {
+		ee->PrepareSearchFormula();
 		ee->Show();
 		ee->Raise();
 	} else {
 		ee = new ParamEdit(this, cfg, db_mgr, dw->GetDrawsController());
+		ee->PrepareSearchFormula();
 		ee->Show();
 	}
 }

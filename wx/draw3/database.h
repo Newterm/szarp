@@ -132,6 +132,8 @@ struct DatabaseQuery {
 
 	/**DrawInfo this query refers to*/
 	DrawInfo *draw_info;
+	/**IPK param this query refers to*/
+	TParam *param;
 	/** prefix of query*/
 	std::wstring prefix;
 

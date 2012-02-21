@@ -868,7 +868,7 @@ void DrawPicker::SetInsertUpdateFinished(bool ok) {
 	if (ok)
 		m_remarks_handler->GetConnection()->FetchNewParamsAndSets(this);
 	else
-		wxMessageBox(_("You don't have sufficient privileges too insert this set."), _("Insufficient privileges"),
+		wxMessageBox(_("You don't have sufficient privileges too insert/modify this set."), _("Insufficient privileges"),
 			wxOK | wxICON_ERROR, this);
 }
 
@@ -890,6 +890,8 @@ int DrawPicker::NewSet(wxString prefix, bool network_set) {
 		m_inc_search = new IncSearch(m_config_mgr, m_remarks_handler, id, this, incsearch_DIALOG, _("Find"), false, false, true, m_database_manager);
 	else
 		m_inc_search->SetConfigName(id);
+
+	m_title_input->SetEditable(true);
 
 	m_editing_existing = false;
 
@@ -923,6 +925,9 @@ wxString DrawPicker::GetNewSetName() {
 
 wxString DrawPicker::AppendTitlePrefix(wxString title) {
 	if (m_defined_set->IsNetworkSet()) {
+		if (m_editing_existing)
+			return title;
+
 		wxString username, password, server;
 		bool autofetch;
 		m_remarks_handler->GetConfiguration(username, password, server, autofetch);
@@ -944,6 +949,8 @@ int DrawPicker::EditAsNew(DrawSet *set, wxString prefix, bool network) {
 	m_modified = true;
 
 	m_prefix = prefix;
+
+	m_title_input->SetEditable(true);
 
 	Clear();
 
@@ -985,6 +992,8 @@ int DrawPicker::EditSet(DefinedDrawSet *set, wxString prefix) {
 	Clear();
 
 	m_defined_set = set->MakeDeepCopy();
+
+	m_title_input->SetEditable(!set->IsNetworkSet());
 
 	m_prefix = prefix;
 	wxString cn = m_config_mgr->GetConfigByPrefix(prefix)->GetID();

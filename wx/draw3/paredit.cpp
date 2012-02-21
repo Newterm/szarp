@@ -76,6 +76,7 @@ ParamEdit::ParamEdit(wxWindow *parent, ConfigManager *cfg, DatabaseManager *dbmg
 	SetHelpText(_T("draw3-ext-parametersset"));
 	
 	m_widget_mode = EDITING_PARAM;
+	m_search_direction = NOT_SEARCHING;
 
 	m_cfg_mgr = cfg;
 	m_draws_ctrl = NULL;
@@ -100,6 +101,7 @@ ParamEdit::ParamEdit(wxWindow *parent, ConfigManager *cfg, DatabaseManager *dbmg
 	m_base_prefix = dc->GetCurrentDrawInfo()->GetBasePrefix();
 
 	m_widget_mode = EDITING_SEARCH_EXPRESSION;
+	m_search_direction = NOT_SEARCHING;
 
 	InitWidget(parent);
 
@@ -267,8 +269,6 @@ void ParamEdit::CreateDefinedParam() {
 	np->CreateParam();
 
 	if (m_network_param) {
-		if (!m_creating_new)
-			m_remarks_handler->GetConnection()->InsertOrUpdateParam(m_edited_param, NULL, true);
 		m_remarks_handler->GetConnection()->InsertOrUpdateParam(np, this, false);
 		delete np;
 	} else {
@@ -374,6 +374,8 @@ int ParamEdit::Edit(DefinedParam * param)
 	m_button_base_config->Disable();
 
 	m_network_param = param->IsNetworkParam();
+	if (m_network_param)
+		m_param_name_input->Enable(false);
 
 	int ret = ShowModal();
 
@@ -525,7 +527,7 @@ void ParamEdit::FormulaCompiledForExpression(DatabaseQuery *q) {
 		L"",
 		GetFormula(),
 		0,
-		TParam::LUA_VA,
+		TParam::LUA_AV,
 		-1);
 	param->CreateParam();
 
@@ -545,6 +547,7 @@ void ParamEdit::FormulaCompiledForExpression(DatabaseQuery *q) {
 	q = new DatabaseQuery();
 	q->type = DatabaseQuery::SEARCH_DATA;
 	q->draw_info = ddi;
+	q->param = param->GetIPKParam();
 	q->draw_no = -1;
 	q->search_data.end = -1;
 	q->search_data.period_type = m_draws_ctrl->GetPeriod();
@@ -562,6 +565,9 @@ void ParamEdit::FormulaCompiledForExpression(DatabaseQuery *q) {
 		case SEARCHING_RIGHT:
 			q->search_data.start = (dt + time_index.GetTimeRes() + time_index.GetDateRes()).GetTime().GetTicks();
 			q->search_data.direction = 1;
+			break;
+		case NOT_SEARCHING:
+			assert(false);
 			break;
 	}
 	QueryDatabase(q);
@@ -582,6 +588,8 @@ void ParamEdit::SearchResultReceived(DatabaseQuery *q) {
 	delete q->search_data.search_condition;
 	delete q->draw_info;
 	delete q;
+
+	m_search_direction = NOT_SEARCHING;
 }
 
 void ParamEdit::DatabaseResponse(DatabaseQuery *q) {
@@ -640,6 +648,20 @@ void ParamEdit::OnFormulaUndo(wxCommandEvent &event) {
 
 void ParamEdit::OnFormulaRedo(wxCommandEvent &event) {
 	m_formula_input->Redo();
+}
+
+void ParamEdit::PrepareSearchFormula() {
+	DrawInfo* draw_info = m_draws_ctrl->GetCurrentDrawInfo();
+	if (draw_info == NULL || draw_info->IsValid() == false)
+		return;
+
+	m_formula_input->ClearAll();
+	m_formula_input->AddText(_T("v = "));
+
+	DrawParam *p = draw_info->GetParam();
+	wxString pname = p->GetParamName();
+	
+	m_formula_input->AddText(wxString::Format(_T("p(\"%s:%s\", t, pt) "), draw_info->GetBasePrefix().c_str(), pname.c_str()));
 }
 
 void ParamEdit::OnFormulaInsertParam(wxCommandEvent &event) {
@@ -761,11 +783,17 @@ void ParamEdit::SendCompileFormulaQuery() {
 }
 
 void ParamEdit::OnForwardButton(wxCommandEvent& event) {
+	if (m_search_direction != NOT_SEARCHING)
+		return;
+
 	m_search_direction = SEARCHING_RIGHT;	
 	SendCompileFormulaQuery();
 }
 
 void ParamEdit::OnBackwardButton(wxCommandEvent& event) {
+	if (m_search_direction != NOT_SEARCHING)
+		return;
+
 	m_search_direction = SEARCHING_LEFT;	
 	SendCompileFormulaQuery();
 }
@@ -780,11 +808,13 @@ void ParamEdit::ParamInsertUpdateError(wxString error) {
 }
 
 void ParamEdit::ParamInsertUpdateFinished(bool ok) {
-	if (ok)
+	if (ok) {
+		m_remarks_handler->GetConnection()->FetchNewParamsAndSets(NULL);
 		EndModal(wxID_OK);
-	else
-		wxMessageBox(_("You don't have sufficient privileges too insert this set."), _("Insufficient privileges"),
+	} else {
+		wxMessageBox(_("You don't have sufficient privileges too insert/update this param."), _("Insufficient privileges"),
 			wxOK | wxICON_ERROR, this);
+	}
 }
 
 BEGIN_EVENT_TABLE(ParamEdit, wxDialog)

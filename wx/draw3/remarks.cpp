@@ -218,11 +218,9 @@ void RemarksHandler::OnRemarksStored(RemarksStoredEvent &event) {
 
 	if (event.GetManuallyTriggered()) {
 		if (remarks.size())
-			wxMessageBox(_("New remarks received"), _("New remarks"), wxICON_INFORMATION,
-					wxGetApp().GetTopWindow());
+			wxMessageBox(_("New remarks received"), _("New remarks"), wxICON_INFORMATION);
 		else
-			wxMessageBox(_("No new remarks"), _("Remarks"), wxICON_INFORMATION,
-					wxGetApp().GetTopWindow());
+			wxMessageBox(_("No new remarks"), _("Remarks"), wxICON_INFORMATION);
 	}
 }
 
@@ -579,7 +577,6 @@ void XMLRPCConnection::OnSocketEvent(wxSocketEvent &event) {
 void XMLRPCConnection::PostRequest(XMLRPC_REQUEST request) {
 
 	if (m_read_state != CLOSED) {
-		std::cout << "m_read_state:" << (int) m_read_state << std::endl;
 		assert(m_read_state == CLOSED);
 	}
 
@@ -997,7 +994,7 @@ void RemarksConnection::OnXMLRPCResponse(XMLRPCResponseEvent &event) {
 
 		command->HandleResponse(response);
 
-		if (size > 1 || size == 1 && m_command_list.size() == 1)
+		if (size > 1 || (size == 1 && m_command_list.size() == 1))
 			SendCommand();
 	}
 }
@@ -1015,8 +1012,8 @@ RemarksConnection::FetchRemarksCommand::FetchRemarksCommand(RemarksConnection* c
 
 void RemarksConnection::FetchRemarksCommand::Error(wxString error) {
 	if (m_manually_triggered)
-		wxMessageBox(wxString::Format(_("Failed to fetch remarks: %s"), error.c_str()), _("Error"), wxICON_ERROR,
-			wxGetApp().GetTopWindow());
+		wxMessageBox(wxString::Format(_("Failed to fetch remarks: %s"), error.c_str()), _("Error"), wxICON_ERROR);
+			
 	else
 		ErrorFrame::NotifyError(wxString::Format(_("Failed to fetch remarks: %s"), error.c_str()));
 }
@@ -1116,7 +1113,7 @@ void RemarksConnection::InsertOrUpdateParamCommand::Error(wxString error) {
 	if (m_control)
 		m_control->ParamInsertUpdateError(error);
 	else
-		wxLogError(_T("RemarksConnection::InsertOrUpdateParamCommand::Error: %s"), error.c_str());
+		wxMessageBox(wxString::Format(_("Network operation failed: %s"), error.c_str()), _("Error"), wxICON_ERROR);
 }
 
 void RemarksConnection::InsertOrUpdateParamCommand::Send() {
@@ -1159,7 +1156,10 @@ RemarksConnection::InsertOrUpdateSetCommand::InsertOrUpdateSetCommand(RemarksCon
 }
 
 void RemarksConnection::InsertOrUpdateSetCommand::Error(wxString error) {
-	m_control->SetInsertUpdateError(error);
+	if (m_control)
+		m_control->SetInsertUpdateError(error);
+	else
+		wxMessageBox(wxString::Format(_("Network operation failed: %s"), error.c_str()), _("Error"), wxICON_ERROR);
 }
 
 void RemarksConnection::InsertOrUpdateSetCommand::Send() {
@@ -1186,8 +1186,13 @@ void RemarksConnection::InsertOrUpdateSetCommand::Send() {
 
 void RemarksConnection::InsertOrUpdateSetCommand::HandleResponse(XMLRPC_REQUEST response) {
 	XMLRPC_VALUE i = XMLRPC_VectorRewind(XMLRPC_RequestGetData(response)); 
-	int v = XMLRPC_GetValueBoolean(i);	
-	m_control->SetInsertUpdateFinished(v != 0);
+	bool ok = XMLRPC_GetValueBoolean(i) != 0;
+	if (m_control)
+		m_control->SetInsertUpdateFinished(ok);
+	else 
+		if (!ok)
+			wxMessageBox(_("You don't have sufficient privileges to update this set."), _("Insufficient privileges"),
+				wxOK | wxICON_ERROR);
 }
 
 RemarksConnection::InsertOrUpdateSetCommand::~InsertOrUpdateSetCommand() {
@@ -1271,15 +1276,19 @@ void RemarksConnection::FetchParamsAndSetsCommand::ProcessSets(XMLRPC_VALUE ss, 
 			DefinedDrawSet* set = new DefinedDrawSet(m_cfg_mgr->GetDefinedDrawsSets(), true);
 			set->SetName(sname);
 
+			dv = XMLRPC_VectorNext(v);
+			std::wstring uname = SC::U2S((const unsigned char*) XMLRPC_GetValueString(dv));
+			set->SetUserName(uname);
+
+			dv = XMLRPC_VectorNext(v);
+			set->SetModificationTime(XMLRPC_GetValueDateTime(dv));
+
 			std::vector<DefinedDrawInfo*> draws;
 			dv = XMLRPC_VectorNext(v);
 			for (XMLRPC_VALUE i = XMLRPC_VectorRewind(dv);
 					i;
 					i = XMLRPC_VectorNext(dv))
 				set->Add(ProcessDrawInfo(i));
-
-			v = XMLRPC_VectorNext(v);
-			set->SetModificationTime(XMLRPC_GetValueInt(v));
 
 			updated = AddSet(set);
 		} else {
@@ -1324,7 +1333,7 @@ void RemarksConnection::FetchParamsAndSetsCommand::HandleResponse(XMLRPC_REQUEST
 	bool sets_updated = false;
 	ProcessSets(sets, sets_updated);
 
-	wxConfig::Get()->Write(_T("NetworkParamsAndSetsLatestRetrieval"), long(m_fetch_time));
+	wxConfig::Get()->Write(_T("NetworkParamsAndSetsLatestRetrieval"), long(time(NULL)));
 	wxConfig::Get()->Flush();
 
 	if (m_event)

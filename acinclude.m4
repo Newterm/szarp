@@ -1232,11 +1232,11 @@ AC_DEFUN([AX_BOOST_DATE_TIME],
 	        AC_CACHE_CHECK(whether the Boost::Date_Time library is available,
        	                                    ax_cv_boost_date_time,
 			[AC_LANG_PUSH([C++])
-				AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[@%:@include <boost/date_time/gregorian/gregorian_types.hpp>]],
+				AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[@%:@include <boost/date_time/gregorian/gregorian_types.hpp>]],
 					[[	
 						using namespace boost::gregorian; date d(2002,Jan,10);
 						return 0;
-					]]),
+					]])],
 				ax_cv_boost_date_time=yes, ax_cv_boost_date_time=no)
 				AC_LANG_POP([C++])
 			]
@@ -1318,12 +1318,12 @@ AC_DEFUN([AX_BOOST_FILESYSTEM],
 	        AC_CACHE_CHECK(whether the Boost::Filesystem library is available,
        	                                    ax_cv_boost_filesystem,
 		        [AC_LANG_PUSH([C++])
-				AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[@%:@include <boost/filesystem/path.hpp>]],
+				AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[@%:@include <boost/filesystem/path.hpp>]],
 					[[
 					using namespace boost::filesystem;
 					path my_path( "foo/bar/data.txt" );
 					return 0;
-				]]),
+				]])],
 				ax_cv_boost_filesystem=yes, ax_cv_boost_filesystem=no)
 				AC_LANG_POP([C++])
                 	]
@@ -1413,12 +1413,12 @@ AC_DEFUN([AX_BOOST_THREAD],
 				else
                                 	CXXFLAGS="-pthread $CXXFLAGS"
 				fi
-				AC_COMPILE_IFELSE(AC_LANG_PROGRAM(
+				AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 					[
 						[@%:@include <boost/thread/thread.hpp>]],
 						[[boost::thread_group thrds;
 	                                   	return 0;]
-					]),
+					])],
 					ax_cv_boost_thread=yes, 
 					ax_cv_boost_thread=no)
 				CXXFLAGS=$CXXFLAGS_SAVE
@@ -1533,9 +1533,9 @@ AC_DEFUN([AX_BOOST_SYSTEM],
         AC_CACHE_CHECK(whether the Boost::System library is available,
                                            ax_cv_boost_system,
         [AC_LANG_PUSH([C++])
-                         AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[@%:@include <boost/system/system_error.hpp>
+                         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[@%:@include <boost/system/system_error.hpp>
                                                                                                 ]],
-                                   [[boost::system::system_error o(boost::system::error_code()); return 0;]]),
+                                   [[boost::system::system_error o(boost::system::error_code()); return 0;]])],
                    ax_cv_boost_system=yes, ax_cv_boost_system=no)
          AC_LANG_POP([C++])
                 ])
@@ -1615,9 +1615,9 @@ AC_DEFUN([AX_BOOST_REGEX],
         AC_CACHE_CHECK(whether the Boost::Regex library is available,
                                            ax_cv_boost_regex,
         [AC_LANG_PUSH([C++])
-                         AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[@%:@include <boost/regex.hpp>
+                         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[@%:@include <boost/regex.hpp>
                                                                                                 ]],
-                                   [[boost::regex r(); return 0;]]),
+                                   [[boost::regex r(); return 0;]])],
                    ax_cv_boost_regex=yes, ax_cv_boost_regex=no)
          AC_LANG_POP([C++])
                 ])
@@ -1694,10 +1694,10 @@ AC_DEFUN([AX_BOOST_PROGRAM_OPTIONS],
                 AC_CACHE_CHECK([whether the Boost::Program_Options library is available],
                                            ax_cv_boost_program_options,
                                            [AC_LANG_PUSH(C++)
-                                AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[@%:@include <boost/program_options.hpp>
+                                AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[@%:@include <boost/program_options.hpp>
                                                           ]],
                                   [[boost::program_options::options_description generic("Generic options");
-                                   return 0;]]),
+                                   return 0;]])],
                            ax_cv_boost_program_options=yes, ax_cv_boost_program_options=no)
                                         AC_LANG_POP([C++])
                 ])

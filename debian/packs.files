@@ -96,6 +96,3 @@ Files: opt/szarp/lib/szarpnagios.py
 Files: opt/szarp/bin/sn-fam.py
 Files: opt/szarp/bin/update-nagios.py
 Files: usr/share/nagios3/htdocs/szarp*.html
-
-Package: szarp-dbg-symbols
-Files: usr/lib/debug/*

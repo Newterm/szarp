@@ -799,56 +799,117 @@ void DrawTreeRoot::AddSet(TDraw* tdraw, DrawSet *drawsset) {
 	}
 }
 
-void DrawTreeRoot::AddUserSet(DrawSet* drawsset) {
-	if (!m_child_nodev.size())
-		return;
+void DrawTreeRoot::AddUserSet(DrawSet* _draw_set) {
+	DefinedDrawSet* draw_set = dynamic_cast<DefinedDrawSet*>(_draw_set);
 	if (m_user_subtree == NULL) {
 		m_user_subtree = new DrawTreeNode();
-		m_user_subtree->m_name = _("User sets");
+		m_user_subtree->m_name = _("Users' sets");
 		m_user_subtree->m_prior = -2;
 		m_user_subtree->m_child_set = NULL;
 		m_user_subtree->m_elemet_type = NODE;
 		m_child_nodev.push_back(m_user_subtree);
 	}
-	DrawTreeNode* node = new DrawTreeNode();
-	node->m_name = drawsset->GetName();
-	node->m_prior = drawsset->GetPrior();
-	node->m_child_set = drawsset;
-	node->m_elemet_type = LEAF;
-	m_user_subtree->m_child_nodev.push_back(node);
-	m_user_subtree->Sort();
+
+	bool network = draw_set->IsNetworkSet();
+	wxString name;
+	if (network)
+		name = draw_set->GetUserName();
+	else
+		name = _("Local sets");
+
+	DrawTreeNode *node = NULL;
+	std::vector<DrawTreeNode*>::iterator i =
+		std::find_if(m_user_subtree->m_child_nodev.begin(), m_user_subtree->m_child_nodev.end(), DrawTreeNodeNameEq(name));
+	if (i != m_user_subtree->m_child_nodev.end()) {
+		node = *i;
+	} else {
+		node = new DrawTreeNode();
+		node->m_name = name;
+		node->m_prior = network ? node->m_child_nodev.size() + 1 : 0;
+		node->m_child_set = NULL;
+		node->m_elemet_type = NODE;
+		m_user_subtree->m_child_nodev.push_back(node);
+		m_user_subtree->Sort();
+	}
+
+	DrawTreeNode* snode = new DrawTreeNode();
+	snode->m_name = draw_set->GetName();
+	snode->m_prior = node->m_child_nodev.size() + 1;
+	snode->m_child_set = draw_set;
+	snode->m_elemet_type = LEAF;
+
+	node->m_child_nodev.push_back(snode);
 }
 
-void DrawTreeRoot::RemoveUserSet(wxString name) {
-	if (m_user_subtree == NULL)
+void DrawTreeRoot::RemoveUserSet(wxString name, DrawSet *_set) {
+	DefinedDrawSet* draw_set = dynamic_cast<DefinedDrawSet*>(_set);
+	if (m_user_subtree == NULL || draw_set == NULL)
 		return;
+
+	wxString nname;
+	if (draw_set->IsNetworkSet())
+		nname = draw_set->GetUserName();
+	else
+		nname = _("Local sets");
+
 	std::vector<DrawTreeNode*>::iterator i;
-	i = std::find_if(m_user_subtree->m_child_nodev.begin(), m_user_subtree->m_child_nodev.end(), DrawTreeNodeNameEq(name));
-	if (i != m_child_nodev.end()) {
-		delete *i;
-		m_child_nodev.erase(i);
+	i = std::find_if(m_user_subtree->m_child_nodev.begin(), m_user_subtree->m_child_nodev.end(), DrawTreeNodeNameEq(nname));
+	if (i == m_user_subtree->m_child_nodev.end())
+		return;
+
+	std::vector<DrawTreeNode*>::iterator j;
+	j = std::find_if((*i)->m_child_nodev.begin(), (*i)->m_child_nodev.end(), DrawTreeNodeNameEq(name));
+	if (j != (*i)->m_child_nodev.end()) {
+		delete *j;
+		(*i)->m_child_nodev.erase(j);
 	}
 }
 
 void DrawTreeRoot::RenameUserSet(wxString oname, DrawSet *set) {
-	if (m_user_subtree == NULL)
+	DefinedDrawSet* draw_set = dynamic_cast<DefinedDrawSet*>(set);
+	if (m_user_subtree == NULL || set == NULL)
 		return;
+
+	wxString nname;
+	if (draw_set->IsNetworkSet())
+		nname = draw_set->GetUserName();
+	else
+		nname = _("Local sets");
+
 	std::vector<DrawTreeNode*>::iterator i;
-	i = std::find_if(m_user_subtree->m_child_nodev.begin(), m_user_subtree->m_child_nodev.end(), DrawTreeNodeNameEq(oname));
-	if (i != m_user_subtree->m_child_nodev.end()) {
-		(*i)->m_name = set->GetName();
-		(*i)->m_child_set = set;
+	i = std::find_if(m_user_subtree->m_child_nodev.begin(), m_user_subtree->m_child_nodev.end(), DrawTreeNodeNameEq(nname));
+	if (i == m_user_subtree->m_child_nodev.end())
+		return;
+
+	std::vector<DrawTreeNode*>::iterator j;
+	j = std::find_if((*i)->m_child_nodev.begin(), (*i)->m_child_nodev.end(), DrawTreeNodeNameEq(oname));
+	if (j != (*i)->m_child_nodev.end()) {
+		(*j)->m_name = set->GetName();
+		(*j)->m_child_set = set;
 	}
 }
 
 void DrawTreeRoot::SubstituteUserSet(wxString oname, DrawSet *set) {
-	if (m_user_subtree == NULL)
+	DefinedDrawSet* draw_set = dynamic_cast<DefinedDrawSet*>(set);
+	if (m_user_subtree == NULL || set == NULL)
 		return;
+
+	wxString nname;
+	if (draw_set->IsNetworkSet())
+		nname = draw_set->GetUserName();
+	else
+		nname = _("Local sets");
+
 	std::vector<DrawTreeNode*>::iterator i;
-	i = std::find_if(m_user_subtree->m_child_nodev.begin(), m_user_subtree->m_child_nodev.end(), DrawTreeNodeNameEq(oname));
-	if (i != m_user_subtree->m_child_nodev.end()) {
-		(*i)->m_name = set->GetName();
-		(*i)->m_child_set = set;
+	i = std::find_if(m_user_subtree->m_child_nodev.begin(), m_user_subtree->m_child_nodev.end(), DrawTreeNodeNameEq(nname));
+	if (i == m_user_subtree->m_child_nodev.end())
+		return;
+
+	std::vector<DrawTreeNode*>::iterator j;
+	j = std::find_if((*i)->m_child_nodev.begin(), (*i)->m_child_nodev.end(), DrawTreeNodeNameEq(oname));
+	if (j != (*i)->m_child_nodev.end()) {
+		(*j)->m_name = set->GetName();
+		(*j)->m_child_set = set;
 	}
 }
 
@@ -888,8 +949,8 @@ void DrawsSets::AddUserSet(DefinedDrawSet *s) {
 }
 
 void DrawsSets::RemoveUserSet(wxString name) {
+	m_tree_root.RemoveUserSet(name, GetDrawsSets()[name]);
 	GetRawDrawsSets().erase(name);
-	m_tree_root.RemoveUserSet(name);
 }
 
 void DrawsSets::RenameUserSet(wxString oname, DefinedDrawSet *set) {
@@ -1157,7 +1218,7 @@ bool ConfigManager::SaveDefinedDrawsSets() {
 
 bool ConfigManager::RemoveDefinedParam(DefinedParam *p) {
 	DrawSetsHash& dsh = m_defined_sets->GetRawDrawsSets();
-	std::vector<DefinedDrawInfo*> ddiv;
+	std::vector<std::pair<DefinedDrawSet*, DefinedDrawInfo*> > ddiv;
 
 	for (DrawSetsHash::iterator i = dsh.begin();
 			i != dsh.end();
@@ -1170,7 +1231,7 @@ bool ConfigManager::RemoveDefinedParam(DefinedParam *p) {
 			assert(dp);
 
 			if (dp->GetParam() == p)
-				ddiv.push_back(dp);
+				ddiv.push_back(std::make_pair(ds, dp));
 		}
 	}
 
@@ -1180,10 +1241,15 @@ bool ConfigManager::RemoveDefinedParam(DefinedParam *p) {
 
 	delete p;
 
-	for (std::vector<DefinedDrawInfo*>::iterator i = ddiv.begin();
+	for (std::vector<std::pair<DefinedDrawSet*, DefinedDrawInfo*> >::iterator i = ddiv.begin();
 			i != ddiv.end();
-			i++)
-		m_defined_sets->RemoveDrawFromSet(*i);
+			i++) {
+		i->second->SetValid(false);
+
+		std::vector<DefinedDrawSet*>* c = i->first->GetCopies();
+		for (std::vector<DefinedDrawSet*>::iterator j = c->begin(); j != c->end(); j++)
+			NotifySetModified((*j)->GetDrawsSets()->GetPrefix(), (*j)->GetName(), *j);
+	}
 
 	return deleted;
 }

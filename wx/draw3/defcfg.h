@@ -463,6 +463,10 @@ public:
 
 	bool IsNetworkSet() const;
 
+	wxString GetUserName() const;
+
+	void SetUserName(wxString user_name);
+
 	time_t GetModificationTime() const;
 
 	void SetModificationTime(time_t modification_time);
@@ -484,6 +488,8 @@ protected:
 	std::vector<DefinedDrawSet*> *m_copies;
 
 	bool m_network_set;
+
+	wxString m_user_name;
 
 	time_t m_modification_time;
 

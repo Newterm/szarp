@@ -6,6 +6,81 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.590
+#01.02.2012
+* This month saw introduction of libpyszbase module into SZARP. This
+module gives Python application direct access to SZARP database (szbase).
+Libpyszbase module contains functions for searching and accessing data in 
+szbase and calculating all types of average values (including 10-seconds
+probes). One of the goals of introducing this library (apart from the fact
+that such library is simply cool thing to have) was to ease SZARP integration
+with other information systems. In various deployment scenarios, quite often
+a need arises to periodically export data from SZARP to some other system in
+the format specific for such system (let it be (In)SQL database, XML, some
+proprietary format, etc.). For such application Python proved to be indispensable
+tool. Previously when faced with such task we were resolving to calling szbase
+extraction tools from Python scripts and parsing their output, such solution
+was less than ideal - inefficient, cumbersome not not very elegant. With pyszbase
+one can access szbase without any overhead of this kind.
+* Development of pyipk further progressed. At this moment it is possible 
+browse and edit existing params.xml files using drag and drop. The goal 
+is to make pyipk an app that can be used to create SZARP configurations
+from scratch.
+* A minor bug in k601 daemon was fixed.
+
+** 3.1.568
+#01.01.2012
+* Improved stability of remarks server - when connection to a database 
+drops it automatically gets reestablished
+* SZARP codebase was adopted to latest version of boost library,
+SZARP binary packages no longer depend on slightly outdated boost 1.42
+and are using boost libs that come with current Debian/Ubuntu distros
+* Draw3: as a consequence of network params and sets introduction, handling
+of incomplete/invalid users sets was overhauled. Invalid graphs are no
+longer automatically removed, they remain in configuration but are
+unusable and are marked with '***' sign.
+* Speedup in initialization of szbase engine - esp. noticeable for
+configurations with large number of drawdefinable RPN params.
+* Documentation of XYZ graphs was extended to cover description of 
+variants of this type of graphs also we added detailed explanation
+on how those graphs are generated 
+
+** 3.1.568
+#01.12.2011
+* draw3 activity logger was fixed to not block the GUI thread when 
+server ip address cannot be resolved
+* Regression fix - draw3 was crashing when attempt was made to edit user
+sets and params when remarks server address was not configured
+* Mechanism to inform user that more recent version of the draw3 
+app is already installed was improved to accommodate for systems
+with lacking short form alias in locale settings
+* Support for python 2.x version was improved in szarp python scripts
+* Introduction of new utility - pyipk. the purpose of pyipk is to ease editing
+of szarp configurations
+* szarp-xsltd package was fixed to not overwrite configuration files
+on package update
+* Modbus ASCII protocol support fixes in boruta daemon
+* Draw3: handling of sets with more than 12 graphs improved
+* Filler app now orrectly behaves on Debian Squeeze
+* Implementation of szarp ipk parser implementation was switched from DOM to
+xmlTextReader based, thus reducing memory consumption of configuration parsing
+process
+
+** 3.1.563
+#01.11.2011
+* Documentation of SZARP data aggregation daemon - meaner3 - is more
+complete now
+* Fix: button 'SEASON' was brought back to draw3 application
+* Support for 'ISO-8859-2' encoding in raporter.py app was imporved
+* k601dmn now properly handles the case when serial port gets disconnected
+(which may happen when e.g. usb2rs converter is unplugged) - in this
+case daemon will periodically make attempts to reopen the port
+* Two minor issues with modbus support in boruta's modbus plugin
+were fixed
+* Draw3 now optionally can be set up to monitor user activity - gathered
+data is completely anonymous and is collected to allow us understand 
+better how users interact with the application, which in turn we hope,
+we will be able to use to make the app even more user friendly
 ** 3.1.562
 #01.10.2011
 * Added support for setting server address with SZRSYNC_SERVER variable 
