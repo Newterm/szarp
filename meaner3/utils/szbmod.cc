@@ -218,19 +218,25 @@ void save_combined_param(double pw, TParam *p, std::vector<std::pair<time_t, std
 			i++) {
 		int v;
 		unsigned int* uv = (unsigned int*) &v;
-		if (!std::isnan(i->second[pn]))
+		short lsw;
+		short msw;
+		if (!std::isnan(i->second[pn])) {
 			v = round(i->second[pn] * pw);
-		else
-			v = (SZB_FILE_NODATA << 16) | SZB_FILE_NODATA;
+			lsw = *uv & 0xffff;
+			msw = *uv >> 16;
+		} else {
+			lsw = SZB_FILE_NODATA;
+			msw = SZB_FILE_NODATA;
+		}
 		sp_msw.Write(szb->rootdir.c_str(),
 				i->first,
-				*uv >> 16,	
+				msw,
 				NULL, /* no status info */
 				1, /* overwrite */
 				1 /* force_nodata */);
 		sp_lsw.Write(szb->rootdir.c_str(),
 				i->first,
-				*uv & 0xffff,	
+				lsw,
 				NULL, /* no status info */
 				1, /* overwrite */
 				1 /* force_nodata */);
