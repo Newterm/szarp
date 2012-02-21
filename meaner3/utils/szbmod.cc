@@ -53,10 +53,17 @@ static char doc[] = "Allows for fast fast data modification of szbase parameter.
 "params. The values returned from formula are then stored in database.\n"
 "For example if program is run with following params:\n"
 "./szbmod -fformula -Dprefix=xxxx -s'2007-01-01 00:00' -e'2009-12-30 00:00' \"Sieæ:Sterownik:Temperatura zewnêtrzna\"\n"
-"and contents of file formula is like that:\n"
+"and contents of file formula is as follows:\n"
 "local v = 2 * p(\"xxx:Sieæ:Sterownik:Temperatura zewnêtrzna\", t, pt)\n"
 "return v\n"
 "then for given period values of \"Sieæ:Sterownik:Temperatura zewnêtrzna\" will be doubled.\n"
+"Any formula is accepted.\n"
+"As data scaling is a relatively common task, szmbod provides a shortcut, instead of creating\n"
+"a formula to scale param value one can pass a scaling factor as a -m switch, in that case szbmod will\n"
+"generate a proper formula on its own\n"
+"So the same effect as in a previous example (scaling param values by a factor of 2) can be achieved\n"
+"by invoking program in following way:\n"
+"./szbmod -m2 -Dprefix=xxxx -s'2007-01-01 00:00' -e'2009-12-30 00:00' \"Sieæ:Sterownik:Temperatura zewnêtrzna\"\n"
 "Config file:\n\
 Configuration options are read from file /etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg,\n\
 from section 'meaner3' or from global section.\n\
@@ -80,6 +87,7 @@ settings in config file."},
 	{"start", 's', "", 0, "Start of time range. In format yyyy-mm-dd hh:mm."}, 
 	{"end", 'e', "", 0, "End of time range. In format yyyy-mm-dd hh:mm."},
 	{"formula", 'f', "", 0, "File with formula to apply."},
+	{"multiply", 'm', "", 0, "Multiply params by given factor."},
 	{0}
 };
 
@@ -87,6 +95,8 @@ struct arguments {
 	time_t start;
 	time_t end;
 	std::string formula;
+	bool multiply;
+	double multiplier;
 	std::vector<std::wstring> params;
 };
 
@@ -134,6 +144,17 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 			if (arguments->formula.empty()) {
 				fprintf(stderr, "Failed to load formula from file: %s", arg);
 				argp_usage(state);
+			}
+			break;
+		}
+		case 'm': {
+			char *e;
+			arguments->multiplier = strtod(arg, &e);
+			if (*e != 0) {
+				fprintf(stderr, "Invalid value for multiplier: %s", arg);
+				argp_usage(state);
+			} else {
+				arguments->multiply = true;
 			}
 			break;
 		}
@@ -244,6 +265,19 @@ void save_combined_param(double pw, TParam *p, std::vector<std::pair<time_t, std
 
 }
 
+void create_multiply_formula(struct arguments& arg, const char* prefix) {
+	std::stringstream formula;
+	formula << "return ";
+	for (size_t i = 0; i < arg.params.size(); i++) {
+		formula << arg.multiplier << " * " << "p(\"" << prefix << ":" << SC::S2A(arg.params[i]) << "\", t, pt)";
+		if (i + 1 < arg.params.size())
+			formula << ", ";
+	}
+	arg.formula = formula.str();
+	std::cout << "Following formula will be used: " << std::endl;
+	std::cout << formula.str() << std::endl;
+}
+
 int main(int argc, char* argv[])
 {
 	struct arguments arguments;
@@ -264,6 +298,7 @@ int main(int argc, char* argv[])
 	/* parse params */
 	arguments.start = (time_t) -1;
 	arguments.end = (time_t) -1;
+	arguments.multiply = false;
 	argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
 	if (arguments.start == -1 
@@ -317,10 +352,13 @@ int main(int argc, char* argv[])
 
 	lua_State* lua = Lua::GetInterpreter();
 
-	if (arguments.formula.empty()) {
-		std::wcerr << "No formula given, error" << std::endl;
+	if (arguments.formula.empty() && arguments.multiply == false) {
+		std::wcerr << "No formula given and no multiply param given, error" << std::endl;
 		return 1;
 	}
+
+	if (arguments.multiply)
+		create_multiply_formula(arguments, ipk_prefix);
 
 	if (szb_compile_lua_formula(lua, (const char*) SC::A2U(arguments.formula).c_str(), "", false) == false) {
 		std::wcerr << "Failed to compile formula, error: " << lua_tostring(lua, -1) << std::endl;

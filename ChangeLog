@@ -1,3 +1,10 @@
+2012-02-21	Darek Marcinkiewicz <reksio@newterm.pl>
+	* meaner3/utils/szbmod.cc: -m option added, to quote szbmod help:
+	As data scaling is a relatively common task, szmbod provides a shortcut, instead of creating
+	a formula to scale param value one can pass a scaling factor as a -m switch, in that case szbmod will generate a proper formula on its own
+	So the same effect as in a previous example (scaling param values by a factor of 2) can be achieved
+	by invoking program in following way
+	szbmod -m2 -Dprefix=xxxx -s'2007-01-01 00:00' -e'2009-12-30 00:00' "Siec:Sterownik:Temperatura zewnetrzna"
 2012-02-17	Darek Marcinkiewicz <reksio@newterm.pl>
 	* configure.in: make descends into python dir
 	only for non-migw32 build
