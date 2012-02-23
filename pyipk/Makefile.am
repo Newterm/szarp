@@ -1,7 +1,7 @@
 
-# Pawe³ Pa³ucha pawel@praterm.com.pl
+# Jakub Kotur <qba@newterm.pl>
 #
-# $Id: Makefile.am 6332 2009-01-20 17:27:14Z reksio $
+# $Id: Makefile.am 6332 2012-02-23 15:15:14
 
 SUBDIRS = 
 
@@ -40,6 +40,17 @@ else
 endif
 
 else
+
+# fake pyipk files, to build lenny. This must be updated every time
+# while something is added to debian/packs.files in pyipk section
+if DEB_BUILD
+	@touch $(DESTDIR)///opt/szarp/bin/ipkcmd
+	@touch $(DESTDIR)///opt/szarp/bin/ipkqt
+	@mkdir -p $(DESTDIR)///opt/szarp/lib/plugins
+	@mkdir -p $(DESTDIR)///opt/szarp/lib/python${PYTHON_VERSION}/dist-packages/libipk
+	@mkdir -p $(DESTDIR)///opt/szarp/lib/python${PYTHON_VERSION}/dist-packages/qtipk
+endif
 	@echo 'Python <= 2.5 not supported'
+
 endif
 

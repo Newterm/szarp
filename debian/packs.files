@@ -50,6 +50,8 @@ Files: etc/pam.d/paramd
 Files: opt/szarp/bin/paramd
 Files: opt/szarp/resources/paramd_access.conf
 
+# if you want to add something to this section, please go to 
+# pyipk/Makefile.am and update it according to instructions
 Package: szarp-pyipk
 Files: opt/szarp/bin/ipkcmd
 Files: opt/szarp/bin/ipkqt
