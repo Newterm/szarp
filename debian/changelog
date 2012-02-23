@@ -1,3 +1,9 @@
+szarp (3.1.607) lenny; urgency=low
+
+  * building lenny
+
+ -- Jakub Kotur <qba@newterm.pl>  Thu, 23 Feb 2012 13:53:09 +0100
+
 szarp (3.1.606) oneiric; urgency=low
 
   * building oneiric
