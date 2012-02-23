@@ -39,9 +39,9 @@
 
 #include <vector>
 
-#include "wxlogging.h"
+#include "cfgmgr.h"
 
-typedef std::vector<DrawInfo*> DrawInfoList;
+#include "wxlogging.h"
 
 /**class responsible for creating and managing @see DrawFrame objects*/
 class FrameManager : public wxEvtHandler {

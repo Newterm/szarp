@@ -39,6 +39,8 @@
 #include <wx/aui/aui.h>
 #endif
 
+#include "cfgmgr.h"
+
 #include "classes.h"
 #include <vector>
 
@@ -48,8 +50,6 @@
  * This class reprezents panel with all the draws' display and control
  * widgets. It can be used as a main frame for program tab or windows.
  */
-
-typedef std::vector<DrawInfo*> DrawInfoList;
 
 class DrawPanel : public wxPanel, public DrawObserver {
 	public:

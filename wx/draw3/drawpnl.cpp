@@ -913,7 +913,12 @@ DrawSet* DrawPanel::GetSelectedSet() {
 }
 
 DrawInfoList DrawPanel::GetDrawInfoList() {
-	return sw->GetDrawInfoList();
+	DrawInfoList dil = sw->GetDrawInfoList();
+	DrawInfo* di;
+	wxDateTime wdt;
+	GetDisplayedDrawInfo( &di , wdt );
+	dil.SetSelectedDraw( di );
+	return dil;
 }
 
 void DrawPanel::Copy() {

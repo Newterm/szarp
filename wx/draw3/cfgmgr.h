@@ -160,6 +160,17 @@ class DrawInfo
 
 };
 
+class DrawInfoList : public std::vector<DrawInfo*> {
+public:
+	void SetSelectedDraw( DrawInfo* di )
+	{	selected = di; }
+
+	DrawInfo* GetSelectedDraw()
+	{	return selected; }
+private:
+	DrawInfo* selected;
+};
+
 class IPKDrawInfo : public DrawInfo {
 protected:
 	DrawsSets *ds;
