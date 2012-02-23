@@ -212,6 +212,10 @@ if test "$no_python" != "yes" ; then
 			     your path.
 			     ])
 	fi
+
+	# test if python version is >= 2.6. This is needed cause pyipk doesnt
+	# work with python 2.5, but sharp has to be build on debian lenny
+	AM_CONDITIONAL(PYTHON_26, test $(word 1,$(subst ., ,${PYTHON_VERSION})) -ge 2 -a $(word 2,$(subst ., ,${PYTHON_VERSION})) -ge 6 )
 fi
 
 # X windows tests (sets 'X_CFLAGS', 'X_PRE_LIBS', 'X_LIBS' and
