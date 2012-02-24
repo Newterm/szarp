@@ -39,9 +39,10 @@ class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog ) :
 		return dict( zip( self.args , [ e.text() for e in self.ents ] ) )
 
 	def pluginSelected( self , index ) :
-		# FIXME: Plugins.get creates new plugin object
-		#        this may be expensive in future
-		self.args = self.plugins.get_args( self.names[ index.row() ] )
+		name = self.names[ index.row() ]
+
+		self.args = self.plugins.get_args( name )
+		self.textDoc.setText( self.plugins.help( name ) )
 
 		for l in self.labs : l.close()
 		for e in self.ents : e.close()

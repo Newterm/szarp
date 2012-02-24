@@ -9,7 +9,12 @@ from functools import reduce
 from lxml import etree
 
 class CountSubTag( Plugin ) :
-	'''Counts specified sub tag in param tag'''
+	'''Shows tags with specified number of subtags
+
+	  * tag    - xml tag name
+	  * subtag - xml children tag name
+	  * count  - number of repeats
+	'''
 	def __init__( self , **args ) :
 		Plugin.__init__( self , **args )
 		self.params = {} 
@@ -36,7 +41,7 @@ class CountSubTag( Plugin ) :
 		return [ k for k in self.params if self.params[k] == self.count ]
 
 class MissingSubTag( CountSubTag ) :
-	'''Lists param tags with no specified sub tag'''
+	'''Lists tags without specified subtags. Same as CountSubTag with count = 0'''
 	def set_args( self , **args ) :
 		CountSubTag.set_args( self , count = 0 , **args )
 
@@ -67,7 +72,12 @@ class XPath( Plugin ) :
 		return self.nodes
 
 class FindAttrib( XPath ) :
-	'''Finds tags with attribute same as specified value'''
+	'''Finds tags with attribute same as specified value
+
+	  * tag    - xml tag name
+	  * attrib - attribute name
+	  * value  - attribute value
+	'''
 	def __init__( self , **args ) :
 		XPath.__init__( self , **args )
 
@@ -82,7 +92,11 @@ class FindAttrib( XPath ) :
 		return list( self.nodes )
 
 class FindRepeated( Plugin ) :
-	'''Finds tags with same attrib values'''
+	'''Finds tags with repeated attrib values
+
+	  * tag    - xml tag name 
+	  * attrib - tag attribute name
+	'''
 	def __init__( self , **args ) :
 		Plugin.__init__( self , **args )
 		self.nodes = {}
