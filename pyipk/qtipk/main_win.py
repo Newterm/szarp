@@ -12,10 +12,13 @@ from libipk.plugins import Plugins
 from .xml_view import XmlView
 from .xml_diag import XmlDialog
 from .plug_diag import PluginsDialog
+from .base_diag import BaseDialog
 
 from .utils import *
 
 from .ui.main_win import Ui_MainWindow
+
+SZARP_PATH = '/opt/szarp/'
 
 class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 	def __init__( self , plugins ) :
@@ -41,18 +44,7 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 		if self.params != None : self.params.touch()
 
 	def rlyClose( self ) :
-		if self.params == None or self.params.close() :
-			return True
-		else :
-			reply = QtGui.QMessageBox.question(self, 'Message',
-				"Params not saved. Are you sure to quit?",
-				QtGui.QMessageBox.Yes | QtGui.QMessageBox.No,
-				QtGui.QMessageBox.No)
-
-			if reply == QtGui.QMessageBox.Yes:
-				return True
-			else :
-				return False
+		return self.closeParams()
 
 	def closeEvent(self, event):
 		if self.rlyClose() :
@@ -81,10 +73,25 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 			self.openParams( fromUtf8(fn[0]) )
 
 	def openParams( self , filename ) :
+		if not self.closeParams() : return
 		self.params = Params( filename )
 		self.view_full.clear()
 		self.view_result.clear()
 		self.view_full.add_node( self.params.root )
+
+	def closeParams( self ) :
+		if self.params == None or self.params.close() :
+			return True
+		else :
+			reply = QtGui.QMessageBox.question(self, 'Message',
+				"Params not saved. Are you sure you want to do this?",
+				QtGui.QMessageBox.Yes | QtGui.QMessageBox.No,
+				QtGui.QMessageBox.No)
+
+			if reply == QtGui.QMessageBox.Yes:
+				return True
+			else :
+				return False
 
 	def runOnNodes( self , nodes ) :
 		result = self.openRunDialog()
@@ -110,4 +117,9 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 		if diag.exec_() == QtGui.QDialog.Accepted :
 			return ( diag.selected_name() , diag.selected_args() )
 		return None
+
+	def openBaseDialog( self ) :
+		diag = BaseDialog( self , SZARP_PATH )
+		if diag.exec_() == QtGui.QDialog.Accepted :
+			self.openParams( fromUtf8( diag.selected_params() ) )
 
