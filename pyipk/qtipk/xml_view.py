@@ -4,6 +4,8 @@
 import sip
 sip.setapi('QString', 2)
 
+import string
+
 from PyQt4 import QtGui , QtCore
 
 from lxml import etree
@@ -121,8 +123,18 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 
 		if role == QtCore.Qt.DisplayRole :
 			# FIXME: this method is probably to havy for lage xml files
-			lines = toUtf8( etree.tostring( index.internalPointer().node , pretty_print = True , encoding = 'utf8' , method = 'xml' ) )
-			return lines.partition('\n')[0]
+			n = index.internalPointer().node
+#            ns = n.nsmap[None]
+#            n.nsmap[None] = ''
+#            out = toUtf8( etree.tostring( n , pretty_print = True , encoding = 'utf8' , method = 'xml' ) ).partition('\n')[0]
+#            n.nsmap[None] = ns
+#            return out
+			if isinstance(n.tag,basestring) :
+				out = '<%s '%n.tag + ' '.join(['%s="%s"'%(a,n.get(a)) for a in n.attrib]) + '>'
+				out = string.replace(out,'{'+n.nsmap[None]+'}','') if None in n.nsmap else out
+			else :
+				out = toUtf8( etree.tostring( n , pretty_print = True , encoding = 'utf8' , method = 'xml' ) ).partition('\n')[0]
+			return out
 		else:
 			return None
 
