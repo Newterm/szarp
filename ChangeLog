@@ -1,3 +1,5 @@
+2012-02-27	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2/szbase: fix in combined params calculation
 2012-02-21	Aleksy Barcz <abarcz@newterm.pl>
 	* wx/draw3: highlighting matching and unmatched braces in LUA editor
 2012-02-21	Darek Marcinkiewicz <reksio@newterm.pl>
