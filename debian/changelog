@@ -1,3 +1,63 @@
+szarp (3.1.611) stable; urgency=low
+
+  * building lenny
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Tue, 29 Feb 2012 10:44:07 +0100
+
+szarp (3.1.610) testing; urgency=low
+
+  * building squeeze
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Tue, 29 Feb 2012 10:44:07 +0100
+
+szarp (3.1.609) oneiric; urgency=low
+
+  * building oneiric
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Tue, 29 Feb 2012 10:44:07 +0100
+
+szarp (3.1.608) lenny; urgency=low
+
+  * building lenny
+
+ -- Jakub Kotur <qba@newterm.pl>  Thu, 23 Feb 2012 13:53:09 +0100
+
+szarp (3.1.606) oneiric; urgency=low
+
+  * building oneiric
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Wed, 22 Feb 2012 10:44:07 +0100
+
+szarp (3.1.603) testing; urgency=low
+
+  * building squeeze
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Mon, 20 Feb 2012 12:43:55 +0100
+
+szarp (3.1.597) natty; urgency=low
+
+  * building natty
+
+ --  Darek Marcinkiewicz <reksio@newterm.pl> Fri, 17 Feb 2012 08:23:04 +0200
+
+szarp (3.1.596) unstable; urgency=low
+
+  * building unstable 
+
+ --  Darek Marcinkiewicz <reksio@newterm.pl> Fri, 17 Feb 2012 08:22:04 +0200
+
+szarp (3.1.595) natty; urgency=low
+
+  * building natty
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Thu, 17 Feb 2012 08:21:04 +0200
+
+szarp (3.1.594) unstable; urgency=low
+
+  * building unstable 
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Tue, 07 Feb 2012 22:23:49 +0100
+
 szarp (3.1.591) natty; urgency=low
 
   * building natty 

@@ -913,7 +913,12 @@ DrawSet* DrawPanel::GetSelectedSet() {
 }
 
 DrawInfoList DrawPanel::GetDrawInfoList() {
-	return sw->GetDrawInfoList();
+	DrawInfoList dil = sw->GetDrawInfoList();
+	DrawInfo* di;
+	wxDateTime wdt;
+	GetDisplayedDrawInfo( &di , wdt );
+	dil.SetSelectedDraw( di );
+	return dil;
 }
 
 void DrawPanel::Copy() {
@@ -1036,10 +1041,12 @@ DrawPanel::GetUrl(bool with_infinity) {
 
 void DrawPanel::SearchDate() {
 	if (ee) {
+		ee->PrepareSearchFormula();
 		ee->Show();
 		ee->Raise();
 	} else {
 		ee = new ParamEdit(this, cfg, db_mgr, dw->GetDrawsController());
+		ee->PrepareSearchFormula();
 		ee->Show();
 	}
 }

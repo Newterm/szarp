@@ -39,9 +39,9 @@
 #endif
 #include <wx/validate.h>
 
-#include "wxlogging.h"
+#include "cfgmgr.h"
 
-typedef std::vector<DrawInfo*> DrawInfoList;
+#include "wxlogging.h"
 
 /** Validator class - checks if draw can be disabled, and inform
  * drawswdg about enabling/disabling widget */

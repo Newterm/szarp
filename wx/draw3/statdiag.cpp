@@ -43,7 +43,7 @@
 #include "statdiag.h"
 
 
-StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, ConfigManager *cfg, RemarksHandler *rh, TimeInfo time, std::vector<DrawInfo*> user_draws) :
+StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, ConfigManager *cfg, RemarksHandler *rh, TimeInfo time, DrawInfoList user_draws) :
 	szFrame(parent, 
 		wxID_ANY, 
 		_("Statistics window"),
@@ -164,19 +164,7 @@ StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, C
 	ws->Add(panel, 1, wxEXPAND);
 	SetSizer(ws);
 	
-	if (user_draws.size()) {
-		m_draw = user_draws[0];
-		SetDrawInfo(m_draw);
-	}
-	else
-		m_draw = NULL;
-
-#if 0
-	line = new wxStaticLine(this);
-	sizer->Add(line, 0, wxEXPAND | wxALL, 5);
-#endif
-
-	SetSize(500, 470);
+	SetDrawInfo( user_draws.GetSelectedDraw() );
 
 	// use enum position
 	m_period_choice->SetSelection(time.period);

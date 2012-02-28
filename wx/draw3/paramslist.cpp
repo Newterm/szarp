@@ -244,7 +244,7 @@ void ParamsListDialog::OnRemove(wxCommandEvent &e) {
 		return;
 	}
 
-	int ret = wxMessageBox(_("Are you sure you want to delete this param? All draws referring to this param will be removed as well."), _("Warning!"), wxOK | wxCANCEL, this);
+	int ret = wxMessageBox(_("Are you sure you want to delete this param?"), _("Warning!"), wxOK | wxCANCEL, this);
 	if (ret != wxOK)
 		return;
 

@@ -35,7 +35,7 @@
 #include <wx/wx.h>
 #endif
 
-typedef std::vector<DrawInfo*> DrawInfoList;
+#include "cfgmgr.h"
 
 /**Window calculating statistical values of a param*/
 class StatDialog : public szFrame, public DBInquirer, public DrawInfoDropReceiver, public ConfigObserver {

@@ -1,3 +1,37 @@
+2012-02-27	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2/szbase: fix in combined params calculation
+2012-02-21	Aleksy Barcz <abarcz@newterm.pl>
+	* wx/draw3: highlighting matching and unmatched braces in LUA editor
+2012-02-21	Darek Marcinkiewicz <reksio@newterm.pl>
+	* meaner3/utils/szbmod.cc: -m option added, to quote szbmod help:
+	As data scaling is a relatively common task, szmbod provides a shortcut, instead of creating
+	a formula to scale param value one can pass a scaling factor as a -m switch, in that case szbmod will generate a proper formula on its own
+	So the same effect as in a previous example (scaling param values by a factor of 2) can be achieved
+	by invoking program in following way
+	szbmod -m2 -Dprefix=xxxx -s'2007-01-01 00:00' -e'2009-12-30 00:00' "Siec:Sterownik:Temperatura zewnetrzna"
+2012-02-17	Darek Marcinkiewicz <reksio@newterm.pl>
+	* configure.in: make descends into python dir
+	only for non-migw32 build
+	* wx/draw3: more deleting params fixes
+	* wx/draw3: more network params/sets related fixes
+	and improvements
+2012-02-16	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2/szbase.cc: for lua params - also
+	properly handle return values of boolean type
+	(previously we were always returning 0 for them)
+	* wx/draw3: small tweak to 'search date', currently
+	selected draw in automatically inserted into
+	the formula - should be faster to use
+	* wx/draw3: added missing Polish translations
+	* wx/draw3: solid chunk of improvemnts to network
+	param and sets support, much more usable now, quite
+	a few crashing scenarios fixed
+2012-02-15	Darek Marcinkiewicz <reksio@newterm.pl>
+	* acinlude.m4 - make latest autoconf happy 
+	* debian/control: removed dbg package building,
+	it is not possible to build lua_parser.cc with
+	debug symbols on x86 machine using g++ 4.6
+	and boost-1.48
 2012-02-01	Darek Marcinkiewicz <reksio@newterm.pl>
 	* parcook/k601-prop-plugin.h: bugfix, destructor has to be virutal
 2012-01-24	Darek Marcinkiewicz <reksio@newterm.pl>

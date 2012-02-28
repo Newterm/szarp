@@ -161,7 +161,7 @@ class UserSet:
 	def parse_xml(self, u_string, u_name):
 		u_xml = etree.fromstring(u_string)
 
-		self.name = str(u_xml.xpath("/window/@title")[0])
+		self.name = u_xml.xpath("/window")[0].attrib["title"]
 
 		for u_draw in u_xml.xpath("/window/param"):
 
@@ -366,7 +366,7 @@ class ParamsAndSetsFetcher:
 				if v[0] == False:
 					continue
 				else:
-					s1[k][1].extend(v[1])
+					s1[k][3].extend(v[3])
 
 		set_names = {}
 
@@ -403,12 +403,14 @@ class UserSetsManager:
 
 			d["prefix_id"] = prefix_map[prefix]
 
-		set_id = tdb.get_set_id(user_set.name, self.user_id)
+		set_id, set_user_id = tdb.get_set_id(user_set.name)
 
 		if set_id is None:
 			set_id = tdb.insert_set(user_set.name, self.user_id)
-		else:
+		elif set_user_id == self.user_id:
 			tdb.remove_draws_from_set(set_id)
+		else:
+			return False
 
 		i = 0
 		while i < len(user_set.draws):
@@ -448,17 +450,16 @@ class UserSetsManager:
 
 			user_set.parse_xml(str(s), self.username)
 
-			if not tdb.has_access_to_prefix(user_set.prefix):
+			if not all([tdb.has_access_to_prefix(p, self.user_id) for p in set(user_set.prefixes)]):
 				r.append(False)
 				continue
 
-			set_id = td.get_set_id(user_set.name, self.user_id)
-
-			tdb.remove_draw_from_set(set_id)
-
-			tdb.update_set_mod_time(set_id, prefix, deleted=True)
-			
-			r.append(True)
+			set_id, set_user_id = tdb.get_set_id(user_set.name)
+			if self.user_id == set_user_id:
+				tdb.update_set_mod_time(set_id, deleted=True)
+				r.append(True)
+			else:
+				r.append(False)
 
 		return r
 
@@ -482,13 +483,16 @@ class ParamsManager:
 				r.append(False)
 				continue
 
-			param_id = tdb.get_param_id(param.name, self.user_id)
+			param_id, param_user_id = tdb.get_param_id(param.name)
 
 			if param_id is None:
 				tdb.insert_param(param, self.user_id, prefix_id)
-			else:
+				r.append(True)
+			elif param_user_id == self.user_id:
 				tdb.update_param(param, param_id, prefix_id, self.user_id)
-			r.append(True)
+				r.append(True)
+			else:
+				r.append(False)
 
 		return r
 			
@@ -503,15 +507,14 @@ class ParamsManager:
 		tdb = TransDbAccess(self.db, trans)
 		for p in params:
 			param = UserParam()
-			param.parse_xml(p, self.username)
+			param.parse_xml(str(p), self.username)
 
-			if not tbd.has_access_to_prefix(param.prefix, self.user_id):
+			if not tdb.has_access_to_prefix(param.prefix, self.user_id):
 				r.append(False)
 				continue
 
-			tbd.remove_param(param.prefix, param.name, self.user_id)
+			r.append(tdb.remove_param(param.prefix, param.name, self.user_id))
 
-			r.append(True)
 		return r
 
 class Database:
@@ -752,17 +755,17 @@ class TransDbAccess:
 			{ 'set_id' : set_id, 'time' : psycopg2.TimestampFromTicks(time.time()), 'deleted' : deleted } )
 				
 			
-	def get_param_id(self, param, user_id):
+	def get_param_id(self, param):
 		self.trans.execute("""
 			SELECT
-				id
+				id, user_id
 			FROM	
 				param
 			WHERE
-				pname = %(pname)s AND user_id = %(user_id)s
-			""", { 'pname' : param, 'user_id' : user_id })
+				pname = %(pname)s
+			""", { 'pname' : param })
 		r = self.trans.fetchall()
-		return r[0][0] if len(r) > 0 else None
+		return r[0][0:2] if len(r) > 0 else (None, None)
 	
 
 	def remove_param(self, prefix, name, user_id):
@@ -770,11 +773,12 @@ class TransDbAccess:
 			UPDATE	
 				param
 			SET
-				deleted = 1,
+				deleted = 't',
 				mod_time = %(mod_time)s
 			WHERE
 				prefix_id = (SELECT id FROM prefix WHERE prefix = %(prefix)s) AND pname = %(pname)s AND user_id = %(user_id)s""",
 			{ 'mod_time' : psycopg2.TimestampFromTicks(time.time()), 'prefix' : prefix, 'pname' : name, 'user_id' : user_id})
+		return self.trans.rowcount > 0
 
 	def get_prefixes(self):
 		self.trans.execute("""
@@ -832,7 +836,7 @@ class TransDbAccess:
 	def get_params(self, prefixes, time):
 		self.trans.execute("""	
 				SELECT
-					p.pname, r.prefix, p.formula, p.type, p.unit, p.start_date, p.prec, p.deleted
+					p.pname, r.prefix, p.formula, p.type, p.unit, p.start_date, p.prec, p.mod_time, p.deleted 
 				FROM
 					param as p
 				JOIN
@@ -850,21 +854,21 @@ class TransDbAccess:
 			row = self.trans.fetchone()
 		return ret
 
-	def get_set_id(self, set_name, user_id):
+	def get_set_id(self, set_name):
 		self.trans.execute("""
 			SELECT
-				set_id
+				set_id, user_id
 			FROM
 				draw_set
 			WHERE
-				name = %(set_name)s and user_id = %(user_id)s""",
-			{ 'set_name' : set_name, 'user_id' : user_id })
+				name = %(set_name)s""",
+			{ 'set_name' : set_name})
 
 		row = self.trans.fetchone()
 		if row:
-			return row[0]
+			return row[0:2]
 		else:
-			return None
+			return (None, None)
 
 	def get_set_name(self, set_id):
 		self.trans.execute("""
@@ -883,17 +887,21 @@ class TransDbAccess:
 	def get_draws(self, prefixes, time):
 		self.trans.execute("""
 			SELECT 
-				d.set_id, p.prefix, d.name, d.draw, d.title, d.sname, d.hoursum, d.color, d.draw_min, d.draw_max, d.scale, d.min_scale, d.max_scale, ds.deleted
+				d.set_id, p.prefix, d.name, d.draw, d.title, d.sname, d.hoursum, d.color, d.draw_min, d.draw_max, d.scale, d.min_scale, d.max_scale, ds.deleted, u.name, ds.mod_time
 			FROM
 				draw as d
 			JOIN
 				draw_set as ds
 			ON
-				(d.set_id = d.set_id)
+				(d.set_id = ds.set_id)
 			JOIN
 				prefix as p
 			ON
 				(d.prefix_id = p.id)
+			JOIN
+				users as u
+			ON
+				(ds.user_id = u.id) 
 			WHERE
 				ds.mod_time >= %(time)s AND d.prefix_id IN %(prefixes)s
 			ORDER BY
@@ -907,11 +915,16 @@ class TransDbAccess:
 			set_id = row[0]
 			draw = row[1:12]
 			deleted = row[13]
+			user_name = row[14]
+			mod_time = row[15]
 
-			if set_id in ret and not deleted:
-				ret[set_id][1].append(draw)
+			if deleted:
+				ret[set_id] = (False,)
 			else:
-				ret[set_id] = (True, [draw]) if not deleted else (False,)
+				if set_id in ret:
+					ret[set_id][3].append(draw)
+				else:
+					ret[set_id] = (True, user_name, mod_time, [draw])
 
 			row = self.trans.fetchone()
 

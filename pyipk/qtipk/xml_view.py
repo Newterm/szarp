@@ -90,6 +90,8 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 	def index(self, row, column, parent):
 		ptr = parent.internalPointer()
 		if ptr == None :
+			if row < 0 or row >= len(self.nodes) :
+				return QtCore.QModelIndex()
 			return self.createIndex(row,column,self.nodes[row])
 		if row >= len(ptr.node) : return QtCore.QModelIndex()
 		obj = NodeInfo(ptr.node[row],parent)
@@ -105,10 +107,14 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 		if ptr == None :
 			return len(self.nodes)
 		else :
-			return len(ptr.node)
+			return len(ptr.node) 
 
 	def columnCount(self, index):
 		return 1
+
+	def insertRows(self, row, count, parent=None ):
+		self.beginInsertRows()
+		self.endInsertRows()
 
 	def data(self, index, role):
 		if not index.isValid() : return None
@@ -142,11 +148,7 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 			if parent == None :
 				continue
 
-			# remove from old parent if not same
 			row = parent.index( node )
-			self.beginRemoveRows( parentidx , row , row )
-			parent.remove( node )
-			self.endRemoveRows()
 			self.drag.append( DragInfo( ni , parent , row ) )
 
 		# create dummy data
@@ -158,13 +160,7 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 		if not data.hasFormat('pyipk/indexes') : return False
 
 		if action == QtCore.Qt.IgnoreAction or not parent.isValid() :
-			for d in self.drag :
-				# insert into old place
-				self.beginInsertRows(d.nodeinfo.parent,d.parentid,d.parentid)
-				d.parent.insert(d.parentid,d.nodeinfo.node)
-				self.endInsertRows()
 			del self.drag[:]
-
 			return False
 
 		if column > 0 : return False
@@ -174,9 +170,10 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 		for d in self.drag :
 			# insert into new node
 			row = row if row >= 0 else len(parentinfo.node)
-			self.beginInsertRows(parent,row,row)
+			self.beginMoveRows(d.nodeinfo.parent,d.parentid,d.parentid,parent,row)
+			d.parent.remove( d.nodeinfo.node )
 			parentinfo.node.insert(row,d.nodeinfo.node)
-			self.endInsertRows()
+			self.endMoveRows()
 		del self.drag[:]
 
 		self.changedSig.emit()

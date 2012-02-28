@@ -160,6 +160,17 @@ class DrawInfo
 
 };
 
+class DrawInfoList : public std::vector<DrawInfo*> {
+public:
+	void SetSelectedDraw( DrawInfo* di )
+	{	selected = di; }
+
+	DrawInfo* GetSelectedDraw()
+	{	return selected; }
+private:
+	DrawInfo* selected;
+};
+
 class IPKDrawInfo : public DrawInfo {
 protected:
 	DrawsSets *ds;
@@ -304,7 +315,7 @@ public:
 	DrawTreeRoot();
 	void AddSet(TDraw* d, DrawSet *node);
 	void AddUserSet(DrawSet* darwset);
-	void RemoveUserSet(wxString name);
+	void RemoveUserSet(wxString name, DrawSet *set);
 	void RenameUserSet(wxString oname, DrawSet *set);
 	void SubstituteUserSet(wxString name, DrawSet *set);
 };

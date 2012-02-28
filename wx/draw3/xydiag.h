@@ -35,9 +35,9 @@
 #include <wx/wx.h>
 #endif
 
-#include "wxlogging.h"
+#include "cfgmgr.h"
 
-typedef std::vector<DrawInfo*> DrawInfoList;
+#include "wxlogging.h"
 
 typedef std::pair<std::vector<double>, std::vector<DTime> > XYPoint;
 

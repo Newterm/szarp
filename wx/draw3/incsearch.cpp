@@ -778,7 +778,7 @@ void IncSearch::OnRemoveMenu(wxCommandEvent &e) {
 
 			DefinedDrawSet* s = ds->MakeDeepCopy();
 			s->Remove(idx);
-			m_remarks_handler->GetConnection()->InsertOrUpdateSet(s, this, true);
+			m_remarks_handler->GetConnection()->InsertOrUpdateSet(s, this, false);
 
 			delete s;
 		} else {

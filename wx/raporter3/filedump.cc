@@ -35,9 +35,7 @@ FileDumpDialog::FileDumpDialog(wxFrame *parent, wxString *report_name)
 	: wxDialog(
 			parent, 
 			ID_FileDumpDialog, 
-			wxString(_("File dump options")), 
-			wxDefaultPosition, 
-			wxSize(wxDefaultSize.GetWidth(), 290)), 
+			wxString(_("File dump options"))),
 	reportname(report_name)
 {
 	wxBoxSizer *main_sizer = new wxBoxSizer(wxVERTICAL);
@@ -103,7 +101,7 @@ FileDumpDialog::FileDumpDialog(wxFrame *parent, wxString *report_name)
 			wxALIGN_CENTER | wxALL, 
 			10);
 
-	SetSizer(main_sizer);
+	SetSizerAndFit(main_sizer);
 
 	LoadConfiguration();
 
