@@ -1,3 +1,6 @@
+2012-02-28	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3/drawsctl: split DrawsCtrl class by introducing individiual classes
+	for each state
 2012-02-27	Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2/szbase: fix in combined params calculation
 2012-02-21	Aleksy Barcz <abarcz@newterm.pl>
