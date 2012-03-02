@@ -6,6 +6,22 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.614
+#01.03.2012
+* reggression fix in combined params calculation
+* usablity improvement in draw3: currently selected graph shows up as
+default choice in statistics dialog 
+* szbmod was extened to support -m command line option, this option
+makes szbmod to automatically generate formula that scales param
+value by provided scaling factor
+* szbmod(again): fix in writing combined params values'
+* fixes in building szarp on debian/lenny 
+* a lot of improvements in network params/sets handling
+* usability improvement: upon opening of 'search date' window, current paramter
+is automatically inserted into search formula
+* the biggest class in draw3 codebase was split into several
+smalles classes, the code should be more readable and approachable now
+
 ** 3.1.590
 #01.02.2012
 * This month saw introduction of libpyszbase module into SZARP. This
