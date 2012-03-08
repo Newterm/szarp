@@ -49,6 +49,7 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 		elif action == showAction :
 			self.showSig.emit( nodes )
 		elif action == editAction :
+			for i in idxes : self.view.collapse( self.model.parent(i) )
 			self.editSig.emit( nodes )
 
 	def set_name( self , name ) :

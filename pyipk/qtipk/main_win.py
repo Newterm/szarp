@@ -14,26 +14,34 @@ from .xml_diag import XmlDialog
 from .plug_diag import PluginsDialog
 from .base_diag import BaseDialog
 
+from .params_editor import ParamsEditor
+
 from .utils import *
 
 from .ui.main_win import Ui_MainWindow
 
 SZARP_PATH = '/opt/szarp/'
+DEFAULT_EDITOR = 'gvim'
 
 class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 	def __init__( self , plugins ) :
 		QtGui.QMainWindow.__init__( self )
 		self.setupUi( self )
 
+		self.editor = ParamsEditor( self , DEFAULT_EDITOR )
+		self.editor.changedSig.connect( self.touch_params )
+
 		self.view_full = XmlView( 'params' , self.centralwidget )
-		self.hlay_xml.addWidget( self.view_full )
 		self.view_full.changedSig.connect( self.touch_params )
 		self.view_full.runSig.connect( self.runOnNodes )
 		self.view_full.showSig.connect( self.showOnNodes )
+		self.view_full.editSig.connect( self.editOnNodes )
+		self.hlay_xml.addWidget( self.view_full )
 
 		self.view_result = XmlView( 'result' , self.centralwidget )
+		self.view_result.changedSig.connect( self.touch_params )
 		self.view_result.showSig.connect( self.showOnNodes )
-
+		self.view_result.editSig.connect( self.editOnNodes )
 		self.hlay_xml.addWidget( self.view_result )
 
 		self.params = None
@@ -106,6 +114,9 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 			res_nodes = plug.result()
 			for r in res_nodes :
 				self.view_result.add_node( r )
+
+	def editOnNodes( self , nodes ) :
+		self.editor.edit( nodes )
 
 	def showOnNodes( self , nodes ) :
 		diag = XmlDialog( self )
