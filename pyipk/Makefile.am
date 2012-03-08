@@ -34,9 +34,9 @@ install:
 if PYTHON_26
 
 if DEB_BUILD
-	python setup.py install --root $(DESTDIR) --prefix /opt/szarp/ --install-layout=deb
+	python setup.py install --root $(DESTDIR) --install-scripts /opt/szarp/bin/ --install-layout=deb
 else
-	python setup.py install --prefix /opt/szarp/ 
+	python setup.py install --install-scripts /opt/szarp/bin/
 endif
 
 else
