@@ -7,6 +7,27 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.614
+#01.03.2012
+* poprawiono problem w liczeniu parametrów sk³adanych
+* wprowadzono usprawnienie do okna warto¶ci ¶rednich, akutalnie
+wy¶wietlany wykres automatycznie ustawia siê jako wykres wybrany w tym
+oknie dialogowym
+* narzêdzie szbmod zotsta³o rozszerzone o obs³ugê opcji -m, podanie
+tej opcji powoduje ¿e program samodzielnie generuje formu³ê skaluj±c±
+warto¶ci parametrów o podany czynnik. Ta zmiana zosta³a wprowadzona poniewa¿
+skalowanie jest jedn± z czêstszych modyfikacji wykonywanych na danych
+historycznych, a pisanie za ka¿dorazowo tych samych formu³ bywa ¿mudne.
+* szbmod: poprawiono b³±d w zapisywaniu warto¶ci sk³adanych
+* poprawiono budowanie SZARPa na dystrybucji Debian Lenny.
+* wprowadzono du¿o usprawnieñ i poprawek w obs³udze zestawów sieciowych
+* kolejne drobne usprawniie w draw3: w oknie "wyszukiwanie daty" akutalnie wy¶wietlany
+parametr jest automatycznie wstawiany do formu³y wyszukiwaia
+* poprawiono czytelno¶æ kodu draw3 - najwiêksza klasa w tym programie zosta³a 
+rozbita na kilka mniejszych podklas, jako rezultat uzyskano bardziej przejrzysty,
+miej zawik³any kod
+
+
 ** 3.1.590
 #01.02.2012
 * Do systemu SZARP dodano bibliotekê libpyszbase. Biblioteka ta pozwala na

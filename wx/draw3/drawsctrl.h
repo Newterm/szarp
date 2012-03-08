@@ -1,6 +1,4 @@
-/* 
-  SZARP: SCADA software 
-  
+/* SZARP: SCADA software 
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -61,11 +59,9 @@ public:
 
 class DrawsController : public DBInquirer, public ConfigObserver {
 
-	/**State of the Draw. Not selected params may be only in state STOP and DISPLAY.
-	 * Selected param in any state*/
 	enum STATE {
 		/**Parameter is stoped, no queries to database are issued*/
-		STOP,		
+		STOP = 0,
 		/**Values are simply displayed*/
 		DISPLAY,
 
@@ -95,9 +91,179 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 		/**Database is searched in both directions from proposed time, rithe search result
 		 * is choosen if data is found on the left side, otherwise time neareset to proposed
 		 * time is set*/
-		SEARCH_BOTH_PREFER_RIGHT
+		SEARCH_BOTH_PREFER_RIGHT,
 
-	} m_state;
+		FIRST_UNUSED_STATE_ID
+
+	};
+
+	class State {
+	protected:
+		DrawsController *m_c;
+	public:
+		void SetDrawsController(DrawsController *c);
+		
+		virtual void HandleDataResponse(DatabaseQuery *query);
+
+		virtual void HandleSearchResponse(DatabaseQuery *query);
+
+		virtual void MoveCursorBegin();
+
+		virtual void MoveCursorEnd();
+
+		virtual void MoveCursorLeft(int n);
+
+		virtual void MoveCursorRight(int n);
+
+		virtual void MoveScreenLeft();
+
+		virtual void MoveScreenRight();
+
+		virtual void GoToLatestDate();
+
+		virtual void NewDataForSelectedDraw();
+
+		virtual void SetNumberOfUnits();
+
+		virtual void Reset();
+
+		virtual const DTime& GetStateTime() const = 0;
+
+		virtual void Enter(const DTime& time) = 0;
+
+		virtual void Leaving() {};
+
+	};
+
+	class StopState : public State {
+		DTime m_stop_time;
+	public:
+		void Reset();
+
+		void SetNumberOfUnits();
+
+		virtual void Enter(const DTime& time);
+
+		const DTime& GetStateTime() const;
+	};
+
+	class DisplayState : public State {
+	public:
+		void MoveCursorBegin();
+
+		void MoveCursorEnd();
+
+		void MoveCursorLeft(int n);
+
+		void MoveCursorRight(int n);
+
+		void MoveScreenLeft();
+
+		void MoveScreenRight();
+
+		void SetNumberOfUnits();
+	
+		void Reset();
+
+		void GoToLatestDate();
+
+		void Enter(const DTime& time);
+
+		void Leaving();
+
+		const DTime& GetStateTime() const;
+	};
+
+	class WaitState : public State {
+	protected:
+		DTime m_time_to_go;
+	public:
+		void Reset();
+		void NewDataForSelectedDraw();
+		virtual void Enter(const DTime& time);
+		virtual void CheckForDataPresence(Draw *draw) = 0;
+		const DTime& GetStateTime() const;
+	};
+
+	class WaitDataLeft : public WaitState {
+	public:
+		void CheckForDataPresence(Draw *draw);
+	};
+
+	class WaitDataRight : public WaitState {
+	public:
+		void CheckForDataPresence(Draw *draw);
+	};
+
+	class WaitDataBoth : public WaitState {
+	public:
+		void CheckForDataPresence(Draw *draw);
+	};
+
+	class SearchState : public State {
+	protected:
+		DTime m_search_time;
+		/**Sends a search query to the db
+		 * @param start - search start time
+		 * @param end - search end time
+		 * @param direction - direcrion of search*/
+		void SendSearchQuery(const wxDateTime& start, const wxDateTime& end, int direction);
+	public:
+		const DTime& GetStateTime() const;
+		void Reset();
+		void HandleSearchResponse(DatabaseQuery *query);
+		virtual void HandleLeftResponse(wxDateTime& time);
+		virtual void HandleRightResponse(wxDateTime& time);
+	};
+
+	class SearchLeft : public SearchState {
+	public:
+		virtual void Enter(const DTime& time);
+		virtual void HandleLeftResponse(wxDateTime& time);
+	};
+
+	class SearchRight : public SearchState {
+	public:
+		virtual void Enter(const DTime& time);
+		virtual void HandleRightResponse(wxDateTime& time);
+	};
+
+	class SearchBoth : public SearchState {
+	protected:
+		DTime m_start_time;
+	public:
+		DTime FindCloserTime(const DTime& reference, const DTime& left, const DTime& right);
+	};
+
+	class SearchBothPreferCloser : public SearchBoth {
+		DTime m_right_result;
+
+		bool SwitchToGraphThatMayHaveData();
+	public:
+		virtual void Enter(const DTime& time);
+		virtual void HandleLeftResponse(wxDateTime& time);
+		virtual void HandleRightResponse(wxDateTime& time);
+	};
+
+	class SearchBothPreferLeft : public SearchBoth {
+		DTime m_left_result;
+	public:
+		virtual void Enter(const DTime& time);
+		virtual void HandleLeftResponse(wxDateTime& time);
+		virtual void HandleRightResponse(wxDateTime& time);
+	};
+
+	class SearchBothPreferRight : public SearchBoth {
+		DTime m_right_result;
+	public:
+		virtual void Enter(const DTime& time);
+		virtual void HandleLeftResponse(wxDateTime& time);
+		virtual void HandleRightResponse(wxDateTime& time);
+	};
+
+	State* m_states[FIRST_UNUSED_STATE_ID];
+
+	State* m_state;
 
 	class TimeReference {
 		int m_month;
@@ -114,21 +280,7 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 
 	ConfigManager *m_config_manager;
 
-	/**Indicates if search for data in left direction has been received*/
-	bool m_got_left_search_response;
-	/**Indicates if search for data in right direction has been received*/
-	bool m_got_right_search_response;
-
-	/**Result of search for search for data in left direction*/
-	DTime m_left_search_result;
-	/**Result of search for search for data in right direction*/
-	DTime m_right_search_result;
-
-	DTime m_suggested_start_time;
-
 	DTime m_current_time;
-
-	DTime m_time_to_go;
 
 	int m_selected_draw;
 
@@ -163,85 +315,35 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 
 	void DisableDisabledDraws();
 
-	/** In all but WAIT* states this method does nothing. 
-	 *
-	 * If param is in @see WAIT_DATA_LEFT state values from the one 
-	 * indexed by @see m_proposed_time are scanned in left direction.
-	 * Scans stops if at first probe that is present and is not SZB_NODATA or the
-	 * value for it has not yet been received. In former case param enters
-	 * @see DISPLAY state and @see m_current_time is set to found probe's time. In latter
-	 * case nothing happens. If no probe meeting above conditions is found param 
-	 * enters @see SEARCH_LEFT state.
-	 *
-	 * In @see WAIT_DATA_RIGHT state method does exactly the same as in @see WAIT_DATA_RIGHT
-	 * but directions are reversed.
-	 *
-	 * In WAIT_DATA_BOTH probes are scanned 'simultaneously' in both directions from 
-	 * the probes indexed by @see m_proposed_time. Scan stop contions are the same 
-	 * as in other WAIT* states. This also refers to action performed upon encountering
-	 * probe that meets these cond..If no probe is found @see Draw enters @see
-	 * SEARCH_BOTH state.
-	 */
-	void CheckAwaitedDataPresence();
-
 	void FetchData();
 
 	/**Issues queriers for probes in @see m_values table that are is empty state*/
 	void TriggerSearch();
 
-	/**Sends a search query to the db
-	 * @param start - search start time
-	 * @param end - search end time
-	 * @param direction - direcrion of search*/
-	void SendSearchQuery(const wxDateTime& start, const wxDateTime& end, int direction);
-	
 	DatabaseQuery* CreateQuery(const std::vector<time_t> &times) const;
-
-	void EnterSearchState(STATE state, DTime search_from, const DTime& suggested_start_time);
-
-	void EnterWaitState(STATE state);
-
-	void EnterDisplayState(const DTime& time);
 
 	void NoDataFound();
 
 	void MoveToTime(const DTime &time);
 
-	DTime ChooseStartDate(const DTime& found_time);
+	DTime ChooseStartDate(const DTime& found_time, const DTime& suggested_start_time = DTime());
 
 	void DoSet(DrawSet *set);
 
 	void DoSwitchNextDraw(int dir);
 
-	void DoSetSelectedDraw(int draw_to_select);
+	DTime DoSetSelectedDraw(int draw_to_select);
 
-	void EnterStopState();
+	void ThereIsNoData(const DTime& time);
 
-	void ThereIsNoData();
+	DTime SetSelectedDraw(int draw_to_select);
 
-	void SetSelectedDraw(int draw_to_select);
-
-	void BusyCursorSet();
+	void EnterState(STATE state, const DTime &time);
 public:
 	DrawsController(ConfigManager *config_manager, DatabaseManager *database_manager);
 
 	~DrawsController();
-	/**If draw is not is one of searching states the response is simply ignored.
-	 * Otherwise appopriate action is taken: 
-	 *
-	 * If we are searching left and it is response for this direction is recevied
-	 * @see m_proposed_time is set to (adjusted to period) found time and Draw
-	 * enters WAIT_DATA_LEFT state. In WAIT_DATA_RIGHT state this method behaves alike.
-	 * In both mentionetd states if data is not found param enters DISPLAY state.
-	 *
-	 *
-	 * If draw is in SEARCH_BOTH state and responses for both directions are received,
-	 * time which is nearer the @see m_proposed_time is chosen and also if @see m_suggested_start_time
-	 * is valid, attempt is made to set it as @see m_start_time. In case both search returns -1 and we
-	 * are not displaying anything i.e @see m_current_time is not valid @see DrawsWidgetis is 
-	 * informed that we have no data and draw is disabled.
-	 * 
-	 * @param response from database*/
+
 	void HandleSearchResponse(DatabaseQuery *query);
 
 	void HandleDataResponse(DatabaseQuery *query);
@@ -376,7 +478,7 @@ public:
 		BY_HOURSUM
 	};
 
-	 void SortDraws(SORTING_CRITERIA criteria);
+	void SortDraws(SORTING_CRITERIA criteria);
 
 };
 

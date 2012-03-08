@@ -1,3 +1,27 @@
+szarp (3.1.614) oneiric; urgency=low
+
+  * building oneiric
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Tue, 29 Feb 2012 11:44:07 +0100
+
+szarp (3.1.611) stable; urgency=low
+
+  * building lenny
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Tue, 29 Feb 2012 10:44:07 +0100
+
+szarp (3.1.610) testing; urgency=low
+
+  * building squeeze
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Tue, 29 Feb 2012 10:44:07 +0100
+
+szarp (3.1.609) oneiric; urgency=low
+
+  * building oneiric
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Tue, 29 Feb 2012 10:44:07 +0100
+
 szarp (3.1.608) lenny; urgency=low
 
   * building lenny
