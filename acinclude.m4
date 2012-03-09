@@ -601,8 +601,8 @@ AC_DEFUN([AC_PATH_XMLRPC_EPI], [
 	xmlrpc_epi_config_args_l=""
 	xmlrpc_epi_config_args_i=""
 	if test "x$xmlrpc_epi_config_prefix" != "x"; then
-                xmlrpc_epi_config_args_l="-L $xmlrpc_epi_config_prefix/lib"
-                xmlrpc_epi_config_args_i="-I $xmlrpc_epi_config_prefix/include"
+                xmlrpc_epi_config_args_l="-L$xmlrpc_epi_config_prefix/lib"
+                xmlrpc_epi_config_args_i="-I$xmlrpc_epi_config_prefix/include"
 	fi
 
 	if test "x$xmlrpc_epi_library_name" = "x"; then
@@ -658,7 +658,7 @@ AC_DEFUN([AC_PATH_SSL], [
 			if test -f "$ssl_config_prefix/lib/libssl32.dll" -o -f "$ssl_config_prefix/lib/libssl32.a"; then
 				ssl_name="ssl32"
 			else
-				ssl_name="ssleay32-0.9.8"
+				ssl_name="ssleay32"
 			fi
 		fi
 	else
@@ -668,7 +668,7 @@ AC_DEFUN([AC_PATH_SSL], [
 	ssl_config_args_l=""
 	ssl_config_args_i=""
 	if test "x$ssl_config_prefix" != "x"; then
-                ssl_config_args_l="-L $ssl_config_prefix/lib"
+                ssl_config_args_l="-L$ssl_config_prefix/lib"
                 ssl_config_args_i="-I$ssl_config_prefix/include"
 	fi
 
@@ -715,7 +715,7 @@ AC_DEFUN([AC_PATH_CARES], [
 	cares_config_args_l=""
 	cares_config_args_i=""
 	if test "x$cares_config_prefix" != "x"; then
-                cares_config_args_l="-L $cares_config_prefix/lib"
+                cares_config_args_l="-L$cares_config_prefix/lib"
                 cares_config_args_i="-I$cares_config_prefix/include"
 	fi
 
@@ -761,7 +761,7 @@ AC_DEFUN([AC_PATH_FREETYPE], [
 	fi
 
 	if test x$freetype_prefix != x; then 
-		FREETYPE_LIBS="-L ${freetype_prefix}/lib $FREETYPE_LIBS";
+		FREETYPE_LIBS="-L${freetype_prefix}/lib $FREETYPE_LIBS";
 		FREETYPE_CFLAGS="-I ${freetype_prefix}/include";
 	fi
 
@@ -804,7 +804,7 @@ AC_DEFUN([AC_PATH_FTGL], [
 		ftgl_lib_l="";
 		ftgl_headers_i="";
 		if test "x$ftgl_config_prefix" != "x"; then
-			ftgl_lib_l="-L $ftgl_config_prefix/lib"
+			ftgl_lib_l="-L$ftgl_config_prefix/lib"
 			ftgl_headers_i="-I$ftgl_config_prefix/include $ftgl_config_args_i"
 		fi
 
@@ -850,7 +850,7 @@ AC_DEFUN([AC_PATH_VMIME], [
 	vmime_config_args_l=""
 	vmime_config_args_i=""
 	if test "x$vmime_config_prefix" != "x"; then
-                vmime_config_args_l="-L $vmime_config_prefix/lib"
+                vmime_config_args_l="-L$vmime_config_prefix/lib"
                 vmime_config_args_i="-I$vmime_config_prefix/include"
 	fi
 
@@ -927,7 +927,7 @@ AC_DEFUN([AC_PATH_RSYNC], [
 	rsync_config_args_l=""
 	rsync_config_args_i=""
 	if test "x$rsync_config_prefix" != "x"; then
-                rsync_config_args_l="-L $rsync_config_prefix/lib"
+                rsync_config_args_l="-L$rsync_config_prefix/lib"
                 rsync_config_args_i="-I$rsync_config_prefix/include"
 	fi
 
@@ -960,7 +960,7 @@ AC_DEFUN([AC_PATH_LUA], [
 	lua_config_args_l=""
 	lua_config_args_i=""
 	if test "x$lua_config_prefix" != "x"; then
-                lua_config_args_l="-L $lua_config_prefix/lib"
+                lua_config_args_l="-L$lua_config_prefix/lib"
                 lua_config_args_i="-I$lua_config_prefix/include"
 	fi
 
@@ -1005,7 +1005,7 @@ AC_DEFUN([AC_PATH_LDAP], [
 	ldap_config_args_l=""
 	ldap_config_args_i=""
 	if test "x$ldap_config_prefix" != "x"; then
-                ldap_config_args_l="-L $ldap_config_prefix/lib"
+                ldap_config_args_l="-L$ldap_config_prefix/lib"
                 ldap_config_args_i="-I$ldap_config_prefix/include"
 	fi
 

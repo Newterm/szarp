@@ -24,17 +24,17 @@ SUBDIRS = common draw3 $(INCLUDE_SUBDIRS) \
 winsetup:
 	@srcdir@/../script/nsis/winsetup.sh -c \
 		-d bin \
-		-f draw3.exe draw3/draw3.exe \
-		-f scc.exe scc/scc.exe \
-		-f ssc.exe sync/ssc.exe \
-		-f szau.exe szau/szau.exe \
-		-f ekstraktor3.exe ekstraktor3/ekstraktor3.exe \
-		-f raporter3.exe raporter3/raporter3.exe \
-		-f isledit.exe isledit/isledit.exe \
-		-f wxhelp.exe wxhelp/wxhelp.exe \
-		-f isledit.exe isledit/isledit.exe \
-		-f szast.exe szast/szast.exe \
-		-f kontroler3.exe kontroler3/kontroler3.exe \
+		-f draw3.exe draw3/.libs/draw3.exe \
+		-f scc.exe scc/.libs/scc.exe \
+		-f ssc.exe sync/.libs/ssc.exe \
+		-f szau.exe szau/.libs/szau.exe \
+		-f ekstraktor3.exe ekstraktor3/.libs/ekstraktor3.exe \
+		-f raporter3.exe raporter3/.libs/raporter3.exe \
+		-f isledit.exe isledit/.libs/isledit.exe \
+		-f wxhelp.exe wxhelp/.libs/wxhelp.exe \
+		-f isledit.exe isledit/.libs/isledit.exe \
+		-f szast.exe szast/.libs/szast.exe \
+		-f kontroler3.exe kontroler3/.libs/kontroler3.exe \
 		-d resources \
 		@srcdir@/../resources/dictionary.xml \
 		-f isledit.inx @srcdir@/../wx/isledit/isledit.inx.win \

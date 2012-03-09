@@ -269,62 +269,14 @@ wine /usr/local/i586-mingw32msvc/bin/xsltproc.exe --version
 
 
 3.8. OpenSSL library.
+As of version 1.0 OpenSSL supports cross-compilation out of the box, so the process
+is as simple as:
 
-wget http://openssl.org/source/openssl-1.0.0d.tar.gz
-tar -zxvf openssl-1.0.0d.tar.gz
-cd openssl-1.0.0d
-
-save a script as mkOpenSSL.sh
->>>SCRIPT BEGIN
-#!/bin/sh
-
-# Lazify things a little
-export cross="i586-mingw32msvc-"
-
-# Generate the dll definitions
-perl util/mkdef.pl no-idea no-mdc2 no-rc5 libeay 32 > ms/libeay32.def
-perl util/mkdef.pl no-idea no-mdc2 no-rc5 ssleay 32 > ms/ssleay32.def
-
-# Remove a check which effs up the cross-sompile
-sed -i -e "/^\$IsMK/d" ./Configure
-
-# Configure for OpenVPN
-./config no-idea no-mdc2 no-rc5 shared mingw:i586-mingw32msvc-gcc
-
-# Fix up the tools and libs
-sed -i -e "s/^EX_LIBS=\(.*\)/EX_LIBS=\1 -lws2_32 -lgdi32/" Makefile
-sed -i -e "s/^CC=.*/CC=${cross}gcc/" Makefile
-sed -i -e "s/^RANLIB=.*/RANLIB=${cross}ranlib/" Makefile
-sed -i -e "s/^AR=.*/AR=${cross}ar r/" Makefile
-sed -i -e "s/^ARD=.*/ARD=${cross}ar d/" Makefile
-
-# Build the whole shebang
-make
-
-# I guess the windows build scripts do this
-if [ ! -d "out" ]; then
-  mkdir out
-fi
-
-# Copy everything to the places OpenVPN expects and generate the dlls
-cp apps/openssl.exe out
-cp *.a out
-i586-mingw32msvc-dllwrap --dllname libeay32.dll --output-lib out/libeay32.a --def ms/libeay32.def out/libcrypto.a -lwsock32 -lgdi32
-i586-mingw32msvc-dllwrap --dllname libssl32.dll --output-lib out/libssl32.a --def ms/ssleay32.def out/libssl.a out/libeay32.a
-cp *.dll out
-<<<SCRIPT END
-
-chmod 700 mkOpenSSL.sh
-./mkOpenSSL.sh
-cp ./out/openssl.exe /usr/local/i586-mingw32msvc/bin/
-cp ./out/*.dll /usr/local/i586-mingw32msvc/lib/
-cp ./out/*.a /usr/local/i586-mingw32msvc/lib/
-mkdir -p /usr/local/i586-mingw32msvc/include/openssl/
-cp ./include/openssl/* /usr/local/i586-mingw32msvc/include/openssl/
-
-Testing:
-
-wine /usr/local/i586-mingw32msvc/bin/openssl.exe --help
+wget http://openssl.org/source/openssl-1.0.0g.tar.gz
+tar -zxvf openssl-1.0.0g.tar.gz
+cd openssl-1.0.0g
+./Configure --prefix=/usr/local/i586-mingw32msvc/ --cross-compile-prefix=i586-mingw32msvc- shared mingw zlib -I/usr/local/i586-mingw32msvc/include -L/usr/local/i586-mingw32msvc/lib
+make install
 
 
 3.9 c-ares library.

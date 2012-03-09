@@ -51,11 +51,11 @@
 
 #define __WXLOGGING_H__
 
+#include "config.h"
+
 #include <string>
-
+#include <wx/wx.h>
 #include <boost/asio.hpp>
-
-#include <wx/event.h>
 
 #include "liblog.h"
 
