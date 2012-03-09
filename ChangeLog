@@ -1,3 +1,25 @@
+2012-03-09	Jakub Kotur <qba@newterm.pl>
+	* pyipk (fixed libraries importinga):
+	libraries are now installed to standard python directory, so scripts
+	can easily import them
+	* pyipk ("Edit with" option added):
+	chosen nodes can be modified with text editor
+	* pyipk (fixed collapsing after drag'n'drop):
+	QAbstractItemModel was comparing internal data pointers, and if they
+	were different collapse parent node. Now internal data are lxml nodes
+	itself so they are same but there is performance issue with
+	calculating parent index.
+	GC issue is still present:(
+	* pyipk (Moar readable xml list):
+	xml list is now more human readable and a little bit faster. Still its
+	not code masterpiece:(
+	* pyipk (Plugins documentation in gui):
+	printing plugins docstrings in PluginsDialog window
+	* pyipk (Base dialog):
+	dialog which allows to open params.xml by choosing szarp base
+	* pyipk (Moar plugins):
+	new plugins for pyipk: core xpath, finding attributes, finding
+	repeated attributes
 2012-03-09	Darek Marcinkiewicz <reksio@newterm.pl>
 	* /: windows compilation tweaks
 	* INSTALL.Windows: updated OpenSSL compilation istruction,
