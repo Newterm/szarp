@@ -1,3 +1,9 @@
+szarp (6.1.616) stable; urgency=low
+
+  * building lenny
+
+ -- Jakub Kotur <qba@newterm.pl>  Fri, 09 Mar 2012 13:29:08 +0100
+
 szarp (6.1.615) unstable; urgency=low
 
   * building unstable 
