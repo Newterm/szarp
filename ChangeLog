@@ -1,3 +1,7 @@
+2012-03-12	Darek Marcinkiewicz <reksio@newterm.pl>
+	* utils: make szbredialer/szppp-{on,off} explictly use bash,
+	as they rely on bash specific features	
+	* parcook/sbusdmn.cc: allow for unit ids greater that > 9
 2012-03-09	Jakub Kotur <qba@newterm.pl>
 	* pyipk (fixed libraries importinga):
 	libraries are now installed to standard python directory, so scripts

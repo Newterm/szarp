@@ -653,7 +653,7 @@ enum PROTOCOL_TYPE { SBUS, SBUS_PCD };
 class SBUSUnit  {
 	SerialPort *m_port;
 	short *m_buffer;
-	std::string m_id;
+	unsigned char m_id;
 	int m_read_timeout;
 	int m_max_read_attempts;
 	std::map<unsigned short, Param> m_params;
@@ -681,12 +681,12 @@ bool SBUSUnit::Configure(PROTOCOL_TYPE protocol, TUnit *unit, xmlNodePtr xmlunit
 			dolog(0, "Attribbute sbus:id not present in unit element, line no (%ld)", xmlGetLineNo(xmlunit)); 
 			return false;
 		}
-		m_id = (char*)_id;
-		dolog(5, "Attribbute sbus:id is %s", m_id.c_str());
-		m_id[0] -= '0';
+
+		m_id = atoi((char*)_id);
+		dolog(5, "Attribbute sbus:id is %d", int(m_id));
 		xmlFree(_id);
 	} else {
-		m_id = " ";
+		m_id = 0;
 	}
 	
 
@@ -901,7 +901,7 @@ Buffer SBUSUnit::CreateQueryPacket(unsigned short start, int count) {
 	if (m_protocol != SBUS_PCD) {
 		b.PutChar('\xb5');
 		b.PutChar('\x00');
-		b.PutChar(m_id.at(0));
+		b.PutChar(m_id);
 	}
 	b.PutChar('\x06');
 	b.PutChar(count - 1);
@@ -925,7 +925,7 @@ bool SBUSUnit::ReadResponse(int count, Buffer &dec) {
 	size_t has_read = 0;
 
 	if (!m_port->Wait(m_read_timeout)) {
-		dolog(1, "Timeout while waiting for response for device %c", m_id[0]);
+		dolog(1, "Timeout while waiting for response for device %d", int(m_id));
 		return false;
 	}
 
@@ -935,15 +935,15 @@ bool SBUSUnit::ReadResponse(int count, Buffer &dec) {
 		if (has_read == 2)
 			break;
 
-		if (m_port->Wait(1)) {
-			dolog(1, "Timeout while waiting for character from device %c", m_id[0]);
+		if (!m_port->Wait(1)) {
+			dolog(1, "Timeout while waiting for character from device %d", int(m_id));
 			return false;
 		}
 
 	} while (true);
 
 	if (m_protocol != SBUS_PCD && response.GetChar(1) != '\x01') {
-		dolog(1, "Error while quering device %c, invalid response type %d", m_id[0], (int) response.GetChar(1));
+		dolog(1, "Error while quering device %d, invalid response type %d", int(m_id), (int) response.GetChar(1));
 		return false;
 	}
 
@@ -960,14 +960,14 @@ bool SBUSUnit::ReadResponse(int count, Buffer &dec) {
 		dec.Resize(has_read);
 	}
 	if (dec.Size() != response_size) {
-		dolog(1, "Invalid lenght of response for device %c, expected:%zu, got:%zu", m_id[0], response_size, dec.Size());
+		dolog(1, "Invalid lenght of response for device %d, expected:%zu, got:%zu", int(m_id), response_size, dec.Size());
 		return false;
 	}
 
 	unsigned short ccrc = CalculateCRC(dec, dec.Size() - 2, false);
 	unsigned short pcrc = dec.GetShort(dec.Size() - 2);
 	if (ccrc != pcrc) {
-		dolog(1, "Invalid crc while querying device %c, calculated:%hu, received:%hu", m_id[0], ccrc, pcrc);
+		dolog(1, "Invalid crc while querying device %d, calculated:%hu, received:%hu", int(m_id), ccrc, pcrc);
 		return false;
 	}
 
