@@ -1074,7 +1074,7 @@ fi
 SUBDIRS="$SUBDIRS resources script"
 
 # pyipk directory
-if test x$no_python != xyes ; then
+if test x$no_python != xyes -a x$with_mingw32 != xyes; then
 	SUBDIRS="$SUBDIRS pyipk"
 fi
 
