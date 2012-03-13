@@ -1,3 +1,9 @@
+szarp (3.1.621) oneiric; urgency=low
+
+  * building oneiric
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Tue, 13 Mar 2012 11:44:07 +0100
+
 szarp (3.1.620) stable; urgency=low
 
   * building lenny
