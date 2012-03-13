@@ -1,3 +1,13 @@
+2012-03-13  Jakub Kotur <qba@newterm.pl>
+	* pyipk/libipk/plugin.py, pyipk/plugins/edit_plg.py: pyipk: moar
+	plugins  + added simple editing plugins -- enumerate attrib and order
+	nodes by attrib
+	* pyipk/qtipk/xml_view.py: pyipk: third attempt to xml tree  + third
+	and I hope final version of xml_view.  Now its implemented more qt-like
+	and should work properly.  Additionally drag'n'drop should work in
+	every cases.
+	* configure.in: pyipk: fixed building system  + detecting python 2.6
+	now works properly
 2012-03-12	Darek Marcinkiewicz <reksio@newterm.pl>
 	* utils: make szbredialer/szppp-{on,off} explictly use bash,
 	as they rely on bash specific features	
