@@ -42,7 +42,7 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 
 		action = menu.exec_(self.mapToGlobal(event.pos()))
 
-		nodes = [ i.internalPointer() for i in idxes ]
+		nodes = [ i.internalPointer().node for i in idxes ]
 
 		if action == runAction :
 			self.runSig.emit( nodes )
@@ -58,84 +58,142 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 	def clear( self ) :
 		self.model.clear()
 
-	def add_node( self , node , parent = None ) :
+	def add_node( self , node ) :
 		if node == None : raise ValueError('Node cannot be None')
-		self.model.add_node( node , parent )
+		self.model.add_node( node )
 		self.view.update()
 		self.update()
 
 class DragInfo :
-	def __init__( self , node , nodeidx , parent , parentid ) :
+	def __init__( self , node , nodeidx , parent ) :
 		self.node = node
 		self.nodeidx = nodeidx
 		self.parent = parent
-		self.parentid = parentid
+
+globaltab = []
+
+class ModelTree :
+	def __init__( self , node , row , parent=None ) :
+		globaltab.append( self )
+		
+		self.parent = None if parent == None else parent.add( self )
+		self.node = node 
+		self.row  = row
+
+		self.children = []
+		# TODO: should be done dinamicly
+		for i in range(len(self.node)) :
+			self.add( ModelTree( self.node[i] , i ) )
+
+	def insert( self, row , child ) :
+		prev = child.parent.children.index( child )
+
+		if child.parent == self and prev < row : row -= 1
+
+		child.parent.children.pop(prev)
+		self.children.insert( row , child )
+
+		self.__update_rows( row )
+		child.parent.__update_rows( prev )
+
+		child.parent = self
+
+	def __update_rows( self , beg = 0 ) :
+		# Update row index.
+		# TODO: Could be done faster like this: for i in ragne(beg,len(self.children))
+		for i in range(len(self.children)) :
+			self.children[i].row = i
+
+	def add( self , child ) :
+		self.children.append( child )
+		child.parent = self
+
+	def __repr__( self ) :
+		return unicode( (self.row,self.node) )
 
 class XmlTreeModel(QtCore.QAbstractItemModel):
 	changedSig = QtCore.pyqtSignal()
 
 	def __init__(self):
 		QtCore.QAbstractItemModel.__init__(self)
-		self.nodes = []
-		self.tab   = []
+#        self.root      = ModelTree(None,0)
+#        self.root.node = etree.Element('root')
 		self.drag  = []
+		self.roots = []
 
-	def add_node( self , node , parent ) :
-		self.beginInsertRows(QtCore.QModelIndex(),len(self.nodes),len(self.nodes)+1)
-		self.nodes.append( node )
+	def add_node( self , node ) :
+#        row = len(self.root.children)
+		row = len(self.roots)
+		self.beginInsertRows(QtCore.QModelIndex(),row,row+1)
+		self.roots.append( ModelTree(node,row) )
+#        self.root.node.append( node )
+#        self.root.add_child( ModelTree(node,row) )
 		self.endInsertRows()
 
+#    def createIndex( self , row , column , ptr ) :
+#        i = QtCore.QAbstractItemModel.createIndex( self , row , column , ptr )
+#        print i
+#        return i
+
+#    def create_model_tree( self , parentmt , node , row , column ) :
+#        mt = ModelTree(parentmt,node)
+#        idx= self.createIndex(row,column,mt)
+#        mt.set_index(idx)
+#        return mt
+
 	def clear( self ) :
-		self.beginRemoveRows( QtCore.QModelIndex() , 0 , len(self.nodes) )
-		self.nodes = []
+		self.beginRemoveRows( QtCore.QModelIndex() , 0 , len(self.roots) )
+		del self.roots[:]
+#        self.root = ModelTree(None,0)
+#        self.root.node = etree.Element('root')
 		self.endRemoveRows()
 
-	def index(self, row, column, parent):
-		ptr = parent.internalPointer()
-		if ptr == None :
-			if row < 0 or row >= len(self.nodes) :
+	def index(self, row, column, parentidx ):
+		parent = parentidx.internalPointer()
+#        print 'index' , row , column , parent
+		if parent == None :
+			if row >= 0 and row < len(self.roots) :
+#                print 'row>=0 and row<len(self.roots)' ,  self.roots[row]
+				return self.createIndex(row,column,self.roots[row])
+			else :
+#                print 'Empty'
 				return QtCore.QModelIndex()
-			return self.createIndex(row,column,self.nodes[row])
-		if row >= len(ptr) : return QtCore.QModelIndex()
-		obj = ptr[row]
-		self.tab.append(obj) #FIXME: this is nasty hack for GC. Must be fixed soon.
-		return self.createIndex(row, column, obj)
+		if row >= len(parent.node) : return QtCore.QModelIndex()
+		if len(parent.children) <= row :
+			for i in range(len(parent.children),row+1) :
+#                print
+#                print 'add'
+#                print
+				parent.add( ModelTree( parent.node[i] , i ) )
+#        print 'Normal' , row , parent.children[row] , parent.children
+		return self.createIndex(row,column,parent.children[row])
 
 	def parent(self, index):
-		ptr = index.internalPointer()
-		if ptr == None :
-			return QtCore.QModelIndex()
-		parent  = ptr    .getparent()
-		if parent == None :
-			return QtCore.QModelIndex()
-		grandpa = parent .getparent()
-		if grandpa == None :
-			row = self.nodes.index(parent)
-		else :
-			row = grandpa.index( parent )
-		column  = 0
-		return self.createIndex( row , column , parent )
+#        print 'parent' , index.internalPointer()
+		child  = index.internalPointer()
+		if child == None or child.parent == None : return QtCore.QModelIndex()
+		row = child.parent.row if child.parent != None else 0
+#        print row ,child.parent, child.node.getparent()
+#        print row ,child.parent , child.parent.children
+#        print row ,child.parent.node , child.parent.node.getchildren()
+		return self.createIndex( row , 0 , child.parent )
 
 	def rowCount(self, index):
 		ptr = index.internalPointer()
-		if ptr == None :
-			return len(self.nodes)
-		else :
-			return len(ptr) 
+		print 'rowCount' , ptr , len(ptr.node) if ptr != None else 0
+		return len(ptr.node) if ptr != None else len(self.roots)
 
 	def columnCount(self, index):
 		return 1
 
-	def insertRows(self, row, count, parent=None ):
-		self.beginInsertRows()
-		self.endInsertRows()
-
 	def data(self, index, role):
+#        print 'data' , index , index.internalPointer() , role
 		if not index.isValid() : return None
 
 		if role == QtCore.Qt.DisplayRole :
 			# FIXME: this method is probably to havy for lage xml files
-			n = index.internalPointer()
+#            print 'Display'
+			n = index.internalPointer().node
 #            ns = n.nsmap[None]
 #            n.nsmap[None] = ''
 #            out = toUtf8( etree.tostring( n , pretty_print = True , encoding = 'utf8' , method = 'xml' ) ).partition('\n')[0]
@@ -148,30 +206,38 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 				out = toUtf8( etree.tostring( n , pretty_print = True , encoding = 'utf8' , method = 'xml' ) ).partition('\n')[0]
 			return out
 		else:
+#            print 'None'
 			return None
 
 	def supportedDropActions(self): 
 		return QtCore.Qt.MoveAction | QtCore.Qt.IgnoreAction
 
 	def flags(self, index):
+#        print 'flags'
+		flags = QtCore.Qt.ItemIsEnabled
 		if not index.isValid():
-			return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsDropEnabled
-		return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | \
-		       QtCore.Qt.ItemIsDragEnabled | QtCore.Qt.ItemIsDropEnabled
+			return flags
+		flags |= QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsDropEnabled
+		if index.internalPointer().parent == None :
+			return flags
+		flags |= QtCore.Qt.ItemIsDragEnabled
+		return flags
+		       
 
 	def mimeTypes(self):
 		return ['pyipk/indexes']
 
 	def mimeData(self, indexes):
+#        print 'mime'
 		for nodeidx in indexes :
-			node = nodeidx.internalPointer()
-			parent = node.getparent()
+			child = nodeidx.internalPointer()
+			parent = child.parent
 
 			if parent == None :
 				continue
 
-			row = parent.index( node )
-			self.drag.append( DragInfo( node , nodeidx , parent , row ) )
+#            print 'drag: ' , child , parent
+			self.drag.append( DragInfo( child, nodeidx, parent ) )
 
 		# create dummy data
 		mime = QtCore.QMimeData()
@@ -179,6 +245,7 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 		return mime
 
 	def dropMimeData(self, data, action, row, column, parentidx):
+#        print 'drag'
 		if not data.hasFormat('pyipk/indexes') : return False
 
 		if action == QtCore.Qt.IgnoreAction or not parentidx.isValid() :
@@ -191,11 +258,29 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 
 		for d in self.drag :
 			# insert into new node
-			row = row if row >= 0 else len(parent)
-			self.beginMoveRows(self.parent(d.nodeidx),d.parentid,d.parentid,parentidx,row)
-			d.parent.remove( d.node )
-			parent.insert(row,d.node )
+			row = row if row >= 0 else self.rowCount(parentidx)
+			if d.parent == parent and (row == d.node.row+1 or row == d.node.row) : continue
+#            print
+#            print 'drop: ' , d.node , d.parent , d.node.row , '\t->\t' , parent , row
+#            print
+			self.beginMoveRows(self.parent(d.nodeidx),d.node.row,d.node.row,parentidx,row)
+
+#            print 'beginned'
+			d.parent.node.remove( d.node.node )
+			parent.node.insert(row,d.node.node )
+
+#            print parent , d.node , parent.children
+#            print d.parent , d.node , d.parent.children
+
+			parent.insert( row , d.node )
+
+#            print parent , d.node , parent.children
+#            print d.parent , d.node , d.parent.children
+
+#            print 'ending'
+
 			self.endMoveRows()
+#            print 'ended'
 		del self.drag[:]
 
 		self.changedSig.emit()
