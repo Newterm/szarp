@@ -41,7 +41,9 @@ const uint16_t Message::ACCOUNT_EXPIRED = 11;
 const uint16_t Message::INVALID_AUTH_INFO = 13;
 const uint16_t Message::INVALID_HWKEY = 14;
 
-const uint32_t PacketExchanger::QUEUE_SIZE_LIMIT = 8 * (Packet::HEADER_LENGTH + Packet::MAX_LENGTH);
+const uint32_t PacketExchanger::MAX_QUEUE_SIZE_LIMIT = 64 * (Packet::HEADER_LENGTH + Packet::MAX_LENGTH);
+
+const uint32_t PacketExchanger::START_QUEUE_SIZE_LIMIT = 8 * (Packet::HEADER_LENGTH + Packet::MAX_LENGTH);
 
 const uint8_t Packet::OK_PACKET = 0;
 const uint8_t Packet::LAST_PACKET = 1;
@@ -89,9 +91,17 @@ bool PacketExchanger::WritePackets() {
 
 	if (m_blocked_on_write || m_write_blocked_on_read)
 		return result;
+
+	bool buffer_was_full = OutputQueueAboveHighWaterMark();
 	do {
-		if (m_write_buffer.m_buf_pos == 0 && m_output_queue.size() == 0) 
+		if (m_write_buffer.m_buf_pos == 0 && m_output_queue.size() == 0) {
+			//if we managed to deplete output queue that was full without
+			//saturating the link it is a sign that we should increase
+			//output queue size
+			if (buffer_was_full && m_queue_size_limit < MAX_QUEUE_SIZE_LIMIT)
+			 	m_queue_size_limit *= 2;
 			return result;
+		}
 
 		do {
 			if (m_output_queue.size() == 0)
@@ -356,7 +366,7 @@ void PacketExchanger::CheckTermination() {
 }
 
 bool PacketExchanger::MayRead() {
-	return m_input_queue_size < QUEUE_SIZE_LIMIT;
+	return m_input_queue_size < m_queue_size_limit;
 }
 
 bool PacketExchanger::WantWrite() {
@@ -376,7 +386,7 @@ PacketExchanger::PacketExchanger(SSL *ssl, time_t select_timeout, TermChecker* t
 		m_term(term), m_input_queue_size(0), m_output_queue_size(0),
 		m_blocked_on_read(false), m_write_blocked_on_read(false),
 		m_blocked_on_write(false), m_read_blocked_on_write(false),
-		m_read_closed(false) {
+		m_read_closed(false), m_queue_size_limit(START_QUEUE_SIZE_LIMIT) {
 
 	m_fd = SSL_get_fd(m_ssl);
 
@@ -491,11 +501,11 @@ void PacketExchanger::Disconnect() {
 
 
 bool PacketExchanger::OutputQueueAboveHighWaterMark() {
-	return m_output_queue_size > QUEUE_SIZE_LIMIT;
+	return m_output_queue_size > m_queue_size_limit;
 }
 
 bool PacketExchanger::OutputQueueAboveLowWaterMark() {
-	return m_output_queue_size > QUEUE_SIZE_LIMIT / 2;
+	return m_output_queue_size > m_queue_size_limit / 2;
 }
 
 bool PacketExchanger::InputAvaiable() {

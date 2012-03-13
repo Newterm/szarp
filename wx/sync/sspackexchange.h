@@ -143,8 +143,12 @@ class PacketExchanger {
 	bool m_read_blocked_on_write;
 	/** True if peer has closed its reading pipe*/
 	bool m_read_closed;
-	/** Maximum size of queues*/
-	static const uint32_t QUEUE_SIZE_LIMIT;
+
+	size_t m_queue_size_limit;
+	/** Starting maximum size of queues*/
+	static const uint32_t START_QUEUE_SIZE_LIMIT;
+	/** Upper limit of maximum size of queues*/
+	static const uint32_t MAX_QUEUE_SIZE_LIMIT;
 
 	/**Removes a packet from output queue
 	 * @return packet from a queue's front, NULL if queue is empty*/

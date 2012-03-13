@@ -293,8 +293,10 @@ TDraw::SPECIAL_TYPES DefinedDrawInfo::GetSpecial() {
 
 	if (m_special_changed)
 		return m_sp;
-	else
+	else if (d)
 		return DrawInfo::GetSpecial();
+	else
+		return TDraw::NONE;
 }
 
 void DefinedDrawInfo::SetSpecial(TDraw::SPECIAL_TYPES special) {

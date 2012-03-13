@@ -1,3 +1,13 @@
+2012-03-13	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/sync: dynamically adjust output queue size, namely - if 
+	last write we were able to deplete whole output queue without
+	saturating the link, we increase the maximum queue size
+	(up to predefined limit)
+	* wx/draw3: in DefinedDrawInfo::GetSpecial check if TDraw member is
+	NULL, if it is - do not call DrawInfo::GetSpecial (as this triggers
+	assert). This is a check that we have in other DefinedDrawInfo
+	methods but somehow it was skipped in this one. Generally it is a
+	little bit messy and should be cleaned up at some point.
 2012-03-13  Jakub Kotur <qba@newterm.pl>
 	* pyipk/libipk/plugin.py, pyipk/plugins/edit_plg.py: pyipk: moar
 	plugins  + added simple editing plugins -- enumerate attrib and order
