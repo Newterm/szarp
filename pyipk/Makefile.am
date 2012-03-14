@@ -47,8 +47,10 @@ if DEB_BUILD
 	@touch $(DESTDIR)///opt/szarp/bin/ipkcmd
 	@touch $(DESTDIR)///opt/szarp/bin/ipkqt
 	@mkdir -p $(DESTDIR)///opt/szarp/lib/plugins
-	@mkdir -p $(DESTDIR)///opt/szarp/lib/python${PYTHON_VERSION}/dist-packages/libipk
-	@mkdir -p $(DESTDIR)///opt/szarp/lib/python${PYTHON_VERSION}/dist-packages/qtipk
+#         @mkdir -p $(DESTDIR)///opt/szarp/lib/python${PYTHON_VERSION}/dist-packages/libipk
+#         @mkdir -p $(DESTDIR)///opt/szarp/lib/python${PYTHON_VERSION}/dist-packages/qtipk
+	@mkdir -p $(DESTDIR)///usr/lib/python${PYTHON_VERSION}/dist-packages/libipk
+	@mkdir -p $(DESTDIR)///usr/lib/python${PYTHON_VERSION}/dist-packages/qtipk
 endif
 	@echo 'Python <= 2.5 not supported'
 
