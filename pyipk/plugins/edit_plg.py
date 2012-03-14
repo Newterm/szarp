@@ -3,9 +3,9 @@ from libipk.plugin import Plugin
 from lxml import etree
 
 class EnumerateChoosenAttrib( Plugin ) :
-	''' Sets specified attrib to succeding numbers starts from 'from' '''
+	''' Sets specified attrib to succeding numbers starts from 'start' '''
 	def set_args( self , **args ) :
-		self.beg    = int(args['from'])
+		self.beg    = int(args['start'])
 		self.attrib = args['attrib']
 
 		self.num = self.beg
@@ -13,7 +13,7 @@ class EnumerateChoosenAttrib( Plugin ) :
 
 	@staticmethod
 	def get_args() :
-		return ['attrib','from']
+		return ['attrib','start']
 
 	def process( self , node ) :
 		self.nodes.append(node)
@@ -25,15 +25,15 @@ class EnumerateChoosenAttrib( Plugin ) :
 
 
 class EnumerateSubTagAttrib( Plugin ) :
-	''' Sets specified attrib to succeding numbers starts from 'from' '''
+	''' Sets specified attrib to succeding numbers starts from 'start' '''
 	def set_args( self , **args ) :
 		self.tag    = args['tag']
-		self.beg    = int(args['from'])
+		self.beg    = int(args['start'])
 		self.attrib = args['attrib']
 
 	@staticmethod
 	def get_args() :
-		return ['tag','attrib','from']
+		return ['tag','attrib','start']
 
 	def process( self , root ) :
 		self.root = root

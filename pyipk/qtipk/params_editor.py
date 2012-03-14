@@ -47,7 +47,7 @@ class ParamsEditor( QtCore.QObject ) :
 	def create_file( self , filename , nodes ) :
 		with open(filename,'w') as f :
 			for n in nodes :
-				f.write( toUtf8( etree.tostring( n , pretty_print = True , encoding='utf8' , method = 'xml' , xml_declaration=False ) ) )
+				f.write(  etree.tostring( n , pretty_print = True , encoding='utf8' , method = 'xml' , xml_declaration=False ) ) 
 
 	def read_file( self , filename ) :
 		doc = etree.parse( filename )

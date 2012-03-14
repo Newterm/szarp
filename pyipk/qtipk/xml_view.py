@@ -26,6 +26,8 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 
 		self.model = XmlTreeModel()
 		self.view.setModel( self.model )
+		self.view.expanded.connect(self.model.expand)
+		self.view.collapsed.connect(self.model.collapse)
 		self.model.changedSig.connect(self.changedSig)
 
 		self.set_name( name )
@@ -81,9 +83,13 @@ class ModelTree :
 		self.row  = row
 
 		self.children = []
-		# TODO: should be done dinamicly
+
+	def fill( self ) :
 		for i in range(len(self.node)) :
 			self.add( ModelTree( self.node[i] , i ) )
+
+	def purge( self ) :
+		self.children = []
 
 	def insert( self, row , child ) :
 		prev = child.parent.children.index( child )
@@ -122,98 +128,74 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 		self.roots = []
 
 	def add_node( self , node ) :
-#        row = len(self.root.children)
 		row = len(self.roots)
 		self.beginInsertRows(QtCore.QModelIndex(),row,row+1)
 		self.roots.append( ModelTree(node,row) )
-#        self.root.node.append( node )
-#        self.root.add_child( ModelTree(node,row) )
 		self.endInsertRows()
-
-#    def createIndex( self , row , column , ptr ) :
-#        i = QtCore.QAbstractItemModel.createIndex( self , row , column , ptr )
-#        print i
-#        return i
-
-#    def create_model_tree( self , parentmt , node , row , column ) :
-#        mt = ModelTree(parentmt,node)
-#        idx= self.createIndex(row,column,mt)
-#        mt.set_index(idx)
-#        return mt
 
 	def clear( self ) :
 		self.beginRemoveRows( QtCore.QModelIndex() , 0 , len(self.roots) )
 		del self.roots[:]
-#        self.root = ModelTree(None,0)
-#        self.root.node = etree.Element('root')
 		self.endRemoveRows()
+
+	def expand( self , index ) :
+		mt = index.internalPointer()
+		if mt != None : mt.fill()
+
+	def collapse( self , index ) :
+		mt = index.internalPointer()
+		if mt != None : mt.purge()
 
 	def index(self, row, column, parentidx ):
 		parent = parentidx.internalPointer()
-#        print 'index' , row , column , parent
 		if parent == None :
 			if row >= 0 and row < len(self.roots) :
-#                print 'row>=0 and row<len(self.roots)' ,  self.roots[row]
 				return self.createIndex(row,column,self.roots[row])
 			else :
-#                print 'Empty'
 				return QtCore.QModelIndex()
 		if row >= len(parent.node) : return QtCore.QModelIndex()
 		if len(parent.children) <= row :
 			for i in range(len(parent.children),row+1) :
-#                print
-#                print 'add'
-#                print
 				parent.add( ModelTree( parent.node[i] , i ) )
-#        print 'Normal' , row , parent.children[row] , parent.children
 		return self.createIndex(row,column,parent.children[row])
 
 	def parent(self, index):
-#        print 'parent' , index.internalPointer()
 		child  = index.internalPointer()
 		if child == None or child.parent == None : return QtCore.QModelIndex()
 		row = child.parent.row if child.parent != None else 0
-#        print row ,child.parent, child.node.getparent()
-#        print row ,child.parent , child.parent.children
-#        print row ,child.parent.node , child.parent.node.getchildren()
 		return self.createIndex( row , 0 , child.parent )
 
 	def rowCount(self, index):
 		ptr = index.internalPointer()
-		print 'rowCount' , ptr , len(ptr.node) if ptr != None else 0
 		return len(ptr.node) if ptr != None else len(self.roots)
 
 	def columnCount(self, index):
 		return 1
 
 	def data(self, index, role):
-#        print 'data' , index , index.internalPointer() , role
 		if not index.isValid() : return None
 
 		if role == QtCore.Qt.DisplayRole :
 			# FIXME: this method is probably to havy for lage xml files
-#            print 'Display'
 			n = index.internalPointer().node
 #            ns = n.nsmap[None]
 #            n.nsmap[None] = ''
 #            out = toUtf8( etree.tostring( n , pretty_print = True , encoding = 'utf8' , method = 'xml' ) ).partition('\n')[0]
 #            n.nsmap[None] = ns
 #            return out
-			if isinstance(n.tag,basestring) :
+			if isinstance(n.tag,str) :
 				out = '<%s '%n.tag + ' '.join(['%s="%s"'%(a,n.get(a)) for a in n.attrib]) + '>'
-				out = string.replace(out,'{'+n.nsmap[None]+'}','') if None in n.nsmap else out
+				out = out.replace('{'+n.nsmap[None]+'}','') if None in n.nsmap else out
 			else :
 				out = toUtf8( etree.tostring( n , pretty_print = True , encoding = 'utf8' , method = 'xml' ) ).partition('\n')[0]
 			return out
 		else:
-#            print 'None'
 			return None
 
 	def supportedDropActions(self): 
 		return QtCore.Qt.MoveAction | QtCore.Qt.IgnoreAction
 
 	def flags(self, index):
-#        print 'flags'
 		flags = QtCore.Qt.ItemIsEnabled
 		if not index.isValid():
 			return flags
@@ -228,7 +210,6 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 		return ['pyipk/indexes']
 
 	def mimeData(self, indexes):
-#        print 'mime'
 		for nodeidx in indexes :
 			child = nodeidx.internalPointer()
 			parent = child.parent
@@ -236,7 +217,6 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 			if parent == None :
 				continue
 
-#            print 'drag: ' , child , parent
 			self.drag.append( DragInfo( child, nodeidx, parent ) )
 
 		# create dummy data
@@ -245,7 +225,6 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 		return mime
 
 	def dropMimeData(self, data, action, row, column, parentidx):
-#        print 'drag'
 		if not data.hasFormat('pyipk/indexes') : return False
 
 		if action == QtCore.Qt.IgnoreAction or not parentidx.isValid() :
@@ -260,27 +239,15 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 			# insert into new node
 			row = row if row >= 0 else self.rowCount(parentidx)
 			if d.parent == parent and (row == d.node.row+1 or row == d.node.row) : continue
-#            print
-#            print 'drop: ' , d.node , d.parent , d.node.row , '\t->\t' , parent , row
-#            print
 			self.beginMoveRows(self.parent(d.nodeidx),d.node.row,d.node.row,parentidx,row)
 
-#            print 'beginned'
 			d.parent.node.remove( d.node.node )
 			parent.node.insert(row,d.node.node )
 
-#            print parent , d.node , parent.children
-#            print d.parent , d.node , d.parent.children
 
 			parent.insert( row , d.node )
 
-#            print parent , d.node , parent.children
-#            print d.parent , d.node , d.parent.children
-
-#            print 'ending'
-
 			self.endMoveRows()
-#            print 'ended'
 		del self.drag[:]
 
 		self.changedSig.emit()
