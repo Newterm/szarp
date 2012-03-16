@@ -31,27 +31,28 @@
 -->
 
   <define name="params">
-    <element name="params" ns="http://www.praterm.com.pl/SZARP/ipk">
+    <element name="params" ns="http://www.praterm.com.pl/SZARP/ipk" >
       <ref name="attlist.params"/>
-      <oneOrMore>
-        <ref name="device"/>
-      </oneOrMore>
-      <optional>
-        <ref name="defined"/>
-      </optional>
-      <optional>
-        <ref name="drawdefinable"/>
-      </optional>
-      <optional>
-        <ref name="boilers"/>
-      </optional>
-      <optional>
-        <ref name="seasons"/>
-      </optional>
-      <zeroOrMore>
-        <ref name="extra"/>
-      </zeroOrMore>
-
+      <interleave>
+        <oneOrMore>
+          <ref name="device"/>
+        </oneOrMore>
+        <optional>
+          <ref name="defined"/>
+        </optional>
+        <optional>
+          <ref name="drawdefinable"/>
+        </optional>
+        <optional>
+          <ref name="boilers"/>
+        </optional>
+        <optional>
+          <ref name="seasons"/>
+        </optional>
+        <optional>
+          <ref name="checker"/>
+        </optional>
+      </interleave>
     </element>
   </define>
   <define name="attlist.params" combine="interleave">
@@ -101,9 +102,6 @@
   <define name="device">
     <element name="device" ns="http://www.praterm.com.pl/SZARP/ipk">
       <ref name="attlist.device"/>
-      <zeroOrMore>
-        <ref name="extra"/>
-      </zeroOrMore>
       <choice>
         <oneOrMore>
           <ref name="radio"/>
@@ -187,9 +185,6 @@
           <ref name="send"/>
         </choice>
       </oneOrMore>
-      <zeroOrMore>
-        <ref name="extra"/>
-      </zeroOrMore>
     </element>
   </define>
   <define name="attlist.unit" combine="interleave">
@@ -228,24 +223,29 @@
   <define name="param">
     <element name="param" ns="http://www.praterm.com.pl/SZARP/ipk">
       <ref name="attlist.param"/>
-      <zeroOrMore>
-        <ref name="value"/>
-      </zeroOrMore>
-      <optional>
-        <ref name="define"/>
-      </optional>
-      <zeroOrMore>
-        <ref name="raport"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="draw"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="analysis"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="extra"/>
-      </zeroOrMore>
+      <interleave>
+        <zeroOrMore>
+          <ref name="value"/>
+        </zeroOrMore>
+        <optional>
+          <ref name="define"/>
+        </optional>
+        <optional>
+          <ref name="editable"/>
+        </optional>
+        <zeroOrMore>
+          <ref name="raport"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="draw"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="analysis"/>
+        </zeroOrMore>
+        <optional>
+          <ref name="doc"/>
+        </optional>
+      </interleave>
     </element>
   </define>
   <define name="attlist.param" combine="interleave">
@@ -271,6 +271,12 @@
     </optional>
     <optional>
       <attribute name="sum_divisor" a:defaultValue="6"/>
+    </optional>
+    <optional>
+      <attribute name="type"/>
+    </optional>
+    <optional>
+      <attribute name="start_date"/>
     </optional>
     <zeroOrMore>
       <ref name="extra-attribute"/>
@@ -320,9 +326,14 @@
   <define name="define">
     <element name="define" ns="http://www.praterm.com.pl/SZARP/ipk">
       <ref name="attlist.define"/>
-      <optional>
-        <ref name="script"/>
-      </optional>
+        <interleave>
+        <optional>
+          <ref name="script"/>
+        </optional>
+        <optional>
+          <ref name="doc"/>
+        </optional>
+      </interleave>
     </element>
   </define>
   <define name="attlist.define" combine="interleave">
@@ -357,6 +368,9 @@
       <attribute name="lua_end_offset"/>
     </optional>
     <optional>
+      <attribute name="lua_formula"/>
+    </optional>
+    <optional>
       <attribute name="new_def" a:defaultValue="no">
         <choice>
           <value>no</value>
@@ -364,12 +378,31 @@
         </choice>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="start_date"/>
+    </optional>
   </define>
   
   <define name="script"> 
     <element name="script" ns="http://www.praterm.com.pl/SZARP/ipk">
       <text/>
     </element> 
+  </define>
+
+  <!--
+    Element 'editable' ??? PROFIT
+  -->
+
+  <define name="editable"> 
+    <element name="editable" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+      <ref name="attlist.editable"/>
+      <empty />
+    </element> 
+  </define>
+  <define name="attlist.editable" combine="interleave">
+    <attribute name="min"/>
+    <attribute name="max"/>
+    <attribute name="time"/>
   </define>
 
   <!--
@@ -512,6 +545,14 @@
         </choice>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="new_def" a:defaultValue="no">
+        <choice>
+          <value>no</value>
+          <value>yes</value>
+        </choice>
+      </attribute>
+    </optional>
   </define>
 
   <!--
@@ -533,6 +574,9 @@
   </define>
 
   <define name="attlist.treenode">
+    <optional>
+      <attribute name="name"/>
+    </optional>
     <optional>
       <attribute name="prior"/>
     </optional>
@@ -559,9 +603,6 @@
   <define name="send">
     <element name="send" ns="http://www.praterm.com.pl/SZARP/ipk">
       <ref name="attlist.send"/>
-      <zeroOrMore>
-        <ref name="extra"/>
-      </zeroOrMore>
     </element>
   </define>
   <define name="attlist.send" combine="interleave">
@@ -618,7 +659,7 @@
       </zeroOrMore>
     </element>
   </define>
-  <define name="attlist.drawdefinable" combine="interleave">
+  <define name="attlist.drawdefinable">
     <empty/>
   </define>
 
@@ -764,26 +805,6 @@
 
   <!-- Dodatkowe elementy i atrybuty z innych przestrzeni nazw. -->
   
-  <define name="extra">
-    <element ns="http://wwww.praterm.com.pl/SZARP/ipk">
-      <anyName>
-        <except>
-	  <nsName/>
-	  <nsName ns=""/>
-	</except>
-      </anyName>
-        <zeroOrMore>
-      	  <choice>
-	    <attribute>
-	      <anyName/>
-	    </attribute>
-	    <text/>
-	    <ref name="extra"/>
-	  </choice>
-        </zeroOrMore>
-    </element>
-  </define>
-  
   <define name="extra-attribute">
     <attribute>
       <anyName>
@@ -794,7 +815,46 @@
       </anyName>
     </attribute>
   </define>
-  
+
+  <!-- Checker -->
+
+  <define name="checker">
+    <element name="rules" ns="http://www.praterm.com.pl/SZARP/ipk-checker">
+      <ref name="attlist.rules"/>
+      <zeroOrMore>
+        <element name="rule">
+          <ref name="attlist.rule"/>
+          <text/>
+        </element>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="attlist.rules" combine="interleave">
+    <empty/>
+  </define>
+  <define name="attlist.rule" combine="interleave">
+    <attribute name="name" ns="http://www.praterm.com.pl/SZARP/ipk-checker"/>
+  </define>
+
+  <!-- Dokumentacja -->
+
+  <define name="doc">
+    <element name="doc" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+      <ref name="attlist.doc"/>
+      <text/>
+    </element>
+  </define>
+  <define name="attlist.doc" combine="interleave">
+    <optional>
+      <attribute name="hidden">
+        <choice>
+          <value>true</value>
+          <value>false</value>
+        </choice>
+      </attribute>
+    </optional>
+  </define>
+
   <!-- G³ówny tag dokumentu -->
   
   <start>
