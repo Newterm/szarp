@@ -167,7 +167,9 @@ const DTime& DrawsController::StopState::GetStateTime() const {
 
 void DrawsController::StopState::SetNumberOfUnits() { }
 
-void DrawsController::StopState::Reset() { }
+void DrawsController::StopState::Reset() {
+	m_c->EnterState(SEARCH_BOTH, m_stop_time);
+}
 
 void DrawsController::WaitState::Reset() {
 	m_c->FetchData();

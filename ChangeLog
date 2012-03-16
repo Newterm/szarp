@@ -1,3 +1,6 @@
+2012-03-16	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: bugfix: a state transition is needed on reset event
+	when controller is in stop state
 2012-03-13	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/sync: dynamically adjust output queue size, namely - if 
 	last write we were able to deplete whole output queue without
