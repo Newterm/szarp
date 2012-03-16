@@ -76,3 +76,35 @@ class TestCountSubTag( unittest.TestCase ) :
 		self.assertEqual( len(zero) , 1 )
 		self.assertEqual( len(one) , 79 )
 
+class TestFindAttrib( unittest.TestCase ) :
+	def setUp( self ) :
+		self.doc = etree.parse( 'tests/params.xml' )
+
+	def tearDown( self ) :
+		pass
+
+	def test_args( self ) :
+		self.assertListEqual( FindAttrib.get_args() , ['tag','attrib','value'] )
+
+	def test_subsubtag( self ) :
+		plg = FindAttrib( tag='param' , attrib='name' , value='A:B:C' )
+		plg.process( self.doc.getroot() )
+
+		self.assertEqual( len(plg.result()) , 2 )
+
+class TestFindRepeated( unittest.TestCase ) :
+	def setUp( self ) :
+		self.doc = etree.parse( 'tests/params.xml' )
+
+	def tearDown( self ) :
+		pass
+
+	def test_args( self ) :
+		self.assertListEqual( FindRepeated.get_args() , ['tag','attrib'])
+
+	def test_multipledraws( self ) :
+		plg = FindRepeated( tag='draw' , attrib='title' )
+		plg.process( self.doc.getroot() )
+
+		self.assertEqual( len(plg.result()) , 79 )
+
