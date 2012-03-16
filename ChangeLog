@@ -1,4 +1,5 @@
 2012-03-16	Darek Marcinkiewicz <reksio@newterm.pl>
+	* utils/remarks_server.py: bugfix + code cleanup
 	* wx/draw3: bugfix: a state transition is needed on reset event
 	when controller is in stop state
 2012-03-13	Darek Marcinkiewicz <reksio@newterm.pl>

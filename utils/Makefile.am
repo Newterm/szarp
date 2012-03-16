@@ -100,6 +100,15 @@ probesserver_PYTHON = \
 	probes_server/szbcache.py \
 	probes_server/probes_server.tac
 
+remarksserverdir = @prefix@/lib/python
+remarksserver_PYTHON = \
+	remarks_server/dbinteraction.py \
+	remarks_server/paramssets.py \
+	remarks_server/transdb.py \
+	remarks_server/db.py \
+	remarks_server/remarks.py \
+	remarks_server/sessions.py
+
 
 agregator_SOURCES = agregator.cc
 agregator_LDADD = $(LIBSZARP2) $(LIBSZARP) @PTHREAD_CFLAGS@ @BOOST_SYSTEM_LIB@ @XML_LIBS@ @BOOST_LDFLAGS@ @BOOST_FILESYSTEM_LIB@ @SSL_LIBS@

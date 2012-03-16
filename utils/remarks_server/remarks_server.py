@@ -26,6 +26,9 @@ from OpenSSL import SSL
 
 import ConfigParser
 
+import sys
+sys.path.append("/opt/szarp/lib/python")
+
 import dbinteraction
 import sessions
 import db
