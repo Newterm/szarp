@@ -28,6 +28,7 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 		self.view.setModel( self.model )
 		self.view.expanded.connect(self.model.expand)
 		self.view.collapsed.connect(self.model.collapse)
+		self.view.header().moveSection(1,0)
 		self.model.changedSig.connect(self.changedSig)
 
 		self.set_name( name )
@@ -44,7 +45,7 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 
 		action = menu.exec_(self.mapToGlobal(event.pos()))
 
-		nodes = [ i.internalPointer().node for i in idxes ]
+		nodes = [ i.internalPointer().node for i in idxes if i.column() == 0 ]
 
 		if action == runAction :
 			self.runSig.emit( nodes )
@@ -82,16 +83,23 @@ class ModelTree :
 		self.node = node 
 		self.row  = row
 
-		self.children = []
+		self.children = None
+
+	def rows( self ) :
+		return len(self.node)
 
 	def fill( self ) :
-		for i in range(len(self.node)) :
-			self.add( ModelTree( self.node[i] , i ) )
+		if self.children == None :
+			self.children = []
+			for i in range(len(self.node)) :
+				self.add( ModelTree( self.node[i] , i ) )
 
 	def purge( self ) :
-		self.children = []
+		self.children = None
 
 	def insert( self, row , child ) :
+		self.fill()
+
 		prev = child.parent.children.index( child )
 
 		if child.parent == self and prev < row : row -= 1
@@ -111,8 +119,13 @@ class ModelTree :
 			self.children[i].row = i
 
 	def add( self , child ) :
+		self.fill()
 		self.children.append( child )
 		child.parent = self
+
+	def children_at( self , row ) :
+		self.fill()
+		return self.children[row]
 
 	def __repr__( self ) :
 		return unicode( (self.row,self.node) )
@@ -154,10 +167,10 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 			else :
 				return QtCore.QModelIndex()
 		if row >= len(parent.node) : return QtCore.QModelIndex()
-		if len(parent.children) <= row :
-			for i in range(len(parent.children),row+1) :
+		if parent.rows() <= row :
+			for i in range(parent.rows(),row+1) :
 				parent.add( ModelTree( parent.node[i] , i ) )
-		return self.createIndex(row,column,parent.children[row])
+		return self.createIndex(row,column,parent.children_at(row))
 
 	def parent(self, index):
 		child  = index.internalPointer()
@@ -166,11 +179,16 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 		return self.createIndex( row , 0 , child.parent )
 
 	def rowCount(self, index):
+		if index.column() > 0 : return 0
 		ptr = index.internalPointer()
 		return len(ptr.node) if ptr != None else len(self.roots)
 
 	def columnCount(self, index):
-		return 1
+		return 2
+
+	def headerData( self , section , orientation , role ) :
+		if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole :
+			return [ 'xml' , 'line' ][section]
 
 	def data(self, index, role):
 		if not index.isValid() : return None
@@ -178,14 +196,16 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 		if role == QtCore.Qt.DisplayRole :
 			# FIXME: this method is probably to havy for lage xml files
 			n = index.internalPointer().node
+			if index.column() == 1 :
+				return str(n.sourceline)
 #            ns = n.nsmap[None]
 #            n.nsmap[None] = ''
 #            out = toUtf8( etree.tostring( n , pretty_print = True , encoding = 'utf8' , method = 'xml' ) ).partition('\n')[0]
 #            n.nsmap[None] = ns
 #            return out
 			if isinstance(n.tag,str) :
-				out = '<%s '%n.tag + ' '.join(['%s="%s"'%(a,n.get(a)) for a in n.attrib]) + '>'
-				out = out.replace('{'+n.nsmap[None]+'}','') if None in n.nsmap else out
+				tag = n.tag.replace( '{%s}' % n.nsmap[n.prefix] , '%s:' % n.prefix if n.prefix != None else  '' )
+				out = '<%s '% tag + ' '.join(['%s="%s"'%(a,n.get(a)) for a in n.attrib]) + '>'
 			else :
 				out = toUtf8( etree.tostring( n , pretty_print = True , encoding = 'utf8' , method = 'xml' ) ).partition('\n')[0]
 			return out
@@ -211,6 +231,9 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 
 	def mimeData(self, indexes):
 		for nodeidx in indexes :
+			if nodeidx.column() != 0 :
+				continue
+
 			child = nodeidx.internalPointer()
 			parent = child.parent
 
