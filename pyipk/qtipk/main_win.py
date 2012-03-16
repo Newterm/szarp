@@ -13,6 +13,7 @@ from .xml_view import XmlView
 from .xml_diag import XmlDialog
 from .plug_diag import PluginsDialog
 from .base_diag import BaseDialog
+from .validate_diag import ValidateDialog
 
 from .params_editor import ParamsEditor
 
@@ -22,6 +23,7 @@ from .ui.main_win import Ui_MainWindow
 
 SZARP_PATH = '/opt/szarp/'
 DEFAULT_EDITOR = 'gvim'
+DEFAULT_RELAXNG = '/opt/szarp/resources/dtd/ipk-params.rng'
 
 class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 	def __init__( self , plugins ) :
@@ -47,6 +49,8 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 		self.params = None
 		self.plugins = Plugins()
 		self.plugins.load(plugins)
+
+		self.validateDiag = ValidateDialog( self , DEFAULT_RELAXNG )
 
 	def touch_params( self ) :
 		if self.params != None : self.params.touch()
@@ -133,4 +137,7 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 		diag = BaseDialog( self , SZARP_PATH )
 		if diag.exec_() == QtGui.QDialog.Accepted :
 			self.openParams( fromUtf8( diag.selected_params() ) )
+
+	def validate( self ) :
+		self.validateDiag.exec_( self.params )
 
