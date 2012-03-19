@@ -505,11 +505,8 @@ PStatement StatementConverter::operator() (const assignment &a) {
 #ifdef LUA_OPTIMIZER_DEBUG
 	lua_opt_debug_stream << "Converting assignement" << std::endl;
 #endif
-#if 0
+	boost::shared_ptr<StatementList> ret = boost::make_shared<StatementList>();
 	for (size_t i = 0; i < a.varlist.size(); i++) {
-#else
-		size_t i = 0;
-#endif
 		try {
 			const identifier& identifier_ = boost::get<identifier>(a.varlist[i]);
 #ifdef LUA_OPTIMIZER_DEBUG
@@ -521,13 +518,12 @@ PStatement StatementConverter::operator() (const assignment &a) {
 				expression = m_param_converter->ConvertExpression(a.explist[i]);
 			else
 				expression = boost::make_shared<NilExpression>();
-			return boost::make_shared<AssignmentStatement>(variable, expression);
+			ret->AddStatement(boost::make_shared<AssignmentStatement>(variable, expression));
 		} catch (boost::bad_get&) {
 			throw ParamConversionException(L"Only assignment to variables allowed in optimized expressions");
 		}
-#if 0
 	}
-#endif
+	return ret;
 }
 
 PStatement StatementConverter::operator() (const block &b) {
@@ -616,29 +612,25 @@ PStatement StatementConverter::operator() (const local_assignment &a) {
 #ifdef LUA_OPTIMIZER_DEBUG
 	lua_opt_debug_stream << "Converting local assignment" << std::endl;
 #endif
-	PExpression expression;
-#if 0
+	boost::shared_ptr<StatementList> ret = boost::make_shared<StatementList>();
 	for (size_t i = 0; i < a.varlist.size(); i++) {
-#else
-	size_t i = 0;
-#endif
 		try {
 			const identifier& identifier_ = boost::get<identifier>(a.varlist[i]);
 #ifdef LUA_OPTIMIZER_DEBUG
 			lua_opt_debug_stream << "Identifier: " << SC::S2A(identifier_) << std::endl;
 #endif
 			VarRef variable = m_param_converter->GetLocalVar(identifier_);
+			PExpression expression;
 			if (i < a.explist.size())
 				expression = m_param_converter->ConvertExpression(a.explist[i]);
 			else
 				expression = boost::make_shared<NilExpression>();
-			return boost::make_shared<AssignmentStatement>(variable, expression);
+			ret->AddStatement(boost::make_shared<AssignmentStatement>(variable, expression));
 		} catch (boost::bad_get&) {
 			throw ParamConversionException(L"Only assignment to variables allowed in optimized expressions");
 		}
-#if 0
 	}
-#endif
+	return ret;
 }
 
 PStatement StatementConverter::operator() (const local_function_declaration &f) {
@@ -950,38 +942,37 @@ PExpression NanConverter::Convert(const std::vector<expression>& expressions) {
 }
 
 std::wstring get_string_expression(const expression &e) {
-#define ERROR throw ParamConversionException(L"Expression is not string")
 	const or_exp& or_exp_ = e;
 	if (or_exp_.size() != 1)
-		ERROR;
+		throw ParamConversionException(L"Expression is not string");
 
 	const and_exp& and_exp_ = or_exp_[0];
 	if (and_exp_.size() != 1)
-		ERROR;
+		throw ParamConversionException(L"Expression is not string");
 
 	const cmp_exp& cmp_exp_ = and_exp_[0];
 	if (cmp_exp_.cmps.size())
-		ERROR;
+		throw ParamConversionException(L"Expression is not string");
 
 	const concat_exp& concat_exp_ = cmp_exp_.concat;
 	if (concat_exp_.size() != 1)
-		ERROR;
+		throw ParamConversionException(L"Expression is not string");
 
 	const add_exp& add_exp_ = concat_exp_[0];
 	if (add_exp_.adds.size())
-		ERROR;
+		throw ParamConversionException(L"Expression is not string");
 
 	const mul_exp& mul_exp_ = add_exp_.mul;
 	if (mul_exp_.muls.size())
-		ERROR;
+		throw ParamConversionException(L"Expression is not string");
 
 	const unop_exp& unop_exp_ = mul_exp_.unop;
 	if (unop_exp_.get<0>().size())
-		ERROR;
+		throw ParamConversionException(L"Expression is not string");
 
 	const pow_exp& pow_exp_ = unop_exp_.get<1>();
 	if (pow_exp_.size() != 1)
-		ERROR;
+		throw ParamConversionException(L"Expression is not string");
 
 	try {
 		const std::wstring& name = boost::get<std::wstring>(pow_exp_[0]);
@@ -990,7 +981,7 @@ std::wstring get_string_expression(const expression &e) {
 #ifdef LUA_OPTIMIZER_DEBUG
 		lua_opt_debug_stream << "Failed to convert expression to string: " << e.what() << std::endl;
 #endif
-		ERROR;
+		throw ParamConversionException(L"Expression is not string");
 	}
 }
 
@@ -1390,11 +1381,14 @@ Val ParamRef::Value(const double& time, const double& period) {
 Param* optimize_lua_param(TParam* p) {
 	LuaExec::Param* ep = new LuaExec::Param;
 	p->SetLuaExecParam(ep);
-	lua_grammar::chunk param_code;
+
 	std::wstring param_text = SC::U2S(p->GetLuaScript());
 	std::wstring::const_iterator param_text_begin = param_text.begin();
 	std::wstring::const_iterator param_text_end = param_text.end();
+
 	ep->m_optimized = false;
+
+	lua_grammar::chunk param_code;
 	if (lua_grammar::parse(param_text_begin, param_text_end, param_code)) {
 		Szbase* szbase = Szbase::GetObject();
 		LuaExec::ParamConverter pc(szbase);
