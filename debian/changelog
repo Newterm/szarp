@@ -1,3 +1,9 @@
+szarp (3.1.626) testing; urgency=low
+
+  * building squeeze
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Mon, 19 Mar 2012 10:28:27 +0100
+
 szarp (3.1.625) stable; urgency=low
 
   * building lenny
