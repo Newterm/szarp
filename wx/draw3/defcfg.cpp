@@ -1277,10 +1277,15 @@ void DefinedDrawSet::Add(const std::vector<DrawInfo*>& draws, bool color_unique)
 	size_t color_index = 0;
 
 	for (std::vector<DrawInfo*>::const_iterator i = draws.begin(); i != draws.end(); i++) {
-		DefinedDrawInfo* ddi = new DefinedDrawInfo(*i, m_ds);
-		if (color_unique) 
-			make_color_unique(*m_draws, ddi, color_index);
-		Add(ddi);
+		if (DefinedDrawInfo* d = dynamic_cast<DefinedDrawInfo*>(*i)) {
+			DefinedDrawInfo* ddi = new DefinedDrawInfo(*d);
+			Add(ddi);
+		} else {
+			DefinedDrawInfo* ddi = new DefinedDrawInfo(*i, m_ds);
+			if (color_unique) 
+				make_color_unique(*m_draws, ddi, color_index);
+			Add(ddi);
+		}
 	}
 }
 

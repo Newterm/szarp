@@ -887,7 +887,7 @@ int DrawPicker::NewSet(wxString prefix, bool network_set) {
 	wxString id = m_config_mgr->GetConfigByPrefix(prefix)->GetID();
 
 	if (m_inc_search == NULL)
-		m_inc_search = new IncSearch(m_config_mgr, m_remarks_handler, id, this, incsearch_DIALOG, _("Find"), false, false, true, m_database_manager);
+		m_inc_search = new IncSearch(m_config_mgr, m_remarks_handler, id, this, incsearch_DIALOG, _("Find"), false, true, true, m_database_manager);
 	else
 		m_inc_search->SetConfigName(id);
 
@@ -969,7 +969,7 @@ int DrawPicker::EditAsNew(DrawSet *set, wxString prefix, bool network) {
 	wxString cn = m_config_mgr->GetConfigByPrefix(prefix)->GetID();
 
 	if (m_inc_search == NULL)
-		m_inc_search = new IncSearch(m_config_mgr, m_remarks_handler, cn, static_cast<wxWindow*>(this), incsearch_DIALOG, _("Find"), false, false, true, m_database_manager);
+		m_inc_search = new IncSearch(m_config_mgr, m_remarks_handler, cn, static_cast<wxWindow*>(this), incsearch_DIALOG, _("Find"), false, true, true, m_database_manager);
 	else
 		m_inc_search->SetConfigName(cn);
 
@@ -999,7 +999,7 @@ int DrawPicker::EditSet(DefinedDrawSet *set, wxString prefix) {
 	wxString cn = m_config_mgr->GetConfigByPrefix(prefix)->GetID();
 
 	if (m_inc_search == NULL)
-		m_inc_search = new IncSearch(m_config_mgr, m_remarks_handler, cn, static_cast<wxWindow*>(this), incsearch_DIALOG, _("Find"), false, false, true, m_database_manager);
+		m_inc_search = new IncSearch(m_config_mgr, m_remarks_handler, cn, static_cast<wxWindow*>(this), incsearch_DIALOG, _("Find"), false, true, true, m_database_manager);
 	else
 		m_inc_search->SetConfigName(cn);
 
