@@ -291,7 +291,6 @@ void Draw::StopDoubleCursor() {
 }
 
 void Draw::SetRemarksTimes(std::vector<wxDateTime>& times) {
-	bool new_added = false;
 	for (std::vector<wxDateTime>::iterator i = times.begin();
 			i != times.end();
 			i++) {
@@ -301,10 +300,8 @@ void Draw::SetRemarksTimes(std::vector<wxDateTime>& times) {
 		int idx = GetIndex(dt);
 		if (idx >= 0) {
 			ValueInfo& vi = m_values.at(idx);
-			if (vi.m_remark == false) {
+			if (vi.m_remark == false)
 				vi.m_remark = true;
-				new_added = true;
-			}
 		}
 	}
 	m_observers->NotifyNewRemarks(this);
