@@ -89,7 +89,7 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 		self.params = Params( filename )
 		self.view_full.clear()
 		self.view_result.clear()
-		self.view_full.add_node( self.params.root )
+		self.view_full.add_node( self.params.getroot() )
 
 	def closeParams( self ) :
 		if self.params == None or self.params.close() :

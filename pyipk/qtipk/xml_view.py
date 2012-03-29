@@ -45,7 +45,7 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 
 		action = menu.exec_(self.mapToGlobal(event.pos()))
 
-		nodes = [ i.internalPointer().node for i in idxes if i.column() == 0 ]
+		nodes = [ i.internalPointer().node.node for i in idxes if i.column() == 0 ]
 
 		if action == runAction :
 			self.runSig.emit( nodes )
@@ -197,18 +197,9 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 			# FIXME: this method is probably to havy for lage xml files
 			n = index.internalPointer().node
 			if index.column() == 1 :
-				return str(n.sourceline)
-#            ns = n.nsmap[None]
-#            n.nsmap[None] = ''
-#            out = toUtf8( etree.tostring( n , pretty_print = True , encoding = 'utf8' , method = 'xml' ) ).partition('\n')[0]
-#            n.nsmap[None] = ns
-#            return out
-			if isinstance(n.tag,str) :
-				tag = n.tag.replace( '{%s}' % n.nsmap[n.prefix] , '%s:' % n.prefix if n.prefix != None else  '' )
-				out = '<%s '% tag + ' '.join(['%s="%s"'%(a,n.get(a)) for a in n.attrib]) + '>'
+				return str(n.getline())
 			else :
-				out = toUtf8( etree.tostring( n , pretty_print = True , encoding = 'utf8' , method = 'xml' ) ).partition('\n')[0]
-			return out
+				return n.toline()
 		else:
 			return None
 
