@@ -9,6 +9,8 @@ from PyQt4 import QtGui , QtCore
 from libipk.params import Params
 from libipk.plugins import Plugins
 
+from .params import QNode
+
 from .xml_view import XmlView
 from .xml_diag import XmlDialog
 from .plug_diag import PluginsDialog
@@ -86,7 +88,7 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 
 	def openParams( self , filename ) :
 		if not self.closeParams() : return
-		self.params = Params( filename )
+		self.params = Params( filename , treeclass = QNode )
 		self.view_full.clear()
 		self.view_result.clear()
 		self.view_full.add_node( self.params.getroot() )
@@ -114,9 +116,10 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 		self.view_result.clear()
 
 		for n in nodes :
-			plug.process( n )
-			res_nodes = plug.result()
-			for r in res_nodes :
+			plug.process( n.node )
+			lxml_nodes = plug.result()
+			ipk_nodes = self.params.rebuild_tree( lxml_nodes )
+			for r in ipk_nodes :
 				self.view_result.add_node( r )
 
 	def editOnNodes( self , nodes ) :
