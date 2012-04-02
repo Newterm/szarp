@@ -659,7 +659,9 @@ void DrawsController::DatabaseResponse(DatabaseQuery *query) {
 
 void DrawsController::HandleDataResponse(DatabaseQuery *query) {
 	int draw_no = query->draw_no;
-	if (size_t(draw_no) >= m_draws.size()) {
+	if (size_t(draw_no) >= m_draws.size()
+			|| query->value_data.period_type != GetPeriod()
+			|| query->draw_info != m_draws[draw_no]->GetDrawInfo()) {
 		delete query;
 		return;
 	}
@@ -676,7 +678,6 @@ void DrawsController::HandleDataResponse(DatabaseQuery *query) {
 		m_state->NewDataForSelectedDraw();
 
 	delete query;
-
 }
 
 bool DrawsController::GetNoData() {
@@ -684,7 +685,8 @@ bool DrawsController::GetNoData() {
 }
 
 void DrawsController::HandleSearchResponse(DatabaseQuery *query) {
-	m_state->HandleSearchResponse(query);
+	if (query->search_data.period_type == GetPeriod() && GetCurrentDrawInfo() == query->draw_info)
+		m_state->HandleSearchResponse(query);
 	delete query;
 }
 
@@ -876,6 +878,8 @@ void DrawsController::SetRenamed(wxString prefix, wxString from, wxString to, Dr
 }
 
 void DrawsController::Set(DrawSet *set) {
+	if (set == NULL)
+		return;
 
 	DoSet(set);
 
