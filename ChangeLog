@@ -1,3 +1,9 @@
+2012-04-02	Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2/prober_connection.cc: handle properly the
+	case when response from prober is of length "0"
+	* utils/prober: some fixes in dealing with empty parameters -
+	i.e. cases when we have a directory for a param, but no data
+	there
 2012-03-26	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: two small bug fixes
 2012-03-19	Darek Marcinkiewicz <reksio@newterm.pl>

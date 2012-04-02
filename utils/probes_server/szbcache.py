@@ -178,6 +178,8 @@ class SzbCache:
 		if not os.path.isdir(dpath):
 			return (0, -1)
 		first, last = self.search_first_last(dpath)
+		if first == -1:
+			return (0, -1)
 		return ((((endtime - starttime) / self.SZBCACHE_PROBE) + 1) * self.SZBCACHE_SIZE,
 				last)
 
@@ -262,7 +264,7 @@ class SzbCache:
 		"""
 		l = sorted(glob.glob(dirpath + '/[0-9][0-9][0-9][0-9][0-9][0-9]%s' % (self.SZBCACHE_EXT)))
 		if len(l) == 0:
-			return -1
+			return (-1,-1)
 		return (self.index2time(l[0]), self.index2time(l[len(l) - 1], -1) )
 
 	def check_path(self, parampath):
