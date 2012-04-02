@@ -56,9 +56,10 @@ class ParamsEditor( QtCore.QObject ) :
 		if stat != QtCore.QProcess.NormalExit :
 			return 
 
-		node.replace( self.read_file(filename) )
-
-		os.remove(filename)
+		try :
+			node.replace( self.read_file(filename) )
+		finally :
+			os.remove(filename)
 
 	def launch( self , prog , filename , node ) :
 		process = QtCore.QProcess()
