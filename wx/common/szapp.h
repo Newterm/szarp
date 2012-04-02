@@ -76,7 +76,7 @@ public:
 
 	void InitializeLocale(wxString catalog, wxLocale &locale);
 
-	void ShowAbout();
+	void ShowAbout(wxWindow *parent = NULL);
 
 	void SetProgPath(wxString path) { m_path = path; }
 

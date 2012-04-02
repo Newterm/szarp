@@ -41,7 +41,7 @@ class szAboutDlg : public wxDialog {
 	void OnLink(wxTextUrlEvent& event);
 	wxTextCtrl* m_textCtrl;	/**< Main about text control */
 public:
-	szAboutDlg(wxBitmap* bitmap, wxString programName, wxString version, wxString releasedate, wxArrayString authors);
+	szAboutDlg(wxBitmap* bitmap, wxString programName, wxString version, wxString releasedate, wxArrayString authors, wxWindow *parent = NULL);
 };
 
 enum {

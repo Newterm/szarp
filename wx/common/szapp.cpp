@@ -244,7 +244,7 @@ void szAppImpl::InitializeLocale(wxString catalog, wxLocale &locale)
 	InitializeLocale(catalogs, locale);
 }
 
-void szAppImpl::ShowAbout() {
+void szAppImpl::ShowAbout(wxWindow *parent) {
 	wxBitmap bitmap;
 	wxString logoimage = GetSzarpDir();
 
@@ -295,7 +295,7 @@ void szAppImpl::ShowAbout() {
 	authors.Add(wxString(L"Marcin Zalewski") + _(" (logo)"));
 
 
-	wxDialog* dlg = new szAboutDlg(bitmapptr, m_progname, m_version, m_releasedate, authors);
+	wxDialog* dlg = new szAboutDlg(bitmapptr, m_progname, m_version, m_releasedate, authors, parent);
 	if (szFrame::default_icon.IsOk()) {
 		dlg->SetIcon(szFrame::default_icon);
 	}

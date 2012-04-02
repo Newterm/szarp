@@ -631,9 +631,9 @@ wxString DrawGLApp::GetSzarpDir() {
 	return szAppImpl::GetSzarpDir();
 }
 
-void DrawGLApp::ShowAbout()
+void DrawGLApp::ShowAbout(wxWindow *parent)
 {
-	szAppImpl::ShowAbout();
+	szAppImpl::ShowAbout(parent);
 }
 
 void DrawGLApp::SetProgName(wxString str) {

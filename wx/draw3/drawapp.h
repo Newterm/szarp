@@ -72,7 +72,7 @@ public:
 	void SetProgName(wxString str);
 
 	/** Show About dialog */
-	void ShowAbout();
+	void ShowAbout(wxWindow *parent);
 
 	virtual bool OnCmdLineError(wxCmdLineParser &parser)  { return true; }
 

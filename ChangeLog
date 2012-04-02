@@ -1,4 +1,6 @@
 2012-04-02	Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: always show About dialog on top of 
+	the curreent main window
 	* libSzarp2/prober_connection.cc: handle properly the
 	case when response from prober is of length "0"
 	* utils/prober: some fixes in dealing with empty parameters -

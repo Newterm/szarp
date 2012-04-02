@@ -83,7 +83,7 @@ database_manager(dm), m_notebook(NULL), draw_panel(NULL), remarks_handler(remark
 
 void DrawFrame::OnAbout(wxCommandEvent & event)
 {
-	wxGetApp().ShowAbout();
+	wxGetApp().ShowAbout(this);
 }
 
 void DrawFrame::OnHelp(wxCommandEvent & event)

@@ -29,8 +29,8 @@
 
 #include <wx/statline.h>
 
-szAboutDlg::szAboutDlg(wxBitmap* bitmap, wxString programName, wxString version, wxString releasedate, wxArrayString authors) :
-	 wxDialog(NULL, wxID_ANY, _("SZARP About"), wxDefaultPosition, wxSize(10,10), wxTAB_TRAVERSAL | wxFRAME_NO_TASKBAR | wxCAPTION | wxSTAY_ON_TOP | wxCLOSE_BOX)
+szAboutDlg::szAboutDlg(wxBitmap* bitmap, wxString programName, wxString version, wxString releasedate, wxArrayString authors, wxWindow *parent) :
+	 wxDialog(parent, wxID_ANY, _("SZARP About"), wxDefaultPosition, wxSize(10,10), wxTAB_TRAVERSAL | wxFRAME_NO_TASKBAR | wxCAPTION | wxSTAY_ON_TOP | wxCLOSE_BOX)
 {
 
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
