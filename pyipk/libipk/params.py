@@ -42,8 +42,17 @@ class PNode :
 			out = toUtf8( etree.tostring( self.node , pretty_print = True , encoding = 'utf8' , method = 'xml' ) ).partition('\self.node')[0]
 		return out
 
+	def tostring( self ) :
+		return etree.tostring( self.node , pretty_print = True , encoding='utf8' , method = 'xml' , xml_declaration=False )
+
 	def __repr__( self ) :
 		return '('+object.__repr__(self)+','+str(self.node)+')'
+
+	def replace( self , lxmlnode ) :
+		if self.parent != None :
+			self.parent.node.replace( self.node , lxmlnode )
+		self.node = lxmlnode
+		self.__rebuild_children()
 
 	def remove( self , child ) :
 		try :
@@ -90,7 +99,7 @@ class PNode :
 
 	def __rebuild_children( self ) :
 		for i in range(len(self.node)) :
-			if self.children[i].node == self.node[i] :
+			if i < len(self) and self.children[i].node == self.node[i] :
 				continue
 
 			idx = self._index( self.node[i] , i )

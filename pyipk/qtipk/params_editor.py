@@ -44,31 +44,25 @@ class ParamsEditor( QtCore.QObject ) :
 	def get_tmp( self ) :
 		return os.path.join( QtCore.QDir.tempPath(),id_generator() + '.ipkqt.params.xml' )
 
-	def create_file( self , filename , nodes ) :
+	def create_file( self , filename , node ) :
 		with open(filename,'w') as f :
-			for n in nodes :
-				f.write(  etree.tostring( n , pretty_print = True , encoding='utf8' , method = 'xml' , xml_declaration=False ) ) 
+			f.write(  node.tostring() )
 
 	def read_file( self , filename ) :
 		doc = etree.parse( filename )
-		return [ doc.getroot() ]
+		return doc.getroot()
 
-	def on_finish( self , code , stat , filename , nin ) :
+	def on_finish( self , code , stat , filename , node ) :
 		if stat != QtCore.QProcess.NormalExit :
 			return 
 
-		nout = self.read_file( filename )
-
-		self.changedSig.emit()
-
-		for i in range(min(len(nin),len(nout))) :
-			nin[i].getparent().replace(nin[i],nout[i])
+		node.replace( self.read_file(filename) )
 
 		os.remove(filename)
 
-	def launch( self , prog , filename , nodes ) :
+	def launch( self , prog , filename , node ) :
 		process = QtCore.QProcess()
-		process.finished.connect( lambda c , s : self.on_finish(c,s,filename,nodes) )
+		process.finished.connect( lambda c , s : self.on_finish(c,s,filename,node) )
 		args = [filename]
 		if re.search('vim',prog) != None :
 			args.append('--nofork') # nasty hax for gvim which likes to fork after start
@@ -77,15 +71,14 @@ class ParamsEditor( QtCore.QObject ) :
 		return process
 
 	def edit( self , nodes ) :
-		if len(nodes) > 1 :
-			raise NotImplementedError('Too many nodes selected. Currently only one node can be edited.')
+#        if len(nodes) > 1 :
+#            raise NotImplementedError('Too many nodes selected. Currently only one node can be edited.')
 
 		prog = self.get_binary()
 		if prog == None : return
 
-		tmp  = self.get_tmp()
-
-		self.create_file( tmp , nodes )
-
-		self.proc.append( self.launch( prog , tmp , nodes ) )
+		for n in nodes :
+			tmp  = self.get_tmp()
+			self.create_file( tmp , n )
+			self.proc.append( self.launch( prog , tmp , n ) )
 

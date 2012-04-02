@@ -5,6 +5,7 @@
 import unittest
 
 import os , filecmp
+import platform
 
 from lxml import etree
 
@@ -140,6 +141,14 @@ class TestPNode( unittest.TestCase ) :
 		root.insert( 0 , root[0] )
 		self.assertEqTrees()
 
+	def test_replace( self ) :
+		r = self.params.getroot()
+		r[2].replace( etree.Element('cze1') )
+		self.assertEqTrees()
+		
+		r.replace( etree.Element('cze2') )
+		self.assertEqTrees()
+
 	def test_rebuild_one( self ) :
 		r = self.params.getroot().node
 
@@ -194,4 +203,10 @@ class TestPNode( unittest.TestCase ) :
 		self.assertEqual( res[0].node , e )
 		self.assertEqual( res[1] , q )
 		self.assertEqual( res[2] , self.params.getroot() )
+
+	def test_rebuild_insert( self ) :
+		s = self.params.getroot().node[3]
+		s.insert( 0 , etree.Element('cze') )
+		self.params.rebuild_tree()
+		self.assertEqTrees()
 
