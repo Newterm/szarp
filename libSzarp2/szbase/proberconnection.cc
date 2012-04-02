@@ -205,7 +205,7 @@ void ProberConnection::HandleGetFirstLine(const boost::system::error_code &error
 		is >> m_server_time >> length;
 		sz_log(10, "Reading %zu bytes of data, %zu already in buffer", length, m_input_buffer.size());
 		m_values_count = length / 2;
-		if (m_input_buffer.size() == length)
+		if (m_input_buffer.size() >= length)
 			HandleReadValues();
 		else
 			boost::asio::async_read(m_socket,

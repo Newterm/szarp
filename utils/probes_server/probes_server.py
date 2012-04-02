@@ -142,6 +142,10 @@ class GetProducer(Producer):
 		self._paused = False
 		if not self._size is None:
 			self._proto.transport.write("%d %d\n" % (self._last, self._size))
+			if self._size == 0:
+				self.finish()
+				debug("GET PRODUCER FINISH")
+				return
 			self._size = None
 		while not self._paused and self._start < self._end:
 			self._start = self._proto.factory.szbcache.write_data(
