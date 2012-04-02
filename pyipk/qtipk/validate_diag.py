@@ -46,7 +46,7 @@ class ValidateDialog( QtGui.QDialog , Ui_ValidateDialog ) :
 
 		relaxng_doc = etree.parse(self.relax_file)
 		relaxng = etree.RelaxNG(relaxng_doc)
-		if not relaxng.validate( self.params.root ) :
+		if not relaxng.validate( self.params.root.node ) :
 			self.errorText.setPlainText( repr( relaxng.error_log ) )
 		else :
 			self.errorText.setPlainText( 'OK' )
