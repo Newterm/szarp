@@ -29,7 +29,7 @@ class TestModelTree( TestCaseTree ) :
 	def tearDown( self ) :
 		pass
 
-	def test_mulit_node( self ) :
+	def test_multi_node( self ) :
 		self.model.add_node( self.params.getroot()[0] )
 		self.model.add_node( self.params.getroot()[1] )
 		i0 = self.model.index(0,0,QModelIndex()).internalPointer().node
@@ -40,6 +40,9 @@ class TestModelTree( TestCaseTree ) :
 		self.assertEqual( i1 , q1 )
 
 class TestModelTreeDragNDrop( TestCaseTree ) :
+	def getIdx( self , row , parent ) :
+		return self.model.index(row,0,parent)
+
 	def setUp( self ) :
 		self.model = XmlTreeModel()
 		self.params = Params( './tests/params.xml' , treeclass=QNode )
@@ -50,6 +53,8 @@ class TestModelTreeDragNDrop( TestCaseTree ) :
 		self.i00 = self.model.index(0,0,self.i0)
 		self.i01 = self.model.index(1,0,self.i0)
 		self.i02 = self.model.index(2,0,self.i0)
+		self.i000 = self.getIdx(0,self.i00)
+		self.i010 = self.getIdx(0,self.i01)
 
 		self.n0 = self.params.getroot()
 		self.n00 = self.n0[0]
@@ -60,9 +65,6 @@ class TestModelTreeDragNDrop( TestCaseTree ) :
 	
 	def tearDown( self ) :
 		pass
-
-	def getIdx( self , row , parent ) :
-		return self.model.index(row,0,parent)
 
 	def assertQNodeAtIndex( self , row , parent , qnode , msg = None ) :
 		self.assertEqual( self.model.index(row,0,parent).internalPointer().node , qnode , msg )
@@ -110,6 +112,35 @@ class TestModelTreeDragNDrop( TestCaseTree ) :
 		self.assertQNodeAtIndex( 0, self.i00, self.n010 )
 		self.assertQNodeAtIndex( 0, self.i01, self.n000 )
 		self.assertEqQTree(self.n0,self.params.doc.getroot())
+
+	def test_collapse( self ) :
+		self.assertQNodeAtIndex( 0, self.i00, self.n000 )
+		self.assertQNodeAtIndex( 0, self.i01, self.n010 )
+
+		mime = self.model.mimeData( [self.i010] )
+		self.model.dropMimeData( mime , Qt.DropAction , 1, 0, self.i00 )
+
+		self.assertQNodeAtIndex( 0, self.i00, self.n000 )
+		self.assertQNodeAtIndex( 1, self.i00, self.n010 )
+
+		self.model.collapse( self.i00 )
+
+		mime = self.model.mimeData( [self.getIdx(1,self.i00)] )
+		self.model.dropMimeData( mime , Qt.DropAction , -1, 0, self.i01 )
+
+		self.assertQNodeAtIndex( 0, self.i00, self.n000 )
+		self.assertQNodeAtIndex( 0, self.i01, self.n010 )
+
+class TestMultiModelTree( TestCaseTree ) :
+	def setUp( self ) :
+		self.models = [ XmlTreeModel() for i in range(5) ]
+		self.params = Params( './tests/params.xml' , treeclass=QNode )
+
+		for m in self.models :
+			m.add_node( self.params.getroot() )
+	
+	def tearDown( self ) :
+		pass
 
 class TestXmlView( TestCaseTree ) :
 	def setUp( self ) :
