@@ -119,21 +119,29 @@ class PNode :
 
 
 class Params :
-	def __init__( self , filename = None , mode = None , namespaces = None , treeclass = PNode ) :
+	def __init__( self , filename = None , relaxng = None , mode = None , namespaces = None , treeclass = PNode ) :
 		self.filename = filename
+		self.rng_schema = relaxng
+		self.rng_log = None
 		self.changed = False
 		self.doc = None
 		self.treeclass = treeclass
 		self.nsmap = {}
 		if filename :
-			self.open( filename , mode , namespaces , treeclass )
+			try :
+				self.open( filename , relaxng , mode , namespaces , treeclass )
+			except ValueError :
+				pass
 
-	def open( self , filename , mode = None , namespaces = None , treeclass = PNode ) :
+	def open( self , filename , relaxng = None , mode = None , namespaces = None , treeclass = PNode ) :
 		if self.doc :
 			raise IOError('File already opened')
+		self.filename = filename
+		self.rng_schema = relaxng
 		self.doc = etree.parse( filename )
 		self.root = treeclass( self , None , self.doc.getroot() )
 		self.changed = False
+		self.validate_raise()
 
 	def getroot( self ) :
 		return self.root
@@ -145,9 +153,32 @@ class Params :
 		if fn == None : fn = self.filename
 		self.doc.write( fn , pretty_print=True , method = 'xml' , xml_declaration=True , encoding=self.doc.docinfo.encoding )
 		self.changed = False
+		self.validate_raise()
 
 	def close( self ) :
 		return not self.changed 
+
+	def validate( self , schema=None ) :
+		if schema == None :
+			schema = self.rng_schema
+		if schema == None :
+			return True
+
+		relaxng_doc = etree.parse(schema)
+		relaxng = etree.RelaxNG(relaxng_doc)
+		if relaxng.validate( self.root.node ) :
+			self.rng_log = None
+			return True
+		else :
+			self.rng_log = repr( relaxng.error_log )
+			return False
+
+	def validate_raise( self , schema=None ) :
+		if not self.validate( schema ) :
+			raise ValueError("XML doesn't validate")
+
+	def validate_log( self ) :
+		return self.rng_log
 
 	def rebuild_tree( self , nodes = [] ) :
 		''' Rebuilds PNode tree to consits with lxml tree.

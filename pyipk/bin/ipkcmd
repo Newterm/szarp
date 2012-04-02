@@ -12,6 +12,7 @@ from libipk.plugins import Plugins
 from lxml import etree
 
 DEFAULT_PLUGINS = '/opt/szarp/lib/plugins/'
+DEFAULT_RELAXNG = '/opt/szarp/resources/dtd/ipk-params.rng'
 
 class App :
 	def __init__( self ) :
@@ -39,9 +40,24 @@ class App :
 		self.parser.add_option("-b" , "--base" ,
 				metavar="<prefix>" ,
 				help = "SZARP base prefix" )
-		self.parser.add_option("-r" , "--read-only" ,
+		self.parser.add_option("-n" , "--not-validate" ,
+				dest="not_validate" ,
 				action="store_true" ,
-				help = "turn read-only mode (not implemented yet)" )
+				help = "if present params will not be validate with relax-ng schema." )
+		self.parser.add_option("-g" , "--relax-ng" ,
+				dest="relax_ng" ,
+				metavar="<ipk-params.rng>" ,
+				help="specify relax-ng schema. Defaults to %s." % DEFAULT_RELAXNG ,
+				default = DEFAULT_RELAXNG )
+		self.parser.add_option("-w" , "--write" ,
+				action="store_true" ,
+				help = "turns read-write mode" )
+		self.parser.add_option("-q" , "--quiet" ,
+				action="store_true" ,
+				help = "turns quiet mode" )
+		self.parser.add_option("-e" , "--headers" ,
+				action="store_true" ,
+				help = "prints only first line of tag" )
 		self.parser.add_option("" , "--load" ,
 				metavar = "<path>" ,
 				help = "directory where plugins are stored. Defaults to %s." % DEFAULT_PLUGINS ,
@@ -73,16 +89,17 @@ class App :
 
 	def validate_args( self ) :
 
-		if len(self.args) < 1 :
-			self.parser.error("Plugin must be specified.")
 
 		if len(self.args) > 1 :
 			self.parser.error("Unknown options specified.")
 
-		if not self.plugins.available( self.args[0] ) :
-			self.parser.error("No such plugin available. Use -L to list available plugins.")
+		if len(self.args) < 1 :
+			self.plgname = None
+		else :
+			self.plgname = self.args[0]
+			if not self.plugins.available( self.args[0] ) :
+				self.parser.error("No such plugin available. Use -L to list available plugins.")
 
-		self.plgname = self.args[0]
 
 	def ask_for_args( self , args ) :
 		res = {}
@@ -94,9 +111,17 @@ class App :
 		return res
 
 	def print_result( self , nodes ) :
+		if self.options.quiet :
+			return
+		print('')
+		print('')
 		for n in nodes :
+			print('line %d:' % n.getline())
+			if self.options.headers :
+				print( '    ' + n.toline() )
+			else :
+				print( '    ' + n.tostring() )
 			print('')
-			print( '    ' + etree.tostring( n , encoding = 'utf8' , pretty_print = True ) )
 
 	def run( self ) :
 		try :
@@ -114,9 +139,11 @@ class App :
 
 		self.validate_options()
 
-		args = self.ask_for_args( self.plugins.get_args(self.plgname) )
-
-		plg = self.plugins.get( self.plgname , args )
+		if self.plgname != None :
+			args = self.ask_for_args( self.plugins.get_args(self.plgname) )
+			plg = self.plugins.get( self.plgname , args )
+		else :
+			plg = None
 
 		if self.options.params : 
 			paramsfile = self.options.params 
@@ -124,13 +151,30 @@ class App :
 			# TODO: use custom sharp install path
 			paramsfile = "/opt/szarp/" + self.options.base + "/config/params.xml"
 
-		self.params = Params(paramsfile)
+		if self.options.not_validate :
+			relaxng = None
+		else :
+			relaxng = self.options.relax_ng
 
-		plg.process( self.params.root )
+		self.params = Params( paramsfile , relaxng )
 
-		self.print_result( plg.result() )
+		if self.params.validate_log() != None :
+			print '='*10 + 'RelaxNG' + '='*10
+			print self.params.validate_log()
+			print '='*27
 
-		self.params.close()
+		if plg != None :
+			plg.process( self.params.getroot().node )
+			results = self.params.rebuild_tree( plg.result() )
+			self.print_result( results )
+
+		if self.params.close() and self.options.write :
+			try :
+				self.params.save() 
+			except ValueError :
+				print '='*10 + RelaxNG + '='*10
+				print self.params.validate_log()
+				print '='*27
 
 		return 0
 
