@@ -16,7 +16,7 @@ DEFAULT_RELAXNG = '/opt/szarp/resources/dtd/ipk-params.rng'
 
 class App :
 	def __init__( self ) :
-		self.usage = 'usage: $prog [options] <Plugin>'
+		self.usage = 'usage: $prog [options] <Plugin> [<argument>:<value> [...]]'
 
 		self.plugins = Plugins()
 		self.params = None
@@ -89,10 +89,6 @@ class App :
 
 	def validate_args( self ) :
 
-
-		if len(self.args) > 1 :
-			self.parser.error("Unknown options specified.")
-
 		if len(self.args) < 1 :
 			self.plgname = None
 		else :
@@ -100,10 +96,17 @@ class App :
 			if not self.plugins.available( self.args[0] ) :
 				self.parser.error("No such plugin available. Use -L to list available plugins.")
 
-
 	def ask_for_args( self , args ) :
 		res = {}
+		while len(self.args) >= 2 :
+			try :
+				k , v = self.args.pop().split(':')
+				res[k] = v
+			except ValueError :
+				self.parser.error("Invalid argument list")
+
 		for a in args :
+			if a in res : continue
 			if sys.version_info < (3,0) :
 				res[a] = raw_input(a + ": ")
 			else :
