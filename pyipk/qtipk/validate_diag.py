@@ -19,8 +19,6 @@ class ValidateDialog( QtGui.QDialog , Ui_ValidateDialog ) :
 
 		self.setFile( default_relax )
 
-		self.buttonBox.accepted.connect( self.validate )
-
 	def setFile( self , filename ) :
 		self.relax_file = filename
 		self.lineFile.setText( filename )

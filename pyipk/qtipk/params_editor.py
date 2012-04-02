@@ -2,7 +2,7 @@
 import sip
 sip.setapi('QString', 2)
 
-import string , random , os.path , subprocess , re
+import string , random , os.path , subprocess , re , tempfile
 
 from lxml import etree
 
@@ -22,9 +22,6 @@ class OpenWithDialog( QtGui.QDialog , Ui_OpenWithDialog ) :
 	def get_binary( self ) :
 		return self.progInput.text()
 
-def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
-	return ''.join(random.choice(chars) for x in range(size))
-
 class ParamsEditor( QtCore.QObject ) :
 	changedSig = QtCore.pyqtSignal()
 
@@ -42,7 +39,9 @@ class ParamsEditor( QtCore.QObject ) :
 		return None
 
 	def get_tmp( self ) :
-		return os.path.join( QtCore.QDir.tempPath(),id_generator() + '.ipkqt.params.xml' )
+		res = tempfile.mkstemp(suffix='.xml')
+		os.close(res[0])
+		return res[1]
 
 	def create_file( self , filename , node ) :
 		with open(filename,'w') as f :

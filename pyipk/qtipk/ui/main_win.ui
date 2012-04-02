@@ -26,7 +26,7 @@
      <x>0</x>
      <y>0</y>
      <width>364</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -35,6 +35,7 @@
     </property>
     <addaction name="actionOpen"/>
     <addaction name="actionBase"/>
+    <addaction name="actionRemote"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_As"/>
     <addaction name="separator"/>
@@ -101,6 +102,11 @@
   <action name="actionNamespaces">
    <property name="text">
     <string>Namespaces</string>
+   </property>
+  </action>
+  <action name="actionRemote">
+   <property name="text">
+    <string>Remote</string>
    </property>
   </action>
  </widget>
@@ -234,6 +240,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionRemote</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>openRemoteDialog()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>181</x>
+     <y>159</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>openParamsDialog()</slot>
@@ -242,5 +264,6 @@
   <slot>saveAs()</slot>
   <slot>openBaseDialog()</slot>
   <slot>validate()</slot>
+  <slot>openRemoteDialog()</slot>
  </slots>
 </ui>

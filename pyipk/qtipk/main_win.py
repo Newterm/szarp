@@ -15,6 +15,7 @@ from .xml_view import XmlView
 from .xml_diag import XmlDialog
 from .plug_diag import PluginsDialog
 from .base_diag import BaseDialog
+from .remote_diag import RemoteDialog
 from .validate_diag import ValidateDialog
 
 from .params_editor import ParamsEditor
@@ -138,6 +139,11 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 
 	def openBaseDialog( self ) :
 		diag = BaseDialog( self , SZARP_PATH )
+		if diag.exec_() == QtGui.QDialog.Accepted :
+			self.openParams( fromUtf8( diag.selected_params() ) )
+
+	def openRemoteDialog( self ) :
+		diag = RemoteDialog( self , SZARP_PATH )
 		if diag.exec_() == QtGui.QDialog.Accepted :
 			self.openParams( fromUtf8( diag.selected_params() ) )
 
