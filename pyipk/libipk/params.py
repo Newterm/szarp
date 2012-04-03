@@ -8,6 +8,8 @@ try :
 except ImportError :
 	import urllib.parse as up
 
+from StringIO import StringIO
+
 import lxml
 
 from libipk import errors
@@ -127,19 +129,13 @@ class PNode :
 
 
 class Params :
-	def __init__( self , filename = None , relaxng = None , mode = None , namespaces = None , treeclass = PNode ) :
-		self.filename = filename
+	def __init__( self , relaxng = None , namespaces = None , treeclass = PNode ) :
 		self.rng_schema = relaxng
 		self.rng_log = None
 		self.changed = False
 		self.doc = None
 		self.treeclass = treeclass
 		self.nsmap = {}
-		if filename :
-			try :
-				self.open( filename , relaxng , mode , namespaces )
-			except ValueError :
-				pass
 
 	def getroot( self ) :
 		return self.root
@@ -147,24 +143,33 @@ class Params :
 	def touch( self ) :
 		self.changed = True
 
-	def open( self , filename , relaxng = None , mode = None , namespaces = None ) :
-		if self.doc :
+	def open( self , fs ) :
+		if self.doc != None :
 			raise IOError('File already opened')
-		self.filename = filename
-		self.rng_schema = relaxng
-		self.doc = etree.parse( FS_local(filename).filename() )
+		self.fs = fs
+		self.doc = etree.parse( StringIO( fs.read() ) )
 		self.root = self.treeclass( self , None , self.doc.getroot() )
 		self.changed = False
 		self.validate_raise()
 
-	def save( self , fn = None ) :
-		if fn == None : fn = self.filename
-		self.doc.write( fn , pretty_print=True , method = 'xml' , xml_declaration=True , encoding=self.doc.docinfo.encoding )
+	def save( self , fs = None ) :
+		fs = self.fs if fs == None else fs
 		self.changed = False
-		self.validate_raise()
+		try :
+			self.validate_raise()
+		finally :
+			fs.write( etree.tostring( self.doc , pretty_print=True , method = 'xml' , xml_declaration=True , encoding=self.doc.docinfo.encoding ) )
 
 	def close( self ) :
-		return not self.changed 
+		if self.changed :
+			return False
+		self.close_force()
+		return True
+
+	def close_force( self ) :
+		self.doc = None
+		self.root = None
+		self.changed = False
 
 	def validate( self , schema=None ) :
 		if schema == None :
@@ -225,4 +230,9 @@ class Params :
 			except IndexError :
 				return None
 		return node
+
+def params_file( filename , *l , **m ) :
+	p = Params( *l , **m )
+	p.open( FS_local(filename) )
+	return p
 

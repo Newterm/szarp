@@ -10,6 +10,7 @@ import platform
 from lxml import etree
 
 import libipk.params
+from libipk.filesource import FS_local
 
 TMP_FILE = '/tmp/test_pyipk_params.xml'
 
@@ -22,20 +23,20 @@ class TestOpen( unittest.TestCase ) :
 		pass
 
 	def test_construct( self ) :
-		params = libipk.params.Params('tests/params.xml')
+		params = libipk.params.params_file('tests/params.xml')
 		self.assertTrue(True)
 
 	def test_double_open( self ) :
-		params = libipk.params.Params('test/params.xml')
-		self.assertRaises( IOError , params.open , "unknown.xml" )
+		params = libipk.params.params_file('tests/params.xml')
+		self.assertRaises( IOError , params.open , FS_local("unknown.xml") )
 
-	def test_double_open( self ) :
+	def test_fail_open( self ) :
 		params = libipk.params.Params()
-		self.assertRaises( IOError , params.open , "unknown.xml" )
+		self.assertRaises( IOError , params.open , FS_local("unknown.xml") )
 
 class TestTouching( unittest.TestCase ) :
 	def setUp( self ) :
-		self.params = libipk.params.Params('tests/params.xml')
+		self.params = libipk.params.params_file('tests/params.xml')
 
 	def tearDown( self ) :
 		pass
@@ -50,7 +51,7 @@ class TestTouching( unittest.TestCase ) :
 	def test_save( self ) :
 		self.params.touch()
 		self.assertFalse( self.params.close() )
-		self.params.save( TMP_FILE )
+		self.params.save( FS_local(TMP_FILE) )
 		self.assertTrue( self.params.close() )
 
 	def test_touch_node( self ) :
@@ -59,18 +60,18 @@ class TestTouching( unittest.TestCase ) :
 
 class TestSave( unittest.TestCase ) :
 	def setUp( self ) :
-		self.params = libipk.params.Params('tests/params.xml')
+		self.params = libipk.params.params_file('tests/params.xml')
 
 	def tearDown( self ) :
 		os.remove( TMP_FILE )
 
 	def test_save_same( self ) :
-		self.params.save( TMP_FILE )
+		self.params.save( FS_local(TMP_FILE) )
 		self.assertTrue( filecmp.cmp( 'tests/params.xml' , TMP_FILE ) )
 
 class TestParams( unittest.TestCase ) :
 	def setUp( self ) :
-		self.params = libipk.params.Params( './tests/params.xml' )
+		self.params = libipk.params.params_file( './tests/params.xml' )
 	
 	def tearDown( self ) :
 		pass
@@ -105,7 +106,7 @@ class TestParams( unittest.TestCase ) :
 
 class TestPNode( unittest.TestCase ) :
 	def setUp( self ) :
-		self.params = libipk.params.Params( './tests/params.xml' )
+		self.params = libipk.params.params_file( './tests/params.xml' )
 	
 	def tearDown( self ) :
 		pass

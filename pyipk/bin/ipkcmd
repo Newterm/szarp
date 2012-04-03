@@ -6,7 +6,7 @@ import sys
 
 from optparse import OptionParser , OptionGroup 
 
-from libipk.params import Params
+from libipk.params import params_file
 from libipk.plugins import Plugins
 
 from lxml import etree
@@ -159,7 +159,7 @@ class App :
 		else :
 			relaxng = self.options.relax_ng
 
-		self.params = Params( paramsfile , relaxng )
+		self.params = params_file( paramsfile , relaxng )
 
 		if self.params.validate_log() != None :
 			print '='*10 + 'RelaxNG' + '='*10

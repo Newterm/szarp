@@ -14,7 +14,7 @@ from PyQt4.QtCore import Qt , QModelIndex
 
 from qtipk.xml_view import XmlView , XmlTreeModel
 from qtipk.params import QNode , ModelTree
-from libipk.params import Params
+from libipk.params import params_file
 
 from lxml import etree
 
@@ -24,7 +24,7 @@ from .trees import TestCaseTree
 class TestModelTree( TestCaseTree ) :
 	def setUp( self ) :
 		self.model = XmlTreeModel()
-		self.params = Params( './tests/params.xml' , treeclass=QNode )
+		self.params = params_file( './tests/params.xml' , treeclass=QNode )
 	
 	def tearDown( self ) :
 		pass
@@ -45,7 +45,7 @@ class TestModelTreeDragNDrop( TestCaseTree ) :
 
 	def setUp( self ) :
 		self.model = XmlTreeModel()
-		self.params = Params( './tests/params.xml' , treeclass=QNode )
+		self.params = params_file( './tests/params.xml' , treeclass=QNode )
 
 		self.model.add_node( self.params.getroot() )
 
@@ -134,7 +134,7 @@ class TestModelTreeDragNDrop( TestCaseTree ) :
 class TestMultiModelTree( TestCaseTree ) :
 	def setUp( self ) :
 		self.models = [ XmlTreeModel() for i in range(5) ]
-		self.params = Params( './tests/params.xml' , treeclass=QNode )
+		self.params = params_file( './tests/params.xml' , treeclass=QNode )
 
 		for m in self.models :
 			m.add_node( self.params.getroot() )
@@ -150,7 +150,7 @@ class TestXmlView( TestCaseTree ) :
 		self.view = self.xml.view
 		self.model = self.xml.model
 
-		self.params = Params( './tests/params.xml' , treeclass=QNode )
+		self.params = params_file( './tests/params.xml' , treeclass=QNode )
 	
 	def tearDown( self ) :
 		self.app.deleteLater()

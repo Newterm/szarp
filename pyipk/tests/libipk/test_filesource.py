@@ -18,19 +18,27 @@ class TestSsh( unittest.TestCase ) :
 	def setUp( self ) :
 		fd , fn = tempfile.mkstemp()
 		os.close(fd)
-		self.fn = fn
+		self.fn1 = fn
+
+		fd , fn = tempfile.mkstemp()
+		os.close(fd)
+		self.fn2 = fn
 
 	def tearDown( self ) :
-		pass
+		os.remove(self.fn1)
+		os.remove(self.fn2)
 
 	def test_read( self ) :
-		shutil.copyfile( TEST_PARAMS , self.fn )
-		s = fs.FS_ssh( 'localhost' , self.fn )
-		self.assertTrue( filecmp.cmp( self.fn , s.filename() ) )
+		shutil.copyfile( TEST_PARAMS , self.fn1 )
+		s = fs.FS_ssh( '127.0.0.1' , self.fn1 , port = 22 )
+		with open(self.fn2,'w') as f :
+			f.write( s.read() )
+		self.assertTrue( filecmp.cmp( TEST_PARAMS , self.fn2 ) )
 
-	def test_sync( self ) :
-		s = fs.FS_ssh( 'localhost' , self.fn )
-		shutil.copyfile( TEST_PARAMS , s.filename() )
-		s.sync()
-		self.assertTrue( filecmp.cmp( TEST_PARAMS , self.fn ) )
+	def test_write( self ) :
+		shutil.copyfile( TEST_PARAMS , self.fn2 )
+		s = fs.FS_ssh( 'localhost' , self.fn1 )
+		with open(self.fn2,'r') as f :
+			s.write( f.read() )
+		self.assertTrue( filecmp.cmp( TEST_PARAMS , self.fn1 ) )
 

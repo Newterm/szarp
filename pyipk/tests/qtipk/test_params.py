@@ -21,7 +21,7 @@ from .trees import TestCaseTree
 
 class TestModelTree( TestCaseTree ) :
 	def setUp( self ) :
-		self.params = lp.Params( './tests/params.xml' , treeclass = qp.QNode )
+		self.params = lp.params_file( './tests/params.xml' , treeclass = qp.QNode )
 		self.root = self.params.getroot()
 	
 	def tearDown( self ) :
@@ -29,7 +29,7 @@ class TestModelTree( TestCaseTree ) :
 
 class TestQNode( TestCaseTree ) :
 	def setUp( self ) :
-		self.params = lp.Params( './tests/params.xml' , treeclass = qp.QNode )
+		self.params = lp.params_file( './tests/params.xml' , treeclass = qp.QNode )
 	
 	def tearDown( self ) :
 		pass

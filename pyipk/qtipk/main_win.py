@@ -6,7 +6,7 @@ sip.setapi('QString', 2)
 
 from PyQt4 import QtGui , QtCore
 
-from libipk.params import Params
+from libipk.params import Params , params_file
 from libipk.plugins import Plugins
 
 from .params import QNode
@@ -89,7 +89,7 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 
 	def openParams( self , filename ) :
 		if not self.closeParams() : return
-		self.params = Params( filename , treeclass = QNode )
+		self.params = params_file( filename , treeclass = QNode )
 		self.view_full.clear()
 		self.view_result.clear()
 		self.view_full.add_node( self.params.getroot() )
