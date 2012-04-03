@@ -239,3 +239,8 @@ def params_file( filename , *l , **m ) :
 	p.open( FS_local(filename) )
 	return p
 
+def params_fs( fs , *l , **m ) :
+	p = Params( *l , **m )
+	p.open( fs )
+	return p
+

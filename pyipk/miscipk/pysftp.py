@@ -12,8 +12,13 @@ License: BSD  (see http://code.google.com/p/pysftp/source/browse/trunk/LICENSE.t
 """
 
 import os
+import socket
 import tempfile
 import paramiko
+
+from paramiko import SSHException as ConnectionError
+from paramiko import AuthenticationException as AuthenticationError
+from socket   import gaierror as HostNotFoundError
 
 __version__ = "$Rev: 9 $"
 class Connection(object):
@@ -41,6 +46,7 @@ class Connection(object):
                  log = False,
                  ):
         self._sftp_live = False
+        self._transport_live = False
         self._sftp = None
         if not username:
             username = os.environ['LOGNAME']
@@ -53,7 +59,8 @@ class Connection(object):
 
         # Begin the SSH transport.
         self._transport = paramiko.Transport((host, port))
-        self._tranport_live = True
+        self._transport_live = True
+
         # Authenticate the transport. prefer password if given
         if password:
             # Using Password.
@@ -128,9 +135,9 @@ class Connection(object):
             self._sftp.close()
             self._sftp_live = False
         # Close the SSH Transport.
-        if self._tranport_live:
+        if self._transport_live:
             self._transport.close()
-            self._tranport_live = False
+            self._transport_live = False
 
     def __del__(self):
         """Attempt to clean up if not explicitly closed."""

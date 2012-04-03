@@ -6,7 +6,8 @@ sip.setapi('QString', 2)
 
 from PyQt4 import QtGui , QtCore
 
-from libipk.params import Params , params_file
+from libipk.params import params_fs
+from libipk.filesource import FS_local
 from libipk.plugins import Plugins
 
 from .params import QNode
@@ -85,11 +86,11 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 				'XML Files (*.xml);;All (*)' )
 
 		if fn[0] != '' :
-			self.openParams( fromUtf8(fn[0]) )
+			self.openParams( FS_local( fromUtf8(fn[0]) ) )
 
-	def openParams( self , filename ) :
+	def openParams( self , fs ) :
 		if not self.closeParams() : return
-		self.params = params_file( filename , treeclass = QNode )
+		self.params = params_fs( fs , treeclass = QNode )
 		self.view_full.clear()
 		self.view_result.clear()
 		self.view_full.add_node( self.params.getroot() )
@@ -140,12 +141,12 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 	def openBaseDialog( self ) :
 		diag = BaseDialog( self , SZARP_PATH )
 		if diag.exec_() == QtGui.QDialog.Accepted :
-			self.openParams( fromUtf8( diag.selected_params() ) )
+			self.openParams( FS_local(fromUtf8(diag.selected_params())) )
 
 	def openRemoteDialog( self ) :
 		diag = RemoteDialog( self , SZARP_PATH )
 		if diag.exec_() == QtGui.QDialog.Accepted :
-			self.openParams( fromUtf8( diag.selected_params() ) )
+			self.openParams( diag.get_fs() )
 
 	def validate( self ) :
 		self.validateDiag.exec_( self.params )

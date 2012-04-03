@@ -2,12 +2,18 @@
 # -*- coding: utf-8 -*-
 # vim: set fileencoding=utf-8 :
 
+try :
+	from urlparse import urlparse
+except ImportError :
+	from urllib.parse import urlparse
+
 import sys
 
 from optparse import OptionParser , OptionGroup 
 
-from libipk.params import params_file
+from libipk.params import params_fs
 from libipk.plugins import Plugins
+from libipk.filesource import FS_local , FS_ssh , AuthenticationError , ConnectionError , HostNotFoundError
 
 from lxml import etree
 
@@ -40,6 +46,9 @@ class App :
 		self.parser.add_option("-b" , "--base" ,
 				metavar="<prefix>" ,
 				help = "SZARP base prefix" )
+		self.parser.add_option("-u" , "--url" ,
+				metavar="<url>" ,
+				help="url to params.xml file. Currently only file and ssh protocols supported. Url format: protocol://user:password@host:port/path/to/file>" )
 		self.parser.add_option("-n" , "--not-validate" ,
 				dest="not_validate" ,
 				action="store_true" ,
@@ -51,7 +60,7 @@ class App :
 				default = DEFAULT_RELAXNG )
 		self.parser.add_option("-w" , "--write" ,
 				action="store_true" ,
-				help = "turns read-write mode" )
+				help = "writes to original params.xml file after processing" )
 		self.parser.add_option("-q" , "--quiet" ,
 				action="store_true" ,
 				help = "turns quiet mode" )
@@ -82,10 +91,15 @@ class App :
 			sys.exit(0)
 
 	def validate_options( self ) :
-		if self.options.params and self.options.base :
-			self.parser.error("Options --params and --base are mutually exclusive.")
-		if not self.options.params and not self.options.base :
-			self.parser.error("One of --params or --base must be specified.")
+		num = 0
+		if self.options.params : num += 1
+		if self.options.base   : num += 1
+		if self.options.url    : num += 1
+
+		if num > 1 :
+			self.parser.error("Options --params, --base and --url are mutually exclusive.")
+		if num < 1 :
+			self.parser.error("One of --params, --base or --url must be specified.")
 
 	def validate_args( self ) :
 
@@ -116,8 +130,6 @@ class App :
 	def print_result( self , nodes ) :
 		if self.options.quiet :
 			return
-		print('')
-		print('')
 		for n in nodes :
 			print('line %d:' % n.getline())
 			if self.options.headers :
@@ -149,17 +161,38 @@ class App :
 			plg = None
 
 		if self.options.params : 
-			paramsfile = self.options.params 
-		else :
+			fs = FS_local( self.options.params )
+		elif self.options.base :
 			# TODO: use custom sharp install path
-			paramsfile = "/opt/szarp/" + self.options.base + "/config/params.xml"
+			fs = FS_local( "/opt/szarp/" + self.options.base + "/config/params.xml" )
+		elif self.options.url :
+			o = urlparse( self.options.url )
+			if o.scheme == 'file' :
+				fs = FS_local( o.path )
+			elif o.scheme == 'ssh' :
+				try :
+					fs = FS_ssh( o.hostname , o.path , username = o.username , password = o.password , port = o.port if o.port != None else 22 )
+				except AuthenticationError as e :
+					print('Authentication error: %s' % e)
+					return 1
+				except ConnectionError as e:
+					print('Connection error: %s' % e)
+					return 1
+				except HostNotFoundError as e:
+					print('Host not found: %s' % e)
+					return 1
+				except IOError as e:
+					print('File not found: %s' % e)
+					return 1
+			else :
+				self.parser.error("Url protocol not supported")
 
 		if self.options.not_validate :
 			relaxng = None
 		else :
 			relaxng = self.options.relax_ng
 
-		self.params = params_file( paramsfile , relaxng )
+		self.params = params_fs( fs , relaxng )
 
 		if self.params.validate_log() != None :
 			print '='*10 + 'RelaxNG' + '='*10

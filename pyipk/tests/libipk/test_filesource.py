@@ -42,3 +42,10 @@ class TestSsh( unittest.TestCase ) :
 			s.write( f.read() )
 		self.assertTrue( filecmp.cmp( TEST_PARAMS , self.fn1 ) )
 
+	@unittest.skip( "Host finding takes long time, but test should pass." )
+	def test_fail_conn( self ) :
+		self.assertRaises( fs.HostNotFoundError , fs.FS_ssh , 'unknown.local' , self.fn1 , port = 17 )
+
+	def test_fail_auth( self ) :
+		self.assertRaises( fs.AuthenticationError , fs.FS_ssh , 'localhost' , self.fn1 , username = 'root' )
+

@@ -26,7 +26,7 @@
      <x>0</x>
      <y>0</y>
      <width>364</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -107,6 +107,9 @@
   <action name="actionRemote">
    <property name="text">
     <string>Remote</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
    </property>
   </action>
  </widget>
