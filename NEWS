@@ -6,6 +6,22 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.631
+#01.04.2012
+* bug fixes and cleanup of remarks server code
+* fixes for corner cases in communication between szbase and probes
+server 
+* small usalibity improvement in defined param handling - it is now
+possible to add defined param graph into the draws sets without
+specifiying all graph parameters on every time
+* lua optimizer was extened to support multiple assignments
+in one statement
+* small bugfix in draw3 - about dialog was always shown on top
+of first main window, now it is shown on top of the window 
+from which it is opened
+* pyipk application saw significant progress, a lot of new
+features were added
+
 ** 3.1.614
 #01.03.2012
 * reggression fix in combined params calculation
