@@ -60,6 +60,7 @@ Files: opt/szarp/lib/plugins
 #Files: opt/szarp/lib/python*/dist-packages/qtipk*
 Files: usr/lib*/python*/dist-packages/libipk*
 Files: usr/lib*/python*/dist-packages/qtipk*
+Files: usr/lib*/python*/dist-packages/miscipk*
 
 Package: szarp-xsltd
 Files: opt/szarp/resources/xsltd
