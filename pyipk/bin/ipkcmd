@@ -83,7 +83,7 @@ class App :
 			sys.exit(0)
 
 	def print_plugin_help( self ) :
-		if self.options.help_plugin :
+		if self.plgname != None and self.options.help_plugin :
 			print( 'Help for %s:' % self.plgname )
 			print( '' )
 			for h in self.plugins.help(self.plgname).splitlines() :
