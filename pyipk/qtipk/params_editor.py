@@ -51,18 +51,31 @@ class ParamsEditor( QtCore.QObject ) :
 		doc = etree.parse( filename )
 		return doc.getroot()
 
-	def on_finish( self , code , stat , filename , node ) :
+	def on_finish( self , code , stat , prog , filename , node , proc ) :
 		if stat != QtCore.QProcess.NormalExit :
 			return 
 
 		try :
 			node.replace( self.read_file(filename) )
-		finally :
+		except etree.XMLSyntaxError as e :
+			msg = QtGui.QMessageBox( self.parent )
+			msg.setText( 'Invalid XML syntax')
+			msg.setInformativeText( str(e) )
+			msg.setStandardButtons( QtGui.QMessageBox.Retry | QtGui.QMessageBox.Close )
+			msg.setDefaultButton( QtGui.QMessageBox.Close );
+			ret = msg.exec_()
+			if ret == QtGui.QMessageBox.Retry :
+				self.proc.append( self.launch( prog , filename , node ) )
+			else :
+				os.remove(filename)
+		else :
 			os.remove(filename)
+		finally :
+			self.proc.remove( proc )
 
 	def launch( self , prog , filename , node ) :
 		process = QtCore.QProcess()
-		process.finished.connect( lambda c , s : self.on_finish(c,s,filename,node) )
+		process.finished.connect( lambda c , s : self.on_finish(c,s,prog,filename,node,process) )
 		args = [filename]
 		if re.search('vim',prog) != None :
 			args.append('--nofork') # nasty hax for gvim which likes to fork after start
