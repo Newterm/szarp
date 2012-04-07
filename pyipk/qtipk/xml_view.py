@@ -43,11 +43,17 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 
 		runAction = menu.addAction("Run")
 		showAction = menu.addAction("Show")
+		delAction = menu.addAction("Delete")
+		newAction = menu.addAction("Insert new")
+		editnewAction = menu.addAction("Edit new")
 		editAction = menu.addAction("Edit with")
 
 		action = menu.exec_(self.mapToGlobal(event.pos()))
 
 		nodes = [ i.internalPointer().node for i in idxes if i.column() == 0 ]
+
+		def child_elem( node ) :
+			return etree.Element(node.tag+"_child")
 
 		if action == runAction :
 			self.runSig.emit( nodes )
@@ -55,6 +61,14 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 			self.showSig.emit( nodes )
 		elif action == editAction :
 			self.editSig.emit( nodes )
+		elif action == newAction :
+			for n in nodes : n.create_child(child_elem(n.node))
+		elif action == editnewAction :
+			newnodes = [ n.create_child(child_elem(n.node)) for n in nodes ]
+			self.editSig.emit( newnodes )
+		elif action == delAction :
+			for n in nodes : n.delete()
+			
 
 	def set_name( self , name ) :
 		pass

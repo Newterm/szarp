@@ -72,6 +72,7 @@ class PNode :
 			self.children.remove( child )
 			self.node.remove( child.node )
 			child.parent = None
+			self.touch()
 		except ValueError :
 			raise ValueError('That child is not mine: ' + self.toline())
 
@@ -84,6 +85,7 @@ class PNode :
 	def insert( self , pos , child ) :
 		if child in self.children :
 			return
+		if pos < 0 : pos = len(self.children)
 		self.children.insert( pos , child )
 		self.node.insert( pos , child.node )
 		child.parent = self
@@ -91,6 +93,11 @@ class PNode :
 
 	def _insert( self , pos , child ) :
 		pass
+
+	def create_child( self , node ) :
+		n = self.__create( node )
+		self.insert( -1 , n )
+		return n
 
 	def __create( self , node ) :
 		return self.__class__( self.doc , self , node )

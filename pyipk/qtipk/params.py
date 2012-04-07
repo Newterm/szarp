@@ -94,6 +94,7 @@ class ModelTree :
 	def insert( self , row , factory ) :
 		''' inserts new MtNode based on factory function '''
 		self.fill()
+		if row < 0 : row = len(self.children)
 		self.mtmodel.beginInsertRows(
 				self.mtmodel.createIndex(row,0,self) , 
 				row ,
