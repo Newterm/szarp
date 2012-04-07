@@ -11,7 +11,7 @@ import sys
 
 from optparse import OptionParser , OptionGroup 
 
-from libipk.params import params_fs
+from libipk.params import Params
 from libipk.plugins import Plugins
 from libipk.filesource import FS_local , FS_ssh , AuthenticationError , ConnectionError , HostNotFoundError
 
@@ -83,7 +83,7 @@ class App :
 			sys.exit(0)
 
 	def print_plugin_help( self ) :
-		if self.options.help_plugin :
+		if self.plgname != None and self.options.help_plugin :
 			print( 'Help for %s:' % self.plgname )
 			print( '' )
 			for h in self.plugins.help(self.plgname).splitlines() :
@@ -130,6 +130,7 @@ class App :
 	def print_result( self , nodes ) :
 		if self.options.quiet :
 			return
+		print('')
 		for n in nodes :
 			print('line %d:' % n.getline())
 			if self.options.headers :
@@ -192,12 +193,16 @@ class App :
 		else :
 			relaxng = self.options.relax_ng
 
-		self.params = params_fs( fs , relaxng )
-
-		if self.params.validate_log() != None :
+		try :
+			self.params = Params( relaxng )
+			self.params.open( fs )
+		except ValueError :
 			print '='*10 + 'RelaxNG' + '='*10
 			print self.params.validate_log()
 			print '='*27
+		except IOError :
+			print 'File not found: %s' % fs.filename()
+			return 2
 
 		if plg != None :
 			plg.process( self.params.getroot().node )
