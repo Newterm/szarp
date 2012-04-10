@@ -40,7 +40,7 @@
 
 #include "log_prefix.h"
 
-#define LOG_PARAMS_NUMBER 253
+#define LOG_PARAMS_NUMBER 250
 const wchar_t* LOG_PARAMS[LOG_PARAMS_NUMBER][3] = {
 	{ LOG_PREFIX L":draw3:codeedit:size" , L"log" , L"codeedit:size" }, 
 	{ LOG_PREFIX L":draw3:codeedit:clear" , L"log" , L"codeedit:clear" }, 
@@ -62,7 +62,6 @@ const wchar_t* LOG_PARAMS[LOG_PARAMS_NUMBER][3] = {
 	{ LOG_PREFIX L":draw3:codeedit:overtype" , L"log" , L"codeedit:overtype" }, 
 	{ LOG_PREFIX L":draw3:codeedit:readonly" , L"log" , L"codeedit:readonly" }, 
 	{ LOG_PREFIX L":draw3:codeedit:wrapmodeon" , L"log" , L"codeedit:wrapmodeon" }, 
-	{ LOG_PREFIX L":draw3:codeedit:" , L"log" , L"codeedit:" }, 
 	{ LOG_PREFIX L":draw3:codeedit:" , L"log" , L"codeedit:" }, 
 	{ LOG_PREFIX L":draw3:remarks:ok" , L"log" , L"remarks:ok" }, 
 	{ LOG_PREFIX L":draw3:remarks:pass" , L"log" , L"remarks:pass" }, 
@@ -239,7 +238,6 @@ const wchar_t* LOG_PARAMS[LOG_PARAMS_NUMBER][3] = {
 	{ LOG_PREFIX L":draw3:remarks:open" , L"log" , L"remarks:open" }, 
 	{ LOG_PREFIX L":draw3:remarks:close" , L"log" , L"remarks:close" }, 
 	{ LOG_PREFIX L":draw3:remarks:help" , L"log" , L"remarks:help" }, 
-	{ LOG_PREFIX L":draw3:remarks:close" , L"log" , L"remarks:close" }, 
 	{ LOG_PREFIX L":draw3:seldraw:block" , L"log" , L"seldraw:block" }, 
 	{ LOG_PREFIX L":draw3:seldraw:psc" , L"log" , L"seldraw:psc" }, 
 	{ LOG_PREFIX L":draw3:seldraw:doc" , L"log" , L"seldraw:doc" }, 
@@ -253,7 +251,6 @@ const wchar_t* LOG_PARAMS[LOG_PARAMS_NUMBER][3] = {
 	{ LOG_PREFIX L":draw3:statdiag:help" , L"log" , L"statdiag:help" }, 
 	{ LOG_PREFIX L":draw3:statdiag:show" , L"log" , L"statdiag:show" }, 
 	{ LOG_PREFIX L":draw3:statdiag:choice" , L"log" , L"statdiag:choice" }, 
-	{ LOG_PREFIX L":draw3:statdiag:close" , L"log" , L"statdiag:close" }, 
 	{ LOG_PREFIX L":draw3:timewdg:DECADE" , L"log" , L"timewdg:DECADE" }, 
 	{ LOG_PREFIX L":draw3:timewdg:YEAR" , L"log" , L"timewdg:YEAR" }, 
 	{ LOG_PREFIX L":draw3:timewdg:MONTH" , L"log" , L"timewdg:MONTH" }, 
