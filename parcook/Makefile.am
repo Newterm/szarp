@@ -18,6 +18,7 @@ INCLUDES = @XML_CFLAGS@ @LUA_CFLAGS@ \
            -I$(SOURCE_DIR)/../include			\
 	   $(BOOST_CPPFLAGS)				\
 	   $(XMLRPC_EPI_CFLAGS)				\
+	  `python-config --cflags`			\ 
 	   -DPREFIX=\"@prefix@\"
 
 LIBSZARP2 = ../libSzarp2/libSzarp2.la
@@ -83,7 +84,8 @@ bin_PROGRAMS = \
 	      testdmn \
 	      @UNITEDMN@ \
 	      wlkdmn \
-              zmddmn 
+              zmddmn \
+	      pythondmn
 
 EXTRA_PROGRAMS = psetd ddedmn unitedmn dlmsdmn
 
@@ -211,3 +213,6 @@ iecdmn_LDADD = $(LDADD)
 
 prodmn_SOURCES = prodmn.cc
 prodmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
+
+pythondmn_SOURCES = pythondmn.cc
+pythondmn_LDADD = $(LDADD) @BOOST_PYTHON_LIB@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_PYTHON_MODULE) -l@PYTHON_LIB@
