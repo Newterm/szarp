@@ -540,13 +540,14 @@ SZBASE_TYPE
 szb_get_probe(szb_buffer_t * buffer, TParam * param,
 	time_t t, SZARP_PROBE_TYPE probe, int custom_probe)
 {
+    time_t s = szb_round_time(t, probe, custom_probe);
+    time_t e = szb_move_time(s, 1, probe, custom_probe);
 
     return szb_get_avg(buffer, param,
-		szb_round_time(t, probe, custom_probe), //start
-		szb_move_time(t, 1, probe, custom_probe),
+		s , e ,
 		NULL,
 		NULL,
-		probe); //end
+		probe);
 }
 
 #undef NOT_FIXED
