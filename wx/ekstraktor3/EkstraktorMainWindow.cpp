@@ -150,7 +150,7 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 	
 	minimize->SetValue(true);
 			
-	wxStaticBoxSizer *period_box_sizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Type of Average Values"));
+	wxStaticBoxSizer *period_box_sizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Period:"));
 	static_box = period_box_sizer->GetStaticBox();
 	static_box->SetToolTip(_("Sets type of result data"));
 
@@ -167,6 +167,11 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 	period_box_sizer->Add(new wxRadioButton(panel, ID_DayPeriod, _("DAY")), 0, wxEXPAND | wxRIGHT, 20);
 	period_box_sizer->Add(new wxRadioButton(panel, ID_WeekPeriod, _("WEEK")), 0, wxEXPAND | wxRIGHT, 20);
 	period_box_sizer->Add(new wxRadioButton(panel, ID_MonthPeriod, _("MONTH")), 0, wxEXPAND | wxRIGHT, 20);
+
+
+	wxStaticBoxSizer *value_type_box_sizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Values type:"));
+	value_type_box_sizer->Add(new wxRadioButton(panel, ID_Average, _("Average"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP), 0, wxEXPAND | wxRIGHT, 20);
+	value_type_box_sizer->Add(new wxRadioButton(panel, ID_End, _("Counter")), 0, wxEXPAND | wxRIGHT, 20);
 
         sizer_top = new wxBoxSizer(wxVERTICAL);
         sizer1 = new wxBoxSizer(wxHORIZONTAL);
@@ -195,11 +200,12 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 	sizer1_2->Add(separator_box_sizer, 0, wxALL, 5);
 	sizer1_2->Add(minimize, 0, wxALL, 5);
 	sizer1_2->Add(period_box_sizer, 0, wxALL, 5);
+	sizer1_2->Add(value_type_box_sizer, 0, wxALL, 5);
 
 	sizer1_1->Add(new wxStaticText(panel, -1, 
 			_("Parameters to be extracted:"), wxDefaultPosition, wxDefaultSize), 0, wxALL, 5);
 	
-	parametersList = new wxCheckListBox(panel, ID_ListBox, wxDefaultPosition, wxSize(400,200), 0, NULL, wxLB_NEEDED_SB|wxLB_SINGLE);
+	parametersList = new wxListBox(panel, -1, wxDefaultPosition, wxSize(400,200), 0, NULL, wxLB_NEEDED_SB|wxLB_SINGLE);
 	sizer1_1->Add(parametersList, 1, wxALL | wxEXPAND, 5);
 
 	wxButton* add_bt = new wxButton(panel, ID_AddParametersBt, _("Add parameter"));
@@ -395,12 +401,6 @@ void EkstraktorMainWindow::onDeleteParams(wxCommandEvent &event)
 	}
 }
 
-void EkstraktorMainWindow::onParamCheckToggle(wxCommandEvent &event)
-{
-	int pos = event.GetInt();
-	parlist->Check( pos , parametersList->IsChecked(pos) );
-}
-
 void EkstraktorMainWindow::onReadParamListFromFile(wxCommandEvent &event)
 {
 	int i, j;
@@ -437,7 +437,7 @@ void EkstraktorMainWindow::onReadParamListFromFile(wxCommandEvent &event)
 				_("Incorrect parameters"),
 				wxOK);
 	}
-	parlist->FillCheckListBox(parametersList);
+	parlist->FillListBox(parametersList);
 	TestEmpty();
 }
 
@@ -487,9 +487,7 @@ void EkstraktorMainWindow::onWriteResults(wxCommandEvent &event)
 		arguments.params.push_back(SzbExtractor::Param(
 			std::wstring(parametersList->GetString(i).wchar_str()),
 			NULL,
-			parametersList->IsChecked(i) ?
-				SzbExtractor::TYPE_END :
-				SzbExtractor::TYPE_AVERAGE ));
+			selectedValueType ));
 
 	// SET THE REST OF ARGUMENTS ACCORDINGLY
         arguments.start_time = mainWidget->GetStartDate();
@@ -764,6 +762,14 @@ void EkstraktorMainWindow::onSeparatorChange(wxCommandEvent &event) {
 		selectedSeparator = COMMA;
 }
 
+void EkstraktorMainWindow::onAverageTypeSet(wxCommandEvent &event) {
+	selectedValueType = SzbExtractor::TYPE_AVERAGE;
+}
+
+void EkstraktorMainWindow::onEndTypeSet(wxCommandEvent &event) {
+	selectedValueType = SzbExtractor::TYPE_END;
+}
+
 BEGIN_EVENT_TABLE(EkstraktorMainWindow, wxFrame)
 	EVT_MENU(ID_ReadParamListFromFile, EkstraktorMainWindow::onReadParamListFromFile)
 	EVT_MENU(ID_WriteParamListToFile, EkstraktorMainWindow::onWriteParamListToFile)
@@ -780,8 +786,6 @@ BEGIN_EVENT_TABLE(EkstraktorMainWindow, wxFrame)
 	
 	EVT_MENU(ID_About, EkstraktorMainWindow::onAbout)
 
-	EVT_CHECKLISTBOX(ID_ListBox, EkstraktorMainWindow::onParamCheckToggle)
-
 	EVT_RADIOBUTTON(ID_DotSeparator, EkstraktorMainWindow::onSeparatorChange)
 	EVT_RADIOBUTTON(ID_CommaSeparator, EkstraktorMainWindow::onSeparatorChange)
 
@@ -793,6 +797,9 @@ BEGIN_EVENT_TABLE(EkstraktorMainWindow, wxFrame)
 	EVT_RADIOBUTTON(ID_DayPeriod, EkstraktorMainWindow::onPeriodChange)
 	EVT_RADIOBUTTON(ID_WeekPeriod, EkstraktorMainWindow::onPeriodChange)
 	EVT_RADIOBUTTON(ID_MonthPeriod, EkstraktorMainWindow::onPeriodChange)
+
+	EVT_RADIOBUTTON(ID_Average, EkstraktorMainWindow::onAverageTypeSet)
+	EVT_RADIOBUTTON(ID_End, EkstraktorMainWindow::onEndTypeSet)
 
 	EVT_CHECKBOX(ID_Minimize, EkstraktorMainWindow::onMinimize)
 	EVT_BUTTON(ID_ChangeStartDate, EkstraktorMainWindow::onStartDate)

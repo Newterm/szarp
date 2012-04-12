@@ -78,9 +78,10 @@ SZBASE_TYPE SzbExtractor::get_probe( const Param& p , TParam*tp , time_t t , SZA
 	case TYPE_AVERAGE :
 		res = szb_get_avg( p.szb , tp , s , e , NULL , NULL , pt );
 		break;
-	case TYPE_START :
-		res = szb_get_data( p.szb , tp , s );
-		break;
+// Dosent work as expected
+//        case TYPE_START :
+//                res = szb_get_data( p.szb , tp , s );
+//                break;
 	case TYPE_END :
 		res = szb_get_data( p.szb , tp , e );
 		break;

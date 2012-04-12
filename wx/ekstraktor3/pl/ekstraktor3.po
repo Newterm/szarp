@@ -134,8 +134,17 @@ msgid "Turns off printing of empty result lines"
 msgstr "Wy³±cz zapisywanie do pliku pustych linii"
 
 #: EkstraktorMainWindow.cpp:153
-msgid "Type of Average Values"
-msgstr "Rodzaj ¶rednich:"
+msgid "Period:"
+msgstr "Okres:"
+
+msgid "Values type:"
+msgstr "Typ próbek:"
+
+msgid "Average"
+msgstr "¦rednia"
+
+msgid "Counter"
+msgstr "Licznik"
 
 #: EkstraktorMainWindow.cpp:155
 msgid "Sets type of result data"

@@ -50,7 +50,6 @@ class SzbExtractor {
 		/** available params types */
 		typedef enum {
 			TYPE_AVERAGE ,
-			TYPE_START ,
 			TYPE_END ,
 		} ParamType;
 		/** Error codes */

@@ -27,6 +27,7 @@
 #include <wx/progdlg.h>
 #include <wx/cshelp.h>
 
+#include "szbextr/extr.h"
 #include "ids.h" 
 #include "parselect.h"
 #include "htmlview.h"
@@ -84,7 +85,7 @@ class EkstraktorMainWindow : wxFrame
 	wxCheckBox *minimize;
 
 	// LIST OF CHOSEN PARAMETERS
-	wxCheckListBox *parametersList;
+	wxListBox *parametersList;
 				/**< List box for parameters */
 	szParList *parlist;	/**< Object for holding current parameters
 				  list. */
@@ -99,6 +100,7 @@ class EkstraktorMainWindow : wxFrame
 	enum { PERIOD, COMMA } selectedSeparator; /**< selected separator */
 
 	int selectedPeriod;	/**< selected time period*/
+	SzbExtractor::ParamType selectedValueType; /**< selected value type */
 	
 	void onPeriodChange(wxCommandEvent &event);
 	void onSeparatorChange(wxCommandEvent &event);
@@ -112,7 +114,6 @@ class EkstraktorMainWindow : wxFrame
 		void onChooseParams(wxCommandEvent &event);
 		void onAddParams(szParSelectEvent &event);
 		void onDeleteParams(wxCommandEvent &event);
-		void onParamCheckToggle(wxCommandEvent &event);
 		void onReadParamListFromFile(wxCommandEvent &event);
 		void onWriteParamListToFile(wxCommandEvent &event);
 		void onWriteResults(wxCommandEvent &event);
@@ -130,6 +131,8 @@ class EkstraktorMainWindow : wxFrame
 		void onTimeStep(wxCommandEvent &event);
 		void onStartDate(wxCommandEvent &event);
 		void onStopDate(wxCommandEvent &event);
+		void onAverageTypeSet(wxCommandEvent &event);
+		void onEndTypeSet(wxCommandEvent &event);
 
 		void SetStartDate(time_t start_date);
 		void SetStopDate(time_t stop_date);

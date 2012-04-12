@@ -41,8 +41,6 @@ enum EkstraktorMainWindowIDs {
 	ID_About,
 	ID_ContextHelp,
 
-	ID_ListBox,
-
 	ID_DotSeparator,
 	ID_CommaSeparator,
 
@@ -53,6 +51,9 @@ enum EkstraktorMainWindowIDs {
 	ID_DayPeriod,
 	ID_WeekPeriod,
 	ID_MonthPeriod,
+
+	ID_Average,
+	ID_End,
 
 	ID_SeparatorChange,
 	ID_Minimize, 
