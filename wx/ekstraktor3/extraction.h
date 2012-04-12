@@ -44,7 +44,7 @@ struct extr_arguments {
         std::wstring output;
         std::wstring delimiter;
         int progress;
-	std::vector<std::wstring> params;
+	std::vector<SzbExtractor::Param> params;
         std::wstring no_data;
         int empty;
 	std::wstring oo_script;

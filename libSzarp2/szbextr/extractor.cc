@@ -66,14 +66,36 @@ SzbExtractor::~SzbExtractor()
 {
 }
 
-int SzbExtractor::SetParams(const std::vector<std::wstring>& params, std::vector<szb_buffer_t*>& szb)
+SZBASE_TYPE SzbExtractor::get_probe( const Param& p , TParam*tp , time_t t , SZARP_PROBE_TYPE pt , int ct )
+{
+	time_t s = szb_round_time(t, pt, ct);
+	time_t e = szb_move_time(s, 1, pt, ct);
+
+	SZBASE_TYPE res = SZB_NODATA;
+	
+	switch( p.type  )
+	{
+	case TYPE_AVERAGE :
+		res = szb_get_avg( p.szb , tp , s , e , NULL , NULL , pt );
+		break;
+	case TYPE_START :
+		res = szb_get_data( p.szb , tp , s );
+		break;
+	case TYPE_END :
+		res = szb_get_data( p.szb , tp , e );
+		break;
+	}
+
+	return res;
+}
+
+int SzbExtractor::SetParams(const std::vector<Param>& params)
 {
 	this->params = params;
-	this->szbs = szb;
 	params_objects.clear();
 
 	for (size_t i = 0; i < params.size(); i++) {
-		TParam *p = ipk->getParamByName(params[i]);
+		TParam *p = ipk->getParamByName(params[i].name);
 		if ((p == NULL) || (!p->IsReadable()))
 			return i + 1;
 		params_objects.push_back(p);
@@ -187,7 +209,7 @@ SzbExtractor::ExtractToCSV(FILE *output, const std::wstring& delimiter)
     
     for (size_t i = 0; i < params_objects.size(); i++) {
 	// parameter name
-	rc = fprintf(output, "%s%s", SC::S2A(delimiter).c_str(), SC::S2A(params[i]).c_str());
+	rc = fprintf(output, "%s%s", SC::S2A(delimiter).c_str(), SC::S2A(params[i].name).c_str());
     }
     CHECK_RC
 	
@@ -224,7 +246,7 @@ SzbExtractor::ExtractToCSV(FILE *output, const std::wstring& delimiter)
 	    CHECK_CANCEL
 
 	    SZBASE_TYPE data
-		= szb_get_probe(szbs[i], params_objects[i], t, period_type, custom_period);
+		= get_probe(params[i], params_objects[i], t, period_type, custom_period);
 
 	    if (!empty && !no_empty) {
 		/** print previous empty values */
@@ -300,7 +322,7 @@ SzbExtractor::ExtractSum(FILE *output, const std::wstring& delimiter)
 		
 	for (size_t i = 0; i < params.size(); i++) {
 		// nazwa parametru
-		rc = fprintf(output, "%s%s", SC::S2A(params[i]).c_str(), SC::S2A(delimiter).c_str());
+		rc = fprintf(output, "%s%s", SC::S2A(params[i].name).c_str(), SC::S2A(delimiter).c_str());
 	}
 	fprintf(output, "\n");
 	CHECK_RC
@@ -319,7 +341,7 @@ SzbExtractor::ExtractSum(FILE *output, const std::wstring& delimiter)
 			localtime_r(&t, &tm);
 #endif
 			SZBASE_TYPE data
-				= szb_get_probe(szbs[i], params_objects[i], t, period_type, custom_period);
+				= get_probe(params[i], params_objects[i], t, period_type, custom_period);
 			if (!IS_SZB_NODATA(data)) {
 				sum += data;
 			}
@@ -509,7 +531,7 @@ SzbExtractor::ExtractToOOXML(FILE* output)
 	CHECK_RC
 	for (size_t i = 0; i < params.size(); i++) {
 		/* parameter name */
-		xmlChar *name = xmlEncodeSpecialChars(txml, SC::S2U(params[i]).c_str());
+		xmlChar *name = xmlEncodeSpecialChars(txml, SC::S2U(params[i].name).c_str());
 		rc = fprintf(output, "<table:table-cell><text:p>%s</text:p></table:table-cell>\n", name);
 		xmlFree(name);
 		CHECK_RC
@@ -548,7 +570,7 @@ SzbExtractor::ExtractToOOXML(FILE* output)
 		for (size_t i = 0; i < params.size(); i++) {
 			CHECK_CANCEL
 			
-			SZBASE_TYPE data = szb_get_probe(szbs[i], params_objects[i],
+			SZBASE_TYPE data = get_probe(params[i], params_objects[i],
 					t, period_type, custom_period);
 			if (!empty && !no_empty) {
 				/** print previous empty values */
@@ -823,7 +845,7 @@ SzbExtractor::ExtractToXMLWriter(xmlTextWriterPtr writer, const std::wstring& en
 	/* <param/> */
 	rc = xmlTextWriterWriteElement(writer,
 		BAD_CAST "param",
-		SC::S2U(params[i]).c_str());
+		SC::S2U(params[i].name).c_str());
 	CHECK_RC;
     }
     
@@ -867,7 +889,7 @@ SzbExtractor::ExtractToXMLWriter(xmlTextWriterPtr writer, const std::wstring& en
 	for (size_t i = 0; i < params.size(); i++) {
 	    CHECK_CANCEL;
 	    
-	    SZBASE_TYPE data = szb_get_probe(szbs[i], params_objects[i],
+	    SZBASE_TYPE data = get_probe(params[i], params_objects[i],
 		    t, period_type, custom_period);
 	    if (!empty && !no_empty) {
 		/** print previous empty values */

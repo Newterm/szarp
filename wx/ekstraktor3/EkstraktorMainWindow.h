@@ -84,7 +84,7 @@ class EkstraktorMainWindow : wxFrame
 	wxCheckBox *minimize;
 
 	// LIST OF CHOSEN PARAMETERS
-	wxListBox *parametersList;
+	wxCheckListBox *parametersList;
 				/**< List box for parameters */
 	szParList *parlist;	/**< Object for holding current parameters
 				  list. */
@@ -112,6 +112,7 @@ class EkstraktorMainWindow : wxFrame
 		void onChooseParams(wxCommandEvent &event);
 		void onAddParams(szParSelectEvent &event);
 		void onDeleteParams(wxCommandEvent &event);
+		void onParamCheckToggle(wxCommandEvent &event);
 		void onReadParamListFromFile(wxCommandEvent &event);
 		void onWriteParamListToFile(wxCommandEvent &event);
 		void onWriteResults(wxCommandEvent &event);

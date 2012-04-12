@@ -41,6 +41,8 @@ enum EkstraktorMainWindowIDs {
 	ID_About,
 	ID_ContextHelp,
 
+	ID_ListBox,
+
 	ID_DotSeparator,
 	ID_CommaSeparator,
 

@@ -47,6 +47,12 @@
  */
 class SzbExtractor {
 	public:
+		/** available params types */
+		typedef enum {
+			TYPE_AVERAGE ,
+			TYPE_START ,
+			TYPE_END ,
+		} ParamType;
 		/** Error codes */
 		typedef enum {
 			ERR_OK = 0,	/** no error */
@@ -59,6 +65,14 @@ class SzbExtractor {
 			ERR_LOADXSL,	/** error loading XSL stylsheet */
 			ERR_TRANSFORM,	/** error applying XSL stylesheet */
 		} ErrorCode;
+		/** Param description needed by SzbExtractor */
+		struct Param {
+			Param( const std::wstring& n , szb_buffer_t*b , ParamType t ) :
+				name(n) , szb(b) , type(t) {}
+			std::wstring name;
+			szb_buffer_t* szb;
+			ParamType type;
+		};
 		/**
 		 * Constructor. LibXML and LibXSLT should be initialized.
 		 * @param ipk pointer to initialized TSzarpConfig object
@@ -68,6 +82,20 @@ class SzbExtractor {
 		 * Free memory.
 		 */
 		~SzbExtractor();
+
+		/** 
+		 * @brief returns probe value for param
+		 * 
+		 * @param p
+		 * @param tp
+		 * @param t
+		 * @param st
+		 * @param ct
+		 * 
+		 * @return 
+		 */
+		SZBASE_TYPE get_probe( const Param& p , TParam*tp , time_t t , SZARP_PROBE_TYPE st , int ct );
+
 		/**
 		 * Set array of params to extract.
 		 * @param array of param names, may not be NULL; only pointer
@@ -80,7 +108,7 @@ class SzbExtractor {
 		 * found in IPK configuration or with wrong type) starting
 		 * from 1
 		 */
-		int SetParams(const std::vector<std::wstring>& params, std::vector<szb_buffer_t*>& szb);
+		int SetParams(const std::vector<Param>& params);
 		/**
 		 * Set period of time to extract and type of probes.
 		 * @param period_type type of period, one of PT_MIN10,
@@ -309,8 +337,7 @@ class SzbExtractor {
 
 		TSzarpConfig *ipk;	/**< IPK object */
 		szb_buffer_t *szb;	/**< SzarpBase buffer */
-		std::vector<std::wstring> params;		/** array of param names to extract */
-		std::vector<szb_buffer_t*> szbs;	/** array of szarp_base buffer pointers */
+		std::vector<Param> params;		/** array of param names to extract */
 		std::vector<TParam*> params_objects;
 					/**< array of pointers to param objects
 					 */

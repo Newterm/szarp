@@ -522,6 +522,43 @@ void szParList::FillListBox(wxListBox* lbox)
 	}
 }
 
+void szParList::FillCheckListBox(wxCheckListBox* lbox)
+{
+	assert (lbox != NULL);
+	if (xml == NULL)
+		return;
+	lbox->Clear();
+	BindAll();
+	for (xmlNodePtr node = xml->children->children; node; node = node->next) {
+		xmlChar *s = xmlGetProp(node, BAD_CAST "name");
+		xmlAttrPtr b = xmlHasProp(node, BAD_CAST "value");
+		bool byvalue = b != NULL;
+		if (s == NULL)
+			continue;
+		int pos = lbox->Append(SC::U2S(s).c_str(), node->_private);
+		lbox->Check( pos , byvalue );
+		xmlFree(s);
+	}
+}
+
+void szParList::Check( unsigned int pos , bool check )
+{
+	unsigned int i=0;
+	xmlNodePtr node;
+	// find param at position pos
+	for (node = xml->children->children; node; node = node->next) {
+		if( xmlHasProp(node, BAD_CAST "name") != NULL ) ++i;
+		if( i == pos+1 ) break;
+	}
+	// check if its not to far
+	if (!node) return;
+	// set or unset attribute value
+	if (check) 
+		xmlSetProp(node,BAD_CAST "value",BAD_CAST "");
+	else
+		xmlUnsetProp(node,BAD_CAST "value");
+}
+
 class szParListPrintout : public wxPrintout {
 	public:
 	szParListPrintout(szParList* parlist, wxString title);

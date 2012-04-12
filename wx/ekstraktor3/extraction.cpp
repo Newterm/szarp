@@ -71,10 +71,8 @@ int extract(struct extr_arguments arguments,
 	SzbExtractor* extr = new SzbExtractor(ipk);
 	assert (extr != NULL);
 
-	std::vector<szb_buffer_t*> szbs;
-	
         for (unsigned int i = 0; i < arguments.params.size(); i++)
-                szbs.push_back(szb);
+		arguments.params[i].szb = szb;
 
         if (arguments.year < 0)
                 extr->SetPeriod(arguments.probe, arguments.start_time,
@@ -82,7 +80,7 @@ int extract(struct extr_arguments arguments,
         else
                 extr->SetMonth(arguments.probe, arguments.year,
                                 arguments.month, arguments.probe_length);
-        if (extr->SetParams(arguments.params, szbs) 
+        if (extr->SetParams(arguments.params) 
 			> 0) {
                 return -1;
         }

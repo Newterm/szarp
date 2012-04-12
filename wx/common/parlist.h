@@ -229,6 +229,9 @@ public:
 	 * @param lbox wxListBox object to fill
 	 */
 	void FillListBox(wxListBox* lbox);
+	void FillCheckListBox(wxCheckListBox* lbox);
+
+	void Check( unsigned int pos , bool check = true );
 
 	/** 
 	 * Print list of parameters. Currently under Linux kde print tool 'kprinter' 

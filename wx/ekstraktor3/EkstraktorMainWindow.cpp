@@ -199,7 +199,7 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 	sizer1_1->Add(new wxStaticText(panel, -1, 
 			_("Parameters to be extracted:"), wxDefaultPosition, wxDefaultSize), 0, wxALL, 5);
 	
-	parametersList = new wxListBox(panel, -1, wxDefaultPosition, wxSize(400,200), 0, NULL, wxLB_NEEDED_SB|wxLB_SINGLE);
+	parametersList = new wxCheckListBox(panel, ID_ListBox, wxDefaultPosition, wxSize(400,200), 0, NULL, wxLB_NEEDED_SB|wxLB_SINGLE);
 	sizer1_1->Add(parametersList, 1, wxALL | wxEXPAND, 5);
 
 	wxButton* add_bt = new wxButton(panel, ID_AddParametersBt, _("Add parameter"));
@@ -395,6 +395,12 @@ void EkstraktorMainWindow::onDeleteParams(wxCommandEvent &event)
 	}
 }
 
+void EkstraktorMainWindow::onParamCheckToggle(wxCommandEvent &event)
+{
+	int pos = event.GetInt();
+	parlist->Check( pos , parametersList->IsChecked(pos) );
+}
+
 void EkstraktorMainWindow::onReadParamListFromFile(wxCommandEvent &event)
 {
 	int i, j;
@@ -431,7 +437,7 @@ void EkstraktorMainWindow::onReadParamListFromFile(wxCommandEvent &event)
 				_("Incorrect parameters"),
 				wxOK);
 	}
-	parlist->FillListBox(parametersList);
+	parlist->FillCheckListBox(parametersList);
 	TestEmpty();
 }
 
@@ -477,9 +483,14 @@ void EkstraktorMainWindow::onWriteResults(wxCommandEvent &event)
 	struct extr_arguments arguments = getExtrDefaultArguments();
 	// MAKE A LIST OF PARAMETERS FOR extract()
 	arguments.params.clear();
-	for(int i = 0; (unsigned int) i < parametersList->GetCount(); i++) {
-		arguments.params.push_back(std::wstring(parametersList->GetString(i).wchar_str()));
-	}
+	for(int i = 0; (unsigned int) i < parametersList->GetCount(); i++)
+		arguments.params.push_back(SzbExtractor::Param(
+			std::wstring(parametersList->GetString(i).wchar_str()),
+			NULL,
+			parametersList->IsChecked(i) ?
+				SzbExtractor::TYPE_END :
+				SzbExtractor::TYPE_AVERAGE ));
+
 	// SET THE REST OF ARGUMENTS ACCORDINGLY
         arguments.start_time = mainWidget->GetStartDate();
         arguments.end_time = mainWidget->GetStopDate();
@@ -768,6 +779,8 @@ BEGIN_EVENT_TABLE(EkstraktorMainWindow, wxFrame)
 	EVT_MENU(ID_ContextHelp, EkstraktorMainWindow::onShowContextHelp)
 	
 	EVT_MENU(ID_About, EkstraktorMainWindow::onAbout)
+
+	EVT_CHECKLISTBOX(ID_ListBox, EkstraktorMainWindow::onParamCheckToggle)
 
 	EVT_RADIOBUTTON(ID_DotSeparator, EkstraktorMainWindow::onSeparatorChange)
 	EVT_RADIOBUTTON(ID_CommaSeparator, EkstraktorMainWindow::onSeparatorChange)

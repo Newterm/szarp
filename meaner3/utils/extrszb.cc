@@ -141,7 +141,7 @@ struct arguments {
 	char * output;
 	char * delimiter;
 	int progress;
-	std::vector<std::wstring> params;
+	std::vector<SzbExtractor::Param> params;
 	int params_count;
 	par_list * list;
 	char *no_data;
@@ -367,7 +367,11 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 			for (int i = 1; i <= arguments->params_count; i++) {
 				assert (arguments->list != NULL);
 				par_list *tmp = arguments->list->next;
-				arguments->params.push_back(SC::A2S(arguments->list->name).c_str());
+				arguments->params.push_back(
+					SzbExtractor::Param(
+						SC::A2S(arguments->list->name).c_str(),
+						NULL,
+						SzbExtractor::TYPE_AVERAGE ));
 				free(arguments->list);
 				arguments->list = tmp;
 			}
@@ -527,9 +531,8 @@ int main(int argc, char* argv[])
 
 	SzbExtractor * extr = new SzbExtractor(ipk);
 
-	std::vector<szb_buffer_t*> szbs;
 	for (int i = 0; i < arguments.params_count; i++)
-		szbs.push_back(szb);
+		arguments.params[i].szb = szb;
 	
 	assert (extr != NULL);
 	if (arguments.year < 0)
@@ -538,10 +541,10 @@ int main(int argc, char* argv[])
 	else
 		extr->SetMonth(arguments.probe, arguments.year, 
 				arguments.month, arguments.probe_length);
-	if ((err = extr->SetParams(arguments.params, szbs))
+	if ((err = extr->SetParams(arguments.params))
 			> 0) {
 		sz_log(0, "Parameter with name '%s' can not be read", 
-				SC::U2A(SC::S2U(arguments.params[err - 1])).c_str());
+				SC::U2A(SC::S2U(arguments.params[err - 1].name)).c_str());
 		return 1;
 	}
 	extr->SetNoDataString(SC::A2S(arguments.no_data));
