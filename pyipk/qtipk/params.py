@@ -76,7 +76,6 @@ class ModelTree :
 
 	def delete( self ) :
 		''' deletes self from ModelTree structure '''
-#        print 'delete' , self , self.mtmodel , self.node
 		self.mtmodel.beginRemoveRows(
 				self.mtmodel.createIndex(self.row,0,self.parent) , 
 				self.row ,
@@ -99,7 +98,6 @@ class ModelTree :
 				self.mtmodel.createIndex(row,0,self) , 
 				row ,
 				row )
-#        print 'insert' , self , row , len(self.children)
 		child = factory( row )
 		self.children.insert( row , child )
 		self.__update_child( child )
@@ -120,7 +118,6 @@ class QNode( PNode , QtCore.QObject ) :
 
 	def create_mtnode( self , row , mtmodel = None ) :
 		''' factory for ModelTree nodes based on self node '''
-#        print 'create mt' , self
 		mt = ModelTree( self , row ) 
 		self.changedSig.connect( mt.node_changed )
 		self. deleteSig.connect( mt.delete )
@@ -133,14 +130,16 @@ class QNode( PNode , QtCore.QObject ) :
 		PNode.touch( self )
 
 	def delete( self ) :
-#        print 'delsig' , self , self.parent
 		self.deleteSig.emit()
 		PNode.remove( self.parent , self )
 
-	def insert( self , row , child ) :
+	def _remove( self , child ) :
+		child.deleteSig.emit()
+		PNode._remove( self , child )
+
+	def _insert( self , row , child ) :
 		self.insertSig.emit( row , child.create_mtnode )
-		PNode.insert( self , row , child )
-#        print 'insert' , self , self.parent , child , child.parent
+		PNode._insert( self , row , child )
 
 	@classmethod
 	def add_drag( cls , qnode ) :

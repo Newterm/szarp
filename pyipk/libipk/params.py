@@ -69,30 +69,27 @@ class PNode :
 
 	def remove( self , child ) :
 		try :
-			self.children.remove( child )
 			self.node.remove( child.node )
-			child.parent = None
-			self.touch()
+			self._remove( child )
 		except ValueError :
 			raise ValueError('That child is not mine: ' + self.toline())
 
-	def rebuild( self ) :
-		self.__rebuild_children()
-
 	def _remove( self , child ) :
-		pass
+		self.children.remove( child )
+		child.parent = None
+		self.touch()
 
 	def insert( self , pos , child ) :
 		if child in self.children :
 			return
 		if pos < 0 : pos = len(self.children)
-		self.children.insert( pos , child )
 		self.node.insert( pos , child.node )
-		child.parent = self
-		self.touch()
+		self._insert( pos , child )
 
 	def _insert( self , pos , child ) :
-		pass
+		self.children.insert( pos , child )
+		child.parent = self
+		self.touch()
 
 	def create_child( self , node ) :
 		n = self.__create( node )
@@ -101,6 +98,9 @@ class PNode :
 
 	def __create( self , node ) :
 		return self.__class__( self.doc , self , node )
+
+	def rebuild( self ) :
+		self.__rebuild_children()
 
 	def __build_children( self ) :
 		if self.node == None :
@@ -124,15 +124,25 @@ class PNode :
 
 			idx = self._index( self.node[i] , i )
 			if idx >= 0 :
-				self.children[i] , self.children[idx] = \
-					self.children[idx] , self.children[i]
+				# swap children
+				ci   = self.children[i  ]
+				cidx = self.children[idx]
+
+				self._remove( ci   )
+				self._remove( cidx )
+
+				self._insert( i , cidx )
+				self._insert( idx , ci )
 			else :
-				self.children.insert( i , self.__create(self.node[i]) )
+				# insert new child
+				self._insert( i , self.__create(self.node[i]) )
 
 			self.touch()
 
 		if len(self.node) < len(self.children) :
-			del self.children[len(self.node):]
+			# remove additional children
+			torm = list(self.children[len(self.node):])
+			for c in torm : self._remove( c )
 			self.touch()
 
 		for c in self.children : c.rebuild()
