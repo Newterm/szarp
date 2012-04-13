@@ -55,6 +55,8 @@ class EnumerateSubTagAttrib( Plugin ) :
 
 
 class SortTagAttrib( Plugin ) :
+	''' Sorts all children of selected plugins by specified attrib '''
+
 	def set_args( self , **args ) :
 		self.attrib = args['attrib']
 		self.root   = None
@@ -62,6 +64,10 @@ class SortTagAttrib( Plugin ) :
 	@staticmethod
 	def get_args() :
 		return ['attrib']
+
+	@staticmethod
+	def section() :
+		return 'Edit'
 
 	def process( self , root ) :
 		self.root = root

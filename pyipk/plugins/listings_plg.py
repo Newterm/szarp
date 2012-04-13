@@ -94,7 +94,7 @@ class FindAttrib( XPath ) :
 class FindRepeated( Plugin ) :
 	'''Finds tags with repeated attrib values
 
-	  * tag    - xml tag name 
+	  * tag    - xml tag name
 	  * attrib - tag attribute name
 	'''
 	def __init__( self , **args ) :
