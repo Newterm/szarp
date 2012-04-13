@@ -15,6 +15,10 @@ class EnumerateChoosenAttrib( Plugin ) :
 	def get_args() :
 		return ['attrib','start']
 
+	@staticmethod
+	def section() :
+		return 'Edit'
+
 	def process( self , node ) :
 		self.nodes.append(node)
 		node.set(self.attrib,'%d'%self.num)
@@ -34,6 +38,10 @@ class EnumerateSubTagAttrib( Plugin ) :
 	@staticmethod
 	def get_args() :
 		return ['tag','attrib','start']
+
+	@staticmethod
+	def section() :
+		return 'Edit'
 
 	def process( self , root ) :
 		self.root = root

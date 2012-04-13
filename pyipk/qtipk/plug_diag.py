@@ -17,29 +17,32 @@ class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog ) :
 
 		self.plugins = plugins
 		self.fill( self.plugins )
-		self.listView.setSelection( QtCore.QRect(0,0,1,1) , 
-				QtGui.QItemSelectionModel.Select )
 
 		self.args = None
 		self.labs = []
 		self.ents = []
 
 	def fill( self , plugins ) :
-		self.names = list( plugins.names() )
-		self.names.sort()
-		self.listView.setModel( QtGui.QStringListModel( self.names ) )
+		sections = {}
+		for n in plugins.names() :
+			s = plugins.get_section(n)
+			if s not in sections :
+				sections[s] = QtGui.QTreeWidgetItem( self.treeWidget , [s] )
 
-	def selected_index( self ) :
-		return self.listView.currentIndex().row()
+			sections[s].addChild( QtGui.QTreeWidgetItem( [n] ) )
 
 	def selected_name( self ) :
-		return self.names[ self.listView.currentIndex().row() ]
+		idxs = self.treeWidget.selectedItems()
+		return idxs[0].text(0) if len(idxs) > 0 and idxs[0].parent() != None else None
 
 	def selected_args( self ) :
 		return dict( zip( self.args , [ e.text() for e in self.ents ] ) )
 
-	def pluginSelected( self , index ) :
-		name = self.names[ index.row() ]
+	def pluginSelected( self ) :
+		name = self.selected_name()
+
+		# section selected
+		if name == None : return
 
 		self.args = self.plugins.get_args( name )
 		self.textDoc.setText( self.plugins.help( name ) )

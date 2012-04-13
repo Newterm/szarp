@@ -9,6 +9,10 @@ class Plugin :
 		except KeyError as e:
 			raise ValueError('%s: Your argument is invalid: %s' % (self.__class__.__name__,str(e)) )
 
+	@staticmethod
+	def section() :
+		return 'General'
+
 	def set_args( self ) :
 		pass
 

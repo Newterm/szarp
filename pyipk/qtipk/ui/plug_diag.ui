@@ -17,16 +17,24 @@
    <item>
     <layout class="QHBoxLayout" name="hlay_main">
      <item>
-      <widget class="QListView" name="listView">
-       <property name="editTriggers">
-        <set>QAbstractItemView::NoEditTriggers</set>
+      <widget class="QTreeWidget" name="treeWidget">
+       <property name="autoExpandDelay">
+        <number>1200</number>
        </property>
-       <property name="tabKeyNavigation">
+       <property name="indentation">
+        <number>15</number>
+       </property>
+       <property name="animated">
         <bool>true</bool>
        </property>
-       <property name="showDropIndicator" stdset="0">
+       <attribute name="headerVisible">
         <bool>false</bool>
-       </property>
+       </attribute>
+       <column>
+        <property name="text">
+         <string notr="true">1</string>
+        </property>
+       </column>
       </widget>
      </item>
      <item>
@@ -113,18 +121,18 @@
    </hints>
   </connection>
   <connection>
-   <sender>listView</sender>
-   <signal>clicked(QModelIndex)</signal>
+   <sender>treeWidget</sender>
+   <signal>itemSelectionChanged()</signal>
    <receiver>PluginsDialog</receiver>
    <slot>pluginSelected()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>132</x>
-     <y>152</y>
+     <x>110</x>
+     <y>230</y>
     </hint>
     <hint type="destinationlabel">
-     <x>2</x>
-     <y>198</y>
+     <x>5</x>
+     <y>213</y>
     </hint>
    </hints>
   </connection>

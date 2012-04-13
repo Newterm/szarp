@@ -7,6 +7,14 @@ import os , sys , inspect
 import libipk.errors as errors
 import libipk.plugin as plg
 
+def except_no_plugin( func ) :
+	def wrapper( *l , **m ) :
+		try :
+			return func( *l , **m )
+		except KeyError as e :
+			raise errors.NoSuchPlugin( e[0] )
+	return wrapper
+
 class Plugins :
 	def __init__( self ) :
 		self.plugins = {}
@@ -34,17 +42,17 @@ class Plugins :
 				   else :
 					   self.plugins[c[0]] = c[1]
 
+	@except_no_plugin
 	def get( self , name , args = {} ) :
-		try :
-			return self.plugins[name]( **args )
-		except KeyError as e :
-			raise errors.NoSuchPlugin(name)
+		return self.plugins[name]( **args )
 
+	@except_no_plugin
 	def get_args( self , name ) :
-		try :
-			return self.plugins[name].get_args()
-		except KeyError as e :
-			raise errors.NoSuchPlugin(name)
+		return self.plugins[name].get_args()
+
+	@except_no_plugin
+	def get_section( self , name ) :
+		return self.plugins[name].section()
 
 	def available( self , name ) :
 		return name in self.plugins
