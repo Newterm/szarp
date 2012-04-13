@@ -119,10 +119,11 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 
 		for n in nodes :
 			plug.process( n.node )
-			lxml_nodes = plug.result()
-			ipk_nodes = self.params.rebuild_tree( lxml_nodes )
-			for r in ipk_nodes :
-				self.view_result.add_node( r )
+
+		lxml_nodes = plug.result()
+		ipk_nodes = self.params.rebuild_tree( lxml_nodes )
+		for r in ipk_nodes :
+			self.view_result.add_node( r )
 
 	def editOnNodes( self , nodes ) :
 		self.editor.edit( nodes )

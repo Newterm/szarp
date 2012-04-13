@@ -17,6 +17,7 @@ class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog ) :
 
 		self.plugins = plugins
 		self.fill( self.plugins )
+		self.treeWidget.sortItems(0,QtCore.Qt.AscendingOrder)
 
 		self.args = None
 		self.labs = []
