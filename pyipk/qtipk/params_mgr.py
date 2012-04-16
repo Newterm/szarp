@@ -18,6 +18,24 @@ from .params_editor import ParamsEditor
 
 DEFAULT_EDITOR = 'gvim'
 
+class CopyBuffer :
+	def __init__( self ) :
+		self.nodes = None
+
+	def set( self , nodes ) :
+		self.nodes = nodes
+
+	def get( self ) :
+		return self.nodes 
+
+	def pop( self ) :
+		nodes = self.nodes
+		self.nodes = None
+		return nodes
+
+	def __len__( self ) :
+		return 0 if self.nodes == None else 1
+
 class ParamsManager( QtGui.QTabWidget ) :
 	def __init__( self , plugins , parent = None ) :
 		QtGui.QTabWidget.__init__( self , parent )
@@ -27,6 +45,8 @@ class ParamsManager( QtGui.QTabWidget ) :
 
 		self.editor = ParamsEditor( self , DEFAULT_EDITOR )
 		self.editor.changedSig.connect( self.touch_params )
+
+		self.copybuf = CopyBuffer()
 
 		self.plugins = plugins
 		self.paramss = []
@@ -39,8 +59,8 @@ class ParamsManager( QtGui.QTabWidget ) :
 
 		wdg = QtGui.QWidget( self )
 		hlay_xml = QtGui.QHBoxLayout( wdg )
-		view_full = XmlView( 'params' , self )
-		view_result = XmlView( 'result' , self )
+		view_full = XmlView( 'params' , self , self.copybuf )
+		view_result = XmlView( 'result' , self , self.copybuf )
 
 		view_full.changedSig.connect(lambda : self.touch_params(index))
 		view_full.runSig.connect(lambda ns : self.runOnNodes(index,ns))
@@ -89,7 +109,7 @@ class ParamsManager( QtGui.QTabWidget ) :
 			return True
 		else :
 			reply = QtGui.QMessageBox.question(self, 'Message',
-				"Params not saved. Are you sure you want to do this?",
+				"File %s not saved. Are you sure you want to close it?" % str(params.get_filesource()),
 				QtGui.QMessageBox.Yes | QtGui.QMessageBox.No,
 				QtGui.QMessageBox.No)
 

@@ -163,6 +163,9 @@ class Params :
 	def touch( self ) :
 		self.changed = True
 
+	def get_filesource( self ) :
+		return self.fs
+
 	def open( self , fs ) :
 		if self.doc != None :
 			raise IOError('File already opened')
