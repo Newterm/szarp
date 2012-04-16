@@ -104,6 +104,7 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 
 	def clear( self ) :
 		self.beginRemoveRows( QtCore.QModelIndex() , 0 , len(self.roots) )
+		for r in self.roots : r.close()
 		del self.roots[:]
 		self.endRemoveRows()
 

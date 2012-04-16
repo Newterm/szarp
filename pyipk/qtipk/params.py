@@ -43,8 +43,14 @@ class ModelTree :
 				self.add( self.node[i].create_mtnode( i ) )
 
 	def purge( self ) :
-		for c in self.children : c.__disconnect()
+		for c in self.children : c.close()
 		self.children = None
+
+	def close( self ) :
+		self.__disconnect()
+		if self.children != None:
+			for c in self.children : c.close()
+			self.children = None
 
 	def remove( self , child ) :
 		row = child.row
@@ -83,7 +89,7 @@ class ModelTree :
 		self.parent.remove( self )
 		self.parent = None
 		self.mtmodel.endRemoveRows()
-		self.__disconnect()
+		self.close()
 
 	def __disconnect( self ) :
 		self.node.changedSig.disconnect(self.node_changed)
