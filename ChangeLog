@@ -1,3 +1,43 @@
+2012-04-16  Jakub Kotur <qba@newterm.pl>
+	* pyipk/libipk/filesource.py, pyipk/libipk/params.py,
+	pyipk/plugins/simple_plg.py, pyipk/qtipk/main_win.py,
+	pyipk/qtipk/params.py, pyipk/qtipk/params_mgr.py,
+	pyipk/qtipk/remote_diag.py, pyipk/qtipk/ui/base_diag.ui,
+	pyipk/qtipk/ui/main_win.ui, pyipk/qtipk/ui/remote_diag.ui,
+	pyipk/qtipk/xml_view.py: pyipk: handling mulitple params and bugfixes 
+	+ bugfix: rising exception while cannot connect + bugfix: cleaning
+	trees while closing xml_view + dummy plugin for testing and showcase +
+	opening new params in new tabs
+2012-04-13  Jakub Kotur <qba@newterm.pl>
+	* pyipk/libipk/params.py, pyipk/qtipk/params.py: pyipk: fixed xml view 
+	+ now xml view is correctly updated when plugin changes, deletes or
+	inserts nodes
+	* pyipk/plugins/draws_plg.py, pyipk/plugins/edit_plg.py,
+	pyipk/plugins/listings_plg.py, pyipk/plugins/simple_plg.py: pyipk: moar
+	plugins  + new plugins for draws and reports: * removing draws/reports
+	* creating new draws * cleaning up priorities/orders + minor fixes in
+	old plugins
+	* pyipk/qtipk/main_win.py, pyipk/qtipk/plug_diag.py,
+	pyipk/qtipk/ui/base_diag.ui, pyipk/qtipk/ui/main_win.ui,
+	pyipk/qtipk/ui/plug_diag.ui, pyipk/qtipk/ui/xml_view.ui: pyipk: minor
+	fixes  + sorting plugins in plugdialog + result should be taken once
+	per plugin run, not after every node process + corrected windows
+	initial sizes + better size policy in plugins dialog
+	* pyipk/libipk/plugin.py, pyipk/libipk/plugins.py,
+	pyipk/plugins/edit_plg.py, pyipk/qtipk/plug_diag.py,
+	pyipk/qtipk/ui/plug_diag.ui: pyipk: section in plugins  + plugins has
+	now static method get_section which defines its section string + plugin
+	dialog has now tree with sections instead of simple list
+2012-04-12  Jakub Kotur <jakub.kotur@gmail.com>
+	* libSzarp2/szbase/szbbuf.cc: bugfix: szb_get_probe could fail at calc
+	avg  + szb_get_probe was rounding start time and then offsetting time
+	that he get no rounded one. In corner case there was possibility that
+	we were calculating average for almost period*2.
+	* libSzarp2/include/szbextr/, meaner3/utils/extrszb.cc, wx/common/,
+	wx/ekstraktor3/: ekstraktor3: eksport value at and of period  + for
+	every parameter in list one can specify if it should be exported as
+	average or value at end of period + xml for saving list is extended
+	with type (avg/value) for every parameter
 2012-04-02	Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: always show About dialog on top of 
 	the curreent main window
