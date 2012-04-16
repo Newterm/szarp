@@ -19,6 +19,8 @@ from .params import ModelTree
 class XmlView( QtGui.QWidget , Ui_XmlView ) :
 	changedSig = QtCore.pyqtSignal()
 	runSig = QtCore.pyqtSignal( list )
+	copySig = QtCore.pyqtSignal( list )
+	pasteSig = QtCore.pyqtSignal()
 	showSig = QtCore.pyqtSignal( list )
 	editSig = QtCore.pyqtSignal( list )
 
@@ -41,12 +43,17 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 		if len( idxes ) == 0 : return
 		menu = QtGui.QMenu(self)
 
-		runAction = menu.addAction("Run")
-		showAction = menu.addAction("Show")
-		delAction = menu.addAction("Delete")
-		newAction = menu.addAction("Insert new")
-		editnewAction = menu.addAction("Edit new")
-		editAction = menu.addAction("Edit with")
+		runAction     = menu.addAction(stdIcon("system-run"),"Run")
+		menu.addSeparator()
+		copyAction    = menu.addAction(stdIcon("edit-copy"),"Copy")
+		pasteAction    = menu.addAction(stdIcon("edit-paste"),"Paste")
+		cutAction     = menu.addAction(stdIcon("edit-cut"),"Cut")
+		menu.addSeparator()
+		newAction     = menu.addAction(stdIcon("insert-object"),"Insert new")
+		menu.addSeparator()
+		showAction    = menu.addAction(stdIcon("document-print-preview"),"Show")
+		editnewAction = menu.addAction(stdIcon("accessories-text-editor"),"Edit new")
+		editAction    = menu.addAction("Edit with")
 
 		action = menu.exec_(self.mapToGlobal(event.pos()))
 
@@ -57,6 +64,10 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 
 		if action == runAction :
 			self.runSig.emit( nodes )
+		elif action == copyAction :
+			self.copySig.emit( nodes )
+		elif action == pasteAction :
+			self.pasteSig.emit()
 		elif action == showAction :
 			self.showSig.emit( nodes )
 		elif action == editAction :
@@ -66,7 +77,7 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 		elif action == editnewAction :
 			newnodes = [ n.create_child(child_elem(n.node)) for n in nodes ]
 			self.editSig.emit( newnodes )
-		elif action == delAction :
+		elif action == cutAction :
 			for n in nodes : n.delete()
 			
 
