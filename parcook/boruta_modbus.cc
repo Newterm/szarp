@@ -572,8 +572,6 @@ class serial_ascii_parser : public serial_parser {
 	unsigned char update_crc(unsigned char c, unsigned char crc) const;
 	unsigned char finish_crc(unsigned char c) const;
 
-	int from_ascii(unsigned char c1, unsigned char c2, unsigned char &c) const;
-	void to_ascii(unsigned char c, unsigned char& c1, unsigned char &c2) const;
 
 	virtual void read_timer_event();
 public:
@@ -705,22 +703,28 @@ unsigned short bcd_parcook_modbus_val_op::val() {
 		+ (val >> 12) * 1000;
 }
 
+typedef union {
+    int32_t i32;
+    uint16_t u16[2];
+}
+U32;
+
 template<class T> unsigned short long_parcook_modbus_val_op<T>::val() {
-	uint16_t v2[2];
+	U32 v;
 	bool valid;
 
-	v2[1] = m_reg_msw->get_val(valid);
+	v.u16[1] = m_reg_msw->get_val(valid);
 	if (!valid) {
 		dolog(10, "Int value, msw invalid, no_data");
 		return SZARP_NO_DATA;
 	}
-	v2[0] = m_reg_lsw->get_val(valid);
+	v.u16[0] = m_reg_lsw->get_val(valid);
 	if (!valid) {
 		dolog(10, "Int value, lsw invalid, no_data");
 		return SZARP_NO_DATA;
 	}
 
-	int32_t iv = *((int32_t*)v2) * m_prec; 
+	int32_t iv = v.i32 * m_prec; 
 	uint32_t* pv = (uint32_t*) &iv;
 
 	dolog(10, "Int value: %d, unsigned int: %u", iv, *pv);
@@ -1985,46 +1989,6 @@ bool serial_ascii_parser::check_crc() {
 	return crc == frame_crc;
 }
 
-namespace {
-
-int char2value(unsigned char c, unsigned char &o) {
-	if (c >= '0' && c <= '9')
-		o |= (c - '0');
-	else if (c >= 'A' && c <= 'F')
-		o |= (c - 'A' + 10);
-	else
-		return 1;
-	return 0;
-}
-
-}
-
-int serial_ascii_parser::from_ascii(unsigned char c1, unsigned char c2, unsigned char &c) const {
-	c = 0;
-	if (char2value(c1, c))
-		return 1;
-	c <<= 4;
-	if (char2value(c2, c))
-		return 1;
-	return 0;
-}
-
-namespace {
-
-unsigned char value2char(unsigned char c) {
-	if (c <= 9)
-		return '0' + c;
-	else
-		return 'A' + c - 10;
-}
-
-}
-
-void serial_ascii_parser::to_ascii(unsigned char c, unsigned char& c1, unsigned char &c2) const {
-	c1 = value2char(c >> 4);
-	c2 = value2char(c & 0xf);
-}
-
 void serial_ascii_parser::read_data(struct bufferevent* bufev) {
 	unsigned char c;
 	stop_read_timer();
@@ -2042,7 +2006,7 @@ void serial_ascii_parser::read_data(struct bufferevent* bufev) {
 			m_state = ADDR_2;
 			break;
 		case ADDR_2:
-			if (from_ascii(m_previous_char, c, m_sdu.unit_id)) {
+			if (ascii::from_ascii(m_previous_char, c, m_sdu.unit_id)) {
 				dolog(1, "Invalid value received in request");
 				m_serial_handler->error(serial_connection_handler::FRAME_ERROR);
 				m_state = COLON;
@@ -2056,7 +2020,7 @@ void serial_ascii_parser::read_data(struct bufferevent* bufev) {
 			m_state = FUNC_CODE_2; 
 			break;
 		case FUNC_CODE_2:
-			if (from_ascii(m_previous_char, c, m_sdu.pdu.func_code)) {
+			if (ascii::from_ascii(m_previous_char, c, m_sdu.pdu.func_code)) {
 				dolog(1, "Invalid value received in request");
 				m_serial_handler->error(serial_connection_handler::FRAME_ERROR);
 				m_state = COLON;
@@ -2074,7 +2038,7 @@ void serial_ascii_parser::read_data(struct bufferevent* bufev) {
 			}
 			break;
 		case DATA_2:
-			if (from_ascii(m_previous_char, c, c)) {
+			if (ascii::from_ascii(m_previous_char, c, c)) {
 				dolog(1, "Invalid value received in request");
 				m_serial_handler->error(serial_connection_handler::FRAME_ERROR);
 				m_state = COLON;
@@ -2112,7 +2076,7 @@ void serial_ascii_parser::send_sdu(unsigned char unit_id, PDU &pdu, struct buffe
 	bufferevent_write(bufev, const_cast<char*>(":"), 1);
 
 #define SEND_VAL(v) { \
-	to_ascii(v, c1, c2); \
+	ascii::to_ascii(v, c1, c2); \
 	bufferevent_write(bufev, &c1, sizeof(c1)); \
 	bufferevent_write(bufev, &c2, sizeof(c2)); }
 
