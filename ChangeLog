@@ -1,3 +1,7 @@
+2012-04-19 Krzysztof Galazka <kg@newterm.pl>
+	* parcook/{borutadmn.*,boruta_modbus.cc,boruta_lumel.cc}: new driver
+	for lumel protocol in boruta, fixed conversion of 2 shorts in integer,
+	moved ascii helper functions to main daemon code for reuse in lumel
 2012-04-16  Jakub Kotur <qba@newterm.pl>
 	* pyipk/libipk/filesource.py, pyipk/libipk/params.py,
 	pyipk/plugins/simple_plg.py, pyipk/qtipk/main_win.py,
