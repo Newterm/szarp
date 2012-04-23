@@ -62,13 +62,16 @@ class ParamsManager( QtGui.QTabWidget ) :
 		view_full = XmlView( 'params' , self , self.copybuf )
 		view_result = XmlView( 'result' , self , self.copybuf )
 
-		view_full.changedSig.connect(lambda : self.touch_params(index))
-		view_full.runSig.connect(lambda ns : self.runOnNodes(index,ns))
+		views = (view_full,view_result)
+
+		view_full.changedSig.connect( params.touch )
+		view_full.runSig.connect(lambda ns : self.runOnNodes(params,views,ns))
 		view_full.showSig.connect( self.showOnNodes )
 		view_full.editSig.connect( self.editOnNodes )
 		hlay_xml.addWidget( view_full )
 
-		view_result.changedSig.connect(lambda : self.touch_params(index))
+		view_result.changedSig.connect( params.touch )
+		view_result.runSig.connect(lambda ns : self.runOnNodes(params,views,ns))
 		view_result.showSig.connect( self.showOnNodes )
 		view_result.editSig.connect( self.editOnNodes )
 		hlay_xml.addWidget( view_result )
@@ -122,13 +125,12 @@ class ParamsManager( QtGui.QTabWidget ) :
 		params = self.currentParams()
 		if params != None : params.save( filesource )
 
-	def runOnNodes( self , index , nodes ) :
+	def runOnNodes( self , params , views , nodes ) :
 		result = self.openRunDialog()
 		if result == None : return
 
 		plug = self.plugins.get( result[0] , result[1] )
-		params = self.paramss[index]
-		view = self.views[index][1]
+		view = views[1]
 
 		view.clear()
 
