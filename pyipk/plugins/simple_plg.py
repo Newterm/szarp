@@ -24,7 +24,8 @@ class ShowParents( Plugin ) :
 		self.tags = []
 
 	def process( self , root ) :
-		self.tags.append( root.getparent() )
+		if root.getparent() not in self.tags :
+			self.tags.append( root.getparent() )
 
 	def result( self ) :
 		return self.tags

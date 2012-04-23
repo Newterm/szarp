@@ -4,11 +4,12 @@
 
 from libipk.plugin import Plugin
 from lxml import etree
+import operator as op
 
 from functools import reduce
 
-class CorrectAllDraws( Plugin ) :
-	''' Corrects all draws numeration beneath selected nodes '''
+class DrawsNumbering( Plugin ) :
+	''' Corrects all draws numbering beneath selected nodes '''
 
 	def __init__( self , **args ) :
 		Plugin.__init__( self , **args )
@@ -68,7 +69,7 @@ class CorrectAllDraws( Plugin ) :
 
 		return reduce( lambda a , b : a+b , drawslist , [] )
 
-class CorrectSpecifiedDraws( CorrectAllDraws ) :
+class DrawsNumberingSpecified( DrawsNumbering ) :
 	''' Corrects all draws with specified title numeration beneath selected nodes '''
 
 	@staticmethod
@@ -86,6 +87,56 @@ class CorrectSpecifiedDraws( CorrectAllDraws ) :
 
 			self.drawsmap[drawtitle].append( draw )
 
+
+class DrawsColorsCheck( Plugin ) :
+	''' Checks if there are repeated colors in draws if so shows those draws. If drawtitle is empty checks all draws each one separately. '''
+
+	def set_args( self , **args ) :
+		self.drawtitle = args['drawtitle']
+		self.tags      = {}
+
+	@staticmethod
+	def section() : return 'Params'
+
+	@staticmethod
+	def get_args() :
+		return ['drawtitle']
+
+	def process( self , root ) :
+		if self.drawtitle != '' :
+			self.process_single( root , self.drawtitle )
+		else :
+			self.process_all( root )
+
+	def process_single( self , root , title ) :
+		for node in root.xpath( './/ns:draw[@title="%s"]' % (title) , namespaces = { 'ns' : root.nsmap[None] } ) :
+			self.append_tc( title , node.get('color',default='') , node )
+
+	def process_all( self , root ) :
+		for node in root.xpath( './/ns:draw' , namespaces = { 'ns' : root.nsmap[None] } ) :
+			self.append_tc( node.get('title') , node.get('color',default='') , node )
+
+	def append_tc( self , title , color , node ) :
+		if title in self.tags :
+			if color in self.tags[title] :
+				self.tags[title][color].append( node )
+			else :
+				self.tags[title][color] = [node]
+		else :
+			self.tags[title] = { color : [node] }
+
+	def result( self ) :
+		return reduce(
+			lambda a , b :
+				a + (reduce( op.add , b.values() , [] )
+					if reduce(
+						lambda r , i :
+							r or i[0] != '' and len(i[1]) > 1 ,
+						b.items() ,
+						False )
+					else []) ,
+			self.tags.values() ,
+			[] )
 
 class PurgeSubTag( Plugin ) :
 	''' Removes all tags specified by subtag that are children of tag spec by tag '''
