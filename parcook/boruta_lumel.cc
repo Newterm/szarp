@@ -17,7 +17,7 @@
 */
 /*
  * 
- * Krzysztof GaÅ‚Ä…zka <kg@newterm.pl>
+ * Krzysztof Ga³±zka <kg@newterm.pl>
  * 
  */
 /*
@@ -28,7 +28,7 @@
  @class 4
 
  @devices This is a borutadmn subdriver for Lumel protocol.
- @devices.pl Sterownik do demona borutadmn, obsÅ‚ugujÄ…cy protokÃ³Å‚ Lumel.
+ @devices.pl Sterownik do demona borutadmn, obs³uguj±cy protokó³ Lumel.
 
  @description_end
 
