@@ -279,7 +279,7 @@ bool DrawApp::OnInit() {
 			GetSzarpDir().c_str(), 
 			_lang.c_str(),
 			new szMutex());
-	m_cfg_mgr = new ConfigManager(this, IPKContainer::GetObject());
+	m_cfg_mgr = new ConfigManager(GetSzarpDataDir(), IPKContainer::GetObject());
 
 	m_cfg_mgr->SetSplashScreen(splash);
 
@@ -642,12 +642,6 @@ void DrawGLApp::ShowAbout(wxWindow *parent)
 
 void DrawGLApp::SetProgName(wxString str) {
 	szAppImpl::SetProgName(str);
-}
-
-void debug_print_long(wchar_t *l) {
-	FILE * f = fopen("/tmp/draw_debug_print.tmp", "w");
-	fprintf(f, "%ls\n", l);
-	fclose(f);
 }
 
 void DrawApp::HandleEvent(wxEvtHandler *handler, wxEventFunction func, wxEvent& event) const

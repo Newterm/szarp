@@ -50,7 +50,7 @@
 /**
  * Main application class.
  */
-class SCCApp: public szApp
+class SCCApp: public szApp<>
 {
 public:
 	/**Genereates new SCCMenu and provides it to SCCFrame*/

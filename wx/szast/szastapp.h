@@ -32,7 +32,7 @@
 /**
  * Main application class.
  */
-class SzastApp : public szApp
+class SzastApp : public szApp<>
 {
 	/**
 	 * Method called on application start.

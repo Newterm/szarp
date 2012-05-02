@@ -101,9 +101,9 @@ wxFrame(parent, id, title, pos, size,
 
 	m_help = new szHelpController();
 #ifndef MINGW32
-	m_help->AddBook(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDir() + L"/resources/documentation/new/ipk/html/ipk.hhp");
+	m_help->AddBook(dynamic_cast<szAppConfig*>(wxTheApp)->GetSzarpDir() + L"/resources/documentation/new/ipk/html/ipk.hhp");
 #else
-	m_help->AddBook(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDir() + L"\\resources\\documentation\\new\\ipk\\html\\ipk.hhp");
+	m_help->AddBook(dynamic_cast<szAppConfig*>(wxTheApp)->GetSzarpDir() + L"\\resources\\documentation\\new\\ipk\\html\\ipk.hhp");
 #endif
 
 	szHelpControllerHelpProvider* m_provider = new szHelpControllerHelpProvider;
@@ -371,7 +371,7 @@ void ISLFrame::do_disable()
 	}
 }
 
-class ISLEditor:public szApp {
+class ISLEditor:public szApp<> {
  private:
 	wxLocale locale;	/**< locale object */
 	wxString m_config;	/**< path to file with SZARP configuration */

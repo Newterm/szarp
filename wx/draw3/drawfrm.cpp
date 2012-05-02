@@ -53,6 +53,8 @@
 #include "errfrm.h"
 #include "paramslist.h"
 #include "remarks.h"
+#include "remarksfetcher.h"
+#include "remarksdialog.h"
 #include "drawfrm.h"
 #include "drawprint.h"
 #include "probadddiag.h"

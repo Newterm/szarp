@@ -59,6 +59,8 @@
 #include "szframe.h"
 #include "drawfrm.h"
 #include "remarks.h"
+#include "remarksdialog.h"
+#include "remarksfetcher.h"
 #include "drawpnl.h"
 #include "drawapp.h"
 #include "drawtreedialog.h"

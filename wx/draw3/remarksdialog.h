@@ -1,3 +1,5 @@
+#ifndef __REMARKSDIALOG_H__
+#define __REMARKSDIALOG_H__
 /* 
   SZARP: SCADA software 
 
@@ -15,54 +17,35 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/* $Id$
- *
- * raporter3 program
- * SZARP
 
- * pawel@praterm.com.pl
- */
+class RemarksListDialog : public wxDialog {
+	wxListCtrl* m_list_ctrl;
 
-#ifndef __RAP_H__
-#define __RAP_H__
+	RemarksHandler* m_remarks_handler;
 
-#include <wx/wxprec.h>
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
-#ifndef WX_PRECOMP
-#include <wx/wx.h>
-#endif
+	std::vector<Remark> m_displayed_remarks;
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+	void ShowRemark(int index);
 
-#include "szapp.h"
+	DrawFrame* m_draw_frame;
+public:
+	RemarksListDialog(DrawFrame* parent, RemarksHandler *handler);
 
-/**
- * Main app class
- */
-class rapApp: public szApp<> {
-	wxLocale locale;
+	void SetViewedRemarks(std::vector<Remark> &remarks);
 
-	virtual bool OnCmdLineError(wxCmdLineParser &parser);
+	void OnClose(wxCloseEvent& event);
 
-	virtual bool OnCmdLineHelp(wxCmdLineParser &parser);
+	void OnCloseButton(wxCommandEvent& event);
 
-	virtual bool OnCmdLineParsed(wxCmdLineParser &parser);
+	void OnOpenButton(wxCommandEvent& event);
 
-	virtual void OnInitCmdLine(wxCmdLineParser &parser);
-protected:
-	wxString m_server;
+	void OnRemarkItemActivated(wxListEvent &event);
 
-	wxString m_title;
+	void OnHelpButton(wxCommandEvent &event);
 
-	virtual bool OnInit();
-	int OnExit();
+	DECLARE_EVENT_TABLE()
+
 };
 
-
-DECLARE_APP(rapApp);
 
 #endif

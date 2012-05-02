@@ -47,7 +47,7 @@
 /**
  * Main application class.
  */
-class WHApp: public szApp
+class WHApp: public szApp<>
 {
 	/**
 	 * Method called on application start.

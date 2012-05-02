@@ -1930,7 +1930,7 @@ void ProgressFrame::StartSync(bool show, wxArrayString dirList, bool delete_opti
 		passwords[n] = strdup(SC::S2A(sc[*i].second).c_str());
 	}
 
-	wxString _local_dir = dynamic_cast<szApp*>(wxTheApp)->GetSzarpDataDir();
+	wxString _local_dir = dynamic_cast<szAppConfig*>(wxTheApp)->GetSzarpDataDir();
 	char *local_dir = strdup(SC::S2A(_local_dir).c_str());
 
 	m_client->SetOptions(addresses,
@@ -2590,7 +2590,7 @@ void SSCSelectionFrame::LoadDatabases() {
 		}
 	}
 
-	m_config_titles = GetConfigTitles(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDataDir(), &hidden_databases);
+	m_config_titles = GetConfigTitles(dynamic_cast<szAppConfig*>(wxTheApp)->GetSzarpDataDir(), &hidden_databases);
 	for (ConfigNameHash::iterator i = m_config_titles.begin(); i != m_config_titles.end(); i++)
 		m_databases.Add(i->first);
 
