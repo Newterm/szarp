@@ -230,9 +230,9 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 
 	m_help = new szHelpController;
 #ifndef MINGW32
-	m_help->AddBook(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDir() + L"/resources/documentation/new/ekstraktor3/html/ekstraktor3.hhp");
+	m_help->AddBook(dynamic_cast<szAppConfig*>(wxTheApp)->GetSzarpDir() + L"/resources/documentation/new/ekstraktor3/html/ekstraktor3.hhp");
 #else
-	m_help->AddBook(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDir() + L"\\resources\\documentation\\new\\ekstraktor3\\html\\ekstraktor3.hhp");
+	m_help->AddBook(dynamic_cast<szAppConfig*>(wxTheApp)->GetSzarpDir() + L"\\resources\\documentation\\new\\ekstraktor3\\html\\ekstraktor3.hhp");
 #endif
 	szHelpControllerHelpProvider* m_provider = new szHelpControllerHelpProvider;
 	wxHelpProvider::Set(m_provider);

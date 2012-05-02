@@ -1,6 +1,6 @@
-/*
-  SZARP: SCADA software
-
+/* 
+  SZARP: SCADA software 
+  
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -17,16 +17,16 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
- * ekstrakta3 program
+ * draw3
  * SZARP
-
- * vooyeck@praterm.com.pl
-
+ 
+ * Paweł Pałucha pawel@praterm.com.pl
+ *
  * $Id$
  */
 
-#ifndef __EKSTRAKTOR3__H_
-#define __EKSTRAKTOR3__H_
+#ifndef __TESTAPP_H__
+#define __TESTAPP_H__
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include <wx/wxprec.h>
@@ -35,40 +35,41 @@
 #endif
 #ifndef WX_PRECOMP
 #include <wx/wx.h>
+#include <wx/glcanvas.h>
 #endif
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include <map>
 
-#include <wx/cmdline.h>
-#include <wx/filename.h>
-#include <wx/config.h>
-#include <wx/tokenzr.h>
-#include "libpar.h"
-
-// the application widget
-#include "EkstraktorWidget.h"
-#include "geometry.h"
-#include "cconv.h"
 #include "szapp.h"
-#include "cfgdlg.h"
-#include "version.h"
+#include "singleinstance.h"
+#include "szhlpctrl.h"
 
-/**
- * Main application class.
- */
+#include "wxlogging.h"
 
-class EkstrApp: public szApp<>
+class TestApp : public szApp<wxAppConsole>
 {
-	wxLocale locale;
+			/**<Object representing thread that executes queries*/
+	QueryExecutor* m_executor;
 
-	wxString base;
+			/**Database manager object*/
+	DatabaseManager* m_dbmgr;
 
-	wxString geometry;
-  protected:
+			/**Queries queue*/
+	DatabaseQueryQueue* m_db_queue;
+
+			/**Remarks handling object*/
+	RemarksHandler* m_remarks_handler;
+
+	ConfigManager *m_cfg_mgr;
+
+	void StopThreads();
+public:
+	virtual int OnRun();
+
 	virtual bool OnInit();
-  public:
+
+	virtual int OnExit();
+
 	virtual bool OnCmdLineError(wxCmdLineParser &parser);
 
 	virtual bool OnCmdLineHelp(wxCmdLineParser &parser);
@@ -76,8 +77,12 @@ class EkstrApp: public szApp<>
 	virtual bool OnCmdLineParsed(wxCmdLineParser &parser);
 
 	virtual void OnInitCmdLine(wxCmdLineParser &parser);
-}; 
 
-DECLARE_APP(EkstrApp)
+	TestApp();
 
-#endif //__EKSTRAKTOR3__H_
+	virtual ~TestApp();
+};
+
+DECLARE_APP(TestApp)
+
+#endif

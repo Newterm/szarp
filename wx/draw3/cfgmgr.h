@@ -414,7 +414,7 @@ class ConfigManager
 {
     public:
 	/** Default constructor, does nothing. */
-	ConfigManager(DrawApp* app, IPKContainer *ipk_container);
+	ConfigManager(wxString szarp_data_dir, IPKContainer *ipk_container);
 	
 	/** Loads configuration for given base name 
 	 * @param prefix prefix of configration to load
@@ -542,8 +542,7 @@ protected:
 	/**@return all configus prefixes*/
 	wxArrayString GetPrefixes();
 
-	/** Pointer to szApp which use this manager */
-	DrawApp* m_app;
+	wxString m_szarp_data_dir;
 	
 	/** Container for a IPKs */
 	IPKContainer *m_ipks;

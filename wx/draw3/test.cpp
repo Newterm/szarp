@@ -1,5 +1,6 @@
 /* 
   SZARP: SCADA software 
+  
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -15,54 +16,15 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/* $Id$
- *
- * raporter3 program
+/*
+ * draw3 program
  * SZARP
-
- * pawel@praterm.com.pl
+ 
+ * $Id$
  */
 
-#ifndef __RAP_H__
-#define __RAP_H__
+#include "classes.h"
+#include "testapp.h"
 
-#include <wx/wxprec.h>
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
-#ifndef WX_PRECOMP
-#include <wx/wx.h>
-#endif
+IMPLEMENT_APP_CONSOLE(TestApp);
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include "szapp.h"
-
-/**
- * Main app class
- */
-class rapApp: public szApp<> {
-	wxLocale locale;
-
-	virtual bool OnCmdLineError(wxCmdLineParser &parser);
-
-	virtual bool OnCmdLineHelp(wxCmdLineParser &parser);
-
-	virtual bool OnCmdLineParsed(wxCmdLineParser &parser);
-
-	virtual void OnInitCmdLine(wxCmdLineParser &parser);
-protected:
-	wxString m_server;
-
-	wxString m_title;
-
-	virtual bool OnInit();
-	int OnExit();
-};
-
-
-DECLARE_APP(rapApp);
-
-#endif

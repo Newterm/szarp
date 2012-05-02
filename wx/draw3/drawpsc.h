@@ -43,7 +43,7 @@ class DrawPscSystemConfigurationEditor {
 
 	DrawPsc *m_draw_psc;
 public:
-	static DrawPscSystemConfigurationEditor* Create(IPKConfig *ipk, DrawPsc *psc);
+	static DrawPscSystemConfigurationEditor* Create(wxString szarp_data_dir, IPKConfig *ipk, DrawPsc *psc);
 	void SetSettableParams(IPKConfig *cfg);
 	void SetSpeedAndUnitNames(IPKConfig *cfg);
 
@@ -64,9 +64,11 @@ class DrawPsc {
 	wxString m_username;
 	wxString m_password;
 	wxDateTime m_last_fetch;
+	wxString m_szarp_data_dir;
 
 	std::map<wxString, DrawPscSystemConfigurationEditor*> m_editors;
 public:
+	DrawPsc(wxString szarp_data_dir);
 	void SetAuthData(wxString username, wxString password, wxDateTime last_fetch);
 	void GetAuthData(wxString& username, wxString& password, wxDateTime& last_fetch);
 	void ConfigurationLoaded(IPKConfig *ipk);
