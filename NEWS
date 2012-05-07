@@ -6,6 +6,18 @@
 # Empty lines are ignored.
 # $Id$
 
+** 3.1.647
+# 01.05.2012
+* new boruta plugin for Lumel meters
+* new boruta plugin for tensometric scales
+* further developments of pyipk:
+  - plugins to manipulate reports and sets
+  - support for simultaneous editing of multiple params.xml
+  - params.xml can be edited over ssh connection
+  - added plugin that checks if colors repeat in draw3 sets
+* ekstraktor3 now supports extraction of "counter" values - it
+  is possible to request extraction of last value of a parameter
+  for a given period
 ** 3.1.631
 #01.04.2012
 * bug fixes and cleanup of remarks server code
