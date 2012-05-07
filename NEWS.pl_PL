@@ -7,6 +7,20 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.647
+# 01.05.2012
+* nowy plugin dla demona boruta obs³uguj±cy komunikacje z licznikami Lumel
+* nowy plugin dla boruty obs³uguj±cy komunikacjê z wagami tensometrycznymi
+* dalszy rozwój pyipk:
+ - dodano plugin do manipulaowania zestawami wykresów oraz raportami
+ - wsparcie dla równoczesnej edycji kilku plików params.xml
+ - plik params.xml mo¿e byæ edytowany przez po³±czenie ssh
+ - dodano plugin sprawdzaj±cy czy w zestawach wykresów nie powtarzaj± siê 
+   kolory
+* ekstraktor3 pozwala na ekstrakcjê warto¶ci "licznikowych" dla których 
+  wyci±gana jest ostatnia warto¶æ parametru dla zadanego czasu
+  (w odró¿nieniu od warto¶ci standardowych gdzie dla zadanego okresu czasu
+  wyci±gana jest ¶rednia warto¶æ parametru)
 ** 3.1.631
 #01.04.2012
 * kod serwera komentarzy zosta³ w du¿ej mierze przepisany, kod jest
