@@ -6,6 +6,8 @@ sip.setapi('QString', 2)
 
 import string
 
+from copy import copy
+
 from PyQt4 import QtGui , QtCore
 
 from lxml import etree
@@ -22,9 +24,11 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 	showSig = QtCore.pyqtSignal( list )
 	editSig = QtCore.pyqtSignal( list )
 
-	def __init__( self , name , parent ) :
+	def __init__( self , name , parent , buf = None ) :
 		QtGui.QWidget.__init__( self , parent )
 		self.setupUi(self)
+
+		self.copybuf = buf 
 
 		self.model = XmlTreeModel()
 		self.view.setModel( self.model )
@@ -39,35 +43,53 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 		idxes = self.view.selectedIndexes()
 
 		if len( idxes ) == 0 : return
-		menu = QtGui.QMenu(self)
-
-		runAction = menu.addAction("Run")
-		showAction = menu.addAction("Show")
-		delAction = menu.addAction("Delete")
-		newAction = menu.addAction("Insert new")
-		editnewAction = menu.addAction("Edit new")
-		editAction = menu.addAction("Edit with")
-
-		action = menu.exec_(self.mapToGlobal(event.pos()))
 
 		nodes = [ i.internalPointer().node for i in idxes if i.column() == 0 ]
+		menu = QtGui.QMenu(self)
+
+		runAction     = menu.addAction(stdIcon("system-run"),"Run")
+		menu.addSeparator()
+		copyAction    = menu.addAction(stdIcon("edit-copy"),"Copy")
+		pasteAction   = menu.addAction(stdIcon("edit-paste"),"Paste")
+		cutAction     = menu.addAction(stdIcon("edit-cut"),"Cut")
+		menu.addSeparator()
+		deleteAction  = menu.addAction(stdIcon("list-remove"),"Remove")
+		newAction     = menu.addAction(stdIcon("list-add"),"Insert new")
+		menu.addSeparator()
+		showAction    = menu.addAction(stdIcon("document-print-preview"),"Show")
+		editnewAction = menu.addAction(stdIcon("accessories-text-editor"),"Edit new")
+		editAction    = menu.addAction("Edit with")
+
+
+		pasteAction.setEnabled(len(self.copybuf) > 0 and len(nodes) == 1)
+
+		action = menu.exec_(self.mapToGlobal(event.pos()))
 
 		def child_elem( node ) :
 			return etree.Element(node.tag+"_child")
 
 		if action == runAction :
 			self.runSig.emit( nodes )
+		elif action == copyAction :
+			self.copybuf.set( nodes )
+		elif action == pasteAction :
+			nnodes = self.copybuf.get()
+			for n in nnodes :
+				nodes[0].create_child( copy(n.node) )
+		elif action == cutAction :
+			self.copybuf.set( nodes )
+			for n in nodes : n.delete()
 		elif action == showAction :
 			self.showSig.emit( nodes )
 		elif action == editAction :
 			self.editSig.emit( nodes )
+		elif action == deleteAction :
+			for n in nodes : n.delete()
 		elif action == newAction :
 			for n in nodes : n.create_child(child_elem(n.node))
 		elif action == editnewAction :
 			newnodes = [ n.create_child(child_elem(n.node)) for n in nodes ]
 			self.editSig.emit( newnodes )
-		elif action == delAction :
-			for n in nodes : n.delete()
 			
 
 	def set_name( self , name ) :
@@ -81,6 +103,9 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 		self.model.add_node( node )
 		self.view.update()
 		self.update()
+
+	def set_buf( self , buf ) :
+		self.copybuf = buf
 
 class DragInfo :
 	def __init__( self , node , nodeidx , parent ) :
@@ -104,6 +129,7 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 
 	def clear( self ) :
 		self.beginRemoveRows( QtCore.QModelIndex() , 0 , len(self.roots) )
+		for r in self.roots : r.close()
 		del self.roots[:]
 		self.endRemoveRows()
 

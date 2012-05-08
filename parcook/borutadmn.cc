@@ -389,6 +389,7 @@ protocols::protocols() {
 	m_tcp_server_factories["modbus"] = create_modbus_tcp_server;
 	m_serial_server_factories["modbus"] = create_modbus_serial_server;
 	m_serial_client_factories["fp210"] = create_fp210_serial_client;
+	m_serial_client_factories["lumel"] = create_lumel_serial_client;
 	m_tcp_client_factories["wmtp"] = create_wmtp_tcp_client;
 }
 
@@ -496,7 +497,7 @@ void serial_connection::connection_error_cb(struct bufferevent *ev, short event,
 }
 
 void client_manager::finished_cycle() {
-	dolog(10, "client_manager, starting new cycle");
+	dolog(10, "client_manager::finished_cycle");
 	for (std::vector<std::vector<client_driver*> >::iterator i = m_connection_client_map.begin();
 			i != m_connection_client_map.end();
 			i++) 
@@ -1178,3 +1179,39 @@ void dolog(int level, const char * fmt, ...) {
 	}
 
 } 
+
+namespace ascii {
+
+int char2value(unsigned char c, unsigned char &o) {
+	if (c >= '0' && c <= '9')
+		o |= (c - '0');
+	else if (c >= 'A' && c <= 'F')
+		o |= (c - 'A' + 10);
+	else
+		return 1;
+	return 0;
+}
+
+int from_ascii(unsigned char c1, unsigned char c2, unsigned char &c) {
+	c = 0;
+	if (char2value(c1, c))
+		return 1;
+	c <<= 4;
+	if (char2value(c2, c))
+		return 1;
+	return 0;
+}
+
+unsigned char value2char(unsigned char c) {
+	if (c <= 9)
+		return '0' + c;
+	else
+		return 'A' + c - 10;
+}
+
+void to_ascii(unsigned char c, unsigned char& c1, unsigned char &c2) {
+	c1 = value2char(c >> 4);
+	c2 = value2char(c & 0xf);
+}
+
+}

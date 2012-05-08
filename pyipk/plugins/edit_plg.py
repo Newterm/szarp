@@ -1,5 +1,7 @@
 from libipk.plugin import Plugin
 
+import string
+
 from lxml import etree
 
 class EnumerateChoosenAttrib( Plugin ) :
@@ -55,11 +57,11 @@ class EnumerateSubTagAttrib( Plugin ) :
 
 
 class SortTagAttrib( Plugin ) :
-	''' Sorts all children of selected plugins by specified attrib '''
+	''' Sorts all children of selected tags by specified attrib. Children with no such attrib are grouped at front in undefined order. '''
 
 	def set_args( self , **args ) :
 		self.attrib = args['attrib']
-		self.root   = None
+		self.roots  = []
 
 	@staticmethod
 	def get_args() :
@@ -70,10 +72,10 @@ class SortTagAttrib( Plugin ) :
 		return 'Edit'
 
 	def process( self , root ) :
-		self.root = root
-		root[:] = sorted(root,key=lambda n:n.get(self.attrib))
+		self.roots.append(root)
+		root[:] = sorted(root,key=lambda n:string.lower(n.get(self.attrib,default='')))
 
 	def result( self ) :
-		return [ self.root ] if self.root != None else []
+		return self.roots
 
 

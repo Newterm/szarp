@@ -471,6 +471,8 @@ tcp_server_driver* create_modbus_tcp_server();
 
 serial_client_driver* create_fp210_serial_client();
 
+serial_client_driver* create_lumel_serial_client();
+
 tcp_client_driver* create_wmtp_tcp_client();
 
 void dolog(int level, const char * fmt, ...)
@@ -501,6 +503,16 @@ template<class T> int get_xml_extra_prop(xmlNodePtr node, const char* pname, T& 
 	}
 	xmlFree(prop);	
 	return ok ? 0 : 1;
+}
+
+namespace ascii {
+    int char2value(unsigned char c, unsigned char &o) ;
+
+    int from_ascii(unsigned char c1, unsigned char c2, unsigned char &c) ;
+
+    unsigned char value2char(unsigned char c) ;
+
+    void to_ascii(unsigned char c, unsigned char& c1, unsigned char &c2) ;
 }
 
 

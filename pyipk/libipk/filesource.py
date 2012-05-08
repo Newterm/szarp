@@ -32,6 +32,9 @@ class FS_local( FileSource ) :
 	def filename( self ) :
 		return self.fn
 
+	def __str__( self ) :
+		return self.fn
+
 from miscipk.pysftp import ConnectionError
 from miscipk.pysftp import AuthenticationError
 from miscipk.pysftp import HostNotFoundError
@@ -39,6 +42,7 @@ from miscipk.pysftp import HostNotFoundError
 class FS_ssh( FS_local ) :
 	def __init__( self , serv , path , *l , **m ) :
 		self.fn = None
+		self.serv = serv
 		self.path = path
 		self.con = pysftp.Connection( serv , *l , **m )
 		fd , fn  = tempfile.mkstemp('.xml','params-')
@@ -62,4 +66,7 @@ class FS_ssh( FS_local ) :
 	def __del__( self ) :
 		FS_local.__del__( self )
 		if self.fn != None : os.remove(self.fn)
+
+	def __str__( self ) :
+		return '%s:%s' % (self.serv,self.path)
 

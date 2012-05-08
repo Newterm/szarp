@@ -52,7 +52,7 @@ class PNode :
 			tag = self.node.tag.replace( '{%s}' % self.node.nsmap[self.node.prefix] , '%s:' % self.node.prefix if self.node.prefix != None else  '' )
 			out = '<%s '% tag + ' '.join(['%s="%s"'%(a,self.node.get(a)) for a in self.node.attrib]) + '>'
 		else :
-			out = toUtf8( etree.tostring( self.node , pretty_print = True , encoding = 'utf8' , method = 'xml' ) ).partition('\self.node')[0]
+			out = toUtf8( etree.tostring( self.node , pretty_print = True , encoding = 'utf8' , method = 'xml' ) ).partition('\n')[0]
 		return out
 
 	def tostring( self ) :
@@ -162,6 +162,9 @@ class Params :
 
 	def touch( self ) :
 		self.changed = True
+
+	def get_filesource( self ) :
+		return self.fs
 
 	def open( self , fs ) :
 		if self.doc != None :

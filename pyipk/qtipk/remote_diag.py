@@ -6,7 +6,7 @@ import os , os.path
 
 from PyQt4 import QtGui , QtCore
 
-from .utils import toUtf8
+from .utils import *
 
 from .ui.remote_diag import Ui_RemoteDialog
 
@@ -22,11 +22,11 @@ class RemoteDialog( QtGui.QDialog , Ui_RemoteDialog ) :
 		self.labelError.hide()
 
 	def connect( self ) :
-		base = self.lineBase.text()
-		serv = self.lineServer.text()
-		user = self.lineUser.text()
-		pswd = self.linePass.text()
-		port = self.linePort.text()
+		base = fromUtf8( self.lineBase.text() )
+		serv = fromUtf8( self.lineServer.text() )
+		user = fromUtf8( self.lineUser.text() )
+		pswd = fromUtf8( self.linePass.text() )
+		port = fromUtf8( self.linePort.text() )
 		path = '%s/%s/config/params.xml' % (self.szarp_dir,base)
 
 		if serv == '' : serv = base

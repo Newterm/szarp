@@ -43,8 +43,14 @@ class ModelTree :
 				self.add( self.node[i].create_mtnode( i ) )
 
 	def purge( self ) :
-		for c in self.children : c.__disconnect()
+		for c in self.children : c.close()
 		self.children = None
+
+	def close( self ) :
+		self.__disconnect()
+		if self.children != None:
+			for c in self.children : c.close()
+			self.children = None
 
 	def remove( self , child ) :
 		row = child.row
@@ -74,7 +80,7 @@ class ModelTree :
 #    def __repr__( self ) :
 #        return unicode( ('ModelTree',self.row,self.node) )
 
-	def delete( self ) :
+	def delete_beg( self ) :
 		''' deletes self from ModelTree structure '''
 		self.mtmodel.beginRemoveRows(
 				self.mtmodel.createIndex(self.row,0,self.parent) , 
@@ -82,15 +88,19 @@ class ModelTree :
 				self.row )
 		self.parent.remove( self )
 		self.parent = None
+
+	def delete_end( self ) :
 		self.mtmodel.endRemoveRows()
-		self.__disconnect()
+		self.close()
 
 	def __disconnect( self ) :
-		self.node.changedSig.disconnect(self.node_changed)
-		self.node. deleteSig.disconnect(self.delete)
-		self.node. insertSig.disconnect(self.insert)
+		self.node.  changedSig.disconnect(self.node_changed)
+		self.node.deleteBegSig.disconnect(self.delete_beg)
+		self.node.deleteEndSig.disconnect(self.delete_end)
+		self.node.insertBegSig.disconnect(self.insert_beg)
+		self.node.insertEndSig.disconnect(self.insert_end)
 
-	def insert( self , row , factory ) :
+	def insert_beg( self , row , factory ) :
 		''' inserts new MtNode based on factory function '''
 		self.fill()
 		if row < 0 : row = len(self.children)
@@ -102,13 +112,17 @@ class ModelTree :
 		self.children.insert( row , child )
 		self.__update_child( child )
 		self.__update_rows( row )
+
+	def insert_end( self ) :
 		self.mtmodel.endInsertRows()
 
 
 class QNode( PNode , QtCore.QObject ) :
 	changedSig = QtCore.pyqtSignal()
-	deleteSig  = QtCore.pyqtSignal()
-	insertSig  = QtCore.pyqtSignal(int,object)
+	deleteBegSig  = QtCore.pyqtSignal()
+	deleteEndSig  = QtCore.pyqtSignal()
+	insertBegSig  = QtCore.pyqtSignal(int,object)
+	insertEndSig  = QtCore.pyqtSignal()
 
 	drag = []
 
@@ -119,9 +133,11 @@ class QNode( PNode , QtCore.QObject ) :
 	def create_mtnode( self , row , mtmodel = None ) :
 		''' factory for ModelTree nodes based on self node '''
 		mt = ModelTree( self , row ) 
-		self.changedSig.connect( mt.node_changed )
-		self. deleteSig.connect( mt.delete )
-		self. insertSig.connect( mt.insert )
+		self.  changedSig.connect( mt.node_changed )
+		self.deleteBegSig.connect( mt.delete_beg )
+		self.deleteEndSig.connect( mt.delete_end )
+		self.insertBegSig.connect( mt.insert_beg )
+		self.insertEndSig.connect( mt.insert_end )
 		if mtmodel != None : mt.mtmodel = mtmodel
 		return mt
 
@@ -130,16 +146,19 @@ class QNode( PNode , QtCore.QObject ) :
 		PNode.touch( self )
 
 	def delete( self ) :
-		self.deleteSig.emit()
+		self.deleteBegSig.emit()
 		PNode.remove( self.parent , self )
+		self.deleteEndSig.emit()
 
 	def _remove( self , child ) :
-		child.deleteSig.emit()
+		child.deleteBegSig.emit()
 		PNode._remove( self , child )
+		child.deleteEndSig.emit()
 
 	def _insert( self , row , child ) :
-		self.insertSig.emit( row , child.create_mtnode )
+		self.insertBegSig.emit( row , child.create_mtnode )
 		PNode._insert( self , row , child )
+		self.insertEndSig.emit()
 
 	@classmethod
 	def add_drag( cls , qnode ) :
