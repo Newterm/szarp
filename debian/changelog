@@ -1,3 +1,9 @@
+szarp (3.1.649) squeeze; urgency=low
+
+  * building squeeze
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Wed, 09 May 2012 12:36:50 +0200
+
 szarp (3.1.648) squeeze; urgency=low
 
   * building squeeze
