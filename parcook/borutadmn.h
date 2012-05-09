@@ -48,6 +48,7 @@
  *
  */
 
+#include <netinet/in.h>
 #include <event.h>
 #include "ipchandler.h"
 
