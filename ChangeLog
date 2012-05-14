@@ -1,3 +1,5 @@
+2012-05-14 Krzysztof Galazka <kg@newterm.pl>
+	* parcook/boruta_lumel.cc: fix for prec calculating
 2012-04-19 Krzysztof Galazka <kg@newterm.pl>
 	* parcook/{borutadmn.*,boruta_modbus.cc,boruta_lumel.cc}: new driver
 	for lumel protocol in boruta, fixed conversion of 2 shorts in integer,

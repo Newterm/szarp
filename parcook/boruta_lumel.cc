@@ -77,9 +77,8 @@ typedef std::map<unsigned char, lumel_register*> LRMAP;
 class read_val_op {
     protected:
 	lumel_register* m_reg;
-	int m_prec;
     public:
-	read_val_op(lumel_register *reg, int prec) : m_reg(reg), m_prec(prec) {} ;
+	read_val_op(lumel_register *reg, int prec) : m_reg(reg) {} ;
 	virtual unsigned short val() = 0;
 };
 
@@ -128,7 +127,7 @@ unsigned short short_read_val_op::val() {
     if (m_reg->get_val(val))
 	return SZARP_NO_DATA;
 
-    return (unsigned short)(val * m_prec);
+    return (unsigned short)(val);
 }
 
 unsigned short long_read_val_op::val() {
@@ -137,7 +136,7 @@ unsigned short long_read_val_op::val() {
     if (m_reg->get_val(val))
 	return SZARP_NO_DATA;
 
-    int v = (val * m_prec);
+    int v = (val);
     return m_lsw ? (unsigned short)(v & 0xFFFF) : (unsigned short)(v >> 16);
 }
 
