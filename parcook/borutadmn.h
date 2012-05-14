@@ -48,6 +48,10 @@
  *
  */
 
+#include <netinet/in.h>
+#include <event.h>
+#include "ipchandler.h"
+
 /**self-descriptive struct holding all aspects of serial port conifguration in one place*/
 struct serial_port_configuration {
 	std::string path;
@@ -98,21 +102,21 @@ public:
 	virtual void set_id(std::pair<size_t, size_t> id);
 
 	virtual void set_manager(client_manager* manager);
-	/** through this method manager informs a driver that there was
+	/** through this method manager informs a driver that there was a
 	 * problem with connection, if a connection could not be established,
 	 * bufev will be set to NULL, otherwise it will point to a buffer
 	 * of a connection that caused problem*/
 	virtual void connection_error(struct bufferevent *bufev) = 0;
 	/** this method is called when it is this drivers turn to use
-	 * a connection, after compilting his job driver should release
+	 * a connection, after completing his job driver should release
 	 * connection by calling @see driver_finished_job on its manager
 	 * @param bufev connection's buffer event
 	 * @param fd connection's descriptior */
 	virtual void scheduled(struct bufferevent* bufev, int fd) = 0;
 	/** called by manager for currently scheduled clients when there
-	 * are incoming data for their connetions*/
+	 * is incoming data for their connections*/
 	virtual void data_ready(struct bufferevent* bufev, int fd) = 0;
-	/** called for driver when cycle is finshed, just after this
+	/** called for driver when cycle is finished, just after this
 	 * method is called data will be passed to parcook, so driver
 	 * should put any data it has received into it's portion of read buffer*/
 	virtual void finished_cycle();
@@ -469,6 +473,8 @@ tcp_server_driver* create_modbus_tcp_server();
 serial_client_driver* create_fp210_serial_client();
 
 serial_client_driver* create_lumel_serial_client();
+
+tcp_client_driver* create_wmtp_tcp_client();
 
 void dolog(int level, const char * fmt, ...)
   __attribute__ ((format (printf, 2, 3)));

@@ -96,7 +96,6 @@
 #include <termios.h>
 #include <unistd.h>
 #include <sys/time.h>
-#include <event.h>
 #include <vector>
 
 #include <boost/lexical_cast.hpp>
@@ -111,7 +110,6 @@
 #include <libxml/xpathInternals.h>
 
 #include "conversion.h"
-#include "ipchandler.h"
 #include "liblog.h"
 #include "xmlutils.h"
 #include "tokens.h"
@@ -392,6 +390,7 @@ protocols::protocols() {
 	m_serial_server_factories["modbus"] = create_modbus_serial_server;
 	m_serial_client_factories["fp210"] = create_fp210_serial_client;
 	m_serial_client_factories["lumel"] = create_lumel_serial_client;
+	m_tcp_client_factories["wmtp"] = create_wmtp_tcp_client;
 }
 
 std::string protocols::get_proto_name(xmlNodePtr node) {
@@ -404,7 +403,6 @@ tcp_client_driver* protocols::create_tcp_client_driver(xmlNodePtr node) {
 	std::string proto = get_proto_name(node);
 	if (proto.empty())
 		return NULL;
-
 	std::string use_tcp_2_serial_proxy;
 	if (get_xml_extra_prop(node, "use_tcp_2_serial_proxy", use_tcp_2_serial_proxy, true))
 		return NULL;

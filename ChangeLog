@@ -1,3 +1,5 @@
+2012-05-14 Krzysztof Galazka <kg@newterm.pl>
+	* parcook/boruta_lumel.cc: fix for prec calculating
 2012-05-14 Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: further work on test app, this app again a GUI app, 
 	due to limitations of wx2.8 it is not possible to have console
