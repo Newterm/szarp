@@ -86,6 +86,7 @@
 #include "vercheck.h"
 #include "getprobersaddresses.h"
 
+#include "testrunner.h"
 #include "testapp.h"
 
 extern void InitXmlResource();
@@ -93,12 +94,18 @@ extern void InitXmlResource();
 TestApp::TestApp() {
 }
 
+#if 0
 int TestApp::OnRun() {
 	wxEventLoop* loop = new wxEventLoop();
-	ProcessPendingEvents();
+
+	m_runner->Run();
+
+	//ProcessPendingEvents();
 	loop->Run();
+
 	return 0; 
 }
+#endif
 
 bool TestApp::OnInit() {
 	/* Read params from szarp.cfg. */
@@ -125,9 +132,13 @@ bool TestApp::OnInit() {
 	WSADATA wsaData;
 	WSAStartup(wVersionRequested, &wsaData);
 #endif
+
+#if 0
+	wxPendingEventsLocker = new wxCriticalSection;
+#endif
+
 	/* Set logging to stderr. */
 	wxLog *logger = new wxLogStderr();
-	//wxLog *logger = new wxLogGui();
 	wxLog::SetActiveTarget(logger);
 
 	wxString _lang = wxConfig::Get()->Read(_T("LANGUAGE"), AUTO_LANGUAGE);
@@ -138,7 +149,7 @@ bool TestApp::OnInit() {
 			GetSzarpDir().c_str(), 
 			_lang.c_str(),
 			new szMutex());
-	m_cfg_mgr = new ConfigManager(SC::A2S("/opt/szarp/bin"), IPKContainer::GetObject());
+	m_cfg_mgr = new ConfigManager(L"/opt/szarp/bin", IPKContainer::GetObject());
 
 	m_db_queue = new DatabaseQueryQueue();
 	m_dbmgr = new DatabaseManager(m_db_queue, m_cfg_mgr);
@@ -164,8 +175,11 @@ bool TestApp::OnInit() {
 
 	m_remarks_handler = new RemarksHandler(m_cfg_mgr);
 	m_remarks_handler->Start();
-	
+
 	SetAppName(_T("SZARPTESTAPP"));
+
+	m_runner = new TestRunner(m_dbmgr, m_cfg_mgr);
+	m_runner->Run();
 
 	return TRUE;
 }
