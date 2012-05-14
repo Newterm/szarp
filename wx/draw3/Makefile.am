@@ -127,6 +127,7 @@ draw3test_SOURCES = \
                 draw.cpp draw.h \
 		GUI/resource.cpp \
 		testapp.cpp testapp.h \
+		testrunner.cpp testrunner.h \
 		test.cpp 
 
 draw3_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) $(LIBWXSCINTILLA)

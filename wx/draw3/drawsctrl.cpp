@@ -1175,7 +1175,7 @@ DrawInfo* DrawsController::GetCurrentDrawInfo() {
 }
 
 time_t DrawsController::GetCurrentTime() {
-	return m_current_time.GetTime().GetTicks();
+	return m_current_time.IsValid() ? m_current_time.GetTime().GetTicks() : -1;
 }
 
 bool DrawsController::GetDoubleCursor() {

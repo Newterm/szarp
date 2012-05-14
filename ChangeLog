@@ -13,6 +13,22 @@
 	screen
 2012-05-14 Krzysztof Galazka <kg@newterm.pl>
 	* parcook/boruta_lumel.cc: fix for prec calculating
+2012-05-14 Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: further work on test app, this app again a GUI app, 
+	due to limitations of wx2.8 it is not possible to have console
+	based app that passes events between threads, sigh
+2012-05-02 Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: beginnings of test appplication for draw3/libSzarp2, this
+	commit:
+	1. introduces some more isolation between GUI and "guts" od draw3
+	so that it is possible to compile only the "guts" part as a console
+	aplication (this is not exactly true, some small GUI stuff still
+	gets compiled in but this is relatively minor part)
+	2. adds draw3test console app, at this point this app does nothing
+	apart from starting up
+	3. turns szApp class into template so that it can inherit either from
+	wxApp(gui app) or wxConsoleApp and adjusts the rest of the code
+	to accomodate to this change
 2012-04-19 Krzysztof Galazka <kg@newterm.pl>
 	* parcook/{borutadmn.*,boruta_modbus.cc,boruta_lumel.cc}: new driver
 	for lumel protocol in boruta, fixed conversion of 2 shorts in integer,

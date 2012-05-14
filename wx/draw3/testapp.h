@@ -46,7 +46,9 @@
 
 #include "wxlogging.h"
 
-class TestApp : public szApp<wxAppConsole>
+class TestRunner;
+
+class TestApp : public szApp<wxApp>
 {
 			/**<Object representing thread that executes queries*/
 	QueryExecutor* m_executor;
@@ -62,9 +64,13 @@ class TestApp : public szApp<wxAppConsole>
 
 	ConfigManager *m_cfg_mgr;
 
+	TestRunner *m_runner;
+
 	void StopThreads();
 public:
+#if 0
 	virtual int OnRun();
+#endif
 
 	virtual bool OnInit();
 
