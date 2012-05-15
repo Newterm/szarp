@@ -77,8 +77,9 @@ typedef std::map<unsigned char, lumel_register*> LRMAP;
 class read_val_op {
     protected:
 	lumel_register* m_reg;
+	int m_prec;
     public:
-	read_val_op(lumel_register *reg, int prec) : m_reg(reg) {} ;
+	read_val_op(lumel_register *reg, int prec) : m_reg(reg), m_prec(prec) {} ;
 	virtual unsigned short val() = 0;
 };
 
@@ -98,6 +99,7 @@ public:
 
 void lumel_register::set_val(std::string & val) {
     m_val = val;
+   dolog(10, "lumel_register::get_val value: %s", m_val.c_str());
 }
 
 int lumel_register::get_val(double & value) {
@@ -117,6 +119,7 @@ int lumel_register::get_val(double & value) {
 	return 1;
    }
    value = val;
+   dolog(10, "lumel_register::get_val value: %f", value);
 
    return 0;
 }
@@ -127,7 +130,7 @@ unsigned short short_read_val_op::val() {
     if (m_reg->get_val(val))
 	return SZARP_NO_DATA;
 
-    return (unsigned short)(val);
+    return (short)(val * m_prec);
 }
 
 unsigned short long_read_val_op::val() {
@@ -136,7 +139,7 @@ unsigned short long_read_val_op::val() {
     if (m_reg->get_val(val))
 	return SZARP_NO_DATA;
 
-    int v = (val);
+    int v = (val * m_prec);
     return m_lsw ? (unsigned short)(v & 0xFFFF) : (unsigned short)(v >> 16);
 }
 
@@ -288,13 +291,29 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 		unsigned char addr = (unsigned char)l;
 		dolog(10, "lumel_serial_client::configure _addr: %ld, addr: %hhu", l, addr);
 		
+		int prec = exp10(param->GetPrec());
+		std::string _prec;
+		if (get_xml_extra_prop(pnode, "prec", _prec, true)) {
+		    dolog(0, "Invalid address attribute in param element at line: %ld", xmlGetLineNo(pnode));
+		    return 1;
+		}
+
+		if (!_prec.empty()) {
+		    l = strtol(_prec.c_str(), &e, 0);
+		    if (*e != 0 || l < 0) {
+			    dolog(0, "Invalid extra:prec attribute value: %ld (line %ld)", l, xmlGetLineNo(pnode));
+			    return 1;
+		    } 
+		    prec = exp10(l);
+		    dolog(10, "lumel_serial_client::configure _addr: %ld, prec: %d", l, addr);
+		}
+
 		std::string val_op;
 		if (get_xml_extra_prop(node, "val_op", val_op, true)) {
 		    dolog(0, "Invalid val_op attribute in param element at line: %ld", xmlGetLineNo(pnode));
 		    return 1;
 		}
 
-		int prec = exp10(param->GetPrec());
 		lumel_register* reg = NULL;
 
 		if (val_op.empty()) {
@@ -508,7 +527,7 @@ int lumel_serial_client::parse_frame() {
 
     std::stringstream val;
 
-    for (size_t i = 8; i < m_buffer.size(); i++) {
+    for (size_t i = 7; i < m_buffer.size(); i++) {
 	val.put(m_buffer[i]);
     }
 
