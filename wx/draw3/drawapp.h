@@ -190,6 +190,9 @@ protected:
 
 	bool m_just_print_version;
 
+	/** start in full screen mode*/
+	bool m_full_screen;
+
 	/**Object that prevents more than one m_instance of program from running.*/
 	szSingleInstanceChecker *m_instance;
 
