@@ -1050,6 +1050,14 @@ if test x$no_ssl != xyes -a x$no_rsync != xyes ; then
 	fi
 fi
 
+no_cppnit="yes"
+PKG_CHECK_MODULES(CPPUNIT, x11, no_cppunit="no", [AC_MSG_RESULT([
+	cppunit library not found on your system,
+	configuring without cppunit, draw test app will not be built
+	])
+])
+AM_CONDITIONAL(HAVE_CPPUNIT, test "x$no_cppunit" != xyes)
+
 # Python/pylons
 if test x$no_python != xyes -a "x$PYBABEL" != "x" -a x$with_mingw32 != xyes; then
 	SUBDIRS="$SUBDIRS www"
@@ -1291,6 +1299,13 @@ fi
 
 echo -n "Configured with c-ares             "
 if test "x$no_cares" != "xyes" ; then
+        echo "yes"
+else
+        echo "no"
+fi
+
+echo -n "Configure with cppunit             "
+if test "x$no_cppunit" != "xyes" ; then
         echo "yes"
 else
         echo "no"

@@ -1,3 +1,11 @@
+2012-05-20 Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: further work on test app, 1 test added ;)
+	* configure.in: we test for cppunit presence (but we don't use
+	it just yet - I considered it as a basis for our test app, but after
+	some consideration I gave up the idea - it looks like too much hassle
+	to use it for an app utlizing wx event loop which in fact is doing
+	integration testing), anyway when we start doing unit tests, the check
+	for this library will already be here, waiting
 2012-05-14 Krzysztof Galazka <kg@newterm.pl>
 	* parcook/boruta_lumel.cc: fix for prec calculating
 2012-05-14 Darek Marcinkiewicz <reksio@newterm.pl>
