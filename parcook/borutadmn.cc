@@ -32,7 +32,7 @@
   components - subdrivers - to provide support for particular protocols. Currently drivers are available for modbus, 
   zet and fp2100 protocols. 
  @devices.pl Boruta jest uniwersalnym demonem, który sam w sobie nie implementuje ¿adnego z protoko³ów.
-  Obs³ug± w³±¶ciwych protoko³ow zajuj± siê sterowniki bêd±ce modu³ami boruty. Obecnie dostêpne s± sterowniki
+  Obs³ug± w³a¶ciwych protoko³ów zajmuj± siê sterowniki bêd±ce modu³ami boruty. Obecnie dostêpne s± sterowniki
   dla protoko³ów Modbus, ZET i FP210.
 
  @protocol Modbus RTU/ASCII, Modbus TCP, ZET and FP210
