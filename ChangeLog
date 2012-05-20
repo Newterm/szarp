@@ -1,12 +1,14 @@
 2012-08-22 Dariusz Marcinkiewcz <reksio@newterm.pl>
 	* /: windows fixes: building fix, draw3 incsearch window fix, windows
 	version bump
-2012-05-06 Dariusz Marcinkiewcz <reksio@newterm.pl>
-	* wx/sync: bump max connection timeout value, currently for our largest
-	db, in full sync mode, client may spend several minutes on traversing
-	db directory structure is search for files that were removed on server,
-	while doing this it does not generate any trafiic which leads to
-	connection being timed out by server
+2012-05-20 Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: further work on test app, 1 test added ;)
+	* configure.in: we test for cppunit presence (but we don't use
+	it just yet - I considered it as a basis for our test app, but after
+	some consideration I gave up the idea - it looks like too much hassle
+	to use it for an app utlizing wx event loop which in fact is doing
+	integration testing), anyway when we start doing unit tests, the check
+	for this library will already be here, waiting
 2012-05-15 Krzysztof Galazka <kg@newterm.pl>
 	* parcook/boruta_lumel.cc: one more fix in prec calculation
 	* wx/draw3/{drawapp.*,frmmgr.*}: switch in command line for full
@@ -17,6 +19,12 @@
 	* wx/draw3: further work on test app, this app again a GUI app, 
 	due to limitations of wx2.8 it is not possible to have console
 	based app that passes events between threads, sigh
+2012-05-06 Dariusz Marcinkiewcz <reksio@newterm.pl>
+	* wx/sync: bump max connection timeout value, currently for our largest
+	db, in full sync mode, client may spend several minutes on traversing
+	db directory structure is search for files that were removed on server,
+	while doing this it does not generate any trafiic which leads to
+	connection being timed out by server
 2012-05-02 Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: beginnings of test appplication for draw3/libSzarp2, this
 	commit:

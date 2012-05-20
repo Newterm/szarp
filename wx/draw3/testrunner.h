@@ -25,11 +25,11 @@
 class TestRunner;
 
 class Test : public DrawObserver {
+protected:
 	DrawsController *m_dc;
 	ConfigManager *m_cfg_mgr;
 	TestRunner *m_runner;
 
-protected:
 	virtual void DataReady() {};
 public:
 	bool SetupController(wxString prefix, wxString set, wxString graph, PeriodType pt, const wxDateTime& time);
@@ -38,6 +38,10 @@ public:
 	virtual void Init(TestRunner *runner, DrawsController* dc, ConfigManager* cfg);
 	virtual void Teardown(DrawsController* dc);
 	virtual void Start() = 0;
+	virtual const char* TestName() const = 0;
+
+	static int s_assertions_tested;
+	static int s_assertions_failed;
 };
 
 class TestRunner : public wxEvtHandler {
