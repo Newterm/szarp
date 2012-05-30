@@ -31,8 +31,11 @@ INCLUDES = @XML_CFLAGS@ @XSLT_CFLAGS@ @CURL_CFLAGS@ @LUA_CFLAGS@ \
 
 noinst_LTLIBRARIES = libSzarp2.la
 
-EXTRA_PROGRAMS = szbtest lua_parser_test xmlreader_test
+EXTRA_PROGRAMS = szbtest lua_parser_test xmlreader_test async_log_test
 szbtest_SOURCES = $(SZBASE_DIR)/szbtest.cc
+
+async_log_test_SOURCES = async_log_test.c
+async_log_test_LDADD = $(LDADD) -levent ../libSzarp/libSzarp.la libSzarp2.la
 
 lua_parser_test_INCLUDES = $(INCLUDES)
 lua_parser_test_LDADD = $(LDADD) ../libSzarp/libSzarp.la libSzarp2.la
@@ -56,7 +59,8 @@ noinst_HEADERS = \
 		      $(INCLUDE_DIR)/tokens.h \
 		      $(INCLUDE_DIR)/convuri.h \
                       $(INCLUDE_DIR)/ppset.h \
-                      $(INCLUDE_DIR)/xmlutils.h 
+                      $(INCLUDE_DIR)/xmlutils.h \
+                      $(INCLUDE_DIR)/async_syslog.h 
 
 if MINGW32_OPT
 INCLUDE_PARSERS =
@@ -96,6 +100,7 @@ libSzarp2_la_SOURCES = \
 			$(SOURCE_DIR)/misc/tokens.cc \
 			$(SOURCE_DIR)/misc/xmlutils.cc \
 			$(SOURCE_DIR)/misc/base64.cc \
+			$(SOURCE_DIR)/misc/async_syslog.c \
 			$(DMN_DIR)/mbus.cc \
 			$(DMN_DIR)/ppset.cc \
 			$(SOURCE_DIR)/misc/xscale.cc \

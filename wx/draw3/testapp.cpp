@@ -149,7 +149,7 @@ bool TestApp::OnInit() {
 			GetSzarpDir().c_str(), 
 			_lang.c_str(),
 			new szMutex());
-	m_cfg_mgr = new ConfigManager(L"/opt/szarp/bin", IPKContainer::GetObject());
+	m_cfg_mgr = new ConfigManager(GetSzarpDataDir().c_str(), IPKContainer::GetObject());
 
 	m_db_queue = new DatabaseQueryQueue();
 	m_dbmgr = new DatabaseManager(m_db_queue, m_cfg_mgr);

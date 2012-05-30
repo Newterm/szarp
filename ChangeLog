@@ -1,3 +1,10 @@
+2012-05-30 Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2: async_syslog - asynchronous (based on libevent)
+	implementation of syslog logging library (inspired by
+	http://freecode.com/projects/syslog-async)
+	* libSzarp2/async_log_test.c: small piece of code to somewhat test the
+	library
+	* wx/draw3/testapp.cpp: small fix
 2012-05-20 Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: further work on test app, 1 test added ;)
 	* configure.in: we test for cppunit presence (but we don't use
