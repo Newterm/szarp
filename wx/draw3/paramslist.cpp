@@ -272,27 +272,8 @@ void ParamsListDialog::OnEdit(wxCommandEvent &e) {
 
 	ParamEdit pe(this, m_def_sets->GetParentManager(), m_dbmgr, m_remarks_handler);
 	pe.SetCurrentConfig(m_prefix);
-	if (pe.Edit(p) != wxID_OK) 
-		return;
-
-	DefinedParam *np = new DefinedParam(pe.GetBasePrefix(),
-			pe.GetParamNameFirstAndSecondPart() + pe.GetParamName(),
-			pe.GetUnit(),
-			pe.GetFormula(),
-			pe.GetPrec(),
-			pe.GetFormulaType(),
-			pe.GetStartTime(),
-			p->IsNetworkParam());
-
-	np->CreateParam();
-	if (np->IsNetworkParam()) {
-		m_remarks_handler->GetConnection()->InsertOrUpdateParam(np, this, false);
-		//now remove the param, we will get one from server
-		delete np;
-	} else {
-		m_def_sets->GetParentManager()->SubstiuteDefinedParams(std::vector<DefinedParam*>(1, p), std::vector<DefinedParam*>(1, np));
+	if (pe.Edit(p) == wxID_OK) 
 		LoadParams();
-	}
 
 }
 

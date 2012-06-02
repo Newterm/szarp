@@ -1576,8 +1576,8 @@ int main(int argc, char *argv[])
 	}
 	logfile = libpar_getpar("parcook", "log", 0);
 	if (logfile == NULL)
-		logfile = strdup(PREFIX "/logs/parcook.log");
-	if (loginit(log_level, logfile) < 0) {
+		logfile = strdup("parcook");
+	if (sz_loginit(log_level, logfile) < 0) {
 		sz_log(0, "parcook: cannot open log file '%s', exiting",
 		    logfile);
 		return 1;

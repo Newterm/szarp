@@ -1,3 +1,21 @@
+2012-06-02 Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp*: move async_syslog lib to libSzarp, this is a better
+	 place for it
+	* libSzarp: extend liblog to support 3 backends:
+	 - syslog - classic synchronous syslog, used by default on linux
+	 - classic - logging library used by szarp so far, it is still
+	  used on windows
+	 - asyslog - backend using our home brew asynchronous libevent based
+	  asynchronous variant
+	* libSzarp2/execute.cc: fix for off-by-one error in chech_for_other
+	 function
+	* wx/draw3: fix for just discovered param editing bug
+	* parcook/borutadmn.cc: make boruta use asychronous version of 
+	 syslog lib - boruta never blocks now (with exception of waiting
+	 on semaphore guarding access to shared memory, but it is negligible 
+	 and cannot be easily "fixed")
+	* /: various minor changes here and there to adjust szarp code
+	 for slightly changed liblog api
 2012-05-30 Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2: async_syslog - asynchronous (based on libevent)
 	implementation of syslog logging library (inspired by

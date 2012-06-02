@@ -34,9 +34,6 @@ noinst_LTLIBRARIES = libSzarp2.la
 EXTRA_PROGRAMS = szbtest lua_parser_test xmlreader_test async_log_test
 szbtest_SOURCES = $(SZBASE_DIR)/szbtest.cc
 
-async_log_test_SOURCES = async_log_test.c
-async_log_test_LDADD = $(LDADD) -levent ../libSzarp/libSzarp.la libSzarp2.la
-
 lua_parser_test_INCLUDES = $(INCLUDES)
 lua_parser_test_LDADD = $(LDADD) ../libSzarp/libSzarp.la libSzarp2.la
 lua_parser_test_SOURCES = $(SZBASE_DIR)/lua_parser_test.cc
@@ -100,7 +97,6 @@ libSzarp2_la_SOURCES = \
 			$(SOURCE_DIR)/misc/tokens.cc \
 			$(SOURCE_DIR)/misc/xmlutils.cc \
 			$(SOURCE_DIR)/misc/base64.cc \
-			$(SOURCE_DIR)/misc/async_syslog.c \
 			$(DMN_DIR)/mbus.cc \
 			$(DMN_DIR)/ppset.cc \
 			$(SOURCE_DIR)/misc/xscale.cc \

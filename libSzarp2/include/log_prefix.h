@@ -5,7 +5,7 @@
 #define LOG_PREFIX_LEN 8
 #define LOG_PREFIX L"Activity"
 
-#define LOG_DAEMON PREFIX "/bin/logdmn"
+#define LOG_DAEMON "logdmn"
 
 #endif /* __LOG_PREFIX_H__ */
 

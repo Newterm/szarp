@@ -2944,9 +2944,9 @@ bool SSCApp::OnCmdLineHelp(wxCmdLineParser &parser) {
 
 bool SSCApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 
-	long debug;
-	if (parser.Found(_T("debug"), &debug))
-		loginit((int) debug, SC::S2A(wxGetHomeDir() + _T("\\ssc.log")).c_str());
+	long log_level = 2;
+	parser.Found(_T("debug"), &log_level);
+	sz_loginit(log_level, "ssclient", SZ_LIBLOG_FACILITY_APP);
 	return true;
 }
 

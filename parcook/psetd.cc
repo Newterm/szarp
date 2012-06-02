@@ -645,9 +645,9 @@ int main(int argc, char *argv[])
 
 	char* logfile = libpar_getpar("psetd", "log", 0);
 	if (logfile == NULL)
-		logfile = strdup(PREFIX"/logs/psetd.log");
+		logfile = strdup("psetd");
 
-	loglevel = loginit(loglevel, logfile);
+	loglevel = sz_loginit(loglevel, logfile);
 	if (loglevel < 0) {
 		sz_log(0, "psetd: cannot inialize log file %s, errno %d", logfile, errno);
 		return 1;
