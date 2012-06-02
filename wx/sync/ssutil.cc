@@ -35,15 +35,15 @@
 
 #ifndef MINGW32
 bool InitLogging(int *argc, char **argv, const char* progname) {
-	int loglevel = loginit_cmdline(2, NULL, argc, argv);
+	int loglevel = 2;
 
 	char *logfile = libpar_getpar(argv[0], "log", 0);
 	if (logfile == NULL) 
-		asprintf(&logfile, PREFIX"/logs/%s.log", progname);
+		asprintf(&logfile, progname, progname);
 
-	loglevel = loginit(loglevel, logfile);
+	loglevel = sz_loginit(loglevel, logfile);
 	if (loglevel < 0) {
-		sz_log(0, "%s: cannot initalize log file '%s', errno %d",
+		sz_log(0, "%s: cannot initalize log '%s', errno %d",
 		       argv[0], logfile, errno);
 		return false;
 	}

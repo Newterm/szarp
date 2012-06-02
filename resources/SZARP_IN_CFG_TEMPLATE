@@ -101,7 +101,7 @@ execute_stderr=$szarp_root$/logs/execute_stderr.log
 :meaner3
 
 # meaner3 log file
-log=__INSTALL_DIR__/logs/meaner3.log
+log=meaner3
 
 :prober
 # directory with 10-seconds probes cache
