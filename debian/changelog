@@ -1,3 +1,9 @@
+szarp (3.1.652) oneiric; urgency=low
+
+  * building oneiric
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Sun, 2 Jun 2012 10:27:27 +0200
+
 szarp (3.1.649) squeeze; urgency=low
 
   * building squeeze
