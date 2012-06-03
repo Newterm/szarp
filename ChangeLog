@@ -1,6 +1,10 @@
 2012-08-22 Dariusz Marcinkiewcz <reksio@newterm.pl>
 	* /: windows fixes: building fix, draw3 incsearch window fix, windows
 	version bump
+2012-06-03 Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/boruta_modbus.cc: boruta now supports sending of constant
+	integer values + longest method in boruta code splitted into a couple
+	of several smaller ones
 2012-06-02 Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp*: move async_syslog lib to libSzarp, this is a better
 	 place for it
