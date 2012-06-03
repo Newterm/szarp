@@ -1,3 +1,7 @@
+2012-06-03 Darek Marcinkiewicz <reksio@newterm.pl>
+	* parcook/boruta_modbus.cc: boruta now supports sending of constant
+	integer values + longest method in boruta code splitted into a couple
+	of several smaller ones
 2012-06-02 Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp*: move async_syslog lib to libSzarp, this is a better
 	 place for it

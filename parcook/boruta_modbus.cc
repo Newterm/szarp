@@ -374,7 +374,6 @@ protected:
 
 	std::vector<parcook_modbus_val_op*> m_parcook_ops;
 	std::vector<sender_modbus_val_op*> m_sender_ops;
-	std::vector<modbus_register*> m_send_map;
 
 	enum FLOAT_ORDER { LSWMSW, MSWLSW } m_float_order;
 
@@ -383,6 +382,10 @@ protected:
 	float m_nodata_value;
 
 	bool process_request(unsigned char unit, PDU &pdu);
+	int configure_int_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, bool send);
+	int configure_bcd_register(TParam* param, TSendParam* sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, bool send);
+	int configure_long_float_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, unsigned short& other_reg, bool send);
+	int configure_param(xmlNodePtr node, TSzarpConfig *sc, TParam* p, TSendParam *sp, bool send, unsigned char id);
 	int configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx);
 	const char* error_string(const unsigned char& error);
 	void consume_read_regs_response(unsigned char& unit, unsigned short start_addr, unsigned short regs_count, PDU &pdu);
@@ -999,11 +1002,204 @@ bool modbus_unit::register_val_expired(time_t time) {
 		return time >= m_current_time - m_expiration_time;
 }
 
+int modbus_unit::configure_int_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, bool send) {
+	m_registers[id][addr] = new modbus_register(this);
+	if (send)
+		m_sender_ops.push_back(new short_sender_modbus_val_op(m_nodata_value, m_registers[id][addr]));
+	else 
+		m_parcook_ops.push_back(new short_parcook_modbus_val_op(m_registers[id][addr]));
+	dolog(7, "Param %ls mapped to unit: %c, register %hu, value type: integer", param ? param->GetName().c_str() : L"send param", id, addr);
+	return 0;
+}
+
+int modbus_unit::configure_bcd_register(TParam* param, TSendParam* sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, bool send) {
+	m_registers[id][addr] = new modbus_register(this);
+	if (send) {
+		dolog(0, "Unsupported bcd value type for send param %ls", param->GetName().c_str());
+		return 1;
+	}
+	m_parcook_ops.push_back(new bcd_parcook_modbus_val_op(m_registers[id][addr]));
+	dolog(7, "Param %s mapped to unit: %c, register %hu, value type: bcd", SC::S2A(param->GetName()).c_str(), id, addr);
+	return 0;
+}
+
+int modbus_unit::configure_long_float_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, unsigned short& other_reg, bool send) {
+	std::string val_op;
+	get_xml_extra_prop(node, "val_op", val_op, false);
+
+	FLOAT_ORDER float_order = m_float_order;
+
+	std::string val_type;	
+	if (get_xml_extra_prop(node, "val_type", val_type))
+		return 1;
+
+	std::string _float_order;
+	get_xml_extra_prop(node, "FloatOrder", _float_order, false);
+	if (!_float_order.empty()) {
+		if (_float_order == "msblsb") {
+			dolog(5, "Setting mswlsw for next param");
+			float_order = MSWLSW;
+		} else if (_float_order == "lsbmsb") {
+			dolog(5, "Setting lswmsw for next param");
+			float_order = LSWMSW;
+		} else {
+			dolog(0, "Invalid float order specification: %s, %ld", _float_order.c_str(), xmlGetLineNo(node));
+			return 1;
+		}
+	}
+
+	unsigned short msw, lsw;
+	bool is_lsw;
+	other_reg = 0;
+	if (val_op.empty())  {
+		if (float_order == MSWLSW) {
+			msw = addr;
+			other_reg = lsw = addr + 1;
+		} else {
+			other_reg = msw = addr + 1;
+			lsw = addr;
+		}
+		is_lsw = true;
+	} else if (val_op == "MSW") {
+		if (float_order == MSWLSW) {
+			msw = addr;
+			lsw = addr + 1;
+		} else {
+			msw = addr + 1;
+			lsw = addr;
+		}
+		other_reg = lsw;
+		is_lsw = false;
+	} else if (val_op == "LSW") {
+		if (float_order == LSWMSW) {
+			lsw = addr;
+			msw = addr + 1;
+		} else {
+			lsw = addr + 1;
+			msw = addr;
+		}
+		other_reg = msw;
+		is_lsw = true;
+	} else {
+		dolog(0, "Unsupported val_op attribute value - %s, line %ld", val_op.c_str(), xmlGetLineNo(node));
+		return 1;
+	}
+
+	if (m_registers[id].find(lsw) == m_registers[id].end()) 
+		m_registers[id][lsw] = new modbus_register(this);
+	if (m_registers[id].find(msw) == m_registers[id].end())
+		m_registers[id][msw] = new modbus_register(this);
+
+	if (val_type == "float")  {
+		if (!send) {
+			m_parcook_ops.push_back(new long_parcook_modbus_val_op<float>(m_registers[id][lsw], m_registers[id][msw], prec, is_lsw));
+			dolog(7, "Parcook param %ls no(%zu), mapped to unit: %lc, register %hu, value type: float, params holds %s part, lsw: %hu, msw: %hu",
+				param->GetName().c_str(), m_parcook_ops.size(), id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
+		} else {
+			m_sender_ops.push_back(new float_sender_modbus_val_op(m_nodata_value, m_registers[id][lsw], m_registers[id][msw], prec));
+			dolog(7, "Sender param %ls no(%zu), mapped to unit: %lc, register %hu, value type: float, params holds %s part",
+				param ? param->GetName().c_str() : L"(not a param, just value)", m_sender_ops.size(), id, addr, is_lsw ? "lsw" : "msw");
+		}
+	} else {
+		if (!send) {
+			m_parcook_ops.push_back(new long_parcook_modbus_val_op<unsigned int>(m_registers[id][lsw], m_registers[id][msw], prec, is_lsw));
+			dolog(7, "Parcook param %ls no(%zu), mapped to unit: %lc, register %hu, value type: long, params holds %s part, lsw: %hu, msw: %hu",
+				param->GetName().c_str(), m_parcook_ops.size(), id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
+		} else {
+			dolog(0, "Unsupported long value type for send param line %ld, exiting!", xmlGetLineNo(node));
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+int modbus_unit::configure_param(xmlNodePtr node, TSzarpConfig* sc, TParam* p, TSendParam *sp, bool send, unsigned char id) { 
+	char* c = (char*) xmlGetNsProp(node, BAD_CAST("address"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+	if (c == NULL) {
+		dolog(0, "Missing address attribute in param element at line: %ld", xmlGetLineNo(node));
+		return 1;
+	}
+
+	unsigned short addr;
+	char *e;
+	long l = strtol((char*)c, &e, 0);
+	if (*e != 0 || l < 0 || l > 65535) {
+		dolog(0, "Invalid address attribute value: %s(line %ld), between 0 and 65535", c, xmlGetLineNo(node));
+		return 1;
+	} 
+	xmlFree(c);
+	addr = l;
+
+	REGISTER_TYPE rt;
+	c = (char*) xmlGetNsProp(node, BAD_CAST("register_type"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+	if (c == NULL || !strcmp(c, "holding_register"))
+		rt = HOLDING_REGISTER;
+	else if (!strcmp(c, "input_register"))
+		rt = INPUT_REGISTER;
+	else {
+		dolog(0, "Unsupported register type, line %ld, should be either input_register or holding_register", xmlGetLineNo(node));
+		return 1;
+	}
+	xmlFree(c);
+
+	std::string val_type;	
+	if (get_xml_extra_prop(node, "val_type", val_type))
+		return 1;
+
+	TParam *param = NULL; 
+	int prec_e = 0;
+	if (send) {
+		if (!sp->GetParamName().empty()) {
+			param = sc->getParamByName(sp->GetParamName());
+			if (param == NULL) {
+				dolog(0, "parameter with name '%ls' not found (send parameter at line %ld)",
+						sp->GetParamName().c_str(), xmlGetLineNo(node));
+				return 1;
+			}
+			if (get_xml_extra_prop(node, "prec", prec_e))
+				prec_e = param->GetPrec();
+		} else {
+			if (get_xml_extra_prop(node, "prec", prec_e))
+				prec_e = 0;
+		}
+	} else {
+		param = p;
+		prec_e = p->GetPrec();
+	}
+	int prec = exp10(prec_e);
+
+	int ret;
+	if (val_type == "integer") {
+		ret = configure_int_register(param, sp, prec, node, id, addr, send);
+	} else if (val_type == "bcd") {
+		ret = configure_bcd_register(param, sp, prec, node, id, addr, send);
+	} else if (val_type == "long" || val_type == "float") {
+		unsigned short other_reg;
+
+		ret = configure_long_float_register(param, sp, prec, node, id, addr, other_reg, send);
+		m_received.insert(std::make_pair(id, std::make_pair(rt, other_reg)));
+	} else {
+		dolog(0, "Unsupported value type:%s, for param at line: %ld", val_type.c_str(), xmlGetLineNo(node));
+		ret = 1;
+	}
+
+	if (ret)
+		return ret;
+
+	if (!send) {
+		m_received.insert(std::make_pair(id, std::make_pair(rt, addr)));
+	} else {
+		m_sent.insert(std::make_pair(id, std::make_pair(rt, addr)));
+	}
+
+	return 0;
+}
+
 int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
 	int i, j;
 	TParam *p;
 	TSendParam *sp;
-	char *c;
 	unsigned char id;
 
 	std::string _id;
@@ -1043,166 +1239,12 @@ int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
 		assert(node);
 		free(expr);
 
-		c = (char*) xmlGetNsProp(node, BAD_CAST("address"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-		if (c == NULL) {
-			dolog(0, "Missing address attribute in param element at line: %ld", xmlGetLineNo(node));
-			return 1;
-		}
+		configure_param(node, u->GetSzarpConfig(), p, sp, send, id);
 
-		unsigned short addr;
-		char *e;
-		long l = strtol((char*)c, &e, 0);
-		if (*e != 0 || l < 0 || l > 65535) {
-			dolog(0, "Invalid address attribute value: %s(line %ld), between 0 and 65535", c, xmlGetLineNo(node));
-			return 1;
-		} 
-		xmlFree(c);
-		addr = l;
-
-		REGISTER_TYPE rt;
-		c = (char*) xmlGetNsProp(node, BAD_CAST("register_type"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-		if (c == NULL || !strcmp(c, "holding_register"))
-			rt = HOLDING_REGISTER;
-		else if (!strcmp(c, "input_register"))
-			rt = INPUT_REGISTER;
-		else {
-			dolog(0, "Unsupported register type, line %ld, should be either input_register or holding_register", xmlGetLineNo(node));
-			return 1;
-		}
-		xmlFree(c);
-
-		std::string val_type;	
-		if (get_xml_extra_prop(node, "val_type", val_type))
-			return 1;
-
-		TParam *param; 
-		if (send) {
-			param = u->GetSzarpConfig()->getParamByName(sp->GetParamName());
-			if (param == NULL) {
-				dolog(0, "parameter with name '%ls' not found (send parameter %d)",
-						sp->GetParamName().c_str(), j + 1);
-				return 1;
-			}
-		} else
-			param = p;
-
-		sender_modbus_val_op *vos;
-		parcook_modbus_val_op *vop;
-		bool two_regs = false;
-		unsigned short other_reg = 0;
-		if (val_type == "integer") {
-			m_registers[id][addr] = new modbus_register(this);
-			if (send) 
-				vos = new short_sender_modbus_val_op(m_nodata_value, m_registers[id][addr]);
-			else 
-				vop = new short_parcook_modbus_val_op(m_registers[id][addr]);
-			dolog(7, "Param %s mapped to unit: %lc, register %hu, value type: integer", SC::S2A(param->GetName()).c_str(), u->GetId(), addr);
-		} else if (val_type == "bcd") {
-			m_registers[id][addr] = new modbus_register(this);
-			if (send) {
-				dolog(0, "Unsupported bcd value type for send param no. %d", j + 1);
-				return 1;
-			}
-			vop = new bcd_parcook_modbus_val_op(m_registers[id][addr]);
-			dolog(7, "Param %s mapped to unit: %lc, register %hu, value type: bcd", SC::S2A(param->GetName()).c_str(), u->GetId(), addr);
-		} else if (val_type == "long" || val_type == "float") {
-			std::string val_op;
-			get_xml_extra_prop(node, "val_op", val_op, false);
-
-			FLOAT_ORDER float_order = m_float_order;
-
-			std::string _float_order;
-			get_xml_extra_prop(node, "FloatOrder", _float_order, false);
-			if (!_float_order.empty()) {
-				if (_float_order == "msblsb") {
-					dolog(5, "Setting mswlsw for next param");
-					float_order = MSWLSW;
-				} else if (_float_order == "lsbmsb") {
-					dolog(5, "Setting lswmsw for next param");
-					float_order = LSWMSW;
-				} else {
-					dolog(0, "Invalid float order specification: %s, %ld", _float_order.c_str(), xmlGetLineNo(node));
-					return 1;
-				}
-			}
-
-			unsigned short msw, lsw;
-			bool is_lsw;
-			if (val_op.empty())  {
-				if (float_order == MSWLSW) {
-					msw = addr;
-					other_reg = lsw = addr + 1;
-				} else {
-					other_reg = msw = addr + 1;
-					lsw = addr;
-				}
-				is_lsw = true;
-			} else if (val_op == "MSW") {
-				if (float_order == MSWLSW) {
-					msw = addr;
-					lsw = addr + 1;
-				} else {
-					msw = addr + 1;
-					lsw = addr;
-				}
-				other_reg = lsw;
-				is_lsw = false;
-			} else if (val_op == "LSW") {
-				if (float_order == LSWMSW) {
-					lsw = addr;
-					msw = addr + 1;
-				} else {
-					lsw = addr + 1;
-					msw = addr;
-				}
-				other_reg = msw;
-				is_lsw = true;
-			} else {
-				dolog(0, "Unsupported val_op attribute value - %s, line %ld", val_op.c_str(), xmlGetLineNo(node));
-				return 1;
-			}
-
-			if (m_registers[id].find(lsw) == m_registers[id].end()) 
-				m_registers[id][lsw] = new modbus_register(this);
-			if (m_registers[id].find(msw) == m_registers[id].end())
-				m_registers[id][msw] = new modbus_register(this);
-
-			int prec = exp10(param->GetPrec());
-			if (val_type == "float")  {
-				if (!send) {
-					vop = new long_parcook_modbus_val_op<float>(m_registers[id][lsw], m_registers[id][msw], prec, is_lsw);
-					dolog(7, "Parcook param %s no(%zu), mapped to unit: %lc, register %hu, value type: float, params holds %s part, lsw: %hu, msw: %hu",
-						SC::S2A(param->GetName()).c_str(), m_parcook_ops.size(), u->GetId(), addr, is_lsw ? "lsw" : "msw", lsw, msw);
-				} else {
-					vos = new float_sender_modbus_val_op(m_nodata_value, m_registers[id][lsw], m_registers[id][msw], prec);
-					dolog(7, "Sender param %s no(%zu), mapped to unit: %lc, register %hu, value type: float, params holds %s part",
-						SC::S2A(param->GetName()).c_str(), m_sender_ops.size(), u->GetId(), addr, is_lsw ? "lsw" : "msw");
-				}
-			} else {
-				if (!send) {
-					vop = new long_parcook_modbus_val_op<unsigned int>(m_registers[id][lsw], m_registers[id][msw], prec, is_lsw);
-					dolog(7, "Parcook param %s no(%zu), mapped to unit: %lc, register %hu, value type: long, params holds %s part, lsw: %hu, msw: %hu",
-						SC::S2A(param->GetName()).c_str(), m_parcook_ops.size(), u->GetId(), addr, is_lsw ? "lsw" : "msw", lsw, msw);
-				} else {
-					dolog(0, "Unsupported long value type for send param no. %d, exiting!", j + 1);
-					return 1;
-				}
-			}
-			two_regs = true;
-		}
-
-		if (!send) {
-			p = p->GetNext();
-			m_parcook_ops.push_back(vop);
-			m_received.insert(std::make_pair(id, std::make_pair(rt, addr)));
-			if (two_regs)
-				m_received.insert(std::make_pair(id, std::make_pair(rt, other_reg)));
-		} else {
+		if (send)
 			sp = sp->GetNext();
-			m_sender_ops.push_back(vos);
-			m_send_map.push_back(m_registers[id][addr]);
-			m_sent.insert(std::make_pair(id, std::make_pair(rt, addr)));
-		}
+		else
+			p = p->GetNext();
 	}
 	xmlXPathFreeContext(xp_ctx);
 	return 0;
