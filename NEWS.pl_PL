@@ -7,6 +7,33 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.653
+# 01.06.2012
+* rozbudowano istniej±c± w SZARPie bibliotekê do logowania - liblog. 
+Dotychczas jedyn± metod± jak± liblog u¿ywa³ do zapisywania logów by³o
+ich wpisywanie do plików testkowych o z góry ustalonym formacie.
+Obecnie architektura tej biblioteki zosta³a zmieniona - sam liblog
+nie zajmuje siê formatowaniem ani zgrywaniem logów na dysk - za to
+zadanie odpowiedzialne s± "pluginy", których rol± jest zapisanie logów
+we w³a¶ciwym dla nich formacie. Taka architektura pozwala na ³atwe
+konfigurowanie oraz rozbudowywanie libloga o wsparcie dla ró¿nych mechanizmów
+logowania. W tej chwili zaimplemtowane s± 3 pluginy:
+- syslog - jak nazwa wskazuje jest to plugin u¿ywj±cy bibliteki syslog,
+ten plugin jest teraz domy¶lnie u¿ywany na linuxie
+- asyslog - jest to plugin u¿ywaj±cy naszej w³asnej bilbioteki do logowania,
+stworzony dla aplikacji opartych o libevent
+- classic - plugin ten implementuje sposób logowania u¿ywany dotychczas
+przez SZARPa, domy¶lnie stosowany jest na windowsie
+* stworzono bibliotekê asyslog, biblioteka ta to prosta implementacja
+protoko³u syslog oparata na bibliotece libevent, pozwala ona aplikacjom
+u¿ywaj±cym libevent logowaæ do sysloga w sposób nieblokuj±cy
+* do modbus-owego driver do boruty dodano wsparcie dla wysy³ania warto¶ci
+ca³kowitych zawartych bezpo¶rednio w konfiguracjij
+* dodano prze³±cznik -f do wspieranych argumentów linii komend programu
+draw3, draw3 uruchomiony z tym prze³±cznikiem uruchamia siê od razu
+w trybie pe³noekranowym
+* poprawiono liczenie precyzji w driverze boruty do komunikacji z
+regulatorami lumel
 ** 3.1.647
 # 01.05.2012
 * nowy plugin dla demona boruta obs³uguj±cy komunikacje z licznikami Lumel
