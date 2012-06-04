@@ -31,7 +31,7 @@ INCLUDES = @XML_CFLAGS@ @XSLT_CFLAGS@ @CURL_CFLAGS@ @LUA_CFLAGS@ \
 
 noinst_LTLIBRARIES = libSzarp2.la
 
-EXTRA_PROGRAMS = szbtest lua_parser_test xmlreader_test async_log_test
+EXTRA_PROGRAMS = szbtest lua_parser_test xmlreader_test
 szbtest_SOURCES = $(SZBASE_DIR)/szbtest.cc
 
 lua_parser_test_INCLUDES = $(INCLUDES)
@@ -56,8 +56,7 @@ noinst_HEADERS = \
 		      $(INCLUDE_DIR)/tokens.h \
 		      $(INCLUDE_DIR)/convuri.h \
                       $(INCLUDE_DIR)/ppset.h \
-                      $(INCLUDE_DIR)/xmlutils.h \
-                      $(INCLUDE_DIR)/async_syslog.h 
+                      $(INCLUDE_DIR)/xmlutils.h
 
 if MINGW32_OPT
 INCLUDE_PARSERS =

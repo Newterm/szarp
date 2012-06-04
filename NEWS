@@ -6,6 +6,31 @@
 # Empty lines are ignored.
 # $Id$
 
+
+** 3.1.653
+# 01.06.2012
+* szarp logging library "liblog" has seen significant improvements.
+Up to now liblog implemented one way of logging - the log files have
+been written directly to disk in a fixed textual format. The changed liblog
+introduces notion of plugins which hide the details of actual logging
+mechanism behind a simple API and make liblog easily extendable and configurable
+to support various logging methods. Currently liblog comes with following
+plugins:
+- syslog: which is now default on linux platform, as the name suggest
+this plugin uses syslog as an underlaying logging method
+- asyslog: this one is very similar to syslog but uses our homebrew
+implementation of non-blocking asynchronous syslog protocol, suitable
+for use in applications based on libevent
+- classic: this plugin implements the old-way of logging, used by default
+on Windows
+* asyslog has been added to SZARP - it is a simple asynchronous implementation
+of syslog library to be used in applications based on libevent. This library 
+let application do the logging in purely non-blocking way.
+* boruta modbus driver now supports sending of constant integer values
+* draw3 supports command-line switch to make it start in full-screen
+mode
+* fix precision calculation in boruta lumel driver
+
 ** 3.1.647
 # 01.05.2012
 * new boruta plugin for Lumel meters
