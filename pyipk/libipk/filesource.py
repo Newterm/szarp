@@ -8,7 +8,7 @@ class FileSource :
 		return ''
 
 	def write( self , data ) :
-		passe
+		pass
 
 	def filename( self ) :
 		return ''

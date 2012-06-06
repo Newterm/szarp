@@ -13,6 +13,7 @@ from .params import QNode
 from .xml_view import XmlView
 from .xml_diag import XmlDialog
 
+from .map_view import MapDialog
 from .plug_diag import PluginsDialog
 from .params_editor import ParamsEditor
 
@@ -68,12 +69,14 @@ class ParamsManager( QtGui.QTabWidget ) :
 		view_full.runSig.connect(lambda ns : self.runOnNodes(params,views,ns))
 		view_full.showSig.connect( self.showOnNodes )
 		view_full.editSig.connect( self.editOnNodes )
+		view_full.attribSig.connect( self.attribOnNodes )
 		hlay_xml.addWidget( view_full )
 
 		view_result.changedSig.connect( params.touch )
 		view_result.runSig.connect(lambda ns : self.runOnNodes(params,views,ns))
 		view_result.showSig.connect( self.showOnNodes )
 		view_result.editSig.connect( self.editOnNodes )
+		view_result.attribSig.connect( self.attribOnNodes )
 		hlay_xml.addWidget( view_result )
 
 		self.addTab( wdg , str(filesource) )
@@ -155,4 +158,17 @@ class ParamsManager( QtGui.QTabWidget ) :
 		if diag.exec_() == QtGui.QDialog.Accepted :
 			return ( diag.selected_name() , diag.selected_args() )
 		return None
+
+	def attribOnNodes( self , nodes ) :
+		if len(nodes) != 1 :
+			print('You may edit attribs only on one node at once')
+			return
+
+		n = nodes[0]
+		diag = MapDialog( self )
+		diag.set_list( n.node.items() )
+		if diag.exec_() == QtGui.QDialog.Accepted :
+			n.node.attrib.clear()
+			for k , v in diag.get_list() :
+				n.node.set(k,v)
 
