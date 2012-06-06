@@ -26,7 +26,7 @@
      <x>0</x>
      <y>0</y>
      <width>706</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -47,6 +47,7 @@
     </property>
     <addaction name="actionValidate"/>
     <addaction name="actionNamespaces"/>
+    <addaction name="actionConfiguration"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_Options"/>
@@ -110,6 +111,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actionConfiguration">
+   <property name="text">
+    <string>Configuration</string>
    </property>
   </action>
  </widget>
@@ -243,6 +249,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionConfiguration</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>openConfigDialog()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>352</x>
+     <y>286</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>openParamsDialog()</slot>
@@ -252,5 +274,6 @@
   <slot>openBaseDialog()</slot>
   <slot>validate()</slot>
   <slot>openRemoteDialog()</slot>
+  <slot>openConfigDialog()</slot>
  </slots>
 </ui>

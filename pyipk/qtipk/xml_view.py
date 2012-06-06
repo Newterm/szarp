@@ -23,6 +23,7 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 	runSig = QtCore.pyqtSignal( list )
 	showSig = QtCore.pyqtSignal( list )
 	editSig = QtCore.pyqtSignal( list )
+	attribSig = QtCore.pyqtSignal( list )
 
 	def __init__( self , name , parent , buf = None ) :
 		QtGui.QWidget.__init__( self , parent )
@@ -48,6 +49,7 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 		menu = QtGui.QMenu(self)
 
 		runAction     = menu.addAction(stdIcon("system-run"),"Run")
+		attribAction  = menu.addAction("Attributes")
 		menu.addSeparator()
 		copyAction    = menu.addAction(stdIcon("edit-copy"),"Copy")
 		pasteAction   = menu.addAction(stdIcon("edit-paste"),"Paste")
@@ -62,6 +64,7 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 
 
 		pasteAction.setEnabled(len(self.copybuf) > 0 and len(nodes) == 1)
+		attribAction.setEnabled(len(nodes) == 1)
 
 		action = menu.exec_(self.mapToGlobal(event.pos()))
 
@@ -70,6 +73,8 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 
 		if action == runAction :
 			self.runSig.emit( nodes )
+		elif action == attribAction :
+			self.attribSig.emit( nodes )
 		elif action == copyAction :
 			self.copybuf.set( nodes )
 		elif action == pasteAction :
