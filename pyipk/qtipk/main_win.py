@@ -6,7 +6,7 @@ sip.setapi('QString', 2)
 
 from PyQt4 import QtGui , QtCore
 
-from libipk.filesource import FS_local
+from libipk.filesource import FS_local , FS_url
 from libipk.plugins import Plugins
 
 from .params_mgr import ParamsManager
@@ -14,27 +14,31 @@ from .params_mgr import ParamsManager
 from .base_diag import BaseDialog
 from .remote_diag import RemoteDialog
 from .validate_diag import ValidateDialog
+from .map_view import MapDialog
 
 from .utils import *
+from .config import Config , Configurable
 
 from .ui.main_win import Ui_MainWindow
 
-SZARP_PATH = '/opt/szarp/'
-DEFAULT_RELAXNG = '/opt/szarp/resources/dtd/ipk-params.rng'
-
-class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
-	def __init__( self , plugins ) :
+class MainWindow( QtGui.QMainWindow , Ui_MainWindow , Configurable ) :
+	def __init__( self , parent ) :
 		QtGui.QMainWindow.__init__( self )
 		self.setupUi( self )
+		Configurable.__init__( self , parent )
 
 		self.plugins = Plugins()
-		self.plugins.load(plugins)
+		self.plugins.load( self.cfg['path:plugins'] )
+		self.cfg.on_edited( 'path:plugins' , self.plugins.reload )
 
 		self.params_mgr = ParamsManager( self.plugins , self )
 
-		self.validateDiag = ValidateDialog( self , DEFAULT_RELAXNG )
+		self.validateDiag = ValidateDialog( self )
 
 		self.setCentralWidget( self.params_mgr )
+
+		if 'url:params' in self.cfg :
+			self.openParams( FS_url(self.cfg['url:params']) )
 
 	def rlyClose( self ) :
 		return self.params_mgr.closeAllParams()
@@ -68,14 +72,23 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow ) :
 		self.params_mgr.newParams( fs )
 
 	def openBaseDialog( self ) :
-		diag = BaseDialog( self , SZARP_PATH )
+		diag = BaseDialog( self , self.cfg['path:szarp'] )
 		if diag.exec_() == QtGui.QDialog.Accepted :
 			self.openParams( FS_local(fromUtf8(diag.selected_params())) )
 
 	def openRemoteDialog( self ) :
-		diag = RemoteDialog( self , SZARP_PATH )
+		diag = RemoteDialog( self , self.cfg['path:szarp'] )
 		if diag.exec_() == QtGui.QDialog.Accepted :
 			self.openParams( diag.get_fs() )
+
+	def openConfigDialog( self ) :
+		diag = MapDialog( self )
+		diag.set_map( self.cfg )
+		# lambda cannot contain assignment:O
+		def update( m ) : self.cfg = m
+		diag.on_apply( update )
+		if diag.exec_() == QtGui.QDialog.Accepted :
+			self.cfg = diag.get_map()
 
 	def validate( self ) :
 		self.validateDiag.exec_( self.params_mgr.currentParams() )

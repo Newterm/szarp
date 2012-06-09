@@ -82,3 +82,10 @@ class MapDialog( QtGui.QDialog , Ui_MapDialog ) :
 		self.set_list = self.view.set_list
 		self.get_list = self.view.get_list
 
+	def on_apply( self , func ) :
+		self.apply_func = func
+
+	def onClicked( self , but ) :
+		if self.buttonBox.buttonRole( but ) == QtGui.QDialogButtonBox.ApplyRole :
+			self.apply_func( self.view.get_map() )
+

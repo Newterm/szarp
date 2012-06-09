@@ -9,6 +9,7 @@ from lxml import etree
 from PyQt4 import QtGui , QtCore
 
 from .utils import * 
+from .config import Configurable
 
 from .ui.open_with_dialog import Ui_OpenWithDialog
 
@@ -22,19 +23,19 @@ class OpenWithDialog( QtGui.QDialog , Ui_OpenWithDialog ) :
 	def get_binary( self ) :
 		return self.progInput.text()
 
-class ParamsEditor( QtCore.QObject ) :
+class ParamsEditor( QtCore.QObject , Configurable ) :
 	changedSig = QtCore.pyqtSignal()
 
-	def __init__( self , parent , default = '' ) :
+	def __init__( self , parent ) :
 		QtCore.QObject.__init__(self)
+		Configurable.__init__(self,parent)
 		self.parent  = parent
-		self.default = default
 		self.proc = []
 
 	def get_binary( self ) :
-		diag = OpenWithDialog( self.parent , self.default )
+		diag = OpenWithDialog( self.parent , self.cfg['gui:editor'] )
 		if diag.exec_() == QtGui.QDialog.Accepted :
-			self.default = diag.get_binary()
+			self.cfg['gui:editor'] = diag.get_binary()
 			return diag.get_binary()
 		return None
 
