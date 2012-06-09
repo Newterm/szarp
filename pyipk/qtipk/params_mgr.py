@@ -17,7 +17,7 @@ from .map_view import MapDialog
 from .plug_diag import PluginsDialog
 from .params_editor import ParamsEditor
 
-DEFAULT_EDITOR = 'gvim'
+from .config import Config , Configurable
 
 class CopyBuffer :
 	def __init__( self ) :
@@ -37,14 +37,15 @@ class CopyBuffer :
 	def __len__( self ) :
 		return 0 if self.nodes == None else 1
 
-class ParamsManager( QtGui.QTabWidget ) :
+class ParamsManager( QtGui.QTabWidget , Configurable ) :
 	def __init__( self , plugins , parent = None ) :
 		QtGui.QTabWidget.__init__( self , parent )
+		Configurable.__init__( self , parent )
 
 		self.setTabsClosable( True )
 		self.tabCloseRequested.connect( self.closeTab )
 
-		self.editor = ParamsEditor( self , DEFAULT_EDITOR )
+		self.editor = ParamsEditor( self )
 		self.editor.changedSig.connect( self.touch_params )
 
 		self.copybuf = CopyBuffer()

@@ -56,7 +56,7 @@ class PNode :
 		return out
 
 	def tostring( self ) :
-		return etree.tostring( self.node , pretty_print = True , encoding='utf8' , method = 'xml' , xml_declaration=False )
+		return etree.tostring( self.node , pretty_print = True , encoding='utf8' , method = 'xml' , xml_declaration=True )
 
 	def __repr__( self ) :
 		return '('+object.__repr__(self)+','+str(self.node)+')'

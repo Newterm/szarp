@@ -1,6 +1,11 @@
 
 import os , tempfile 
 
+try :
+	from urlparse import urlparse
+except ImportError :
+	from urllib.parse import urlparse
+
 from miscipk import pysftp
 
 class FileSource :
@@ -69,4 +74,13 @@ class FS_ssh( FS_local ) :
 
 	def __str__( self ) :
 		return '%s:%s' % (self.serv,self.path)
+
+def FS_url( url ) :
+	o = urlparse( url )
+	if o.scheme == 'file' :
+		return FS_local( o.path )
+	elif o.scheme == 'ssh' :
+		return FS_ssh( o.hostname , o.path , username = o.username , password = o.password , port = o.port if o.port != None else 22 )
+
+	raise ValueError("Url protocol not supported")
 

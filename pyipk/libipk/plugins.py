@@ -22,6 +22,9 @@ class Plugins :
 	def names( self ) :
 		return self.plugins.keys()
 
+	def clear( self ) :
+		self.plugins.clear()
+
 	def load( self , path ) :
 		sys.path.append( path )
 		for modname in os.listdir(path) :
@@ -29,6 +32,10 @@ class Plugins :
 				modname = modname[:-3]
 				self.import_module( modname )
 		sys.path.pop()
+
+	def reload( self , path ) :
+		self.clear()
+		self.load( path )
 
 	def import_module( self , modname ) :
 		__import__( modname )
