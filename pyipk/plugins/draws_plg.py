@@ -9,7 +9,7 @@ import operator as op
 from functools import reduce
 
 class DrawsNumbering( Plugin ) :
-	''' Corrects all draws numbering beneath selected nodes '''
+	'''Corrects all draws numbering beneath selected nodes '''
 
 	def __init__( self , **args ) :
 		Plugin.__init__( self , **args )
@@ -70,7 +70,7 @@ class DrawsNumbering( Plugin ) :
 		return reduce( lambda a , b : a+b , drawslist , [] )
 
 class DrawsNumberingSpecified( DrawsNumbering ) :
-	''' Corrects all draws with specified title numeration beneath selected nodes '''
+	'''Corrects all draws with specified title numeration beneath selected nodes '''
 
 	@staticmethod
 	def get_args() :
@@ -89,7 +89,7 @@ class DrawsNumberingSpecified( DrawsNumbering ) :
 
 
 class DrawsColorsCheck( Plugin ) :
-	''' Checks if there are repeated colors in draws if so shows those draws. If drawtitle is empty checks all draws each one separately. '''
+	'''Checks if there are repeated colors in draws if so shows those draws. If drawtitle is empty checks all draws each one separately. '''
 
 	def set_args( self , **args ) :
 		self.drawtitle = args['drawtitle']
@@ -139,7 +139,7 @@ class DrawsColorsCheck( Plugin ) :
 			[] )
 
 class PurgeSubTag( Plugin ) :
-	''' Removes all tags specified by subtag that are children of tag spec by tag '''
+	'''Removes all tags specified by subtag that are children of tag spec by tag '''
 	def set_args( self , **args ) :
 		self.tag    = args['tag']
 		self.subtag = args['subtag']
@@ -162,7 +162,7 @@ class PurgeSubTag( Plugin ) :
 		return self.tags
 
 class PurgeDraws( PurgeSubTag ) :
-	''' Removes all draws from param tags beneath selected nodes '''
+	'''Removes all draws from param tags beneath selected nodes '''
 	@staticmethod
 	def section() : return 'Params'
 
@@ -173,7 +173,7 @@ class PurgeDraws( PurgeSubTag ) :
 		PurgeSubTag.set_args( self, tag='param', subtag='draw', **args )
 
 class PurgeReports( PurgeSubTag ) :
-	''' Removes all reports from param tags beneath selected nodes '''
+	'''Removes all reports from param tags beneath selected nodes '''
 
 	@staticmethod
 	def section() : return 'Params'
@@ -186,7 +186,7 @@ class PurgeReports( PurgeSubTag ) :
 
 
 class AddDraw( Plugin ) :
-	''' Adds all param tags beneath selected nodes to draw '''
+	'''Adds all param tags beneath selected nodes to draw '''
 
 	@staticmethod
 	def section() : return 'Params'

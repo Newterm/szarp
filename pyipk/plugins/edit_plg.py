@@ -5,7 +5,7 @@ import string
 from lxml import etree
 
 class EnumerateChoosenAttrib( Plugin ) :
-	''' Sets specified attrib to succeding numbers starts from 'start' '''
+	'''Sets specified attrib to succeding numbers starts from 'start' '''
 	def set_args( self , **args ) :
 		self.beg    = int(args['start'])
 		self.attrib = args['attrib']
@@ -31,7 +31,7 @@ class EnumerateChoosenAttrib( Plugin ) :
 
 
 class EnumerateSubTagAttrib( Plugin ) :
-	''' Sets specified attrib to succeding numbers starts from 'start' '''
+	'''Sets specified attrib to succeding numbers starts from 'start' '''
 	def set_args( self , **args ) :
 		self.tag    = args['tag']
 		self.beg    = int(args['start'])
@@ -57,7 +57,7 @@ class EnumerateSubTagAttrib( Plugin ) :
 
 
 class SortTagAttrib( Plugin ) :
-	''' Sorts all children of selected tags by specified attrib. Children with no such attrib are grouped at front in undefined order. '''
+	'''Sorts all children of selected tags by specified attrib. Children with no such attrib are grouped at front in undefined order. '''
 
 	def set_args( self , **args ) :
 		self.attrib = args['attrib']
