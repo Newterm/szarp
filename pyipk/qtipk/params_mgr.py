@@ -57,6 +57,8 @@ class ParamsManager( QtGui.QTabWidget , Configurable ) :
 	def newParams( self , filesource ) :
 		params = params_fs( filesource , treeclass = QNode )
 
+		self.cfg['url:params'] = filesource.url()
+
 		index = len(self.paramss)
 
 		wdg = QtGui.QWidget( self )
@@ -101,6 +103,8 @@ class ParamsManager( QtGui.QTabWidget , Configurable ) :
 			views[0].clear()
 			views[1].clear()
 			self.removeTab(index)
+			if self.count() == 0 :
+				del self.cfg['url:params']
 
 	def touch_params( self , index ) :
 		self.paramss[index].touch()
