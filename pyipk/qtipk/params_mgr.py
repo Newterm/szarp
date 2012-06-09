@@ -172,8 +172,11 @@ class ParamsManager( QtGui.QTabWidget , Configurable ) :
 		n = nodes[0]
 		diag = MapDialog( self )
 		diag.set_list( n.node.items() )
-		if diag.exec_() == QtGui.QDialog.Accepted :
-			n.node.attrib.clear()
+		def update( m = None ) :
 			for k , v in diag.get_list() :
 				n.node.set(k,v)
+		diag.on_apply( update )
+		if diag.exec_() == QtGui.QDialog.Accepted :
+			n.node.attrib.clear()
+			update()
 
