@@ -18,6 +18,9 @@ class FileSource :
 	def filename( self ) :
 		return ''
 
+	def url( self ) :
+		return ''
+
 	def __del__( self ) :
 		pass
 
@@ -37,6 +40,9 @@ class FS_local( FileSource ) :
 	def filename( self ) :
 		return self.fn
 
+	def url( self ) :
+		return 'file://%s' % self.fn
+
 	def __str__( self ) :
 		return self.fn
 
@@ -45,15 +51,16 @@ from miscipk.pysftp import AuthenticationError
 from miscipk.pysftp import HostNotFoundError
 
 class FS_ssh( FS_local ) :
-	def __init__( self , serv , path , *l , **m ) :
+	def __init__( self , serv , path , username = None , port = None , *l , **m ) :
 		self.fn = None
 		self.serv = serv
 		self.path = path
-		self.con = pysftp.Connection( serv , *l , **m )
+		self.con = pysftp.Connection( serv , username , port = port , *l , **m )
 		fd , fn  = tempfile.mkstemp('.xml','params-')
 		os.close(fd)
 		FS_local.__init__( self , fn )
 		self.refresh()
+		self._url = self.join_url( serv , path , username , port )
 
 	def refresh( self ) :
 		self.con.get( self.path , self.fn )
@@ -67,6 +74,14 @@ class FS_ssh( FS_local ) :
 
 	def filename( self ) :
 		return self.fn
+
+	def join_url( self , host , path , user = None , port = None ) :
+		netloc = host   if port == None else '%s:%s'%(host,port)
+		addr   = netloc if user == None else '%s@%s'%(user,netloc)
+		return 'ssh://%s%s' % (addr,path)
+
+	def url( self ) :
+		return self._url
 
 	def __del__( self ) :
 		FS_local.__del__( self )

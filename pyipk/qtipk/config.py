@@ -21,8 +21,9 @@ def fullpath( path ) :
 
 class Config( QtCore.QObject )  :
 
-	editedSig = QtCore.pyqtSignal( str , str )
-	addedSig  = QtCore.pyqtSignal( str , str )
+	editedSig  = QtCore.pyqtSignal( str , str )
+	addedSig   = QtCore.pyqtSignal( str , str )
+	removedSig = QtCore.pyqtSignal( str , str )
 
 	def connect_key( self , sig , key , func ) :
 		sig.connect( lambda k , v : k == key and func(v) )
@@ -32,6 +33,9 @@ class Config( QtCore.QObject )  :
 
 	def on_added( self , key , func ) :
 		self.connect_key( self.addedSig , key , func )
+
+	def on_remove( self , key , func ) :
+		self.connect_key( self.removedSig , key , func )
 
 	def __init__( self ) :
 		QtCore.QObject.__init__( self )
@@ -44,7 +48,9 @@ class Config( QtCore.QObject )  :
 		return self.m[key]
 
 	def __delitem__( self , key ) :
+		val = self.m[key]
 		del self.m[key]
+		self.removedSig.emit( key , val )
 
 	def __setitem__( self , key , val ) :
 		if key not in self.m :
@@ -66,6 +72,7 @@ class Config( QtCore.QObject )  :
 		self['path:szarp']    = '/opt/szarp/'
 		self['path:relax_ng'] = '/opt/szarp/resources/dtd/ipk-params.rng'
 		self['path:plugins']  = '/opt/szarp/lib/plugins/'
+		self['path:config']   = fullpath('~/.pyipk.ini')
 
 		self['gui:editor']    = 'gvim'
 
@@ -93,11 +100,14 @@ class Config( QtCore.QObject )  :
 				metavar = "<path>" ,
 				help = "directory where SZARP is installed. Defaults to %s." % self['path:szarp'] ,
 				default = self['path:szarp'] )
-
+		self.parser.add_option("" , "--config" ,
+				metavar = "<path>" ,
+				help = "path to config file. Defaults to %s." % self['path:config'] ,
+				default = self['path:config'] )
 		options , self.args = self.parser.parse_args()
 
 		if options.base :
-			self['url:params'] = 'file:///opt/szarp/%s/config/params.xml' % self.base
+			self['url:params'] = 'file:///opt/szarp/%s/config/params.xml' % options.base
 		elif options.params :
 			self['url:params'] = 'file:///%s' % fullpath( options.params )
 		elif options.url :
@@ -106,12 +116,29 @@ class Config( QtCore.QObject )  :
 		self['path:szarp']    = fullpath( options.prefix )
 		self['path:relax_ng'] = fullpath( options.relax_ng )
 		self['path:plugins']  = fullpath( options.load )
+		self['path:config']   = fullpath( options.config )
 
-	def parse_cfg_file( self , path ) :
-		pass
+	def parse_cfg_file( self , path , force = True ) :
+		cfg = configparser.SafeConfigParser()
+		cfg.read( path )
+		for sec in cfg.sections() :
+			for k , v in cfg.items( sec ) :
+				key = '%s:%s'%(sec,k)
+				if force or key not in self :
+					self[key] = v
 
 	def save_to_cfg( self , path ) :
-		pass
+		self.to_save = path
+
+	def save( self ) :
+		cfg = configparser.SafeConfigParser()
+		for k , v in self.m.items() :
+			s , k = k.split(':',1)
+			if not cfg.has_section(s) :
+				cfg.add_section(s) 
+			cfg.set(s,k,v)
+		with open( self.to_save , 'wb' ) as f :
+			cfg.write( f )
 
 class Configurable :
 	def __init__( self , parent = None ) :

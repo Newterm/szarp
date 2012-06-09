@@ -15,14 +15,16 @@ class QtApp( QtGui.QApplication , Configurable ) :
 		QtGui.QApplication.__init__( self , argv )
 		Configurable.__init__( self )
 
-		self.cfg.parse_cfg_file( '' )
+		self.cfg.parse_cfg_file( self.cfg['path:config'] )
 		self.cfg.parse_cmd_line( argv )
 
-		self.cfg.save_to_cfg( '' )
+		self.cfg.save_to_cfg( self.cfg['path:config'] )
 
 		self.main_win = MainWindow( self )
 
 	def run( self ) :
 		self.main_win.show()
-		return self.exec_()
+		code = self.exec_()
+		self.cfg.save()
+		return code
 
