@@ -1,3 +1,6 @@
+2012-06-10 Darek Marcinkiewicz <reksio@newterm.pl>
+	* utils/remarks_handler: fix, graph's short name wasn't properly
+	stored
 2012-06-03 Darek Marcinkiewicz <reksio@newterm.pl>
 	* parcook/boruta_modbus.cc: boruta now supports sending of constant
 	integer values + longest method in boruta code splitted into a couple
