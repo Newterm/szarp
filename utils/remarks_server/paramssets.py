@@ -75,7 +75,7 @@ class UserSet:
 			draw["hoursum"] = True if "hoursum" in u_draw.attrib else None
 			draw["draw"] = u_draw.attrib["draw"]
 
-			draw_element_attribs = ["max", "min", "color", "title", "sname", "scale", "min_scale", "max_scale"]
+			draw_element_attribs = ["max", "min", "color", "title", "short", "scale", "min_scale", "max_scale"]
 			for attrib in draw_element_attribs:
 				draw[attrib] = None
 
