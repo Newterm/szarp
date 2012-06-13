@@ -69,7 +69,7 @@ FrameManager::FrameManager(DatabaseManager *dmgr, ConfigManager *cfgmgr, Remarks
 {
 }
 
-bool FrameManager::CreateFrame(const wxString &prefix, const wxString& set, PeriodType pt, time_t time, const wxSize& size, const wxPoint &position, int selected_draw, bool try_load_layout) {
+bool FrameManager::CreateFrame(const wxString &prefix, const wxString& set, PeriodType pt, time_t time, const wxSize& size, const wxPoint &position, int selected_draw, bool try_load_layout, bool full_screen) {
 	DrawFrame *frame = new DrawFrame(this, database_manager, config_manager, remarks_handler, NULL, free_frame_number, _T(""), prefix);
 
 	if(!(try_load_layout && frame->LoadLayout())) {
@@ -108,6 +108,9 @@ bool FrameManager::CreateFrame(const wxString &prefix, const wxString& set, Peri
 		free_frame_number = 0;
 	else
 		free_frame_number++;
+
+	if (full_screen)
+		frame->SwitchFullScreen();
 
 	frame->Show(true);
 	frame->Raise();

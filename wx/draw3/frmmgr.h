@@ -74,7 +74,7 @@ class FrameManager : public wxEvtHandler {
 	 * @param size initial size of frame
 	 * @param position initial position of frame
 	 * @return true if config was successfully read and frame created*/
-	bool CreateFrame(const wxString &prefix, const wxString& set, PeriodType pt, time_t time, const wxSize& size, const wxPoint &position, int selected_draw = 0, bool try_load_layout = false);
+	bool CreateFrame(const wxString &prefix, const wxString& set, PeriodType pt, time_t time, const wxSize& size, const wxPoint &position, int selected_draw = 0, bool try_load_layout = false, bool full_screen = false);
 
 
 	/**postition current panel at following params

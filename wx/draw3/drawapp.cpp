@@ -379,7 +379,7 @@ bool DrawApp::OnInit() {
 	FrameManager *fm = new FrameManager(m_dbmgr, m_cfg_mgr, m_remarks_handler);
 
 	/*@michal  */
-	if (!fm->CreateFrame(prefix, window, pt, time, wxSize(width, height), wxPoint(x, y), selected_draw, m_url.IsEmpty())) {
+	if (!fm->CreateFrame(prefix, window, pt, time, wxSize(width, height), wxPoint(x, y), selected_draw, m_url.IsEmpty(), m_full_screen)) {
 		StopThreads();
 		wxLogError(_T("Unable to load base: %s"), prefix.c_str());
 		return FALSE;
@@ -421,6 +421,8 @@ void DrawApp::OnInitCmdLine(wxCmdLineParser &parser) {
 	parser.AddSwitch(_T("e"), wxEmptyString, 
 		_("open url in existing window"));
 
+	parser.AddSwitch(_T("f"), wxEmptyString, 
+		_("open window in full screen mode"));
 
 	parser.AddSwitch(_T("v"), _T("verbose"), _("verbose logging"));
 
@@ -463,6 +465,8 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 
 	if (parser.Found(_T("v")))
     		wxLog::SetVerbose();
+
+	m_full_screen = parser.Found(_T("f"));
 
 	m_just_print_version = parser.Found(_("V"));
 

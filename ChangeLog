@@ -42,6 +42,16 @@
 	to use it for an app utlizing wx event loop which in fact is doing
 	integration testing), anyway when we start doing unit tests, the check
 	for this library will already be here, waiting
+2012-05-06 Dariusz Marcinkiewcz <reksio@newterm.pl>
+	* wx/sync: bump max connection timeout value, currently for our largest
+	db, in full sync mode, client may spend several minutes on traversing
+	db directory structure is search for files that were removed on server,
+	while doing this it does not generate any trafiic which leads to
+	connection being timed out by server
+2012-05-15 Krzysztof Galazka <kg@newterm.pl>
+	* parcook/boruta_lumel.cc: one more fix in prec calculation
+	* wx/draw3/{drawapp.*,frmmgr.*}: switch in command line for full
+	screen
 2012-05-14 Krzysztof Galazka <kg@newterm.pl>
 	* parcook/boruta_lumel.cc: fix for prec calculating
 2012-05-14 Darek Marcinkiewicz <reksio@newterm.pl>

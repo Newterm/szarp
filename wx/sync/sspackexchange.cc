@@ -61,7 +61,7 @@ const uint32_t FetchFileListEx::NOT_SUCH_DIR = 1;
 const uint32_t FetchFileListEx::REGEX_COMP_FAILED = 2;
 const uint32_t FetchFileListEx::NO_FILES_SELECTED = 3;
 
-const int connection_timeout_seconds = 5 * 60;
+const int connection_timeout_seconds = 20 * 60;
 
 Packet* PacketExchanger::DequeInputPacket() { 
 	if (m_input_queue.size() == 0)
