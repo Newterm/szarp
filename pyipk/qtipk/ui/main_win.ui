@@ -26,7 +26,7 @@
      <x>0</x>
      <y>0</y>
      <width>706</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -36,6 +36,8 @@
     <addaction name="actionOpen"/>
     <addaction name="actionBase"/>
     <addaction name="actionRemote"/>
+    <addaction name="separator"/>
+    <addaction name="actionReload"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_As"/>
     <addaction name="separator"/>
@@ -109,13 +111,18 @@
    <property name="text">
     <string>Remote</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+R</string>
-   </property>
   </action>
   <action name="actionConfiguration">
    <property name="text">
     <string>Configuration</string>
+   </property>
+  </action>
+  <action name="actionReload">
+   <property name="text">
+    <string>Reload</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
    </property>
   </action>
  </widget>
@@ -265,6 +272,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionReload</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>reload()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>352</x>
+     <y>286</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>openParamsDialog()</slot>
@@ -275,5 +298,6 @@
   <slot>validate()</slot>
   <slot>openRemoteDialog()</slot>
   <slot>openConfigDialog()</slot>
+  <slot>reload()</slot>
  </slots>
 </ui>

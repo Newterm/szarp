@@ -115,19 +115,28 @@ class ParamsManager( QtGui.QTabWidget , Configurable ) :
 				return False
 		return True
 
+	def confirmDialog( self , msg ) :
+		reply = QtGui.QMessageBox.question(self, 'Message', msg ,
+			QtGui.QMessageBox.Yes | QtGui.QMessageBox.No,
+			QtGui.QMessageBox.No)
+
+		if reply == QtGui.QMessageBox.Yes:
+			return True
+		else :
+			return False
+
 	def closeParams( self , params ) :
 		if params.close() :
 			return True
 		else :
-			reply = QtGui.QMessageBox.question(self, 'Message',
-				"File %s not saved. Are you sure you want to close it?" % str(params.get_filesource()),
-				QtGui.QMessageBox.Yes | QtGui.QMessageBox.No,
-				QtGui.QMessageBox.No)
+			return self.confirmDialog( "File %s not saved. Are you sure you want to close it?" % str(params.get_filesource()) )
 
-			if reply == QtGui.QMessageBox.Yes:
-				return True
-			else :
-				return False
+	def reload( self ) :
+		params = self.currentParams()
+		if params != None :
+			if not params.reload() :
+				if self.confirmDialog( "File %s not saved. Are you sure you want to reload it?" % str(params.get_filesource()) )  :
+					params.reload( force = True )
 
 	def save( self , filesource = None ) :
 		params = self.currentParams()
