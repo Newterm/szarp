@@ -182,13 +182,13 @@ void ParamsListDialog::LoadParams() {
 		if (!filter.IsEmpty() && text.Lower().Find(filter) == wxNOT_FOUND)
 			continue;
 
-		wxListItem i;
-		i.SetText(text);
-		i.SetData(dp);
-		i.SetId(j);
+		wxListItem it;
+		it.SetText(text);
+		it.SetData(dp);
+		it.SetId(j);
 
-		i.SetColumn(0);
-		m_param_list->InsertItem(i);
+		it.SetColumn(0);
+		m_param_list->InsertItem(it);
 	}
 
 	if (m_param_list->GetItemCount() > 0) {
