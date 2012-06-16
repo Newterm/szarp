@@ -10,6 +10,8 @@
 #include <iomanip>
 #include <vector>
 
+#include <cstdio>
+#include <unistd.h>
 #include <termio.h>
 #include <fcntl.h>
 #include <sys/types.h>
