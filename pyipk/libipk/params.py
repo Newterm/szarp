@@ -166,6 +166,16 @@ class Params :
 	def get_filesource( self ) :
 		return self.fs
 
+	def reload( self , force = None ) :
+		if not force and self.changed :
+			return False
+
+		self.doc = etree.parse( StringIO( self.fs.read() ) )
+		self.rebuild_tree()
+		self.changed = False
+
+		return True
+
 	def open( self , fs ) :
 		if self.doc != None :
 			raise IOError('File already opened')
@@ -223,10 +233,9 @@ class Params :
 		returns -- list of PNodes equivalent to lxml nodes 
 		'''
 		if self.root.node != self.doc.getroot() :
-			del self.root
-			self.root = self.treeclass( self , None , self.doc.getroot() )
-
-		self.root.rebuild()
+			self.root.replace( self.doc.getroot() )
+		else :
+			self.root.rebuild()
 
 		return [ self.get_pnode( self.find_node_path( n ) ) for n in nodes ]
 
