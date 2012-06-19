@@ -2,8 +2,8 @@ package szarp;
 
 message ParamValue {
 	required uint32 param_no = 1;
-	required uint32 timestamp = 2;
-	optional uint32 utimestamp = 3;
+	required uint32 time = 2;
+	optional uint32 nanotime = 3;
 
 	optional uint32 int_value = 11;
 	optional float float_value = 12;
@@ -11,5 +11,5 @@ message ParamValue {
 }
 
 message ParamsValues {
-	repeated ParamValue paramValues = 1;
+	repeated ParamValue param_values = 1;
 }
