@@ -1,6 +1,13 @@
 2012-08-22 Dariusz Marcinkiewcz <reksio@newterm.pl>
 	* /: windows fixes: building fix, draw3 incsearch window fix, windows
 	version bump
+2012-06-19 Darek Marcinkiewicz <reksio@newterm.pl>
+	* configure.in: added checks for ZeroMQ library, protocol buffers
+	lib and protoc compiler
+	* libSzarp2/protobuf/paramsvalues.proto: protobuf message carrying
+	params' values	
+	* python/protobuf: python paramsvalues.proto (de)serializer is
+	generated here
 2012-06-13 Darek Marcinkiewicz <reksio@newterm.pl>
 	* utils/remarks_handler: whenever param is updated, its
 	deleted flag is set to false - fixes a problem with inserting
