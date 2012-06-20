@@ -70,7 +70,7 @@ class Param:
 			return msg.double_value
 			
 	def value_from_binary(self, blob):
-		return struct.unpack(self.value_format_string, blob)
+		return struct.unpack(self.value_format_string, blob)[0]
 
 	def time_to_file_stamp(self, time, nanotime):
 		if self.time_prec == 8:
