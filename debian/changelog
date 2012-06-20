@@ -1,3 +1,9 @@
+szarp (3.1.655) unstable; urgency=low
+
+  * building unstable
+
+ -- Jakub Kotur <qba@newterm.pl>  Wed, 20 Jun 2012 09:58:29 +0000
+
 szarp (3.1.653) oneiric; urgency=low
 
   * building oneiric
