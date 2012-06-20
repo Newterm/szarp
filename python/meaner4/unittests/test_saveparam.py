@@ -33,6 +33,7 @@ import param
 import paramsvalues_pb2
 import parampath
 import saveparam
+import config
 
 class SaveParamTest(unittest.TestCase):
 	def setUp(self):
@@ -44,21 +45,80 @@ class SaveParamTest(unittest.TestCase):
       </param>
 """)
 
-	def test_saveparam(self):
-		temp_dir = tempfile.mkdtemp(suffix="meaner4_unit_test")
-		sp = saveparam.SaveParam(self.node, temp_dir)
-
+	def _msg(self, time, value):
 		msg = paramsvalues_pb2.ParamValue()
-		msg.param_no = 1;
-		msg.time = 123456;
-		msg.int_value = 4
-		sp.process_msg(msg)
+		msg.param_no = 1
+		msg.time = time
+		msg.int_value = value
 
-		file_path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/00001234560000000000.sz4")
-		st = os.stat(file_path)
-		self.assertEqual(st.st_mtime, 123456.)
+		return msg
 
-		with open(file_path) as f:
-			self.assertEqual(struct.unpack("<i", f.read(4))[0], 4)
+	def _check_time_size(self, path, time, size):
+		st = os.stat(path)
+		self.assertEqual(st.st_mtime, time)
+		self.assertEqual(st.st_size, size)
+
+	def _check_file(self, path, fmt, expected):
+		with open(path) as f:
+			self.assertEqual(struct.unpack(fmt, f.read()), expected)
+
+	def test_basictest(self):
+		temp_dir = tempfile.mkdtemp(suffix="meaner4_unit_test")
+		path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/00001234560000000000.sz4")
+
+		sp = saveparam.SaveParam(self.node, temp_dir)
+		sp.process_msg(self._msg(123456, 4))
+		self._check_time_size(path, 123456., 4)
+		self._check_file(path, "<i", (4,))
+
+		sp.process_msg(self._msg(123457, 4))
+		self._check_time_size(path, 123457., 4)
+		self._check_file(path, "<i", (4,))
+
+		sp.process_msg(self._msg(123458, 5))
+		self._check_time_size(path, 123458., 4 + 8 + 4)
+		self._check_file(path, "<iIIi", (4, 123457, 0, 5))
+
+		del sp
 
 		shutil.rmtree(temp_dir)
+
+	def test_basictest2(self):
+		"""Similar to basictest, but creates new saveparam object before writing second value"""
+		temp_dir = tempfile.mkdtemp(suffix="meaner4_unit_test")
+		path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/00001234560000000000.sz4")
+
+		sp = saveparam.SaveParam(self.node, temp_dir)
+		sp.process_msg(self._msg(123456, 4))
+		self._check_time_size(path, 123456., 4)
+		self._check_file(path, "<i", (4,))
+
+		sp.process_msg(self._msg(123457, 4))
+		self._check_time_size(path, 123457., 4)
+		self._check_file(path, "<i", (4,))
+
+		del sp
+		sp = saveparam.SaveParam(self.node, temp_dir)
+
+		sp.process_msg(self._msg(123458, 5))
+		self._check_time_size(path, 123458., 4 + 8 + 4)
+		self._check_file(path, "<iIIi", (4, 123457, 0, 5))
+
+		del sp
+		shutil.rmtree(temp_dir)
+
+	def test_basictest3(self):
+		temp_dir = tempfile.mkdtemp(suffix="meaner4_unit_test")
+
+		item_size = 4 + 8
+		items_per_file = config.DATA_FILE_SIZE / item_size
+
+		sp = saveparam.SaveParam(self.node, temp_dir)
+		for i in range(items_per_file + 1):
+			sp.process_msg(self._msg(i, i))
+
+		path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/00000000000000000000.sz4")
+		self._check_time_size(path, items_per_file - 1, items_per_file * item_size)
+
+		path2 = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/%010d0000000000.sz4" % (items_per_file))
+		self._check_time_size(path2, items_per_file, 4)

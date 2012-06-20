@@ -57,9 +57,9 @@ class Param:
 
 	def time_to_binary(self, time, nanotime):
 		if self.time_prec == 8:
-			return struct.pack("<uu", time, nanotime)
+			return struct.pack("<II", time, nanotime)
 		else:
-			return struct.pack("<u", time)
+			return struct.pack("<I", time)
 
 	def value_from_msg(self, msg):
 		if self.data_type == "short" or self.data_type == "int":
