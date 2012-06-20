@@ -4,11 +4,11 @@ szarp (3.1.674) squeeze; urgency=low
 
  -- Krzysztof Gałązka <kg@newterm.pl>  Mon, 12 Jun 2012 15:09:38 +0200
 
-szarp (3.1.656) squeeze; urgency=low
+szarp (3.1.656) natty; urgency=low
 
-  * building squeeze
+  * building natty
 
- -- Krzysztof Gałązka <kg@newterm.pl>  Mon, 12 Jun 2012 15:09:38 +0200
+ -- Jakub Kotur <qba@newterm.pl>  Wed, 20 Jun 2012 10:19:55 +0000
 
 szarp (3.1.655) unstable; urgency=low
 
