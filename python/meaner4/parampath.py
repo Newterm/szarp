@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 """
   SZARP: SCADA software 
   Darek Marcinkiewicz <reksio@newterm.pl>
@@ -22,7 +24,7 @@ import os
 import param
 
 class ParamPath:
-	def __self__(self, param, szbase_dir):
+	def __init__(self, param, szbase_dir):
 		self.szbase_dir = szbase_dir
 		self.param = param
 		self.param_path = self.param_name_to_path(param.param_name)
@@ -38,7 +40,7 @@ class ParamPath:
 				  u"U", u"V", u"W", u"X", u"Y", u"Z"]:
 				return x
 
-			if x == u":"
+			if x == u":":
 				return "/"
 
 			pmap = { u"ą" : u"a", u"Ą" : u"A", u"ć" : u"c", u"Ć" : u"C",
@@ -51,20 +53,26 @@ class ParamPath:
 
 			return u"_"
 				
-		return [ conv(x) for x in param_name ]
+		return "".join([ conv(x) for x in param_name ])
 
 	def create_file_path(self, time, nanotime):
 		if self.param.time_prec == 4:
-			file_name = "%010d" % (time)
+			file_name = "%010d.sz4" % (time)
 		else:
-			file_name = "%010d%010d" % (time, nanotime)
-		return os.join(self.szbase_dir, self.param_path, file_name)
-	
-	def find_latest_path(self):
-		file_names = os.walk(os.join(self.szbase_dir, self.param_path))[2]
-		file_names.sort()
+			file_name = "%010d%010d.sz4" % (time, nanotime)
+		return os.path.join(self.szbase_dir, self.param_path, file_name)
 
-		if len(file_names) > 0:
-			return file_names[-1]
-		else:
+	def param_dir(self):
+		return os.path.join(self.szbase_dir, self.param_path)
+
+	def find_latest_path(self):
+		try:
+			file_names = os.listdir(self.param_dir())
+			file_names.sort()
+
+			if len(file_names) > 0:
+				return os.path.join(self.szbase_dir, self.param_path, file_names[-1])
+			else:
+				return None
+		except OSError:
 			return None
