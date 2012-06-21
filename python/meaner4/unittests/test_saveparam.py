@@ -53,9 +53,8 @@ class SaveParamTest(unittest.TestCase):
 
 		return msg
 
-	def _check_time_size(self, path, time, size):
+	def _check_size(self, path, size):
 		st = os.stat(path)
-		self.assertEqual(st.st_mtime, time)
 		self.assertEqual(st.st_size, size)
 
 	def _check_file(self, path, fmt, expected):
@@ -68,16 +67,16 @@ class SaveParamTest(unittest.TestCase):
 
 		sp = saveparam.SaveParam(self.node, temp_dir)
 		sp.process_msg(self._msg(123456, 4))
-		self._check_time_size(path, 123456., 4)
-		self._check_file(path, "<i", (4,))
+		self._check_size(path, 12)
+		self._check_file(path, "<iII", (4, 123456, 0))
 
 		sp.process_msg(self._msg(123457, 4))
-		self._check_time_size(path, 123457., 4)
-		self._check_file(path, "<i", (4,))
+		self._check_size(path, 12)
+		self._check_file(path, "<iII", (4, 123457, 0))
 
 		sp.process_msg(self._msg(123458, 5))
-		self._check_time_size(path, 123458., 4 + 8 + 4)
-		self._check_file(path, "<iIIi", (4, 123457, 0, 5))
+		self._check_size(path, 4 + 8 + 4 + 8)
+		self._check_file(path, "<iIIiII", (4, 123457, 0, 5, 123458, 0))
 
 		del sp
 
@@ -90,21 +89,20 @@ class SaveParamTest(unittest.TestCase):
 
 		sp = saveparam.SaveParam(self.node, temp_dir)
 		sp.process_msg(self._msg(123456, 4))
-		self._check_time_size(path, 123456., 4)
-		self._check_file(path, "<i", (4,))
+		self._check_size(path, 12)
+		self._check_file(path, "<iII", (4, 123456, 0))
 
 		sp.process_msg(self._msg(123457, 4))
-		self._check_time_size(path, 123457., 4)
-		self._check_file(path, "<i", (4,))
+		self._check_size(path, 12)
+		self._check_file(path, "<iII", (4, 123457, 0))
 
 		del sp
 		sp = saveparam.SaveParam(self.node, temp_dir)
 
 		sp.process_msg(self._msg(123458, 5))
-		self._check_time_size(path, 123458., 4 + 8 + 4)
-		self._check_file(path, "<iIIi", (4, 123457, 0, 5))
+		self._check_size(path, 4 + 8 + 4 + 8)
+		self._check_file(path, "<iIIiII", (4, 123457, 0, 5, 123458, 0))
 
-		del sp
 		shutil.rmtree(temp_dir)
 
 	def test_basictest3(self):
@@ -118,7 +116,7 @@ class SaveParamTest(unittest.TestCase):
 			sp.process_msg(self._msg(i, i))
 
 		path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/00000000000000000000.sz4")
-		self._check_time_size(path, items_per_file - 1, items_per_file * item_size)
+		self._check_size(path, items_per_file * item_size)
 
 		path2 = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/%010d0000000000.sz4" % (items_per_file))
-		self._check_time_size(path2, items_per_file, 4)
+		self._check_size(path2, 12)
