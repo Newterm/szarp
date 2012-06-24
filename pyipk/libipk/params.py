@@ -39,6 +39,12 @@ class PNode :
 	def touch( self ) :
 		self.doc.touch()
 
+	def getparent( self ) :
+		return self.parent
+	
+	def index( self , child ) :
+		return self.node.index(child.node)
+
 	def getline( self ) :
 		return self.node.sourceline
 
@@ -147,6 +153,26 @@ class PNode :
 
 		for c in self.children : c.rebuild()
 
+	def find_path( self ) :
+		path = []
+		node = self
+
+		parent = node.getparent()
+		while parent != None :
+			path.insert( 0 , parent.index( node ) )
+			node = parent
+			parent = node.getparent()
+
+		return path
+
+	def get_by_path( self , path ) :
+		node = self
+		for p in path :
+			try :
+				node = node[p]
+			except IndexError :
+				return None
+		return node
 
 class Params :
 	def __init__( self , relaxng = None , namespaces = None , treeclass = PNode ) :
@@ -255,13 +281,7 @@ class Params :
 		return path
 
 	def get_pnode( self , path ) :
-		node = self.getroot()
-		for p in path :
-			try :
-				node = node[p]
-			except IndexError :
-				return None
-		return node
+		return self.getroot().get_by_path( path )
 
 def params_file( filename , *l , **m ) :
 	p = Params( *l , **m )
@@ -272,4 +292,19 @@ def params_fs( fs , *l , **m ) :
 	p = Params( *l , **m )
 	p.open( fs )
 	return p
+
+import re
+
+class ParamsSearch :
+	def __init__( self , roots , pattern ) :
+		self.stack  = list(reversed(roots))
+		self.pattern= re.compile(pattern)
+
+	def next( self , breaker = None ) :
+		while len(self.stack) > 0 and (breaker == None or breaker()) :
+			node   = self.stack.pop()
+			self.stack += reversed( node.children )
+			if self.pattern.search( node.toline() ) :
+				return node.find_path()
+		return None
 

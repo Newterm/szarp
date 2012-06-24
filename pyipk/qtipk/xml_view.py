@@ -8,6 +8,8 @@ import string
 
 from copy import copy
 
+import libipk.params
+
 from PyQt4 import QtGui , QtCore
 
 from lxml import etree
@@ -17,6 +19,49 @@ from .utils import *
 from .ui.xml_view import Ui_XmlView
 
 from .params import ModelTree
+
+import re , threading , time
+
+class SearchEngine( QtCore.QObject ) :
+	foundSig = QtCore.pyqtSignal( object )
+
+	def __init__( self , parent = None ) :
+		QtCore.QObject.__init__( self , parent )
+		self.thread  = threading.Thread()
+		self._stop = threading.Event()
+
+	def breaker( self ) :
+#        time.sleep(0.001)
+		return not self._stop.isSet()
+
+	def run( self ) :
+		i = 0
+		for r in self.roots :
+			se = libipk.params.ParamsSearch( [r] , self.pattern )
+			while True :
+				path = se.next( breaker = self.breaker )
+				if path == None :
+					break
+				path.insert( 0 , i )
+				self.foundSig.emit( path )
+			i += 1
+
+	def stop( self ) :
+		self._stop.set()
+		self.thread.join()
+		self._stop.clear()
+
+	def new( self , roots , string ) :
+		if self.thread.isAlive() : 
+			self.stop()
+
+		if string == '' : return
+
+		self.roots   = roots
+		self.pattern = string
+
+		self.thread = threading.Thread( target = self.run )
+		self.thread.start()
 
 class XmlView( QtGui.QWidget , Ui_XmlView ) :
 	changedSig = QtCore.pyqtSignal()
@@ -36,9 +81,78 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 		self.view.expanded.connect(self.model.expand)
 		self.view.collapsed.connect(self.model.collapse)
 		self.view.header().moveSection(1,0)
+
 		self.model.changedSig.connect(self.changedSig)
 
 		self.set_name( name )
+
+		self.search = SearchEngine()
+		self.search.foundSig.connect( self.on_found )
+
+		self.found_paths = []
+		self.current_path_id = None
+		self.lineFind.hide()
+		self.butNext.hide()
+		self.butPrev.hide()
+		self.view.setFocus()
+
+		self.set_shortcut( self.view     , "Ctrl+F" , self.on_search_start )
+		self.set_shortcut( self.view     , "Esc"    , self.on_search_end   )
+		self.set_shortcut( self.view     , "Ctrl+N" , self.on_next         )
+		self.set_shortcut( self.view     , "Ctrl+P" , self.on_prev         )
+		self.set_shortcut( self.lineFind , "Esc"    , self.on_search_end   )
+		self.set_shortcut( self.lineFind , "Ctrl+N" , self.on_next         )
+		self.set_shortcut( self.lineFind , "Ctrl+P" , self.on_prev         )
+
+	def set_shortcut( self , parent , key , func ) :
+		sc = QtGui.QShortcut( parent )
+		sc.setKey( key )
+		sc.setContext( QtCore.Qt.WidgetWithChildrenShortcut )
+		sc.activated.connect( func )
+
+	def on_search( self , string ) :
+		self.found_paths = []
+		self.current_path_id = None
+		self.search.new( [ r.node for r in self.model.getroots() ] , string )
+
+	def on_search_start( self ) :
+		self.lineFind.show()
+		self.butNext.show()
+		self.butPrev.show()
+		self.lineFind.setFocus()
+
+	def on_search_end( self ) :
+		self.lineFind.hide()
+		self.butNext.hide()
+		self.butPrev.hide()
+		self.view.setFocus()
+
+		self.found_paths = []
+		self.current_path_id = None
+
+	def on_found( self , p ) :
+		self.found_paths.append( p )
+		if self.current_path_id == None :
+			self.current_path_id = len(self.found_paths)-1
+			self.set_by_path( p )
+
+	def on_next( self ) :
+		if self.current_path_id == None : return
+		self.current_path_id += 1
+		if self.current_path_id >= len(self.found_paths) :
+			self.current_path_id = 0
+		self.set_by_path( self.found_paths[ self.current_path_id ] )
+
+	def on_prev( self ) :
+		if self.current_path_id == None : return
+		self.current_path_id -= 1
+		if self.current_path_id < 0 :
+			self.current_path_id = len(self.found_paths)-1 
+		self.set_by_path( self.found_paths[ self.current_path_id ] )
+	
+	def set_by_path( self , p ) :
+		i = self.model.index_by_path( p )
+		self.view.setCurrentIndex( i )
 	
 	def contextMenuEvent(self, event):
 		idxes = self.view.selectedIndexes()
@@ -126,6 +240,9 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 		self.drag  = []
 		self.roots = []
 
+	def getroots( self ) :
+		return self.roots
+
 	def add_node( self , node ) :
 		row = len(self.roots)
 		self.beginInsertRows(QtCore.QModelIndex(),row,row+1)
@@ -145,6 +262,14 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 	def collapse( self , index ) :
 		mt = index.internalPointer()
 		if mt != None : mt.purge()
+
+	def index_by_path( self , path ) :
+		path = list(path)
+		node = QtCore.QModelIndex()
+		while len(path) > 0 :
+			parent = node
+			node   = self.index( path.pop(0) , 0 , parent )
+		return node
 
 	def index(self, row, column, parentidx ):
 		parent = parentidx.internalPointer()
