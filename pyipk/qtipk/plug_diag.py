@@ -10,18 +10,22 @@ from .utils import toUtf8
 
 from .ui.plug_diag import Ui_PluginsDialog
 
-class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog ) :
+from .config import Configurable
+
+class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog , Configurable ) :
 	def __init__( self , parent , plugins ) :
 		QtGui.QDialog.__init__( self , parent )
 		self.setupUi( self )
-
-		self.plugins = plugins
-		self.fill( self.plugins )
-		self.treeWidget.sortItems(0,QtCore.Qt.AscendingOrder)
+		Configurable.__init__( self , parent )
 
 		self.args = None
 		self.labs = []
 		self.ents = []
+
+		self.plugins = plugins
+		self.fill( self.plugins )
+		self.treeWidget.sortItems(0,QtCore.Qt.AscendingOrder)
+		self.select_last()
 
 	def fill( self , plugins ) :
 		sections = {}
@@ -30,7 +34,14 @@ class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog ) :
 			if s not in sections :
 				sections[s] = QtGui.QTreeWidgetItem( self.treeWidget , [s] )
 
-			sections[s].addChild( QtGui.QTreeWidgetItem( [n] ) )
+			item = QtGui.QTreeWidgetItem( [n] )
+			sections[s].addChild( item )
+
+			if n == self.cfg['gui:plugin_selected'] :
+				self.treeWidget.setCurrentItem( item )
+
+	def select_last( self ) :
+		pass
 
 	def selected_name( self ) :
 		idxs = self.treeWidget.selectedItems()
@@ -41,6 +52,8 @@ class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog ) :
 
 	def pluginSelected( self ) :
 		name = self.selected_name()
+
+		self.cfg['gui:plugin_selected'] = name
 
 		# section selected
 		if name == None : return

@@ -51,7 +51,7 @@ from miscipk.pysftp import AuthenticationError
 from miscipk.pysftp import HostNotFoundError
 
 class FS_ssh( FS_local ) :
-	def __init__( self , serv , path , username = None , port = None , *l , **m ) :
+	def __init__( self , serv , path , username = None , port = 22 , *l , **m ) :
 		self.fn = None
 		self.serv = serv
 		self.path = path

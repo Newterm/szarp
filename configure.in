@@ -76,6 +76,14 @@ if test "x$DIALOG" = "x" ; then
                       ])
 fi
 
+AC_CHECK_PROG([PROTOC], [protoc], [protoc], [])
+if test "x$PROTOC" = "x" ; then
+        AC_MSG_WARN([
+                      protoc compiler not present, it is needed
+		      for compiling Szarp4 components
+                      ])
+fi
+
 AC_CHECK_PROG([ICONV], [iconv], [iconv], [])
 if test "x$ICONV" = "x" ; then
         AC_MSG_WARN([
@@ -298,6 +306,25 @@ if test x$no_x != xyes ; then
 	X_LIBS="$XPM_LIBS $X_LIBS"
 	X_CFLAGS="$XPM_CFLAGS $X_CFLAGS"
 fi
+
+no_protobuf="yes"
+if test x$with_mingw32 = xno; then
+	PKG_CHECK_MODULES(PROTOBUF, protobuf, no_protobuf="no", [AC_MSG_RESULT([
+			libprotobuf-dev library not found on your system,	
+			it is required to build Szarp 4 components
+		])
+	])
+fi
+
+no_protobuf="yes"
+if test x$with_mingw32 = xno; then
+	PKG_CHECK_MODULES(ZMQ, libzmq, no_zmq="no", [AC_MSG_RESULT([
+			libzmq-dev library not found on your system,	
+			it is required to build Szarp 4 components
+		])
+	])
+fi
+
 
 AH_VERBATIM([_GNU_SOURCE],
 [/* Enable GNU extensions on systems that have them.  */
@@ -1106,6 +1133,9 @@ AC_OUTPUT( \
 	libSzarp2/tools/ipk_config \
 	python/Makefile \
 	python/pyszbase/Makefile \
+	python/protobuf/Makefile \
+	python/meaner4/Makefile \
+	python/meaner4/unittests/Makefile \
 	meaner3/Makefile \
 	parcook/Makefile \
 	parcook/analiza/Makefile \

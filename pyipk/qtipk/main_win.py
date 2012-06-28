@@ -49,6 +49,9 @@ class MainWindow( QtGui.QMainWindow , Ui_MainWindow , Configurable ) :
 		else :
 			event.ignore()
 
+	def reload( self ) :
+		self.params_mgr.reload()
+
 	def save( self ) :
 		self.params_mgr.save()
 

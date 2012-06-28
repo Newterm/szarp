@@ -1,3 +1,14 @@
+2012-06-20 Darek Marcinkiewicz <reksio@newterm.pl>
+	* python/meaner4: fixes + some unit tests
+2012-06-19 Darek Marcinkiewicz <reksio@newterm.pl>
+	* python/meaner4: beginnings/prototype of yet another incarnation
+	of meaner, meaner4 this time	
+	* configure.in: added checks for ZeroMQ library, protocol buffers
+	lib and protoc compiler
+	* libSzarp2/protobuf/paramsvalues.proto: protobuf message carrying
+	params' values	
+	* python/protobuf: python paramsvalues.proto (de)serializer is
+	generated here
 2012-06-13 Darek Marcinkiewicz <reksio@newterm.pl>
 	* utils/remarks_handler: whenever param is updated, its
 	deleted flag is set to false - fixes a problem with inserting
