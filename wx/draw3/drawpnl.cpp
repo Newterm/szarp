@@ -920,6 +920,7 @@ DrawInfoList DrawPanel::GetDrawInfoList() {
 	wxDateTime wdt;
 	GetDisplayedDrawInfo( &di , wdt );
 	dil.SetSelectedDraw( di );
+	dil.SetStatsInterval(dw->GetDrawsController()->GetStatsInterval());
 	return dil;
 }
 

@@ -43,11 +43,11 @@
 #define CSV_XSLT "extr_csv.xsl"
 #define OO_XSLT "extr_oo.xsl"
 
-SzbExtractor::SzbExtractor(TSzarpConfig *ipk)
+SzbExtractor::SzbExtractor(Szbase *szbase)
 {
-	assert (ipk != NULL);
+	assert (szbase != NULL);
 
-	this->ipk = ipk;
+	this->szbase = szbase;
 	start = -1;
 	end = -1;
 	period_type = PT_MIN10;
@@ -96,7 +96,10 @@ int SzbExtractor::SetParams(const std::vector<Param>& params)
 	params_objects.clear();
 
 	for (size_t i = 0; i < params.size(); i++) {
-		TParam *p = ipk->getParamByName(params[i].name);
+		std::pair<szb_buffer_t*, TParam*> bp;
+		if (!szbase->FindParam(params[i].prefix + L":" + params[i].name, bp))
+			return i + 1;
+		TParam *p = bp.second;
 		if ((p == NULL) || (!p->IsReadable()))
 			return i + 1;
 		params_objects.push_back(p);

@@ -39,6 +39,18 @@ InquirerId DBInquirer::GetId() const {
 	return m_inquirer_id;
 }
 
+DrawInfo* DBInquirer::GetCurrentDrawInfo() {
+	return NULL;
+}
+
+time_t DBInquirer::GetCurrentTime() {
+	return -1;
+}
+
+void DBInquirer::DatabaseResponse(DatabaseQuery *query) {
+	delete query;
+}
+
 void DBInquirer::QueryDatabase(DatabaseQuery *query) {
 	query->inquirer_id = m_inquirer_id;
 	m_database_manager->QueryDatabase(query);

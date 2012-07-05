@@ -468,6 +468,8 @@ public:
 
 	bool GetNoData();
 
+	std::pair<time_t, time_t> GetStatsInterval();
+
 	static szb_nan_search_condition search_condition;
 
 	enum SORTING_CRITERIA {

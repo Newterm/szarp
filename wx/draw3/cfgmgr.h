@@ -167,7 +167,14 @@ public:
 
 	DrawInfo* GetSelectedDraw()
 	{	return selected; }
+
+	std::pair<time_t, time_t> GetStatsInterval()
+	{	return stats_interval; }
+
+	void SetStatsInterval(const std::pair<time_t, time_t> &i)
+	{	stats_interval = i; }
 private:
+	std::pair<time_t, time_t> stats_interval;
 	DrawInfo* selected;
 };
 

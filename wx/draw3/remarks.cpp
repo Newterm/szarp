@@ -69,6 +69,7 @@
 #include "cfgmgr.h"
 #include "cconv.h"
 #include "version.h"
+#include "dbinquirer.h"
 #include "drawfrm.h"
 #include "drawpnl.h"
 #include "dbinquirer.h"

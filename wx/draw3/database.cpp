@@ -21,6 +21,8 @@
 #include "database.h"
 #include "cfgmgr.h"
 #include "dbmgr.h"
+#include "conversion.h"
+#include "szbextr/extr.h"
 
 #include <math.h>
 
@@ -119,6 +121,9 @@ void* QueryExecutor::Entry() {
 					q->prober_address.port);
 			free(q->prober_address.address);
 			free(q->prober_address.port);
+			post_response = false;
+		} else if (q->type == DatabaseQuery::EXTRACT_PARAM_VALUES) {
+			ExecuteExtractParametersQuery(q->extraction_parameters);
 			post_response = false;
 		} else {
 			TParam *p = NULL; 
@@ -300,9 +305,44 @@ void QueryExecutor::ExecuteSearchQuery(szb_buffer_t* szb, TParam *p, DatabaseQue
 
 }
 
+void QueryExecutor::ExecuteExtractParametersQuery(DatabaseQuery::ExtractionParameters &pars) {
+	IPKContainer* ipk = IPKContainer::GetObject();
+	assert(ipk);
+
+	SzbExtractor extr(szbase);
+	extr.SetPeriod(PeriodToProbeType(pars.pt),
+			pars.start_time,
+			szb_move_time(pars.end_time, 1, PeriodToProbeType(pars.pt), 0),
+			0);
+
+	extr.SetNoDataString(L"NO_DATA");
+	extr.SetEmpty(0);
+
+	FILE* output = fopen((const char*) SC::S2U(*pars.file_name).c_str(), "w");
+	if (output == NULL)
+		return;
+
+	std::vector<SzbExtractor::Param> params;
+	for (size_t i = 0; i < pars.params->size(); i++) {
+		std::wstring param = pars.params->at(i);
+		std::wstring prefix = pars.prefixes->at(i);
+		szb_buffer_t* buffer = szbase->GetBuffer(prefix);
+		params.push_back(SzbExtractor::Param(param, prefix, buffer, SzbExtractor::TYPE_AVERAGE));
+	}
+
+	extr.SetParams(params);
+	extr.ExtractToCSV(output, L";");
+	fclose(output);
+}
+
 DatabaseQuery::~DatabaseQuery() {
-	if (type == GET_DATA)
+	if (type == GET_DATA) {
 		delete value_data.vv;
+	} else if (type == EXTRACT_PARAM_VALUES) {
+		delete extraction_parameters.params;
+		delete extraction_parameters.prefixes;
+		delete extraction_parameters.file_name;
+	}
 }
 
 DatabaseQueryQueue::DatabaseQueryQueue() : database_manager(NULL), cant_prioritise_entries(0)
@@ -341,6 +381,9 @@ double DatabaseQueryQueue::FindQueryRanking(DatabaseQuery* q) {
 		return -100.f;
 
 	if (q->type == DatabaseQuery::CHECK_CONFIGURATIONS_CHANGE)
+		return -200.f;
+
+	if (q->type == DatabaseQuery::EXTRACT_PARAM_VALUES)
 		return -200.f;
 
 

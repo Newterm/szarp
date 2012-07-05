@@ -370,6 +370,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 				arguments->params.push_back(
 					SzbExtractor::Param(
 						SC::A2S(arguments->list->name).c_str(),
+						L"",
 						NULL,
 						SzbExtractor::TYPE_AVERAGE ));
 				free(arguments->list);
@@ -529,10 +530,12 @@ int main(int argc, char* argv[])
 	}
 
 
-	SzbExtractor * extr = new SzbExtractor(ipk);
+	SzbExtractor * extr = new SzbExtractor(Szbase::GetObject());
 
-	for (int i = 0; i < arguments.params_count; i++)
+	for (int i = 0; i < arguments.params_count; i++) {
 		arguments.params[i].szb = szb;
+		arguments.params[i].prefix = ipk->GetPrefix();
+	}
 	
 	assert (extr != NULL);
 	if (arguments.year < 0)
