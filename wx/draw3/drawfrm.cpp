@@ -59,14 +59,14 @@
 #include "drawprint.h"
 #include "probadddiag.h"
 #include "delqitem.h"
+#include "dbmgr.h"
 
 #include "wxlogging.h"
 
 DrawFrame::DrawFrame(FrameManager * fm, DatabaseManager* dm, ConfigManager* cm, RemarksHandler *remarks, wxWindow * parent,
 		     wxWindowID id, const wxString & title, const wxString & name, const wxPoint & pos,
 		     const wxSize & size, long style)
-:szFrame(parent, id, title, pos, size, style | wxFRAME_FLOAT_ON_PARENT, name), m_name(name), frame_manager(fm), config_manager(cm),
-database_manager(dm), m_notebook(NULL), draw_panel(NULL), remarks_handler(remarks)
+:szFrame(parent, id, title, pos, size, style | wxFRAME_FLOAT_ON_PARENT, name), DBInquirer(dm), m_name(name), frame_manager(fm), config_manager(cm), database_manager(dm), m_notebook(NULL), draw_panel(NULL), remarks_handler(remarks)
 {
 
 	wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
@@ -1083,6 +1083,43 @@ void DrawFrame::OnSortGraph(wxCommandEvent &event) {
 	}
 }
 
+void DrawFrame::OnExportDataToFile(wxCommandEvent& e) {
+	wxString directory = wxGetHomeDir();
+	wxFileDialog file(this, 
+			_("Choose file to extract data to"),
+			wxString(directory),
+			_T(""),
+			_("Comma Separated Values (*.csv)"), wxSAVE | wxOVERWRITE_PROMPT);
+	file.SetFilterIndex(3);
+
+	if (file.ShowModal() != wxID_OK)
+		return;
+
+	DatabaseQuery* query = new DatabaseQuery();
+	query->type = DatabaseQuery::EXTRACT_PARAM_VALUES;
+
+	query->extraction_parameters.params = new std::vector<std::wstring>();
+	query->extraction_parameters.prefixes = new std::vector<std::wstring>();
+
+	DrawInfoList dil = draw_panel->GetDrawInfoList();
+	for (size_t i = 0; i < dil.size(); i++) {
+		query->extraction_parameters.params->push_back(dil.at(i)->GetParamName().c_str());
+		query->extraction_parameters.prefixes->push_back(dil.at(i)->GetBasePrefix().c_str());
+	}
+
+	std::wstring filename = (file.GetDirectory() + L"/" + file.GetFilename()).c_str();
+	if (filename.size() < 4 || filename.find(L'.') == std::wstring::npos)
+		filename += L".csv";
+
+	query->extraction_parameters.start_time = dil.GetStatsInterval().first;
+	query->extraction_parameters.end_time = dil.GetStatsInterval().second;
+	query->extraction_parameters.pt = draw_panel->GetPeriod();
+	query->extraction_parameters.file_name = new std::wstring(filename);
+
+	QueryDatabase(query);
+}
+
+
 void DrawFrame::OnProberAddresses(wxCommandEvent &event) {
 	std::map<wxString, std::pair<wxString, wxString> > addresses = wxGetApp().GetProbersAddresses();
 
@@ -1154,6 +1191,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     LOG_EVT_MENU(XRCID("Summary"), DrawFrame , OnSummaryWindowCheck, "drawfrm:summary" )
     LOG_EVT_MENU(XRCID("Jump"), DrawFrame , OnJumpToDate, "drawfrm:jump" )
     LOG_EVT_MENU(XRCID("Axes"), DrawFrame , OnNumberOfAxes, "drawfrm:axes" )
+    LOG_EVT_MENU(XRCID("ExportDataToFile"), DrawFrame , OnExportDataToFile, "drawfrm:export" )
     EVT_AUINOTEBOOK_PAGE_CHANGED(wxID_ANY, DrawFrame::OnNotebookSelectionChange )
     EVT_AUINOTEBOOK_PAGE_CLOSED(wxID_ANY, DrawFrame::OnNotebookPageClose )
     LOG_EVT_MENU(XRCID("Print"), DrawFrame , OnPrint, "drawfrm:print" )

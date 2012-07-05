@@ -684,6 +684,18 @@ bool DrawsController::GetNoData() {
 	return m_state == m_states[STOP];
 }
 
+std::pair<time_t, time_t> DrawsController::GetStatsInterval() {
+	if (m_selected_draw == -1)
+		return std::make_pair(time_t(-1), time_t(-1));
+
+	const Draw::VT& vt = m_draws[m_selected_draw]->GetValuesTable();
+
+	time_t end = m_draws[m_selected_draw]->GetTimeOfIndex(vt.m_stats.m_end - vt.m_view.Start()).GetTime().GetTicks();
+	time_t start = m_draws[m_selected_draw]->GetTimeOfIndex(vt.m_stats.m_start - vt.m_view.Start()).GetTime().GetTicks();
+
+	return std::make_pair(std::min(start, end), std::max(start, end));
+}
+
 void DrawsController::HandleSearchResponse(DatabaseQuery *query) {
 	if (query->search_data.period_type == GetPeriod() && GetCurrentDrawInfo() == query->draw_info)
 		m_state->HandleSearchResponse(query);

@@ -488,6 +488,7 @@ void EkstraktorMainWindow::onWriteResults(wxCommandEvent &event)
 	for(int i = 0; (unsigned int) i < parametersList->GetCount(); i++)
 		arguments.params.push_back(SzbExtractor::Param(
 			std::wstring(parametersList->GetString(i).wchar_str()),
+			std::wstring(),
 			NULL,
 			selectedValueType ));
 
