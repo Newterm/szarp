@@ -4,6 +4,8 @@ szarp (3.1.674) squeeze; urgency=low
 
  -- Krzysztof Gałązka <kg@newterm.pl>  Mon, 12 Jun 2012 15:09:38 +0200
 
+szarp (3.1.671) oneiric; urgency=low
+
 szarp (3.1.670) oneiric; urgency=low
 
   * building oneiric 
