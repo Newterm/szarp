@@ -180,6 +180,7 @@ struct async_syslog_state* async_openlog(struct event_base* base, const char *id
 	state->facility = facility;
 	state->mask = 0xff;
 	state->fd = -1;
+	state->sock_type = SOCK_DGRAM;
 	state->write_ready = 0;
 
 	for (; i < ASYNC_SYSLOG_BUFFER_SIZE; i++) {
@@ -218,8 +219,8 @@ void async_vsyslog(struct async_syslog_state* state, int priority, const char *f
 	if (state->buffer_get == state->buffer_put && !state->buffers_empty)
 		return;
 
-	add_to_log_buffer(state, priority, format, ap);
 	connect_to_syslog(state);
+	add_to_log_buffer(state, priority, format, ap);
 	write_to_syslog(state);
 }
 
