@@ -249,6 +249,9 @@ int set_serial_port_settings(int fd, serial_port_configuration &spc) {
 		case 38400:
 			ti.c_cflag = B38400;
 			break;
+		case 115200:
+			ti.c_cflag = B115200;
+			break;
 		default:
 			ti.c_cflag = B9600;
 			dolog(8, "setting port speed to default value 9600");
@@ -1165,12 +1168,15 @@ void dolog(int level, const char * fmt, ...) {
 	if (g_debug) {
 		char *l;
 		va_start(fmt_args, fmt);
-		vasprintf(&l, fmt, fmt_args);
+		if (vasprintf(&l, fmt, fmt_args) != -1) {
+			std::cout << l << std::endl;
+			sz_log(level, "%s", l);
+			free(l);
+		} else {
+			std::cout << "Logging error " << strerror(errno) << std::endl;
+		}
 		va_end(fmt_args);
 
-		std::cout << l << std::endl;
-		sz_log(level, "%s", l);
-		free(l);
 	} else {
 		va_start(fmt_args, fmt);
 		vsz_log(level, fmt, fmt_args);
