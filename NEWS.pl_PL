@@ -7,6 +7,24 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.673:
+# 09.06.2012
+* dodana opcjê ekstrakcji danych z programu draw3, w du¿ej mierze jest to
+duplikacja funkcjonalno¶ci oferowanej przez program ekstraktor3, w odróznieniu
+od aplikacji ekstraktor3 draw3 pozwala tak¿e na ekstrakcjê danych z paramterów
+u¿ytkownika
+* rozbudowano program pyipk dodaj±c: opcjê do wszykiwania tekstu w pliku params.xml, 
+walidacjê nazw parametrów, prze³adowywanie konfiguracji, edycjê parametrów, itp.
+* rozpoczêto prace nad nowym formatem bazy danych pozwalaj±cym na przechowywanie
+danych o dowolnej rozdzielczo¶ci czasowej
+* poprawione b³ad w programie draw3: okno komunikatów o b³êdach nie zabiera
+focusu z g³ównego okna programu draw3
+* poprawiono b³±d w programie ekstraktor3, z powodu niezalizalizownia zmiennej
+czasami proces ekstrakcji danych siê nie udawa³ 
+* poprawiono b³±d wyliczania ¶rednich warto¶ci dla parametrów sk³adanych w programie 
+parcook
+* poprawiono drobne b³êdy w bibliotece async_syslog 
+
 ** 3.1.653
 # 01.06.2012
 * rozbudowano istniej±c± w SZARPie bibliotekê do logowania - liblog. 
