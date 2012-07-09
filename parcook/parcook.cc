@@ -171,7 +171,7 @@ short last_min10;		/* ostatnie 10 minut w ktorej liczona byla
 
 typedef unsigned char tCnts[3];
 
-typedef int tSums[3];
+typedef long long tSums[3];
 
 typedef short tProbes[6];
 
@@ -190,6 +190,7 @@ tCnts *Cnts;			/* liczniki usrednien */
 tSums *Sums;			/* sumy usrednien */
 
 struct tParamInfo {
+	TParam * param;
 	enum { SINGLE, COMBINED } type;
 	enum { LSW, MSW } lsw_msw;
 	int other;
@@ -217,8 +218,9 @@ struct phLineInfo
 
 typedef struct phLineInfo tLineInfo;
 
-void calculate_average(short *probes, int param_no, int probe_type) {
-	sz_log(9, "Enetring calculate average, probe type: %d", probe_type);
+void calculate_average(short *probes, int param_no, int probe_type)
+{
+	sz_log(10, "Entering calculate average, probe type: %d", probe_type);
 	if (ParsInfo[param_no]->type == tParamInfo::SINGLE) {
 		if (Cnts[param_no][probe_type])
 			probes[param_no] = Sums[param_no][probe_type] / (int) Cnts[param_no][probe_type];
@@ -226,38 +228,32 @@ void calculate_average(short *probes, int param_no, int probe_type) {
 			probes[param_no] = SZARP_NO_DATA;
 		return;
 	}
-	int other = ParsInfo[param_no]->other;
-	if (!Cnts[param_no][probe_type] || !Cnts[other][probe_type]) {
+
+	if (ParsInfo[param_no]->lsw_msw == tParamInfo::LSW)
+		//we will update both sums when updating msw
+		return;
+
+	if (!Cnts[param_no][probe_type]) {
 		sz_log(9, "Calculating average for combined both counts equal 0");
 		probes[param_no] = SZARP_NO_DATA;
 		return;
 	}
-	int lsw, msw;
-	unsigned long long v;
-	if (ParsInfo[param_no]->lsw_msw == tParamInfo::LSW) {
-		lsw = param_no;
-		msw = other;
-	} else {
-		msw = param_no;
-		lsw = other;
-	}
-	sz_log(9, "msw portion: %u, lsw portion:%u ", Sums[msw][probe_type], Sums[lsw][probe_type]);
-	v = ((unsigned long long)Sums[msw][probe_type] << 16) + (unsigned)Sums[lsw][probe_type];
-	sz_log(9, "Combinded sum value %llu", v);
-	v /= Cnts[param_no][probe_type];
-	sz_log(9, "Calculated value %llu", v);
-	unsigned short *vp = (unsigned short*)&probes[param_no];
-	if (ParsInfo[param_no]->lsw_msw == tParamInfo::LSW) {
-		*vp = v & 0xffff;
-		sz_log(9, "Setting lsw to %hu", *vp);
-	} else {
-		*vp = v >> 16;
-		sz_log(9, "Setting msw to %hu", *vp);
-	}
-	sz_log(9, "Leaving calculate average");
+
+	int msw = param_no;
+	int lsw = ParsInfo[param_no]->other;
+
+	int v = (int)(Sums[msw][probe_type] / Cnts[msw][probe_type]);
+
+	sz_log(0, "Combinded sum value %lld, Calculated value %d", Sums[msw][probe_type], v);
+
+	probes[msw] = (unsigned short)(v >> 16);
+	probes[lsw] = (unsigned short)(v & 0xFFFF);
+
+	sz_log(9, "Leaving calculate average, msw set to: %hhu, lsw set to: %hhu", probes[msw], probes[lsw]) ;
 }
 
-template<class OVT> void update_value(int param_no, int probe_type, short* ivt, OVT ovt, int abuf) {
+template<class OVT> void update_value(int param_no, int probe_type, short* ivt, OVT ovt, int abuf)
+{
 	if (ParsInfo[param_no]->type == tParamInfo::SINGLE) {
 		if (ovt[param_no][abuf] != SZARP_NO_DATA) {
 			Sums[param_no][probe_type] -= (int) ovt[param_no][abuf];
@@ -274,8 +270,10 @@ template<class OVT> void update_value(int param_no, int probe_type, short* ivt, 
 	if (ParsInfo[param_no]->lsw_msw == tParamInfo::LSW)
 		//we will update both sums when updating msw
 		return;
-	sz_log(9, "Entering update value for combined param, probe type: %d", probe_type);
+
+	sz_log(9, "Entering update value for combined param %ls, probe type: %d", ParsInfo[param_no]->param->GetName().c_str(), probe_type);
 	int other = ParsInfo[param_no]->other;
+
 	/*
 	We cast everything to unsigned, because we don't really
 	care about signs in combined params.
@@ -285,28 +283,32 @@ template<class OVT> void update_value(int param_no, int probe_type, short* ivt, 
 	so I hope I will save a future developer some head scratching
 	while hunting for bugs in parcook ;)
 	*/
-	unsigned short* pv = (unsigned short*)&ovt[param_no][abuf];
-	unsigned short* ov = (unsigned short*)&ovt[other][abuf];
-	unsigned int* pvs = (unsigned int*)&Sums[param_no][probe_type];
-	unsigned int* ovs = (unsigned int*)&Sums[other][probe_type];
+	unsigned short * pmsw = (unsigned short *)&ovt[param_no][abuf];
+	unsigned short * plsw = (unsigned short *)&ovt[other][abuf];
+
+	int prev_val = (int)((*pmsw) << 16) | (*plsw);
+
+	sz_log(8, "probe_type: %d, param_no: %d, msw: %u, lsw: %u, prev_val: %d, sum: %lld",
+	       	probe_type, param_no, *pmsw, *plsw, prev_val, Sums[param_no][probe_type]);
+
 	if (ovt[param_no][abuf] != SZARP_NO_DATA || ovt[other][abuf] != SZARP_NO_DATA) {
-		*pvs -= *pv;
-		*ovs -= *ov;
+		Sums[param_no][probe_type] -= prev_val;
 		Cnts[param_no][probe_type]--;
-		Cnts[other][probe_type]--;
-		sz_log(9, "Decreasing sum counts for combined param cause at least one value is data");
+		sz_log(8, "Decreasing sum counts for combined param cause at least one value is data");
 	} else {
-		sz_log(9, "Not decreasing sum counts for combined param cause both values are no data");
+		sz_log(8, "Not decreasing sum counts for combined param cause both values are no data");
 	}
+
 	ovt[param_no][abuf] = ivt[param_no];
 	ovt[other][abuf] = ivt[other];
-	if (ovt[param_no][abuf] != SZARP_NO_DATA || ovt[other][abuf] != SZARP_NO_DATA) {
-		*pvs += *pv;
-		*ovs += *ov;
+
+	int val = (int)(*pmsw << 16) | *plsw;
+
+	if (SZARP_NO_DATA != ovt[param_no][abuf] || SZARP_NO_DATA != ovt[other][abuf]) {
+		Sums[param_no][probe_type] += val;
 		Cnts[param_no][probe_type]++;
-		Cnts[other][probe_type]++;
-		sz_log(9, "Increasing vals count: %d", Cnts[param_no][probe_type]);
-		sz_log(9, "Increasing vals count: msw %hu, lsw %hu, sum msw: %u, sum lsw:%u", *pv, *ov, *pvs, *ovs);
+		sz_log(8, "Increasing vals count: msw %hu, lsw %hu, prev: %u, val: %u, sum: %lld",
+		       	*pmsw, *plsw, prev_val, val, Sums[param_no][probe_type]);
 	}
 	sz_log(9, "Leaving update for combined param");
 }
@@ -1082,7 +1084,8 @@ void AllocProbesMemory(void)
 	}
 }
 
-void configure_pars_infos(TSzarpConfig *ipk) {
+void configure_pars_infos(TSzarpConfig *ipk) 
+{
 	for (TParam* p = ipk->GetFirstDrawDefinable(); p; p = p->GetNext()) {
 		if (p->GetType() != TParam::P_COMBINED)
 			continue;
@@ -1091,12 +1094,14 @@ void configure_pars_infos(TSzarpConfig *ipk) {
 		unsigned int lsw = p_cache[1]->GetIpcInd();
 
 		tParamInfo* msw_pi = (tParamInfo*) malloc(sizeof(tParamInfo));
+		msw_pi->param = p_cache[0];
 		msw_pi->type = tParamInfo::COMBINED;
 		msw_pi->lsw_msw = tParamInfo::MSW;
 		msw_pi->other = lsw;
 		ParsInfo[msw] = msw_pi;
 
 		tParamInfo* lsw_pi = (tParamInfo*) malloc(sizeof(tParamInfo));
+		lsw_pi->param = p_cache[1];
 		lsw_pi->type = tParamInfo::COMBINED;
 		lsw_pi->lsw_msw = tParamInfo::LSW;
 		lsw_pi->other = msw;
@@ -1108,6 +1113,7 @@ void configure_pars_infos(TSzarpConfig *ipk) {
 		if (ParsInfo[i])
 			continue;
 		tParamInfo* pi = (tParamInfo*) malloc(sizeof(tParamInfo));
+		pi->param = ipk->getParamByIPC(i);
 		pi->type = tParamInfo::SINGLE;
 		ParsInfo[i] = pi;
 	}
@@ -1345,7 +1351,8 @@ void execute_scripts(std::vector<LuaParamInfo*>& param_info) {
 
 }
 
-void calculate_lua_params(TSzarpConfig *ipk, PH& pv, std::vector<LuaParamInfo*>& param_info) {
+void calculate_lua_params(TSzarpConfig *ipk, PH& pv, std::vector<LuaParamInfo*>& param_info)
+{
 
 	TParam* p = ipk->GetFirstParam();
 	for (int i = 0; i < VTlen; ++i) {
@@ -1457,8 +1464,7 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 	Sem[1].sem_op = 0;
 	semop(SemDes, Sem, 2);
 	if ((Minute =
-	     (short *) shmat(MinuteDes, (void *) 0,
-			     0)) == (void *) -1) {
+	     (short *) shmat(MinuteDes, (void *) 0, 0)) == (void *) -1) {
 		sz_log(0,
 		    "parcook: cannot attach 'min' segment, errno %d, exiting",
 		    errno);

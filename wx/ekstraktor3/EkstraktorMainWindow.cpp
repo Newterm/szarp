@@ -76,6 +76,8 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 			// the wxRESIZE_BORDER option turned off
 			wxDEFAULT_FRAME_STYLE - wxRESIZE_BORDER  )
 {
+	selectedValueType = SzbExtractor::TYPE_AVERAGE;
+
 	mainWidget = widget;
 	mainWidget->SetProbeType(PT_MIN10);
 	progressDialog = NULL;
