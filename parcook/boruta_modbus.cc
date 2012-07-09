@@ -1093,18 +1093,17 @@ int modbus_unit::configure_long_float_register(TParam* param, TSendParam *sparam
 	if (val_type == "float")  {
 		if (!send) {
 			m_parcook_ops.push_back(new long_parcook_modbus_val_op<float>(m_registers[id][lsw], m_registers[id][msw], prec, is_lsw));
-			dolog(7, "Parcook param %ls no(%zu), mapped to unit: %lc, register %hu, value type: float, params holds %s part, lsw: %hu, msw: %hu",
-				param->GetName().c_str(), m_parcook_ops.size(), id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
+			dolog(7, "Parcook param %ls no(%zu), mapped to unit: %d, register %hu, value type: float, params holds %s part, lsw: %hu, msw: %hu", param->GetName().c_str(), m_parcook_ops.size(), int(id), addr, is_lsw ? "lsw" : "msw", lsw, msw);
 		} else {
 			m_sender_ops.push_back(new float_sender_modbus_val_op(m_nodata_value, m_registers[id][lsw], m_registers[id][msw], prec));
-			dolog(7, "Sender param %ls no(%zu), mapped to unit: %lc, register %hu, value type: float, params holds %s part",
-				param ? param->GetName().c_str() : L"(not a param, just value)", m_sender_ops.size(), id, addr, is_lsw ? "lsw" : "msw");
+			dolog(7, "Sender param %ls no(%zu), mapped to unit: %d, register %hu, value type: float, params holds %s part",
+				param ? param->GetName().c_str() : L"(not a param, just value)", m_sender_ops.size(), int(id), addr, is_lsw ? "lsw" : "msw");
 		}
 	} else {
 		if (!send) {
 			m_parcook_ops.push_back(new long_parcook_modbus_val_op<unsigned int>(m_registers[id][lsw], m_registers[id][msw], prec, is_lsw));
-			dolog(7, "Parcook param %ls no(%zu), mapped to unit: %lc, register %hu, value type: long, params holds %s part, lsw: %hu, msw: %hu",
-				param->GetName().c_str(), m_parcook_ops.size(), id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
+			dolog(7, "Parcook param %ls no(%zu), mapped to unit: %c, register %hu, value type: long, params holds %s part, lsw: %hu, msw: %hu",
+				param->GetName().c_str(), m_parcook_ops.size(), int(id), addr, is_lsw ? "lsw" : "msw", lsw, msw);
 		} else {
 			dolog(0, "Unsupported long value type for send param line %ld, exiting!", xmlGetLineNo(node));
 			return 1;
