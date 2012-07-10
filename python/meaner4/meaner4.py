@@ -20,10 +20,9 @@
 """
 
 import sys
-import meaner
-
 sys.path.append("/opt/szarp/lib/python")
 
+import meaner
 from libpar import LibparReader
 
 if __name__ == "__main__":
@@ -31,11 +30,10 @@ if __name__ == "__main__":
 
 	path = lpr.get("global", "szbase")
 	ipk = lpr.get("global", "IPK")
+	uri = lpr.get("global", "parcook_socket_uri")
 
-	uri = lpr.get("global", "paramd_uri")
-
-	meaner = meaner.Meaner(uri)
+	meaner = meaner.Meaner(path, uri)
 	meaner.configure(ipk)
 
-	menaer.run()
+	meaner.run()
 

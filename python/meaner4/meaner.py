@@ -20,6 +20,7 @@
 
 import zmq
 import lxml
+import lxml.etree
 import paramsvalues_pb2
 import param
 import saveparam
@@ -28,7 +29,7 @@ class Meaner:
 	def __init__(self, path, uri):
 		self.save_params = []
 
-		self.szbase_path = szbase_path
+		self.szbase_path = path
 		self.parcook_uri = uri
 
 		self.context = zmq.Context(1)
@@ -42,13 +43,17 @@ class Meaner:
 
 	def run(self):
 		self.socket.connect(self.parcook_uri)
+		self.socket.setsockopt(zmq.SUBSCRIBE, "")
 
 		while True:
 			msg = self.socket.recv()
 
-			params_values = ParamsValues()
+			params_values = paramsvalues_pb2.ParamsValues()
 			params_values.ParseFromString(msg)
 
 			for param_value in params_values.param_values:
-				self.save_params[param_value.param_no].process_value(param_value)
+				#TODO: we ignore logdmn params for now
+				if param_value.param_no >= len(self.save_params):
+					continue
+				self.save_params[param_value.param_no].process_msg(param_value)
 			

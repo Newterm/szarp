@@ -151,7 +151,7 @@ CacheableDatablock::LoadFromCache()
 
 	ifs.read((char*) data, sizeof(SZBASE_TYPE) * probes);
 
-	if(ifs.fail() && !ifs.eof()) {
+	if(ifs.fail() || !ifs.eof()) {
 		sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL,
 				"CacheableDatablock::LoadFromCache: error reading file: '%ls' !",
 				cachepath.c_str());

@@ -27,8 +27,8 @@ import parampath
 import math
 
 class SaveParam:
-	def __init__(self, node, szbase_dir):
-		self.param = param.Param(node)
+	def __init__(self, param, szbase_dir):
+		self.param = param
 		self.param_path = parampath.ParamPath(self.param, szbase_dir)
 		self.file = None
 		self.current_value = None

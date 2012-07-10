@@ -11,6 +11,7 @@ YACC=@YACC@
 SOURCE_DIR=@srcdir@
 IPK_DIR=$(SOURCE_DIR)/ipk
 SZBASE_DIR=$(SOURCE_DIR)/szbase
+SZ4_DIR=$(SOURCE_DIR)/sz4
 DMN_DIR=$(SOURCE_DIR)/linedmn
 PARSERS_DIR=$(SOURCE_DIR)/parsers
 INCLUDE_DIR=$(SOURCE_DIR)/include
@@ -34,6 +35,17 @@ noinst_LTLIBRARIES = libSzarp2.la
 EXTRA_PROGRAMS = szbtest lua_parser_test xmlreader_test
 szbtest_SOURCES = $(SZBASE_DIR)/szbtest.cc
 
+
+protobuf/paramsvalues.pb.h: protobuf/paramsvalues.proto 
+	$(PROTOC) --cpp_out=$(SRCDIR)/protobuf $<
+
+protobuf/paramsvalues.pb.cc: protobuf/paramsvalues.proto 
+	$(PROTOC) --cpp_out=$(SRCDIR)/protobuf $<
+
+include/protobuf/paramsvalues.pb.h: protobuf/paramsvalues.pb.h
+	cp $< $@
+
+
 lua_parser_test_INCLUDES = $(INCLUDES)
 lua_parser_test_LDADD = $(LDADD) ../libSzarp/libSzarp.la libSzarp2.la
 lua_parser_test_SOURCES = $(SZBASE_DIR)/lua_parser_test.cc
@@ -56,7 +68,8 @@ noinst_HEADERS = \
 		      $(INCLUDE_DIR)/tokens.h \
 		      $(INCLUDE_DIR)/convuri.h \
                       $(INCLUDE_DIR)/ppset.h \
-                      $(INCLUDE_DIR)/xmlutils.h
+                      $(INCLUDE_DIR)/xmlutils.h \
+                      $(INCLUDE_DIR)/protobuf/paramsvalues.pb.h
 
 if MINGW32_OPT
 INCLUDE_PARSERS =
@@ -129,7 +142,15 @@ libSzarp2_la_SOURCES = \
 			$(SZBASE_DIR)/loptcalculate.cc $(SZBASE_DIR)/loptcalculate.h \
 			$(SZBASE_DIR)/probeblock.cc \
 			$(SZBASE_DIR)/szbsearch.h $(SZBASE_DIR)/szbsearch.cc \
-			$(SZBASE_DIR)/szbblock.cc
+			$(SZBASE_DIR)/szbblock.cc \
+			\
+			$(INCLUDE_DIR)/sz4/block.h \
+			$(INCLUDE_DIR)/sz4/load_file_locked.h \
+			$(SZ4_DIR)/load_file_locked.cpp \
+			\
+			protobuf/paramsvalues.pb.cc \
+			include/protobuf/paramsvalues.pb.h
+
 
 
 # Additional files for deleting on 'make maintainer-clean'

@@ -63,9 +63,14 @@
 #include <boost/tokenizer.hpp>
 #include <tr1/unordered_map>
 
+#include <zmq.hpp>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+
 #include "szarp.h"
 #include "szbase/szbbase.h"
 #include "szbase/szbhash.h"
+
+#include "protobuf/paramsvalues.pb.h"
 
 #include "funtable.h"
 #include "daemon.h"
@@ -1379,7 +1384,32 @@ void calculate_lua_params(TSzarpConfig *ipk, PH& pv, std::vector<LuaParamInfo*>&
 }
 #endif
 
-void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*>& param_info) 
+void str_deleter(void* data, void* obj) {
+	delete (std::string*)obj;
+}
+
+void publish_values(short* Probe, zmq::socket_t& socket) {
+	std::string* buffer = new std::string();
+	{
+		google::protobuf::io::StringOutputStream stream(buffer);
+		szarp::ParamsValues param_values;
+
+		time_t now = time(NULL);
+		for (unsigned i = 0; i < VTlen; i++) {
+			szarp::ParamValue* param_value = param_values.add_param_values();
+			param_value->set_param_no(i);
+			param_value->set_time(now);
+			param_value->set_int_value(Probe[VTlen]);
+		}
+
+		param_values.SerializeToZeroCopyStream(&stream);
+	}
+
+	zmq::message_t msg((void*)buffer->data(), buffer->size(), str_deleter, buffer);
+	socket.send(msg);
+}
+
+void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*>& param_info, zmq::socket_t& zmq_socket) 
 {
 	int abuf;	/* time index in probes tables */
 	int ii;
@@ -1445,6 +1475,9 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 	/** calculate lua params*/
 	calculate_lua_params(ipk, ipc_param_values, param_info);
 #endif
+
+	sz_log(10, "publishing new values");
+	publish_values(Probe, zmq_socket);
 
 	/* NOW update probes history */
 	for (ii = 0; ii < VTlen; ii++)
@@ -1551,6 +1584,7 @@ int main(int argc, char *argv[])
 	struct arguments arguments;
 	char* linedmnpat;	/**< path for ftok */
 	char* config_prefix;
+	char* parcook_socket;
 
 	InitSignals();
 
@@ -1594,6 +1628,7 @@ int main(int argc, char *argv[])
 	parcookpat = libpar_getpar("", "parcook_path", 1);
 	linedmnpat = libpar_getpar("", "linex_cfg", 1);
 	config_prefix = libpar_getpar("parscriptd", "config_prefix", 1);
+	parcook_socket = libpar_getpar("", "parcook_socket_uri", 1);
 	/* end szarp.cfg processing */
 	libpar_done();
 	
@@ -1672,10 +1707,13 @@ int main(int argc, char *argv[])
 #endif
 	sz_log(10, "Going main loop");
 
+	zmq::context_t zmq_context(1);
+	zmq::socket_t socket(zmq_context, ZMQ_PUB);
+	socket.bind(parcook_socket);
 	
 	/* start processing */
 	while (1) 
-		MainLoop(ipk, param_values, pi);
+		MainLoop(ipk, param_values, pi, socket);
 	/* not reached */	
 	return 0;
 }
