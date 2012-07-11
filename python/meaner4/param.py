@@ -52,6 +52,14 @@ class Param:
 		else:
 			self.time_prec = 4
 
+	def nan(self):
+		if self.data_type == "short":
+			return -2**15
+		elif self.data_type == "int":
+			return -2**31
+		else:
+			return float('nan')
+
 	def value_to_binary(self, value):
 		return struct.pack(self.value_format_string, value)
 
@@ -77,5 +85,14 @@ class Param:
 			return time + float(nanotime) / (10 ** 9)
 		else:
 			return time
+
+	def time_just_before(self, time, nanotime):
+		if self.time_prec == 8:
+			if nanotime == 0:
+				return (time - 1, 10 ** 9 - 1)
+			else:
+				return (time, nanotime - 1)
+		else:
+			return (time - 1, nanotime)
 
 

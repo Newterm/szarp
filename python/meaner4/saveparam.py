@@ -43,7 +43,7 @@ class SaveParam:
 		finally:
 			fcntl.lockf(self.file, fcntl.LOCK_UN)
 
-	def new_value(self, value, time, nanotime):
+	def write_value(self, value, time, nanotime):
 		if self.file_size + self.param.time_prec + self.param.value_lenght >= config.DATA_FILE_SIZE:
 			self.file.close()
 
@@ -89,12 +89,16 @@ class SaveParam:
 			self.file = open(path, "w+b")
 			self.current_value = None
 
+	def fill_no_data(self, time, nanotime):
+		prev_time, prev_nanotime = self.param.time_just_before(time, nanotime)
+		self.write_value(self.param.nan(), prev_time, prev_nanotime)
 
 	def process_msg(self, msg):
 		if not self.param.written_to_base:
 			return
 
-		if self.first_write:
+		first_write = self.first_write
+		if first_write:
 			self.prepare_for_writing(msg.time, msg.nanotime)
 			self.first_write = False
 
@@ -102,5 +106,7 @@ class SaveParam:
 		if  value == self.current_value:
 			self.update_last_time(msg.time, msg.nanotime)
 		else:
-			self.new_value(value, msg.time, msg.nanotime)
+			if first_write and self.current_value is not None:
+				self.fill_no_data(msg.time, msg.nanotime)
+			self.write_value(value, msg.time, msg.nanotime)
 

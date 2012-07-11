@@ -65,7 +65,7 @@ class SaveParamTest(unittest.TestCase):
 		temp_dir = tempfile.mkdtemp(suffix="meaner4_unit_test")
 		path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/00001234560000000000.sz4")
 
-		sp = saveparam.SaveParam(self.node, temp_dir)
+		sp = saveparam.SaveParam(param.Param(self.node), temp_dir)
 		sp.process_msg(self._msg(123456, 4))
 		self._check_size(path, 12)
 		self._check_file(path, "<iII", (4, 123456, 0))
@@ -87,7 +87,7 @@ class SaveParamTest(unittest.TestCase):
 		temp_dir = tempfile.mkdtemp(suffix="meaner4_unit_test")
 		path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/00001234560000000000.sz4")
 
-		sp = saveparam.SaveParam(self.node, temp_dir)
+		sp = saveparam.SaveParam(param.Param(self.node), temp_dir)
 		sp.process_msg(self._msg(123456, 4))
 		self._check_size(path, 12)
 		self._check_file(path, "<iII", (4, 123456, 0))
@@ -97,11 +97,11 @@ class SaveParamTest(unittest.TestCase):
 		self._check_file(path, "<iII", (4, 123457, 0))
 
 		del sp
-		sp = saveparam.SaveParam(self.node, temp_dir)
+		sp = saveparam.SaveParam(param.Param(self.node), temp_dir)
 
-		sp.process_msg(self._msg(123458, 5))
-		self._check_size(path, 4 + 8 + 4 + 8)
-		self._check_file(path, "<iIIiII", (4, 123457, 0, 5, 123458, 0))
+		sp.process_msg(self._msg(123459, 5))
+		self._check_size(path, 4 + 8 + 4 + 8 + 4 + 8)
+		self._check_file(path, "<iIIiIIiII", (4, 123457, 0, -2**31, 123458, 999999999, 5, 123459, 0))
 
 		shutil.rmtree(temp_dir)
 
@@ -111,7 +111,7 @@ class SaveParamTest(unittest.TestCase):
 		item_size = 4 + 8
 		items_per_file = config.DATA_FILE_SIZE / item_size
 
-		sp = saveparam.SaveParam(self.node, temp_dir)
+		sp = saveparam.SaveParam(param.Param(self.node), temp_dir)
 		for i in range(items_per_file + 1):
 			sp.process_msg(self._msg(i, i))
 
