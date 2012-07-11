@@ -1433,8 +1433,13 @@ void modbus_client::starting_new_cycle() {
 	}
 
 	if (m_last_activity + 10 < m_current_time) {
-		dolog(1, "Answer did not arrive, sending next query");
 		send_next_query();
+		if (m_state == IDLE) {
+			dolog(1, "Answer did not arrive and we have no more queries - terminating connection");
+			terminate_connection();
+		} else {
+			dolog(1, "Answer did not arrive, sending next query");
+		}
 	}
 }
 
