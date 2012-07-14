@@ -794,6 +794,10 @@ public:
 		, P_LUA
 #endif
 		} ParamType;
+
+	typedef enum { SHORT, INT, FLOAT, DOUBLE } DataType;
+
+	typedef enum { SECOND, NANOSECOND } TimeType; 
 	
 	static bool IsHourSumUnit(const std::wstring& unit);
 
@@ -838,7 +842,9 @@ public:
 #endif
 #endif
 	    _sum_unit(),
-	    _sum_divisor(6.)
+	    _sum_divisor(6.),
+	    _dataType(SHORT),
+	    _timeType(SECOND)
 	{ }
 
 	/** Deletes whole list. */
@@ -1176,6 +1182,13 @@ public:
 
 	void SetParentSzarpConfig(TSzarpConfig *parentSzarpConfig) { _parentSzarpConfig = parentSzarpConfig; }
 
+	DataType GetDataType() const { return _dataType; }
+
+	void SetDataType(DataType dataType) { _dataType = dataType; }
+
+	TimeType GetTimeType() const { return _timeType; }
+
+	void SetTimeType(TimeType timeType) { _timeType = timeType; }
 protected:
 	TUnit * _parentUnit;  /**< Pointer to parent TUnit object (NULL for defined). */
 
@@ -1256,12 +1269,17 @@ protected:
 #endif
 
 #endif
-	/*unit that shall be used to display summaried values of this params*/
+	/** unit that shall be used to display summaried values of this params*/
 	std::wstring _sum_unit;
 
-	/*summarived values of this param shall be divided by this factor*/
+	/** summaried values of this param shall be divided by this factor*/
 	double _sum_divisor;
 
+	/** this parameter data type*/
+	DataType _dataType;
+
+	/** this parameter time type, i.e. resolution*/
+	TimeType _timeType;
 };
 
 /**

@@ -37,10 +37,10 @@ szbtest_SOURCES = $(SZBASE_DIR)/szbtest.cc
 
 
 protobuf/paramsvalues.pb.h: protobuf/paramsvalues.proto 
-	$(PROTOC) --cpp_out=$(SRCDIR)/protobuf $<
+	$(PROTOC) --cpp_out=$(SRCDIR)protobuf $<
 
 protobuf/paramsvalues.pb.cc: protobuf/paramsvalues.proto 
-	$(PROTOC) --cpp_out=$(SRCDIR)/protobuf $<
+	$(PROTOC) --cpp_out=$(SRCDIR)protobuf $<
 
 include/protobuf/paramsvalues.pb.h: protobuf/paramsvalues.pb.h
 	cp $< $@

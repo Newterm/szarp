@@ -1,5 +1,5 @@
-#ifndef __BLOCK_H__
-#define __BLOCK_H__
+#ifndef __SZ4_BLOCK_H__
+#define __SZ4_BLOCK_H__
 /* 
   SZARP: SCADA software 
   
@@ -21,15 +21,10 @@
 
 #include <algorithm>
 
+#include "sz4/defs.h"
+#include "sz4/time.h"
+
 namespace sz4 {
-
-template<class V, class T> struct value_time_pair {
-	typedef V value_type;
-	typedef T time_type;
-
-	value_type value;
-	time_type  time;
-} __attribute__ ((packed));
 
 template<class V, class T> struct value_time_pair<V, T> make_value_time_pair(V v, T t) {
 	value_time_pair<V, T> p;
@@ -51,18 +46,50 @@ template<class I, class T> I search_entry_for_time(I begin, I end, T t) {
 
 template<class V, class T> class block {
 public:
-	typedef V data_type;
+	typedef V value_type;
 	typedef T time_type;
-
 	typedef value_time_pair<V, T> value_time_type;
+	typedef std::vector<value_time_type> value_time_vector;
 
-	typedef std::vector<value_time_type> value_time_vector_pair;
+	block(const time_type& start_time) : m_start_time(start_time) {}
+		
+	const time_type& start_time() const { return m_start_time; }
+	const time_type& end_time() const { return m_data[m_data.size() - 1].time; }
 
-	data_type m_start_time;
-	time_type m_end_time;
+	std::pair<typename value_sum<value_type>::type, typename time_difference<time_type>::type>
+	weighted_sum(const time_type& start_time, const time_type &end_time) const {
+		std::pair<typename time_difference<time_type>::type, 
+			typename value_sum<value_type>::type> r(0, 0);
+		time_type prev_time(start_time);
 
-	value_time_vector_pair m_data;
+		bool done = false;
+		typename value_time_vector::const_iterator i = search_entry_for_time(m_data.begin(), m_data.end(), start_time);
+		while (!done && i != m_data.end()) {
+			typename time_difference<time_type>::type time_diff;
+			if (i->time >= end_time) {
+				time_diff = end_time - prev_time;
+				done = true;
+			} else {
+				time_diff = i->time - prev_time;
+			}
+			prev_time = i->time;
 
+			if (!value_is_no_data(i->value)) {
+				r.first += i->value * time_diff;
+				r.second += time_diff;
+			}
+
+			std::advance(i, 1);
+		}
+
+		return r;
+	}
+
+	void set_data(value_time_vector& data) { m_data.swap(data); }
+private:
+
+	value_time_vector m_data;
+	time_type m_start_time;
 };
 
 }
