@@ -460,10 +460,10 @@ protected:
 	modbus_client();
 	void reset_cycle();
 	void start_cycle();
-	void send_next_query();
+	void send_next_query(bool previous_ok);
 	void send_write_query();
 	void send_read_query();
-	void next_query();
+	void next_query(bool previous_ok);
 	void send_query();
 	void find_continuous_reg_block(RSET::iterator &i, RSET &regs);
 	void timeout();
@@ -1432,15 +1432,8 @@ void modbus_client::starting_new_cycle() {
 			break;
 	}
 
-	if (m_last_activity + 10 < m_current_time) {
-		send_next_query();
-		if (m_state == IDLE) {
-			dolog(1, "Answer did not arrive and we have no more queries - terminating connection");
-			terminate_connection();
-		} else {
-			dolog(1, "Answer did not arrive, sending next query");
-		}
-	}
+	if (m_last_activity + 10 < m_current_time)
+		send_next_query(false);
 }
 
 
@@ -1453,16 +1446,16 @@ void modbus_client::reset_cycle() {
 
 void modbus_client::start_cycle() {
 	dolog(7, "Starting cycle");
-	send_next_query();
+	send_next_query(true);
 }
 
-void modbus_client::send_next_query() {
+void modbus_client::send_next_query(bool previous_ok) {
 
 	switch (m_state) {
 		case IDLE:
 		case READ_QUERY_SENT:
 		case WRITE_QUERY_SENT:
-			next_query();
+			next_query(previous_ok);
 			send_query();
 			break;
 		default:
@@ -1510,7 +1503,7 @@ void modbus_client::send_read_query() {
 	send_pdu(m_unit, m_pdu);
 }
 
-void modbus_client::next_query() {
+void modbus_client::next_query(bool previous_ok) {
 	switch (m_state) {
 		case IDLE:
 			m_state = READ_QUERY_SENT;
@@ -1527,7 +1520,12 @@ void modbus_client::next_query() {
 			}
 			m_state = IDLE;
 			reset_cycle();
-			cycle_finished();
+			if (previous_ok)
+				cycle_finished();
+			else {
+				dolog(1, "Previous query failed and we have just finished our cycle - teminating connection");
+				terminate_connection();
+			}
 			break;
 	}
 }
@@ -1552,12 +1550,12 @@ void modbus_client::timeout() {
 			dolog(1, "Timeout while reading data, unit_id: %d, address: %hu, registers count: %hu, progressing with queries",
 					(int)m_unit, m_start_addr, m_regs_count);
 
-			send_next_query();
+			send_next_query(false);
 			break;
 		case WRITE_QUERY_SENT:
 			dolog(1, "Timeout while writing data, unit_id: %d, address: %hu, registers count: %hu, progressing with queries",
 					(int)m_unit, m_start_addr, m_regs_count);
-			send_next_query();
+			send_next_query(false);
 			break;
 		default:
 			dolog(1, "Received unexpected timeout from connection, ignoring.");
@@ -1598,18 +1596,24 @@ void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 		case READ_QUERY_SENT:
 			try {
 				consume_read_regs_response(m_unit, m_start_addr, m_regs_count, pdu);
-			} catch (std::out_of_range) {	//message was distorted
+
+				send_next_query(true);
+			} catch (std::out_of_range&) {	//message was distorted
 				dolog(1, "Error while processing response - there is either a bug or sth was very wrong with request format");
+
+				send_next_query(false);
 			}
-			send_next_query();
 			break;
 		case WRITE_QUERY_SENT:
 			try {
 				consume_write_regs_response(m_unit, m_start_addr, m_regs_count, pdu);
-			} catch (std::out_of_range) {	//message was distorted
+
+				send_next_query(true);
+			} catch (std::out_of_range&) {	//message was distorted
 				dolog(1, "Error while processing response - there is either a bug or sth was very wrong with request format");
+
+				send_next_query(false);
 			}
-			send_next_query();
 			break;
 		default:
 			dolog(10, "Received unexpected response from slave - ignoring it.");
