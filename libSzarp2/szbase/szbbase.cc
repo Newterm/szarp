@@ -15,10 +15,13 @@
 #include <time.h>
 
 #include <liblog.h>
+#include "szbparamobserver.h"
+#include "szbparamobserver.h"
 #include "szbbase.h"
 #include "szbbuf.h"
 #include "szbhash.h"
 
+#include "luapextract.h"
 #include "cacheabledatablock.h"
 #include "conversion.h"
 #include "proberconnection.h"
@@ -475,6 +478,52 @@ bool Szbase::CompileLuaFormula(const std::wstring& formula, std::wstring& error)
 }
 
 #endif
+
+void Szbase::AddParamMonitor(SzbParamObserver *observer, const std::vector<TParam*>& params) {
+	std::vector<std::pair<TParam*, std::vector<std::string> > > to_monitor;
+	for (std::vector<TParam*>::const_iterator i = params.begin(); 
+			i != params.end();
+			i++) {
+
+		std::vector<std::string> paths;
+		std::vector<TParam*> to_process, seen;
+
+		to_process.push_back(*i);
+		seen.push_back(*i);
+
+		while (to_process.size()) {
+			TParam* p = to_process.back();
+			to_process.pop_back();
+
+			if (p->GetType() == TParam::P_REAL) {
+				std::string path(SC::S2A((m_szarp_dir / p->GetSzarpConfig()->GetPrefix() / L"szbase" / p->GetSzbaseName()).file_string()));
+				paths.push_back(path);
+				continue;
+			}
+
+			assert(p->GetType() == TParam::P_LUA);
+			std::vector<std::wstring> strings;
+			if (!extract_strings_from_formula(p->GetFormula(), strings))
+				continue;
+
+			for (std::vector<std::wstring>::iterator i = strings.begin();
+					i != strings.end();
+					i++) {
+				std::pair<szb_buffer_t*, TParam*> bp;
+				if (!FindParam(*i, bp))
+					continue;
+
+				if (std::find(seen.begin(), seen.end(), bp.second) != seen.end())
+					continue;
+
+				seen.push_back(bp.second);
+				to_process.push_back(bp.second);
+			}
+		}
+		to_monitor.push_back(std::make_pair(*i, paths));
+	}
+	m_monitor.add_observer(observer, to_monitor);
+}
 
 #ifndef NO_LUA
 

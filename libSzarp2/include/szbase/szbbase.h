@@ -20,6 +20,8 @@
 #include "szbdate.h"
 #include "szbbuf.h"
 #include "szbfile.h"
+#include "szbparamobserver.h"
+#include "szbparammonitor.h"
 #include <szbase/szbfilewatcher.h>
 
 #include <tr1/unordered_map>
@@ -102,6 +104,8 @@ class Szbase {
 	/**maximum serach time*/
 	time_t m_maximum_search_time;
 
+	SzbParamMonitor m_monitor;
+
 	/**Load configuration for this prefix into internal hashes*/
 	bool AddBase(const std::wstring& prefix);
 
@@ -149,6 +153,7 @@ public:
 	/**Compiles lua formula*/
 	bool CompileLuaFormula(const std::wstring& formula, std::wstring& error);
 #endif
+	void AddParamMonitor(SzbParamObserver *observer, const std::vector<TParam*>& params);
 	/**Static methods for initizaling global object*/
 	static void Init(const std::wstring& szarp_dir, bool write_cache = false);
 	static void Init(const std::wstring& szarp_dir, void (*callback)(std::wstring, std::wstring), bool write_cache, int memory_cache_size = 0);
