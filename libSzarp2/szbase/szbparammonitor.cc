@@ -66,10 +66,18 @@ void SzbParamMonitorImpl::process_notification() {
 				throw std::runtime_error("Failed to read from inotify socket");
 		}
 
-		struct inotify_event* e = (struct inotify_event*) buf;
-		size_t l = strlen(e->name);
-		if (l > 4 && e->name[l - 4] == '.' && e->name[l - 3] == 's' && e->name[l - 2] == 'z' && (e->name[l - 1] == '4' || e->name[l - 1] == 'b'))
-			tokens.push_back(e->wd);
+		ssize_t p = 0;
+		while (r > 0) {
+			struct inotify_event* e = (struct inotify_event*) (buf + p);
+			size_t l = strlen(e->name);
+
+			if (l > 4 && e->name[l - 4] == '.' && e->name[l - 3] == 's' && e->name[l - 2] == 'z'
+					&& (e->name[l - 1] == '4' || e->name[l - 1] == 'b'))
+				tokens.push_back(e->wd);
+
+			r -= sizeof(*e) + e->len;
+			p += sizeof(*e) + e->len;
+		}
 
 	}
 
@@ -105,7 +113,7 @@ void SzbParamMonitorImpl::process_cmds() {
 				if (wd < 0)
 					sz_log(3, "Failed to add watch for path:%s, errno: %d", cmd.path.c_str(), errno);
 				else
-					m_monitor->token_assigned(wd, cmd.param, cmd.observer, cmd.path);
+					m_monitor->dir_registered(wd, cmd.param, cmd.observer, cmd.path);
 				break;
 			case DEL_CMD:
 				if (inotify_rm_watch(m_inotify_socket, cmd.token))
@@ -151,7 +159,7 @@ void SzbParamMonitorImpl::run() {
 	m_thread = boost::thread(boost::bind(&SzbParamMonitorImpl::loop, this));
 }
 
-void SzbParamMonitorImpl::trigger_command_pipe() {
+bool SzbParamMonitorImpl::trigger_command_pipe() {
 again:
 	ssize_t r = write(m_cmd_socket[0], "a", 1);
 	if (r == -1) {
@@ -161,11 +169,13 @@ again:
 			sz_log(4, "Failed to write to command pipe errno: %d", errno);
 			boost::mutex::scoped_lock lock(m_mutex);
 			m_queue.pop_back();
+			return false;
 		}
 	}
+	return true;
 }
 
-void SzbParamMonitorImpl::start_monitoring_dir(const std::string& path, TParam* param, SzbParamObserver* observer) {
+bool SzbParamMonitorImpl::start_monitoring_dir(const std::string& path, TParam* param, SzbParamObserver* observer) {
 	command cmd;
 	cmd.cmd = ADD_CMD;
 	cmd.path = path;
@@ -175,10 +185,10 @@ void SzbParamMonitorImpl::start_monitoring_dir(const std::string& path, TParam* 
 		boost::mutex::scoped_lock lock(m_mutex);
 		m_queue.push_back(cmd);
 	}
-	trigger_command_pipe();
+	return trigger_command_pipe();
 }
 
-void SzbParamMonitorImpl::end_monitoring_dir(SzbMonitorTokenType token) {
+bool SzbParamMonitorImpl::end_monitoring_dir(SzbMonitorTokenType token) {
 	command cmd;
 	cmd.cmd = DEL_CMD;
 	cmd.token = token;
@@ -186,18 +196,21 @@ void SzbParamMonitorImpl::end_monitoring_dir(SzbMonitorTokenType token) {
 		boost::mutex::scoped_lock lock(m_mutex);
 		m_queue.push_back(cmd);
 	}
+	return trigger_command_pipe();
 }
 
-void SzbParamMonitorImpl::terminate() {
+bool SzbParamMonitorImpl::terminate() {
 	command cmd;
 	cmd.cmd = END_CMD;
 	{
 		boost::mutex::scoped_lock lock(m_mutex);
 		m_queue.push_back(cmd);
 	}
-	trigger_command_pipe();
+	if (!trigger_command_pipe())
+		return false;
 
 	m_thread.join();
+	return true;
 }
 
 
@@ -205,12 +218,18 @@ SzbParamMonitor::SzbParamMonitor() : m_monitor_impl(this) {
 	m_monitor_impl.run();
 }
 
-void SzbParamMonitor::token_assigned(SzbMonitorTokenType token, TParam *param, SzbParamObserver* observer, const std::string& path) {
+void SzbParamMonitor::dir_registered(SzbMonitorTokenType token, TParam *param, SzbParamObserver* observer, const std::string& path) {
 	boost::mutex::scoped_lock lock(m_mutex);
 
 	m_token_observer_param[token].push_back(std::make_pair(observer, param));
 	m_observer_token_param[observer].push_back(std::tr1::make_tuple(token, param, path));
 	m_path_token[path] = token;
+
+	m_cond.notify_one();
+}
+
+void SzbParamMonitor::failed_to_register_dir(TParam *param, SzbParamObserver* observer, const std::string& path) {
+	m_cond.notify_one();
 }
 
 void SzbParamMonitor::dirs_changed(const std::vector<SzbMonitorTokenType>& dirs) {
@@ -235,9 +254,12 @@ void SzbParamMonitor::add_observer(SzbParamObserver* observer, const std::vector
 				j != i->second.end();
 				j++) {
 			std::tr1::unordered_map<std::string, SzbMonitorTokenType>::iterator k = m_path_token.find(*j);
-			if (k == m_path_token.end())
-				m_monitor_impl.start_monitoring_dir(*j, i->first, observer);
-			else {
+			if (k == m_path_token.end()) {
+				if (m_monitor_impl.start_monitoring_dir(*j, i->first, observer))
+					m_cond.wait(lock);
+				else
+					sz_log(4, "Failed to to add dir to monitord");
+			} else {
 				m_token_observer_param[k->second].push_back(std::make_pair(observer, i->first));
 				m_observer_token_param[observer].push_back(std::tr1::make_tuple(k->second, i->first, *j));
 			}

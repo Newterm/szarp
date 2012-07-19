@@ -23,6 +23,7 @@
 #include <tr1/unordered_map>
 
 #include <boost/thread/thread.hpp>
+#include <boost/thread/condition.hpp>
 
 typedef int SzbMonitorTokenType;
 
@@ -55,13 +56,13 @@ class SzbParamMonitorImpl {
 	void process_notification();
 	void process_cmds();
 	void loop();
-	void trigger_command_pipe();
+	bool trigger_command_pipe();
 public:
 	SzbParamMonitorImpl(SzbParamMonitor *monitork);
-	void start_monitoring_dir(const std::string& path, TParam* param, SzbParamObserver* observer);
-	void end_monitoring_dir(SzbMonitorTokenType token);
+	bool start_monitoring_dir(const std::string& path, TParam* param, SzbParamObserver* observer);
+	bool end_monitoring_dir(SzbMonitorTokenType token);
 	void run();
-	void terminate();
+	bool terminate();
 };
 
 class SzbParamMonitor {
@@ -72,11 +73,13 @@ class SzbParamMonitor {
 	std::tr1::unordered_map<std::string, SzbMonitorTokenType> m_path_token;
 
 	boost::mutex m_mutex;
+	boost::condition m_cond;
 	
 	SzbParamMonitorImpl m_monitor_impl;
 public:
 	SzbParamMonitor();	
-	void token_assigned(SzbMonitorTokenType token, TParam *param, SzbParamObserver* observer, const std::string& path);
+	void dir_registered(SzbMonitorTokenType token, TParam *param, SzbParamObserver* observer, const std::string& path);
+	void failed_to_register_dir(TParam *param, SzbParamObserver* observer, const std::string& path);
 	void dirs_changed(const std::vector<SzbMonitorTokenType>& dirs);
 	void terminate();
 	void add_observer(SzbParamObserver* observer, const std::vector<std::pair<TParam*, std::vector<std::string> > >& observed);

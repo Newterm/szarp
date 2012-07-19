@@ -17,12 +17,14 @@ class TParam;
 class SzbParamMonitorTest : public CPPUNIT_NS::TestFixture
 {
 	void writeTest();
-	void moveTest();
+	void renameTest();
 
 	CPPUNIT_TEST_SUITE( SzbParamMonitorTest );
 	CPPUNIT_TEST( writeTest );
-	CPPUNIT_TEST( moveTest );
+	CPPUNIT_TEST( renameTest );
 	CPPUNIT_TEST_SUITE_END();
+
+	std::vector<std::string> createDirectories();
 public:
 	void setUp();
 };
@@ -45,14 +47,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION( SzbParamMonitorTest );
 void SzbParamMonitorTest::setUp() {
 }
 
-void SzbParamMonitorTest::writeTest() {
-	SzbParamMonitor m;
-	TestObserver o;
-
+std::vector<std::string> SzbParamMonitorTest::createDirectories() {
 	std::stringstream file_name;
 	file_name << "/tmp/szb_monitor_unit_test_" << getpid() << "." << time(NULL) << ".tmp";
-	
-	boost::filesystem::create_directories(file_name.str());
 	std::vector<std::string> dir_paths;
 	for (char c = 'a'; c < 'd'; c++) {
 		std::stringstream s;
@@ -63,8 +60,16 @@ void SzbParamMonitorTest::writeTest() {
 		dir_paths.push_back(p.file_string());
 	}
 
-	m.add_observer(&o, std::vector<std::pair<TParam*, std::vector<std::string> > >(1, std::make_pair((TParam*)1, dir_paths)));
-	sleep(1);
+	return dir_paths;
+}
+
+void SzbParamMonitorTest::writeTest() {
+	SzbParamMonitor m;
+	TestObserver o1, o2;
+
+	std::vector<std::string> dir_paths = createDirectories();
+	m.add_observer(&o1, std::vector<std::pair<TParam*, std::vector<std::string> > >(1, std::make_pair((TParam*)1, dir_paths)));
+	struct timespec t = {0, 300000000};
 
 	for (std::vector<std::string>::iterator i = dir_paths.begin();
 			i != dir_paths.end();
@@ -75,11 +80,71 @@ void SzbParamMonitorTest::writeTest() {
 		ofs.write("1111", 4);
 	}
 
-	sleep(1);
-	CPPUNIT_ASSERT_EQUAL(1u, o.map.size());
-	CPPUNIT_ASSERT_EQUAL(3, o.map[(TParam*)1]);
+	nanosleep(&t, NULL);
+	CPPUNIT_ASSERT_EQUAL(1u, o1.map.size());
+	CPPUNIT_ASSERT_EQUAL(3, o1.map[(TParam*)1]);
+
+	m.add_observer(&o1, std::vector<std::pair<TParam*, std::vector<std::string> > >(1, std::make_pair((TParam*)2, dir_paths)));
+	m.add_observer(&o2, std::vector<std::pair<TParam*, std::vector<std::string> > >(1, std::make_pair((TParam*)2, dir_paths)));
+	for (std::vector<std::string>::iterator i = dir_paths.begin();
+			i != dir_paths.end();
+			i++) {
+
+		std::string s = *i + "/test.sz4";
+		std::ofstream ofs(s.c_str(), std::ios_base::binary);
+		ofs.write("1111", 4);
+	}
+
+	nanosleep(&t, NULL);
+	CPPUNIT_ASSERT_EQUAL(2u, o1.map.size());
+	CPPUNIT_ASSERT_EQUAL(6, o1.map[(TParam*)1]);
+	CPPUNIT_ASSERT_EQUAL(3, o1.map[(TParam*)2]);
+
+	CPPUNIT_ASSERT_EQUAL(1u, o2.map.size());
+	CPPUNIT_ASSERT_EQUAL(3, o2.map[(TParam*)2]);
+
+	m.remove_observer(&o1);
+	for (std::vector<std::string>::iterator i = dir_paths.begin();
+			i != dir_paths.end();
+			i++) {
+
+		std::string s = *i + "/test.sz4";
+		std::ofstream ofs(s.c_str(), std::ios_base::binary);
+		ofs.write("1111", 4);
+	}
+
+	nanosleep(&t, NULL);
+	CPPUNIT_ASSERT_EQUAL(2u, o1.map.size());
+	CPPUNIT_ASSERT_EQUAL(6, o1.map[(TParam*)1]);
+	CPPUNIT_ASSERT_EQUAL(3, o1.map[(TParam*)2]);
+
+	CPPUNIT_ASSERT_EQUAL(1u, o2.map.size());
+	CPPUNIT_ASSERT_EQUAL(6, o2.map[(TParam*)2]);
+
+	boost::filesystem::remove_all(boost::filesystem::path(dir_paths[0]).branch_path());
 }
 
-void SzbParamMonitorTest::moveTest() {
+void SzbParamMonitorTest::renameTest() {
+	SzbParamMonitor m;
+	TestObserver o1;
+
+	std::vector<std::string> dir_paths = createDirectories();
+	m.add_observer(&o1, std::vector<std::pair<TParam*, std::vector<std::string> > >(1, std::make_pair((TParam*)1, dir_paths)));
+	struct timespec t = {0, 300000000};
+
+	{
+		std::ofstream ofs((dir_paths[0] + "/f.tmp").c_str(), std::ios_base::binary);
+		ofs.write("1111", 4);
+
+		std::ofstream ofs2((dir_paths[1] + "/f.tmp").c_str(), std::ios_base::binary);
+		ofs2.write("1111", 4);
+	}
+
+	boost::filesystem::rename(dir_paths[0] + "/f.tmp", dir_paths[0] + "/11.sz4");
+	boost::filesystem::rename(dir_paths[1] + "/f.tmp", dir_paths[1] + "/11.sz4");
+
+	nanosleep(&t, NULL);
+	CPPUNIT_ASSERT_EQUAL(1u, o1.map.size());
+	CPPUNIT_ASSERT_EQUAL(2, o1.map[(TParam*)1]);
 }
 

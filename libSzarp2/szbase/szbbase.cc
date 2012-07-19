@@ -16,7 +16,7 @@
 
 #include <liblog.h>
 #include "szbparamobserver.h"
-#include "szbparamobserver.h"
+#include "szbparammonitor.h"
 #include "szbbase.h"
 #include "szbbuf.h"
 #include "szbhash.h"
@@ -48,6 +48,7 @@ const int default_maximum_search_time = 15;			/** maximum deafult serach time */
 
 Szbase::Szbase(const std::wstring& szarp_dir) : m_szarp_dir(szarp_dir), m_config_modification_callback(NULL)
 {
+	m_monitor = new SzbParamMonitor();
 	m_current_query = 0;
 	m_maximum_search_time = default_maximum_search_time;
 }
@@ -66,6 +67,7 @@ void Szbase::Destroy() {
 }
 
 Szbase::~Szbase() {
+	delete m_monitor;
 	m_file_watcher.Terminate();
 	for (TBI::iterator i = m_ipkbasepair.begin() ; i != m_ipkbasepair.end() ; ++i) {
 		std::pair<szb_buffer_t*, TSzarpConfig*> v = i->second;
@@ -522,7 +524,7 @@ void Szbase::AddParamMonitor(SzbParamObserver *observer, const std::vector<TPara
 		}
 		to_monitor.push_back(std::make_pair(*i, paths));
 	}
-	m_monitor.add_observer(observer, to_monitor);
+	m_monitor->add_observer(observer, to_monitor);
 }
 
 #ifndef NO_LUA

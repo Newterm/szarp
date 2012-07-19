@@ -54,7 +54,7 @@ public:
 	block(const time_type& start_time) : m_start_time(start_time) {}
 		
 	const time_type& start_time() const { return m_start_time; }
-	const time_type& end_time() const { return m_data[m_data.size() - 1].time; }
+	const time_type end_time() const { return m_data[m_data.size() - 1].time; }
 
 	std::pair<typename value_sum<value_type>::type, typename time_difference<time_type>::type>
 	weighted_sum(const time_type& start_time, const time_type &end_time) const {

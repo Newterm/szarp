@@ -20,8 +20,6 @@
 #include "szbdate.h"
 #include "szbbuf.h"
 #include "szbfile.h"
-#include "szbparamobserver.h"
-#include "szbparammonitor.h"
 #include <szbase/szbfilewatcher.h>
 
 #include <tr1/unordered_map>
@@ -48,6 +46,8 @@ typedef boost::recursive_mutex::scoped_lock recursive_scoped_lock;
 bool szb_compile_lua_formula(lua_State *lua, const char *formula, const char *formula_name = "param_fomula", bool ret_v_val = true);
 #endif
 
+class SzbParamObserver;
+class SzbParamMonitor;
 
 /** Highest level szbase API, provides access to szbase content
  This class should be initialized by calling one of Init static method.
@@ -104,7 +104,7 @@ class Szbase {
 	/**maximum serach time*/
 	time_t m_maximum_search_time;
 
-	SzbParamMonitor m_monitor;
+	SzbParamMonitor* m_monitor;
 
 	/**Load configuration for this prefix into internal hashes*/
 	bool AddBase(const std::wstring& prefix);
