@@ -1,5 +1,3 @@
-#ifndef __SZ4_PATH_H__
-#define __SZ4_PATH_H__
 /* 
   SZARP: SCADA software 
   
@@ -23,11 +21,18 @@
 
 namespace sz4 {
 
-template<class T> T path_to_date(const std::wstring& path) { return T(); }
-
-template<> second_time_t path_to_date<second_time_t>(const std::wstring& path);
-
-template<> nanosecond_time_t path_to_date<nanosecond_time_t>(const std::wstring& path);
+long long operator-(const nanosecond_time_t& t1, const nanosecond_time_t& t2) {
+	long long d = t1.second;
+	d -= t2.second;
+	d *= 1000000000;
+	d += t1.nanosecond;
+	d -= t1.nanosecond;
+	return d;
 
 }
-#endif
+
+bool operator==(const nanosecond_time_t& t1, const nanosecond_time_t& t2) {
+	return t1.second == t2.second && t1.nanosecond == t2.nanosecond;
+}
+
+}

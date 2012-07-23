@@ -69,12 +69,12 @@ void SzbParamMonitorImpl::process_notification() {
 		ssize_t p = 0;
 		while (r > 0) {
 			struct inotify_event* e = (struct inotify_event*) (buf + p);
-			size_t l = strlen(e->name);
-
-			if (l > 4 && e->name[l - 4] == '.' && e->name[l - 3] == 's' && e->name[l - 2] == 'z'
-					&& (e->name[l - 1] == '4' || e->name[l - 1] == 'b'))
-				tokens.push_back(e->wd);
-
+			if (e->len) {
+				size_t l = strlen(e->name);
+				if (l > 4 && e->name[l - 4] == '.' && e->name[l - 3] == 's' && e->name[l - 2] == 'z'
+						&& (e->name[l - 1] == '4' || e->name[l - 1] == 'b'))
+					tokens.push_back(e->wd);
+			}
 			r -= sizeof(*e) + e->len;
 			p += sizeof(*e) + e->len;
 		}

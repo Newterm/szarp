@@ -1,5 +1,5 @@
-#ifndef __SZ4_PATH_H__
-#define __SZ4_PATH_H__
+#ifndef __SZ4_EXCPETIONS_H__
+#define __SZ4_EXCPETIONS_H__
 /* 
   SZARP: SCADA software 
   
@@ -19,15 +19,10 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
-#include "sz4/time.h"
+#include <stdexcept>
 
 namespace sz4 {
-
-template<class T> T path_to_date(const std::wstring& path) { return T(); }
-
-template<> second_time_t path_to_date<second_time_t>(const std::wstring& path);
-
-template<> nanosecond_time_t path_to_date<nanosecond_time_t>(const std::wstring& path);
-
+	class exception : std::runtime_error {}
 }
+
 #endif

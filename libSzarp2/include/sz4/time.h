@@ -19,6 +19,8 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
+#include <stdint.h>
+
 namespace sz4 {
 
 typedef uint32_t second_time_t;
@@ -28,18 +30,23 @@ struct nanosecond_time_t {
 	uint32_t nanosecond;
 } __attribute__ ((packed));
 
-long long operator-(const nanosecond_time_t& t1, const nanosecond_time_t& t2) {
-	long long d = t1.second;
-	d -= t2.second;
-	d *= 1000000000;
-	d += t1.nanosecond;
-	d -= t1.nanosecond;
-	return d;
-}
+long long operator-(const nanosecond_time_t& t1, const nanosecond_time_t& t2);
 
-bool operator==(const nanosecond_time_t& t1, const nanosecond_time_t& t2) {
-	return t1.second == t2.second && t1.nanosecond == t2.nanosecond;
-}
+bool operator==(const nanosecond_time_t& t1, const nanosecond_time_t& t2);
+
+template<class T> class invalid_time_value { };
+
+template<> class invalid_time_value<nanosecond_time_t> {
+public:
+	static bool is_valid(const nanosecond_time_t& t) { return !(t == value()); }
+	static nanosecond_time_t value() { nanosecond_time_t v = { -1, -1 }; return v; }
+};
+
+template<> class invalid_time_value<second_time_t> {
+public:
+	static bool is_valid(const second_time_t& t) { return !(t == value()); }
+	static second_time_t value() { return -1; }
+};
 
 }
 

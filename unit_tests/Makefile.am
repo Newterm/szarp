@@ -13,4 +13,5 @@ bin_PROGRAMS = unit_tests
 unit_tests_SOURCES = \
 		unit_tests.cpp \
 		sz4_block_unit_test.cpp \
-		szb_param_monitor_unit_test.cpp
+		szb_param_monitor_unit_test.cpp \
+		sz4_file_search.cpp
