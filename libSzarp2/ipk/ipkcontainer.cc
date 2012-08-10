@@ -131,6 +131,14 @@ void IPKContainer::AddExtraParam(const std::wstring& prefix, TParam *n) {
 	if (i == configs.end())
 		return;
 	n->SetParentSzarpConfig(i->second);
+
+	ConfigAux& aux = config_aux[prefix];
+	if (aux._freeIds.size()) {
+		std::set<unsigned>::iterator i = aux._freeIds.begin();
+		n->SetParamId(*i);
+		aux._freeIds.erase(i);
+	} else
+		n->SetParamId(aux._maxParamId++);
 }
 
 void IPKContainer::RemoveExtraParam(const std::wstring& prefix, TParam *p) {
@@ -139,6 +147,12 @@ void IPKContainer::RemoveExtraParam(const std::wstring& prefix, TParam *p) {
 	std::vector<TParam*>& tp = m_extra_params[prefix];
 	std::vector<TParam*>::iterator ei = std::remove(tp.begin(), tp.end(), p);
 	tp.erase(ei, tp.end());
+
+	ConfigAux& aux = config_aux[prefix];
+	if (tp->GetParamId() + 1 == aux._maxParamId)
+		aux._maxParamId--;
+	else
+		aux._freeIds.insert(tp->GetParamId());
 
 	delete p;
 }
@@ -164,7 +178,6 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 			delete ipk;
 			return NULL;
 		}
-
 	}
 
 	TDictionary d(szarp_system_dir.string());
@@ -172,10 +185,22 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 	if (configs.find(prefix) != configs.end())
 		delete configs[prefix];
 	configs[prefix] = ipk;
-	std::vector<TParam*>& pv = m_extra_params[prefix];
-	std::for_each(pv.begin(), pv.end(), std::bind2nd(std::mem_fun(&TParam::SetParentSzarpConfig), ipk));
-	return ipk;
 
+	unsigned id = 0;
+	for (TParam* p = ipk->GetFirstParam(); p; p = p->GetNext(true))
+		p->SetParamId(id++);
+
+	std::vector<TParam*>& pv = m_extra_params[prefix];
+	for (std::vector<TParam*>::iterator i = pv.begin(); i != pv.end(); i++) {
+		(*i)->SetParamId(id++);
+		(*i)->SetParentSzarpConfig(ipk);
+	}
+
+	ConfigAux ca;
+	ca._maxParamId = id;
+	config_aux[id] = ca;
+
+	return ipk;
 }
 
 TSzarpConfig* IPKContainer::LoadConfig(const std::wstring& prefix, const std::wstring& file , bool logparams) {

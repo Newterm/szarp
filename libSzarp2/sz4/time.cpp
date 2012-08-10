@@ -21,6 +21,11 @@
 
 namespace sz4 {
 
+nanosecond_time_t make_nanosecond_time(uint32_t second, uint32_t nanosecond) {
+	nanosecond_time_t v = {second, nanosecond};
+	return v;
+}
+
 long long operator-(const nanosecond_time_t& t1, const nanosecond_time_t& t2) {
 	long long d = t1.second;
 	d -= t2.second;
@@ -33,6 +38,10 @@ long long operator-(const nanosecond_time_t& t1, const nanosecond_time_t& t2) {
 
 bool operator==(const nanosecond_time_t& t1, const nanosecond_time_t& t2) {
 	return t1.second == t2.second && t1.nanosecond == t2.nanosecond;
+}
+
+long long operator>(const nanosecond_time_t& t1, const nanosecond_time_t& t2) {
+	return t1.second > t2.second || t1.second == t2.second && t1.nanosecond > t2.nanosecond;
 }
 
 }

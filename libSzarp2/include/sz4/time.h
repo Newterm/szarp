@@ -30,7 +30,11 @@ struct nanosecond_time_t {
 	uint32_t nanosecond;
 } __attribute__ ((packed));
 
+nanosecond_time_t make_nanosecond_time(uint32_t second, uint32_t nanosecond);
+
 long long operator-(const nanosecond_time_t& t1, const nanosecond_time_t& t2);
+
+long long operator>(const nanosecond_time_t& t1, const nanosecond_time_t& t2);
 
 bool operator==(const nanosecond_time_t& t1, const nanosecond_time_t& t2);
 
@@ -39,7 +43,7 @@ template<class T> class invalid_time_value { };
 template<> class invalid_time_value<nanosecond_time_t> {
 public:
 	static bool is_valid(const nanosecond_time_t& t) { return !(t == value()); }
-	static nanosecond_time_t value() { nanosecond_time_t v = { -1, -1 }; return v; }
+	static nanosecond_time_t value() { return make_nanosecond_time(-1, -1); }
 };
 
 template<> class invalid_time_value<second_time_t> {

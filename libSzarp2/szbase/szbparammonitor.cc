@@ -258,7 +258,7 @@ void SzbParamMonitor::add_observer(SzbParamObserver* observer, const std::vector
 				if (m_monitor_impl.start_monitoring_dir(*j, i->first, observer))
 					m_cond.wait(lock);
 				else
-					sz_log(4, "Failed to to add dir to monitord");
+					sz_log(4, "Failed to to add dir to monitor");
 			} else {
 				m_token_observer_param[k->second].push_back(std::make_pair(observer, i->first));
 				m_observer_token_param[observer].push_back(std::tr1::make_tuple(k->second, i->first, *j));
@@ -285,7 +285,7 @@ void SzbParamMonitor::remove_observer(SzbParamObserver* obs) {
 					j != opv.end();
 					j++)
 				if (j->first == obs) {
-					opv.erase(j);	
+					opv.erase(j);
 					break;
 				}
 		}

@@ -1189,6 +1189,10 @@ public:
 	TimeType GetTimeType() const { return _timeType; }
 
 	void SetTimeType(TimeType timeType) { _timeType = timeType; }
+
+	unsigned GetParamId() const { return _paramId; }
+
+	void SetParamId(unsigned paramId) { _paramId = paramId; }
 protected:
 	TUnit * _parentUnit;  /**< Pointer to parent TUnit object (NULL for defined). */
 
@@ -1216,6 +1220,8 @@ protected:
 	int _inbase;	/**< 0 for parameters that are not saved to base, otherwise
 			  1; inbase > 0 and baseInd < 0 it means 'auto' base index
 			  (only available for SzarpBase base format) */
+
+	unsigned _paramId;
 
 	std::wstring _formula;    /**< NULL if it's an oridinary parameter, formula
 			      for defined parameters. */
@@ -2222,6 +2228,13 @@ class IPKContainer {
 
 	typedef std::tr1::unordered_map<std::wstring, TSzarpConfig*> CM;
 
+	struct ConfigAux {
+		unsigned _maxParamId;
+		std::set<unsigned> _freeIds;
+	};
+
+	typedef std::tr1::unordered_map<std::wstring, ConfigAux> CAUXM;
+
 	/**Szarp system directory*/
 	boost::filesystem::wpath szarp_system_dir;
 
@@ -2233,6 +2246,8 @@ class IPKContainer {
 
 	/**Preload configurations*/
 	CM configs_ready_for_load;
+
+	CAUXM config_aux;
 
 	static IPKContainer* _object;
 
