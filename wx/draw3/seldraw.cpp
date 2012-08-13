@@ -78,7 +78,6 @@ SelectDrawValidator::SelectDrawValidator(DrawsWidget *drawswdg, int index, wxChe
 	assert (index >= 0);
 	m_index = index;
 	m_cb = cb;
-	m_menu = NULL;
 }
 
 SelectDrawValidator::SelectDrawValidator(const SelectDrawValidator& val)
@@ -93,7 +92,6 @@ SelectDrawValidator::Copy(const SelectDrawValidator& val)
 	m_draws_wdg = val.m_draws_wdg;
 	m_index = val.m_index;
 	m_cb = val.m_cb;
-	m_menu = NULL;
 	return TRUE;
 }
 
@@ -140,17 +138,16 @@ SelectDrawValidator::OnMouseRightDown(wxMouseEvent &event) {
 	if (di == NULL)
 		return;
 
-	delete m_menu;
-	m_menu = new wxMenu();
+	wxMenu menu;
 
 	DrawParam* dp = di->GetParam();
 	if (di->IsValid() && dp->GetIPKParam()->GetPSC())
-		m_menu->Append(seldrawID_PSC,_("Set parameter"));
+		menu.Append(seldrawID_PSC,_("Set parameter"));
 
-	m_menu->SetClientData(m_cb);
+	menu.SetClientData(m_cb);
 
 	if (m_draws_wdg->GetDrawBlocked(m_index)) {
-		wxMenuItem* item = m_menu->AppendCheckItem(seldrawID_CTX_BLOCK_MENU, _("Draw blocked\tCtrl-B"));
+		wxMenuItem* item = menu.AppendCheckItem(seldrawID_CTX_BLOCK_MENU, _("Draw blocked\tCtrl-B"));
 		item->Check();
 	} else {
 		int non_blocked_count = 0;
@@ -160,16 +157,17 @@ SelectDrawValidator::OnMouseRightDown(wxMouseEvent &event) {
 
 		//one draw shall be non-blocked
 		if (non_blocked_count > 1)
-			m_menu->AppendCheckItem(seldrawID_CTX_BLOCK_MENU, _("Draw blocked\tCtrl-B"));
+			menu.AppendCheckItem(seldrawID_CTX_BLOCK_MENU, _("Draw blocked\tCtrl-B"));
 	}
 
-	m_menu->Append(seldrawID_CTX_DOC_MENU, _("Parameter documentation\tCtrl-H"));
-	m_menu->Append(seldrawID_CTX_COPY_PARAM_NAME_MENU, _("Copy parameter name\tCtrl+Shift+C"));
+	menu.Append(seldrawID_CTX_DOC_MENU, _("Parameter documentation\tCtrl-H"));
+	menu.Append(seldrawID_CTX_COPY_PARAM_NAME_MENU, _("Copy parameter name\tCtrl+Shift+C"));
 
 	if (dynamic_cast<DefinedParam*>(dp) != NULL)
-		m_menu->Append(seldrawID_CTX_EDIT_PARAM, _("Edit parameter associated with graph\tCtrl-E"));
+		menu.Append(seldrawID_CTX_EDIT_PARAM, _("Edit parameter associated with graph\tCtrl-E"));
 
-	m_cb->PopupMenu(m_menu);
+	m_cb->PopupMenu(&menu);
+
 }
 
 void SelectDrawValidator::OnMouseMiddleDown(wxMouseEvent &event) {
@@ -192,7 +190,6 @@ void SelectDrawValidator::Set(DrawsWidget *drawswdg, int index, wxCheckBox *cb) 
 }
 
 SelectDrawValidator::~SelectDrawValidator() {
-	delete m_menu;
 }
 
 
@@ -340,12 +337,14 @@ SelectDrawWidget::SetChanged(DrawsController *draws_controller)
 		m_cb_l[i]->SetBackgroundColour(DRAW3_BG_COLOR);
 	}
 
-	for (size_t i = MIN_DRAWS_COUNT; i < m_cb_l.size(); i++) {
-		sizer->Detach(m_cb_l[i]);
-		m_cb_l[i]->Destroy();
-	}
+	if (selected_set->GetDraws()->size() > MIN_DRAWS_COUNT && selected_set->GetDraws()->size() < m_cb_l.size()) {
+		for (size_t i = selected_set->GetDraws()->size(); i < m_cb_l.size(); i++) {
+			sizer->Detach(m_cb_l[i]);
+			m_cb_l[i]->Destroy();
+		}
 
-	m_cb_l.resize(MIN_DRAWS_COUNT);
+		m_cb_l.resize(selected_set->GetDraws()->size());
+	}
 
 	InsertSomeDraws(0, std::min(selected_set->GetDraws()->size(), MIN_DRAWS_COUNT));
 
@@ -455,10 +454,9 @@ void SelectDrawWidget::OnEditParam(wxCommandEvent &event) {
 	while (!w->IsTopLevel())
 		w = w->GetParent();
 
-	ParamEdit* pe = new ParamEdit(w, m_cfg, m_dbmgr, m_remarks_handler);
-	pe->SetCurrentConfig(d->GetBasePrefix());
-	pe->Edit(dp);
-	delete pe;
+	ParamEdit pe(w, m_cfg, m_dbmgr, m_remarks_handler);
+	pe.SetCurrentConfig(d->GetBasePrefix());
+	pe.Edit(dp);
 
 }
 

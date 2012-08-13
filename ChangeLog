@@ -1,3 +1,9 @@
+
+2012-08-13 Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: param editing fix (actually it was related
+	solely to GUI components interdependencies
+	and had nothing to do with actual param
+	editing feature)
 2012-06-20 Darek Marcinkiewicz <reksio@newterm.pl>
 	* python/meaner4: fixes + some unit tests
 2012-06-19 Darek Marcinkiewicz <reksio@newterm.pl>
