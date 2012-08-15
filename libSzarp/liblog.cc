@@ -129,16 +129,14 @@ void vsz_log(int level, const char * msg_format, va_list fmt_args) {
 int sz_level_to_syslog_level(int level) {
 	switch (level) {
 		case 0:
-			return LOG_EMERG;
+			return LOG_CRIT;
 		case 1:
-			return LOG_ALERT;
-		case 2:
 			return LOG_ERR;
-		case 3:
+		case 2:
 			return LOG_WARNING;
-		case 4:
+		case 3:
 			return LOG_NOTICE;
-		case 5:
+		case 4:
 			return LOG_INFO;
 		default:
 			return LOG_DEBUG;
