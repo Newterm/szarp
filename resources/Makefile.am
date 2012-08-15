@@ -131,6 +131,9 @@ dictionary:
 	$(INSTALL) -d $(DESTDIR)@prefix@/resources
 	$(INSTALL) dictionary.xml $(DESTDIR)@prefix@/resources
 
+rsyslog: rsyslog.conf
+	$(INSTALL) -D rsyslog.conf $(DESTDIR)/etc/rsyslog.d/szarp.conf
+
 
 if !DEB_BUILD
 
@@ -176,7 +179,7 @@ install-data-local: copyfiles links
 
 endif
 
-install-data-hook: vim paramd_access parstart_ apache2 regulators_defs dictionary
+install-data-hook: vim paramd_access parstart_ apache2 regulators_defs dictionary rsyslog
 
 uninstall-local: uninstall-apache2
 	rm -rf @prefix@/resources/* /etc/apache2/sites-available/szarp
