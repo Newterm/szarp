@@ -68,18 +68,19 @@ NO_CB_PACK_OPTS ?= \
 		-pszarp-utils \
 		-pszarp-wx \
 		-pszarp-viewer \
-		-pszarp-xsltd 
+		-pszarp-xsltd \
+		-pszarp-dbg-symbols
 
 DOC_PACKAGES ?= \
 		-pszarp-doc-pdf \
 		-pszarp-doc-html
 		 
 ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
-	CFLAGS = -O0
-	CXXFLAGS = -O0
+	CFLAGS = -O0 -ggdb
+	CXXFLAGS = -O0 -ggdb
 else
-	CFLAGS = -O2
-	CXXFLAGS = -O2
+	CFLAGS = -O2 -ggdb
+	CXXFLAGS = -O2 -ggdb
 endif
 
 
@@ -136,7 +137,7 @@ binary-arch: binary-no-cb
 binary-arch-common: 
 	dh_testroot
 	dh_link
-	dh_strip
+	dh_strip --dbg-package=szarp-dbg-symbols
 	dh_compress
 	dh_makeshlibs
 	dh_installinit -udefaults\ 98 --name=parstart
