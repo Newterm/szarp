@@ -36,10 +36,16 @@ AC_PROG_CC([gcc3 gcc-3 gcc cc])
 AC_PROG_CC_C_O
 # C preprocesor (sets CPP)
 AC_PROG_CPP
+
 # C++ compiler (sets CXX)
 AC_PROG_CXX([g++3 g++-3 g++])
+# check g++ version
+AX_GXX_VERSION
+AM_CONDITIONAL([GXX_VERSION_47], [test x$GXX_VERSION = x4.7])
+
 # C++ preprocesor (sets CXXCPP)
 AC_PROG_CXXCPP
+
 #libtool
 AC_PROG_LIBTOOL
 #enable exe extensions in conditionaly built programs on pre 2.50 autoconf's
@@ -1445,3 +1451,4 @@ fi
 echo
 echo "Type 'make' to build SZARP"
 echo
+echo "GXX version:	$GXX_VERSION"

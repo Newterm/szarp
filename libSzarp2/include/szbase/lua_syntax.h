@@ -270,6 +270,6 @@ namespace lua_grammar {
 	bool parse(std::wstring::const_iterator& iter, std::wstring::const_iterator &end, chunk& chunk_);
 };
 
-#endif
+#endif //LUA_PARAM_OPTIMISE
 
 #endif

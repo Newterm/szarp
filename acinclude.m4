@@ -1,4 +1,4 @@
-dnl autoconf macros for SZARP
+Gdnl autoconf macros for SZARP
 dnl 
 dnl Pawe³ Pa³ucha <pawel@praterm.com.pl>
 dnl
@@ -2463,4 +2463,20 @@ if test "$ac_cv_boost_python" = "yes"; then
   AC_SUBST(BOOST_PYTHON_LIB)
 fi
 ])dnl
+
+
+AC_DEFUN([AX_GXX_VERSION], [
+  GXX_VERSION=""
+  AS_IF([test "x$GXX" = "xyes"],[
+      AC_CACHE_CHECK([gxx version],[ax_cv_gxx_version],[
+        ax_cv_gxx_version="`$CXX -dumpversion`"
+        AS_IF([test "x$ax_cv_gxx_version" = "x"],[
+          ax_cv_gxx_version=""
+        ])
+      ])
+      GXX_VERSION=$ax_cv_gxx_version
+  ])
+  AC_SUBST([GXX_VERSION])
+])
+
 
