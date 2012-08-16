@@ -29,7 +29,7 @@ INCLUDES = @XML_CFLAGS@ @XSLT_CFLAGS@ @CURL_CFLAGS@ @LUA_CFLAGS@ \
 	-I$(SZBASE_DIR)					\
 	-DPREFIX=\"@prefix@\"
 
-noinst_LTLIBRARIES = libSzarp2.la
+noinst_LTLIBRARIES = libSzarp2.la libSzarpLuaParser.la
 
 EXTRA_PROGRAMS = szbtest lua_parser_test xmlreader_test
 szbtest_SOURCES = $(SZBASE_DIR)/szbtest.cc
@@ -122,14 +122,23 @@ libSzarp2_la_SOURCES = \
 			$(SZBASE_DIR)/szbfilewatcher.cc $(INCLUDE_DIR)/szbase/szbfilewatcher.h \
 			$(SZBASE_DIR)/szbcancelhandle.cc $(INCLUDE_DIR)/szbase/szbcancelhandle.h \
 			$(SZBASE_DIR)/loptdatablock.cc $(SZBASE_DIR)/loptdatablock.h \
-			$(SZBASE_DIR)/lua_parser_extra.cc $(SZBASE_DIR)/lua_parser_extra.h \
-			$(SZBASE_DIR)/lua_parser.cc $(INCLUDE_DIR)/szbase/lua_syntax.h \
 			$(SZBASE_DIR)/proberconnection.cc $(SZBASE_DIR)/proberconnection.h \
 			$(SZBASE_DIR)/luacalculate.cc $(SZBASE_DIR)/luacalculate.h \
 			$(SZBASE_DIR)/loptcalculate.cc $(SZBASE_DIR)/loptcalculate.h \
 			$(SZBASE_DIR)/probeblock.cc \
 			$(SZBASE_DIR)/szbsearch.h $(SZBASE_DIR)/szbsearch.cc \
 			$(SZBASE_DIR)/szbblock.cc
+
+libSzarp2_la_LIBADD = libSzarpLuaParser.la
+
+libSzarpLuaParser_la_SOURCES = \
+			$(SZBASE_DIR)/lua_parser_extra.cc $(SZBASE_DIR)/lua_parser_extra.h \
+			$(SZBASE_DIR)/lua_parser.cc $(INCLUDE_DIR)/szbase/lua_syntax.h
+
+
+if GXX_VERSION_47
+libSzarpLuaParser_la_CXXFLAGS = $(CXXFLAGS) --param ggc-min-expand=5
+endif
 
 
 # Additional files for deleting on 'make maintainer-clean'
