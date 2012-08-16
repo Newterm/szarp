@@ -1,4 +1,4 @@
-Gdnl autoconf macros for SZARP
+dnl autoconf macros for SZARP
 dnl 
 dnl Pawe³ Pa³ucha <pawel@praterm.com.pl>
 dnl
