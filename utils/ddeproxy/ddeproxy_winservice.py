@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-  SZARP: SCADA software 
+  SZARP: SCADA software
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -43,6 +43,9 @@ import win32serviceutil
 import win32service
 import win32event
 import servicemanager
+import time
+
+from threading import Thread
 
 # default application name, for compatilibity with old ddespy/ddedmn
 __DEFAULT_APPNAME__ = "MBENET"
@@ -71,24 +74,70 @@ class ShutdownError(Exception):
 		return "Shutdown"
 
 class DDESpy:
-        def __init__(self):
+        def __init__(self, servicemanager):
                 self.appname = ""
                 self.lasttopic = ""
+                self.servicemanager = servicemanager
                 self.server = dde.CreateServer()
                 self.server.Create("DDEPROXY")
                 self.convers = dde.CreateConversation(self.server)
-                
+
         def __del__(self):
                 self.server.Shutdown()
-        
+
         def set_appname(self, appname):
                 if (self.appname != appname):
                         self.appname = appname
                         self.lasttopic = ""
 
+        def error(self, msg):
+            if self.servicemanager:
+                self.servicemanager.LogErrorMsg(msg)
+
+
 	def shutdown(self):
 		raise ShutdownError()
-              
+
+        def _reconnect(self, topic):
+            try:
+                self.convers.ConnectTo(self.appname, topic)
+                # if there were no exception, we can mark connection as valid
+                self.lasttopic = topic
+            except dde.error, e:
+                msg = 'Cannot connect to app: %s, topic: %s, reason' % (self.appname, topic, str(e))
+                self.error(msg)
+                raise xmlrpclib.Falut(xmlrpclib.APPLICATION_ERROR, msg)
+
+	def get_values2(self, params):
+                if self.appname == "":
+                        self.set_appname(__DEFAULT_APPNAME__);
+		resp  = {}
+                for appname, topics in params.iteritems():
+                    self.set_appname(appname)
+                    app_resp = {}
+                    resp[appname] = app_resp
+                    for topic, items in topics.iteritems():
+                        topic_resp = {}
+			# if topic changed or last request was not succesfull
+                        if self.lasttopic != topic:
+                            # mark connection as invalid
+                            self.lasttopic = ""
+                            self._reconnect(topic)
+                        for item in items:
+                            try:
+                                val = self.convers.Request(str(item))
+                                ret = val.rstrip("\0\n")
+                                self.lasttopic = topic
+                            except dde.error, e:
+                                self.lasttopic = ""
+                                msg = 'Cannot get topic: %s, item: %s, reason: %s' % (topic, str(item), str(e))
+                                self.error(msg)
+                                ret = None
+                            topic_resp[topic] = ret
+                        resp[topic] = topic_resp
+
+		return resp
+
 	def get_values(self, params):
                 if self.appname == "":
                         self.set_appname(__DEFAULT_APPNAME__);
@@ -106,11 +155,17 @@ class DDESpy:
                                 self.lasttopic = topic
                         for item in items:
                                 self.lasttopic = ""
-                                ret = self.convers.Request(str(item)).rstrip("\0")
-                                self.lasttopic = topic
+                                try:
+                                    val = self.convers.Request(str(item))
+                                    ret = val.rstrip("\0")
+                                    self.lasttopic = topic
+                                except dde.error, e:
+                                    self.error('Cannot get item: %s, reason: %s', (str(item), str(e)))
+                                    ret = None
                                 v.append(ret)
 
 		return v;
+
 
 class SilentRequestHandler(SimpleXMLRPCServer.SimpleXMLRPCRequestHandler):
         """
@@ -122,39 +177,59 @@ class SilentRequestHandler(SimpleXMLRPCServer.SimpleXMLRPCRequestHandler):
                 pass
                 #print format % (args, par1, par2)
 
+class DDEProxyServer(Thread):
+
+    def __init__(self, servicemanager):
+        Thread.__init__(self)
+        self.servicemanager = servicemanager
+        self._start_running = True
+        self.server = None
+
+    def shutdown(self):
+        self._start_running = False
+        if self.server:
+            self.server.shutdown()
+
+    def run(self):
+        while self._start_running:
+            try:
+                self.server = SimpleXMLRPCServer.SimpleXMLRPCServer(("", 8080), requestHandler = SilentRequestHandler)
+                self.server.register_instance(DDESpy(self.servicemanager))
+                self.server.serve_forever()
+            except ShutdownError, e:
+                return
+            except Exception, e:
+                import servicemanager
+                self.servicemanager.LogErrorMsg("Cought exception: %s" % str(e))
+                time.sleep(1)
+
+
 
 class AppServerSvc (win32serviceutil.ServiceFramework):
     _svc_name_ = "DDEPROXY"
     _svc_display_name_ = "DDE proxy service"
 
-    def __init__(self,args):
-        win32serviceutil.ServiceFramework.__init__(self,args)
-        self.hWaitStop = win32event.CreateEvent(None,0,0,None)
-        self.server = SimpleXMLRPCServer.SimpleXMLRPCServer(("", 8080),
-			requestHandler = SilentRequestHandler)
-	self.server.register_instance(DDESpy())
+    def __init__(self, args):
+        win32serviceutil.ServiceFramework.__init__(self, args)
+        self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
 
     def SvcStop(self):
         self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
-
-	proxy = xmlrpclib.ServerProxy("http://127.0.0.1:8080")
-	proxy.shutdown()
+        win32event.SetEvent(self.hWaitStop)
 
     def SvcDoRun(self):
+        import servicemanager
         servicemanager.LogMsg(servicemanager.EVENTLOG_INFORMATION_TYPE,
                               servicemanager.PYS_SERVICE_STARTED,
                               (self._svc_name_,''))
-        self.main()
 
-    def main(self):
-	while True:
-		try:
-			self.server.serve_forever()
-		except ShutdownError, e:
-			return
-		except Exception, e:
-			print "Cought exception", e
-			print "Trying to restart"
+        self.server = DDEProxyServer(servicemanager)
+        self.server.start()
+
+        win32event.WaitForSingleObject(self.hWaitStop, win32event.INFINITE)
+
+        self.server.shutdown()
+        self.server.join()
 
 
 def usage():
@@ -165,6 +240,5 @@ Default port number is %d
 """ % (__PORT__)
 
 if __name__ == '__main__':
-	
 	win32serviceutil.HandleCommandLine(AppServerSvc)
-	
+
