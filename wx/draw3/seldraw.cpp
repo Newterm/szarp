@@ -329,7 +329,17 @@ SelectDrawWidget::SetChanged(DrawsController *draws_controller)
 
 	wxSizer *sizer = GetSizer();
 
-	for (size_t i = selected_set->GetDraws()->size(); i < MIN_DRAWS_COUNT; i++) {
+	size_t new_draws_count = selected_set->GetDraws()->size();
+	size_t new_cb_size = std::max(new_draws_count, MIN_DRAWS_COUNT);
+	for (size_t i = new_cb_size; i < m_cb_l.size(); i++) {
+		sizer->Detach(m_cb_l[i]);
+		m_cb_l[i]->Destroy();
+	}
+
+	if (new_cb_size < m_cb_l.size())
+		m_cb_l.resize(new_cb_size);
+
+	for (size_t i = new_draws_count; i < MIN_DRAWS_COUNT; i++) {
 		m_cb_l[i]->SetLabel(wxString::Format(_T("%d."), i + 1));
 		m_cb_l[i]->Enable(FALSE);
 		m_cb_l[i]->SetValue(FALSE);
@@ -337,19 +347,10 @@ SelectDrawWidget::SetChanged(DrawsController *draws_controller)
 		m_cb_l[i]->SetBackgroundColour(DRAW3_BG_COLOR);
 	}
 
-	if (selected_set->GetDraws()->size() > MIN_DRAWS_COUNT && selected_set->GetDraws()->size() < m_cb_l.size()) {
-		for (size_t i = selected_set->GetDraws()->size(); i < m_cb_l.size(); i++) {
-			sizer->Detach(m_cb_l[i]);
-			m_cb_l[i]->Destroy();
-		}
+	InsertSomeDraws(0, new_draws_count > MIN_DRAWS_COUNT ? m_cb_l.size() : new_draws_count);
 
-		m_cb_l.resize(selected_set->GetDraws()->size());
-	}
-
-	InsertSomeDraws(0, std::min(selected_set->GetDraws()->size(), MIN_DRAWS_COUNT));
-
-	if (selected_set->GetDraws()->size() > MIN_DRAWS_COUNT && !m_timer->IsRunning())
-		m_timer->Start(250, true);		
+	if (selected_set->GetDraws()->size() > m_cb_l.size() && !m_timer->IsRunning())
+		m_timer->Start(250, true);
 
 	FitInside();
 }
