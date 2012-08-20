@@ -271,7 +271,7 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, const double*
 				sz_log(0, " it: %d, param_cnt: %d, num: %d",
 					it, param_cnt, param->GetNumParsInFormula());
 				sz_log(0, " chptr: %ls", chptr);
-				return NULL;
+				return nan("");
 			}
 	
 			// put probe value on stack

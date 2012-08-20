@@ -31,9 +31,8 @@ long long operator-(const nanosecond_time_t& t1, const nanosecond_time_t& t2) {
 	d -= t2.second;
 	d *= 1000000000;
 	d += t1.nanosecond;
-	d -= t1.nanosecond;
+	d -= t2.nanosecond;
 	return d;
-
 }
 
 bool operator==(const nanosecond_time_t& t1, const nanosecond_time_t& t2) {
@@ -41,7 +40,7 @@ bool operator==(const nanosecond_time_t& t1, const nanosecond_time_t& t2) {
 }
 
 long long operator>(const nanosecond_time_t& t1, const nanosecond_time_t& t2) {
-	return t1.second > t2.second || t1.second == t2.second && t1.nanosecond > t2.nanosecond;
+	return t1.second > t2.second || (t1.second == t2.second && t1.nanosecond > t2.nanosecond);
 }
 
 }

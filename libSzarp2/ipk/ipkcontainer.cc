@@ -149,10 +149,10 @@ void IPKContainer::RemoveExtraParam(const std::wstring& prefix, TParam *p) {
 	tp.erase(ei, tp.end());
 
 	ConfigAux& aux = config_aux[prefix];
-	if (tp->GetParamId() + 1 == aux._maxParamId)
+	if (p->GetParamId() + 1 == aux._maxParamId)
 		aux._maxParamId--;
 	else
-		aux._freeIds.insert(tp->GetParamId());
+		aux._freeIds.insert(p->GetParamId());
 
 	delete p;
 }
@@ -198,7 +198,7 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 
 	ConfigAux ca;
 	ca._maxParamId = id;
-	config_aux[id] = ca;
+	config_aux[prefix] = ca;
 
 	return ipk;
 }

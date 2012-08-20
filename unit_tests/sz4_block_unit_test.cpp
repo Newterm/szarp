@@ -59,7 +59,7 @@ void Sz4BlockTestCase::weigthedSumTest() {
 	std::pair<typename sz4::value_sum<unsigned>::type, typename sz4::time_difference<unsigned>::type> wsum;
 	std::vector<sz4::value_time_pair<unsigned, unsigned> > v = m_v;
 
-	sz4::block<unsigned, unsigned> block(0u);
+	sz4::concrete_block<unsigned, unsigned> block(0u);
 	block.set_data(v);
 
 	wsum = block.weighted_sum(0u, 1u);
@@ -82,7 +82,7 @@ void Sz4BlockTestCase::weigthedSumTest() {
 
 void Sz4BlockTestCase::weigthedSumTest2() {
 	std::vector<sz4::value_time_pair<short, unsigned> > v;
-	sz4::block<short, unsigned> block(0u);
+	sz4::concrete_block<short, unsigned> block(0u);
 	std::pair<typename sz4::value_sum<short>::type, typename sz4::time_difference<unsigned>::type> wsum;
 
 	v.push_back(sz4::make_value_time_pair((short)1, 1u));
@@ -135,7 +135,7 @@ void Sz4BlockTestCase::blockLoadTest() {
 			CPPUNIT_ASSERT(v.at(i).value == std::numeric_limits<short>::min());
 	}
 
-	sz4::block<short, unsigned> block(0u);
+	sz4::concrete_block<short, unsigned> block(0u);
 	block.set_data(v);
 
 	CPPUNIT_ASSERT_EQUAL(7u, block.end_time());

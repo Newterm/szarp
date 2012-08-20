@@ -44,14 +44,14 @@ template<class I, class T> I search_entry_for_time(I begin, I end, T t) {
 	return std::lower_bound(begin, end, t, cmp_time<value_type, T>);
 }
 
-template<class V, class T> class block {
+template<class V, class T> class concrete_block {
 public:
 	typedef V value_type;
 	typedef T time_type;
 	typedef value_time_pair<V, T> value_time_type;
 	typedef std::vector<value_time_type> value_time_vector;
 
-	block(const time_type& start_time) : m_start_time(start_time) {}
+	concrete_block(const time_type& start_time) : m_start_time(start_time) {}
 		
 	const time_type& start_time() const { return m_start_time; }
 	const time_type end_time() const { return m_data[m_data.size() - 1].time; }
