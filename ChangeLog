@@ -1,3 +1,6 @@
+2012-08-22 Dariusz Marcinkiewcz <reksio@newterm.pl>
+	* /: windows fixes: building fix, draw3 incsearch window fix, windows
+	version bump
 2012-05-06 Dariusz Marcinkiewcz <reksio@newterm.pl>
 	* wx/sync: bump max connection timeout value, currently for our largest
 	db, in full sync mode, client may spend several minutes on traversing

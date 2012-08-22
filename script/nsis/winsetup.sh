@@ -184,6 +184,8 @@ function CopyDlls()
 	/usr/local/boost/lib/boost_date_time*.dll \
 	/usr/local/boost/lib/boost_program_options*.dll \
 	/usr/local/boost/lib/boost_thread*.dll \
+	/usr/lib/gcc/i686-w64-mingw32/4.6/libstdc++-6.dll \
+	/usr/lib/gcc/i686-w64-mingw32/4.6/libgcc_s_sjlj-1.dll \
 	$MINGW"
 	
 	cat >> "`GetTmp`/FileList.nsh" <<EOF
