@@ -76,7 +76,12 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
 			token = self.service.sessions.new(user_id, username)
 			return token
 		else:
-			raise xmlrpc.Fault(-1, "Incorrect username and password")
+                        ok, user_id, username = tdb.autologin(user, password)
+                        if ok:
+                                token = self.service.sessions.new(user_id, username)
+                                return token
+                        else:
+                                raise xmlrpc.Fault(-1, "Incorrect username and password")
 
 	def xmlrpc_login(self, user, password):
 		return self.service.db.dbpool.runInteraction(self._login_interaction, user, password)

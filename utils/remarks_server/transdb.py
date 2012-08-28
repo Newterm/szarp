@@ -17,6 +17,8 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 
+import hashlib
+
 import psycopg2
 import time
 from twisted.web import xmlrpc
@@ -25,7 +27,31 @@ class TransDbAccess:
 	def __init__(self, db, trans):
 		self.db = db
 		self.trans = trans
-	
+
+	def autologin(self, user, password):
+                # autologin format: login@prefix
+                user_data = user.split('@')
+
+                if len(user_data) != 2:
+                        return False, None, None
+                try:
+                        filestring = open("/opt/szarp/" + user_data[1] + "/config/params.xml", "r").read()
+                except IOError:
+                        return False, None, None
+
+                md5 = hashlib.md5()
+                md5.update(filestring)
+                filestring_md5 = md5.hexdigest()
+                
+                if filestring_md5 == password:         
+                        ok, user_id, username = self.login("auto","auto")
+		        if ok:
+			        return True, user_id, user_data[0]
+		        else:
+                                return False, None, None
+                else:
+                        return False, None, None
+
 	def login(self, user, password):
 		self.trans.execute("""
 			SELECT

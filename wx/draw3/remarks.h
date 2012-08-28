@@ -441,6 +441,10 @@ class RemarksHandler : public wxEvtHandler {
 
 	bool m_configured;
 
+#ifndef MINGW32
+        bool m_szarp_cfg;
+#endif /*MINGW32*/
+
 	wxString m_username;
 	wxString m_password;
 	wxString m_server;
@@ -455,6 +459,11 @@ class RemarksHandler : public wxEvtHandler {
 	wxTimer m_timer;
 
 	void GetConfigurationFromSSCConfig();
+
+#ifndef MINGW32
+        void GetConfigurationFromSzarpCfg();
+#endif /*MINGW32*/
+
 public:
 	RemarksHandler(ConfigManager *config_manager);
 
@@ -471,6 +480,10 @@ public:
 	std::set<std::wstring> GetPrefixes();
 
 	bool Configured();
+
+#ifndef MINGW32
+        bool CfgConfigured();
+#endif /*MINGW32*/
 
 	void GetConfiguration(wxString& username, wxString& password, wxString &server, bool& autofetch);
 
