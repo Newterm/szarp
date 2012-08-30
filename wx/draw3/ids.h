@@ -64,6 +64,9 @@ enum { drawID_SELDRAW = wxID_HIGHEST,
 	seldrawID_CTX_DOC_MENU,
 	seldrawID_CTX_COPY_PARAM_NAME_MENU,
 	seldrawID_CTX_EDIT_PARAM,
+	seldrawID_CTX_AVERAGE_VALUE,
+	seldrawID_CTX_LAST_VALUE,
+	seldrawID_CTX_DIFFERENCE_VALUE,
 	seldrawID_PSC,
 	drawpickID_COLOR,
 	drawpickTB_SAVE,
@@ -181,6 +184,8 @@ const wxString period_names[PERIOD_T_LAST] =
 
 /**Type of database inquires identificators*/
 typedef int InquirerId;
+
+enum AverageValueCalculationMethod { AVERAGE_VALUE_CALCULATION_AVERAGE, AVERAGE_VALUE_CALCULATION_LAST, AVERAGE_VALUE_CALCULATION_LAST_FIRST };
 
 #endif
 

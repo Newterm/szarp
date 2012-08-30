@@ -405,7 +405,7 @@ szb_get_data(szb_buffer_t * buffer, TParam * param, time_t time)
 
 void 
 szb_get_avg_probe(szb_buffer_t * buffer, TParam * param,
-	time_t start_time, time_t end_time, double &psum, int &pcount, SZARP_PROBE_TYPE probe_type, bool *is_fixed) {
+	time_t start_time, time_t end_time, double &psum, int &pcount, SZARP_PROBE_TYPE probe_type, bool *is_fixed, double *first, double *last) {
 
 	szb_probeblock_t* b;
 	int probe;
@@ -428,6 +428,10 @@ szb_get_avg_probe(szb_buffer_t * buffer, TParam * param,
 				if (!IS_SZB_NODATA(data[i])) {
 					psum += data[i];
 					pcount++;
+					if (last)
+						*last = data[i];
+					if (pcount == 1 && first)
+						*first = data[i];
 				}
 			}
 		}
@@ -438,7 +442,7 @@ szb_get_avg_probe(szb_buffer_t * buffer, TParam * param,
 
 void
 szb_get_avg_data(szb_buffer_t * buffer, TParam * param,
-	time_t start_time, time_t end_time, double& psum, int &pcount, SZARP_PROBE_TYPE probe_type, bool *is_fixed)
+	time_t start_time, time_t end_time, double& psum, int &pcount, SZARP_PROBE_TYPE probe_type, bool *is_fixed, double* first, double*last)
 {
 
 	szb_datablock_t *b;
@@ -459,11 +463,18 @@ szb_get_avg_data(szb_buffer_t * buffer, TParam * param,
 		if (start_time <= end_time) {
 			pcount = (end_time - start_time) / SZBASE_DATA_SPAN;
 			psum = param->GetConstValue() * pcount;
+			if (first)
+				*first = param->GetConstValue();
+			if (last)
+				*last = param->GetConstValue();
 			return;
 		} else {
+			if (first)
+				*first = SZB_NODATA;
+			if (last)
+				*last = SZB_NODATA;
 			psum = SZB_NODATA;
 			pcount = 0;
-	
 			return;
 		}
 
@@ -487,6 +498,10 @@ szb_get_avg_data(szb_buffer_t * buffer, TParam * param,
 				if (!IS_SZB_NODATA(data[i])) {
 					psum += data[i];
 					pcount++;
+					if (last)
+						*last = data[i];
+					if (pcount == 1 && first)
+						*first = data[i];
 				}
 			}
 		}
@@ -497,7 +512,7 @@ szb_get_avg_data(szb_buffer_t * buffer, TParam * param,
 
 SZBASE_TYPE
 szb_get_avg(szb_buffer_t * buffer, TParam * param,
-	time_t start_time, time_t end_time, double * psum, int *pcount, SZARP_PROBE_TYPE probe_type, bool *is_fixed) {
+	time_t start_time, time_t end_time, double * psum, int *pcount, SZARP_PROBE_TYPE probe_type, bool *is_fixed, double *first, double *last) {
 
 	if (is_fixed)
 		*is_fixed = true;
@@ -516,15 +531,19 @@ szb_get_avg(szb_buffer_t * buffer, TParam * param,
 #endif
 
 	if (probe_type == PT_SEC10)
-		szb_get_avg_probe(buffer, param, start_time, end_time, sum, count, probe_type, is_fixed);
+		szb_get_avg_probe(buffer, param, start_time, end_time, sum, count, probe_type, is_fixed, first, last);
 	else
-		szb_get_avg_data(buffer, param, start_time, end_time, sum, count, probe_type, is_fixed);
+		szb_get_avg_data(buffer, param, start_time, end_time, sum, count, probe_type, is_fixed, first, last);
 
 	if (count <= 0) {
 		if (NULL != psum)
 			*psum = SZB_NODATA;
 		if (NULL != pcount)
 			*pcount = 0;
+		if (first)
+			*first = SZB_NODATA;
+		if (last)
+			*last = SZB_NODATA;
 		return SZB_NODATA;
 	}
 

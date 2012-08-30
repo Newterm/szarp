@@ -109,6 +109,7 @@ class RelWindow : public wxFrame, public DrawObserver {
 	/**Causes window repaint*/
 	virtual void StatsChanged(Draw *draw);
 
+	virtual void AverageValueCalculationMethodChanged(Draw *draw);
 
 	virtual ~RelWindow();
 

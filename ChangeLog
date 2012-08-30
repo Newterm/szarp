@@ -1,3 +1,21 @@
+2012-08-30 Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2: extend szbase API to return last and
+	first value from specified date range
+	* wx/draw3: new submenu has been added to context 
+	menu on graph list widget. Using this submenu user 
+	can choose what kind of values he wants to be drawn
+	on a graph:
+	- average value (default and only option available up to now): 
+	  for each mean time the average for each point is calculated
+	  e.g. for average type 'YEAR' each point represent parameters'
+	  mean value for a month
+	- last value: last value is drawn, sticking to our YEAR example
+	  - each point will represent value at 23:50 of last day of
+	  a month
+	- diff value: difference between last and first value for selected
+	  period is drawn, for YEAR it is difference between param value
+	  at 23:50 of last day of a month and value at 00:00 of first
+	  day of a month
 2012-08-22 Dariusz Marcinkiewcz <reksio@newterm.pl>
 	* /: windows fixes: building fix, draw3 incsearch window fix, windows
 	version bump

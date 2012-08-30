@@ -219,14 +219,17 @@ void QueryExecutor::ExecuteDataQuery(szb_buffer_t* szb, TParam* p, DatabaseQuery
 
 		time_t end = szb_move_time(i->time, 1, pt, i->custom_length);
 		if (p && szb) {
+			bool fixed;
 			i->response = szb_get_avg(szb, 
 					p, 
 					i->time,
 					end,
 					&i->sum,
 					&i->count,
-					pt);
-
+					pt,
+					&fixed,
+					&i->first_val,
+					&i->last_val);
 			if (szb->last_err != SZBE_OK) {
 				i->ok = false;
 				i->error = szb->last_err;

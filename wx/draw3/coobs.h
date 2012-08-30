@@ -66,6 +66,8 @@ public:
 
 	virtual void ParamDestroyed(DefinedParam *d) {}
 
+	virtual void DrawInfoAverageValueCalculationChanged(DrawInfo *d) {}
+
 	virtual ~ConfigObserver();
 	
 };

@@ -160,6 +160,8 @@ class SummaryWindow : public wxDialog, public DrawObserver {
 	virtual void DoubleCursorChanged(DrawsController *draws_controller);
 
 	virtual void NumberOfValuesChanged(DrawsController *draws_controller);
+	
+	virtual void AverageValueCalculationMethodChanged(Draw *d);
 
 	/**Causes refresh of given param value*/
 	void UpdateDraw(Draw *draw);

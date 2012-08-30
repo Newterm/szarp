@@ -378,6 +378,14 @@ void InfoWidget::NumberOfValuesChanged(DrawsController *draws_controller) {
 	m_update_values = true;
 }
 
+void InfoWidget::AverageValueCalculationMethodChanged(Draw *draw) {
+	if (draw->GetSelected() == false)
+		return;
+
+	m_update_values = true;
+	m_update_current_value = true;
+}
+
 void InfoWidget::DoubleCursorMode(bool set) {
 	ShowExtraPanel(set);
 	m_double_cursor = set;

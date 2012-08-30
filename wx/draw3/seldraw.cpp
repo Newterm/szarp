@@ -163,6 +163,25 @@ SelectDrawValidator::OnMouseRightDown(wxMouseEvent &event) {
 	menu.Append(seldrawID_CTX_DOC_MENU, _("Parameter documentation\tCtrl-H"));
 	menu.Append(seldrawID_CTX_COPY_PARAM_NAME_MENU, _("Copy parameter name\tCtrl+Shift+C"));
 
+	wxMenu* submenu = new wxMenu();
+	submenu->SetClientData(m_cb);
+	wxMenuItem* averageItem = submenu->AppendRadioItem(seldrawID_CTX_AVERAGE_VALUE, _("Average value for selected period"));
+	wxMenuItem* lastItem = submenu->AppendRadioItem(seldrawID_CTX_LAST_VALUE, _("Last value"));
+	wxMenuItem* diffItem = submenu->AppendRadioItem(seldrawID_CTX_DIFFERENCE_VALUE, _("Difference between last and first value"));
+	menu.AppendSubMenu(submenu, _("Type of average values shown"));
+
+	switch (di->GetAverageValueCalculationMethod()) {
+		case AVERAGE_VALUE_CALCULATION_AVERAGE:
+			averageItem->Check(true);
+			break;
+		case AVERAGE_VALUE_CALCULATION_LAST:
+			lastItem->Check(true);
+			break;
+		case AVERAGE_VALUE_CALCULATION_LAST_FIRST:
+			diffItem->Check(true);
+			break;
+	}
+
 	if (dynamic_cast<DefinedParam*>(dp) != NULL)
 		menu.Append(seldrawID_CTX_EDIT_PARAM, _("Edit parameter associated with graph\tCtrl-E"));
 
@@ -198,7 +217,9 @@ BEGIN_EVENT_TABLE(SelectDrawWidget, wxWindow)
 	LOG_EVT_MENU(seldrawID_PSC, SelectDrawWidget , OnPSC, "seldraw:psc" )
 	LOG_EVT_MENU(seldrawID_CTX_DOC_MENU, SelectDrawWidget , OnDocs, "seldraw:doc" )
 	LOG_EVT_MENU(seldrawID_CTX_COPY_PARAM_NAME_MENU, SelectDrawWidget , OnCopyParamName , "seldraw:cpyparam" )
-	LOG_EVT_MENU(seldrawID_CTX_EDIT_PARAM, SelectDrawWidget , OnEditParam, "seldraw:edit" )
+	LOG_EVT_MENU(seldrawID_CTX_AVERAGE_VALUE, SelectDrawWidget , OnAverageValueCalucatedMethodChange, "seldraw:averagevaluemethodchange" )
+	LOG_EVT_MENU(seldrawID_CTX_LAST_VALUE, SelectDrawWidget , OnAverageValueCalucatedMethodChange, "seldraw:averagevaluemethodchange" )
+	LOG_EVT_MENU(seldrawID_CTX_DIFFERENCE_VALUE, SelectDrawWidget , OnAverageValueCalucatedMethodChange, "seldraw:averagevaluemethodchange" )
 	EVT_TIMER(wxID_ANY, SelectDrawWidget::OnTimer)
 END_EVENT_TABLE()
 
@@ -459,6 +480,33 @@ void SelectDrawWidget::OnEditParam(wxCommandEvent &event) {
 	pe.SetCurrentConfig(d->GetBasePrefix());
 	pe.Edit(dp);
 
+}
+
+void SelectDrawWidget::OnAverageValueCalucatedMethodChange(wxCommandEvent &event) {
+	int i = GetClicked(event);
+	if (i == -1)
+		return;
+	DrawInfo *d = m_draws_wdg->GetDrawInfo(i);
+	AverageValueCalculationMethod qt = d->GetAverageValueCalculationMethod();
+	switch (event.GetId()) {
+		case seldrawID_CTX_AVERAGE_VALUE:
+			if (qt == AVERAGE_VALUE_CALCULATION_AVERAGE) 
+				return;
+			d->SetAverageValueCalculationMethod(AVERAGE_VALUE_CALCULATION_AVERAGE);
+			break;
+		case seldrawID_CTX_LAST_VALUE:
+			if (qt == AVERAGE_VALUE_CALCULATION_LAST) 
+				return;
+			d->SetAverageValueCalculationMethod(AVERAGE_VALUE_CALCULATION_LAST);
+			break;
+		case seldrawID_CTX_DIFFERENCE_VALUE:
+			if (qt == AVERAGE_VALUE_CALCULATION_LAST_FIRST) 
+				return;
+			d->SetAverageValueCalculationMethod(AVERAGE_VALUE_CALCULATION_LAST_FIRST);
+			break;
+	}
+
+	m_cfg->DrawInfoAverageValueCalculationChanged(d);
 }
 
 void SelectDrawWidget::OnCopyParamName(wxCommandEvent &event) {
