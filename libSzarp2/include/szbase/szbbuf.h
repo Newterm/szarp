@@ -382,7 +382,8 @@ szb_get_data(szb_buffer_t * buffer, TParam * param, time_t time);
  */
 SZBASE_TYPE
 szb_get_avg(szb_buffer_t * buffer, TParam * param,
-	time_t start_time, time_t end_time, double * psum = NULL, int * pcount = NULL, SZARP_PROBE_TYPE pt = PT_MIN10, bool *isFixes = NULL);
+	time_t start_time, time_t end_time, double * psum = NULL, int * pcount = NULL, SZARP_PROBE_TYPE pt = PT_MIN10, bool *isFixes = NULL,
+	double* first = NULL, double *last = NULL);
 
 /** Return value of probe of given type.
  * @param buffer pointer to data base buffer

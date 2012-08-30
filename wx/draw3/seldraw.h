@@ -194,6 +194,8 @@ protected:
 	/** edit parametr */
 	void OnEditParam(wxCommandEvent &event);
 
+	void OnAverageValueCalucatedMethodChange(wxCommandEvent &event);
+
 	void OnTimer(wxTimerEvent&);
 
         DECLARE_DYNAMIC_CLASS(SelectDrawWidget)

@@ -1377,6 +1377,19 @@ void DrawsController::RefreshData(bool auto_refresh) {
 	}
 }
 
+void DrawsController::DrawInfoAverageValueCalculationChanged(DrawInfo* di) {
+	for (int i = 0; i < m_active_draws_count; i++) {
+		if (!m_draws[i]->GetEnable())
+			continue;
+		if (m_draws[i]->GetDrawInfo() != di)
+			continue;
+
+		m_draws[i]->AverageValueCalculationMethodChanged();
+
+		m_observers.NotifyAverageValueCalculationMethodChanged(m_draws[i]);
+	}
+}
+
 void DrawsController::MoveCursorLeft(int n) {
 	m_state->MoveCursorLeft(n);
 }
@@ -1603,4 +1616,8 @@ void DrawsObservers::NotifyBlockedChanged(Draw* draw) {
 
 void DrawsObservers::NotifyDrawsSorted(DrawsController* controller) {
 	std::for_each(m_observers.begin(), m_observers.end(), std::bind2nd(std::mem_fun(&DrawObserver::DrawsSorted), controller));
+}
+
+void DrawsObservers::NotifyAverageValueCalculationMethodChanged(Draw *draw) {
+	std::for_each(m_observers.begin(), m_observers.end(), std::bind2nd(std::mem_fun(&DrawObserver::AverageValueCalculationMethodChanged), draw));
 }

@@ -137,6 +137,8 @@ class PieWindow : public wxFrame, public DrawObserver {
 
 	void DoubleCursorChanged(DrawsController *draws_controller);
 
+	void AverageValueCalculationMethodChanged(Draw *d);
+
 
 	virtual ~PieWindow();
 

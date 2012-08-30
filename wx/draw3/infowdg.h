@@ -68,6 +68,7 @@ class InfoWidget : public wxPanel, public DrawObserver {
 
 		virtual void NumberOfValuesChanged(DrawsController *draws_controller);
 
+		virtual void AverageValueCalculationMethodChanged(Draw *draw);
 
 		void DoubleCursorMode(bool set);
 	protected:

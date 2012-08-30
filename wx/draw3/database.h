@@ -73,6 +73,10 @@ struct DatabaseQuery {
 			int custom_length;
 			/**Response from a database*/
 			double response;
+			/**First val*/
+			double first_val;
+			/**Last val*/
+			double last_val;
 			/**Sum of probes*/
 			double sum;
 			/**Number of no no-data probes*/

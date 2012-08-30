@@ -113,6 +113,7 @@ DrawInfo::DrawInfo() {
 	d = NULL;
 	p = NULL;
 	c = wxNullColour;
+	avm = AVERAGE_VALUE_CALCULATION_AVERAGE;	
 }
 
 DrawInfo::DrawInfo(TDraw *d, DrawParam *p)
@@ -123,6 +124,7 @@ DrawInfo::DrawInfo(TDraw *d, DrawParam *p)
 	this->d = d;
 	this->p = p;
 	c = wxNullColour;
+	avm = AVERAGE_VALUE_CALCULATION_AVERAGE;	
 
 	if (d->GetColor().empty())
 		return;
@@ -300,6 +302,14 @@ wxString
 DrawInfo::GetValueStr(const double &val, const wxString& no_data_str) {
 	assert (p != NULL);
 	return p->GetIPKParam()->PrintValue(val, no_data_str.c_str());
+}
+
+AverageValueCalculationMethod DrawInfo::GetAverageValueCalculationMethod() const {
+	return avm;
+}
+
+void DrawInfo::SetAverageValueCalculationMethod(AverageValueCalculationMethod _avm) {
+	avm = _avm;
 }
 
 IPKDrawInfo::IPKDrawInfo(TDraw *d, TParam *p, DrawsSets *_ds) :
@@ -1332,6 +1342,13 @@ void ConfigManager::SubstiuteDefinedParams(const std::vector<DefinedParam*>& to_
 		delete to_rem[i];
 	}
 
+}
+
+void ConfigManager::DrawInfoAverageValueCalculationChanged(DrawInfo *d) {
+	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
+			i != m_observers.end();
+			i++)
+		(*i)->DrawInfoAverageValueCalculationChanged(d);
 }
 
 class ExportImportSet {
