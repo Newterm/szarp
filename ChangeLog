@@ -1,3 +1,5 @@
+2012-08-31 Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: tiny period siwtching fix
 2012-08-30 Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2: extend szbase API to return last and
 	first value from specified date range
