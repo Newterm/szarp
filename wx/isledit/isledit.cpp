@@ -413,7 +413,7 @@ class ISLEditor:public szApp<> {
 	}
 
 	virtual void OnInitCmdLine(wxCmdLineParser & parser) {
-		szApp::OnInitCmdLine(parser);
+		szApp<>::OnInitCmdLine(parser);
 		parser.SetLogo(_("ISL Editor - plugin for Inkscape"));
 		parser.AddSwitch(_T("h"), _T("help"), _("print usage info"),
 				 wxCMD_LINE_OPTION_HELP);
@@ -430,7 +430,7 @@ IMPLEMENT_APP(ISLEditor)
 
 bool ISLEditor::OnInit()
 {
-	if (szApp::OnInit() == false) {
+	if (szApp<>::OnInit() == false) {
 		return false;
 	}
 	SetAppName(_T("ISL Editor"));

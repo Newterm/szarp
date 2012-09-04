@@ -68,7 +68,7 @@ bool rapApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 }
 
 void rapApp::OnInitCmdLine(wxCmdLineParser &parser) {
-	szApp::OnInitCmdLine(parser);
+	szApp<>::OnInitCmdLine(parser);
 	parser.SetLogo(_("Szarp Raporter v 3.1"));
 	parser.AddSwitch(_T("h"), _("help"), _("show help"), wxCMD_LINE_OPTION_HELP);
 	parser.AddParam(_T("server"), wxCMD_LINE_VAL_STRING,
@@ -78,7 +78,7 @@ void rapApp::OnInitCmdLine(wxCmdLineParser &parser) {
 
 bool rapApp::OnInit() 
 {
-	if (!szApp::OnInit())
+	if (!szApp<>::OnInit())
 		return false;
 		
 	srand(time(NULL));

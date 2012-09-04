@@ -48,7 +48,7 @@ extern void InitXmlResource();
 
 bool SzastApp::OnInit()
 {
-	szApp::OnInit();
+	szApp<>::OnInit();
 	/* Set locale. */
 	this->InitializeLocale(_T("szast"), locale);
 

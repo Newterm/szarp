@@ -34,7 +34,7 @@
 
 bool ConfApp::OnInit()
 {
-	if (!szApp::OnInit()) {
+	if (!szApp<>::OnInit()) {
 		return false;
 	}
 
