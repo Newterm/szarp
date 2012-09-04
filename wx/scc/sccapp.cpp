@@ -56,7 +56,7 @@ bool SCCApp::OnInit()
 {
 	scc_ipc_messages::init_ipc();
 
-	if (szApp::OnInit() == false)
+	if (szApp<>::OnInit() == false)
 		return false;
 
 	this->SetProgName(_("SCC"));
@@ -243,7 +243,7 @@ int SCCApp::OnExit()
 }
 
 void SCCApp::OnInitCmdLine(wxCmdLineParser &parser) {
-	szApp::OnInitCmdLine(parser);
+	szApp<>::OnInitCmdLine(parser);
 	parser.SetLogo(_("SZARP Control Center. Notice that only one copy of program with specified\nparameters can be run."));
 	parser.AddSwitch(_T("h"), _T("help"), _("show help"), wxCMD_LINE_OPTION_HELP);
 	parser.AddSwitch(_T("D<name>=<str>"), wxEmptyString,
