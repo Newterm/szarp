@@ -88,6 +88,12 @@ szarp (3.1.655) unstable; urgency=low
 
  -- Jakub Kotur <qba@newterm.pl>  Wed, 20 Jun 2012 09:58:29 +0000
 
+szarp (3.1.653) oneiric; urgency=low
+
+  * building oneiric
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Mon, 3 Jun 2012 10:27:27 +0200
+
 szarp (3.1.654) squeeze; urgency=low
 
   * building squeeze
