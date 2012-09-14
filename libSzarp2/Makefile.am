@@ -149,9 +149,13 @@ libSzarp2_la_SOURCES = \
 			\
 			$(INCLUDE_DIR)/sz4/block.h \
 			$(INCLUDE_DIR)/sz4/load_file_locked.h \
+			$(INCLUDE_DIR)/sz4/buffer.h \
+			$(INCLUDE_DIR)/sz4/defs.h \
 			$(SZ4_DIR)/load_file_locked.cpp \
 			$(SZ4_DIR)/time.cpp \
 			$(SZ4_DIR)/path.cpp \
+			$(SZ4_DIR)/buffer.cpp \
+			$(SZ4_DIR)/defs.cpp \
 			\
 			protobuf/paramsvalues.pb.cc \
 			include/protobuf/paramsvalues.pb.h

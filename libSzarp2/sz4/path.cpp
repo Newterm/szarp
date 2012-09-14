@@ -22,38 +22,5 @@
 
 namespace sz4 {
 
-template<> second_time_t path_to_date<second_time_t>(const std::wstring& path) {
-	second_time_t v = 0;
-
-	if (path.size() < 14)
-		return invalid_time_value<second_time_t>::value();
-
-	for (size_t i = 0; i < 10; i++) {
-		v *= 10;
-		v += int(path[path.size() - 14 + i] - L'0');
-	}
-
-	return v;	
-}
-
-template<> nanosecond_time_t path_to_date<nanosecond_time_t>(const std::wstring& path) {
-	nanosecond_time_t v = {0, 0};
-
-	if (path.size() < 24)
-		return invalid_time_value<nanosecond_time_t>::value();
-
-	for (size_t i = 0; i < 10; i++) {
-		v.nanosecond *= 10;
-		v.nanosecond += path[path.size() - 14 + i] - L'0';
-	}
-
-	for (size_t i = 0; i < 10; i++) {
-		v.second *= 10;
-		v.second += path[path.size() - 24 + i] - L'0';
-	}
-
-	return v;
-}
-
 
 }

@@ -23,11 +23,68 @@
 
 namespace sz4 {
 
-template<class T> T path_to_date(const std::wstring& path) { return T(); }
+namespace path_impl {
 
-template<> second_time_t path_to_date<second_time_t>(const std::wstring& path);
+template<class C> struct zero_char_trait { };
 
-template<> nanosecond_time_t path_to_date<nanosecond_time_t>(const std::wstring& path);
+template<> struct zero_char_trait<char> {
+	static const char zero = '0';
+};
+
+template<> struct zero_char_trait<wchar_t> {
+	static const wchar_t zero = L'0';
+};
+
+template<class T, class C> struct path_to_date_converter {
+};
+
+
+template<class C> struct path_to_date_converter<second_time_t, C> {
+	static second_time_t convert(const std::basic_string<C> &path) {
+		second_time_t v = 0;
+
+		if (path.size() < 14)
+			return invalid_time_value<second_time_t>::value();
+
+		for (size_t i = 0; i < 10; i++) {
+			v *= 10;
+			v += int(path[path.size() - 14 + i] - zero_char_trait<C>::zero);
+		}
+
+		return v;	
+	}
+};
+
+template<class C> struct path_to_date_converter<nanosecond_time_t, C>  {
+	static nanosecond_time_t convert(const std::basic_string<C> &path) {
+		nanosecond_time_t v(0, 0);
+	
+		if (path.size() < 24)
+			return invalid_time_value<nanosecond_time_t>::value();
+	
+		for (size_t i = 0; i < 10; i++) {
+			v.nanosecond *= 10;
+			v.nanosecond += path[path.size() - 14 + i] - zero_char_trait<C>::zero;
+		}
+	
+		for (size_t i = 0; i < 10; i++) {
+			v.second *= 10;
+			v.second += path[path.size() - 24 + i] - zero_char_trait<C>::zero;
+		}
+	
+		return v;
+	}
+};
+
+}
+
+template<class T> T path_to_date(const std::string& path) {
+	return path_impl::path_to_date_converter<T, char>::convert(path);
+}
+
+template<class T> T path_to_date(const std::wstring& path) {
+	return path_impl::path_to_date_converter<T, wchar_t>::convert(path);
+}
 
 }
 #endif

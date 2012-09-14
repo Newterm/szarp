@@ -23,7 +23,7 @@ class TParam;
 
 class SzbParamObserver {
 public:
-	virtual void param_data_changed(TParam* param) = 0;
+	virtual void param_data_changed(TParam* param, const std::string& path) = 0;
 	virtual ~SzbParamObserver() {} 
 };
 

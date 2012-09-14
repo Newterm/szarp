@@ -53,7 +53,7 @@ SzbParamMonitorImpl::SzbParamMonitorImpl(SzbParamMonitor* monitor) : m_monitor(m
 
 void SzbParamMonitorImpl::process_notification() {
 	char buf[sizeof(inotify_event) + PATH_MAX + 1];
-	std::vector<SzbMonitorTokenType> tokens;
+	std::vector<std::pair<SzbMonitorTokenType, std::string> > tokens_and_paths;
 
 	while (true) {
 		ssize_t r = read(m_inotify_socket, buf, sizeof(buf));
@@ -69,11 +69,11 @@ void SzbParamMonitorImpl::process_notification() {
 		ssize_t p = 0;
 		while (r > 0) {
 			struct inotify_event* e = (struct inotify_event*) (buf + p);
-			if (e->len) {
+			if ((e->mask & (IN_CLOSE_WRITE | IN_MOVED_TO)) && e->len) {
 				size_t l = strlen(e->name);
 				if (l > 4 && e->name[l - 4] == '.' && e->name[l - 3] == 's' && e->name[l - 2] == 'z'
 						&& (e->name[l - 1] == '4' || e->name[l - 1] == 'b'))
-					tokens.push_back(e->wd);
+					tokens_and_paths.push_back(std::make_pair(SzbMonitorTokenType(e->wd), e->name));
 			}
 			r -= sizeof(*e) + e->len;
 			p += sizeof(*e) + e->len;
@@ -81,8 +81,8 @@ void SzbParamMonitorImpl::process_notification() {
 
 	}
 
-	if (tokens.size())
-		m_monitor->dirs_changed(tokens);
+	if (tokens_and_paths.size())
+		m_monitor->files_changed(tokens_and_paths);
 }
 
 void SzbParamMonitorImpl::process_cmds() {
@@ -113,7 +113,7 @@ void SzbParamMonitorImpl::process_cmds() {
 				if (wd < 0)
 					sz_log(3, "Failed to add watch for path:%s, errno: %d", cmd.path.c_str(), errno);
 				else
-					m_monitor->dir_registered(wd, cmd.param, cmd.observer, cmd.path);
+					m_monitor->dir_registered(wd, cmd.param, cmd.observer, cmd.path, cmd.order);
 				break;
 			case DEL_CMD:
 				if (inotify_rm_watch(m_inotify_socket, cmd.token))
@@ -175,12 +175,13 @@ again:
 	return true;
 }
 
-bool SzbParamMonitorImpl::start_monitoring_dir(const std::string& path, TParam* param, SzbParamObserver* observer) {
+bool SzbParamMonitorImpl::start_monitoring_dir(const std::string& path, TParam* param, SzbParamObserver* observer, unsigned order) {
 	command cmd;
 	cmd.cmd = ADD_CMD;
 	cmd.path = path;
 	cmd.observer = observer;
 	cmd.param = param;
+	cmd.order = order;
 	{
 		boost::mutex::scoped_lock lock(m_mutex);
 		m_queue.push_back(cmd);
@@ -218,10 +219,10 @@ SzbParamMonitor::SzbParamMonitor() : m_monitor_impl(this) {
 	m_monitor_impl.run();
 }
 
-void SzbParamMonitor::dir_registered(SzbMonitorTokenType token, TParam *param, SzbParamObserver* observer, const std::string& path) {
+void SzbParamMonitor::dir_registered(SzbMonitorTokenType token, TParam *param, SzbParamObserver* observer, const std::string& path, unsigned order) {
 	boost::mutex::scoped_lock lock(m_mutex);
 
-	m_token_observer_param[token].push_back(std::make_pair(observer, param));
+	m_token_observer_param[token].insert(std::make_pair(order, std::make_pair(observer, param)));
 	m_observer_token_param[observer].push_back(std::tr1::make_tuple(token, param, path));
 	m_path_token[path] = token;
 
@@ -232,20 +233,25 @@ void SzbParamMonitor::failed_to_register_dir(TParam *param, SzbParamObserver* ob
 	m_cond.notify_one();
 }
 
-void SzbParamMonitor::dirs_changed(const std::vector<SzbMonitorTokenType>& dirs) {
+void SzbParamMonitor::files_changed(const std::vector<std::pair<SzbMonitorTokenType, std::string> >& tokens_and_paths) {
 	boost::mutex::scoped_lock lock(m_mutex);
-	for (std::vector<SzbMonitorTokenType>::const_iterator i = dirs.begin();
-			i != dirs.end();
+	for (std::vector<std::pair<SzbMonitorTokenType, std::string> >::const_iterator i = tokens_and_paths.begin();
+			i != tokens_and_paths.end();
 			i++) {
-		std::vector<std::pair<SzbParamObserver*, TParam*> >& opv = m_token_observer_param[*i];
-		for (std::vector<std::pair<SzbParamObserver*, TParam*> >::iterator j = opv.begin();
+		std::multimap<unsigned, std::pair<SzbParamObserver*, TParam*> >& opv = m_token_observer_param[i->first];
+		for (std::multimap<unsigned, std::pair<SzbParamObserver*, TParam*> >::iterator j = opv.begin();
 				j != opv.end();
 				j++)
-			j->first->param_data_changed(j->second);
+			j->second.first->param_data_changed(j->second.second, i->second);
 	}
 }
 
-void SzbParamMonitor::add_observer(SzbParamObserver* observer, const std::vector<std::pair<TParam*, std::vector<std::string> > >& observed) {
+void SzbParamMonitor::add_observer(SzbParamObserver* observer, TParam* param, const std::string& path, unsigned order) {
+	std::vector<std::string> vp(1, path);
+	add_observer(observer, std::vector<std::pair<TParam*, std::vector<std::string> > >(1, std::make_pair(param, vp)), order);
+}
+
+void SzbParamMonitor::add_observer(SzbParamObserver* observer, const std::vector<std::pair<TParam*, std::vector<std::string> > >& observed, unsigned order) {
 	boost::mutex::scoped_lock lock(m_mutex);
 	for (std::vector<std::pair<TParam*, std::vector<std::string> > >::const_iterator i = observed.begin();
 			i != observed.end();
@@ -255,12 +261,12 @@ void SzbParamMonitor::add_observer(SzbParamObserver* observer, const std::vector
 				j++) {
 			std::tr1::unordered_map<std::string, SzbMonitorTokenType>::iterator k = m_path_token.find(*j);
 			if (k == m_path_token.end()) {
-				if (m_monitor_impl.start_monitoring_dir(*j, i->first, observer))
+				if (m_monitor_impl.start_monitoring_dir(*j, i->first, observer, order))
 					m_cond.wait(lock);
 				else
 					sz_log(4, "Failed to to add dir to monitor");
 			} else {
-				m_token_observer_param[k->second].push_back(std::make_pair(observer, i->first));
+				m_token_observer_param[k->second].insert(std::make_pair(order, std::make_pair(observer, i->first)));
 				m_observer_token_param[observer].push_back(std::tr1::make_tuple(k->second, i->first, *j));
 			}
 		}
@@ -274,17 +280,17 @@ void SzbParamMonitor::remove_observer(SzbParamObserver* obs) {
 			i++) {
 		SzbMonitorTokenType token = std::tr1::get<0>(*i);
 		const std::string& path = std::tr1::get<2>(*i);
-		std::vector<std::pair<SzbParamObserver*, TParam*> >& opv = m_token_observer_param[token];
+		std::multimap<unsigned, std::pair<SzbParamObserver*, TParam*> >& opv = m_token_observer_param[token];
 		if (opv.size() == 1) {
 			m_monitor_impl.end_monitoring_dir(token);
 
 			m_path_token.erase(path);
 			m_token_observer_param.erase(token);
 		} else {
-			for (std::vector<std::pair<SzbParamObserver*, TParam*> >::iterator j = opv.begin();
+			for (std::multimap<unsigned, std::pair<SzbParamObserver*, TParam*> >::iterator j = opv.begin();
 					j != opv.end();
 					j++)
-				if (j->first == obs) {
+				if (j->second.first == obs) {
 					opv.erase(j);
 					break;
 				}

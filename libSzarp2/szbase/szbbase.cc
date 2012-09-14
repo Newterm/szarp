@@ -524,7 +524,7 @@ void Szbase::AddParamMonitor(SzbParamObserver *observer, const std::vector<TPara
 		}
 		to_monitor.push_back(std::make_pair(*i, paths));
 	}
-	m_monitor->add_observer(observer, to_monitor);
+	m_monitor->add_observer(observer, to_monitor, 0);
 }
 
 #ifndef NO_LUA

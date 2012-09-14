@@ -30,16 +30,39 @@ public:
 };
 
 class TestObserver : public SzbParamObserver { 
+	boost::mutex m_mutex;
+	boost::condition m_cond;
+	size_t m_counter;
 public:
+	TestObserver();
+	void reset_counter();
 	std::map<TParam*, int> map;
-	void param_data_changed(TParam* param) {
-		std::map<TParam*, int>::iterator i = map.find(param);
-		if (i == map.end())
-			map[param] = 1;
-		else
-			i->second++;
-	}
+	void param_data_changed(TParam* param, const std::string& path);
+	bool wait_for(size_t events);
 };
+
+TestObserver::TestObserver() {
+	m_counter = 0;
+}
+
+void TestObserver::param_data_changed(TParam* param, const std::string& path) {
+	boost::mutex::scoped_lock lock(m_mutex);
+	std::map<TParam*, int>::iterator i = map.find(param);
+	if (i == map.end())
+		map[param] = 1;
+	else
+		i->second++;
+	m_counter += 1;
+	m_cond.notify_one();
+}
+
+bool TestObserver::wait_for(size_t events) {
+	boost::mutex::scoped_lock lock(m_mutex);
+	while (events != m_counter)
+		if (!m_cond.timed_wait(lock, boost::posix_time::seconds(5)))
+			return false;
+	return true;
+}
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION( SzbParamMonitorTest );
@@ -68,8 +91,7 @@ void SzbParamMonitorTest::writeTest() {
 	TestObserver o1, o2;
 
 	std::vector<std::string> dir_paths = createDirectories();
-	m.add_observer(&o1, std::vector<std::pair<TParam*, std::vector<std::string> > >(1, std::make_pair((TParam*)1, dir_paths)));
-	struct timespec t = {0, 300000000};
+	m.add_observer(&o1, std::vector<std::pair<TParam*, std::vector<std::string> > >(1, std::make_pair((TParam*)1, dir_paths)), 0);
 
 	for (std::vector<std::string>::iterator i = dir_paths.begin();
 			i != dir_paths.end();
@@ -80,12 +102,12 @@ void SzbParamMonitorTest::writeTest() {
 		ofs.write("1111", 4);
 	}
 
-	nanosleep(&t, NULL);
+	CPPUNIT_ASSERT(o1.wait_for(3));
 	CPPUNIT_ASSERT_EQUAL(1u, o1.map.size());
 	CPPUNIT_ASSERT_EQUAL(3, o1.map[(TParam*)1]);
 
-	m.add_observer(&o1, std::vector<std::pair<TParam*, std::vector<std::string> > >(1, std::make_pair((TParam*)2, dir_paths)));
-	m.add_observer(&o2, std::vector<std::pair<TParam*, std::vector<std::string> > >(1, std::make_pair((TParam*)2, dir_paths)));
+	m.add_observer(&o1, std::vector<std::pair<TParam*, std::vector<std::string> > >(1, std::make_pair((TParam*)2, dir_paths)), 0);
+	m.add_observer(&o2, std::vector<std::pair<TParam*, std::vector<std::string> > >(1, std::make_pair((TParam*)2, dir_paths)), 0);
 	for (std::vector<std::string>::iterator i = dir_paths.begin();
 			i != dir_paths.end();
 			i++) {
@@ -95,11 +117,12 @@ void SzbParamMonitorTest::writeTest() {
 		ofs.write("1111", 4);
 	}
 
-	nanosleep(&t, NULL);
+	CPPUNIT_ASSERT(o1.wait_for(9));
 	CPPUNIT_ASSERT_EQUAL(2u, o1.map.size());
 	CPPUNIT_ASSERT_EQUAL(6, o1.map[(TParam*)1]);
 	CPPUNIT_ASSERT_EQUAL(3, o1.map[(TParam*)2]);
 
+	CPPUNIT_ASSERT(o2.wait_for(3));
 	CPPUNIT_ASSERT_EQUAL(1u, o2.map.size());
 	CPPUNIT_ASSERT_EQUAL(3, o2.map[(TParam*)2]);
 
@@ -113,11 +136,11 @@ void SzbParamMonitorTest::writeTest() {
 		ofs.write("1111", 4);
 	}
 
-	nanosleep(&t, NULL);
 	CPPUNIT_ASSERT_EQUAL(2u, o1.map.size());
 	CPPUNIT_ASSERT_EQUAL(6, o1.map[(TParam*)1]);
 	CPPUNIT_ASSERT_EQUAL(3, o1.map[(TParam*)2]);
 
+	CPPUNIT_ASSERT(o2.wait_for(6));
 	CPPUNIT_ASSERT_EQUAL(1u, o2.map.size());
 	CPPUNIT_ASSERT_EQUAL(6, o2.map[(TParam*)2]);
 
@@ -129,9 +152,7 @@ void SzbParamMonitorTest::renameTest() {
 	TestObserver o1;
 
 	std::vector<std::string> dir_paths = createDirectories();
-	m.add_observer(&o1, std::vector<std::pair<TParam*, std::vector<std::string> > >(1, std::make_pair((TParam*)1, dir_paths)));
-	struct timespec t = {0, 300000000};
-
+	m.add_observer(&o1, std::vector<std::pair<TParam*, std::vector<std::string> > >(1, std::make_pair((TParam*)1, dir_paths)), 0);
 	{
 		std::ofstream ofs((dir_paths[0] + "/f.tmp").c_str(), std::ios_base::binary);
 		ofs.write("1111", 4);
@@ -143,7 +164,7 @@ void SzbParamMonitorTest::renameTest() {
 	boost::filesystem::rename(dir_paths[0] + "/f.tmp", dir_paths[0] + "/11.sz4");
 	boost::filesystem::rename(dir_paths[1] + "/f.tmp", dir_paths[1] + "/11.sz4");
 
-	nanosleep(&t, NULL);
+	CPPUNIT_ASSERT(o1.wait_for(2));
 	CPPUNIT_ASSERT_EQUAL(1u, o1.map.size());
 	CPPUNIT_ASSERT_EQUAL(2, o1.map[(TParam*)1]);
 }

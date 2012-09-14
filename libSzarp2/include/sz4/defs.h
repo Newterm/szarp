@@ -1,5 +1,3 @@
-#ifndef __SZ4_DEFS_H__
-#define __SZ4_DEFS_H__
 /* 
   SZARP: SCADA software 
   
@@ -18,9 +16,12 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
+#ifndef __SZ4_DEFS_H__
+#define __SZ4_DEFS_H__
 
 #include <limits>
 #include <cmath>
+#include <ctime>
 #include <stdint.h>
 
 #include "sz4/time.h"
@@ -37,14 +38,6 @@ template<class V, class T> struct value_time_pair {
 
 template<class T> bool value_is_no_data(const T& v) {
 	return v == std::numeric_limits<T>::min();
-}
-
-template<> bool value_is_no_data<double>(const double& v) {
-	return std::isnan(v);
-}
-
-template<> bool value_is_no_data<float>(const float& v) {
-	return std::isnan(v);
 }
 
 template<class T> struct time_difference { };
@@ -77,6 +70,20 @@ template<> struct value_sum<float> {
 
 template<> struct value_sum<double> {
 	typedef double type;
+};
+
+template<class value_type, class time_type> struct weighted_sum {
+	typedef typename value_sum<value_type>::type sum_type;
+	typedef typename time_difference<time_type>::type time_diff_type;
+
+	sum_type m_sum;
+	time_diff_type m_weight;
+	time_diff_type m_no_data_weight;
+
+	weighted_sum() : m_sum(0), m_weight(0), m_no_data_weight(0) {}
+	sum_type& sum() { return m_sum; }
+	time_diff_type& weight() { return m_weight; }
+	time_diff_type& no_data_weight() { return m_no_data_weight; }
 };
 
 }

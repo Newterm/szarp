@@ -20,23 +20,35 @@
 */
 
 #include <stdint.h>
+#include <ctime>
 
 namespace sz4 {
 
 typedef uint32_t second_time_t;
 
 struct nanosecond_time_t {
+	nanosecond_time_t() : second(0), nanosecond(0) {}
+	nanosecond_time_t(uint32_t _second, uint32_t _nanosecond) : second(_second), nanosecond(_nanosecond) {}
+	nanosecond_time_t(const second_time_t& time) : second(time), nanosecond(0) {}
+	bool operator==(const nanosecond_time_t& t) const { return second == t.second && nanosecond == t.nanosecond; }
+	long long operator- (const nanosecond_time_t& t) const {
+		long long d = second;
+		d -= t.second;
+		d *= 1000000000;
+		d += nanosecond;
+		d -= t.nanosecond;
+		return d;
+	}
+	bool operator< (const nanosecond_time_t& t) const { return second < t.second || (second == t.second && nanosecond < t.nanosecond); } 
+	bool operator<= (const nanosecond_time_t& t) const { return second < t.second || (second == t.second && nanosecond <= t.nanosecond); } 
+	bool operator> (const nanosecond_time_t& t) const { return second > t.second || (second == t.second && nanosecond > t.nanosecond); } 
+	bool operator>= (const nanosecond_time_t& t) const { return second > t.second || (second == t.second && nanosecond >= t.nanosecond); } 
+	operator second_time_t() const { return second; }
 	uint32_t second;
 	uint32_t nanosecond;
 } __attribute__ ((packed));
 
 nanosecond_time_t make_nanosecond_time(uint32_t second, uint32_t nanosecond);
-
-long long operator-(const nanosecond_time_t& t1, const nanosecond_time_t& t2);
-
-long long operator>(const nanosecond_time_t& t1, const nanosecond_time_t& t2);
-
-bool operator==(const nanosecond_time_t& t1, const nanosecond_time_t& t2);
 
 template<class T> class invalid_time_value { };
 

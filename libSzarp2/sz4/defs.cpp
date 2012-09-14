@@ -1,5 +1,3 @@
-#ifndef __SZ4_LOAD_FILE_LOCKED_H__
-#define __SZ4_LOAD_FILE_LOCKED_H__
 /* 
   SZARP: SCADA software 
   
@@ -19,9 +17,17 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
+#include "sz4/defs.h"
+
 namespace sz4 {
 
-bool load_file_locked(const std::wstring& path, void *data, size_t size);
+template<> bool value_is_no_data<double>(const double& v) {
+	return std::isnan(v);
+}
 
-};
-#endif
+template<> bool value_is_no_data<float>(const float& v) {
+	return std::isnan(v);
+}
+
+}
+

@@ -8,7 +8,7 @@
 
 namespace sz4 {
 
-bool load_file_locked(const std::wstring path, void *data, size_t size) {
+bool load_file_locked(const std::wstring& path, void *data, size_t size) {
 	namespace bi = boost::interprocess;
 
 	std::basic_string<unsigned char> upath = SC::S2U(path);

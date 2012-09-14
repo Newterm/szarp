@@ -56,10 +56,7 @@ public:
 	const time_type& start_time() const { return m_start_time; }
 	const time_type end_time() const { return m_data[m_data.size() - 1].time; }
 
-	std::pair<typename value_sum<value_type>::type, typename time_difference<time_type>::type>
-	weighted_sum(const time_type& start_time, const time_type &end_time) const {
-		std::pair<typename time_difference<time_type>::type, 
-			typename value_sum<value_type>::type> r(0, 0);
+	void get_weighted_sum(const time_type& start_time, const time_type &end_time, weighted_sum<V, T>& r) const {
 		time_type prev_time(start_time);
 
 		bool done = false;
@@ -75,14 +72,14 @@ public:
 			prev_time = i->time;
 
 			if (!value_is_no_data(i->value)) {
-				r.first += i->value * time_diff;
-				r.second += time_diff;
+				r.sum() += i->value * time_diff;
+				r.weight() += time_diff;
+			} else {
+				r.no_data_weight() += time_diff;
 			}
 
 			std::advance(i, 1);
 		}
-
-		return r;
 	}
 
 	void set_data(value_time_vector& data) { m_data.swap(data); }

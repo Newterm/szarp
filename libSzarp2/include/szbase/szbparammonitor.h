@@ -47,6 +47,7 @@ class SzbParamMonitorImpl {
 		SzbMonitorTokenType token;
 		TParam* param;
 		SzbParamObserver* observer;
+		unsigned order;
 	};
 
 	int m_cmd_socket[2];
@@ -59,7 +60,7 @@ class SzbParamMonitorImpl {
 	bool trigger_command_pipe();
 public:
 	SzbParamMonitorImpl(SzbParamMonitor *monitork);
-	bool start_monitoring_dir(const std::string& path, TParam* param, SzbParamObserver* observer);
+	bool start_monitoring_dir(const std::string& path, TParam* param, SzbParamObserver* observer, unsigned order);
 	bool end_monitoring_dir(SzbMonitorTokenType token);
 	void run();
 	bool terminate();
@@ -68,7 +69,7 @@ public:
 class SzbParamMonitor {
 	friend class SzbParamMonitorImpl;
 
-	std::tr1::unordered_map<SzbMonitorTokenType, std::vector<std::pair<SzbParamObserver*, TParam*> > > m_token_observer_param;
+	std::tr1::unordered_map<SzbMonitorTokenType, std::multimap<unsigned, std::pair<SzbParamObserver*, TParam*> > > m_token_observer_param;
 	std::tr1::unordered_map<SzbParamObserver*, std::vector<std::tr1::tuple<SzbMonitorTokenType, TParam*, std::string> > > m_observer_token_param;
 	std::tr1::unordered_map<std::string, SzbMonitorTokenType> m_path_token;
 
@@ -78,11 +79,12 @@ class SzbParamMonitor {
 	SzbParamMonitorImpl m_monitor_impl;
 public:
 	SzbParamMonitor();	
-	void dir_registered(SzbMonitorTokenType token, TParam *param, SzbParamObserver* observer, const std::string& path);
+	void dir_registered(SzbMonitorTokenType token, TParam *param, SzbParamObserver* observer, const std::string& path, unsigned order);
 	void failed_to_register_dir(TParam *param, SzbParamObserver* observer, const std::string& path);
-	void dirs_changed(const std::vector<SzbMonitorTokenType>& dirs);
+	void files_changed(const std::vector<std::pair<SzbMonitorTokenType, std::string> >& tokens_and_paths);
 	void terminate();
-	void add_observer(SzbParamObserver* observer, const std::vector<std::pair<TParam*, std::vector<std::string> > >& observed);
+	void add_observer(SzbParamObserver* observer, TParam* param, const std::string& path, unsigned order);
+	void add_observer(SzbParamObserver* observer, const std::vector<std::pair<TParam*, std::vector<std::string> > >& observed, unsigned order);
 	void remove_observer(SzbParamObserver* obs);
 	~SzbParamMonitor();	
 };
