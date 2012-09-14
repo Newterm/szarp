@@ -19,6 +19,8 @@
 #include "sz4/buffer.h"
 #include "sz4/load_file_locked.h"
 
+#include "test_observer.h"
+
 class Sz4BufferTestCase : public CPPUNIT_NS::TestFixture
 {
 	void test1();
@@ -26,6 +28,7 @@ class Sz4BufferTestCase : public CPPUNIT_NS::TestFixture
 
 	CPPUNIT_TEST_SUITE( Sz4BufferTestCase );
 	CPPUNIT_TEST( test1 );
+	CPPUNIT_TEST( test2 );
 	CPPUNIT_TEST_SUITE_END();
 public:
 	void setUp();
@@ -109,14 +112,13 @@ void Sz4BufferTestCase::test1() {
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.weight());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.no_data_weight());
 
-	sleep(100000);
 	delete buffer;
 	boost::filesystem::remove_all(boost::filesystem::wpath(base_dir_name.str()));
 }
 
 void Sz4BufferTestCase::test2() {
 	std::wstringstream base_dir_name;
-	base_dir_name << L"/tmp/szb_bufer_unit_test_1" << getpid() << L"." << time(NULL) << L".tmp";
+	base_dir_name << L"/tmp/szb_bufer_unit_test_2" << getpid() << L"." << time(NULL) << L".tmp";
 	std::wstringstream param_dir_name;
 	param_dir_name << base_dir_name.str() << L"/A/A/A";
 	boost::filesystem::create_directories(param_dir_name.str());
@@ -141,6 +143,47 @@ void Sz4BufferTestCase::test2() {
 	SzbParamMonitor monitor;
 	sz4::buffer buffer(&monitor, base_dir_name.str());
 	sz4::weighted_sum<int, sz4::second_time_t> sum;
+
+	buffer.get_weighted_sum(&param, sz4::second_time_t(1900), sz4::second_time_t(2000), sum);
+	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(500), sum.sum());
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), sum.weight());
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), sum.no_data_weight());
+
+	TestObserver o;
+	monitor.add_observer(&o, &param, SC::S2A(param_dir_name.str()), 1);
+	{
+		std::wstringstream ss;
+		ss << param_dir_name.str() << L"/" << std::setfill(L'0') << std::setw(10) << 1900 << L".sz4";
+		std::ofstream ofs(SC::S2A(ss.str()).c_str(), std::ios_base::binary | std::ios_base::app);
+		unsigned data = 20;
+		ofs.write((const char*) &data, sizeof(data));
+		data = 2000;
+		ofs.write((const char*) &data, sizeof(data));
+	}
+	o.wait_for(1);
+
+	sum = sz4::weighted_sum<int, sz4::second_time_t>();
+	buffer.get_weighted_sum(&param, sz4::second_time_t(1900), sz4::second_time_t(2000), sum);
+	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(1500), sum.sum());
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(100), sum.weight());
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.no_data_weight());
+
+	{
+		std::wstringstream ss;
+		ss << param_dir_name.str() << L"/" << std::setfill(L'0') << std::setw(10) << 1900 << L".sz4";
+		std::ofstream ofs(SC::S2A(ss.str()).c_str(), std::ios_base::binary | std::ios_base::app);
+		unsigned data = 30;
+		ofs.write((const char*) &data, sizeof(data));
+		data = 3000;
+		ofs.write((const char*) &data, sizeof(data));
+	}
+	o.wait_for(2);
+
+	sum = sz4::weighted_sum<int, sz4::second_time_t>();
+	buffer.get_weighted_sum(&param, sz4::second_time_t(1900), sz4::second_time_t(3000), sum);
+	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(31500), sum.sum());
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(1100), sum.weight());
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.no_data_weight());
 
 	boost::filesystem::remove_all(boost::filesystem::wpath(base_dir_name.str()));
 

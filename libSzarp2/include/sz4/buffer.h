@@ -19,6 +19,8 @@
 #ifndef __SZ4_BUFFER_H__
 #define __SZ4_BUFFER_H__
 
+#include "config.h"
+
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/thread/thread.hpp>
@@ -169,13 +171,12 @@ public:
 		T current(start);
 		//search for the first block that has starting time bigger than
 		//start_time
-		typename map_type::iterator i = m_blocks.upper_bound(start);
-		if (i == m_blocks.end()) {
+		if (m_blocks.size() == 0) {
 			//no such block - nodata
 			sum.no_data_weight() += end - current;
 			return;
 		}
-		
+		typename map_type::iterator i = m_blocks.upper_bound(start);
 		//if not first - back one off
 		if (i != m_blocks.begin())
 			std::advance(i, -1);

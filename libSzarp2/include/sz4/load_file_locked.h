@@ -21,7 +21,7 @@
 
 namespace sz4 {
 
-bool load_file_locked(const std::wstring& path, void *data, size_t size);
+bool load_file_locked(const boost::filesystem::wpath& path, void *data, size_t size);
 
 };
 #endif

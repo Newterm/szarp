@@ -1,8 +1,11 @@
+#include "config.h"
+
 #include <sys/types.h>
 #include <unistd.h>
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <boost/filesystem/path.hpp>
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "conversion.h"

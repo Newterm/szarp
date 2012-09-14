@@ -14,6 +14,8 @@
 class TParam;
 #include "szbase/szbparammonitor.h"
 
+#include "test_observer.h"
+
 class SzbParamMonitorTest : public CPPUNIT_NS::TestFixture
 {
 	void writeTest();
@@ -28,42 +30,6 @@ class SzbParamMonitorTest : public CPPUNIT_NS::TestFixture
 public:
 	void setUp();
 };
-
-class TestObserver : public SzbParamObserver { 
-	boost::mutex m_mutex;
-	boost::condition m_cond;
-	size_t m_counter;
-public:
-	TestObserver();
-	void reset_counter();
-	std::map<TParam*, int> map;
-	void param_data_changed(TParam* param, const std::string& path);
-	bool wait_for(size_t events);
-};
-
-TestObserver::TestObserver() {
-	m_counter = 0;
-}
-
-void TestObserver::param_data_changed(TParam* param, const std::string& path) {
-	boost::mutex::scoped_lock lock(m_mutex);
-	std::map<TParam*, int>::iterator i = map.find(param);
-	if (i == map.end())
-		map[param] = 1;
-	else
-		i->second++;
-	m_counter += 1;
-	m_cond.notify_one();
-}
-
-bool TestObserver::wait_for(size_t events) {
-	boost::mutex::scoped_lock lock(m_mutex);
-	while (events != m_counter)
-		if (!m_cond.timed_wait(lock, boost::posix_time::seconds(5)))
-			return false;
-	return true;
-}
-
 
 CPPUNIT_TEST_SUITE_REGISTRATION( SzbParamMonitorTest );
 
