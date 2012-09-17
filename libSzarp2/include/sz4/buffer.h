@@ -37,11 +37,14 @@
 
 namespace sz4 {
 
-class generic_param_entry {
+class generic_param_entry : public SzbParamObserver {
 protected:
 	TParam* m_param;
+	const boost::filesystem::wpath m_param_dir;
+	std::vector<std::string> m_paths_to_update;
+	boost::mutex m_mutex;
 public:
-	generic_param_entry(TParam* param) : m_param(param) {}
+	generic_param_entry(TParam* param, const boost::filesystem::wpath& param_dir) : m_param(param), m_param_dir(param_dir) {}
 	TParam* get_param() const { return m_param; }
 	virtual void get_weighted_sum(const second_time_t& start, const second_time_t& end, weighted_sum<short, second_time_t>& wsum) = 0;
 	virtual void get_weighted_sum(const second_time_t& start, const second_time_t& end, weighted_sum<int, second_time_t>& wsum) = 0;
@@ -52,13 +55,16 @@ public:
 	virtual void get_weighted_sum(const nanosecond_time_t& start, const nanosecond_time_t& end, weighted_sum<float, nanosecond_time_t>& wsum) = 0;
 	virtual void get_weighted_sum(const nanosecond_time_t& start, const nanosecond_time_t& end, weighted_sum<double, nanosecond_time_t>& wsum) = 0;
 	virtual void refresh_file(const std::string& path) = 0;
+	void register_at_monitor(SzbParamMonitor* monitor);
+	void deregister_from_monitor(SzbParamMonitor* monitor);
+	void param_data_changed(TParam*, const std::string& path);
 	virtual ~generic_param_entry() {}
 };
 
 template<class V, class T> class block_entry {
 	concrete_block<V, T> m_block;
 	bool m_needs_refresh;
-	std::wstring m_block_path;
+	const boost::filesystem::wpath m_block_path;
 public:
 	block_entry(const T& start_time, const std::wstring& block_path) :
 		m_block(start_time), m_needs_refresh(true), m_block_path(block_path) {}
@@ -116,12 +122,10 @@ template<class V, class T> class param_entry_in_buffer : public generic_param_en
 	typedef std::map<T, block_entry<V, T>*> map_type;
 
 	bool m_refresh_file_list;
-	const boost::filesystem::wpath m_param_dir;
 	map_type m_blocks;
 public:
 	param_entry_in_buffer(TParam* param, const boost::filesystem::wpath& base_dir) :
-		generic_param_entry(param), m_refresh_file_list(true),
-		m_param_dir(base_dir / param->GetSzbaseName())
+		generic_param_entry(param, base_dir / param->GetSzbaseName()), m_refresh_file_list(true)
 	{ }
 
 	void get_weighted_sum(const second_time_t& start, const second_time_t& end, weighted_sum<short, second_time_t>& wsum) {
@@ -162,7 +166,16 @@ public:
 		helper.convert();
 	}
 
+	void check_if_refresh_needed() {
+		boost::mutex::scoped_lock lock(m_mutex);
+		for (std::vector<std::string>::iterator i = m_paths_to_update.begin(); i != m_paths_to_update.end(); i++) {
+			refresh_file(*i);
+		}
+		m_paths_to_update.clear();
+	}
+
 	void get_weighted_sum_impl(const T& start, const T& end, weighted_sum<V, T>& sum)  {
+		check_if_refresh_needed();
 		if (m_refresh_file_list) {
 			refresh_file_list();
 			m_refresh_file_list = false;
@@ -237,35 +250,29 @@ public:
 			m_blocks.insert(std::make_pair(file_time, new block_entry<V, T>(file_time, file_path)));
 		}
 	}
+
+	virtual ~param_entry_in_buffer() {
+		for (typename map_type::iterator i = m_blocks.begin(); i != m_blocks.end(); i++)
+			delete i->second;
+	}
 };
 
-class buffer : public SzbParamObserver {
+class buffer {
 	SzbParamMonitor* m_param_monitor;
 	boost::filesystem::wpath m_buffer_directory;
 	std::vector<generic_param_entry*> m_param_ents;
-	std::vector<std::vector<std::string> > m_param_ents_to_update;
-	boost::mutex m_mutex;
 public:
 	buffer(SzbParamMonitor* param_monitor, const std::wstring& buffer_directory)
 		: m_param_monitor(param_monitor), m_buffer_directory(buffer_directory) {}
 
 	template<class T, class V> void get_weighted_sum(TParam* param, const T& start, const T &end, weighted_sum<V, T> &wsum) {
-		generic_param_entry* entry = NULL;
-		if (m_param_ents.size() > param->GetParamId())
-			entry = m_param_ents[param->GetParamId()];
-		else
+		if (m_param_ents.size() <= param->GetParamId())
 			m_param_ents.resize(param->GetParamId() + 1, NULL);
+
+		generic_param_entry* entry = m_param_ents[param->GetParamId()];
 		if (entry == NULL) {
 			entry = m_param_ents[param->GetParamId()] = create_param_entry(param);
-			m_param_monitor->add_observer(this, param, (m_buffer_directory / param->GetSzbaseName()).external_file_string(), 0);
-		} else {
-			boost::mutex::scoped_lock lock(m_mutex);
-			if (param->GetParamId() < m_param_ents_to_update.size()) {
-				std::vector<std::string> &v = m_param_ents_to_update[param->GetParamId()];
-				for (std::vector<std::string>::iterator i = v.begin(); i != v.end(); i++)
-					entry->refresh_file(*i);
-				v.clear();	
-			}
+			entry->register_at_monitor(m_param_monitor);
 		}
 		return entry->get_weighted_sum(start, end, wsum);
 	}
@@ -274,10 +281,14 @@ public:
 
 	generic_param_entry* create_param_entry(TParam* param);
 
+	void remove_param(TParam* param);
+
 	~buffer() {
-		for (std::vector<generic_param_entry*>::iterator i = m_param_ents.begin(); i != m_param_ents.end(); i++) 
+		for (std::vector<generic_param_entry*>::iterator i = m_param_ents.begin(); i != m_param_ents.end(); i++) {
+			if (*i)
+				(*i)->deregister_from_monitor(m_param_monitor);
 			delete *i;
-		m_param_monitor->remove_observer(this);
+		}
 	}
 };
 

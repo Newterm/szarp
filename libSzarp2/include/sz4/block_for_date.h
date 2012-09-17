@@ -1,5 +1,3 @@
-#ifndef __SZ4_BLOCK_FOR_DATE_H__
-#define __SZ4_BLOCK_FOR_DATE_H__
 /* 
   SZARP: SCADA software 
   
@@ -18,6 +16,8 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
+#ifndef __SZ4_BLOCK_FOR_DATE_H__
+#define __SZ4_BLOCK_FOR_DATE_H__
 
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>

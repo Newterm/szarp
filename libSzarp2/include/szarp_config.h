@@ -1193,6 +1193,10 @@ public:
 	unsigned GetParamId() const { return _paramId; }
 
 	void SetParamId(unsigned paramId) { _paramId = paramId; }
+
+	unsigned GetConfigId() const { return _configId; }
+
+	void SetConfigId(unsigned configId) { _configId = configId; }
 protected:
 	TUnit * _parentUnit;  /**< Pointer to parent TUnit object (NULL for defined). */
 
@@ -1222,6 +1226,8 @@ protected:
 			  (only available for SzarpBase base format) */
 
 	unsigned _paramId;
+
+	unsigned _configId;
 
 	std::wstring _formula;    /**< NULL if it's an oridinary parameter, formula
 			      for defined parameters. */
@@ -2231,6 +2237,7 @@ class IPKContainer {
 	struct ConfigAux {
 		unsigned _maxParamId;
 		std::set<unsigned> _freeIds;
+		unsigned _configId;
 	};
 
 	typedef std::tr1::unordered_map<std::wstring, ConfigAux> CAUXM;
@@ -2248,6 +2255,8 @@ class IPKContainer {
 	CM configs_ready_for_load;
 
 	CAUXM config_aux;
+
+	unsigned max_config_id;
 
 	static IPKContainer* _object;
 

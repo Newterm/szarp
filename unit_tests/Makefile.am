@@ -17,5 +17,6 @@ unit_tests_SOURCES = \
 		szb_param_monitor_unit_test.cpp \
 		sz4_file_search.cpp \
 		sz4_buffer_unit_test.cpp \
+		sz4_base_test.cpp \
 		test_observer.h \
 		test_observer.cpp

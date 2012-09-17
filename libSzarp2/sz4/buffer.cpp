@@ -22,11 +22,31 @@
 
 namespace sz4 {
 
-void buffer::param_data_changed(TParam* param, const std::string& path) {
+void generic_param_entry::register_at_monitor(SzbParamMonitor* monitor) {
+	monitor->add_observer(this, m_param, m_param_dir.external_file_string(), 0);
+}
+
+void generic_param_entry::deregister_from_monitor(SzbParamMonitor* monitor) {
+	monitor->remove_observer(this);
+}
+
+void generic_param_entry::param_data_changed(TParam*, const std::string& path) {
 	boost::mutex::scoped_lock lock(m_mutex);
-	if (param->GetParamId() >= m_param_ents_to_update.size())
-		m_param_ents_to_update.resize(param->GetParamId() + 1);
-	m_param_ents_to_update[param->GetParamId()].push_back(path);
+	m_paths_to_update.push_back(path);
+}
+
+void buffer::remove_param(TParam* param) {
+	if (m_param_ents.size() <= param->GetParamId())
+		return;
+
+	generic_param_entry* entry = m_param_ents[param->GetParamId()];
+	if (!entry)
+		return;
+
+	entry->deregister_from_monitor(m_param_monitor);
+	delete entry;
+
+	m_param_ents[param->GetParamId()] = NULL;
 }
 
 generic_param_entry* buffer::create_param_entry(TParam* param) {

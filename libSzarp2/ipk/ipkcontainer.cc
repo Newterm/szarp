@@ -42,6 +42,7 @@ IPKContainer::IPKContainer(const std::wstring& szarp_data_dir, const std::wstrin
 	this->szarp_system_dir = szarp_system_dir;
 	this->language = language;
 	this->mutex = mutex;
+	this->max_config_id = 0;
 }
 
 IPKContainer::~IPKContainer() {
@@ -139,6 +140,7 @@ void IPKContainer::AddExtraParam(const std::wstring& prefix, TParam *n) {
 		aux._freeIds.erase(i);
 	} else
 		n->SetParamId(aux._maxParamId++);
+	n->SetConfigId(aux._configId);
 }
 
 void IPKContainer::RemoveExtraParam(const std::wstring& prefix, TParam *p) {
@@ -182,21 +184,28 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 
 	TDictionary d(szarp_system_dir.string());
 	d.TranslateIPK(ipk, language);
-	if (configs.find(prefix) != configs.end())
+
+	ConfigAux ca;
+	if (configs.find(prefix) != configs.end()) {
 		delete configs[prefix];
+		ca._configId = config_aux[prefix]._configId;
+	} else  {
+		ca._configId = max_config_id++;
+	}
 	configs[prefix] = ipk;
 
 	unsigned id = 0;
-	for (TParam* p = ipk->GetFirstParam(); p; p = p->GetNext(true))
+	for (TParam* p = ipk->GetFirstParam(); p; p = p->GetNext(true)) {
 		p->SetParamId(id++);
+		p->SetConfigId(ca._configId);
+	}
 
 	std::vector<TParam*>& pv = m_extra_params[prefix];
 	for (std::vector<TParam*>::iterator i = pv.begin(); i != pv.end(); i++) {
 		(*i)->SetParamId(id++);
 		(*i)->SetParentSzarpConfig(ipk);
+		(*i)->SetConfigId(ca._configId);
 	}
-
-	ConfigAux ca;
 	ca._maxParamId = id;
 	config_aux[prefix] = ca;
 
