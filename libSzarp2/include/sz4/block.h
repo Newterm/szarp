@@ -20,6 +20,7 @@
 #define __SZ4_BLOCK_H__
 
 #include <algorithm>
+#include <iterator>
 
 #include "sz4/defs.h"
 #include "sz4/time.h"
@@ -33,15 +34,15 @@ template<class V, class T> struct value_time_pair<V, T> make_value_time_pair(V v
 	return p;
 }
 
-template<class V, class T> bool cmp_time(const value_time_pair<V, T>& p, const T& t) {
-	return p.time < t;
+template<class T, class V> bool cmp_time(const T& t, const value_time_pair<V, T>& p) {
+	return t < p.time;
 }
 
-template<class I, class T> I search_entry_for_time(I begin, I end, T t) {
+template<class I, class T> I search_entry_for_time(I begin, I end, const T& t) {
 	typedef typename I::value_type pair_type;
 	typedef typename pair_type::value_type value_type;
 
-	return std::lower_bound(begin, end, t, cmp_time<value_type, T>);
+	return std::upper_bound(begin, end, t, cmp_time<T, value_type>);
 }
 
 template<class V, class T> class concrete_block {
@@ -80,6 +81,50 @@ public:
 
 			std::advance(i, 1);
 		}
+	}
+
+		
+	T search_data_right(const T& start, const T& end, const search_condition &condition) {
+		typename value_time_vector::const_iterator i = search_entry_for_time(m_data.begin(), m_data.end(), start);
+		while (i != m_data.end()) {
+			if (condition(i->value)) {
+				if (i == m_data.begin())
+					return std::max(start, m_start_time);
+				else {
+					std::advance(i, -1);
+					return std::max(i->time, start);
+
+				}
+			}
+
+			if (i->time >= end)
+				break;
+			std::advance(i, 1);
+		}
+		return invalid_time_value<T>::value;
+	}
+
+	T search_data_left(const T& start, const T& end, const search_condition &condition) {
+		if (m_data.size() == 0)
+			return invalid_time_value<T>::value;
+
+		typename value_time_vector::const_iterator i = search_entry_for_time(m_data.begin(), m_data.end(), start);
+		if (i == m_data.end())
+			std::advance(i, -1);
+
+		while (true) {
+			if (i->time <= end)
+				break;
+
+			if (condition(i->value))
+				return std::min(time_just_before<T>::get(i->time), start);
+
+			if (i == m_data.begin())
+				break;
+
+			std::advance(i, -1);
+		}
+		return invalid_time_value<T>::value;
 	}
 
 	void set_data(value_time_vector& data) { m_data.swap(data); }

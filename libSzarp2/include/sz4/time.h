@@ -54,14 +54,34 @@ template<class T> class invalid_time_value { };
 
 template<> class invalid_time_value<nanosecond_time_t> {
 public:
-	static bool is_valid(const nanosecond_time_t& t) { return !(t == value()); }
-	static nanosecond_time_t value() { return make_nanosecond_time(-1, -1); }
+	static bool is_valid(const nanosecond_time_t& t) { return !(t == value); }
+	static const nanosecond_time_t value;
 };
 
 template<> class invalid_time_value<second_time_t> {
 public:
-	static bool is_valid(const second_time_t& t) { return !(t == value()); }
-	static second_time_t value() { return -1; }
+	static bool is_valid(const second_time_t& t) { return !(t == value); }
+	static const second_time_t value;
+};
+
+template<class T> class time_just_before {
+};
+
+template<> class time_just_before<nanosecond_time_t> {
+public:
+	static nanosecond_time_t get(const nanosecond_time_t& t) {
+		if (t.nanosecond)
+			return nanosecond_time_t(t.second, t.nanosecond - 1);
+		else
+			return nanosecond_time_t(t.second - 1, 999999999);
+	}
+};
+
+template<> class time_just_before<second_time_t> {
+public:
+	static second_time_t get(const second_time_t& t) {
+		return t - 1;
+	}
 };
 
 }

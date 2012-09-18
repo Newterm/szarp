@@ -18,12 +18,13 @@
 
 class Sz4BlockTestCase : public CPPUNIT_NS::TestFixture
 {
-	std::vector<sz4::value_time_pair<unsigned, unsigned> > m_v;
+	std::vector<sz4::value_time_pair<int, sz4::second_time_t> > m_v;
 	void searchTest();
 	void weigthedSumTest();
 	void weigthedSumTest2();
 	void pathParseTest();
 	void blockLoadTest();
+	void searchDataTest();
 
 	CPPUNIT_TEST_SUITE( Sz4BlockTestCase );
 	CPPUNIT_TEST( searchTest );
@@ -31,6 +32,7 @@ class Sz4BlockTestCase : public CPPUNIT_NS::TestFixture
 	CPPUNIT_TEST( weigthedSumTest2 );
 	CPPUNIT_TEST( pathParseTest );
 	CPPUNIT_TEST( blockLoadTest );
+	CPPUNIT_TEST( searchDataTest );
 	CPPUNIT_TEST_SUITE_END();
 public:
 	void setUp();
@@ -40,79 +42,79 @@ public:
 CPPUNIT_TEST_SUITE_REGISTRATION( Sz4BlockTestCase );
 
 void Sz4BlockTestCase::setUp() {
-	m_v.push_back(sz4::make_value_time_pair(1u, 1u));
-	m_v.push_back(sz4::make_value_time_pair(3u, 3u));
-	m_v.push_back(sz4::make_value_time_pair(5u, 5u));
-	m_v.push_back(sz4::make_value_time_pair(7u, 7u));
-	m_v.push_back(sz4::make_value_time_pair(9u, 9u));
+	m_v.push_back(sz4::make_value_time_pair(1, 1u));
+	m_v.push_back(sz4::make_value_time_pair(3, 3u));
+	m_v.push_back(sz4::make_value_time_pair(5, 5u));
+	m_v.push_back(sz4::make_value_time_pair(7, 7u));
+	m_v.push_back(sz4::make_value_time_pair(9, 9u));
 }
 
 void Sz4BlockTestCase::searchTest() {
-	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 0u)->value == 1u);
-	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 1u)->value == 1u);
-	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 2u)->value == 3u);
-	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 3u)->value == 3u);
-	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 4u)->value == 5u);
-	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 5u)->value == 5u);
-	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 7u)->value == 7u);
-	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 8u)->value == 9u);
-	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 9u)->value == 9u);
+	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 0u)->value == 1);
+	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 1u)->value == 3);
+	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 2u)->value == 3);
+	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 3u)->value == 5);
+	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 4u)->value == 5);
+	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 5u)->value == 7);
+	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 7u)->value == 9);
+	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 8u)->value == 9);
+	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 9u) == m_v.end());
 	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 10u) == m_v.end());
 }
 
 void Sz4BlockTestCase::weigthedSumTest() {
-	sz4::weighted_sum<unsigned, sz4::second_time_t> wsum;
-	std::vector<sz4::value_time_pair<unsigned, sz4::second_time_t> > v = m_v;
+	sz4::weighted_sum<int, sz4::second_time_t> wsum;
+	std::vector<sz4::value_time_pair<int, sz4::second_time_t> > v = m_v;
 
-	sz4::concrete_block<unsigned, sz4::second_time_t> block(0u);
+	sz4::concrete_block<int, sz4::second_time_t> block(0u);
 	block.set_data(v);
 
 	block.get_weighted_sum(0u, sz4::second_time_t(1), wsum);
-	CPPUNIT_ASSERT_EQUAL(1ull, wsum.sum());
+	CPPUNIT_ASSERT_EQUAL(1ll, wsum.sum());
 	CPPUNIT_ASSERT_EQUAL(1l, wsum.weight());
 
-	wsum = sz4::weighted_sum<unsigned, sz4::second_time_t>();
+	wsum = sz4::weighted_sum<int, sz4::second_time_t>();
 	block.get_weighted_sum(0u, 2u, wsum);
-	CPPUNIT_ASSERT_EQUAL(4ull, wsum.sum());
+	CPPUNIT_ASSERT_EQUAL(4ll, wsum.sum());
 	CPPUNIT_ASSERT_EQUAL(2l, wsum.weight());
 
-	wsum = sz4::weighted_sum<unsigned, sz4::second_time_t>();
+	wsum = sz4::weighted_sum<int, sz4::second_time_t>();
 	block.get_weighted_sum(0u, 4u, wsum);
-	CPPUNIT_ASSERT_EQUAL(12ull, wsum.sum());
+	CPPUNIT_ASSERT_EQUAL(12ll, wsum.sum());
 	CPPUNIT_ASSERT_EQUAL(4l, wsum.weight());
 
-	wsum = sz4::weighted_sum<unsigned, sz4::second_time_t>();
+	wsum = sz4::weighted_sum<int, sz4::second_time_t>();
 	block.get_weighted_sum(0u, 100u, wsum);
-	CPPUNIT_ASSERT_EQUAL(1ull + 2ull * (3ull + 5ull + 7ull + 9ull), wsum.sum());
+	CPPUNIT_ASSERT_EQUAL(1ll + 2ll * (3ll + 5ll + 7ll + 9ll), wsum.sum());
 	CPPUNIT_ASSERT_EQUAL(9l, wsum.weight());
 
-	wsum = sz4::weighted_sum<unsigned, sz4::second_time_t>();
+	wsum = sz4::weighted_sum<int, sz4::second_time_t>();
 	block.get_weighted_sum(2u, 3u, wsum);
-	CPPUNIT_ASSERT_EQUAL(3ull, wsum.sum());
+	CPPUNIT_ASSERT_EQUAL(3ll, wsum.sum());
 	CPPUNIT_ASSERT_EQUAL(1l, wsum.weight());
 	CPPUNIT_ASSERT_EQUAL(0l, wsum.no_data_weight());
 
-	wsum = sz4::weighted_sum<unsigned, sz4::second_time_t>();
+	wsum = sz4::weighted_sum<int, sz4::second_time_t>();
 	block.get_weighted_sum(1u, 3u, wsum);
-	CPPUNIT_ASSERT_EQUAL(6ull, wsum.sum());
+	CPPUNIT_ASSERT_EQUAL(6ll, wsum.sum());
 	CPPUNIT_ASSERT_EQUAL(2l, wsum.weight());
 	CPPUNIT_ASSERT_EQUAL(0l, wsum.no_data_weight());
 
-	wsum = sz4::weighted_sum<unsigned, sz4::second_time_t>();
+	wsum = sz4::weighted_sum<int, sz4::second_time_t>();
 	block.get_weighted_sum(1u, 1u, wsum);
-	CPPUNIT_ASSERT_EQUAL(0ull, wsum.sum());
+	CPPUNIT_ASSERT_EQUAL(0ll, wsum.sum());
 	CPPUNIT_ASSERT_EQUAL(0l, wsum.weight());
 	CPPUNIT_ASSERT_EQUAL(0l, wsum.no_data_weight());
 
-	wsum = sz4::weighted_sum<unsigned, sz4::second_time_t>();
+	wsum = sz4::weighted_sum<int, sz4::second_time_t>();
 	block.get_weighted_sum(2u, 2u, wsum);
-	CPPUNIT_ASSERT_EQUAL(0ull, wsum.sum());
+	CPPUNIT_ASSERT_EQUAL(0ll, wsum.sum());
 	CPPUNIT_ASSERT_EQUAL(0l, wsum.weight());
 	CPPUNIT_ASSERT_EQUAL(0l, wsum.no_data_weight());
 
-	wsum = sz4::weighted_sum<unsigned, sz4::second_time_t>();
+	wsum = sz4::weighted_sum<int, sz4::second_time_t>();
 	block.get_weighted_sum(0u, 0u, wsum);
-	CPPUNIT_ASSERT_EQUAL(0ull, wsum.sum());
+	CPPUNIT_ASSERT_EQUAL(0ll, wsum.sum());
 	CPPUNIT_ASSERT_EQUAL(0l, wsum.weight());
 	CPPUNIT_ASSERT_EQUAL(0l, wsum.no_data_weight());
 }
@@ -135,9 +137,9 @@ void Sz4BlockTestCase::weigthedSumTest2() {
 void Sz4BlockTestCase::pathParseTest() {
 	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(21), sz4::path_to_date<sz4::second_time_t>(L"0000000021.sz4"));
 	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(1), sz4::path_to_date<sz4::second_time_t>(L"0000000001.sz4"));
-	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value(), sz4::path_to_date<sz4::second_time_t>(L"000000001.sz4"));
+	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value, sz4::path_to_date<sz4::second_time_t>(L"000000001.sz4"));
 
-	sz4::nanosecond_time_t t[] = { sz4::nanosecond_time_t(1, 1), sz4::nanosecond_time_t(2, 2 ), sz4::invalid_time_value<sz4::nanosecond_time_t>::value() };
+	sz4::nanosecond_time_t t[] = { sz4::nanosecond_time_t(1, 1), sz4::nanosecond_time_t(2, 2 ), sz4::invalid_time_value<sz4::nanosecond_time_t>::value };
 	CPPUNIT_ASSERT(t[0] == sz4::path_to_date<sz4::nanosecond_time_t>(L"00000000010000000001.sz4"));
 	CPPUNIT_ASSERT(t[1] == sz4::path_to_date<sz4::nanosecond_time_t>(L"00000000020000000002.sz4"));
 	CPPUNIT_ASSERT(t[2] == sz4::path_to_date<sz4::nanosecond_time_t>(L"00000000020000.sz4"));
@@ -183,5 +185,61 @@ void Sz4BlockTestCase::blockLoadTest() {
 	CPPUNIT_ASSERT_EQUAL(6l, wsum.weight());
 
 	unlink(SC::S2A(file_name.str()).c_str());
+}
+
+namespace {
+
+class test_search_condition : public sz4::search_condition {
+	int value_to_search;
+public:
+	test_search_condition(int v) : value_to_search(v) {}
+	virtual bool operator()(const int &v) const { return value_to_search == v; }
+	virtual bool operator()(const short &v) const { return false; }
+	virtual bool operator()(const float &v) const { return false; }
+	virtual bool operator()(const double &v) const { return false; }
+};
+
+}
+
+void Sz4BlockTestCase::searchDataTest() {
+	sz4::concrete_block<int, sz4::second_time_t> block(0u);
+	std::vector<sz4::value_time_pair<int, sz4::second_time_t> > v = m_v;
+
+	v.push_back(sz4::make_value_time_pair(3, 11u));
+	block.set_data(v);
+
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(0), block.search_data_right(0u, 10u, test_search_condition(1)));
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(0), block.search_data_right(0u, 1u, test_search_condition(1)));
+
+	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value, block.search_data_right(1u, 10u, test_search_condition(1)));
+	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value, block.search_data_right(2u, 10u, test_search_condition(1)));
+
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(1), block.search_data_right(0u, 10u, test_search_condition(3)));
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(2), block.search_data_right(2u, 10u, test_search_condition(3)));
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(9), block.search_data_right(3u, 10u, test_search_condition(3)));
+	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value, block.search_data_right(3u, 9u, test_search_condition(3)));
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(9), block.search_data_right(9u, 11u, test_search_condition(3)));
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(10), block.search_data_right(10u, 11u, test_search_condition(3)));
+	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value, block.search_data_right(10u, 11u, test_search_condition(5)));
+	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value, block.search_data_right(11u, 12u, test_search_condition(3)));
+
+	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value, block.search_data_right(2u, 11u, test_search_condition(1)));
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(7), block.search_data_right(0u, 10u, test_search_condition(9)));
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(7), block.search_data_right(4u, 10u, test_search_condition(9)));
+
+
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(0), block.search_data_left(10u, 0u, test_search_condition(1)));
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(0), block.search_data_left(1u, 0u, test_search_condition(1)));
+
+	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value, block.search_data_left(10u, 1u, test_search_condition(1)));
+	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value, block.search_data_left(100u, 11u, test_search_condition(3)));
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(4), block.search_data_left(100u, 0, test_search_condition(5)));
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(10), block.search_data_left(10u, 0, test_search_condition(3)));
+	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value, block.search_data_left(8u, 3u, test_search_condition(3)));
+
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(10), block.search_data_left(11u, 10u, test_search_condition(3)));
+	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value, block.search_data_left(11u, 10u, test_search_condition(5)));
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(2), block.search_data_left(8, 0u, test_search_condition(3)));
+
 }
 

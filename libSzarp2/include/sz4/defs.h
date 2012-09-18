@@ -86,6 +86,15 @@ template<class value_type, class time_type> struct weighted_sum {
 	time_diff_type& no_data_weight() { return m_no_data_weight; }
 };
 
+class search_condition {
+public:
+	virtual bool operator()(const short&) const = 0;
+	virtual bool operator()(const int&) const = 0;
+	virtual bool operator()(const float&) const = 0;
+	virtual bool operator()(const double&) const = 0;
+	virtual ~search_condition() {};
+};
+
 }
 
 #endif

@@ -44,7 +44,7 @@ template<class C> struct path_to_date_converter<second_time_t, C> {
 		second_time_t v = 0;
 
 		if (path.size() < 14)
-			return invalid_time_value<second_time_t>::value();
+			return invalid_time_value<second_time_t>::value;
 
 		for (size_t i = 0; i < 10; i++) {
 			v *= 10;
@@ -60,7 +60,7 @@ template<class C> struct path_to_date_converter<nanosecond_time_t, C>  {
 		nanosecond_time_t v(0, 0);
 	
 		if (path.size() < 24)
-			return invalid_time_value<nanosecond_time_t>::value();
+			return invalid_time_value<nanosecond_time_t>::value;
 	
 		for (size_t i = 0; i < 10; i++) {
 			v.nanosecond *= 10;

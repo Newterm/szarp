@@ -21,6 +21,10 @@
 
 namespace sz4 {
 
+const nanosecond_time_t invalid_time_value<nanosecond_time_t>::value = make_nanosecond_time(-1, -1);
+
+const second_time_t invalid_time_value<second_time_t>::value = -1;
+
 nanosecond_time_t make_nanosecond_time(uint32_t second, uint32_t nanosecond) {
 	return nanosecond_time_t(second, nanosecond);
 }
