@@ -93,7 +93,6 @@ public:
 				else {
 					std::advance(i, -1);
 					return std::max(i->time, start);
-
 				}
 			}
 

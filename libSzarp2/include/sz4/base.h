@@ -31,13 +31,11 @@
 namespace sz4 {
 
 class base {
-	const boost::filesystem::wpath  m_szarp_data_dir;
+	const boost::filesystem::wpath m_szarp_data_dir;
 	std::vector<buffer*> m_buffers;
 	SzbParamMonitor m_monitor;
-public:
-	base(const std::wstring& szarp_data_dir) : m_szarp_data_dir(szarp_data_dir) {}
 
-	template<class V, class T> void get_weighted_sum(TParam* param, const T& start, const T& end, weighted_sum<V, T>& sum) {
+	buffer* buffer_for_param(TParam* param) {
 		buffer* buf;
 		if (param->GetConfigId() >= m_buffers.size())
 			m_buffers.resize(param->GetConfigId() + 1, NULL);
@@ -46,7 +44,22 @@ public:
 		if (buf == NULL)
 			buf = m_buffers[param->GetConfigId()] = new buffer(&m_monitor, (m_szarp_data_dir / param->GetSzarpConfig()->GetPrefix() / L"sz4").file_string());
 
-		buf->get_weighted_sum(param, start, end, sum);
+		return buf;
+	}
+
+public:
+	base(const std::wstring& szarp_data_dir) : m_szarp_data_dir(szarp_data_dir) {}
+
+	template<class V, class T> void get_weighted_sum(TParam* param, const T& start, const T& end, weighted_sum<V, T>& sum) {
+		buffer_for_param(param)->get_weighted_sum(param, start, end, sum);
+	}
+
+	template<class T> void search_data_right(TParam* param, const T& start, const T& end, const search_condition& condition) {
+		buffer_for_param(param)->search_data_right(param, start, end, condition);
+	}
+
+	template<class T> void search_data_left(TParam* param, const T& start, const T& end, const search_condition& condition) {
+		buffer_for_param(param)->search_data_left(param, start, end, condition);
 	}
 
 	void remove_param(TParam* param) {

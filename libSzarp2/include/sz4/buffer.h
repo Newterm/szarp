@@ -192,18 +192,18 @@ template<class V, class T> class param_entry_in_buffer : public generic_param_en
 		if (m_blocks.size() == 0)
 			return invalid_time_value<T>::value;
 
-		T current(start);
-		typename map_type::iterator i = m_blocks.upper_bound(current);
+		typename map_type::iterator i = m_blocks.upper_bound(start);
+		//if not first - step one back
+		if (i != m_blocks.begin())
+			std::advance(i, -1);
+
 		while (i != m_blocks.end()) {
 			block_entry<V, T>* entry = i->second;
-			if (entry->block().start_time() > end)
+			if (entry->block().start_time() >= end)
 				break;
 
 			entry->refresh_if_needed();
-			if (entry->block().start_time() > current)
-				current = entry->block().start_time();
-
-			T t = entry->search_data_right(current, end, condition);
+			T t = entry->search_data_right(start, end, condition);
 			if (invalid_time_value<T>::is_valid(t))
 				return t;
 
@@ -219,20 +219,17 @@ template<class V, class T> class param_entry_in_buffer : public generic_param_en
 			return invalid_time_value<T>::value;
 
 		typename map_type::iterator i = m_blocks.upper_bound(start);
-		if (i == m_blocks.end())
-			return invalid_time_value<T>::value;
+		if (i != m_blocks.begin())
+			std::advance(i, -1);
 
-		T current(start);
 		while (true) {
 			block_entry<V, T>* entry = i->second;
+
 			entry->refresh_if_needed();
 			if (entry->block().end_time() <= end)
 				break;
 
-			if (entry->block().end_time() > current)
-				current = entry->block().start_time();
-
-			T t = entry->search_data_left(current, end, condition);
+			T t = entry->search_data_left(start, end, condition);
 			if (invalid_time_value<T>::is_valid(t))
 				return t;
 
@@ -279,6 +276,7 @@ template<class V, class T> class param_entry_in_buffer : public generic_param_en
 				i++) {
 
 			std::wstring file_path = i->path().file_string();
+
 			T file_time = path_to_date<T>(file_path);
 			if (!invalid_time_value<T>::is_valid(file_time))
 				continue;
@@ -333,7 +331,7 @@ public:
 	}
 
 	second_time_t search_data_left(const second_time_t& start, const second_time_t& end, const search_condition& condition) {
-		return search_data_right_templ(start, end, condition);
+		return search_data_left_templ(start, end, condition);
 	}
 
 	nanosecond_time_t search_data_right(const nanosecond_time_t& start, const nanosecond_time_t& end, const search_condition& condition) {
@@ -341,7 +339,7 @@ public:
 	}
 
 	nanosecond_time_t search_data_left(const nanosecond_time_t& start, const nanosecond_time_t& end, const search_condition& condition) {
-		return search_data_right_templ(start, end, condition);
+		return search_data_left_templ(start, end, condition);
 	}
 
 	template<class RT> RT search_data_right_templ(const RT& start, const RT &end, const search_condition& condition) {

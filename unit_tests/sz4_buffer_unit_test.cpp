@@ -25,10 +25,12 @@ class Sz4BufferTestCase : public CPPUNIT_NS::TestFixture
 {
 	void test1();
 	void test2();
+	void searchTest();
 
 	CPPUNIT_TEST_SUITE( Sz4BufferTestCase );
 	CPPUNIT_TEST( test1 );
 	CPPUNIT_TEST( test2 );
+	CPPUNIT_TEST( searchTest );
 	CPPUNIT_TEST_SUITE_END();
 public:
 	void setUp();
@@ -184,6 +186,82 @@ void Sz4BufferTestCase::test2() {
 	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(31500), sum.sum());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(1100), sum.weight());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.no_data_weight());
+
+	boost::filesystem::remove_all(boost::filesystem::wpath(base_dir_name.str()));
+
+}
+
+namespace {
+
+class test_search_condition : public sz4::search_condition {
+	int value_to_search;
+public:
+	test_search_condition(int v) : value_to_search(v) {}
+	virtual bool operator()(const int &v) const { return value_to_search == v; }
+	virtual bool operator()(const short &v) const { return false; }
+	virtual bool operator()(const float &v) const { return false; }
+	virtual bool operator()(const double &v) const { return false; }
+};
+
+}
+
+
+void Sz4BufferTestCase::searchTest() {
+	std::wstringstream base_dir_name;
+	base_dir_name << L"/tmp/szb_bufer_unit_test_2" << getpid() << L"." << time(NULL) << L".tmp";
+	std::wstringstream param_dir_name;
+	param_dir_name << base_dir_name.str() << L"/A/A/A";
+	boost::filesystem::create_directories(param_dir_name.str());
+
+	for (int i = 0; i < 2100; i += 100) {
+		std::wstringstream ss;
+		ss << param_dir_name.str() << L"/" << std::setfill(L'0') << std::setw(10) << i << L".sz4";
+		std::ofstream ofs(SC::S2A(ss.str()).c_str(), std::ios_base::binary);
+		int j;
+		for (j = 0; j < 100 - (2000 - i) / 100 - 10; j++) {
+			unsigned data = j % 25;
+			ofs.write((const char*) &data, sizeof(data));
+			data = i + j + 1;
+			ofs.write((const char*) &data, sizeof(data));
+		}
+
+		unsigned data = i / 100 + 10000;
+		ofs.write((const char*) &data, sizeof(data));
+		data = i + j + 1;
+		ofs.write((const char*) &data, sizeof(data));
+	}
+
+
+	TParam param(NULL);
+	param.SetParamId(0);
+	param.SetName(L"A:A:A");
+	param.SetTimeType(TParam::SECOND);
+	param.SetDataType(TParam::INT);
+
+	
+	SzbParamMonitor monitor;
+	sz4::buffer buffer(&monitor, base_dir_name.str());
+
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(0), buffer.search_data_right(&param, sz4::second_time_t(0), sz4::second_time_t(2000), test_search_condition(0)));
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(100), buffer.search_data_right(&param, sz4::second_time_t(100), sz4::second_time_t(2000), test_search_condition(0)));
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(125), buffer.search_data_right(&param, sz4::second_time_t(101), sz4::second_time_t(2000), test_search_condition(0)));
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(1), buffer.search_data_right(&param, sz4::second_time_t(0), sz4::second_time_t(2000), test_search_condition(1)));
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(101), buffer.search_data_right(&param, sz4::second_time_t(100), sz4::second_time_t(2000), test_search_condition(1)));
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(224), buffer.search_data_right(&param, sz4::second_time_t(190), sz4::second_time_t(2000), test_search_condition(24)));
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(224), buffer.search_data_right(&param, sz4::second_time_t(190), sz4::second_time_t(2000), test_search_condition(24)));
+	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value, buffer.search_data_right(&param, sz4::second_time_t(10000), sz4::second_time_t(20000), test_search_condition(181)));
+	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value, buffer.search_data_right(&param, sz4::second_time_t(1885), sz4::second_time_t(1900), test_search_condition(0)));
+	for (int i = 0; i < 20; i++) {
+		CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(100 * i + 70 + i), buffer.search_data_right(&param, sz4::second_time_t(0), sz4::second_time_t(2000), test_search_condition(10000 + i)));
+	}
+	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value, buffer.search_data_right(&param, sz4::second_time_t(182), sz4::second_time_t(2000), test_search_condition(181)));
+
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(2000), buffer.search_data_left(&param, sz4::second_time_t(2000), sz4::second_time_t(0), test_search_condition(0)));
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(150), buffer.search_data_left(&param, sz4::second_time_t(198), sz4::second_time_t(100), test_search_condition(0)));
+	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value, buffer.search_data_left(&param, sz4::second_time_t(1999), sz4::second_time_t(1998), test_search_condition(0)));
+	for (int i = 0; i < 20; i++) {
+		CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(100 * i + 70 + i), buffer.search_data_left(&param, sz4::second_time_t(2000), sz4::second_time_t(0), test_search_condition(10000 + i)));
+	}
 
 	boost::filesystem::remove_all(boost::filesystem::wpath(base_dir_name.str()));
 
