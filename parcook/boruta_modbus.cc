@@ -751,7 +751,7 @@ template<> unsigned short long_parcook_modbus_val_op<float>::val() {
 	}
 
 	float* f = (float*) v2;
-	int iv = *f * m_prec;	
+	int iv = nearbyint(*f * m_prec);	
 	unsigned int* pv = (unsigned int*) &iv;
 
 	dolog(10, "Float value: %f, int: %d, unsigned int: %u", *f, iv, *pv);

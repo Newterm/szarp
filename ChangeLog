@@ -1,3 +1,6 @@
+2012-09-19 Dariusz Marcinkiewcz <reksio@newterm.pl>
+	* parcook/boruta_modbus.cc - round floats to nearest int while doing
+	values convertion
 2012-08-22 Dariusz Marcinkiewcz <reksio@newterm.pl>
 	* /: windows fixes: building fix, draw3 incsearch window fix, windows
 	version bump
