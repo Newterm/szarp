@@ -19,6 +19,9 @@
 	* wx/draw3: F12 key hides/unhides menubar in main window
 2012-09-21 Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: param editing from context menu restored
+2012-09-19 Dariusz Marcinkiewcz <reksio@newterm.pl>
+	* parcook/boruta_modbus.cc - round floats to nearest int while doing
+	values convertion
 2012-09-04 Krzysztof Ga³±zka <kg@newterm.pl>
 	* wx/*/*app.cpp: fix for usage of szApp for gcc in squeeze
 2012-08-31 Darek Marcinkiewicz <reksio@newterm.pl>
