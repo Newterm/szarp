@@ -120,7 +120,6 @@ draw3test_SOURCES = \
 		drawurl.cpp drawurl.h \
 		errfrm.h errfrm.cpp \
 		drawtime.h drawtime.cpp \
-		luapextract.h luapextract.cpp \
 		delqitem.h delqitem.cpp \
 		splashscreen.cpp splashscreen.h \
                 draw.cpp draw.h \

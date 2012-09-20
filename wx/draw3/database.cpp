@@ -24,10 +24,15 @@
 #include "conversion.h"
 #include "szbextr/extr.h"
 
-#include <math.h>
+#include <cmath>
 
 #include <algorithm>
 #include <iostream>
+#include <limits>
+
+#include <sz4/base.h>
+
+sz4::base* sz4_base = new sz4::base(L"/opt/szarp");
 
 DatabaseQuery* CreateDataQueryPrivate(DrawInfo* di, TParam *param, PeriodType pt, int draw_no);
 
@@ -219,14 +224,11 @@ void QueryExecutor::ExecuteDataQuery(szb_buffer_t* szb, TParam* p, DatabaseQuery
 
 		time_t end = szb_move_time(i->time, 1, pt, i->custom_length);
 		if (p && szb) {
-			i->response = szb_get_avg(szb, 
-					p, 
-					i->time,
-					end,
-					&i->sum,
-					&i->count,
-					pt);
-
+			sz4::weighted_sum<double, sz4::second_time_t> sum;
+			sz4_base->get_weighted_sum(p, sz4::second_time_t(i->time), sz4::second_time_t(end), sum);
+			i->response = sum.sum() / sum.weight();
+			i->sum = sum.sum();
+			i->count = sum.weight();
 			if (szb->last_err != SZBE_OK) {
 				i->ok = false;
 				i->error = szb->last_err;
@@ -262,6 +264,26 @@ void QueryExecutor::StopSearch() {
 	}
 }
 
+class no_data_search_condition : public sz4::search_condition {
+public:
+	bool operator()(const short& v) const {
+		return v != std::numeric_limits<short>::min();
+	}
+
+	bool operator()(const int& v) const {
+		return v != std::numeric_limits<int>::min();
+
+	}
+
+	bool operator()(const float& v) const {
+		return isnanf(v);
+	}
+
+	bool operator()(const double& v) const {
+		return isnan(v);
+	}
+};
+
 void QueryExecutor::ExecuteSearchQuery(szb_buffer_t* szb, TParam *p, DatabaseQuery::SearchData& sd) {
 	if (szb == NULL) {
 		sd.ok = true;
@@ -277,6 +299,7 @@ void QueryExecutor::ExecuteSearchQuery(szb_buffer_t* szb, TParam *p, DatabaseQue
 	}
 #endif
 
+#if 0
 	sd.response = 
 		szb_search(szb, 
 			p, 
@@ -284,6 +307,15 @@ void QueryExecutor::ExecuteSearchQuery(szb_buffer_t* szb, TParam *p, DatabaseQue
 			sd.end, 
 			sd.direction, 
 			PeriodToProbeType(sd.period_type), cancelHandle, *sd.search_condition);
+#endif
+	if (sd.direction > 0)
+		sd.response = sz4_base->search_data_right(p, sz4::second_time_t(sd.start), sz4::second_time_t(sd.end), no_data_search_condition());
+	else {
+		if (sd.end == -1)
+			sd.end = 0;
+		sd.response = sz4_base->search_data_left(p, sz4::second_time_t(sd.start), sz4::second_time_t(sd.end), no_data_search_condition());
+
+	}
 
 	if (szb->last_err != SZBE_OK) {
 		sd.ok = false;

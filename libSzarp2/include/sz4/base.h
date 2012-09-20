@@ -54,12 +54,12 @@ public:
 		buffer_for_param(param)->get_weighted_sum(param, start, end, sum);
 	}
 
-	template<class T> void search_data_right(TParam* param, const T& start, const T& end, const search_condition& condition) {
-		buffer_for_param(param)->search_data_right(param, start, end, condition);
+	template<class T> T search_data_right(TParam* param, const T& start, const T& end, const search_condition& condition) {
+		return buffer_for_param(param)->search_data_right(param, start, end, condition);
 	}
 
-	template<class T> void search_data_left(TParam* param, const T& start, const T& end, const search_condition& condition) {
-		buffer_for_param(param)->search_data_left(param, start, end, condition);
+	template<class T> T search_data_left(TParam* param, const T& start, const T& end, const search_condition& condition) {
+		return buffer_for_param(param)->search_data_left(param, start, end, condition);
 	}
 
 	void remove_param(TParam* param) {
