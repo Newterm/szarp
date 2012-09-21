@@ -1255,7 +1255,7 @@ msgstr "Ró¿nica miêdzy pierwsz± a ostatni± warto¶ci±"
 
 #: seldraw.cpp:171
 msgid "Type of average values shown"
-msgstr "Rodzaj warto¶ci pokazywanej dla ekranów dekada/rok/miêsi±c/dzieñ"
+msgstr "Rodzaj warto¶ci pokazywanej dla ekranów dekada/rok/miesi±c/tydzieñ"
 
 #: seldraw.cpp:186
 msgid "Edit parameter associated with graph\tCtrl-E"
