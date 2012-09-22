@@ -27,21 +27,25 @@ import parampath
 import math
 
 class SaveParam:
-	def __init__(self, param, szbase_dir):
+	def __init__(self, param, szbase_dir, sync=True):
 		self.param = param
 		self.param_path = parampath.ParamPath(self.param, szbase_dir)
 		self.file = None
 		self.current_value = None
 		self.first_write = True
+		self.sync = sync
 
 	def update_last_time(self, time, nanotime):
 		self.file.seek(-self.param.time_prec, os.SEEK_END)
 		try:
-			fcntl.lockf(self.file, fcntl.LOCK_EX)
+			if self.sync:
+				fcntl.lockf(self.file, fcntl.LOCK_EX)
 			self.file.write(self.param.time_to_binary(time, nanotime))
-			self.file.flush()
+			if self.sync:
+				self.file.flush()
 		finally:
-			fcntl.lockf(self.file, fcntl.LOCK_UN)
+			if self.sync:
+				fcntl.lockf(self.file, fcntl.LOCK_UN)
 
 	def write_value(self, value, time, nanotime):
 		if self.file_size + self.param.time_prec + self.param.value_lenght >= config.DATA_FILE_SIZE:
@@ -52,14 +56,17 @@ class SaveParam:
 			self.file_size = 0
 
 		try:
-			fcntl.lockf(self.file, fcntl.LOCK_EX)
+			if self.sync:
+				fcntl.lockf(self.file, fcntl.LOCK_EX)
 			self.file.write(self.param.value_to_binary(value))
 			self.file.write(self.param.time_to_binary(time, nanotime))
-			self.file.flush()
+			if self.sync:
+				self.file.flush()
 	
 			self.file_size += self.param.time_prec + self.param.value_lenght
 		finally:
-			fcntl.lockf(self.file, fcntl.LOCK_UN)
+			if self.sync:
+				fcntl.lockf(self.file, fcntl.LOCK_UN)
 
 		self.current_value = value
 
@@ -93,20 +100,22 @@ class SaveParam:
 		prev_time, prev_nanotime = self.param.time_just_before(time, nanotime)
 		self.write_value(self.param.nan(), prev_time, prev_nanotime)
 
-	def process_msg(self, msg):
+	def process_value(self, value, time, nanotime):
 		if not self.param.written_to_base:
 			return
 
 		first_write = self.first_write
 		if first_write:
-			self.prepare_for_writing(msg.time, msg.nanotime)
+			self.prepare_for_writing(time, nanotime)
 			self.first_write = False
 
-		value = self.param.value_from_msg(msg)
 		if  value == self.current_value:
-			self.update_last_time(msg.time, msg.nanotime)
+			self.update_last_time(time, nanotime)
 		else:
 			if first_write and self.current_value is not None:
-				self.fill_no_data(msg.time, msg.nanotime)
-			self.write_value(value, msg.time, msg.nanotime)
+				self.fill_no_data(time, nanotime)
+			self.write_value(value, time, nanotime)
+
+	def process_msg(self, msg):
+		self.process_value(self.param.value_from_msg(msg), msg.time, msg.nanotime)
 

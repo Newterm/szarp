@@ -46,7 +46,8 @@ class ParamPath:
 			pmap = { u"ą" : u"a", u"Ą" : u"A", u"ć" : u"c", u"Ć" : u"C",
 				 u"ę" : u"e", u"Ę" : u"E", u"ł" : u"l", u"Ł" : u"L",
 				 u"ń" : u"n", u"Ń" : u"N", u"ó" : u"o", u"Ó" : u"O",
-				 u"ż" : u"z", u"Ż" : u"Z", u"ź" : u"z", u"Ź" : u"Z" }
+				 u"ś" : u"s", u"Ś" : u"S", u"ż" : u"z", u"Ż" : u"Z",
+				 u"ź" : u"z", u"Ź" : u"Z" }
 
 			if x in pmap:
 				return pmap[x]
