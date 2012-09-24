@@ -60,14 +60,21 @@ sz4_dir = os.path.join(config_dir, "sz4")
 
 save_params = []
 ipk = lxml.etree.parse(config_dir + "/config/params.xml")
-for p in ipk.xpath("//s:param", namespaces={'s':'http://www.praterm.com.pl/SZARP/ipk'}):
+params = ipk.xpath("//s:param[@base_ind]", namespaces={'s':'http://www.praterm.com.pl/SZARP/ipk'})
+sys.stdout.write("Converting...")
+for i, p in enumerate(params):
 	try:
 		sp = saveparam.SaveParam(param.Param(p), sz4_dir, False)
+
+		print
+		print "Converting values for param: %s, param %d out of %d" % (sp.param_path.param_path, i + 1, len(params))
+
 		szbase_files = [ x for x in os.listdir(os.path.join(szbase_dir, sp.param_path.param_path)) if x.endswith(".szb")]
 		szbase_files.sort()
-		print "Param: ", sp.param_path.param_path
-		for szbase_path in szbase_files:
-			print "File: ", szbase_path
+
+		for j, szbase_path in enumerate(szbase_files):
+			sys.stdout.write("\rFile: %s, %d/%d    " % (szbase_path, j, len(szbase_files)))
+			sys.stdout.flush()
 			date = szbase_file_path_to_date(szbase_path)
 
 			f = open(os.path.join(szbase_dir, sp.param_path.param_path, szbase_path)).read()

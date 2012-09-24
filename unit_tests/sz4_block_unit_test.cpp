@@ -25,6 +25,7 @@ class Sz4BlockTestCase : public CPPUNIT_NS::TestFixture
 	void pathParseTest();
 	void blockLoadTest();
 	void searchDataTest();
+	void testBigNum();
 
 	CPPUNIT_TEST_SUITE( Sz4BlockTestCase );
 	CPPUNIT_TEST( searchTest );
@@ -33,6 +34,7 @@ class Sz4BlockTestCase : public CPPUNIT_NS::TestFixture
 	CPPUNIT_TEST( pathParseTest );
 	CPPUNIT_TEST( blockLoadTest );
 	CPPUNIT_TEST( searchDataTest );
+	CPPUNIT_TEST( testBigNum );
 	CPPUNIT_TEST_SUITE_END();
 public:
 	void setUp();
@@ -130,7 +132,7 @@ void Sz4BlockTestCase::weigthedSumTest2() {
 	block.set_data(v);
 
 	block.get_weighted_sum(0u, 3u, wsum);
-	CPPUNIT_ASSERT_EQUAL(2, wsum.sum());
+	CPPUNIT_ASSERT_EQUAL(2ll, wsum.sum());
 	CPPUNIT_ASSERT_EQUAL(2l, wsum.weight());
 }
 
@@ -181,10 +183,22 @@ void Sz4BlockTestCase::blockLoadTest() {
 
 	sz4::weighted_sum<short, unsigned> wsum;
 	block.get_weighted_sum(0u, 7u, wsum);
-	CPPUNIT_ASSERT_EQUAL(1 + 2 + 3 + 4 + 5 + 7, wsum.sum());
+	CPPUNIT_ASSERT_EQUAL(1ll + 2 + 3 + 4 + 5 + 7, wsum.sum());
 	CPPUNIT_ASSERT_EQUAL(6l, wsum.weight());
 
 	unlink(SC::S2A(file_name.str()).c_str());
+}
+
+void Sz4BlockTestCase::testBigNum() {
+	sz4::concrete_block<short, sz4::second_time_t> block(10000000u);
+
+	std::vector<sz4::value_time_pair<short, sz4::second_time_t> > v;
+	v.push_back(sz4::make_value_time_pair(short(1500), 10000000u + 2 * 3600 * 24 * 31u)); 
+	block.set_data(v);
+
+	sz4::weighted_sum<short, unsigned> wsum;
+	block.get_weighted_sum(10000000u, 10000000u + 1 * 3600 * 24 * 31, wsum);
+	CPPUNIT_ASSERT_EQUAL(4017600000ll, wsum.sum());
 }
 
 namespace {

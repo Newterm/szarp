@@ -100,31 +100,31 @@ void SzbParamMonitorImpl::process_cmds() {
 			}
 		}
 
-		command cmd;
-		{
-			boost::mutex::scoped_lock lock(m_mutex);
-			cmd = m_queue.front();
+		boost::mutex::scoped_lock lock(m_mutex);
+		while (m_queue.size()) {
+			command cmd = m_queue.front();
 			m_queue.pop_front();
-		}
 
-		switch (cmd.cmd) {
-			case ADD_CMD:
-				wd = inotify_add_watch(m_inotify_socket, cmd.path.c_str(), IN_CLOSE_WRITE | IN_MOVED_TO);
-				if (wd < 0)
-					sz_log(3, "Failed to add watch for path:%s, errno: %d", cmd.path.c_str(), errno);
-				else
-					m_monitor->dir_registered(wd, cmd.param, cmd.observer, cmd.path, cmd.order);
-				break;
-			case DEL_CMD:
-				if (inotify_rm_watch(m_inotify_socket, cmd.token))
-					sz_log(3, "Failed to remove watch, errno: %d", errno);
-				break;
-			case END_CMD:
-				m_terminate = true;
-				close(m_inotify_socket);
-				close(m_cmd_socket[0]);
-				close(m_cmd_socket[1]);
-				return;
+			switch (cmd.cmd) {
+				case ADD_CMD:
+					wd = inotify_add_watch(m_inotify_socket, cmd.path.c_str(), IN_CLOSE_WRITE | IN_MOVED_TO);
+					if (wd < 0) {
+						sz_log(3, "Failed to add watch for path:%s, errno: %d", cmd.path.c_str(), errno);
+						m_monitor->failed_to_register_dir(cmd.param, cmd.observer, cmd.path);
+					} else
+						m_monitor->dir_registered(wd, cmd.param, cmd.observer, cmd.path, cmd.order);
+					break;
+				case DEL_CMD:
+					if (inotify_rm_watch(m_inotify_socket, cmd.token))
+						sz_log(3, "Failed to remove watch, errno: %d", errno);
+					break;
+				case END_CMD:
+					m_terminate = true;
+					close(m_inotify_socket);
+					close(m_cmd_socket[0]);
+					close(m_cmd_socket[1]);
+					return;
+			}
 		}
 	}
 }
@@ -230,6 +230,7 @@ void SzbParamMonitor::dir_registered(SzbMonitorTokenType token, TParam *param, S
 }
 
 void SzbParamMonitor::failed_to_register_dir(TParam *param, SzbParamObserver* observer, const std::string& path) {
+	boost::mutex::scoped_lock lock(m_mutex);
 	m_cond.notify_one();
 }
 

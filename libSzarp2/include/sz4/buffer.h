@@ -250,7 +250,9 @@ template<class V, class T> class param_entry_in_buffer : public generic_param_en
 			m_paths_to_update.clear();
 		}
 		if (m_refresh_file_list) {
-			refresh_file_list();
+			try {
+				refresh_file_list();
+			} catch (boost::filesystem::wfilesystem_error&) {}
 			m_refresh_file_list = false;
 		}
 	}

@@ -226,9 +226,9 @@ void QueryExecutor::ExecuteDataQuery(szb_buffer_t* szb, TParam* p, DatabaseQuery
 		if (p && szb) {
 			sz4::weighted_sum<double, sz4::second_time_t> sum;
 			sz4_base->get_weighted_sum(p, sz4::second_time_t(i->time), sz4::second_time_t(end), sum);
-			i->response = sum.sum() / sum.weight();
-			i->sum = sum.sum();
-			i->count = sum.weight();
+			i->response = sum.sum() / sum.weight() / pow10(p->GetPrec());
+			i->sum = sum.sum() / pow10(p->GetPrec());
+			i->count = sum.weight() / (sum.weight() + sum.no_data_weight()) * 100;
 			if (szb->last_err != SZBE_OK) {
 				i->ok = false;
 				i->error = szb->last_err;

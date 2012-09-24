@@ -53,7 +53,7 @@ template<> struct time_difference<nanosecond_time_t> {
 template<class T> struct value_sum { };
 
 template<> struct value_sum<short> {
-	typedef int type;
+	typedef long long type;
 };
 
 template<> struct value_sum<int> {

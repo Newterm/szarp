@@ -73,7 +73,7 @@ public:
 			prev_time = i->time;
 
 			if (!value_is_no_data(i->value)) {
-				r.sum() += i->value * time_diff;
+				r.sum() += typename weighted_sum<V, T>::sum_type(i->value) * time_diff;
 				r.weight() += time_diff;
 			} else {
 				r.no_data_weight() += time_diff;
