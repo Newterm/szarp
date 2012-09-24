@@ -887,12 +887,12 @@ tcp_server_manager::listen_port::listen_port(tcp_server_manager* _manager, int _
 
 int tcp_server_manager::start_listening_on_port(int port) {
 	int ret, fd, on = 1;
-	struct sockaddr_in addr;
 	fd = socket(PF_INET, SOCK_STREAM, 0);
 	if (fd == -1) {
 		dolog(0, "socket() failed, errno %d (%s)", errno, strerror(errno));
 		return -1;
 	}
+
 	ret = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, 
 			&on, sizeof(on));
 	if (ret == -1) {
@@ -901,18 +901,29 @@ int tcp_server_manager::start_listening_on_port(int port) {
 		close(fd);
 		return -1;
 	}
+
+	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
 	ret = bind(fd, (struct sockaddr *)&addr, sizeof(addr));
-	if (ret == 0) {
-		return fd;
-	} else {
+	if (-1 == ret) {
 		dolog(1, "bind() failed, errno %d (%s), will retry",
 			errno, strerror(errno));
 		close(fd);
 		return -1;
 	}
+
+	ret = listen(fd, 1);
+	if (-1 == ret) {
+		dolog(0, "listen() failed, errno %d (%s)",
+				errno, strerror(errno));
+		close(fd);
+		return -1;
+	}
+
+	return fd;
 }
 
 void tcp_server_manager::close_connection(struct bufferevent* bufev) {
@@ -933,7 +944,7 @@ int tcp_server_manager::configure(TUnit *unit, xmlNodePtr node, short* read, sho
 		return 1;
 	}
 	int port;
-	if (!get_xml_extra_prop(node, "port", port))
+	if (get_xml_extra_prop(node, "tcp-port", port))
 		return 1;
 	m_listen_ports.push_back(listen_port(this, port, m_drivers.size()));
 	driver->id() = m_drivers.size();
