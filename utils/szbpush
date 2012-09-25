@@ -44,7 +44,7 @@ RSYNC_OPTIONS="-az --exclude='.*' --exclude='nohup.out' --delete --force"
 # dodatkowe opcje dla rsynca do wysy³ania baz szbase (gdy nie robimy pelnego synca)
 SZBASE_EXTRA=" --include=`date +%Y%m.szb` --include=`date +%Y%m -d '1 month ago'`.szb --exclude=*.szb"
 
-SSH_OPTIONS='-o StrictHostKeyChecking=no'
+SSH_OPTIONS="-o StrictHostKeyChecking=no -o ControlPath=$(mktemp --tmpdir -u ssh-%r@%h:%p-XXXXXXX)"
 
 function log {
     echo `date '+%F %X'` "szbpush[$$]: $@" >> /opt/szarp/logs/szbpush.log
@@ -165,8 +165,11 @@ function do_rsync {
 }
 
 function cleanup {
-    kill 0
-    exit 1
+	echo "Got error signal, cleaning up"
+	pgrep -P $$
+	pkill -P $$
+	ssh $SSH_OPTIONS -O exit $REMOTE
+	exit 1
 }
 
 
@@ -190,6 +193,13 @@ shift;
 
 CODE=0
 
+ssh -M -N -f $SSH_OPTIONS $REMOTE 
+if [ $? = 255 ]; then
+    echo "Cannot connect, exiting"
+    exit 1
+fi
+
+
 for ARG in $@ ; do
 	for i in /opt/szarp/$ARG ; do
 		log "do_rsync $i start"
@@ -199,4 +209,7 @@ for ARG in $@ ; do
 		[ $LAST -ne 0 ] && CODE=$LAST;
 	done
 done
+
+ssh $SSH_OPTIONS -O exit $REMOTE
+
 exit $CODE
