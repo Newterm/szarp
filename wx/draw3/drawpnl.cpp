@@ -304,6 +304,9 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 					printf("IKE!\n");
 		}
 		break;
+	case WXK_F12:
+		panel->df->ToggleMenuBarVisbility();
+		break;
 	default:
 		event.Skip();
 		return false;

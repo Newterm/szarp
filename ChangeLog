@@ -1,3 +1,11 @@
+2012-09-28 Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2/szbase/probeblock.cc: lua params do not go
+	outside of (first date in base; last date in base) range,
+	unless those ranges are specifically overriden by parameter
+	configuration
+	* wx/common: quit button added to help window (for draws running
+	without window manager) + added some missing translations
+	* wx/draw3: F12 key hides/unhides menubar in main window
 2012-09-21 Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: param editing from context menu restored
 2012-09-04 Krzysztof Ga³±zka <kg@newterm.pl>
