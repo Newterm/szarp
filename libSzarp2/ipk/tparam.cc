@@ -60,7 +60,7 @@
 using namespace std;
 
 bool TParam::IsHourSumUnit(const std::wstring& unit) {
-	if (unit == L"MW" || unit == L"kW" || unit == L"GJ")
+	if (unit == L"MW" || unit == L"kW")
 		return true;
 
 	if (unit.size() > 2
