@@ -23,52 +23,11 @@ namespace LuaExec {
 
 class ExecutionEngine;
 
-typedef double Val;
-
-struct ParamRef {
-	szb_buffer_t *m_buffer;
-	TParam* m_param;
-	size_t m_param_index;
-	std::list<ExecutionEngine*> m_exec_engines;
-	ExecutionEngine* m_exec_engine;
+struct SzbParamRef : public ParRef {
 public:
 	ParamRef();
-	void PushExecutionEngine(ExecutionEngine *exec_engine);
-	void PopExecutionEngine();
-	Val Value(const double &time, const double& period);
-};
-
-class Var {
-	size_t m_var_no;
-	ExecutionEngine* m_ee;
-	std::list<ExecutionEngine*> m_exec_engines;
-public:
-	Var(size_t var_no);
-	Val& operator()();
-	Val& operator=(const Val& val);
-	void PushExecutionEngine(ExecutionEngine *exec_engine);
-	void PopExecutionEngine();
-};
-
-
-class Expression {
-public:
-	virtual Val Value() = 0;
-};
-
-class Statement {
-public:
-	virtual void Execute() = 0;
-};
-
-typedef boost::shared_ptr<Expression> PExpression;
-typedef boost::shared_ptr<Statement> PStatement;
-
-class StatementList : public Statement {
-	std::vector<PStatement> m_statements;
-public:
-	void AddStatement(PStatement statement);
-	virtual void Execute();
+	virtual Val Value(const double &time, const double& period) = 0;
+	virtual ~ParamRef() {};
 };
 
 class Param {

@@ -326,6 +326,9 @@ public:
 
 	void CreateLogParams();
 
+	unsigned GetConfigId() const { return config_id; }
+
+	void SetConfigId(unsigned _config_id) { config_id = _config_id; }
 protected:
 	/**
 	 * Creates parcook.cfg file.
@@ -390,6 +393,8 @@ protected:
 	int transformSzarpFormula(const std::wstring &f);
 #endif
 
+	unsigned config_id;
+			/**< Configuration unique numbe id */
 	int read_freq;	/**< Param reading frequency (in seconds) */
 	int send_freq;
 			/**< Param send frequency (in seconds) */
@@ -2198,36 +2203,10 @@ private:
 
 };
 
-/**Mutex interface*/
-class TSMutex {
-public:
-	/**Locks the mutex*/
-	virtual void Lock() = 0;
-	/**Relases the mutex*/
-	virtual void Release() = 0;
-	virtual ~TSMutex() = 0;
-};
-
-/**Mutex locker. Locks provided mutex at object construction. Releases at desctrution*/
-class TSMutexLocker {
-	TSMutex* mutex;
-public:
-	TSMutexLocker(TSMutex *);
-	~TSMutexLocker();
-};
-
-class NullMutex : public TSMutex {
-public:
-        virtual void Lock() {}
-        virtual void Release() {}
-        virtual ~NullMutex() {}
-};
-
 /**Synchronized IPKs container*/
 class IPKContainer {
 
-	/**Mutex guarding access to the container*/
-	TSMutex* mutex;
+	boost::mutex m_mutex;
 
 	/**Szarp data directory*/
 	boost::filesystem::wpath szarp_data_dir;
@@ -2293,8 +2272,8 @@ public:
 	/**@return the container object*/
 	static IPKContainer* GetObject();
 	/**Inits the container
-	 * @param szarp_dir path to main szarp directory, mutex for data synchronization*/
-	static void Init(const std::wstring& szarp_data_dir, const std::wstring& szarp_system_dir, const std::wstring& language, TSMutex* mutex);
+	 * @param szarp_dir path to main szarp directory*/
+	static void Init(const std::wstring& szarp_data_dir, const std::wstring& szarp_system_dir, const std::wstring& language);
 	/**Destroys the container*/
 	static void Destroy();
 };

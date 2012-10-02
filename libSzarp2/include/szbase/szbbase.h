@@ -74,7 +74,7 @@ class Szbase {
 
 	TBPU8 m_u8params;
 
-	TBI m_ipkbasepair;
+	std::vector<szb_buffer_t*> m_szb_buffers;
 
 	/**Stores address of probes servers for particular prefixes.*/
 	std::tr1::unordered_map<std::wstring, std::pair<std::wstring, std::wstring> >
@@ -108,6 +108,8 @@ class Szbase {
 
 	/**Load configuration for this prefix into internal hashes*/
 	bool AddBase(const std::wstring& prefix);
+
+	IPKContiner* m_ipk_containter;
 
 	static Szbase* _instance;
 
@@ -160,7 +162,7 @@ public:
 	/**Destroy all object contents*/
 	static void Destroy();
 	/**Get buffer for give prefix*/
-	szb_buffer_t* GetBuffer(const std::wstring& prefix);
+	szb_buffer_t* GetBuffer(const std::wstring& prefix, bool add_if_not_present = true);
 	static Szbase* GetObject();
 	std::wstring GetCacheDir(const std::wstring& prefix);
 	/**Find param with given global name*/
