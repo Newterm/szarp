@@ -439,7 +439,6 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 					}
 				} 
 
-				xw.NextTag();
 			} else {
 				break;
 			}
@@ -453,7 +452,6 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 				assert(devices != NULL);
 				td->parseXML(reader);
 			}
-			xw.NextTag();
 		} else
 		if (xw.IsTag("defined")) {
 			if (xw.IsBeginTag()) {
@@ -461,7 +459,6 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 				if (_par)
 					defined = _par;
 			}
-			xw.NextTag();
 		} else
 		if (xw.IsTag("drawdefinable")) {
 			if (xw.IsBeginTag()) {
@@ -469,7 +466,6 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 				if (_par)
 					drawdefinable = _par;
 			}
-			xw.NextTag();
 		} else
 		if (xw.IsTag("seasons")) {
 			if (xw.IsBeginTag()) {
@@ -480,7 +476,6 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 					xw.XMLError("'<seasons>' parse problem");
 				}
 			}
-			xw.NextTag();
 		} else
 		if (xw.IsTag("boilers")) {
 			if (xw.IsBeginTag()) {
@@ -493,11 +488,11 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 					xw.XMLError("'<boilers>' parser problem");
 				}
 			}
-			xw.NextTag();
 		} else {
 			xw.XMLErrorNotKnownTag("params");
 		}
-
+		if (!xw.NextTag())
+			return 1;
 	}
 
 // why? copy/paste from parse reader

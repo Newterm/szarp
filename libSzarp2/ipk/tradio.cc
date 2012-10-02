@@ -87,7 +87,6 @@ int TRadio::parseXML(xmlTextReaderPtr reader)
 						xw.XMLWarningNotKnownAttr();
 					}
 				}
-					xw.NextTag();
 			} else {
 				break;
 			}
@@ -103,7 +102,6 @@ int TRadio::parseXML(xmlTextReaderPtr reader)
 				if (u->parseXML(reader))
 					return 1;
 			}
-			xw.NextTag();
 		} else
 		if (xw.IsTag("device")) {
 			if (xw.IsEndTag()) {
@@ -113,6 +111,8 @@ int TRadio::parseXML(xmlTextReaderPtr reader)
 		} else {
 			xw.XMLErrorNotKnownTag("radio");
 		}
+		if (!xw.NextTag())
+			return 1;
 	}
 
 	if (units == NULL) {

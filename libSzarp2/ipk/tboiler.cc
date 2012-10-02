@@ -123,9 +123,10 @@ TBoiler* TBoiler::parseXML(xmlTextReaderPtr reader) {
 		}
 	}
 
-	boiler = new TBoiler(boiler_no, grate_speed, coal_gate_height, boiler_type);
+	if (!xw.NextTag())
+		return NULL;
 
-	xw.NextTag();
+	boiler = new TBoiler(boiler_no, grate_speed, coal_gate_height, boiler_type);
 
 	for (;;) {
 		if (xw.IsTag("interval")) {
@@ -137,7 +138,10 @@ TBoiler* TBoiler::parseXML(xmlTextReaderPtr reader) {
 				}
 				boiler->AddInterval(interval);
 			}
-			xw.NextTag();
+			if (!xw.NextTag()) {
+				delete boiler;
+				return NULL;
+			}
 		} else
 		if (xw.IsTag("boiler")) {
 			return boiler;
