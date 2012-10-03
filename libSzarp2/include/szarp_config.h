@@ -37,6 +37,8 @@
 #include <vector>
 #include <map>
 #include <tr1/unordered_map>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/shared_mutex.hpp>
 
 #include <string>
 #include <set>
@@ -2205,8 +2207,26 @@ private:
 
 /**Synchronized IPKs container*/
 class IPKContainer {
+	class UnsignedStringHash {
+		std::tr1::hash<std::string> m_hasher;
+		public:
+		size_t operator() (const std::basic_string<unsigned char>& v) const {
+			return m_hasher((const char*) v.c_str());
+		}
+	};
 
-	boost::mutex m_mutex;
+	/** Maps global parameters names encoding in utf-8 to corresponding szb_buffer_t* and TParam* objects. 
+	 UTF-8 encoded param names are used by LUA formulas*/
+	typedef std::tr1::unordered_map<std::basic_string<unsigned char>, TParam*, UnsignedStringHash > utf_hash_type;
+	/*Maps global parameters encoded in wchar_t. Intention of having two separate maps 
+	is to avoid frequent conversions between two encodings*/
+	typedef std::tr1::unordered_map<std::wstring, TParam* > hash_type;
+
+	hash_type m_params;
+
+	utf_hash_type m_utf_params;
+
+	boost::shared_mutex m_lock;
 
 	/**Szarp data directory*/
 	boost::filesystem::wpath szarp_data_dir;
@@ -2243,8 +2263,8 @@ class IPKContainer {
 
 	IPKContainer(const std::wstring& szarp_data_dir,
 			const std::wstring& szarp_system_dir,
-			const std::wstring& lang,
-			TSMutex* mutex);
+			const std::wstring& lang);
+			
 
 	~IPKContainer();
 
@@ -2254,18 +2274,28 @@ class IPKContainer {
 	 * @param logparams defines if logging params should be generated
 	 */
 	TSzarpConfig* AddConfig(const std::wstring& prefix, const std::wstring& file = std::wstring() , bool logparams = true );
+
+	TParam* GetParamFromHash(const std::basic_string<unsigned char>& global_param_name);
+
+	TParam* GetParamFromHash(const std::wstring& global_param_name);
+
+	void AddParamToHash(TParam* p);
+
+	void RemoveParamFromHash(TParam* p);
 public:
 	void RemoveExtraParam(const std::wstring& prefix, TParam *param);
 
 	bool ReadyConfigurationForLoad(const std::wstring &prefix, bool logparams = true );
 
-	TParam* GetParam(const std::wstring& global_param_name);
+	template<class T> TParam* GetParam(const std::basic_string<T>& global_param_name, bool add_config_if_not_present = true);
 
 	void AddExtraParam(const std::wstring& prefix, TParam *param);
 
 	/**Retrieves config from the container
 	 * @return configuration object or NULL if given config is not available*/
 	TSzarpConfig *GetConfig(const std::wstring& prefix);
+	
+	TSzarpConfig* GetConfig(const std::basic_string<unsigned char>& prefix);
 	/**Loads config into the container
 	 * @return loaded config object, NULL if error occured during configuration load*/
 	TSzarpConfig *LoadConfig(const std::wstring& prefix, const std::wstring& file = std::wstring(), bool logparams = true );

@@ -217,7 +217,7 @@ void szb_probeblock_lua_t::FetchProbes() {
 	if (!buffer->prober_connection->GetRange(range_start, range_end))
 		return;
 
-	time_t param_start_time = param->GetLuaStartDateTime() > 0 ? : range_start; 
+	time_t param_start_time = param->GetLuaStartDateTime() > 0 ? param->GetLuaStartDateTime() : range_start; 
 	if (param_start_time > GetEndTime())
 		return;
 
@@ -240,15 +240,6 @@ void szb_probeblock_lua_t::FetchProbes() {
 
 	}
 
-	int count;
-	if (range_end > GetEndTime())
-		count = probes_per_block;
-	else if (GetStartTime() > range_end) {
-		sz_log(10, "Not fetching probes for definable block because it is from the future");
-		return;
-	} else
-		count = (range_end - GetStartTime()) / SZBASE_PROBE_SPAN + 1;
-
 	lua_rawgeti(lua, LUA_REGISTRYINDEX, ref);
 	double prec10 = pow10(param->GetPrec());
 	for (int i = fixed_probes_count; i < probes_per_block; i++, t += SZBASE_PROBE_SPAN) {
@@ -265,7 +256,7 @@ void szb_probeblock_lua_t::FetchProbes() {
 }
 
 void szb_probeblock_lua_opt_t::FetchProbes() {
-	LuaExec::ExecutionEngine ee(buffer, param->GetLuaExecParam());
+	LuaExec::SzbaseExecutionEngine ee(buffer, param->GetLuaExecParam());
 	sz_log(10, "Fetching lua opt probes");
 	time_t t = start_time + fixed_probes_count * SZBASE_PROBE_SPAN;
 	for (int i = fixed_probes_count; i < probes_per_block; i++, t += SZBASE_PROBE_SPAN) {

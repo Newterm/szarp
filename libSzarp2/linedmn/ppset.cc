@@ -1061,8 +1061,7 @@ xmlDocPtr parse_report(const char* response, int len) {
 
 		while (true) {
 			try {
-				char c;
-				c = is.peek();
+				is.peek();
 			} catch (ios_base::failure) {
 				if (is.exceptions() & ios_base::eofbit && vi.size() > 0)
 					//ok - end of message

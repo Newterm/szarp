@@ -19,29 +19,17 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
+#include "szarp_base_common/lua_param_optimizer.h"
+
 namespace LuaExec {
 
-class ExecutionEngine;
-
-struct SzbParamRef : public ParRef {
-public:
-	ParamRef();
-	virtual Val Value(const double &time, const double& period) = 0;
-	virtual ~ParamRef() {};
+struct SzbaseParam : public Param {
+        std::map<szb_buffer_t*, time_t> m_last_update_times;
 };
 
-class Param {
-public:
-	bool m_optimized;
-	std::vector<Var> m_vars;
-	std::vector<ParamRef> m_par_refs;
-	std::map<szb_buffer_t*, time_t> m_last_update_times;
-	PStatement m_statement;
-};
-
-class ExecutionEngine {
+class SzbaseExecutionEngine : public ExecutionEngine {
 	szb_buffer_t* m_buffer;
-	std::vector<TParam*> m_params;
+	std::vector<szb_buffer_t*> m_buffers;
 	struct ListEntry {
 		time_t start_time;
 		time_t end_time;
@@ -58,17 +46,17 @@ class ExecutionEngine {
 	szb_block_t* SearchBlockRight(size_t param_index, time_t t, std::list<ListEntry>::iterator& i, SZB_BLOCK_TYPE bt);
 	szb_block_t* GetBlock(size_t param_index, time_t time, SZB_BLOCK_TYPE bt);
 public:
-	ExecutionEngine(szb_buffer_t *buffer, Param *param);
+	SzbaseExecutionEngine(szb_buffer_t *buffer, Param *param);
 
 	void CalculateValue(time_t t, SZARP_PROBE_TYPE probe_type, double &val, bool &fixed);
 
-	double Value(size_t param_index, const double& time, const double& period_type);
+	virtual double Value(size_t param_index, const double& time, const double& period_type);
 	double ValueBlock(ParamRef& ref, const time_t& time, SZB_BLOCK_TYPE block_type);
 	double ValueAvg(ParamRef& ref, const time_t& time, const double& period_type);
 
 	std::vector<double>& Vars();
 
-	~ExecutionEngine();
+	~SzbaseExecutionEngine();
 };
 
 Param* optimize_lua_param(TParam* p);

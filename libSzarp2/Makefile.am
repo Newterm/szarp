@@ -10,6 +10,7 @@ YACC=@YACC@
 
 SOURCE_DIR=@srcdir@
 IPK_DIR=$(SOURCE_DIR)/ipk
+SZARP_BASE_COMMON_DIR=$(SOURCE_DIR)/szarp_base_common
 SZBASE_DIR=$(SOURCE_DIR)/szbase
 SZ4_DIR=$(SOURCE_DIR)/sz4
 DMN_DIR=$(SOURCE_DIR)/linedmn
@@ -48,7 +49,7 @@ include/protobuf/paramsvalues.pb.h: protobuf/paramsvalues.pb.h
 
 lua_parser_test_INCLUDES = $(INCLUDES)
 lua_parser_test_LDADD = $(LDADD) ../libSzarp/libSzarp.la libSzarp2.la
-lua_parser_test_SOURCES = $(SZBASE_DIR)/lua_parser_test.cc
+lua_parser_test_SOURCES = $(SZARP_BASE_COMMON_DIR)/lua_parser_test.cc
 
 xmlreader_test_INCLUDES = $(INCLUDES)
 xmlreader_test_LDADD = $(LDADD) ../libSzarp/libSzarp.la libSzarp2.la $(BOOST_LDFLAGS) $(BOOST_SYSTEM_LIB) $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_REGEX_LIB) $(BOOST_DATE_TIME_LIB)  ../libSzarp/liblog.o
@@ -135,15 +136,18 @@ libSzarp2_la_SOURCES = \
 			$(SZBASE_DIR)/szbfilewatcher.cc $(INCLUDE_DIR)/szbase/szbfilewatcher.h \
 			$(SZBASE_DIR)/szbcancelhandle.cc $(INCLUDE_DIR)/szbase/szbcancelhandle.h \
 			$(SZBASE_DIR)/loptdatablock.cc $(SZBASE_DIR)/loptdatablock.h \
-			$(SZBASE_DIR)/lua_parser_extra.cc $(SZBASE_DIR)/lua_parser_extra.h \
-			$(SZBASE_DIR)/lua_parser.cc $(INCLUDE_DIR)/szbase/lua_syntax.h \
+			$(SZARP_BASE_COMMON_DIR)/lua_param_optimizer.cc $(INCLUDE_DIR)/szarp_base_common/lua_param_optimizer.h \
+			$(SZARP_BASE_COMMON_DIR)/lua_parser_extra.cc $(SZARP_BASE_COMMON_DIR)/lua_parser_extra.h \
+			$(SZARP_BASE_COMMON_DIR)/lua_parser.cc $(INCLUDE_DIR)/szarp_base_common/lua_syntax.h \
+			$(SZARP_BASE_COMMON_DIR)/lua_strings_extract.cc	$(INCLUDE_DIR)/szarp_base_common/lua_strings_extract.h \
+			$(SZARP_BASE_COMMON_DIR)/time.cc $(INCLUDE_DIR)/szarp_base_common/time.h \
+			$(INCLUDE_DIR)/szarp_base_common/lua_syntax_fusion_adapt.h \
 			$(SZBASE_DIR)/proberconnection.cc $(SZBASE_DIR)/proberconnection.h \
 			$(SZBASE_DIR)/luacalculate.cc $(SZBASE_DIR)/luacalculate.h \
 			$(SZBASE_DIR)/loptcalculate.cc $(SZBASE_DIR)/loptcalculate.h \
 			$(SZBASE_DIR)/probeblock.cc \
 			$(SZBASE_DIR)/szbsearch.h $(SZBASE_DIR)/szbsearch.cc \
 			$(SZBASE_DIR)/szbblock.cc \
-			$(SZBASE_DIR)/luapextract.cc $(INCLUDE_DIR)/szbase/luapextract.h \
 			$(SZBASE_DIR)/szbparammonitor.cc $(INCLUDE_DIR)/szbase/szbparammonitor.h \
 			$(INCLUDE_DIR)/szbase/szbparamobserver.h \
 			\
@@ -153,7 +157,7 @@ libSzarp2_la_SOURCES = \
 			$(INCLUDE_DIR)/sz4/base.h \
 			$(INCLUDE_DIR)/sz4/defs.h \
 			$(SZ4_DIR)/load_file_locked.cpp \
-			$(SZ4_DIR)/time.cpp \
+			$(SZ4_DIR)/sz4_time.cpp \
 			$(SZ4_DIR)/path.cpp \
 			$(SZ4_DIR)/buffer.cpp \
 			$(SZ4_DIR)/base.cpp \

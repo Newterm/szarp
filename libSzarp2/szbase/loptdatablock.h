@@ -25,6 +25,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "luadatablock.h"
+#include "loptcalculate.h"
 
 LuaDatablock *create_lua_data_block(szb_buffer_t *b, TParam* p, int y, int m);
 
@@ -38,9 +39,9 @@ class ExecutionEngine;
 
 class LuaOptDatablock : public LuaDatablock 
 {
-	void CalculateValues(LuaExec::ExecutionEngine *ee, int end_probe);
+	void CalculateValues(LuaExec::SzbaseExecutionEngine *ee, int end_probe);
 public:
-	LuaExec::Param *exec_param;
+	LuaExec::SzbaseParam *exec_param;
 	LuaOptDatablock(szb_buffer_t * b, TParam * p, int y, int m);
 	virtual void FinishInitialization();
 	virtual void Refresh();

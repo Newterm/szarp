@@ -17,9 +17,9 @@
 
 #include <time.h>
 #include "szbdefines.h"
+#include "szarp_base_common/defines.h"
+#include "szarp_base_common/time.h"
 
-/** Enumeration type for different probe types. */
-typedef enum { PT_SEC10, PT_MIN10, PT_HOUR, PT_HOUR8, PT_DAY, PT_WEEK, PT_MONTH, PT_YEAR, PT_CUSTOM } SZARP_PROBE_TYPE ;
 		
 /**
  * Return number of days in month of given year.
@@ -105,20 +105,6 @@ szb_round_time(time_t t, SZARP_PROBE_TYPE probe_type, int custom_length);
 
 time_t
 szb_round_to_probe_block_start(time_t t);
-
-/** Moves time value by specified number of probes. Count value can be
- * negative to indicate left direction of move. For example
- * szb_move_time(t, -2, PT_WEEK, 0) moves t value 2 weeks back
- * @param t time value
- * @param count number of probes to move
- * @param probe_type type of probe
- * @param custom_length length of probe for probe_type PT_CUSTOM, ignored for
- * other probe types
- * @return modified time
- */
-time_t
-szb_move_time(time_t t, int count, SZARP_PROBE_TYPE probe_type, 
-		int custom_length);
 
 #endif
 

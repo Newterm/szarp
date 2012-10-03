@@ -147,8 +147,7 @@ bool TestApp::OnInit() {
 
 	IPKContainer::Init(GetSzarpDataDir().c_str(), 
 			GetSzarpDir().c_str(), 
-			_lang.c_str(),
-			new szMutex());
+			_lang.c_str());
 	m_cfg_mgr = new ConfigManager(GetSzarpDataDir().c_str(), IPKContainer::GetObject());
 
 	m_db_queue = new DatabaseQueryQueue();

@@ -21,7 +21,6 @@
 #include "szbbuf.h"
 #include "szbhash.h"
 
-#include "luapextract.h"
 #include "cacheabledatablock.h"
 #include "conversion.h"
 #include "proberconnection.h"
@@ -70,7 +69,7 @@ void Szbase::Destroy() {
 Szbase::~Szbase() {
 	delete m_monitor;
 	m_file_watcher.Terminate();
-	for (std::vector<szb_buffer_t*>::iterator i = m_buffers.begin(); i != m_buffers.end(); i++)
+	for (std::vector<szb_buffer_t*>::iterator i = m_szb_buffers.begin(); i != m_szb_buffers.end(); i++)
 		if (*i)
 			szb_free_buffer(*i);
 }
@@ -105,11 +104,6 @@ bool Szbase::AddBase(const std::wstring& prefix) {
 }
 
 void Szbase::AddExtraParam(const std::wstring &prefix, TParam *param) {
-
-	TBI::iterator i = m_ipkbasepair.find(prefix);
-	if (i != m_ipkbasepair.end())
-		AddParamToHash(prefix, param);
-
 }
 
 #ifndef NO_LUA
@@ -171,11 +165,11 @@ bool Szbase::AddBase(const std::wstring& szbase_dir, const std::wstring &prefix)
 		return false;
 	}
 
-	if (m_buffers.size() <= ipk->GetConfigId())
-		m_buffers.resize(ipk->GetConfigId() + 1, NULL);
+	if (m_szb_buffers.size() <= ipk->GetConfigId())
+		m_szb_buffers.resize(ipk->GetConfigId() + 1, NULL);
 
-	assert(m_buffers[m_ipk->GetConfigId()] == NULL);
-	m_buffers[m_ipk->GetConfigId] = ipk;
+	assert(m_szb_buffers[ipk->GetConfigId()] == NULL);
+	m_szb_buffers[ipk->GetConfigId()] = szbbuf;
 
 	if (m_config_modification_callback != NULL) {
 		m_file_watcher.AddFileWatch(szbbuf->GetConfigurationFilePath(), prefix, m_config_modification_callback);
@@ -192,26 +186,21 @@ void Szbase::NotifyAboutConfigurationChanges() {
 }
 
 void Szbase::RemoveConfig(const std::wstring &prefix, bool poison_cache) {
+	TSzarpConfig *ipk = m_ipk_containter->GetConfig(prefix);
+	if (ipk == NULL)
+		return;
 
-	szb_buffer_t* buffer = GetBuffer(prefix);
+	if (m_szb_buffers.size() <= ipk->GetConfigId())
+		return;
+
+	szb_buffer_t* buffer = m_szb_buffers[ipk->GetConfigId()];
 	if (buffer == NULL)
 		return;
+
 	m_file_watcher.RemoveFileWatch(prefix);
 
-	std::vector<std::wstring> pn;
-	for (TBP::iterator i = m_params.begin() ; i != m_params.end(); ++i)
-		if (i->second.first == b)
-			pn.push_back(i->first);
-
-	for (std::vector<std::wstring>::iterator i = pn.begin(); i != pn.end(); ++i) {
-		m_params.erase(*i);
-		m_u8params.erase(SC::S2U(*i));
-	}
-
-	m_ipkbasepair.erase(prefix);
-
 	if (poison_cache)
-		b->cachepoison = true;
+		buffer->cachepoison = true;
 	szb_free_buffer(buffer);
 
 }
@@ -318,7 +307,7 @@ time_t Szbase::Search(const std::wstring& param, time_t start, time_t end, int d
 	return t;
 }
 
-double Szbase::GetValue(std::pair<szb_buffer_t*, TParam*>& bp, szb_buffer_t* buffer, time_t time, SZARP_PROBE_TYPE probe_type, int custom_length, bool *is_fixed, bool &ok, std::wstring &error) { 	
+double Szbase::GetValue(std::pair<szb_buffer_t*, TParam*>& bp, time_t time, SZARP_PROBE_TYPE probe_type, int custom_length, bool *is_fixed, bool &ok, std::wstring &error) { 	
 	time_t end = szb_move_time(time, 1, probe_type, custom_length);
 	double result = szb_get_avg(bp.first, bp.second, time, end, NULL, NULL, probe_type, is_fixed);
 
@@ -353,7 +342,7 @@ double Szbase::GetValue(const std::wstring& param, time_t time, SZARP_PROBE_TYPE
 	ok = FindParam(param, bp);
 
 	if (ok == false) {
-		error = std::wstring(L"Param ") + SC::U2S(param) + L" not present";
+		error = std::wstring(L"Param ") + param + L" not present";
 		return SZB_NODATA;
 	}
 
@@ -372,7 +361,7 @@ Szbase* Szbase::_instance = NULL;
 
 szb_buffer_t* Szbase::GetBufferForParam(TParam* p, bool add_if_not_present) {
 	szb_buffer_t *buffer;
-	if (m_buffers.size() <= p->GetConfigId() || (buffer = m_buffers[p->GetConfigId()]) == NULL) {
+	if (m_szb_buffers.size() <= p->GetConfigId() || (buffer = m_szb_buffers[p->GetConfigId()]) == NULL) {
 		if (add_if_not_present) {
 			if (!AddBase(p->GetSzarpConfig()->GetPrefix()))
 				return NULL;
@@ -384,22 +373,19 @@ szb_buffer_t* Szbase::GetBufferForParam(TParam* p, bool add_if_not_present) {
 }
 
 szb_buffer_t* Szbase::GetBuffer(const std::wstring &prefix, bool add_if_not_present) {
-
-	for (std::vector<szb_buffer_t*>::iterator i = m_ipk_containter.begin();
-			i != m_ipk_containter.end();
-			i++) {
-		szb_buffer_t* buffer = *i;
-		if (buffer && buffer->GetPrefix() == prefix)
-			return buffer;
+	TSzarpConfig *ipk = m_ipk_containter->GetConfig(prefix);
+	if (ipk == NULL)
+		return NULL;
+	szb_buffer_t* buffer;
+	if (m_szb_buffers.size() <= ipk->GetConfigId() || (buffer = m_szb_buffers[ipk->GetConfigId()]) == NULL) {
+		if (add_if_not_present) {
+			if (!AddBase(prefix))
+				return NULL;
+			return GetBuffer(prefix, false);
+		} else
+			return NULL;
 	}
-
-	if (!add_if_not_present)
-		return NULL;
-
-	if (!AddBase(prefix))
-		return NULL;
-
-	return GetBuffer(prefix, false);
+	return buffer;
 }
 
 void Szbase::NextQuery() {
@@ -415,7 +401,7 @@ void Szbase::SetProberAddress(std::wstring prefix, std::wstring address, std::ws
 	szb_buffer_t* buffer = GetBuffer(prefix);
 	if (buffer) {
 		delete buffer->prober_connection;
-		buffer->prober_connection = prober_connection;
+		buffer->prober_connection = NULL;
 	}
 
 }
@@ -447,6 +433,8 @@ bool Szbase::CompileLuaFormula(const std::wstring& formula, std::wstring& error)
 #endif
 
 void Szbase::AddParamMonitor(SzbParamObserver *observer, const std::vector<TParam*>& params) {
+#if 0
+//TODO: kick it out
 	std::vector<std::pair<TParam*, std::vector<std::string> > > to_monitor;
 	for (std::vector<TParam*>::const_iterator i = params.begin(); 
 			i != params.end();
@@ -490,6 +478,7 @@ void Szbase::AddParamMonitor(SzbParamObserver *observer, const std::vector<TPara
 		to_monitor.push_back(std::make_pair(*i, paths));
 	}
 	m_monitor->add_observer(observer, to_monitor, 0);
+#endif
 }
 
 #ifndef NO_LUA

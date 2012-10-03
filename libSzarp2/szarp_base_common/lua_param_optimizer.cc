@@ -17,6 +17,11 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
+#include "config.h"
+
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+
 #include "szarp_base_common/lua_param_optimizer.h"
 
 #ifdef LUA_PARAM_OPTIMISE
@@ -621,7 +626,7 @@ PExpression InSeasonConverter::Convert(const std::vector<expression>& expression
 	return boost::make_shared<InSeasonExpression>(sc, m_param_converter->ConvertExpression(expressions[1]));
 }
 
-ParamConverter::ParamConverter(ParamReferenceFactory *param_reference_factory) : m_param_reference_factory(param_reference_factory) {
+ParamConverter::ParamConverter(IPKContainer *ipk_container) : m_ipk_container(ipk_container) {
 	m_function_converters[L"szb_move_time"] = boost::make_shared<SzbMoveTimeConverter>(this);
 	m_function_converters[L"isnan"] = boost::make_shared<IsNanConverter>(this);
 	m_function_converters[L"nan"] = boost::make_shared<NanConverter>(this);
@@ -667,26 +672,23 @@ VarRef ParamConverter::FindVar(const std::wstring& identifier) {
 }
 
 ParRefRef ParamConverter::GetParamRef(const std::wstring param_name) {
-	return m_param_reference_factory->GetParamReference(param_name);
-#if 0
-	std::pair<szb_buffer_t*, TParam*> bp;
-	if (m_szbase->FindParam(param_name, bp) == false)
+	TParam* param = m_ipk_container->GetParam(param_name);
+	if (param == NULL)
 		throw ParamConversionException(std::wstring(L"Param ") + param_name + L" not found");
 
-	for (size_t i = 0; i < m_param->m_par_refs.size(); i++)
-		if (m_param->m_par_refs[i].m_buffer == bp.first && m_param->m_par_refs[i].m_param == bp.second)
+	size_t i;
+	for (i = 0; i < m_param->m_par_refs.size(); i++) {
+		ParamRef &ref = m_param->m_par_refs[i];
+		if (ref.m_param->GetParamId() == param->GetParamId() && ref.m_param->GetConfigId() == param->GetConfigId())
 			return ParRefRef(&m_param->m_par_refs, i);
+	}
 
-	size_t pi = m_param->m_par_refs.size();
 	ParamRef pr;
-	pr.m_buffer = bp.first;
-	pr.m_param = bp.second;
-	pr.m_param_index = pi;
+	pr.m_param = param;
+	pr.m_param_index = i;
 	m_param->m_par_refs.push_back(pr);
-	m_param->m_last_update_times[bp.first] = 0szbase;
 
-	return ParRefRef(&m_param->m_par_refs, pi);
-#endif
+	return ParRefRef(&m_param->m_par_refs, i);
 }
 
 PStatement ParamConverter::ConvertBlock(const block& block) {

@@ -31,7 +31,7 @@
 
 #include "conversion.h"
 #include "liblog.h"
-#include "lua_syntax.h"
+#include "szarp_base_common/lua_syntax.h"
 #include "szbbase.h"
 #include "loptcalculate.h"
 
@@ -39,32 +39,17 @@ namespace LuaExec {
 
 using namespace lua_grammar;
 
-class ExecutionEngine;
+class SzbaseExecutionEngine;
 
-class VarRef {
-	std::vector<Var>* m_vec;
-	size_t m_var_no;
-public:
-	VarRef() : m_vec(NULL) {}
-	VarRef(std::vector<Var>* vec, size_t var_no) : m_vec(vec), m_var_no(var_no) {}
-	Var& var() { return (*m_vec)[m_var_no]; }
-};
-
-class ParRefRef {
-	std::vector<ParamRef>* m_vec;
-	size_t m_par_no;
-public:
-	ParRefRef() : m_vec(NULL) {}
-	ParRefRef(std::vector<ParamRef>* vec, size_t par_no) : m_vec(vec), m_par_no(par_no) {}
-	ParamRef& par_ref() { return (*m_vec)[m_par_no]; }
-};
-
-ExecutionEngine::ExecutionEngine(szb_buffer_t *buffer, Param *param) {
+SzbaseExecutionEngine::SzbaseExecutionEngine(szb_buffer_t *buffer, Param *param) {
 	m_buffer = buffer;
 	szb_lock_buffer(m_buffer);
 	m_param = param;
-	for (size_t i = 0; i < m_param->m_par_refs.size(); i++)
+	Szbase* szbase = Szbase::GetObject();
+	for (size_t i = 0; i < m_param->m_par_refs.size(); i++) {
 		m_param->m_par_refs[i].PushExecutionEngine(this);
+		m_buffers.push_back(szbase->GetBufferForParam(m_param->m_par_refs[i].m_param));
+	}
 	m_blocks.resize(UNUSED_BLOCK_TYPE);
 	m_blocks_iterators.resize(UNUSED_BLOCK_TYPE);
 	for (size_t i = 0 ; i < UNUSED_BLOCK_TYPE; i++) {
@@ -83,7 +68,7 @@ ExecutionEngine::ExecutionEngine(szb_buffer_t *buffer, Param *param) {
 	m_vals[9] = PT_SEC10;
 }
 
-void ExecutionEngine::CalculateValue(time_t t, SZARP_PROBE_TYPE probe_type, double &val, bool &fixed) {
+void SzbaseExecutionEngine::CalculateValue(time_t t, SZARP_PROBE_TYPE probe_type, double &val, bool &fixed) {
 	m_fixed = true;
 	m_vals[0] = nan("");
 	m_vals[1] = t;
@@ -93,9 +78,9 @@ void ExecutionEngine::CalculateValue(time_t t, SZARP_PROBE_TYPE probe_type, doub
 	val = m_vals[0];
 }
 
-ExecutionEngine::ListEntry ExecutionEngine::GetBlockEntry(size_t param_index, time_t t, SZB_BLOCK_TYPE bt) {
+SzbaseExecutionEngine::ListEntry SzbaseExecutionEngine::GetBlockEntry(size_t param_index, time_t t, SZB_BLOCK_TYPE bt) {
 	ListEntry le;
-	le.block = szb_get_block(m_param->m_par_refs[param_index].m_buffer, m_param->m_par_refs[param_index].m_param, t, bt);
+	le.block = szb_get_block(m_buffers[param_index], m_param->m_par_refs[param_index].m_param, t, bt);
 	int year, month;
 	switch (bt) {
 		case MIN10_BLOCK:
@@ -116,7 +101,7 @@ ExecutionEngine::ListEntry ExecutionEngine::GetBlockEntry(size_t param_index, ti
 	return le;
 }
 
-szb_block_t* ExecutionEngine::AddBlock(size_t param_index,
+szb_block_t* SzbaseExecutionEngine::AddBlock(size_t param_index,
 		time_t t,
 		std::list<ListEntry>::iterator& i,
 		SZB_BLOCK_TYPE bt) {
@@ -126,7 +111,7 @@ szb_block_t* ExecutionEngine::AddBlock(size_t param_index,
 	return i->block;
 }
 
-szb_block_t* ExecutionEngine::SearchBlockLeft(size_t param_index,
+szb_block_t* SzbaseExecutionEngine::SearchBlockLeft(size_t param_index,
 		time_t t,
 		std::list<ListEntry>::iterator& i,
 		SZB_BLOCK_TYPE bt) {
@@ -144,7 +129,7 @@ szb_block_t* ExecutionEngine::SearchBlockLeft(size_t param_index,
 
 }
 
-szb_block_t* ExecutionEngine::SearchBlockRight(
+szb_block_t* SzbaseExecutionEngine::SearchBlockRight(
 		size_t param_index,
 		time_t t, std::list<ListEntry>::iterator& i,
 		SZB_BLOCK_TYPE bt) {
@@ -162,7 +147,7 @@ szb_block_t* ExecutionEngine::SearchBlockRight(
 
 }
 
-szb_block_t* ExecutionEngine::GetBlock(size_t param_index,
+szb_block_t* SzbaseExecutionEngine::GetBlock(size_t param_index,
 		time_t time,
 		SZB_BLOCK_TYPE bt) {
 	if (m_blocks[bt][param_index].size()) {	
@@ -181,7 +166,7 @@ szb_block_t* ExecutionEngine::GetBlock(size_t param_index,
 	}
 }
 
-double ExecutionEngine::ValueBlock(ParamRef& ref, const time_t& time, SZB_BLOCK_TYPE block_type) {
+double SzbaseExecutionEngine::ValueBlock(ParamRef& ref, const time_t& time, SZB_BLOCK_TYPE block_type) {
 	double ret;
 
 	szb_block_t* block = GetBlock(ref.m_param_index, time, block_type);
@@ -215,16 +200,16 @@ double ExecutionEngine::ValueBlock(ParamRef& ref, const time_t& time, SZB_BLOCK_
 	return ret;
 }
 
-double ExecutionEngine::ValueAvg(ParamRef& ref, const time_t& time, const double& period_type) {
+double SzbaseExecutionEngine::ValueAvg(ParamRef& ref, const time_t& time, const double& period_type) {
 	bool fixed;
 	time_t ptime = szb_round_time(time, (SZARP_PROBE_TYPE) period_type, 0);
-	double ret = szb_get_avg(ref.m_buffer, ref.m_param, ptime, szb_move_time(ptime, 1, (SZARP_PROBE_TYPE)period_type, 0), NULL, NULL, (SZARP_PROBE_TYPE)period_type, &fixed);
+	double ret = szb_get_avg(m_buffers[ref.m_param_index], ref.m_param, ptime, szb_move_time(ptime, 1, (SZARP_PROBE_TYPE)period_type, 0), NULL, NULL, (SZARP_PROBE_TYPE)period_type, &fixed);
 	if (!fixed)
 		m_fixed = false;
 	return ret;
 }
 
-double ExecutionEngine::Value(size_t param_index, const double& time_, const double& period_type) {
+double SzbaseExecutionEngine::Value(size_t param_index, const double& time_, const double& period_type) {
 	time_t time = time_;
 
 	ParamRef& ref = m_param->m_par_refs[param_index];
@@ -242,11 +227,11 @@ double ExecutionEngine::Value(size_t param_index, const double& time_, const dou
 	}
 }
 
-std::vector<double>& ExecutionEngine::Vars() {
+std::vector<double>& SzbaseExecutionEngine::Vars() {
 	return m_vals;
 }
 
-ExecutionEngine::~ExecutionEngine() {
+SzbaseExecutionEngine::~SzbaseExecutionEngine() {
 	szb_unlock_buffer(m_buffer);
 	for (size_t i = 0; i < m_param->m_par_refs.size(); i++)
 		m_param->m_par_refs[i].PopExecutionEngine();
@@ -255,7 +240,7 @@ ExecutionEngine::~ExecutionEngine() {
 }
 
 Param* optimize_lua_param(TParam* p) {
-	LuaExec::Param* ep = new LuaExec::Param;
+	LuaExec::SzbaseParam* ep = new LuaExec::SzbaseParam;
 	p->SetLuaExecParam(ep);
 
 	std::wstring param_text = SC::U2S(p->GetLuaScript());
@@ -266,18 +251,17 @@ Param* optimize_lua_param(TParam* p) {
 
 	lua_grammar::chunk param_code;
 	if (lua_grammar::parse(param_text_begin, param_text_end, param_code)) {
-		Szbase* szbase = Szbase::GetObject();
-		LuaExec::ParamConverter pc(szbase);
+		LuaExec::ParamConverter pc(IPKContainer::GetObject());
 		try {
 			pc.ConvertParam(param_code, ep);
 			ep->m_optimized = true;
 			for (std::vector<LuaExec::ParamRef>::iterator i = ep->m_par_refs.begin();
 				 	i != ep->m_par_refs.end();
 					i++)
-				szbase->AddLuaOptParamReference(i->m_param, p);
+				Szbase::GetObject()->AddLuaOptParamReference(i->m_param, p);
 			//no params are referenced by this param
 			if (ep->m_par_refs.size() == 0) {
-				szb_buffer_t* buffer = szbase->GetBuffer(p->GetSzarpConfig()->GetPrefix());
+				szb_buffer_t* buffer = Szbase::GetObject()->GetBuffer(p->GetSzarpConfig()->GetPrefix());
 				assert(buffer);
 				ep->m_last_update_times[buffer] = -1;
 			}

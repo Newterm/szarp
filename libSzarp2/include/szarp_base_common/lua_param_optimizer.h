@@ -21,14 +21,32 @@
 
 #ifdef LUA_PARAM_OPTIMISE
 
+#include <list>
+
+#include <boost/variant.hpp>
+#include "szarp_base_common/defines.h"
+#include "szarp_base_common/time.h"
+#include "szarp_base_common/lua_syntax.h"
+#include "szarp_config.h"
+
 namespace LuaExec {
 
 typedef double Val;
+
+using namespace lua_grammar;
+
+class ExecutionEngine {
+public:
+	virtual double Value(size_t param_index, const double& time_, const double& period_type) = 0;
+	virtual std::vector<double>& Vars() = 0;
+	virtual ~ExecutionEngine() {}
+};
 
 struct ParamRef {
 	TParam* m_param;
 	size_t m_param_index;
 	ExecutionEngine* m_exec_engine;
+	std::list<ExecutionEngine*> m_exec_engines;
 public:
 	ParamRef();
 	void PushExecutionEngine(ExecutionEngine *exec_engine);
@@ -52,10 +70,20 @@ class Expression {
 public:
 	virtual Val Value() = 0;
 };
+typedef boost::shared_ptr<Expression> PExpression;
 
 class Statement {
 public:
 	virtual void Execute() = 0;
+};
+typedef boost::shared_ptr<Statement> PStatement;
+
+struct Param {
+        bool m_optimized;
+        std::vector<Var> m_vars;
+        std::vector<ParamRef> m_par_refs;
+        PStatement m_statement;
+	virtual ~Param() {}
 };
 
 class StatementList : public Statement {
@@ -113,9 +141,6 @@ public:
 	}
 };
 
-typedef boost::shared_ptr<Expression> PExpression;
-typedef boost::shared_ptr<Statement> PStatement;
-
 template<class unop> class UnExpression : public Expression {
 	PExpression m_e;
 	unop m_op;
@@ -135,17 +160,6 @@ public:
 
 	virtual Val Value() {
 		return m_op(m_e1->Value(), m_e2->Value());
-	}
-};
-
-class AssignmentStatement : public Statement {
-	VarRef m_var;
-	PExpression m_exp;
-public:
-	AssignmentStatement(VarRef var, PExpression exp) : m_var(var), m_exp(exp) {}
-
-	virtual void Execute() {
-		m_var.var() = m_exp->Value();
 	}
 };
 
@@ -434,14 +448,14 @@ public:
 };
 
 class ParamConverter {
-	Szbase* m_szbase;
+	IPKContainer* m_ipk_container;
 	Param* m_param;
 	typedef std::map<std::wstring, VarRef> frame;
 	std::vector<frame> m_vars_map;
 	std::vector<std::map<std::wstring, VarRef> >::iterator m_current_frame;
 	std::map<std::wstring, boost::shared_ptr<FunctionConverter> > m_function_converters;
 public:
-	ParamConverter(Szbase *szbase);
+	ParamConverter(IPKContainer *container);
 
 	VarRef GetGlobalVar(std::wstring identifier);
 
@@ -471,29 +485,6 @@ public:
 
 	void InitalizeVars();
 
-};
-
-
-class IsNanExpression : public Expression {
-	PExpression m_exp;
-public:
-	IsNanExpression(PExpression exp) : m_exp(exp) {}
-
-	virtual Val Value() {
-		return std::isnan(m_exp->Value());
-	}
-};
-
-class InSeasonExpression : public Expression {
-	TSzarpConfig* m_sc;
-	PExpression m_t;
-public:
-	InSeasonExpression(TSzarpConfig* sc, PExpression t) : m_sc(sc), m_t(t) {}
-
-	virtual Val Value() {
-		time_t t = m_t->Value();
-		return m_sc->GetSeasons()->IsSummerSeason(t);
-	}
 };
 
 

@@ -21,14 +21,4 @@
 
 #include <wx/thread.h>
 #include <szarp_config.h>
-
-/*Szarp mutex adapter for wxWidgets*/
-class szMutex : public TSMutex {
-	wxMutex mutex;
-public:
-	virtual void Lock();
-	virtual void Release();
-	virtual ~szMutex();
-};
-
 #endif
