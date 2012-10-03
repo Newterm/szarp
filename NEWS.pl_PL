@@ -7,6 +7,25 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.684:
+# 02.09.2011
+* Zakutalizowano dokumntacjê programu draw3: dodano opis kilku
+najnowszych opcji oraz rozbudowano dokumentacjê parametrów
+definiowalych u¿ytkownika
+* Poprawiono b³±d w kodzie parsuj±cym konfiguracjê systemu szarp.
+B³±d powodowa³ zawieszanie aplikacji która próbowa³a wczytaæ 
+plik który nie by³ poprawnie sformatowanym plikiem XML.
+* Parametry maj±ce jednostke GJ nie s± ju¿ automatycznie 
+oznaczane jako sumowane godzinowo.
+* Poprawiono b³±d w liczniu parametrów definiowalych LUA 
+na warto¶ciach 10-skundowych, warto¶æi tych mog³y, w przypadku
+niektórych formu³, wychodziæ "w przysz³o¶æ", taraz ju¿ ten
+problem nie powinien wystêpowaæ.
+* Dodano przycisk "wyjd¼" do okna pomocy, bez niego
+niemo¿liwe by³o zamkniêcie draw3 gdy program dzia³a³
+w ¶rodowisku bez menad¿era okien
+* Poprawki w obs³ugdze trybu tcp serwer w demonie boruta
+
 ** 3.1.682:
 # 05.09.2011
 * Poprawiono b³±d mog±cy prowadziæ do zawieszenia program draw3 podczas

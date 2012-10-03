@@ -7,6 +7,22 @@
 # $Id$
 
 
+** 3.1.684:
+# 02.09.2011
+* Draw3 documentation update: some recently added features has
+been documented, documentation on user defined params has
+been extended
+* Fixed problem in params.xml parser, broken xml file
+could make application using the parser to loop ad infinitum
+* Small fix - params having GJ unit are no longer automatically 
+flagged as having "hoursum" attribute
+* Fix: lua parameters for 30-second range no longer go outside
+of first-last available date range
+* Quit button added to draw3 help window, without that 
+button it wasn't possible to close help window when draw3
+was running on system without window manager
+* Fixes for boruta in tcp server mode handling
+
 ** 3.1.682:
 # 05.09.2011
 * Fix in parameter editing bug under draw3
