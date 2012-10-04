@@ -82,7 +82,9 @@ std::ostream& operator<< (std::ostream& out, const nil& c );
 
 std::ostream& operator<< (std::ostream& out, const threedots& c );
 
-std::ostream& operator<< (std::ostream& out, const chunk& c );
+std::ostream& operator<< (std::ostream& out, const boost::recursive_wrapper<chunk>& c );
+
+std::ostream& operator<< (std::ostream& out, const boost::recursive_wrapper<block>& c );
 
 std::ostream& operator<< (std::ostream& out, const block& c );
 
@@ -117,6 +119,8 @@ std::ostream& operator<<(std::ostream& os, const boost::recursive_wrapper<std::v
 std::ostream& operator<<(std::ostream& os, const std::vector<field>& v);
 
 std::ostream& operator<< (std::ostream& os, const tableconstructor& e);
+
+std::ostream& operator<< (std::ostream& os, const chunk& e);
 
 std::ostream& operator<< (std::ostream& os, const boost::tuple<identifier, args> & t);
 
@@ -219,7 +223,7 @@ struct lua_parser : qi::grammar<std::wstring::const_iterator, chunk(), lua_skip_
 	qi::rule<std::wstring::const_iterator, return_(), space> return__;
 	qi::rule<std::wstring::const_iterator, stat(), space> stat_;
 	qi::rule<std::wstring::const_iterator, laststat(), space> laststat_;
-	qi::rule<std::wstring::const_iterator, chunk(), space> chunk_;
+	qi::rule<std::wstring::const_iterator, chunk()> chunk_;
 	qi::rule<std::wstring::const_iterator, tableconstructor(), space> tableconstructor_;
 	qi::rule<std::wstring::const_iterator, std::vector<var>(), space> varlist_;
 	qi::rule<std::wstring::const_iterator, std::vector<field>(), space> fieldlist_;

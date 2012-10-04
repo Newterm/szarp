@@ -26,13 +26,6 @@
 
 #ifdef LUA_PARAM_OPTIMISE
 
-//#define LUA_OPTIMIZER_DEBUG
-
-#ifdef LUA_OPTIMIZER_DEBUG
-#include <fstream>
-std::ofstream lua_opt_debug_stream("/tmp/lua_optimizer_debug");
-#endif
-
 namespace LuaExec {
 
 ParamRef::ParamRef() {

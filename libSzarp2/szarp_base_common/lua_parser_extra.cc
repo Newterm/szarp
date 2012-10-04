@@ -170,6 +170,15 @@ std::ostream& operator<< (std::ostream& out, const block& c ) {
 	return out << c.chunk_.get();
 }
 
+std::ostream& operator<< (std::ostream& out, const boost::recursive_wrapper<chunk>& c ) {
+	return out << c.get();
+}
+
+std::ostream& operator<< (std::ostream& out, const boost::recursive_wrapper<block>& c ) {
+	return out << c.get();
+}
+
+
 std::ostream& operator<< (std::ostream& out, const parlist1& c ) {
 	out << c.namelist_;
 	if (c.threedots_)

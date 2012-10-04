@@ -58,7 +58,7 @@ TSzarpConfig* IPKContainer::GetConfig(const std::wstring& prefix) {
 	boost::upgrade_lock<boost::shared_mutex> lock(m_lock);
 
 	CM::iterator i = configs.find(prefix.c_str());
-	if (i != configs.end()) {
+	if (i == configs.end()) {
 		boost::upgrade_to_unique_lock<boost::shared_mutex> unique(lock);
 		i = configs.find(prefix);
 		if (i == configs.end()) {

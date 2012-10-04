@@ -23,6 +23,14 @@
 
 namespace LuaExec {
 
+//#define LUA_OPTIMIZER_DEBUG
+
+#ifdef LUA_OPTIMIZER_DEBUG
+#include <fstream>
+std::ofstream lua_opt_debug_stream("/tmp/lua_optimizer_debug");
+#endif
+
+
 std::wstring get_string_expression(const expression &e);
 
 template<class container_type> PStatement StatementConverter<container_type>::operator() (const assignment &a) {
