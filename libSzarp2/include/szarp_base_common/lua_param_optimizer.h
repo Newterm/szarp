@@ -163,6 +163,12 @@ public:
 	}
 };
 
+template<> Val BinExpression<std::logical_or<Val> >::Value();
+
+template<> Val BinExpression<std::logical_and<Val> >::Value();
+
+template<> Val BinExpression<std::modulus<Val> >::Value();
+
 class AssignmentStatement : public Statement {
 	VarRef m_var;
 	PExpression m_exp;
@@ -302,6 +308,7 @@ public:
 	}
 };
 
+template<class T> class FunctionConverter;
 
 class ParamConversionException {
 	std::wstring m_error;
@@ -310,152 +317,15 @@ public:
 	const std::wstring& what() const  { return m_error; }
 };
 
-class ParamConverter;
-
-class StatementConverter : public boost::static_visitor<PStatement> {
-	ParamConverter* m_param_converter;
-public:
-	StatementConverter(ParamConverter *param_converter) : m_param_converter(param_converter) {}
-
-	PStatement operator() (const assignment &a);
-
-	PStatement operator() (const block &b);
-
-	PStatement operator() (const while_loop &w);
-
-	PStatement operator() (const repeat_loop &r);
-
-	PStatement operator() (const if_stat &if_);
-
-	PStatement operator() (const for_in_loop &a);
-
-	PStatement operator() (const postfixexp &a);
-
-	PStatement operator() (const for_from_to_loop &for_);
-
-	PStatement operator() (const function_declaration &a);
-
-	PStatement operator() (const local_assignment &a);
-
-	PStatement operator() (const local_function_declaration &f);
-
-};
-
-class ExpressionConverter {
-	ParamConverter* m_param_converter;
-
-	PExpression ConvertTerm(const term& term_);
-
-	PExpression ConvertPow(const pow_exp& exp);
-
-	PExpression ConvertUnOp(const unop_exp& unop);
-
-	PExpression ConvertMul(const mul_exp& mul_);
-
-	PExpression ConvertAdd(const add_exp& add_);
-
-	PExpression ConvertConcat(const concat_exp &concat);
-
-	PExpression ConvertCmp(const cmp_exp& cmp_exp_);
-
-	PExpression ConvertAnd(const and_exp& and_exp_);
-
-	PExpression ConvertOr(const or_exp& or_exp_);
-
-public:
-	ExpressionConverter(ParamConverter *param_converter) : m_param_converter(param_converter) {}
-	PExpression ConvertExpression(const expression& expression_);
-};
-
-class TermConverter : public boost::static_visitor<PExpression> {
-	ParamConverter* m_param_converter;
-public:
-	TermConverter(ParamConverter *param_converter) : m_param_converter(param_converter) { }
-	PExpression operator()(const nil& nil_);
-
-	PExpression operator()(const bool& bool_);
-
-	PExpression operator()(const double& double_);
-
-	PExpression operator()(const std::wstring& string);
-
-	PExpression operator()(const threedots& threedots_);
-
-	PExpression operator()(const funcbody& funcbody_);
-
-	PExpression operator()(const tableconstructor& tableconstrutor_);
-
-	PExpression operator()(const postfixexp& postfixexp_);
-
-	PExpression operator()(const expression& expression_);
-};
-
-class PostfixConverter : public boost::static_visitor<PExpression> {
-	ParamConverter* m_param_converter;
-public:
-	PostfixConverter(ParamConverter* param_converter) : m_param_converter(param_converter) {}
-
-	PExpression operator()(const identifier& identifier_);
-
-	const std::vector<expression>& GetArgs(const std::vector<exp_ident_arg_namearg>& e);
-
-	PExpression operator()(const boost::tuple<exp_identifier, std::vector<exp_ident_arg_namearg> > &exp);
-};
-
-class FunctionConverter { 
-protected:
-	ParamConverter* m_param_converter;
-public:
-	FunctionConverter(ParamConverter *param_converter) : m_param_converter(param_converter) {}	
-
-	virtual PExpression Convert(const std::vector<expression>& expressions) = 0;
-};
-
-class SzbMoveTimeConverter : public FunctionConverter {
-public:
-	SzbMoveTimeConverter(ParamConverter *param_converter) : FunctionConverter(param_converter) {}	
-
-	virtual PExpression Convert(const std::vector<expression>& expressions);
-};
-
-class IsNanConverter : public FunctionConverter {
-public:
-	IsNanConverter(ParamConverter *param_converter) : FunctionConverter(param_converter) {}	
-
-	virtual PExpression Convert(const std::vector<expression>& expressions);
-};
-
-class NanConverter : public FunctionConverter {
-public:
-	NanConverter(ParamConverter *param_converter) : FunctionConverter(param_converter) {}	
-
-	PExpression Convert(const std::vector<expression>& expressions);
-};
-
-class ParamValueConverter : public FunctionConverter {
-	std::wstring GetParamName(const expression& e);
-public:
-	ParamValueConverter(ParamConverter *param_converter) : FunctionConverter(param_converter) {}	
-
-	PExpression Convert(const std::vector<expression>& expressions);
-};
-
-class InSeasonConverter : public FunctionConverter {
-public:
-	InSeasonConverter(ParamConverter *param_converter) : FunctionConverter(param_converter) {}	
-
-	PExpression Convert(const std::vector<expression>& expressions);
-};
-
-class ParamConverter {
-	IPKContainer* m_ipk_container;
+template<class container_type> class ParamConverterTempl {
+	container_type* m_ipk_container;
 	Param* m_param;
 	typedef std::map<std::wstring, VarRef> frame;
 	std::vector<frame> m_vars_map;
 	std::vector<std::map<std::wstring, VarRef> >::iterator m_current_frame;
-	std::map<std::wstring, boost::shared_ptr<FunctionConverter> > m_function_converters;
+	std::map<std::wstring, boost::shared_ptr<FunctionConverter<container_type> > > m_function_converters;
 public:
-	ParamConverter(IPKContainer *container);
+	ParamConverterTempl(container_type* container);
 
 	VarRef GetGlobalVar(std::wstring identifier);
 
@@ -487,6 +357,143 @@ public:
 
 };
 
+template<class container_type> class StatementConverter : public boost::static_visitor<PStatement> {
+	ParamConverterTempl<container_type>* m_param_converter;
+public:
+	StatementConverter(ParamConverterTempl<container_type> *param_converter) : m_param_converter(param_converter) {}
+
+	PStatement operator() (const assignment &a);
+
+	PStatement operator() (const block &b);
+
+	PStatement operator() (const while_loop &w);
+
+	PStatement operator() (const repeat_loop &r);
+
+	PStatement operator() (const if_stat &if_);
+
+	PStatement operator() (const for_in_loop &a);
+
+	PStatement operator() (const postfixexp &a);
+
+	PStatement operator() (const for_from_to_loop &for_);
+
+	PStatement operator() (const function_declaration &a);
+
+	PStatement operator() (const local_assignment &a);
+
+	PStatement operator() (const local_function_declaration &f);
+
+};
+
+template<class container_type> class ExpressionConverter {
+	ParamConverterTempl<container_type>* m_param_converter;
+
+	PExpression ConvertTerm(const term& term_);
+
+	PExpression ConvertPow(const pow_exp& exp);
+
+	PExpression ConvertUnOp(const unop_exp& unop);
+
+	PExpression ConvertMul(const mul_exp& mul_);
+
+	PExpression ConvertAdd(const add_exp& add_);
+
+	PExpression ConvertConcat(const concat_exp &concat);
+
+	PExpression ConvertCmp(const cmp_exp& cmp_exp_);
+
+	PExpression ConvertAnd(const and_exp& and_exp_);
+
+	PExpression ConvertOr(const or_exp& or_exp_);
+
+public:
+	ExpressionConverter(ParamConverterTempl<container_type> *param_converter) : m_param_converter(param_converter) {}
+	PExpression ConvertExpression(const expression& expression_);
+};
+
+template<class container_type> class TermConverter : public boost::static_visitor<PExpression> {
+	ParamConverterTempl<container_type>* m_param_converter;
+public:
+	TermConverter(ParamConverterTempl<container_type> *param_converter) : m_param_converter(param_converter) { }
+	PExpression operator()(const nil& nil_);
+
+	PExpression operator()(const bool& bool_);
+
+	PExpression operator()(const double& double_);
+
+	PExpression operator()(const std::wstring& string);
+
+	PExpression operator()(const threedots& threedots_);
+
+	PExpression operator()(const funcbody& funcbody_);
+
+	PExpression operator()(const tableconstructor& tableconstrutor_);
+
+	PExpression operator()(const postfixexp& postfixexp_);
+
+	PExpression operator()(const expression& expression_);
+};
+
+template<class container_type> class PostfixConverter : public boost::static_visitor<PExpression> {
+	ParamConverterTempl<container_type>* m_param_converter;
+public:
+	PostfixConverter(ParamConverterTempl<container_type>* param_converter) : m_param_converter(param_converter) {}
+
+	PExpression operator()(const identifier& identifier_);
+
+	const std::vector<expression>& GetArgs(const std::vector<exp_ident_arg_namearg>& e);
+
+	PExpression operator()(const boost::tuple<exp_identifier, std::vector<exp_ident_arg_namearg> > &exp);
+};
+
+template<class container_type> class FunctionConverter { 
+protected:
+	ParamConverterTempl<container_type>* m_param_converter;
+public:
+	FunctionConverter(ParamConverterTempl<container_type> *param_converter) : m_param_converter(param_converter) {}	
+
+	virtual PExpression Convert(const std::vector<expression>& expressions) = 0;
+};
+
+template<class container_type> class SzbMoveTimeConverter : public FunctionConverter<container_type> {
+public:
+	SzbMoveTimeConverter(ParamConverterTempl<container_type> *param_converter) : FunctionConverter<container_type>(param_converter) {}	
+
+	virtual PExpression Convert(const std::vector<expression>& expressions);
+};
+
+template<class container_type> class IsNanConverter : public FunctionConverter<container_type> {
+public:
+	IsNanConverter(ParamConverterTempl<container_type> *param_converter) : FunctionConverter<container_type>(param_converter) {}	
+
+	virtual PExpression Convert(const std::vector<expression>& expressions);
+};
+
+template<class container_type> class NanConverter : public FunctionConverter<container_type> {
+public:
+	NanConverter(ParamConverterTempl<container_type> *param_converter) : FunctionConverter<container_type>(param_converter) {}	
+
+	PExpression Convert(const std::vector<expression>& expressions);
+};
+
+template<class container_type> class ParamValueConverter : public FunctionConverter<container_type> {
+	std::wstring GetParamName(const expression& e);
+public:
+	ParamValueConverter(ParamConverterTempl<container_type> *param_converter) : FunctionConverter<container_type>(param_converter) {}	
+
+	PExpression Convert(const std::vector<expression>& expressions);
+};
+
+template<class container_type> class InSeasonConverter : public FunctionConverter<container_type> {
+	container_type* m_ipk_container;
+public:
+	InSeasonConverter(ParamConverterTempl<container_type> *param_converter, container_type* container) : FunctionConverter<container_type>(param_converter), m_ipk_container(container) {}	
+
+	PExpression Convert(const std::vector<expression>& expressions);
+};
+
+typedef ParamConverterTempl<IPKContainer> ParamConverter;
 
 }
 

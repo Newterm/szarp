@@ -86,13 +86,13 @@ void Sz4BaseTestCase::test1() {
 		}
 	}
 
-	IPKContainer::Init(base_dir_name.str(), L"/opt/szarp", L"pl", new NullMutex());
+	IPKContainer::Init(base_dir_name.str(), L"/opt/szarp", L"pl");
 	IPKContainer* ipk = IPKContainer::GetObject();
 
-	TParam* p11 = ipk->GetParam(L"a:a:a:a");
-	TParam* p12 = ipk->GetParam(L"a:b:b:b");
-	TParam* p21 = ipk->GetParam(L"b:a:a:a");
-	TParam* p22 = ipk->GetParam(L"b:b:b:b");
+	TParam* p11 = ipk->GetParam(std::wstring(L"a:a:a:a"));
+	TParam* p12 = ipk->GetParam(std::wstring(L"a:b:b:b"));
+	TParam* p21 = ipk->GetParam(std::wstring(L"b:a:a:a"));
+	TParam* p22 = ipk->GetParam(std::wstring(L"b:b:b:b"));
 
 	CPPUNIT_ASSERT(p11 != NULL);
 	CPPUNIT_ASSERT(p12 != NULL);

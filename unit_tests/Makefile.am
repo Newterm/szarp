@@ -19,4 +19,5 @@ unit_tests_SOURCES = \
 		sz4_buffer_unit_test.cpp \
 		sz4_base_test.cpp \
 		test_observer.h \
-		test_observer.cpp
+		test_observer.cpp \
+		base_param_converter_unit_test.cpp

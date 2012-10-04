@@ -137,6 +137,7 @@ libSzarp2_la_SOURCES = \
 			$(SZBASE_DIR)/szbcancelhandle.cc $(INCLUDE_DIR)/szbase/szbcancelhandle.h \
 			$(SZBASE_DIR)/loptdatablock.cc $(SZBASE_DIR)/loptdatablock.h \
 			$(SZARP_BASE_COMMON_DIR)/lua_param_optimizer.cc $(INCLUDE_DIR)/szarp_base_common/lua_param_optimizer.h \
+			$(INCLUDE_DIR)/szarp_base_common/lua_param_optimizer_templ.h \
 			$(SZARP_BASE_COMMON_DIR)/lua_parser_extra.cc $(SZARP_BASE_COMMON_DIR)/lua_parser_extra.h \
 			$(SZARP_BASE_COMMON_DIR)/lua_parser.cc $(INCLUDE_DIR)/szarp_base_common/lua_syntax.h \
 			$(SZARP_BASE_COMMON_DIR)/lua_strings_extract.cc	$(INCLUDE_DIR)/szarp_base_common/lua_strings_extract.h \
