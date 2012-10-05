@@ -223,7 +223,7 @@ struct lua_parser : qi::grammar<std::wstring::const_iterator, chunk(), lua_skip_
 	qi::rule<std::wstring::const_iterator, return_(), space> return__;
 	qi::rule<std::wstring::const_iterator, stat(), space> stat_;
 	qi::rule<std::wstring::const_iterator, laststat(), space> laststat_;
-	qi::rule<std::wstring::const_iterator, chunk()> chunk_;
+	qi::rule<std::wstring::const_iterator, chunk(), space> chunk_;
 	qi::rule<std::wstring::const_iterator, tableconstructor(), space> tableconstructor_;
 	qi::rule<std::wstring::const_iterator, std::vector<var>(), space> varlist_;
 	qi::rule<std::wstring::const_iterator, std::vector<field>(), space> fieldlist_;

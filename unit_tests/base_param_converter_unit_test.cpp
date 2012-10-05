@@ -37,7 +37,7 @@ void BaseParamConverterTestCase::test1() {
 	std::wstring f = L"v = 10";
 	std::wstring::const_iterator param_text_begin = f.begin();
 	std::wstring::const_iterator param_text_end = f.end();
-	CPPUNIT_ASSERT(lua_grammar::parse(param_text_begin, param_text_end, param_code));
+	CPPUNIT_ASSERT(lua_grammar::parse(param_text_begin, param_text_end, param_code) && param_text_begin == param_text_end);
 
 	LuaExec::ParamConverterTempl<IPKContainerMock> conv(&mock);
 	try {
@@ -90,7 +90,7 @@ void BaseParamConverterTestCase::test2() {
 	std::wstring f = SC::U2S((const unsigned char*)fu.c_str());
 	std::wstring::const_iterator param_text_begin = f.begin();
 	std::wstring::const_iterator param_text_end = f.end();
-	CPPUNIT_ASSERT(lua_grammar::parse(param_text_begin, param_text_end, param_code));
+	CPPUNIT_ASSERT(lua_grammar::parse(param_text_begin, param_text_end, param_code) && param_text_begin == param_text_end);
 
 	LuaExec::ParamConverterTempl<IPKContainerMock> conv(&mock);
 	try {

@@ -250,7 +250,7 @@ Param* optimize_lua_param(TParam* p) {
 	ep->m_optimized = false;
 
 	lua_grammar::chunk param_code;
-	if (lua_grammar::parse(param_text_begin, param_text_end, param_code)) {
+	if (lua_grammar::parse(param_text_begin, param_text_end, param_code) && param_text_begin == param_text_end) {
 		LuaExec::ParamConverter pc(IPKContainer::GetObject());
 		try {
 			pc.ConvertParam(param_code, ep);
