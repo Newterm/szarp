@@ -49,39 +49,34 @@ void buffer::remove_param(TParam* param) {
 	m_param_ents[param->GetParamId()] = NULL;
 }
 
-generic_param_entry* buffer::create_param_entry(TParam* param) {
-	switch (param->GetDataType()) {
-		case TParam::SHORT:
-			switch (param->GetTimeType()) {
-				case TParam::SECOND:
-					return new param_entry_in_buffer<short, second_time_t>(param, m_buffer_directory);
-				case TParam::NANOSECOND:
-					return new param_entry_in_buffer<short, nanosecond_time_t>(param, m_buffer_directory);
-			}
-		case TParam::INT:
-			switch (param->GetTimeType()) {
-				case TParam::SECOND:
-					return new param_entry_in_buffer<int, second_time_t>(param, m_buffer_directory);
-				case TParam::NANOSECOND:
-					return new param_entry_in_buffer<int, nanosecond_time_t>(param, m_buffer_directory);
-			}
-		case TParam::FLOAT:
-			switch (param->GetTimeType()) {
-				case TParam::SECOND:
-					return new param_entry_in_buffer<float, second_time_t>(param, m_buffer_directory);
-				case TParam::NANOSECOND:
-					return new param_entry_in_buffer<float, nanosecond_time_t>(param, m_buffer_directory);
-			}
-		case TParam::DOUBLE:
-			switch (param->GetTimeType()) {
-				case TParam::SECOND:
-					return new param_entry_in_buffer<double, second_time_t>(param, m_buffer_directory);
-				case TParam::NANOSECOND:
-					return new param_entry_in_buffer<double, nanosecond_time_t>(param, m_buffer_directory);
-			}
+template<class data_type, class time_type> generic_param_entry* param_entry_build(TParam* param, const boost::filesystem::wpath &buffer_directory) {
+	return new param_entry_in_buffer<data_type, time_type>(param, buffer_directory);
+}
+
+template<class data_type> generic_param_entry* param_entry_build(TParam::TimeType type_time, TParam* param, const boost::filesystem::wpath &buffer_directory) {
+	switch (type_time) {
+		case TParam::SECOND:
+			return param_entry_build<date_type, second_time_t>(param, buffer_directory);
+		case TParam::NANOSECOND:
+			return param_entry_build<date_type, nanosecond_time_t>(param, buffer_directory);
 	}
-	/*NOT REACHED*/
-	return NULL;
+}
+
+generic_param_entry* param_entry_build(TParam::DataType data_type, TParam::TimeType type_time, TParam* param, const boost::filesystem::wpath &buffer_directory) {
+	switch (data_type) {
+		case TParam::SHORT:
+			return param_entry_build<short>(time_type, param, buffer_directory);
+		case TParam::INT:
+			return param_entry_build<int>(time_type, param, buffer_directory);
+		case TParam::FLOAT:
+			return param_entry_build<float>(time_type, param, buffer_directory);
+		case TParam::DOUBLE:
+			return param_entry_build<double>(time_type, param, buffer_directory);
+	}
+}
+
+generic_param_entry* buffer::create_param_entry(TParam* param) {
+	return param_entry_build(param->GetDataType(), param->GetTimeType(), param, m_buffer_directory);
 }
 
 
