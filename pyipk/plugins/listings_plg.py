@@ -119,3 +119,26 @@ class FindRepeated( Plugin ) :
 	def result( self ) :
 		return reduce( lambda a , b : a + b if len(b)>1 else a , self.nodes.values() , [] )
 
+class ListParams( FindAttrib ) :
+	''' Lists all params with specified draw title.
+
+	Order of params is specified by draw order attribute.
+	'''
+
+	@staticmethod
+	def section() : return 'Draw'
+
+	def __init__( self , **args ) :
+		FindAttrib.__init__( self , **args )
+
+	def set_args( self , **args ) :
+		FindAttrib.set_args( self, tag='draw', attrib='title', value=args['title'] )
+
+	@staticmethod
+	def get_args() :
+		return [ 'title' ]
+
+	def result( self ) :
+		self.nodes.sort( key = lambda n : n.get('order') )
+		return [ n.getparent() for n in self.nodes ]
+

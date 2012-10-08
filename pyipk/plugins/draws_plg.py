@@ -8,6 +8,12 @@ import operator as op
 
 from functools import reduce
 
+def tofloat( string ) :
+	try :
+		return float(string)
+	except TypeError :
+		return float('inf')
+
 class DrawsNumbering( Plugin ) :
 	'''Corrects all draws numbering beneath selected nodes '''
 
@@ -16,7 +22,7 @@ class DrawsNumbering( Plugin ) :
 		self.drawsmap = {} 
 
 	@staticmethod
-	def section() : return 'Params'
+	def section() : return 'Draw'
 
 	def process( self , root ) :
 		for draw in root.xpath( './/default:draw' , namespaces = { 'default' : root.nsmap[None] } ) :
@@ -27,12 +33,6 @@ class DrawsNumbering( Plugin ) :
 			self.drawsmap[drawtitle].append( draw )
 
 	def result( self ) :
-		def tofloat( string ) :
-			try :
-				return float(string)
-			except TypeError :
-				return float('inf')
-
 		for draws in self.drawsmap.values() :
 			draws.sort( key = lambda d : tofloat(d.get('order',default='inf')) )
 			i = 1
@@ -96,7 +96,7 @@ class DrawsColorsCheck( Plugin ) :
 		self.tags      = {}
 
 	@staticmethod
-	def section() : return 'Params'
+	def section() : return 'Draw'
 
 	@staticmethod
 	def get_args() :
@@ -164,7 +164,7 @@ class PurgeSubTag( Plugin ) :
 class PurgeDraws( PurgeSubTag ) :
 	'''Removes all draws from param tags beneath selected nodes '''
 	@staticmethod
-	def section() : return 'Params'
+	def section() : return 'Draw'
 
 	@staticmethod
 	def get_args() : return []
@@ -176,7 +176,7 @@ class PurgeReports( PurgeSubTag ) :
 	'''Removes all reports from param tags beneath selected nodes '''
 
 	@staticmethod
-	def section() : return 'Params'
+	def section() : return 'Report'
 
 	@staticmethod
 	def get_args() : return []
@@ -189,7 +189,7 @@ class AddDraw( Plugin ) :
 	'''Adds all param tags beneath selected nodes to draw '''
 
 	@staticmethod
-	def section() : return 'Params'
+	def section() : return 'Draw'
 
 	@staticmethod
 	def get_args() : return ['title']
@@ -218,4 +218,79 @@ class AddDraw( Plugin ) :
 
 	def result( self ) :
 		return self.tags
+
+class ListDraws( Plugin ) :
+	''' Lists all draws in order defined by prior attribute. '''
+
+	@staticmethod
+	def section() : return 'Draw'
+
+	def __init__( self , **args ) :
+		Plugin.__init__( self , **args )
+		self.draws = {}
+
+	def process( self , root ) :
+		for node in root.xpath( './/default:draw' , namespaces = { 'default' : root.nsmap[None] } ) :
+			title = node.get('title')
+			if title not in self.draws :
+				self.draws[title] = node
+			else :
+				old = self.draws[title]
+				np  = tofloat(node.get('order',default='inf'))
+				op  = tofloat(old .get('order',default='inf'))
+				if np < op :
+					self.draws[title] = node
+
+	def result( self ) :
+		return sorted( self.draws.values() , key = lambda n : tofloat(n.get('prior')) )
+
+class ApplyPrior( Plugin ) :
+	''' Sets prior to draw tag in specified order. Use with ListDraws. '''
+
+	@staticmethod
+	def section() : return 'Draw'
+
+	def __init__( self , **args ) :
+		Plugin.__init__( self , **args )
+		self.nodes = []
+		self.prior = 0
+
+	def process( self , node ) :
+		if node.tag != '{%s}%s' % (node.nsmap[node.prefix],'draw') :
+			return
+		node.set('prior',str(self.prior))
+		self.prior += 2
+		self.nodes.append(node)
+
+	def result( self ) :
+		return self.nodes
+
+class ApplyOrder( Plugin ) :
+	''' Sets order to draw tag in specified order. Use with ListParams. '''
+
+	@staticmethod
+	def section() : return 'Draw'
+
+	def __init__( self , **args ) :
+		Plugin.__init__( self , **args )
+		self.nodes = []
+		self.order = 0
+
+	def set_args( self , **args ) :
+		self.title = args['title']
+
+	@staticmethod
+	def get_args() :
+		return [ 'title' ]
+
+	def process( self , node ) :
+		if node.tag != '{%s}%s' % (node.nsmap[node.prefix],'param') :
+			return
+		for n in node.xpath( ".//ns:draw[@title='%s']" % self.title , namespaces = { 'ns' : node.nsmap[None] } ) :
+			n.set('order',str(self.order))
+		self.order += 2
+		self.nodes.append(node)
+
+	def result( self ) :
+		return self.nodes
 
