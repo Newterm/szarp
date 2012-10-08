@@ -15,6 +15,8 @@ from libipk.params import Params
 from libipk.plugins import Plugins
 from libipk.filesource import FS_local , FS_ssh , FS_url , AuthenticationError , ConnectionError , HostNotFoundError
 
+from miscipk.console import getTerminalSize
+
 from lxml import etree
 
 DEFAULT_PLUGINS = '/opt/szarp/lib/plugins/'
@@ -75,11 +77,41 @@ class App :
 		self.options , self.args = self.parser.parse_args()
 
 	def print_plugin_list( self ) :
+		plg  = {}
+		lmax = 0
+		wcmd , hcmd = getTerminalSize()
 		if self.options.list_plugins :
 			print("Available plugins:")
-			print("")
 			for n in self.plugins.names() :
-				print("  %s    \t%s" % ( n , self.plugins.help(n).splitlines()[0] ) )
+				s = self.plugins.get_section(n)
+				if s in plg :
+					plg[s].append(n)
+				else :
+					plg[s] = [n]
+				lmax = max(lmax,len(n))
+
+			lmax += 2
+
+			whlp = wcmd - lmax - 4
+
+			for s in sorted(plg.keys()) :
+				print("")
+				print("  %s" % s )
+				for n in sorted(plg[s]) :
+					w = 0
+					hlp = self.plugins.help(n).splitlines()[0].split()
+					sys.stdout.write("    {0:<{w}}".format( n , w=lmax ) )
+					for h in hlp :
+						w += len(h)+1
+						if w < whlp :
+							sys.stdout.write(h)
+							sys.stdout.write(" ")
+						else:
+							w = len(h)+1
+							sys.stdout.write("\n    {:<{w}}".format('',w=lmax))
+							sys.stdout.write(h)
+							sys.stdout.write(" ")
+					sys.stdout.write("\n")
 			sys.exit(0)
 
 	def print_plugin_help( self ) :
