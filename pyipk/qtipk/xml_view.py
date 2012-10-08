@@ -318,6 +318,10 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 				return str(n.getline())
 			else :
 				return n.toline()
+		elif role == QtCore.Qt.BackgroundRole :
+			if index.column() == 0 :
+				color = index.internalPointer().node.node.get('color')
+				return QtGui.QColor( color ) if color != None else None
 		else:
 			return None
 
