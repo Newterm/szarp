@@ -21,51 +21,6 @@
 
 namespace sz4 {
 
-#if 0
-class execution_engine : public ExecutionEngine {
-	base* m_base;
-	std::vector<double> m_vars;
-public:
-	execution_engine(base* _base, TParam* param) : m_base(_base) {
-		LuaExec::Param* exec_param = param->GetLuaExecParam();
-		m_vars.resize(exec_param->m_vars.size());
-
-		m_vals[3] = PT_MIN10;
-		m_vals[4] = PT_HOUR;
-		m_vals[5] = PT_HOUR8;
-		m_vals[6] = PT_DAY;
-		m_vals[7] = PT_WEEK;
-		m_vals[8] = PT_MONTH;
-		m_vals[9] = PT_SEC10;
-
-	}
-
-	
-#if 0
-	void calculate_value(
-		m_vals[0] = nan("");
-		m_vals[1] = t;
-		m_vals[2] = probe_type;
-#endif
-
-	virtual double Value(size_t param_index, const double& time_, const double& period_type) {
-		ParamRef& ref = m_param->m_par_refs[param_index];
-		//XXX
-		weighted_sum<double, time_t> sum;
-		m_base->get_weighted_sum(ref.m_param, start, szb_move_time(time_, 1, period_type, sum);
-		if (sum.data_weight())
-			return sum.sum() / sum.data_weight();
-		else
-			return nan("");
-	}
-
-	virtual std::vector<double>& Vars() {
-		return m_vars;
-	}
-	~execution_engine() {}
-}
-#endif
-
 template<class V, class T> class real_param_entry_in_buffer : public SzbParamObserver {
 	base *m_base;
 	typedef std::map<T, block_entry<V, T>*> map_type;

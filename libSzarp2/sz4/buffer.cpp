@@ -18,9 +18,11 @@
 */
 
 #include "szarp_config.h"
-#include "sz4/buffer.h"
 #include "szarp_base_common/lua_param_optimizer.h"
+#include "sz4/buffer.h"
+#include "sz4/base.h"
 #include "sz4/real_param_entry.h"
+#include "sz4/lua_optimized_param_entry.h"
 
 namespace sz4 {
 
@@ -71,7 +73,7 @@ generic_param_entry* param_entry_build(base *_base, TParam* param, const boost::
 		case TParam::SZ4_REAL:
 			return param_entry_build_t_1<real_param_entry_in_buffer>(_base, param, buffer_directory);
 		case TParam::SZ4_LUA_OPTIMIZED:
-//			return param_entry_build_t_1<lua_optimized_param_entry_in_buffer>(param, buffer_directory);
+			return param_entry_build_t_1<lua_optimized_param_entry_in_buffer>(_base, param, buffer_directory);
 		default:
 		case TParam::SZ4_NONE:
 			assert(false);
