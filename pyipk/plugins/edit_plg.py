@@ -21,6 +21,10 @@ class EnumerateChoosenAttrib( Plugin ) :
 	def section() :
 		return 'Edit'
 
+	@staticmethod
+	def get_default() :
+		return { 'attrib' : 'order' , 'start' : '0' }
+
 	def process( self , node ) :
 		self.nodes.append(node)
 		node.set(self.attrib,'%d'%self.num)
@@ -40,6 +44,10 @@ class EnumerateSubTagAttrib( Plugin ) :
 	@staticmethod
 	def get_args() :
 		return ['tag','attrib','start']
+
+	@staticmethod
+	def get_default() :
+		return { 'tag' : 'draw' , 'attrib' : 'order' , 'start' : '0' }
 
 	@staticmethod
 	def section() :
@@ -66,6 +74,10 @@ class SortTagAttrib( Plugin ) :
 	@staticmethod
 	def get_args() :
 		return ['attrib']
+
+	@staticmethod
+	def get_default() :
+		return { 'attrib' : 'order' }
 
 	@staticmethod
 	def section() :

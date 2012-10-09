@@ -109,6 +109,10 @@ class FindRepeated( Plugin ) :
 	def get_args() :
 		return [ 'tag' , 'attrib' ]
 
+	@staticmethod
+	def get_default() :
+		return { 'tag' : 'draw' , 'attrib' : 'title' }
+
 	def process( self , root ) :
 		for node in root.xpath( self.xpath , namespaces = { 'ns' : root.nsmap[None] } ) :
 			value = node.attrib[self.attrib]

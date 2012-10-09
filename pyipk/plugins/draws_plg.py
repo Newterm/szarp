@@ -24,6 +24,18 @@ class NormalizeDraws( Plugin ) :
 	@staticmethod
 	def section() : return 'Draw'
 
+	@staticmethod
+	def get_args() :
+		return [ 'start' , 'step' ]
+
+	@staticmethod
+	def get_default() :
+		return { 'start' : '2' , 'step' : '2' }
+
+	def set_args( self , **args ) :
+		self.start = float(args['start'])
+		self.step  = float(args['step'])
+
 	def process( self , root ) :
 		for draw in root.xpath( './/default:draw' , namespaces = { 'default' : root.nsmap[None] } ) :
 			drawtitle = draw.get('title') 
@@ -35,10 +47,10 @@ class NormalizeDraws( Plugin ) :
 	def result( self ) :
 		for draws in self.drawsmap.values() :
 			draws.sort( key = lambda d : tofloat(d.get('order',default='inf')) )
-			i = 2
+			i = self.start 
 			for d in draws :
 				d.set('order',str(i))
-				i+=2
+				i+=self.step
 
 		drawslist = list(self.drawsmap.values())
 
@@ -62,10 +74,10 @@ class NormalizeDraws( Plugin ) :
 
 		drawslist.sort( key = lambda ds : tofloat(ds[0].get('prior',default='inf')) )
 
-		i = int(minprior) if minprior != float('inf') else 2
+		i = int(minprior) if minprior != float('inf') else self.start
 		for draws in drawslist :
 			draws[0].set('prior',str(i))
-			i+=2
+			i+=self.step
 
 		return reduce( lambda a , b : a+b , drawslist , [] )
 
@@ -74,10 +86,15 @@ class NormalizeDrawsSpecified( NormalizeDraws ) :
 
 	@staticmethod
 	def get_args() :
-		return [ 'drawtitle' ]
+		return [ 'drawtitle' ] + NormalizeDraws.get_args()
+
+	@staticmethod
+	def get_default() :
+		return NormalizeDraws.get_default()
 
 	def set_args( self , **args ) :
 		self.drawtitle = args['drawtitle']
+		NormalizeDraws.set_args( self , **args )
 
 	def process( self , root ) :
 		for draw in root.xpath( './/default:draw[@title="%s"]' % self.drawtitle , namespaces = { 'default' : root.nsmap[None] } ) :
@@ -192,11 +209,17 @@ class AddDraw( Plugin ) :
 	def section() : return 'Draw'
 
 	@staticmethod
-	def get_args() : return ['title']
+	def get_args() :
+		return [ 'title' , 'start' , 'step' ]
+
+	@staticmethod
+	def get_default() :
+		return { 'start' : '2' , 'step' : '2' }
 
 	def set_args( self , **args ) :
+		self.i     = float(args['start'])
+		self.step  = float(args['step'])
 		self.title = args['title']
-		self.i = 1
 		self.tags = []
 
 	def process( self , root ) :
@@ -209,12 +232,12 @@ class AddDraw( Plugin ) :
 		for node in root.xpath( './/ns:%s' % ('param') , namespaces = { 'ns' : root.nsmap[None] } ) :
 			node.append( create_draw(self.title,self.i,root.nsmap) )
 			self.tags.append(node)
-			self.i+=2
+			self.i+=self.step
 
 		if root.tag == '{%s}%s' % (root.nsmap[root.prefix],'param') :
 			root.append( create_draw(self.title,self.i,root.nsmap) )
 			self.tags.append(root)
-			self.i+=2
+			self.i+=self.step
 
 	def result( self ) :
 		return self.tags
@@ -250,16 +273,27 @@ class ApplyDrawsPrior( Plugin ) :
 	@staticmethod
 	def section() : return 'Draw'
 
+	@staticmethod
+	def get_args() :
+		return [ 'start' , 'step' ]
+
+	@staticmethod
+	def get_default() :
+		return { 'start' : '2' , 'step' : '2' }
+
+	def set_args( self , **args ) :
+		self.prior = float(args['start'])
+		self.step  = float(args['step'])
+
 	def __init__( self , **args ) :
 		Plugin.__init__( self , **args )
 		self.nodes = []
-		self.prior = 2
 
 	def process( self , node ) :
 		if node.tag != '{%s}%s' % (node.nsmap[node.prefix],'draw') :
 			return
 		node.set('prior',str(self.prior))
-		self.prior += 2
+		self.prior += self.step
 		self.nodes.append(node)
 
 	def result( self ) :
@@ -271,10 +305,22 @@ class ApplyParamsOrder( Plugin ) :
 	@staticmethod
 	def section() : return 'Draw'
 
+	@staticmethod
+	def get_args() :
+		return [ 'start' , 'step' ]
+
+	@staticmethod
+	def get_default() :
+		return { 'start' : '2' , 'step' : '2' }
+
+	def set_args( self , **args ) :
+		self.order = float(args['start'])
+		self.start = self.order
+		self.step  = float(args['step'])
+
 	def __init__( self , **args ) :
 		Plugin.__init__( self , **args )
 		self.nodes = []
-		self.order = 2
 		self.priorize = None
 		self.prior = tofloat('inf')
 
@@ -293,9 +339,9 @@ class ApplyParamsOrder( Plugin ) :
 			if 'prior' in n.attrib :
 				self.prior = min(self.prior,tofloat(n.get('prior',default='inf')))
 				n.attrib.pop('prior')
-			if self.order == 2 :
+			if self.order == self.start :
 				self.priorize = n
-		self.order += 2
+		self.order += self.step
 		self.nodes.append(node)
 
 	def result( self ) :
