@@ -155,6 +155,8 @@ libSzarp2_la_SOURCES = \
 			$(INCLUDE_DIR)/sz4/block.h \
 			$(INCLUDE_DIR)/sz4/load_file_locked.h \
 			$(INCLUDE_DIR)/sz4/buffer.h \
+			$(INCLUDE_DIR)/sz4/real_param_entry.h \
+			$(INCLUDE_DIR)/sz4/lua_optimized_param_entry.h \
 			$(INCLUDE_DIR)/sz4/base.h \
 			$(INCLUDE_DIR)/sz4/defs.h \
 			$(SZ4_DIR)/load_file_locked.cpp \

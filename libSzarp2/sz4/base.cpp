@@ -17,12 +17,28 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
+#include "config.h"
+
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 
-#include <sz4/time.h>
-#include <sz4/block.h>
+#include "szarp_config.h"
+
+#include "sz4/time.h"
+#include "sz4/base.h"
 
 namespace sz4 {
+
+buffer* base::buffer_for_param(TParam* param) {
+	buffer* buf;
+	if (param->GetConfigId() >= m_buffers.size())
+		m_buffers.resize(param->GetConfigId() + 1, NULL);
+	buf = m_buffers[param->GetConfigId()];
+
+	if (buf == NULL)
+		buf = m_buffers[param->GetConfigId()] = new buffer(this, &m_monitor, (m_szarp_data_dir / param->GetSzarpConfig()->GetPrefix() / L"sz4").file_string());
+
+	return buf;
+}
 
 }

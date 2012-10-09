@@ -243,34 +243,21 @@ Param* optimize_lua_param(TParam* p) {
 	LuaExec::SzbaseParam* ep = new LuaExec::SzbaseParam;
 	p->SetLuaExecParam(ep);
 
-	std::wstring param_text = SC::U2S(p->GetLuaScript());
-	std::wstring::const_iterator param_text_begin = param_text.begin();
-	std::wstring::const_iterator param_text_end = param_text.end();
-
-	ep->m_optimized = false;
-
-	lua_grammar::chunk param_code;
-	if (lua_grammar::parse(param_text_begin, param_text_end, param_code) && param_text_begin == param_text_end) {
-		LuaExec::ParamConverter pc(IPKContainer::GetObject());
-		try {
-			pc.ConvertParam(param_code, ep);
-			ep->m_optimized = true;
-			for (std::vector<LuaExec::ParamRef>::iterator i = ep->m_par_refs.begin();
-				 	i != ep->m_par_refs.end();
-					i++)
-				Szbase::GetObject()->AddLuaOptParamReference(i->m_param, p);
-			//no params are referenced by this param
-			if (ep->m_par_refs.size() == 0) {
-				szb_buffer_t* buffer = Szbase::GetObject()->GetBuffer(p->GetSzarpConfig()->GetPrefix());
-				assert(buffer);
-				ep->m_last_update_times[buffer] = -1;
-			}
-		} catch (LuaExec::ParamConversionException &e) {
-			sz_log(3, "Parameter %ls cannot be optimized, reason: %ls", p->GetName().c_str(), e.what().c_str());
-#ifdef LUA_OPTIMIZER_DEBUG
-			lua_opt_debug_stream << "Parameter " << SC::S2A(p->GetName()) << " cannot be optimized, reason: " << SC::S2A(e.what()) << std::endl;
-#endif
+	IPKContainer* container = IPKContainer::GetObject();
+	if (LuaExec::optimize_lua_param(p, container)) {
+		for (std::vector<LuaExec::ParamRef>::iterator i = ep->m_par_refs.begin();
+			 	i != ep->m_par_refs.end();
+				i++) {
+			Szbase::GetObject()->AddLuaOptParamReference(i->m_param, p);
+			szb_buffer_t* buffer = Szbase::GetObject()->GetBuffer(i->m_param->GetSzarpConfig()->GetPrefix());
+			ep->m_last_update_times[buffer] = -1;
 		}
+		if (ep->m_par_refs.size() == 0) {
+			szb_buffer_t* buffer = Szbase::GetObject()->GetBuffer(p->GetSzarpConfig()->GetPrefix());
+			assert(buffer);
+			ep->m_last_update_times[buffer] = -1;
+		}
+
 	}
 	return ep;
 }

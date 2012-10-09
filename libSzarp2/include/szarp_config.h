@@ -805,9 +805,14 @@ public:
 	typedef enum { SHORT, INT, FLOAT, DOUBLE } DataType;
 
 	typedef enum { SECOND, NANOSECOND } TimeType; 
-	
-	static bool IsHourSumUnit(const std::wstring& unit);
 
+	typedef enum { 	SZ4_NONE,
+			SZ4_REAL,
+			SZ4_COMBINED,
+			SZ4_DEFINABLE,
+			SZ4_LUA,
+			SZ4_LUA_OPTIMIZED } Sz4ParamType;
+	
 	TParam(TUnit *parent,
 		TSzarpConfig *parentSC = NULL,
 		const std::wstring& formula = std::wstring(),
@@ -851,7 +856,8 @@ public:
 	    _sum_unit(),
 	    _sum_divisor(6.),
 	    _dataType(SHORT),
-	    _timeType(SECOND)
+	    _timeType(SECOND),
+	    _sz4ParamType(SZ4_NONE)
 	{ }
 
 	/** Deletes whole list. */
@@ -1197,6 +1203,10 @@ public:
 
 	void SetTimeType(TimeType timeType) { _timeType = timeType; }
 
+	Sz4ParamType GetSz4Type() const { return _sz4ParamType; }
+
+	void SetSz4Type(Sz4ParamType sz4ParamType) { _sz4ParamType = sz4ParamType; }
+
 	unsigned GetParamId() const { return _paramId; }
 
 	void SetParamId(unsigned paramId) { _paramId = paramId; }
@@ -1204,6 +1214,8 @@ public:
 	unsigned GetConfigId() const { return _configId; }
 
 	void SetConfigId(unsigned configId) { _configId = configId; }
+
+	static bool IsHourSumUnit(const std::wstring& unit);
 protected:
 	TUnit * _parentUnit;  /**< Pointer to parent TUnit object (NULL for defined). */
 
@@ -1299,6 +1311,9 @@ protected:
 
 	/** this parameter time type, i.e. resolution*/
 	TimeType _timeType;
+
+	/** parameter type as classified by Sz4 code*/
+	Sz4ParamType _sz4ParamType;
 };
 
 /**

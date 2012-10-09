@@ -19,21 +19,10 @@
 
 #include "szarp_config.h"
 #include "sz4/buffer.h"
+#include "szarp_base_common/lua_param_optimizer.h"
+#include "sz4/real_param_entry.h"
 
 namespace sz4 {
-
-void generic_param_entry::register_at_monitor(SzbParamMonitor* monitor) {
-	monitor->add_observer(this, m_param, m_param_dir.external_file_string(), 0);
-}
-
-void generic_param_entry::deregister_from_monitor(SzbParamMonitor* monitor) {
-	monitor->remove_observer(this);
-}
-
-void generic_param_entry::param_data_changed(TParam*, const std::string& path) {
-	boost::mutex::scoped_lock lock(m_mutex);
-	m_paths_to_update.push_back(path);
-}
 
 void buffer::remove_param(TParam* param) {
 	if (m_param_ents.size() <= param->GetParamId())
@@ -49,35 +38,82 @@ void buffer::remove_param(TParam* param) {
 	m_param_ents[param->GetParamId()] = NULL;
 }
 
-template<class data_type, class time_type> generic_param_entry* param_entry_build(TParam* param, const boost::filesystem::wpath &buffer_directory) {
-	return new param_entry_in_buffer<data_type, time_type>(param, buffer_directory);
+template<template<typename DT, typename TT> class param_entry_type, class data_type, class time_type> generic_param_entry* param_entry_build_t_3(base* _base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
+	return new param_entry_in_buffer<param_entry_type, data_type, time_type>(_base, param, buffer_directory);
 }
 
-template<class data_type> generic_param_entry* param_entry_build(TParam::TimeType type_time, TParam* param, const boost::filesystem::wpath &buffer_directory) {
-	switch (type_time) {
+template<template <typename DT, typename TT> class param_entry_type, class data_type> generic_param_entry* param_entry_build_t_2(base* _base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
+	switch (param->GetTimeType()) {
 		case TParam::SECOND:
-			return param_entry_build<date_type, second_time_t>(param, buffer_directory);
+			return param_entry_build_t_3<param_entry_type, data_type, second_time_t>(_base, param, buffer_directory);
 		case TParam::NANOSECOND:
-			return param_entry_build<date_type, nanosecond_time_t>(param, buffer_directory);
+			return param_entry_build_t_3<param_entry_type, data_type, nanosecond_time_t>(_base, param, buffer_directory);
 	}
+	return NULL;
 }
 
-generic_param_entry* param_entry_build(TParam::DataType data_type, TParam::TimeType type_time, TParam* param, const boost::filesystem::wpath &buffer_directory) {
-	switch (data_type) {
+template<template <typename DT, typename TT> class param_entry_type> generic_param_entry* param_entry_build_t_1(base* _base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
+	switch (param->GetDataType()) {
 		case TParam::SHORT:
-			return param_entry_build<short>(time_type, param, buffer_directory);
+			return param_entry_build_t_2<param_entry_type, short>(_base, param, buffer_directory);
 		case TParam::INT:
-			return param_entry_build<int>(time_type, param, buffer_directory);
+			return param_entry_build_t_2<param_entry_type, int>(_base, param, buffer_directory);
 		case TParam::FLOAT:
-			return param_entry_build<float>(time_type, param, buffer_directory);
+			return param_entry_build_t_2<param_entry_type, float>(_base, param, buffer_directory);
 		case TParam::DOUBLE:
-			return param_entry_build<double>(time_type, param, buffer_directory);
+			return param_entry_build_t_2<param_entry_type, double>(_base, param, buffer_directory);
+	}
+	return NULL;
+}
+
+generic_param_entry* param_entry_build(base *_base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
+	switch (param->GetSz4Type()) {
+		case TParam::SZ4_REAL:
+			return param_entry_build_t_1<real_param_entry_in_buffer>(_base, param, buffer_directory);
+		case TParam::SZ4_LUA_OPTIMIZED:
+//			return param_entry_build_t_1<lua_optimized_param_entry_in_buffer>(param, buffer_directory);
+		default:
+		case TParam::SZ4_NONE:
+			assert(false);
 	}
 }
 
 generic_param_entry* buffer::create_param_entry(TParam* param) {
-	return param_entry_build(param->GetDataType(), param->GetTimeType(), param, m_buffer_directory);
+	prepare_param(param);
+
+	return param_entry_build(m_base, param, m_buffer_directory);
 }
 
+void buffer::prepare_param(TParam* param) {
+	if (param->GetSz4Type() != TParam::SZ4_NONE)
+		return;
+
+	if (param->GetType() == TParam::P_REAL) {
+		param->SetSz4Type(TParam::SZ4_REAL);
+		return;
+	}
+
+	param->PrepareDefinable();
+	if (param->GetType() == TParam::P_COMBINED) {
+		param->SetSz4Type(TParam::SZ4_COMBINED);
+		return;
+	}
+
+	if (param->GetType() == TParam::P_DEFINABLE) {
+		param->SetSz4Type(TParam::SZ4_DEFINABLE);
+		return;
+	}
+
+	if (param->GetType() == TParam::P_LUA) {
+		LuaExec::Param* exec_param = new LuaExec::Param();
+		param->SetLuaExecParam(exec_param);
+
+		if (LuaExec::optimize_lua_param(param, IPKContainer::GetObject())) 
+			param->SetSz4Type(TParam::SZ4_LUA);
+		else
+			param->SetSz4Type(TParam::SZ4_LUA_OPTIMIZED);
+		return;
+	}
+}
 
 }
