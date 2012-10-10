@@ -20,6 +20,7 @@
 #define __SZ4_LUA_OPTIMIZED_PARAM_ENTRY_H__
 
 #include "szarp_base_common/lua_param_optimizer.h"
+#include "sz4/definable_param_cache.h"
 
 namespace sz4 {
 
@@ -73,14 +74,19 @@ public:
 	}
 };
 
-template<class V, class T> class lua_optimized_param_entry_in_buffer : public SzbParamObserver {
+template<class value_type, class time_type> class lua_optimized_param_entry_in_buffer : public SzbParamObserver {
 	base* m_base;
 	TParam* m_param;
+
+	std::vector<definable_param_cache<value_type, time_type> > m_cache;
 public:
 	lua_optimized_param_entry_in_buffer(base *_base, TParam* param, const boost::filesystem::wpath&) : m_base(_base), m_param(param)
-	{}
+	{
+		for (SZARP_PROBE_TYPE p = PT_FIRST; p < PT_LAST; p = SZARP_PROBE_TYPE(p + 1))
+			m_cache.push_back(definable_param_cache<value_type, time_type>(p));
+	}
 
-	void get_weighted_sum_impl(const T& start, const T& end, SZARP_PROBE_TYPE probe_type, weighted_sum<V, T>& sum)  {
+	void get_weighted_sum_impl(const time_type& start, const time_type& end, SZARP_PROBE_TYPE probe_type, weighted_sum<value_type, time_type>& sum)  {
 		execution_engine ee(m_base, m_param);
 		double v = ee.calculate_value(start, probe_type);
 		if (!isnan(v)) {
@@ -91,12 +97,12 @@ public:
 		}
 	}
 
-	T search_data_right_impl(const T& start, const T& end, SZARP_PROBE_TYPE, const search_condition& condition) {
-		return invalid_time_value<T>::value;
+	time_type search_data_right_impl(const time_type& start, const time_type& end, SZARP_PROBE_TYPE, const search_condition& condition) {
+		return invalid_time_value<time_type>::value;
 	}
 
-	T search_data_left_impl(const T& start, const T& end, SZARP_PROBE_TYPE, const search_condition& condition) {
-		return invalid_time_value<T>::value;
+	time_type search_data_left_impl(const time_type& start, const time_type& end, SZARP_PROBE_TYPE, const search_condition& condition) {
+		return invalid_time_value<time_type>::value;
 	}
 
 	void register_at_monitor(SzbParamMonitor* monitor) {

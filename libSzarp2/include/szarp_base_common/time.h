@@ -20,7 +20,7 @@
  */
 time_t
 szb_move_time(time_t t, int count, SZARP_PROBE_TYPE probe_type, 
-		int custom_length);
+		int custom_length = 0);
 
 
 #endif
