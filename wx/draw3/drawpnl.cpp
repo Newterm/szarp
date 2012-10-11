@@ -175,13 +175,13 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 		  id.c_str(), event.GetKeyCode());
 	switch (event.GetKeyCode()) {
 	case WXK_LEFT:
-		if(event.ShiftDown() && panel->tw->GetSelection() == PERIOD_T_DAY)
+		if(event.ShiftDown() && (panel->tw->GetSelection() == PERIOD_T_DAY || panel->tw->GetSelection() == PERIOD_T_30MINUTE))
 			panel->dw->SetKeyboardAction(CURSOR_LONG_LEFT_KB);
 		else
 			panel->dw->SetKeyboardAction(CURSOR_LEFT_KB);
 		break;
 	case WXK_RIGHT:
-		if (event.ShiftDown() && panel->tw->GetSelection() == PERIOD_T_DAY)
+		if(event.ShiftDown() && (panel->tw->GetSelection() == PERIOD_T_DAY || panel->tw->GetSelection() == PERIOD_T_30MINUTE))
 			panel->dw->SetKeyboardAction(CURSOR_LONG_RIGHT_KB);
 		else
 			panel->dw->SetKeyboardAction(CURSOR_RIGHT_KB);
