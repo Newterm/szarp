@@ -1,4 +1,6 @@
 2012-10-11 Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: shift + arrow key works not only on day screen but also on
+	30 min screen
 	* libSzarp/async_syslog.c: sz_loginit happens to call
 	sz_logdone, if it is a first call, the async_logone will be
 	called with state == NULL, the code wasn't handling this
