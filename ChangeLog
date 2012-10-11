@@ -1,3 +1,12 @@
+2012-10-11 Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp/async_syslog.c: sz_loginit happens to call
+	sz_logdone, if it is a first call, the async_logone will be
+	called with state == NULL, the code wasn't handling this
+	case properly
+	* parcook/boruta_modbus.cc: boruta modbus tcp is much more restrictive in
+	what it accepts as a valid response - added check for correct transaction
+	id and response length, when any of those are incorrect, response is 
+	discarded (previously boruta was consuming responses with partial data)
 2012-09-28 Darek Marcinkiewicz <reksio@newterm.pl>
 	* libSzarp2/szbase/probeblock.cc: lua params do not go
 	outside of (first date in base; last date in base) range,

@@ -869,6 +869,12 @@ void modbus_unit::consume_read_regs_response(unsigned char& uid, unsigned short 
 		return;
 	} 
 
+	if (pdu.data.size() != 2 * regs_count + 1) {
+		dolog(1, "Unexpected data size in response to read holding registers command, requested %hu regs but got %zu data in response",
+		       	regs_count, pdu.data.size() - 1);
+		throw std::out_of_range("Invalid response size");
+	}
+
 	URMAP::iterator i = m_registers.find(uid);
 	assert(i != m_registers.end());
 	RMAP& unit = i->second;
@@ -1349,7 +1355,7 @@ void tcp_parser::read_data(struct bufferevent *bufev) {
 			break;
 		case L2:
 			m_state = U_ID;
-			m_adu.length = (c << 8);
+			m_adu.length |= (c << 8);
 			m_adu.length = ntohs(m_adu.length);
 			m_payload_size = m_adu.length - 2;
 			dolog(8, "Data size: %hu", m_payload_size);
@@ -1640,8 +1646,6 @@ void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 
 				send_next_query(true);
 			} catch (std::out_of_range&) {	//message was distorted
-				dolog(1, "Error while processing response - there is either a bug or sth was very wrong with request format");
-
 				send_next_query(false);
 			}
 			break;
@@ -1651,8 +1655,6 @@ void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 
 				send_next_query(true);
 			} catch (std::out_of_range&) {	//message was distorted
-				dolog(1, "Error while processing response - there is either a bug or sth was very wrong with request format");
-
 				send_next_query(false);
 			}
 			break;
@@ -1668,8 +1670,8 @@ int modbus_client::initialize() {
 }
 
 void modbus_tcp_client::send_pdu(unsigned char unit, PDU &pdu) {
-	m_parser->send_adu(m_trans_id, unit, pdu, m_bufev);
 	m_trans_id++;
+	m_parser->send_adu(m_trans_id, unit, pdu, m_bufev);
 }
 
 void modbus_tcp_client::cycle_finished() {
@@ -1681,7 +1683,12 @@ void modbus_tcp_client::terminate_connection() {
 }
 
 void modbus_tcp_client::frame_parsed(TCPADU &adu, struct bufferevent* bufev) {
-	pdu_received(adu.unit_id, adu.pdu);
+	if (m_trans_id != adu.trans_id) {
+		dolog(1, "Received unexpected tranasction id in response: %u, expected: %u, progressing with queries", unsigned(adu.trans_id), unsigned(m_trans_id));
+		send_next_query(false);
+	} else {
+		pdu_received(adu.unit_id, adu.pdu);
+	}
 }
 
 void modbus_tcp_client::finished_cycle() {
