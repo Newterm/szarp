@@ -307,13 +307,14 @@ class ApplyParamsOrder( Plugin ) :
 
 	@staticmethod
 	def get_args() :
-		return [ 'start' , 'step' ]
+		return [ 'title' , 'start' , 'step' ]
 
 	@staticmethod
 	def get_default() :
 		return { 'start' : '2' , 'step' : '2' }
 
 	def set_args( self , **args ) :
+		self.title = args['title']
 		self.order = float(args['start'])
 		self.start = self.order
 		self.step  = float(args['step'])
@@ -323,13 +324,6 @@ class ApplyParamsOrder( Plugin ) :
 		self.nodes = []
 		self.priorize = None
 		self.prior = tofloat('inf')
-
-	def set_args( self , **args ) :
-		self.title = args['title']
-
-	@staticmethod
-	def get_args() :
-		return [ 'title' ]
 
 	def process( self , node ) :
 		if node.tag != '{%s}%s' % (node.nsmap[node.prefix],'param') :

@@ -40,8 +40,11 @@ class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog , Configurable ) :
 			item = QtGui.QTreeWidgetItem( [n] )
 			sections[s].addChild( item )
 
-			if n == self.cfg['gui:plugin_selected'] :
-				self.treeWidget.setCurrentItem( item )
+			try :
+				if n == self.cfg['gui:plugin_selected'] :
+					self.treeWidget.setCurrentItem( item )
+			except KeyError as e :
+				pass
 
 	def select_last( self ) :
 		pass
