@@ -1,3 +1,5 @@
+#ifndef __SZ4_DEFINABLE_PARAM_CACHE_PARAM_ENTRY_H__
+#define __SZ4_DEFINABLE_PARAM_CACHE_PARAM_ENTRY_H__
 /* 
   SZARP: SCADA software 
   
@@ -16,8 +18,6 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-#ifndef __SZ4_DEFINABLE_PARAM_CACHE_PARAM_ENTRY_H__
-#define __SZ4_DEFINABLE_PARAM_CACHE_PARAM_ENTRY_H__
 
 #include <map>
 
