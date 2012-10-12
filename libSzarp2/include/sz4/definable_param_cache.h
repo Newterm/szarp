@@ -38,7 +38,7 @@ public:
 		m_probe_type(probe_type), m_non_fixed_version(2)
 	{}
 
-	bool get_value(const time_type& time, bool only_fixed, value_type& value) {
+	bool get_value(const time_type& time, value_type& value) {
 		if (!m_blocks.size())
 			return false;
 
@@ -50,7 +50,7 @@ public:
 		if (j == i->data().end() || j->time != time)
 			return false;
 
-		if (j->value.second != 0 && (only_fixed || j->value.second != m_non_fixed_version))
+		if (j->value.second != 0 && j->value.second != m_non_fixed_version)
 			return false;
 
 		value = j->value.first;
@@ -90,6 +90,26 @@ public:
 			m_blocks.erase(i);
 			delete block_n;
 		}
+	}
+
+	std::pair<bool, time_type> search_data_left(const time_type& start, const time_type& end, const search_condition& condition) {
+		if (!m_blocks.size())
+			return std::make_pair(false, start);
+
+		typename map_type::iterator i = m_blocks.upper_bound(start);
+		if (i != m_blocks.begin())
+			std::advance(i, -1);
+
+	}
+
+	std::pair<bool, time_type> search_data_right(const time_type& start, const time_type& end, const search_condition& condition) {
+		if (!m_blocks.size())
+			return std::make_pair(false, start);
+
+		typename map_type::iterator i = m_blocks.upper_bound(start);
+		if (i != m_blocks.begin())
+			std::advance(i, -1);
+
 	}
 
 	void invalidate_non_fixed_values() {
