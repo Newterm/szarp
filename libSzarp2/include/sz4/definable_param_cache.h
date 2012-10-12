@@ -138,7 +138,7 @@ public:
 
 	std::pair<bool, time_type> search_result(const block_type& block, typename block_type::value_time_vector::const_iterator block_iterator) {
 		if (block_iterator == block->data().end())
-			return std:make_pair(false, invalid_time_value<time_type>::value());
+			return std::make_pair(false, invalid_time_value<time_type>::value);
 
 		if (block_iterator->value.second == 0 || block_iterator->value.second == m_current_non_fixed)
 			return std::make_pair(true, block_iterator->time);

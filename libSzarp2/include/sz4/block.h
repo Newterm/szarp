@@ -71,7 +71,7 @@ public:
 		return m_data;
 	}
 
-	template<class search_op> value_time_vector::const_iterator search_data_right_t(const time_type& start, const time_type& end, const search_op &condition) {
+	template<class search_op> typename value_time_vector::const_iterator search_data_right_t(const time_type& start, const time_type& end, const search_op &condition) {
 		typename value_time_block<value_type, time_type>::value_time_vector::const_iterator i = search_entry_for_time(start);
 		while (i != m_data.end()) {
 			if (condition(i->value))
@@ -84,7 +84,7 @@ public:
 		return m_data.end();
 	}
 
-	template<class search_op> value_time_vector::const_iterator search_data_left(const time_type& start, const time_type& end, const search_op &condition) {
+	template<class search_op> typename value_time_vector::const_iterator search_data_left_t(const time_type& start, const time_type& end, const search_op &condition) {
 		if (m_data.size() == 0)
 			return m_data.end();
 
@@ -163,12 +163,14 @@ public:
 
 		if (i == this->m_data.begin())
 			return std::max(start, this->m_start_time);
-		else 
+		else  {
+			std::advance(i, -1);
 			return std::max(i->time, start);
+		}
 	}
 
 	time_type search_data_left(const time_type& start, const time_type& end, const search_condition &condition) {
-		typename value_time_block<value_type, time_type>::value_time_vector::const_iterator i = this->search_data_left_t(start, end, cond);
+		typename value_time_block<value_type, time_type>::value_time_vector::const_iterator i = this->search_data_left_t(start, end, condition);
 		if (i != this->m_data.end())
 			return std::min(time_just_before<time_type>::get(i->time), start);
 		else 
