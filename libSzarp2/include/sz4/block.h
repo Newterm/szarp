@@ -71,6 +71,43 @@ public:
 		return m_data;
 	}
 
+	template<class search_op> value_time_vector::const_iterator search_data_right_t(const time_type& start, const time_type& end, const search_op &condition) {
+		typename value_time_block<value_type, time_type>::value_time_vector::const_iterator i = search_entry_for_time(start);
+		while (i != m_data.end()) {
+			if (condition(i->value))
+				return i;
+
+			if (i->time >= end)
+				break;
+			std::advance(i, 1);
+		}
+		return m_data.end();
+	}
+
+	template<class search_op> value_time_vector::const_iterator search_data_left(const time_type& start, const time_type& end, const search_op &condition) {
+		if (m_data.size() == 0)
+			return m_data.end();
+
+		typename value_time_block<value_type, time_type>::value_time_vector::const_iterator i = search_entry_for_time(start);
+		if (i == m_data.end())
+			std::advance(i, -1);
+
+		while (true) {
+			if (i->time <= end)
+				break;
+
+			if (condition(i->value))
+				return i;
+
+			if (i == m_data.begin())
+				break;
+
+			std::advance(i, -1);
+		}
+		return m_data.end();
+	}
+
+
 	void append_entry(const value_type& value, const time_type& time) {
 		m_data.push_back(make_value_time_pair(value, time));
 	}
@@ -120,45 +157,22 @@ public:
 
 		
 	time_type search_data_right(const time_type& start, const time_type& end, const search_condition &condition) {
-		typename value_time_block<value_type, time_type>::value_time_vector::const_iterator i = this->search_entry_for_time(start);
-		while (i != this->m_data.end()) {
-			if (condition(i->value)) {
-				if (i == this->m_data.begin())
-					return std::max(start, this->m_start_time);
-				else {
-					std::advance(i, -1);
-					return std::max(i->time, start);
-				}
-			}
+		typename value_time_block<value_type, time_type>::value_time_vector::const_iterator i = this->search_data_right_t(start, end, condition);
+		if (i == this->m_data.end())
+			return invalid_time_value<time_type>::value;
 
-			if (i->time >= end)
-				break;
-			std::advance(i, 1);
-		}
-		return invalid_time_value<time_type>::value;
+		if (i == this->m_data.begin())
+			return std::max(start, this->m_start_time);
+		else 
+			return std::max(i->time, start);
 	}
 
 	time_type search_data_left(const time_type& start, const time_type& end, const search_condition &condition) {
-		if (this->m_data.size() == 0)
+		typename value_time_block<value_type, time_type>::value_time_vector::const_iterator i = this->search_data_left_t(start, end, cond);
+		if (i != this->m_data.end())
+			return std::min(time_just_before<time_type>::get(i->time), start);
+		else 
 			return invalid_time_value<time_type>::value;
-
-		typename value_time_block<value_type, time_type>::value_time_vector::const_iterator i = this->search_entry_for_time(start);
-		if (i == this->m_data.end())
-			std::advance(i, -1);
-
-		while (true) {
-			if (i->time <= end)
-				break;
-
-			if (condition(i->value))
-				return std::min(time_just_before<time_type>::get(i->time), start);
-
-			if (i == this->m_data.begin())
-				break;
-
-			std::advance(i, -1);
-		}
-		return invalid_time_value<time_type>::value;
 	}
 
 };
