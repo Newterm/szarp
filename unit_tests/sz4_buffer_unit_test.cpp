@@ -20,6 +20,7 @@
 #include "sz4/load_file_locked.h"
 
 #include "test_observer.h"
+#include "test_serach_condition.h"
 
 class Sz4BufferTestCase : public CPPUNIT_NS::TestFixture
 {
@@ -190,21 +191,6 @@ void Sz4BufferTestCase::test2() {
 	boost::filesystem::remove_all(boost::filesystem::wpath(base_dir_name.str()));
 
 }
-
-namespace {
-
-class test_search_condition : public sz4::search_condition {
-	int value_to_search;
-public:
-	test_search_condition(int v) : value_to_search(v) {}
-	virtual bool operator()(const int &v) const { return value_to_search == v; }
-	virtual bool operator()(const short &v) const { return false; }
-	virtual bool operator()(const float &v) const { return false; }
-	virtual bool operator()(const double &v) const { return false; }
-};
-
-}
-
 
 void Sz4BufferTestCase::searchTest() {
 	std::wstringstream base_dir_name;

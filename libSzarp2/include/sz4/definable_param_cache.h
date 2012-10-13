@@ -46,8 +46,8 @@ public:
 		if (i != m_blocks.begin())
 			std::advance(i, -1);
 
-		typename block_type::value_time_vector::const_iterator j = i->search_entry_for_time(time);
-		if (j == i->data().end() || j->time != time)
+		typename block_type::value_time_vector::const_iterator j = i->second->search_entry_for_time(time);
+		if (j == i->second->data().end() || j->time != time)
 			return false;
 
 		if (j->value.second != 0 && j->value.second != m_current_non_fixed)
