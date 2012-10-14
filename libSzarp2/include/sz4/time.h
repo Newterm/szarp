@@ -22,6 +22,8 @@
 #include <stdint.h>
 #include <ctime>
 
+#include "szarp_base_common/time.h"
+
 namespace sz4 {
 
 typedef uint32_t second_time_t;
@@ -83,6 +85,13 @@ public:
 		return t - 1;
 	}
 };
+
+nanosecond_time_t 
+szb_move_time(const nanosecond_time_t& t, int count, SZARP_PROBE_TYPE probe_type, 
+		int custom_length = 0);
+
+nanosecond_time_t 
+szb_round_time(nanosecond_time_t t, SZARP_PROBE_TYPE probe_type, int custom_length = 0);
 
 }
 

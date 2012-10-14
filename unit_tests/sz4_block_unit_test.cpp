@@ -16,6 +16,8 @@
 #include "sz4/path.h"
 #include "sz4/load_file_locked.h"
 
+#include "test_serach_condition.h"
+
 class Sz4BlockTestCase : public CPPUNIT_NS::TestFixture
 {
 	std::vector<sz4::value_time_pair<int, sz4::second_time_t> > m_v;
@@ -44,11 +46,12 @@ public:
 CPPUNIT_TEST_SUITE_REGISTRATION( Sz4BlockTestCase );
 
 void Sz4BlockTestCase::setUp() {
-	m_v.push_back(sz4::make_value_time_pair(1, 1u));
-	m_v.push_back(sz4::make_value_time_pair(3, 3u));
-	m_v.push_back(sz4::make_value_time_pair(5, 5u));
-	m_v.push_back(sz4::make_value_time_pair(7, 7u));
-	m_v.push_back(sz4::make_value_time_pair(9, 9u));
+	typedef sz4::value_time_pair<int, sz4::second_time_t> pair_type;
+	m_v.push_back(sz4::make_value_time_pair<pair_type>(1, 1u));
+	m_v.push_back(sz4::make_value_time_pair<pair_type>(3, 3u));
+	m_v.push_back(sz4::make_value_time_pair<pair_type>(5, 5u));
+	m_v.push_back(sz4::make_value_time_pair<pair_type>(7, 7u));
+	m_v.push_back(sz4::make_value_time_pair<pair_type>(9, 9u));
 }
 
 void Sz4BlockTestCase::searchTest() {
@@ -122,13 +125,14 @@ void Sz4BlockTestCase::weigthedSumTest() {
 }
 
 void Sz4BlockTestCase::weigthedSumTest2() {
-	std::vector<sz4::value_time_pair<short, unsigned> > v;
+	typedef sz4::value_time_pair<short, sz4::second_time_t> pair_type;
+	std::vector<pair_type> v;
 	sz4::concrete_block<short, unsigned> block(0u);
 	sz4::weighted_sum<short, sz4::second_time_t> wsum;
 
-	v.push_back(sz4::make_value_time_pair((short)1, 1u));
-	v.push_back(sz4::make_value_time_pair(std::numeric_limits<short>::min(), 2u));
-	v.push_back(sz4::make_value_time_pair((short)1, 3u));
+	v.push_back(sz4::make_value_time_pair<pair_type>((short)1, 1u));
+	v.push_back(sz4::make_value_time_pair<pair_type>(std::numeric_limits<short>::min(), 2u));
+	v.push_back(sz4::make_value_time_pair<pair_type>((short)1, 3u));
 	block.set_data(v);
 
 	block.get_weighted_sum(0u, 3u, wsum);
@@ -192,8 +196,9 @@ void Sz4BlockTestCase::blockLoadTest() {
 void Sz4BlockTestCase::testBigNum() {
 	sz4::concrete_block<short, sz4::second_time_t> block(10000000u);
 
-	std::vector<sz4::value_time_pair<short, sz4::second_time_t> > v;
-	v.push_back(sz4::make_value_time_pair(short(1500), 10000000u + 2 * 3600 * 24 * 31u)); 
+	typedef sz4::value_time_pair<short, sz4::second_time_t> pair_type;
+	std::vector<pair_type> v;
+	v.push_back(sz4::make_value_time_pair<pair_type>(short(1500), 10000000u + 2 * 3600 * 24 * 31u)); 
 	block.set_data(v);
 
 	sz4::weighted_sum<short, unsigned> wsum;
@@ -201,25 +206,12 @@ void Sz4BlockTestCase::testBigNum() {
 	CPPUNIT_ASSERT_EQUAL(4017600000ll, wsum.sum());
 }
 
-namespace {
-
-class test_search_condition : public sz4::search_condition {
-	int value_to_search;
-public:
-	test_search_condition(int v) : value_to_search(v) {}
-	virtual bool operator()(const int &v) const { return value_to_search == v; }
-	virtual bool operator()(const short &v) const { return false; }
-	virtual bool operator()(const float &v) const { return false; }
-	virtual bool operator()(const double &v) const { return false; }
-};
-
-}
-
 void Sz4BlockTestCase::searchDataTest() {
+	typedef sz4::value_time_pair<int, sz4::second_time_t> pair_type;
 	sz4::concrete_block<int, sz4::second_time_t> block(0u);
-	std::vector<sz4::value_time_pair<int, sz4::second_time_t> > v = m_v;
+	std::vector<pair_type> v = m_v;
 
-	v.push_back(sz4::make_value_time_pair(3, 11u));
+	v.push_back(sz4::make_value_time_pair<pair_type>(3, 11u));
 	block.set_data(v);
 
 	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(0), block.search_data_right(0u, 10u, test_search_condition(1)));

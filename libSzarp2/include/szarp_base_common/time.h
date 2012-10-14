@@ -22,6 +22,16 @@ time_t
 szb_move_time(time_t t, int count, SZARP_PROBE_TYPE probe_type, 
 		int custom_length = 0);
 
+/**
+ * Rounds time value according to given probe type. Uses local time.
+ * @param t time value
+ * @param probe_type type of probe
+ * @param custom_length length of probe for PT_CUSTOM probe type (greater then
+ * 0), ignored for other probe types
+ * @return rounded value
+ */
+time_t
+szb_round_time(time_t t, SZARP_PROBE_TYPE probe_type, int custom_length = 0);
 
 #endif
 

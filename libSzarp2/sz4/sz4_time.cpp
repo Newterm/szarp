@@ -17,6 +17,7 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
+#include "szarp_base_common/time.h"
 #include "sz4/time.h"
 
 namespace sz4 {
@@ -27,6 +28,17 @@ const second_time_t invalid_time_value<second_time_t>::value = -1;
 
 nanosecond_time_t make_nanosecond_time(uint32_t second, uint32_t nanosecond) {
 	return nanosecond_time_t(second, nanosecond);
+}
+
+nanosecond_time_t 
+szb_move_time(const nanosecond_time_t& t, int count, SZARP_PROBE_TYPE probe_type, 
+		int custom_length) {
+	return make_nanosecond_time(szb_move_time(time_t(t.second), count, probe_type, custom_length), t.nanosecond);
+}
+
+nanosecond_time_t 
+szb_round_time(nanosecond_time_t t, SZARP_PROBE_TYPE probe_type, int custom_length) {
+	return make_nanosecond_time(szb_round_time(time_t(t.second), probe_type, custom_length), 0);
 }
 
 }

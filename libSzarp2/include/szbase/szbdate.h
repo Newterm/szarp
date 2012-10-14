@@ -92,17 +92,6 @@ probe2gmt(int probe, int year, int month, struct tm * tm);
 void
 probe2local(int probe, int year, int month, struct tm * tm);
 
-/**
- * Rounds time value according to given probe type. Uses local time.
- * @param t time value
- * @param probe_type type of probe
- * @param custom_length length of probe for PT_CUSTOM probe type (greater then
- * 0), ignored for other probe types
- * @return rounded value
- */
-time_t
-szb_round_time(time_t t, SZARP_PROBE_TYPE probe_type, int custom_length);
-
 time_t
 szb_round_to_probe_block_start(time_t t);
 
