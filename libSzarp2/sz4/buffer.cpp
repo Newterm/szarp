@@ -54,6 +54,33 @@ template<template <typename DT, typename TT> class param_entry_type, class data_
 	return NULL;
 }
 
+void generic_param_entry::param_data_changed(TParam* param, const std::string& path) {
+	handle_param_data_changed(param, path);
+	boost::lock_guard<boost::recursive_mutex> lock(m_lock);
+	for (std::list<generic_param_entry*>::iterator i = m_referring_params.begin(); i != m_referring_params.end(); i++) {
+		(*i)->param_data_changed(param, path);
+}
+
+void generic_param_entry::add_reffering_param(generic_param_entry* param_entry) {
+	boost::lock_guard<boost::recursive_mutex> lock(m_lock);
+	m_referring_params.push_back(param_entry);
+}
+
+void generic_param_entry::remove_reffering_param(generic_param_entry* param_entry) {
+	boost::lock_guard<boost::recursive_mutex> lock(m_lock);
+	std::list<generic_param_entry*>::iterator i = std::find(m_referring_params.begin(), m_referring_params.end(), param_entry);
+	if (i != m_referring_params.end())
+		m_referring_params.erase(i);
+}
+
+generic_param_entry::~generic_param_entry() {
+	for (std::list<generic_param_entry*>::iterator i = m_referring_params.begin(); i != m_referring_params.end(); i++) {
+		(*i)->reffered_param_removed(this);
+
+	for (std::list<generic_param_entry*>::iterator i = m_reffered_params.begin(); i != m_reffered_params.end(); i++) {
+		(*i)->remove_reffering_param(this);
+}
+
 template<template <typename DT, typename TT> class param_entry_type> generic_param_entry* param_entry_build_t_1(base* _base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
 	switch (param->GetDataType()) {
 		case TParam::SHORT:
@@ -72,8 +99,17 @@ generic_param_entry* param_entry_build(base *_base, TParam* param, const boost::
 	switch (param->GetSz4Type()) {
 		case TParam::SZ4_REAL:
 			return param_entry_build_t_1<real_param_entry_in_buffer>(_base, param, buffer_directory);
-		case TParam::SZ4_LUA_OPTIMIZED:
-			return param_entry_build_t_1<lua_optimized_param_entry_in_buffer>(_base, param, buffer_directory);
+		case TParam::SZ4_LUA_OPTIMIZED: {
+			generic_param_entry* entry = param_entry_build_t_1<lua_optimized_param_entry_in_buffer>(_base, param, buffer_directory);
+			LuaExec::Param* exec_param = param->GetLuaExecParam();
+			for (std::vector<ParamRef>::iterator i = exec_param->m_par_refs.begin();
+					i != exec_param->m_par_refs.end();
+					i++) {
+				generic_param_entry* reffered_entry = get_param_entry(i->m_param);
+				reffered_entry->add_reffering_param(entry);
+			}
+			return entry;
+		}
 		default:
 		case TParam::SZ4_NONE:
 			assert(false);

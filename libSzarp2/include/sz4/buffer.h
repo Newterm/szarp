@@ -24,7 +24,7 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/thread/thread.hpp>
-#include <boost/thread/mutex.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 
 #include <boost/preprocessor/seq/for_each_product.hpp>
 #include <boost/preprocessor/seq/elem.hpp>
@@ -49,7 +49,11 @@ class base;
 
 class generic_param_entry {
 protected:
+	boost::reursive_muex m_reference_list_lock;
 	TParam* m_param;
+
+	std::list<generic_param_entry*> m_referring_params;
+	std::list<generic_param_entry*> m_referred_params;
 public:
 	generic_param_entry(TParam* param) : m_param(param) {}
 	TParam* get_param() const { return m_param; }
@@ -69,8 +73,15 @@ public:
 
 	virtual void register_at_monitor(SzbParamMonitor* monitor) = 0;
 	virtual void deregister_from_monitor(SzbParamMonitor* monitor) = 0;
-	virtual void param_data_changed(TParam*, const std::string& path) = 0;
-	virtual ~generic_param_entry() {}
+	void param_data_changed(TParam*, const std::string& path);
+	virtual void handle_param_data_changed(TParam*, const std::string& path) {};
+
+
+	void add_reffering_param(generic_param_entry* param_entry);
+	void remove_reffering_param(generic_param_entry* param_entry);
+	void reffered_param_removed(generic_param_entry* param_entry);
+
+	virtual ~generic_param_entry();
 };
 
 template<class V, class T> class block_entry {
@@ -191,9 +202,10 @@ public:
 		m_entry.deregister_from_monitor(monitor);
 	}
 
-	void param_data_changed(TParam* param, const std::string& path) {
+	void handle_param_data_changed(TParam* param, const std::string& path) {
 		m_entry.param_data_changed(param, path);
 	}
+			
 
 	virtual ~param_entry_in_buffer() {
 	}
