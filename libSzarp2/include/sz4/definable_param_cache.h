@@ -142,7 +142,13 @@ public:
 		typename block_type::value_time_vector::const_iterator j = 
 				block.search_data_left_t(start, end, condition_true_or_expired_op(condition, m_current_non_fixed));
 		time_type time_found = block.search_result_left(start, j);
-		return search_result(time_found, j);
+		if (!invalid_time_value<time_type>::is_valid(time_found)) {
+			if (block.start_time() > szb_move_time(end, 1, m_probe_type)) 
+				return std::make_pair(false, szb_move_time(block.start_time(), -1, m_probe_type));
+			else
+				return std::make_pair(true, time_found);
+		} else
+			return search_result(time_found, j);
 	}
 
 	std::pair<bool, time_type> search_data_right(const time_type& start, const time_type& end, const search_condition& condition) {
@@ -150,23 +156,26 @@ public:
 			return std::make_pair(false, start);
 
 		typename map_type::iterator i = m_blocks.upper_bound(start);
-		if (i == m_blocks.begin())
+		if (i != m_blocks.begin())
 			std::advance(i, -1);
 
 		block_type& block = *i->second;
-		if (start < block->start_time())
+		if (start < block.start_time())
 			return std::make_pair(false, start);
 
 		typename block_type::value_time_vector::const_iterator j = 
 				block.search_data_right_t(start, end, condition_true_or_expired_op(condition, m_current_non_fixed));
 		time_type time_found = block.search_result_right(start, j);
-		return search_result(time_found, j);
+		if (!invalid_time_value<time_type>::is_valid(time_found))
+			if (block.end_time() < end)
+				return std::make_pair(false, block.end_time());
+			else
+				return std::make_pair(true, time_found);
+		else
+			return search_result(time_found, j);
 	}
 
 	std::pair<bool, time_type> search_result(const time_type& time_found, typename block_type::value_time_vector::const_iterator block_iterator) {
-		if (!invalid_time_value<time_type>::is_valid(time_found))
-			return std::make_pair(false, time_found);
-
 		time_type rounded_time = szb_round_time(time_found, m_probe_type);
 		if (block_iterator->value.second == 0 || block_iterator->value.second == m_current_non_fixed)
 			return std::make_pair(true, rounded_time);
