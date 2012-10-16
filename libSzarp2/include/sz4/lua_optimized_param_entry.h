@@ -78,7 +78,9 @@ template<class value_type, class time_type> class lua_optimized_param_entry_in_b
 	base* m_base;
 	TParam* m_param;
 
-	std::vector<definable_param_cache<value_type, time_type> > m_cache;
+	typedef definable_param_cache<value_type, time_type> cache_type;
+	typedef std::vector<cache_type> cache_vector;
+	cache_vector m_cache;
 public:
 	lua_optimized_param_entry_in_buffer(base *_base, TParam* param, const boost::filesystem::wpath&) : m_base(_base), m_param(param)
 	{
@@ -86,7 +88,17 @@ public:
 			m_cache.push_back(definable_param_cache<value_type, time_type>(p));
 	}
 
+	void invalidate_non_fixed_if_needed() {
+		if (!m_invalidate_non_fixed)
+			return;
+
+		m_invalidate_non_fixed = true;
+		std::for_each(m_cache.begin(), m_cache.end(), std::mem_fun(&cache_type::invalidate_non_fixed_values));
+	}
+
 	void get_weighted_sum_impl(const time_type& start, const time_type& end, SZARP_PROBE_TYPE probe_type, weighted_sum<value_type, time_type>& sum)  {
+		invalidate_non_fixed_if_needed();
+
 		execution_engine ee(m_base, m_param);
 		double v = ee.calculate_value(start, probe_type);
 		if (!isnan(v)) {
@@ -98,10 +110,14 @@ public:
 	}
 
 	time_type search_data_right_impl(const time_type& start, const time_type& end, SZARP_PROBE_TYPE, const search_condition& condition) {
+		invalidate_non_fixed_if_needed();
+
 		return invalid_time_value<time_type>::value;
 	}
 
 	time_type search_data_left_impl(const time_type& start, const time_type& end, SZARP_PROBE_TYPE, const search_condition& condition) {
+		invalidate_non_fixed_if_needed();
+
 		return invalid_time_value<time_type>::value;
 	}
 
@@ -112,8 +128,15 @@ public:
 	}
 
 	void param_data_changed(TParam*, const std::string& path) {
+		m_invalidate_non_fixed = true;
 	}
 
+	void reffered_param_removed(generic_param_entry* param_entry) {
+		delete param->GetLuaExecParam();
+		m_param->SetLuaExecParam(NULL);
+		//go trough preparation procedure again
+		m_param->SetSz4Type(TParam::SZ4_NONE);
+	}
 
 };
 

@@ -79,7 +79,7 @@ public:
 
 	void add_reffering_param(generic_param_entry* param_entry);
 	void remove_reffering_param(generic_param_entry* param_entry);
-	void reffered_param_removed(generic_param_entry* param_entry);
+	virtual void reffered_param_removed(generic_param_entry* param_entry) {};
 
 	virtual ~generic_param_entry();
 };

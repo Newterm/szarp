@@ -73,6 +73,10 @@ void generic_param_entry::remove_reffering_param(generic_param_entry* param_entr
 		m_referring_params.erase(i);
 }
 
+void generic_param_entry::reffered_param_removed(generic_param_entry* param_entry) {
+
+}
+
 generic_param_entry::~generic_param_entry() {
 	for (std::list<generic_param_entry*>::iterator i = m_referring_params.begin(); i != m_referring_params.end(); i++) {
 		(*i)->reffered_param_removed(this);
