@@ -54,12 +54,10 @@
 #include "config.h"
 
 #include <string>
+
 #include <wx/wx.h>
-#include <boost/asio.hpp>
 
 #include "liblog.h"
-
-using boost::asio::ip::udp;
 
 /** 
  * @brief sets const char* string in std::string
@@ -130,12 +128,6 @@ private:
 	static std::string appname;
 	static std::string address;
 	static std::string port;
-
-	static boost::asio::io_service* io_service;
-	static udp::socket* s;
-	static udp::resolver* resolver;
-	static udp::resolver::query* query;
-	static udp::resolver::iterator resolver_results;
 };
 
 // Events macros copied from wx/event.h (wx-2.8)

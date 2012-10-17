@@ -139,13 +139,15 @@ int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz
         else {
                 l = atoi(c);
                 free(c);
-        }                                                           
+        }
 	sz_logdone();
 	if (async_logging_context)
 		sz_log_system_init(sz_log_asyslog_init, sz_log_asyslog_vlog, sz_log_asyslog_close);
+
         c = libpar_getpar(m_daemon_name.c_str(), "log", 0);
         if (c == NULL)
 		c = strdup(m_daemon_name.c_str());
+
         l = sz_loginit(l, c, SZ_LIBLOG_FACILITY_DAEMON, async_logging_context);
         if (l < 0) {
                sz_log(0, "%s: cannot inialize log %s, errno %d", 

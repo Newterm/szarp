@@ -7,7 +7,51 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
-** 3.1.673:
+** 3.1.684:
+# 02.09.2011
+* Zakutalizowano dokumntacjê programu draw3: dodano opis kilku
+najnowszych opcji oraz rozbudowano dokumentacjê parametrów
+definiowalych u¿ytkownika
+* Poprawiono b³±d w kodzie parsuj±cym konfiguracjê systemu szarp.
+B³±d powodowa³ zawieszanie aplikacji która próbowa³a wczytaæ 
+plik który nie by³ poprawnie sformatowanym plikiem XML.
+* Parametry maj±ce jednostke GJ nie s± ju¿ automatycznie 
+oznaczane jako sumowane godzinowo.
+* Poprawiono b³±d w liczniu parametrów definiowalych LUA 
+na warto¶ciach 10-skundowych, warto¶æi tych mog³y, w przypadku
+niektórych formu³, wychodziæ "w przysz³o¶æ", taraz ju¿ ten
+problem nie powinien wystêpowaæ.
+* Dodano przycisk "wyjd¼" do okna pomocy, bez niego
+niemo¿liwe by³o zamkniêcie draw3 gdy program dzia³a³
+w ¶rodowisku bez menad¿era okien
+* Poprawki w obs³ugdze trybu tcp serwer w demonie boruta
+
+** 3.1.682:
+# 05.09.2011
+* Poprawiono b³±d mog±cy prowadziæ do zawieszenia program draw3 podczas
+edycji parametru u¿ytkownika
+* Poprawiono drobny b³±d w prze³±czaniu okresu w draw3, czasami widget
+do wyboru okresu czasu móg³ pokazywaæ inny okres ni¿ faktycznie rysowany 
+* Poprawiono kompilacje SZARPa pod Debianem unstable
+* Poprawiono zatrzymywanie serwisu ddeproxy, teraz poprawnie reaguje on
+na zdarzenie zamkniêcia
+* Dodano now± opcjê do programu draw3. Na wykresach rocznych, miesiêcznych,
+tygodniowych oraz okresu sezonu mo¿liwe jest wybranie czy ka¿dy punkt
+ma reprezentowaæ:
+- warto¶æ ¶redni± parametru dla w³a¶ciwego okresu czasu (roku dla dekady,
+miesi±ca dla roku, itd.), jest to domy¶lny (i jedyny dostêpy dotychczas)
+sposób rysowania wykresów
+- ostatni± warto¶æ z okresu reprezentowanego przez punkt (czyli np. na 
+ekranie rocznym ka¿dy punkt bêdzie reprezentowa³ warto¶æ parametru z ostaniego
+dnia miesi±ca godziny 23:50)
+- ró¿nicê miêdzy ostatni± a pierwsz± warto¶æi± 10-minutow± próbk± dla okresu
+reprezentowanego przez punkt (np. dla roku bêdzie to ró¿nica miêdzy warto¶ci±
+z 23:50 ostatniego dnia miesi±ca a 00:00 pierwszego dnia miesi±ca)
+Ostatnie dwa warianty s± szczególnie przydatne przy rysowaniu parametrów
+reprezentuj±cych warto¶æi licznikowe. Zmiany sposobu rysowania wykresów
+dokunuje siê z menu kontekstowego listy wykresów (z prawej strony okna).
+
+** 3.1.673
 # 09.06.2012
 * dodana opcjê ekstrakcji danych z programu draw3, w du¿ej mierze jest to
 duplikacja funkcjonalno¶ci oferowanej przez program ekstraktor3, w odróznieniu

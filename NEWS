@@ -7,6 +7,47 @@
 # $Id$
 
 
+** 3.1.684:
+# 02.09.2011
+* Draw3 documentation update: some recently added features has
+been documented, documentation on user defined params has
+been extended
+* Fixed problem in params.xml parser, broken xml file
+could make application using the parser to loop ad infinitum
+* Small fix - params having GJ unit are no longer automatically 
+flagged as having "hoursum" attribute
+* Fix: lua parameters for 30-second range no longer go outside
+of first-last available date range
+* Quit button added to draw3 help window, without that 
+button it wasn't possible to close help window when draw3
+was running on system without window manager
+* Fixes for boruta in tcp server mode handling
+
+** 3.1.682:
+# 05.09.2011
+* Fix in parameter editing bug under draw3
+* Fixed small bug in period switichng in draw3 (it was possible
+for period radio button to become out of sync with actual
+period show in graph widget)
+* Improved SZARP compilation under debian unstable
+* Fix in ddeproxy service shutdown
+* New feature for draw3. Up to today on main draw3 graph widget
+each point (for periods decade, year, month, week and season) represented
+average value of parameter from corresponding time span (e.g. for
+period year, each point represented average param value for a month).
+For some types of params (especially counters) it wasn't necessarily
+the most interesting piece of information user would like to have.
+Because of this draw3 has been extended to allow user to choose
+among 3 different kind of values to be displayed for decade, year,
+month, week and season period):
+- average, that a default and only option available so far, each
+point represents param average valuek
+- last, last 10-minute probe for a point time span is drawn
+- diff, difference between value of last 10-minute probe and
+first 10-minute of time span covered by point is drawn
+New option is accessible from context menu of graphs' list
+widget.
+
 ** 3.1.673:
 # 09.06.2012
 * basic data extraction support for draw3, this features mostly

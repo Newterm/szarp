@@ -220,8 +220,6 @@ void IncSearch::SetColumnWidth()
 	}
 
 	item_list->SetColumnWidth(0, mw + 10);
-	UpdateItemList();
-
 }
 
 void IncSearch::OnSearch(wxCommandEvent & event) {
@@ -287,9 +285,11 @@ void IncSearch::OnEnter(void)
 
 void IncSearch::UpdateItemList()
 {
+	item_list->Freeze();
 	item_list->DeleteAllItems();
 	item_list->SetItems(m_cur_items);
 	item_list->SetItemCount(m_cur_items->GetCount());
+	item_list->Thaw();
 	if (m_cur_items->GetCount())
 		item_list->Select(0, true);
 }
@@ -341,8 +341,8 @@ void IncSearch::OnChoice(wxCommandEvent & evt)
 	confid = GetConfPrefix(evt.GetString());
 
 	LoadParams();
-	SetColumnWidth();
 	Search();
+	SetColumnWidth();
 }
 
 void IncSearch::OnReset(wxCommandEvent & evt)
@@ -640,6 +640,7 @@ void IncSearch::FinishWindowCreation() {
 
 	LoadParams();
 	SetColumnWidth();
+	UpdateItemList();
 
 #ifdef __WXGTK__
 	if (db_picker == NULL)

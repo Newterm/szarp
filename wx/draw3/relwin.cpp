@@ -247,6 +247,10 @@ void RelWindow::StatsChanged(Draw *draw) {
 	Update(draw);
 }
 
+void RelWindow::AverageValueCalculationMethodChanged(Draw *draw) {
+	Update(draw);
+}
+
 void RelWindow::OnClose(wxCloseEvent &event) {
 	if (event.CanVeto()) {
 		event.Veto();

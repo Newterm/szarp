@@ -1,4 +1,82 @@
+szarp (3.1.689) unstable; urgency=low
+
+  * building unstable
+
+ -- Jakub Kotur <qba@bender>  Thu, 11 Oct 2012 11:29:44 +0200
+
+szarp (3.1.686) unstable; urgency=low
+
+  * building unstable
+
+ -- Jakub Kotur <qba@bender>  Thu, 11 Oct 2012 11:29:43 +0200
+
+szarp (3.1.685) unstable; urgency=low
+
+  * building unstable
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Wed, 21 Sep 2012 11:18:07 +0200
+
+szarp (3.1.684) unstable; urgency=low
+
+  * building unstable
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Wed, 21 Sep 2012 11:18:07 +0200
+
+szarp (3.1.682) unstable; urgency=low
+
+  * building unstable
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Tue, 04 Sep 2012 10:18:18 +0200
+
+szarp (3.1.681) unstable; urgency=low
+
+  * building unstable
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Thu, 31 Aug 2012 20:05:24 +0200
+
+szarp (3.1.680) unstable; urgency=low
+
+  * building unstable
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Thu, 20 Aug 2012 20:05:24 +0200
+
+szarp (3.1.679) unstable; urgency=low
+
+  * building unstable
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Thu, 16 Aug 2012 20:05:24 +0200
+
+szarp (3.1.678) unstable; urgency=low
+
+  * building unstable
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Wed, 15 Aug 2012 16:22:48 +0200
+
+szarp (3.1.677) unstable; urgency=low
+
+  * build unstable
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Fri, 03 Aug 2012 15:03:03 +0200
+
+szarp (3.1.676) unstable; urgency=low
+
+  * building unstable 
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Fri, 03 Aug 2012 09:56:37 +0200
+
+szarp (3.1.674) squeeze; urgency=low
+
+  * building squeeze
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Mon, 12 Jun 2012 15:09:38 +0200
+
 szarp (3.1.672) oneiric; urgency=low
+
+  * building oneiric 
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Thu, 05 Jul 2012 17:02:56 +0200
+
+szarp (3.1.670) oneiric; urgency=low
 
   * building oneiric 
 
@@ -45,6 +123,18 @@ szarp (3.1.654) squeeze; urgency=low
   * building squeeze
 
  -- Krzysztof Gałązka <kg@newterm.pl>  Mon, 12 Jun 2012 15:09:38 +0200
+
+szarp (3.1.653) oneiric; urgency=low
+
+  * building oneric once more
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Mon, 3 Jun 2012 10:27:27 +0200
+
+szarp (3.1.652) oneiric; urgency=low
+
+  * building oneiric
+
+ -- Darek Marcinkiewicz <reksio@newterm.pl>  Sun, 2 Jun 2012 10:27:27 +0200
 
 szarp (3.1.651) squeeze; urgency=low
 

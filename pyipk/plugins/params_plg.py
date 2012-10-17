@@ -19,7 +19,7 @@ class RenameParamName( Plugin ) :
 		self.nodes = []
 
 	@staticmethod
-	def section() : return 'Params'
+	def section() : return 'Param'
 
 	def set_args( self , **args ) :
 		self.secs = [ args['section 1'] , args['section 2'] , args['section 3'] ]
@@ -94,7 +94,7 @@ class FindLswMsw( FindSubStrings ) :
 	'''
 
 	@staticmethod
-	def section() : return 'Params'
+	def section() : return 'Param'
 
 	def set_args( self , **args ) :
 		FindSubStrings.set_args( self , tag='param' , attrib = 'name' )
@@ -114,7 +114,7 @@ class LetterChecker( Plugin ) :
 		self.cnodes = []
 
 	@staticmethod
-	def section() : return 'Params'
+	def section() : return 'Param'
 
 	@staticmethod
 	def get_args() :

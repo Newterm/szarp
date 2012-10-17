@@ -22,8 +22,19 @@ my $name_chars = qr/[-+0-9a-z.]/i;
 our $regex_header = qr/^(szarp) \(([^\(\) \t]+)\)((?:\s+$name_chars+)+)\;(.*?)\s*$/i;
 our $regex_trailer = qr/^ \-\- (.*) <(.*)>(  ?)((\w+\,\s*)?\d{1,2}\s+\w+\s+\d{4}\s+\d{1,2}:\d\d:\d\d\s+[-+]\d{4}(\s+\([^\\\(\)]\))?)\s*$/o;
 
+my $version_only = 0;
+my $path = "";
 
-my $path = $ARGV[0] or die "Path to changelog needed";
+for (@ARGV) {
+	if ($_ eq '-v') {
+		$version_only = 1;
+	}
+	else {
+		$path = $_;
+	}
+}
+
+die "Path to changelog needed" if ($path eq "");
 
 my $version = 'unknown';
 my $date = 'unknown';
@@ -46,5 +57,14 @@ while (<CHANGELOG>) {
 }
 close(CHANGELOG);
 
-print "$version $date";
+if ($version =~ /(\d+\.\d+\.\d+)(-.*)/) {
+    $version = $1;
+}
+
+if ($version_only) {
+       print $version;
+}
+else {
+	print "$version $date";
+}
 

@@ -2323,7 +2323,7 @@ public:
 	 * Take a next tag in param. Omit all tags listed in 'ingnoredTags', and 'ignoredTrees'.
 	 * @return return true if exists next tag, otherwise return false
 	 */
-	bool NextTag();
+	bool NextTag() __wur;
 	/**
 	 * @param n name of tag
 	 * @return true if current tag is equel n, otherwise return false

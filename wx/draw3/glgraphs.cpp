@@ -1488,6 +1488,10 @@ void GLGraphs::NewRemarks(Draw *d) {
 	Refresh();
 }
 
+void GLGraphs::AverageValueCalculationMethodChanged(Draw *draw) {
+	Refresh();
+}
+
 GLGraphs::~GLGraphs() {
 }
 

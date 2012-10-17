@@ -62,7 +62,7 @@ bool EkstrApp::OnInit()
 #else
 	libpar_read_cmdline(&argc, argv);
 #endif
-	if (!szApp::OnInit())
+	if (!szApp<>::OnInit())
 		return false;
 
 	boost::filesystem::wpath_traits::imbue(std::locale("C")); 	
@@ -165,7 +165,7 @@ bool EkstrApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 }
 
 void EkstrApp::OnInitCmdLine(wxCmdLineParser &parser) {
-	szApp::OnInitCmdLine(parser);
+	szApp<>::OnInitCmdLine(parser);
 	parser.SetLogo(_("Szarp Extractor version 3.00"));
 	parser.AddOption(_T("geometry"), wxEmptyString,
 			 _("X windows geometry specification"),

@@ -1160,6 +1160,16 @@ void DrawFrame::SetsParamsReceived(bool new_params_or_sets) {
 	}
 }
 
+void DrawFrame::ToggleMenuBarVisbility() {
+	if (menu_bar->IsShown()) {
+		SetMenuBar(NULL);
+		menu_bar->Show(false);
+	} else {
+		SetMenuBar(menu_bar);
+		menu_bar->Show(true);
+	}
+
+}
 
 void DrawFrame::OnSearchDate(wxCommandEvent &event) {
 	draw_panel->SearchDate();

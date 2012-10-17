@@ -5986,6 +5986,7 @@ wywo³anie poni¿szego kodu:
 <programlisting>
 return function ()                            
        local p = szbase                       
+       local PT_SEC10 = ProbeType.PT_SEC10
        local PT_MIN10 = ProbeType.PT_MIN10    
        local PT_HOUR = ProbeType.PT_HOUR      
        local PT_HOUR8 = ProbeType.PT_HOUR8    
@@ -6086,6 +6087,11 @@ end
 		</programlisting>
 		Opis funkcji <emphasis>nan</emphasis> dostêpny jest w 
 		<xref linkend="draw-definable-lua-functions">
+		</para>
+	</listitem>
+	<listitem>
+		<para>
+		<emphasis>PT_SEC10</emphasis> - sta³a opisuj±ca typ próbki.
 		</para>
 	</listitem>
 	<listitem>

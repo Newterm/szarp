@@ -113,14 +113,16 @@ int TTreeNode::parseXML(xmlTextReaderPtr reader) {
 	if (isEmptyTag)
 		return 0;
 
-	xw.NextTag();
+	if (!xw.NextTag())
+		return 1;
 
 	if (xw.IsTag("treenode")) {
 		if (xw.IsBeginTag()) {
 			_parent = new TTreeNode();
 			if (_parent->parseXML(reader))
 				return 1;
-			xw.NextTag();
+			if (!xw.NextTag())
+				return 1;
 		}
 		if (xw.IsEndTag()) {
 			int _tmp = xmlTextReaderDepth(reader);

@@ -60,7 +60,7 @@
 using namespace std;
 
 bool TParam::IsHourSumUnit(const std::wstring& unit) {
-	if (unit == L"MW" || unit == L"kW" || unit == L"GJ")
+	if (unit == L"MW" || unit == L"kW")
 		return true;
 
 	if (unit.size() > 2
@@ -198,7 +198,8 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 
 	bool isFormula = false;
 
-	xw.NextTag();
+	if (!xw.NextTag())
+		return 1;
 
 	for (;;) {
 		if (xw.IsTag("raport")) {
@@ -239,7 +240,6 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 					strw_filen,
 					o);
 			}
-			xw.NextTag();
 		} else
 		if (xw.IsTag("value")) {
 			if (xw.IsBeginTag()) {
@@ -271,7 +271,6 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 				else
 					v = v->Append(new TValue(i, wstr_name, NULL));
 			}
-			xw.NextTag();
 		} else
 		if (xw.IsTag("draw")) {
 			if (xw.IsBeginTag()) {
@@ -279,7 +278,6 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 			if (d != NULL)
 				AddDraw(d);
 			}
-			xw.NextTag();
 		} else
 		if (xw.IsTag("analysis")) {
 			if (xw.IsBeginTag()) {
@@ -287,7 +285,6 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 			if (a != NULL)
 				AddAnalysis(a);
 			}
-			xw.NextTag();
 		} else
 		if (xw.IsTag("define")) {
 			if (xw.IsBeginTag()) {
@@ -367,13 +364,11 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 					}
 				} // end FORALLATTR
 			} // end "define"
-			xw.NextTag();
 		} else
 		if (xw.IsTag("script")) {
 			if (xw.IsBeginTag()) {
 				_script = TScript::parseXML(reader);
 			}
-			xw.NextTag();
 		} else
 		if (xw.IsTag("param")) {
 			break;
@@ -381,6 +376,8 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 		else {
 			xw.XMLErrorNotKnownTag("param");
 		}
+		if (!xw.NextTag())
+			return 1;
 	}
 
 	if (!isPrecAttr && !_values) {

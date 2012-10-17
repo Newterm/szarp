@@ -150,6 +150,10 @@ class DrawInfo
 
 	virtual bool IsValid() const;
 
+	AverageValueCalculationMethod GetAverageValueCalculationMethod()  const;
+	
+	void SetAverageValueCalculationMethod(AverageValueCalculationMethod _avm);
+
 	virtual ~DrawInfo() { }
     protected:
 	TDraw *d;	/**< Pointer to draw. */
@@ -158,6 +162,8 @@ class DrawInfo
 	
 	wxColour c;	/**< Color of draw. */
 
+	AverageValueCalculationMethod avm;
+			/** What kind of data we are querying for*/
 };
 
 class DrawInfoList : public std::vector<DrawInfo*> {
@@ -536,6 +542,8 @@ class ConfigManager
 	bool SubstituteOrAddDefinedParams(const std::vector<DefinedParam*>& dp);
 
 	void SubstiuteDefinedParams(const std::vector<DefinedParam*>& to_rem, const std::vector<DefinedParam*>& to_add);
+
+	void DrawInfoAverageValueCalculationChanged(DrawInfo *d);
 	
 	~ConfigManager();
 protected:

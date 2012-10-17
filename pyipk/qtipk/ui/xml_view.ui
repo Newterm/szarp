@@ -55,6 +55,9 @@
      <property name="headerHidden">
       <bool>false</bool>
      </property>
+     <property name="expandsOnDoubleClick">
+      <bool>false</bool>
+     </property>
      <attribute name="headerVisible">
       <bool>true</bool>
      </attribute>

@@ -44,6 +44,8 @@ RSYNC_OPTIONS="-az --exclude='.*' --exclude='nohup.out' --delete --force"
 # dodatkowe opcje dla rsynca do wysy³ania baz szbase (gdy nie robimy pelnego synca)
 SZBASE_EXTRA=" --include=`date +%Y%m.szb` --include=`date +%Y%m -d '1 month ago'`.szb --exclude=*.szb"
 
+SSH_OPTIONS="-o StrictHostKeyChecking=no -o ControlPath=$(mktemp --tmpdir -u ssh-%r@%h:%p-XXXXXXX)"
+
 function log {
     echo `date '+%F %X'` "szbpush[$$]: $@" >> /opt/szarp/logs/szbpush.log
 }
@@ -52,12 +54,13 @@ function usage {
     echo "`basename $0` [-c] <ADDRESS> <BASE> <BASE2>"
     echo "    -c - user curl to get szbase_stamp"
     echo "    -b speed limit transfer speed to speed kbps"
+    echo "    -t <time> ssh connection timeout"
     echo "    <ADDRESS> - address to connect to"
     echo "    <BASE> - base to send"
     echo
 }
 
-OPTS=`getopt -q -o cb:p: -n $ME -- "$@"`
+OPTS=`getopt -q -o cb:p:t: -n $ME -- "$@"`
 
 if [ $? != 0 ]; then
     usage
@@ -75,12 +78,16 @@ while true; do
 	    shift 2
 	    ;;
 	-p)
-	    SSH_PORT="-p $2"
+	    SSH_OPTIONS="$SSH_OPTIONS -p $2"
 	    shift 2
 	    ;;
 	-c)
 	    USE_CURL=yes
 	    shift
+	    ;;
+	-t)
+	    SSH_OPTIONS="$SSH_OPTIONS -o ConnectTimeout=$2"
+	    shift 2
 	    ;;
 	--)
 	    shift
@@ -98,8 +105,9 @@ function get_verbose_level () {
 	RSYNC_VERBOSE="-vP" # domy¶lnie tryb gadatliwy
 
 	m_pid=`/bin/pidof meaner3`
+	pgid=`ps h -o pgid -p $$`
 
-	if  [[ $PPID -eq $m_pid ]]; then
+	if  [[ $pgid -eq $m_pid ]]; then
 		RSYNC_VERBOSE="" # wywo³anie z meanera - tryb cichy
 	fi
 }
@@ -116,7 +124,7 @@ function get_local_stamp {
 function get_remote_stamp {
 	RET=-1;	
 	if [ -z $USE_CURL ]; then
-		RESULT=`ssh -o StrictHostKeyChecking=no $SSH_PORT $REMOTE "stat --format=%Y $1/szbase_stamp" 2>/dev/null` 
+		RESULT=`ssh $SSH_OPTIONS $REMOTE "stat --format=%Y $1/szbase_stamp" 2>/dev/null` 
 		SRET=$?
 		#connection failed
 		if [ $SRET -eq 255 ]; then
@@ -152,8 +160,16 @@ function do_rsync {
 		SE=$SZBASE_EXTRA
 	    fi
 	fi
-	export RSYNC_RSH="ssh -o StrictHostKeyChecking=no $SSH_PORT"
+	export RSYNC_RSH="ssh $SSH_OPTIONS"
 	/usr/bin/rsync --bwlimit=$BWLIMIT $RSYNC_VERBOSE $RSYNC_OPTIONS $SE $1 $REMOTE:/opt/szarp
+}
+
+function cleanup {
+	echo "Got error signal, cleaning up"
+	pgrep -P $$
+	pkill -P $$
+	ssh $SSH_OPTIONS -O exit $REMOTE
+	exit 1
 }
 
 
@@ -161,6 +177,8 @@ if [ $# -lt 2 ]; then
 	usage
 	exit 2
 fi
+
+trap cleanup SIGINT SIGTERM
 
 log "start with args $@"
 
@@ -175,6 +193,13 @@ shift;
 
 CODE=0
 
+ssh -M -N -f $SSH_OPTIONS $REMOTE 
+if [ $? = 255 ]; then
+    echo "Cannot connect, exiting"
+    exit 1
+fi
+
+
 for ARG in $@ ; do
 	for i in /opt/szarp/$ARG ; do
 		log "do_rsync $i start"
@@ -184,4 +209,7 @@ for ARG in $@ ; do
 		[ $LAST -ne 0 ] && CODE=$LAST;
 	done
 done
+
+ssh $SSH_OPTIONS -O exit $REMOTE
+
 exit $CODE

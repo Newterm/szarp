@@ -80,6 +80,8 @@ class DrawObserver {
 	virtual void NoData(DrawsController *d) {}
 	/**Notifies that draw list has been resorted*/
 	virtual void DrawsSorted(DrawsController *draws_controller) {}
+	/**Notifies that draw list has been resorted*/
+	virtual void AverageValueCalculationMethodChanged(Draw *draw) {}
 
 	virtual ~DrawObserver() = 0;
 };

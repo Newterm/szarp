@@ -388,6 +388,11 @@ void WxGraphs::NewRemarks(Draw *draw) {
 	m_bg_view->NewRemarks(draw);
 }
 
+void WxGraphs::AverageValueCalculationMethodChanged(Draw *d) {
+	m_graphs.at(d->GetDrawNo())->DrawAll();
+	Refresh();
+}
+
 void WxGraphs::OnSize(wxSizeEvent & WXUNUSED(event))
 {
 	int w, h;

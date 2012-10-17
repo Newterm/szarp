@@ -377,6 +377,10 @@ void PieWindow::DoubleCursorChanged(DrawsController *draws_controller) {
 		UpdateDraw(draws_controller->GetDraw(i));
 }
 
+void PieWindow::AverageValueCalculationMethodChanged(Draw *d) {
+	UpdateDraw(d);
+}
+
 void PieWindow::StatsChanged(Draw *draw) {
 	UpdateDraw(draw);
 }

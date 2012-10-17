@@ -33,27 +33,19 @@
 #include <string.h>
 #endif
 
+#include <stdio.h>
 #include <stdarg.h>
 #include <syslog.h>
 
 #include "liblog.h"
 
-#ifndef MINGW32
 #include "liblog_impl_syslog.h"
-#else
 #include "liblog_impl_classic.h"
-#endif
 
 //init defaults
-#ifndef MINGW32
-sz_log_init_function* __log_init_func = sz_log_syslog_init;
-sz_vlog_function* __log_vlog_func = sz_log_syslog_vlog;
-sz_log_close_function* __log_close_func = sz_log_syslog_close;
-#else
-sz_log_init_function __log_init_func = sz_log_system_init;
-sz_vlog_function __log_vlog_func = sz_log_syslog_vlog;
-sz_log_close_function __log_close_func = sz_log_syslog_close;
-#endif
+sz_log_init_function* __log_init_func = sz_log_classic_init;
+sz_vlog_function* __log_vlog_func = sz_log_classic_vlog;
+sz_log_close_function* __log_close_func = sz_log_classic_close;
 
 void* __state;
 
@@ -107,6 +99,32 @@ void sz_log_system_init(sz_log_init_function init, sz_vlog_function vlog, sz_log
 }
 
 int sz_loginit(int level, const char * logname, SZ_LIBLOG_FACILITY facility, void *context) {
+	// asyslog setup handled diferently
+	if (NULL != __state) {
+		__state = __log_init_func(level, logname, facility, context);
+		return level;
+	}
+
+	// cleanup before appling new setup
+	sz_logdone();
+
+	// if no logfile setup logging to classic system with stderr output
+	if (NULL == logname) {
+		__log_init_func = sz_log_classic_init;
+		__log_vlog_func = sz_log_classic_vlog;
+		__log_close_func = sz_log_classic_close;
+	}
+	else {
+#ifndef MINGW32
+		__log_init_func = sz_log_syslog_init;
+		__log_vlog_func = sz_log_syslog_vlog;
+		__log_close_func = sz_log_syslog_close;
+#else
+		__log_init_func = sz_log_classic_init;
+		__log_vlog_func = sz_log_classic_vlog;
+		__log_close_func = sz_log_classic_close;
+#endif
+	}
 	__state = __log_init_func(level, logname, facility, context);
 	return level;
 }
@@ -129,16 +147,14 @@ void vsz_log(int level, const char * msg_format, va_list fmt_args) {
 int sz_level_to_syslog_level(int level) {
 	switch (level) {
 		case 0:
-			return LOG_EMERG;
+			return LOG_CRIT;
 		case 1:
-			return LOG_ALERT;
-		case 2:
 			return LOG_ERR;
-		case 3:
+		case 2:
 			return LOG_WARNING;
-		case 4:
+		case 3:
 			return LOG_NOTICE;
-		case 5:
+		case 4:
 			return LOG_INFO;
 		default:
 			return LOG_DEBUG;

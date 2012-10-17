@@ -1406,9 +1406,9 @@ AC_DEFUN([AX_BOOST_THREAD],
 				AC_LANG_PUSH([C++])
 				CXXFLAGS_SAVE=$CXXFLAGS
 
-				if test "x$build_os" = "xsolaris" ; then
+				if test "x$target_os" = "xsolaris" ; then
 					CXXFLAGS="-pthreads $CXXFLAGS"
-				elif test "x$build_os" = "xmingw32" ; then
+				elif test "x$target_os" = "xmingw32msvc" -o "x$target_os" = "xmingw32"; then
 					CXXFLAGS="-mthreads $CXXFLAGS"
 				else
                                 	CXXFLAGS="-pthread $CXXFLAGS"
@@ -1426,9 +1426,9 @@ AC_DEFUN([AX_BOOST_THREAD],
 			]
 		)
                 if test "x$ax_cv_boost_thread" = "xyes"; then
-			if test "x$build_os" = "xsolaris" ; then
+			if test "x$target_os" = "xsolaris" ; then
 				BOOST_CPPFLAGS="-pthreads $BOOST_CPPFLAGS"
-			elif test "x$build_os" = "xmingw32" ; then
+			elif test "x$target_os" = "xmingw32msvc" -o "x$target_os" = "xmingw32"; then
 				BOOST_CPPFLAGS="-mthreads $BOOST_CPPFLAGS"
 			else
 				BOOST_CPPFLAGS="-pthread $BOOST_CPPFLAGS"
@@ -2463,4 +2463,20 @@ if test "$ac_cv_boost_python" = "yes"; then
   AC_SUBST(BOOST_PYTHON_LIB)
 fi
 ])dnl
+
+
+AC_DEFUN([AX_GXX_VERSION], [
+  GXX_VERSION=""
+  AS_IF([test "x$GXX" = "xyes"],[
+      AC_CACHE_CHECK([gxx version],[ax_cv_gxx_version],[
+        ax_cv_gxx_version="`$CXX -dumpversion`"
+        AS_IF([test "x$ax_cv_gxx_version" = "x"],[
+          ax_cv_gxx_version=""
+        ])
+      ])
+      GXX_VERSION=$ax_cv_gxx_version
+  ])
+  AC_SUBST([GXX_VERSION])
+])
+
 

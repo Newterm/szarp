@@ -138,6 +138,8 @@ public:
 	virtual void NewRemarks(Draw *draw);
 
 	virtual void NoData(DrawsController *d);
+
+	virtual void AverageValueCalculationMethodChanged(Draw *draw);
 	
 	virtual void SetFocus();
 

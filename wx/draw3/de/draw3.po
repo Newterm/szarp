@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-07-05 15:20+0200\n"
+"POT-Creation-Date: 2012-08-30 20:26+0200\n"
 "PO-Revision-Date: 2008-07-16 11:40+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -18,23 +18,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 # "Wczytywanie konfiguracji: "
-#: cfgmgr.cpp:534
+#: cfgmgr.cpp:544
 msgid "Loading configuration: "
 msgstr "Lade Konfiguration: "
 
 # Zestawy definiowane przez u¿ytkownika
-#: cfgmgr.cpp:806
+#: cfgmgr.cpp:816
 #, fuzzy
 msgid "Users' sets"
 msgstr "Benutzerdefinierte Sätze"
 
-#: cfgmgr.cpp:818 cfgmgr.cpp:853 cfgmgr.cpp:877 cfgmgr.cpp:901
+#: cfgmgr.cpp:828 cfgmgr.cpp:863 cfgmgr.cpp:887 cfgmgr.cpp:911
 msgid "Local sets"
 msgstr ""
 
 # "Nie uda³o siê stworzyæ katalogu %s. Zestawy definiowane nie mog± zostaæ "
 # "zapisane."
-#: cfgmgr.cpp:1197
+#: cfgmgr.cpp:1207
 #, c-format
 msgid "Failed to create directory %s. Defined draws cannot be saved"
 msgstr ""
@@ -42,97 +42,97 @@ msgstr ""
 "gespeichert weden."
 
 # "B³±d"
-#: cfgmgr.cpp:1198 drawfrm.cpp:671 drawpsc.cpp:426 drawpsc.cpp:439
+#: cfgmgr.cpp:1208 drawfrm.cpp:671 drawpsc.cpp:426 drawpsc.cpp:439
 #: drawpsc.cpp:448 drawpsc.cpp:457 paramslist.cpp:269 paramslist.cpp:305
 #: paramslist.cpp:322 paredit.cpp:218 remarks.cpp:1016 remarks.cpp:1117
-#: remarks.cpp:1163 remarks.cpp:1211 seldraw.cpp:521
+#: remarks.cpp:1163 remarks.cpp:1211 seldraw.cpp:568
 msgid "Error"
 msgstr "Fehler"
 
 # "Parametr:U¿ytkownika:"
-#: cfgmgr.cpp:1367 paredit.cpp:638 XRC_gettext_file.h:3
+#: cfgmgr.cpp:1384 paredit.cpp:638 XRC_gettext_file.h:3
 msgid "User:Param:"
 msgstr "Benutzer:Parameter:"
 
 # "Wybierz minutê"
-#: cfgmgr.cpp:1385 cfgmgr.cpp:1448
+#: cfgmgr.cpp:1402 cfgmgr.cpp:1465
 #, fuzzy
 msgid "Choose a file"
 msgstr "Wählen Sie eine Start Minute"
 
-#: cfgmgr.cpp:1386 cfgmgr.cpp:1449
+#: cfgmgr.cpp:1403 cfgmgr.cpp:1466
 msgid "SZARP draw set (*.xds)|*.xds|All files (*.*)|*.*"
 msgstr ""
 
-#: cfgmgr.cpp:1416
+#: cfgmgr.cpp:1433
 #, c-format
 msgid "Export of set to file: %s failed"
 msgstr ""
 
 # msgstr "B³±d"
-#: cfgmgr.cpp:1416 defcfg.cpp:2013 defcfg.cpp:2020 paramslist.cpp:243
+#: cfgmgr.cpp:1433 defcfg.cpp:2013 defcfg.cpp:2020 paramslist.cpp:243
 #: paramslist.cpp:263 paramslist.cpp:298
 msgid "Error!"
 msgstr "Fehler!"
 
-#: cfgmgr.cpp:1430
+#: cfgmgr.cpp:1447
 #, fuzzy, c-format
 msgid "%s (%s)"
 msgstr "%.*f %s (%s)"
 
-#: cfgmgr.cpp:1430 cfgmgr.cpp:1432 cfgmgr.cpp:1501
+#: cfgmgr.cpp:1447 cfgmgr.cpp:1449 cfgmgr.cpp:1518
 msgid "imported"
 msgstr ""
 
-#: cfgmgr.cpp:1432
+#: cfgmgr.cpp:1449
 #, c-format
 msgid "%s (%s <%d>)"
 msgstr ""
 
-#: cfgmgr.cpp:1436
+#: cfgmgr.cpp:1453
 #, c-format
 msgid "Set with name %s already exists. Give a name for a set:"
 msgstr ""
 
-#: cfgmgr.cpp:1437
+#: cfgmgr.cpp:1454
 msgid "Set already exists"
 msgstr ""
 
-#: cfgmgr.cpp:1461
+#: cfgmgr.cpp:1478
 #, c-format
 msgid "Importing set: %s"
 msgstr ""
 
-#: cfgmgr.cpp:1469
+#: cfgmgr.cpp:1486
 #, fuzzy, c-format
 msgid "Need to load configuration for prefix: %s"
 msgstr "B³±d podczas ³adowania konfiguracji dla bazy: "
 
 # "Wczytywanie konfiguracji: "
-#: cfgmgr.cpp:1471
+#: cfgmgr.cpp:1488
 #, fuzzy, c-format
 msgid "Failed to load configuration: %s"
 msgstr "Lade Konfiguration: "
 
-#: cfgmgr.cpp:1486
+#: cfgmgr.cpp:1503
 #, c-format
 msgid "Operation completed successfully, set %s imported"
 msgstr ""
 
 # "Operacja siê nie powiod³a."
-#: cfgmgr.cpp:1486
+#: cfgmgr.cpp:1503
 #, fuzzy
 msgid "Operation successful."
 msgstr "Vorgang ist fehlgeschlagen."
 
 # "Import plików nie powiód³ siê."
-#: cfgmgr.cpp:1489
+#: cfgmgr.cpp:1506
 #, fuzzy, c-format
 msgid "Failed to import set from file: %s"
 msgstr "Fehler beim Import die Fenster von Datei."
 
 # "Operacja siê nie powiod³a."
-#: cfgmgr.cpp:1489 defcfg.cpp:1577
+#: cfgmgr.cpp:1506 defcfg.cpp:1577
 msgid "Operation failed."
 msgstr "Vorgang ist fehlgeschlagen."
 
@@ -1390,35 +1390,57 @@ msgid "Title"
 msgstr "Titel"
 
 # "Ustawienia parametru"
-#: seldraw.cpp:148
+#: seldraw.cpp:145
 msgid "Set parameter"
 msgstr "Einstellungen des Parameters"
 
 # "Wykres zablokowany"
-#: seldraw.cpp:153 seldraw.cpp:163
+#: seldraw.cpp:150 seldraw.cpp:160
 msgid "Draw blocked\tCtrl-B"
 msgstr "Schaubild gesperrt\tCtrl-B"
 
 # "Dokumentacja parametru"
-#: seldraw.cpp:166
+#: seldraw.cpp:163
 msgid "Parameter documentation\tCtrl-H"
 msgstr "Dokumentation des Parameters\tCtrl-H"
 
-#: seldraw.cpp:167 XRC_gettext_file.h:154
+#: seldraw.cpp:164 XRC_gettext_file.h:154
 msgid "Copy parameter name\tCtrl+Shift+C"
 msgstr "Kopier der Name des Parameters\tCtrl+Shift+C"
 
+# "¦rednie liczone jako:"
+#: seldraw.cpp:168
+#, fuzzy
+msgid "Average value for selected period"
+msgstr "Die Mittel gezählt als:"
+
+# "Warto¶æ maksymalna"
+#: seldraw.cpp:169
+#, fuzzy
+msgid "Last value"
+msgstr "Maximalen Wert"
+
 #: seldraw.cpp:170
+msgid "Difference between last and first value"
+msgstr ""
+
+# "Warto¶æ ¶rednia"
+#: seldraw.cpp:171
+#, fuzzy
+msgid "Type of average values shown"
+msgstr "Das Mittel"
+
+#: seldraw.cpp:186
 msgid "Edit parameter associated with graph\tCtrl-E"
 msgstr ""
 
-#: seldraw.cpp:299 seldraw.cpp:426
+#: seldraw.cpp:317 seldraw.cpp:447
 #, c-format
 msgid "%d.[B]"
 msgstr "%d.[B]"
 
 # "Uruchomienie przegl±darki nie powiod³o siê"
-#: seldraw.cpp:521
+#: seldraw.cpp:568
 msgid "I was not able to start default browser"
 msgstr "Ich könnte nicht Standard-Browser laufen."
 
@@ -1436,27 +1458,27 @@ msgstr "Ich starte draw3..."
 msgid "Statistics window"
 msgstr "Statistik-Fenster"
 
-#: statdiag.cpp:67 timewdg.cpp:56 xydiag.cpp:60 ids.h:180
+#: statdiag.cpp:67 timewdg.cpp:56 xydiag.cpp:60 ids.h:183
 msgid "DECADE"
 msgstr ""
 
-#: statdiag.cpp:67 timewdg.cpp:57 xydiag.cpp:60 ids.h:180
+#: statdiag.cpp:67 timewdg.cpp:57 xydiag.cpp:60 ids.h:183
 msgid "YEAR"
 msgstr "JAHR"
 
-#: statdiag.cpp:67 timewdg.cpp:58 xydiag.cpp:60 ids.h:180
+#: statdiag.cpp:67 timewdg.cpp:58 xydiag.cpp:60 ids.h:183
 msgid "MONTH"
 msgstr "MONAT"
 
-#: statdiag.cpp:67 timewdg.cpp:59 xydiag.cpp:60 ids.h:180
+#: statdiag.cpp:67 timewdg.cpp:59 xydiag.cpp:60 ids.h:183
 msgid "WEEK"
 msgstr "WOCHE"
 
-#: statdiag.cpp:67 timewdg.cpp:60 xydiag.cpp:60 ids.h:180
+#: statdiag.cpp:67 timewdg.cpp:60 xydiag.cpp:60 ids.h:183
 msgid "DAY"
 msgstr "TAG"
 
-#: statdiag.cpp:67 timewdg.cpp:61 xydiag.cpp:60 ids.h:180
+#: statdiag.cpp:67 timewdg.cpp:61 xydiag.cpp:60 ids.h:183
 msgid "30 MINUTES"
 msgstr ""
 
@@ -1601,7 +1623,7 @@ msgid " %R"
 msgstr "%R"
 
 # SEZON#
-#: timewdg.cpp:62 ids.h:180
+#: timewdg.cpp:62 ids.h:183
 msgid "SEASON"
 msgstr "SAISON"
 
@@ -1832,7 +1854,7 @@ msgstr "Fehlende daten"
 msgid "There is no common data for these params for given time period"
 msgstr "Es ist nicht gemeinsam daten fur wählen Schaubilder in Zeitraum"
 
-#: ids.h:180
+#: ids.h:183
 msgid "HOUR"
 msgstr ""
 

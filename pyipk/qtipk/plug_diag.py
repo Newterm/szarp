@@ -22,6 +22,9 @@ class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog , Configurable ) :
 		self.labs = []
 		self.ents = []
 
+		self.light_color = QtGui.QColor("grey")
+		self.default_color = QtGui.QColor("black")
+
 		self.plugins = plugins
 		self.fill( self.plugins )
 		self.treeWidget.sortItems(0,QtCore.Qt.AscendingOrder)
@@ -37,8 +40,11 @@ class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog , Configurable ) :
 			item = QtGui.QTreeWidgetItem( [n] )
 			sections[s].addChild( item )
 
-			if n == self.cfg['gui:plugin_selected'] :
-				self.treeWidget.setCurrentItem( item )
+			try :
+				if n == self.cfg['gui:plugin_selected'] :
+					self.treeWidget.setCurrentItem( item )
+			except KeyError as e :
+				pass
 
 	def select_last( self ) :
 		pass
@@ -59,6 +65,7 @@ class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog , Configurable ) :
 		if name == None : return
 
 		self.args = self.plugins.get_args( name )
+		defaults  = self.plugins.get_defaults( name )
 		self.textDoc.setText( self.plugins.help( name ) )
 
 		for l in self.labs : l.close()
@@ -66,12 +73,32 @@ class PluginsDialog( QtGui.QDialog , Ui_PluginsDialog , Configurable ) :
 
 		del self.labs[:]
 		del self.ents[:]
-		
+
 		row = 0
 		for arg in self.args :
 			self.labs.append( QtGui.QLabel( arg ) )
-			self.ents.append( QtGui.QLineEdit() )
+			le = QtGui.QLineEdit()
+			if arg in defaults :
+				le.setText( defaults[arg] )
+			self.ents.append( le )
 			self.glay_args.addWidget( self.labs[-1] , row , 0 )
 			self.glay_args.addWidget( self.ents[-1] , row , 1 )
 			row += 1
+
+		pal = QtGui.QPalette()
+		pal.setColor( QtGui.QPalette.Text , self.light_color )
+		for le in self.ents : le.setPalette(pal)
+
+		map( lambda e : e.textEdited.connect( lambda : self.set_color(e,self.default_color) ) , self.ents )
+
+		if len(self.ents) > 0 :
+			QtGui.QWidget.setTabOrder( self.treeWidget , self.ents[0] )
+			for i in range(1,len(self.ents)) :
+				QtGui.QWidget.setTabOrder( self.ents[i-1] , self.ents[i] )
+			QtGui.QWidget.setTabOrder( self.ents[-1] , self.buttonBox )
+
+	def set_color( self , widget , color ) :
+		pal = QtGui.QPalette()
+		pal.setColor( QtGui.QPalette.Text , color )
+		widget.setPalette(pal)
 

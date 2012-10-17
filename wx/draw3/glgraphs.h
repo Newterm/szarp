@@ -235,6 +235,8 @@ public:
 
 	virtual void NewRemarks(Draw *draw);
 
+	virtual void AverageValueCalculationMethodChanged(Draw *draw);
+
 	virtual void DrawInfoChanged(Draw *draw);
 
 	virtual void DrawSelected(Draw *draw);

@@ -387,7 +387,7 @@ kliknij ikonê <inlinemediaobject><imageobject><imagedata
 </chapter> <!-- draw3-base -->
 
 <chapter id="draw3-ext">
-<title>Zagadnienia zaawansowane</title>
+<title>Funkcje program draw3</title>
 
 <section id="draw3-ext-toc">
 <title>Spis tre¶ci</title>
@@ -845,6 +845,41 @@ sam parametr u¿ytkownika:
 </para>
 </section> <!-- draw3-ext-chartset -->
 
+<section id="draw3-ext-change-point-meaning">
+<title>Zmiana rodzaju warto¶ci reprezentowanych przez punkt</title>
+<para>
+Standardowo ka¿dem punktowi na wykresie odpowiada ¶rednia warto¶æ
+parametru z okresu reprezentowanego przez ten punkt. Mo¿esz to zmieniæ tak
+by ka¿demu punktowi odpowiada³a:
+<itemizedlist>
+<listitem><para>
+Ostatni± warto¶æ z okresu reprezentowanego przez punkt (czyli np. na 
+ekranie rocznym ka¿dy punkt bêdzie reprezentowa³ warto¶æ parametru z ostaniego
+dnia miesi±ca godziny 23:50)
+</para></listitem>
+<listitem><para>
+Ró¿nicê miêdzy ostatni± a pierwsz± warto¶æi± 10-minutow± próbk± dla okresu
+reprezentowanego przez punkt (np. dla roku bêdzie to ró¿nica miêdzy warto¶ci±
+z 23:50 ostatniego dnia miesi±ca a 00:00 pierwszego dnia miesi±ca)
+</para></listitem>
+</itemizedlist>
+Zmiany tego ustawienia mo¿na dokonaæ z menu kontekstowego pojawiaj±cego siê
+po klikniêciu prawym klawiszem w ten parametr na li¶cie parametrów. G³ówny 
+sens istnienia tej opcji jest taki, ¿e dla niektórych parametrów bardziej
+interesuj±ce od tego jak± by³a ¶rednia warto¶æ parametru w danym okresie,
+jest to jak± warto¶æ przyjmowa³ ten parametr np. pod koniec miesi±ca lub
+o ile w tym okresie warto¶æ parametru wzros³a. Szczególnie jest to przydatne 
+w przypadku parametrów reprezentuj±cych róznego rodzaju liczniki.
+</para>
+<para>
+<figure><title>Zmiana rodzaju warto¶ci reprezentowanych przez punkt</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-change_value_type.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+</section>
+
 <section id="draw3-ext-parametersset">
 <title>Definiowanie w³asnych parametrów</title>
 <para>
@@ -871,8 +906,37 @@ parametr musisz okre¶liæ:
 Nazwê parametru - dowolny ci±g znaków identyfikuj±cy parametr.
 </para></listitem>
 <listitem><para>
-Sposób liczenia ¶redniej - czy najpierw liczymy formu³ê dla wszystkich próbek i pó¼niej 
-wyci±gamy ¶redni± z tych próbek, czy te¿ formu³ê stosujemy do wyliczonych ¶rednich.
+Sposób liczenia ¶redniej. Formu³a mo¿e byæ zastosowana raz dla danego ka¿dego punktu 
+z wykresu lub program mozê wyliczyæ formu³ê dla wszystkich warto¶ci 10-mintowych
+i z nich wyci±gn±æ ¶redni±.
+</para>
+<para>
+O co tu chodzi - program rysuj±c wykres warto¶ci paramerów standardowo pos³uguje siê
+warto¶ciami ¶rednimi - np. gdy jeste¶my na ekranie miesiêcznym ka¿demu punktowi na 
+wykresie odpowiada warto¶æ ¶rednia parametru z ka¿dego dnia. Warto¶æ ta w przypadku
+formu³y mo¿e zostaæ wyliczona na dwa sposoby (trzymaj±c siê naszego przyk³adu wykresu
+miesiêcznego):
+<itemizedlist>
+<listitem><para>
+Formu³a dla ka¿dego dnia zostanie wykonana tylko raz. Przy wowo³aniu formu³y parametr
+<emphasis>t</emphasis> bêdzie wskazywa³a na pocz±tek danego dnia (doby), a parametr <emphasis>pt</emphasis>
+bêdzie mia³ warto¶æ <emphasis>PT_DAY</emphasis>. Warto¶æ zwrócona przez formu³ê bêdzie
+bezpo¶rednio narysowana na wykresie.
+</para></listitem>
+<listitem><para>
+Formu³a zostanie wywo³ana 144 (24 * 6) razy dla ka¿dego dnia. Dla warto¶ci parametru <emphasis>t</emphasis>
+przyjmuj±cego odpowiednio warto¶ci <emphasis>t<subscript>0</subscript>, t<subscript>0</subscript> + 10min, t<subscript>0</subscript> + 20min, .., t<subscript>0</subscript> + 23h40min, t<subscript>0</subscript> + 23h50min</emphasis>
+gdzie <emphasis>t<subscript>0</subscript></emphasis> to czas z godziny 00:00 danego dnia. Przy ka¿dy wywo³aniu
+formu³y parametr <emphasis>pt</emphasis> bêdzie ustawiony na warto¶æ <emphasis>PT_MIN10</emphasis>.
+Z tych wszystkich warto¶ci program wyci±gnie ¶redni± i ta zostanie umieszone na wykresie.
+</para></listitem>
+</itemizedlist>
+Oznacza to ¿e formu³y liczone drugim sposobem bêd± wyliczane zawsze
+na warto¶ciach 10-minutowych, a wszystkie pozosta³e warto¶ci (godzinowe, dobowe, tygodniowe, miesiêczne, roczne) zostan± 
+wyliczone na podstawie warto¶ci 10-minutowych zwróconych przez formu³ê.
+Wyj±tkiem od tego schematu s± warto¶ci 10-sekundowe, dla ¶rednich 10-sekundowych zawsze <emphasis>pt</emphasis>
+ustawione jest na <emphasis>PT_SEC10</emphasis>, a warto¶ci parametru wyliczane s±
+dla kolejnych 10-sekudówek, niezale¿nie od tego jaki sposób wylicznia ¶rednich jest wybrany.
 </para></listitem>
 <listitem><para>
 Precyzjê wy¶wietlania parametru (ilo¶æ miejsc po przecinku).

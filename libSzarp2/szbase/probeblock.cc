@@ -213,13 +213,24 @@ void szb_probeblock_definable_t::FetchProbes() {
 
 void szb_probeblock_lua_t::FetchProbes() {
 	sz_log(10, "Fetcheing lua probes");
-	lua_State* lua = Lua::GetInterpreter();
-	time_t t = start_time + fixed_probes_count * SZBASE_PROBE_SPAN;
-	int ref = param->GetLuaParamReference();
-
-	if (ref == LUA_REFNIL)
+	time_t range_start, range_end;
+	if (!buffer->prober_connection->GetRange(range_start, range_end))
 		return;
 
+	time_t param_start_time = param->GetLuaStartDateTime() > 0 ? param->GetLuaStartDateTime() : range_start; 
+	param_start_time += param->GetLuaStartOffset();
+	if (param_start_time > GetEndTime())
+		return;
+
+	range_end += param->GetLuaEndOffset();
+	if (range_end < GetStartTime())
+		return;
+
+	lua_State* lua = Lua::GetInterpreter();
+
+	int ref = param->GetLuaParamReference();
+	if (ref == LUA_REFNIL)
+		return;
 	if (ref == LUA_NOREF) {
 		ref = compile_lua_param(lua, param);
 		if (ref == LUA_REFNIL) {
@@ -232,8 +243,14 @@ void szb_probeblock_lua_t::FetchProbes() {
 	}
 
 	lua_rawgeti(lua, LUA_REGISTRYINDEX, ref);
+	time_t t = start_time + fixed_probes_count * SZBASE_PROBE_SPAN;
 	double prec10 = pow10(param->GetPrec());
-	for (int i = fixed_probes_count; i < probes_per_block; i++, t += SZBASE_PROBE_SPAN) {
+	for (int i = fixed_probes_count; i < probes_per_block && t < range_end; i++, t += SZBASE_PROBE_SPAN) {
+		if (t < param_start_time) { 
+			fixed_probes_count++;
+			continue;
+		}
+
 		Lua::fixed.push(true);
 		lua_get_val(lua, buffer, t, PT_SEC10, 0, data[i]);
 		data[i] = rint(data[i] * prec10) / prec10; 
@@ -247,10 +264,29 @@ void szb_probeblock_lua_t::FetchProbes() {
 }
 
 void szb_probeblock_lua_opt_t::FetchProbes() {
+	sz_log(10, "Fetcheing lua probes");
+	time_t range_start, range_end;
+	if (!buffer->prober_connection->GetRange(range_start, range_end))
+		return;
+
+	time_t param_start_time = param->GetLuaStartDateTime() > 0 ? param->GetLuaStartDateTime() : range_start; 
+	param_start_time += param->GetLuaStartOffset();
+	if (param_start_time > GetEndTime())
+		return;
+
+	range_end += param->GetLuaEndOffset();
+	if (range_end < GetStartTime())
+		return;
+
 	LuaExec::ExecutionEngine ee(buffer, param->GetLuaExecParam());
 	sz_log(10, "Fetching lua opt probes");
 	time_t t = start_time + fixed_probes_count * SZBASE_PROBE_SPAN;
-	for (int i = fixed_probes_count; i < probes_per_block; i++, t += SZBASE_PROBE_SPAN) {
+	for (int i = fixed_probes_count; i < probes_per_block && t < range_end; i++, t += SZBASE_PROBE_SPAN) {
+		if (t < param_start_time) { 
+			fixed_probes_count++;
+			continue;
+		}
+
 		bool probe_fixed = true;
 		ee.CalculateValue(t, PT_SEC10, data[i], probe_fixed);
 		if (probe_fixed && fixed_probes_count == i)
