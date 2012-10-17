@@ -1594,14 +1594,14 @@ When in SZARP line daemon mode, the following options are available:\n");
 
                                 MBus::value_t value_to_send = values.at(mbus_param_num);
                         
-                                if (mbus_config.transforms[i->first].at(j) != NULL)
-                                    (*mbus_config.transforms[i->first].at(j))(value_to_send, j);
-
                                 if (mbus_config.modulos[i->first].at(j) != -1)
                                     value_to_send %= mbus_config.modulos[i->first].at(j);
 
                                 value_to_send /= mbus_config.divisors[i->first].at(j);
                                 value_to_send *= mbus_config.multipliers[i->first].at(j);
+
+                                if (mbus_config.transforms[i->first].at(j) != NULL)
+                                    (*mbus_config.transforms[i->first].at(j))(value_to_send, j);
 
                                 ipc->m_read[parcook_index++] = value_to_send;
                             }
