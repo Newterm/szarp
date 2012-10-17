@@ -1214,10 +1214,13 @@ std::vector<MBus::value_t> MBus::parse_data_from_rsp_ud(std::string frame_conten
                                     data_representation = append_byte(data_representation, static_cast<byte>(frame_content.at(variable_data_dif_offset + previous_data_blocks_length + current_data_block_length + i)), is_msb_first, i);
                                 }
 
+				//to avoid overflows when shifting to desired precision,
+				//store the intermidiary as double
+				double d_value = data_representation.value;
                                 for (unsigned int i = 0; i < precision; i++)
-                                    data_representation.value *= 10;
+                                    d_value *= 10;
 
-                                data = value_t(data_representation.value);
+                                data = value_t(d_value);
                                 
                                 data &= four_byte_data_mask;
 
