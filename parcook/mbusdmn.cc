@@ -1256,6 +1256,12 @@ communication testing application.\n\n\
                              switch is omitted, the daemon works as a SZARP \n\
                              line daemon. When in testing mode, the device\n\
                              should be omitted.\n\n\
+      --sontex               Sending REQ_UD2 before every other frame to\n\ 
+                             wakeup device. This option is used for Sontex\n\ 
+                             Supercal 531 heatmeters that do not always\n\ 
+                             respond to first m-bus protocol frame.\n\
+                             This option can be used both in test mode\n\
+                             or in normal mode.\n\n\
 When in testing mode, the following options are available:\n\n\
       --device               The device to connect to\n\
       --speed                Transmission speed to use\n\
@@ -1267,13 +1273,44 @@ When in testing mode, the following options are available:\n\n\
 When in SZARP line daemon mode, the following options are available:\n");
 
     bool testing_mode = false;
+    /** For Sontex Supercal 531 */
+    bool sontex_supercal_531 = false; 
+    int sontex_option_index = 0;
 
     // Check if any of the command-line parameters is "--test" - if so,
     // we're in testing mode.
     for (int i = 1; i < argc; i++) {
         if (std::string(argv[i]) == "--test")
             testing_mode = true;
+        // Check if device is sontex supercal 531 heatmeter
+        if (std::string(argv[i]) == "--sontex") {
+            sontex_supercal_531 = true;
+            sontex_option_index = i;
+        }
     }
+    
+    //for (int i = 1; i < argc; i++) {
+    //        std::wcout << argv[i] << " "; 
+    //        std::wcout << "\n";
+    //}
+    
+    /** If sontex_supercal_531 option is set we need to remove it from 
+     *  argument list so it can be used outside of testing mode 
+     */
+    if (sontex_supercal_531) {
+        for (int i = sontex_option_index; i < argc - 1; i++) {
+            argv[i] = argv[i+1];
+        }
+        argc--;
+
+        //std::wcout << "Args modified: \n";
+        //for (int i = 1; i < argc; i++) {
+        //    std::wcout << argv[i] << " "; 
+        //    std::wcout << "\n";
+        //}
+    }
+
+   
 
     if (testing_mode) { // MBus communication testing mode
         sz_log(2, "Starting communication testing mode...");
@@ -1286,6 +1323,7 @@ When in SZARP line daemon mode, the following options are available:\n");
                                    {"stop_bits", 1, NULL, 0},
                                    {"parity", 1, NULL, 0},
                                    {"test", 0, NULL, 0},
+                                   {"sontex", 0, NULL, 0},
                                    {0, 0, 0, 0}};
 
         int option_index = 0;
@@ -1387,9 +1425,9 @@ When in SZARP line daemon mode, the following options are available:\n");
             std::cout << "connected.\n";
 
             std::cout << "Initializing communication...\n";
-            if (mbus.initialize_communication(address, true, std::cout)) {
+            if (mbus.initialize_communication(address, sontex_supercal_531, true, std::cout)) {
                 std::cout << "Querying device for values...\n";
-                mbus.query_for_data(address, true, true, std::cout);
+                mbus.query_for_data(address, sontex_supercal_531, true, true, std::cout);
             }
         } else 
             std::cout << "failed.\n";
@@ -1457,7 +1495,7 @@ When in SZARP line daemon mode, the following options are available:\n");
             for (std::map<MBus::byte, int>::iterator i = mbus_config.units.begin(); i != mbus_config.units.end(); i++) {
                 sz_log(5, "Initializing communication with device %d...", static_cast<unsigned int>(i->first));
 
-                if (mbus_config.mbus->initialize_communication(i->first, is_debug, std::cout)) {
+                if (mbus_config.mbus->initialize_communication(i->first, sontex_supercal_531, is_debug, std::cout)) {
                     sz_log(5, "Done.");
                 } else {
                     sz_log(5, "Failed.");
@@ -1468,7 +1506,7 @@ When in SZARP line daemon mode, the following options are available:\n");
                 if (mbus_config.reset[i->first]) {
                     sz_log(8, "Resetting the device %d...", static_cast<unsigned int>(i->first));
 
-                    if (mbus_config.mbus->reset_application(i->first, mbus_config.reset_type[i->first], is_debug, std::cout)) {
+                    if (mbus_config.mbus->reset_application(i->first, mbus_config.reset_type[i->first], sontex_supercal_531, is_debug, std::cout)) {
                         sz_log(8, "Done.");
                     } else {
                         sz_log(8, "Failed.");
@@ -1481,7 +1519,7 @@ When in SZARP line daemon mode, the following options are available:\n");
                     std::vector<MBus::byte> data;
                     data.push_back(mbus_config.select_data_type[i->first]);
 
-                    std::vector<MBus::value_t> values = mbus_config.mbus->select_data_for_readout(i->first, data, is_debug, std::cout);
+                    std::vector<MBus::value_t> values = mbus_config.mbus->select_data_for_readout(i->first, data, sontex_supercal_531, is_debug, std::cout);
                     if (!values.empty()) {
                         sz_log(8, "Done.");
                     } else {
@@ -1496,7 +1534,7 @@ When in SZARP line daemon mode, the following options are available:\n");
 
                     std::string frame;
 
-                    if ((frame = mbus_config.mbus->query_for_status(i->first, is_debug, std::cout)) == "") {
+                    if ((frame = mbus_config.mbus->query_for_status(i->first, sontex_supercal_531, is_debug, std::cout)) == "") {
                         sz_log(10, "Failed.");
                     } else {
                         sz_log(10, "Done.");
@@ -1509,7 +1547,7 @@ When in SZARP line daemon mode, the following options are available:\n");
                 if (mbus_config.change_address[i->first] > 0) {
                     sz_log(8, "Changing the device %d address to %d...", static_cast<unsigned int>(i->first), mbus_config.change_address[i->first]);
 
-                    if (mbus_config.mbus->change_slave_address(i->first, mbus_config.change_address[i->first], is_debug, std::cout)) {
+                    if (mbus_config.mbus->change_slave_address(i->first, mbus_config.change_address[i->first], sontex_supercal_531, is_debug, std::cout)) {
                         sz_log(8, "Done.");
 
                         mbus_config.units[mbus_config.change_address[i->first]] = mbus_config.units[i->first];
@@ -1532,7 +1570,7 @@ When in SZARP line daemon mode, the following options are available:\n");
                 for (std::map<MBus::byte, int>::iterator i = mbus_config.units.begin(); i != mbus_config.units.end(); i++) {
                     sz_log(7, "Querying device %d for values...", static_cast<unsigned int>(i->first));
 
-                    std::vector<MBus::value_t> values = mbus_config.mbus->query_for_data(i->first, is_debug, config->GetDumpHex(), std::cout);
+                    std::vector<MBus::value_t> values = mbus_config.mbus->query_for_data(i->first, sontex_supercal_531, is_debug, config->GetDumpHex(), std::cout);
 
                     if (!values.empty()) { // The device should return some values, empty vector means an error condition has occurred
                         sz_log(7, "Done.");
@@ -1579,7 +1617,7 @@ When in SZARP line daemon mode, the following options are available:\n");
                         if (mbus_config.reinitialize_on_error[i->first]) {
                             sz_log(5, "Reinitializing communication with device %d...", static_cast<unsigned int>(i->first));
 
-                            if (mbus_config.mbus->initialize_communication(i->first, is_debug, std::cout)) {
+                            if (mbus_config.mbus->initialize_communication(i->first, sontex_supercal_531, is_debug, std::cout)) {
                                 sz_log(5, "Done.");
 
                                 reinitialization_done = true;

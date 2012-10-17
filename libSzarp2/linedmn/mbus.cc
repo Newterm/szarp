@@ -10,8 +10,6 @@
 #include <iomanip>
 #include <vector>
 
-#include <cstdio>
-#include <unistd.h>
 #include <termio.h>
 #include <fcntl.h>
 #include <sys/types.h>
@@ -1801,14 +1799,14 @@ bool MBus::send_frame(std::string frame) {
         return true;
 }
 
-std::string MBus::receive_frame() {
+std::string MBus::receive_frame(int timeout_sec, int timeout_usec) {
     fd_set fds;
     FD_ZERO(&fds);
     FD_SET(serial_port_fd, &fds);
 
     struct timeval tv;
-    tv.tv_sec = 5; // Wait for 5 seconds for the data
-    tv.tv_usec = 0;
+    tv.tv_sec = timeout_sec; 
+    tv.tv_usec = timeout_usec;
 
     int select_retval = select(serial_port_fd + 1, &fds, NULL, NULL, &tv);
 
@@ -1827,7 +1825,38 @@ std::string MBus::receive_frame() {
     }
 }
 
-bool MBus::initialize_communication(byte address, bool debug, std::ostream& os) {
+void MBus::wakeup_device(byte address) { 
+    std::wcout << "Waking up device with SND_NKE2 datagram.\n";
+    
+    if (send_frame(create_short_frame(SND_NKE2, address))) {
+        std::wcout << "SND_NKE2 sent successfully.\n";
+    } else {
+        std::wcout << "Error while sending SND_NKE2.\n";
+        return;
+    }
+
+    /** Device will not respond to this - we are just waiting for it to wakeup */ 
+ 
+    std::string frame("");
+
+    if (identify_frame(frame = receive_frame(1,0)) == single_char) {
+        std::wcout << "Device is already awake.\n";
+    } else {
+        if (frame == "") {
+            std::wcout << "Timed out while waiting for reply - device should be now awake.\n";
+        }
+        else {
+            std::wcout << "Invalid reply received.\n";
+        }
+    }
+}
+
+
+bool MBus::initialize_communication(byte address, bool sontex, bool debug, std::ostream& os) {
+    
+    if (sontex)
+        wakeup_device(address);
+
     if (debug)
         os << "Sending the SND_NKE2 datagram.\n";
     
@@ -1843,7 +1872,7 @@ bool MBus::initialize_communication(byte address, bool debug, std::ostream& os) 
 
     std::string frame("");
 
-    if (identify_frame(frame = receive_frame()) == single_char) {
+    if (identify_frame(frame = receive_frame(5,0)) == single_char) {
         if (debug)
             os << "Received a positive reply.\n";
     } else {
@@ -1865,7 +1894,11 @@ bool MBus::initialize_communication(byte address, bool debug, std::ostream& os) 
     return true;
 }
 
-std::vector<MBus::value_t> MBus::query_for_data(byte address, bool debug, bool dump_hex, std::ostream& os) {
+std::vector<MBus::value_t> MBus::query_for_data(byte address, bool sontex, bool debug, bool dump_hex, std::ostream& os) {
+
+    if (sontex)
+        wakeup_device(address);
+
     if (debug)
         os << "Sending the REQ_UD2 datagram.\n";
     
@@ -1879,7 +1912,7 @@ std::vector<MBus::value_t> MBus::query_for_data(byte address, bool debug, bool d
         return std::vector<value_t>();
     }
 
-    std::string frame = receive_frame();
+    std::string frame = receive_frame(5,0);
     std::vector<value_t> values;
 
     if (dump_hex) {
@@ -1929,7 +1962,11 @@ std::vector<MBus::value_t> MBus::query_for_data(byte address, bool debug, bool d
     return values;
 }
 
-std::string MBus::query_for_status(byte address, bool debug, std::ostream& os) {
+std::string MBus::query_for_status(byte address, bool sontex, bool debug, std::ostream& os) {
+    
+    if (sontex)
+        wakeup_device(address);
+
     if (debug)
         os << "Sending the REQ_SKE datagram.\n";
     
@@ -1943,7 +1980,7 @@ std::string MBus::query_for_status(byte address, bool debug, std::ostream& os) {
         return std::string("");
     }
 
-    std::string frame = receive_frame();
+    std::string frame = receive_frame(5,0);
 
     if (debug) {
         if (frame == "") 
@@ -1960,7 +1997,11 @@ std::string MBus::query_for_status(byte address, bool debug, std::ostream& os) {
     return frame;
 }
 
-bool MBus::reset_application(byte address, byte reset_type, bool debug, std::ostream& os) {
+bool MBus::reset_application(byte address, byte reset_type, bool sontex, bool debug, std::ostream& os) {
+    
+    if (sontex)
+        wakeup_device(address);
+
     if (debug)
         os << "Sending the SND_UD datagram with application reset information.\n";
     
@@ -1979,7 +2020,7 @@ bool MBus::reset_application(byte address, byte reset_type, bool debug, std::ost
 
     std::string frame("");
 
-    if (identify_frame(frame = receive_frame()) == single_char) {
+    if (identify_frame(frame = receive_frame(5,0)) == single_char) {
         if (debug)
             os << "Received a positive reply.\n";
     } else {
@@ -2001,8 +2042,11 @@ bool MBus::reset_application(byte address, byte reset_type, bool debug, std::ost
     return true;
 }
 
-std::vector<MBus::value_t> MBus::select_data_for_readout(byte address, std::vector<byte> data, bool debug, std::ostream& os) {
+std::vector<MBus::value_t> MBus::select_data_for_readout(byte address, std::vector<byte> data, bool sontex, bool debug, std::ostream& os) {
     std::vector<value_t> values;
+
+    if (sontex)
+        wakeup_device(address);
 
     if (debug)
         os << "Sending the SND_UD datagram with select data for readout information.\n";
@@ -2018,7 +2062,7 @@ std::vector<MBus::value_t> MBus::select_data_for_readout(byte address, std::vect
     }
 
     std::string frame("");
-    frame_type reply_type = identify_frame(frame = receive_frame());
+    frame_type reply_type = identify_frame(frame = receive_frame(5,0));
 
     // There are two possible replies to a selection of data for readout
     // request
@@ -2047,7 +2091,11 @@ std::vector<MBus::value_t> MBus::select_data_for_readout(byte address, std::vect
     return values;
 }
 
-bool MBus::change_slave_address(byte address, byte new_address, bool debug, std::ostream& os) {
+bool MBus::change_slave_address(byte address, byte new_address, bool sontex, bool debug, std::ostream& os) {
+    
+    if (sontex)
+        wakeup_device(address);
+
     if (debug)
         os << "Sending the SND_UD datagram with address change information.\n";
     
@@ -2068,7 +2116,7 @@ bool MBus::change_slave_address(byte address, byte new_address, bool debug, std:
 
     std::string frame("");
 
-    if (identify_frame(frame = receive_frame()) == single_char) {
+    if (identify_frame(frame = receive_frame(5,0)) == single_char) {
         if (debug)
             os << "Received a positive reply.\n";
     } else {
