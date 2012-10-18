@@ -130,11 +130,28 @@ public:
 
 
 	void append_entry(const value_type& value, const time_type& time) {
-		m_data.push_back(make_value_time_pair<value_time_type>(value, time));
+		if (!m_data.size())
+			m_data.push_back(make_value_time_pair<value_time_type>(value, time));
+		else {
+			value_time_type& last_value_time = *m_data.rbegin();
+			if (last_value_time.value == value)
+				last_value_time.time = time;
+			else
+				m_data.push_back(make_value_time_pair<value_time_type>(value, time));
+		}
 	}
 
-	void append_entries(const value_time_vector& entries) {
-		m_data.insert(m_data.end(), entries.begin(), entries.end());
+	void append_entries(typename value_time_vector::iterator begin, typename value_time_vector::iterator end) {
+		if (begin == end)
+			return;
+
+		append_entry(begin->value, begin->time);
+		m_data.insert(m_data.end(), begin + 1, end);
+	}
+
+
+	typename value_time_vector::iterator insert_entry(typename value_time_vector::iterator i, const value_type& value, const time_type& time) {
+		return m_data.insert(i, make_value_time_pair<value_time_type>(value, time));
 	}
 
 	void set_data(value_time_vector& data) { m_data.swap(data); }

@@ -71,43 +71,76 @@ public:
 		return true;
 	}
 
-	void store_value(const value_type& value, const time_type& time, bool fixed) {
-		unsigned entry_version = fixed ? 0 : m_current_non_fixed;
-		
-		if (!m_blocks.size()) {
-			block_type* block = new block_type(time);
-			block->append_entry(std::make_pair(value, entry_version), szb_move_time(time, 1, m_probe_type));
+	typename map_type::iterator create_new_block(const value_type& value, const time_type& time, unsigned version) {
+		block_type* block = new block_type(time);
+		block->append_entry(std::make_pair(value, version), szb_move_time(time, 1, m_probe_type));
+		return m_blocks.insert(std::make_pair(time, block)).first;
+	}
 
-			m_blocks.insert(std::make_pair(time, block));
-			return;
+	void maybe_merge_3_block_entries(block_type* block,  typename block_type::value_time_vector::iterator i) {
+		if (i != block->data().begin() && (i + 1) != block->data().end() && (i - 1)->value == i->value && i->value == (i + 1)->value) {
+			(i - 1)->time = (i + 1)->time;
+			block->data().erase(i, i + 2);
 		}
+	}
 
-		typename map_type::iterator i = m_blocks.upper_bound(time);
-		if (i != m_blocks.begin())
-			std::advance(i, -1);
+	void insert_value_inside_block(block_type* block, const value_type& value, const time_type& time, unsigned version) {
+		typename block_type::value_time_vector::iterator i = block->search_entry_for_time(time);
+		time_type previous_end_time;
 
+		if (i->value == std::make_pair(value, version))
+			return;
+
+		if (i == block->data().begin())
+			previous_end_time = block->start_time();
+		else
+			previous_end_time = (i - 1)->time;
+
+		if (previous_end_time < time)
+			i = block->insert_entry(i, i->value, time) + 1;
+
+		time_type end_time = szb_move_time(time, 1, m_probe_type);
+		if (i->time == end_time) {
+			i->value = std::make_pair(value, version);
+			maybe_merge_3_block_entries(block, i);
+		} else
+			block->insert_entry(i, std::make_pair(value, version), end_time);
+	}
+
+	void maybe_merge_block_with_next_one(typename map_type::iterator i) {
 		block_type* block = i->second;
-		if (block->end_time() > time) {
-			typename block_type::value_time_vector::iterator k = block->search_entry_for_time(time);
-			k->value = std::make_pair(value, entry_version);
-			return;
-		}
-
-		time_type probe_end_time = szb_move_time(time, 1, m_probe_type);
-		if (block->end_time() != time) {
-			block = new block_type(time);
-			m_blocks.insert(std::make_pair(time, block));
-		}
-		block->append_entry(std::make_pair(value, entry_version), probe_end_time);
-
 		std::advance(i, 1);
-		if (i != m_blocks.end() && i->first == probe_end_time) {
+		if (i != m_blocks.end() && i->first == block->end_time()) {
 			block_type* block_n = i->second;
-			block->append_entries(block_n->data());
+			block->append_entries(block_n->data().begin(), block_n->data().end());
 
 			m_blocks.erase(i);
 			delete block_n;
 		}
+	}
+
+	void store_value(const value_type& value, const time_type& time, bool fixed) {
+		unsigned entry_version = fixed ? 0 : m_current_non_fixed;
+		
+		if (!m_blocks.size()) {
+			create_new_block(value, time, entry_version);
+			return;
+		}
+
+		typename map_type::iterator i = m_blocks.upper_bound(time);
+		if (i == m_blocks.begin())
+			i = create_new_block(value, time, entry_version);
+		else {
+			std::advance(i, -1);
+			if (i->second->end_time() < time)
+				i = create_new_block(value, time, entry_version);
+			else if (i->second->end_time() == time)
+				i->second->append_entry(std::make_pair(value, entry_version), szb_move_time(time, 1, m_probe_type));
+			else
+				insert_value_inside_block(i->second, value, time, entry_version);
+		}
+
+		maybe_merge_block_with_next_one(i);
 	}
 
 	class condition_true_or_expired_op {
@@ -190,12 +223,17 @@ public:
 
 		m_current_non_fixed = 2;
 		for (typename map_type::iterator i = m_blocks.begin(); i != m_blocks.end(); i++) {
-			typename block_type::value_time_vector& data = i->value->data();
+			typename block_type::value_time_vector& data = i->second->data();
 			for (typename block_type::value_time_vector::iterator j = data.begin(); j != data.end(); j++) {
 				if (j->value.second != 0)
 					j->value.second = 1;
 			}
 		}
+	}
+
+	~definable_param_cache() {
+		for (typename map_type::iterator i = m_blocks.begin(); i != m_blocks.end(); i++)
+			delete i->second;
 	}
 };
 

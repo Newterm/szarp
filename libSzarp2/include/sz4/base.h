@@ -53,6 +53,10 @@ public:
 		return buffer_for_param(param)->search_data_left(param, start, end, probe_type, condition);
 	}
 
+	generic_param_entry* get_param_entry(TParam* param) {
+		return buffer_for_param(param)->get_param_entry(param);
+	}
+
 	void remove_param(TParam* param) {
 		if (param->GetConfigId() >= m_buffers.size())
 			return;

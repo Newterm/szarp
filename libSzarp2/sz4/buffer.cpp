@@ -17,6 +17,8 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
+#include <tr1/functional>
+
 #include "szarp_config.h"
 #include "szarp_base_common/lua_param_optimizer.h"
 #include "sz4/buffer.h"
@@ -56,33 +58,26 @@ template<template <typename DT, typename TT> class param_entry_type, class data_
 
 void generic_param_entry::param_data_changed(TParam* param, const std::string& path) {
 	handle_param_data_changed(param, path);
-	boost::lock_guard<boost::recursive_mutex> lock(m_lock);
-	for (std::list<generic_param_entry*>::iterator i = m_referring_params.begin(); i != m_referring_params.end(); i++) {
-		(*i)->param_data_changed(param, path);
+	boost::lock_guard<boost::recursive_mutex> lock(m_reference_list_lock);
+	std::for_each(m_referring_params.begin(), m_referring_params.end(),
+		std::tr1::bind(&generic_param_entry::param_data_changed, std::tr1::placeholders::_1, param, path));
 }
 
 void generic_param_entry::add_reffering_param(generic_param_entry* param_entry) {
-	boost::lock_guard<boost::recursive_mutex> lock(m_lock);
+	boost::lock_guard<boost::recursive_mutex> lock(m_reference_list_lock);
 	m_referring_params.push_back(param_entry);
 }
 
 void generic_param_entry::remove_reffering_param(generic_param_entry* param_entry) {
-	boost::lock_guard<boost::recursive_mutex> lock(m_lock);
+	boost::lock_guard<boost::recursive_mutex> lock(m_reference_list_lock);
 	std::list<generic_param_entry*>::iterator i = std::find(m_referring_params.begin(), m_referring_params.end(), param_entry);
 	if (i != m_referring_params.end())
 		m_referring_params.erase(i);
 }
 
-void generic_param_entry::reffered_param_removed(generic_param_entry* param_entry) {
-
-}
-
 generic_param_entry::~generic_param_entry() {
-	for (std::list<generic_param_entry*>::iterator i = m_referring_params.begin(); i != m_referring_params.end(); i++) {
-		(*i)->reffered_param_removed(this);
-
-	for (std::list<generic_param_entry*>::iterator i = m_reffered_params.begin(); i != m_reffered_params.end(); i++) {
-		(*i)->remove_reffering_param(this);
+	std::for_each(m_referring_params.begin(), m_referring_params.end(), std::bind2nd(std::mem_fun(&generic_param_entry::reffered_param_removed), this));
+	std::for_each(m_referred_params.begin(), m_referred_params.end(), std::bind2nd(std::mem_fun(&generic_param_entry::remove_reffering_param), this));
 }
 
 template<template <typename DT, typename TT> class param_entry_type> generic_param_entry* param_entry_build_t_1(base* _base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
@@ -106,10 +101,10 @@ generic_param_entry* param_entry_build(base *_base, TParam* param, const boost::
 		case TParam::SZ4_LUA_OPTIMIZED: {
 			generic_param_entry* entry = param_entry_build_t_1<lua_optimized_param_entry_in_buffer>(_base, param, buffer_directory);
 			LuaExec::Param* exec_param = param->GetLuaExecParam();
-			for (std::vector<ParamRef>::iterator i = exec_param->m_par_refs.begin();
+			for (std::vector<LuaExec::ParamRef>::iterator i = exec_param->m_par_refs.begin();
 					i != exec_param->m_par_refs.end();
 					i++) {
-				generic_param_entry* reffered_entry = get_param_entry(i->m_param);
+				generic_param_entry* reffered_entry = _base->get_param_entry(i->m_param);
 				reffered_entry->add_reffering_param(entry);
 			}
 			return entry;

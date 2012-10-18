@@ -49,7 +49,7 @@ class base;
 
 class generic_param_entry {
 protected:
-	boost::reursive_muex m_reference_list_lock;
+	boost::recursive_mutex m_reference_list_lock;
 	TParam* m_param;
 
 	std::list<generic_param_entry*> m_referring_params;
