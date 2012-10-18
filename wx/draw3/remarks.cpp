@@ -78,6 +78,7 @@
 #include "errfrm.h"
 #include "md5.h"
 #include "drawsctrl.h"
+#define REMARKS_CPP
 #include "remarks.h"
 #include "defcfg.h"
 

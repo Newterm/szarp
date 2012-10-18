@@ -21,6 +21,8 @@
 #include "config.h"
 #endif
 
+#ifndef MINGW32
+
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/un.h>
@@ -238,3 +240,5 @@ void async_closelog(struct async_syslog_state *state) {
 	free(state->ident);
 	free(state);
 }
+
+#endif

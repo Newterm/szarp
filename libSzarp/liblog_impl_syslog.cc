@@ -17,6 +17,10 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
+#include "config.h"
+
+#ifndef MINGW32
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <syslog.h>
@@ -53,3 +57,5 @@ void sz_log_syslog_close(void* data) {
 void sz_log_syslog_vlog(void* data, int level, const char * msg_format, va_list fmt_args) {
 	vsyslog(sz_level_to_syslog_level(level), msg_format, fmt_args);
 }
+
+#endif

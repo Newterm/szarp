@@ -315,7 +315,21 @@ public:
 
 };
 
+//this event is used from within multiple object files, so we need to
+//do some MSW magic here
+#ifndef __WXMSW__
 DECLARE_EVENT_TYPE(REMARKSRESPONSE_EVENT, -1)
+#else
+//if this header is pulled by cpp file that defines actual event
+//do regular stuff
+#ifdef REMARKS_CPP
+DECLARE_EVENT_TYPE(REMARKSRESPONSE_EVENT, -1)
+#else
+//if not - we do this thing
+DECLARE_EXPORTED_EVENT_TYPE(__declspec(dllexport), REMARKSRESPONSE_EVENT,-1);
+#endif
+#endif
+
 
 typedef void (wxEvtHandler::*RemarksResponseEventFunction)(RemarksResponseEvent&);
 

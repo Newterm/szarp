@@ -41,7 +41,7 @@
 
 #include "config.h"
 
-#ifndef MING32
+#ifndef MINGW32
 #include <syslog.h>
 #else
 //as there is no syslog under msw we fix our default to 0 there
@@ -51,12 +51,12 @@
 
 enum SZ_LIBLOG_FACILITY {
 	SZ_LIBLOG_FACILITY_DAEMON 
-#ifndef MING32
+#ifndef MINGW32
 	 			 = LOG_DAEMON
 #endif
 				,
 	SZ_LIBLOG_FACILITY_APP 
-#ifndef MING32
+#ifndef MINGW32
 	 			 = LOG_LOCAL1
 #endif
 };

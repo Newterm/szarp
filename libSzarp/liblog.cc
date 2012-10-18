@@ -35,7 +35,9 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#ifndef MINGW32
 #include <syslog.h>
+#endif
 
 #include "liblog.h"
 
@@ -144,6 +146,7 @@ void vsz_log(int level, const char * msg_format, va_list fmt_args) {
 	__log_vlog_func(__state, level, msg_format, fmt_args);
 }
 
+#ifndef MINGW32
 int sz_level_to_syslog_level(int level) {
 	switch (level) {
 		case 0:
@@ -160,3 +163,4 @@ int sz_level_to_syslog_level(int level) {
 			return LOG_DEBUG;
 	}
 }
+#endif
