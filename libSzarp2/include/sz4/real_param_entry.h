@@ -21,8 +21,8 @@
 
 namespace sz4 {
 
-template<class V, class T> class real_param_entry_in_buffer : public SzbParamObserver {
-	base *m_base;
+template<class V, class T, class B> class real_param_entry_in_buffer : public SzbParamObserver {
+	B* m_base;
 	typedef std::map<T, block_entry<V, T>*> map_type;
 	map_type m_blocks;
 
@@ -34,7 +34,7 @@ template<class V, class T> class real_param_entry_in_buffer : public SzbParamObs
 
 	bool m_refresh_file_list;
 public:
-	real_param_entry_in_buffer(base *_base, TParam* param, const boost::filesystem::wpath& param_dir) : m_base(_base), m_param(param), m_param_dir(param_dir), m_refresh_file_list(true)
+	real_param_entry_in_buffer(B *_base, TParam* param, const boost::filesystem::wpath& param_dir) : m_base(_base), m_param(param), m_param_dir(param_dir), m_refresh_file_list(true)
 		{}
 	void get_weighted_sum_impl(const T& start, const T& end, SZARP_PROBE_TYPE, weighted_sum<V, T>& sum)  {
 		refresh_if_needed();

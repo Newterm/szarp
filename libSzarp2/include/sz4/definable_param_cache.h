@@ -52,7 +52,7 @@ public:
 		m_probe_type(probe_type), m_current_non_fixed(2)
 	{}
 
-	bool get_value(const time_type& time, value_type& value) {
+	bool get_value(const time_type& time, value_type& value, bool& fixed) {
 		if (!m_blocks.size())
 			return false;
 
@@ -68,6 +68,7 @@ public:
 			return false;
 
 		value = j->value.first;
+		fixed = j->value.second == 0;
 		return true;
 	}
 

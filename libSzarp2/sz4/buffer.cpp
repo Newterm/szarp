@@ -28,20 +28,6 @@
 
 namespace sz4 {
 
-template<template<typename DT, typename TT> class param_entry_type, class data_type, class time_type> generic_param_entry* param_entry_build_t_3(base* _base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
-	return new param_entry_in_buffer<param_entry_type, data_type, time_type>(_base, param, buffer_directory);
-}
-
-template<template <typename DT, typename TT> class param_entry_type, class data_type> generic_param_entry* param_entry_build_t_2(base* _base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
-	switch (param->GetTimeType()) {
-		case TParam::SECOND:
-			return param_entry_build_t_3<param_entry_type, data_type, second_time_t>(_base, param, buffer_directory);
-		case TParam::NANOSECOND:
-			return param_entry_build_t_3<param_entry_type, data_type, nanosecond_time_t>(_base, param, buffer_directory);
-	}
-	return NULL;
-}
-
 void generic_param_entry::param_data_changed(TParam* param, const std::string& path) {
 	handle_param_data_changed(param, path);
 	boost::lock_guard<boost::recursive_mutex> lock(m_reference_list_lock);
@@ -64,41 +50,6 @@ void generic_param_entry::remove_reffering_param(generic_param_entry* param_entr
 generic_param_entry::~generic_param_entry() {
 	std::for_each(m_referring_params.begin(), m_referring_params.end(), std::bind2nd(std::mem_fun(&generic_param_entry::reffered_param_removed), this));
 	std::for_each(m_referred_params.begin(), m_referred_params.end(), std::bind2nd(std::mem_fun(&generic_param_entry::remove_reffering_param), this));
-}
-
-template<template <typename DT, typename TT> class param_entry_type> generic_param_entry* param_entry_build_t_1(base* _base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
-	switch (param->GetDataType()) {
-		case TParam::SHORT:
-			return param_entry_build_t_2<param_entry_type, short>(_base, param, buffer_directory);
-		case TParam::INT:
-			return param_entry_build_t_2<param_entry_type, int>(_base, param, buffer_directory);
-		case TParam::FLOAT:
-			return param_entry_build_t_2<param_entry_type, float>(_base, param, buffer_directory);
-		case TParam::DOUBLE:
-			return param_entry_build_t_2<param_entry_type, double>(_base, param, buffer_directory);
-	}
-	return NULL;
-}
-
-generic_param_entry* param_entry_build(base *_base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
-	switch (param->GetSz4Type()) {
-		case TParam::SZ4_REAL:
-			return param_entry_build_t_1<real_param_entry_in_buffer>(_base, param, buffer_directory);
-		case TParam::SZ4_LUA_OPTIMIZED: {
-			generic_param_entry* entry = param_entry_build_t_1<lua_optimized_param_entry_in_buffer>(_base, param, buffer_directory);
-			LuaExec::Param* exec_param = param->GetLuaExecParam();
-			for (std::vector<LuaExec::ParamRef>::iterator i = exec_param->m_par_refs.begin();
-					i != exec_param->m_par_refs.end();
-					i++) {
-				generic_param_entry* reffered_entry = _base->get_param_entry(i->m_param);
-				reffered_entry->add_reffering_param(entry);
-			}
-			return entry;
-		}
-		default:
-		case TParam::SZ4_NONE:
-			assert(false);
-	}
 }
 
 }

@@ -40,6 +40,10 @@ template<class T> bool value_is_no_data(const T& v) {
 	return v == std::numeric_limits<T>::min();
 }
 
+bool value_is_no_data(const double& v);
+
+bool value_is_no_data(const float& v);
+
 template<class T> struct time_difference { };
 
 template<> struct time_difference<second_time_t> {

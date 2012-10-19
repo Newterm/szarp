@@ -21,11 +21,11 @@
 
 namespace sz4 {
 
-template<> bool value_is_no_data<double>(const double& v) {
+bool value_is_no_data(const double& v) {
 	return std::isnan(v);
 }
 
-template<> bool value_is_no_data<float>(const float& v) {
+bool value_is_no_data(const float& v) {
 	return std::isnan(v);
 }
 

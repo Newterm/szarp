@@ -41,7 +41,7 @@
 
 namespace sz4 {
 
-class base;
+template<class ipk_container> class base_templ;
 
 #define SZ4_BASE_DATA_TYPE_SEQ (short)(int)(float)(double)
 #define SZ4_BASE_TIME_TYPE_SEQ (second_time_t)(nanosecond_time_t)
@@ -136,6 +136,7 @@ public:
 		m_sum.sum() = m_temp.sum();
 		m_sum.weight() = m_temp.weight();
 		m_sum.no_data_weight() = m_temp.no_data_weight();
+		m_sum.set_fixed(m_temp.fixed());
 	}
 };
 
@@ -149,8 +150,8 @@ public:
 
 }
 
-template<template <typename DT, typename TT> class PT, class V, class T> class param_entry_in_buffer : public generic_param_entry {
-	PT<V, T> m_entry;
+template<template <typename DT, typename TT, typename BT> class PT, class V, class T, class B> class param_entry_in_buffer : public generic_param_entry {
+	PT<V, T, B> m_entry;
 	
 	template<class RV, class RT> void get_weighted_sum_templ(const T& start, const T& end, SZARP_PROBE_TYPE probe_type, weighted_sum<RV, RT>& sum)  {
 		param_buffer_type_converion_helper::helper<V, T, RV, RT> helper(sum);
@@ -158,7 +159,7 @@ template<template <typename DT, typename TT> class PT, class V, class T> class p
 		helper.convert();
 	}
 public:
-	param_entry_in_buffer(base* _base, TParam* param, const boost::filesystem::wpath& base_dir) :
+	param_entry_in_buffer(B* _base, TParam* param, const boost::filesystem::wpath& base_dir) :
 		generic_param_entry(param), m_entry(_base, param, base_dir / param->GetSzbaseName())
 	{ }
 
@@ -212,7 +213,7 @@ public:
 };
 
 template<class ipk_conatiner_type> class buffer_templ {
-	base* m_base;
+	base_templ<ipk_conatiner_type>* m_base;
 	SzbParamMonitor* m_param_monitor;
 	ipk_conatiner_type* m_ipk_container;
 	boost::filesystem::wpath m_buffer_directory;
@@ -220,7 +221,7 @@ template<class ipk_conatiner_type> class buffer_templ {
 
 	void prepare_param(TParam* param);
 public:
-	buffer_templ(base* _base, SzbParamMonitor* param_monitor, ipk_conatiner_type* ipk_container, const std::wstring& buffer_directory)
+	buffer_templ(base_templ<ipk_conatiner_type>* _base, SzbParamMonitor* param_monitor, ipk_conatiner_type* ipk_container, const std::wstring& buffer_directory)
 		: m_base(_base), m_param_monitor(param_monitor), m_ipk_container(ipk_container), m_buffer_directory(buffer_directory) {}
 
 	generic_param_entry* get_param_entry(TParam* param) {
