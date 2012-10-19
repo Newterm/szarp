@@ -36,7 +36,7 @@ buffer* base::buffer_for_param(TParam* param) {
 	buf = m_buffers[param->GetConfigId()];
 
 	if (buf == NULL)
-		buf = m_buffers[param->GetConfigId()] = new buffer(this, &m_monitor, (m_szarp_data_dir / param->GetSzarpConfig()->GetPrefix() / L"sz4").file_string());
+		buf = m_buffers[param->GetConfigId()] = new buffer(this, &m_monitor, m_ipk_container, (m_szarp_data_dir / param->GetSzarpConfig()->GetPrefix() / L"sz4").file_string());
 
 	return buf;
 }

@@ -99,7 +99,7 @@ void Sz4BaseTestCase::test1() {
 	CPPUNIT_ASSERT(p21 != NULL);
 	CPPUNIT_ASSERT(p22 != NULL);
 
-	sz4::base base(base_dir_name.str());
+	sz4::base base(base_dir_name.str(), NULL);
 
 	sz4::weighted_sum<short, sz4::second_time_t> sum;
 	base.get_weighted_sum(p11, sz4::second_time_t(1000), sz4::second_time_t(2000), PT_SEC10, sum);

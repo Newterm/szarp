@@ -665,6 +665,35 @@ template<class container_type> void ParamConverterTempl<container_type>::Initali
 	AddVariable(L"PT_SEC10");
 }
 
+template<class IPKContainerType> bool optimize_lua_param(TParam* param, IPKContainerType* container) {
+	std::wstring param_text = SC::U2S(param->GetLuaScript());
+	std::wstring::const_iterator param_text_begin = param_text.begin();
+	std::wstring::const_iterator param_text_end = param_text.end();
+
+	LuaExec::Param* exec_param = param->GetLuaExecParam();
+	exec_param->m_optimized = false;	
+
+	lua_grammar::chunk param_code;
+
+	if (lua_grammar::parse(param_text_begin, param_text_end, param_code) && param_text_begin == param_text_end) {
+		LuaExec::ParamConverterTempl<IPKContainerType> pc(container);
+		try {
+			pc.ConvertParam(param_code, exec_param);
+			exec_param->m_optimized = true;
+		} catch (LuaExec::ParamConversionException &ex) {
+			sz_log(3, "Parameter %ls cannot be optimized, reason: %ls", param->GetName().c_str(), ex.what().c_str());
+#ifdef LUA_OPTIMIZER_DEBUG
+			lua_opt_debug_stream << "Parameter " << SC::S2A(param->GetName()) << " cannot be optimized, reason: " << SC::S2A(ex.what()) << std::endl;
+#endif
+		}
+	} else
+		sz_log(3, "Parameter %ls cannot be optimized, failed to parse its defiition", param->GetName().c_str());
+	
+
+	return exec_param->m_optimized;
+}
+
+
 }
 
 #endif

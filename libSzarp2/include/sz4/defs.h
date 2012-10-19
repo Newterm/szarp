@@ -79,11 +79,14 @@ template<class value_type, class time_type> struct weighted_sum {
 	sum_type m_sum;
 	time_diff_type m_weight;
 	time_diff_type m_no_data_weight;
+	bool m_fixed;
 
-	weighted_sum() : m_sum(0), m_weight(0), m_no_data_weight(0) {}
+	weighted_sum() : m_sum(0), m_weight(0), m_no_data_weight(0), m_fixed(true) {}
 	sum_type& sum() { return m_sum; }
 	time_diff_type& weight() { return m_weight; }
 	time_diff_type& no_data_weight() { return m_no_data_weight; }
+	bool fixed() { return m_fixed; }
+	void set_fixed(bool fixed) { m_fixed &= fixed; }
 };
 
 class search_condition {

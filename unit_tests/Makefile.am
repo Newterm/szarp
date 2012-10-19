@@ -21,4 +21,5 @@ unit_tests_SOURCES = \
 		sz4_definable_param_cache.cpp \
 		test_observer.h \
 		test_observer.cpp \
-		base_param_converter_unit_test.cpp
+		base_param_converter_unit_test.cpp \
+		sz4_lua_param_optimized.cpp

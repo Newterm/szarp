@@ -68,52 +68,60 @@ void Sz4BufferTestCase::test1() {
 	param.SetDataType(TParam::INT);
 
 	SzbParamMonitor monitor;
-	sz4::buffer* buffer = new sz4::buffer(NULL, &monitor, base_dir_name.str());
+	sz4::buffer* buffer = new sz4::buffer(NULL, &monitor, NULL, base_dir_name.str());
 	sz4::weighted_sum<int, sz4::second_time_t> sum;
 
 	buffer->get_weighted_sum(&param, sz4::second_time_t(1000), sz4::second_time_t(2000), PT_SEC10, sum);
 	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(5000), sum.sum());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(500), sum.weight());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(500), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(false, sum.fixed());
 
 	sum = sz4::weighted_sum<int, sz4::second_time_t>();
 	buffer->get_weighted_sum(&param, sz4::second_time_t(0), sz4::second_time_t(1000), PT_SEC10, sum);
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.weight());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(1000), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
 
 	sum = sz4::weighted_sum<int, sz4::second_time_t>();
 	buffer->get_weighted_sum(&param, sz4::second_time_t(2000), sz4::second_time_t(2050), PT_SEC10, sum);
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.weight());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(false, sum.fixed());
 
 	sum = sz4::weighted_sum<int, sz4::second_time_t>();
 	buffer->get_weighted_sum(&param, sz4::second_time_t(1050), sz4::second_time_t(1100), PT_SEC10, sum);
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.weight());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
 
 	sum = sz4::weighted_sum<int, sz4::second_time_t>();
 	buffer->get_weighted_sum(&param, sz4::second_time_t(1050), sz4::second_time_t(1150), PT_SEC10, sum);
 	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(10 * 50), sum.sum());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), sum.weight());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
 
 	sum = sz4::weighted_sum<int, sz4::second_time_t>();
 	buffer->get_weighted_sum(&param, sz4::second_time_t(1025), sz4::second_time_t(1175), PT_SEC10, sum);
 	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(10 * 75), sum.sum());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(75), sum.weight());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(75), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
 
 	sum = sz4::weighted_sum<int, sz4::second_time_t>();
 	buffer->get_weighted_sum(&param, sz4::second_time_t(1025), sz4::second_time_t(1025), PT_SEC10, sum);
 	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(0), sum.sum());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.weight());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
 
 	sum = sz4::weighted_sum<int, sz4::second_time_t>();
 	buffer->get_weighted_sum(&param, sz4::second_time_t(1075), sz4::second_time_t(1075), PT_SEC10, sum);
 	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(0), sum.sum());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.weight());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
 
 	delete buffer;
 	boost::filesystem::remove_all(boost::filesystem::wpath(base_dir_name.str()));
@@ -144,13 +152,14 @@ void Sz4BufferTestCase::test2() {
 	param.SetDataType(TParam::INT);
 
 	SzbParamMonitor monitor;
-	sz4::buffer buffer(NULL, &monitor, base_dir_name.str());
+	sz4::buffer buffer(NULL, &monitor, NULL, base_dir_name.str());
 	sz4::weighted_sum<int, sz4::second_time_t> sum;
 
 	buffer.get_weighted_sum(&param, sz4::second_time_t(1900), sz4::second_time_t(2000), PT_SEC10, sum);
 	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(500), sum.sum());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), sum.weight());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(false, sum.fixed());
 
 	TestObserver o;
 	monitor.add_observer(&o, &param, SC::S2A(param_dir_name.str()), 1);
@@ -170,6 +179,7 @@ void Sz4BufferTestCase::test2() {
 	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(1500), sum.sum());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(100), sum.weight());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
 
 	{
 		std::wstringstream ss;
@@ -187,6 +197,11 @@ void Sz4BufferTestCase::test2() {
 	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(31500), sum.sum());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(1100), sum.weight());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
+
+	sum = sz4::weighted_sum<int, sz4::second_time_t>();
+	buffer.get_weighted_sum(&param, sz4::second_time_t(1900), sz4::second_time_t(4000), PT_SEC10, sum);
+	CPPUNIT_ASSERT_EQUAL(false, sum.fixed());
 
 	boost::filesystem::remove_all(boost::filesystem::wpath(base_dir_name.str()));
 
@@ -226,7 +241,7 @@ void Sz4BufferTestCase::searchTest() {
 
 	
 	SzbParamMonitor monitor;
-	sz4::buffer buffer(NULL, &monitor, base_dir_name.str());
+	sz4::buffer buffer(NULL, &monitor, NULL, base_dir_name.str());
 
 	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(0), buffer.search_data_right(&param, sz4::second_time_t(0), sz4::second_time_t(2000), PT_SEC10, test_search_condition(0)));
 	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(100), buffer.search_data_right(&param, sz4::second_time_t(100), sz4::second_time_t(2000), PT_SEC10, test_search_condition(0)));

@@ -495,7 +495,7 @@ public:
 
 typedef ParamConverterTempl<IPKContainer> ParamConverter;
 
-bool optimize_lua_param(TParam* param, IPKContainer* container);
+template<class ipk_container_type> bool optimize_lua_param(TParam* param, ipk_container_type* container);
 
 }
 

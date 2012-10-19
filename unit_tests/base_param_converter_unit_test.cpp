@@ -4,6 +4,7 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
+#include "liblog.h"
 #include "szarp_base_common/lua_param_optimizer.h"
 #define LUA_OPTIMIZER_DEBUG
 #include "szarp_base_common/lua_param_optimizer_templ.h"
@@ -21,13 +22,20 @@ class BaseParamConverterTestCase : public CPPUNIT_NS::TestFixture
 
 CPPUNIT_TEST_SUITE_REGISTRATION( BaseParamConverterTestCase );
 
+namespace {
+
 class IPKContainerMock {
 	TParam param;
 public:
-	IPKContainerMock() : param(NULL) {}
+	IPKContainerMock() : param(NULL) {
+		param.SetConfigId(0);
+		param.SetParamId(0);
+	}
 	TSzarpConfig* GetConfig(const std::wstring&) { return (TSzarpConfig*) 1; }
 	TParam* GetParam(const std::wstring&) { return &param; }
 };
+
+}
 
 void BaseParamConverterTestCase::test1() {
 	IPKContainerMock mock;
@@ -49,7 +57,6 @@ void BaseParamConverterTestCase::test1() {
 }
 
 void BaseParamConverterTestCase::test2() {
-	return;
 	IPKContainerMock mock;
 	LuaExec::Param param;
 

@@ -211,16 +211,17 @@ public:
 	}
 };
 
-class buffer {
+template<class ipk_conatiner_type> class buffer_templ {
 	base* m_base;
 	SzbParamMonitor* m_param_monitor;
+	ipk_conatiner_type* m_ipk_container;
 	boost::filesystem::wpath m_buffer_directory;
 	std::vector<generic_param_entry*> m_param_ents;
 
 	void prepare_param(TParam* param);
 public:
-	buffer(base* _base, SzbParamMonitor* param_monitor, const std::wstring& buffer_directory)
-		: m_base(_base), m_param_monitor(param_monitor), m_buffer_directory(buffer_directory) {}
+	buffer_templ(base* _base, SzbParamMonitor* param_monitor, ipk_conatiner_type* ipk_container, const std::wstring& buffer_directory)
+		: m_base(_base), m_param_monitor(param_monitor), m_ipk_container(ipk_container), m_buffer_directory(buffer_directory) {}
 
 	generic_param_entry* get_param_entry(TParam* param) {
 		if (m_param_ents.size() <= param->GetParamId())
@@ -250,7 +251,7 @@ public:
 
 	void remove_param(TParam* param);
 
-	~buffer() {
+	~buffer_templ() {
 		for (std::vector<generic_param_entry*>::iterator i = m_param_ents.begin(); i != m_param_ents.end(); i++) {
 			if (*i)
 				(*i)->deregister_from_monitor(m_param_monitor);
@@ -258,6 +259,8 @@ public:
 		}
 	}
 };
+
+typedef buffer_templ<IPKContainer> buffer;
 
 }
 

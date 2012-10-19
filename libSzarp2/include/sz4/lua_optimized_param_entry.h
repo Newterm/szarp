@@ -49,17 +49,22 @@ public:
 	execution_engine(base* _base, TParam* param) : m_base(_base), m_exec_param(param->GetLuaExecParam()), m_initialized(false) {
 	}
 
-	double calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type) {
+	std::pair<double, bool> calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type) {
 		if (!m_initialized) {
 			initialize();
 			m_initialized = true;
 		}
 
+		m_base->fixed_stack().push(true);
 		m_vars[0] = nan("");
 		m_vars[1] = time;
 		m_vars[2] = probe_type;
 		m_exec_param->m_statement->Execute();
-		return m_vars[0];
+
+		bool fixed = m_base->fixed_stack().top();
+		m_base->fixed_stack().pop();
+	
+		return std::make_pair(m_vars[0], fixed);
 	}
 
 	virtual double Value(size_t param_index, const double& time_, const double& probe_type) {
@@ -71,6 +76,8 @@ public:
 			return sum.sum() / sum.weight();
 		else
 			return nan("");
+		assert(m_base->fixed_stack().size());
+		m_base->fixed_stack().top() &= sum.fixed();
 	}
 
 	virtual std::vector<double>& Vars() {
@@ -115,13 +122,14 @@ public:
 		while (current < end) {
 			value_type value;
 			if (m_cache[probe_type].get_value(current, value) == false) {
-				value = ee.calculate_value(current, probe_type);
-				m_cache[probe_type].store_value(current, value, /*XXX*/false);
+				std::pair<double, bool> r = ee.calculate_value(current, probe_type);
+				value = r.first;
+				m_cache[probe_type].store_value(value, current, r.second);
 			}
 
 			time_type next = szb_move_time(current, 1, probe_type);
 			if (!value_is_no_data(value)) {
-				sum.sum() += v;
+				sum.sum() += value * (next - current);
 				sum.weight() += next - current;
 			} else
 				sum.no_data_weight() += next - current;
@@ -130,7 +138,7 @@ public:
 
 	}
 
-	time_type search_data_right_impl(const time_type& start, const time_type& end, SZARP_PROBE_TYPE, const search_condition& condition) {
+	time_type search_data_right_impl(const time_type& start, const time_type& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) {
 		invalidate_non_fixed_if_needed();
 
 		execution_engine ee(m_base, m_param);
@@ -141,14 +149,14 @@ public:
 				return r.second;
 			
 			current = r.second;
-			value_type value = ee.calculate_value(current, probe_type);
-			m_cache[probe_type].store_value(current, value, /*XXX*/false);
+			std::pair<double, bool> vf = ee.calculate_value(current, probe_type);
+			m_cache[probe_type].store_value(vf.first, current, vf.second);
 		}
 
 		return invalid_time_value<time_type>::value;
 	}
 
-	time_type search_data_left_impl(const time_type& start, const time_type& end, SZARP_PROBE_TYPE, const search_condition& condition) {
+	time_type search_data_left_impl(const time_type& start, const time_type& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) {
 		invalidate_non_fixed_if_needed();
 
 		execution_engine ee(m_base, m_param);
@@ -157,10 +165,10 @@ public:
 			std::pair<bool, time_type> r = m_cache[probe_type].search_data_left(current, end, condition);
 			if (r.first)
 				return r.second;
-			
 			current = r.second;
-			value_type value = ee.calculate_value(current, probe_type);
-			m_cache[probe_type].store_value(current, value, /*XXX*/false);
+
+			std::pair<double, bool> vf = ee.calculate_value(current, probe_type);
+			m_cache[probe_type].store_value(vf.first, current, vf.second);
 		}
 
 		return invalid_time_value<time_type>::value;
@@ -180,6 +188,7 @@ public:
 		delete m_param->GetLuaExecParam();
 		m_param->SetLuaExecParam(NULL);
 		//go trough preparation procedure again
+		//XXX: reset cache as well
 		m_param->SetSz4Type(TParam::SZ4_NONE);
 	}
 

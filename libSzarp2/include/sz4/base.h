@@ -22,24 +22,28 @@
 #include "config.h"
 
 #include <vector>
+#include <stack>
 
 #include <boost/filesystem/path.hpp>
 
 #include "sz4/defs.h"
 #include "sz4/buffer.h"
 
-namespace sz4 {
+class IPKContainer;
 
-class buffer;
+namespace sz4 {
 
 class base {
 	const boost::filesystem::wpath m_szarp_data_dir;
 	std::vector<buffer*> m_buffers;
 	SzbParamMonitor m_monitor;
+	IPKContainer* m_ipk_container;
 
 	buffer* buffer_for_param(TParam* param);
+
+	std::stack<bool> m_fixed_stack;
 public:
-	base(const std::wstring& szarp_data_dir) : m_szarp_data_dir(szarp_data_dir) {}
+	base(const std::wstring& szarp_data_dir, IPKContainer* ipk_container) : m_szarp_data_dir(szarp_data_dir), m_ipk_container(ipk_container) {}
 
 	template<class V, class T> void get_weighted_sum(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, weighted_sum<V, T>& sum) {
 		buffer_for_param(param)->get_weighted_sum(param, start, end, probe_type, sum);
@@ -68,10 +72,13 @@ public:
 		buf->remove_param(param);
 	}
 
+	std::stack<bool>& fixed_stack() { return m_fixed_stack; }
+
 	~base() {
 		for (std::vector<buffer*>::iterator i = m_buffers.begin(); i != m_buffers.end(); i++)
 			delete *i;
 	}
+
 };
 
 }

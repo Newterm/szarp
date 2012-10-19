@@ -28,20 +28,6 @@
 
 namespace sz4 {
 
-void buffer::remove_param(TParam* param) {
-	if (m_param_ents.size() <= param->GetParamId())
-		return;
-
-	generic_param_entry* entry = m_param_ents[param->GetParamId()];
-	if (!entry)
-		return;
-
-	entry->deregister_from_monitor(m_param_monitor);
-	delete entry;
-
-	m_param_ents[param->GetParamId()] = NULL;
-}
-
 template<template<typename DT, typename TT> class param_entry_type, class data_type, class time_type> generic_param_entry* param_entry_build_t_3(base* _base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
 	return new param_entry_in_buffer<param_entry_type, data_type, time_type>(_base, param, buffer_directory);
 }
@@ -115,42 +101,12 @@ generic_param_entry* param_entry_build(base *_base, TParam* param, const boost::
 	}
 }
 
-generic_param_entry* buffer::create_param_entry(TParam* param) {
-	prepare_param(param);
-
-	return param_entry_build(m_base, param, m_buffer_directory);
 }
 
-void buffer::prepare_param(TParam* param) {
-	if (param->GetSz4Type() != TParam::SZ4_NONE)
-		return;
+#include "sz4/buffer_templ.h"
 
-	if (param->GetType() == TParam::P_REAL) {
-		param->SetSz4Type(TParam::SZ4_REAL);
-		return;
-	}
+namespace sz4 {
 
-	param->PrepareDefinable();
-	if (param->GetType() == TParam::P_COMBINED) {
-		param->SetSz4Type(TParam::SZ4_COMBINED);
-		return;
-	}
-
-	if (param->GetType() == TParam::P_DEFINABLE) {
-		param->SetSz4Type(TParam::SZ4_DEFINABLE);
-		return;
-	}
-
-	if (param->GetType() == TParam::P_LUA) {
-		LuaExec::Param* exec_param = new LuaExec::Param();
-		param->SetLuaExecParam(exec_param);
-
-		if (LuaExec::optimize_lua_param(param, IPKContainer::GetObject())) 
-			param->SetSz4Type(TParam::SZ4_LUA);
-		else
-			param->SetSz4Type(TParam::SZ4_LUA_OPTIMIZED);
-		return;
-	}
-}
+template class buffer_templ<IPKContainer>;
 
 }

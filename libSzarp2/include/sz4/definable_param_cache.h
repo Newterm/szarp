@@ -176,7 +176,7 @@ public:
 				block.search_data_left_t(start, end, condition_true_or_expired_op(condition, m_current_non_fixed));
 		time_type time_found = block.search_result_left(start, j);
 		if (!invalid_time_value<time_type>::is_valid(time_found)) {
-			if (block.start_time() > szb_move_time(end, 1, m_probe_type)) 
+			if (block.start_time() > time_type(szb_move_time(end, 1, m_probe_type))) 
 				return std::make_pair(false, szb_move_time(block.start_time(), -1, m_probe_type));
 			else
 				return std::make_pair(true, time_found);

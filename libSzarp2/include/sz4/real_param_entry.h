@@ -43,6 +43,7 @@ public:
 		if (m_blocks.size() == 0) {
 			//no such block - nodata
 			sum.no_data_weight() += end - start;
+			sum.set_fixed(false);
 			return;
 		}
 
@@ -54,8 +55,10 @@ public:
 		do {
 			block_entry<V, T>* entry = i->second;
 
-			if (end < entry->block().start_time())
-				break;
+			if (end < entry->block().start_time()) {
+				sum.no_data_weight() += end - current;
+				return;
+			}
 
 			if (current < entry->block().start_time()) {
 				sum.no_data_weight() += entry->block().start_time() - current;
@@ -73,9 +76,10 @@ public:
 			std::advance(i, 1);
 		} while (i != m_blocks.end());
 
-		if (current < end)
+		if (current < end) {
 			sum.no_data_weight() += end - current;
-
+			sum.set_fixed(false);
+		}
 	}
 
 	T search_data_right_impl(const T& start, const T& end, SZARP_PROBE_TYPE, const search_condition& condition) {
