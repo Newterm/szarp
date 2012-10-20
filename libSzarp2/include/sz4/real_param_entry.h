@@ -21,7 +21,7 @@
 
 namespace sz4 {
 
-template<class V, class T, class B> class real_param_entry_in_buffer : public SzbParamObserver {
+template<class V, class T, class B> class real_param_entry_in_buffer {
 	B* m_base;
 	typedef std::map<T, block_entry<V, T>*> map_type;
 	map_type m_blocks;
@@ -185,12 +185,12 @@ public:
 		}
 	}
 
-	void register_at_monitor(SzbParamMonitor* monitor) {
-		monitor->add_observer(this, m_param, m_param_dir.external_file_string(), 0);
+	void register_at_monitor(generic_param_entry* entry, SzbParamMonitor* monitor) {
+		monitor->add_observer(entry, m_param, m_param_dir.external_file_string(), 0);
 	}
 
-	void deregister_from_monitor(SzbParamMonitor* monitor) {
-		monitor->remove_observer(this);
+	void deregister_from_monitor(generic_param_entry* entry, SzbParamMonitor* monitor) {
+		monitor->remove_observer(entry);
 	}
 
 	void param_data_changed(TParam*, const std::string& path) {

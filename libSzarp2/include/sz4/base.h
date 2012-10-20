@@ -84,6 +84,8 @@ public:
 
 	std::stack<bool>& fixed_stack() { return m_fixed_stack; }
 
+	SzbParamMonitor& param_monitor() { return m_monitor; }
+
 	~base_templ() {
 		for (typename std::vector<buffer_templ<ipk_container_type>*>::iterator i = m_buffers.begin(); i != m_buffers.end(); i++)
 			delete *i;

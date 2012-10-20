@@ -28,6 +28,7 @@
 #include "sz4/base.h"
 
 #include "test_serach_condition.h"
+#include "test_observer.h"
 
 class Sz4LuaParamOptimized : public CPPUNIT_NS::TestFixture
 {
@@ -100,7 +101,7 @@ public:
 	 {
 		param.SetConfigId(0);
 		param.SetParamId(0);
-		param.SetDataType(TParam::INT);
+		param.SetDataType(TParam::SHORT);
 		param.SetName(L"A:B:C");
 		param.SetParentSzarpConfig(&config);
 
@@ -134,15 +135,45 @@ public:
 
 void Sz4LuaParamOptimized::test2() {
 	unit_test::IPKContainerMock2 mock;
-	sz4::base_templ<unit_test::IPKContainerMock2> base(L"", &mock);
 
+	std::wstringstream base_dir_name;
+	base_dir_name << L"/tmp/sz4_lua_param_optimized" << getpid() << L"." << time(NULL) << L".tmp";
+	boost::filesystem::wpath base_path(base_dir_name.str());
+	boost::filesystem::wpath param_dir(base_path / L"TEST/sz4/A/B/C");
+	boost::filesystem::create_directories(param_dir);
+
+	sz4::base_templ<unit_test::IPKContainerMock2> base(base_path.file_string(), &mock);
 	sz4::buffer_templ<unit_test::IPKContainerMock2>* buff = base.buffer_for_param(mock.GetParam(L"BASE:A:B:D"));
 
-	sz4::weighted_sum<double, sz4::second_time_t> sum;
-	buff->get_weighted_sum(mock.GetParam(L"BASE:A:B:D"), 100u, 200u, PT_SEC10, sum);
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.weight());
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(100), sum.no_data_weight());
-	CPPUNIT_ASSERT_EQUAL(false, sum.fixed());
+	
+	TestObserver o;
+	base.param_monitor().add_observer(&o, mock.GetParam(L"BASE:A:B:C"), param_dir.external_file_string(), 10);
+	{
+		sz4::weighted_sum<double, sz4::second_time_t> sum;
+		buff->get_weighted_sum(mock.GetParam(L"BASE:A:B:D"), 100u, 200u, PT_SEC10, sum);
+		CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.weight());
+		CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(100), sum.no_data_weight());
+		CPPUNIT_ASSERT_EQUAL(false, sum.fixed());
 
+		std::wstringstream file_name;
+		file_name << std::setfill(L'0') << std::setw(10) << 100 << L".sz4";
+		std::ofstream ofs((param_dir / file_name.str()).external_file_string().c_str());
+
+		short v = 10;
+		ofs.write((const char*)&v, sizeof(v));
+
+		sz4::second_time_t t = 150;
+		ofs.write((const char*)&t, sizeof(t));
+	}
+
+	CPPUNIT_ASSERT(o.wait_for(1, 2));
+	{
+		sz4::weighted_sum<double, sz4::second_time_t> sum;
+		buff->get_weighted_sum(mock.GetParam(L"BASE:A:B:D"), 100u, 200u, PT_SEC10, sum);
+		CPPUNIT_ASSERT_EQUAL(10 * 50., sum.sum());
+		CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), sum.weight());
+		CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), sum.no_data_weight());
+		CPPUNIT_ASSERT_EQUAL(false, sum.fixed());
+	}
 }
 

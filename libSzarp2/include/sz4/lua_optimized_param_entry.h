@@ -185,10 +185,10 @@ public:
 		return invalid_time_value<time_type>::value;
 	}
 
-	void register_at_monitor(SzbParamMonitor* monitor) {
+	void register_at_monitor(generic_param_entry* entry, SzbParamMonitor* monitor) {
 	}
 
-	void deregister_from_monitor(SzbParamMonitor* monitor) {
+	void deregister_from_monitor(generic_param_entry* entry, SzbParamMonitor* monitor) {
 	}
 
 	void param_data_changed(TParam*, const std::string& path) {

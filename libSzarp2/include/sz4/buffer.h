@@ -47,7 +47,7 @@ template<class ipk_container> class base_templ;
 #define SZ4_BASE_TIME_TYPE_SEQ (second_time_t)(nanosecond_time_t)
 
 
-class generic_param_entry {
+class generic_param_entry : public SzbParamObserver {
 protected:
 	boost::recursive_mutex m_reference_list_lock;
 	TParam* m_param;
@@ -196,17 +196,20 @@ public:
 	}
 
 	void register_at_monitor(SzbParamMonitor* monitor) {
-		m_entry.register_at_monitor(monitor);
+		m_entry.register_at_monitor(this, monitor);
 	}
 
 	void deregister_from_monitor(SzbParamMonitor* monitor) {
-		m_entry.deregister_from_monitor(monitor);
+		m_entry.deregister_from_monitor(this, monitor);
 	}
 
 	void handle_param_data_changed(TParam* param, const std::string& path) {
 		m_entry.param_data_changed(param, path);
 	}
 			
+	PT<V, T, B>& get_contained_entry() {
+		return m_entry;
+	}
 
 	virtual ~param_entry_in_buffer() {
 	}
