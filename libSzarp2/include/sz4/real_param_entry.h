@@ -206,6 +206,28 @@ public:
 		}
 	}
 
+	T get_first_time() {
+		refresh_if_needed();
+		if (m_blocks.size() == 0)
+			return invalid_time_value<T>::value;
+		else {
+			block_entry<V, T>* entry = m_blocks.rbegin()->second;
+			entry->refresh_if_needed();
+			return entry->end_time();	
+		}
+	}
+
+	T get_last_time() {
+		refresh_if_needed();
+		if (m_blocks.size() == 0)
+			return invalid_time_value<T>::value;
+		else {
+			block<
+			return m_blocks.begin()->first;
+		}
+	}
+
+
 	void register_at_monitor(generic_param_entry* entry, SzbParamMonitor* monitor) {
 		monitor->add_observer(entry, m_param, m_param_dir.external_file_string(), 0);
 	}

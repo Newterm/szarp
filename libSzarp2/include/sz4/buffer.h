@@ -58,6 +58,10 @@ public:
 	generic_param_entry(TParam* param) : m_param(param) {}
 	TParam* get_param() const { return m_param; }
 
+	/* Macro below generates methods
+	 virtual void get_weighted_sum(time_type start_time, time_type end_type, weighted_sum<time_type, value_type>() = 0;
+	 for each possible combination of value and time types
+	*/
 #	define SZ4_GENERATE_ABSTRACT_GET_WSUM(r, seq) 	\
 	virtual void get_weighted_sum(const BOOST_PP_SEQ_ELEM(1, seq)& start, const BOOST_PP_SEQ_ELEM(1, seq)& end, SZARP_PROBE_TYPE probe_type, weighted_sum<BOOST_PP_SEQ_ELEM(0, seq), BOOST_PP_SEQ_ELEM(1, seq)>& wsum) = 0;
 
@@ -70,6 +74,12 @@ public:
 	virtual second_time_t search_data_left(const second_time_t& start, const second_time_t& end,  SZARP_PROBE_TYPE probe_type,const search_condition& condition) = 0;
 	virtual nanosecond_time_t search_data_right(const nanosecond_time_t& start, const nanosecond_time_t& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) = 0;
 	virtual nanosecond_time_t search_data_left(const nanosecond_time_t& start, const nanosecond_time_t& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) = 0;
+
+	virtual void get_first_time(nanosecond_time_t& t) = 1;
+	virtual void get_first_time(second_time_t& t) = 0;
+
+	virtual void get_last_time(nanosecond_time_t& t) = 0;
+	virtual void get_last_time(second_time_t& t) = 0;
 
 	virtual void register_at_monitor(SzbParamMonitor* monitor) = 0;
 	virtual void deregister_from_monitor(SzbParamMonitor* monitor) = 0;
@@ -183,6 +193,30 @@ public:
 		return RT(m_entry.search_data_left_impl(T(start), T(end), probe_type, condition));
 	}
 
+	template<class RT> get_first_time_templ(RT& t) {
+		t = RT(m_entry.get_first_time());
+	}
+
+	void get_first_time(nanosecond_time_t& t) {
+		get_first_time_templ(t);
+	}
+
+	void get_first_time(second_time_t& t) {
+		get_first_time_templ(t);
+	}
+
+	template<class RT> get_last_time_templ(RT& t) {
+		t = RT(m_entry.get_last_time());
+	}
+
+	void get_last_time(nanosecond_time_t& t) {
+		get_last_time_templ(t);
+	}	
+
+	void get_last_time(second_time_t& t) {
+		get_last_time_templ(t);
+	}
+
 	void register_at_monitor(SzbParamMonitor* monitor) {
 		m_entry.register_at_monitor(this, monitor);
 	}
@@ -210,10 +244,19 @@ template<class ipk_conatiner_type> class buffer_templ {
 	boost::filesystem::wpath m_buffer_directory;
 	std::vector<generic_param_entry*> m_param_ents;
 
+	generic_param_entry* m_heart_beat_entry;
+
 	void prepare_param(TParam* param);
 public:
-	buffer_templ(base_templ<ipk_conatiner_type>* _base, SzbParamMonitor* param_monitor, ipk_conatiner_type* ipk_container, const std::wstring& buffer_directory)
-		: m_base(_base), m_param_monitor(param_monitor), m_ipk_container(ipk_container), m_buffer_directory(buffer_directory) {}
+	buffer_templ(base_templ<ipk_conatiner_type>* _base, SzbParamMonitor* param_monitor, ipk_conatiner_type* ipk_container, const std::wstring& prefix, const std::wstring& buffer_directory)
+			: m_base(_base), m_param_monitor(param_monitor), m_ipk_container(ipk_container), m_buffer_directory(buffer_directory) {
+	
+		TParam* heart_beat_param = m_ipk_container->GetParam(prefix + L":Status:Meaner4:Heartbeat");
+		if (heart_beat_param)
+			m_heart_beat_entry = get_param_entry(m_ipk_container->GetParam(prefix + L":Status:Meaner4:Heartbeat"));
+		else
+			m_heart_beat_entry = NULL;
+	}
 
 	generic_param_entry* get_param_entry(TParam* param) {
 		if (m_param_ents.size() <= param->GetParamId())
@@ -240,6 +283,22 @@ public:
 	}
 
 	generic_param_entry* create_param_entry(TParam* param);
+
+	void get_first_time(nanosecond_time_t& t) {
+		m_heart_beat_entry->get_first_time(t);
+	}
+
+	void get_first_time(second_time_t& t) {
+		m_heart_beat_entry->get_first_time(t);
+	}
+
+	void get_last_time(nanosecond_time_t& t) {
+		m_heart_beat_entry->get_last_time(t);
+	}
+
+	void get_last_time(second_time_t& t) {
+		m_heart_beat_entry->get_last_time(t);
+	}
 
 	void remove_param(TParam* param);
 

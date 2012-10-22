@@ -61,9 +61,10 @@ public:
 			m_buffers.resize(param->GetConfigId() + 1, NULL);
 		buf = m_buffers[param->GetConfigId()];
 
-		if (buf == NULL)
-			buf = m_buffers[param->GetConfigId()] = new buffer_templ<ipk_container_type>(this, &m_monitor, m_ipk_container, (m_szarp_data_dir / param->GetSzarpConfig()->GetPrefix() / L"sz4").file_string());
-
+		if (buf == NULL) {
+			std::wstring prefix = param->GetSzarpConfig()->GetPrefix();	
+			buf = m_buffers[param->GetConfigId()] = new buffer_templ<ipk_container_type>(this, &m_monitor, m_ipk_container, prefix, (m_szarp_data_dir / prefix / L"sz4").file_string());
+		}
 		return buf;
 	}
 
