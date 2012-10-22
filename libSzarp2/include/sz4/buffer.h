@@ -85,12 +85,13 @@ public:
 };
 
 template<class V, class T> class block_entry {
+protected:
 	concrete_block<V, T> m_block;
 	bool m_needs_refresh;
 	const boost::filesystem::wpath m_block_path;
 public:
-	block_entry(const T& start_time, const std::wstring& block_path) :
-		m_block(start_time), m_needs_refresh(true), m_block_path(block_path) {}
+	block_entry(const T& start_time) :
+		m_block(start_time), m_needs_refresh(true) {}
 
 	void get_weighted_sum(const T& start, const T& end, weighted_sum<V, T>& wsum) {
 		m_block.get_weighted_sum(start, end, wsum);
@@ -102,19 +103,6 @@ public:
 
 	T search_data_left(const T& start, const T& end, const search_condition& condition) {
 		return m_block.search_data_left(start, end, condition);
-	}
-
-	void refresh_if_needed() {
-		if (!m_needs_refresh)
-			return;
-
-		std::vector<value_time_pair<V, T> > values;
-		size_t size = boost::filesystem::file_size(m_block_path);
-		values.resize(size / sizeof(value_time_pair<V, T>));
-
-		if (load_file_locked(m_block_path, (char*) &values[0], values.size() * sizeof(value_time_pair<V, T>)))
-			m_block.set_data(values);
-		m_needs_refresh = false;
 	}
 
 	void set_needs_refresh() {

@@ -21,9 +21,30 @@
 
 namespace sz4 {
 
+template<class V, class T> class file_block_entry : public block_entry<V, T> {
+	const boost::filesystem::wpath m_block_path;
+public:
+	file_block_entry(const T& start_time, const std::wstring& block_path) :
+		block_entry<V, T>(start_time), m_block_path(block_path) {}
+
+	void refresh_if_needed() {
+		if (!this->m_needs_refresh)
+			return;
+
+		std::vector<value_time_pair<V, T> > values;
+		size_t size = boost::filesystem::file_size(m_block_path);
+		values.resize(size / sizeof(value_time_pair<V, T>));
+
+		if (load_file_locked(m_block_path, (char*) &values[0], values.size() * sizeof(value_time_pair<V, T>)))
+			this->m_block.set_data(values);
+		this->m_needs_refresh = false;
+	}
+};
+
+
 template<class V, class T, class B> class real_param_entry_in_buffer {
 	B* m_base;
-	typedef std::map<T, block_entry<V, T>*> map_type;
+	typedef std::map<T, file_block_entry<V, T>*> map_type;
 	map_type m_blocks;
 
 	TParam* m_param;
@@ -53,7 +74,7 @@ public:
 		if (i != m_blocks.begin())
 			std::advance(i, -1);
 		do {
-			block_entry<V, T>* entry = i->second;
+			file_block_entry<V, T>* entry = i->second;
 
 			if (end < entry->block().start_time()) {
 				sum.no_data_weight() += end - current;
@@ -93,7 +114,7 @@ public:
 			std::advance(i, -1);
 
 		while (i != m_blocks.end()) {
-			block_entry<V, T>* entry = i->second;
+			file_block_entry<V, T>* entry = i->second;
 			if (entry->block().start_time() >= end)
 				break;
 
@@ -118,7 +139,7 @@ public:
 			std::advance(i, -1);
 
 		while (true) {
-			block_entry<V, T>* entry = i->second;
+			file_block_entry<V, T>* entry = i->second;
 
 			entry->refresh_if_needed();
 			if (entry->block().end_time() <= end)
@@ -181,7 +202,7 @@ public:
 			if (m_blocks.find(file_time) != m_blocks.end())
 				continue;
 
-			m_blocks.insert(std::make_pair(file_time, new block_entry<V, T>(file_time, file_path)));
+			m_blocks.insert(std::make_pair(file_time, new file_block_entry<V, T>(file_time, file_path)));
 		}
 	}
 
