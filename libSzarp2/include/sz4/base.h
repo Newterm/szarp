@@ -27,15 +27,19 @@
 #include <boost/filesystem/path.hpp>
 
 #include "sz4/defs.h"
+#include "sz4/types.h"
 #include "sz4/buffer.h"
-
-class IPKContainer;
 
 namespace sz4 {
 
-template<class ipk_container_type> class base_templ {
+template<class types> class buffer_templ;
+
+template<class types> class base_templ {
+public:
+	typedef typename types::ipk_container_type ipk_container_type;
+private:
 	const boost::filesystem::wpath m_szarp_data_dir;
-	std::vector<buffer_templ<ipk_container_type>*> m_buffers;
+	std::vector<buffer_templ<types>*> m_buffers;
 	SzbParamMonitor m_monitor;
 	ipk_container_type* m_ipk_container;
 
@@ -55,15 +59,15 @@ public:
 		return buffer_for_param(param)->search_data_left(param, start, end, probe_type, condition);
 	}
 
-	buffer_templ<ipk_container_type>* buffer_for_param(TParam* param) {
-		buffer_templ<ipk_container_type>* buf;
+	buffer_templ<types>* buffer_for_param(TParam* param) {
+		buffer_templ<types>* buf;
 		if (param->GetConfigId() >= m_buffers.size())
 			m_buffers.resize(param->GetConfigId() + 1, NULL);
 		buf = m_buffers[param->GetConfigId()];
 
 		if (buf == NULL) {
 			std::wstring prefix = param->GetSzarpConfig()->GetPrefix();	
-			buf = m_buffers[param->GetConfigId()] = new buffer_templ<ipk_container_type>(this, &m_monitor, m_ipk_container, prefix, (m_szarp_data_dir / prefix / L"sz4").file_string());
+			buf = m_buffers[param->GetConfigId()] = new buffer_templ<types>(this, &m_monitor, m_ipk_container, prefix, (m_szarp_data_dir / prefix / L"sz4").file_string());
 		}
 		return buf;
 	}
@@ -76,7 +80,7 @@ public:
 		if (param->GetConfigId() >= m_buffers.size())
 			return;
 
-		buffer* buf = m_buffers[param->GetConfigId()];
+		buffer_templ<types>* buf = m_buffers[param->GetConfigId()];
 		if (buf == NULL)
 			return;
 
@@ -88,13 +92,13 @@ public:
 	SzbParamMonitor& param_monitor() { return m_monitor; }
 
 	~base_templ() {
-		for (typename std::vector<buffer_templ<ipk_container_type>*>::iterator i = m_buffers.begin(); i != m_buffers.end(); i++)
+		for (typename std::vector<buffer_templ<types>*>::iterator i = m_buffers.begin(); i != m_buffers.end(); i++)
 			delete *i;
 	}
 
 };
 
-typedef base_templ<IPKContainer> base;
+typedef base_templ<base_types> base;
 
 }
 

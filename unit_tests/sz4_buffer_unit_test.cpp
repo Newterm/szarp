@@ -10,17 +10,26 @@
 
 #include "conversion.h"
 #include "szarp_config.h"
+#include "liblog.h"
+
+#include "szarp_base_common/defines.h"
+#include "szarp_base_common/lua_param_optimizer.h"
+#include "szarp_base_common/lua_param_optimizer_templ.h"
 
 #include "sz4/defs.h"
 #include "sz4/time.h"
 #include "sz4/block.h"
 #include "sz4/path.h"
-#include "sz4/block.h"
+#include "sz4/base.h"
 #include "sz4/buffer.h"
+#include "sz4/real_param_entry.h"
+#include "sz4/lua_optimized_param_entry.h"
+#include "sz4/buffer_templ.h"
 #include "sz4/load_file_locked.h"
 
 #include "test_observer.h"
 #include "test_serach_condition.h"
+#include "simple_mocks.h"
 
 class Sz4BufferTestCase : public CPPUNIT_NS::TestFixture
 {
@@ -68,7 +77,9 @@ void Sz4BufferTestCase::test1() {
 	param.SetDataType(TParam::INT);
 
 	SzbParamMonitor monitor;
-	sz4::buffer* buffer = new sz4::buffer(NULL, &monitor, NULL, base_dir_name.str());
+	mocks::IPKContainerMock container_mock;
+	container_mock.add_param(&param);
+	sz4::buffer_templ<mocks::mock_types>* buffer = new sz4::buffer_templ<mocks::mock_types>(NULL, &monitor, &container_mock, L"TEST", base_dir_name.str());
 	sz4::weighted_sum<int, sz4::second_time_t> sum;
 
 	buffer->get_weighted_sum(&param, sz4::second_time_t(1000), sz4::second_time_t(2000), PT_SEC10, sum);
@@ -146,13 +157,14 @@ void Sz4BufferTestCase::test2() {
 
 
 	TParam param(NULL);
-	param.SetParamId(0);
 	param.SetName(L"A:A:A");
 	param.SetTimeType(TParam::SECOND);
 	param.SetDataType(TParam::INT);
 
 	SzbParamMonitor monitor;
-	sz4::buffer buffer(NULL, &monitor, NULL, base_dir_name.str());
+	mocks::IPKContainerMock container_mock;
+	container_mock.add_param(&param);
+	sz4::buffer_templ<mocks::mock_types> buffer(NULL, &monitor, &container_mock, L"TEST", base_dir_name.str());
 	sz4::weighted_sum<int, sz4::second_time_t> sum;
 
 	buffer.get_weighted_sum(&param, sz4::second_time_t(1900), sz4::second_time_t(2000), PT_SEC10, sum);
@@ -234,14 +246,15 @@ void Sz4BufferTestCase::searchTest() {
 
 
 	TParam param(NULL);
-	param.SetParamId(0);
 	param.SetName(L"A:A:A");
 	param.SetTimeType(TParam::SECOND);
 	param.SetDataType(TParam::INT);
 
 	
 	SzbParamMonitor monitor;
-	sz4::buffer buffer(NULL, &monitor, NULL, base_dir_name.str());
+	mocks::IPKContainerMock container_mock;
+	container_mock.add_param(&param);
+	sz4::buffer_templ<mocks::mock_types> buffer(NULL, &monitor, &container_mock, L"TEST", base_dir_name.str());
 
 	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(0), buffer.search_data_right(&param, sz4::second_time_t(0), sz4::second_time_t(2000), PT_SEC10, test_search_condition(0)));
 	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(100), buffer.search_data_right(&param, sz4::second_time_t(100), sz4::second_time_t(2000), PT_SEC10, test_search_condition(0)));

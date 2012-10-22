@@ -42,8 +42,8 @@ public:
 };
 
 
-template<class V, class T, class B> class real_param_entry_in_buffer {
-	B* m_base;
+template<class V, class T, class types> class real_param_entry_in_buffer {
+	base_templ<types>* m_base;
 	typedef std::map<T, file_block_entry<V, T>*> map_type;
 	map_type m_blocks;
 
@@ -55,7 +55,7 @@ template<class V, class T, class B> class real_param_entry_in_buffer {
 
 	bool m_refresh_file_list;
 public:
-	real_param_entry_in_buffer(B *_base, TParam* param, const boost::filesystem::wpath& param_dir) : m_base(_base), m_param(param), m_param_dir(param_dir), m_refresh_file_list(true)
+	real_param_entry_in_buffer(base_templ<types> *_base, TParam* param, const boost::filesystem::wpath& param_dir) : m_base(_base), m_param(param), m_param_dir(param_dir), m_refresh_file_list(true)
 		{}
 	void get_weighted_sum_impl(const T& start, const T& end, SZARP_PROBE_TYPE, weighted_sum<V, T>& sum)  {
 		refresh_if_needed();
@@ -211,9 +211,9 @@ public:
 		if (m_blocks.size() == 0)
 			return invalid_time_value<T>::value;
 		else {
-			block_entry<V, T>* entry = m_blocks.rbegin()->second;
+			file_block_entry<V, T>* entry = m_blocks.rbegin()->second;
 			entry->refresh_if_needed();
-			return entry->end_time();	
+			return entry->block().end_time();	
 		}
 	}
 
@@ -222,8 +222,9 @@ public:
 		if (m_blocks.size() == 0)
 			return invalid_time_value<T>::value;
 		else {
-			block<
-			return m_blocks.begin()->first;
+			file_block_entry<V, T>* entry = m_blocks.rbegin()->second;
+			entry->refresh_if_needed();
+			return entry->block().end_time();
 		}
 	}
 

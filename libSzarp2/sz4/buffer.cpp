@@ -21,8 +21,8 @@
 
 #include "szarp_config.h"
 #include "szarp_base_common/lua_param_optimizer.h"
-#include "sz4/buffer.h"
 #include "sz4/base.h"
+#include "sz4/buffer.h"
 #include "sz4/real_param_entry.h"
 #include "sz4/lua_optimized_param_entry.h"
 
@@ -58,6 +58,6 @@ generic_param_entry::~generic_param_entry() {
 
 namespace sz4 {
 
-template class buffer_templ<IPKContainer>;
+template class buffer_templ<base_types>;
 
 }

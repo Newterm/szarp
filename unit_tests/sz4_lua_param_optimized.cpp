@@ -15,13 +15,13 @@
 #include "liblog.h"
 #include "szarp_base_common/defines.h"
 #include "szarp_base_common/lua_param_optimizer.h"
+#include "szarp_base_common/lua_param_optimizer_templ.h"
 #include "sz4/defs.h"
 #include "sz4/time.h"
 #include "sz4/path.h"
 #include "sz4/block.h"
 #include "sz4/buffer.h"
 #include "sz4/definable_param_cache.h"
-#include "szarp_base_common/lua_param_optimizer_templ.h"
 #include "sz4/real_param_entry.h"
 #include "sz4/lua_optimized_param_entry.h"
 #include "sz4/buffer_templ.h"
@@ -63,7 +63,7 @@ public:
 );
 		param.SetParentSzarpConfig(&config);
 
-		config.SetName(L"TEST", L"TEST");
+		config.SetName(L"BASE", L"BASE");
 	}
 	TSzarpConfig* GetConfig(const std::wstring&) { return &config; }
 	TParam* GetParam(const std::wstring&) { return &param; }
@@ -77,10 +77,20 @@ CPPUNIT_TEST_SUITE_REGISTRATION( Sz4LuaParamOptimized );
 void Sz4LuaParamOptimized::setUp() {
 }
 
+namespace {
+
+struct test_types {
+	typedef IPKContainerMock1 ipk_container_type;
+};
+
+}
+
+
+
 void Sz4LuaParamOptimized::test1() {
 	IPKContainerMock1 mock;
-	sz4::base_templ<IPKContainerMock1> base(L"", &mock);
-	sz4::buffer_templ<IPKContainerMock1>* buff = base.buffer_for_param(mock.GetParam(L""));
+	sz4::base_templ<test_types> base(L"", &mock);
+	sz4::buffer_templ<test_types>* buff = base.buffer_for_param(mock.GetParam(L""));
 
 	sz4::weighted_sum<double, sz4::second_time_t> sum;
 	buff->get_weighted_sum(mock.GetParam(L""), 100u, 200u, PT_SEC10, sum);
@@ -94,10 +104,12 @@ namespace unit_test {
 class IPKContainerMock2 {
 	TParam param;
 	TParam param2;
+	TParam param3;
 	TSzarpConfig config;
 public:
 	IPKContainerMock2() : param(NULL, NULL, std::wstring(), TParam::NONE, TParam::P_REAL),
-				param2(NULL, NULL, std::wstring(), TParam::LUA_VA, TParam::P_LUA)
+				param2(NULL, NULL, std::wstring(), TParam::LUA_VA, TParam::P_LUA),
+				param3(NULL, NULL, std::wstring(), TParam::NONE, TParam::P_REAL)
 	 {
 		param.SetConfigId(0);
 		param.SetParamId(0);
@@ -113,7 +125,13 @@ public:
 );
 		param2.SetParentSzarpConfig(&config);
 
-		config.SetName(L"TEST", L"TEST");
+		param3.SetConfigId(0);
+		param3.SetParamId(3);
+		param3.SetDataType(TParam::DOUBLE);
+		param3.SetParentSzarpConfig(&config);
+
+
+		config.SetName(L"BASE", L"BASE");
 	}
 
 	TSzarpConfig* GetConfig(const std::wstring&) { return (TSzarpConfig*) 1; }
@@ -124,10 +142,17 @@ public:
 
 		if (name == L"BASE:A:B:D")
 			return &param2;
+
+		if (name == L"BASE:Status:Meaner4:Heartbeat")
+			return &param3;
 		
 		assert(false);
 		return NULL;
 	}
+};
+
+struct test_types {
+	typedef IPKContainerMock2 ipk_container_type;
 };
 
 }
@@ -139,11 +164,11 @@ void Sz4LuaParamOptimized::test2() {
 	std::wstringstream base_dir_name;
 	base_dir_name << L"/tmp/sz4_lua_param_optimized" << getpid() << L"." << time(NULL) << L".tmp";
 	boost::filesystem::wpath base_path(base_dir_name.str());
-	boost::filesystem::wpath param_dir(base_path / L"TEST/sz4/A/B/C");
+	boost::filesystem::wpath param_dir(base_path / L"BASE/sz4/A/B/C");
 	boost::filesystem::create_directories(param_dir);
 
-	sz4::base_templ<unit_test::IPKContainerMock2> base(base_path.file_string(), &mock);
-	sz4::buffer_templ<unit_test::IPKContainerMock2>* buff = base.buffer_for_param(mock.GetParam(L"BASE:A:B:D"));
+	sz4::base_templ<unit_test::test_types> base(base_path.file_string(), &mock);
+	sz4::buffer_templ<unit_test::test_types>* buff = base.buffer_for_param(mock.GetParam(L"BASE:A:B:D"));
 
 	
 	TestObserver o;

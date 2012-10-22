@@ -34,6 +34,7 @@
 
 #include "szarp_base_common/defines.h"
 #include "sz4/defs.h"
+#include "sz4/types.h"
 #include "sz4/time.h"
 #include "sz4/block.h"
 #include "sz4/path.h"
@@ -41,7 +42,7 @@
 
 namespace sz4 {
 
-template<class ipk_container> class base_templ;
+template<class types> class base_templ;
 
 #define SZ4_BASE_DATA_TYPE_SEQ (short)(int)(float)(double)
 #define SZ4_BASE_TIME_TYPE_SEQ (second_time_t)(nanosecond_time_t)
@@ -75,7 +76,7 @@ public:
 	virtual nanosecond_time_t search_data_right(const nanosecond_time_t& start, const nanosecond_time_t& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) = 0;
 	virtual nanosecond_time_t search_data_left(const nanosecond_time_t& start, const nanosecond_time_t& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) = 0;
 
-	virtual void get_first_time(nanosecond_time_t& t) = 1;
+	virtual void get_first_time(nanosecond_time_t& t) = 0;
 	virtual void get_first_time(second_time_t& t) = 0;
 
 	virtual void get_last_time(nanosecond_time_t& t) = 0;
@@ -148,8 +149,8 @@ public:
 
 }
 
-template<template <typename DT, typename TT, typename BT> class PT, class V, class T, class B> class param_entry_in_buffer : public generic_param_entry {
-	PT<V, T, B> m_entry;
+template<template <typename DT, typename TT, typename BT> class PT, class V, class T, class BT> class param_entry_in_buffer : public generic_param_entry {
+	PT<V, T, BT> m_entry;
 	
 	template<class RV, class RT> void get_weighted_sum_templ(const T& start, const T& end, SZARP_PROBE_TYPE probe_type, weighted_sum<RV, RT>& sum)  {
 		param_buffer_type_converion_helper::helper<V, T, RV, RT> helper(sum);
@@ -157,7 +158,7 @@ template<template <typename DT, typename TT, typename BT> class PT, class V, cla
 		helper.convert();
 	}
 public:
-	param_entry_in_buffer(B* _base, TParam* param, const boost::filesystem::wpath& base_dir) :
+	param_entry_in_buffer(base_templ<BT>* _base, TParam* param, const boost::filesystem::wpath& base_dir) :
 		generic_param_entry(param), m_entry(_base, param, base_dir / param->GetSzbaseName())
 	{ }
 
@@ -193,7 +194,7 @@ public:
 		return RT(m_entry.search_data_left_impl(T(start), T(end), probe_type, condition));
 	}
 
-	template<class RT> get_first_time_templ(RT& t) {
+	template<class RT> void get_first_time_templ(RT& t) {
 		t = RT(m_entry.get_first_time());
 	}
 
@@ -205,7 +206,7 @@ public:
 		get_first_time_templ(t);
 	}
 
-	template<class RT> get_last_time_templ(RT& t) {
+	template<class RT> void get_last_time_templ(RT& t) {
 		t = RT(m_entry.get_last_time());
 	}
 
@@ -229,7 +230,7 @@ public:
 		m_entry.param_data_changed(param, path);
 	}
 			
-	PT<V, T, B>& get_contained_entry() {
+	PT<V, T, base_templ<BT> >& get_contained_entry() {
 		return m_entry;
 	}
 
@@ -237,10 +238,11 @@ public:
 	}
 };
 
-template<class ipk_conatiner_type> class buffer_templ {
-	base_templ<ipk_conatiner_type>* m_base;
+template<class types> class buffer_templ {
+	typedef typename types::ipk_container_type ipk_container_type;
+	base_templ<types>* m_base;
 	SzbParamMonitor* m_param_monitor;
-	ipk_conatiner_type* m_ipk_container;
+	ipk_container_type* m_ipk_container;
 	boost::filesystem::wpath m_buffer_directory;
 	std::vector<generic_param_entry*> m_param_ents;
 
@@ -248,7 +250,7 @@ template<class ipk_conatiner_type> class buffer_templ {
 
 	void prepare_param(TParam* param);
 public:
-	buffer_templ(base_templ<ipk_conatiner_type>* _base, SzbParamMonitor* param_monitor, ipk_conatiner_type* ipk_container, const std::wstring& prefix, const std::wstring& buffer_directory)
+	buffer_templ(base_templ<types>* _base, SzbParamMonitor* param_monitor, ipk_container_type* ipk_container, const std::wstring& prefix, const std::wstring& buffer_directory)
 			: m_base(_base), m_param_monitor(param_monitor), m_ipk_container(ipk_container), m_buffer_directory(buffer_directory) {
 	
 		TParam* heart_beat_param = m_ipk_container->GetParam(prefix + L":Status:Meaner4:Heartbeat");
@@ -311,7 +313,7 @@ public:
 	}
 };
 
-typedef buffer_templ<IPKContainer> buffer;
+typedef buffer_templ<base_types> buffer;
 
 }
 

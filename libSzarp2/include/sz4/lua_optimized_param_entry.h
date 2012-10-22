@@ -24,8 +24,8 @@
 
 namespace sz4 {
 
-template<class B> class execution_engine : public LuaExec::ExecutionEngine {
-	B* m_base;
+template<class types> class execution_engine : public LuaExec::ExecutionEngine {
+	base_templ<types>* m_base;
 	LuaExec::Param* m_exec_param;
 	std::vector<double> m_vars;
 	bool m_initialized;
@@ -48,7 +48,7 @@ template<class B> class execution_engine : public LuaExec::ExecutionEngine {
 
 	}
 public:
-	execution_engine(B* _base, TParam* param) : m_base(_base), m_exec_param(param->GetLuaExecParam()), m_initialized(false) {
+	execution_engine(base_templ<types>* _base, TParam* param) : m_base(_base), m_exec_param(param->GetLuaExecParam()), m_initialized(false) {
 	}
 
 	std::pair<double, bool> calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type) {
@@ -98,8 +98,8 @@ public:
 	}
 };
 
-template<class value_type, class time_type, class base_type> class lua_optimized_param_entry_in_buffer : public SzbParamObserver {
-	base_type* m_base;
+template<class value_type, class time_type, class types> class lua_optimized_param_entry_in_buffer : public SzbParamObserver {
+	base_templ<types>* m_base;
 	TParam* m_param;
 	bool m_invalidate_non_fixed;
 
@@ -107,7 +107,7 @@ template<class value_type, class time_type, class base_type> class lua_optimized
 	typedef std::vector<cache_type> cache_vector;
 	cache_vector m_cache;
 public:
-	lua_optimized_param_entry_in_buffer(base_type *_base, TParam* param, const boost::filesystem::wpath&) : m_base(_base), m_param(param), m_invalidate_non_fixed(false)
+	lua_optimized_param_entry_in_buffer(base_templ<types>*_base, TParam* param, const boost::filesystem::wpath&) : m_base(_base), m_param(param), m_invalidate_non_fixed(false)
 	{
 		for (SZARP_PROBE_TYPE p = PT_FIRST; p < PT_LAST; p = SZARP_PROBE_TYPE(p + 1))
 			m_cache.push_back(definable_param_cache<value_type, time_type>(p));
@@ -125,7 +125,7 @@ public:
 		invalidate_non_fixed_if_needed();
 
 		time_type current(start);
-		execution_engine<base_type> ee(m_base, m_param);
+		execution_engine<types> ee(m_base, m_param);
 
 		while (current < end) {
 			value_type value;
@@ -152,7 +152,7 @@ public:
 	time_type search_data_right_impl(const time_type& start, const time_type& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) {
 		invalidate_non_fixed_if_needed();
 
-		execution_engine<base_type> ee(m_base, m_param);
+		execution_engine<types> ee(m_base, m_param);
 		time_type current(start);
 		while (true) {
 			std::pair<bool, time_type> r = m_cache[probe_type].search_data_right(current, end, condition);
@@ -170,7 +170,7 @@ public:
 	time_type search_data_left_impl(const time_type& start, const time_type& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) {
 		invalidate_non_fixed_if_needed();
 
-		execution_engine<base_type> ee(m_base, m_param);
+		execution_engine<types> ee(m_base, m_param);
 		time_type current(start);
 		while (true) {
 			std::pair<bool, time_type> r = m_cache[probe_type].search_data_left(current, end, condition);
@@ -182,6 +182,14 @@ public:
 			m_cache[probe_type].store_value(vf.first, current, vf.second);
 		}
 
+		return invalid_time_value<time_type>::value;
+	}
+
+	time_type get_first_time() {
+		return invalid_time_value<time_type>::value;
+	}
+
+	time_type get_last_time() {
 		return invalid_time_value<time_type>::value;
 	}
 

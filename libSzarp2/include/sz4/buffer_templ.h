@@ -21,40 +21,40 @@
 
 namespace sz4 {
 
-template<template<typename DT, typename TT, class BT> class param_entry_type, class base_type, class data_type, class time_type> generic_param_entry* param_entry_build_t_3(base_type* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
-	return new param_entry_in_buffer<param_entry_type, data_type, time_type, base_type>(base, param, buffer_directory);
+template<template<typename DT, typename TT, class BT> class param_entry_type, class types, class data_type, class time_type> generic_param_entry* param_entry_build_t_3(base_templ<types>* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
+	return new param_entry_in_buffer<param_entry_type, data_type, time_type, types>(base, param, buffer_directory);
 }
 
-template<template <typename DT, typename TT, class BT> class param_entry_type, class base_type, class data_type> generic_param_entry* param_entry_build_t_2(base_type* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
+template<template <typename DT, typename TT, class BT> class param_entry_type, class types, class data_type> generic_param_entry* param_entry_build_t_2(base_templ<types>* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
 	switch (param->GetTimeType()) {
 		case TParam::SECOND:
-			return param_entry_build_t_3<param_entry_type, base_type, data_type, second_time_t>(base, param, buffer_directory);
+			return param_entry_build_t_3<param_entry_type, types, data_type, second_time_t>(base, param, buffer_directory);
 		case TParam::NANOSECOND:
-			return param_entry_build_t_3<param_entry_type, base_type, data_type, nanosecond_time_t>(base, param, buffer_directory);
+			return param_entry_build_t_3<param_entry_type, types, data_type, nanosecond_time_t>(base, param, buffer_directory);
 	}
 	return NULL;
 }
 
-template<template <typename DT, typename TT, class BT> class param_entry_type, class base_type> generic_param_entry* param_entry_build_t_1(base_type* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
+template<template <typename DT, typename TT, class BT> class param_entry_type, class types> generic_param_entry* param_entry_build_t_1(base_templ<types>* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
 	switch (param->GetDataType()) {
 		case TParam::SHORT:
-			return param_entry_build_t_2<param_entry_type, base_type, short>(base, param, buffer_directory);
+			return param_entry_build_t_2<param_entry_type, types, short>(base, param, buffer_directory);
 		case TParam::INT:
-			return param_entry_build_t_2<param_entry_type, base_type, int>(base, param, buffer_directory);
+			return param_entry_build_t_2<param_entry_type, types, int>(base, param, buffer_directory);
 		case TParam::FLOAT:
-			return param_entry_build_t_2<param_entry_type, base_type, float>(base, param, buffer_directory);
+			return param_entry_build_t_2<param_entry_type, types, float>(base, param, buffer_directory);
 		case TParam::DOUBLE:
-			return param_entry_build_t_2<param_entry_type, base_type, double>(base, param, buffer_directory);
+			return param_entry_build_t_2<param_entry_type, types, double>(base, param, buffer_directory);
 	}
 	return NULL;
 }
 
-template<class base_type> generic_param_entry* param_entry_build(base_type *base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
+template<class types> generic_param_entry* param_entry_build(base_templ<types> *base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
 	switch (param->GetSz4Type()) {
 		case TParam::SZ4_REAL:
-			return param_entry_build_t_1<real_param_entry_in_buffer, base_type>(base, param, buffer_directory);
+			return param_entry_build_t_1<real_param_entry_in_buffer, types>(base, param, buffer_directory);
 		case TParam::SZ4_LUA_OPTIMIZED: {
-			generic_param_entry* entry = param_entry_build_t_1<lua_optimized_param_entry_in_buffer, base_type>(base, param, buffer_directory);
+			generic_param_entry* entry = param_entry_build_t_1<lua_optimized_param_entry_in_buffer, types>(base, param, buffer_directory);
 			LuaExec::Param* exec_param = param->GetLuaExecParam();
 			for (std::vector<LuaExec::ParamRef>::iterator i = exec_param->m_par_refs.begin();
 					i != exec_param->m_par_refs.end();
@@ -71,7 +71,7 @@ template<class base_type> generic_param_entry* param_entry_build(base_type *base
 }
 
 
-template<class ipk_container_type> void buffer_templ<ipk_container_type>::remove_param(TParam* param) {
+template<class types> void buffer_templ<types>::remove_param(TParam* param) {
 	if (m_param_ents.size() <= param->GetParamId())
 		return;
 
@@ -85,13 +85,13 @@ template<class ipk_container_type> void buffer_templ<ipk_container_type>::remove
 	m_param_ents[param->GetParamId()] = NULL;
 }
 
-template<class ipk_container_type> generic_param_entry* buffer_templ<ipk_container_type>::create_param_entry(TParam* param) {
+template<class types> generic_param_entry* buffer_templ<types>::create_param_entry(TParam* param) {
 	prepare_param(param);
 
 	return param_entry_build(m_base, param, m_buffer_directory);
 }
 
-template<class ipk_container_type> void buffer_templ<ipk_container_type>::prepare_param(TParam* param) {
+template<class types> void buffer_templ<types>::prepare_param(TParam* param) {
 	if (param->GetSz4Type() != TParam::SZ4_NONE)
 		return;
 
