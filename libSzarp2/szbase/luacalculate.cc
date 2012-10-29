@@ -5,6 +5,7 @@
 #include "szbsearch.h"
 
 #include "luacalculate.h"
+#include "szarp_base_common/lua_utils.h"
 
 void lua_get_val(lua_State* lua, szb_buffer_t *buffer, time_t start, SZARP_PROBE_TYPE probe_type, int custom_length, double& result)
 {

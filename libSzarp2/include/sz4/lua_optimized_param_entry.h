@@ -74,8 +74,8 @@ public:
 		//this probably should depend on type of parameter we are calucating data for
 		weighted_sum<double, nanosecond_time_t> sum;
 		m_base->get_weighted_sum(ref.m_param,
-				time_,
-				szb_move_time(time_, 1, SZARP_PROBE_TYPE(probe_type), 0),
+				nanosecond_time_t(time_),
+				nanosecond_time_t(szb_move_time(nanosecond_time_t(time_), 1, SZARP_PROBE_TYPE(probe_type), 0)),
 				SZARP_PROBE_TYPE(probe_type),
 				sum);
 

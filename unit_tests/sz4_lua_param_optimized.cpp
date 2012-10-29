@@ -26,6 +26,7 @@
 #include "sz4/lua_optimized_param_entry.h"
 #include "sz4/buffer_templ.h"
 #include "sz4/base.h"
+#include "sz4/lua_interpreter_templ.h"
 
 #include "test_serach_condition.h"
 #include "test_observer.h"
@@ -67,6 +68,7 @@ public:
 	}
 	TSzarpConfig* GetConfig(const std::wstring&) { return &config; }
 	TParam* GetParam(const std::wstring&) { return &param; }
+	TParam* GetParam(const std::basic_string<unsigned char>&) { return &param; }
 };
 
 }
@@ -144,6 +146,20 @@ public:
 			return &param2;
 
 		if (name == L"BASE:Status:Meaner4:Heartbeat")
+			return &param3;
+		
+		assert(false);
+		return NULL;
+	}
+
+	TParam* GetParam(const std::basic_string<unsigned char>& name) {
+		if (name == (const unsigned char*)"BASE:A:B:C")
+			return &param;
+
+		if (name == (const unsigned char*)"BASE:A:B:D")
+			return &param2;
+
+		if (name == (const unsigned char*)"BASE:Status:Meaner4:Heartbeat")
 			return &param3;
 		
 		assert(false);

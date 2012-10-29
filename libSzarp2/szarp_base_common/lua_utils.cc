@@ -20,6 +20,9 @@
 #include <sstream>
 #include <cstring>
 
+#include "conversion.h"
+#include "szarp_config.h"
+#include "liblog.h"
 #include "szarp_base_common/defines.h"
 #include "szarp_base_common/lua_utils.h"
 
@@ -49,10 +52,10 @@ bool prepare_param(lua_State *lua, TParam* param) {
 	int ref = param->GetLuaParamReference();
 	if (ref == LUA_NOREF) {
 		ref = compile_lua_param(lua, param);
-		p->SetLuaParamRef(ref);
+		param->SetLuaParamRef(ref);
 	}
 
-	if (ret != LUA_REFNIL) {
+	if (ref != LUA_REFNIL) {
 		lua_rawgeti(lua, LUA_REGISTRYINDEX, ref);
 		return true;
 	} else {
@@ -62,7 +65,7 @@ bool prepare_param(lua_State *lua, TParam* param) {
 
 int compile_lua_param(lua_State *lua, TParam *p) {
 	int lua_function_reference = LUA_NOREF;
-	if (compile_lua_formula(lua, (const char*) p->GetLuaScript(), (const char*)SC::S2U(p->GetName()).c_str()), true)
+	if (compile_lua_formula(lua, (const char*) p->GetLuaScript(), (const char*)SC::S2U(p->GetName()).c_str(), true))
 		lua_function_reference = luaL_ref(lua, LUA_REGISTRYINDEX);
 	else {
 		sz_log(0, "Error compiling param %ls: %s\n", p->GetName().c_str(), lua_tostring(lua, -1));

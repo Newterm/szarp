@@ -41,4 +41,9 @@ szb_round_time(nanosecond_time_t t, SZARP_PROBE_TYPE probe_type, int custom_leng
 	return make_nanosecond_time(szb_round_time(time_t(t.second), probe_type, custom_length), 0);
 }
 
+std::ostream& operator<<(std::ostream& s, const nanosecond_time_t &t) {
+	return s << "(" << t.second << "," << t.nanosecond << ")";
+}
+
+
 }

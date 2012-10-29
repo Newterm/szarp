@@ -21,6 +21,7 @@
 
 #include <stdint.h>
 #include <ctime>
+#include <iostream>
 
 #include "szarp_base_common/time.h"
 
@@ -31,7 +32,7 @@ typedef uint32_t second_time_t;
 struct nanosecond_time_t {
 	nanosecond_time_t() : second(0), nanosecond(0) {}
 	nanosecond_time_t(uint32_t _second, uint32_t _nanosecond) : second(_second), nanosecond(_nanosecond) {}
-	nanosecond_time_t(double _time) : second(_second), nanosecond((_time - (long)_time) * 1000000000) {}
+	nanosecond_time_t(double _time) : second(_time), nanosecond((_time - (long)_time) * 1000000000) {}
 	nanosecond_time_t(const second_time_t& time) : second(time), nanosecond(0) {}
 	bool operator==(const nanosecond_time_t& t) const { return second == t.second && nanosecond == t.nanosecond; }
 	long long operator- (const nanosecond_time_t& t) const {
@@ -94,6 +95,8 @@ szb_move_time(const nanosecond_time_t& t, int count, SZARP_PROBE_TYPE probe_type
 
 nanosecond_time_t 
 szb_round_time(nanosecond_time_t t, SZARP_PROBE_TYPE probe_type, int custom_length = 0);
+
+std::ostream& operator<<(std::ostream& s, const nanosecond_time_t &t);
 
 }
 

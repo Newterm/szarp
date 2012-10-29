@@ -17,89 +17,78 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
+#include "conversion.h"
+
+#include "szarp_base_common/lua_utils.h"
+#include "sz4/types.h"
+#include "sz4/exceptions.h"
+#include "sz4/base.h"
 
 namespace sz4 {
 
-template<class base_types> struct base_ipk_pair : public std::pair<base_templ<base_types>*, typename base_types::ipk_container_type*> {}
+template<class types> struct base_ipk_pair : public std::pair<base_templ<types>*, typename types::ipk_container_type*> {};
 
 template<class types> base_ipk_pair<types>* get_base_ipk_pair(lua_State *lua) {
-	base_ipk_pair* ret;
+	base_ipk_pair<types>* ret;
 	lua_pushlightuserdata(lua, (void*)&lua_interpreter<types>::lua_base_ipk_pair_key);
 	lua_gettable(lua, LUA_REGISTRYINDEX);
-	ret = (base_ipk_pair*)lua_touserdata(lua, -1);
+	ret = (base_ipk_pair<types>*)lua_touserdata(lua, -1);
 	lua_pop(lua, 1);
 	return ret;
 }
 
-template<base_types> int lua_sz4(lua_State *lua) {
+template<class base_types> int lua_sz4(lua_State *lua) {
 	const unsigned char* param_name = (unsigned char*) luaL_checkstring(lua, 1);
+	if (param_name == NULL) 
+                 luaL_error(lua, "Invalid param name");
+
 	nanosecond_time_t time(lua_tonumber(lua, 2));
 	SZARP_PROBE_TYPE probe_type(static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 3)));
-	int custom_length(lua_tointeger(lua, 4));
 
-	base_ipk_pair<base_types>* base_ipk = get_base_ipk_pair(lua);
-
-	TParam* param = base_ipk.second->GetParam(param_name);
+	base_ipk_pair<base_types>* base_ipk = get_base_ipk_pair<base_types>(lua);
+	TParam* param = base_ipk->second->GetParam(std::basic_string<unsigned char>(param_name));
 	if (param == NULL)
                  luaL_error(lua, "Param %s not found", param_name);
 
 	weighted_sum<double, nanosecond_time_t> sum;
-	base_ipk.first->get_weighted_sum(param, time_, szb_move_time(time_, 1, SZARP_PROBE_TYPE(probe_type), 0), probe_type, sum);
-	base_ipk.first->fixed_stack().top() &= sum.fixed();
+	base_ipk->first->get_weighted_sum(param, time, szb_move_time(time, 1, SZARP_PROBE_TYPE(probe_type), 0), probe_type, sum);
+	base_ipk->first->fixed_stack().top() &= sum.fixed();
 
 	if (sum.weight())
-		lua_pushnumber(lua, return sum.sum() / sum.weight());
+		lua_pushnumber(lua, sum.sum() / sum.weight());
 	else
 		lua_pushnumber(lua, nan(""));
 	return 1;
 }
 
-int lua_sz4_move_time(lua_State* lua) {
-	nanosecond_time_t time(lua_tonumber(lua, 1));
-	int count(lua_tointeger(lua, 2));
-	SZARP_PROBE_TYPE probe_type(static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 3)));
-	int custom_lenght(lua_tointeger(lua, 4));
+int lua_sz4_move_time(lua_State* lua);
 
-	lua_pushnumber(lua, szb_move_time(time, 1, probe_type, custom_lenght));
-	return 1;
-}
+int lua_sz4_round_time(lua_State* lua);
 
-int lua_sz4_round_time(lua_State* lua) {
-	nanosecond_time_t time(static_cast<time_t>(lua_tonumber(lua, 1)));
-	SZARP_PROBE_TYPE probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 2));
-	int custom_length = lua_tointeger(lua, 3);
-
-	nanosecond_time_t result = szb_round_time(time , probe_type, custom_length);
-	lua_pushnumber(lua, result);
-	return 1;
-}
-
-int lua_sz4_in_season(lua_State *lua) {
+template<class types> int lua_sz4_in_season(lua_State *lua) {
 	const unsigned char* prefix = reinterpret_cast<const unsigned char*>(luaL_checkstring(lua, 1));
 	time_t time(lua_tonumber(lua, 2));
-	base_ipk_pair<base_types>* base_ipk = get_base_ipk_pair(lua);
+	base_ipk_pair<types>* base_ipk = get_base_ipk_pair<types>(lua);
+
+	TSzarpConfig *cfg = base_ipk->second->GetConfig(SC::U2S(prefix));
 	if (cfg == NULL)
 		luaL_error(lua, "Config %s not found", (char*)prefix);
-
-	TSzarpConfig *cfg = base_ipk.second->GetConfig(SC::U2S(prefix));
 	lua_pushboolean(lua, cfg->GetSeasons()->IsSummerSeason(time));
 	return 1;
 }
 
-int lua_sz4_isnan(lua_State* lua) {
-	double v = lua_tonumber(lua, 1);
-	lua_pushboolean(lua, std::isnan(v));
-	return 1;
-}
+int lua_sz4_isnan(lua_State* lua);
 
-template<class types> lua_interpreter::lua_interpreter() {
+int lua_sz4_nan(lua_State* lua);
+
+template<class types> lua_interpreter<types>::lua_interpreter() {
 	m_lua = lua_open();
 	if (m_lua == NULL) {
-		throw execption("Failed to initialize lua interpreter");	
+		throw exception("Failed to initialize lua interpreter");	
 	}
 
-	luaL_openlibs(lua);
-	lua::set_probe_types_globals(lua);
+	luaL_openlibs(m_lua);
+	lua::set_probe_types_globals(m_lua);
 
 	const struct luaL_reg sz4_funcs_lib[] = {
 		{ "szbase", lua_sz4<types> },
@@ -111,19 +100,20 @@ template<class types> lua_interpreter::lua_interpreter() {
 		{ "nan", lua_sz4_nan },
 		{ "in_season", lua_sz4_in_season<types> },
 		{ NULL, NULL }
+	};
 
 	const luaL_Reg *lib = sz4_funcs_lib;
 
 	for (; lib->func; lib++) 
-		lua_register(lua, lib->name, lib->func);
+		lua_register(m_lua, lib->name, lib->func);
 
 };
 
-template<class type> bool lua_interpreter::prepare_param(TParam* param) {
+template<class types> bool lua_interpreter<types>::prepare_param(TParam* param) {
 	return lua::prepare_param(m_lua, param);
 }
 
-template<class type> double lua_interpreter::calculate_value(nanosecond_time_t start, SZARP_PROBE_TYPE probe_type, int custom_length) {
+template<class types> double lua_interpreter<types>::calculate_value(nanosecond_time_t start, SZARP_PROBE_TYPE probe_type, int custom_length) {
 	double result;
 
 	lua_pushvalue(m_lua, -1);	
@@ -137,7 +127,7 @@ template<class type> double lua_interpreter::calculate_value(nanosecond_time_t s
 
 	if (lua_isnumber(m_lua, -1))
 		result = lua_tonumber(m_lua, -1);
-	else if (lua_isboolean(lua, -1))
+	else if (lua_isboolean(m_lua, -1))
 		result = lua_toboolean(m_lua, -1);
 	else
 		result = nan("");
@@ -146,13 +136,17 @@ template<class type> double lua_interpreter::calculate_value(nanosecond_time_t s
 	return result;
 }
 
-template<class types> lua_interpreter::pop_prepared_param() {
+template<class types> void lua_interpreter<types>::pop_prepared_param() {
 	lua_pop(m_lua, 1);
 }
 
-template<class types> lua_interpreter::~lua_interpreter() {
+template<class types> lua_interpreter<types>::~lua_interpreter() {
 	if (m_lua)
 		lua_close(m_lua);
 }
+
+template<class types> const int lua_interpreter<types>::lua_base_ipk_pair_key = 0;
+
+
 
 }

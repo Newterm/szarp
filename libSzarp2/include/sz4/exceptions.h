@@ -22,7 +22,7 @@
 #include <stdexcept>
 
 namespace sz4 {
-	class exception : std::runtime_error {}
+	typedef std::runtime_error exception;
 }
 
 #endif

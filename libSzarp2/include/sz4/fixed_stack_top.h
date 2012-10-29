@@ -27,7 +27,7 @@ class fixed_stack_top {
 	std::stack<bool>& m_stack;
 public:
 	fixed_stack_top(std::stack<bool>& stack) : m_stack(stack) {
-		m_stack.push_back(true);
+		m_stack.push(true);
 	}
 
 	bool& value() {

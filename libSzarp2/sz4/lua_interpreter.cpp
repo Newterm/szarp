@@ -23,6 +23,38 @@
 
 namespace sz4 {
 
+int lua_sz4_move_time(lua_State* lua) {
+	nanosecond_time_t time(lua_tonumber(lua, 1));
+	int count(lua_tointeger(lua, 2));
+	SZARP_PROBE_TYPE probe_type(static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 3)));
+	int custom_lenght(lua_tointeger(lua, 4));
+
+	lua_pushnumber(lua, szb_move_time(time, count, probe_type, custom_lenght));
+	return 1;
+}
+
+int lua_sz4_round_time(lua_State* lua) {
+	nanosecond_time_t time(lua_tonumber(lua, 1));
+	SZARP_PROBE_TYPE probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 2));
+	int custom_length = lua_tointeger(lua, 3);
+
+	nanosecond_time_t result = szb_round_time(time , probe_type, custom_length);
+	lua_pushnumber(lua, result);
+	return 1;
+}
+
+
+int lua_sz4_isnan(lua_State* lua) {
+	double v = lua_tonumber(lua, 1);
+	lua_pushboolean(lua, std::isnan(v));
+	return 1;
+}
+
+int lua_sz4_nan(lua_State* lua) {
+	lua_pushnumber(lua, nan(""));
+	return 1;
+}
+
 template class lua_interpreter<base_types>;
 
 }

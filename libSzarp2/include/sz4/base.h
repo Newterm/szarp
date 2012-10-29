@@ -95,7 +95,7 @@ public:
 
 	SzbParamMonitor& param_monitor() { return m_monitor; }
 
-	lua_interpreter& lua_interpreter() { return m_interperter; }
+	lua_interpreter<types>& get_lua_interpreter() { return m_interperter; }
 
 	~base_templ() {
 		for (typename std::vector<buffer_templ<types>*>::iterator i = m_buffers.begin(); i != m_buffers.end(); i++)

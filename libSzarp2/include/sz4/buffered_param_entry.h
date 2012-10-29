@@ -21,7 +21,7 @@
 
 namespace sz4 {
 
-template<class value_type, class time_type, class types, class calculation_method> class buffered_param_entry_in_buffer : public SzbParamObserver {
+template<class value_type, class time_type, class types, template<class types> class calculation_method> class buffered_param_entry_in_buffer : public SzbParamObserver {
 	base_templ<types>* m_base;
 	TParam* m_param;
 	bool m_invalidate_non_fixed;
@@ -48,7 +48,7 @@ public:
 		invalidate_non_fixed_if_needed();
 
 		time_type current(start);
-		caluculation_method<types> ee(m_base, m_param);
+		calculation_method<types> ee(m_base, m_param);
 
 		while (current < end) {
 			value_type value;
@@ -75,7 +75,7 @@ public:
 	time_type search_data_right_impl(const time_type& start, const time_type& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) {
 		invalidate_non_fixed_if_needed();
 
-		caluculation_method<types> ee(m_base, m_param);
+		calculation_method<types> ee(m_base, m_param);
 		time_type current(start);
 		while (true) {
 			std::pair<bool, time_type> r = m_cache[probe_type].search_data_right(current, end, condition);
@@ -93,7 +93,7 @@ public:
 	time_type search_data_left_impl(const time_type& start, const time_type& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) {
 		invalidate_non_fixed_if_needed();
 
-		caluculation_method<types> ee(m_base, m_param);
+		calculation_method<types> ee(m_base, m_param);
 		time_type current(start);
 		while (true) {
 			std::pair<bool, time_type> r = m_cache[probe_type].search_data_left(current, end, condition);
@@ -134,7 +134,7 @@ public:
 		m_param->SetSz4Type(TParam::SZ4_NONE);
 	}
 
-	virtual ~buffered_param_entry_in_buffer();
+	virtual ~buffered_param_entry_in_buffer() {};
 
 };
 

@@ -1,5 +1,5 @@
-#ifndef __SZ4_BASE_H__
-#define __SZ4_BASE_H__
+#ifndef __SZ4_LUA_INTERPRETER_H__
+#define __SZ4_LUA_INTERPRETER_H__
 /* 
   SZARP: SCADA software 
   
@@ -21,6 +21,10 @@
 
 #include <lua.hpp>
 
+#include "sz4/defs.h"
+#include "sz4/time.h"
+
+namespace sz4 {
 
 template<class types> class lua_interpreter {
 	lua_State* m_lua;
@@ -29,11 +33,15 @@ public:
 
 	bool prepare_param(TParam* param);
 
-	double calculate_value(nanosecond_time_t time, TParam* param);
+	double calculate_value(nanosecond_time_t start, SZARP_PROBE_TYPE probe_type, int custom_length);
 
 	void pop_prepared_param();
 
 	~lua_interpreter();
 
-	static const int lua_base_ipk_pair_key = 0;
+	static const int lua_base_ipk_pair_key;
 };
+
+}
+
+#endif
