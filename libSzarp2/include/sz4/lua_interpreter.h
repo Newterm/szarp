@@ -1,5 +1,5 @@
-#ifndef __LUA_UTILS_H__
-#define __LUA_UTILS_H__
+#ifndef __SZ4_BASE_H__
+#define __SZ4_BASE_H__
 /* 
   SZARP: SCADA software 
   
@@ -21,18 +21,19 @@
 
 #include <lua.hpp>
 
-class TParam;
 
-namespace lua {
+template<class types> class lua_interpreter {
+	lua_State* m_lua;
+public:
+	lua_interpreter();
 
-void set_probe_types_globals(lua_State *lua);
+	bool prepare_param(TParam* param);
 
-bool prepare_param(lua_State *lua, TParam* param);
+	double calculate_value(nanosecond_time_t time, TParam* param);
 
-int  compile_lua_param(lua_State *lua, TParam *p);
+	void pop_prepared_param();
 
-bool compile_lua_formula(lua_State *lua, const char *formula, const char *formula_name, bool ret_v_val);
+	~lua_interpreter();
 
-}
-
-#endif
+	static const int lua_base_ipk_pair_key = 0;
+};

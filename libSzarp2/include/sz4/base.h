@@ -24,11 +24,14 @@
 #include <vector>
 #include <stack>
 
+#include <lua.hpp>
+
 #include <boost/filesystem/path.hpp>
 
 #include "sz4/defs.h"
 #include "sz4/types.h"
 #include "sz4/buffer.h"
+#include "sz4/lua_interpreter.h"
 
 namespace sz4 {
 
@@ -44,6 +47,7 @@ private:
 	ipk_container_type* m_ipk_container;
 
 	std::stack<bool> m_fixed_stack;
+	lua_interpreter<types> m_interperter;
 public:
 	base_templ(const std::wstring& szarp_data_dir, ipk_container_type* ipk_container) : m_szarp_data_dir(szarp_data_dir), m_ipk_container(ipk_container) {}
 
@@ -90,6 +94,8 @@ public:
 	std::stack<bool>& fixed_stack() { return m_fixed_stack; }
 
 	SzbParamMonitor& param_monitor() { return m_monitor; }
+
+	lua_interpreter& lua_interpreter() { return m_interperter; }
 
 	~base_templ() {
 		for (typename std::vector<buffer_templ<types>*>::iterator i = m_buffers.begin(); i != m_buffers.end(); i++)

@@ -1,5 +1,5 @@
-#ifndef __LUA_UTILS_H__
-#define __LUA_UTILS_H__
+#ifndef __SZ4_FIXED_STACK_TOP_H__
+#define __SZ4_FIXED_STACK_TOP_H__
 /* 
   SZARP: SCADA software 
   
@@ -19,19 +19,25 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
-#include <lua.hpp>
+#include <stack>
 
-class TParam;
+namespace sz4 {
 
-namespace lua {
+class fixed_stack_top {
+	std::stack<bool>& m_stack;
+public:
+	fixed_stack_top(std::stack<bool>& stack) : m_stack(stack) {
+		m_stack.push_back(true);
+	}
 
-void set_probe_types_globals(lua_State *lua);
+	bool& value() {
+		return m_stack.top();
+	}
 
-bool prepare_param(lua_State *lua, TParam* param);
-
-int  compile_lua_param(lua_State *lua, TParam *p);
-
-bool compile_lua_formula(lua_State *lua, const char *formula, const char *formula_name, bool ret_v_val);
+	~fixed_stack_top() {
+		m_stack.pop();
+	}
+};
 
 }
 

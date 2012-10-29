@@ -28,19 +28,6 @@ void lua_get_val(lua_State* lua, szb_buffer_t *buffer, time_t start, SZARP_PROBE
 	lua_pop(lua, 1);
 }
 
-int compile_lua_param(lua_State *lua, TParam *p) {
-	int lua_function_reference = LUA_NOREF;
-	if (szb_compile_lua_formula(lua, (const char*) p->GetLuaScript(), (const char*)SC::S2U(p->GetName()).c_str()))
-		lua_function_reference = luaL_ref(lua, LUA_REGISTRYINDEX);
-	else {
-		sz_log(0, "Error compiling param %ls: %s\n", p->GetName().c_str(), lua_tostring(lua, -1));
-		lua_function_reference = LUA_REFNIL;
-	}
-	p->SetLuaParamRef(lua_function_reference);
-	return lua_function_reference;
-
-}
-
 SZBASE_TYPE szb_lua_get_avg(szb_buffer_t* buffer, TParam *param, time_t start_time, time_t end_time, SZBASE_TYPE *psum, int *pcount, SZARP_PROBE_TYPE probe, bool &fixed) {
 	double sum = .0;
 	size_t data_count = 0;
@@ -50,7 +37,7 @@ SZBASE_TYPE szb_lua_get_avg(szb_buffer_t* buffer, TParam *param, time_t start_ti
 	lua_State* lua = Lua::GetInterpreter();
 	int ref = param->GetLuaParamReference();
 	if (ref == LUA_NOREF) {
-		ref = compile_lua_param(lua, param);
+		ref = lua::compile_lua_param(lua, param);
 		if (ref == LUA_REFNIL) {
 			buffer->last_err = SZBE_LUA_ERROR;
 			buffer->last_err_string = SC::U2S((const unsigned char*)lua_tostring(lua, -1));

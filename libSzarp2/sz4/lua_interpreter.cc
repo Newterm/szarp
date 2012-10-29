@@ -1,5 +1,3 @@
-#ifndef __LUA_UTILS_H__
-#define __LUA_UTILS_H__
 /* 
   SZARP: SCADA software 
   
@@ -19,20 +17,12 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
-#include <lua.hpp>
+#include "sz4/types.h"
+#include "sz4/lua_interpreter.h"
+#include "sz4/lua_interpreter_templ.h"
 
-class TParam;
+namespace sz4 {
 
-namespace lua {
-
-void set_probe_types_globals(lua_State *lua);
-
-bool prepare_param(lua_State *lua, TParam* param);
-
-int  compile_lua_param(lua_State *lua, TParam *p);
-
-bool compile_lua_formula(lua_State *lua, const char *formula, const char *formula_name, bool ret_v_val);
+template class lua_interpreter<base_types>;
 
 }
-
-#endif

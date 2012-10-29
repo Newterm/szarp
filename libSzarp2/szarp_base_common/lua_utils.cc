@@ -45,6 +45,34 @@ void set_probe_types_globals(lua_State *lua) {
 	lua_setglobal(lua, "ProbeType");
 } 
 
+bool prepare_param(lua_State *lua, TParam* param) {
+	int ref = param->GetLuaParamReference();
+	if (ref == LUA_NOREF) {
+		ref = compile_lua_param(lua, param);
+		p->SetLuaParamRef(ref);
+	}
+
+	if (ret != LUA_REFNIL) {
+		lua_rawgeti(lua, LUA_REGISTRYINDEX, ref);
+		return true;
+	} else {
+		return false;
+	}
+}
+
+int compile_lua_param(lua_State *lua, TParam *p) {
+	int lua_function_reference = LUA_NOREF;
+	if (compile_lua_formula(lua, (const char*) p->GetLuaScript(), (const char*)SC::S2U(p->GetName()).c_str()), true)
+		lua_function_reference = luaL_ref(lua, LUA_REGISTRYINDEX);
+	else {
+		sz_log(0, "Error compiling param %ls: %s\n", p->GetName().c_str(), lua_tostring(lua, -1));
+		lua_function_reference = LUA_REFNIL;
+	}
+	p->SetLuaParamRef(lua_function_reference);
+	return lua_function_reference;
+
+}
+
 bool compile_lua_formula(lua_State *lua, const char *formula, const char *formula_name, bool ret_v_val) {
 
 	std::ostringstream paramfunction;
