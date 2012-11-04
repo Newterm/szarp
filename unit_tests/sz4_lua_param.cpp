@@ -32,12 +32,12 @@
 #include "test_serach_condition.h"
 #include "test_observer.h"
 
-class Sz4LuaParamOptimized : public CPPUNIT_NS::TestFixture
+class Sz4LuaParam : public CPPUNIT_NS::TestFixture
 {
 	void test1();
 	void test2();
 
-	CPPUNIT_TEST_SUITE( Sz4LuaParamOptimized );
+	CPPUNIT_TEST_SUITE( Sz4LuaParam );
 	CPPUNIT_TEST( test1 );
 	CPPUNIT_TEST( test2 );
 	CPPUNIT_TEST_SUITE_END();
@@ -57,11 +57,11 @@ public:
 		param.SetDataType(TParam::DOUBLE);
 		param.SetName(L"A:B:C1");
 		param.SetLuaScript((const unsigned char*) 
-"if (t % 100) < 50 then "
-"	v = 0		"
-"else			"
-"	v = 1		"
-"end			"
+"if (t % 100) < 50 then 	"
+"	v = 0 * math.pow(1, 1)	"
+"else				"
+"	v = 1			"
+"end				"
 );
 		param.SetParentSzarpConfig(&config);
 
@@ -75,9 +75,9 @@ public:
 }
 
 
-CPPUNIT_TEST_SUITE_REGISTRATION( Sz4LuaParamOptimized );
+CPPUNIT_TEST_SUITE_REGISTRATION( Sz4LuaParam );
 
-void Sz4LuaParamOptimized::setUp() {
+void Sz4LuaParam::setUp() {
 }
 
 namespace {
@@ -90,7 +90,7 @@ struct test_types {
 
 
 
-void Sz4LuaParamOptimized::test1() {
+void Sz4LuaParam::test1() {
 	IPKContainerMock1 mock;
 	sz4::base_templ<test_types> base(L"", &mock);
 	sz4::buffer_templ<test_types>* buff = base.buffer_for_param(mock.GetParam(L""));
@@ -124,7 +124,7 @@ public:
 		param2.SetParamId(1);
 		param2.SetDataType(TParam::DOUBLE);
 		param2.SetLuaScript((const unsigned char*) 
-"v = p(\"BASE:A:B:C\", t, pt)"
+"v = p(\"BASE:A:B:C\", t, pt) * math.pow(1, 1)"
 );
 		param2.SetParentSzarpConfig(&config);
 
@@ -175,11 +175,11 @@ struct test_types {
 }
 
 
-void Sz4LuaParamOptimized::test2() {
+void Sz4LuaParam::test2() {
 	unit_test::IPKContainerMock2 mock;
 
 	std::wstringstream base_dir_name;
-	base_dir_name << L"/tmp/sz4_lua_param_optimized" << getpid() << L"." << time(NULL) << L".tmp";
+	base_dir_name << L"/tmp/sz4_lua_param" << getpid() << L"." << time(NULL) << L".tmp";
 	boost::filesystem::wpath base_path(base_dir_name.str());
 	boost::filesystem::wpath param_dir(base_path / L"BASE/sz4/A/B/C");
 	boost::filesystem::create_directories(param_dir);

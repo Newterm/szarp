@@ -25,6 +25,7 @@
 #include "sz4/buffer.h"
 #include "sz4/real_param_entry.h"
 #include "sz4/lua_optimized_param_entry.h"
+#include "sz4/lua_param_entry.h"
 
 namespace sz4 {
 

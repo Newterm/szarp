@@ -19,6 +19,11 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
+#include <algorithm>
+
+#include "conversion.h"
+#include "szarp_base_common/lua_strings_extract.h"
+
 namespace sz4 {
 
 template<template<typename DT, typename TT, class BT> class param_entry_type, class types, class data_type, class time_type> generic_param_entry* param_entry_build_t_3(base_templ<types>* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
@@ -64,12 +69,31 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 			}
 			return entry;
 		}
+		case TParam::SZ4_LUA: {
+			generic_param_entry* entry = param_entry_build_t_1<lua_param_entry_in_buffer, types>(base, param, buffer_directory);
+			std::wstring formula = SC::U2S(param->GetLuaScript());
+			std::vector<std::wstring> strings;
+			extract_strings_from_formula(formula.c_str(), strings);
+
+			typename types::ipk_container_type* ipk_container = base->get_ipk_container();
+			for (std::vector<std::wstring>::iterator i = strings.begin(); i != strings.end(); i++) {
+				if (std::count(i->begin(), i->end(), L':') != 4)
+					continue;
+
+				TParam * param = ipk_container->GetParam(*i);
+				if (param == NULL)
+					continue;
+
+				generic_param_entry* reffered_entry = base->get_param_entry(param);
+				reffered_entry->add_reffering_param(entry);
+			}
+			return entry;
+		}
 		default:
 		case TParam::SZ4_NONE:
 			assert(false);
 	}
 }
-
 
 template<class types> void buffer_templ<types>::remove_param(TParam* param) {
 	if (m_param_ents.size() <= param->GetParamId())

@@ -25,6 +25,7 @@
 #include "sz4/buffer.h"
 #include "sz4/real_param_entry.h"
 #include "sz4/lua_optimized_param_entry.h"
+#include "sz4/lua_param_entry.h"
 #include "sz4/buffer_templ.h"
 #include "sz4/load_file_locked.h"
 

@@ -32,6 +32,7 @@
 #include "sz4/types.h"
 #include "sz4/buffer.h"
 #include "sz4/lua_interpreter.h"
+#include "szarp_base_common/lua_strings_extract.h"
 
 namespace sz4 {
 
@@ -96,6 +97,8 @@ public:
 	SzbParamMonitor& param_monitor() { return m_monitor; }
 
 	lua_interpreter<types>& get_lua_interpreter() { return m_interperter; }
+
+	ipk_container_type* get_ipk_container() { return m_ipk_container; }
 
 	~base_templ() {
 		for (typename std::vector<buffer_templ<types>*>::iterator i = m_buffers.begin(); i != m_buffers.end(); i++)
