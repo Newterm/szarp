@@ -144,7 +144,7 @@ EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry,
 				tmp_date =
 				    szb_search(szbase_buffer, prm,
 						    tmp_date, first_date, 1);
-				if (tmp_date < first_date) {
+				if (tmp_date > 0 && tmp_date < first_date) {
 					first_date = tmp_date;
 				}
 			}
@@ -160,7 +160,7 @@ EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry,
 				tmp_date =
 				    szb_search(szbase_buffer, prm,
 						    tmp_date, last_date, -1);
-				if (tmp_date > last_date) {
+				if (tmp_date > 0 && tmp_date > last_date) {
 					last_date = tmp_date;
 				}
 			}
