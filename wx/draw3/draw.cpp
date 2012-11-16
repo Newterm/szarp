@@ -433,6 +433,8 @@ void ValuesTable::ClearStats() {
 	m_data_probes_count = 0;
 
 	m_sum = 
+	m_sum2 = 
+	m_sdev = 
 	m_max = 
 	m_min = 
 	m_hsum = 
@@ -591,17 +593,21 @@ void ValuesTable::UpdateStats(int idx) {
 		m_max = std::max(val, m_max);
 		m_min = std::min(val, m_min);
 		m_sum += val;
+		m_sum2 += val * val;
 		if (m_draw->GetDrawInfo() != NULL)
 			m_hsum += v.sum / m_draw->GetDrawInfo()->GetSumDivisor();
 	} else {
 		m_max = m_min = val;
 		m_sum = val;
+		m_sum2 = val * val;
 		if (m_draw->GetDrawInfo() != NULL)
 			m_hsum = v.sum / m_draw->GetDrawInfo()->GetSumDivisor();
 	}
 	if (m_draw->m_draws_controller->GetPeriod() == PERIOD_T_30MINUTE)
 		m_hsum /= 60;
 	m_count++;
+
+	m_sdev = sqrt(m_sum2 / m_count - m_sum / m_count * m_sum / m_count);
 }
 
 void ValuesTable::CalculateProbeValue(int index) {

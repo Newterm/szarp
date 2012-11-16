@@ -131,6 +131,11 @@ StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, C
 	m_avg_value_text = new wxStaticText(subpanel, wxID_ANY, _T(""));
 	subpanel_sizer->Add(m_avg_value_text, wxEXPAND | wxLEFT | wxRIGHT, 20);
 
+	label = new wxStaticText(subpanel, wxID_ANY, wxString(_("Standard deviation")) + _T(":"));
+	subpanel_sizer->Add(label, wxALIGN_LEFT | wxLEFT | wxRIGHT, 20);
+	m_stddev_value_text = new wxStaticText(subpanel, wxID_ANY, _T(""));
+	subpanel_sizer->Add(m_stddev_value_text, wxEXPAND | wxLEFT | wxRIGHT, 20);
+
 	label = new wxStaticText(subpanel, wxID_ANY, wxString(_("Maximum value")) + _T(":"));
 	subpanel_sizer->Add(label, wxALIGN_LEFT | wxLEFT | wxRIGHT, 20);
 	m_max_value_text = new wxStaticText(subpanel, wxID_ANY, _T(""));
@@ -200,7 +205,8 @@ void StatDialog::DatabaseResponse(DatabaseQuery *q) {
 		if (m_count++ == 0) {
 			m_max = i->response;
 			m_min = i->response;
-			m_sum = i->response;
+			m_sum = 0;
+			m_sum2 = 0;
 			m_hsum = i->sum;
 
 			m_max_time = wxDateTime(i->time);
@@ -219,6 +225,7 @@ void StatDialog::DatabaseResponse(DatabaseQuery *q) {
 		}
 
 		m_sum += i->response;
+		m_sum2 += i->response * i->response;
 		m_hsum += i->sum;
 	} 
 
@@ -241,11 +248,15 @@ void StatDialog::DatabaseResponse(DatabaseQuery *q) {
 
 		if (m_count) {
 			wxString unit = m_draw->GetUnit();
+			double sdev = sqrt(m_sum2 / m_count - m_sum / m_count * m_sum / m_count);
 
 			m_min_value_text->SetLabel(wxString::Format(_T("%s %s (%s)"),
 						m_draw->GetValueStr(m_min, _T("- -")).c_str(),
 						unit.c_str(),
 						FormatTime(m_min_time, m_period).c_str()));
+			m_stddev_value_text->SetLabel(wxString::Format(_T("%s %s"),
+						m_draw->GetValueStr(sdev, _T("- -")).c_str(),
+						unit.c_str()));
 			m_avg_value_text->SetLabel(wxString::Format(_T("%s %s"),
 						m_draw->GetValueStr(m_sum / m_count, _T("- -")).c_str(),
 						unit.c_str()));
@@ -261,6 +272,7 @@ void StatDialog::DatabaseResponse(DatabaseQuery *q) {
 		} else {
 			m_min_value_text->SetLabel(_("no data"));
 			m_avg_value_text->SetLabel(_("no data"));
+			m_stddev_value_text->SetLabel(_("no data"));
 			m_max_value_text->SetLabel(_("no data"));
 			if (m_draw->GetSpecial() == TDraw::HOURSUM) 
 				m_hsum_value_text->SetLabel(_("no data"));

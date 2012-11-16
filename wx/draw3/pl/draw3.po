@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-08-30 20:26+0200\n"
+"POT-Creation-Date: 2012-11-16 23:10+0100\n"
 "PO-Revision-Date: 2012-02-17 12:27+0100\n"
 "Last-Translator: a <a@a.pl>\n"
 "Language-Team: \n"
@@ -38,12 +38,12 @@ msgstr ""
 
 #: cfgmgr.cpp:1208 drawfrm.cpp:671 drawpsc.cpp:426 drawpsc.cpp:439
 #: drawpsc.cpp:448 drawpsc.cpp:457 paramslist.cpp:269 paramslist.cpp:305
-#: paramslist.cpp:322 paredit.cpp:218 remarks.cpp:1016 remarks.cpp:1117
-#: remarks.cpp:1163 remarks.cpp:1211 seldraw.cpp:568
+#: paramslist.cpp:322 paredit.cpp:218 remarks.cpp:1017 remarks.cpp:1118
+#: remarks.cpp:1164 remarks.cpp:1212 seldraw.cpp:569
 msgid "Error"
 msgstr "B³±d"
 
-#: cfgmgr.cpp:1384 paredit.cpp:638 XRC_gettext_file.h:3
+#: cfgmgr.cpp:1384 paredit.cpp:639 XRC_gettext_file.h:3
 msgid "User:Param:"
 msgstr "Parametr:U¿ytkownika:"
 
@@ -387,11 +387,11 @@ msgstr "Nie zdefiniowane przez u¿ytkownika"
 msgid "You may only remove user defined sets."
 msgstr "Mo¿esz edytowaæ tylko zestawy zdefiniowane przez u¿ytkownika."
 
-#: drawfrm.cpp:247 incsearch.cpp:751
+#: drawfrm.cpp:247 incsearch.cpp:752
 msgid "Do you really want to remove this set?"
 msgstr "Czy na pewno chcesz usun±æ ten zestawy?"
 
-#: drawfrm.cpp:248 incsearch.cpp:752
+#: drawfrm.cpp:248 incsearch.cpp:753
 msgid "Set removal"
 msgstr "Usuniêcie zestawu"
 
@@ -533,11 +533,11 @@ msgstr "Wybierz plik do zaimportowania"
 msgid "Comma Separated Values (*.csv)"
 msgstr ""
 
-#: drawfrm.cpp:1149 incsearch.cpp:797 incsearch.cpp:810 paramslist.cpp:351
+#: drawfrm.cpp:1149 incsearch.cpp:798 incsearch.cpp:811 paramslist.cpp:351
 msgid "Error in communicatoin with server: "
 msgstr "B³ad komunikacji z serwerem: %s"
 
-#: drawfrm.cpp:1149 incsearch.cpp:797 incsearch.cpp:810 paramslist.cpp:351
+#: drawfrm.cpp:1149 incsearch.cpp:798 incsearch.cpp:811 paramslist.cpp:351
 msgid "Failed to update paramaters"
 msgstr "Nie uda³o siê zmieniæ parametru"
 
@@ -610,7 +610,7 @@ msgstr ""
 "mniejsza ni¿ warto¶æ 'Koniec skalowanego wykresu' oraz wiêksza lub równa "
 "pocz±tkowi osi wykresu"
 
-#: drawpick.cpp:369 incsearch.cpp:712 XRC_gettext_file.h:210
+#: drawpick.cpp:369 incsearch.cpp:713 XRC_gettext_file.h:210
 msgid "Edit"
 msgstr "Edytuj"
 
@@ -634,7 +634,7 @@ msgstr "Warto¶æ minimalna"
 msgid "Max value"
 msgstr "Warto¶æ maksymalna"
 
-#: drawpick.cpp:471 incsearch.cpp:711
+#: drawpick.cpp:471 incsearch.cpp:712
 msgid "Remove"
 msgstr "Usuñ"
 
@@ -706,11 +706,11 @@ msgstr "Musisz ustawiæ tytu³."
 msgid "No title"
 msgstr "Brak tytu³u"
 
-#: drawpick.cpp:863 paredit.cpp:806
+#: drawpick.cpp:863 paredit.cpp:807
 msgid "Error while editing network set: "
 msgstr "B³±d podczas edycji zestawu sieciowego:"
 
-#: drawpick.cpp:863 paredit.cpp:806
+#: drawpick.cpp:863 paredit.cpp:807
 msgid "Editing network set error"
 msgstr "B³±d edycji parametru"
 
@@ -718,7 +718,7 @@ msgstr "B³±d edycji parametru"
 msgid "You don't have sufficient privileges too insert/modify this set."
 msgstr "Nie posiadasz uprawnieñ by dodaæ/zmieniæ ten zestaw."
 
-#: drawpick.cpp:871 paredit.cpp:815 remarks.cpp:1195
+#: drawpick.cpp:871 paredit.cpp:816 remarks.cpp:1196
 msgid "Insufficient privileges"
 msgstr "Brak uprawnieñ"
 
@@ -730,8 +730,8 @@ msgstr "Nie uda³o siê pobraæ zestawów sieciowych: %s"
 msgid "Failed to fetch network sets"
 msgstr "Nie uda³o siê pobraæ zestawów sieciowych"
 
-#: drawpick.cpp:890 drawpick.cpp:972 drawpick.cpp:1002 drawpnl.cpp:572
-#: drawpnl.cpp:607 drawtb.cpp:57 paredit.cpp:674
+#: drawpick.cpp:890 drawpick.cpp:972 drawpick.cpp:1002 drawpnl.cpp:575
+#: drawpnl.cpp:610 drawtb.cpp:57 paredit.cpp:675
 msgid "Find"
 msgstr "Wyszukaj"
 
@@ -783,7 +783,7 @@ msgstr "min.="
 msgid "avg.="
 msgstr "¶r.="
 
-#: drawprint.cpp:799 drawprint.cpp:1057 drawprint.cpp:1074 infowdg.cpp:290
+#: drawprint.cpp:799 drawprint.cpp:1057 drawprint.cpp:1074 infowdg.cpp:291
 msgid "max.="
 msgstr "max.="
 
@@ -839,7 +839,7 @@ msgstr ""
 "Niezgodno¶æ konfiguracji, nie mo¿esz ustawiaæ warto¶ci parametrów. Spróbuj "
 "zsynchronizowaæ dane."
 
-#: drawswdg.cpp:333 statdiag.cpp:337 xydiag.cpp:275
+#: drawswdg.cpp:333 statdiag.cpp:349 xydiag.cpp:275
 msgid "Select date"
 msgstr "Wybierz datê"
 
@@ -871,7 +871,7 @@ msgstr "Drzewo wykresów"
 msgid "Go to latest date"
 msgstr "Id¿ do najnowszej danej"
 
-#: drawtb.cpp:64 remarks.cpp:224 XRC_gettext_file.h:59 XRC_gettext_file.h:99
+#: drawtb.cpp:64 remarks.cpp:225 XRC_gettext_file.h:59 XRC_gettext_file.h:99
 #: XRC_gettext_file.h:100 XRC_gettext_file.h:163 XRC_gettext_file.h:183
 msgid "Remarks"
 msgstr "Komentarze"
@@ -954,30 +954,34 @@ msgstr "Wyczy¶æ"
 msgid "Ok"
 msgstr "Ok"
 
-#: incsearch.cpp:147 statdiag.cpp:154 xygraph.cpp:81 xyzgraph.cpp:1347
+#: incsearch.cpp:147 statdiag.cpp:159 xygraph.cpp:81 xyzgraph.cpp:1347
 msgid "Close"
 msgstr "Zamknij"
 
-#: incsearch.cpp:149 statdiag.cpp:157 xydiag.cpp:160 xygraph.cpp:86
+#: incsearch.cpp:149 statdiag.cpp:162 xydiag.cpp:160 xygraph.cpp:86
 #: xygraph.cpp:87 xyzgraph.cpp:1354 xyzgraph.cpp:1355
 msgid "Help"
 msgstr "Pomoc"
 
-#: incsearch.cpp:762
+#: incsearch.cpp:763
 msgid "Do you really want to remove this graph?"
 msgstr "Czy na pewno chcesz usun±æ ten wykres?"
 
-#: incsearch.cpp:763
+#: incsearch.cpp:764
 msgid "Graph removal"
 msgstr "Usuniêcie zestawu"
 
-#: incsearch.cpp:805
+#: incsearch.cpp:806
 msgid "You are not allowed to remove this set"
 msgstr "Nie masz uprawnieñ by usun±æ ten zestaw"
 
-#: incsearch.cpp:805 paramslist.cpp:360 paramslist.cpp:368
+#: incsearch.cpp:806 paramslist.cpp:360 paramslist.cpp:368
 msgid "Failed to remove paramater"
 msgstr "Nie uda³o siê usun±æ parametru"
+
+#: infowdg.cpp:290
+msgid "std. dev.="
+msgstr ""
 
 #: paramslist.cpp:243 paramslist.cpp:298
 msgid "Choose parameter first"
@@ -1024,60 +1028,60 @@ msgstr "Szukanie daty"
 msgid "Information"
 msgstr "Informacja"
 
-#: paredit.cpp:293
+#: paredit.cpp:294
 msgid "You must provide a formula."
 msgstr "Podaj formu³ê"
 
-#: paredit.cpp:293
+#: paredit.cpp:294
 msgid "Formula missing."
 msgstr "Nie podano formu³y."
 
-#: paredit.cpp:299
+#: paredit.cpp:300
 msgid "You must provide a param name."
 msgstr "Musisz podaæ nazwê parametru."
 
-#: paredit.cpp:299
+#: paredit.cpp:300
 msgid "Parameter name missing."
 msgstr "Brak nazwy parametru."
 
-#: paredit.cpp:305
+#: paredit.cpp:306
 msgid "You must set a reference configuration."
 msgstr "Musisz podaæ konfiguracjê odniesienia."
 
-#: paredit.cpp:305
+#: paredit.cpp:306
 msgid "Reference configuration missing."
 msgstr "Brak konfiguracji odniesienia."
 
-#: paredit.cpp:494
+#: paredit.cpp:495
 #, c-format
 msgid "Error while compiling param %s"
 msgstr "B³±d podczas kompilacji parametru %s"
 
-#: paredit.cpp:515
+#: paredit.cpp:516
 #, c-format
 msgid "Invalid expression %s"
 msgstr "Niepoprawne wyra¿enie %s"
 
-#: paredit.cpp:580
+#: paredit.cpp:581
 #, c-format
 msgid "Found time: %s"
 msgstr "Znaleziony czas: %s"
 
-#: paredit.cpp:582
+#: paredit.cpp:583
 #, c-format
 msgid "%s"
 msgstr ""
 
-#: paredit.cpp:582
+#: paredit.cpp:583
 msgid "No date found"
 msgstr "Nie znaleziono danych spe³niaj±cych podany warunek"
 
-#: paredit.cpp:636
+#: paredit.cpp:637
 #, c-format
 msgid "User:%s:"
 msgstr "Parametr:%s:"
 
-#: paredit.cpp:815
+#: paredit.cpp:816
 msgid "You don't have sufficient privileges too insert/update this param."
 msgstr "Nie posiadasz uprawnieñ by dodaæ/zmieniæ ten parametr."
 
@@ -1137,83 +1141,83 @@ msgid "There are no values ratio defined for these graphs"
 msgstr ""
 "To okno nie zawiera wykresów, dla których liczony by³by stosunek warto¶ci."
 
-#: remarks.cpp:222
+#: remarks.cpp:223
 msgid "New remarks received"
 msgstr "Odebrano nowe komentarze"
 
-#: remarks.cpp:222
+#: remarks.cpp:223
 msgid "New remarks"
 msgstr "Nowe komentarze"
 
-#: remarks.cpp:224
+#: remarks.cpp:225
 msgid "No new remarks"
 msgstr "Brak nowych komentarzy"
 
-#: remarks.cpp:838
+#: remarks.cpp:839
 #, c-format
 msgid "Failed to resolve address: %ls"
 msgstr "Nie znaleziono adresu: %ls"
 
-#: remarks.cpp:881
+#: remarks.cpp:882
 msgid ""
 "Connection with remarks and network sets and params server not configured"
 msgstr ""
 "Po³±czenie z serwerem komentarzy i zestawów/parametrów sieciowych nie "
 "skonfigurowane."
 
-#: remarks.cpp:935
+#: remarks.cpp:936
 msgid "Server connection failure"
 msgstr "Nie uda³o siê po³±czyæ z serwerem"
 
-#: remarks.cpp:938
+#: remarks.cpp:939
 msgid "Server communication error"
 msgstr "B³±d komunikacji z serwerem"
 
-#: remarks.cpp:941
+#: remarks.cpp:942
 msgid "User is not allowed to send remarks for this base"
 msgstr "Nie masz uprawnieñ by wysy³aæ komentarze do tej konfiguracji"
 
-#: remarks.cpp:944
+#: remarks.cpp:945
 msgid "Invalid response from server"
 msgstr "Niepoprawna odpowied¼ od serwera"
 
-#: remarks.cpp:947
+#: remarks.cpp:948
 msgid "Incorrect username and password"
 msgstr "Niepoprawna nazwa u¿ytkownika i has³o"
 
-#: remarks.cpp:1016 remarks.cpp:1019
+#: remarks.cpp:1017 remarks.cpp:1020
 #, c-format
 msgid "Failed to fetch remarks: %s"
 msgstr "Nie uda³o siê pobraæ komentarzy: %s"
 
-#: remarks.cpp:1117 remarks.cpp:1163
+#: remarks.cpp:1118 remarks.cpp:1164
 #, c-format
 msgid "Network operation failed: %s"
 msgstr "Operacja siê nie powiod³a %s"
 
-#: remarks.cpp:1195
+#: remarks.cpp:1196
 msgid "You don't have sufficient privileges to update this set."
 msgstr "Nie posiadasz uprawnieñ by zmieniæ ten zestaw."
 
-#: remarks.cpp:1211
+#: remarks.cpp:1212
 #, c-format
 msgid "Failed to fetch params and sets: %s"
 msgstr "Nie uda³o siê pobraæ zestawów i parametrów sieciowych: %s"
 
-#: remarks.cpp:2106
+#: remarks.cpp:2107
 msgid "Remark sent successfully."
 msgstr "Komentarz zosta³ wys³any."
 
-#: remarks.cpp:2106
+#: remarks.cpp:2107
 msgid "Remark sent."
 msgstr "Komentarze wys³any."
 
-#: remarks.cpp:2110
+#: remarks.cpp:2111
 #, c-format
 msgid "There was an error sending remark:'%s'."
 msgstr "Wyst±pi³ b³±d podczas wysy³ania komentarza:'%s'."
 
-#: remarks.cpp:2110
+#: remarks.cpp:2111
 msgid "Error."
 msgstr "B³±d."
 
@@ -1261,12 +1265,12 @@ msgstr "Rodzaj warto¶ci pokazywanej dla ekranów dekada/rok/miesi±c/tydzieñ"
 msgid "Edit parameter associated with graph\tCtrl-E"
 msgstr "Edytuj parametr zwi±zany z wykresem\tCtrl-E"
 
-#: seldraw.cpp:317 seldraw.cpp:447
+#: seldraw.cpp:318 seldraw.cpp:448
 #, c-format
 msgid "%d.[B]"
 msgstr "%d.[B]"
 
-#: seldraw.cpp:568
+#: seldraw.cpp:569
 msgid "I was not able to start default browser"
 msgstr "Uruchomienie domy¶lnej przegl±darki nie powiod³o siê"
 
@@ -1351,38 +1355,43 @@ msgid "Average value"
 msgstr "Warto¶æ ¶rednia"
 
 #: statdiag.cpp:134
+msgid "Standard deviation"
+msgstr "Odchylenie standardowe"
+
+#: statdiag.cpp:139
 msgid "Maximum value"
 msgstr "Maksimum"
 
-#: statdiag.cpp:139
+#: statdiag.cpp:144
 msgid "Hour sum"
 msgstr "Warto¶æ sumaryczna"
 
-#: statdiag.cpp:151 xydiag.cpp:156 XRC_gettext_file.h:49
+#: statdiag.cpp:156 xydiag.cpp:156 XRC_gettext_file.h:49
 msgid "OK"
 msgstr "OK"
 
-#: statdiag.cpp:262 statdiag.cpp:263 statdiag.cpp:264 statdiag.cpp:266
+#: statdiag.cpp:273 statdiag.cpp:274 statdiag.cpp:275 statdiag.cpp:276
+#: statdiag.cpp:278
 msgid "no data"
 msgstr "brak danych"
 
-#: statdiag.cpp:278
+#: statdiag.cpp:290
 msgid "You need to choose draw first."
 msgstr "Najpierw wybierz wykres."
 
-#: statdiag.cpp:278 xydiag.cpp:189 xydiag.cpp:191
+#: statdiag.cpp:290 xydiag.cpp:189 xydiag.cpp:191
 msgid "Draw missing"
 msgstr "Brakuj±cy wykres"
 
-#: statdiag.cpp:416
+#: statdiag.cpp:428
 msgid "You need to choose draw first"
 msgstr "Najpierw wybierz wykres."
 
-#: statdiag.cpp:421 xydiag.cpp:196
+#: statdiag.cpp:433 xydiag.cpp:196
 msgid "Start date must be less than or equal to end date"
 msgstr "Data pocz±tkowa musi byæ równa lub wcze¶niejsza ni¿ data koñcowa"
 
-#: statdiag.cpp:421 xydiag.cpp:196
+#: statdiag.cpp:433 xydiag.cpp:196
 msgid "Invalid date"
 msgstr "Niepoprawna data"
 

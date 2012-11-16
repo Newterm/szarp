@@ -146,6 +146,8 @@ struct ValuesTable {
 
 	/**Statistics values*/
 	double m_sum;
+	double m_sum2;
+	double m_sdev;
 	double m_hsum;
 	double m_min;
 	double m_max;
