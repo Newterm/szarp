@@ -1,3 +1,5 @@
+2012-11-16 Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: draw3 displays standard deviation of current graph
 2012-10-11 Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: shift + arrow key works not only on day screen but also on
 	30 min screen
