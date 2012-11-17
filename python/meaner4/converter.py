@@ -45,6 +45,56 @@ def szbase_file_path_to_date(path):
 
 	return datetime.datetime(year, month, 1)
 
+def expand_param_name(string, base_param_name):
+	ss = string.split(':')
+	ps = string.split(':')
+
+	for i in len(ss):
+		if ss[i] == '*'
+			ss[i] = ps[i]
+
+	return ':'.join(ss)
+	
+
+def is_combined_formula(formula):
+	s = "start"
+	for i, c in enumerate(formula):
+		if c == '(':
+			if s == "start":
+				s = "first_param"
+				ps = i + 1
+			elif s == "after_first_param":
+				s = "second_param"
+				ps = i + 1
+			else:
+				return (False, None, None)
+		elif c == ')':
+			if s == "first_param"
+				fp = formula[ps:i - ps]
+				s = "afer_first_param"
+			elif s == "second_param":
+				sp = formula[ps:i - ps]
+				s = "afer_second_param"
+			else:
+				return (False, None, None)
+		elif c == ':'
+			if s == "after_second_param":
+				s = "done"
+			elif s = "first_param" or s == "second_param":
+				continue
+			return (False, None, None)
+		else:
+			if s = "first_param" or s == "second_param" or c.isspace():
+				continue
+			else:
+				return (False, None, None)
+			
+	if s == "done":
+		return (True, fp, sp)
+	else:
+		return (False, None, None)
+
+
 
 if len(sys.argv) != 2 or sys.argv[1] == '-h':
 	print """Invocation:
