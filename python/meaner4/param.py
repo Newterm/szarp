@@ -25,10 +25,14 @@ class Param:
 	def __init__(self, node):
 		self.param_name = node.attrib["name"]
 
-		self.written_to_base = True if "base_ind" in node.attrib else False
+		self.prepare_combined(node)
+
+		self.written_to_base = True if "base_ind" in node.attrib or self.combined else False
 
 		if "data_type" in node.attrib:
 			self.data_type = node.attrib["data_type"]
+		elif self.combined:
+			self.data_type = "int"	
 		else:
 			self.data_type = "short"
 
@@ -52,6 +56,75 @@ class Param:
 		else:
 			self.time_prec = 4
 
+		self.lsw_combined_referencing_param = None
+		self.msw_combined_referencing_param = None
+
+	def expand_param_name(self, string, base_param_name):
+		ss = string.split(':')
+		ps = string.split(':')
+
+		for i in len(ss):
+			if ss[i] == '*':
+				ss[i] = ps[i]
+
+		return ':'.join(ss)
+	
+
+	def is_combined_formula(formula):
+		s = "start"
+		for i, c in enumerate(formula):
+			if c == '(':
+				if s == "start":
+					s = "msw_param"
+					ps = i + 1
+				elif s == "after_msw_param":
+					s = "lsw_param"
+					ps = i + 1
+				else:
+					return (False, None, None)
+			elif c == ')':
+				if s == "msw_param":
+					mp = formula[ps:i - ps]
+					s = "afer_msw_param"
+				elif s == "lsw_param":
+					lp = formula[ps:i - ps]
+					s = "afer_lsw_param"
+				else:
+					return (False, None, None)
+			elif c == ':':
+				if s == "after_lsw_param":
+					s = "done"
+				elif s == "msw_param" or s == "lsw_param":
+					continue
+				else:
+					return (False, None, None)
+			else:
+				if s == "first_param" or s == "second_param" or c.isspace():
+					continue
+				else:
+					return (False, None, None)
+			
+		if s == "done":
+			return (True, mp, lp)
+		else:
+			return (False, None, None)
+
+
+	def prepare_combined(self, node):
+		try:
+			define_node = node.xpath("define[@type='DRAWDEFINABLE']")[0]
+		except IndexError:
+			self.combined = False
+			return
+
+		self.combined, lsw, msw = self.is_combined_formula(define_node.attr['formula'])
+		if not self.combined:
+			return
+
+		self.lsw_param_name = self.expand_param_name(lsw, self.param_name)
+		self.msw_param_name = self.expand_param_name(msw, self.param_name)
+		self.combined = True
+		
 	def nan(self):
 		if self.data_type == "short":
 			return -2**15

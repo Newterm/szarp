@@ -36,10 +36,11 @@ class Meaner:
 		self.socket = self.context.socket(zmq.SUB)
 
 	def configure(self, ipk_path):
-		ipk = lxml.etree.parse(ipk_path)
+
+		ipk = IPK.ipk(ipk_path)
 		
-		for p in ipk.xpath("//s:param", namespaces={'s':'http://www.praterm.com.pl/SZARP/ipk'}):
-			self.save_params.append(saveparam.SaveParam(param.Param(p), self.szbase_path))
+		for p in ipk.params:
+			self.save_params.append(saveparam.SaveParam(p, self.szbase_path))
 
 	def run(self):
 		self.socket.connect(self.parcook_uri)

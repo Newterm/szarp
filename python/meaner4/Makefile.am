@@ -6,4 +6,5 @@ meaner4_PYTHON = config.py \
 	meaner.py \
 	parampath.py \
 	param.py \
-	saveparam.py
+	saveparam.py \
+	ipk.py
