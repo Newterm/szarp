@@ -2664,6 +2664,8 @@ wxMenu* SSCTaskBarItem::CreateMenu() {
 }
 
 void SSCTaskBarItem::OnCloseMenuEvent(wxCommandEvent &event) {
+	if (wxMessageBox(_("Do you really want to quit SSC"), _("Quit application?"), wxICON_QUESTION | wxOK | wxCANCEL) != wxOK) 
+		return;
 	m_cfg_frame->Close(true);
 #ifdef MINGW32
 	RemoveIcon();
