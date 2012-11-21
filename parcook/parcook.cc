@@ -291,7 +291,7 @@ template<class OVT> void update_value(int param_no, int probe_type, short* ivt, 
 	sz_log(8, "probe_type: %d, param_no: %d, msw: %u, lsw: %u, prev_val: %d, sum: %lld",
 	       	probe_type, param_no, *pmsw, *plsw, prev_val, Sums[param_no][probe_type]);
 
-	if (ovt[param_no][abuf] != SZARP_NO_DATA || ovt[other][abuf] != SZARP_NO_DATA) {
+	if (ovt[param_no][abuf] != SZARP_NO_DATA) {
 		Sums[param_no][probe_type] -= prev_val;
 		Cnts[param_no][probe_type]--;
 		sz_log(7, "Decreasing sum counts for combined param cause at least one value is data");
@@ -304,7 +304,7 @@ template<class OVT> void update_value(int param_no, int probe_type, short* ivt, 
 
 	int val = (int)(*pmsw << 16) | *plsw;
 
-	if (SZARP_NO_DATA != ovt[param_no][abuf] || SZARP_NO_DATA != ovt[other][abuf]) {
+	if (SZARP_NO_DATA != ovt[param_no][abuf]) {
 		Sums[param_no][probe_type] += val;
 		Cnts[param_no][probe_type]++;
 		sz_log(7, "Increasing vals count: msw %hu, lsw %hu, prev: %u, val: %u, sum: %lld",
