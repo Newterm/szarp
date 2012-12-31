@@ -89,6 +89,8 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 			}
 			return entry;
 		}
+		case TParam::SZ4_DEFINABLE:
+			return param_entry_build_t_1<rpn_param_entry_in_buffer, types>(base, param, buffer_directory);
 		default:
 		case TParam::SZ4_NONE:
 			assert(false);

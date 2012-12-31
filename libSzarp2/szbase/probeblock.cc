@@ -31,7 +31,9 @@
 #include "proberconnection.h"
 #include "szbbase.h"
 #include "conversion.h"
+#include "szb_definable_caluclate.h"
 
+static const size_t DEFINABLE_STACK_SIZE  = 200;
 
 szb_probeblock_t::szb_probeblock_t(szb_buffer_t *buffer, TParam* param, time_t start_time, time_t end_time) :
 	szb_block_t(buffer, param, start_time, end_time), last_query_id(-1) {
@@ -204,7 +206,12 @@ void szb_probeblock_definable_t::FetchProbes() {
 	const std::wstring& formula = this->param->GetDrawFormula();
 	for (int i = fixed_probes_count; i < count; i++) {
 		time_t time = GetStartTime() + i * SZBASE_PROBE_SPAN;
-		data[i] = szb_definable_calculate(buffer, stack, dblocks, p_cache, formula, i, num_of_params, time, param) / pw;
+		szbase_value_fetch_functor value_fetch(buffer, time, PT_SEC10);	
+		default_is_summer_functor is_summer(time, param);
+		data[i] = definable_calculate(stack, dblocks, p_cache, formula, num_of_params, value_fetch, is_summer, param) / pw;
+		for (int j = 0; j < num_of_params; j++)
+			if (dblocks[j])
+				dblocks[j] += 1;
 	}
 	fixed_probes_count = new_fixed_probes;
 	szb_unlock_buffer(buffer);

@@ -126,7 +126,7 @@ libSzarp2_la_SOURCES = \
 			$(SZBASE_DIR)/szbfile.cc $(SZBASE_DIR)/szbfile.h \
 			$(SZBASE_DIR)/szbname.cc $(SZBASE_DIR)/szbname.h \
 			$(SZBASE_DIR)/definabledatablock.cc $(SZBASE_DIR)/definabledatablock.h \
-			$(SZBASE_DIR)/definablecalculate.cc $(SZBASE_DIR)/definablecalculate.h \
+			$(SZBASE_DIR)/szb_definable_calculate.cc $(SZBASE_DIR)/szb_definable_calculate.h \
 			$(SZBASE_DIR)/realdatablock.cc $(SZBASE_DIR)/realdatablock.h \
 			$(SZBASE_DIR)/combineddatablock.cc $(SZBASE_DIR)/combineddatablock.h \
 			$(SZBASE_DIR)/cacheabledatablock.cc $(SZBASE_DIR)/cacheabledatablock.h \
@@ -144,6 +144,7 @@ libSzarp2_la_SOURCES = \
 			$(SZARP_BASE_COMMON_DIR)/lua_utils.cc $(INCLUDE_DIR)/szarp_base_common/lua_utils.h \
 			$(SZARP_BASE_COMMON_DIR)/time.cc $(INCLUDE_DIR)/szarp_base_common/time.h \
 			$(SZARP_BASE_COMMON_DIR)/lua_utils.cc $(INCLUDE_DIR)/szarp_base_common/lua_utils.h \
+			$(SZARP_BASE_COMMON_DIR)/definable_calculate.cc $(INCLUDE_DIR)/szarp_base_common/definable_calculate.h \
 			$(INCLUDE_DIR)/szarp_base_common/lua_syntax_fusion_adapt.h \
 			$(SZBASE_DIR)/proberconnection.cc $(SZBASE_DIR)/proberconnection.h \
 			$(SZBASE_DIR)/luacalculate.cc $(SZBASE_DIR)/luacalculate.h \
@@ -163,6 +164,7 @@ libSzarp2_la_SOURCES = \
 			$(INCLUDE_DIR)/sz4/lua_optimized_param_entry_templ.h \
 			$(INCLUDE_DIR)/sz4/lua_interpreter.h \
 			$(INCLUDE_DIR)/sz4/lua_param_entry.h \
+			$(INCLUDE_DIR)/sz4/rpn_param_entry.h \
 			$(INCLUDE_DIR)/sz4/base.h \
 			$(INCLUDE_DIR)/sz4/defs.h \
 			$(SZ4_DIR)/load_file_locked.cpp \

@@ -1,25 +1,10 @@
-#ifndef __DEFINABLE_CALCULATE_H__
-#define __DEFINABLE_CALCULATE_H__
-#endif
-
-#include <config.h>
-
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#include "config.h" 
+#include "liblog.h"
+#include "szarp_base_common/definable_calculate.h" 
 
 #ifdef MINGW32
 #include "mingw32_missing.h"
 #endif
-
-#include "szbbuf.h"
-#include "szbname.h"
-#include "szbfile.h"
-#include "szbdate.h"
-#include "szbhash.h"
-#include "liblog.h"
-
-#include "definablecalculate.h"
 
 #define MAX_FID 8
 
@@ -231,13 +216,22 @@ szb_definable_choose_function(double funid, double *parlst)
 }
 
 
+default_is_summer_functor::default_is_summer_functor(time_t _t) : t(_t), param(_param) {}
+
+bool default_is_summer_functor::operator()(double& is_summer) {
+	TSzarpConfig *config = param->GetSzarpConfig();
+	assert(config);
+	const TSSeason *seasons;
+	if ((seasons = config->GetSeasons())) {
+		is_summer =  seasons->IsSummerSeason(t) ? 1 : 0;
+		return true;
+	}
+	return false;
+}
+
 double
-szb_definable_choose_function(double funid, double *parlst);
-
-
-SZBASE_TYPE
-szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, const double** cache, TParam** params,
-	const std::wstring& formula, int probe_n, int param_cnt, time_t time, TParam* param)
+szb_definable_calculate(double * stack, size_t stack_size, const double** cache, TParam** params,
+	const std::wstring& formula, int param_cnt, value_fetch_functor& value_fetch, is_summer_functor& is_summer, TParam* param)
 {
 
 	short sp = 0;
@@ -249,7 +243,7 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, const double*
 	if (formula.empty()) {
 		szb_definable_error = 1;
 		sz_log(0, "Invalid, NULL formula");
-		return SZB_NODATA;
+		return nan("");
 	}
 
 	do {
@@ -257,11 +251,11 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, const double*
 			chptr = wcschr(chptr, L' ');
 	
 			// check stack size
-			if (sp >= DEFINABLE_STACK_SIZE) {
+			if (sp >= stack_size) {
 				sz_log(0,
 					"Nastapilo przepelnienie stosu przy liczeniu formuly %ls",
 					formula.c_str());
-				return SZB_NODATA;
+				return nan("");
 			}
 	
 			if (it >= param_cnt) {
@@ -276,48 +270,48 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, const double*
 	
 			// put probe value on stack
 			if (cache[it] != NULL) {
-				const SZBASE_TYPE * data = cache[it];
-				if(!IS_SZB_NODATA(data[probe_n]))
-					stack[sp++] = data[probe_n] * pow(10, params[it]->GetPrec());
+				const double * data = cache[it];
+				if(!isnan(*data))
+					stack[sp++] = *data * pow(10, params[it]->GetPrec());
 				else
-					stack[sp++] = SZB_NODATA;
+					stack[sp++] = nan("");
 			} else {
 				TParam** fc = param->GetFormulaCache();
 				if (fc[it]->GetType() == TParam::P_LUA
-					&& fc[it]->GetFormulaType() == TParam::LUA_AV) {
-					stack[sp++] = szb_get_data(buffer, fc[it], time);
-					if (!IS_SZB_NODATA(stack[sp]))
+						&& fc[it]->GetFormulaType() == TParam::LUA_AV) {
+					stack[sp++] = value_fetch(fc[it]);
+					if (!isnan(stack[sp]))
 						stack[sp] = stack[sp] * pow(10, params[it]->GetPrec());
 				} else {
-					stack[sp++] = SZB_NODATA;
+					stack[sp++] = nan("");
 				}
 			}
 	
 			it++;
 		} else {
-			SZBASE_TYPE tmp;
+			double tmp;
 			short par_cnt;
 			int i1, i2;
 			switch (*chptr) {
 				case L'&':
 					if (sp < 2)	/* swap */
-						return SZB_NODATA;
-					if (IS_SZB_NODATA(stack[sp - 1]) || IS_SZB_NODATA(stack[sp - 2]))
-						return SZB_NODATA;
+						return nan("");
+					if (isnan(stack[sp - 1]) || isnan(stack[sp - 2]))
+						return nan("");
 					tmp = stack[sp - 1];
 					stack[sp - 1] = stack[sp - 2];
 					stack[sp - 2] = tmp;
 					break;		
 				case L'!':		
-					if (IS_SZB_NODATA(stack[sp - 1]))
-						return SZB_NODATA;
+					if (isnan(stack[sp - 1]))
+						return nan("");
 
 					// check stack size
-					if (DEFINABLE_STACK_SIZE <= sp) {
+					if (stack_size <= sp) {
 						sz_log(0,
 							"Przepelnienie stosu dla formuly %ls, w funkcji '!'",
 							formula.c_str());
-						return SZB_NODATA;
+						return nan("");
 					}
 
 					stack[sp] = stack[sp - 1];	/* duplicate */
@@ -325,13 +319,13 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, const double*
 					break;
 				case L'$':
 					if (sp-- < 2)	/* function call */
-						return SZB_NODATA;
+						return nan("");
 					par_cnt = (short) rint(stack[sp - 1]);
 					if (sp < par_cnt + 1)
-						return SZB_NODATA;
+						return nan("");
 					for (int i = sp - 2; i >= sp - par_cnt - 1; i--)
-						if (IS_SZB_NODATA(stack[i]))
-							return SZB_NODATA;
+						if (isnan(stack[i]))
+							return nan("");
 
 					stack[sp - par_cnt - 1] =
 					szb_definable_choose_function(stack[sp], &stack[sp - par_cnt - 1]);
@@ -340,11 +334,11 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, const double*
 					break;		
 				case L'#':
 					// check stack size
-					if (DEFINABLE_STACK_SIZE <= sp) {
+					if (stack_size <= sp) {
 						sz_log(0,
 							"Przepelnienie stosu dla formuly %ls, przy odkladaniu stalej: %lf",
 							formula.c_str(), wcstod(++chptr, NULL));
-						return SZB_NODATA;
+						return nan("");
 					}
 		
 					stack[sp++] = wcstod(++chptr, NULL);
@@ -357,7 +351,7 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, const double*
 					* w innym wypadku zostawia <par2>  
 					*/
 						if (sp-- < 3)
-							return SZB_NODATA;
+							return nan("");
 
 						if (0 == stack[sp])
 							stack[sp - 2] = stack[sp - 1];
@@ -366,42 +360,42 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, const double*
 					break;
 				case L'+':
 					if (sp-- < 2)
-						return SZB_NODATA;
-					if (IS_SZB_NODATA(stack[sp]) || IS_SZB_NODATA(stack[sp - 1]))
-						return SZB_NODATA;
+						return nan("");
+					if (isnan(stack[sp]) || isnan(stack[sp - 1]))
+						return nan("");
 					stack[sp - 1] += stack[sp];
 					break;
 				case L'-':
 					if (sp-- < 2)
-						return SZB_NODATA;
-					if (IS_SZB_NODATA(stack[sp]) || IS_SZB_NODATA(stack[sp - 1]))
-						return SZB_NODATA;
+						return nan("");
+					if (isnan(stack[sp]) || isnan(stack[sp - 1]))
+						return nan("");
 					stack[sp - 1] -= stack[sp];
 					break;
 				case L'*':
 					if (sp-- < 2)
-						return SZB_NODATA;
-					if (IS_SZB_NODATA(stack[sp]) || IS_SZB_NODATA(stack[sp - 1]))
-						return SZB_NODATA;
+						return nan("");
+					if (isnan(stack[sp]) || isnan(stack[sp - 1]))
+						return nan("");
 					stack[sp - 1] *= stack[sp];
 					break;
 				case L'/':
 					if (sp-- < 2)
-						return SZB_NODATA;
-					if (IS_SZB_NODATA(stack[sp]) || IS_SZB_NODATA(stack[sp - 1] ))
-						return SZB_NODATA;
+						return nan("");
+					if (isnan(stack[sp]) || isnan(stack[sp - 1] ))
+						return nan("");
 					if (stack[sp] != 0.0)
 						stack[sp - 1] /= stack[sp];
 					else {
-						sz_log(4, "WARRNING: szb_definable_calculate: dzielenie przez zero (i: %d)", probe_n);
-							return SZB_NODATA;
+						sz_log(4, "WARRNING: szb_definable_calculate: dzielenie przez zero ");
+							return nan("");
 					}
 					break;
 				case L'>':
 					if (sp-- < 2)	/* wieksze */
-						return SZB_NODATA;
-					if (IS_SZB_NODATA(stack[sp]) || IS_SZB_NODATA(stack[sp - 1]))
-						return SZB_NODATA;
+						return nan("");
+					if (isnan(stack[sp]) || isnan(stack[sp - 1]))
+						return nan("");
 					if (stack[sp - 1] > stack[sp])
 						stack[sp - 1] = 1;
 					else
@@ -409,9 +403,9 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, const double*
 					break;
 				case L'<':
 					if (sp-- < 2)	/* mniejsze */
-						return SZB_NODATA;
-					if (IS_SZB_NODATA(stack[sp]) || IS_SZB_NODATA(stack[sp - 1]))
-						return SZB_NODATA;
+						return nan("");
+					if (isnan(stack[sp]) || isnan(stack[sp - 1]))
+						return nan("");
 					if (stack[sp - 1] < stack[sp])
 						stack[sp - 1] = 1;
 					else
@@ -419,9 +413,9 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, const double*
 					break;
 				case L'~':
 					if (sp-- < 2)	/* rowne */
-						return SZB_NODATA;
-					if (IS_SZB_NODATA(stack[sp]) || IS_SZB_NODATA(stack[sp - 1]))
-						return SZB_NODATA;
+						return nan("");
+					if (isnan(stack[sp]) || isnan(stack[sp - 1]))
+						return nan("");
 					if (stack[sp - 1] == stack[sp])
 						stack[sp - 1] = 1;
 					else
@@ -429,18 +423,18 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, const double*
 					break;
 				case L':':
 					if (sp-- < 2)	/* slowo */
-						return SZB_NODATA;
-					if (IS_SZB_NODATA(stack[sp]) || IS_SZB_NODATA(stack[sp - 1]))
-						return SZB_NODATA;
-					i1 = (SZB_FILE_TYPE) rint(stack[sp - 1]);
-					i2 = (SZB_FILE_TYPE) rint(stack[sp]);
-					stack[sp - 1] = (SZBASE_TYPE) ((i1 << 16) | i2);
+						return nan("");
+					if (isnan(stack[sp]) || isnan(stack[sp - 1]))
+						return nan("");
+					i1 = (short) rint(stack[sp - 1]);
+					i2 = (short) rint(stack[sp]);
+					stack[sp - 1] = (double) ((i1 << 16) | i2);
 					break;
 				case L'^':
 					if (sp-- < 2)	/* potega */
-						return SZB_NODATA;
-					if (IS_SZB_NODATA(stack[sp]) || IS_SZB_NODATA(stack[sp - 1] ))
-						return SZB_NODATA;
+						return nan("");
+					if (isnan(stack[sp]) || isnan(stack[sp - 1] ))
+						return nan("");
 	
 					// fix - PP 
 					if (stack[sp] == 0.0) {
@@ -449,40 +443,39 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, const double*
 					} else if (stack[sp - 1] >= 0.0) {
 						stack[sp - 1] = pow(stack[sp - 1], stack[sp]);
 					} else {
-						sz_log(4, "WARRNING: szb_definable_calculate: wyk�adnik pot�gi < 0 (i: %d)", probe_n);
-						return SZB_NODATA;
+						sz_log(4, "WARRNING: szb_definable_calculate: wyk�adnik pot�gi < 0");
+						return nan("");
 					}
 					break;
 				case L'N':
-					if (sp-- < 2)	/* Sprawdzenie czy SZB_NODATA */
-						return SZB_NODATA;
-					if (IS_SZB_NODATA(stack[sp - 1]))
+					if (sp-- < 2)	/* Sprawdzenie czy nan("") */
+						return nan("");
+					if (isnan(stack[sp - 1]))
 						stack[sp - 1] = stack[sp];
 					break;
 				case L'X':
 					// check stack size
-					if (DEFINABLE_STACK_SIZE <= sp) {
+					if (stack_size <= sp) {
 						sz_log(0,
 							"Przepelnienie stosu dla formuly %ls, w funkcji X",
 							formula.c_str());
-						return SZB_NODATA;
+						return nan("");
 					}
-					stack[sp++] = SZB_NODATA;
+					stack[sp++] = nan("");
 					break;
 				case L'S':
-					if (DEFINABLE_STACK_SIZE > sp) {
-						TSzarpConfig *config = param->GetSzarpConfig();
-						assert(config);
-						const TSSeason *seasons;
-						if ((seasons = config->GetSeasons())) {
-							stack[sp++] = seasons->IsSummerSeason(time) ? 1 : 0;
+					if (stack_size > sp) {
+						bool is_in_summer;
+						bool found = is_summer(is_in_summer);
+						if (found) {
+							stack[sp++] = is_in_summer ? 1 : 0;
 							break;
 						}
 					} else {
 						sz_log(0,
 							"Przepelnienie stosu dla formuly %ls, w funkcji S",
 							formula.c_str());
-						return SZB_NODATA;
+						return nan("");
 					} //Falls through if there is no seasons defined
 				default:
 					if (iswspace(*chptr))
@@ -493,17 +486,17 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, const double*
 	} while (chptr && *(++chptr) != 0);
 
 	if (szb_definable_error)
-		return SZB_NODATA;
+		return nan("");
 
 	if (sp-- < 0) {
 		sz_log(5, "ERROR: szb_definable_calculate: sp-- < 0");
 		szb_definable_error = 1;
-		return SZB_NODATA;
+		return nan("");
 	}
 
-	if (IS_SZB_NODATA(stack[0])) {
-		sz_log(10, "WARRNING: szb_definable_calculate: stack[0] == SZB_NODATA");
-		return SZB_NODATA;
+	if (isnan(stack[0])) {
+		sz_log(10, "WARRNING: szb_definable_calculate: stack[0] == nan("")");
+		return nan("");
 	}
 
 	return stack[0];
