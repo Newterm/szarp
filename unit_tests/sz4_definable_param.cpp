@@ -33,12 +33,12 @@
 #include "test_serach_condition.h"
 #include "test_observer.h"
 
-class Sz4LuaParam : public CPPUNIT_NS::TestFixture
+class Sz4RPNParam : public CPPUNIT_NS::TestFixture
 {
 	void test1();
 	void test2();
 
-	CPPUNIT_TEST_SUITE( Sz4LuaParam );
+	CPPUNIT_TEST_SUITE( Sz4RPNParam );
 	CPPUNIT_TEST( test1 );
 	CPPUNIT_TEST( test2 );
 	CPPUNIT_TEST_SUITE_END();
@@ -49,36 +49,30 @@ public:
 namespace {
 
 class IPKContainerMock1 {
-	TParam param;
 	TSzarpConfig config;
+	TParam* param;
 public:
-	IPKContainerMock1() : param(NULL, NULL, std::wstring(), TParam::LUA_VA, TParam::P_LUA) {
-		param.SetConfigId(0);
-		param.SetParamId(0);
-		param.SetDataType(TParam::DOUBLE);
-		param.SetName(L"A:B:C1");
-		param.SetLuaScript((const unsigned char*) 
-"if (t % 100) < 50 then 	"
-"	v = 0 * math.pow(1, 1)	"
-"else				"
-"	v = 1			"
-"end				"
-);
-		param.SetParentSzarpConfig(&config);
+	IPKContainerMock1() : param(new TParam(NULL, &config, L"1", TParam::DEFINABLE, TParam::P_DEFINABLE)) {
+		param->SetConfigId(0);
+		param->SetParamId(0);
+		param->SetDataType(TParam::DOUBLE);
+		param->SetName(L"A:B:C1");
+		param->SetParentSzarpConfig(&config);
 
 		config.SetName(L"BASE", L"BASE");
+		config.AddDrawDefinable(param);
 	}
 	TSzarpConfig* GetConfig(const std::wstring&) { return &config; }
-	TParam* GetParam(const std::wstring&) { return &param; }
-	TParam* GetParam(const std::basic_string<unsigned char>&) { return &param; }
+	TParam* GetParam(const std::wstring&) { return param; }
+	TParam* GetParam(const std::basic_string<unsigned char>&) { return param; }
 };
 
 }
 
 
-CPPUNIT_TEST_SUITE_REGISTRATION( Sz4LuaParam );
+CPPUNIT_TEST_SUITE_REGISTRATION( Sz4RPNParam );
 
-void Sz4LuaParam::setUp() {
+void Sz4RPNParam::setUp() {
 }
 
 namespace {
@@ -91,48 +85,49 @@ struct test_types {
 
 
 
-void Sz4LuaParam::test1() {
+void Sz4RPNParam::test1() {
 	IPKContainerMock1 mock;
 	sz4::base_templ<test_types> base(L"", &mock);
 	sz4::buffer_templ<test_types>* buff = base.buffer_for_param(mock.GetParam(L""));
 
 	sz4::weighted_sum<double, sz4::second_time_t> sum;
 	buff->get_weighted_sum(mock.GetParam(L""), 100u, 200u, PT_SEC10, sum);
-	CPPUNIT_ASSERT_EQUAL(50., sum.sum());
+	CPPUNIT_ASSERT_EQUAL(100., sum.sum());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(100), sum.weight());
 	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
 }
 
-namespace unit_test {
+namespace rpn_unit_test {
 
 class IPKContainerMock2 {
-	TParam param;
-	TParam param2;
-	TParam param3;
 	TSzarpConfig config;
+	TParam* param;
+	TParam* param2;
+	TParam* param3;
 public:
-	IPKContainerMock2() : param(NULL, NULL, std::wstring(), TParam::NONE, TParam::P_REAL),
-				param2(NULL, NULL, std::wstring(), TParam::LUA_VA, TParam::P_LUA),
-				param3(NULL, NULL, std::wstring(), TParam::NONE, TParam::P_REAL)
+	IPKContainerMock2() : param(new TParam(NULL, &config, std::wstring(), TParam::NONE, TParam::P_REAL)),
+				param2(new TParam(NULL, &config, L"(A:B:C) 1 +", TParam::DEFINABLE, TParam::P_DEFINABLE)),
+				param3(new TParam(NULL, &config, std::wstring(), TParam::NONE, TParam::P_REAL))
 	 {
-		param.SetConfigId(0);
-		param.SetParamId(0);
-		param.SetDataType(TParam::SHORT);
-		param.SetName(L"A:B:C");
-		param.SetParentSzarpConfig(&config);
+		param->SetConfigId(0);
+		param->SetParamId(0);
+		param->SetDataType(TParam::SHORT);
+		param->SetName(L"A:B:C");
+		param->SetParentSzarpConfig(&config);
+		config.AddDrawDefinable(param);
 
-		param2.SetConfigId(0);
-		param2.SetParamId(1);
-		param2.SetDataType(TParam::DOUBLE);
-		param2.SetLuaScript((const unsigned char*) 
-"v = p(\"BASE:A:B:C\", t, pt) * math.pow(1, 1)"
-);
-		param2.SetParentSzarpConfig(&config);
+		param2->SetConfigId(0);
+		param2->SetParamId(1);
+		param2->SetDataType(TParam::DOUBLE);
+		param2->SetName(L"A:B:D");
+		param2->SetParentSzarpConfig(&config);
+		config.AddDrawDefinable(param2);
 
-		param3.SetConfigId(0);
-		param3.SetParamId(3);
-		param3.SetDataType(TParam::DOUBLE);
-		param3.SetParentSzarpConfig(&config);
+		param3->SetConfigId(0);
+		param3->SetParamId(3);
+		param3->SetDataType(TParam::DOUBLE);
+		param3->SetParentSzarpConfig(&config);
+		config.AddDrawDefinable(param3);
 
 
 		config.SetName(L"BASE", L"BASE");
@@ -142,13 +137,13 @@ public:
 
 	TParam* GetParam(const std::wstring& name) {
 		if (name == L"BASE:A:B:C")
-			return &param;
+			return param;
 
 		if (name == L"BASE:A:B:D")
-			return &param2;
+			return param2;
 
 		if (name == L"BASE:Status:Meaner4:Heartbeat")
-			return &param3;
+			return param3;
 		
 		assert(false);
 		return NULL;
@@ -156,13 +151,13 @@ public:
 
 	TParam* GetParam(const std::basic_string<unsigned char>& name) {
 		if (name == (const unsigned char*)"BASE:A:B:C")
-			return &param;
+			return param;
 
 		if (name == (const unsigned char*)"BASE:A:B:D")
-			return &param2;
+			return param2;
 
 		if (name == (const unsigned char*)"BASE:Status:Meaner4:Heartbeat")
-			return &param3;
+			return param3;
 		
 		assert(false);
 		return NULL;
@@ -176,17 +171,17 @@ struct test_types {
 }
 
 
-void Sz4LuaParam::test2() {
-	unit_test::IPKContainerMock2 mock;
+void Sz4RPNParam::test2() {
+	rpn_unit_test::IPKContainerMock2 mock;
 
 	std::wstringstream base_dir_name;
-	base_dir_name << L"/tmp/sz4_definable_param" << getpid() << L"." << time(NULL) << L".tmp";
+	base_dir_name << L"/tmp/sz4_rpn_param" << getpid() << L"." << time(NULL) << L".tmp";
 	boost::filesystem::wpath base_path(base_dir_name.str());
 	boost::filesystem::wpath param_dir(base_path / L"BASE/sz4/A/B/C");
 	boost::filesystem::create_directories(param_dir);
 
-	sz4::base_templ<unit_test::test_types> base(base_path.file_string(), &mock);
-	sz4::buffer_templ<unit_test::test_types>* buff = base.buffer_for_param(mock.GetParam(L"BASE:A:B:D"));
+	sz4::base_templ<rpn_unit_test::test_types> base(base_path.file_string(), &mock);
+	sz4::buffer_templ<rpn_unit_test::test_types>* buff = base.buffer_for_param(mock.GetParam(L"BASE:A:B:D"));
 
 	
 	TestObserver o;
@@ -213,7 +208,7 @@ void Sz4LuaParam::test2() {
 	{
 		sz4::weighted_sum<double, sz4::second_time_t> sum;
 		buff->get_weighted_sum(mock.GetParam(L"BASE:A:B:D"), 100u, 200u, PT_SEC10, sum);
-		CPPUNIT_ASSERT_EQUAL(10 * 50., sum.sum());
+		CPPUNIT_ASSERT_EQUAL(11 * 50., sum.sum());
 		CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), sum.weight());
 		CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), sum.no_data_weight());
 		CPPUNIT_ASSERT_EQUAL(false, sum.fixed());

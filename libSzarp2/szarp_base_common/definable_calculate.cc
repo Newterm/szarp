@@ -216,9 +216,9 @@ szb_definable_choose_function(double funid, double *parlst)
 }
 
 
-default_is_summer_functor::default_is_summer_functor(time_t _t) : t(_t), param(_param) {}
+default_is_summer_functor::default_is_summer_functor(time_t _t, TParam* _param) : param(_param), t(_t) {}
 
-bool default_is_summer_functor::operator()(double& is_summer) {
+bool default_is_summer_functor::operator()(bool& is_summer) {
 	TSzarpConfig *config = param->GetSzarpConfig();
 	assert(config);
 	const TSSeason *seasons;
@@ -230,7 +230,7 @@ bool default_is_summer_functor::operator()(double& is_summer) {
 }
 
 double
-szb_definable_calculate(double * stack, size_t stack_size, const double** cache, TParam** params,
+szb_definable_calculate(double * stack, int stack_size, const double** cache, TParam** params,
 	const std::wstring& formula, int param_cnt, value_fetch_functor& value_fetch, is_summer_functor& is_summer, TParam* param)
 {
 

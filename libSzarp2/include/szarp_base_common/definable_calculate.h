@@ -29,7 +29,7 @@ public:
 };
 
 double
-szb_definable_calculate(double * stack, size_t stack_size, const double** cache, TParam** params,
+szb_definable_calculate(double * stack, int stack_size, const double** cache, TParam** params,
 	const std::wstring& formula, int param_cnt, value_fetch_functor& value_fetch, is_summer_functor& is_summer, TParam* param);
 
 #endif

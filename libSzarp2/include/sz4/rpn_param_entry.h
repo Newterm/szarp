@@ -39,7 +39,6 @@ template<class types> class rpn_calculate {
 	TParam* m_param;
 public:
 	rpn_calculate(base_templ<types>* base, TParam* param) : m_base(base), m_param(param) {
-		param->PrepareDefinable();
 	}
 
 	template<class T> std::pair<double, bool> calculate_value(T time, SZARP_PROBE_TYPE probe_type) {
@@ -57,8 +56,8 @@ public:
 		const std::wstring& formula = m_param->GetDrawFormula();
 		TParam **f_cache = m_param->GetFormulaCache();
 		double pw = pow(10, m_param->GetPrec());
-		double sum;
-		size_t count;
+		double sum = 0;
+		size_t count = 0;
 		bool fixed = true;
 
 		T end_time = szb_move_time(time, 1, probe_type);

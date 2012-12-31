@@ -24,4 +24,5 @@ unit_tests_SOURCES = \
 		base_param_converter_unit_test.cpp \
 		sz4_lua_param_optimized.cpp \
 		sz4_lua_param.cpp \
+		sz4_definable_param.cpp \
 		simple_mocks.h 

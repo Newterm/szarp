@@ -89,8 +89,19 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 			}
 			return entry;
 		}
-		case TParam::SZ4_DEFINABLE:
-			return param_entry_build_t_1<rpn_param_entry_in_buffer, types>(base, param, buffer_directory);
+		case TParam::SZ4_DEFINABLE: {
+			generic_param_entry* entry = param_entry_build_t_1<rpn_param_entry_in_buffer, types>(base, param, buffer_directory);
+
+			TParam **f_cache = param->GetFormulaCache();
+			int num_of_params = param->GetNumParsInFormula();
+			for (int i = 0; i < num_of_params; i++) {
+				generic_param_entry* reffered_entry = base->get_param_entry(f_cache[i]);
+				reffered_entry->add_reffering_param(entry);
+
+			}
+
+			return entry;
+		}
 		default:
 		case TParam::SZ4_NONE:
 			assert(false);

@@ -25,13 +25,13 @@
 #include "szbbuf.h"
 #include "szbdefines.h"
 #include "szbdate.h"
-#include "definablecalculate.h"
+#include "szb_definable_calculate.h"
 #include "luacalculate.h"
 #include "loptcalculate.h"
 #include "proberconnection.h"
 #include "szbbase.h"
 #include "conversion.h"
-#include "szb_definable_caluclate.h"
+#include "szb_definable_calculate.h"
 
 static const size_t DEFINABLE_STACK_SIZE  = 200;
 
@@ -208,7 +208,7 @@ void szb_probeblock_definable_t::FetchProbes() {
 		time_t time = GetStartTime() + i * SZBASE_PROBE_SPAN;
 		szbase_value_fetch_functor value_fetch(buffer, time, PT_SEC10);	
 		default_is_summer_functor is_summer(time, param);
-		data[i] = definable_calculate(stack, dblocks, p_cache, formula, num_of_params, value_fetch, is_summer, param) / pw;
+		data[i] = szb_definable_calculate(stack, DEFINABLE_STACK_SIZE, dblocks, p_cache, formula, num_of_params, value_fetch, is_summer, param) / pw;
 		for (int j = 0; j < num_of_params; j++)
 			if (dblocks[j])
 				dblocks[j] += 1;
