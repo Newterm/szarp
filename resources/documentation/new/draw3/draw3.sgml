@@ -64,7 +64,7 @@ Ten rozdzia³ opisuje:
 <listitem><para>jak uruchomiæ programu Draw 3 - <xref linkend="draw3-base-run"></para></listitem>
 <listitem><para>co jest widoczne w g³ównym oknie programu przegl±daj±cego - <xref linkend="draw3-base-win"></para></listitem>
 <listitem><para>jak wybraæ interesuj±cy Ciê zestaw wykresów - <xref linkend="draw3-base-charts"></para></listitem>
-<listitem><para>jak zmieniæ zakres ¶rednich - <xref linkend="draw3-base-range"></para></listitem>
+GG<listitem><para>jak zmieniæ zakres ¶rednich - <xref linkend="draw3-base-range"></para></listitem>
 <listitem><para>jak poruszaæ siê po wykresach - <xref linkend="draw3-base-graphsnavigation"></para></listitem>
 <listitem><para>jak korzystaæ z zak³adek i okien - <xref linkend="draw3-base-tabs"></para></listitem>
 <listitem><para>jak wydrukowaæ interesuj±ce Ciê wykresy - <xref linkend="draw3-base-prints"></para></listitem>
@@ -92,6 +92,7 @@ W czasie startu Draw 3 odczyta konfiguracjê, uruchomi mechanizm odpytywania bazy
 <imageobject><imagedata align="center" fileref="pics/draw3-progress.png"></imageobject>
 </mediaobject>
 </para>
+<note>
 <para>
 Aby zapoznaæ siê z obs³ug± podstawowych funkcji programu, przejd¼ do <xref linkend="draw3-base-win">.
 <note><para>
@@ -140,7 +141,7 @@ oraz ikony skrótów:
 
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-data_icon.png"></imageobject></inlinemediaobject> - Id¼ do najnowszej danej  - ustawienie kursora na najnowszej danej </para></listitem>
 
-<listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-remark_icon.png"></imageobject></inlinemediaobject> - Komentarze - pokauje kometarze dla akutalnej konfiguracji - wiêcej <xref linkend="draw3-ext-remarks"></para></listitem>
+<listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-remark_icon.png"></imageobject></inlinemediaobject> - Komentarze - pokazuje kometarze dla aktualnej konfiguracji - wiêcej <xref linkend="draw3-ext-remarks"></para></listitem>
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-exit_icon.png"></imageobject></inlinemediaobject> - Wyj¶cie - wyj¶cie z programu</para></listitem>
 </itemizedlist>
 </para>
@@ -215,7 +216,7 @@ widoczne s± ¶rednie z ca³ego dnia. W tym trybie mo¿liwe jest przesuwanie kursora
 <listitem><para><emphasis>30 MINUT</emphasis> - pokazuje próbki 10-sekundowe - na ekranie widoczne s± próbki 10-sekundowe z 30 minut</para></listitem>
 <listitem><para><emphasis>SEZON</emphasis> - pokazuje ¶rednie tygodniowe  - na ekranie widoczne s± ¶rednie z ca³ego sezonu</para></listitem>
 </itemizedlist>
-Wszystkie tryby, poza dziennym, pokazuj± granice sezonów (czerwona - pocz±tek sezonu letniego, niebieska - pocz±tek sezonu letniego).
+Wszystkie tryby, poza dziennym, pokazuj± granice sezonów (czerwona - pocz±tek sezonu letniego, niebieska - pocz±tek sezonu zimowego).
 Mo¿esz prze³±czyæ miêdzy rodzajami ¶rednich:
 <itemizedlist>
 <listitem><para>klikaj±c myszk± na odpowiedni tryb</para></listitem>
@@ -319,7 +320,7 @@ Zak³adki na wzór przegl±darek internetowych s± otwarte równolegle, w ramach jedn
 programu Draw 3. 
 </para>
 <para>
-Nowe okno mo¿esz otworzyæ przez skrót klawiaturowy <keycode>Ctrl + N</keycode>,ralbo 
+Nowe okno mo¿esz otworzyæ przez skrót klawiaturowy <keycode>Ctrl + N</keycode>,albo 
 wybieraj±c z menu <guimenu>Plik</guimenu> polecenie <guimenu>Otwórz nowe okno</guimenu>. 
 Now± zak³adkê mo¿esz otworzyæ przez skrót klawiaturowy <keycode>Ctrl + T</keycode> albo 
 wybieraj±c z menu <guimenu>Plik</guimenu> polecenie <guimenu>Otwórz now± zak³adkê</guimenu>.
@@ -578,13 +579,13 @@ pojawi± siê wyliczone warto¶ci dla danego parametru.
 </section> <!-- draw3-ext-meanvalues -->
 
 <section id="draw3-ext-chartxy">
-<title>Zale¿no¶ci pomiêdzy parametrami - wykres X/Y</title>
+<title>Zale¿no¶ci pomiêdzy parametrami - wykres XY</title>
 <para>
-W Draw 3 mo¿esz okre¶liæ korelacjê warto¶ci wybranych parametrów. S³u¿± do tego wykresy X/Y. 
+W Draw 3 mo¿esz okre¶liæ korelacjê warto¶ci wybranych parametrów. S³u¿± do tego wykresy XY. 
 Mo¿esz je utworzyæ wybieraj±c z menu <guimenu>Plik</guimenu> oraz <guimenu>Wykres XY</guimenu>.
 Domy¶lnie, jako wykresy X i Y, zostan± wybrane pierwsze dwa niewygaszone wykresy z aktualnego zestawu. Tak¿e zakres czasowy zostanie ustawiony na ten z aktualnego zestawu.
 <figure>
-<title>Tworzenie wykresu X/Y</title>
+<title>Tworzenie wykresu XY</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-xy1.png"></imageobject>
 </mediaobject></figure>
@@ -593,8 +594,8 @@ W oknie obok wykresu XY, po prawej jego stronie, umieszczone s± dok³adniejsze in
 <listitem><para>warto¶æ w wybranym punkcie wykresu</para></listitem>
 <listitem><para>warto¶æ minimaln±, ¶redni± i maksymaln± w wybranym okresie czasu</para></listitem>
 <listitem><para>odchylenie standardowe</para></listitem>
-<listitem><para>korelacja X/Y - pokazuje warto¶æ wspó³czynnika korelacji Pearsona - wspó³czynnik ten przyjmuje warto¶æ tym bli¿sz± 1 lub -1 im bardziej waro¶ci parametru X s± liniowo zale¿ne od warto¶ci parametru Y</para></listitem>
-<listitem><para>korelacja rangowa X/Y - korelacja rangowa przyjmuje warto¶æ tym wiêksz± im bardziej warto¶ci parametrów X i Y spe³niaj± zale¿no¶æ monotoniczno¶ci, a wiêc im bardziej spe³niony jest warunek ¿e wzrostowi warto¶ci parametru X towarzyszy wzrost warto¶ci parametru Y. Korelacja rangowa mierzy ogólniejsz± zale¿no¶æ miêdzy parametarmi X i Y ni¿ wspó³czynnik Pearsona poniewa¿ by korelacja rangowa przyjê³a du¿± warto¶æ wystarczy, by wzrostowi warto¶ci jednego parametru towarzyszy³ jakikolwiek wzrost warto¶ci drugiego parametru, w przypadku wspó³czynnika Pearsona wzrost ten dodatkowo musi byæ liniowy.</para></listitem>
+<listitem><para>korelacja XY - pokazuje warto¶æ wspó³czynnika korelacji Pearsona - wspó³czynnik ten przyjmuje warto¶æ tym bli¿sz± 1 lub -1 im bardziej waro¶ci parametru X s± liniowo zale¿ne od warto¶ci parametru Y</para></listitem>
+<listitem><para>korelacja rangowa XY - korelacja rangowa przyjmuje warto¶æ tym wiêksz± im bardziej warto¶ci parametrów X i Y spe³niaj± zale¿no¶æ monotoniczno¶ci, a wiêc im bardziej spe³niony jest warunek ¿e wzrostowi warto¶ci parametru X towarzyszy wzrost warto¶ci parametru Y. Korelacja rangowa mierzy ogólniejsz± zale¿no¶æ miêdzy parametarmi X i Y ni¿ wspó³czynnik Pearsona poniewa¿ by korelacja rangowa przyjê³a du¿± warto¶æ wystarczy, by wzrostowi warto¶ci jednego parametru towarzyszy³ jakikolwiek wzrost warto¶ci drugiego parametru, w przypadku wspó³czynnika Pearsona wzrost ten dodatkowo musi byæ liniowy.</para></listitem>
 <listitem><para>zakres dat, dla których tworzony jest wykres XY</para></listitem>
 <listitem><para>ilo¶æ próbek, które s± wy¶wietlane w wybranym miejscu na wykresie</para></listitem>
 <listitem><para>listê powy¿ej wymienionych próbek</para></listitem>
@@ -604,7 +605,7 @@ wykresu.
 </para>
 <para>
 <figure> 
-<title>Wykres X/Y</title>
+<title>Wykres XY</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-xy2.png"></imageobject>
 </mediaobject></figure>
@@ -613,7 +614,7 @@ wykresu.
 W przypadku, gdy podczas definiowania wykresu XY wybierzesz u¶rednienie warto¶ci, uzyskasz wykres podobny do poni¿szego:
 </para>`
 <para>
-<figure> <title>Wykres X/Y - u¶rednione warto¶ci</title>
+<figure> <title>Wykres XY - u¶rednione warto¶ci</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-xy3.png"></imageobject>
 </mediaobject></figure>
@@ -622,16 +623,16 @@ W przypadku, gdy podczas definiowania wykresu XY wybierzesz u¶rednienie warto¶ci
 <emphasis>Uwaga!</emphasis> Je¶li wybierzesz z³y okres czasowy (np. bêdziesz chcia³ wykres danych dla przysz³ego miesi±ca), program poinformuje Ciê o b³êdzie komunikatem: <quote>Brak wspólnych danych dla wybranych wykresów w zadanym okresie czasu</quote>.
 </para>
 <para>
-Parametry wykresu X/Y mo¿na zmieniæ wybieraj±c z menu <guimenu>Wykres</guimenu> a nastêpnie 
+Parametry wykresu XY mo¿na zmieniæ wybieraj±c z menu <guimenu>Wykres</guimenu> a nastêpnie 
 <guimenu>Zmieñ parametry wykresu</guimenu>. Mo¿esz tak¿e w szybki sposób stworzyæ zestaw 
-sk³adaj±cy siê z wykresów tworz±cych wykres X/Y u¿ywaj±c przycisku 
+sk³adaj±cy siê z wykresów tworz±cych wykres XY u¿ywaj±c przycisku 
 <guibutton>Id¼ do wykresu</guibutton>. Zestaw mo¿esz zapisaæ i edytowaæ 
 jako zestaw parametrów u¿ytkownika (wiêcej w <xref linkend="draw3-ext-chartset">). 
 </para>
 <para>
-Mo¿liwe jest zwiêkszenie i zmniejszenie skali wykresu. W tym celu, na oknie wykresu X/Y, trzymaj±c prawy klawisz myszy zaznacz interesuj±cy Ciê obszar i zwolnij klawisz:
+Mo¿liwe jest zwiêkszenie i zmniejszenie skali wykresu. W tym celu, na oknie wykresu XY, trzymaj±c prawy klawisz myszy zaznacz interesuj±cy Ciê obszar i zwolnij klawisz:
 <para>
-<figure> <title>Wykres X/Y - skalowanie wykresu</title>
+<figure> <title>Wykres XY - skalowanie wykresu</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-xy4.png"></imageobject>
 </mediaobject></figure>
