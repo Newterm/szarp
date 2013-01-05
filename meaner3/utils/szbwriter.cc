@@ -49,6 +49,9 @@
 
 #include <argp.h>
 
+#include <sys/types.h>
+#include <utime.h>
+
 #include "liblog.h"
 #include "libpar.h"
 #include "szarp_config.h"
@@ -809,6 +812,7 @@ int main(int argc, char *argv[])
 {
 	int loglevel;
 	char *ipk_path;
+	char *stamp;
 	char *data_dir;
 	const char *cache_dir;
 	const char *double_pattern;
@@ -880,6 +884,10 @@ int main(int argc, char *argv[])
 		szbw->saveXML(SC::A2S(ipk_path));
 	
 	delete szbw;
+
+	// update database stamp file
+	if( (stamp  = libpar_getpar(SZARP_CFG_SECTION  , "szbase_stamp", 0)) )
+		utime( stamp , NULL );
 
 	sz_log(2, "Completed successfully");
 	

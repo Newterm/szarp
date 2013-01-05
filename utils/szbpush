@@ -185,7 +185,7 @@ log "start with args $@"
 get_verbose_level;
 
 REMOTE=$1;
-REMOTE_SERVER=`echo "REMOTE" | cut -d '@' -f 2`
+REMOTE_SERVER=`echo "$REMOTE" | cut -d '@' -f 2`
 if [ -z "REMOTE_SERVER" ] ; then
 	REMOTE_SERVER=$REMOTE
 fi
