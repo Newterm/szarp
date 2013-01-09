@@ -1290,8 +1290,8 @@ When in SZARP line daemon mode, the following options are available:\n");
     }
     
     //for (int i = 1; i < argc; i++) {
-    //        std::wcout << argv[i] << " "; 
-    //        std::wcout << "\n";
+    //        std::cout << argv[i] << " "; 
+    //        std::cout << "\n";
     //}
     
     /** If sontex_supercal_531 option is set we need to remove it from 
@@ -1303,10 +1303,10 @@ When in SZARP line daemon mode, the following options are available:\n");
         }
         argc--;
 
-        //std::wcout << "Args modified: \n";
+        //std::cout << "Args modified: \n";
         //for (int i = 1; i < argc; i++) {
-        //    std::wcout << argv[i] << " "; 
-        //    std::wcout << "\n";
+        //    std::cout << argv[i] << " "; 
+        //    std::cout << "\n";
         //}
     }
 
@@ -1327,7 +1327,7 @@ When in SZARP line daemon mode, the following options are available:\n");
                                    {0, 0, 0, 0}};
 
         int option_index = 0;
-        std::wstring device;
+        std::string device;
         unsigned long int speed = 300;
         MBus::byte address = MBus::broadcast_with_reply;
         unsigned long int byte_interval = 10000;
@@ -1346,7 +1346,7 @@ When in SZARP line daemon mode, the following options are available:\n");
 
             switch (option_index) {
                 case 0:
-                    device = SC::A2S(optarg);
+                    device.assign(optarg);
                     break;
                 case 1:
                     argval = strtol(optarg, NULL, 10);
@@ -1399,7 +1399,7 @@ When in SZARP line daemon mode, the following options are available:\n");
 
         MBus mbus;
 
-        std::wcout << "Making a test attempt to connect to " << device << " with the following parameters:\n"
+        std::cout << "Making a test attempt to connect to " << device << " with the following parameters:\n"
                   << "MBus address: " << static_cast<unsigned int>(address) << "\n"
                   << "Speed: " << speed << "\n"
                   << "Byte interval: " << byte_interval << "\n"
@@ -1460,8 +1460,8 @@ When in SZARP line daemon mode, the following options are available:\n");
             sz_log(2, "Connected.");
 
         if (is_debug)
-            std::wcout << std::dec << "MBus daemon connection data:\n" 
-                      << "\tParcook line number: " << config->GetLineNumber() << "\n\tDevice: " << config->GetDevice()->GetPath()
+            std::cout << std::dec << "MBus daemon connection data:\n" 
+                      << "\tParcook line number: " << config->GetLineNumber() << "\n\tDevice: " << SC::S2A(config->GetDevice()->GetPath())
                       << "\n\tParameters to report: " << ipc->m_params_count << "\n";
 
         MBusConfig mbus_config(config->GetXMLDevice());
@@ -1479,12 +1479,12 @@ When in SZARP line daemon mode, the following options are available:\n");
             connection_speed = 300;
 
         if (is_debug)
-            std::wcout << std::dec << "Connecting to the device " << config->GetDevice()->GetPath() 
+            std::cout << std::dec << "Connecting to the device " << SC::S2A(config->GetDevice()->GetPath()) 
                       << " with baudrate " << connection_speed << "...\n";
 
         // Connect only when the connection died, not every time when we
         // want to retrieve data from the device
-        if (mbus_config.mbus->connect(config->GetDevice()->GetPath(),
+        if (mbus_config.mbus->connect(SC::S2A(config->GetDevice()->GetPath()),
                          connection_speed, mbus_config.byte_interval, mbus_config.data_bits, 
                          mbus_config.stop_bits, mbus_config.parity)) {
             sz_log(5, "Connected.");

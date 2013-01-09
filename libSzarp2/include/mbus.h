@@ -199,7 +199,7 @@ class MBus {
          * @param parity type of parity to use in communication with the other device
          * @return true if the connection and parameters' setting succeeded, false otherwise
          */
-        bool connect(std::wstring device, unsigned long int baudrate = 300, unsigned long int byte_interval = 10000, 
+        bool connect(std::string device, unsigned long int baudrate = 300, unsigned long int byte_interval = 10000, 
                 unsigned int data_bits = 8, unsigned int stop_bits = 1, parity_type parity = none);
 
         /** Closes the connection to the device.

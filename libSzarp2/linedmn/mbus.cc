@@ -1672,8 +1672,8 @@ void MBus::dump_frame(std::ostream& os, std::string frame) {
     os << std::endl;
 }
 
-bool MBus::connect(std::wstring device, unsigned long int baudrate, unsigned long int byte_interval, unsigned int data_bits, unsigned int stop_bits, parity_type parity) {
-    int fd = open(SC::S2A(device).c_str(), O_RDWR | O_NDELAY | O_NONBLOCK);
+bool MBus::connect(std::string device, unsigned long int baudrate, unsigned long int byte_interval, unsigned int data_bits, unsigned int stop_bits, parity_type parity) {
+    int fd = open(device.c_str(), O_RDWR | O_NDELAY | O_NONBLOCK);
     unsigned long int baudrate_flag, data_bits_flag, stop_bits_flag, parity_flag;
 
     if (fd < 0)
@@ -1830,12 +1830,12 @@ std::string MBus::receive_frame(int timeout_sec, int timeout_usec) {
 }
 
 void MBus::wakeup_device(byte address) { 
-    std::wcout << "Waking up device with SND_NKE2 datagram.\n";
+    std::cout << "Waking up device with SND_NKE2 datagram.\n";
     
     if (send_frame(create_short_frame(SND_NKE2, address))) {
-        std::wcout << "SND_NKE2 sent successfully.\n";
+        std::cout << "SND_NKE2 sent successfully.\n";
     } else {
-        std::wcout << "Error while sending SND_NKE2.\n";
+        std::cout << "Error while sending SND_NKE2.\n";
         return;
     }
 
@@ -1844,13 +1844,13 @@ void MBus::wakeup_device(byte address) {
     std::string frame("");
 
     if (identify_frame(frame = receive_frame(1,0)) == single_char) {
-        std::wcout << "Device is already awake.\n";
+        std::cout << "Device is already awake.\n";
     } else {
         if (frame == "") {
-            std::wcout << "Timed out while waiting for reply - device should be now awake.\n";
+            std::cout << "Timed out while waiting for reply - device should be now awake.\n";
         }
         else {
-            std::wcout << "Invalid reply received.\n";
+            std::cout << "Invalid reply received.\n";
         }
     }
 }
