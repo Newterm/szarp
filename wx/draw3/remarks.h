@@ -47,6 +47,11 @@
 
 class Remark {
 public:
+
+#ifndef MINGW32
+        static const int c_max_uname_size;
+#endif /*MINGW32*/
+
 	typedef std::pair<int, int> ID;
 private:
 	boost::shared_ptr<xmlDoc> m_doc;
@@ -465,6 +470,11 @@ class RemarksHandler : public wxEvtHandler {
 #endif /*MINGW32*/
 
 public:
+
+#ifndef MINGW32
+        static const int c_max_uname_size;
+#endif /*MINGW32*/
+
 	RemarksHandler(ConfigManager *config_manager);
 
 	void AddRemarkFetcher(RemarksFetcher* fetcher);

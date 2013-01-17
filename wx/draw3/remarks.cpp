@@ -52,6 +52,8 @@
 #include <wx/dir.h>
 #include <wx/config.h>
 #include <wx/tokenzr.h>
+/* for wxGetUserName(2) */
+#include <wx/utils.h>
 
 #ifndef MINGW32
 #include <stdio.h>
@@ -59,6 +61,8 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
+
+#include "libpar.h"
 #endif
 
 #include "szframe.h"
@@ -89,6 +93,10 @@
 #include "defcfg.h"
 
 #include "timeformat.h"
+
+#ifndef MINGW32
+        const int Remark::c_max_uname_size = 30;
+#endif /*MINGW32*/
 
 void debug_print_long(const wchar_t *l);
 
@@ -227,6 +235,8 @@ void RemarksHandler::GetConfigurationFromSzarpCfg() {
                 wxLogWarning(_T("config has root_dir: %s"), (SC::A2S(szarp_root_dir)).c_str());
 
                 /** Because of getpwuid(...) implementation there is no need to free user_pwd memory */
+                /** @TODO: User is availible from Szarp level methods */
+                /*
                 struct passwd *user_pwd = getpwuid(getuid());
                 if (!user_pwd) {
                         wxLogWarning(_T("remarks_server option is set, but could not find calling username"));
@@ -235,7 +245,17 @@ void RemarksHandler::GetConfigurationFromSzarpCfg() {
                         free(szarp_root_dir);
                         return;
                 }
-                
+                */
+
+                wxString username = wxGetUserName();
+                if (username == wxEmptyString) {
+                        wxLogWarning(_T("remarks_server option is set, but could not find calling username"));
+                        free(server);
+                        free(config_prefix);
+                        free(szarp_root_dir);
+                        return;
+                }
+
                 /** Read using wxFile */
                 wxString config_file_path;
                 wxFile config_file;
@@ -288,7 +308,7 @@ void RemarksHandler::GetConfigurationFromSzarpCfg() {
                 }
 
                 m_server = SC::A2S(server);
-                m_username << SC::A2S(user_pwd->pw_name) << SC::A2S("@") << SC::A2S(config_prefix);
+                m_username << username << SC::A2S("@") << SC::A2S(config_prefix);
                 m_password = SC::A2S(password);
                 
                 ptr = NULL;

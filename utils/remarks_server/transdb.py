@@ -23,6 +23,8 @@ import psycopg2
 import time
 from twisted.web import xmlrpc
 
+from twisted.python import log
+
 class TransDbAccess:
 	def __init__(self, db, trans):
 		self.db = db
@@ -34,23 +36,37 @@ class TransDbAccess:
 
                 if len(user_data) != 2:
                         return False, None, None
-                try:
-                        filestring = open("/opt/szarp/" + user_data[1] + "/config/params.xml", "r").read()
-                except IOError:
-                        return False, None, None
-
-                md5 = hashlib.md5()
-                md5.update(filestring)
-                filestring_md5 = md5.hexdigest()
                 
-                if filestring_md5 == password:         
-                        ok, user_id, username = self.login("auto","auto")
-		        if ok:
-			        return True, user_id, user_data[0]
-		        else:
-                                return False, None, None
+                log.msg("cfglogin user: " + user);
+
+                # Login a prefix-wide type user 
+                ok, user_id, username = self.login(user_data[1], password)
+		if ok:
+			return ok, user_id, user_data[0]
                 else:
                         return False, None, None
+
+                #
+                # Configuration hash check - moved to database
+                #
+
+#                try:
+#                        filestring = open("/opt/szarp/" + user_data[1] + "/config/params.xml", "r").read()
+#                except IOError:
+#                        return False, None, None
+#                
+#                md5 = hashlib.md5()
+#                md5.update(filestring)
+#                filestring_md5 = md5.hexdigest()
+#                
+#                if filestring_md5 == password:         
+#                        ok, user_id, username = self.login("auto","auto")
+#		        if ok:
+#			        return True, user_id, user_data[0]
+#		        else:
+#                                return False, None, None
+#                else:
+#                        return False, None, None
 
 	def login(self, user, password):
 		self.trans.execute("""
@@ -153,13 +169,14 @@ class TransDbAccess:
 				set_id = %(set_id)s""",
 			{ 'set_id' : set_id })
 
+        # @hary: sname > short
 	def insert_set_draw(self, set_id, draw, draw_order):
 		draw["set_id"] = set_id
 		draw["draw_order"] = draw_order
 
 		query = u"""
 			INSERT INTO
-				draw (set_id, name, draw, title, sname, prefix_id, hoursum, color, draw_min, draw_max, scale, min_scale, max_scale, draw_order)
+				draw (set_id, name, draw, title, short, prefix_id, hoursum, color, draw_min, draw_max, scale, min_scale, max_scale, draw_order)
 			VALUES
 				(%(set_id)s, %(name)s, %(draw)s, %(title)s, %(sname)s, %(prefix_id)s, %(hoursum)s, %(color)s, %(min)s, %(max)s, %(scale)s, %(min_scale)s, %(max_scale)s, %(draw_order)s)"""
 
@@ -308,10 +325,11 @@ class TransDbAccess:
 		return row[0]
 
 
+        # @hary: d.sname > d.short
 	def get_draws(self, prefixes, time):
 		self.trans.execute("""
 			SELECT 
-				d.set_id, p.prefix, d.name, d.draw, d.title, d.sname, d.hoursum, d.color, d.draw_min, d.draw_max, d.scale, d.min_scale, d.max_scale, ds.deleted, u.name, ds.mod_time
+				d.set_id, p.prefix, d.name, d.draw, d.title, d.short, d.hoursum, d.color, d.draw_min, d.draw_max, d.scale, d.min_scale, d.max_scale, ds.deleted, u.name, ds.mod_time
 			FROM
 				draw as d
 			JOIN
