@@ -59,34 +59,32 @@ config_dir = sys.argv[1]
 szbase_dir = os.path.join(config_dir, "szbase")
 sz4_dir = os.path.join(config_dir, "sz4")
 
-save_params = []
-ipk = IPK.ipk(config_dir + "/config/params.xml")
+ipk = ipk.IPK(config_dir + "/config/params.xml")
 sys.stdout.write("Converting...")
 
-param_map = {}
-for i, pnode in enumerate(params):
-	p = param.Param(pnode)
-	sp = saveparam.SaveParam(param.Param(p), sz4_dir, False)
-	param_map[p.param_name] = p
+save_param_map = {}
+for i, p in enumerate(ipk.params):
+	sp = saveparam.SaveParam(p, sz4_dir, False)
+	save_param_map[p.param_name] = sp
 
-for i, p in enumerate(param_map):
+for pname in save_param_map.iterkeys():
 	try:
-
-		print
-		print "Converting values for param: %s, param %d out of %d" % (sp.param_path.param_path, i + 1, len(params))
-
-		if p.param.msw_combined_referencing_param is not None or p.param.lsw_combined_referencing_param is not None:
+		sp = save_param_map[pname]
+		if sp.param.msw_combined_referencing_param is not None or sp.param.lsw_combined_referencing_param is not None:
 			continue
 
-		combined = p.param.combined
+		sp = save_param_map[pname]
+		print
+		print "Converting values for param: %s, param %d out of %d" % (sp.param_path.param_path, i + 1, len(save_param_map))
 
+		combined = sp.param.combined
 		if combined:
-			lp = p.lsw_param
-			mp = p.msw_param
+			lsp = save_param_map[sp.param.lsw_param.param_name]
+			msp = save_param_map[sp.param.msw_param.param_name]
 		else:
-			lp = sp
+			lsp = sp
 
-		szbase_files = [ x for x in os.listdir(os.path.join(szbase_dir, lp.param_path.param_path)) if x.endswith(".szb")]
+		szbase_files = [ x for x in os.listdir(os.path.join(szbase_dir, lsp.param_path.param_path)) if x.endswith(".szb")]
 		szbase_files.sort()
 
 		for j, szbase_path in enumerate(szbase_files):
@@ -94,15 +92,17 @@ for i, p in enumerate(param_map):
 			sys.stdout.flush()
 			date = szbase_file_path_to_date(szbase_path)
 
-			f = open(os.path.join(szbase_dir, lp.param_path.param_path, szbase_path)).read()
+			f = open(os.path.join(szbase_dir, lsp.param_path.param_path, szbase_path)).read()
 			if combined:
-				f2 = open(os.path.join(szbase_dir, mp.param_path.param_path, szbase_path)).read()
+				f2 = open(os.path.join(szbase_dir, msp.param_path.param_path, szbase_path)).read()
 			for i in xrange(len(f) / 2):
-				v = struct.unpack_from("<h", f, i * 2)[0]
 				if combined:
+					v1 = struct.unpack_from("<H", f, i * 2)[0]
 					v2 = struct.unpack_from("<h", f2, i * 2)[0]
-					v = v2 * 65536 + v
-				lp.process_value(v, calendar.timegm(date.utctimetuple()), None)
+					v = (v2 << 16) + v1
+				else:
+					v = struct.unpack_from("<h", f, i * 2)[0]
+				sp.process_value(v, calendar.timegm(date.utctimetuple()), None)
 				date += datetime.timedelta(minutes=10)
 	except OSError, e:
 		pass

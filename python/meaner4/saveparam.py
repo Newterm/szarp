@@ -109,7 +109,7 @@ class SaveParam:
 			self.prepare_for_writing(time, nanotime)
 			self.first_write = False
 
-		if  value == self.current_value:
+		if value == self.current_value:
 			self.update_last_time(time, nanotime)
 		else:
 			if first_write and self.current_value is not None:

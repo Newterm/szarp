@@ -89,5 +89,15 @@ class ParamTest(unittest.TestCase):
 		
 			self.assertEqual(p.value_from_msg(msg), self.values[i])
 
+	def test_parsing_combined(self):
+		n = lxml.etree.fromstring("""
+    <param name="Siec:Kamstrup:przeplyw z licznika" short_name="Kp" draw_name="Przeplyw z licznika" unit="m3/h" prec="2">
+      <define type="DRAWDEFINABLE" formula="(*:*:przeplyw z licznika msw) (*:*:przeplyw z licznika lsw) :"/>
+      <draw title="Kamstrup cieppomierz CO" min="0" max="300" special="hoursum" order="6"/>
+    </param>""")
+		p = param.Param(n)
+
+		self.assertTrue(p.combined)
+		self.assertEqual("Siec:Kamstrup:przeplyw z licznika lsw", p.lsw_param_name)
 
 

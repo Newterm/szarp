@@ -39,7 +39,7 @@ class IPK:
 				continue
 
 			lsw_param = param_map[p.lsw_param_name]
-			msw_param = param_map[p.lsw_param_name]
+			msw_param = param_map[p.msw_param_name]
 
 			p.lsw_param = lsw_param
 			p.msw_param = msw_param

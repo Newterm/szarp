@@ -61,34 +61,33 @@ class Param:
 
 	def expand_param_name(self, string, base_param_name):
 		ss = string.split(':')
-		ps = string.split(':')
+		ps = base_param_name.split(':')
 
-		for i in len(ss):
+		for i in range(len(ss)):
 			if ss[i] == '*':
 				ss[i] = ps[i]
 
 		return ':'.join(ss)
 	
 
-	def is_combined_formula(formula):
+	def is_combined_formula(self, formula):
 		s = "start"
 		for i, c in enumerate(formula):
 			if c == '(':
 				if s == "start":
 					s = "msw_param"
-					ps = i + 1
 				elif s == "after_msw_param":
 					s = "lsw_param"
-					ps = i + 1
 				else:
 					return (False, None, None)
+				ps = i + 1
 			elif c == ')':
 				if s == "msw_param":
-					mp = formula[ps:i - ps]
-					s = "afer_msw_param"
+					mp = formula[ps:i]
+					s = "after_msw_param"
 				elif s == "lsw_param":
-					lp = formula[ps:i - ps]
-					s = "afer_lsw_param"
+					lp = formula[ps:i]
+					s = "after_lsw_param"
 				else:
 					return (False, None, None)
 			elif c == ':':
@@ -99,7 +98,7 @@ class Param:
 				else:
 					return (False, None, None)
 			else:
-				if s == "first_param" or s == "second_param" or c.isspace():
+				if s == "msw_param" or s == "lsw_param" or c.isspace():
 					continue
 				else:
 					return (False, None, None)
@@ -112,12 +111,12 @@ class Param:
 
 	def prepare_combined(self, node):
 		try:
-			define_node = node.xpath("define[@type='DRAWDEFINABLE']")[0]
+			define_node = node.xpath("s:define[@type='DRAWDEFINABLE']", namespaces={'s':'http://www.praterm.com.pl/SZARP/ipk'})[0]
 		except IndexError:
 			self.combined = False
 			return
 
-		self.combined, lsw, msw = self.is_combined_formula(define_node.attr['formula'])
+		self.combined, msw, lsw = self.is_combined_formula(define_node.attrib['formula'])
 		if not self.combined:
 			return
 
