@@ -67,6 +67,7 @@ BEGIN_EVENT_TABLE(PieWindow, wxFrame)
     EVT_IDLE(PieWindow::OnIdle)
     EVT_BUTTON(wxID_HELP, PieWindow::OnHelpButton)
     EVT_CLOSE(PieWindow::OnClose)
+    EVT_PAINT(PieWindow::OnSize)
 END_EVENT_TABLE()
 
 PieWindow::ObservedDraw::ObservedDraw(Draw *_draw) : draw(_draw)
@@ -103,15 +104,7 @@ void PieWindow::OnIdle(wxIdleEvent &event) {
 	if (!m_update)
 		return;
 
-	if (m_requested_size.GetWidth() > 0 
-			&& m_requested_size.GetHeight() > 0) {
-		m_graph->SetBestSize(m_requested_size.GetWidth(), 
-				m_requested_size.GetHeight());
-		GetSizer()->Fit(this);
-		m_requested_size = wxSize();
-	}
-
-	m_graph->Refresh();
+	SetBestSize();
 
 	m_update = false;
 }
@@ -414,6 +407,22 @@ PieWindow::~PieWindow() {
 
 void PieWindow::OnHelpButton(wxCommandEvent &event) {
 	wxHelpProvider::Get()->ShowHelp(this);
+}
+
+void PieWindow::OnSize(wxPaintEvent &event) {
+	SetBestSize();
+}
+
+void PieWindow::SetBestSize() {
+	if (m_requested_size.GetWidth() > 0 
+			&& m_requested_size.GetHeight() > 0) {
+		m_graph->SetBestSize(m_requested_size.GetWidth(), 
+				m_requested_size.GetHeight());
+		GetSizer()->Fit(this);
+		m_requested_size = wxSize();
+	}
+
+	m_graph->Refresh();
 }
 
 bool PieWindow::Show(bool show) {

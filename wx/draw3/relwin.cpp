@@ -187,14 +187,14 @@ void RelWindow::ResetDraw(Draw *draw) {
 
 	int no = draw->GetDrawNo();
 
-	if (m_draws[no] == NULL)
+	if (m_draws.find(no) == m_draws.end())
 		return;
 
 	if (m_draws[no]->rel)
 		m_proper_draws_count--;
 
 	delete m_draws[no];
-	m_draws[no] = NULL;
+	m_draws.erase(no);
 
 	if (m_proper_draws_count < 2)
 		m_update = true;
@@ -280,5 +280,10 @@ bool RelWindow::Show(bool show) {
 
 void RelWindow::OnHelpButton(wxCommandEvent &event) {
 	wxHelpProvider::Get()->ShowHelp(this);
+}
+
+void RelWindow::DoubleCursorChanged(DrawsController *draw) {
+	for (size_t i = 0; i < draw->GetDrawsCount(); i++)
+		Update(draw->GetDraw(i));
 }
 

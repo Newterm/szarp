@@ -111,6 +111,8 @@ class RelWindow : public wxFrame, public DrawObserver {
 
 	virtual void AverageValueCalculationMethodChanged(Draw *draw);
 
+	virtual void DoubleCursorChanged(DrawsController *draw);
+
 	virtual ~RelWindow();
 
 	DECLARE_EVENT_TABLE()

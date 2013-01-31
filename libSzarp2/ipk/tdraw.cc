@@ -135,7 +135,7 @@ TDraw* TDraw::parseXML(xmlTextReaderPtr reader)
 					if (SC::U2S(attr) == SPECIAL_TYPES_STR[i]) {
 						sp = (SPECIAL_TYPES)i;
 						break;
-				}
+					}
 			} else {
 				xw.XMLWarningNotKnownAttr();
 			}

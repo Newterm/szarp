@@ -115,7 +115,7 @@ TParam::SetNewDefinable(bool is_new_def)
 TDraw *
 TParam::AddDraw(TDraw * draw)
 {
-    if (IsHourSumUnit(_unit))
+    if (IsHourSumUnit(_unit) && (draw->GetSpecial() == TDraw::NONE))
 	draw->SetSpecial(TDraw::HOURSUM);
     if (_draws == NULL) {
 	_draws = draw;

@@ -89,9 +89,6 @@ class PieWindow : public wxFrame, public DrawObserver {
 	/**Hides window*/
 	void OnClose(wxCloseEvent &event);
 
-	/**Draws window*/
-	void OnPaint(wxPaintEvent &event);
-
 	/**Cauces window repaint*/
 	void UpdateDraw(Draw *d);
 
@@ -110,6 +107,8 @@ class PieWindow : public wxFrame, public DrawObserver {
 	int m_proper_draws_count;
 
 	DrawsController *m_draws_controller;
+
+	void SetBestSize();
 
 	public:
 	PieWindow(wxWindow *parent, DrawPanel *panel);
@@ -134,6 +133,8 @@ class PieWindow : public wxFrame, public DrawObserver {
 
 	/**Causes window repaint*/
 	virtual void StatsChanged(Draw *draw);
+
+	virtual void OnSize(wxPaintEvent &event);
 
 	void DoubleCursorChanged(DrawsController *draws_controller);
 
