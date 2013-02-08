@@ -166,9 +166,12 @@ double get_y_position(const double& value, DrawInfo* di) {
 
 	double dif = max - min;
 
-	if (dif <= 0) {
-		wxLogInfo(_T("%s %f %f"), di->GetName().c_str(), min, max);
-		assert(false);
+	if( max <= min  ) {
+		// FIXME:  Draw3 should atomaticly detect axes in that case, but
+		//         it currently doesnt :(
+		wxLogWarning(_T("Parameter %s has invalid min/max values: min %f, max %f. Min is set to 0, and max to 100."), di->GetName().c_str(), min, max);
+		min = 0;
+		max = 100;
 	}
 
 	int sc = di->GetScale();
