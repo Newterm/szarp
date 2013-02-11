@@ -864,7 +864,7 @@ same user parameter:
 Draw 3 program allows the user to define their own parameters using the formulas
 LUA language. Created by myself
 parameters you can add to your set of charts
-(look: <xref linkend="draw3-ext-chartset">).
+(see: <xref linkend="draw3-ext-chartset">).
 </para>
 <para>
 To define your own parameter choose <guimenu>Tool </guimenu> and then <guimenu>User parameters</guimenu> (you can also use the keyboard shortcut  <keycode> Ctrl + U </keycode>). You will be following a new window:
@@ -1317,55 +1317,55 @@ math.sqrt(100)
 
 <row>
 <entry>log10(x)</entry>
-<entry>logarytm o podstawie 10 z x</entry>
+<entry>logarithm base 10 of x</entry>
 <entry><programlisting>math.log10(100)</programlisting></entry>
 </row>
 
 <row>
 <entry>pow(x,y)</entry>
-<entry>x podniesione do potêgi y (mo¿na te¿ u¿yæ x^y)</entry>
+<entry>x raised to the power of y (you can also use x ^ y)</entry>
 <entry><programlisting>math.pow(2,3)</programlisting></entry>
 </row>
 
 <row>
 <entry>sqrt(x)</entry>
-<entry>pierwiastek z x</entry>
+<entry>square root of x</entry>
 <entry><programlisting>math.sqrt(9)</programlisting></entry>
 </row>
 
 <row>
 <entry>min(x,y,z)</entry>
-<entry>warto¶æ minimalna z podanej listy argumentów</entry>
+<entry>the minimum value of the specified list of arguments</entry>
 <entry><programlisting>math.min(7,4,12)</programlisting></entry>
 </row>
 
 <row>
 <entry>max(x,y,z)</entry>
-<entry>warto¶æ maksymalna z podanej listy argumentów</entry>
+<entry>the minimum value of the specified list of arguments</entry>
 <entry><programlisting>math.max(3,4.5,1)</programlisting></entry>
 </row>
 
 <row>
 <entry>modf(x)</entry>
-<entry>dwa argumenty - warto¶æ ca³kowita x oraz warto¶æ po przecinku</entry>
+<entry>two arguments - the total value of x and the value after the decimal point </entry>
 <entry><programlisting>math.modf(5.3)</programlisting></entry>
 </row>
 
 <row>
 <entry>random([x],[y])</entry>
-<entry>warto¶æ losowa z zakresu: (0;1), gdy uruchomiona bez argumentu, (0;x) - podany jeden argument, (x;y) - podane dwa argumenty</entry>
+<entry>random value in the range (0, 1) when running without an argument, (0, x) - given one argument, (x, y) - are two arguments</entry>
 <entry><programlisting>math.random(23,80)</programlisting></entry>
 </row>
 
 <row>
 <entry>huge</entry>
-<entry>nieskoñczono¶æ (czasem mo¿e byæ przydatna w po³±czeniu z funkcjami trygonometrycznymi)</entry>
+<entry>infinity (sometimes may be useful in combination with the trigonometric functions)</entry>
 <entry><programlisting>math.huge</programlisting></entry>
 </row>
 
 <row>
 <entry>pi</entry>
-<entry>warto¶æ sta³ej pi</entry>
+<entry>constant pi</entry>
 <entry><programlisting>math.pi</programlisting></entry>
 </row>
 
@@ -1374,45 +1374,46 @@ math.sqrt(100)
 </table>
 </para>
 <para>
-Wiêcej o pisaniu w³asnych funkcji mo¿esz przeczytaæ w rozdziale <ulink url="http://szarp.org/szarp/doc/ipk/html/draw-definable-lua.html">Parametry definiowalne LUA</ulink> dokumentu <ulink url="http://szarp.org/szarp/doc/ipk/html/szarp.html">System SZARP - dokumentacja techniczna</ulink>.
+More about writing your own functions you can read in the chapter <ulink url="http://szarp.org/szarp/doc/ipk/html/draw-definable-lua.html">LUA definable parameters</ulink> document<ulink url="http://szarp.org/szarp/doc/ipk/html/szarp.html">SZARP System - technical documentation</ulink>.
 </para>
 
 </section> <!-- draw3-ext-luamath -->
 
 <section id="draw3-ext-expression-searching">
-<title>Wyszukiwanie wed³ug podanych kryteriów</title>
+<title>Search by your criteria</title>
 <note><para>
-Program przegl±daj±cy pozwala na wyszukiwanie momentow w czasie, ktore spe³niaj± zadane przez u¿ytkownika kryteria.
+The program allows you to search browsing moments in time, that meet the criteria set by the user.
 </para></note>
 <para>
-By uruchomiæ tê funkcjê wybierz z menu <guimenu>Narzêdzia</guimenu>  opcjê <guimenu>Wyszukaj datê</guimenu>. Pojawi siê okno podobne do okna s³u¿±cego do edycji parametrow definiowalnych
-(zobacz: <xref linkend="draw3-ext-parametersset">). Podobieñstwo to wynika z faktu, ¿e kryteria wyszukiwania maj± postaæ wyra¿eñ jêzyka LUA i s±
-tak na prawdê specyficznymi parametrami, ktore zamiast warto¶ci liczbowej maj± zwarcaæ warto¶c logiczn± '1', gdy kryterium dla podanej chwili w czasie
-jest spe³nione lub '0', gdy kryterium spe³nione nie jest. Wprowadzenia kryterium dokonuje siê w dok³adnie w takich sam sposob jak edytuje parametry u¿ytkownika.</para>
-<note><para> Przy czym jako warto¶æ logiczn± '1', tak na prawdê rozumie siê wszystko, co nie jest liczbowym 0.
-Mo¿na te¿ u¿ywac sta³ych jêzyka LUA true i false (jednak je¿eli nie jest to konieczne lepiej u¿ywaæ warto¶ci liczbowych, bo umo¿liwi to zoptymaliowanie
-takich kryteriow przez optymalizator).
+To access this feature, select the menu <guimenu> Tools </guimenu> option <guimenu> Search date </guimenu>. A window similar to the window used for editing definable parameters
+(see: <xref linkend="draw3-ext-parametersset">). This similarity arises from the fact that the search terms are in the form LUA
+ language and are
+really specific parameters, which instead of a numerical value to zwarcaæ logic '1 ', the criterion for a given moment in time
+is satisfied or '0 ', when the criterion is not met. Introduction of the criterion is made in exactly the same way as editing user parameters. </para>
+<note><para> At the same time as a logical '1 ', it really means anything that is not numerical 0th
+You can also use the LUA language constants true and false (but if you do not have to make better use of numerical values, because this will allow zoptymaliowanie
+such criteria by the optimizer).
 </para></note>
 <para>
-Jak ju¿ wprowadzisz wyra¿nie wci¶nij przycisk <guimenu> Wstecz </guimenu> - spowoduje to wyszukanie kryterium "do ty³u" - tzn. dla chwil w czasie wcze¶niejszych ni¿
-ta, na ktorej znajdowa³ sie kursor z wykresu, z którego otworzy³e¶ okno wyszukiwania. Gdy taka chwila w czasie zostanie znaleziona, pojawi siê
-w oknie, a kursor zostanie ustawiony na wykresie na pozycji odpowiadaj±cej znalezionej chwili. Analogicznie dzia³a przycisk "Dalej".
+As you have written explicitly press <guimenu> Back </guimenu> - it will find the criterion of "backwards" - that is, for moments in time prior to
+This, on which the cursor was located from the graph, which opened the search window. When this moment in time is found, you will be
+in the window, and the cursor is placed on the chart at the position corresponding to the time it finds. Similarly, work on "Next".
 </para>
-<figure> <title>Wyszukiwanie wg. zadanego wartunku</title>
+<figure> <title>Search by the specified condition</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-searching_date.png"></imageobject>
 </mediaobject></figure>
 </section>
 <section id="draw3-ext-draw2draw3comparison">
-<title>Porównanie Draw 3 z poprzedni± wersj± programu</title>
+<title>Draw 3 Comparison with the previous version of</title>
 <para>
-Program przegl±daj±cy w trzeciej wersji zachowa³ wiêkszo¶æ funkcji poprzednich wersji 
-dodaj±c tak¿e now± funkcjonalno¶æ. Zmianie uleg³a terminologia - zamiast terminu
-<quote>Okno</quote> i <quote>Okno definiowalne</quote> u¿ywane s± terminy
-<quote>Zestaw wykresów</quote> i <quote>Zestaw u¿ytkownika</quote>.
+Reading program in the third version retains most of the features of previous versions
+also adding new functionality. The terminology has changed - instead of the term
+<quote> Window </quote> and <quote> Definable window </quote> are terms used
+<quote> Set of graphs </quote> and <quote>Set of the user</quote>.
 <para>
-Zmiany funkcjonalno¶ci w porównaniu z poprzedni± wersj± umieszczone s± w poni¿szej tabeli:
-<table frame="all"><title>Zmiany funkcjonalno¶ci pojawiaj±ce siê w trzeciej wersji programu przegl±daj±cego</title>
+Changes in functionality as compared with the previous version are provided in the following table:
+<table frame="all"><title>Functional changes occurring in the third version of the viewer</title>
 <tgroup cols="4" align="left" colsep="1" rowsep="1">
 <colspec colname="col1" align="left" colwidth="1*"> <!-- Identyfikatory kolumn -->
 <colspec colname="col2" align="left" colwidth="2*">
@@ -1420,99 +1421,99 @@ Zmiany funkcjonalno¶ci w porównaniu z poprzedni± wersj± umieszczone s± w poni¿sz
 <colspec colname="col4" align="left" colwidth="2*">
 <thead>
 <row>
-<entry>czego dotyczy zmiana</entry>
+<entry>what the change</entry>
 <entry align="center">Draw 2</entry>
 <entry align="center">Draw 3</entry>
-<entry>odno¶nik do dokumentacji</entry>
+<entry>link to the documentation</entry>
 </row>
 </thead>
 <tbody>
 
 <row>
-<entry align="left">Filtr</entry>
+<entry align="left">Filter</entry>
 <entry align="left">
-u¿ycie ograniczone do ¶rednich dziennych, wyklucza u¿ycie rozdwojonego kursora, klawiszami liter od <keycode>a</keycode> do <keycode>f</keycode> mo¿liwe by³o prze³±czanie stopnia filtru
+use restricted to the average daily, excludes the use of split cursor keys and the letters from <keycode> a </keycode> to <keycode> f </keycode> it was possible to switch the filter level
 </entry>
 <entry align="left">
-dzia³a dla wszystkich rodzajów ¶redniej, mo¿e byæ u¿yty razem z rozdwojonym kursorem
+works for all types of medium, can be used together with split cursor
 </entry>
 <entry align="left"><xref linkend="draw3-ext-filter"></entry>
 </row>
 
 <row>
-<entry align="left">Wersja dla systemu Windows</entry>
-<entry>brak</entry>
-<entry>tworzona razem z wersj± dla systemu Linux (technologia WxWidgets)</entry>
+<entry align="left">Wersion for Windows</entry>
+<entry>no</entry>
+<entry>created with version for Linux (Technology WxWidgets)</entry>
 <entry align="left"></entry>
 </row>
 
 <row>
-<entry align="left">Okna i zak³adki do ³atwiejszego przegl±dania zestawów wykresów</entry>
-<entry>brak</entry>
-<entry>nowa funkcja</entry>
+<entry align="left">The windows and tabs for easier viewing sets of charts</entry>
+<entry>no</entry>
+<entry>new function</entry>
 <entry align="left"><xref linkend="draw3-base-tabs"></entry>
 </row>
 
 <row>
-<entry align="left">U³atwienie wyszukiwania zestawów wykresów</entry>
-<entry>brak</entry>
-<entry>nowa funkcja</entry>
+<entry align="left">U³atwienie wyszukiwania zestawów wykresów </entry>
+<entry>no</entry>
+<entry>new function</entry>
 <entry align="left"><xref linkend="draw3-base-charts"></entry>
 </row>
 
 <row>
-<entry align="left">Wyszukiwanie parametrów</entry>
-<entry>brak</entry>
-<entry>nowa funkcja</entry>
+<entry align="left">Search parameters</entry>
+<entry>no</entry>
+<entry>new function</entry>
 <entry align="left"><xref linkend="draw3-base-find-parameter"></entry>
 </row>
 
 <row>
-<entry align="left">Definiowanie w³asnych zestawów wykresów</entry>
-<entry>brak</entry>
-<entry>nowa funkcja</entry>
+<entry align="left">Define your own set of charts</entry>
+<entry>no</entry>
+<entry>new function</entry>
 <entry align="left"><xref linkend="draw3-ext-chartset"></entry>
 </row>
 
 <row>
-<entry align="left">Wielojêzyczno¶æ</entry>
-<entry>brak</entry>
-<entry>nowa funkcja - mo¿liwo¶æ ogl±dania interfejsu programu oraz nazw parametrów w ró¿nych jêzykach</entry>
+<entry align="left">Multilingualism</entry>
+<entry>no</entry>
+<entry>new feature - the ability to watch the program interface and parameter names in different languages</entry>
 <entry align="left"><xref linkend="draw3-ext-languages"></entry>
 </row>
 
 <row>
-<entry align="left">Definiowanie w³asnych parametrów</entry>
-<entry>brak</entry>
-<entry>nowa funkcja</entry>
+<entry align="left">Define your own parameters</entry>
+<entry>no</entry>
+<entry>new function</entry>
 <entry align="left"><xref linkend="draw3-ext-parametersset"></entry>
 </row>
 
 <row>
-<entry align="left">Obliczanie korelacji parametrów</entry>
-<entry>brak</entry>
-<entry>nowa funkcja</entry>
+<entry align="left">Calculation of correlation parameters</entry>
+<entry>no</entry>
+<entry>new function</entry>
 <entry align="left"><xref linkend="draw3-ext-chartxy"></entry>
 </row>
 
 <row>
-<entry align="left">Informacja o zapisanej (procentowej) ilo¶ci próbek parametru na wykresie</entry>
-<entry>brak</entry>
-<entry>nowa funkcja</entry>
+<entry align="left">Stored information (percentage) of samples in the graph parameter</entry>
+<entry>no</entry>
+<entry>new function</entry>
 <entry align="left"><xref linkend="draw3-base-win"></entry>
 </row>
 
 <row>
-<entry align="left">Dynamiczne (wielow±tkowe) ³adowanie parametrów</entry>
-<entry>brak</entry>
-<entry>nowa funkcja</entry>
+<entry align="left">Dynamic (multi-threaded) loading parameters</entry>
+<entry>no</entry>
+<entry>new function</entry>
 <entry align="left"></entry>
 </row>
 
 <row>
-<entry align="left">Obs³uga natywnego mechanizmu drukowania</entry>
-<entry>brak</entry>
-<entry>nowa funkcja</entry>
+<entry align="left">Support native printing mechanism</entry>
+<entry>no</entry>
+<entry>new function</entry>
 <entry align="left"><xref linkend="draw3-base-prints"></entry>
 </row>
 
@@ -1524,92 +1525,92 @@ dzia³a dla wszystkich rodzajów ¶redniej, mo¿e byæ u¿yty razem z rozdwojonym kurs
 </section> <!-- draw3-ext-draw2draw3comparison -->
 
 <section id="draw3-ext-shortcuts">
-<title>Skróty klawiaturowe</title>
+<title>Keyboard shortcuts<title>
 <para>
 Zmiana trybu wy¶wietlania ¶rednich:
 <itemizedlist>
-<listitem><para>zmiana trybu wy¶wietlania na roczny - <keycode>Alt + R</keycode></para></listitem>
-<listitem><para>zmiana trybu wy¶wietlania na miesiêczny - <keycode>Alt + M</keycode></para></listitem>
-<listitem><para>zmiana trybu wy¶wietlania na tygodniowy - <keycode>Alt + T</keycode></para></listitem>
-<listitem><para>zmiana trybu wy¶wietlania na dobowy - <keycode>Alt + D</keycode></para></listitem>
-<listitem><para>zmiana trybu wy¶wietlania na 30-minutowy - <keycode>Alt + 3</keycode></para></listitem>
-<listitem><para>zmiana trybu wy¶wietlania na sezonowy - <keycode>Alt + S</keycode></para></listitem>
+<listitem><para>change display mode for a year - <keycode>Alt + R</keycode></para></listitem>
+<listitem><para>change display mode for to monthly - <keycode>Alt + M</keycode></para></listitem>
+<listitem><para>change display mode for a week - <keycode>Alt + T</keycode></para></listitem>
+<listitem><para>change display mode for a daily - <keycode>Alt + D</keycode></para></listitem>
+<listitem><para>change display mode for to 30-minute - <keycode>Alt + 3</keycode></para></listitem>
+<listitem><para>change display mode for of the seasonal - <keycode>Alt + S</keycode></para></listitem>
 </itemizedlist>
 </para>
 <para>
 Nawigacja:
 <itemizedlist>
-<listitem><para>przesuniêcie o 6 próbek (w oknie ze ¶rednimi 10-cio minutowymi) - <keycode>Shift + (klawisz strza³ki w prawo lub w lewo)</keycode></para></listitem>
-<listitem><para>przesuwanie o d³ugo¶æ jednego ekranu w lewo po wykresie - <keycode>PgUp</keycode></para></listitem>
-<listitem><para>przesuwanie o d³ugo¶æ jednego ekranu w prawo po wykresie - <keycode>PgDown</keycode></para></listitem>
-<listitem><para>skok pod datê - <keycode>Ctrl + J</keycode></para></listitem>
-<listitem><para>kopiowanie lokalizacji - <keycode>Ctrl + C</keycode></para></listitem>
-<listitem><para>wklejanie lokalizacji - <keycode>Ctrl + V</keycode></para></listitem>
-<listitem><para>blokowanie wykresu - <keycode>Ctrl + B</keycode></para></listitem>
+<listitem><para>shift of 6 samples (in the window with the average 10-minute intervals) - <keycode>Shift + (right arrow or left)</keycode></para></listitem>
+<listitem><para>moving the length of one screen to the left on the chart - <keycode>PgUp</keycode></para></listitem>
+<listitem><para>moving the length of one screen to the right on the chart - <keycode>PgDown</keycode></para></listitem>
+<listitem><para>jump at the date of - <keycode>Ctrl + J</keycode></para></listitem>
+<listitem><para>copy location - <keycode>Ctrl + C</keycode></para></listitem>
+<listitem><para>pasting location - <keycode>Ctrl + V</keycode></para></listitem>
+<listitem><para>block diagram - <keycode>Ctrl + B</keycode></para></listitem>
 </itemizedlist>
 </para>
 <para>
-Wykresy pomocnicze:
+Auxiliary graphs:
 <itemizedlist>
-<listitem><para>Warto¶ci sumaryczne - <keycode>Ctrl + G</keycode></para></listitem>
-<listitem><para>¦rednie procentowe - <keycode>Ctrl + Alt + S</keycode></para></listitem>
-<listitem><para>Stosunek warto¶ci - <keycode>Shift + Ctrl + S</keycode></para></listitem>
+<listitem><para>Total values - <keycode>Ctrl + G</keycode></para></listitem>
+<listitem><para>Average percentage - <keycode>Ctrl + Alt + S</keycode></para></listitem>
+<listitem><para>The ratio of values - <keycode>Shift + Ctrl + S</keycode></para></listitem>
 </itemizedlist>
 </para>
 <para>
-Wyszukiwanie:
+Search:
 <itemizedlist>
-<listitem><para>wyszukanie wykresów parametrów- <keycode>Ctrl + F</keycode></para></listitem>
-<listitem><para>wyszukanie zestawu wykresów - <keycode>Ctrl + Z</keycode></para></listitem>
+<listitem><para>search performance charts - <keycode>Ctrl + F</keycode></para></listitem>
+<listitem><para>Find a set of graphs - <keycode>Ctrl + Z</keycode></para></listitem>
 </itemizedlist>
 </para>
 <para>
-Filtr - u¶rednianie warto¶ci s±siaduj±cych próbek
+Filter - averaging adjacent samples
 <itemizedlist>
-<listitem><para>zmiana poziomu u¶redniania (od 0 do 5) - od <keycode>A</keycode> do <keycode>F</keycode></para></listitem></itemizedlist>
+<listitem><para>averaging level change (from 0 to 5) - of <keycode>A</keycode> to <keycode>F</keycode></para></listitem></itemizedlist>
 </para>
 <para>
-Wydruki i ustawienia wydruków:
+Prints and print settings:
 <itemizedlist>
-<listitem><para>zmiana ilo¶ci drukowanych osi - <keycode>Ctrl + X</keycode></para></listitem>
-<listitem><para>drukowanie wykresów - <keycode>Ctrl + P</keycode></para></listitem>
+<listitem><para>change in the quantity of printed axis - <keycode>Ctrl + X</keycode></para></listitem>
+<listitem><para>printing charts - <keycode>Ctrl + P</keycode></para></listitem>
 </itemizedlist>
 </para>
 <para>
-Okna i zak³adki:
+The windows and tabs:
 <itemizedlist>
-<listitem><para>wy¶wietlanie okna w trybie pe³noekranowym - <keycode>F11</keycode></para></listitem>
-<listitem><para>otwarcie nowego okna - <keycode>Ctrl + N</keycode></para></listitem>
-<listitem><para>otwarcie nowej zak³adki - <keycode>Ctrl + T</keycode></para></listitem>
-<listitem><para>przej¶cie do nastêpnej zak³adki - <keycode>Ctrl + PgDown</keycode></para></listitem>
-<listitem><para>przej¶cie do poprzedniej zak³adki - <keycode>Ctrl + PgUp</keycode></para></listitem>
-<listitem><para>zamkniêcie bie¿±cej zak³adki - <keycode>Ctrl + W</keycode></para></listitem>
-<listitem><para>zamkniêcie bie¿±cego okna - <keycode>Ctrl + Q</keycode></para></listitem>
+<listitem><para>window display in full screen mode - <keycode>F11</keycode></para></listitem>
+<listitem><para>open a new window - <keycode>Ctrl + N</keycode></para></listitem>
+<listitem><para>open a new tabs - <keycode>Ctrl + T</keycode></para></listitem>
+<listitem><para>move to the next tab - <keycode>Ctrl + PgDown</keycode></para></listitem>
+<listitem><para>move to the previous tab - <keycode>Ctrl + PgUp</keycode></para></listitem>
+<listitem><para>close the current tab - <keycode>Ctrl + W</keycode></para></listitem>
+<listitem><para>close the current window - <keycode>Ctrl + Q</keycode></para></listitem>
 </itemizedlist>
 </para>
 <para>
-W³asne parametry i zestawy wykresów:
+Sets its own parameters and charts:
 <itemizedlist>
-<listitem><para>stworzenie w³asnego zestawu wykresów - <keycode>Ctrl + A</keycode></para></listitem>
-<listitem><para>edycja w³asnego zestawu wykresów XYZ - <keycode>Ctrl + E</keycode></para></listitem>
-<listitem><para>zdefiniowanie w³asnego parametru - <keycode>Ctrl + U</keycode></para></listitem>
+<listitem><para>create your own set of charts - <keycode>Ctrl + A</keycode></para></listitem>
+<listitem><para>edit your own set of charts XYZ - <keycode>Ctrl + E</keycode></para></listitem>
+<listitem><para>define your own paramete - <keycode>Ctrl + U</keycode></para></listitem>
 </itemizedlist>
 </para>
 <para>
-Pomoc:
+Help:
 <itemizedlist>
-<listitem><para>wy¶wietlenie pomocy - <keycode>F1</keycode></para></listitem>
-<listitem><para>wy¶wietlenie pomocy kontekstowej - <keycode>Shift + F1</keycode></para></listitem>
-<listitem><para>wy¶wietlenie dokumentacji wy¶wietlanego parametru - <keycode>Ctrl + H</keycode></para></listitem>
+<listitem><para>displays help - <keycode>F1</keycode></para></listitem>
+<listitem><para>display context-sensitive help - <keycode>Shift + F1</keycode></para></listitem>
+<listitem><para>view documents displayed parameter - <keycode>Ctrl + H</keycode></para></listitem>
 </itemizedlist>
 </para>
 <para>
-Inne:
+Other:
 <itemizedlist>
-<listitem><para>od¶wie¿enie warto¶ci parametrów - <keycode>Ctrl + R</keycode></para></listitem>
-<listitem><para>uruchomienie/zamkniêcie trybu rozdwojonego kursora - <keycode>Backspace</keycode></para></listitem>
-<listitem><para>import okien definiowalnych z wcze¶niejszej wersji programu - <keycode> Shift + Ctrl + I</keycode></para></listitem>
-<listitem><para>zdalne zmienianie ustawieñ parametrów - <keycode>Ctrl + O</keycode></para></listitem>
+<listitem><para>refresh values - <keycode>Ctrl + R</keycode></para></listitem>
+<listitem><para>start/shutdown mode, the split cursor <keycode>Backspace</keycode></para></listitem>
+<listitem><para>definable windows import from an earlier version - <keycode> Shift + Ctrl + I</keycode></para></listitem>
+<listitem><para>remote to change the parameter settings - <keycode>Ctrl + O</keycode></para></listitem>
 </itemizedlist>
 </para>
 </section> <!-- draw3-ext-shortcuts -->
