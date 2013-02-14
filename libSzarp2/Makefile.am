@@ -98,6 +98,7 @@ libSzarp2_la_SOURCES = \
 			$(SOURCE_DIR)/misc/base64.cc \
 			$(DMN_DIR)/mbus.cc \
 			$(DMN_DIR)/ppset.cc \
+			$(DMN_DIR)/serialport.cc \
 			$(SOURCE_DIR)/misc/xscale.cc \
 			\
 			$(SOURCE_DIR)/szbextr/extractor.cc \
