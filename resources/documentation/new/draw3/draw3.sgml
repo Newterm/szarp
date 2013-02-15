@@ -37,7 +37,7 @@ Dowiedz siê wiêcej:
 <para>o poruszaniu siê po wykresach - <xref linkend="draw3-base-graphsnavigation"></para>
 </listitem>
 <listitem>
-</para>o definiowaniu w³asnych zestawów wykresów - <xref linkend="draw3-ext-chartset"></para>
+<para>o definiowaniu w³asnych zestawów wykresów - <xref linkend="draw3-ext-chartset"></para>
 </listitem>
 <listitem>
 <para>o skrótach klawiaturowych - <xref linkend="draw3-ext-shortcuts"></para>
@@ -64,7 +64,7 @@ Ten rozdzia³ opisuje:
 <listitem><para>jak uruchomiæ programu Draw 3 - <xref linkend="draw3-base-run"></para></listitem>
 <listitem><para>co jest widoczne w g³ównym oknie programu przegl±daj±cego - <xref linkend="draw3-base-win"></para></listitem>
 <listitem><para>jak wybraæ interesuj±cy Ciê zestaw wykresów - <xref linkend="draw3-base-charts"></para></listitem>
-GG<listitem><para>jak zmieniæ zakres ¶rednich - <xref linkend="draw3-base-range"></para></listitem>
+<listitem><para>jak zmieniæ zakres ¶rednich - <xref linkend="draw3-base-range"></para></listitem>
 <listitem><para>jak poruszaæ siê po wykresach - <xref linkend="draw3-base-graphsnavigation"></para></listitem>
 <listitem><para>jak korzystaæ z zak³adek i okien - <xref linkend="draw3-base-tabs"></para></listitem>
 <listitem><para>jak wydrukowaæ interesuj±ce Ciê wykresy - <xref linkend="draw3-base-prints"></para></listitem>
@@ -99,7 +99,7 @@ Aby zapoznaæ siê z obs³ug± podstawowych funkcji programu, przejd¼ do <xref linke
 Zobacz tak¿e <xref linkend="draw3-ext-cmd">, aby dowiedzieæ siê, jak uruchamiaæ
 program z linii komend.</para></note>
 Aby zakoñczyæ program, zamknij okno programu, wybierz opcjê
-<guimenuitem>Zamknij</guimenuitem> z menu <guimenu>Plik</guimenu> lub kliknij na ikonê z drzwiami umieszczon± na dole okna programu.
+<guimenu>Zamknij</guimenu> z menu <guimenu>Plik</guimenu> lub kliknij na ikonê z drzwiami umieszczon± na dole okna programu.
 </para>
 
 </section> <!-- draw3-base-run -->
@@ -136,11 +136,8 @@ oraz ikony skrótów:
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-split_icon.png"></imageobject></inlinemediaobject> - Rozdwojony kursor - wiêcej <xref linkend="draw3-ext-doublecursor"></para></listitem>
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-filtericon.png"></imageobject></inlinemediaobject> - Filtr - wiêcej <xref linkend="draw3-ext-filter"></para></listitem>
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-refresh_icon.png"></imageobject></inlinemediaobject> - Od¶wie¿  - wiêcej <xref linkend="draw3-ext-refresh"></para></listitem>
-
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-tree_icon.png"></imageobject></inlinemediaobject> - Drzewo wykresów  - okno wy¶wietlaj±ce posegregowane zestawy wykresów</para></listitem>
-
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-data_icon.png"></imageobject></inlinemediaobject> - Id¼ do najnowszej danej  - ustawienie kursora na najnowszej danej </para></listitem>
-
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-remark_icon.png"></imageobject></inlinemediaobject> - Komentarze - pokazuje kometarze dla aktualnej konfiguracji - wiêcej <xref linkend="draw3-ext-remarks"></para></listitem>
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-exit_icon.png"></imageobject></inlinemediaobject> - Wyj¶cie - wyj¶cie z programu</para></listitem>
 </itemizedlist>
@@ -271,6 +268,9 @@ umieszczone obok numeru i tytu³u wykresu. Po klikniêciu wykres zniknie z okna gr
 powtórne klikniêcie przywróci wy¶wietlanie wykresu. Nie jest mo¿liwe wygaszenie wykresu, 
 na którym aktualnie znajduje siê kursor.
 </para>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-extinction.png"></imageobject>
+</mediaobject>
 <para>
 Wygaszanie wykresów mo¿esz wykorzystaæ do zwiêkszenia czytelno¶ci prezentowanych danych,
 poza tym podczas drukowania z programu drukowane s± tylko niewygaszone wykresy
@@ -320,7 +320,7 @@ Zak³adki na wzór przegl±darek internetowych s± otwarte równolegle, w ramach jedn
 programu Draw 3. 
 </para>
 <para>
-Nowe okno mo¿esz otworzyæ przez skrót klawiaturowy <keycode>Ctrl + N</keycode>,albo 
+Nowe okno mo¿esz otworzyæ przez skrót klawiaturowy <keycode>Ctrl + N</keycode>, albo 
 wybieraj±c z menu <guimenu>Plik</guimenu> polecenie <guimenu>Otwórz nowe okno</guimenu>. 
 Now± zak³adkê mo¿esz otworzyæ przez skrót klawiaturowy <keycode>Ctrl + T</keycode> albo 
 wybieraj±c z menu <guimenu>Plik</guimenu> polecenie <guimenu>Otwórz now± zak³adkê</guimenu>.
@@ -394,7 +394,7 @@ W celu wy¶wietlenia informacji o programie przegl±daj±cym (wersja, autorzy, lice
 kliknij ikonê <inlinemediaobject><imageobject><imagedata
 			fileref="pics/draw3-about_icon.png"></imageobject></inlinemediaobject>
 	na pasku narzêdziowym,  wybierz z menu <guimenu>Pomoc</guimenu> i
-	<guimenu>O programie</guimenu> lub u¿yj skrótu klawiaturowego <keycode>F2</keycode>
+	<guimenu>O programie</guimenu> lub u¿yj skrótu klawiaturowego <keycode>F2</keycode>.
 </para>
 </section> <!-- draw3-base-about -->
 
@@ -460,7 +460,7 @@ tylko zaznaczonego fragmentu wykresu.
 <para>
 W celu uruchomienia podwójnego kursora ustaw siê kursorem na pocz±tku interesuj±cego Ciê okresu.
 Nastêpnie w³±cz podwójny kursor - u¿yj skrótu <keycode>Backspace</keycode>, wybierz z 
-menu <guimenu>Narzêdzia</guimenu> i <guimenu>Rozdwojony kursor</guimenu> lub kliknij na ikonê
+menu <guimenu>Widok</guimenu> i <guimenu>Rozdwojony kursor</guimenu> lub kliknij na ikonê
 <inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-split_icon.png"></imageobject></inlinemediaobject>na pasku narzêdzi.
 W trybie rozdwojonego kursora bie¿±cy wykres zostanie pogrubiony oraz poni¿ej okna z wykresami pojawi siê nowy wiersz z danymi dotycz±cymi koñca zaznaczonego okresu:
 <figure>
@@ -1397,7 +1397,7 @@ Mo¿na te¿ u¿ywac sta³ych jêzyka LUA true i false (jednak je¿eli nie jest to koni
 takich kryteriow przez optymalizator).
 </para></note>
 <para>
-Jak ju¿ wprowadzisz wyra¿nie wci¶nij przycisk <guimenu> Wstecz </guimenu> - spowoduje to wyszukanie kryterium "do ty³u" - tzn. dla chwil w czasie wcze¶niejszych ni¿
+Jak ju¿ wprowadzisz wyra¿nie wci¶nij przycisk "Wstecz" - spowoduje to wyszukanie kryterium "do ty³u" - tzn. dla chwil w czasie wcze¶niejszych ni¿
 ta, na ktorej znajdowa³ sie kursor z wykresu, z którego otworzy³e¶ okno wyszukiwania. Gdy taka chwila w czasie zostanie znaleziona, pojawi siê
 w oknie, a kursor zostanie ustawiony na wykresie na pozycji odpowiadaj±cej znalezionej chwili. Analogicznie dzia³a przycisk "Dalej".
 </para>
@@ -1562,8 +1562,8 @@ Wykresy pomocnicze:
 <para>
 Wyszukiwanie:
 <itemizedlist>
-<listitem><para>wyszukanie wykresów parametrów- <keycode>Ctrl + F</keycode></para></listitem>
-<listitem><para>wyszukanie zestawu wykresów - <keycode>Ctrl + Z</keycode></para></listitem>
+<listitem><para>wyszukanie wykresów parametrów - <keycode>Ctrl + F</keycode></para></listitem>
+<listitem><para>wyszukanie zestawu wykresów XYZ - <keycode>Ctrl + Z</keycode></para></listitem>
 </itemizedlist>
 </para>
 <para>
