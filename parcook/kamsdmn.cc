@@ -52,6 +52,31 @@
 
 #define RESPONSE_SIZE 82
 
+bool single;
+
+void dolog(int level, const char * fmt, ...)
+	__attribute__ ((format (printf, 2, 3)));
+
+
+void dolog(int level, const char * fmt, ...) {
+	va_list fmt_args;
+
+	if (single) {
+		char *l;
+		va_start(fmt_args, fmt);
+		vasprintf(&l, fmt, fmt_args);
+		va_end(fmt_args);
+
+		std::cout << l << std::endl;
+		sz_log(level, "%s", l);
+		free(l);
+	} else {
+		va_start(fmt_args, fmt);
+		vsz_log(level, fmt, fmt_args);
+		va_end(fmt_args);
+	}
+} 
+
 xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	xmlChar *c;
 	char *e;
@@ -214,17 +239,9 @@ void kams_daemon::StartDo() {
 		m_serial_port->AddListener(this);
 		m_serial_port->Open();
 		std::string info = m_id + ": connection established.";
-		if (m_daemon_conf->GetSingle()) {
-			std::cout << info << std::endl;
-		} else {
-			sz_log(2, "%s: %s", m_id.c_str(), info.c_str());
-		}
+		dolog(2, "%s: %s", m_id.c_str(), info.c_str());
 	} catch (SerialPortException &e) {
-		if (m_daemon_conf->GetSingle()) {
-			std::cerr << e.what() << std::endl;
-		} else {
-			sz_log(0, "%s: %s", m_id.c_str(), e.what());
-		}
+		dolog(0, "%s: %s", m_id.c_str(), e.what());
 		SetRestart();
 	}
         evtimer_set(&m_ev_timer, TimerCallback, this);
@@ -246,7 +263,7 @@ void kams_daemon::Do()
 			try {
 				WriteChar();
 			} catch (SerialPortException &e) {
-				sz_log(0, "%s: %s", m_id.c_str(), e.what());
+				dolog(0, "%s: %s", m_id.c_str(), e.what());
 				SetRestart();
 			}
 			if (m_chars_written == 3) {
@@ -259,7 +276,7 @@ void kams_daemon::Do()
 			try {
 				WriteChar();
 			} catch (SerialPortException &e) {
-				sz_log(0, "%s: %s", m_id.c_str(), e.what());
+				dolog(0, "%s: %s", m_id.c_str(), e.what());
 				SetRestart();
 			}
 			if (m_chars_written < 3) {
@@ -284,20 +301,12 @@ void kams_daemon::Do()
 				}
 				m_ipc->GoParcook();
 			} catch (NoDataException &e) {
-				if (m_daemon_conf->GetSingle()) {
-					std::cerr << e.what() << std::endl;
-				} else {
-					sz_log(0, "%s: %s", m_id.c_str(), e.what());
-				}
+				dolog(0, "%s: %s", m_id.c_str(), e.what());
 				wait_ms = 0;
 				IncreaseWaitForDataTime();
 				SetRestart();
 			} catch (KamsDmnException &e) {
-				if (m_daemon_conf->GetSingle()) {
-					std::cerr << e.what() << std::endl;
-				} else {
-					sz_log(0, "%s: %s", m_id.c_str(), e.what());
-				}
+				dolog(0, "%s: %s", m_id.c_str(), e.what());
 				wait_ms = 1000;
 				m_state = SET_COMM_WRITE;
 				for (int i = 0; i < m_ipc->m_params_count; i++) {
@@ -305,11 +314,7 @@ void kams_daemon::Do()
 				}
 				m_ipc->GoParcook();
 			} catch (SerialPortException &e) {
-				if (m_daemon_conf->GetSingle()) {
-					std::cerr << e.what() << std::endl;
-				} else {
-					sz_log(0, "%s: %s", m_id.c_str(), e.what());
-				}
+				dolog(0, "%s: %s", m_id.c_str(), e.what());
 				wait_ms = 0;
 				IncreaseWaitForDataTime();
 				SetRestart();
@@ -319,18 +324,10 @@ void kams_daemon::Do()
 			try {
 				m_serial_port->Close();
 				m_serial_port->Open();
-				if (m_daemon_conf->GetSingle()) {
-					std::cout << "Restart successful!" << std::endl;
-				} else {
-					sz_log(2, "%s: %s", m_id.c_str(), "Restart successful!");
-				}
+				dolog(2, "%s: %s", m_id.c_str(), "Restart successful!");
 				m_state = SET_COMM_WRITE;
 			} catch (SerialPortException &e) {
-				if (m_daemon_conf->GetSingle()) {
-					std::cerr << "Restart failed: " << e.what() << std::endl;
-				} else {
-					sz_log(0, "%s: %s %s", m_id.c_str(), "Restart failed:", e.what());
-				}
+				dolog(0, "%s: %s %s", m_id.c_str(), "Restart failed:", e.what());
 				for (int i = 0; i < m_ipc->m_params_count; i++) {
 					m_ipc->m_read[i] = SZARP_NO_DATA;
 				}
@@ -375,11 +372,7 @@ void kams_daemon::WriteChar()
 
 void kams_daemon::ReadError(short event)
 {
-	if (m_daemon_conf->GetSingle()) {
-		std::cerr << "ReadError, closing connection.." << std::endl;
-	} else {
-		sz_log(0, "%s: %s", m_id.c_str(), "ReadError, closing connection..");
-	}
+	dolog(0, "%s: %s", m_id.c_str(), "ReadError, closing connection..");
 	m_serial_port->Close();
 	SetRestart();
 }
@@ -577,7 +570,7 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 		xmlChar* tcp_data_port = get_device_node_extra_prop(xp_ctx, "tcp-data-port");
 		if (tcp_data_port == NULL) {
 			m_data_port = SerialAdapter::DEFAULT_DATA_PORT;
-			sz_log(2, "Unspecified tcp data port, assuming default port: %hu", m_data_port);
+			dolog(2, "Unspecified tcp data port, assuming default port: %hu", m_data_port);
 		} else {
 			std::istringstream istr((char*) tcp_data_port);
 			bool conversion_failed = (istr >> m_data_port).fail();
@@ -592,7 +585,7 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 		xmlChar* tcp_cmd_port = get_device_node_extra_prop(xp_ctx, "tcp-cmd-port");
 		if (tcp_cmd_port == NULL) {
 			m_cmd_port = SerialAdapter::DEFAULT_CMD_PORT;
-			sz_log(2, "Unspecified cmd port, assuming default port: %hu", m_cmd_port);
+			dolog(2, "Unspecified cmd port, assuming default port: %hu", m_cmd_port);
 		} else {
 			std::istringstream istr((char*) tcp_cmd_port);
 			bool conversion_failed = (istr >> m_cmd_port).fail();
@@ -610,6 +603,7 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 		istr >> data_port_str;
 		m_id = m_ip + ":" + data_port_str;
 	}
+	single = m_daemon_conf->GetSingle() || m_daemon_conf->GetDiagno();
 }
 
 int main(int argc, char *argv[])
@@ -620,7 +614,7 @@ int main(int argc, char *argv[])
 	try {
 		daemon.ReadConfig(argc, argv);
 	} catch (kams_daemon::KamsDmnException &e) {
-		sz_log(0, e.what());
+		dolog(0, e.what());
 		exit(1);
 	}
 	daemon.StartDo();
@@ -628,10 +622,10 @@ int main(int argc, char *argv[])
 	try {
 		event_dispatch();
 	} catch (MsgException &e) {
-		sz_log(0, "FATAL!: daemon killed by exception: %s", e.what());
+		dolog(0, "FATAL!: daemon killed by exception: %s", e.what());
 		exit(1);
 	} catch (...) {
-		sz_log(0, "FATAL!: daemon killed by unknown exception");
+		dolog(0, "FATAL!: daemon killed by unknown exception");
 		exit(1);
 	}
 }
