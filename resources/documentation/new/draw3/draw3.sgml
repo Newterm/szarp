@@ -92,7 +92,6 @@ W czasie startu Draw 3 odczyta konfiguracjê, uruchomi mechanizm odpytywania bazy
 <imageobject><imagedata align="center" fileref="pics/draw3-progress.png"></imageobject>
 </mediaobject>
 </para>
-<note>
 <para>
 Aby zapoznaæ siê z obs³ug± podstawowych funkcji programu, przejd¼ do <xref linkend="draw3-base-win">.
 <note><para>
@@ -612,7 +611,7 @@ wykresu.
 </para>
 <para>
 W przypadku, gdy podczas definiowania wykresu XY wybierzesz u¶rednienie warto¶ci, uzyskasz wykres podobny do poni¿szego:
-</para>`
+</para>
 <para>
 <figure> <title>Wykres XY - u¶rednione warto¶ci</title>
 <mediaobject>
@@ -676,7 +675,7 @@ Po jej wybraniu zobaczysz okno do wyboru parametrów oraz zakresu czasu, z jakieg
 <title>Tworzenie wykresu XYZ</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-xyz1.png"></imageobject>
-/mediaobject></figure>
+</mediaobject></figure>
 </para>
 <para>
 Gdy okre¶lisz parametry oraz przedzia³ czasowy naci¶nij przycisk OK. Powinno to spowodowaæ pobranie danych z bazy oraz otwartcie okna z wykresem.
