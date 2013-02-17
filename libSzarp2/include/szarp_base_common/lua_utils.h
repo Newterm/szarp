@@ -31,7 +31,7 @@ bool prepare_param(lua_State *lua, TParam* param);
 
 int  compile_lua_param(lua_State *lua, TParam *p);
 
-bool compile_lua_formula(lua_State *lua, const char *formula, const char *formula_name, bool ret_v_val);
+bool compile_lua_formula(lua_State *lua, const char *formula, const char *formula_name = "param_fomula", bool ret_v_val = true);
 
 }
 

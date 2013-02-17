@@ -143,7 +143,6 @@ libSzarp2_la_SOURCES = \
 			$(SZARP_BASE_COMMON_DIR)/lua_strings_extract.cc	$(INCLUDE_DIR)/szarp_base_common/lua_strings_extract.h \
 			$(SZARP_BASE_COMMON_DIR)/lua_utils.cc $(INCLUDE_DIR)/szarp_base_common/lua_utils.h \
 			$(SZARP_BASE_COMMON_DIR)/time.cc $(INCLUDE_DIR)/szarp_base_common/time.h \
-			$(SZARP_BASE_COMMON_DIR)/lua_utils.cc $(INCLUDE_DIR)/szarp_base_common/lua_utils.h \
 			$(SZARP_BASE_COMMON_DIR)/definable_calculate.cc $(INCLUDE_DIR)/szarp_base_common/definable_calculate.h \
 			$(INCLUDE_DIR)/szarp_base_common/lua_syntax_fusion_adapt.h \
 			$(SZBASE_DIR)/proberconnection.cc $(SZBASE_DIR)/proberconnection.h \
@@ -168,7 +167,6 @@ libSzarp2_la_SOURCES = \
 			$(INCLUDE_DIR)/sz4/base.h \
 			$(INCLUDE_DIR)/sz4/defs.h \
 			$(SZ4_DIR)/load_file_locked.cpp \
-			$(SZ4_DIR)/sz4_time.cpp \
 			$(SZ4_DIR)/path.cpp \
 			$(SZ4_DIR)/buffer.cpp \
 			$(SZ4_DIR)/base.cpp \

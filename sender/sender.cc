@@ -591,8 +591,7 @@ int main(int argc, char *argv[])
 	free(log_value);
 
 	char *config_prefix = libpar_getpar("sender", "config_prefix", 1);
-	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"pl",
-			   new NullMutex());
+	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"pl");
 	IPKContainer *ic = IPKContainer::GetObject();
 	TSzarpConfig *ipk = ic->GetConfig(SC::A2S(config_prefix));
 	if (ipk == NULL) {

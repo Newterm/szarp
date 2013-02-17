@@ -32,13 +32,15 @@
 
 #include <sz4/base.h>
 
-sz4::base* sz4_base = new sz4::base(L"/opt/szarp");
+sz4::base* sz4_base;
 
 DatabaseQuery* CreateDataQueryPrivate(DrawInfo* di, TParam *param, PeriodType pt, int draw_no);
 
 QueryExecutor::QueryExecutor(DatabaseQueryQueue *_queue, wxEvtHandler *_response_receiver, Szbase *_szbase) :
 	wxThread(wxTHREAD_JOINABLE), queue(_queue), response_receiver(_response_receiver), szbase(_szbase), cancelHandle(NULL)
-{ }
+{ 
+	sz4_base = new sz4::base(L"/opt/szarp", IPKContainer::GetObject());
+}
 
 SZARP_PROBE_TYPE PeriodToProbeType(PeriodType period) {
 	SZARP_PROBE_TYPE pt;
@@ -225,7 +227,7 @@ void QueryExecutor::ExecuteDataQuery(szb_buffer_t* szb, TParam* p, DatabaseQuery
 		time_t end = szb_move_time(i->time, 1, pt, i->custom_length);
 		if (p && szb) {
 			sz4::weighted_sum<double, sz4::second_time_t> sum;
-			sz4_base->get_weighted_sum(p, sz4::second_time_t(i->time), sz4::second_time_t(end), sum);
+			sz4_base->get_weighted_sum(p, sz4::second_time_t(i->time), sz4::second_time_t(end), pt, sum);
 			i->response = sum.sum() / sum.weight() / pow10(p->GetPrec());
 			i->sum = sum.sum() / pow10(p->GetPrec());
 			i->count = sum.weight() / (sum.weight() + sum.no_data_weight()) * 100;
@@ -309,12 +311,11 @@ void QueryExecutor::ExecuteSearchQuery(szb_buffer_t* szb, TParam *p, DatabaseQue
 			PeriodToProbeType(sd.period_type), cancelHandle, *sd.search_condition);
 #endif
 	if (sd.direction > 0)
-		sd.response = sz4_base->search_data_right(p, sz4::second_time_t(sd.start), sz4::second_time_t(sd.end), no_data_search_condition());
+		sd.response = sz4_base->search_data_right(p, sz4::second_time_t(sd.start), sz4::second_time_t(sd.end), PeriodToProbeType(sd.period_type), no_data_search_condition());
 	else {
 		if (sd.end == -1)
 			sd.end = 0;
-		sd.response = sz4_base->search_data_left(p, sz4::second_time_t(sd.start), sz4::second_time_t(sd.end), no_data_search_condition());
-
+		sd.response = sz4_base->search_data_left(p, sz4::second_time_t(sd.start), sz4::second_time_t(sd.end), PeriodToProbeType(sd.period_type), no_data_search_condition());
 	}
 
 	if (szb->last_err != SZBE_OK) {

@@ -79,7 +79,7 @@ public:
 			empty_fetch_functor empty_fetch;
 
 			double v = szb_definable_calculate(stack,
-					sizeof(stack) / sizeof(stack[0]),
+					int(sizeof(stack) / sizeof(stack[0])),
 					varrarr,
 					f_cache,
 					formula,

@@ -259,7 +259,7 @@ int DbDaemon::ParseConfig(DaemonConfig * cfg)
 	
 	m_single = cfg->GetSingle();
 
-	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"", new NullMutex());
+	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"");
 	Szbase::Init(SC::A2S(PREFIX), NULL);
 
 	asprintf(&e, "%s/szbase", cfg->GetDevicePath());

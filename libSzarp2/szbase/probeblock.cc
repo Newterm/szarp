@@ -21,16 +21,17 @@
 
 #include <boost/asio.hpp>
 
+
 #include "liblog.h"
 #include "szbbuf.h"
 #include "szbdefines.h"
 #include "szbdate.h"
-#include "szb_definable_calculate.h"
 #include "luacalculate.h"
 #include "loptcalculate.h"
 #include "proberconnection.h"
 #include "szbbase.h"
 #include "conversion.h"
+#include "szarp_base_common/lua_utils.h"
 #include "szb_definable_calculate.h"
 
 static const size_t DEFINABLE_STACK_SIZE  = 200;
@@ -237,7 +238,7 @@ void szb_probeblock_lua_t::FetchProbes() {
 		return;
 
 	if (ref == LUA_NOREF) {
-		ref = compile_lua_param(lua, param);
+		ref = lua::compile_lua_param(lua, param);
 		if (ref == LUA_REFNIL) {
 			buffer->last_err = SZBE_LUA_ERROR;
 			buffer->last_err_string = SC::U2S((const unsigned char*)lua_tostring(lua, -1));
