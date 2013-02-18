@@ -67,6 +67,7 @@ for i, p in enumerate(ipk.params):
 	sp = saveparam.SaveParam(p, sz4_dir, False)
 	save_param_map[p.param_name] = sp
 
+pno = 0
 for pname in save_param_map.iterkeys():
 	try:
 		sp = save_param_map[pname]
@@ -75,7 +76,7 @@ for pname in save_param_map.iterkeys():
 
 		sp = save_param_map[pname]
 		print
-		print "Converting values for param: %s, param %d out of %d" % (sp.param_path.param_path, i + 1, len(save_param_map))
+		print "Converting values for param: %s, param %d out of %d" % (sp.param_path.param_path, pno + 1, len(save_param_map))
 
 		combined = sp.param.combined
 		if combined:
@@ -95,16 +96,21 @@ for pname in save_param_map.iterkeys():
 			f = open(os.path.join(szbase_dir, lsp.param_path.param_path, szbase_path)).read()
 			if combined:
 				f2 = open(os.path.join(szbase_dir, msp.param_path.param_path, szbase_path)).read()
-			for i in xrange(len(f) / 2):
-				if combined:
-					v1 = struct.unpack_from("<H", f, i * 2)[0]
-					v2 = struct.unpack_from("<h", f2, i * 2)[0]
-					v = (v2 << 16) + v1
-				else:
-					v = struct.unpack_from("<h", f, i * 2)[0]
-				sp.process_value(v, calendar.timegm(date.utctimetuple()), None)
-				date += datetime.timedelta(minutes=10)
+			try: 
+				for i in xrange(len(f) / 2):
+					if combined:
+						v1 = struct.unpack_from("<H", f, i * 2)[0]
+						v2 = struct.unpack_from("<h", f2, i * 2)[0]
+						v = (v2 << 16) + v1
+					else:
+						v = struct.unpack_from("<h", f, i * 2)[0]
+					sp.process_value(v, calendar.timegm(date.utctimetuple()), None)
+					date += datetime.timedelta(minutes=10)
+			except struct.error:
+				pass
 	except OSError, e:
 		pass
+
+	pno += 1
 
 
