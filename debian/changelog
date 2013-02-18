@@ -1,3 +1,9 @@
+szarp (3.1.699) squeeze; urgency=low
+
+  * building squeeze
+
+ -- Marta Szawara <marta@sloneczko>  Mon, 18 Feb 2013 10:16:57 +0100
+
 szarp (3.1.698) unstable; urgency=low
 
   * building unstable
