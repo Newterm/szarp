@@ -64,6 +64,12 @@ else
 INCLUDE_PARSERS = $(PARSERS_FILES)
 endif
 
+if MINGW32_OPT
+SERIALPORT =
+else
+SERIALPORT = $(DMN_DIR)/serialport.cc
+endif
+
 libSzarp2_la_SOURCES = \
 			$(IPK_DIR)/tdevice.cc \
 			$(IPK_DIR)/tdraw.cc \
@@ -98,7 +104,7 @@ libSzarp2_la_SOURCES = \
 			$(SOURCE_DIR)/misc/base64.cc \
 			$(DMN_DIR)/mbus.cc \
 			$(DMN_DIR)/ppset.cc \
-			$(DMN_DIR)/serialport.cc \
+			$(SERIALPORT) \
 			$(SOURCE_DIR)/misc/xscale.cc \
 			\
 			$(SOURCE_DIR)/szbextr/extractor.cc \
