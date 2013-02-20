@@ -367,10 +367,16 @@ void SerialAdapter::SetConfiguration(const struct termios *serial_conf)
 
 	if (serial_conf->c_cflag & PARENB)
 	{
-		if (serial_conf->c_cflag & PARODD)
-			mode |= SERIAL_ODD;
+		if (serial_conf->c_cflag & CMSPAR)
+			if (serial_conf->c_cflag & PARODD)
+				mode |= SERIAL_MARK;
+			else
+				mode |= SERIAL_SPACE;
 		else
-			mode |= SERIAL_EVEN;
+			if (serial_conf->c_cflag & PARODD)
+				mode |= SERIAL_ODD;
+			else
+				mode |= SERIAL_EVEN;
 	}
 	else
 		mode |= SERIAL_NONE;
