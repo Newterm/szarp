@@ -36,6 +36,11 @@ void SerialPort::Open()
 	bufferevent_enable(m_bufferevent, EV_READ | EV_WRITE | EV_PERSIST);
 }
 
+bool SerialPort::Ready()
+{
+	return (m_bufferevent != NULL);
+}
+
 void SerialPort::Close()
 {
 	if (m_bufferevent != NULL) {
@@ -197,6 +202,13 @@ void SerialAdapter::ReadCmdCallback(struct bufferevent *bufev, void* ds)
 void SerialAdapter::ErrorCallback(struct bufferevent *bufev, short event, void* ds)
 {
 	reinterpret_cast<SerialAdapter*>(ds)->Error(bufev, event);
+}
+
+bool SerialAdapter::Ready()
+{
+	return ((m_data_bufferevent != NULL) &&
+		(m_cmd_bufferevent != NULL) &&
+		(m_serial_state == READY));
 }
 
 void SerialAdapter::WriteData(const void* data, size_t size)
@@ -509,7 +521,7 @@ void SerialAdapter::SetConfiguration(const struct termios *serial_conf)
 	if (m_cmd_bufferevent == NULL)
 	{
 		SerialAdapterException ex;
-		ex.SetMsg("Port is currently unavailable");
+		ex.SetMsg("Port is currently unavailable for config");
 		throw ex;
 	}
 	WriteCmd(cmd_buffer);
@@ -520,6 +532,12 @@ void SerialAdapter::SetConfiguration(const struct termios *serial_conf)
 
 void SerialAdapter::LineControl(bool dtr, bool rts)
 {
+	if ((m_data_bufferevent == NULL) || (m_serial_state != READY))
+	{
+		SerialAdapterException ex;
+		ex.SetMsg("Port is currently unavailable");
+		throw ex;
+	}
 	std::vector<unsigned char> cmd_buffer;
 	cmd_buffer.resize(4, 0);
 

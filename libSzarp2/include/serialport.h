@@ -217,6 +217,8 @@ public:
 	virtual void LineControl(bool dtr, bool rts) = 0;
 	/** Write data to serial port */
 	virtual void WriteData(const void* data, size_t size) = 0;
+	/** Returns true if port is ready for communication */
+	virtual bool Ready() = 0;
 
 	/** Adds listener for port */
 	void AddListener(SerialPortListener* listener)
@@ -269,6 +271,8 @@ public:
 	}
 	/** Open port (previously configured) */
 	virtual void Open();
+	/** true if ready for r/w */
+	virtual bool Ready();
 	/** Close port */
 	virtual void Close();
 	/** Set serial line configuration */
@@ -315,6 +319,9 @@ public:
 	{
 		Connect();
 	}
+	/** true if ready for r/w */
+	virtual bool Ready();
+
 	virtual void Close()
 	{
 		CloseConnection();
