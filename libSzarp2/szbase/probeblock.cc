@@ -235,7 +235,7 @@ void szb_probeblock_lua_t::FetchProbes() {
 		ref = compile_lua_param(lua, param);
 		if (ref == LUA_REFNIL) {
 			buffer->last_err = SZBE_LUA_ERROR;
-			buffer->last_err_string = SC::U2S((const unsigned char*)lua_tostring(lua, -1));
+			buffer->last_err_string = SC::lua_error2szarp(lua_tostring(lua, -1));
 			lua_pop(lua, 1);
 			return;
 		}
