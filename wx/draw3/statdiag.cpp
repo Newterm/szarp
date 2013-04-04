@@ -168,6 +168,7 @@ StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, C
 	wxSizer *ws = new wxBoxSizer(wxHORIZONTAL);
 	ws->Add(panel, 1, wxEXPAND);
 	SetSizer(ws);
+	ws->SetSizeHints(this);
 	
 	SetDrawInfo( user_draws.GetSelectedDraw() );
 

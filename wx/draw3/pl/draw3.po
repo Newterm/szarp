@@ -1913,7 +1913,7 @@ msgstr "Komentarz odnosz±cy siê do ca³ego obiektu"
 
 #: XRC_gettext_file.h:77
 msgid "Choose remark type:"
-msgstr "Wybierz rodzja komentarza:"
+msgstr "Wybierz rodzaj komentarza:"
 
 #: XRC_gettext_file.h:78
 msgid "Probe servers addresses"
