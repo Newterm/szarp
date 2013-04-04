@@ -1207,28 +1207,18 @@ void XYZCanvas::OnMouseMotion(wxMouseEvent &event) {
 	int x = event.GetX();
 	int y = event.GetY();
 
-	int dx = x - m_start_mouse_x;
-	int dy = y - m_start_mouse_y;
+	double dx = x - m_start_mouse_x;
+	double dy = y - m_start_mouse_y;
 
 	wxSize size = GetSize();
-
-	m_graph_angle_y = m_start_angle_y + 360 * dx / (size.GetWidth() / size.GetHeight()) / size.GetWidth();
+	m_graph_angle_y = m_start_angle_y + 360 * dx / size.GetHeight();
 	m_graph_angle_x = m_start_angle_x + 360 * dy / size.GetHeight();
-
-	//std::cout << "(" << m_start_angle_x << " " << m_start_angle_y << ") -> (" << m_camera_angle_x << " " << m_camera_angle_y << ")" << std::endl;
 
 	Refresh();
 }
 
 void XYZCanvas::OnMouseLeaveWindow(wxMouseEvent &event) {
 	m_right_down = false;
-#if 0
-	if (m_right_down) {	
-		m_graph_angle_x = m_start_angle_x;
-		m_graph_angle_y = m_start_angle_y;
-		Refresh();
-	}
-#endif
 }
 
 wxImage XYZCanvas::GetGraphImage() {
