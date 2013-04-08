@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-11-16 23:10+0100\n"
+"POT-Creation-Date: 2013-04-08 19:58+0200\n"
 "PO-Revision-Date: 2008-07-16 11:40+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -223,51 +223,51 @@ msgstr "Die Fenster wurden erfolgreich importiert."
 msgid "Ok!"
 msgstr "Ok!"
 
-#: disptime.cpp:74 drawview.cpp:207 gcdcgraphs.cpp:720 glgraphs.cpp:1364
+#: disptime.cpp:74 drawview.cpp:207 gcdcgraphs.cpp:723 glgraphs.cpp:1364
 msgid "january"
 msgstr ""
 
-#: disptime.cpp:75 drawview.cpp:210 gcdcgraphs.cpp:723 glgraphs.cpp:1367
+#: disptime.cpp:75 drawview.cpp:210 gcdcgraphs.cpp:726 glgraphs.cpp:1367
 msgid "february"
 msgstr ""
 
-#: disptime.cpp:76 drawview.cpp:213 gcdcgraphs.cpp:726 glgraphs.cpp:1370
+#: disptime.cpp:76 drawview.cpp:213 gcdcgraphs.cpp:729 glgraphs.cpp:1370
 msgid "march"
 msgstr ""
 
-#: disptime.cpp:77 drawview.cpp:216 gcdcgraphs.cpp:729 glgraphs.cpp:1373
+#: disptime.cpp:77 drawview.cpp:216 gcdcgraphs.cpp:732 glgraphs.cpp:1373
 msgid "april"
 msgstr ""
 
-#: disptime.cpp:78 drawview.cpp:219 gcdcgraphs.cpp:732 glgraphs.cpp:1376
+#: disptime.cpp:78 drawview.cpp:219 gcdcgraphs.cpp:735 glgraphs.cpp:1376
 msgid "may"
 msgstr ""
 
-#: disptime.cpp:79 drawview.cpp:222 gcdcgraphs.cpp:735 glgraphs.cpp:1379
+#: disptime.cpp:79 drawview.cpp:222 gcdcgraphs.cpp:738 glgraphs.cpp:1379
 msgid "june"
 msgstr ""
 
-#: disptime.cpp:80 drawview.cpp:225 gcdcgraphs.cpp:738 glgraphs.cpp:1382
+#: disptime.cpp:80 drawview.cpp:225 gcdcgraphs.cpp:741 glgraphs.cpp:1382
 msgid "july"
 msgstr ""
 
-#: disptime.cpp:81 drawview.cpp:228 gcdcgraphs.cpp:741 glgraphs.cpp:1385
+#: disptime.cpp:81 drawview.cpp:228 gcdcgraphs.cpp:744 glgraphs.cpp:1385
 msgid "august"
 msgstr ""
 
-#: disptime.cpp:82 drawview.cpp:231 gcdcgraphs.cpp:744 glgraphs.cpp:1388
+#: disptime.cpp:82 drawview.cpp:231 gcdcgraphs.cpp:747 glgraphs.cpp:1388
 msgid "septermber"
 msgstr ""
 
-#: disptime.cpp:83 drawview.cpp:234 gcdcgraphs.cpp:747 glgraphs.cpp:1391
+#: disptime.cpp:83 drawview.cpp:234 gcdcgraphs.cpp:750 glgraphs.cpp:1391
 msgid "october"
 msgstr ""
 
-#: disptime.cpp:84 drawview.cpp:237 gcdcgraphs.cpp:750 glgraphs.cpp:1394
+#: disptime.cpp:84 drawview.cpp:237 gcdcgraphs.cpp:753 glgraphs.cpp:1394
 msgid "november"
 msgstr ""
 
-#: disptime.cpp:85 drawview.cpp:240 gcdcgraphs.cpp:753 glgraphs.cpp:1397
+#: disptime.cpp:85 drawview.cpp:240 gcdcgraphs.cpp:756 glgraphs.cpp:1397
 msgid "december"
 msgstr ""
 
@@ -951,7 +951,7 @@ msgid ""
 "solved by synchronization of data."
 msgstr ""
 
-#: drawswdg.cpp:333 statdiag.cpp:349 xydiag.cpp:275
+#: drawswdg.cpp:333 statdiag.cpp:350 xydiag.cpp:276
 msgid "Select date"
 msgstr "Wählen Sie das Datum"
 
@@ -1001,11 +1001,11 @@ msgstr "Beenden"
 msgid "New version available"
 msgstr ""
 
-#: drawview.cpp:199 gcdcgraphs.cpp:712 glgraphs.cpp:1356
+#: drawview.cpp:199 gcdcgraphs.cpp:715 glgraphs.cpp:1356
 msgid "summer season"
 msgstr "Sommersaison"
 
-#: drawview.cpp:201 gcdcgraphs.cpp:714 glgraphs.cpp:1358
+#: drawview.cpp:201 gcdcgraphs.cpp:717 glgraphs.cpp:1358
 msgid "winter season"
 msgstr "Wintersaison"
 
@@ -1030,7 +1030,7 @@ msgid "The are no user defined sets. Do you want to create one?"
 msgstr ""
 "Nicht benutzerdefinierte Sätze. Würden erstellen Sie eine neue Schaubild"
 
-#: gcdcgraphs.cpp:386 wxgraphs.cpp:225
+#: gcdcgraphs.cpp:389 wxgraphs.cpp:225
 msgid "No data"
 msgstr "Keiner Daten"
 
@@ -1070,12 +1070,12 @@ msgstr "Reset"
 msgid "Ok"
 msgstr "Ok"
 
-#: incsearch.cpp:147 statdiag.cpp:159 xygraph.cpp:81 xyzgraph.cpp:1347
+#: incsearch.cpp:147 statdiag.cpp:159 xygraph.cpp:81 xyzgraph.cpp:1393
 msgid "Close"
 msgstr "Schließ"
 
 #: incsearch.cpp:149 statdiag.cpp:162 xydiag.cpp:160 xygraph.cpp:86
-#: xygraph.cpp:87 xyzgraph.cpp:1354 xyzgraph.cpp:1355
+#: xygraph.cpp:87 xyzgraph.cpp:1400 xyzgraph.cpp:1401
 #, fuzzy
 msgid "Help"
 msgstr "Hilfe"
@@ -1103,7 +1103,7 @@ msgid "Failed to remove paramater"
 msgstr "Failed to create dir: "
 
 #: infowdg.cpp:290
-msgid "std. dev.="
+msgid "\\u03c3 ="
 msgstr ""
 
 #: paramslist.cpp:243 paramslist.cpp:298
@@ -1224,26 +1224,26 @@ msgid "You don't have sufficient privileges too insert/update this param."
 msgstr ""
 
 # Rozk³ad procentowy
-#: piewin.cpp:76
+#: piewin.cpp:77
 msgid "Percentage distribution"
 msgstr "Prozentuale Verteilung"
 
-#: piewin.cpp:86
+#: piewin.cpp:87
 msgid "Average percentage distribution"
 msgstr "Durchschnittliche prozentuale Verteilung"
 
-#: piewin.cpp:254
+#: piewin.cpp:247
 #, c-format
 msgid "Sum: %.*f %s"
 msgstr "Summe: %.*f %s"
 
-#: piewin.cpp:264
+#: piewin.cpp:257
 msgid ""
 "There are no draws in this sets for which percentage distribution is "
 "calculated."
 msgstr ""
 
-#: piewin.cpp:266
+#: piewin.cpp:259
 msgid "All values equal zero."
 msgstr ""
 
@@ -1560,34 +1560,34 @@ msgstr "Der Wert der aggregierten"
 msgid "OK"
 msgstr "OK"
 
-#: statdiag.cpp:273 statdiag.cpp:274 statdiag.cpp:275 statdiag.cpp:276
-#: statdiag.cpp:278
+#: statdiag.cpp:274 statdiag.cpp:275 statdiag.cpp:276 statdiag.cpp:277
+#: statdiag.cpp:279
 msgid "no data"
 msgstr "Keiner Daten"
 
 # "Najpierw wybierz wykres"
-#: statdiag.cpp:290
+#: statdiag.cpp:291
 #, fuzzy
 msgid "You need to choose draw first."
 msgstr "Zuerst wählen Sie das Schaubild"
 
 # "Brakuj±cy wykres"
-#: statdiag.cpp:290 xydiag.cpp:189 xydiag.cpp:191
+#: statdiag.cpp:291 xydiag.cpp:190 xydiag.cpp:192
 msgid "Draw missing"
 msgstr "Fehlende Schaubild"
 
 # "Najpierw wybierz wykres"
-#: statdiag.cpp:428
+#: statdiag.cpp:429
 msgid "You need to choose draw first"
 msgstr "Zuerst wählen Sie das Schaubild"
 
 # "Data pocz±tkowa musi byæ równa lub wcze¶niejsza ni¿ data koñcowa"
-#: statdiag.cpp:433 xydiag.cpp:196
+#: statdiag.cpp:434 xydiag.cpp:197
 msgid "Start date must be less than or equal to end date"
 msgstr "Start Datum muss gleich oder früher als End Datum"
 
 # "Niepoprawna data"
-#: statdiag.cpp:433 xydiag.cpp:196
+#: statdiag.cpp:434 xydiag.cpp:197
 msgid "Invalid date"
 msgstr "Ungültiges Datum"
 
@@ -1699,27 +1699,27 @@ msgid "Cancel"
 msgstr "Abbrechen"
 
 # Edytuj wykres
-#: xydiag.cpp:177 xyzgraph.cpp:1318
+#: xydiag.cpp:177 xyzgraph.cpp:1364
 #, fuzzy
 msgid "XYZ Graph"
 msgstr "Edit Schaubild"
 
 # "Musisz podaæ oba wykresy"
-#: xydiag.cpp:189
+#: xydiag.cpp:190
 msgid "You have to specify both draws"
 msgstr "Sie mussen zwei Schaubilder geben"
 
-#: xydiag.cpp:191
+#: xydiag.cpp:192
 msgid "You have to specify all draws"
 msgstr "Sie mussen alle Schaubilder geben"
 
 # "Brak wspólnych danych dla wybranych wykresów w zadanym okresie czasu"
-#: xydiag.cpp:219
+#: xydiag.cpp:220
 msgid "There is no common data in selected draws from given time span"
 msgstr "Es ist nicht gemeinsam daten fur wählen Schaubilder in Zeitraum"
 
 # "Brak danych"
-#: xydiag.cpp:219
+#: xydiag.cpp:220
 msgid "No common data"
 msgstr "Fehlende daten"
 
@@ -1730,24 +1730,24 @@ msgid "X/Y graph"
 msgstr "Edit Schaubild"
 
 # "Wybierz parametry wykresu"
-#: xygraph.cpp:72 xyzgraph.cpp:1331
+#: xygraph.cpp:72 xyzgraph.cpp:1377
 #, fuzzy
 msgid "Change graph parameters"
 msgstr "Wählen Sie Parameter des Schaubilds"
 
 # "Drukuj\tCtrl-P"
-#: xygraph.cpp:74 xyzgraph.cpp:1336
+#: xygraph.cpp:74 xyzgraph.cpp:1382
 msgid "Print\tCtrl-P"
 msgstr "Drucken\tCtrl-P"
 
 # "¦rednie procentowe"
-#: xygraph.cpp:75 xyzgraph.cpp:1342 XRC_gettext_file.h:116
+#: xygraph.cpp:75 xyzgraph.cpp:1388 XRC_gettext_file.h:116
 #, fuzzy
 msgid "Page Settings\tCtrl+Shift+S"
 msgstr "Der durchschnittliche Prozentsatz\tCtrl+Alt+S"
 
 # "Podgl±d wydruku"
-#: xygraph.cpp:76 xyzgraph.cpp:1339
+#: xygraph.cpp:76 xyzgraph.cpp:1385
 msgid "Print preview"
 msgstr "Druckvorschau"
 
@@ -1755,7 +1755,7 @@ msgstr "Druckvorschau"
 msgid "Zoom out\tCtrl--"
 msgstr ""
 
-#: xygraph.cpp:83 xyzgraph.cpp:1351
+#: xygraph.cpp:83 xyzgraph.cpp:1397
 msgid "Graph"
 msgstr "Schaubild"
 
@@ -1852,13 +1852,13 @@ msgid " in terms of "
 msgstr " Von "
 
 # "Brak danych"
-#: xyzgraph.cpp:870
+#: xyzgraph.cpp:926
 #, fuzzy
 msgid "No common data found"
 msgstr "Fehlende daten"
 
 # "Brak wspólnych danych dla wybranych wykresów w zadanym okresie czasu"
-#: xyzgraph.cpp:870
+#: xyzgraph.cpp:926
 #, fuzzy
 msgid "There is no common data for these params for given time period"
 msgstr "Es ist nicht gemeinsam daten fur wählen Schaubilder in Zeitraum"

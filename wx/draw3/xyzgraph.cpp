@@ -36,6 +36,11 @@
 #include <FTGL/ftgl.h>
 #include <GL/glu.h>
 
+#ifndef NO_CGAL
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Triangulation_3.h>
+#endif
+
 #include "szhlpctrl.h"
 
 #include "cconv.h"
@@ -186,11 +191,13 @@ public:
 				m_x += 1;
 				if (std::isnan(m_canvas->m_vertices[i + 1]))
 					continue;
+				std::cout << "Found a point\n";
 				return true;
 			}
 			m_z += 1;
 			m_x = 0;
 		}
+		std::cout << "No point found\n";
 		return false;
 	}
 };
@@ -558,12 +565,18 @@ void XYZCanvas::DrawPointInfo() {
 
 	for (size_t i = 0; i < 3; i++) {
 		double v = m_vertices[pi + i] / slices_no * (m_graph->m_dmax[i] - m_graph->m_dmin[i]) + m_graph->m_dmin[i];
-		wxString str = wxString::Format(_T("%c: %.*f %s %s"),
+		wxString str = wxString::Format(_("%c: %.*f %s %s (min:%.*f, avg:%.*f, max:%.*f)"),
 				L'X' + i,
 				m_graph->m_di[i]->GetPrec(),
 				v,
 				m_graph->m_di[i]->GetUnit().c_str(),
-				m_graph->m_di[i]->GetShortName().c_str());
+				m_graph->m_di[i]->GetShortName().c_str(),
+				m_graph->m_di[i]->GetPrec(),
+				m_graph->m_min[i],
+				m_graph->m_di[i]->GetPrec(),
+				m_graph->m_avg[i],
+				m_graph->m_di[i]->GetPrec(),
+				m_graph->m_max[i]);
 		wxColor c = m_graph->m_di[i]->GetDrawColor();
 		float gc[] = {0, 0, 0, 1};
 		gc[0] = float(c.Red()) / 255; 
@@ -674,7 +687,7 @@ void XYZCanvas::AddTriangle(size_t i, size_t j, size_t k) {
 	m_triangles.push_back(m_vertices[k]);
 	m_triangles.push_back(m_vertices[k + 1]);
 	m_triangles.push_back(m_vertices[k + 2]);
-					
+
 	m_triangles_colors.push_back(m_colors[i / 3 * 4]);
 	m_triangles_colors.push_back(m_colors[i / 3 * 4 + 1]);
 	m_triangles_colors.push_back(m_colors[i / 3 * 4 + 2]);
@@ -697,15 +710,56 @@ void XYZCanvas::PrepareTriangles() {
 	m_triangles_colors.resize(0);
 	m_triangles_indexes.resize(0);
 
+#if NO_CGAL
 	PointsSource point_source(this);
 	TriangleConsumer triangle_conumer(this);
 
 	triangulation _triangulation(0, slices_no - 1, 0, slices_no - 1, m_data_points, &point_source, &triangle_conumer);
 	_triangulation.go();
+#else
+	typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+
+	typedef CGAL::Triangulation_3<K> Triangulation;
+	typedef Triangulation::Cell_handle Cell_handle;
+	typedef Triangulation::Vertex_handle Vertex_handle;
+	typedef Triangulation::Triangle Triangle;
+	typedef Triangulation::Facet Facet;
+	typedef Triangulation::Point Point;
+
+	std::vector<Point> v;
+	for (size_t z = 0; z < XYZCanvas::slices_no; z++) for (size_t x = 0; x < XYZCanvas::slices_no; x++) {
+		int i = XZToIndex(x, z);
+		if (std::isnan(m_vertices[i + 1]))
+			continue;
+
+		Point p(m_vertices[i], m_vertices[i + 1], m_vertices[i + 2]);
+		v.push_back(p);
+	}
+
+	Triangulation t(v.begin(), v.end());
+
+	for (Triangulation::Finite_facets_iterator i = t.finite_facets_begin();
+			i != t.finite_facets_end();
+			i++) {
+		const Facet& f = *i;
+
+		const Triangle& triangle(t.triangle(f));
+
+		const Point& p1 = triangle.vertex(0);
+		const Point& p2 = triangle.vertex(1);
+		const Point& p3 = triangle.vertex(2);
+
+		size_t i = XZToIndex(p1.x(), p1.z());
+		size_t j = XZToIndex(p2.x(), p2.z());
+		size_t k = XZToIndex(p3.x(), p3.z());
+
+		AddTriangle(i, j, k);
+	}
+
+#endif
 }
 
 void XYZCanvas::PrepareSinglePoints() {
-	m_single_points_normals.resize(0);
 	m_single_points_points.resize(0);
 	m_single_points_colors.resize(0);
 	m_single_points_indexes.resize(0);
@@ -838,9 +892,11 @@ void XYZCanvas::DrawTrianglesGraph() {
 	if (m_triangles.size()) {
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_COLOR_ARRAY);
+
 		glVertexPointer(3, GL_FLOAT, 0, &m_triangles[0]);
 		glColorPointer(4, GL_UNSIGNED_BYTE, 0, &m_triangles_colors[0]);
 		glDrawArrays(GL_TRIANGLES, 0, m_triangles.size() / 3);
+
 		glDisableClientState(GL_VERTEX_ARRAY);
 		glDisableClientState(GL_COLOR_ARRAY);
 	}

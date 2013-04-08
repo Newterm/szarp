@@ -1,3 +1,11 @@
+2013-04-08 Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: more info about params in xyz graphs
+	* wx/draw3: change the way traingualation of points
+	in xyz graph is done, we know use cgal library for this	
+	/and fall back on old method if draw is compiled without
+	cgal/
+	* acinlude.m4: add libcgal detection
+	* debian/control: szarp builds depends on libcgal-dev
 2012-12-25 Darek Marcinkiewicz <reksio@newterm.pl>
 	* resources/documention/new/draw3: added tutorial on 
 	definable parameters

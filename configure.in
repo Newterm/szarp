@@ -1091,6 +1091,12 @@ PKG_CHECK_MODULES(CPPUNIT, x11, no_cppunit="no", [AC_MSG_RESULT([
 ])
 AM_CONDITIONAL(HAVE_CPPUNIT, test "x$no_cppunit" != xyes)
 
+AC_LIB_CGAL( [], [no_cgal=yes] )
+if test "x$no_cgal" = "xyes" ; then
+        AC_DEFINE(NO_CGAL, 1, [Define to 1 if CGAL library is not available])
+fi
+
+
 # Python/pylons
 if test x$no_python != xyes -a "x$PYBABEL" != "x" -a x$with_mingw32 != xyes; then
 	SUBDIRS="$SUBDIRS www"
