@@ -89,7 +89,6 @@
 #include "liblog.h"
 #include "xmlutils.h"
 #include "execute.h"
-#include "tokens.h"
 
 #include "conversion.h"
 
@@ -276,22 +275,30 @@ int ExecDaemon::Exec(IPCHandler *ipc)
 	ret = execute_substv(m_argvp[0], m_argvp);
 	if (ret == NULL)
 		return 1;
-	char **toks;
-	int tokc = 0;
-	tokenize_d(ret, &toks, &tokc, "\n ");
-	for (int i = 0; (i < m_params_count) && (i < tokc); i++) {
+
+	unsigned b=0 , e=0;
+
+	for (int i = 0; i < m_params_count ; ++i )
+	{
+		b = e++;
+		if( ret[b] == '\0' || i >= m_params_count ) continue;
+		while( ret[e] != '\0' && ret[e] != '\n' && ret[e] != ' ' ) ++e;
+
 		char *errptr;
 		int d;
-		d = (int)strtod(toks[i], &errptr);
+		char t = ret[e];
+		ret[e] = '\0';
+		d = (int)strtod(ret+b, &errptr);
 		if (*errptr != 0) {
-			sz_log(2, "Got incorrect string for param i: '%s'", toks[i]);
+			sz_log(2, "Got incorrect string for param i: '%s'", ret+b);
 			d = SZARP_NO_DATA;
 		} else {
-			sz_log(10, "Got string for param i: '%s', converted to value %d", toks[i], d);
+			sz_log(10, "Got string for param i: '%s', converted to value %d", ret+b, d);
 		}
 		ipc->m_read[i] = d;
+		ret[e]= t;
 	}
-	tokenize_d(NULL, &toks, &tokc, NULL);
+
 	free(ret);
 	
 	return 0;
