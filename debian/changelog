@@ -4,6 +4,41 @@ szarp (3.1.702) unstable; urgency=low
 
  -- Krzysztof Gałązka <kg@newterm.pl>  Tue, 05 Mar 2013 10:55:27 +0100
 
+szarp (3.1.701) squeeze; urgency=low
+
+  * building squeeze
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Tue, 19 Feb 2013 12:08:14 +0100
+
+szarp (3.1.700) squeeze; urgency=low
+
+  * building squeeze
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Tue, 19 Feb 2013 11:22:20 +0100
+
+szarp (3.1.699) squeeze; urgency=low
+
+  * building squeeze
+
+ -- Marta Szawara <marta@sloneczko>  Mon, 18 Feb 2013 10:16:57 +0100
+
+szarp (3.1.698) unstable; urgency=low
+
+  * building unstable
+
+ -- Marta Szawara <marta@sloneczko>  Fri, 15 Feb 2013 11:54:15 +0100
+
+szarp (3.1.697) unstable; urgency=low
+
+  * building unstable
+
+ -- Marta Szawara <marta@sloneczko>  Fri, 15 Feb 2013 11:51:51 +0100
+
+szarp (3.1.697) squeeze; urgency=low
+
+  * building squeeze
+
+ -- Krzysztof Gałązka <kg@newterm.pl>  Mon, 11 Feb 2013 15:36:33 +0100
 szarp (3.1.696) unstable; urgency=low
 
   * building unstable
