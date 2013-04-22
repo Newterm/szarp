@@ -1007,7 +1007,7 @@ void DrawFrame::OnConfigureRemarks(wxCommandEvent &event) {
 
 #ifndef MINGW32
 
-        /** Authorisation details from szarp.cfg will not be visible */
+        /* Authorization details from szarp.cfg will not be visible */
         if (remarks_handler->CfgConfigured()) { 
                 username = password = server = wxEmptyString;
         }

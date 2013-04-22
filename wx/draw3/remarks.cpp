@@ -94,10 +94,6 @@
 
 #include "timeformat.h"
 
-#ifndef MINGW32
-        const int Remark::c_max_uname_size = 30;
-#endif /*MINGW32*/
-
 void debug_print_long(const wchar_t *l);
 
 DEFINE_EVENT_TYPE(REMARKSSTORED_EVENT)
@@ -163,22 +159,30 @@ RemarksHandler::RemarksHandler(ConfigManager *config_manager) : m_config_manager
 
 #ifndef MINGW32
 
-        m_szarp_cfg = false;
+    m_szarp_cfg = false;
 
-	m_configured = !m_server.IsEmpty() && !m_username.IsEmpty() && !m_password.IsEmpty();
+    /* Check if remarks server access was loaded from SSCConfig */
+    m_configured = !m_server.IsEmpty() && !m_username.IsEmpty() && !m_password.IsEmpty();
 
-        wxLogWarning(_T("m_server: %s"), m_server.c_str());
-        wxLogWarning(_T("m_username: %s"), m_username.c_str());
-        wxLogWarning(_T("m_password: %s"), m_password.c_str());
+    wxLogWarning(_T("m_server: %s"), m_server.c_str());
+    wxLogWarning(_T("m_username: %s"), m_username.c_str());
+    wxLogWarning(_T("m_password: %s"), m_password.c_str());
 
-        if (!m_configured) {
-                wxLogWarning(_T("!m_configured"));
-		GetConfigurationFromSzarpCfg();
+    /* 
+     * If remarks server access credentials where not present in SSConfig 
+     * use cfglogin method. Credentials created this way are not put in
+     * .szarp configuration file. Those credentials are single use -
+     * session only and are not directly visible to user.
+     */
+    if (!m_configured) {
+        wxLogWarning(_T("!m_configured"));
+            
+        GetConfigurationFromSzarpCfg();
 
 		m_configured = !m_server.IsEmpty() && !m_username.IsEmpty() && !m_password.IsEmpty();
-                if (m_configured) 
-                        m_szarp_cfg = true;
-        
+
+        if (m_configured) 
+            m_szarp_cfg = true;
 	}
 
 #endif /*MINGW32*/
@@ -196,133 +200,123 @@ RemarksHandler::RemarksHandler(ConfigManager *config_manager) : m_config_manager
 #ifndef MINGW32
 
 bool RemarksHandler::CfgConfigured() {
-        return m_szarp_cfg;
+    return m_szarp_cfg;
 }
 
 void RemarksHandler::GetConfigurationFromSzarpCfg() {  
 
-        wxLogWarning(_T("GetConfigurationFromSzarpCfg"));
+    wxLogWarning(_T("GetConfigurationFromSzarpCfg"));
 
 #ifdef __WXGTK__
 
-        wxLogWarning(_T("defined __WXGTK__"));
+    wxLogWarning(_T("defined __WXGTK__"));
 
-	libpar_init();
- 
-        /** Check for remarks_server option in config file */
-	char *server = libpar_getpar("", "remarks_server", 0);
-        if (server) {
-	        
-                wxLogWarning(_T("config has server: %s"), (SC::A2S(server)).c_str());
+    libpar_init();
 
-                char *config_prefix = libpar_getpar("", "config_prefix", 0);
-                if (!config_prefix) {
-                        wxLogWarning(_T("remarks_server option is set, but could not find prefix"));
-                        free(server);
-                        return;
-                }
-                
-                wxLogWarning(_T("config has prefix: %s"), (SC::A2S(config_prefix)).c_str());
+    /* Check for remarks_server option in config file */
+    char *server = libpar_getpar("", "remarks_server", 0);
 
-                char *szarp_root_dir = libpar_getpar("", "szarp_data_root", 0);
-                if (!szarp_root_dir) {
-                        wxLogWarning(_T("remarks_server option is set, but could not find szarp data root"));
-                        free(server);
-                        free(config_prefix);
-                        return;
-                }
+    if (server) {
+        
+        wxLogWarning(_T("config has server: %s"), (SC::A2S(server)).c_str());
 
-                wxLogWarning(_T("config has root_dir: %s"), (SC::A2S(szarp_root_dir)).c_str());
+        char *config_prefix = libpar_getpar("", "config_prefix", 0);
+        if (!config_prefix) {
+            wxLogWarning(_T("remarks_server option is set, but could not find prefix"));
+            free(server);
+            return;
+        }
+    
+        wxLogWarning(_T("config has prefix: %s"), (SC::A2S(config_prefix)).c_str());
 
-                /** Because of getpwuid(...) implementation there is no need to free user_pwd memory */
-                /** @TODO: User is availible from Szarp level methods */
-                /*
-                struct passwd *user_pwd = getpwuid(getuid());
-                if (!user_pwd) {
-                        wxLogWarning(_T("remarks_server option is set, but could not find calling username"));
-                        free(server);
-                        free(config_prefix);
-                        free(szarp_root_dir);
-                        return;
-                }
-                */
+        char *szarp_root_dir = libpar_getpar("", "szarp_data_root", 0);
+        if (!szarp_root_dir) {
+            wxLogWarning(_T("remarks_server option is set, but could not find szarp data root"));
+            free(server);
+            free(config_prefix);
+            return;
+        }
 
-                wxString username = wxGetUserName();
-                if (username == wxEmptyString) {
-                        wxLogWarning(_T("remarks_server option is set, but could not find calling username"));
-                        free(server);
-                        free(config_prefix);
-                        free(szarp_root_dir);
-                        return;
-                }
+        wxLogWarning(_T("config has root_dir: %s"), (SC::A2S(szarp_root_dir)).c_str());
 
-                /** Read using wxFile */
-                wxString config_file_path;
-                wxFile config_file;
+        wxString username = wxGetUserName();
+        if (username == wxEmptyString) {
+            wxLogWarning(_T("remarks_server option is set, but could not find calling username"));
+            free(server);
+            free(config_prefix);
+            free(szarp_root_dir);
+            return;
+        }
 
-                config_file_path << SC::A2S(szarp_root_dir) << SC::A2S(config_prefix) 
-                        << SC::A2S("/config/params.xml");
+        /* Read using wxFile */
+        wxString config_file_path;
+        wxFile config_file;
 
-                wxLogWarning(_T("config_file_path: %s"), config_file_path.c_str());
+        config_file_path << SC::A2S(szarp_root_dir) << SC::A2S(config_prefix) 
+            << SC::A2S("/config/params.xml");
 
-                config_file.Open(config_file_path);
-                if (!config_file.IsOpened()) {
-                        wxLogWarning(_T("remarks_server option is set, but could not open file: %s"), config_file_path.c_str()); 
-                        free(server);
-                        free(config_prefix);
-                        free(szarp_root_dir);
-                        return;
-                }
+        wxLogWarning(_T("config_file_path: %s"), config_file_path.c_str());
 
-                const int config_file_size = config_file.Length();
-                unsigned char *config_file_buffer = new unsigned char[config_file_size];
+        config_file.Open(config_file_path);
+        if (!config_file.IsOpened()) {
+            wxLogWarning(_T("remarks_server option is set, but could not open file: %s"), config_file_path.c_str()); 
+            free(server);
+            free(config_prefix);
+            free(szarp_root_dir);
+            return;
+        }
 
-                /** Read whole file at once */
-                const int byte_count = config_file.Read(config_file_buffer, config_file_size);
-                if (byte_count != config_file_size) {
-                        wxLogWarning(_T("remarks_server option is set, but could not read from file: %s"), config_file_path.c_str());
-                        free(server);
-                        free(config_prefix);
-                        free(szarp_root_dir);
-                        config_file.Close();
-                        return;
-                }
+        const int config_file_size = config_file.Length();
+        unsigned char *config_file_buffer = new unsigned char[config_file_size];
 
-                config_file.Close();
+        /* Read whole file at once */
+        const int byte_count = config_file.Read(config_file_buffer, config_file_size);
+        if (byte_count != config_file_size) {
+            wxLogWarning(_T("remarks_server option is set, but could not read from file: %s"), config_file_path.c_str());
+            free(server);
+            free(config_prefix);
+            free(szarp_root_dir);
+            config_file.Close();
+            return;
+        }
 
-                /** Calculate MD5 */
-                const unsigned char *c_config_file_buffer = config_file_buffer;
-	        unsigned char hashed[MD5_DIGEST_LENGTH];
-                MD5(c_config_file_buffer, config_file_size, hashed);
-               
-                c_config_file_buffer = NULL;
-                delete [] config_file_buffer;
+        config_file.Close();
 
-                /** Prepare MD5 to be converted to wxString */
-                char *password = new char[2*MD5_DIGEST_LENGTH];
-                char *ptr = password;
+        /* Calculate MD5 */
+        const unsigned char *c_config_file_buffer = config_file_buffer;
+        unsigned char hashed[MD5_DIGEST_LENGTH];
+        MD5(c_config_file_buffer, config_file_size, hashed);
+       
+        c_config_file_buffer = NULL;
+        delete [] config_file_buffer;
 
-                for (int j = 0; j < MD5_DIGEST_LENGTH; j++) {
-                        sprintf(ptr, "%02x", hashed[j]);
-                        ptr=ptr+2;
-                }
+        /* Prepare MD5 to be converted to wxString */
+        char *password = new char[2*MD5_DIGEST_LENGTH];
+        char *ptr = password;
 
-                m_server = SC::A2S(server);
-                m_username << username << SC::A2S("@") << SC::A2S(config_prefix);
-                m_password = SC::A2S(password);
-                
-                ptr = NULL;
-                delete [] password;
+        for (int j = 0; j < MD5_DIGEST_LENGTH; j++) {
+            sprintf(ptr, "%02x", hashed[j]);
+            ptr=ptr+2;
+        }
 
-                wxLogWarning(_T("m_server: %s"), m_server.c_str());
-                wxLogWarning(_T("m_username: %s"), m_username.c_str());
-                wxLogWarning(_T("m_password: %s"), m_password.c_str());
+        m_server = SC::A2S(server);
+        m_username << username << SC::A2S("@") << SC::A2S(config_prefix);
+        m_password = SC::A2S(password);
+            
+        ptr = NULL;
+        delete [] password;
 
-                free(server);
-                free(config_prefix);
-                free(szarp_root_dir);
-        } 
+        wxLogWarning(_T("m_server: %s"), m_server.c_str());
+        wxLogWarning(_T("m_username: %s"), m_username.c_str());
+        wxLogWarning(_T("m_password: %s"), m_password.c_str());
+
+        free(server);
+        free(config_prefix);
+        free(szarp_root_dir);
+    } 
+
 #endif /*__WXGTK__*/
+
 }
 
 #endif /*MINGW32*/
@@ -408,6 +402,8 @@ void RemarksHandler::Stop() {
 }
 
 RemarksConnection* RemarksHandler::GetConnection() {
+
+    wxLogWarning(_T("GetConnection!"));
 
 	if (m_connection == NULL) {
 		m_connection = new RemarksConnection(m_server, this, m_config_manager);

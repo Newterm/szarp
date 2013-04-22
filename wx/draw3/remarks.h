@@ -48,10 +48,6 @@
 class Remark {
 public:
 
-#ifndef MINGW32
-        static const int c_max_uname_size;
-#endif /*MINGW32*/
-
 	typedef std::pair<int, int> ID;
 private:
 	boost::shared_ptr<xmlDoc> m_doc;
@@ -447,7 +443,9 @@ class RemarksHandler : public wxEvtHandler {
 	bool m_configured;
 
 #ifndef MINGW32
-        bool m_szarp_cfg;
+
+    bool m_szarp_cfg;
+
 #endif /*MINGW32*/
 
 	wxString m_username;
@@ -466,14 +464,12 @@ class RemarksHandler : public wxEvtHandler {
 	void GetConfigurationFromSSCConfig();
 
 #ifndef MINGW32
-        void GetConfigurationFromSzarpCfg();
+
+    void GetConfigurationFromSzarpCfg();
+
 #endif /*MINGW32*/
 
 public:
-
-#ifndef MINGW32
-        static const int c_max_uname_size;
-#endif /*MINGW32*/
 
 	RemarksHandler(ConfigManager *config_manager);
 
@@ -492,7 +488,9 @@ public:
 	bool Configured();
 
 #ifndef MINGW32
-        bool CfgConfigured();
+
+    bool CfgConfigured();
+
 #endif /*MINGW32*/
 
 	void GetConfiguration(wxString& username, wxString& password, wxString &server, bool& autofetch);
