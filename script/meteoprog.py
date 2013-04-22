@@ -57,7 +57,7 @@ class AuthURLopener(FancyURLopener):
 # fetch XML data
 opener = AuthURLopener()
 meteo = opener.open(url)
-xml = etree.XML(meteo.read())
+xml = etree.XML(meteo.read().lstrip(' \t\n'))
 
 # save output
 cache_min = []
