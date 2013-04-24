@@ -12,10 +12,12 @@
 # user=<user name to access data>
 # password=<password>
 
-from urllib import FancyURLopener
 from lxml import etree
 from ConfigParser import SafeConfigParser
+import httplib
+import base64, string
 import datetime
+import re
 
 # Config file path
 CONFIG = "/etc/szarp/meteoprog.cfg"
@@ -49,14 +51,40 @@ url = config.get('Main', 'url')
 user = config.get('Main', 'user')
 passwd = config.get('Main', 'password')
 
-# class for passing user/password
-class AuthURLopener(FancyURLopener):
-	def prompt_user_passwd(self, host, realm):
-		return (user, passwd)
+def url_split(url):
+	# get url base (without trailing request part)
+	reg_result = re.match("(http://)?(?P<host>[^/]+)(?P<middle>.*/)(?P<end>[^/]*)\s*", url)
+	if reg_result == None:
+		raise Exception("URL: '%s' doesn't match expected form" % url)
+	url_host = reg_result.group('host')
+	url_middle = reg_result.group('middle')
+	url_end = reg_result.group('end')
+	return [url_host, url_middle, url_end]
 
-# fetch XML data
-opener = AuthURLopener()
-meteo = opener.open(url)
+# establish connection, which will be used without closing
+[url_host, url_middle, url_end] = url_split(url)
+connection = httplib.HTTPConnection(url_host)
+auth = base64.encodestring('%s:%s' % (user, passwd)).replace('\n', '')
+# authorisation request, authorisation will be kept together with open connection
+connection.request("GET", url_middle, headers={"Authorization" : "Basic %s" % auth})
+response = connection.getresponse()
+
+# handle redirections
+redir_depth = 0
+while response.status in [301, 302]:
+	redir_depth = redir_depth + 1
+	if redir_depth > 10:
+		raise Exception("Redirected %d times, giving up" % redir_depth)
+	headers = dict(response.getheaders())
+	location = headers['location']
+	[url_host, url_middle, unused] = url_split(location)
+	connection = httplib.HTTPConnection(url_host)
+	connection.request("GET", url_middle, headers={"Authorization" : "Basic %s" % auth})
+	response = connection.getresponse()
+
+# get XML data using open connection
+connection.request("GET", url_middle + url_end, headers={"Authorization" : "Basic %s" % auth})
+meteo = connection.getresponse()
 xml = etree.XML(meteo.read().lstrip(' \t\n'))
 
 # save output
