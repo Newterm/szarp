@@ -197,25 +197,36 @@ class CategoryTree():
 	def write_to_xml(self, use_spaces, spaces_num):
 		reg_indent = re.compile('^(?P<whitespace>\s*)<draw.*$')
 		reg_element_end = re.compile('/>\s*$')
+		new_lines = []
+		count = 1
+		for line in self.lines:
+			if self.reg_comment.search(line) == None:
+				res = self.reg_draw.search(line)
+				if res != None:
+					title = res.group('title')
+					res2 = reg_indent.match(line)
+					if res2 == None:
+						printerr("No whitespace before draw element at line %d" % count)
+						print line
+						exit(1)
+					draw_whitespace = res2.group('whitespace')
+					if title in self.tree_nodes:
+						treenode = self.tree_nodes[title]
+						del self.tree_nodes[title]
+						treenode_element = treenode.generate_element(draw_whitespace, use_spaces, spaces_num)
+						if reg_element_end.search(line) != None:
+							line = reg_element_end.sub('>', line)
+							line = line + '\n' + treenode_element + draw_whitespace + '</draw>'
+						else:
+							line = line + '\n' + treenode_element
+			line = line + '\n'
+			new_lines.append(line)
+			count = count + 1
+		print "writing params.xml..."
 		with open(self.filename, 'w') as f:
-			for line in self.lines:
-				if self.reg_comment.search(line) == None:
-					res = self.reg_draw.search(line)
-					if res != None:
-						title = res.group('title')
-						res2 = reg_indent.match(line)
-						draw_whitespace = res2.group('whitespace')
-						if title in self.tree_nodes:
-							treenode = self.tree_nodes[title]
-							del self.tree_nodes[title]
-							treenode_element = treenode.generate_element(draw_whitespace, use_spaces, spaces_num)
-							if reg_element_end.search(line) != None:
-								line = reg_element_end.sub('>', line)
-								line = line + '\n' + treenode_element + draw_whitespace + '</draw>'
-							else:
-								line = line + '\n' + treenode_element
-				line = line + '\n'
+			for line in new_lines:
 				f.write(line)
+		print "wrote changes"
 
 parser = OptionParser(usage="usage: %prog [options]\nModifies params.xml in current dir according to hardcoded rules (edit to modify)")
 parser.add_option("-s", "--spaces", help="indent with spaces (if not provided, indents with tabs)",
@@ -242,16 +253,30 @@ categories = CategoryTree("params.xml")
 # - regex for parsing 'title' attribute from 'draw' element
 # - piece of code evaluating to a list of category names, from top-level
 # the code can access regex result by variable 'res'
+
+categories.add_rule("Interbin.*", "['Nadrzędna', 'Interbin']")
+categories.add_rule(".*(O|o)dgazow.*", "['Nadrzędna', 'Odgazowywacz']")
+categories.add_rule("Alstom.*", "['Nadrzędna', 'Alstom']")
+categories.add_rule("Falownik.*", "['Nadrzędna', 'Falowniki']")
+categories.add_rule("Pompa.*", "['Nadrzędna', 'Pompy']")
+categories.add_rule(".*(K|k)olektor.*", "['Nadrzędna', 'Kolektory']")
+categories.add_rule(".*magistral.*", "['Nadrzędna', 'Magistrale małe']")
+categories.add_rule(".*(O|o)dsiarcz.*", "['Nadrzędna', 'Odsiarczanie']")
+#categories.add_rule(".*(S|s)terowanie.*", "['Nadrzędna', 'Sterowanie ciepłownią']")
+
 categories.add_rule("^([^0-9]* )*(?P<number>[0-9]+)( .*)*$", "['Kotły', 'Kocioł ' + res.group('number')]")
 categories.add_rule("^([^0-9]* )*K(?P<number>[0-9]+)( .*)*$", "['Kotły', 'Kocioł ' + res.group('number')]")
-#categories.add_rule("^(W|w)ęzeł (?P<name>[^ ]+( .*)*)$", "['Węzły']")
-categories.add_rule("^(W|w)ęzeł (?P<name>[^ ]+)( .*)*$", "['Węzły', 'Węzeł ' + res.group('name')]")
-categories.add_default_category("['Nadrzędna']")
+categories.add_rule("^([^0-9]* )*W(R|P).* ([^0-9]* )*(?P<number>[0-9]+)( .*)*$", "['Kotły', 'Kocioł ' + res.group('number')]")
+
+#categories.add_rule("^(W|w)ęzeł (?P<name>[^ ]+( .*)*)$", "['Węzeł']")
+categories.add_rule("^(W|w)ęzeł (CWU|CO|CWUICO) \((?P<name>[^ ]+)\)( .*)*$", "['Węzły', 'Węzeł ' + res.group('name')]")
+categories.add_rule("^(W|w)ęzeł (CWU|CO|CWUICO) (?P<name>[^-]+) -( .*)*$", "['Węzły', 'Węzeł ' + res.group('name')]")
+#categories.add_rule("^(W|w)ęzeł (?P<name>[^ ]+)( .*)*$", "['Węzły', 'Węzeł ' + res.group('name')]")
+
+categories.add_default_category("['Nadrzędna', 'Pozostałe']")
 
 categories.build()
 if options.write:
-	print "writing params.xml..."
 	categories.write_to_xml(options.spaces, options.num_spaces)
-	print "wrote changes"
 else:
 	categories.printall(print_xml=options.print_xml)

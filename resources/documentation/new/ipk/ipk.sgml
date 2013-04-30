@@ -3436,19 +3436,19 @@ W tym wypadku w programie przegl±daj±cym jako dziecko korzenia zostanie utworzon
 Element <emphasis>treenode</emphasis> mo¿e zawieraæ nastêpuj±ce atrybuty:
 <itemizedlist>
 <listitem><para>
-<emphasis>order</emphasis> - okre¶la on po³o¿enie elementu <emphasis>treenode</emphasis>  wobec jako braci (elementów
+<emphasis>prior</emphasis> - okre¶la on po³o¿enie elementu <emphasis>treenode</emphasis>  wobec jako braci (elementów
 maj±cych tego samego ojca)
 Przyk³ad:
 <programlisting>
 <![CDATA[
         <draw title="Kocio³ WR 5 - temperatury" ...>
-		<treenode order="1" name="Kocio³ WR 5">
+		<treenode prior="1" name="Kocio³ WR 5">
 			<treenode name="Kot³y"/>
 		</treenode>
 	</draw>
 ...
         <draw title="Kocio³ WR 4 - temperatury" .. >
-		<treenode order="0" name="Kocio³ WR 4">
+		<treenode prior="0" name="Kocio³ WR 4">
 			<treenode name="Kot³y"/>
 		</treenode>
 	</draw>
@@ -3457,21 +3457,21 @@ Przyk³ad:
 Taka konfiguracja oznacza ¿e wêze³ "Kocio³ WR 4" bêdzie znajdowa³ siê przed wêz³em "Kocio³ WR 5".
 </para></listitem>
 <listitem><para>
-<emphasis>draw_order</emphasis> - okre¶la on po³o¿enie li¶cia <emphasis>draw</emphasis> w danym elemencie <emphasis>treenode</emphasis>.
-Dzia³a on analogicznie do elementu <emphasis>order</emphasis>.
+<emphasis>draw_prior</emphasis> - okre¶la on po³o¿enie li¶cia <emphasis>draw</emphasis> w danym elemencie <emphasis>treenode</emphasis>.
+Dzia³a on analogicznie do elementu <emphasis>prior</emphasis>.
 Przyk³ad:
 <programlisting>
 <![CDATA[
         <draw title="Kocio³ WR 5 - temperatury" ...>
-		<treenode draw_order="1" order="1" name="Kocio³ WR 5"/>
+		<treenode draw_prior="1" prior="1" name="Kocio³ WR 5"/>
 	</draw>
 ...
         <draw title="Kocio³ WR 5 - ci¶nienia" .. >
-		<treenode draw_order="0" order="0" name="Kocio³ WR 5"/>
+		<treenode draw_prior="0" prior="0" name="Kocio³ WR 5"/>
 	</draw>
 ]]>
 </programlisting>
-W tym wypadku li¶æ "Kocio³ WR 5 - temperatury" bêdzie umiejscowiony przed li¶ciem "Kocio³ WR 5 - ci¶nienia".
+W tym wypadku li¶æ "Kocio³ WR 5 - ci¶nienia" bêdzie umiejscowiony przed li¶ciem "Kocio³ WR 5 - temperatury".
 </para>
 </listitem>
 </itemizedlist>
