@@ -25,6 +25,8 @@ from twisted.web import xmlrpc
 
 from twisted.python import log
 
+from datetime import datetime
+
 class TransDbAccess:
 	def __init__(self, db, trans):
 		self.db = db
@@ -36,15 +38,41 @@ class TransDbAccess:
 
                 if len(user_data) != 2:
                         return False, None, None
-                
+        
                 log.msg("cfglogin user: " + user);
 
                 # Login a prefix-wide type user 
                 ok, user_id, username = self.login(user_data[1], password)
+
 		if ok:
+                # Configuration files are in sync
+                        log.msg("Cfg in sync");
 			return ok, user_id, user_data[0]
                 else:
-                        return False, None, None
+                        # Configuration files may not be in sync
+                        log.msg("Cfg not in sync");
+                        self.trans.execute("""
+			        SELECT
+				        user_id, date_created
+			        FROM
+				        hash_history
+			        WHERE
+				        password = %(password)s
+			        """,
+			        { 'password' : password } )
+	
+		        row = self.trans.fetchall()
+		        if row is not None:
+                                #@TODO: Case with identical multiple passwords - very possible
+                                #@TODO: Age of hash in hash history
+                                #for r in range(row):
+                                #        date_string = row[r][1]
+                                #        date_tab = date_string.split('-')
+                                #        date_parsed = datetime(date_tab[0], date_tab[1], date_tab[2])
+                                        
+			        return True, user_id, user_data[0]
+		        else:
+			        return False, None, None
 
                 #
                 # Configuration hash check - moved to database

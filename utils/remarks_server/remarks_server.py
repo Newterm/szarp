@@ -67,15 +67,15 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
 				return f(self, userid, username, *args, **kwargs)
 			else:
 				raise xmlrpc.Fault(-1, "Incorrect session token")
-		return check
-
-	def _login_interaction(self, trans, user, password):
-		tdb = transdb.TransDbAccess(self.service.db, trans)
-		ok, user_id, username = tdb.login(user, password)
-		if ok:
-			token = self.service.sessions.new(user_id, username)
-			return token
-		else:
+                return check
+        
+        def _login_interaction(self, trans, user, password):
+                tdb = transdb.TransDbAccess(self.service.db, trans)
+                ok, user_id, username = tdb.login(user, password)
+                if ok:
+                        token = self.service.sessions.new(user_id, username)
+		        return token
+	        else:
                         # Login with configuration hash
                         ok, user_id, username = tdb.autologin(user, password)
                         if ok:
