@@ -46,7 +46,7 @@ protected:
 	typedef std::map<time_type, block_type*> map_type;
 
 	map_type m_blocks;
-	unsigned m_current_non_fixed;			
+	unsigned m_current_non_fixed;
 public:
 	definable_param_cache(SZARP_PROBE_TYPE probe_type) :
 		m_probe_type(probe_type), m_current_non_fixed(2)

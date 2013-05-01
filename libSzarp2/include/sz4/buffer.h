@@ -101,8 +101,8 @@ protected:
 	bool m_needs_refresh;
 	const boost::filesystem::wpath m_block_path;
 public:
-	block_entry(const T& start_time) :
-		m_block(start_time), m_needs_refresh(true) {}
+	block_entry(const T& start_time, block_cache* cache) :
+		m_block(start_time, cache), m_needs_refresh(true) {}
 
 	void get_weighted_sum(const T& start, const T& end, weighted_sum<V, T>& wsum) {
 		m_block.get_weighted_sum(start, end, wsum);
@@ -136,6 +136,7 @@ public:
 		m_sum.weight() = m_temp.weight();
 		m_sum.no_data_weight() = m_temp.no_data_weight();
 		m_sum.set_fixed(m_temp.fixed());
+		m_sum.reffered_blocks().swap(m_temp.reffered_blocks());
 	}
 };
 

@@ -21,6 +21,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <list>
 
 #include "sz4/defs.h"
 #include "sz4/time.h"
@@ -163,11 +164,31 @@ protected:
 	time_type m_start_time;
 };
 
-template<class value_type, class time_type> class concrete_block : public value_time_block<value_time_pair<value_type, time_type> > {
+class block_cache;
+class generic_block {
+	block_cache* m_cache;
+	std::vector<generic_block*> m_reffering_blocks;
+	std::vector<generic_block*> m_reffered_blocks;
+
+	std::list<generic_block*>::iterator m_block_location;
+public:
+	generic_block(block_cache* cache);
+	bool ok_to_delete() const;
+	std::list<generic_block*>::iterator& location();
+	bool has_reffering_blocks() const;
+	void add_reffering_block(generic_block* block);
+	void remove_reffering_block(generic_block* block);
+
+	void add_reffered_block(generic_block* block);
+	void remove_reffered_block(generic_block* block);
+	virtual ~generic_block();
+};
+
+template<class value_type, class time_type> class concrete_block : public value_time_block<value_time_pair<value_type, time_type> >, public generic_block {
 public:
 	typedef value_time_block<value_time_pair<value_type, time_type> > block_type;
 
-	concrete_block(const time_type& start_time) : block_type(start_time) {}
+	concrete_block(const time_type& start_time, block_cache* cache) : block_type(start_time), generic_block(cache) {}
 		
 	void get_weighted_sum(const time_type& start_time, const time_type &end_time, weighted_sum<value_type, time_type>& r) const {
 		time_type prev_time(start_time);

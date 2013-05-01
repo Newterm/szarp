@@ -24,8 +24,8 @@ namespace sz4 {
 template<class V, class T> class file_block_entry : public block_entry<V, T> {
 	const boost::filesystem::wpath m_block_path;
 public:
-	file_block_entry(const T& start_time, const std::wstring& block_path) :
-		block_entry<V, T>(start_time), m_block_path(block_path) {}
+	file_block_entry(const T& start_time, const std::wstring& block_path, block_cache* cache) :
+		block_entry<V, T>(start_time, cache), m_block_path(block_path) {}
 
 	void refresh_if_needed() {
 		if (!this->m_needs_refresh)
@@ -202,7 +202,7 @@ public:
 			if (m_blocks.find(file_time) != m_blocks.end())
 				continue;
 
-			m_blocks.insert(std::make_pair(file_time, new file_block_entry<V, T>(file_time, file_path)));
+			m_blocks.insert(std::make_pair(file_time, new file_block_entry<V, T>(file_time, file_path, m_base->cache())));
 		}
 	}
 
@@ -213,7 +213,7 @@ public:
 		else {
 			file_block_entry<V, T>* entry = m_blocks.rbegin()->second;
 			entry->refresh_if_needed();
-			return entry->block().end_time();	
+			return entry->block().end_time();
 		}
 	}
 

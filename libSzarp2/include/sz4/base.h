@@ -32,6 +32,7 @@
 #include "sz4/types.h"
 #include "sz4/buffer.h"
 #include "sz4/lua_interpreter.h"
+#include "sz4/block_cache.h"
 #include "szarp_base_common/lua_strings_extract.h"
 
 namespace sz4 {
@@ -49,6 +50,8 @@ private:
 
 	std::stack<bool> m_fixed_stack;
 	lua_interpreter<types> m_interperter;
+
+	block_cache m_cache;
 public:
 	base_templ(const std::wstring& szarp_data_dir, ipk_container_type* ipk_container) : m_szarp_data_dir(szarp_data_dir), m_ipk_container(ipk_container) {}
 
@@ -99,6 +102,8 @@ public:
 	lua_interpreter<types>& get_lua_interpreter() { return m_interperter; }
 
 	ipk_container_type* get_ipk_container() { return m_ipk_container; }
+
+	block_cache* cache() { return &m_cache; }
 
 	~base_templ() {
 		for (typename std::vector<buffer_templ<types>*>::iterator i = m_buffers.begin(); i != m_buffers.end(); i++)

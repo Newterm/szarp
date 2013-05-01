@@ -22,6 +22,8 @@
 #include <limits>
 #include <cmath>
 #include <ctime>
+#include <algorithm>
+#include <vector>
 #include <stdint.h>
 
 #include "sz4/time.h"
@@ -76,6 +78,8 @@ template<> struct value_sum<double> {
 	typedef double type;
 };
 
+class generic_block;
+
 template<class value_type, class time_type> struct weighted_sum {
 	typedef typename value_sum<value_type>::type sum_type;
 	typedef typename time_difference<time_type>::type time_diff_type;
@@ -85,12 +89,20 @@ template<class value_type, class time_type> struct weighted_sum {
 	time_diff_type m_no_data_weight;
 	bool m_fixed;
 
+	std::vector<generic_block*> m_reffered_blocks;
+
 	weighted_sum() : m_sum(0), m_weight(0), m_no_data_weight(0), m_fixed(true) {}
 	sum_type& sum() { return m_sum; }
 	time_diff_type& weight() { return m_weight; }
 	time_diff_type& no_data_weight() { return m_no_data_weight; }
+	std::vector<generic_block*>& reffered_blocks() { return m_reffered_blocks; }
 	bool fixed() { return m_fixed; }
 	void set_fixed(bool fixed) { m_fixed &= fixed; }
+	void add_reffered_block(generic_block* block) {
+		std::vector<generic_block*>::iterator i = std::find(m_reffered_blocks.begin(), m_reffered_blocks.end(), block);
+		if (i != m_reffered_blocks.end())
+			m_reffered_blocks.push_back(block);
+	}
 };
 
 class search_condition {

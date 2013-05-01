@@ -166,13 +166,16 @@ libSzarp2_la_SOURCES = \
 			$(INCLUDE_DIR)/sz4/rpn_param_entry.h \
 			$(INCLUDE_DIR)/sz4/base.h \
 			$(INCLUDE_DIR)/sz4/defs.h \
+			$(INCLUDE_DIR)/sz4/block_cache..h \
 			$(SZ4_DIR)/load_file_locked.cpp \
 			$(SZ4_DIR)/path.cpp \
 			$(SZ4_DIR)/buffer.cpp \
 			$(SZ4_DIR)/base.cpp \
+			$(SZ4_DIR)/block.cpp \
 			$(SZ4_DIR)/defs.cpp \
 			$(SZ4_DIR)/lua_interpreter.cpp \
 			$(SZ4_DIR)/sz4_time.cpp \
+			$(SZ4_DIR)/block_cache.cpp \
 			\
 			protobuf/paramsvalues.pb.cc \
 			include/protobuf/paramsvalues.pb.h

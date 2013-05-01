@@ -14,6 +14,7 @@
 #include "sz4/time.h"
 #include "sz4/block.h"
 #include "sz4/path.h"
+#include "sz4/block_cache.h"
 #include "sz4/load_file_locked.h"
 
 #include "test_serach_condition.h"
@@ -21,6 +22,7 @@
 class Sz4BlockTestCase : public CPPUNIT_NS::TestFixture
 {
 	std::vector<sz4::value_time_pair<int, sz4::second_time_t> > m_v;
+	sz4::block_cache m_cache;
 	void searchTest();
 	void weigthedSumTest();
 	void weigthedSumTest2();
@@ -71,7 +73,7 @@ void Sz4BlockTestCase::weigthedSumTest() {
 	sz4::weighted_sum<int, sz4::second_time_t> wsum;
 	std::vector<sz4::value_time_pair<int, sz4::second_time_t> > v = m_v;
 
-	sz4::concrete_block<int, sz4::second_time_t> block(0u);
+	sz4::concrete_block<int, sz4::second_time_t> block(0u, &m_cache);
 	block.set_data(v);
 
 	block.get_weighted_sum(0u, sz4::second_time_t(1), wsum);
@@ -127,7 +129,7 @@ void Sz4BlockTestCase::weigthedSumTest() {
 void Sz4BlockTestCase::weigthedSumTest2() {
 	typedef sz4::value_time_pair<short, sz4::second_time_t> pair_type;
 	std::vector<pair_type> v;
-	sz4::concrete_block<short, unsigned> block(0u);
+	sz4::concrete_block<short, unsigned> block(0u, &m_cache);
 	sz4::weighted_sum<short, sz4::second_time_t> wsum;
 
 	v.push_back(sz4::make_value_time_pair<pair_type>((short)1, 1u));
@@ -180,7 +182,7 @@ void Sz4BlockTestCase::blockLoadTest() {
 			CPPUNIT_ASSERT(v.at(i).value == std::numeric_limits<short>::min());
 	}
 
-	sz4::concrete_block<short, unsigned> block(0u);
+	sz4::concrete_block<short, unsigned> block(0u, &m_cache);
 	block.set_data(v);
 
 	CPPUNIT_ASSERT_EQUAL(7u, block.end_time());
@@ -194,7 +196,7 @@ void Sz4BlockTestCase::blockLoadTest() {
 }
 
 void Sz4BlockTestCase::testBigNum() {
-	sz4::concrete_block<short, sz4::second_time_t> block(10000000u);
+	sz4::concrete_block<short, sz4::second_time_t> block(10000000u, &m_cache);
 
 	typedef sz4::value_time_pair<short, sz4::second_time_t> pair_type;
 	std::vector<pair_type> v;
@@ -208,7 +210,7 @@ void Sz4BlockTestCase::testBigNum() {
 
 void Sz4BlockTestCase::searchDataTest() {
 	typedef sz4::value_time_pair<int, sz4::second_time_t> pair_type;
-	sz4::concrete_block<int, sz4::second_time_t> block(0u);
+	sz4::concrete_block<int, sz4::second_time_t> block(0u, &m_cache);
 	std::vector<pair_type> v = m_v;
 
 	v.push_back(sz4::make_value_time_pair<pair_type>(3, 11u));
