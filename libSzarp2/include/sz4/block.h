@@ -45,14 +45,44 @@ template<class I, class T> I search_entry_for_time(I begin, I end, const T& t) {
 	return std::upper_bound(begin, end, t, cmp_time<T, pair_type>);
 }
 
-template<class value_time_type> class value_time_block {
+class block_cache;
+class generic_block {
+protected:
+	block_cache* m_cache;
+	std::vector<generic_block*> m_reffering_blocks;
+	std::vector<generic_block*> m_reffered_blocks;
+
+	std::list<generic_block*>::iterator m_block_location;
+public:
+	generic_block(block_cache* cache);
+	bool ok_to_delete() const;
+	std::list<generic_block*>::iterator& location();
+	bool has_reffering_blocks() const;
+	void add_reffering_block(generic_block* block);
+	void remove_reffering_block(generic_block* block);
+
+	void add_reffered_block(generic_block* block);
+	void remove_reffered_block(generic_block* block);
+
+	virtual size_t block_size() const = 0;
+
+	virtual ~generic_block();
+};
+
+
+template<class value_time_type> class value_time_block : public generic_block {
 public:
 	typedef typename value_time_type::value_type value_type;
 	typedef typename value_time_type::time_type time_type;
 
 	typedef std::vector<value_time_type> value_time_vector;
 
-	value_time_block(const time_type& time) : m_start_time(time) {}
+	value_time_block(const time_type& time,
+		block_cache* cache)
+		:
+		generic_block(cache),
+		m_start_time(time)
+	{}
 
 	const time_type& start_time() const { return m_start_time; }
 	const time_type end_time() const { return m_data[m_data.size() - 1].time; }
@@ -71,6 +101,14 @@ public:
 
 	const value_time_vector& data() const {
 		return m_data;
+	}
+
+	size_t block_size() const {
+		return m_data.size() * (sizeof(value_type) + sizeof(time_type));
+	}
+
+	void block_data_updated(size_t previous_size) {
+		m_cache->block_size_changed(this, previous_size);
 	}
 
 	template<class search_op> typename value_time_vector::const_iterator search_data_right_t(const time_type& start, const time_type& end, const search_op &condition) {
@@ -164,31 +202,15 @@ protected:
 	time_type m_start_time;
 };
 
-class block_cache;
-class generic_block {
-	block_cache* m_cache;
-	std::vector<generic_block*> m_reffering_blocks;
-	std::vector<generic_block*> m_reffered_blocks;
-
-	std::list<generic_block*>::iterator m_block_location;
-public:
-	generic_block(block_cache* cache);
-	bool ok_to_delete() const;
-	std::list<generic_block*>::iterator& location();
-	bool has_reffering_blocks() const;
-	void add_reffering_block(generic_block* block);
-	void remove_reffering_block(generic_block* block);
-
-	void add_reffered_block(generic_block* block);
-	void remove_reffered_block(generic_block* block);
-	virtual ~generic_block();
-};
-
-template<class value_type, class time_type> class concrete_block : public value_time_block<value_time_pair<value_type, time_type> >, public generic_block {
+template<class value_type, class time_type> class concrete_block : public value_time_block<value_time_pair<value_type, time_type> > {
 public:
 	typedef value_time_block<value_time_pair<value_type, time_type> > block_type;
 
-	concrete_block(const time_type& start_time, block_cache* cache) : block_type(start_time), generic_block(cache) {}
+	concrete_block(const time_type& start_time,
+			block_cache* cache)
+		:
+			block_type(start_time, cache)
+	{}
 		
 	void get_weighted_sum(const time_type& start_time, const time_type &end_time, weighted_sum<value_type, time_type>& r) const {
 		time_type prev_time(start_time);
@@ -216,6 +238,9 @@ public:
 		}
 	}
 
+	virtual size_t block_size() const {
+		return block_type::block_size();
+	}
 		
 	time_type search_data_right(const time_type& start, const time_type& end, const search_condition &condition) {
 		typename block_type::value_time_vector::const_iterator i = this->search_data_right_t(start, end, condition);

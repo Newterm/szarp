@@ -43,7 +43,8 @@ protobuf/paramsvalues.pb.h: protobuf/paramsvalues.proto
 protobuf/paramsvalues.pb.cc: protobuf/paramsvalues.proto 
 	$(PROTOC) --cpp_out=$(SRCDIR)protobuf $<
 
-include/protobuf/paramsvalues.pb.h: protobuf/paramsvalues.pb.h
+include/protobuf/paramsvalues.pb.h: protobuf/protobuf/paramsvalues.pb.h
+	mkdir -p include/protobuf
 	cp $< $@
 
 
@@ -177,8 +178,8 @@ libSzarp2_la_SOURCES = \
 			$(SZ4_DIR)/sz4_time.cpp \
 			$(SZ4_DIR)/block_cache.cpp \
 			\
-			protobuf/paramsvalues.pb.cc \
-			include/protobuf/paramsvalues.pb.h
+			protobuf/protobuf/paramsvalues.pb.cc \
+			protobuf/protobuf/paramsvalues.pb.h
 
 
 

@@ -17,12 +17,15 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 #include <algorithm>
+#include "sz4/defs.h"
+#include "sz4/block_cache.h"
 #include "sz4/block.h"
 #include "sz4/block_cache.h"
 
 namespace sz4 {
 
-generic_block::generic_block(block_cache* cache) : m_cache(cache) {
+generic_block::generic_block(block_cache* cache) :
+		m_cache(cache) {
 	m_cache->add_new_block(this);
 }
 
@@ -69,7 +72,6 @@ void generic_block::remove_reffered_block(generic_block* block) {
 generic_block::~generic_block() { 
 	std::for_each(m_reffered_blocks.begin(), m_reffered_blocks.end(), std::bind2nd(std::mem_fun(&generic_block::remove_reffering_block), this));
 	std::for_each(m_reffering_blocks.begin(), m_reffering_blocks.end(), std::bind2nd(std::mem_fun(&generic_block::remove_reffered_block), this));
-	m_cache->remove_block(this);
 }
 
 }

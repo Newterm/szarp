@@ -21,16 +21,27 @@
 
 namespace sz4 {
 
-template<class V, class T> class file_block_entry : public block_entry<V, T> {
+template<class V, class T, class types> class real_param_entry_in_buffer;
+
+template<class V, class T, class types> class file_block_entry : public block_entry<V, T> {
 	const boost::filesystem::wpath m_block_path;
+	real_param_entry_in_buffer<V, T, types>* m_param_entry;
 public:
-	file_block_entry(const T& start_time, const std::wstring& block_path, block_cache* cache) :
-		block_entry<V, T>(start_time, cache), m_block_path(block_path) {}
+	file_block_entry(const T& start_time,
+			const std::wstring& block_path,
+			block_cache* cache,
+			real_param_entry_in_buffer<V, T, types>* param_entry)
+		:
+			block_entry<V, T>(start_time, cache),
+			m_block_path(block_path),
+			m_param_entry(param_entry)
+		{}
 
 	void refresh_if_needed() {
 		if (!this->m_needs_refresh)
 			return;
 
+		size_t previous_size = this->m_block.block_size();
 		std::vector<value_time_pair<V, T> > values;
 		size_t size = boost::filesystem::file_size(m_block_path);
 		values.resize(size / sizeof(value_time_pair<V, T>));
@@ -38,13 +49,22 @@ public:
 		if (load_file_locked(m_block_path, (char*) &values[0], values.size() * sizeof(value_time_pair<V, T>)))
 			this->m_block.set_data(values);
 		this->m_needs_refresh = false;
+
+		this->m_block.block_data_updated(previous_size);
+	}
+
+	~file_block_entry() {
+		m_param_entry->remove_block(this);
 	}
 };
 
 
 template<class V, class T, class types> class real_param_entry_in_buffer {
+public:
+	typedef file_block_entry<V, T, types> file_block_entry_type;
+	typedef std::map<T, file_block_entry_type*> map_type;
+private:
 	base_templ<types>* m_base;
-	typedef std::map<T, file_block_entry<V, T>*> map_type;
 	map_type m_blocks;
 
 	TParam* m_param;
@@ -74,7 +94,7 @@ public:
 		if (i != m_blocks.begin())
 			std::advance(i, -1);
 		do {
-			file_block_entry<V, T>* entry = i->second;
+			file_block_entry_type* entry = i->second;
 
 			if (end < entry->block().start_time()) {
 				sum.no_data_weight() += end - current;
@@ -114,7 +134,7 @@ public:
 			std::advance(i, -1);
 
 		while (i != m_blocks.end()) {
-			file_block_entry<V, T>* entry = i->second;
+			file_block_entry_type* entry = i->second;
 			if (entry->block().start_time() >= end)
 				break;
 
@@ -139,7 +159,7 @@ public:
 			std::advance(i, -1);
 
 		while (true) {
-			file_block_entry<V, T>* entry = i->second;
+			file_block_entry_type* entry = i->second;
 
 			entry->refresh_if_needed();
 			if (entry->block().end_time() <= end)
@@ -186,6 +206,16 @@ public:
 			m_refresh_file_list = true;
 	}
 
+	void remove_block(file_block_entry_type* block) {
+		for (typename map_type::iterator i = m_blocks.begin();
+				i != m_blocks.end();
+				i++)
+			if (i->second == block) {
+				m_blocks.erase(i);
+				break;
+			}
+	}
+
 	void refresh_file_list() {
 		namespace fs = boost::filesystem;
 		
@@ -202,7 +232,7 @@ public:
 			if (m_blocks.find(file_time) != m_blocks.end())
 				continue;
 
-			m_blocks.insert(std::make_pair(file_time, new file_block_entry<V, T>(file_time, file_path, m_base->cache())));
+			m_blocks.insert(std::make_pair(file_time, new file_block_entry_type(file_time, file_path, m_base->cache(), this)));
 		}
 	}
 
@@ -211,7 +241,7 @@ public:
 		if (m_blocks.size() == 0)
 			return invalid_time_value<T>::value;
 		else {
-			file_block_entry<V, T>* entry = m_blocks.rbegin()->second;
+			file_block_entry_type* entry = m_blocks.rbegin()->second;
 			entry->refresh_if_needed();
 			return entry->block().end_time();
 		}
@@ -222,7 +252,7 @@ public:
 		if (m_blocks.size() == 0)
 			return invalid_time_value<T>::value;
 		else {
-			file_block_entry<V, T>* entry = m_blocks.rbegin()->second;
+			file_block_entry_type* entry = m_blocks.rbegin()->second;
 			entry->refresh_if_needed();
 			return entry->block().end_time();
 		}
@@ -243,7 +273,10 @@ public:
 	}
 
 	~real_param_entry_in_buffer() {
-		for (typename map_type::iterator i = m_blocks.begin(); i != m_blocks.end(); i++)
+		map_type blocks;
+		blocks.swap(m_blocks);
+
+		for (typename map_type::iterator i = blocks.begin(); i != blocks.end(); i++)
 			delete i->second;
 	}
 };

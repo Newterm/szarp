@@ -23,7 +23,7 @@ public:
 
 	}
 	TSzarpConfig* GetConfig(const std::wstring&) { return (TSzarpConfig*) 1; }
-	TParam* GetParam(const std::wstring&) { return &param; }
+	template<class T> TParam* GetParam(const std::basic_string<T>&) { return &param; }
 };
 
 struct mock_types {

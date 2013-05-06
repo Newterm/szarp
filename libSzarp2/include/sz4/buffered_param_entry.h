@@ -33,7 +33,7 @@ public:
 	buffered_param_entry_in_buffer(base_templ<types>*_base, TParam* param, const boost::filesystem::wpath&) : m_base(_base), m_param(param), m_invalidate_non_fixed(false)
 	{
 		for (SZARP_PROBE_TYPE p = PT_FIRST; p < PT_LAST; p = SZARP_PROBE_TYPE(p + 1))
-			m_cache.push_back(definable_param_cache<value_type, time_type>(p));
+			m_cache.push_back(definable_param_cache<value_type, time_type>(p, _base->cache()));
 	}
 
 	void invalidate_non_fixed_if_needed() {

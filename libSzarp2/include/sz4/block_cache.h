@@ -26,11 +26,15 @@ namespace sz4 {
 class block_cache {
 	std::list<generic_block*> m_blocks;
 	std::list<generic_block*>::iterator m_list_separator_position;
+	size_t m_cache_size;
 public:
 	block_cache();
+	size_t cache_size() const;
 	void add_new_block(generic_block* block);
 	void remove_block(generic_block* block);
+	void block_size_changed(generic_block* block, size_t previous_size);
 	void block_updated(generic_block* block);
+	void remove(size_t size);
 };
 
 }

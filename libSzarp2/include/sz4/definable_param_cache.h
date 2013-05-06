@@ -36,20 +36,39 @@ template<class V, class T> struct value_time_type {
 
 
 template<class value_type, class time_type> class definable_param_cache {
-protected:
+public:
 	SZARP_PROBE_TYPE m_probe_type;
 
 	typedef std::pair<value_type, unsigned> value_version_type;
 	typedef def_cache_value_type::value_time_type<value_version_type, time_type> value_time_type;
 
-	typedef value_time_block<value_time_type> block_type;
+	class block_type : public value_time_block<value_time_type> {
+		definable_param_cache<value_type, time_type>* m_param_cache;
+	public:
+		block_type(const time_type& time,
+			block_cache* cache,
+			definable_param_cache<value_type, time_type>* param_cache)
+			:
+			value_time_block<value_time_type>(time, cache),
+			m_param_cache(param_cache) 
+		{}
+
+		~block_type() {
+			m_param_cache->remove_block(this);
+		}
+	};	
 	typedef std::map<time_type, block_type*> map_type;
 
+protected:
 	map_type m_blocks;
 	unsigned m_current_non_fixed;
+	block_cache* m_cache;
 public:
-	definable_param_cache(SZARP_PROBE_TYPE probe_type) :
-		m_probe_type(probe_type), m_current_non_fixed(2)
+	definable_param_cache(SZARP_PROBE_TYPE probe_type, block_cache *cache)
+		:
+		m_probe_type(probe_type),
+		m_current_non_fixed(2),
+		m_cache(cache)
 	{}
 
 	bool get_value(const time_type& time, value_type& value, bool& fixed) {
@@ -73,7 +92,7 @@ public:
 	}
 
 	typename map_type::iterator create_new_block(const value_type& value, const time_type& time, unsigned version) {
-		block_type* block = new block_type(time);
+		block_type* block = new block_type(time, m_cache, this);
 		block->append_entry(std::make_pair(value, version), szb_move_time(time, 1, m_probe_type));
 		return m_blocks.insert(std::make_pair(time, block)).first;
 	}
@@ -230,6 +249,16 @@ public:
 					j->value.second = 1;
 			}
 		}
+	}
+
+	void remove_block(block_type *block) {
+		for (typename map_type::iterator i =  m_blocks.begin();
+				i != m_blocks.end();
+				i++)
+			if (i->second == block) {
+				m_blocks.erase(i);
+				break;
+			}
 	}
 
 	~definable_param_cache() {

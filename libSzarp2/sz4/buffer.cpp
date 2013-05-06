@@ -21,6 +21,8 @@
 
 #include "szarp_config.h"
 #include "szarp_base_common/lua_param_optimizer.h"
+#include "sz4/defs.h"
+#include "sz4/block_cache.h"
 #include "sz4/base.h"
 #include "sz4/buffer.h"
 #include "sz4/real_param_entry.h"

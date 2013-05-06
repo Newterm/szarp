@@ -12,6 +12,7 @@
 
 #include "sz4/defs.h"
 #include "sz4/time.h"
+#include "sz4/block_cache.h"
 #include "sz4/block.h"
 #include "sz4/path.h"
 #include "sz4/block_cache.h"

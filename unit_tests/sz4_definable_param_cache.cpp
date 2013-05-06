@@ -16,6 +16,7 @@
 #include "sz4/defs.h"
 #include "sz4/time.h"
 #include "sz4/path.h"
+#include "sz4/block_cache.h"
 #include "sz4/block.h"
 #include "sz4/definable_param_cache.h"
 
@@ -30,14 +31,17 @@ class Sz4DefinableParamCache : public CPPUNIT_NS::TestFixture
 	CPPUNIT_TEST( test1 );
 	CPPUNIT_TEST( test2 );
 	CPPUNIT_TEST_SUITE_END();
+
+	sz4::block_cache* m_cache;
 public:
 	void setUp();
+	void tearDown();
 };
 
 
 class definable_param_cache : public sz4::definable_param_cache<int, sz4::nanosecond_time_t> {
 public:
-	definable_param_cache(SZARP_PROBE_TYPE probe_type) : sz4::definable_param_cache<int, sz4::nanosecond_time_t>(probe_type) {}
+	definable_param_cache(SZARP_PROBE_TYPE probe_type, sz4::block_cache* cache) : sz4::definable_param_cache<int, sz4::nanosecond_time_t>(probe_type, cache) {}
 	map_type& blocks() { return m_blocks; }
 };
 
@@ -45,10 +49,15 @@ public:
 CPPUNIT_TEST_SUITE_REGISTRATION( Sz4DefinableParamCache );
 
 void Sz4DefinableParamCache::setUp() {
+	m_cache = new sz4::block_cache();
+}
+
+void Sz4DefinableParamCache::tearDown() {
+	delete m_cache;
 }
 
 void Sz4DefinableParamCache::test1() {
-	definable_param_cache cache(PT_SEC10);
+	definable_param_cache cache(PT_SEC10, m_cache);
 	test_search_condition cond(10);
 	int v;
 	bool fixed;
@@ -152,7 +161,7 @@ void Sz4DefinableParamCache::test1() {
 }
 
 void Sz4DefinableParamCache::test2() {
-	definable_param_cache cache(PT_SEC10);
+	definable_param_cache cache(PT_SEC10, m_cache);
 	test_search_condition cond(10);
 	int v;
 	bool fixed;
