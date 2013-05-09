@@ -39,11 +39,19 @@
 #include <xmlrpc-epi/xmlrpc.h>
 #include <libxml/tree.h>
 
+#ifndef MINGW32
+/* cfglogin includes */
+
+#include <deque>
+
+#endif
+
 #include <boost/shared_ptr.hpp>
 
 #include "biowxsock.h"
 
 #include "wxlogging.h"
+
 
 class Remark {
 public:
@@ -444,8 +452,18 @@ class RemarksHandler : public wxEvtHandler {
 
 #ifndef MINGW32
 
-    bool m_szarp_cfg;
+        /* cfglogin variables */
 
+        bool m_cfglogin;
+        int m_cfglogin_cnt;
+        std::deque<wxString> hash_history;
+
+        static const int c_cfglogin_max;
+        static const int c_timer_id;
+        static const int c_cfglogin_timer_id;
+
+        wxTimer m_cfglogin_timer;
+        
 #endif /*MINGW32*/
 
 	wxString m_username;
@@ -465,7 +483,9 @@ class RemarksHandler : public wxEvtHandler {
 
 #ifndef MINGW32
 
-    void GetConfigurationFromSzarpCfg();
+        /* cfglogin private methods */
+
+        void GetConfigurationFromSzarpCfg();
 
 #endif /*MINGW32*/
 
@@ -489,8 +509,12 @@ public:
 
 #ifndef MINGW32
 
-    bool CfgConfigured();
+        /* cfglogin public methods */
 
+        bool CfgConfigured();
+        wxString GetHistoryHash();
+        void OnCfgLoginTimer(wxTimerEvent &event);
+        
 #endif /*MINGW32*/
 
 	void GetConfiguration(wxString& username, wxString& password, wxString &server, bool& autofetch);
