@@ -702,32 +702,6 @@ if test "x$no_ftgl" != "xyes" ; then
         AC_DEFINE(HAVE_FTGL, 1, [Define to 1 if ftgl is available])
 fi
 
-# Check for VMIME library
-no_vmime=""
-AC_ARG_WITH([vmime], AC_HELP_STRING([--without-vmime], [do not use Vmime library]),
-[
-	if test "$withval" = "no" ; then
-		no_vmime="yes"
-	else
-		no_vmime=""
-	fi
-],)
-if test "$no_vmime" != "yes" ; then
-	AC_PATH_VMIME( [], [no_vmime=yes] )
-	if test x$no_vmime = xyes ; then
-                AC_MSG_WARN([
-			Vmime library not found on your system, check if
-			libvmime development package is installed;
-			configuring without
-		])
-        fi
-fi
-
-
-if test "x$no_vmime" = "xyes" ; then
-        AC_DEFINE(NO_VMIME, 1, [Define to 1 if Vmime library is not available])
-fi
-
 no_boost_base=""
 no_boost_filesystem="yes"
 no_boost_datetime="yes"
@@ -1270,13 +1244,6 @@ fi
 
 echo -n "Configured with gstreamer          "
 if test "$no_gstreamer" != "yes" ; then
-        echo "yes"
-else
-        echo "no"
-fi
-
-echo -n "Configured with vmime              "
-if test "$no_vmime" != "yes" ; then
         echo "yes"
 else
         echo "no"
