@@ -738,10 +738,10 @@ void XYZCanvas::PrepareTriangles() {
 
 	Triangulation t(v.begin(), v.end());
 
-	for (Triangulation::Finite_facets_iterator i = t.finite_facets_begin();
-			i != t.finite_facets_end();
-			i++) {
-		const Facet& f = *i;
+	for (Triangulation::Finite_facets_iterator itr = t.finite_facets_begin();
+			itr != t.finite_facets_end();
+			itr++) {
+		const Facet& f = *itr;
 
 		const Triangle& triangle(t.triangle(f));
 
