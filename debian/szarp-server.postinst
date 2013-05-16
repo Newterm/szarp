@@ -55,8 +55,8 @@ END
 			-days 365 -nodes \
 			-config /tmp/sss_ssl.conf
 
-		ln -s /opt/szarp/$PREFIX/sss_key.pem /etc/szarp || true;
-		ln -s /opt/szarp/$PREFIX/sss_ca.pem /etc/szarp || true;
+		ln -sf /opt/szarp/$PREFIX/sss_key.pem /etc/szarp || true;
+		ln -sf /opt/szarp/$PREFIX/sss_ca.pem /etc/szarp || true;
 
 		rm /tmp/sss_ssl.conf
 	fi
