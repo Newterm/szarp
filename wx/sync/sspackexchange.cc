@@ -18,6 +18,7 @@
 */
 #include "sspackexchange.h"
 #include <libxml/xinclude.h>
+#include <unistd.h>
 
 const uint16_t MessageType::AUTH = 1;
 const uint16_t MessageType::AUTH2 = 2;
