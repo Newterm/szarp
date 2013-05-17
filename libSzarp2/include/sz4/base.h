@@ -1,3 +1,5 @@
+#ifndef __SZ4_BASE_H__
+#define __SZ4_BASE_H__
 /* 
   SZARP: SCADA software 
   
@@ -16,13 +18,11 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-#ifndef __SZ4_BASE_H__
-#define __SZ4_BASE_H__
-
 #include "config.h"
 
 #include <vector>
 #include <stack>
+#include <set>
 
 #include <lua.hpp>
 
@@ -48,7 +48,7 @@ private:
 	SzbParamMonitor m_monitor;
 	ipk_container_type* m_ipk_container;
 
-	std::stack<bool> m_fixed_stack;
+	std::stack<std::pair<bool, std::set<generic_block*> > > m_fixed_stack;
 	lua_interpreter<types> m_interperter;
 
 	block_cache m_cache;
@@ -95,7 +95,7 @@ public:
 		buf->remove_param(param);
 	}
 
-	std::stack<bool>& fixed_stack() { return m_fixed_stack; }
+	std::stack<std::pair<bool, std::set<generic_block*> > >& fixed_stack() { return m_fixed_stack; }
 
 	SzbParamMonitor& param_monitor() { return m_monitor; }
 

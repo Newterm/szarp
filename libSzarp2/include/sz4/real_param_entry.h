@@ -41,7 +41,6 @@ public:
 		if (!this->m_needs_refresh)
 			return;
 
-		size_t previous_size = this->m_block.block_size();
 		std::vector<value_time_pair<V, T> > values;
 		size_t size = boost::filesystem::file_size(m_block_path);
 		values.resize(size / sizeof(value_time_pair<V, T>));
@@ -50,7 +49,6 @@ public:
 			this->m_block.set_data(values);
 		this->m_needs_refresh = false;
 
-		this->m_block.block_data_updated(previous_size);
 	}
 
 	~file_block_entry() {
@@ -273,11 +271,8 @@ public:
 	}
 
 	~real_param_entry_in_buffer() {
-		map_type blocks;
-		blocks.swap(m_blocks);
-
-		for (typename map_type::iterator i = blocks.begin(); i != blocks.end(); i++)
-			delete i->second;
+		while (m_blocks.size())
+			delete m_blocks.begin()->second;
 	}
 };
 

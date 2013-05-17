@@ -41,7 +41,7 @@ public:
 	rpn_calculate(base_templ<types>* base, TParam* param) : m_base(base), m_param(param) {
 	}
 
-	template<class T> std::pair<double, bool> calculate_value(T time, SZARP_PROBE_TYPE probe_type) {
+	template<class T> std::tr1::tuple<double, bool, std::set<generic_block*> > calculate_value(T time, SZARP_PROBE_TYPE probe_type) {
 
 		//for backward compatiblity, 'new' method of caluclating RPN definable params
 		if (probe_type != PT_SEC10)
@@ -59,6 +59,7 @@ public:
 		double sum = 0;
 		size_t count = 0;
 		bool fixed = true;
+		std::set<generic_block*> reffered_blocks;
 
 		T end_time = szb_move_time(time, 1, probe_type);
 		double stack[200];
@@ -72,6 +73,9 @@ public:
 					varray[i] = wsum.sum() / wsum.weight();
 				else
 					varray[i] = nan("");
+				reffered_blocks.insert(
+					wsum.reffered_blocks().begin(),
+					wsum.reffered_blocks().end());
 				fixed &= wsum.fixed();
 			}
 
@@ -95,10 +99,19 @@ public:
 			time = next_time;
 		}
 
+		double v;
 		if (count) 
-			return std::make_pair(sum / count, fixed);
+			v = sum / count;
 		else
-			return std::make_pair(nan(""), fixed);
+			v = nan("");
+
+		return std::tr1::tuple<double,
+				bool,
+				std::set<generic_block*> >(
+				v,
+				fixed,
+				reffered_blocks);	
+
 	}
 };
 

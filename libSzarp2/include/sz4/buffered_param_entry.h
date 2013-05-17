@@ -53,11 +53,13 @@ public:
 		while (current < end) {
 			value_type value;
 			bool fixed;
-			if (m_cache[probe_type].get_value(current, value, fixed) == false) {
-				std::pair<double, bool> r = ee.calculate_value(current, probe_type);
-				value = r.first;
-				fixed = r.second;
-				m_cache[probe_type].store_value(value, current, fixed);
+			std::set<generic_block*> reffered_blocks;
+			if (!m_cache[probe_type].get_value(current,
+					value,
+					fixed,
+					reffered_blocks)) {
+				std::tr1::tie(value, fixed, reffered_blocks) = ee.calculate_value(current, probe_type);
+				m_cache[probe_type].store_value(value, current, fixed, reffered_blocks);
 			}
 
 			time_type next = szb_move_time(current, 1, probe_type);
@@ -66,6 +68,10 @@ public:
 				sum.weight() += next - current;
 			} else
 				sum.no_data_weight() += next - current;
+			sum.add_reffered_blocks(
+					reffered_blocks.begin(),
+					reffered_blocks.end()
+					);
 			sum.set_fixed(fixed);
 			current = next;
 		}
@@ -83,8 +89,15 @@ public:
 				return r.second;
 			
 			current = r.second;
-			std::pair<double, bool> vf = ee.calculate_value(current, probe_type);
-			m_cache[probe_type].store_value(vf.first, current, vf.second);
+			std::tr1::tuple<double,
+				bool,
+				std::set<generic_block*> >
+				vf(ee.calculate_value(current, probe_type));
+			m_cache[probe_type].store_value(
+					std::tr1::get<0>(vf),
+					current,
+					std::tr1::get<1>(vf),
+					std::tr1::get<2>(vf));
 		}
 
 		return invalid_time_value<time_type>::value;
@@ -101,8 +114,12 @@ public:
 				return r.second;
 			current = r.second;
 
-			std::pair<double, bool> vf = ee.calculate_value(current, probe_type);
-			m_cache[probe_type].store_value(vf.first, current, vf.second);
+			std::tr1::tuple<double, bool, std::set<generic_block*> >
+				 vf(ee.calculate_value(current, probe_type));
+			m_cache[probe_type].store_value(std::tr1::get<0>(vf),
+					current,
+					std::tr1::get<1>(vf),
+					std::tr1::get<2>(vf));
 		}
 
 		return invalid_time_value<time_type>::value;

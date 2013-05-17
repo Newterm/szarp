@@ -2,8 +2,6 @@
   SZARP: SCADA software 
   
 
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
   (at your option) any later version.
 
@@ -66,6 +64,7 @@ public:
 
 	virtual size_t block_size() const = 0;
 
+	void remove_from_cache();
 	virtual ~generic_block();
 };
 
@@ -169,14 +168,16 @@ public:
 
 
 	void append_entry(const value_type& value, const time_type& time) {
+		cache_block_size_updater(m_cache, this);
 		if (!m_data.size())
 			m_data.push_back(make_value_time_pair<value_time_type>(value, time));
 		else {
 			value_time_type& last_value_time = *m_data.rbegin();
-			if (last_value_time.value == value)
+			if (last_value_time.value == value) {
 				last_value_time.time = time;
-			else
+			} else {
 				m_data.push_back(make_value_time_pair<value_time_type>(value, time));
+			}
 		}
 	}
 
@@ -184,17 +185,29 @@ public:
 		if (begin == end)
 			return;
 
+		cache_block_size_updater(m_cache, this);
 		append_entry(begin->value, begin->time);
 		m_data.insert(m_data.end(), begin + 1, end);
 	}
 
 
 	typename value_time_vector::iterator insert_entry(typename value_time_vector::iterator i, const value_type& value, const time_type& time) {
+		cache_block_size_updater(m_cache, this);
 		return m_data.insert(i, make_value_time_pair<value_time_type>(value, time));
 	}
 
-	void set_data(value_time_vector& data) { m_data.swap(data); }
+	void set_data(value_time_vector& data) {
+		cache_block_size_updater(m_cache, this);
+		m_data.swap(data);
+	}
 
+	void maybe_merge_3_block_entries(typename value_time_vector::iterator i) {
+		cache_block_size_updater(m_cache, this);
+		if (i != m_data.begin() && (i + 1) != m_data.end() && (i - 1)->value == i->value && i->value == (i + 1)->value) {
+			(i - 1)->time = (i + 1)->time;
+			m_data.erase(i, i + 2);
+		}
+	}
 	virtual ~value_time_block() {}
 
 protected:
@@ -212,7 +225,7 @@ public:
 			block_type(start_time, cache)
 	{}
 		
-	void get_weighted_sum(const time_type& start_time, const time_type &end_time, weighted_sum<value_type, time_type>& r) const {
+	void get_weighted_sum(const time_type& start_time, const time_type &end_time, weighted_sum<value_type, time_type>& r) {
 		time_type prev_time(start_time);
 
 		bool done = false;
@@ -236,6 +249,8 @@ public:
 
 			std::advance(i, 1);
 		}
+
+		r.add_reffered_block(this);
 	}
 
 	virtual size_t block_size() const {

@@ -69,6 +69,10 @@ void generic_block::remove_reffered_block(generic_block* block) {
 	m_cache->block_updated(this);
 }
 
+void generic_block::remove_from_cache() {
+	m_cache->remove_block(this);
+}
+
 generic_block::~generic_block() { 
 	std::for_each(m_reffered_blocks.begin(), m_reffered_blocks.end(), std::bind2nd(std::mem_fun(&generic_block::remove_reffering_block), this));
 	std::for_each(m_reffering_blocks.begin(), m_reffering_blocks.end(), std::bind2nd(std::mem_fun(&generic_block::remove_reffered_block), this));

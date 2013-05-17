@@ -29,8 +29,9 @@ block_cache::block_cache() : m_cache_size(0) {
 	m_list_separator_position = m_blocks.begin();
 }
 
-size_t block_cache::cache_size() const {
-	return m_cache_size;
+void block_cache::cache_size(size_t& size_in_bytes, size_t& blocks_count) const {
+	size_in_bytes = m_cache_size;
+	blocks_count = m_blocks.size() - 1;
 }
 
 void block_cache::add_new_block(generic_block* block) {
@@ -43,8 +44,6 @@ void block_cache::remove_block(generic_block* block) {
 }
 
 void block_cache::block_size_changed(generic_block* block, size_t previous_size) {
-	block_updated(block);
-
 	m_cache_size -= previous_size;
 	m_cache_size += block->block_size();
 }
@@ -63,6 +62,20 @@ void block_cache::remove(size_t size) {
 		size -= std::min(size, (*i)->block_size());
 		delete block;
 	}
+}
+
+cache_block_size_updater::cache_block_size_updater(block_cache* cache,
+				generic_block* block)
+				:
+				m_cache(cache),
+				m_block(block) {
+	m_previous_size = m_block->block_size();	
+}
+
+cache_block_size_updater::~cache_block_size_updater() {
+	size_t size = m_block->block_size();
+	if (size != m_previous_size)
+		m_cache->block_size_changed(m_block, m_previous_size);
 }
 
 }

@@ -24,14 +24,20 @@
 namespace sz4 {
 
 class fixed_stack_top {
-	std::stack<bool>& m_stack;
+	std::stack<std::pair<bool, std::set<generic_block*> > >& m_stack;
 public:
-	fixed_stack_top(std::stack<bool>& stack) : m_stack(stack) {
-		m_stack.push(true);
+	fixed_stack_top(std::stack<std::pair<bool, std::set<generic_block*> > >& stack)
+			: m_stack(stack) {
+		m_stack.push(std::make_pair(true, std::set<generic_block*>()));
 	}
 
 	bool& value() {
-		return m_stack.top();
+		return m_stack.top().first;
+	}
+
+	std::set<generic_block*>& reffered_blocks() {
+		return m_stack.top().second;
+
 	}
 
 	~fixed_stack_top() {

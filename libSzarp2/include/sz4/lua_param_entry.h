@@ -19,6 +19,9 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
+#include <tr1/tuple>
+#include <set>
+
 #if 0
 #include "szarp_base_common/lua_types.h"
 #endif
@@ -37,13 +40,19 @@ public:
 		m_param_ok = m_base->get_lua_interpreter().prepare_param(param);
 	}
 
-	std::pair<double, bool> calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type) {
+	std::tr1::tuple<double, bool, std::set<generic_block*> > calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type) {
 		if (!m_param_ok)
-			return std::make_pair(nan(""), false);
+			return std::tr1::tuple<double,
+					bool,
+					std::set<generic_block*> >(
+					nan(""),
+					false,
+					std::set<generic_block*>());
 
 		fixed_stack_top stack_top(m_base->fixed_stack());
 		double value = m_base->get_lua_interpreter().calculate_value(time, probe_type, 0);
-		return std::make_pair(value, stack_top.value());
+		return std::tr1::tuple<double, bool, std::set<generic_block*> >
+			(value, stack_top.value(), stack_top.reffered_blocks());
 	}
 
 	~lua_caluclate() {

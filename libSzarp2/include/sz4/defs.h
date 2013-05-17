@@ -26,6 +26,8 @@
 #include <vector>
 #include <stdint.h>
 
+#include <tr1/functional>
+
 #include "sz4/time.h"
 
 namespace sz4 {
@@ -98,9 +100,20 @@ template<class value_type, class time_type> struct weighted_sum {
 	std::vector<generic_block*>& reffered_blocks() { return m_reffered_blocks; }
 	bool fixed() { return m_fixed; }
 	void set_fixed(bool fixed) { m_fixed &= fixed; }
+	template<class T> void add_reffered_blocks(T begin, T end) {
+		std::for_each(begin, end, 
+			std::tr1::bind(
+				&weighted_sum<value_type, time_type>
+					::add_reffered_block, 
+				this,
+				std::tr1::placeholders::_1));
+	}
 	void add_reffered_block(generic_block* block) {
-		std::vector<generic_block*>::iterator i = std::find(m_reffered_blocks.begin(), m_reffered_blocks.end(), block);
-		if (i != m_reffered_blocks.end())
+		std::vector<generic_block*>::iterator i =
+			 std::find(m_reffered_blocks.begin(),
+			 	m_reffered_blocks.end(),
+			 	block);
+		if (i == m_reffered_blocks.end())
 			m_reffered_blocks.push_back(block);
 	}
 };

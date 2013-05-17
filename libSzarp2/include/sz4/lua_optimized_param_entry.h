@@ -53,7 +53,7 @@ public:
 	execution_engine(base_templ<types>* _base, TParam* param) : m_base(_base), m_exec_param(param->GetLuaExecParam()), m_initialized(false) {
 	}
 
-	std::pair<double, bool> calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type) {
+	std::tr1::tuple<double, bool, std::set<generic_block*> > calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type) {
 		if (!m_initialized) {
 			initialize();
 			m_initialized = true;
@@ -66,7 +66,13 @@ public:
 		m_vars[2] = probe_type;
 		m_exec_param->m_statement->Execute();
 
-		return std::make_pair(m_vars[0], stack_top.value());
+		return std::tr1::tuple<
+				double,
+				bool,
+				std::set<generic_block*> >(
+				m_vars[0],
+				stack_top.value(),
+				stack_top.reffered_blocks());
 	}
 
 	virtual double Value(size_t param_index, const double& time_, const double& probe_type) {
@@ -80,7 +86,10 @@ public:
 				sum);
 
 		assert(m_base->fixed_stack().size());
-		m_base->fixed_stack().top() &= sum.fixed();
+		m_base->fixed_stack().top().first &= sum.fixed();
+		m_base->fixed_stack().top().second.insert(
+				sum.reffered_blocks().begin(),
+				sum.reffered_blocks().end());
 
 		if (sum.weight())
 			return sum.sum() / sum.weight();

@@ -24,20 +24,31 @@
 
 class Sz4BaseTestCase : public CPPUNIT_NS::TestFixture
 {
-	void test1();
+protected:
+	std::wstring m_base_dir_name;
+
+public:
+
+	void smokeTest1();
+	void cacheTest1();
+	void setUp();
+	void tearDown();
 
 	CPPUNIT_TEST_SUITE( Sz4BaseTestCase );
-	CPPUNIT_TEST( test1 );
+	CPPUNIT_TEST( smokeTest1 );
+	CPPUNIT_TEST( cacheTest1 );
 	CPPUNIT_TEST_SUITE_END();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( Sz4BaseTestCase );
 
-void Sz4BaseTestCase::test1() {
+void Sz4BaseTestCase::setUp() {
 	std::wstringstream base_dir_name;
 	base_dir_name << L"/tmp/sz4_base_test_1" << getpid() << L"." << time(NULL) << L".tmp";
+	
+	m_base_dir_name = base_dir_name.str();
 
-	boost::filesystem::wpath path(base_dir_name.str());
+	boost::filesystem::wpath path(m_base_dir_name);
 
 	boost::filesystem::create_directories(path / L"b/config");
 	boost::filesystem::create_directories(path / L"b/sz4");
@@ -69,6 +80,15 @@ void Sz4BaseTestCase::test1() {
 "      	</param>"
 "    </unit>"
 "  </device>"
+"  <drawdefinable>"
+"    <param name=\"z:z:z\" short_name=\"\" draw_name=\"\" unit=\"%\" prec=\"0\" data_type=\"double\">"
+"      <define type=\"LUA\" lua_formula=\"va\" start_date=\"-1\">"
+"        <script><![CDATA["
+"		v = p(\"a:a:a:a\", t, pt) + p(\"a:a:a:a\", t, pt)"
+"	 ]]></script>"
+"      </define>"
+"    </param>"
+"  </drawdefinable>"
 "</params>";
 		ofs.close();
 
@@ -89,7 +109,16 @@ void Sz4BaseTestCase::test1() {
 		}
 	}
 
-	IPKContainer::Init(base_dir_name.str(), L"/opt/szarp", L"pl");
+	IPKContainer::Init(m_base_dir_name, L"/opt/szarp", L"pl");
+
+}
+
+void Sz4BaseTestCase::tearDown() {
+	IPKContainer::Destroy();
+	boost::filesystem::remove_all(m_base_dir_name);
+}
+
+void Sz4BaseTestCase::smokeTest1() {
 	IPKContainer* ipk = IPKContainer::GetObject();
 
 	TParam* p11 = ipk->GetParam(std::wstring(L"a:a:a:a"));
@@ -102,7 +131,7 @@ void Sz4BaseTestCase::test1() {
 	CPPUNIT_ASSERT(p21 != NULL);
 	CPPUNIT_ASSERT(p22 != NULL);
 
-	sz4::base base(base_dir_name.str(), ipk);
+	sz4::base base(m_base_dir_name, ipk);
 
 	sz4::weighted_sum<short, sz4::second_time_t> sum;
 	base.get_weighted_sum(p11, sz4::second_time_t(1000), sz4::second_time_t(2000), PT_SEC10, sum);
@@ -110,7 +139,31 @@ void Sz4BaseTestCase::test1() {
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(500), sum.weight());
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(500), sum.no_data_weight());
 
-	IPKContainer::Destroy();
-
-	boost::filesystem::remove_all(base_dir_name.str());
 }
+
+void Sz4BaseTestCase::cacheTest1() {
+	IPKContainer* ipk = IPKContainer::GetObject();
+
+	TParam* pr = ipk->GetParam(std::wstring(L"a:a:a:a"));
+	CPPUNIT_ASSERT(pr != NULL);
+
+	TParam* pl = ipk->GetParam(std::wstring(L"a:z:z:z"));
+	CPPUNIT_ASSERT(pl != NULL);
+
+	sz4::base base(m_base_dir_name, ipk);
+
+	sz4::weighted_sum<short, sz4::second_time_t> sum_r;
+	base.get_weighted_sum(pr, sz4::second_time_t(1000), sz4::second_time_t(2000), PT_SEC10, sum_r);
+	CPPUNIT_ASSERT_EQUAL(10u, sum_r.reffered_blocks().size());
+
+	sz4::weighted_sum<double, sz4::second_time_t> sum_l;
+	base.get_weighted_sum(pl, sz4::second_time_t(1000), sz4::second_time_t(2000), PT_SEC10, sum_l);
+	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<double>::type(10000), sum_l.sum());
+	CPPUNIT_ASSERT_EQUAL(10u, sum_l.reffered_blocks().size());
+
+	size_t size_in_bytes, blocks_count;
+	base.cache()->cache_size(size_in_bytes,blocks_count);
+	CPPUNIT_ASSERT_EQUAL(11u, blocks_count);
+
+}
+
