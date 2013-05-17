@@ -463,10 +463,10 @@ protected:
 	modbus_client();
 	void reset_cycle();
 	void start_cycle();
-	void send_next_query();
+	void send_next_query(bool previous_ok);
 	void send_write_query();
 	void send_read_query();
-	void next_query();
+	void next_query(bool previous_ok);
 	void send_query();
 	void find_continuous_reg_block(RSET::iterator &i, RSET &regs);
 	void timeout();
@@ -754,7 +754,7 @@ template<> unsigned short long_parcook_modbus_val_op<float>::val() {
 	}
 
 	float* f = (float*) v2;
-	int iv = *f * m_prec;	
+	int iv = nearbyint(*f * m_prec);	
 	unsigned int* pv = (unsigned int*) &iv;
 
 	dolog(10, "Float value: %f, int: %d, unsigned int: %u", *f, iv, *pv);
@@ -868,6 +868,12 @@ void modbus_unit::consume_read_regs_response(unsigned char& uid, unsigned short 
 		dolog(1, "Error is: %s(%d)", error_string(pdu.data.at(0)), (int)pdu.data.at(0));
 		return;
 	} 
+
+	if (pdu.data.size() != 2 * regs_count + 1) {
+		dolog(1, "Unexpected data size in response to read holding registers command, requested %hu regs but got %zu data in response",
+		       	regs_count, pdu.data.size() - 1);
+		throw std::out_of_range("Invalid response size");
+	}
 
 	URMAP::iterator i = m_registers.find(uid);
 	assert(i != m_registers.end());
@@ -1349,7 +1355,7 @@ void tcp_parser::read_data(struct bufferevent *bufev) {
 			break;
 		case L2:
 			m_state = U_ID;
-			m_adu.length = (c << 8);
+			m_adu.length |= (c << 8);
 			m_adu.length = ntohs(m_adu.length);
 			m_payload_size = m_adu.length - 2;
 			dolog(8, "Data size: %hu", m_payload_size);
@@ -1473,10 +1479,8 @@ void modbus_client::starting_new_cycle() {
 			break;
 	}
 
-	if (m_last_activity + 10 < m_current_time) {
-		dolog(1, "Answer did not arrive, sending next query");
-		send_next_query();
-	}
+	if (m_last_activity + 10 < m_current_time)
+		send_next_query(false);
 }
 
 
@@ -1489,16 +1493,16 @@ void modbus_client::reset_cycle() {
 
 void modbus_client::start_cycle() {
 	dolog(7, "Starting cycle");
-	send_next_query();
+	send_next_query(true);
 }
 
-void modbus_client::send_next_query() {
+void modbus_client::send_next_query(bool previous_ok) {
 
 	switch (m_state) {
 		case IDLE:
 		case READ_QUERY_SENT:
 		case WRITE_QUERY_SENT:
-			next_query();
+			next_query(previous_ok);
 			send_query();
 			break;
 		default:
@@ -1546,7 +1550,7 @@ void modbus_client::send_read_query() {
 	send_pdu(m_unit, m_pdu);
 }
 
-void modbus_client::next_query() {
+void modbus_client::next_query(bool previous_ok) {
 	switch (m_state) {
 		case IDLE:
 			m_state = READ_QUERY_SENT;
@@ -1563,7 +1567,12 @@ void modbus_client::next_query() {
 			}
 			m_state = IDLE;
 			reset_cycle();
-			cycle_finished();
+			if (previous_ok)
+				cycle_finished();
+			else {
+				dolog(1, "Previous query failed and we have just finished our cycle - teminating connection");
+				terminate_connection();
+			}
 			break;
 	}
 }
@@ -1588,12 +1597,12 @@ void modbus_client::timeout() {
 			dolog(1, "Timeout while reading data, unit_id: %d, address: %hu, registers count: %hu, progressing with queries",
 					(int)m_unit, m_start_addr, m_regs_count);
 
-			send_next_query();
+			send_next_query(false);
 			break;
 		case WRITE_QUERY_SENT:
 			dolog(1, "Timeout while writing data, unit_id: %d, address: %hu, registers count: %hu, progressing with queries",
 					(int)m_unit, m_start_addr, m_regs_count);
-			send_next_query();
+			send_next_query(false);
 			break;
 		default:
 			dolog(1, "Received unexpected timeout from connection, ignoring.");
@@ -1634,18 +1643,20 @@ void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 		case READ_QUERY_SENT:
 			try {
 				consume_read_regs_response(m_unit, m_start_addr, m_regs_count, pdu);
-			} catch (std::out_of_range) {	//message was distorted
-				dolog(1, "Error while processing response - there is either a bug or sth was very wrong with request format");
+
+				send_next_query(true);
+			} catch (std::out_of_range&) {	//message was distorted
+				send_next_query(false);
 			}
-			send_next_query();
 			break;
 		case WRITE_QUERY_SENT:
 			try {
 				consume_write_regs_response(m_unit, m_start_addr, m_regs_count, pdu);
-			} catch (std::out_of_range) {	//message was distorted
-				dolog(1, "Error while processing response - there is either a bug or sth was very wrong with request format");
+
+				send_next_query(true);
+			} catch (std::out_of_range&) {	//message was distorted
+				send_next_query(false);
 			}
-			send_next_query();
 			break;
 		default:
 			dolog(10, "Received unexpected response from slave - ignoring it.");
@@ -1659,8 +1670,8 @@ int modbus_client::initialize() {
 }
 
 void modbus_tcp_client::send_pdu(unsigned char unit, PDU &pdu) {
-	m_parser->send_adu(m_trans_id, unit, pdu, m_bufev);
 	m_trans_id++;
+	m_parser->send_adu(m_trans_id, unit, pdu, m_bufev);
 }
 
 void modbus_tcp_client::cycle_finished() {
@@ -1672,7 +1683,12 @@ void modbus_tcp_client::terminate_connection() {
 }
 
 void modbus_tcp_client::frame_parsed(TCPADU &adu, struct bufferevent* bufev) {
-	pdu_received(adu.unit_id, adu.pdu);
+	if (m_trans_id != adu.trans_id) {
+		dolog(1, "Received unexpected tranasction id in response: %u, expected: %u, progressing with queries", unsigned(adu.trans_id), unsigned(m_trans_id));
+		send_next_query(false);
+	} else {
+		pdu_received(adu.unit_id, adu.pdu);
+	}
 }
 
 void modbus_tcp_client::finished_cycle() {

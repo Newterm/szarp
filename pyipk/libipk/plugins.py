@@ -61,6 +61,10 @@ class Plugins :
 	def get_section( self , name ) :
 		return self.plugins[name].section()
 
+	@except_no_plugin
+	def get_defaults( self , name ) :
+		return self.plugins[name].get_default()
+
 	def available( self , name ) :
 		return name in self.plugins
 

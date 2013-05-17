@@ -20,6 +20,10 @@ class Plugin :
 	def get_args() :
 		return []
 
+	@staticmethod
+	def get_default() :
+		return {}
+
 	def process( self , node , **args ) :
 		raise NotImplementedError('You must implement precess method')
 

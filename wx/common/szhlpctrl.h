@@ -55,7 +55,7 @@ class szHelpController: public wxHtmlHelpControllerEx
 		 * default style contain: wxHF_TOOLBAR | wxHF_CONTENTS | wxHF_INDEX |
 		 * wxHF_SEARCH | wxHF_BOOKMARKS | wxHF_PRINT
 		 */
-		szHelpController(int style = wxHF_DEFAULT_STYLE | wxHF_FRAME);
+		szHelpController(int style = wxHF_DEFAULT_STYLE | wxHF_FRAME | wxHF_TOOLBAR);
 		/**
 		 * Display book page from hhc file if section is number or
 		 * use GetId to get to right number of page to display it.

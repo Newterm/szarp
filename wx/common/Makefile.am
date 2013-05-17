@@ -112,13 +112,9 @@ update-po:
 
 winsetup: ${WIN_APP_NAME}Setup.exe
 
-@srcdir@/version.h: @top_srcdir@/ChangeLog Makefile.am
+@srcdir@/version.h: @top_srcdir@/debian/changelog Makefile.am
 	echo -n "#define SZARP_VERSION \"" > @srcdir@/version.h
-if !DEB_BUILD
-	cat @top_srcdir@/version | cut -f1 -d' ' | tr -d \\n >> @srcdir@/version.h; 
-else DEB_BUILD
-	cat @top_srcdir@/current_tag | tr -d \\n >> @srcdir@/version.h; 
-endif
+	@ @top_srcdir@/script/version-info -v @top_srcdir@/debian/changelog >> @srcdir@/version.h;
 	echo "\"" >> @srcdir@/version.h
 
 @srcdir@/GUI/resource.cpp: @srcdir@/GUI/*xrc

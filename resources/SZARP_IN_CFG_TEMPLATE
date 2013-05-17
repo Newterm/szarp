@@ -63,6 +63,9 @@ linex_cfg=$config_root$
 $datadir$:="$szarp_root$/$prefix$/szbase"
 datadir=$datadir$
 
+# szbase stamp file
+szbase_stamp=$szarp_root$/$prefix$/szbase_stamp
+
 # log level, default is 2
 $if $debug$<>""
 log_level=$debug$

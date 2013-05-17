@@ -114,7 +114,7 @@ fp2kdmn_SOURCES = fp2kdmn.cc
 
 ipcinfo_SOURCES = ipcinfo.cc
 
-kamsdmn_SOURCES = kamsdmn.cc kams-prop-plugin.h
+kamsdmn_SOURCES = kamsdmn.cc
 kamsdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_DATE_TIME_LIB) $(DL)
 
 kwmsdmn_SOURCES = kwmsdmn.cc

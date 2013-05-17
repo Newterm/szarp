@@ -231,6 +231,19 @@ void QueryExecutor::ExecuteDataQuery(szb_buffer_t* szb, TParam* p, DatabaseQuery
 			i->response = sum.sum() / sum.weight() / pow10(p->GetPrec());
 			i->sum = sum.sum() / pow10(p->GetPrec());
 			i->count = sum.weight() / (sum.weight() + sum.no_data_weight()) * 100;
+#if 0
+			bool fixed;
+			i->response = szb_get_avg(szb, 
+					p, 
+					i->time,
+					end,
+					&i->sum,
+					&i->count,
+					pt,
+					&fixed,
+					&i->first_val,
+					&i->last_val);
+#endif
 			if (szb->last_err != SZBE_OK) {
 				i->ok = false;
 				i->error = szb->last_err;

@@ -92,8 +92,6 @@ class SelectDrawValidator : public wxValidator {
 	protected:
 	DECLARE_EVENT_TABLE()
 
-	wxMenu *m_menu;		/**menu with item allowing user to block a draw*/
-
 	wxCheckBox *m_cb;	/**poineter do draw's checkbox, for menu popup*/
 
 	DrawsWidget *m_draws_wdg;/** pointer to draws widget, we have to communicate with this object */
@@ -195,6 +193,8 @@ protected:
 
 	/** edit parametr */
 	void OnEditParam(wxCommandEvent &event);
+
+	void OnAverageValueCalucatedMethodChange(wxCommandEvent &event);
 
 	void OnTimer(wxTimerEvent&);
 

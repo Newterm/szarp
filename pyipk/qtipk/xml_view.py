@@ -82,6 +82,8 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 		self.view.collapsed.connect(self.model.collapse)
 		self.view.header().moveSection(1,0)
 
+		self.view.doubleClicked.connect( self.doubleClick )
+
 		self.model.changedSig.connect(self.changedSig)
 
 		self.set_name( name )
@@ -153,6 +155,10 @@ class XmlView( QtGui.QWidget , Ui_XmlView ) :
 	def set_by_path( self , p ) :
 		i = self.model.index_by_path( p )
 		self.view.setCurrentIndex( i )
+
+	def doubleClick( self , idx ) :
+		if idx.column() == 0 :
+			self.attribSig.emit( [idx.internalPointer().node] )
 	
 	def contextMenuEvent(self, event):
 		idxes = self.view.selectedIndexes()
@@ -312,6 +318,10 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 				return str(n.getline())
 			else :
 				return n.toline()
+		elif role == QtCore.Qt.BackgroundRole :
+			if index.column() == 0 :
+				color = index.internalPointer().node.node.get('color')
+				return QtGui.QColor( color ) if color != None else None
 		else:
 			return None
 
@@ -320,11 +330,7 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 
 	def flags(self, index):
 		flags = QtCore.Qt.ItemIsEnabled
-		if not index.isValid():
-			return flags
 		flags |= QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsDropEnabled
-		if index.internalPointer().parent == None :
-			return flags
 		flags |= QtCore.Qt.ItemIsDragEnabled
 		return flags
 		       
@@ -333,17 +339,14 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 		return ['pyipk/indexes']
 
 	def mimeData(self, indexes):
+
+		del self.drag[:]
+
 		for nodeidx in indexes :
 			if nodeidx.column() != 0 :
 				continue
 
-			child = nodeidx.internalPointer()
-			parent = child.parent
-
-			if parent == None :
-				continue
-
-			self.drag.append( child )
+			self.drag.append( nodeidx )
 
 		# create dummy data
 		mime = QtCore.QMimeData()
@@ -351,17 +354,49 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 		return mime
 
 	def dropMimeData(self, data, action, row, column, parentidx):
-		if not data.hasFormat('pyipk/indexes') : return False
+		result = True
 
-		if action == QtCore.Qt.IgnoreAction or not parentidx.isValid() :
-			del self.drag[:]
-			return False
+		if not data.hasFormat('pyipk/indexes') :
+			result = False
+		elif action == QtCore.Qt.IgnoreAction :
+			result = False
+		elif column > 0 :
+			result = False
+		elif all( n.internalPointer().parent == None for n in self.drag ) and not parentidx.isValid() :
+			self.dropRoot( row )
+		elif all( n.internalPointer().parent != None for n in self.drag ) and parentidx.isValid() :
+			self.dropNodes( row , parentidx )
+			self.changedSig.emit()
+		else :
+			result = False
 
-		if column > 0 : return False
+		del self.drag[:]
 
+		return result
+
+	def dropRoot( self , row ) :
+		tomove = [ self.roots[i.row()] for i in self.drag ]
+		off = 0
+		add = 0
+		for d in sorted( self.drag , key = lambda i : i.row() ) :
+			self.beginRemoveRows( QtCore.QModelIndex() , d.row()-off , d.row()-off )
+			del self.roots[ d.row() - off ]
+			self.endRemoveRows()
+			off += 1
+			if row > d.row() :
+				add += 1
+
+		row -= add
+
+		self.beginInsertRows( QtCore.QModelIndex(), row, row+len(tomove)-1 )
+		self.roots[row:row] = tomove
+		self.endInsertRows()
+
+	def dropNodes( self , row ,parentidx ) :
 		qparent = parentidx.internalPointer().node
 
-		for mtnode in self.drag :
+		for idx in self.drag :
+			mtnode = idx.internalPointer()
 			qnode = mtnode.node
 
 			# insert into new node
@@ -372,10 +407,4 @@ class XmlTreeModel(QtCore.QAbstractItemModel):
 
 			qnode.delete()
 			qparent.insert( row , qnode )
-
-		del self.drag[:]
-
-		self.changedSig.emit()
-
-		return True
 

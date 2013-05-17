@@ -36,10 +36,16 @@ AC_PROG_CC([gcc3 gcc-3 gcc cc])
 AC_PROG_CC_C_O
 # C preprocesor (sets CPP)
 AC_PROG_CPP
+
 # C++ compiler (sets CXX)
 AC_PROG_CXX([g++3 g++-3 g++])
+# check g++ version
+AX_GXX_VERSION
+AM_CONDITIONAL([GXX_VERSION_47], [test x$GXX_VERSION = x4.7])
+
 # C++ preprocesor (sets CXXCPP)
 AC_PROG_CXXCPP
+
 #libtool
 AC_PROG_LIBTOOL
 #enable exe extensions in conditionaly built programs on pre 2.50 autoconf's
@@ -729,32 +735,6 @@ if test "x$no_ftgl" != "xyes" ; then
         AC_DEFINE(HAVE_FTGL, 1, [Define to 1 if ftgl is available])
 fi
 
-# Check for VMIME library
-no_vmime=""
-AC_ARG_WITH([vmime], AC_HELP_STRING([--without-vmime], [do not use Vmime library]),
-[
-	if test "$withval" = "no" ; then
-		no_vmime="yes"
-	else
-		no_vmime=""
-	fi
-],)
-if test "$no_vmime" != "yes" ; then
-	AC_PATH_VMIME( [], [no_vmime=yes] )
-	if test x$no_vmime = xyes ; then
-                AC_MSG_WARN([
-			Vmime library not found on your system, check if
-			libvmime development package is installed;
-			configuring without
-		])
-        fi
-fi
-
-
-if test "x$no_vmime" = "xyes" ; then
-        AC_DEFINE(NO_VMIME, 1, [Define to 1 if Vmime library is not available])
-fi
-
 no_boost_base=""
 no_boost_filesystem="yes"
 no_boost_datetime="yes"
@@ -1089,6 +1069,12 @@ if test x$no_cppunit != xyes; then
 	SUBDIRS="$SUBDIRS unit_tests"
 fi
 
+AC_LIB_CGAL( [], [no_cgal=yes] )
+if test "x$no_cgal" = "xyes" ; then
+        AC_DEFINE(NO_CGAL, 1, [Define to 1 if CGAL library is not available])
+fi
+
+
 # Python/pylons
 if test x$no_python != xyes -a "x$PYBABEL" != "x" -a x$with_mingw32 != xyes; then
 	SUBDIRS="$SUBDIRS www"
@@ -1318,13 +1304,6 @@ else
         echo "no"
 fi
 
-echo -n "Configured with vmime              "
-if test "$no_vmime" != "yes" ; then
-        echo "yes"
-else
-        echo "no"
-fi
-
 echo -n "Configured with libevent           "
 if test "x$no_libevent" != "xyes" ; then
         echo "yes"
@@ -1450,3 +1429,4 @@ fi
 echo
 echo "Type 'make' to build SZARP"
 echo
+echo "GXX version:	$GXX_VERSION"

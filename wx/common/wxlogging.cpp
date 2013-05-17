@@ -25,13 +25,13 @@
  * @date 2011-10-11
  */
 
+#define WIN32_LEAN_AND_MEAN
 #include "wxlogging.h"
+#include <boost/asio.hpp>
 
 #include <exception>
 #include <typeinfo>
 #include <iostream>
-
-#include <boost/asio.hpp>
 
 #include <wx/log.h>
 
@@ -50,12 +50,13 @@ std::string UDPLogger::appname("szarp");
 std::string UDPLogger::address("localhost");
 std::string UDPLogger::port   ("7777");
 
-boost::asio::io_service* UDPLogger::io_service = NULL;
-udp::socket*             UDPLogger::s          = NULL;
-udp::resolver*           UDPLogger::resolver   = NULL;
-udp::resolver::query*    UDPLogger::query      = NULL;
 
-udp::resolver::iterator  UDPLogger::resolver_results;
+static boost::asio::io_service* io_service = NULL;
+static udp::socket*             s          = NULL;
+static udp::resolver*           resolver   = NULL;
+static udp::resolver::query*    query      = NULL;
+
+static udp::resolver::iterator  resolver_results;
 
 void UDPLogger::HandleEvent(wxEvtHandler *handler, wxEventFunction func, wxEvent& event)
 {

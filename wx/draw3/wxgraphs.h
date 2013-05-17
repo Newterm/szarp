@@ -150,6 +150,8 @@ public:
 
 	virtual void NewRemarks(Draw *draw);
 
+	virtual void AverageValueCalculationMethodChanged(Draw *draw);
+
 	virtual void DoubleCursorChanged(DrawsController *draws_controller);
 
 	virtual void CurrentProbeChanged(Draw* draw, int pi, int ni, int d);

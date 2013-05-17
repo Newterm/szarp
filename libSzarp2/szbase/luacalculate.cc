@@ -24,7 +24,7 @@ void lua_get_val(lua_State* lua, szb_buffer_t *buffer, time_t start, SZARP_PROBE
 	} else {
 		result = SZB_NODATA;
 		buffer->last_err = SZBE_LUA_ERROR;
-		buffer->last_err_string = SC::U2S((const unsigned char*)lua_tostring(lua, -1));	
+		buffer->last_err_string = SC::lua_error2szarp(lua_tostring(lua, -1));
 	}
 	lua_pop(lua, 1);
 }
@@ -41,8 +41,7 @@ SZBASE_TYPE szb_lua_get_avg(szb_buffer_t* buffer, TParam *param, time_t start_ti
 		ref = lua::compile_lua_param(lua, param);
 		if (ref == LUA_REFNIL) {
 			buffer->last_err = SZBE_LUA_ERROR;
-			buffer->last_err_string = SC::U2S((const unsigned char*)lua_tostring(lua, -1));
-
+			buffer->last_err_string = SC::lua_error2szarp(lua_tostring(lua, -1));
 			lua_pop(lua, 1);
 
 			goto error;

@@ -21,6 +21,8 @@
 #include "config.h"
 #endif
 
+#ifndef MINGW32
+
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/un.h>
@@ -225,6 +227,9 @@ void async_vsyslog(struct async_syslog_state* state, int priority, const char *f
 }
 
 void async_closelog(struct async_syslog_state *state) {
+	if (state == NULL) //may happend upon initialization
+		return;
+
 	size_t i;
 	for (i = 0; i < ASYNC_SYSLOG_BUFFER_SIZE; i++)
 		evbuffer_free(state->buffers[i]);
@@ -235,3 +240,5 @@ void async_closelog(struct async_syslog_state *state) {
 	free(state->ident);
 	free(state);
 }
+
+#endif

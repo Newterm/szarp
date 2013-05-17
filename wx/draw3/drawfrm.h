@@ -194,13 +194,16 @@ public:
 	/**load layout*/
 	bool LoadLayout();
 
-	~DrawFrame();
-
 	DrawPanel *GetCurrentPanel();
 
 	void SetsParamsReceiveError(wxString error);
 
 	void SetsParamsReceived(bool);
+
+	void ToggleMenuBarVisbility();
+
+	~DrawFrame();
+
 protected:
 	wxString m_name;
 

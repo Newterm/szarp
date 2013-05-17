@@ -1,3 +1,78 @@
+2013-04-08 Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: more info about params in xyz graphs
+	* wx/draw3: change the way traingualation of points
+	in xyz graph is done, we know use cgal library for this	
+	/and fall back on old method if draw is compiled without
+	cgal/
+	* acinlude.m4: add libcgal detection
+	* debian/control: szarp builds depends on libcgal-dev
+2012-12-25 Darek Marcinkiewicz <reksio@newterm.pl>
+	* resources/documention/new/draw3: added tutorial on 
+	definable parameters
+2012-11-16 Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: draw3 displays standard deviation of current graph
+2012-10-11 Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: shift + arrow key works not only on day screen but also on
+	30 min screen
+	* libSzarp/async_syslog.c: sz_loginit happens to call
+	sz_logdone, if it is a first call, the async_logone will be
+	called with state == NULL, the code wasn't handling this
+	case properly
+	* parcook/boruta_modbus.cc: boruta modbus tcp is much more restrictive in
+	what it accepts as a valid response - added check for correct transaction
+	id and response length, when any of those are incorrect, response is 
+	discarded (previously boruta was consuming responses with partial data)
+2012-09-28 Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2/szbase/probeblock.cc: lua params do not go
+	outside of (first date in base; last date in base) range,
+	unless those ranges are specifically overriden by parameter
+	configuration
+	* wx/common: quit button added to help window (for draws running
+	without window manager) + added some missing translations
+	* wx/draw3: F12 key hides/unhides menubar in main window
+2012-09-21 Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: param editing from context menu restored
+2012-09-19 Dariusz Marcinkiewcz <reksio@newterm.pl>
+	* parcook/boruta_modbus.cc - round floats to nearest int while doing
+	values convertion
+2012-09-19 Dariusz Marcinkiewcz <reksio@newterm.pl>
+	* parcook/boruta_modbus.cc - round floats to nearest int while doing
+	values convertion
+2012-09-04 Krzysztof Ga³±zka <kg@newterm.pl>
+	* wx/*/*app.cpp: fix for usage of szApp for gcc in squeeze
+2012-08-31 Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: tiny period siwtching fix
+2012-08-30 Darek Marcinkiewicz <reksio@newterm.pl>
+	* libSzarp2: extend szbase API to return last and
+	first value from specified date range
+	* wx/draw3: new submenu has been added to context 
+	menu on graph list widget. Using this submenu user 
+	can choose what kind of values he wants to be drawn
+	on a graph:
+	- average value (default and only option available up to now): 
+	  for each mean time the average for each point is calculated
+	  e.g. for average type 'YEAR' each point represent parameters'
+	  mean value for a month
+	- last value: last value is drawn, sticking to our YEAR example
+	  - each point will represent value at 23:50 of last day of
+	  a month
+	- diff value: difference between last and first value for selected
+	  period is drawn, for YEAR it is difference between param value
+	  at 23:50 of last day of a month and value at 00:00 of first
+	  day of a month
+2012-08-22 Dariusz Marcinkiewcz <reksio@newterm.pl>
+	* /: windows fixes: building fix, draw3 incsearch window fix, windows
+	version bump
+2012-08-15 Krzysztof Ga³±zka <kg@newterm.pl>
+	* resouces/{Makefile.am,rsyslog.conf}: rules for rsyslog
+	* parcook/parcook.cc: some cleanup in log messages
+	* libSzarp/liblog.cc: tweaked mapping sz_log_level to syslog
+	levels
+2012-08-13 Darek Marcinkiewicz <reksio@newterm.pl>
+	* wx/draw3: param editing fix (actually it was related
+	solely to GUI components interdependencies
+	and had nothing to do with actual param
+	editing feature)
 2012-06-20 Darek Marcinkiewicz <reksio@newterm.pl>
 	* python/meaner4: fixes + some unit tests
 2012-06-19 Darek Marcinkiewicz <reksio@newterm.pl>
@@ -53,12 +128,6 @@
 	to use it for an app utlizing wx event loop which in fact is doing
 	integration testing), anyway when we start doing unit tests, the check
 	for this library will already be here, waiting
-2012-05-06 Dariusz Marcinkiewcz <reksio@newterm.pl>
-	* wx/sync: bump max connection timeout value, currently for our largest
-	db, in full sync mode, client may spend several minutes on traversing
-	db directory structure is search for files that were removed on server,
-	while doing this it does not generate any trafiic which leads to
-	connection being timed out by server
 2012-05-15 Krzysztof Galazka <kg@newterm.pl>
 	* parcook/boruta_lumel.cc: one more fix in prec calculation
 	* wx/draw3/{drawapp.*,frmmgr.*}: switch in command line for full
@@ -69,6 +138,12 @@
 	* wx/draw3: further work on test app, this app again a GUI app, 
 	due to limitations of wx2.8 it is not possible to have console
 	based app that passes events between threads, sigh
+2012-05-06 Dariusz Marcinkiewcz <reksio@newterm.pl>
+	* wx/sync: bump max connection timeout value, currently for our largest
+	db, in full sync mode, client may spend several minutes on traversing
+	db directory structure is search for files that were removed on server,
+	while doing this it does not generate any trafiic which leads to
+	connection being timed out by server
 2012-05-02 Darek Marcinkiewicz <reksio@newterm.pl>
 	* wx/draw3: beginnings of test appplication for draw3/libSzarp2, this
 	commit:

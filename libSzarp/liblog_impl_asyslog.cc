@@ -17,6 +17,10 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
+#include "config.h"
+
+#ifndef MINGW32
+
 #include <syslog.h>
 #include "liblog.h"
 #include "async_syslog.h"
@@ -41,3 +45,5 @@ void sz_log_asyslog_vlog(void* data, int level, const char * msg_format, va_list
 	struct async_syslog_state* state = (struct async_syslog_state*) data;
 	async_vsyslog(state, sz_level_to_syslog_level(level), msg_format, fmt_args);
 }
+
+#endif

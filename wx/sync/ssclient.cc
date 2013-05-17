@@ -2664,6 +2664,8 @@ wxMenu* SSCTaskBarItem::CreateMenu() {
 }
 
 void SSCTaskBarItem::OnCloseMenuEvent(wxCommandEvent &event) {
+	if (wxMessageBox(_("Do you really want to quit SSC"), _("Quit application?"), wxICON_QUESTION | wxOK | wxCANCEL) != wxOK) 
+		return;
 	m_cfg_frame->Close(true);
 #ifdef MINGW32
 	RemoveIcon();
@@ -2951,7 +2953,7 @@ bool SSCApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 }
 
 void SSCApp::OnInitCmdLine(wxCmdLineParser &parser) {
-	szApp::OnInitCmdLine(parser);
+	szApp<>::OnInitCmdLine(parser);
 
         parser.SetLogo(_("SSC version 3.00."));
 
@@ -3005,7 +3007,7 @@ void SSCApp::ConvertConfigToMultipleServers() {
 		}
 	}
 
-	ConfigNameHash ct = GetConfigTitles(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDataDir(), &hidden_databases);
+	ConfigNameHash ct = GetConfigTitles(dynamic_cast<szApp<>*>(wxTheApp)->GetSzarpDataDir(), &hidden_databases);
 
 	wxString bases;
 	bool first = true;
@@ -3027,7 +3029,7 @@ void SSCApp::ConvertConfigToMultipleServers() {
 }
 
 bool SSCApp::OnInit() {
-	szApp::OnInit();
+	szApp<>::OnInit();
 	this->SetProgName(_("Sync Client"));
 
 	wxLog *logger = new wxLogStderr();

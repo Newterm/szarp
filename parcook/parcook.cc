@@ -225,7 +225,7 @@ typedef struct phLineInfo tLineInfo;
 
 void calculate_average(short *probes, int param_no, int probe_type)
 {
-	sz_log(10, "Entering calculate average, probe type: %d", probe_type);
+	sz_log(7, "Entering calculate average, probe type: %d", probe_type);
 	if (ParsInfo[param_no]->type == tParamInfo::SINGLE) {
 		if (Cnts[param_no][probe_type])
 			probes[param_no] = Sums[param_no][probe_type] / (int) Cnts[param_no][probe_type];
@@ -239,7 +239,7 @@ void calculate_average(short *probes, int param_no, int probe_type)
 		return;
 
 	if (!Cnts[param_no][probe_type]) {
-		sz_log(9, "Calculating average for combined both counts equal 0");
+		sz_log(7, "Calculating average for combined both counts equal 0");
 		probes[param_no] = SZARP_NO_DATA;
 		return;
 	}
@@ -249,12 +249,12 @@ void calculate_average(short *probes, int param_no, int probe_type)
 
 	int v = (int)(Sums[msw][probe_type] / Cnts[msw][probe_type]);
 
-	sz_log(0, "Combinded sum value %lld, Calculated value %d", Sums[msw][probe_type], v);
+	sz_log(7, "Combinded sum value %lld, Calculated value %d", Sums[msw][probe_type], v);
 
 	probes[msw] = (unsigned short)(v >> 16);
 	probes[lsw] = (unsigned short)(v & 0xFFFF);
 
-	sz_log(9, "Leaving calculate average, msw set to: %hhu, lsw set to: %hhu", probes[msw], probes[lsw]) ;
+	sz_log(7, "Leaving calculate average, msw set to: %hhu, lsw set to: %hhu", probes[msw], probes[lsw]) ;
 }
 
 template<class OVT> void update_value(int param_no, int probe_type, short* ivt, OVT ovt, int abuf)
@@ -276,7 +276,7 @@ template<class OVT> void update_value(int param_no, int probe_type, short* ivt, 
 		//we will update both sums when updating msw
 		return;
 
-	sz_log(9, "Entering update value for combined param %ls, probe type: %d", ParsInfo[param_no]->param->GetName().c_str(), probe_type);
+	sz_log(7, "Entering update value for combined param %ls, probe type: %d", ParsInfo[param_no]->param->GetName().c_str(), probe_type);
 	int other = ParsInfo[param_no]->other;
 
 	/*
@@ -296,12 +296,12 @@ template<class OVT> void update_value(int param_no, int probe_type, short* ivt, 
 	sz_log(8, "probe_type: %d, param_no: %d, msw: %u, lsw: %u, prev_val: %d, sum: %lld",
 	       	probe_type, param_no, *pmsw, *plsw, prev_val, Sums[param_no][probe_type]);
 
-	if (ovt[param_no][abuf] != SZARP_NO_DATA || ovt[other][abuf] != SZARP_NO_DATA) {
+	if (ovt[param_no][abuf] != SZARP_NO_DATA) {
 		Sums[param_no][probe_type] -= prev_val;
 		Cnts[param_no][probe_type]--;
-		sz_log(8, "Decreasing sum counts for combined param cause at least one value is data");
+		sz_log(7, "Decreasing sum counts for combined param cause at least one value is data");
 	} else {
-		sz_log(8, "Not decreasing sum counts for combined param cause both values are no data");
+		sz_log(7, "Not decreasing sum counts for combined param cause both values are no data");
 	}
 
 	ovt[param_no][abuf] = ivt[param_no];
@@ -309,13 +309,13 @@ template<class OVT> void update_value(int param_no, int probe_type, short* ivt, 
 
 	int val = (int)(*pmsw << 16) | *plsw;
 
-	if (SZARP_NO_DATA != ovt[param_no][abuf] || SZARP_NO_DATA != ovt[other][abuf]) {
+	if (SZARP_NO_DATA != ovt[param_no][abuf]) {
 		Sums[param_no][probe_type] += val;
 		Cnts[param_no][probe_type]++;
-		sz_log(8, "Increasing vals count: msw %hu, lsw %hu, prev: %u, val: %u, sum: %lld",
+		sz_log(7, "Increasing vals count: msw %hu, lsw %hu, prev: %u, val: %u, sum: %lld",
 		       	*pmsw, *plsw, prev_val, val, Sums[param_no][probe_type]);
 	}
-	sz_log(9, "Leaving update for combined param");
+	sz_log(7, "Leaving update for combined param");
 }
 
 const char* lua_ipc_table_key = "ipc_table_key";
@@ -409,19 +409,19 @@ bool compile_script(TParam *p) {
 
 	int ret = luaL_loadbuffer(lua, content, strlen(content), (const char*)SC::S2U(p->GetName()).c_str());
 	if (ret != 0) {
-		sz_log(0, "Error compiling param %ls: %s\n", p->GetName().c_str(), lua_tostring(lua, -1));
+		sz_log(1, "Error compiling param %ls: %s\n", p->GetName().c_str(), lua_tostring(lua, -1));
 		return false;
 	}
 
 	ret = lua_pcall(lua, 0, 1, 0);
 	if (ret != 0) {
-		sz_log(0, "Error compiling param %ls: %s\n", p->GetName().c_str(), lua_tostring(lua, -1));
+		sz_log(1, "Error compiling param %ls: %s\n", p->GetName().c_str(), lua_tostring(lua, -1));
 		return false;
 	}
 
 	ret = lua_pcall(lua, 0, 1, 0);
 	if (ret != 0) {
-		sz_log(0, "Error compiling param %ls: %s\n", p->GetName().c_str(), lua_tostring(lua, -1));
+		sz_log(1, "Error compiling param %ls: %s\n", p->GetName().c_str(), lua_tostring(lua, -1));
 		return false;
 	}
 
@@ -862,7 +862,7 @@ errno %d, exiting", shmdes, errno);
 
 RETSIGTYPE Terminate(int sig)
 {
-	sz_log(0, "parcook: signal %d cought, cleaning up and exiting", sig);
+	sz_log(2, "parcook: signal %d cought, cleaning up and exiting", sig);
 	exit(1);
 }
 
@@ -880,11 +880,12 @@ RETSIGTYPE ChildDied(int sig)
 	pid_t pid = waitpid(-1,&stat,WNOHANG);
 
 	if( pid == -1 )
-		sz_log(0,"Waiting for process on SIGCHLD: %s",strerror(errno));
+		sz_log(1, "Waiting for process on SIGCHLD: %s", strerror(errno));
 	else if( pid == 0 )
-		sz_log(1,"No process died after waiting on SIGCHLD: strange");
+		sz_log(0, "No process died after waiting on SIGCHLD: strange");
 	else
-		sz_log(WIFEXITED(stat)&&!WEXITSTATUS(stat)?10:1,"Process %i ended with code %i",pid,WEXITSTATUS(stat));
+		sz_log(WIFEXITED(stat) && !WEXITSTATUS(stat) ? 10 : 1,
+			"Process %i ended with code %i", pid, WEXITSTATUS(stat));
 }
 
 int InitSignals()
@@ -1177,7 +1178,7 @@ void LanchDaemon(int i, char* linedmnpat)
 				linedmnpat, LinesInfo[i].LineNum, i + 1, errno);
 		exit(1);
 	}
-	sz_log(10, "parcook: creating segment: key %08x", key);
+	sz_log(5, "parcook: creating segment: key %08x", key);
 
 	/* create segment for communicating with daemon */
 	if ((LinesInfo[i].ShmDes = shmget(key,
@@ -1194,7 +1195,7 @@ void LanchDaemon(int i, char* linedmnpat)
 	/* fork to run line daemon */
 	if ((pid = fork()) > 0) {
 		/* parent, do nothing */
-		sz_log(10, "parcook: starting daemon\nIndex: %d\nLineNum: %d\nParTotal: %d\nDaemon: %ls\nDevice: %ls\nOptions: %ls\nPID: %d",
+		sz_log(5, "parcook: starting daemon\nIndex: %d\nLineNum: %d\nParTotal: %d\nDaemon: %ls\nDevice: %ls\nOptions: %ls\nPID: %d",
 			i, LinesInfo[i].LineNum, LinesInfo[i].ParTotal, LinesInfo[i].daemon.c_str(), LinesInfo[i].device.c_str(), LinesInfo[i].options.c_str(),pid);
 
 		return;
@@ -1303,7 +1304,7 @@ bool execute_script(TParam *p, double &result) {
 	int ret = lua_pcall(lua, 0, 1, 0);
 	Lua::fixed.pop();
 	if (ret != 0) {
-		sz_log(0, "Param(%s) execution error: %s", SC::S2A(p->GetName()).c_str(), lua_tostring(lua, -1));
+		sz_log(1, "Param(%s) execution error: %s", SC::S2A(p->GetName()).c_str(), lua_tostring(lua, -1));
 		return false;
 	}
 

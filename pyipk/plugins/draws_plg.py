@@ -8,7 +8,13 @@ import operator as op
 
 from functools import reduce
 
-class DrawsNumbering( Plugin ) :
+def tofloat( string ) :
+	try :
+		return float(string)
+	except TypeError :
+		return float('inf')
+
+class NormalizeDraws( Plugin ) :
 	'''Corrects all draws numbering beneath selected nodes '''
 
 	def __init__( self , **args ) :
@@ -16,7 +22,19 @@ class DrawsNumbering( Plugin ) :
 		self.drawsmap = {} 
 
 	@staticmethod
-	def section() : return 'Params'
+	def section() : return 'Draw'
+
+	@staticmethod
+	def get_args() :
+		return [ 'start' , 'step' ]
+
+	@staticmethod
+	def get_default() :
+		return { 'start' : '2' , 'step' : '2' }
+
+	def set_args( self , **args ) :
+		self.start = float(args['start'])
+		self.step  = float(args['step'])
 
 	def process( self , root ) :
 		for draw in root.xpath( './/default:draw' , namespaces = { 'default' : root.nsmap[None] } ) :
@@ -27,18 +45,12 @@ class DrawsNumbering( Plugin ) :
 			self.drawsmap[drawtitle].append( draw )
 
 	def result( self ) :
-		def tofloat( string ) :
-			try :
-				return float(string)
-			except TypeError :
-				return float('inf')
-
 		for draws in self.drawsmap.values() :
 			draws.sort( key = lambda d : tofloat(d.get('order',default='inf')) )
-			i = 1
+			i = self.start 
 			for d in draws :
 				d.set('order',str(i))
-				i+=3
+				i+=self.step
 
 		drawslist = list(self.drawsmap.values())
 
@@ -62,22 +74,27 @@ class DrawsNumbering( Plugin ) :
 
 		drawslist.sort( key = lambda ds : tofloat(ds[0].get('prior',default='inf')) )
 
-		i = int(minprior) if minprior != float('inf') else 1
+		i = int(minprior) if minprior != float('inf') else self.start
 		for draws in drawslist :
 			draws[0].set('prior',str(i))
-			i+=3
+			i+=self.step
 
 		return reduce( lambda a , b : a+b , drawslist , [] )
 
-class DrawsNumberingSpecified( DrawsNumbering ) :
+class NormalizeDrawsSpecified( NormalizeDraws ) :
 	'''Corrects all draws with specified title numeration beneath selected nodes '''
 
 	@staticmethod
 	def get_args() :
-		return [ 'drawtitle' ]
+		return [ 'drawtitle' ] + NormalizeDraws.get_args()
+
+	@staticmethod
+	def get_default() :
+		return NormalizeDraws.get_default()
 
 	def set_args( self , **args ) :
 		self.drawtitle = args['drawtitle']
+		NormalizeDraws.set_args( self , **args )
 
 	def process( self , root ) :
 		for draw in root.xpath( './/default:draw[@title="%s"]' % self.drawtitle , namespaces = { 'default' : root.nsmap[None] } ) :
@@ -96,7 +113,7 @@ class DrawsColorsCheck( Plugin ) :
 		self.tags      = {}
 
 	@staticmethod
-	def section() : return 'Params'
+	def section() : return 'Draw'
 
 	@staticmethod
 	def get_args() :
@@ -164,7 +181,7 @@ class PurgeSubTag( Plugin ) :
 class PurgeDraws( PurgeSubTag ) :
 	'''Removes all draws from param tags beneath selected nodes '''
 	@staticmethod
-	def section() : return 'Params'
+	def section() : return 'Draw'
 
 	@staticmethod
 	def get_args() : return []
@@ -176,7 +193,7 @@ class PurgeReports( PurgeSubTag ) :
 	'''Removes all reports from param tags beneath selected nodes '''
 
 	@staticmethod
-	def section() : return 'Params'
+	def section() : return 'Report'
 
 	@staticmethod
 	def get_args() : return []
@@ -189,14 +206,20 @@ class AddDraw( Plugin ) :
 	'''Adds all param tags beneath selected nodes to draw '''
 
 	@staticmethod
-	def section() : return 'Params'
+	def section() : return 'Draw'
 
 	@staticmethod
-	def get_args() : return ['title']
+	def get_args() :
+		return [ 'title' , 'start' , 'step' ]
+
+	@staticmethod
+	def get_default() :
+		return { 'start' : '2' , 'step' : '2' }
 
 	def set_args( self , **args ) :
+		self.i     = float(args['start'])
+		self.step  = float(args['step'])
 		self.title = args['title']
-		self.i = 1
 		self.tags = []
 
 	def process( self , root ) :
@@ -209,13 +232,113 @@ class AddDraw( Plugin ) :
 		for node in root.xpath( './/ns:%s' % ('param') , namespaces = { 'ns' : root.nsmap[None] } ) :
 			node.append( create_draw(self.title,self.i,root.nsmap) )
 			self.tags.append(node)
-			self.i+=3
+			self.i+=self.step
 
 		if root.tag == '{%s}%s' % (root.nsmap[root.prefix],'param') :
 			root.append( create_draw(self.title,self.i,root.nsmap) )
 			self.tags.append(root)
-			self.i+=3
+			self.i+=self.step
 
 	def result( self ) :
 		return self.tags
+
+class ListDraws( Plugin ) :
+	''' Lists all draws in order defined by prior attribute. '''
+
+	@staticmethod
+	def section() : return 'Draw'
+
+	def __init__( self , **args ) :
+		Plugin.__init__( self , **args )
+		self.draws = {}
+
+	def process( self , root ) :
+		for node in root.xpath( './/default:draw' , namespaces = { 'default' : root.nsmap[None] } ) :
+			title = node.get('title')
+			if title not in self.draws :
+				self.draws[title] = node
+			else :
+				old = self.draws[title]
+				np  = tofloat(node.get('prior',default='inf'))
+				op  = tofloat(old .get('prior',default='inf'))
+				if np < op :
+					self.draws[title] = node
+
+	def result( self ) :
+		return sorted( self.draws.values() , key = lambda n : tofloat(n.get('prior')) )
+
+class ApplyDrawsPrior( Plugin ) :
+	''' Sets prior to draw tag in specified order. Use with ListDraws. '''
+
+	@staticmethod
+	def section() : return 'Draw'
+
+	@staticmethod
+	def get_args() :
+		return [ 'start' , 'step' ]
+
+	@staticmethod
+	def get_default() :
+		return { 'start' : '2' , 'step' : '2' }
+
+	def set_args( self , **args ) :
+		self.prior = float(args['start'])
+		self.step  = float(args['step'])
+
+	def __init__( self , **args ) :
+		Plugin.__init__( self , **args )
+		self.nodes = []
+
+	def process( self , node ) :
+		if node.tag != '{%s}%s' % (node.nsmap[node.prefix],'draw') :
+			return
+		node.set('prior',str(self.prior))
+		self.prior += self.step
+		self.nodes.append(node)
+
+	def result( self ) :
+		return self.nodes
+
+class ApplyParamsOrder( Plugin ) :
+	''' Sets order to draw tag in specified order. Use with ListParams. '''
+
+	@staticmethod
+	def section() : return 'Draw'
+
+	@staticmethod
+	def get_args() :
+		return [ 'title' , 'start' , 'step' ]
+
+	@staticmethod
+	def get_default() :
+		return { 'start' : '2' , 'step' : '2' }
+
+	def set_args( self , **args ) :
+		self.title = args['title']
+		self.order = float(args['start'])
+		self.start = self.order
+		self.step  = float(args['step'])
+
+	def __init__( self , **args ) :
+		Plugin.__init__( self , **args )
+		self.nodes = []
+		self.priorize = None
+		self.prior = tofloat('inf')
+
+	def process( self , node ) :
+		if node.tag != '{%s}%s' % (node.nsmap[node.prefix],'param') :
+			return
+		for n in node.xpath( ".//ns:draw[@title='%s']" % self.title , namespaces = { 'ns' : node.nsmap[None] } ) :
+			n.set('order',str(self.order))
+			if 'prior' in n.attrib :
+				self.prior = min(self.prior,tofloat(n.get('prior',default='inf')))
+				n.attrib.pop('prior')
+			if self.order == self.start :
+				self.priorize = n
+		self.order += self.step
+		self.nodes.append(node)
+
+	def result( self ) :
+		if self.priorize != None : self.priorize.set('prior',str(int(self.prior)))
+		return self.nodes
 

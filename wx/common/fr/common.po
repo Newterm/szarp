@@ -1,14 +1,16 @@
 # POLISH MESSAGES FOR SZARP WX COMMON LIBRARY.
 # Darek Marcinkiewicz <darek@praterm.com.pl>, 2005.
 #
+#: szapp.cpp:222
 msgid ""
 msgstr ""
 "Project-Id-Version: WX-Common\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-06-06 12:02+0200\n"
+"POT-Creation-Date: 2012-09-28 16:16+0200\n"
 "PO-Revision-Date: 2008-06-11 14:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -25,33 +27,33 @@ msgstr "Minute:"
 msgid "Second:"
 msgstr ""
 
-#: datechooser.cpp:129 htmlabout.cpp:74 aboutdlg.cpp:103 authdiag.cpp:72
-#: cfgdlg.cpp:118 helpctrlex/helpwinex.cpp:1438 helpctrlex/helpwinex.cpp:1440
+#: datechooser.cpp:130 htmlabout.cpp:74 aboutdlg.cpp:103 authdiag.cpp:72
+#: cfgdlg.cpp:118 helpctrlex/helpwinex.cpp:1447 helpctrlex/helpwinex.cpp:1449
 msgid "OK"
 msgstr "OK"
 
-#: datechooser.cpp:130 serverdlg.cpp:90 authdiag.cpp:75 cfgdlg.cpp:119
-#: helpctrlex/helpwinex.cpp:1437 helpctrlex/helpwinex.cpp:1441
+#: datechooser.cpp:131 serverdlg.cpp:90 authdiag.cpp:75 cfgdlg.cpp:119
+#: helpctrlex/helpwinex.cpp:1446 helpctrlex/helpwinex.cpp:1450
 msgid "Cancel"
 msgstr "Supprimer"
 
-#: datechooser.cpp:165
+#: datechooser.cpp:167
 msgid "Invalid (too large/small) date"
 msgstr ""
 
-#: datechooser.cpp:165
+#: datechooser.cpp:167
 msgid "Error!"
 msgstr "Erreur!"
 
-#: datechooser.cpp:176
+#: datechooser.cpp:178
 msgid "Please choose the date from between: "
 msgstr "Choisir la date entre "
 
-#: datechooser.cpp:178
+#: datechooser.cpp:180
 msgid "and"
 msgstr "et"
 
-#: datechooser.cpp:180
+#: datechooser.cpp:182
 msgid "Incorrect date range"
 msgstr "Champ incorrect"
 
@@ -103,7 +105,7 @@ msgstr "Fermer la fenêtre"
 msgid "Back"
 msgstr "Retour"
 
-#: htmlview.cpp:105 helpctrlex/helpwinex.cpp:737
+#: htmlview.cpp:105 helpctrlex/helpwinex.cpp:740
 msgid "Go back"
 msgstr "Aller à la page précédente"
 
@@ -111,7 +113,7 @@ msgstr "Aller à la page précédente"
 msgid "Forward"
 msgstr "Avancer"
 
-#: htmlview.cpp:106 helpctrlex/helpwinex.cpp:740
+#: htmlview.cpp:106 helpctrlex/helpwinex.cpp:743
 msgid "Go forward"
 msgstr "Aller à la page suivante"
 
@@ -180,7 +182,7 @@ msgstr ""
 msgid "Could not load RelaxNG schema from file %s"
 msgstr "Impossible de télécharger le schéma RelaxNG à partir du fichier %s"
 
-#: parlist.cpp:628
+#: parlist.cpp:665
 msgid "Print preview"
 msgstr "Aperçu avant impression"
 
@@ -318,31 +320,48 @@ msgstr "Impossible d'accéder au répertoire de SZARP. Traitement impossible!"
 msgid "SzarpDir: "
 msgstr "SZARPDir: "
 
-#: szapp.cpp:212
+#: szapp.cpp:202
 msgid "Default locale cannot be loaded. Exiting"
 msgstr ""
 
-#: szapp.cpp:212 szapp.cpp:216
+#: szapp.cpp:202 szapp.cpp:206
 msgid "Information."
 msgstr ""
 
-#: szapp.cpp:219
+#: szapp.cpp:209
 msgid "No locale for this system`s language."
 msgstr "Pas de paramètres pour le language de ce système."
 
-#: szapp.cpp:299
+#: szapp.cpp:220
+msgid "Setting locale to \"C\""
+msgstr ""
+
+#: szapp.cpp:223 szapp.cpp:227
+msgid "wx: Setting locale to \""
+msgstr ""
+
+#: szapp.cpp:223 szapp.cpp:227
+msgid "\""
+msgstr ""
+
+#: szapp.cpp:226
+#, fuzzy
+msgid "."
+msgstr ".\n"
+
+#: szapp.cpp:288
 msgid " (Ideas)"
 msgstr ""
 
-#: szapp.cpp:300 szapp.cpp:301
+#: szapp.cpp:289 szapp.cpp:290
 msgid " (French translations)"
 msgstr ""
 
-#: szapp.cpp:302
+#: szapp.cpp:291
 msgid " (logo)"
 msgstr ""
 
-#: szapp.cpp:373
+#: szapp.h:141
 msgid "Dprefix"
 msgstr ""
 
@@ -587,202 +606,207 @@ msgstr ""
 msgid "HelpView"
 msgstr "Aide"
 
-#: helpctrlex/helpwinex.cpp:425
+#: helpctrlex/helpwinex.cpp:426
 msgid "Displays help as you browse the books on the left."
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:498
+#: helpctrlex/helpwinex.cpp:499
 msgid "Displays help contents."
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:517 helpctrlex/helpwinex.cpp:1308
-#: helpctrlex/helpwinex.cpp:2077
+#: helpctrlex/helpwinex.cpp:518 helpctrlex/helpwinex.cpp:1317
+#: helpctrlex/helpwinex.cpp:2096
 msgid "(bookmarks)"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:530
+#: helpctrlex/helpwinex.cpp:531
 msgid "Add current page to bookmarks"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:531
+#: helpctrlex/helpwinex.cpp:532
 msgid "Remove current page from bookmarks"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:555
+#: helpctrlex/helpwinex.cpp:556
 msgid "Contents"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:571
+#: helpctrlex/helpwinex.cpp:572
 msgid "Enter text and press enter."
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:572
+#: helpctrlex/helpwinex.cpp:573
 msgid "Find"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:573 helpctrlex/helpwinex.cpp:589
+#: helpctrlex/helpwinex.cpp:574 helpctrlex/helpwinex.cpp:590
 msgid ""
 "Display all index items that contain given substring. Search is case "
 "insensitive."
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:575
+#: helpctrlex/helpwinex.cpp:576
 msgid "Show all"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:576 helpctrlex/helpwinex.cpp:590
+#: helpctrlex/helpwinex.cpp:577 helpctrlex/helpwinex.cpp:591
 msgid "Show all items in index."
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:585
+#: helpctrlex/helpwinex.cpp:586
 msgid "Click on an index entry to view the relevant help page."
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:602
+#: helpctrlex/helpwinex.cpp:603
 msgid "Index"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:619
+#: helpctrlex/helpwinex.cpp:620
 msgid "Type a search word and press enter."
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:622
+#: helpctrlex/helpwinex.cpp:623
 msgid "Specify where to search."
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:623
+#: helpctrlex/helpwinex.cpp:624
 msgid "Case sensitive"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:624
+#: helpctrlex/helpwinex.cpp:625
 msgid "Whole words only"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:625 helpctrlex/helpwinex.cpp:642
+#: helpctrlex/helpwinex.cpp:626 helpctrlex/helpwinex.cpp:643
 msgid "Search"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:626 helpctrlex/helpwinex.cpp:628
+#: helpctrlex/helpwinex.cpp:627 helpctrlex/helpwinex.cpp:629
 msgid ""
 "Search contents of help book(s) for all occurences of the text you typed "
 "above."
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:633
+#: helpctrlex/helpwinex.cpp:634
 msgid "The search results."
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:732
+#: helpctrlex/helpwinex.cpp:735
 msgid "Show/hide navigation panel"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:745
+#: helpctrlex/helpwinex.cpp:748
 msgid "Go one level up in document hierarchy"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:748
+#: helpctrlex/helpwinex.cpp:751
 msgid "Previous page"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:751
+#: helpctrlex/helpwinex.cpp:754
 msgid "Next page"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:759 helpctrlex/helpwinex.cpp:1809
+#: helpctrlex/helpwinex.cpp:762 helpctrlex/helpwinex.cpp:1828
 msgid "Open HTML document"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:765
+#: helpctrlex/helpwinex.cpp:768
 msgid "Print this page"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:771
+#: helpctrlex/helpwinex.cpp:774
 msgid "Display options dialog"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:889
+#: helpctrlex/helpwinex.cpp:780
+#, fuzzy
+msgid "Close help"
+msgstr "Fermer"
+
+#: helpctrlex/helpwinex.cpp:898
 #, fuzzy
 msgid "Please choose the page to display:"
 msgstr "Choisir la date entre "
 
-#: helpctrlex/helpwinex.cpp:890
+#: helpctrlex/helpwinex.cpp:899
 msgid "Help Topics"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:951
+#: helpctrlex/helpwinex.cpp:960
 msgid "Searching..."
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:951
+#: helpctrlex/helpwinex.cpp:960
 msgid "No matching page found yet"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:962
+#: helpctrlex/helpwinex.cpp:971
 #, c-format
 msgid "Found %i matches"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:1065 helpctrlex/helpwinex.cpp:1148
+#: helpctrlex/helpwinex.cpp:1074 helpctrlex/helpwinex.cpp:1157
 #, fuzzy
 msgid "(Help)"
 msgstr "Aide"
 
-#: helpctrlex/helpwinex.cpp:1214 helpctrlex/helpwinex.cpp:1216
-#: helpctrlex/helpwinex.cpp:1234 helpctrlex/helpwinex.cpp:1235
-#: helpctrlex/helpwinex.cpp:1986 helpctrlex/helpwinex.cpp:2036
+#: helpctrlex/helpwinex.cpp:1223 helpctrlex/helpwinex.cpp:1225
+#: helpctrlex/helpwinex.cpp:1243 helpctrlex/helpwinex.cpp:1244
+#: helpctrlex/helpwinex.cpp:2005 helpctrlex/helpwinex.cpp:2055
 #, c-format
 msgid "%i of %i"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:1252
+#: helpctrlex/helpwinex.cpp:1261
 msgid "Search in all books"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:1406
+#: helpctrlex/helpwinex.cpp:1415
 msgid "Help Browser Options"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:1411
+#: helpctrlex/helpwinex.cpp:1420
 msgid "Normal font:"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:1412
+#: helpctrlex/helpwinex.cpp:1421
 msgid "Fixed font:"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:1413
+#: helpctrlex/helpwinex.cpp:1422
 msgid "Font size:"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:1428
+#: helpctrlex/helpwinex.cpp:1437
 #, fuzzy
 msgid "Preview:"
 msgstr "Aperçu avant impression"
 
-#: helpctrlex/helpwinex.cpp:1461
+#: helpctrlex/helpwinex.cpp:1470
 msgid ""
 "<html><body><table><tr><td>Normal face<br>(and <u>underlined</u>. <i>Italic "
-"face.</i> <b>Bold face.</b> <b><i>Bold italic face.</i></b><br><font size=-"
-"2>font size -2</font><br><font size=-1>font size -1</font><br><font size="
-"+0>font size +0</font><br><font size=+1>font size +1</font><br><font size="
-"+2>font size +2</font><br><font size=+3>font size +3</font><br><font size="
-"+4>font size +4</font><br><td><p><tt>Fixed size face.<br> <b>bold</b> "
-"<i>italic</i> <b><i>bold italic <u>underlined</u></i></b><br><font size=-"
-"2>font size -2</font><br><font size=-1>font size -1</font><br><font size="
-"+0>font size +0</font><br><font size=+1>font size +1</font><br><font size="
-"+2>font size +2</font><br><font size=+3>font size +3</font><br><font size="
-"+4>font size +4</font></tt></table></body></html>"
+"face.</i> <b>Bold face.</b> <b><i>Bold italic face.</i></b><br><font "
+"size=-2>font size -2</font><br><font size=-1>font size -1</font><br><font "
+"size=+0>font size +0</font><br><font size=+1>font size +1</font><br><font "
+"size=+2>font size +2</font><br><font size=+3>font size +3</font><br><font "
+"size=+4>font size +4</font><br><td><p><tt>Fixed size face.<br> <b>bold</b> "
+"<i>italic</i> <b><i>bold italic <u>underlined</u></i></b><br><font "
+"size=-2>font size -2</font><br><font size=-1>font size -1</font><br><font "
+"size=+0>font size +0</font><br><font size=+1>font size +1</font><br><font "
+"size=+2>font size +2</font><br><font size=+3>font size +3</font><br><font "
+"size=+4>font size +4</font></tt></table></body></html>"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:1798
+#: helpctrlex/helpwinex.cpp:1817
 msgid "Help Printing"
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:1800
+#: helpctrlex/helpwinex.cpp:1819
 msgid "Cannot print empty page."
 msgstr ""
 
-#: helpctrlex/helpwinex.cpp:1814
+#: helpctrlex/helpwinex.cpp:1833
 msgid ""
 "HTML files (*.htm)|*.htm|HTML files (*.html)|*.html|Help books (*.htb)|*.htb|"
 "Help books (*.zip)|*.zip|HTML Help Project (*.hhp)|*.hhp|All files (*.*)|*"

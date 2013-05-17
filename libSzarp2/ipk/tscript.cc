@@ -55,12 +55,14 @@ unsigned char* TScript::parseXML(xmlTextReaderPtr reader)
 		if (xw.IsTag("script")) {
 			if (xw.IsBeginTag()) {
 				script = xmlTextReaderReadString(reader);
-				xw.NextTag();
+				if (!xw.NextTag())
+					xw.XMLError("Premature end of config file", 0);
 			} else
 				break;
 		} else
 		if (xw.IsTag("#cdata-section")) {
-			xw.NextTag();
+			if (!xw.NextTag())
+				xw.XMLError("Premature end of config file", 0);
 		} else {
 			xw.XMLErrorNotKnownTag("script");
 		}

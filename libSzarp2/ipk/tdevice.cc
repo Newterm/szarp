@@ -163,7 +163,8 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 		}
 	}
 
-	xw.NextTag();
+	if (!xw.NextTag())
+		return 1;
 
 	for (;;) {
 		if (xw.IsTag("radio")) {
@@ -177,7 +178,8 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 				if (r->parseXML(reader))
 					return 1;
 			}
-			xw.NextTag();
+			if (!xw.NextTag())
+				return 1;
 		} else
 		if (xw.IsTag("unit")) {
 			if (xw.IsBeginTag()) {
@@ -190,7 +192,7 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 				if (r->parseXML(reader))
 					return 1;
 			}
-		break;
+			break;
 //			xw.NextTag(); // don't take next tag - <unit> set it
 		} else
 		if (xw.IsTag("device")) {

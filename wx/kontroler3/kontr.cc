@@ -48,7 +48,7 @@ bool kontrApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 }
 
 void kontrApp::OnInitCmdLine(wxCmdLineParser &parser) {
-	szApp::OnInitCmdLine(parser);
+	szApp<>::OnInitCmdLine(parser);
 
 	parser.SetLogo(_("Szarp Kontroler version 3.00 (in-progress)."));
 	parser.AddParam(_T("server"), wxCMD_LINE_VAL_STRING,
@@ -59,7 +59,7 @@ void kontrApp::OnInitCmdLine(wxCmdLineParser &parser) {
 
 bool kontrApp::OnInit() {
 
-    if (szApp::OnInit() == false)
+    if (szApp<>::OnInit() == false)
 	    return false;
 
 // To remove 

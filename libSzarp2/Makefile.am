@@ -31,7 +31,7 @@ INCLUDES = @XML_CFLAGS@ @XSLT_CFLAGS@ @CURL_CFLAGS@ @LUA_CFLAGS@ \
 	-I$(SZBASE_DIR)					\
 	-DPREFIX=\"@prefix@\"
 
-noinst_LTLIBRARIES = libSzarp2.la
+noinst_LTLIBRARIES = libSzarp2.la libSzarpLuaParser.la
 
 EXTRA_PROGRAMS = szbtest lua_parser_test xmlreader_test
 szbtest_SOURCES = $(SZBASE_DIR)/szbtest.cc
@@ -79,6 +79,12 @@ else
 INCLUDE_PARSERS = $(PARSERS_FILES)
 endif
 
+if MINGW32_OPT
+SERIALPORT =
+else
+SERIALPORT = $(DMN_DIR)/serialport.cc
+endif
+
 libSzarp2_la_SOURCES = \
 			$(IPK_DIR)/tdevice.cc \
 			$(IPK_DIR)/tdraw.cc \
@@ -113,6 +119,7 @@ libSzarp2_la_SOURCES = \
 			$(SOURCE_DIR)/misc/base64.cc \
 			$(DMN_DIR)/mbus.cc \
 			$(DMN_DIR)/ppset.cc \
+			$(SERIALPORT) \
 			$(SOURCE_DIR)/misc/xscale.cc \
 			\
 			$(SOURCE_DIR)/szbextr/extractor.cc \
@@ -181,6 +188,17 @@ libSzarp2_la_SOURCES = \
 			protobuf/protobuf/paramsvalues.pb.cc \
 			protobuf/protobuf/paramsvalues.pb.h
 
+
+libSzarp2_la_LIBADD = libSzarpLuaParser.la
+
+libSzarpLuaParser_la_SOURCES = \
+			$(SZBASE_DIR)/lua_parser_extra.cc $(SZBASE_DIR)/lua_parser_extra.h \
+			$(SZBASE_DIR)/lua_parser.cc $(INCLUDE_DIR)/szbase/lua_syntax.h
+
+
+if GXX_VERSION_47
+libSzarpLuaParser_la_CXXFLAGS = $(CXXFLAGS) --param ggc-min-expand=5
+endif
 
 
 # Additional files for deleting on 'make maintainer-clean'

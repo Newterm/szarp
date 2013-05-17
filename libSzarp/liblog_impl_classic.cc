@@ -45,8 +45,6 @@ void sz_log_info(int info)
 
 static int __sz_loginit(int level, const char * logname)
 {
-    sz_logdone();
-    
     if ( (level < 0 ) || (level > 10))
 	__log_level = 0;
     else

@@ -87,7 +87,7 @@ int TWriter::LoadConfig(const char *section, const char* datadir_param)
 	
 	c = libpar_getpar(section, "log", 0);
 	if (c == NULL) {
-		asprintf(&c, PREFIX"%s", section);
+		asprintf(&c, PREFIX"/logs/%s.log", section);
 		assert(c != NULL);
 	}
 	l = sz_loginit(l, c);

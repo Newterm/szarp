@@ -56,8 +56,11 @@ class MapView( QtGui.QWidget , Ui_MapView ) :
 
 	def contextMenuEvent(self, event):
 		menu = QtGui.QMenu(self)
+
 		addAction = menu.addAction("Add")
 		delAction = menu.addAction("Del")
+		menu.addSeparator()
+		colorDiag = menu.addAction("Edit Color")
 
 		action = menu.exec_(self.mapToGlobal(event.pos()))
 
@@ -66,6 +69,11 @@ class MapView( QtGui.QWidget , Ui_MapView ) :
 		elif action == delAction :
 			r = self.view.currentRow()
 			self.del_item( r )
+		elif action == colorDiag :
+			item = self.view.currentItem()
+			res  = QtGui.QColorDialog.getColor( QtGui.QColor(item.text()) , self )
+			item.setText( res.name() )
+
 
 class MapDialog( QtGui.QDialog , Ui_MapDialog ) :
 

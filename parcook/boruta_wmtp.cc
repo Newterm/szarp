@@ -70,11 +70,10 @@ public:
 			COMMUNICATION_MODE, FUN_ID, FUN_VAL, CTRL_SUM};
 		
 		m_response = response;
-		std::cout << "+ Response parsed: " << response << std::endl;
+		dolog(10, "Response being parsed: %s", response.c_str());
 		boost::cmatch matches;
 		if (boost::regex_match(response.c_str(), matches, re)) {
-			std::cout << "Parse OK" << std::endl;
-			
+			dolog(10, "Parse OK");
 			// check ctrl sum
 			if (ctrlsum_check) {
 				boost::regex rectrl("\\[([^]]*)\\]" + sre_ctrlsum + sre_lineend);
@@ -86,11 +85,11 @@ public:
 	
 				std::string calculated_ctrl_sum = wmtp_calculate_ctrlsum(command_root);
 				if (ctrl_sum != calculated_ctrl_sum) {
-					std::cout << "Ctrl sum mismatch! calculated: " << calculated_ctrl_sum
-						<< " received: " << ctrl_sum << std::endl;
+					dolog(1, "Ctrl sum mismatch! calculated: %s received: %s",
+						calculated_ctrl_sum.c_str(), ctrl_sum.c_str());
 					//TODO error? ignore?
 				} else {
-					std::cout << "Ctrl sum OK." << std::endl;
+					dolog(10, "Ctrl sum OK.");
 				}
 			}
 
@@ -133,7 +132,7 @@ public:
 			m_fun_val = boost::lexical_cast<unsigned int>(fun_value);
 
 		} else {
-			std::cout << "Parse Failed" << std::endl;
+			dolog(1, "Parse Failed");
 			return false;
 		}
 		return true;
@@ -240,7 +239,6 @@ class wmtp_driver : public tcp_client_driver {
 public:
 	wmtp_driver() : m_read(NULL), m_auto_params_retrieved(false)
 	{
-		std::cout << "WMTP was created" << std::endl;
 		m_default_param = WMTP_CONVEYOR_SPEED;
 		m_auto_params[m_default_param] = false;
 
@@ -368,16 +366,16 @@ void wmtp_driver::finalize() {
 	// notify communication layer manager
 	m_manager->driver_finished_job(this);
 
-	std::cout << "WMTP driver received in cycle: " << std::endl;
+	dolog(10, "WMTP driver received in cycle: ");
 	for (offset_map::iterator it = m_requested_params.begin();
 		it != m_requested_params.end(); ++it) {
 		
 		std::string param_name = it->first;
 		short value = read_param_value(param_name);
 		if (value == SZARP_NO_DATA)
-			std::cout << param_name << " : NO_DATA" << std::endl;
+			dolog(10, "%s : NO_DATA", param_name.c_str());
 		else
-			std::cout << param_name << " : " << value << std::endl;
+			dolog(10, "%s : %d", param_name.c_str(), value);
 	}
 }
 
@@ -386,7 +384,7 @@ void wmtp_driver::timeout_cb(int fd, short event, void *_wmtp_driver) {
 	if (z->m_last_request_it != z->m_necessary_requests.end()) {
 		z->finalize();
 	}
-	std::cout << "WMTP timeout" << std::endl;
+	dolog(1, "WMTP timeout");
 }
 
 void wmtp_driver::request_next(struct bufferevent* bufev) {
@@ -406,7 +404,7 @@ void wmtp_driver::request_next(struct bufferevent* bufev) {
 		// next param request
 		m_input_buffer.clear();
 		std::string request = m_request_producer.produce(*m_last_request_it);
-		std::cout << "WMTP sending request for : " << *m_last_request_it << std::endl;
+		dolog(10, "WMTP sending request for : %s", (*m_last_request_it).c_str());
 		bufferevent_write(bufev, (void*)request.c_str(), request.size());
 		start_timer();
 	}
@@ -456,13 +454,11 @@ int wmtp_driver::configure(TUnit* unit, xmlNodePtr node, short* read, short *sen
 	// read address
 	if (get_xml_extra_prop(node, "id", m_address))
 		return 1;
-	std::cout << "Boruta WMTP configure() - address is " << m_address << std::endl;
 	if (m_address.size() != 2)
 		return 1;
 	m_request_producer.initialize(m_address);
 
-	std::cout << "SZARP_NO_DATA is " << SZARP_NO_DATA << std::endl;
-	dolog(0, "Boruta WMTP configure()");
+	dolog(0, "Boruta WMTP configure() - address is: %s", m_address.c_str());
 
 	// read target memory space
 	m_read = read;
@@ -480,7 +476,7 @@ int wmtp_driver::configure(TUnit* unit, xmlNodePtr node, short* read, short *sen
 
 		// check if param name is valid
 		if (m_auto_params.find(param_name) == m_auto_params.end()) {
-			std::cout << "ERROR: param extra:name invalid: " << param_name << std::endl;
+			dolog(0, "ERROR: param extra:name invalid: %s", param_name.c_str());
 			return 1;
 		}
 		m_requested_params[param_name] = offset_in_shared_memory;
@@ -498,16 +494,16 @@ int wmtp_driver::configure(TUnit* unit, xmlNodePtr node, short* read, short *sen
 		m_necessary_requests.push_back(m_default_param);
 	}
 	
-	std::cout << "Requested params are: " << std::endl;
+	dolog(2, "Requested params are: ");
 	for (offset_map::iterator it = m_requested_params.begin();
 		it != m_requested_params.end(); ++it) {
 		
 		std::string param_name = it->first;
-		std::cout << it->first << " at offset: " << it->second << std::endl;
+		dolog(2, "%s at offset: %d", it->first.c_str(), it->second);
 	}
-	std::cout << "Necessary requests are: " << std::endl;
+	dolog(2, "Necessary requests are: ");
 	for (std::vector<std::string>::iterator it = m_necessary_requests.begin(); it != m_necessary_requests.end(); ++it) {
-		std::cout << *it << std::endl;
+		dolog(2, (*it).c_str());
 	}
 	
 	// initialize requests iterator
