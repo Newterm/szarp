@@ -100,7 +100,7 @@ public:
 		std::wstring pname( recsize, 0 );
 //                std::string smsg( msg , recsize );
 
-		pname.insert( 0 , LOG_PREFIX_LOG_DAEMON L":" );
+		pname.insert( 0 , LOG_PREFIX_DAEMON L":" );
 		std::copy( msg , msg+recsize ,
 			 pname.begin() + LOG_PREFIX_LEN + 1 ) ;
 

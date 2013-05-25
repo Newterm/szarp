@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 	char * ipk_prefix = libpar_getpar("", "config_prefix", 1);
 	assert (ipk_prefix != NULL);
 
-	IPKContainer::Init(SC::A2S(szarp_data_root), SC::A2S(PREFIX), L"", new NullMutex());
+	IPKContainer::Init(SC::A2S(szarp_data_root), SC::A2S(PREFIX), L"");
 	Szbase::Init(SC::A2S(szarp_data_root), NULL);
 	Szbase * szbase = Szbase::GetObject();
 	

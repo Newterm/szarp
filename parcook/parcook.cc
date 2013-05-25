@@ -1633,7 +1633,7 @@ int main(int argc, char *argv[])
 	/* end szarp.cfg processing */
 	libpar_done();
 	
-	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"pl", new NullMutex());	
+	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"pl");
 	Szbase::Init(SC::A2S(PREFIX));
 
 	IPKContainer* ic = IPKContainer::GetObject();

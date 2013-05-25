@@ -345,7 +345,7 @@ void SetDaemon::AddParam(const std::wstring& name, double min, double max, doubl
 
 void SetDaemon::ReadVals()
 {
-	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"", new NullMutex());
+	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"");
 	Szbase::Init(SC::A2S(PREFIX), NULL);
 	Szbase* szb = Szbase::GetObject();
 

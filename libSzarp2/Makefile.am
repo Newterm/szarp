@@ -146,8 +146,6 @@ libSzarp2_la_SOURCES = \
 			$(SZBASE_DIR)/loptdatablock.cc $(SZBASE_DIR)/loptdatablock.h \
 			$(SZARP_BASE_COMMON_DIR)/lua_param_optimizer.cc $(INCLUDE_DIR)/szarp_base_common/lua_param_optimizer.h \
 			$(INCLUDE_DIR)/szarp_base_common/lua_param_optimizer_templ.h \
-			$(SZARP_BASE_COMMON_DIR)/lua_parser_extra.cc $(SZARP_BASE_COMMON_DIR)/lua_parser_extra.h \
-			$(SZARP_BASE_COMMON_DIR)/lua_parser.cc $(INCLUDE_DIR)/szarp_base_common/lua_syntax.h \
 			$(SZARP_BASE_COMMON_DIR)/lua_strings_extract.cc	$(INCLUDE_DIR)/szarp_base_common/lua_strings_extract.h \
 			$(SZARP_BASE_COMMON_DIR)/lua_utils.cc $(INCLUDE_DIR)/szarp_base_common/lua_utils.h \
 			$(SZARP_BASE_COMMON_DIR)/time.cc $(INCLUDE_DIR)/szarp_base_common/time.h \
@@ -192,8 +190,8 @@ libSzarp2_la_SOURCES = \
 libSzarp2_la_LIBADD = libSzarpLuaParser.la
 
 libSzarpLuaParser_la_SOURCES = \
-			$(SZBASE_DIR)/lua_parser_extra.cc $(SZBASE_DIR)/lua_parser_extra.h \
-			$(SZBASE_DIR)/lua_parser.cc $(INCLUDE_DIR)/szbase/lua_syntax.h
+			$(SZARP_BASE_COMMON_DIR)/lua_parser_extra.cc $(SZARP_BASE_COMMON_DIR)/lua_parser_extra.h \
+			$(SZARP_BASE_COMMON_DIR)/lua_parser.cc $(INCLUDE_DIR)/szarp_base_common/lua_syntax.h
 
 
 if GXX_VERSION_47

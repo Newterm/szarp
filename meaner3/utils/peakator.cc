@@ -167,7 +167,7 @@ protected:
 
 PeakEliminator::PeakEliminator(TSzarpConfig* ipk, const char* dir, double delta)
 {
-	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"", new NullMutex());
+	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"");
 	Szbase::Init(SC::A2S(PREFIX), NULL);
 	buf = szb_create_buffer(Szbase::GetObject(), SC::A2S(dir), 1, ipk);
 	if (buf == NULL) {

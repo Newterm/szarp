@@ -42,10 +42,6 @@
 
 typedef boost::recursive_mutex::scoped_lock recursive_scoped_lock;
 
-#ifndef NO_LUA
-bool szb_compile_lua_formula(lua_State *lua, const char *formula, const char *formula_name = "param_fomula", bool ret_v_val = true);
-#endif
-
 class SzbParamObserver;
 class SzbParamMonitor;
 

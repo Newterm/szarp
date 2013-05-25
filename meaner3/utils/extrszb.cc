@@ -505,7 +505,7 @@ int main(int argc, char* argv[])
 	LIBXML_TEST_VERSION
 	xmlSubstituteEntitiesDefault(1);
 
-	IPKContainer::Init(SC::A2S(szarp_data_root), SC::A2S(PREFIX), L"", new NullMutex());
+	IPKContainer::Init(SC::A2S(szarp_data_root), SC::A2S(PREFIX), L"");
 	Szbase::Init(SC::A2S(szarp_data_root), NULL);
 
 

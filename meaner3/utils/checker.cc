@@ -1089,7 +1089,7 @@ int CluaRegister::GetDataFromParam(time_t StartDate, time_t StopDate, char *PNam
 	*PSize = 0;
 	ActualDate = StartDate;
 	
-	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"", new NullMutex());
+	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"");
 	Szbase::Init(SC::A2S(PREFIX), NULL);
 	buf = szb_create_buffer(Szbase::GetObject(), SC::A2S(IpkConf.dir), 1, IpkConf.ipk);
 	while(ActualDate < StopDate){
@@ -1132,7 +1132,7 @@ int CluaRegister::GetDataFromParams(time_t StartDate, time_t StopDate, char *PWi
 	for (TParam *ppp = ipk->GetFirstParam();ppp;ppp=ipk->GetNextParam(ppp)){
 		
 		if (CheckWildCardString((char *)(SC::S2A(ppp->GetName()).c_str()),(char *)PWildCard)==0){	
-			IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"", new NullMutex());
+			IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"");
 			Szbase::Init(SC::A2S(PREFIX), NULL);
 			buf = szb_create_buffer(Szbase::GetObject(), SC::A2S(dir), 1, ipk);
 			data = szb_get_avg(buf, ipk->getParamByName(ppp->GetName()), StartDate, StopDate);
