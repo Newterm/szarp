@@ -32,7 +32,6 @@
 #include "config.h"
 #endif
 
-#include <limits>
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -196,12 +195,13 @@ tSums *Sums;			/* sumy usrednien */
 
 struct tParamInfo {
 	TParam * param;
-	enum { SINGLE, COMBINED } type;
-	enum { LSW, MSW } lsw_msw;
-	int other;
+	enum { SINGLE, COMBINED, LSW, MSW } type;
+	int param_no;
+	int lsw, msw;
 };
 
 tParamInfo **ParsInfo;
+std::vector<tParamInfo*> CombinedParams;
 
 struct sembuf Sem[4];
 
@@ -234,22 +234,24 @@ void calculate_average(short *probes, int param_no, int probe_type)
 		return;
 	}
 
-	if (ParsInfo[param_no]->lsw_msw == tParamInfo::LSW)
+	tParamInfo *pi = ParsInfo[param_no];
+	if (pi->type != tParamInfo::MSW)
 		//we will update both sums when updating msw
 		return;
 
 	if (!Cnts[param_no][probe_type]) {
 		sz_log(7, "Calculating average for combined both counts equal 0");
+		probes[pi->lsw] = SZARP_NO_DATA;
 		probes[param_no] = SZARP_NO_DATA;
 		return;
 	}
 
 	int msw = param_no;
-	int lsw = ParsInfo[param_no]->other;
+	int lsw = pi->lsw;
 
 	int v = (int)(Sums[msw][probe_type] / Cnts[msw][probe_type]);
 
-	sz_log(7, "Combinded sum value %lld, Calculated value %d", Sums[msw][probe_type], v);
+	sz_log(7, "Combined sum value %lld, Calculated value %d", Sums[msw][probe_type], v);
 
 	probes[msw] = (unsigned short)(v >> 16);
 	probes[lsw] = (unsigned short)(v & 0xFFFF);
@@ -272,13 +274,11 @@ template<class OVT> void update_value(int param_no, int probe_type, short* ivt, 
 		}
 		return;
 	}
-	if (ParsInfo[param_no]->lsw_msw == tParamInfo::LSW)
+	if (ParsInfo[param_no]->type != tParamInfo::MSW)
 		//we will update both sums when updating msw
 		return;
 
 	sz_log(7, "Entering update value for combined param %ls, probe type: %d", ParsInfo[param_no]->param->GetName().c_str(), probe_type);
-	int other = ParsInfo[param_no]->other;
-
 	/*
 	We cast everything to unsigned, because we don't really
 	care about signs in combined params.
@@ -288,8 +288,10 @@ template<class OVT> void update_value(int param_no, int probe_type, short* ivt, 
 	so I hope I will save a future developer some head scratching
 	while hunting for bugs in parcook ;)
 	*/
+
+	int lsw = ParsInfo[param_no]->lsw;
 	unsigned short * pmsw = (unsigned short *)&ovt[param_no][abuf];
-	unsigned short * plsw = (unsigned short *)&ovt[other][abuf];
+	unsigned short * plsw = (unsigned short *)&ovt[lsw][abuf];
 
 	int prev_val = (int)((*pmsw) << 16) | (*plsw);
 
@@ -305,7 +307,7 @@ template<class OVT> void update_value(int param_no, int probe_type, short* ivt, 
 	}
 
 	ovt[param_no][abuf] = ivt[param_no];
-	ovt[other][abuf] = ivt[other];
+	ovt[lsw][abuf] = ivt[lsw];
 
 	int val = (int)(*pmsw << 16) | *plsw;
 
@@ -1092,27 +1094,33 @@ void AllocProbesMemory(void)
 
 void configure_pars_infos(TSzarpConfig *ipk) 
 {
-	for (TParam* p = ipk->GetFirstDrawDefinable(); p; p = p->GetNext()) {
+	int combined_param_no = VTlen;
+	for (TParam* p = ipk->GetFirstDrawDefinable(); p; p = p->GetNext(), combined_param_no++) {
 		if (p->GetType() != TParam::P_COMBINED)
 			continue;
+
 		TParam **p_cache = p->GetFormulaCache();
 		unsigned int msw = p_cache[0]->GetIpcInd();
 		unsigned int lsw = p_cache[1]->GetIpcInd();
 
 		tParamInfo* msw_pi = (tParamInfo*) malloc(sizeof(tParamInfo));
 		msw_pi->param = p_cache[0];
-		msw_pi->type = tParamInfo::COMBINED;
-		msw_pi->lsw_msw = tParamInfo::MSW;
-		msw_pi->other = lsw;
+		msw_pi->type = tParamInfo::MSW;
 		ParsInfo[msw] = msw_pi;
 
 		tParamInfo* lsw_pi = (tParamInfo*) malloc(sizeof(tParamInfo));
 		lsw_pi->param = p_cache[1];
-		lsw_pi->type = tParamInfo::COMBINED;
-		lsw_pi->lsw_msw = tParamInfo::LSW;
-		lsw_pi->other = msw;
+		lsw_pi->type = tParamInfo::LSW;
 		ParsInfo[lsw] = lsw_pi;
 
+		tParamInfo* combined = (tParamInfo*) malloc(sizeof(tParamInfo));
+		combined->param = p;
+		combined->type = tParamInfo::COMBINED;
+		combined->lsw = lsw;
+		combined->msw = msw;
+		combined->param_no = combined_param_no;
+		
+		CombinedParams.push_back(combined);
 	}
 
 	for (int i = 0; i < VTlen; i++) {
@@ -1292,6 +1300,7 @@ void ParseCfg(TSzarpConfig *ipk, char *linedmnpat)
 
 	/* parse formulas */
 	ParseFormulas(ipk);
+
 }
 
 #ifndef NO_LUA
@@ -1396,11 +1405,21 @@ void publish_values(short* Probe, zmq::socket_t& socket) {
 		szarp::ParamsValues param_values;
 
 		time_t now = time(NULL);
-		for (unsigned i = 0; i < VTlen; i++) {
+		for (int i = 0; i < VTlen; i++) {
 			szarp::ParamValue* param_value = param_values.add_param_values();
 			param_value->set_param_no(i);
 			param_value->set_time(now);
-			param_value->set_int_value(Probe[VTlen]);
+			param_value->set_int_value(Probe[i]);
+		}
+
+		for (size_t i = 0; i < CombinedParams.size(); i++) {
+			szarp::ParamValue* param_value = param_values.add_param_values();
+			tParamInfo* pi = CombinedParams[i];	
+			param_value->set_param_no(pi->param_no);
+			param_value->set_time(now);
+			param_value->set_int_value(
+				unsigned(Probe[pi->lsw]) << 16
+				| unsigned(Probe[pi->msw]));
 		}
 
 		param_values.SerializeToZeroCopyStream(&stream);
