@@ -43,6 +43,13 @@ export DH_OPTIONS
 DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 
+ifeq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
+#	CC=gcc
+	CFG_ARGS=
+else
+#	CC=$(DEB_HOST_GNU_TYPE)-gcc
+	CFG_ARGS=--with-prefix=/usr/$(DEB_HOST_GNU_TYPE)
+endif
 
 DEB_PYTHON_SYSTEM=pysupport
 DEB_PYTHON_VERSIONS=all
@@ -95,7 +102,7 @@ debian/config-status-no-cb: configure
 	fi;
 	./configure CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" --prefix=/$(PREFIX) \
 		--host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) \
-		--enable-deb-build
+		--enable-deb-build $(CFG_ARGS)
 	@touch $@
 
 debian/build-no-cb-stamp: debian/config-status-no-cb
