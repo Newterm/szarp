@@ -172,6 +172,8 @@ void DrawApp::InitGL() {
 
 
 bool DrawApp::OnInit() {
+
+
 	/* Read params from szarp.cfg. */
 #if wxUSE_UNICODE
 	libpar_read_cmdline_w(&argc, argv);
@@ -183,6 +185,7 @@ bool DrawApp::OnInit() {
 
 	if (!DrawGLApp::OnInit())
 		return false;
+
 
 	SetProgName(_T("Draw 3"));
 	//signal(SIGINT, INThandler);
@@ -219,6 +222,7 @@ bool DrawApp::OnInit() {
 	//wxLog *logger = new wxLogGui();
 	wxLog::SetActiveTarget(logger);
 
+
 	m_instance = new szSingleInstanceChecker(_T(".szarp_m_instance_lock"), wxEmptyString, 
 			_T("draw3"));
 	if (m_instance->IsAnotherRunning()) {
@@ -235,6 +239,7 @@ bool DrawApp::OnInit() {
 		}
 		return false;
 	}
+        
 
 	InitGL();
 
@@ -326,6 +331,8 @@ bool DrawApp::OnInit() {
 	UDPLogger::SetAddress( (const char*)m_base.mb_str(wxConvUTF8) );
 	UDPLogger::SetPort   ( "7777" );
 	UDPLogger::LogEvent  ( "drawapp:start" );
+
+
 
 	wxString prefix, window;
 	PeriodType pt = PERIOD_T_YEAR;

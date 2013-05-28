@@ -148,6 +148,7 @@ const int REMARKS_SERVER_PORT = 7998;
 
 RemarksHandler::RemarksHandler(ConfigManager *config_manager) : m_config_manager(config_manager) {
 
+
 	wxConfigBase* config = wxConfig::Get();
 
 	long first_run_with_remarks = 1L;
@@ -161,6 +162,9 @@ RemarksHandler::RemarksHandler(ConfigManager *config_manager) : m_config_manager
 	m_configured = !m_server.IsEmpty() && !m_username.IsEmpty() && !m_password.IsEmpty();
 
 	if (!m_configured && first_run_with_remarks) {
+
+
+
 		GetConfigurationFromSSCConfig();
 
 		m_configured = !m_server.IsEmpty() && !m_username.IsEmpty() && !m_password.IsEmpty();
@@ -288,7 +292,7 @@ void RemarksHandler::OnCfgLoginTimer(wxTimerEvent &event) {
 wxString RemarksHandler::GetHistoryHash() {
         wxString hash = wxEmptyString;
 
-        if ((m_cfglogin_cnt < c_cfglogin_max)) {
+        if ((m_cfglogin_cnt < c_cfglogin_max) && (m_cfglogin_cnt < hash_history.size())) {
                 hash = hash_history[m_cfglogin_cnt];
                 m_cfglogin_cnt++;
         } 
@@ -305,7 +309,7 @@ void RemarksHandler::GetConfigurationFromSzarpCfg() {
         wxLogWarning(_T("GetConfigurationFromSzarpCfg"));
 
 #ifdef __WXGTK__
-
+        
         wxLogWarning(_T("defined __WXGTK__"));
 
         libpar_init();
@@ -388,13 +392,17 @@ void RemarksHandler::GetConfigurationFromSzarpCfg() {
                 delete [] config_file_buffer;
 
                 /* Prepare MD5 to be converted to wxString */
-                char *password = new char[2*MD5_DIGEST_LENGTH];
+                char *password = new char[2*MD5_DIGEST_LENGTH + 2];
                 char *ptr = password;
 
                 for (int j = 0; j < MD5_DIGEST_LENGTH; j++) {
                         sprintf(ptr, "%02x", hashed[j]);
                         ptr=ptr+2;
                 }
+
+                password[2*MD5_DIGEST_LENGTH] = '\0';
+
+                m_username = wxEmptyString;
 
                 m_server = SC::A2S(server);
                 m_username << username << SC::A2S("@") << SC::A2S(config_prefix);
@@ -406,6 +414,7 @@ void RemarksHandler::GetConfigurationFromSzarpCfg() {
                 wxLogWarning(_T("m_server: %s"), m_server.c_str());
                 wxLogWarning(_T("m_username: %s"), m_username.c_str());
                 wxLogWarning(_T("m_password: %s"), m_password.c_str());
+                
 
                 free(server);
                 free(config_prefix);
@@ -1254,11 +1263,15 @@ void RemarksConnection::HandleFault(XMLRPC_REQUEST response) {
 
         /* If password and login come from autologin and we encounter username/password failure */
         if (m_remarks_handler->CfgConfigured() && fault_string == _T("Incorrect username and password")) {
+                
+                wxLogWarning(_T("Login retry from hash history"));
 
                 wxString history_hash = m_remarks_handler->GetHistoryHash();
 
                 if (history_hash != wxEmptyString) {
                         m_password = history_hash;
+
+                        wxLogWarning(_T("New m_password: %s"), m_password.c_str());
                         /* Try to login with different password from history and ommit error message */
                         m_token = -1;
                         Login();

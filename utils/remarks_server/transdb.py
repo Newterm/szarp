@@ -25,7 +25,7 @@ from twisted.web import xmlrpc
 
 from twisted.python import log
 
-from datetime import datetime
+import datetime
 
 class TransDbAccess:
 	def __init__(self, db, trans):
@@ -39,40 +39,64 @@ class TransDbAccess:
                 if len(user_data) != 2:
                         return False, None, None
         
-                log.msg("cfglogin user: " + user);
-
-                # Login a prefix-wide type user 
+                # Login a prefix-wide type user
                 ok, user_id, username = self.login(user_data[1], password)
 
 		if ok:
-                # Configuration files are in sync
-                        log.msg("Cfg in sync");
+                        # Configuration files are in sync
 			return ok, user_id, user_data[0]
                 else:
-                        # Configuration files may not be in sync
-                        log.msg("Cfg not in sync");
+                        # Check if user login exists in users at all
+                        self.trans.execute("""
+                                SELECT
+                                        id
+                                FROM
+                                        users
+                                WHERE
+                                        name = %(name)s
+                                """,
+                                { 'name' : user_data[1] } )
+
+                        row = self.trans.fetchone()
+
+                        if row is None:
+                                return False, None, None
+                        
+                        user_id = row[0]
+
+                        # Check hash history for given user_id
                         self.trans.execute("""
 			        SELECT
-				        user_id, date_created
+				        date_created
 			        FROM
 				        hash_history
 			        WHERE
-				        password = %(password)s
+				        user_id = %(user_id)s and password = %(password)s
 			        """,
-			        { 'password' : password } )
+                                { 'user_id' : user_id, 'password' : password } )
 	
-		        row = self.trans.fetchall()
-		        if row is not None:
-                                #@TODO: Case with identical multiple passwords - very possible
-                                #@TODO: Age of hash in hash history
-                                #for r in range(row):
-                                #        date_string = row[r][1]
-                                #        date_tab = date_string.split('-')
-                                #        date_parsed = datetime(date_tab[0], date_tab[1], date_tab[2])
-                                        
-			        return True, user_id, user_data[0]
-		        else:
-			        return False, None, None
+                        rows = self.trans.fetchall()
+                        
+                        # We have a list of hash history for given user_id.
+                        # It is a list because passwords in history are not
+                        # unique. We need to see if the newest date is not 
+                        # to old for autologin.
+
+                        #for row in rows:
+                        #        log.msg("hash_hist row: " + str(row[0]))
+                        if rows:
+                                date_list = list(rows[0])
+                                date_list.sort()
+                                # Check if not too old
+                                print date_list
+                                # If newest timestamp is older than now() by more than 93 days do not autologin
+                                if datetime.timedelta(days=93) < datetime.datetime.now() - date_list[0]:
+                                        return False, None, None
+                                else:
+                                        return True, user_id, user_data[0]
+                        else:
+                                return False, None, None
+
 
                 #
                 # Configuration hash check - moved to database
