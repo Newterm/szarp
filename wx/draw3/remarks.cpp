@@ -99,7 +99,7 @@
 
 /* cfglogin: contants */
 
-const int RemarksHandler::c_cfglogin_max = 3;
+const unsigned int RemarksHandler::c_cfglogin_max = 3;
 const int RemarksHandler::c_timer_id = wxID_HIGHEST + 1;
 const int RemarksHandler::c_cfglogin_timer_id = wxID_HIGHEST + 2;
 
@@ -163,8 +163,6 @@ RemarksHandler::RemarksHandler(ConfigManager *config_manager) : m_config_manager
 
 	if (!m_configured && first_run_with_remarks) {
 
-
-
 		GetConfigurationFromSSCConfig();
 
 		m_configured = !m_server.IsEmpty() && !m_username.IsEmpty() && !m_password.IsEmpty();
@@ -213,6 +211,7 @@ RemarksHandler::RemarksHandler(ConfigManager *config_manager) : m_config_manager
 
         m_timer.SetOwner(this, c_timer_id);
         /* end of cfglogin part */
+
         if (m_auto_fetch)
                 m_timer.Start(1000 * 60 * 10);
 
@@ -272,7 +271,6 @@ RemarksHandler::RemarksHandler(ConfigManager *config_manager) : m_config_manager
 
 void RemarksHandler::OnCfgLoginTimer(wxTimerEvent &event) {
 
-        wxLogWarning(_T("GetConfigurationFromSzarpCfg"));
         wxString old_password;
 
         old_password = m_password;
@@ -285,11 +283,10 @@ void RemarksHandler::OnCfgLoginTimer(wxTimerEvent &event) {
                 if (hash_history.size() > c_cfglogin_max)
                         hash_history.pop_back();
         }
-        
-
 }
 
 wxString RemarksHandler::GetHistoryHash() {
+
         wxString hash = wxEmptyString;
 
         if ((m_cfglogin_cnt < c_cfglogin_max) && (m_cfglogin_cnt < hash_history.size())) {
@@ -415,7 +412,6 @@ void RemarksHandler::GetConfigurationFromSzarpCfg() {
                 wxLogWarning(_T("m_username: %s"), m_username.c_str());
                 wxLogWarning(_T("m_password: %s"), m_password.c_str());
                 
-
                 free(server);
                 free(config_prefix);
                 free(szarp_root_dir);
@@ -1271,7 +1267,7 @@ void RemarksConnection::HandleFault(XMLRPC_REQUEST response) {
                 if (history_hash != wxEmptyString) {
                         m_password = history_hash;
 
-                        wxLogWarning(_T("New m_password: %s"), m_password.c_str());
+                        wxLogWarning(_T("New password: %s"), m_password.c_str());
                         /* Try to login with different password from history and ommit error message */
                         m_token = -1;
                         Login();

@@ -40,18 +40,17 @@
 #include <libxml/tree.h>
 
 #ifndef MINGW32
-/* cfglogin includes */
 
+/* cfglogin includes */
 #include <deque>
 
-#endif
+#endif /*MINGW32*/
 
 #include <boost/shared_ptr.hpp>
 
 #include "biowxsock.h"
 
 #include "wxlogging.h"
-
 
 class Remark {
 public:
@@ -454,14 +453,21 @@ class RemarksHandler : public wxEvtHandler {
 
         /* cfglogin variables */
 
+        /* cfglogin method of authorization was used */
         bool m_cfglogin;
-        int m_cfglogin_cnt;
+        /* Number of times login retry was used */
+        unsigned int m_cfglogin_cnt;
+        /* Hash history */
         std::deque<wxString> hash_history;
 
-        static const int c_cfglogin_max;
+        /* Maximum number of times to allow login retry */
+        static const unsigned int c_cfglogin_max;
+        /* Event id for auto fetch timer */
         static const int c_timer_id;
+        /* Event id for cfglogin timer */
         static const int c_cfglogin_timer_id;
 
+        /* cfglogin timer */
         wxTimer m_cfglogin_timer;
         
 #endif /*MINGW32*/
