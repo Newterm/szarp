@@ -19,6 +19,7 @@
 
 from twisted.application import internet, service
 from twisted.internet import protocol
+from twisted.internet import task
 from twisted.protocols import basic
 from twisted.web import xmlrpc, server
 from twisted.python import log
@@ -120,7 +121,10 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
 		fetcher = paramssets.ParamsAndSetsFetcher(self.service.db, user_id, xmlrpc_time.value, prefixes)
 		return fetcher.do_it()
 
-
+        # Looping method for updating configuration file hash
+        def hash_update(self):
+                log.msg("hash update")
+        
 class RemarksService(service.Service):
 	def __init__(self, config):
 		self.sessions = sessions.Sessions()
@@ -135,7 +139,12 @@ application = service.Application('remarks_server')
 serviceCollection = service.IServiceCollection(application)
 
 remarks_service = RemarksService(config)
-site = server.Site(RemarksXMLRPCServer(remarks_service))
+# Also start looping task for updating configuration file hash
+remarks_server= RemarksXMLRPCServer(remarks_service)
+looping_task = task.LoopingCall(remarks_server.hash_update)
+looping_task.start(2.0)
+
+site = server.Site(remarks_server)
 
 ssl_server = internet.SSLServer(config.getint("connection", "port"), site, SSLContextFactory(config))
 ssl_server.setServiceParent(service.IServiceCollection(application))
