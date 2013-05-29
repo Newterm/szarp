@@ -33,19 +33,24 @@ class TransDbAccess:
 		self.trans = trans
 
 	def autologin(self, user, password):
+
                 # autologin format: login@prefix
                 user_data = user.split('@')
 
                 if len(user_data) != 2:
                         return False, None, None
+
+                log.msg("Debug: autologin detected: " + user)
         
                 # Login a prefix-wide type user
                 ok, user_id, username = self.login(user_data[1], password)
 
 		if ok:
+                        log.msg("Debug: User entry (" + user_data[1] + ", " + password + ") is authorised (config files in sync)")
                         # Configuration files are in sync
 			return ok, user_id, user_data[0]
                 else:
+                        log.msg("Debug: User entry (" + user_data[1] + ", " + password + ") is not authorised (checking if username exists)")
                         # Check if user login exists in users at all
                         self.trans.execute("""
                                 SELECT
@@ -60,11 +65,13 @@ class TransDbAccess:
                         row = self.trans.fetchone()
 
                         if row is None:
+                                log.msg("Debug: User entry (" + user_data[1] + ", " + password + ") incorrect username")
                                 return False, None, None
                         
                         user_id = row[0]
 
                         # Check hash history for given user_id
+                        log.msg("Debug: User entry (" + user_data[1] + ", " + password + ") username ok (checking hash history)")
                         self.trans.execute("""
 			        SELECT
 				        date_created
@@ -85,16 +92,24 @@ class TransDbAccess:
                         #for row in rows:
                         #        log.msg("hash_hist row: " + str(row[0]))
                         if rows:
-                                date_list = list(rows[0])
-                                date_list.sort()
-                                # Check if not too old
+                                date_list = []
+                                for row in rows:
+                                        row_list = list(row)
+                                        date_list = date_list + row_list
+
                                 print date_list
+                                date_list.sort(reverse=True)
+                                print date_list
+                                # Check if not too old
                                 # If newest timestamp is older than now() by more than 93 days do not autologin
                                 if datetime.timedelta(days=93) < datetime.datetime.now() - date_list[0]:
+                                        log.msg("Debug: User entry (" + user_data[1] + ", " + password + ") password too old")
                                         return False, None, None
                                 else:
+                                        log.msg("Debug: User entry (" + user_data[1] + ", " + password + ") password found in hash history")
                                         return True, user_id, user_data[0]
                         else:
+                                log.msg("Debug: User entry (" + user_data[1] + ", " + password + ") password incorrect")
                                 return False, None, None
 
 
