@@ -25,6 +25,8 @@ from twisted.web import xmlrpc, server
 from twisted.python import log
 from OpenSSL import SSL
 
+import hashlib
+
 import ConfigParser
 
 import sys
@@ -41,6 +43,7 @@ __CONFIG_FILE__ = "/etc/szarp/remark_server_config.ini"
 
 NOBODY_UID = 65534
 NOGROUP_GID = 65534
+HASH_UPDATE_INTERVAL = 10.0
 
 class SSLContextFactory:
 	"""Factory creating ssl contexts"""
@@ -60,6 +63,7 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
 	def __init__(self, service):
 		xmlrpc.XMLRPC.__init__(self, allowNone=True)
 		self.service = service
+                self.cfglogin_prefixes = []
 
 	def check_token(f):
 		def check(self, token, *args, **kwargs):
@@ -121,9 +125,38 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
 		fetcher = paramssets.ParamsAndSetsFetcher(self.service.db, user_id, xmlrpc_time.value, prefixes)
 		return fetcher.do_it()
 
+        # Calculate md5 hash of configuration file for given szbase prefix name
+        def get_prefix_config_md5(self, prefix):
+                try:
+                        filestring = open("/opt/szarp/" + prefix + "/config/params.xml", "r").read()
+                except IOError:
+                        return ""
+                
+                md5 = hashlib.md5()
+                md5.update(filestring)
+                return md5.hexdigest()
+
         # Looping method for updating configuration file hash
         def hash_update(self):
-                log.msg("hash update")
+                for prefix in self.cfglogin_prefixes:
+                        config_hash = self.get_prefix_config_md5(prefix)
+                        if config_hash:
+                                self.hash_update_interaction(prefix, config_hash)
+        
+        def _hash_update_interaction(self, trans, prefix, config_hash):
+                tdb = transdb.TransDbAccess(self.service.db, trans)
+                tdb.hash_update(prefix, config_hash)
+
+        def hash_update_interaction(self, prefix, config_hash):
+		return self.service.db.dbpool.runInteraction(self._hash_update_interaction, prefix, config_hash)
+
+        # Fetching cfglogin prefix list
+        def _fetch_cfglogin_interaction(self, trans):
+                tdb = transdb.TransDbAccess(self.service.db, trans)
+                self.cfglogin_prefixes = tdb.fetch_cfglogin()
+
+        def fetch_cfglogin_interaction(self):
+		return self.service.db.dbpool.runInteraction(self._fetch_cfglogin_interaction)
         
 class RemarksService(service.Service):
 	def __init__(self, config):
@@ -139,10 +172,14 @@ application = service.Application('remarks_server')
 serviceCollection = service.IServiceCollection(application)
 
 remarks_service = RemarksService(config)
+
 # Also start looping task for updating configuration file hash
-remarks_server= RemarksXMLRPCServer(remarks_service)
+remarks_server = RemarksXMLRPCServer(remarks_service)
+# Also fetch autologin usernames (szbase prefixes) from database
+remarks_server.fetch_cfglogin_interaction()
+
 looping_task = task.LoopingCall(remarks_server.hash_update)
-looping_task.start(2.0)
+looping_task.start(HASH_UPDATE_INTERVAL)
 
 site = server.Site(remarks_server)
 

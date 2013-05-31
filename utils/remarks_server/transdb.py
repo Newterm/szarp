@@ -32,6 +32,58 @@ class TransDbAccess:
 		self.db = db
 		self.trans = trans
 
+        def hash_update(self, prefix, config_hash):
+
+                #log.msg("Debug: hash_update("+prefix+","+config_hash+")")
+
+		self.trans.execute("""
+			SELECT
+				id, password
+			FROM
+				users
+			WHERE
+				name = %(user)s and autologin = 1
+			""",
+			{ 'user' : prefix } )
+	
+		row = self.trans.fetchone()
+		if row is not None:
+                        if config_hash != row[1]:
+
+                                log.msg("Debug: hash_update("+prefix+","+row[1]+" -> "+config_hash+")")
+
+		                self.trans.execute("""
+                                        UPDATE 
+                                                users
+	                                SET 
+                                                password = %(password)s 
+                                        WHERE 
+                                                users.id = %(id)s
+			                """,
+			        { 'password' : config_hash, 'id' : row[0] } )
+
+        def fetch_cfglogin(self):
+                # Fetch users using cfglogin
+                self.trans.execute("""
+                        SELECT
+                                name
+                        FROM
+                                users
+                        WHERE
+                                autologin = 1
+                        """)
+
+                rows = self.trans.fetchall()
+
+                # Convert query result to list of prefixes
+                cfglogin_list = []
+                if rows:
+                        for row in rows:
+                                row_list = list(row)
+                                cfglogin_list = cfglogin_list + row_list
+
+                return cfglogin_list
+
 	def autologin(self, user, password):
 
                 # autologin format: login@prefix
@@ -111,29 +163,6 @@ class TransDbAccess:
                         else:
                                 log.msg("Debug: User entry (" + user_data[1] + ", " + password + ") password incorrect")
                                 return False, None, None
-
-
-                #
-                # Configuration hash check - moved to database
-                #
-
-#                try:
-#                        filestring = open("/opt/szarp/" + user_data[1] + "/config/params.xml", "r").read()
-#                except IOError:
-#                        return False, None, None
-#                
-#                md5 = hashlib.md5()
-#                md5.update(filestring)
-#                filestring_md5 = md5.hexdigest()
-#                
-#                if filestring_md5 == password:         
-#                        ok, user_id, username = self.login("auto","auto")
-#		        if ok:
-#			        return True, user_id, user_data[0]
-#		        else:
-#                                return False, None, None
-#                else:
-#                        return False, None, None
 
 	def login(self, user, password):
 		self.trans.execute("""
