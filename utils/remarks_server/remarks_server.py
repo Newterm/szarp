@@ -26,6 +26,7 @@ from twisted.python import log
 from OpenSSL import SSL
 
 import hashlib
+import os
 
 import ConfigParser
 
@@ -44,6 +45,9 @@ __CONFIG_FILE__ = "/etc/szarp/remark_server_config.ini"
 NOBODY_UID = 65534
 NOGROUP_GID = 65534
 HASH_UPDATE_INTERVAL = 10.0
+#PREFIX_SYNC_INTERVAL = 3600.0
+PREFIX_SYNC_INTERVAL = 5.0
+NOT_A_PREFIX_LIST = ["bin","lib","logs","resources"]
 
 class SSLContextFactory:
 	"""Factory creating ssl contexts"""
@@ -157,6 +161,19 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
 
         def fetch_cfglogin_interaction(self):
 		return self.service.db.dbpool.runInteraction(self._fetch_cfglogin_interaction)
+
+        # Database and szbase synchronization
+        def do_prefix_sync(self):
+                # Compare prefixes in database with /opt/szarp directory perform synchronization
+                # Check config/aggr.xml and modify aggregated map
+
+                for prefix_dir in os.walk('/opt/szarp').next()[1]:
+                        if prefix_dir not in NOT_A_PREFIX_LIST:
+                                print prefix_dir
+
+        # Database users and cfglogin szbases sync
+        #def do_cfglogin_sync(self):
+                # Check all prefixes for cfglogin file and change/create cfglogin users accordingly
         
 class RemarksService(service.Service):
 	def __init__(self, config):
@@ -175,11 +192,15 @@ remarks_service = RemarksService(config)
 
 # Also start looping task for updating configuration file hash
 remarks_server = RemarksXMLRPCServer(remarks_service)
+
 # Also fetch autologin usernames (szbase prefixes) from database
 remarks_server.fetch_cfglogin_interaction()
 
-looping_task = task.LoopingCall(remarks_server.hash_update)
-looping_task.start(HASH_UPDATE_INTERVAL)
+sync_task = task.LoopingCall(remarks_server.do_prefix_sync)
+sync_task.start(PREFIX_SYNC_INTERVAL)
+
+hash_update_task = task.LoopingCall(remarks_server.hash_update)
+hash_update_task.start(HASH_UPDATE_INTERVAL)
 
 site = server.Site(remarks_server)
 
