@@ -32,6 +32,35 @@ class TransDbAccess:
 		self.db = db
 		self.trans = trans
 
+        def sync_update(self, prefix_map):
+                print prefix_map
+
+		self.trans.execute("""
+                        SELECT 
+                                prefix.prefix, 
+                                aggregators.aggregated  
+                        FROM 
+                                prefix 
+                        INNER JOIN 
+                                (SELECT 
+                                        aggregated_map.aggregated AS aggregator, 
+                                        prefix.prefix 
+                                AS 
+                                        aggregated 
+                                FROM 
+                                        prefix 
+                                INNER JOIN 
+                                        aggregated_map 
+                                ON
+                                        prefix.id = aggregated_map.prefix) 
+                                AS aggregators 
+                                
+                        ON prefix.id = aggregators.aggregator;
+			""")
+
+                rows = self.trans.fetchall()
+                print rows
+	
         def hash_update(self, prefix, config_hash):
 
                 #log.msg("Debug: hash_update("+prefix+","+config_hash+")")

@@ -40,6 +40,8 @@ import transdb
 import remarks
 import paramssets
 
+import xml.etree.ElementTree as ET
+
 __CONFIG_FILE__ = "/etc/szarp/remark_server_config.ini"
 
 NOBODY_UID = 65534
@@ -48,6 +50,7 @@ HASH_UPDATE_INTERVAL = 10.0
 #PREFIX_SYNC_INTERVAL = 3600.0
 PREFIX_SYNC_INTERVAL = 5.0
 NOT_A_PREFIX_LIST = ["bin","lib","logs","resources"]
+SZARP_DIR = "/opt/szarp"
 
 class SSLContextFactory:
 	"""Factory creating ssl contexts"""
@@ -166,10 +169,31 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
         def do_prefix_sync(self):
                 # Compare prefixes in database with /opt/szarp directory perform synchronization
                 # Check config/aggr.xml and modify aggregated map
+                prefix_map = {}
 
-                for prefix_dir in os.walk('/opt/szarp').next()[1]:
+                for prefix_dir in os.walk(SZARP_DIR).next()[1]:
                         if prefix_dir not in NOT_A_PREFIX_LIST:
-                                print prefix_dir
+                                # check if aggregated
+                                prefix_map[prefix_dir] = []
+                                try:
+                                        treeAggr = ET.parse(SZARP_DIR + "/" + prefix_dir + "/config/aggr.xml")
+                                        treeAggrRoot = treeAggr.getroot()
+                                        treeAggrConfigs = treeAggrRoot.findall("{http://www.praterm.com.pl/IPK/aggregate}config")
+                                        for treeAggrConfig in treeAggrConfigs:
+                                                prefix_map[prefix_dir].append(treeAggrConfig.attrib['prefix'])
+
+                                except IOError:
+                                        print "Not aggregated"
+
+                self.sync_update_interaction(prefix_map)
+
+        # Update database prefixes and aggregated map
+        def _sync_update_interaction(self, trans, prefix_map):
+                tdb = transdb.TransDbAccess(self.service.db, trans)
+                tdb.sync_update(prefix_map)
+
+        def sync_update_interaction(self, prefix_map):
+		return self.service.db.dbpool.runInteraction(self._sync_update_interaction, prefix_map)
 
         # Database users and cfglogin szbases sync
         #def do_cfglogin_sync(self):
