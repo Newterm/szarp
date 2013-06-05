@@ -33,7 +33,6 @@ class TransDbAccess:
 		self.trans = trans
 
         def sync_update(self, prefix_map):
-                print prefix_map
 
 		self.trans.execute("""
                         SELECT 
@@ -41,7 +40,7 @@ class TransDbAccess:
                                 aggregators.aggregated  
                         FROM 
                                 prefix 
-                        INNER JOIN 
+                        LEFT JOIN 
                                 (SELECT 
                                         aggregated_map.aggregated AS aggregator, 
                                         prefix.prefix 
@@ -59,8 +58,44 @@ class TransDbAccess:
 			""")
 
                 rows = self.trans.fetchall()
-                print rows
-	
+                db_map = {}
+
+                if rows:
+                        for row in rows:
+                                if row[0] not in db_map:
+                                        db_map[row[0]] = []
+                                if row[1]:
+                                        db_map[row[0]].append(row[1])
+                
+
+                # Prefixes in /opt/szarp, not in database
+                diff = list(set(prefix_map.keys()) - set(db_map.keys()))
+                for missing in diff:
+                        self.trans.execute("""
+                                INSERT INTO
+                                        prefix
+                                VALUES
+                                        (DEFAULT, %(prefix)s)
+			                """,
+			        { 'prefix' : missing })
+                        
+                        db_map[missing] = []
+
+                # Modifications of aggregated_map
+                for key in db_map.keys():
+                        if key in prefix_map.keys():
+                                aggr_diff = list(set(prefix_map[key]) - set(db_map[key]))
+                                if aggr_diff:
+                                        for prefix in aggr_diff:
+                                                self.trans.execute("""
+                                                        INSERT INTO
+                                                                aggregated_map
+                                                        VALUES
+                                                                ((SELECT id FROM prefix WHERE prefix = %(prefix)s), 
+                                                                 (SELECT id FROM prefix WHERE prefix = %(aggregated)s))
+			                                """,
+                                                        { 'prefix' : prefix, 'aggregated' : key })
+                
         def hash_update(self, prefix, config_hash):
 
                 #log.msg("Debug: hash_update("+prefix+","+config_hash+")")
@@ -76,7 +111,7 @@ class TransDbAccess:
 			{ 'user' : prefix } )
 	
 		row = self.trans.fetchone()
-		if row is not None:
+		if row:
                         if config_hash != row[1]:
 
                                 log.msg("Debug: hash_update("+prefix+","+row[1]+" -> "+config_hash+")")
