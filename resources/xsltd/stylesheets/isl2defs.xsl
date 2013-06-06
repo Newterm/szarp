@@ -25,7 +25,8 @@
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:isl="http://www.praterm.com.pl/ISL/params"
 	xmlns="http://www.w3.org/2000/svg"
-	xmlns:svg="http://www.w3.org/2000/svg">
+	xmlns:svg="http://www.w3.org/2000/svg"
+        xmlns:pxslt="http://www.praterm.com.pl/ISL/pxslt">
 
 	<!-- Copy main SVG element and all it's attributes. -->
 	<xsl:template match="svg:svg">
@@ -44,8 +45,7 @@
 	<xsl:template match="*[@isl:uri]">
 		<xsl:variable name="value1">
 			<!-- just copy value -->
-			<xsl:copy-of 
-				select="document(@isl:uri)/isl:params/isl:attribute/text()"/>
+			<xsl:copy-of select="pxslt:isl_vu(@isl:uri)"/>
 		</xsl:variable>
 		
 		<xsl:choose>

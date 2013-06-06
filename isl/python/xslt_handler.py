@@ -2,7 +2,7 @@
   Apache mod_python handler for serving ISL documents - replacing buggy
   mod_xslt.
 
-  SZARP: SCADA software 
+  SZARP: SCADA software
   Copyright (C) 2007  PRATERM S.A.
   Pawel Palucha <pawel@praterm.com.pl>
 
@@ -24,7 +24,8 @@ from mod_python import apache
 from mod_python import util
 from lxml import etree
 from lxml.etree import XSLT
-from StringIO import StringIO
+
+import urllib2
 
 
 class HttpResolver(etree.Resolver):
@@ -57,6 +58,35 @@ class XsltHandler:
 		Initialization - save request object
 		"""
 		self.req = req
+                self.timeout = 2.0
+                self.got_timeout = False
+
+        def isl_vu(self, context, args):
+            if self.got_timeout:
+                self.req.log_error('isl_vu: already got timeout - not doing request', apache.APLOG_WARNING)
+                return u'----'
+
+            url = args[0]
+
+            try:
+                r = urllib2.urlopen(url, timeout=self.timeout)
+
+                if (r.getcode() != 200):
+                    self.req.log_error('isl_vu status_code: %d' % r.getcode(), apache.APLOG_WARNING)
+                    return u'----'
+
+                doc = etree.parse(r, parser)
+
+                vu = doc.getroot()[0].text
+
+                return vu
+            except urllib2.URLError, e:
+                self.req.log_error('isl_vu http timeout for url: %s' % url, apache.APLOG_WARNING)
+                self.got_timeout = True
+            except Exception, e:
+                self.req.log_error('isl_vu url: %s get error: %s' % (url, str(e)), apache.APLOG_ERR)
+
+            return u'----'
 
 	def content(self):
 		"""
@@ -64,6 +94,10 @@ class XsltHandler:
 		"""
 		global svg_stylesheet
 		global defs_stylesheet
+
+                ns = etree.FunctionNamespace("http://www.praterm.com.pl/ISL/pxslt")
+                ns.prefix = 'pxslt'
+                ns['isl_vu'] = self.isl_vu
 
 		fc = util.FieldStorage(self.req)
 		req_type = fc.getfirst('type')
@@ -81,9 +115,16 @@ class XsltHandler:
 
 		doc = etree.parse(fname, parser)
 
+                r = 'dupa'
+                try:
+                    r = stylesheet(doc, uri = "'" + paramd_uri + "'")
+                except Exception, e:
+                    self.req.log_error('content: stylesheet failed %s' % str(e), apache.APLOG_ERR)
+                    r = stylesheet.error_log
+
 		self.req.content_type= 'image/svg+xml'
 		self.req.send_http_header()
-		self.req.write(str(stylesheet(doc, uri = "'" + paramd_uri + "'")))
+		self.req.write(str(r))
 
 def handler(req):
 	"""
