@@ -64,15 +64,15 @@ int TDevice::parseXML(xmlNodePtr node)
 		options = SC::U2S(c);
 		xmlFree(c);
 	}
-	c = xmlGetNoNsProp(node, X"path");
-	if (!c)
-		goto inside;
-	path = SC::U2S(c);
-	xmlFree(c);
 	c = xmlGetNoNsProp(node, X"speed");
 	if (!c)
 		goto inside;
 	speed = atoi((char*) c);
+	xmlFree(c);
+	c = xmlGetNoNsProp(node, X"path");
+	if (!c)
+		goto inside;
+	path = SC::U2S(c);
 	xmlFree(c);
 	c = xmlGetNoNsProp(node, X"stop");
 	if (!c)
