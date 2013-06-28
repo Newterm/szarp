@@ -26,14 +26,97 @@ from twisted.web import xmlrpc
 from twisted.python import log
 
 import datetime
+import hashlib
 
 class TransDbAccess:
 	def __init__(self, db, trans):
 		self.db = db
 		self.trans = trans
 
-        def sync_update(self, prefix_map):
+        def add_user(self, username, password):
 
+                log.msg("Debug: add_user("+username+","+password+")")
+
+                # Insert autologin user into users table
+                name = "Konto automatyczne " + username
+                self.trans.execute("""
+                        INSERT INTO 
+                                users 
+                        VALUES
+                                (DEFAULT, %(username)s, %(password)s, %(name)s, 1)
+                        """,
+                { 'username' : username, 'password' : password, 'name' : name })
+
+                log.msg("Debug: new users("+username+","+password+","+name+")")
+
+        def add_user_prefix_access(self, username):
+                # Insert user_prefix_access for autologin user
+                # 1. Find out id of inserted user
+                self.trans.execute("""
+                        SELECT id FROM users WHERE users.name=%(username)s AND users.autologin=1
+                        """,
+                { 'username' : username })
+                inserted_user_id = self.trans.fetchone()
+
+                log.msg("Debug: inderted_username_id("+str(inserted_user_id[0])+")")
+                # 2. Find out id of prefix that coresponds to autologin username 
+                self.trans.execute("""
+                        SELECT prefix.id FROM prefix WHERE prefix.prefix=%(username)s
+                        """,
+                { 'username' : username })
+                coresponding_prefix_id = self.trans.fetchone()
+ 
+                log.msg("Debug: coresponding_prefix_id("+str(coresponding_prefix_id[0])+")")
+                # Insert access privilage for autologin user
+                self.trans.execute("""
+                        INSERT INTO 
+                                user_prefix_access 
+                        VALUES
+                                (%(user_id)s,%(prefix_id)s,1)
+                        """,
+                { 'user_id' : inserted_user_id[0], 'prefix_id' : coresponding_prefix_id[0] })
+                
+        def add_user_prefix_access_aggregated(self, username):
+                # Insert access privilage for aggregated
+                self.trans.execute("""
+                        INSERT INTO 
+                                user_prefix_access (user_id, prefix_id)
+                        SELECT 
+                                users.id, aggregated_map.prefix 
+                        FROM 
+                                users, aggregated_map, prefix 
+                        WHERE 
+                                users.name=%(username)s
+                        AND
+                                prefix.prefix=%(username)s
+                        AND
+                                aggregated_map.aggregated=prefix.id
+                        """,
+                { 'username' : username })
+
+                log.msg("Debug: new user_prefix_access(for aggregated)")
+
+        def update_user_prefix_access_aggregated(self, username):
+                #@TODO: merge with above query
+                # Update write access
+                self.trans.execute("""
+                        UPDATE 
+                                user_prefix_access
+                        SET 
+                                write_access=1 
+                        FROM 
+                                users 
+                        WHERE 
+                                users.name=%(username)s
+                        AND
+                                user_prefix_access.user_id=users.id
+                                """,
+                { 'username' : username })
+
+                log.msg("Debug: new user_prefix_access(aggregated write access update)")
+                
+        def db_map(self):
+                # Fetch (prefix, aggr_prefix) table from database
 		self.trans.execute("""
                         SELECT 
                                 prefix.prefix, 
@@ -52,79 +135,105 @@ class TransDbAccess:
                                         aggregated_map 
                                 ON
                                         prefix.id = aggregated_map.prefix) 
-                                AS aggregators 
-                                
-                        ON prefix.id = aggregators.aggregator;
-			""")
+                        AS 
+                                aggregators 
+                        ON 
+                                prefix.id = aggregators.aggregator
+                        """)
 
                 rows = self.trans.fetchall()
                 db_map = {}
 
+                # Transform (prefix, aggregated_prefix) table into
+                # { prefix : [aggr_prefx1, ...], ... } map
                 if rows:
                         for row in rows:
                                 if row[0] not in db_map:
                                         db_map[row[0]] = []
                                 if row[1]:
                                         db_map[row[0]].append(row[1])
-                
 
-                # Prefixes in /opt/szarp, not in database
+                return db_map
+
+        def prefix_update(self, prefix_map, db_map):
+                # Insert into database prefixes in /opt/szarp and not in database
                 diff = list(set(prefix_map.keys()) - set(db_map.keys()))
                 for missing in diff:
+                        # Add prefix
+                        log.msg("Debug: db_update("+missing+")")
                         self.trans.execute("""
                                 INSERT INTO
                                         prefix
                                 VALUES
                                         (DEFAULT, %(prefix)s)
-			                """,
-			        { 'prefix' : missing })
-                        
+			        """,
+			{ 'prefix' : missing })
+
+                        # Adding this new prefix to map so it will have its
+                        # aggregated information updated in next step along
+                        # with other prefixes
                         db_map[missing] = []
 
-                # Modifications of aggregated_map
+        def aggregated_update(self, prefix_map, db_map):
+                # Insert user_prefix_access for autologin user
+               
+                # Modifying aggregated maps for prefixes in database
                 for key in db_map.keys():
                         if key in prefix_map.keys():
+                                # Find id of aggregator
+                                self.trans.execute("""
+                                        SELECT id FROM prefix WHERE prefix = %(prefix)s
+                                        """,
+                                { 'prefix' : key })
+                                aggregator_id = self.trans.fetchone()
                                 aggr_diff = list(set(prefix_map[key]) - set(db_map[key]))
                                 if aggr_diff:
                                         for prefix in aggr_diff:
+                                                # Find id of aggregated
+                                                self.trans.execute("""
+                                                        SELECT id FROM prefix WHERE prefix = %(prefix)s
+			                                """,
+                                                { 'prefix' : prefix })
+                                                aggregated_id = self.trans.fetchone()
+
+                                                # Insert into aggregated_map(aggregated, aggregator)
                                                 self.trans.execute("""
                                                         INSERT INTO
                                                                 aggregated_map
                                                         VALUES
-                                                                ((SELECT id FROM prefix WHERE prefix = %(prefix)s), 
-                                                                 (SELECT id FROM prefix WHERE prefix = %(aggregated)s))
+                                                                (%(aggregated_id)s, %(aggregator_id)s)
 			                                """,
-                                                        { 'prefix' : prefix, 'aggregated' : key })
-                
+                                                { 'aggregated_id' : aggregated_id[0], 'aggregator_id' : aggregator_id[0] })
+
+        #@TODO: get all config hashes and compare with database in for loop
         def hash_update(self, prefix, config_hash):
-
-                #log.msg("Debug: hash_update("+prefix+","+config_hash+")")
-
-		self.trans.execute("""
-			SELECT
-				id, password
-			FROM
-				users
-			WHERE
-				name = %(user)s and autologin = 1
-			""",
-			{ 'user' : prefix } )
-	
-		row = self.trans.fetchone()
-		if row:
+                
+                # Fetch autologin users
+                self.trans.execute("""
+                        SELECT
+                                id, password
+                        FROM
+                                users
+                        WHERE
+                                name = %(user)s and autologin = 1
+                        """,
+                { 'user' : prefix } )
+            
+                row = self.trans.fetchone()
+                if row:
                         if config_hash != row[1]:
 
                                 log.msg("Debug: hash_update("+prefix+","+row[1]+" -> "+config_hash+")")
 
-		                self.trans.execute("""
+                                self.trans.execute("""
                                         UPDATE 
                                                 users
-	                                SET 
+                                        SET 
                                                 password = %(password)s 
                                         WHERE 
                                                 users.id = %(id)s
-			                """,
-			        { 'password' : config_hash, 'id' : row[0] } )
+                                        """,
+                                { 'password' : config_hash, 'id' : row[0] } )
 
         def fetch_cfglogin(self):
                 # Fetch users using cfglogin
@@ -161,10 +270,10 @@ class TransDbAccess:
                 # Login a prefix-wide type user
                 ok, user_id, username = self.login(user_data[1], password)
 
-		if ok:
+                if ok:
                         log.msg("Debug: User entry (" + user_data[1] + ", " + password + ") is authorised (config files in sync)")
                         # Configuration files are in sync
-			return ok, user_id, user_data[0]
+                        return ok, user_id, user_data[0]
                 else:
                         log.msg("Debug: User entry (" + user_data[1] + ", " + password + ") is not authorised (checking if username exists)")
                         # Check if user login exists in users at all
@@ -176,7 +285,7 @@ class TransDbAccess:
                                 WHERE
                                         name = %(name)s
                                 """,
-                                { 'name' : user_data[1] } )
+                        { 'name' : user_data[1] } )
 
                         row = self.trans.fetchone()
 
@@ -196,7 +305,7 @@ class TransDbAccess:
 			        WHERE
 				        user_id = %(user_id)s and password = %(password)s
 			        """,
-                                { 'user_id' : user_id, 'password' : password } )
+                        { 'user_id' : user_id, 'password' : password } )
 	
                         rows = self.trans.fetchall()
                         
@@ -237,7 +346,7 @@ class TransDbAccess:
 			WHERE
 				name = %(user)s and password = %(password)s
 			""",
-			{ 'user' : user, 'password' : password } )
+		{ 'user' : user, 'password' : password } )
 	
 		row = self.trans.fetchone()
 		if row is not None:
@@ -261,8 +370,8 @@ class TransDbAccess:
 					user_prefix_access.user_id = %(user_id)s
 				AND
 					user_prefix_access.write_access = 1
-
-			""",  { 'prefix' : prefix, 'user_id': user_id })
+                        """,  
+                { 'prefix' : prefix, 'user_id': user_id })
 
 		r = self.trans.fetchall()
 		return r[0][0] if len(r) > 0 else None
