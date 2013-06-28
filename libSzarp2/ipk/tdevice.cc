@@ -65,10 +65,10 @@ int TDevice::parseXML(xmlNodePtr node)
 		xmlFree(c);
 	}
 	c = xmlGetNoNsProp(node, X"speed");
-	if (!c)
-		goto inside;
-	speed = atoi((char*) c);
-	xmlFree(c);
+	if (c) {
+		speed = atoi((char*) c);
+		xmlFree(c);
+	}
 	c = xmlGetNoNsProp(node, X"path");
 	if (!c)
 		goto inside;
