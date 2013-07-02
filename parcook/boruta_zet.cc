@@ -242,7 +242,7 @@ void zet_proto_impl::stop_timer() {
 
 void zet_proto_impl::send_query(struct bufferevent* bufev) {
 	std::stringstream ss;
-	ss << "\x11\x02P" << m_id << "\x03";
+	ss << "\x11\x02P" << m_id ;
 	bool sending_data = false;
 	unsigned short sender_checksum = 0;
 	for (size_t i = 0; i < m_send_count; i++) { 
