@@ -6,6 +6,101 @@
 # Empty lines are ignored.
 # $Id$
 
+
+** 3.1.684:
+# 02.09.2011
+* Draw3 documentation update: some recently added features has
+been documented, documentation on user defined params has
+been extended
+* Fixed problem in params.xml parser, broken xml file
+could make application using the parser to loop ad infinitum
+* Small fix - params having GJ unit are no longer automatically 
+flagged as having "hoursum" attribute
+* Fix: lua parameters for 30-second range no longer go outside
+of first-last available date range
+* Quit button added to draw3 help window, without that 
+button it wasn't possible to close help window when draw3
+was running on system without window manager
+* Fixes for boruta in tcp server mode handling
+
+** 3.1.682:
+# 05.09.2011
+* Fix in parameter editing bug under draw3
+* Fixed small bug in period switichng in draw3 (it was possible
+for period radio button to become out of sync with actual
+period show in graph widget)
+* Improved SZARP compilation under debian unstable
+* Fix in ddeproxy service shutdown
+* New feature for draw3. Up to today on main draw3 graph widget
+each point (for periods decade, year, month, week and season) represented
+average value of parameter from corresponding time span (e.g. for
+period year, each point represented average param value for a month).
+For some types of params (especially counters) it wasn't necessarily
+the most interesting piece of information user would like to have.
+Because of this draw3 has been extended to allow user to choose
+among 3 different kind of values to be displayed for decade, year,
+month, week and season period):
+- average, that a default and only option available so far, each
+point represents param average valuek
+- last, last 10-minute probe for a point time span is drawn
+- diff, difference between value of last 10-minute probe and
+first 10-minute of time span covered by point is drawn
+New option is accessible from context menu of graphs' list
+widget.
+
+** 3.1.673:
+# 09.06.2012
+* basic data extraction support for draw3, this features mostly
+duplicates extractor3 functionality but also provides feature
+not present in draw3 - from draw3 it is possible to extract data
+for user defined params
+* a handful of new features in pyipk: support for regex-based text searching, 
+parameters' names validation, configuration reloading, attributes editing, ....
+* bugfix - error frame does no longer receives focus when shown
+* work on new format of database that will be able to hold values with 
+arbitrary time precision
+* fixed bug in extractor3 - due to uninitialized variable sometimes
+extractor failed to extract data
+* fixed a problem in calculatiog average values of combined params in parcook
+daemon
+* minor fixes to async syslog library 
+
+** 3.1.653
+# 01.06.2012
+* szarp logging library "liblog" has seen significant improvements.
+Up to now liblog implemented one way of logging - the log files have
+been written directly to disk in a fixed textual format. The changed liblog
+introduces notion of plugins which hide the details of actual logging
+mechanism behind a simple API and make liblog easily extendable and configurable
+to support various logging methods. Currently liblog comes with following
+plugins:
+- syslog: which is now default on linux platform, as the name suggest
+this plugin uses syslog as an underlaying logging method
+- asyslog: this one is very similar to syslog but uses our homebrew
+implementation of non-blocking asynchronous syslog protocol, suitable
+for use in applications based on libevent
+- classic: this plugin implements the old-way of logging, used by default
+on Windows
+* asyslog has been added to SZARP - it is a simple asynchronous implementation
+of syslog library to be used in applications based on libevent. This library 
+let application do the logging in purely non-blocking way.
+* boruta modbus driver now supports sending of constant integer values
+* draw3 supports command-line switch to make it start in full-screen
+mode
+* fix precision calculation in boruta lumel driver
+
+** 3.1.647
+# 01.05.2012
+* new boruta plugin for Lumel meters
+* new boruta plugin for tensometric scales
+* further developments of pyipk:
+  - plugins to manipulate reports and sets
+  - support for simultaneous editing of multiple params.xml
+  - params.xml can be edited over ssh connection
+  - added plugin that checks if colors repeat in draw3 sets
+* ekstraktor3 now supports extraction of "counter" values - it
+  is possible to request extraction of last value of a parameter
+  for a given period
 ** 3.1.631
 #01.04.2012
 * bug fixes and cleanup of remarks server code

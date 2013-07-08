@@ -48,6 +48,9 @@ ValueInfo::ValueInfo() {
 	val = SZB_NODATA;
 	sum = SZB_NODATA;
 	db_val = SZB_NODATA;
+	av_val = SZB_NODATA;
+	first_val = SZB_NODATA;
+	last_val = SZB_NODATA;
 	max_probes = -1;
 	count_probes = 0;
 	n_count = 0;
@@ -374,6 +377,28 @@ const TimeIndex& Draw::GetTimeIndex() {
 	return m_index;
 }
 
+void Draw::AverageValueCalculationMethodChanged() {
+	for (size_t i = 0; i < m_values.len(); ++i) {
+		ValueInfo &v = m_values.Get(i);
+		if (v.state == ValueInfo::PRESENT || v.state == ValueInfo::NEIGHBOUR_WAIT) {
+			switch (m_draw_info->GetAverageValueCalculationMethod()) {
+				case AVERAGE_VALUE_CALCULATION_AVERAGE:
+					v.db_val = v.av_val;
+					break;
+				case AVERAGE_VALUE_CALCULATION_LAST:
+					v.db_val = v.last_val;
+					break;
+				case AVERAGE_VALUE_CALCULATION_LAST_FIRST:
+					v.db_val = v.last_val - v.first_val;
+					break;
+			}
+			if (v.state == ValueInfo::PRESENT)
+				m_values.CalculateProbeValue(i);
+		}
+	}
+	m_values.RecalculateStats();
+}
+
 ValuesTable::ValuesTable(Draw *draw) {
 	m_draw = draw;
 }
@@ -408,6 +433,8 @@ void ValuesTable::ClearStats() {
 	m_data_probes_count = 0;
 
 	m_sum = 
+	m_sum2 = 
+	m_sdev = 
 	m_max = 
 	m_min = 
 	m_hsum = 
@@ -566,17 +593,21 @@ void ValuesTable::UpdateStats(int idx) {
 		m_max = std::max(val, m_max);
 		m_min = std::min(val, m_min);
 		m_sum += val;
+		m_sum2 += val * val;
 		if (m_draw->GetDrawInfo() != NULL)
 			m_hsum += v.sum / m_draw->GetDrawInfo()->GetSumDivisor();
 	} else {
 		m_max = m_min = val;
 		m_sum = val;
+		m_sum2 = val * val;
 		if (m_draw->GetDrawInfo() != NULL)
 			m_hsum = v.sum / m_draw->GetDrawInfo()->GetSumDivisor();
 	}
 	if (m_draw->m_draws_controller->GetPeriod() == PERIOD_T_30MINUTE)
 		m_hsum /= 60;
 	m_count++;
+
+	m_sdev = sqrt(m_sum2 / m_count - m_sum / m_count * m_sum / m_count);
 }
 
 void ValuesTable::CalculateProbeValue(int index) {
@@ -635,9 +666,23 @@ void ValuesTable::InsertValue(DatabaseQuery::ValueData::V *v, bool &view_values_
 
 	ValueInfo& vi = m_values.at(index);
 
-	vi.db_val = v->response;
+	vi.av_val = v->response;
 	vi.sum = v->sum;
+	vi.first_val = v->first_val;
+	vi.last_val = v->last_val;
 	vi.count_probes = v->count;
+
+	switch (m_draw->m_draw_info->GetAverageValueCalculationMethod()) {
+		case AVERAGE_VALUE_CALCULATION_AVERAGE:
+			vi.db_val = v->response;
+			break;
+		case AVERAGE_VALUE_CALCULATION_LAST:
+			vi.db_val = v->last_val;
+			break;
+		case AVERAGE_VALUE_CALCULATION_LAST_FIRST:
+			vi.db_val = v->last_val - v->first_val;
+			break;
+	}
 
 	UpdateProbesValues(index, stats_updated, view_values_changed);
 }

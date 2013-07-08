@@ -456,7 +456,7 @@ class boruta_daemon {
 public:
 	boruta_daemon();
 	struct event_base* get_event_base();	
-	int configure(DaemonConfig *cfg);
+	int configure(int *argc, char *argv[]);
 	void go();
 	static void cycle_timer_callback(int fd, short event, void* daemon);
 };

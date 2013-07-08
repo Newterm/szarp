@@ -52,15 +52,15 @@ public:
 	virtual InquirerId GetId() const;
 
 	/**@return current param, queries for values of this param will have higher priority than queries to other params*/
-	virtual DrawInfo* GetCurrentDrawInfo() = 0;
+	virtual DrawInfo* GetCurrentDrawInfo();
 
 	/**@return current time, used for queries prioritization*/
-	virtual time_t GetCurrentTime() = 0;
+	virtual time_t GetCurrentTime();
 
 	/**method is called when response from db is received
 	 * @param query object holding response from database, the same instance that was sent to the database via 
 	 * @see QueryDatabase method but with proper fields filled*/
-	virtual void DatabaseResponse(DatabaseQuery *query) = 0;
+	virtual void DatabaseResponse(DatabaseQuery *query);
 
 	/**Removes object from @see DatabaseManager*/
 	virtual ~DBInquirer();

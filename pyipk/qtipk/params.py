@@ -146,9 +146,7 @@ class QNode( PNode , QtCore.QObject ) :
 		PNode.touch( self )
 
 	def delete( self ) :
-		self.deleteBegSig.emit()
 		PNode.remove( self.parent , self )
-		self.deleteEndSig.emit()
 
 	def _remove( self , child ) :
 		child.deleteBegSig.emit()

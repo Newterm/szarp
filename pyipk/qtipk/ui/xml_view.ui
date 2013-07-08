@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>274</width>
-    <height>210</height>
+    <width>353</width>
+    <height>418</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -55,6 +55,9 @@
      <property name="headerHidden">
       <bool>false</bool>
      </property>
+     <property name="expandsOnDoubleClick">
+      <bool>false</bool>
+     </property>
      <attribute name="headerVisible">
       <bool>true</bool>
      </attribute>
@@ -66,12 +69,85 @@
      </attribute>
     </widget>
    </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLineEdit" name="lineFind"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="butPrev">
+       <property name="text">
+        <string>Previous</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="butNext">
+       <property name="text">
+        <string>Next</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>lineFind</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>XmlView</receiver>
+   <slot>on_search(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>48</x>
+     <y>401</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>3</x>
+     <y>368</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>butNext</sender>
+   <signal>clicked()</signal>
+   <receiver>XmlView</receiver>
+   <slot>on_next()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>304</x>
+     <y>403</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>350</x>
+     <y>378</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>butPrev</sender>
+   <signal>clicked()</signal>
+   <receiver>XmlView</receiver>
+   <slot>on_prev()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>224</x>
+     <y>392</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>245</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <slots>
   <slot>on_expand()</slot>
   <slot>on_changed()</slot>
+  <slot>on_search(QString)</slot>
+  <slot>on_next()</slot>
+  <slot>on_prev()</slot>
  </slots>
 </ui>

@@ -1109,11 +1109,16 @@ struct event_base* boruta_daemon::get_event_base() {
 	return m_event_base;
 }
 
-int boruta_daemon::configure(DaemonConfig *cfg) {
-	m_cfg = cfg;
-	if (configure_ipc())
-		return 1;
+int boruta_daemon::configure(int *argc, char *argv[]) {
 	if (configure_events())
+		return 1;
+
+	m_cfg = new DaemonConfig("borutadmn");
+	if (m_cfg->Load(argc, argv, 0, NULL, 0, m_event_base))
+		return 1;
+	g_debug = m_cfg->GetDiagno() || m_cfg->GetSingle();
+
+	if (configure_ipc())
 		return 1;
 	if (configure_units())
 		return 1;
@@ -1155,17 +1160,11 @@ void boruta_daemon::cycle_timer_callback(int fd, short event, void* daemon) {
 }
 
 int main(int argc, char *argv[]) {
-	DaemonConfig   *cfg;
 	xmlInitParser();
 	LIBXML_TEST_VERSION
 	xmlLineNumbersDefault(1);
-	cfg = new DaemonConfig("borutadmn");
-	assert(cfg != NULL);
-	if (cfg->Load(&argc, argv))
-		return 1;
-	g_debug = cfg->GetDiagno() || cfg->GetSingle();
 	boruta_daemon daemon;
-	if (daemon.configure(cfg))
+	if (daemon.configure(&argc, argv))
 		return 1;
 	signal(SIGPIPE, SIG_IGN);
 	dolog(2, "Starting Boruta Daemon");

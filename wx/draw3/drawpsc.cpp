@@ -31,10 +31,10 @@
 #include "drawpsc.h"
 #include "drawapp.h"
 
-DrawPscSystemConfigurationEditor* DrawPscSystemConfigurationEditor::Create(IPKConfig *ipk, DrawPsc *psc) {
+DrawPscSystemConfigurationEditor* DrawPscSystemConfigurationEditor::Create(wxString szarp_data_dir, IPKConfig *ipk, DrawPsc *psc) {
 	wxString prefix = ipk->GetPrefix();
 
-	wxFileName cd(wxGetApp().GetSzarpDataDir(), wxEmptyString);
+	wxFileName cd(szarp_data_dir, wxEmptyString);
 	cd.AppendDir(prefix);
 	cd.AppendDir(_T("config"));
 	wxFileName packs_file_name(cd.GetPath(), _T("packs.xml"));
@@ -169,13 +169,15 @@ bool& DrawPscSystemConfigurationEditor::IsUnitDataPresent(PscConfigurationUnit *
 	return m_units_data_flag[u];
 }
 
+DrawPsc::DrawPsc(wxString szarp_data_dir) : m_szarp_data_dir(szarp_data_dir) { }
+
 void DrawPsc::ConfigurationLoaded(IPKConfig *ipk) {
 	wxString prefix = ipk->GetPrefix();
 	if (m_editors.find(ipk->GetPrefix()) != m_editors.end())
 		delete m_editors[ipk->GetPrefix()];
 	m_editors.erase(ipk->GetPrefix());
 
-	DrawPscSystemConfigurationEditor* sc = DrawPscSystemConfigurationEditor::Create(ipk, this);
+	DrawPscSystemConfigurationEditor* sc = DrawPscSystemConfigurationEditor::Create(m_szarp_data_dir, ipk, this);
 	if (sc == NULL)
 		return;
 

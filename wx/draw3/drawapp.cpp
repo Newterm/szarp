@@ -279,7 +279,7 @@ bool DrawApp::OnInit() {
 			GetSzarpDir().c_str(), 
 			_lang.c_str(),
 			new szMutex());
-	m_cfg_mgr = new ConfigManager(this, IPKContainer::GetObject());
+	m_cfg_mgr = new ConfigManager(GetSzarpDataDir(), IPKContainer::GetObject());
 
 	m_cfg_mgr->SetSplashScreen(splash);
 
@@ -489,14 +489,9 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 
 	long debug;
 	if (parser.Found(_T("debug"), &debug))
-#ifdef __WXGTK__
-		loginit((int) debug, "/tmp/draw3.log");
-#else
-		loginit((int) debug, SC::S2A(wxGetHomeDir() + _T("\\draw3.log")).c_str());
-#endif
+		sz_loginit((int) debug, "draw3", SZ_LIBLOG_FACILITY_APP);
 	else
-		loginit(2, NULL);
-	log_info(0);
+		sz_loginit(2, "draw3", SZ_LIBLOG_FACILITY_APP);
 
 	return true;
 }
@@ -642,12 +637,6 @@ void DrawGLApp::ShowAbout(wxWindow *parent)
 
 void DrawGLApp::SetProgName(wxString str) {
 	szAppImpl::SetProgName(str);
-}
-
-void debug_print_long(wchar_t *l) {
-	FILE * f = fopen("/tmp/draw_debug_print.tmp", "w");
-	fprintf(f, "%ls\n", l);
-	fclose(f);
 }
 
 void DrawApp::HandleEvent(wxEvtHandler *handler, wxEventFunction func, wxEvent& event) const

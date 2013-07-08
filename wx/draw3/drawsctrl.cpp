@@ -684,6 +684,18 @@ bool DrawsController::GetNoData() {
 	return m_state == m_states[STOP];
 }
 
+std::pair<time_t, time_t> DrawsController::GetStatsInterval() {
+	if (m_selected_draw == -1)
+		return std::make_pair(time_t(-1), time_t(-1));
+
+	const Draw::VT& vt = m_draws[m_selected_draw]->GetValuesTable();
+
+	time_t end = m_draws[m_selected_draw]->GetTimeOfIndex(vt.m_stats.m_end - vt.m_view.Start()).GetTime().GetTicks();
+	time_t start = m_draws[m_selected_draw]->GetTimeOfIndex(vt.m_stats.m_start - vt.m_view.Start()).GetTime().GetTicks();
+
+	return std::make_pair(std::min(start, end), std::max(start, end));
+}
+
 void DrawsController::HandleSearchResponse(DatabaseQuery *query) {
 	if (query->search_data.period_type == GetPeriod() && GetCurrentDrawInfo() == query->draw_info)
 		m_state->HandleSearchResponse(query);
@@ -1175,7 +1187,7 @@ DrawInfo* DrawsController::GetCurrentDrawInfo() {
 }
 
 time_t DrawsController::GetCurrentTime() {
-	return m_current_time.GetTime().GetTicks();
+	return m_current_time.IsValid() ? m_current_time.GetTime().GetTicks() : -1;
 }
 
 bool DrawsController::GetDoubleCursor() {
@@ -1362,6 +1374,19 @@ void DrawsController::RefreshData(bool auto_refresh) {
 	} else {
 		FetchData();
 		EnterState(WAIT_DATA_NEAREST, m_state->GetStateTime());
+	}
+}
+
+void DrawsController::DrawInfoAverageValueCalculationChanged(DrawInfo* di) {
+	for (int i = 0; i < m_active_draws_count; i++) {
+		if (!m_draws[i]->GetEnable())
+			continue;
+		if (m_draws[i]->GetDrawInfo() != di)
+			continue;
+
+		m_draws[i]->AverageValueCalculationMethodChanged();
+
+		m_observers.NotifyAverageValueCalculationMethodChanged(m_draws[i]);
 	}
 }
 
@@ -1591,4 +1616,8 @@ void DrawsObservers::NotifyBlockedChanged(Draw* draw) {
 
 void DrawsObservers::NotifyDrawsSorted(DrawsController* controller) {
 	std::for_each(m_observers.begin(), m_observers.end(), std::bind2nd(std::mem_fun(&DrawObserver::DrawsSorted), controller));
+}
+
+void DrawsObservers::NotifyAverageValueCalculationMethodChanged(Draw *draw) {
+	std::for_each(m_observers.begin(), m_observers.end(), std::bind2nd(std::mem_fun(&DrawObserver::AverageValueCalculationMethodChanged), draw));
 }

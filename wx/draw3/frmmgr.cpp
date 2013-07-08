@@ -39,6 +39,7 @@
 #include "seteditctrl.h"
 #include "remarks.h"
 #include "drawpick.h"
+#include "dbinquirer.h"
 #include "drawfrm.h"
 #include "frmmgr.h"
 #include "dbmgr.h"
@@ -165,7 +166,7 @@ void FrameManager::OnClose(wxCloseEvent &event) {
 
 	assert(i < frames.Count());
 
-	int dn = frame->GetId();
+	int dn = frame->wxWindowBase::GetId();
 
 	int width, height;
 	frame->GetSize(&width, &height);
@@ -193,7 +194,7 @@ DrawFrame *FrameManager::FindFrame(int number) {
 	DrawFrame *ret = NULL;
 
 	for (size_t i = 0; i < frames.Count(); ++i)
-		if (frames[i]->GetId() == number) {
+		if (frames[i]->wxWindowBase::GetId() == number) {
 			ret = frames[i];
 			break;	
 		}

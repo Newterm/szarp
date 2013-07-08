@@ -56,6 +56,8 @@ class StatDialog : public szFrame, public DBInquirer, public DrawInfoDropReceive
 	double m_min;
 	/**Calculated sum*/
 	double m_sum;
+	/**Calculated sum*/
+	double m_sum2;
 	/**Calculate hoursum value*/
 	double m_hsum;
 	/**Found maximum value*/
@@ -88,6 +90,8 @@ class StatDialog : public szFrame, public DBInquirer, public DrawInfoDropReceive
 	wxStaticText *m_min_value_text;
 	/**Widget showing average value*/
 	wxStaticText *m_avg_value_text;
+	/**Widget showing average value*/
+	wxStaticText *m_stddev_value_text;
 	/**Widget showing hoursum value*/
 	wxStaticText *m_hsum_value_text;
 

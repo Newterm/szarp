@@ -73,7 +73,7 @@ class TransDbAccess:
 			UPDATE
 				param
 			SET
-				prefix_id = %(prefix_id)s, formula = %(formula)s, type=%(type)s, unit=%(unit)s, start_date=%(start_date)s, prec=%(prec)s, mod_time = %(mod_time)s
+				prefix_id = %(prefix_id)s, formula = %(formula)s, type=%(type)s, unit=%(unit)s, start_date=%(start_date)s, prec=%(prec)s, mod_time = %(mod_time)s, deleted = 'f'
 			WHERE
 				id = %(id)s AND user_id=%(user_id)s""",
 			{ 'prefix_id' : prefix_id,
@@ -133,9 +133,9 @@ class TransDbAccess:
 
 		query = u"""
 			INSERT INTO
-				draw (set_id, name, draw, title, sname, prefix_id, hoursum, color, draw_min, draw_max, scale, min_scale, max_scale, draw_order)
+				draw (set_id, name, draw, title, short, prefix_id, hoursum, color, draw_min, draw_max, scale, min_scale, max_scale, draw_order)
 			VALUES
-				(%(set_id)s, %(name)s, %(draw)s, %(title)s, %(sname)s, %(prefix_id)s, %(hoursum)s, %(color)s, %(min)s, %(max)s, %(scale)s, %(min_scale)s, %(max_scale)s, %(draw_order)s)"""
+				(%(set_id)s, %(name)s, %(draw)s, %(title)s, %(short)s, %(prefix_id)s, %(hoursum)s, %(color)s, %(min)s, %(max)s, %(scale)s, %(min_scale)s, %(max_scale)s, %(draw_order)s)"""
 
 		self.trans.execute(query, draw)
 
@@ -285,7 +285,7 @@ class TransDbAccess:
 	def get_draws(self, prefixes, time):
 		self.trans.execute("""
 			SELECT 
-				d.set_id, p.prefix, d.name, d.draw, d.title, d.sname, d.hoursum, d.color, d.draw_min, d.draw_max, d.scale, d.min_scale, d.max_scale, ds.deleted, u.name, ds.mod_time
+				d.set_id, p.prefix, d.name, d.draw, d.title, d.short, d.hoursum, d.color, d.draw_min, d.draw_max, d.scale, d.min_scale, d.max_scale, ds.deleted, u.name, ds.mod_time
 			FROM
 				draw as d
 			JOIN

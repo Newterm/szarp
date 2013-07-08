@@ -68,11 +68,13 @@ int extract(struct extr_arguments arguments,
 		TSzarpConfig *ipk, szb_buffer_t *szb)
 {
 	FILE *output = NULL;
-	SzbExtractor* extr = new SzbExtractor(ipk);
+	SzbExtractor* extr = new SzbExtractor(Szbase::GetObject());
 	assert (extr != NULL);
 
-        for (unsigned int i = 0; i < arguments.params.size(); i++)
+        for (unsigned int i = 0; i < arguments.params.size(); i++) {
 		arguments.params[i].szb = szb;
+		arguments.params[i].prefix = ipk->GetPrefix();
+	}
 
         if (arguments.year < 0)
                 extr->SetPeriod(arguments.probe, arguments.start_time,

@@ -400,7 +400,7 @@ kliknij ikonê <inlinemediaobject><imageobject><imagedata
 </chapter> <!-- draw3-base -->
 
 <chapter id="draw3-ext">
-<title>Zagadnienia zaawansowane</title>
+<title>Funkcje program draw3</title>
 
 <section id="draw3-ext-toc">
 <title>Spis tre¶ci</title>
@@ -857,6 +857,41 @@ sam parametr u¿ytkownika:
 </para>
 </section> <!-- draw3-ext-chartset -->
 
+<section id="draw3-ext-change-point-meaning">
+<title>Zmiana rodzaju warto¶ci reprezentowanych przez punkt</title>
+<para>
+Standardowo ka¿dem punktowi na wykresie odpowiada ¶rednia warto¶æ
+parametru z okresu reprezentowanego przez ten punkt. Mo¿esz to zmieniæ tak
+by ka¿demu punktowi odpowiada³a:
+<itemizedlist>
+<listitem><para>
+Ostatni± warto¶æ z okresu reprezentowanego przez punkt (czyli np. na 
+ekranie rocznym ka¿dy punkt bêdzie reprezentowa³ warto¶æ parametru z ostaniego
+dnia miesi±ca godziny 23:50)
+</para></listitem>
+<listitem><para>
+Ró¿nicê miêdzy ostatni± a pierwsz± warto¶æi± 10-minutow± próbk± dla okresu
+reprezentowanego przez punkt (np. dla roku bêdzie to ró¿nica miêdzy warto¶ci±
+z 23:50 ostatniego dnia miesi±ca a 00:00 pierwszego dnia miesi±ca)
+</para></listitem>
+</itemizedlist>
+Zmiany tego ustawienia mo¿na dokonaæ z menu kontekstowego pojawiaj±cego siê
+po klikniêciu prawym klawiszem w ten parametr na li¶cie parametrów. G³ówny 
+sens istnienia tej opcji jest taki, ¿e dla niektórych parametrów bardziej
+interesuj±ce od tego jak± by³a ¶rednia warto¶æ parametru w danym okresie,
+jest to jak± warto¶æ przyjmowa³ ten parametr np. pod koniec miesi±ca lub
+o ile w tym okresie warto¶æ parametru wzros³a. Szczególnie jest to przydatne 
+w przypadku parametrów reprezentuj±cych róznego rodzaju liczniki.
+</para>
+<para>
+<figure><title>Zmiana rodzaju warto¶ci reprezentowanych przez punkt</title>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-change_value_type.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+</section>
+
 <section id="draw3-ext-parametersset">
 <title>Definiowanie w³asnych parametrów</title>
 <para>
@@ -883,8 +918,37 @@ parametr musisz okre¶liæ:
 Nazwê parametru - dowolny ci±g znaków identyfikuj±cy parametr.
 </para></listitem>
 <listitem><para>
-Sposób liczenia ¶redniej - czy najpierw liczymy formu³ê dla wszystkich próbek i pó¼niej 
-wyci±gamy ¶redni± z tych próbek, czy te¿ formu³ê stosujemy do wyliczonych ¶rednich.
+Sposób liczenia ¶redniej. Formu³a mo¿e byæ zastosowana raz dla danego ka¿dego punktu 
+z wykresu lub program mozê wyliczyæ formu³ê dla wszystkich warto¶ci 10-mintowych
+i z nich wyci±gn±æ ¶redni±.
+</para>
+<para>
+O co tu chodzi - program rysuj±c wykres warto¶ci paramerów standardowo pos³uguje siê
+warto¶ciami ¶rednimi - np. gdy jeste¶my na ekranie miesiêcznym ka¿demu punktowi na 
+wykresie odpowiada warto¶æ ¶rednia parametru z ka¿dego dnia. Warto¶æ ta w przypadku
+formu³y mo¿e zostaæ wyliczona na dwa sposoby (trzymaj±c siê naszego przyk³adu wykresu
+miesiêcznego):
+<itemizedlist>
+<listitem><para>
+Formu³a dla ka¿dego dnia zostanie wykonana tylko raz. Przy wowo³aniu formu³y parametr
+<emphasis>t</emphasis> bêdzie wskazywa³a na pocz±tek danego dnia (doby), a parametr <emphasis>pt</emphasis>
+bêdzie mia³ warto¶æ <emphasis>PT_DAY</emphasis>. Warto¶æ zwrócona przez formu³ê bêdzie
+bezpo¶rednio narysowana na wykresie.
+</para></listitem>
+<listitem><para>
+Formu³a zostanie wywo³ana 144 (24 * 6) razy dla ka¿dego dnia. Dla warto¶ci parametru <emphasis>t</emphasis>
+przyjmuj±cego odpowiednio warto¶ci <emphasis>t<subscript>0</subscript>, t<subscript>0</subscript> + 10min, t<subscript>0</subscript> + 20min, .., t<subscript>0</subscript> + 23h40min, t<subscript>0</subscript> + 23h50min</emphasis>
+gdzie <emphasis>t<subscript>0</subscript></emphasis> to czas z godziny 00:00 danego dnia. Przy ka¿dy wywo³aniu
+formu³y parametr <emphasis>pt</emphasis> bêdzie ustawiony na warto¶æ <emphasis>PT_MIN10</emphasis>.
+Z tych wszystkich warto¶ci program wyci±gnie ¶redni± i ta zostanie umieszone na wykresie.
+</para></listitem>
+</itemizedlist>
+Oznacza to ¿e formu³y liczone drugim sposobem bêd± wyliczane zawsze
+na warto¶ciach 10-minutowych, a wszystkie pozosta³e warto¶ci (godzinowe, dobowe, tygodniowe, miesiêczne, roczne) zostan± 
+wyliczone na podstawie warto¶ci 10-minutowych zwróconych przez formu³ê.
+Wyj±tkiem od tego schematu s± warto¶ci 10-sekundowe, dla ¶rednich 10-sekundowych zawsze <emphasis>pt</emphasis>
+ustawione jest na <emphasis>PT_SEC10</emphasis>, a warto¶ci parametru wyliczane s±
+dla kolejnych 10-sekudówek, niezale¿nie od tego jaki sposób wylicznia ¶rednich jest wybrany.
 </para></listitem>
 <listitem><para>
 Precyzjê wy¶wietlania parametru (ilo¶æ miejsc po przecinku).
@@ -1617,3 +1681,617 @@ Inne:
 </section> <!-- draw3-ext-shortcuts -->
 
 </chapter> <!-- draw3-ext -->
+
+<chapter id="draw3-definied-param-appendix">
+<title>Dodatek: Parametry definiowalne, przewodnik.</title>
+<section id="raison-d-etre">
+<title>Po co ten dokument?</title>
+<para>
+Dokumentacja systemu SZARP opisuje parametry definiowalne LUA,
+robi to jednak w taki sposób, ¿e to co tam mo¿na znale¼æ ma charakter
+raczej referencyjny, informacje tam zgromadzone przeznaczone s± dla
+kogo¶ kto ju¿ wie o co w parametrach definiowalnych chodzi. Za³o¿eniem
+tego dodatku jest wprowadzenie u¿ytkownika do parametrów
+definiowalnych, tak by parametrami LUA mog³y siê zacz±æ swobodnie
+pos³ugiwaæ osoby bez jakiej¶ poprzedniej wiedzy o tym jak te parametry
+dzia³aj±. Ograniczymy siê tylko do parametrów definiowalnych programu
+przegl±daj±cego bo tylko takie u¿ytkownik aplikacji klienckich
+systemu SZARP mo¿e bezpo¶rednio tworzyæ i edytowaæ.
+</para>
+</section>
+<section>
+<title>Wstêp.</title>
+<para>
+G³ównym zadaniem programu przegl±daj±cego jest rysowanie przebiegów
+warto¶ci parametrów. U¿ytkownik otwiera sobie zestaw wykresów, ustawia
+siê na jakim¶ czasie, a program przegl±daj±cy pobiera warto¶ci parametrów
+i dla ka¿dego z przedzia³ów czasowych (punktach na osi X) nanosi na wykres
+warto¶ci parametrów.
+<note>
+<para>
+Przyk³ad: je¿eli ogl±damy tylko jeden parametr, jeste¶my na ekranie rok
+i na dodatek ustawieni na pocz±tku roku 2012, to ¿eby narysowaæ wykres program
+przegl±daj±cy dowiaduje siê jaka jest ¶rednia[1] warto¶æ parametru dla
+miesi±ca stycznia 2012, lutego 2012, marca 2012, itd., a nastêpnie tak otrzymane
+warto¶ci prezentuje jako wykres parametru.
+</para>
+</note>
+</para>
+<para>
+W przypadku parametrów zbieranych bezpo¶rednio przez system SZARP
+(np. temperatura zewnêtrzna), sprawa jest prosta, program przegl±daj±cy
+wyci±ga odpowiednie warto¶ci z bazy danych, pytaj±c siê bazy - 
+jaka jest ¶rednia warto¶æ temperatury zewnêtrznej w styczniu 2012, 
+lutym 2012, marcu 2012, itd., a je¿eli bêdziemy na ekranie np. miesi±c
+to bêdzie pyta³ jaka jest ¶rednia warto¶æ temperatury w kolejnych
+dniach. Tak samo jest z parametrami definiowalnymi - program przegl±daj±cy 
+pyta siê jaka jest warto¶æ ¶rednia parametru za miesi±c styczeñ, 
+luty, marzec, itp, tylko ju¿ w tym wypadku nie siêga po warto¶æ
+bezpo¶rednio do bazy danych ale korzysta z formu³y parametru
+definiowalnego by uzyskaæ ¿±dan± warto¶æ.
+</para>
+<para>
+A sk±d nazwa parametry definiowalnych LUA? Parametry definiowalne LUA
+s± nazywane tak, poniewa¿ do ich zapisu u¿ywany jest jêzyk skryptowy LUA.
+LUA jest dosyæ popularnym jêzykiem o sk³adni opartej na jêzykach C/Pascal,
+osoby znaj±ce choæ trochê programowanie widz±c przyk³ad kodu w jêzyku LUA,
+na pewno szybko odnajd± znajome konstrukcje.
+</para>
+</section>
+<section>
+<title>Pocz±tki.</title>
+<para>
+Dodaj±c nowy parametr piszemy fragment kodu w jêzyku LUA. Ten fragment
+kodu (zwany czêsto formu³±) oblicza warto¶æ parametru, a ta wyliczona 
+przez formu³ê warto¶æ jest dok³adnie tym co program przegl±daj±cy
+nanosi na wykres.
+</para>
+<para>
+Przejd¼my teraz szybko do przyk³adu, uruchommy program przegl±daj±cy
+i dodajmy nowy parametr definiowalny (szczegó³y jak pos³u¿yæ siê
+programem draw3 ¿eby dodaæ nowy parametr znajduj± siê w dokumentacji
+draw3) o nastêpuj±cej formule:
+<programlisting>
+v = 1
+</programlisting>
+<note>
+<para>
+We wszystkich przyk³adach a¿ do punktu "¦rednie jeszcze raz"
+<xref linkend="draw3-param-tutorial-types-of-averages">
+zak³adamy ¿e parametr ma opcje '¦rednie liczone jako' ustawiony na warto¶æ
+'wynik zastosowania formu³y na ¶rednich'.
+</para>
+</note>
+</para>
+<para>
+Po wy¶wietleniu wykresu naszego parametru zobaczymy poziom± kreskê -
+w ka¿dym swoim punkcie parametr przyjmuje warto¶æ 1. Wynik którego
+mo¿na siê by³o spodziewaæ, a jak to siê sta³o?
+Je¿eli ci±gle jeste¶my na pocz±tku roku 2012 to program przegl±daj±cy 
+wykona³ formu³ê 12 razy chc±c siê dowiedzieæ jaka jest warto¶æ
+parametru dla stycznia 2012, lutego 2012, itp. Program przegl±daj±cy
+po wykonaniu formu³y, sprawdza co znajduje siê w zmiennej v. To co formu³a
+tej zmiennej przypisze jest uznawane za warto¶æ parametru. A ¿e nasza formu³a
+nie robi nic innego jak tylko przypisuje zmiennej v warto¶æ 1, nie przejmuj±c
+siê czymkolwiek, to i nasz parametr ma na wykresie postaæ poziomej 
+kreski.
+</para>
+</section> 
+<section> 
+<title>Czas, czyli zmienna 't'.</title>
+<para>
+Zróbmy teraz co¶ odrobinê ciekawszego, przestawmy draw3 na okno 
+warto¶ci 10-minutowych (dzieñ) i zmienimy nasz± formu³ê na:
+<programlisting>
+v = math.sin(t * 2 * 3.14 / 3600 / 12)
+</programlisting>
+Zobaczymy na ekranie dwie sinusoidy. Niew±tpliwy postêp je¶li
+chodzi o atrakcyjno¶æ wizualn±.
+Nasz nowy parametr nie jest ju¿ poziom± kresk±, jego warto¶æ zale¿y
+od czasu. Tajemnica tkwi w wykorzystaniu zmiennej 't'. To w³a¶nie
+w tej zmiennej, przed wykonaniem formu³y, program przegl±daj±cy
+umieszcza informacje dla jakiego czasu chce uzyskaæ warto¶æ naszego
+parametru. Zak³adaj±c ¿e wybrali¶my dzieñ np. 24 listopada 2012,
+to by narysowaæ wykres program przygl±daj±cy wykona³ formu³ê parametru
+24 * 6 (rysujemy wykres dla 24 godzin, a dla ka¿dej godziny pobieramy
+10 minutowe warto¶ci), podstawiaj±c do zmiennej t warto¶ci czasu 
+odpowiadaj±cej 24 listopada godzina 00:00, 24 listopada godzina 00:10,
+24 listopada godzina 00:20, 24 listopada godzina 00:30, 24 listopada 
+godzina 00:40, 24 listopada godzina 00:50, 24 listopada godzina 01:00
+..., 24 listopada godzina 23:40, 24 listopada godzina 23:50.
+</para>
+<para>
+Czas w zmiennej t zapisany jest jako liczba, ilo¶æ sekund od pewnej
+umownej chwili '0'. Brzmi to dosyæ tajemniczo ale w praktyce, gdy piszemy
+parametry w ogóle nie musimy my¶leæ jak czas jest zapisywany. Ten przyk³ad
+jest w³a¶ciwie wyj±tkiem bo uwzglêdnili¶my reprezentacjê zmiennej t, tak
+¿eby w 24h zmie¶ciæ 2 sinusoidy.
+</para>
+</section> 
+<section> 
+<title>¦rednie, zmienna 'pt'.</title>
+<para>
+Wiemy ju¿ zatem jak program przegl±daj±cy przekazuje formule informacje
+o jaki czas mu chodzi. Brakuje nam jeszcze jednej informacji do 
+kompletu - zmiennej 'pt'. Zmienna pt jest to zmienna w której draw3
+przed wykonaniem formu³y, umieszcza informacje jakiego rodzaju ¶redni±
+formu³a ma wyliczyæ. Je¿eli program jest ustawiony na ekranie 'rok',
+bêd± go interesowa³y ¶rednie miesiêczne, na ekranie miesi±c bêd± to ¶rednie
+dzienne, itd. W odró¿nieniu od zmiennej t, zmienna pt nie przyjmuje warto¶ci
+liczbowej ale tylko jedn± z warto¶ci z okre¶lonego zbioru.
+</para>
+<para>
+Najlepszy bêdzie tu przyk³ad. Zróbmy parametr, który bêdzie przyjmowa³ ró¿n±
+warto¶æ w zale¿no¶ci od tego jaki przedzia³ czasu jest wybrany w programie
+przegl±daj±cym, oto formu³a:
+<programlisting>
+if pt == PT_YEAR then
+        v = 5
+elseif pt == PT_MONTH then
+        v = 4
+elseif pt == PT_DAY then
+        v = 3
+elseif pt == PT_HOUR8 then
+        v = 2
+elseif pt == PT_MIN10 then
+	v = 1
+else
+        v = 0
+end
+</programlisting>
+<note>
+<para>
+Nale¿y pamiêtaæ ¿eby w programie przegl±daj±cym parametr ten mia³ ustawiony
+atrybut '¦rednie liczone jako' na 'wynik zastosowania formu³y dla ¶rednich'.
+</para>
+</note>
+</para>
+<para>
+I co teraz widzimy? Dostajemy parametr który, je¿eli wybierzemy ekran dekada
+zwróci nam warto¶æ 5, gdy rok warto¶æ 4, gdy miesi±c warto¶æ 2, gdy dzieñ
+warto¶æ 1 oraz zero w pozosta³ych przypadkach. 
+</para>
+<para>
+PT_YEAR, PT_MONTH, PT_DAY, PT_HOUR8, PT_MIN10, PT_WEEK i PT_SEC10 to wszystkie
+dopuszczalne warto¶ci zmiennej pt.
+</para>
+</section> 
+<section> 
+<title>Wreszcie co¶ ciekawego.</title>
+<para>
+Wiemy ju¿ mniej wiêcej jak wygl±daj± parametry od strony programu przegl±daj±cego
+i widzieli¶my kilka przyk³adów formu³. Ale tak naprawdê nie mo¿emy zrobiæ
+ci±gle niczego wartego uwagi; mo¿emy robiæ parametry których warto¶ci zale¿±
+od czasu, parametry które przyjmuj± warto¶ci zale¿ne od tego dla jakich ¶rednich je
+liczymy, ale to ci±gle nie jest to. 
+</para>
+<para>
+Potrzebna nam jest mo¿liwo¶æ odwo³ania siê w naszych formu³ach do innych parametrów
+programu SZARP. Przez inne parametry rozumiemy tutaj zarówno parametry zgromadzone
+w bazie danych SZARPa a tak¿e inne parametry definiowalne.
+</para>
+<para>
+Szybki przyk³ad, zróbmy parametr:
+<programlisting>
+v = p("xxxx:Sieæ:Sterownik temperatura zewnêtrzna, t, pt)
+</programlisting>
+<note>
+<para>
+Tekstu p(...) nie wpisujemy, aby uzyskaæ ¿±dany efekt, w oknie 
+edycji parametru klikamy w przycisk &lt;W&gt; i pokazanej listy wybieramy 
+wykres temperatury zewnêtrznej, a dostaniemy to o co chodzi.
+</para>
+</note>
+</para>
+<para>
+Wprowadzamy nowy parametr i widzimy ¿e ten nasz parametr jest wiern±
+kopi± parametru 'temperatura zewnêtrzna'.
+</para>
+<para>
+Co tu siê dzieje? 
+</para>
+<para>
+W naszym parametrze odwo³ali¶my siê do warto¶ci innego parametru. To
+w³a¶nie robi konstrukcja p("xxxx:Sieæ:Sterownik temperatura zewnêtrzna, t, pt),
+a konkretnie funkcja p. Funkcja p pobiera warto¶ci parametru, przyjmuje
+ona 3 parametry:
+<itemizedlist>
+<listitem><para>
+pierwszy to 'globalna nazwa parametru', znowu nie bardzo musimy sie przejmowaæ
+co to dok³adnie jest poniewa¿ tê nazwê dostaniemy od draw3 po wybraniu
+wykresu z listy
+</para></listitem>
+<listitem><para>
+drugim parametrem jest czas 
+</para></listitem>
+<listitem><para>
+a trzecim rodzaj ¶redniej
+</para></listitem>
+</itemizedlist>
+<para>
+W drugim i trzecim argumencie chodzi dok³adnie o to samo, co omawiali¶my w dwóch
+poprzednich punktach. ¯eby pobraæ warto¶æ parametru trzeba okre¶liæ
+o jaki czas oraz o jak± ¶redni± nam chodzi, w ten sam sposób jak okre¶la 
+to draw3 gdy pyta nasz parameter o warto¶æ.
+</para>
+<para>
+W naszym wywo³aniu p("xxxx:Sieæ:Sterownik temperatura zewnêtrzna, t, pt),
+jako czas podali¶my warto¶æ zmiennej t, a jako ¶redni± warto¶æ zmiennej pt.
+Czyli powiedzieli¶my, ¿e chcemy uzyskaæ warto¶æ temperatury zewnêtrznej
+dla takiej chwili w czasie i takiej ¶redniej, o jak± zapyta³ nasz parametr
+program przegl±daj±cy. Je¿eli program przegl±daj±cy zapyta - chcê ¶redni±
+10-minutow± dla Twojego parametru dla godziny 08:40 - to nasz parametr
+zwróci 10-minutow± ¶redni± temperatury zewnêtrznej dla 08:40.
+</para>
+<para>
+Mogliby¶my te¿ np. napisaæ p("xxxx:Sieæ:Sterownik temperatura zewnêtrzna, t, PT_MONTH)
+wtedy, niezale¿nie od tego o jaki rodzaj ¶rednich zapyta nas program przegl±daj±cy,
+my bêdziemy zwracaæ ¶redni± warto¶æ miesiêczn±.
+</para>
+<para>
+Uzbrojeni w tê wiedzê mo¿emy ju¿ robiæ ciekawsze parametry, np. banalny parametr licz±cy
+¶redni± prêdko¶æ rusztu:
+<programlisting>
+v = (p("xxxx:Kocio³ 3:Sterownik:Prêdko¶æ lewego rusztu", t, pt) + p("xxxx:Kocio³ 3:Sterownik:Prêdko¶æ prawego rusztu", t, pt)) / 2
+</programlisting>
+</para>
+<para>
+Parametr okre¶laj±cy zalecane otwarcie strefy:
+<programlisting>
+local v1 = p("xxx:Kocio³ 1:Sterownik:D³ugo¶æ strefy spalania", t, pt)
+if v1 < 3
+ then
+  v = 0
+ else
+  if v1 > 4
+   then
+    v = 100
+   else
+    v = (v1 * 100) % 300
+  end
+end
+</programlisting>
+</para>
+</section> 
+<section> 
+<title>Podró¿e w czasie.</title>
+<para>
+Wiemy ¿e program przegl±daj±cy pytaj±c nas o warto¶æ parametru umieszcza
+w zmiennej t informacje dla jakiego czasu chce uzyskaæ warto¶æ parametru.
+</para>
+<para>
+Wiem te¿, pó³oficjalnie, ¿e ta warto¶æ zapisana jest jako ilo¶æ sekund
+od pewnego czasu '0'. Mo¿emy siê wiêc pokusiæ o napisanie parametru
+który bêdzie liczy³ np. przyrost temperatury zewnêtrznej w okresie 
+10 minut, np. takiego:
+<programlisting>
+v = p("xxxx:Sieæ:Sterownik temperatura zewnêtrzna, t, PT_MIN10) - p("xxxx:Sieæ:Sterownik temperatura zewnêtrzna, t - 10 * 60, PT_MIN10) 
+</programlisting>
+</para>
+<para>
+I faktycznie, parametr zwróci to co chcemy. Jak widaæ da siê to tak zrobiæ
+ale rêczne operowanie na warto¶ci zmiennej t jest niewygodne, dlatego te¿
+w formu³ach programu przegl±daj±cego mamy dostêpn± funkcjê szb_move_time.
+Funkcja szb_move_time przyjmuje 3 parametry: czas pocz±tkowy, o ile jednostek
+nale¿y czas pocz±tkowy przesun±æ, jednostka przesuniêcia. To co ta
+funkcja zwraca to przesuniêta warto¶æ czasu. Zanim podamy przyk³ad
+to jeszcze wyja¶nienie o co chodzi z tymi jednostkami. Za pomoc± 
+funkcji szb_move_time czas mo¿emy przesun±æ o pewn± ilo¶æ: lat, miesiêcy,
+dni, tygodni, okresów 8-godzinnych i 10-minutowych. Odpowiadaj± one ¶ci¶le rodzajom
+¶rednich na ekranach programu draw3. Oznaczenia jednostek s± te¿ takie same
+jak oznaczenia ¶rednich, a wiêc odpowiednio PT_YEAR, PT_MONTH, PT_WEEK, PT_DAY,
+PT_WEEK, PT_HOUR8, PT_MIN10.
+</para>
+<para>
+Kilka przyk³adów wywo³añ funkcji szb_move_time:
+<itemizedlist>
+<listitem><para>
+szb_move_time(t, 6, PT_MIN10) - przesuñ podany czas o 6 jednostek 10-minutowych 
+</para></listitem>
+<listitem><para>
+szb_move_time(t, 2, PT_YEAR) - przesuñ podany czas o 2 lata do przodu
+</para></listitem>
+<listitem><para>
+szb_move_time(t, -1, PT_MONTH) - przesuñ podany czas o 1 miesi±c do ty³u
+</para></listitem>
+</itemizedlist>
+</para>
+<para>
+Mo¿emy teraz np. napisaæ parametr który bêdzie podawa³ ró¿nicê miêdzy
+warto¶ci± temperatury zewnêtrznej dla czasu dla którego liczony jest
+parametr a czasem miesi±c wcze¶niejszym.
+</para>
+<para>
+<programlisting>
+local miesiac_wczesniej = szb_move_time(t, -1, PT_MONTH)
+v = p("xxxx:Sieæ:Sterownik temperatura zewnêtrzna, t, PT_MIN10) - p("xxxx:Sieæ:Sterownik temperatura zewnêtrzna, miesiac_wczesniej, PT_MIN10) 
+</programlisting>
+</para>
+<para>
+Mo¿emy te¿ wykorzystuj±c fakt ¿e w zmiennej pt mamy ¶redni± dla której
+rysowany jest parametr, zrobiæ rzecz nastêpuj±c± - parametr który
+ogl±dany na ekranie dekada bêdzie podawa³ nam wzrost ¶redniej
+temperatury rocznej miêdzy poszczególnymi latami; ogl±dany na ekranie rocznym
+to wzrost ¶redniej temperatury miesiêcznej miêdzy poszczególnymi miesi±cami;
+miesiêcznej, wzrost temperatury dobowej miêdzy poszczególnymi dniami; itp.
+</para>
+<para>
+<programlisting>
+local poprzedni_czas = szb_move_time(t, -1, pt)
+v = p("xxxx:Sieæ:Sterownik temperatura zewnêtrzna", t, pt) - p("xxxx:Sieæ:Sterownik temperatura zewnêtrzna", poprzedni_czas, pt) 
+</programlisting>
+</para>
+
+</section>
+<section id="draw3-param-tutorial-types-of-averages"> 
+<title>¦rednie jeszcze raz.</title>
+<para>
+W pierwszym przyk³adzie zamie¶cili¶my uwagê: we wszystkich przyk³adach a¿ do punktu 
+"¦rednie jeszcze raz" <xref linkend="draw3-param-tutorial-types-of-averages">
+zak³adamy ¿e parametr ma opcje '¦rednie liczone jako' ustawiony na warto¶æ 'wynik
+zastosowania formu³y na ¶rednich'.
+</para>
+<para>
+Teraz czas wyja¶niæ o co w tym chodzi.
+</para>
+<para>
+Przypomnijmy jeszcze raz jak program przegl±daj±cy rysuje wykres parametru.
+</para>
+<para>
+Za³ó¿my na pocz±tek ¿e jeste¶my na na ekranie rocznym.  Program przegl±daj±cy
+musi narysowaæ 12 punktów, ¶rednich miesiêcznych dla ka¿dego miesi±ca w roku.
+Wobec tego wywo³uje formu³ê parametru 12 razy za ka¿dy razem ustawiaj±c nastêpuj±ce
+warto¶ci zmiennych t i pt:
+<itemizedlist>
+<listitem><para>
+zmienna t = 1 dzieñ stycznia, godzina 00:00, zmienna pt = PT_MONTH
+</para></listitem>
+<listitem><para>
+zmienna t = 1 dzieñ lutego, godzina 00:00, zmienna pt = PT_MONTH
+</para></listitem>
+<listitem><para>
+...
+</para></listitem>
+<listitem><para>
+zmienna t = 1 dzieñ grudnia, godzina 00:00, zmienna pt = PT_MONTH
+</para></listitem>
+</itemizedlist>
+</para>
+<para>
+Gdy bêdziemy na ekranie miesiêcznym, np. na marcu program przegl±daj±cy
+wywo³a formu³ê 31 razy, z takimi parametrami:
+</para>
+<para>
+<itemizedlist>
+<listitem><para>
+zmienna t = 1 dzieñ stycznia, godzina 00:00, zmienna pt = PT_MONTH
+</para></listitem>
+<listitem><para>
+zmienna t = 2 dzieñ marca, godzina 00:00, zmienna pt = PT_MONTH
+</para></listitem>
+<listitem><para>
+zmienna t = 3 dzieñ marca, godzina 00:00, zmienna pt = PT_MONTH
+<listitem><para>
+...
+</para></listitem>
+<listitem><para>
+zmienna t = 31 dzieñ marca, godzina 00:00, zmienna pt = PT_MONTH
+</para></listitem>
+</itemizedlist>
+</para>
+<para>
+Za³ó¿my teraz ¿e jeste¶my na okresie dzieñ, wtedy program zrobi tak:
+<itemizedlist>
+<listitem><para>
+zmienna t = godzina 00:00, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+zmienna t = godzina 00:10, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+zmienna t = godzina 00:20, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+...
+</para></listitem>
+<listitem><para>
+zmienna t = godzina 23:50, zmienna pt = PT_MIN10
+</para></listitem>
+</itemizedlist>
+</para>
+<para>
+Teraz zmieniamy opcje na '¦rednie liczone jako' na '¶rednia z zastosowania formu³y
+dla ka¿dej próbki'. Co siê zmieni³o? Zmiana polega na tym ¿e program przegl±daj±cy
+zaczyna liczyæ ¶rednie "sam". Program przegl±daj±cy, niezale¿nie od tego jak±
+¶redni± bêdziemy rysowa³, zawsze wywo³a formu³ê dla warto¶ci 10-minutowych i
+z tak otrzymanych wyników obliczy warto¶æ ¶redni±. Wracaj±c do naszego przyk³adu roku,
+nasza formu³a zostanie wykonana z takimi parametrami:
+<itemizedlist>
+<listitem><para>
+zmienna t = 1 styczeñ, godzina 00:00, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+zmienna t = 1 styczeñ, godzina 00:10, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+zmienna t = 1 styczeñ, godzina 00:20, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+zmienna t = 1 styczeñ, godzina 00:30, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+...
+</para></listitem>
+<listitem><para>
+zmienna t = 1 styczeñ, godzina 23:50, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+zmienna t = 2 styczeñ, godzina 00:00, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+zmienna t = 2 styczeñ, godzina 00:10, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+...
+</para></listitem>
+<listitem><para>
+zmienna t = 2 styczeñ, godzina 23:50, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+...
+</para></listitem>
+<listitem><para>
+zmienna t = 31 styczeñ, godzina 23:50, zmienna pt = PT_MIN10
+<note>
+<para>
+te wyniki zostan± nastêpnie u¶rednione i warto¶æ ¶rednia bêdzie
+umieszczona jako warto¶æ parametru dla miesi±ca styczeñ, po czym program
+ruszy do nastêpnego miesi±ca
+</para>
+</note>
+</para></listitem>
+<listitem><para>
+zmienna t = 1 luty, godzina 00:00, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+zmienna t = 1 luty, godzina 00:10, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+zmienna t = 1 luty, godzina 00:20, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+zmienna t = 1 luty, godzina 00:30, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+...
+</para></listitem>
+<listitem><para>
+zmienna t = 1 luty, godzina 23:50, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+zmienna t = 2 luty, godzina 00:00, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+zmienna t = 2 luty, godzina 00:10, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+zmienna t = 2 luty, godzina 00:20, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+zmienna t = 2 luty, godzina 00:30, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+...
+</para></listitem>
+<listitem><para>
+zmienna t = 2 luty, godzina 23:50, zmienna pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+zmienna t = ostatni dzieñ lutego, godzina 23:50, zmienna pt = PT_MIN10
+<note>
+<para>
+tu znowu nastêpuje u¶rednienie i program rusza dalej
+</para>
+</note>
+</para></listitem>
+<listitem><para>
+...
+</para></listitem>
+</itemizedlist>
+</para>
+<para>
+Analogicznie bêdzie dla ekranu miesi±c. Jedynie przypadek dla ¶rednich
+10-minutowych nie bêdzie siê niczym ró¿ni³.
+<note>
+<para>
+Te 10-minut rozdzielczo¶ci bierze siê st±d ¿e warto¶æ 10-minutowa jest to najwiêksza
+rozdzielczo¶æ z jak± SZARP trzyma dane w archiwum.
+</para>
+</note>
+</para>
+<para>
+Istnieje kilka powodów dla których w programie przegl±daj±cym
+(a w ogólno¶ci w systemie SZARP) mamy te dwa rodzaje parametrów.
+Przede wszystkim, niektóre parametry ze wzglêdu na swoje cechy ³atwiej
+jest zapisaæ jako takie które bêdzie siê liczyæ sposobem drugim. 
+</para>
+<para>
+We¼my np. parametr licz±cy iloraz warto¶ci jakich¶ dwóch parametrów
+(A i B dla uproszczenia). Najprostszy zapis formu³y takiego parametru to:
+<programlisting>
+v = p("A", t, pt) / p("B", t, pt)
+</programlisting>
+</para>
+<para>
+Co siê teraz stanie jak policzymy warto¶æ tego parametru pierwszym sposobem dla
+np. ¶redniej dobowej? Otrzymamy wynik wykonania nastêpuj±cej operacji:
+<programlisting>
+v = (¶rednia dobowa parametru A) / (¶rednia dobowa parametru B)
+</programlisting>
+</para>
+<para>
+W wiêkszo¶ci przypadków jednak to nie bêdzie to o co nam chodzi, my
+potrzebujemy warto¶ci:
+<programlisting>
+v = (
+	(warto¶æ A dla godziny 00:00) / (warto¶æ B dla godziny 00:00) 
+	+ (warto¶æ A dla godziny 00:10) / (warto¶æ B dla godziny 00:10)
+	+ (warto¶æ A dla godziny 00:20) / (warto¶æ B dla godziny 00:20)
+...
+	+ (warto¶æ A dla godziny 23:50) / (warto¶æ B dla godziny 23:50)
+    ) / (24 * 6)
+</programlisting>
+To jest dok³adnie to co daje nam drugi sposób, zapisanie takiej operacji
+dla parametru którego ¶rednie liczone s± sposobem pierwszym by³oby zadaniem
+znacznie bardziej czasoch³onnym (szczególnie gdyby¶my chcieli ¿eby parametr
+zachowywa³ siê poprawnie dla ka¿dego rodzaju ¶rednich).
+</para>
+<para>
+We¼my kolejny przyk³ad parametru:
+<programlisting>
+v = p("xxx:Kocio³ 4:Sterownik:Wydajno¶æ kot³a", t, pt)
+local i = 1;
+while isnan(v) and i < 10 do
+	local v1 = p("xxx:Kocio³ 4:Sterownik:Wydajno¶æ kot³a", szb_move_time(t, -i, pt), pt)
+	local v2 = p("xxx:Kocio³ 4:Sterownik:Wydajno¶æ kot³a", szb_move_time(t, i, pt), pt)
+	if isnan(v1) then
+		v = v2
+	elseif isnan(v2) then
+		v = v1
+	else
+		v = (v1 + v2) / 2
+	end
+	i = i + 1
+end
+</programlisting>
+Parametr realizuje proste zadanie - stara siê uzupe³niæ dziury w danych
+parametru "wydajno¶æ kot³a". Je¿eli dla danej 10-minutówki w czasie nie ma
+warto¶ci parametru, to formu³a stara siê wygenerowaæ j± z warto¶ci le¿±cych
+obok. W przypadku tej formu³y liczenie tej warto¶ci sposobem pierwszym, równie¿
+nie mia³oby sensu.
+</para>
+</section>
+<section>
+<title>Uwaga o warto¶ciach 10 sekundowych.</title>
+<para>
+Nasz krótki przewodnik starannie omija³ do tej pory ¶rednie 10-sekundowe.
+Z tego powodu ¿e te ¶rednie s± traktowane w sposób odrobinê odmienny,
+przede wszystkim dlatego ze pojawi³y siê w SZARPie znacznie pó¼niej ni¿
+same parametry definiowalne a tak¿e nie s± synchronizowane na lokalny
+komputer u¿ytkownika.
+</para>
+<para>
+Wspomniana odmienno¶æ ta sprowadza siê do zachowania parametrów których
+¶rednie liczone s± jako "¶rednia zastosowania formu³y dla ka¿dej próbki".
+Napisali¶my w poprzednim rozdziale ¿e dla takich parametrów, niezale¿nie
+od tego jakiego rodzaju ¶redni± ogl±damy i tak zawsze formu³a bêdzie
+liczona dla pt = PT_MIN10. To nie mia³o by sensu w przypadku ¶rednich
+10-sekundowych oczywi¶cie, dlatego te¿ ta zasada ich nie dotyczy. 
+W przypadku ¶rednich 10-sekundowych, niezale¿nie od tego jakiego rodzaju
+jest parametr zawsze formu³a je wyliczaj±ca bêdzie wywo³ywana z pt = PT_SEC10.
+(warto¶ci± oznaczaj±ca ¶rednie 10-sekundowe jest PT_SEC10 i tak± te¿
+warto¶æ program przegl±daj±cy stosuje przy wyliczaniu parametrów).
+</para>
+</section>
+
+</chapter> <!-- draw3-ext-lua-parameters-tutorial -->

@@ -45,7 +45,7 @@
 /**
  * Draw Frame class. It's responsible for remember frame size and positions.
  */
-class DrawFrame : public szFrame, public SetsParamsReceivedEvent {
+class DrawFrame : public szFrame, public SetsParamsReceivedEvent, public DBInquirer {
 public:
 	/**
 	 * It's orginal constructor from wxFrame.
@@ -180,6 +180,8 @@ public:
 
 	void OnSortGraph(wxCommandEvent &e);
 
+	void OnExportDataToFile(wxCommandEvent& e);
+
 	/**Schedules removal of a panel (at next Idle event)*/
 	void RemovePanel(DrawPanel *panel);
 
@@ -192,13 +194,16 @@ public:
 	/**load layout*/
 	bool LoadLayout();
 
-	~DrawFrame();
-
 	DrawPanel *GetCurrentPanel();
 
 	void SetsParamsReceiveError(wxString error);
 
 	void SetsParamsReceived(bool);
+
+	void ToggleMenuBarVisbility();
+
+	~DrawFrame();
+
 protected:
 	wxString m_name;
 

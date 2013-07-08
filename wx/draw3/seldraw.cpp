@@ -78,7 +78,6 @@ SelectDrawValidator::SelectDrawValidator(DrawsWidget *drawswdg, int index, wxChe
 	assert (index >= 0);
 	m_index = index;
 	m_cb = cb;
-	m_menu = NULL;
 }
 
 SelectDrawValidator::SelectDrawValidator(const SelectDrawValidator& val)
@@ -93,7 +92,6 @@ SelectDrawValidator::Copy(const SelectDrawValidator& val)
 	m_draws_wdg = val.m_draws_wdg;
 	m_index = val.m_index;
 	m_cb = val.m_cb;
-	m_menu = NULL;
 	return TRUE;
 }
 
@@ -140,17 +138,16 @@ SelectDrawValidator::OnMouseRightDown(wxMouseEvent &event) {
 	if (di == NULL)
 		return;
 
-	delete m_menu;
-	m_menu = new wxMenu();
+	wxMenu menu;
 
 	DrawParam* dp = di->GetParam();
 	if (di->IsValid() && dp->GetIPKParam()->GetPSC())
-		m_menu->Append(seldrawID_PSC,_("Set parameter"));
+		menu.Append(seldrawID_PSC,_("Set parameter"));
 
-	m_menu->SetClientData(m_cb);
+	menu.SetClientData(m_cb);
 
 	if (m_draws_wdg->GetDrawBlocked(m_index)) {
-		wxMenuItem* item = m_menu->AppendCheckItem(seldrawID_CTX_BLOCK_MENU, _("Draw blocked\tCtrl-B"));
+		wxMenuItem* item = menu.AppendCheckItem(seldrawID_CTX_BLOCK_MENU, _("Draw blocked\tCtrl-B"));
 		item->Check();
 	} else {
 		int non_blocked_count = 0;
@@ -160,16 +157,36 @@ SelectDrawValidator::OnMouseRightDown(wxMouseEvent &event) {
 
 		//one draw shall be non-blocked
 		if (non_blocked_count > 1)
-			m_menu->AppendCheckItem(seldrawID_CTX_BLOCK_MENU, _("Draw blocked\tCtrl-B"));
+			menu.AppendCheckItem(seldrawID_CTX_BLOCK_MENU, _("Draw blocked\tCtrl-B"));
 	}
 
-	m_menu->Append(seldrawID_CTX_DOC_MENU, _("Parameter documentation\tCtrl-H"));
-	m_menu->Append(seldrawID_CTX_COPY_PARAM_NAME_MENU, _("Copy parameter name\tCtrl+Shift+C"));
+	menu.Append(seldrawID_CTX_DOC_MENU, _("Parameter documentation\tCtrl-H"));
+	menu.Append(seldrawID_CTX_COPY_PARAM_NAME_MENU, _("Copy parameter name\tCtrl+Shift+C"));
+
+	wxMenu* submenu = new wxMenu();
+	submenu->SetClientData(m_cb);
+	wxMenuItem* averageItem = submenu->AppendRadioItem(seldrawID_CTX_AVERAGE_VALUE, _("Average value for selected period"));
+	wxMenuItem* lastItem = submenu->AppendRadioItem(seldrawID_CTX_LAST_VALUE, _("Last value"));
+	wxMenuItem* diffItem = submenu->AppendRadioItem(seldrawID_CTX_DIFFERENCE_VALUE, _("Difference between last and first value"));
+	menu.AppendSubMenu(submenu, _("Type of average values shown"));
+
+	switch (di->GetAverageValueCalculationMethod()) {
+		case AVERAGE_VALUE_CALCULATION_AVERAGE:
+			averageItem->Check(true);
+			break;
+		case AVERAGE_VALUE_CALCULATION_LAST:
+			lastItem->Check(true);
+			break;
+		case AVERAGE_VALUE_CALCULATION_LAST_FIRST:
+			diffItem->Check(true);
+			break;
+	}
 
 	if (dynamic_cast<DefinedParam*>(dp) != NULL)
-		m_menu->Append(seldrawID_CTX_EDIT_PARAM, _("Edit parameter associated with graph\tCtrl-E"));
+		menu.Append(seldrawID_CTX_EDIT_PARAM, _("Edit parameter associated with graph\tCtrl-E"));
 
-	m_cb->PopupMenu(m_menu);
+	m_cb->PopupMenu(&menu);
+
 }
 
 void SelectDrawValidator::OnMouseMiddleDown(wxMouseEvent &event) {
@@ -192,7 +209,6 @@ void SelectDrawValidator::Set(DrawsWidget *drawswdg, int index, wxCheckBox *cb) 
 }
 
 SelectDrawValidator::~SelectDrawValidator() {
-	delete m_menu;
 }
 
 
@@ -201,6 +217,9 @@ BEGIN_EVENT_TABLE(SelectDrawWidget, wxWindow)
 	LOG_EVT_MENU(seldrawID_PSC, SelectDrawWidget , OnPSC, "seldraw:psc" )
 	LOG_EVT_MENU(seldrawID_CTX_DOC_MENU, SelectDrawWidget , OnDocs, "seldraw:doc" )
 	LOG_EVT_MENU(seldrawID_CTX_COPY_PARAM_NAME_MENU, SelectDrawWidget , OnCopyParamName , "seldraw:cpyparam" )
+	LOG_EVT_MENU(seldrawID_CTX_AVERAGE_VALUE, SelectDrawWidget , OnAverageValueCalucatedMethodChange, "seldraw:averagevaluemethodchange" )
+	LOG_EVT_MENU(seldrawID_CTX_LAST_VALUE, SelectDrawWidget , OnAverageValueCalucatedMethodChange, "seldraw:averagevaluemethodchange" )
+	LOG_EVT_MENU(seldrawID_CTX_DIFFERENCE_VALUE, SelectDrawWidget , OnAverageValueCalucatedMethodChange, "seldraw:averagevaluemethodchange" )
 	LOG_EVT_MENU(seldrawID_CTX_EDIT_PARAM, SelectDrawWidget , OnEditParam, "seldraw:edit" )
 	EVT_TIMER(wxID_ANY, SelectDrawWidget::OnTimer)
 END_EVENT_TABLE()
@@ -332,7 +351,17 @@ SelectDrawWidget::SetChanged(DrawsController *draws_controller)
 
 	wxSizer *sizer = GetSizer();
 
-	for (size_t i = selected_set->GetDraws()->size(); i < MIN_DRAWS_COUNT; i++) {
+	size_t new_draws_count = selected_set->GetDraws()->size();
+	size_t new_cb_size = std::max(new_draws_count, MIN_DRAWS_COUNT);
+	for (size_t i = new_cb_size; i < m_cb_l.size(); i++) {
+		sizer->Detach(m_cb_l[i]);
+		m_cb_l[i]->Destroy();
+	}
+
+	if (new_cb_size < m_cb_l.size())
+		m_cb_l.resize(new_cb_size);
+
+	for (size_t i = new_draws_count; i < MIN_DRAWS_COUNT; i++) {
 		m_cb_l[i]->SetLabel(wxString::Format(_T("%d."), i + 1));
 		m_cb_l[i]->Enable(FALSE);
 		m_cb_l[i]->SetValue(FALSE);
@@ -340,17 +369,10 @@ SelectDrawWidget::SetChanged(DrawsController *draws_controller)
 		m_cb_l[i]->SetBackgroundColour(DRAW3_BG_COLOR);
 	}
 
-	for (size_t i = MIN_DRAWS_COUNT; i < m_cb_l.size(); i++) {
-		sizer->Detach(m_cb_l[i]);
-		m_cb_l[i]->Destroy();
-	}
+	InsertSomeDraws(0, new_draws_count > MIN_DRAWS_COUNT ? m_cb_l.size() : new_draws_count);
 
-	m_cb_l.resize(MIN_DRAWS_COUNT);
-
-	InsertSomeDraws(0, std::min(selected_set->GetDraws()->size(), MIN_DRAWS_COUNT));
-
-	if (selected_set->GetDraws()->size() > MIN_DRAWS_COUNT && !m_timer->IsRunning())
-		m_timer->Start(250, true);		
+	if (selected_set->GetDraws()->size() > m_cb_l.size() && !m_timer->IsRunning())
+		m_timer->Start(250, true);
 
 	FitInside();
 }
@@ -455,11 +477,37 @@ void SelectDrawWidget::OnEditParam(wxCommandEvent &event) {
 	while (!w->IsTopLevel())
 		w = w->GetParent();
 
-	ParamEdit* pe = new ParamEdit(w, m_cfg, m_dbmgr, m_remarks_handler);
-	pe->SetCurrentConfig(d->GetBasePrefix());
-	pe->Edit(dp);
-	delete pe;
+	ParamEdit pe(w, m_cfg, m_dbmgr, m_remarks_handler);
+	pe.SetCurrentConfig(d->GetBasePrefix());
+	pe.Edit(dp);
 
+}
+
+void SelectDrawWidget::OnAverageValueCalucatedMethodChange(wxCommandEvent &event) {
+	int i = GetClicked(event);
+	if (i == -1)
+		return;
+	DrawInfo *d = m_draws_wdg->GetDrawInfo(i);
+	AverageValueCalculationMethod qt = d->GetAverageValueCalculationMethod();
+	switch (event.GetId()) {
+		case seldrawID_CTX_AVERAGE_VALUE:
+			if (qt == AVERAGE_VALUE_CALCULATION_AVERAGE) 
+				return;
+			d->SetAverageValueCalculationMethod(AVERAGE_VALUE_CALCULATION_AVERAGE);
+			break;
+		case seldrawID_CTX_LAST_VALUE:
+			if (qt == AVERAGE_VALUE_CALCULATION_LAST) 
+				return;
+			d->SetAverageValueCalculationMethod(AVERAGE_VALUE_CALCULATION_LAST);
+			break;
+		case seldrawID_CTX_DIFFERENCE_VALUE:
+			if (qt == AVERAGE_VALUE_CALCULATION_LAST_FIRST) 
+				return;
+			d->SetAverageValueCalculationMethod(AVERAGE_VALUE_CALCULATION_LAST_FIRST);
+			break;
+	}
+
+	m_cfg->DrawInfoAverageValueCalculationChanged(d);
 }
 
 void SelectDrawWidget::OnCopyParamName(wxCommandEvent &event) {

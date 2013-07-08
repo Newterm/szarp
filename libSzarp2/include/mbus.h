@@ -199,7 +199,7 @@ class MBus {
          * @param parity type of parity to use in communication with the other device
          * @return true if the connection and parameters' setting succeeded, false otherwise
          */
-        bool connect(std::wstring device, unsigned long int baudrate = 300, unsigned long int byte_interval = 10000, 
+        bool connect(std::string device, unsigned long int baudrate = 300, unsigned long int byte_interval = 10000, 
                 unsigned int data_bits = 8, unsigned int stop_bits = 1, parity_type parity = none);
 
         /** Closes the connection to the device.
@@ -226,7 +226,7 @@ class MBus {
          * @param os output stream to print the debugging information to
          * @return true if the initialization succeeded (i.e. a positive reply was received from the other device), false otherwise
          */
-        bool initialize_communication(byte address = broadcast_with_reply, bool debug = false, std::ostream& os = std::cerr);
+        bool initialize_communication(byte address = broadcast_with_reply, bool sontex = false, bool debug = false, std::ostream& os = std::cerr);
 
         /** Performs an application reset on the other device.
          * Send a SND_UD frame to the other device containing a request
@@ -246,7 +246,7 @@ class MBus {
          * @param os output stream to print the debugging information to
          * @return true if the initialization succeeded (i.e. a positive reply was received from the other device), false otherwise
          */
-        bool reset_application(byte address, byte reset_type, bool debug = false, std::ostream& os = std::cerr);
+        bool reset_application(byte address, byte reset_type, bool sontex = false, bool debug = false, std::ostream& os = std::cerr);
 
         /** Selects data for readout from the other device.
          * Sends a SND_UD frame to the other device containing a request
@@ -266,7 +266,7 @@ class MBus {
          * @param os output stream to print the debugging information to
          * @return values read from the other device or an empty vector if the request was ignored, the other device didn't reply giving the values or parsing the reply failed
          */
-        std::vector<value_t> select_data_for_readout(byte address, std::vector<byte> data, bool debug = false, std::ostream& os = std::cerr);
+        std::vector<value_t> select_data_for_readout(byte address, std::vector<byte> data, bool sontex = false, bool debug = false, std::ostream& os = std::cerr);
 
         /** Changes the other device's primary address
          * Sends a SND_UD frame containing a request to change the
@@ -284,7 +284,7 @@ class MBus {
          * @param os output stream to print the debugging information to
          * @return true if the address change succeeded (i.e. a positive reply was received from the other device), false otherwise
          */
-        bool change_slave_address(byte address, byte new_address, bool debug = false, std::ostream& os = std::cerr);
+        bool change_slave_address(byte address, byte new_address, bool sontex = false, bool debug = false, std::ostream& os = std::cerr);
 
         /** Queries the other device for data of M-Bus type 2.
          * Sends a REQ_UD2 frame to the other device, then receives the
@@ -302,7 +302,7 @@ class MBus {
          * @param os output stream to print the debugging information to
          * @return values read from the other device or an empty vector if the request was ignored, the other device didn't reply giving the values or parsing the reply failed
          */
-        std::vector<value_t> query_for_data(byte address, bool debug = false, bool dump_hex = false, std::ostream& os = std::cerr);
+        std::vector<value_t> query_for_data(byte address, bool sontex = false, bool debug = false, bool dump_hex = false, std::ostream& os = std::cerr);
 
         /** Queries the other device for status information.
          * Sends a REQ_SKE frame to the other device and returns the
@@ -317,7 +317,7 @@ class MBus {
          * @param os output stream to print the debugging information to
          * @return the M-Bus frame received from the other device
          */
-        std::string query_for_status(byte address, bool debug = false, std::ostream& os = std::cerr);
+        std::string query_for_status(byte address, bool sontex = false, bool debug = false, std::ostream& os = std::cerr);
 
         /** Parses a M-Bus frame and prints it's contents to the given
          * output stream with comments.
@@ -845,7 +845,10 @@ class MBus {
          * @see read(int, void *, size_t)
          * @return the received frame
          */
-        std::string receive_frame();
+        std::string receive_frame(int timeout_sec, int timeout_usec);
+
+        /** Just for Sontex Supercal 531 */
+        void wakeup_device(byte address);
 };
 
 template<typename T> MBus::byte_representation<T> MBus::generic_append_byte_representation(byte_representation<T> current_value, byte last_byte, bool msb_first, int byte_number) {

@@ -44,9 +44,9 @@ class DrawObserver {
 	virtual void Detach(DrawsController *draws_controller);
 	/**Informs object that displayed start time changed*/
 	virtual void ScreenMoved(Draw* draw, const wxDateTime &start_date) {};
-	/**Informss object that new data appeared at given index position*/
+	/**Informs object that new data appeared at given index position*/
 	virtual void NewData(Draw* draw, int idx) {};
-	/**Informss object that staitical values has changed.*/
+	/**Informs object that statistical values have changed.*/
 	virtual void StatsChanged(Draw *draw) {};
 	/**Informs object that current probe for draw has changed*/
 	virtual void CurrentProbeChanged(Draw *draw, int pi, int ni, int d) {};
@@ -72,7 +72,7 @@ class DrawObserver {
 	virtual void BlockedChanged(Draw *draw) {};
 	/**Informs object that current @see Draw has changed it's enabled attribute*/
 	virtual void NewRemarks(Draw *draw) {};
-	/**Inorms object that double cursor mode was changed for @see Draw*/
+	/**Informs object that double cursor mode was changed for @see Draw*/
 	virtual void DoubleCursorChanged(DrawsController *draw) {};
 	/**Norifies that give draw has no data*/
 	virtual void NoData(Draw *d) {}
@@ -80,6 +80,8 @@ class DrawObserver {
 	virtual void NoData(DrawsController *d) {}
 	/**Notifies that draw list has been resorted*/
 	virtual void DrawsSorted(DrawsController *draws_controller) {}
+	/**Notifies that draw list has been resorted*/
+	virtual void AverageValueCalculationMethodChanged(Draw *draw) {}
 
 	virtual ~DrawObserver() = 0;
 };

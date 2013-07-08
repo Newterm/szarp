@@ -7,6 +7,109 @@
 # Pozosta³e linie zawieraj± opis zmian.
 # Puste linie s± ignorowane.
 
+** 3.1.684:
+# 02.09.2011
+* Zakutalizowano dokumntacjê programu draw3: dodano opis kilku
+najnowszych opcji oraz rozbudowano dokumentacjê parametrów
+definiowalych u¿ytkownika
+* Poprawiono b³±d w kodzie parsuj±cym konfiguracjê systemu szarp.
+B³±d powodowa³ zawieszanie aplikacji która próbowa³a wczytaæ 
+plik który nie by³ poprawnie sformatowanym plikiem XML.
+* Parametry maj±ce jednostke GJ nie s± ju¿ automatycznie 
+oznaczane jako sumowane godzinowo.
+* Poprawiono b³±d w liczniu parametrów definiowalych LUA 
+na warto¶ciach 10-skundowych, warto¶æi tych mog³y, w przypadku
+niektórych formu³, wychodziæ "w przysz³o¶æ", taraz ju¿ ten
+problem nie powinien wystêpowaæ.
+* Dodano przycisk "wyjd¼" do okna pomocy, bez niego
+niemo¿liwe by³o zamkniêcie draw3 gdy program dzia³a³
+w ¶rodowisku bez menad¿era okien
+* Poprawki w obs³ugdze trybu tcp serwer w demonie boruta
+
+** 3.1.682:
+# 05.09.2011
+* Poprawiono b³±d mog±cy prowadziæ do zawieszenia program draw3 podczas
+edycji parametru u¿ytkownika
+* Poprawiono drobny b³±d w prze³±czaniu okresu w draw3, czasami widget
+do wyboru okresu czasu móg³ pokazywaæ inny okres ni¿ faktycznie rysowany 
+* Poprawiono kompilacje SZARPa pod Debianem unstable
+* Poprawiono zatrzymywanie serwisu ddeproxy, teraz poprawnie reaguje on
+na zdarzenie zamkniêcia
+* Dodano now± opcjê do programu draw3. Na wykresach rocznych, miesiêcznych,
+tygodniowych oraz okresu sezonu mo¿liwe jest wybranie czy ka¿dy punkt
+ma reprezentowaæ:
+- warto¶æ ¶redni± parametru dla w³a¶ciwego okresu czasu (roku dla dekady,
+miesi±ca dla roku, itd.), jest to domy¶lny (i jedyny dostêpy dotychczas)
+sposób rysowania wykresów
+- ostatni± warto¶æ z okresu reprezentowanego przez punkt (czyli np. na 
+ekranie rocznym ka¿dy punkt bêdzie reprezentowa³ warto¶æ parametru z ostaniego
+dnia miesi±ca godziny 23:50)
+- ró¿nicê miêdzy ostatni± a pierwsz± warto¶æi± 10-minutow± próbk± dla okresu
+reprezentowanego przez punkt (np. dla roku bêdzie to ró¿nica miêdzy warto¶ci±
+z 23:50 ostatniego dnia miesi±ca a 00:00 pierwszego dnia miesi±ca)
+Ostatnie dwa warianty s± szczególnie przydatne przy rysowaniu parametrów
+reprezentuj±cych warto¶æi licznikowe. Zmiany sposobu rysowania wykresów
+dokunuje siê z menu kontekstowego listy wykresów (z prawej strony okna).
+
+** 3.1.673
+# 09.06.2012
+* dodana opcjê ekstrakcji danych z programu draw3, w du¿ej mierze jest to
+duplikacja funkcjonalno¶ci oferowanej przez program ekstraktor3, w odróznieniu
+od aplikacji ekstraktor3 draw3 pozwala tak¿e na ekstrakcjê danych z paramterów
+u¿ytkownika
+* rozbudowano program pyipk dodaj±c: opcjê do wszykiwania tekstu w pliku params.xml, 
+walidacjê nazw parametrów, prze³adowywanie konfiguracji, edycjê parametrów, itp.
+* rozpoczêto prace nad nowym formatem bazy danych pozwalaj±cym na przechowywanie
+danych o dowolnej rozdzielczo¶ci czasowej
+* poprawione b³ad w programie draw3: okno komunikatów o b³êdach nie zabiera
+focusu z g³ównego okna programu draw3
+* poprawiono b³±d w programie ekstraktor3, z powodu niezalizalizownia zmiennej
+czasami proces ekstrakcji danych siê nie udawa³ 
+* poprawiono b³±d wyliczania ¶rednich warto¶ci dla parametrów sk³adanych w programie 
+parcook
+* poprawiono drobne b³êdy w bibliotece async_syslog 
+
+** 3.1.653
+# 01.06.2012
+* rozbudowano istniej±c± w SZARPie bibliotekê do logowania - liblog. 
+Dotychczas jedyn± metod± jak± liblog u¿ywa³ do zapisywania logów by³o
+ich wpisywanie do plików testkowych o z góry ustalonym formacie.
+Obecnie architektura tej biblioteki zosta³a zmieniona - sam liblog
+nie zajmuje siê formatowaniem ani zgrywaniem logów na dysk - za to
+zadanie odpowiedzialne s± "pluginy", których rol± jest zapisanie logów
+we w³a¶ciwym dla nich formacie. Taka architektura pozwala na ³atwe
+konfigurowanie oraz rozbudowywanie libloga o wsparcie dla ró¿nych mechanizmów
+logowania. W tej chwili zaimplemtowane s± 3 pluginy:
+- syslog - jak nazwa wskazuje jest to plugin u¿ywj±cy bibliteki syslog,
+ten plugin jest teraz domy¶lnie u¿ywany na linuxie
+- asyslog - jest to plugin u¿ywaj±cy naszej w³asnej bilbioteki do logowania,
+stworzony dla aplikacji opartych o libevent
+- classic - plugin ten implementuje sposób logowania u¿ywany dotychczas
+przez SZARPa, domy¶lnie stosowany jest na windowsie
+* stworzono bibliotekê asyslog, biblioteka ta to prosta implementacja
+protoko³u syslog oparata na bibliotece libevent, pozwala ona aplikacjom
+u¿ywaj±cym libevent logowaæ do sysloga w sposób nieblokuj±cy
+* do modbus-owego driver do boruty dodano wsparcie dla wysy³ania warto¶ci
+ca³kowitych zawartych bezpo¶rednio w konfiguracjij
+* dodano prze³±cznik -f do wspieranych argumentów linii komend programu
+draw3, draw3 uruchomiony z tym prze³±cznikiem uruchamia siê od razu
+w trybie pe³noekranowym
+* poprawiono liczenie precyzji w driverze boruty do komunikacji z
+regulatorami lumel
+** 3.1.647
+# 01.05.2012
+* nowy plugin dla demona boruta obs³uguj±cy komunikacje z licznikami Lumel
+* nowy plugin dla boruty obs³uguj±cy komunikacjê z wagami tensometrycznymi
+* dalszy rozwój pyipk:
+ - dodano plugin do manipulaowania zestawami wykresów oraz raportami
+ - wsparcie dla równoczesnej edycji kilku plików params.xml
+ - plik params.xml mo¿e byæ edytowany przez po³±czenie ssh
+ - dodano plugin sprawdzaj±cy czy w zestawach wykresów nie powtarzaj± siê 
+   kolory
+* ekstraktor3 pozwala na ekstrakcjê warto¶ci "licznikowych" dla których 
+  wyci±gana jest ostatnia warto¶æ parametru dla zadanego czasu
+  (w odró¿nieniu od warto¶ci standardowych gdzie dla zadanego okresu czasu
+  wyci±gana jest ¶rednia warto¶æ parametru)
 ** 3.1.631
 #01.04.2012
 * kod serwera komentarzy zosta³ w du¿ej mierze przepisany, kod jest

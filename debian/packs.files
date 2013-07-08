@@ -4,6 +4,7 @@ Files: opt/szarp/bin/{szrsync,szbpush,ssh_tunel.sh,szppp-off,szppp-on,szredialer
 Files: opt/szarp/bin/{isdn-*-sh,ipcclean,ipcinfo,lpparse,szarp_scripter}
 Files: opt/szarp/resources/{xslt,dictionary.xml}
 Files: opt/szarp/logs
+Files: etc/rsyslog.d/szarp.conf
 
 Package: szarp-daemons
 Files: opt/szarp/bin/{parcook,sender,analiza,meaner3,sss,checker,psetd,stampd,ssconf.py,remarks_server.py,prober}
@@ -101,3 +102,6 @@ Files: opt/szarp/lib/szarpnagios.py
 Files: opt/szarp/bin/sn-fam.py
 Files: opt/szarp/bin/update-nagios.py
 Files: usr/share/nagios3/htdocs/szarp*.html
+
+Package: szarp-dbg-symbols
+Files: usr/lib/debug/*

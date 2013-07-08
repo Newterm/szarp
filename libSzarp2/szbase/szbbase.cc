@@ -468,7 +468,7 @@ bool Szbase::CompileLuaFormula(const std::wstring& formula, std::wstring& error)
 	lua_State* lua = Lua::GetInterpreter();
 	bool r = szb_compile_lua_formula(lua, (const char*)SC::S2U(formula).c_str());
 	if (r == false)
-		error = SC::U2S((unsigned char*)lua_tostring(lua, -1));
+		error = SC::lua_error2szarp(lua_tostring(lua, -1));
 	lua_pop(lua, 1);
 	return r;
 

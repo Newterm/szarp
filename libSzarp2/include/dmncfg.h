@@ -111,13 +111,16 @@ public:
 	 * is read from file
 	 * @param force_device_index if >=0 device index is not taken from
 	 * command line but set to force_device_index. Works only for LoadNotXML
+	 * @param if async logging library is to be used, a proper context
+         *  (with current implementation it should be pointer to libevent_base) should
+         *  be provided here if no context is provided - synchronous logging will be used
 	 *
 	 * want to read extra libpar params - you need to call libpar_done
 	 * on your own
 	 * @return 0 on success, 1 on error (you should exit), 2 if usage
 	 * info was printed (you should exit)
 	 */
-	virtual int Load(int *argc, char **argv, int libpardone = 1 , TSzarpConfig* sz_cfg = NULL , int force_device_index = -1 );
+	virtual int Load(int *argc, char **argv, int libpardone = 1 , TSzarpConfig* sz_cfg = NULL , int force_device_index = -1, void* async_logging_context = NULL);
 	/** Returns number of daemon's line. All Get* functions must be called
 	 * AFTER successfull call to Load() - otherwise assertion fails. */
 	int GetLineNumber();

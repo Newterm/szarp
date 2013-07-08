@@ -150,6 +150,10 @@ class DrawInfo
 
 	virtual bool IsValid() const;
 
+	AverageValueCalculationMethod GetAverageValueCalculationMethod()  const;
+	
+	void SetAverageValueCalculationMethod(AverageValueCalculationMethod _avm);
+
 	virtual ~DrawInfo() { }
     protected:
 	TDraw *d;	/**< Pointer to draw. */
@@ -158,6 +162,8 @@ class DrawInfo
 	
 	wxColour c;	/**< Color of draw. */
 
+	AverageValueCalculationMethod avm;
+			/** What kind of data we are querying for*/
 };
 
 class DrawInfoList : public std::vector<DrawInfo*> {
@@ -167,7 +173,14 @@ public:
 
 	DrawInfo* GetSelectedDraw()
 	{	return selected; }
+
+	std::pair<time_t, time_t> GetStatsInterval()
+	{	return stats_interval; }
+
+	void SetStatsInterval(const std::pair<time_t, time_t> &i)
+	{	stats_interval = i; }
 private:
+	std::pair<time_t, time_t> stats_interval;
 	DrawInfo* selected;
 };
 
@@ -414,7 +427,7 @@ class ConfigManager
 {
     public:
 	/** Default constructor, does nothing. */
-	ConfigManager(DrawApp* app, IPKContainer *ipk_container);
+	ConfigManager(wxString szarp_data_dir, IPKContainer *ipk_container);
 	
 	/** Loads configuration for given base name 
 	 * @param prefix prefix of configration to load
@@ -529,6 +542,8 @@ class ConfigManager
 	bool SubstituteOrAddDefinedParams(const std::vector<DefinedParam*>& dp);
 
 	void SubstiuteDefinedParams(const std::vector<DefinedParam*>& to_rem, const std::vector<DefinedParam*>& to_add);
+
+	void DrawInfoAverageValueCalculationChanged(DrawInfo *d);
 	
 	~ConfigManager();
 protected:
@@ -542,8 +557,7 @@ protected:
 	/**@return all configus prefixes*/
 	wxArrayString GetPrefixes();
 
-	/** Pointer to szApp which use this manager */
-	DrawApp* m_app;
+	wxString m_szarp_data_dir;
 	
 	/** Container for a IPKs */
 	IPKContainer *m_ipks;

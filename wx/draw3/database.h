@@ -57,7 +57,9 @@ struct DatabaseQuery {
 		/**Checks if any configuration has changed*/
 		CHECK_CONFIGURATIONS_CHANGE,
 		/**Set addresses of probers servers*/
-		SET_PROBER_ADDRESS
+		SET_PROBER_ADDRESS,
+		/**Set addresses of probers servers*/
+		EXTRACT_PARAM_VALUES,
 	};
 
 	/**Parameters of a query for data*/
@@ -71,6 +73,10 @@ struct DatabaseQuery {
 			int custom_length;
 			/**Response from a database*/
 			double response;
+			/**First val*/
+			double first_val;
+			/**Last val*/
+			double last_val;
 			/**Sum of probes*/
 			double sum;
 			/**Number of no no-data probes*/
@@ -127,6 +133,15 @@ struct DatabaseQuery {
 		wchar_t *port;
 	};
 
+	struct ExtractionParameters {
+		time_t start_time;
+		time_t end_time;
+		PeriodType pt;
+		std::vector<std::wstring>* params;
+		std::vector<std::wstring>* prefixes;
+		std::wstring* file_name;
+	};
+
 	/**Type of query*/
 	QueryType type;
 
@@ -149,6 +164,7 @@ struct DatabaseQuery {
 		CompileFormula compile_formula;
 		DefinedParamData defined_param;
 		ProberAddress prober_address;
+		ExtractionParameters extraction_parameters;
 	};
 
 	~DatabaseQuery();
@@ -178,6 +194,7 @@ class QueryExecutor : public wxThread {
 	 * @param sd output param @see DatabaseQuery::SearchData*/
 	void ExecuteSearchQuery(szb_buffer_t *szb, TParam *p, DatabaseQuery::SearchData &sd);
 
+	void ExecuteExtractParametersQuery(DatabaseQuery::ExtractionParameters &extract_parameters);
 public:
 	void StopSearch();
 

@@ -108,6 +108,9 @@ time_t search_in_probe_range(szb_buffer_t* buffer, TParam* param, time_t start, 
 }
 
 bool adjust_search_boundaries(time_t& start, time_t& end, time_t first_date, time_t last_date, int direction) {
+	if (first_date == -1 && last_date == -1)
+		return false;
+
 	if (direction <= 0 && start < first_date)
 		return false;
 
@@ -264,8 +267,10 @@ time_t search_in_data_range(szb_buffer_t* buffer, TParam* param, time_t start, t
 time_t szb_real_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, const szb_search_condition& condtion) {
 	time_t first_date = szb_search_first(buffer, param);
 	time_t last_date = szb_search_last(buffer, param);
+
 	if (adjust_search_boundaries(start, end, first_date, last_date, direction) == false)
 		return -1;
+
 	return search_in_data_range(buffer, param, start, end, direction, condtion);
 }
 

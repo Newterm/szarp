@@ -53,6 +53,7 @@
 #include "drawprint.h"
 #include "drawurl.h"
 #include "remarks.h"
+#include "remarksfetcher.h"
 #include "disptime.h"
 #include "cfgmgr.h"
 #include "drawdnd.h"

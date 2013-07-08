@@ -37,7 +37,7 @@
 
 bool WHApp::OnInit()
 {
-	szApp::OnInit();
+	szApp<>::OnInit();
 
 	// SET LOCALE 
 #ifndef __WXMSW__

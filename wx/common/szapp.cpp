@@ -161,10 +161,6 @@ void szAppImpl::InitSzarpDataDir()
 }
 
 
-wxString szApp::GetSzarpDir() {
-	return szAppImpl::GetSzarpDir();
-}
-
 void szAppImpl::SetSzarpDataDir(wxString dir) {
 	wxConfig* cfg = new wxConfig(_T("SZARPDATADIR"));
 	cfg->Write(_T("SZARPDATADIR"), dir);
@@ -306,64 +302,5 @@ void szAppImpl::ShowAbout(wxWindow *parent) {
 	delete dlg;
 
 	return;
-}
-
-szApp::szApp() : wxApp(), szAppImpl() {
-}
-
-void szApp::InitSzarpDataDir() {
-	return szAppImpl::InitSzarpDataDir();
-}
-
-void szApp::SetSzarpDataDir(wxString dir) {
-	szAppImpl::SetSzarpDataDir(dir);
-}
-
-bool szApp::OnInit() {
-	if (!wxApp::OnInit())
-		return false;
-	szAppImpl::SetProgPath(argv[0]);
-	szAppImpl::OnInit();
-	return true;
-}
-
-wxString szApp::GetSzarpDataDir() {
-	return szAppImpl::GetSzarpDataDir();
-}
-
-void szApp::InitializeLocale(wxArrayString &catalogs, wxLocale &locale)
-{
-	szAppImpl::InitializeLocale(catalogs, locale);
-}
-
-void szApp::InitializeLocale(wxString catalog, wxLocale &locale)
-{
-	szAppImpl::InitializeLocale(catalog, locale);
-}
-
-void szApp::ShowAbout()
-{
-	szAppImpl::ShowAbout();
-}
-
-void szApp::SetProgName(wxString str) {
-	szAppImpl::SetProgName(str);
-}
-
-bool szApp::OnCmdLineError(wxCmdLineParser &parser) {
-	return wxApp::OnCmdLineError(parser);
-}
-
-bool szApp::OnCmdLineHelp(wxCmdLineParser &parser) {
-	return wxApp::OnCmdLineHelp(parser);
-}
-
-bool szApp::OnCmdLineParsed(wxCmdLineParser &parser){
-	return wxApp::OnCmdLineParsed(parser);
-}
-
-void szApp::OnInitCmdLine(wxCmdLineParser &parser) {
-	wxApp::OnInitCmdLine(parser);
-	parser.AddSwitch(_("Dprefix"), wxEmptyString, _T("database prefix"));
 }
 

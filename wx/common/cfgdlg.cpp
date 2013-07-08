@@ -152,7 +152,7 @@ namespace {
 
 bool ConfigDialog::SelectDatabase(wxString &database, wxArrayString* hidden_databases)
 {
-	ConfigDialog *cfg_dlg = new ConfigDialog(NULL, GetConfigTitles(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDataDir(), hidden_databases), _T(""));
+	ConfigDialog *cfg_dlg = new ConfigDialog(NULL, GetConfigTitles(dynamic_cast<szAppConfig*>(wxTheApp)->GetSzarpDataDir(), hidden_databases), _T(""));
 
 	cfg_dlg->ShowUserDefinedSets(false);
 

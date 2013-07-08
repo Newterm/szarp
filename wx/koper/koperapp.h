@@ -52,7 +52,7 @@
 
 #include "koperframe.h"
 
-class KoperApp : public szApp {
+class KoperApp : public szApp<> {
 protected:
 	bool OnInit();
 	int OnExit();

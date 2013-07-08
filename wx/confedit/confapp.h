@@ -38,7 +38,7 @@
 /**
  * Main application class.
  */
-class ConfApp: public szApp
+class ConfApp: public szApp<>
 {
 	/**
 	 * Method called on application start.

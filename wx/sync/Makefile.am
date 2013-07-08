@@ -102,7 +102,7 @@ sss_SOURCES = \
 	sstring.h \
 	hwkey.cc \
 	latin2.h \
-	latin2.c \
+	latin2.cc \
 	hwkey.h
 
 

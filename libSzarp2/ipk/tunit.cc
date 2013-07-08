@@ -94,7 +94,8 @@ int TUnit::parseXML(xmlTextReaderPtr reader)
 	assert (params == NULL);
 	assert (sendParams == NULL);
 
-	xw.NextTag();
+	if (!xw.NextTag())
+		return 1;
 
 	for (;;) {
 		if (xw.IsTag("param")) {
@@ -106,7 +107,6 @@ int TUnit::parseXML(xmlTextReaderPtr reader)
 				if (p->parseXML(reader))
 					return 1;
 			}
-			xw.NextTag();
 		} else
 		if (xw.IsTag("unit")) {
 			break;
@@ -120,11 +120,12 @@ int TUnit::parseXML(xmlTextReaderPtr reader)
 				if (sp->parseXML(reader))
 					return 1;
 			}
-			xw.NextTag();
 		}
 		else {
 			xw.XMLErrorNotKnownTag("unit");
 		}
+		if (!xw.NextTag())
+			return 1;
 	}
 
 	return 0;

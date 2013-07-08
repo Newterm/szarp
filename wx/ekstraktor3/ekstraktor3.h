@@ -59,7 +59,7 @@
  * Main application class.
  */
 
-class EkstrApp: public szApp
+class EkstrApp: public szApp<>
 {
 	wxLocale locale;
 

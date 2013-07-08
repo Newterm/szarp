@@ -217,7 +217,7 @@ void SCCSelectionFrame::SetCheckBoxes()
 
 void SCCSelectionFrame::LoadDatabases() 
 {
-	m_config_titles = GetConfigTitles(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDataDir());
+	m_config_titles = GetConfigTitles(dynamic_cast<szAppConfig*>(wxTheApp)->GetSzarpDataDir());
 	for (ConfigNameHash::iterator i = m_config_titles.begin(); i != m_config_titles.end(); i++) {
 		m_databases.Add(i->first);
 	}

@@ -45,8 +45,11 @@ class RemoteDialog( QtGui.QDialog , Ui_RemoteDialog ) :
 		except fs.HostNotFoundError :
 			self.labelError.setText('Host not found: ssh://%s:%d' % (serv,port) )
 			self.labelError.show()
-		except IOError :
-			self.labelError.setText('File not found: ssh://%s:%d%s' % (serv,port,path) )
+		except IOError as e :
+			self.labelError.setText('%s: ssh://%s:%d%s' % (str(e),serv,port,path) )
+			self.labelError.show()
+		except TypeError as e :
+			self.labelError.setText( str(e) )
 			self.labelError.show()
 		else :
 			self.labelError.setText('')

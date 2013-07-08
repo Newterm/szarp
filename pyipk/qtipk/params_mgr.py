@@ -13,10 +13,11 @@ from .params import QNode
 from .xml_view import XmlView
 from .xml_diag import XmlDialog
 
+from .map_view import MapDialog
 from .plug_diag import PluginsDialog
 from .params_editor import ParamsEditor
 
-DEFAULT_EDITOR = 'gvim'
+from .config import Config , Configurable
 
 class CopyBuffer :
 	def __init__( self ) :
@@ -36,14 +37,15 @@ class CopyBuffer :
 	def __len__( self ) :
 		return 0 if self.nodes == None else 1
 
-class ParamsManager( QtGui.QTabWidget ) :
+class ParamsManager( QtGui.QTabWidget , Configurable ) :
 	def __init__( self , plugins , parent = None ) :
 		QtGui.QTabWidget.__init__( self , parent )
+		Configurable.__init__( self , parent )
 
 		self.setTabsClosable( True )
 		self.tabCloseRequested.connect( self.closeTab )
 
-		self.editor = ParamsEditor( self , DEFAULT_EDITOR )
+		self.editor = ParamsEditor( self )
 		self.editor.changedSig.connect( self.touch_params )
 
 		self.copybuf = CopyBuffer()
@@ -54,6 +56,8 @@ class ParamsManager( QtGui.QTabWidget ) :
 
 	def newParams( self , filesource ) :
 		params = params_fs( filesource , treeclass = QNode )
+
+		self.cfg['url:params'] = filesource.url()
 
 		index = len(self.paramss)
 
@@ -68,12 +72,14 @@ class ParamsManager( QtGui.QTabWidget ) :
 		view_full.runSig.connect(lambda ns : self.runOnNodes(params,views,ns))
 		view_full.showSig.connect( self.showOnNodes )
 		view_full.editSig.connect( self.editOnNodes )
+		view_full.attribSig.connect( self.attribOnNodes )
 		hlay_xml.addWidget( view_full )
 
 		view_result.changedSig.connect( params.touch )
 		view_result.runSig.connect(lambda ns : self.runOnNodes(params,views,ns))
 		view_result.showSig.connect( self.showOnNodes )
 		view_result.editSig.connect( self.editOnNodes )
+		view_result.attribSig.connect( self.attribOnNodes )
 		hlay_xml.addWidget( view_result )
 
 		self.addTab( wdg , str(filesource) )
@@ -97,6 +103,8 @@ class ParamsManager( QtGui.QTabWidget ) :
 			views[0].clear()
 			views[1].clear()
 			self.removeTab(index)
+			if self.count() == 0 :
+				del self.cfg['url:params']
 
 	def touch_params( self , index ) :
 		self.paramss[index].touch()
@@ -107,19 +115,28 @@ class ParamsManager( QtGui.QTabWidget ) :
 				return False
 		return True
 
+	def confirmDialog( self , msg ) :
+		reply = QtGui.QMessageBox.question(self, 'Message', msg ,
+			QtGui.QMessageBox.Yes | QtGui.QMessageBox.No,
+			QtGui.QMessageBox.No)
+
+		if reply == QtGui.QMessageBox.Yes:
+			return True
+		else :
+			return False
+
 	def closeParams( self , params ) :
 		if params.close() :
 			return True
 		else :
-			reply = QtGui.QMessageBox.question(self, 'Message',
-				"File %s not saved. Are you sure you want to close it?" % str(params.get_filesource()),
-				QtGui.QMessageBox.Yes | QtGui.QMessageBox.No,
-				QtGui.QMessageBox.No)
+			return self.confirmDialog( "File %s not saved. Are you sure you want to close it?" % str(params.get_filesource()) )
 
-			if reply == QtGui.QMessageBox.Yes:
-				return True
-			else :
-				return False
+	def reload( self ) :
+		params = self.currentParams()
+		if params != None :
+			if not params.reload() :
+				if self.confirmDialog( "File %s not saved. Are you sure you want to reload it?" % str(params.get_filesource()) )  :
+					params.reload( force = True )
 
 	def save( self , filesource = None ) :
 		params = self.currentParams()
@@ -155,4 +172,20 @@ class ParamsManager( QtGui.QTabWidget ) :
 		if diag.exec_() == QtGui.QDialog.Accepted :
 			return ( diag.selected_name() , diag.selected_args() )
 		return None
+
+	def attribOnNodes( self , nodes ) :
+		if len(nodes) != 1 :
+			print('You may edit attribs only on one node at once')
+			return
+
+		n = nodes[0]
+		diag = MapDialog( self )
+		diag.set_list( n.node.items() )
+		def update( m = None ) :
+			for k , v in diag.get_list() :
+				n.node.set(k,v)
+		diag.on_apply( update )
+		if diag.exec_() == QtGui.QDialog.Accepted :
+			n.node.attrib.clear()
+			update()
 

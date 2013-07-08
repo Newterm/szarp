@@ -90,7 +90,7 @@ int TWriter::LoadConfig(const char *section, const char* datadir_param)
 		asprintf(&c, PREFIX"/logs/%s.log", section);
 		assert(c != NULL);
 	}
-	l = loginit(l, c);
+	l = sz_loginit(l, c);
 	if (l < 0) {
 		sz_log(0, "TWriter::LoadConfig(): cannot initialize log file %s, errno %d", c, errno);
 		free(c);

@@ -37,10 +37,7 @@ void Watcher::operator()() {
 	try {
 
 		do {
-			boost::xtime xt;
-			boost::xtime_get(&xt, boost::TIME_UTC);
-			xt.sec = xt.sec - (xt.sec % 600) + 900;
-			boost::thread::sleep(xt);
+			boost::this_thread::sleep(boost::posix_time::minutes(15));
 			m_watcher->CheckModifications();
 		
 		} while(1);

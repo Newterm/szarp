@@ -178,7 +178,7 @@ int check_for_other (int argc, char *argv[])
     f = fopen (filename, "r");
     if (f) {
       // read the command line
-      l = fread (buffer, 1, 256, f);
+      l = fread (buffer, 1, 255, f);
       fclose (f);
       // don't care about errors while reading single file
       if (l <= 0)

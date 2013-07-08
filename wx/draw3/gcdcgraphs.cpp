@@ -1016,6 +1016,10 @@ void GCDCGraphs::NoData(DrawsController *d) {
 	m_refresh = true;
 }
 
+void GCDCGraphs::AverageValueCalculationMethodChanged(Draw *d) {
+	m_refresh = true;
+}
+
 void GCDCGraphs::ResetGraphs(DrawsController *controller) {
 	m_draws.resize(0);
 	for (size_t i = 0; i < controller->GetDrawsCount(); i++)

@@ -66,9 +66,10 @@ class SzbExtractor {
 		} ErrorCode;
 		/** Param description needed by SzbExtractor */
 		struct Param {
-			Param( const std::wstring& n , szb_buffer_t*b , ParamType t ) :
-				name(n) , szb(b) , type(t) {}
+			Param( const std::wstring& n , const std::wstring& p, szb_buffer_t*b , ParamType t ) :
+				name(n) , prefix(p), szb(b) , type(t) {}
 			std::wstring name;
+			std::wstring prefix;
 			szb_buffer_t* szb;
 			ParamType type;
 		};
@@ -76,7 +77,7 @@ class SzbExtractor {
 		 * Constructor. LibXML and LibXSLT should be initialized.
 		 * @param ipk pointer to initialized TSzarpConfig object
 		 */
-		SzbExtractor(TSzarpConfig *ipk);
+		SzbExtractor(Szbase *szbase);
 		/**
 		 * Free memory.
 		 */
@@ -334,7 +335,7 @@ class SzbExtractor {
 		 */
 		void ReplaceSeparator(wchar_t *buf);
 
-		TSzarpConfig *ipk;	/**< IPK object */
+		Szbase *szbase;	/**< szbase object */
 		szb_buffer_t *szb;	/**< SzarpBase buffer */
 		std::vector<Param> params;		/** array of param names to extract */
 		std::vector<TParam*> params_objects;

@@ -24,6 +24,7 @@
 #ifdef MINGW32
 #include <shlwapi.h>
 #endif
+
 #include <assert.h>
 #include <unistd.h>
 
