@@ -10,3 +10,18 @@
 	nocreate
 	size 10M
 }
+
+/var/log/szarp/*.log {
+	compress
+	delaycompress
+	rotate 5
+	daily 
+	missingok
+	nocreate
+	size 10M
+	sharedscripts
+        postrotate
+		kill -HUP $(cat /var/run/rsyslogd.pid)
+        endscript
+}
+
