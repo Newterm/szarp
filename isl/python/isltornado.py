@@ -20,7 +20,7 @@ from lxml.etree import XSLT
 logger = logging.getLogger('IslTornado')
 logger.setLevel(logging.DEBUG)
 
-define("port", default=8888, help="run on the given port", type=int)
+define("port", default=8088, help="run on the given port", type=int)
 
 class HttpResolver(etree.Resolver):
     def resolve(self, url, id, context):
@@ -149,8 +149,6 @@ class IslTornado(tornado.web.Application):
         # stylesheet objects because of some threading issues
         self.svg_stylesheet = etree.parse('./isl2svg.xsl', self.parser)
         self.defs_stylesheet = etree.parse('./isl2defs2.xsl', self.parser)
-
-
 
 
 def main():
