@@ -25,7 +25,9 @@ from twisted.web import xmlrpc, server
 from twisted.python import log
 from OpenSSL import SSL
 
+# cfglogin
 import hashlib
+
 import os
 
 import ConfigParser
@@ -46,8 +48,11 @@ __CONFIG_FILE__ = "/etc/szarp/remark_server_config.ini"
 
 NOBODY_UID = 65534
 NOGROUP_GID = 65534
+
+# cfglogin
 HASH_UPDATE_INTERVAL = 10.0
 NOT_A_PREFIX_LIST = ["bin","lib","logs","resources"]
+
 SZARP_DIR = "/opt/szarp"
 
 class SSLContextFactory:
@@ -61,7 +66,6 @@ class SSLContextFactory:
 		ctx.use_certificate_file(self.certfile)
 		ctx.use_privatekey_file(self.keyfile)
 		return ctx
-
 
 class RemarksXMLRPCServer(xmlrpc.XMLRPC):
 	"""Main object communicating with the user"""
@@ -87,7 +91,7 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
                         token = self.service.sessions.new(user_id, username)
 		        return token
 	        else:
-                        # Login with configuration hash
+                        # cfglogin
                         ok, user_id, username = tdb.autologin(user, password)
                         if ok:
                                 token = self.service.sessions.new(user_id, username)
@@ -131,8 +135,9 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
 		fetcher = paramssets.ParamsAndSetsFetcher(self.service.db, user_id, xmlrpc_time.value, prefixes)
 		return fetcher.do_it()
 
-        # This Xml-Rpc method is meant to be called by user to sync /opt/szarp with remarks database
-        # after /opt/szarp has changed.
+        # cfglogin
+
+        # XMLRPC: This method is meant to be called by user to sync /opt/szarp with remarks database after sharp root dir change
         def xmlrpc_prefix_sync(self):
                 prefix_map = {}
 
@@ -153,97 +158,36 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
                                                 log.msg("aggr.xml expected but not found")
 
                 # Update database using /opt/szarp prefix map
+                self.prefix_sync_interaction(prefix_map)
 
-                # Get database map +
-                self.db_map_interaction()
-                # Update prefixes in database (add new prefixes to db_map) +
-                self.prefix_update_interaction(prefix_map, self.db_map)
-                # Update aggregated information +
-                self.aggregated_update_interaction(prefix_map, self.db_map)
-                # Create new autologin users for added prefixes 
-                diff = list(set(prefix_map.keys()) - set(self.db_map.keys()))
-                for username in diff:
-                        configuration_hash = remarks_server.get_prefix_config_md5(username)
-                        if configuration_hash != "": 
-                                # Add user +
-                                self.add_user_interaction(username, configuration_hash)
-                                # Add user_prefix_access +
-                                self.add_user_prefix_access_interaction(username)
-                                if prefix_map[username]:
-                                        # Add aggregated information for username aggregator +
-                                        self.add_user_prefix_access_aggregated_interaction(username)
-                                        # Update write permissions +
-                                        self.update_user_prefix_access_aggregated_interaction(username)
-                                # Update cfglogin list for hash update purposes +
-                                self.fetch_cfglogin_interaction()
+        # Interaction: Sync remarks database prefixes with szarp root dir
+        # This method only adds data to database (it does not delete things from database)
+        def _prefix_sync_interaction(self, trans, prefix_map):
+                tdb = transdb.TransDbAccess(self.service.db, trans)
+                tdb.prefix_sync(prefix_map, self)
 
-        # Get map of database 
-        def _db_map_interaction(self, trans):
-                tdb = transdb.TransDbAccess(self.service.db, trans)
-                db_map = tdb.db_map()
-        def db_map_interaction(self):
-		return self.service.db.dbpool.runInteraction(self._db_map_interaction)
-
-        # Update prefixes
-        def _prefix_update_interaction(self, trans, prefix_map, db_map):
-                tdb = transdb.TransDbAccess(self.service.db, trans)
-                tdb.prefix_update(prefix_map, db_map)
-        def prefix_update_interaction(self, prefix_map, db_map):
-		return self.service.db.dbpool.runInteraction(self._prefix_update_interaction, prefix_map, db_map)
-        
-        # Update aggregated
-        def _aggregated_update_interaction(self, trans, prefix_map, db_map):
-                tdb = transdb.TransDbAccess(self.service.db, trans)
-                tdb.aggregated_update(prefix_map, db_map)
-        def aggregated_update_interaction(self, prefix_map, db_map):
-		return self.service.db.dbpool.runInteraction(self._aggregated_update_interaction, prefix_map, db_map)
-
-        # Add user
-        def _add_user_interaction(self, trans, username, password):
-                tdb = transdb.TransDbAccess(self.service.db, trans)
-                tdb.add_user(username, password)
-        def add_user_interaction(self, username, password):
-		return self.service.db.dbpool.runInteraction(self._add_user_interaction, username, password)
-       
-        # Add user prefix access
-        def _add_user_prefix_access_interaction(self, trans, username):
-                tdb = transdb.TransDbAccess(self.service.db, trans)
-                tdb.add_user_prefix_access(username)
-        def add_user_prefix_access_interaction(self, username):
-		return self.service.db.dbpool.runInteraction(self._add_user_prefix_access_interaction, username)
-            
-        # Add user prefix access aggregated
-        def _add_user_prefix_access_aggregated_interaction(self, trans, username):
-                tdb = transdb.TransDbAccess(self.service.db, trans)
-                tdb.add_user_prefix_access_aggregated(username)
-        def add_user_prefix_access_aggregated_interaction(self, username):
-		return self.service.db.dbpool.runInteraction(self._add_user_prefix_access_aggregated_interaction, username)
-
-        # Update user prefix access aggregated
-        def _update_user_prefix_access_aggregated_interaction(self, trans, username):
-                tdb = transdb.TransDbAccess(self.service.db, trans)
-                tdb.update_user_prefix_access_aggregated(username)
-        def update_user_prefix_access_aggregated_interaction(self, username):
-		return self.service.db.dbpool.runInteraction(self._update_user_prefix_access_aggregated_interaction, username)
+        def prefix_sync_interaction(self, prefix_map):
+		return self.service.db.dbpool.runInteraction(self._prefix_sync_interaction, prefix_map)
 
         # Calculate md5 hash of configuration file for given szbase prefix name
         def get_prefix_config_md5(self, prefix):
                 try:
                         filestring = open("/opt/szarp/" + prefix + "/config/params.xml", "r").read()
                 except IOError:
-                        return ""
+                        return None
                 
                 md5 = hashlib.md5()
                 md5.update(filestring)
                 return md5.hexdigest()
 
-        # Updating configuration file hash
+        # Perform hash udpate on all autologin users
         def hash_update(self):
                 for prefix in self.cfglogin_prefixes:
                         config_hash = self.get_prefix_config_md5(prefix)
                         if config_hash:
                                 self.hash_update_interaction(prefix, config_hash)
         
+        # Interaction: Perform hash update on specific user
         def _hash_update_interaction(self, trans, prefix, config_hash):
                 tdb = transdb.TransDbAccess(self.service.db, trans)
                 tdb.hash_update(prefix, config_hash)
@@ -251,22 +195,13 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
         def hash_update_interaction(self, prefix, config_hash):
 		return self.service.db.dbpool.runInteraction(self._hash_update_interaction, prefix, config_hash)
 
-        # Fetching cfglogin prefix list
+        # Interaction: Fetch users marked as autologin in remarks database to perform hash update on them
         def _fetch_cfglogin_interaction(self, trans):
                 tdb = transdb.TransDbAccess(self.service.db, trans)
                 self.cfglogin_prefixes = tdb.fetch_cfglogin()
 
         def fetch_cfglogin_interaction(self):
 		return self.service.db.dbpool.runInteraction(self._fetch_cfglogin_interaction)
-        
-        # Add user to database
-        def add_user_interaction(self, prefix, password_hash):
-		return self.service.db.dbpool.runInteraction(self._add_user_interaction, prefix, password_hash)
-
-        def _add_user_interaction(self, trans,  prefix, password_hash):
-                tdb = transdb.TransDbAccess(self.service.db, trans)
-                tdb.add_user(prefix, password_hash)
-
         
 class RemarksService(service.Service):
 	def __init__(self, config):
@@ -284,23 +219,12 @@ remarks_service = RemarksService(config)
 
 remarks_server = RemarksXMLRPCServer(remarks_service)
 
-'''
-# First: fix database:
-# Standalone script adds:
-# - Users autologin column,
-# - Hash history table,
-# - Hash update function,
-# - Hash update trigger procedure.
-# Remarks server does:
-# - Check if exists/add autologin user for each prefix in szarp root dir
-for prefix_dir in os.walk(SZARP_DIR).next()[1]:
-        if prefix_dir not in NOT_A_PREFIX_LIST:
-                remarks_server.add_user_interaction(prefix_dir, remarks_server.get_prefix_config_md5(prefix_dir))
-'''
 
+# cfglogin
 # Initial autologin users from database, updated after each prefix sync
 remarks_server.fetch_cfglogin_interaction()
 
+# cfglogin
 # TASK: Update password hash of users using cfglogin
 hash_update_task = task.LoopingCall(remarks_server.hash_update)
 hash_update_task.start(HASH_UPDATE_INTERVAL)

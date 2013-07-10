@@ -33,6 +33,8 @@ class TransDbAccess:
 		self.db = db
 		self.trans = trans
 
+        # cfglogin
+        # Add new cfglogin (autologin) user to database
         def add_user(self, username, password):
 
                 log.msg("Debug: add_user("+username+","+password+")")
@@ -48,7 +50,9 @@ class TransDbAccess:
                 { 'username' : username, 'password' : password, 'name' : name })
 
                 log.msg("Debug: new users("+username+","+password+","+name+")")
-
+        
+        # cfglogin
+        # Add new user prefix access for cfglogin (autologin) user
         def add_user_prefix_access(self, username):
                 # Insert user_prefix_access for autologin user
                 # 1. Find out id of inserted user
@@ -58,7 +62,7 @@ class TransDbAccess:
                 { 'username' : username })
                 inserted_user_id = self.trans.fetchone()
 
-                log.msg("Debug: inderted_username_id("+str(inserted_user_id[0])+")")
+                log.msg("Debug: inserted_username_id("+str(inserted_user_id[0])+")")
                 # 2. Find out id of prefix that coresponds to autologin username 
                 self.trans.execute("""
                         SELECT prefix.id FROM prefix WHERE prefix.prefix=%(username)s
@@ -76,6 +80,8 @@ class TransDbAccess:
                         """,
                 { 'user_id' : inserted_user_id[0], 'prefix_id' : coresponding_prefix_id[0] })
                 
+        # cfglogin
+        # Add new user prefix access for user according to aggregated map
         def add_user_prefix_access_aggregated(self, username):
                 # Insert access privilage for aggregated
                 self.trans.execute("""
@@ -96,6 +102,8 @@ class TransDbAccess:
 
                 log.msg("Debug: new user_prefix_access(for aggregated)")
 
+        # cfglogin
+        # Update user prefix access for aggregated prefixes
         def update_user_prefix_access_aggregated(self, username):
                 #@TODO: merge with above query
                 # Update write access
@@ -115,6 +123,8 @@ class TransDbAccess:
 
                 log.msg("Debug: new user_prefix_access(aggregated write access update)")
                 
+        # cfglogin
+        # Fetch database map of prefixes and their aggregation
         def db_map(self):
                 # Fetch (prefix, aggr_prefix) table from database
 		self.trans.execute("""
@@ -154,7 +164,9 @@ class TransDbAccess:
                                         db_map[row[0]].append(row[1])
 
                 return db_map
-
+        
+        # cfglogin
+        # Add missing prefixes to database
         def prefix_update(self, prefix_map, db_map):
                 # Insert into database prefixes in /opt/szarp and not in database
                 diff = list(set(prefix_map.keys()) - set(db_map.keys()))
@@ -172,22 +184,26 @@ class TransDbAccess:
                         # Adding this new prefix to map so it will have its
                         # aggregated information updated in next step along
                         # with other prefixes
-                        db_map[missing] = []
 
+                return diff
+
+        # cfglogin
+        # Add missing aggregated map elements
         def aggregated_update(self, prefix_map, db_map):
                 # Insert user_prefix_access for autologin user
-               
+                updated = []
                 # Modifying aggregated maps for prefixes in database
                 for key in db_map.keys():
                         if key in prefix_map.keys():
-                                # Find id of aggregator
-                                self.trans.execute("""
-                                        SELECT id FROM prefix WHERE prefix = %(prefix)s
-                                        """,
-                                { 'prefix' : key })
-                                aggregator_id = self.trans.fetchone()
                                 aggr_diff = list(set(prefix_map[key]) - set(db_map[key]))
                                 if aggr_diff:
+                                        # Find id of aggregator
+                                        self.trans.execute("""
+                                                SELECT id FROM prefix WHERE prefix = %(prefix)s
+                                                """,
+                                        { 'prefix' : key })
+                                        aggregator_id = self.trans.fetchone()
+                                        updated.append(key)
                                         for prefix in aggr_diff:
                                                 # Find id of aggregated
                                                 self.trans.execute("""
@@ -204,7 +220,58 @@ class TransDbAccess:
                                                                 (%(aggregated_id)s, %(aggregator_id)s)
 			                                """,
                                                 { 'aggregated_id' : aggregated_id[0], 'aggregator_id' : aggregator_id[0] })
+                return updated
 
+        # cfglogin
+        # Main database synchronization routine
+        def prefix_sync(self, prefix_map, remarks_server):
+                log.msg("Debug: Prefix sync transaction started")
+
+                db_map = self.db_map()
+                log.msg("Debug: Database map aquired")
+                diff = self.prefix_update(prefix_map, db_map)
+                log.msg("Debug: Prefixes updated")
+
+                print diff
+                db_map_upd = db_map.copy()
+                for missing in diff:
+                        db_map_upd[missing] = []
+
+                updated = self.aggregated_update(prefix_map, db_map_upd)
+                log.msg("Debug: Aggregated updated")
+
+                print updated
+
+                # Create new autologin users for added prefixes 
+                for username in diff:
+                        configuration_hash = remarks_server.get_prefix_config_md5(username)
+                        if configuration_hash: 
+                                # Add user +
+                                self.add_user(username, configuration_hash)
+                                log.msg("Debug: User added")
+                                # Add user_prefix_access +
+                                self.add_user_prefix_access(username)
+                                log.msg("Debug: User prefix access added")
+                        else:
+                                log.msg("Debug: Configuration hash of "+username+" could not be calculated")
+
+                for username in updated:
+                        #if prefix_map[username]:
+                        # Add aggregated information for username aggregator +
+                        self.add_user_prefix_access_aggregated(username)
+                        log.msg("Debug: User prefix access aggregated added")
+                        # Update write permissions +
+                        self.update_user_prefix_access_aggregated(username)
+                        log.msg("Debug: User prefix access aggregated updated")
+
+                # Update cfglogin list for hash update purposes +
+                remarks_server.cfglogin_prefixes = self.fetch_cfglogin()
+                log.msg("Debug: Cfglogin updated")
+
+                log.msg("Debug: Transaction is exiting")
+
+        # cfglogin
+        # Update database password of autologin user
         #@TODO: get all config hashes and compare with database in for loop
         def hash_update(self, prefix, config_hash):
                 
@@ -235,6 +302,8 @@ class TransDbAccess:
                                         """,
                                 { 'password' : config_hash, 'id' : row[0] } )
 
+        # cfglogin
+        # Fetch cfglogin (autologin) users from database
         def fetch_cfglogin(self):
                 # Fetch users using cfglogin
                 self.trans.execute("""
@@ -257,6 +326,8 @@ class TransDbAccess:
 
                 return cfglogin_list
 
+        # cfglogin
+        # cfglogin (autologin) routine
 	def autologin(self, user, password):
 
                 # autologin format: login@prefix
