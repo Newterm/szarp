@@ -867,6 +867,9 @@ msgstr "Od¶wie¿"
 msgid "Tree Set"
 msgstr "Drzewo wykresów"
 
+msgid "Show screen keyboard"
+msgstr "Klawiatura ekranowa"
+
 #: drawtb.cpp:63
 msgid "Go to latest date"
 msgstr "Id¿ do najnowszej danej"
