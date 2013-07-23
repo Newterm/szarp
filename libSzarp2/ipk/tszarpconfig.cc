@@ -395,6 +395,8 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 	const char* ignored_trees[] = { "mobile", "checker:rules",  0 };
 	xw.SetIgnoredTrees(ignored_trees);
 
+	nativeLanguage = L"pl";
+
 	for (;;) {
 		if (xw.IsTag("params")) {
 			if (xw.IsBeginTag()) {
@@ -424,6 +426,9 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 						} else
 						if (xw.IsAttr("title")) {
 							title = SC::U2S(attr);
+						} else
+						if (xw.IsAttr("language")) {
+							nativeLanguage = SC::U2S(attr);
 						} else
 						if (xw.IsAttr("documentation_base_url")) {
 							documentation_base_url = SC::U2S(attr);
