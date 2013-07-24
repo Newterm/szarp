@@ -42,7 +42,7 @@ SSH_PORT=
 #dodatkowe opcje dla rsync'a
 RSYNC_OPTIONS="-az --exclude='.*' --exclude='nohup.out' --delete --force"
 # dodatkowe opcje dla rsynca do wysy³ania baz szbase (gdy nie robimy pelnego synca)
-SZBASE_EXTRA=" --include=`date +%Y%m.szb` --include=`date +%Y%m -d '1 month ago'`.szb --exclude=*.szb"
+SZBASE_EXTRA=" --append-verify --include=`date +%Y%m.szb` --include=`date +%Y%m -d '1 month ago'`.szb --exclude=*.szb"
 
 SSH_OPTIONS="-o StrictHostKeyChecking=no -o ControlPath=$(mktemp --tmpdir -u ssh-%r@%h:%p-XXXXXXX)"
 
@@ -157,11 +157,21 @@ function do_rsync {
 	    log "do_rsync: LMT: $LMT, RMT: $RMT"
 
 	    if [ $RMT -eq $LMT ]; then
-		SE=$SZBASE_EXTRA
+		SE="yes"
 	    fi
 	fi
+
 	export RSYNC_RSH="ssh $SSH_OPTIONS"
-	/usr/bin/rsync --bwlimit=$BWLIMIT $RSYNC_VERBOSE $RSYNC_OPTIONS $SE $1 $REMOTE:/opt/szarp
+
+	if [ -n "$SE" ]; then
+	    ROPTS="--bwlimit=$BWLIMIT $RSYNC_VERBOSE $RSYNC_OPTIONS"
+	    # first synchronize all beside szbase
+	    /usr/bin/rsync $ROPTS --exclude=szbase $1 $REMOTE:/opt/szarp
+	    # then synchronize only szbase
+	    /usr/bin/rsync $ROPTS --include=szbase $SZBASE_EXTRA $1 $REMOTE:/opt/szarp
+	else
+	    /usr/bin/rsync --bwlimit=$BWLIMIT $RSYNC_VERBOSE $RSYNC_OPTIONS $SE $1 $REMOTE:/opt/szarp
+	fi
 }
 
 function cleanup {
