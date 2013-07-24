@@ -176,6 +176,8 @@ public:
 
 	void OnShowRemarks(wxCommandEvent &e);
 
+	void OnShowKeyboard(wxCommandEvent &e);
+
 	void OnGoToLatestDate(wxCommandEvent &e);
 
 	void OnSortGraph(wxCommandEvent &e);

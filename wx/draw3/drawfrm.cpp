@@ -1019,6 +1019,10 @@ void DrawFrame::OnPrintPageSetup(wxCommandEvent& event) {
 	Print::PageSetup(this);
 }
 
+void DrawFrame::OnShowKeyboard(wxCommandEvent& event) {
+	wxExecute( wxString::FromAscii("florence-ctl show") );
+}
+
 void DrawFrame::OnGoToLatestDate(wxCommandEvent& event) {
 	draw_panel->GoToLatestDate();	
 }
@@ -1255,6 +1259,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     LOG_EVT_MENU(drawTB_EXIT, DrawFrame , OnExit, "drawfrm:tb_exit" )
     LOG_EVT_MENU(drawTB_ABOUT, DrawFrame , OnAbout, "drawfrm:tb_about" )
     LOG_EVT_MENU(drawTB_REMARK, DrawFrame , OnShowRemarks, "drawfrm:tb_remark" )
+    LOG_EVT_MENU(drawTB_FLORENCE, DrawFrame , OnShowKeyboard, "drawfrm:tb_florence" )
     LOG_EVT_MENU(drawTB_GOTOLATESTDATE, DrawFrame , OnGoToLatestDate, "drawfrm:tb_gotolatest" )
     LOG_EVT_MENU(XRCID("GoToLatestDate"), DrawFrame , OnGoToLatestDate, "drawfrm:gotolatest" )
     LOG_EVT_MENU(XRCID("SearchDate"), DrawFrame , OnSearchDate , "drawfrm:search_date")
