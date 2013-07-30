@@ -1,7 +1,6 @@
 /* 
  SZARP: SCADA software 
  
-
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2 of the License, or
@@ -168,6 +167,26 @@ struct DatabaseQuery {
 	};
 
 	~DatabaseQuery();
+
+};
+
+class Draw3Base {
+
+public:
+	void RemoveConfig(const std::wstring& prefix,
+			bool poison_cache) = 0;
+
+	bool CompileLuaFormula(const std::wstring& formula, std::wstring& error) = 0;
+
+	void AddExtraParam(const std::wstring& prefix, TParam *param) = 0;
+
+	void RemoveExtraParam(const std::wstring& prefix, TParam *param) = 0;
+
+	void NotifyAboutConfigurationChanges() = 0;
+
+	void SetProberAddress(const std::wstring& prefix,
+			const std::wstring& address,
+			int port);
 
 };
 

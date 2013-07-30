@@ -425,6 +425,8 @@ void DrawApp::OnInitCmdLine(wxCmdLineParser &parser) {
 
 	parser.AddSwitch(_T("v"), _T("verbose"), _("verbose logging"));
 
+	parser.AddSwitch(_T("4"), _T("sz4"), _("use sz4 base format"));
+
 	parser.AddSwitch(_T("V"), _T("version"), 
 		_("print version number and exit"));
 	
