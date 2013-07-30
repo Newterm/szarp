@@ -202,7 +202,7 @@ CombinedDatablock::Refresh()
 	int size;
 	try {
 		size = fs::file_size(tmppath);
-	} catch (fs::wfilesystem_error) {
+	} catch (fs::filesystem_error) {
 		buffer->last_err = SZBE_SYSERR;
 		return;
 	}
@@ -214,7 +214,7 @@ CombinedDatablock::Refresh()
 	tmppath = szb_datablock_t::GetBlockFullPath(buffer, p_cache[1], year, month);
 	try {
 		size = fs::file_size(tmppath);
-	} catch (fs::wfilesystem_error) {
+	} catch (fs::filesystem_error) {
 		buffer->last_err = SZBE_SYSERR;
 		return;
 	}

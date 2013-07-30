@@ -87,10 +87,10 @@ template<typename OP> std::wstring find_one_param_file(const fs::wpath &paramPat
 
 	std::wstring file;
 	try {
-		for (fs::wdirectory_iterator i(paramPath); 
-				i != fs::wdirectory_iterator(); 
+		for (fs::directory_iterator i(paramPath); 
+				i != fs::directory_iterator(); 
 				i++) {
-			std::wstring l = i->path().leaf();
+			std::wstring l = i->path().leaf().wstring();
 			if (is_szb_file_name(l) == false)
 				continue;
 
@@ -104,7 +104,7 @@ template<typename OP> std::wstring find_one_param_file(const fs::wpath &paramPat
 	
 		}
 
-	} catch (fs::wfilesystem_error &e) {
+	} catch (fs::filesystem_error &e) {
 		file.clear();
 	}
 
@@ -262,7 +262,7 @@ szb_search_last(szb_buffer_t * buffer, TParam * param)
 				size_t size;
 				try {
 					size = fs::file_size(paramFilePath);
-				} catch (fs::wfilesystem_error& e) {
+				} catch (fs::filesystem_error& e) {
 					return -1;
 				}
 
@@ -617,11 +617,11 @@ szb_create_buffer(Szbase *szbase, const std::wstring &directory, int num, TSzarp
 	ret->szbase = szbase;
 
 	fs::wpath rootpath(directory);
-	ret->rootdir = rootpath.string();
+	ret->rootdir = rootpath.wstring();
 
 	fs::wpath tmppath(ret->rootdir);
 	tmppath.remove_leaf().remove_leaf();
-	ret->prefix = tmppath.leaf();
+	ret->prefix = tmppath.leaf().wstring();
 
 	ret->first_av_date = -1;
 	ret->first_param = ipk->getParamByIPC(0);
@@ -644,7 +644,7 @@ szb_create_buffer(Szbase *szbase, const std::wstring &directory, int num, TSzarp
 
 	rootpath /= p->GetSzbaseName();
 	// prepare mpath for fast path creation
-	ret->meaner3_path += rootpath.string();
+	ret->meaner3_path += rootpath.wstring();
 
 	ret->last_err = SZBE_OK;
 
@@ -714,7 +714,7 @@ szb_definable_meaner_last(szb_buffer_t * buffer)
 	size_t size;
 	try {
 		size = fs::file_size(meaner3path / last);
-	} catch (fs::wfilesystem_error& e) {
+	} catch (fs::filesystem_error& e) {
 		return -1;
 	}
 
@@ -789,7 +789,7 @@ szb_buffer_str::GetConfigurationDate() {
 
 	try {
 		return fs::last_write_time(configPath);
-	} catch (fs::wfilesystem_error& e) {
+	} catch (fs::filesystem_error& e) {
 		return -1;
 	}
 
@@ -802,8 +802,8 @@ std::wstring szb_buffer_str::GetConfigurationFilePath() {
 	std::wstring ret;
 	try {
 		if (fs::exists(configPath))
-			ret = configPath.string();
-	} catch (fs::wfilesystem_error& e) {}
+			ret = configPath.wstring();
+	} catch (fs::filesystem_error& e) {}
 
 	return ret;
 }
@@ -816,8 +816,8 @@ std::wstring szb_buffer_str::GetSzbaseStampFilePath() {
 
 	try {
 		if (fs::exists(path))
-			ret = path.string();
-	} catch (fs::wfilesystem_error& e) {}
+			ret = path.wstring();
+	} catch (fs::filesystem_error& e) {}
 
 	return ret;
 }

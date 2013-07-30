@@ -96,7 +96,7 @@ void Szbase::Init(const std::wstring& szarp_dir, void (*callback)(std::wstring, 
 
 bool Szbase::AddBase(const std::wstring& prefix) {
 
-	return AddBase((m_szarp_dir / prefix / L"szbase").file_string(), prefix);
+	return AddBase((m_szarp_dir / prefix / L"szbase").wstring(), prefix);
 }
 
 void Szbase::AddExtraParam(const std::wstring &prefix, TParam *param) {

@@ -90,7 +90,7 @@ std::wstring szb_createfilename(const std::wstring& param_name, const int year, 
 int szb_cc_parent(const std::wstring& path)
 {
 	fs::wpath tmppath(path);
-	tmppath.remove_leaf();
+	tmppath.remove_filename();
 	if(fs::exists(tmppath))
 		return 0;
 	return fs::create_directories(tmppath) ? 0 : 1;
@@ -113,13 +113,13 @@ int szb_open_ne(const std::wstring& directory, const std::wstring& param,
 	fs::wpath path(directory);
 	path /= filename;
 	if (flags & O_CREAT) {
-		szb_cc_parent(path.string());
+		szb_cc_parent(path.wstring());
 		mode = SZBASE_CMASK; 
 	}
 #ifdef MINGW32
-	fd = open(SC::S2A(path.string()).c_str(), flags | O_BINARY, mode);
+	fd = open(SC::S2A(path.wstring()).c_str(), flags | O_BINARY, mode);
 #else
-	fd = open(SC::S2A(path.string()).c_str(), flags, mode);
+	fd = open(SC::S2A(path.wstring()).c_str(), flags, mode);
 #endif
 	/* on error fd is -1, so we can just return it */
 	return fd;
@@ -140,7 +140,7 @@ int szb_close(const int fd)
 void szb_path2date(const std::wstring& path, int* year, int* month)
 {
 	fs::wpath tmppath(path);
-	std::wstring datestring = fs::basename(tmppath);
+	std::wstring datestring =tmppath.filename().wstring();
 
 	*year = *month = 0;
 
@@ -178,7 +178,7 @@ void szb_path2date(const std::wstring& path, int* year, int* month)
 bool
 is_szb_file_name(const fs::wpath& path)
 {
-	const std::wstring& str = path.string();
+	const std::wstring& str = path.wstring();
 
 	for (int i = 0; i < 6; i++)
 		if (!iswdigit(str[i]))
@@ -203,7 +203,7 @@ szb_file_exists(const std::wstring& filename, time_t *file_modification_date)
 		time_t mt = fs::last_write_time(filename);
 		if (file_modification_date)
 			*file_modification_date = mt;
-	} catch (fs::wfilesystem_error) {
+	} catch (fs::filesystem_error) {
 		if (file_modification_date)
 			*file_modification_date = -1;
 		return false;

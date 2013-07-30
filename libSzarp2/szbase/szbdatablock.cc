@@ -114,7 +114,7 @@ szb_datablock_t::GetBlockRelativePath(TParam * param, int year, int month) {
 
 	fs::wpath paramPath = fs::wpath(param->GetSzbaseName()) / wss.str();
 
-	return paramPath.string();
+	return paramPath.wstring();
 }
 
 std::wstring
@@ -132,7 +132,7 @@ szb_datablock_t::GetBlockFullPath(szb_buffer_t* buffer, TParam * param, int year
 		return L"";
 
 	fs::wpath paramPath = fs::wpath(buffer->rootdir) / rp;
-	return paramPath.string();
+	return paramPath.wstring();
 }
 
 void szb_datablock_t::AllocateDataMemory() { assert(!data); data = new SZBASE_TYPE[this->max_probes]; }

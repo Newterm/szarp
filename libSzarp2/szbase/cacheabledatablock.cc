@@ -112,7 +112,7 @@ std::wstring CacheableDatablock::GetCacheRootDirPath(szb_buffer_t *buffer) {
 
 	cachepath = cachepath / L".szarp" / L"szbase" / L"cache" / fs::wpath(buffer->prefix);
 
-	return cachepath.string();
+	return cachepath.wstring();
 }
 
 std::wstring CacheableDatablock::GetCacheFilePath(TParam * p, int y, int m)
@@ -124,7 +124,7 @@ std::wstring CacheableDatablock::GetCacheFilePath(TParam * p, int y, int m)
 
 	fs::wpath ret = fs::wpath(cache) / this->GetBlockRelativePath();
 
-	return ret.string();
+	return ret.wstring();
 }
 
 bool
@@ -204,7 +204,7 @@ CacheableDatablock::IsCacheFileValid(int &probes, time_t *mdate)
 	size_t size;
 	try {
 		size = fs::file_size(cachepath);
-	} catch (fs::wfilesystem_error) {
+	} catch (fs::filesystem_error) {
 		sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL,
 				"CacheableDatablock::IsCacheFileValid: cannot retrive file szie for: '%ls'",
 				this->cachepath.c_str());
@@ -214,7 +214,7 @@ CacheableDatablock::IsCacheFileValid(int &probes, time_t *mdate)
 	time_t mtime;
 	try {
 		mtime = fs::last_write_time(cachepath);
-	} catch (fs::wfilesystem_error) {
+	} catch (fs::filesystem_error) {
 		sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, "CacheableDatablock::IsCacheFileValid: cannot retrive modification date for: '%ls'", this->cachepath.c_str());
 		return false;
 	}
@@ -247,7 +247,7 @@ CacheableDatablock::IsCacheFileValid(int &probes, time_t *mdate)
 	time_t bmt;
 	try {
 		bmt = fs::last_write_time(tmp);
-	} catch (fs::wfilesystem_error) {
+	} catch (fs::filesystem_error) {
 		sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, "CacheableDatablock::IsCacheFileValid: cannot retrive modification date of szbase_stamp");
 		return true;
 	}
