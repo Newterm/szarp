@@ -135,7 +135,7 @@
     </entry>
     <entry>
       <translation lang="fr" value="Prix * tonne de chabon"/>
-      <translation lang="en" value="Price * ton of carbon"/>
+      <translation lang="en" value="Price * ton of coal"/>
       <translation lang="pl" value="Cena * tony węgla"/>
     </entry>
     <entry>
@@ -215,7 +215,7 @@
     </entry>
     <entry>
       <translation lang="fr" value="Quantité d'air pour *m3/h de cahrbon"/>
-      <translation lang="en" value="The amount of air to * m3 / h of carbon"/>
+      <translation lang="en" value="The amount of air to * m3 / h of coal"/>
       <translation lang="pl" value="Ilość powietrza dla *m3/h węgla"/>
     </entry>
     <entry>
@@ -224,8 +224,8 @@
       <translation lang="pl" value="KPW"/>
     </entry>
     <entry>
-      <translation lang="fr" value="Canal *"/>
-      <translation lang="en" value="Channel * "/>
+      <translation lang="fr" value="Caniveau *"/>
+      <translation lang="en" value="Duct * "/>
       <translation lang="pl" value="Kanał *"/>
     </entry>
     <entry>
@@ -394,7 +394,7 @@
     </entry>
     <entry>
       <translation lang="fr" value="Puissance au compteur*"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Power of the counter*"/>
       <translation lang="pl" value="Moc z licznika*"/>
     </entry>
     <entry>
@@ -441,11 +441,6 @@
       <translation lang="fr" value=""/>
       <translation lang="en" value=""/>
       <translation lang="pl" value="Podciśnienie strona lewa"/>
-    </entry>
-    <entry>
-      <translation lang="fr" value=""/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Podciśnienie w komorze spalania"/>
     </entry>
     <entry>
       <translation lang="fr" value=""/>
@@ -499,7 +494,7 @@
     </entry>
     <entry>
       <translation lang="fr" value="Débit sur le compteur lsw"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Flow of the counter lsw"/>
       <translation lang="pl" value="Przepływ z licznika lsw"/>
     </entry>
     <entry>
@@ -734,23 +729,17 @@
     </entry>
     <entry>
       <translation lang="fr" value=""/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Calorific value"/>
       <translation lang="pl" value="Wartość opałowa"/>
     </entry>
     <entry>
       <translation lang="fr" value="Eau au compteur"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Woda z licznika"/>
-      <comment content="  Woda z licznika"/>
-    </entry>
-    <entry>
-      <translation lang="fr" value=""/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Water of the counter"/>
       <translation lang="pl" value="Woda z licznika"/>
     </entry>
     <entry>
       <translation lang="fr" value=""/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Water of the counter msw"/>
       <translation lang="pl" value="Woda z licznika msw"/>
     </entry>
     <entry>
@@ -998,18 +987,12 @@
       <translation lang="en" value=""/>
       <translation lang="pl" value="Średnie dobowe zawyżenie temperatury na sieć"/>
     </entry>
-    </param_name>
+</param_name>
   <draw_title>
     <entry>
       <translation lang="fr" value="Pressions entre collecteurs"/>
       <translation lang="en" value=""/>
       <translation lang="pl" value="Ciśnienia międzykolektorowe"/>
-    </entry>
-    <entry>
-      <translation lang="fr" value="Pressions réseau*"/>
-      <translation lang="en" value="Net pressures*"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Ciśnienia sieciowe*"/>
     </entry>
     <entry>
       <translation lang="fr" value="Economiseur *-*  N° * - pressions"/>
@@ -1043,33 +1026,42 @@
     </entry>
     <entry>
       <translation lang="fr" value="Chaudiere *-* N° * - analyse *"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Kocioł *-* nr * - analiza w ruchu *"/>
+      <translation lang="en" value="Boiler * Analysis on move *"/>
+      <translation lang="pl" value="Kocioł * Analiza w ruchu *"/>
     </entry>
     <entry>
       <translation lang="fr" value="Chaudiere *-* N° * - pressions "/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Kocioł *-* nr * - ciśnienia"/>
+      <translation lang="en" value="Boiler * Pressure"/>
+      <translation lang="pl" value="Kocioł * Ciśnienia"/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Chaudiere *-* N° * - pressions "/>
+      <translation lang="en" value="Boiler * Pressure blowing"/>
+      <translation lang="pl" value="Kocioł * Ciśnienia"/>
     </entry>
     <entry>
       <translation lang="fr" value="Chaudiere *-* N° * - rendement"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Kocioł *-* nr * - efektywność"/>
+      <translation lang="en" value="Boiler * Efficiency"/>
+      <translation lang="pl" value="Kocioł * Efektywność"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Libra * Efficiency"/>
+      <translation lang="pl" value="Waga * Efektywność"/>
     </entry>
     <entry>
       <translation lang="fr" value="Chaudiere *-* N° * - chambre de combustion"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Kocioł *-* nr * - komora spalania"/>
+      <translation lang="en" value="Boiler * Combustion chamber"/>
+      <translation lang="pl" value="Kocioł * Komora spalania"/>
     </entry>
     <entry>
       <translation lang="fr" value="Chaudiere *-* N° * - ajustements de réglage"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Kocioł *-* nr * - korekty i relacje wysterowania"/>
+      <translation lang="en" value="Boiler * Corrections and relation. modul."/>
+      <translation lang="pl" value="Kocioł * Korekty i relacje wysterowania"/>
     </entry>
     <entry>
       <translation lang="fr" value="Chaudiere *-* N° * - températures"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Kocioł *-* nr * - temperatury"/>
+      <translation lang="en" value="Boiler * Temperatures"/>
+      <translation lang="pl" value="Kocioł * Temperatury"/>
     </entry>
     <entry>
       <translation lang="fr" value="Chaudiere *-* N° * -température et pressions "/>
@@ -1078,8 +1070,8 @@
     </entry>
     <entry>
       <translation lang="fr" value="Chaudiere *-* N° * - températures fumées"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Kocioł *-* nr * - temperatury spalin"/>
+      <translation lang="en" value="Boiler * Flue gas temperatures"/>
+      <translation lang="pl" value="Kocioł * Temperatury spalin"/>
     </entry>
     <entry>
       <translation lang="fr" value="Chaudiere *-* N° * - vent. de l'air parasite"/>
@@ -1088,8 +1080,8 @@
     </entry>
     <entry>
       <translation lang="fr" value="Chaudiere *-* N° * - rendement et débit"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Kocioł *-* nr * - wydajność i przepływ"/>
+      <translation lang="en" value="Boiler * Efficiency and flow"/>
+      <translation lang="pl" value="Kocioł * Wydajność i przepływ"/>
     </entry>
     <entry>
       <translation lang="fr" value="Compteur électricité - pussance passive"/>
@@ -1111,21 +1103,6 @@
       <translation lang="fr" value="Dégazeur - pressions*"/>
       <translation lang="en" value=""/>
       <translation lang="pl" value="Odgazowywacz - ciśnienia*"/>
-    </entry>
-    <entry>
-      <translation lang="fr" value="Dégazeur - pression colonnes*"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Odgazowywacz - ciśnienie w kolumnie*"/>
-    </entry>
-    <entry>
-      <translation lang="fr" value="Dégazeur - niveau eau*"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Odgazowywacz - poziom wody*"/>
-    </entry>
-    <entry>
-      <translation lang="fr" value="Dégazeur - températures*"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Odgazowywacz - temperatury*"/>
     </entry>
     <entry>
       <translation lang="fr" value="Dégazeur - pertes eau*"/>
@@ -1238,9 +1215,8 @@
     </entry>
     <entry>
       <translation lang="fr" value="Perte cheminée"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Chimney loss"/>
       <translation lang="pl" value="Strata kominowa"/>
-      <translation lang="en" value="Chimney losses"/>
     </entry>
     <entry>
       <translation lang="fr" value="Perte de transport"/>
@@ -1273,11 +1249,6 @@
       <translation lang="en" value="Total losses"/>
     </entry>
     <entry>
-      <translation lang="fr" value="Températures fumées "/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Temperatury spalin"/>
-    </entry>
-    <entry>
       <translation lang="en" value=""/>
       <translation lang="pl" value="Teoretyczne zużycie e. elektr. przez układ pompowy"/>
       <translation lang="en" value="Theoretical el. energy consumption for pomps"/>
@@ -1295,8 +1266,8 @@
     </entry>
     <entry>
       <translation lang="fr" value="Poids *-* N° * - charbon fourni a la chaudiere"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Waga *-* nr * - dostarczony węgiel"/>
+      <translation lang="en" value="Libra * Delivered coal"/>
+      <translation lang="pl" value="Waga * Dostarczony węgiel"/>
     </entry>
     <entry>
       <translation lang="fr" value="Poids *-* N° * - efficacité"/>
@@ -1315,18 +1286,18 @@
     </entry>
     <entry>
       <translation lang="fr" value="Poids *-* N° * - rendement"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Waga *-* nr * - sprawność"/>
+      <translation lang="en" value="Libra * Efficiency"/>
+      <translation lang="pl" value="Waga * Sprawność"/>
     </entry>
     <entry>
       <translation lang="fr" value="Poids *-* N° * - barre réglage couche charbon et grill"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Waga *-* nr * - warstwownica i ruszt"/>
+      <translation lang="en" value="Libra * Plying and grid"/>
+      <translation lang="pl" value="Waga * Warstwownica i ruszt"/>
     </entry>
     <entry>
       <translation lang="fr" value="Poids *-* N° * - productivité"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Waga *-* nr * - wydajność"/>
+      <translation lang="en" value="Libra * Performance"/>
+      <translation lang="pl" value="Waga * Wydajność"/>
     </entry>
     <entry>
       <translation lang="fr" value="Ventilateurs air faux *-* N° *"/>
@@ -1341,10 +1312,9 @@
       <translation lang="en" value="Anemometer"/>
     </entry>
     <entry>
-      <translation lang="fr" value="Rendement chaufferie*"/>
-      <translation lang="en" value="Heat station perform.*"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Wydajności ciepłowni*"/>
+      <translation lang="fr" value="Rendement chaufferie"/>
+      <translation lang="en" value="Efficiency heating"/>
+      <translation lang="pl" value="Wydajności ciepłowni"/>
     </entry>
     <entry>
       <translation lang="fr" value="Echangeurs vapeur-eau"/>
@@ -1386,7 +1356,189 @@
       <translation lang="en" value=""/>
       <translation lang="pl" value="Węzeł * - wydajności"/>
     </entry>
-    </draw_title>
+    <entry>
+      <translation lang="en" value="Efficiency"/>
+      <translation lang="pl" value="Sprawność"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Weight of fuel oil"/>
+      <translation lang="pl" value="Masa oleju"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Counters oil"/>
+      <translation lang="pl" value="Liczniki oleju"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Temperatures hot service water"/>
+      <translation lang="pl" value="Temperatury CWU"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Temperatures space heating"/>
+      <translation lang="pl" value="Temperatury CO"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Temperatures network"/>
+      <translation lang="pl" value="Temperatury sieciowe"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Flows network"/>
+      <translation lang="pl" value="Przepływy sieciowe"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Operation pumps"/>
+      <translation lang="pl" value="Praca pomp"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Kamstrup heat meter space heating"/>
+      <translation lang="pl" value="Kamstrup ciepłomierz CO"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Kamstrup heat meter"/>
+      <translation lang="pl" value="Kamstrup ciepłomierz"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Pollustat heat meter hot service water"/>
+      <translation lang="pl" value="Pollustat ciepłomierz CWU"/>
+    </entry>
+       <entry>
+      <translation lang="en" value="Sontex heat meter"/>
+      <translation lang="pl" value="Sontex ciepłomierz"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Temperatures collector"/>
+      <translation lang="pl" value="Teperatury kolektorowe"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Temperatures collector"/>
+      <translation lang="pl" value="Temperatury kolektorowe"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Supply pressure"/>
+      <translation lang="pl" value="Ciśnienia sieciowe"/>
+    <entry>
+    </entry>
+      <translation lang="en" value="Pressure collector"/>
+      <translation lang="pl" value="Ciśnienie kolektorowe"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Degasser - pressure in the column"/>
+      <translation lang="pl" value="Odgazowywacz - ciśnienie w kolumnie"/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Dégazeur - niveau eau"/>
+      <translation lang="en" value="Degasser - water level"/>
+      <translation lang="pl" value="Odgazowywacz - poziom wody"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Flue gas temperatures"/>
+      <translation lang="pl" value="Temperatury spalin"/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Dégazeur - températures"/>
+      <translation lang="en" value="Degasser - temperature"/>
+      <translation lang="pl" value="Odgazowywacz - temperatury"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * O2 in flue gas"/>
+      <translation lang="pl" value="Kocioł * O2 w spalinach"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * Extract fan"/>
+      <translation lang="pl" value="Kocioł * Wentylator wyciągu"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * Pressure blowing"/>
+      <translation lang="pl" value="Kocioł * Ciśnienia podmuchowe"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * Pressure under zone"/>
+      <translation lang="pl" value="Kocioł * Ciśnienia podstrefowe"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * Secondary air fan"/>
+      <translation lang="pl" value="Kocioł * Wentylator powietrza wtórnego"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * Slag"/>
+      <translation lang="pl" value="Kocioł * Odżużlacz"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * Flue gas pressure"/>
+      <translation lang="pl" value="Kocioł * Ciśnienie spalin"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * Setpoint grid"/>
+      <translation lang="pl" value="Kocioł * Wartość zadana ruszt"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * Setpoint blast"/>
+      <translation lang="pl" value="Kocioł * Wartość zadana podmuch"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * Setpoint string"/>
+      <translation lang="pl" value="Kocioł * Wartość zadana ciąg"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Libra * Failures and warnings"/>
+      <translation lang="pl" value="Waga * Awarie i ostrzeżenia"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Libra * Blockade"/>
+      <translation lang="pl" value="Waga * Blokady"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Libra * Blockade"/>
+      <translation lang="pl" value="Kocioł * Blokady"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * Tests"/>
+      <translation lang="pl" value="Kocioł * Testy"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * Tests"/>
+      <translation lang="pl" value="Kocioł * Testy"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boilers - counters grid"/>
+      <translation lang="pl" value="Kotły - liczniki rusztu"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Libra conveyor"/>
+      <translation lang="pl" value="Waga taśmociągowa"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="The primary control"/>
+      <translation lang="pl" value="Sterowanie Nadrzędnym"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * Deslagging"/>
+      <translation lang="pl" value="Kocioł * Odżużlanie"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * Slag"/>
+      <translation lang="pl" value="Kocioł * Żużel"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Libra * The parameters coal"/>
+      <translation lang="pl" value="Waga * Parametry węgla"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * Fans false air"/>
+      <translation lang="pl" value="Kocioł * Wentylatory fałszywego powietrza"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * Efficiency 100-"/>
+      <translation lang="pl" value="Kocioł * Sprawność 100-"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * Efficiencies"/>
+      <translation lang="pl" value="Kocioł * Sprawności"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * Temperatures vaults"/>
+      <translation lang="pl" value="Kocioł * Temperatury sklepienia"/>
+    </entry>
+  </draw_title>
   <draw_name>
     <entry>
       <translation lang="fr" value="Débit échangeurs vapeur/eau"/>
@@ -1450,7 +1602,7 @@
     </entry>
     <entry>
       <translation lang="fr" value="Prix d'1 tonne de charbon"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Price of coal"/>
       <translation lang="pl" value="Cena węgla"/>
       <comment content="  Cena 1 tony węgla"/>
     </entry>
@@ -1487,20 +1639,18 @@
     <entry>
       <translation lang="fr" value="Pression disponible"/>
       <translation lang="en" value=""/>
-      <translation lang="pl" value="Ciśnienie dysp."/>
-      <comment content="  Aktualne ciśnienie dyspozycyjne"/>
-    </entry>
-    <entry>
-      <translation lang="fr" value="Pression disponible"/>
-      <translation lang="en" value=""/>
       <translation lang="pl" value="Ciśnienie dyspoz."/>
       <comment content="  Ciśnienie dyspozycyjne"/>
     </entry>
     <entry>
       <translation lang="fr" value="Diff. pression collect."/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Pressure between collect."/>
       <translation lang="pl" value="Ciśnienie m. kol."/>
       <comment content="  Różnica ciśnień kolektorowych"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Pressure between coll. asked"/>
+      <translation lang="pl" value="Ciśnienie m. kol. zad."/>
     </entry>
     <entry>
       <translation lang="fr" value="Pression actuelle de la vapeur"/>
@@ -1509,34 +1659,10 @@
       <comment content="  Aktualne ciśnienie pary"/>
     </entry>
     <entry>
-      <translation lang="fr" value="Pression de retour"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Ciśnienie powrotu"/>
-      <comment content="  Ciśnienie wody powrotnej"/>
-    </entry>
-    <entry>
       <translation lang="fr" value="Pression avant pompes "/>
       <translation lang="en" value=""/>
       <translation lang="pl" value="Ciśnienie przed pomp."/>
       <comment content="  Ciśnienie przed pompami"/>
-    </entry>
-    <entry>
-      <translation lang="fr" value="Pression collone dégas."/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Ciśnienie w kolumn."/>
-      <comment content="  Ciśnienie w kolumnie odgazowywacza"/>
-    </entry>
-    <entry>
-      <translation lang="fr" value="Pression en amont"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Ciśnienie wejściowe"/>
-      <comment content="  Ciśnienie wody przed kotłem"/>
-    </entry>
-    <entry>
-      <translation lang="fr" value="Pression en aval"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Ciśnienie wyjściowe"/>
-      <comment content="  Ciśnienie wody za kotłem"/>
     </entry>
     <entry>
       <translation lang="fr" value="Pression après pompes"/>
@@ -1549,12 +1675,6 @@
       <translation lang="en" value=""/>
       <translation lang="pl" value="Ciśnienie zadane"/>
       <comment content="  Zadane ciśnienie w kolumnie"/>
-    </entry>
-    <entry>
-      <translation lang="fr" value="Pression d'alimentation"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Ciśnienie zasilania"/>
-      <comment content="  Ciśnienie wody zasilającej sieć c.o."/>
     </entry>
     <entry>
       <translation lang="fr" value="No du cycle d'analyse"/>
@@ -1636,7 +1756,7 @@
     </entry>
     <entry>
       <translation lang="fr" value="Efficacité"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Efficiency"/>
       <translation lang="pl" value="Efektywność"/>
       <comment content="  Koszt produkcji 1MWh"/>
     </entry>
@@ -1701,12 +1821,6 @@
       <comment content="  Wyjściowy stosunek energia / objętość w analizie"/>
     </entry>
     <entry>
-      <translation lang="fr" value="Energie sur le compteur"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Energia"/>
-      <comment content="  Energia z licznika"/>
-    </entry>
-    <entry>
       <translation lang="fr" value="Energie P+"/>
       <translation lang="en" value=""/>
       <translation lang="pl" value="Energia P+"/>
@@ -1714,13 +1828,13 @@
     </entry>
     <entry>
       <translation lang="fr" value="Energie compteur lsw"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Energy lsw"/>
       <translation lang="pl" value="Energia lsw"/>
       <comment content="  Energia z licznika lsw"/>
     </entry>
     <entry>
       <translation lang="fr" value="Energie compteur msw"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Energy msw "/>
       <translation lang="pl" value="Energia msw"/>
       <comment content="  Energia z licznika msw"/>
     </entry>
@@ -1731,12 +1845,6 @@
       <translation lang="en" value=""/>
       <translation lang="pl" value="Energia na produkcję"/>
       <translation lang="hu" value="Energia/gyártás"/>
-    </entry>
-    <entry>
-      <translation lang="fr" value="Energie*"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Energia*"/>
-      <comment content="  Energia z licznika"/>
     </entry>
     <entry>
       <translation lang="fr" value="Total du rapport énergie / masse"/>
@@ -1914,7 +2022,7 @@
     </entry>
     <entry>
       <translation lang="fr" value="Coût de charbon *"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="The cost coal boiler *"/>
       <translation lang="pl" value="Koszt węgla kotła *"/>
       <comment content="  Koszt produkcji na godzinę"/>
     </entry>
@@ -1932,13 +2040,13 @@
     </entry>
     <entry>
       <translation lang="fr" value="Quantité gravimétrique du charbon"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Weight density"/>
       <translation lang="pl" value="Masa nasypowa"/>
       <comment content="  Masa nasypowa węgla"/>
     </entry>
     <entry>
       <translation lang="fr" value="Mass de charbon *"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Weight coal boiler *"/>
       <translation lang="pl" value="Masa węgla kotła *"/>
       <comment content="  Masa węgla do kotła"/>
     </entry>
@@ -2034,15 +2142,9 @@
     </entry>
     <entry>
       <translation lang="fr" value="Rendement maximum de la chaudière"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Max. zalec. wyd."/>
+      <translation lang="en" value="Recommended max. performance"/>
+e     <translation lang="pl" value="Max. zalec. wyd."/>
       <comment content="  Maksymalna wydajność kotła"/>
-    </entry>
-    <entry>
-      <translation lang="fr" value="Débit actuel mélange chaud"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Mieszanie gorące"/>
-      <comment content="  Aktualny przepływ przez mieszanie gorące"/>
     </entry>
     <entry>
       <translation lang="fr" value="Ecart minimum Qk 3min avec oscillations"/>
@@ -2129,7 +2231,7 @@
     </entry>
     <entry>
       <translation lang="fr" value="Rendement minimum de la chaudière"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Recommended min. performance"/>
       <translation lang="pl" value="Min. zalec. wyd."/>
       <comment content="  Minimalna wydajność kotła"/>
     </entry>
@@ -2191,13 +2293,13 @@
     </entry>
     <entry>
       <translation lang="fr" value="Puissance au compteur lsw"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Power lsw"/>
       <translation lang="pl" value="Moc lsw"/>
       <comment content="  Moc z licznika lsw"/>
     </entry>
     <entry>
       <translation lang="fr" value="Puissance au compteur msw"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Power msw"/>
       <translation lang="pl" value="Moc msw"/>
       <comment content="  Moc z licznika msw"/>
     </entry>
@@ -2323,13 +2425,13 @@
     </entry>
     <entry>
       <translation lang="fr" value="Puissance sur le compteur"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Power of the counter"/>
       <translation lang="pl" value="Moc z licznika"/>
       <comment content="  Moc z licznika"/>
     </entry>
     <entry>
       <translation lang="fr" value="Puissance*"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Power*"/>
       <translation lang="pl" value="Moc*"/>
       <comment content="  Moc z licznika"/>
     </entry>
@@ -2353,7 +2455,7 @@
     </entry>
     <entry>
       <translation lang="fr" value="Volume du charbon *"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Volume of coal boiler *"/>
       <translation lang="pl" value="Obj. węgla kotła *"/>
       <comment content="  Aktualna objętość węgla"/>
     </entry>
@@ -2431,21 +2533,29 @@
     </entry>
     <entry>
       <translation lang="fr" value="Sous-pression dans la chambre de combustion "/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Underpress. in chamber"/>
       <translation lang="pl" value="Podciśn. w komorze"/>
       <comment content="  Podciśnienie w komorze spalania"/>
     </entry>
     <entry>
       <translation lang="fr" value="Sous-pression - côté gauche"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Underpressure left"/>
       <translation lang="pl" value="Podciśnienie lewe"/>
       <comment content="  Podciśnienie strona lewa"/>
     </entry>
     <entry>
       <translation lang="fr" value="Sous-pression - côté droit"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Underpressure right"/>
       <translation lang="pl" value="Podciśnienie prawe"/>
       <comment content="  Podciśnienie strona prawa"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Underpressure"/>
+      <translation lang="pl" value="Podciśnienie"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Underpress. reference"/>
+      <translation lang="pl" value="Podciśnienie odn."/>
     </entry>
     <entry>
       <translation lang="fr" value="Sous-pression moyenne dans la chambre de combustion"/>
@@ -2460,22 +2570,10 @@
       <comment content="  Potrzeby własne technologii"/>
     </entry>
     <entry>
-      <translation lang="fr" value="Air pour *,*m*/h charbon"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Powietrze dla *,*m*/h"/>
+      <translation lang="fr" value="Air pour * charbon"/>
+      <translation lang="en" value="Air for *"/>
+      <translation lang="pl" value="Powietrze dla *"/>
       <comment content="  Ilość powietrza dla 0,4m3/h węgla"/>
-    </entry>
-    <entry>
-      <translation lang="fr" value="Aair pour *m3/h de cahrbon"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Powietrze dla *m3/h"/>
-      <comment content="  Ilość powietrza dla 0,8m3/h węgla"/>
-    </entry>
-    <entry>
-      <translation lang="fr" value="Niveau eau récipient dégas."/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Poziom w zbiorniku"/>
-      <comment content="  Poziom wody w zbiorniku odgazowywacza"/>
     </entry>
     <entry>
       <translation lang="fr" value="Moitié de la période d'oscillation de l'écoulement de l'air"/>
@@ -2539,13 +2637,13 @@
     </entry>
     <entry>
       <translation lang="fr" value="Débit au compteur lsw"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Flow lsw"/>
       <translation lang="pl" value="Przepływ lsw"/>
       <comment content="  Przepływ z licznika lsw"/>
     </entry>
     <entry>
       <translation lang="fr" value="Débit au compteur msw"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Flow msw"/>
       <translation lang="pl" value="Przepływ msw"/>
       <comment content="  Przepływ z licznika msw"/>
     </entry>
@@ -2574,12 +2672,6 @@
       <comment content="  Przepływ ładowania"/>
     </entry>
     <entry>
-      <translation lang="fr" value="Débit*"/>
-      <translation lang="en" value="Flow"/>
-      <translation lang="pl" value="Przepływ*"/>
-      <comment content="  Przepływ z licznika"/>
-    </entry>
-    <entry>
       <translation lang="fr" value="Courant L*"/>
       <translation lang="en" value=""/>
       <translation lang="pl" value="Prąd L*"/>
@@ -2599,7 +2691,7 @@
     </entry>
     <entry>
       <translation lang="fr" value="Vitesse de la grille"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Speed the grid"/>
       <translation lang="pl" value="Prędkość rusztu"/>
       <comment content="  Prędkość rusztu"/>
     </entry>
@@ -2665,9 +2757,9 @@
     </entry>
     <entry>
       <translation lang="fr" value="Différence des températures"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Difference temp."/>
       <translation lang="pl" value="Różnica temperatur"/>
-      <comment content="  Różnica temperatur"/>
+      <comment content="Różnica temperatur"/>
     </entry>
     <entry>
       <translation lang="fr" value="Pas règlage pompe refroidissement"/>
@@ -2779,13 +2871,13 @@
     </entry>
     <entry>
       <translation lang="fr" value="Coef. énergie/masse"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Ratio of energy/mass"/>
       <translation lang="pl" value="Stos. energia/masa"/>
       <comment content="  Stosunek energia / masa"/>
     </entry>
     <entry>
       <translation lang="fr" value="Coef. énergie/volume"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Ratio energy/volume"/>
       <translation lang="pl" value="Stos. energia/obj."/>
       <comment content="  Stosunek energia / objętość"/>
     </entry>
@@ -2880,7 +2972,6 @@
     <entry>
       <translation lang="fr" value="Temp. au soleil."/>
       <translation lang="en" value="Ext. temp. (sun)"/>
-      <translation lang="en" value=""/>
       <translation lang="pl" value="Temp. na słońcu"/>
     </entry>
     <entry>
@@ -2910,7 +3001,6 @@
     <entry>
       <translation lang="fr" value="Temp. de réf."/>
       <translation lang="en" value="Reference temp."/>
-      <translation lang="en" value=""/>
       <translation lang="pl" value="Temp. odniesienia"/>
     </entry>
     <entry>
@@ -2944,8 +3034,8 @@
     </entry>
     <entry>
       <translation lang="fr" value="Temp. de retour du CC"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Temp. powrotu z CO"/>
+      <translation lang="en" value="Return temp. space heating"/>
+      <translation lang="pl" value="Temp. powrotu CO"/>
       <comment content="  Temperatura powrotna z CO"/>
     </entry>
     <entry>
@@ -2967,22 +3057,10 @@
       <comment content="  Temperatura spalin przed ekonomizerem"/>
     </entry>
     <entry>
-      <translation lang="fr" value="Temp. fumée avant rechauffer "/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Temp. sp. przed p."/>
-      <comment content="  Temperatura spalin przed podgrzewaczem"/>
-    </entry>
-    <entry>
       <translation lang="fr" value="Temp. fumée après économiseur "/>
       <translation lang="en" value=""/>
       <translation lang="pl" value="Temp. sp. za ekon."/>
       <comment content="  Temperatura spalin za ekonomizerem"/>
-    </entry>
-    <entry>
-      <translation lang="fr" value="Temp. gaz de combustion après "/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Temp. sp. za p."/>
-      <comment content="  Temperatura spalin za podgrzewaczem"/>
     </entry>
     <entry>
       <translation lang="fr" value="Temp. gaz entrée chem."/>
@@ -3004,14 +3082,13 @@
     </entry>
     <entry>
       <translation lang="fr" value="Temp. gaz"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Temp. gas"/>
       <translation lang="pl" value="Temp. spalin"/>
       <comment content="  Temperatura spalin"/>
     </entry>
     <entry>
       <translation lang="fr" value="Temp. consigne"/>
       <translation lang="en" value="Control temp."/>
-      <translation lang="en" value=""/>
       <translation lang="pl" value="Temp. sterująca"/>
     </entry>
     <entry>
@@ -3031,12 +3108,6 @@
       <translation lang="en" value=""/>
       <translation lang="pl" value="Temp. wej. w węźle"/>
       <comment content="  Temperatura wody z ciepłowni"/>
-    </entry>
-    <entry>
-      <translation lang="fr" value="Temp. eau av. chaud."/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Temp. wejściowa"/>
-      <comment content="  Temperatura wody przed kotłem"/>
     </entry>
     <entry>
       <translation lang="fr" value="Temp. eau chaude"/>
@@ -3117,15 +3188,9 @@
       <comment content="  Temperatura za 2-st"/>
     </entry>
     <entry>
-      <translation lang="fr" value="Temp. eau apr chaud."/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Temp. za kotłami"/>
-      <comment content="  Temperatura wody w kolektorze za kotłami"/>
-    </entry>
-    <entry>
       <translation lang="fr" value="Temp. après réchauffer d'eau adoucie "/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Temp. za podgrzew."/>
+      <translation lang="en" value="Temp. for preheater"/>
+      <translation lang="pl" value="Temp. za podgrz."/>
       <comment content="  Temperatura za podgrz. wody zmiękczonej n.p."/>
     </entry>
     <entry>
@@ -3142,9 +3207,8 @@
     </entry>
     <entry>
       <translation lang="fr" value="Temp. imposée"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Setpoint temp."/>
       <translation lang="pl" value="Temp. zadana"/>
-      <comment content="  Temperatura zadana"/>
     </entry>
     <entry>
       <translation lang="fr" value="Temp. déf. chauff. cent."/>
@@ -3196,8 +3260,8 @@
     </entry>
     <entry>
       <translation lang="fr" value="Température de sortie - bloqué"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Twy - blokada"/>
+      <translation lang="en" value="Start. temp. - lock *"/>
+      <translation lang="pl" value="Twy - blokada *"/>
       <comment content="  Temperatura wyjściowa - blokada"/>
     </entry>
     <entry>
@@ -3214,7 +3278,7 @@
     </entry>
     <entry>
       <translation lang="fr" value="Valeur calorifique"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Calorific value"/>
       <translation lang="pl" value="Wartość opałowa"/>
       <comment content="  Wartość opałowa"/>
     </entry>
@@ -3226,15 +3290,8 @@
     </entry>
     <entry>
       <translation lang="fr" value="Eau au compteur"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Water of the counter"/>
       <translation lang="pl" value="Woda z licznika"/>
-      <comment content="  Woda z licznika"/>
-    </entry>
-    <entry>
-      <translation lang="fr" value="Eau*"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Woda*"/>
-      <comment content="  Woda z licznika"/>
     </entry>
     <entry>
       <translation lang="fr" value="Débit introduits de chargement prévus"/>
@@ -3299,7 +3356,6 @@
     <entry>
       <translation lang="fr" value="Rendement"/>
       <translation lang="en" value="Performance"/>
-      <translation lang="en" value=""/>
       <translation lang="pl" value="Wydajność"/>
     </entry>
     <entry>
@@ -3307,12 +3363,6 @@
       <translation lang="en" value=""/>
       <translation lang="pl" value="Wydajność *h"/>
       <comment content="  Moc wyjściowa 1h"/>
-    </entry>
-    <entry>
-      <translation lang="fr" value="Rendement chaudière *"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Wydajność kotła *"/>
-      <comment content="  Wydajność kotła"/>
     </entry>
     <entry>
       <translation lang="fr" value="Rendement corrigée"/>
@@ -3328,7 +3378,7 @@
     </entry>
     <entry>
       <translation lang="fr" value="Valeur de chauffage calculée"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Calculated calorific value"/>
       <translation lang="pl" value="Wyliczona wart. opał."/>
       <comment content="  Wyliczona wartość opałowa"/>
     </entry>
@@ -3340,7 +3390,7 @@
     </entry>
     <entry>
       <translation lang="fr" value="Volume charbon exigée"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Required volume of coal"/>
       <translation lang="pl" value="Wym. obj. węgla"/>
       <comment content="  Wymagana objętość węgla"/>
     </entry>
@@ -3355,6 +3405,10 @@
       <translation lang="en" value=""/>
       <translation lang="pl" value="Wys. + st. praw. war."/>
       <comment content="  Sumaryczna wysokość prawej warstwownicy"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Height + fixed layer"/>
+      <translation lang="pl" value="Wys. + st. warstw."/>
     </entry>
     <entry>
       <translation lang="fr" value="Haut. volet vert. gauche"/>
@@ -3394,13 +3448,13 @@
     </entry>
     <entry>
       <translation lang="fr" value="Règl. ond. pompe de circul."/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Activation inverter pump"/>
       <translation lang="pl" value="Wyst. fal. p. ob."/>
       <comment content="  Aktualne wysterowanie falownika pompy obiegowej"/>
     </entry>
     <entry>
       <translation lang="fr" value="Rég. d'ond. pom. transversalle "/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Modulation inverter pump"/>
       <translation lang="pl" value="Wyst. fal. p. pop."/>
       <comment content="  Aktualne wysterowanie falownika pompy poprzecznej"/>
     </entry>
@@ -3417,12 +3471,6 @@
       <comment content="  Aktualne wyst. falownika pompy schładzającej"/>
     </entry>
     <entry>
-      <translation lang="fr" value="Règl. ond. soufflé"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Wyst. fal. podm."/>
-      <comment content="  Aktualne wysterowanie falownika podmuchu"/>
-    </entry>
-    <entry>
       <translation lang="fr" value="Règl mut pompe de la"/>
       <translation lang="en" value=""/>
       <translation lang="pl" value="Wyst. fal. prz. ręcz."/>
@@ -3430,9 +3478,13 @@
     </entry>
     <entry>
       <translation lang="fr" value="Règl. actuel ond. foyer"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Actuation of grid inverter"/>
       <translation lang="pl" value="Wyst. fal. rusz."/>
-      <comment content="  Aktualne wysterowanie falownika rusztu"/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Règl. actuel ond. foyer"/>
+      <translation lang="en" value="Actuation of grid inverter"/>
+      <translation lang="pl" value="Wyst. fal. ruszt"/>
     </entry>
     <entry>
       <translation lang="fr" value="Règlage de l'ondulateur de la pompe de chargement au travail manuel"/>
@@ -3465,12 +3517,6 @@
       <comment content="  Wysterowanie falownika wentylatora z zadajnika"/>
     </entry>
     <entry>
-      <translation lang="fr" value="Règl. actuel ond. hotte"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Wyst. fal. wyc."/>
-      <comment content="  Aktualne wysterowanie falownika wyciągu"/>
-    </entry>
-    <entry>
       <translation lang="fr" value="Règl. ond.*"/>
       <translation lang="en" value=""/>
       <translation lang="pl" value="Wyst. fal.*"/>
@@ -3478,19 +3524,17 @@
     </entry>
     <entry>
       <translation lang="fr" value="Règl. ond. tirage souflée/rendemnt."/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Actuation inverter/power"/>
       <translation lang="pl" value="Wyst. fal./moc"/>
-      <comment content="  Stosunek zad. wyst. fal. podm. / wydajność"/>
     </entry>
     <entry>
       <translation lang="fr" value="Règl. ond. tirage souflée/vol. charb."/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Actuation inverter/carbon"/>
       <translation lang="pl" value="Wyst. fal./węgiel"/>
-      <comment content="  Stosunek zad. wyst. fal. podm. / obj. węgla"/>
     </entry>
     <entry>
       <translation lang="fr" value="Air relatif *"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Relative air *"/>
       <translation lang="pl" value="Względne pow. *"/>
       <comment content="  Względna ilość powietrza dla 0,8m3/h węgla 3"/>
     </entry>
@@ -3562,7 +3606,7 @@
     </entry>
     <entry>
       <translation lang="fr" value="Règlage du mutatuer de la pompe de circulation"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Damage modul. inverter pump"/>
       <translation lang="pl" value="Zad. wyst. fal. p. ob."/>
       <comment content="  Wysterowanie fal. pompy obiegowej z zadajnika"/>
     </entry>
@@ -3610,7 +3654,7 @@
     </entry>
     <entry>
       <translation lang="fr" value="Vitesse recommandée du foyer"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Recommended speed grid"/>
       <translation lang="pl" value="Zalec. pr. rusztu"/>
       <comment content="  Zalecana prędkość rusztu"/>
     </entry>
@@ -3622,20 +3666,14 @@
     </entry>
     <entry>
       <translation lang="fr" value="Energie fournie"/>
-      <translation lang="en" value=""/>
+      <translation lang="en" value="Contained in the coal"/>
       <translation lang="pl" value="Zawarta w węglu"/>
       <comment content="  Dostarczona energia"/>
     </entry>
     <entry>
-      <translation lang="fr" value="CO* ds gaz"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Zawartość CO*"/>
-      <comment content="  Zawartość CO2 w spalinach"/>
-    </entry>
-    <entry>
       <translation lang="fr" value="Teneur en O2 dans la fumee"/>
-      <translation lang="en" value=""/>
-      <translation lang="pl" value="Zawartość O*"/>
+      <translation lang="en" value="Content O2"/>
+      <translation lang="pl" value="Zawartość O2"/>
       <comment content="  Zawartość O2 w spalinach"/>
     </entry>
     <entry>
@@ -3712,7 +3750,7 @@
     </entry>
     <entry>
       <translation lang="fr" value="Temp. sortie"/>
-      <translation lang="en" value="The temp. output"/>
+      <translation lang="en" value="Output temp."/>
       <translation lang="pl" value="Temp. wyjściowa"/>
     </entry>
     <entry>
@@ -3722,7 +3760,7 @@
       <comment content="Temperatura zasilania z licznika"/>
     </entry>
     <entry>
-      <translation lang="en" value="Heat for hot water 1m3"/>
+      <translation lang="en" value="Heat for hot servi. water 1m3"/>
       <translation lang="pl" value="Ciepło na 1m3 CWU"/>
       <comment content="Ciepło na 1m3 CWU"/>
     </entry>
@@ -3754,9 +3792,9 @@
       <comment content="Sieć polustat CWU"/>
     </entry>
     <entry>
-      <translation lang="fr" value="Energie sur le compteur*"/>
-      <translation lang="en" value="Energy from the counter *"/>
-      <translation lang="pl" value="Energia z licznika*"/>
+      <translation lang="fr" value="Energie sur le compteur"/>
+      <translation lang="en" value="Energy from the counter"/>
+      <translation lang="pl" value="Energia z licznika"/>
     </entry>
     <entry>
       <translation lang="fr" value="Puissance au compteur"/>
@@ -3776,25 +3814,25 @@
     </entry>
     <entry>
       <translation lang="fr" value="Temp. extérieure"/>
-      <translation lang="en" value="Temp. outside"/>
+      <translation lang="en" value="Outside temp."/>
       <translation lang="pl" value="Temp. zewnętrzna"/>
     </entry>
     <entry>
-      <translation lang="en" value="Temp. outside hot water"/>
-      <translation lang="pl" value="Temp. wyjść. CWU "/>
+      <translation lang="en" value="Outside temp. hot serv. water"/>
+      <translation lang="pl" value="Temp. wyjść CWU"/>
     </entry>
     <entry>
-      <translation lang="en" value="Temp. outside heating"/>
-      <translation lang="pl" value="Temp. wyjść. CO "/>
+      <translation lang="en" value="Outside temp. space heating"/>
+      <translation lang="pl" value="Temp. wyjść. CO"/>
     </entry>
     <entry>
       <translation lang="fr" value="Temp. de retour de circulation"/>
-      <translation lang="en" value="Return temp. of the circulating "/>
+      <translation lang="en" value="Return temp. of the circulat. "/>
       <translation lang="pl" value="Temp. pow z cyr."/>
       <comment content="Temperatura powrotna z cyrkulacji"/>
     </entry>
     <entry>
-      <translation lang="en" value="Reference temp. for the return of circulation"/>
+      <translation lang="en" value="Refer. temp. return of circulat."/>
       <translation lang="pl" value="Temp. odn. powrotu z cyrk."/>
     </entry>
     <entry>
@@ -3806,11 +3844,11 @@
     </entry>
     <entry>
       <translation lang="en" value="Flow water 1"/>
-      <translation lang="pl" value="Przepływ wody 1"/>
+      <translation lang="pl" value="Przeplyw wody 1"/>
     </entry>
     <entry>
       <translation lang="en" value="Flow water 2"/>
-      <translation lang="pl" value="Przepływ wody 2"/>
+      <translation lang="pl" value="Przeplyw wody 2"/>
     </entry>
     <entry>
       <translation lang="en" value="Total flow"/>
@@ -3821,19 +3859,19 @@
       <translation lang="pl" value="Przepływy sieciowe*"/>
     </entry>
     <entry>
-      <translation lang="en" value="Counter K1 oil per hour."/>
+      <translation lang="en" value="Counter K1 oil per hour"/>
       <translation lang="pl" value="Licznik oleju K1 na godz."/>
     </entry>
     <entry>
-      <translation lang="en" value="Counter K2 oil per hour."/>
+      <translation lang="en" value="Counter K2 oil per hour"/>
       <translation lang="pl" value="Licznik oleju K2 na godz."/>
     </entry>
     <entry>
-      <translation lang="en" value="Counter K3 oil per hour."/>
+      <translation lang="en" value="Counter K3 oil per hour"/>
       <translation lang="pl" value="Licznik oleju K3 na godz."/>
     </entry>
     <entry>
-      <translation lang="en" value="Counter K4 oil per hour."/>
+      <translation lang="en" value="Counter K4 oil per hour"/>
       <translation lang="pl" value="Licznik oleju K4 na godz."/>
     </entry>
     <entry>
@@ -3909,6 +3947,11 @@
       <translation lang="pl" value="Energia dostarczona K4"/>
     </entry>
     <entry>
+      <translation lang="fr" value="Rendement"/>
+      <translation lang="en" value="Efficiency"/>
+      <translation lang="pl" value="Sprawność"/>
+    </entry>
+    <entry>
       <translation lang="fr" value="Rendement *"/>
       <translation lang="en" value="Efficiency *"/>
       <translation lang="pl" value="Sprawność *"/>
@@ -3919,14 +3962,14 @@
     </entry>
     <entry>
       <translation lang="en" value="Activ. of the circulation pump"/>
-      <translation lang="pl" value="Wyster. pomp. cyrk."/>
+      <translation lang="pl" value="Wyster. pompy cyrk."/>
     </entry>
     <entry>
-      <translation lang="en" value="Feedback activation of the circulation pump K1"/>
+      <translation lang="en" value="Feedback activ. of the circ. pump K1"/>
       <translation lang="pl" value="Zwrot. wyst. pomp. cyr. K1"/>
     </entry>
     <entry>
-      <translation lang="en" value="Feedback activation of the circulation pump K2"/>
+      <translation lang="en" value="Feedback activ. of the circ. pump K2"/>
       <translation lang="pl" value="Zwrot. wyst. pomp. cyr. K2"/>
     </entry>
     <entry>
@@ -3946,10 +3989,6 @@
       <translation lang="pl" value="Praca pomp cyrkulacji"/>
     </entry>
     <entry>
-      <translation lang="en" value="Water from the counter"/>
-      <translation lang="pl" value="Woda z licznika"/>
-   </entry>
-    <entry>
       <translation lang="en" value="Kamstrup heat meter"/>
       <translation lang="pl" value="Kamstrup ciepłomierz"/>
    </entry>
@@ -3967,50 +4006,50 @@
    </entry>
     <entry>
       <translation lang="en" value="Enclosed circulation pump 1"/>
-      <translation lang="pl" value="Załączona pompa cyr. 1"/>
+      <translation lang="pl" value="Załączona pompa cyrk. 1"/>
    </entry>
     <entry>
       <translation lang="en" value="Enclosed circulation pump 2"/>
-      <translation lang="pl" value="Załączona pompa cyr. 2"/>
+      <translation lang="pl" value="Załączona pompa cyrk. 2"/>
    </entry>
     <entry>
       <translation lang="en" value="Circulation pump failure 1"/>
-      <translation lang="pl" value="Awaria pompy cyr. 1"/>
+      <translation lang="pl" value="Awaria pompy cyrk. 1"/>
    </entry>
     <entry>
       <translation lang="en" value="Circulation pump failure 2"/>
-      <translation lang="pl" value="Awaria pompy cyr. 2"/>
+      <translation lang="pl" value="Awaria pompy cyrk. 2"/>
    </entry>
     <entry>
-      <translation lang="en" value="Confirmation of the circulation pump 1"/>
-      <translation lang="pl" value="Potw. pracy pompy cyr. 1"/>
+      <translation lang="en" value="Confirmat. of the circ. pump 1"/>
+      <translation lang="pl" value="Potw. pracy pompy cyrk. 1"/>
    </entry>
     <entry>
-      <translation lang="en" value="Confirmation of the circulation pump 2"/>
-      <translation lang="pl" value="Potw. pracy pompy cyr. 2"/>
+      <translation lang="en" value="Confirmat. of the circ. pump 2"/>
+      <translation lang="pl" value="Potw. pracy pompy cyrk. 2"/>
    </entry>
     <entry>
-      <translation lang="en" value="Automatic circulation pump 1"/>
-      <translation lang="pl" value="Praca auto. pompy cyr. 1"/>
+      <translation lang="en" value="Automatic circulat. pump 1"/>
+      <translation lang="pl" value="Praca auto. pompy cyrk. 1"/>
    </entry>
     <entry>
-      <translation lang="en" value="Automatic circulation pump 2"/>
-      <translation lang="pl" value="Praca auto. pompy cyr. 2"/>
+      <translation lang="en" value="Automatic circulat. pump 2"/>
+      <translation lang="pl" value="Praca auto. pompy cyrk. 2"/>
    </entry>
     <entry>
       <translation lang="en" value="Control panel lon"/>
       <translation lang="pl" value="Sterowanie lon panel"/>
    </entry>
     <entry>
-      <translation lang="en" value="Jobs pump"/>
-      <translation lang="pl" value="Praca pom "/>
+      <translation lang="en" value="Operation pump"/>
+      <translation lang="pl" value="Praca pomp" />
    </entry>
     <entry>
-      <translation lang="en" value="Temp. flow hot water"/>
+      <translation lang="en" value="Flow temp. hot serv. water"/>
       <translation lang="pl" value="Temp. zasilania CWU"/>
    </entry>
     <entry>
-      <translation lang="en" value="Temp. circulation"/>
+      <translation lang="en" value="Circulation temp."/>
       <translation lang="pl" value="Temp. cyrkulacji"/>
    </entry>
     <entry>
@@ -4018,15 +4057,15 @@
       <translation lang="pl" value="Temp. za wym. CWU"/>
    </entry>
     <entry>
-      <translation lang="en" value="Temp. boiler"/>
+      <translation lang="en" value="Boiler temp."/>
       <translation lang="pl" value="Temp. kotła"/>
    </entry>
     <entry>
-      <translation lang="en" value="Temp. setpoint hot water"/>
+      <translation lang="en" value="Setpoint temp. hot serv. water"/>
       <translation lang="pl" value="Temp. zadana CWU"/>
    </entry>
     <entry>
-      <translation lang="en" value="Temp. setpoint off hot water"/>
+      <translation lang="en" value="Setpoint off temp. hot serv. water"/>
       <translation lang="pl" value="Temp. zadana wył. CWU"/>
    </entry>
     <entry>
@@ -4034,11 +4073,11 @@
       <translation lang="pl" value="Temp. zadana max kotła"/>
    </entry>
     <entry>
-      <translation lang="en" value="Set temperature circulation"/>
+      <translation lang="en" value="Setpoint temp. circulation"/>
       <translation lang="pl" value="Temp. zadana cyrk."/>
    </entry>
     <entry>
-      <translation lang="en" value="Hot water valve position"/>
+      <translation lang="en" value="Hot serv.  water valve position"/>
       <translation lang="pl" value="Położenie zaworu CWU"/>
    </entry>
     <entry>
@@ -4046,19 +4085,19 @@
       <translation lang="pl" value="Temperatury CWU"/>
    </entry>
     <entry>
-      <translation lang="en" value="Return temp.central heating DN100"/>
+      <translation lang="en" value="Return temp. cent. heat. DN100"/>
       <translation lang="pl" value="Temp. powr. CO DN100"/>
    </entry>
     <entry>
-      <translation lang="en" value="Return temp.central heating DN200"/>
+      <translation lang="en" value="Return temp. cent. heat. DN200"/>
       <translation lang="pl" value="Temp. powr. CO DN200"/>
    </entry>
     <entry>
-      <translation lang="en" value="The starting temperature heating DN100"/>
+      <translation lang="en" value="Outside temp. heating DN100"/>
       <translation lang="pl" value="Temp. wyjść. CO DN100"/>
    </entry>
     <entry>
-      <translation lang="en" value="The starting temperature heating DN100"/>
+      <translation lang="en" value="Outside temp. heating DN200"/>
       <translation lang="pl" value="Temp. wyjść. CO DN200"/>
    </entry>
     <entry>
@@ -4076,5 +4115,540 @@
       <translation lang="en" value="Collector temperature"/>
       <translation lang="pl" value="Temperatury kolektorowe"/>
     </entry>
-    </draw_name>
+    <entry>
+      <translation lang="en" value="Heating efficiency"/>
+      <translation lang="pl" value="Wydajność ciepłowni"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Flow in the net"/>
+      <translation lang="pl" value="Przepływ w sieci"/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Débit actuel mélange chaud"/>
+      <translation lang="en" value="Mixing hot"/>
+      <translation lang="pl" value="Mieszanie gorące"/>
+      <comment content="  Aktualny przepływ przez mieszanie gorące"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Mixing cold"/>
+      <translation lang="pl" value="Mieszanie zimne"/>
+      <comment content="Aktualny przepływ przez mieszanie zimne"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="The flow of heat"/>
+      <translation lang="pl" value="Przepływ ciepłowni"/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Pression disponible"/>
+      <translation lang="en" value="Available pressure"/>
+      <translation lang="pl" value="Ciśnienie dysp."/>
+      <comment content="Aktualne ciśnienie dyspozycyjne"/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Pression d'alimentation"/>
+      <translation lang="en" value="Supply pressure"/>
+      <translation lang="pl" value="Ciśnienie zasilania"/>
+      <comment content="Ciśnienie wody zasilającej sieć c.o."/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Pression de retour"/>
+      <translation lang="en" value="Back pressure"/>
+      <translation lang="pl" value="Ciśnienie powrotu"/>
+      <comment content="Ciśnienie wody powrotnej"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Net pressure"/>
+      <translation lang="pl" value="Ciśnienie sieciowe"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Pressure for boilers"/>
+      <translation lang="pl" value="Ciśnienie za kotłami"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Pressure collector"/>
+      <translation lang="pl" value="Ciśnienie kolektorowe"/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Temp. eau apr chaud."/>
+      <translation lang="en" value="Temp. for boilers"/>
+      <translation lang="pl" value="Temp. za kotłami"/>
+      <comment content="  Temperatura wody w kolektorze za kotłami"/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Pression collone dégas."/>
+      <translation lang="en" value="Pressure in the column"/>
+      <translation lang="pl" value="Ciśnienie w kolumn."/>
+      <comment content="Ciśnienie w kolumnie odgazowywacza"/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Dégazeur - pression colonnes*"/>
+      <translation lang="en" value="Degasser - the pressure in the column*"/>
+      <translation lang="pl" value="Odgazowywacz - ciśnienie w kolumnie*"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Temp. in the dome"/>
+      <translation lang="pl" value="Temp. w kopule"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Temp. in the reservoir"/>
+      <translation lang="pl" value="Temp. w zbiorniku"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Temp. the degasser"/>
+      <translation lang="pl" value="Temp. od odgaz."/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Niveau eau récipient dégas."/>
+      <translation lang="en" value="Level in the tank"/>
+      <translation lang="pl" value="Poziom w zbiorniku"/>
+      <comment content="  Poziom wody w zbiorniku odgazowywacza"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Exhaust tem. input to stack2"/>
+      <translation lang="pl" value="T. sp. wej. k. 2"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Exhaust tem. input to stack3"/>
+      <translation lang="pl" value="T. sp. wej. k. 3"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Exhaust tem. input for stack4"/>
+      <translation lang="pl" value="T. sp. za. k. 4"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Exhaust tem. input to stack4"/>
+      <translation lang="pl" value="T. sp. wej. k. 4"/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Températures fumées "/>
+      <translation lang="en" value="Flue gas temperatures"/>
+      <translation lang="pl" value="Temperatury spalin"/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Temp. eau av. chaud."/>
+      <translation lang="en" value="Input temp."/>
+      <translation lang="pl" value="Temp. wejściowa"/>
+      <comment content="  Temperatura wody przed kotłem"/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Rendement chaudière *"/>
+      <translation lang="en" value="Efficiency boiler *"/>
+      <translation lang="pl" value="Wydajność kotła *"/>
+      <comment content="Wydajność kotła"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Heat production *"/>
+      <translation lang="pl" value="Produkcja ciepła *"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Heat production"/>
+      <translation lang="pl" value="Produkcja ciepła"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Operation boiler *"/>
+      <translation lang="pl" value="Praca kotła *"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * - Performance and flow"/>
+      <translation lang="pl" value="Kocioł * - Wydajność i przepływ"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Underpress. in combus. chamber"/>
+      <translation lang="pl" value="Podciśn. ciągi"/>
+     <comment content="Podciśnienie w komorze spalania"/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Règl. ond. soufflé"/>
+      <translation lang="en" value="Actuation inverter blast"/>
+      <translation lang="pl" value="Wyst. fal. podm."/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Règl. actuel ond. hotte"/>
+      <translation lang="en" value="Actuation lift inverter"/>
+      <translation lang="pl" value="Wyst.fal. wyc."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Fan blast"/>
+      <translation lang="pl" value="Praca went. podm."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Asked modulation inverter lift"/>
+      <translation lang="pl" value="Zad. wyst. fal. wyc."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * - The combustion chamber"/>
+      <translation lang="pl" value="Kocioł * - Komora spalania"/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Pression en aval"/>
+      <translation lang="en" value="Output pressure"/>
+      <translation lang="pl" value="Ciśnienie wyjściowe"/>
+      <comment content="  Ciśnienie wody za kotłem"/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Pression en amont"/>
+      <translation lang="en" value="Input pressure"/>
+      <translation lang="pl" value="Ciśnienie wejściowe"/>
+      <comment content="  Ciśnienie wody przed kotłem"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Input pressure"/>
+      <translation lang="pl" value="Cisnienie wejściowe"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * Pressure"/>
+      <translation lang="pl" value="Kocioł * Ciśnienia"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Blowing pressure"/>
+      <translation lang="pl" value="Ciśnienie podm."/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Temp. fumée avant rechauffer "/>
+      <translation lang="en" value="Flue gas temp. before heater"/>
+      <translation lang="pl" value="Temp. sp. przed p."/>
+      <comment content="  Temperatura spalin przed podgrzewaczem"/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Temp. gaz de combustion après "/>
+      <translation lang="en" value="Flue gas temp. for heater"/>
+      <translation lang="pl" value="Temp. sp. za p."/>
+      <comment content="  Temperatura spalin za podgrzewaczem"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Boiler * Flue gas temperatures"/>
+      <translation lang="pl" value="Kocioł * Temperatury spalin"/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="CO* ds gaz"/>
+      <translation lang="en" value="Content CO*"/>
+      <translation lang="pl" value="Zawartość CO*"/>
+      <comment content="  Zawartość CO2 w spalinach"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Return temp. hot serv. water"/>
+      <translation lang="pl" value="Temp. powrotu CWU"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Feedback activ. circ. pump 1"/>
+      <translation lang="pl" value="Zwrot wyst. pompy cyrk. 1"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Feedback activ. circ. pump 2"/>
+      <translation lang="pl" value="Zwrot wyst. pompy cyrk. 2"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Nominal length pulse inverter"/>
+      <translation lang="pl" value="Zadana dł. imp. falownika"/>
+    </entry>
+   <entry>
+      <translation lang="en" value="Power temp. space heating"/>
+      <translation lang="pl" value="Temp. zasilania CO"/>
+   </entry>
+   <entry>
+      <translation lang="en" value="Return temp. of the circulat."/>
+      <translation lang="pl" value="Temp. powrotu z cyrk."/>
+   </entry>
+   <entry>
+      <translation lang="en" value="Temp. hot water heat exchanger"/>
+      <translation lang="pl" value="Temp. z wym. CW"/>
+   </entry>
+   <entry>
+      <translation lang="en" value="Efficiency circulation pump 1"/>
+      <translation lang="pl" value="Wydajność pompy cyrk. 1"/>
+   </entry>
+   <entry>
+      <translation lang="en" value="Efficiency circulation pump 2"/>
+      <translation lang="pl" value="Wydajność pompy cyrk. 2"/>
+   </entry>
+    <entry>
+      <translation lang="en" value="Extract fan operation"/>
+      <translation lang="pl" value="Praca went. wyc."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Damage actvat. of grid inverter"/>
+      <translation lang="pl" value="Zad. wyst. fal. rusz."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Damage activat. of inverter blast"/>
+      <translation lang="pl" value="Zad. wyst. fal. podm."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Height of the layer"/>
+      <translation lang="pl" value="Wysokość warstwy"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Zone number 1"/>
+      <translation lang="pl" value="Strefa nr 1"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Zone number 2"/>
+      <translation lang="pl" value="Strefa nr 2"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Zone number 3"/>
+      <translation lang="pl" value="Strefa nr 3"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Zone number 4"/>
+      <translation lang="pl" value="Strefa nr 4"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Zone number 5"/>
+      <translation lang="pl" value="Strefa nr 5"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Running the engine"/>
+      <translation lang="pl" value="Praca silnika rusztu"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Inverter operation lift"/>
+      <translation lang="pl" value="Praca fal. wyc."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Failure lift inverter"/>
+      <translation lang="pl" value="Awaria fal. wyc."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Inverter operation blast"/>
+      <translation lang="pl" value="Praca fal. podm."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Failure inverter blast"/>
+      <translation lang="pl" value="Awaria fal. podm."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Temp. boiler flue gas"/>
+    <entry>
+      <translation lang="en" value="Temp. boiler flue gas"/>
+      <translation lang="pl" value="Temp. sp. za kot."/>
+    </entry>
+      <translation lang="pl" value="Temp. za pod."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Flue gas temp. for heater"/>
+      <translation lang="pl" value="Temp. za pod."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Secondary air fan operation"/>
+      <translation lang="pl" value="Praca went. wtór."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Failure secondary air fan"/>
+      <translation lang="pl" value="Praca went. wyc."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Operation slag"/>
+      <translation lang="pl" value="Praca odżużlacza"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Failure slag"/>
+      <translation lang="pl" value="Awaria odżużlacza"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Gas pressure at boiler"/>
+      <translation lang="pl" value="Ciśnienie spalin za kotłem"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Setpoint grid"/>
+      <translation lang="pl" value="Wartość zadana ruszt"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Setpoint blast"/>
+      <translation lang="pl" value="Wartość zadana podmuch"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Setpoint string"/>
+      <translation lang="pl" value="Wartość zadana ciąg"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Inverter operation grid"/>
+      <translation lang="pl" value="Praca fal. ruszt."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Failure inverter grid"/>
+      <translation lang="pl" value="Awaria fal. ruszt."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Warning"/>
+      <translation lang="pl" value="Ostrzeżenie"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Withdrawal"/>
+      <translation lang="pl" value="Odstawienie"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Emergency withdrawal *"/>
+      <translation lang="pl" value="Awaryjne odstawienie *"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Locking the"/>
+      <translation lang="pl" value="Deblokada"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Blockade min. pressure"/>
+      <translation lang="pl" value="Blokada min. ciś."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Blockade min. flow"/>
+      <translation lang="pl" value="Blokada min. przep."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Blockade maks. temp."/>
+      <translation lang="pl" value="Blokada maks. t. wody"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Meter grid *"/>
+      <translation lang="pl" value="Licznik rusztu*"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Mass of coal"/>
+      <translation lang="pl" value="Masa węgla"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Main counter"/>
+      <translation lang="pl" value="Licznik główny"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Evolution of grid k*"/>
+      <translation lang="pl" value="Kier. zmian ruszt k*"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Network flow"/>
+      <translation lang="pl" value="Przepływ sieci"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Flow of network completion"/>
+      <translation lang="pl" value="Przep. uzup. sieci"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Modulation inverter pump"/>
+      <translation lang="pl" value="Wyst. fal. p. ob."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Pulse length control inverters"/>
+      <translation lang="pl" value="Dł. imp. ster. fal."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Time of the program"/>
+      <translation lang="pl" value="Czas działania prog."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Time of the program"/>
+      <translation lang="pl" value="Czas dział. prog."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Actual activat. of statem."/>
+      <translation lang="pl" value="Rzecz. wyst. wyciągu"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Actual activat. of blast"/>
+      <translation lang="pl" value="Rzecz. wyst. podmuchu"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Complem. water temp."/>
+      <translation lang="pl" value="Temp. wody. uzup."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Water flow completion"/>
+      <translation lang="pl" value="Przep. wody uzup."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Temp. in slag bath"/>
+      <translation lang="pl" value="Temp. wann. odż."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Temp. in slag room"/>
+      <translation lang="pl" value="Temp. pom. odż."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Aver. flow of slag bath K*"/>
+      <translation lang="pl" value="Śred. dopływ do odż. K*"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Heat to environ. K*"/>
+      <translation lang="pl" value="Ciepło do otoczenia K*"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Heat flux in water slag K*"/>
+      <translation lang="pl" value="Strumień ciep. wod. odż. K*"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Heat flux in slag K*"/>
+      <translation lang="pl" value="Strumień ciepła w żużlu K*"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Loss in slag K*"/>
+      <translation lang="pl" value="Strata w żużlu K*"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Content of combust. slag K*"/>
+      <translation lang="pl" value="Zaw. cz. palnych w ż. K*"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Loss in environ. K*"/>
+      <translation lang="pl" value="Strata do otoczenia K*"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Other losses"/>
+      <translation lang="pl" value="Straty pozostałe"/>
+    </entry>
+    <entry>
+      <translation lang="fr" value="Perte cheminée"/>
+      <translation lang="en" value="Chimney loss"/>
+      <translation lang="pl" value="Strata kominowa"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Burn time"/>
+      <translation lang="pl" value="Czas spalania"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Fixed layer"/>
+      <translation lang="pl" value="Stała warstw."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Recommended amount of layer"/>
+      <translation lang="pl" value="Zalecana wys. warstw."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Control algorithm"/>
+      <translation lang="pl" value="Algorytm regulacji"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Average temp. false air"/>
+      <translation lang="pl" value="Śr. Temp. fałsz. pow."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Desired temp. false air"/>
+      <translation lang="pl" value="Zad. Temp. fałsz. pow."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Temp. false air"/>
+      <translation lang="pl" value="Temperatura fałsz. pow."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Power factor"/>
+      <translation lang="pl" value="Współczynnik mocy"/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Activat. inverter false air"/>
+      <translation lang="pl" value="Wyst. fal. f. pow."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Actual activat. of false air"/>
+      <translation lang="pl" value="Rzecz. wyst. fal. pow."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Differ. modulat. gust false"/>
+      <translation lang="pl" value="Zad. róż. podm. a fał."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Meter complement slag"/>
+      <translation lang="pl" value="Licznik uzup. odż."/>
+    </entry>
+    <entry>
+      <translation lang="en" value="Temp. vaults"/>
+      <translation lang="pl" value="Temp. sklepienia"/>
+    </entry>
+</draw_name>
 </dictionary>
