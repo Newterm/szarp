@@ -5,16 +5,33 @@
 
 namespace qi = boost::spirit::qi;
 
-qi::rule<std::wstring::const_iterator, std::wstring()> get_keywords_rule();
-
 namespace lua_grammar {
+
+qi::rule<std::wstring::const_iterator, std::wstring()> keywords_rule();
 
 struct lua_skip_parser : qi::grammar<std::wstring::const_iterator> {
 	qi::rule<std::wstring::const_iterator> skip;
 	lua_skip_parser();
 };
 
-}
+qi::rule<std::wstring::const_iterator, bool(), lua_skip_parser> boolean_rule();
+
+qi::rule<std::wstring::const_iterator, std::wstring(), lua_skip_parser> string_rule(
+	qi::rule<std::wstring::const_iterator, wchar_t()>& escaped_character
+	);
+
+void operators_precedence(
+	qi::rule<std::wstring::const_iterator, expression(), lua_skip_parser>& expression_,
+	qi::rule<std::wstring::const_iterator, or_exp(), lua_skip_parser>& or_,
+	qi::rule<std::wstring::const_iterator, and_exp(), lua_skip_parser>& and_,
+	qi::rule<std::wstring::const_iterator, cmp_exp(), lua_skip_parser>& cmp_,
+	qi::rule<std::wstring::const_iterator, concat_exp(), lua_skip_parser>& concat_,
+	qi::rule<std::wstring::const_iterator, add_exp(), lua_skip_parser>& add_,
+	qi::rule<std::wstring::const_iterator, mul_exp(), lua_skip_parser>& mul_,
+	qi::rule<std::wstring::const_iterator, unop_exp(), lua_skip_parser>& unop_,
+	qi::rule<std::wstring::const_iterator, pow_exp(), lua_skip_parser>& pow_,
+	qi::rule<std::wstring::const_iterator, term(), lua_skip_parser>& term_
+);
 
 struct mulop_symbols : qi::symbols<wchar_t, lua_grammar::mul_op> {
 	mulop_symbols ();
@@ -35,5 +52,7 @@ struct unop_symbols : qi::symbols<wchar_t, lua_grammar::un_op> {
 struct escaped_symbol : qi::symbols<wchar_t, wchar_t> {
 	escaped_symbol();
 };
+
+}
 
 #endif
