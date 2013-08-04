@@ -1316,7 +1316,7 @@ TParam::calculateConst(const std::wstring& formula)
 		    }
 		    else {
 			sz_log(4,
-				"WARRNING: wyk³adnik potêgi < 0 %s)",
+				"WARRNING: wykladnik potegi < 0 %s)",
 				SC::S2A(formula).c_str());
 			return SZB_NODATA;
 		    }

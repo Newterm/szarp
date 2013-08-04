@@ -3,6 +3,7 @@
 #endif
 
 #include <config.h>
+#include <limits>
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -271,7 +272,7 @@ szb_definable_calculate(szb_buffer_t *buffer, SZBASE_TYPE * stack, const double*
 				sz_log(0, " it: %d, param_cnt: %d, num: %d",
 					it, param_cnt, param->GetNumParsInFormula());
 				sz_log(0, " chptr: %ls", chptr);
-				return NULL;
+				return std::numeric_limits<double>::quiet_NaN();
 			}
 	
 			// put probe value on stack

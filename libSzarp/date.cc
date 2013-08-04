@@ -210,8 +210,7 @@ CompareDates(int period, MyDate *FirstDate, MyDate *SecondDate)
 void
 DebugDateShort(FILE * file, const char * msg, MyDate * date)
 {
-    fprintf(file, msg);
-    fprintf(file, " %4d.%02d.%02d\n", date->year, date->month, date->mday);
+    fprintf(file, "%s %4d.%02d.%02d\n", msg, date->year, date->month, date->mday);
 }
 
 
