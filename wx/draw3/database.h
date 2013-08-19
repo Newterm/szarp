@@ -171,7 +171,6 @@ struct DatabaseQuery {
 };
 
 class Draw3Base {
-
 public:
 	void RemoveConfig(const std::wstring& prefix,
 			bool poison_cache) = 0;
@@ -186,8 +185,47 @@ public:
 
 	void SetProberAddress(const std::wstring& prefix,
 			const std::wstring& address,
-			int port);
+			int port) = 0 ;
 
+	void ExtractParametersQuery(DatabaseQuery::ExtractionParameters &pars) = 0;
+
+	void SearchData(DatabaseQuery* query) = 0;
+
+	void GetData(DatabaseQuery* query) = 0;
+
+	void ResetBuffer(DatabaseQuery* query) = 0;
+
+	void ClearCache(DatabaseQuery* query) = 0;
+
+	virtual ~Draw3Base() {}
+};
+
+void SzbaseBase : public Draw3Base {
+public:
+	void RemoveConfig(const std::wstring& prefix,
+			bool poison_cache) ;
+
+	bool CompileLuaFormula(const std::wstring& formula, std::wstring& error) ;
+
+	void AddExtraParam(const std::wstring& prefix, TParam *param) ;
+
+	void RemoveExtraParam(const std::wstring& prefix, TParam *param) ;
+
+	void NotifyAboutConfigurationChanges() ;
+
+	void SetProberAddress(const std::wstring& prefix,
+			const std::wstring& address,
+			int port)  ;
+
+	void ExtractParametersQuery(DatabaseQuery::ExtractionParameters &pars) ;
+
+	void SearchData(DatabaseQuery* query);
+
+	void GetData(DatabaseQuery* query);
+
+	void ResetBuffer(DatabaseQuery* query);
+
+	void ClearCache(DatabaseQuery* query);
 };
 
 /**Query execution thread*/

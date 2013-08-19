@@ -36,6 +36,18 @@ sz4::base* sz4_base;
 
 DatabaseQuery* CreateDataQueryPrivate(DrawInfo* di, TParam *param, PeriodType pt, int draw_no);
 
+void SzbaseBase::RemoveConfig(const std::wstring& prefix, bool poison_cache) {
+	TParam *p = q->defined_param.p;
+	wchar_t *prefix = q->defined_param.prefix;
+	m_szbase->RemoveExtraParam(prefix, p);
+}
+
+bool SzbaseBase::CompileLuaFormula(const std::wstring& formula, std::wstring& error) {
+
+}
+
+
+
 QueryExecutor::QueryExecutor(DatabaseQueryQueue *_queue, wxEvtHandler *_response_receiver, Szbase *_szbase) :
 	wxThread(wxTHREAD_JOINABLE), queue(_queue), response_receiver(_response_receiver), szbase(_szbase), cancelHandle(NULL)
 { 
@@ -77,10 +89,6 @@ SZARP_PROBE_TYPE PeriodToProbeType(PeriodType period) {
 void* QueryExecutor::Entry() {
 	DatabaseQuery *q = NULL;
 
-#if 0
-	try {
-#endif
-
 	while ((q = queue->GetQuery())) {
 
 		bool post_response = false;
@@ -114,9 +122,6 @@ void* QueryExecutor::Entry() {
 
 			free(prefix);
 		} else if (q->type == DatabaseQuery::REMOVE_PARAM) {
-			TParam *p = q->defined_param.p;
-			wchar_t *prefix = q->defined_param.prefix;
-			szbase->RemoveExtraParam(prefix, p);
 			post_response = true;
 #endif
 		} else if (q->type == DatabaseQuery::CHECK_CONFIGURATIONS_CHANGE) {
@@ -176,13 +181,7 @@ void* QueryExecutor::Entry() {
 	
 	}
 	
-#if 0
-	} catch (std::exception &e) {
-		std::cout << e.what() << std::endl;
-	}
-#endif
-	
-
+	delete base;
 	Szbase::Destroy();
 
 	return NULL;
