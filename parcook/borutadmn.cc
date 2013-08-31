@@ -571,7 +571,8 @@ void client_manager::starting_new_cycle() {
 			(*j)->starting_new_cycle();
 	for (size_t connection = 0; connection < m_connection_client_map.size(); connection++) {
 		size_t& client = m_current_client.at(connection);
-		if (do_get_connection_state(connection) == NOT_CONNECTED) {
+		CONNECTION_STATE cstate = do_get_connection_state(connection);
+		if (cstate == NOT_CONNECTED || cstate == CONNECTING) {
 			if (do_establish_connection(connection)) {
 				for (size_t c = 0; c < m_connection_client_map.at(connection).size(); c++)
 					m_connection_client_map.at(connection).at(c)->connection_error(NULL);
@@ -657,7 +658,7 @@ void client_manager::connection_established_cb(size_t connection) {
 	do_schedule(connection, current_client);
 }
 
-tcp_client_manager::tcp_connection::tcp_connection(tcp_client_manager *_manager, size_t _addr_no, std::string _address) : state(NOT_CONNECTED), fd(-1), bufev(NULL), conn_no(_addr_no), manager(_manager), address(_address) {}
+tcp_client_manager::tcp_connection::tcp_connection(tcp_client_manager *_manager, size_t _addr_no, std::string _address) : state(NOT_CONNECTED), fd(-1), bufev(NULL), conn_no(_addr_no), connecting_start(0), manager(_manager), address(_address) {}
 
 int tcp_client_manager::configure_tcp_address(xmlNodePtr node, struct sockaddr_in &addr) {
 	std::string address;
@@ -703,6 +704,7 @@ do_connect:
 		goto do_connect;
 	} else if (errno == EWOULDBLOCK || errno == EINPROGRESS) {
 		c.state = CONNECTING;
+		c.connecting_start = time(NULL);
 	} else {
 		dolog(0, "Failed to connect: %s", strerror(errno));
 		close_connection(c);
@@ -730,6 +732,17 @@ void tcp_client_manager::do_terminate_connection(size_t conn_no) {
 
 int tcp_client_manager::do_establish_connection(size_t conn_no) {
 	tcp_connection &c = m_tcp_connections.at(conn_no);
+	if (c.state == CONNECTING) {
+	    time_t now = time(NULL);
+	    if (c.connecting_start + 30 < now) {
+		dolog(2,
+		    "tcp_client_manager::do_establish_connection connecting with %s last too long, retrying",
+		    c.address.c_str());
+		close_connection(c);
+		return 1;
+	    }
+	    return 0;
+	}
 	dolog(8, "tcp_client_manager::connecting to address: %s", c.address.c_str());
 	if (open_connection(c, m_addresses.at(conn_no)))
 		return 1;
@@ -794,6 +807,7 @@ void tcp_client_manager::connection_write_cb(struct bufferevent *ev, void* _tcp_
 		return;
 	tcp_client_manager* t = c->manager;
 	c->state = CONNECTED;
+	c->connecting_start = 0;
 	dolog(8, "tcp_client_manager: connection with address: %s established", c->address.c_str());
 	t->connection_established_cb(c->conn_no);
 }

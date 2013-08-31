@@ -331,6 +331,7 @@ class tcp_client_manager : public client_manager {
 		int fd;
 		struct bufferevent *bufev;
 		size_t conn_no;
+		time_t connecting_start;
 		tcp_client_manager *manager;
 		std::string address;
 	};
