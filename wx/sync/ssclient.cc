@@ -1930,7 +1930,7 @@ void ProgressFrame::StartSync(bool show, wxArrayString dirList, bool delete_opti
 		passwords[n] = strdup(SC::S2A(sc[*i].second).c_str());
 	}
 
-	wxString _local_dir = dynamic_cast<szApp*>(wxTheApp)->GetSzarpDataDir();
+	wxString _local_dir = dynamic_cast<szAppConfig*>(wxTheApp)->GetSzarpDataDir();
 	char *local_dir = strdup(SC::S2A(_local_dir).c_str());
 
 	m_client->SetOptions(addresses,
@@ -2590,7 +2590,7 @@ void SSCSelectionFrame::LoadDatabases() {
 		}
 	}
 
-	m_config_titles = GetConfigTitles(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDataDir(), &hidden_databases);
+	m_config_titles = GetConfigTitles(dynamic_cast<szAppConfig*>(wxTheApp)->GetSzarpDataDir(), &hidden_databases);
 	for (ConfigNameHash::iterator i = m_config_titles.begin(); i != m_config_titles.end(); i++)
 		m_databases.Add(i->first);
 
@@ -2664,6 +2664,8 @@ wxMenu* SSCTaskBarItem::CreateMenu() {
 }
 
 void SSCTaskBarItem::OnCloseMenuEvent(wxCommandEvent &event) {
+	if (wxMessageBox(_("Do you really want to quit SSC"), _("Quit application?"), wxICON_QUESTION | wxOK | wxCANCEL) != wxOK) 
+		return;
 	m_cfg_frame->Close(true);
 #ifdef MINGW32
 	RemoveIcon();
@@ -2944,14 +2946,14 @@ bool SSCApp::OnCmdLineHelp(wxCmdLineParser &parser) {
 
 bool SSCApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 
-	long debug;
-	if (parser.Found(_T("debug"), &debug))
-		loginit((int) debug, SC::S2A(wxGetHomeDir() + _T("\\ssc.log")).c_str());
+	long log_level = 2;
+	parser.Found(_T("debug"), &log_level);
+	sz_loginit(log_level, "ssclient", SZ_LIBLOG_FACILITY_APP);
 	return true;
 }
 
 void SSCApp::OnInitCmdLine(wxCmdLineParser &parser) {
-	szApp::OnInitCmdLine(parser);
+	szApp<>::OnInitCmdLine(parser);
 
         parser.SetLogo(_("SSC version 3.00."));
 
@@ -3005,7 +3007,7 @@ void SSCApp::ConvertConfigToMultipleServers() {
 		}
 	}
 
-	ConfigNameHash ct = GetConfigTitles(dynamic_cast<szApp*>(wxTheApp)->GetSzarpDataDir(), &hidden_databases);
+	ConfigNameHash ct = GetConfigTitles(dynamic_cast<szApp<>*>(wxTheApp)->GetSzarpDataDir(), &hidden_databases);
 
 	wxString bases;
 	bool first = true;
@@ -3027,7 +3029,7 @@ void SSCApp::ConvertConfigToMultipleServers() {
 }
 
 bool SSCApp::OnInit() {
-	szApp::OnInit();
+	szApp<>::OnInit();
 	this->SetProgName(_("Sync Client"));
 
 	wxLog *logger = new wxLogStderr();

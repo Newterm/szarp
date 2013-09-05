@@ -65,7 +65,8 @@ int TSSeason::parseXML(xmlTextReaderPtr reader) {
 	if (isEmpty)
 		return 0;
 
-	xw.NextTag();
+	if (!xw.NextTag())
+		return 1;
 
 	for (;;) {
 
@@ -107,7 +108,8 @@ int TSSeason::parseXML(xmlTextReaderPtr reader) {
 				}
 				seasons[year] = s;
 			}
-			xw.NextTag();
+			if (!xw.NextTag())
+				return 1;
 		} else
 		if (xw.IsTag("seasons")) {
 			break;

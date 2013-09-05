@@ -455,7 +455,7 @@ class TransDbAccess:
 			UPDATE
 				param
 			SET
-				prefix_id = %(prefix_id)s, formula = %(formula)s, type=%(type)s, unit=%(unit)s, start_date=%(start_date)s, prec=%(prec)s, mod_time = %(mod_time)s
+				prefix_id = %(prefix_id)s, formula = %(formula)s, type=%(type)s, unit=%(unit)s, start_date=%(start_date)s, prec=%(prec)s, mod_time = %(mod_time)s, deleted = 'f'
 			WHERE
 				id = %(id)s AND user_id=%(user_id)s""",
 			{ 'prefix_id' : prefix_id,
@@ -518,7 +518,7 @@ class TransDbAccess:
 			INSERT INTO
 				draw (set_id, name, draw, title, short, prefix_id, hoursum, color, draw_min, draw_max, scale, min_scale, max_scale, draw_order)
 			VALUES
-				(%(set_id)s, %(name)s, %(draw)s, %(title)s, %(sname)s, %(prefix_id)s, %(hoursum)s, %(color)s, %(min)s, %(max)s, %(scale)s, %(min_scale)s, %(max_scale)s, %(draw_order)s)"""
+				(%(set_id)s, %(name)s, %(draw)s, %(title)s, %(short)s, %(prefix_id)s, %(hoursum)s, %(color)s, %(min)s, %(max)s, %(scale)s, %(min_scale)s, %(max_scale)s, %(draw_order)s)"""
 
 		self.trans.execute(query, draw)
 

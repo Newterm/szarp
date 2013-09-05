@@ -81,6 +81,15 @@ struct ValueInfo {
 	/**Sum probes' values*/
 	double sum;
 
+	/**Last no no-data values*/
+	double first_val;
+
+	/**Last no no-data values*/
+	double last_val;
+
+	/**Average value for this point*/
+	double av_val;
+
 	/**Value as received from database*/
 	double db_val;
 
@@ -137,6 +146,8 @@ struct ValuesTable {
 
 	/**Statistics values*/
 	double m_sum;
+	double m_sum2;
+	double m_sdev;
 	double m_hsum;
 	double m_min;
 	double m_max;
@@ -198,7 +209,6 @@ struct ValuesTable {
 
 	void InsertValue(DatabaseQuery::ValueData::V *v, bool &view_values_changed, bool &stats_updated);
 
-	/**@return 'virtual' size of table. That is a size of @see m_view interval*/
 	size_t size() const;
 	
 	/**Resets contents of table. All entries and statistical values are set to no data.*/
@@ -302,6 +312,8 @@ public:
 	TimeInfo GetTimeInfo() const;
 
 	const TimeIndex& GetTimeIndex();
+	
+	void AverageValueCalculationMethodChanged();
 
 	/**@return DTime object corresponding to given index in @see m_values table*/
 	DTime GetDTimeOfIndex(int i) const;

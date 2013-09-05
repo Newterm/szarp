@@ -36,6 +36,8 @@
     <addaction name="actionOpen"/>
     <addaction name="actionBase"/>
     <addaction name="actionRemote"/>
+    <addaction name="separator"/>
+    <addaction name="actionReload"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_As"/>
     <addaction name="separator"/>
@@ -47,6 +49,7 @@
     </property>
     <addaction name="actionValidate"/>
     <addaction name="actionNamespaces"/>
+    <addaction name="actionConfiguration"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_Options"/>
@@ -107,6 +110,16 @@
   <action name="actionRemote">
    <property name="text">
     <string>Remote</string>
+   </property>
+  </action>
+  <action name="actionConfiguration">
+   <property name="text">
+    <string>Configuration</string>
+   </property>
+  </action>
+  <action name="actionReload">
+   <property name="text">
+    <string>Reload</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
@@ -243,6 +256,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionConfiguration</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>openConfigDialog()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>352</x>
+     <y>286</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionReload</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>reload()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>352</x>
+     <y>286</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>openParamsDialog()</slot>
@@ -252,5 +297,7 @@
   <slot>openBaseDialog()</slot>
   <slot>validate()</slot>
   <slot>openRemoteDialog()</slot>
+  <slot>openConfigDialog()</slot>
+  <slot>reload()</slot>
  </slots>
 </ui>

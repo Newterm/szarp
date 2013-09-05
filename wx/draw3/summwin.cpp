@@ -438,6 +438,10 @@ void SummaryWindow::NumberOfValuesChanged(DrawsController *draws_controller) {
 	DoubleCursorChanged(draws_controller);
 }
 
+void SummaryWindow::AverageValueCalculationMethodChanged(Draw *draw) {
+	UpdateDraw(draw);
+}
+
 void SummaryWindow::PeriodChanged(Draw *draw, PeriodType period) {
 	UpdateDraw(draw);
 }

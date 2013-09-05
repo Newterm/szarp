@@ -11,6 +11,7 @@ case "$1" in
     configure)
 
 	/opt/szarp/bin/install_vim || true
+	service rsyslog restart    || true
 
     ;;
 

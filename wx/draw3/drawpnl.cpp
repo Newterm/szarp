@@ -59,6 +59,8 @@
 #include "szframe.h"
 #include "drawfrm.h"
 #include "remarks.h"
+#include "remarksdialog.h"
+#include "remarksfetcher.h"
 #include "drawpnl.h"
 #include "drawapp.h"
 #include "drawtreedialog.h"
@@ -173,13 +175,13 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 		  id.c_str(), event.GetKeyCode());
 	switch (event.GetKeyCode()) {
 	case WXK_LEFT:
-		if(event.ShiftDown() && panel->tw->GetSelection() == PERIOD_T_DAY)
+		if(event.ShiftDown() && (panel->tw->GetSelection() == PERIOD_T_DAY || panel->tw->GetSelection() == PERIOD_T_30MINUTE))
 			panel->dw->SetKeyboardAction(CURSOR_LONG_LEFT_KB);
 		else
 			panel->dw->SetKeyboardAction(CURSOR_LEFT_KB);
 		break;
 	case WXK_RIGHT:
-		if (event.ShiftDown() && panel->tw->GetSelection() == PERIOD_T_DAY)
+		if(event.ShiftDown() && (panel->tw->GetSelection() == PERIOD_T_DAY || panel->tw->GetSelection() == PERIOD_T_30MINUTE))
 			panel->dw->SetKeyboardAction(CURSOR_LONG_RIGHT_KB);
 		else
 			panel->dw->SetKeyboardAction(CURSOR_RIGHT_KB);
@@ -301,6 +303,9 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 		if (event.ShiftDown()) {
 					printf("IKE!\n");
 		}
+		break;
+	case WXK_F12:
+		panel->df->ToggleMenuBarVisbility();
 		break;
 	default:
 		event.Skip();
@@ -918,6 +923,7 @@ DrawInfoList DrawPanel::GetDrawInfoList() {
 	wxDateTime wdt;
 	GetDisplayedDrawInfo( &di , wdt );
 	dil.SetSelectedDraw( di );
+	dil.SetStatsInterval(dw->GetDrawsController()->GetStatsInterval());
 	return dil;
 }
 

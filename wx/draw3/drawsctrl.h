@@ -54,6 +54,7 @@ public:
 	void NotifyFilterChanged(DrawsController *draws_controller);
 	void NotifyNumberOfValuesChanged(DrawsController *draws_controller);
 	void NotifyDrawsSorted(DrawsController *draws_controller);
+	void NotifyAverageValueCalculationMethodChanged(Draw *draw);
 
 };
 
@@ -389,7 +390,6 @@ public:
 
 	void Set(int draw_no);
 
-
 	int GetFilter();
 
 	void SetFilter(int filter);
@@ -420,6 +420,8 @@ public:
 
 
 	void RefreshData(bool auto_refresh);
+
+	void DrawInfoAverageValueCalculationChanged(DrawInfo* di);
 
 	void ClearCache();
 
@@ -467,6 +469,8 @@ public:
 	bool AtTheNewestValue();
 
 	bool GetNoData();
+
+	std::pair<time_t, time_t> GetStatsInterval();
 
 	static szb_nan_search_condition search_condition;
 

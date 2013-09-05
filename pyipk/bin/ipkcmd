@@ -13,7 +13,9 @@ from optparse import OptionParser , OptionGroup
 
 from libipk.params import Params
 from libipk.plugins import Plugins
-from libipk.filesource import FS_local , FS_ssh , AuthenticationError , ConnectionError , HostNotFoundError
+from libipk.filesource import FS_local , FS_ssh , FS_url , AuthenticationError , ConnectionError , HostNotFoundError
+
+from miscipk.console import getTerminalSize
 
 from lxml import etree
 
@@ -75,11 +77,41 @@ class App :
 		self.options , self.args = self.parser.parse_args()
 
 	def print_plugin_list( self ) :
+		plg  = {}
+		lmax = 0
+		wcmd , hcmd = getTerminalSize()
 		if self.options.list_plugins :
 			print("Available plugins:")
-			print("")
 			for n in self.plugins.names() :
-				print("  %s    \t%s" % ( n , self.plugins.help(n).splitlines()[0] ) )
+				s = self.plugins.get_section(n)
+				if s in plg :
+					plg[s].append(n)
+				else :
+					plg[s] = [n]
+				lmax = max(lmax,len(n))
+
+			lmax += 2
+
+			whlp = wcmd - lmax - 4
+
+			for s in sorted(plg.keys()) :
+				print("")
+				print("  %s" % s )
+				for n in sorted(plg[s]) :
+					w = 0
+					hlp = self.plugins.help(n).splitlines()[0].split()
+					sys.stdout.write("    {0:<{w}}".format( n , w=lmax ) )
+					for h in hlp :
+						w += len(h)+1
+						if w < whlp :
+							sys.stdout.write(h)
+							sys.stdout.write(" ")
+						else:
+							w = len(h)+1
+							sys.stdout.write("\n    {:<{w}}".format('',w=lmax))
+							sys.stdout.write(h)
+							sys.stdout.write(" ")
+					sys.stdout.write("\n")
 			sys.exit(0)
 
 	def print_plugin_help( self ) :
@@ -167,26 +199,22 @@ class App :
 			# TODO: use custom sharp install path
 			fs = FS_local( "/opt/szarp/" + self.options.base + "/config/params.xml" )
 		elif self.options.url :
-			o = urlparse( self.options.url )
-			if o.scheme == 'file' :
-				fs = FS_local( o.path )
-			elif o.scheme == 'ssh' :
-				try :
-					fs = FS_ssh( o.hostname , o.path , username = o.username , password = o.password , port = o.port if o.port != None else 22 )
-				except AuthenticationError as e :
-					print('Authentication error: %s' % e)
-					return 1
-				except ConnectionError as e:
-					print('Connection error: %s' % e)
-					return 1
-				except HostNotFoundError as e:
-					print('Host not found: %s' % e)
-					return 1
-				except IOError as e:
-					print('File not found: %s' % e)
-					return 1
-			else :
-				self.parser.error("Url protocol not supported")
+			try :
+				fs = FS_url( self.options.url )
+			except AuthenticationError as e :
+				print('Authentication error: %s' % e)
+				return 1
+			except ConnectionError as e:
+				print('Connection error: %s' % e)
+				return 1
+			except HostNotFoundError as e:
+				print('Host not found: %s' % e)
+				return 1
+			except IOError as e:
+				print('File not found: %s' % e)
+				return 1
+			except ValueError as e :
+				self.parser.error(str(e))
 
 		if self.options.not_validate :
 			relaxng = None

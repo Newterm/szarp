@@ -20,7 +20,7 @@
 /**
  * Main app class
  */
-class kontrApp: public szApp {
+class kontrApp: public szApp<> {
   wxLocale locale;
   wxString server;
 protected:

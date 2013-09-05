@@ -22,6 +22,9 @@ class Plugins :
 	def names( self ) :
 		return self.plugins.keys()
 
+	def clear( self ) :
+		self.plugins.clear()
+
 	def load( self , path ) :
 		sys.path.append( path )
 		for modname in os.listdir(path) :
@@ -29,6 +32,10 @@ class Plugins :
 				modname = modname[:-3]
 				self.import_module( modname )
 		sys.path.pop()
+
+	def reload( self , path ) :
+		self.clear()
+		self.load( path )
 
 	def import_module( self , modname ) :
 		__import__( modname )
@@ -53,6 +60,10 @@ class Plugins :
 	@except_no_plugin
 	def get_section( self , name ) :
 		return self.plugins[name].section()
+
+	@except_no_plugin
+	def get_defaults( self , name ) :
+		return self.plugins[name].get_default()
 
 	def available( self , name ) :
 		return name in self.plugins

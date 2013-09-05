@@ -211,3 +211,36 @@ class TestPNode( unittest.TestCase ) :
 		self.params.rebuild_tree()
 		self.assertEqTrees()
 
+class TestSearch( unittest.TestCase ) :
+	def setUp( self ) :
+		self.params = libipk.params.params_file( './tests/params.xml' )
+	
+	def tearDown( self ) :
+		pass
+
+	def test_find_root_by_tag( self ) :
+		root = self.params.getroot().node
+		tag = root.tag.replace( '{%s}' % root.nsmap[root.prefix] , '%s:' % root.prefix if root.prefix != None else  '' )
+		se = libipk.params.ParamsSearch([self.params.getroot()], tag )
+		path = se.next()
+		self.assertEqual( self.params.get_pnode( path ) , self.params.getroot() )
+
+	def test_find_none( self ) :
+		se = libipk.params.ParamsSearch( [self.params.getroot()] , 'asfdasdf' )
+		self.assertEqual( se.next() , None )
+
+	def test_find_by_title( self ) :
+		root = self.params.getroot()
+		node = root[2][0][1]
+		title = node.node.get('title')
+		se = libipk.params.ParamsSearch( [self.params.getroot()] , title )
+
+		paths = [ se.next() ]
+		while paths[-1] != None : paths.append(se.next())
+		del paths[-1]
+
+		nodes = [ self.params.get_pnode(path) for path in paths ]
+
+		self.assertIn( node , nodes )
+		for n in nodes : self.assertRegexpMatches( node.toline() , title )
+		

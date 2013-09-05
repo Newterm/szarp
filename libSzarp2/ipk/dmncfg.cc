@@ -40,6 +40,8 @@
 #include "liblog.h"
 #include "libpar.h"
 
+#include "liblog_impl_asyslog.h"
+
 #define SZARP_CFG "/etc/"PACKAGE_NAME"/"PACKAGE_NAME".cfg"
 
 DaemonConfig::DaemonConfig(const char *name)
@@ -102,7 +104,7 @@ void DaemonConfig::SetUsageFooter(const char *footer)
 		m_usage_footer.clear();
 }
 
-int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz_cfg , int force_device_index )
+int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz_cfg , int force_device_index, void* async_logging_context) 
 {
 	char *c;
 	int l;
@@ -137,13 +139,18 @@ int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz
         else {
                 l = atoi(c);
                 free(c);
-        }                                                           
+        }
+	sz_logdone();
+	if (async_logging_context)
+		sz_log_system_init(sz_log_asyslog_init, sz_log_asyslog_vlog, sz_log_asyslog_close);
+
         c = libpar_getpar(m_daemon_name.c_str(), "log", 0);
         if (c == NULL)
-                asprintf(&c, "%s/%s",PREFIX"/logs", m_daemon_name.c_str());
-        l = loginit(l, c);
+		c = strdup(m_daemon_name.c_str());
+
+        l = sz_loginit(l, c, SZ_LIBLOG_FACILITY_DAEMON, async_logging_context);
         if (l < 0) {
-               sz_log(0, "%s: cannot inialize log file %s, errno %d", 
+               sz_log(0, "%s: cannot inialize log %s, errno %d", 
 				m_daemon_name.c_str(), c, errno);
                 free(c);
                 return 1;
@@ -306,13 +313,13 @@ settings in config file."},
 	{"scan", SCAN, "ID range (e.g. 1-7)", 0,
          "Daemon scans for units from within provided ids' range"},
 	{"speed", SPEED, "Port speed e.g. 9600", 0,
-         "Port communiation speed"},
+         "Port communication speed"},
 	{"noconf", NOCONF, 0, 0,
          "Do not load configuration"},
 	{"dumphex", DUMPHEX, 0, 0,
-         "Print trasmited bytes in hex-terminal format"},
+         "Print trasmitted bytes in hex-terminal format"},
 	{"askdelay", ASKDELAY, "delay in seconds", 0, 
-         "Sets delay between quieries to different units"},
+         "Sets delay between queries to different units"},
         {0},
 	};
                                                                                 

@@ -1,3 +1,5 @@
+#ifndef __REMARKS_H__
+#define __REMARKS_H__
 /* 
   SZARP: SCADA software 
 
@@ -321,7 +323,29 @@ public:
 
 };
 
+//this event is used from within multiple object files, so we need to
+//do some MSW magic here
+#ifndef __WXMSW__
 DECLARE_EVENT_TYPE(REMARKSRESPONSE_EVENT, -1)
+#else
+//if this header is pulled by cpp file that defines actual event
+//do regular stuff
+#ifdef REMARKS_CPP
+DECLARE_EVENT_TYPE(REMARKSRESPONSE_EVENT, -1)
+#else
+//if not - we do this thing
+DECLARE_EXPORTED_EVENT_TYPE(__declspec(dllexport), REMARKSRESPONSE_EVENT,-1);
+#endif
+#endif
+
+
+typedef void (wxEvtHandler::*RemarksResponseEventFunction)(RemarksResponseEvent&);
+
+#define EVT_REMARKS_RESPONSE(id, fn) \
+    DECLARE_EVENT_TABLE_ENTRY( REMARKSRESPONSE_EVENT, id, -1, \
+    (wxObjectEventFunction) (wxEventFunction) (wxCommandEventFunction) \
+    wxStaticCastEvent( RemarksResponseEventFunction, & fn ), (wxObject *) NULL ),
+
 
 class RemarksStoredEvent : public wxCommandEvent {
 	std::vector<Remark> m_remarks;
@@ -444,6 +468,12 @@ public:
 	void GetAllRemarks(const wxString& prefix, wxEvtHandler *handler);
 };
 
+class RemarksReceiver {
+public:
+	virtual void RemarksReceived(std::vector<Remark>& remarks) = 0;
+	virtual ~RemarksReceiver() {}
+};
+
 
 class RemarksHandler : public wxEvtHandler {
 
@@ -481,7 +511,7 @@ class RemarksHandler : public wxEvtHandler {
 	RemarksStorage* m_storage;
 	ConfigManager* m_config_manager;
 
-	std::vector<RemarksFetcher*> m_fetchers;
+	std::vector<RemarksReceiver*> m_receivers;
 
 	wxTimer m_timer;
 
@@ -499,9 +529,9 @@ public:
 
 	RemarksHandler(ConfigManager *config_manager);
 
-	void AddRemarkFetcher(RemarksFetcher* fetcher);
+	void AddRemarkReceiver(RemarksReceiver* fetcher);
 
-	void RemoveRemarkFetcher(RemarksFetcher* fetcher);
+	void RemoveRemarkReceiver(RemarksReceiver* fetcher);
 
 	void NewRemarks(std::vector<Remark>& remarks, time_t fetch_time, bool manually_triggered);
 
@@ -586,73 +616,4 @@ public:
 
 };
 
-
-class RemarksListDialog : public wxDialog {
-	wxListCtrl* m_list_ctrl;
-
-	RemarksHandler* m_remarks_handler;
-
-	std::vector<Remark> m_displayed_remarks;
-
-	void ShowRemark(int index);
-
-	DrawFrame* m_draw_frame;
-public:
-	RemarksListDialog(DrawFrame* parent, RemarksHandler *handler);
-
-	void SetViewedRemarks(std::vector<Remark> &remarks);
-
-	void OnClose(wxCloseEvent& event);
-
-	void OnCloseButton(wxCommandEvent& event);
-
-	void OnOpenButton(wxCommandEvent& event);
-
-	void OnRemarkItemActivated(wxListEvent &event);
-
-	void OnHelpButton(wxCommandEvent &event);
-
-	DECLARE_EVENT_TABLE()
-
-};
-
-class RemarksFetcher : public wxEvtHandler, public DrawObserver {
-	std::map<Remark::ID, Remark> m_remarks;
-
-	DrawFrame *m_draw_frame;
-
-	RemarksHandler *m_remarks_handler;
-
-	DrawsController *m_draws_controller;
-
-	bool m_awaiting_for_whole_base;
-
-	void Fetch();
-
-public:
-	RemarksFetcher(RemarksHandler *remarks_handler, DrawFrame* m_draw_frame);
-
-	virtual void ScreenMoved(Draw* draw, const wxDateTime &start_time);
-
-	virtual void DrawInfoChanged(Draw *draw);
-
-	virtual void Attach(DrawsController *d);
-
-	virtual void Detach(DrawsController *d);
-
-	virtual void DrawSelected(Draw *draw);
-
-	void ShowRemarks();
-
-	void OnShowRemarks(wxCommandEvent &e);
-
-	void ShowRemarks(const wxDateTime &from_time, const wxDateTime &to_time);
-
-	void RemarksReceived(std::vector<Remark>& remarks);
-
-	void OnRemarksResponse(RemarksResponseEvent &e);
-
-	virtual ~RemarksFetcher();
-
-	DECLARE_EVENT_TABLE()
-};
+#endif

@@ -12,9 +12,11 @@
 # user=<user name to access data>
 # password=<password>
 
-from urllib import FancyURLopener
 from lxml import etree
 from ConfigParser import SafeConfigParser
+from urlparse import urlparse
+import httplib
+import base64, string
 import datetime
 
 # Config file path
@@ -24,7 +26,8 @@ CONFIG = "/etc/szarp/meteoprog.cfg"
 strs = [
 		'"Sieæ:Prognoza temperatury:temperatura %s 1 dzieñ"',
 		'"Sieæ:Prognoza temperatury:temperatura %s 2 dni"',
-		'"Sieæ:Prognoza temperatury:temperatura %s 3 dni"'
+		'"Sieæ:Prognoza temperatury:temperatura %s 3 dni"',
+		'"Sieæ:Prognoza temperatury:temperatura %s 4 dni"'
 		]
 minmax = [ "minimalna", "maksymalna" ]
 
@@ -49,15 +52,43 @@ url = config.get('Main', 'url')
 user = config.get('Main', 'user')
 passwd = config.get('Main', 'password')
 
-# class for passing user/password
-class AuthURLopener(FancyURLopener):
-	def prompt_user_passwd(self, host, realm):
-		return (user, passwd)
+def url_split(url):
+	parse_res = urlparse(url)
+	url_host = parse_res.netloc
+	url_path = parse_res.path
+	if parse_res.query != "":
+		url_path = url_path + "?" + parse_res.query
+	return [url_host, url_path]
 
-# fetch XML data
-opener = AuthURLopener()
-meteo = opener.open(url)
-xml = etree.XML(meteo.read())
+# establish connection
+[url_host, url_path] = url_split(url)
+connection = httplib.HTTPConnection(url_host)
+auth = base64.encodestring('%s:%s' % (user, passwd)).replace('\n', '')
+connection.request("GET", url_path, headers={"Authorization" : "Basic %s" % auth})
+response = connection.getresponse()
+
+# handle redirections
+redir_depth = 0
+while response.status in [301, 302]:
+	redir_depth = redir_depth + 1
+	if redir_depth > 10:
+		raise Exception("Redirected %d times, giving up" % redir_depth)
+	headers = dict(response.getheaders())
+	location = headers['location']
+	[url_host, url_path] = url_split(location)
+	connection = httplib.HTTPConnection(url_host)
+	connection.request("GET", url_path, headers={"Authorization" : "Basic %s" % auth})
+	response = connection.getresponse()
+
+# get XML data using open connection
+data = response.read().lstrip(' \t\n')
+xml = etree.XML(data)
+
+sample_time = xml.find('Day/Time')
+if 'name' in sample_time.keys():
+	use_time_names = True
+else:
+	use_time_names = False
 
 # save output
 cache_min = []
@@ -68,13 +99,19 @@ for date in xml:
 	for time in date:
 		tmin = time.find('tmin')
 		tmax = time.find('tmax')
-		cache_min.append((int(tmin.text), datetime.datetime(int(year), int(month), int(day), hours[time.get('name')], 0) - shift[time.get('name')]))
-		cache_max.append((int(tmax.text), datetime.datetime(int(year), int(month), int(day), hours[time.get('name')], 0) - shift[time.get('name')]))
+		if use_time_names:
+			cache_min.append((int(tmin.text), datetime.datetime(int(year), int(month), int(day), hours[time.get('name')], 0) - shift[time.get('name')]))
+			cache_max.append((int(tmax.text), datetime.datetime(int(year), int(month), int(day), hours[time.get('name')], 0) - shift[time.get('name')]))
+		else:
+			cache_min.append((int(tmin.text), datetime.datetime(int(year), int(month), int(day), int(time.get('time')[:2]) , 0) ))
+			cache_max.append((int(tmax.text), datetime.datetime(int(year), int(month), int(day), int(time.get('time')[:2]) , 0) ))
+
 	# add data for end of period
 	cache_min.append((int(tmin.text), datetime.datetime(int(year), int(month), int(day)) +
 		datetime.timedelta(days=1) - shift['last']))
 	cache_max.append((int(tmax.text), datetime.datetime(int(year), int(month), int(day)) +
 		datetime.timedelta(days=1) - shift['last']))
+
 	i += 1
 
 interval = datetime.timedelta(minutes=10)

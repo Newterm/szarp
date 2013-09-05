@@ -37,7 +37,7 @@ xmlChar *toUTF8(const char *strorig)
 	i = strlen(str) + 1;
 	if ((i * 2) > sz_toUTF8_bufsize) {
 		sz_toUTF8_bufsize = i * 2;
-		sz_toUTF8_buffer = realloc(
+		sz_toUTF8_buffer = (char*)realloc(
 				sz_toUTF8_buffer, 
 				sz_toUTF8_bufsize * sizeof(char));
 	}
@@ -70,7 +70,7 @@ unsigned char* fromUTF8(unsigned char *str)
 		return NULL;
 	i = strlen(_str) + 1;
 
-	tmp = _tmp = malloc(i);
+	tmp = _tmp = (char*)malloc(i);
 	o = i;
 	
 #ifdef MINGW32

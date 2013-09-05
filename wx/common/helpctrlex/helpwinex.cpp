@@ -83,6 +83,7 @@ enum
     wxID_HTML_DOWN,
     wxID_HTML_PRINT,
     wxID_HTML_OPENFILE,
+    wxID_HTML_QUIT,
     wxID_HTML_OPTIONS,
     wxID_HTML_BOOKMARKSLIST,
     wxID_HTML_BOOKMARKSADD,
@@ -718,6 +719,8 @@ void wxHtmlHelpWindowEx::AddToolbarButtons(wxToolBar *toolBar, int style)
         wxArtProvider::GetBitmap(wxART_PRINT, wxART_HELP_BROWSER);
     wxBitmap woptionsBitmap = 
         wxArtProvider::GetBitmap(wxART_HELP_SETTINGS, wxART_HELP_BROWSER);
+    wxBitmap wquitBitmap = 
+        wxArtProvider::GetBitmap(wxART_QUIT, wxART_HELP_BROWSER);
 
     wxASSERT_MSG( (wpanelBitmap.Ok() && wbackBitmap.Ok() &&
                    wforwardBitmap.Ok() && wupnodeBitmap.Ok() &&
@@ -769,6 +772,12 @@ void wxHtmlHelpWindowEx::AddToolbarButtons(wxToolBar *toolBar, int style)
     toolBar->AddTool(wxID_HTML_OPTIONS, woptionsBitmap, wxNullBitmap,
                        FALSE, -1, -1, (wxObject *) NULL,
                        _("Display options dialog"));
+
+
+    toolBar->AddSeparator();
+    toolBar->AddTool(wxID_HTML_QUIT, wquitBitmap, wxNullBitmap,
+                       FALSE, -1, -1, (wxObject *) NULL,
+                       _("Close help"));
 }
 
 /*
@@ -1750,6 +1759,16 @@ void wxHtmlHelpWindowEx::OnToolbar(wxCommandEvent& event)
             }
             break;
 
+	case wxID_HTML_QUIT: {
+            wxWindow* parent(this);
+            while (parent && !parent->IsKindOf(CLASSINFO(wxTopLevelWindow)))
+            {
+                parent = parent->GetParent();
+            }
+            if (parent)
+                parent->Close();
+            break;
+	}
         case wxID_HTML_OPTIONS :
             OptionsDialog();
             break;

@@ -34,6 +34,9 @@ std::basic_string<unsigned char> A2U(const std::basic_string<char>& c);
 
 std::string U2A(const std::basic_string<unsigned char>& c);
 
+/** lua library returns error string which may contain a slit in half
+ * unicode 2-byte, which makes iconv() call in U2S fail */
+std::wstring lua_error2szarp(const char* lua_error);
 }
 
 #endif

@@ -215,4 +215,29 @@ namespace SC {
 		return utf2ascii(c);
 	}
 
+	std::wstring lua_error2szarp(const char* lua_error)
+	{
+
+		try {
+			return SC::U2S((const unsigned char*)lua_error);
+		} catch(const std::runtime_error& ex) {
+		}
+		// try to ommit the []-bracketed abbreviated error string,
+		// which may contain a split in half unicode 2-byte
+		// and retain the rest of information
+		std::string source(lua_error);
+		size_t right_bracket_pos = source.rfind("]");
+		std::string target = "[<unparseable string>]";
+		if (right_bracket_pos != std::string::npos) {
+			size_t first_char_pos = right_bracket_pos + 1;
+			if (first_char_pos < source.size()) {
+				target += source.substr(first_char_pos);
+			}
+		}
+		try {
+			return SC::U2S((const unsigned char*)target.c_str());
+		} catch(const std::runtime_error& ex) {
+		}
+		return SC::A2S("[<unparseable string>]");
+	}
 }

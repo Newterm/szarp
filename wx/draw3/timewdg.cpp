@@ -137,12 +137,14 @@ void TimeWidget::OnFocus(wxFocusEvent &event)
 
 void TimeWidget::PeriodChanged(Draw *draw, PeriodType pt) {
 	if (draw->GetSelected()) {
+		m_selected = pt;
 		SetSelection(pt);
 	}
 }
 
 void TimeWidget::DrawInfoChanged(Draw *draw) {
 	if (draw->GetSelected()) {
+		m_selected = draw->GetPeriod();
 		SetSelection(draw->GetPeriod());
 	}
 }

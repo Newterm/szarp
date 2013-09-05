@@ -45,7 +45,7 @@ bool KoperApp::ParseCommandLine() {
 
 bool KoperApp::OnInit() {
 
-	szApp::OnInit();
+	szApp<>::OnInit();
 
 #ifndef __WXMSW__
 	m_locale.Init();

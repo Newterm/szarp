@@ -42,6 +42,14 @@
 #define AUTO_LANGUAGE wxT("auto")
 #define DEFAULT_LANGUAGE wxLocale::GetLanguageInfo(wxLocale::GetSystemLanguage() == wxLANGUAGE_UNKNOWN ? wxLANGUAGE_ENGLISH_UK : wxLocale::GetSystemLanguage())->CanonicalName.Left(2)
 
+
+class szAppConfig {
+public:
+	virtual wxString GetSzarpDataDir() = 0;
+	virtual wxString GetSzarpDir() = 0;
+	virtual ~szAppConfig() {};
+};
+
 class szAppImpl {
 	bool has_data_dir;
 
@@ -85,47 +93,67 @@ public:
 };
 
 /** Loads aditional Gtk resources */
-class szApp: public wxApp, szAppImpl {
+template<class APP=wxApp> class szApp: public APP, public szAppConfig, szAppImpl  {
 public:
-	szApp();
-	/** Loads resources */
-	virtual bool OnInit();
-	/** Returns main szarp directory - on Linux it's set during
-	 * compilation, on Windows it is calculated from program path.
-	 * szConv_init() must be called before calling this function!
-	 * Directory is WITH slash at the end.
-	 */
-	wxString GetSzarpDir();
+	szApp() : APP(), szAppImpl() { }
 
+	void SetSzarpDataDir(wxString dir) { szAppImpl::SetSzarpDataDir(dir); }
 
-	/** Returns szarp data directory - the direcotry where szarp databases
-	 * are supposed to be stored. This direcotry can be changed by the user.
-	 */
-	wxString GetSzarpDataDir();
+	virtual bool OnInit() {
+		if (!APP::OnInit())
+			return false;
+		szAppImpl::SetProgPath(APP::argv[0]);
+		szAppImpl::OnInit();
+		return true;
+	}
 
-	/** Sets szarp data directory*/
-	void SetSzarpDataDir(wxString dir);
+	virtual wxString GetSzarpDir() {
+		return szAppImpl::GetSzarpDir();
+	}
 
-	/** Sets program name to display in About dialog */
-	void SetProgName(wxString str);
+	virtual wxString GetSzarpDataDir() {
+		return szAppImpl::GetSzarpDataDir();
+	}
 
-	/** Show About dialog */
-	void ShowAbout();
+	virtual void ShowAbout()
+	{
+		szAppImpl::ShowAbout();
+	}
 
-	virtual bool OnCmdLineError(wxCmdLineParser &parser);
+	virtual void SetProgName(wxString str) {
+		szAppImpl::SetProgName(str);
+	}
 
-	virtual bool OnCmdLineHelp(wxCmdLineParser &parser);
+	virtual bool OnCmdLineError(wxCmdLineParser &parser) {
+		return APP::OnCmdLineError(parser);
+	}
 
-	virtual bool OnCmdLineParsed(wxCmdLineParser &parser);
+	virtual bool OnCmdLineHelp(wxCmdLineParser &parser) {
+		return APP::OnCmdLineHelp(parser);
+	}
 
-	virtual void OnInitCmdLine(wxCmdLineParser &parser);
+	bool OnCmdLineParsed(wxCmdLineParser &parser){
+		return APP::OnCmdLineParsed(parser);
+	}
+
+	virtual void OnInitCmdLine(wxCmdLineParser &parser) {
+		APP::OnInitCmdLine(parser);
+		parser.AddSwitch(_("Dprefix"), wxEmptyString, _T("database prefix"));
+	}
+
 protected:
 	/** Retrives szarp data directory location*/
-	void InitSzarpDataDir();
+	void InitSzarpDataDir() { return szAppImpl::InitSzarpDataDir(); } 
 
-	/** Initializes loacle in a unified way */
-	void InitializeLocale(wxArrayString &catalogs, wxLocale &locale);
-	void InitializeLocale(wxString catalog, wxLocale &locale);
+	void InitializeLocale(wxArrayString &catalogs, wxLocale &locale)
+	{
+		szAppImpl::InitializeLocale(catalogs, locale);
+	}
+
+	void InitializeLocale(wxString catalog, wxLocale &locale)
+	{
+		szAppImpl::InitializeLocale(catalog, locale);
+	}
 
 };
 

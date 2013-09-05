@@ -58,11 +58,32 @@
 #include "tokens.h"
 #include "xmlutils.h"
 #include "conversion.h"
+#include "serialport.h"
 
 bool single;
 
 void dolog(int level, const char * fmt, ...)
   __attribute__ ((format (printf, 2, 3)));
+
+xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
+	xmlChar *c;
+	char *e;
+	asprintf(&e, "./@%s", prop);
+	assert (e != NULL);
+	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
+	free(e);
+	return c;
+}
+
+xmlChar* get_device_node_extra_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
+	xmlChar *c;
+	char *e;
+	asprintf(&e, "./@extra:%s", prop);
+	assert (e != NULL);
+	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
+	free(e);
+	return c;
+}
 
 std::string tohex(const unsigned char* buffer, size_t len) {
 	std::ostringstream oss;
@@ -99,71 +120,6 @@ const unsigned short crc_table[] = {
        0xcb7d,0xdb5c,0xeb3f,0xfb1e,0x8bf9,0x9bd8,0xabbb,0xbb9a,0x4a75,0x5a54,0x6a37,0x7a16,0x0af1,0x1ad0,0x2ab3,0x3a92,
        0xfd2e,0xed0f,0xdd6c,0xcd4d,0xbdaa,0xad8b,0x9de8,0x8dc9,0x7c26,0x6c07,0x5c64,0x4c45,0x3ca2,0x2c83,0x1ce0,0x0cc1,
        0xef1f,0xff3e,0xcf5d,0xdf7c,0xaf9b,0xbfba,0x8fd9,0x9ff8,0x6e17,0x7e36,0x4e55,0x5e74,0x2e93,0x3eb2,0x0ed1,0x1ef0
-};
-
-
-
-class SerialException : public std::runtime_error {
-	public:		
-	SerialException(int err) : std::runtime_error(strerror(err)) {};
-	SerialException(const std::string &err) : std::runtime_error(err) {};
-};
-
-/**Class handling comunication with serial port.*/
-class SerialPort {
-public:
-	enum PARITY { MARK, SPACE };
-
-	/**Constructor 
-	 * @param path path to a serial port device
-	 * @param speed connection speed
-	 * @param stopbits number of stop bits
-	 * @param timeout specifies number of seconds @see GetData should wait for data 
-	 * to arrive on a port*/
-	SerialPort(const char* path, int speed) : 
-		m_fd(-1), m_path(path), m_speed(speed)
-	{};
-	/**Closes the port*/
-	void Close();
-	/**Opens the port throws @see SerialException 
-	* if it was unable to open a port or set connection
-	* parameters. Attempts to open a port only if it
-	* is not already opened or is opened with another speed
-	* @param force_speed speed for port, 0 for default device speed
-	*/
-	void Open();
-
-	bool IsOpen();
-
-	/*Reads data from a port to a given buffer,
-	 * null terminates read data. Throws @see SerialException
-	 * if read failed, or timeout occurred closes port in both cases.
-	 * @param buffer buffer where data shall be placed
-	 * @param size size of a buffer
-	 * @return number of read bytes (not including terminating NULL)*/
-	ssize_t GetData(void* buffer, size_t size);
-
-	/*Writes contents of a supplied buffer to a port.
-	 * Throws @see SerialException and closes the port
-	 * if write operation failes.
-	 * @param buffer buffer containing data that should be written
-	 * @param size size of the buffer*/
-	void WriteData(const void* buffer, size_t size);
-
-	/**Waits for data arrival on a port, throws SerialException
-	 * if no data arrived withing specified time interval
-	 * or select call failed. In both cases port is closed.
-	 * @param timeout number of seconds the method should wait*/
-	bool Wait(int timeout);
-
-	void SetParity(PARITY parity);
-
-	void SetModemLines(int dtr, int rts);
-private:
-
-	int m_fd; 		/**<device descriptor, -1 indicates that the device is closed*/
-	const char* m_path;	/**<path to the device*/
-	int m_speed;		/**<configured connection speed (9600 def)*/ 
 };
 
 /**Data buffer*/
@@ -225,94 +181,9 @@ public:
 	unsigned char& at(size_t i);
 	/**resizes buffer*/
 	void Resize(size_t size);
-
+	/** Clears whole buffer */
+	void Clear();
 };
-
-
-bool SerialPort::Wait(int timeout) 
-{
-	int ret;
-	struct timeval tv;
-	fd_set set;
-	time_t t1, t2;
-
-	time(&t1);
-
-	dolog(8, "Waiting for data");
-	while (true) {
-		time(&t2);
-		tv.tv_sec = timeout - (t2 - t1);
-		if (tv.tv_sec < 0) {
-			dolog(2, "I cannot wait for negative number of seconds");
-			return false;
-		}
-		tv.tv_usec = 0;
-		FD_ZERO(&set);
-		FD_SET(m_fd, &set);
-	
-		ret = select(m_fd + 1, &set, NULL, NULL, &tv);
-		if (ret < 0) {
-			if (errno == EINTR) {
-				continue;
-			} else {
-				Close();
-				dolog(1, "select failed, errno %d (%s)",
-					errno, strerror(errno));
-				throw SerialException(errno);
-			}
-		} else if (ret == 0) {
-			dolog(4, "No data arrived within specified interval");
-			return false;
-		} else {
-			dolog(8, "Data arrived");
-			return true;
-		}
-	}
-}
-
-ssize_t SerialPort::GetData(void* buffer, size_t size) {
-again:
-	ssize_t ret;
-	ret = read(m_fd, buffer, size);
-	if (ret == -1) {
-		if (errno == EINTR) {
-			goto again;
-		} else {
-			Close();
-			dolog(1, "read failed, errno %d (%s)",
-				errno, strerror(errno));
-			throw SerialException(errno);
-		}
-	}
-	return ret;
-}
-
-void SerialPort::WriteData(const void* buffer, size_t size) {
-	size_t sent = 0;
-	int ret;
-
-	const char* b = static_cast<const char*>(buffer);
-
-	while (sent < size) {
-		ret = write(m_fd, b + sent, size - sent);
-			
-		if (ret < 0) { 
-			if (errno != EINTR) {
-				Close();
-				dolog(2, "write failed, errno %d (%s)",
-					errno, strerror(errno));
-				throw SerialException(errno);
-			} else {
-				continue;
-			}
-		} else if (ret == 0) {
-			Close();
-			dolog(2, "wrote 0 bytes to a port");
-			throw SerialException(std::string("Error writing to port, 0 bytes writen"));
-		}
-		sent += ret;
-	} 
-}
 
 unsigned int speed2const(int speed) {
 	switch (speed) {
@@ -333,113 +204,17 @@ unsigned int speed2const(int speed) {
 		case 38400:
 			return B38400;
 		default:
+			dolog(0, "WARNING: setting default port speed: 9600");
 			return B9600;
 	}
 }
 
-void SerialPort::Open() 
-{
-	if (m_fd >= 0) 
-		return;
-
-	dolog(6, "Opening port: %s", m_path);
-
-	m_fd = open(m_path, O_RDWR | O_NOCTTY | O_NONBLOCK, 0);
-	
-	if (m_fd == -1) {
-		dolog(1, "sbusdmn: cannot open device %s, errno:%d (%s)", m_path,
-			errno, strerror(errno));
-		throw SerialException(errno);
-	}
-	
-	struct termios ti;
-	if (tcgetattr(m_fd, &ti) == -1) {
-		dolog(1, "sbusdmn: cannot retrieve port settings, errno:%d (%s)",
-				errno, strerror(errno));
-		Close();
-		throw SerialException(errno);
-	}
-
-	dolog(6, "setting port speed to %d", m_speed);
-	ti.c_cflag = speed2const(m_speed);
-	ti.c_oflag = 
-	ti.c_iflag =
-	ti.c_lflag = 0;
-
-	ti.c_cflag |= CS8 | CREAD | CLOCAL;
-
-	if (tcsetattr(m_fd, TCSANOW, &ti) == -1) {
-		dolog(1, "Cannot set port settings, errno: %d (%s)",
-			errno, strerror(errno));	
-		Close();
-		throw SerialException(errno);
-	}
-}
-
-bool SerialPort::IsOpen() {
-	return m_fd >= 0;
-}
-
-void SerialPort::SetParity(PARITY parity) {
-	if (m_fd < 0)
-		return;
-	struct termios ti;
-	if (tcgetattr(m_fd, &ti) == -1) {
-		dolog(1, "sbusdmn: cannot retrieve port settings, errno:%d (%s)",
-				errno, strerror(errno));
-		Close();
-		throw SerialException(errno);
-	}
-
-	ti.c_cflag = speed2const(m_speed);
-	switch (parity) {
-		case MARK:
-			ti.c_cflag |= PARENB | CMSPAR | PARODD;
-			break;	
-		case SPACE:
-			ti.c_cflag |= PARENB | CMSPAR;
-			break;
-	}
-
-	ti.c_cflag |= CS8 | CREAD | CLOCAL;
-	if (tcsetattr(m_fd, TCSANOW, &ti) == -1) {
-		dolog(1, "sbusdmn: cannot set port settings, errno:%d (%s)",
-				errno, strerror(errno));
-		Close();
-		throw SerialException(errno);
-	}
-
-}
-
-void SerialPort::SetModemLines(int dtr, int rts) {
-	if (m_fd < 0)
-		return;
-	int serial;
-	ioctl(m_fd, TIOCMGET, &serial);
-        if (dtr)
-                serial |= TIOCM_DTR;
-        else
-                serial &= ~TIOCM_DTR;
-        if (rts)
-                serial |= TIOCM_RTS;
-        else
-                serial &= ~TIOCM_RTS;
-        ioctl(m_fd, TIOCMSET, &serial);
-}
-
-
-void SerialPort::Close() 
-{
-	if (m_fd < 0) 
-		return;
-
-	dolog(6, "Closing port: %s", m_path);
-
-	close(m_fd);
-	m_fd = -1;
-}
-
 Buffer::Buffer() : m_read_pointer(0) {}
+
+void Buffer::Clear() {
+	m_read_pointer = 0;
+	m_values.clear();
+}
 
 void Buffer::SetChar(size_t idx, unsigned char c) {
 	idx += m_read_pointer;
@@ -650,40 +425,135 @@ struct Param {
 
 enum PROTOCOL_TYPE { SBUS, SBUS_PCD };
 
-class SBUSUnit  {
-	SerialPort *m_port;
+class BaseSBUSDaemon {
+protected:
+	std::string m_str_id;		/**< ID of given daemon */
+public:
+	virtual void UnitFinished() = 0;
+	const char* GetId() const {
+		return m_str_id.c_str();
+	}
+};
+
+class SBUSUnit: public SerialPortListener  {
+	static const int MAX_WAIT_FOR_CONFIG_MS = 5000;
+	static const int MIN_WAIT_FOR_CONFIG_MS = 1000;
+
+	enum PARITY { MARK, SPACE };
+	BaseSerialPort *m_port;
+	struct termios m_termios;	/**< serial port configuration */
 	short *m_buffer;
 	unsigned char m_id;
 	int m_read_timeout;
 	int m_max_read_attempts;
 	std::map<unsigned short, Param> m_params;
 	PROTOCOL_TYPE m_protocol;
+
+	std::map<unsigned short, Param>::iterator m_curr_param;
+	unsigned short m_start_address;
+					/**< starting address of current query */
+	int m_param_count;		/**< count of params in current query */		
+	int m_read_attempts;		/**< number of read attempts for current address range */
+	Buffer m_response;		/**< buffer for response from device */
+	size_t m_expected_response_size;/**< expected size of response from device */
+	struct event m_ev_timer;	/**< event timer for calling QueryTimerCallback */
+	
+	typedef enum {IDLE, INIT_QUERY, START_QUERY, PCD_INIT, PCD_INITIALIZED, SEND_QUERY,
+		WAIT_RESPONSE, PROCESSING_RESPONSE} CommState;
+	CommState m_state;
+	BaseSBUSDaemon *m_daemon;	/**< callback for telling daemon that unit finished querying */
+	int m_wait_for_config_ms;
+					/**< time given to serial port for config set */
+
 	Buffer CreateQueryPacket(unsigned short start, int count);
-	bool ReadResponse(int count, Buffer &dec);
 	void SetParamsVals(unsigned short start, int count, Buffer& response);
-	void QueryRange(unsigned short start, int count);
-	void DoPCDInit();
+
+	void ScheduleNext(unsigned int wait_ms=0);
+	void Do();
+	void InitSingleQuery();
+	void PCDInitStart();
+	void PCDInitContinue();
+	void PCDInitFinish();
+	void SendQuery();
+	void ProcessResponse();
+	void BadResponse();
+	void IncreaseWaitForConfigTime() {
+		if (m_wait_for_config_ms < MAX_WAIT_FOR_CONFIG_MS) {
+			m_wait_for_config_ms += 1000;
+		}
+	}
+	void SetPortParity(PARITY parity);
+	const char* GetId() const {
+		return m_daemon->GetId();
+	}
 public:
-	bool Configure(PROTOCOL_TYPE protocol, TUnit *unit, xmlNodePtr xmlunit, short *params, SerialPort *port);
-	void QueryUnit();
+	SBUSUnit(BaseSBUSDaemon *daemon)
+		:m_port(NULL), m_buffer(NULL), m_start_address(0),
+		m_param_count(0), m_read_attempts(0), m_state(IDLE),
+		m_daemon(daemon), m_wait_for_config_ms(MIN_WAIT_FOR_CONFIG_MS)
+	{}
+	bool Configure(PROTOCOL_TYPE protocol, TUnit *unit, xmlNodePtr xmlunit,
+		short *params, BaseSerialPort *port, int speed);
+	static void TimerCallback(int fd, short event, void* thisptr);
+	void QueryAll();
+
+	/** Serial port listener callbacks */
+	virtual void ReadData(const std::vector<unsigned char>& data);
+	virtual void ReadError(short int event);
 };
 
-bool SBUSUnit::Configure(PROTOCOL_TYPE protocol, TUnit *unit, xmlNodePtr xmlunit, short *params, SerialPort *port) {
+void SBUSUnit::ScheduleNext(unsigned int wait_ms)
+{
+	struct timeval tv;
+	tv.tv_sec = wait_ms / 1000;
+	tv.tv_usec = (wait_ms % 1000) * 1000;
+	evtimer_add(&m_ev_timer, &tv);
+}
+
+void SBUSUnit::TimerCallback(int fd, short event, void* thisptr)
+{
+        reinterpret_cast<SBUSUnit*>(thisptr)->Do();
+}
+
+void SBUSUnit::SetPortParity(PARITY parity)
+{
+	struct termios ti = m_termios;
+	switch (parity) {
+		case MARK:
+			ti.c_cflag |= PARENB | CMSPAR | PARODD;
+			break;	
+		case SPACE:
+			ti.c_cflag |= PARENB | CMSPAR;
+			break;
+	}
+	m_port->SetConfiguration(&ti);
+}
+
+bool SBUSUnit::Configure(PROTOCOL_TYPE protocol, TUnit *unit,
+		xmlNodePtr xmlunit, short *params, BaseSerialPort *port, int speed) {
 	m_protocol = protocol;
 	m_buffer = params;
 	m_port = port;
+
+	m_termios.c_cflag = speed2const(speed);
+	dolog(6, "setting port speed to %d", speed);
+	m_termios.c_oflag = 0;
+	m_termios.c_iflag = 0;
+	m_termios.c_lflag = 0;
+	m_termios.c_cflag |= CS8 | CREAD | CLOCAL;
 
 	char *endptr;
 
 	if (protocol != SBUS_PCD) {
 		xmlChar* _id = xmlGetNsProp(xmlunit, BAD_CAST("id"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 		if (_id == NULL) {
-			dolog(0, "Attribbute sbus:id not present in unit element, line no (%ld)", xmlGetLineNo(xmlunit)); 
+			dolog(0, "%s: Attribbute sbus:id not present in unit element, line no (%ld)",
+				GetId(), xmlGetLineNo(xmlunit)); 
 			return false;
 		}
 
 		m_id = atoi((char*)_id);
-		dolog(5, "Attribbute sbus:id is %d", int(m_id));
+		dolog(5, "%s: Attribbute sbus:id is %d", GetId(), int(m_id));
 		xmlFree(_id);
 	} else {
 		m_id = 0;
@@ -720,13 +590,14 @@ bool SBUSUnit::Configure(PROTOCOL_TYPE protocol, TUnit *unit, xmlNodePtr xmlunit
 				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 
 		if (_address == NULL) {
-			dolog(0, "Error, attribute sbus:address missing in param definition, line(%ld)", xmlGetLineNo(n));
+			dolog(0, "%s: Error, attribute sbus:address missing in param definition, line(%ld)", GetId(), xmlGetLineNo(n));
 			return false;
 		}
 
 		unsigned short address = strtoul((char*)_address, &endptr, 0);
 		if (*endptr != 0) {
-			dolog(0, "Error, invalid value of parameter sbus:address in param definition, line(%ld)", xmlGetLineNo(n));
+			dolog(0, "%s: Error, invalid value of parameter sbus:address in param definition, line(%ld)",
+				GetId(), xmlGetLineNo(n));
 			return false;
 		}
 
@@ -737,11 +608,12 @@ bool SBUSUnit::Configure(PROTOCOL_TYPE protocol, TUnit *unit, xmlNodePtr xmlunit
 		if (_prec != NULL) {
 			prec = strtol((char*)_prec, &endptr, 0);
 			if (*endptr != 0) {
-				dolog(0, "Error, invalid value of parameter sbus:prec in param definition, line(%ld)", xmlGetLineNo(n));
+				dolog(0, "%s: Error, invalid value of parameter sbus:prec in param definition, line(%ld)",
+					GetId(), xmlGetLineNo(n));
 				return false;
 			}
 			xmlFree(_prec);
-			dolog(5, "Got prec %d", prec);
+			dolog(5, "%s: Got prec %d", GetId(), prec);
 		}
 
 		bool is_msw = false;
@@ -825,9 +697,8 @@ bool SBUSUnit::Configure(PROTOCOL_TYPE protocol, TUnit *unit, xmlNodePtr xmlunit
 		xmlFree(_y_m_conv);
 	}
 
+	evtimer_set(&m_ev_timer, TimerCallback, this);
 	return true;
-
-
 }
 
 Buffer EncodeB5Values(const Buffer &b) {
@@ -896,6 +767,230 @@ unsigned short CalculateCRC(const Buffer &b, size_t len, bool addfe) {
 	return crc;
 }
 
+void SBUSUnit::Do() {
+	switch (m_state) {
+	case IDLE:
+		break;
+	case INIT_QUERY:
+		InitSingleQuery();
+		break;
+	case START_QUERY:
+		PCDInitStart();
+		break;
+	case PCD_INIT:
+		PCDInitContinue();
+		break;
+	case PCD_INITIALIZED:
+		PCDInitFinish();
+		break;
+	case SEND_QUERY:
+		SendQuery();
+		break;
+	case WAIT_RESPONSE:
+		if (m_response.Size() < 2) {
+			dolog(8, "Timeout while waiting for response");
+			BadResponse();
+		} else {
+			m_state = PROCESSING_RESPONSE;
+			ProcessResponse();
+		}
+		break;
+	case PROCESSING_RESPONSE:
+		break;
+	}
+}
+
+void SBUSUnit::QueryAll() {
+	if (m_params.size() == 0)
+		return;
+
+	m_port->ClearListeners();
+	m_port->AddListener(this);
+	m_curr_param = m_params.begin();
+	m_state = INIT_QUERY;
+	ScheduleNext();
+}
+
+void SBUSUnit::InitSingleQuery() {
+	if (m_curr_param == m_params.end()) {
+		m_state = IDLE;
+		m_port->Close();
+		m_port->ClearListeners();
+		m_daemon->UnitFinished();
+		return;
+	}
+	m_start_address = m_curr_param->first;
+	m_param_count = 1;
+
+	for (++m_curr_param; m_curr_param != m_params.end(); ++m_curr_param) {
+		unsigned short next_address = m_curr_param->first;
+		if (next_address > m_start_address + m_param_count)
+			break;
+		if (m_param_count == 31)
+			break;
+		m_param_count++;
+	}
+	// m_curr_param now points to next param to be queried
+
+	m_read_attempts = 0;
+	m_state = START_QUERY;
+	ScheduleNext();
+}
+
+void SBUSUnit::PCDInitStart() {
+	try {
+		m_port->Open();
+		m_state = PCD_INIT;
+		if (m_protocol == SBUS_PCD) {
+			SetPortParity(MARK);
+		} else {
+			m_port->SetConfiguration(&m_termios);
+		}
+		ScheduleNext(m_wait_for_config_ms);
+	} catch (const SerialPortException &ex) {
+		dolog(0, "%s: Exception occured in PCDInitStart: %s", GetId(), ex.what());
+		BadResponse();
+	}
+}
+
+void SBUSUnit::PCDInitContinue() {
+	try {
+		m_state = PCD_INITIALIZED;
+		if (!m_port->Ready()) {
+			dolog(0, "%s: Error: port isn't ready in PCDInitContinue", GetId());
+			IncreaseWaitForConfigTime();
+			BadResponse();
+		}
+		if (m_protocol == SBUS_PCD) {
+			m_port->LineControl(0, 1);
+			unsigned char fe = 0xfe;
+			m_port->WriteData(&fe, 1);
+			ScheduleNext(1000);
+		} else {
+			ScheduleNext();
+		}
+	} catch (const SerialPortException &ex) {
+		dolog(0, "%s: Exception occured in PCDInitContinue: %s", GetId(), ex.what());
+		BadResponse();
+	}
+}
+
+void SBUSUnit::PCDInitFinish() {
+	try {
+		m_state = SEND_QUERY;
+		if (m_protocol == SBUS_PCD) {
+			SetPortParity(SPACE);
+			ScheduleNext(m_wait_for_config_ms);
+		} else {
+			ScheduleNext();
+		}
+	} catch (const SerialPortException &ex) {
+		dolog(0, "%s: Exception occured in PCDInitFinish: %s", GetId(), ex.what());
+		BadResponse();
+	}
+}
+
+void SBUSUnit::SendQuery() {
+	try {
+		if (!m_port->Ready()) {
+			dolog(0, "%s: Error: port isn't ready in SendQuery", GetId());
+			IncreaseWaitForConfigTime();
+			BadResponse();
+		}
+		m_response.Clear();
+		Buffer query = CreateQueryPacket(m_start_address, m_param_count);
+		m_port->WriteData(query.Content(), query.Size());
+		m_expected_response_size = m_param_count * 4 
+						+ 2;	//checksum
+		if (m_protocol != SBUS_PCD)
+			m_expected_response_size += 1	//frame synchronization byte
+						+ 1;	//response code
+		m_state = WAIT_RESPONSE;
+		dolog(8, "Waiting for data");
+		ScheduleNext(m_read_timeout * 1000);	// timer used as timeout
+	} catch (const SerialPortException &ex) {
+		dolog(0, "%s: Exception occured in SendQuery: %s", GetId(), ex.what());
+		BadResponse();
+	}
+}
+
+void SBUSUnit::ReadData(const std::vector<unsigned char>& data) {
+	if (m_state != WAIT_RESPONSE) {
+		dolog(4, "Data arrived outside WAIT_RESPONSE");
+		return;
+	}
+	dolog(8, "Data arrived");
+
+	for (std::vector<unsigned char>::const_iterator it = data.begin();
+			it != data.end(); ++it) {
+		m_response.PutChar(*it);
+	}
+
+	if ((m_response.Size() >= 2) && (m_protocol != SBUS_PCD)
+			&& (m_response.GetChar(1) != '\x01')) {
+		dolog(1, "%s: Error while quering device %d, invalid response type %d",
+			GetId(), int(m_id), (int) m_response.GetChar(1));
+		BadResponse();
+		return;
+	}
+
+	if (m_response.Size() >= m_expected_response_size * 2) {
+		m_state = PROCESSING_RESPONSE;
+		ProcessResponse();
+	} else {
+		ScheduleNext(1000);	// single character timeout
+	}
+}
+
+void SBUSUnit::ProcessResponse() {
+	if (m_response.Size() > m_expected_response_size * 2)
+		m_response.Resize(m_expected_response_size * 2);	// drop excessive bytes
+	if (m_protocol != SBUS_PCD) {
+		Buffer temp_buffer = m_response;
+		try {
+			m_response = DecodeB5Values(temp_buffer, temp_buffer.Size());
+		} catch (...) {
+			dolog(1, "%s: Error occurred while decoding response values", GetId());
+			BadResponse();
+			return;
+		}
+	}
+	if (m_response.Size() != m_expected_response_size) {
+		dolog(1, "%s: Invalid lenght of response for device %d, expected:%zu, got:%zu",
+			GetId(), int(m_id), m_expected_response_size, m_response.Size());
+		BadResponse();
+		return;
+	}
+
+	unsigned short ccrc = CalculateCRC(m_response, m_response.Size() - 2, false);
+	unsigned short pcrc = m_response.GetShort(m_response.Size() - 2);
+	if (ccrc != pcrc) {
+		dolog(1, "%s: Invalid crc while querying device %d, calculated:%hu, received:%hu", GetId(), int(m_id), ccrc, pcrc);
+		BadResponse();
+		return;
+	}
+	SetParamsVals(m_start_address, m_param_count, m_response);
+	dolog(8, "Response parsed with success");
+	m_state = INIT_QUERY;
+	ScheduleNext();
+}
+
+void SBUSUnit::BadResponse() {
+	m_port->Close();
+	m_read_attempts++;
+	if (m_read_attempts >= m_max_read_attempts) {
+		m_state = INIT_QUERY;
+	} else {
+		m_state = START_QUERY;
+	}
+	ScheduleNext();
+}
+
+void SBUSUnit::ReadError(short int event) {
+	dolog(8, "ReadError occured");
+	BadResponse();
+}
+
 Buffer SBUSUnit::CreateQueryPacket(unsigned short start, int count) {
 	Buffer b;
 	if (m_protocol != SBUS_PCD) {
@@ -911,67 +1006,6 @@ Buffer SBUSUnit::CreateQueryPacket(unsigned short start, int count) {
 		return EncodeB5Values(b);
 	else
 		return b;
-}
-
-bool SBUSUnit::ReadResponse(int count, Buffer &dec) {
-	size_t response_size = count * 4 
-		+ 2; //checksum
-	if (m_protocol != SBUS_PCD)
-		response_size += 1 //frame synchronizastion byte
-				+ 1; //response code
-
-	Buffer response;
-	response.Resize(2 * response_size);
-	size_t has_read = 0;
-
-	if (!m_port->Wait(m_read_timeout)) {
-		dolog(1, "Timeout while waiting for response for device %d", int(m_id));
-		return false;
-	}
-
-	do {
-		has_read += m_port->GetData(response.Content() + has_read, 2 - has_read);
-
-		if (has_read == 2)
-			break;
-
-		if (!m_port->Wait(1)) {
-			dolog(1, "Timeout while waiting for character from device %d", int(m_id));
-			return false;
-		}
-
-	} while (true);
-
-	if (m_protocol != SBUS_PCD && response.GetChar(1) != '\x01') {
-		dolog(1, "Error while quering device %d, invalid response type %d", int(m_id), (int) response.GetChar(1));
-		return false;
-	}
-
-	while (has_read < 2 * response_size) {
-		if (!m_port->Wait(1))
-			break;
-		has_read += m_port->GetData(response.Content() + has_read, 2 * response_size - has_read);
-	}
-
-	if (m_protocol != SBUS_PCD) {
-		dec = DecodeB5Values(response, has_read);
-	} else {
-		dec = response;
-		dec.Resize(has_read);
-	}
-	if (dec.Size() != response_size) {
-		dolog(1, "Invalid lenght of response for device %d, expected:%zu, got:%zu", int(m_id), response_size, dec.Size());
-		return false;
-	}
-
-	unsigned short ccrc = CalculateCRC(dec, dec.Size() - 2, false);
-	unsigned short pcrc = dec.GetShort(dec.Size() - 2);
-	if (ccrc != pcrc) {
-		dolog(1, "Invalid crc while querying device %d, calculated:%hu, received:%hu", int(m_id), ccrc, pcrc);
-		return false;
-	}
-
-	return true;
 }
 
 template<typename T> T mypow(T val, int e) {
@@ -1033,88 +1067,57 @@ void SBUSUnit::SetParamsVals(unsigned short start, int count, Buffer& response) 
 
 }
 
-void SBUSUnit::DoPCDInit() {
-	unsigned char fe = 0xfe;
-	m_port->SetParity(SerialPort::MARK);
-	m_port->SetModemLines(0, 1);
-	m_port->WriteData(&fe, 1);
-	sleep(1);
-	m_port->SetParity(SerialPort::SPACE);
-}
-
-void SBUSUnit::QueryRange(unsigned short start, int count) {
-	Buffer query = CreateQueryPacket(start, count);
-	
-	bool data_read = false;
-	int no_of_tries = 0;	
-	Buffer response;
-	while (!data_read && no_of_tries++ < m_max_read_attempts) {
-		if (!m_port->IsOpen())
-			m_port->Open();
-		if (m_protocol == SBUS_PCD)
-			DoPCDInit();
-		m_port->WriteData(query.Content(), query.Size());
-
-		response = Buffer();
-		if (ReadResponse(count, response) == false)
-			m_port->Close();
-		else
-			data_read = true;
-
-	}
-
-	SetParamsVals(start, count, response);
-}
-
-
-void SBUSUnit::QueryUnit() {
-	if (m_params.size() == 0)
-		return;
-	
-	std::map<unsigned short, Param>::iterator i = m_params.begin();
-	
-	unsigned short start = i->first;
-	int count = 1;
-
-	while (++i != m_params.end()) {
-		unsigned short next = i->first;
-		if (next != start + count) {
-			QueryRange(start, count);
-			start = next;
-			count = 1;
-		} else 
-			count++;
-
-		if (count == 32) {
-			QueryRange(start, count - 1);
-			start = next;
-			count = 1;
-		}
-
-	}
-	QueryRange(start, count);
-}
-
-class SBUSDaemon {
+class SBUSDaemon: public BaseSBUSDaemon {
 	std::vector<SBUSUnit*> m_units;
 	int m_read_freq;
 	IPCHandler *m_ipc;
-	SerialPort *m_port;
+	BaseSerialPort *m_port;
+
+	std::string m_path;		/**< Serial port file descriptor path */
+	std::string m_ip;		/**< SerialAdapter ip */
+	int m_data_port;		/**< SerialAdapter data port number */
+	int m_cmd_port;			/**< SerialAdapter command port number */
+
+	std::vector<SBUSUnit*>::iterator m_current_unit;
+	time_t m_start_cycle_time;
+
+	typedef enum {IDLE, READY, QUERYING} DaemonState;
+	DaemonState m_state;
+	
+	struct event m_ev_timer;	/**< event timer for calling QueryTimerCallback */
+
+	void Do();
 	void WarmUp();
+	void StartCycle();
+	void QueryUnit();
+	void ScheduleNext(unsigned int wait_ms=0);
 public:
+	SBUSDaemon() :m_state(IDLE) {}
 	bool Configure(DaemonConfig* cfg);
 	void Start();
+	virtual void UnitFinished();
+	static void TimerCallback(int fd, short event, void* thisptr);
 };
+
+void SBUSDaemon::ScheduleNext(unsigned int wait_ms)
+{
+	struct timeval tv;
+	tv.tv_sec = wait_ms / 1000;
+	tv.tv_usec = (wait_ms % 1000) * 1000;
+	evtimer_add(&m_ev_timer, &tv);
+}
+
+void SBUSDaemon::TimerCallback(int fd, short event, void* thisptr)
+{
+        reinterpret_cast<SBUSDaemon*>(thisptr)->Do();
+}
 
 bool SBUSDaemon::Configure(DaemonConfig *cfg) {
 	m_ipc = new IPCHandler(cfg);
 	if (m_ipc->Init()) {
-		dolog(0, "Intialization of IPCHandler failed");
+		dolog(0, "Initialization of IPCHandler failed");
 		return false;
 	}
-
-	m_port = new SerialPort(cfg->GetDevicePath(),
-		       cfg->GetSpeed());
 
 	TDevice* dev = cfg->GetDevice();
 	xmlNodePtr xdev = cfg->GetXMLDevice();
@@ -1128,7 +1131,7 @@ bool SBUSDaemon::Configure(DaemonConfig *cfg) {
 		char *endptr;
 		m_read_freq = strtoul((char*)_read_freq, &endptr, 0);
 		if (*endptr) {
-			dolog(0, "Invalid value for sbus:read_freq attribbute device element, line no (%ld)", xmlGetLineNo(xdev)); 
+			dolog(0, "Invalid value for sbus:read_freq attribute device element, line no (%ld)", xmlGetLineNo(xdev)); 
 			xmlFree(_read_freq);
 			return false;
 		}
@@ -1148,7 +1151,77 @@ bool SBUSDaemon::Configure(DaemonConfig *cfg) {
 	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(xdev->doc);
 	xp_ctx->node = xdev;
 
-	int ret;
+	/* prepare xpath */
+	assert (xp_ctx != NULL);
+	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
+			SC::S2U(IPK_NAMESPACE_STRING).c_str());
+	assert (ret == 0);
+	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra",
+			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
+	assert (ret == 0);
+
+	xp_ctx->node = cfg->GetXMLDevice();
+
+	xmlChar *c = get_device_node_extra_prop(xp_ctx, "tcp-ip");
+	if (c == NULL) {
+		xmlChar *path = get_device_node_prop(xp_ctx, "path");
+		if (path == NULL) {
+			dolog(0, "ERROR!: neither IP nor device path has been specified");
+			return false;
+		}
+		m_path.assign((const char*)path);
+		xmlFree(path);
+
+		m_str_id = m_path;
+	} else {
+		m_ip.assign((const char*)c);
+		xmlFree(c);
+
+		xmlChar* tcp_data_port = get_device_node_extra_prop(xp_ctx, "tcp-data-port");
+		if (tcp_data_port == NULL) {
+			m_data_port = SerialAdapter::DEFAULT_DATA_PORT;
+			dolog(2, "Unspecified tcp data port, assuming default port: %hu", m_data_port);
+		} else {
+			std::istringstream istr((char*) tcp_data_port);
+			bool conversion_failed = (istr >> m_data_port).fail();
+			if (conversion_failed) {
+				dolog(0, "ERROR!: Invalid data port value: %s", tcp_data_port);
+				return false;
+			}
+		}
+		xmlFree(tcp_data_port);
+
+		xmlChar* tcp_cmd_port = get_device_node_extra_prop(xp_ctx, "tcp-cmd-port");
+		if (tcp_cmd_port == NULL) {
+			m_cmd_port = SerialAdapter::DEFAULT_CMD_PORT;
+			dolog(2, "Unspecified cmd port, assuming default port: %hu", m_cmd_port);
+		} else {
+			std::istringstream istr((char*) tcp_cmd_port);
+			bool conversion_failed = (istr >> m_cmd_port).fail();
+			if (conversion_failed) {
+				dolog(0, "ERROR!: Invalid cmd port value: %s", tcp_cmd_port);
+				return false;
+			}
+		}
+		xmlFree(tcp_cmd_port);
+
+		std::stringstream istr;
+		std::string data_port_str;
+		istr << m_data_port;
+		istr >> data_port_str;
+		m_str_id = m_ip + ":" + data_port_str;
+	}
+	int speed = cfg->GetSpeed();	// TODO if configured with IP, this returns -1
+	if (m_ip.compare("") != 0) {
+		SerialAdapter *client = new SerialAdapter();
+		m_port = client;
+		client->InitTcp(m_ip, m_data_port, m_cmd_port);
+	} else {
+		SerialPort *port = new SerialPort();
+		m_port = port;
+		port->Init(m_path);
+	}
+
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
 	assert(ret == 0);
 
@@ -1164,8 +1237,8 @@ bool SBUSDaemon::Configure(DaemonConfig *cfg) {
 	for (TUnit *unit = dev->GetFirstRadio()->GetFirstUnit(); unit; unit = unit->GetNext(), i++) {
 		assert(i < rset->nodesetval->nodeNr);
 
-		SBUSUnit* u  = new SBUSUnit();
-		if (u->Configure(protocol, unit, rset->nodesetval->nodeTab[i], reads, m_port) == false)
+		SBUSUnit* u  = new SBUSUnit(this);
+		if (u->Configure(protocol, unit, rset->nodesetval->nodeTab[i], reads, m_port, speed) == false)
 			return false;
 
 		m_units.push_back(u);
@@ -1173,55 +1246,78 @@ bool SBUSDaemon::Configure(DaemonConfig *cfg) {
 		reads += unit->GetParamsCount();
 	}
 
-	return true;
 
+        evtimer_set(&m_ev_timer, TimerCallback, this);
+	return true;
+}
+
+void SBUSDaemon::Start() {
+	ScheduleNext();
+	event_dispatch();
+}
+
+void SBUSDaemon::Do() {
+	switch (m_state) {
+	case IDLE:	// we never return to this state
+		WarmUp();
+		break;
+	case READY:
+		StartCycle();
+		break;
+	case QUERYING:
+		QueryUnit();
+		break;
+	}
 }
 
 void SBUSDaemon::WarmUp() {
 	time_t now = time(NULL);
 	int left = now % m_read_freq;
+
+	m_state = READY;
 	if (left) {
 		int s = m_read_freq - left;
-		while (s)
-			s = sleep(s);
-
+		ScheduleNext(s * 1000);
+	} else {
+		ScheduleNext();
 	}
 }
 
-void SBUSDaemon::Start() {
+void SBUSDaemon::StartCycle() {
+	dolog(6, "Beginning parametr fetching loop");
 
-	WarmUp();
+	for (int i = 0; i < m_ipc->m_params_count; ++i) 
+		m_ipc->m_read[i] = SZARP_NO_DATA;
 
-	while (true) {
-		dolog(6, "Beginning parametr fetching loop");
+	m_start_cycle_time = time(NULL);
+	m_current_unit = m_units.begin();
+	m_state = QUERYING;
+	ScheduleNext();
+}
 
-		for (int i = 0; i < m_ipc->m_params_count; ++i) 
-			m_ipc->m_read[i] = SZARP_NO_DATA;
-
-		time_t st = time(NULL);
-
-		for (std::vector<SBUSUnit*>::iterator i = m_units.begin();
-				i != m_units.end();
-				++i) {
-			try {
-				(*i)->QueryUnit();
-			} catch (std::exception &e) {
-				dolog(0, "Exception occured while quering %s unit", e.what());
-				m_port->Close();
-			}
-		}
-
+void SBUSDaemon::QueryUnit() {
+	if (m_current_unit == m_units.end()) {
 		m_ipc->GoParcook();
-
-		int s = st + m_read_freq - time(NULL);
-		while (s > 0) 
-			s = sleep(s);
-
 		dolog(6, "End of parametrs' fetching loop");
+		int sleep_seconds = m_start_cycle_time + m_read_freq - time(NULL);
+		if (sleep_seconds < 0) {
+			sleep_seconds = 0;
+		}
+		m_state = READY;
+		dolog(6, "Schedule next in %ds", sleep_seconds);
+		ScheduleNext(sleep_seconds * 1000);
+	} else {
+		(*m_current_unit)->QueryAll();
 	}
+}
+
+void SBUSDaemon::UnitFinished() {
+	++m_current_unit;
+	QueryUnit();
 }
 
 int main(int argc, char *argv[]) {
+	event_init();
 	DaemonConfig* cfg = new DaemonConfig("sbusdmn");
 
 	if (cfg->Load(&argc, argv))

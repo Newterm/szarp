@@ -44,7 +44,7 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 			_("X/Y graph parameters"),
 			wxDefaultPosition,
 			wxDefaultSize,
-			wxDEFAULT_DIALOG_STYLE | wxTAB_TRAVERSAL),
+			wxDEFAULT_DIALOG_STYLE | wxTAB_TRAVERSAL | wxRESIZE_BORDER ),
 		m_period(time.period),
 		m_start_time(time.begin_time),
 		m_end_time(time.end_time)
@@ -175,8 +175,9 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 
 	if (m_frame->GetDimCount() == 3)
 		SetTitle(_("XYZ Graph"));
-	SetSize(500, 350);
+
 	SetSizer(sizer);
+	sizer->SetSizeHints(this);
 
 }
 

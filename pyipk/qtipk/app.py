@@ -8,13 +8,23 @@ from PyQt4 import QtGui
 
 from .main_win import MainWindow
 
-class QtApp( QtGui.QApplication ) :
-	def __init__( self , argv , plugins ) :
-		QtGui.QApplication.__init__( self , argv )
+from .config import Config , Configurable
 
-		self.main_win = MainWindow( plugins )
+class QtApp( QtGui.QApplication , Configurable ) :
+	def __init__( self , argv ) :
+		QtGui.QApplication.__init__( self , argv )
+		Configurable.__init__( self )
+
+		self.cfg.parse_cfg_file( self.cfg['path:config'] )
+		self.cfg.parse_cmd_line( argv )
+
+		self.cfg.save_to_cfg( self.cfg['path:config'] )
+
+		self.main_win = MainWindow( self )
 
 	def run( self ) :
 		self.main_win.show()
-		return self.exec_()
+		code = self.exec_()
+		self.cfg.save()
+		return code
 

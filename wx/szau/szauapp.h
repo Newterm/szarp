@@ -51,7 +51,7 @@ namespace fs = boost::filesystem;
 /**
  * Main application class.
  */
-class SzauApp : public szApp {
+class SzauApp : public szApp<> {
 public:
 	fs::wpath getInstallerLocalPath();
 protected:

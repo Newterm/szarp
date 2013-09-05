@@ -828,7 +828,7 @@ public:
 
 /**
  * main application class*/
-class SSCApp : public szApp {
+class SSCApp : public szApp<> {
 
 	/**locale handling object*/
 	wxLocale locale;

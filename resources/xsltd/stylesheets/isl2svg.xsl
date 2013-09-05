@@ -63,30 +63,13 @@
 
 <xsl:stylesheet version="1.0" 
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	xmlns:isl="http://www.praterm.com.pl/ISL/params">
+	xmlns:isl="http://www.praterm.com.pl/ISL/params"
+        xmlns:pxslt="http://www.praterm.com.pl/ISL/pxslt">
 
 	<!-- Load param value -->
 	<xsl:template match="*[@isl:uri]">
 		<xsl:variable name="value1">
-			<xsl:choose>
-				<!-- test for special "v_u" attribute -->
-				<xsl:when test='substring-after(@isl:uri,"@") =	"v_u"'>
-					<xsl:variable name="tmp1"
-						select='substring-before(@isl:uri,"@")'/>
-					<xsl:variable name="tmp2" 
-						select="document(concat($tmp1,'@value'))/isl:params/isl:attribute/text()"/>
-					<xsl:variable name="tmp3" 
-						select="document(concat($tmp1,'@unit'))/isl:params/isl:attribute/text()"/>
-					<!-- concat 'value' and 'unit' attrs -->
-					<xsl:copy-of select="concat($tmp2, ' ',
-						$tmp3)"/>
-				</xsl:when>
-				<xsl:otherwise>
-					<!-- just copy value -->
-					<xsl:copy-of 
-						select="document(@isl:uri)/isl:params/isl:attribute/text()"/>
-				</xsl:otherwise>
-			</xsl:choose>
+                        <xsl:copy-of select="pxslt:isl_vu(@isl:uri)"/>
 		</xsl:variable>
 		
 		<xsl:choose>
@@ -192,7 +175,7 @@
 var refresh_time = 5000
 
 function start(){
-	window.setInterval('getRemoteData()', refresh_time)
+	window.setInterval('getRemoteData()', refresh_time);
 }
 
 function getRemoteData(){

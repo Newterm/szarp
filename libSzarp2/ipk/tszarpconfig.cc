@@ -341,32 +341,30 @@ TSzarpConfig::loadXMLReader(const std::wstring &path, const std::wstring& prefix
 	this->prefix = prefix;
 	xmlTextReaderPtr reader = xmlNewTextReaderFilename(SC::S2A(path).c_str());
 
-	try {
-		int ret = 0;
-		if (reader != NULL) {
-			ret = xmlTextReaderRead(reader);
-
-			if (ret == 1)
-				ret = parseXML(reader);
-			else
-				ret = 1;
-
-			xmlFreeTextReader(reader);
-			if (ret != 0) {
-				sz_log(1, "XML document not wellformed\n");
-			}
-		} else
-			sz_log(1,"Unable to open XML document\n");
-
-		return ret;
-
-	} catch (XMLWrapperException) {
-		xmlFreeTextReader(reader);
-		sz_log(1, "XML document not wellformed, look at previous logs\n");
+	if (NULL == reader) {
+		sz_log(1,"Unable to open XML document\n");
 		return 1;
 	}
 
-	return 0;
+	int ret = xmlTextReaderRead(reader);
+
+	if (ret == 1) {
+		try {
+			ret = parseXML(reader);
+		}
+	       	catch (XMLWrapperException) {
+			sz_log(1, "XML document not wellformed, look at previous logs\n");
+			ret = 1;
+		}
+	}
+	else {
+		sz_log(1, "XML document not wellformed\n");
+		ret = 1;
+	}
+
+	xmlFreeTextReader(reader);
+
+	return ret;
 }
 
 int
@@ -439,7 +437,6 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 					}
 				} 
 
-				xw.NextTag();
 			} else {
 				break;
 			}
@@ -453,7 +450,6 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 				assert(devices != NULL);
 				td->parseXML(reader);
 			}
-			xw.NextTag();
 		} else
 		if (xw.IsTag("defined")) {
 			if (xw.IsBeginTag()) {
@@ -461,7 +457,6 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 				if (_par)
 					defined = _par;
 			}
-			xw.NextTag();
 		} else
 		if (xw.IsTag("drawdefinable")) {
 			if (xw.IsBeginTag()) {
@@ -469,7 +464,6 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 				if (_par)
 					drawdefinable = _par;
 			}
-			xw.NextTag();
 		} else
 		if (xw.IsTag("seasons")) {
 			if (xw.IsBeginTag()) {
@@ -480,7 +474,6 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 					xw.XMLError("'<seasons>' parse problem");
 				}
 			}
-			xw.NextTag();
 		} else
 		if (xw.IsTag("boilers")) {
 			if (xw.IsBeginTag()) {
@@ -493,11 +486,11 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 					xw.XMLError("'<boilers>' parser problem");
 				}
 			}
-			xw.NextTag();
 		} else {
 			xw.XMLErrorNotKnownTag("params");
 		}
-
+		if (!xw.NextTag())
+			return 1;
 	}
 
 // why? copy/paste from parse reader

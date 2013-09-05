@@ -8,6 +8,9 @@
 #include <wx/xrc/xmlres.h>
 #include <wx/cshelp.h>
 
+#ifndef MINGW32
+extern "C" void gtk_window_set_accept_focus(void *window, int setting);
+#endif
 
 ErrorFrame *ErrorFrame::_error_frame = NULL;
 
@@ -21,6 +24,11 @@ END_EVENT_TABLE()
 void ErrorFrame::Create() {
 	if (_error_frame == NULL)
 		_error_frame = new ErrorFrame();
+
+#ifndef MINGW32
+	gtk_window_set_accept_focus(_error_frame->GetHandle(), 0);
+#endif
+
 }
 
 void ErrorFrame::NotifyError(const wxString &s) {
@@ -76,7 +84,7 @@ void ErrorFrame::OnClear(wxCommandEvent &event) {
 }
 
 void ErrorFrame::ShowFrame() {
-	Create();
+        Create();
 	_error_frame->Show(true);
 	_error_frame->Raise();
 }

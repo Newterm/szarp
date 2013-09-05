@@ -459,7 +459,7 @@ void szParList::LoadSchema()
 	}
 	xmlRelaxNGParserCtxtPtr ctxt;
 
-	wxString dir = dynamic_cast<szApp*>(wxTheApp)->GetSzarpDir();
+	wxString dir = dynamic_cast<szAppConfig*>(wxTheApp)->GetSzarpDir();
 
 #ifndef MINGW32
 		dir += _T("/resources/dtd/params-list.rng");

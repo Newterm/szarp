@@ -16,6 +16,12 @@ LEX=@LEX@
 
 noinst_LTLIBRARIES = libSzarp.la
 
+EXTRA_PROGRAMS = async_log_test
+
+async_log_test_SOURCES = async_log_test.c
+async_log_test_LDADD = $(LDADD) -levent libSzarp.la 
+
+
 libparnt.yy.cc: libparnt.lex $(INCLUDE_DIR)/libpar_int.h $(INCLUDE_DIR)/libparnt.parse.h
 	$(LEX) -o$@ $<
 
@@ -32,6 +38,10 @@ libSzarp_la_SOURCES = \
 		      mbrtu.cc \
 		      conversion.cc \
 		      ipctools.cc \
+		      async_syslog.c \
+		      liblog_impl_classic.cc \
+		      liblog_impl_syslog.cc \
+		      liblog_impl_asyslog.cc \
 		      mingw32_missing.cc
                       
 noinst_HEADERS = \
@@ -48,6 +58,10 @@ noinst_HEADERS = \
 		 $(INCLUDE_DIR)/modbus.h \
 		 $(INCLUDE_DIR)/ipctools.h \
 		 $(INCLUDE_DIR)/conversion.h \
+		 $(INCLUDE_DIR)/async_syslog.h \
+		 $(INCLUDE_DIR)/liblog_impl_classic.h \
+		 $(INCLUDE_DIR)/liblog_impl_syslog.h \
+		 $(INCLUDE_DIR)/liblog_impl_asyslog.h \
 		 $(INCLUDE_DIR)/mingw32_missing.h 
  
 EXTRA_DIST = \

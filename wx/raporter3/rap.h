@@ -43,7 +43,7 @@
 /**
  * Main app class
  */
-class rapApp: public szApp {
+class rapApp: public szApp<> {
 	wxLocale locale;
 
 	virtual bool OnCmdLineError(wxCmdLineParser &parser);

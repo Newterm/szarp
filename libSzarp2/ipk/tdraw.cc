@@ -135,7 +135,7 @@ TDraw* TDraw::parseXML(xmlTextReaderPtr reader)
 					if (SC::U2S(attr) == SPECIAL_TYPES_STR[i]) {
 						sp = (SPECIAL_TYPES)i;
 						break;
-				}
+					}
 			} else {
 				xw.XMLWarningNotKnownAttr();
 			}
@@ -167,7 +167,10 @@ TDraw* TDraw::parseXML(xmlTextReaderPtr reader)
 		return ret;
 	}
 
-	xw.NextTag();
+	if (!xw.NextTag()) {
+		delete ret;
+		return NULL;
+	}
 
 	for (;;) {
 		if (xw.IsTag("treenode")) {
@@ -179,7 +182,10 @@ TDraw* TDraw::parseXML(xmlTextReaderPtr reader)
 				}
 				ret->_tree_nodev.push_back(node);
 			}
-			xw.NextTag();
+			if (!xw.NextTag()) {
+				delete ret;
+				return NULL;
+			}
 		} else
 		if (xw.IsTag("draw")) {
 			break;

@@ -14,10 +14,6 @@
 #ifndef __LATIN2_H__
 #define __LATIN2_H__
 
-#ifdef __cplusplus
-	extern "C" {
-#endif
-
 #include <libxml/tree.h>
 /**
  * Converts ISO-8859-2 (or CP1250 - under Windows) string to UTF8 encoding.
@@ -36,10 +32,6 @@ xmlChar *toUTF8(const char *str);
  * @return pointer to param string
  */
 unsigned char *fromUTF8(unsigned char *str);
-
-#ifdef __cplusplus
-	}
-#endif
 
 #endif
 

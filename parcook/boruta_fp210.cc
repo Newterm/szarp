@@ -174,6 +174,7 @@ class fp210_driver : public serial_client_driver {
 	int m_flow_prec;
 	int m_sum_prec;
 	struct event m_timer;
+	driver_logger m_log;
 	void set_no_data();
 	void start_timer();
 	void stop_timer();
@@ -184,6 +185,7 @@ class fp210_driver : public serial_client_driver {
 	void set_sum_value(char *val);
 public:
 	fp210_driver();
+	const char* driver_name() { return "fp210_driver"; }
 	virtual void starting_new_cycle();
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void data_ready(struct bufferevent* bufev, int fd);
@@ -192,7 +194,7 @@ public:
 	static void timeout_cb(int fd, short event, void *fp210_driver);
 };
 
-fp210_driver::fp210_driver() {
+fp210_driver::fp210_driver() : m_log(this) {
 	m_state = IDLE;
 }
 
@@ -247,8 +249,8 @@ void fp210_driver::set_sum_value(char *val) {
 	std::string vs(val);
 	std::string vs1 = vs.substr(8, 11);
 	std::string vs2 = vs.substr(19, 11);
-	dolog(4, "Sumator 1: %s", vs1.c_str());
-	dolog(4, "Sumator 2: %s", vs2.c_str());
+	m_log.log(4, "Sumator 1: %s", vs1.c_str());
+	m_log.log(4, "Sumator 2: %s", vs2.c_str());
 	int v1 = atof(vs1.c_str()) * m_sum_prec;
 	int v2 = atof(vs2.c_str()) * m_sum_prec;
 	unsigned* pv1 = (unsigned*)&v1;
@@ -277,12 +279,12 @@ void fp210_driver::data_ready(struct bufferevent* bufev, int fd) {
 	char **toks;
 	if (!readline(bufev))
 		return;
-	dolog(4, "fp210, got response: %s", &m_input_buffer[0]);
+	m_log.log(4, "fp210, got response: %s", &m_input_buffer[0]);
 	tokenize_d(&m_input_buffer[0], &toks, &tokc, " ");
 	switch (m_state) {
 		case READING_FLOW:
 			if (tokc != 4) {
-				dolog(0, "Invalid number of fields in flow response");
+				m_log.log(0, "Invalid number of fields in flow response");
 				m_manager->terminate_connection(this);
 				break;
 			}
@@ -292,7 +294,7 @@ void fp210_driver::data_ready(struct bufferevent* bufev, int fd) {
 			break;
 		case READING_SUMS:
 			if (tokc != 3) {
-				dolog(0, "Invalid number of fields in sum response");
+				m_log.log(0, "Invalid number of fields in sum response");
 				m_manager->terminate_connection(this);
 				break;
 			}
@@ -317,7 +319,7 @@ int fp210_driver::configure(TUnit* unit, xmlNodePtr node, short* read, short *se
 		return 1;
 	m_read_count = unit->GetParamsCount();
 	if (m_read_count != 5) {
-		dolog(0, "FP210 requires exactly 5 parameters in szarp configuration");
+		m_log.log(0, "FP210 requires exactly 5 parameters in szarp configuration");
 		return 1;
 	}
 	m_read = read;

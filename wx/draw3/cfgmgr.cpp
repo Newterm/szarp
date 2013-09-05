@@ -113,6 +113,7 @@ DrawInfo::DrawInfo() {
 	d = NULL;
 	p = NULL;
 	c = wxNullColour;
+	avm = AVERAGE_VALUE_CALCULATION_AVERAGE;	
 }
 
 DrawInfo::DrawInfo(TDraw *d, DrawParam *p)
@@ -123,6 +124,7 @@ DrawInfo::DrawInfo(TDraw *d, DrawParam *p)
 	this->d = d;
 	this->p = p;
 	c = wxNullColour;
+	avm = AVERAGE_VALUE_CALCULATION_AVERAGE;	
 
 	if (d->GetColor().empty())
 		return;
@@ -300,6 +302,14 @@ wxString
 DrawInfo::GetValueStr(const double &val, const wxString& no_data_str) {
 	assert (p != NULL);
 	return p->GetIPKParam()->PrintValue(val, no_data_str.c_str());
+}
+
+AverageValueCalculationMethod DrawInfo::GetAverageValueCalculationMethod() const {
+	return avm;
+}
+
+void DrawInfo::SetAverageValueCalculationMethod(AverageValueCalculationMethod _avm) {
+	avm = _avm;
 }
 
 IPKDrawInfo::IPKDrawInfo(TDraw *d, TParam *p, DrawsSets *_ds) :
@@ -506,13 +516,13 @@ const double DrawSet::unassigned_prior_value = std::numeric_limits<double>::max(
 
 const double DrawSet::defined_draws_prior_start = -2;
 
-ConfigManager::ConfigManager(DrawApp* app, IPKContainer *ipks) : m_app(app), m_ipks(ipks), splashscreen(NULL)
+ConfigManager::ConfigManager(wxString szarp_data_dir, IPKContainer *ipks) : m_szarp_data_dir(szarp_data_dir), m_ipks(ipks), splashscreen(NULL)
 {
 	m_defined_sets = NULL;
 
 	LoadDefinedDrawsSets();
 
-	psc = new DrawPsc();
+	psc = new DrawPsc(szarp_data_dir);
 }
 
 bool ConfigManager::IsPSC(wxString prefix) {
@@ -1012,13 +1022,6 @@ DrawsSetsHash& ConfigManager::GetConfigurations() {
 	return config_hash;
 }
 
-
-#if 0
-wxString ConfigManager::GetSzarpDir() {
-	return m_app->GetSzarpDir();
-}
-#endif
-
 ConfigNameHash& ConfigManager::GetConfigTitles() {
 	wxArrayString hidden_databases;
 	wxString tmp;
@@ -1036,7 +1039,7 @@ ConfigNameHash& ConfigManager::GetConfigTitles() {
 	}
 
 	if (m_config_names.empty()) {
-		m_config_names = ::GetConfigTitles(m_app->GetSzarpDataDir(), &hidden_databases);
+		m_config_names = ::GetConfigTitles(m_szarp_data_dir, &hidden_databases);
 		m_config_names[DefinedDrawsSets::DEF_PREFIX]
 		= wxGetTranslation(DefinedDrawsSets::DEF_NAME);
 	}
@@ -1048,12 +1051,12 @@ wxArrayString ConfigManager::GetPrefixes() {
 
 	wxArrayString result;
 
-	wxDir dir(m_app->GetSzarpDataDir());
+	wxDir dir(m_szarp_data_dir);
 	wxString path;
 
 	if (dir.GetFirst(&path, wxEmptyString, wxDIR_DIRS))
 		do
-			if (wxFile::Exists(m_app->GetSzarpDataDir()+ path + _T("/config/params.xml")))
+			if (wxFile::Exists(m_szarp_data_dir+ path + _T("/config/params.xml")))
 				result.Add(path);
 		while (dir.GetNext(&path));
 
@@ -1339,6 +1342,13 @@ void ConfigManager::SubstiuteDefinedParams(const std::vector<DefinedParam*>& to_
 		delete to_rem[i];
 	}
 
+}
+
+void ConfigManager::DrawInfoAverageValueCalculationChanged(DrawInfo *d) {
+	for (std::vector<ConfigObserver*>::iterator i = m_observers.begin();
+			i != m_observers.end();
+			i++)
+		(*i)->DrawInfoAverageValueCalculationChanged(d);
 }
 
 class ExportImportSet {

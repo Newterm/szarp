@@ -16,8 +16,8 @@ RESOURCES =
 endif
 
 # Compilations flags
-INCLUDES = @WX_CXXFLAGS@ @XML_CFLAGS@ @LUA_CFLAGS@ @SSL_CFLAGS@ @BOOST_CPPFLAGS@ @CARES_CFLAGS@ \
-	   @GDK_CFLAGS@ @GTK_CFLAGS@ @SQLITE3_CFLAGS@ @GSTREAMER_CFLAGS@ @VMIME_CFLAGS@ @FREETYPE_CFLAGS@ @XMLRPC_EPI_CFLAGS@ \
+INCLUDES = @WX_CXXFLAGS@ @XML_CFLAGS@ @LUA_CFLAGS@ @SSL_CFLAGS@ @BOOST_CPPFLAGS@ @CARES_CFLAGS@ @CGAL_CFLAGS@ \
+	   @GDK_CFLAGS@ @GTK_CFLAGS@ @SQLITE3_CFLAGS@ @GSTREAMER_CFLAGS@ @FREETYPE_CFLAGS@ @XMLRPC_EPI_CFLAGS@ \
 	   -I@srcdir@/../../libSzarp/include \
 	   -I@srcdir@/../../libSzarp2/include \
 	   -I@srcdir@/../../include \
@@ -35,29 +35,29 @@ TMP_GETTEXT=XRC_gettext_file
 
 # Program to create
 
-bin_PROGRAMS = draw3
+bin_PROGRAMS = draw3 draw3test
 
 WIN_APP_NAME = Draw3
 
 draw3_SOURCES = \
 		classes.h \
-                draw3.cpp \
-                dbmgr.cpp dbmgr.h \
+		draw3.cpp \
+		dbmgr.cpp dbmgr.h \
 		database.h database.cpp \
 		disptime.cpp disptime.h \
 		drawpnl.cpp drawpnl.h \
-		drawsctrl.h drawsctrl.cpp \
                 drawswdg.cpp drawswdg.h \
-                drawapp.cpp drawapp.h \
-                draw.cpp draw.h \
+		drawsctrl.h drawsctrl.cpp \
+		drawapp.cpp drawapp.h \
+		draw.cpp draw.h \
 		coobs.h coobs.cpp \
 		cfgmgr.cpp cfgmgr.h \
 		ids.h \
 		infowdg.cpp infowdg.h \
 		drawview.h drawview.cpp \
-                seldraw.cpp seldraw.h \
-                selset.cpp selset.h \
-                timewdg.cpp timewdg.h \
+		seldraw.cpp seldraw.h \
+		selset.cpp selset.h \
+		timewdg.cpp timewdg.h \
 		drawtb.cpp drawtb.h \
 		incsearch.cpp incsearch.h \
 		drawobs.h drawobs.cpp \
@@ -77,6 +77,8 @@ draw3_SOURCES = \
 		drawdnd.h drawdnd.cpp \
 		progfrm.h progfrm.cpp \
 		remarks.h remarks.cpp \
+		remarksdialog.h remarksdialog.cpp \
+		remarksfetcher.h remarksfetcher.cpp \
 		splashscreen.cpp splashscreen.h \
 		drawipc.cpp drawipc.h \
 		drawurl.cpp drawurl.h \
@@ -100,8 +102,39 @@ draw3_SOURCES = \
 		seteditctrl.h parameditctrl.h \
 		GUI/resource.cpp
 
+draw3test_SOURCES = \
+		classes.h \
+		dbmgr.cpp dbmgr.h \
+		database.h database.cpp \
+		drawsctrl.h drawsctrl.cpp \
+		coobs.h coobs.cpp \
+		cfgmgr.cpp cfgmgr.h \
+		ids.h \
+		drawobs.h drawobs.cpp \
+		drawpsc.h drawpsc.cpp \
+		timeformat.h timeformat.cpp \
+		defcfg.h defcfg.cpp \
+		dbinquirer.cpp dbinquirer.h \
+		drawdnd.h drawdnd.cpp \
+		progfrm.h progfrm.cpp \
+		remarks.h remarks.cpp \
+		drawurl.cpp drawurl.h \
+		errfrm.h errfrm.cpp \
+		drawtime.h drawtime.cpp \
+		luapextract.h luapextract.cpp \
+		delqitem.h delqitem.cpp \
+		splashscreen.cpp splashscreen.h \
+                draw.cpp draw.h \
+		GUI/resource.cpp \
+		testapp.cpp testapp.h \
+		testrunner.cpp testrunner.h \
+		test.cpp 
+
 draw3_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) $(LIBWXSCINTILLA)
-draw3_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) $(LIBWXSCINTILLA) @SSL_LIBS@ @XML_LIBS@ @WX_LIBS@ @LUA_LIBS@ @GDK_LIBS@ @SQLITE3_LIBS@ @GSTREAMER_LIBS@ @VMIME_LIBS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @FTGL_LIBS@  @WXGL_LIBS@ @XMLRPC_EPI_LIBS@ @CARES_LIBS@ @MINGW32_LIBS@
+draw3_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) $(LIBWXSCINTILLA) @XSLT_LIBS@ @ZIP_LIBS@ @SSL_LIBS@ @XML_LIBS@ @WX_LIBS@ @LUA_LIBS@ @GDK_LIBS@ @SQLITE3_LIBS@ @GSTREAMER_LIBS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @FTGL_LIBS@  @WXGL_LIBS@ @XMLRPC_EPI_LIBS@ @CARES_LIBS@ @MINGW32_LIBS@ @CGAL_LIBS@
+
+draw3test_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) $(LIBWXSCINTILLA)
+draw3test_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) $(LIBWXSCINTILLA) @XSLT_LIBS@ @ZIP_LIBS@ @SSL_LIBS@ @XML_LIBS@ @WX_LIBS@ @LUA_LIBS@ @GDK_LIBS@ @SQLITE3_LIBS@ @GSTREAMER_LIBS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @FTGL_LIBS@  @WXGL_LIBS@ @XMLRPC_EPI_LIBS@ @CARES_LIBS@ @MINGW32_LIBS@ @CGAL_LIBS@
 draw3_LOCALES_TMP = @srcdir@/draw3.tpo
 
 CLEANFILES = fr/draw3.mo pl/draw3.mo de/draw3.mo $(draw3_LOCALES_TMP)

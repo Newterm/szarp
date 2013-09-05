@@ -63,8 +63,9 @@ class lumel_register {
 	unsigned char m_address;
 	std::string m_val;
 	time_t m_mod_time;
+	driver_logger* m_log;
 public:
-	lumel_register(unsigned char addr) : m_address(addr) {} ;
+	lumel_register(unsigned char addr, driver_logger *log) : m_address(addr), m_log(log) {} ;
 	unsigned char get_address() { return m_address; };
 	void set_val(std::string & val);
 	int get_val(double & value);
@@ -99,7 +100,7 @@ public:
 
 void lumel_register::set_val(std::string & val) {
     m_val = val;
-   dolog(10, "lumel_register::get_val value: %s", m_val.c_str());
+   m_log->log(10, "lumel_register::get_val value: %s", m_val.c_str());
 }
 
 int lumel_register::get_val(double & value) {
@@ -110,16 +111,16 @@ int lumel_register::get_val(double & value) {
     double val = strtod(str, &endptr); 
  
     if ((errno == ERANGE && (val == LONG_MAX || val == LONG_MIN)) || (errno != 0 && val == 0)) {
-	dolog(2, "Error in ascii to doble conversion");
+	m_log->log(2, "Error in ascii to doble conversion");
 	return 1;
     }
 
    if (endptr == str) {
-	dolog(2, "No value in string");
+	m_log->log(2, "No value in string");
 	return 1;
    }
    value = val;
-   dolog(10, "lumel_register::get_val value: %f", value);
+   m_log->log(10, "lumel_register::get_val value: %f", value);
 
    return 0;
 }
@@ -158,6 +159,7 @@ protected:
     struct event m_read_timer;
     bool m_read_timer_started;
     int m_timeout;
+    driver_logger m_log;
 
     enum { IDLE, REQUEST, RESPONSE } m_state;
 
@@ -182,6 +184,8 @@ protected:
     void stop_read_timer();
 
 public:
+    lumel_serial_client();
+    const char* driver_name() { return "lumel_driver"; }
     virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration& spc);
     virtual void connection_error(struct bufferevent *bufev);
     virtual void starting_new_cycle();
@@ -192,9 +196,10 @@ public:
     static void read_timer_callback(int fd, short event, void* lumel_serial_client);
 };
 
+lumel_serial_client::lumel_serial_client() : m_log(this) {}
 
 void lumel_serial_client::stop_read_timer() {
-	dolog(10, "lumel_serial_client::stop_read_timer");
+	m_log.log(10, "lumel_serial_client::stop_read_timer");
 	if (m_read_timer_started) {
 		event_del(&m_read_timer);
 		m_read_timer_started = false;
@@ -202,7 +207,7 @@ void lumel_serial_client::stop_read_timer() {
 }
 
 void lumel_serial_client::start_read_timer() {
-	dolog(10, "lumel_serial_client::start_read_timer");
+	m_log.log(10, "lumel_serial_client::start_read_timer");
 	stop_read_timer();
 
 	struct timeval tv;
@@ -210,16 +215,17 @@ void lumel_serial_client::start_read_timer() {
 	tv.tv_usec = m_timeout;
 	evtimer_add(&m_read_timer, &tv); 
 	m_read_timer_started = true;
-	dolog(10, "lumel_serial_client::stop_read_timer: Read timer started");
+	m_log.log(10, "lumel_serial_client::stop_read_timer: Read timer started");
 }
 
 void lumel_serial_client::read_timer_callback(int fd, short event, void* client) {
-	dolog(10, "lumel_serial_client::read_timer_callback");
-	((lumel_serial_client*) client)->read_timer_event();
+	lumel_serial_client* lumel = (lumel_serial_client*) client;
+	lumel->m_log.log(10, "lumel_serial_client::read_timer_callback");
+	lumel->read_timer_event();
 }
 
 void lumel_serial_client::read_timer_event() {
-    dolog(2, "lumel_serial_client::read_timer_event, state: %d, reg: %d", m_state, m_registers_iterator->first);
+    m_log.log(2, "lumel_serial_client::read_timer_event, state: %d, reg: %d", m_state, m_registers_iterator->first);
     next_request();
 }
 
@@ -257,7 +263,7 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 	}
 
 	if (id > 31) {
-	    dolog(0, "Unit id out of allowed range in unit element at line: %ld", xmlGetLineNo(node));
+	    m_log.log(0, "Unit id out of allowed range in unit element at line: %ld", xmlGetLineNo(node));
 	    return 1;
 	}
 	m_unit_id = id;
@@ -278,39 +284,39 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 
 		std::string _addr;
 		if (get_xml_extra_prop(pnode, "address", _addr, false)) {
-		    dolog(0, "Invalid address attribute in param element at line: %ld", xmlGetLineNo(pnode));
+		    m_log.log(0, "Invalid address attribute in param element at line: %ld", xmlGetLineNo(pnode));
 		    return 1;
 		}
 
 		char *e;
 		long l = strtol(_addr.c_str(), &e, 0);
 		if (*e != 0 || l < 0 || l > 0x32) {
-			dolog(0, "Invalid address attribute value: %ld (line %ld), between 0 and 0x32", l, xmlGetLineNo(pnode));
+			m_log.log(0, "Invalid address attribute value: %ld (line %ld), between 0 and 0x32", l, xmlGetLineNo(pnode));
 			return 1;
 		} 
 		unsigned char addr = (unsigned char)l;
-		dolog(10, "lumel_serial_client::configure _addr: %ld, addr: %hhu", l, addr);
+		m_log.log(10, "lumel_serial_client::configure _addr: %ld, addr: %hhu", l, addr);
 		
 		int prec = exp10(param->GetPrec());
 		std::string _prec;
 		if (get_xml_extra_prop(pnode, "prec", _prec, true)) {
-		    dolog(0, "Invalid address attribute in param element at line: %ld", xmlGetLineNo(pnode));
+		    m_log.log(0, "Invalid address attribute in param element at line: %ld", xmlGetLineNo(pnode));
 		    return 1;
 		}
 
 		if (!_prec.empty()) {
 		    l = strtol(_prec.c_str(), &e, 0);
 		    if (*e != 0 || l < 0) {
-			    dolog(0, "Invalid extra:prec attribute value: %ld (line %ld)", l, xmlGetLineNo(pnode));
+			    m_log.log(0, "Invalid extra:prec attribute value: %ld (line %ld)", l, xmlGetLineNo(pnode));
 			    return 1;
 		    } 
 		    prec = exp10(l);
-		    dolog(10, "lumel_serial_client::configure _addr: %ld, prec: %d", l, addr);
+		    m_log.log(10, "lumel_serial_client::configure _addr: %ld, prec: %d", l, addr);
 		}
 
 		std::string val_op;
 		if (get_xml_extra_prop(node, "val_op", val_op, true)) {
-		    dolog(0, "Invalid val_op attribute in param element at line: %ld", xmlGetLineNo(pnode));
+		    m_log.log(0, "Invalid val_op attribute in param element at line: %ld", xmlGetLineNo(pnode));
 		    return 1;
 		}
 
@@ -318,16 +324,16 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 
 		if (val_op.empty()) {
 		    if (m_registers.find(addr) != m_registers.end()) {
-			dolog(0, "Already configured register with address (%hd) in param element at line: %ld", addr, xmlGetLineNo(pnode));
+			m_log.log(0, "Already configured register with address (%hd) in param element at line: %ld", addr, xmlGetLineNo(pnode));
 			return 1;
 		    }
-		    reg = new lumel_register(addr); 
+		    reg = new lumel_register(addr, &m_log); 
 		    m_registers[addr] = reg;
 		    m_read_operators.push_back(new short_read_val_op(reg, prec));
 		}
 		else {
 		    if (m_registers.find(addr) == m_registers.end()) {
-			reg = new lumel_register(addr);
+			reg = new lumel_register(addr, &m_log);
 			m_registers[addr] = reg;
 		    }
 		    else {
@@ -341,7 +347,7 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 			m_read_operators.push_back(new long_read_val_op(reg, prec, false));
 		    }
 		    else {
-			dolog(0, "Unsupported val_op attribute value - %s, line %ld", val_op.c_str(), xmlGetLineNo(pnode));
+			m_log.log(0, "Unsupported val_op attribute value - %s, line %ld", val_op.c_str(), xmlGetLineNo(pnode));
 			return 1;
 		    }
 		}
@@ -351,7 +357,7 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 }
 
 void lumel_serial_client::connection_error(struct bufferevent *bufev) {
-	dolog(10, "lumel_serial_client::connection_error");
+	m_log.log(10, "lumel_serial_client::connection_error");
 	m_state = IDLE;
 	m_bufev = NULL;
 	m_buffer.clear();
@@ -360,12 +366,12 @@ void lumel_serial_client::connection_error(struct bufferevent *bufev) {
 }
 
 void lumel_serial_client::starting_new_cycle() {
-	dolog(10, "lumel_serial_client::starting_new_cycle");
+	m_log.log(10, "lumel_serial_client::starting_new_cycle");
 }
 
 void lumel_serial_client::scheduled(struct bufferevent* bufev, int fd) {
 	m_bufev = bufev;
-	dolog(10, "lumel_serial_client::scheduled");
+	m_log.log(10, "lumel_serial_client::scheduled");
 	switch (m_state) {
 	    case IDLE:
 		m_registers_iterator = m_registers.begin();
@@ -373,22 +379,22 @@ void lumel_serial_client::scheduled(struct bufferevent* bufev, int fd) {
 		break;
 	    case REQUEST:
 	    case RESPONSE:
-		dolog(2, "New cycle before end of querying");
+		m_log.log(2, "New cycle before end of querying");
 		break;
 	    default:
-		dolog(2, "Unknown state, something went teribly wrong");
+		m_log.log(2, "Unknown state, something went teribly wrong");
 		assert(false);
 		break;
 	}
 }
 
 void lumel_serial_client::finished_cycle() {
-    dolog(10, "lumel_serial_client::finished_cycle");
+    m_log.log(10, "lumel_serial_client::finished_cycle");
     to_parcook();
 }
 
 void lumel_serial_client::send_request() {
-    dolog(10, "lumel_serial_client::send_request");
+    m_log.log(10, "lumel_serial_client::send_request");
     m_buffer.clear();
     make_read_request();
     bufferevent_write(m_bufev, &m_request_buffer[0], m_request_buffer.size());
@@ -397,7 +403,7 @@ void lumel_serial_client::send_request() {
 }
 
 void lumel_serial_client::next_request() {
-    dolog(10, "lumel_serial_client::next_request");
+    m_log.log(10, "lumel_serial_client::next_request");
     switch (m_state) {
 	case REQUEST:
 	    // TODO error?
@@ -412,7 +418,7 @@ void lumel_serial_client::next_request() {
     m_registers_iterator++;
     if (m_registers_iterator == m_registers.end()) {
 	// TODO end of cycle
-	dolog(8, "lumel_serial_client::next_request, no more registers to query, driver finished job");
+	m_log.log(8, "lumel_serial_client::next_request, no more registers to query, driver finished job");
 	m_state = IDLE;
 	m_manager->driver_finished_job(this);
 	return;
@@ -434,7 +440,7 @@ unsigned char lumel_serial_client::checksum(std::vector<unsigned char> & buffer)
 }
 
 void lumel_serial_client::make_read_request() {
-    dolog(10, "lumel_serial_client::make_read_request");
+    m_log.log(10, "lumel_serial_client::make_read_request");
     m_request_buffer.clear();
     lumel_register* reg = m_registers_iterator->second;
     m_request_buffer.push_back(':');
@@ -458,7 +464,7 @@ void lumel_serial_client::data_ready(struct bufferevent* bufev, int fd) {
     switch (m_state) {
 	case IDLE:
 	    // TODO something wrong hapend?
-	    dolog(2, "Got unrequested message, ignoring");
+	    m_log.log(2, "Got unrequested message, ignoring");
 	    while (bufferevent_read(bufev, &c, sizeof(c)) != 0);
 	    break;
 	case REQUEST:
@@ -467,7 +473,7 @@ void lumel_serial_client::data_ready(struct bufferevent* bufev, int fd) {
 		    break;
 	    }
 	    if (c != ':') {
-		   dolog(8, "Start of frame not found, waiting");
+		   m_log.log(8, "Start of frame not found, waiting");
 		   break;
 	    }
 	    stop_read_timer();
@@ -497,12 +503,12 @@ int lumel_serial_client::parse_frame() {
 	return 1;
     }
 
-    dolog(8, "lumel_serial_client::parse_frame, l: %d", m_buffer.size());
+    m_log.log(8, "lumel_serial_client::parse_frame, l: %d", m_buffer.size());
 
     for (size_t i = 0; i < 7; i++) {
 	if (m_buffer[i] != m_request_buffer[i]) {
 	    // TODO error
-	    dolog(2, "Wrong response at character %d", i);
+	    m_log.log(2, "Wrong response at character %d", i);
 	    return 1;
 	}
     }
@@ -515,13 +521,13 @@ int lumel_serial_client::parse_frame() {
     m_buffer.pop_back();
     unsigned char sum1;
     if(ascii::from_ascii(s2, s1, sum1)) {
-	dolog(2, "Cannot convert checksum from ascii");
+	m_log.log(2, "Cannot convert checksum from ascii");
 	return 1;
     }
     unsigned char sum2 = checksum(m_buffer);
 
     if (sum1 != sum2) {
-	dolog(2, "Wrong checksum, ignoring frame");
+	m_log.log(2, "Wrong checksum, ignoring frame");
 	return 1;
     }
 
@@ -540,10 +546,10 @@ int lumel_serial_client::parse_frame() {
 
 
 void lumel_serial_client::to_parcook() {
-    dolog(10, "lumel_serial_client::to_parcook, m_read_count: %d", m_read_count);
+    m_log.log(10, "lumel_serial_client::to_parcook, m_read_count: %d", m_read_count);
     for (size_t i = 0; i < m_read_count; i++) {
 	m_read[i] = m_read_operators[i]->val();
-	dolog(9, "Parcook param no %zu set to %hu", i, m_read[i]);
+	m_log.log(9, "Parcook param no %zu set to %hu", i, m_read[i]);
     }
 }
 

@@ -38,7 +38,37 @@
 #define log_info(info) \
      sz_log_info(info)
 
+
+#include "config.h"
+
+#ifndef MINGW32
+#include <syslog.h>
+#else
+//as there is no syslog under msw we fix our default to 0 there
+#define LOG_DAEMON 0
+#endif
 #include <stdarg.h>
+
+enum SZ_LIBLOG_FACILITY {
+	SZ_LIBLOG_FACILITY_DAEMON 
+#ifndef MINGW32
+	 			 = LOG_DAEMON
+#endif
+				,
+	SZ_LIBLOG_FACILITY_APP 
+#ifndef MINGW32
+	 			 = LOG_LOCAL1
+#endif
+};
+
+
+typedef void* (sz_log_init_function)(int level, const char* logname, SZ_LIBLOG_FACILITY facility, void *context);
+
+typedef void (sz_vlog_function)(void* data, int level, const char * msg_format, va_list fmt_args);
+
+typedef void (sz_log_close_function)(void* data);
+
+void sz_log_system_init(sz_log_init_function, sz_vlog_function, sz_log_close_function);
 
 /*
  * loginit - inicjacja mechanizmu logowania na poziomie zadanym
@@ -63,8 +93,7 @@
  *
  */
 
-int sz_loginit(int level, const char * logfile);
-
+int sz_loginit(int level, const char * logname, SZ_LIBLOG_FACILITY facility = SZ_LIBLOG_FACILITY_DAEMON, void *context = 0);
 /*
  * loginit_cmdline - inicjacja mechanizmu logowania, podobnie jak w przypadku
  * funkcji loginit(). Dodatkowymi argumentami jest wskaznik na ilosc parametrow
@@ -80,7 +109,7 @@ int sz_loginit(int level, const char * logfile);
  * wywolano loginit(level, logfile).
  */
 
-int sz_loginit_cmdline(int level, const char * logfile, int *argc, char *argv[]);
+int sz_loginit_cmdline(int level, const char * logname, int *argc, char *argv[], SZ_LIBLOG_FACILITY facility = SZ_LIBLOG_FACILITY_DAEMON);
 
 /** logdone - zamyka plik z logiem. Jej uzycie jest zalecane (aczkolwiek
  * niekonieczne przed zakonczeniem programu. Zakonczenie logowania jest
@@ -128,4 +157,5 @@ void vsz_log(int level, const char * msg_format, va_list fmt_args);
  */
 void sz_log_info(int info);
 
+int sz_level_to_syslog_level(int level);
 #endif

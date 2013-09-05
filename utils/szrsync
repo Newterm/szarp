@@ -246,7 +246,8 @@ function do_rsync () {
 	[ $? -eq 0 ] || return
 
 	export RSYNC_RSH="ssh -o StrictHostKeyChecking=no $SSH_PORT"
-	rsync -az $SZRSYNC_VERBOSE --bwlimit=$BWLIMIT --exclude='.*' --exclude='nohup.out' $DELETE $INC $EXC $ADDRESS:$i /opt/szarp
+	echo rsync -az $SZRSYNC_VERBOSE --bwlimit=$BWLIMIT --exclude='.*' --exclude='nohup.out' $DELETE $INC $EXC $ADDRESS:$i ${i%\/[^\/]*}
+	rsync -az $SZRSYNC_VERBOSE --bwlimit=$BWLIMIT --exclude='.*' --exclude='nohup.out' $DELETE $INC $EXC $ADDRESS:$i ${i%\/[^\/]*}
 	LAST=$?
 	if [ $LAST -ne 0 -a $CODE -eq 0 ] ; then
 		CODE=$LAST
