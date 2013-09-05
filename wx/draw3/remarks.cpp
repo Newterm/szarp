@@ -207,7 +207,7 @@ RemarksHandler::RemarksHandler(ConfigManager *config_manager) : m_config_manager
                         m_cfglogin_cnt = 0;
 
                         m_cfglogin_timer.SetOwner(this, c_cfglogin_timer_id);
-                        m_cfglogin_timer.Start(1000 * 10);
+                        m_cfglogin_timer.Start(1000 * 10 * 60);
                 }
         }
 
@@ -511,9 +511,11 @@ RemarksConnection* RemarksHandler::GetConnection() {
 
 	if (m_connection == NULL) {
 		m_connection = new RemarksConnection(m_server, this, m_config_manager);
-		m_connection->SetUsernamePassword(m_username, m_password);
+                /* cfglogin: need to change m_password each time */
+		//m_connection->SetUsernamePassword(m_username, m_password);
 	}
 
+	m_connection->SetUsernamePassword(m_username, m_password);
 	return m_connection;
 
 }
