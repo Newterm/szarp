@@ -295,13 +295,18 @@ bool DrawApp::OnInit() {
 	m_db_queue->SetDatabaseManager(m_dbmgr);
 	m_dbmgr->SetProbersAddresses(GetProbersAddresses());
 
-	Szbase::Init(GetSzarpDataDir().c_str(),
+	Draw3Base* draw_base;
+	if (m_sz4) {
+		draw_base = new Sz4Base(GetSzarpDataDir().c_str(),
+			IPKContainer::GetObject());
+	} else {
+		draw_base = new SzbaseBase(GetSzarpDataDir().c_str(),
 			&ConfigurationFileChangeHandler::handle,
-			true,
 			wxConfig::Get()->Read(_T("SZBUFER_IN_MEMORY_CACHE"), 0L));
-	Szbase* szbase = Szbase::GetObject();
 
-	m_executor = new QueryExecutor(m_db_queue, m_dbmgr, szbase);
+	}
+
+	m_executor = new QueryExecutor(m_db_queue, m_dbmgr, draw_base);
 	m_executor->Create();
 	m_executor->SetPriority((WXTHREAD_MAX_PRIORITY + WXTHREAD_DEFAULT_PRIORITY) / 2);
 	m_executor->Run();
@@ -468,6 +473,8 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
     		wxLog::SetVerbose();
 
 	m_full_screen = parser.Found(_T("f"));
+	
+	m_sz4 = parser.Found(_T("4"));
 
 	m_just_print_version = parser.Found(_("V"));
 

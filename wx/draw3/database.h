@@ -27,8 +27,11 @@
 #include <list>
 #include <ids.h>
 #include <boost/thread/thread.hpp>
+#include <tr1/tuple>
 
 #include "szbase/szbbase.h"
+#include "sz4/base.h"
+
 
 /**Query to the database*/
 struct DatabaseQuery {
@@ -172,36 +175,52 @@ struct DatabaseQuery {
 
 class Draw3Base {
 public:
-	void RemoveConfig(const std::wstring& prefix,
+	virtual void RemoveConfig(const std::wstring& prefix,
 			bool poison_cache) = 0;
 
-	bool CompileLuaFormula(const std::wstring& formula, std::wstring& error) = 0;
+	virtual bool CompileLuaFormula(const std::wstring& formula, std::wstring& error) = 0;
 
-	void AddExtraParam(const std::wstring& prefix, TParam *param) = 0;
+	virtual void AddExtraParam(const std::wstring& prefix, TParam *param) = 0;
 
-	void RemoveExtraParam(const std::wstring& prefix, TParam *param) = 0;
+	virtual void RemoveExtraParam(const std::wstring& prefix, TParam *param) = 0;
 
-	void NotifyAboutConfigurationChanges() = 0;
+	virtual void NotifyAboutConfigurationChanges() = 0;
 
-	void SetProberAddress(const std::wstring& prefix,
+	virtual void SetProberAddress(const std::wstring& prefix,
 			const std::wstring& address,
-			int port) = 0 ;
+			const std::wstring& port) = 0 ;
 
-	void ExtractParametersQuery(DatabaseQuery::ExtractionParameters &pars) = 0;
+	virtual void ExtractParameters(DatabaseQuery::ExtractionParameters &pars) = 0;
 
-	void SearchData(DatabaseQuery* query) = 0;
+	virtual void SearchData(DatabaseQuery* query) = 0;
 
-	void GetData(DatabaseQuery* query) = 0;
+	virtual void GetData(DatabaseQuery* query, wxEvtHandler *response_receiver) = 0;
 
-	void ResetBuffer(DatabaseQuery* query) = 0;
+	virtual void ResetBuffer(DatabaseQuery* query) = 0;
 
-	void ClearCache(DatabaseQuery* query) = 0;
+	virtual void ClearCache(DatabaseQuery* query) = 0;
+
+	virtual void StopSearch() = 0;
 
 	virtual ~Draw3Base() {}
 };
 
-void SzbaseBase : public Draw3Base {
+class SzbaseBase : public Draw3Base {
+	Szbase *szbase;
+
+	boost::mutex m_mutex;
+
+	SzbCancelHandle *cancelHandle;
+
+	std::tr1::tuple<TSzarpConfig*, szb_buffer_t*> GetConfigAndBuffer(TParam *param);
+	
+	void maybeSetCancelHandle(TParam* param);
+	void releaseCancelHandle(TParam* param);
 public:
+	SzbaseBase(const std::wstring& data_path, void (*conf_changed_cb)(std::wstring, std::wstring), int cache_size);
+
+	~SzbaseBase();	
+
 	void RemoveConfig(const std::wstring& prefix,
 			bool poison_cache) ;
 
@@ -215,17 +234,55 @@ public:
 
 	void SetProberAddress(const std::wstring& prefix,
 			const std::wstring& address,
-			int port)  ;
+			const std::wstring& port)  ;
 
-	void ExtractParametersQuery(DatabaseQuery::ExtractionParameters &pars) ;
+	void ExtractParameters(DatabaseQuery::ExtractionParameters &pars) ;
 
 	void SearchData(DatabaseQuery* query);
 
-	void GetData(DatabaseQuery* query);
+	void GetData(DatabaseQuery* query, wxEvtHandler *response_receiver);
 
 	void ResetBuffer(DatabaseQuery* query);
 
 	void ClearCache(DatabaseQuery* query);
+	
+	void StopSearch();
+};
+
+class Sz4Base : public Draw3Base {
+	sz4::base *base;
+
+public:
+	Sz4Base(const std::wstring& data_dir, IPKContainer* ipk_conatiner);
+
+	~Sz4Base();	
+
+	void RemoveConfig(const std::wstring& prefix,
+			bool poison_cache) ;
+
+	bool CompileLuaFormula(const std::wstring& formula, std::wstring& error) ;
+
+	void AddExtraParam(const std::wstring& prefix, TParam *param) ;
+
+	void RemoveExtraParam(const std::wstring& prefix, TParam *param) ;
+
+	void NotifyAboutConfigurationChanges() ;
+
+	void SetProberAddress(const std::wstring& prefix,
+			const std::wstring& address,
+			const std::wstring& port)  ;
+
+	void ExtractParameters(DatabaseQuery::ExtractionParameters &pars) ;
+
+	void SearchData(DatabaseQuery* query);
+
+	void GetData(DatabaseQuery* query, wxEvtHandler *response_receiver);
+
+	void ResetBuffer(DatabaseQuery* query);
+
+	void ClearCache(DatabaseQuery* query);
+	
+	void StopSearch();
 };
 
 /**Query execution thread*/
@@ -234,12 +291,8 @@ class QueryExecutor : public wxThread {
 	DatabaseQueryQueue *queue;
 	/**Object receiving responses*/
 	wxEvtHandler *response_receiver;
-	/**Szbase object*/
-	Szbase *szbase;
-
-	boost::mutex m_mutex;
-
-	SzbCancelHandle *cancelHandle;
+	/**base object*/
+	Draw3Base *base;
 
 	/**Peforms a query for a parametr values
 	 * @param base buffer that operation shall be performed upon */
@@ -255,7 +308,7 @@ class QueryExecutor : public wxThread {
 public:
 	void StopSearch();
 
-	QueryExecutor(DatabaseQueryQueue *_queue, wxEvtHandler *_response_receiver, Szbase *_szbase);
+	QueryExecutor(DatabaseQueryQueue *_queue, wxEvtHandler *_response_receiver, Draw3Base *_base);
 	/**Thread entry point. Executes queries*/
 	virtual void* Entry();
 };

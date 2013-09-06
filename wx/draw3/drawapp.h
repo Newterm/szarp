@@ -193,6 +193,8 @@ protected:
 	/** start in full screen mode*/
 	bool m_full_screen;
 
+	bool m_sz4;
+
 	/**Object that prevents more than one m_instance of program from running.*/
 	szSingleInstanceChecker *m_instance;
 
