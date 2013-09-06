@@ -505,20 +505,38 @@ void RemarksHandler::Stop() {
 	m_storage->Wait();
 }
 
+/* cfglogin */
+#ifndef MINGW32
+
 RemarksConnection* RemarksHandler::GetConnection() {
 
     wxLogWarning(_T("GetConnection!"));
 
 	if (m_connection == NULL) {
 		m_connection = new RemarksConnection(m_server, this, m_config_manager);
-                /* cfglogin: need to change m_password each time */
-		//m_connection->SetUsernamePassword(m_username, m_password);
 	}
 
 	m_connection->SetUsernamePassword(m_username, m_password);
 	return m_connection;
 
 }
+
+#else /*MINGW32*/
+
+RemarksConnection* RemarksHandler::GetConnection() {
+
+    wxLogWarning(_T("GetConnection!"));
+
+	if (m_connection == NULL) {
+		m_connection = new RemarksConnection(m_server, this, m_config_manager);
+		m_connection->SetUsernamePassword(m_username, m_password);
+	}
+
+	return m_connection;
+
+}
+
+#endif /*MINGW32*/
 
 RemarksStorage* RemarksHandler::GetStorage() {
 	return m_storage;
