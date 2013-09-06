@@ -467,7 +467,7 @@ protected:
 		IDLE,
 	} m_state;
 
-	time_t m_last_activity;
+	unsigned int m_requests_sent;
 
 	void starting_new_cycle();
 protected:
@@ -908,7 +908,7 @@ void modbus_unit::consume_read_regs_response(unsigned char& uid, unsigned short 
 	for (size_t addr = start_addr; addr < start_addr + regs_count; addr++, data_index += 2) {
 		RMAP::iterator j = unit.find(addr);
 		unsigned short v = ((unsigned short)(pdu.data.at(data_index)) << 8) | pdu.data.at(data_index + 1);
-		m_log.log(7, "Setting register unit_id: %d, address: %hu, value: %hu", (int) uid, addr, v);
+		m_log.log(9, "Setting register unit_id: %d, address: %hu, value: %hu", (int) uid, addr, v);
 		j->second->set_val(v, m_current_time);
 	}
 
@@ -953,7 +953,7 @@ bool modbus_unit::perform_write_registers(RMAP &unit, PDU &pdu) {
 
 		unsigned short v = (d.at(data_index) << 8) | d.at(data_index + 1);
 
-		m_log.log(7, "Setting register: %hu value: %hu", addr, v);
+		m_log.log(9, "Setting register: %hu value: %hu", addr, v);
 		j->second->set_val(v, m_current_time);	
 	}
 
@@ -983,7 +983,7 @@ bool modbus_unit::perform_read_holding_regs(RMAP &unit, PDU &pdu) {
 		unsigned short v = j->second->get_val();
 		d.push_back(v >> 8);
 		d.push_back(v & 0xff);
-		m_log.log(7, "Sending register: %hu, value: %hu", addr, v);
+		m_log.log(9, "Sending register: %hu, value: %hu", addr, v);
 	}
 
 	m_log.log(7, "Request processed sucessfully.");
@@ -1040,7 +1040,7 @@ int modbus_unit::configure_int_register(TParam* param, TSendParam *sparam, int p
 		m_sender_ops.push_back(new short_sender_modbus_val_op(m_nodata_value, m_registers[id][addr], &m_log));
 	else 
 		m_parcook_ops.push_back(new short_parcook_modbus_val_op(m_registers[id][addr], &m_log));
-	m_log.log(7, "Param %ls mapped to unit: %c, register %hu, value type: integer", param ? param->GetName().c_str() : L"send param", id, addr);
+	m_log.log(8, "Param %ls mapped to unit: %c, register %hu, value type: integer", param ? param->GetName().c_str() : L"send param", id, addr);
 	return 0;
 }
 
@@ -1051,7 +1051,7 @@ int modbus_unit::configure_bcd_register(TParam* param, TSendParam* sparam, int p
 		return 1;
 	}
 	m_parcook_ops.push_back(new bcd_parcook_modbus_val_op(m_registers[id][addr], &m_log));
-	m_log.log(7, "Param %s mapped to unit: %c, register %hu, value type: bcd", SC::S2A(param->GetName()).c_str(), id, addr);
+	m_log.log(8, "Param %s mapped to unit: %c, register %hu, value type: bcd", SC::S2A(param->GetName()).c_str(), id, addr);
 	return 0;
 }
 
@@ -1125,16 +1125,16 @@ int modbus_unit::configure_long_float_register(TParam* param, TSendParam *sparam
 	if (val_type == "float")  {
 		if (!send) {
 			m_parcook_ops.push_back(new long_parcook_modbus_val_op<float>(m_registers[id][lsw], m_registers[id][msw], prec, is_lsw, &m_log));
-			m_log.log(7, "Parcook param %ls no(%zu), mapped to unit: %d, register %hu, value type: float, params holds %s part, lsw: %hu, msw: %hu", param->GetName().c_str(), m_parcook_ops.size(), int(id), addr, is_lsw ? "lsw" : "msw", lsw, msw);
+			m_log.log(8, "Parcook param %ls no(%zu), mapped to unit: %d, register %hu, value type: float, params holds %s part, lsw: %hu, msw: %hu", param->GetName().c_str(), m_parcook_ops.size(), int(id), addr, is_lsw ? "lsw" : "msw", lsw, msw);
 		} else {
 			m_sender_ops.push_back(new float_sender_modbus_val_op(m_nodata_value, m_registers[id][lsw], m_registers[id][msw], prec, &m_log));
-			m_log.log(7, "Sender param %ls no(%zu), mapped to unit: %d, register %hu, value type: float, params holds %s part",
+			m_log.log(8, "Sender param %ls no(%zu), mapped to unit: %d, register %hu, value type: float, params holds %s part",
 				param ? param->GetName().c_str() : L"(not a param, just value)", m_sender_ops.size(), int(id), addr, is_lsw ? "lsw" : "msw");
 		}
 	} else {
 		if (!send) {
 			m_parcook_ops.push_back(new long_parcook_modbus_val_op<unsigned int>(m_registers[id][lsw], m_registers[id][msw], prec, is_lsw, &m_log));
-			m_log.log(7, "Parcook param %ls no(%zu), mapped to unit: %c, register %hu, value type: long, params holds %s part, lsw: %hu, msw: %hu",
+			m_log.log(8, "Parcook param %ls no(%zu), mapped to unit: %c, register %hu, value type: long, params holds %s part, lsw: %hu, msw: %hu",
 				param->GetName().c_str(), m_parcook_ops.size(), int(id), addr, is_lsw ? "lsw" : "msw", lsw, msw);
 		} else {
 			m_log.log(0, "Unsupported long value type for send param line %ld, exiting!", xmlGetLineNo(node));
@@ -1488,7 +1488,7 @@ void tcp_server::finished_cycle() {
 
 void tcp_server::connection_error(struct bufferevent *bufev) {
 	tcp_parser* parser = m_parsers[bufev];
-	m_log.log(5, "Terminating connection");
+	m_log.log(5, "connection_error: Terminating connection");
 	m_parsers.erase(bufev);
 	delete parser;
 }
@@ -1499,15 +1499,16 @@ void modbus_client::starting_new_cycle() {
 		case IDLE:
 			return;
 		case READ_QUERY_SENT:
-			m_log.log(2, "New cycle started, we are in read cycle");
+			m_log.log(2, "modbus_client::starting_new_cycle New cycle started, we are in read cycle");
 			break;
 		case WRITE_QUERY_SENT:
-			m_log.log(2, "New cycle started, we are in write cycle");
+			m_log.log(2, "modbus_client::starting_new_cycle New cycle started, we are in write cycle");
 			break;
 	}
 
-	if (m_last_activity + 10 < m_current_time) {
-		send_next_query(false);
+	if (m_requests_sent > 10) {
+		m_log.log(7, "starting_new_cycle: to many failed requests");
+		terminate_connection();
 	}
 }
 
@@ -1525,7 +1526,7 @@ void modbus_client::start_cycle() {
 }
 
 void modbus_client::send_next_query(bool previous_ok) {
-
+	m_log.log(7, "send_next_query: previous_ok: %c", previous_ok);
 	switch (m_state) {
 		case IDLE:
 		case READ_QUERY_SENT:
@@ -1537,6 +1538,7 @@ void modbus_client::send_next_query(bool previous_ok) {
 			assert(false);
 			break;
 	}
+	m_requests_sent++;
 }
 
 void modbus_client::send_write_query() {
@@ -1689,7 +1691,7 @@ void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 			m_log.log(10, "Received unexpected response from slave - ignoring it.");
 			break;
 	}
-	m_last_activity = m_current_time;
+	m_requests_sent--;
 }
 
 int modbus_client::initialize() {
@@ -1707,6 +1709,7 @@ void modbus_tcp_client::cycle_finished() {
 
 void modbus_tcp_client::terminate_connection() {
 	m_manager->terminate_connection(this);
+	m_requests_sent = 0;
 }
 
 modbus_tcp_client::modbus_tcp_client() : modbus_client(this) {}
@@ -1729,8 +1732,10 @@ void modbus_tcp_client::starting_new_cycle() {
 }
 
 void modbus_tcp_client::connection_error(struct bufferevent *bufev) {
+	m_log.log(8, "connection_error reseting parser");
 	m_state = IDLE;
 	m_parser->reset();
+	m_requests_sent = 0;
 }
 
 void modbus_tcp_client::scheduled(struct bufferevent* bufev, int fd) {
@@ -1870,10 +1875,10 @@ bool serial_rtu_parser::check_crc() {
 
 	unsigned short frame_crc = d[m_data_read - 2] | (d[m_data_read - 1] << 8);
 
-	m_log->log(9,"Unit ID = %hx",m_sdu.unit_id);
-	m_log->log(9,"Func code = %hx",m_sdu.pdu.func_code);
+	m_log->log(8,"Unit ID = %hx",m_sdu.unit_id);
+	m_log->log(8,"Func code = %hx",m_sdu.pdu.func_code);
 	for (size_t i = 0; i < m_data_read ; i++) m_log->log(9,"Data[%d] = %hx",i,d[i]);
-	m_log->log(9, "Checking crc, result: %s, unit_id: %d, caluclated crc: %hx, frame crc: %hx",
+	m_log->log(8, "Checking crc, result: %s, unit_id: %d, caluclated crc: %hx, frame crc: %hx",
 	       	(crc == frame_crc ? "OK" : "ERROR"), m_sdu.unit_id, crc, frame_crc);
 	return crc == frame_crc;
 }
@@ -1973,7 +1978,7 @@ int serial_rtu_parser::configure(xmlNodePtr node, serial_port_configuration &spc
 		else
 			m_timeout = 100000;
 	}
-	m_log->log(9, "serial_parser m_timeout: %d", m_timeout);
+	m_log->log(8, "serial_parser m_timeout: %d", m_timeout);
 	if (m_delay_between_chars)
 		evtimer_set(&m_write_timer, write_timer_callback, this);
 	return 0;
@@ -1995,14 +2000,14 @@ void serial_rtu_parser::read_data(struct bufferevent *bufev) {
 		case ADDR:
 			if (bufferevent_read(bufev, &m_sdu.unit_id, sizeof(m_sdu.unit_id)) == 0) 
 				break;
-			m_log->log(9, "Parsing new frame, unit_id: %d", (int) m_sdu.unit_id);
+			m_log->log(8, "Parsing new frame, unit_id: %d", (int) m_sdu.unit_id);
 			m_state = FUNC_CODE;
 		case FUNC_CODE:
 			if (bufferevent_read(bufev, &m_sdu.pdu.func_code, sizeof(m_sdu.pdu.func_code)) == 0) {
 				start_read_timer();
 				break;
 			}
-			m_log->log(9, "\tfunc code: %d", (int) m_sdu.pdu.func_code);
+			m_log->log(8, "\tfunc code: %d", (int) m_sdu.pdu.func_code);
 			m_state = DATA;
 			m_data_read = 0;
 			m_sdu.pdu.data.resize(max_frame_size - 2);

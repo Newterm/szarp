@@ -550,7 +550,7 @@ void serial_connection::connection_error_cb(struct bufferevent *ev, short event,
 }
 
 void client_manager::finished_cycle() {
-	dolog(10, "client_manager::finished_cycle");
+	dolog(7, "client_manager::finished_cycle");
 	for (std::vector<std::vector<client_driver*> >::iterator i = m_connection_client_map.begin();
 			i != m_connection_client_map.end();
 			i++) 
@@ -561,7 +561,7 @@ void client_manager::finished_cycle() {
 }
 
 void client_manager::starting_new_cycle() {
-	dolog(10, "client_manager, starting new cycle");
+	dolog(7, "client_manager::starting new cycle");
 	for (std::vector<std::vector<client_driver*> >::iterator i = m_connection_client_map.begin();
 			i != m_connection_client_map.end();
 			i++) 
@@ -572,6 +572,7 @@ void client_manager::starting_new_cycle() {
 	for (size_t connection = 0; connection < m_connection_client_map.size(); connection++) {
 		size_t& client = m_current_client.at(connection);
 		CONNECTION_STATE cstate = do_get_connection_state(connection);
+		dolog(7, "client_manager::starting_new_cycle connection: %d state: %d", connection, cstate);
 		if (cstate == NOT_CONNECTED || cstate == CONNECTING) {
 			if (do_establish_connection(connection)) {
 				for (size_t c = 0; c < m_connection_client_map.at(connection).size(); c++)
@@ -603,6 +604,8 @@ void client_manager::driver_finished_job(client_driver *driver) {
 void client_manager::terminate_connection(client_driver *driver) {
 	size_t connection = driver->id().first;
 	size_t& client = m_current_client.at(connection);
+	dolog(6, "client_manager::terminate_connection: requested connection: %zu, client: %zu",
+		connection, client);
 	if (driver->id().second != client) {
 		dolog(0, "Boruta core was requested by driver number %zu (connection %zu) to terminate connection!", client, connection);
 		dolog(0, "But this driver in not a current driver for this connection, THIS IS VERY, VERY WRONG (BUGGY DRIVER?)");
@@ -658,7 +661,7 @@ void client_manager::connection_established_cb(size_t connection) {
 	do_schedule(connection, current_client);
 }
 
-tcp_client_manager::tcp_connection::tcp_connection(tcp_client_manager *_manager, size_t _addr_no, std::string _address) : state(NOT_CONNECTED), fd(-1), bufev(NULL), conn_no(_addr_no), connecting_start(0), manager(_manager), address(_address) {}
+tcp_client_manager::tcp_connection::tcp_connection(tcp_client_manager *_manager, size_t _addr_no, std::string _address) : state(NOT_CONNECTED), fd(-1), bufev(NULL), conn_no(_addr_no), connecting_timeout(0), manager(_manager), address(_address) {}
 
 int tcp_client_manager::configure_tcp_address(xmlNodePtr node, struct sockaddr_in &addr) {
 	std::string address;
@@ -686,9 +689,12 @@ void tcp_client_manager::close_connection(tcp_connection &c) {
 		c.fd = -1;
 	}
 	c.state = NOT_CONNECTED;
+	c.connecting_timeout = time(NULL) + 30; // now + 30 sek
+	dolog(7, "tcp_client_manager::close_connection connection %s closed", c.address.c_str());
 }
 
 int tcp_client_manager::open_connection(tcp_connection &c, struct sockaddr_in& addr) {
+	dolog(7, "tcp_client_manager::open_connection  %s", c.address.c_str());
 	c.fd = socket(PF_INET, SOCK_STREAM, 0);
 	assert(c.fd >= 0);
 	if (set_nonblock(c.fd)) {
@@ -700,11 +706,12 @@ do_connect:
 	int ret = connect(c.fd, (struct sockaddr*) &addr, sizeof(addr));
 	if (ret == 0) {
 		c.state = CONNECTED;
+		c.connecting_timeout = 0;
 	} else if (errno == EINTR) {
 		goto do_connect;
 	} else if (errno == EWOULDBLOCK || errno == EINPROGRESS) {
 		c.state = CONNECTING;
-		c.connecting_start = time(NULL);
+		c.connecting_timeout = time(NULL) + 30; // 30sek from now
 	} else {
 		dolog(0, "Failed to connect: %s", strerror(errno));
 		close_connection(c);
@@ -726,34 +733,38 @@ struct bufferevent* tcp_client_manager::do_get_connection_buf(size_t conn_no) {
 
 void tcp_client_manager::do_terminate_connection(size_t conn_no) {
 	tcp_connection &c = m_tcp_connections.at(conn_no);
-	dolog(8, "tcp_client_manager::terminating connection: %s", c.address.c_str());
+	dolog(7, "tcp_client_manager::do_terminate_connection connection: %s", c.address.c_str());
 	close_connection(c);
 }
 
 int tcp_client_manager::do_establish_connection(size_t conn_no) {
 	tcp_connection &c = m_tcp_connections.at(conn_no);
 	if (c.state == CONNECTING) {
-	    time_t now = time(NULL);
-	    if (c.connecting_start + 30 < now) {
-		dolog(2,
-		    "tcp_client_manager::do_establish_connection connecting with %s last too long, retrying",
+	    if (c.connecting_timeout > time(NULL))
+		return 0;
+
+	    dolog(2,
+		"tcp_client_manager::do_establish_connection connecting with %s last too long, retrying",
+		c.address.c_str());
+	    close_connection(c);
+	    return 1;
+	}
+	if (c.state == NOT_CONNECTED && c.connecting_timeout && c.connecting_timeout < time(NULL)) {
+	    dolog(5, "tcp_client_manager::do_establish_connection break between new connection with %s",
 		    c.address.c_str());
-		close_connection(c);
-		return 1;
-	    }
 	    return 0;
 	}
-	dolog(8, "tcp_client_manager::connecting to address: %s", c.address.c_str());
+	dolog(7, "tcp_client_manager::connecting to address: %s", c.address.c_str());
 	if (open_connection(c, m_addresses.at(conn_no)))
 		return 1;
 	if (c.state == CONNECTED)
-		dolog(8, "tcp_client_manager::connection with address: %s established", c.address.c_str());
+		dolog(7, "tcp_client_manager::connection with address: %s established", c.address.c_str());
 	return c.state == NOT_CONNECTED ? 1 : 0;
 }
 
 void tcp_client_manager::do_schedule(size_t conn_no, size_t client_no) {
 	tcp_connection& c = m_tcp_connections.at(conn_no);
-	dolog(8, "tcp_client_manager::scheduling client %zu for address %s", client_no, c.address.c_str());
+	dolog(7, "tcp_client_manager::scheduling client %zu for address %s", client_no, c.address.c_str());
 	m_connection_client_map.at(conn_no).at(client_no)->scheduled(c.bufev, c.fd);
 }
 
@@ -807,15 +818,15 @@ void tcp_client_manager::connection_write_cb(struct bufferevent *ev, void* _tcp_
 		return;
 	tcp_client_manager* t = c->manager;
 	c->state = CONNECTED;
-	c->connecting_start = 0;
-	dolog(8, "tcp_client_manager: connection with address: %s established", c->address.c_str());
+	c->connecting_timeout = 0;
+	dolog(7, "tcp_client_manager: connection with address: %s established", c->address.c_str());
 	t->connection_established_cb(c->conn_no);
 }
  
 void tcp_client_manager::connection_error_cb(struct bufferevent *ev, short event, void* _tcp_connection) {
 	tcp_connection* c = (tcp_connection*) _tcp_connection;
 	tcp_client_manager* t = c->manager;
-	dolog(8, "tcp_client_manager: connection with address: %s error", c->address.c_str());
+	dolog(5, "tcp_client_manager::connection_error_cb connection with address: %s error", c->address.c_str());
 	t->client_manager::connection_error_cb(c->conn_no);
 }
 
