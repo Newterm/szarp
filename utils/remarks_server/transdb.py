@@ -17,15 +17,160 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 
+import hashlib
+
 import psycopg2
 import time
 from twisted.web import xmlrpc
+
+from twisted.python import log
+
+import datetime
+import hashlib
 
 class TransDbAccess:
 	def __init__(self, db, trans):
 		self.db = db
 		self.trans = trans
+
+        # cfglogin
+        # Update database password of autologin user
+        #@TODO: get all config hashes and compare with database in for loop
+        def hash_update(self, prefix, config_hash):
+                
+                # Fetch autologin users
+                self.trans.execute("""
+                        SELECT
+                                id, password
+                        FROM
+                                users
+                        WHERE
+                                name = %(user)s and autologin = 1
+                        """,
+                { 'user' : prefix } )
+            
+                row = self.trans.fetchone()
+                if row:
+                        if config_hash != row[1]:
+
+                                log.msg("Debug: hash_update("+prefix+","+row[1]+" -> "+config_hash+")")
+
+                                self.trans.execute("""
+                                        UPDATE 
+                                                users
+                                        SET 
+                                                password = %(password)s 
+                                        WHERE 
+                                                users.id = %(id)s
+                                        """,
+                                { 'password' : config_hash, 'id' : row[0] } )
+
+        # cfglogin
+        # Fetch cfglogin (autologin) users from database
+        def fetch_cfglogin(self):
+                # Fetch users using cfglogin
+                self.trans.execute("""
+                        SELECT
+                                name
+                        FROM
+                                users
+                        WHERE
+                                autologin = 1
+                        """)
+
+                rows = self.trans.fetchall()
+
+                # Convert query result to list of prefixes
+                cfglogin_list = []
+                if rows:
+                        for row in rows:
+                                row_list = list(row)
+                                cfglogin_list = cfglogin_list + row_list
+
+                return cfglogin_list
+
+        # cfglogin
+        # cfglogin (autologin) routine
+	def autologin(self, user, password):
+
+                # autologin format: login@prefix
+                user_data = user.split('@')
+
+                if len(user_data) != 2:
+                        return False, None, None
+
+                log.msg("Debug: autologin detected: " + user)
+        
+                # Login a prefix-wide type user
+                ok, user_id, username = self.login(user_data[1], password)
+
+                if ok:
+                        log.msg("Debug: User entry (" + user_data[1] + ", " + password + ") is authorised (config files in sync)")
+                        # Configuration files are in sync
+                        return ok, user_id, user_data[0]
+                else:
+                        log.msg("Debug: User entry (" + user_data[1] + ", " + password + ") is not authorised (checking if username exists)")
+                        # Check if user login exists in users at all
+                        self.trans.execute("""
+                                SELECT
+                                        id
+                                FROM
+                                        users
+                                WHERE
+                                        name = %(name)s
+                                """,
+                        { 'name' : user_data[1] } )
+
+                        row = self.trans.fetchone()
+
+                        if row is None:
+                                log.msg("Debug: User entry (" + user_data[1] + ", " + password + ") incorrect username")
+                                return False, None, None
+                        
+                        user_id = row[0]
+
+                        # Check hash history for given user_id
+                        log.msg("Debug: User entry (" + user_data[1] + ", " + password + ") username ok (checking hash history)")
+                        self.trans.execute("""
+			        SELECT
+				        date_created
+			        FROM
+				        hash_history
+			        WHERE
+				        user_id = %(user_id)s and password = %(password)s
+			        """,
+                        { 'user_id' : user_id, 'password' : password } )
 	
+                        rows = self.trans.fetchall()
+                        
+                        # We have a list of hash history for given user_id.
+                        # It is a list because passwords in history are not
+                        # unique. We need to see if the newest date is not 
+                        # to old for autologin.
+
+                        #for row in rows:
+                        #        log.msg("hash_hist row: " + str(row[0]))
+                        if rows:
+                                date_list = []
+                                for row in rows:
+                                        row_list = list(row)
+                                        date_list = date_list + row_list
+
+                                print date_list
+                                date_list.sort(reverse=True)
+                                print date_list
+                                # Check if not too old
+                                # If newest timestamp is older than now() by more than 93 days do not autologin
+                                if datetime.timedelta(days=93) < datetime.datetime.now() - date_list[0]:
+                                        log.msg("Debug: User entry (" + user_data[1] + ", " + password + ") password too old")
+                                        return False, None, None
+                                else:
+                                        log.msg("Debug: User entry (" + user_data[1] + ", " + password + ") password found in hash history")
+                                        return True, user_id, user_data[0]
+                        else:
+                                log.msg("Debug: User entry (" + user_data[1] + ", " + password + ") password incorrect")
+                                return False, None, None
+
 	def login(self, user, password):
 		self.trans.execute("""
 			SELECT
@@ -35,7 +180,7 @@ class TransDbAccess:
 			WHERE
 				name = %(user)s and password = %(password)s
 			""",
-			{ 'user' : user, 'password' : password } )
+		{ 'user' : user, 'password' : password } )
 	
 		row = self.trans.fetchone()
 		if row is not None:
@@ -59,8 +204,8 @@ class TransDbAccess:
 					user_prefix_access.user_id = %(user_id)s
 				AND
 					user_prefix_access.write_access = 1
-
-			""",  { 'prefix' : prefix, 'user_id': user_id })
+                        """,  
+                { 'prefix' : prefix, 'user_id': user_id })
 
 		r = self.trans.fetchall()
 		return r[0][0] if len(r) > 0 else None
@@ -127,6 +272,7 @@ class TransDbAccess:
 				set_id = %(set_id)s""",
 			{ 'set_id' : set_id })
 
+        # @hary: sname > short
 	def insert_set_draw(self, set_id, draw, draw_order):
 		draw["set_id"] = set_id
 		draw["draw_order"] = draw_order
@@ -282,6 +428,7 @@ class TransDbAccess:
 		return row[0]
 
 
+        # @hary: d.sname > d.short
 	def get_draws(self, prefixes, time):
 		self.trans.execute("""
 			SELECT 
