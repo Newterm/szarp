@@ -136,40 +136,6 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
 		fetcher = paramssets.ParamsAndSetsFetcher(self.service.db, user_id, xmlrpc_time.value, prefixes)
 		return fetcher.do_it()
 
-        # cfglogin
-
-        # XMLRPC: This method is meant to be called by user to sync /opt/szarp with remarks database after sharp root dir change
-        def xmlrpc_prefix_sync(self):
-                prefix_map = {}
-
-                # Check /opt/szarp contents
-                for prefix_dir in os.walk(SZARP_DIR).next()[1]:
-                        if prefix_dir not in NOT_A_PREFIX_LIST:
-                                # check if szbase prefix is aggregated
-                                prefix_map[prefix_dir] = []
-                                filepath = SZARP_DIR + "/" + prefix_dir + "/config/aggr.xml"
-                                if os.path.isfile(filepath):
-                                        try:
-                                                treeAggr = ET.parse(filepath)
-                                                treeAggrRoot = treeAggr.getroot()
-                                                treeAggrConfigs = treeAggrRoot.findall("{http://www.praterm.com.pl/IPK/aggregate}config")
-                                                for treeAggrConfig in treeAggrConfigs:
-                                                        prefix_map[prefix_dir].append(treeAggrConfig.attrib['prefix'])
-                                        except IOError:
-                                                log.msg("aggr.xml expected but not found")
-
-                # Update database using /opt/szarp prefix map
-                self.prefix_sync_interaction(prefix_map)
-
-        # Interaction: Sync remarks database prefixes with szarp root dir
-        # This method only adds data to database (it does not delete things from database)
-        def _prefix_sync_interaction(self, trans, prefix_map):
-                tdb = transdb.TransDbAccess(self.service.db, trans)
-                tdb.prefix_sync(prefix_map, self)
-
-        def prefix_sync_interaction(self, prefix_map):
-		return self.service.db.dbpool.runInteraction(self._prefix_sync_interaction, prefix_map)
-
         # Calculate md5 hash of configuration file for given szbase prefix name
         def get_prefix_config_md5(self, prefix):
                 try:
