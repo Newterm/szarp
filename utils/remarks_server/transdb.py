@@ -233,11 +233,16 @@ class TransDbAccess:
                 log.msg("Debug: Prefixes updated")
 
                 print diff
-                db_map_upd = db_map.copy()
-                for missing in diff:
-                        db_map_upd[missing] = []
 
-                updated = self.aggregated_update(prefix_map, db_map_upd)
+                #db_map_upd = db_map.copy()
+                #for missing in diff:
+                #        db_map_upd[missing] = []
+
+                # @TODO:
+                # Do not update aggregated of new prefixes in this sync run.
+                # Those prefixes may not yet be in database.
+                # Run sync once more.
+                updated = self.aggregated_update(prefix_map, db_map)
                 log.msg("Debug: Aggregated updated")
 
                 print updated
