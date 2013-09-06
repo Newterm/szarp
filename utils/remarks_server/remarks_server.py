@@ -74,6 +74,7 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
 		self.service = service
                 self.cfglogin_prefixes = []
                 self.db_map = {}
+		self.prefix_mod_time = {}
 
 	def check_token(f):
 		def check(self, token, *args, **kwargs):
@@ -183,9 +184,23 @@ class RemarksXMLRPCServer(xmlrpc.XMLRPC):
         # Perform hash udpate on all autologin users
         def hash_update(self):
                 for prefix in self.cfglogin_prefixes:
-                        config_hash = self.get_prefix_config_md5(prefix)
-                        if config_hash:
-                                self.hash_update_interaction(prefix, config_hash)
+			current_mod_time = os.stat("/opt/szarp/" + prefix + "/config/params.xml").st_mtime
+				
+			if prefix in self.prefix_mod_time.keys():
+				if self.prefix_mod_time[prefix] != current_mod_time:
+                			log.msg("Debug: prefix_mod_time:"+prefix+"("+str(self.prefix_mod_time[prefix])+"->"+str(current_mod_time)+")")
+					self.prefix_mod_time[prefix] = current_mod_time
+					
+                        		config_hash = self.get_prefix_config_md5(prefix)
+                        		if config_hash:
+                                		self.hash_update_interaction(prefix, config_hash)
+			else:
+                		log.msg("Debug: prefix_mod_time:"+prefix+"(None->"+str(current_mod_time)+")")
+				self.prefix_mod_time[prefix] = current_mod_time
+					
+                        	config_hash = self.get_prefix_config_md5(prefix)
+                        	if config_hash:
+                                	self.hash_update_interaction(prefix, config_hash)
         
         # Interaction: Perform hash update on specific user
         def _hash_update_interaction(self, trans, prefix, config_hash):
