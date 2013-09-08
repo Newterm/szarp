@@ -18,6 +18,24 @@ AC_CONFIG_HEADERS(config.h)
 # Set default prefix
 AC_PREFIX_DEFAULT([/opt/szarp])
 
+# Sets prefix where libraries are stored. This is designed for cross complatoin
+# where we usualy want to set --prefix=/usr/<arch> but this also affects installation
+# directory. This option only sets where to search libraries. So cross compilation
+# can be simply configured using:
+#
+#  ./configure --host=arm-linux-gnueabi --with-prefix=/usr/arm-linux-gnueabi
+#
+AC_ARG_WITH([prefix],
+	AC_HELP_STRING([--with-prefix=<dir>],
+	       [Set default path where libraries are stored. Defult is /usr/]),
+	[
+		if test "$withval" = "no" ; then
+			lib_prefix="/usr/"
+		else
+			lib_prefix="$withval"
+		fi
+	], [lib_prefix="/usr/"])
+
 # Debugging of configure script
 AC_ARG_ENABLE([debug-config],
               AC_HELP_STRING([--enable-debug-config],
@@ -357,6 +375,7 @@ fi
 
 # check for wxWidgets (sets WX_CPPFLAGS, WX_CXXFLAGS, WX_CFLAGS_ONLY, WX_LIBS)
 AM_OPTIONS_WXCONFIG
+wc_config_prefix="${lib_prefix}"
 if test "$no_wx" != "yes" ; then
         AM_PATH_WXCONFIG(2.8.0, [], [no_wx=yes])
         if test "$no_wx" = "yes" ; then
@@ -452,7 +471,7 @@ fi
 AC_SUBST(MINGW32_LIBS)
 
 # check for libxml2 (sets XML_CLAGS and XML_LIBS)
-AM_PATH_XML2(2.6.5, [no_xml=], [no_xml="yes"])
+PKG_CHECK_MODULES([XML], [libxml-2.0], [no_xml=], [no_xml="yes"])
 if test "$no_xml" = "yes" ; then
 	AC_MSG_WARN([
                               libxml2 must be installed on your system but xml2-config
@@ -467,10 +486,11 @@ if test "$no_xml" = "yes" ; then
 			      Aborting configure.
                               ])
 fi
+
 AC_PROG_XSLTPROC()
 AC_CHECK_PROG([XMLLINT], [xmllint], [xmllint], [])
 
-AM_PATH_XSLT(1.1.0, [no_xslt=], [no_xslt="yes"])
+PKG_CHECK_MODULES([XSLT], [libxslt], [no_xslt=], [no_xslt="yes"])
 if test "$no_xslt" = "yes" ; then
 	AC_MSG_WARN([
                               libxslt must be installed on your system but xslt-config
@@ -605,14 +625,14 @@ AC_ARG_WITH([curl], AC_HELP_STRING([--without-curl], [do not use curl library]),
 		fi
 	], [no_curl=""])
 if test "$no_curl" != "yes" ; then
-	AM_PATH_CURL( [], [no_curl=yes] )
-	if  test "$no_curl" = "yes" ; then
-                AC_MSG_WARN([
-                              curl library not found on your system, check if
-			      libcurl development package is installed;
-			      configuring without
-			    ])
-	fi
+	no_curl="yes"
+	PKG_CHECK_MODULES(CURL, libcurl, no_curl="no",[
+		AC_MSG_WARN([
+		      curl library not found on your system, check if
+		      libcurl development package is installed;
+		      configuring without
+		])
+	])
 fi
 AM_CONDITIONAL(HAVE_CURL, test x$no_curl != xyes)
 
@@ -667,13 +687,12 @@ if test "$no_luajit" != "yes"; then
 	])
 fi
 if test "$no_lua" != "yes" -a "$no_luajit" != "no"; then
-	AC_PATH_LUA( [], [no_lua=yes] )
-		if test x$no_lua = xyes ; then
-                AC_MSG_WARN([
+	no_lua="yes"
+	PKG_CHECK_MODULES(LUA, lua5.1, no_lua="no", [AC_MSG_RESULT([
 			liblua library not found on your system,
 			configuring without
-		])
-        fi
+								      ])
+	])
 fi
 if test "x$no_lua" = "xyes" ; then
         AC_DEFINE(NO_LUA, 1, [Define to 1 if lua is not available])
@@ -742,6 +761,7 @@ no_boost_regex="yes"
 no_boost_threads="yes"
 no_boost_system="yes"
 no_boost_program_options="yes"
+ac_boost_path="${lib_prefix}"
 AX_BOOST_BASE([no_boost_base="no"], [no_boost_base="yes"])
 if test $no_boost_base = "no" ; then
 	AX_BOOST_FILESYSTEM([no_boost_filesystem="no" ], [no_boost_filesystem="yes"])
@@ -990,7 +1010,7 @@ if test x$no_wx != xyes ; then
         if test x$host_os != xmingw32 ; then
                 IPKEDIT=ipkedit
         fi
-	HELPCOMMAND="\${prefix}/bin/wxhelp"
+	HELPCOMMAND="\${lib_prefix}/bin/wxhelp"
 else
 	HELPCOMMAND="konqueror"
 fi
@@ -1419,10 +1439,32 @@ if test x$debug_config = xyes ; then
         echo "WX_CPPFLAGS: $WX_CPPFLAGS"
         echo "WX_CXXFLAGS: $WX_CXXFLAGS"
         echo "WX_CFLAGS_ONLY: $WX_CFLAGS_ONLY"
+	echo "WC_LIBS: $WX_LIBS"
+        echo "NEWT_LIBS: $NEWT_LIBS"
+        echo "CURL_CFLAGS: $CURL_CFLAGS"
+        echo "CURL_LIBS: $CURL_LIBS"
+	echo "LUA_CFLAGS: $LUA_CFLAGS"
+	echo "LUA_LIBS: $LUA_LIBS"
+        echo "GDK_CFLAGS: $GDK_CFLAGS"
+        echo "GDK_LIBS: $GDK_LIBS"
+        echo "GTK_CFLAGS: $GTK_CFLAGS"
+        echo "GTK_LIBS: $GTK_LIBS"
         echo "XML_CFLAGS: $XML_CFLAGS"
         echo "XML_LIBS: $XML_LIBS"
-        echo "NEWT_LIBS: $NEWT_LIBS"
-        echo "CURL_LIBS: $CURL_LIBS"
+        echo "XSLT_CFLAGS: $XSLT_CFLAGS"
+        echo "XSLT_LIBS: $XSLT_LIBS"
+        echo "WNCK_CFLAGS: $WNCK_CFLAGS"
+        echo "WNCK_LIBS: $WNCK_LIBS"
+        echo "SQLITE3_CFLAGS: $SQLITE3_CFLAGS"
+        echo "SQLITE3_LIBS: $SQLITE3_LIBS"
+        echo "GSTREAMER_CFLAGS: $GSTREAMER_CFLAGS"
+        echo "GSTREAMER_LIBS: $GSTREAMER_LIBS"
+        echo "EVENT_CFLAGS: $EVENT_CFLAGS"
+        echo "EVENT_LIBS: $EVENT_LIBS"
+        echo "WNCK_CFLAGS: $WNCK_CFLAGS"
+        echo "WNCK_LIBS: $WNCK_LIBS"
+        echo "BOOST_CPPFLAGS: $BOOST_CPPFLAGS"
+        echo "BOOST_LIBS: $BOOST_LIBS"
         echo "ZIP_CFLAGS: $ZIP_CFLAGS"
         echo "ZIP_LIBS: $ZIP_LIBS"
 fi

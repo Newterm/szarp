@@ -81,7 +81,14 @@ while response.status in [301, 302]:
 	response = connection.getresponse()
 
 # get XML data using open connection
-xml = etree.XML(response.read().lstrip(' \t\n'))
+data = response.read().lstrip(' \t\n')
+xml = etree.XML(data)
+
+sample_time = xml.find('Day/Time')
+if 'name' in sample_time.keys():
+	use_time_names = True
+else:
+	use_time_names = False
 
 # save output
 cache_min = []
@@ -92,8 +99,12 @@ for date in xml:
 	for time in date:
 		tmin = time.find('tmin')
 		tmax = time.find('tmax')
-		cache_min.append((int(tmin.text), datetime.datetime(int(year), int(month), int(day), int(time.get('time')[:2]) , 0) ))
-		cache_max.append((int(tmax.text), datetime.datetime(int(year), int(month), int(day), int(time.get('time')[:2]) , 0) ))
+		if use_time_names:
+			cache_min.append((int(tmin.text), datetime.datetime(int(year), int(month), int(day), hours[time.get('name')], 0) - shift[time.get('name')]))
+			cache_max.append((int(tmax.text), datetime.datetime(int(year), int(month), int(day), hours[time.get('name')], 0) - shift[time.get('name')]))
+		else:
+			cache_min.append((int(tmin.text), datetime.datetime(int(year), int(month), int(day), int(time.get('time')[:2]) , 0) ))
+			cache_max.append((int(tmax.text), datetime.datetime(int(year), int(month), int(day), int(time.get('time')[:2]) , 0) ))
 
 	# add data for end of period
 	cache_min.append((int(tmin.text), datetime.datetime(int(year), int(month), int(day)) +

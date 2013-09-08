@@ -204,6 +204,7 @@ unsigned int speed2const(int speed) {
 		case 38400:
 			return B38400;
 		default:
+			dolog(0, "WARNING: setting default port speed: 9600");
 			return B9600;
 	}
 }
@@ -946,7 +947,13 @@ void SBUSUnit::ProcessResponse() {
 		m_response.Resize(m_expected_response_size * 2);	// drop excessive bytes
 	if (m_protocol != SBUS_PCD) {
 		Buffer temp_buffer = m_response;
-		m_response = DecodeB5Values(temp_buffer, temp_buffer.Size());
+		try {
+			m_response = DecodeB5Values(temp_buffer, temp_buffer.Size());
+		} catch (...) {
+			dolog(1, "%s: Error occurred while decoding response values", GetId());
+			BadResponse();
+			return;
+		}
 	}
 	if (m_response.Size() != m_expected_response_size) {
 		dolog(1, "%s: Invalid lenght of response for device %d, expected:%zu, got:%zu",

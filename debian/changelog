@@ -1,3 +1,21 @@
+szarp (3.1.709) stable; urgency=low
+
+  * building stable
+
+ -- Jakub Kotur <qba@bender>  Mon, 08 Jul 2013 18:32:33 +0200
+
+szarp (3.1.707) stable; urgency=low
+
+  * building stable
+
+ -- root <root@fry>  Mon, 27 May 2013 16:04:31 +0000
+
+szarp (3.1.706) stable; urgency=low
+
+  * building stable
+
+ -- Jakub Kotur <qba@newterm.pl>  Thu, 16 May 2013 23:50:10 +0200
+
 szarp (3.1.705) unstable; urgency=low
 
   * building unstable

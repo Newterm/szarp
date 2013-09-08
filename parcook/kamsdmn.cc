@@ -290,6 +290,8 @@ void kams_daemon::Do()
 			SelectSerialMode(m_read_mode);
 			m_state = READ;
 			wait_ms = m_wait_for_data_ms;
+			dolog(10, "%s: waiting for data, wait time = %dms", m_id.c_str(),
+				m_wait_for_data_ms);
 			break;
 		case READ:
 			try {

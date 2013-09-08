@@ -185,10 +185,12 @@ class zet_proto_impl {
 	void start_timer();
 	void stop_timer();
 protected:
+	driver_logger m_log;
 	virtual void driver_finished_job() = 0;
 	virtual void terminate_connection() = 0;
 	virtual struct event_base* get_event_base() = 0;
 public:
+	zet_proto_impl(boruta_driver* driver);
 	void send_query(struct bufferevent* bufev);
 	virtual void starting_new_cycle();
 	virtual void connection_error(struct bufferevent *bufev);
@@ -204,6 +206,8 @@ protected:
 	virtual void terminate_connection();
 	struct event_base* get_event_base();
 public:
+	zet_proto_tcp();
+	const char* driver_name() { return "zet_tcp_driver"; }
 	virtual void starting_new_cycle();
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
@@ -217,6 +221,8 @@ protected:
 	virtual void terminate_connection();
 	struct event_base* get_event_base();
 public:
+	zet_proto_serial();
+	const char* driver_name() { return "zet_serial_driver"; }
 	virtual void starting_new_cycle();
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
@@ -240,9 +246,12 @@ void zet_proto_impl::stop_timer() {
 	event_del(&m_timer);
 }
 
+zet_proto_impl::zet_proto_impl(boruta_driver* driver) : m_log(driver) 
+{}
+
 void zet_proto_impl::send_query(struct bufferevent* bufev) {
 	std::stringstream ss;
-	ss << "\x11\x02P" << m_id << "\x03";
+	ss << "\x11\x02P" << m_id ;
 	bool sending_data = false;
 	unsigned short sender_checksum = 0;
 	for (size_t i = 0; i < m_send_count; i++) { 
@@ -297,18 +306,18 @@ void zet_proto_impl::data_ready(struct bufferevent* bufev, int fd) {
 		tokenize_d(&m_buffer[0], &toks, &tokc, "\r");
 		if (tokc < 3) {
 			tokenize_d(NULL, &toks, &tokc, NULL);
-			dolog(5, "Unable to parse response from ZET/SK, it is invalid");
+			m_log.log(5, "Unable to parse response from ZET/SK, it is invalid");
 			throw std::invalid_argument("Wrong response format");
 		}
 		size_t params_count = tokc - 5;
 		if (params_count != m_read_count) {
-			dolog(5, "Invalid number of values received, expected: %zu, got: %zu", m_read_count, params_count);
+			m_log.log(5, "Invalid number of values received, expected: %zu, got: %zu", m_read_count, params_count);
 			tokenize_d(NULL, &toks, &tokc, NULL);
 			throw std::invalid_argument("Wrong number or values");
 		}
 		char id = toks[2][0];
 		if (id != m_id) {
-			dolog(5, "Invalid id in response, expected: %c, got: %c", m_id, id);
+			m_log.log(5, "Invalid id in response, expected: %c, got: %c", m_id, id);
 			tokenize_d(NULL, &toks, &tokc, NULL);
 			throw std::invalid_argument("Wrong id in response");
 		}
@@ -321,7 +330,7 @@ void zet_proto_impl::data_ready(struct bufferevent* bufev, int fd) {
 		for (char *c = &m_buffer[m_data_in_buffer - 1]; *c == '\r'; c--) 
 			checksum -= (uint) *c;
 		if (checksum != atoi(toks[tokc-1])) {
-			dolog(4, "ZET/SK driver, wrong checksum");
+			m_log.log(4, "ZET/SK driver, wrong checksum");
 			tokenize_d(NULL, &toks, &tokc, NULL);
 			throw std::invalid_argument("Wrong checksum");
 		}
@@ -354,7 +363,7 @@ int zet_proto_impl::configure(TUnit* unit, xmlNodePtr node, short* read, short *
 	} else if (plc == "zet") {
 		m_plc_type = ZET;
 	} else {
-		dolog(0, "Invalid value of plc attribute %s, line:%ld", plc.c_str(), xmlGetLineNo(node));
+		m_log.log(0, "Invalid value of plc attribute %s, line:%ld", plc.c_str(), xmlGetLineNo(node));
 		return 1;
 	}
 	TSendParam *sp = unit->GetFirstSendParam();
@@ -388,6 +397,8 @@ struct event_base* zet_proto_tcp::get_event_base() {
 	return m_event_base;
 }
 
+zet_proto_tcp::zet_proto_tcp() : zet_proto_impl(this) {}
+
 void zet_proto_tcp::starting_new_cycle() {
 	zet_proto_impl::starting_new_cycle();
 }
@@ -419,6 +430,8 @@ void zet_proto_serial::terminate_connection() {
 struct event_base* zet_proto_serial::get_event_base() {
 	return m_event_base;
 }
+
+zet_proto_serial::zet_proto_serial() : zet_proto_impl(this) {}
 
 void zet_proto_serial::starting_new_cycle() {
 	zet_proto_impl::starting_new_cycle();

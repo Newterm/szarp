@@ -173,10 +173,10 @@ void ParamsListDialog::LoadParams() {
 	wxString filter = m_search_text->GetValue().Lower();
 
 	long j = 0;
-	for (std::vector<DefinedParam*>::const_iterator i = dps.begin();
-			i != dps.end();
-			i++, j++) {
-		DefinedParam* dp = *i;
+	for (std::vector<DefinedParam*>::const_iterator itr = dps.begin();
+			itr != dps.end();
+			itr++, j++) {
+		DefinedParam* dp = *itr;
 		wxString text = dp->GetBasePrefix() + _T(":") + dp->GetParamName();
 
 		if (!filter.IsEmpty() && text.Lower().Find(filter) == wxNOT_FOUND)

@@ -47,6 +47,7 @@
 #include "bitmaps/flag_checkered.xpm"
 #include "bitmaps/oldverwarn.xpm"
 #include "bitmaps/draw_tree.xpm"
+#include "bitmaps/florence.xpm"
 
 DrawToolBar::DrawToolBar(wxWindow *parent) :
 	wxToolBar(parent,-1)
@@ -60,6 +61,10 @@ DrawToolBar::DrawToolBar(wxWindow *parent) :
 	AddTool(drawTB_FILTER, _T(""),filter0_xpm, _("Filter"));
 	AddTool(drawTB_REFRESH, _T(""),refresh_xpm, _("Refresh"));
 	AddTool(drawTB_DRAWTREE, _T(""),draw_tree_xpm, _("Tree Set"));
+/** disable florence keyboard in windows builds */
+#ifndef MINGW32
+	AddTool(drawTB_FLORENCE, _T(""), florence_xpm, _("Show screen keyboard"));
+#endif
 	AddTool(drawTB_GOTOLATESTDATE, _T(""), flag_checkered_xpm, _("Go to latest date"));
 	AddTool(drawTB_REMARK, _T(""), remark_xpm, _("Remarks"));
 	AddTool(drawTB_EXIT, _T(""),exit_xpm, _("Quit"));

@@ -45,9 +45,10 @@ std::string wmtp_calculate_ctrlsum(std::string str) {
 /** Parses WMTP responses */
 class wmtp_response_parser {
 public:
-	wmtp_response_parser() :  m_address("00"), m_main_counter(0),
+	wmtp_response_parser(driver_logger* log) :  m_address("00"), m_main_counter(0),
 		m_weighing_point_shifted(false), m_conveyor_running(false), m_efficiency(0), 
-		m_communication_mode('x'), m_fun_id("xx"), m_fun_val(0), m_endline(false){
+		m_communication_mode('x'), m_fun_id("xx"), m_fun_val(0), m_endline(false), m_log(log)
+		{
 		m_values[WMTP_EFFICIENCY] = 0;
 		m_values[WMTP_COUNTER_MSW] = 0;
 		m_values[WMTP_COUNTER_LSW] = 0;
@@ -70,10 +71,10 @@ public:
 			COMMUNICATION_MODE, FUN_ID, FUN_VAL, CTRL_SUM};
 		
 		m_response = response;
-		dolog(10, "Response being parsed: %s", response.c_str());
+		m_log->log(10, "Response being parsed: %s", response.c_str());
 		boost::cmatch matches;
 		if (boost::regex_match(response.c_str(), matches, re)) {
-			dolog(10, "Parse OK");
+			m_log->log(10, "Parse OK");
 			// check ctrl sum
 			if (ctrlsum_check) {
 				boost::regex rectrl("\\[([^]]*)\\]" + sre_ctrlsum + sre_lineend);
@@ -85,11 +86,11 @@ public:
 	
 				std::string calculated_ctrl_sum = wmtp_calculate_ctrlsum(command_root);
 				if (ctrl_sum != calculated_ctrl_sum) {
-					dolog(1, "Ctrl sum mismatch! calculated: %s received: %s",
+					m_log->log(1, "Ctrl sum mismatch! calculated: %s received: %s",
 						calculated_ctrl_sum.c_str(), ctrl_sum.c_str());
 					//TODO error? ignore?
 				} else {
-					dolog(10, "Ctrl sum OK.");
+					m_log->log(10, "Ctrl sum OK.");
 				}
 			}
 
@@ -132,7 +133,7 @@ public:
 			m_fun_val = boost::lexical_cast<unsigned int>(fun_value);
 
 		} else {
-			dolog(1, "Parse Failed");
+			m_log->log(1, "Parse Failed");
 			return false;
 		}
 		return true;
@@ -181,6 +182,8 @@ protected:
 protected:
 	bool m_endline;			/**< true if \n occured in feed() */
 	std::string m_response;		/**< whole response being parsed */
+
+	driver_logger *m_log;
 	
 };
 
@@ -237,7 +240,7 @@ protected:
 
 class wmtp_driver : public tcp_client_driver {
 public:
-	wmtp_driver() : m_read(NULL), m_auto_params_retrieved(false)
+	wmtp_driver() : m_log(this), m_read(NULL), m_auto_params_retrieved(false), m_response_parser(&m_log)
 	{
 		m_default_param = WMTP_CONVEYOR_SPEED;
 		m_auto_params[m_default_param] = false;
@@ -251,6 +254,8 @@ public:
 		m_auto_params[WMTP_WEIGHING_POINT_SHIFTED] = true;
 		m_auto_params[WMTP_CONVEYOR_RUNS] = true;
 	}
+
+	const char* driver_name() { return "wmtp_driver"; }
 
 	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send);
 	
@@ -297,6 +302,8 @@ protected:
 protected:
 	typedef std::map<std::string, unsigned int> offset_map;
 
+	driver_logger m_log;
+
 	std::string m_address;		/**< address of WMTP device */
 	short *m_read;			/**< buffer for writing received params values */
 
@@ -320,6 +327,7 @@ protected:
 	std::string m_input_buffer;
 					/**< buffer storing incoming chars */
 	struct event m_timer;		/**< for timeout handling */
+
 };
 
 void wmtp_driver::start_timer() {
@@ -366,16 +374,16 @@ void wmtp_driver::finalize() {
 	// notify communication layer manager
 	m_manager->driver_finished_job(this);
 
-	dolog(10, "WMTP driver received in cycle: ");
+	m_log.log(10, "WMTP driver received in cycle: ");
 	for (offset_map::iterator it = m_requested_params.begin();
 		it != m_requested_params.end(); ++it) {
 		
 		std::string param_name = it->first;
 		short value = read_param_value(param_name);
 		if (value == SZARP_NO_DATA)
-			dolog(10, "%s : NO_DATA", param_name.c_str());
+			m_log.log(10, "%s : NO_DATA", param_name.c_str());
 		else
-			dolog(10, "%s : %d", param_name.c_str(), value);
+			m_log.log(10, "%s : %d", param_name.c_str(), value);
 	}
 }
 
@@ -384,7 +392,7 @@ void wmtp_driver::timeout_cb(int fd, short event, void *_wmtp_driver) {
 	if (z->m_last_request_it != z->m_necessary_requests.end()) {
 		z->finalize();
 	}
-	dolog(1, "WMTP timeout");
+	z->m_log.log(1, "WMTP timeout");
 }
 
 void wmtp_driver::request_next(struct bufferevent* bufev) {
@@ -404,7 +412,7 @@ void wmtp_driver::request_next(struct bufferevent* bufev) {
 		// next param request
 		m_input_buffer.clear();
 		std::string request = m_request_producer.produce(*m_last_request_it);
-		dolog(10, "WMTP sending request for : %s", (*m_last_request_it).c_str());
+		m_log.log(10, "WMTP sending request for : %s", (*m_last_request_it).c_str());
 		bufferevent_write(bufev, (void*)request.c_str(), request.size());
 		start_timer();
 	}
@@ -458,7 +466,7 @@ int wmtp_driver::configure(TUnit* unit, xmlNodePtr node, short* read, short *sen
 		return 1;
 	m_request_producer.initialize(m_address);
 
-	dolog(0, "Boruta WMTP configure() - address is: %s", m_address.c_str());
+	m_log.log(0, "Boruta WMTP configure() - address is: %s", m_address.c_str());
 
 	// read target memory space
 	m_read = read;
@@ -476,7 +484,7 @@ int wmtp_driver::configure(TUnit* unit, xmlNodePtr node, short* read, short *sen
 
 		// check if param name is valid
 		if (m_auto_params.find(param_name) == m_auto_params.end()) {
-			dolog(0, "ERROR: param extra:name invalid: %s", param_name.c_str());
+			m_log.log(0, "ERROR: param extra:name invalid: %s", param_name.c_str());
 			return 1;
 		}
 		m_requested_params[param_name] = offset_in_shared_memory;
@@ -494,16 +502,16 @@ int wmtp_driver::configure(TUnit* unit, xmlNodePtr node, short* read, short *sen
 		m_necessary_requests.push_back(m_default_param);
 	}
 	
-	dolog(2, "Requested params are: ");
+	m_log.log(2, "Requested params are: ");
 	for (offset_map::iterator it = m_requested_params.begin();
 		it != m_requested_params.end(); ++it) {
 		
 		std::string param_name = it->first;
-		dolog(2, "%s at offset: %d", it->first.c_str(), it->second);
+		m_log.log(2, "%s at offset: %d", it->first.c_str(), it->second);
 	}
-	dolog(2, "Necessary requests are: ");
+	m_log.log(2, "Necessary requests are: ");
 	for (std::vector<std::string>::iterator it = m_necessary_requests.begin(); it != m_necessary_requests.end(); ++it) {
-		dolog(2, (*it).c_str());
+		m_log.log(2, (*it).c_str());
 	}
 	
 	// initialize requests iterator

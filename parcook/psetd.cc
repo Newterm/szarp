@@ -37,6 +37,7 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <assert.h>
+#include <unistd.h>
 
 #include <netinet/in.h>
 #include <netinet/tcp.h>

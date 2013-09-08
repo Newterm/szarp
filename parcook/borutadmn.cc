@@ -117,10 +117,26 @@
 
 bool g_debug = false;
 
+driver_logger::driver_logger(boruta_driver* driver) : m_driver(driver) {
+}
+
+void driver_logger::log(int level, const char * fmt, ...) {
+	va_list fmt_args;
+	va_start(fmt_args, fmt);
+	m_driver->vdriver_log(level, fmt, fmt_args);
+	va_end(fmt_args);
+}
+
+void driver_logger::vlog(int level, const char * fmt, va_list fmt_args) {
+	m_driver->vdriver_log(level, fmt, fmt_args);
+}
+
 /*implementation*/
 
 std::string sock_addr_to_string(struct sockaddr_in& addr) {
-	return inet_ntoa(addr.sin_addr);
+	std::stringstream ss;
+	ss << inet_ntoa(addr.sin_addr) << ":" << ntohs(addr.sin_port);
+	return ss.str();
 }
 
 int set_nonblock(int fd) {
@@ -300,12 +316,28 @@ void boruta_driver::set_event_base(struct event_base* ev_base)
 	m_event_base = ev_base;
 }
 
+void boruta_driver::set_address_string(const std::string& str) {
+	m_address_string = str;		
+}
+
 const std::pair<size_t, size_t> & client_driver::id() {
 	return m_id;
 }
 
 void client_driver::set_id(std::pair<size_t, size_t> id) {
 	m_id = id;
+}
+
+void client_driver::vdriver_log(int level, const char * fmt, va_list fmt_args)
+{
+	char *l;
+	if (vasprintf(&l, fmt, fmt_args) != -1) {
+		::dolog(level, "%s:%s:%d:%s", driver_name(), m_address_string.c_str(), m_id.second, l);
+		free(l);
+	} else {
+		::dolog(2, "Error in formatting log message, driver: %s, address: %s, error: %s",
+					driver_name(), m_address_string.c_str(), strerror(errno));
+	}
 }
 
 void client_driver::set_manager(client_manager* manager) {
@@ -324,7 +356,21 @@ size_t& server_driver::id() {
 	return m_id;
 }
 
+void server_driver::vdriver_log(int level, const char * fmt, va_list fmt_args)
+{
+	char *l;
+	if (vasprintf(&l, fmt, fmt_args) != -1) {
+		dolog(level, "%s:%s:%s", driver_name(), m_address_string.c_str(), l);
+		free(l);
+	} else {
+		dolog(2, "Error in formatting log message, driver: %s, address: %s, error: %s",
+					driver_name(), m_address_string.c_str(), strerror(errno));
+	}
+}
+
 tcp_proxy_2_serial_client::tcp_proxy_2_serial_client(serial_client_driver* _serial_client) : m_serial_client(_serial_client) { }
+
+
 
 const std::pair<size_t, size_t> & tcp_proxy_2_serial_client::id() {
 	return m_serial_client->id();
@@ -341,6 +387,11 @@ void tcp_proxy_2_serial_client::set_manager(client_manager* manager) {
 void tcp_proxy_2_serial_client::set_event_base(struct event_base* ev_base) {
 	m_serial_client->set_event_base(ev_base);
 }
+
+const char* tcp_proxy_2_serial_client::driver_name() {
+	return m_serial_client->driver_name();
+}
+
 
 void tcp_proxy_2_serial_client::connection_error(struct bufferevent *bufev) {
 	m_serial_client->connection_error(bufev);
@@ -374,7 +425,6 @@ int tcp_proxy_2_serial_client::configure(TUnit* unit, xmlNodePtr node, short* re
 tcp_proxy_2_serial_client::~tcp_proxy_2_serial_client() {
 	delete m_serial_client;
 }
-
 
 void serial_server_driver::set_manager(serial_server_manager* manager) {
 	m_manager = manager;
@@ -521,7 +571,8 @@ void client_manager::starting_new_cycle() {
 			(*j)->starting_new_cycle();
 	for (size_t connection = 0; connection < m_connection_client_map.size(); connection++) {
 		size_t& client = m_current_client.at(connection);
-		if (do_get_connection_state(connection) == NOT_CONNECTED) {
+		CONNECTION_STATE cstate = do_get_connection_state(connection);
+		if (cstate == NOT_CONNECTED || cstate == CONNECTING) {
 			if (do_establish_connection(connection)) {
 				for (size_t c = 0; c < m_connection_client_map.at(connection).size(); c++)
 					m_connection_client_map.at(connection).at(c)->connection_error(NULL);
@@ -607,7 +658,7 @@ void client_manager::connection_established_cb(size_t connection) {
 	do_schedule(connection, current_client);
 }
 
-tcp_client_manager::tcp_connection::tcp_connection(tcp_client_manager *_manager, size_t _addr_no, std::string _address) : state(NOT_CONNECTED), fd(-1), bufev(NULL), conn_no(_addr_no), manager(_manager), address(_address) {}
+tcp_client_manager::tcp_connection::tcp_connection(tcp_client_manager *_manager, size_t _addr_no, std::string _address) : state(NOT_CONNECTED), fd(-1), bufev(NULL), conn_no(_addr_no), connecting_start(0), manager(_manager), address(_address) {}
 
 int tcp_client_manager::configure_tcp_address(xmlNodePtr node, struct sockaddr_in &addr) {
 	std::string address;
@@ -653,6 +704,7 @@ do_connect:
 		goto do_connect;
 	} else if (errno == EWOULDBLOCK || errno == EINPROGRESS) {
 		c.state = CONNECTING;
+		c.connecting_start = time(NULL);
 	} else {
 		dolog(0, "Failed to connect: %s", strerror(errno));
 		close_connection(c);
@@ -680,6 +732,17 @@ void tcp_client_manager::do_terminate_connection(size_t conn_no) {
 
 int tcp_client_manager::do_establish_connection(size_t conn_no) {
 	tcp_connection &c = m_tcp_connections.at(conn_no);
+	if (c.state == CONNECTING) {
+	    time_t now = time(NULL);
+	    if (c.connecting_start + 30 < now) {
+		dolog(2,
+		    "tcp_client_manager::do_establish_connection connecting with %s last too long, retrying",
+		    c.address.c_str());
+		close_connection(c);
+		return 1;
+	    }
+	    return 0;
+	}
 	dolog(8, "tcp_client_manager::connecting to address: %s", c.address.c_str());
 	if (open_connection(c, m_addresses.at(conn_no)))
 		return 1;
@@ -717,7 +780,10 @@ int tcp_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, sho
 		m_connection_client_map.push_back(std::vector<client_driver*>());
 		m_tcp_connections.push_back(tcp_connection(this, i, sock_addr_to_string(addr)));
 	}
+
 	driver->set_id(std::make_pair(i, m_connection_client_map[i].size()));
+	driver->set_address_string(sock_addr_to_string(addr));
+
 	m_connection_client_map[i].push_back(driver);
 	return 0;
 }
@@ -741,6 +807,7 @@ void tcp_client_manager::connection_write_cb(struct bufferevent *ev, void* _tcp_
 		return;
 	tcp_client_manager* t = c->manager;
 	c->state = CONNECTED;
+	c->connecting_start = 0;
 	dolog(8, "tcp_client_manager: connection with address: %s established", c->address.c_str());
 	t->connection_established_cb(c->conn_no);
 }
@@ -804,6 +871,7 @@ int serial_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, 
 	m_connection_client_map.at(j).push_back(driver);
 	m_configurations.at(j).push_back(spc);
 	driver->set_id(std::make_pair(j, m_connection_client_map.at(j).size() - 1));
+	driver->set_address_string(spc.path);
 	return 0;
 }
 
