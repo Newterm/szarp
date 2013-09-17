@@ -219,6 +219,10 @@ struct lua_parser : qi::grammar<std::wstring::const_iterator, chunk(), lua_skip_
 	qi::rule<std::wstring::const_iterator, std::vector<expression>(), space> eexplist_;
 	qi::rule<std::wstring::const_iterator, space> fieldsep_;
 
+	addop_symbols* addop_symbols_;
+	cmpop_symbols* cmpop_symbols_;
+	mulop_symbols* mulop_symbols_;
+	unop_symbols* unop_symbols_;
 public:
 	lua_parser() : lua_parser::base_type(chunk_) {
 		using qi::lit;
@@ -371,7 +375,11 @@ public:
 			mul_,
 			unop_,
 			pow_,
-			term_
+			term_,
+			&addop_symbols_,
+			&cmpop_symbols_,
+			&mulop_symbols_,
+			&unop_symbols_
 			);
 		/*
 		 We have following rules that cannot be directly fed to spirit
@@ -488,6 +496,12 @@ public:
 		//BOOST_SPIRIT_DEBUG_NODE(qi::double_);
 	}
 
+	~lua_parser() {
+		delete addop_symbols_;
+		delete cmpop_symbols_;
+		delete mulop_symbols_;
+		delete unop_symbols_;
+	}
 };
 
 bool parse(std::wstring::const_iterator& iter, std::wstring::const_iterator &end, chunk& chunk_) {

@@ -13,7 +13,7 @@
 
 #include "lua_syntax.h"
 #include "lua_parser_extra.h"
-#include "lua_syntax_fusion_adapt.h"
+#include "szarp_base_common/lua_syntax_fusion_adapt.h"
 #include "conversion.h"
 
 namespace lua_grammar {
@@ -76,24 +76,29 @@ void operators_precedence(
 	qi::rule<std::wstring::const_iterator, mul_exp(), lua_skip_parser>& mul_,
 	qi::rule<std::wstring::const_iterator, unop_exp(), lua_skip_parser>& unop_,
 	qi::rule<std::wstring::const_iterator, pow_exp(), lua_skip_parser>& pow_,
-	qi::rule<std::wstring::const_iterator, term(), lua_skip_parser>& term_)
+	qi::rule<std::wstring::const_iterator, term(), lua_skip_parser>& term_,
+	addop_symbols** addop_symbols_,
+	cmpop_symbols** cmpop_symbols_,
+	mulop_symbols** mulop_symbols_,
+	unop_symbols** unop_symbols_
+)
 {
 	using qi::_1;
 	using qi::_val;
 
-	addop_symbols addop_symbols_;
-	cmpop_symbols cmpop_symbols_;
-	mulop_symbols mulop_symbols_;
-	unop_symbols unop_symbols_;
+	*addop_symbols_ = new addop_symbols();
+	*cmpop_symbols_ = new cmpop_symbols();
+	*mulop_symbols_ = new mulop_symbols();
+	*unop_symbols_ = new unop_symbols();
 
 	expression_ = or_ [_val = _1];
 	or_ = and_ % L"or";
 	and_ =  cmp_ % L"and";
-	cmp_ = concat_ >> *(cmpop_symbols_ >> concat_);
+	cmp_ = concat_ >> *((**cmpop_symbols_) >> concat_);
 	concat_ = add_ % L"..";
-	add_ = mul_ >> *(addop_symbols_ >> mul_);
-	mul_ = unop_ >> *(mulop_symbols_ >> unop_);
-	unop_ = *unop_symbols_ >> pow_;
+	add_ = mul_ >> *((**addop_symbols_) >> mul_);
+	mul_ = unop_ >> *((**mulop_symbols_) >> unop_);
+	unop_ = *(**unop_symbols_) >> pow_;
 	pow_ = term_ % L"^";
 }
 
