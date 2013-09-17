@@ -288,6 +288,10 @@ Sz4Base::Sz4Base(const std::wstring& data_dir, IPKContainer* ipk_conatiner) {
 	base = new sz4::base(data_dir, ipk_conatiner);
 }
 
+Sz4Base::~Sz4Base() {
+	delete base;
+}
+
 void Sz4Base::RemoveConfig(const std::wstring& prefix, bool poison_cache) {
 
 }
@@ -382,6 +386,10 @@ void Sz4Base::ResetBuffer(DatabaseQuery* query) {
 }
 
 void Sz4Base::ClearCache(DatabaseQuery* query) {
+
+}
+
+void Sz4Base::StopSearch() {
 
 }
 

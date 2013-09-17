@@ -58,16 +58,29 @@ public:
 		}
 	};
 
+	struct entry_cmp_by_value_and_version {
+		bool operator()(const entry_type& e1, const entry_type& e2) const {
+			return e1.value == e2.value && e1.version == e2.version;
+		}
+	};
+	
+	struct entry_merge {
+		void operator()(entry_type& e1, const entry_type& e2, const entry_type& e3) const {
+			e1.reffered_blocks.insert(e2.reffered_blocks.begin(), e2.reffered_blocks.end());
+			e1.reffered_blocks.insert(e3.reffered_blocks.begin(), e3.reffered_blocks.end());
+		}
+	};
+
 	typedef def_cache_value_type::value_time_type<entry_type, time_type> value_time_type;
 
-	class block_type : public value_time_block<value_time_type> {
+	class block_type : public value_time_block<value_time_type, entry_cmp_by_value_and_version, entry_merge> {
 		definable_param_cache<value_type, time_type>* m_param_cache;
 	public:
 		block_type(const time_type& time,
 			block_cache* cache,
 			definable_param_cache<value_type, time_type>* param_cache)
 			:
-			value_time_block<value_time_type>(time, cache),
+			value_time_block<value_time_type, entry_cmp_by_value_and_version, entry_merge>(time, cache),
 			m_param_cache(param_cache) 
 		{}
 

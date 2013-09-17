@@ -69,8 +69,15 @@ public:
 	virtual ~generic_block();
 };
 
+template<class T> struct empty_merge {
+	void operator()(T& t, T& t2, T& t3) const {}
+};
 
-template<class value_time_type> class value_time_block : public generic_block {
+template<
+	class value_time_type,
+	class value_cmp = std::equal_to<typename value_time_type::value_type>,
+	class value_merge = empty_merge<typename value_time_type::value_type>
+> class value_time_block : public generic_block {
 public:
 	typedef typename value_time_type::value_type value_type;
 	typedef typename value_time_type::time_type time_type;
@@ -204,8 +211,13 @@ public:
 
 	void maybe_merge_3_block_entries(typename value_time_vector::iterator i) {
 		cache_block_size_updater(m_cache, this);
-		if (i != m_data.begin() && (i + 1) != m_data.end() && (i - 1)->value == i->value && i->value == (i + 1)->value) {
+		if (i != m_data.begin()
+				&& (i + 1) != m_data.end()
+				&& value_cmp()((i - 1)->value, i->value)
+				&& value_cmp()(i->value, (i + 1)->value))
+		{
 			(i - 1)->time = (i + 1)->time;
+			value_merge()((i - 1)->value, i->value, (i + 1)->value);
 			m_data.erase(i, i + 2);
 		}
 	}
