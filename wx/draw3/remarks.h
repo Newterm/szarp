@@ -41,6 +41,13 @@
 #include <xmlrpc-epi/xmlrpc.h>
 #include <libxml/tree.h>
 
+#ifndef MINGW32
+
+/* cfglogin includes */
+#include <deque>
+
+#endif /*MINGW32*/
+
 #include <boost/shared_ptr.hpp>
 
 #include "biowxsock.h"
@@ -49,6 +56,7 @@
 
 class Remark {
 public:
+
 	typedef std::pair<int, int> ID;
 private:
 	boost::shared_ptr<xmlDoc> m_doc;
@@ -471,6 +479,29 @@ class RemarksHandler : public wxEvtHandler {
 
 	bool m_configured;
 
+#ifndef MINGW32
+
+        /* cfglogin variables */
+
+        /* cfglogin method of authorization was used */
+        bool m_cfglogin;
+        /* Number of times login retry was used */
+        unsigned int m_cfglogin_cnt;
+        /* Hash history */
+        std::deque<wxString> hash_history;
+
+        /* Maximum number of times to allow login retry */
+        static const unsigned int c_cfglogin_max;
+        /* Event id for auto fetch timer */
+        static const int c_timer_id;
+        /* Event id for cfglogin timer */
+        static const int c_cfglogin_timer_id;
+
+        /* cfglogin timer */
+        wxTimer m_cfglogin_timer;
+        
+#endif /*MINGW32*/
+
 	wxString m_username;
 	wxString m_password;
 	wxString m_server;
@@ -485,7 +516,17 @@ class RemarksHandler : public wxEvtHandler {
 	wxTimer m_timer;
 
 	void GetConfigurationFromSSCConfig();
+
+#ifndef MINGW32
+
+        /* cfglogin private methods */
+
+        void GetConfigurationFromSzarpCfg();
+
+#endif /*MINGW32*/
+
 public:
+
 	RemarksHandler(ConfigManager *config_manager);
 
 	void AddRemarkReceiver(RemarksReceiver* fetcher);
@@ -501,6 +542,16 @@ public:
 	std::set<std::wstring> GetPrefixes();
 
 	bool Configured();
+
+#ifndef MINGW32
+
+        /* cfglogin public methods */
+
+        bool CfgConfigured();
+        wxString GetHistoryHash();
+        void OnCfgLoginTimer(wxTimerEvent &event);
+        
+#endif /*MINGW32*/
 
 	void GetConfiguration(wxString& username, wxString& password, wxString &server, bool& autofetch);
 

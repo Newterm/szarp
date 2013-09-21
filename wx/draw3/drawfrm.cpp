@@ -1007,6 +1007,15 @@ void DrawFrame::OnConfigureRemarks(wxCommandEvent &event) {
 	
 	remarks_handler->GetConfiguration(username, password, server, autofetch);
 
+#ifndef MINGW32
+
+        /* Authorization details from szarp.cfg will not be visible */
+        if (remarks_handler->CfgConfigured()) { 
+                username = password = server = wxEmptyString;
+        }
+
+#endif /*MINGW32*/
+
 	RemarksConfigurationDialog d(this, username, password, server, autofetch);
 
 	if (d.ShowModal() == wxID_OK) {
