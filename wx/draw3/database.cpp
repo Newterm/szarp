@@ -478,7 +478,7 @@ void* QueryExecutor::Entry() {
 			post_response = true;
 		} else if (q->type == DatabaseQuery::GET_DATA) {
 			base->GetData(q, response_receiver);
-			post_response = true;
+			post_response = false;
 		} else if (q->type == DatabaseQuery::RESET_BUFFER) {
 			base->ResetBuffer(q);
 		} else if (q->type == DatabaseQuery::CLEAR_CACHE) {
