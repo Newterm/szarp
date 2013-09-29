@@ -27,6 +27,7 @@ import struct
 import lxml.etree
 import calendar
 import datetime
+import cStringIO
 
 import param
 import saveparam
@@ -46,6 +47,42 @@ def szbase_file_path_to_date(path):
 
 	return datetime.datetime(year, month, 1)
 
+class FileFactory:
+	class File:
+		def __init__(self, path):
+			self.path = path
+
+			self.file = cStringIO.StringIO()
+			try:
+				file = open(path, "r+b")
+				s = file.read()
+				self.file.write(s)
+			except:
+				pass
+
+
+		def seek(self, offset, whence):
+			self.file.seek(offset, whence)
+
+		def write(self, data):
+			self.file.write(data)
+
+		def read(self, len):
+			return self.file.read(len)
+
+		def lock(self):
+			pass
+
+		def unlock(self):
+			pass
+
+		def close(self):
+			file = open(self.path, "w+b")
+			file.write(self.file.getvalue())
+			self.file.close()
+
+	def open(self, path, mode):
+		return self.File(path)
 
 if len(sys.argv) != 2 or sys.argv[1] == '-h':
 	print """Invocation:
@@ -64,7 +101,7 @@ sys.stdout.write("Converting...")
 
 save_param_map = {}
 for i, p in enumerate(ipk.params):
-	sp = saveparam.SaveParam(p, sz4_dir, False)
+	sp = saveparam.SaveParam(p, sz4_dir, FileFactory())
 	save_param_map[p.param_name] = sp
 
 pno = 0
@@ -108,6 +145,8 @@ for pname in save_param_map.iterkeys():
 					date += datetime.timedelta(minutes=10)
 			except struct.error:
 				pass
+
+		sp.close()
 	except OSError, e:
 		pass
 

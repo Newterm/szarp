@@ -25,48 +25,70 @@ import config
 import param
 import parampath
 import math
+from contextlib import contextmanager
+
+@contextmanager
+def file_lock(file):
+	file.lock()
+
+	yield file
+
+	file.unlock()
+
+class FileFactory:
+	class File:
+		def __init__(self, path, mode):
+			self.file = open(path, mode)
+
+		def seek(self, offset, whence):
+			self.file.seek(offset, whence)
+
+		def write(self, data):
+			self.file.write(data)
+
+		def read(self, len):
+			return self.file.read(len)
+
+		def lock(self):
+			fcntl.lockf(self.file, fcntl.LOCK_EX)
+
+		def unlock(self):
+			file.flush()
+			fcntl.lockf(self.file, fcntl.LOCK_UN)
+
+		def close(self):
+			self.file.close()
+
+	def open(self, path, mode):
+		return self.File(path, mode)
 
 class SaveParam:
-	def __init__(self, param, szbase_dir, sync=True):
+	def __init__(self, param, szbase_dir, file_factory=FileFactory()):
 		self.param = param
 		self.param_path = parampath.ParamPath(self.param, szbase_dir)
 		self.file = None
 		self.current_value = None
 		self.first_write = True
-		self.sync = sync
+		self.file_factory = file_factory
 
 	def update_last_time(self, time, nanotime):
 		self.file.seek(-self.param.time_prec, os.SEEK_END)
-		try:
-			if self.sync:
-				fcntl.lockf(self.file, fcntl.LOCK_EX)
+		with file_lock(self.file):
 			self.file.write(self.param.time_to_binary(time, nanotime))
-			if self.sync:
-				self.file.flush()
-		finally:
-			if self.sync:
-				fcntl.lockf(self.file, fcntl.LOCK_UN)
 
 	def write_value(self, value, time, nanotime):
 		if self.file_size + self.param.time_prec + self.param.value_lenght >= config.DATA_FILE_SIZE:
 			self.file.close()
 
 			path = self.param_path.create_file_path(time, nanotime)
-			self.file = open(path, "w+b")
+			self.file = self.file_factory.open(path, mode="w+b")
 			self.file_size = 0
 
-		try:
-			if self.sync:
-				fcntl.lockf(self.file, fcntl.LOCK_EX)
+		with file_lock(self.file):
 			self.file.write(self.param.value_to_binary(value))
 			self.file.write(self.param.time_to_binary(time, nanotime))
-			if self.sync:
-				self.file.flush()
-	
+
 			self.file_size += self.param.time_prec + self.param.value_lenght
-		finally:
-			if self.sync:
-				fcntl.lockf(self.file, fcntl.LOCK_UN)
 
 		self.current_value = value
 
@@ -75,7 +97,7 @@ class SaveParam:
 
 		if path is not None:
 			self.file_size = os.path.getsize(path)
-			self.file = open(path, "r+b")
+			self.file = self.file_factory.open(path, "r+b")
 
 			if self.file_size >= self.param.time_prec + self.param.value_lenght:
 				self.file.seek(-(self.param.time_prec + self.param.value_lenght), os.SEEK_END)
@@ -93,7 +115,7 @@ class SaveParam:
 				os.makedirs(param_dir)
 
 			path = self.param_path.create_file_path(time, nanotime)
-			self.file = open(path, "w+b")
+			self.file = self.file_factory.open(path, "w+b")
 			self.current_value = None
 
 	def fill_no_data(self, time, nanotime):
@@ -118,4 +140,10 @@ class SaveParam:
 
 	def process_msg(self, msg):
 		self.process_value(self.param.value_from_msg(msg), msg.time, msg.nanotime)
+
+	def close(self):
+		if self.file:
+			self.file.close()
+			self.file = None
+				
 

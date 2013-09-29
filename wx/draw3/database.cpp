@@ -350,7 +350,7 @@ void Sz4Base::SearchData(DatabaseQuery* query) {
 			sd.end = 0;
 		sd.response = base->search_data_left(p, sz4::second_time_t(sd.start), sz4::second_time_t(sd.end), PeriodToProbeType(sd.period_type), no_data_search_condition());
 	}
-
+	sd.ok = true;
 }
 
 void Sz4Base::GetData(DatabaseQuery* query, wxEvtHandler* response_receiver) {
@@ -375,6 +375,8 @@ void Sz4Base::GetData(DatabaseQuery* query, wxEvtHandler* response_receiver) {
 		i->ok = true;
 
 		rq->value_data.vv->push_back(*i);
+
+		i++;
 	}
 
 	DatabaseResponse dr(rq);
