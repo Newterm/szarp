@@ -109,7 +109,7 @@ Aby zakoñczyæ program, zamknij okno programu, wybierz opcjê
 Rysunek poni¿ej przedstawia g³ówne okno programu: 
 <figure> <title>G³ówne okno programu</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-win.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-win.png"></imageobject>
 </mediaobject>
 </figure>
 </para>
@@ -340,7 +340,7 @@ stronie, nad nazwami parametrów) pole prze³±cznika pomiêdzy zak³adkami.
 Gdy utworzysz wiele zak³adek, pojawi± siê równie¿ strza³ki do przesuwania paska z zak³adkami.
 <figure> <title>Zak³adki w menu</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-tabs2.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-tabs2.png"></imageobject>
 </mediaobject></figure>
 </para>
 <para>
@@ -369,7 +369,7 @@ kontekstow±. ¯eby przeczytaæ dokumentacjê programu Draw3, wybierz
 <figure>
 <title>Pomoc w programie Draw3</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-help.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-help.png"></imageobject>
 </mediaobject></figure>
 </para><para>
 Pomoc kontekstowa umo¿liwia wy¶wietlenie opisu dla wybranego elementu programu Draw3 i otwiera
@@ -380,7 +380,7 @@ miejsce s³u¿±ce wyborowi ¶rednich, czym otworzysz dokumentacjê w oczekiwanym mie
 <figure>
 <title>Pomoc kontekstowa programu Draw3</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-help2.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-help2.png"></imageobject>
 </mediaobject></figure>
 
 </para>
@@ -421,7 +421,7 @@ Program przegl±daj±cy potrafi samodzielnie doczytaæ zmieniaj±ce siê wykresy (np.
 Je¶li chcesz porównaæ warto¶ci parametrów z ró¿nych okresów czasowych (np. temperaturê steruj±c± z marca z temperatur± odniesienia z kwietnia), wykorzystaj funkcjê blokowania wykresu. Kliknij prawym klawiszem na tytu³ wykresu i wybierz <quote>Wykres zablokowany</quote>. Na pokazanym poni¿ej zestawie wykresów zablokowany zosta³ wykres "Temp. powrotna":
 <figure><title>Blokowanie wykresu</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-blockgraph.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-blockgraph.png"></imageobject>
 </mediaobject>
 </figure>
 </para>
@@ -432,7 +432,7 @@ Do zablokowania wykresu mo¿esz równie¿ u¿yæ skrótu klawiszowego <keycode>Ctrl + 
 Po przesuniêciu czasu z lutego na styczeñ, wykres "Temp. powrotna" (oznaczony kolorem ¿ó³tym) nie zmieni³ swojego po³o¿enia (zwróæ uwagê, ¿e przy nazwie zablokowanego wykresu pojawi³ siê dopisek <emphasis>[B]</emphasis>):
 <figure><title>Zablokowany wykres</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-blockgraph2.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-blockgraph2.png"></imageobject>
 </mediaobject>
 </figure>
 </para>
@@ -465,7 +465,7 @@ W trybie rozdwojonego kursora bie¿±cy wykres zostanie pogrubiony oraz poni¿ej ok
 <figure>
 <title>Rozdwojony kursor</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-doublecursor.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-doublecursor.png"></imageobject>
 </mediaobject>
 </figure>
 </para>
@@ -512,7 +512,7 @@ nazwie parametru, okresie sumowania parametru oraz procencie próbek zawieraj±cyc
 <figure>
 <title>Warto¶ci sumaryczne - dodatkowe informacje</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-summary_values2.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-summary_values2.png"></imageobject>
 </mediaobject></figure>
 </para>
 <note>
@@ -586,7 +586,7 @@ Domy¶lnie, jako wykresy X i Y, zostan± wybrane pierwsze dwa niewygaszone wykresy
 <figure>
 <title>Tworzenie wykresu XY</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-xy1.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-xy1.png"></imageobject>
 </mediaobject></figure>
 W oknie obok wykresu XY, po prawej jego stronie, umieszczone s± dok³adniejsze informacje dotycz±ce parametrów pokazanych na wykresie: 
 <itemizedlist>
@@ -690,7 +690,7 @@ Mo¿esz te¿ spowodowaæ ustawienie siê kursora na konkretnym punkcie, klikaj±c na 
 <figure>
 <title>Wykres XYZ</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-xyz2.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-xyz2.png"></imageobject>
 </mediaobject></figure>
 </para>
 <para>
@@ -765,7 +765,7 @@ Program przegl±daj±cy udostêpnia mo¿liwo¶æ obejrzenia dokumentacji technicznej d
 W celu obejrzenia dokumentacji technicznej parametru, skorzystaj ze skrótu klawiszowego <keycode>Ctrl + H</keycode> lub kliknij prawym klawiszem na tytu³ wykresu (po prawej stronie okna programu) i wybierz <quote>Dokumentacja parametru</quote>, jak to jest widoczne poni¿ej:
 <figure><title>Dokumentacja parametru</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-blockgraph.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-blockgraph.png"></imageobject>
 </mediaobject>
 </figure>
 </para>
@@ -801,7 +801,7 @@ Po ka¿dej zmianie jêzyka musisz ponownie uruchomiæ program przegl±daj±cy.
 W programie przegl±daj±cym mo¿esz stworzyæ w³asny zestaw wykresów. W tym celu z menu wybierz <guimenu>Zestawy</guimenu> i <guimenu>Nowy zestaw</guimenu> lub wci¶nij <keycode>Ctrl + A</keycode>. Pojawi siê poni¿sze okno:
 <figure> <title>Edycja zestawu wykresów</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-chart_set.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-chart_set.png"></imageobject>
 </mediaobject></figure>
 </para>
 <para>
@@ -831,7 +831,7 @@ poszukiwanego ci±gu znaków w pole <quote>Wyszukaj</quote>. Okno ze zdefiniowanym
 mo¿e wygl±daæ podobnie jak na poni¿szym zrzucie ekranu:
 <figure> <title>Lista parametrów u¿ytkownika</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-chart_set2_1.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-chart_set2_1.png"></imageobject>
 </mediaobject></figure>
 </para>
 <!-- SUBSECTION dodawanie wykresu do w³asnej listy wykresów -->
@@ -851,7 +851,7 @@ parametru z zestawu wykresów, edytowaæ ustawienia wykresu (kolor, zakres warto¶c
 sam parametr u¿ytkownika:
 <figure> <title>Edycja w³asnego zestawu parametrów</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-chart_set6.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-chart_set6.png"></imageobject>
 </mediaobject>
 </figure>
 </para>
@@ -886,7 +886,7 @@ w przypadku parametrów reprezentuj±cych róznego rodzaju liczniki.
 <para>
 <figure><title>Zmiana rodzaju warto¶ci reprezentowanych przez punkt</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-change_value_type.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-change_value_type.png"></imageobject>
 </mediaobject>
 </figure>
 </para>
@@ -905,7 +905,7 @@ W celu zdefiniowania w³asnego parametru wybierz z menu <guimenu>Narzêdzia</guime
 <figure>
 <title>Pocz±tek tworzenie formu³y parametru</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-parameters_set.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-parameters_set.png"></imageobject>
 </mediaobject>
 </figure>
 </para>
@@ -1466,7 +1466,7 @@ w oknie, a kursor zostanie ustawiony na wykresie na pozycji odpowiadaj±cej znale
 </para>
 <figure> <title>Wyszukiwanie wg. zadanego wartunku</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-searching_date.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-searching_date.png"></imageobject>
 </mediaobject></figure>
 </section>
 <section id="draw3-ext-draw2draw3comparison">
