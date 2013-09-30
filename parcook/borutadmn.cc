@@ -684,10 +684,7 @@ void tcp_client_manager::close_connection(tcp_connection &c) {
 		bufferevent_free(c.bufev);
 		c.bufev = NULL;
 	}
-	if (c.fd >= 0) {
-		close(c.fd);
-		c.fd = -1;
-	}
+	c.fd = -1;
 	c.state = NOT_CONNECTED;
 	c.connecting_timeout = time(NULL) + 30; // now + 30 sek
 	dolog(7, "tcp_client_manager::close_connection connection %s closed", c.address.c_str());
@@ -702,23 +699,20 @@ int tcp_client_manager::open_connection(tcp_connection &c, struct sockaddr_in& a
 		close_connection(c);
 		return 1;
 	}
-do_connect:
-	int ret = connect(c.fd, (struct sockaddr*) &addr, sizeof(addr));
-	if (ret == 0) {
-		c.state = CONNECTED;
-		c.connecting_timeout = 0;
-	} else if (errno == EINTR) {
-		goto do_connect;
-	} else if (errno == EWOULDBLOCK || errno == EINPROGRESS) {
-		c.state = CONNECTING;
-		c.connecting_timeout = time(NULL) + 30; // 30sek from now
-	} else {
+	c.bufev = bufferevent_socket_new(
+			m_boruta->get_event_base(),
+			c.fd,
+			BEV_OPT_CLOSE_ON_FREE);
+	bufferevent_setcb(c.bufev, connection_read_cb, 
+			NULL, connection_event_cb,
+			&c);
+	if (bufferevent_socket_connect(c.bufev, (struct sockaddr*) &addr, sizeof(addr))) {
 		dolog(0, "Failed to connect: %s", strerror(errno));
 		close_connection(c);
 		return 1;
 	}
-	c.bufev = bufferevent_new(c.fd, connection_read_cb, connection_write_cb, connection_error_cb, &c);
-	bufferevent_base_set(m_boruta->get_event_base(), c.bufev);
+	c.state = CONNECTING;
+	c.connecting_timeout = time(NULL) + 30; // 30sek from now
 	bufferevent_enable(c.bufev, EV_READ | EV_WRITE | EV_PERSIST);
 	return 0;
 }
@@ -812,22 +806,21 @@ void tcp_client_manager::connection_read_cb(struct bufferevent *ev, void* _tcp_c
 	t->client_manager::connection_read_cb(c->conn_no, c->bufev, c->fd);
 }
 
-void tcp_client_manager::connection_write_cb(struct bufferevent *ev, void* _tcp_connection) {
-	tcp_connection* c = (tcp_connection*) _tcp_connection;
-	if (c->state != CONNECTING)
-		return;
-	tcp_client_manager* t = c->manager;
-	c->state = CONNECTED;
-	c->connecting_timeout = 0;
-	dolog(7, "tcp_client_manager: connection with address: %s established", c->address.c_str());
-	t->connection_established_cb(c->conn_no);
-}
- 
-void tcp_client_manager::connection_error_cb(struct bufferevent *ev, short event, void* _tcp_connection) {
+void tcp_client_manager::connection_event_cb(struct bufferevent *ev, short event, void* _tcp_connection) {
 	tcp_connection* c = (tcp_connection*) _tcp_connection;
 	tcp_client_manager* t = c->manager;
-	dolog(5, "tcp_client_manager::connection_error_cb connection with address: %s error", c->address.c_str());
-	t->client_manager::connection_error_cb(c->conn_no);
+
+	if (event & BEV_EVENT_CONNECTED) {
+		c->state = CONNECTED;
+		c->connecting_timeout = 0;
+		dolog(7, "tcp_client_manager: connection with address: %s established", c->address.c_str());
+		t->connection_established_cb(c->conn_no);
+	} 
+
+	if (event & BEV_EVENT_ERROR) {
+		dolog(5, "tcp_client_manager::connection_error_cb connection with address: %s error", c->address.c_str());
+		t->client_manager::connection_error_cb(c->conn_no);
+	}
 }
 
 CONNECTION_STATE serial_client_manager::do_get_connection_state(size_t conn_no) {
@@ -1090,12 +1083,13 @@ do_accept:
 	connection c;
 	c.serv_no = p->serv_no;
 	c.fd = fd;
-	c.bufev = bufferevent_new(fd,
-			connection_read_cb, 
-			NULL, 
-			connection_error_cb,
+	c.bufev = bufferevent_socket_new(
+			m->m_boruta->get_event_base(),
+			fd,
+			BEV_OPT_CLOSE_ON_FREE);
+	bufferevent_setcb(c.bufev, connection_read_cb, 
+			NULL, connection_error_cb,
 			m);
-	bufferevent_base_set(m->m_boruta->get_event_base(), c.bufev);
 	bufferevent_enable(c.bufev, EV_READ | EV_WRITE | EV_PERSIST);
 	m->m_connections[c.bufev] = c;
 	if (m->m_drivers.at(p->serv_no)->connection_accepted(c.bufev, fd, &addr))

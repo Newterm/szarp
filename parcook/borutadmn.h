@@ -356,8 +356,7 @@ public:
 	int configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols);
 	int initialize();
 	static void connection_read_cb(struct bufferevent *ev, void* _tcp_connection);
-	static void connection_write_cb(struct bufferevent *ev, void* _tcp_connection);
-	static void connection_error_cb(struct bufferevent *ev, short event, void* _tcp_connection);
+	static void connection_event_cb(struct bufferevent *ev, short event, void* _tcp_connection);
 };
 
 /**implementation of class deadling with serial client drivers*/
