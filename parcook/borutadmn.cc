@@ -1115,7 +1115,13 @@ int boruta_daemon::configure_ipc() {
 }
 
 int boruta_daemon::configure_events() {
-	m_event_base = (struct event_base*) event_init();
+    /* hary: fix for disabling epoll - works in libevent2 */
+    struct event_config *cfg = event_config_new();
+    event_config_avoid_method(cfg, "epoll");
+	//m_event_base = (struct event_base*) event_init();
+    m_event_base = event_base_new_with_config(cfg);
+    event_config_free(cfg);
+    /* end of fix */
 	evtimer_set(&m_timer, cycle_timer_callback, this);
 	event_base_set(m_event_base, &m_timer);
 	return 0;
