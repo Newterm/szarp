@@ -1,3 +1,9 @@
+szarp (3.1.719) stable; urgency=low
+
+  * building stable
+
+ -- root <root@newterm.pl>  Tue, 15 Oct 2013 18:43:38 +0000
+
 szarp (3.1.709) stable; urgency=low
 
   * building stable
