@@ -79,6 +79,7 @@ public:
 
 	virtual void set_event_base(struct event_base* ev_base);
 	virtual void set_address_string(const std::string& str);
+	virtual const std::string& address_string() const;
 	virtual const char* driver_name() = 0;
 	virtual ~boruta_driver() {}
 };
@@ -161,6 +162,8 @@ public:
 	void set_event_base(struct event_base* ev_base);
 
 	void set_address_string(const std::string& str);
+
+	const std::string& address_string() const;
 
 	const char* driver_name();
 

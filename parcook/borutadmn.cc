@@ -320,6 +320,10 @@ void boruta_driver::set_address_string(const std::string& str) {
 	m_address_string = str;		
 }
 
+const std::string& boruta_driver::address_string() const {
+	return m_address_string;
+}
+
 const std::pair<size_t, size_t> & client_driver::id() {
 	return m_id;
 }
@@ -394,6 +398,10 @@ const char* tcp_proxy_2_serial_client::driver_name() {
 
 void tcp_proxy_2_serial_client::set_address_string(const std::string& str) {
 	return m_serial_client->set_address_string(str);
+}
+
+const std::string& tcp_proxy_2_serial_client::address_string() const {
+	return m_address_string;
 }
 
 void tcp_proxy_2_serial_client::connection_error(struct bufferevent *bufev) {
@@ -596,7 +604,8 @@ void client_manager::driver_finished_job(client_driver *driver) {
 	size_t connection = driver->id().first;
 	size_t& client = m_current_client.at(connection);
 	if (driver->id().second != client) {
-		dolog(0, "Boruta was notfied by client number %zu (connection %zu) that it has finished it's job!", client, connection);
+		dolog(0, "Boruta was notfied by client number %zu (connection %s) that it has finished it's job!",
+			 client, m_connection_client_map.at(connection).at(client)->address_string().c_str());
 		dolog(0, "But this driver in not a current driver for this connection, THIS IS VERY, VERY WRONG (BUGGY DRIVER?)");
 		return;
 	}
@@ -607,10 +616,13 @@ void client_manager::driver_finished_job(client_driver *driver) {
 void client_manager::terminate_connection(client_driver *driver) {
 	size_t connection = driver->id().first;
 	size_t& client = m_current_client.at(connection);
-	dolog(6, "client_manager::terminate_connection: requested connection: %zu, client: %zu",
-		connection, client);
+	dolog(6, "client_manager::terminate_connection: requested connection: %s, client: %zu",
+		m_connection_client_map.at(connection).at(client)->address_string().c_str(),
+		client);
 	if (driver->id().second != client) {
-		dolog(0, "Boruta core was requested by driver number %zu (connection %zu) to terminate connection!", client, connection);
+		dolog(0, "Boruta core was requested by driver number %zu (connection %s) to terminate connection!",
+				client,
+				m_connection_client_map.at(connection).at(client)->address_string().c_str());
 		dolog(0, "But this driver in not a current driver for this connection, THIS IS VERY, VERY WRONG (BUGGY DRIVER?)");
 		dolog(0, "Request ignored");
 		return;
@@ -629,7 +641,8 @@ void client_manager::connection_read_cb(size_t connection, struct bufferevent *b
 		client_driver *d = m_connection_client_map.at(connection).at(m_current_client.at(connection));
 		d->data_ready(bufev, fd);
 	} else {
-		dolog(1, "Received data in client_manager when for this connection (no. %zu) no driver is active. Terminating connection", connection);
+		dolog(1, "Received data in client_manager when for connection address (%s) no driver is active. Terminating connection",
+				m_connection_client_map.at(connection).at(0)->address_string().c_str());
 		do_terminate_connection(connection);
 	}
 }
