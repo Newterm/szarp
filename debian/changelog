@@ -1,3 +1,9 @@
+szarp (3.1.721) squeeze; urgency=low
+
+  * building squeeze
+
+ -- root <root@newterm.pl>  Tue, 15 Oct 2013 19:14:31 +0000
+
 szarp (3.1.720) squeeze; urgency=low
 
   * building squeeze
