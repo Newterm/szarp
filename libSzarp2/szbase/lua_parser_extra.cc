@@ -13,7 +13,7 @@
 
 #include "lua_syntax.h"
 #include "lua_parser_extra.h"
-#include "szarp_base_common/lua_syntax_fusion_adapt.h"
+#include "lua_syntax_fusion_adapt.h"
 #include "conversion.h"
 
 namespace lua_grammar {
