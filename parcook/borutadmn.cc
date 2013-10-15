@@ -392,6 +392,9 @@ const char* tcp_proxy_2_serial_client::driver_name() {
 	return m_serial_client->driver_name();
 }
 
+void tcp_proxy_2_serial_client::set_address_string(const std::string& str) {
+	return m_serial_client->set_address_string(str);
+}
 
 void tcp_proxy_2_serial_client::connection_error(struct bufferevent *bufev) {
 	m_serial_client->connection_error(bufev);

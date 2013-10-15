@@ -78,7 +78,7 @@ public:
 	virtual void vdriver_log(int level, const char * fmt, va_list fmt_args) = 0;
 
 	virtual void set_event_base(struct event_base* ev_base);
-	void set_address_string(const std::string& str);
+	virtual void set_address_string(const std::string& str);
 	virtual const char* driver_name() = 0;
 	virtual ~boruta_driver() {}
 };
@@ -159,6 +159,8 @@ public:
 	void set_manager(client_manager* manager);
 
 	void set_event_base(struct event_base* ev_base);
+
+	void set_address_string(const std::string& str);
 
 	const char* driver_name();
 
