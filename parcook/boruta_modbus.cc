@@ -467,7 +467,7 @@ protected:
 		IDLE,
 	} m_state;
 
-	unsigned int m_requests_sent;
+	time_t m_last_activity;
 
 	void starting_new_cycle();
 protected:
@@ -1488,7 +1488,7 @@ void tcp_server::finished_cycle() {
 
 void tcp_server::connection_error(struct bufferevent *bufev) {
 	tcp_parser* parser = m_parsers[bufev];
-	m_log.log(5, "connection_error: Terminating connection");
+	m_log.log(5, "Terminating connection");
 	m_parsers.erase(bufev);
 	delete parser;
 }
@@ -1499,16 +1499,15 @@ void modbus_client::starting_new_cycle() {
 		case IDLE:
 			return;
 		case READ_QUERY_SENT:
-			m_log.log(2, "modbus_client::starting_new_cycle New cycle started, we are in read cycle");
+			m_log.log(2, "New cycle started, we are in read cycle");
 			break;
 		case WRITE_QUERY_SENT:
-			m_log.log(2, "modbus_client::starting_new_cycle New cycle started, we are in write cycle");
+			m_log.log(2, "New cycle started, we are in write cycle");
 			break;
 	}
 
-	if (m_requests_sent > 10) {
-		m_log.log(7, "starting_new_cycle: to many failed requests");
-		terminate_connection();
+	if (m_last_activity + 10 < m_current_time) {
+		send_next_query(false);
 	}
 }
 
@@ -1526,7 +1525,7 @@ void modbus_client::start_cycle() {
 }
 
 void modbus_client::send_next_query(bool previous_ok) {
-	m_log.log(7, "send_next_query: previous_ok: %c", previous_ok);
+
 	switch (m_state) {
 		case IDLE:
 		case READ_QUERY_SENT:
@@ -1538,7 +1537,6 @@ void modbus_client::send_next_query(bool previous_ok) {
 			assert(false);
 			break;
 	}
-	m_requests_sent++;
 }
 
 void modbus_client::send_write_query() {
@@ -1691,7 +1689,7 @@ void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 			m_log.log(10, "Received unexpected response from slave - ignoring it.");
 			break;
 	}
-	m_requests_sent--;
+	m_last_activity = m_current_time;
 }
 
 int modbus_client::initialize() {
@@ -1709,7 +1707,6 @@ void modbus_tcp_client::cycle_finished() {
 
 void modbus_tcp_client::terminate_connection() {
 	m_manager->terminate_connection(this);
-	m_requests_sent = 0;
 }
 
 modbus_tcp_client::modbus_tcp_client() : modbus_client(this) {}
@@ -1732,10 +1729,8 @@ void modbus_tcp_client::starting_new_cycle() {
 }
 
 void modbus_tcp_client::connection_error(struct bufferevent *bufev) {
-	m_log.log(8, "connection_error reseting parser");
 	m_state = IDLE;
 	m_parser->reset();
-	m_requests_sent = 0;
 }
 
 void modbus_tcp_client::scheduled(struct bufferevent* bufev, int fd) {
