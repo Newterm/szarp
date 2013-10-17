@@ -137,7 +137,7 @@ for pname in save_param_map.iterkeys():
 				for i in xrange(len(f) / 2):
 					if combined:
 						v1 = struct.unpack_from("<H", f, i * 2)[0]
-						v2 = struct.unpack_from("<h", f2, i * 2)[0]
+						v2 = struct.unpack_from("<H", f2, i * 2)[0]
 						v = (v2 << 16) + v1
 					else:
 						v = struct.unpack_from("<h", f, i * 2)[0]

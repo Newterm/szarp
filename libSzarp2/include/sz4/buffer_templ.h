@@ -143,6 +143,7 @@ template<class types> void buffer_templ<types>::prepare_param(TParam* param) {
 
 	if (param->GetType() == TParam::P_COMBINED) {
 		param->SetSz4Type(TParam::SZ4_COMBINED);
+		param->SetDataType(TParam::INT);
 		return;
 	}
 
