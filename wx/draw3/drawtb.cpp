@@ -49,6 +49,7 @@
 #include "bitmaps/draw_tree.xpm"
 #include "bitmaps/florence.xpm"
 
+#ifndef MINGW32
 std::string exec_cmd (const char* cmd)
 {
 	char buffer[128];
@@ -66,6 +67,7 @@ std::string exec_cmd (const char* cmd)
 	pclose(pipe);
 	return result;
 }
+#endif
 
 DrawToolBar::DrawToolBar(wxWindow *parent) :
 	wxToolBar(parent,-1)
