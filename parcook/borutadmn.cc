@@ -117,6 +117,8 @@
 
 bool g_debug = false;
 
+static const time_t RECONNECT_ATTEMPT_DELAY = 10;
+
 driver_logger::driver_logger(boruta_driver* driver) : m_driver(driver) {
 }
 
@@ -702,7 +704,7 @@ void tcp_client_manager::close_connection(tcp_connection &c) {
 	}
 	c.fd = -1;
 	c.state = NOT_CONNECTED;
-	c.connecting_timeout = time(NULL) + 30; // now + 30 sek
+	c.connecting_timeout = time(NULL) + RECONNECT_ATTEMPT_DELAY;
 	dolog(7, "tcp_client_manager::close_connection connection %s closed", c.address.c_str());
 }
 
@@ -718,7 +720,7 @@ int tcp_client_manager::open_connection(tcp_connection &c, struct sockaddr_in& a
 	c.bufev = bufferevent_socket_new(
 			m_boruta->get_event_base(),
 			c.fd,
-			BEV_OPT_CLOSE_ON_FREE);
+			BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS);
 	bufferevent_setcb(c.bufev, connection_read_cb, 
 			NULL, connection_event_cb,
 			&c);
@@ -728,7 +730,7 @@ int tcp_client_manager::open_connection(tcp_connection &c, struct sockaddr_in& a
 		return 1;
 	}
 	c.state = CONNECTING;
-	c.connecting_timeout = time(NULL) + 30; // 30sek from now
+	c.connecting_timeout = time(NULL) + RECONNECT_ATTEMPT_DELAY;
 	bufferevent_enable(c.bufev, EV_READ | EV_WRITE | EV_PERSIST);
 	return 0;
 }
@@ -750,19 +752,18 @@ void tcp_client_manager::do_terminate_connection(size_t conn_no) {
 int tcp_client_manager::do_establish_connection(size_t conn_no) {
 	tcp_connection &c = m_tcp_connections.at(conn_no);
 	if (c.state == CONNECTING) {
-	    if (c.connecting_timeout > time(NULL))
-		return 0;
+		if (c.connecting_timeout > time(NULL))
+			return 0;
 
-	    dolog(2,
-		"tcp_client_manager::do_establish_connection connecting with %s last too long, retrying",
-		c.address.c_str());
-	    close_connection(c);
-	    return 1;
+		dolog(2, "tcp_client_manager::do_establish_connection connecting with %s last too long, retrying",
+			c.address.c_str());
+		close_connection(c);
+		return 1;
 	}
-	if (c.state == NOT_CONNECTED && c.connecting_timeout && c.connecting_timeout < time(NULL)) {
-	    dolog(5, "tcp_client_manager::do_establish_connection break between new connection with %s",
-		    c.address.c_str());
-	    return 0;
+	if (c.state == NOT_CONNECTED && c.connecting_timeout && c.connecting_timeout > time(NULL)) {
+		dolog(5, "tcp_client_manager::do_establish_connection break between new connection with %s",
+			c.address.c_str());
+		return 0;
 	}
 	dolog(7, "tcp_client_manager::connecting to address: %s", c.address.c_str());
 	if (open_connection(c, m_addresses.at(conn_no)))
@@ -1016,7 +1017,7 @@ int tcp_server_manager::start_listening_on_port(int port) {
 
 void tcp_server_manager::close_connection(struct bufferevent* bufev) {
 	connection &c = m_connections[bufev];
-	close(c.fd);
+	c.fd = -1;
 	m_connections.erase(bufev);
 	bufferevent_free(bufev);
 }
@@ -1102,7 +1103,7 @@ do_accept:
 	c.bufev = bufferevent_socket_new(
 			m->m_boruta->get_event_base(),
 			fd,
-			BEV_OPT_CLOSE_ON_FREE);
+			BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS);
 	bufferevent_setcb(c.bufev, connection_read_cb, 
 			NULL, connection_error_cb,
 			m);
@@ -1159,7 +1160,7 @@ int boruta_daemon::configure_units() {
 			server = true;	
 		else if (mode == "client")
 			server = false;	
-                else {
+		else {
 			dolog(0, "Unknown unit mode: %s, failed to configure daemon", mode.c_str());
 			return 1;
 		}
