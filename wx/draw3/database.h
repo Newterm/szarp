@@ -62,6 +62,8 @@ struct DatabaseQuery {
 		SET_PROBER_ADDRESS,
 		/**Set addresses of probers servers*/
 		EXTRACT_PARAM_VALUES,
+		/**Set addresses of probers servers*/
+		REGISTER_OBSERVER,
 	};
 
 	/**Parameters of a query for data*/
@@ -144,6 +146,12 @@ struct DatabaseQuery {
 		std::wstring* file_name;
 	};
 
+	struct ObserverRegistrationParameters {
+		sz4::param_observer* observer;
+		std::vector<TParam*>* params_to_register;
+		std::vector<TParam*>* params_to_deregister;
+	};
+
 	/**Type of query*/
 	QueryType type;
 
@@ -167,6 +175,7 @@ struct DatabaseQuery {
 		DefinedParamData defined_param;
 		ProberAddress prober_address;
 		ExtractionParameters extraction_parameters;
+		ObserverRegistrationParameters observer_registration_parameters;
 	};
 
 	~DatabaseQuery();
@@ -201,6 +210,10 @@ public:
 	virtual void ClearCache(DatabaseQuery* query) = 0;
 
 	virtual void StopSearch() = 0;
+
+	virtual void RegisterObserver(sz4::param_observer* observer, const std::vector<TParam*>& params) = 0;
+
+	virtual void DeregisterObserver(sz4::param_observer* observer, const std::vector<TParam*>& params) = 0;
 
 	virtual ~Draw3Base() {}
 };
@@ -247,6 +260,10 @@ public:
 	void ClearCache(DatabaseQuery* query);
 	
 	void StopSearch();
+
+	void RegisterObserver(sz4::param_observer* observer, const std::vector<TParam*>& params) {};
+
+	void DeregisterObserver(sz4::param_observer* observer, const std::vector<TParam*>& params) {};
 };
 
 class Sz4Base : public Draw3Base {
@@ -283,6 +300,10 @@ public:
 	void ClearCache(DatabaseQuery* query);
 	
 	void StopSearch();
+
+	void RegisterObserver(sz4::param_observer* observer, const std::vector<TParam*>& params);
+
+	void DeregisterObserver(sz4::param_observer* observer, const std::vector<TParam*>& params);
 };
 
 /**Query execution thread*/

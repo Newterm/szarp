@@ -38,6 +38,7 @@
 #include "sz4/time.h"
 #include "sz4/block.h"
 #include "sz4/path.h"
+#include "sz4/param_observer.h"
 #include "sz4/load_file_locked.h"
 
 namespace sz4 {
@@ -50,11 +51,12 @@ template<class types> class base_templ;
 
 class generic_param_entry : public SzbParamObserver {
 protected:
-	boost::recursive_mutex m_reference_list_lock;
+	boost::recursive_mutex m_lock;
 	TParam* m_param;
 
 	std::list<generic_param_entry*> m_referring_params;
 	std::list<generic_param_entry*> m_referred_params;
+	std::list<param_observer*> m_observers;
 public:
 	generic_param_entry(TParam* param) : m_param(param) {}
 	TParam* get_param() const { return m_param; }
@@ -88,9 +90,14 @@ public:
 	virtual void handle_param_data_changed(TParam*, const std::string& path) {};
 
 
-	void add_reffering_param(generic_param_entry* param_entry);
-	void remove_reffering_param(generic_param_entry* param_entry);
-	virtual void reffered_param_removed(generic_param_entry* param_entry) {};
+	void add_refferring_param(generic_param_entry* param_entry);
+	void remove_refferring_param(generic_param_entry* param_entry);
+
+	void add_refferred_param(generic_param_entry *param_entry);
+	virtual void refferred_param_removed(generic_param_entry* param_entry);
+
+	void register_observer(param_observer *observer);
+	void deregister_observer(param_observer *observer);
 
 	virtual ~generic_param_entry();
 };
@@ -136,7 +143,7 @@ public:
 		m_sum.weight() = m_temp.weight();
 		m_sum.no_data_weight() = m_temp.no_data_weight();
 		m_sum.set_fixed(m_temp.fixed());
-		m_sum.reffered_blocks().swap(m_temp.reffered_blocks());
+		m_sum.refferred_blocks().swap(m_temp.refferred_blocks());
 	}
 };
 

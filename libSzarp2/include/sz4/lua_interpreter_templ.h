@@ -55,8 +55,8 @@ template<class base_types> int lua_sz4(lua_State *lua) {
 	base_ipk->first->fixed_stack().top().first
 			&= sum.fixed();
 	base_ipk->first->fixed_stack().top().second.insert(
-				sum.reffered_blocks().begin(),
-				sum.reffered_blocks().end());
+				sum.refferred_blocks().begin(),
+				sum.refferred_blocks().end());
 
 	if (sum.weight())
 		lua_pushnumber(lua, sum.sum() / sum.weight());

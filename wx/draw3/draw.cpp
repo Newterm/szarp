@@ -159,7 +159,17 @@ DTime Draw::GetTimeOfIndex(int i) const {
 	return m_index.GetTimeOfIndex(i);
 }
 
-DatabaseQuery* Draw::GetDataToFetch() {
+bool ShouldFetchNewValue(ValueInfo& vi, bool fetch_present_no_data) { 
+	if (vi.state == ValueInfo::EMPTY)
+		return true;
+
+	if (!fetch_present_no_data)
+		return false;
+
+	return vi.state == ValueInfo::PENDING || (vi.state == ValueInfo::PRESENT && !vi.IsData());
+}
+
+DatabaseQuery* Draw::GetDataToFetch(bool fetch_present_no_data) {
 	const DTime& start_time = m_index.GetStartTime();
 	assert(start_time.IsValid());
 
@@ -179,7 +189,7 @@ DatabaseQuery* Draw::GetDataToFetch() {
 	for (size_t i = 0; i < m_values.len(); ++i) {
 		ValueInfo &v = m_values.Get(i);
 
-		if (v.state != ValueInfo::EMPTY) 
+		if (!ShouldFetchNewValue(v, fetch_present_no_data))
 			continue;
 		
 		DTime pt = GetDTimeOfIndex(i - d);

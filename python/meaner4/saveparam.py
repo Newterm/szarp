@@ -53,7 +53,7 @@ class FileFactory:
 			fcntl.lockf(self.file, fcntl.LOCK_EX)
 
 		def unlock(self):
-			file.flush()
+			self.file.flush()
 			fcntl.lockf(self.file, fcntl.LOCK_UN)
 
 		def close(self):

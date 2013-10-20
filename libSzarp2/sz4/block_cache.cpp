@@ -50,7 +50,7 @@ void block_cache::block_size_changed(generic_block* block, size_t previous_size)
 
 void block_cache::block_updated(generic_block* block) {
 	m_blocks.erase(block->location());
-	m_blocks.insert(block->has_reffering_blocks()
+	m_blocks.insert(block->has_refferring_blocks()
 		? m_blocks.end() : m_list_separator_position, block);
 }
 

@@ -36,6 +36,8 @@ class Param:
 		else:
 			self.data_type = "short"
 
+		self.prec = 0 if self.combined else int(node.attrib["prec"])
+
 		if self.data_type == "short":
 			self.value_format_string = "<h"
 			self.value_lenght = 2

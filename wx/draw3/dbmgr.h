@@ -38,6 +38,8 @@
 
 #include <vector>
 
+#include "sz4/param_observer.h"
+
 /**Event encapsulating response from database*/
 class DatabaseResponse : public wxCommandEvent {
 	/**@see DatabaseQuery*/
@@ -84,6 +86,25 @@ typedef void (wxEvtHandler::*ConfigurationChangedEventFunction)(ConfigurationCha
     (wxObjectEventFunction) (wxEventFunction) (wxCommandEventFunction) \
     wxStaticCastEvent( ConfigurationChangedEventFunction, & fn ), (wxObject *) NULL ),
 
+DECLARE_EVENT_TYPE(PARAM_DATA_CHANGED, -1)
+
+class ParamDataChangedEvent : public wxCommandEvent {
+	TParam* m_param;
+public:
+	ParamDataChangedEvent(TParam *param);
+	TParam* GetParam();
+	/**Clones object*/
+	virtual wxEvent* Clone() const;
+	virtual ~ParamDataChangedEvent();
+};
+
+typedef void (wxEvtHandler::*ParamDataChangedEventFunction)(ParamDataChangedEvent&);
+#define EVT_PARAM_DATA_CHANGED(id, fn) \
+    DECLARE_EVENT_TABLE_ENTRY( PARAM_DATA_CHANGED, id, -1, \
+    (wxObjectEventFunction) (wxEventFunction) (wxCommandEventFunction) \
+    wxStaticCastEvent( ParamDataChangedEventFunction, & fn ), (wxObject *) NULL ),
+
+
 class SyncedPrefixSet {
 	private:
 		std::set<wxString> prefixes;
@@ -94,8 +115,9 @@ class SyncedPrefixSet {
 		bool Remove(wxString prefix);
 };
 
+
 /**Class managing draw inquirers*/
-class DatabaseManager : public wxEvtHandler {
+class DatabaseManager : public wxEvtHandler, public sz4::param_observer {
 	typedef std::tr1::unordered_map<InquirerId, DBInquirer*> IH;
 	typedef IH::iterator IHI;
 
@@ -146,6 +168,8 @@ public:
 
 	void OnConfigurationChange(ConfigurationChangedEvent &e);
 
+	void OnParamDataChanged(ParamDataChangedEvent &e);
+
 	/**Adds object to list of inquirers*/
 	void AddInquirer(DBInquirer *inquirer);
 
@@ -158,6 +182,10 @@ public:
 	void InitiateConfigurationReload(wxString prefix);
 
 	void ConfigurationReloadFinished(wxString prefix);
+
+	void ChangeObservedParamsRegistration(const std::vector<TParam*>& to_deregister, const std::vector<TParam*>& to_register);
+
+	void param_data_changed(TParam *param);
 	
         DECLARE_EVENT_TABLE()
 };

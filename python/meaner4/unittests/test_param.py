@@ -36,7 +36,7 @@ class ParamTest(unittest.TestCase):
 		self.msg_attrs  = [ "int_value"	   , "int_value" , "float_value" , "double_value" ]
 		
 		self.node_def = lxml.etree.fromstring("""
-      <param name="Kocioł 3:Sterownik:Aktualne wysterowanie falownika podmuchu" short_name="imp_p" draw_name="Wyst. fal. podm." unit="%" prec="1" base_ind="auto">
+      <param xmlns="http://www.praterm.com.pl/SZARP/ipk" name="Kocioł 3:Sterownik:Aktualne wysterowanie falownika podmuchu" short_name="imp_p" draw_name="Wyst. fal. podm." unit="%" prec="1" base_ind="auto">
         <raport title="Kocioł 3" order="14"/>
         <draw title="Kocioł 3 Komora spalania" color="red" min="0" max="100" prior="85" order="1"/>
         <draw title="Kocioł 3 Praca falowników" color="red" min="0" max="100" prior="86" order="1"/>
@@ -46,7 +46,7 @@ class ParamTest(unittest.TestCase):
 		self.nodes = []
 		for t in self.types:
 			n = lxml.etree.fromstring("""
-      <param name="Kocioł 3:Sterownik:Aktualne wysterowanie falownika podmuchu" short_name="imp_p" draw_name="Wyst. fal. podm." unit="%%" prec="1" base_ind="auto" data_type="%s">
+      <param xmlns="http://www.praterm.com.pl/SZARP/ipk" name="Kocioł 3:Sterownik:Aktualne wysterowanie falownika podmuchu" short_name="imp_p" draw_name="Wyst. fal. podm." unit="%%" prec="1" base_ind="auto" data_type="%s">
         <raport title="Kocioł 3" order="14"/>
         <draw title="Kocioł 3 Komora spalania" color="red" min="0" max="100" prior="85" order="1"/>
         <draw title="Kocioł 3 Praca falowników" color="red" min="0" max="100" prior="86" order="1"/>
@@ -91,7 +91,7 @@ class ParamTest(unittest.TestCase):
 
 	def test_parsing_combined(self):
 		n = lxml.etree.fromstring("""
-    <param name="Siec:Kamstrup:przeplyw z licznika" short_name="Kp" draw_name="Przeplyw z licznika" unit="m3/h" prec="2">
+    <param xmlns="http://www.praterm.com.pl/SZARP/ipk" name="Siec:Kamstrup:przeplyw z licznika" short_name="Kp" draw_name="Przeplyw z licznika" unit="m3/h" prec="2">
       <define type="DRAWDEFINABLE" formula="(*:*:przeplyw z licznika msw) (*:*:przeplyw z licznika lsw) :"/>
       <draw title="Kamstrup cieppomierz CO" min="0" max="300" special="hoursum" order="6"/>
     </param>""")

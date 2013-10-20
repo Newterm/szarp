@@ -42,19 +42,19 @@ public:
 	struct entry_type {
 		value_type value;
 		unsigned version;
-		std::set<generic_block*> reffered_blocks;
+		std::set<generic_block*> refferred_blocks;
 		entry_type() {};
 		entry_type(const value_type& _value, 
 				const unsigned _version,
-				std::set<generic_block*> _reffered_blocks)
+				std::set<generic_block*> _refferred_blocks)
 				:
 				value(_value),
 				version(_version),
-				reffered_blocks(_reffered_blocks) { }
+				refferred_blocks(_refferred_blocks) { }
 		bool operator==(const entry_type& o) const {
 			return value == o.value
 				&& version == o.version
-				&& reffered_blocks == o.reffered_blocks;
+				&& refferred_blocks == o.refferred_blocks;
 		}
 	};
 
@@ -66,8 +66,8 @@ public:
 	
 	struct entry_merge {
 		void operator()(entry_type& e1, const entry_type& e2, const entry_type& e3) const {
-			e1.reffered_blocks.insert(e2.reffered_blocks.begin(), e2.reffered_blocks.end());
-			e1.reffered_blocks.insert(e3.reffered_blocks.begin(), e3.reffered_blocks.end());
+			e1.refferred_blocks.insert(e2.refferred_blocks.begin(), e2.refferred_blocks.end());
+			e1.refferred_blocks.insert(e3.refferred_blocks.begin(), e3.refferred_blocks.end());
 		}
 	};
 
@@ -102,7 +102,7 @@ public:
 		m_cache(cache)
 	{}
 
-	bool get_value(const time_type& time, value_type& value, bool& fixed, std::set<generic_block*>& reffered_blocks) {
+	bool get_value(const time_type& time, value_type& value, bool& fixed, std::set<generic_block*>& refferred_blocks) {
 		if (!m_blocks.size())
 			return false;
 
@@ -119,7 +119,7 @@ public:
 
 		value = j->value.value;
 		fixed = j->value.version == 0;
-		reffered_blocks.insert(i->second);
+		refferred_blocks.insert(i->second);
 		return true;
 	}
 
@@ -129,13 +129,13 @@ public:
 		return m_blocks.insert(std::make_pair(time, block)).first;
 	}
 
-	void insert_value_inside_block(block_type* block, const value_type& value, const time_type& time, unsigned version, const std::set<generic_block*>& reffered_blocks) {
+	void insert_value_inside_block(block_type* block, const value_type& value, const time_type& time, unsigned version, const std::set<generic_block*>& refferred_blocks) {
 		typename block_type::value_time_vector::iterator i = block->search_entry_for_time(time);
 		time_type previous_end_time;
 
 		if (i->value.value == value
 				&& i->value.version == version
-				&& i->value.reffered_blocks == reffered_blocks)
+				&& i->value.refferred_blocks == refferred_blocks)
 			return;
 
 		if (i == block->data().begin())
@@ -147,19 +147,19 @@ public:
 			i = block->insert_entry(i,
 					entry_type(value,
 						version,
-						reffered_blocks),
+						refferred_blocks),
 					time) + 1;
 
 		time_type end_time = szb_move_time(time, 1, m_probe_type);
 		if (i->time == end_time) {
 			i->value = entry_type(value,
 				 	version,
-					reffered_blocks);
+					refferred_blocks);
 			block->maybe_merge_3_block_entries(i);
 		} else
 			block->insert_entry(i, entry_type(value,
 						version,
-						reffered_blocks)
+						refferred_blocks)
 					, end_time);
 	}
 
@@ -176,25 +176,25 @@ public:
 		}
 	}
 
-	void store_value(const value_type& value, const time_type& time, bool fixed, const std::set<generic_block*> reffered_blocks) {
+	void store_value(const value_type& value, const time_type& time, bool fixed, const std::set<generic_block*> refferred_blocks) {
 		unsigned entry_version = fixed ? 0 : m_current_non_fixed;
 		
 		if (!m_blocks.size()) {
-			create_new_block(value, time, entry_version, reffered_blocks);
+			create_new_block(value, time, entry_version, refferred_blocks);
 			return;
 		}
 
 		typename map_type::iterator i = m_blocks.upper_bound(time);
 		if (i == m_blocks.begin())
-			i = create_new_block(value, time, entry_version, reffered_blocks);
+			i = create_new_block(value, time, entry_version, refferred_blocks);
 		else {
 			std::advance(i, -1);
 			if (i->second->end_time() < time)
-				i = create_new_block(value, time, entry_version, reffered_blocks);
+				i = create_new_block(value, time, entry_version, refferred_blocks);
 			else if (i->second->end_time() == time)
-				i->second->append_entry(entry_type(value, entry_version, reffered_blocks), szb_move_time(time, 1, m_probe_type));
+				i->second->append_entry(entry_type(value, entry_version, refferred_blocks), szb_move_time(time, 1, m_probe_type));
 			else
-				insert_value_inside_block(i->second, value, time, entry_version, reffered_blocks);
+				insert_value_inside_block(i->second, value, time, entry_version, refferred_blocks);
 		}
 
 		maybe_merge_block_with_next_one(i);
@@ -302,7 +302,6 @@ public:
 
 	~definable_param_cache() {
 		for (typename map_type::iterator i = m_blocks.begin(); i != m_blocks.end(); i++) {
-			i->second->remove_from_cache();
 			delete i->second;
 		}
 	}

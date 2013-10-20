@@ -65,8 +65,9 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 			for (std::vector<LuaExec::ParamRef>::iterator i = exec_param->m_par_refs.begin();
 					i != exec_param->m_par_refs.end();
 					i++) {
-				generic_param_entry* reffered_entry = base->get_param_entry(i->m_param);
-				reffered_entry->add_reffering_param(entry);
+				generic_param_entry* refferred_entry = base->get_param_entry(i->m_param);
+				refferred_entry->add_refferring_param(entry);
+				entry->add_refferred_param(entry);
 			}
 			return entry;
 		}
@@ -85,8 +86,9 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 				if (param == NULL)
 					continue;
 
-				generic_param_entry* reffered_entry = base->get_param_entry(param);
-				reffered_entry->add_reffering_param(entry);
+				generic_param_entry* refferred_entry = base->get_param_entry(param);
+				refferred_entry->add_refferring_param(entry);
+				entry->add_refferred_param(entry);
 			}
 			return entry;
 		}
@@ -96,9 +98,9 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 			TParam **f_cache = param->GetFormulaCache();
 			int num_of_params = param->GetNumParsInFormula();
 			for (int i = 0; i < num_of_params; i++) {
-				generic_param_entry* reffered_entry = base->get_param_entry(f_cache[i]);
-				reffered_entry->add_reffering_param(entry);
-
+				generic_param_entry* refferred_entry = base->get_param_entry(f_cache[i]);
+				refferred_entry->add_refferring_param(entry);
+				entry->add_refferred_param(entry);
 			}
 
 			return entry;

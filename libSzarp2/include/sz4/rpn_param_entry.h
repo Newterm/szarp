@@ -59,7 +59,7 @@ public:
 		double sum = 0;
 		size_t count = 0;
 		bool fixed = true;
-		std::set<generic_block*> reffered_blocks;
+		std::set<generic_block*> refferred_blocks;
 
 		T end_time = szb_move_time(time, 1, probe_type);
 		double stack[200];
@@ -73,9 +73,9 @@ public:
 					varray[i] = wsum.sum() / wsum.weight();
 				else
 					varray[i] = nan("");
-				reffered_blocks.insert(
-					wsum.reffered_blocks().begin(),
-					wsum.reffered_blocks().end());
+				refferred_blocks.insert(
+					wsum.refferred_blocks().begin(),
+					wsum.refferred_blocks().end());
 				fixed &= wsum.fixed();
 			}
 
@@ -110,7 +110,7 @@ public:
 				std::set<generic_block*> >(
 				v,
 				fixed,
-				reffered_blocks);	
+				refferred_blocks);	
 
 	}
 };

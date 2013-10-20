@@ -91,30 +91,30 @@ template<class value_type, class time_type> struct weighted_sum {
 	time_diff_type m_no_data_weight;
 	bool m_fixed;
 
-	std::vector<generic_block*> m_reffered_blocks;
+	std::vector<generic_block*> m_refferred_blocks;
 
 	weighted_sum() : m_sum(0), m_weight(0), m_no_data_weight(0), m_fixed(true) {}
 	sum_type& sum() { return m_sum; }
 	time_diff_type& weight() { return m_weight; }
 	time_diff_type& no_data_weight() { return m_no_data_weight; }
-	std::vector<generic_block*>& reffered_blocks() { return m_reffered_blocks; }
+	std::vector<generic_block*>& refferred_blocks() { return m_refferred_blocks; }
 	bool fixed() { return m_fixed; }
 	void set_fixed(bool fixed) { m_fixed &= fixed; }
-	template<class T> void add_reffered_blocks(T begin, T end) {
+	template<class T> void add_refferred_blocks(T begin, T end) {
 		std::for_each(begin, end, 
 			std::tr1::bind(
 				&weighted_sum<value_type, time_type>
-					::add_reffered_block, 
+					::add_refferred_block, 
 				this,
 				std::tr1::placeholders::_1));
 	}
-	void add_reffered_block(generic_block* block) {
+	void add_refferred_block(generic_block* block) {
 		std::vector<generic_block*>::iterator i =
-			 std::find(m_reffered_blocks.begin(),
-			 	m_reffered_blocks.end(),
+			 std::find(m_refferred_blocks.begin(),
+			 	m_refferred_blocks.end(),
 			 	block);
-		if (i == m_reffered_blocks.end())
-			m_reffered_blocks.push_back(block);
+		if (i == m_refferred_blocks.end())
+			m_refferred_blocks.push_back(block);
 	}
 };
 

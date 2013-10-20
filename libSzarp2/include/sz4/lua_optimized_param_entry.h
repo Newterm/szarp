@@ -72,7 +72,7 @@ public:
 				std::set<generic_block*> >(
 				m_vars[0],
 				stack_top.value(),
-				stack_top.reffered_blocks());
+				stack_top.refferred_blocks());
 	}
 
 	virtual double Value(size_t param_index, const double& time_, const double& probe_type) {
@@ -88,8 +88,8 @@ public:
 		assert(m_base->fixed_stack().size());
 		m_base->fixed_stack().top().first &= sum.fixed();
 		m_base->fixed_stack().top().second.insert(
-				sum.reffered_blocks().begin(),
-				sum.reffered_blocks().end());
+				sum.refferred_blocks().begin(),
+				sum.refferred_blocks().end());
 
 		if (sum.weight())
 			return sum.sum() / sum.weight();

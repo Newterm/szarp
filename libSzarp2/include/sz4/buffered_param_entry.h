@@ -53,13 +53,13 @@ public:
 		while (current < end) {
 			value_type value;
 			bool fixed;
-			std::set<generic_block*> reffered_blocks;
+			std::set<generic_block*> refferred_blocks;
 			if (!m_cache[probe_type].get_value(current,
 					value,
 					fixed,
-					reffered_blocks)) {
-				std::tr1::tie(value, fixed, reffered_blocks) = ee.calculate_value(current, probe_type);
-				m_cache[probe_type].store_value(value, current, fixed, reffered_blocks);
+					refferred_blocks)) {
+				std::tr1::tie(value, fixed, refferred_blocks) = ee.calculate_value(current, probe_type);
+				m_cache[probe_type].store_value(value, current, fixed, refferred_blocks);
 			}
 
 			time_type next = szb_move_time(current, 1, probe_type);
@@ -68,9 +68,9 @@ public:
 				sum.weight() += next - current;
 			} else
 				sum.no_data_weight() += next - current;
-			sum.add_reffered_blocks(
-					reffered_blocks.begin(),
-					reffered_blocks.end()
+			sum.add_refferred_blocks(
+					refferred_blocks.begin(),
+					refferred_blocks.end()
 					);
 			sum.set_fixed(fixed);
 			current = next;
@@ -143,12 +143,13 @@ public:
 		m_invalidate_non_fixed = true;
 	}
 
-	void reffered_param_removed(generic_param_entry* param_entry) {
+	void refferred_param_removed(generic_param_entry* param_entry) {
 		delete m_param->GetLuaExecParam();
 		m_param->SetLuaExecParam(NULL);
 		//go trough preparation procedure again
 		//XXX: reset cache as well
 		m_param->SetSz4Type(TParam::SZ4_NONE);
+		generic_param_entry::refferred_param_removed(param_entry);
 	}
 
 	virtual ~buffered_param_entry_in_buffer() {};

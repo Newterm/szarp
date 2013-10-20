@@ -36,6 +36,7 @@
 #include "drawobs.h"
 #include "draw.h"
 #include "drawswdg.h"
+#include "dbmgr.h"
 #include "cfgmgr.h"
 
 static const size_t MAXIMUM_NUMBER_OF_INITIALLY_ENABLED_DRAWS = 12;
@@ -70,6 +71,22 @@ void DrawsController::State::Reset() {}
 
 void DrawsController::State::SetNumberOfUnits() {
 	m_c->FetchData();
+}
+
+void DrawsController::State::ParamDataChanged(TParam* param) {
+	for (std::vector<Draw*>::iterator i = m_c->m_draws.begin();
+			i != m_c->m_draws.end();
+			i++) {
+		if (!(*i)->GetEnable())
+			continue;
+
+		if (param != (*i)->GetDrawInfo()->GetParam()->GetIPKParam()) 
+			continue;
+		
+		DatabaseQuery *q = (*i)->GetDataToFetch(true);
+		if (q)
+			m_c->QueryDatabase(q);
+	}
 }
 
 void DrawsController::DisplayState::MoveCursorLeft(int n) {
@@ -601,7 +618,26 @@ DrawsController::DrawsController(ConfigManager *config_manager, DatabaseManager 
 	m_state = m_states[STOP];
 }
 
+namespace {
+std::vector<TParam*> GetSetParams(DrawSet* set) {
+	std::vector<TParam*> v;
+	if (set == NULL)
+		return v;
+
+	DrawInfoArray *draws = set->GetDraws();
+	for (DrawInfoArray::iterator i = draws->begin(); i != draws->end(); i++) {
+		TParam* param = (*i)->GetParam()->GetIPKParam();
+		if (param)
+			v.push_back(param);
+	}
+		
+	return v;
+}
+}
+
 DrawsController::~DrawsController() {
+	ChangeObservedParamsRegistration(GetSetParams(m_draw_set), std::vector<TParam*>());
+
 	for (size_t i = 0; i < m_draws.size(); i++)
 		delete m_draws[i];
 
@@ -773,7 +809,7 @@ bool DrawsController::GetFollowLatestData() {
 
 void DrawsController::FetchData() {
 	for (size_t i = 0; i < m_draws.size(); i++) {
-		DatabaseQuery *q = m_draws[i]->GetDataToFetch();
+		DatabaseQuery *q = m_draws[i]->GetDataToFetch(false);
 		if (q)
 			QueryDatabase(q);
 	}
@@ -804,6 +840,9 @@ void DrawsController::MoveToTime(const DTime &time) {
 
 void DrawsController::DoSet(DrawSet *set) {
 	m_double_cursor = false;
+
+	std::vector<TParam*> previous_params(GetSetParams(m_draw_set));
+	std::vector<TParam*> new_params(GetSetParams(set));
 
 	m_draw_set = set;
 	m_current_set_name = set->GetName();
@@ -839,6 +878,7 @@ void DrawsController::DoSet(DrawSet *set) {
 		m_draws[i]->SetInitialDrawNo(i);
 	}
 
+	ChangeObservedParamsRegistration(previous_params, new_params);
 }
 
 void DrawsController::ConfigurationWasReloaded(wxString prefix) {
@@ -1511,6 +1551,10 @@ void DrawsController::SortDraws(SORTING_CRITERIA criteria) {
 	}
 
 	m_observers.NotifyDrawsSorted(this);
+}
+
+void DrawsController::ParamDataChanged(TParam* param) {
+	m_state->ParamDataChanged(param);
 }
 
 void DrawsObservers::AttachObserver(DrawObserver *observer) {

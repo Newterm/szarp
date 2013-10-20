@@ -33,6 +33,7 @@
 #include "sz4/buffer.h"
 #include "sz4/lua_interpreter.h"
 #include "sz4/block_cache.h"
+#include "sz4/param_observer.h"
 #include "szarp_base_common/lua_strings_extract.h"
 
 namespace sz4 {
@@ -93,6 +94,22 @@ public:
 			return;
 
 		buf->remove_param(param);
+	}
+
+	void register_observer(param_observer *observer, const std::vector<TParam*>& params) {
+		for (std::vector<TParam*>::const_iterator i = params.begin(); i != params.end(); i++) {
+			generic_param_entry *entry = get_param_entry(*i);
+			if (entry)
+				entry->register_observer(observer);
+		}
+	}
+
+	void deregister_observer(param_observer *observer, const std::vector<TParam*>& params) {
+		for (std::vector<TParam*>::const_iterator i = params.begin(); i != params.end(); i++) {
+			generic_param_entry *entry = get_param_entry(*i);
+			if (entry)
+				entry->deregister_observer(observer);
+		}
 	}
 
 	std::stack<std::pair<bool, std::set<generic_block*> > >& fixed_stack() { return m_fixed_stack; }

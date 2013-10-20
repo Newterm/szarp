@@ -30,42 +30,42 @@ generic_block::generic_block(block_cache* cache) :
 }
 
 bool generic_block::ok_to_delete() const {
-	return m_reffering_blocks.size() == 0;
+	return m_refferring_blocks.size() == 0;
 }
 
 std::list<generic_block*>::iterator& generic_block::location() {
 	return m_block_location;
 }
 
-bool generic_block::has_reffering_blocks() const {
-	return m_reffering_blocks.size();
+bool generic_block::has_refferring_blocks() const {
+	return m_refferring_blocks.size();
 }
 
-void generic_block::add_reffering_block(generic_block* block) {
-	std::vector<generic_block*>::iterator i = std::find(m_reffering_blocks.begin(), m_reffering_blocks.end(), block);
-	if (i != m_reffering_blocks.end()) {
-		m_reffering_blocks.push_back(block);
+void generic_block::add_refferring_block(generic_block* block) {
+	std::vector<generic_block*>::iterator i = std::find(m_refferring_blocks.begin(), m_refferring_blocks.end(), block);
+	if (i != m_refferring_blocks.end()) {
+		m_refferring_blocks.push_back(block);
 		m_cache->block_updated(this);
 	}
 }
 
-void generic_block::remove_reffering_block(generic_block* block) {
-	std::vector<generic_block*>::iterator i = std::remove(m_reffering_blocks.begin(), m_reffering_blocks.end(), block);
-	m_reffering_blocks.erase(i, m_reffering_blocks.end());
+void generic_block::remove_refferring_block(generic_block* block) {
+	std::vector<generic_block*>::iterator i = std::remove(m_refferring_blocks.begin(), m_refferring_blocks.end(), block);
+	m_refferring_blocks.erase(i, m_refferring_blocks.end());
 	m_cache->block_updated(this);
 }
 
-void generic_block::add_reffered_block(generic_block* block) {
-	std::vector<generic_block*>::iterator i = std::find(m_reffered_blocks.begin(), m_reffered_blocks.end(), block);
-	if (i != m_reffered_blocks.end()) {
-		m_reffered_blocks.push_back(block);
+void generic_block::add_refferred_block(generic_block* block) {
+	std::vector<generic_block*>::iterator i = std::find(m_refferred_blocks.begin(), m_refferred_blocks.end(), block);
+	if (i != m_refferred_blocks.end()) {
+		m_refferred_blocks.push_back(block);
 		m_cache->block_updated(this);
 	}
 }
 
-void generic_block::remove_reffered_block(generic_block* block) {
-	std::vector<generic_block*>::iterator i = std::remove(m_reffered_blocks.begin(), m_reffered_blocks.end(), block);
-	m_reffered_blocks.erase(i, m_reffered_blocks.end());
+void generic_block::remove_refferred_block(generic_block* block) {
+	std::vector<generic_block*>::iterator i = std::remove(m_refferred_blocks.begin(), m_refferred_blocks.end(), block);
+	m_refferred_blocks.erase(i, m_refferred_blocks.end());
 	m_cache->block_updated(this);
 }
 
@@ -74,8 +74,8 @@ void generic_block::remove_from_cache() {
 }
 
 generic_block::~generic_block() { 
-	std::for_each(m_reffered_blocks.begin(), m_reffered_blocks.end(), std::bind2nd(std::mem_fun(&generic_block::remove_reffering_block), this));
-	std::for_each(m_reffering_blocks.begin(), m_reffering_blocks.end(), std::bind2nd(std::mem_fun(&generic_block::remove_reffered_block), this));
+	std::for_each(m_refferred_blocks.begin(), m_refferred_blocks.end(), std::bind2nd(std::mem_fun(&generic_block::remove_refferring_block), this));
+	std::for_each(m_refferring_blocks.begin(), m_refferring_blocks.end(), std::bind2nd(std::mem_fun(&generic_block::remove_refferred_block), this));
 }
 
 }

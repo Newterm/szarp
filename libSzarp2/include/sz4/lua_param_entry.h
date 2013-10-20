@@ -52,7 +52,7 @@ public:
 		fixed_stack_top stack_top(m_base->fixed_stack());
 		double value = m_base->get_lua_interpreter().calculate_value(time, probe_type, 0);
 		return std::tr1::tuple<double, bool, std::set<generic_block*> >
-			(value, stack_top.value(), stack_top.reffered_blocks());
+			(value, stack_top.value(), stack_top.refferred_blocks());
 	}
 
 	~lua_caluclate() {

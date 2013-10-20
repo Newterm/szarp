@@ -48,20 +48,20 @@ class block_cache;
 class generic_block {
 protected:
 	block_cache* m_cache;
-	std::vector<generic_block*> m_reffering_blocks;
-	std::vector<generic_block*> m_reffered_blocks;
+	std::vector<generic_block*> m_refferring_blocks;
+	std::vector<generic_block*> m_refferred_blocks;
 
 	std::list<generic_block*>::iterator m_block_location;
 public:
 	generic_block(block_cache* cache);
 	bool ok_to_delete() const;
 	std::list<generic_block*>::iterator& location();
-	bool has_reffering_blocks() const;
-	void add_reffering_block(generic_block* block);
-	void remove_reffering_block(generic_block* block);
+	bool has_refferring_blocks() const;
+	void add_refferring_block(generic_block* block);
+	void remove_refferring_block(generic_block* block);
 
-	void add_reffered_block(generic_block* block);
-	void remove_reffered_block(generic_block* block);
+	void add_refferred_block(generic_block* block);
+	void remove_refferred_block(generic_block* block);
 
 	virtual size_t block_size() const = 0;
 
@@ -263,7 +263,7 @@ public:
 			std::advance(i, 1);
 		}
 
-		r.add_reffered_block(this);
+		r.add_refferred_block(this);
 	}
 
 	virtual size_t block_size() const {

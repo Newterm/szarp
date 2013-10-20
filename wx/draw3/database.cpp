@@ -395,6 +395,14 @@ void Sz4Base::StopSearch() {
 
 }
 
+void Sz4Base::RegisterObserver(sz4::param_observer* observer, const std::vector<TParam*>& params) {
+	base->register_observer(observer, params);
+}
+
+void Sz4Base::DeregisterObserver(sz4::param_observer* observer, const std::vector<TParam*>& params) {
+	base->deregister_observer(observer, params);
+}
+
 QueryExecutor::QueryExecutor(DatabaseQueryQueue *_queue, wxEvtHandler *_response_receiver, Draw3Base *_base) :
 	wxThread(wxTHREAD_JOINABLE), queue(_queue), response_receiver(_response_receiver), base(_base)
 { 
@@ -485,6 +493,9 @@ void* QueryExecutor::Entry() {
 			base->ResetBuffer(q);
 		} else if (q->type == DatabaseQuery::CLEAR_CACHE) {
 			base->ClearCache(q);
+		} else if (q->type == DatabaseQuery::REGISTER_OBSERVER) {
+			base->DeregisterObserver(q->observer_registration_parameters.observer, *q->observer_registration_parameters.params_to_deregister);
+			base->RegisterObserver(q->observer_registration_parameters.observer, *q->observer_registration_parameters.params_to_register);
 		} else {
 			assert(false);
 		}
@@ -518,6 +529,9 @@ DatabaseQuery::~DatabaseQuery() {
 		delete extraction_parameters.params;
 		delete extraction_parameters.prefixes;
 		delete extraction_parameters.file_name;
+	} else if (type == REGISTER_OBSERVER) {
+		delete observer_registration_parameters.params_to_register;
+		delete observer_registration_parameters.params_to_deregister;
 	}
 }
 
@@ -536,6 +550,9 @@ double DatabaseQueryQueue::FindQueryRanking(DatabaseQuery* q) {
 		return 100.f;
 
 	if (q->type == DatabaseQuery::CLEAR_CACHE)
+		return 150.f;
+
+	if (q->type == DatabaseQuery::REGISTER_OBSERVER)
 		return 150.f;
 
 	if (q->type == DatabaseQuery::SET_PROBER_ADDRESS)

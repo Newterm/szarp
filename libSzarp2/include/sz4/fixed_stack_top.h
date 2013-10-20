@@ -35,7 +35,7 @@ public:
 		return m_stack.top().first;
 	}
 
-	std::set<generic_block*>& reffered_blocks() {
+	std::set<generic_block*>& refferred_blocks() {
 		return m_stack.top().second;
 
 	}

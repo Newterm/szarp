@@ -132,7 +132,11 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 
 		virtual void Enter(const DTime& time) = 0;
 
+		virtual void ParamDataChanged(TParam* param);
+
 		virtual void Leaving() {};
+
+		virtual ~State() {};
 
 	};
 
@@ -146,6 +150,8 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 		virtual void Enter(const DTime& time);
 
 		const DTime& GetStateTime() const;
+
+		void ParamDataChanged(TParam* param) {}
 	};
 
 	class DisplayState : public State {
@@ -184,6 +190,7 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 		virtual void Enter(const DTime& time);
 		virtual void CheckForDataPresence(Draw *draw) = 0;
 		const DTime& GetStateTime() const;
+		void ParamDataChanged(TParam* param) {}
 	};
 
 	class WaitDataLeft : public WaitState {
@@ -215,6 +222,7 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 		void HandleSearchResponse(DatabaseQuery *query);
 		virtual void HandleLeftResponse(wxDateTime& time);
 		virtual void HandleRightResponse(wxDateTime& time);
+		void ParamDataChanged(TParam* param) {}
 	};
 
 	class SearchLeft : public SearchState {
@@ -340,6 +348,7 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 	DTime SetSelectedDraw(int draw_to_select);
 
 	void EnterState(STATE state, const DTime &time);
+
 public:
 	DrawsController(ConfigManager *config_manager, DatabaseManager *database_manager);
 
@@ -484,6 +493,7 @@ public:
 
 	void SortDraws(SORTING_CRITERIA criteria);
 
+	void ParamDataChanged(TParam* param);
 };
 
 #endif
