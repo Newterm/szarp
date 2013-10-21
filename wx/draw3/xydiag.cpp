@@ -113,7 +113,18 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 #undef __BUTTON_NAME
 
 	line = new wxStaticLine(this);
+
 	sizer->Add(line, 0, wxEXPAND, 10);
+	wxBoxSizer* sizer_4 = new wxBoxSizer(wxHORIZONTAL);
+	label = new wxStaticText(this, wxID_ANY, _("Choose period:"));
+	sizer_4->Add(label, 0, wxALIGN_CENTER | wxALL, 5);
+	line = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL);
+	m_period_choice = new wxChoice(this, XY_CHOICE_PERIOD, wxDefaultPosition, wxDefaultSize, PERIOD_T_SEASON, period_choices);
+	sizer_4->Add(m_period_choice, 0, wxALIGN_CENTER, 5);
+	sizer->Add(sizer_4, 0, wxALIGN_CENTER | wxALL, 5);
+
+	line = new wxStaticLine(this);
+	sizer->Add(line, 0, wxEXPAND | wxALL, 5);
 
 	wxFlexGridSizer* sizer_3 = new wxFlexGridSizer(2, 5, 5);
 
@@ -131,17 +142,6 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 
 	line = new wxStaticLine(this);
 	sizer->Add(line, 0, wxEXPAND, 5);
-
-	wxBoxSizer* sizer_4 = new wxBoxSizer(wxHORIZONTAL);
-	label = new wxStaticText(this, wxID_ANY, _("Choose period:"));
-	sizer_4->Add(label, 0, wxALIGN_CENTER | wxALL, 5);
-	line = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL);
-	m_period_choice = new wxChoice(this, XY_CHOICE_PERIOD, wxDefaultPosition, wxDefaultSize, PERIOD_T_SEASON, period_choices);
-	sizer_4->Add(m_period_choice, 0, wxALIGN_CENTER, 5);
-	sizer->Add(sizer_4, 0, wxALIGN_CENTER | wxALL, 5);
-
-	line = new wxStaticLine(this);
-	sizer->Add(line, 0, wxEXPAND | wxALL, 5);
 
 	m_avg_check = NULL;
 	if (m_frame->GetDimCount() == 2) {
