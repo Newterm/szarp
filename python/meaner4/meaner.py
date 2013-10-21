@@ -24,7 +24,7 @@ import lxml.etree
 import paramsvalues_pb2
 import param
 import saveparam
-import meanerbase
+from meanerbase import MeanerBase
 
 class Meaner(MeanerBase):
 	def __init__(self, path, uri):

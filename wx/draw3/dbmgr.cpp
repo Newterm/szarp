@@ -94,7 +94,7 @@ wxEvent* ConfigurationChangedEvent::Clone() const {
 
 ConfigurationChangedEvent::~ConfigurationChangedEvent() {}
 
-ParamDataChangedEvent::ParamDataChangedEvent(TParam *param) : wxCommandEvent(DATABASE_RESP, wxID_ANY), m_param(param) {}
+ParamDataChangedEvent::ParamDataChangedEvent(TParam *param) : wxCommandEvent(PARAM_DATA_CHANGED, wxID_ANY), m_param(param) {}
 
 TParam* ParamDataChangedEvent::GetParam() {
 	return m_param;

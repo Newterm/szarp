@@ -22,6 +22,7 @@ import lxml
 import lxml.etree
 import param
 import saveparam
+from ipk import IPK
 
 class MeanerBase:
 	def __init__(self, path):
@@ -30,8 +31,7 @@ class MeanerBase:
 		self.szbase_path = path
 
 	def configure(self, ipk_path):
-
-		ipk = IPK.ipk(ipk_path)
+		ipk = IPK(ipk_path)
 		
 		for p in ipk.params:
 			self.save_params.append(saveparam.SaveParam(p, self.szbase_path))

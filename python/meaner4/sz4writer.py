@@ -22,16 +22,17 @@ import sys
 sys.path.append("/opt/szarp/lib/python")
 
 import os
-import datetime
+import time
 
-import meanerbase
+from meanerbase import MeanerBase
+from ipk import IPK
 
-class Sz4Writer(meanerbase.MeanerBase):
+class Sz4Writer(MeanerBase):
 	def __init__(self, path):
 		MeanerBase.__init__(self, path)
 
 	def configure(self, ipk_path):
-		MeanerBase.configure(self, path)
+		MeanerBase.configure(self, ipk_path)
 
 		self.name2index = { sp.param.param_name : i for (i, sp) in enumerate(self.save_params) }
 
@@ -40,12 +41,12 @@ class Sz4Writer(meanerbase.MeanerBase):
 
 	def process_file(self, path, time_format):
 		print "Reading values from file %s" % (path,)
-		f = fopen(path, 'r')
+		f = open(path, 'r')
 		
 		for line in f:
 			(pname, time_string, value_string) = line.rsplit(';', 3)
 
-			pindex = self.name2index[pname]
+			pindex = self.name2index[unicode(pname, 'utf-8')]
 			if pindex is None:
 				print "Param %s not found, skipping line" % (pname,)
 				continue
@@ -60,5 +61,5 @@ if __name__ == "__main__":
 	writer = Sz4Writer(sys.argv[1] + '/sz4')
 	writer.configure(sys.argv[1] + '/config/params.xml')
 
-	writer.process_file(sys.argv[2], "%Y-%m-%d %H:%M:%S" if len(sys.argv) == 4 else sys.argv[3])
+	writer.process_file(sys.argv[2], "%Y-%m-%d %H:%M:%S" if len(sys.argv) == 3 else sys.argv[3])
 
