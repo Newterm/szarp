@@ -1,3 +1,9 @@
+szarp (3.1.723) stable; urgency=low
+
+  * building stable
+
+ -- Jakub Kotur <qba@bender>  Mon, 21 Oct 2013 16:09:43 +0200
+
 szarp (3.1.722) stable; urgency=low
 
   * building stable
