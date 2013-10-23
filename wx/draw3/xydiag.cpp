@@ -38,6 +38,11 @@
 #include "xygraph.h"
 #include "incsearch.h"
 
+/* initialize static members from XYDialog class */
+int XYDialog::m_loaded_time = 0;
+DTime XYDialog::m_saved_start_time = DTime();
+DTime XYDialog::m_saved_end_time = DTime();
+
 XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, DatabaseManager *db, RemarksHandler *rh, TimeInfo time, DrawInfoList user_draws,  XFrame *frame) :
 		wxDialog(parent,
 			wxID_ANY,
@@ -49,6 +54,11 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 		m_start_time(time.begin_time),
 		m_end_time(time.end_time)
 		{
+
+	if (m_loaded_time == 0) {
+		m_saved_start_time = time.begin_time;
+		m_saved_end_time = time.end_time;
+	}
 
 	if (frame->GetDimCount() == 3)
 		SetHelpText(_T("draw3-ext-chartxyz"));
@@ -139,6 +149,17 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 	sizer_3->Add(label, 0, wxALIGN_CENTER | wxALL, 5);
 	button = new wxButton(this, XY_END_TIME, FormatTime(m_end_time.GetTime(), m_period));
 	sizer_3->Add(button, 1, wxEXPAND);
+
+	wxBoxSizer *button_sizer1 = new wxBoxSizer(wxHORIZONTAL);
+	button = new wxButton(this, XY_SAVE_TIME, _("Save time"));
+	button_sizer1->Add(button, 0, wxALL, 10);
+	button = new wxButton(this, XY_LOAD_TIME, _("Load time"));
+	button_sizer1->Add(button, 0, wxALL, 10);
+	if (m_loaded_time == 0) {
+		button->Disable();
+		button->Update();
+	}
+	sizer->Add(button_sizer1, 1, wxALIGN_RIGHT | wxALL, 10);
 
 	line = new wxStaticLine(this);
 	sizer->Add(line, 0, wxEXPAND, 5);
@@ -293,6 +314,32 @@ void XYDialog::OnDateChange(wxCommandEvent &event) {
 
 	button->SetLabel(FormatTime(time->GetTime(), m_period));
 
+}
+
+void XYDialog::OnSaveTimeButton(wxCommandEvent &event) {
+	wxButton *button = wxDynamicCast(FindWindow(XY_LOAD_TIME), wxButton);
+
+	if (m_loaded_time == 0) {
+		button->Enable(true);
+		button->Update();
+		m_loaded_time = 1;
+	}
+
+	m_saved_start_time = m_start_time;
+	m_saved_end_time = m_end_time;
+}
+
+void XYDialog::OnLoadTimeButton(wxCommandEvent &event) {
+	wxButton *button;
+
+	m_start_time = m_saved_start_time;
+	m_end_time = m_saved_end_time;
+
+	button = wxDynamicCast(FindWindow(XY_START_TIME), wxButton);
+	button->SetLabel(FormatTime(m_start_time.GetTime(), m_period));
+
+	button = wxDynamicCast(FindWindow(XY_END_TIME), wxButton);
+	button->SetLabel(FormatTime(m_end_time.GetTime(), m_period));
 }
 
 void XYDialog::OnDrawChange(wxCommandEvent &event) {
@@ -637,6 +684,8 @@ BEGIN_EVENT_TABLE(XYDialog, wxDialog)
 	LOG_EVT_BUTTON(wxID_CANCEL, XYDialog , OnCancel, "xydiag:cancel" )
 	LOG_EVT_BUTTON(wxID_HELP, XYDialog , OnHelpButton, "xydiag:help" )
 	LOG_EVT_BUTTON(XY_END_TIME, XYDialog , OnDateChange, "xydiag:end_date" )
+	LOG_EVT_BUTTON(XY_SAVE_TIME, XYDialog , OnSaveTimeButton, "xydiag:save_time" )
+	LOG_EVT_BUTTON(XY_LOAD_TIME, XYDialog , OnLoadTimeButton, "xydiag:load_time" )
 	LOG_EVT_CHOICE(XY_CHOICE_PERIOD, XYDialog , OnPeriodChange, "xydiag:period_change" )
 	LOG_EVT_BUTTON(XY_XAXIS_BUTTON, XYDialog , OnDrawChange, "xydiag:xaxis" )
 	LOG_EVT_BUTTON(XY_YAXIS_BUTTON, XYDialog , OnDrawChange, "xydiag:yaxis" )
