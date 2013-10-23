@@ -93,7 +93,7 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 	line  = new wxStaticLine(this);
 
 	sizer->Add(label, 0, wxALIGN_CENTER | wxALL, 5);
-	sizer->Add(line, 0, wxEXPAND, 10);
+	sizer->Add(line, 0, wxEXPAND | wxALL, 5);
 
 #define __BUTTON_NAME(N) user_draws.size() >= N ? user_draws[N-1]->GetName() :wxString( _("Choose draw"))
 
@@ -124,7 +124,7 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 
 	line = new wxStaticLine(this);
 
-	sizer->Add(line, 0, wxEXPAND, 10);
+	sizer->Add(line, 0, wxEXPAND | wxALL, 5);
 	wxBoxSizer* sizer_4 = new wxBoxSizer(wxHORIZONTAL);
 	label = new wxStaticText(this, wxID_ANY, _("Choose period:"));
 	sizer_4->Add(label, 0, wxALIGN_CENTER | wxALL, 5);
@@ -152,17 +152,17 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 
 	wxBoxSizer *button_sizer1 = new wxBoxSizer(wxHORIZONTAL);
 	button = new wxButton(this, XY_SAVE_TIME, _("Save time"));
-	button_sizer1->Add(button, 0, wxALL, 10);
+	button_sizer1->Add(button, 0, wxALL, 3);
 	button = new wxButton(this, XY_LOAD_TIME, _("Load time"));
-	button_sizer1->Add(button, 0, wxALL, 10);
+	button_sizer1->Add(button, 0, wxALL, 3);
 	if (m_loaded_time == 0) {
 		button->Disable();
 		button->Update();
 	}
-	sizer->Add(button_sizer1, 1, wxALIGN_RIGHT | wxALL, 10);
+	sizer->Add(button_sizer1, 0, wxALIGN_RIGHT | wxALL, 5);
 
 	line = new wxStaticLine(this);
-	sizer->Add(line, 0, wxEXPAND, 5);
+	sizer->Add(line, 0, wxEXPAND | wxALL, 5);
 
 	m_avg_check = NULL;
 	if (m_frame->GetDimCount() == 2) {
