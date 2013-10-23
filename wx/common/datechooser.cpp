@@ -81,6 +81,10 @@ DateChooserWidget::DateChooserWidget(wxWindow *parent,
         date_control = new wxCalendarCtrl(this, -1, wxDefaultDateTime, 
 			wxDefaultPosition, wxDefaultSize, 
 			wxCAL_SHOW_HOLIDAYS|wxCAL_MONDAY_FIRST);
+
+		wxSize calSize = date_control->GetSize();
+		date_control->SetSizeHints(calSize.GetWidth() * 1.1, calSize.GetHeight());
+
 	sizer1_1->Add(date_control, 0, wxALL, 5); // 1_1_1
 
 	date_control->SetFocus();

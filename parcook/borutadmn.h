@@ -69,13 +69,19 @@ struct serial_port_configuration {
 	} char_size;
 };
 
-/**common class for types of drivers, actually the only thing they share is a fact
-that they hold a pointer to event_base*/
+/**common class for types of drivers*/
 class boruta_driver {
 protected:
 	struct event_base* m_event_base;
+	std::string m_address_string;
 public:
+	virtual void vdriver_log(int level, const char * fmt, va_list fmt_args) = 0;
+
 	virtual void set_event_base(struct event_base* ev_base);
+	virtual void set_address_string(const std::string& str);
+	virtual const std::string& address_string() const;
+	virtual const char* driver_name() = 0;
+	virtual ~boruta_driver() {}
 };
 
 /**base class for server drivers, server drivers have a single numeric identifier,
@@ -83,6 +89,8 @@ and respond to connection_error 'event'*/
 class server_driver : public boruta_driver {
 	size_t m_id;
 public:
+	void vdriver_log(int level, const char * fmt, va_list ap);
+
 	virtual void connection_error(struct bufferevent *bufev) = 0;
 	size_t& id();
 };
@@ -91,15 +99,17 @@ class client_manager;
 
 /** base class for client driver */
 class client_driver : public boruta_driver {
+protected:
 	/** client driver identificator consiting of two numbers - id of connection
 	 * this driver is assigned to and id of driver itself */
 	std::pair<size_t, size_t> m_id;
-protected:
 	client_manager* m_manager;
 public:
 	virtual const std::pair<size_t, size_t> & id();
 
 	virtual void set_id(std::pair<size_t, size_t> id);
+
+	void vdriver_log(int level, const char * fmt, va_list ap);
 
 	virtual void set_manager(client_manager* manager);
 	/** through this method manager informs a driver that there was a
@@ -150,6 +160,12 @@ public:
 	void set_manager(client_manager* manager);
 
 	void set_event_base(struct event_base* ev_base);
+
+	void set_address_string(const std::string& str);
+
+	const std::string& address_string() const;
+
+	const char* driver_name();
 
 	virtual void connection_error(struct bufferevent *bufev);
 
@@ -320,6 +336,7 @@ class tcp_client_manager : public client_manager {
 		int fd;
 		struct bufferevent *bufev;
 		size_t conn_no;
+		time_t connecting_timeout;
 		tcp_client_manager *manager;
 		std::string address;
 	};
@@ -344,8 +361,7 @@ public:
 	int configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols);
 	int initialize();
 	static void connection_read_cb(struct bufferevent *ev, void* _tcp_connection);
-	static void connection_write_cb(struct bufferevent *ev, void* _tcp_connection);
-	static void connection_error_cb(struct bufferevent *ev, short event, void* _tcp_connection);
+	static void connection_event_cb(struct bufferevent *ev, short event, void* _tcp_connection);
 };
 
 /**implementation of class deadling with serial client drivers*/
@@ -515,6 +531,15 @@ namespace ascii {
 
     void to_ascii(unsigned char c, unsigned char& c1, unsigned char &c2) ;
 }
+
+class driver_logger {
+	boruta_driver* m_driver;
+public:
+	driver_logger(boruta_driver* driver);
+	void log(int level, const char * fmt, ...)
+		  __attribute__ ((format (printf, 3, 4)));
+	void vlog(int level, const char * fmt, va_list fmt_args);
+};
 
 
 #endif

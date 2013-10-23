@@ -1345,6 +1345,14 @@ msgstr "Koniec:"
 msgid "Period"
 msgstr "Okres"
 
+#: xydiag.cpp: 144
+msgid "Save time"
+msgstr "Zapisz czas"
+
+#: xydiag.cpp: 146
+msgid "Load time"
+msgstr "Wczytaj czas"
+
 #: statdiag.cpp:118
 msgid "Values"
 msgstr "Warto¶ci"

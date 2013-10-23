@@ -156,14 +156,6 @@ struct lua_parser : qi::grammar<std::wstring::const_iterator, chunk(), lua_skip_
 
 	typedef lua_skip_parser space;
 
-	mulop_symbols mulop_symbols_;
-
-	addop_symbols addop_symbols_;
-
-	cmpop_symbols cmpop_symbols_;
-
-	unop_symbols unop_symbols_;
-
 	escaped_symbol escaped_symbol_;
 
 	qi::rule<std::wstring::const_iterator, std::wstring()> keywords;
@@ -227,12 +219,14 @@ struct lua_parser : qi::grammar<std::wstring::const_iterator, chunk(), lua_skip_
 	qi::rule<std::wstring::const_iterator, std::vector<expression>(), space> eexplist_;
 	qi::rule<std::wstring::const_iterator, space> fieldsep_;
 
+	addop_symbols* addop_symbols_;
+	cmpop_symbols* cmpop_symbols_;
+	mulop_symbols* mulop_symbols_;
+	unop_symbols* unop_symbols_;
 public:
 	lua_parser() : lua_parser::base_type(chunk_) {
 		using qi::lit;
 		using qi::lexeme;
-		using qi::on_error;
-		using qi::fail;
 		using qi::_val;
 		using qi::_1;
 		using qi::eps;
@@ -241,7 +235,7 @@ public:
 		//actual grammar definition
 
 		//keywords rule sucked from lua_parser_extra.cc
-		keywords = get_keywords_rule();
+		keywords = keywords_rule();
 
 		//identifier is a string that is not a keyword
 		keywordse = keywords >> !char_(L"a-zA-Z0-9_");
@@ -259,17 +253,14 @@ public:
 		//three dots term
 		threedots_ = lit(L"...") [_val = threedots() ];
 
-		//proper string handling
-		string = lexeme[L"'" >> *(escaped_character - L"'") >> L"'"]
-			| lexeme[L"\"" >> *(escaped_character - L"\"") >> L"\""]
-			| lexeme[L"[[" >> *(char_ - L"]]") >> L"]]"]; 
+		//string handling
+		string = string_rule(escaped_character);
 
 		//break term
 		break__ = lit(L"break") [_val = break_()];
 
 		//boolean constant
-		boolean = lit(L"true")[_val = true]
-			| lit(L"false")[_val = false];
+		boolean = boolean_rule();
 
 		//nil constant
 		nil_ = lit(L"nil")[_val = nil()];
@@ -374,16 +365,22 @@ public:
 			| L'(' >> expression_ >> L')';
 
 		//operator precedence
-		expression_ = or_ [_val = _1];
-		or_ = and_ % L"or";
-		and_ =  cmp_ % L"and";
-		cmp_ = concat_ >> *(cmpop_symbols_ >> concat_);
-		concat_ = add_ % L"..";
-		add_ = mul_ >> *(addop_symbols_ >> mul_);
-		mul_ = unop_ >> *(mulop_symbols_ >> unop_);
-		unop_ = *unop_symbols_ >> pow_;
-		pow_ = term_ % L"^";
-
+		operators_precedence(
+			expression_,
+			or_,
+			and_,
+			cmp_,
+			concat_,
+			add_,
+			mul_,
+			unop_,
+			pow_,
+			term_,
+			&addop_symbols_,
+			&cmpop_symbols_,
+			&mulop_symbols_,
+			&unop_symbols_
+			);
 		/*
 		 We have following rules that cannot be directly fed to spirit
   		 var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name 
@@ -499,6 +496,12 @@ public:
 		//BOOST_SPIRIT_DEBUG_NODE(qi::double_);
 	}
 
+	~lua_parser() {
+		delete addop_symbols_;
+		delete cmpop_symbols_;
+		delete mulop_symbols_;
+		delete unop_symbols_;
+	}
 };
 
 bool parse(std::wstring::const_iterator& iter, std::wstring::const_iterator &end, chunk& chunk_) {

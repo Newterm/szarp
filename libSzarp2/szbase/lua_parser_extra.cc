@@ -13,10 +13,13 @@
 
 #include "lua_syntax.h"
 #include "lua_parser_extra.h"
+#include "lua_syntax_fusion_adapt.h"
 #include "conversion.h"
 
+namespace lua_grammar {
 
-qi::rule<std::wstring::const_iterator, std::wstring()> get_keywords_rule() {
+
+qi::rule<std::wstring::const_iterator, std::wstring()> keywords_rule() {
 	qi::rule<std::wstring::const_iterator, std::wstring()> rule = 
 		qi::lit(L"and")
 			| L"break"
@@ -43,7 +46,61 @@ qi::rule<std::wstring::const_iterator, std::wstring()> get_keywords_rule() {
 	return rule;
 }
 
-namespace lua_grammar {
+qi::rule<std::wstring::const_iterator, bool(), lua_skip_parser> boolean_rule() {
+	namespace qi = boost::spirit::qi;
+	using qi::lit;
+	using qi::_val;
+
+	return lit(L"true")[_val = true] | lit(L"false")[_val = false];
+}
+
+qi::rule<std::wstring::const_iterator, std::wstring(), lua_skip_parser> string_rule(
+	qi::rule<std::wstring::const_iterator, wchar_t()>& escaped_character
+	)
+{
+	using boost::spirit::standard_wide::char_;
+	using qi::lexeme;
+	return lexeme[L"'" >> *(escaped_character - L"'") >> L"'"]
+		| lexeme[L"\"" >> *(escaped_character - L"\"") >> L"\""]
+		| lexeme[L"[[" >> *(char_ - L"]]") >> L"]]"]; 
+
+}
+
+void operators_precedence(
+	qi::rule<std::wstring::const_iterator, expression(), lua_skip_parser>& expression_,
+	qi::rule<std::wstring::const_iterator, or_exp(), lua_skip_parser>& or_,
+	qi::rule<std::wstring::const_iterator, and_exp(), lua_skip_parser>& and_,
+	qi::rule<std::wstring::const_iterator, cmp_exp(), lua_skip_parser>& cmp_,
+	qi::rule<std::wstring::const_iterator, concat_exp(), lua_skip_parser>& concat_,
+	qi::rule<std::wstring::const_iterator, add_exp(), lua_skip_parser>& add_,
+	qi::rule<std::wstring::const_iterator, mul_exp(), lua_skip_parser>& mul_,
+	qi::rule<std::wstring::const_iterator, unop_exp(), lua_skip_parser>& unop_,
+	qi::rule<std::wstring::const_iterator, pow_exp(), lua_skip_parser>& pow_,
+	qi::rule<std::wstring::const_iterator, term(), lua_skip_parser>& term_,
+	addop_symbols** addop_symbols_,
+	cmpop_symbols** cmpop_symbols_,
+	mulop_symbols** mulop_symbols_,
+	unop_symbols** unop_symbols_
+)
+{
+	using qi::_1;
+	using qi::_val;
+
+	*addop_symbols_ = new addop_symbols();
+	*cmpop_symbols_ = new cmpop_symbols();
+	*mulop_symbols_ = new mulop_symbols();
+	*unop_symbols_ = new unop_symbols();
+
+	expression_ = or_ [_val = _1];
+	or_ = and_ % L"or";
+	and_ =  cmp_ % L"and";
+	cmp_ = concat_ >> *((**cmpop_symbols_) >> concat_);
+	concat_ = add_ % L"..";
+	add_ = mul_ >> *((**addop_symbols_) >> mul_);
+	mul_ = unop_ >> *((**mulop_symbols_) >> unop_);
+	unop_ = *(**unop_symbols_) >> pow_;
+	pow_ = term_ % L"^";
+}
 
 lua_skip_parser::lua_skip_parser() : lua_skip_parser::base_type(skip) {
 
@@ -57,7 +114,6 @@ lua_skip_parser::lua_skip_parser() : lua_skip_parser::base_type(skip) {
 
 	}	
 
-}
 
 mulop_symbols::mulop_symbols() {
 	add(L"*", lua_grammar::MUL)
@@ -98,6 +154,8 @@ escaped_symbol::escaped_symbol() {
 		(L"\"", L'\"');
 }
 
+}
+
 namespace std {
 ostream& operator<< (ostream& os, const wstring& s) {
 	return os << SC::S2A(s);
@@ -131,6 +189,8 @@ tableconstructor& tableconstructor::operator=(const std::vector<field>& v) {
 	tableconstructor_ = v;
 	return *this;
 }
+
+
 
 std::ostream& operator<< (std::ostream& os, const boost::recursive_wrapper<expression>& e) {
 	return os << e.get();
@@ -389,4 +449,6 @@ std::ostream& operator<< (std::ostream& os, const std::vector<expression>& v) {
 		os << " " << v[i];
 	return os;
 }
+
 }
+

@@ -50,6 +50,7 @@ sz_vlog_function* __log_vlog_func = sz_log_classic_vlog;
 sz_log_close_function* __log_close_func = sz_log_classic_close;
 
 void* __state;
+int __log_level = 0;
 
 int sz_loginit_cmdline(int level, const char * logfile, int *argc, char *argv[], SZ_LIBLOG_FACILITY facility)
 {
@@ -101,10 +102,13 @@ void sz_log_system_init(sz_log_init_function init, sz_vlog_function vlog, sz_log
 }
 
 int sz_loginit(int level, const char * logname, SZ_LIBLOG_FACILITY facility, void *context) {
+	int new_level = ( (level < 0 ) || (level > 10)) ? 0 : level;
+
 	// asyslog setup handled diferently
 	if (NULL != __state) {
-		__state = __log_init_func(level, logname, facility, context);
-		return level;
+		__state = __log_init_func(new_level, logname, facility, context);
+		__log_level = new_level;
+		return __log_level;
 	}
 
 	// cleanup before appling new setup
@@ -127,22 +131,30 @@ int sz_loginit(int level, const char * logname, SZ_LIBLOG_FACILITY facility, voi
 		__log_close_func = sz_log_classic_close;
 #endif
 	}
-	__state = __log_init_func(level, logname, facility, context);
-	return level;
+	__log_level = new_level;
+
+	__state = __log_init_func(__log_level, logname, facility, context);
+	return __log_level;
 }
 
 void sz_logdone(void) {
+	__log_level = 0;
+
 	__log_close_func(__state);
 }
 
 void sz_log(int level, const char * msg_format, ...) {
 	va_list fmt_args;
+	if (level > __log_level)
+		return;
 	va_start(fmt_args, msg_format);
 	__log_vlog_func(__state, level, msg_format, fmt_args);
 	va_end(fmt_args);
 }
 
 void vsz_log(int level, const char * msg_format, va_list fmt_args) {
+	if (level > __log_level)
+		return;
 	__log_vlog_func(__state, level, msg_format, fmt_args);
 }
 

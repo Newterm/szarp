@@ -185,10 +185,12 @@ class zet_proto_impl {
 	void start_timer();
 	void stop_timer();
 protected:
+	driver_logger m_log;
 	virtual void driver_finished_job() = 0;
 	virtual void terminate_connection() = 0;
 	virtual struct event_base* get_event_base() = 0;
 public:
+	zet_proto_impl(boruta_driver* driver);
 	void send_query(struct bufferevent* bufev);
 	virtual void starting_new_cycle();
 	virtual void connection_error(struct bufferevent *bufev);
@@ -204,6 +206,8 @@ protected:
 	virtual void terminate_connection();
 	struct event_base* get_event_base();
 public:
+	zet_proto_tcp();
+	const char* driver_name() { return "zet_tcp_driver"; }
 	virtual void starting_new_cycle();
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
@@ -217,6 +221,8 @@ protected:
 	virtual void terminate_connection();
 	struct event_base* get_event_base();
 public:
+	zet_proto_serial();
+	const char* driver_name() { return "zet_serial_driver"; }
 	virtual void starting_new_cycle();
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
@@ -239,6 +245,9 @@ void zet_proto_impl::start_timer() {
 void zet_proto_impl::stop_timer() {
 	event_del(&m_timer);
 }
+
+zet_proto_impl::zet_proto_impl(boruta_driver* driver) : m_log(driver) 
+{}
 
 void zet_proto_impl::send_query(struct bufferevent* bufev) {
 	std::stringstream ss;
@@ -283,11 +292,16 @@ void zet_proto_impl::data_ready(struct bufferevent* bufev, int fd) {
 		if (m_buffer.at(m_data_in_buffer - 1) != '\r'
 				|| m_buffer.at(m_data_in_buffer - 2) != '\r'
 				|| (m_plc_type == SK
-					&& m_buffer.at(m_data_in_buffer - 3) != '\r'))
+					&& m_buffer.at(m_data_in_buffer - 3) != '\r')) {
+			m_log.log(10, "Received %zu characters, not yet full packet, awaiting more", m_data_in_buffer);
 			return;
+		}
 	} catch (std::out_of_range) {
+		m_log.log(10, "Received %zu characters, not yet full packet, awaiting more", m_data_in_buffer);
 		return;
 	}
+
+	m_log.log(10, "Received %zu characters, looks like full query", m_data_in_buffer);
 
 	stop_timer();
 	try {
@@ -297,18 +311,18 @@ void zet_proto_impl::data_ready(struct bufferevent* bufev, int fd) {
 		tokenize_d(&m_buffer[0], &toks, &tokc, "\r");
 		if (tokc < 3) {
 			tokenize_d(NULL, &toks, &tokc, NULL);
-			dolog(5, "Unable to parse response from ZET/SK, it is invalid");
+			m_log.log(5, "Unable to parse response from ZET/SK, it is invalid");
 			throw std::invalid_argument("Wrong response format");
 		}
 		size_t params_count = tokc - 5;
 		if (params_count != m_read_count) {
-			dolog(5, "Invalid number of values received, expected: %zu, got: %zu", m_read_count, params_count);
+			m_log.log(5, "Invalid number of values received, expected: %zu, got: %zu", m_read_count, params_count);
 			tokenize_d(NULL, &toks, &tokc, NULL);
 			throw std::invalid_argument("Wrong number or values");
 		}
 		char id = toks[2][0];
 		if (id != m_id) {
-			dolog(5, "Invalid id in response, expected: %c, got: %c", m_id, id);
+			m_log.log(5, "Invalid id in response, expected: %c, got: %c", m_id, id);
 			tokenize_d(NULL, &toks, &tokc, NULL);
 			throw std::invalid_argument("Wrong id in response");
 		}
@@ -321,8 +335,9 @@ void zet_proto_impl::data_ready(struct bufferevent* bufev, int fd) {
 		for (char *c = &m_buffer[m_data_in_buffer - 1]; *c == '\r'; c--) 
 			checksum -= (uint) *c;
 		if (checksum != atoi(toks[tokc-1])) {
-			dolog(4, "ZET/SK driver, wrong checksum");
+			m_log.log(4, "ZET/SK driver, wrong checksum");
 			tokenize_d(NULL, &toks, &tokc, NULL);
+			m_log.log(5, "Wrong checksum expected: %c, got: %c", m_id, id);
 			throw std::invalid_argument("Wrong checksum");
 		}
 		for (size_t i = 0; i < m_read_count; i++)
@@ -354,7 +369,7 @@ int zet_proto_impl::configure(TUnit* unit, xmlNodePtr node, short* read, short *
 	} else if (plc == "zet") {
 		m_plc_type = ZET;
 	} else {
-		dolog(0, "Invalid value of plc attribute %s, line:%ld", plc.c_str(), xmlGetLineNo(node));
+		m_log.log(0, "Invalid value of plc attribute %s, line:%ld", plc.c_str(), xmlGetLineNo(node));
 		return 1;
 	}
 	TSendParam *sp = unit->GetFirstSendParam();
@@ -371,8 +386,10 @@ void zet_proto_impl::timeout_cb(int fd, short event, void *_zet_proto_impl) {
 		z->m_timeout_count = 0;
 		z->set_no_data();
 		z->terminate_connection();
+		z->m_log.log(10, "Request timed out too many times, terminating connection");
 	} else {
 		z->start_timer();
+		z->m_log.log(10, "Request timed out for 10 secs, but doing nothing");
 	}
 }
 
@@ -387,6 +404,8 @@ void zet_proto_tcp::terminate_connection() {
 struct event_base* zet_proto_tcp::get_event_base() {
 	return m_event_base;
 }
+
+zet_proto_tcp::zet_proto_tcp() : zet_proto_impl(this) {}
 
 void zet_proto_tcp::starting_new_cycle() {
 	zet_proto_impl::starting_new_cycle();
@@ -419,6 +438,8 @@ void zet_proto_serial::terminate_connection() {
 struct event_base* zet_proto_serial::get_event_base() {
 	return m_event_base;
 }
+
+zet_proto_serial::zet_proto_serial() : zet_proto_impl(this) {}
 
 void zet_proto_serial::starting_new_cycle() {
 	zet_proto_impl::starting_new_cycle();

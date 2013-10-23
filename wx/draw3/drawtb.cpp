@@ -49,6 +49,26 @@
 #include "bitmaps/draw_tree.xpm"
 #include "bitmaps/florence.xpm"
 
+#ifndef MINGW32
+std::string exec_cmd (const char* cmd)
+{
+	char buffer[128];
+	std::string result = "";
+	FILE* pipe = popen(cmd, "r");
+
+	if (!pipe)
+		return "";
+
+	while (!feof(pipe)) {
+		if (NULL != fgets(buffer, 128, pipe))
+			result += buffer;
+	}
+
+	pclose(pipe);
+	return result;
+}
+#endif
+
 DrawToolBar::DrawToolBar(wxWindow *parent) :
 	wxToolBar(parent,-1)
 {
@@ -72,6 +92,16 @@ DrawToolBar::DrawToolBar(wxWindow *parent) :
 		NewDrawVersionAvailable();
 	else
 		Realize();
+
+#ifndef MINGW32
+	/* disable florence button if program is not present */
+	std::string path = exec_cmd("which florence");
+	path = path.substr(0, path.size()-1);
+
+	if (access(path.c_str(), X_OK))
+		EnableTool(drawTB_FLORENCE, false);
+#endif
+
 	VersionChecker::AddToolbar(this);
 }
 
