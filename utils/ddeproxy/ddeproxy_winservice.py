@@ -91,8 +91,8 @@ class DDESpy:
                         self.lasttopic = ""
 
         def error(self, msg):
-            if self.servicemanager:
-                self.servicemanager.LogErrorMsg(msg)
+            import servicemanager
+            servicemanager.LogErrorMsg(msg)
 
 
 	def shutdown(self):
@@ -103,10 +103,10 @@ class DDESpy:
                 self.convers.ConnectTo(self.appname, topic)
                 # if there were no exception, we can mark connection as valid
                 self.lasttopic = topic
-            except dde.error, e:
-                msg = 'Cannot connect to app: %s, topic: %s, reason' % (self.appname, topic, str(e))
+            except Exception, e:
+                msg = 'Cannot connect to app: %s, topic: %s, reason: %s' % (self.appname, topic, str(e))
                 self.error(msg)
-                raise xmlrpclib.Falut(xmlrpclib.APPLICATION_ERROR, msg)
+                raise xmlrpclib.Fault(xmlrpclib.APPLICATION_ERROR, msg)
 
 	def get_values2(self, params):
                 if self.appname == "":
@@ -128,7 +128,7 @@ class DDESpy:
                                 val = self.convers.Request(str(item))
                                 ret = val.rstrip("\0\n")
                                 self.lasttopic = topic
-                            except dde.error, e:
+                            except Exception, e:
                                 self.lasttopic = ""
                                 msg = 'Cannot get topic: %s, item: %s, reason: %s' % (topic, str(item), str(e))
                                 self.error(msg)
@@ -150,19 +150,26 @@ class DDESpy:
                         if self.lasttopic != topic:
 				# mark connection as invalid
                                 self.lasttopic = ""
-                                self.convers.ConnectTo(self.appname, topic)
-				# if there were no exception, we can mark connection as valid
-                                self.lasttopic = topic
+                                try:
+                                    self.convers.ConnectTo(self.appname, topic)
+                                    # if there were no exception, we can mark connection as valid
+                                    self.lasttopic = topic
+                                except Exception, e:
+                                    msg = 'Cannot connect to app: %s, topic: %s, reason: %s' % (self.appname, topic, str(e))
+                                    self.error(msg)
+                                    e2 = Exception(msg)
+                                    raise e2
                         for item in items:
                                 self.lasttopic = ""
                                 try:
                                     val = self.convers.Request(str(item))
                                     ret = val.rstrip("\0")
                                     self.lasttopic = topic
-                                except dde.error, e:
-                                    self.error('Cannot get item: %s, reason: %s', (str(item), str(e)))
+                                except Exception, e:
+                                    self.error('Cannot get item: %s, reason: %s' % (str(item), str(e)))
                                     ret = None
                                 v.append(ret)
+                                time.sleep(1)
 
 		return v;
 
@@ -200,7 +207,7 @@ class DDEProxyServer(Thread):
                 return
             except Exception, e:
                 import servicemanager
-                self.servicemanager.LogErrorMsg("Cought exception: %s" % str(e))
+                servicemanager.LogErrorMsg("Caught exception: %s" % str(e))
                 time.sleep(1)
 
 
