@@ -2,6 +2,12 @@ szarp (3.1.724) unstable; urgency=low
 
   * building unstable
 
+ -- tph <tph@newmsi.newterm.pl>  Fri, 25 Oct 2013 14:02:32 +0200
+
+szarp (3.1.724) unstable; urgency=low
+
+  * building unstable
+
  -- tph <tph@newmsi.newterm.pl>  Fri, 25 Oct 2013 13:34:19 +0200
 
 szarp (3.1.723) stable; urgency=low
