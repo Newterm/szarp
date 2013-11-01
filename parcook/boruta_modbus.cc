@@ -1512,7 +1512,7 @@ void modbus_client::starting_new_cycle() {
 }
 
 
-modbus_client::modbus_client(boruta_driver* driver) : modbus_unit(driver), m_state(IDLE) {}
+modbus_client::modbus_client(boruta_driver* driver) : modbus_unit(driver), m_state(IDLE), m_last_activity(0) {}
 
 void modbus_client::reset_cycle() {
 	m_received_iterator = m_received.begin();
