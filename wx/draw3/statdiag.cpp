@@ -181,10 +181,6 @@ StatDialog::StatDialog(wxWindow *parent, wxString prefix, DatabaseManager *db, C
 	Show(true);
 }
 
-time_t StatDialog::GetCurrentTime() {
-	return -1;
-}
-
 DrawInfo* StatDialog::GetCurrentDrawInfo() {
 	return m_draw;
 }
@@ -210,17 +206,16 @@ void StatDialog::DatabaseResponse(DatabaseQuery *q) {
 			m_sum2 = 0;
 			m_hsum = i->sum;
 
-			m_max_time = wxDateTime(i->time);
-			m_min_time = wxDateTime(i->time);
+			m_min_time = m_max_time = ToWxDateTime(i->time_second, i->time_nanosecond);
 		} else {
 			if (m_max < i->response) {
 				m_max = i->response;
-				m_max_time = wxDateTime(i->time);
+				m_max_time = ToWxDateTime(i->time_second, i->time_nanosecond);
 			}
 
 			if (m_min > i->response) {
 				m_min = i->response;
-				m_min_time = wxDateTime(i->time);
+				m_min_time = ToWxDateTime(i->time_second, i->time_nanosecond);
 			}
 
 		}
@@ -320,7 +315,7 @@ void StatDialog::ProgressFetch() {
 	DatabaseQuery* q = CreateDataQuery(m_draw, m_period);
 
 	while (m_current_time <= m_end_time && m_pending < 200) {
-		AddTimeToDataQuery(q, m_current_time.GetTime().GetTicks());
+		AddTimeToDataQuery(q, m_current_time.GetTime());
 
 		m_pending++;
 		m_current_time = m_current_time + idx.GetTimeRes() + idx.GetDateRes();

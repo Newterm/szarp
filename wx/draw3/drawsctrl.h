@@ -441,7 +441,7 @@ public:
 	virtual DrawInfo* GetCurrentDrawInfo();
 
 	/**@return current time, used for queries prioritization*/
-	virtual time_t GetCurrentTime();
+	virtual wxDateTime GetCurrentTime();
 
 	virtual void ConfigurationWasReloaded(wxString prefix);
 

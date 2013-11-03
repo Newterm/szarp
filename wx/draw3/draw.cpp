@@ -206,7 +206,7 @@ DatabaseQuery* Draw::GetDataToFetch(bool fetch_present_no_data) {
 		
 		if (q == NULL)
 			q = CreateDataQuery(m_draw_info, period, m_draw_no);
-		AddTimeToDataQuery(q, pt.GetTime().GetTicks());
+		AddTimeToDataQuery(q, pt.GetTime());
 	}
 
 	return q;
@@ -663,7 +663,7 @@ void ValuesTable::AddData(DatabaseQuery *q, bool &view_values_changed, bool &sta
 }
 
 void ValuesTable::InsertValue(DatabaseQuery::ValueData::V *v, bool &view_values_changed, bool& stats_updated) {
-	DTime dt(m_draw->GetPeriod(), wxDateTime(v->time));
+	DTime dt(m_draw->GetPeriod(), ToWxDateTime(v->time_second, v->time_nanosecond));
 
 	int view_index = m_draw->m_index.GetStartTime().GetDistance(dt);
 	int index = view_index + m_view.Start();

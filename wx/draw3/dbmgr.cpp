@@ -224,8 +224,10 @@ time_t DatabaseManager::GetCurrentDateForInquirer(InquirerId id) {
 
 	if (i == inquirers.end())
 		result = -1;
-	else
-		result = i->second->GetCurrentTime();
+	else {
+		wxDateTime t = i->second->GetCurrentTime();
+		t.IsValid() ? result = t.GetTicks() : -1;
+	}
 
 	return result;
 }

@@ -43,8 +43,8 @@ DrawInfo* DBInquirer::GetCurrentDrawInfo() {
 	return NULL;
 }
 
-time_t DBInquirer::GetCurrentTime() {
-	return -1;
+wxDateTime DBInquirer::GetCurrentTime() {
+	return wxInvalidDateTime;
 }
 
 void DBInquirer::DatabaseResponse(DatabaseQuery *query) {

@@ -44,7 +44,7 @@ public:
 	template<class T> std::tr1::tuple<double, bool, std::set<generic_block*> > calculate_value(T time, SZARP_PROBE_TYPE probe_type) {
 
 		//for backward compatiblity, 'new' method of caluclating RPN definable params
-		if (probe_type != PT_SEC10)
+		if (probe_type != PT_SEC10 || probe_type != PT_SEC || probe_type != PT_HALFSEC)
 			probe_type = PT_MIN10;
 
 		int num_of_params = m_param->GetNumParsInFormula();

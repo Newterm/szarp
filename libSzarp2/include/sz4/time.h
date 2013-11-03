@@ -31,9 +31,9 @@ typedef uint32_t second_time_t;
 
 struct nanosecond_time_t {
 	nanosecond_time_t() : second(0), nanosecond(0) {}
-	nanosecond_time_t(uint32_t _second, uint32_t _nanosecond) : second(_second), nanosecond(_nanosecond) {}
+	nanosecond_time_t(uint32_t _second, uint32_t _nanosecond) : second(_second), nanosecond(_second) {}
 	nanosecond_time_t(double _time) : second(_time), nanosecond((_time - (long)_time) * 1000000000) {}
-	nanosecond_time_t(const second_time_t& time) : second(time), nanosecond(0) {}
+	nanosecond_time_t(const second_time_t& time);
 	bool operator==(const nanosecond_time_t& t) const { return second == t.second && nanosecond == t.nanosecond; }
 	long long operator- (const nanosecond_time_t& t) const {
 		long long d = second;
@@ -47,13 +47,38 @@ struct nanosecond_time_t {
 	bool operator<= (const nanosecond_time_t& t) const { return second < t.second || (second == t.second && nanosecond <= t.nanosecond); } 
 	bool operator> (const nanosecond_time_t& t) const { return second > t.second || (second == t.second && nanosecond > t.nanosecond); } 
 	bool operator>= (const nanosecond_time_t& t) const { return second > t.second || (second == t.second && nanosecond >= t.nanosecond); } 
-	operator second_time_t() const { return second; }
+	operator second_time_t() const;
 	operator double() const { return second + double(nanosecond) / 1000000000; }
 	uint32_t second;
 	uint32_t nanosecond;
 } __attribute__ ((packed));
 
 nanosecond_time_t make_nanosecond_time(uint32_t second, uint32_t nanosecond);
+
+template<class FT, class TT> class round_up {
+};
+
+template<class TT> class round_up<TT, TT> {
+public:
+	TT operator()(const TT& t) const { return t; }
+};
+
+template<> class round_up<sz4::nanosecond_time_t, sz4::second_time_t> {
+public:
+	sz4::second_time_t operator()(const sz4::nanosecond_time_t& t) const { 
+		if (t.nanosecond)
+			return t.second + 1;
+		else
+			return t.second;
+	}
+};
+
+template<> class round_up<sz4::second_time_t, sz4::nanosecond_time_t> {
+public:
+	sz4::nanosecond_time_t operator()(const sz4::second_time_t& t) const { 
+		return sz4::nanosecond_time_t(t, 0);
+	}
+};
 
 template<class T> class invalid_time_value { };
 

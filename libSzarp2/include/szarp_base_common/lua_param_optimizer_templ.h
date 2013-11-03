@@ -663,6 +663,8 @@ template<class container_type> void ParamConverterTempl<container_type>::Initali
 	AddVariable(L"PT_WEEK");
 	AddVariable(L"PT_MONTH");
 	AddVariable(L"PT_SEC10");
+	AddVariable(L"PT_SEC");
+	AddVariable(L"PT_HALFSEC");
 }
 
 template<class IPKContainerType> bool optimize_lua_param(TParam* param, IPKContainerType* container) {

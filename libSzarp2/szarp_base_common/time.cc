@@ -22,6 +22,8 @@ szb_move_time(time_t t, int count, SZARP_PROBE_TYPE probe_type, int custom_lengt
 			return (t + (count * 10 ));
 		case PT_SEC :
 			return (t + count);
+		case PT_HALFSEC:
+			return t;
 		case PT_HOUR :
 			return (t + (count * 3600));
 		case PT_HOUR8 :

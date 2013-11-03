@@ -33,12 +33,48 @@ nanosecond_time_t make_nanosecond_time(uint32_t second, uint32_t nanosecond) {
 nanosecond_time_t 
 szb_move_time(const nanosecond_time_t& t, int count, SZARP_PROBE_TYPE probe_type, 
 		int custom_length) {
-	return make_nanosecond_time(szb_move_time(time_t(t.second), count, probe_type, custom_length), t.nanosecond);
+	switch (probe_type) {
+		case PT_HALFSEC: {
+			unsigned sec = t.second;
+			sec += count / 2;
+
+			unsigned nsec =	t.nanosecond + 500000000 * (count % 2);
+			unsigned carry = nsec / 1000000000;
+
+			sec += carry;
+			nsec -= carry;
+			return make_nanosecond_time(sec, nsec);
+		}
+		default:
+			return make_nanosecond_time(szb_move_time(time_t(t.second), count, probe_type, custom_length), t.nanosecond);
+	}
 }
 
 nanosecond_time_t 
 szb_round_time(nanosecond_time_t t, SZARP_PROBE_TYPE probe_type, int custom_length) {
-	return make_nanosecond_time(szb_round_time(time_t(t.second), probe_type, custom_length), 0);
+	switch (probe_type) {
+		case PT_HALFSEC:
+			return make_nanosecond_time(t.second, t.nanosecond / 500000000 * 500000000);
+		default:
+			return make_nanosecond_time(szb_round_time(time_t(t.second), probe_type, custom_length), 0);
+	}
+}
+
+nanosecond_time_t::nanosecond_time_t(const second_time_t& time) {
+	if (invalid_time_value<second_time_t>::is_valid(time)) {
+		second = time;
+		nanosecond = 0;
+	} else {
+		*this = invalid_time_value<nanosecond_time_t>::value;
+	}	
+}
+
+nanosecond_time_t::operator second_time_t() const {
+	return sz4::invalid_time_value<nanosecond_time_t>::is_valid(*this)
+		?
+		second 
+		:
+		invalid_time_value<second_time_t>::value;
 }
 
 std::ostream& operator<<(std::ostream& s, const nanosecond_time_t &t) {

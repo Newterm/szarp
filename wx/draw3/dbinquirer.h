@@ -58,7 +58,7 @@ public:
 	virtual DrawInfo* GetCurrentDrawInfo();
 
 	/**@return current time, used for queries prioritization*/
-	virtual time_t GetCurrentTime();
+	virtual wxDateTime GetCurrentTime();
 
 	/**method is called when response from db is received
 	 * @param query object holding response from database, the same instance that was sent to the database via 

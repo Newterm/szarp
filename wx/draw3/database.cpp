@@ -30,6 +30,27 @@
 #include <iostream>
 #include <limits>
 
+namespace {
+
+void sz4_nanonsecond_to_pair(const sz4::nanosecond_time_t& time, unsigned &second, unsigned& nanosecond) {
+	if (sz4::invalid_time_value<sz4::nanosecond_time_t>::is_valid(time)) {
+		second = time.second;
+		nanosecond = time.nanosecond;
+	} else {
+		second = -1;
+		nanosecond = -1;
+	}
+}
+
+sz4::nanosecond_time_t pair_to_sz4_nanosecond(unsigned second, unsigned nanosecond) {
+	if (second == (unsigned) -1 && nanosecond == (unsigned) -1)
+		return sz4::invalid_time_value<sz4::nanosecond_time_t>::value;
+	else
+		return sz4::nanosecond_time_t(second, nanosecond);
+}
+
+}
+
 DatabaseQuery* CreateDataQueryPrivate(DrawInfo* di, TParam *param, PeriodType pt, int draw_no);
 
 std::tr1::tuple<TSzarpConfig*, szb_buffer_t*> SzbaseBase::GetConfigAndBuffer(TParam *param) {
@@ -142,7 +163,8 @@ void SzbaseBase::SearchData(DatabaseQuery* query) {
 			
 	if (szb == NULL) {
 		sd.ok = true;
-		sd.response = -1;
+		sd.response_second = -1;
+		sd.response_nanosecond = -1;
 		return;
 	}
 
@@ -150,13 +172,17 @@ void SzbaseBase::SearchData(DatabaseQuery* query) {
 
 	szbase->NextQuery();
 
-	sd.response = 
+	sd.response_second = 
 		szb_search(szb, 
 			p, 
-			sd.start, 
-			sd.end, 
+			sd.start_second, 
+			sd.end_second, 
 			sd.direction, 
 			PeriodToProbeType(sd.period_type), cancelHandle, *sd.search_condition);
+	if (sd.response_second == (unsigned) -1)
+		sd.response_nanosecond = -1;
+	else
+		sd.response_nanosecond = 0;
 
 	if (szb->last_err != SZBE_OK) {
 		sd.ok = false;
@@ -195,7 +221,7 @@ void SzbaseBase::GetData(DatabaseQuery* query, wxEvtHandler *response_receiver) 
 	while (i != vd.vv->end()) {
 
 		int new_year, new_month;
-		szb_time2my(i->time, &new_year, &new_month);
+		szb_time2my(i->time_second, &new_year, &new_month);
 
 		if (new_year != year || new_month != month) {
 			if (rq) {
@@ -214,12 +240,12 @@ void SzbaseBase::GetData(DatabaseQuery* query, wxEvtHandler *response_receiver) 
 			rq->inquirer_id = query->inquirer_id;
 		}
 
-		time_t end = szb_move_time(i->time, 1, pt, i->custom_length);
+		time_t end = szb_move_time(i->time_second, 1, pt, i->custom_length);
 		if (p && szb) {
 			bool fixed;
 			i->response = szb_get_avg(szb, 
 					p, 
-					i->time,
+					i->time_second,
 					end,
 					&i->sum,
 					&i->count,
@@ -343,13 +369,29 @@ public:
 void Sz4Base::SearchData(DatabaseQuery* query) {
 	TParam* p = query->param;
 	DatabaseQuery::SearchData& sd = query->search_data;
-	if (sd.direction > 0)
-		sd.response = base->search_data_right(p, sz4::second_time_t(sd.start), sz4::second_time_t(sd.end), PeriodToProbeType(sd.period_type), no_data_search_condition());
-	else {
-		if (sd.end == -1)
-			sd.end = 0;
-		sd.response = base->search_data_left(p, sz4::second_time_t(sd.start), sz4::second_time_t(sd.end), PeriodToProbeType(sd.period_type), no_data_search_condition());
+	sz4::nanosecond_time_t response;
+	if (sd.direction > 0) {
+		response = base->search_data_right(
+			p,
+			pair_to_sz4_nanosecond(sd.start_second, sd.start_nanosecond),
+			pair_to_sz4_nanosecond(sd.end_second, sd.end_nanosecond),
+			PeriodToProbeType(sd.period_type),
+			no_data_search_condition()
+		);
+	} else {
+		sz4::nanosecond_time_t end = pair_to_sz4_nanosecond(sd.end_second, sd.end_nanosecond);
+		if (!sz4::invalid_time_value<sz4::nanosecond_time_t>::is_valid(end)) {
+			end.second = 0;
+			end.nanosecond = 0;
+		}
+		response = base->search_data_left(
+			p,
+			pair_to_sz4_nanosecond(sd.start_second, sd.start_nanosecond),
+			end,
+			PeriodToProbeType(sd.period_type),
+			no_data_search_condition());
 	}
+	sz4_nanonsecond_to_pair(response, sd.response_second, sd.response_nanosecond);
 	sd.ok = true;
 }
 
@@ -365,15 +407,31 @@ void Sz4Base::GetData(DatabaseQuery* query, wxEvtHandler* response_receiver) {
 
 	std::vector<DatabaseQuery::ValueData::V>::iterator i = vd.vv->begin();
 	while (i != vd.vv->end()) {
-		sz4::weighted_sum<double, sz4::second_time_t> sum;
-		time_t end = szb_move_time(i->time, 1, pt, i->custom_length);
-		base->get_weighted_sum(p, sz4::second_time_t(i->time), sz4::second_time_t(end), pt, sum);
+		if (pt == PT_HALFSEC) {
+			sz4::weighted_sum<double, sz4::nanosecond_time_t> sum;
+			sz4::nanosecond_time_t time = pair_to_sz4_nanosecond(i->time_second, i->time_nanosecond);
+			sz4::nanosecond_time_t end = szb_move_time(
+				time,
+				1,
+				pt,
+				i->custom_length);
+			base->get_weighted_sum(p, time, end, pt, sum);
 
-		i->response = sum.sum() / sum.weight() / pow10(p->GetPrec());
-		i->sum = sum.sum() / pow10(p->GetPrec());
-		i->count = sum.weight() / (sum.weight() + sum.no_data_weight()) * 100;
+			i->response = sum.sum() / sum.weight() / pow10(p->GetPrec());
+			i->sum = sum.sum() / pow10(p->GetPrec());
+			i->count = sum.weight() / (sum.weight() + sum.no_data_weight()) * 100;
+
+		} else {
+			sz4::weighted_sum<double, sz4::second_time_t> sum;
+			sz4::second_time_t end = szb_move_time(sz4::second_time_t(i->time_second), 1, pt, i->custom_length);
+			base->get_weighted_sum(p, sz4::second_time_t(i->time_second), end, pt, sum);
+
+			i->response = sum.sum() / sum.weight() / pow10(p->GetPrec());
+			i->sum = sum.sum() / pow10(p->GetPrec());
+			i->count = sum.weight() / (sum.weight() + sum.no_data_weight()) * 100;
+		}
+
 		i->ok = true;
-
 		rq->value_data.vv->push_back(*i);
 
 		i++;
@@ -432,18 +490,38 @@ SZARP_PROBE_TYPE PeriodToProbeType(PeriodType period) {
 		case PERIOD_T_30MINUTE:
 			pt = PT_SEC10;
 			break;
-#if 1
 		case PERIOD_T_3MINUTE:
-		case PERIOD_T_MINUTE:
 			pt = PT_SEC;
 			break;
-#endif
+		case PERIOD_T_MINUTE:
+			pt = PT_HALFSEC;
+			break;
 		default:
 			pt = PT_CUSTOM;
 			assert (0);
 	}
 
 	return pt;
+}
+
+void ToNanosecondTime(const wxDateTime& time, unsigned& second, unsigned& nanosecond) {
+	if (time.IsValid()) {
+		second = time.GetTicks();
+		nanosecond = time.GetMillisecond() * 1000000;
+	} else {	
+		second = -1;
+		nanosecond = -1;
+	}
+}
+
+wxDateTime ToWxDateTime(unsigned second, unsigned nanosecond) {
+	if (second == (unsigned) -1 && nanosecond == (unsigned) -1)
+		return wxInvalidDateTime;
+	else {
+		wxDateTime t((time_t)second);
+		t.SetMillisecond(nanosecond / 1000000);
+		return t;
+	}
 }
 
 void* QueryExecutor::Entry() {
@@ -598,8 +676,8 @@ double DatabaseQueryQueue::FindQueryRanking(DatabaseQuery* q) {
 
 		double d;
 
-		time_t& t1 = vv[0].time;
-		time_t& t2 = vv[vv.size() - 1].time;
+		time_t t1 = vv[0].time_second;
+		time_t t2 = vv[vv.size() - 1].time_second;
 		if (t1 <= t && t <= t2)
 			d = 0;
 		else 
@@ -640,8 +718,8 @@ void DatabaseQueryQueue::ShufflePriorities() {
 
 }
 void DatabaseQueryQueue::CleanOld(DatabaseQuery *query) {
-	time_t start = query->search_data.start;
-	time_t end = query->search_data.end;
+	time_t start = query->search_data.start_second;
+	time_t end = query->search_data.end_second;
 
 	assert(start<end);
 	
@@ -653,7 +731,7 @@ void DatabaseQueryQueue::CleanOld(DatabaseQuery *query) {
 		
 		for(i=queue.begin();i!=queue.end();i++)
 		{
-			if((i->query->search_data.start < start)||(i->query->search_data.end>end))
+			if((i->query->search_data.start_second < start)||(i->query->search_data.end_second>end))
 			{	
 				wxSemaError err = semaphore.TryWait();
 				assert(err == wxSEMA_NO_ERROR);
@@ -747,9 +825,9 @@ DatabaseQuery* CreateDataQuery(DrawInfo* di, PeriodType pt, int draw_no) {
 }
 
 
-void AddTimeToDataQuery(DatabaseQuery *q, time_t time) {
+void AddTimeToDataQuery(DatabaseQuery *q, const wxDateTime& time) {
 	DatabaseQuery::ValueData::V v;
-	v.time = time;
+	ToNanosecondTime(time, v.time_second, v.time_nanosecond);
 	v.custom_length = 0;
 	q->value_data.vv->push_back(v);
 }

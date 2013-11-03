@@ -195,11 +195,11 @@ public:
 	}
 
 	template<class RT> RT search_data_right_templ(const RT& start, const RT &end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) {
-		return RT(m_entry.search_data_right_impl(T(start), T(end), probe_type, condition));
+		return RT(m_entry.search_data_right_impl(T(start), round_up<RT, T>()(end), probe_type, condition));
 	}
 
 	template<class RT> RT search_data_left_templ(const RT& start, const RT &end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) {
-		return RT(m_entry.search_data_left_impl(T(start), T(end), probe_type, condition));
+		return RT(m_entry.search_data_left_impl(T(start), round_up<RT, T>()(end), probe_type, condition));
 	}
 
 	template<class RT> void get_first_time_templ(RT& t) {

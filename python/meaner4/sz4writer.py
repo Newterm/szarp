@@ -23,6 +23,7 @@ sys.path.append("/opt/szarp/lib/python")
 
 import os
 import time
+from datetime import datetime
 
 from meanerbase import MeanerBase
 from ipk import IPK
@@ -52,10 +53,12 @@ class Sz4Writer(MeanerBase):
 				continue
 			sparam = self.save_params[pindex]
 
-			_time = time.mktime(time.strptime(time_string, time_format))
+			_datetime = datetime.strptime(time_string, time_format)
+			time_sec = time.mktime(_datetime.timetuple())
+			time_nanosec = _datetime.time().microsecond * 1000
 
 			value = self.prepare_value(value_string, sparam.param)
-			sparam.process_value(value, _time, 0)
+			sparam.process_value(value, time_sec, time_nanosec)
 
 if __name__ == "__main__":
 	writer = Sz4Writer(sys.argv[1] + '/sz4')

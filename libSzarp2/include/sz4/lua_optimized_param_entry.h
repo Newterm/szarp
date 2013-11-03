@@ -42,6 +42,8 @@ template<class types> class execution_engine : public LuaExec::ExecutionEngine {
 		m_vars[7] = PT_WEEK;
 		m_vars[8] = PT_MONTH;
 		m_vars[9] = PT_SEC10;
+		m_vars[10] = PT_SEC;
+		m_vars[11] = PT_HALFSEC;
 	
 		for (size_t i = 0; i < m_vars.size(); i++)
 			m_exec_param->m_vars[i].PushExecutionEngine(this);

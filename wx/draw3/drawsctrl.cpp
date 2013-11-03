@@ -297,9 +297,6 @@ const DTime& DrawsController::SearchState::GetStateTime() const {
 void DrawsController::SearchState::SendSearchQuery(const wxDateTime& start, const wxDateTime& end, int direction) {
 	assert(m_c->m_selected_draw >= 0);
 
-	time_t t1 = start.IsValid() ? start.GetTicks() : -1;
-	time_t t2 = end.IsValid() ? end.GetTicks() : -1;
-
 	wxLogInfo(_T("Sending search query, start time:%s, end_time: %s, direction: %d"),
 			start.IsValid() ? start.Format().c_str() : L"none",
 			end.IsValid() ? end.Format().c_str() : L"none",
@@ -313,8 +310,12 @@ void DrawsController::SearchState::SendSearchQuery(const wxDateTime& start, cons
 	else 
 		q->param = NULL;
 	q->draw_no = m_c->m_selected_draw;
-	q->search_data.start = t1;
-	q->search_data.end = t2;
+	ToNanosecondTime(start, 
+		q->search_data.start_second,
+		q->search_data.start_nanosecond);
+	ToNanosecondTime(end, 
+		q->search_data.end_second,
+		q->search_data.end_nanosecond);
 	q->search_data.period_type = m_c->m_draws[m_c->m_selected_draw]->GetPeriod();
 	q->search_data.direction = direction;
 	q->search_data.search_condition = &DrawsController::search_condition;
@@ -329,12 +330,14 @@ void DrawsController::SearchState::Reset() {
 
 void DrawsController::SearchState::HandleSearchResponse(DatabaseQuery* query) {
 	DatabaseQuery::SearchData& data = query->search_data;
-	wxDateTime time = data.response != -1 ? wxDateTime(data.response) : wxInvalidDateTime;
+	wxDateTime time = ToWxDateTime(data.response_second, data.response_nanosecond);
+	wxDateTime start = ToWxDateTime(data.start_second, data.start_nanosecond);
+	wxDateTime end = ToWxDateTime(data.end_second, data.end_nanosecond);
 
 	wxLogInfo(_T("Search response dir: %d, start: %s, end: %s,  response: %s"),
 			data.direction,
-			wxDateTime(data.start).Format().c_str(),
-			data.end != -1 ? wxDateTime(data.end).Format().c_str() : L"none",
+			start.Format().c_str(),
+			end.IsValid() ? end.Format().c_str() : L"none",
 			time.Format().c_str());
 
 	switch (data.direction) {
@@ -1235,8 +1238,8 @@ DrawInfo* DrawsController::GetCurrentDrawInfo() {
 		return NULL;
 }
 
-time_t DrawsController::GetCurrentTime() {
-	return m_current_time.IsValid() ? m_current_time.GetTime().GetTicks() : -1;
+wxDateTime DrawsController::GetCurrentTime() {
+	return m_current_time;
 }
 
 bool DrawsController::GetDoubleCursor() {

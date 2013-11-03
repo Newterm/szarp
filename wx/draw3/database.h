@@ -72,7 +72,8 @@ struct DatabaseQuery {
 		PeriodType period_type;
 		struct V {
 			/**Start time of data*/
-			time_t time;
+			unsigned time_second;
+			unsigned time_nanosecond;
 			/**Custom porobe length*/
 			int custom_length;
 			/**Response from a database*/
@@ -99,11 +100,13 @@ struct DatabaseQuery {
 	/**Parameters of a search query*/
 	struct SearchData {
 		/**Range of search*/
-		time_t start, end;
+		unsigned start_second, start_nanosecond;
+		unsigned end_second, end_nanosecond;
 		/**Direction of search*/
 		int direction;
 		/**Response*/
-		time_t response;
+		unsigned response_second;
+		unsigned response_nanosecond;
 		/**Type of probe we searching for (needed for LUA params)*/
 		PeriodType period_type;
 		/** False if error ocurred during data search*/
@@ -394,8 +397,12 @@ public:
 
 DatabaseQuery* CreateDataQuery(DrawInfo* di, PeriodType pt, int draw_no = -1);
 
-void AddTimeToDataQuery(DatabaseQuery *q, time_t time);
+void AddTimeToDataQuery(DatabaseQuery *q, const wxDateTime& time);
 
 SZARP_PROBE_TYPE PeriodToProbeType(PeriodType period);
+
+void ToNanosecondTime(const wxDateTime& time, unsigned& second, unsigned &nanosecond);
+
+wxDateTime ToWxDateTime(unsigned second, unsigned nanosecond);
 
 #endif
