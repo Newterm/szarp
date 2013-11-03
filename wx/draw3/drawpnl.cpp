@@ -451,7 +451,7 @@ void DrawPanel::CreateChildren(const wxString& set, PeriodType pt, time_t time, 
 
 	vsizer->Add(dtw, 0, wxALL | wxEXPAND);
 	vsizer->Add(sw, 0, wxALL | wxEXPAND, 10);
-	vsizer->Add(tw, 0, wxALL | wxEXPAND, 2);
+	vsizer->Add(tw, 1, wxALL | wxEXPAND, 2);
 
 #ifdef WXAUI_IN_PANEL
 	vpanel->SetSizer(vsizer);
@@ -796,6 +796,12 @@ void DrawPanel::PeriodChanged(Draw *d, PeriodType pt) {
 		case PERIOD_T_30MINUTE:
 			id = XRCID("30MINUTE_RADIO");
 			break;
+		case PERIOD_T_3MINUTE:
+			id = XRCID("3MINUTE_RADIO");
+			break;
+		case PERIOD_T_MINUTE:
+			id = XRCID("MINUTE_RADIO");
+			break;
 		case PERIOD_T_SEASON:
 			id = XRCID("SEASON_RADIO");
 			break;
@@ -1019,7 +1025,13 @@ void DrawPanel::SetActive(bool _active) {
 				pmi = menu_bar->FindItem(XRCID("DAY_RADIO"));
 				break;
 			case PERIOD_T_30MINUTE:
-				pmi = menu_bar->FindItem(XRCID("HOUR_RADIO"));
+				pmi = menu_bar->FindItem(XRCID("30MINUTE_RADIO"));
+				break;
+			case PERIOD_T_3MINUTE:
+				pmi = menu_bar->FindItem(XRCID("3MINUTE_RADIO"));
+				break;
+			case PERIOD_T_MINUTE:
+				pmi = menu_bar->FindItem(XRCID("MINUTE_RADIO"));
 				break;
 			case PERIOD_T_SEASON:
 				pmi = menu_bar->FindItem(XRCID("SEASON_RADIO"));

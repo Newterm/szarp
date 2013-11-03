@@ -291,6 +291,16 @@
                         <radio>1</radio>
                     </item>
                     <item>
+                        <label>3 Minutes\tAlt+3</label>
+                        <name>3MINUTE_RADIO</name>
+                        <radio>1</radio>
+                    </item>
+                    <item>
+                        <label>Minute\tAlt+3</label>
+                        <name>MINUTE_RADIO</name>
+                        <radio>1</radio>
+                    </item>
+                    <item>
                         <label>Season\tAlt+S</label>
                         <name>SEASON_RADIO</name>
                         <radio>1</radio>

@@ -45,7 +45,7 @@
 /**
  * Widget for selecting period of time displayed in draws widget.
  */
-class TimeWidget: public wxRadioBox, public DrawObserver
+class TimeWidget: public wxScrolledWindow, public DrawObserver
 {
 public:
         /** Constructor.
@@ -75,10 +75,14 @@ public:
 
 	virtual void DrawInfoChanged(Draw *draw);
 
+	int GetSelection();
+
 protected:
 	DrawsWidget* m_draws_widget;      /**< Corresponding draws widget. */
         int m_previous;			/**< Previously selected item. */
         int m_selected;                   /**< Currently selected item. */
+
+	wxRadioBox* m_radio_box;
 
         DECLARE_EVENT_TABLE()
 };

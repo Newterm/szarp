@@ -281,6 +281,7 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 		int m_hour;
 		int m_minute;
 		int m_second;
+		int m_milisecond;
 	public:
 		TimeReference(const wxDateTime &datetime);
 		void Update(const DTime& time); 

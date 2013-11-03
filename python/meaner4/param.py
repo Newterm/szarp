@@ -36,7 +36,7 @@ class Param:
 		else:
 			self.data_type = "short"
 
-		if self.combined or "prec" not in node.attrib:
+		if "prec" not in node.attrib:
 			self.prec = 0
 		else:
 			self.prec = int(node.attrib["prec"])
