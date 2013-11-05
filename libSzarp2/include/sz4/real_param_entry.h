@@ -155,6 +155,8 @@ public:
 		typename map_type::iterator i = m_blocks.upper_bound(start);
 		if (i != m_blocks.begin())
 			std::advance(i, -1);
+		else if (i->first > start)
+			return invalid_time_value<T>::value;
 
 		while (true) {
 			file_block_entry_type* entry = i->second;

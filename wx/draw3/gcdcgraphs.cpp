@@ -453,6 +453,12 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 	std::vector<std::pair<double,double> > p2circles;
 	std::vector<std::pair<double,double> >* pcircles = &p1circles;
 
+	bool draw_circle =
+		d->GetPeriod() != PERIOD_T_DAY
+		&& d->GetPeriod() != PERIOD_T_30MINUTE
+		&& d->GetPeriod() != PERIOD_T_3MINUTE
+		&& d->GetPeriod() != PERIOD_T_MINUTE;
+
 	for (int i = 0; i < pc; i++) {
 		if (!d->GetValuesTable().at(i).IsData()) {
 			prev_data = false;
@@ -471,8 +477,7 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 			path = &path2;
 			pcircles = &p2circles;
 
-			if ((d->GetPeriod() != PERIOD_T_DAY && d->GetPeriod() != PERIOD_T_30MINUTE)
-					|| (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())) 
+			if (draw_circle || (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())) 
 				pcircles->push_back(std::make_pair(x, y));
 
 			path->MoveToPoint(x, y);
@@ -490,8 +495,7 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 			else
 				p = &p1circles;
 
-			if ((d->GetPeriod() != PERIOD_T_DAY && d->GetPeriod() != PERIOD_T_30MINUTE)
-					|| (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())) 
+			if (draw_circle || (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())) 
 				p->push_back(std::make_pair(x, y));
 
 			path = &path1;
@@ -509,19 +513,13 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 			else
 				path->MoveToPoint(x, y);
 
-			if ((d->GetPeriod() != PERIOD_T_DAY && d->GetPeriod() != PERIOD_T_30MINUTE)
-					|| (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())) 
+			if (draw_circle || (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())) 
 				pcircles->push_back(std::make_pair(x, y));
 		}
 		
 		prev_data = true;
 	}
 
-	bool draw_circle =
-		d->GetPeriod() != PERIOD_T_DAY
-		&& d->GetPeriod() != PERIOD_T_30MINUTE
-		&& d->GetPeriod() != PERIOD_T_3MINUTE
-		&& d->GetPeriod() != PERIOD_T_MINUTE;
 	for (std::vector<std::pair<double, double> >::iterator i = p1circles.begin();
 			i != p1circles.end();
 			i++)

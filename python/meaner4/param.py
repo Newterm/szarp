@@ -56,8 +56,8 @@ class Param:
 		else:
 			raise ValueError("Unsupported value type: %s" % (self.data_type,))
 
-		if "time_prec" in node.attrib:
-			self.time_prec = int(node.attrib["time_prec"])
+		if "time_type" in node.attrib:
+			self.time_prec = 8 if node.attrib["time_type"] == "nanosecond" else 4
 		else:
 			self.time_prec = 4
 
