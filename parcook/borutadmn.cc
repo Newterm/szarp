@@ -741,16 +741,16 @@ void tcp_client_manager::do_terminate_connection(size_t conn_no) {
 	tcp_connection &c = m_tcp_connections.at(conn_no);
 	switch (c.state) {
 		case CONNECTED:
+		case CONNECTING:
 			dolog(7, "tcp_client_manager::do_terminate_connection connection: %s, scheduling recconect", c.address.c_str());
 			close_connection(c);
 			c.schedule_timer(5, 0);
 			c.state = IDLING;
 			break;
 		case NOT_CONNECTED:
-		case CONNECTING:
 		case IDLING:
 			dolog(7, "tcp_client_manager::do_terminate_connection connection: %s,"
-				"however connectoin is not in connectd state, doing nothing",
+				"however connection is is not connected/idling state, doing nothing",
 				c.address.c_str());
 			break;
 	}
