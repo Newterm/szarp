@@ -666,7 +666,7 @@ void client_manager::connection_established_cb(size_t connection) {
 	do_schedule(connection, current_client);
 }
 
-tcp_client_manager::tcp_connection::tcp_connection(tcp_client_manager *_manager, size_t _addr_no, std::string _address) : state(NOT_CONNECTED), fd(-1), bufev(NULL), conn_no(_addr_no), connecting_timeout(0), manager(_manager), address(_address) {}
+tcp_client_manager::tcp_connection::tcp_connection(tcp_client_manager *_manager, size_t _addr_no, std::string _address) : state(NOT_CONNECTED), fd(-1), bufev(NULL), conn_no(_addr_no), manager(_manager), address(_address) {}
 
 void tcp_client_manager::tcp_connection::schedule_timer(int secs, int usecs) {
 	struct timeval tv;
@@ -698,7 +698,6 @@ void tcp_client_manager::close_connection(tcp_connection &c) {
 	}
 	c.fd = -1;
 	c.state = NOT_CONNECTED;
-	c.connecting_timeout = time(NULL) + RECONNECT_ATTEMPT_DELAY;
 	dolog(7, "tcp_client_manager::close_connection connection %s closed", c.address.c_str());
 }
 
@@ -725,7 +724,7 @@ int tcp_client_manager::open_connection(tcp_connection &c, struct sockaddr_in& a
 	}
 	bufferevent_enable(c.bufev, EV_READ | EV_WRITE | EV_PERSIST);
 	c.state = CONNECTING;
-	c.schedule_timer(4, 0);
+	c.schedule_timer(c.establishment_timeout, 0);
 	return 0;
 }
 
@@ -744,7 +743,7 @@ void tcp_client_manager::do_terminate_connection(size_t conn_no) {
 		case CONNECTING:
 			dolog(7, "tcp_client_manager::do_terminate_connection connection: %s, scheduling recconect", c.address.c_str());
 			close_connection(c);
-			c.schedule_timer(5, 0);
+			c.schedule_timer(c.retry_gap, 0);
 			c.state = IDLING;
 			break;
 		case NOT_CONNECTED:
@@ -792,7 +791,19 @@ int tcp_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, sho
 		i = m_addresses.size();
 		m_addresses.push_back(addr);
 		m_connection_client_map.push_back(std::vector<client_driver*>());
-		m_tcp_connections.push_back(tcp_connection(this, i, sock_addr_to_string(addr)));
+		
+		tcp_connection c(this, i, sock_addr_to_string(addr));
+
+		c.retry_gap = 4;
+		if (get_xml_extra_prop(node, "connection-retry-gap", c.retry_gap, true))
+			return 1;
+
+		c.establishment_timeout = 10;
+		if (get_xml_extra_prop(node, "connection-establishment-timeout", c.establishment_timeout, true))
+			return 1;
+
+		dolog(8, "%s establishment_timeout %d, retry_gap: %d", c.address.c_str(), c.establishment_timeout, c.retry_gap);
+		m_tcp_connections.push_back(c);
 	}
 
 	driver->set_id(std::make_pair(i, m_connection_client_map[i].size()));
