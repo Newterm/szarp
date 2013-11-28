@@ -55,9 +55,9 @@ XYDialog::XYDialog(wxWindow *parent, wxString prefix, ConfigManager *cfg, Databa
 		m_end_time(time.end_time)
 		{
 
-	if (m_loaded_time == 0) {
-		m_saved_start_time = time.begin_time;
-		m_saved_end_time = time.end_time;
+	if (user_draws.GetDoubleCursor()) {
+		m_start_time = DTime(m_period, wxDateTime(user_draws.GetStatsInterval().first));
+		m_end_time = DTime(m_period, wxDateTime(user_draws.GetStatsInterval().second));
 	}
 
 	if (frame->GetDimCount() == 3)
