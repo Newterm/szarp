@@ -749,7 +749,7 @@ Unique registers (read params): %d\n\
 	dolog(2, "starting main loop");
 
 	char *plugin_path;
-	asprintf(&plugin_path, "%s/szarp-prop-plugins.ab.so", dirname(argv[0]));
+	asprintf(&plugin_path, "%s/szarp-prop-plugins.so", dirname(argv[0]));
 	plugin = dlopen(plugin_path, RTLD_LAZY);
 	if (plugin == NULL) {
 		dolog(0,
