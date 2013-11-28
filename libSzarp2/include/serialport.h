@@ -207,11 +207,11 @@ public:
 	BaseSerialPort() {}
 	virtual ~BaseSerialPort() {}
 
-	/** Open port (previously configured) */
+	/** Open port (previously initialized) */
 	virtual void Open() = 0;
 	/** Close port */
 	virtual void Close() = 0;
-	/** Set serial line configuration */
+	/** Set serial line configuration for an already open port */
 	virtual void SetConfiguration(const struct termios *serial_conf) = 0;
 	/** Set DTR and RTS signals according to params */
 	virtual void LineControl(bool dtr, bool rts) = 0;

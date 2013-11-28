@@ -25,6 +25,7 @@ Section: misc
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, python-lxml, python-decorator, python-twisted
 Suggests: python-twisted-core
+Breaks: szarp-proprietary-daemons(<=3.0.10)
 Conflicts: szarp-proprietary-daemons(<=3.0.6824), szarp-sss, szarp-utils (<=2.2.2070)
 Replaces: szarp-proprietary-daemons(<=3.0.6824), szarp-sss
 Description: SZARP server daemons

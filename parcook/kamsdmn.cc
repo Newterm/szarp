@@ -147,8 +147,8 @@ protected:
 	/** Schedule next state machine step */
 	void ScheduleNext(unsigned int wait_ms);
 
-        /** Callback for next step of timed state machine. */
-        static void TimerCallback(int fd, short event, void* thisptr);
+	/** Callback for next step of timed state machine. */
+	static void TimerCallback(int fd, short event, void* thisptr);
 
 	/** One step of state machine */
 	void Do();
