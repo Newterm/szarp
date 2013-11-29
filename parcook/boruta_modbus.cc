@@ -467,7 +467,8 @@ protected:
 		IDLE,
 	} m_state;
 
-	time_t m_last_activity;
+	time_t m_latest_request_sent;
+	unsigned m_request_timeout;
 
 	void starting_new_cycle();
 protected:
@@ -487,6 +488,7 @@ protected:
 	virtual void terminate_connection() = 0;
 
 public:
+	int configure(TUnit *unit, xmlNodePtr node, short *read, short *send);
 	void pdu_received(unsigned char u, PDU &pdu);
 	virtual int initialize();
 };
@@ -1506,13 +1508,13 @@ void modbus_client::starting_new_cycle() {
 			break;
 	}
 
-	if (m_last_activity + 10 < m_current_time) {
+	if (m_latest_request_sent + m_request_timeout  < time(NULL)) {
 		send_next_query(false);
 	}
 }
 
 
-modbus_client::modbus_client(boruta_driver* driver) : modbus_unit(driver), m_state(IDLE) {}
+modbus_client::modbus_client(boruta_driver* driver) : modbus_unit(driver), m_state(IDLE), m_latest_request_sent(0), m_request_timeout(0) {}
 
 void modbus_client::reset_cycle() {
 	m_received_iterator = m_received.begin();
@@ -1616,6 +1618,7 @@ void modbus_client::send_query() {
 			send_write_query();
 			break;
 	}
+	m_latest_request_sent = time(NULL);
 }
 
 void modbus_client::timeout() {
@@ -1660,6 +1663,13 @@ void modbus_client::find_continuous_reg_block(RSET::iterator &i, RSET &regs) {
 	}
 }
 
+int modbus_client::configure(TUnit *unit, xmlNodePtr node, short *read, short *send) {
+	m_request_timeout = 10;
+	if (get_xml_extra_prop(node, "request-timeout", m_request_timeout, true))
+		return 1;
+	return modbus_unit::configure(unit, node, read, send);
+}
+
 void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 	if (u != m_unit) {
 		m_log.log(1, "Received PDU from unit %d while we wait for response from unit %d, ignoring it!", (int)u, (int)m_unit);
@@ -1689,7 +1699,6 @@ void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 			m_log.log(10, "Received unexpected response from slave - ignoring it.");
 			break;
 	}
-	m_last_activity = m_current_time;
 }
 
 int modbus_client::initialize() {
@@ -1743,7 +1752,7 @@ void modbus_tcp_client::data_ready(struct bufferevent* bufev, int fd) {
 }
 
 int modbus_tcp_client::configure(TUnit* unit, xmlNodePtr node, short* read, short *send) {
-	if (modbus_unit::configure(unit, node, read, send))
+	if (modbus_client::configure(unit, node, read, send))
 		return 1;
 	m_trans_id = 0;
 	m_parser = new tcp_parser(this, &m_log);
@@ -1792,7 +1801,7 @@ void modbus_serial_client::data_ready(struct bufferevent* bufev, int fd) {
 }
 
 int modbus_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration &spc) {
-	if (modbus_unit::configure(unit, node, read, send))
+	if (modbus_client::configure(unit, node, read, send))
 		return 1;
 	std::string protocol;
 	get_xml_extra_prop(node, "serial_protocol_variant", protocol, true);

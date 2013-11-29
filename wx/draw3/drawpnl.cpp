@@ -924,6 +924,7 @@ DrawInfoList DrawPanel::GetDrawInfoList() {
 	GetDisplayedDrawInfo( &di , wdt );
 	dil.SetSelectedDraw( di );
 	dil.SetStatsInterval(dw->GetDrawsController()->GetStatsInterval());
+	dil.SetDoubleCursor(dw->GetDrawsController()->GetDoubleCursor());
 	return dil;
 }
 
