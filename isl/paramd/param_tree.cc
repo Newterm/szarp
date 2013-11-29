@@ -196,25 +196,13 @@ char *ParamTree::processReports()
 
 	xmlOutputBufferFlush(out_buf);
 	if (out_buf->conv != NULL)
-#ifdef LIBXML2_NEW_BUFFER
 		xmlbuffer = (char *)xmlStrndup(
-				xmlOutputBufferGetContent(out_buf),
-				xmlOutputBufferGetSize(out_buf));
-#else
-		xmlbuffer = (char *)xmlStrndup(
-				out_buf->conv->content,
+				out_buf->conv->content, 
 				out_buf->conv->use);
-#endif
 	else 
-#ifdef LIBXML2_NEW_BUFFER
 		xmlbuffer = (char *)xmlStrndup(
-				xmlOutputBufferGetContent(out_buf),
-				xmlOutputBufferGetSize(out_buf));
-#else
-		xmlbuffer = (char *)xmlStrndup(
-				out_buf->conv->content,
-				out_buf->conv->use);
-#endif
+				out_buf->buffer->content, 
+				out_buf->buffer->use);
 	xmlOutputBufferClose(out_buf);
 
 	return xmlbuffer;
@@ -469,25 +457,13 @@ char *ParamTree::processReportParams(xmlNodePtr raport, bool listing, bool contr
 
 	xmlOutputBufferFlush(out_buf);
 	if (out_buf->conv != NULL)
-#ifdef LIBXML2_NEW_BUFFER
 		xmlbuffer = (char *)xmlStrndup(
-				xmlOutputBufferGetContent(out_buf),
-				xmlOutputBufferGetSize(out_buf));
-#else
-		xmlbuffer = (char *)xmlStrndup(
-				out_buf->conv->content,
+				out_buf->conv->content, 
 				out_buf->conv->use);
-#endif
 	else 
-#ifdef LIBXML2_NEW_BUFFER
 		xmlbuffer = (char *)xmlStrndup(
-				xmlOutputBufferGetContent(out_buf),
-				xmlOutputBufferGetSize(out_buf));
-#else
-		xmlbuffer = (char *)xmlStrndup(
-				out_buf->conv->content,
-				out_buf->conv->use);
-#endif
+				out_buf->buffer->content, 
+				out_buf->buffer->use);
 	xmlOutputBufferClose(out_buf);
 
 	return xmlbuffer;
