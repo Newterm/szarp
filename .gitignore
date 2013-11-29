@@ -7,6 +7,7 @@
 *~
 *.swp
 .deps
+.libs
 aclocal.m4
 autom4te.cache
 config.guess
@@ -16,8 +17,11 @@ config.log
 config.status
 config.sub
 configure
+compile
 depcomp
 install-sh
+libtool
+ltmain.sh
 Makefile.in
 Makefile
 missing
