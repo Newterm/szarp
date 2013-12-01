@@ -875,6 +875,12 @@ template<> inline MBus::byte_representation<float> MBus::append_byte< MBus::byte
     return generic_append_byte_representation(current_value, last_byte, msb_first, byte_number);
 }
 
+//error that requires connection restart
+struct mbus_read_data_error {
+    std::string error;
+    mbus_read_data_error(std::string _error) : error(_error) {}
+};
+
 #endif
 
 #endif // MBUS_H
