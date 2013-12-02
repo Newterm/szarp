@@ -61,7 +61,6 @@ char *TreeProcessor::dumpDocXML(xmlDocPtr doc) {
 char *TreeProcessor::processXML(xmlNodePtr node, int *code, const char* attribute)
 {
 	char *xmlbuffer;
-	xmlBufPtr _buf;
 
 	*code = 200;
 	if (!node) {
@@ -129,7 +128,7 @@ char *TreeProcessor::processXML(xmlNodePtr node, int *code, const char* attribut
 	xmlOutputBufferFlush(out_buf);
 
 #ifdef  LIBXML2_NEW_BUFFER
-	_buf = out_buf->conv != NULL ? out_buf->conv : out_buf->buffer;
+	xmlBufPtr _buf = out_buf->conv != NULL ? out_buf->conv : out_buf->buffer;
 	xmlbuffer = (char *)xmlStrndup(xmlBufContent(_buf), xmlBufUse(_buf));
 #else
 	if (out_buf->conv != NULL)
