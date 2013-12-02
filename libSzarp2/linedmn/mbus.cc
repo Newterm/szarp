@@ -1799,8 +1799,8 @@ bool MBus::send_frame(std::string frame) {
     while ((last_sent_bytes = write(serial_port_fd, frame.substr(sent_bytes).c_str(), frame.length() - sent_bytes)) > 0) // Try sending the frame until all the bytes are sent or the transmission fails
         sent_bytes += last_sent_bytes;
 
-    if (sent_bytes < 0)
-        return false;
+    if (last_sent_bytes < 0) 
+        throw mbus_read_data_error(std::string("Error while reading data ") + strerror(errno));
     else
         return true;
 }
