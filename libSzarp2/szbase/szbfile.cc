@@ -112,14 +112,21 @@ int szb_open_ne(const std::wstring& directory, const std::wstring& param,
 
 	fs::wpath path(directory);
 	path /= filename;
+
+#if BOOST_FILESYSTEM_VERSION == 3
+	std::wstring path_str = path.wstring();
+#else
+	std::wstring path_str = path.string();
+#endif
+
 	if (flags & O_CREAT) {
-		szb_cc_parent(path.string());
+		szb_cc_parent(path_str);
 		mode = SZBASE_CMASK; 
 	}
 #ifdef MINGW32
-	fd = open(SC::S2A(path.string()).c_str(), flags | O_BINARY, mode);
+	fd = open(SC::S2A(path_str).c_str(), flags | O_BINARY, mode);
 #else
-	fd = open(SC::S2A(path.string()).c_str(), flags, mode);
+	fd = open(SC::S2A(path_str).c_str(), flags, mode);
 #endif
 	/* on error fd is -1, so we can just return it */
 	return fd;
@@ -140,7 +147,11 @@ int szb_close(const int fd)
 void szb_path2date(const std::wstring& path, int* year, int* month)
 {
 	fs::wpath tmppath(path);
+#if BOOST_FILESYSTEM_VERSION == 3
+	std::wstring datestring = tmppath.filename().wstring();
+#else
 	std::wstring datestring = fs::basename(tmppath);
+#endif
 
 	*year = *month = 0;
 
@@ -178,7 +189,11 @@ void szb_path2date(const std::wstring& path, int* year, int* month)
 bool
 is_szb_file_name(const fs::wpath& path)
 {
+#if BOOST_FILESYSTEM_VERSION == 3
+	const std::wstring& str = path.wstring();
+#else
 	const std::wstring& str = path.string();
+#endif
 
 	for (int i = 0; i < 6; i++)
 		if (!iswdigit(str[i]))
@@ -203,7 +218,11 @@ szb_file_exists(const std::wstring& filename, time_t *file_modification_date)
 		time_t mt = fs::last_write_time(filename);
 		if (file_modification_date)
 			*file_modification_date = mt;
+#if BOOST_FILESYSTEM_VERSION == 3
+	} catch (fs::filesystem_error) {
+#else
 	} catch (fs::wfilesystem_error) {
+#endif
 		if (file_modification_date)
 			*file_modification_date = -1;
 		return false;

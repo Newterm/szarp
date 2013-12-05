@@ -83,7 +83,11 @@ bool FileRemover::CheckPath(const path& p)
 	if (not is_regular_file(m_iter->path())) {
 		return false;
 	}
+#if BOOST_FILESYSTEM_VERSION == 3
+	if (FileOutdated(m_iter->path().filename().string())) {
+#else
 	if (FileOutdated(m_iter->path().filename())) {
+#endif
 		remove(m_iter->path());
 		return true;
 	}
@@ -93,7 +97,11 @@ bool FileRemover::CheckPath(const path& p)
 bool FileRemover::FileOutdated(const string& filename)
 {
 	int year, month;
+#if BOOST_FILESYSTEM_VERSION == 3
+	if (not FilenameToYearMonth(m_iter->path().filename().string(), year, month)) {
+#else
 	if (not FilenameToYearMonth(m_iter->path().filename(), year, month)) {
+#endif
 		return false;
 	}
 	int distance = (m_current_year * 12) + m_current_month - (year * 12) - month;

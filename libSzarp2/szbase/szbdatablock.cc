@@ -114,7 +114,11 @@ szb_datablock_t::GetBlockRelativePath(TParam * param, int year, int month) {
 
 	fs::wpath paramPath = fs::wpath(param->GetSzbaseName()) / wss.str();
 
+#if BOOST_FILESYSTEM_VERSION == 3
+	return paramPath.wstring();
+#else
 	return paramPath.string();
+#endif
 }
 
 std::wstring
@@ -132,7 +136,11 @@ szb_datablock_t::GetBlockFullPath(szb_buffer_t* buffer, TParam * param, int year
 		return L"";
 
 	fs::wpath paramPath = fs::wpath(buffer->rootdir) / rp;
+#if BOOST_FILESYSTEM_VERSION == 3
+	return paramPath.wstring();
+#else
 	return paramPath.string();
+#endif
 }
 
 void szb_datablock_t::AllocateDataMemory() { assert(!data); data = new SZBASE_TYPE[this->max_probes]; }

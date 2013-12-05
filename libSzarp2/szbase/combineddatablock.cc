@@ -197,12 +197,16 @@ CombinedDatablock::Refresh()
 	int position = this->fixed_probes_count * sizeof(SZB_FILE_TYPE);
 	TParam ** p_cache = this->param->GetFormulaCache();
 
+#if BOOST_FILESYSTEM_VERSION != 3
+#define filesystem_error wfilesystem_error
+#endif
+
 	// msw file
 	std::wstring tmppath = szb_datablock_t::GetBlockFullPath(buffer, p_cache[0], year, month);
 	int size;
 	try {
 		size = fs::file_size(tmppath);
-	} catch (fs::wfilesystem_error) {
+	} catch (fs::filesystem_error) {
 		buffer->last_err = SZBE_SYSERR;
 		return;
 	}
@@ -214,10 +218,15 @@ CombinedDatablock::Refresh()
 	tmppath = szb_datablock_t::GetBlockFullPath(buffer, p_cache[1], year, month);
 	try {
 		size = fs::file_size(tmppath);
-	} catch (fs::wfilesystem_error) {
+	} catch (fs::filesystem_error) {
 		buffer->last_err = SZBE_SYSERR;
 		return;
 	}
+
+#if BOOST_FILESYSTEM_VERSION != 3
+#undef filesystem_error wfilesystem_error
+#endif
+
 	if (size <= position)	// check if file size changed
 		return;
 	// choose shorter file
