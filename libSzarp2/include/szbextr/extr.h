@@ -210,7 +210,7 @@ class SzbExtractor {
 		 * @return ERR_OK on success, or error code
 		 */
 		ErrorCode ExtractToXML(FILE *output, 
-				const std::wstring &encoding = L"ISO-8859-2");
+				const std::string &encoding = "UTF-8");
 		/** Creates OpenOffice spreadsheat document with given path.
 		 * @param path path to output file
 		 * @return ERR_OK on success or error code
@@ -272,7 +272,8 @@ class SzbExtractor {
 		 */
 		ErrorCode ExtractAndTransform(FILE *output, 
 				xsltStylesheetPtr stylesheet,
-				char **params = NULL);
+				char **params = NULL,
+				const std::string& encoding = "UTF-8");
 		/** Extract document to XML, transform is with XSLT stylesheet
 		 * and write to output stream.
 		 * @param output output stream
@@ -284,7 +285,8 @@ class SzbExtractor {
 		 */
 		ErrorCode ExtractAndTransform(FILE *output, 
 				char *stylesheet_path,
-				char **params = NULL);
+				char **params = NULL,
+				const std::string& encoding = "UTF-8");
 	protected:
 		/**
 		 * Extract XML data using XML Writer interface. Document is
@@ -293,7 +295,7 @@ class SzbExtractor {
 		 * @return ERR_OK on success or error code
 		 */
 		ErrorCode ExtractToXMLWriter(xmlTextWriterPtr writer, 
-				const std::wstring& encoding = L"ISO-8859-2");
+				const std::string& encoding = "UTF-8");
 		/** 
 		 * Print properly converted param element to writer.
 		 * @param writer pointer to writer

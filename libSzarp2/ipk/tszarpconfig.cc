@@ -309,7 +309,7 @@ TSzarpConfig::saveXML(const std::wstring &path)
     d = generateXML();
     if (d == NULL)
 	return -1;
-    r = xmlSaveFormatFileEnc(SC::S2A(path).c_str(), d, "ISO-8859-2", 1);
+    r = xmlSaveFormatFile(SC::S2A(path).c_str(), d, 1);
     xmlFreeDoc(d);
     return r;
 }

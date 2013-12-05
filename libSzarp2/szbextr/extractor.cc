@@ -706,7 +706,8 @@ SzbExtractor::ExtractToOpenOffice(const std::wstring& path)
 
 SzbExtractor::ErrorCode 
 SzbExtractor::ExtractAndTransform(FILE *output,
-		xsltStylesheetPtr stylesheet, char *params[])
+		xsltStylesheetPtr stylesheet, char *params[],
+		const std::string& encoding )
 {
 	assert (output != NULL);
 	assert (stylesheet != NULL);
@@ -723,7 +724,7 @@ SzbExtractor::ExtractAndTransform(FILE *output,
 	}
 	xmlTextWriterSetIndent(writer, 1);
 
-	ret =  ExtractToXMLWriter(writer, L"ISO-8859-2");
+	ret =  ExtractToXMLWriter(writer, encoding.c_str());
 	xmlFreeTextWriter(writer);
 	if (ret == ERR_OK) {
 		if (progress_watcher)
@@ -754,20 +755,21 @@ SzbExtractor::ExtractAndTransform(FILE *output,
 
 SzbExtractor::ErrorCode 
 SzbExtractor::ExtractAndTransform(FILE *output, char *stylesheet_path,
-		char *params[]) 
+		char *params[],
+		const std::string& encoding )
 {
 	ErrorCode ret;
 	xsltStylesheetPtr stylesheet;
 	stylesheet = xsltParseStylesheetFile(SC::A2U(stylesheet_path).c_str());
 	if (stylesheet == NULL)
 		return ERR_LOADXSL;
-	ret = ExtractAndTransform(output, stylesheet, params);
+	ret = ExtractAndTransform(output, stylesheet, params, encoding);
 	xsltFreeStylesheet(stylesheet);
 	return ret;
 }
 
 SzbExtractor::ErrorCode 
-SzbExtractor::ExtractToXML(FILE *output, const std::wstring &encoding)
+SzbExtractor::ExtractToXML(FILE *output, const std::string &encoding)
 {
 	assert (output != NULL);
 	ErrorCode ret;
@@ -805,7 +807,7 @@ SzbExtractor::ExtractToXML(FILE *output, const std::wstring &encoding)
 }
 
 SzbExtractor::ErrorCode 
-SzbExtractor::ExtractToXMLWriter(xmlTextWriterPtr writer, const std::wstring& encoding)
+SzbExtractor::ExtractToXMLWriter(xmlTextWriterPtr writer, const std::string& encoding)
 {
     assert (writer != NULL);
     
@@ -831,7 +833,7 @@ SzbExtractor::ExtractToXMLWriter(xmlTextWriterPtr writer, const std::wstring& en
     Szbase::GetObject()->NextQuery();
     
     /* start document */
-    rc = xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL);
+    rc = xmlTextWriterStartDocument(writer, NULL, encoding.c_str(), NULL);
     CHECK_RC;
     
     /* <extracted> */
