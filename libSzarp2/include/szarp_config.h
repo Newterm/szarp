@@ -91,22 +91,7 @@ public:
 	 */
 	TSzarpConfig( bool logparams = true );
 	virtual ~TSzarpConfig(void);
-	/**
-	 * Saves configuration in SZARP 2.1 format.
-	 * @param directory directory where to place output files (PTT.act,
-	 * parcook.cfg, line<x>.cfg, sender.cfg)
-	 * @param force if 1 existing files will be overwritten, if 0 existing
-	 * files are skipped and function returns with error
-	 * @param prefix prefix used to create ekrncor file name
-	 * @param old_ekrncor 1 if traditional format of ekrncor file should
-	 * be used, 0 for new format (with param names instead of base record
-	 * and field indexes); passing 1 can result in errors if some params
-	 * have auto base indexes.
-	 * @return 0 on success, 1 on error
-	 */
-#ifndef MINGW32
-	int saveSzarpConfig(const std::wstring &directory, int force = 0);
-#endif
+
 	/**
 	 * @return title of configuration.
 	 */
@@ -327,51 +312,6 @@ public:
 	void CreateLogParams();
 
 protected:
-	/**
-	 * Creates parcook.cfg file.
-	 * @param directory directory where to create output file
-	 * @param force 1 if overwriting existing file is allowed
-	 * @return number of succesfully created files
-	 */
-#ifndef MINGW32
-	int saveParcookCfg(const std::wstring& directory, int force);
-#endif
-	/**
-	 * Creates line<x>.cfg files.
-	 * @param directory directory where to create output files
-	 * @param force 1 if overwriting existing files is allowed
-	 * @return number of succesfully created files
-	 */
-#ifndef MINGW32
-	int saveLineCfg(const std::wstring& directory, int force);
-#endif
-	/**
-	 * Creates PTT.act file.
-	 * @param directory directory where to create output file
-	 * @param force 1 if overwriting existing file is allowed
-	 * @return number of succesfully created files
-	 */
-#ifndef MINGW32
-	int savePTT(const std::wstring& directory, int force);
-#endif
-	/**
-	 * Creates sender.cfg file.
-	 * @param directory directory where to create output file
-	 * @param force 1 if overwriting existing file is allowed
-	 * @return number of succesfully created files
-	 */
-#ifndef MINGW32
-	int saveSenderCfg(const std::wstring& directory, int force);
-#endif
-	/**
-	 * Creates raporters configuration files.
-	 * @param directory directory where to create output file
-	 * @param force 1 if overwriting existing file is allowed
-	 * @return number of succesfully created files
-	 */
-#ifndef MINGW32
-	int SaveRaporters(const std::wstring& directory, int force);
-#endif
 	/**
 	 * Adds new defined parameter. Adds parameter with given formula at
 	 * and of defined params table.
