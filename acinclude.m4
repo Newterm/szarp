@@ -1247,7 +1247,8 @@ AC_DEFUN([AX_BOOST_DATE_TIME],
 			BN_BOOST_DATE_TIME_LIB=boost_date_time
 			BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
 			if test "x$ax_boost_user_date_time_lib" = "x"; then
-				for libextension in `(ls $BOOSTLIBDIR/boost_date_time*; ls $BOOSTLIBDIR/libboost_date_time* ) | sed 's,.*/,,' | egrep "so|a|lib"$ | sed -e 's;^\(lib\)\?boost_date_time\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_date_time\(.*\)\.a*$;\2;' -e 's;^\(lib\)\?boost_date_time\(.*\)\.lib*$;\2;'` ; do
+				for libextension in `(ls $BOOSTLIBDIR/boost_date_time*; ls $BOOSTLIBDIR/libboost_date_time* ) | sed 's,.*/,,' | egrep "so|a|lib"$` ; do
+					libextension=`echo $libextension | sed -e 's;^\(lib\)\?boost_date_time\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_date_time\(.*\)\.a*$;\2;'  -e 's;^\(lib\)\?boost_date_time\(.*\)\.lib*$;\2;'`
 					ax_lib=${BN_BOOST_DATE_TIME_LIB}${libextension}
 					AC_CHECK_LIB($ax_lib, exit,
 						[BOOST_DATE_TIME_LIB="-l$ax_lib"; AC_SUBST(BOOST_DATE_TIME_LIB) link_date_time="yes"; break],
@@ -1334,7 +1335,8 @@ AC_DEFUN([AX_BOOST_FILESYSTEM],
 			BN_BOOSTFILESYSTEM_LIB=boost_filesystem
 			BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
 			if test "x$ax_boost_user_filesystem_lib" = "x"; then
-		                for libextension in `(ls $BOOSTLIBDIR/boost_filesystem*; ls $BOOSTLIBDIR/libboost_filesystem* ) | sed 's,.*/,,' | egrep "so|a|lib"$ | sed -e 's;^\(lib\)\?boost_filesystem\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_filesystem\(.*\)\.a*$;\2;' -e 's;^\(lib\)\?boost_filesystem\(.*\)\.lib*$;\2;'` ; do
+		                for libextension in `(ls $BOOSTLIBDIR/boost_filesystem*; ls $BOOSTLIBDIR/libboost_filesystem* ) | sed 's,.*/,,' | egrep "so|a|lib"$` ; do
+					libextension=`echo $libextension | sed -e 's;^\(lib\)\?boost_filesystem\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_filesystem\(.*\)\.a*$;\2;'  -e 's;^\(lib\)\?boost_filesystem\(.*\)\.lib*$;\2;'`
 					ax_lib=${BN_BOOSTFILESYSTEM_LIB}${libextension}
 					AC_CHECK_LIB($ax_lib, exit,
 						[BOOST_FILESYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_FILESYSTEM_LIB) link_filesystem="yes"; break],
@@ -1546,8 +1548,9 @@ AC_DEFUN([AX_BOOST_SYSTEM],
 			
 	                if test "x$ax_boost_user_system_lib" = "x"; then
 			    BN_BOOST_SYSTEM="boost_system"
-	                    for libraryext in `(ls $BOOSTLIBDIR/boost_system*; ls $BOOSTLIBDIR/libboost_system* ) | sed 's,.*/,,' | egrep "so|a|lib"$ | sed -e 's;^\(lib\)\?boost_system\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_system\(.*\)\.a*$;\2;' -e 's;^\(lib\)\?boost_system\(.*\)\.lib*$;\2;'`; do
-    	                        ax_lib=${BN_BOOST_SYSTEM}${libraryext}			
+	                    for libraryext in `(ls $BOOSTLIBDIR/boost_system*; ls $BOOSTLIBDIR/libboost_system* ) | sed 's,.*/,,' | egrep "so|a|lib"$`; do
+				libraryext=`echo ${libraryext} | sed -e 's;^\(lib\)\?boost_system\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_system\(.*\)\.a*$;\2;' -e 's;^\(lib\)\?boost_system\(.*\)\.lib*$;\2;'`
+    	                        ax_lib=${BN_BOOST_SYSTEM}${libraryext}
                                 AC_CHECK_LIB($ax_lib, exit,
                                  [BOOST_SYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_SYSTEM_LIB) link_system="yes"; break],
                                  [link_system="no"])
@@ -1626,7 +1629,8 @@ AC_DEFUN([AX_BOOST_REGEX],
                         BN_BOOST_REGEX=boost_regex
                         BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
                         if test "x$ax_boost_user_regex_lib" = "x"; then
-                        	for libextension in `(ls $BOOSTLIBDIR/boost_regex*; ls $BOOSTLIBDIR/libboost_regex* ) | sed 's,.*/,,' | egrep "so|a|lib"$ | sed -e 's;^\(lib\)\?boost_regex\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_regex\(.*\)\.a*$;\2;'  -e 's;^\(lib\)\?boost_regex\(.*\)\.lib*$;\2;'` ; do
+                        	for libextension in `(ls $BOOSTLIBDIR/boost_regex*; ls $BOOSTLIBDIR/libboost_regex* ) | sed 's,.*/,,' | egrep "so|a|lib"$` ; do
+					libextension=`echo $libextension | sed -e 's;^\(lib\)\?boost_regex\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_regex\(.*\)\.a*$;\2;'  -e 's;^\(lib\)\?boost_regex\(.*\)\.lib*$;\2;'`
                         		ax_lib=${BN_BOOST_REGEX}${libextension}
                         		AC_CHECK_LIB($ax_lib, exit,
                         		 [BOOST_REGEX_LIB="-l$ax_lib"; AC_SUBST(BOOST_REGEX_LIB) link_regex="yes"; break],
@@ -1706,7 +1710,8 @@ AC_DEFUN([AX_BOOST_PROGRAM_OPTIONS],
                                   BN_BOOST_PROGRAM_OPTIONS_LIB=boost_program_options
                                   BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
                                   if test "x$ax_boost_user_program_options_lib" = "x"; then
-                                  	for libextension in `(ls $BOOSTLIBDIR/boost_program_options*; ls $BOOSTLIBDIR/libboost_program_options* ) | sed 's,.*/,,' | egrep "so|a|lib"$ | sed -e 's;^\(lib\)\?boost_program_options\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_program_options\(.*\)\.a*$;\2;'  -e 's;^\(lib\)\?boost_program_options\(.*\)\.lib*$;\2;'` ; do
+                                  	for libextension in `(ls $BOOSTLIBDIR/boost_program_options*; ls $BOOSTLIBDIR/libboost_program_options* ) | sed 's,.*/,,' | egrep "so|a|lib"$` ; do
+						libextension=`echo $libextension | sed -e 's;^\(lib\)\?boost_program_options\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_program_options\(.*\)\.a*$;\2;'  -e 's;^\(lib\)\?boost_program_options\(.*\)\.lib*$;\2;'`
                                   		ax_lib=${BN_BOOST_PROGRAM_OPTIONS_LIB}${libextension}
                                   		AC_CHECK_LIB($ax_lib, exit,
                                   		[BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib"; AC_SUBST(BOOST_PROGRAM_OPTIONS_LIB) link_program_options="yes"; break],
