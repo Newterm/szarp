@@ -148,7 +148,7 @@ void szb_path2date(const std::wstring& path, int* year, int* month)
 {
 	fs::wpath tmppath(path);
 #if BOOST_FILESYSTEM_VERSION == 3
-	std::wstring datestring = tmppath.filename().wstring();
+	std::wstring datestring = tmppath.stem().wstring();
 #else
 	std::wstring datestring = fs::basename(tmppath);
 #endif

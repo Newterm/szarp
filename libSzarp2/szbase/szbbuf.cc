@@ -88,9 +88,9 @@ template<typename OP> std::wstring find_one_param_file(const fs::wpath &paramPat
 	std::wstring file;
 	try {
 #if BOOST_FILESYSTEM_VERSION == 3
-		for( fs::path::iterator i = paramPath.begin() ; i != paramPath.end() ; ++i )
+		for( fs::directory_iterator i(paramPath); i != fs::directory_iterator(); ++i )
 		{
-			std::wstring l = i->filename().wstring();
+			std::wstring l = i->path().filename().wstring();
 #else
 		for (fs::wdirectory_iterator i(paramPath); 
 				i != fs::wdirectory_iterator(); 
@@ -632,7 +632,7 @@ szb_create_buffer(Szbase *szbase, const std::wstring &directory, int num, TSzarp
 	fs::wpath tmppath(ret->rootdir);
 	tmppath.remove_leaf().remove_leaf();
 #if BOOST_FILESYSTEM_VERSION == 3
-	ret->prefix = tmppath.leaf().wstring();
+	ret->prefix = tmppath.filename().wstring();
 #else
 	ret->prefix = tmppath.leaf();
 #endif
