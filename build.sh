@@ -65,9 +65,5 @@ do
 	then
 		do_push $d $version
 	fi
-
-	suffix=${version##*.}
-	let "suffix += 1"
-	version=${version%.*}.$suffix
 done
 
