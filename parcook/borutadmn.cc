@@ -904,7 +904,9 @@ void serial_client_manager::do_terminate_connection(size_t conn_no) {
 
 CONNECTION_STATE serial_client_manager::do_establish_connection(size_t conn_no) {
 	const std::string path = m_configurations.at(conn_no).at(0).path;
-	m_serial_connections.at(conn_no).open_connection(path, m_boruta->get_event_base());
+	if (m_serial_connections.at(conn_no).fd < 0) { // not connected
+	    m_serial_connections.at(conn_no).open_connection(path, m_boruta->get_event_base());
+	}
 	return do_get_connection_state(conn_no);
 }
 
