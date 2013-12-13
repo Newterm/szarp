@@ -1557,9 +1557,7 @@ When in SZARP line daemon mode, the following options are available:\n");
         sz_log(4, "Exporting data from WLK files in %s to %s", SC::S2A(import_data_directory).c_str(), SC::S2A(output_file_name).c_str());
 
 #if BOOST_FILESYSTEM_VERSION == 3
-		boost::filesystem::path import_path( import_data_directory ); 
-
-        std::for_each( import_path.begin(), import_path.end(), WLKExporter(output_file_name, begin_date, end_date, config->GetXMLDevice()));
+        std::for_each(boost::filesystem::directory_iterator(import_data_directory), boost::filesystem::directory_iterator(), WLKExporter(output_file_name, begin_date, end_date, config->GetXMLDevice()));
 #else
         std::for_each(boost::filesystem::wdirectory_iterator(import_data_directory), boost::filesystem::wdirectory_iterator(), WLKExporter(output_file_name, begin_date, end_date, config->GetXMLDevice()));
 #endif
