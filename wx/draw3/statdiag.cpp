@@ -267,7 +267,7 @@ void StatDialog::DatabaseResponse(DatabaseQuery *q) {
 						FormatTime(m_max_time, m_period).c_str()));
 			if (m_draw->GetSpecial() == TDraw::HOURSUM) {
 				if (unit.Replace(_T("/h"), _T("")) == 0)
-					unit += _T("*h");
+					unit += _T("h");
 				m_hsum_value_text->SetLabel(wxString::Format(_T("%s %s"), m_draw->GetValueStr(m_hsum / m_draw->GetSumDivisor()).c_str(), unit.c_str()));
 			}
 		} else {
