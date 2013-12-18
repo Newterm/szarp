@@ -616,7 +616,7 @@ int main(int argc, char *argv[])
 	try {
 		daemon.ReadConfig(argc, argv);
 	} catch (kams_daemon::KamsDmnException &e) {
-		dolog(0, e.what());
+		dolog(0, "%s", e.what());
 		exit(1);
 	}
 	daemon.StartDo();

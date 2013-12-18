@@ -1018,7 +1018,7 @@ int main(int argc, char *argv[])
 		daemon.Init(argc, argv);
 		dolog(10, "..finished initializing.");
 	} catch (K601Daemon::K601Exception &e) {
-		dolog(0, e.what());
+		dolog(0, "%s", e.what());
 		exit(1);
 	}
 	daemon.StartDo();

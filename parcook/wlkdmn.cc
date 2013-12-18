@@ -1188,10 +1188,9 @@ short WLKReader::operator[](int index) {
 
 bool WLKReader::read_record(std::ifstream& input_stream, boost::posix_time::ptime time_to_read) {
     std::wstringstream log_message;
+    log_message << time_to_read;
 
-    log_message << "Reading data record from the data file for " << time_to_read; 
-
-    sz_log(5, SC::S2A(log_message.str()).c_str());
+    sz_log(5, "Reading data record from the data file for %s", SC::S2A(log_message.str()).c_str());
 
     input_stream.seekg(0, std::ios::beg);
 

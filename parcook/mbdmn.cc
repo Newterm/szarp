@@ -273,7 +273,8 @@ protected:
 	int configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx);
 	const char* error_string(const unsigned char& error);
 public:
-	modbus_daemon();	
+	modbus_daemon();
+	virtual ~modbus_daemon() {};
 	struct event_base* get_event_base();
 	bool register_val_expired(time_t time);
 	virtual int configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx);

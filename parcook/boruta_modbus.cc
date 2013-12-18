@@ -468,7 +468,7 @@ protected:
 	} m_state;
 
 	time_t m_latest_request_sent;
-	unsigned m_request_timeout;
+	time_t m_request_timeout;
 
 	void starting_new_cycle();
 protected:
@@ -895,7 +895,7 @@ void modbus_unit::consume_read_regs_response(unsigned char& uid, unsigned short 
 		return;
 	} 
 
-	if (pdu.data.size() != 2 * regs_count + 1) {
+	if (pdu.data.size() - 1 != regs_count * 2) {
 		m_log.log(1, "Unexpected data size in response to read holding registers command, requested %hu regs but got %zu data in response",
 		       	regs_count, pdu.data.size() - 1);
 		throw std::out_of_range("Invalid response size");

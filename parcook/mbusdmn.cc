@@ -1256,9 +1256,9 @@ communication testing application.\n\n\
                              switch is omitted, the daemon works as a SZARP \n\
                              line daemon. When in testing mode, the device\n\
                              should be omitted.\n\n\
-      --sontex               Sending REQ_UD2 before every other frame to\n\ 
-                             wakeup device. This option is used for Sontex\n\ 
-                             Supercal 531 heatmeters that do not always\n\ 
+      --sontex               Sending REQ_UD2 before every other frame to\n\
+                             wakeup device. This option is used for Sontex\n\
+                             Supercal 531 heatmeters that do not always\n\
                              respond to first m-bus protocol frame.\n\
                              This option can be used both in test mode\n\
                              or in normal mode.\n\n\

@@ -657,7 +657,7 @@ int main(int argc,char *argv[])
   Initialize(LineNum);
 //  sprintf(linedev,"/dev/ttyX%d",atoi(argv[1]) - 1); 
 //  sprintf(linedev,"/dev/ttyA%02d",atoi(argv[1]) - 1); 
-  snprintf(linedev, sizeof(linedev), argv[2]); 
+  snprintf(linedev, sizeof(linedev), "%s", argv[2]); 
   	// teraz moze byc uzywane i ze specjaliksem i z moksa 
   linedev[sizeof(linedev)-1] = '\0';
 

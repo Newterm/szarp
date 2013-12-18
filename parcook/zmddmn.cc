@@ -336,7 +336,7 @@ void
 PartitionMessage(unsigned char *inbuf, unsigned short length, int *buf,
 		 unsigned short *size)
 {
-	int i, j, k, l;
+	int i, k;
 	unsigned short pos;
 	pos = 0;
 	i = 0;
@@ -349,13 +349,13 @@ PartitionMessage(unsigned char *inbuf, unsigned short length, int *buf,
 	*size = i;
 	k = 0;
 	for (i = 0; i < *size; i++) {
-		for (j = 0; j < VarCount; j++) {
+		for (size_t j = 0; j < VarCount; j++) {
 			if (strcmp
 			    ((char*)DeviceVariableCodes[i],
 			     (char*)ConfigVariableCodes[j]) == 0) {
 				buf[k] = atoi((char*)DeviceVariableValues[i]);
 				if (ConfigVariableCommas[j] != 0)
-					for (l = 0; l < ConfigVariableCommas[j];
+					for (size_t l = 0; l < ConfigVariableCommas[j];
 					     l++) {
 						buf[k] = buf[k] / 10;
 					}
@@ -380,14 +380,12 @@ PartitionMessage(unsigned char *inbuf, unsigned short length, int *buf,
 int ReadOutput(int sock, int *buf, unsigned short *size)
 {
 	int i, j, res;
-	unsigned short lenght;
 	unsigned char inbuf[READ_MESSAGE_SIZE];
 	/*
 	 * ustalenie dok³adnej postaci ramki - ilo¶æ odczytywanych rejestrów
 	 * (number) oraz adres pocz±tkowego rejestru odczytywanych danych
 	 */
 	errno = 0;
-	lenght = 180;
 	memset(inbuf, 0, READ_MESSAGE_SIZE);
 	/*
 	 * wys³anie komunikatu do urz±dzenia 
