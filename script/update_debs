@@ -155,7 +155,7 @@ sub debian_key_install {
 
 }
 
-system("apt-get update") == 0 or die "apt-get update failed";
+system("apt-get -qq update") == 0 or die "apt-get update failed";
 		
 # supress cache building messages
 $_config->{"quiet"} = 2;
