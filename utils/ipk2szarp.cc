@@ -141,12 +141,6 @@ out:
 		prefix = guess_prefix(dir);
 	}
 
-	i = sc->saveSzarpConfig(SC::A2S(dir), force);
-	if (i < 0) {
-		cout << "Error while creating output files.\n";
-		return 1;
-	}
-
 	//check for parameters repetitions in params.xml
 	sc->checkRepetitions();
 	

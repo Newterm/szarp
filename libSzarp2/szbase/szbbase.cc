@@ -96,7 +96,11 @@ void Szbase::Init(const std::wstring& szarp_dir, void (*callback)(std::wstring, 
 
 bool Szbase::AddBase(const std::wstring& prefix) {
 
+#if BOOST_FILESYSTEM_VERSION == 3
+	return AddBase((m_szarp_dir / prefix / L"szbase").wstring(), prefix);
+#else
 	return AddBase((m_szarp_dir / prefix / L"szbase").file_string(), prefix);
+#endif
 }
 
 void Szbase::AddExtraParam(const std::wstring &prefix, TParam *param) {

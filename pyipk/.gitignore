@@ -1,0 +1,11 @@
+build/
+qtipk/ui/base_diag.py
+qtipk/ui/main_win.py
+qtipk/ui/map_diag.py
+qtipk/ui/map_view.py
+qtipk/ui/open_with_dialog.py
+qtipk/ui/plug_diag.py
+qtipk/ui/remote_diag.py
+qtipk/ui/validate_diag.py
+qtipk/ui/xml_diag.py
+qtipk/ui/xml_view.py

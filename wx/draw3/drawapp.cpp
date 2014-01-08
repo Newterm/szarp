@@ -181,7 +181,11 @@ bool DrawApp::OnInit() {
 	libpar_read_cmdline(&argc, argv);
 #endif
 
+#if BOOST_FILESYSTEM_VERSION == 3
+	boost::filesystem::wpath::imbue(std::locale("C")); 	
+#else
 	boost::filesystem::wpath_traits::imbue(std::locale("C")); 	
+#endif
 
 	if (!DrawGLApp::OnInit())
 		return false;

@@ -109,8 +109,14 @@ bool IPKContainer::ReadyConfigurationForLoad(const std::wstring &prefix, bool lo
 
 	TSzarpConfig* ipk = new TSzarpConfig(logparams); 
 
+#if BOOST_FILESYSTEM_VERSION == 3
+	if (ipk->loadXML(_file.wstring(), prefix)) {
+			sz_log(2, "Unable to load config from file:%ls", _file.wstring().c_str());
+#else
 	if (ipk->loadXML(_file.file_string(), prefix)) {
 			sz_log(2, "Unable to load config from file:%ls", _file.file_string().c_str());
+#endif
+
 		delete ipk;
 		return false;
 	}
@@ -159,15 +165,24 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 			_file = file;
 
 		
+#if BOOST_FILESYSTEM_VERSION == 3
+		if (ipk->loadXML(_file.wstring(), prefix)) {
+			sz_log(2, "Unable to load config from file:%ls", _file.wstring().c_str());
+#else
 		if (ipk->loadXML(_file.file_string(), prefix)) {
 			sz_log(2, "Unable to load config from file:%ls", _file.file_string().c_str());
+#endif
 			delete ipk;
 			return NULL;
 		}
 
 	}
 
+#if BOOST_FILESYSTEM_VERSION == 3
+	TDictionary d(szarp_system_dir.wstring());
+#else
 	TDictionary d(szarp_system_dir.string());
+#endif
 	d.TranslateIPK(ipk, language);
 	if (configs.find(prefix) != configs.end())
 		delete configs[prefix];

@@ -1375,15 +1375,21 @@ void WLKExporter::save_last_read_data(WLKReader wlk_reader, boost::posix_time::p
 void WLKExporter::operator()(const boost::filesystem::wpath &file) {
     boost::wsmatch match;
 
-    sz_log(5, "Processing file %s", SC::S2A(file.string()).c_str());
+#if BOOST_FILESYSTEM_VERSION == 3
+	std::wstring filename = file.wstring();
+#else
+	std::wstring filename = file.string();
+#endif
 
-    if (!boost::regex_search(file.string(), match, boost::wregex(L"(\\d{4})-(\\d{2}).wlk")))
+    sz_log(5, "Processing file %s", SC::S2A(filename).c_str());
+
+    if (!boost::regex_search(filename, match, boost::wregex(L"(\\d{4})-(\\d{2}).wlk")))
         return;
 
-    sz_log(5, "Opening the data file %s", SC::S2A(file.string()).c_str());
+    sz_log(5, "Opening the data file %s", SC::S2A(filename).c_str());
 
     std::ifstream wlk_file;
-    wlk_file.open(SC::S2A(file.string()).c_str(), std::ios::in | std::ios::binary);
+    wlk_file.open(SC::S2A(filename).c_str(), std::ios::in | std::ios::binary);
 
     if (wlk_file.is_open()) {
         WLKReader wlk_reader(device_node);
@@ -1407,7 +1413,7 @@ void WLKExporter::operator()(const boost::filesystem::wpath &file) {
             if (wlk_reader.read_record(wlk_file, *time_iterator))
                 save_last_read_data(wlk_reader, *time_iterator);
             else
-                sz_log(9, "Error reading data record from file %s for date %s", SC::S2A(file.string()).c_str(), boost::posix_time::to_simple_string(*time_iterator).c_str());
+                sz_log(9, "Error reading data record from file %s for date %s", SC::S2A(filename).c_str(), boost::posix_time::to_simple_string(*time_iterator).c_str());
         }
         
         write_data_to_file();
@@ -1549,7 +1555,11 @@ When in SZARP line daemon mode, the following options are available:\n");
 
         sz_log(4, "Exporting data from WLK files in %s to %s", SC::S2A(import_data_directory).c_str(), SC::S2A(output_file_name).c_str());
 
+#if BOOST_FILESYSTEM_VERSION == 3
+        std::for_each(boost::filesystem::directory_iterator(import_data_directory), boost::filesystem::directory_iterator(), WLKExporter(output_file_name, begin_date, end_date, config->GetXMLDevice()));
+#else
         std::for_each(boost::filesystem::wdirectory_iterator(import_data_directory), boost::filesystem::wdirectory_iterator(), WLKExporter(output_file_name, begin_date, end_date, config->GetXMLDevice()));
+#endif
     } else {
         bool is_debug = config->GetSingle() || config->GetDiagno();
 

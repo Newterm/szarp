@@ -771,8 +771,6 @@ if test $no_boost_base = "no" ; then
 	AX_BOOST_SYSTEM([no_boost_system="no"], [no_boost_system="yes"])
 	AX_BOOST_PROGRAM_OPTIONS([no_boost_program_options="no"], [no_boost_program_options="yes"])
 
-	AC_DEFINE(BOOST_FILESYSTEM_VERSION, 2, [Out code is compatible with version 2 of boost::filesysstem])
-
 	AX_PYTHON
 	AX_BOOST_PYTHON
 
