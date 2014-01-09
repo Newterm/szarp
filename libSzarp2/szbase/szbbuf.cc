@@ -74,6 +74,10 @@
 
 namespace fs = boost::filesystem;
 
+#if BOOST_FILESYSTEM_VERSION != 3
+#define filesystem_error wfilesystem_error
+#endif
+
 #define szb_hfun szb_hfun2
 
 #define uhashsize(n) ((ub4)1<<(n))
@@ -732,11 +736,7 @@ szb_definable_meaner_last(szb_buffer_t * buffer)
 	size_t size;
 	try {
 		size = fs::file_size(meaner3path / last);
-#if BOOST_FILESYSTEM_VERSION == 3
 	} catch (fs::filesystem_error& e) {
-#else
-	} catch (fs::wfilesystem_error& e) {
-#endif
 		return -1;
 	}
 
@@ -811,11 +811,7 @@ szb_buffer_str::GetConfigurationDate() {
 
 	try {
 		return fs::last_write_time(configPath);
-#if BOOST_FILESYSTEM_VERSION == 3
 	} catch (fs::filesystem_error& e) {
-#else
-	} catch (fs::wfilesystem_error& e) {
-#endif
 		return -1;
 	}
 
@@ -830,11 +826,10 @@ std::wstring szb_buffer_str::GetConfigurationFilePath() {
 		if (fs::exists(configPath))
 #if BOOST_FILESYSTEM_VERSION == 3
 			ret = configPath.wstring();
-	} catch (fs::filesystem_error& e) {
 #else
 			ret = configPath.string();
-	} catch (fs::wfilesystem_error& e) {
 #endif
+	} catch (fs::filesystem_error& e) {
 	}
 
 	return ret;
@@ -850,11 +845,10 @@ std::wstring szb_buffer_str::GetSzbaseStampFilePath() {
 		if (fs::exists(path))
 #if BOOST_FILESYSTEM_VERSION == 3
 			ret = path.wstring();
-	} catch (fs::filesystem_error& e) {
 #else
 			ret = path.string();
-	} catch (fs::wfilesystem_error& e) {
 #endif
+	} catch (fs::filesystem_error& e) {
 	}
 
 	return ret;
@@ -1120,3 +1114,6 @@ TupleHasher::operator()(const BufferKey s) const
 	val ^= val2 << 14;
 	return val;
 }
+
+#undef filesystem_error
+
