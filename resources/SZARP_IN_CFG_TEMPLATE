@@ -39,14 +39,13 @@ $config_root$:="$szarp_root$/$prefix$/config"
 $resources_root$:="$szarp_root$/resources"
 
 # path to PTT.act file
-# TODO: use some other path, this one is obsolete
-PTT=$config_root$/params.xml
+PTT=$szarp_root$/$prefix$
 
 # IPK configuration file path
 IPK=$config_root$/params.xml
 
 # path used for IPC identifiers
-parcook_path=$config_root$/params.xml
+parcook_path=$szarp_root$/$prefix$
 
 # path to parcook.cfg file
 # TODO: obsolete file, some other path should be used
