@@ -344,7 +344,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 						if (xw.IsAttr("formula")) {
 						// workaround - take only one attr. "formula" when occur more than one <define>
 							if (!isFormula) {
-								_formula = SC::U2S(attr);
+								SetFormula( SC::U2S(attr) , _ftype );
 								isFormula = true;
 							}
 						} else
