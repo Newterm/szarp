@@ -1,7 +1,6 @@
 #!/bin/bash
 # SZARP: SCADA software 
 # 
-#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -22,31 +21,8 @@
 # $Id: i2smo 4393 2007-09-13 16:37:10Z reksio $
 
 
-# This is wrapper for ipk2szarp tool. It passes all the options to ipk2szarp,
-# but output directory is modified to temporary directory. After runing 
-# ipk2szarp files with different checksum are copied to original output 
-# directory. The efect is that only really modified files are replaced by 
-# their new versions.
-#
-# WARNING! Modified files are overwritten even if ipk2szarp '-f' options is 
-# not present.
-
 BINPREFIX="/opt/szarp/bin"
 
-
-function get_tmp_dir() {
-	_TMPFILE=`mktemp -d /tmp/i2smo.XXXXXX`
-	if [ $? -ne 0 ]; then
-		echo "$0: Can't create temp file, exiting..."
-		exit 1
-	fi
-	echo $_TMPFILE
-}
-
-PREFIX=
-ALL=
-FILE=
-DIR=
 
 if [ ! -e ./params.xml ]
 then
@@ -54,90 +30,12 @@ then
 	exit 1;
 fi
 
+sh -c "$BINPREFIX/ipk2szarp"
 
-# PROCESS ARGUMENTS
-while [ "x$1" != "x" ] ; do
-	case $1 in
-		-p) 
-		shift
-		PREFIX=$1
-		;;
-		-*)
-		ALL="$ALL $1"
-		;;
-		*)
-		if [ "x$FILE" = "x" ] ; then
-			FILE=$1
-		elif [ "x$DIR" = "x" ] ; then
-			DIR=$1
-		else
-			echo "i2smo: it looks like too many arguments to ipk2szarp ($1) - try '--help'"
-			exit 1
-		fi
-	esac
-	shift
-done
-
-
-# CHECK AND MODIFY FILE AND DIR
-if [ "x$FILE" = "x" ] ; then
-	FILE="params.xml"
+if [ $? -eq 0 ]
+then
+	echo "OK"
+else
+	echo "ERROR"
 fi
 
-if [ "x$DIR" = "x" ] ; then
-	DIR="."
-fi
-
-TMPDIR=`get_tmp_dir`
-
-#Guessing prefix if it isn't option
-
-if [ -n "$PREFIX" ]
-    then
-	ALL="-p $PREFIX $ALL"
-	else
-	PREFIX=`pwd`
-	PREFIX=`dirname $PREFIX`
-	PREFIX=`basename $PREFIX`
-	ALL="-p $PREFIX $ALL"
-	echo "i2smo: Trying to guess prefix: $PREFIX"
-fi
-
-
-# RUN IPK2SZARP
-sh -c "$BINPREFIX/ipk2szarp $ALL $FILE $TMPDIR"
-
-if [ $? -ne 0 ] ; then
-	rm -rf $TMPDIR
-	exit 1
-fi
-
-MOD=
-# COPY MODIFIED FILES
-for i in $TMPDIR/* ; do
-	if [ ! -f "$i" ] ; then
-		continue
-	fi
-	NAME=`basename "$i"`
-	if [ ! -f "$DIR/$NAME" ] ; then
-		cp "$TMPDIR/$NAME" "$DIR"
-		echo "i2smo: file $NAME modified"
-		MOD=1
-		continue
-	fi
-	COMPARE=`diff "$DIR/$NAME" "$TMPDIR/$NAME"`
-	if [ -n "$COMPARE" ] ; then
-		cp "$TMPDIR/$NAME" "$DIR"
-		echo "i2smo: file $NAME modified"
-		MOD=1
-	fi
-done
-
-if [ "x$MOD" != "x1" ] ; then
-	echo "i2smo: no files modified"
-fi
-
-#echo options $ALL
-#echo file $FILE
-#echo dir $DIR
-#echo tmpdir $TMPDIR

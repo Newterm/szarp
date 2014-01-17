@@ -47,39 +47,16 @@ void usage(void)
 	cout << "Usage: ipk2szarp [OPTION]... [INPUT_FILE [OUTPUT_DIR]]\n";
 	cout << "Converts new XML configuration format to SZARP 2.1 config files.\n\n";
 	cout << "  INPUT_FILE          XML config file (default is params.xml) \n";
-	cout << "  OUTPUT_DIR          directory where to place output SZARP 2.1 files, \n                      current is default\n";
 	cout << "Options:\n";
-	cout << "  -f, --force         overwrite existing files, without this option program\n                      fails if files already exist\n\n";
-	cout << "  -p, --prefix=prefix prefix used to create Szarp Draw config file (ekrncor)\n                      name, without this option file ekrnXXXX.cor is created.\n";
-	cout << "  -o, --old_ekrncor   use traditional format for ekrncor file, draws for \n                      parameters with auto indexes are ignored.\n";
 	cout << "  -h, --help          print this info and exit\n";
-	cout << "You can also specify '--debug=<n>' option to set debug level from 0 (errors\n  only) to 9.\n";
-}
-
-/* Try to guess configuration prefix from output directory path. */
-char * guess_prefix(const char *dir)
-{
-	char *prefix;
-	char *tmp = strdup(dir);
-
-	cout << "Trying to guess prefix: ";
-	prefix = basename(dirname(tmp));
-	free(tmp);
-
-	if (!prefix || !prefix[0] || strchr(prefix, '/')) {
-		cout << "using default.\n";
-		return NULL;
-	} 
-
-	cout << prefix << "\n";
-	return strdup (prefix);
+	cout << "\nYou can also specify '--debug=<n>' option to set debug level from 0 (errors\n  only) to 9." << endl;
 }
 
 int main(int argc, char* argv[])
 {
 	TSzarpConfig *sc;
-	int i, force, old_ekrncor;
-	char *prefix, *input, *dir;
+	int i;
+	char *input;
 
 	loginit_cmdline(2, NULL, &argc, argv);
 	log_info(0);
@@ -89,47 +66,25 @@ int main(int argc, char* argv[])
 	LIBXML_TEST_VERSION
 	xmlInitializePredefinedEntities();
 
-	force = 0;
-	old_ekrncor = 0;
-	prefix = input = dir = NULL;
+	input = NULL;
 	
 	while (argc > 1) {
-		if (!strcmp(argv[1], "-f") || (!strcmp(argv[1], "--force")))
-			force = 1;
-		else if (!strcmp(argv[1], "-o") || (!strcmp(argv[1], "--old_ekrncor")))
-			old_ekrncor = 1;
-		else if (!strcmp(argv[1], "-p")) {
-			argc--;
-			argv++;
-			if (argc <= 1) {
-				usage();
-				return 1;
-			}
-			prefix = strdup(argv[1]);
-		} else if (!strncmp(argv[1], "--prefix=", 9)) {
-			prefix = strdup(argv[1]+9);
-		} else if (!strcmp(argv[1], "--help") || (!strcmp(argv[1],
-			"-h"))) {
+		if (!strcmp(argv[1], "--help") || (!strcmp(argv[1], "-h"))) {
 			usage();
 			return 1;
 		} else {
 			input = strdup(argv[1]);
 			argc--;
 			argv++;
-			if (argc > 1)
-				dir = strdup(argv[1]);
-			goto out;
+			break;
 		}
 		argc--;
 		argv++;
 	}
-out:
+
 	if (input == NULL)
 		input = strdup("params.xml");
-	if (dir == NULL)
-		dir = get_current_dir_name();
-	sz_log(10, "Parsed options summary: prefix='%s' force='%s', input='%s', output='%s'",
-		prefix, force?"yes":"no", input, dir);
+	sz_log(10, "Parsed options summary: , input='%s'", input);
 	
 	i = sc->loadXML(SC::A2S(input));
 	if (i) {
@@ -137,18 +92,15 @@ out:
 		return 1;
 	}
 
-	if (prefix == NULL) {
-		prefix = guess_prefix(dir);
-	}
-
 	//check for parameters repetitions in params.xml
-	sc->checkRepetitions();
-	
+	int ret = sc->checkConfiguration();
+
 	delete sc;
 	free(input);
-	free(dir);
-	if (prefix)
-		free(prefix);
 	xmlCleanupParser();
-	return 0;
+
+	sz_logdone();
+
+	return ret;
 }
+

@@ -949,6 +949,23 @@ TBoiler* TSzarpConfig::AddBoiler(TBoiler *boiler) {
 		return boilers->Append(boiler);
 }
 
+bool TSzarpConfig::checkConfiguration()
+{
+	bool ret = true;
+	ret = ret && checkRepetitions(false);
+	ret = ret && checkFormulas();
+	return ret;
+}
+
+bool TSzarpConfig::checkFormulas()
+{
+	for( TParam* p=GetFirstParam(); p ; p=GetNextParam(p) )
+		p->GetParcookFormula();
+	for( TParam* p=GetFirstParam(); p ; p=GetNextParam(p) )
+		p->GetDrawFormula();
+	return true; // No way to check if no error occurred
+}
+
 int TSzarpConfig::checkRepetitions(int quiet)
 {
 	std::vector<std::wstring> str;

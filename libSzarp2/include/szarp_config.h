@@ -290,6 +290,16 @@ public:
 	 */
 	std::wstring absoluteName(const std::wstring& name, const std::wstring& ref);
 
+	/**
+	 * Check if configuration is valid. Basicly calls all check* functions
+	 */
+	bool checkConfiguration();
+
+	/**
+	 * Check if formulas are well defined
+	 */
+	bool checkFormulas();
+
 	/** Checks if repetitions of parameters names in params.xml occurred
 	 * @param quiet if equal 1 do not print anything to standard output
 	 * @return 0 if there is no repetitions or 1 if there are some
