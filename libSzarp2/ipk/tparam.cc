@@ -205,7 +205,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 		if (xw.IsTag("raport")) {
 			if (xw.IsBeginTag()) {
 				double o = -1.0;
-				std::wstring strw_title, strw_desc, strw_filen;
+				std::wstring strw_title, strw_desc;
 
 				const char* need_attr_raport[] = { "title",0  };
 				if (!xw.AreValidAttr(need_attr_raport)) {
@@ -224,11 +224,6 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 						} else
 						if (xw.IsAttr("description")) {
 							strw_desc = SC::U2S(attr);
-						} else
-						if (xw.IsAttr("filename")) {
-							strw_filen = SC::U2S(attr);
-						} else {
-							xw.XMLWarningNotKnownAttr();
 						}
 					} catch (boost::bad_lexical_cast &) {
 						xw.XMLErrorWrongAttrValue();
@@ -237,7 +232,6 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 
 				AddRaport(strw_title,
 					strw_desc,
-					strw_filen,
 					o);
 			}
 		} else
@@ -495,16 +489,13 @@ TParam::parseXML(xmlNodePtr node)
 	    }
 	    NEEDATR(ch, "title");
 	    xmlChar* d = xmlGetNoNsProp(ch, X"description");
-	    xmlChar* f = xmlGetNoNsProp(ch, X"filename");
 
 	    AddRaport(SC::U2S(c),
 			d != NULL ? SC::U2S(d) : std::wstring(),
-			f != NULL ? SC::U2S(f) : std::wstring(),
 		    	o);
 
 	    xmlFree(c);
 	    xmlFree(d);
-	    xmlFree(f);
 	    c = NULL;
 	}
 	else if (!strcmp((char *) ch->name, "draw")) {
@@ -969,89 +960,12 @@ TParam::~TParam()
 }
 
 void
-TParam::AddRaport(const std::wstring& title, const std::wstring& descr, const std::wstring& filename,
-			double order)
+TParam::AddRaport(const std::wstring& title, const std::wstring& descr, double order)
 {
     if (_raports == NULL)
-	_raports = new TRaport(this, title, descr, filename, order);
+	_raports = new TRaport(this, title, descr, order);
     else
-	_raports->Append(new TRaport(this, title, descr, filename, order));
-}
-
-int
-TParam::TransformDefinableFormula()
-{
-    std::wstring w, w2;
-    int s = 0, p;
-    TParam *par;
-
-    if (_formula.empty()) {
-	    _szbase_name = std::wstring();
-	CheckForNullFormula();
-	return 0;
-    }
-
-    std::wstring& f = _formula;
- 
-    int state = 1;
-    int l = _formula.length();
-    int e = 0;
-    
-    for (; e < l; e++)
-	switch (state) {
-	case 1:
-	    switch (f[e]) {
-	    case L'#':
-		state = 2;
-		break;
-	    default:
-		if ((f[e] >= L'0') && (f[e] <= L'9')) {
-		    s = e;
-		    state = 3;
-		} else
-		    w += f[e];
-	    };
-	    break;
-	case 2:
-	    if (((f[e] < L'0') || (f[e] > L'9')) && (f[e] != L'-'))
-		state = 1;
-	    w += f[e];
-	    break;
-	  write_index:
-	case 3:
-	    if ((f[e] < L'0') || (f[e] > L'9')) {
-		state = 1;
-		p = 0;
-		for (; s < e; s++)
-		    p = (p * 10) + (f[s] - L'0');
-		par = GetSzarpConfig()->getParamByBaseInd(p);
-		if (par == NULL) {
-		   sz_log(1, "Error while transforming formula - param with base index %d not found", p);
-		    SetFormula(L"(Error:Error:Error)");
-		    return 1;
-		}
-		w2 = par->GetName();
-
-		p = w2.rfind(':');
-		if (!GetName().empty() && (!wcsncmp(w2.c_str(), GetName().c_str(), p + 1))) {
-		    w2.replace(0, p, L"*:*");
-		} else {
-		    p = w2.find(':');
-		    if (!GetName().empty() && (!wcsncmp(w2.c_str(), GetName().c_str(), p + 1))) {
-			// w2.compare(name, 0, p))) 
-			w2.replace(0, p, L"*");
-		    }
-		}
-		w = w + L"(" + w2 + L")" + f[e];
-	    }
-	    break;
-	}
-
-    if (state == 3)
-	goto write_index;
-
-    SetFormula(w, DEFINABLE);
-    return 0;
+	_raports->Append(new TRaport(this, title, descr, order));
 }
 
 const std::wstring&
