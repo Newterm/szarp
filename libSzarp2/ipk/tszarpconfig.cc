@@ -678,7 +678,11 @@ TSzarpConfig::PrepareDrawDefinable()
     TParam * p = drawdefinable;
     while (p) {
 	if (p->IsDefinable())
-		p->PrepareDefinable();
+		try {
+			p->PrepareDefinable();
+		} catch( TCheckException& e ) {
+			sz_log(0,"Invalid draw definable formula %s",SC::S2A(p->GetName()).c_str());
+		}
 	p = p->GetNext();
     }
 
@@ -952,21 +956,32 @@ TBoiler* TSzarpConfig::AddBoiler(TBoiler *boiler) {
 bool TSzarpConfig::checkConfiguration()
 {
 	bool ret = true;
-	ret = ret && checkRepetitions(false);
-	ret = ret && checkFormulas();
+	ret = checkRepetitions(false) && ret;
+	ret = checkFormulas()         && ret;
 	return ret;
 }
 
 bool TSzarpConfig::checkFormulas()
 {
+	bool ret = true;
+	/** This loop checks every formula and return false if any is invalid */
 	for( TParam* p=GetFirstParam(); p ; p=GetNextParam(p) )
-		p->GetParcookFormula();
+		try {
+			p->GetParcookFormula();
+		} catch( TCheckException& e ) {
+			ret = false;
+		}
 	for( TParam* p=GetFirstParam(); p ; p=GetNextParam(p) )
-		p->GetDrawFormula();
-	return true; // No way to check if no error occurred
+		try {
+			p->GetDrawFormula();
+		} catch( TCheckException& e ) {
+			ret = false;
+		}
+
+	return ret;
 }
 
-int TSzarpConfig::checkRepetitions(int quiet)
+bool TSzarpConfig::checkRepetitions(int quiet)
 {
 	std::vector<std::wstring> str;
         int all_repetitions_number = 0, the_same_repetitions_number=0;
@@ -994,11 +1009,7 @@ int TSzarpConfig::checkRepetitions(int quiet)
 		}
 	}
 	
-	if (all_repetitions_number > 0) {
-		return 1;
-	} else {
-		return 0;
-	}
+	return all_repetitions_number == 0;
 }				
 
 void TSzarpConfig::ConfigureSeasonsLimits() {

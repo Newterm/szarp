@@ -969,7 +969,7 @@ TParam::AddRaport(const std::wstring& title, const std::wstring& descr, double o
 }
 
 const std::wstring&
-TParam::GetDrawFormula()
+TParam::GetDrawFormula() throw(TCheckException)
 {
     if (_formula.empty()) {
 	return _formula;
@@ -1025,8 +1025,7 @@ TParam::GetDrawFormula()
 		    SC::S2A(absolute_name).c_str(),
 		    SC::S2A(_name).c_str());
 
-		_parsed_formula = std::wstring();
-		return _parsed_formula;
+		throw TCheckException();
 	    }
 	    tmp << tp->GetVirtualBaseInd();
 
@@ -1269,7 +1268,7 @@ TParam::calculateConst(const std::wstring& formula)
 }
 
 void
-TParam::PrepareDefinable()
+TParam::PrepareDefinable() throw(TCheckException)
 {
     if (_prepared)
 	return;
@@ -1305,7 +1304,7 @@ TParam::PrepareDefinable()
 	if (ech == std::wstring::npos) {
 	    sz_log(0, "Error in formula = %s (param: %s)", SC::S2A(_formula).c_str(), SC::S2A(_name).c_str());
 	    _f_cache.clear();
-	    return;
+		throw TCheckException();
 	}
 
 	std::wstring absolute_name = _parentSzarpConfig->absoluteName(_formula.substr(sch, ech - sch), _name);
@@ -1316,7 +1315,7 @@ TParam::PrepareDefinable()
 	if (NULL == tp) {
 	    sz_log(0, "Error in formula '%s', param: '%s' not found", SC::S2A(_formula).c_str(), SC::S2A(absolute_name).c_str());
 	    _f_cache.clear();
-	    return;
+		throw TCheckException();
 	}
 
 	if (tp->IsDefinable()) {
@@ -1388,7 +1387,7 @@ TParam::PrepareDefinable()
 }
 
 std::wstring
-TParam::GetParcookFormula()
+TParam::GetParcookFormula() throw(TCheckException)
 {
 	int st, b, e, l;
     	wchar_t ch = 0;
@@ -1437,7 +1436,7 @@ TParam::GetParcookFormula()
 		p = GetSzarpConfig()->getParamByName(c2);
 		if (p == NULL) {
 		   sz_log(0, "GetParcookFormula: parameter '%s' not found in formula for '%s'", SC::S2A(c2).c_str(), SC::S2A(GetName()).c_str());
-		    assert(false);
+		   throw TCheckException();
 		}
 		str << p->GetIpcInd();
 		st = 0;

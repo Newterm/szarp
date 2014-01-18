@@ -88,12 +88,12 @@ int main(int argc, char* argv[])
 	
 	i = sc->loadXML(SC::A2S(input));
 	if (i) {
-		cout << "Error while reading configuration.\n";
+		cerr << "Error while reading configuration." << endl;
 		return 1;
 	}
 
 	//check for parameters repetitions in params.xml
-	int ret = sc->checkConfiguration();
+	int ret = !sc->checkConfiguration();
 
 	delete sc;
 	free(input);

@@ -80,6 +80,12 @@ class TBoilers;
 class XMLWrapper;
 class XMLWrapperException;
 
+
+class TCheckException : public std::exception {
+	virtual const char* what() const throw()
+	{ return "Invalid params.xml definition. See log for more informations."; }
+};
+
 /** SZARP system configuration */
 class TSzarpConfig {
 public:
@@ -304,7 +310,7 @@ public:
 	 * @param quiet if equal 1 do not print anything to standard output
 	 * @return 0 if there is no repetitions or 1 if there are some
 	 */
-	int checkRepetitions(int quiet = 0);
+	bool checkRepetitions(int quiet = 0);
 
 	/** Configrures default summer seasons limit (if seasons are not already configured*/
 	void ConfigureSeasonsLimits();
@@ -855,13 +861,12 @@ public:
 	/** @return pointer to string with formula in definable.cfg format
 	 * do not free it - its handled iternaly by TParam object.
 	 * (may be NULL) */
-	const std::wstring&  GetDrawFormula();
+	const std::wstring&  GetDrawFormula() throw(TCheckException);
 	/**
 	 * Returns parameter's RPN formula in parcook.cfg format (with comment).
-	 * @return newly allocated string with formula in parcook format (you have to
-	 * free it after use), NULL if p is not defined parameter
+	 * @return newly allocated string with formula in parcook format
 	 */
-	std::wstring GetParcookFormula();
+	std::wstring GetParcookFormula() throw(TCheckException);
 
 	/** @return type of formula (RPN, DEFINABLE or NONE) */
 	FormulaType GetFormulaType() { return _ftype; }
@@ -1072,7 +1077,7 @@ public:
 	TAnalysis* AddAnalysis(TAnalysis* analysis);
 
 	/** Prepares data for definable calculation. */
-	void PrepareDefinable();
+	void PrepareDefinable() throw(TCheckException);
 
 #ifndef NO_LUA
 	const unsigned char* GetLuaScript() const;
