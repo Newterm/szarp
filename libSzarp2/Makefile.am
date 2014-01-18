@@ -138,15 +138,10 @@ libSzarp2_la_SOURCES = \
 
 libSzarp2_la_LIBADD = libSzarpLuaParser.la
 
+libSzarpLuaParser_la_CXXFLAGS = $(AM_CXXFLAGS) -g0
 libSzarpLuaParser_la_SOURCES = \
 			$(SZBASE_DIR)/lua_parser_extra.cc $(SZBASE_DIR)/lua_parser_extra.h \
 			$(SZBASE_DIR)/lua_parser.cc $(INCLUDE_DIR)/szbase/lua_syntax.h
-
-
-if GXX_VERSION_47
-libSzarpLuaParser_la_CXXFLAGS = $(CXXFLAGS) --param ggc-min-expand=5
-endif
-
 
 # Additional files for deleting on 'make maintainer-clean'
 MAINTAINERCLEANFILES = Makefile.in \

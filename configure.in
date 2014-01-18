@@ -49,6 +49,15 @@ ALL_LINGUAS="pl"
 
 # Compilers
 
+# default CFLAGS and CXXFLAGS to empty
+: ${CFLAGS=""} 
+: ${CXXFLAGS=""} 
+
+# use AM_FLAGS for default CXXFLAGS
+: ${AM_CXXFLAGS="-O2 -g -Wall"} 
+AC_SUBST([AM_CXXFLAGS])
+
+
 # C compiler (sets CC)
 AC_PROG_CC([gcc3 gcc-3 gcc cc])
 AC_PROG_CC_C_O
@@ -939,10 +948,6 @@ AH_VERBATIM([tailq],
 } while (0)
 #endif /* TAILQ_FOREACH */
 ])
-
-CFLAGS="$CFLAGS -Wall"
-CXXFLAGS="$CXXFLAGS -Wall"
-
 
 #############################################################################
 # FOR DEVELOPERS
