@@ -236,6 +236,11 @@ case "$1" in
 
 	;;
   restart|reload)
+	if [ -x __INSTALL_DIR__/bin/ipk2szarp ]; then
+		echo "Verifying configuration: __INSTALL_DIR__/ipk2szarp"
+		__INSTALL_DIR__/bin/ipk2szarp || { echo "Invalid configuration -- won't restart" 1>&2; exit 1; }
+	fi
+
 	$0 stop
 	$0 start
 	;;
