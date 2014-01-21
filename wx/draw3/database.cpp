@@ -395,6 +395,33 @@ void Sz4Base::SearchData(DatabaseQuery* query) {
 	sd.ok = true;
 }
 
+template<class time_type> void Sz4Base::GetValue(DatabaseQuery::ValueData::V& v,
+		const time_type& time, TParam* p, SZARP_PROBE_TYPE pt) {
+	typedef sz4::weighted_sum<double, time_type> wsum_type;
+
+	time_type end_time = szb_move_time(time, 1, pt, v.custom_length);
+	wsum_type wsum;
+	base->get_weighted_sum(p, time, end_time, pt, wsum);
+
+	v.response = wsum.avg() / pow10(p->GetPrec());
+
+	typename wsum_type::sum_type sum;
+	typename wsum_type::time_diff_type weight;
+	sum = wsum.sum(weight);
+
+	double scale;
+	if (pt == PT_HALFSEC)
+		scale = 10 * 60.;
+	else
+		scale = 10 * 1000000000.;
+	v.sum = sum / pow10(p->GetPrec()) * wsum.gcd() / scale;
+
+	if (weight)
+		v.count = weight / (weight + wsum.no_data_weight() / wsum.gcd()) * 100;
+	else
+		v.count = 0;
+}
+
 void Sz4Base::GetData(DatabaseQuery* query, wxEvtHandler* response_receiver) {
 	DatabaseQuery::ValueData &vd = query->value_data;
 
@@ -408,34 +435,18 @@ void Sz4Base::GetData(DatabaseQuery* query, wxEvtHandler* response_receiver) {
 	std::vector<DatabaseQuery::ValueData::V>::iterator i = vd.vv->begin();
 	while (i != vd.vv->end()) {
 		if (pt == PT_HALFSEC) {
-			sz4::weighted_sum<double, sz4::nanosecond_time_t> sum;
 			sz4::nanosecond_time_t time = pair_to_sz4_nanosecond(i->time_second, i->time_nanosecond);
-			sz4::nanosecond_time_t end = szb_move_time(
-				time,
-				1,
-				pt,
-				i->custom_length);
-			base->get_weighted_sum(p, time, end, pt, sum);
-
-			i->response = sum.sum() / sum.weight() / pow10(p->GetPrec());
-			i->sum = sum.sum() / pow10(p->GetPrec());
-			i->count = sum.weight() / (sum.weight() + sum.no_data_weight()) * 100;
-
+			GetValue<sz4::nanosecond_time_t>(*i, time, p, pt);
 		} else {
-			sz4::weighted_sum<double, sz4::second_time_t> sum;
-			sz4::second_time_t end = szb_move_time(sz4::second_time_t(i->time_second), 1, pt, i->custom_length);
-			base->get_weighted_sum(p, sz4::second_time_t(i->time_second), end, pt, sum);
-
-			i->response = sum.sum() / sum.weight() / pow10(p->GetPrec());
-			i->sum = sum.sum() / pow10(p->GetPrec());
-			i->count = sum.weight() / (sum.weight() + sum.no_data_weight()) * 100;
+			GetValue<sz4::second_time_t>(*i, i->time_second, p, pt);
 		}
 
 		i->ok = true;
 		rq->value_data.vv->push_back(*i);
 
 		i++;
-	}
+
+	}	
 
 	DatabaseResponse dr(rq);
 	wxPostEvent(response_receiver, dr);

@@ -63,10 +63,9 @@ public:
 			}
 
 			time_type next = szb_move_time(current, 1, probe_type);
-			if (!value_is_no_data(value)) {
-				sum.sum() += value * (next - current);
-				sum.weight() += next - current;
-			} else
+			if (!value_is_no_data(value))
+				sum.add(value, next - current);
+			else
 				sum.no_data_weight() += next - current;
 			sum.add_refferred_blocks(
 					refferred_blocks.begin(),

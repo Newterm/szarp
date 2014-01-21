@@ -272,6 +272,8 @@ public:
 class Sz4Base : public Draw3Base {
 	sz4::base *base;
 
+	template<class time_type> void GetValue(DatabaseQuery::ValueData::V& v,
+			const time_type& time, TParam* p, SZARP_PROBE_TYPE pt);
 public:
 	Sz4Base(const std::wstring& data_dir, IPKContainer* ipk_conatiner);
 

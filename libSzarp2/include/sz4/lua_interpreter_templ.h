@@ -58,10 +58,7 @@ template<class base_types> int lua_sz4(lua_State *lua) {
 				sum.refferred_blocks().begin(),
 				sum.refferred_blocks().end());
 
-	if (sum.weight())
-		lua_pushnumber(lua, sum.sum() / sum.weight());
-	else
-		lua_pushnumber(lua, nan(""));
+	lua_pushnumber(lua, sum.avg());
 	return 1;
 }
 

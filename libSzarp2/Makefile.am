@@ -37,10 +37,10 @@ EXTRA_PROGRAMS = szbtest lua_parser_test xmlreader_test
 szbtest_SOURCES = $(SZBASE_DIR)/szbtest.cc
 
 
-protobuf/paramsvalues.pb.h: protobuf/paramsvalues.proto 
+protobuf/protobuf/paramsvalues.pb.h: protobuf/paramsvalues.proto 
 	$(PROTOC) --cpp_out=$(SRCDIR)protobuf $<
 
-protobuf/paramsvalues.pb.cc: protobuf/paramsvalues.proto 
+protobuf/protobuf/paramsvalues.pb.cc: protobuf/paramsvalues.proto 
 	$(PROTOC) --cpp_out=$(SRCDIR)protobuf $<
 
 include/protobuf/paramsvalues.pb.h: protobuf/protobuf/paramsvalues.pb.h

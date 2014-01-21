@@ -139,11 +139,7 @@ public:
 	helper(weighted_sum<OV, OT>& sum) : m_sum(sum) {}
 	weighted_sum<IV, IT>& sum() { return m_temp; }
 	void convert() {
-		m_sum.sum() = m_temp.sum();
-		m_sum.weight() = m_temp.weight();
-		m_sum.no_data_weight() = m_temp.no_data_weight();
-		m_sum.set_fixed(m_temp.fixed());
-		m_sum.refferred_blocks().swap(m_temp.refferred_blocks());
+		m_sum.take_from(m_temp);
 	}
 };
 

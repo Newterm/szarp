@@ -93,10 +93,7 @@ public:
 				sum.refferred_blocks().begin(),
 				sum.refferred_blocks().end());
 
-		if (sum.weight())
-			return sum.sum() / sum.weight();
-		else
-			return nan("");
+		return sum.avg();
 	}
 
 	virtual std::vector<double>& Vars() {

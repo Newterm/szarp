@@ -19,6 +19,8 @@
 
 #include "sz4/defs.h"
 
+#include <cmath> 
+
 namespace sz4 {
 
 bool value_is_no_data(const double& v) {
@@ -26,7 +28,15 @@ bool value_is_no_data(const double& v) {
 }
 
 bool value_is_no_data(const float& v) {
-	return std::isnan(v);
+	return isnanf(v);
+}
+
+template<> float no_data<float>() {
+	return nanf("");
+}
+
+template<> double no_data<double>() {
+	return nan("");
 }
 
 }
