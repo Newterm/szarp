@@ -32,6 +32,12 @@
 #include <wx/image.h>
 #include <wx/cmdline.h>
 #include <wx/wxprec.h>
+#include <stdexcept>
+#include <langinfo.h>
+#include <locale.h>
+#include <iconv.h>
+#include <errno.h>
+#include <string.h>
 
 #ifndef MINGW32
 #include <unistd.h>
@@ -201,7 +207,58 @@ SCCMenu* SCCApp::CreateMainMenu() {
 			ICON(\"") + GetSzarpDir() + _T("resources/wx/icons/szarp16.xpm\")");
 		smenu = SCCMenu::ParseMenu(s);
 	} else {
+		/* XXX */
+#ifdef MINGW32
 		smenu = SCCMenu::ParseMenu(wxString(SC::A2S(buffer)));
+#else
+		setlocale(LC_CTYPE, "");
+		char* enc = nl_langinfo(CODESET);
+
+		if (0 != strncmp(enc, "UTF-8", strlen(enc))) {
+			smenu = SCCMenu::ParseMenu(wxString(SC::A2S(buffer)));
+		} else {
+			iconv_t m_handle;
+			const std::basic_string<char> &str = buffer;
+			m_handle = iconv_open("WCHAR_T", enc);
+
+			if (m_handle  == (iconv_t) -1) {
+				throw std::runtime_error(std::string("LibSzarp: Error opening iconv: ") + "WCHAR_T" + " to " + enc);
+			}
+
+			char *input_start = (char*)(str.c_str());
+			char *input = input_start;
+			size_t input_length = (str.length() + 1) * sizeof(char);
+			size_t total_length  = sizeof(wchar_t) * (str.length() + 1);
+			size_t remaining_length = total_length;
+			char *output_start = (char*) malloc(total_length);
+			char *output = output_start;
+
+			while (iconv(m_handle, &input, &input_length, &output, &remaining_length) == (size_t) -1) {
+				if (errno == E2BIG) {
+					char *nb = (char*)realloc(output_start, 2 * total_length);
+					output_start = nb;
+					output = output_start + (total_length - remaining_length);
+					remaining_length += total_length;
+					total_length *= 2;
+				} else if (errno == EILSEQ) {
+					free(output_start);
+					throw std::runtime_error("Invalid multibyte sequence encountered in convertsion");
+				} else if (errno == EINVAL) {
+					free(output_start);
+					throw std::runtime_error("Incomplete multibyte sequence encountered in convertsion");
+				} else {
+					free(output_start);
+					throw std::runtime_error("String convertsion failed");
+				}
+			}
+
+			std::basic_string<wchar_t> ret(reinterpret_cast<wchar_t*>(output_start));
+			free(output_start);
+
+			smenu = SCCMenu::ParseMenu(wxString(ret));
+		}
+		/* End of XXX */
+#endif  /* MINGW32 */
 		free(buffer);
 	}
 
