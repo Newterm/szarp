@@ -328,6 +328,29 @@ struct SDU {
 	PDU pdu;
 };
 
+std::string tcpadu2string(const struct TCPADU& adu) {
+	std::stringstream ss;
+	ss << "trans_id: " << (int)adu.trans_id;
+	ss << "proto_id: " << (int)adu.proto_id;
+	ss << "len: " << (int)adu.length;
+	ss << "unit: " << (int)adu.unit_id;
+	ss << "fun: " << (int)adu.pdu.func_code;
+	for (size_t i = 0; i < adu.pdu.data.size(); i++) {
+		ss << " " << (int)adu.pdu.data[i];
+	}
+	return ss.str();
+}
+
+std::string sdu2string(const struct SDU& sdu) {
+	std::stringstream ss;
+	ss << "unit: " << (int)sdu.unit_id;
+	ss << "fun: " << (int)sdu.pdu.func_code;
+	for (size_t i = 0; i < sdu.pdu.data.size(); i++) {
+		ss << " " << (int)sdu.pdu.data[i];
+	}
+	return ss.str();
+}
+
 //maps regisers values to parcook short values
 class parcook_modbus_val_op {
 protected:
@@ -887,7 +910,7 @@ const char* modbus_unit::error_string(const unsigned char& error) {
 }
 
 void modbus_unit::consume_read_regs_response(unsigned char& uid, unsigned short start_addr, unsigned short regs_count, PDU &pdu) {
-	m_log.log(5, "Consuming read holing register response unit_id: %d, address: %hu, registers count: %hu", (int) uid, start_addr, regs_count);
+	m_log.log(5, "Consuming read holding register response unit_id: %d, address: %hu, registers count: %hu", (int) uid, start_addr, regs_count);
 	if (pdu.func_code & MB_ERROR_CODE) {
 		m_log.log(1, "Exception received in response to read holding registers command, unit_id: %d, address: %hu, count: %hu",
 		       	(int)uid, start_addr, regs_count);
@@ -1882,7 +1905,7 @@ bool serial_rtu_parser::check_crc() {
 	m_log->log(8,"Unit ID = %hx",m_sdu.unit_id);
 	m_log->log(8,"Func code = %hx",m_sdu.pdu.func_code);
 	for (size_t i = 0; i < m_data_read ; i++) m_log->log(9,"Data[%d] = %hx",i,d[i]);
-	m_log->log(8, "Checking crc, result: %s, unit_id: %d, caluclated crc: %hx, frame crc: %hx",
+	m_log->log(8, "Checking crc, result: %s, unit_id: %d, calculated crc: %hx, frame crc: %hx",
 	       	(crc == frame_crc ? "OK" : "ERROR"), m_sdu.unit_id, crc, frame_crc);
 	return crc == frame_crc;
 }

@@ -868,7 +868,7 @@ const char* modbus_daemon::error_string(const unsigned char& error) {
 }
 
 void modbus_daemon::consume_read_regs_response(unsigned char& uid, unsigned short start_addr, unsigned short regs_count, PDU &pdu) {
-	dolog(5, "Consuming read holing register response unit_id: %d, address: %hu, registers count: %hu", (int) uid, start_addr, regs_count);
+	dolog(5, "Consuming read holding register response unit_id: %d, address: %hu, registers count: %hu", (int) uid, start_addr, regs_count);
 	if (pdu.func_code & MB_ERROR_CODE) {
 		dolog(1, "Exception received in response to read holding registers command, unit_id: %d, address: %hu, count: %hu",
 		       	(int)uid, start_addr, regs_count);
@@ -1964,7 +1964,7 @@ bool serial_rtu_parser::check_crc() {
 		crc = update_crc(crc, m_sdu.pdu.data[i]);
 
 	unsigned short frame_crc = d[m_data_read - 2] | (d[m_data_read - 1] << 8);
-	dolog(9, "Checking crc, result: %s, unit_id: %d, caluclated crc: %hx, frame crc: %hx",
+	dolog(9, "Checking crc, result: %s, unit_id: %d, calculated crc: %hx, frame crc: %hx",
 	       	(crc == frame_crc ? "OK" : "ERROR"), m_sdu.unit_id, crc, frame_crc);
 #if 0
 	if (crc != frame_crc) {
