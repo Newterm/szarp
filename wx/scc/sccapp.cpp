@@ -32,6 +32,12 @@
 #include <wx/image.h>
 #include <wx/cmdline.h>
 #include <wx/wxprec.h>
+#include <stdexcept>
+#include <langinfo.h>
+#include <locale.h>
+#include <iconv.h>
+#include <errno.h>
+#include <string.h>
 
 #ifndef MINGW32
 #include <unistd.h>
@@ -201,7 +207,18 @@ SCCMenu* SCCApp::CreateMainMenu() {
 			ICON(\"") + GetSzarpDir() + _T("resources/wx/icons/szarp16.xpm\")");
 		smenu = SCCMenu::ParseMenu(s);
 	} else {
+#ifdef MINGW32
 		smenu = SCCMenu::ParseMenu(wxString(SC::A2S(buffer)));
+#else
+		setlocale(LC_CTYPE, "");
+		char* enc = nl_langinfo(CODESET);
+
+		if (0 != strncmp(enc, "UTF-8", strlen(enc))) {
+			smenu = SCCMenu::ParseMenu(wxString(SC::A2S(buffer)));
+		} else {
+			smenu = SCCMenu::ParseMenu(wxString(SC::U2S((unsigned char *)buffer)));
+		}
+#endif  /* MINGW32 */
 		free(buffer);
 	}
 
