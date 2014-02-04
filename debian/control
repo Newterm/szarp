@@ -158,14 +158,6 @@ Description: Inkscape plugin for editing SZARP ISL visualization schemas
  Plugin for editing ISL visualization schemas using Inkscape vector drawing
  program.
 
-Package: szarp-mobile
-Section: misc
-Architecture: all
-Pre-Depends: sudo
-Depends: python, ${python:Depends}
-Description: SZARP mobile configuration manager
- SZARP mobilemgr - program for handling mobile configuration.
-
 Package: szarp-sssweb
 Section: misc
 Architecture: any
