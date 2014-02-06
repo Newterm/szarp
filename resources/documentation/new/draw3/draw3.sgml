@@ -2080,7 +2080,7 @@ zmienna t = 31 dzieñ marca, godzina 00:00, zmienna pt = PT_MONTH
 </itemizedlist>
 </para>
 <para>
-Za³ó¿my teraz ¿e jeste¶my na okresie dzieñ, wtedy program zrobi tak:
+Za³ó¿my teraz, ¿e jeste¶my na okresie dzieñ, wtedy program zrobi tak:
 <itemizedlist>
 <listitem><para>
 zmienna t = godzina 00:00, zmienna pt = PT_MIN10
