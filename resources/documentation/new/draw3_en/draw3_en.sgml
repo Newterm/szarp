@@ -3,7 +3,7 @@
 <!ENTITY help SYSTEM "../common/help.sgml">
 ]>
 
-<book lang="en" id="draw3">
+<book lang="pl" id="draw3">
 <bookinfo>
 
 
@@ -136,7 +136,7 @@ and shortcut icons:
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-filtericon.png"></imageobject></inlinemediaobject> - Filter - more <xref linkend="draw3-ext-filter"></para></listitem>
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-refresh_icon.png"></imageobject></inlinemediaobject> - Refresh - more <xref linkend="draw3-ext-refresh"></para></listitem>
 
-<listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-tree__icon.png"></imageobject></inlinemediaobject> - Tree Set - a window displaying segregated sets of graphs</para></listitem>
+<listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-tree_icon.png"></imageobject></inlinemediaobject> - Tree Set - a window displaying segregated sets of graphs</para></listitem>
 
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-data_icon.png"></imageobject></inlinemediaobject> - Go to latest date - set the cursor on the latest </para></listitem>
 
