@@ -207,7 +207,7 @@ class SSConf:
 		(tmpfd, tmpname) = tempfile.mkstemp(prefix="sss_userdb")
 		try:
 			tmpfile = os.fdopen(tmpfd, "wb")
-			self.db.write(tmpfile)
+			self.db.write(tmpfile, xml_declaration=True, pretty_print=True, encoding='utf-8')
 			tmpfile.close()
 			os.chmod(tmpname, 0644)
 			shutil.move(tmpname, self.db_path)

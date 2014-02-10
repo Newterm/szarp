@@ -21,7 +21,10 @@ def make_map(config):
     # CUSTOM ROUTES HERE
 
     map.connect("home", '/', controller='syncuser', action='index')
-    map.connect('', '/{controller}/', action='index')
+    map.connect("logout", '/login/logout')
+
+    map.connect('/{controller}', action='index')
+    map.connect('/{controller}/', action='index')
     map.connect('/{controller}/{action}')
     map.connect('/{controller}/{action}/{id}')
 

@@ -2,12 +2,12 @@ import logging
 import hashlib
 
 from pylons import app_globals
-from pylons import request, response, session, tmpl_context as c
+from pylons import request, response, session, url, tmpl_context as c
 from pylons.controllers.util import abort, redirect
-from pylons.i18n import set_lang
 from pylons.decorators import rest
 
 from sssweb.lib.base import *
+from sssweb.lib.helpers import send_email
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -18,7 +18,6 @@ class SyncuserController(BaseController):
 
 	def __before__(self):
 		BaseController.__before__(self)
-		set_lang(app_globals.config['lang'])
 
         def _get_selected_bases(self, requrest):
             selected = []
@@ -32,6 +31,7 @@ class SyncuserController(BaseController):
 
 	def index(self):
             c.list = app_globals.rpcservice.list_users(session['user'], session['passhash'])
+            log.info(url.current(action='new'))
             return render('/syncuser/index.mako')
 
 	@rest.dispatch_on(POST='save')
@@ -76,8 +76,8 @@ class SyncuserController(BaseController):
 		if id is None:
 			try:
 				password = app_globals.rpcservice.add_user(session['user'], session['passhash'], user)
-				msg = _("Your SZARP Synchronization account has been created.\n\nYour login: %s\nYour password: %s\nVisist %s to change your password and view your settings.\n\nSZARP Synchronization Server\n") % (user['name'], password, h.url_for(controller = '/', qualified = True))
-				h.send_email(user['email'], _("SZARP sync new account"), msg)
+				msg = _("Your SZARP Synchronization account has been created.\n\nYour login: %s\nYour password: %s\nVisist %s to change your password and view your settings.\n\nSZARP Synchronization Server\n") % (user['name'], password, url(controller = '/', qualified = True))
+				send_email(user['email'], _("SZARP sync new account"), msg)
 			except Exception, e:
 				log.error(str(e))
 				raise e
@@ -104,7 +104,7 @@ class SyncuserController(BaseController):
 		password = app_globals.rpcservice.reset_password(session['user'], session['passhash'], id)
 		user = app_globals.rpcservice.get_user(session['user'], session['passhash'], id)
 		msg = _("Your password for SZARP Synchronization Server has been reset by administrator.\nYour login is '%s', your new password is '%s'.\n\nSZARP Synchronization Server\n") % (user['name'], password)
-		h.send_email(user['email'], _("SZARP sync new password"), msg)
+		send_email(user['email'], _("SZARP sync new password"), msg)
                 
 		c.message = "New password has been sent to user %s" % id
 		c.action = 'edit'
@@ -126,13 +126,13 @@ class SyncuserController(BaseController):
 
 	def disable_key(self, id):
 		app_globals.rpcservice.disable_key(session['user'], session['passhash'], id)
-		return redirect(h.url_for(action='edit'))
+		return redirect(url.current(action='edit'))
 
 	def reset_key(self, id):
 		app_globals.rpcservice.reset_key(session['user'], session['passhash'], id)
-		return redirect(h.url_for(action='edit'))
+		return redirect(url.current(action='edit'))
 
 	def turnoff_key(self, id):
 		app_globals.rpcservice.turnoff_key(session['user'], session['passhash'], id)
-		return redirect(h.url_for(action='edit'))
+		return redirect(url.current(action='edit'))
 

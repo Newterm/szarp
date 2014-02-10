@@ -1,7 +1,9 @@
 import logging
 import hashlib
 
-from pylons.i18n import set_lang
+from pylons import app_globals, request, response, session, tmpl_context as c, url
+from pylons.controllers.util import abort, redirect
+
 from pylons.decorators import rest
 
 from sssweb.lib.base import *
@@ -12,7 +14,6 @@ class LoginController(BaseController):
 
 	def __before__(self):
 		BaseController.__before__(self)
-		set_lang(app_globals.config['lang'])
 
 	def index(self):
 		"""
@@ -52,7 +53,7 @@ class LoginController(BaseController):
 			session['passhash'] = passhash
 			session.save()
 			return redirect(url(controller='account'))
-		return redirect(h.url_for(action = 'invalid'))
+		return redirect(url.current(action = 'invalid'))
 
 	def logout(self):
 		"""
@@ -78,7 +79,7 @@ class LoginController(BaseController):
 		(key, email) = app_globals.rpcservice.get_password_link(user)
 
 		if key:
-			msg = _("You (or someone else) requested change of forgotten password to SZARP Synchronization Server.\n\nIf you did not request password change, just ignore this e-mail.\nIf you want to reset your SZARP synchronization password, click (or paste to your WWW browser) following link: \n%s\nLink is valid to the end of current day.\n\nSZARP Synchronization Server\n") % (h.url_for(controller = 'login', action = 'activate_link', qualified = True, user = user, key = key))
+			msg = _("You (or someone else) requested change of forgotten password to SZARP Synchronization Server.\n\nIf you did not request password change, just ignore this e-mail.\nIf you want to reset your SZARP synchronization password, click (or paste to your WWW browser) following link: \n%s\nLink is valid to the end of current day.\n\nSZARP Synchronization Server\n") % (url(controller = 'login', action = 'activate_link', qualified = True, user = user, key = key))
 			h.send_email(email, _("SZARP sync password reset"), msg) 
 
 		# We display this message also for non-existent user names so this page
