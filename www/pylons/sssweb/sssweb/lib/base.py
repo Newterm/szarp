@@ -18,7 +18,7 @@ class BaseController(WSGIController):
     def __before__(self):
         # Authentication required?
 	if self.requires_auth and 'user' not in session:
-		return redirect(url(controller='login', qualified = True))
+		return redirect(url(controller='login', action='index', qualified = True))
 
     def __call__(self, environ, start_response):
         """Invoke the Controller"""

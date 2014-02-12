@@ -8,6 +8,8 @@ from pylons.decorators import rest
 
 from sssweb.lib.base import *
 
+from sssweb.lib.helpers import send_email
+
 log = logging.getLogger(__name__)
 
 class LoginController(BaseController):
@@ -45,7 +47,7 @@ class LoginController(BaseController):
 			session['user'] = form_username
 			session['passhash'] = passhash
 			session.save()
-			return redirect(url(controller='syncuser'))
+			return redirect(url(controller='syncuser', action='index'))
 
 		if app_globals.rpcservice.check_user(form_username, passhash):
 			# Mark user as logged in
@@ -63,7 +65,7 @@ class LoginController(BaseController):
 			del session['user']
 			del session['passhash']
 			session.save()
-			return redirect(url(controller='login'))
+			return redirect(url('home'))
 
 	def reminder(self):
 		"""
@@ -80,11 +82,12 @@ class LoginController(BaseController):
 
 		if key:
 			msg = _("You (or someone else) requested change of forgotten password to SZARP Synchronization Server.\n\nIf you did not request password change, just ignore this e-mail.\nIf you want to reset your SZARP synchronization password, click (or paste to your WWW browser) following link: \n%s\nLink is valid to the end of current day.\n\nSZARP Synchronization Server\n") % (url(controller = 'login', action = 'activate_link', qualified = True, user = user, key = key))
-			h.send_email(email, _("SZARP sync password reset"), msg) 
+			send_email(email, _("SZARP sync password reset"), msg) 
 
 		# We display this message also for non-existent user names so this page
 		# cannot be used to check existing user names.
 		c.message = _("Check your e-mail for password activation link. Link is valid to the end of current day.")
+                c.controller = 'syncuser'
 		c.action = "index"
 		return render("/info.mako")
 
@@ -99,7 +102,7 @@ class LoginController(BaseController):
 			c.error = _("Link is incorrect or outdated!")
 		else:
 			msg = _("Your password for SZARP Synchronization Server has been reset.\nYour login is '%s', your new password is '%s'.\n\nSZARP Synchronization Server\n") % (user, password)
-			h.send_email(email, _("SZARP sync new password"), msg) 
+			send_email(email, _("SZARP sync new password"), msg) 
 			c.message = _("Your password has been reset. New password has been sent to you by e-mail.")
 		c.action = "index"
 		return render("/info.mako")
