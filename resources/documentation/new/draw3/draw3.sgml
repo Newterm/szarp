@@ -43,7 +43,7 @@ Dowiedz siê wiêcej:
 <para>o skrótach klawiaturowych - <xref linkend="draw3-ext-shortcuts"></para>
 </listitem>
 </itemizedlist>
-Mo¿esz przej¶æ do spisu tre¶ci - <xref linkend="draw3"> lub wybraæ odno¶nik <quote>Nastêpny</quote>, aby zapoznaæ siê po kolei z podstawowymi funkcjami programu.
+Mo¿esz przejSæ do spisu tre¶ci - <xref linkend="draw3"> lub wybraæ odno¶nik <quote>Nastêpny</quote>, aby zapoznaæ siê po kolei z podstawowymi funkcjami programu.
 </para>
 </section><!-- draw3-info-main -->
 </chapter><!-- draw3-info -->
@@ -67,7 +67,7 @@ Ten rozdzia³ opisuje:
 <listitem><para>jak zmieniæ zakres ¶rednich - <xref linkend="draw3-base-range"></para></listitem>
 <listitem><para>jak poruszaæ siê po wykresach - <xref linkend="draw3-base-graphsnavigation"></para></listitem>
 <listitem><para>jak korzystaæ z zak³adek i okien - <xref linkend="draw3-base-tabs"></para></listitem>
-<listitem><para>jak wydrukowaæ interesuj±ce Ciê wykresy - <xref linkend="draw3-base-prints"></para></listitem>
+<listitem><para>jak wydrukowaæ interesuj¹ce Ciê wykresy - <xref linkend="draw3-base-prints"></para></listitem>
 </itemizedlist>
 </para>
 </section> <!-- draw3-base-main -->
@@ -75,14 +75,14 @@ Ten rozdzia³ opisuje:
 <section id="draw3-base-run">
 <title>Uruchomienie programu</title>
 <para>
-Zwykle bêdziesz uruchamiaæ program pos³uguj±c siê programem Centrum Sterowania SZARP (SCC). Wystarczy klikn±æ lewym przyciskiem myszki na ikonê SCC i wybraæ interesuj±c± nas ciep³owniê lub wêze³ cieplny (wiêcej informacji o SCC mo¿esz znale¼æ w dokumencie <ulink url="http://szarp.org/szarp/doc/scc/html/scc.html">Centrum Sterowania SZARP</ulink> [<ulink url="http://szarp.org/szarp/doc/pdf/scc-article.pdf">pdf</ulink>]). Proces uruchomienia (tutaj na systemie Linux) jest widoczny poni¿ej:
-<figure> <title>Centrum Sterowania SZARP - uruchomienie programu przegl±daj±cego (pod Linuxem)</title>
+Zwykle bêdziesz uruchamiaæ program pos³uguj¹c siê programem Centrum Sterowania SZARP (SCC). Wystarczy klikn¹æ lewym przyciskiem myszki na ikonê SCC i wybraæ interesuj¹c¹ nas ciep³owniê lub wêze³ cieplny (wiêcej informacji o SCC mo¿esz znale¼æ w dokumencie <ulink url="http://szarp.org/szarp/doc/scc/html/scc.html">Centrum Sterowania SZARP</ulink> [<ulink url="http://szarp.org/szarp/doc/pdf/scc-article.pdf">pdf</ulink>]). Proces uruchomienia (tutaj na systemie Linux) jest widoczny poni¿ej:
+<figure> <title>Centrum Sterowania SZARP - uruchomienie programu przegl¹daj¹cego (pod Linuxem)</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-scc.png"></imageobject>
 </mediaobject></figure>
 <note>
 <para>
-¯eby uruchomiæ program przegl±daj±cy, musisz mieæ dostêp do danych, które bêd± w nim wy¶wietlane. Mo¿esz ¶ci±gn±æ dane na dysk poprzez synchronizator danych (wiêcej o synchronizacji w dokumencie <ulink url="http://szarp.org/szarp/doc/ssc/html/ssc.html">Synchronizator plików</ulink>), albo zalogowaæ siê do systemu, który takie dane przechowuje. Do systemu mo¿esz zalogowaæ siê bezpo¶rednio (pracuj±c pod Linuxem) lub (w przypadku systemu Windows) za pomoc± emulatora X-terminala (np. Cygwin). Program SCC automatycznie wy¶wietla nazwy wszystkich ciep³owni (lub innych obiektów), dla których dostêpne s± dane.
+¯eby uruchomiæ program przegl¹daj¹cy, musisz mieæ dostêp do danych, które bêd¹ w nim wy¶wietlane. Mo¿esz ¶ci±gn±æ dane na dysk poprzez synchronizator danych (wiêcej o synchronizacji w dokumencie <ulink url="http://szarp.org/szarp/doc/ssc/html/ssc.html">Synchronizator plików</ulink>), albo zalogowaæ siê do systemu, który takie dane przechowuje. Do systemu mo¿esz zalogowaæ siê bezpo¶rednio (pracuj±c pod Linuxem) lub (w przypadku systemu Windows) za pomoc± emulatora X-terminala (np. Cygwin). Program SCC automatycznie wy¶wietla nazwy wszystkich ciep³owni (lub innych obiektów), dla których dostêpne s± dane.
 </para>
 </note>
 </para>
@@ -98,7 +98,7 @@ Aby zapoznaæ siê z obs³ug± podstawowych funkcji programu, przejd¼ do <xref linke
 Zobacz tak¿e <xref linkend="draw3-ext-cmd">, aby dowiedzieæ siê, jak uruchamiaæ
 program z linii komend.</para></note>
 Aby zakoñczyæ program, zamknij okno programu, wybierz opcjê
-<guimenu>Zamknij</guimenu> z menu <guimenu>Plik</guimenu> lub kliknij na ikonê z drzwiami umieszczon± na dole okna programu.
+<guimenu>Zamknij</guimenu> z menu <guimenu>Plik</guimenu> lub kliknij na ikonê z drzwiami umieszczon¹ na dole okna programu.
 </para>
 
 </section> <!-- draw3-base-run -->
@@ -228,7 +228,7 @@ Mo¿esz prze³±czyæ miêdzy rodzajami ¶rednich:
 <section id="draw3-base-graphsnavigation">
 <title>Nawigacja po wykresach</title>
 <para>
-Po wykresach mo¿esz siê poruszaæ u¿ywaj±c myszki (przez klikniêcie na konkretnych wykresie) lub przy u¿yciu klawiatury. Aktualna pozycja jest zaznaczona przez kursor - bia³y kwadrat. 
+Po wykresach mo¿esz siê poruszaæ u¿ywaj±c myszki (przez klikniêcie na konkretnym wykresie) lub przy u¿yciu klawiatury. Aktualna pozycja jest zaznaczona przez kursor - bia³y kwadrat. 
 Strza³kami "prawo" i "lewo" przesuniesz kursor po bie¿±cym wykresie, z kolei wci¶niêcie 
 klawiszy ze strza³kami "góra" i "dó³" powoduje zmianê bie¿±cego wykresu na nastêpny/poprzedni 
 w ramach zestawu. Klawiszami <keycode>PgUp</keycode> oraz <keycode>PgDown</keycode> 
@@ -1046,13 +1046,13 @@ odró¿nia dwa typy komentarzy: odnosz±ce siê do ca³ego systemu oraz odnosz±ce siê
 <para>
 <note>
 <para>
-Je¿eli nie istalowa³e¶ systemu SZARP samodzielnie, ale u¿ywasz go na ciep³owni lub w innym miejscu, w którym program by³ konfigurowany przez obs³ugê, 
+Je¿eli nie instalowa³e¶ systemu SZARP samodzielnie, ale u¿ywasz go na ciep³owni lub w innym miejscu, w którym program by³ konfigurowany przez obs³ugê, 
 przypuszczalnie masz ju¿ skonfigurowan± obs³ugê komentarzy - mo¿esz pomin±æ ten rozdzia³.
 </para>
 </note>
 Zanim bêdziesz móg³ korzystaæ z komentarzy musisz skonfigurowaæ program przegl±daj±cy do ich odbierania i wysy³ania. Do skonfigurowania komentarzy
 musisz znaæ: adres serwera komentarzy oraz swoj± nazwê u¿ytkownika i has³o na tym serwerze. W celu ich uzyskania skontaktuj siê z dzia³em IT.
-Nastêpnie w menu <guimenu>Narzêdzia</guimenu>  w g³ównym oknie programu, w podmenu <guimenu>Ustawienia</guimenu> kliknij na <guimenu>Komentarze</guimenu>. Pojawi siê nastêpuj±ce okno dialogowei, w którym
+Nastêpnie w menu <guimenu>Narzêdzia</guimenu>  w g³ównym oknie programu, w podmenu <guimenu>Ustawienia</guimenu> kliknij na <guimenu>Komentarze</guimenu>. Pojawi siê nastêpuj±ce okno dialogowe, w którym
 musisz wporwadziæ wy¿ej wymienione informacje:
 <figure> <title>Konfiguracja komentarzy</title>
 <mediaobject>
@@ -1167,7 +1167,7 @@ potem jest nazwa konfiguracji (np. byto dla Bytowa) i z rozszerzeniem <filename>
 <para>
 Program przegl±daj±cy daje wybranym u¿ytkownikom mo¿liwo¶æ zdalnego zadania
 parametrów regulatorów ZET stosowanych w ciep³owniach Newtermu. Dostêp do tej
-funkcjonalno¶ci wymaga konta na serwerze Newtermu oraz odpowmednich uprawnieñ do
+funkcjonalno¶ci wymaga konta na serwerze Newtermu oraz odpowiednich uprawnieñ do
 dostêpu do parametrów poszczególnych ciep³owni.
 </para>
 <para>
@@ -1453,10 +1453,10 @@ Program przegl±daj±cy pozwala na wyszukiwanie momentow w czasie, ktore spe³niaj±
 <para>
 By uruchomiæ t± funkcjê wybierz z menu <guimenu>Narzêdzia</guimenu>  opcjê <guimenu>Wyszukaj datê</guimenu>. Pojawi siê okno podobne do okna s³u¿±cego do edycji parametrow definiowalnych
 (zobacz: <xref linkend="draw3-ext-parametersset">). Podobieñstwo to wynika z faktu, ¿e kryteria wyszukiwania maj± postaæ wyra¿eñ jêzyka LUA i s±
-tak na prawdê specyficznymi parametrami, ktore zamiast warto¶ci liczbowej maj± zwarcaæ warto¶c logiczn± '1', gdy kryterium dla podanej chwili w czasie
+tak na prawdê specyficznymi parametrami, ktore zamiast warto¶ci liczbowej maj± wyra¿aæ warto¶c logiczn± '1', gdy kryterium dla podanej chwili w czasie
 jest spe³nione lub '0', gdy kryterium spe³nione nie jest. Wprowadzenia kryterium dokonuje siê w dok³adnie w takich sam sposob jak edytuje parametry u¿ytkownika.</para>
 <note><para> Przy czym jako warto¶æ logiczn± '1', tak na prawdê rozumie siê wszystko, co nie jest liczbowym 0.
-Mo¿na te¿ u¿ywac sta³ych jêzyka LUA true i false (jednak je¿eli nie jest to konieczne lepiej u¿ywaæ warto¶ci liczbowych, bo umo¿liwi to zoptymaliowanie
+Mo¿na te¿ u¿ywac sta³ych jêzyka LUA true i false (jednak je¿eli nie jest to konieczne lepiej u¿ywaæ warto¶ci liczbowych, bo umo¿liwi to zoptymalizowanie
 takich kryteriow przez optymalizator).
 </para></note>
 <para>
@@ -1803,7 +1803,7 @@ godzina 00:40, 24 listopada godzina 00:50, 24 listopada godzina 01:00
 Czas w zmiennej t zapisany jest jako liczba, ilo¶æ sekund od pewnej
 umownej chwili '0'. Brzmi to dosyæ tajemniczo ale w praktyce, gdy piszemy
 parametry w ogóle nie musimy pamiêtaæ o tym jak czas jest zapisywany. Ten przyk³ad
-jest w³a¶ciwie wyj±tkiem bo uwzglêdnili¶my reprezentacjê zmiennej t, tak
+jest w³a¶ciwie wyj±tkiem, bo uwzglêdnili¶my reprezentacjê zmiennej t, tak
 ¿eby w 24h zmie¶ciæ 2 sinusoidy.
 </para>
 </section> 
@@ -1814,7 +1814,7 @@ Wiemy ju¿ zatem jak program przegl±daj±cy przekazuje formule informacje
 o jaki czas mu chodzi. Brakuje nam jeszcze jednej informacji do 
 kompletu - zmiennej 'pt'. Zmienna pt jest to zmienna w której draw3
 przed wykonaniem formu³y, umieszcza informacje jakiego rodzaju ¶redni±
-formu³a ma wyliczyæ. Je¿eli program jest ustawiony na ekranie 'rok',
+formu³ê ma wyliczyæ. Je¿eli program jest ustawiony na ekranie 'rok',
 bêd± go interesowa³y ¶rednie miesiêczne, na ekranie miesi±c bêd± to ¶rednie
 dzienne, itd. W odró¿nieniu od zmiennej t, zmienna pt nie przyjmuje warto¶ci
 liczbowej ale tylko jedn± z warto¶ci z okre¶lonego zbioru.
@@ -1960,7 +1960,7 @@ w zmiennej t informacje dla jakiego czasu chce uzyskaæ warto¶æ parametru.
 </para>
 <para>
 Wiem te¿, pó³oficjalnie, ¿e ta warto¶æ zapisana jest jako ilo¶æ sekund
-od pewnego czasu '0'. Mo¿emy siê wiêc pokusiæ o napisanie parametru
+od pewnego czasu '0'. Mo¿emy siê wiêc pokusiæ o napisanie parametru,
 który bêdzie liczy³ np. przyrost temperatury zewnêtrznej w okresie 
 10 minut, np. takiego:
 <programlisting>
@@ -2007,8 +2007,8 @@ v = p("xxxx:Sieæ:Sterownik temperatura zewnêtrzna, t, PT_MIN10) - p("xxxx:Sieæ:S
 </programlisting>
 </para>
 <para>
-Mo¿emy te¿ wykorzystuj±c fakt ¿e w zmiennej pt mamy ¶redni± dla której
-rysowany jest parametr, zrobiæ rzecz nastêpuj±c± - parametr który
+Mo¿emy te¿ wykorzystuj±c fakt, ¿e w zmiennej pt mamy ¶redni± dla której
+rysowany jest parametr, zrobiæ rzecz nastêpuj±c± - parametr, który
 ogl±dany na ekranie dekada bêdzie podawa³ nam wzrost ¶redniej
 temperatury rocznej miêdzy poszczególnymi latami; ogl±dany na ekranie rocznym
 to wzrost ¶redniej temperatury miesiêcznej miêdzy poszczególnymi miesi±cami;
@@ -2025,9 +2025,9 @@ v = p("xxxx:Sieæ:Sterownik temperatura zewnêtrzna", t, pt) - p("xxxx:Sieæ:Sterow
 <section id="draw3-param-tutorial-types-of-averages"> 
 <title>¦rednie jeszcze raz.</title>
 <para>
-W pierwszym przyk³adzie zamie¶cili¶my uwagê: we wszystkich przyk³adach a¿ do punktu 
+W pierwszym przyk³adzie zamie¶cili¶my uwagê: we wszystkich przyk³adach, a¿ do punktu 
 "¦rednie jeszcze raz" <xref linkend="draw3-param-tutorial-types-of-averages">
-zak³adamy ¿e parametr ma opcje '¦rednie liczone jako' ustawiony na warto¶æ 'wynik
+zak³adamy, ¿e parametr ma opcje '¦rednie liczone jako' ustawiony na warto¶æ 'wynik
 zastosowania formu³y na ¶rednich'.
 </para>
 <para>
@@ -2100,7 +2100,7 @@ zmienna t = godzina 23:50, zmienna pt = PT_MIN10
 </para>
 <para>
 Teraz zmieniamy opcje z '¦rednie liczone jako' na '¶rednia z zastosowania formu³y
-dla ka¿dej próbki'. Co siê zmieni³o? Zmiana polega na tym ¿e program przegl±daj±cy
+dla ka¿dej próbki'. Co siê zmieni³o? Zmiana polega na tym, ¿e program przegl±daj±cy
 zaczyna liczyæ ¶rednie "sam". Program przegl±daj±cy, niezale¿nie od tego jak±
 ¶redni± bêdziemy rysowa³, zawsze wywo³a formu³ê dla warto¶ci 10-minutowych i
 z tak otrzymanych wyników obliczy warto¶æ ¶redni±. Wracaj±c do analizowanego przyk³adu roku,
@@ -2209,10 +2209,10 @@ rozdzielczo¶æ z jak± SZARP trzyma dane w archiwum.
 </note>
 </para>
 <para>
-Istnieje kilka powodów dla których w programie przegl±daj±cym
+Istnieje kilka powodów, dla których w programie przegl±daj±cym
 (a w ogólno¶ci w systemie SZARP) mamy te dwa rodzaje parametrów.
 Przede wszystkim, niektóre parametry ze wzglêdu na swoje cechy ³atwiej
-jest zapisaæ jako takie które bêdzie siê liczyæ sposobem drugim. 
+jest zapisaæ jako takie, które bêdzie siê liczyæ sposobem drugim. 
 </para>
 <para>
 We¼my np. parametr licz±cy iloraz warto¶ci jakich¶ dwóch parametrów
@@ -2241,8 +2241,8 @@ v = (
     ) / (24 * 6)
 </programlisting>
 Dok³adnie to daje nam drugi sposób. Zapisanie takiej operacji
-dla parametru którego ¶rednie liczone s± sposobem pierwszym by³oby zadaniem
-znacznie bardziej czasoch³onnym (szczególnie gdyby¶my chcieli ¿eby parametr
+dla parametru, którego ¶rednie liczone s± sposobem pierwszym by³oby zadaniem
+znacznie bardziej czasoch³onnym (szczególnie gdyby¶my chcieli, ¿eby parametr
 zachowywa³ siê poprawnie dla ka¿dego rodzaju ¶rednich).
 </para>
 <para>
@@ -2274,15 +2274,15 @@ nie mia³oby sensu.
 <title>Uwaga o warto¶ciach 10 sekundowych.</title>
 <para>
 Nasz krótki przewodnik starannie omija³ do tej pory ¶rednie 10-sekundowe.
-Z tego powodu ¿e te ¶rednie s± traktowane w sposób odrobinê odmienny,
-przede wszystkim dlatego ze pojawi³y siê w SZARPie znacznie pó¼niej ni¿
-same parametry definiowalne a tak¿e nie s± synchronizowane na lokalny
+Z tego powodu, ¿e te ¶rednie s± traktowane w sposób odrobinê odmienny.
+Przede wszystkim dlatego, ¿e pojawi³y siê w SZARPie znacznie pó¼niej ni¿
+same parametry definiowalne, a tak¿e nie s± synchronizowane na lokalny
 komputer u¿ytkownika.
 </para>
 <para>
-Wspomniana odmienno¶æ ta sprowadza siê do zachowania parametrów których
+Wspomniana odmienno¶æ sprowadza siê do zachowania parametrów, których
 ¶rednie liczone s± jako "¶rednia zastosowania formu³y dla ka¿dej próbki".
-Napisali¶my w poprzednim rozdziale ¿e dla takich parametrów, niezale¿nie
+Napisali¶my w poprzednim rozdziale, ¿e dla takich parametrów niezale¿nie
 od tego jakiego rodzaju ¶redni± ogl±damy i tak zawsze formu³a bêdzie
 liczona dla pt = PT_MIN10. To nie mia³o by sensu w przypadku ¶rednich
 10-sekundowych oczywi¶cie, dlatego te¿ ta zasada ich nie dotyczy. 

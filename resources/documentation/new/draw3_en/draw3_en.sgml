@@ -75,7 +75,7 @@ This chapter describes:
 <section id="draw3-base-run">
 <title>Starting the program</title>
 <para>
-The program will usually run the program using the Control Center SZARP (SCC). Just click the left mouse button on the icon and choose an interesting SCC us heating plant or substation (more information about SCC can see the <ulink url = "http://szarp.org/szarp/doc/scc/html/scc.html">Control Center SZARP</ulink> [<ulink url="http://szarp.org/szarp/doc/pdf/scc-article.pdf"> pdf </ulink>]). The start (here on Linux) is shown below:
+Typically, you will run the program Handle ± c the program SZARP Control Center (SCC). Just click the left mouse button on the icon and choose an interesting SCC us heating plant or substation (more information about SCC can see the <ulink url = "http://szarp.org/szarp/doc/scc/html/scc.html">Control Center SZARP</ulink> [<ulink url="http://szarp.org/szarp/doc/pdf/scc-article.pdf"> pdf </ulink>]). The start (here on Linux) is shown below:
 <figure><title>SZARP Control Center - launch the viewer (Linux)</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-scc.png"></imageobject>
@@ -489,7 +489,7 @@ Also, changing the type of output will average Split cursor mode.
 The program allows you to view the sum of the parameters for the selected time range.
 Aggregation is active only for some parameters - where it makes sense and is a physical
 integration is implemented as a discrete graph. For example, if we plot the boiler output
-(ie energy / time), the sum will show us the amount of energy produced.
+(ie energy/time), the sum will show us the amount of energy produced.
 </para>
 <para> Summation window for the selected set of charts turn by choosing
 <guimenu>View</guimenu> and <guimenu>Summary window</guimenu>, by ckicking the icon
@@ -549,7 +549,8 @@ Several sets of charts allows you to calculate the ratio of the charts. The calc
 </mediaobject></figure>
 </para>
 <para>
-The ratio is calculated values for all samples visible in the graphs. In order to obtain relative values for different range of data, use the cursor rozdwojonego (more on Split cursor - <xref linkend="draw3-ext-doublecursor">).
+The ratio is calculated values for all samples visible in the graphs. In order to obtain relative values for different range of data, use the cursor 
+divided into two (more on Split cursor - <xref linkend="draw3-ext-doublecursor">).
 </para>
 <para>
 The ratio value is calculated based on the average of the samples selected time (eg, month). You can switch between the average timing, but remember that this will leave the Split cursor  mode.
@@ -564,8 +565,8 @@ to the list of "Average values". It shows the average, minimum, maximum, and
 (if the selected parameter that makes sense) the total value of the specified period of time.
 </para>
 <para>
-To open the window with the averages, select  <guimenu> File </guimenu> and <guimenu> Values
-Medium </guimenu>. By default, the chart to calculate the average, will be selected first niewygaszony graph of the current system. Also, by default, the time range will be set on the basis of the current system. Of course, you can change the chart and the time span before the calculations. After setting all values click <guibutton> OK </guibutton>. In the <emphasis> Values </emphasis>
+To open the window with the averages, select <guimenu> File </guimenu> and <guimenu> Values
+Medium </guimenu>. By default, the chart to calculate the average, will be selected first working graph of the current system. Also, by default, the time range will be set on the basis of the current system. Of course, you can change the chart and the time span before the calculations. After setting all values click <guibutton> OK </guibutton>. In the <emphasis> Values </emphasis>
 appear in the calculated values for a given parameter.
 </para>
 <para>
@@ -639,7 +640,7 @@ It is possible to increase or decrease the scale of the graph. To this end, the 
 </mediaobject></figure>
 </para>
 <para>
-To return to the original scale choose <guimenu>  Graph </guimenu> and <guimenu> Zoom graph </guimenu> or use the keyboard shortcut <keycode> Ctrl +- </keycode>.
+To return to the original scale choose <guimenu> Graph </guimenu> and <guimenu> Zoom graph </guimenu> or use the keyboard shortcut <keycode> Ctrl +- </keycode>.
 </para>
 <para>
 XY charts can be printed by choosing <guimenu>File</guimenu> and
@@ -661,13 +662,13 @@ Extension of XY charts are graphs XYZ. XYZ charts show the relationship between
 values of the three parameters simultaneously. For a given period of time and the average program
 draw3 collects three values of selected parameters for each of the points in time of the given
 interval (eg, for an average day will be a medium for each hour of the selected
-range). Yes selected three of the points in the three-dimensional przestrzni
+range). Yes selected three of the points in the three-dimensional space
 underlying the chart being built. These points are then spread on the grid 24 to 24
-mesh points are points wygenerowango chart with coordinates Xo, YSR, Yo. where
+mesh points are points generate chart with coordinates Xo, YSR, Yo. where
 Xo and Zo respectively, x and z coordinates of the center of the eye, and the average value of YSR
-s which contain all the points in the mesh (the averaging odpowienik
+s which contain all the points in the mesh (the averaging equivalent in
 for the XY chart). 3D charts are two forms - point and "Surface", the chart
-point is one in which draw3 rysje just the chart, and the chart "p³aszczynowy"
+point is one in which draw3 rysje just the chart, and the chart "plane"
 is a graph in which the same program in addition to the triangulation of these points draw
 points (at any time while watching chart you can switch between
 the two modes by pressing the <keycode>space bar</keycode>.
@@ -680,15 +681,16 @@ When selected, you will see a window to select the parameters, and the time rang
 </mediaobject></figure>
 </para>
 <para>
-If you specify parameters and the time interval, press the OK button. This should retrieve data from the database and otwartcie graph window.
+If you specify parameters and the time interval, press the OK button. This should retrieve data from the database and open graph window.
 </para>
 <para>
-At the top of the window there is a menu <guimenu> Chart </guimenu> of options allowing you to: modify the parameters akutalnych graph, chart printing, print preview, page setup, closing the current window and menu <guimenu> Help </guimenu>.
+At the top of the window there is a menu <guimenu> Chart </guimenu> of options allowing you to: modify the parameters 
+at a time graph, chart printing, print preview, page setup, closing the current window and menu <guimenu> Help </guimenu>.
 </para>
 <para>
 Below you will find the main part of the menu window containing the relevant graph. In the upper left corner of the window is displayed
 akutalnej information about the cursor position. The cursor is represented on the graph as a white cube, whose position can be changed using the cursor keys.
-You can also make setting the cursor on a specific point, that point by clicking the left mouse klawisem.
+You can also make setting the cursor on a specific point, that point by clicking the left mouse key.
 <figure>
 <title>Chart XYZ</title>
 <mediaobject>
@@ -698,7 +700,7 @@ You can also make setting the cursor on a specific point, that point by clicking
 <para>
 The chart you can move (changing the position of "point of view" of the observer) using the following keys:
 <itemizedlist>
-<listitem><para><keycode>w</keycode> - move forward </para></listitem>
+<listitem><para><keycode>w</keycode> - move forward</para></listitem>
 <listitem><para><keycode>s</keycode> - move back</para></listitem>
 <listitem><para><keycode>a</keycode> - move left</para></listitem>
 <listitem><para><keycode>d</keycode> - move right</para></listitem>
@@ -713,7 +715,7 @@ The movement back and forth can also be done using the mouse wheel (for latopie 
 sliding your finger along the right edge of it.
 </para>
 <para>
-In addition to changing the position obserwartora you can also rotate the graph. To rotate the graph, press and hold the right mouse button, and then start
+In addition to changing the position observer you can also rotate the graph. To rotate the graph, press and hold the right mouse button, and then start
 move the mouse pointer. Mouse movement in the vertical direction causes rotation of the X axis chart, and mouse movements in a horizontal direction rotation chart
 about the axis Y.
 </para>
@@ -870,7 +872,7 @@ to each point corresponds to:
 <itemizedlist>
 <listitem><para>
 The final value of the period represented by the point (like the
-Annual screen each point will represent the value of the parameter of ostaniego
+Annual screen each point will represent the value of the parameter of last
 day of the month 23:50 hours)
 </para></listitem>
 <listitem><para>
@@ -880,7 +882,7 @@ from 23:50 on the last day of the month and 0:00 of the first day of the month)
 </para></listitem>
 </itemizedlist>
 Change this setting to make the context menu
-right click on this parameter in the parameter list. main
+right click on this parameter in the parameter list. Main
 sense of the existence of this option is that for some parameters more
 interesting from that which was the average value of a parameter in a given period,
 This is the value accepted this parameter, eg at the end of the month or
@@ -905,7 +907,7 @@ parameters you can add to your set of charts
 (see: <xref linkend="draw3-ext-chartset">).
 </para>
 <para>
-To define your own parameter choose <guimenu>Tool </guimenu> and then <guimenu>User parameters</guimenu> (you can also use the keyboard shortcut  <keycode> Ctrl + U </keycode>). You will be following a new window:
+To define your own parameter choose <guimenu>Tool </guimenu> and then <guimenu>User parameters</guimenu> (you can also use the keyboard shortcut <keycode> Ctrl + U </keycode>). You will be following a new window:
 <figure>
 <title>The beginning of the creation of a formula parameter</title>
 <mediaobject>
@@ -943,7 +945,7 @@ calculated parameter.
 </itemizedlist>
 <para>
 values of other parameters. For more on this topic, see
-<xref linkend="draw3-ext-luamath"> oraz w 
+<xref linkend="draw3-ext-luamath"> and in
 <ulink url="http://szarp.org/szarp/doc/ipk/html/draw-definable-lua.html">documentation
 SZARP technical system</ulink>.
 </para>
@@ -1012,7 +1014,7 @@ messages, click <guibutton>Hide</guibutton> close the window.
 <para>
 Using the viewer can place and view comments - text messages assigned to a specific configuration, and when over time.
 Comments are global in nature, created by you comments will be available for all users of the viewer, who also have
-skonifgurowan± support for comments and the appropriate privileges allowing them to watch the comments for your system. The program browsing
+support for comments and the appropriate privileges allowing them to watch the comments for your system. The program browsing
 distinguishes between two types of comments: relating to the system and the related set of graphs in a single system.
 </para>
 <section id="draw3-ext-remarks-configuration">
@@ -1020,13 +1022,13 @@ distinguishes between two types of comments: relating to the system and the rela
 <para>
 <note>
 <para>
-If you do not istalowa³e¶ SZARP system itself, but using it to heat or other place where the program was configured by the service,
+If you do not installed SZARP system itself, but using it to heat or other place where the program was configured by the service,
 presumably you have configured support for comments - you can skip this section.
 </para>
 </note>
 Before you can use the comments you are reading program set up to send and receive them. To set up a comments
 you need to know: server address comments and your username and password on the server. In order to obtain them, contact your IT department.
-Then, in the <guimenu>Tools menu</guimenu> in the main window, in the sub-<guimenu> Settings </guimenu> click on <guimenu> Comments </guimenu>. The following window will appear dialogowei in which
+Then, in the <guimenu>Tools menu</guimenu> in the main window, in the sub-<guimenu> Settings </guimenu> click on <guimenu> Comments </guimenu>. The following window will appear transcript in which
 you must enter the above information:
 <figure> <title>Setting up comments</title>
 <mediaobject>
@@ -1052,7 +1054,7 @@ will connect to the server and retrieve new comments without having to select th
 <title>View comments </title>
 <para>
 The list of comments relating to the currently viewed by you get the system you select <guimenu> Show Comments </guimenu>
-from menu <guimenu> Comments </guimenu> (in the <guimenu> Tools menu </guimenu>). Receive the same list by clicking on the icon comments
+from menu <guimenu> Comments </guimenu> (in the <guimenu> Tools menu</guimenu>). Receive the same list by clicking on the icon comments
 <inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-remark_icon.png"></imageobject></inlinemediaobject>.
 </para>
 <para>
@@ -1087,7 +1089,7 @@ that it will contain only the comments relating to the said compartment.
 <para>
 The program also allows browsing to create comments. To add a new comment, select <guimenu> Add comment </guimenu>
 from menu <guimenu> Comments </guimenu>, located in the <guimenu> Tools menu </guimenu>. A window will appear where you can enter the title of the comment
-its content, and choose whether to cover the entire comment object or set of charts akutalnego. The time by which
+its content, and choose whether to cover the entire comment object or set of charts current. The time by which
 will refer Comments are, it is time akutalnie indicated by the cursor on the time charts.
 After entering the title and the content of the comment, press the "Add" button, it will send a comment
 the server.
@@ -1139,7 +1141,7 @@ then the name of the configuration (eg for Bytów Bytom) and extension <filename>
 <para>
 The program gives selected users browsing remote tasks
 ZET controller parameters used in the plants Newtermu. Access to this
-functionality requires an account on the server and odpowmednich Newtermu rights
+functionality requires an account on the server and appropriate Newtermu rights
 access to the parameters of each plant.
 </para>
 <para>
@@ -1426,11 +1428,10 @@ The program allows you to search browsing moments in time, that meet the criteri
 <para>
 To access this feature, select the menu <guimenu> Tools </guimenu> option <guimenu> Search date </guimenu>. A window similar to the window used for editing definable parameters
 (see: <xref linkend="draw3-ext-parametersset">). This similarity arises from the fact that the search terms are in the form LUA
- language and are
-really specific parameters, which instead of a numerical value to zwarcaæ logic '1 ', the criterion for a given moment in time
+language and are really specific parameters, which instead of a numerical value to return logic '1 ', the criterion for a given moment in time
 is satisfied or '0 ', when the criterion is not met. Introduction of the criterion is made in exactly the same way as editing user parameters. </para>
 <note><para> At the same time as a logical '1 ', it really means anything that is not numerical 0th
-You can also use the LUA language constants true and false (but if you do not have to make better use of numerical values, because this will allow zoptymaliowanie
+You can also use the LUA language constants true and false (but if you do not have to make better use of numerical values, because this will allow optimize
 such criteria by the optimizer).
 </para></note>
 <para>
@@ -1494,7 +1495,7 @@ works for all types of medium, can be used together with split cursor
 </row>
 
 <row>
-<entry align="left">U³atwienie wyszukiwania zestawów wykresów </entry>
+<entry align="left">Facilitating the search sets of charts </entry>
 <entry>no</entry>
 <entry>new function</entry>
 <entry align="left"><xref linkend="draw3-base-charts"></entry>
@@ -1566,7 +1567,7 @@ works for all types of medium, can be used together with split cursor
 <section id="draw3-ext-shortcuts">
 <title>Keyboard shortcuts</title>
 <para>
-Zmiana trybu wy¶wietlania ¶rednich:
+Changing the display medium:
 <itemizedlist>
 <listitem><para>change display mode for a year - <keycode>Alt + R</keycode></para></listitem>
 <listitem><para>change display mode for to monthly - <keycode>Alt + M</keycode></para></listitem>
@@ -1577,7 +1578,7 @@ Zmiana trybu wy¶wietlania ¶rednich:
 </itemizedlist>
 </para>
 <para>
-Nawigacja:
+Navigation:
 <itemizedlist>
 <listitem><para>shift of 6 samples (in the window with the average 10-minute intervals) - <keycode>Shift + (right arrow or left)</keycode></para></listitem>
 <listitem><para>moving the length of one screen to the left on the chart - <keycode>PgUp</keycode></para></listitem>
@@ -1661,14 +1662,12 @@ Other:
 <section id="raison-d-etre">
 <title>What is this document?</title>
 <para>
-SZARP system documentation describes the parameters definable Lua,
-It does, however, in such a way that it can be found that there is a
-rather Reference, information collected there are for
-someone who already knows what it definable parameters. The assumption
-This appendix is intended to introduce the user to the parameters
-definable, so that the parameters of the LUA could be started easily
-use person without any previous knowledge of how these parameters
-operate. Confine ourselves to definable parameters of the program
+SZARP system documentation describes the parameters definable Lua, which are rather Reference.
+The information collected there are for
+someone who already knows what it definable parameters. 
+The aim of this addition is the introduction of user-definable parameters,
+so that the parameters of the LUA could begin to use freely those who have no knowledge of how these parameters. 
+Confine ourselves to definable parameters of the program
 browsing because only the user client applications
 SZARP system can directly create and edit.
 </para>
@@ -1707,22 +1706,22 @@ definable to get the desired value.
 <para>
 And whence the name of definable parameters LUA? Definable parameters LUA
 are called so because their record is used scripting language LUA.
-Lua is quite popular language syntax based on C / Pascal,
-people who know a little programming seeing the example code in LUA
+It is quite a popular language with a syntax based on C / Pascal, 
+a person familiar with the basics of seeing the example code in LUA
 certainly quickly find familiar structures.
 </para>
 </section>
 <section>
 <title>The beginnings.</title>
 <para>
-By adding a new parameter write a piece of code in LUA. this piece of
+By adding a new parameter write a furnaces of code in LUA. This piece of
 code (often called a formula) calculates the value of the parameter, and this calculated
 by the formula value is exactly what the program browsing
 applied to the chart.
 </para>
 <para>
-Let's move quickly to the example, run the program browsing
-and add a new parameter definable (details of how to use
+Let's move quickly to the example, you must first run the program browsing
+and add a new parameter definable(details of how to use
 draw3 program to add a new parameter, see the documentation
 draw3) with the following formula:
 <programlisting>
@@ -1730,7 +1729,7 @@ v = 1
 </programlisting>
 <note>
 <para>
-We wszystkich przyk³adach a¿ do punktu "¦rednie jeszcze raz"
+In all embodiments it to the "average again"
 <xref linkend="draw3-param-tutorial-types-of-averages">
 we assume that the parameter has the options 'Average counted as' set to
 'the result of application of the formula for the average'.
@@ -1744,7 +1743,7 @@ was to be expected, and how did it happen?
 If we are still at the beginning of 2012 is a program browsing
 made formula 12 times wanting to know what is the value
 parameter for the January 2012, February 2012, etc. The program browsing
-after the formula checks to see what is in the variable v. This is what formula
+after the formula, which is subsequently checked in variable v. This is what formula
 assigns the variable is considered to be the value of the parameter. And because our formula
 does nothing but sets the variable v 1, no worries
 with anything, then our parameter is the graph form horizontal
@@ -1754,12 +1753,12 @@ mark.
 <section> 
 <title>Time, that is, the variable 't'.</title>
 <para>
-Now let's do something a little more interesting, przestawmy draw3 on window
+Now let's do something a little more interesting, switch draw3 on window
 the 10-minute (day) and change our formula to:
 <programlisting>
 v = math.sin(t * 2 * 3.14 / 3600 / 12)
 </programlisting>
-We'll see on the screen two sinusoid. The undoubted progress if
+On the screen we see two sine wave. The undoubted progress if
 in terms of visual appeal.
 Our new parameter is no longer a horizontal line, its value depends on
 from time. The secret lies in the use of the variable 't'. it is
@@ -1777,7 +1776,7 @@ at 0:40, November 24 at 0:50, November 24 at 01:00
 <para>
 Time variable t is stored as a number, the number of seconds from a
 contractual time '0 '. It sounds quite mysterious but in practice, when we write
-parameters do not have to think as time is saved. this example
+parameters do not need to remember how time is recorded. This example
 is properly taken into account the representation of the exception because the variable t, so
 to fit in 24 2 sine wave.
 </para>
@@ -1837,7 +1836,7 @@ We already know more or less how the parameters from the browser software
 and we have seen some examples of formulas. But we can not really do
 still nothing worth attention, we can make the parameters whose values depend on
 from the time that the parameters assume the values dependent on the medium for which it
-count, but it still is not.
+count, but it is still not enough.
 </para>
 <para>
 We need the ability to appeal in our formulas to other parameters
@@ -1865,7 +1864,7 @@ a copy of the parameter 'external temperature'.
 What's going on here?
 </para>
 <para>
-Here, the parameter canceled the value of another parameter. it
+Here, the parameter canceled the value of another parameter. It
 just makes design p ("xxxx: Network:External temperature controller, t, pt),
 namely the function p function retrieves the value of the parameter p, adopt
 it three parameters:
@@ -1943,13 +1942,13 @@ v = p ("xxxx:Network:External temperature controller, t, PT_MIN10) - p("xxxx:Net
 </programlisting>
 </para>
 <para>
-And in fact, the parameter returns what we want. As you can see it can be done so
+And in fact, the parameter returns what we want. As you can see it can be done so in such a way so
 but manual operation on the value of the variable t is inconvenient, so the
 in formulas browser software we have available function szb_move_time.
 Szb_move_time function takes 3 parameters: start time, if units
 you must move the start time, the offset. That's what this
 This function returns the offset time value. Before we give an example
-is yet to clarify what's going on with these units. by means of
+is yet to clarify what's going on with these units. By means of
 function szb_move_time time we move a certain amount: years, months,
 days, weeks, periods of 8-hour and 10-minute increments. They correspond closely types
 medium-sized screens draw3 program. Designations units are also the same
@@ -1992,7 +1991,7 @@ monthly, daily temperature rise between days, etc.
 <para>
 <programlisting>
 local previous_time = szb_move_time (t, -1 pt)
-v = p ("xxxx:Network:External temperature controller", t, pt) - p("xxxx: Network:External temperature controller", poprzedni_czas, pt)
+v = p ("xxxx:Network:External temperature controller", t, pt) - p("xxxx: Network:External temperature controller", previous_time, pt)
 </programlisting>
 </para>
 
@@ -2002,7 +2001,7 @@ v = p ("xxxx:Network:External temperature controller", t, pt) - p("xxxx: Network
 <para>
 In the first example is contained note: in all the examples to the point
 "Average again" <xref linkend="draw3-param-tutorial-types-of-averages">
-we assume that the parameter has the options' Average counted as' set to 'score
+we assume that the parameter has the options 'Average counted as' set to 'score
 application of the formula for the average '.
 </para>
 <para>
@@ -2012,7 +2011,7 @@ Now is the time to explain what's going on.
 Recall again the reading program draws a graph parameter.
 </para>
 <para>
-Suppose that we are at the beginning of the screen on an annual basis. The program browsing
+For starters, let's assume that we are on the screen annually. The program browsing
 must draw 12 points, the average monthly for each month of the year.
 Therefore, the formula produces parameter 12 times for each time setting the following
 the variables t and pt:
@@ -2078,8 +2077,8 @@ Now change the options on the 'Average counted as' on' the average of the applic
 for each sample. "What has changed? The change lies in the fact that the program browsing
 begins to count the mean "alone." Browsing program, regardless of whether they
 average we draw, always calls the formula for the 10-minute and
-from the results thus obtained calculate the average value. Returning to our example year
-Our formula is made with such parameters:
+from the results thus obtained calculate the average value.  Returning to the analyzed example, 
+our formula is made with such parameters:
 <itemizedlist>
 <listitem><para>
 variable t = 1 day of January, hour 0:00, the variable pt = PT_MIN10
@@ -2215,7 +2214,7 @@ v = (
         + (A-values for 23:50 hour) / (value of B for 23:50 hour)
     ) / (24 * 6)
 </programlisting>
-This is exactly what gives us another way to save such an operation
+Exactly this gives us another way. Writing such an operation
 parameter which averages are calculated first way would be to task
 much more time-consuming (especially if we wanted to parameter
 behaved correctly for each type of medium).
@@ -2239,7 +2238,7 @@ while isnan(v) and i < 10 do
 end
 </programlisting>
 This parameter performs a simple task - trying to make a hole in the data
-parameter "boiler efficiency". If for a given 10-minutówki no time
+parameter "boiler efficiency". If for a given 10-minute no time
 value of the parameter, then the formula is trying to generate it from the underlying
 next. For this formula the values of counting a first method, the
 would not make sense.
