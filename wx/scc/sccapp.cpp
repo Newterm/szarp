@@ -210,13 +210,12 @@ SCCMenu* SCCApp::CreateMainMenu() {
 #ifdef MINGW32
 		smenu = SCCMenu::ParseMenu(wxString(SC::A2S(buffer)));
 #else
-		setlocale(LC_CTYPE, "");
-		char* enc = nl_langinfo(CODESET);
-
-		if (0 != strncmp(enc, "UTF-8", strlen(enc))) {
-			smenu = SCCMenu::ParseMenu(wxString(SC::A2S(buffer)));
-		} else {
+		try {
 			smenu = SCCMenu::ParseMenu(wxString(SC::U2S((unsigned char *)buffer)));
+		}
+		catch (const std::runtime_error& ex) {
+			wxLogWarning(_T("Decoding szarp.cfg from UTF-8 failed, trying ISO-8859-2"));
+			smenu = SCCMenu::ParseMenu(wxString(SC::A2S(buffer)));
 		}
 #endif  /* MINGW32 */
 		free(buffer);
