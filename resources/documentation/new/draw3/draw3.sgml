@@ -75,7 +75,7 @@ Ten rozdzia³ opisuje:
 <section id="draw3-base-run">
 <title>Uruchomienie programu</title>
 <para>
-Program bêdziesz zwykle uruchamiaæ pos³uguj±c siê programem Centrum Sterowania SZARP (SCC). Wystarczy klikn±æ lewym przyciskiem myszki na ikonê SCC i wybraæ interesuj±c± nas ciep³owniê lub wêze³ cieplny (wiêcej informacji o SCC mo¿esz znale¼æ w dokumencie <ulink url="http://szarp.org/szarp/doc/scc/html/scc.html">Centrum Sterowania SZARP</ulink> [<ulink url="http://szarp.org/szarp/doc/pdf/scc-article.pdf">pdf</ulink>]). Proces uruchomienia (tutaj na systemie Linux) jest widoczny poni¿ej:
+Zwykle bêdziesz uruchamiaæ program pos³uguj±c siê programem Centrum Sterowania SZARP (SCC). Wystarczy klikn±æ lewym przyciskiem myszki na ikonê SCC i wybraæ interesuj±c± nas ciep³owniê lub wêze³ cieplny (wiêcej informacji o SCC mo¿esz znale¼æ w dokumencie <ulink url="http://szarp.org/szarp/doc/scc/html/scc.html">Centrum Sterowania SZARP</ulink> [<ulink url="http://szarp.org/szarp/doc/pdf/scc-article.pdf">pdf</ulink>]). Proces uruchomienia (tutaj na systemie Linux) jest widoczny poni¿ej:
 <figure> <title>Centrum Sterowania SZARP - uruchomienie programu przegl±daj±cego (pod Linuxem)</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-scc.png"></imageobject>
@@ -247,7 +247,7 @@ W celu sprawniejszego przechodzenia do interesuj±cych Ciê dat mo¿esz skorzystaæ 
 Pozwoli Ci ono na szybsze przemieszczenie kursora pod interesuj±c± datê.
 </para>
 <para>
-Je¶li wiesz, ¿e za chwilê bêdziesz wracaæ do konkretnego miejsca wykresu, mo¿esz u¿yæ kopiowania lokalizacji. Pozwoli Ci wróciæ w krótkim czasie w zapamiêtane miejsce. W tym celu z menu wybierz <guimenu>Narzêdzia</guimenu> i <guimenu>Kopiuj lokalizacjê</guimenu> albo u¿yj skrótu klawiszowego <keycode>Ctrl + C</keycode>. ¯eby powróciæ do tego miejsca z menu wybierz <guimenu>Narzêdzia</guimenu> i <guimenu>Wklej lokalizacjê</guimenu> albo u¿yj skrótu klawiszowego <keycode>Ctrl + V</keycode>.
+Je¶li wiesz, ¿e za chwilê bêdziesz wracaæ do konkretnego miejsca wykresu, mo¿esz u¿yæ kopiowania lokalizacji. Pozwoli Ci to wróciæ w krótkim czasie w zapamiêtane miejsce. W tym celu z menu wybierz <guimenu>Narzêdzia</guimenu> i <guimenu>Kopiuj lokalizacjê</guimenu> albo u¿yj skrótu klawiszowego <keycode>Ctrl + C</keycode>. ¯eby powróciæ do tego miejsca z menu wybierz <guimenu>Narzêdzia</guimenu> i <guimenu>Wklej lokalizacjê</guimenu> albo u¿yj skrótu klawiszowego <keycode>Ctrl + V</keycode>.
 </para>
 <note>
 <para>
@@ -881,7 +881,7 @@ sens istnienia tej opcji jest taki, ¿e dla niektórych parametrów bardziej
 interesuj±ce od tego jak± by³a ¶rednia warto¶æ parametru w danym okresie,
 jest to jak± warto¶æ przyjmowa³ ten parametr np. pod koniec miesi±ca lub
 o ile w tym okresie warto¶æ parametru wzros³a. Szczególnie jest to przydatne 
-w przypadku parametrów reprezentuj±cych róznego rodzaju liczniki.
+w przypadku parametrów reprezentuj±cych ró¿nego rodzaju liczniki.
 </para>
 <para>
 <figure><title>Zmiana rodzaju warto¶ci reprezentowanych przez punkt</title>
@@ -923,7 +923,7 @@ z wykresu lub program mozê wyliczyæ formu³ê dla wszystkich warto¶ci 10-mintowych
 i z nich wyci±gn±æ ¶redni±.
 </para>
 <para>
-O co tu chodzi - program rysuj±c wykres warto¶ci paramerów standardowo pos³uguje siê
+Program rysuj±c wykres warto¶ci paramerów standardowo pos³uguje siê
 warto¶ciami ¶rednimi - np. gdy jeste¶my na ekranie miesiêcznym ka¿demu punktowi na 
 wykresie odpowiada warto¶æ ¶rednia parametru z ka¿dego dnia. Warto¶æ ta w przypadku
 formu³y mo¿e zostaæ wyliczona na dwa sposoby (trzymaj±c siê naszego przyk³adu wykresu
@@ -943,7 +943,7 @@ formu³y parametr <emphasis>pt</emphasis> bêdzie ustawiony na warto¶æ <emphasis>P
 Z tych wszystkich warto¶ci program wyci±gnie ¶redni± i ta zostanie umieszone na wykresie.
 </para></listitem>
 </itemizedlist>
-Oznacza to ¿e formu³y liczone drugim sposobem bêd± wyliczane zawsze
+Oznacza to, ¿e formu³y liczone drugim sposobem bêd± wyliczane zawsze
 na warto¶ciach 10-minutowych, a wszystkie pozosta³e warto¶ci (godzinowe, dobowe, tygodniowe, miesiêczne, roczne) zostan± 
 wyliczone na podstawie warto¶ci 10-minutowych zwróconych przez formu³ê.
 Wyj±tkiem od tego schematu s± warto¶ci 10-sekundowe, dla ¶rednich 10-sekundowych zawsze <emphasis>pt</emphasis>
@@ -1451,7 +1451,7 @@ Wiêcej o pisaniu w³asnych funkcji mo¿esz przeczytaæ w rozdziale <ulink url="http
 Program przegl±daj±cy pozwala na wyszukiwanie momentow w czasie, ktore spe³niaj± zadane przez u¿ytkownika kryteria.
 </para></note>
 <para>
-By uruchomiæ tê funkcjê wybierz z menu <guimenu>Narzêdzia</guimenu>  opcjê <guimenu>Wyszukaj datê</guimenu>. Pojawi siê okno podobne do okna s³u¿±cego do edycji parametrow definiowalnych
+By uruchomiæ t± funkcjê wybierz z menu <guimenu>Narzêdzia</guimenu>  opcjê <guimenu>Wyszukaj datê</guimenu>. Pojawi siê okno podobne do okna s³u¿±cego do edycji parametrow definiowalnych
 (zobacz: <xref linkend="draw3-ext-parametersset">). Podobieñstwo to wynika z faktu, ¿e kryteria wyszukiwania maj± postaæ wyra¿eñ jêzyka LUA i s±
 tak na prawdê specyficznymi parametrami, ktore zamiast warto¶ci liczbowej maj± zwarcaæ warto¶c logiczn± '1', gdy kryterium dla podanej chwili w czasie
 jest spe³nione lub '0', gdy kryterium spe³nione nie jest. Wprowadzenia kryterium dokonuje siê w dok³adnie w takich sam sposob jak edytuje parametry u¿ytkownika.</para>
@@ -1688,13 +1688,12 @@ Inne:
 <title>Po co ten dokument?</title>
 <para>
 Dokumentacja systemu SZARP opisuje parametry definiowalne LUA,
-robi to jednak w taki sposób, ¿e to co tam mo¿na znale¼æ ma charakter
-raczej referencyjny, informacje tam zgromadzone przeznaczone s± dla
+które maj± raczej charakter referencyjny. Informacje tam zgromadzone przeznaczone s± dla
 kogo¶ kto ju¿ wie o co w parametrach definiowalnych chodzi. Za³o¿eniem
 tego dodatku jest wprowadzenie u¿ytkownika do parametrów
 definiowalnych, tak by parametrami LUA mog³y siê zacz±æ swobodnie
-pos³ugiwaæ osoby bez jakiej¶ poprzedniej wiedzy o tym jak te parametry
-dzia³aj±. Ograniczymy siê tylko do parametrów definiowalnych programu
+pos³ugiwaæ osoby, które nie maj± wiedzy na temat dzia³ania tych parametrów.
+Ograniczymy siê tylko do parametrów definiowalnych programu
 przegl±daj±cego bo tylko takie u¿ytkownik aplikacji klienckich
 systemu SZARP mo¿e bezpo¶rednio tworzyæ i edytowaæ.
 </para>
@@ -1704,7 +1703,7 @@ systemu SZARP mo¿e bezpo¶rednio tworzyæ i edytowaæ.
 <para>
 G³ównym zadaniem programu przegl±daj±cego jest rysowanie przebiegów
 warto¶ci parametrów. U¿ytkownik otwiera sobie zestaw wykresów, ustawia
-siê na jakim¶ czasie, a program przegl±daj±cy pobiera warto¶ci parametrów
+siê na wybranym czasie, a program przegl±daj±cy pobiera warto¶ci parametrów
 i dla ka¿dego z przedzia³ów czasowych (punktach na osi X) nanosi na wykres
 warto¶ci parametrów.
 <note>
@@ -1719,7 +1718,7 @@ warto¶ci prezentuje jako wykres parametru.
 </para>
 <para>
 W przypadku parametrów zbieranych bezpo¶rednio przez system SZARP
-(np. temperatura zewnêtrzna), sprawa jest prosta, program przegl±daj±cy
+(np. temperatura zewnêtrzna), sprawa jest prosta, gdy¿ program przegl±daj±cy
 wyci±ga odpowiednie warto¶ci z bazy danych, pytaj±c siê bazy - 
 jaka jest ¶rednia warto¶æ temperatury zewnêtrznej w styczniu 2012, 
 lutym 2012, marcu 2012, itd., a je¿eli bêdziemy na ekranie np. miesi±c
@@ -1733,8 +1732,8 @@ definiowalnego by uzyskaæ ¿±dan± warto¶æ.
 <para>
 A sk±d nazwa parametry definiowalnych LUA? Parametry definiowalne LUA
 s± nazywane tak, poniewa¿ do ich zapisu u¿ywany jest jêzyk skryptowy LUA.
-LUA jest dosyæ popularnym jêzykiem o sk³adni opartej na jêzykach C/Pascal,
-osoby znaj±ce choæ trochê programowanie widz±c przyk³ad kodu w jêzyku LUA,
+Jest on dosyæ popularnym jêzykiem o sk³adni opartej na jêzykach C/Pascal,
+osoby znaj±ce podstawy programowania widz±c przyk³ad kodu w jêzyku LUA,
 na pewno szybko odnajd± znajome konstrukcje.
 </para>
 </section>
@@ -1747,9 +1746,9 @@ przez formu³ê warto¶æ jest dok³adnie tym co program przegl±daj±cy
 nanosi na wykres.
 </para>
 <para>
-Przejd¼my teraz szybko do przyk³adu, uruchommy program przegl±daj±cy
-i dodajmy nowy parametr definiowalny (szczegó³y jak pos³u¿yæ siê
-programem draw3 ¿eby dodaæ nowy parametr znajduj± siê w dokumentacji
+Przejd¼my teraz szybko do przyk³adu, najpier nale¿y uruchomiæ program przegl±daj±cy
+i dodaæ nowy parametr definiowalny (szczegó³y jak pos³u¿yæ siê
+programem draw3, ¿eby dodaæ nowy parametr znajduj± siê w dokumentacji
 draw3) o nastêpuj±cej formule:
 <programlisting>
 v = 1
@@ -1770,7 +1769,7 @@ mo¿na siê by³o spodziewaæ, a jak to siê sta³o?
 Je¿eli ci±gle jeste¶my na pocz±tku roku 2012 to program przegl±daj±cy 
 wykona³ formu³ê 12 razy chc±c siê dowiedzieæ jaka jest warto¶æ
 parametru dla stycznia 2012, lutego 2012, itp. Program przegl±daj±cy
-po wykonaniu formu³y, sprawdza co znajduje siê w zmiennej v. To co formu³a
+po wykonaniu formu³y, kolejno sprawdza co znajduje siê w zmiennej v. To co formu³a
 tej zmiennej przypisze jest uznawane za warto¶æ parametru. A ¿e nasza formu³a
 nie robi nic innego jak tylko przypisuje zmiennej v warto¶æ 1, nie przejmuj±c
 siê czymkolwiek, to i nasz parametr ma na wykresie postaæ poziomej 
@@ -1785,16 +1784,16 @@ warto¶ci 10-minutowych (dzieñ) i zmienimy nasz± formu³ê na:
 <programlisting>
 v = math.sin(t * 2 * 3.14 / 3600 / 12)
 </programlisting>
-Zobaczymy na ekranie dwie sinusoidy. Niew±tpliwy postêp je¶li
+Na ekranie zobaczymy dwie sinusoidy. Niew±tpliwy postêp je¶li
 chodzi o atrakcyjno¶æ wizualn±.
 Nasz nowy parametr nie jest ju¿ poziom± kresk±, jego warto¶æ zale¿y
 od czasu. Tajemnica tkwi w wykorzystaniu zmiennej 't'. To w³a¶nie
 w tej zmiennej, przed wykonaniem formu³y, program przegl±daj±cy
 umieszcza informacje dla jakiego czasu chce uzyskaæ warto¶æ naszego
-parametru. Zak³adaj±c ¿e wybrali¶my dzieñ np. 24 listopada 2012,
+parametru. Zak³adaj±c, ¿e wybrali¶my dzieñ np. 24 listopada 2012,
 to by narysowaæ wykres program przygl±daj±cy wykona³ formu³ê parametru
 24 * 6 (rysujemy wykres dla 24 godzin, a dla ka¿dej godziny pobieramy
-10 minutowe warto¶ci), podstawiaj±c do zmiennej t warto¶ci czasu 
+10 minutowe warto¶ci). Podstawiaj±c do zmiennej t warto¶ci czasu 
 odpowiadaj±cej 24 listopada godzina 00:00, 24 listopada godzina 00:10,
 24 listopada godzina 00:20, 24 listopada godzina 00:30, 24 listopada 
 godzina 00:40, 24 listopada godzina 00:50, 24 listopada godzina 01:00
@@ -1803,7 +1802,7 @@ godzina 00:40, 24 listopada godzina 00:50, 24 listopada godzina 01:00
 <para>
 Czas w zmiennej t zapisany jest jako liczba, ilo¶æ sekund od pewnej
 umownej chwili '0'. Brzmi to dosyæ tajemniczo ale w praktyce, gdy piszemy
-parametry w ogóle nie musimy my¶leæ jak czas jest zapisywany. Ten przyk³ad
+parametry w ogóle nie musimy pamiêtaæ o tym jak czas jest zapisywany. Ten przyk³ad
 jest w³a¶ciwie wyj±tkiem bo uwzglêdnili¶my reprezentacjê zmiennej t, tak
 ¿eby w 24h zmie¶ciæ 2 sinusoidy.
 </para>
@@ -1821,7 +1820,7 @@ dzienne, itd. W odró¿nieniu od zmiennej t, zmienna pt nie przyjmuje warto¶ci
 liczbowej ale tylko jedn± z warto¶ci z okre¶lonego zbioru.
 </para>
 <para>
-Najlepszy bêdzie tu przyk³ad. Zróbmy parametr, który bêdzie przyjmowa³ ró¿n±
+Najlepszy bêdzie tu nastêpuj±cy przyk³ad. Zróbmy parametr, który bêdzie przyjmowa³ ró¿n±
 warto¶æ w zale¿no¶ci od tego jaki przedzia³ czasu jest wybrany w programie
 przegl±daj±cym, oto formu³a:
 <programlisting>
@@ -1863,7 +1862,7 @@ Wiemy ju¿ mniej wiêcej jak wygl±daj± parametry od strony programu przegl±daj±ceg
 i widzieli¶my kilka przyk³adów formu³. Ale tak naprawdê nie mo¿emy zrobiæ
 ci±gle niczego wartego uwagi; mo¿emy robiæ parametry których warto¶ci zale¿±
 od czasu, parametry które przyjmuj± warto¶ci zale¿ne od tego dla jakich ¶rednich je
-liczymy, ale to ci±gle nie jest to. 
+liczymy, ale ci±gle jest to za ma³o. 
 </para>
 <para>
 Potrzebna nam jest mo¿liwo¶æ odwo³ania siê w naszych formu³ach do innych parametrów
@@ -1884,7 +1883,7 @@ wykres temperatury zewnêtrznej, a dostaniemy to o co chodzi.
 </note>
 </para>
 <para>
-Wprowadzamy nowy parametr i widzimy ¿e ten nasz parametr jest wiern±
+Wprowadzamy nowy parametr i widzimy, ¿e ten nasz parametr jest wiern±
 kopi± parametru 'temperatura zewnêtrzna'.
 </para>
 <para>
@@ -1969,7 +1968,7 @@ v = p("xxxx:Sieæ:Sterownik temperatura zewnêtrzna, t, PT_MIN10) - p("xxxx:Sieæ:S
 </programlisting>
 </para>
 <para>
-I faktycznie, parametr zwróci to co chcemy. Jak widaæ da siê to tak zrobiæ
+I faktycznie, parametr zwróci to co chcemy. Jak widaæ da siê to tak zrobiæ w ten sposób,
 ale rêczne operowanie na warto¶ci zmiennej t jest niewygodne, dlatego te¿
 w formu³ach programu przegl±daj±cego mamy dostêpn± funkcjê szb_move_time.
 Funkcja szb_move_time przyjmuje 3 parametry: czas pocz±tkowy, o ile jednostek
@@ -2038,7 +2037,7 @@ Teraz czas wyja¶niæ o co w tym chodzi.
 Przypomnijmy jeszcze raz jak program przegl±daj±cy rysuje wykres parametru.
 </para>
 <para>
-Za³ó¿my na pocz±tek ¿e jeste¶my na na ekranie rocznym.  Program przegl±daj±cy
+Na pocz±tek za³ó¿my, ¿e jeste¶my na na ekranie rocznym.  Program przegl±daj±cy
 musi narysowaæ 12 punktów, ¶rednich miesiêcznych dla ka¿dego miesi±ca w roku.
 Wobec tego wywo³uje formu³ê parametru 12 razy za ka¿dy razem ustawiaj±c nastêpuj±ce
 warto¶ci zmiennych t i pt:
@@ -2080,7 +2079,7 @@ zmienna t = 31 dzieñ marca, godzina 00:00, zmienna pt = PT_MONTH
 </itemizedlist>
 </para>
 <para>
-Za³ó¿my teraz ¿e jeste¶my na okresie dzieñ, wtedy program zrobi tak:
+Za³ó¿my teraz, ¿e jeste¶my na okresie dzieñ, wtedy program zrobi tak:
 <itemizedlist>
 <listitem><para>
 zmienna t = godzina 00:00, zmienna pt = PT_MIN10
@@ -2100,11 +2099,11 @@ zmienna t = godzina 23:50, zmienna pt = PT_MIN10
 </itemizedlist>
 </para>
 <para>
-Teraz zmieniamy opcje na '¦rednie liczone jako' na '¶rednia z zastosowania formu³y
+Teraz zmieniamy opcje z '¦rednie liczone jako' na '¶rednia z zastosowania formu³y
 dla ka¿dej próbki'. Co siê zmieni³o? Zmiana polega na tym ¿e program przegl±daj±cy
 zaczyna liczyæ ¶rednie "sam". Program przegl±daj±cy, niezale¿nie od tego jak±
 ¶redni± bêdziemy rysowa³, zawsze wywo³a formu³ê dla warto¶ci 10-minutowych i
-z tak otrzymanych wyników obliczy warto¶æ ¶redni±. Wracaj±c do naszego przyk³adu roku,
+z tak otrzymanych wyników obliczy warto¶æ ¶redni±. Wracaj±c do analizowanego przyk³adu roku,
 nasza formu³a zostanie wykonana z takimi parametrami:
 <itemizedlist>
 <listitem><para>
@@ -2241,7 +2240,7 @@ v = (
 	+ (warto¶æ A dla godziny 23:50) / (warto¶æ B dla godziny 23:50)
     ) / (24 * 6)
 </programlisting>
-To jest dok³adnie to co daje nam drugi sposób, zapisanie takiej operacji
+Dok³adnie to daje nam drugi sposób. Zapisanie takiej operacji
 dla parametru którego ¶rednie liczone s± sposobem pierwszym by³oby zadaniem
 znacznie bardziej czasoch³onnym (szczególnie gdyby¶my chcieli ¿eby parametr
 zachowywa³ siê poprawnie dla ka¿dego rodzaju ¶rednich).

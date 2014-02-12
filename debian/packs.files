@@ -88,9 +88,6 @@ Files: opt/szarp/bin/isledit
 Files: opt/szarp/resources/locales/pl_PL/LC_MESSAGES/isledit.mo
 Files: usr/share/inkscape/extensions/isledit.inx
 
-Package: szarp-mobile
-Files: opt/szarp/bin/mobilemgr
-
 Package: szarp-sssweb
 Files: var/cache/pylons-sssweb
 Files: etc/szarp/ssweb*

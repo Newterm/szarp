@@ -37,7 +37,7 @@ Learn more:
 <para>about navigating the charts - <xref linkend="draw3-base-graphsnavigation"></para>
 </listitem>
 <listitem>
-</para>about defining your own set of charts - <xref linkend="draw3-ext-chartset"></para>
+<para>about defining your own set of charts - <xref linkend="draw3-ext-chartset"></para>
 </listitem>
 <listitem>
 <para>keyboard shortcuts - <xref linkend="draw3-ext-shortcuts"></para>
@@ -75,8 +75,8 @@ This chapter describes:
 <section id="draw3-base-run">
 <title>Starting the program</title>
 <para>
-The program will usually run the program using the Control Center SZARP (SCC). Just click the left mouse button on the icon and choose an interesting SCC us heating plant or substation (more information about SCC can see the <ulink url = "http://szarp.org/szarp/doc/scc/html/scc.html">Control Center SZARP</ulink> [<ulink url="http://szarp.org/szarp/doc/pdf/scc-article.pdf"> pdf </ ulink>]). The start (here on Linux) is shown below:
-<figure> <title> SZARP Control Center - launch the viewer (Linux) </title>
+The program will usually run the program using the Control Center SZARP (SCC). Just click the left mouse button on the icon and choose an interesting SCC us heating plant or substation (more information about SCC can see the <ulink url = "http://szarp.org/szarp/doc/scc/html/scc.html">Control Center SZARP</ulink> [<ulink url="http://szarp.org/szarp/doc/pdf/scc-article.pdf"> pdf </ulink>]). The start (here on Linux) is shown below:
+<figure><title>SZARP Control Center - launch the viewer (Linux)</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-scc.png"></imageobject>
 </mediaobject></figure>
@@ -92,7 +92,6 @@ During the start Draw 3 reads configuration operates a database query and displa
 <imageobject><imagedata align="center" fileref="pics/draw3-progress.png"></imageobject>
 </mediaobject>
 </para>
-<note>
 <para>
 To see the support the basic functions of the program, go to <xref linkend="draw3-base-win">.
 <note><para>
@@ -137,7 +136,7 @@ and shortcut icons:
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-filtericon.png"></imageobject></inlinemediaobject> - Filter - more <xref linkend="draw3-ext-filter"></para></listitem>
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-refresh_icon.png"></imageobject></inlinemediaobject> - Refresh - more <xref linkend="draw3-ext-refresh"></para></listitem>
 
-<listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-tree__icon.png"></imageobject></inlinemediaobject> - Tree Set - a window displaying segregated sets of graphs</para></listitem>
+<listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-tree_icon.png"></imageobject></inlinemediaobject> - Tree Set - a window displaying segregated sets of graphs</para></listitem>
 
 <listitem><para><inlinemediaobject><imageobject><imagedata align="center" fileref="pics/draw3-data_icon.png"></imageobject></inlinemediaobject> - Go to latest date - set the cursor on the latest </para></listitem>
 
@@ -199,7 +198,7 @@ Once you have selected the program will display the parameter looking for the ri
 </section> <!-- draw3-base-find-parameter -->
 
 <section id="draw3-base-range">
-<title>Wybór rodzaju ¶rednich</title>
+<title>Select the type of medium</title>
 <para>
 The data in the graphics window are displayed in one of the modes:
 <itemizedlist>
@@ -241,8 +240,8 @@ You can move the chart by the length of one screen to the left and right.
 You can also use the mouse to quickly scroll through charts. Clicking once on the edge of the graphics window move the cursor one position to the right or left. Using double click move the cursor on the length of the screen.
 </para>
 <para>
-In order to better transition to the dates you are interested you can seize the opportunity to jump into the selected date. To do this, select the menu <guimenu>Tools</guimenu> and <guimenu>Jump the date</ guimenu> or use the keyboard shortcut <keycode>Ctrl + J</keycode>. In this way, display the window:
-<figure> <title>Navigation - jump at the date of</title>
+In order to better transition to the dates you are interested you can seize the opportunity to jump into the selected date. To do this, select the menu <guimenu>Tools</guimenu> and <guimenu>Jump the date</guimenu> or use the keyboard shortcut <keycode>Ctrl + J</keycode>. In this way, display the window:
+<figure><title>Navigation - jump at the date of</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-jump2date.png"></imageobject>
 </mediaobject>
@@ -263,13 +262,16 @@ Each of the charts you can print what you read in the chapter <xref linkend="dra
 </section> <!-- draw3-base-graphsnavigation -->
 
 <section id="draw3-base-hidegraphs">
-<title>Wygaszanie i wy¶wietlanie wykresów</title>
+<title>Blanking and display charts</title>
 <para>
 Chart you can extinguish except for the display - in this, click on the checkbox
 placed next to the number and the title of the chart. When you click the graph disappears from the graphics window,
 re-click restore to display the chart. It is not possible extinction of the graph,
 where the cursor is currently located.
 </para>
+<mediaobject>
+<imageobject><imagedata align="center" fileref="pics/draw3-extinction.png"></imageobject>
+</mediaobject>
 <para>
 Blanking charts can be used to enhance the readability of the presented data,
 besides, when printing from printed charts are only dimmed
@@ -282,7 +284,7 @@ charts graphs selected by you will remain off.
 </section> <!-- draw3-base-hidegraphs -->
 
 <section id="draw3-base-prints">
-<title>Wydruki</title>
+<title>Print</title>
 <para>
 A set of charts in Draw 3 can be printed by using a combination of <keycode>Ctrl + P</keycode> 
 or choose from the menu <guimenu>File</guimenu> and <guimenu>Print</guimenu>. 
@@ -338,7 +340,7 @@ loading.
 When you open more than one tab in the menu bar appears bookmarks and (right
 side, the names of the parameters) field switch between tabs.
 When you create multiple tabs, also the arrows to move the tab bar.
-<figure> <title>Tabs in the menu</title>
+<figure><title>Tabs in the menu</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-tabs2.png"></imageobject>
 </mediaobject></figure>
@@ -351,31 +353,31 @@ or click on the title of the selected tab.
 <para>
 To close the currently visible tab, click on the X to the right of the
 name of the bookmark, use the keyboard shortcut  <keycode>Ctrl +W</keycode> or select from the menu
-<guimenu> File </guimenu> and then <guimenu> Close tab </guimenu>. The current window
-Draw 3 can close using the key combination <keycode> Ctrl + Q </keycode> by clicking on the
+<guimenu>File</guimenu> and then <guimenu>Close tab</guimenu>. The current window
+Draw 3 can close using the key combination <keycode>Ctrl + Q</keycode> by clicking on the
 cross closing the window or by choosing  <guimenu>File</guimenu> and then
-<guimenu> Close </guimenu>. After confirmation window will be closed.
+<guimenu>Close</guimenu>. After confirmation window will be closed.
 </para>
 </section> <!-- draw3-base-tabs -->
 
 <section id="draw3-base-help">
-<title> Help and context-sensitive help in Draw3 </title>
+<title>Help and context-sensitive help in Draw3</title>
 <para>
 The program offers two ways of reading the documentation used: normal (ie through
 the inclusion of a separate window displaying this document) and the so-called. help
 context. To read the documentation Draw3 program, select
-<guimenu> Help </guimenu> <guimenu> Help </guimenu> or use the keyboard shortcut  <keycode>F1</keycode>.
+<guimenu>Help</guimenu><guimenu>Help</guimenu> or use the keyboard shortcut <keycode>F1</keycode>.
 
 <figure>
-<title> Help in Draw3 </title>
+<title>Help in Draw3</title>
 <mediaobject>
-<imageobject> <imagedata align="center" fileref="pics/draw3-help.png"> </ imageobject>
-</mediaobject> </figure>
-</para> <para>
+<imageobject><imagedata align="center" fileref="pics/draw3-help.png"></imageobject>
+</mediaobject></figure>
+</para><para>
 Context-sensitive help to display the description for the selected item and opens the Draw3
 documentation in place. If you want to see a description of the choice of type of medium,
-from the menu, select <guimenu>Help</guimenu>, then <guimenu> Context help </guimenu> or use
-shortcut <keycode> Shift + F1 </keycode> (the cursor will change its appearance). Then click on
+from the menu, select <guimenu>Help</guimenu>, then <guimenu>Context help</guimenu> or use
+shortcut <keycode>Shift + F1</keycode> (the cursor will change its appearance). Then click on
 place of choice for medium-sized, and then open the documentation in the expected place.
 <figure>
 <title>Context help Draw3</title>
@@ -387,7 +389,7 @@ place of choice for medium-sized, and then open the documentation in the expecte
 </section> <!-- draw3-base-help -->
 
 <section id="draw3-base-about">
-<title>O programie</title>
+<title>About the program</title>
 <para>
 To view information about viewers (version, authors, license)
 click <inlinemediaobject><imageobject><imagedata
@@ -450,7 +452,7 @@ two times the same parameter.
 </section> <!-- draw3-ext-blockgraphs -->
 
 <section id="draw3-ext-doublecursor">
-<title>Rozdwojony kursor</title>
+<title>Split cursor</title>
 <para>
 Split mode the cursor allows you to select a portion of the graph. All presented
 the program data - such as minimum, maximum, average and total value - will address
@@ -517,7 +519,7 @@ parameter name, parameter aggregation period and the percentage of samples that 
 </para>
 <note>
 <para>
-Because the values are added together for a period of time, individuals are subject to change totalized value. For example, instead <quote> kW </quote> occurs <quote> kWh </quote>, in place of <quote> z³/h </quote> - <quote> z³ </quote>, <quote> MW </quote> - <quote> GJ </quote>, <quote> mg/m3 </quote> - <quote> mg/m3*h </quote>.
+Because the values are added together for a period of time, individuals are subject to change totalized value. For example, instead <quote>kW</quote> occurs <quote>kWh</quote>, in place of <quote>z³/h</quote> - <quote>z³</quote>, <quote>MW</quote> - <quote>GJ</quote>, <quote>mg/m3</quote> - <quote>mg/m3*h</quote>.
 </para>
 </note>
 <para>
@@ -528,7 +530,7 @@ If there is no current set of charts, for which it can be calculated the total v
 <section id="draw3-percentagedistribution">
 <title>Pie window</title>
 <para>
-The program allows you to view chart reading of the percentage distribution of the parameters. It is calculated on the basis of the distribution of parameter values for the selected type of medium (eg, average weekly). To view a graph of the distribution percentage, choose <guimenu> View </guimenu> and <guimenu> Pie window </guimenu> (or use the keyboard shortcut  <keycode> Ctrl + Alt + S </ keycode>). In the case where the selected set of charts can not be displayed percentage distribution of the parameters, a window with the appropriate information.
+The program allows you to view chart reading of the percentage distribution of the parameters. It is calculated on the basis of the distribution of parameter values for the selected type of medium (eg, average weekly). To view a graph of the distribution percentage, choose <guimenu>View</guimenu> and <guimenu>Pie window</guimenu> (or use the keyboard shortcut  <keycode>Ctrl + Alt + S</keycode>). In the case where the selected set of charts can not be displayed percentage distribution of the parameters, a window with the appropriate information.
 <figure>
 <title>Pie window</title>
 <mediaobject>
@@ -540,7 +542,7 @@ The program allows you to view chart reading of the percentage distribution of t
 <section id="draw3-ext-valuesratio"> 
 <title>Ratio window</title>
 <para>
-Several sets of charts allows you to calculate the ratio of the charts. The calculation can start by choosing <guimenu> View </guimenu> and <guimenu> Ratio window </guimenu>. For calculation sets the ratio of the offering additional window is displayed, as shown in the following image:
+Several sets of charts allows you to calculate the ratio of the charts. The calculation can start by choosing <guimenu>View</guimenu> and <guimenu>Ratio window</guimenu>. For calculation sets the ratio of the offering additional window is displayed, as shown in the following image:
 <figure> <title>Ratio window</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-valuesratio.png"></imageobject>
@@ -581,10 +583,10 @@ appear in the calculated values for a given parameter.
 <title>The relationships between parameters - graph XY</title>
 <para>
 In Draw 3, you can specify the correlation of selected parameters. They are used for the charts XY.
-You can create one by choosing <guimenu>File</guimenu> and <guimenu> XY </guimenu>.
+You can create one by choosing <guimenu>File</guimenu> and <guimenu>XY</guimenu>.
 By default, the graphs X and Y will be selected first two charts dimmed with the current system. Also, the time range is set to that of the current system.
 <figure>
-<title>	<Create a chart XY</title>
+<title>Create a chart XY</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-xy1.png"></imageobject>
 </mediaobject></figure>
@@ -611,7 +613,7 @@ graph.
 </para>
 <para>
 If the definition of an XY chart averaging the values you choose, you get a graph similar to the following:
-</para>`
+</para>
 <para>
 <figure> <title>Chart XY - averaged values</title>
 <mediaobject>
@@ -675,7 +677,7 @@ When selected, you will see a window to select the parameters, and the time rang
 <title>Create a chart XYZ</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-xyz1.png"></imageobject>
-/mediaobject></figure>
+</mediaobject></figure>
 </para>
 <para>
 If you specify parameters and the time interval, press the OK button. This should retrieve data from the database and otwartcie graph window.
@@ -718,7 +720,7 @@ about the axis Y.
 </section> <!-- draw3-ext-chartxyz -->
 
 <section id="draw3-ext-filter">
-<title>Filtr</title>
+<title>Filter</title>
 <para>
 The program allows averaging of adjacent samples -
 filter function. Filter is used to smooth charts for easy designation
@@ -758,11 +760,11 @@ To disable the filter, set the filter level on the value <quote> 0 </quote>.
 </section> <!-- draw3-ext-filter -->
 
 <section id="draw3-parameter-documentation">
-<title>cumentation parameter<para>
+<title>Cumentation parameter<para>
 The program provides an opportunity to see browsing the technical documentation for the defined parameters and their graphs. This documentation explains what the selected parameter and how it is calculated (for the parameters depend on the values of other parameters).
 </para>
 <para>
-To view the technical parameter, use the keyboard shortcut  <keycode> Ctrl + H </keycode> or right-click on the title of chart (on the right side of the window) and select <quote> parameter documentation </ quote>, as it is shown below:
+To view the technical parameter, use the keyboard shortcut <keycode>Ctrl + H</keycode> or right-click on the title of chart (on the right side of the window) and select <quote>parameter documentation</quote>, as it is shown below:
 <figure><title>Documentation parameter</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-blockgraph.png"></imageobject>
@@ -777,7 +779,7 @@ The result of the call parameter documentation will open in your default web bro
 <section id="draw3-ext-languages">
 <title>Changing the language Draw3</title>
 <para>
-When you first start Draw3 or when the language has never been selected, the default language is the language <quote> automatic </quote> - used in the system.
+When you first start Draw3 or when the language has never been selected, the default language is the language <quote>automatic</quote> - used in the system.
 Draw3 The program allows you to change the language in which they are displayed as messages and menus
 program and parameter names. Parameter names are translated dynamically based on a special dictionary (if the parameter name does not appear in the dictionary, it displays the parameter name untranslated).
 </para>
@@ -857,6 +859,42 @@ same user parameter:
 </figure>
 </para>
 </section> <!-- draw3-ext-chartset -->
+
+
+<section id="draw3-ext-change-point-meaning">
+<title>Changing the type of the value represented by the point</title>
+<para>
+The standard by every point on the graph corresponds to the average value
+parameter from the time represented by this point. This can be changed so
+to each point corresponds to:
+<itemizedlist>
+<listitem><para>
+The final value of the period represented by the point (like the
+Annual screen each point will represent the value of the parameter of ostaniego
+day of the month 23:50 hours)
+</para></listitem>
+<listitem><para>
+The difference between the last and the first value in the 10-minute sample for the period
+represented by point (e.g., for a year will be the difference between the
+from 23:50 on the last day of the month and 0:00 of the first day of the month)
+</para></listitem>
+</itemizedlist>
+Change this setting to make the context menu
+right click on this parameter in the parameter list. main
+sense of the existence of this option is that for some parameters more
+interesting from that which was the average value of a parameter in a given period,
+This is the value accepted this parameter, eg at the end of the month or
+provided that in the period parameter value has increased. This is particularly useful
+for parameters representing different kinds of counters.
+</para>
+<para>
+<figure><title>Changing the type of the value represented by the point</title>
+<mediaobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-change_value_type.png"></imageobject>
+</mediaobject>
+</figure>
+</para>
+</section>
 
 <section id="draw3-ext-parametersset">
 <title>Define your own parameters</title>
@@ -1071,7 +1109,7 @@ because the browsing program detects the configuration change
 and reads her own, without user interaction.
 </para>
 <para>
-In order to reload the configuration choose <guimenu> Tools </guimenu> and <guimenu> Reload configuration </guimenu>.
+In order to reload the configuration choose <guimenu>Tools</guimenu> and <guimenu>Reload configuration</guimenu>.
 </para>
 </section> <!-- draw3-ext-reloadconfiguration -->
 
@@ -1080,13 +1118,13 @@ In order to reload the configuration choose <guimenu> Tools </guimenu> and <guim
 <para>
 For those using a previous version of the viewer Draw 3 can import
 defined sets of graphs (called in the previous version of
-<quote> Definable windows </quote>). If you want to take advantage of this opportunity,
-choose <guimenu> Tools </guimenu> and
-Import <guimenu> Definable windows from an earlier version </guimenu> or use the keyboard shortcut
-<keycode> keys Ctrl + Shift + I </keycode>.
+<quote>Definable windows</quote>). If you want to take advantage of this opportunity,
+choose <guimenu>Tools</guimenu> and
+Import <guimenu>Definable windows from an earlier version</guimenu> or use the keyboard shortcut
+<keycode>keys Ctrl + Shift + I</keycode>.
 A window opens in which you select a file from a saved configuration - is usually stored
-in your home directory under the name beginning with <filename> ekrn </ filename>,
-then the name of the configuration (eg for Bytów Bytom) and extension <filename> def </filename>:
+in your home directory under the name beginning with <filename>ekrn</filename>,
+then the name of the configuration (eg for Bytów Bytom) and extension <filename>def</filename>:
 <figure>
 <title>Import definable windows</title>
 <mediaobject>
@@ -1105,8 +1143,8 @@ functionality requires an account on the server and odpowmednich Newtermu rights
 access to the parameters of each plant.
 </para>
 <para>
-If you have permission, from the menu select <guimenu> Tools </guimenu>
-<guimenu> Set the parameters </guimenu> or use the keyboard shortcut <keycode> Ctrl + O </keycode>. Open a window confirming your power to change the parameters:
+If you have permission, from the menu select <guimenu>Tools</guimenu>
+<guimenu>Set the parameters</guimenu> or use the keyboard shortcut <keycode>Ctrl + O</keycode>. Open a window confirming your power to change the parameters:
 <figure>
 <title>Remote change parameters - authorization</title>
 <mediaobject>
@@ -1114,6 +1152,7 @@ If you have permission, from the menu select <guimenu> Tools </guimenu>
 </mediaobject>
 </figure>
 </para>
+<para>
 After successful authentication the course of browsing software connects to the server, and will show you a window:
 <para>
 <figure>
@@ -1143,9 +1182,9 @@ For your changes are sent to the device (and thus take effect), choose <guimenu>
 <para>
 In the "Packages" for a list of packages currently selected controller. When you click on the number or description of the package, you will be
 window listing. The list includes another moment in time where the package changes its value. In this window
-You can add new value (selecting the <guimenu> Add </guimenu>), edit existing ones (by right-clicking
-the value of the mouse, and then selecting  <guimenu> Edit </guimenu> from the menu that appears). You can also delete the value (the
-<guimenu> Delete </guimenu>).
+You can add new value (selecting the <guimenu>Add</guimenu>), edit existing ones (by right-clicking
+the value of the mouse, and then selecting  <guimenu>Edit</guimenu> from the menu that appears). You can also delete the value (the
+<guimenu>Delete</guimenu>).
 <note><para>
 The program is trying to be "intelligent" in the sense that all directly consecutive identical values are merged together.
 Do not be surprised if, for example with the last value set on hour 10 of at 10Pa for example, add a new value of at a
@@ -1160,7 +1199,7 @@ Do not be surprised if, for example with the last value set on hour 10 of at 10P
 </para>
 <para>
 From the program, you can also choose the type of time-control packages. To do this, select the menu
-<guimenu> Actions </ guimenu> and then <guimenu> Set the type of packages </guimenu>. Shows you a window
+<guimenu>Actions</guimenu> and then <guimenu>Set the type of packages</guimenu>. Shows you a window
 where you can make a choice:
 <figure>
 <title> Remote change parameters - select the type of package </title>
@@ -1172,8 +1211,8 @@ where you can make a choice:
 <para>
 With the help menu, you can also:
 <itemizedlist>
-<listitem><para>refresh the current values of the controller - select <guimenu> Actions </guimenu> and then <guimenu> Download (refresh) value</guimenu></para></listitem>
-<listitem><para>packages and reset to default values fixed - select <guimenu> Actions </guimenu>, and then <guimenu> Reset the value </guimenu></para></listitem>
+<listitem><para>refresh the current values of the controller - select <guimenu>Actions</guimenu> and then <guimenu>Download (refresh) value</guimenu></para></listitem>
+<listitem><para>packages and reset to default values fixed - select <guimenu>Actions</guimenu>, and then <guimenu>Reset the value</guimenu></para></listitem>
 </itemizedlist>
 </para>
 </section> <!-- draw3-ext-remoteparametersset -->
@@ -1212,9 +1251,9 @@ get a list of options the program. To start Draw 3 for a particular database, us
 <para>
 For Windows, you can also start reading on your computer (after installation), also from the command line. Run command line in one of three ways:
 <itemizedlist>
-<listitem><para> the menu select <guimenu> Start</guimenu>-><guimenu>All programs</guimenu>-><guimenu> Accessories </guimenu>-><guimenu>Command Prompt</guimenu></para></listitem>
-<listitem><para> the menu select <guimenu>Start</guimenu>-><guimenu> Run ... </guimenu>, type <emphasis>cmd</emphasis> and press </para>Enter</listitem>
-<listitem><para> use the keyboard shortcut <keycode>Win</keycode> (Windows logo key) <keycode> + R </keycode>, type <emphasis>cmd</emphasis> and press Enter</para></listitem>
+<listitem><para> the menu select <guimenu>Start</guimenu>-><guimenu>All programs</guimenu>-><guimenu>Accessories</guimenu>-><guimenu>Command Prompt</guimenu></para></listitem>
+<listitem><para> the menu select <guimenu>Start</guimenu>-><guimenu> Run ... </guimenu>, type <emphasis>cmd</emphasis> and press Enter</para></listitem>
+<listitem><para> use the keyboard shortcut <keycode>Win</keycode> (Windows logo key) <keycode>+ R</keycode>, type <emphasis>cmd</emphasis> and press Enter.</para></listitem>
 </itemizedlist>
 </para>
 <para>
@@ -1525,7 +1564,7 @@ works for all types of medium, can be used together with split cursor
 </section> <!-- draw3-ext-draw2draw3comparison -->
 
 <section id="draw3-ext-shortcuts">
-<title>Keyboard shortcuts<title>
+<title>Keyboard shortcuts</title>
 <para>
 Zmiana trybu wy¶wietlania ¶rednich:
 <itemizedlist>
@@ -1616,3 +1655,617 @@ Other:
 </section> <!-- draw3-ext-shortcuts -->
 
 </chapter> <!-- draw3-ext -->
+
+<chapter id="draw3-definied-param-appendix">
+<title>Appendix: Parameters definable, guide.</title>
+<section id="raison-d-etre">
+<title>What is this document?</title>
+<para>
+SZARP system documentation describes the parameters definable Lua,
+It does, however, in such a way that it can be found that there is a
+rather Reference, information collected there are for
+someone who already knows what it definable parameters. The assumption
+This appendix is intended to introduce the user to the parameters
+definable, so that the parameters of the LUA could be started easily
+use person without any previous knowledge of how these parameters
+operate. Confine ourselves to definable parameters of the program
+browsing because only the user client applications
+SZARP system can directly create and edit.
+</para>
+</section>
+<section>
+<title>Introduction.</title>
+<para>
+The main job of finding out is to draw waveforms
+parameter values. The user opens a set of graphs, sets
+at a time, and the program reading the parameter values
+and for each of the intervals (X-axis points) plotted on the graph
+parameter values.
+<note>
+<para>
+Example: if you watch only one parameter, we are on the screen year
+and in addition lined up at the beginning of 2012, is to draw a graph of the program
+browsing learns what the average [1] parameter value for
+month of January 2012, February 2012, March 2012, etc., then the thus obtained
+values are presented as a graph parameter.
+</para>
+</note>
+</para>
+<para>
+For parameters collected by the system directly SZARP
+(eg outside temperature), it's simple, the program browsing
+pulls the corresponding values from the database, asking the database -
+what is the average outside temperature in January 2012,
+February 2012, March 2012, etc., and if we are to screen a month
+it will ask what is the average temperature in the next
+days. So it is with definable parameters - the program browsing
+asks what is the average value of the parameter for the month of January,
+February, March, etc, has only been in this case does not reach the value
+directly into the database but uses a formula parameter
+definable to get the desired value.
+</para>
+<para>
+And whence the name of definable parameters LUA? Definable parameters LUA
+are called so because their record is used scripting language LUA.
+Lua is quite popular language syntax based on C / Pascal,
+people who know a little programming seeing the example code in LUA
+certainly quickly find familiar structures.
+</para>
+</section>
+<section>
+<title>The beginnings.</title>
+<para>
+By adding a new parameter write a piece of code in LUA. this piece of
+code (often called a formula) calculates the value of the parameter, and this calculated
+by the formula value is exactly what the program browsing
+applied to the chart.
+</para>
+<para>
+Let's move quickly to the example, run the program browsing
+and add a new parameter definable (details of how to use
+draw3 program to add a new parameter, see the documentation
+draw3) with the following formula:
+<programlisting>
+v = 1
+</programlisting>
+<note>
+<para>
+We wszystkich przyk³adach a¿ do punktu "¦rednie jeszcze raz"
+<xref linkend="draw3-param-tutorial-types-of-averages">
+we assume that the parameter has the options 'Average counted as' set to
+'the result of application of the formula for the average'.
+</para>
+</note>
+</para>
+<para>
+When you see our chart we see horizontal line parameter -
+in each of its point parameter takes the value 1 the result of which
+was to be expected, and how did it happen?
+If we are still at the beginning of 2012 is a program browsing
+made formula 12 times wanting to know what is the value
+parameter for the January 2012, February 2012, etc. The program browsing
+after the formula checks to see what is in the variable v. This is what formula
+assigns the variable is considered to be the value of the parameter. And because our formula
+does nothing but sets the variable v 1, no worries
+with anything, then our parameter is the graph form horizontal
+mark.
+</para>
+</section> 
+<section> 
+<title>Time, that is, the variable 't'.</title>
+<para>
+Now let's do something a little more interesting, przestawmy draw3 on window
+the 10-minute (day) and change our formula to:
+<programlisting>
+v = math.sin(t * 2 * 3.14 / 3600 / 12)
+</programlisting>
+We'll see on the screen two sinusoid. The undoubted progress if
+in terms of visual appeal.
+Our new parameter is no longer a horizontal line, its value depends on
+from time. The secret lies in the use of the variable 't'. it is
+in this variable, before the formula, the program browsing
+places the information for which time he wants to get the value of our
+parameter. Assuming that we have chosen the day, eg 24 November 2012,
+This would draw a graph looking at the program made a formula parameter
+24 * 6 (draw a graph for 24 hours, and for each hour charge
+10 minute values), substituting the variable t the time
+corresponding to 24 November at 00:00 on November 24 at 0:10,
+November 24 at 0:20, November 24 at 00:30 November 24
+at 0:40, November 24 at 0:50, November 24 at 01:00
+..., November 24 at 23:40, 24 November at 23.50.
+</para>
+<para>
+Time variable t is stored as a number, the number of seconds from a
+contractual time '0 '. It sounds quite mysterious but in practice, when we write
+parameters do not have to think as time is saved. this example
+is properly taken into account the representation of the exception because the variable t, so
+to fit in 24 2 sine wave.
+</para>
+</section> 
+<section> 
+<title>Average, variable 'pt'. </title>
+<para>
+We know, therefore, how the program forward formula browsing information
+by which time he was talking about. We lack even one piece of information to
+set - the variable pt. The variable pt is a variable in which draw3
+before the formula is placed about what kind of average
+formula is calculated. If the program display is set to 'age',
+it will be interested in the monthly average, the screen will be a monthly average
+Daily, etc. In contrast to the variable t, the variable entitled not accept the
+numerical but only one of the values from the specified file.
+</para>
+<para>
+The best example would be here. Let's take a parameter that will accept different
+value depending on which time interval is selected in the program
+viewers, this is the formula:
+<programlisting>
+if pt == PT_YEAR then
+        v = 5
+elseif pt == PT_MONTH then
+        v = 4
+elseif pt == PT_DAY then
+        v = 3
+elseif pt == PT_HOUR8 then
+        v = 2
+elseif pt == PT_MIN10 then
+	v = 1
+else
+        v = 0
+end
+</programlisting>
+<note>
+<para>
+Please note that in the peer-reviewed this parameter was set
+attribute 'Average counted as' on 'the result of applying the formula for the average'.
+</para>
+</note>
+</para>
+<para>
+Now what do we see? We get a parameter that, if we choose the screen a decade
+will return a value of 5, the year the value of 4, the monthly value of 2 when the day
+value of one and zero otherwise.
+</para>
+<para>
+PT_YEAR, PT_MONTH, PT_DAY, PT_HOUR8, PT_MIN10, PT_WEEK i PT_SEC10 then all
+permissible value of the variable pt.
+</para>
+</section> 
+<section> 
+<title>Finally something interesting.</title>
+<para>
+We already know more or less how the parameters from the browser software
+and we have seen some examples of formulas. But we can not really do
+still nothing worth attention, we can make the parameters whose values depend on
+from the time that the parameters assume the values dependent on the medium for which it
+count, but it still is not.
+</para>
+<para>
+We need the ability to appeal in our formulas to other parameters
+SZARP program. By other parameters mean here both parameters collected
+SZARP in the database as well as other definable parameters.
+</para>
+<para>
+Quick example, let's parameter:
+<programlisting>
+v = p("xxxx:Network:External temperature controller, t, pt)
+</programlisting>
+<note>
+<para>
+Text p (...) does not enter to get the desired effect, in the
+parameter editing, click on the button &lt;W&gt; and illustrated list select
+outside temperature graph, and we'll get it for what it is.
+</para>
+</note>
+</para>
+<para>
+We introduce a new parameter, and we see that this parameter is our faithful
+a copy of the parameter 'external temperature'.
+</para>
+<para>
+What's going on here?
+</para>
+<para>
+Here, the parameter canceled the value of another parameter. it
+just makes design p ("xxxx: Network:External temperature controller, t, pt),
+namely the function p function retrieves the value of the parameter p, adopt
+it three parameters:
+<itemizedlist>
+<listitem><para>
+The first is 'global parameter name', again not really we have to worry
+what exactly is because the name of draw3 get when you select
+chart list
+</para></listitem>
+<listitem><para>
+the second parameter is the time
+</para></listitem>
+<listitem><para>
+and the third kind of mean
+</para></listitem>
+</itemizedlist>
+<para>
+In the second and third argument comes exactly the same as discussed in the two
+the preceding paragraphs. To retrieve the value of the parameter you need to specify
+about what time and by which we mean the average, in the same way as defined
+This draw3 when asked about the value of our parameter.
+</para>
+<para>
+In our call to p ("xxxx: Network:External temperature controller, t, pt),
+as the time we have given the value of the variable t, and the average value of the variable Fri
+So we said that we want to get the value of the outside temperature
+for such a moment in time and the average of the parameter which we asked
+browsing program. If you are reading program will ask - I want to average
+10 minute for your parameter for the hours 8:40 - this is our parameter
+returns the 10-minute average outdoor temperature for 8:40.
+</para>
+<para>
+We could also write eg p ("xxxx: Network:External temperature controller, t, PT_MONTH)
+then, regardless of what kind of medium-browsing program will ask us,
+we will pay the average monthly value.
+</para>
+<para>
+Armed with verage speed of the grid:this knowledge, we can now do more interesting parameters, such trivial parameter counting
+the average speed of the grid:
+<programlisting>
+v = (p ("xxxx: Boiler 3: Controller:Speed left the grid", t, pt) + p ("xxxx: Boiler 3:Driver speed grilled right", t, pt)) / 2
+</programlisting>
+</para>
+<para>
+This parameter specifies the recommended opening the zone:
+<programlisting>
+local v1 = p("xxx:Boiler 1:Controller:The length of the combustion zone", t, pt)
+if v1 < 3
+ then
+  v = 0
+ else
+  if v1 > 4
+   then
+    v = 100
+   else
+    v = (v1 * 100) % 300
+  end
+end
+</programlisting>
+</para>
+</section> 
+<section> 
+<title>Travel in time.</title>
+<para>
+We know that the program browsing asking us for a parameter value is placed
+in the variable t for which the time information wants to get the parameter value.
+</para>
+<para>
+I also know, semi-officially, that this value is stored as the number of seconds
+some time '0 '. We therefore attempt to write parameter
+which will consist of eg external temperature rise during
+10 minutes, for example like this:
+<programlisting>
+v = p ("xxxx:Network:External temperature controller, t, PT_MIN10) - p("xxxx:Network:External temperature controller, t - 10 * 60, PT_MIN10)
+</programlisting>
+</para>
+<para>
+And in fact, the parameter returns what we want. As you can see it can be done so
+but manual operation on the value of the variable t is inconvenient, so the
+in formulas browser software we have available function szb_move_time.
+Szb_move_time function takes 3 parameters: start time, if units
+you must move the start time, the offset. That's what this
+This function returns the offset time value. Before we give an example
+is yet to clarify what's going on with these units. by means of
+function szb_move_time time we move a certain amount: years, months,
+days, weeks, periods of 8-hour and 10-minute increments. They correspond closely types
+medium-sized screens draw3 program. Designations units are also the same
+as the label of the average, and so accordingly PT_YEAR, PT_MONTH, PT_WEEK, PT_DAY,
+PT_WEEK, PT_HOUR8, PT_MIN10.
+</para>
+<para>
+Some examples of function calls szb_move_time:
+<itemizedlist>
+<listitem><para>
+szb_move_time(t, 6, PT_MIN10) - move the specified time of 6 units of 10 minutes 
+</para></listitem>
+<listitem><para>
+szb_move_time(t, 2, PT_YEAR) - move the specified time of 2 years ahead
+</para></listitem>
+<listitem><para>
+szb_move_time(t, -1, PT_MONTH) - move the specified time of 1 month backward
+</para></listitem>
+</itemizedlist>
+</para>
+<para>
+We can now write parameter such that will be administering the difference between
+outside temperature value for the time for which is calculated
+parameter and sometimes months earlier.
+</para>
+<para>
+<programlisting>
+local month_earlier = szb_move_time(t, -1, PT_MONTH)
+v = p("xxxx:Network:External temperature controller, t, PT_MIN10) - p("xxxx:Network:External temperature controller, month_earlier, PT_MIN10)
+</programlisting>
+</para>
+<para>
+We can also using the fact that we have a variable called average for the
+draws a parameter, do the following - a parameter that
+viewed on the screen is going to give us a decade of growth in the average
+annual temperature between years; viewed on the screen annual
+This increase in the average monthly temperature between months;
+monthly, daily temperature rise between days, etc.
+</para>
+<para>
+<programlisting>
+local previous_time = szb_move_time (t, -1 pt)
+v = p ("xxxx:Network:External temperature controller", t, pt) - p("xxxx: Network:External temperature controller", poprzedni_czas, pt)
+</programlisting>
+</para>
+
+</section>
+<section id="draw3-param-tutorial-types-of-averages"> 
+<title>Average again.</title>
+<para>
+In the first example is contained note: in all the examples to the point
+"Average again" <xref linkend="draw3-param-tutorial-types-of-averages">
+we assume that the parameter has the options' Average counted as' set to 'score
+application of the formula for the average '.
+</para>
+<para>
+Now is the time to explain what's going on.
+</para>
+<para>
+Recall again the reading program draws a graph parameter.
+</para>
+<para>
+Suppose that we are at the beginning of the screen on an annual basis. The program browsing
+must draw 12 points, the average monthly for each month of the year.
+Therefore, the formula produces parameter 12 times for each time setting the following
+the variables t and pt:
+<itemizedlist>
+<listitem><para>
+variable t = 1 day of January, hour 00:00, the variable pt = PT_MONTH
+</para></listitem>
+<listitem><para>
+variable t = 1 day of January, hour 00:00, the variable pt = PT_MONTH
+</para></listitem>
+<listitem><para>
+...
+</para></listitem>
+<listitem><para>
+variable t = 1 day in December, hour 0:00, the variable pt = PT_MONTH
+</para></listitem>
+</itemizedlist>
+</para>
+<para>
+When will monthly display, eg. at March program browsing
+trigger formula 31 times, with these parameters:
+</para>
+<para>
+<itemizedlist>
+<listitem><para>
+variable t = 1 day of January, hour 00:00, the variable pt = PT_MONTH
+</para></listitem>
+<listitem><para>
+variable t = 2 days of March, hour 0:00, the variable pt = PT_MONTH
+</para></listitem>
+<listitem><para>
+variable t = 3 days of March, hour 0:00, the variable pt = PT_MONTH
+<listitem><para>
+...
+</para></listitem>
+<listitem><para>
+variable t = 31 days of March, hour 0:00, the variable pt = PT_MONTH
+</para></listitem>
+</itemizedlist>
+</para>
+<para>
+Suppose now that we are in the period of the day, then the program will do so:
+<itemizedlist>
+<listitem><para>
+variable t = hour 0:00, the variable pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+variable t = hour 0:10, the variable pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+variable t = hour 0:20, the variable pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+...
+</para></listitem>
+<listitem><para>
+variable t = hour 23:50, the variable pt = PT_MIN10
+</para></listitem>
+</itemizedlist>
+</para>
+<para>
+Now change the options on the 'Average counted as' on' the average of the application of the formula
+for each sample. "What has changed? The change lies in the fact that the program browsing
+begins to count the mean "alone." Browsing program, regardless of whether they
+average we draw, always calls the formula for the 10-minute and
+from the results thus obtained calculate the average value. Returning to our example year
+Our formula is made with such parameters:
+<itemizedlist>
+<listitem><para>
+variable t = 1 day of January, hour 0:00, the variable pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+variable t = 1 day of January, hour 0:10, the variable pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+variable t = 1 day of January, hour 0:20, the variable pt = PT_MIN10
+</para></listitem>
+<listitem> <para>
+variable t = 1 day of January, hour 0:30, the variable pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+...
+</para></listitem>
+<listitem><para>
+variable t = 1 day of January, hour 23:50, the variable pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+variable t = 2 day of January, hour 0:00, the variable pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+variable t = 2 day of January, hour 0:10, the variable pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+...
+</para></listitem>
+<listitem><para>
+variable t = 2 day of January, hour 23:50, the variable pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+...
+</para></listitem>
+<listitem><para>
+variable t = 31 day of January, hour 23:50, the variable pt = PT_MIN10
+<note>
+<para>
+these results are then averaged and the average value is
+positioned as the parameter value for the month of January, and the program
+move to next month
+</para>
+</note>
+</para></listitem>
+<listitem><para>
+variable t = 1 day of February, hour 0:00, the variable pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+variable t = 1 day of February, hour 0:10, the variable pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+variable t = 1 day of February, hour 0:20, the variable pt = PT_MIN10
+</para></listitem>
+<listitem> <para>
+variable t = 1 day of February, hour 0:30, the variable pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+...
+</para></listitem>
+<listitem><para>
+variable t = 1 day of February, hour 23:50, the variable pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+variable t = 2 day of February, hour 0:00, the variable pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+variable t = 2 day of February, hour 0:10, the variable pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+variable t = 2 day of February, hour 0:20, the variable pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+variable t = 2 day of February, hour 0:30, the variable pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+...
+</para></listitem>
+<listitem><para>
+variable t = 2 day of January, hour 23:50, the variable pt = PT_MIN10
+</para></listitem>
+<listitem><para>
+variable t = last day of February, hour 23:50, the variable pt = PT_MIN10
+<note>
+<para>
+here again, averaging occurs and the program moves on
+</para>
+</note>
+</para></listitem>
+<listitem><para>
+...
+</para></listitem>
+</itemizedlist>
+</para>
+<para>
+Similarly, the screen will be for a month. Only the case for medium
+10-minute like will not vary.
+<note>
+<para>
+These 10-minute resolution stems from the fact that the value of the 10-minute is the largest
+the resolution with which SZARP keeps data in the archive.
+</para>
+</note>
+</para>
+<para>
+There are several reasons why in the peer-reviewed
+(and in general the system SZARP) we have these two types of parameters.
+First of all, some of the parameters because of its features easily
+is saved as one that will count the other way.
+</para>
+<para>
+Take, for example, counting parameter quotient of any two parameters
+(A and B for simplicity). The simplest formula for this parameter record is:
+<programlisting>
+v = p("A", t, pt) / p("B", t, pt)
+</programlisting>
+</para>
+<para>
+What happens now to count the value of this parameter the first method for
+for example, the average daily? We obtain the result of executing the following operations:
+<programlisting>
+v = (average daily parameter A) / (average daily parameter B)
+</programlisting>
+</para>
+<para>
+In most cases, however, it will not be what we want, we
+we need values:
+<programlisting>
+v = (
+        (A value for 00:00 hour) / (value of B for 00:00 hour)
+        + (A-values for 0:10 hour) / (value of B for 0:10 hour)
+        + (A-values for 0:20 hour) / (value of B for 0:20 hour)
+...
+        + (A-values for 23:50 hour) / (value of B for 23:50 hour)
+    ) / (24 * 6)
+</programlisting>
+This is exactly what gives us another way to save such an operation
+parameter which averages are calculated first way would be to task
+much more time-consuming (especially if we wanted to parameter
+behaved correctly for each type of medium).
+</para>
+<para>
+Let's take another example of a parameter:
+<programlisting>
+v = p("xxx:Boiler 4:Driver:Efficiency boiler", t, pt)
+local i = 1;
+while isnan(v) and i < 10 do
+        local v1 = p("xxx:Boiler 4:Driver:Efficiency Boiler", szb_move_time(t,-i, pt), pt)
+        local v2 = p("xxx:Boiler 4:Driver:Efficiency Boiler", szb_move_time(t, i, pt), pt)
+        if isnan(v1) then
+                v = v2
+        elseif isnan(v2) then
+                v = v1
+        else
+                v = (v1 + v2) / 2
+        end
+        i = i + 1
+end
+</programlisting>
+This parameter performs a simple task - trying to make a hole in the data
+parameter "boiler efficiency". If for a given 10-minutówki no time
+value of the parameter, then the formula is trying to generate it from the underlying
+next. For this formula the values of counting a first method, the
+would not make sense.
+</para>
+</section>
+<section>
+<title>Note the values of 10 seconds.</title>
+<para>
+Our short guide carefully clears so far the average of 10 seconds.
+For this reason, these averages are treated a little differently,
+primarily because of the lint appeared in much later than
+same parameters definable and are not synchronized to the local
+computer.
+</para>
+<para>
+That difference is reduced to the behavior of the parameters which
+the average is calculated as "the standard application of the formula for each sample."
+We wrote in the previous chapter that for such parameters independently
+on the kind of the average watch, and so the formula will always
+calculated for pt = PT_MIN10. It did not make sense in the case of medium
+10-second course, which is why this rule does not apply.
+For medium 10 seconds, regardless of what type of
+parameter is always formula for calculating them will be called from pt = PT_SEC10.
+(denoting the value of the average 10-second PT_SEC10 and this is also
+value reading program used in the calculation of parameters).
+</para>
+</section>
+
+</chapter> <!-- draw3-ext-lua-parameters-tutorial -->
