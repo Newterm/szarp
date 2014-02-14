@@ -11,6 +11,8 @@
 #include "dmncfg.h"
 #include "ipchandler.h"
 #include "liblog.h"
+#include "szarp_config.h"
+#include "szbase/szbbase.h"
 
 namespace py = boost::python;
 
@@ -116,6 +118,112 @@ namespace szarp {
 	}
 
     }
+
+
+    class pyszbase {
+	public:
+	    pyszbase() : m_initialized(false) {};
+
+	    void init(const std::wstring& szarp_path, const std::wstring& lang);
+	    void shutdown();
+
+	    double get_value(const std::wstring& param, time_t time, SZARP_PROBE_TYPE probe_type);
+	    time_t search_first(const std::wstring &param);
+	    time_t search_last(const std::wstring &param);
+	    time_t search(const std::wstring &param, time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe);
+	    void set_prober_server_address(const std::wstring &prefix, const std::wstring& address, const std::wstring& port);
+
+	    Szbase* get_szbase_object();
+	    void check_no_init();
+
+	    bool m_initialized;
+    };
+
+    Szbase* pyszbase::get_szbase_object() {
+	if (!m_initialized)
+	    throw std::runtime_error("libpyszbase library not initialized");
+
+	Szbase* szbase = Szbase::GetObject();	
+	szbase->NextQuery();
+
+	return szbase;
+    }
+
+    void pyszbase::check_no_init() {
+	if (m_initialized)
+	    throw std::runtime_error("libpyszbase already initialized");
+    }
+
+    void pyszbase::init(const std::wstring& szarp_path, const std::wstring& lang) {
+	check_no_init();
+
+	IPKContainer::Init(szarp_path, szarp_path, lang, new NullMutex());
+	Szbase::Init(szarp_path, false);
+
+	m_initialized = true;
+    }
+
+    void pyszbase::shutdown() {
+	check_no_init();
+
+	Szbase::Destroy();	
+	IPKContainer::Destroy();
+
+	m_initialized = false;
+    }
+
+    double pyszbase::get_value(const std::wstring& param, time_t time, SZARP_PROBE_TYPE probe_type) {
+	Szbase *szbase = get_szbase_object();
+
+	bool is_fixed, ok;
+	std::wstring error;
+	double ret = szbase->GetValue(param, time, probe_type, 0, &is_fixed, ok, error);
+
+	if (!ok)
+	    std::runtime_error(SC::S2A(error));
+
+	return ret;
+    }
+
+    time_t pyszbase::search_first(const std::wstring &param) {
+	Szbase *szbase = get_szbase_object();
+
+	bool ok;
+	time_t ret = szbase->SearchFirst(param, ok);
+	if (!ok)
+	    throw std::runtime_error("Param " + SC::S2A(param) + " not found");
+
+	return ret;
+    }
+
+    time_t pyszbase::search_last(const std::wstring &param) {
+	Szbase *szbase = get_szbase_object();
+
+	bool ok;
+	time_t ret = szbase->SearchLast(param, ok);
+	if (!ok)
+	    throw std::runtime_error("Param " + SC::S2A(param) + " not found");
+
+	return ret;
+    }
+
+    time_t pyszbase::search(const std::wstring &param, time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe) {
+	Szbase *szbase = get_szbase_object();
+
+	bool ok = true;
+	std::wstring error;
+	time_t ret = szbase->Search(param, start, end, direction, probe, ok, error);
+	if (!ok)
+	    throw std::runtime_error(SC::S2A(error));
+
+	return ret;
+    }
+
+    void pyszbase::set_prober_server_address(const std::wstring &prefix, const std::wstring& address, const std::wstring& port) {
+	Szbase *szbase = get_szbase_object();
+	szbase->SetProberAddress(prefix, address, port);
+    }
+
 }
 
 int main( int argc, char ** argv )
@@ -132,8 +240,17 @@ int main( int argc, char ** argv )
 	    exit(1);
     }
 
+    FILE * fp = fopen(device_name, "r");
+    if (NULL == fp) {
+	    sz_log(0, "Script %s doesn't exists -- exiting", device_name);
+	    exit(1);
+    }
+
     try {
 	Py_Initialize();
+
+	py::object main_module(py::handle<>(py::borrowed(PyImport_AddModule("__main__"))));
+	py::object main_namespace = main_module.attr("__dict__");
 
 	szarp::ipc ipc;
 
@@ -142,16 +259,6 @@ int main( int argc, char ** argv )
 	    exit(1);
 	}
 
-	FILE * fp = fopen(device_name, "r");
-	if (NULL == fp) {
-		sz_log(0, "Script %s doesn't exists -- exiting", device_name);
-		exit(1);
-	}
-
-
-	py::object main_module(py::handle<>(py::borrowed(PyImport_AddModule("__main__"))));
-
-	py::object main_namespace = main_module.attr("__dict__");
 	main_namespace["IPC"] = py::class_<szarp::ipc>("IPC")
 	    .def("set_read", &szarp::ipc::set_read)
 	    .def("set_no_data", &szarp::ipc::set_no_data)
@@ -159,6 +266,34 @@ int main( int argc, char ** argv )
 	    .def("go_sender", &szarp::ipc::go_sender)
 	    .def("go_parcook", &szarp::ipc::go_parcook);
 	main_namespace["ipc"] = py::ptr(&ipc);
+
+
+	szarp::pyszbase pyszbase;
+
+	py::object pyszbase_class = py::class_<szarp::pyszbase>("PySzbase")
+	    .def("init", &szarp::pyszbase::init)
+	    .def("shutdown", &szarp::pyszbase::shutdown)
+	    .def("get_value", &szarp::pyszbase::get_value)
+	    .def("search_first", &szarp::pyszbase::search_first)
+	    .def("search_last", &szarp::pyszbase::search_last)
+	    .def("search", &szarp::pyszbase::search)
+	    .def("set_prober_server_address", &szarp::pyszbase::set_prober_server_address)
+	    ;
+	main_namespace["PySzbase"] = pyszbase_class;
+	main_namespace["pyszbase"] = py::ptr(&pyszbase);
+
+	py::scope pyszbase_scope = pyszbase_class;
+	
+	py::enum_<SZARP_PROBE_TYPE>("PROBE_TYPE")
+		.value("PT_SEC10", PT_SEC10)
+		.value("PT_MIN10", PT_MIN10)
+		.value("PT_HOUR", PT_HOUR)
+		.value("PT_HOUR8", PT_HOUR8)
+		.value("PT_DAY", PT_DAY)
+		.value("PT_WEEKP", PT_WEEK)
+		.value("PT_MONTH", PT_MONTH)
+		.value("PT_YEAR", PT_YEAR)
+		;
 
 	py::handle<> ignored(( PyRun_File(fp, device_name,
                                      Py_file_input,
