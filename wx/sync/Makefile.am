@@ -15,7 +15,7 @@ endif
 
 SSC_rule = ssc$(EXEEXT)
 
-INCLUDES = @GDK_CFLAGS@ @GTK_CFLAGS@ @WX_CXXFLAGS@ @XML_CFLAGS@ @RSYNC_CFLAGS@ @SSL_CFLAGS@ @LUA_CFLAGS@ @BOOST_CPPFLAGS@ @CARES_CFLAGS@ \
+AM_CPPFLAGS = @GDK_CFLAGS@ @GTK_CFLAGS@ @WX_CXXFLAGS@ @XML_CFLAGS@ @RSYNC_CFLAGS@ @SSL_CFLAGS@ @LUA_CFLAGS@ @BOOST_CPPFLAGS@ @CARES_CFLAGS@ \
 	-I@srcdir@/../../libSzarp/include \
 	-I@srcdir@/../../libSzarp2/include \
         -I@srcdir@/../../include \

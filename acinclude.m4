@@ -1034,59 +1034,201 @@ dnl check for base boost library presence
 AC_DEFUN([AX_BOOST_BASE],
 [
 AC_ARG_WITH([boost],
-        AS_HELP_STRING([--with-boost@<:@=DIR@:>@], [use boost (default is yes) - it is possible to specify the root directory for boost (optional)]),
-        [
+  [AS_HELP_STRING([--with-boost@<:@=ARG@:>@],
+    [use Boost library from a standard location (ARG=yes),
+     from the specified location (ARG=<path>),
+     or disable it (ARG=no)
+     @<:@ARG=yes@:>@ ])],
+    [
     if test "$withval" = "no"; then
-                want_boost="no"
+        want_boost="no"
     elif test "$withval" = "yes"; then
         want_boost="yes"
         ac_boost_path=""
     else
-            want_boost="yes"
+        want_boost="yes"
         ac_boost_path="$withval"
-        fi
+    fi
     ],
     [want_boost="yes"])
 
-if test "x$want_boost" = "xyes"; then
-        boost_lib_version_req=1.35.0
-        boost_lib_version_req_shorten=`expr $boost_lib_version_req : '\([[0-9]]*\.[[0-9]]*\)'`
-        boost_lib_version_req_major=`expr $boost_lib_version_req : '\([[0-9]]*\)'`
-        boost_lib_version_req_minor=`expr $boost_lib_version_req : '[[0-9]]*\.\([[0-9]]*\)'`
-        boost_lib_version_req_sub_minor=`expr $boost_lib_version_req : '[[0-9]]*\.[[0-9]]*\.\([[0-9]]*\)'`
-        if test "x$boost_lib_version_req_sub_minor" = "x" ; then
-                boost_lib_version_req_sub_minor="0"
-        fi
-        WANT_BOOST_VERSION=`expr $boost_lib_version_req_major \* 100000 \+  $boost_lib_version_req_minor \* 100 \+ $boost_lib_version_req_sub_minor`
-        AC_MSG_CHECKING(for boostlib >= $boost_lib_version_req)
-        succeeded=no
 
-        dnl first we check the system location for boost libraries
-        dnl this location ist chosen if boost libraries are installed with the --layout=system option
-        dnl or if you install boost with RPM
-        if test "$ac_boost_path" != ""; then
-                BOOST_LDFLAGS="-L$ac_boost_path/lib"
-                BOOST_CPPFLAGS="-I$ac_boost_path/include"
+AC_ARG_WITH([boost-libdir],
+        AS_HELP_STRING([--with-boost-libdir=LIB_DIR],
+        [Force given directory for boost libraries. Note that this will override library path detection, so use this parameter only if default library detection fails and you know exactly where your boost libraries are located.]),
+        [
+        if test -d "$withval"
+        then
+                ac_boost_lib_path="$withval"
         else
-                for ac_boost_path_tmp in /usr /usr/local /opt /opt/local ; do
-                        if test -d "$ac_boost_path_tmp/include/boost" && test -r "$ac_boost_path_tmp/include/boost"; then
-                                BOOST_LDFLAGS="-L$ac_boost_path_tmp/lib"
-                                BOOST_CPPFLAGS="-I$ac_boost_path_tmp/include"
-                                break;
-                        fi
+                AC_MSG_ERROR(--with-boost-libdir expected directory name)
+        fi
+        ],
+        [ac_boost_lib_path=""]
+)
+
+if test "x$want_boost" = "xyes"; then
+    boost_lib_version_req=ifelse([$1], ,1.20.0,$1)
+    boost_lib_version_req_shorten=`expr $boost_lib_version_req : '\([[0-9]]*\.[[0-9]]*\)'`
+    boost_lib_version_req_major=`expr $boost_lib_version_req : '\([[0-9]]*\)'`
+    boost_lib_version_req_minor=`expr $boost_lib_version_req : '[[0-9]]*\.\([[0-9]]*\)'`
+    boost_lib_version_req_sub_minor=`expr $boost_lib_version_req : '[[0-9]]*\.[[0-9]]*\.\([[0-9]]*\)'`
+    if test "x$boost_lib_version_req_sub_minor" = "x" ; then
+        boost_lib_version_req_sub_minor="0"
+        fi
+    WANT_BOOST_VERSION=`expr $boost_lib_version_req_major \* 100000 \+  $boost_lib_version_req_minor \* 100 \+ $boost_lib_version_req_sub_minor`
+    AC_MSG_CHECKING(for boostlib >= $boost_lib_version_req)
+    succeeded=no
+
+    dnl On 64-bit systems check for system libraries in both lib64 and lib.
+    dnl The former is specified by FHS, but e.g. Debian does not adhere to
+    dnl this (as it rises problems for generic multi-arch support).
+    dnl The last entry in the list is chosen by default when no libraries
+    dnl are found, e.g. when only header-only libraries are installed!
+    libsubdirs="lib"
+    ax_arch=`uname -m`
+    case $ax_arch in
+      x86_64|ppc64|s390x|sparc64|aarch64)
+        libsubdirs="lib64 lib lib64"
+        ;;
+    esac
+
+    dnl allow for real multi-arch paths e.g. /usr/lib/x86_64-linux-gnu. Give
+    dnl them priority over the other paths since, if libs are found there, they
+    dnl are almost assuredly the ones desired.
+    AC_REQUIRE([AC_CANONICAL_HOST])
+    libsubdirs="lib/${host_cpu}-${host_os} $libsubdirs"
+
+    case ${host_cpu} in
+      i?86)
+        libsubdirs="lib/i386-${host_os} $libsubdirs"
+        ;;
+    esac
+
+    dnl first we check the system location for boost libraries
+    dnl this location ist chosen if boost libraries are installed with the --layout=system option
+    dnl or if you install boost with RPM
+    if test "$ac_boost_path" != ""; then
+        BOOST_CPPFLAGS="-I$ac_boost_path/include"
+        for ac_boost_path_tmp in $libsubdirs; do
+                if test -d "$ac_boost_path"/"$ac_boost_path_tmp" ; then
+                        BOOST_LDFLAGS="-L$ac_boost_path/$ac_boost_path_tmp"
+                        break
+                fi
+        done
+    elif test "$cross_compiling" != yes; then
+        for ac_boost_path_tmp in /usr /usr/local /opt /opt/local ; do
+            if test -d "$ac_boost_path_tmp/include/boost" && test -r "$ac_boost_path_tmp/include/boost"; then
+                for libsubdir in $libsubdirs ; do
+                    if ls "$ac_boost_path_tmp/$libsubdir/libboost_"* >/dev/null 2>&1 ; then break; fi
                 done
+                BOOST_LDFLAGS="-L$ac_boost_path_tmp/$libsubdir"
+                BOOST_CPPFLAGS="-I$ac_boost_path_tmp/include"
+                break;
+            fi
+        done
+    fi
+
+    dnl overwrite ld flags if we have required special directory with
+    dnl --with-boost-libdir parameter
+    if test "$ac_boost_lib_path" != ""; then
+       BOOST_LDFLAGS="-L$ac_boost_lib_path"
+    fi
+
+    CPPFLAGS_SAVED="$CPPFLAGS"
+    CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+    export CPPFLAGS
+
+    LDFLAGS_SAVED="$LDFLAGS"
+    LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
+    export LDFLAGS
+
+    AC_REQUIRE([AC_PROG_CXX])
+    AC_LANG_PUSH(C++)
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    @%:@include <boost/version.hpp>
+    ]], [[
+    #if BOOST_VERSION >= $WANT_BOOST_VERSION
+    // Everything is okay
+    #else
+    #  error Boost version is too old
+    #endif
+    ]])],[
+        AC_MSG_RESULT(yes)
+    succeeded=yes
+    found_system=yes
+        ],[
+        ])
+    AC_LANG_POP([C++])
+
+
+
+    dnl if we found no boost with system layout we search for boost libraries
+    dnl built and installed without the --layout=system option or for a staged(not installed) version
+    if test "x$succeeded" != "xyes"; then
+        _version=0
+        if test "$ac_boost_path" != ""; then
+            if test -d "$ac_boost_path" && test -r "$ac_boost_path"; then
+                for i in `ls -d $ac_boost_path/include/boost-* 2>/dev/null`; do
+                    _version_tmp=`echo $i | sed "s#$ac_boost_path##" | sed 's/\/include\/boost-//' | sed 's/_/./'`
+                    V_CHECK=`expr $_version_tmp \> $_version`
+                    if test "$V_CHECK" = "1" ; then
+                        _version=$_version_tmp
+                    fi
+                    VERSION_UNDERSCORE=`echo $_version | sed 's/\./_/'`
+                    BOOST_CPPFLAGS="-I$ac_boost_path/include/boost-$VERSION_UNDERSCORE"
+                done
+            fi
+        else
+            if test "$cross_compiling" != yes; then
+                for ac_boost_path in /usr /usr/local /opt /opt/local ; do
+                    if test -d "$ac_boost_path" && test -r "$ac_boost_path"; then
+                        for i in `ls -d $ac_boost_path/include/boost-* 2>/dev/null`; do
+                            _version_tmp=`echo $i | sed "s#$ac_boost_path##" | sed 's/\/include\/boost-//' | sed 's/_/./'`
+                            V_CHECK=`expr $_version_tmp \> $_version`
+                            if test "$V_CHECK" = "1" ; then
+                                _version=$_version_tmp
+                                best_path=$ac_boost_path
+                            fi
+                        done
+                    fi
+                done
+
+                VERSION_UNDERSCORE=`echo $_version | sed 's/\./_/'`
+                BOOST_CPPFLAGS="-I$best_path/include/boost-$VERSION_UNDERSCORE"
+                if test "$ac_boost_lib_path" = ""; then
+                    for libsubdir in $libsubdirs ; do
+                        if ls "$best_path/$libsubdir/libboost_"* >/dev/null 2>&1 ; then break; fi
+                    done
+                    BOOST_LDFLAGS="-L$best_path/$libsubdir"
+                fi
+            fi
+
+            if test "x$BOOST_ROOT" != "x"; then
+                for libsubdir in $libsubdirs ; do
+                    if ls "$BOOST_ROOT/stage/$libsubdir/libboost_"* >/dev/null 2>&1 ; then break; fi
+                done
+                if test -d "$BOOST_ROOT" && test -r "$BOOST_ROOT" && test -d "$BOOST_ROOT/stage/$libsubdir" && test -r "$BOOST_ROOT/stage/$libsubdir"; then
+                    version_dir=`expr //$BOOST_ROOT : '.*/\(.*\)'`
+                    stage_version=`echo $version_dir | sed 's/boost_//' | sed 's/_/./g'`
+                        stage_version_shorten=`expr $stage_version : '\([[0-9]]*\.[[0-9]]*\)'`
+                    V_CHECK=`expr $stage_version_shorten \>\= $_version`
+                    if test "$V_CHECK" = "1" -a "$ac_boost_lib_path" = "" ; then
+                        AC_MSG_NOTICE(We will use a staged boost library from $BOOST_ROOT)
+                        BOOST_CPPFLAGS="-I$BOOST_ROOT"
+                        BOOST_LDFLAGS="-L$BOOST_ROOT/stage/$libsubdir"
+                    fi
+                fi
+            fi
         fi
 
-        CPPFLAGS_SAVED="$CPPFLAGS"
         CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
         export CPPFLAGS
-
-        LDFLAGS_SAVED="$LDFLAGS"
         LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
         export LDFLAGS
 
         AC_LANG_PUSH(C++)
-        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
         @%:@include <boost/version.hpp>
         ]], [[
         #if BOOST_VERSION >= $WANT_BOOST_VERSION
@@ -1095,653 +1237,751 @@ if test "x$want_boost" = "xyes"; then
         #  error Boost version is too old
         #endif
         ]])],[
-        AC_MSG_RESULT(yes)
+            AC_MSG_RESULT(yes)
         succeeded=yes
         found_system=yes
-        ],[
-        ])
+            ],[
+            ])
         AC_LANG_POP([C++])
+    fi
 
-
-
-        dnl if we found no boost with system layout we search for boost libraries
-        dnl built and installed without the --layout=system option or for a staged(not installed) version
-        if test "x$succeeded" != "xyes"; then
-                _version=0
-                if test "$ac_boost_path" != ""; then
-                        BOOST_LDFLAGS="-L$ac_boost_path/lib"
-                        if test -d "$ac_boost_path" && test -r "$ac_boost_path"; then
-                                for i in `ls -d $ac_boost_path/include/boost-* 2>/dev/null`; do
-                                        _version_tmp=`echo $i | sed "s#$ac_boost_path##" | sed 's/\/include\/boost-//' | sed 's/_/./'`
-                                        V_CHECK=`expr $_version_tmp \> $_version`
-                                        if test "$V_CHECK" = "1" ; then
-                                                _version=$_version_tmp
-                                        fi
-                                        VERSION_UNDERSCORE=`echo $_version | sed 's/\./_/'`
-                                        BOOST_CPPFLAGS="-I$ac_boost_path/include/boost-$VERSION_UNDERSCORE"
-                                done
-                        fi
-                else
-                        for ac_boost_path in /usr /usr/local /opt /opt/local ; do
-                                if test -d "$ac_boost_path" && test -r "$ac_boost_path"; then
-                                        for i in `ls -d $ac_boost_path/include/boost-* 2>/dev/null`; do
-                                                _version_tmp=`echo $i | sed "s#$ac_boost_path##" | sed 's/\/include\/boost-//' | sed 's/_/./'`
-                                                V_CHECK=`expr $_version_tmp \> $_version`
-                                                if test "$V_CHECK" = "1" ; then
-                                                        _version=$_version_tmp
-                                                        best_path=$ac_boost_path
-                                                fi
-                                        done
-                                fi
-                        done
-
-                        VERSION_UNDERSCORE=`echo $_version | sed 's/\./_/'`
-                        BOOST_CPPFLAGS="-I$best_path/include/boost-$VERSION_UNDERSCORE"
-                        BOOST_LDFLAGS="-L$best_path/lib"
-
-                        if test "x$BOOST_ROOT" != "x"; then
-                                if test -d "$BOOST_ROOT" && test -r "$BOOST_ROOT" && test -d "$BOOST_ROOT/stage/lib" && test -r "$BOOST_ROOT/stage/lib"; then
-                                        version_dir=`expr //$BOOST_ROOT : '.*/\(.*\)'`
-                                        stage_version=`echo $version_dir | sed 's/boost_//' | sed 's/_/./g'`
-                                        stage_version_shorten=`expr $stage_version : '\([[0-9]]*\.[[0-9]]*\)'`
-                                        V_CHECK=`expr $stage_version_shorten \>\= $_version`
-                                        if test "$V_CHECK" = "1" ; then
-                                                AC_MSG_NOTICE(We will use a staged boost library from $BOOST_ROOT)
-                                                BOOST_CPPFLAGS="-I$BOOST_ROOT"
-                                                BOOST_LDFLAGS="-L$BOOST_ROOT/stage/lib"
-                                        fi
-                                fi
-                        fi
-                fi
-
-                CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-                export CPPFLAGS
-                LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
-                export LDFLAGS
-
-                AC_LANG_PUSH(C++)
-                AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-                @%:@include <boost/version.hpp>
-                ]], [[
-                #if BOOST_VERSION >= $WANT_BOOST_VERSION
-                // Everything is okay
-                #else
-                #  error Boost version is too old
-                #endif
-                ]])],[
-                AC_MSG_RESULT(yes)
-                succeeded=yes
-                found_system=yes
-                ],[
-                ])
-                AC_LANG_POP([C++])
-        fi
-
-        if test "$succeeded" != "yes" ; then
-                if test "$_version" = "0" ; then
-                        AC_MSG_WARN([[We could not detect the boost libraries (version $boost_lib_version_req_shorten or higher). If you have a staged boost library (still not installed) please specify \$BOOST_ROOT in your environment and do not give a PATH to --with-boost option.  If you are sure you have boost installed, then check your version number looking in <boost/version.hpp>. See http://randspringer.de/boost for more documentation.]])
-                else
-                        AC_MSG_WARN([Your boost libraries seems to old (version $_version).])
-                fi
-		ifelse([$2], , :, [$2])
+    if test "$succeeded" != "yes" ; then
+        if test "$_version" = "0" ; then
+            AC_MSG_NOTICE([[We could not detect the boost libraries (version $boost_lib_version_req_shorten or higher). If you have a staged boost library (still not installed) please specify \$BOOST_ROOT in your environment and do not give a PATH to --with-boost option.  If you are sure you have boost installed, then check your version number looking in <boost/version.hpp>. See http://randspringer.de/boost for more documentation.]])
         else
-		ifelse([$1], , :, [$1])
-                AC_SUBST(BOOST_CPPFLAGS)
-                AC_SUBST(BOOST_LDFLAGS)
-                AC_DEFINE(HAVE_BOOST, 1,[define if the Boost library is available])
+            AC_MSG_NOTICE([Your boost libraries seems to old (version $_version).])
         fi
+        # execute ACTION-IF-NOT-FOUND (if present):
+        ifelse([$3], , :, [$3])
+    else
+        AC_SUBST(BOOST_CPPFLAGS)
+        AC_SUBST(BOOST_LDFLAGS)
+        AC_DEFINE(HAVE_BOOST,,[define if the Boost library is available])
+        # execute ACTION-IF-FOUND (if present):
+        ifelse([$2], , :, [$2])
+    fi
 
-        CPPFLAGS="$CPPFLAGS_SAVED"
-        LDFLAGS="$LDFLAGS_SAVED"
+    CPPFLAGS="$CPPFLAGS_SAVED"
+    LDFLAGS="$LDFLAGS_SAVED"
 fi
 
 ])
 
 dnl checks for boost date time library
+# ===========================================================================
+#    http://www.gnu.org/software/autoconf-archive/ax_boost_date_time.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_BOOST_DATE_TIME
+#
+# DESCRIPTION
+#
+#   Test for Date_Time library from the Boost C++ libraries. The macro
+#   requires a preceding call to AX_BOOST_BASE. Further documentation is
+#   available at <http://randspringer.de/boost/index.html>.
+#
+#   This macro calls:
+#
+#     AC_SUBST(BOOST_DATE_TIME_LIB)
+#
+#   And sets:
+#
+#     HAVE_BOOST_DATE_TIME
+#
+# LICENSE
+#
+#   Copyright (c) 2008 Thomas Porschberg <thomas@randspringer.de>
+#   Copyright (c) 2008 Michael Tindal
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
 
 AC_DEFUN([AX_BOOST_DATE_TIME],
 [
-        AC_ARG_WITH([boost-date-time],
-        AS_HELP_STRING([--with-boost-date-time@<:@=special-lib@:>@],
+	AC_ARG_WITH([boost-date-time],
+	AS_HELP_STRING([--with-boost-date-time@<:@=special-lib@:>@],
                    [use the Date_Time library from boost - it is possible to specify a certain library for the linker
                         e.g. --with-boost-date-time=boost_date_time-gcc-mt-d-1_33_1 ]),
         [
         if test "$withval" = "no"; then
-		want_boost="no"
+			want_boost="no"
         elif test "$withval" = "yes"; then
-		want_boost="yes"
-		ax_boost_user_date_time_lib=""
+            want_boost="yes"
+            ax_boost_user_date_time_lib=""
         else
-		want_boost="yes"
+		    want_boost="yes"
 		ax_boost_user_date_time_lib="$withval"
-	fi
+		fi
         ],
         [want_boost="yes"]
-        )
+	)
 
-        if test "x$want_boost" = "xyes"; then
-	        AC_REQUIRE([AC_PROG_CC])
+	if test "x$want_boost" = "xyes"; then
+        AC_REQUIRE([AC_PROG_CC])
 		CPPFLAGS_SAVED="$CPPFLAGS"
-       		CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+		CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
 		export CPPFLAGS
 
-       		LDFLAGS_SAVED="$LDFLAGS"
+		LDFLAGS_SAVED="$LDFLAGS"
 		LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
 		export LDFLAGS
 
-	        AC_CACHE_CHECK(whether the Boost::Date_Time library is available,
-       	                                    ax_cv_boost_date_time,
-			[AC_LANG_PUSH([C++])
-				AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[@%:@include <boost/date_time/gregorian/gregorian_types.hpp>]],
-					[[	
-						using namespace boost::gregorian; date d(2002,Jan,10);
-						return 0;
-					]])],
-				ax_cv_boost_date_time=yes, ax_cv_boost_date_time=no)
-				AC_LANG_POP([C++])
-			]
-		)
-
+        AC_CACHE_CHECK(whether the Boost::Date_Time library is available,
+					   ax_cv_boost_date_time,
+        [AC_LANG_PUSH([C++])
+		 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[@%:@include <boost/date_time/gregorian/gregorian_types.hpp>]],
+                                   [[using namespace boost::gregorian; date d(2002,Jan,10);
+                                     return 0;
+                                   ]])],
+         ax_cv_boost_date_time=yes, ax_cv_boost_date_time=no)
+         AC_LANG_POP([C++])
+		])
 		if test "x$ax_cv_boost_date_time" = "xyes"; then
-			AC_DEFINE(HAVE_BOOST_DATE_TIME, 1, [define if the Boost::Date_Time library is available])
-			BN_BOOST_DATE_TIME_LIB=boost_date_time
-			BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
-			if test "x$ax_boost_user_date_time_lib" = "x"; then
-				for libextension in `(ls $BOOSTLIBDIR/boost_date_time*; ls $BOOSTLIBDIR/libboost_date_time* ) | sed 's,.*/,,' | egrep "so|a|lib"$` ; do
-					libextension=`echo $libextension | sed -e 's;^\(lib\)\?boost_date_time\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_date_time\(.*\)\.a*$;\2;'  -e 's;^\(lib\)\?boost_date_time\(.*\)\.lib*$;\2;'`
-					ax_lib=${BN_BOOST_DATE_TIME_LIB}${libextension}
-					AC_CHECK_LIB($ax_lib, exit,
-						[BOOST_DATE_TIME_LIB="-l$ax_lib"; AC_SUBST(BOOST_DATE_TIME_LIB) link_date_time="yes"; break],
-						[link_date_time="no"])
-					ax_lib=lib$ax_lib
-					AC_CHECK_LIB($ax_lib, exit,
-						[BOOST_DATE_TIME_LIB="-l$ax_lib"; AC_SUBST(BOOST_DATE_TIME_LIB) link_date_time="yes"; break],
-						[link_date_time="no"])
+			AC_DEFINE(HAVE_BOOST_DATE_TIME,,[define if the Boost::Date_Time library is available])
+            BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
+            if test "x$ax_boost_user_date_time_lib" = "x"; then
+                for libextension in `ls $BOOSTLIBDIR/libboost_date_time*.so* $BOOSTLIBDIR/libboost_date_time*.dylib* $BOOSTLIBDIR/libboost_date_time*.a* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_date_time.*\)\.so.*$;\1;' -e 's;^lib\(boost_date_time.*\)\.dylib.*$;\1;' -e 's;^lib\(boost_date_time.*\)\.a*$;\1;'` ; do
+                     ax_lib=${libextension}
+				    AC_CHECK_LIB($ax_lib, exit,
+                                 [BOOST_DATE_TIME_LIB="-l$ax_lib"; AC_SUBST(BOOST_DATE_TIME_LIB) link_date_time="yes"; break],
+                                 [link_date_time="no"])
 				done
-			else
-				for ax_lib in $ax_boost_user_date_time_lib lib$ax_boost_user_date_time_lib l$ax_boost_user_date_time_lib $BN_BOOST_DATE_TIME_LIB-$ax_boost_user_date_time_lib; do
-					AC_CHECK_LIB($ax_lib, main,
-						[BOOST_DATE_TIME_LIB="-l$ax_lib"; AC_SUBST(BOOST_DATE_TIME_LIB) link_date_time="yes"; break],
-						[link_date_time="no"])
+                if test "x$link_date_time" != "xyes"; then
+                for libextension in `ls $BOOSTLIBDIR/boost_date_time*.dll* $BOOSTLIBDIR/boost_date_time*.a* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^\(boost_date_time.*\)\.dll.*$;\1;' -e 's;^\(boost_date_time.*\)\.a.*$;\1;'` ; do
+                     ax_lib=${libextension}
+				    AC_CHECK_LIB($ax_lib, exit,
+                                 [BOOST_DATE_TIME_LIB="-l$ax_lib"; AC_SUBST(BOOST_DATE_TIME_LIB) link_date_time="yes"; break],
+                                 [link_date_time="no"])
 				done
+                fi
 
-			fi
+            else
+               for ax_lib in $ax_boost_user_date_time_lib boost_date_time-$ax_boost_user_date_time_lib; do
+				      AC_CHECK_LIB($ax_lib, main,
+                                   [BOOST_DATE_TIME_LIB="-l$ax_lib"; AC_SUBST(BOOST_DATE_TIME_LIB) link_date_time="yes"; break],
+                                   [link_date_time="no"])
+                  done
 
-			if test "x$link_date_time" = "xno"; then
-				AC_MSG_WARN(Boost date time library not found)
-				ifelse([$2], , :, [$2])
-			else
-				ifelse([$1], , :, [$1])
+            fi
+            if test "x$ax_lib" = "x"; then
+                AC_MSG_ERROR(Could not find a version of the library!)
+            fi
+			if test "x$link_date_time" != "xyes"; then
+				AC_MSG_ERROR(Could not link against $ax_lib !)
 			fi
-		else
-			ifelse([$2], , :, [$2])
 		fi
 
 		CPPFLAGS="$CPPFLAGS_SAVED"
-		LDFLAGS="$LDFLAGS_SAVED"
-
-	else
-		ifelse([$2], , :, [$2])
-        fi
+	LDFLAGS="$LDFLAGS_SAVED"
+	fi
 ])
 
 dnl checks for boost filesystem library
+# ===========================================================================
+#    http://www.gnu.org/software/autoconf-archive/ax_boost_filesystem.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_BOOST_FILESYSTEM
+#
+# DESCRIPTION
+#
+#   Test for Filesystem library from the Boost C++ libraries. The macro
+#   requires a preceding call to AX_BOOST_BASE. Further documentation is
+#   available at <http://randspringer.de/boost/index.html>.
+#
+#   This macro calls:
+#
+#     AC_SUBST(BOOST_FILESYSTEM_LIB)
+#
+#   And sets:
+#
+#     HAVE_BOOST_FILESYSTEM
+#
+# LICENSE
+#
+#   Copyright (c) 2009 Thomas Porschberg <thomas@randspringer.de>
+#   Copyright (c) 2009 Michael Tindal
+#   Copyright (c) 2009 Roman Rybalko <libtorrent@romanr.info>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
 AC_DEFUN([AX_BOOST_FILESYSTEM],
 [
-        AC_ARG_WITH([boost-filesystem],
-        AS_HELP_STRING([--with-boost-filesystem@<:@=special-lib@:>@],
+	AC_ARG_WITH([boost-filesystem],
+	AS_HELP_STRING([--with-boost-filesystem@<:@=special-lib@:>@],
                    [use the Filesystem library from boost - it is possible to specify a certain library for the linker
                         e.g. --with-boost-filesystem=boost_filesystem-gcc-mt ]),
         [
         if test "$withval" = "no"; then
-		want_boost="no"
+			want_boost="no"
         elif test "$withval" = "yes"; then
-		want_boost="yes"
-		ax_boost_user_filesystem_lib=""
+            want_boost="yes"
+            ax_boost_user_filesystem_lib=""
         else
-		want_boost="yes"
-                ax_boost_user_filesystem_lib="$withval"
-	fi
+		    want_boost="yes"
+		ax_boost_user_filesystem_lib="$withval"
+		fi
         ],
         [want_boost="yes"]
-        )
+	)
 
-        if test "x$want_boost" = "xyes"; then
-	        AC_REQUIRE([AC_PROG_CC])
-                CPPFLAGS_SAVED="$CPPFLAGS"
-                CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-                export CPPFLAGS
+	if test "x$want_boost" = "xyes"; then
+        AC_REQUIRE([AC_PROG_CC])
+		CPPFLAGS_SAVED="$CPPFLAGS"
+		CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+		export CPPFLAGS
 
-                LDFLAGS_SAVED="$LDFLAGS"
-                LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
-                export LDFLAGS
+		LDFLAGS_SAVED="$LDFLAGS"
+		LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
+		export LDFLAGS
 
-	        AC_CACHE_CHECK(whether the Boost::Filesystem library is available,
-       	                                    ax_cv_boost_filesystem,
-		        [AC_LANG_PUSH([C++])
-				AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[@%:@include <boost/filesystem/path.hpp>]],
-					[[
-					using namespace boost::filesystem;
-					path my_path( "foo/bar/data.txt" );
-					return 0;
-				]])],
-				ax_cv_boost_filesystem=yes, ax_cv_boost_filesystem=no)
-				AC_LANG_POP([C++])
-                	]
-		)
+		LIBS_SAVED=$LIBS
+		LIBS="$LIBS $BOOST_SYSTEM_LIB"
+		export LIBS
 
-                if test "x$ax_cv_boost_filesystem" = "xyes"; then
-			AC_DEFINE(HAVE_BOOST_FILESYSTEM, 1, [define if the Boost::Filesystem library is available])
-			BN_BOOSTFILESYSTEM_LIB=boost_filesystem
-			BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
-			if test "x$ax_boost_user_filesystem_lib" = "x"; then
-		                for libextension in `(ls $BOOSTLIBDIR/boost_filesystem*; ls $BOOSTLIBDIR/libboost_filesystem* ) | sed 's,.*/,,' | egrep "so|a|lib"$` ; do
-					libextension=`echo $libextension | sed -e 's;^\(lib\)\?boost_filesystem\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_filesystem\(.*\)\.a*$;\2;'  -e 's;^\(lib\)\?boost_filesystem\(.*\)\.lib*$;\2;'`
-					ax_lib=${BN_BOOSTFILESYSTEM_LIB}${libextension}
-					AC_CHECK_LIB($ax_lib, exit,
-						[BOOST_FILESYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_FILESYSTEM_LIB) link_filesystem="yes"; break],
-						[link_filesystem="no"])
-					ax_lib=lib${BN_BOOSTFILESYSTEM_LIB}${libextension}
-					AC_CHECK_LIB($ax_lib, exit,
-						[BOOST_FILESYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_FILESYSTEM_LIB) link_filesystem="yes"; break],
-						[link_filesystem="no"])
+        AC_CACHE_CHECK(whether the Boost::Filesystem library is available,
+					   ax_cv_boost_filesystem,
+        [AC_LANG_PUSH([C++])
+         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[@%:@include <boost/filesystem/path.hpp>]],
+                                   [[using namespace boost::filesystem;
+                                   path my_path( "foo/bar/data.txt" );
+                                   return 0;]])],
+					       ax_cv_boost_filesystem=yes, ax_cv_boost_filesystem=no)
+         AC_LANG_POP([C++])
+		])
+		if test "x$ax_cv_boost_filesystem" = "xyes"; then
+			AC_DEFINE(HAVE_BOOST_FILESYSTEM,,[define if the Boost::Filesystem library is available])
+            BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
+            if test "x$ax_boost_user_filesystem_lib" = "x"; then
+                for libextension in `ls -r $BOOSTLIBDIR/libboost_filesystem* 2>/dev/null | sed 's,.*/lib,,' | sed 's,\..*,,'` ; do
+                     ax_lib=${libextension}
+				    AC_CHECK_LIB($ax_lib, exit,
+                                 [BOOST_FILESYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_FILESYSTEM_LIB) link_filesystem="yes"; break],
+                                 [link_filesystem="no"])
 				done
-			else
-				for ax_lib in $ax_boost_user_filesystem_lib lib$ax_boost_user_filesystem_lib l$ax_boost_user_filesystem_lib $BN_BOOSTFILESYSTEM_LIB-$ax_boost_user_filesystem_lib; do
-					AC_CHECK_LIB($ax_lib, exit,
-					[BOOST_FILESYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_FILESYSTEM_LIB) link_filesystem="yes"; break],
-					[link_filesystem="no"])
+                if test "x$link_filesystem" != "xyes"; then
+                for libextension in `ls -r $BOOSTLIBDIR/boost_filesystem* 2>/dev/null | sed 's,.*/,,' | sed -e 's,\..*,,'` ; do
+                     ax_lib=${libextension}
+				    AC_CHECK_LIB($ax_lib, exit,
+                                 [BOOST_FILESYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_FILESYSTEM_LIB) link_filesystem="yes"; break],
+                                 [link_filesystem="no"])
 				done
+		    fi
+            else
+               for ax_lib in $ax_boost_user_filesystem_lib boost_filesystem-$ax_boost_user_filesystem_lib; do
+				      AC_CHECK_LIB($ax_lib, exit,
+                                   [BOOST_FILESYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_FILESYSTEM_LIB) link_filesystem="yes"; break],
+                                   [link_filesystem="no"])
+                  done
+
+            fi
+            if test "x$ax_lib" = "x"; then
+                AC_MSG_ERROR(Could not find a version of the library!)
+            fi
+			if test "x$link_filesystem" != "xyes"; then
+				AC_MSG_ERROR(Could not link against $ax_lib !)
 			fi
-                        if test "x$link_filesystem" = "xno"; then
-                                AC_MSG_ERROR(Library boost::filesytem not found!)
-				ifelse([$2], , :, [$2])
-			else
-				ifelse([$1], , :, [$1])
-                        fi
-		else
-			ifelse([$2], , :, [$2])
-                fi
+		fi
 
 		CPPFLAGS="$CPPFLAGS_SAVED"
 		LDFLAGS="$LDFLAGS_SAVED"
-	else
-		ifelse([$2], , :, [$2])
-
-        fi
+		LIBS="$LIBS_SAVED"
+	fi
 ])
 
+
+# ===========================================================================
+#      http://www.gnu.org/software/autoconf-archive/ax_boost_thread.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_BOOST_THREAD
+#
+# DESCRIPTION
+#
+#   Test for Thread library from the Boost C++ libraries. The macro requires
+#   a preceding call to AX_BOOST_BASE. Further documentation is available at
+#   <http://randspringer.de/boost/index.html>.
+#
+#   This macro calls:
+#
+#     AC_SUBST(BOOST_THREAD_LIB)
+#
+#   And sets:
+#
+#     HAVE_BOOST_THREAD
+#
+# LICENSE
+#
+#   Copyright (c) 2009 Thomas Porschberg <thomas@randspringer.de>
+#   Copyright (c) 2009 Michael Tindal
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
 AC_DEFUN([AX_BOOST_THREAD],
 [
-        AC_ARG_WITH([boost-thread],
-        AS_HELP_STRING([--with-boost-thread@<:@=special-lib@:>@],
+	AC_ARG_WITH([boost-thread],
+	AS_HELP_STRING([--with-boost-thread@<:@=special-lib@:>@],
                    [use the Thread library from boost - it is possible to specify a certain library for the linker
                         e.g. --with-boost-thread=boost_thread-gcc-mt ]),
         [
         if test "$withval" = "no"; then
-                        want_boost="no"
+			want_boost="no"
         elif test "$withval" = "yes"; then
             want_boost="yes"
             ax_boost_user_thread_lib=""
         else
-                    want_boost="yes"
-                ax_boost_user_thread_lib="$withval"
-                fi
+		    want_boost="yes"
+		ax_boost_user_thread_lib="$withval"
+		fi
         ],
         [want_boost="yes"]
-        )
+	)
 
-        if test "x$want_boost" = "xyes"; then
-		AC_REQUIRE([AC_PROG_CC])
-		AC_REQUIRE([AC_CANONICAL_BUILD])
-                CPPFLAGS_SAVED="$CPPFLAGS"
-                CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-                export CPPFLAGS
+	if test "x$want_boost" = "xyes"; then
+        AC_REQUIRE([AC_PROG_CC])
+        AC_REQUIRE([AC_CANONICAL_BUILD])
+		CPPFLAGS_SAVED="$CPPFLAGS"
+		CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+		export CPPFLAGS
 
-                LDFLAGS_SAVED="$LDFLAGS"
-                LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
-                export LDFLAGS
+		LDFLAGS_SAVED="$LDFLAGS"
+		LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
+		export LDFLAGS
 
-        	AC_CACHE_CHECK(whether the Boost::Thread library is available,
-                                           ax_cv_boost_thread,
-			[
-				AC_LANG_PUSH([C++])
-				CXXFLAGS_SAVE=$CXXFLAGS
+        AC_CACHE_CHECK(whether the Boost::Thread library is available,
+					   ax_cv_boost_thread,
+        [AC_LANG_PUSH([C++])
+			 CXXFLAGS_SAVE=$CXXFLAGS
 
-				if test "x$target_os" = "xsolaris" ; then
-					CXXFLAGS="-pthreads $CXXFLAGS"
-				elif test "x$target_os" = "xmingw32msvc" -o "x$target_os" = "xmingw32"; then
-					CXXFLAGS="-mthreads $CXXFLAGS"
-				else
-                                	CXXFLAGS="-pthread $CXXFLAGS"
-				fi
-				AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-					[
-						[@%:@include <boost/thread/thread.hpp>]],
-						[[boost::thread_group thrds;
-	                                   	return 0;]
-					])],
-					ax_cv_boost_thread=yes, 
-					ax_cv_boost_thread=no)
-				CXXFLAGS=$CXXFLAGS_SAVE
-				AC_LANG_POP([C++])
-			]
-		)
-                if test "x$ax_cv_boost_thread" = "xyes"; then
-			if test "x$target_os" = "xsolaris" ; then
-				BOOST_CPPFLAGS="-pthreads $BOOST_CPPFLAGS"
-			elif test "x$target_os" = "xmingw32msvc" -o "x$target_os" = "xmingw32"; then
-				BOOST_CPPFLAGS="-mthreads $BOOST_CPPFLAGS"
-			else
-				BOOST_CPPFLAGS="-pthread $BOOST_CPPFLAGS"
-			fi
+			 if test "x$host_os" = "xsolaris" ; then
+				 CXXFLAGS="-pthreads $CXXFLAGS"
+			 elif test "x$host_os" = "xmingw32" ; then
+				 CXXFLAGS="-mthreads $CXXFLAGS"
+			 else
+				CXXFLAGS="-pthread $CXXFLAGS"
+			 fi
+			 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[@%:@include <boost/thread/thread.hpp>]],
+                                   [[boost::thread_group thrds;
+                                   return 0;]])],
+                   ax_cv_boost_thread=yes, ax_cv_boost_thread=no)
+			 CXXFLAGS=$CXXFLAGS_SAVE
+             AC_LANG_POP([C++])
+		])
+		if test "x$ax_cv_boost_thread" = "xyes"; then
+           if test "x$host_os" = "xsolaris" ; then
+			  BOOST_CPPFLAGS="-pthreads $BOOST_CPPFLAGS"
+		   elif test "x$host_os" = "xmingw32" ; then
+			  BOOST_CPPFLAGS="-mthreads $BOOST_CPPFLAGS"
+		   else
+			  BOOST_CPPFLAGS="-pthread $BOOST_CPPFLAGS"
+		   fi
 
-                        AC_SUBST(BOOST_CPPFLAGS)
+			AC_SUBST(BOOST_CPPFLAGS)
 
-                        AC_DEFINE(HAVE_BOOST_THREAD,,[define if the Boost::Thread library is available])
-                        BN=boost_thread
-                        LDFLAGS_SAVE=$LDFLAGS
-                        case "x$build_os" in
-				*bsd* )
-					LDFLAGS="-pthread $LDFLAGS"
-					break;
-					;;
-			esac
-			if test "x$ax_boost_user_thread_lib" = "x"; then
-				for ax_lib in $BN $BN-$CC $BN-$CC-mt $BN-$CC-mt-s $BN-$CC-s \
-					lib$BN lib$BN-$CC lib$BN-$CC-mt lib$BN-$CC-mt-s lib$BN-$CC-s \
-					$BN-mt $BN-mgw $BN-mgw $BN-mgw-mt $BN-mgw-mt-s $BN-mgw-s lib$BN-mgw44-mt-1_40 lib$BN-mgw44-mt-1_42 $BN-mgw44-mt-1_42; do
-					AC_CHECK_LIB(
-						$ax_lib, 
-						main, 
-						[
-							BOOST_THREAD_LIB="-l$ax_lib" 
-							AC_SUBST(BOOST_THREAD_LIB) 
-							link_thread="yes" 
-							break
-						],
-                                 		[link_thread="no"]
-					)
-                                done
-			else
-				for ax_lib in $ax_boost_user_thread_lib $BN-$ax_boost_user_thread_lib \
-				    $BN-mgw44-mt-1_40 lib$BN-mgw44-mt-1_40 $BN-mgw44-mt-1_40.lib lib$BN-mgw44-mt-1_40.lib lib$BN-mgw34-mt-1_42.lib lib$BN-mgw44-mt-1_42.lib; do
-					AC_CHECK_LIB(
-						$ax_lib, 
-						main,
-						[
-							BOOST_THREAD_LIB="-l$ax_lib" 
-							AC_SUBST(BOOST_THREAD_LIB) 
-							link_thread="yes" 
-							break
-						],
-						[link_thread="no"]
-					)
+			AC_DEFINE(HAVE_BOOST_THREAD,,[define if the Boost::Thread library is available])
+            BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
+
+			LDFLAGS_SAVE=$LDFLAGS
+                        case "x$host_os" in
+                          *bsd* )
+                               LDFLAGS="-pthread $LDFLAGS"
+                          break;
+                          ;;
+                        esac
+            if test "x$ax_boost_user_thread_lib" = "x"; then
+                for libextension in `ls -r $BOOSTLIBDIR/libboost_thread* 2>/dev/null | sed 's,.*/lib,,' | sed 's,\..*,,'`; do
+                     ax_lib=${libextension}
+				    AC_CHECK_LIB($ax_lib, exit,
+                                 [BOOST_THREAD_LIB="-l$ax_lib"; AC_SUBST(BOOST_THREAD_LIB) link_thread="yes"; break],
+                                 [link_thread="no"])
 				done
-			fi
+                if test "x$link_thread" != "xyes"; then
+                for libextension in `ls -r $BOOSTLIBDIR/boost_thread* 2>/dev/null | sed 's,.*/,,' | sed 's,\..*,,'`; do
+                     ax_lib=${libextension}
+				    AC_CHECK_LIB($ax_lib, exit,
+                                 [BOOST_THREAD_LIB="-l$ax_lib"; AC_SUBST(BOOST_THREAD_LIB) link_thread="yes"; break],
+                                 [link_thread="no"])
+				done
+                fi
+
+            else
+               for ax_lib in $ax_boost_user_thread_lib boost_thread-$ax_boost_user_thread_lib; do
+				      AC_CHECK_LIB($ax_lib, exit,
+                                   [BOOST_THREAD_LIB="-l$ax_lib"; AC_SUBST(BOOST_THREAD_LIB) link_thread="yes"; break],
+                                   [link_thread="no"])
+                  done
+
+            fi
+            if test "x$ax_lib" = "x"; then
+                AC_MSG_ERROR(Could not find a version of the library!)
+            fi
 			if test "x$link_thread" = "xno"; then
 				AC_MSG_ERROR(Could not link against $ax_lib !)
-				ifelse([$2], , :, [$2])
-			else
-				case "x$build_os" in
-					*bsd* )
-						BOOST_LDFLAGS="-pthread $BOOST_LDFLAGS"
-						break;
-						;;
-				esac				
-				ifelse([$1], , :, [$1])
-                        fi
-		else
-			ifelse([$2], , :, [$2])
-                fi
-                CPPFLAGS="$CPPFLAGS_SAVED"
-		LDFLAGS="$LDFLAGS_SAVED"
-        fi
+                        else
+                           case "x$host_os" in
+                              *bsd* )
+				BOOST_LDFLAGS="-pthread $BOOST_LDFLAGS"
+                              break;
+                              ;;
+                           esac
+
+			fi
+		fi
+
+		CPPFLAGS="$CPPFLAGS_SAVED"
+	LDFLAGS="$LDFLAGS_SAVED"
+	fi
 ])
 
 
-
 dnl checks for boost system library
+# ===========================================================================
+#      http://www.gnu.org/software/autoconf-archive/ax_boost_system.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_BOOST_SYSTEM
+#
+# DESCRIPTION
+#
+#   Test for System library from the Boost C++ libraries. The macro requires
+#   a preceding call to AX_BOOST_BASE. Further documentation is available at
+#   <http://randspringer.de/boost/index.html>.
+#
+#   This macro calls:
+#
+#     AC_SUBST(BOOST_SYSTEM_LIB)
+#
+#   And sets:
+#
+#     HAVE_BOOST_SYSTEM
+#
+# LICENSE
+#
+#   Copyright (c) 2008 Thomas Porschberg <thomas@randspringer.de>
+#   Copyright (c) 2008 Michael Tindal
+#   Copyright (c) 2008 Daniel Casimiro <dan.casimiro@gmail.com>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
 AC_DEFUN([AX_BOOST_SYSTEM],
 [
-        AC_ARG_WITH([boost-system],
-        AS_HELP_STRING([--with-boost-system@<:@=special-lib@:>@],
+	AC_ARG_WITH([boost-system],
+	AS_HELP_STRING([--with-boost-system@<:@=special-lib@:>@],
                    [use the System library from boost - it is possible to specify a certain library for the linker
-                        e.g. --with-boost-system=boost_system-gcc-mt-d-1_33_1 ]),
+                        e.g. --with-boost-system=boost_system-gcc-mt ]),
         [
         if test "$withval" = "no"; then
-                        want_boost="no"
+			want_boost="no"
         elif test "$withval" = "yes"; then
             want_boost="yes"
             ax_boost_user_system_lib=""
         else
-            want_boost="yes"
-            ax_boost_user_system_lib="$withval"
-        fi
+		    want_boost="yes"
+		ax_boost_user_system_lib="$withval"
+		fi
         ],
         [want_boost="yes"]
-        )
+	)
 
-        if test "x$want_boost" = "xyes"; then
+	if test "x$want_boost" = "xyes"; then
         AC_REQUIRE([AC_PROG_CC])
-                CPPFLAGS_SAVED="$CPPFLAGS"
-                CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-                export CPPFLAGS
+        AC_REQUIRE([AC_CANONICAL_BUILD])
+		CPPFLAGS_SAVED="$CPPFLAGS"
+		CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+		export CPPFLAGS
 
-                LDFLAGS_SAVED="$LDFLAGS"
-                LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
-                export LDFLAGS
+		LDFLAGS_SAVED="$LDFLAGS"
+		LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
+		export LDFLAGS
 
         AC_CACHE_CHECK(whether the Boost::System library is available,
-                                           ax_cv_boost_system,
+					   ax_cv_boost_system,
         [AC_LANG_PUSH([C++])
-                         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[@%:@include <boost/system/system_error.hpp>
-                                                                                                ]],
-                                   [[boost::system::system_error o(boost::system::error_code()); return 0;]])],
+			 CXXFLAGS_SAVE=$CXXFLAGS
+
+			 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[@%:@include <boost/system/error_code.hpp>]],
+                                   [[boost::system::system_category]])],
                    ax_cv_boost_system=yes, ax_cv_boost_system=no)
-         AC_LANG_POP([C++])
-                ])
-                if test "x$ax_cv_boost_system" = "xyes"; then
-                        AC_DEFINE(HAVE_BOOST_SYSTEM,,[define if the Boost::System library is available])
-                        BN_BOOST_SYSTEM=""
-        		BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
-			
-	                if test "x$ax_boost_user_system_lib" = "x"; then
-			    BN_BOOST_SYSTEM="boost_system"
-	                    for libraryext in `(ls $BOOSTLIBDIR/boost_system*; ls $BOOSTLIBDIR/libboost_system* ) | sed 's,.*/,,' | egrep "so|a|lib"$`; do
-				libraryext=`echo ${libraryext} | sed -e 's;^\(lib\)\?boost_system\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_system\(.*\)\.a*$;\2;' -e 's;^\(lib\)\?boost_system\(.*\)\.lib*$;\2;'`
-    	                        ax_lib=${BN_BOOST_SYSTEM}${libraryext}
-                                AC_CHECK_LIB($ax_lib, exit,
+			 CXXFLAGS=$CXXFLAGS_SAVE
+             AC_LANG_POP([C++])
+		])
+		if test "x$ax_cv_boost_system" = "xyes"; then
+			AC_SUBST(BOOST_CPPFLAGS)
+
+			AC_DEFINE(HAVE_BOOST_SYSTEM,,[define if the Boost::System library is available])
+            BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
+
+			LDFLAGS_SAVE=$LDFLAGS
+            if test "x$ax_boost_user_system_lib" = "x"; then
+                for libextension in `ls -r $BOOSTLIBDIR/libboost_system* 2>/dev/null | sed 's,.*/lib,,' | sed 's,\..*,,'` ; do
+                     ax_lib=${libextension}
+				    AC_CHECK_LIB($ax_lib, exit,
                                  [BOOST_SYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_SYSTEM_LIB) link_system="yes"; break],
                                  [link_system="no"])
-				ax_lib=lib${BN_BOOST_SYSTEM}${libraryext}
-				AC_CHECK_LIB($ax_lib, exit,
+				done
+                if test "x$link_system" != "xyes"; then
+                for libextension in `ls -r $BOOSTLIBDIR/boost_system* 2>/dev/null | sed 's,.*/,,' | sed -e 's,\..*,,'` ; do
+                     ax_lib=${libextension}
+				    AC_CHECK_LIB($ax_lib, exit,
                                  [BOOST_SYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_SYSTEM_LIB) link_system="yes"; break],
                                  [link_system="no"])
-                            done
-			else
-		    	    BN_BOOST_SYSTEM=$ax_boost_user_system_lib
-			    for ax_lib in $ax_boost_user_system_lib l$ax_boost_user_system_lib lib$ax_boost_user_system_lib $BN_BOOST_SYSTEM-$ax_boost_user_system_lib; do
-                                      AC_CHECK_LIB($ax_lib, main,
+				done
+                fi
+
+            else
+               for ax_lib in $ax_boost_user_system_lib boost_system-$ax_boost_user_system_lib; do
+				      AC_CHECK_LIB($ax_lib, exit,
                                    [BOOST_SYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_SYSTEM_LIB) link_system="yes"; break],
                                    [link_system="no"])
-	                   done
-			fi
-                        if test "x$link_system" = "xno"; then
-                                AC_MSG_ERROR(Could not link against $ax_lib !)
-				ifelse([$2], , :, [$2])
-			else
-				ifelse([$1], , :, [$1])
-                        fi
-		else
-			ifelse([$2], , :, [$2])
-                fi
-                CPPFLAGS="$CPPFLAGS_SAVED"
-                LDFLAGS="$LDFLAGS_SAVED"
-	else
-		ifelse([$2], , :, [$2])
+                  done
 
-        fi
+            fi
+            if test "x$ax_lib" = "x"; then
+                AC_MSG_ERROR(Could not find a version of the library!)
+            fi
+			if test "x$link_system" = "xno"; then
+				AC_MSG_ERROR(Could not link against $ax_lib !)
+			fi
+		fi
+
+		CPPFLAGS="$CPPFLAGS_SAVED"
+	LDFLAGS="$LDFLAGS_SAVED"
+	fi
 ])
 
 dnl checks for boost regex library
+# ===========================================================================
+#      http://www.gnu.org/software/autoconf-archive/ax_boost_regex.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_BOOST_REGEX
+#
+# DESCRIPTION
+#
+#   Test for Regex library from the Boost C++ libraries. The macro requires
+#   a preceding call to AX_BOOST_BASE. Further documentation is available at
+#   <http://randspringer.de/boost/index.html>.
+#
+#   This macro calls:
+#
+#     AC_SUBST(BOOST_REGEX_LIB)
+#
+#   And sets:
+#
+#     HAVE_BOOST_REGEX
+#
+# LICENSE
+#
+#   Copyright (c) 2008 Thomas Porschberg <thomas@randspringer.de>
+#   Copyright (c) 2008 Michael Tindal
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
 AC_DEFUN([AX_BOOST_REGEX],
 [
-        AC_ARG_WITH([boost-regex],
-        AS_HELP_STRING([--with-boost-regex@<:@=special-lib@:>@],
+	AC_ARG_WITH([boost-regex],
+	AS_HELP_STRING([--with-boost-regex@<:@=special-lib@:>@],
                    [use the Regex library from boost - it is possible to specify a certain library for the linker
                         e.g. --with-boost-regex=boost_regex-gcc-mt-d-1_33_1 ]),
         [
         if test "$withval" = "no"; then
-                        want_boost="no"
+			want_boost="no"
         elif test "$withval" = "yes"; then
             want_boost="yes"
             ax_boost_user_regex_lib=""
         else
-                    want_boost="yes"
-                ax_boost_user_regex_lib="$withval"
-                fi
+		    want_boost="yes"
+		ax_boost_user_regex_lib="$withval"
+		fi
         ],
         [want_boost="yes"]
-        )
+	)
 
-        if test "x$want_boost" = "xyes"; then
+	if test "x$want_boost" = "xyes"; then
         AC_REQUIRE([AC_PROG_CC])
-                CPPFLAGS_SAVED="$CPPFLAGS"
-                CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-                export CPPFLAGS
+		CPPFLAGS_SAVED="$CPPFLAGS"
+		CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+		export CPPFLAGS
 
-                LDFLAGS_SAVED="$LDFLAGS"
-                LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
-                export LDFLAGS
+		LDFLAGS_SAVED="$LDFLAGS"
+		LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
+		export LDFLAGS
 
         AC_CACHE_CHECK(whether the Boost::Regex library is available,
-                                           ax_cv_boost_regex,
+					   ax_cv_boost_regex,
         [AC_LANG_PUSH([C++])
-                         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[@%:@include <boost/regex.hpp>
-                                                                                                ]],
+			 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[@%:@include <boost/regex.hpp>
+												]],
                                    [[boost::regex r(); return 0;]])],
                    ax_cv_boost_regex=yes, ax_cv_boost_regex=no)
          AC_LANG_POP([C++])
-                ])
-                if test "x$ax_cv_boost_regex" = "xyes"; then
-                        AC_DEFINE(HAVE_BOOST_REGEX,,[define if the Boost::Regex library is available])
-                        BN_BOOST_REGEX=boost_regex
-                        BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
-                        if test "x$ax_boost_user_regex_lib" = "x"; then
-                        	for libextension in `(ls $BOOSTLIBDIR/boost_regex*; ls $BOOSTLIBDIR/libboost_regex* ) | sed 's,.*/,,' | egrep "so|a|lib"$` ; do
-					libextension=`echo $libextension | sed -e 's;^\(lib\)\?boost_regex\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_regex\(.*\)\.a*$;\2;'  -e 's;^\(lib\)\?boost_regex\(.*\)\.lib*$;\2;'`
-                        		ax_lib=${BN_BOOST_REGEX}${libextension}
-                        		AC_CHECK_LIB($ax_lib, exit,
-                        		 [BOOST_REGEX_LIB="-l$ax_lib"; AC_SUBST(BOOST_REGEX_LIB) link_regex="yes"; break],
-                        		 [link_regex="no"])
-                        		ax_lib=lib${BN_BOOST_REGEX}${libextension}
-                        		AC_CHECK_LIB($ax_lib, exit,
-                        		 [BOOST_REGEX_LIB="-l$ax_lib"; AC_SUBST(BOOST_REGEX_LIB) link_regex="yes"; break],
-                        		 [link_regex="no"])
-                                done
-                        else
-                        	for ax_lib in $ax_boost_user_regex_lib lib$ax_boost_user_regex_lib l$ax_boost_user_regex_lib $BN_BOOST_REGEX-$ax_boost_user_regex_lib; do
-                        		AC_CHECK_LIB($ax_lib, main,
-                        		 [BOOST_REGEX_LIB="-l$ax_lib"; AC_SUBST(BOOST_REGEX_LIB) link_regex="yes"; break],
-                        		 [link_regex="no"])
-                        done
-		fi
-                        if test "x$link_regex" = "xno"; then
-                                AC_MSG_ERROR(Could not link against $ax_lib !)
-				ifelse([$2], , :, [$2])
-			else
-				ifelse([$1], , :, [$1])
-                        fi
-		else
-			ifelse([$2], , :, [$2])
+		])
+		if test "x$ax_cv_boost_regex" = "xyes"; then
+			AC_DEFINE(HAVE_BOOST_REGEX,,[define if the Boost::Regex library is available])
+            BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
+            if test "x$ax_boost_user_regex_lib" = "x"; then
+                for libextension in `ls $BOOSTLIBDIR/libboost_regex*.so* $BOOSTLIBDIR/libboost_regex*.dylib* $BOOSTLIBDIR/libboost_regex*.a* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_regex.*\)\.so.*$;\1;' -e 's;^lib\(boost_regex.*\)\.dylib.*;\1;' -e 's;^lib\(boost_regex.*\)\.a.*$;\1;'` ; do
+                     ax_lib=${libextension}
+				    AC_CHECK_LIB($ax_lib, exit,
+                                 [BOOST_REGEX_LIB="-l$ax_lib"; AC_SUBST(BOOST_REGEX_LIB) link_regex="yes"; break],
+                                 [link_regex="no"])
+				done
+                if test "x$link_regex" != "xyes"; then
+                for libextension in `ls $BOOSTLIBDIR/boost_regex*.dll* $BOOSTLIBDIR/boost_regex*.a* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^\(boost_regex.*\)\.dll.*$;\1;' -e 's;^\(boost_regex.*\)\.a.*$;\1;'` ; do
+                     ax_lib=${libextension}
+				    AC_CHECK_LIB($ax_lib, exit,
+                                 [BOOST_REGEX_LIB="-l$ax_lib"; AC_SUBST(BOOST_REGEX_LIB) link_regex="yes"; break],
+                                 [link_regex="no"])
+				done
                 fi
 
-                CPPFLAGS="$CPPFLAGS_SAVED"
-                LDFLAGS="$LDFLAGS_SAVED"
-	else
-		ifelse([$2], , :, [$2])
+            else
+               for ax_lib in $ax_boost_user_regex_lib boost_regex-$ax_boost_user_regex_lib; do
+				      AC_CHECK_LIB($ax_lib, main,
+                                   [BOOST_REGEX_LIB="-l$ax_lib"; AC_SUBST(BOOST_REGEX_LIB) link_regex="yes"; break],
+                                   [link_regex="no"])
+               done
+            fi
+            if test "x$ax_lib" = "x"; then
+                AC_MSG_ERROR(Could not find a version of the Boost::Regex library!)
+            fi
+			if test "x$link_regex" != "xyes"; then
+				AC_MSG_ERROR(Could not link against $ax_lib !)
+			fi
+		fi
 
-        fi
+		CPPFLAGS="$CPPFLAGS_SAVED"
+	LDFLAGS="$LDFLAGS_SAVED"
+	fi
 ])
 
 dnl checks for boost program options library
+# ============================================================================
+#  http://www.gnu.org/software/autoconf-archive/ax_boost_program_options.html
+# ============================================================================
+#
+# SYNOPSIS
+#
+#   AX_BOOST_PROGRAM_OPTIONS
+#
+# DESCRIPTION
+#
+#   Test for program options library from the Boost C++ libraries. The macro
+#   requires a preceding call to AX_BOOST_BASE. Further documentation is
+#   available at <http://randspringer.de/boost/index.html>.
+#
+#   This macro calls:
+#
+#     AC_SUBST(BOOST_PROGRAM_OPTIONS_LIB)
+#
+#   And sets:
+#
+#     HAVE_BOOST_PROGRAM_OPTIONS
+#
+# LICENSE
+#
+#   Copyright (c) 2009 Thomas Porschberg <thomas@randspringer.de>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
 AC_DEFUN([AX_BOOST_PROGRAM_OPTIONS],
 [
-        AC_ARG_WITH([boost-program-options],
-                AS_HELP_STRING([--with-boost-program-options@<:@=special-lib@:>@],
+	AC_ARG_WITH([boost-program-options],
+		AS_HELP_STRING([--with-boost-program-options@<:@=special-lib@:>@],
                        [use the program options library from boost - it is possible to specify a certain library for the linker
                         e.g. --with-boost-program-options=boost_program_options-gcc-mt-1_33_1 ]),
         [
         if test "$withval" = "no"; then
-                        want_boost="no"
+			want_boost="no"
         elif test "$withval" = "yes"; then
             want_boost="yes"
             ax_boost_user_program_options_lib=""
         else
-                    want_boost="yes"
-                ax_boost_user_program_options_lib="$withval"
-                fi
+		    want_boost="yes"
+		ax_boost_user_program_options_lib="$withval"
+		fi
         ],
         [want_boost="yes"]
-        )
+	)
 
-        if test "x$want_boost" = "xyes"; then
+	if test "x$want_boost" = "xyes"; then
         AC_REQUIRE([AC_PROG_CC])
-            export want_boost
-                CPPFLAGS_SAVED="$CPPFLAGS"
-                CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-                export CPPFLAGS
-                LDFLAGS_SAVED="$LDFLAGS"
-                LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
-                export LDFLAGS
-                AC_CACHE_CHECK([whether the Boost::Program_Options library is available],
-                                           ax_cv_boost_program_options,
-                                           [AC_LANG_PUSH(C++)
-                                AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[@%:@include <boost/program_options.hpp>
+	    export want_boost
+		CPPFLAGS_SAVED="$CPPFLAGS"
+		CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+		export CPPFLAGS
+		LDFLAGS_SAVED="$LDFLAGS"
+		LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
+		export LDFLAGS
+		AC_CACHE_CHECK([whether the Boost::Program_Options library is available],
+					   ax_cv_boost_program_options,
+					   [AC_LANG_PUSH(C++)
+				AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[@%:@include <boost/program_options.hpp>
                                                           ]],
                                   [[boost::program_options::options_description generic("Generic options");
                                    return 0;]])],
                            ax_cv_boost_program_options=yes, ax_cv_boost_program_options=no)
-                                        AC_LANG_POP([C++])
-                ])
-                if test "$ax_cv_boost_program_options" = yes; then
-                                AC_DEFINE(HAVE_BOOST_PROGRAM_OPTIONS,,[define if the Boost::PROGRAM_OPTIONS library is available])
-                                  BN_BOOST_PROGRAM_OPTIONS_LIB=boost_program_options
-                                  BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
-                                  if test "x$ax_boost_user_program_options_lib" = "x"; then
-                                  	for libextension in `(ls $BOOSTLIBDIR/boost_program_options*; ls $BOOSTLIBDIR/libboost_program_options* ) | sed 's,.*/,,' | egrep "so|a|lib"$` ; do
-						libextension=`echo $libextension | sed -e 's;^\(lib\)\?boost_program_options\(.*\)\.so.*$;\2;' -e 's;^\(lib\)\?boost_program_options\(.*\)\.a*$;\2;'  -e 's;^\(lib\)\?boost_program_options\(.*\)\.lib*$;\2;'`
-                                  		ax_lib=${BN_BOOST_PROGRAM_OPTIONS_LIB}${libextension}
-                                  		AC_CHECK_LIB($ax_lib, exit,
-                                  		[BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib"; AC_SUBST(BOOST_PROGRAM_OPTIONS_LIB) link_program_options="yes"; break],
-                                  		[link_program_options="no"])
-                                  		ax_lib=lib${ax_lib}
-                                  		AC_CHECK_LIB($ax_lib, exit,
-                                  		[BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib"; AC_SUBST(BOOST_PROGRAM_OPTIONS_LIB) link_program_options="yes"; break],
-                                  		[link_program_options="no"])
-                                  	done
-                                  else
-                                  	for ax_lib in $ax_boost_user_program_options_lib lib$ax_boost_user_program_options_lib l$ax_boost_user_program_options_lib $BN_BOOST_PROGRAM_OPTIONS_LIB-$ax_boost_user_program_options_lib; do
-                                  		AC_CHECK_LIB($ax_lib, main,
-                                  		[BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib"; AC_SUBST(BOOST_PROGRAM_OPTIONS_LIB) link_program_options="yes"; break],
-                                  		[link_program_options="no"])
-                                  	done
-                                  fi
-                                  if test "x$link_program_options" = "xno"; then
-                                        AC_MSG_ERROR([Could not link against [$ax_lib] !])
-                                  	ifelse([$2], , :, [$2])
-                                  else
-                                  	ifelse([$1], , :, [$1])
-                                  fi
-		else
-			ifelse([$2], , :, [$2])
+					AC_LANG_POP([C++])
+		])
+		if test "$ax_cv_boost_program_options" = yes; then
+				AC_DEFINE(HAVE_BOOST_PROGRAM_OPTIONS,,[define if the Boost::PROGRAM_OPTIONS library is available])
+                  BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
+                if test "x$ax_boost_user_program_options_lib" = "x"; then
+                for libextension in `ls $BOOSTLIBDIR/libboost_program_options*.so* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_program_options.*\)\.so.*$;\1;'` `ls $BOOSTLIBDIR/libboost_program_options*.dylib* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_program_options.*\)\.dylib.*$;\1;'` `ls $BOOSTLIBDIR/libboost_program_options*.a* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_program_options.*\)\.a.*$;\1;'` ; do
+                     ax_lib=${libextension}
+				    AC_CHECK_LIB($ax_lib, exit,
+                                 [BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib"; AC_SUBST(BOOST_PROGRAM_OPTIONS_LIB) link_program_options="yes"; break],
+                                 [link_program_options="no"])
+				done
+                if test "x$link_program_options" != "xyes"; then
+                for libextension in `ls $BOOSTLIBDIR/boost_program_options*.dll* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^\(boost_program_options.*\)\.dll.*$;\1;'` `ls $BOOSTLIBDIR/boost_program_options*.a* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^\(boost_program_options.*\)\.a.*$;\1;'` ; do
+                     ax_lib=${libextension}
+				    AC_CHECK_LIB($ax_lib, exit,
+                                 [BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib"; AC_SUBST(BOOST_PROGRAM_OPTIONS_LIB) link_program_options="yes"; break],
+                                 [link_program_options="no"])
+				done
                 fi
-                CPPFLAGS="$CPPFLAGS_SAVED"
-		LDFLAGS="$LDFLAGS_SAVED"
-	else
-		ifelse([$2], , :, [$2])
-        fi
+                else
+                  for ax_lib in $ax_boost_user_program_options_lib boost_program_options-$ax_boost_user_program_options_lib; do
+				      AC_CHECK_LIB($ax_lib, main,
+                                   [BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib"; AC_SUBST(BOOST_PROGRAM_OPTIONS_LIB) link_program_options="yes"; break],
+                                   [link_program_options="no"])
+                  done
+                fi
+            if test "x$ax_lib" = "x"; then
+                AC_MSG_ERROR(Could not find a version of the library!)
+            fi
+				if test "x$link_program_options" != "xyes"; then
+					AC_MSG_ERROR([Could not link against [$ax_lib] !])
+				fi
+		fi
+		CPPFLAGS="$CPPFLAGS_SAVED"
+	LDFLAGS="$LDFLAGS_SAVED"
+	fi
 ])
 
 dnl Checks if we have usable PAM library. Sets $PAM_LIBS variable. 
@@ -2286,6 +2526,7 @@ AC_DEFUN([AC_CHECK_ICU], [
   fi
 ])
 
+
 # ===========================================================================
 #         http://www.gnu.org/software/autoconf-archive/ax_python.html
 # ===========================================================================
@@ -2339,20 +2580,20 @@ AC_DEFUN([AC_CHECK_ICU], [
 #   modified version of the Autoconf Macro, you may extend this special
 #   exception to the GPL to apply to your modified version as well.
 
-
 AC_DEFUN([AX_PYTHON],
 [AC_MSG_CHECKING(for python build information)
 AC_MSG_RESULT([])
-for python in python2.7 python2.6 python2.5 python2.4 python2.3 python2.2 python2.1 python; do
+for python in python3.3 python3.2 python3.1 python3.0 python2.7 python2.6 python2.5 python2.4 python2.3 python2.2 python2.1 python; do
 AC_CHECK_PROGS(PYTHON_BIN, [$python])
 ax_python_bin=$PYTHON_BIN
 if test x$ax_python_bin != x; then
    AC_CHECK_LIB($ax_python_bin, main, ax_python_lib=$ax_python_bin, ax_python_lib=no)
-   AC_CHECK_HEADER([$ax_python_bin/Python.h],
-   ax_python_header="/usr/include/$ax_python_bin",
-   ax_python_header=no)
-   if test $ax_python_lib != no; then
-     if test $ax_python_header != no; then
+   if test x$ax_python_lib == xno; then
+     AC_CHECK_LIB(${ax_python_bin}m, main, ax_python_lib=${ax_python_bin}m, ax_python_lib=no)
+   fi
+   if test x$ax_python_lib != xno; then
+     ax_python_header=`$ax_python_bin -c "from distutils.sysconfig import *; print(get_config_var('CONFINCLUDEPY'))"`
+     if test x$ax_python_header != x; then
        break;
      fi
    fi
@@ -2381,8 +2622,331 @@ if test x$ax_python_lib != xno; then
   PYTHON_LIB=$ax_python_lib
   AC_SUBST(PYTHON_LIB)
 fi
-])dnl
+])
 
+
+# ===========================================================================
+#      http://www.gnu.org/software/autoconf-archive/ax_python_devel.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_PYTHON_DEVEL([version])
+#
+# DESCRIPTION
+#
+#   Note: Defines as a precious variable "PYTHON_VERSION". Don't override it
+#   in your configure.ac.
+#
+#   This macro checks for Python and tries to get the include path to
+#   'Python.h'. It provides the $(PYTHON_CPPFLAGS) and $(PYTHON_LDFLAGS)
+#   output variables. It also exports $(PYTHON_EXTRA_LIBS) and
+#   $(PYTHON_EXTRA_LDFLAGS) for embedding Python in your code.
+#
+#   You can search for some particular version of Python by passing a
+#   parameter to this macro, for example ">= '2.3.1'", or "== '2.4'". Please
+#   note that you *have* to pass also an operator along with the version to
+#   match, and pay special attention to the single quotes surrounding the
+#   version number. Don't use "PYTHON_VERSION" for this: that environment
+#   variable is declared as precious and thus reserved for the end-user.
+#
+#   This macro should work for all versions of Python >= 2.1.0. As an end
+#   user, you can disable the check for the python version by setting the
+#   PYTHON_NOVERSIONCHECK environment variable to something else than the
+#   empty string.
+#
+#   If you need to use this macro for an older Python version, please
+#   contact the authors. We're always open for feedback.
+#
+# LICENSE
+#
+#   Copyright (c) 2009 Sebastian Huber <sebastian-huber@web.de>
+#   Copyright (c) 2009 Alan W. Irwin
+#   Copyright (c) 2009 Rafael Laboissiere <rafael@laboissiere.net>
+#   Copyright (c) 2009 Andrew Collier
+#   Copyright (c) 2009 Matteo Settenvini <matteo@member.fsf.org>
+#   Copyright (c) 2009 Horst Knorr <hk_classes@knoda.org>
+#   Copyright (c) 2013 Daniel Mullner <muellner@math.stanford.edu>
+#
+#   This program is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU General Public License as published by the
+#   Free Software Foundation, either version 3 of the License, or (at your
+#   option) any later version.
+#
+#   This program is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+#   Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License along
+#   with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+#   As a special exception, the respective Autoconf Macro's copyright owner
+#   gives unlimited permission to copy, distribute and modify the configure
+#   scripts that are the output of Autoconf when processing the Macro. You
+#   need not follow the terms of the GNU General Public License when using
+#   or distributing such scripts, even though portions of the text of the
+#   Macro appear in them. The GNU General Public License (GPL) does govern
+#   all other use of the material that constitutes the Autoconf Macro.
+#
+#   This special exception to the GPL applies to versions of the Autoconf
+#   Macro released by the Autoconf Archive. When you make and distribute a
+#   modified version of the Autoconf Macro, you may extend this special
+#   exception to the GPL to apply to your modified version as well.
+
+AU_ALIAS([AC_PYTHON_DEVEL], [AX_PYTHON_DEVEL])
+AC_DEFUN([AX_PYTHON_DEVEL],[
+	#
+	# Allow the use of a (user set) custom python version
+	#
+	AC_ARG_VAR([PYTHON_VERSION],[The installed Python
+		version to use, for example '2.3'. This string
+		will be appended to the Python interpreter
+		canonical name.])
+
+	AC_PATH_PROG([PYTHON],[python[$PYTHON_VERSION]])
+	if test -z "$PYTHON"; then
+	   AC_MSG_ERROR([Cannot find python$PYTHON_VERSION in your system path])
+	   PYTHON_VERSION=""
+	fi
+
+	#
+	# Check for a version of Python >= 2.1.0
+	#
+	AC_MSG_CHECKING([for a version of Python >= '2.1.0'])
+	ac_supports_python_ver=`$PYTHON -c "import sys; \
+		ver = sys.version.split ()[[0]]; \
+		print (ver >= '2.1.0')"`
+	if test "$ac_supports_python_ver" != "True"; then
+		if test -z "$PYTHON_NOVERSIONCHECK"; then
+			AC_MSG_RESULT([no])
+			AC_MSG_FAILURE([
+This version of the AC@&t@_PYTHON_DEVEL macro
+doesn't work properly with versions of Python before
+2.1.0. You may need to re-run configure, setting the
+variables PYTHON_CPPFLAGS, PYTHON_LDFLAGS, PYTHON_SITE_PKG,
+PYTHON_EXTRA_LIBS and PYTHON_EXTRA_LDFLAGS by hand.
+Moreover, to disable this check, set PYTHON_NOVERSIONCHECK
+to something else than an empty string.
+])
+		else
+			AC_MSG_RESULT([skip at user request])
+		fi
+	else
+		AC_MSG_RESULT([yes])
+	fi
+
+	#
+	# if the macro parameter ``version'' is set, honour it
+	#
+	if test -n "$1"; then
+		AC_MSG_CHECKING([for a version of Python $1])
+		ac_supports_python_ver=`$PYTHON -c "import sys; \
+			ver = sys.version.split ()[[0]]; \
+			print (ver $1)"`
+		if test "$ac_supports_python_ver" = "True"; then
+		   AC_MSG_RESULT([yes])
+		else
+			AC_MSG_RESULT([no])
+			AC_MSG_ERROR([this package requires Python $1.
+If you have it installed, but it isn't the default Python
+interpreter in your system path, please pass the PYTHON_VERSION
+variable to configure. See ``configure --help'' for reference.
+])
+			PYTHON_VERSION=""
+		fi
+	fi
+
+	#
+	# Check if you have distutils, else fail
+	#
+	AC_MSG_CHECKING([for the distutils Python package])
+	ac_distutils_result=`$PYTHON -c "import distutils" 2>&1`
+	if test -z "$ac_distutils_result"; then
+		AC_MSG_RESULT([yes])
+	else
+		AC_MSG_RESULT([no])
+		AC_MSG_ERROR([cannot import Python module "distutils".
+Please check your Python installation. The error was:
+$ac_distutils_result])
+		PYTHON_VERSION=""
+	fi
+
+	#
+	# Check for Python include path
+	#
+	AC_MSG_CHECKING([for Python include path])
+	if test -z "$PYTHON_CPPFLAGS"; then
+		python_path=`$PYTHON -c "import distutils.sysconfig; \
+			print (distutils.sysconfig.get_python_inc ());"`
+		plat_python_path=`$PYTHON -c "import distutils.sysconfig; \
+			print (distutils.sysconfig.get_python_inc (plat_specific=1));"`
+		if test -n "${python_path}"; then
+			if test "${plat_python_path}" != "${python_path}"; then
+				python_path="-I$python_path -I$plat_python_path"
+			else
+				python_path="-I$python_path"
+			fi
+		fi
+		PYTHON_CPPFLAGS=$python_path
+	fi
+	AC_MSG_RESULT([$PYTHON_CPPFLAGS])
+	AC_SUBST([PYTHON_CPPFLAGS])
+
+	#
+	# Check for Python library path
+	#
+	AC_MSG_CHECKING([for Python library path])
+	if test -z "$PYTHON_LDFLAGS"; then
+		# (makes two attempts to ensure we've got a version number
+		# from the interpreter)
+		ac_python_version=`cat<<EOD | $PYTHON -
+
+# join all versioning strings, on some systems
+# major/minor numbers could be in different list elements
+from distutils.sysconfig import *
+e = get_config_var('VERSION')
+if e is not None:
+	print(e)
+EOD`
+
+		if test -z "$ac_python_version"; then
+			if test -n "$PYTHON_VERSION"; then
+				ac_python_version=$PYTHON_VERSION
+			else
+				ac_python_version=`$PYTHON -c "import sys; \
+					print (sys.version[[:3]])"`
+			fi
+		fi
+
+		# Make the versioning information available to the compiler
+		AC_DEFINE_UNQUOTED([HAVE_PYTHON], ["$ac_python_version"],
+                                   [If available, contains the Python version number currently in use.])
+
+		# First, the library directory:
+		ac_python_libdir=`cat<<EOD | $PYTHON -
+
+# There should be only one
+import distutils.sysconfig
+e = distutils.sysconfig.get_config_var('LIBDIR')
+if e is not None:
+	print (e)
+EOD`
+
+		# Now, for the library:
+		ac_python_library=`cat<<EOD | $PYTHON -
+
+import distutils.sysconfig
+c = distutils.sysconfig.get_config_vars()
+if 'LDVERSION' in c:
+	print ('python'+c[['LDVERSION']])
+else:
+	print ('python'+c[['VERSION']])
+EOD`
+
+		# This small piece shamelessly adapted from PostgreSQL python macro;
+		# credits goes to momjian, I think. I'd like to put the right name
+		# in the credits, if someone can point me in the right direction... ?
+		#
+		if test -n "$ac_python_libdir" -a -n "$ac_python_library"
+		then
+			# use the official shared library
+			ac_python_library=`echo "$ac_python_library" | sed "s/^lib//"`
+			PYTHON_LDFLAGS="-L$ac_python_libdir -l$ac_python_library"
+		else
+			# old way: use libpython from python_configdir
+			ac_python_libdir=`$PYTHON -c \
+			  "from distutils.sysconfig import get_python_lib as f; \
+			  import os; \
+			  print (os.path.join(f(plat_specific=1, standard_lib=1), 'config'));"`
+			PYTHON_LDFLAGS="-L$ac_python_libdir -lpython$ac_python_version"
+		fi
+
+		if test -z "PYTHON_LDFLAGS"; then
+			AC_MSG_ERROR([
+  Cannot determine location of your Python DSO. Please check it was installed with
+  dynamic libraries enabled, or try setting PYTHON_LDFLAGS by hand.
+			])
+		fi
+	fi
+	AC_MSG_RESULT([$PYTHON_LDFLAGS])
+	AC_SUBST([PYTHON_LDFLAGS])
+
+	#
+	# Check for site packages
+	#
+	AC_MSG_CHECKING([for Python site-packages path])
+	if test -z "$PYTHON_SITE_PKG"; then
+		PYTHON_SITE_PKG=`$PYTHON -c "import distutils.sysconfig; \
+			print (distutils.sysconfig.get_python_lib(0,0));"`
+	fi
+	AC_MSG_RESULT([$PYTHON_SITE_PKG])
+	AC_SUBST([PYTHON_SITE_PKG])
+
+	#
+	# libraries which must be linked in when embedding
+	#
+	AC_MSG_CHECKING(python extra libraries)
+	if test -z "$PYTHON_EXTRA_LIBS"; then
+	   PYTHON_EXTRA_LIBS=`$PYTHON -c "import distutils.sysconfig; \
+                conf = distutils.sysconfig.get_config_var; \
+                print (conf('LIBS'))"`
+	fi
+	AC_MSG_RESULT([$PYTHON_EXTRA_LIBS])
+	AC_SUBST(PYTHON_EXTRA_LIBS)
+
+	#
+	# linking flags needed when embedding
+	#
+	AC_MSG_CHECKING(python extra linking flags)
+	if test -z "$PYTHON_EXTRA_LDFLAGS"; then
+		PYTHON_EXTRA_LDFLAGS=`$PYTHON -c "import distutils.sysconfig; \
+			conf = distutils.sysconfig.get_config_var; \
+			print (conf('LINKFORSHARED'))"`
+	fi
+	AC_MSG_RESULT([$PYTHON_EXTRA_LDFLAGS])
+	AC_SUBST(PYTHON_EXTRA_LDFLAGS)
+
+	#
+	# final check to see if everything compiles alright
+	#
+	AC_MSG_CHECKING([consistency of all components of python development environment])
+	# save current global flags
+	ac_save_LIBS="$LIBS"
+	ac_save_CPPFLAGS="$CPPFLAGS"
+	LIBS="$ac_save_LIBS $PYTHON_LDFLAGS $PYTHON_EXTRA_LDFLAGS $PYTHON_EXTRA_LIBS"
+	CPPFLAGS="$ac_save_CPPFLAGS $PYTHON_CPPFLAGS"
+	AC_LANG_PUSH([C])
+	AC_LINK_IFELSE([
+		AC_LANG_PROGRAM([[#include <Python.h>]],
+				[[Py_Initialize();]])
+		],[pythonexists=yes],[pythonexists=no])
+	AC_LANG_POP([C])
+	# turn back to default flags
+	CPPFLAGS="$ac_save_CPPFLAGS"
+	LIBS="$ac_save_LIBS"
+
+	AC_MSG_RESULT([$pythonexists])
+
+        if test ! "x$pythonexists" = "xyes"; then
+	   AC_MSG_FAILURE([
+  Could not link test program to Python. Maybe the main Python library has been
+  installed in some non-standard library path. If so, pass it to configure,
+  via the LDFLAGS environment variable.
+  Example: ./configure LDFLAGS="-L/usr/non-standard-path/python/lib"
+  ============================================================================
+   ERROR!
+   You probably have to install the development version of the Python package
+   for your distribution.  The exact name of this package varies among them.
+  ============================================================================
+	   ])
+	  PYTHON_VERSION=""
+	fi
+
+	#
+	# all done!
+	#
+])
 
 
 # ===========================================================================
@@ -2396,7 +2960,7 @@ fi
 # DESCRIPTION
 #
 #   This macro checks to see if the Boost.Python library is installed. It
-#   also attempts to guess the currect library name using several attempts.
+#   also attempts to guess the correct library name using several attempts.
 #   It tries to build the library name using a user supplied name or suffix
 #   and then just the raw library.
 #
@@ -2405,12 +2969,14 @@ fi
 #
 #   This macro calls AC_SUBST(BOOST_PYTHON_LIB).
 #
-#   In order to ensure that the Python headers are specified on the include
-#   path, this macro requires AX_PYTHON to be called.
+#   In order to ensure that the Python headers and the Boost libraries are
+#   specified on the include path, this macro requires AX_PYTHON_DEVEL and
+#   AX_BOOST_BASE to be called.
 #
 # LICENSE
 #
 #   Copyright (c) 2008 Michael Tindal
+#   Copyright (c) 2013 Daniel Mullner <muellner@math.stanford.edu>
 #
 #   This program is free software; you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by the
@@ -2439,36 +3005,38 @@ fi
 #   exception to the GPL to apply to your modified version as well.
 
 AC_DEFUN([AX_BOOST_PYTHON],
-[AC_REQUIRE([AX_PYTHON])dnl
+[AC_REQUIRE([AX_PYTHON_DEVEL])dnl
 AC_CACHE_CHECK(whether the Boost::Python library is available,
 ac_cv_boost_python,
 [AC_LANG_SAVE
  AC_LANG_CPLUSPLUS
  CPPFLAGS_SAVE="$CPPFLAGS"
- if test x$PYTHON_INCLUDE_DIR != x; then
-   CPPFLAGS="-I$PYTHON_INCLUDE_DIR $CPPFLAGS"
+ if test x$PYTHON_CPPFLAGS != x; then
+   CPPFLAGS="$PYTHON_CPPFLAGS $CPPFLAGS"
  fi
  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
  #include <boost/python/module.hpp>
  using namespace boost::python;
  BOOST_PYTHON_MODULE(test) { throw "Boost::Python test."; }]],
-			   [[return 0;]])],
-			   ac_cv_boost_python=yes, ac_cv_boost_python=no)
+	[[return 0;]])],
+	ac_cv_boost_python=yes, ac_cv_boost_python=no)
  AC_LANG_RESTORE
  CPPFLAGS="$CPPFLAGS_SAVE"
 ])
 if test "$ac_cv_boost_python" = "yes"; then
   AC_DEFINE(HAVE_BOOST_PYTHON,,[define if the Boost::Python library is available])
-  ax_boost_python_lib=boost_python
-  AC_ARG_WITH([boost-python],AS_HELP_STRING([--with-boost-python],[specify the boost python library or suffix to use]),
+  ax_python_lib=boost_python
+  AC_ARG_WITH([boost-python],AS_HELP_STRING([--with-boost-python],[specify yes/no or the boost python library or suffix to use]),
   [if test "x$with_boost_python" != "xno"; then
-     ax_boost_python_lib=$with_boost_python
+     ax_python_lib=$with_boost_python
+     ax_boost_python_lib=boost_python-$with_boost_python
    fi])
-  AC_CHECK_LIB($ax_boost_python_lib, exit, [BOOST_PYTHON_LIB=-l$ax_boost_python_lib],,-l$ax_python_lib)
-  AC_SUBST(BOOST_PYTHON_LIB)
+  BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
+  for ax_lib in `ls $BOOSTLIBDIR/libboost_python*.so* $BOOSTLIBDIR/libboost_python*.dylib* $BOOSTLIBDIR/libboost_python*.a* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_python.*\)\.so.*$;\1;' -e 's;^lib\(boost_python.*\)\.dylib.*$;\1;' -e 's;^lib\(boost_python.*\)\.a.*$;\1;' ` $ax_python_lib $ax_boost_python_lib boost_python; do
+    AC_CHECK_LIB($ax_lib, exit, [BOOST_PYTHON_LIB="-l$ax_lib"; AC_SUBST(BOOST_PYTHON_LIB) link_boost_python="yes"; break], , [$PYTHON_LDFLAGS])
+  done
 fi
 ])dnl
-
 
 AC_DEFUN([AX_GXX_VERSION], [
   GXX_VERSION=""
@@ -2482,7 +3050,7 @@ AC_DEFUN([AX_GXX_VERSION], [
       GXX_VERSION=$ax_cv_gxx_version
   ])
   AC_SUBST([GXX_VERSION])
-])
+])dnl
 
 dnl Checks if we have usable cgal library. Sets $CGAL_LIBS variable. 
 dnl AC_LIB_CGAL( [ ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]] )

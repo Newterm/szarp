@@ -10,7 +10,7 @@ SUBDIRS =
 MAINTAINERCLEANFILES = Makefile.in
 
 # Compilations flags
-INCLUDES = -I../include \
+AM_CPPFLAGS = -I../include \
 	   -I@srcdir@/../include \
 	   -I@srcdir@/../libSzarp/include  \
 	   -I@srcdir@/../libSzarp2/include \

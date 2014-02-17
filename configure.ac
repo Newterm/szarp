@@ -12,7 +12,7 @@ AC_CANONICAL_TARGET
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 
-AM_INIT_AUTOMAKE([-Wno-portability])
+AM_INIT_AUTOMAKE([-Wno-portability subdir-objects])
 AC_CONFIG_HEADERS(config.h)
 
 # Set default prefix
@@ -349,7 +349,7 @@ if test x$with_mingw32 = xno; then
 	])
 fi
 
-no_protobuf="yes"
+no_zmq="yes"
 if test x$with_mingw32 = xno; then
 	PKG_CHECK_MODULES(ZMQ, libzmq, no_zmq="no", [AC_MSG_RESULT([
 			libzmq-dev library not found on your system,	
@@ -763,27 +763,28 @@ if test "x$no_ftgl" != "xyes" ; then
         AC_DEFINE(HAVE_FTGL, 1, [Define to 1 if ftgl is available])
 fi
 
-no_boost_base=""
-no_boost_filesystem="yes"
-no_boost_datetime="yes"
-no_boost_regex="yes"
-no_boost_threads="yes"
-no_boost_system="yes"
-no_boost_program_options="yes"
+has_boost_base="no"
 ac_boost_path="${lib_prefix}"
-AX_BOOST_BASE([no_boost_base="no"], [no_boost_base="yes"])
-if test $no_boost_base = "no" ; then
-	AX_BOOST_FILESYSTEM([no_boost_filesystem="no" ], [no_boost_filesystem="yes"])
-	AX_BOOST_DATE_TIME([no_boost_datetime="no"], [no_boost_datetime="yes"])
-	AX_BOOST_REGEX([no_boost_regex="no"], [no_boost_regex="yes"])
-	AX_BOOST_THREAD([no_boost_threads="no"], [no_boost_threads="yes"])
-	AX_BOOST_SYSTEM([no_boost_system="no"], [no_boost_system="yes"])
-	AX_BOOST_PROGRAM_OPTIONS([no_boost_program_options="no"], [no_boost_program_options="yes"])
+AX_BOOST_BASE("1.35.0", [has_boost_base="yes"], [has_boost_base="no"])
+if test "x$has_boost_base" = "xyes" ; then
+	AX_BOOST_FILESYSTEM
+	AX_BOOST_DATE_TIME
+	AX_BOOST_REGEX
+	AX_BOOST_THREAD
+	AX_BOOST_SYSTEM
+	AX_BOOST_PROGRAM_OPTIONS
 
 	AX_PYTHON
 	AX_BOOST_PYTHON
 
 fi
+has_boost_filesystem=${link_filesystem:-no}
+has_boost_datetime=${link_date_time:-no}
+has_boost_regex=${link_regex:-no}
+has_boost_thread=${link_thread:-no}
+has_boost_system=${link_system:-no}
+has_boost_program_options=${link_program_options:-no}
+
 
 #Check for LIBEVENT
 no_libevent=""
@@ -1344,50 +1345,20 @@ else
 fi
 
 echo -n "Configured with boost              "
-if test "x$no_boost_base" != "xyes" ; then
+if test "x$has_boost_base" = "xyes" ; then
         echo "yes"
 
-	echo -n "Configured with boost filesystem   "
-	if test "x$no_boost_filesystem" != "xyes" ; then
-	        echo "yes"
-	else
-		echo "no"
-	fi
+	echo "Configured with boost filesystem   $has_boost_filesystem"
 
-	echo -n "Configured with boost date time    "
-	if test "x$no_boost_datetime" != "xyes" ; then
-	        echo "yes"
-	else
-		echo "no"
-	fi
+	echo "Configured with boost date time    $has_boost_datetime"
 
-	echo -n "Configured with boost regex        "
-	if test "x$no_boost_regex" != "xyes" ; then
-	        echo "yes"
-	else
-		echo "no"
-	fi
+	echo "Configured with boost regex        $has_boost_regex"
 
-	echo -n "Configured with boost thread       "
-	if test "x$no_boost_threads" != "xyes" ; then
-	        echo "yes"
-	else
-		echo "no"
-	fi
+	echo "Configured with boost thread       $has_boost_thread"
 
-	echo -n "Configured with boost system       "
-	if test "x$no_boost_system" != "xyes" ; then
-	        echo "yes"
-	else
-		echo "no"
-	fi
+	echo "Configured with boost system       $has_boost_system"
 
-	echo -n "Configured with boost program opts "
-	if test "x$no_boost_program_options" != "xyes" ; then
-	        echo "yes"
-	else
-		echo "no"
-	fi
+	echo "Configured with boost program opts $has_boost_program_options"
 
 else
         echo "no"
@@ -1402,6 +1373,13 @@ fi
 
 echo -n "Configured with zip                "
 if test "x$no_zip" != "xyes" ; then
+        echo "yes"
+else
+        echo "no"
+fi
+
+echo -n "Configured with zmq                "
+if test "x$no_zmq" != "xyes" ; then
         echo "yes"
 else
         echo "no"
@@ -1462,7 +1440,11 @@ if test x$debug_config = xyes ; then
         echo "WNCK_CFLAGS: $WNCK_CFLAGS"
         echo "WNCK_LIBS: $WNCK_LIBS"
         echo "BOOST_CPPFLAGS: $BOOST_CPPFLAGS"
-        echo "BOOST_LIBS: $BOOST_LIBS"
+        echo "BOOST_LIBS: $BOOST_LDFLAGS"
+        echo "BOOST_SYSTEM_LIB: $BOOST_SYSTEM_LIB"
+        echo "BOOST_PROGRAM_OPTIONS_LIB: $BOOST_PROGRAM_OPTIONS_LIB"
+        echo "BOOST_DATE_TIME_LIB: $BOOST_DATE_TIME_LIB"
+        echo "BOOST_PYTHON_LIB: $BOOST_PYTHON_LIB"
         echo "ZIP_CFLAGS: $ZIP_CFLAGS"
         echo "ZIP_LIBS: $ZIP_LIBS"
 fi

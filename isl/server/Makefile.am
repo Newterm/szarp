@@ -6,7 +6,7 @@
 SUBDIRS = 
 
 LDADD=../../libSzarp/libSzarp.la @SSL_LIBS@ @PAM_LIBS@ @XML_LIBS@
-INCLUDES=\
+AM_CPPFLAGS = \
 	-I@srcdir@/../../include		\
 	-I@srcdir@/../../libSzarp/include	\
 	-I@srcdir@/../../libSzarp2/include	\

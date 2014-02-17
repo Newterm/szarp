@@ -10,7 +10,7 @@ SUBDIRS =
 MAINTAINERCLEANFILES = Makefile.in
 
 # Compilations flags
-INCLUDES = @WX_CXXFLAGS@ -I@srcdir@/../common -DPREFIX=\"@prefix@\" \
+AM_CPPFLAGS = @WX_CXXFLAGS@ -I@srcdir@/../common -DPREFIX=\"@prefix@\" \
 	-I@srcdir@/../../libSzarp/include
 
 LIBWXCOMMON=../common/libwxcommon.la
