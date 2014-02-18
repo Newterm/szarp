@@ -971,9 +971,10 @@ TParam::AddRaport(const std::wstring& title, const std::wstring& descr, double o
 const std::wstring&
 TParam::GetDrawFormula() throw(TCheckException)
 {
-    if (_formula.empty()) {
-	return _formula;
-    }
+	if( _ftype != DEFINABLE || _formula.empty() ) {
+		_parsed_formula.clear();
+		return _parsed_formula;
+	}
 
     if (!_parsed_formula.empty())
 	return _parsed_formula;
@@ -1389,6 +1390,9 @@ TParam::PrepareDefinable() throw(TCheckException)
 std::wstring
 TParam::GetParcookFormula() throw(TCheckException)
 {
+	if( _ftype != RPN )
+		return std::wstring();
+
 	int st, b, e, l;
     	wchar_t ch = 0;
 	std::wstring c, c2;
