@@ -12,7 +12,7 @@ AC_CANONICAL_TARGET
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 
-AM_INIT_AUTOMAKE([-Wno-portability subdir-objects])
+AM_INIT_AUTOMAKE([-Wno-portability])
 AC_CONFIG_HEADERS(config.h)
 
 # Set default prefix

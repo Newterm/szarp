@@ -1085,9 +1085,9 @@ if test "x$want_boost" = "xyes"; then
     dnl this (as it rises problems for generic multi-arch support).
     dnl The last entry in the list is chosen by default when no libraries
     dnl are found, e.g. when only header-only libraries are installed!
+    AC_REQUIRE([AC_CANONICAL_HOST])
     libsubdirs="lib"
-    ax_arch=`uname -m`
-    case $ax_arch in
+    case $host_cpu in
       x86_64|ppc64|s390x|sparc64|aarch64)
         libsubdirs="lib64 lib lib64"
         ;;
@@ -1096,7 +1096,6 @@ if test "x$want_boost" = "xyes"; then
     dnl allow for real multi-arch paths e.g. /usr/lib/x86_64-linux-gnu. Give
     dnl them priority over the other paths since, if libs are found there, they
     dnl are almost assuredly the ones desired.
-    AC_REQUIRE([AC_CANONICAL_HOST])
     libsubdirs="lib/${host_cpu}-${host_os} $libsubdirs"
 
     case ${host_cpu} in
@@ -1111,7 +1110,7 @@ if test "x$want_boost" = "xyes"; then
     if test "$ac_boost_path" != ""; then
         BOOST_CPPFLAGS="-I$ac_boost_path/include"
         for ac_boost_path_tmp in $libsubdirs; do
-                if test -d "$ac_boost_path"/"$ac_boost_path_tmp" ; then
+                if ls -1 "$ac_boost_path"/"$ac_boost_path_tmp"/libboost_*.so >/dev/null 2>/dev/null ; then
                         BOOST_LDFLAGS="-L$ac_boost_path/$ac_boost_path_tmp"
                         break
                 fi
