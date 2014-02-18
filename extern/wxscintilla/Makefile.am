@@ -11,7 +11,7 @@ else
 SCINTILLA_DEF = -DSCI_LEXER -DGTK -DLINK_LEXERS
 endif
 
-AM_CFLAGS = \
+AM_CXXFLAGS = \
 	   -I $(SOURCE_DIR)/include \
 	   -I $(SOURCE_DIR)/src/scintilla/include \
 	   -I $(SOURCE_DIR)/src/scintilla/src \
