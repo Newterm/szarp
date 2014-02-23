@@ -105,8 +105,8 @@ void Sz4BlockTestCase::weigthedSumTest() {
 
 	wsum = sz4::weighted_sum<int, sz4::second_time_t>();
 	block.get_weighted_sum(1u, 3u, wsum);
-	CPPUNIT_ASSERT_EQUAL(6ll, wsum.sum(weight));
-	CPPUNIT_ASSERT_EQUAL(2l, weight);
+	CPPUNIT_ASSERT_EQUAL(3ll, wsum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(1l, weight);
 	CPPUNIT_ASSERT_EQUAL(0l, wsum.no_data_weight());
 
 	wsum = sz4::weighted_sum<int, sz4::second_time_t>();
@@ -210,7 +210,8 @@ void Sz4BlockTestCase::testBigNum() {
 	sz4::weighted_sum<short, unsigned> wsum;
 	sz4::weighted_sum<short, unsigned>::time_diff_type weight;
 	block.get_weighted_sum(10000000u, 10000000u + 1 * 3600 * 24 * 31, wsum);
-	CPPUNIT_ASSERT_EQUAL(4017600000ll, wsum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(1500ll, wsum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL((sz4::weighted_sum<short, unsigned>::time_diff_type(1)), weight);
 }
 
 void Sz4BlockTestCase::searchDataTest() {

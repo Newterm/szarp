@@ -239,10 +239,13 @@ public:
 	{}
 		
 	void get_weighted_sum(const time_type& start_time, const time_type &end_time, weighted_sum<value_type, time_type>& r) {
-		time_type prev_time(start_time);
+		if (start_time >= end_time)
+			return;
 
+		time_type prev_time(start_time);
 		bool done = false;
 		typename block_type::value_time_vector::const_iterator i = this->search_entry_for_time(start_time);
+
 		while (!done && i != this->m_data.end()) {
 			typename time_difference<time_type>::type time_diff;
 			if (i->time >= end_time) {
