@@ -10,7 +10,7 @@ SUBDIRS =
 MAINTAINERCLEANFILES = Makefile.in
 
 # Compilations flags
-INCLUDES = @LUA_CFLAGS@ \
+AM_CPPFLAGS = @LUA_CFLAGS@ \
 	   @XML_CFLAGS@ \
 	   @BOOST_CPPFLAGS@ \
 	   -I@srcdir@/../libSzarp/include \

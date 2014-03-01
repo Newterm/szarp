@@ -80,6 +80,12 @@ class TBoilers;
 class XMLWrapper;
 class XMLWrapperException;
 
+
+class TCheckException : public std::exception {
+	virtual const char* what() const throw()
+	{ return "Invalid params.xml definition. See log for more informations."; }
+};
+
 /** SZARP system configuration */
 class TSzarpConfig {
 public:
@@ -304,7 +310,7 @@ public:
 	 * @param quiet if equal 1 do not print anything to standard output
 	 * @return 0 if there is no repetitions or 1 if there are some
 	 */
-	int checkRepetitions(int quiet = 0);
+	bool checkRepetitions(int quiet = 0);
 
 	/** Configrures default summer seasons limit (if seasons are not already configured*/
 	void ConfigureSeasonsLimits();
@@ -330,15 +336,6 @@ protected:
 	 * @return number of parameter (from 0)
 	 */
 	int AddDefined(const std::wstring &formula);
-	/**
-	 * Transforms formula from Szarp 2.1 format (IPC indexes) to
-	 * RPN IPK format and sets formula attribute to transformed formula.
-	 * @param f string with Szarp 2.1 formula
-	 * @return 1 on error, 0 on success
-	 */
-#ifndef MING32
-	int transformSzarpFormula(const std::wstring &f);
-#endif
 
 	int read_freq;	/**< Param reading frequency (in seconds) */
 	int send_freq;
@@ -864,13 +861,12 @@ public:
 	/** @return pointer to string with formula in definable.cfg format
 	 * do not free it - its handled iternaly by TParam object.
 	 * (may be NULL) */
-	const std::wstring&  GetDrawFormula();
+	const std::wstring&  GetDrawFormula() throw(TCheckException);
 	/**
 	 * Returns parameter's RPN formula in parcook.cfg format (with comment).
-	 * @return newly allocated string with formula in parcook format (you have to
-	 * free it after use), NULL if p is not defined parameter
+	 * @return newly allocated string with formula in parcook format
 	 */
-	std::wstring GetParcookFormula();
+	std::wstring GetParcookFormula() throw(TCheckException);
 
 	/** @return type of formula (RPN, DEFINABLE or NONE) */
 	FormulaType GetFormulaType() { return _ftype; }
@@ -1049,12 +1045,9 @@ public:
 	 * @param title title of raport
 	 * @param descr description of param, if NULL last part of param name
 	 * is used
-	 * @param filename name of SZARP 2.1 file with raport, if NULL 'title'
-	 * is used
 	 * @param order priority of param within raport, default is -1.0
 	 */
-	void AddRaport(const std::wstring& title, const std::wstring& descr = std::wstring(), const std::wstring& filename = std::wstring(),
-			double order = -1.0 );
+	void AddRaport(const std::wstring& title, const std::wstring& descr = std::wstring(), double order = -1.0 );
 
 	/**
 	 * Returns list of raports for param.
@@ -1083,15 +1076,8 @@ public:
 	 */
 	TAnalysis* AddAnalysis(TAnalysis* analysis);
 
-	/**
-	 * Transforms param's formula form SZARP 2.1 draw definable form to IPK
-	 * form.
-	 * @return 0 on success, 1 on error
-	 */
-	int TransformDefinableFormula();
-
 	/** Prepares data for definable calculation. */
-	void PrepareDefinable();
+	void PrepareDefinable() throw(TCheckException);
 
 #ifndef NO_LUA
 	const unsigned char* GetLuaScript() const;
@@ -1608,18 +1594,7 @@ public:
 	 * @return created TValue list
 	 */
 	static TValue *createValue(int prec);
-	/**
-	 * Returns SZARP 2.1 identifier corresponding to actual value objects
-	 * list.
-	 * @see TValue::createValue
-	 * @return SZARP 2.1 value type identifier (from 5 to 7), 0 if no one
-	 * is correct
-	 */
-	int getSzarpId(void);
-	/**
-	 * Generates XML node with value info.
-	 * @return created XML node, NULL on error
-	 */
+
 	xmlNodePtr generateXMLNode(void);
 	/**
 	 * Appends value to at end of list.
@@ -1669,14 +1644,11 @@ protected:
  */
 class TRaport {
 public:
-	TRaport(TParam * p, const std::wstring& t, const std::wstring& d = std::wstring(), const std::wstring& file = std::wstring(), double o = -1.0) :
-		param(p), title(t), descr(d), order(o), filename(file), next(NULL)
+	TRaport(TParam * p, const std::wstring& t, const std::wstring& d = std::wstring(), double o = -1.0) :
+		param(p), title(t), descr(d), order(o), next(NULL)
 	{
 		if (!descr.empty() && descr == p->GetName())
 			descr = std::wstring();
-
-		if (!filename.empty() && filename == title)
-			filename = std::wstring();
 	}
 	/** Delete whole list. */
 	~TRaport();
@@ -1735,11 +1707,6 @@ protected:
 	double order;	/**< Priority of param within raport. Ignored if
 			  less then 0. Greater number means later in raport.
 			  */
-	std::wstring filename;
-			/**< Name of file of raport ('*.rap' file). If NULL,
-			 * <i>title</i> + '.rap' is allocated and used.
-			 * It's for compatibility with SZARP 2.1.
-			 * It can be removed in future. */
 	TRaport* next;	/**< Next list element */
 };
 

@@ -30,24 +30,16 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
+#endif  /* HAVE_CONFIG_H */
 
 #ifndef MINGW32
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include <wx/wxprec.h>
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
+
 #ifndef WX_PRECOMP
 #include <wx/wx.h>
-#endif
-
-
-/** define to create config for Tcl/Tk raporter */
-#define CONFIG_RAPORTER 1
-/** define to create config for Motif SzarpDraw */
-#define CONFIG_SZARPDRAW 1
+#endif  /* ! WX_PRECOMP */
 
 /** name of directory with szarp configuration */
 #define SZARPDIR _T(".szarp")
@@ -55,15 +47,11 @@
 /** 
  * Dialog for selecting default font size for almost all SZARP applications.
  * For every type of application we have to do different things:
- * - for Raporter Tcl/Tk we create file ~/.szarp/raporter.cfg file with
- *   'FontSize=N' string; this string is parsed from within szarp.cfg file
- * - for SzarpDraw (Motif) we create ~/.szarp/SzarpDraw.res file with X
- *   resources definition; this file must include general resource file
- *   (/opt/szarp/resources/Motif/SzarpDraw/SzarpDraw.res) to set colours and
- *   so on; path to resources is detected in szarp.cfg
  * - for wx (Gtk) applications we create ~/.szarp/gtk.rc file with Gtk
  *   resource definitions; this file is included by applications using szApp
  *   class
+ * - for Raporter Tcl/Tk [deleted]
+ * - for SzarpDraw (Motif) [deleted]
  */
 class szCommonFontDlg : public wxDialog {
 public:
@@ -85,18 +73,6 @@ protected:
 	/** Create gtk.rc file for wxGtk applications. 
 	 * @param dir name of directory where to create file */
 	void CreateGtkConfig(wxString dir);
-#ifdef CONFIG_RAPORTER
-	/** Create raporter.cfg file for Raporter Tcl/Tk. 
-	 * @param dir name of directory where to create file */
-	void CreateRaporterConfig(wxString dir);
-#endif
-#ifdef CONFIG_SZARPDRAW
-	/** Create SzarpDraw.res file for Motif SzarpDraw.
-	 * @param dir name of directory where to create file
-	 * @param ubuntu true for Ubuntu system (some fonts missing, so we
-	 * create more general font description) */
-	void CreateSzarpDrawConfig(wxString dir, bool ubuntu = false);
-#endif
 
 	/** minimum point font size */
 	static const int min_font_size = 8;
@@ -113,7 +89,7 @@ protected:
 	DECLARE_EVENT_TABLE()
 };
 
-#endif /* ! MINGW32 */
+#endif  /* ! MINGW32 */
 
-#endif /* __SZARP_FONTS_H__ */
+#endif  /* __SZARP_FONTS_H__ */
 

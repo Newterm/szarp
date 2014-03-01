@@ -6,7 +6,6 @@ from pylons import request, response, session, tmpl_context as c
 from pylons.controllers.util import abort, redirect
 from pylons.decorators import rest
 
-from pylons.i18n import set_lang
 from sssweb.lib.base import *
 
 log = logging.getLogger(__name__)
@@ -16,7 +15,6 @@ class AccountController(BaseController):
 
 	def __before__(self):
 		BaseController.__before__(self)
-		set_lang(app_globals.config['lang'])
 
 	def index(self):
 		# Return a rendered template

@@ -41,6 +41,9 @@ using namespace std;
 
 #include "szarp_config.h"
 #include "liblog.h"
+#include "libpar.h"
+
+#define SZARP_CFG		"/etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg"
 
 void usage(void)
 {
@@ -57,6 +60,7 @@ int main(int argc, char* argv[])
 	TSzarpConfig *sc;
 	int i;
 	char *input;
+	char *ipk_path;
 
 	loginit_cmdline(2, NULL, &argc, argv);
 	log_info(0);
@@ -82,18 +86,24 @@ int main(int argc, char* argv[])
 		argv++;
 	}
 
-	if (input == NULL)
-		input = strdup("params.xml");
-	sz_log(10, "Parsed options summary: , input='%s'", input);
+	if( input ) {
+		i = sc->loadXML(SC::A2S(input));
+	} else {
+		libpar_init_with_filename(SZARP_CFG, 1);
+		if( !(ipk_path  = libpar_getpar("", "IPK", 1 ))) {
+			cerr << "Cannot find IPK variable" << endl;
+			return 1;
+		}
+		i = sc->loadXML(SC::A2S(ipk_path));
+	}
 	
-	i = sc->loadXML(SC::A2S(input));
 	if (i) {
-		cout << "Error while reading configuration.\n";
+		cerr << "Error while reading configuration." << endl;
 		return 1;
 	}
 
 	//check for parameters repetitions in params.xml
-	int ret = sc->checkConfiguration();
+	int ret = !sc->checkConfiguration();
 
 	delete sc;
 	free(input);

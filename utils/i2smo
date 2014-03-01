@@ -20,17 +20,9 @@
 # Pawe³ Pa³ucha <pawel@praterm.com.pl>
 # $Id: i2smo 4393 2007-09-13 16:37:10Z reksio $
 
-
 BINPREFIX="/opt/szarp/bin"
 
-
-if [ ! -e ./params.xml ]
-then
-	echo "i2smo: there is no params.xml file in current directory; check if your directory is proper"
-	exit 1;
-fi
-
-sh -c "$BINPREFIX/ipk2szarp"
+sh -c "$BINPREFIX/ipk2szarp $@"
 
 if [ $? -eq 0 ]
 then

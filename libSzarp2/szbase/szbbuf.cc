@@ -155,8 +155,12 @@ szb_get_datablock(szb_buffer_t * buffer, TParam * param, int year, int month)
     if (NULL != ret)
 	return ret;
 
-    if (param->IsDefinable())
-	param->PrepareDefinable();
+	try {
+		if( param->IsDefinable() )
+			param->PrepareDefinable();
+	} catch( TCheckException& e ) {
+		return NULL;
+	}
 
     switch (param->GetType()) {
 	case TParam::P_REAL:

@@ -1,12 +1,12 @@
 <html>
 <head>
 <title>${_('SZARP Synchroniser')}</title>
-${h.stylesheet_link(h.url_for("/css/default.css"))}
+${h.stylesheet_link(h.url("/css/default.css"))}
 </head>
 <body>
 <div class="header">${_('SZARP Synchroniser Web Admin')}</div>
-% if c.error:
-    <div class="error">${c.error}</div>
+% if error is not UNDEFINED:
+    <div class="error">${error}</div>
 % endif
   ${next.body()}
 </body>
