@@ -10,7 +10,7 @@ SUBDIRS =
 MAINTAINERCLEANFILES = Makefile.in
 
 # Compilations flags
-INCLUDES = @WX_CXXFLAGS@ @WXGL_CFLAGS@ @XML_CFLAGS@ @LUA_CFLAGS@ @FREETYPE_CFLAGS@ @FTGL_CFLAGS@ @BOOST_CPPFLAGS@ \
+AM_CPPFLAGS = @WX_CXXFLAGS@ @WXGL_CFLAGS@ @XML_CFLAGS@ @LUA_CFLAGS@ @FREETYPE_CFLAGS@ @FTGL_CFLAGS@ @BOOST_CPPFLAGS@ \
 	-I@srcdir@/../../libSzarp/include \
 	-I@srcdir@/../../libSzarp2/include \
         -I@srcdir@/../../include \

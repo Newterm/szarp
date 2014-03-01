@@ -3,7 +3,7 @@ from paste.cascade import Cascade
 from paste.registry import RegistryManager
 from paste.urlparser import StaticURLParser
 from paste.deploy.converters import asbool
-from pylons.middleware import ErrorHandler, StatusCodeRedirect, StaticJavascripts
+from pylons.middleware import ErrorHandler, StatusCodeRedirect
 from pylons.wsgiapp import PylonsApp
 
 from beaker.middleware import CacheMiddleware, SessionMiddleware
@@ -41,11 +41,13 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
     # The Pylons WSGI app
     app = PylonsApp(config=config)
 
+    # Routing/Session Middleware
+    app = RoutesMiddleware(app, config['routes.map'], singleton=False)
+    app = SessionMiddleware(app, config)
+
     # CUSTOM MIDDLEWARE HERE (filtered by error handling middlewares)
     # Routing/Session/Cache Middleware
-    app = RoutesMiddleware(app, config['routes.map'])
-    app = SessionMiddleware(app, config)
-    app = CacheMiddleware(app, config)
+#    app = CacheMiddleware(app, config)
     app = AuthErrorMiddleware(app)
 
     if asbool(full_stack):
@@ -57,14 +59,14 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
 	if asbool(config['debug']):
 		app = StatusCodeRedirect(app)
 	else:
-		app = StatusCodeRedirect(app, [401, 403, 404, 500])
+                app = StatusCodeRedirect(app, [400, 401, 403, 404, 500])
 
     # Establish the Registry for this application
     app = RegistryManager(app)
 
-    # Static files
-    javascripts_app = StaticJavascripts()
-    static_app = StaticURLParser(config['pylons.paths']['static_files'])
-    app = Cascade([static_app, javascripts_app, app])
+    if asbool(static_files):
+        # Serve static files
+        static_app = StaticURLParser(config['pylons.paths']['static_files'])
+        app = Cascade([static_app, app])
     app.config = config
     return app

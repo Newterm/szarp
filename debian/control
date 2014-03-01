@@ -161,7 +161,7 @@ Description: Inkscape plugin for editing SZARP ISL visualization schemas
 Package: szarp-sssweb
 Section: misc
 Architecture: any
-Depends: ${python:Depends}, python-pylons (>=0.10-1)
+Depends: ${python:Depends}, python-pylons (>=1.0-2)
 Suggests: apache2, python-flup
 XB-Python-Version: ${python:Versions}
 Description: Web interface for SZARP synchronization server.

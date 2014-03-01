@@ -5,7 +5,7 @@
 <p>${_('Your hardware key status is')}: ${printkey(c.user['hwkey'])}</p>
 <p>${_('Your account')} ${printexp(c.user['expired'])}</p>
 <p>${_('List of bases for synchronization')}: ${', '.join(c.user['sync'])}</p>
-<p>${h.link_to(_('Change password'), h.url_for(action = 'password'))}</p>
+<p>${h.link_to(_('Change password'), h.url.current(action = 'password'))}</p>
 
 <%def name="printkey(key)">
   % if key == '0':

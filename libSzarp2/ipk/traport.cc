@@ -70,8 +70,6 @@ xmlNodePtr TRaport::GenerateXMLNode()
 	xmlSetProp(r, X"title", SC::S2U(title).c_str());
 	if (!IsDescrDefault())
 		xmlSetProp(r, X"description", SC::S2U(descr).c_str());
-	if (!IsFileNameDefault())
-		xmlSetProp(r, X"filename", SC::S2U(filename).c_str());
 	if (order >= 0.0) {
 		SWPRINTF(buffer, BUFSIZE, L"%g", order);
 		buffer[BUFSIZE-1] = 0;
@@ -91,22 +89,6 @@ std::wstring TRaport::GetDescr()
 	if (sp != std::string::npos)
 		return n.substr(sp + 1);
 	return n;
-}
-
-std::wstring TRaport::GetFileName()
-{
-	if (!filename.empty())
-		return filename;
-	return title + L".rap";
-}
-
-int TRaport::IsFileNameDefault()
-{
-	if (filename.empty())
-		return 1;
-	if (filename == title + L".rap")
-		return 1;
-	return 0;
 }
 
 int TRaport::IsDescrDefault()

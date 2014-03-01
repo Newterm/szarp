@@ -1,8 +1,14 @@
+import logging
 
 from webob import Request, Response
 from webob import exc
+
 import xmlrpclib
-from routes import url_for
+
+from pylons import url
+
+log = logging.getLogger(__name__)
+
 class AuthErrorMiddleware(object):
 	"""
 	Catches XML-RCP exceptions and if it's authorization error, redirects to login page.
@@ -15,10 +21,11 @@ class AuthErrorMiddleware(object):
 		try:
 			rsp = req.get_response(self.app)
 		except  xmlrpclib.Fault, err:
+                        log.exception('AuthErrorMiddleware:')
 			# faultString is something like: <'__main__.AuthException'>:invalid user or password
 			c = err.faultString.split("'",2)[1].partition(".")[2]
 			if c == "AuthException":
-				rsp = exc.HTTPSeeOther(location = url_for(controller='login', action = 'invalid'))
+				rsp = exc.HTTPSeeOther(location = url(controller='login', action = 'invalid'))
 			else:
 				raise err
 		return rsp(environ, start_response)

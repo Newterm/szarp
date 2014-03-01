@@ -6,7 +6,7 @@
 
 SUBDIRS =
 
-INCLUDES = -I@srcdir@/../../include \
+AM_CPPFLAGS = -I@srcdir@/../../include \
 	   -I@srcdir@/../../libSzarp/include   \
 	   -I@srcdir@/../../libSzarp2/include   \
 	   -I@srcdir@/../server @XML_CFLAGS@ @PTHREAD_CFLAGS@ @LUA_CFLAGS@ \
