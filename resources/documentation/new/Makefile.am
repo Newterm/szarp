@@ -29,7 +29,6 @@
 
 DOCS=\
 	draw3 \
-	draw3_en \
 	eksploatacja \
 	ekstraktor3 \
 	viszio \
