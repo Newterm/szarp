@@ -66,7 +66,7 @@ public:
 			if (!value_is_no_data(value))
 				sum.add(value, next - current);
 			else
-				sum.no_data_weight() += next - current;
+				sum.add_no_data_weight(next - current);
 			sum.add_refferred_blocks(
 					refferred_blocks.begin(),
 					refferred_blocks.end()

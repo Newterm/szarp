@@ -105,9 +105,12 @@ private:
 	bool m_fixed;
 	std::vector<generic_block*> m_refferred_blocks;
 
-	template <class T> T calc_gcd(T p, T q) {
+	template <class T> T calc_gcd(T p, T q) const {
 		if (p < q)
 			std::swap(p, q);
+
+		if (!q)
+			return p;
 
 		T t;
 		while ((t = (p % q))) {
@@ -118,7 +121,7 @@ private:
 		return q;
 	}
 public:
-	weighted_sum() : m_no_data_weight(0), m_fixed(true) {}
+	weighted_sum() : m_gcd(0), m_no_data_weight(0), m_fixed(true) {}
 
 	const std::vector<value_type>& values() const { return m_values; }
 	const std::vector<time_diff_type>& weights() const { return m_weights; }
@@ -127,15 +130,11 @@ public:
 		m_values.push_back(value);
 		m_weights.push_back(weight);
 
-		if (m_weights.size() == 1)
-			m_gcd = weight;
-		else
-			m_gcd = calc_gcd(weight, m_gcd);
+		m_gcd = calc_gcd(weight, m_gcd);
 	}
 
-
-	const time_diff_type& gcd() {
-		return m_gcd;
+	time_diff_type gcd() const {
+		return calc_gcd(m_gcd, m_no_data_weight);
 	}
 
 	sum_type sum(time_diff_type& weight) const {
@@ -144,8 +143,9 @@ public:
 			return 0;
 
 		sum_type sum = 0;
+		time_diff_type _gcd = gcd();
 		for (size_t i = 0; i < m_values.size(); i++) {
-			time_diff_type _weight = m_weights[i] / m_gcd;
+			time_diff_type _weight = m_weights[i] / _gcd;
 
 			sum += _weight * m_values[i];
 			weight += _weight;
@@ -164,10 +164,20 @@ public:
 	}
 
 	time_diff_type weight() {
-		return std::accumulate(m_weights.begin(), m_weights.end(), 0);
+		time_diff_type weight = std::accumulate(m_weights.begin(), m_weights.end(), 0);
+		return weight / gcd();
 	}
 	
-	time_diff_type& no_data_weight() { return m_no_data_weight; }
+	time_diff_type no_data_weight() {
+		if (!m_no_data_weight)
+			return m_no_data_weight;
+		else
+			return m_no_data_weight / gcd();
+	}
+
+	void add_no_data_weight(time_diff_type _weight) {
+		m_no_data_weight += _weight;
+	}
 
 	bool fixed() const { return m_fixed; }
 	void set_fixed(bool fixed) { m_fixed &= fixed; }

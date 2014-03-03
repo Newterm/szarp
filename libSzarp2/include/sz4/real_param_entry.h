@@ -81,7 +81,7 @@ public:
 		//start_time
 		if (m_blocks.size() == 0) {
 			//no such block - nodata
-			sum.no_data_weight() += end - start;
+			sum.add_no_data_weight(end - start);
 			sum.set_fixed(false);
 			return;
 		}
@@ -95,12 +95,12 @@ public:
 			file_block_entry_type* entry = i->second;
 
 			if (end < entry->block().start_time()) {
-				sum.no_data_weight() += end - current;
+				sum.add_no_data_weight(end - current);
 				return;
 			}
 
 			if (current < entry->block().start_time()) {
-				sum.no_data_weight() += entry->block().start_time() - current;
+				sum.add_no_data_weight(entry->block().start_time() - current);
 				current = i->first;
 			}
 
@@ -116,7 +116,7 @@ public:
 		} while (i != m_blocks.end());
 
 		if (current < end) {
-			sum.no_data_weight() += end - current;
+			sum.add_no_data_weight(end - current);
 			sum.set_fixed(false);
 		}
 	}

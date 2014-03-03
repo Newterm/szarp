@@ -259,7 +259,7 @@ public:
 			if (!value_is_no_data(i->value)) {
 				r.add(i->value, time_diff);
 			} else {
-				r.no_data_weight() += time_diff;
+				r.add_no_data_weight(time_diff);
 			}
 
 			std::advance(i, 1);

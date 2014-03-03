@@ -29,7 +29,8 @@ INCLUDES = @XML_CFLAGS@ @XSLT_CFLAGS@ @CURL_CFLAGS@ @LUA_CFLAGS@ \
 	-I$(INCLUDE_DIR)/szbase				\
 	-I$(SOURCE_DIR)/../libSzarp/include		\
 	-I$(SZBASE_DIR)					\
-	-DPREFIX=\"@prefix@\"
+	-DPREFIX=\"@prefix@\"				\
+	-I$(SOURCE_DIR)/protobuf
 
 noinst_LTLIBRARIES = libSzarp2.la libSzarpLuaParser.la
 

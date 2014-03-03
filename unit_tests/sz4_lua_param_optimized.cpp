@@ -100,8 +100,8 @@ void Sz4LuaParamOptimized::test1() {
 	sz4::weighted_sum<double, sz4::second_time_t> sum;
 	sz4::weighted_sum<double, sz4::second_time_t>::time_diff_type weight;
 	buff->get_weighted_sum(mock.GetParam(L""), 100u, 200u, PT_SEC10, sum);
-	CPPUNIT_ASSERT_EQUAL(50., sum.sum(weight));
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(100), weight);
+	CPPUNIT_ASSERT_EQUAL(5., sum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(10), weight);
 	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
 }
 
@@ -197,7 +197,7 @@ void Sz4LuaParamOptimized::test2() {
 		sz4::weighted_sum<double, sz4::second_time_t> sum;
 		buff->get_weighted_sum(mock.GetParam(L"BASE:A:B:D"), 100u, 200u, PT_SEC10, sum);
 		CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.weight());
-		CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(100), sum.no_data_weight());
+		CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(1), sum.no_data_weight());
 		CPPUNIT_ASSERT_EQUAL(false, sum.fixed());
 
 		std::wstringstream file_name;
@@ -216,9 +216,9 @@ void Sz4LuaParamOptimized::test2() {
 		sz4::weighted_sum<double, sz4::second_time_t> sum;
 		sz4::weighted_sum<double, sz4::second_time_t>::time_diff_type weight;
 		buff->get_weighted_sum(mock.GetParam(L"BASE:A:B:D"), 100u, 200u, PT_SEC10, sum);
-		CPPUNIT_ASSERT_EQUAL(10 * 50., sum.sum(weight));
-		CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), weight);
-		CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), sum.no_data_weight());
+		CPPUNIT_ASSERT_EQUAL(50., sum.sum(weight));
+		CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(5), weight);
+		CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(5), sum.no_data_weight());
 		CPPUNIT_ASSERT_EQUAL(false, sum.fixed());
 	}
 }
