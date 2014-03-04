@@ -984,31 +984,26 @@ bool TSzarpConfig::checkFormulas()
 bool TSzarpConfig::checkRepetitions(int quiet)
 {
 	std::vector<std::wstring> str;
-        int all_repetitions_number = 0, the_same_repetitions_number=0;
-        
+	int all_repetitions_number = 0, the_same_repetitions_number=1;
+
 	for (TParam* p = GetFirstParam(); p; p = GetNextParam(p)) {
 		str.push_back(p->GetSzbaseName());
 	}
 	std::sort(str.begin(), str.end());
-	
-	for(size_t j = 0 ; j < str.size() - 1; j++){
-		if (!str[j].compare(str[j + 1])){ 
-			the_same_repetitions_number += 1;
-			all_repetitions_number += 1;
-		}
-		
-		else if ( j > 0 && !str[j].compare(str[j - 1])) {
-			
-			the_same_repetitions_number += 1;
-			all_repetitions_number += 1;
-			
-			if (!quiet)
+
+	for( size_t j=0 ; j<str.size() ; ++j )
+	{
+		if( j<str.size()-1 && str[j] == str[j+1] )
+			++the_same_repetitions_number;
+		else if( the_same_repetitions_number > 1 ) {
+			if( !quiet )
 				sz_log(1, "There is %d repetitions of: %s", the_same_repetitions_number, SC::S2A(str[j-1]).c_str());
-			
-			the_same_repetitions_number = 0;
+
+			all_repetitions_number += the_same_repetitions_number;
+			the_same_repetitions_number = 1;
 		}
 	}
-	
+
 	return all_repetitions_number == 0;
 }				
 

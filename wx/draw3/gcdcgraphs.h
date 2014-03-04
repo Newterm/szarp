@@ -46,6 +46,7 @@
 #include "wxlogging.h"
 
 class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver  {
+	bool m_right_down;
 
 	bool m_draw_param_name;
 
@@ -160,10 +161,13 @@ public:
 	 */
 	void OnMouseLeftUp(wxMouseEvent& event);
 
-	/** Event handler - called when left mouse button is pressed.
-	 * Handles moving cursor and shifting screen.
-	 */
 	void OnMouseRightDown(wxMouseEvent& event);
+
+	void OnMouseRightUp(wxMouseEvent& event);
+
+	void OnMouseMove(wxMouseEvent& event);
+
+	void OnMouseLeave(wxMouseEvent& event);
 
 	void OnSize(wxSizeEvent& event);
 

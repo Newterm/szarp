@@ -1502,8 +1502,8 @@ int modbus_unit::configure(TUnit *unit, xmlNodePtr node, short *read, short *sen
 		return 1;
 	}
 	if (!m_expiration_time) {
-		m_log.log(5, "no-data timeout not specified (or 0), assuming no data expiration");
-		m_expiration_time = 0;
+		m_log.log(5, "no-data timeout not specified (or 0), assuming 1 minute data expiration");
+		m_expiration_time = 60;
 	} 
 
 	m_nodata_value = 0;

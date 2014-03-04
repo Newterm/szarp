@@ -402,12 +402,6 @@ void BackgroundDrawer::DrawBackground(wxDC *dc) {
 	
 		c *= -1; 
 
-		int xn; 
-		if (i < pc)
-			xn = x + x2 - x1;
-		else
-			xn = w - m_rightmargin;
-
 		dc->DrawRectangle(x, m_topmargin, x2 - x1, h - m_topmargin + 1);
 
 		x = x + x2 - x1;

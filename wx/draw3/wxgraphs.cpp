@@ -48,15 +48,17 @@ BEGIN_EVENT_TABLE(WxGraphs, wxWindow)
     EVT_PAINT(WxGraphs::OnPaint)
     EVT_LEFT_DOWN(WxGraphs::OnMouseLeftDown)
     EVT_LEFT_DCLICK(WxGraphs::OnMouseLeftDClick)
-    EVT_LEAVE_WINDOW(WxGraphs::OnMouseLeftUp)
-    EVT_LEFT_UP(WxGraphs::OnMouseLeftUp)
+    EVT_LEAVE_WINDOW(WxGraphs::OnMouseLeave)
+    EVT_MOTION(WxGraphs::OnMouseMove)
+    EVT_RIGHT_DOWN(WxGraphs::OnMouseRightDown)
+    EVT_RIGHT_UP(WxGraphs::OnMouseRightUp)
     EVT_IDLE(WxGraphs::OnIdle)
     EVT_SIZE(WxGraphs::OnSize)
     EVT_SET_FOCUS(WxGraphs::OnSetFocus)
     EVT_ERASE_BACKGROUND(WxGraphs::OnEraseBackground)
 END_EVENT_TABLE()
 
-WxGraphs::WxGraphs(wxWindow *parent, ConfigManager *cfg) : wxWindow(parent, wxID_ANY) {
+WxGraphs::WxGraphs(wxWindow *parent, ConfigManager *cfg) : wxWindow(parent, wxID_ANY), m_right_down(false) {
 	SetHelpText(_T("draw3-base-win"));
 
 	wxFont f = GetFont();
@@ -594,16 +596,54 @@ void WxGraphs::DrawDance(wxDC* dc) {
 void WxGraphs::OnSetFocus(wxFocusEvent& event) {
 }
 
-void WxGraphs::OnMouseRightDown(wxMouseEvent &event) {
-	if (m_draws_wdg->GetSelectedDrawIndex() == -1)
+void WxGraphs::OnMouseMove(wxMouseEvent &event) {
+	if (!m_right_down)
 		return;
 
-	Draw *d = m_draws[m_draws_wdg->GetSelectedDrawIndex()];
-	DrawInfo *di = d->GetDrawInfo();
+	if (m_draws_wdg->GetNoData())
+		return;
 
-	SetInfoDataObject wido(di->GetBasePrefix(), di->GetSetName(), d->GetPeriod(), d->GetCurrentTime().GetTicks(), m_draws_wdg->GetSelectedDrawIndex());
-	wxDropSource ds(wido, this);
-	ds.DoDragDrop(0);
+	int index = m_draws_wdg->GetSelectedDrawIndex();
+	if (index == -1)
+		return;
+
+	int w, h;
+	GetClientSize(&w, &h);
+
+	if (event.GetX() < m_screen_margins.leftmargin) {
+		m_draws_wdg->SetKeyboardAction(CURSOR_LEFT_KB);
+		return;
+	}
+
+	if (event.GetX() > (w - m_screen_margins.rightmargin)) {
+		m_draws_wdg->SetKeyboardAction(CURSOR_RIGHT_KB);
+		return;
+	}
+
+	m_draws_wdg->SetKeyboardAction(NONE);
+
+	int x = event.GetX();
+	int y = event.GetY();
+	double dist;
+	wxDateTime time;
+
+	m_graphs.at(index)->GetDistance(x, y, dist, time);
+	m_draws_wdg->SelectDraw(index, true, time);
+}
+
+void WxGraphs::OnMouseLeave(wxMouseEvent &event) {
+	OnMouseRightUp(event);
+	OnMouseLeftDClick(event);
+}
+
+void WxGraphs::OnMouseRightDown(wxMouseEvent &event) {
+	m_right_down = true;
+	OnMouseMove(event);
+}
+
+void WxGraphs::OnMouseRightUp(wxMouseEvent &event) {
+	m_right_down = false;
+	m_draws_wdg->SetKeyboardAction(NONE);
 }
 
 wxDragResult WxGraphs::SetSetInfo(wxCoord x, 

@@ -184,10 +184,6 @@ RemarksHandler::RemarksHandler(ConfigManager *config_manager) : m_config_manager
         /* Check if remarks server access was loaded from SSCConfig */
         m_configured = !m_server.IsEmpty() && !m_username.IsEmpty() && !m_password.IsEmpty();
 
-        wxLogWarning(_T("m_server: %s"), m_server.c_str());
-        wxLogWarning(_T("m_username: %s"), m_username.c_str());
-        wxLogWarning(_T("m_password: %s"), m_password.c_str());
-
         /* 
         * If remarks server access credentials where not present in SSConfig 
         * use cfglogin method. Credentials created this way are not put in
