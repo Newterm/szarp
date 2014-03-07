@@ -93,7 +93,11 @@ ParamDynamicTreeData IPKLoader::get_dynamic_tree()
 	
 	for (TParam* p = szarpConfig->GetFirstParam(); p; p = szarpConfig->GetNextParam(p)) {
 		if (p->GetFormulaType() == TParam::DEFINABLE) {
-			p->PrepareDefinable();
+			try {
+				p->PrepareDefinable();
+			} catch( TCheckException& e ) {
+				sz_log(0,"Invalid definable formula %s",SC::S2A(p->GetName()).c_str());
+			}
 		}
 		if (p->IsInBase())
 			inbase++;
@@ -252,7 +256,11 @@ xmlDocPtr IPKLoader::GetXMLDoc(AbstractNodesFilter &nf, const time_t& time, cons
 		if (!nf(p))
 			continue;
 		if (p->GetFormulaType() == TParam::DEFINABLE) {
-			p->PrepareDefinable();
+			try {
+				p->PrepareDefinable();
+			} catch( TCheckException& e ) {
+				sz_log(0,"Invalid definable formula %s",SC::S2A(p->GetName()).c_str());
+			}
 		}
 		pcount++;
 
