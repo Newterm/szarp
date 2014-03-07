@@ -454,7 +454,8 @@ dwa razy ten sam parametr.
 <para>
 Tryb rozdwojonego kursora pozwala na zaznaczenie fragmentu wykresu. Wszystkie prezentowane
 przez program dane - takie jak minimum, maksimum, ¶rednia i warto¶æ sumaryczna - bêd± dotyczy³y
-tylko zaznaczonego fragmentu wykresu.
+tylko zaznaczonego fragmentu wykresu. Podobnie ten zakres jest domy¶lnie
+wczytywany przez narzêdzie tworzenia wykresów XY.
 </para>
 <para>
 W celu uruchomienia podwójnego kursora ustaw siê kursorem na pocz±tku interesuj±cego Ciê okresu.
@@ -582,7 +583,9 @@ pojawi± siê wyliczone warto¶ci dla danego parametru.
 <para>
 W Draw 3 mo¿esz okre¶liæ korelacjê warto¶ci wybranych parametrów. S³u¿± do tego wykresy XY. 
 Mo¿esz je utworzyæ wybieraj±c z menu <guimenu>Plik</guimenu> oraz <guimenu>Wykres XY</guimenu>.
-Domy¶lnie, jako wykresy X i Y, zostan± wybrane pierwsze dwa niewygaszone wykresy z aktualnego zestawu. Tak¿e zakres czasowy zostanie ustawiony na ten z aktualnego zestawu.
+Domy¶lnie, jako wykresy X i Y, zostan± wybrane pierwsze dwa niewygaszone wykresy z aktualnego
+zestawu. Tak¿e zakres czasowy zostanie ustawiony na ten z aktualnego zestawu lub je¶li w³±czony
+jest podwójny kursor, na zakres nim zaznaczony.
 <figure>
 <title>Tworzenie wykresu XY</title>
 <mediaobject>
