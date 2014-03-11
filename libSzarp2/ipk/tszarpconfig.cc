@@ -958,6 +958,7 @@ bool TSzarpConfig::checkConfiguration()
 	bool ret = true;
 	ret = checkRepetitions(false) && ret;
 	ret = checkFormulas()         && ret;
+	ret = checkSend()             && ret;
 	return ret;
 }
 
@@ -1006,6 +1007,30 @@ bool TSzarpConfig::checkRepetitions(int quiet)
 
 	return all_repetitions_number == 0;
 }				
+
+bool TSzarpConfig::checkSend()
+{
+	bool ret = true;
+	for( TDevice* d = GetFirstDevice(); d; d = GetNextDevice(d) )
+		for( TRadio* r = d->GetFirstRadio(); r; r = d->GetNextRadio(r) )
+			for( TUnit* u = r->GetFirstUnit(); u; u = r->GetNextUnit(u) )
+				for( TSendParam* sp = u->GetFirstSendParam(); sp; sp = u->GetNextSendParam(sp) )
+				{
+					if( !sp->IsConfigured() || sp->GetParamName().empty() )
+						continue;
+
+					TParam* p = getParamByName(sp->GetParamName()); 
+					if( p == NULL ) {
+						sz_log(1, "Cannot find parameter to send (%s)", SC::S2A(sp->GetParamName()).c_str());
+						ret = false;
+					} else if( p->IsDefinable() ) {
+						sz_log(1, "Cannot use drawdefinable param in send (%s)", SC::S2A(sp->GetParamName()).c_str());
+						ret = false;
+					}
+				}
+	return ret;
+}
+
 
 void TSzarpConfig::ConfigureSeasonsLimits() {
 	if (seasons == NULL)

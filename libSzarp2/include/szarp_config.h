@@ -312,6 +312,11 @@ public:
 	 */
 	bool checkRepetitions(int quiet = 0);
 
+	/**
+	 * Check if sends are ok -- this means if every send has valid param
+	 */
+	bool checkSend();
+
 	/** Configrures default summer seasons limit (if seasons are not already configured*/
 	void ConfigureSeasonsLimits();
 
