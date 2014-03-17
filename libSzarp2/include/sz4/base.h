@@ -54,7 +54,9 @@ private:
 
 	block_cache m_cache;
 public:
-	base_templ(const std::wstring& szarp_data_dir, ipk_container_type* ipk_container) : m_szarp_data_dir(szarp_data_dir), m_ipk_container(ipk_container) {}
+	base_templ(const std::wstring& szarp_data_dir, ipk_container_type* ipk_container) : m_szarp_data_dir(szarp_data_dir), m_ipk_container(ipk_container) {
+		m_interperter.initialize(this, m_ipk_container);
+	}
 
 	template<class V, class T> void get_weighted_sum(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, weighted_sum<V, T>& sum) {
 		buffer_for_param(param)->get_weighted_sum(param, start, end, probe_type, sum);

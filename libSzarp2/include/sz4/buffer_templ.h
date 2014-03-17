@@ -60,6 +60,8 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 		case TParam::SZ4_COMBINED:
 			return param_entry_build_t_1<real_param_entry_in_buffer, types>(base, param, buffer_directory);
 		case TParam::SZ4_LUA_OPTIMIZED: {
+			param->SetDataType(TParam::DOUBLE);
+
 			generic_param_entry* entry = param_entry_build_t_1<lua_optimized_param_entry_in_buffer, types>(base, param, buffer_directory);
 			LuaExec::Param* exec_param = param->GetLuaExecParam();
 			for (std::vector<LuaExec::ParamRef>::iterator i = exec_param->m_par_refs.begin();
@@ -72,6 +74,8 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 			return entry;
 		}
 		case TParam::SZ4_LUA: {
+			param->SetDataType(TParam::DOUBLE);
+
 			generic_param_entry* entry = param_entry_build_t_1<lua_param_entry_in_buffer, types>(base, param, buffer_directory);
 			std::wstring formula = SC::U2S(param->GetLuaScript());
 			std::vector<std::wstring> strings;
@@ -93,6 +97,8 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 			return entry;
 		}
 		case TParam::SZ4_DEFINABLE: {
+			param->SetDataType(TParam::DOUBLE);
+
 			generic_param_entry* entry = param_entry_build_t_1<rpn_param_entry_in_buffer, types>(base, param, buffer_directory);
 
 			TParam **f_cache = param->GetFormulaCache();

@@ -26,6 +26,8 @@
 
 namespace sz4 {
 
+template<typename types> class base_templ;
+
 template<class types> class lua_interpreter {
 	lua_State* m_lua;
 public:
@@ -36,6 +38,8 @@ public:
 	double calculate_value(nanosecond_time_t start, SZARP_PROBE_TYPE probe_type, int custom_length);
 
 	void pop_prepared_param();
+
+	void initialize(base_templ<types>* base, typename types::ipk_container_type* container);
 
 	~lua_interpreter();
 

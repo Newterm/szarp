@@ -357,11 +357,11 @@ public:
 	}
 
 	bool operator()(const float& v) const {
-		return isnanf(v);
+		return !isnanf(v);
 	}
 
 	bool operator()(const double& v) const {
-		return isnan(v);
+		return !isnan(v);
 	}
 };
 
@@ -403,7 +403,7 @@ template<class time_type> void Sz4Base::GetValue(DatabaseQuery::ValueData::V& v,
 	wsum_type wsum;
 	base->get_weighted_sum(p, time, end_time, pt, wsum);
 
-	v.response = wsum.avg() / pow10(p->GetPrec());
+	v.response = wsum.avg() / sz4::scale_factor(p);
 
 	typename wsum_type::sum_type sum;
 	typename wsum_type::time_diff_type weight;
@@ -414,7 +414,7 @@ template<class time_type> void Sz4Base::GetValue(DatabaseQuery::ValueData::V& v,
 		scale = 10 * 60.;
 	else
 		scale = 10 * 1000000000.;
-	v.sum = sum / pow10(p->GetPrec()) * wsum.gcd() / scale;
+	v.sum = sum / sz4::scale_factor(p) * wsum.gcd() / scale;
 
 	if (weight)
 		v.count = weight / (weight + wsum.no_data_weight() / wsum.gcd()) * 100;

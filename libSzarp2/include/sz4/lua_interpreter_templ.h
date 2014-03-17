@@ -37,6 +37,16 @@ template<class types> base_ipk_pair<types>* get_base_ipk_pair(lua_State *lua) {
 	return ret;
 }
 
+template<class types> void push_base_ipk_pair(lua_State *lua, base_templ<types>* base, typename types::ipk_container_type* container) {
+	lua_pushlightuserdata(lua, (void*)&lua_interpreter<types>::lua_base_ipk_pair_key);
+
+	base_ipk_pair<types>* pair = (base_ipk_pair<types>*)lua_newuserdata(lua, sizeof(base_ipk_pair<types>));
+	pair->first = base;
+	pair->second = container;
+
+	lua_settable(lua, LUA_REGISTRYINDEX);
+}
+
 template<class base_types> int lua_sz4(lua_State *lua) {
 	const unsigned char* param_name = (unsigned char*) luaL_checkstring(lua, 1);
 	if (param_name == NULL) 
@@ -58,7 +68,7 @@ template<class base_types> int lua_sz4(lua_State *lua) {
 				sum.refferred_blocks().begin(),
 				sum.refferred_blocks().end());
 
-	lua_pushnumber(lua, sum.avg());
+	lua_pushnumber(lua, sum.avg() / scale_factor(param));
 	return 1;
 }
 
@@ -109,6 +119,10 @@ template<class types> lua_interpreter<types>::lua_interpreter() {
 		lua_register(m_lua, lib->name, lib->func);
 
 };
+
+template<class types> void lua_interpreter<types>::initialize(base_templ<types>* base, typename types::ipk_container_type* container) {
+	push_base_ipk_pair(m_lua, base, container);
+}
 
 template<class types> bool lua_interpreter<types>::prepare_param(TParam* param) {
 	return lua::prepare_param(m_lua, param);

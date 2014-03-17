@@ -93,7 +93,7 @@ public:
 				sum.refferred_blocks().begin(),
 				sum.refferred_blocks().end());
 
-		return sum.avg();
+		return sum.avg() / scale_factor(ref.m_param);
 	}
 
 	virtual std::vector<double>& Vars() {

@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <ctime>
 #include <iostream>
+#include <limits>
 
 #include "szarp_base_common/time.h"
 
@@ -67,7 +68,10 @@ template<> class round_up<sz4::nanosecond_time_t, sz4::second_time_t> {
 public:
 	sz4::second_time_t operator()(const sz4::nanosecond_time_t& t) const { 
 		if (t.nanosecond)
-			return t.second + 1;
+			if (t.second < std::numeric_limits<sz4::second_time_t>::max())
+				return t.second + 1;
+			else
+				return t.second;
 		else
 			return t.second;
 	}

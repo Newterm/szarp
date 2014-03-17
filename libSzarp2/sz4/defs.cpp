@@ -19,6 +19,8 @@
 
 #include "sz4/defs.h"
 
+#include "szarp_config.h"
+
 #include <cmath> 
 
 namespace sz4 {
@@ -37,6 +39,29 @@ template<> float no_data<float>() {
 
 template<> double no_data<double>() {
 	return nan("");
+}
+
+int scale_factor(TParam* p) {
+	switch (p->GetDataType()) {
+		case TParam::FLOAT:
+		case TParam::DOUBLE:
+			return 1;
+		case TParam::SHORT:
+		case TParam::INT:
+			return pow10(p->GetPrec());
+	}
+}
+
+int descale_factor(TParam* p) {
+	switch (p->GetDataType()) {
+		case TParam::FLOAT:
+		case TParam::DOUBLE:
+			return pow10(p->GetPrec());
+		case TParam::SHORT:
+		case TParam::INT:
+			return 1;
+	}
+
 }
 
 }

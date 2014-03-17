@@ -31,6 +31,8 @@
 
 #include "sz4/time.h"
 
+class TParam;
+
 namespace sz4 {
 
 template<class V, class T> struct value_time_pair {
@@ -219,6 +221,9 @@ public:
 			m_refferred_blocks.push_back(block);
 	}
 };
+
+int scale_factor(TParam* p);
+int descale_factor(TParam* p);
 
 class search_condition {
 public:
