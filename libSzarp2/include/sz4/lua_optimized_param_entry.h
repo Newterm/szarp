@@ -23,6 +23,7 @@
 #include "sz4/definable_param_cache.h"
 #include "sz4/buffered_param_entry.h"
 #include "sz4/fixed_stack_top.h"
+#include "sz4/util.h"
 
 namespace sz4 {
 
@@ -93,7 +94,7 @@ public:
 				sum.refferred_blocks().begin(),
 				sum.refferred_blocks().end());
 
-		return sum.avg() / scale_factor(ref.m_param);
+		return scale_value(sum.avg(), ref.m_param);
 	}
 
 	virtual std::vector<double>& Vars() {

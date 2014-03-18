@@ -23,6 +23,7 @@
 #include "sz4/types.h"
 #include "sz4/exceptions.h"
 #include "sz4/base.h"
+#include "sz4/util.h"
 
 namespace sz4 {
 
@@ -68,7 +69,7 @@ template<class base_types> int lua_sz4(lua_State *lua) {
 				sum.refferred_blocks().begin(),
 				sum.refferred_blocks().end());
 
-	lua_pushnumber(lua, sum.avg() / scale_factor(param));
+	lua_pushnumber(lua, scale_value(sum.avg(), param));
 	return 1;
 }
 
@@ -161,7 +162,5 @@ template<class types> lua_interpreter<types>::~lua_interpreter() {
 }
 
 template<class types> const int lua_interpreter<types>::lua_base_ipk_pair_key = 0;
-
-
 
 }

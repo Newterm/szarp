@@ -23,6 +23,7 @@
 #include "dbmgr.h"
 #include "conversion.h"
 #include "szbextr/extr.h"
+#include "sz4/util.h"
 
 #include <cmath>
 
@@ -403,7 +404,7 @@ template<class time_type> void Sz4Base::GetValue(DatabaseQuery::ValueData::V& v,
 	wsum_type wsum;
 	base->get_weighted_sum(p, time, end_time, pt, wsum);
 
-	v.response = wsum.avg() / sz4::scale_factor(p);
+	v.response = sz4::scale_value(wsum.avg(), p);
 
 	typename wsum_type::sum_type sum;
 	typename wsum_type::time_diff_type weight;
@@ -414,7 +415,7 @@ template<class time_type> void Sz4Base::GetValue(DatabaseQuery::ValueData::V& v,
 		scale = 10 * 60.;
 	else
 		scale = 10 * 1000000000.;
-	v.sum = sum / sz4::scale_factor(p) * wsum.gcd() / scale;
+	v.sum = sz4::scale_value(sum, p) * wsum.gcd() / scale;
 
 	if (weight)
 		v.count = weight / (weight + wsum.no_data_weight() / wsum.gcd()) * 100;

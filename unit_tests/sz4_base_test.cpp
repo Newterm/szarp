@@ -161,7 +161,7 @@ void Sz4BaseTestCase::cacheTest1() {
 
 	sz4::weighted_sum<double, sz4::second_time_t> sum_l;
 	base.get_weighted_sum(pl, sz4::second_time_t(1000), sz4::second_time_t(2000), PT_SEC10, sum_l);
-	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<double>::type(1000), sum_l.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<double>::type(100), sum_l.sum(weight));
 	CPPUNIT_ASSERT_EQUAL(10u, sum_l.refferred_blocks().size());
 
 	size_t size_in_bytes, blocks_count;

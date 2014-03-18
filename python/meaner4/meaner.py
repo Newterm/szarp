@@ -27,7 +27,7 @@ import saveparam
 from meanerbase import MeanerBase
 
 class Meaner(MeanerBase):
-	def __init__(self, path, uri):
+	def __init__(self, path, uri, heartbeat):
 		MeanerBase.__init__(self, path)
 
 		self.parcook_uri = uri

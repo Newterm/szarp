@@ -22,6 +22,7 @@
 #include "szarp_base_common/definable_calculate.h"
 #include "sz4/definable_param_cache.h"
 #include "sz4/buffered_param_entry.h"
+#include "sz4/util.h"
 
 namespace sz4 {
 
@@ -69,7 +70,7 @@ public:
 			for (int i = 0; i < num_of_params; i++) {
 				weighted_sum<double, T> wsum;
 				m_base->get_weighted_sum(f_cache[i], time, next_time, probe_type, wsum);
-				varray[i] = wsum.avg() * descale_factor(f_cache[i]);
+				varray[i] = descale_value(wsum.avg(), f_cache[i]);
 				refferred_blocks.insert(
 					wsum.refferred_blocks().begin(),
 					wsum.refferred_blocks().end());
