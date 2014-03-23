@@ -31,8 +31,8 @@ class MeanerBase:
 		self.szbase_path = path
 
 	def configure(self, ipk_path):
-		ipk = IPK(ipk_path)
+		self.ipk = IPK(ipk_path)
 		
-		for p in ipk.params:
+		for p in self.ipk.params:
 			self.save_params.append(saveparam.SaveParam(p, self.szbase_path))
 

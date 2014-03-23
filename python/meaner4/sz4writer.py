@@ -41,7 +41,6 @@ class Sz4Writer(MeanerBase):
 		return float(value) * (10 ** param.prec)
 
 	def process_file(self, path, time_format):
-		print "Reading values from file %s" % (path,)
 		f = open(path, 'r')
 		
 		for line in f:
@@ -49,7 +48,6 @@ class Sz4Writer(MeanerBase):
 
 			pindex = self.name2index[unicode(pname, 'utf-8')]
 			if pindex is None:
-				print "Param %s not found, skipping line" % (pname,)
 				continue
 			sparam = self.save_params[pindex]
 

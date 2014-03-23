@@ -40,6 +40,7 @@
 
 #include "log_prefix.h"
 
+///XXX: remember to add  adjust meaner4 code as well, while changing this
 #define LOG_PARAMS_NUMBER 250
 const wchar_t* LOG_PARAMS[LOG_PARAMS_NUMBER][3] = {
 	{ LOG_PREFIX_DAEMON L":draw3:codeedit:size" , L"log" , L"codeedit:size" }, 

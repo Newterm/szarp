@@ -28,11 +28,12 @@ from libpar import LibparReader
 if __name__ == "__main__":
 	lpr = LibparReader()
 
-	path = lpr.get("global", "szbase")
+	path = lpr.get("global", "sz4")
 	ipk = lpr.get("global", "IPK")
 	uri = lpr.get("global", "parcook_socket_uri")
+	heartbeat = int(lpr.get("sz4", "heartbeat_frequency"))
 
-	meaner = meaner.Meaner(path, uri)
+	meaner = meaner.Meaner(path, uri, heartbeat)
 	meaner.configure(ipk)
 
 	meaner.run()

@@ -122,7 +122,7 @@ class SaveParam:
 		prev_time, prev_nanotime = self.param.time_just_before(time, nanotime)
 		self.write_value(self.param.nan(), prev_time, prev_nanotime)
 
-	def process_value(self, value, time, nanotime):
+	def process_value(self, value, time, nanotime = 0):
 		if not self.param.written_to_base:
 			return
 

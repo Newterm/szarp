@@ -55,7 +55,7 @@ class ParamTest(unittest.TestCase):
 			self.nodes.append(n)
 
 	def test_parsing_def(self):
-		p = param.Param(self.node_def)
+		p = param.from_node(self.node_def)
 		
 		self.assertEqual(p.data_type, "short")
 		self.assertEqual(p.value_format_string, "<h")
@@ -73,7 +73,7 @@ class ParamTest(unittest.TestCase):
 
 	def test_parsing2(self):
 		for i, n in enumerate(self.nodes):
-			p = param.Param(n)
+			p = param.from_node(n)
 
 			self.assertEqual(p.data_type, self.types[i])
 			self.assertEqual(p.value_format_string, self.formats[i])
@@ -95,7 +95,7 @@ class ParamTest(unittest.TestCase):
       <define type="DRAWDEFINABLE" formula="(*:*:przeplyw z licznika msw) (*:*:przeplyw z licznika lsw) :"/>
       <draw title="Kamstrup cieppomierz CO" min="0" max="300" special="hoursum" order="6"/>
     </param>""")
-		p = param.Param(n)
+		p = param.from_node(n)
 
 		self.assertTrue(p.combined)
 		self.assertEqual("Siec:Kamstrup:przeplyw z licznika lsw", p.lsw_param_name)

@@ -39,7 +39,7 @@ class ParamPathTest(unittest.TestCase):
         <draw title="Kocioł 3 Praca falowników" color="red" min="0" max="100" prior="86" order="1"/>
       </param>
 """)
-		self.param1 = param.Param(node1)
+		self.param1 = param.from_node(node1)
 
 		node2 = lxml.etree.fromstring("""
       <param name="Kocioł 3:Sterownik:Aktualne wysterowanie falownika podmuchu" short_name="imp_p" draw_name="Wyst. fal. podm." unit="%" prec="1" base_ind="auto" time_type="nanosecond">
@@ -48,7 +48,7 @@ class ParamPathTest(unittest.TestCase):
         <draw title="Kocioł 3 Praca falowników" color="red" min="0" max="100" prior="86" order="1"/>
       </param>
 """)
-		self.param2 = param.Param(node2)
+		self.param2 = param.from_node(node2)
 
 	def test_path1(self):
 		pp = parampath.ParamPath(self.param1, "/tmp")

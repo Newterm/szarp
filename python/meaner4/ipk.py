@@ -22,13 +22,22 @@ import lxml
 import lxml.etree
 import param
 
+LOG_PARAM_COUNT=250
+
+IPK_NAMESPACE='http://www.praterm.com.pl/SZARP/ipk'
+
 class IPK:
 	def __init__(self, ipk_path):
 		ipk = lxml.etree.parse(ipk_path)
 
 		self.params = [
-			param.Param(p) for p in ipk.xpath("//s:param", namespaces={'s':'http://www.praterm.com.pl/SZARP/ipk'})
+			param.from_node(p) for p in ipk.xpath("//s:device//s:param", namespaces={'s': IPK_NAMESPACE })
 		]
+		self.device_params_count = len(self.params)
+
+		self.params.extend(
+			param.from_node(p) for p in ipk.xpath("//s:defined/s:param|s:drawdefinable/s:param", namespaces={'s': IPK_NAMESPACE })
+		)
 
 		param_map = {}
 		for p in self.params:
@@ -46,4 +55,12 @@ class IPK:
 
 			lsw_param.lsw_combined_referencing_param = p
 			msw_param.msw_combined_referencing_param = p
+
+	def adjust_param_index(self, index):
+		if index < self.device_params_count:
+			return (False, index)
+		elif index < self.device_params_count + LOG_PARAM_COUNT:
+			return (True, None)
+		else:
+			return (False, index - LOG_PARAM_COUNT)
 

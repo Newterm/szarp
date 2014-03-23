@@ -1496,12 +1496,13 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 	calculate_lua_params(ipk, ipc_param_values, param_info);
 #endif
 
-	sz_log(10, "publishing new values");
-	publish_values(Probe, zmq_socket);
-
 	/* NOW update probes history */
 	for (ii = 0; ii < VTlen; ii++)
 		update_value(ii, 0, Probe, Probes, abuf);
+
+	sz_log(10, "publishing new values");
+	publish_values(Probe, zmq_socket);
+
 	/* release probes semaphore */
 	Sem[0].sem_num = SEM_PROBE + 1;
 	Sem[0].sem_op = -1;
