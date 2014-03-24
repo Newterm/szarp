@@ -89,7 +89,7 @@ To start the program browsing, you need to have access to data that will be disp
 <para>
 During the start Draw 3 reads configuration operates a database query and displays its main window. At the time display window with a progress bar:
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-progress.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-progress.png"></imageobject>
 </mediaobject>
 </para>
 <para>
@@ -109,7 +109,7 @@ To complete the program, close the window, select
 The figure below shows the main window of the program:
 <figure> <title>The main window</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-win.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-win.png"></imageobject>
 </mediaobject>
 </figure>
 </para>
@@ -342,7 +342,7 @@ side, the names of the parameters) field switch between tabs.
 When you create multiple tabs, also the arrows to move the tab bar.
 <figure><title>Tabs in the menu</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-tabs2.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-tabs2.png"></imageobject>
 </mediaobject></figure>
 </para>
 <para>
@@ -371,7 +371,7 @@ context. To read the documentation Draw3 program, select
 <figure>
 <title>Help in Draw3</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-help.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-help.png"></imageobject>
 </mediaobject></figure>
 </para><para>
 Context-sensitive help to display the description for the selected item and opens the Draw3
@@ -382,7 +382,7 @@ place of choice for medium-sized, and then open the documentation in the expecte
 <figure>
 <title>Context help Draw3</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-help2.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-help2.png"></imageobject>
 </mediaobject></figure>
 
 </para>
@@ -423,7 +423,7 @@ The program is able to independently decipher browsing the changing graphs (eg i
 If you want to compare values from different periods of time (eg, temperature control from March to April, the reference temperature), use the function block diagram. Right-click on the title of the chart and select <quote>Chart locked</quote>. On the set of graphs shown below is the chart locked "Temp. return":
 <figure><title>Block charts</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-blockgraph.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-blockgraph.png"></imageobject>
 </mediaobject>
 </figure>
 </para>
@@ -434,7 +434,7 @@ To block chart you can also use the keyboard shortcut <keycode>Ctrl + B</keycode
 When you move the time from February to January, chart "Temp. Return" (marked in yellow) has not changed its position (note that the name of chart appeared locked postscript
 <figure><title>Locked chart</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-blockgraph2.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-blockgraph2.png"></imageobject>
 </mediaobject>
 </figure>
 </para>
@@ -467,7 +467,7 @@ During the current Split cursor chart is bold and below the window with graphs w
 <figure>
 <title>Split cursor</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-doublecursor.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-doublecursor.png"></imageobject>
 </mediaobject>
 </figure>
 </para>
@@ -514,7 +514,7 @@ parameter name, parameter aggregation period and the percentage of samples that 
 <figure>
 <title>Summary window - additional information</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-summary_values2.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-summary_values2.png"></imageobject>
 </mediaobject></figure>
 </para>
 <note>
@@ -589,7 +589,7 @@ By default, the graphs X and Y will be selected first two charts dimmed with the
 <figure>
 <title>Create a chart XY</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-xy1.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-xy1.png"></imageobject>
 </mediaobject></figure>
 In the next chart XY, the right of the page, are placed more detailed information on the parameters shown in the graph:
 <itemizedlist>
@@ -694,7 +694,7 @@ You can also make setting the cursor on a specific point, that point by clicking
 <figure>
 <title>Chart XYZ</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-xyz2.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-xyz2.png"></imageobject>
 </mediaobject></figure>
 </para>
 <para>
@@ -769,7 +769,7 @@ The program provides an opportunity to see browsing the technical documentation 
 To view the technical parameter, use the keyboard shortcut <keycode>Ctrl + H</keycode> or right-click on the title of chart (on the right side of the window) and select <quote>parameter documentation</quote>, as it is shown below:
 <figure><title>Documentation parameter</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-blockgraph.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-blockgraph.png"></imageobject>
 </mediaobject>
 </figure>
 </para>
@@ -806,7 +806,7 @@ After each change the language, you must restart the program.
 The program can create their own set of graphs. To do this, select the menu <guimenu> Sets </guimenu> and <guimenu> New set </guimenu> or press <keycode> Ctrl + A </keycode>. The following window will appear:
 <figure> <title>Editing charts set</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-chart_set.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-chart_set.png"></imageobject>
 </mediaobject></figure>
 </para>
 <para>
@@ -836,7 +836,7 @@ looking for a string in the <quote> Search field </quote>. The window with the d
 may look something like the screenshot below:
 <figure> <title>User parameter list</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-chart_set2_1.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-chart_set2_1.png"></imageobject>
 </mediaobject></figure>
 </para>
 <!-- SUBSECTION dodawanie wykresu do w³asnej listy wykresów -->
@@ -856,7 +856,7 @@ parameter of a set of graphs, edit the chart (color, range of value) or edit
 same user parameter:
 <figure> <title>Edit your own set of parameters</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-chart_set6.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-chart_set6.png"></imageobject>
 </mediaobject>
 </figure>
 </para>
@@ -911,7 +911,7 @@ To define your own parameter choose <guimenu>Tool </guimenu> and then <guimenu>U
 <figure>
 <title>The beginning of the creation of a formula parameter</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-parameters_set.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-parameters_set.png"></imageobject>
 </mediaobject>
 </figure>
 </para>
@@ -1441,7 +1441,7 @@ in the window, and the cursor is placed on the chart at the position correspondi
 </para>
 <figure> <title>Search by the specified condition</title>
 <mediaobject>
-<imageobject><imagedata align="center" fileref="pics/draw3-searching_date.png"></imageobject>
+<imageobject><imagedata scale="45" align="center" fileref="pics/draw3-searching_date.png"></imageobject>
 </mediaobject></figure>
 </section>
 <section id="draw3-ext-draw2draw3comparison">
