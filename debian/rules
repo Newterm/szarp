@@ -82,8 +82,8 @@ DOC_PACKAGES ?= \
 		-pszarp-doc-pdf \
 		-pszarp-doc-html
 
-CFLAGS = -ggdb -Wunused-local-typedefs
-CXXFLAGS = -ggdb -Wunused-local-typedefs
+CFLAGS = -ggdb -w
+CXXFLAGS = -ggdb -w
 		 
 ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
 	CFLAGS += -O0
