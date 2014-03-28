@@ -69,7 +69,7 @@ void SzbParamMonitorImpl::process_notification() {
 		ssize_t p = 0;
 		while (r > 0) {
 			struct inotify_event* e = (struct inotify_event*) (buf + p);
-			if ((e->mask & (IN_CLOSE_WRITE | IN_MOVED_TO)) && e->len) {
+			if ((e->mask & (IN_MODIFY | IN_MOVED_TO | IN_CLOSE_WRITE)) && e->len) {
 				size_t l = strlen(e->name);
 				if (l > 4 && e->name[l - 4] == '.' && e->name[l - 3] == 's' && e->name[l - 2] == 'z'
 						&& (e->name[l - 1] == '4' || e->name[l - 1] == 'b'))
@@ -107,7 +107,7 @@ void SzbParamMonitorImpl::process_cmds() {
 
 			switch (cmd.cmd) {
 				case ADD_CMD:
-					wd = inotify_add_watch(m_inotify_socket, cmd.path.c_str(), IN_CLOSE_WRITE | IN_MOVED_TO);
+					wd = inotify_add_watch(m_inotify_socket, cmd.path.c_str(), IN_CLOSE_WRITE | IN_MOVED_TO | IN_MODIFY);
 					if (wd < 0) {
 						sz_log(3, "Failed to add watch for path:%s, errno: %d", cmd.path.c_str(), errno);
 						m_monitor->failed_to_register_dir(cmd.param, cmd.observer, cmd.path);

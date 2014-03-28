@@ -56,6 +56,8 @@ DTime& DTime::AdjustToPeriodStart() {
 			m_time.SetSecond(0);
 			break;
 		case PERIOD_T_MINUTE:
+			m_time.SetMillisecond(0);
+			break;
 		case PERIOD_T_3MINUTE:
 		case PERIOD_T_30MINUTE:
 			m_time.SetSecond(0);

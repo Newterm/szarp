@@ -64,7 +64,7 @@ wxString FormatTime(const wxDateTime &time, PeriodType period) {
 #endif
 	} else {
 		int minute = time.GetMinute();
-		if (period != PERIOD_T_30MINUTE)
+		if (period != PERIOD_T_30MINUTE && period != PERIOD_T_3MINUTE && period != PERIOD_T_MINUTE)
 			minute = minute / 10 * 10;
 
 		int second = time.GetSecond();
@@ -73,7 +73,6 @@ wxString FormatTime(const wxDateTime &time, PeriodType period) {
 			
 		switch (period) {
 			case PERIOD_T_MINUTE:
-				wxLogError(_T("miliseconds %d"), time.GetMillisecond());
 				ret = wxString::Format(_T(".%01d"), time.GetMillisecond() / 100);
 			case PERIOD_T_3MINUTE:
 			case PERIOD_T_30MINUTE:

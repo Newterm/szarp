@@ -168,7 +168,7 @@ public:
 
 #	define SZ4_GENERATE_GET_WSUM(r, seq) 	\
 	void get_weighted_sum(const BOOST_PP_SEQ_ELEM(1, seq)& start, const BOOST_PP_SEQ_ELEM(1, seq)& end, SZARP_PROBE_TYPE probe_type, weighted_sum<BOOST_PP_SEQ_ELEM(0, seq), BOOST_PP_SEQ_ELEM(1, seq)>& wsum) {	  \
-		get_weighted_sum_templ(start, end, probe_type, wsum);	\
+		get_weighted_sum_templ(start, round_up<BOOST_PP_SEQ_ELEM(1, seq), T>()(end), probe_type, wsum);	\
 	}
 
 	BOOST_PP_SEQ_FOR_EACH_PRODUCT_R(1, SZ4_GENERATE_GET_WSUM, (SZ4_BASE_DATA_TYPE_SEQ)(SZ4_BASE_TIME_TYPE_SEQ))

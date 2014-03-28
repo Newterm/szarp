@@ -57,7 +57,6 @@ class Meaner(MeanerBase):
 					if log_param:
 						#TODO: we ignore logdmn params (for now)
 						continue
-					print index
 					self.save_params[index].process_msg(param_value)
 		except zmq.ZMQError as e:
 			if e.errno != zmq.EAGAIN:

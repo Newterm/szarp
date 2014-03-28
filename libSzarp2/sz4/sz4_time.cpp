@@ -42,7 +42,7 @@ szb_move_time(const nanosecond_time_t& t, int count, SZARP_PROBE_TYPE probe_type
 			unsigned carry = nsec / 1000000000;
 
 			sec += carry;
-			nsec -= carry;
+			nsec -= carry * 1000000000;
 			return make_nanosecond_time(sec, nsec);
 		}
 		default:
