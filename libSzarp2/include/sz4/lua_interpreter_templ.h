@@ -161,6 +161,10 @@ template<class types> lua_interpreter<types>::~lua_interpreter() {
 		lua_close(m_lua);
 }
 
+template<class types> lua_State* lua_interpreter<types>::lua() {
+	return m_lua;
+}
+
 template<class types> const int lua_interpreter<types>::lua_base_ipk_pair_key = 0;
 
 }

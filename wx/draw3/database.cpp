@@ -24,6 +24,7 @@
 #include "conversion.h"
 #include "szbextr/extr.h"
 #include "sz4/util.h"
+#include "szarp_base_common/lua_utils.h"
 
 #include <cmath>
 
@@ -324,13 +325,19 @@ void Sz4Base::RemoveConfig(const std::wstring& prefix, bool poison_cache) {
 }
 
 bool Sz4Base::CompileLuaFormula(const std::wstring& formula, std::wstring& error) {
-	return true;
+	lua_State* lua = base->get_lua_interpreter().lua();
+	bool r = lua::compile_lua_formula(lua, (const char*)SC::S2U(formula).c_str());
+	if (r == false)
+		error = SC::lua_error2szarp(lua_tostring(lua, -1));
+	lua_pop(lua, 1);
+	return r;
 }
 
 void Sz4Base::AddExtraParam(const std::wstring& prefix, TParam *param) {
 }
 
 void Sz4Base::RemoveExtraParam(const std::wstring& prefix, TParam *param) {
+	base->remove_param(param);
 }
 
 void Sz4Base::NotifyAboutConfigurationChanges() {
@@ -343,7 +350,6 @@ void Sz4Base::SetProberAddress(const std::wstring& prefix,
 }
 
 void Sz4Base::ExtractParameters(DatabaseQuery::ExtractionParameters &pars) {
-
 }
 
 class no_data_search_condition : public sz4::search_condition {

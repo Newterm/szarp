@@ -41,6 +41,8 @@ public:
 
 	void initialize(base_templ<types>* base, typename types::ipk_container_type* container);
 
+	lua_State* lua();
+
 	~lua_interpreter();
 
 	static const int lua_base_ipk_pair_key;
