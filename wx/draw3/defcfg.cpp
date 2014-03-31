@@ -181,6 +181,7 @@ void DefinedParam::CreateParam() {
 
 	m_param->SetName(m_param_name.c_str());
 	m_param->SetPrec(m_prec);
+	m_param->SetTimeType(TParam::NANOSECOND);
 	m_param->SetFormulaType(m_type);
 	m_param->SetLuaScript(SC::S2U(m_formula).c_str());
 	m_param->SetLuaStartDateTime(m_start_time);
