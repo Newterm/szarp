@@ -1,7 +1,0 @@
-# Plik konfiguracyjny licznika LandisGyr ZMD
-# Cody zmiennych do odczytu - musza byc zgodne z kodami parametrow widocznych na wyswietlaczu licznika
-VariableCode=1.8.3, 1.8.4, 1.8.5
-# Dzielniki wartosci zmiennych o powyzszych kodach (o ile dziesiatek trzeba podzielic wartosci tych zmiennych)
-Commas=1, 1, 1
-
-

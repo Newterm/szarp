@@ -1,3 +1,0 @@
-
-#define NO_MOTIF
-

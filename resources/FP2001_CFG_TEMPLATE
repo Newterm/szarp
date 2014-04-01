@@ -1,9 +1,0 @@
-# Szablonowy plik konfiguracyjny przelicznikow FP-2001 i FP-2001W
-# UWAGA!!! Adresy urzadzen w pliku linex.cfg
-# W pliku linex.cfg okresla sie rowniez typy urzadzen ( drugi parametr od lewej strony):
-# 1 - dla FP-2001 ( w params.xml type="1")
-# 2 - dla FP-2001W ( W params.xml type="2")
-# Dzielnik entalpii pary (FP-2001)
-EntalpiaParyDivBy=10
-
-
