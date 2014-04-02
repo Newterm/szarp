@@ -38,42 +38,53 @@
 
 #include "szarp.h"
 #include "ipcdefines.h"
+#include "szarp_config.h"
+#include "conversion.h"
 
-int
-main(int argc, char *argv[])
+
+int main(int argc, char *argv[])
 {
-    char parcookpat[129];
-    char linedmnpat[129];
-    FILE *patfile;
-    ushort val, i;
-    char buf[133];
-    
-    libpar_read_cmdline(&argc, argv);
-    libpar_init();
-    libpar_readpar("", "parcook_cfg", buf, sizeof(buf), 1);
-    libpar_readpar("", "parcook_path", parcookpat, sizeof(parcookpat), 1);
-    libpar_readpar("", "linex_cfg", linedmnpat, sizeof(linedmnpat), 1);
-    libpar_done();  
-    
-    
-    if ((patfile = fopen(buf, "r")) == NULL)
-	ErrMessage(2, buf);
-    fscanf(patfile, "%hu", &val);
-    
-    printf("\nSHM_PROBE: \t %08x\n", ftok(parcookpat,SHM_PROBE));
-    printf("SHM_MINUTE: \t %08x\n", ftok(parcookpat,SHM_MINUTE));
-    printf("SHM_MIN10: \t %08x\n", ftok(parcookpat,SHM_MIN10));
-    printf("SHM_HOUR: \t %08x\n", ftok(parcookpat,SHM_HOUR));
-    printf("SHM_ALERT: \t %08x\n", ftok(parcookpat,SHM_ALERT));
-    
-    for (i = 0; i < val; i++)
-	printf("SHM_LIN%d: \t %08x\n", (i + 1), ftok(linedmnpat, i+2));
-    
-    printf("\nSEM_PARCOOK: \t %08x\n", ftok(parcookpat,SEM_PARCOOK));
-    
-    printf("\nMSG_SET: \t %08x\n", ftok(parcookpat, MSG_SET));
-    printf("MSG_RPLY: \t %08x\n", ftok(parcookpat, MSG_RPLY));
-    
-    return 0;
+
+	libpar_read_cmdline(&argc, argv);
+	/* read params from szarp.cfg file */
+	libpar_init_with_filename("/etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg", 1);
+
+	char *parcookpat = libpar_getpar("", "parcook_path", 1);
+	char *linedmnpat = libpar_getpar("", "linex_cfg", 1);
+	char *config_prefix = libpar_getpar("sender", "config_prefix", 1);
+	libpar_done();
+
+	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"pl",
+			new NullMutex());
+	IPKContainer *ic = IPKContainer::GetObject();
+	TSzarpConfig *ipk = ic->GetConfig(SC::A2S(config_prefix));
+	if (ipk == NULL) {
+		printf("Unable to load IPK for prefix %s", config_prefix);
+		return 1;
+	}
+
+	printf("\nSHM_PROBE: \t %08x\n", ftok(parcookpat,SHM_PROBE));
+	printf("SHM_MINUTE: \t %08x\n", ftok(parcookpat,SHM_MINUTE));
+	printf("SHM_MIN10: \t %08x\n", ftok(parcookpat,SHM_MIN10));
+	printf("SHM_HOUR: \t %08x\n", ftok(parcookpat,SHM_HOUR));
+	printf("SHM_ALERT: \t %08x\n", ftok(parcookpat,SHM_ALERT));
+
+	int linenum = 0;
+	for (TDevice *d = ipk->GetFirstDevice(); d != NULL; d = ipk->GetNextDevice(d)) {
+		 linenum = d->GetNum() + 1;
+		 printf("SHM_LIN%d: \t %08x\n", (d->GetNum() + 1), ftok(linedmnpat, linenum));
+	}
+
+
+	printf("\nSEM_PARCOOK: \t %08x\n", ftok(parcookpat,SEM_PARCOOK));
+
+	printf("\nMSG_SET: \t %08x\n", ftok(parcookpat, MSG_SET));
+	printf("MSG_RPLY: \t %08x\n", ftok(parcookpat, MSG_RPLY));
+
+	free(config_prefix);
+	free(linedmnpat);
+	free(parcookpat);
+
+	return 0;
 }
 
