@@ -152,7 +152,7 @@ Description: SZARP database filler
 
 Package: szarp-isledit
 Section: graphics
-Architecture: all
+Architecture: any
 Depends: szarp-base, ${shlibs:Depends}, ${misc:Depends}, inkscape
 Description: Inkscape plugin for editing SZARP ISL visualization schemas
  Plugin for editing ISL visualization schemas using Inkscape vector drawing
