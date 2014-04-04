@@ -66,11 +66,12 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 			LuaExec::Param* exec_param = param->GetLuaExecParam();
 			for (std::vector<LuaExec::ParamRef>::iterator i = exec_param->m_par_refs.begin();
 					i != exec_param->m_par_refs.end();
-					i++) {
-				generic_param_entry* refferred_entry = base->get_param_entry(i->m_param);
-				refferred_entry->add_refferring_param(entry);
-				entry->add_refferred_param(entry);
-			}
+					i++) 
+				if (i->m_param != param) {
+					generic_param_entry* refferred_entry = base->get_param_entry(i->m_param);
+					refferred_entry->add_refferring_param(entry);
+					entry->add_refferred_param(entry);
+				}
 			return entry;
 		}
 		case TParam::SZ4_LUA: {
@@ -86,11 +87,11 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 				if (std::count(i->begin(), i->end(), L':') != 4)
 					continue;
 
-				TParam * param = ipk_container->GetParam(*i);
-				if (param == NULL)
+				TParam * rparam = ipk_container->GetParam(*i);
+				if (rparam == NULL || param == rparam)
 					continue;
 
-				generic_param_entry* refferred_entry = base->get_param_entry(param);
+				generic_param_entry* refferred_entry = base->get_param_entry(rparam);
 				refferred_entry->add_refferring_param(entry);
 				entry->add_refferred_param(entry);
 			}

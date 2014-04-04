@@ -8,7 +8,7 @@ szb_move_time(time_t t, int count, SZARP_PROBE_TYPE probe_type, int custom_lengt
 #ifndef HAVE_LOCALTIME_R
 	struct tm *ptm;
 #endif
-	if (t <= 0)
+	if (t < 0)
 		return -1;
 	if ( (probe_type == PT_CUSTOM) && (custom_length <= 0) )
 		return -1;

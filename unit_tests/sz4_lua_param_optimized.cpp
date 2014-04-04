@@ -38,10 +38,12 @@ class Sz4LuaParamOptimized : public CPPUNIT_NS::TestFixture
 {
 	void test1();
 	void test2();
+	void test3();
 
 	CPPUNIT_TEST_SUITE( Sz4LuaParamOptimized );
 	CPPUNIT_TEST( test1 );
 	CPPUNIT_TEST( test2 );
+	CPPUNIT_TEST( test3 );
 	CPPUNIT_TEST_SUITE_END();
 public:
 	void setUp();
@@ -105,17 +107,19 @@ void Sz4LuaParamOptimized::test1() {
 	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
 }
 
-namespace unit_test {
+namespace {
 
 class IPKContainerMock2 {
 	TParam param;
 	TParam param2;
 	TParam param3;
+	TParam param4;
 	TSzarpConfig config;
 public:
 	IPKContainerMock2() : param(NULL, NULL, std::wstring(), TParam::NONE, TParam::P_REAL),
 				param2(NULL, NULL, std::wstring(), TParam::LUA_VA, TParam::P_LUA),
-				param3(NULL, NULL, std::wstring(), TParam::NONE, TParam::P_REAL)
+				param3(NULL, NULL, std::wstring(), TParam::NONE, TParam::P_REAL),
+				param4(NULL, NULL, std::wstring(), TParam::NONE, TParam::P_LUA)
 	 {
 		param.SetConfigId(0);
 		param.SetParamId(0);
@@ -136,6 +140,18 @@ public:
 		param3.SetDataType(TParam::DOUBLE);
 		param3.SetParentSzarpConfig(&config);
 
+		param4.SetConfigId(0);
+		param4.SetParamId(0);
+		param4.SetDataType(TParam::DOUBLE);
+		param4.SetName(L"A:B:E");
+		param4.SetParentSzarpConfig(&config);
+		param4.SetLuaScript((const unsigned char*) 
+"if t > 0 then"
+"	v = 2 * p(\"BASE:A:B:E\", 0, pt) "
+"else"
+"	v = 1 "
+"end"
+);
 
 		config.SetName(L"BASE", L"BASE");
 	}
@@ -152,6 +168,9 @@ public:
 		if (name == L"BASE:Status:Meaner4:Heartbeat")
 			return &param3;
 		
+		if (name == L"BASE:A:B:E")
+			return &param4;
+
 		assert(false);
 		return NULL;
 	}
@@ -166,20 +185,22 @@ public:
 		if (name == (const unsigned char*)"BASE:Status:Meaner4:Heartbeat")
 			return &param3;
 		
+		if (name == (const unsigned char*)"BASE:A:B:E")
+			return &param4;
+
 		assert(false);
 		return NULL;
 	}
 };
 
-struct test_types {
+struct test_types2 {
 	typedef IPKContainerMock2 ipk_container_type;
 };
 
 }
 
-
 void Sz4LuaParamOptimized::test2() {
-	unit_test::IPKContainerMock2 mock;
+	IPKContainerMock2 mock;
 
 	std::wstringstream base_dir_name;
 	base_dir_name << L"/tmp/sz4_lua_param_optimized" << getpid() << L"." << time(NULL) << L".tmp";
@@ -187,8 +208,8 @@ void Sz4LuaParamOptimized::test2() {
 	boost::filesystem::wpath param_dir(base_path / L"BASE/sz4/A/B/C");
 	boost::filesystem::create_directories(param_dir);
 
-	sz4::base_templ<unit_test::test_types> base(base_path.file_string(), &mock);
-	sz4::buffer_templ<unit_test::test_types>* buff = base.buffer_for_param(mock.GetParam(L"BASE:A:B:D"));
+	sz4::base_templ<test_types2> base(base_path.file_string(), &mock);
+	sz4::buffer_templ<test_types2>* buff = base.buffer_for_param(mock.GetParam(L"BASE:A:B:D"));
 
 	
 	TestObserver o;
@@ -223,3 +244,24 @@ void Sz4LuaParamOptimized::test2() {
 	}
 }
 
+void Sz4LuaParamOptimized::test3() {
+	IPKContainerMock2 mock;
+
+	std::wstringstream base_dir_name;
+	base_dir_name << L"/tmp/sz4_lua_param_optimized" << getpid() << L"." << time(NULL) << L".tmp";
+
+	boost::filesystem::wpath base_path(base_dir_name.str());
+	boost::filesystem::wpath param_dir(base_path / L"BASE/sz4");
+	boost::filesystem::create_directories(param_dir);
+
+	sz4::base_templ<test_types2> base(base_path.file_string(), &mock);
+	sz4::buffer_templ<test_types2>* buff = base.buffer_for_param(mock.GetParam(L"BASE:A:B:E"));
+	sz4::weighted_sum<double, sz4::second_time_t> sum;
+	sz4::weighted_sum<double, sz4::second_time_t>::time_diff_type weight;
+	buff->get_weighted_sum(mock.GetParam(L"BASE:A:B:E"), 0u, 2u, PT_SEC, sum);
+	CPPUNIT_ASSERT_EQUAL(3., sum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(2), weight);
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
+
+}
