@@ -8,7 +8,7 @@ fail() {
 	exit $1
 }
 
-if [ $# -ne 2 ]
+if [ $# -ne 1 ]
 then 
 	echo "Usage:"
 	echo "  $0 <version>"
@@ -17,6 +17,6 @@ fi
 
 ver=$2
 
-git push || fail $?
+git push origin HEAD || fail $?
 git push origin $ver || fail $?
 

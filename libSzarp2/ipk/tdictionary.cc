@@ -23,7 +23,11 @@ bool match_text(const std::wstring& expr, const std::wstring& text, std::vector<
 
 TDictionary::TDictionary(const std::wstring& szarp_dir) {
 
+#if BOOST_FILESYSTEM_VERSION == 3
+	m_dictionary_path = (boost::filesystem::wpath(szarp_dir) / L"resources" / L"dictionary.xml").wstring();
+#else
 	m_dictionary_path = (boost::filesystem::wpath(szarp_dir) / L"resources" / L"dictionary.xml").string();
+#endif
 
 }
 

@@ -9,7 +9,7 @@ SUBDIRS =
 LDADD=@LUA_LIBS@
 
 # Compilations flags
-INCLUDES = @WX_CXXFLAGS@ @XML_CFLAGS@ -I@srcdir@/../../libSzarp2/include \
+AM_CPPFLAGS = @WX_CXXFLAGS@ @XML_CFLAGS@ -I@srcdir@/../../libSzarp2/include \
 	-I@srcdir@/../../libSzarp/include \
         -I@srcdir@/../../include -I@srcdir@/../common \
         -I@srcdir@/../../resources/wx/icons \

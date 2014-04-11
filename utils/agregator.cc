@@ -1566,7 +1566,7 @@ int process_file(char *path, bool verbose, bool force)
 			int textlen;
 	
 			/* dump XML to string */
-			xmlDocDumpFormatMemoryEnc(output, &docptr, &textlen, "ISO-8859-2", 1);
+			xmlDocDumpFormatMemory(output, &docptr, &textlen, 1);
 			
 			if(st.st_size == textlen) {
 				int indf;
@@ -1637,7 +1637,7 @@ int process_file(char *path, bool verbose, bool force)
 		}
 
 		/* save result to file */
-		if (xmlSaveFormatFileEnc(out_path, output, "ISO-8859-2", 1) < 0) {
+		if (xmlSaveFormatFile(out_path, output, 1) < 0) {
 			sz_log(0, "Error saving file %s", out_path);
 			return 1;
 		}

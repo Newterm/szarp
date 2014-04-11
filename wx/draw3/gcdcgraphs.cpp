@@ -50,7 +50,7 @@
  * to make it work fast. 3.0 version of wxWidgets promises to provide wxGCDC that would have
  * the same API as wxDC, so we won't need most of this code anyway.*/
 
-GCDCGraphs::GCDCGraphs(wxWindow* parent, ConfigManager *cfg) : wxWindow(parent, wxID_ANY), m_draw_param_name(false), m_cfg_mgr(cfg), m_recalulate_margins(true) {
+GCDCGraphs::GCDCGraphs(wxWindow* parent, ConfigManager *cfg) : wxWindow(parent, wxID_ANY), m_right_down(false), m_draw_param_name(false), m_cfg_mgr(cfg), m_recalulate_margins(true) {
 	m_screen_margins.leftmargin = 10;
 	m_screen_margins.rightmargin = 10;
 	m_screen_margins.topmargin = 10;
@@ -127,12 +127,6 @@ void GCDCGraphs::DrawBackground(wxGraphicsContext &dc) {
 			dc.SetBrush(wxBrush(back2_col, wxSOLID));
 	
 		c *= -1; 
-
-		double xn; 
-		if (i < pc)
-			xn = x + x2 - x1;
-		else
-			xn = w - m_screen_margins.rightmargin;
 
 		dc.DrawRectangle(x, m_screen_margins.topmargin, x2 - x1, h - m_screen_margins.topmargin + 1);
 
@@ -310,8 +304,6 @@ void GCDCGraphs::DrawYAxisVals(wxGraphicsContext& dc) {
 
 	double min = di->GetMin();
 	double max = di->GetMax();
-	double dif = max - min;
-
 	if( max <= min  ) {
 		// FIXME:  Draw3 should atomaticly detect axes in that case, but
 		//         it currently doesnt :(
@@ -988,16 +980,61 @@ void GCDCGraphs::OnMouseLeftUp(wxMouseEvent& event) {
 	m_draws_wdg->StopMovingCursor();
 }
 
-void GCDCGraphs::OnMouseRightDown(wxMouseEvent& event) {
-	if (m_draws_wdg->GetSelectedDrawIndex() == -1)
+void GCDCGraphs::OnMouseMove(wxMouseEvent &event) {
+	if (!m_right_down)
 		return;
 
-	Draw *d = m_draws[m_draws_wdg->GetSelectedDrawIndex()];
-	DrawInfo *di = d->GetDrawInfo();
+	if (m_draws_wdg->GetNoData())
+		return;
 
-	SetInfoDataObject wido(di->GetBasePrefix(), di->GetSetName(), d->GetPeriod(), d->GetCurrentTime().GetTicks(), m_draws_wdg->GetSelectedDrawIndex());
-	wxDropSource ds(wido, this);
-	ds.DoDragDrop(0);
+	int index = m_draws_wdg->GetSelectedDrawIndex();
+	if (index == -1)
+		return;
+
+	int w, h;
+	GetClientSize(&w, &h);
+
+	if (event.GetX() < m_screen_margins.leftmargin) {
+		m_draws_wdg->SetKeyboardAction(CURSOR_LEFT_KB);
+		return;
+	}
+
+	if (event.GetX() > (w - m_screen_margins.rightmargin)) {
+		m_draws_wdg->SetKeyboardAction(CURSOR_RIGHT_KB);
+		return;
+	}
+
+	m_draws_wdg->SetKeyboardAction(NONE);
+
+	int x = event.GetX();
+	int y = event.GetY();
+	double dist;
+	wxDateTime time;
+
+	GetDistance(index, x, y, dist, time);
+	m_draws_wdg->SelectDraw(index, true, time);
+}
+
+void GCDCGraphs::OnMouseRightDown(wxMouseEvent& event) {
+	if (m_right_down)
+		return;
+	m_right_down = true;
+	m_draws_wdg->DoubleCursorSet(true);
+	OnMouseMove(event);
+}
+
+void GCDCGraphs::OnMouseRightUp(wxMouseEvent& event) {
+	if (!m_right_down)
+		return;
+
+	m_right_down = false;
+	m_draws_wdg->SetKeyboardAction(NONE);
+	m_draws_wdg->DoubleCursorSet(false);
+}
+
+void GCDCGraphs::OnMouseLeave(wxMouseEvent& event) {
+	OnMouseLeftUp(event);
+	OnMouseRightUp(event);
 }
 
 void GCDCGraphs::OnSize(wxSizeEvent& event) {
@@ -1050,7 +1087,10 @@ BEGIN_EVENT_TABLE(GCDCGraphs, wxWindow)
 	EVT_IDLE(GCDCGraphs::OnIdle)
 	LOG_EVT_LEFT_DOWN(GCDCGraphs , OnMouseLeftDown, "gcdcg:mouse_left_down" )
 	LOG_EVT_LEFT_DCLICK(GCDCGraphs , OnMouseLeftDClick, "gcdcg:mouse_left_click" )
-	EVT_LEAVE_WINDOW(GCDCGraphs::OnMouseLeftUp)
+        EVT_RIGHT_DOWN(GCDCGraphs::OnMouseRightDown)
+        EVT_RIGHT_UP(GCDCGraphs::OnMouseRightUp)
+	EVT_LEAVE_WINDOW(GCDCGraphs::OnMouseLeave)
+	EVT_MOTION(GCDCGraphs::OnMouseMove)
 	LOG_EVT_LEFT_UP(GCDCGraphs , OnMouseLeftUp, "gcdcg:mouse_left_up" )
 	EVT_SIZE(GCDCGraphs::OnSize)
 	EVT_SET_FOCUS(GCDCGraphs::OnSetFocus)

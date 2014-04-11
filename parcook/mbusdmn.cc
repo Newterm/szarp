@@ -1256,9 +1256,9 @@ communication testing application.\n\n\
                              switch is omitted, the daemon works as a SZARP \n\
                              line daemon. When in testing mode, the device\n\
                              should be omitted.\n\n\
-      --sontex               Sending REQ_UD2 before every other frame to\n\ 
-                             wakeup device. This option is used for Sontex\n\ 
-                             Supercal 531 heatmeters that do not always\n\ 
+      --sontex               Sending REQ_UD2 before every other frame to\n\
+                             wakeup device. This option is used for Sontex\n\
+                             Supercal 531 heatmeters that do not always\n\
                              respond to first m-bus protocol frame.\n\
                              This option can be used both in test mode\n\
                              or in normal mode.\n\n\
@@ -1478,176 +1478,187 @@ When in SZARP line daemon mode, the following options are available:\n");
         if (connection_speed <= 0)
             connection_speed = 300;
 
-        if (is_debug)
-            std::cout << std::dec << "Connecting to the device " << SC::S2A(config->GetDevice()->GetPath()) 
-                      << " with baudrate " << connection_speed << "...\n";
+        //main loop
+        while (true) try {
 
-        // Connect only when the connection died, not every time when we
-        // want to retrieve data from the device
-        if (mbus_config.mbus->connect(SC::S2A(config->GetDevice()->GetPath()),
-                         connection_speed, mbus_config.byte_interval, mbus_config.data_bits, 
-                         mbus_config.stop_bits, mbus_config.parity)) {
-            sz_log(5, "Connected.");
+            if (is_debug)
+                std::cout << std::dec << "Connecting to the device " << SC::S2A(config->GetDevice()->GetPath()) 
+                        << " with baudrate " << connection_speed << "...\n";
 
-            // All the initialization procedures should be performed only
-            // after connection, not every time we want to retrieve data
-            // from the device
-            for (std::map<MBus::byte, int>::iterator i = mbus_config.units.begin(); i != mbus_config.units.end(); i++) {
-                sz_log(5, "Initializing communication with device %d...", static_cast<unsigned int>(i->first));
-
-                if (mbus_config.mbus->initialize_communication(i->first, sontex_supercal_531, is_debug, std::cout)) {
-                    sz_log(5, "Done.");
-                } else {
-                    sz_log(5, "Failed.");
-
-                    continue;
-                }
-
-                if (mbus_config.reset[i->first]) {
-                    sz_log(8, "Resetting the device %d...", static_cast<unsigned int>(i->first));
-
-                    if (mbus_config.mbus->reset_application(i->first, mbus_config.reset_type[i->first], sontex_supercal_531, is_debug, std::cout)) {
-                        sz_log(8, "Done.");
-                    } else {
-                        sz_log(8, "Failed.");
-                    }
-                }
-
-                if (mbus_config.select_data[i->first]) {
-                    sz_log(8, "Selecting data for readout...");
-
-                    std::vector<MBus::byte> data;
-                    data.push_back(mbus_config.select_data_type[i->first]);
-
-                    std::vector<MBus::value_t> values = mbus_config.mbus->select_data_for_readout(i->first, data, sontex_supercal_531, is_debug, std::cout);
-                    if (!values.empty()) {
-                        sz_log(8, "Done.");
-                    } else {
-                        sz_log(8, "Failed.");
-                    }
-                }
-
-                // Querying for status is performed only after connecting, not
-                // with every data query
-                if (is_debug) {
-                    sz_log(10, "Querying device for status...");
-
-                    std::string frame;
-
-                    if ((frame = mbus_config.mbus->query_for_status(i->first, sontex_supercal_531, is_debug, std::cout)) == "") {
-                        sz_log(10, "Failed.");
-                    } else {
-                        sz_log(10, "Done.");
-                    }
-                }
-
-                // Changing the address has to be the last action in
-                // this loop as it destroys the element pointed by the
-                // iterator
-                if (mbus_config.change_address[i->first] > 0) {
-                    sz_log(8, "Changing the device %d address to %d...", static_cast<unsigned int>(i->first), mbus_config.change_address[i->first]);
-
-                    if (mbus_config.mbus->change_slave_address(i->first, mbus_config.change_address[i->first], sontex_supercal_531, is_debug, std::cout)) {
-                        sz_log(8, "Done.");
-
-                        mbus_config.units[mbus_config.change_address[i->first]] = mbus_config.units[i->first];
-                        mbus_config.units.erase(i->first);
-                    } else {
-                        sz_log(8, "Failed.");
-                    }
-                }
-
-            }
-
-            sz_log(2, "Starting the parameters gathering loop.");
-
-            while (true) {
-                int parcook_index = 0;
-                bool reinitialization_done = false;
-
-                sz_log(3, "Gathering data.");
-
+            // Connect only when the connection died, not every time when we
+            // want to retrieve data from the device
+            if (mbus_config.mbus->connect(SC::S2A(config->GetDevice()->GetPath()),
+                             connection_speed, mbus_config.byte_interval, mbus_config.data_bits, 
+                             mbus_config.stop_bits, mbus_config.parity)) {
+                sz_log(5, "Connected.");
+    
+                // All the initialization procedures should be performed only
+                // after connection, not every time we want to retrieve data
+                // from the device
                 for (std::map<MBus::byte, int>::iterator i = mbus_config.units.begin(); i != mbus_config.units.end(); i++) {
-                    sz_log(7, "Querying device %d for values...", static_cast<unsigned int>(i->first));
-
-                    std::vector<MBus::value_t> values = mbus_config.mbus->query_for_data(i->first, sontex_supercal_531, is_debug, config->GetDumpHex(), std::cout);
-
-                    if (!values.empty()) { // The device should return some values, empty vector means an error condition has occurred
-                        sz_log(7, "Done.");
-
-                        int values_num = static_cast<int>(values.size()) + mbus_config.prevs_count(i->first); // Number of values is really the number of values received from the device plus the number of parameters which can have their value computed from a previous value
-
-                        if (is_debug)
-                            std::cout << "\nReceived " << std::dec << values_num << " value" << (values_num > 1 ? "s" : "") << " of " << i->second << " expected.\n";
-
-                        if (values_num == i->second) {
-                            int prev_count = 0;
-
-                            for (int j = 0; j < i->second; j++) {
-                                if (mbus_config.prevs[i->first].at(j))
-                                    prev_count++;
-
-                                int mbus_param_num = j - prev_count;
-
-                                if (is_debug)
-                                    std::cout << "Value no. " << std::dec << (j + 1) << " is M-Bus parameter no. " << (mbus_param_num + 1) << ".\n";
-
-                                MBus::value_t value_to_send = values.at(mbus_param_num);
-                        
-                                if (mbus_config.modulos[i->first].at(j) != -1)
-                                    value_to_send %= mbus_config.modulos[i->first].at(j);
-
-                                value_to_send /= mbus_config.divisors[i->first].at(j);
-                                value_to_send *= mbus_config.multipliers[i->first].at(j);
-
-                                if (mbus_config.transforms[i->first].at(j) != NULL)
-                                    (*mbus_config.transforms[i->first].at(j))(value_to_send, j);
-
-                                ipc->m_read[parcook_index++] = value_to_send;
-                            }
-                        } else { // By convention, we return only NO_DATA when the number of received parameters doesn't exactly match the number of parameters in IPK
-                            sz_log(7, "Wrong number of parameters received: expected %d, got %d.", i->second, values_num);
-
-                            for (int j = 0; j < i->second; j++)
-                                ipc->m_read[parcook_index++] = SZARP_NO_DATA;
-                        }
+                    sz_log(5, "Initializing communication with device %d...", static_cast<unsigned int>(i->first));
+    
+                    if (mbus_config.mbus->initialize_communication(i->first, sontex_supercal_531, is_debug, std::cout)) {
+                        sz_log(5, "Done.");
                     } else {
-                        sz_log(7, "Failed.");
-
-                        if (mbus_config.reinitialize_on_error[i->first]) {
-                            sz_log(5, "Reinitializing communication with device %d...", static_cast<unsigned int>(i->first));
-
-                            if (mbus_config.mbus->initialize_communication(i->first, sontex_supercal_531, is_debug, std::cout)) {
-                                sz_log(5, "Done.");
-
-                                reinitialization_done = true;
-                            } else
-                                sz_log(5, "Failed.");
-                        } 
-
-                        if (!reinitialization_done) {
-                            for (int j = 0; j < i->second; j++)
-                                ipc->m_read[parcook_index++] = SZARP_NO_DATA;
+                        sz_log(5, "Failed.");
+    
+                        continue;
+                    }
+    
+                    if (mbus_config.reset[i->first]) {
+                        sz_log(8, "Resetting the device %d...", static_cast<unsigned int>(i->first));
+    
+                        if (mbus_config.mbus->reset_application(i->first, mbus_config.reset_type[i->first], sontex_supercal_531, is_debug, std::cout)) {
+                            sz_log(8, "Done.");
+                        } else {
+                            sz_log(8, "Failed.");
                         }
-
-                        break;
+                    }
+    
+                    if (mbus_config.select_data[i->first]) {
+                        sz_log(8, "Selecting data for readout...");
+    
+                        std::vector<MBus::byte> data;
+                        data.push_back(mbus_config.select_data_type[i->first]);
+    
+                        std::vector<MBus::value_t> values = mbus_config.mbus->select_data_for_readout(i->first, data, sontex_supercal_531, is_debug, std::cout);
+                        if (!values.empty()) {
+                            sz_log(8, "Done.");
+                        } else {
+                            sz_log(8, "Failed.");
+                        }
+                    }
+    
+                    // Querying for status is performed only after connecting, not
+                    // with every data query
+                    if (is_debug) {
+                        sz_log(10, "Querying device for status...");
+    
+                        std::string frame;
+    
+                        if ((frame = mbus_config.mbus->query_for_status(i->first, sontex_supercal_531, is_debug, std::cout)) == "") {
+                            sz_log(10, "Failed.");
+                        } else {
+                            sz_log(10, "Done.");
+                        }
+                    }
+    
+                    // Changing the address has to be the last action in
+                    // this loop as it destroys the element pointed by the
+                    // iterator
+                    if (mbus_config.change_address[i->first] > 0) {
+                        sz_log(8, "Changing the device %d address to %d...", static_cast<unsigned int>(i->first), mbus_config.change_address[i->first]);
+    
+                        if (mbus_config.mbus->change_slave_address(i->first, mbus_config.change_address[i->first], sontex_supercal_531, is_debug, std::cout)) {
+                            sz_log(8, "Done.");
+    
+                            mbus_config.units[mbus_config.change_address[i->first]] = mbus_config.units[i->first];
+                            mbus_config.units.erase(i->first);
+                        } else {
+                            sz_log(8, "Failed.");
+                        }
+                    }
+    
+                }
+    
+                sz_log(2, "Starting the parameters gathering loop.");
+    
+                while (true) {
+                    int parcook_index = 0;
+                    bool reinitialization_done = false;
+    
+                    sz_log(3, "Gathering data.");
+    
+                    for (std::map<MBus::byte, int>::iterator i = mbus_config.units.begin(); i != mbus_config.units.end(); i++) {
+                        sz_log(7, "Querying device %d for values...", static_cast<unsigned int>(i->first));
+    
+                        std::vector<MBus::value_t> values = mbus_config.mbus->query_for_data(i->first, sontex_supercal_531, is_debug, config->GetDumpHex(), std::cout);
+    
+                        if (!values.empty()) { // The device should return some values, empty vector means an error condition has occurred
+                            sz_log(7, "Done.");
+    
+                            int values_num = static_cast<int>(values.size()) + mbus_config.prevs_count(i->first); // Number of values is really the number of values received from the device plus the number of parameters which can have their value computed from a previous value
+    
+                            if (is_debug)
+                                std::cout << "\nReceived " << std::dec << values_num << " value" << (values_num > 1 ? "s" : "") << " of " << i->second << " expected.\n";
+    
+                            if (values_num == i->second) {
+                                int prev_count = 0;
+    
+                                for (int j = 0; j < i->second; j++) {
+                                    if (mbus_config.prevs[i->first].at(j))
+                                        prev_count++;
+    
+                                    int mbus_param_num = j - prev_count;
+    
+                                    if (is_debug)
+                                        std::cout << "Value no. " << std::dec << (j + 1) << " is M-Bus parameter no. " << (mbus_param_num + 1) << ".\n";
+    
+                                    MBus::value_t value_to_send = values.at(mbus_param_num);
+                            
+                                    if (mbus_config.modulos[i->first].at(j) != -1)
+                                        value_to_send %= mbus_config.modulos[i->first].at(j);
+    
+                                    value_to_send /= mbus_config.divisors[i->first].at(j);
+                                    value_to_send *= mbus_config.multipliers[i->first].at(j);
+    
+                                    if (mbus_config.transforms[i->first].at(j) != NULL)
+                                        (*mbus_config.transforms[i->first].at(j))(value_to_send, j);
+    
+                                    ipc->m_read[parcook_index++] = value_to_send;
+                                }
+                            } else { // By convention, we return only NO_DATA when the number of received parameters doesn't exactly match the number of parameters in IPK
+                                sz_log(7, "Wrong number of parameters received: expected %d, got %d.", i->second, values_num);
+    
+                                for (int j = 0; j < i->second; j++)
+                                    ipc->m_read[parcook_index++] = SZARP_NO_DATA;
+                            }
+                        } else {
+                            sz_log(7, "Failed.");
+    
+                            if (mbus_config.reinitialize_on_error[i->first]) {
+                                sz_log(5, "Reinitializing communication with device %d...", static_cast<unsigned int>(i->first));
+    
+                                if (mbus_config.mbus->initialize_communication(i->first, sontex_supercal_531, is_debug, std::cout)) {
+                                    sz_log(5, "Done.");
+    
+                                    reinitialization_done = true;
+                                } else
+                                    sz_log(5, "Failed.");
+                            } 
+    
+                            if (!reinitialization_done) {
+                                for (int j = 0; j < i->second; j++)
+                                    ipc->m_read[parcook_index++] = SZARP_NO_DATA;
+                            }
+    
+                            break;
+                        }
+                    }
+    
+                    sz_log(5, "Passing collected data to parcook.");
+                    ipc->GoParcook();
+    
+                    if (!reinitialization_done) {
+                        sz_log(3, "Sleeping...");
+                        sleep(sleep_time);
                     }
                 }
-
-                sz_log(5, "Passing collected data to parcook.");
-                ipc->GoParcook();
-
-                if (!reinitialization_done) {
-                    sz_log(3, "Sleeping...");
-                    sleep(sleep_time);
-                }
+    
+                // Dummy code, never executed
+                mbus_config.mbus->disconnect();
+                
+            } else {
+                sz_log(1, "Connection failed, sleeping.");
+                sleep(5);    
             }
 
-            // Dummy code, never executed
+        } catch (mbus_read_data_error& e) {
             mbus_config.mbus->disconnect();
-            
-        } else
-            sz_log(0, "Connection failed, terminating.");
+            sz_log(1, "Data reading failed (%s), sleeping and will reopen port later", e.error.c_str());
+            sleep(5);
+        }
 
         delete ipc;
     }

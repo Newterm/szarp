@@ -434,7 +434,7 @@ void PartitionMessage(unsigned char *inbuf,unsigned short lenght,int *buf, unsig
  /* zwraca dlugosc wczytanej komendy */
 int ReadOutput(int sock,int *buf,unsigned short *size)
 {
-  int i,k,j;
+  int i,j;
   unsigned short lenght;
   unsigned char inbuf[READ_MESSAGE_SIZE] ;
   unsigned char test[6] = { 6,'1','0','A','\r','\n'} ;
@@ -453,7 +453,6 @@ int ReadOutput(int sock,int *buf,unsigned short *size)
 /* odczyt odpowiedzi urz±dzenia */
  //ChangeParB9600(sock) ;
   sleep(4) ;
-  k =0 ;
   i=0;
   i=read(sock, inbuf, 20);
   if (i != 20) {
@@ -470,7 +469,6 @@ int ReadOutput(int sock,int *buf,unsigned short *size)
   i = write(sock, test, 6) ;
   if (i<0)  return -1 ;
   if (Diagno) printf("frame %d%c%c%c%c%c was sended \n", test[0],test[1],test[2],test[3],test[4],test[5]) ;
-  k = 0;
   i = 0;
   sleep(15) ;
   i=read(sock,inbuf , lenght) ;

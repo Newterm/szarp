@@ -511,7 +511,7 @@ int wmtp_driver::configure(TUnit* unit, xmlNodePtr node, short* read, short *sen
 	}
 	m_log.log(2, "Necessary requests are: ");
 	for (std::vector<std::string>::iterator it = m_necessary_requests.begin(); it != m_necessary_requests.end(); ++it) {
-		m_log.log(2, (*it).c_str());
+		m_log.log(2, "%s", (*it).c_str());
 	}
 	
 	// initialize requests iterator

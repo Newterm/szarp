@@ -78,7 +78,8 @@ public:
 	virtual void vdriver_log(int level, const char * fmt, va_list fmt_args) = 0;
 
 	virtual void set_event_base(struct event_base* ev_base);
-	void set_address_string(const std::string& str);
+	virtual void set_address_string(const std::string& str);
+	virtual const std::string& address_string() const;
 	virtual const char* driver_name() = 0;
 	virtual ~boruta_driver() {}
 };
@@ -159,6 +160,10 @@ public:
 	void set_manager(client_manager* manager);
 
 	void set_event_base(struct event_base* ev_base);
+
+	void set_address_string(const std::string& str);
+
+	const std::string& address_string() const;
 
 	const char* driver_name();
 
@@ -274,7 +279,7 @@ public:
 
 class boruta_daemon;
 
-enum CONNECTION_STATE { CONNECTED, NOT_CONNECTED, CONNECTING };
+enum CONNECTION_STATE { CONNECTED, NOT_CONNECTED, IDLING, CONNECTING };
 
 /** a client manager class performing client drivers scheduling, it's
  * an abstract class requiring from its subclasses to implement 
@@ -293,9 +298,9 @@ protected:
 	virtual void do_terminate_connection(size_t conn_no) = 0;
 	/**to be implemented by subclass - shall schedule client on a connection*/
 	virtual void do_schedule(size_t conn_no, size_t client_no) = 0;
-	/**to be implemented by subclass - shall establish connection and return zero value
-	 * if there was no problem with connection establishment*/
-	virtual int do_establish_connection(size_t conn_no) = 0;
+	/**to be implemented by subclass - shall establish connection and return connection
+	 * state */
+	virtual CONNECTION_STATE do_establish_connection(size_t conn_no) = 0;
 
 	/** method handling arrival data on a connection, it simply routes this information
 	 * to current driver for this connection*/
@@ -326,14 +331,17 @@ class tcp_client_manager : public client_manager {
 	boruta_daemon *m_boruta;
 	struct tcp_connection {
 		tcp_connection(tcp_client_manager *manager, size_t conn_no, std::string address);
+		void schedule_timer(int secs, int nsecs);
 		void close();
 		CONNECTION_STATE state;	
 		int fd;
 		struct bufferevent *bufev;
 		size_t conn_no;
-		time_t connecting_start;
+		unsigned retry_gap;
+		unsigned establishment_timeout;
 		tcp_client_manager *manager;
 		std::string address;
+		struct event timer;
 	};
 	/**adresses for connections*/
 	std::vector<sockaddr_in> m_addresses;
@@ -350,14 +358,14 @@ protected:
 	virtual struct bufferevent* do_get_connection_buf(size_t conn_no);
 	virtual void do_terminate_connection(size_t conn_no);
 	virtual void do_schedule(size_t conn_no, size_t client_no);
-	virtual int do_establish_connection(size_t conn_no);
+	virtual CONNECTION_STATE do_establish_connection(size_t conn_no);
 public:
 	tcp_client_manager(boruta_daemon *boruta) : m_boruta(boruta) {}
 	int configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols);
 	int initialize();
 	static void connection_read_cb(struct bufferevent *ev, void* _tcp_connection);
-	static void connection_write_cb(struct bufferevent *ev, void* _tcp_connection);
-	static void connection_error_cb(struct bufferevent *ev, short event, void* _tcp_connection);
+	static void connection_event_cb(struct bufferevent *ev, short event, void* _tcp_connection);
+	static void connection_timer_cb(int fd, short event, void* _tcp_connection);
 };
 
 /**implementation of class deadling with serial client drivers*/
@@ -374,7 +382,7 @@ protected:
 	virtual struct bufferevent* do_get_connection_buf(size_t conn_no);
 	virtual void do_terminate_connection(size_t conn_no);
 	virtual void do_schedule(size_t conn_no, size_t client_no);
-	virtual int do_establish_connection(size_t conn_no);
+	virtual CONNECTION_STATE do_establish_connection(size_t conn_no);
 public:
 	serial_client_manager(boruta_daemon *boruta) : m_boruta(boruta) {}
 	int configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols);

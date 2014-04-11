@@ -36,6 +36,7 @@ bin_SCRIPTS = $(PACKAGED_SCRIPT) \
 
 install-data-local:
 	$(INSTALL) -d $(DESTDIR)/var/szarp
+	$(INSTALL) -d $(DESTDIR)/var/log/szarp/
 	$(INSTALL) -d $(DESTDIR)/etc/cron.d
 	$(INSTALL) szarp-server.cron $(DESTDIR)/etc/cron.d/szarp-server
 	$(INSTALL) szarp-sss.cron $(DESTDIR)/etc/cron.d/szarp-sss

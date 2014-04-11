@@ -163,6 +163,12 @@ class XYDialog : public wxDialog, public ConfigObserver
 	DTime m_start_time;
 	/**End of range selected by user*/
 	DTime m_end_time;
+	/**Saved start of range selected by user*/
+	static DTime m_saved_start_time;
+	/**Saved end of range selected by user*/
+	static DTime m_saved_end_time;
+	/**Variable indicating whether user saved time*/
+	static int m_loaded_time;
 	
 	DrawInfoList m_di;
 
@@ -195,6 +201,9 @@ class XYDialog : public wxDialog, public ConfigObserver
 	void OnDrawChange(wxCommandEvent &event);
 	/**Handles period change triggered by the user*/
 	void OnPeriodChange(wxCommandEvent &event);
+	/**Handles date save/load triggered by user*/
+	void OnSaveTimeButton(wxCommandEvent &event);
+	void OnLoadTimeButton(wxCommandEvent &event);
 
 	void OnHelpButton(wxCommandEvent &event);
 

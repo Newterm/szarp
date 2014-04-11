@@ -6,7 +6,7 @@
     <span>${h.link_to('Logout', url(controller='login', action='logout'))}</span>
 </div>
 
-${h.form(h.url_for(method='post'))}
+${h.form(h.url.current(method='post'))}
   <p>Login: ${h.text('name', value=c.user.name, disabled = (len(c.user.name) > 0))}</p>
   <p>User name: ${h.text('real_name', value=c.user.real_name)}</p>
   <p>Password: ${h.password('password', value=c.password)}</p>

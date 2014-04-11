@@ -39,30 +39,34 @@ namespace {
 std::basic_string<unsigned char> unescape(const std::basic_string<unsigned char>& c) {
 	int s = 0;
 	unsigned char v = 0;
+	unsigned char ch = 0;
 	const unsigned char *i = c.c_str();
 	std::basic_string<unsigned char> ret;
 
 	while (*i) {
+		ch = *i;
 		switch (s) {
 			case 0:
-				if (*i != '%')
-					ret += *i;
+				if (ch != '%')
+					ret += ch;
 				else
 					s = 1;
 				break;
 			case 1:
-				if (*i <= '9')
-					v = ((*i) - '0') << 4;
+				ch = tolower(ch);
+				if (ch <= '9')
+					v = (ch - '0') << 4;
 				else
-					v = ((*i) - 'a' + 10) << 4;
+					v = (ch - 'a' + 10) << 4;
 
 				s = 2;
 				break;
 			case 2:
-				if (*i <= '9')
-					v |= ((*i) - '0');
+				ch = tolower(ch);
+				if (ch <= '9')
+					v |= (ch - '0');
 				else
-					v |= ((*i) - 'a' + 10);
+					v |= (ch - 'a' + 10);
 				ret += v;
 				s = 0;
 				break;

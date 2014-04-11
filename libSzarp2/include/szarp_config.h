@@ -82,6 +82,12 @@ class TBoilers;
 class XMLWrapper;
 class XMLWrapperException;
 
+
+class TCheckException : public std::exception {
+	virtual const char* what() const throw()
+	{ return "Invalid params.xml definition. See log for more informations."; }
+};
+
 /** SZARP system configuration */
 class TSzarpConfig {
 public:
@@ -93,22 +99,7 @@ public:
 	 */
 	TSzarpConfig( bool logparams = true );
 	virtual ~TSzarpConfig(void);
-	/**
-	 * Saves configuration in SZARP 2.1 format.
-	 * @param directory directory where to place output files (PTT.act,
-	 * parcook.cfg, line<x>.cfg, sender.cfg)
-	 * @param force if 1 existing files will be overwritten, if 0 existing
-	 * files are skipped and function returns with error
-	 * @param prefix prefix used to create ekrncor file name
-	 * @param old_ekrncor 1 if traditional format of ekrncor file should
-	 * be used, 0 for new format (with param names instead of base record
-	 * and field indexes); passing 1 can result in errors if some params
-	 * have auto base indexes.
-	 * @return 0 on success, 1 on error
-	 */
-#ifndef MINGW32
-	int saveSzarpConfig(const std::wstring &directory, int force = 0);
-#endif
+
 	/**
 	 * @return title of configuration.
 	 */
@@ -307,11 +298,26 @@ public:
 	 */
 	std::wstring absoluteName(const std::wstring& name, const std::wstring& ref);
 
+	/**
+	 * Check if configuration is valid. Basicly calls all check* functions
+	 */
+	bool checkConfiguration();
+
+	/**
+	 * Check if formulas are well defined
+	 */
+	bool checkFormulas();
+
 	/** Checks if repetitions of parameters names in params.xml occurred
 	 * @param quiet if equal 1 do not print anything to standard output
 	 * @return 0 if there is no repetitions or 1 if there are some
 	 */
-	int checkRepetitions(int quiet = 0);
+	bool checkRepetitions(int quiet = 0);
+
+	/**
+	 * Check if sends are ok -- this means if every send has valid param
+	 */
+	bool checkSend();
 
 	/** Configrures default summer seasons limit (if seasons are not already configured*/
 	void ConfigureSeasonsLimits();
@@ -333,51 +339,6 @@ public:
 	void SetConfigId(unsigned _config_id) { config_id = _config_id; }
 protected:
 	/**
-	 * Creates parcook.cfg file.
-	 * @param directory directory where to create output file
-	 * @param force 1 if overwriting existing file is allowed
-	 * @return number of succesfully created files
-	 */
-#ifndef MINGW32
-	int saveParcookCfg(const std::wstring& directory, int force);
-#endif
-	/**
-	 * Creates line<x>.cfg files.
-	 * @param directory directory where to create output files
-	 * @param force 1 if overwriting existing files is allowed
-	 * @return number of succesfully created files
-	 */
-#ifndef MINGW32
-	int saveLineCfg(const std::wstring& directory, int force);
-#endif
-	/**
-	 * Creates PTT.act file.
-	 * @param directory directory where to create output file
-	 * @param force 1 if overwriting existing file is allowed
-	 * @return number of succesfully created files
-	 */
-#ifndef MINGW32
-	int savePTT(const std::wstring& directory, int force);
-#endif
-	/**
-	 * Creates sender.cfg file.
-	 * @param directory directory where to create output file
-	 * @param force 1 if overwriting existing file is allowed
-	 * @return number of succesfully created files
-	 */
-#ifndef MINGW32
-	int saveSenderCfg(const std::wstring& directory, int force);
-#endif
-	/**
-	 * Creates raporters configuration files.
-	 * @param directory directory where to create output file
-	 * @param force 1 if overwriting existing file is allowed
-	 * @return number of succesfully created files
-	 */
-#ifndef MINGW32
-	int SaveRaporters(const std::wstring& directory, int force);
-#endif
-	/**
 	 * Adds new defined parameter. Adds parameter with given formula at
 	 * and of defined params table.
 	 * @param formula formula in IPK format, only pointer is passed (string
@@ -385,15 +346,6 @@ protected:
 	 * @return number of parameter (from 0)
 	 */
 	int AddDefined(const std::wstring &formula);
-	/**
-	 * Transforms formula from Szarp 2.1 format (IPC indexes) to
-	 * RPN IPK format and sets formula attribute to transformed formula.
-	 * @param f string with Szarp 2.1 formula
-	 * @return 1 on error, 0 on success
-	 */
-#ifndef MING32
-	int transformSzarpFormula(const std::wstring &f);
-#endif
 
 	unsigned config_id;
 			/**< Configuration unique numbe id */
@@ -933,13 +885,12 @@ public:
 	/** @return pointer to string with formula in definable.cfg format
 	 * do not free it - its handled iternaly by TParam object.
 	 * (may be NULL) */
-	const std::wstring&  GetDrawFormula();
+	const std::wstring&  GetDrawFormula() throw(TCheckException);
 	/**
 	 * Returns parameter's RPN formula in parcook.cfg format (with comment).
-	 * @return newly allocated string with formula in parcook format (you have to
-	 * free it after use), NULL if p is not defined parameter
+	 * @return newly allocated string with formula in parcook format
 	 */
-	std::wstring GetParcookFormula();
+	std::wstring GetParcookFormula() throw(TCheckException);
 
 	/** @return type of formula (RPN, DEFINABLE or NONE) */
 	FormulaType GetFormulaType() { return _ftype; }
@@ -1118,12 +1069,9 @@ public:
 	 * @param title title of raport
 	 * @param descr description of param, if NULL last part of param name
 	 * is used
-	 * @param filename name of SZARP 2.1 file with raport, if NULL 'title'
-	 * is used
 	 * @param order priority of param within raport, default is -1.0
 	 */
-	void AddRaport(const std::wstring& title, const std::wstring& descr = std::wstring(), const std::wstring& filename = std::wstring(),
-			double order = -1.0 );
+	void AddRaport(const std::wstring& title, const std::wstring& descr = std::wstring(), double order = -1.0 );
 
 	/**
 	 * Returns list of raports for param.
@@ -1152,15 +1100,8 @@ public:
 	 */
 	TAnalysis* AddAnalysis(TAnalysis* analysis);
 
-	/**
-	 * Transforms param's formula form SZARP 2.1 draw definable form to IPK
-	 * form.
-	 * @return 0 on success, 1 on error
-	 */
-	int TransformDefinableFormula();
-
 	/** Prepares data for definable calculation. */
-	void PrepareDefinable();
+	void PrepareDefinable() throw(TCheckException);
 
 #ifndef NO_LUA
 	const unsigned char* GetLuaScript() const;
@@ -1710,18 +1651,7 @@ public:
 	 * @return created TValue list
 	 */
 	static TValue *createValue(int prec);
-	/**
-	 * Returns SZARP 2.1 identifier corresponding to actual value objects
-	 * list.
-	 * @see TValue::createValue
-	 * @return SZARP 2.1 value type identifier (from 5 to 7), 0 if no one
-	 * is correct
-	 */
-	int getSzarpId(void);
-	/**
-	 * Generates XML node with value info.
-	 * @return created XML node, NULL on error
-	 */
+
 	xmlNodePtr generateXMLNode(void);
 	/**
 	 * Appends value to at end of list.
@@ -1771,14 +1701,11 @@ protected:
  */
 class TRaport {
 public:
-	TRaport(TParam * p, const std::wstring& t, const std::wstring& d = std::wstring(), const std::wstring& file = std::wstring(), double o = -1.0) :
-		param(p), title(t), descr(d), order(o), filename(file), next(NULL)
+	TRaport(TParam * p, const std::wstring& t, const std::wstring& d = std::wstring(), double o = -1.0) :
+		param(p), title(t), descr(d), order(o), next(NULL)
 	{
 		if (!descr.empty() && descr == p->GetName())
 			descr = std::wstring();
-
-		if (!filename.empty() && filename == title)
-			filename = std::wstring();
 	}
 	/** Delete whole list. */
 	~TRaport();
@@ -1837,11 +1764,6 @@ protected:
 	double order;	/**< Priority of param within raport. Ignored if
 			  less then 0. Greater number means later in raport.
 			  */
-	std::wstring filename;
-			/**< Name of file of raport ('*.rap' file). If NULL,
-			 * <i>title</i> + '.rap' is allocated and used.
-			 * It's for compatibility with SZARP 2.1.
-			 * It can be removed in future. */
 	TRaport* next;	/**< Next list element */
 };
 

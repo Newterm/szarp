@@ -11,11 +11,13 @@
 #include <vector>
 
 #include <termio.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <string.h>
 #include "conversion.h"
 
 // These are the value, media and unit information look-up tables used
@@ -1797,8 +1799,8 @@ bool MBus::send_frame(std::string frame) {
     while ((last_sent_bytes = write(serial_port_fd, frame.substr(sent_bytes).c_str(), frame.length() - sent_bytes)) > 0) // Try sending the frame until all the bytes are sent or the transmission fails
         sent_bytes += last_sent_bytes;
 
-    if (sent_bytes < 0)
-        return false;
+    if (last_sent_bytes < 0) 
+        throw mbus_read_data_error(std::string("Error while reading data ") + strerror(errno));
     else
         return true;
 }
@@ -1820,10 +1822,18 @@ std::string MBus::receive_frame(int timeout_sec, int timeout_usec) {
         unsigned char character = 0;
         std::string frame("");
 
-        while (read(serial_port_fd, &character, 1) > 0) {
+        ssize_t r;
+        while ((r = read(serial_port_fd, &character, 1)) > 0) {
             frame.insert(frame.length(), 1, character);
             usleep(serial_port_byte_interval);
         }
+        if (r == -1)
+            switch (errno) {
+                case EAGAIN:
+                    break;
+                default:
+                    throw mbus_read_data_error(std::string("Error while reading data ") + strerror(errno));
+            }
 
         return frame;
     }

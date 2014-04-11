@@ -74,6 +74,10 @@
 
 namespace fs = boost::filesystem;
 
+#if BOOST_FILESYSTEM_VERSION != 3
+#define filesystem_error wfilesystem_error
+#endif
+
 #define szb_hfun szb_hfun2
 
 #define uhashsize(n) ((ub4)1<<(n))
@@ -87,10 +91,16 @@ template<typename OP> std::wstring find_one_param_file(const fs::wpath &paramPat
 
 	std::wstring file;
 	try {
+#if BOOST_FILESYSTEM_VERSION == 3
+		for( fs::directory_iterator i(paramPath); i != fs::directory_iterator(); ++i )
+		{
+			std::wstring l = i->path().filename().wstring();
+#else
 		for (fs::wdirectory_iterator i(paramPath); 
 				i != fs::wdirectory_iterator(); 
 				i++) {
 			std::wstring l = i->path().leaf();
+#endif
 			if (is_szb_file_name(l) == false)
 				continue;
 
@@ -104,7 +114,7 @@ template<typename OP> std::wstring find_one_param_file(const fs::wpath &paramPat
 	
 		}
 
-	} catch (fs::wfilesystem_error &e) {
+	} catch (fs::filesystem_error &e) {
 		file.clear();
 	}
 
@@ -145,8 +155,12 @@ szb_get_datablock(szb_buffer_t * buffer, TParam * param, int year, int month)
     if (NULL != ret)
 	return ret;
 
-    if (param->IsDefinable())
-	param->PrepareDefinable();
+	try {
+		if( param->IsDefinable() )
+			param->PrepareDefinable();
+	} catch( TCheckException& e ) {
+		return NULL;
+	}
 
     switch (param->GetType()) {
 	case TParam::P_REAL:
@@ -262,7 +276,7 @@ szb_search_last(szb_buffer_t * buffer, TParam * param)
 				size_t size;
 				try {
 					size = fs::file_size(paramFilePath);
-				} catch (fs::wfilesystem_error& e) {
+				} catch (fs::filesystem_error& e) {
 					return -1;
 				}
 
@@ -617,11 +631,19 @@ szb_create_buffer(Szbase *szbase, const std::wstring &directory, int num, TSzarp
 	ret->szbase = szbase;
 
 	fs::wpath rootpath(directory);
+#if BOOST_FILESYSTEM_VERSION == 3
+	ret->rootdir = rootpath.wstring();
+#else
 	ret->rootdir = rootpath.string();
+#endif
 
+#if BOOST_FILESYSTEM_VERSION == 3
+	ret->prefix = next(rootpath.end(),-2)->wstring();
+#else
 	fs::wpath tmppath(ret->rootdir);
 	tmppath.remove_leaf().remove_leaf();
 	ret->prefix = tmppath.leaf();
+#endif
 
 	ret->first_av_date = -1;
 	ret->first_param = ipk->getParamByIPC(0);
@@ -644,7 +666,11 @@ szb_create_buffer(Szbase *szbase, const std::wstring &directory, int num, TSzarp
 
 	rootpath /= p->GetSzbaseName();
 	// prepare mpath for fast path creation
+#if BOOST_FILESYSTEM_VERSION == 3
+	ret->meaner3_path += rootpath.wstring();
+#else
 	ret->meaner3_path += rootpath.string();
+#endif
 
 	ret->last_err = SZBE_OK;
 
@@ -714,7 +740,7 @@ szb_definable_meaner_last(szb_buffer_t * buffer)
 	size_t size;
 	try {
 		size = fs::file_size(meaner3path / last);
-	} catch (fs::wfilesystem_error& e) {
+	} catch (fs::filesystem_error& e) {
 		return -1;
 	}
 
@@ -789,7 +815,7 @@ szb_buffer_str::GetConfigurationDate() {
 
 	try {
 		return fs::last_write_time(configPath);
-	} catch (fs::wfilesystem_error& e) {
+	} catch (fs::filesystem_error& e) {
 		return -1;
 	}
 
@@ -802,8 +828,13 @@ std::wstring szb_buffer_str::GetConfigurationFilePath() {
 	std::wstring ret;
 	try {
 		if (fs::exists(configPath))
+#if BOOST_FILESYSTEM_VERSION == 3
+			ret = configPath.wstring();
+#else
 			ret = configPath.string();
-	} catch (fs::wfilesystem_error& e) {}
+#endif
+	} catch (fs::filesystem_error& e) {
+	}
 
 	return ret;
 }
@@ -816,8 +847,13 @@ std::wstring szb_buffer_str::GetSzbaseStampFilePath() {
 
 	try {
 		if (fs::exists(path))
+#if BOOST_FILESYSTEM_VERSION == 3
+			ret = path.wstring();
+#else
 			ret = path.string();
-	} catch (fs::wfilesystem_error& e) {}
+#endif
+	} catch (fs::filesystem_error& e) {
+	}
 
 	return ret;
 }
@@ -1082,3 +1118,6 @@ TupleHasher::operator()(const BufferKey s) const
 	val ^= val2 << 14;
 	return val;
 }
+
+#undef filesystem_error
+

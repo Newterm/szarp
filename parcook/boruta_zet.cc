@@ -292,11 +292,16 @@ void zet_proto_impl::data_ready(struct bufferevent* bufev, int fd) {
 		if (m_buffer.at(m_data_in_buffer - 1) != '\r'
 				|| m_buffer.at(m_data_in_buffer - 2) != '\r'
 				|| (m_plc_type == SK
-					&& m_buffer.at(m_data_in_buffer - 3) != '\r'))
+					&& m_buffer.at(m_data_in_buffer - 3) != '\r')) {
+			m_log.log(10, "Received %zu characters, not yet full packet, awaiting more", m_data_in_buffer);
 			return;
+		}
 	} catch (std::out_of_range) {
+		m_log.log(10, "Received %zu characters, not yet full packet, awaiting more", m_data_in_buffer);
 		return;
 	}
+
+	m_log.log(10, "Received %zu characters, looks like full query", m_data_in_buffer);
 
 	stop_timer();
 	try {
@@ -332,6 +337,7 @@ void zet_proto_impl::data_ready(struct bufferevent* bufev, int fd) {
 		if (checksum != atoi(toks[tokc-1])) {
 			m_log.log(4, "ZET/SK driver, wrong checksum");
 			tokenize_d(NULL, &toks, &tokc, NULL);
+			m_log.log(5, "Wrong checksum expected: %c, got: %c", m_id, id);
 			throw std::invalid_argument("Wrong checksum");
 		}
 		for (size_t i = 0; i < m_read_count; i++)
@@ -380,8 +386,10 @@ void zet_proto_impl::timeout_cb(int fd, short event, void *_zet_proto_impl) {
 		z->m_timeout_count = 0;
 		z->set_no_data();
 		z->terminate_connection();
+		z->m_log.log(10, "Request timed out too many times, terminating connection");
 	} else {
 		z->start_timer();
+		z->m_log.log(10, "Request timed out for 10 secs, but doing nothing");
 	}
 }
 

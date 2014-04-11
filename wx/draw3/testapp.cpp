@@ -115,8 +115,6 @@ bool TestApp::OnInit() {
 	libpar_read_cmdline(&argc, argv);
 #endif
 
-	boost::filesystem::wpath_traits::imbue(std::locale("C")); 	
-
 	SetProgName(_T("Test app"));
 
 	m_db_queue = NULL;

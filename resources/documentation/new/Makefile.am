@@ -29,6 +29,7 @@
 
 DOCS=\
 	draw3 \
+	draw3_en \
 	eksploatacja \
 	ekstraktor3 \
 	viszio \
@@ -96,7 +97,7 @@ SGMLHELP=../../../../script/sgml2hlpctrl.pl
 	polish-ent.tex.tmp; mv polish-ent.tex.tmp $(notdir $(basename $<).tex); \
 	pdfjadetex $(notdir $(basename $<).tex) 2>&1 >/dev/null; \
 	pdfjadetex $(notdir $(basename $<).tex) 2>&1 >/dev/null; \
-	pdfjadetex $(notdir $(basename $<).tex)  
+	pdfjadetex $(notdir $(basename $<).tex) 2>&1 >/dev/null
 
 %-article.sgml:%.sgml
 	cat $< | sed -e 's+DOCTYPE book+DOCTYPE article+ig' \

@@ -15,15 +15,12 @@ RESOURCES = \
        @srcdir@/cor.vim \
        @srcdir@/definable.vim \
        @srcdir@/documentation \
-       @srcdir@/dsc.vim \
        @srcdir@/dtd \
        @srcdir@/elog.vim \
        @srcdir@/libpar.vim \
        @srcdir@/meteo_template.xml \
        @srcdir@/paramd_access.conf \
        @srcdir@/parcook.vim \
-       @srcdir@/ptt.vim \
-       @srcdir@/rap.vim \
        @srcdir@/sounds \
        @srcdir@/szablon.vim \
        @srcdir@/szarp.vim \
@@ -39,17 +36,12 @@ RESOURCES = \
 
 EXTRA_DIST = \
       $(RESOURCES) \
-      @srcdir@/DATAPAF_CFG_TEMPLATE \
-      @srcdir@/FP2001_CFG_TEMPLATE \
       @srcdir@/SZARP_IN_CFG_TEMPLATE \
       @srcdir@/cor.vim \
       @srcdir@/definable.vim \
-      @srcdir@/dsc.vim \
       @srcdir@/elog.vim \
       @srcdir@/libpar.vim \
       @srcdir@/parcook.vim \
-      @srcdir@/ptt.vim \
-      @srcdir@/rap.vim \
       @srcdir@/szablon.vim \
       @srcdir@/szarp.vim \
       @srcdir@/paramd_access.conf 

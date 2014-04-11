@@ -61,20 +61,18 @@ char *TreeProcessor::dumpDocXML(xmlDocPtr doc) {
 char *TreeProcessor::processXML(xmlNodePtr node, int *code, const char* attribute)
 {
 	char *xmlbuffer;
-	xmlOutputBufferPtr out_buf;
 
 	*code = 200;
 	if (!node) {
-		xmlbuffer = strdup("");
-		goto end;
+		return strdup("");
 	}
+
 	/* check if it's request for attrribute */
-	out_buf = xmlAllocOutputBuffer(NULL);
+	xmlOutputBufferPtr out_buf = xmlAllocOutputBuffer(NULL);
 	if (out_buf == NULL) {
 		sz_log(0, "cannot allocate xml output buffer");
 		*code = 500;
-		xmlbuffer = NULL;
-		goto end;
+		return NULL;
 	}
 		
 	if (attribute) {
@@ -128,6 +126,11 @@ char *TreeProcessor::processXML(xmlNodePtr node, int *code, const char* attribut
 	}
 		
 	xmlOutputBufferFlush(out_buf);
+
+#ifdef  LIBXML2_NEW_BUFFER
+	xmlBufPtr _buf = out_buf->conv != NULL ? out_buf->conv : out_buf->buffer;
+	xmlbuffer = (char *)xmlStrndup(xmlBufContent(_buf), xmlBufUse(_buf));
+#else
 	if (out_buf->conv != NULL)
 		xmlbuffer = (char *)xmlStrndup(
 				out_buf->conv->content, 
@@ -136,8 +139,9 @@ char *TreeProcessor::processXML(xmlNodePtr node, int *code, const char* attribut
 		xmlbuffer = (char *)xmlStrndup(
 				out_buf->buffer->content, 
 				out_buf->buffer->use);
+#endif // LIBXML2_NEW_BUFFER
 	xmlOutputBufferClose(out_buf);
-end:
+
 	return xmlbuffer;
 }
 
@@ -151,21 +155,17 @@ end:
 char *TreeProcessor::processHTML(xmlNodePtr node, int *code, int last_slash)
 {
 	char *xmlbuffer;
-	int size;
-	xmlOutputBufferPtr out_buf;
 	char *c;
 	time_t t;
 
-	*code = 200;
-	size = 0;
-	out_buf = xmlAllocOutputBuffer(NULL);
-
+	xmlOutputBufferPtr out_buf = xmlAllocOutputBuffer(NULL);
 	if (out_buf == NULL) {
 		sz_log(0, "cannot allocate xml output buffer");
 		*code = 500;
-		xmlbuffer = NULL;
-		goto end;
+		return NULL;
 	}
+
+	*code = 200;
 	xmlOutputBufferWriteString(out_buf, html_header);
 
 	if (node == NULL)
@@ -195,6 +195,11 @@ char *TreeProcessor::processHTML(xmlNodePtr node, int *code, int last_slash)
 	xmlOutputBufferWriteString(out_buf, html_footer);
 
 	xmlOutputBufferFlush(out_buf);
+
+#ifdef  LIBXML2_NEW_BUFFER
+	xmlBufPtr _buf = out_buf->conv != NULL ? out_buf->conv : out_buf->buffer;
+	xmlbuffer = (char *)xmlStrndup(xmlBufContent(_buf), xmlBufUse(_buf));
+#else
 	if (out_buf->conv != NULL)
 		xmlbuffer = (char *)xmlStrndup(
 				out_buf->conv->content, 
@@ -203,8 +208,10 @@ char *TreeProcessor::processHTML(xmlNodePtr node, int *code, int last_slash)
 		xmlbuffer = (char *)xmlStrndup(
 				out_buf->buffer->content, 
 				out_buf->buffer->use);
+#endif // LIBXML2_NEW_BUFFER
+
 	xmlOutputBufferClose(out_buf);
-end:
+
 	return xmlbuffer;
 }
 

@@ -112,7 +112,11 @@ std::wstring CacheableDatablock::GetCacheRootDirPath(szb_buffer_t *buffer) {
 
 	cachepath = cachepath / L".szarp" / L"szbase" / L"cache" / fs::wpath(buffer->prefix);
 
+#if BOOST_FILESYSTEM_VERSION == 3
+	return cachepath.wstring();
+#else
 	return cachepath.string();
+#endif
 }
 
 std::wstring CacheableDatablock::GetCacheFilePath(TParam * p, int y, int m)
@@ -124,7 +128,11 @@ std::wstring CacheableDatablock::GetCacheFilePath(TParam * p, int y, int m)
 
 	fs::wpath ret = fs::wpath(cache) / this->GetBlockRelativePath();
 
+#if BOOST_FILESYSTEM_VERSION == 3
+	return ret.wstring();
+#else
 	return ret.string();
+#endif
 }
 
 bool
@@ -191,6 +199,10 @@ CacheableDatablock::LoadFromCache()
 	return true;
 }
 
+#if BOOST_FILESYSTEM_VERSION != 3
+#define filesystem_error wfilesystem_error
+#endif
+
 bool
 CacheableDatablock::IsCacheFileValid(int &probes, time_t *mdate)
 {
@@ -204,7 +216,7 @@ CacheableDatablock::IsCacheFileValid(int &probes, time_t *mdate)
 	size_t size;
 	try {
 		size = fs::file_size(cachepath);
-	} catch (fs::wfilesystem_error) {
+	} catch (fs::filesystem_error) {
 		sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL,
 				"CacheableDatablock::IsCacheFileValid: cannot retrive file szie for: '%ls'",
 				this->cachepath.c_str());
@@ -214,7 +226,7 @@ CacheableDatablock::IsCacheFileValid(int &probes, time_t *mdate)
 	time_t mtime;
 	try {
 		mtime = fs::last_write_time(cachepath);
-	} catch (fs::wfilesystem_error) {
+	} catch (fs::filesystem_error) {
 		sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, "CacheableDatablock::IsCacheFileValid: cannot retrive modification date for: '%ls'", this->cachepath.c_str());
 		return false;
 	}
@@ -247,13 +259,18 @@ CacheableDatablock::IsCacheFileValid(int &probes, time_t *mdate)
 	time_t bmt;
 	try {
 		bmt = fs::last_write_time(tmp);
-	} catch (fs::wfilesystem_error) {
+	} catch (fs::filesystem_error) {
 		sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, "CacheableDatablock::IsCacheFileValid: cannot retrive modification date of szbase_stamp");
 		return true;
 	}
 
 	return mtime > bmt;
 }
+
+#if BOOST_FILESYSTEM_VERSION != 2
+#undef filesystem_error
+#endif
+
 
 bool
 CacheableDatablock::CreateCacheDirectory()

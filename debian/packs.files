@@ -4,6 +4,7 @@ Files: opt/szarp/bin/{szrsync,szbpush,ssh_tunel.sh,szppp-off,szppp-on,szredialer
 Files: opt/szarp/bin/{isdn-*-sh,ipcclean,ipcinfo,lpparse,szarp_scripter}
 Files: opt/szarp/resources/{xslt,dictionary.xml}
 Files: opt/szarp/logs
+Files: var/log/szarp
 Files: etc/rsyslog.d/szarp.conf
 
 Package: szarp-daemons
@@ -86,9 +87,6 @@ Package: szarp-isledit
 Files: opt/szarp/bin/isledit
 Files: opt/szarp/resources/locales/pl_PL/LC_MESSAGES/isledit.mo
 Files: usr/share/inkscape/extensions/isledit.inx
-
-Package: szarp-mobile
-Files: opt/szarp/bin/mobilemgr
 
 Package: szarp-sssweb
 Files: var/cache/pylons-sssweb

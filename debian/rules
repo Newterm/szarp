@@ -81,13 +81,16 @@ NO_CB_PACK_OPTS ?= \
 DOC_PACKAGES ?= \
 		-pszarp-doc-pdf \
 		-pszarp-doc-html
+
+CFLAGS = -ggdb -w
+CXXFLAGS = -ggdb -w
 		 
 ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
-	CFLAGS = -O0 -ggdb
-	CXXFLAGS = -O0 -ggdb
+	CFLAGS += -O0
+	CXXFLAGS += -O0
 else
-	CFLAGS = -O2 -ggdb
-	CXXFLAGS = -O2 -ggdb
+	CFLAGS += -O2
+	CXXFLAGS += -O2
 endif
 
 

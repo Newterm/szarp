@@ -30,7 +30,7 @@ class KMPSendInterface {
 		virtual ~KMPSendInterface() { };
 		virtual void CreateQuery (unsigned char CID, unsigned char REMOTE_ADDR,
 		    unsigned short REGISTER) = 0;
-  		virtual void SendQuery (int fd) = 0;
+		virtual std::vector<unsigned char> GetQuery() = 0;
 };
 /** Class for communicating with Kamstrup 601 Heatmeter. */
 class KMPReceiveInterface {
@@ -43,7 +43,8 @@ public:
     virtual void KMPPutResponse (unsigned char *_ReceiveBuffer, unsigned short _RSize) = 0;
     virtual unsigned short ReceiveSize () = 0;
     virtual unsigned short UnStuffedReceiveSize () = 0;
-    virtual char ReceiveResponse (int fd, unsigned long dbc, unsigned char timeout) = 0;
+    virtual unsigned short GetBufferSize() = 0;
+    virtual char ReceiveResponse (std::vector<unsigned char> response) = 0;
     virtual void UnStuffResponse () = 0;
     virtual char CheckResponse () = 0;
     virtual double ReadFloatRegister (char *e_c) = 0;

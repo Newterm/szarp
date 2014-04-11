@@ -14,14 +14,12 @@ do_build() {
 	echo
 	echo " ====== Building: $dist $ver ====== "
 	echo
-	dch -v $ver -D $dist --force-distribution building $dist || fail $?
-	git add debian/changelog
-	git commit -m "building $dist" || fail $?
+	git commit -m "building $dist" --allow-empty || fail $?
 	git tag $ver || fail $?
 }
 
 do_push() {
-	git push || fail $?
+	git push origin HEAD || fail $?
 	git push origin $ver || fail $?
 }
 
@@ -67,9 +65,5 @@ do
 	then
 		do_push $d $version
 	fi
-
-	suffix=${version##*.}
-	let "suffix += 1"
-	version=${version%.*}.$suffix
 done
 

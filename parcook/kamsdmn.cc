@@ -147,8 +147,8 @@ protected:
 	/** Schedule next state machine step */
 	void ScheduleNext(unsigned int wait_ms);
 
-        /** Callback for next step of timed state machine. */
-        static void TimerCallback(int fd, short event, void* thisptr);
+	/** Callback for next step of timed state machine. */
+	static void TimerCallback(int fd, short event, void* thisptr);
 
 	/** One step of state machine */
 	void Do();
@@ -616,7 +616,7 @@ int main(int argc, char *argv[])
 	try {
 		daemon.ReadConfig(argc, argv);
 	} catch (kams_daemon::KamsDmnException &e) {
-		dolog(0, e.what());
+		dolog(0, "%s", e.what());
 		exit(1);
 	}
 	daemon.StartDo();

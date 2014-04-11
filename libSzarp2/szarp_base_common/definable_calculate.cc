@@ -1,6 +1,7 @@
 #include "config.h" 
 #include "liblog.h"
 #include "szarp_base_common/definable_calculate.h" 
+#include <limits>
 
 #ifdef MINGW32
 #include "mingw32_missing.h"
@@ -265,7 +266,7 @@ szb_definable_calculate(double * stack, int stack_size, const double** cache, TP
 				sz_log(0, " it: %d, param_cnt: %d, num: %d",
 					it, param_cnt, param->GetNumParsInFormula());
 				sz_log(0, " chptr: %ls", chptr);
-				return nan("");
+				return std::numeric_limits<double>::quiet_NaN();
 			}
 	
 			// put probe value on stack

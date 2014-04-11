@@ -460,13 +460,13 @@ bool DrawsWidget::SetSet(wxString sset,
 	DrawSet *set = NULL;
 
 	if (!sset.IsEmpty()) {
-			for (DrawSetsHash::iterator i = ds->GetDrawsSets().begin();
-					i != ds->GetDrawsSets().end();
-					i++)
-				if (i->second->GetName() == sset) {
-					set = i->second;
-					break;
-				}
+		for (DrawSetsHash::iterator i = ds->GetDrawsSets().begin();
+				i != ds->GetDrawsSets().end();
+				i++)
+			if (i->second->GetName() == sset) {
+				set = i->second;
+				break;
+			}
 	}
 	if (set == NULL)
 		if ((set = m_draws_controller->GetSet()) == NULL) {

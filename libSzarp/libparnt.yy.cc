@@ -559,7 +559,7 @@ static int yy_prev_more_offset = 0;
 	yyleng -= (yy_more_offset); \
 	}
 #ifndef YYLMAX
-#define YYLMAX 8192
+#define YYLMAX 32768
 #endif
 
 char yytext[YYLMAX];

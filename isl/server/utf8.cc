@@ -110,15 +110,6 @@ void utf2a(unsigned char *str)
 		return;
 	i = 0; j = 0;
 	while (str[i] != 0) {
-		if (str[i] < 128) {
-			if (!isalnum(str[i])) {
-				str[j] = '_';
-			} else {
-				str[j] = str[i];
-			}
-			i++; j++;
-			continue;
-		}
 		if (str[i] == 196) {
 			if (str[i+1] == 133) {
 				str[j] = 'a';
@@ -151,7 +142,7 @@ void utf2a(unsigned char *str)
 				continue;
 			}
 		}
-		if (str[i] == 197) {
+		else if (str[i] == 197) {
 			if (str[i+1] == 130) {
 				str[j] = 'l';
 				j++; i+= 2;
@@ -203,7 +194,7 @@ void utf2a(unsigned char *str)
 				continue;
 			}
 		}
-		if (str[i] == 195) {
+		else if (str[i] == 195) {
 			if (str[i+1] == 179) {
 				str[j] = 'o';
 				j++; i+= 2;
@@ -215,6 +206,14 @@ void utf2a(unsigned char *str)
 				continue;
 			}
 		}
+		else if (str[i]<128) {
+		   	if (!isalnum(str[i]))
+				str[i] = '_';
+		} else {
+			/* translate 2 byte utf8 char to one _ -- skip one */
+			str[++i] = '_';
+		}
+			
 		str[j++] = str[i++];
 	}
 	str[j] = 0;
@@ -250,20 +249,7 @@ int cmpURI(const unsigned char *uri, const unsigned char *name)
 			break;
 		}
 		
-		if (uri[i] >= 195 || uri[i] <= 197) {
-			if (uri[i] == name[j] && uri[i + 1] == name[j + 1]) {
-				if (name[j + 1] == '\0') {
-					i++;
-					j++;
-				} else {
-					i += 2;
-					j += 2;
-					continue;
-				}
-			}
-		}
-
-		if (uri[i] == 196) {
+		else if (uri[i] == 196) {
 			if (uri[i+1] == 133) {
 				if ((name[j] == (unsigned char)'±') ||	
 						(name[j] =='a')) {
@@ -314,7 +300,7 @@ int cmpURI(const unsigned char *uri, const unsigned char *name)
 			}
 			break;
 		}
-		if (uri[i] == 197) {
+		else if (uri[i] == 197) {
 			if (uri[i+1] == 130) {
 				if ((name[j] == (unsigned char)'³') 
 						|| (name[j] =='l')) {
@@ -397,7 +383,7 @@ int cmpURI(const unsigned char *uri, const unsigned char *name)
 			}
 			break;
 		}
-		if (uri[i] == 195) {
+		else if (uri[i] == 195) {
 			if (uri[i+1] == 179) {
 				if ((name[j] == (unsigned char)'ó') 
 						|| (name[j] =='o')) {
@@ -413,6 +399,17 @@ int cmpURI(const unsigned char *uri, const unsigned char *name)
 					continue;
 				}
 				break;
+			}
+		}
+		else {
+			if (name[j]>128) {
+				i+=2;
+				j+=2;
+				continue;
+			} else if (name[j]=='_') {
+				i+=2;
+				j+=1;
+				continue;
 			}
 		}
 		break;

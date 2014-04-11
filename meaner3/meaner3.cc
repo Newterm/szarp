@@ -210,7 +210,11 @@ int main(int argc, char* argv[])
 	TStatus *status;
 	time_t last_cycle; /**< time of last cycle */
 
+#if BOOST_FILESYSTEM_VERSION == 3
+	boost::filesystem::wpath::imbue(std::locale("C")); 	
+#else
 	boost::filesystem::wpath_traits::imbue(std::locale("C")); 	
+#endif
 
 	/* Set initial logging. */
 	loglevel = loginit_cmdline(2, NULL, &argc, argv);

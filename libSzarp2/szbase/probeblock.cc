@@ -328,8 +328,12 @@ szb_probeblock_t *create_lua_data_block(szb_buffer_t *b, TParam* p, time_t t) {
 szb_probeblock_t* szb_create_probe_block(szb_buffer_t *buffer, TParam *param, time_t time) {
 	szb_probeblock_t* ret = NULL;
 
-	if (param->IsDefinable())
-		param->PrepareDefinable();
+	try {
+		if (param->IsDefinable())
+			param->PrepareDefinable();
+	} catch( TCheckException& e ) {
+		return NULL;
+	}
 
 	switch (param->GetType()) {
 		case TParam::P_REAL:

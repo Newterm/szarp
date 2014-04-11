@@ -94,6 +94,10 @@
 			order of words for 2 registers encoded values, default is "msblsb" (first most, then less
 			significant word), other possible value is "lsbmsb"; can be overwritten for specific
 			parameter
+		extra:DoubleOrder="msdlsd"
+			order of words for 4 registers encoded values, default is "msdlsd" (first most, then less
+			significant double), other possible value is "lsdmsd"; can be overwritten for specific
+			parameter
 		extra:nodata-timeout="60"
 			time (in seconds) of value  expiration if no data was received, default value is
 		        "0" (never expire)
@@ -119,9 +123,11 @@
 			and 0x10 (WriteMultipleRegisters) functions are accepted
 		extra:val_type="integer"
 			required, register value type, one of "integer", "bcd" (not supported for 'send' elements), 
-			"long" or "float"; integer and bcd coded parameters occupy 1 register, long integer and float
-			registers occupy 2 successive registers
+			"long" or "float" or "double"; integer and bcd coded parameters occupy 1 register, long integer and float
+			registers occupy 2 successive registers, double val_type occupy 4 successive registers
 		extra:FloatOrder="lsbmsb"
+			overwritten unit FloatOrder value for specific parameter
+		extra:DoubleOrder="lsdmsd"
 			overwritten unit FloatOrder value for specific parameter
 		extra:val_op="MSW"
 			optional operator for converting long or float modbus values to parameter values; SZARP
@@ -328,6 +334,29 @@ struct SDU {
 	PDU pdu;
 };
 
+std::string tcpadu2string(const struct TCPADU& adu) {
+	std::stringstream ss;
+	ss << "trans_id: " << (int)adu.trans_id;
+	ss << "proto_id: " << (int)adu.proto_id;
+	ss << "len: " << (int)adu.length;
+	ss << "unit: " << (int)adu.unit_id;
+	ss << "fun: " << (int)adu.pdu.func_code;
+	for (size_t i = 0; i < adu.pdu.data.size(); i++) {
+		ss << " " << (int)adu.pdu.data[i];
+	}
+	return ss.str();
+}
+
+std::string sdu2string(const struct SDU& sdu) {
+	std::stringstream ss;
+	ss << "unit: " << (int)sdu.unit_id;
+	ss << "fun: " << (int)sdu.pdu.func_code;
+	for (size_t i = 0; i < sdu.pdu.data.size(); i++) {
+		ss << " " << (int)sdu.pdu.data[i];
+	}
+	return ss.str();
+}
+
 //maps regisers values to parcook short values
 class parcook_modbus_val_op {
 protected:
@@ -383,15 +412,20 @@ protected:
 	driver_logger m_log;
 
 	enum FLOAT_ORDER { LSWMSW, MSWLSW } m_float_order;
+	enum DOUBLE_ORDER { LSDMSD, MSDLSD } m_double_order;
 
 	time_t m_current_time;
 	time_t m_expiration_time;
 	float m_nodata_value;
 
 	bool process_request(unsigned char unit, PDU &pdu);
-	int configure_int_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, bool send);
-	int configure_bcd_register(TParam* param, TSendParam* sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, bool send);
-	int configure_long_float_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, unsigned short& other_reg, bool send);
+	int configure_int_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_bcd_register(TParam* param, TSendParam* sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int get_float_order(xmlNodePtr node, FLOAT_ORDER default_value, bool& default_used, FLOAT_ORDER& float_order);
+	int get_double_order(xmlNodePtr node, DOUBLE_ORDER default_value, bool &default_used, DOUBLE_ORDER& double_order);
+	int get_lsw_msw_reg(xmlNodePtr node, unsigned short addr, unsigned short& lsw, unsigned short& msw, bool& is_lsw);
+	int configure_long_float_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_double_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, bool send, REGISTER_TYPE rt);
 	int configure_param(xmlNodePtr node, TSzarpConfig *sc, TParam* p, TSendParam *sp, bool send, unsigned char id);
 	int configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx);
 	const char* error_string(const unsigned char& error);
@@ -467,7 +501,8 @@ protected:
 		IDLE,
 	} m_state;
 
-	time_t m_last_activity;
+	time_t m_latest_request_sent;
+	time_t m_request_timeout;
 
 	void starting_new_cycle();
 protected:
@@ -487,6 +522,7 @@ protected:
 	virtual void terminate_connection() = 0;
 
 public:
+	int configure(TUnit *unit, xmlNodePtr node, short *read, short *send);
 	void pdu_received(unsigned char u, PDU &pdu);
 	virtual int initialize();
 };
@@ -668,6 +704,16 @@ public:
 	virtual unsigned short val();
 };
 
+class double_parcook_modbus_val_op: public parcook_modbus_val_op {
+	modbus_register* m_regs[4];
+	int m_prec;
+	bool m_lsd;
+public:
+	double_parcook_modbus_val_op(int prec, bool lsd, driver_logger *log);
+	void set_regs(modbus_register* regs[4]);
+	unsigned short val();
+};
+
 class short_sender_modbus_val_op : public sender_modbus_val_op {
 	modbus_register *m_reg;
 public:
@@ -788,6 +834,40 @@ template<> unsigned short long_parcook_modbus_val_op<float>::val() {
 		return *pv >> 16;
 }
 
+double_parcook_modbus_val_op::double_parcook_modbus_val_op(int prec, bool lsd, driver_logger *log) : parcook_modbus_val_op(log), m_prec(prec), m_lsd(lsd) {}
+
+
+void double_parcook_modbus_val_op::set_regs(modbus_register* regs[4]) {
+	m_regs[0] = regs[0];
+	m_regs[1] = regs[1];
+	m_regs[2] = regs[2];
+	m_regs[3] = regs[3];
+}
+
+unsigned short double_parcook_modbus_val_op::val() {
+	unsigned short v[4];
+	for (size_t i = 0; i < 4; i++) {
+		bool valid;
+		v[i] = m_regs[i]->get_val(valid);
+		if (!valid) {
+			m_log->log(10, "Int value invalid, no_data");
+			return SZARP_NO_DATA;
+		} else {
+			m_log->log(10, "Double parcoook op: int value valid, data: %hu", v[i]);
+		}
+	}
+
+	int32_t iv = nearbyint(*(double*)v * m_prec); 
+	uint32_t* pv = (uint32_t*) &iv;
+
+	m_log->log(10, "Int value: %d, unsigned int: %u", iv, *pv);
+
+	if (m_lsd)
+		return *pv & 0xffff;
+	else
+		return *pv >> 16;
+}
+
 short_sender_modbus_val_op::short_sender_modbus_val_op(float no_data, modbus_register *reg, driver_logger *log) : sender_modbus_val_op(no_data, log), m_reg(reg) {}
 
 void short_sender_modbus_val_op::set_val(short val, time_t time) {
@@ -885,7 +965,7 @@ const char* modbus_unit::error_string(const unsigned char& error) {
 }
 
 void modbus_unit::consume_read_regs_response(unsigned char& uid, unsigned short start_addr, unsigned short regs_count, PDU &pdu) {
-	m_log.log(5, "Consuming read holing register response unit_id: %d, address: %hu, registers count: %hu", (int) uid, start_addr, regs_count);
+	m_log.log(5, "Consuming read holding register response unit_id: %d, address: %hu, registers count: %hu", (int) uid, start_addr, regs_count);
 	if (pdu.func_code & MB_ERROR_CODE) {
 		m_log.log(1, "Exception received in response to read holding registers command, unit_id: %d, address: %hu, count: %hu",
 		       	(int)uid, start_addr, regs_count);
@@ -893,7 +973,7 @@ void modbus_unit::consume_read_regs_response(unsigned char& uid, unsigned short 
 		return;
 	} 
 
-	if (pdu.data.size() != 2 * regs_count + 1) {
+	if (pdu.data.size() - 1 != regs_count * 2) {
 		m_log.log(1, "Unexpected data size in response to read holding registers command, requested %hu regs but got %zu data in response",
 		       	regs_count, pdu.data.size() - 1);
 		throw std::out_of_range("Invalid response size");
@@ -908,7 +988,7 @@ void modbus_unit::consume_read_regs_response(unsigned char& uid, unsigned short 
 	for (size_t addr = start_addr; addr < start_addr + regs_count; addr++, data_index += 2) {
 		RMAP::iterator j = unit.find(addr);
 		unsigned short v = ((unsigned short)(pdu.data.at(data_index)) << 8) | pdu.data.at(data_index + 1);
-		m_log.log(7, "Setting register unit_id: %d, address: %hu, value: %hu", (int) uid, addr, v);
+		m_log.log(9, "Setting register unit_id: %d, address: %hu, value: %hu", (int) uid, addr, v);
 		j->second->set_val(v, m_current_time);
 	}
 
@@ -953,7 +1033,7 @@ bool modbus_unit::perform_write_registers(RMAP &unit, PDU &pdu) {
 
 		unsigned short v = (d.at(data_index) << 8) | d.at(data_index + 1);
 
-		m_log.log(7, "Setting register: %hu value: %hu", addr, v);
+		m_log.log(9, "Setting register: %hu value: %hu", addr, v);
 		j->second->set_val(v, m_current_time);	
 	}
 
@@ -983,7 +1063,7 @@ bool modbus_unit::perform_read_holding_regs(RMAP &unit, PDU &pdu) {
 		unsigned short v = j->second->get_val();
 		d.push_back(v >> 8);
 		d.push_back(v & 0xff);
-		m_log.log(7, "Sending register: %hu, value: %hu", addr, v);
+		m_log.log(9, "Sending register: %hu, value: %hu", addr, v);
 	}
 
 	m_log.log(7, "Request processed sucessfully.");
@@ -1034,61 +1114,103 @@ bool modbus_unit::register_val_expired(time_t time) {
 
 modbus_unit::modbus_unit(boruta_driver* driver) : m_log(driver) {}
 
-int modbus_unit::configure_int_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, bool send) {
+int modbus_unit::configure_int_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	m_registers[id][addr] = new modbus_register(this, &m_log);
 	if (send)
 		m_sender_ops.push_back(new short_sender_modbus_val_op(m_nodata_value, m_registers[id][addr], &m_log));
 	else 
 		m_parcook_ops.push_back(new short_parcook_modbus_val_op(m_registers[id][addr], &m_log));
-	m_log.log(7, "Param %ls mapped to unit: %c, register %hu, value type: integer", param ? param->GetName().c_str() : L"send param", id, addr);
+
+	if (!send)
+		m_received.insert(std::make_pair(id, std::make_pair(rt, addr)));
+	else
+		m_sent.insert(std::make_pair(id, std::make_pair(rt, addr)));
+
+	m_log.log(8, "Param %ls mapped to unit: %c, register %hu, value type: integer", param ? param->GetName().c_str() : L"send param", id, addr);
 	return 0;
 }
 
-int modbus_unit::configure_bcd_register(TParam* param, TSendParam* sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, bool send) {
+int modbus_unit::configure_bcd_register(TParam* param, TSendParam* sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	m_registers[id][addr] = new modbus_register(this, &m_log);
 	if (send) {
 		m_log.log(0, "Unsupported bcd value type for send param %ls", param->GetName().c_str());
 		return 1;
 	}
 	m_parcook_ops.push_back(new bcd_parcook_modbus_val_op(m_registers[id][addr], &m_log));
-	m_log.log(7, "Param %s mapped to unit: %c, register %hu, value type: bcd", SC::S2A(param->GetName()).c_str(), id, addr);
+
+	m_log.log(8, "Param %s mapped to unit: %c, register %hu, value type: bcd", SC::S2A(param->GetName()).c_str(), id, addr);
+
+	if (!send)
+		m_received.insert(std::make_pair(id, std::make_pair(rt, addr)));
+	else
+		m_sent.insert(std::make_pair(id, std::make_pair(rt, addr)));
+
 	return 0;
 }
 
-int modbus_unit::configure_long_float_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, unsigned short& other_reg, bool send) {
-	std::string val_op;
-	get_xml_extra_prop(node, "val_op", val_op, false);
-
-	FLOAT_ORDER float_order = m_float_order;
-
-	std::string val_type;	
-	if (get_xml_extra_prop(node, "val_type", val_type))
-		return 1;
-
+int modbus_unit::get_float_order(xmlNodePtr node, FLOAT_ORDER default_value, bool &default_used, FLOAT_ORDER& float_order) {
 	std::string _float_order;
-	get_xml_extra_prop(node, "FloatOrder", _float_order, false);
+
+	get_xml_extra_prop(node, "FloatOrder", _float_order, true);
 	if (!_float_order.empty()) {
+		default_used = false;
 		if (_float_order == "msblsb") {
-			m_log.log(5, "Setting mswlsw for next param");
 			float_order = MSWLSW;
 		} else if (_float_order == "lsbmsb") {
-			m_log.log(5, "Setting lswmsw for next param");
 			float_order = LSWMSW;
 		} else {
 			m_log.log(0, "Invalid float order specification: %s, %ld", _float_order.c_str(), xmlGetLineNo(node));
 			return 1;
 		}
+	} else {
+		float_order = default_value;
+		default_used = true;
 	}
+	return 0;
+}
 
-	unsigned short msw, lsw;
-	bool is_lsw;
-	other_reg = 0;
-	if (val_op.empty())  {
+int modbus_unit::get_double_order(xmlNodePtr node, DOUBLE_ORDER default_value, bool &default_used, DOUBLE_ORDER& double_order) {
+	std::string double_order_string;
+	get_xml_extra_prop(node, "DoubleOrder", double_order_string, true);
+	default_used = false;
+	if (double_order_string.empty()) {
+		default_used = true;
+		double_order = default_value;
+	} else if (double_order_string == "msdlsd") {
+		double_order = MSDLSD;
+	} else if (double_order_string == "lsdmsd") {
+		m_double_order = LSDMSD;
+	} else {
+		m_log.log(0, "Invalid double order specification: %s", double_order_string.c_str());
+		return 1;
+	}
+	return 0;
+}
+
+int modbus_unit::get_lsw_msw_reg(xmlNodePtr node, unsigned short addr, unsigned short& lsw, unsigned short& msw, bool& is_lsw) {
+	FLOAT_ORDER float_order;
+	bool default_used;
+	if (get_float_order(node, m_float_order, default_used, float_order))
+		return 1;
+
+	if (!default_used)
+		switch (float_order) {
+			case MSWLSW:
+				m_log.log(5, "Setting mswlsw for next param");
+				break;
+			case LSWMSW:
+				m_log.log(5, "Setting lswmsw for next param");
+				break;
+		}
+
+	std::string val_op;
+	get_xml_extra_prop(node, "val_op", val_op, false);
+	if (val_op.empty() || val_op == "LSW")  {
 		if (float_order == MSWLSW) {
 			msw = addr;
-			other_reg = lsw = addr + 1;
+			lsw = addr + 1;
 		} else {
-			other_reg = msw = addr + 1;
+			msw = addr + 1;
 			lsw = addr;
 		}
 		is_lsw = true;
@@ -1100,23 +1222,100 @@ int modbus_unit::configure_long_float_register(TParam* param, TSendParam *sparam
 			msw = addr + 1;
 			lsw = addr;
 		}
-		other_reg = lsw;
 		is_lsw = false;
-	} else if (val_op == "LSW") {
-		if (float_order == LSWMSW) {
-			lsw = addr;
-			msw = addr + 1;
-		} else {
-			lsw = addr + 1;
-			msw = addr;
-		}
-		other_reg = msw;
-		is_lsw = true;
 	} else {
 		m_log.log(0, "Unsupported val_op attribute value - %s, line %ld", val_op.c_str(), xmlGetLineNo(node));
 		return 1;
 	}
 
+	return 0;
+}
+
+int modbus_unit::configure_double_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, bool send, REGISTER_TYPE rt) {
+	unsigned short addrs[4];
+
+	FLOAT_ORDER float_order;
+	bool default_used;
+	if (get_float_order(node, m_float_order, default_used, float_order))
+		return 1;
+
+	DOUBLE_ORDER double_order;
+	if (get_double_order(node, m_double_order, default_used, double_order))
+		return 1;
+
+	switch (double_order) {
+		case MSDLSD:
+			switch (float_order) {
+				case MSWLSW:
+					addrs[0] = addr;
+					addrs[1] = addr + 1;
+					addrs[2] = addr + 2;
+					addrs[3] = addr + 3;
+					break;
+				case LSWMSW:
+					addrs[0] = addr + 1;
+					addrs[1] = addr;
+					addrs[2] = addr + 3;
+					addrs[3] = addr + 2;
+					break;
+			}
+			break;
+		case LSDMSD:
+			switch (float_order) {
+				case MSWLSW:
+					addrs[0] = addr + 2;
+					addrs[1] = addr + 3;
+					addrs[2] = addr;
+					addrs[3] = addr + 1;
+					break;
+				case LSWMSW:
+					addrs[0] = addr + 3;
+					addrs[1] = addr + 2;
+					addrs[2] = addr + 1;
+					addrs[3] = addr;
+					break;
+			}
+			break;
+	}
+
+	std::string val_op2;
+	bool is_lsd;
+	get_xml_extra_prop(node, "val_op2", val_op2, false);
+	if (val_op2.empty() || val_op2 == "LSD")  {
+		is_lsd = true;
+	} else if (val_op2 == "MSD") {
+		is_lsd = false;
+	} else {
+		m_log.log(0, "Unsupported val_op2 attribute value - %s, line %ld", val_op2.c_str(), xmlGetLineNo(node));
+		return 1;
+	}
+	double_parcook_modbus_val_op* op = new double_parcook_modbus_val_op(prec, is_lsd, &m_log);
+	m_parcook_ops.push_back(op);
+
+	modbus_register* regs[4];
+	for (int i = 0; i < 4; i++) {
+		RMAP::iterator j = m_registers[id].find(addrs[i]);
+		if (j == m_registers[id].end()) {
+			m_registers[id][addrs[i]] = regs[i] = new modbus_register(this, &m_log);
+			m_received.insert(std::make_pair(id, std::make_pair(rt, addrs[i])));
+		} else
+			regs[i] = j->second;
+	}
+	op->set_regs(regs);
+
+	return 0;
+}
+
+int modbus_unit::configure_long_float_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned char id, unsigned short addr, bool send, REGISTER_TYPE rt) {
+	std::string val_type;	
+	if (get_xml_extra_prop(node, "val_type", val_type))
+		return 1;
+
+	bool is_lsw;
+	unsigned short msw, lsw;
+	if (get_lsw_msw_reg(node, addr, lsw, msw, is_lsw))
+		return 1;
+	
 	if (m_registers[id].find(lsw) == m_registers[id].end()) 
 		m_registers[id][lsw] = new modbus_register(this, &m_log);
 	if (m_registers[id].find(msw) == m_registers[id].end())
@@ -1125,22 +1324,26 @@ int modbus_unit::configure_long_float_register(TParam* param, TSendParam *sparam
 	if (val_type == "float")  {
 		if (!send) {
 			m_parcook_ops.push_back(new long_parcook_modbus_val_op<float>(m_registers[id][lsw], m_registers[id][msw], prec, is_lsw, &m_log));
-			m_log.log(7, "Parcook param %ls no(%zu), mapped to unit: %d, register %hu, value type: float, params holds %s part, lsw: %hu, msw: %hu", param->GetName().c_str(), m_parcook_ops.size(), int(id), addr, is_lsw ? "lsw" : "msw", lsw, msw);
+			m_log.log(8, "Parcook param %ls no(%zu), mapped to unit: %d, register %hu, value type: float, params holds %s part, lsw: %hu, msw: %hu", param->GetName().c_str(), m_parcook_ops.size(), int(id), addr, is_lsw ? "lsw" : "msw", lsw, msw);
 		} else {
 			m_sender_ops.push_back(new float_sender_modbus_val_op(m_nodata_value, m_registers[id][lsw], m_registers[id][msw], prec, &m_log));
-			m_log.log(7, "Sender param %ls no(%zu), mapped to unit: %d, register %hu, value type: float, params holds %s part",
+			m_log.log(8, "Sender param %ls no(%zu), mapped to unit: %d, register %hu, value type: float, params holds %s part",
 				param ? param->GetName().c_str() : L"(not a param, just value)", m_sender_ops.size(), int(id), addr, is_lsw ? "lsw" : "msw");
 		}
 	} else {
 		if (!send) {
 			m_parcook_ops.push_back(new long_parcook_modbus_val_op<unsigned int>(m_registers[id][lsw], m_registers[id][msw], prec, is_lsw, &m_log));
-			m_log.log(7, "Parcook param %ls no(%zu), mapped to unit: %c, register %hu, value type: long, params holds %s part, lsw: %hu, msw: %hu",
+			m_log.log(8, "Parcook param %ls no(%zu), mapped to unit: %c, register %hu, value type: long, params holds %s part, lsw: %hu, msw: %hu",
 				param->GetName().c_str(), m_parcook_ops.size(), int(id), addr, is_lsw ? "lsw" : "msw", lsw, msw);
 		} else {
 			m_log.log(0, "Unsupported long value type for send param line %ld, exiting!", xmlGetLineNo(node));
 			return 1;
 		}
 	}
+
+
+	m_received.insert(std::make_pair(id, std::make_pair(rt, lsw)));
+	m_received.insert(std::make_pair(id, std::make_pair(rt, msw)));
 
 	return 0;
 }
@@ -1202,29 +1405,19 @@ int modbus_unit::configure_param(xmlNodePtr node, TSzarpConfig* sc, TParam* p, T
 
 	int ret;
 	if (val_type == "integer") {
-		ret = configure_int_register(param, sp, prec, node, id, addr, send);
+		ret = configure_int_register(param, sp, prec, node, id, addr, send, rt);
 	} else if (val_type == "bcd") {
-		ret = configure_bcd_register(param, sp, prec, node, id, addr, send);
+		ret = configure_bcd_register(param, sp, prec, node, id, addr, send, rt);
 	} else if (val_type == "long" || val_type == "float") {
-		unsigned short other_reg;
-
-		ret = configure_long_float_register(param, sp, prec, node, id, addr, other_reg, send);
-		m_received.insert(std::make_pair(id, std::make_pair(rt, other_reg)));
+		ret = configure_long_float_register(param, sp, prec, node, id, addr, send, rt);
+	} else if (val_type == "double") {
+		ret = configure_double_register(param, sp, prec, node, id, addr, send, rt);
 	} else {
 		m_log.log(0, "Unsupported value type:%s, for param at line: %ld", val_type.c_str(), xmlGetLineNo(node));
 		ret = 1;
 	}
 
-	if (ret)
-		return ret;
-
-	if (!send) {
-		m_received.insert(std::make_pair(id, std::make_pair(rt, addr)));
-	} else {
-		m_sent.insert(std::make_pair(id, std::make_pair(rt, addr)));
-	}
-
-	return 0;
+	return ret;
 }
 
 int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
@@ -1270,7 +1463,8 @@ int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
 		assert(node);
 		free(expr);
 
-		configure_param(node, u->GetSzarpConfig(), p, sp, send, id);
+		if (configure_param(node, u->GetSzarpConfig(), p, sp, send, id))
+			return 1;
 
 		if (send)
 			sp = sp->GetNext();
@@ -1282,22 +1476,25 @@ int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
 }
 
 int modbus_unit::configure(TUnit *unit, xmlNodePtr node, short *read, short *send) {
-
-	std::string float_order;
-	get_xml_extra_prop(node, "FloatOrder", float_order, true);
-	if (float_order.empty()) {
-		m_log.log(5, "Float order not specified, assuming msblsb");
-		m_float_order = MSWLSW;
-	} else if (float_order == "msblsb") {
-		m_log.log(5, "Setting mswlsw float order");
-		m_float_order = MSWLSW;
-	} else if (float_order == "lsbmsb") {
-		m_log.log(5, "Setting lswmsw float order");
-		m_float_order = LSWMSW;
-	} else {
-		m_log.log(0, "Invalid float order specification: %s", float_order.c_str());
+	bool default_used;
+	if (get_float_order(node, MSWLSW, default_used, m_float_order))
 		return 1;
-	}
+	if (default_used)
+		m_log.log(5, "Float order not specified, assuming msblsb");
+	else if (m_float_order == MSWLSW)
+		m_log.log(5, "Setting mswlsw float order");
+	else if (m_float_order == LSWMSW)
+		m_log.log(5, "Setting lswmsw float order");
+
+	
+	if (get_double_order(node, MSDLSD, default_used, m_double_order))
+		return 1;
+	if (default_used)
+		m_log.log(5, "Double order not specified, assuming msdlsd");
+	else if (m_double_order == MSDLSD)
+		m_log.log(5, "Setting msdlsd double order");
+	else if (m_double_order == LSDMSD)
+		m_log.log(5, "Setting lsdmsd double order");
 
 	m_expiration_time = 0;
 	if (get_xml_extra_prop(node, "nodata-timeout", m_expiration_time, true)) {
@@ -1305,8 +1502,8 @@ int modbus_unit::configure(TUnit *unit, xmlNodePtr node, short *read, short *sen
 		return 1;
 	}
 	if (!m_expiration_time) {
-		m_log.log(5, "no-data timeout not specified (or 0), assuming no data expiration");
-		m_expiration_time = 0;
+		m_log.log(5, "no-data timeout not specified (or 0), assuming 1 minute data expiration");
+		m_expiration_time = 60;
 	} 
 
 	m_nodata_value = 0;
@@ -1506,13 +1703,13 @@ void modbus_client::starting_new_cycle() {
 			break;
 	}
 
-	if (m_last_activity + 10 < m_current_time) {
+	if (m_latest_request_sent + m_request_timeout  < time(NULL)) {
 		send_next_query(false);
 	}
 }
 
 
-modbus_client::modbus_client(boruta_driver* driver) : modbus_unit(driver), m_state(IDLE) {}
+modbus_client::modbus_client(boruta_driver* driver) : modbus_unit(driver), m_state(IDLE), m_latest_request_sent(0), m_request_timeout(0) {}
 
 void modbus_client::reset_cycle() {
 	m_received_iterator = m_received.begin();
@@ -1616,6 +1813,7 @@ void modbus_client::send_query() {
 			send_write_query();
 			break;
 	}
+	m_latest_request_sent = time(NULL);
 }
 
 void modbus_client::timeout() {
@@ -1660,6 +1858,13 @@ void modbus_client::find_continuous_reg_block(RSET::iterator &i, RSET &regs) {
 	}
 }
 
+int modbus_client::configure(TUnit *unit, xmlNodePtr node, short *read, short *send) {
+	m_request_timeout = 10;
+	if (get_xml_extra_prop(node, "request-timeout", m_request_timeout, true))
+		return 1;
+	return modbus_unit::configure(unit, node, read, send);
+}
+
 void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 	if (u != m_unit) {
 		m_log.log(1, "Received PDU from unit %d while we wait for response from unit %d, ignoring it!", (int)u, (int)m_unit);
@@ -1689,7 +1894,6 @@ void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 			m_log.log(10, "Received unexpected response from slave - ignoring it.");
 			break;
 	}
-	m_last_activity = m_current_time;
 }
 
 int modbus_client::initialize() {
@@ -1743,7 +1947,7 @@ void modbus_tcp_client::data_ready(struct bufferevent* bufev, int fd) {
 }
 
 int modbus_tcp_client::configure(TUnit* unit, xmlNodePtr node, short* read, short *send) {
-	if (modbus_unit::configure(unit, node, read, send))
+	if (modbus_client::configure(unit, node, read, send))
 		return 1;
 	m_trans_id = 0;
 	m_parser = new tcp_parser(this, &m_log);
@@ -1792,7 +1996,7 @@ void modbus_serial_client::data_ready(struct bufferevent* bufev, int fd) {
 }
 
 int modbus_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration &spc) {
-	if (modbus_unit::configure(unit, node, read, send))
+	if (modbus_client::configure(unit, node, read, send))
 		return 1;
 	std::string protocol;
 	get_xml_extra_prop(node, "serial_protocol_variant", protocol, true);
@@ -1870,10 +2074,10 @@ bool serial_rtu_parser::check_crc() {
 
 	unsigned short frame_crc = d[m_data_read - 2] | (d[m_data_read - 1] << 8);
 
-	m_log->log(9,"Unit ID = %hx",m_sdu.unit_id);
-	m_log->log(9,"Func code = %hx",m_sdu.pdu.func_code);
+	m_log->log(8,"Unit ID = %hx",m_sdu.unit_id);
+	m_log->log(8,"Func code = %hx",m_sdu.pdu.func_code);
 	for (size_t i = 0; i < m_data_read ; i++) m_log->log(9,"Data[%d] = %hx",i,d[i]);
-	m_log->log(9, "Checking crc, result: %s, unit_id: %d, caluclated crc: %hx, frame crc: %hx",
+	m_log->log(8, "Checking crc, result: %s, unit_id: %d, calculated crc: %hx, frame crc: %hx",
 	       	(crc == frame_crc ? "OK" : "ERROR"), m_sdu.unit_id, crc, frame_crc);
 	return crc == frame_crc;
 }
@@ -1973,7 +2177,7 @@ int serial_rtu_parser::configure(xmlNodePtr node, serial_port_configuration &spc
 		else
 			m_timeout = 100000;
 	}
-	m_log->log(9, "serial_parser m_timeout: %d", m_timeout);
+	m_log->log(8, "serial_parser m_timeout: %d", m_timeout);
 	if (m_delay_between_chars)
 		evtimer_set(&m_write_timer, write_timer_callback, this);
 	return 0;
@@ -1995,14 +2199,14 @@ void serial_rtu_parser::read_data(struct bufferevent *bufev) {
 		case ADDR:
 			if (bufferevent_read(bufev, &m_sdu.unit_id, sizeof(m_sdu.unit_id)) == 0) 
 				break;
-			m_log->log(9, "Parsing new frame, unit_id: %d", (int) m_sdu.unit_id);
+			m_log->log(8, "Parsing new frame, unit_id: %d", (int) m_sdu.unit_id);
 			m_state = FUNC_CODE;
 		case FUNC_CODE:
 			if (bufferevent_read(bufev, &m_sdu.pdu.func_code, sizeof(m_sdu.pdu.func_code)) == 0) {
 				start_read_timer();
 				break;
 			}
-			m_log->log(9, "\tfunc code: %d", (int) m_sdu.pdu.func_code);
+			m_log->log(8, "\tfunc code: %d", (int) m_sdu.pdu.func_code);
 			m_state = DATA;
 			m_data_read = 0;
 			m_sdu.pdu.data.resize(max_frame_size - 2);

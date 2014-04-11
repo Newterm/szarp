@@ -122,6 +122,8 @@ bool SVGGenerator::GetGraphTimeParams() {
 
 	m_custom_length = 0;
 	if (!xmlStrcmp(_period_type, X"month"))
+		m_probe_type = PT_YEAR;
+	else if (!xmlStrcmp(_period_type, X"month"))
 		m_probe_type = PT_MONTH;
 	else if (!xmlStrcmp(_period_type, X"week"))
 		m_probe_type = PT_WEEK;
@@ -133,6 +135,8 @@ bool SVGGenerator::GetGraphTimeParams() {
 		m_probe_type = PT_HOUR;
 	else if (!xmlStrcmp(_period_type, X"min10"))
 		m_probe_type = PT_MIN10;
+	else if (!xmlStrcmp(_period_type, X"sec10"))
+		m_probe_type = PT_SEC10;
 	else if (!xmlStrcmp(_period_type, X"custom")) {
 		m_probe_type = PT_CUSTOM;
 		if (_custom_length == NULL)
@@ -202,6 +206,9 @@ xmlNodePtr SVGGenerator::GenerateParam(size_t draw_no, xmlDocPtr doc) {
 xmlNodePtr SVGGenerator::GenerateTimeInfo(xmlDocPtr doc) {
 	xmlNodePtr time_node = xmlNewNode(NULL, X"probes_times");
 	switch (m_probe_type) {
+		case PT_YEAR:
+			xmlSetProp(time_node, X"period", X"year");
+			break;
 		case PT_MONTH:
 			xmlSetProp(time_node, X"period", X"month");
 			break;
@@ -219,6 +226,9 @@ xmlNodePtr SVGGenerator::GenerateTimeInfo(xmlDocPtr doc) {
 			break;
 		case PT_MIN10:
 			xmlSetProp(time_node, X"period", X"min10");
+			break;
+		case PT_SEC10:
+			xmlSetProp(time_node, X"period", X"sec10");
 			break;
 		case PT_CUSTOM:
 			xmlSetProp(time_node, X"period", X"custom");

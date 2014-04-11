@@ -279,6 +279,7 @@ void szAppImpl::ShowAbout(wxWindow *parent) {
 	authors.Add(L"Jaros\u0142aw Nowisz");
 	authors.Add(L"Krzysztof O\u0142owski");
 	authors.Add(L"Pawe\u0142 Pa\u0142ucha");
+	authors.Add(L"Tomasz Pieczerak");
 	authors.Add(L"Lucjan Przykorski");
 	authors.Add(L"Micha\u0142 R\u00F3j");
 	authors.Add(L"Stanis\u0142aw Sawa");

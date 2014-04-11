@@ -34,7 +34,7 @@
 
 #include "liblog.h"
 
-int __log_level = 0;
+
 int __log_info = 1;
 FILE * __logfd = NULL;
 
@@ -45,13 +45,8 @@ void sz_log_info(int info)
 
 static int __sz_loginit(int level, const char * logname)
 {
-    if ( (level < 0 ) || (level > 10))
-	__log_level = 0;
-    else
-	__log_level = level;
-    
     if (logname == NULL || strlen(logname) == 0)
-	return (__log_level);
+	return (level);
 
     __logfd = fopen(logname, "a");
 
@@ -60,7 +55,7 @@ static int __sz_loginit(int level, const char * logname)
 	return -1;
     }
     
-    return (__log_level);
+    return (level);
 }
 
 void* sz_log_classic_init(int level, const char* logname, SZ_LIBLOG_FACILITY facility, void* context) {
@@ -70,8 +65,6 @@ void* sz_log_classic_init(int level, const char* logname, SZ_LIBLOG_FACILITY fac
 
 static void __sz_logdone(void)
 {
-    __log_level = 0;
-
     if ((__logfd != NULL) && (__logfd != stderr))
 	fclose(__logfd);
     
@@ -86,9 +79,6 @@ static void __vsz_log(int level, const char * msg_format, va_list fmt_args) {
     time_t i;
     char *timestr;
     
-    if (level > __log_level)
-	return;
-
     if (__logfd == NULL)
 	__logfd = stderr;
     

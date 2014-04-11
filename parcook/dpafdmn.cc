@@ -554,7 +554,7 @@ void ReadData(char *linedev)
 	int NumberOfVals ;
 	int *vals;
 	long value ;
-	int i,j,res,k,zz;
+	int i,j,k,zz;
 	char kanal[] = "00\0";
 	NumberOfVals = ChannelsCount*Power + ZonesCount*Energy*ChannelsCount ;
 	vals = (int*)malloc(NumberOfVals*sizeof(int)) ;
@@ -562,7 +562,6 @@ void ReadData(char *linedev)
 		vals[i] = SZARP_NO_DATA;
 
 	j=0;
-	res = -1;
 
 	if (Energy)
 	{
@@ -590,7 +589,6 @@ void ReadData(char *linedev)
   				{
   					if (ReadEnergy(&value,Zones[k],kanal)>0)
   					{
-       					    res = 1 ;
        					    if (Diagno) printf("Energy, zone %c, channel %s = %ld\n", Zones[k], kanal, value  );
        					    vals[j] = value / EnergyDivBy;
   					}
@@ -622,7 +620,6 @@ void ReadData(char *linedev)
     		if (Diagno) printf("Power, Kanal %s \n", kanal) ;
   			if (ReadPower(&value,kanal)>0)
   			{
-       			res = 1 ;
        			if (Diagno) printf("Power %s = %ld\n", kanal, value  );
        			vals[j] = value ; /* Power_1 */
   			}

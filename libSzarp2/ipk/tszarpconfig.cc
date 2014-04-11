@@ -309,7 +309,7 @@ TSzarpConfig::saveXML(const std::wstring &path)
     d = generateXML();
     if (d == NULL)
 	return -1;
-    r = xmlSaveFormatFileEnc(SC::S2A(path).c_str(), d, "ISO-8859-2", 1);
+    r = xmlSaveFormatFile(SC::S2A(path).c_str(), d, 1);
     xmlFreeDoc(d);
     return r;
 }
@@ -395,6 +395,8 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 	const char* ignored_trees[] = { "mobile", "checker:rules",  0 };
 	xw.SetIgnoredTrees(ignored_trees);
 
+	nativeLanguage = L"pl";
+
 	for (;;) {
 		if (xw.IsTag("params")) {
 			if (xw.IsBeginTag()) {
@@ -424,6 +426,9 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 						} else
 						if (xw.IsAttr("title")) {
 							title = SC::U2S(attr);
+						} else
+						if (xw.IsAttr("language")) {
+							nativeLanguage = SC::U2S(attr);
 						} else
 						if (xw.IsAttr("documentation_base_url")) {
 							documentation_base_url = SC::U2S(attr);
@@ -673,25 +678,16 @@ TSzarpConfig::PrepareDrawDefinable()
     TParam * p = drawdefinable;
     while (p) {
 	if (p->IsDefinable())
-		p->PrepareDefinable();
+		try {
+			p->PrepareDefinable();
+		} catch( TCheckException& e ) {
+			sz_log(0,"Invalid draw definable formula %s",SC::S2A(p->GetName()).c_str());
+		}
 	p = p->GetNext();
     }
 
     return 0;
 }
-
-#ifndef MINGW32
-int
-TSzarpConfig::saveSzarpConfig(const std::wstring& directory, int force)
-{
-    saveParcookCfg(directory, force);
-    saveLineCfg(directory, force);
-    savePTT(directory, force);
-    saveSenderCfg(directory, force);
-    SaveRaporters(directory, force);
-    return 0;
-}
-#endif
 
 TParam *
 TSzarpConfig::getParamByName(const std::wstring& name)
@@ -727,268 +723,6 @@ TSzarpConfig::getParamByBaseInd(int base_ind)
     }
     return NULL;
 }
-
-
-#ifndef MINGW32
-int
-TSzarpConfig::saveParcookCfg(const std::wstring& directory, int force)
-{
-    FILE *f;
-    string s;
-    const char *c;
-    struct stat tmp;
-
-    using namespace SC;
-
-    s += S2A(directory);
-    s += "/parcook.cfg";
-    c = s.c_str();
-    if ((force == 0) && (stat(c, &tmp) == 0)) {
-sz_log(1, "Cannot create file %s - file exists", c);
-	return 0;
-    }
-    f = fopen(c, "w");
-    if (f == NULL) {
-sz_log(1, "Error while creating file '%s' (errno %d)", c, errno);
-	return 0;
-    }
-    fprintf(f, "%d %d %d\n", GetDevicesCount(), read_freq, GetDefinedCount());
-    for (TDevice * d = GetFirstDevice(); d; d = GetNextDevice(d)) {
-	fprintf(f, "%d %d", d->GetNum() + 1, d->GetParamsCount());
-	if (!d->GetDaemon().empty())
-	    fprintf(f, " %s", S2A(d->GetDaemon()).c_str());
-	if (!d->GetPath().empty())
-	    fprintf(f, " %s", S2A(d->GetPath()).c_str());
-	if (d->GetSpeed() > 0)
-	    fprintf(f, " %d", d->GetSpeed());
-	if (d->GetStopBits() >= 0)
-	    fprintf(f, " %d", d->GetStopBits());
-	if (d->GetProtocol() >= 0)
-	    fprintf(f, " %d", d->GetProtocol());
-	if (!d->GetOptions().empty())
-	    fprintf(f, " %s", S2A(d->GetOptions()).c_str());
-	fprintf(f, "\n");
-    }
-    fprintf(f, "%d\n", GetAllDefinedCount());
-    /* Print all params definitions */
-    for (TParam * cp = GetFirstParam(); cp; cp = GetNextParam(cp)) {
-	    const std::wstring& formula = cp->GetParcookFormula();
-	    if (!formula.empty())
-		    fprintf(f, "%s", S2A(formula).c_str());
-    }
-    fclose(f);
-
-    return 1;
-}
-#endif
-
-#ifndef MINGW32
-int
-TSzarpConfig::saveLineCfg(const std::wstring& directory, int force)
-{
-    int l = 0;
-    FILE *f;
-    struct stat tmp;
-    const char *c;
-    char buf[5];
-    string w;
-
-    for (TDevice * d = GetFirstDevice(); d; d = GetNextDevice(d)) {
-	w = SC::S2A(directory);
-	w += "/line";
-	snprintf(buf, 5, "%d", d->GetNum() + 1);
-	w += buf;
-	w += ".cfg";
-	c = w.c_str();
-	if ((force == 0) && (stat(c, &tmp) == 0)) {
-	   sz_log(1, "Cannot create file %s - file exists", c);
-	    continue;
-	}
-	f = fopen(c, "w");
-	if (f == NULL) {
-	   sz_log(1, "Error while creating file '%s' (errno %d)", c, errno);
-	    return 0;
-	}
-	if (d->GetFirstRadio()->GetId())
-	    fprintf(f, "R%d\n", d->GetRadiosCount());
-	for (TRadio * r = d->GetFirstRadio(); r; r = d->GetNextRadio(r)) {
-	    if (r->GetId()) {
-		std::wstringstream wss;
-		wss << r->GetId();
-		fprintf(f, "%s\n", SC::S2A(wss.str()).c_str());
-	    }
-	    if (d->IsSpecial())
-		fprintf(f, "%d\n", d->GetSpecial());
-	    else
-		fprintf(f, "%d\n", r->GetUnitsCount());
-	    for (TUnit * u = r->GetFirstUnit(); u; u = r->GetNextUnit(u)) {
-		std::wstringstream wss;
-		wss << u->GetId();
-		fprintf(f, "%s %d %d %d %d %d\n",
-			SC::S2A(wss.str()).c_str(), u->GetType(), u->GetSubType(), u->GetParamsCount(), u->GetSendParamsCount(), u->GetBufSize());
-	    }
-	}
-	fclose(f);
-	l++;
-    }
-    return l;
-}
-#endif
-
-#ifndef MINGW32
-int
-TSzarpConfig::savePTT(const std::wstring& directory, int force)
-{
-    string s;
-    const char *c;
-    FILE *f;
-    struct stat tmp;
-    int m;
-    TParam **tab = NULL;
-
-    s += SC::S2A(directory);
-    s += "/PTT.act";
-    c = s.c_str();
-    if ((force == 0) && (stat(c, &tmp) == 0)) {
-sz_log(1, "Cannot create file %s - file exists", c);
-	return 0;
-    }
-    f = fopen(c, "w");
-    if (f == NULL) {
-sz_log(1, "Error while creating file '%s' (errno %d)", c, errno);
-	return 0;
-    }
-
-    m = GetMaxBaseInd();
-
-    if (m >= 0) {
-
-	tab = (TParam **) calloc(m + 1, sizeof(TParam *));
-	for (TParam * p = GetFirstParam(); p; p = GetNextParam(p)) {
-	    if (p->IsAutoBase()) {
-	sz_log(1, "Param '%s' has auto index, do not try szarp2ipk, see docs.", SC::S2A(p->GetName()).c_str());
-	    }
-	    if ((p->GetBaseInd() < 0) || (p->GetBaseInd() > m))
-		continue;
-	    tab[p->GetBaseInd()] = p;
-	}
-    } else {
-sz_log(1, "Base indexes not found, if you are using auto indexes do not try szarp2ipk, see docs.");
-    }
-
-    fprintf(f, "1 %d %d\n", m + 1, GetParamsCount() + GetDefinedCount());
-
-    for (int i = 0; i <= m; i++) {
-	if (tab[i] == NULL) {
-	   sz_log(0, "Param with base index %d (starting from 0) missing", i);
-	    return 0;
-	}
-	fprintf(f, "%d", tab[i]->GetIpcInd());
-	if (tab[i]->GetFirstValue() == NULL) {
-	    fprintf(f, " %d", tab[i]->GetPrec());
-	} else {
-	    assert(tab[i]->GetFirstValue() != NULL);
-	    fprintf(f, " %d", tab[i]->GetFirstValue()->getSzarpId());
-	}
-	fprintf(f, " %s %s [%s];%s", SC::S2A(tab[i]->GetShortName()).c_str(),
-		SC::S2A(tab[i]->GetName()).c_str(), 
-		!tab[i]->GetUnit().empty() ? SC::S2A(tab[i]->GetUnit()).c_str() : "-", 
-		!tab[i]->GetDrawName().empty() ? SC::S2A(tab[i]->GetDrawName()).c_str() : "-");
-	if (tab[i]->GetShortName().length() > 5)
-	   sz_log(1, "Short name '%s' for param '%s' to long (more then 5 characters)", SC::S2A(tab[i]->GetShortName()).c_str(), SC::S2A(tab[i]->GetName()).c_str());
-	if (!tab[i]->GetDrawName().empty() && (tab[i]->GetDrawName().length() > 22))
-	   sz_log(1, "Draw name '%s' for param '%s' to long (more then 22 characters)", SC::S2A(tab[i]->GetDrawName()).c_str(), SC::S2A(tab[i]->GetName()).c_str());
-	fprintf(f, " # (%d, %d)\n", i / 15 + 1, i % 15);
-    }
-    if (tab != NULL)
-	free(tab);
-
-    for (TParam * p = GetFirstParam(); p; p = GetNextParam(p)) {
-	if (p->GetBaseInd() >= 0)
-	    continue;
-	if (p->GetFormulaType() == TParam::DEFINABLE)
-	    continue;
-	fprintf(f, "%d", p->GetIpcInd());
-	if (p->GetFirstValue() == NULL) {
-	    fprintf(f, " %d", p->GetPrec());
-	} else {
-	    fprintf(f, " %d", p->GetFirstValue()->getSzarpId());
-	}
-	fprintf(f, " %s %s [%s];%s\n", 
-		SC::S2A(p->GetShortName()).c_str(), 
-		SC::S2A(p->GetName()).c_str(), 
-		!p->GetUnit().empty() ? SC::S2A(p->GetUnit()).c_str() : "-", 
-		!p->GetDrawName().empty() ? SC::S2A(p->GetDrawName()).c_str() : "");
-    }
-    fclose(f);
-    return 1;
-}
-#endif
-
-#ifndef MINGW32
-int
-TSzarpConfig::saveSenderCfg(const std::wstring& directory, int force)
-{
-    string s;
-    const char *c;
-    int n, pc;
-    TSendParam *sp;
-    TParam *p;
-    struct stat tmp;
-    FILE *f;
-
-    pc = 0;
-    for (TDevice * d = GetFirstDevice(); d; d = GetNextDevice(d))
-	for (TRadio * r = d->GetFirstRadio(); r; r = d->GetNextRadio(r))
-	    for (TUnit * u = r->GetFirstUnit(); u; u = r->GetNextUnit(u))
-		for (sp = u->GetFirstSendParam(); sp; sp = u->GetNextSendParam(sp))
-		    if (sp->IsConfigured())
-			pc++;
-    if (pc <= 0)
-	return 0;
-
-    s += SC::S2A(directory);
-    s += "/sender.cfg";
-    c = s.c_str();
-    if ((force == 0) && (stat(c, &tmp) == 0)) {
-sz_log(1, "Cannot create file %s - file exists", c);
-	return 0;
-    }
-    f = fopen(c, "w");
-    if (f == NULL) {
-sz_log(1, "Error while creating file '%s' (errno %d)", c, errno);
-	return 0;
-    }
-
-    fprintf(f, "%d %d\n", pc, send_freq);
-
-    for (TDevice * d = GetFirstDevice(); d; d = GetNextDevice(d))
-	for (TRadio * r = d->GetFirstRadio(); r; r = d->GetNextRadio(r))
-	    for (TUnit * u = r->GetFirstUnit(); u; u = r->GetNextUnit(u))
-		for (n = 0, sp = u->GetFirstSendParam(); sp; sp = u->GetNextSendParam(sp)) {
-		    if (!sp->IsConfigured())
-			continue;
-		    if (!sp->GetParamName().empty()) {
-			p = getParamByName(sp->GetParamName());
-			if (p == NULL) {
-			   sz_log(1, "Cannot find parameter to send (%s)", SC::S2A(sp->GetParamName()).c_str());
-			    fclose(f);
-			    return 0;
-			}
-			fprintf(f, "%d", p->GetIpcInd());
-		    } else
-			fprintf(f, "#%d", sp->GetValue());
-		    std::wstringstream ss;
-		    ss << u->GetId();
-		    fprintf(f, " %d %s %d %d %d %d\n",
-			    d->GetNum() + 1, SC::S2A(ss.str()).c_str(), n, sp->GetRepeatRate(), sp->GetProbeType(), sp->GetSendNoData());
-		    n++;
-		}
-
-    fclose(f);
-    return 1;
-}
-#endif
 
 std::wstring
 TSzarpConfig::absoluteName(const std::wstring &name, const std::wstring &ref)
@@ -1212,99 +946,6 @@ TSzarpConfig::GetNextRaportItem(TRaport * cur)
     return NULL;
 }
 
-#ifndef MINGW32
-int
-TSzarpConfig::SaveRaporters(const std::wstring& directory, int force)
-{
-    string w;
-    int i = 0;
-    struct stat tmp;
-    for (std::wstring title = GetFirstRaportTitle(); !title.empty(); title = GetNextRaportTitle(title)) {
-	TRaport *rap = GetFirstRaportItem(title);
-	w = SC::S2A(directory);
-	w += "/";
-	w += SC::S2A(rap->GetFileName());
-	const char *c = w.c_str();
-	if ((force == 0) && (stat(w.c_str(), &tmp) == 0)) {
-	   sz_log(1, "Cannot create file %s - file exists", c);
-	    continue;
-	}
-	FILE *f = fopen(c, "w");
-	if (f == NULL) {
-	   sz_log(1, "Error while creating file %s (errno %d)", c, errno);
-	    continue;
-	}
-	fprintf(f, "#Raporter Pattern File#\n");
-	int n = 0;
-	for (TRaport * raptmp = rap; raptmp; raptmp = GetNextRaportItem(raptmp), n++);
-	fprintf(f, "%d %s", n, SC::S2A(rap->GetTitle()).c_str());
-
-	// Table for sorting lines
-	double *orders = (double *) malloc(n * sizeof(double));
-	// Table for storing lines
-#define BUFSIZE 200
-	char **strings = (char **) calloc(n, sizeof(char *));
-	for (int j = 0; j < n; j++)
-	    strings[j] = (char *) calloc(BUFSIZE, sizeof(char));
-
-	for (int j = 0; rap; rap = GetNextRaportItem(rap), j++) {
-	    TParam *p = rap->GetParam();
-	    int prec;
-	    int is_test = 0;
-	    orders[j] = rap->GetOrder();
-	    // special handling of test raports
-	    if (rindex(c, '/') && (!strcasecmp(rindex(c, '/') + 1, "test.rap")))
-		is_test = 1;
-	    else if (!strcasecmp(c, "test.rap") || (!strcasecmp(SC::S2A(title).c_str(), "RAPORT TESTOWY")))
-		is_test = 1;
-	    if (p->GetFirstValue()) {
-		prec = p->GetFirstValue()->getSzarpId();
-	    } else
-		prec = p->GetPrec();
-	    if (is_test) {
-		int num = 0;
-		if (p->GetDevice())
-		    num = p->GetDevice()->GetNum() + 1;
-		snprintf(strings[j], BUFSIZE, "\n%d 5 S%d %s [-]", p->GetIpcInd(), num, SC::S2A(rap->GetDescr()).c_str());
-	    } else {
-		snprintf(strings[j], BUFSIZE,
-			 "\n%d  %d  %s  %s [%s]", p->GetIpcInd(), prec, SC::S2A(p->GetShortName()).c_str(), SC::S2A(rap->GetDescr()).c_str(), SC::S2A(p->GetUnit()).c_str());
-	    }
-	}
-#undef BUFSIZE
-	// Print sorted
-	double last = -1.0;
-	while (1) {
-	    int lasti = -1;
-	    // Find smallest greater then last
-	    for (int j = 0; j < n; j++)
-		if ((orders[j] >= 0.0) && (orders[j] > last) && ((lasti < 0) || (orders[j] < orders[lasti])))
-		    lasti = j;
-	    // If not found, break from loop
-	    if ((lasti < 0) || (orders[lasti] == last) || (orders[lasti] == -1.0))
-		break;
-	    // Currently found
-	    last = orders[lasti];
-	    // Print all matching
-	    for (int j = 0; j < n; j++)
-		if (orders[j] == last)
-		    fprintf(f, "%s", strings[j]);
-	}
-	// Print all without priorities
-	for (int j = 0; j < n; j++)
-	    if (orders[j] < 0)
-		fprintf(f, "%ss", strings[j]);
-	fclose(f);
-	free(orders);
-	for (int j = 0; j < n; j++)
-	    free(strings[j]);
-	free(strings);
-	i++;
-    }
-    return i;
-}
-#endif
-
 TBoiler* TSzarpConfig::AddBoiler(TBoiler *boiler) {
 	if (!boilers)
 		return boilers = boiler;
@@ -1312,40 +953,84 @@ TBoiler* TSzarpConfig::AddBoiler(TBoiler *boiler) {
 		return boilers->Append(boiler);
 }
 
-int TSzarpConfig::checkRepetitions(int quiet)
+bool TSzarpConfig::checkConfiguration()
+{
+	bool ret = true;
+	ret = checkRepetitions(false) && ret;
+	ret = checkFormulas()         && ret;
+	ret = checkSend()             && ret;
+	return ret;
+}
+
+bool TSzarpConfig::checkFormulas()
+{
+	bool ret = true;
+	/** This loop checks every formula and return false if any is invalid */
+	for( TParam* p=GetFirstParam(); p ; p=GetNextParam(p) )
+		try {
+			p->GetParcookFormula();
+		} catch( TCheckException& e ) {
+			ret = false;
+		}
+	for( TParam* p=GetFirstParam(); p ; p=GetNextParam(p) )
+		try {
+			p->GetDrawFormula();
+		} catch( TCheckException& e ) {
+			ret = false;
+		}
+
+	return ret;
+}
+
+bool TSzarpConfig::checkRepetitions(int quiet)
 {
 	std::vector<std::wstring> str;
-        int all_repetitions_number = 0, the_same_repetitions_number=0;
-        
+	int all_repetitions_number = 0, the_same_repetitions_number=1;
+
 	for (TParam* p = GetFirstParam(); p; p = GetNextParam(p)) {
 		str.push_back(p->GetSzbaseName());
 	}
 	std::sort(str.begin(), str.end());
-	
-	for(size_t j = 0 ; j < str.size() - 1; j++){
-		if (!str[j].compare(str[j + 1])){ 
-			the_same_repetitions_number += 1;
-			all_repetitions_number += 1;
-		}
-		
-		else if ( j > 0 && !str[j].compare(str[j - 1])) {
-			
-			the_same_repetitions_number += 1;
-			all_repetitions_number += 1;
-			
-			if (!quiet)
+
+	for( size_t j=0 ; j<str.size() ; ++j )
+	{
+		if( j<str.size()-1 && str[j] == str[j+1] )
+			++the_same_repetitions_number;
+		else if( the_same_repetitions_number > 1 ) {
+			if( !quiet )
 				sz_log(1, "There is %d repetitions of: %s", the_same_repetitions_number, SC::S2A(str[j-1]).c_str());
-			
-			the_same_repetitions_number = 0;
+
+			all_repetitions_number += the_same_repetitions_number;
+			the_same_repetitions_number = 1;
 		}
 	}
-	
-	if (all_repetitions_number > 0) {
-		return 1;
-	} else {
-		return 0;
-	}
+
+	return all_repetitions_number == 0;
 }				
+
+bool TSzarpConfig::checkSend()
+{
+	bool ret = true;
+	for( TDevice* d = GetFirstDevice(); d; d = GetNextDevice(d) )
+		for( TRadio* r = d->GetFirstRadio(); r; r = d->GetNextRadio(r) )
+			for( TUnit* u = r->GetFirstUnit(); u; u = r->GetNextUnit(u) )
+				for( TSendParam* sp = u->GetFirstSendParam(); sp; sp = u->GetNextSendParam(sp) )
+				{
+					if( !sp->IsConfigured() || sp->GetParamName().empty() )
+						continue;
+
+					TParam* p = getParamByName(sp->GetParamName()); 
+					if( p == NULL ) {
+						sz_log(1, "Cannot find parameter to send (%s)", SC::S2A(sp->GetParamName()).c_str());
+						ret = false;
+					} else if( p->IsDefinable() ) {
+						sz_log(1, "Cannot use drawdefinable param in send (%s)", SC::S2A(sp->GetParamName()).c_str());
+						ret = false;
+					}
+				}
+	return ret;
+}
+
 
 void TSzarpConfig::ConfigureSeasonsLimits() {
 	if (seasons == NULL)

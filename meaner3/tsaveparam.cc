@@ -75,7 +75,11 @@ int TSaveParam::WriteProbes(const fs::wpath& directory, time_t t, short int* dat
 
 void TSaveParam::CreateFilePath( const fs::wpath& dir , const std::wstring& name , int year , int month , time_t probe_length )
 {
+#if BOOST_FILESYSTEM_VERSION == 3
+	m_path = (dir / szb_createfilename_ne(cname, year, month, probe_length == SZBASE_DATA_SPAN ? L".szb" : L".szc") ).wstring();
+#else
 	m_path = (dir / szb_createfilename_ne(cname, year, month, probe_length == SZBASE_DATA_SPAN ? L".szb" : L".szc") ).string();
+#endif
 }
 
 int TSaveParam::Write(const fs::wpath& directory, time_t t, short int data, TStatus *status,

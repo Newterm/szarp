@@ -53,6 +53,8 @@
 #define CURSOR_RECTANGLE_SIZE 9
 
 class WxGraphs : public wxWindow, public DrawGraphs, public SetInfoDropReceiver {
+	bool m_right_down;
+
 	/** Internal array of @see GraphVIew objects . */
 	std::vector<GraphView*> m_graphs;
 
@@ -175,10 +177,13 @@ public:
 	 */
 	void OnMouseLeftUp(wxMouseEvent& event);
 
-	/** Event handler - called when left mouse button is pressed.
-	 * Handles moving cursor and shifting screen.
-	 */
 	void OnMouseRightDown(wxMouseEvent& event);
+
+	void OnMouseRightUp(wxMouseEvent& event);
+
+	void OnMouseMove(wxMouseEvent& event);
+
+	void OnMouseLeave(wxMouseEvent& event);
 
 	void OnSize(wxSizeEvent& event);
 

@@ -179,8 +179,16 @@ public:
 
 	void SetStatsInterval(const std::pair<time_t, time_t> &i)
 	{	stats_interval = i; }
+
+	void SetDoubleCursor (bool val)
+	{	double_cursor = val; }
+
+	bool GetDoubleCursor (void)
+	{	return double_cursor; }
+
 private:
 	std::pair<time_t, time_t> stats_interval;
+	bool double_cursor;
 	DrawInfo* selected;
 };
 

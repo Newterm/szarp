@@ -397,7 +397,7 @@ void ConfFrame::OnSaveAs(wxCommandEvent& event)
 
 int ConfFrame::SaveFile(wxString path)
 {
- 	int ret = xmlSaveFormatFileEnc((const char*)path.mb_str(), params, "ISO-8859-2", 1);
+ 	int ret = xmlSaveFormatFile((const char*)path.mb_str(), params, 1);
  	if (ret < 0) {
 		wxLogError(_("There was error saving file %s."), path.c_str());
 	} else {

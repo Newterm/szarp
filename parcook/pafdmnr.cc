@@ -400,7 +400,6 @@ void DaemonClass::PartitionMessage(unsigned char *inbuf, unsigned short lenght, 
 int DaemonClass::ReadOutput(int *buf, unsigned short *size)
 {
     int             i,
-                    k,
                     j;
     unsigned short  lenght;
     unsigned char   inbuf[READ_MESSAGE_SIZE];
@@ -435,7 +434,6 @@ int DaemonClass::ReadOutput(int *buf, unsigned short *size)
      */
     //usleep (30000);
     sleep(2);
-    k = 0;
     i = 0;
     
     FD_ZERO(&rfds);
@@ -479,7 +477,6 @@ int DaemonClass::ReadOutput(int *buf, unsigned short *size)
     if (Diagno)
 	printf("frame %d%c%c%c%c%c was sent \n", test[0], test[1],
 	       test[2], test[3], test[4], test[5]);
-    k = 0;
     i = 0;
     sleep(10);
     retval = select(LineDes+1, &rfds, NULL, NULL, &tv);
