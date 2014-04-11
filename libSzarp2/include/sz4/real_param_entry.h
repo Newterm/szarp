@@ -19,6 +19,11 @@
 #ifndef __SZ4_REAL_PARAM_ENTRY_H__
 #define __SZ4_REAL_PARAM_ENTRY_H__
 
+#if BOOST_FILESYSTEM_VERSION != 3
+#define filesystem_error wfilesystem_error
+#define directory_iterator wdirectory_iterator
+#endif
+
 namespace sz4 {
 
 template<class V, class T, class types> class real_param_entry_in_buffer;
@@ -188,7 +193,7 @@ public:
 		if (m_refresh_file_list) {
 			try {
 				refresh_file_list();
-			} catch (boost::filesystem::wfilesystem_error&) {}
+			} catch (boost::filesystem::filesystem_error&) {}
 			m_refresh_file_list = false;
 		}
 	}
@@ -219,11 +224,15 @@ public:
 	void refresh_file_list() {
 		namespace fs = boost::filesystem;
 		
-		for (fs::wdirectory_iterator i(m_param_dir); 
-				i != fs::wdirectory_iterator(); 
+		for (fs::directory_iterator i(m_param_dir);
+				i != fs::directory_iterator();
 				i++) {
 
+#if BOOST_FILESYSTEM_VERSION == 3
+			std::wstring file_path = i->path().string();
+#else
 			std::wstring file_path = i->path().file_string();
+#endif
 
 			T file_time = path_to_date<T>(file_path);
 			if (!invalid_time_value<T>::is_valid(file_time))
@@ -260,7 +269,11 @@ public:
 
 
 	void register_at_monitor(generic_param_entry* entry, SzbParamMonitor* monitor) {
+#if BOOST_FILESYSTEM_VERSION == 3
+		monitor->add_observer(entry, m_param, m_param_dir.native(), 0);
+#else
 		monitor->add_observer(entry, m_param, m_param_dir.external_file_string(), 0);
+#endif
 	}
 
 	void deregister_from_monitor(generic_param_entry* entry, SzbParamMonitor* monitor) {
@@ -279,4 +292,10 @@ public:
 };
 
 }
+
+#if BOOST_FILESYSTEM_VERSION != 3
+#undef filesystem_error
+#undef directory_iterator
+#endif
+
 #endif
