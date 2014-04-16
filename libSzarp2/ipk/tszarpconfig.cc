@@ -965,6 +965,13 @@ bool TSzarpConfig::checkConfiguration()
 bool TSzarpConfig::checkFormulas()
 {
 	bool ret = true;
+
+	try {
+		PrepareDrawDefinable();
+	} catch( TCheckException& e) {
+		return false;
+	}
+
 	/** This loop checks every formula and return false if any is invalid */
 	for( TParam* p=GetFirstParam(); p ; p=GetNextParam(p) )
 		try {
