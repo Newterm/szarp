@@ -79,7 +79,7 @@ public:
 		if (buf == NULL) {
 			std::wstring prefix = param->GetSzarpConfig()->GetPrefix();	
 #if BOOST_FILESYSTEM_VERSION == 3
-			buf = m_buffers[param->GetConfigId()] = new buffer_templ<types>(this, &m_monitor, m_ipk_container, prefix, (m_szarp_data_dir / prefix / L"sz4").string());
+			buf = m_buffers[param->GetConfigId()] = new buffer_templ<types>(this, &m_monitor, m_ipk_container, prefix, (m_szarp_data_dir / prefix / L"sz4").wstring());
 #else
 			buf = m_buffers[param->GetConfigId()] = new buffer_templ<types>(this, &m_monitor, m_ipk_container, prefix, (m_szarp_data_dir / prefix / L"sz4").file_string());
 #endif

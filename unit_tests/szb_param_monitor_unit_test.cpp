@@ -46,7 +46,11 @@ std::vector<std::string> SzbParamMonitorTest::createDirectories() {
 
 		boost::filesystem::path p = boost::filesystem::path(file_name.str()) / s.str();
 		boost::filesystem::create_directories(p);
+#if BOOST_FILESYSTEM_VERSION == 3
+		dir_paths.push_back(p.string());
+#else
 		dir_paths.push_back(p.file_string());
+#endif
 	}
 
 	return dir_paths;

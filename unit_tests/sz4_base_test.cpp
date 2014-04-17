@@ -65,8 +65,11 @@ void Sz4BaseTestCase::setUp() {
 		boost::filesystem::create_directories(path / ls.str() / L"sz4/a/a/a");
 		boost::filesystem::create_directories(path / ls.str() / L"sz4/b/b/b");
 
-		
+#if BOOST_FILESYSTEM_VERSION == 3
+		std::ofstream ofs((path / ls.str() / L"config/params.xml").native().c_str(), std::ios_base::binary);
+#else
 		std::ofstream ofs((path / ls.str() / L"config/params.xml").external_file_string().c_str(), std::ios_base::binary);
+#endif
 		ofs << 
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
 "<params xmlns=\"http://www.praterm.com.pl/SZARP/ipk\" version=\"1.0\" read_freq=\"10\" send_freq=\"10\" title=\"Globalmalt Bydgoszcz\" documentation_base_url=\"http://www.szarp.com\">"
@@ -100,7 +103,11 @@ void Sz4BaseTestCase::setUp() {
 				boost::filesystem::wpath param_path = path / ls.str() / L"sz4" / ss.str() / ss.str() / ss.str();
 				std::wstringstream file_name;
 				file_name << std::setfill(L'0') << std::setw(10) << i << L".sz4";
+#if BOOST_FILESYSTEM_VERSION == 3
+				std::ofstream ofs((param_path / file_name.str()).native().c_str(), std::ios_base::binary);
+#else
 				std::ofstream ofs((param_path / file_name.str()).external_file_string().c_str(), std::ios_base::binary);
+#endif
 				short value = 10;
 				ofs.write((const char*) &value, sizeof(value));
 				unsigned time = i + 50;

@@ -25,6 +25,10 @@
 #include "path.h"
 #include "time.h"
 
+#if BOOST_FILESYSTEM_VERSION != 3
+#define directory_iterator wdirectory_iterator
+#endif
+
 namespace sz4 {
 
 template<class T> std::wstring find_block_for_date(const std::wstring& dir, const T& time) {
@@ -33,11 +37,14 @@ template<class T> std::wstring find_block_for_date(const std::wstring& dir, cons
 	std::wstring file;
 	T found_time(invalid_time_value<T>::value);
 
-	for (fs::wdirectory_iterator i(dir); 
-			i != fs::wdirectory_iterator(); 
+	for (fs::directory_iterator i(dir);
+			i != fs::directory_iterator();
 			i++) {
-		
+#if BOOST_FILESYSTEM_VERSION == 3
+		T file_time(path_to_date<T>(i->path().string()));
+#else
 		T file_time(path_to_date<T>(i->path().file_string()));
+#endif
 		if (!invalid_time_value<T>::is_valid(file_time))
 			continue;
 
@@ -46,7 +53,11 @@ template<class T> std::wstring find_block_for_date(const std::wstring& dir, cons
 
 		if (!invalid_time_value<T>::is_valid(found_time) || (time - file_time < time - found_time)) {
 			found_time = file_time;
+#if BOOST_FILESYSTEM_VERSION == 3
+			file = i->path().wstring();
+#else
 			file = i->path().file_string();
+#endif
 		}
 	}
 
@@ -54,5 +65,9 @@ template<class T> std::wstring find_block_for_date(const std::wstring& dir, cons
 }
 
 }
+
+#if BOOST_FILESYSTEM_VERSION != 3
+#undef directory_iterator
+#endif
 
 #endif

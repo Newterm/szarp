@@ -2502,9 +2502,6 @@ msgstr "Pomoc kontekstowa\tShift+F1"
 msgid "About\tF2"
 msgstr "O programie\tF2"
 
-#~ msgid "HOUR"
-#~ msgstr "GODZINA"
-
 #~ msgid ""
 #~ "Are you sure you want to delete this param? All draws referring to this "
 #~ "param will be removed as well."

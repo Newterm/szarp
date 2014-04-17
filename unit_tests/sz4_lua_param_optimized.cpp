@@ -208,12 +208,19 @@ void Sz4LuaParamOptimized::test2() {
 	boost::filesystem::wpath param_dir(base_path / L"BASE/sz4/A/B/C");
 	boost::filesystem::create_directories(param_dir);
 
+#if BOOST_FILESYSTEM_VERSION == 3
+	sz4::base_templ<test_types2> base(base_path.wstring(), &mock);
+#else
 	sz4::base_templ<test_types2> base(base_path.file_string(), &mock);
+#endif
 	sz4::buffer_templ<test_types2>* buff = base.buffer_for_param(mock.GetParam(L"BASE:A:B:D"));
-
 	
 	TestObserver o;
+#if BOOST_FILESYSTEM_VERSION == 3
+	base.param_monitor().add_observer(&o, mock.GetParam(L"BASE:A:B:C"), param_dir.native(), 10);
+#else
 	base.param_monitor().add_observer(&o, mock.GetParam(L"BASE:A:B:C"), param_dir.external_file_string(), 10);
+#endif
 	{
 		sz4::weighted_sum<double, sz4::second_time_t> sum;
 		buff->get_weighted_sum(mock.GetParam(L"BASE:A:B:D"), 100u, 200u, PT_SEC10, sum);
@@ -223,7 +230,11 @@ void Sz4LuaParamOptimized::test2() {
 
 		std::wstringstream file_name;
 		file_name << std::setfill(L'0') << std::setw(10) << 100 << L".sz4";
+#if BOOST_FILESYSTEM_VERSION == 3
+		std::ofstream ofs((param_dir / file_name.str()).native().c_str());
+#else
 		std::ofstream ofs((param_dir / file_name.str()).external_file_string().c_str());
+#endif
 
 		short v = 10;
 		ofs.write((const char*)&v, sizeof(v));
@@ -254,7 +265,11 @@ void Sz4LuaParamOptimized::test3() {
 	boost::filesystem::wpath param_dir(base_path / L"BASE/sz4");
 	boost::filesystem::create_directories(param_dir);
 
+#if BOOST_FILESYSTEM_VERSION == 3
+	sz4::base_templ<test_types2> base(base_path.wstring(), &mock);
+#else
 	sz4::base_templ<test_types2> base(base_path.file_string(), &mock);
+#endif
 	sz4::buffer_templ<test_types2>* buff = base.buffer_for_param(mock.GetParam(L"BASE:A:B:E"));
 	sz4::weighted_sum<double, sz4::second_time_t> sum;
 	sz4::weighted_sum<double, sz4::second_time_t>::time_diff_type weight;

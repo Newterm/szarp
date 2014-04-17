@@ -229,7 +229,7 @@ public:
 				i++) {
 
 #if BOOST_FILESYSTEM_VERSION == 3
-			std::wstring file_path = i->path().string();
+			std::wstring file_path = i->path().wstring();
 #else
 			std::wstring file_path = i->path().file_string();
 #endif
