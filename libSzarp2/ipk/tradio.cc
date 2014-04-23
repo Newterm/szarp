@@ -61,8 +61,6 @@ int TRadio::parseXML(xmlTextReaderPtr reader)
 	assert(units == NULL);
 	TUnit* u = NULL;
 
-	bool isRadio = false;
-
 	XMLWrapper xw(reader);
 
 	const char* ignored_trees[] = { "rate:period", 0 };
@@ -72,7 +70,6 @@ int TRadio::parseXML(xmlTextReaderPtr reader)
 
 		if (xw.IsTag("radio")) {
 			if (xw.IsBeginTag()) {
-				isRadio = true;
 				const char *need_attr[] = { "id", 0 };
 				if (!xw.AreValidAttr(need_attr)) {
 					throw XMLWrapperException();
@@ -94,9 +91,9 @@ int TRadio::parseXML(xmlTextReaderPtr reader)
 		if (xw.IsTag("unit")) {
 			if (xw.IsBeginTag()) {
 				if (units == NULL)
-					units = u = new TUnit(this);
+					units = u = parentDevice->GetSzarpConfig()->createUnit(this);
 				else {
-					u = u->Append(new TUnit(this));
+					u = u->Append(parentDevice->GetSzarpConfig()->createUnit(this));
 				}
 				assert(u != NULL);
 				if (u->parseXML(reader))
@@ -125,7 +122,6 @@ int TRadio::parseXML(xmlTextReaderPtr reader)
 int TRadio::parseXML(xmlNodePtr node)
 {
 	unsigned char *c = NULL;
-	int i;
 	xmlNodePtr ch;
 	
 #define NOATR(p, n) \
@@ -146,12 +142,12 @@ int TRadio::parseXML(xmlNodePtr node)
 	}
 	assert(units == NULL);
 	TUnit* u = NULL;
-	for (i = 0, ch = node->children; ch; ch = ch->next)
+	for (ch = node->children; ch; ch = ch->next)
 		if (!strcmp((char *)ch->name, "unit")) {
 			if (units == NULL)
-				units = u = new TUnit(this);
+				units = u = parentDevice->GetSzarpConfig()->createUnit(this);
 			else {
-				u = u->Append(new TUnit(this));
+				u = u->Append(parentDevice->GetSzarpConfig()->createUnit(this));
 			}
 			assert(u != NULL);
 			if (u->parseXML(ch))

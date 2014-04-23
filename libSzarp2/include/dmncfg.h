@@ -58,8 +58,10 @@ public:
 
 		/**pointer to next unit on units' list*/
 		UnitInfo* m_next;
+
+		long m_sender_msg_type;
 	public:
-		UnitInfo(char id, int send_count);
+		UnitInfo(TUnit * unit);
 
 		/**@return next unit info on a list*/
 		UnitInfo* GetNext();
@@ -72,6 +74,8 @@ public:
 		
 		/**sets next object on units' list*/
 		void SetNext(UnitInfo *unit);
+
+		long GetSenderMsgType();
 
 		~UnitInfo();
 	};

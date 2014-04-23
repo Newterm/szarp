@@ -587,7 +587,7 @@ void DaemonConfig::InitUnits() {
 			unit;
 			unit = unit->GetNext()) {
 		
-		UnitInfo* ui = new UnitInfo(unit->GetId(), unit->GetSendParamsCount());
+		UnitInfo* ui = new UnitInfo(unit);
 
 		if (cu) 
 			cu->SetNext(ui);
@@ -617,8 +617,12 @@ DaemonConfig::UnitInfo* DaemonConfig::GetFirstUnitInfo() {
 	return m_units;
 }
 
-DaemonConfig::UnitInfo::UnitInfo(char id, int send_count) : m_id(id), m_send_count(send_count), m_next(NULL)
-{}
+DaemonConfig::UnitInfo::UnitInfo(TUnit * unit) :  m_next(NULL)
+{
+	m_id = unit->GetId();
+	m_send_count = unit->GetSendParamsCount();
+	m_sender_msg_type = unit->GetSenderMsgType();
+}
 
 char DaemonConfig::UnitInfo::GetId() {
 	return m_id;
@@ -635,6 +639,10 @@ DaemonConfig::UnitInfo* DaemonConfig::UnitInfo::GetNext() {
 
 void DaemonConfig::UnitInfo::SetNext(UnitInfo* next) {
 	m_next = next;
+}
+
+long DaemonConfig::UnitInfo::GetSenderMsgType() {
+	return m_sender_msg_type;
 }
 
 DaemonConfig::UnitInfo::~UnitInfo() {

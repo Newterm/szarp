@@ -193,10 +193,7 @@ void ReadCfgFileFromParamXML(TSzarpConfig * ipk)
 						if (p == NULL) {
 							sz_log(1,
 							       "Cannot find parameter to send (%s)",
-							       SC::S2A(sp->
-								       GetParamName
-								       ()).
-							       c_str());
+							       SC::S2A(sp->GetParamName()).c_str());
 							return;
 						}
 
@@ -204,15 +201,11 @@ void ReadCfgFileFromParamXML(TSzarpConfig * ipk)
 						if (sp->GetProbeType() > SEN_MAX) {
 							sz_log(1,
 							       "Bad avg kind= %d of file setting NO_PARAM",
-							       sp->
-							       GetProbeType());
-							SterInfo[k].srcaddr =
-							    NO_PARAM;
+							       sp->GetProbeType());
+							SterInfo[k].srcaddr = NO_PARAM;
 						}
 					       	else {
-							SterInfo[k].avgkind =
-							    (unsigned char)sp->
-							    GetProbeType();
+							SterInfo[k].avgkind = (unsigned char)sp->GetProbeType();
 						}
 						sz_log(10, "Adding send param num %d - sending '%s'",
 								k,
@@ -227,10 +220,7 @@ void ReadCfgFileFromParamXML(TSzarpConfig * ipk)
 								SterInfo[k].msg.cont.value);
 					}
 
-					std::wstringstream ss;
-					ss << u->GetId();
-
-					SterInfo[k].msg.type = (long)(d->GetNum()) * 256L + (long)(SC::S2A(ss.str()).c_str()[0]);
+					SterInfo[k].msg.type = u->GetSenderMsgType();
 					SterInfo[k].msg.cont.param = (unsigned short)n;
 					SterInfo[k].msg.cont.retry = (unsigned char)sp->GetRepeatRate();
 					SterInfo[k].msg.cont.rtype = (long)MY_ID * 256L * 256L + (long)k;

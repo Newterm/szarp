@@ -201,13 +201,11 @@ SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _ti
 	/* create empty configuration */
 	read_freq = send_freq = 10;
 	title = _title;
-	AddDevice(new TDevice(this, L"/bin/true", L"fake"));
-	GetFirstDevice()->AddRadio(new TRadio(devices));
-	GetFirstDevice()->GetFirstRadio()->AddUnit(new TUnit(
-				GetFirstDevice()->GetFirstRadio(), 'x'));
-	TParam* p = new TParam(GetFirstDevice()->
-			GetFirstRadio()->GetFirstUnit());
-	GetFirstDevice()->GetFirstRadio()->GetFirstUnit()->AddParam(p);
+	AddDevice(createDevice(L"/bin/true", L"fake"));
+	TRadio * pr = GetFirstDevice()->AddRadio(createRadio(devices));
+	TUnit * pu = pr->AddUnit(createUnit(pr, 'x'));
+	TParam* p = new TParam(pu);
+	pu->AddParam(p);
 	
 	p->SetFormula(L"fake");
 	p->Configure(L"fake:fake:fake", L"fake", L"fake"
