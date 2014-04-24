@@ -16,7 +16,7 @@ AM_CPPFLAGS = @XML_CFLAGS@ @XSLT_CFLAGS@ @CURL_CFLAGS@ @LUA_CFLAGS@ \
 lib_LTLIBRARIES = libpyszbase.la
 
 libpyszbase_la_SOURCES = pyszbase.cc
-libpyszbase_la_LDFLAGS = -version-info 0:0:0 $(BOOST_PYTHON_LIB) \
+libpyszbase_la_LDFLAGS = -version-info 0:0:0 -l$(BOOST_PYTHON_LIB) \
 			$(PYTHON_LDFLAGS) $(PTHREAD_CFLAGS) \
 			$(XML_LIBS) $(LUA_LIBS) $(BOOST_LDFLAGS) \
 			$(BOOST_SYSTEM_LIB) $(BOOST_FILESYSTEM_LIB) \
