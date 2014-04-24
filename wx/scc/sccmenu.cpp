@@ -127,7 +127,7 @@ void SCCMenu::AddConfig(wxString prefix)
 	free(use_ekstraktor3);
 
 	if (ekstraktor3)
-		AddEkstraktor3();
+		AddEkstraktor3(prefix);
 
 	SzarpConfigs* sconfs = SzarpConfigs::GetInstance();
 	TSzarpConfig* sc = sconfs->GetConfig(prefix);
@@ -177,14 +177,14 @@ void SCCMenu::AddRaporter3(wxString prefix) {
 
 }
 
-void SCCMenu::AddEkstraktor3() {
+void SCCMenu::AddEkstraktor3(const wxString &prefix) {
 	wxFileName filename = wxFileName(wxGetApp().GetSzarpDir(), wxEmptyString);
 	filename.AppendDir(_T("bin"));
 	filename.SetName(_T("ekstraktor3"));
 #ifdef __WXMSW__
 	filename.SetExt(_T("exe"));
 #endif
-	wxString s = filename.GetFullPath();
+	wxString s = filename.GetFullPath() + _T(" -base:") + prefix;
 
 	wxImage img;
 	img.LoadFile(wxGetApp().GetSzarpDir() + EKS_ICON_PATH);

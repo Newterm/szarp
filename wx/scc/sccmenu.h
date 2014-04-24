@@ -257,7 +257,7 @@ private:
 	void AddRaporter3(wxString prefix);
 	/**
 	 * Adds ekstraktor3 item to the menu.*/
-	void AddEkstraktor3();
+	void AddEkstraktor3(const wxString &prefix);
 
 	int id;			/**< Uniq menu item ID */
 	wxString name;		/**< Menu item name (title) */
