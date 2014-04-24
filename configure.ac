@@ -7,6 +7,8 @@ dnl
 AC_PREREQ(2.54)
 AC_INIT(szarp, 3.1, pawel@praterm.com.pl)
 
+AC_CONFIG_MACRO_DIR([m4])
+
 # Cross compilation - this must be early in configure.in
 AC_CANONICAL_TARGET
 AC_CANONICAL_BUILD
@@ -231,7 +233,7 @@ AM_CONDITIONAL(MINGW32_OPT, test "x$with_mingw32" = "xyes")
 
 # posix thread switches
 if test "$with_mingw32" != "yes" ; then
-	ACX_PTHREAD
+	AX_PTHREAD
 fi
 
 # Check for Python
@@ -765,6 +767,11 @@ fi
 
 has_boost_base="no"
 ac_boost_path="${lib_prefix}"
+# On squeeze AX_BOOST_BASE do not execute ACTION-IF-FOUND :(
+AC_LANG_PUSH([C++])
+AC_CHECK_HEADERS([boost/foreach.hpp], [has_boost_base="yes"], [has_boost_base="no"])
+AC_LANG_POP([C++])
+
 AX_BOOST_BASE("1.42.0", [has_boost_base="yes"], [has_boost_base="no"])
 if test "x$has_boost_base" = "xyes" ; then
 	AX_BOOST_FILESYSTEM
