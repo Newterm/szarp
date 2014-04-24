@@ -4,7 +4,7 @@
 echo "Running autoheader"
 autoheader
 echo "Running aclocal"
-aclocal -I /usr/share/aclocal
+aclocal -I /usr/share/aclocal -I m4
 echo "Running libtoolize"
 libtoolize
 echo "Running automake"
