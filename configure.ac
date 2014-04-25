@@ -72,6 +72,8 @@ AC_PROG_CXX([g++3 g++-3 g++])
 # C++ preprocesor (sets CXXCPP)
 AC_PROG_CXXCPP
 
+AX_CXX_COMPILE_STDCXX_11([],[mandatory])
+
 #libtool
 AC_PROG_LIBTOOL
 #enable exe extensions in conditionaly built programs on pre 2.50 autoconf's
