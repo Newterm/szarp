@@ -183,6 +183,7 @@ libSzarp2_la_SOURCES = \
 			$(SZ4_DIR)/lua_interpreter.cpp \
 			$(SZ4_DIR)/sz4_time.cpp \
 			$(SZ4_DIR)/block_cache.cpp \
+			$(SZ4_DIR)/filelock.cpp \
 			\
 			protobuf/protobuf/paramsvalues.pb.cc \
 			protobuf/protobuf/paramsvalues.pb.h
