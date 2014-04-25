@@ -68,9 +68,6 @@ AC_PROG_CPP
 
 # C++ compiler (sets CXX)
 AC_PROG_CXX([g++3 g++-3 g++])
-# check g++ version
-AX_GXX_VERSION
-AM_CONDITIONAL([GXX_VERSION_47], [test x$GXX_VERSION = x4.7])
 
 # C++ preprocesor (sets CXXCPP)
 AC_PROG_CXXCPP
@@ -1458,4 +1455,3 @@ fi
 echo
 echo "Type 'make' to build SZARP"
 echo
-echo "GXX version:	$GXX_VERSION"
