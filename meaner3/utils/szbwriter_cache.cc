@@ -28,7 +28,7 @@
 #include "szbase/szbbase.h"
 
 SzProbeCache::SzProbeCache( int max_probes )
-	: last_key(NULL) , last_param(NULL,NULL)
+	: last_key(NULL) , last_param((TMMapParam*)NULL,(Values*)NULL)
 {
 	last_param.second = new Values( max_probes );
 }

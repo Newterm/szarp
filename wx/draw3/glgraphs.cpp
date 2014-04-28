@@ -419,8 +419,8 @@ void GLGraphs::DrawGraph(Draw *d) {
 	float alpha_val = m_graphs_states.at(d->GetDrawNo()).fade_level;
 	GLfloat col[12] = { 
 		float(wc.Red()) / 255, float(wc.Green()) / 255, float(wc.Blue()) / 255, 1 * alpha_val,
-		float(wc.Red()) / 255 / 2 , float(wc.Green()) / 255 / 2, float(wc.Blue()) / 255, 0.5 * alpha_val,
-		float(wc.Red()) / 255 / 4 , float(wc.Green()) / 255 / 4, float(wc.Blue()) / 255 / 4, 0.25 * alpha_val
+		float(wc.Red()) / 255 / 2 , float(wc.Green()) / 255 / 2, float(wc.Blue()) / 255, 0.5f * alpha_val,
+		float(wc.Red()) / 255 / 4 , float(wc.Green()) / 255 / 4, float(wc.Blue()) / 255 / 4, 0.25f * alpha_val
 	};
 	GLfloat alternate_col[12] = { 1., 1., 1., 1,  0.5, 0.5 , 0.5, 0.5, 0.25, 0.25, 0.25};
 
