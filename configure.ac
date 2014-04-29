@@ -72,8 +72,6 @@ AC_PROG_CXX([g++3 g++-3 g++])
 # C++ preprocesor (sets CXXCPP)
 AC_PROG_CXXCPP
 
-AX_CXX_COMPILE_STDCXX_11([],[mandatory])
-
 #libtool
 AC_PROG_LIBTOOL
 #enable exe extensions in conditionaly built programs on pre 2.50 autoconf's
@@ -229,6 +227,10 @@ if test "$host_os" != "linux-gnu" -a "$with_mingw32" != "yes" ; then
 fi
 
 AM_CONDITIONAL(MINGW32_OPT, test "x$with_mingw32" = "xyes")
+
+if test "$with_mingw32" != "yes" ; then
+	AX_CXX_COMPILE_STDCXX_11([],[mandatory])
+fi
 
 # posix thread switches
 if test "$with_mingw32" != "yes" ; then
@@ -775,14 +777,15 @@ AX_BOOST_BASE("1.42.0", [has_boost_base="yes"], [has_boost_base="no"])
 if test "x$has_boost_base" = "xyes" ; then
 	AX_BOOST_FILESYSTEM
 	AX_BOOST_DATE_TIME
-	AX_BOOST_REGEX
 	AX_BOOST_THREAD
 	AX_BOOST_SYSTEM
 	AX_BOOST_PROGRAM_OPTIONS
 
-	AX_PYTHON
-	AX_BOOST_PYTHON
-
+	if test "$with_mingw32" != "yes" ; then
+		AX_BOOST_REGEX
+		AX_PYTHON
+		AX_BOOST_PYTHON
+	fi
 fi
 has_boost_filesystem=${link_filesystem:-no}
 has_boost_datetime=${link_date_time:-no}
