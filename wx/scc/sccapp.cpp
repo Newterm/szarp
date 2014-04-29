@@ -33,10 +33,6 @@
 #include <wx/cmdline.h>
 #include <wx/wxprec.h>
 #include <stdexcept>
-#include <langinfo.h>
-#include <locale.h>
-#include <iconv.h>
-#include <errno.h>
 #include <string.h>
 
 #ifndef MINGW32
