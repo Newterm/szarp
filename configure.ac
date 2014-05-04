@@ -782,6 +782,8 @@ if test "x$has_boost_base" = "xyes" ; then
 	AX_BOOST_PROGRAM_OPTIONS
 
 	if test "$with_mingw32" != "yes" ; then
+		AX_BOOST_ASIO
+		AX_BOOST_SIGNALS
 		AX_BOOST_REGEX
 		AX_PYTHON
 		AX_BOOST_PYTHON
@@ -1132,6 +1134,11 @@ if test x$no_python != xyes -a x$with_mingw32 != xyes; then
 	SUBDIRS="$SUBDIRS pyipk"
 fi
 
+# iks system directory
+if test x$with_mingw32 != xyes; then
+	SUBDIRS="$SUBDIRS iks"
+fi
+
 AC_SUBST(SUBDIRS)
 
 #############################################################################
@@ -1143,6 +1150,8 @@ AC_OUTPUT( \
 	Makefile \
 	extern/Makefile \
 	extern/wxscintilla/Makefile \
+	iks/Makefile \
+	iks/server/Makefile \
 	isl/Makefile \
 	isl/server/Makefile \
 	isl/paramd/Makefile \
