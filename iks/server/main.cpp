@@ -2,6 +2,11 @@
 #include <string>
 #include <functional>
 
+#if GCC_VERSION < 40600
+#include <cstdlib>
+#include <ctime>
+#endif
+
 #include <boost/program_options.hpp>
 
 #include "net/tcp_server.h"
@@ -19,6 +24,10 @@ namespace p = std::placeholders;
 
 int main( int argc , char** argv )
 {
+#if GCC_VERSION < 40600
+	srand(time(NULL));
+#endif
+
 	po::options_description desc("Options"); 
 
 	desc.add_options() 

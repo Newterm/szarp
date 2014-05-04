@@ -23,6 +23,7 @@ bin_PROGRAMS = iks-server
 iks_server_SOURCES = \
 	locations/welcome/welcome.cpp \
 	locations/location.cpp \
+	locations/protocol_location.cpp \
 	locations/manager.cpp \
 	net/tcp_client.cpp \
 	net/tcp_server.cpp \
