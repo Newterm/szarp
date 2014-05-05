@@ -6,6 +6,7 @@
 namespace ba = boost::algorithm;
 namespace bp = boost::property_tree;
 
+#if BOOST_VERSION > 104400
 namespace boost { namespace property_tree { namespace json_parser {
 template<>
 std::basic_string<char> create_escapes(const std::basic_string<char> &s)
@@ -49,6 +50,7 @@ std::basic_string<char> create_escapes(const std::basic_string<char> &s)
 	return result;
 }
 } } }
+#endif
 
 void fold_xmlattr( bp::ptree& ptree )
 {
@@ -61,7 +63,7 @@ void fold_xmlattr( bp::ptree& ptree )
 	}
 
 	for( auto itr = ptree.begin() ; itr != ptree.end() ; ++itr )
-		if( itr->first != "<xmlattr>" && itr->first.front() != '@' )
+		if( itr->first != "<xmlattr>" && itr->first[0] != '@' )
 			fold_xmlattr( itr->second );
 }
 
@@ -80,7 +82,7 @@ void unfold_xmlattr( bp::ptree& ptree )
 			unfold_xmlattr( itr->second );
 }
 
-std::string ptree_to_json( bp::ptree& ptree , bool pretty )
+std::string ptree_to_json( const bp::ptree& ptree , bool pretty )
 {
 	std::stringstream ss;
 
@@ -89,19 +91,24 @@ std::string ptree_to_json( bp::ptree& ptree , bool pretty )
 	auto s = ss.str();
 
 	if( !pretty ) /** terminating ending \n sign */
-		s.pop_back();
+		s.erase(s.size()-1);
 	
 	return s;
 }
 
 void ptree_to_json( std::ostream& stream ,
-                    bp::ptree& ptree ,
+                    const bp::ptree& ptree ,
                    	bool pretty )
 {
+#if BOOST_VERSION > 104400
 	bp::json_parser::write_json( stream , ptree , pretty );
+#else
+	(void)pretty;
+	bp::json_parser::write_json( stream , ptree );
+#endif
 }
 
-std::string ptree_to_xml( bp::ptree& ptree , bool pretty )
+std::string ptree_to_xml( const bp::ptree& ptree , bool pretty )
 {
 	std::stringstream ss;
 
@@ -110,13 +117,13 @@ std::string ptree_to_xml( bp::ptree& ptree , bool pretty )
 	auto s = ss.str();
 
 	if( !pretty ) /** terminating ending \n sign */
-		s.pop_back();
+		s.erase(s.size()-1);
 	
 	return s;
 }
 
 void ptree_to_xml( std::ostream& stream ,
-                   bp::ptree& ptree ,
+                   const bp::ptree& ptree ,
                    bool pretty )
 {
 	auto settings = pretty ?
@@ -130,10 +137,10 @@ void ptree_foreach(
 	boost::property_tree::ptree& ptree ,
 	std::function<void (bp::ptree::value_type&)> func )
 {
-	ptree_foreach_if( ptree , [func] ( bp::ptree::value_type& arg ) -> bool {
-		func( arg );
-		return true;
-	} );
+	for( auto ic=ptree.begin() ; ic!=ptree.end() ; ++ic ) {
+		func( *ic );
+		ptree_foreach( ic->second , func );
+	}
 }
 
 void ptree_foreach_parent(
@@ -141,19 +148,19 @@ void ptree_foreach_parent(
 	std::function<void (bp::ptree::value_type& ,
 	                    bp::ptree& )> func )
 {
-	ptree_foreach_if_parent( ptree , [func] ( bp::ptree::value_type& arg , bp::ptree& parent ) -> bool {
-		func( arg , parent );
-		return true;
-	} );
+	for( auto ic=ptree.begin() ; ic!=ptree.end() ; ++ic ) {
+		func( *ic , ptree );
+		ptree_foreach_parent( ic->second , func );
+	}
 }
 
 void ptree_foreach_if(
 	boost::property_tree::ptree& ptree ,
 	std::function<bool (boost::property_tree::ptree::value_type&)> func )
 {
-	for( auto& c : ptree )
-		if( func( c ) )
-			ptree_foreach_if( c.second , func );
+	for( auto ic=ptree.begin() ; ic!=ptree.end() ; ++ic )
+		if( func( *ic ) )
+			ptree_foreach_if( ic->second , func );
 
 }
 
@@ -162,8 +169,8 @@ void ptree_foreach_if_parent(
 	std::function<bool (boost::property_tree::ptree::value_type& ,
 	                    boost::property_tree::ptree& )> func )
 {
-	for( auto& c : ptree )
-		if( func( c , ptree ) )
-			ptree_foreach_if_parent( c.second , func );
+	for( auto ic=ptree.begin() ; ic!=ptree.end() ; ++ic )
+		if( func( *ic , ptree ) )
+			ptree_foreach_if_parent( ic->second , func );
 }
 

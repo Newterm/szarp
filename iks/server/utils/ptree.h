@@ -4,6 +4,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
+#if BOOST_VERSION > 104400
 /**
  * This is fix for boost ptree in current version for UTF-8 characters.
  * Comes from:
@@ -15,20 +16,21 @@ namespace boost { namespace property_tree { namespace json_parser
     template<>
     std::basic_string<char> create_escapes(const std::basic_string<char> &s);
 } } }
+#endif
 
 void fold_xmlattr( boost::property_tree::ptree& ptree );
 void unfold_xmlattr( boost::property_tree::ptree& ptree );
 
-std::string ptree_to_json( boost::property_tree::ptree& ptree ,
+std::string ptree_to_json( const boost::property_tree::ptree& ptree ,
                           bool pretty = false );
 void ptree_to_json( std::ostream& stream ,
-                    boost::property_tree::ptree& ptree ,
+                    const boost::property_tree::ptree& ptree ,
                     bool pretty = false );
 
 std::string ptree_to_xml( boost::property_tree::ptree& ptree ,
                           bool pretty = false );
 void ptree_to_xml( std::ostream& stream ,
-                   boost::property_tree::ptree& ptree ,
+                   const boost::property_tree::ptree& ptree ,
                    bool pretty = false );
 
 void ptree_foreach(

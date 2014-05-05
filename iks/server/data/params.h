@@ -17,7 +17,7 @@ class Params {
 	typedef std::unordered_map<std::string,std::shared_ptr<Param>> ParamsMap;
 
 public:
-	using iterator = key_iterator<ParamsMap>;
+	typedef key_iterator<ParamsMap> iterator;
 
 	void from_params_file( const std::string& path ) throw(xml_parse_error);
 
@@ -42,6 +42,8 @@ public:
 protected:
 	void from_vars_xml( const boost::property_tree::ptree& vars_doc ) throw(xml_parse_error);
 	void from_params_xml( boost::property_tree::ptree& params_doc ) throw(xml_parse_error);
+
+	void create_param( boost::property_tree::ptree::value_type& p , const std::string& type );
 
 private:
 	ParamsMap params;

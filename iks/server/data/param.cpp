@@ -7,7 +7,6 @@
 #include "utils/ptree.h"
 
 #include <boost/lexical_cast.hpp>
-#include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
 namespace bp = boost::property_tree;
@@ -34,16 +33,17 @@ void Param::from_params_xml( const bp::ptree& ptree ) throw(xml_parse_error)
 	double max = std::numeric_limits<double>::quiet_NaN();
 	using std::isnan;
 
-	if( param_desc.count("draw") )
-		for( auto& c : param_desc.get_child("draw") )
+	if( param_desc.count("draw") ) {
+		auto& draw_desc = param_desc.get_child("draw");
+		for( auto ic=draw_desc.begin() ; ic!=draw_desc.end() ; ++ic )
 			try {
-				if( c.first == "@min" ) {
-					auto m = boost::lexical_cast<double>( c.second.data() );
+				if( ic->first == "@min" ) {
+					auto m = boost::lexical_cast<double>( ic->second.data() );
 					if( isnan(min) || m < min ) min = m;
 				}
 
-				if( c.first == "@max" ) {
-					auto m = boost::lexical_cast<double>( c.second.data() );
+				if( ic->first == "@max" ) {
+					auto m = boost::lexical_cast<double>( ic->second.data() );
 					if( isnan(max) || m > max ) max = m;
 				}
 
@@ -51,6 +51,7 @@ void Param::from_params_xml( const bp::ptree& ptree ) throw(xml_parse_error)
 			} catch( const boost::bad_lexical_cast& ) {
 				throw xml_parse_error("Invalid min or max value at param_desc " + name);
 			}
+	}
 
 	param_desc.erase("draw");
 	param_desc.erase("raport");
@@ -63,7 +64,7 @@ void Param::from_params_xml( const bp::ptree& ptree ) throw(xml_parse_error)
 
 void Param::to_json( std::ostream& stream , bool pretty ) const
 {
-	bp::json_parser::write_json( stream , param_desc , pretty );
+	ptree_to_json( stream , param_desc , pretty );
 }
 
 std::string Param::to_json( bool pretty ) const
@@ -79,11 +80,7 @@ void Param::to_xml( std::ostream& stream , bool pretty ) const
 	pt.put_child( "var" , param_desc );
 	unfold_xmlattr( pt );
 
-	auto settings = bp::xml_writer_make_settings(' ');
-	if( pretty ) 
-		settings = bp::xml_writer_make_settings(' ', 4);
-
-	bp::xml_parser::write_xml( stream , pt , settings );
+	ptree_to_xml( stream , pt , pretty );
 }
 
 std::string Param::to_xml( bool pretty ) const

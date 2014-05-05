@@ -56,30 +56,38 @@ void Sets::from_params_file( const std::string& path ) throw(xml_parse_error)
 	from_params_xml( sets_doc );
 }
 
+void create_set( bp::ptree::value_type& d , bp::ptree& parent , std::unordered_map<std::string,bp::ptree>& sets_map )
+{
+	if( d.first == "draw" ) {
+		auto name = d.second.get<std::string>("@title");
+		bp::ptree child;
+		child.put("@name",parent.get<std::string>("@name"));
+		child.put("@min",d.second.get<std::string>("@min"));
+		child.put("@max",d.second.get<std::string>("@max"));
+		auto color = d.second.get_optional<std::string>("@color");
+		if( color ) child.put("@graph_color",*color);
+		sets_map[name].push_back( std::make_pair( "" , child ) );
+	}
+}
+
 void Sets::from_params_xml( boost::property_tree::ptree& ptree  ) throw(xml_parse_error)
 {
 	std::unordered_map<std::string,bp::ptree> sets_map;
 
 	fold_xmlattr( ptree );
 
-	ptree_foreach_parent( ptree , [&] ( bp::ptree::value_type& d , bp::ptree& parent ) {
-		if( d.first == "draw" ) {
-			auto name = d.second.get<std::string>("@title");
-			bp::ptree child;
-			child.put("@name",parent.get<std::string>("@name"));
-			child.put("@min",d.second.get<std::string>("@min"));
-			child.put("@max",d.second.get<std::string>("@max"));
-			auto color = d.second.get_optional<std::string>("@color");
-			if( color ) child.put("@graph_color",*color);
-			sets_map[name].push_back( std::make_pair( "" , child ) );
-		}
-	} );
+	ptree_foreach_parent( ptree ,
+		std::bind(
+			create_set ,
+			std::placeholders::_1 ,
+			std::placeholders::_2 ,
+			std::ref(sets_map) ) );
 
-	for( auto& c : sets_map )
+	for( auto ic=sets_map.begin() ; ic!=sets_map.end() ; ++ic )
 	{
 		bp::ptree ptree;
-		ptree.put("@name",c.first);
-		ptree.put_child("params",c.second);
+		ptree.put("@name",ic->first);
+		ptree.put_child("params",ic->second);
 
 		Set s;
 		s.from_json( ptree );
@@ -98,8 +106,8 @@ bp::ptree Sets::get_xml_ptree() const
 	bp::ptree pt;
 
 	/* TODO: Save only choosen sets (e.g. dont save params.xml sets) (05/05/2014 12:23, jkotur) */
-	for( auto& s : sets )
-		pt.add_child("sets.set",s.second->get_xml_ptree().get_child("set"));
+	for( auto is=sets.begin() ; is!=sets.end() ; ++is )
+		pt.add_child("sets.set",is->second->get_xml_ptree().get_child("set"));
 
 	return pt;
 }

@@ -37,22 +37,22 @@ void Set::from_xml( const bp::ptree& ptree )
 	convert_colour( set_desc , "@text_color" );
 
 	params.clear();
-	for( auto& c : set_desc )
-		if( c.first == "param" ) {
-			auto name = c.second.get<std::string>("@name");
+	for( auto ic=set_desc.begin() ; ic!=set_desc.end() ; ++ic )
+		if( ic->first == "param" ) {
+			auto name = ic->second.get<std::string>("@name");
 
-			auto colour = c.second.get_optional<std::string>("@color");
+			auto colour = ic->second.get_optional<std::string>("@color");
 			if( colour ) {
-				c.second.put("@background_color",*colour);
-				c.second.erase("@color");
+				ic->second.put("@background_color",*colour);
+				ic->second.erase("@color");
 			}
 
-			convert_colour( c.second , "@background_color" );
-			convert_colour( c.second , "@graph_color" );
+			convert_colour( ic->second , "@background_color" );
+			convert_colour( ic->second , "@graph_color" );
 
 			params.insert( name );
 
-			params_desc.push_back( std::make_pair( "" , c.second ) );
+			params_desc.push_back( std::make_pair( "" , ic->second ) );
 		}
 
 	set_desc.erase( "param" );
@@ -72,7 +72,7 @@ void Set::convert_colour( bp::ptree& ptree , const std::string& name )
 std::string Set::convert_colour( const std::string& in )
 {
 	/** no need to convert */
-	if( in.front() == '#' )
+	if( in[0] == '#' )
 		return in;
 
 	unsigned int uint;
@@ -94,15 +94,16 @@ void Set::from_json( const bp::ptree& ptree )
 
 	params.clear();
 	name = set_desc.get<std::string>("@name");
-	for( auto& c : set_desc.get_child("params") )
-		params.insert( c.second.get<std::string>("@name") );
+	auto& pdesc = set_desc.get_child("params");
+	for( auto ic=pdesc.begin() ; ic!=pdesc.end() ; ++ic )
+		params.insert( ic->second.get<std::string>("@name") );
 
 	update_hash();
 }
 
 void Set::to_json( std::ostream& stream , bool pretty ) const
 {
-	bp::json_parser::write_json( stream , set_desc , pretty );
+	ptree_to_json( stream , set_desc , pretty );
 }
 
 std::string Set::to_json( bool pretty ) const
@@ -110,7 +111,7 @@ std::string Set::to_json( bool pretty ) const
 	std::stringstream ss;
 	to_json( ss , pretty );
 	auto str = ss.str();
-	str.pop_back(); // remove terminating \n sign
+	str.erase(str.size()-1); // remove terminating \n sign
 	return str;
 }
 
@@ -119,8 +120,9 @@ boost::property_tree::ptree Set::get_xml_ptree() const
 	bp::ptree pt;
 	auto& pset = pt.put_child( "set" , set_desc );
 
-	for( auto& c : pset.get_child("params") )
-		pset.add_child("param",c.second);
+	auto& pdesc = pset.get_child("params");
+	for( auto ic=pdesc.begin() ; ic!=pdesc.end() ; ++ic )
+		pset.add_child("param",ic->second);
 	pset.erase("params");
 	pset.erase("@hash");
 
@@ -131,11 +133,7 @@ boost::property_tree::ptree Set::get_xml_ptree() const
 
 void Set::to_xml( std::ostream& stream , bool pretty ) const
 {
-	auto settings = bp::xml_writer_make_settings(' ');
-	if( pretty ) 
-		settings = bp::xml_writer_make_settings(' ', 4);
-
-	bp::xml_parser::write_xml( stream , get_xml_ptree() , settings );
+	ptree_to_xml( stream , get_xml_ptree() , pretty );
 }
 
 std::string Set::to_xml( bool pretty ) const
@@ -151,8 +149,8 @@ void Set::update_hash()
 
 	hash = 0;
 	/** Because xor is associative there is no need to care about order */
-	for( auto& name : params )
-		hash ^= hash_fn(name);
+	for( auto in=params.begin() ; in!=params.end() ; ++in )
+		hash ^= hash_fn(*in);
 
 	set_desc.put( "@hash" , hash );
 }

@@ -17,7 +17,7 @@ class Sets {
 	typedef std::unordered_map<std::string,std::shared_ptr<Set>> SetsMap;
 
 public:
-	using iterator = key_iterator<SetsMap>;
+	typedef key_iterator<SetsMap> iterator;
 
 	void from_params_file( const std::string& path ) throw(xml_parse_error);
 
