@@ -42,7 +42,7 @@
 
 #include "liblog_impl_asyslog.h"
 
-#define SZARP_CFG "/etc/"PACKAGE_NAME"/"PACKAGE_NAME".cfg"
+#define SZARP_CFG "/etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg"
 
 DaemonConfig::DaemonConfig(const char *name)
 {
@@ -320,7 +320,7 @@ settings in config file."},
                                                                                 
 	asprintf(&doc, "%s\v\
 Config file:\n\
-Configuration options are read from file "SZARP_CFG"\n\
+Configuration options are read from file " SZARP_CFG "\n\
 from section '%s' or from global section.\n\
 These options are mandatory if configuration is loaded:\n\
         IPK             full path to configuration file\n\

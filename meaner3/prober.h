@@ -69,7 +69,7 @@
 #define VALGRIND_IN_USE 1
 
 /** Path to main config file. */
-#define SZARP_CFG "/etc/"PACKAGE_NAME"/"PACKAGE_NAME".cfg"
+#define SZARP_CFG "/etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg"
 
 /** Name of section in main config file. */
 #define SZARP_CFG_SECTION "prober"
