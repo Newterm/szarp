@@ -22,6 +22,7 @@ bin_PROGRAMS = iks-server
 
 iks_server_SOURCES = \
 	locations/welcome/welcome.cpp \
+	locations/szbase/szbase.cpp \
 	locations/location.cpp \
 	locations/protocol_location.cpp \
 	locations/manager.cpp \

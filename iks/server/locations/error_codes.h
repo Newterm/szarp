@@ -14,7 +14,9 @@ enum class ErrorCodes : error_code_t {
 	cannot_set_value = 104,
 	unknown_set      = 200,
 	invalid_set_hash = 202,
+	set_read_only    = 204,
 	unknown_option   = 300,
+	invalid_timestamp= 400,
 	internal_error   = 500,
 	protocol_not_set = 502,
 };
