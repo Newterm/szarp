@@ -25,6 +25,13 @@ iks_server_SOURCES = \
 	locations/location.cpp \
 	locations/protocol_location.cpp \
 	locations/manager.cpp \
+	utils/ptree.cpp \
+	data/config.cpp \
+	data/param.cpp \
+	data/params.cpp \
+	data/set.cpp \
+	data/sets.cpp \
+	data/vars.cpp \
 	net/tcp_client.cpp \
 	net/tcp_server.cpp \
 	main.cpp \
