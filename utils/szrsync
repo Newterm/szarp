@@ -40,6 +40,7 @@ DELETE="--delete --force"
 USE_SSH=
 BWLIMIT=0
 SSH_PORT=
+SYNC_ACTIVITY="--exclude=szbase/Activity"
 
 # use SZRSYNC_SERVER variable or substitute 'praterm' if missing
 SERVER=${SZRSYNC_SERVER:-praterm}
@@ -73,13 +74,14 @@ function usage {
 	echo -e "\t-b speed limit transfer speed to speed kbps"
 	echo -e "\t-n do not delete files"
 	echo -e "\t-s use ssh for getting szbase_stamp date (default curl if -a not given)"
+	echo -e "\t-A synchronize Activity parameters"
 	echo -e "\t-h print this usage info"
 	echo
 }
 
 
 # parse options
-OPTS=`getopt -q -o a:u:H:b:p:hns -n $ME -- "$@"`
+OPTS=`getopt -q -o a:u:H:b:p:hnsA -n $ME -- "$@"`
 
 if [ $? != 0 ]; then
 	usage
@@ -122,6 +124,10 @@ while true; do
 	    usage
 	    exit
 	    ;;
+	-A)
+		SYNC_ACTIVITY="--include=szbase/Activity/***"
+		shift
+		;;
 	--)
 	    shift
 	    break
@@ -237,17 +243,18 @@ function get_include () {
 
 	EXC="--exclude=*.szb --exclude=szbase_stamp"
 	INC="$OUT"
+
 	return 0;
 }
 
 function do_rsync () {
-	get_include $i
+	get_include $1
 
 	[ $? -eq 0 ] || return
 
 	export RSYNC_RSH="ssh -o StrictHostKeyChecking=no $SSH_PORT"
-	echo rsync -az $SZRSYNC_VERBOSE --bwlimit=$BWLIMIT --exclude='.*' --exclude='nohup.out' $DELETE $INC $EXC $ADDRESS:$i ${i%\/[^\/]*}
-	rsync -az $SZRSYNC_VERBOSE --bwlimit=$BWLIMIT --exclude='.*' --exclude='nohup.out' $DELETE $INC $EXC $ADDRESS:$i ${i%\/[^\/]*}
+	echo rsync -az $SZRSYNC_VERBOSE --bwlimit=$BWLIMIT --exclude='.*' --exclude='nohup.out' $SYNC_ACTIVITY $DELETE $INC $EXC $ADDRESS:$1 ${1%\/[^\/]*}
+	rsync -az $SZRSYNC_VERBOSE --bwlimit=$BWLIMIT --exclude='.*' --exclude='nohup.out' $SYNC_ACTIVITY $DELETE $INC $EXC $ADDRESS:$1 ${1%\/[^\/]*}
 	LAST=$?
 	if [ $LAST -ne 0 -a $CODE -eq 0 ] ; then
 		CODE=$LAST

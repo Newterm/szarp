@@ -125,8 +125,7 @@ void IPCHandler::GoSender()
 	for (DaemonConfig::UnitInfo* unit = m_cfg->GetFirstUnitInfo();
 		unit;
 		unit = unit->GetNext()) {
-		long type = (long) (m_cfg->GetLineNumber() - 1) * 256L +
-			unit->GetId();
+		long type = unit->GetSenderMsgType();
 
 		while (msgrcv(m_msgset_d, &msg, sizeof(msg.cont), type, IPC_NOWAIT)
 		       == sizeof(msg.cont)) {

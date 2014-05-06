@@ -35,11 +35,36 @@
 #include"show.h"
 #include"ruler.h"
 
+int MsgSetDes = -1;
+
+int MsgRplyDes = -1;
+
+int MsgRulerDes = -1;
+
+static char parcookpat[MAX_PATH];
+
+void msgRulerInit()
+{
+    char *c;
+
+    libpar_getkey("", "parcook_path", &c);
+    if (!c) ErrMessage(7, "parcook_path");
+    strncpy(parcookpat, c, sizeof(parcookpat));    
+        
+    if ((MsgSetDes = msgget(ftok(parcookpat, MSG_SET), 00666)) < 0)
+	ErrMessage(6, "parcook set");
+    if ((MsgRplyDes = msgget(ftok(parcookpat, MSG_RPLY), 00666)) < 0)
+	ErrMessage(6, "parcook rply");
+    if ((MsgRulerDes = msgget(ftok(parcookpat, MSG_RULER), IPC_CREAT | 00666)) < 0)
+	ErrMessage(6, "ruler");
+}
+
 #define min(a,b) ((float)(a)<(float)(b)?(float)(a):(float)(b))
 
 #define MY_MSG (getpid()%0x8000L)	/* identyfikator ¼ród³a komunikatów */
 
 unsigned short Diags=0;			/* poziom diagnostyczny */
+
 
 short Tzew[288];			/* bufory parametrów wej¶ciowych */
 short Twy[144];

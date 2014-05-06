@@ -95,7 +95,7 @@ inside:
 		if (!strcmp((char *)ch->name, "radio"))
 			i++;
 	if (i <= 0) {
-		radios = new TRadio(this);
+		radios = parentSzarpConfig->createRadio(this);
 		assert (radios != NULL);
 		return radios->parseXML(node);
 	}
@@ -110,9 +110,9 @@ device with radio modems (line %ld)",
 	for (i = 0, ch = node->children; ch; ch = ch->next)
 		if (!strcmp((char *)ch->name, "radio")) {
 			if (radios == NULL) {
-				r = radios = new TRadio(this);
+				r = radios = parentSzarpConfig->createRadio(this);
 			} else {
-				r = r->Append(new TRadio(this));
+				r = r->Append(parentSzarpConfig->createRadio(this));
 			}
 			assert(r != NULL);
 			if (r->parseXML(ch))
@@ -170,9 +170,9 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 		if (xw.IsTag("radio")) {
 			if (xw.IsBeginTag()) {
 				if (radios == NULL) {
-					r = radios = new TRadio(this);
+					r = radios = parentSzarpConfig->createRadio(this);
 				} else {
-					r = r->Append(new TRadio(this));
+					r = r->Append(parentSzarpConfig->createRadio(this));
 				}
 				assert (r != NULL);
 				if (r->parseXML(reader))
@@ -184,9 +184,9 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 		if (xw.IsTag("unit")) {
 			if (xw.IsBeginTag()) {
 				if (radios == NULL) {
-					r = radios = new TRadio(this);
+					r = radios = parentSzarpConfig->createRadio(this);
 				} else {
-					r = r->Append(new TRadio(this));
+					r = r->Append(parentSzarpConfig->createRadio(this));
 				}
 				assert (r != NULL);
 				if (r->parseXML(reader))

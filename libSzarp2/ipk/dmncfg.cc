@@ -108,7 +108,6 @@ int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz
 {
 	char *c;
 	int l;
-	char *ipk_path;
 	
 	assert (m_load_called == 0);
 
@@ -158,7 +157,7 @@ int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz
 	free(c);
 	
 	/* other libpar params */
-	ipk_path = libpar_getpar(m_daemon_name.c_str(), "IPK", 1);
+	m_ipk_path = libpar_getpar(m_daemon_name.c_str(), "IPK", 1);
 	m_parcook_path = libpar_getpar(m_daemon_name.c_str(), "parcook_path", 1);
 	m_linex_path = libpar_getpar(m_daemon_name.c_str(), "linex_cfg", 1);
 
@@ -176,17 +175,13 @@ int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz
 		if( force_device_index < 0 ) 
 			force_device_index = m_device;
 		if( LoadNotXML(sz_cfg,force_device_index) ) {
-			free(ipk_path);
 			return 1;
 		}
 	/* load params.xml */
-	} else if (LoadXML(ipk_path)) {
-		free(ipk_path);
+	} else if (LoadXML(m_ipk_path.c_str())) {
 		return 1;
 	}
 		
-	free(ipk_path);
-
 	m_load_called = 1;
 
 	InitUnits();
@@ -386,7 +381,7 @@ Note: not all options are handled by every daemon.\n\
 }
 
 
-int DaemonConfig::LoadXML(char *path)
+int DaemonConfig::LoadXML(const char *path)
 {
 	xmlDocPtr doc;
 	xmlNodePtr node;
@@ -497,6 +492,12 @@ void DaemonConfig::CloseXML(int clean_parser)
 	}
 }
 
+std::string& DaemonConfig::GetIPKPath()
+{
+	assert (m_load_xml_called != 0);
+	return m_ipk_path;
+}
+
 const char* DaemonConfig::GetParcookPath()
 {
 	assert (m_load_called != 0);
@@ -586,7 +587,7 @@ void DaemonConfig::InitUnits() {
 			unit;
 			unit = unit->GetNext()) {
 		
-		UnitInfo* ui = new UnitInfo(unit->GetId(), unit->GetSendParamsCount());
+		UnitInfo* ui = new UnitInfo(unit);
 
 		if (cu) 
 			cu->SetNext(ui);
@@ -616,8 +617,12 @@ DaemonConfig::UnitInfo* DaemonConfig::GetFirstUnitInfo() {
 	return m_units;
 }
 
-DaemonConfig::UnitInfo::UnitInfo(char id, int send_count) : m_id(id), m_send_count(send_count), m_next(NULL)
-{}
+DaemonConfig::UnitInfo::UnitInfo(TUnit * unit) :  m_next(NULL)
+{
+	m_id = unit->GetId();
+	m_send_count = unit->GetSendParamsCount();
+	m_sender_msg_type = unit->GetSenderMsgType();
+}
 
 char DaemonConfig::UnitInfo::GetId() {
 	return m_id;
@@ -634,6 +639,10 @@ DaemonConfig::UnitInfo* DaemonConfig::UnitInfo::GetNext() {
 
 void DaemonConfig::UnitInfo::SetNext(UnitInfo* next) {
 	m_next = next;
+}
+
+long DaemonConfig::UnitInfo::GetSenderMsgType() {
+	return m_sender_msg_type;
 }
 
 DaemonConfig::UnitInfo::~UnitInfo() {

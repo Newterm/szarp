@@ -182,42 +182,30 @@ void ReadCfgFileFromParamXML(TSzarpConfig * ipk)
 	int k = 0;
 	for (TDevice * d = ipk->GetFirstDevice(); d; d = ipk->GetNextDevice(d))
 		for (TRadio * r = d->GetFirstRadio(); r; r = d->GetNextRadio(r))
-			for (TUnit * u = r->GetFirstUnit(); u;
-			     u = r->GetNextUnit(u))
-				for (n = 0, sp = u->GetFirstSendParam(); sp;
-				     sp = u->GetNextSendParam(sp)) {
+			for (TUnit * u = r->GetFirstUnit(); u; u = r->GetNextUnit(u))
+				for (n = 0, sp = u->GetFirstSendParam(); sp; sp = u->GetNextSendParam(sp)) {
 					if (!sp->IsConfigured()) {
 						sz_log(1, "Send parameter not configured");
 						continue;
 					}
 					if (!sp->GetParamName().empty()) {
-						p = ipk->getParamByName(sp->
-									GetParamName
-									());
+						p = ipk->getParamByName(sp->GetParamName());
 						if (p == NULL) {
 							sz_log(1,
 							       "Cannot find parameter to send (%s)",
-							       SC::S2A(sp->
-								       GetParamName
-								       ()).
-							       c_str());
+							       SC::S2A(sp->GetParamName()).c_str());
 							return;
 						}
 
-						SterInfo[k].srcaddr =
-						    p->GetIpcInd();
-						if (sp->GetProbeType() >
-						    SEN_MAX) {
+						SterInfo[k].srcaddr = p->GetIpcInd();
+						if (sp->GetProbeType() > SEN_MAX) {
 							sz_log(1,
 							       "Bad avg kind= %d of file setting NO_PARAM",
-							       sp->
-							       GetProbeType());
-							SterInfo[k].srcaddr =
-							    NO_PARAM;
-						} else {
-							SterInfo[k].avgkind =
-							    (unsigned char)sp->
-							    GetProbeType();
+							       sp->GetProbeType());
+							SterInfo[k].srcaddr = NO_PARAM;
+						}
+					       	else {
+							SterInfo[k].avgkind = (unsigned char)sp->GetProbeType();
 						}
 						sz_log(10, "Adding send param num %d - sending '%s'",
 								k,
@@ -232,19 +220,10 @@ void ReadCfgFileFromParamXML(TSzarpConfig * ipk)
 								SterInfo[k].msg.cont.value);
 					}
 
-					std::wstringstream ss;
-					ss << u->GetId();
-
-					SterInfo[k].msg.type =
-					    (long)(d->GetNum()) * 256L +
-					    (long)(SC::S2A(ss.str()).
-						   c_str()[0]);
-					SterInfo[k].msg.cont.param =
-					    (unsigned short)n;
-					SterInfo[k].msg.cont.retry =
-					    (unsigned char)sp->GetRepeatRate();
-					SterInfo[k].msg.cont.rtype =
-					    (long)MY_ID *256L * 256L + (long)k;
+					SterInfo[k].msg.type = u->GetSenderMsgType();
+					SterInfo[k].msg.cont.param = (unsigned short)n;
+					SterInfo[k].msg.cont.retry = (unsigned char)sp->GetRepeatRate();
+					SterInfo[k].msg.cont.rtype = (long)MY_ID * 256L * 256L + (long)k;
 
 					if (sp->GetSendNoData() == 0)
 						SterInfo[k].sendnodata = 0;
@@ -389,11 +368,10 @@ int SendSter(int pass, int log_level)
 
 	for (i = 0; i < (int)NumberOfPars; i++) {
 		if (SterInfo[i].status == MSG_SEND) {
-			if (!msgsnd
-			    (MsgSetDes, &(SterInfo[i].msg), sizeof(tSetParam),
-			     IPC_NOWAIT)) {
+			if (!msgsnd(MsgSetDes, &(SterInfo[i].msg), sizeof(tSetParam), IPC_NOWAIT)) {
 				SterInfo[i].status = MSG_CONF;
-			} else {
+			}
+		       	else {
 				sz_log(1, "SendSter: failed msgsnd(MsgSetDes, msg[type=%ld], size=%d, IPC_NOWAIT), errno=%d (%s)for parameter %d", SterInfo[i].msg.type, sizeof(tSetParam), errno, strerror(errno), i);
 				allsent = 0;
 			}
@@ -554,7 +532,7 @@ int main(int argc, char *argv[])
 
 	libpar_read_cmdline(&argc, argv);
 
-    Act.sa_handler = Terminate;
+	Act.sa_handler = Terminate;
 	Act.sa_mask = block_mask;
 	Act.sa_flags = SA_RESTART | SA_RESETHAND;
 	sigaction(SIGTERM, &Act, NULL);
@@ -602,6 +580,7 @@ int main(int argc, char *argv[])
 	free(config_prefix);
 	ipcInitializewithSleep(5);
 	msgInitialize();
+
 	ReadCfgFileFromParamXML(ipk);
 	delete ipk;
 	libpar_done();

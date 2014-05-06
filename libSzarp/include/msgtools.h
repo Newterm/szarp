@@ -24,8 +24,6 @@ extern int MsgRplyDes;
 extern int MsgRulerDes;
 
 void msgInitialize();
-void msgInitTry();
-void msgRulerInit();
 
 #endif
 

@@ -158,7 +158,10 @@ TSzarpConfig::TSzarpConfig( bool logparams ) :
 	devices(NULL), defined(NULL),
 	drawdefinable(NULL), title(),
 	prefix(), boilers(NULL), seasons(NULL) ,
-	logparams(logparams)
+	logparams(logparams),
+       	device_counter(1),
+       	radio_counter(1),
+       	unit_counter(1)
 {
 }
 
@@ -169,6 +172,22 @@ TSzarpConfig::~TSzarpConfig(void)
 	if( drawdefinable ) delete drawdefinable;
 	if( seasons )       delete seasons      ;
 	if( boilers )       delete boilers      ;
+}
+
+
+TDevice* TSzarpConfig::createDevice(const std::wstring& _daemon, const std::wstring& _path)
+{
+	return new TDevice(device_counter++, this, _daemon, _path);
+}
+
+TRadio* TSzarpConfig::createRadio(TDevice* parent, wchar_t _id, TUnit* _units)
+{
+	return new TRadio(radio_counter++, parent, _id, _units);
+}
+
+TUnit* TSzarpConfig::createUnit(TRadio* parent, wchar_t _id, int _type, int _subtype)
+{
+	return new TUnit(unit_counter++, parent, _id, _type, _subtype);
 }
 
 const std::wstring&
@@ -449,23 +468,23 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 		if (xw.IsTag("device")) {
 			if (xw.IsBeginTag()) {
 				if (devices == NULL)
-					devices = td = new TDevice(this);
+					devices = td = createDevice();
 				else
-					td = td->Append(new TDevice(this));
+					td = td->Append(createDevice());
 				assert(devices != NULL);
 				td->parseXML(reader);
 			}
 		} else
 		if (xw.IsTag("defined")) {
 			if (xw.IsBeginTag()) {
-				TParam * _par = TDefined::parseXML(reader,this);
+				TParam * _par = TDefined::parseXML(reader, this);
 				if (_par)
 					defined = _par;
 			}
 		} else
 		if (xw.IsTag("drawdefinable")) {
 			if (xw.IsBeginTag()) {
-				TParam * _par = TDrawdefinable::parseXML(reader,this);
+				TParam * _par = TDrawdefinable::parseXML(reader, this);
 				if (_par)
 					drawdefinable = _par;
 			}
@@ -482,7 +501,7 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 		} else
 		if (xw.IsTag("boilers")) {
 			if (xw.IsBeginTag()) {
-				TBoiler * _b = TBoilers::parseXML(reader,this);
+				TBoiler * _b = TBoilers::parseXML(reader, this);
 				if (_b)
 					AddBoiler(_b);
 				else {
@@ -601,9 +620,9 @@ sz_log(1, "XML file error: send_freq attribute <= 0 (line %ld)", xmlGetLineNo(no
     for (i = 0, ch = node->children; ch; ch = ch->next) {
 	if (!strcmp((char *) ch->name, "device")) {
 	    if (devices == NULL)
-		devices = td = new TDevice(this);
+		devices = td = createDevice();
 	    else
-		td = td->Append(new TDevice(this));
+		td = td->Append(createDevice());
 	    assert(devices != NULL);
 	    if (td->parseXML(ch))
 		goto at_end;
@@ -773,9 +792,9 @@ TSzarpConfig::GetMaxBaseInd()
 void
 TSzarpConfig::CreateLogParams()
 {
-	TDevice* d = new TDevice(this,L"/opt/szarp/bin/logdmn");
-	TRadio * r = new TRadio ( d );
-	TUnit  * u = new TUnit  ( r );
+	TDevice* d = createDevice(L"/opt/szarp/bin/logdmn");
+	TRadio * r = createRadio ( d );
+	TUnit  * u = createUnit( r );
 	TParam * p;
 	TDraw  * w;
 
@@ -965,6 +984,13 @@ bool TSzarpConfig::checkConfiguration()
 bool TSzarpConfig::checkFormulas()
 {
 	bool ret = true;
+
+	try {
+		PrepareDrawDefinable();
+	} catch( TCheckException& e) {
+		return false;
+	}
+
 	/** This loop checks every formula and return false if any is invalid */
 	for( TParam* p=GetFirstParam(); p ; p=GetNextParam(p) )
 		try {
