@@ -32,6 +32,7 @@ int main( int argc , char** argv )
 
 	desc.add_options() 
 		("help,h", "Print this help messages")
+		("base,b", po::value<std::string>(), "Szarp base name")
 		("port,p", po::value<unsigned>()->default_value(9002), "Server port on which we will listen")
 		("locs,L", po::value<std::vector<std::string>>(), "List of locations" );
 
@@ -60,7 +61,7 @@ int main( int argc , char** argv )
 	tcp::endpoint endpoint(tcp::v4(), vm["port"].as<unsigned>() );
 	TcpServer ts(io_service, endpoint);
 
-	LocationsMgr lm;
+	LocationsMgr lm( vm["base"].as<std::string>() );
 
 	ts.on_connected   ( bind(&LocationsMgr::on_new_connection,&lm,p::_1) );
 	ts.on_disconnected( bind(&LocationsMgr::on_disconnected  ,&lm,p::_1) );

@@ -7,9 +7,11 @@
 
 #include "net/connection.h"
 
+#include "data/vars.h"
+
 class LocationsMgr {
 public:
-	LocationsMgr();
+	LocationsMgr( const std::string& base );
 	virtual ~LocationsMgr();
 
 	void on_new_connection( Connection* conn );
@@ -17,6 +19,8 @@ public:
 
 private:
 	std::unordered_map<Connection*,Location*> locations;
+
+	std::string base;
 };
 
 #endif /* end of include guard: __LOCATIONS_MANAGER_H__ */

@@ -18,9 +18,10 @@
 #define MAP_TAG_CMD( type , tag ) \
 	if( typeid(type) == typeid(cmd) ) return tag;
 
-SzbaseLoc::SzbaseLoc( Vars& vars , Connection* con )
-	: ProtocolLocation(con,this) , vars(vars)
+SzbaseLoc::SzbaseLoc( const std::string& szarp_dir , Connection* con )
+	: ProtocolLocation(con,this)
 {
+	vars.from_szarp( szarp_dir );
 }
 
 Command* SzbaseLoc::cmd_from_tag( const std::string& tag )
