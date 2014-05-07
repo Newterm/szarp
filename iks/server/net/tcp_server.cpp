@@ -33,7 +33,11 @@ bool TcpServer::handle_error( const bs::error_code& error )
 
 void TcpServer::do_accept()
 {
-    acceptor_.async_accept(socket_,std::bind(&TcpServer::handle_accept,this,placeholders::_1) );
+	auto tc = new TcpConnection( acceptor_.get_io_service() );
+	tc->on_disconnect( bind(&TcpServer::do_disconnect,this,placeholders::_1) );
+	clients.insert( tc );
+
+    acceptor_.async_accept(tc->get_socket(),std::bind(&TcpServer::handle_accept,this,tc,placeholders::_1) );
 }
 
 void TcpServer::do_disconnect( Connection* con )
@@ -43,24 +47,26 @@ void TcpServer::do_disconnect( Connection* con )
 	delete con;
 }
 
-void TcpServer::handle_accept( const bs::error_code& error )
+void TcpServer::handle_accept(
+		TcpConnection* connection ,
+		const bs::error_code& error )
 {
 	if( handle_error(error) )
 		return;
 
-	auto tc = new TcpConnection( acceptor_.get_io_service() );
+	connection->start();
 
-	tc->on_disconnect( bind(&TcpServer::do_disconnect,this,placeholders::_1) );
-
-	clients.insert( tc );
-
-	emit_connected( tc );
+	emit_connected( connection );
 
 	do_accept();
 }
 
 TcpConnection::TcpConnection( ba::io_service& service )
 	: socket_(service)
+{
+}
+
+void TcpConnection::start()
 {
 	std::cout << "   +++   New client " << socket_.remote_endpoint().address().to_string() << std::endl;
 
