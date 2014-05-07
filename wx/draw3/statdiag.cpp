@@ -208,7 +208,7 @@ void StatDialog::DatabaseResponse(DatabaseQuery *q) {
 			m_min = i->response;
 			m_sum = 0;
 			m_sum2 = 0;
-			m_hsum = i->sum;
+			m_hsum = 0;
 
 			m_max_time = wxDateTime(i->time);
 			m_min_time = wxDateTime(i->time);
