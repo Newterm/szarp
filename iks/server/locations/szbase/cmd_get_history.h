@@ -57,12 +57,12 @@ public:
 		}
 
 		auto probe_type = tags[0];
-		auto s = probe_type.back();
+		auto s = probe_type[probe_type.size()-1];
 
 		timestamp_t probe_sec;
 
 		try {
-			probe_type.pop_back();
+			probe_type.erase(probe_type.size()-1);
 
 			probe_sec = boost::lexical_cast<timestamp_t>(probe_type);
 		} catch( const boost::bad_lexical_cast& ) {
@@ -108,10 +108,6 @@ public:
 
 		tend = gen_data( probes , tbeg , tend , probe_sec , 0 , 100 );
 		
-		for( auto p : probes )
-			std::cout << p << " ";
-		std::cout << std::endl;
-
 		std::copy( base64_enc((char*)probes.data()) ,
 		           base64_enc((char*)(probes.data()+probes.size())) ,
 				   std::back_inserter(data) );
@@ -120,7 +116,6 @@ public:
 		out.add("start", tbeg);
 		out.add("end", tend);
 		out.add("data", data);
-		//apply( str( boost::format("%u %u %s") % tbeg % tend % data ) );
 		apply( ptree_to_json( out , false ) );
 	}
 
@@ -129,22 +124,10 @@ public:
 			timestamp_t beg , timestamp_t end , timestamp_t step ,
 			f32_t min , f32_t max )
 	{
-		auto w = max-min;
-
-		std::default_random_engine generator;
-		std::normal_distribution<double> distribution(0,w/20.0);
-		generator.seed(time(NULL));
-
-		auto p = w/2+min;
-
 		timestamp_t t;
 
 		for( t=beg ; t<=end ; t+=step )
-		{
-			p += distribution(generator);
-
-			out.push_back( p );
-		}
+			out.push_back( 666 );
 
 		return t - step;
 	}

@@ -38,8 +38,8 @@ public:
 		bp::ptree out;
 		bp::ptree params;
 
-		for( auto& p : container )
-			params.push_back( std::make_pair( "" , bp::ptree(p) ) );
+		for( auto ip=container.begin() ; ip!=container.end() ; ++ip )
+			params.push_back( std::make_pair( "" , bp::ptree(*ip) ) );
 
 		out.add_child( "sets" , params );
 

@@ -23,6 +23,11 @@ public:
 	{
 	}
 
+	std::string get_name_str( const std::string& p )
+	{	return p; }
+	std::string get_name_ptree( const boost::property_tree::ptree::value_type& p )
+	{	return p.second.get<std::string>(""); }
+
 	void parse_command( const std::string& data )
 	{
 		namespace bp = boost::property_tree;
@@ -41,27 +46,28 @@ public:
 			auto ps = vars.get_sets().get_set(json.get<std::string>("set"));
 			if( ps )
 				send_params<Set,std::string>( *ps ,
-					[]( const std::string& p ) { return p; } );
+						std::bind(&GetParamsRcv::get_name_str,this,std::placeholders::_1) );
 			else
 				fail( ErrorCodes::unknown_set );
 		} else if( json.count("params") ) {
-			send_params<bp::ptree,bp::ptree::value_type>( json.get_child("params") ,
-				[]( const bp::ptree::value_type& p ) { return p.second.get<std::string>(""); } );
+			send_params<bp::ptree,bp::ptree::value_type>(
+						json.get_child("params") ,
+						std::bind(&GetParamsRcv::get_name_ptree,this,std::placeholders::_1) );
 		} else 
 			fail( ErrorCodes::ill_formed );
 	}
 
 	template<class Container,class Key> void send_params(
 			const Container& container ,
-			const std::function<const std::string& (const Key&)>& get )
+			const std::function<std::string (const Key&)>& get )
 	{
 		namespace bp = boost::property_tree;
 
 		bp::ptree out;
 
-		for( auto& p : container )
+		for( auto ip=container.begin() ; ip!=container.end() ; ++ip )
 		{
-			std::string s( get(p) );
+			std::string s( get(*ip) );
 
 			auto pp = vars.get_params().get_param( s );
 

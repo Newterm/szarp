@@ -25,9 +25,9 @@ public:
 
 		/** Send all options */
 		if( line.empty() ) {
-			for( auto& o : vars.get_config() )
+			for( auto io=vars.get_config().begin() ; io!=vars.get_config().end() ; ++io )
 				/** prevent '.' from beeing path separator */
-				opts.put( boost::property_tree::path(o.first,'\0') , o.second );
+				opts.put( boost::property_tree::path(io->first,'\0') , io->second );
 
 			apply( ptree_to_json( opts ) );
 			return;
@@ -40,9 +40,10 @@ public:
 			bp::json_parser::read_json( ss , json );
 
 			auto& cfg = vars.get_config();
-			for( auto& p : json.get_child("options") )
+			auto& opt = json.get_child("options");
+			for( auto ip=opt.begin() ; ip!=opt.end() ; ++ip )
 			{
-				auto opt = p.second.data();
+				auto opt = ip->second.data();
 				if( !cfg.has( opt ) ) {
 					fail( ErrorCodes::unknown_option );
 					return;

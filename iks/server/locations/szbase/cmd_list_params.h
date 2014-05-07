@@ -53,8 +53,8 @@ public:
 		ptree out;
 		ptree params;
 
-		for( auto& p : container )
-			params.push_back( std::make_pair( "" , ptree(p) ) );
+		for( auto ip=container.begin() ; ip!=container.end() ; ++ip )
+			params.push_back( std::make_pair( "" , ptree(*ip) ) );
 
 		out.add_child( "params" , params );
 
