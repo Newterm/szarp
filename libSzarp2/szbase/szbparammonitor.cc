@@ -107,7 +107,7 @@ void SzbParamMonitorImpl::process_cmds() {
 
 			switch (cmd.cmd) {
 				case ADD_CMD:
-					wd = inotify_add_watch(m_inotify_socket, cmd.path.c_str(), IN_CLOSE_WRITE | IN_MOVED_TO | IN_MODIFY);
+					wd = inotify_add_watch(m_inotify_socket, cmd.path.c_str(), IN_MOVED_TO | IN_MODIFY);
 					if (wd < 0) {
 						sz_log(3, "Failed to add watch for path:%s, errno: %d", cmd.path.c_str(), errno);
 						m_monitor->failed_to_register_dir(cmd.param, cmd.observer, cmd.path);
