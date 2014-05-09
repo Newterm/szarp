@@ -1,11 +1,13 @@
 #include "manager.h"
 
-#include "welcome/welcome.h"
-#include "szbase/szbase.h"
+#include "locations/welcome/welcome.h"
+#include "locations/szbase/szbase.h"
 
 LocationsMgr::LocationsMgr( const std::string& base )
 	: base(base)
 {
+	/* FIXME: Prefix is hard-coded (09/05/2014 10:16, jkotur) */
+	SzbaseWrapper::init( "/opt/szarp" );
 }
 
 LocationsMgr::~LocationsMgr()

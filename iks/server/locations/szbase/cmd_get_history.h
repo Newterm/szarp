@@ -30,6 +30,7 @@ public:
 	{
 	}
 
+protected:
 	void parse_command( const std::string& data )
 	{
 		namespace balgo = boost::algorithm;
@@ -57,40 +58,28 @@ public:
 		}
 
 		auto probe_type = tags[0];
-		auto s = probe_type[probe_type.size()-1];
 
-		timestamp_t probe_sec;
+		SzbaseWrapper::ProbeType pt;
 
-		try {
-			probe_type.erase(probe_type.size()-1);
-
-			probe_sec = boost::lexical_cast<timestamp_t>(probe_type);
-		} catch( const boost::bad_lexical_cast& ) {
-			fail( ErrorCodes::invalid_timestamp );
+		     if( probe_type == "10s" )
+			pt = PT_SEC10;
+		else if( probe_type == "10m" )
+			pt = PT_MIN10;
+		else if( probe_type == "1h" )
+			pt = PT_HOUR;
+		else if( probe_type == "8h" )
+			pt = PT_HOUR8;
+		else if( probe_type == "1d" )
+			pt = PT_DAY;
+		else if( probe_type == "1w" )
+			pt = PT_WEEK;
+		else if( probe_type == "1M" )
+			pt = PT_MONTH;
+		else if( probe_type == "1Y" )
+			pt = PT_YEAR;
+		else {
+			fail( ErrorCodes::wrong_probe_type );
 			return;
-		}
-
-		switch( s ) {
-			case 's':
-				probe_sec = probe_sec;
-				break;
-			case 'm':
-				probe_sec = probe_sec * 60;
-				break;
-			case 'h':
-				probe_sec = probe_sec * 60 * 60;
-				break;
-			case 'd':
-				probe_sec = probe_sec * 60 * 60 * 24;
-				break;
-			case 'M':
-				/* FIXME: 31 days in month is temporary simplification:)
-				 * (31/03/2014 12:29, jkotur) */
-				probe_sec = probe_sec * 60 * 60 * 24 * 31;
-				break;
-			default:
-				fail( ErrorCodes::ill_formed );
-				return;
 		};
 
 		timestamp_t tbeg , tend;
@@ -104,35 +93,40 @@ public:
 		}
 
 		std::vector<f32_t> probes;
-		std::string data;
+		std::string out;
 
-		tend = gen_data( probes , tbeg , tend , probe_sec , 0 , 100 );
+		try {
+			tend = get_data( probes , tbeg , tend , pt , name );
+		} catch ( const szbase_error& e ) {
+			/** TODO: support fail with message */
+			fail( ErrorCodes::szbase_error );
+			return;
+		}
 		
 		std::copy( base64_enc((char*)probes.data()) ,
 		           base64_enc((char*)(probes.data()+probes.size())) ,
-				   std::back_inserter(data) );
+				   std::back_inserter(out) );
 
-		boost::property_tree::ptree out;
-		out.add("start", tbeg);
-		out.add("end", tend);
-		out.add("data", data);
-		apply( ptree_to_json( out , false ) );
+		boost::property_tree::ptree ptree;
+		ptree.add("start", tbeg);
+		ptree.add("end", tend);
+		ptree.add("data", out);
+		apply( ptree_to_json( ptree , false ) );
 	}
 
-	timestamp_t gen_data(
+	timestamp_t get_data(
 			std::vector<f32_t>& out ,
-			timestamp_t beg , timestamp_t end , timestamp_t step ,
-			f32_t min , f32_t max )
+			timestamp_t beg , timestamp_t end , SzbaseWrapper::ProbeType pt ,
+			const std::string& param )
 	{
 		timestamp_t t;
 
-		for( t=beg ; t<=end ; t+=step )
-			out.push_back( 666 );
+		for( t=beg ; t<=end ; t=SzbaseWrapper::next(t,pt) )
+			out.push_back( vars.get_szbase()->get_avg( param , t , pt ) );
 
-		return t - step;
+		return t;
 	}
 
-protected:
 	Vars& vars;
 };
 

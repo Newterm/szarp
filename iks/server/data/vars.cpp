@@ -9,12 +9,13 @@ namespace bf = boost::filesystem;
 using boost::format;
 
 Vars::Vars()
-	: initalized(false)
+	: szb_wrapper(NULL) , initalized(false) 
 {
 }
 
 Vars::~Vars()
 {
+	if( szb_wrapper ) delete szb_wrapper;
 }
 
 void Vars::from_szarp( const std::string& szarp_dir ) throw(file_not_found_error,xml_parse_error)
@@ -32,6 +33,8 @@ void Vars::from_szarp( const std::string& szarp_dir ) throw(file_not_found_error
 
 	params.from_params_file( pszbc.string() );
 	sets  .from_params_file( pszbc.string() );
+
+	szb_wrapper = new SzbaseWrapper( szdir.filename().string() );
 }
 
 void Vars::command_request( const std::string& cmd , const std::string& data ) const

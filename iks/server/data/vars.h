@@ -6,6 +6,7 @@
 #include "sets.h"
 #include "params.h"
 #include "config.h"
+#include "szbase_wrapper.h"
 
 #include "utils/signals.h"
 #include "utils/exception.h"
@@ -36,6 +37,8 @@ public:
 	{	return sets; }
 	const Config& get_config() const
 	{	return config; }
+	const SzbaseWrapper* get_szbase() const
+	{	return szb_wrapper; }
 
 	Params& get_params()
 	{	return params; }
@@ -48,6 +51,8 @@ protected:
 	Params params;
 	Sets   sets;
 	Config config;
+
+	SzbaseWrapper* szb_wrapper;
 
 private:
 	bool initalized;

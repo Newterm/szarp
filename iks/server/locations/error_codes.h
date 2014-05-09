@@ -17,6 +17,8 @@ enum class ErrorCodes : error_code_t {
 	set_read_only    = 204,
 	unknown_option   = 300,
 	invalid_timestamp= 400,
+	wrong_probe_type = 402,
+	szbase_error     = 404,
 	internal_error   = 500,
 	protocol_not_set = 502,
 };
