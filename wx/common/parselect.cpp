@@ -450,8 +450,11 @@ void szParSelect::OnAddClicked(wxCommandEvent & ev)
 			szParTreeElem *pte =
 			    (szParTreeElem *) par_trct->GetItemData(ids.
 								    Item(i));
-			if (pte)
+			if (pte) {
 				params.Add(pte->getParam());
+			} else {
+				par_trct->Expand(ids.Item(i));
+			}
 		}
 	} else {
 		wxTreeItemId id = par_trct->GetSelection();
