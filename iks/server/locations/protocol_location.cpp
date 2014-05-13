@@ -202,8 +202,8 @@ void ProtocolLocation::send_response(
 				this,cmd) );
 }
 
-void ProtocolLocation::send_fail( ErrorCodes code )
+void ProtocolLocation::send_fail( ErrorCodes code , const std::string& msg )
 {
-	write_line( str( format("e 0 %u") % (unsigned)code ) );
+	write_line( str( format("e 0 %u \"%s\"") % (unsigned)code % msg ) );
 }
 

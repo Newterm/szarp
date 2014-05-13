@@ -51,7 +51,7 @@ public:
 	{
 		(void)vars;
 		/* TODO: Szarp doesn't allow to change sets yet (05/05/2014 14:22, jkotur) */
-		set_next( std::bind(&SetUpdateRcv::fail,this,ErrorCodes::set_read_only) );
+		set_next( std::bind(&SetUpdateRcv::fail,this,ErrorCodes::set_read_only,"Not implemented") );
 	}
 
 	virtual ~SetUpdateRcv()

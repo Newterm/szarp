@@ -4,7 +4,7 @@
 #include <string>
 #include <functional>
 
-#include <boost/lexical_cast.hpp>
+#include <boost/format.hpp>
 #include <boost/optional.hpp>
 
 #include "error_codes.h"
@@ -52,11 +52,12 @@ protected:
 	void apply( const std::string& data = "")
 	{	emit_response( ResponseType::OK , data , this ); }
 
-	void fail( ErrorCodes code )
+	void fail( ErrorCodes code , const std::string& msg = "" )
 	{
+		auto data = str( boost::format("%d \"%s\"") % (error_code_t)code % msg );
 		emit_response(
 			ResponseType::ERROR ,
-			boost::lexical_cast<std::string>((error_code_t)code) ,
+			data ,
 			this );
 	}
 

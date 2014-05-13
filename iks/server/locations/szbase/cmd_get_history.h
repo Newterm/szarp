@@ -98,8 +98,7 @@ protected:
 		try {
 			tend = get_data( probes , tbeg , tend , pt , name );
 		} catch ( const szbase_error& e ) {
-			/** TODO: support fail with message */
-			fail( ErrorCodes::szbase_error );
+			fail( ErrorCodes::szbase_error , e.what() );
 			return;
 		}
 		

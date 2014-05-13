@@ -32,7 +32,7 @@ private:
 		const std::string& data ,
 		Command* cmd );
 
-	void send_fail( ErrorCodes code );
+	void send_fail( ErrorCodes code , const std::string& msg = "" );
 
 	virtual void parse_line( const std::string& line );
 

@@ -72,8 +72,7 @@ public:
 			auto pp = vars.get_params().get_param( s );
 
 			if( !pp ) {
-				std::cerr << "Invalid param " << s << " requested" << std::endl;
-				fail( ErrorCodes::unknown_param );
+				fail( ErrorCodes::unknown_param , str( boost::format("Invalid param '%s' requested") % s ) );
 				return;
 			}
 
