@@ -14,7 +14,7 @@ public:
 	static bool init( const std::string& szarp_dir );
 	static bool is_initialized() { return initialized; }
 
-	static time_t next( time_t t , ProbeType pt );
+	static time_t next( time_t t , ProbeType pt , int num = 1 );
 
 	SzbaseWrapper( const std::string& base );
 

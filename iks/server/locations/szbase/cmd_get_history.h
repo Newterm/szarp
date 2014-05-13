@@ -96,19 +96,30 @@ protected:
 		std::string out;
 
 		try {
-			tend = get_data( probes , tbeg , tend , pt , name );
+			get_data( probes , tbeg , tend , pt , name );
 		} catch ( const szbase_error& e ) {
 			fail( ErrorCodes::szbase_error , e.what() );
 			return;
 		}
+
+		using std::isnan;
 		
-		std::copy( base64_enc((char*)probes.data()) ,
-		           base64_enc((char*)(probes.data()+probes.size())) ,
+		auto beg = probes.begin();
+		auto end = probes.end();
+
+		while( beg!=end && isnan(*beg) ) ++beg;
+		while( beg!=end && isnan(*std::prev(end)) ) --end;
+
+		auto nb = std::distance(probes.begin(),beg);
+		auto ne = std::distance(probes.begin(),end);
+
+		std::copy( base64_enc((char*)(probes.data()+nb)) ,
+		           base64_enc((char*)(probes.data()+ne)) ,
 				   std::back_inserter(out) );
 
 		boost::property_tree::ptree ptree;
-		ptree.add("start", tbeg);
-		ptree.add("end", tend);
+		ptree.add("start", SzbaseWrapper::next(tbeg,pt,nb));
+		ptree.add("end"  , SzbaseWrapper::next(tbeg,pt,ne));
 		ptree.add("data", out);
 		apply( ptree_to_json( ptree , false ) );
 	}
@@ -120,7 +131,7 @@ protected:
 	{
 		timestamp_t t;
 
-		for( t=beg ; t<=end ; t=SzbaseWrapper::next(t,pt) )
+		for( t=beg ; t<end ; t=SzbaseWrapper::next(t,pt) )
 			out.push_back( vars.get_szbase()->get_avg( param , t , pt ) );
 
 		return t;

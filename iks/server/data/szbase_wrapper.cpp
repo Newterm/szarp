@@ -76,8 +76,8 @@ double SzbaseWrapper:: get_avg( const std::string& param , time_t start , time_t
 	return val;
 }
 
-time_t SzbaseWrapper::next( time_t t , SzbaseWrapper::ProbeType pt )
+time_t SzbaseWrapper::next( time_t t , SzbaseWrapper::ProbeType pt , int num )
 {
-	return szb_move_time( t , 1 , pt , 0 );
+	return szb_move_time( t , num , pt , 0 );
 }
 
