@@ -1,16 +1,14 @@
-#ifndef __WELCOME_CONNECTION_H__
-#define __WELCOME_CONNECTION_H__
+#ifndef __WELCOME_PROTOCOL_H__
+#define __WELCOME_PROTOCOL_H__
 
-#include "locations/protocol_location.h"
+#include "locations/protocol.h"
 
-class WelcomeLoc : public ProtocolLocation , public Protocol {
+class WelcomeProt : public Protocol {
 public:
-	WelcomeLoc( Connection* con );
-
 	virtual Command* cmd_from_tag( const std::string& tag );
 	virtual std::string tag_from_cmd( const Command* cmd );
 
 };
 
-#endif /* end of include guard: __WELCOME_CONNECTION_H__ */
+#endif /* end of include guard: __WELCOME_PROTOCOL_H__ */
 

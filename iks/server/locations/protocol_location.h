@@ -13,10 +13,11 @@
 
 class ProtocolLocation : public Location {
 public:
-	ProtocolLocation( Connection* connection , Protocol* protocol = NULL );
+	ProtocolLocation( Connection* connection , Protocol::ptr protocol = Protocol::ptr() );
+	ProtocolLocation( Location& location , Protocol::ptr protocol = Protocol::ptr() );
 	virtual ~ProtocolLocation();
 
-	void set_protocol( Protocol* protocol );
+	void set_protocol( Protocol::ptr protocol );
 
 private:
 	void new_cmd( Command* cmd , const std::string& tag , id_t id );
@@ -36,13 +37,15 @@ private:
 
 	virtual void parse_line( const std::string& line );
 
-	Protocol* protocol;
+	Protocol::ptr protocol;
 
 	std::unordered_map<id_t,Command*> commands;
 
 #if GCC_VERSION >= 40600
 	std::default_random_engine rnd;
 #endif
+
+	boost::signals2::scoped_connection conn_protocol;
 };
 
 #endif /* end of include guard: __PROTOCOL_LOCATION_H__ */

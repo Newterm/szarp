@@ -1,13 +1,13 @@
-#ifndef __SZBASE_LOCATION_H__
-#define __SZBASE_LOCATION_H__
+#ifndef __SZBASE_PROTOCOL_H__
+#define __SZBASE_PROTOCOL_H__
 
-#include "locations/protocol_location.h"
+#include "locations/protocol.h"
 
 #include "data/vars.h"
 
-class SzbaseLoc : public ProtocolLocation , public Protocol {
+class SzbaseProt : public Protocol {
 public:
-	SzbaseLoc( const std::string& szarp_base , Connection* con );
+	SzbaseProt( const std::string& szarp_base );
 
 	virtual Command* cmd_from_tag( const std::string& tag );
 	virtual std::string tag_from_cmd( const Command* cmd );
@@ -16,5 +16,5 @@ private:
 	Vars vars;
 };
 
-#endif /* end of include guard: __SZBASE_LOCATION_H__ */
+#endif /* end of include guard: __SZBASE_PROTOCOL_H__ */
 

@@ -19,9 +19,16 @@ using boost::format;
 
 #include "global_service.h"
 
-ProtocolLocation::ProtocolLocation( Connection* connection , Protocol* protocol )
-	: Location(connection) , protocol(protocol)
+ProtocolLocation::ProtocolLocation( Connection* connection , Protocol::ptr protocol )
+	: Location(connection)
 {
+	set_protocol( protocol );
+}
+
+ProtocolLocation::ProtocolLocation( Location& location , Protocol::ptr protocol )
+	: Location(location)
+{
+	set_protocol( protocol );
 }
 
 ProtocolLocation::~ProtocolLocation()
@@ -30,9 +37,15 @@ ProtocolLocation::~ProtocolLocation()
 		delete ikv->second;
 }
 
-void ProtocolLocation::set_protocol( Protocol* new_protocol )
+void ProtocolLocation::set_protocol( Protocol::ptr new_protocol )
 {
-	protocol = new_protocol;
+	if( new_protocol ) {
+		protocol = new_protocol;
+		conn_protocol = protocol->on_protocol_request(
+			std::bind(&ProtocolLocation::set_protocol,this,p::_1) );
+	} else {
+		conn_protocol.disconnect();
+	}
 }
 
 void ProtocolLocation::parse_line( const std::string& line )

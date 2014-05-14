@@ -18,7 +18,9 @@ public:
 	void on_disconnected  ( Connection* conn );
 
 private:
-	std::unordered_map<Connection*,Location*> locations;
+	void new_location( Location::ptr loc );
+
+	std::unordered_map<Connection*,Location::ptr> locations;
 
 	std::string base;
 };

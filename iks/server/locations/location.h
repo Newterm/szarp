@@ -7,10 +7,31 @@
 
 #include "utils/signals.h"
 
+class Location;
+
+typedef boost::signals2::signal<void (std::shared_ptr<Location>)> sig_location;
+typedef sig_location::slot_type sig_location_slot;
+
 class Location {
+	friend class LocationsMgr;
+
 public:
+	typedef std::shared_ptr<Location> ptr;
+	typedef std::shared_ptr<const Location> const_ptr;
+
+	/** Build location with new connection */
 	Location( Connection* conn );
+
+	/** Steal connection from older location */
+	Location( Location& conn );
+
 	virtual ~Location();
+
+	void request_location( Location::ptr loc )
+	{	emit_request_location(loc); }
+
+	slot_connection on_request_location( const sig_location_slot& slot ) const
+	{	return emit_request_location.connect( slot ); }
 
 protected:
 	virtual void parse_line( const std::string& line ) =0;
@@ -18,7 +39,11 @@ protected:
 	void write_line( const std::string& line );
 
 private:
+	void init_connection();
+
 	Connection* connection;
+
+	mutable sig_location emit_request_location;
 
 	boost::signals2::scoped_connection sig_conn;
 };

@@ -1,7 +1,7 @@
 #include "manager.h"
 
 #include "locations/welcome/welcome.h"
-#include "locations/szbase/szbase.h"
+#include "locations/protocol_location.h"
 
 LocationsMgr::LocationsMgr( const std::string& base )
 	: base(base)
@@ -12,13 +12,11 @@ LocationsMgr::LocationsMgr( const std::string& base )
 
 LocationsMgr::~LocationsMgr()
 {
-	for( auto itr=locations.begin() ; itr!=locations.end() ; ++itr )
-		delete itr->second;
 }
 
 void LocationsMgr::on_new_connection( Connection* con )
 {
-	locations[ con ] = new SzbaseLoc( base , con );
+	new_location( std::make_shared<ProtocolLocation>( con , std::make_shared<WelcomeProt>() ) );
 }
 
 void LocationsMgr::on_disconnected( Connection* con )
@@ -27,7 +25,11 @@ void LocationsMgr::on_disconnected( Connection* con )
 	if( itr == locations.end() )
 		return;
 
-	delete itr->second;
 	locations.erase( itr );
+}
+
+void LocationsMgr::new_location( Location::ptr loc )
+{
+	locations[ loc->connection ] = loc;
 }
 

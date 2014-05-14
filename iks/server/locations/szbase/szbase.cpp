@@ -18,13 +18,12 @@
 #define MAP_TAG_CMD( type , tag ) \
 	if( typeid(type) == typeid(cmd) ) return tag;
 
-SzbaseLoc::SzbaseLoc( const std::string& szarp_base , Connection* con )
-	: ProtocolLocation(con,this)
+SzbaseProt::SzbaseProt( const std::string& szarp_base )
 {
 	vars.from_szarp( szarp_base );
 }
 
-Command* SzbaseLoc::cmd_from_tag( const std::string& tag )
+Command* SzbaseProt::cmd_from_tag( const std::string& tag )
 {
 	MAP_CMD_TAG( "s"             , SetRcv          );
 	MAP_CMD_TAG( "set"           , SetRcv          );
@@ -39,7 +38,7 @@ Command* SzbaseLoc::cmd_from_tag( const std::string& tag )
 	return NULL;
 }
 
-std::string SzbaseLoc::tag_from_cmd( const Command* cmd )
+std::string SzbaseProt::tag_from_cmd( const Command* cmd )
 {
 	MAP_TAG_CMD( ValueSnd        , "v"             );
 	MAP_TAG_CMD( SetUpdateSnd    , "set_update"    );
