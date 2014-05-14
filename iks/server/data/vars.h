@@ -19,7 +19,7 @@ public:
 	Vars( );
 	virtual ~Vars();
 
-	void from_szarp( const std::string& szarp_dir ) throw(file_not_found_error,xml_parse_error);
+	void from_szarp( const std::string& szarp_base ) throw(file_not_found_error,xml_parse_error);
 
 	void command_request( const std::string& cmd , const std::string& data ) const;
 

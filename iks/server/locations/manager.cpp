@@ -18,7 +18,7 @@ LocationsMgr::~LocationsMgr()
 
 void LocationsMgr::on_new_connection( Connection* con )
 {
-	locations[ con ] = new SzbaseLoc( "/opt/szarp/" + base , con );
+	locations[ con ] = new SzbaseLoc( base , con );
 }
 
 void LocationsMgr::on_disconnected( Connection* con )

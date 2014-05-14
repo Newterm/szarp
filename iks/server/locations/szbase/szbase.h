@@ -7,7 +7,7 @@
 
 class SzbaseLoc : public ProtocolLocation , public Protocol {
 public:
-	SzbaseLoc( const std::string& szarp_dir , Connection* con );
+	SzbaseLoc( const std::string& szarp_base , Connection* con );
 
 	virtual Command* cmd_from_tag( const std::string& tag );
 	virtual std::string tag_from_cmd( const Command* cmd );

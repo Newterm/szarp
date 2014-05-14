@@ -1,6 +1,8 @@
 #ifndef __DATA_SZBASE_WRAPPER_H__
 #define __DATA_SZBASE_WRAPPER_H__
 
+#include <conversion.h>
+
 #include "szarp_config.h"
 #include "szbase/szbbase.h"
 #include "szbase/szbdate.h"
@@ -10,6 +12,13 @@
 class SzbaseWrapper {
 public:
 	typedef SZARP_PROBE_TYPE ProbeType;
+
+	static const std::string& get_dir()
+#if BOOST_FILESYSTEM_VERSION == 3
+	{	return szarp_dir.string(); }
+#else
+	{	return SC::S2A( szarp_dir.string(); ) }
+#endif
 
 	static bool init( const std::string& szarp_dir );
 	static bool is_initialized() { return initialized; }
