@@ -8,6 +8,7 @@
 #endif
 
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 
 #include "net/tcp_server.h"
 
@@ -32,7 +33,7 @@ int main( int argc , char** argv )
 
 	desc.add_options() 
 		("help,h", "Print this help messages")
-		("base,b", po::value<std::string>(), "Szarp base name")
+		("base,b", po::value<std::string>()->required(), "Szarp base name")
 		("port,p", po::value<unsigned>()->default_value(9002), "Server port on which we will listen")
 		("locs,L", po::value<std::vector<std::string>>(), "List of locations" );
 
@@ -40,7 +41,8 @@ int main( int argc , char** argv )
 	try 
 	{ 
 		po::store(po::parse_command_line(argc, argv, desc),  vm);
-		po::store(po::parse_config_file<char>("iks.ini", desc, true),  vm);
+		if( boost::filesystem::exists("iks.ini") )
+			po::store(po::parse_config_file<char>("iks.ini", desc, true),  vm);
 
 		if ( vm.count("help")  ) { 
 			std::cout << desc << std::endl; 
