@@ -16,10 +16,10 @@ class TcpServer {
 public:
 	TcpServer( boost::asio::io_service& io_service, const boost::asio::ip::tcp::endpoint& endpoint);
 
-	connection on_connected( const sig_connection_slot& slot )
+	slot_connection on_connected( const sig_connection_slot& slot )
 	{	return emit_connected.connect( slot ); }
 
-	connection on_disconnected( const sig_connection_slot& slot )
+	slot_connection on_disconnected( const sig_connection_slot& slot )
 	{	return emit_disconnected.connect( slot ); }
 
 private:

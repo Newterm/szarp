@@ -34,7 +34,7 @@ public:
 
 	void update_set( const Set& s , const std::string& old_name = "" );
 
-	connection on_set_updated( const sig_set_slot& slot ) const
+	slot_connection on_set_updated( const sig_set_slot& slot ) const
 	{	return emit_set_updated.connect( slot ); }
 
 protected:

@@ -42,7 +42,7 @@ public:
 		hnd( data );
 	}
 
-	connection on_response( const sig_response::slot_type& slot )
+	slot_connection on_response( const sig_response::slot_type& slot )
 	{	return emit_response.connect( slot ); }
 
 protected:

@@ -34,9 +34,9 @@ public:
 	                          double value ,
 							  const std::string& pin = "" ) const;
 
-	connection on_param_value_changed( const sig_param_slot& slot ) const
+	slot_connection on_param_value_changed( const sig_param_slot& slot ) const
 	{	return emit_value_changed.connect( slot ); }
-	connection on_request_param_value( const sig_param_request_slot& slot ) const
+	slot_connection on_request_param_value( const sig_param_request_slot& slot ) const
 	{	return emit_request_value.connect( slot ); }
 
 protected:

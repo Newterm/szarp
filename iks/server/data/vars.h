@@ -25,10 +25,10 @@ public:
 
 	void response_received( const std::string& cmd , const std::string& data );
 
-	connection on_command_received( const sig_command_slot& slot ) const
+	slot_connection on_command_received( const sig_command_slot& slot ) const
 	{	return emit_command_received.connect( slot ); }
 
-	connection on_command_response_received( const sig_command_slot& slot ) const
+	slot_connection on_command_response_received( const sig_command_slot& slot ) const
 	{	return emit_command_response_received.connect( slot ); }
 
 	const Params& get_params() const

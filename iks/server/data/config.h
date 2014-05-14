@@ -32,7 +32,7 @@ public:
 		return itr == cfg.end() ? def : itr->second;
 	}
 
-	connection on_changed( const sig_void_slot& slot ) const
+	slot_connection on_changed( const sig_void_slot& slot ) const
 	{	return emit_changed.connect( slot ); }
 
 private:

@@ -3,7 +3,7 @@
 
 #include <boost/signals2.hpp>
 
-using boost::signals2::connection;
+typedef boost::signals2::connection slot_connection;
 
 typedef boost::signals2::signal<void ()> sig_void;
 typedef sig_void::slot_type sig_void_slot;

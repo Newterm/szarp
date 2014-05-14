@@ -14,9 +14,9 @@ public:
 
 	virtual void write_line( const std::string& line ) = 0;
 
-	connection on_line_received( const sig_line_slot& slot )
+	slot_connection on_line_received( const sig_line_slot& slot )
 	{	return emit_line_received.connect( slot ); }
-	connection on_disconnect( const sig_connection_slot& slot )
+	slot_connection on_disconnect( const sig_connection_slot& slot )
 	{	return emit_disconnected.connect( slot ); }
 
 protected:

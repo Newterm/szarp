@@ -24,7 +24,7 @@ public:
 		io_service_.post(std::bind(&TcpClient::do_close, this));
 	}
 
-	connection on_connected( const sig_connection_slot& slot )
+	slot_connection on_connected( const sig_connection_slot& slot )
 	{	return emit_connected.connect( slot ); }
 
 private:
