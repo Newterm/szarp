@@ -6,6 +6,7 @@
 
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "error_codes.h"
 #include "utils/signals.h"
@@ -54,7 +55,11 @@ protected:
 
 	void fail( ErrorCodes code , const std::string& msg = "" )
 	{
-		auto data = str( boost::format("%d \"%s\"") % (error_code_t)code % msg );
+		std::string data;
+		if( msg.empty() )
+			data = boost::lexical_cast<std::string>((error_code_t)code); 
+		else 
+			data = str( boost::format("%d \"%s\"") % (error_code_t)code % msg );
 		emit_response(
 			ResponseType::ERROR ,
 			data ,
