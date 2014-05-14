@@ -3,11 +3,8 @@
 #include "locations/welcome/welcome.h"
 #include "locations/protocol_location.h"
 
-LocationsMgr::LocationsMgr( const std::string& base )
-	: base(base)
+LocationsMgr::LocationsMgr()
 {
-	/* FIXME: Prefix is hard-coded (09/05/2014 10:16, jkotur) */
-	SzbaseWrapper::init( "/opt/szarp" );
 }
 
 LocationsMgr::~LocationsMgr()

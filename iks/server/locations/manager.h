@@ -11,7 +11,7 @@
 
 class LocationsMgr {
 public:
-	LocationsMgr( const std::string& base );
+	LocationsMgr();
 	virtual ~LocationsMgr();
 
 	void on_new_connection( Connection* conn );

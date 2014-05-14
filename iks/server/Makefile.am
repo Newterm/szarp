@@ -6,6 +6,7 @@ MAINTAINERCLEANFILES = Makefile.in
 
 # Compilations flags
 AM_CPPFLAGS = \
+	-DPREFIX=\"@prefix@\" \
 	-I@srcdir@ \
 	-I@srcdir@/../../libSzarp/include \
 	-I@srcdir@/../../libSzarp2/include \
