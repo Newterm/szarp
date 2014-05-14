@@ -31,7 +31,12 @@ public:
 		throw( szbase_init_error, szbase_get_value_error );
 
 private:
+#if BOOST_FILESYSTEM_VERSION == 3
 	static boost::filesystem::path szarp_dir;
+#else
+	static boost::filesystem::wpath szarp_dir;
+#endif
+
 	static bool initialized;
 
 	std::string base_name;

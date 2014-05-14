@@ -34,7 +34,11 @@ void Vars::from_szarp( const std::string& szarp_dir ) throw(file_not_found_error
 	params.from_params_file( pszbc.string() );
 	sets  .from_params_file( pszbc.string() );
 
-	szb_wrapper = new SzbaseWrapper( szdir.filename().string() );
+	szb_wrapper = new SzbaseWrapper( szdir.filename()
+#if BOOST_FILESYSTEM_VERSION == 3
+	                                                 .string()
+#endif
+	                                                           );
 }
 
 void Vars::command_request( const std::string& cmd , const std::string& data ) const

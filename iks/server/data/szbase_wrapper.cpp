@@ -3,17 +3,26 @@
 #include <conversion.h>
 
 bool SzbaseWrapper::initialized = false;
-boost::filesystem::path SzbaseWrapper::szarp_dir;
+
+#if BOOST_FILESYSTEM_VERSION == 3
+typedef boost::filesystem::path path;
+#else
+typedef boost::filesystem::wpath path;
+#endif
+
+path SzbaseWrapper::szarp_dir;
 
 bool SzbaseWrapper::init( const std::string& _szarp_dir )
 {
+	std::wstring w_szarp_dir = SC::A2S(_szarp_dir);
+
 	if( initialized )
-		return boost::filesystem::path(_szarp_dir) == szarp_dir;
+		return path( w_szarp_dir ) == szarp_dir;
 
-	szarp_dir = _szarp_dir;
+	szarp_dir = w_szarp_dir;
 
-	IPKContainer::Init( szarp_dir.wstring(), szarp_dir.wstring(), L"pl_PL", new NullMutex());
-	Szbase::Init( szarp_dir.wstring() , NULL );
+	IPKContainer::Init( w_szarp_dir, w_szarp_dir, L"pl_PL", new NullMutex());
+	Szbase::Init( w_szarp_dir , NULL );
 
 	initialized = true;
 
