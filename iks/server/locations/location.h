@@ -20,17 +20,17 @@ public:
 	typedef std::shared_ptr<const Location> const_ptr;
 
 	/** Build location with new connection */
-	Location( Connection* conn );
-
-	/** Steal connection from older location */
-	Location( Location& conn );
+	Location( Connection* conn = NULL );
 
 	virtual ~Location();
+
+	/** Swap connection object with another location */
+	void swap_connection( Location& loc );
 
 	void request_location( Location::ptr loc )
 	{	emit_request_location(loc); }
 
-	slot_connection on_request_location( const sig_location_slot& slot ) const
+	slot_connection on_location_request( const sig_location_slot& slot ) const
 	{	return emit_request_location.connect( slot ); }
 
 protected:

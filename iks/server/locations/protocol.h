@@ -6,6 +6,7 @@
 #include "command.h"
 
 #include "utils/signals.h"
+#include "locations/location.h"
 
 class Protocol;
 
@@ -22,14 +23,19 @@ public:
 	virtual Command* cmd_from_tag( const std::string& tag ) =0;
 	virtual std::string tag_from_cmd( const Command* cmd ) =0;
 
+	void request_location( Location::ptr loc )
+	{	emit_request_location(loc); }
+	slot_connection on_location_request( const sig_location_slot& slot ) const
+	{	return emit_request_location.connect( slot ); }
+
 	void request_protocol( Protocol::ptr protocol )
 	{	emit_request_protocol( protocol ); }
-
-	slot_connection on_protocol_request( sig_protocol_slot slot )
+	slot_connection on_protocol_request( sig_protocol_slot slot ) const
 	{	return emit_request_protocol.connect( slot ); }
 
 protected:
-	sig_protocol emit_request_protocol;
+	mutable sig_protocol emit_request_protocol;
+	mutable sig_location emit_request_location;
 };
 
 #endif /* end of include guard: __LOCATIONS_PROTOCOL_H__ */

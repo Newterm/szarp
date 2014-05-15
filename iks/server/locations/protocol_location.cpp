@@ -25,12 +25,6 @@ ProtocolLocation::ProtocolLocation( Connection* connection , Protocol::ptr proto
 	set_protocol( protocol );
 }
 
-ProtocolLocation::ProtocolLocation( Location& location , Protocol::ptr protocol )
-	: Location(location)
-{
-	set_protocol( protocol );
-}
-
 ProtocolLocation::~ProtocolLocation()
 {
 	for( auto ikv=commands.begin() ; ikv!=commands.end() ; ++ikv )
@@ -41,10 +35,13 @@ void ProtocolLocation::set_protocol( Protocol::ptr new_protocol )
 {
 	if( new_protocol ) {
 		protocol = new_protocol;
-		conn_protocol = protocol->on_protocol_request(
+		conn_protocol_request = protocol->on_protocol_request(
 			std::bind(&ProtocolLocation::set_protocol,this,p::_1) );
+		conn_location_request = protocol->on_location_request(
+			std::bind(&Location::request_location,this,p::_1) );
 	} else {
-		conn_protocol.disconnect();
+		conn_protocol_request.disconnect();
+		conn_location_request.disconnect(); 
 	}
 }
 

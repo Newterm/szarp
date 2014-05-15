@@ -1,5 +1,7 @@
 #include "manager.h"
 
+#include <functional>
+
 #include "locations/welcome/welcome.h"
 #include "locations/protocol_location.h"
 
@@ -25,8 +27,16 @@ void LocationsMgr::on_disconnected( Connection* con )
 	locations.erase( itr );
 }
 
-void LocationsMgr::new_location( Location::ptr loc )
+void LocationsMgr::new_location( Location::ptr nloc , Location::ptr oloc )
 {
-	locations[ loc->connection ] = loc;
+	if( oloc )
+		nloc->swap_connection( *oloc );
+
+	locations[ nloc->connection ] = nloc;
+
+	nloc->on_location_request(
+		std::bind(
+			&LocationsMgr::new_location, this,
+			std::placeholders::_1 , nloc ) );
 }
 

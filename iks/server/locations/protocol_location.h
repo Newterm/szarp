@@ -14,7 +14,6 @@
 class ProtocolLocation : public Location {
 public:
 	ProtocolLocation( Connection* connection , Protocol::ptr protocol = Protocol::ptr() );
-	ProtocolLocation( Location& location , Protocol::ptr protocol = Protocol::ptr() );
 	virtual ~ProtocolLocation();
 
 	void set_protocol( Protocol::ptr protocol );
@@ -45,7 +44,8 @@ private:
 	std::default_random_engine rnd;
 #endif
 
-	boost::signals2::scoped_connection conn_protocol;
+	boost::signals2::scoped_connection conn_protocol_request;
+	boost::signals2::scoped_connection conn_location_request;
 };
 
 #endif /* end of include guard: __PROTOCOL_LOCATION_H__ */
