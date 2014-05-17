@@ -214,6 +214,9 @@ void ProtocolLocation::send_response(
 
 void ProtocolLocation::send_fail( ErrorCodes code , const std::string& msg )
 {
-	write_line( str( format("e 0 %u \"%s\"") % (unsigned)code % msg ) );
+	if( msg.empty() )
+		write_line( str( format("e 0 %u") % (unsigned)code ) );
+	else
+		write_line( str( format("e 0 %u \"%s\"") % (unsigned)code % msg ) );
 }
 
