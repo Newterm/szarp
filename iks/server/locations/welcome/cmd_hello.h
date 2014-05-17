@@ -6,7 +6,8 @@
 
 #include "global_service.h"
 #include "locations/command.h"
-#include "locations/location.h"
+
+#include "locations/protocol_location.h"
 #include "locations/proxy/proxy.h"
 #include "locations/szbase/szbase.h"
 
@@ -53,7 +54,9 @@ public:
 
 			try {
 				auto szb = std::make_shared<SzbaseProt>( tags[1] );
-				prot.request_protocol( szb );
+				auto loc = std::make_shared<ProtocolLocation>( szb );
+				GlobalService::get_service().post(
+					std::bind(&Protocol::request_location,&prot,loc) );
 				apply();
 			} catch( ... ) {
 				fail( ErrorCodes::szbase_error );

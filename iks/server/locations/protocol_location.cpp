@@ -19,7 +19,7 @@ using boost::format;
 
 #include "global_service.h"
 
-ProtocolLocation::ProtocolLocation( Connection* connection , Protocol::ptr protocol )
+ProtocolLocation::ProtocolLocation( Protocol::ptr protocol , Connection* connection )
 	: Location(connection)
 {
 	set_protocol( protocol );
@@ -35,14 +35,26 @@ void ProtocolLocation::set_protocol( Protocol::ptr new_protocol )
 {
 	if( new_protocol ) {
 		protocol = new_protocol;
-		conn_protocol_request = protocol->on_protocol_request(
-			std::bind(&ProtocolLocation::set_protocol,this,p::_1) );
 		conn_location_request = protocol->on_location_request(
-			std::bind(&Location::request_location,this,p::_1) );
+			std::bind(&ProtocolLocation::request_location,this,p::_1) );
 	} else {
-		conn_protocol_request.disconnect();
 		conn_location_request.disconnect(); 
 	}
+}
+
+void ProtocolLocation::request_location( Location::ptr loc )
+{
+	/** Check if requested location is protocol location */
+	auto plp = std::dynamic_pointer_cast<ProtocolLocation>(loc);
+
+	if( plp ) {
+		/** If it is protocol location only swap protocols */
+		set_protocol( plp->protocol );
+		return;
+	}
+
+	/** Otherwise location is not protocol location so normal request */
+	emit_request_location( loc );
 }
 
 void ProtocolLocation::parse_line( const std::string& line )

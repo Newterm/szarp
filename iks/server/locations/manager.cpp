@@ -15,16 +15,14 @@ LocationsMgr::~LocationsMgr()
 
 void LocationsMgr::on_new_connection( Connection* con )
 {
-	new_location( std::make_shared<ProtocolLocation>( con , std::make_shared<WelcomeProt>() ) );
+	new_location( std::make_shared<ProtocolLocation>( std::make_shared<WelcomeProt>() , con ) );
 }
 
 void LocationsMgr::on_disconnected( Connection* con )
 {
 	auto itr = locations.find( con );
-	if( itr == locations.end() )
-		return;
-
-	locations.erase( itr );
+	if( itr != locations.end() )
+		locations.erase( itr );
 }
 
 void LocationsMgr::new_location( Location::ptr nloc , Location::ptr oloc )

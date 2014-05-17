@@ -28,13 +28,7 @@ public:
 	slot_connection on_location_request( const sig_location_slot& slot ) const
 	{	return emit_request_location.connect( slot ); }
 
-	void request_protocol( Protocol::ptr protocol )
-	{	emit_request_protocol( protocol ); }
-	slot_connection on_protocol_request( sig_protocol_slot slot ) const
-	{	return emit_request_protocol.connect( slot ); }
-
 protected:
-	mutable sig_protocol emit_request_protocol;
 	mutable sig_location emit_request_location;
 };
 

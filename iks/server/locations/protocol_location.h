@@ -13,10 +13,12 @@
 
 class ProtocolLocation : public Location {
 public:
-	ProtocolLocation( Connection* connection , Protocol::ptr protocol = Protocol::ptr() );
+	ProtocolLocation( Protocol::ptr protocol = Protocol::ptr() , Connection* connection = NULL );
 	virtual ~ProtocolLocation();
 
 	void set_protocol( Protocol::ptr protocol );
+
+	virtual void request_location( Location::ptr loc );
 
 private:
 	void new_cmd( Command* cmd , const std::string& tag , id_t id );
@@ -44,7 +46,6 @@ private:
 	std::default_random_engine rnd;
 #endif
 
-	boost::signals2::scoped_connection conn_protocol_request;
 	boost::signals2::scoped_connection conn_location_request;
 };
 
