@@ -12,7 +12,7 @@ LocationsMgr::LocationsMgr()
 	loc_factory.register_location
 		<ProxyLoc>( "local" , "127.0.0.1" , 9002 );
 	loc_factory.register_location
-		<ProtocolLocation>( "gcwp" , std::make_shared<SzbaseProt>("gcwp") );
+		<SzbaseLocation>( "gcwp" , "gcwp" );
 }
 
 LocationsMgr::~LocationsMgr()
