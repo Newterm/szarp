@@ -9,6 +9,8 @@
 
 #include "data/vars.h"
 
+#include "locations/locations_list.h"
+
 class LocationsMgr {
 public:
 	LocationsMgr();
@@ -19,6 +21,8 @@ public:
 
 private:
 	void new_location( Location::ptr nloc , Location::ptr oloc = Location::ptr() );
+
+	LocationsList loc_factory;
 
 	std::unordered_map<Connection*,Location::ptr> locations;
 

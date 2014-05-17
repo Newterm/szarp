@@ -7,16 +7,14 @@
 #include "global_service.h"
 #include "locations/command.h"
 
-#include "locations/protocol_location.h"
-#include "locations/proxy/proxy.h"
-#include "locations/szbase/szbase.h"
+#include "locations/locations_list.h"
 
 namespace balgo = boost::algorithm;
 
 class CmdHelloRcv : public Command {
 public:
-	CmdHelloRcv( Protocol& prot )
-		: prot(prot)
+	CmdHelloRcv( Protocol& prot , LocationsList& locs )
+		: prot(prot) , locs(locs)
 	{
 		set_next( std::bind(&CmdHelloRcv::parse_command,this,std::placeholders::_1) );
 	}
@@ -27,47 +25,22 @@ public:
 
 	void parse_command( const std::string& line )
 	{
-		std::vector<std::string> tags;
-		balgo::split(
-				tags , line ,
-				balgo::is_any_of(" "), balgo::token_compress_on );
-
-		if( tags[0] == "proxy" ) {
-			if( tags.size() < 3 ) {
-				fail( ErrorCodes::ill_formed );
-				return;
-			}
-
-			auto prx = std::make_shared<ProxyLoc>(
-				tags[1] ,
-				boost::lexical_cast<unsigned>(tags[2]) );
+		try {
+			auto loc = locs.make_location( line );
 
 			GlobalService::get_service().post(
-				std::bind(&Protocol::request_location,&prot,prx) );
+				std::bind(&Protocol::request_location,&prot,loc) );
 
 			apply();
-		} else if( tags[0] == "szbase" ) {
-			if( tags.size() < 2 ) {
-				fail( ErrorCodes::ill_formed );
-				return;
-			}
-
-			try {
-				auto szb = std::make_shared<SzbaseProt>( tags[1] );
-				auto loc = std::make_shared<ProtocolLocation>( szb );
-				GlobalService::get_service().post(
-					std::bind(&Protocol::request_location,&prot,loc) );
-				apply();
-			} catch( ... ) {
-				fail( ErrorCodes::szbase_error );
-			}
-		} else {
-			fail( ErrorCodes::ill_formed );
+		} catch( ... ) {
+			/* TODO: Better error handling (17/05/2014 09:36, jkotur) */
+			fail( ErrorCodes::internal_error );
 		}
 	}
 
 protected:
 	Protocol& prot;
+	LocationsList& locs;
 
 };
 
