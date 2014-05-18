@@ -164,16 +164,16 @@ void Sz4BaseTestCase::cacheTest1() {
 
 	sz4::weighted_sum<short, sz4::second_time_t> sum_r;
 	base.get_weighted_sum(pr, sz4::second_time_t(1000), sz4::second_time_t(2000), PT_SEC10, sum_r);
-	CPPUNIT_ASSERT_EQUAL(10u, sum_r.refferred_blocks().size());
+	CPPUNIT_ASSERT_EQUAL(10ul, sum_r.refferred_blocks().size());
 
 	sz4::weighted_sum<double, sz4::second_time_t> sum_l;
 	base.get_weighted_sum(pl, sz4::second_time_t(1000), sz4::second_time_t(2000), PT_SEC10, sum_l);
-	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<double>::type(100), sum_l.sum(weight));
-	CPPUNIT_ASSERT_EQUAL(10u, sum_l.refferred_blocks().size());
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(sz4::value_sum<double>::type(100), sum_l.sum(weight), 0.5);
+	CPPUNIT_ASSERT_EQUAL(10ul, sum_l.refferred_blocks().size());
 
 	size_t size_in_bytes, blocks_count;
 	base.cache()->cache_size(size_in_bytes,blocks_count);
-	CPPUNIT_ASSERT_EQUAL(11u, blocks_count);
+	CPPUNIT_ASSERT_EQUAL(11ul, blocks_count);
 
 }
 

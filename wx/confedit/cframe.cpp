@@ -426,11 +426,11 @@ int ConfFrame::LoadSchema(void)
 	xmlRelaxNGParserCtxtPtr ctxt;
 	
 	ctxt = xmlRelaxNGNewParserCtxt(
-                "file:///"INSTALL_PREFIX"/resources/dtd/ipk-params.rng");
+                "file:///" INSTALL_PREFIX "/resources/dtd/ipk-params.rng");
 	ipk_rng = xmlRelaxNGParse(ctxt);
         if (ipk_rng == NULL) {
                 wxLogError(_("Could not load IPK RelaxNG schema from file %s"),
-                        INSTALL_PREFIX"/resources/dtd/ipk-params.rng");
+                        INSTALL_PREFIX "/resources/dtd/ipk-params.rng");
                 return 1;
         }
         return 0;

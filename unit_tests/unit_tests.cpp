@@ -18,12 +18,12 @@ main( int argc, char* argv[] )
 
   // Add a listener that print dots as test run.
   CPPUNIT_NS::BriefTestProgressListener progress;
-  controller.addListener( &progress );      
+  controller.addListener( &progress );
 
   // Add the top suite to the test runner
   CPPUNIT_NS::TestRunner runner;
   runner.addTest( CPPUNIT_NS::TestFactoryRegistry::getRegistry().makeTest() );
-  runner.run( controller );
+  runner.run( controller, argc > 1 ? argv[1] : "");
 
   // Print test in a compiler compatible format.
   CPPUNIT_NS::CompilerOutputter outputter( &result, CPPUNIT_NS::stdCOut() );

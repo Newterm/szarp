@@ -295,8 +295,8 @@ void InfoWidget::UpdateValues() {
 		if (start > end)
 			std::swap(start, end);
 
-		double sval = vt.Get(start - vt.m_view.Start()).val;
-		double eval = vt.Get(end - vt.m_view.Start()).val;
+		double sval = vt.Get(start).val;
+		double eval = vt.Get(end).val;
 
 		if (!std::isnan(sval) && !std::isnan(eval))
 			info_string += wxString::Format(_(" dif: %s"), m_draw->GetDrawInfo()->GetValueStr(eval - sval, _T("- -")).c_str());

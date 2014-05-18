@@ -82,7 +82,7 @@ void SzbParamMonitorTest::writeTest() {
 	}
 
 	CPPUNIT_ASSERT(o1.wait_for(3));
-	CPPUNIT_ASSERT_EQUAL(1u, o1.map.size());
+	CPPUNIT_ASSERT_EQUAL(1ul, o1.map.size());
 	CPPUNIT_ASSERT_EQUAL(3, o1.map[(TParam*)1]);
 
 	m.add_observer(&o1, std::vector<std::pair<TParam*, std::vector<std::string> > >(1, std::make_pair((TParam*)2, dir_paths)), 0);
@@ -98,12 +98,12 @@ void SzbParamMonitorTest::writeTest() {
 	}
 
 	CPPUNIT_ASSERT(o1.wait_for(9));
-	CPPUNIT_ASSERT_EQUAL(2u, o1.map.size());
+	CPPUNIT_ASSERT_EQUAL(2ul, o1.map.size());
 	CPPUNIT_ASSERT_EQUAL(6, o1.map[(TParam*)1]);
 	CPPUNIT_ASSERT_EQUAL(3, o1.map[(TParam*)2]);
 
 	CPPUNIT_ASSERT(o2.wait_for(3));
-	CPPUNIT_ASSERT_EQUAL(1u, o2.map.size());
+	CPPUNIT_ASSERT_EQUAL(1ul, o2.map.size());
 	CPPUNIT_ASSERT_EQUAL(3, o2.map[(TParam*)2]);
 
 	m.remove_observer(&o1);
@@ -118,12 +118,12 @@ void SzbParamMonitorTest::writeTest() {
 		sz4::close_unlock(fd);
 	}
 
-	CPPUNIT_ASSERT_EQUAL(2u, o1.map.size());
+	CPPUNIT_ASSERT_EQUAL(2ul, o1.map.size());
 	CPPUNIT_ASSERT_EQUAL(6, o1.map[(TParam*)1]);
 	CPPUNIT_ASSERT_EQUAL(3, o1.map[(TParam*)2]);
 
 	CPPUNIT_ASSERT(o2.wait_for(6));
-	CPPUNIT_ASSERT_EQUAL(1u, o2.map.size());
+	CPPUNIT_ASSERT_EQUAL(1ul, o2.map.size());
 	CPPUNIT_ASSERT_EQUAL(6, o2.map[(TParam*)2]);
 
 	boost::filesystem::remove_all(boost::filesystem::path(dir_paths[0]).branch_path());
@@ -149,7 +149,7 @@ void SzbParamMonitorTest::renameTest() {
 	boost::filesystem::rename(dir_paths[1] + "/f.tmp", dir_paths[1] + "/11.sz4");
 
 	CPPUNIT_ASSERT(o1.wait_for(2));
-	CPPUNIT_ASSERT_EQUAL(1u, o1.map.size());
+	CPPUNIT_ASSERT_EQUAL(1ul, o1.map.size());
 	CPPUNIT_ASSERT_EQUAL(2, o1.map[(TParam*)1]);
 }
 

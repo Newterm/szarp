@@ -78,7 +78,7 @@
 #undef _HELP_H_
 
 /** Path to main config file. */
-#define SZARP_CFG "/etc/"PACKAGE_NAME"/"PACKAGE_NAME".cfg"
+#define SZARP_CFG "/etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg"
 
 /** Name of section in main config file for reading data dir.. */
 #define SZARP_CFG_SECTION "meaner3"
@@ -377,13 +377,13 @@ int SetNoData(time_t start, time_t end)
 	
 	ipk_path = libpar_getpar(SZARP_CFG_SECTION, "IPK", 0);
 	if (ipk_path == NULL) {
-		sz_log(0, "szbnull: set 'IPK' param in "SZARP_CFG" file");
+		sz_log(0, "szbnull: set 'IPK' param in " SZARP_CFG " file");
 		return 1;
 	}
 	
 	char *_data_dir = libpar_getpar(SZARP_CFG_SECTION, "datadir", 0);
 	if (_data_dir == NULL) {
-		sz_log(0, "szbnull: set 'datadir' param in "SZARP_CFG" file");
+		sz_log(0, "szbnull: set 'datadir' param in " SZARP_CFG " file");
 		return 1;
 	}
 	data_dir = SC::A2S(_data_dir);

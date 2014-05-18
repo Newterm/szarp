@@ -34,6 +34,8 @@
 #include "test_serach_condition.h"
 #include "test_observer.h"
 
+#include "sz4/filelock.h"
+
 class Sz4LuaParam : public CPPUNIT_NS::TestFixture
 {
 	void test1();
@@ -210,20 +212,31 @@ void Sz4LuaParam::test2() {
 
 		std::wstringstream file_name;
 		file_name << std::setfill(L'0') << std::setw(10) << 100 << L".sz4";
+
+		boost::filesystem::wpath file_path = param_dir / file_name.str();
+
+		std::string file_path_str;
 #if BOOST_FILESYSTEM_VERSION == 3
-		std::ofstream ofs((param_dir / file_name.str()).native().c_str());
+		file_path_str = file_path.native();
 #else
-		std::ofstream ofs((param_dir / file_name.str()).external_file_string().c_str());
+		file_path_str = file_path.external_file_string();
 #endif
+		int fd;
+		CPPUNIT_ASSERT_NO_THROW(fd = sz4::open_writelock(file_path_str.c_str(), O_WRONLY | O_CREAT));
 
+		char buf[6];
 		short v = 10;
-		ofs.write((const char*)&v, sizeof(v));
-
 		sz4::second_time_t t = 150;
-		ofs.write((const char*)&t, sizeof(t));
+
+		memcpy(buf, &v, 2);
+		memcpy(buf + 2, &t, 4);
+
+		write(fd, buf, sizeof(buf));
+
+		sz4::close_unlock(fd);
 	}
 
-	CPPUNIT_ASSERT(o.wait_for(1, 2));
+	CPPUNIT_ASSERT(o.wait_for(1, 3));
 	{
 		sz4::weighted_sum<double, sz4::second_time_t> sum;
 		sz4::weighted_sum<double, sz4::second_time_t>::time_diff_type weight;

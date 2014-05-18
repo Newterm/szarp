@@ -40,7 +40,7 @@ public:
 		if (!m_invalidate_non_fixed)
 			return;
 
-		m_invalidate_non_fixed = true;
+		m_invalidate_non_fixed = false;
 		std::for_each(m_cache.begin(), m_cache.end(), std::mem_fun_ref(&cache_type::invalidate_non_fixed_values));
 	}
 

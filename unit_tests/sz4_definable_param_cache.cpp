@@ -153,12 +153,12 @@ void Sz4DefinableParamCache::test1() {
 	CPPUNIT_ASSERT_EQUAL(r.first, false);
 	CPPUNIT_ASSERT_EQUAL(sz4::make_nanosecond_time(90, 0), r.second);
 
-	CPPUNIT_ASSERT_EQUAL(2u, cache.blocks().size());
+	CPPUNIT_ASSERT_EQUAL(2ul, cache.blocks().size());
 
 	sz4::nanosecond_time_t t3 = sz4::make_nanosecond_time(120, 0);
 	cache.store_value(30, t3, true, set);
 
-	CPPUNIT_ASSERT_EQUAL(1u, cache.blocks().size());
+	CPPUNIT_ASSERT_EQUAL(1ul, cache.blocks().size());
 }
 
 void Sz4DefinableParamCache::test2() {
@@ -175,18 +175,18 @@ void Sz4DefinableParamCache::test2() {
 	cache.store_value(20, sz4::make_nanosecond_time(110, 0), true, set);
 	cache.store_value(10, sz4::make_nanosecond_time(120, 0), true, set);
 
-	CPPUNIT_ASSERT_EQUAL(3u, cache.blocks().begin()->second->data().size());
+	CPPUNIT_ASSERT_EQUAL(3ul, cache.blocks().begin()->second->data().size());
 
 	cache.store_value(10,  sz4::make_nanosecond_time(110, 0), true, set);
-	CPPUNIT_ASSERT_EQUAL(1u, cache.blocks().begin()->second->data().size());
+	CPPUNIT_ASSERT_EQUAL(1ul, cache.blocks().begin()->second->data().size());
 
 	cache.store_value(30, sz4::make_nanosecond_time(140, 0), true, set);
 	cache.store_value(40, sz4::make_nanosecond_time(150, 0), true, set);
-	CPPUNIT_ASSERT_EQUAL(2u, cache.blocks().size());
+	CPPUNIT_ASSERT_EQUAL(2ul, cache.blocks().size());
 
 	cache.store_value(10, sz4::make_nanosecond_time(130, 0), true, set);
-	CPPUNIT_ASSERT_EQUAL(1u, cache.blocks().size());
-	CPPUNIT_ASSERT_EQUAL(3u, cache.blocks().begin()->second->data().size());
+	CPPUNIT_ASSERT_EQUAL(1ul, cache.blocks().size());
+	CPPUNIT_ASSERT_EQUAL(3ul, cache.blocks().begin()->second->data().size());
 
 }
 

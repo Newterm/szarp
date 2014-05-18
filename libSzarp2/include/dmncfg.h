@@ -58,8 +58,10 @@ public:
 
 		/**pointer to next unit on units' list*/
 		UnitInfo* m_next;
+
+		long m_sender_msg_type;
 	public:
-		UnitInfo(char id, int send_count);
+		UnitInfo(TUnit * unit);
 
 		/**@return next unit info on a list*/
 		UnitInfo* GetNext();
@@ -72,6 +74,8 @@ public:
 		
 		/**sets next object on units' list*/
 		void SetNext(UnitInfo *unit);
+
+		long GetSenderMsgType();
 
 		~UnitInfo();
 	};
@@ -170,6 +174,9 @@ public:
 	UnitInfo* GetFirstUnitInfo();
 
 	const char* GetDevicePath();
+
+	std::string& GetIPKPath();
+
 	/** Returns port speed. Returns either value supplied by 
 	 * in command line arguments or, if configuraion is loaded,
 	 * path specified in the configuration.
@@ -201,7 +208,7 @@ protected:
 	/** Loads IPK configuration from XML file. Internal use.
 	 * @return 0 on success, 1 on error
 	 */
-	int LoadXML(char *path);
+	int LoadXML(const char *path);
 	/** 
 	 * @brief Tries to load DaemonConfig not from XML file.
 	 *
@@ -236,6 +243,7 @@ private:
 				  identifiers */
 	std::string m_linex_path;	/**< path to lineX.cfg file, used for IPC
 				  identifiers */
+	std::string m_ipk_path; /**< path to params.xml file */
 	xmlDocPtr m_ipk_doc;	/**< IPK configuration as XML document */
 	xmlNodePtr m_ipk_device;/**< XML 'device' element for daemon */
 	TSzarpConfig *m_ipk;	/**< pointer to IPK configuration */ 

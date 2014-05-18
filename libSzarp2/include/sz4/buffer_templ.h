@@ -84,7 +84,7 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 
 			typename types::ipk_container_type* ipk_container = base->get_ipk_container();
 			for (std::vector<std::wstring>::iterator i = strings.begin(); i != strings.end(); i++) {
-				if (std::count(i->begin(), i->end(), L':') != 4)
+				if (std::count(i->begin(), i->end(), L':') != 3)
 					continue;
 
 				TParam * rparam = ipk_container->GetParam(*i);

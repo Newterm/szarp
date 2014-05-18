@@ -337,6 +337,13 @@ public:
 	unsigned GetConfigId() const { return config_id; }
 
 	void SetConfigId(unsigned _config_id) { config_id = _config_id; }
+
+	TDevice* createDevice(const std::wstring& _daemon = std::wstring(), const std::wstring& _path = std::wstring());
+
+	TRadio* createRadio(TDevice* parent, wchar_t _id = 0, TUnit* _units = NULL);
+
+	TUnit* createUnit(TRadio* parent, wchar_t _id = 0, int _type = 0, int _subtype = 0);
+
 protected:
 	/**
 	 * Adds new defined parameter. Adds parameter with given formula at
@@ -377,15 +384,22 @@ protected:
 	std::wstring ps_port;	/**< Parameter Setting server port*/
 
 	bool logparams; /**< specify if logging parameters should be created */
+	
+	size_t device_counter; /**< numer of created TDevice objects */
+
+	size_t radio_counter; /**< numer of created TRadio objects */
+
+	size_t unit_counter; /**< numer of created TUnit objects */
 };
 
 
 /** Device description */
 class TDevice {
 public:
-	TDevice(TSzarpConfig *parent, const std::wstring& _daemon = std::wstring(), const std::wstring& _path = std::wstring(),
+	TDevice(size_t _number, TSzarpConfig *parent, const std::wstring& _daemon = std::wstring(), const std::wstring& _path = std::wstring(),
 			int _speed = -1, int _stop = -1, int _protocol = -1,
 			const std::wstring& _options = std::wstring()) :
+		number(_number),
 		parentSzarpConfig(parent),
 		daemon(_daemon), path(_path), speed(_speed),
 		stop(_stop),
@@ -504,6 +518,9 @@ protected:
 	 * @return pointer to param, NULL if not found
 	 */
 	TParam *getParamByNum(int num);
+
+	size_t number;
+
 	TSzarpConfig *parentSzarpConfig;
 			/**< Pointer to SzarpConfig object. */
 	std::wstring daemon;	/**< Path to daemon responsible for the line, if NULL
@@ -534,8 +551,8 @@ protected:
  */
 class TRadio {
 public:
-	TRadio(TDevice *parent, wchar_t _id = 0, TUnit* _units = NULL) :
-		parentDevice(parent), id(_id), units(_units), next(NULL)
+	TRadio(size_t _number, TDevice *parent, wchar_t _id = 0, TUnit* _units = NULL) :
+		number(_number), parentDevice(parent), id(_id), units(_units), next(NULL)
 	{ }
 	/** Destroys whole list. */
 	~TRadio();
@@ -599,6 +616,7 @@ public:
 	 */
 	int parseXML(xmlTextReaderPtr reader);
 protected:
+	size_t number;
 	TDevice *parentDevice;
 			/**< Pointer to parent device object. */
 	wchar_t id;	/**< Identifier used by radio modem, NULL if it's
@@ -612,9 +630,9 @@ protected:
  */
 class TUnit {
 public:
-	TUnit(TRadio *parent, wchar_t _id = 0, int _t = 0, int _st = 0,
+	TUnit(size_t _number, TRadio *parent, wchar_t _id = 0, int _t = 0, int _st = 0,
 			int _bs = 0, const std::wstring& _n = std::wstring()) :
-		parentRadio(parent), id(_id), type(_t), subtype(_st),
+		number(_number), parentRadio(parent), id(_id), type(_t), subtype(_st),
 		bufsize(_bs), name(_n), params(NULL), sendParams(NULL), next(NULL)
 	{ }
 	/** Deletes whole list */
@@ -710,7 +728,14 @@ public:
 	const std::wstring& GetTranslatedUnitName();
 
 	void SetTranslatedUnitName(const std::wstring& s);
+
+	long GetSenderMsgType()
+	{
+		return number + 256L;
+	}
 protected:
+	size_t number;
+
 	TRadio *parentRadio;
 			/**< Pointer to parent TRadio object. */
 	wchar_t id;/**< Ascii wchar_tacter - line identifier */

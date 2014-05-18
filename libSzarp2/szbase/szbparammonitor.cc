@@ -73,7 +73,7 @@ void SzbParamMonitorImpl::process_notification() {
 				size_t l = strlen(e->name);
 				if (l > 4 && e->name[l - 4] == '.' && e->name[l - 3] == 's' && e->name[l - 2] == 'z'
 						&& (e->name[l - 1] == '4' || e->name[l - 1] == 'b'))
-					tokens_and_paths.push_back(std::make_pair(SzbMonitorTokenType(e->wd), e->name));
+					tokens_and_paths.push_back(std::make_pair(SzbMonitorTokenType(e->wd), std::string(e->name)));
 			}
 			r -= sizeof(*e) + e->len;
 			p += sizeof(*e) + e->len;

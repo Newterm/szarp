@@ -48,7 +48,7 @@ double get_value(const std::wstring& param, time_t time, SZARP_PROBE_TYPE probe_
 	double ret = szbase->GetValue(param, time, probe_type, 0, &is_fixed, ok, error);
 	
 	if (!ok)
-		std::runtime_error(SC::S2A(error));
+		throw std::runtime_error(SC::S2A(error));
 
 	return ret;
 }

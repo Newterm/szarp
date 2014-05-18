@@ -64,7 +64,7 @@
 #include <mingw32_missing.h>
 #endif
 
-char degree_char[] = { 0xc2, 0xb0, 0x0 };
+char degree_char[] = { (char)0xc2, (char)0xb0, (char)0x0 };
 
 class non_zero_search_condition : public szb_search_condition {
 public:

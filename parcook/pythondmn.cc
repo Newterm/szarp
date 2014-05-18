@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <boost/python.hpp>
+#include <boost/python/copy_const_reference.hpp>
 #include <boost/python/manage_new_object.hpp>
 #include <boost/python/return_value_policy.hpp>
 
@@ -22,6 +23,9 @@ namespace szarp {
 	    ipc() : m_cfg(NULL), m_ipc(NULL), m_read(NULL), m_read_count(0) {};
 
 	    int configure(DaemonConfig * cfg);
+
+	    int get_line_number();
+	    const std::string& get_ipk_path();
 
 	    void set_read(size_t index, py::object & val) ;
 	    void set_no_data(size_t index) ;
@@ -61,6 +65,14 @@ namespace szarp {
 	sz_log(1, "m_read_count: %d, m_send_count: %d", m_read_count, m_send_count);
 
 	return 0;
+    }
+
+    int ipc::get_line_number() {
+	return m_cfg->GetLineNumber();
+    }
+
+    const std::string& ipc::get_ipk_path() {
+	    return m_cfg->GetIPKPath();
     }
 
     void ipc::set_read(size_t index, py::object & val) {
@@ -260,6 +272,8 @@ int main( int argc, char ** argv )
 	}
 
 	main_namespace["IPC"] = py::class_<szarp::ipc>("IPC")
+	    .def("get_line_number", &szarp::ipc::get_line_number)
+	    .def("get_ipk_path", &szarp::ipc::get_ipk_path, py::return_value_policy<py::copy_const_reference>())
 	    .def("set_read", &szarp::ipc::set_read)
 	    .def("set_no_data", &szarp::ipc::set_no_data)
 	    .def("get_send", &szarp::ipc::get_send)
