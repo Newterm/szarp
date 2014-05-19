@@ -20,7 +20,7 @@ public:
 	void on_disconnected  ( Connection* conn );
 
 private:
-	void new_location( Location::ptr nloc , Location::ptr oloc = Location::ptr() );
+	void new_location( Location::ptr nloc , std::weak_ptr<Location> oloc = std::weak_ptr<Location>() );
 
 	LocationsList loc_factory;
 

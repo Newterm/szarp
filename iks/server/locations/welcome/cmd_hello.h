@@ -28,10 +28,16 @@ public:
 		try {
 			auto loc = locs.make_location( line );
 
+			/* FIXME: Because request_location cat delete location
+			 * apply should be called before this. This is pretty ugly
+			 * and should be fixed so apply is safe in case of object
+			 * deletion.
+			 * (19/05/2014 10:13, jkotur)
+			 */
+			apply();
+
 			GlobalService::get_service().post(
 				std::bind(&Protocol::request_location,&prot,loc) );
-
-			apply();
 		} catch( ... ) {
 			/* TODO: Better error handling (17/05/2014 09:36, jkotur) */
 			fail( ErrorCodes::internal_error );

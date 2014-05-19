@@ -31,8 +31,10 @@ void LocationsMgr::on_disconnected( Connection* con )
 		locations.erase( itr );
 }
 
-void LocationsMgr::new_location( Location::ptr nloc , Location::ptr oloc )
+void LocationsMgr::new_location( Location::ptr nloc , std::weak_ptr<Location> oloc_w )
 {
+	auto oloc = oloc_w.lock();
+
 	if( oloc )
 		nloc->swap_connection( *oloc );
 
@@ -41,6 +43,6 @@ void LocationsMgr::new_location( Location::ptr nloc , Location::ptr oloc )
 	nloc->on_location_request(
 		std::bind(
 			&LocationsMgr::new_location, this,
-			std::placeholders::_1 , nloc ) );
+			std::placeholders::_1 , std::weak_ptr<Location>(nloc) ) );
 }
 

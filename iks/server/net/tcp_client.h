@@ -1,6 +1,7 @@
 #ifndef __LINE_CLIENT_H__
 #define __LINE_CLIENT_H__
 
+#include <memory>
 #include <functional>
 
 #include <boost/asio.hpp>
@@ -10,9 +11,14 @@
 
 #include "utils/signals.h"
 
+namespace details { class AsioHandler; }
+
 class TcpClient : public Connection {
+	friend class details::AsioHandler;
+
 public:
 	TcpClient( boost::asio::io_service& io_service, boost::asio::ip::tcp::resolver::iterator endpoint_iterator );
+	virtual ~TcpClient();
 
 	virtual void write_line( const std::string& line )
 	{
@@ -28,6 +34,30 @@ public:
 	{	return emit_connected.connect( slot ); }
 
 private:
+	void do_write_line( const std::string& line );
+
+	void do_close();
+
+	std::shared_ptr<details::AsioHandler> handler;
+
+	boost::asio::io_service& io_service_;
+	boost::asio::ip::tcp::socket socket_;
+
+	boost::asio::streambuf buffer;
+
+	sig_connection emit_connected;
+
+};
+
+namespace details {
+
+class AsioHandler : public std::enable_shared_from_this<AsioHandler> {
+public:
+	AsioHandler( TcpClient& client ) : client(client) , valid(true) {}
+
+	bool is_valid() { return valid; }
+	void invalidate() { valid = false; }
+
 	bool handle_error( const boost::system::error_code& error );
 
 	void handle_connect(const boost::system::error_code& error);
@@ -35,17 +65,12 @@ private:
 	void handle_write(const boost::system::error_code& error);
 
 	void do_read_line();
-	void do_write_line( const std::string& line );
-	void do_close();
 
-private:
-	boost::asio::io_service& io_service_;
-	boost::asio::ip::tcp::socket socket_;
-
-	boost::asio::streambuf buffer;
-
-	sig_connection emit_connected;
+	TcpClient& client;
+	bool valid;
 };
+
+}
 
 #endif /* __LINE_CLIENT_H__ */
 

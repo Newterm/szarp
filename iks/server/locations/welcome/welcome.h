@@ -7,6 +7,7 @@
 class WelcomeProt : public Protocol {
 public:
 	WelcomeProt( LocationsList& locs ) : locs(locs) {}
+	virtual ~WelcomeProt() {}
 
 	virtual Command* cmd_from_tag( const std::string& tag );
 	virtual std::string tag_from_cmd( const Command* cmd );
