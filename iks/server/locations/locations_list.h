@@ -7,10 +7,19 @@
 #include "location.h"
 #include "protocol.h"
 
+#include "utils/iterator.h"
+
 class LocationsList {
+	typedef std::unordered_map<std::string,std::function<Location::ptr ()>> GenetratorsMap;
+
 public:
 	LocationsList() {}
 	virtual ~LocationsList() {}
+
+	typedef key_iterator<GenetratorsMap> iterator;
+
+	iterator begin() const { return iterator(locations_generator.begin()); }
+	iterator end  () const { return iterator(locations_generator.end  ()); }
 
 	template<class T,class... Args> void register_location( const std::string& tag , Args... args )
 	{
@@ -26,7 +35,10 @@ public:
 
 	Location::ptr make_location( const std::string& tag )
 	{
-		return locations_generator[tag]();
+		auto itr = locations_generator.find(tag);
+		return itr != locations_generator.end() ?
+			itr->second() :
+			Location::ptr();
 	}
 
 private:
@@ -36,7 +48,7 @@ private:
 		return std::make_shared<T>( args... );
 	}
 
-	std::unordered_map<std::string,std::function<Location::ptr ()>> locations_generator;
+	GenetratorsMap locations_generator;
 
 };
 

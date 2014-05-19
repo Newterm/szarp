@@ -1,5 +1,5 @@
-#ifndef __WELCOME_CMD_HELLO_H__
-#define __WELCOME_CMD_HELLO_H__
+#ifndef __WELCOME_CMD_CONNECT_REMOTE_H__
+#define __WELCOME_CMD_CONNECT_REMOTE_H__
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -9,17 +9,17 @@
 
 #include "locations/locations_list.h"
 
-namespace balgo = boost::algorithm;
+#include "locations/szbase/szbase.h"
 
-class CmdHelloRcv : public Command {
+class CmdConnectRemoteRcv : public Command {
 public:
-	CmdHelloRcv( Protocol& prot , LocationsList& locs )
+	CmdConnectRemoteRcv( Protocol& prot , LocationsList& locs )
 		: prot(prot) , locs(locs)
 	{
-		set_next( std::bind(&CmdHelloRcv::parse_command,this,std::placeholders::_1) );
+		set_next( std::bind(&CmdConnectRemoteRcv::parse_command,this,std::placeholders::_1) );
 	}
 
-	virtual ~CmdHelloRcv()
+	virtual ~CmdConnectRemoteRcv()
 	{
 	}
 
@@ -27,6 +27,11 @@ public:
 	{
 		try {
 			auto loc = locs.make_location( line );
+
+			if( !loc ) {
+				fail( ErrorCodes::unknown_remote );
+				return;
+			}
 
 			/* FIXME: Because request_location cat delete location
 			 * apply should be called before this. This is pretty ugly
@@ -38,9 +43,8 @@ public:
 
 			GlobalService::get_service().post(
 				std::bind(&Protocol::request_location,&prot,loc) );
-		} catch( ... ) {
-			/* TODO: Better error handling (17/05/2014 09:36, jkotur) */
-			fail( ErrorCodes::internal_error );
+		} catch( const std::exception& e ) {
+			fail( ErrorCodes::internal_error , e.what() );
 		}
 	}
 
@@ -50,5 +54,5 @@ protected:
 
 };
 
-#endif /* end of include guard: __WELCOME_CMD_HELLO_H__ */
+#endif /* end of include guard: __WELCOME_CMD_CONNECT_REMOTE_H__ */
 

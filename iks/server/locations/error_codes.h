@@ -9,6 +9,7 @@ enum class ErrorCodes : error_code_t {
 	invalid_id       = 6,
 	id_used          = 8,
 	response_timeout = 10,
+	unknown_remote   = 20,
 	unknown_param    = 100,
 	invalid_pin      = 102,
 	cannot_set_value = 104,
