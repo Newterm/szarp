@@ -12,6 +12,9 @@ class Connection {
 public:
 	virtual ~Connection() {}
 
+	virtual void close()
+	{	emit_disconnected(this); }
+
 	virtual void write_line( const std::string& line ) = 0;
 
 	slot_connection on_line_received( const sig_line_slot& slot )

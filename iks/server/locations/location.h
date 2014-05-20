@@ -37,6 +37,14 @@ public:
 	{	return emit_request_location.connect( slot ); }
 
 protected:
+	void die()
+	{
+		if( connection )
+			connection->close();
+		sig_conn.disconnect();
+		connection = NULL;
+	}
+
 	virtual void parse_line( const std::string& line ) =0;
 
 	void write_line( const std::string& line );

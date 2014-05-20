@@ -33,6 +33,7 @@ void ProxyLoc::connect( const std::string& address , unsigned port )
 	remote = std::make_shared<TcpClient>( service , endpoint );
 
 	remote->on_line_received( std::bind(&ProxyLoc::write_line,this,p::_1) );
+	remote->on_disconnect( std::bind(&ProxyLoc::die        ,this) );
 }
 
 void ProxyLoc::parse_line( const std::string& line )
