@@ -40,7 +40,7 @@ void RemotesUpdater::connect()
 	remote->on_connected ( std::bind(&RemotesUpdater::get_remotes,this) );
 	remote->on_disconnect( std::bind(&RemotesUpdater::rm_remotes ,this) );
 
-	protocol_mgr = std::make_shared<ProtocolLocation>( shared_from_this() , remote.get() );
+	protocol_mgr = std::make_shared<ProtocolLocation>( "updater" , shared_from_this() , remote.get() );
 }
 
 void RemotesUpdater::get_remotes()

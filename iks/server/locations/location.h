@@ -20,9 +20,12 @@ public:
 	typedef std::shared_ptr<const Location> const_ptr;
 
 	/** Build location with new connection */
-	Location( Connection* conn = NULL );
+	Location( const std::string& name , Connection* conn = NULL );
 
 	virtual ~Location();
+
+	const std::string& get_name()
+	{	return name; }
 
 	/** Swap connection object with another location */
 	void swap_connection( Location& loc );
@@ -43,6 +46,7 @@ protected:
 private:
 	void init_connection();
 
+	std::string name;
 	Connection* connection;
 
 	boost::signals2::scoped_connection sig_conn;

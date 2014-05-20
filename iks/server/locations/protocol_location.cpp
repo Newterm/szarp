@@ -19,8 +19,8 @@ using boost::format;
 
 #include "global_service.h"
 
-ProtocolLocation::ProtocolLocation( Protocol::ptr protocol , Connection* connection )
-	: Location(connection)
+ProtocolLocation::ProtocolLocation( const std::string& name , Protocol::ptr protocol , Connection* connection )
+	: Location(name,connection)
 {
 	set_protocol( protocol );
 }

@@ -12,8 +12,8 @@ using boost::asio::ip::tcp;
 
 namespace p = std::placeholders;
 
-ProxyLoc::ProxyLoc( const std::string& address , unsigned port )
-	: address(address) , port(port)
+ProxyLoc::ProxyLoc( const std::string& name , const std::string& address , unsigned port )
+	: Location(name) , address(address) , port(port)
 {
 	connect( address , port );
 }

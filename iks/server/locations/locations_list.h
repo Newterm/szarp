@@ -75,7 +75,7 @@ private:
 	/* Can be specialized to other types if needed (17/05/2014 08:55, jkotur) */
 	template<class T,class... Args> Location::ptr create_location( const std::string& tag , Args... args )
 	{
-		return std::make_shared<T>( args... );
+		return std::make_shared<T>( tag , args... );
 	}
 
 	GenetratorsMap locations_generator;

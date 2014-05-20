@@ -2,8 +2,8 @@
 
 namespace p  = std::placeholders;
 
-Location::Location( Connection* conn )
-	: connection(conn)
+Location::Location( const std::string& name , Connection* conn )
+	: name(name) , connection(conn)
 {
 	init_connection();
 }

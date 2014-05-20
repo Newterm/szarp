@@ -7,7 +7,7 @@
 
 class ProxyLoc : public Location {
 public:
-	ProxyLoc( const std::string& address , unsigned port );
+	ProxyLoc( const std::string& name , const std::string& address , unsigned port );
 	virtual ~ProxyLoc();
 
 protected:

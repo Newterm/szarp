@@ -25,7 +25,7 @@ LocationsMgr::~LocationsMgr()
 
 void LocationsMgr::on_new_connection( Connection* con )
 {
-	new_location( std::make_shared<ProtocolLocation>( std::make_shared<WelcomeProt>(loc_factory) , con ) );
+	new_location( std::make_shared<ProtocolLocation>( "welcome" , std::make_shared<WelcomeProt>(loc_factory) , con ) );
 }
 
 void LocationsMgr::on_disconnected( Connection* con )

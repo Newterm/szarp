@@ -13,7 +13,7 @@
 
 class ProtocolLocation : public Location {
 public:
-	ProtocolLocation( Protocol::ptr protocol = Protocol::ptr() , Connection* connection = NULL );
+	ProtocolLocation( const std::string& name , Protocol::ptr protocol = Protocol::ptr() , Connection* connection = NULL );
 	virtual ~ProtocolLocation();
 
 	void set_protocol( Protocol::ptr protocol );

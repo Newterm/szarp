@@ -19,8 +19,8 @@ private:
 
 class SzbaseLocation : public ProtocolLocation {
 public:
-	SzbaseLocation( const std::string& szarp_base , Connection* conn = NULL )
-		: ProtocolLocation( std::make_shared<SzbaseProt>(szarp_base) , conn )
+	SzbaseLocation( const std::string& name , const std::string& szarp_base , Connection* conn = NULL )
+		: ProtocolLocation( name , std::make_shared<SzbaseProt>(szarp_base) , conn )
 	{}
 
 	virtual ~SzbaseLocation()
