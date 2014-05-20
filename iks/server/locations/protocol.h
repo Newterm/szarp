@@ -23,12 +23,18 @@ public:
 	virtual Command* cmd_from_tag( const std::string& tag ) =0;
 	virtual std::string tag_from_cmd( const Command* cmd ) =0;
 
+	void send_cmd( Command* cmd )
+	{	emit_send_cmd( cmd ); }
+	slot_connection on_send_cmd( const sig_cmd_ptr_slot& slot )
+	{	return emit_send_cmd.connect( slot ); }
+
 	void request_location( Location::ptr loc )
 	{	emit_request_location(loc); }
 	slot_connection on_location_request( const sig_location_slot& slot ) const
 	{	return emit_request_location.connect( slot ); }
 
 protected:
+	mutable sig_cmd_ptr  emit_send_cmd;
 	mutable sig_location emit_request_location;
 };
 

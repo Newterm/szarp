@@ -87,5 +87,8 @@ private:
 typedef boost::signals2::signal<void (const Command&)> sig_cmd;
 typedef sig_cmd::slot_type sig_cmd_slot;
 
+typedef boost::signals2::signal<void (Command*)> sig_cmd_ptr;
+typedef sig_cmd_ptr::slot_type sig_cmd_ptr_slot;
+
 #endif /* end of include guard: __LOCATIONS_COMMAND_H__ */
 

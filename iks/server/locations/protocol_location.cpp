@@ -35,9 +35,12 @@ void ProtocolLocation::set_protocol( Protocol::ptr new_protocol )
 {
 	if( new_protocol ) {
 		protocol = new_protocol;
+		conn_send_cmd = protocol->on_send_cmd(
+			std::bind(&ProtocolLocation::send_cmd,this,p::_1) );
 		conn_location_request = protocol->on_location_request(
 			std::bind(&ProtocolLocation::request_location,this,p::_1) );
 	} else {
+		conn_send_cmd.disconnect(); 
 		conn_location_request.disconnect(); 
 	}
 }
@@ -92,9 +95,7 @@ void ProtocolLocation::parse_line( const std::string& line )
 		// TODO: log error or sth
 		std::cerr << "Got error from client" << std::endl;
 		erase_cmd( cmd_id );
-	} else if( cmd_name == "k" ) {
-		erase_cmd( cmd_id ); /** proper command end */
-	} else if( cmd_name == "r" ) {
+	} else if( cmd_name == "r" || cmd_name == "k"  ) {
 		if( !commands.count(cmd_id) ) {
 			send_fail( ErrorCodes::invalid_id );
 			return;
@@ -102,6 +103,9 @@ void ProtocolLocation::parse_line( const std::string& line )
 
 		/** Response to command from client */
 		commands[cmd_id]->new_line( data );
+
+		if( cmd_name == "k" )
+			erase_cmd( cmd_id ); /** proper command end */
 	} else {
 		if( commands.count(cmd_id) ) {
 			send_fail( ErrorCodes::id_used );
@@ -116,28 +120,35 @@ void ProtocolLocation::parse_line( const std::string& line )
 			return;
 		}
 
-		new_cmd( cmd , cmd_name , cmd_id );
-		cmd->new_line( data );
+		new_cmd( cmd , cmd_name , cmd_id , Command::to_send(data) );
 	}
 }
 
-void ProtocolLocation::new_cmd( Command* cmd , const std::string& tag , id_t id )
+void ProtocolLocation::new_cmd( Command* cmd , const std::string& tag , id_t id , const Command::to_send& in_data )
 {
-	Command::to_send data = cmd->send_str();
+	Command::to_send out_data = cmd->send_str();
 
-	if( data )
-		write_line( str( format("%s %d %s") % tag % id % *data ) );
+	if( out_data )
+		write_line( str( format("%s %d %s") % tag % id % *out_data ) );
 
-	if( !cmd->single_shot() && !commands.count(id) ) {
-		commands[id] = cmd;
-		cmd->set_id( id );
-		cmd->on_response( 
-				std::bind(&ProtocolLocation::send_response,this,p::_1,p::_2,p::_3) );
-	} else {
-		if( !cmd->single_shot() )
+	if( !cmd->single_shot() ) {
+		if( !commands.count(id) ) {
+			commands[id] = cmd;
+			cmd->set_id( id );
+			cmd->on_response( 
+					std::bind(&ProtocolLocation::send_response,this,p::_1,p::_2,p::_3) );
+		} else {
+			/* TODO: Log error (20/05/2014 12:55, jkotur) */
 			std::cerr << "Invalid id generated" << std::endl;
-		delete cmd;
+			return;
+		}
 	}
+
+	if( in_data )
+		cmd->new_line( *in_data );
+
+	if( cmd->single_shot() )
+		delete cmd;
 }
 
 void ProtocolLocation::erase_cmd( Command* cmd )
