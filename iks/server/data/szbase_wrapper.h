@@ -13,11 +13,11 @@ class SzbaseWrapper {
 public:
 	typedef SZARP_PROBE_TYPE ProbeType;
 
-	static const std::string& get_dir()
+	static std::string get_dir()
 #if BOOST_FILESYSTEM_VERSION == 3
 	{	return szarp_dir.string(); }
 #else
-	{	return SC::S2A( szarp_dir.string(); ) }
+	{	return SC::S2A( szarp_dir.string() ); }
 #endif
 
 	static bool init( const std::string& szarp_dir );

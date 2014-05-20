@@ -1,5 +1,6 @@
 #include "proxy.h"
 
+#include <iostream>
 #include <functional>
 
 #include <boost/asio.hpp>
