@@ -11,6 +11,8 @@
 
 #include "locations/locations_list.h"
 
+#include "locations/remotes_updater/remotes_updater.h"
+
 class LocationsMgr {
 public:
 	LocationsMgr();
@@ -25,6 +27,8 @@ private:
 	LocationsList loc_factory;
 
 	std::unordered_map<Connection*,Location::ptr> locations;
+
+	std::unordered_map<std::string,RemotesUpdater::ptr> updaters;
 
 	std::string base;
 };

@@ -10,9 +10,13 @@
 LocationsMgr::LocationsMgr()
 {
 	loc_factory.register_location
-		<ProxyLoc>( "local" , "127.0.0.1" , 9002 );
-	loc_factory.register_location
 		<SzbaseLocation>( "gcwp" , "gcwp" );
+
+	updaters[ "local" ] = std::make_shared
+		<RemotesUpdater>( "local" , "127.0.0.1" , 9003 , loc_factory );
+
+	for( auto i=updaters.begin() ; i!=updaters.end() ; ++i )
+		i->second->connect();
 }
 
 LocationsMgr::~LocationsMgr()

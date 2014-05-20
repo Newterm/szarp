@@ -20,8 +20,10 @@ public:
 	class iterator : public key_iterator<GenetratorsMap> {
 		friend class LocationsList;
 	public:
-		iterator( const iterator& itr ) : key_iterator(itr.itr) {}
-		iterator( const typename GenetratorsMap::const_iterator& itr ) : key_iterator(itr) {}
+		iterator( const iterator& itr )
+			: key_iterator<GenetratorsMap>(itr.itr) {}
+		iterator( const GenetratorsMap::const_iterator& itr )
+			: key_iterator<GenetratorsMap>(itr) {}
 	};
 
 	iterator begin() const { return iterator(locations_generator.begin()); }

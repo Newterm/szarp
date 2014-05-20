@@ -24,6 +24,7 @@ LDADD = @PTHREAD_CFLAGS@ $(LIBSZARP2) $(LIBSZARP) \
 bin_PROGRAMS = iks-server
 
 iks_server_SOURCES = \
+	locations/remotes_updater/remotes_updater.cpp \
 	locations/welcome/welcome.cpp \
 	locations/szbase/szbase.cpp \
 	locations/proxy/proxy.cpp \
