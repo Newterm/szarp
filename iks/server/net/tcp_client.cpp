@@ -25,8 +25,10 @@ TcpClient::TcpClient( ba::io_service& io_service, tcp::resolver::iterator endpoi
 
 TcpClient::~TcpClient()
 {
-	handler->invalidate();
-	emit_disconnected( this );
+	if( handler->is_valid() ) {
+		emit_disconnected( this );
+		handler->invalidate();
+	}
 }
 
 void TcpClient::do_write_line( const std::string& line )
