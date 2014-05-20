@@ -13,7 +13,7 @@ public:
     key_iterator   operator++(int) { return key_iterator(itr++); }
     bool operator==( const key_iterator& other ) { return itr == other.itr; }
     bool operator!=( const key_iterator& other ) { return itr != other.itr; }
-private:
+protected:
     typename Map::const_iterator itr;
 };
 
