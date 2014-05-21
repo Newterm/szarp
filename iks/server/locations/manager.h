@@ -10,19 +10,26 @@
 #include "data/vars.h"
 
 #include "locations/locations_list.h"
-
 #include "locations/remotes_updater/remotes_updater.h"
+
+#include "utils/config.h"
 
 class LocationsMgr {
 public:
 	LocationsMgr();
 	virtual ~LocationsMgr();
 
+	void add_locations( const CfgSections& cfg );
+	void add_location( const std::string& name , const CfgPairs& cfg );
+
 	void on_new_connection( Connection* conn );
 	void on_disconnected  ( Connection* conn );
 
 private:
 	void new_location( Location::ptr nloc , std::weak_ptr<Location> oloc = std::weak_ptr<Location>() );
+
+	void add_szbase( const std::string& name , const CfgPairs& cfg );
+	void add_proxy ( const std::string& name , const CfgPairs& cfg );
 
 	LocationsList loc_factory;
 

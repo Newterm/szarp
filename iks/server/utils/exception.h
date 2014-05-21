@@ -33,6 +33,9 @@ protected:
 #define DECLARE_MSG_EXCEPT(type) DECLARE_MSG_BASE_EXCEPT(type,msg_error) 
 
 DECLARE_MSG_EXCEPT(config_error);
+DECLARE_MSG_BASE_EXCEPT(missing_option,config_error);
+DECLARE_MSG_BASE_EXCEPT(invalid_value,config_error);
+
 DECLARE_MSG_EXCEPT(file_not_found_error);
 
 DECLARE_MSG_EXCEPT(parse_error);

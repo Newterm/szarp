@@ -32,6 +32,7 @@ iks_server_SOURCES = \
 	locations/protocol_location.cpp \
 	locations/manager.cpp \
 	utils/ptree.cpp \
+	utils/config_.cpp \
 	data/config.cpp \
 	data/param.cpp \
 	data/params.cpp \

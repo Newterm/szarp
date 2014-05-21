@@ -7,6 +7,7 @@
 #include <ctime>
 #endif
 
+#include <boost/algorithm/string.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
@@ -18,12 +19,17 @@
 
 #include "data/szbase_wrapper.h"
 
+#include "utils/config.h"
+
 namespace po = boost::program_options;
+namespace ba = boost::asio;
 
 using boost::asio::ip::tcp;
 
 using std::bind;
 namespace p = std::placeholders;
+
+typedef std::vector<std::string> LocsList;
 
 int main( int argc , char** argv )
 {
@@ -35,16 +41,27 @@ int main( int argc , char** argv )
 
 	desc.add_options() 
 		("help,h", "Print this help messages")
+		("name", po::value<std::string>()->default_value(ba::ip::host_name()), "Szarp prefix")
 		("prefix,P", po::value<std::string>()->default_value(PREFIX), "Szarp prefix")
-		("port,p", po::value<unsigned>()->default_value(9002), "Server port on which we will listen")
-		("locs,L", po::value<std::vector<std::string>>(), "List of locations" );
+		("port,p", po::value<unsigned>()->default_value(9002), "Server port on which we will listen");
 
 	po::variables_map vm; 
+	CfgPairs pairs;
+	CfgSections locs_cfg;
+
 	try 
 	{ 
 		po::store(po::parse_command_line(argc, argv, desc),  vm);
-		if( boost::filesystem::exists("iks.ini") )
-			po::store(po::parse_config_file<char>("iks.ini", desc, true),  vm);
+
+		if( boost::filesystem::exists("iks.ini") ) {
+			auto parsed = po::parse_config_file<char>("iks.ini", desc, true);
+			for( const auto& o : parsed.options )
+				if( o.unregistered )
+					pairs[boost::erase_all_copy(o.string_key," ")] = o.value[0];
+
+			locs_cfg.from_flat( pairs );
+			po::store(parsed,vm);
+		}
 
 		if ( vm.count("help")  ) { 
 			std::cout << desc << std::endl; 
@@ -68,6 +85,8 @@ int main( int argc , char** argv )
 	TcpServer ts(io_service, endpoint);
 
 	LocationsMgr lm;
+
+	lm.add_locations( locs_cfg );
 
 	ts.on_connected   ( bind(&LocationsMgr::on_new_connection,&lm,p::_1) );
 	ts.on_disconnected( bind(&LocationsMgr::on_disconnected  ,&lm,p::_1) );

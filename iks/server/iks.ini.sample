@@ -1,0 +1,11 @@
+port=9003
+
+[ gcwp ]
+type = szbase 
+base = gcwp
+
+[ iks ]
+type = proxy 
+address = 192.168.0.121 
+port = 9003
+
