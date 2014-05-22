@@ -48,6 +48,8 @@ void LocationsMgr::add_proxy( const std::string& name , const CfgPairs& cfg )
 		port = boost::lexical_cast<unsigned>(cfg.at("port"));
 	} catch( boost::bad_lexical_cast& e ) {
 		throw invalid_value("Invalid port number in section " + name );
+	} catch( std::out_of_range& e ) {
+		port = 9002;
 	}
 
 	auto updater = std::make_shared
