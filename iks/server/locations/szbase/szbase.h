@@ -8,7 +8,10 @@
 
 class SzbaseProt : public Protocol {
 public:
-	SzbaseProt( const std::string& szarp_base );
+	SzbaseProt(
+			const std::string& szarp_base ,
+			const std::string& prober_address = "127.0.0.1" ,
+			unsigned prober_port = 8090 );
 
 	virtual Command* cmd_from_tag( const std::string& tag );
 	virtual std::string tag_from_cmd( const Command* cmd );
@@ -19,8 +22,17 @@ private:
 
 class SzbaseLocation : public ProtocolLocation {
 public:
-	SzbaseLocation( const std::string& name , const std::string& szarp_base , Connection* conn = NULL )
-		: ProtocolLocation( name , std::make_shared<SzbaseProt>(szarp_base) , conn )
+	SzbaseLocation(
+			const std::string& name ,
+			const std::string& szarp_base ,
+			const std::string& prober_address = "127.0.0.1" ,
+			unsigned prober_port = 8090 ,
+			Connection* conn = NULL )
+		: ProtocolLocation(
+				name ,
+				std::make_shared<SzbaseProt>(
+					szarp_base,prober_address,prober_port) ,
+				conn )
 	{}
 
 	virtual ~SzbaseLocation()

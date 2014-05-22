@@ -27,6 +27,8 @@ public:
 
 	SzbaseWrapper( const std::string& base );
 
+	void set_prober_address( const std::string& address , unsigned port );
+
 	/**
 	 * Gets average from exact given time with specified probe
 	 */
@@ -40,6 +42,8 @@ public:
 		throw( szbase_init_error, szbase_get_value_error );
 
 private:
+	std::wstring convert_string( const std::string& param ) const;
+
 #if BOOST_FILESYSTEM_VERSION == 3
 	static boost::filesystem::path szarp_dir;
 #else

@@ -1,5 +1,7 @@
 #include "szbase_wrapper.h"
 
+#include <boost/lexical_cast.hpp>
+
 #include <conversion.h>
 
 bool SzbaseWrapper::initialized = false;
@@ -36,22 +38,30 @@ SzbaseWrapper::SzbaseWrapper( const std::string& base )
 	IPKContainer::GetObject()->GetConfig( wbp );
 }
 
+std::wstring SzbaseWrapper::convert_string( const std::string& str ) const
+{
+	std::basic_string<unsigned char> ubp( str.begin() , str.end() );
+	return SC::U2S( ubp );
+}
+
+void SzbaseWrapper::set_prober_address( const std::string& address , unsigned port )
+{
+	Szbase::GetObject()->SetProberAddress(
+			convert_string(base_name) ,
+			convert_string(address) ,
+			boost::lexical_cast<std::wstring>(port) );
+}
+
 double SzbaseWrapper::get_avg( const std::string& param , time_t time , ProbeType type ) const
 	throw( szbase_init_error, szbase_get_value_error )
 {
 	if( !SzbaseWrapper::is_initialized() )
 		throw szbase_init_error("Szbase not initialized");
 
-	std::string bp = base_name + ":" + param;
-
-	std::basic_string<unsigned char> ubp( bp.begin() , bp.end() );
-
-	std::wstring wbp = SC::U2S( ubp );
-
 	bool is_fixed, ok;
 	std::wstring error;
 	double val = Szbase::GetObject()->GetValue(
-			wbp ,
+			convert_string( base_name + ":" + param ) ,
 			time , type , 0 ,
 			&is_fixed , ok , error );
 
@@ -69,13 +79,10 @@ double SzbaseWrapper:: get_avg( const std::string& param , time_t start , time_t
 
 	int len = end - start;
 
-	std::string bp = base_name + ":" + param;
-	std::wstring wbp( bp.begin() , bp.end() );
-
 	bool is_fixed, ok;
 	std::wstring error;
 	double val = Szbase::GetObject()->GetValue(
-			wbp ,
+			convert_string( base_name + ":" + param ) ,
 			start , PT_CUSTOM , len ,
 			&is_fixed , ok , error );
 

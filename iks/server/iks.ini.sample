@@ -4,6 +4,12 @@ port=9003
 type = szbase 
 base = gcwp
 
+[ iks-base ]
+type = szbase
+base = iks
+prober_address = 192.168.0.121
+prober_port = 8090
+
 [ iks ]
 type = proxy 
 address = 192.168.0.121 
