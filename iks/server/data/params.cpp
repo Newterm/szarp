@@ -49,16 +49,21 @@ void Params::from_params_xml( bp::ptree& doc ) throw(xml_parse_error)
 
 void Params::param_value_changed( const std::string& name , double value )
 {
-	auto itr = params.find(name);
+	param_value_changed( iterator(params.find(name)) , value );
+}
 
-	if( itr == params.end() ) {
+void Params::param_value_changed( iterator itr , double value )
+{
+	if( itr.itr == params.end() ) {
 		std::cerr << "Value changed of undefined param" << std::endl;
 		return;
 	}
 
-	itr->second->set_value( value );
+	if( value != itr.itr->second->get_value() ) {
+		itr.itr->second->set_value( value );
 
-	emit_value_changed( itr->second );
+		emit_value_changed( itr.itr->second );
+	}
 }
 
 void Params::request_param_value( const std::string& name ,

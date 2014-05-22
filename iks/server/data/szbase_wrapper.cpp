@@ -60,6 +60,7 @@ double SzbaseWrapper::get_avg( const std::string& param , time_t time , ProbeTyp
 
 	bool is_fixed, ok;
 	std::wstring error;
+	Szbase::GetObject()->NextQuery();
 	double val = Szbase::GetObject()->GetValue(
 			convert_string( base_name + ":" + param ) ,
 			time , type , 0 ,
@@ -81,6 +82,7 @@ double SzbaseWrapper:: get_avg( const std::string& param , time_t start , time_t
 
 	bool is_fixed, ok;
 	std::wstring error;
+	Szbase::GetObject()->NextQuery();
 	double val = Szbase::GetObject()->GetValue(
 			convert_string( base_name + ":" + param ) ,
 			start , PT_CUSTOM , len ,
@@ -95,5 +97,10 @@ double SzbaseWrapper:: get_avg( const std::string& param , time_t start , time_t
 time_t SzbaseWrapper::next( time_t t , SzbaseWrapper::ProbeType pt , int num )
 {
 	return szb_move_time( t , num , pt , 0 );
+}
+
+time_t SzbaseWrapper::round( time_t t , ProbeType type )
+{
+	return szb_round_time( t , type , 0 );
 }
 

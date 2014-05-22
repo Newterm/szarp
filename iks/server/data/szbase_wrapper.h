@@ -24,6 +24,7 @@ public:
 	static bool is_initialized() { return initialized; }
 
 	static time_t next( time_t t , ProbeType pt , int num = 1 );
+	static time_t round( time_t , ProbeType pt );
 
 	SzbaseWrapper( const std::string& base );
 

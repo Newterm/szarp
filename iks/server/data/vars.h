@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include <boost/asio.hpp>
+
 #include "sets.h"
 #include "params.h"
 #include "config.h"
@@ -50,6 +52,8 @@ public:
 	{	return config; }
 
 protected:
+	void check_szarp_values();
+
 	Params params;
 	Sets   sets;
 	Config config;
@@ -58,6 +62,8 @@ protected:
 
 private:
 	bool initalized;
+
+	boost::asio::deadline_timer timeout;
 
 	mutable sig_command emit_command_received;
 	mutable sig_command emit_command_response_received;

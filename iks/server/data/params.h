@@ -17,7 +17,15 @@ class Params {
 	typedef std::unordered_map<std::string,std::shared_ptr<Param>> ParamsMap;
 
 public:
-	typedef key_iterator<ParamsMap> iterator;
+	class iterator : public key_iterator<ParamsMap> {
+		friend class Params;
+	public:
+		iterator( const iterator& itr )
+			: key_iterator<ParamsMap>(itr.itr) {}
+		iterator( const ParamsMap::const_iterator& itr )
+			: key_iterator<ParamsMap>(itr) {}
+	};
+
 
 	void from_params_file( const std::string& path ) throw(xml_parse_error);
 
@@ -29,6 +37,7 @@ public:
 
 	std::shared_ptr<const Param> get_param( const std::string& name ) const;
 
+	void param_value_changed( iterator itr , double value );
 	void param_value_changed( const std::string& name , double value );
 	void request_param_value( const std::string& name ,
 	                          double value ,
