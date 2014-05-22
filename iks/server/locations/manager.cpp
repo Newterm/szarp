@@ -18,7 +18,11 @@ LocationsMgr::~LocationsMgr()
 void LocationsMgr::add_locations( const CfgSections& cfg )
 {
 	for( auto itr=cfg.begin() ; itr!=cfg.end() ; ++itr )
-		add_location( itr->first , itr->second );
+		try {
+			add_location( itr->first , itr->second );
+		} catch( config_error& e ) {
+			std::cerr << "Invalid configuration at " << itr->first << ": " << e.what() << std::endl;
+		}
 }
 
 void LocationsMgr::add_location( const std::string& name , const CfgPairs& cfg )
