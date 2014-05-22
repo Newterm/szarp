@@ -12,6 +12,9 @@
 
 class Param {
 public:
+	typedef std::shared_ptr<Param> ptr;
+	typedef std::shared_ptr<const Param> const_ptr;
+
 	Param( const std::string& parent );
 	virtual ~Param();
 

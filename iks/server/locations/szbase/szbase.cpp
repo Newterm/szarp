@@ -12,17 +12,22 @@
 #include "cmd_get_config.h"
 #include "cmd_get_history.h"
 
+namespace p = std::placeholders;
+
 #define MAP_CMD_TAG( _tag , cmd ) \
 	if( _tag == tag ) return new cmd(vars);
 
 #define MAP_TAG_CMD( type , tag ) \
-	if( typeid(type) == typeid(cmd) ) return tag;
+	if( typeid(type) == typeid(*cmd) ) return tag;
 
 SzbaseProt::SzbaseProt(
 		const std::string& szarp_base ,
 		const std::string& prober_address ,
 		unsigned prober_port )
 {
+	conn_param = vars.get_params().on_param_value_changed(
+		std::bind(&SzbaseProt::on_param_value_changed,this,p::_1) );
+
 	vars.from_szarp( szarp_base );
 	vars.set_szarp_prober_server( prober_address , prober_port );
 }
@@ -48,5 +53,10 @@ std::string SzbaseProt::tag_from_cmd( const Command* cmd )
 	MAP_TAG_CMD( SetUpdateSnd    , "set_update"    );
 	MAP_TAG_CMD( ConfigUpdateSnd , "new_options"   );
 	return "";
+}
+
+void SzbaseProt::on_param_value_changed( Param::const_ptr p )
+{
+	send_cmd( new ValueSnd(p) );
 }
 

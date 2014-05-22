@@ -17,7 +17,11 @@ public:
 	virtual std::string tag_from_cmd( const Command* cmd );
 
 private:
+	void on_param_value_changed( Param::const_ptr p );
+
 	Vars vars;
+
+	boost::signals2::scoped_connection conn_param;
 };
 
 class SzbaseLocation : public ProtocolLocation {
