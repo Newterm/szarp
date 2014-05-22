@@ -2,6 +2,7 @@
 #define __UTILS_CONFIG_H__
 
 #include <map>
+#include <string>
 
 typedef std::map<std::string,std::string> CfgPairs;
 
