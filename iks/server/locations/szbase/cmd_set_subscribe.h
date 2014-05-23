@@ -42,8 +42,7 @@ public:
 
 		if( set_name.empty() ) {
 			/** set current set to none */
-			/* FIXME: Set current set:) (05/05/2014 20:19, jkotur) */
-//            hnd.set_current_set();
+			prot.set_current_set();
 			apply();
 			return;
 		}
@@ -69,8 +68,7 @@ public:
 		}
 
 		/** subscribe to set */
-		/* FIXME: Set current set:) (05/05/2014 20:19, jkotur) */
-//        hnd.set_current_set( s );
+		prot.set_current_set( s );
 		apply();
 	}
 

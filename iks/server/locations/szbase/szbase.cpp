@@ -57,6 +57,25 @@ std::string SzbaseProt::tag_from_cmd( const Command* cmd )
 
 void SzbaseProt::on_param_value_changed( Param::const_ptr p )
 {
-	send_cmd( new ValueSnd(p) );
+	if( current_set && current_set->has_param( p->get_name() ) )
+		send_cmd( new ValueSnd(p) );
+}
+
+void SzbaseProt::set_current_set( Set::const_ptr s )
+{
+	current_set = s;
+
+	if( !current_set )
+		return;
+
+	for( auto itr=current_set->begin() ; itr!=current_set->end() ; ++itr )
+	{
+		auto p = vars.get_params().get_param( *itr );
+		if( p )
+			send_cmd( new ValueSnd(p) );
+		else
+			/* TODO: Log this somewhere (21/03/2014 18:40, jkotur) */
+			std::cerr << "Unknown param in set:O" << std::endl;
+	}
 }
 

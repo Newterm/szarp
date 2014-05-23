@@ -1,6 +1,7 @@
 #ifndef __DATA_SET_H__
 #define __DATA_SET_H__
 
+#include <memory>
 #include <string>
 #include <unordered_set>
 
@@ -12,6 +13,9 @@ class Set {
 
 	typedef std::unordered_set<std::string> ParamsMap;
 public:
+	typedef std::shared_ptr<Set> ptr;
+	typedef std::shared_ptr<const Set> const_ptr;
+
 	typedef ParamsMap::iterator iterator;
 	typedef ParamsMap::const_iterator const_iterator;
 
