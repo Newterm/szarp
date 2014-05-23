@@ -56,6 +56,8 @@ public:
 
 private:
 	void update_hash();
+	void upgrade_option( boost::property_tree::ptree& ptree , const std::string& prev , const std::string& curr );
+	void convert_float ( boost::property_tree::ptree& ptree , const std::string& name );
 	void convert_colour( boost::property_tree::ptree& ptree , const std::string& name );
 	std::string convert_colour( const std::string& in );
 

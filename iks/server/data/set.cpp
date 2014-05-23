@@ -36,16 +36,16 @@ void Set::from_xml( const bp::ptree& ptree )
 	convert_colour( set_desc , "@background_text_color" );
 	convert_colour( set_desc , "@text_color" );
 
+	convert_float( set_desc , "@spacing_vertical"   );
+	convert_float( set_desc , "@spacing_horizontal" );
+
 	params.clear();
 	for( auto ic=set_desc.begin() ; ic!=set_desc.end() ; ++ic )
 		if( ic->first == "param" ) {
 			auto name = ic->second.get<std::string>("@name");
 
-			auto colour = ic->second.get_optional<std::string>("@color");
-			if( colour ) {
-				ic->second.put("@background_color",*colour);
-				ic->second.erase("@color");
-			}
+			upgrade_option( ic->second , "@bg_color" , "@background_color" );
+			upgrade_option( ic->second , "@color"    , "@graph_color" );
 
 			convert_colour( ic->second , "@background_color" );
 			convert_colour( ic->second , "@graph_color" );
@@ -59,6 +59,23 @@ void Set::from_xml( const bp::ptree& ptree )
 	set_desc.put_child( "params" , std::move(params_desc) );
 
 	update_hash();
+}
+
+void Set::upgrade_option( bp::ptree& ptree , const std::string& prev , const std::string& curr )
+{
+	auto opt = ptree.get_optional<std::string>( prev );
+	if( opt ) {
+		ptree.put( curr ,*opt);
+		ptree.erase( prev );
+	}
+}
+
+void Set::convert_float( bp::ptree& ptree , const std::string& name )
+{
+	auto value = ptree.get_optional<std::string>(name);
+	if( !value ) return;
+	std::replace( value->begin() , value->end() , ',' , '.' );
+	ptree.put( name , value );
 }
 
 void Set::convert_colour( bp::ptree& ptree , const std::string& name )
@@ -82,9 +99,9 @@ std::string Set::convert_colour( const std::string& in )
 		return "#000000"; /** invalid convertion, return black */
 	}
 
-	uint >>= 8; /** remove alpha byte */
+	uint &= 0xffffff; /** remove alpha byte */
 
-	return str( boost::format("#%02x") % uint );
+	return str( boost::format("#%06x") % uint );
 }
 
 void Set::from_json( const bp::ptree& ptree )
