@@ -9,6 +9,8 @@
 
 #include "utils/exception.h"
 
+namespace p = std::placeholders;
+
 namespace bf = boost::filesystem;
 
 using boost::format;
@@ -17,10 +19,14 @@ Vars::Vars()
 	: szb_wrapper(NULL) , initalized(false) 
 	, timeout(GlobalService::get_service())
 {
+	hnd = std::make_shared<AsioHandler>();
+	hnd->vars = this;
 }
 
 Vars::~Vars()
 {
+	hnd->vars = NULL;
+
 	if( szb_wrapper ) delete szb_wrapper;
 }
 
@@ -50,7 +56,7 @@ void Vars::set_szarp_prober_server( const std::string& address , unsigned port )
 
 		/* FIXME: Check latest values even without probes server connection
 		 * (22/05/2014 20:53, jkotur) */
-		check_szarp_values();
+		hnd->check_szarp_values();
 	}
 }
 
@@ -64,8 +70,10 @@ void Vars::response_received( const std::string& cmd , const std::string& data )
 	emit_command_response_received( cmd , data );
 }
 
-void Vars::check_szarp_values()
+void Vars::AsioHandler::check_szarp_values( const boost::system::error_code& e )
 {
+	if( !vars || e ) return;
+
 	using std::chrono::system_clock;
 	using namespace boost::posix_time;
 
@@ -73,10 +81,10 @@ void Vars::check_szarp_values()
 	t = SzbaseWrapper::round( t , PT_SEC10 );
 
 	try {
-		for( auto itr=params.begin() ; itr!=params.end() ; ++itr )
-			params.param_value_changed(
+		for( auto itr=vars->params.begin() ; itr!=vars->params.end() ; ++itr )
+			vars->params.param_value_changed(
 					*itr ,
-					szb_wrapper->get_avg( *itr , t , PT_SEC10 ) );
+					vars->szb_wrapper->get_avg( *itr , t , PT_SEC10 ) );
 	} catch( szbase_error& e ) {
 		/* TODO: Better error handling (22/05/2014 20:54, jkotur) */
 		std::cerr << "Szbase error: " << e.what() << std::endl;
@@ -84,7 +92,7 @@ void Vars::check_szarp_values()
 
 	t = SzbaseWrapper::next(t,PT_SEC10,1);
 
-	timeout.expires_at( from_time_t(t) + seconds(1));
-	timeout.async_wait( std::bind(&Vars::check_szarp_values,this) );
+	vars->timeout.expires_at( from_time_t(t) + seconds(1));
+	vars->timeout.async_wait( std::bind(&Vars::AsioHandler::check_szarp_values,shared_from_this(),p::_1) );
 }
 

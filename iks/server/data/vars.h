@@ -52,7 +52,6 @@ public:
 	{	return config; }
 
 protected:
-	void check_szarp_values();
 
 	Params params;
 	Sets   sets;
@@ -62,6 +61,15 @@ protected:
 
 private:
 	bool initalized;
+
+	class AsioHandler : public std::enable_shared_from_this<AsioHandler> {
+	public: 
+		void check_szarp_values( const boost::system::error_code& e = boost::system::error_code() );
+
+		Vars* vars;
+	};
+	friend class Vars::AsioHandler;
+	std::shared_ptr<AsioHandler> hnd;
 
 	boost::asio::deadline_timer timeout;
 
