@@ -20,9 +20,10 @@ typedef boost::archive::iterators::base64_from_binary<
 
 class GetHistoryRcv : public Command {
 public:
-	GetHistoryRcv( Vars& vars )
+	GetHistoryRcv( Vars& vars , Protocol& prot )
 		: vars(vars)
 	{
+		(void)prot;
 		set_next( std::bind(&GetHistoryRcv::parse_command,this,std::placeholders::_1) );
 	}
 

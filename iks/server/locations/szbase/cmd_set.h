@@ -8,9 +8,10 @@
 
 class SetRcv : public Command {
 public:
-	SetRcv( Vars& vars )
+	SetRcv( Vars& vars , Protocol& prot )
 	{
 		(void)vars;
+		(void)prot;
 
 		/* FIXME: Allways fail since szarp doesn't support value setting yet (05/05/2014 12:52, jkotur) */
 		set_next( std::bind(&SetRcv::fail,this,ErrorCodes::cannot_set_value,"Not implemented") );

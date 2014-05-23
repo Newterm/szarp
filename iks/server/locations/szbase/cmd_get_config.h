@@ -7,9 +7,10 @@
 
 class GetConfigRcv : public Command {
 public:
-	GetConfigRcv( Vars& vars )
+	GetConfigRcv( Vars& vars , Protocol& prot )
 		: vars(vars)
 	{
+		(void)prot;
 		set_next( std::bind(&GetConfigRcv::parse_command,this,std::placeholders::_1) );
 	}
 

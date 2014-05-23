@@ -13,9 +13,10 @@
 
 class ListSetsRcv : public Command {
 public:
-	ListSetsRcv( Vars& vars )
+	ListSetsRcv( Vars& vars , Protocol& prot )
 		: vars(vars)
 	{
+		(void)prot;
 		set_next( std::bind(&ListSetsRcv::parse_command,this,std::placeholders::_1) );
 	}
 

@@ -7,8 +7,8 @@
 
 class SetSubscribeRcv : public Command {
 public:
-	SetSubscribeRcv( Vars& vars )
-		: vars(vars)
+	SetSubscribeRcv( Vars& vars , SzbaseProt& prot )
+		: vars(vars) , prot(prot)
 	{
 		set_next( std::bind(&SetSubscribeRcv::parse_command,this,std::placeholders::_1) );
 	}
@@ -76,6 +76,7 @@ public:
 
 protected:
 	Vars& vars;
+	SzbaseProt& prot;
 
 };
 

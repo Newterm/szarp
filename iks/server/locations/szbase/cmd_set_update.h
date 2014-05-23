@@ -11,9 +11,10 @@
 
 class GetSetRcv : public Command {
 public:
-	GetSetRcv( Vars& vars )
+	GetSetRcv( Vars& vars , Protocol& prot )
 		: vars(vars)
 	{
+		(void)prot;
 		set_next( std::bind(&GetSetRcv::parse_command,this,std::placeholders::_1) );
 	}
 
@@ -47,9 +48,11 @@ protected:
 
 class SetUpdateRcv : public Command {
 public:
-	SetUpdateRcv( Vars& vars )
+	SetUpdateRcv( Vars& vars , Protocol& prot )
 	{
 		(void)vars;
+		(void)prot;
+
 		/* TODO: Szarp doesn't allow to change sets yet (05/05/2014 14:22, jkotur) */
 		set_next( std::bind(&SetUpdateRcv::fail,this,ErrorCodes::set_read_only,"Not implemented") );
 	}

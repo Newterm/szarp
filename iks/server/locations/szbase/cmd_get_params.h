@@ -13,9 +13,10 @@
 
 class GetParamsRcv : public Command {
 public:
-	GetParamsRcv( Vars& vars )
+	GetParamsRcv( Vars& vars , Protocol& prot )
 		: vars(vars)
 	{
+		(void)prot;
 		set_next( std::bind(&GetParamsRcv::parse_command,this,std::placeholders::_1) );
 	}
 

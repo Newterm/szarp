@@ -15,7 +15,7 @@
 namespace p = std::placeholders;
 
 #define MAP_CMD_TAG( _tag , cmd ) \
-	if( _tag == tag ) return new cmd(vars);
+	if( _tag == tag ) return new cmd(vars,*this);
 
 #define MAP_TAG_CMD( type , tag ) \
 	if( typeid(type) == typeid(*cmd) ) return tag;

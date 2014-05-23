@@ -14,9 +14,10 @@
 
 class ListParamsRcv : public Command {
 public:
-	ListParamsRcv( Vars& vars )
+	ListParamsRcv( Vars& vars , Protocol& prot )
 		: vars(vars)
 	{
+		(void)prot;
 		set_next( std::bind(&ListParamsRcv::parse_command,this,std::placeholders::_1) );
 	}
 
