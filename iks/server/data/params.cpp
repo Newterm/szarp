@@ -59,11 +59,13 @@ void Params::param_value_changed( iterator itr , double value )
 		return;
 	}
 
-	if( value != itr.itr->second->get_value() ) {
-		itr.itr->second->set_value( value );
+	auto pvalue = itr.itr->second->get_value();
+	if( value == pvalue || (isnan(value) && isnan(pvalue)) )
+		/** If values are equal even if both are NaNs do nothing */
+		return;
 
-		emit_value_changed( itr.itr->second );
-	}
+	itr.itr->second->set_value( value );
+	emit_value_changed( itr.itr->second );
 }
 
 void Params::request_param_value( const std::string& name ,
