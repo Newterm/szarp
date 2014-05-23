@@ -1,5 +1,7 @@
 #include "params.h"
 
+#include <cmath>
+
 #include <boost/format.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
@@ -58,6 +60,8 @@ void Params::param_value_changed( iterator itr , double value )
 		std::cerr << "Value changed of undefined param" << std::endl;
 		return;
 	}
+
+	using std::isnan;
 
 	auto pvalue = itr.itr->second->get_value();
 	if( value == pvalue || (isnan(value) && isnan(pvalue)) )
