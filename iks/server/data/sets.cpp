@@ -56,7 +56,10 @@ void Sets::from_params_file( const std::string& path ) throw(xml_parse_error)
 	from_params_xml( sets_doc );
 }
 
-void create_set( bp::ptree::value_type& d , bp::ptree& parent , std::unordered_map<std::string,bp::ptree>& sets_map )
+void create_set(
+		bp::ptree::value_type& d ,
+		bp::ptree& parent ,
+		std::unordered_map<std::string,bp::ptree>& sets_map )
 {
 	if( d.first == "draw" ) {
 		auto name = d.second.get<std::string>("@title");
@@ -66,6 +69,8 @@ void create_set( bp::ptree::value_type& d , bp::ptree& parent , std::unordered_m
 		child.put("@max",d.second.get<std::string>("@max"));
 		auto color = d.second.get_optional<std::string>("@color");
 		if( color ) child.put("@graph_color",*color);
+		auto order = d.second.get_optional<std::string>("@order");
+		if( order ) child.put("@order",*order);
 		sets_map[name].push_back( std::make_pair( "" , child ) );
 	}
 }

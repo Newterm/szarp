@@ -8,16 +8,49 @@
 #include <boost/signals2.hpp>
 #include <boost/property_tree/ptree.hpp>
 
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/member.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+
+#include "utils/iterator.h"
+
+
 class Set {
 	friend bool operator==( const Set& a , const Set& b );
 
-	typedef std::unordered_set<std::string> ParamsMap;
+	/**
+	 * This struct has first member and its type to use key_iterator class
+	 */
+	struct ParamId {
+		typedef std::string first_type;
+		std::string first;
+		double order;
+		boost::property_tree::ptree desc;
+	};
+
+	struct param_id {};
+	struct param_name {};
+
+	typedef boost::multi_index::multi_index_container<
+		ParamId,
+		boost::multi_index::indexed_by<
+			boost::multi_index::ordered_non_unique<
+				boost::multi_index::tag<param_id>,
+				boost::multi_index::member<ParamId,double,&ParamId::order>
+			>,
+			boost::multi_index::hashed_unique<
+				boost::multi_index::tag<param_name>,
+				boost::multi_index::member<ParamId,std::string,&ParamId::first>
+			>
+		>
+	> ParamsMap;
+
 public:
 	typedef std::shared_ptr<Set> ptr;
 	typedef std::shared_ptr<const Set> const_ptr;
 
-	typedef ParamsMap::iterator iterator;
-	typedef ParamsMap::const_iterator const_iterator;
+	typedef key_iterator<ParamsMap> const_iterator;
 
 	Set();
 	virtual ~Set();
@@ -42,17 +75,14 @@ public:
 	bool empty() const
 	{	return name.empty(); }
 
-	iterator begin() { return params.begin(); }
-	iterator   end() { return params.  end(); }
+	const_iterator begin() const { return cbegin(); }
+	const_iterator   end() const { return   cend(); }
 
-	const_iterator begin() const { return params.begin(); }
-	const_iterator   end() const { return params.  end(); }
+	const_iterator cbegin() const { return const_iterator(params.begin()); }
+	const_iterator cend  () const { return const_iterator(params.  end()); }
 
-	const_iterator cbegin() const { return params.begin(); }
-	const_iterator cend  () const { return params.  end(); }
-
-	bool has_param( const std::string& param_name ) const
-	{	return params.count( param_name ); }
+	bool has_param( const std::string& name ) const
+	{	return boost::multi_index::get<param_name>(params).count( name ); }
 
 private:
 	void update_hash();

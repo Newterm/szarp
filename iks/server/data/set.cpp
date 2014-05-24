@@ -23,8 +23,6 @@ void Set::from_xml( const bp::ptree& ptree )
 {
 	set_desc = ptree;
 
-	bp::ptree params_desc;
-
 	fold_xmlattr( set_desc );
 
 	name = set_desc.get<std::string>("@name");
@@ -43,20 +41,21 @@ void Set::from_xml( const bp::ptree& ptree )
 	for( auto ic=set_desc.begin() ; ic!=set_desc.end() ; ++ic )
 		if( ic->first == "param" ) {
 			auto name = ic->second.get<std::string>("@name");
+			auto pt = ic->second;
 
-			upgrade_option( ic->second , "@bg_color" , "@background_color" );
-			upgrade_option( ic->second , "@color"    , "@graph_color" );
+			upgrade_option( pt , "@bg_color" , "@background_color" );
+			upgrade_option( pt , "@color"    , "@graph_color" );
 
-			convert_colour( ic->second , "@background_color" );
-			convert_colour( ic->second , "@graph_color" );
+			convert_colour( pt , "@background_color" );
+			convert_colour( pt , "@graph_color" );
 
-			params.insert( name );
+			pt.erase("@order");
 
-			params_desc.push_back( std::make_pair( "" , ic->second ) );
+			params.insert(
+				ParamId { name , ic->second.get<double>("@order") , pt } );
 		}
 
 	set_desc.erase( "param" );
-	set_desc.put_child( "params" , std::move(params_desc) );
 
 	update_hash();
 }
@@ -112,15 +111,64 @@ void Set::from_json( const bp::ptree& ptree )
 	params.clear();
 	name = set_desc.get<std::string>("@name");
 	auto& pdesc = set_desc.get_child("params");
+
+	/** Convert orders to doubles and find maximal order value */
+	double max_order = 0;
 	for( auto ic=pdesc.begin() ; ic!=pdesc.end() ; ++ic )
-		params.insert( ic->second.get<std::string>("@name") );
+	{
+		auto so = ic->second.get_optional<double>("@order");
+		if( !so )
+			continue;
+
+		try {
+			double o = boost::lexical_cast<double>(*so);
+			ic->second.put("@order",o);
+
+			max_order = std::max( max_order , o );
+		} catch( boost::bad_lexical_cast& e ) {
+			std::cerr << "Invalid order in param "
+					  << ic->second.get<std::string>("@name") << std::endl;
+
+			ic->second.erase("@order");
+		}
+	}
+
+	/** Put params without order at the end */
+	int i = 0;
+	for( auto ic=pdesc.begin() ; ic!=pdesc.end() ; ++ic )
+	{
+		auto o = ic->second.get_optional<double>("@order");
+		if( !o ) ic->second.put("@order",max_order+ ++i);
+	}
+
+	for( auto ic=pdesc.begin() ; ic!=pdesc.end() ; ++ic )
+	{
+		bp::ptree pt = ic->second;
+
+		pt.erase("@order");
+
+		params.insert(
+				ParamId {
+					ic->second.get<std::string>("@name") ,
+					ic->second.get<double>("@order") ,
+					pt } );
+	}
+	set_desc.erase("params");
 
 	update_hash();
 }
 
 void Set::to_json( std::ostream& stream , bool pretty ) const
 {
-	ptree_to_json( stream , set_desc , pretty );
+	bp::ptree desc = set_desc;
+	bp::ptree params_desc;
+
+	for( auto in=params.begin() ; in!=params.end() ; ++in )
+		params_desc.push_back( std::make_pair( "" , in->desc ) );
+
+	desc.put_child( "params" , std::move(params_desc) );
+
+	ptree_to_json( stream , desc , pretty );
 }
 
 std::string Set::to_json( bool pretty ) const
@@ -162,12 +210,12 @@ std::string Set::to_xml( bool pretty ) const
 
 void Set::update_hash()
 {
-	std::hash<ParamsMap::value_type> hash_fn;
+	std::hash<ParamsMap::value_type::first_type> hash_fn;
 
 	hash = 0;
 	/** Because xor is associative there is no need to care about order */
 	for( auto in=params.begin() ; in!=params.end() ; ++in )
-		hash ^= hash_fn(*in);
+		hash ^= hash_fn(in->first);
 
 	set_desc.put( "@hash" , hash );
 }
