@@ -158,7 +158,7 @@ void Set::from_json( const bp::ptree& ptree )
 	update_hash();
 }
 
-void Set::to_json( std::ostream& stream , bool pretty ) const
+boost::property_tree::ptree Set::get_json_ptree() const
 {
 	bp::ptree desc = set_desc;
 	bp::ptree params_desc;
@@ -168,7 +168,12 @@ void Set::to_json( std::ostream& stream , bool pretty ) const
 
 	desc.put_child( "params" , std::move(params_desc) );
 
-	ptree_to_json( stream , desc , pretty );
+	return desc;
+}
+
+void Set::to_json( std::ostream& stream , bool pretty ) const
+{
+	ptree_to_json( stream , get_json_ptree() , pretty );
 }
 
 std::string Set::to_json( bool pretty ) const
@@ -183,7 +188,7 @@ std::string Set::to_json( bool pretty ) const
 boost::property_tree::ptree Set::get_xml_ptree() const
 {
 	bp::ptree pt;
-	auto& pset = pt.put_child( "set" , set_desc );
+	auto& pset = pt.put_child( "set" , get_json_ptree() );
 
 	auto& pdesc = pset.get_child("params");
 	for( auto ic=pdesc.begin() ; ic!=pdesc.end() ; ++ic )
@@ -222,8 +227,16 @@ void Set::update_hash()
 
 bool operator==( const Set& a , const Set& b )
 {
+	auto ai = a.params.begin();
+	auto bi = b.params.begin();
+	for(  ; ai!=a.params.end() && bi!=b.params.end() ; ++ai , ++bi )
+		if( ai->desc != bi->desc )
+			return false;
+
 	return a.name     == b.name
-	    && a.set_desc == b.set_desc;
+	    && a.set_desc == b.set_desc
+	    && a.hash     == b.hash
+	    && a.order    == b.order;
 }
 
 bool operator!=( const Set& a , const Set& b )

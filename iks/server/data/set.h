@@ -61,6 +61,7 @@ public:
 	void to_xml ( std::ostream& stream , bool pretty = false ) const;
 	void to_json( std::ostream& stream , bool pretty = false ) const;
 
+	boost::property_tree::ptree get_json_ptree() const;
 	boost::property_tree::ptree get_xml_ptree() const;
 	std::string to_xml ( bool pretty = false ) const;
 	std::string to_json( bool pretty = false ) const;
