@@ -3,45 +3,57 @@
 #include <locale>
 
 #include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
 namespace bp = boost::property_tree;
+namespace bm = boost::multi_index;
 using boost::format;
 
 #include "utils/ptree.h"
 
 std::shared_ptr<const Set> Sets::get_set( const std::string& name ) const
 {
-	auto itr = sets.find(name);
-	return itr == sets.end() ? std::shared_ptr<Set>() : itr->second;
+	auto itr = bm::get<set_name>(sets).find(name);
+	return itr == bm::get<set_name>(sets).end() ? std::shared_ptr<Set>() : itr->set;
 }
 
 void Sets::update_set( const Set& s , const std::string& old_name )
 {
 	std::string on = old_name.empty() ? s.get_name() : old_name;
 
+	auto& sname = bm::get<set_name>(sets);
+
 	if( !has_set(on) && !s.empty() ) {
+		/** Put in order if got one otherwise at the end */
+		auto order =
+			s.has_order() ?
+				s.get_order() :
+				bm::get<set_id>(sets).rbegin()->order + 1;
 		auto ps = std::make_shared<Set>( s );
-		sets[ s.get_name() ] = ps;
+		sname.insert( SetEntry { s.get_name() , order , ps } );
 		emit_set_updated( on , ps ); /** New set */
 		return;
 	}
 
-	auto itr = sets.find(on);
+	auto itr = sname.find(on);
 
 	if( s.empty() ) {
 		/** Set removed */
-		sets.erase( itr );
+		sname.erase( itr );
 		emit_set_updated( on , std::shared_ptr<Set>() );
 		return;
 	}
 
-	if( *itr->second != s ) {
+	if( *itr->set != s ) {
 		if( s.get_name() != on )
-			sets.erase( itr );
+			sname.erase( itr );
+
+		/** New order if set -- otherwise old order */
+		auto order = s.has_order() ? s.get_order() : itr->order;
 
 		auto ps = std::make_shared<Set>( s );
-		sets[ s.get_name() ] = ps;
+		sname.insert( SetEntry { s.get_name() , order , ps } );
 
 		/** Set updated */
 		emit_set_updated( on , ps );
@@ -56,10 +68,14 @@ void Sets::from_params_file( const std::string& path ) throw(xml_parse_error)
 	from_params_xml( sets_doc );
 }
 
+typedef std::unordered_map<std::string,std::pair<double,bp::ptree>> SetsTempMap;
+
 void create_set(
 		bp::ptree::value_type& d ,
 		bp::ptree& parent ,
-		std::unordered_map<std::string,bp::ptree>& sets_map )
+		SetsTempMap& sets_map ,
+		double& max_order ,
+		double& unordered )
 {
 	if( d.first == "draw" ) {
 		auto name = d.second.get<std::string>("@title");
@@ -71,13 +87,28 @@ void create_set(
 		if( color ) child.put("@graph_color",*color);
 		auto order = d.second.get_optional<std::string>("@order");
 		if( order ) child.put("@order",*order);
-		sets_map[name].push_back( std::make_pair( "" , child ) );
+		if( !sets_map.count(name) )
+			/** If set no know default order to NaN */
+			sets_map[name].first = --unordered;
+		auto seto   = d.second.get_optional<std::string>("@prior");
+		if( seto  ) {
+			try {
+				auto order = boost::lexical_cast<double>(*seto);
+				sets_map[name].first = order;
+				max_order = std::max(order,max_order);
+			} catch( boost::bad_lexical_cast& e ) {
+				std::cerr << "Invalid prior in set " << name << std::endl;
+			}
+		}
+		sets_map[name].second.push_back( std::make_pair( "" , child ) );
 	}
 }
 
 void Sets::from_params_xml( boost::property_tree::ptree& ptree  ) throw(xml_parse_error)
 {
-	std::unordered_map<std::string,bp::ptree> sets_map;
+	SetsTempMap sets_map;
+	double max_order = 0;
+	double unordered = 0;
 
 	fold_xmlattr( ptree );
 
@@ -86,34 +117,23 @@ void Sets::from_params_xml( boost::property_tree::ptree& ptree  ) throw(xml_pars
 			create_set ,
 			std::placeholders::_1 ,
 			std::placeholders::_2 ,
-			std::ref(sets_map) ) );
+			std::ref(sets_map)    ,
+			std::ref(max_order)   ,
+			std::ref(unordered) ) );
 
 	for( auto ic=sets_map.begin() ; ic!=sets_map.end() ; ++ic )
 	{
 		bp::ptree ptree;
 		ptree.put("@name",ic->first);
-		ptree.put_child("params",ic->second);
+		ptree.put_child("params",ic->second.second);
+
+		auto order = ic->second.first;
+		order = order >=0 ? order : max_order - order ;
 
 		Set s;
 		s.from_json( ptree );
+		s.set_order( order );
 		update_set( s );
 	}
-}
-
-void Sets::to_file( const std::string& path ) const
-{
-	auto settings = bp::xml_writer_make_settings(' ', 2);
-	bp::xml_parser::write_xml( path , get_xml_ptree() , std::locale() , settings );
-}
-
-bp::ptree Sets::get_xml_ptree() const
-{
-	bp::ptree pt;
-
-	/* TODO: Save only choosen sets (e.g. dont save params.xml sets) (05/05/2014 12:23, jkotur) */
-	for( auto is=sets.begin() ; is!=sets.end() ; ++is )
-		pt.add_child("sets.set",is->second->get_xml_ptree().get_child("set"));
-
-	return pt;
 }
 

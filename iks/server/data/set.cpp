@@ -1,6 +1,7 @@
 #include "set.h"
 
 #include <functional>
+#include <limits>
 
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
@@ -12,6 +13,7 @@ namespace bp = boost::property_tree;
 #include "utils/ptree.h"
 
 Set::Set()
+	: order(std::numeric_limits<double>::quiet_NaN())
 {
 }
 

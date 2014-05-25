@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <unordered_set>
+#include <cmath>
 
 #include <boost/signals2.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -66,6 +67,13 @@ public:
 	std::string to_xml ( bool pretty = false ) const;
 	std::string to_json( bool pretty = false ) const;
 
+	bool has_order() const
+	{	using std::isnan; return !isnan(order); }
+	void set_order( double o )
+	{	order = o; }
+	const double get_order() const
+	{	return order; }
+
 	const std::string& get_name() const
 	{	return name; }
 
@@ -94,6 +102,7 @@ private:
 
 	std::string name;
 	std::size_t hash;
+	double order;
 
 	ParamsMap params;
 
