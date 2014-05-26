@@ -132,8 +132,9 @@ protected:
 	{
 		timestamp_t t;
 
+		vars.get_szbase()->sync();
 		for( t=beg ; t<end ; t=SzbaseWrapper::next(t,pt) )
-			out.push_back( vars.get_szbase()->get_avg( param , t , pt ) );
+			out.push_back( vars.get_szbase()->get_avg_no_sync( param , t , pt ) );
 
 		return t;
 	}

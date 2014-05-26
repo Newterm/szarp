@@ -31,15 +31,29 @@ public:
 	void set_prober_address( const std::string& address , unsigned port );
 
 	/**
+	 * Synchronize with data base 
+	 */
+	void sync() const;
+
+	/**
 	 * Gets average from exact given time with specified probe
+	 *
+	 * Before calling no_sync version you have to call sync by hand.
 	 */
 	double get_avg( const std::string& param , time_t time , ProbeType type ) const
 		throw( szbase_init_error, szbase_get_value_error );
+	double get_avg_no_sync( const std::string& param , time_t time , ProbeType type ) const
+		throw( szbase_init_error, szbase_get_value_error );
+
 
 	/**
 	 * Gets average of probes for exact given time gap
+	 *
+	 * Before calling no_sync version you have to call sync by hand.
 	 */
 	double get_avg( const std::string& param , time_t start , time_t end ) const
+		throw( szbase_init_error, szbase_get_value_error );
+	double get_avg_no_sync( const std::string& param , time_t start , time_t end ) const
 		throw( szbase_init_error, szbase_get_value_error );
 
 private:

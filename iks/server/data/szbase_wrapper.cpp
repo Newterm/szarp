@@ -52,7 +52,25 @@ void SzbaseWrapper::set_prober_address( const std::string& address , unsigned po
 			boost::lexical_cast<std::wstring>(port) );
 }
 
-double SzbaseWrapper::get_avg( const std::string& param , time_t time , ProbeType type ) const
+void SzbaseWrapper::sync() const
+{
+	Szbase::GetObject()->NextQuery();
+}
+
+double SzbaseWrapper::get_avg(
+			const std::string& param ,
+			time_t time ,
+			ProbeType type ) const
+	throw( szbase_init_error, szbase_get_value_error )
+{
+	sync();
+	return get_avg_no_sync( param , time , type );
+}
+
+double SzbaseWrapper::get_avg_no_sync(
+			const std::string& param ,
+			time_t time ,
+			ProbeType type ) const
 	throw( szbase_init_error, szbase_get_value_error )
 {
 	if( !SzbaseWrapper::is_initialized() )
@@ -60,7 +78,6 @@ double SzbaseWrapper::get_avg( const std::string& param , time_t time , ProbeTyp
 
 	bool is_fixed, ok;
 	std::wstring error;
-	Szbase::GetObject()->NextQuery();
 	double val = Szbase::GetObject()->GetValue(
 			convert_string( base_name + ":" + param ) ,
 			time , type , 0 ,
@@ -72,7 +89,20 @@ double SzbaseWrapper::get_avg( const std::string& param , time_t time , ProbeTyp
 	return val;
 }
 
-double SzbaseWrapper:: get_avg( const std::string& param , time_t start , time_t end ) const
+double SzbaseWrapper:: get_avg(
+			const std::string& param ,
+			time_t start ,
+			time_t end ) const
+	throw( szbase_init_error, szbase_get_value_error )
+{
+	sync();
+	return get_avg_no_sync( param , start , end );
+}
+
+double SzbaseWrapper:: get_avg_no_sync(
+			const std::string& param ,
+			time_t start ,
+			time_t end ) const
 	throw( szbase_init_error, szbase_get_value_error )
 {
 	if( !SzbaseWrapper::is_initialized() )
@@ -82,7 +112,6 @@ double SzbaseWrapper:: get_avg( const std::string& param , time_t start , time_t
 
 	bool is_fixed, ok;
 	std::wstring error;
-	Szbase::GetObject()->NextQuery();
 	double val = Szbase::GetObject()->GetValue(
 			convert_string( base_name + ":" + param ) ,
 			start , PT_CUSTOM , len ,
