@@ -77,7 +77,9 @@ public:
 				return;
 			}
 
-			out.add_child( s , pp->get_ptree() );
+			out.add_child(
+					bp::ptree::path_type(s,'\0') ,
+					pp->get_ptree() );
 		}
 
 		apply( ptree_to_json( out , false ) );
