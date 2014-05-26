@@ -42,6 +42,7 @@ public:
 
 		if( set_name.empty() ) {
 			/** set current set to none */
+			vars.get_params().subscription_clear();
 			prot.set_current_set();
 			apply();
 			return;
@@ -68,6 +69,7 @@ public:
 		}
 
 		/** subscribe to set */
+		vars.get_params().subscribe_params( *s );
 		prot.set_current_set( s );
 		apply();
 	}

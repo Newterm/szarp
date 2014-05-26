@@ -12,7 +12,7 @@
 namespace bp = boost::property_tree;
 
 Param::Param( const std::string& parent_tag )
-	: parent_tag(parent_tag)
+	: parent_tag(parent_tag) , value(std::numeric_limits<double>::quiet_NaN())
 {
 }
 

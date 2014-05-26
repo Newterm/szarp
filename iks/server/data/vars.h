@@ -3,8 +3,6 @@
 
 #include <string>
 
-#include <boost/asio.hpp>
-
 #include "sets.h"
 #include "params.h"
 #include "config.h"
@@ -61,17 +59,6 @@ protected:
 
 private:
 	bool initalized;
-
-	class AsioHandler : public std::enable_shared_from_this<AsioHandler> {
-	public: 
-		void check_szarp_values( const boost::system::error_code& e = boost::system::error_code() );
-
-		Vars* vars;
-	};
-	friend class Vars::AsioHandler;
-	std::shared_ptr<AsioHandler> hnd;
-
-	boost::asio::deadline_timer timeout;
 
 	mutable sig_command emit_command_received;
 	mutable sig_command emit_command_response_received;
