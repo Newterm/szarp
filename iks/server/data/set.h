@@ -100,6 +100,10 @@ private:
 	void convert_colour( boost::property_tree::ptree& ptree , const std::string& name );
 	std::string convert_colour( const std::string& in );
 
+	void convert_color_names_to_hex();
+	void assign_color( ParamId& p , const std::string& color );
+	void generate_colors_like_draw3();
+
 	std::string name;
 	std::size_t hash;
 	double order;
