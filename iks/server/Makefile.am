@@ -40,6 +40,7 @@ iks_server_SOURCES = \
 	data/set.cpp \
 	data/sets.cpp \
 	data/vars.cpp \
+	data/vars_cache.cpp \
 	data/szbase_wrapper.cpp \
 	net/tcp_client.cpp \
 	net/tcp_server.cpp \

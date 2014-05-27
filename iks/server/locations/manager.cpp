@@ -51,8 +51,10 @@ void LocationsMgr::add_szbase( const std::string& name , const CfgPairs& cfg )
 		throw invalid_value("Invalid port number in section " + name );
 	}
 
-	loc_factory.register_location
-		<SzbaseLocation>( name , cfg.at("base") , pa , p );
+	auto& vars = vars_cache.get_szarp( cfg.at("base") );
+	vars.set_szarp_prober_server( pa , p );
+
+	loc_factory.register_location<SzbaseLocation>( name , std::ref(vars) );
 }
 
 void LocationsMgr::add_proxy( const std::string& name , const CfgPairs& cfg )

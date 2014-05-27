@@ -32,7 +32,7 @@ public:
 	template<class T,class... Args> void register_location( const std::string& tag , Args... args )
 	{
 		std::function<Location::ptr ()> f = 
-			std::bind( &LocationsList::create_location<T,Args&...> , this , tag , std::forward<Args>(args)... );
+			std::bind( &LocationsList::create_location<T,Args...> , this , tag , args... );
 		locations_generator[ tag ] = f;
 
 		emit_location_added( tag );

@@ -49,6 +49,9 @@ public:
 	Config& get_config()
 	{	return config; }
 
+	bool is_initialized() const
+	{	return initialized; }
+
 protected:
 
 	Params params;
@@ -58,7 +61,7 @@ protected:
 	SzbaseWrapper* szb_wrapper;
 
 private:
-	bool initalized;
+	bool initialized;
 
 	mutable sig_command emit_command_received;
 	mutable sig_command emit_command_response_received;

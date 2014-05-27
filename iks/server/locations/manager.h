@@ -7,7 +7,7 @@
 
 #include "net/connection.h"
 
-#include "data/vars.h"
+#include "data/vars_cache.h"
 
 #include "locations/locations_list.h"
 #include "locations/remotes_updater/remotes_updater.h"
@@ -32,12 +32,10 @@ private:
 	void add_proxy ( const std::string& name , const CfgPairs& cfg );
 
 	LocationsList loc_factory;
+	VarsCache vars_cache;
 
 	std::unordered_map<Connection*,Location::ptr> locations;
-
 	std::unordered_map<std::string,RemotesUpdater::ptr> updaters;
-
-	std::string base;
 };
 
 #endif /* end of include guard: __LOCATIONS_MANAGER_H__ */

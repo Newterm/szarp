@@ -10,7 +10,7 @@ namespace bf = boost::filesystem;
 using boost::format;
 
 Vars::Vars()
-	: szb_wrapper(NULL) , initalized(false) 
+	: szb_wrapper(NULL) , initialized(false) 
 {
 }
 
@@ -21,7 +21,7 @@ Vars::~Vars()
 
 void Vars::from_szarp( const std::string& szarp_base ) throw(file_not_found_error,xml_parse_error)
 {
-	if( initalized ) return;
+	if( initialized ) return;
 
 	bf::path szdir = bf::path(SzbaseWrapper::get_dir()) / szarp_base;
 	bf::path pszbc = szdir / "config" / "params.xml";

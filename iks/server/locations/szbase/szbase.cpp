@@ -20,16 +20,15 @@ namespace p = std::placeholders;
 #define MAP_TAG_CMD( type , tag ) \
 	if( typeid(type) == typeid(*cmd) ) return tag;
 
-SzbaseProt::SzbaseProt(
-		const std::string& szarp_base ,
-		const std::string& prober_address ,
-		unsigned prober_port )
+SzbaseProt::SzbaseProt( Vars& vars )
+	: vars(vars)
 {
 	conn_param = vars.get_params().on_param_value_changed(
 		std::bind(&SzbaseProt::on_param_value_changed,this,p::_1) );
+}
 
-	vars.from_szarp( szarp_base );
-	vars.set_szarp_prober_server( prober_address , prober_port );
+SzbaseProt::~SzbaseProt()
+{
 }
 
 Command* SzbaseProt::cmd_from_tag( const std::string& tag )
