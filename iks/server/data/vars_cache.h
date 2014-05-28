@@ -14,7 +14,7 @@ public:
 	Vars& get_szarp( const std::string& base );
 protected:
 
-	std::unordered_map<std::string,Vars> szarp_vars;
+	std::unordered_map<std::string,Vars*> szarp_vars;
 };
 
 #endif /** __DATA_VARS_CACHE_H__ */

@@ -6,16 +6,18 @@ VarsCache::VarsCache()
 
 VarsCache::~VarsCache()
 {
+	for( auto itr=szarp_vars.begin() ; itr!=szarp_vars.end() ; ++itr )
+		delete itr->second;
 }
 
 Vars& VarsCache::get_szarp( const std::string& base )
 {
 	if( szarp_vars.count(base) )
-		return szarp_vars.find(base)->second;
-	
-	auto p = szarp_vars.emplace();
-	p.first->second.from_szarp( base );
+		return *szarp_vars[base];
 
-	return p.first->second;
+	szarp_vars[ base ] = new Vars();
+	szarp_vars[ base ]->from_szarp( base );
+
+	return *szarp_vars[ base ];
 }
 
