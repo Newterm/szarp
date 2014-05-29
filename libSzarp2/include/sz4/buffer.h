@@ -168,6 +168,7 @@ public:
 
 #	define SZ4_GENERATE_GET_WSUM(r, seq) 	\
 	void get_weighted_sum(const BOOST_PP_SEQ_ELEM(1, seq)& start, const BOOST_PP_SEQ_ELEM(1, seq)& end, SZARP_PROBE_TYPE probe_type, weighted_sum<BOOST_PP_SEQ_ELEM(0, seq), BOOST_PP_SEQ_ELEM(1, seq)>& wsum) {	  \
+		probe_adapter<BOOST_PP_SEQ_ELEM(1, seq), T>()(probe_type); \
 		get_weighted_sum_templ(start, round_up<BOOST_PP_SEQ_ELEM(1, seq), T>()(end), probe_type, wsum);	\
 	}
 
@@ -191,10 +192,12 @@ public:
 	}
 
 	template<class RT> RT search_data_right_templ(const RT& start, const RT &end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) {
+		probe_adapter<RT, T>()(probe_type);
 		return RT(m_entry.search_data_right_impl(T(start), round_up<RT, T>()(end), probe_type, condition));
 	}
 
 	template<class RT> RT search_data_left_templ(const RT& start, const RT &end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) {
+		probe_adapter<RT, T>()(probe_type);
 		return RT(m_entry.search_data_left_impl(T(start), round_up<RT, T>()(end), probe_type, condition));
 	}
 

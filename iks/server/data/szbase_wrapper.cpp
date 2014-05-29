@@ -21,7 +21,7 @@ bool SzbaseWrapper::init( const std::string& _szarp_dir )
 
 	szarp_dir = w_szarp_dir;
 
-	IPKContainer::Init( w_szarp_dir, w_szarp_dir, L"pl_PL", new NullMutex());
+	IPKContainer::Init( w_szarp_dir, w_szarp_dir, L"pl_PL" );
 	Szbase::Init( w_szarp_dir , NULL );
 
 	initialized = true;

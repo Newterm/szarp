@@ -738,8 +738,11 @@ std::pair<time_t, time_t> DrawsController::GetStatsInterval() {
 }
 
 void DrawsController::HandleSearchResponse(DatabaseQuery *query) {
-	if (query->search_data.period_type == GetPeriod() && GetCurrentDrawInfo() == query->draw_info)
+	if (query->search_data.period_type == GetPeriod() && GetCurrentDrawInfo() == query->draw_info) {
 		m_state->HandleSearchResponse(query);
+		wxLogInfo(_T("Got search response"));
+	} else
+		wxLogInfo(_T("Ignoring response - wrong draw info/period type"));
 	delete query;
 }
 

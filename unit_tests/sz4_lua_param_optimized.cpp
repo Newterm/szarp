@@ -30,6 +30,7 @@
 #include "sz4/buffer_templ.h"
 #include "sz4/base.h"
 #include "sz4/lua_interpreter_templ.h"
+#include "sz4/filelock.h"
 
 #include "test_serach_condition.h"
 #include "test_observer.h"
@@ -47,7 +48,25 @@ class Sz4LuaParamOptimized : public CPPUNIT_NS::TestFixture
 	CPPUNIT_TEST_SUITE_END();
 public:
 	void setUp();
+	void tearDown();
+
+	std::wstringstream base_dir_name;
+	boost::filesystem::wpath base_path;
+	boost::filesystem::wpath param_dir;
 };
+
+void Sz4LuaParamOptimized::setUp() {
+	base_dir_name << L"/tmp/sz4_lua_param_optimized" << getpid() << L"." << time(NULL) << L".tmp";
+
+	base_path = base_dir_name.str();
+	param_dir = base_path / L"BASE/sz4/A/B/C";
+	boost::filesystem::create_directories(param_dir);
+
+}
+
+void Sz4LuaParamOptimized::tearDown() {
+	boost::filesystem::remove_all(base_path);
+}
 
 namespace {
 
@@ -80,9 +99,6 @@ public:
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION( Sz4LuaParamOptimized );
-
-void Sz4LuaParamOptimized::setUp() {
-}
 
 namespace {
 
@@ -202,12 +218,6 @@ struct test_types2 {
 void Sz4LuaParamOptimized::test2() {
 	IPKContainerMock2 mock;
 
-	std::wstringstream base_dir_name;
-	base_dir_name << L"/tmp/sz4_lua_param_optimized" << getpid() << L"." << time(NULL) << L".tmp";
-	boost::filesystem::wpath base_path(base_dir_name.str());
-	boost::filesystem::wpath param_dir(base_path / L"BASE/sz4/A/B/C");
-	boost::filesystem::create_directories(param_dir);
-
 #if BOOST_FILESYSTEM_VERSION == 3
 	sz4::base_templ<test_types2> base(base_path.wstring(), &mock);
 #else
@@ -230,17 +240,21 @@ void Sz4LuaParamOptimized::test2() {
 
 		std::wstringstream file_name;
 		file_name << std::setfill(L'0') << std::setw(10) << 100 << L".sz4";
+
 #if BOOST_FILESYSTEM_VERSION == 3
-		std::ofstream ofs((param_dir / file_name.str()).native().c_str());
+		std::string file_path((param_dir / file_name.str()).native().c_str());
 #else
-		std::ofstream ofs((param_dir / file_name.str()).external_file_string().c_str());
+		std::string file_path((param_dir / file_name.str()).external_file_string().c_str());
 #endif
+		int fd = sz4::open_writelock(file_path.c_str(), O_WRONLY | O_CREAT);
 
 		short v = 10;
-		ofs.write((const char*)&v, sizeof(v));
+		write(fd, (const char*)&v, sizeof(v));
 
 		sz4::second_time_t t = 150;
-		ofs.write((const char*)&t, sizeof(t));
+		write(fd, (const char*)&t, sizeof(t));
+
+		sz4::close_unlock(fd);
 	}
 
 	CPPUNIT_ASSERT(o.wait_for(1, 2));
@@ -258,13 +272,6 @@ void Sz4LuaParamOptimized::test2() {
 void Sz4LuaParamOptimized::test3() {
 	IPKContainerMock2 mock;
 
-	std::wstringstream base_dir_name;
-	base_dir_name << L"/tmp/sz4_lua_param_optimized" << getpid() << L"." << time(NULL) << L".tmp";
-
-	boost::filesystem::wpath base_path(base_dir_name.str());
-	boost::filesystem::wpath param_dir(base_path / L"BASE/sz4");
-	boost::filesystem::create_directories(param_dir);
-
 #if BOOST_FILESYSTEM_VERSION == 3
 	sz4::base_templ<test_types2> base(base_path.wstring(), &mock);
 #else
@@ -278,5 +285,13 @@ void Sz4LuaParamOptimized::test3() {
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(2), weight);
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.no_data_weight());
 	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
+
+
+	sz4::weighted_sum<double, sz4::nanosecond_time_t> sum_n;
+	sz4::weighted_sum<double, sz4::nanosecond_time_t>::time_diff_type weight_n;
+	buff->get_weighted_sum(mock.GetParam(L"BASE:A:B:E"), sz4::nanosecond_time_t(0, 0), sz4::nanosecond_time_t(0, 500000000u), PT_HALFSEC, sum_n);
+
+	CPPUNIT_ASSERT_EQUAL(1., sum_n.sum(weight_n));
+	CPPUNIT_ASSERT_EQUAL(true, sum_n.fixed());
 
 }

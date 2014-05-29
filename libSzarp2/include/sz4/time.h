@@ -84,6 +84,31 @@ public:
 	}
 };
 
+template<class FT, class TT> struct probe_adapter {
+	void operator()(SZARP_PROBE_TYPE &probe) {};
+};
+
+template<> struct probe_adapter<nanosecond_time_t, second_time_t> {
+	void operator()(SZARP_PROBE_TYPE &probe) {
+		switch (probe) {
+			case PT_HALFSEC:
+				probe = PT_SEC;
+				break;
+			case PT_SEC:
+			case PT_SEC10:
+			case PT_MIN10:
+			case PT_HOUR:
+			case PT_HOUR8:
+			case PT_DAY:
+			case PT_WEEK:
+			case PT_MONTH:
+			case PT_YEAR:
+			case PT_CUSTOM:
+				break;
+		}
+	};
+};
+
 template<class T> class invalid_time_value { };
 
 template<> class invalid_time_value<nanosecond_time_t> {
