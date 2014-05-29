@@ -35,6 +35,9 @@ public:
 	iterator begin() const { return iterator(params.cbegin()); }
 	iterator end  () const { return iterator(params.cend  ()); }
 
+	iterator find( const std::string& name ) const
+	{	return iterator(params.find(name)); }
+
 	bool has_param( const std::string& name ) const
 	{	return params.count(name); }
 

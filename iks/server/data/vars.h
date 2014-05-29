@@ -49,6 +49,8 @@ public:
 	{	return sets; }
 	Config& get_config()
 	{	return config; }
+	ParamsUpdater& get_updater()
+	{	return params_updater; }
 
 	bool is_initialized() const
 	{	return initialized; }

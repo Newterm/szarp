@@ -24,6 +24,9 @@ private:
 	Set::const_ptr current_set;
 
 	boost::signals2::scoped_connection conn_param;
+
+	ParamsUpdater::Subscription sub_params;
+
 };
 
 class SzbaseLocation : public ProtocolLocation {

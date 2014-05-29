@@ -64,8 +64,15 @@ void SzbaseProt::set_current_set( Set::const_ptr s )
 {
 	current_set = s;
 
-	if( !current_set )
+	if( !current_set ) {
+		sub_params.cancel();
 		return;
+	}
+
+	/** Prevent from sending values double if they values changed on subscribe */
+	boost::signals2::shared_connection_block block(conn_param);
+
+	sub_params = vars.get_updater().subscribe_params( *s );
 
 	for( auto itr=current_set->begin() ; itr!=current_set->end() ; ++itr )
 	{

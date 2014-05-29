@@ -1,6 +1,7 @@
 #include "params_updater.h"
 
 #include <chrono>
+#include <memory>
 #include <functional>
 
 namespace p = std::placeholders;
@@ -22,11 +23,44 @@ ParamsUpdater::~ParamsUpdater()
 void ParamsUpdater::set_data_feeder( SzbaseWrapper* data_feeder_ )
 {
 	data_feeder = data_feeder_;
-
-	data_updater->check_szarp_values();
 }
 
-void ParamsUpdater::DataUpdater::check_szarp_values( const boost::system::error_code& e )
+ParamsUpdater::Subscription ParamsUpdater::subscribe_param(
+		const std::string& name ,
+		bool update )
+{
+	auto itr = params.find( name );
+
+	if( itr == params.end() )
+		return Subscription();
+
+	Subscription s(
+		*subscribed_params.insert(
+			std::make_shared<Params::iterator>( itr )
+				).first );
+
+	if( update )
+		data_updater->check_szarp_values();
+
+	return s;
+}
+
+ParamsUpdater::Subscription::Subscription()
+{
+}
+
+ParamsUpdater::Subscription::Subscription( const SharedIterator& itr )
+{
+	subset.insert( itr );
+}
+
+void ParamsUpdater::Subscription::insert( const ParamsUpdater::Subscription& sub )
+{
+	subset.insert( sub.subset.begin() , sub.subset.end() );
+}
+
+void ParamsUpdater::DataUpdater::check_szarp_values(
+		const boost::system::error_code& e )
 {
 	if( e || !parent ) return;
 
@@ -37,17 +71,30 @@ void ParamsUpdater::DataUpdater::check_szarp_values( const boost::system::error_
 	t = SzbaseWrapper::round( t , PT_SEC10 );
 
 	try {
-		for( auto& pname : parent->params )
+		for( auto itr=parent->subscribed_params.begin() ;
+			 itr != parent->subscribed_params.end() ; )
 		{
-			auto& name = pname;
+			if( itr->use_count() <= 1 ) {
+				/** No Subscription object left */
+				itr = parent->subscribed_params.erase( itr );
+				continue;
+			}
+
+			auto& name = ***itr;
 			parent->params.param_value_changed(
 					name ,
 					parent->data_feeder->get_avg( name , t , PT_SEC10 ) );
+
+			++itr;
 		}
 	} catch( szbase_error& e ) {
 		/* TODO: Better error handling (22/05/2014 20:54, jkotur) */
 		std::cerr << "Szbase error: " << e.what() << std::endl;
 	}
+
+	if( parent->subscribed_params.empty() )
+		/** Nothing to do -- no need to check for update */
+		return;
 
 	t = system_clock::to_time_t(system_clock::now());
 	t = SzbaseWrapper::round( t , PT_SEC10 );
