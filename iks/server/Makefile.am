@@ -37,6 +37,7 @@ iks_server_SOURCES = \
 	data/config.cpp \
 	data/param.cpp \
 	data/params.cpp \
+	data/params_updater.cpp \
 	data/set.cpp \
 	data/sets.cpp \
 	data/vars.cpp \

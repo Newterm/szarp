@@ -10,7 +10,7 @@ namespace bf = boost::filesystem;
 using boost::format;
 
 Vars::Vars()
-	: szb_wrapper(NULL) , initialized(false) 
+	: params_updater(params) , szb_wrapper(NULL) , initialized(false) 
 {
 }
 
@@ -36,7 +36,7 @@ void Vars::from_szarp( const std::string& szarp_base ) throw(file_not_found_erro
 	sets  .from_params_file( pszbc.string() );
 
 	szb_wrapper = new SzbaseWrapper( szarp_base );
-	params.set_data_feeder( szb_wrapper );
+	params_updater.set_data_feeder( szb_wrapper );
 }
 
 void Vars::set_szarp_prober_server( const std::string& address , unsigned port )

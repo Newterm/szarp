@@ -4,7 +4,6 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 
 #include <boost/asio.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -18,7 +17,6 @@
 
 class Params {
 	typedef std::unordered_map<std::string,std::shared_ptr<Param>> ParamsMap;
-	typedef std::unordered_set<std::string> ParamsSet;
 
 public:
 	class iterator : public key_iterator<ParamsMap> {
@@ -48,24 +46,6 @@ public:
 	                          double value ,
 							  const std::string& pin = "" ) const;
 
-	/** TODO: change SzbaseWrapper to generic DataFeeder class */
-	void set_data_feeder( SzbaseWrapper* data_feeder = NULL );
-
-	bool subscribe_param( const std::string& name , bool update = true );
-	template<class Container> bool subscribe_params( const Container& names , bool update = true )
-	{
-		bool ret = true;
-
-		for( auto itr=names.begin() ; itr!=names.end() ; ++itr )
-			ret &= subscribe_param( *itr , false );
-
-		if( update )
-			data_updater->check_szarp_values();
-
-		return ret;
-	}
-	void subscription_clear();
-
 	slot_connection on_param_value_changed( const sig_param_slot& slot ) const
 	{	return emit_value_changed.connect( slot ); }
 	slot_connection on_request_param_value( const sig_param_request_slot& slot ) const
@@ -79,27 +59,9 @@ protected:
 
 private:
 	ParamsMap params;
-	ParamsSet subscription;
-
-	SzbaseWrapper* data_feeder;
 
 	mutable sig_param emit_value_changed;
 	mutable sig_param_request emit_request_value;
-
-	class DataUpdater : public std::enable_shared_from_this<DataUpdater> {
-	public: 
-		DataUpdater( Params& params ) : params(params) {}
-		~DataUpdater() { std::cerr << "Die!" << std::endl; }
-
-		void check_szarp_values( const boost::system::error_code& e = boost::system::error_code() );
-
-		Params& params;
-	};
-	friend class Params::DataUpdater;
-	std::shared_ptr<DataUpdater> data_updater;
-
-	boost::asio::deadline_timer timeout;
-
 };
 
 #endif /* end of include guard: __DATA_PARAMS_H__ */

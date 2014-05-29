@@ -7,6 +7,7 @@
 #include "params.h"
 #include "config.h"
 #include "szbase_wrapper.h"
+#include "params_updater.h"
 
 #include "utils/signals.h"
 #include "utils/exception.h"
@@ -58,6 +59,7 @@ protected:
 	Sets   sets;
 	Config config;
 
+	ParamsUpdater params_updater;
 	SzbaseWrapper* szb_wrapper;
 
 private:
