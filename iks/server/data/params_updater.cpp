@@ -70,6 +70,7 @@ void ParamsUpdater::DataUpdater::check_szarp_values(
 
 	time_t t = system_clock::to_time_t(system_clock::now());
 
+	ProbeType min_pt( ProbeType::Type::MAX );
 
 	try {
 		for( auto itr=parent->subscribed_params.begin() ;
@@ -90,6 +91,8 @@ void ParamsUpdater::DataUpdater::check_szarp_values(
 					parent->data_feeder->get_avg( name , ptime , pt ) ,
 					pt );
 
+			min_pt = std::min( pt , min_pt );
+
 			++itr;
 		}
 	} catch( szbase_error& e ) {
@@ -102,8 +105,8 @@ void ParamsUpdater::DataUpdater::check_szarp_values(
 		return;
 
 	t = system_clock::to_time_t(system_clock::now());
-	t = SzbaseWrapper::round( t , ProbeType() );
-	t = SzbaseWrapper::next ( t , ProbeType() );
+	t = SzbaseWrapper::round( t , min_pt );
+	t = SzbaseWrapper::next ( t , min_pt );
 
 	parent->timeout.expires_at( from_time_t(t) + seconds(1));
 	parent->timeout.async_wait( std::bind(&ParamsUpdater::DataUpdater::check_szarp_values,shared_from_this(),p::_1) );
