@@ -12,7 +12,7 @@
 namespace bp = boost::property_tree;
 
 Param::Param( const std::string& parent_tag )
-	: parent_tag(parent_tag) , value(std::numeric_limits<double>::quiet_NaN())
+	: parent_tag(parent_tag)
 {
 }
 
@@ -88,5 +88,19 @@ std::string Param::to_xml( bool pretty ) const
 	std::stringstream ss;
 	to_xml( ss , pretty );
 	return ss.str();
+}
+
+double Param::get_value( ProbeType pt ) const
+{
+	auto itr = values.find( pt );
+	if( itr != values.end() )
+		return itr->second;
+
+	return std::numeric_limits<double>::quiet_NaN();
+}
+
+void Param::set_value( double v , ProbeType pt )
+{
+	values[ pt ] = v;
 }
 

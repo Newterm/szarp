@@ -86,7 +86,8 @@ void ParamsUpdater::DataUpdater::check_szarp_values(
 
 			parent->params.param_value_changed(
 					name ,
-					parent->data_feeder->get_avg( name , ptime , pt ) );
+					parent->data_feeder->get_avg( name , ptime , pt ) ,
+					pt );
 
 			++itr;
 		}

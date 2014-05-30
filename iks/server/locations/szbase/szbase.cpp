@@ -24,7 +24,9 @@ SzbaseProt::SzbaseProt( Vars& vars )
 	: vars(vars)
 {
 	conn_param = vars.get_params().on_param_value_changed(
-		std::bind(&SzbaseProt::on_param_value_changed,this,p::_1) );
+		std::bind(
+			&SzbaseProt::on_param_value_changed,
+			this,p::_1,p::_2,p::_3) );
 }
 
 SzbaseProt::~SzbaseProt()
@@ -54,10 +56,13 @@ std::string SzbaseProt::tag_from_cmd( const Command* cmd )
 	return "";
 }
 
-void SzbaseProt::on_param_value_changed( Param::const_ptr p )
+void SzbaseProt::on_param_value_changed( Param::const_ptr p , double value , ProbeType pt )
 {
-	if( current_set && current_set->has_param( p->get_name() ) )
-		send_cmd( new ValueSnd(p) );
+	(void)value;
+
+	if( current_set
+	 && current_set->has_param( p->get_name() ) )
+		send_cmd( new ValueSnd(p,pt) );
 }
 
 void SzbaseProt::set_current_set( Set::const_ptr s )
@@ -78,7 +83,7 @@ void SzbaseProt::set_current_set( Set::const_ptr s )
 	{
 		auto p = vars.get_params().get_param( *itr );
 		if( p )
-			send_cmd( new ValueSnd(p) );
+			send_cmd( new ValueSnd(p,ProbeType()) );
 		else
 			/* TODO: Log this somewhere (21/03/2014 18:40, jkotur) */
 			std::cerr << "Unknown param in set:O" << std::endl;

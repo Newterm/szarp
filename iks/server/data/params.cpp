@@ -53,12 +53,12 @@ void Params::from_params_xml( bp::ptree& doc ) throw(xml_parse_error)
 
 }
 
-void Params::param_value_changed( const std::string& name , double value )
+void Params::param_value_changed( const std::string& name , double value , ProbeType pt )
 {
-	param_value_changed( iterator(params.find(name)) , value );
+	param_value_changed( iterator(params.find(name)) , value , pt );
 }
 
-void Params::param_value_changed( iterator itr , double value )
+void Params::param_value_changed( iterator itr , double value , ProbeType pt )
 {
 	if( itr.itr == params.end() ) {
 		std::cerr << "Value changed of undefined param" << std::endl;
@@ -67,13 +67,13 @@ void Params::param_value_changed( iterator itr , double value )
 
 	using std::isnan;
 
-	auto pvalue = itr.itr->second->get_value();
+	auto pvalue = itr.itr->second->get_value( pt );
 	if( value == pvalue || (isnan(value) && isnan(pvalue)) )
 		/** If values are equal even if both are NaNs do nothing */
 		return;
 
-	itr.itr->second->set_value( value );
-	emit_value_changed( itr.itr->second );
+	itr.itr->second->set_value( value , pt );
+	emit_value_changed( itr.itr->second , value , pt );
 }
 
 void Params::request_param_value( const std::string& name ,

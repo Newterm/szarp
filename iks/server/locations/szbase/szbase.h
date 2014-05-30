@@ -17,7 +17,7 @@ public:
 	void set_current_set( Set::const_ptr s = Set::const_ptr() );
 
 private:
-	void on_param_value_changed( Param::const_ptr p );
+	void on_param_value_changed( Param::const_ptr p , double value , ProbeType pt );
 
 	Vars& vars;
 
