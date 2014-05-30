@@ -1,6 +1,7 @@
 #ifndef __UTILS_EXCEPTIONS_H__
 #define __UTILS_EXCEPTIONS_H__
 
+#include <string>
 #include <exception>
 
 /**
