@@ -80,7 +80,7 @@ double SzbaseWrapper::get_avg_no_sync(
 	std::wstring error;
 	double val = Szbase::GetObject()->GetValue(
 			convert_string( base_name + ":" + param ) ,
-			time , type , 0 ,
+			time , type.get_szarp_pt() , type.get_len() ,
 			&is_fixed , ok , error );
 
 	if( !ok )
@@ -123,13 +123,13 @@ double SzbaseWrapper:: get_avg_no_sync(
 	return val;
 }
 
-time_t SzbaseWrapper::next( time_t t , SzbaseWrapper::ProbeType pt , int num )
+time_t SzbaseWrapper::next( time_t t , ProbeType pt , int num )
 {
-	return szb_move_time( t , num , pt , 0 );
+	return szb_move_time( t , num , pt.get_szarp_pt() , pt.get_len() );
 }
 
-time_t SzbaseWrapper::round( time_t t , ProbeType type )
+time_t SzbaseWrapper::round( time_t t , ProbeType pt )
 {
-	return szb_round_time( t , type , 0 );
+	return szb_round_time( t , pt.get_szarp_pt() , pt.get_len() );
 }
 

@@ -9,10 +9,10 @@
 
 #include "utils/exception.h"
 
+#include "probe_type.h"
+
 class SzbaseWrapper {
 public:
-	typedef SZARP_PROBE_TYPE ProbeType;
-
 	static std::string get_dir()
 #if BOOST_FILESYSTEM_VERSION == 3
 	{	return szarp_dir.string(); }

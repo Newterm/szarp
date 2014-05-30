@@ -68,7 +68,8 @@ void ParamsUpdater::DataUpdater::check_szarp_values(
 	using namespace boost::posix_time;
 
 	time_t t = system_clock::to_time_t(system_clock::now());
-	t = SzbaseWrapper::round( t , PT_SEC10 );
+
+	ProbeType pt;
 
 	try {
 		for( auto itr=parent->subscribed_params.begin() ;
@@ -81,9 +82,11 @@ void ParamsUpdater::DataUpdater::check_szarp_values(
 			}
 
 			auto& name = ***itr;
+			time_t ptime = SzbaseWrapper::round( t , pt );
+
 			parent->params.param_value_changed(
 					name ,
-					parent->data_feeder->get_avg( name , t , PT_SEC10 ) );
+					parent->data_feeder->get_avg( name , ptime , pt ) );
 
 			++itr;
 		}
@@ -97,8 +100,8 @@ void ParamsUpdater::DataUpdater::check_szarp_values(
 		return;
 
 	t = system_clock::to_time_t(system_clock::now());
-	t = SzbaseWrapper::round( t , PT_SEC10 );
-	t = SzbaseWrapper::next ( t , PT_SEC10 );
+	t = SzbaseWrapper::round( t , ProbeType() );
+	t = SzbaseWrapper::next ( t , ProbeType() );
 
 	parent->timeout.expires_at( from_time_t(t) + seconds(1));
 	parent->timeout.async_wait( std::bind(&ParamsUpdater::DataUpdater::check_szarp_values,shared_from_this(),p::_1) );
