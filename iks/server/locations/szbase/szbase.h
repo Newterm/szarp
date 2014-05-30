@@ -14,13 +14,16 @@ public:
 	virtual Command* cmd_from_tag( const std::string& tag );
 	virtual std::string tag_from_cmd( const Command* cmd );
 
-	void set_current_set( Set::const_ptr s = Set::const_ptr() );
+	void set_current_set(
+			Set::const_ptr s = Set::const_ptr() ,
+			ProbeType pt = ProbeType() );
 
 private:
 	void on_param_value_changed( Param::const_ptr p , double value , ProbeType pt );
 
 	Vars& vars;
 
+	ProbeType current_pt;
 	Set::const_ptr current_set;
 
 	boost::signals2::scoped_connection conn_param;

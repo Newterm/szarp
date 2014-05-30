@@ -14,8 +14,9 @@
  * values.
  */
 class ParamsUpdater {
-	typedef std::shared_ptr<Params::iterator> SharedIterator;
-	typedef std::set<SharedIterator> SharedSubscription;
+	typedef std::pair<Params::iterator,ProbeType> SubKey;
+	typedef std::shared_ptr<SubKey> SharedKey;
+	typedef std::set<SharedKey> SharedSubscription;
 
 public:
 	class Subscription;
@@ -26,13 +27,13 @@ public:
 	/** TODO: change SzbaseWrapper to generic DataFeeder class */
 	void set_data_feeder( SzbaseWrapper* data_feeder = NULL );
 
-	Subscription subscribe_param( const std::string& name , bool update = true );
+	Subscription subscribe_param( const std::string& name , ProbeType pt , bool update = true );
 	template<class Container>
-	Subscription subscribe_params( const Container& names , bool update = true )
+	Subscription subscribe_params( const Container& names , ProbeType pt , bool update = true )
 	{
 		Subscription s;
 		for( auto itr=names.begin() ; itr!=names.end() ; ++itr )
-			s.insert( subscribe_param( *itr , false ) );
+			s.insert( subscribe_param( *itr , pt , false ) );
 
 		if( update )
 			data_updater->check_szarp_values();
@@ -56,7 +57,7 @@ public:
 		void cancel() { subset.clear(); }
 
 	protected:
-		Subscription( const SharedIterator& itr );
+		Subscription( const SharedKey& itr );
 
 		void insert( const Subscription& sub );
 

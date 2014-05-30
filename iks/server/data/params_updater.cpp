@@ -27,6 +27,7 @@ void ParamsUpdater::set_data_feeder( SzbaseWrapper* data_feeder_ )
 
 ParamsUpdater::Subscription ParamsUpdater::subscribe_param(
 		const std::string& name ,
+		ProbeType pt ,
 		bool update )
 {
 	auto itr = params.find( name );
@@ -36,7 +37,7 @@ ParamsUpdater::Subscription ParamsUpdater::subscribe_param(
 
 	Subscription s(
 		*subscribed_params.insert(
-			std::make_shared<Params::iterator>( itr )
+			std::make_shared<SubKey>( itr , pt )
 				).first );
 
 	if( update )
@@ -49,9 +50,9 @@ ParamsUpdater::Subscription::Subscription()
 {
 }
 
-ParamsUpdater::Subscription::Subscription( const SharedIterator& itr )
+ParamsUpdater::Subscription::Subscription( const SharedKey& key )
 {
-	subset.insert( itr );
+	subset.insert( key );
 }
 
 void ParamsUpdater::Subscription::insert( const ParamsUpdater::Subscription& sub )
@@ -69,7 +70,6 @@ void ParamsUpdater::DataUpdater::check_szarp_values(
 
 	time_t t = system_clock::to_time_t(system_clock::now());
 
-	ProbeType pt;
 
 	try {
 		for( auto itr=parent->subscribed_params.begin() ;
@@ -81,7 +81,8 @@ void ParamsUpdater::DataUpdater::check_szarp_values(
 				continue;
 			}
 
-			auto& name = ***itr;
+			auto& name = *(**itr).first;
+			auto& pt   =  (**itr).second;
 			time_t ptime = SzbaseWrapper::round( t , pt );
 
 			parent->params.param_value_changed(
