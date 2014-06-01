@@ -7,6 +7,8 @@ dnl
 AC_PREREQ(2.54)
 AC_INIT(szarp, 3.1, pawel@praterm.com.pl)
 
+AC_CONFIG_MACRO_DIR([m4])
+
 # Cross compilation - this must be early in configure.in
 AC_CANONICAL_TARGET
 AC_CANONICAL_BUILD
@@ -66,9 +68,6 @@ AC_PROG_CPP
 
 # C++ compiler (sets CXX)
 AC_PROG_CXX([g++3 g++-3 g++])
-# check g++ version
-AX_GXX_VERSION
-AM_CONDITIONAL([GXX_VERSION_47], [test x$GXX_VERSION = x4.7])
 
 # C++ preprocesor (sets CXXCPP)
 AC_PROG_CXXCPP
@@ -163,7 +162,7 @@ fi
 
 #ICU
 no_icu=
-AC_CHECK_ICU([3], [ no_icu="no" ], [ no_icu="yes" ])
+AX_CHECK_ICU([3], [ no_icu="no" ], [ no_icu="yes" ])
 if test $no_icu = "yes"; then
 	AC_MSG_WARN([icu libarary not found. SZARP won't compile])
 fi
@@ -229,9 +228,13 @@ fi
 
 AM_CONDITIONAL(MINGW32_OPT, test "x$with_mingw32" = "xyes")
 
+if test "$with_mingw32" != "yes" ; then
+	AX_CXX_COMPILE_STDCXX_11([],[mandatory])
+fi
+
 # posix thread switches
 if test "$with_mingw32" != "yes" ; then
-	ACX_PTHREAD
+	AX_PTHREAD
 fi
 
 # Check for Python
@@ -765,18 +768,26 @@ fi
 
 has_boost_base="no"
 ac_boost_path="${lib_prefix}"
-AX_BOOST_BASE("1.35.0", [has_boost_base="yes"], [has_boost_base="no"])
+# On squeeze AX_BOOST_BASE do not execute ACTION-IF-FOUND :(
+AC_LANG_PUSH([C++])
+AC_CHECK_HEADERS([boost/foreach.hpp], [has_boost_base="yes"], [has_boost_base="no"])
+AC_LANG_POP([C++])
+
+AX_BOOST_BASE("1.42.0", [has_boost_base="yes"], [has_boost_base="no"])
 if test "x$has_boost_base" = "xyes" ; then
 	AX_BOOST_FILESYSTEM
 	AX_BOOST_DATE_TIME
-	AX_BOOST_REGEX
 	AX_BOOST_THREAD
 	AX_BOOST_SYSTEM
 	AX_BOOST_PROGRAM_OPTIONS
 
-	AX_PYTHON
-	AX_BOOST_PYTHON
-
+	if test "$with_mingw32" != "yes" ; then
+		AX_BOOST_ASIO
+		AX_BOOST_SIGNALS
+		AX_BOOST_REGEX
+		AX_PYTHON
+		AX_BOOST_PYTHON
+	fi
 fi
 has_boost_filesystem=${link_filesystem:-no}
 has_boost_datetime=${link_date_time:-no}
@@ -1123,6 +1134,11 @@ if test x$no_python != xyes -a x$with_mingw32 != xyes; then
 	SUBDIRS="$SUBDIRS pyipk"
 fi
 
+# iks system directory
+if test x$with_mingw32 != xyes; then
+	SUBDIRS="$SUBDIRS iks"
+fi
+
 AC_SUBST(SUBDIRS)
 
 #############################################################################
@@ -1134,6 +1150,8 @@ AC_OUTPUT( \
 	Makefile \
 	extern/Makefile \
 	extern/wxscintilla/Makefile \
+	iks/Makefile \
+	iks/server/Makefile \
 	isl/Makefile \
 	isl/server/Makefile \
 	isl/paramd/Makefile \
@@ -1451,4 +1469,3 @@ fi
 echo
 echo "Type 'make' to build SZARP"
 echo
-echo "GXX version:	$GXX_VERSION"
