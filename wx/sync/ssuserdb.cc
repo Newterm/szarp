@@ -68,7 +68,7 @@ XMLUserDB* XMLUserDB::LoadXML(const char *path,const char *prefix) {
 		return NULL;
 	} 
 
-	const char *schema_file = "file:///"PREFIX"/resources/dtd/sync-users.rng";
+	const char *schema_file = "file:///" PREFIX "/resources/dtd/sync-users.rng";
 	xmlRelaxNGParserCtxtPtr pctx;
 	pctx = xmlRelaxNGNewParserCtxt(schema_file);
 	

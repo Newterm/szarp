@@ -96,7 +96,7 @@ int TParcook::LoadConfig()
 {
 	parcook_path = libpar_getpar(SZARP_CFG_SECTION, "parcook_path", 0);
 	if (parcook_path == NULL) {
-		sz_log(0, "TParcook::LoadConfig(): set 'parcook_path' param in "SZARP_CFG" file");
+		sz_log(0, "TParcook::LoadConfig(): set 'parcook_path' param in " SZARP_CFG " file");
 		return 1;
 	}
 	return 0;

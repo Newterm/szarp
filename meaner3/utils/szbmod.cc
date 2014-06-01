@@ -32,12 +32,6 @@
 
 #include "conversion.h"
 
-/** Path to main config file. */
-#define SZARP_CFG "/etc/"PACKAGE_NAME"/"PACKAGE_NAME".cfg"
-
-/** Name of section in main config file for reading data dir.. */
-#define SZARP_CFG_SECTION "meaner3"
-
 char argp_program_name[] = "szbmod";
 const char *argp_program_version = "szbmod " "$Revision: 6199 $";
 const char *argp_program_bug_address = "reksio@praterm.com.pl";
