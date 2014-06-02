@@ -52,6 +52,40 @@ void SzbaseWrapper::set_prober_address( const std::string& address , unsigned po
 			boost::lexical_cast<std::wstring>(port) );
 }
 
+time_t SzbaseWrapper::get_latest(
+			const std::string& param ,
+			ProbeType type ) const
+	throw( szbase_init_error, szbase_get_value_error )
+{
+	if( !SzbaseWrapper::is_initialized() )
+		throw szbase_init_error("Szbase not initialized");
+
+	bool ok;
+	std::wstring error;
+
+	/**
+	 * It looks like szbase has different aruments for "search all" in
+	 * case of 10sec and other probles
+	 */
+	time_t start = type == ProbeType( ProbeType::Type::LIVE ) ?
+		-1 :
+		std::numeric_limits<time_t>::max();
+
+	auto t = Szbase::GetObject()->Search( 
+			convert_string( base_name + ":" + param ) ,
+			start , time_t(-1) , -1 ,
+			type.get_szarp_pt() , ok , error );
+
+	if( !ok )
+		throw szbase_get_value_error("Cannot get latest time of param " + param + ": " + SC::S2A(error) );
+
+	/**
+	 * Round by hand because Szbase::Search returns probes rounded to 
+	 * either 10min or 10sec, not to exact pt
+	 */
+	return round( t , type );
+}
+
 void SzbaseWrapper::sync() const
 {
 	Szbase::GetObject()->NextQuery();

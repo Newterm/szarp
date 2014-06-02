@@ -30,6 +30,14 @@ public:
 
 	void set_prober_address( const std::string& address , unsigned port );
 
+	/** 
+	 * Returns latest probe time in base.
+	 *
+	 * Throws szbase_get_value_error if param not present in base.
+	 */
+	time_t get_latest( const std::string& param , ProbeType type ) const
+		throw( szbase_init_error, szbase_get_value_error );
+
 	/**
 	 * Synchronize with data base 
 	 */

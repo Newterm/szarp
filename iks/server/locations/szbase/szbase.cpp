@@ -11,6 +11,7 @@
 #include "cmd_set_subscribe.h"
 #include "cmd_get_config.h"
 #include "cmd_get_history.h"
+#include "cmd_get_latest.h"
 
 namespace p = std::placeholders;
 
@@ -45,6 +46,7 @@ Command* SzbaseProt::cmd_from_tag( const std::string& tag )
 	MAP_CMD_TAG( "set_subscribe" , SetSubscribeRcv );
 	MAP_CMD_TAG( "get_options"   , GetConfigRcv    );
 	MAP_CMD_TAG( "get_history"   , GetHistoryRcv   );
+	MAP_CMD_TAG( "get_latest"    , GetLatestRcv    );
 	return NULL;
 }
 
