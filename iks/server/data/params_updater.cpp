@@ -78,7 +78,7 @@ void ParamsUpdater::DataUpdater::check_szarp_values(
 		{
 			if( itr->use_count() <= 1 ) {
 				/** No Subscription object left */
-				itr = parent->subscribed_params.erase( itr );
+				parent->subscribed_params.erase( itr++ );
 				continue;
 			}
 
