@@ -33,7 +33,7 @@ ipkedit_SOURCES = \
 	dlistctrl.cc dlistctrl.h \
 	../common/dcolors.h
 
-ipkedit_LDADD = $(LIBWXCOMMON) @WX_LIBS@ @XML_LIBS@ $(LIBSZARP2) $(LIBSZARP) @BOOST_SYSTEM_LIB@ @BOOST_THREAD_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_LOCALE_LIB@
+ipkedit_LDADD = $(LIBWXCOMMON) @WX_LIBS@ @XML_LIBS@ $(LIBSZARP2) $(LIBSZARP) @BOOST_SYSTEM_LIB@ @BOOST_THREAD_LIB@ @BOOST_FILESYSTEM_LIB@
 
 ipkedit_LOCALES = pl/ipkedit.mo
 ipkedit_LOCALES_SRC = pl/ipkedit.po

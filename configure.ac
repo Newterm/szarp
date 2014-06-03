@@ -780,7 +780,6 @@ if test "x$has_boost_base" = "xyes" ; then
 	AX_BOOST_THREAD
 	AX_BOOST_SYSTEM
 	AX_BOOST_PROGRAM_OPTIONS
-	AX_BOOST_LOCALE
 
 	if test "$with_mingw32" != "yes" ; then
 		AX_BOOST_ASIO
@@ -1464,7 +1463,6 @@ if test x$debug_config = xyes ; then
         echo "BOOST_PROGRAM_OPTIONS_LIB: $BOOST_PROGRAM_OPTIONS_LIB"
         echo "BOOST_DATE_TIME_LIB: $BOOST_DATE_TIME_LIB"
         echo "BOOST_PYTHON_LIB: $BOOST_PYTHON_LIB"
-        echo "BOOST_LOCALE: $BOOST_LOCALE"
         echo "ZIP_CFLAGS: $ZIP_CFLAGS"
         echo "ZIP_LIBS: $ZIP_LIBS"
 fi

@@ -210,7 +210,7 @@ bool szParList::SaveFile(wxString path, bool showErrors)
 #ifdef MINGW32
 	int ret = xmlSaveFormatFileEnc(SC::S2A(path.c_str()).c_str(), xml, "CP1250", 1);
 #else
-	int ret = xmlSaveFormatFileEnc(SC::S2A(path.c_str()).c_str(), xml, "UTF-8", 1);
+	int ret = xmlSaveFormatFileEnc(SC::S2A(path.c_str()).c_str(), xml, "ISO-8859-2", 1);
 #endif
 	if (ret == -1) {
 		if (showErrors) {
