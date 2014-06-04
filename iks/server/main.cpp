@@ -55,9 +55,9 @@ int main( int argc , char** argv )
 
 		if( boost::filesystem::exists("iks.ini") ) {
 			auto parsed = po::parse_config_file<char>("iks.ini", desc, true);
-			for( auto io=parsed.options.begin() ; io!=parsed.options.end() ; ++io )
-				if( io->unregistered )
-					pairs[boost::erase_all_copy(io->string_key," ")] = io->value[0];
+			for( const auto& o : parsed.options )
+				if( o.unregistered )
+					pairs[boost::erase_all_copy(o.string_key," ")] = o.value[0];
 
 			locs_cfg.from_flat( pairs );
 			po::store(parsed,vm);
