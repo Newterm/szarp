@@ -768,12 +768,7 @@ fi
 
 has_boost_base="no"
 ac_boost_path="${lib_prefix}"
-# On squeeze AX_BOOST_BASE do not execute ACTION-IF-FOUND :(
-AC_LANG_PUSH([C++])
-AC_CHECK_HEADERS([boost/foreach.hpp], [has_boost_base="yes"], [has_boost_base="no"])
-AC_LANG_POP([C++])
-
-AX_BOOST_BASE("1.42.0", [has_boost_base="yes"], [has_boost_base="no"])
+AX_BOOST_BASE("1.48.0", [has_boost_base="yes"], [has_boost_base="no"])
 if test "x$has_boost_base" = "xyes" ; then
 	AX_BOOST_FILESYSTEM
 	AX_BOOST_DATE_TIME
