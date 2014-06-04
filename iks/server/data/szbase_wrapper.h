@@ -67,12 +67,7 @@ public:
 private:
 	std::wstring convert_string( const std::string& param ) const;
 
-#if BOOST_FILESYSTEM_VERSION == 3
 	static boost::filesystem::path szarp_dir;
-#else
-	static boost::filesystem::wpath szarp_dir;
-#endif
-
 	static bool initialized;
 
 	std::string base_name;
