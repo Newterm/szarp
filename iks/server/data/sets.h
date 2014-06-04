@@ -45,7 +45,7 @@ class Sets {
 	> SetsMap;
 
 public:
-	typedef key_iterator<SetsMap> iterator;
+	using iterator = key_iterator<SetsMap>;
 
 	void from_params_file( const std::string& path ) throw(xml_parse_error);
 

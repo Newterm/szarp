@@ -17,10 +17,7 @@ Params::Params()
 std::shared_ptr<const Param> Params::get_param( const std::string& name ) const
 {
 	auto itr = params.find(name);
-	if( itr == params.end() )
-		return std::shared_ptr<const Param>();
-	else
-		return itr->second;
+	return itr == params.end() ? std::shared_ptr<const Param>() : itr->second;
 }
 
 void Params::from_params_file( const std::string& path ) throw(xml_parse_error)
@@ -31,26 +28,18 @@ void Params::from_params_file( const std::string& path ) throw(xml_parse_error)
 	from_params_xml( params_doc );
 }
 
-void Params::create_param( bp::ptree::value_type& p , const std::string& type )
-{
-	if( p.first == "param" ) {
-		auto param = std::make_shared<Param>( type );
-		param->from_params_xml( p.second );
-		params[ param->get_name() ] = std::move(param);
-	}
-}
-
 void Params::from_params_xml( bp::ptree& doc ) throw(xml_parse_error)
 {
 	fold_xmlattr( doc );
 
-	auto& params_ptree = doc.get_child("params");
-	for( auto id=params_ptree.begin() ; id!=params_ptree.end() ; ++id )
-		ptree_foreach( id->second ,
-			std::bind(
-				&Params::create_param, this,
-				std::placeholders::_1, id->first ) );
-
+	for( auto& d : doc.get_child("params") )
+		ptree_foreach( d.second , [&] ( bp::ptree::value_type& p ) {
+			if( p.first == "param" ) {
+				auto param = std::make_shared<Param>( d.first );
+				param->from_params_xml( p.second );
+				params.emplace( param->get_name(), std::move(param) );
+			}
+		} );
 }
 
 void Params::param_value_changed( const std::string& name , double value , ProbeType pt )
