@@ -36,11 +36,11 @@ class SzbaseLocation : public ProtocolLocation {
 public:
 	SzbaseLocation(
 			const std::string& name ,
-			Vars* vars ,
+			Vars& vars ,
 			Connection* conn = NULL )
 		: ProtocolLocation(
 				name ,
-				std::make_shared<SzbaseProt>(*vars) ,
+				std::make_shared<SzbaseProt>(vars) ,
 				conn )
 	{}
 

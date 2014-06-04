@@ -55,7 +55,7 @@ void LocationsMgr::add_szbase( const std::string& name , const CfgPairs& cfg )
 		auto& vars = vars_cache.get_szarp( cfg.at("base") );
 		vars.set_szarp_prober_server( pa , p );
 
-		loc_factory.register_location<SzbaseLocation>( name , &vars );
+		loc_factory.register_location<SzbaseLocation>( name , std::ref(vars) );
 	} catch( file_not_found_error& e ) {
 		throw invalid_value( e.what() );
 	}
