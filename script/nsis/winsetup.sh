@@ -185,6 +185,7 @@ function CopyDlls()
 	/usr/local/boost/lib/libboost_program_options*.dll \
 	/usr/local/boost/lib/libboost_thread*.dll \
 	/usr/local/boost/lib/libboost_locale*.dll \
+	/usr/local/boost/lib/libboost_chrono*.dll \
 	/usr/lib/gcc/i686-w64-mingw32/4.6/libstdc++-6.dll \
 	/usr/lib/gcc/i686-w64-mingw32/4.6/libgcc_s_sjlj-1.dll \
 	$MINGW"
