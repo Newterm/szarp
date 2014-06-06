@@ -3,9 +3,8 @@
 #
 # This template should be included by szarp.cfg file using $include
 # directive, after setting value of $prefix$ variable.
-# Settings in szarp.cfg may overrride settings from template
+# Settings in szarp.cfg may override settings from template
 #
-# $Id: SZARP_IN_CFG_TEMPLATE 6789 2009-05-29 12:03:33Z pawel $
 
 #
 # __INSTALL_DIR__ - installation prefix - default is /opt/szarp
@@ -121,7 +120,7 @@ port=8090
 # list of reachable probes servers
 servers=local_probes_server
 
-# adress of server running $prefix$ configuration
+# address of server running $prefix$ configuration
 :local_probes_server
 prefix=$prefix$
 
@@ -165,8 +164,8 @@ allowed_ip=@(192.168.*.*|172.*.*.*|127.*.*.*)
 
 :scc
 # default menu configuration for SZARP command center:
-$dont_group_string$:="ciep³ownia\",\"Wêz([eê]³|³y)\",\"^(MP|Z|P)?EC$\",\"^ZC$\",\"Po³udnie\",\"komora\",\"Samsony?\",\"Praterm\",\"dane\",\"Kompaktu?\",\
-\"przeno¶ny\",\"ZOZ\",\"centrum\",\"zbiorcza\",\"security\",\"miejsk?\",\"centrala\",\"Wydzia³\""
+$dont_group_string$:="ciepÅ‚ownia\",\"WÄ™z([eÄ™]Å‚|Å‚y)\",\"^(MP|Z|P)?EC$\",\"^ZC$\",\"PoÅ‚udnie\",\"komora\",\"Samsony?\",\"Praterm\",\"dane\",\"Kompaktu?\",\
+\"przenoÅ›ny\",\"ZOZ\",\"centrum\",\"zbiorcza\",\"security\",\"miejsk?\",\"centrala\",\"WydziaÅ‚\""
 menu= CONFIG("$prefix$"), \
 	SEPARATOR, \
 	DRAWS(".*"), \
@@ -229,7 +228,7 @@ ldap_server_port=636
 
 :koper
 # name of parameter displayed
-param=Sieæ:Sterownik:Finansowa strata sumaryczna R
+param=SieÄ‡:Sterownik:Finansowa strata sumaryczna R
 
 # when to reset date, crontab format (minute, hour, day, month)
 1st_date_reset=0 0 1 1,7
