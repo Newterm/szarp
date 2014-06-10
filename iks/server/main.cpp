@@ -41,7 +41,8 @@ int main( int argc , char** argv )
 
 	desc.add_options() 
 		("help,h", "Print this help messages")
-		("name", po::value<std::string>()->default_value(ba::ip::host_name()), "Szarp prefix")
+		("config_file", po::value<std::string>()->default_value("iks.ini"), "Custom configuration file.")
+		("name", po::value<std::string>()->default_value(ba::ip::host_name()), "Servers name -- defaults to hostname.")
 		("prefix,P", po::value<std::string>()->default_value(PREFIX), "Szarp prefix")
 		("port,p", po::value<unsigned>()->default_value(9002), "Server port on which we will listen");
 
@@ -53,8 +54,9 @@ int main( int argc , char** argv )
 	{ 
 		po::store(po::parse_command_line(argc, argv, desc),  vm);
 
-		if( boost::filesystem::exists("iks.ini") ) {
-			auto parsed = po::parse_config_file<char>("iks.ini", desc, true);
+		if( boost::filesystem::exists(vm["config_file"].as<std::string>()) ) {
+			auto parsed = po::parse_config_file<char>(vm["config_file"].as<std::string>().c_str(), desc, true);
+
 			for( const auto& o : parsed.options )
 				if( o.unregistered )
 					pairs[boost::erase_all_copy(o.string_key," ")] = o.value[0];
