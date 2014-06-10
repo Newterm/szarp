@@ -204,7 +204,7 @@ SCCMenu* SCCApp::CreateMainMenu() {
 		smenu = SCCMenu::ParseMenu(s);
 	} else {
 #ifdef MINGW32
-		smenu = SCCMenu::ParseMenu(wxString(SC::U2S(buffer)));
+		smenu = SCCMenu::ParseMenu(wxString(SC::U2S((unsigned char *)buffer)));
 #else
 		smenu = SCCMenu::ParseMenu(wxString(SC::L2S(buffer)));
 #endif
