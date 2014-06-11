@@ -65,7 +65,7 @@ void ProberConnection::HandleResolve(const boost::system::error_code& error, boo
 	if (error == boost::asio::error::operation_aborted)
 		return;
 	if (error) {
-		m_error = SC::A2S(error.message());
+		m_error = SC::L2S(error.message());
 		StopTimer();
 		return;
 	}
@@ -145,7 +145,7 @@ void ProberConnection::HandleConnect(const boost::system::error_code& error) {
 	if (error == boost::asio::error::operation_aborted)
 		return;
 	if (error) {
-		m_error = SC::A2S(error.message());
+		m_error = SC::L2S(error.message());
 		StopTimer();
 		return;
 	}
@@ -158,7 +158,7 @@ void ProberConnection::HandleWrite(const boost::system::error_code &error) {
 	if (error == boost::asio::error::operation_aborted)
 		return;
 	if (error) {
-		m_error = SC::A2S(error.message());
+		m_error = SC::L2S(error.message());
 		StopTimer();
 		return;
 	}
@@ -169,7 +169,7 @@ void ProberConnection::HandleRangeResponse(const boost::system::error_code &erro
 	if (error == boost::asio::error::operation_aborted)
 		return;
 	if (error) {
-		m_error = SC::A2S(error.message());
+		m_error = SC::L2S(error.message());
 		StopTimer();
 		return;
 	}
@@ -193,7 +193,7 @@ void ProberConnection::HandleGetFirstLine(const boost::system::error_code &error
 	if (error == boost::asio::error::operation_aborted)
 		return;
 	if (error) {
-		m_error = SC::A2S(error.message());
+		m_error = SC::L2S(error.message());
 		StopTimer();
 		return;
 	}
@@ -213,6 +213,7 @@ void ProberConnection::HandleGetFirstLine(const boost::system::error_code &error
 				boost::asio::transfer_at_least(length - m_input_buffer.size()),
 				boost::bind(&ProberConnection::HandleReadValues, this, _1, _2));
 	} else {
+		// FIXME: this A2S() call may be unsafe
 		m_error = std::wstring(L"Error performing operation on prober ") + SC::A2S(line.substr(sizeof("ERROR")));
 		StopTimer();
 	}
@@ -234,7 +235,7 @@ void ProberConnection::HandleSearchResponse(const boost::system::error_code &err
 	if (error == boost::asio::error::operation_aborted)
 		return;
 	if (error) {
-		m_error = SC::A2S(error.message());
+		m_error = SC::L2S(error.message());
 		StopTimer();
 		return;
 	}

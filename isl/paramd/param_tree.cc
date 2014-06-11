@@ -17,7 +17,7 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
- * Pawe³ Pa³ucha 2002
+ * Pawel Palucha 2002
  *
  * param_tree.cc - XML params tree
  *
@@ -712,7 +712,7 @@ void ParamTree::writeNode(xmlOutputBufferPtr buf, xmlNodePtr node,
 		} else {
 			xWS(buf, ".."); 
 		}
-		xWS(buf, (char *)SC::S2U(SC::A2S(("\"> .. (poziom wy¿ej) </a></td></tr>\n"))).c_str());
+		xWS(buf, (char *)SC::S2U(SC::A2S(("\"> .. (poziom wyzej) </a></td></tr>\n"))).c_str());
 	}
 
 	for (n = node->children; n; n = n->next) {
@@ -787,14 +787,14 @@ void ParamTree::writeParam(xmlOutputBufferPtr buf, xmlNodePtr node,
 	} else {
 		xWS(buf, "..");
 	}
-	 xWS(buf, (char *)SC::S2U(SC::A2S("\"> .. (poziom wy¿ej) </a></li></p>")).c_str());
+	 xWS(buf, (char *)SC::S2U(SC::A2S("\"> .. (poziom wyzej) </a></li></p>")).c_str());
 	
 	xWS(buf, (char *)SC::S2U(SC::A2S(
-			"<p><table><tr><td>Pe³na nazwa</td>\n<td>")).c_str()); 
+			"<p><table><tr><td>Pelna nazwa</td>\n<td>")).c_str());
 	c = xGP(node, (xmlChar *)"full_name");
 	xWS(buf, c);
 	xmlFree(c);
-	xWS(buf, (char *)SC::S2U(SC::A2S("</td></tr><tr><td>Nazwa skrócona</td><td>")).c_str()); 
+	xWS(buf, (char *)SC::S2U(SC::A2S("</td></tr><tr><td>Nazwa skrocona</td><td>")).c_str());
 	c = xGP(node, (xmlChar *)"short_name");
 	xWS(buf, c);
 	xmlFree(c);
@@ -802,7 +802,7 @@ void ParamTree::writeParam(xmlOutputBufferPtr buf, xmlNodePtr node,
 	c = xGP(node, (xmlChar *)"unit");
 	xWS(buf, c);
 	xmlFree(c);
-	xWS(buf, (char *)SC::S2U(SC::A2S("</td></tr><tr><td>Warto¶æ</td><td>")).c_str());
+	xWS(buf, (char *)SC::S2U(SC::A2S("</td></tr><tr><td>Wartosc</td><td>")).c_str());
 	c = xGP(node, (xmlChar *)"value");
 	xWS(buf, c);
 	xmlFree(c);
