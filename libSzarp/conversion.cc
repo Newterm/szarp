@@ -114,10 +114,10 @@ std::wstring utf2szarp(const std::basic_string<unsigned char>& c) {
 #else
 std::wstring utf2szarp(const std::basic_string<unsigned char>& c) {
 	if (c.size() == 0)
-		return wstring();
+		return std::wstring();
 
 	int _size = c.size() + 1;
-	boost::scoped_array::scoped_array<wchar_t> buff(new wchar_t[_size]);
+	boost::scoped_array<wchar_t> buff(new wchar_t[_size]);
 	int res = MultiByteToWideChar(CP_UTF8, 0, (CHAR*)c.c_str(), c.size(), buff.get(), c.size() + 1);
 
 	if (res == 0) {
@@ -141,7 +141,7 @@ std::basic_string<unsigned char> szarp2utf(const std::wstring& c) {
 		return std::basic_string<unsigned char>();
 
 	int size_ = c.size() * sizeof(wchar_t);
-	boost::scoped_array::scoped_array<unsigned char> buff(new unsigned char[size_]);
+	boost::scoped_array<unsigned char> buff(new unsigned char[size_]);
 	int res = WideCharToMultiByte(CP_UTF8, 0, (WCHAR*)c.c_str(), c.size(), (CHAR*) buff.get(), size_, NULL, NULL);
 
 	if (res == 0) {
@@ -164,7 +164,7 @@ std::wstring local2szarp(const std::basic_string<char>& c) {
 	if (c.size() == 0)
 		return std::wstring();
 
-	boost::scoped_array::scoped_array<wchar_t> buff(new wchar_t[c.size() + 1]);
+	boost::scoped_array<wchar_t> buff(new wchar_t[c.size() + 1]);
 	int res = MultiByteToWideChar(CP_ACP, 0, c.c_str(), -1, buff.get(), (c.size() + 1) * sizeof(wchar_t));
 
 	if (res == 0) {
@@ -185,14 +185,14 @@ std::string szarp2local(const std::basic_string<wchar_t>& c) {
 #else
 std::string szarp2local(const std::basic_string<wchar_t>& c) {
 	if (c.size() == 0)
-		return std::tring();
+		return std::string();
 
 	int size_ = c.size() * 2;
-	boost::scoped_array::scoped_array<char> buff(new char[size_]);
+	boost::scoped_array<char> buff(new char[size_]);
 	int res = WideCharToMultiByte(CP_ACP, 0, c.c_str(), -1, buff.get(), size_, NULL, NULL);
 
 	if (res == 0) {
-		throw runtime_error("Incomplete multibyte sequence encountered in conversion");
+		throw std::runtime_error("Incomplete multibyte sequence encountered in conversion");
 	}
 
 	return std::string(buff.get(), res - 1);
@@ -213,11 +213,11 @@ std::string szarp2ascii(const std::basic_string<wchar_t>& c) {
 		return std::string();
 
 	int size_ = c.size() * 2;
-	boost::scoped_array::scoped_array<char> buff(new char[size_]);
+	boost::scoped_array<char> buff(new char[size_]);
 	int res = WideCharToMultiByte(CP_ACP, 0, c.c_str(), -1, buff.get(), size_, NULL, NULL);
 
 	if (res == 0) {
-		throw runtime_error("Incomplete multibyte sequence encountered in conversion");
+		throw std::runtime_error("Incomplete multibyte sequence encountered in conversion");
 	}
 
 	return std::string(buff.get(), res - 1);
@@ -236,11 +236,11 @@ std::wstring ascii2szarp(const std::basic_string<char>& c) {
 	if (c.size() == 0)
 		return std::wstring();
 
-	boost::scoped_array::scoped_array<wchar_t> buff(new wchar_t[c.size() + 1]);
+	boost::scoped_array<wchar_t> buff(new wchar_t[c.size() + 1]);
 	int res = MultiByteToWideChar(CP_ACP, 0, c.c_str(), -1, buff.get(), (c.size() + 1) * sizeof(wchar_t));
 
 	if (res == 0) {
-		throw runtime_error("Incomplete multibyte sequence encountered in conversion");
+		throw std::runtime_error("Incomplete multibyte sequence encountered in conversion");
 	}
 
 	return std::wstring(buff.get(), res);
