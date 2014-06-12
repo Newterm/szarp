@@ -1249,7 +1249,7 @@ int main(int argc,char *argv[])
 
   	char *ipk_path = libpar_getpar("analiza", "IPK", 0);
 	if (ipk_path != NULL) {
-		if (ipk->loadXML(SC::A2S(ipk_path))) {
+		if (ipk->loadXML(SC::L2S(ipk_path))) {
 			if (argc == 1) 
 				sz_log(0,"Failed to load IPK file\n");
 			if (ReadAnalizaCfg(argc, argv))

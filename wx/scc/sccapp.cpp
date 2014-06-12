@@ -164,7 +164,7 @@ bool SCCApp::OnInit()
 
 	smenu = CreateMainMenu();
 	// Create main frame.
-	taskbar_item = new SCCTaskBarItem(smenu, wxString(SC::A2S(prefix)), wxString(SC::A2S(suffix)));
+	taskbar_item = new SCCTaskBarItem(smenu, wxString(SC::L2S(prefix)), wxString(SC::L2S(suffix)));
 
 	server = new SCCServer(this, scc_ipc_messages::scc_service);
 	

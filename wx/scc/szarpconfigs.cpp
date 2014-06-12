@@ -58,7 +58,7 @@ SzarpConfigs::SzarpConfigs()
 		char* da = libpar_getpar("scc", "dont_aggregate", 0);
 
 		if (da != NULL) {
-			wxStringTokenizer tknz(wxString(SC::A2S(da)), 
+			wxStringTokenizer tknz(wxString(SC::L2S(da)),
 					_T(","), 
 					wxTOKEN_STRTOK);
 			while (tknz.HasMoreTokens()) 

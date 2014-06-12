@@ -91,7 +91,7 @@ bool szSingleInstanceChecker::IsAnotherRunning() const
 	buf[sizeof(buf) -1] = 0;
 	read(fd, buf, sizeof(buf) - 1);
 	close(fd);
-	wxString cmdline(SC::A2S(buf));
+	wxString cmdline(SC::L2S(buf));
 	if (cmdline.EndsWith(m_appname)) {
 		return true;
 	} else {

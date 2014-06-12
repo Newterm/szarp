@@ -970,7 +970,7 @@ void CFileSyncer::Sync() {
 			}
 		} catch (fs::filesystem_error &e) {
 #if 0
-			wxLogError(wxString(_("error while preparing list of files from the server: ") + SC::A2S(e.what())));
+			wxLogError(wxString(_("error while preparing list of files from the server: ") + SC::L2S(e.what())));
 #endif
 			ok = false;
 		}
@@ -1003,8 +1003,8 @@ void CFileSyncer::Sync() {
 							}
 						} catch(fs::filesystem_error &e) {
 #if 0
-								wxLogError(wxString(SC::A2S(itr->path().string().c_str()))
-										+ _(" error while deleting file: ") + SC::A2S(e.what()));
+								wxLogError(wxString(SC::L2S(itr->path().string().c_str()))
+										+ _(" error while deleting file: ") + SC::L2S(e.what()));
 #endif
 								ok = false;
 						}
@@ -1016,7 +1016,7 @@ void CFileSyncer::Sync() {
 
 			} catch(fs::filesystem_error &e) {
 #if 0
-					wxLogError(wxString(_("error while iterating through directories: ") + SC::A2S(e.what())));
+					wxLogError(wxString(_("error while iterating through directories: ") + SC::L2S(e.what())));
 #endif
 					ok = false;
 			}
@@ -1991,7 +1991,8 @@ void ProgressFrame::UpdateServerBaseMap(std::map<char*, char*>& dir_map) {
 			i != dir_map.end();
 			i++) {
 		wxString base = SC::U2S((unsigned char*)i->first);
-		wxString server = SC::A2S(i->second);
+		// FIXME: may be hardcoded ISO-8859-2
+		wxString server = SC::L2S(i->second);
 
 		for (std::map<wxString, std::set<wxString> >::iterator j = sb.begin();
 				j != sb.end();

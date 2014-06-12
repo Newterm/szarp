@@ -2143,7 +2143,7 @@ namespace EkrnDefConv {
 			int axis_nr;
 			file >> axis_nr;
 
-			DrawInfo* di = get_draw_info(cfg, SC::A2S(ipk_name), ais.at(axis_nr));
+			DrawInfo* di = get_draw_info(cfg, SC::L2S(ipk_name), ais.at(axis_nr));
 			if (di == NULL)
 				continue;
 
@@ -2155,7 +2155,8 @@ namespace EkrnDefConv {
 			result.push_back(e);
 		}
 
-		return std::make_pair(wxString(SC::A2S(title.substr(1))), result);
+		// FIXME: may be hardcoded ISO-8859-2
+		return std::make_pair(wxString(SC::L2S(title.substr(1))), result);
 
 	}
 

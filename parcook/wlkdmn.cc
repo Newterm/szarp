@@ -1310,7 +1310,8 @@ class WLKExporter : public std::unary_function<boost::filesystem::path, void> {
                     } else {
                         sz_log(9, "Read param name %s from param tag in line %ld", value, xmlGetLineNo(param_node));
 
-                        parameters_names.push_back(SC::A2S(value));
+						// FIXME: may be hardcoded ISO-8859-2
+                        parameters_names.push_back(SC::L2S(value));
 
                         free(value);
                     }
@@ -1486,7 +1487,8 @@ When in SZARP line daemon mode, the following options are available:\n");
             import_data_directory = L"";
         } else {
             sz_log(9, "Read directory path %s from device tag", import_data_directory_value);
-            import_data_directory = SC::A2S(import_data_directory_value);
+			// FIXME: may be hardcoded ISO-8859-2
+            import_data_directory = SC::L2S(import_data_directory_value);
 
             free(import_data_directory_value);
         }

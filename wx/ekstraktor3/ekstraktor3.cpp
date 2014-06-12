@@ -92,7 +92,7 @@ bool EkstrApp::OnInit()
 	std::wstring ipk_prefix;
 	char *_ipk_prefix = libpar_getpar("", "config_prefix", 0);
 	if (_ipk_prefix) {
-		ipk_prefix = SC::A2S(_ipk_prefix);
+		ipk_prefix = SC::L2S(_ipk_prefix);
 		free(_ipk_prefix);
 	}
 	std::map<wxString, std::pair<wxString, wxString> > m_probers_addresses;

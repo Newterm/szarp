@@ -51,7 +51,7 @@
 #define X 	(xmlChar *)
 
 IPKLoader::IPKLoader(char *_config_file, PTTParamProxy *pttParamProxy, Szbase *szbase) : config_file(_config_file), m_pttParamProxy(pttParamProxy), m_szbase(szbase) { 
-	szarpConfig = IPKContainer::GetObject()->GetConfig(SC::A2S(_config_file));
+	szarpConfig = IPKContainer::GetObject()->GetConfig(SC::L2S(_config_file));
 }
 
 xmlDocPtr IPKLoader::start_document() {

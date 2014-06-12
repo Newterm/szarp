@@ -19,7 +19,7 @@
 /*
  * $Id$
 
- * Pawe≥ Pa≥ucha <pawel@praterm.com.pl>
+ * Pawe≈Ç Pa≈Çucha <pawel@praterm.com.pl>
  *
  * Parses sorted output from process_csv script and writes to szarp base. Also
  * can alter params.xml file (adds new parameters).
@@ -684,7 +684,7 @@ int SzbaseWriter::process_line(char *line)
 
 	char *unit = check_unit(name);	
 
-	if (add_data(SC::A2S(name), unit != NULL ? SC::A2S(unit) : L"", year, month, day, hour, min, sec, SC::A2S(data))) {
+	if (add_data(SC::L2S(name), unit != NULL ? SC::L2S(unit) : L"", year, month, day, hour, min, sec, SC::L2S(data))) {
 		tokenize(NULL, &toks, &tokc);
 		return 1;
 	}
@@ -792,7 +792,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 		case ARGP_KEY_ARG:
 			if (state->arg_num >= 2)
 				return ARGP_ERR_UNKNOWN;
-			arguments->title = SC::A2S(arg);
+			arguments->title = SC::L2S(arg);
 			break;
                 default:
 			if (state->arg_num >= 2)
@@ -862,11 +862,11 @@ int main(int argc, char *argv[])
 	arguments.no_probes = false;
         argp_parse(&argp, argc, argv, 0, 0, &arguments);
 	if (arguments.title.empty()) {
-		arguments.title = SC::A2S("WÍz≥y Samson");
+		arguments.title = SC::U2S((unsigned char *)"Wƒôz≈Çy Samson");
 	}
 
-	SzbaseWriter *szbw = new SzbaseWriter(SC::A2S(ipk_path), arguments.title, 
-			SC::A2S(double_pattern) , SC::A2S(data_dir), SC::A2S(cache_dir) ,
+	SzbaseWriter *szbw = new SzbaseWriter(SC::L2S(ipk_path), arguments.title,
+			SC::L2S(double_pattern) , SC::L2S(data_dir), SC::L2S(cache_dir),
 			arguments.add_new_params, not arguments.no_probes,
 			fill_how_many_num,fill_how_many_sec_num);
 	assert (szbw != NULL);
@@ -879,7 +879,7 @@ int main(int argc, char *argv[])
 		return 1;
 
 	if(szbw->have_new_params())
-		szbw->saveXML(SC::A2S(ipk_path));
+		szbw->saveXML(SC::L2S(ipk_path));
 	
 	delete szbw;
 

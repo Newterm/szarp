@@ -169,12 +169,10 @@ char *TreeProcessor::processHTML(xmlNodePtr node, int *code, int last_slash)
 	xmlOutputBufferWriteString(out_buf, html_header);
 
 	if (node == NULL)
-		xmlOutputBufferWriteString(out_buf, (char *)
-				SC::S2U(SC::A2S("<p><b>Wezel nie znaleziony!</b></p>")).c_str());
+		xmlOutputBufferWriteString(out_buf, "<p><b>Węzeł nie znaleziony!</b></p>");
 	else {
 		if (strcmp((char *)node->name, "params")) {
-			xmlOutputBufferWriteString(out_buf, (char *)
-				SC::S2U(SC::A2S("<p>Wezel <b>")).c_str());
+			xmlOutputBufferWriteString(out_buf, "<p>Węzeł <b>");
 			c = (char *)xmlGetProp(node, (xmlChar *)"name");
 			xmlOutputBufferWriteString(out_buf, c);
 			xmlFree(c);
@@ -253,7 +251,7 @@ void TreeProcessor::writeNode(xmlOutputBufferPtr buf, xmlNodePtr node,
 		} else {
 			xWS(buf, ".."); 
 		}
-		xWS(buf, (char *)SC::S2U(SC::A2S(("\"> .. (poziom wyzej) </a></td></tr>\n"))).c_str());
+		xWS(buf, "\"> .. (poziom wyżej) </a></td></tr>\n");
 	}
 
 	for (n = node->children; n; n = n->next) {
@@ -328,14 +326,13 @@ void TreeProcessor::writeParam(xmlOutputBufferPtr buf, xmlNodePtr node,
 	} else {
 		xWS(buf, "..");
 	}
-	 xWS(buf, (char *)SC::S2U(SC::A2S("\"> .. (poziom wyzej) </a></li></p>")).c_str());
-	
-	xWS(buf, (char *)SC::S2U(SC::A2S(
-			"<p><table><tr><td>Pelna nazwa</td>\n<td>")).c_str());
+	 xWS(buf, "\"> .. (poziom wyżej) </a></li></p>");
+
+	xWS(buf, "<p><table><tr><td>Pełna nazwa</td>\n<td>");
 	c = xGP(node, (xmlChar *)"full_name");
 	xWS(buf, c);
 	xmlFree(c);
-	xWS(buf, (char *)SC::S2U(SC::A2S("</td></tr><tr><td>Nazwa skrocona</td><td>")).c_str());
+	xWS(buf, "</td></tr><tr><td>Nazwa skrócona</td><td>");
 	c = xGP(node, (xmlChar *)"short_name");
 	xWS(buf, c);
 	xmlFree(c);
@@ -343,7 +340,7 @@ void TreeProcessor::writeParam(xmlOutputBufferPtr buf, xmlNodePtr node,
 	c = xGP(node, (xmlChar *)"unit");
 	xWS(buf, c);
 	xmlFree(c);
-	xWS(buf, (char *)SC::S2U(SC::A2S("</td></tr><tr><td>Wartosc</td><td>")).c_str());
+	xWS(buf, "</td></tr><tr><td>Wartość</td><td>");
 	c = xGP(node, (xmlChar *)"value");
 	xWS(buf, c);
 	xmlFree(c);

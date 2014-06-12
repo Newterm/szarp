@@ -950,7 +950,7 @@ int CipkConf::IpkInit(){
 	}else{
 		m_dir_initialised = 1;
 	}
-	ipk->loadXML(SC::A2S(path));
+	ipk->loadXML(SC::L2S(path));
 	return S_OK;
 };		
 CipkConf IpkConf;
@@ -1072,7 +1072,8 @@ int CluaRegister::GetDataFromParam(time_t StartDate, time_t StopDate, char *PNam
 	time_t ActualDate=0;
 	
 	TParam *p=NULL;
-	p = IpkConf.ipk->getParamByName(SC::A2S(PName));
+	// FIXME: may be hardcoded ISO-8859-2
+	p = IpkConf.ipk->getParamByName(SC::L2S(PName));
 
 
 	if (p==NULL){
@@ -1089,9 +1090,9 @@ int CluaRegister::GetDataFromParam(time_t StartDate, time_t StopDate, char *PNam
 	*PSize = 0;
 	ActualDate = StartDate;
 	
-	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"", new NullMutex());
-	Szbase::Init(SC::A2S(PREFIX), NULL);
-	buf = szb_create_buffer(Szbase::GetObject(), SC::A2S(IpkConf.dir), 1, IpkConf.ipk);
+	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"", new NullMutex());
+	Szbase::Init(SC::L2S(PREFIX), NULL);
+	buf = szb_create_buffer(Szbase::GetObject(), SC::L2S(IpkConf.dir), 1, IpkConf.ipk);
 	while(ActualDate < StopDate){
 		data = szb_get_data(buf, p, ActualDate);
 		PData[i] = (int)p->ToIPCValue(data); 
@@ -1126,15 +1127,15 @@ int CluaRegister::GetDataFromParams(time_t StartDate, time_t StopDate, char *PWi
 		sz_log(0, "'datadir' not found in szarp.cfg");
 		return S_NO_DATA;
 	}
-	ipk->loadXML(SC::A2S(path));
+	ipk->loadXML(SC::L2S(path));
 
 
 	for (TParam *ppp = ipk->GetFirstParam();ppp;ppp=ipk->GetNextParam(ppp)){
 		
 		if (CheckWildCardString((char *)(SC::S2A(ppp->GetName()).c_str()),(char *)PWildCard)==0){	
-			IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"", new NullMutex());
-			Szbase::Init(SC::A2S(PREFIX), NULL);
-			buf = szb_create_buffer(Szbase::GetObject(), SC::A2S(dir), 1, ipk);
+			IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"", new NullMutex());
+			Szbase::Init(SC::L2S(PREFIX), NULL);
+			buf = szb_create_buffer(Szbase::GetObject(), SC::L2S(dir), 1, ipk);
 			data = szb_get_avg(buf, ipk->getParamByName(ppp->GetName()), StartDate, StopDate);
 			PData[ParamsCtr] = (int)ipk->getParamByName(ppp->GetName())->ToIPCValue(data); 
 			szb_free_buffer(buf);
