@@ -40,17 +40,18 @@ public:
 			return;
 		}
 
-		if( !json.count("remotes") )
-			/* TODO: Log errors (19/05/2014 21:49, jkotur) */
+		try {
+			for( auto itr=json.begin() ; itr!=json.end() ; ++itr )
+				locs.register_location<ProxyLoc>
+					( str( boost::format("%s:%s") % name % itr->first ) ,
+					  itr->second.get<std::string>("name") ,
+					  itr->second.get<std::string>("type") ,
+					  address, port );
+
+		} catch( const bp::ptree_error& e ) {
+			/* TODO: Log errors (12/06/2014 16:14, jkotur) */
 			return;
-
-		auto& rms = json.get_child("remotes");
-
-		for( auto itr=rms.begin() ; itr!=rms.end() ; ++itr )
-			locs.register_location<ProxyLoc>
-				( str( boost::format("%s:%s")
-					   % name % itr->second.get<std::string>("") ) ,
-				  address, port );
+		}
 	}
 
 protected:

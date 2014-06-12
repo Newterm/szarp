@@ -43,6 +43,7 @@ void LocationsMgr::add_szbase( const std::string& name , const CfgPairs& cfg )
 {
 	auto pa = cfg.count("prober_address") ? cfg.at("prober_address") : "127.0.0.1";
 	auto pp = cfg.count("prober_port")    ? cfg.at("prober_port")    : "8090";
+	auto draw_name = cfg.count("draw_name") ?  cfg.at("draw_name") : name;
 
 	unsigned p;
 	try {
@@ -55,7 +56,8 @@ void LocationsMgr::add_szbase( const std::string& name , const CfgPairs& cfg )
 		auto& vars = vars_cache.get_szarp( cfg.at("base") );
 		vars.set_szarp_prober_server( pa , p );
 
-		loc_factory.register_location<SzbaseLocation>( name , std::ref(vars) );
+		loc_factory.register_location<SzbaseLocation>(
+				name , draw_name , "szbase" , std::ref(vars) );
 	} catch( file_not_found_error& e ) {
 		throw invalid_value( e.what() );
 	}

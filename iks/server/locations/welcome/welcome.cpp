@@ -43,7 +43,9 @@ std::string WelcomeProt::tag_from_cmd( const Command* cmd )
 
 void WelcomeProt::on_remote_added( const std::string& tag )
 {
-	send_cmd( new CmdAddRemoteSnd( tag ) );
+	auto itr = locs.find( tag );
+	if( itr != locs.end() )
+		send_cmd( new CmdAddRemoteSnd( itr ) );
 }
 
 void WelcomeProt::on_remote_removed( const std::string& tag )
