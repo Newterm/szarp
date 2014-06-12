@@ -47,7 +47,7 @@ Description: SZARP scripts
 Package: szarp-server
 Section: misc
 Architecture: any
-Conflicts: szarp-viewer, szarp-viewer-cb, szarp-terminal, szarp-terminal-cb, szarp-server-cb
+Conflicts: szarp-viewer, szarp-terminal
 Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-daemons, szarp-utils, openssl, subversion, szarp-paramd
 Suggests: szarp-proprietary-daemons
 Description: Configure SZARP as a server
@@ -56,7 +56,7 @@ Description: Configure SZARP as a server
 Package: szarp-wx
 Section: x11
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-doc-html, zip, sudo, xdg-utils, sshpass, ttf-freefont, libgnomeprintui2.2-0
+Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-doc-html, zip, sudo, xdg-utils, sshpass, ttf-freefont
 Description: SZARP utilities based on wxWidgets library
  SZARP raporter3, kontroler3, scc, ekstraktor3, wxhelp, draw3,
  confedit, pipes applications.
@@ -64,7 +64,7 @@ Description: SZARP utilities based on wxWidgets library
 Package: szarp-terminal
 Section: x11
 Architecture: any
-Conflicts: szarp-terminal-cb, szarp-viewer-cb, szarp-viewer, szarp-server, szarp-server-cb
+Conflicts: szarp-viewer, szarp-server
 Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-wx, szarp-doc-html
 Description: Configure SZARP as a terminal
  This package depends on other SZARP's  packages that are 
@@ -73,7 +73,7 @@ Description: Configure SZARP as a terminal
 Package: szarp-viewer
 Section: x11
 Architecture: any
-Conflicts: szarp-viewer-cb, szarp-terminal-cb, szarp-terminal
+Conflicts: szarp-terminal
 Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-wx, szarp-doc-html
 Description: Configure SZARP for viewing databases
  This package installs other SZARP's packages so that it is capable of viewing
@@ -103,8 +103,7 @@ Description: SZARP raporter3/kontroler3 server
 Package: szarp-server-complete
 Section: misc
 Architecture: any
-Conflicts: szarp-server-complete-cb
-Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-daemons, szarp-base, szarp-wx, szarp-doc-html, szarp-server, szarp-isl, szarp-scripts, szarp-utils
+Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-daemons, szarp-base, szarp-wx, szarp-doc-html, szarp-server, szarp-xsltd, szarp-scripts, szarp-utils
 Description: This package contains complete SZARP distribution
  This package contains compontents that gets installed by performing make; make doc;make install from
  SZARP source tree. Configures itself as SZARP server.
