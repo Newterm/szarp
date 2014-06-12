@@ -30,5 +30,6 @@ bin_PROGRAMS = iks-server
 
 iks_server_SOURCES = \
 	main.cpp \
+	daemon.cpp \
 	global_service.cpp
 

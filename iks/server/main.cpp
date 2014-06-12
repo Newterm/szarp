@@ -16,6 +16,7 @@
 #include "locations/manager.h"
 
 #include "global_service.h"
+#include "daemon.h"
 
 #include "data/szbase_wrapper.h"
 
@@ -42,6 +43,7 @@ int main( int argc , char** argv )
 	desc.add_options() 
 		("help,h", "Print this help messages")
 		("config_file", po::value<std::string>()->default_value("iks.ini"), "Custom configuration file.")
+		("no_daemon", "If specified server will not daemonize.")
 		("name", po::value<std::string>()->default_value(ba::ip::host_name()), "Servers name -- defaults to hostname.")
 		("prefix,P", po::value<std::string>()->default_value(PREFIX), "Szarp prefix")
 		("port,p", po::value<unsigned>()->default_value(9002), "Server port on which we will listen");
@@ -92,6 +94,12 @@ int main( int argc , char** argv )
 
 	ts.on_connected   ( bind(&LocationsMgr::on_new_connection,&lm,p::_1) );
 	ts.on_disconnected( bind(&LocationsMgr::on_disconnected  ,&lm,p::_1) );
+
+	ba::signal_set signals(io_service, SIGINT, SIGTERM);
+	signals.async_wait( bind(&ba::io_service::stop, &io_service) );
+
+	if( !vm.count("no_daemon") )
+		daemonize( io_service );
 
 	io_service.run();
 
