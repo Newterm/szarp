@@ -67,7 +67,7 @@
 #include "conversion.h"
 
 /** Path to main config file. */
-#define SZARP_CFG "/etc/"PACKAGE_NAME"/"PACKAGE_NAME".cfg"
+#define SZARP_CFG "/etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg"
 
 /** Name of section in main config file for reading data dir.. */
 #define SZARP_CFG_SECTION "meaner3"
@@ -270,14 +270,10 @@ void save_combined_param(double pw, TParam *p, std::vector<std::pair<time_t, dou
 int main(int argc, char* argv[])
 {
 	struct arguments arguments;
-	int loglevel;	/**< Log level. */
 	char *ipk_prefix;
 	char *szarp_data_root;
 
 	setbuf(stdout, 0);
-	
-	/* Set initial logging. */
-	loglevel = loginit_cmdline(2, NULL, &argc, argv);
 
 	/* Load configuration data. */
 	libpar_read_cmdline(&argc, argv);

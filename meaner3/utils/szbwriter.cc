@@ -397,7 +397,6 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 
 	is_dbl = is_double(name);
 	TParam *par = NULL, *par2 = NULL;
-	int prec;
 
 	sz_log(10,"add_data: name=%ls, m_cur_name=%ls",name.c_str(),m_cur_name.c_str());
 	
@@ -420,15 +419,9 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 			}
 			m_cur_par = getParamByName(name);
 			if (m_cur_par == NULL) {
-				prec = add_param(name, unit, guess_prec(data));
 				m_cur_par = getParamByName(name);
-			} else {
-				prec = m_cur_par->GetPrec();
 			}
-			prec = add_param(name, unit, guess_prec(data));
 			cur_par = getParamByName(name);
-		} else {
-			prec = cur_par->GetPrec();
 		}
 		m_cur_par = cur_par;
 		if (is_dbl) {

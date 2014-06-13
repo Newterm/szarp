@@ -1593,7 +1593,6 @@ ProgramConfig pConfig;
 
 char *dir;
 char *path;
-char *Param;
 int i;
 
 if (!pConfig.ParseCommandLine(argc,argv)){
@@ -1603,7 +1602,6 @@ path = pConfig.PutPath();
 dir = pConfig.PutDir();
 StartDate = pConfig.GetStartDate();
 StopDate = pConfig.GetStopDate();
-Param=pConfig.GetParam();
 
 if (pConfig.IsVerbose()){
 	printf("Starting in Verbose mode:\n");

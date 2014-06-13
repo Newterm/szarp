@@ -275,15 +275,10 @@ void create_multiply_formula(struct arguments& arg, const char* prefix) {
 int main(int argc, char* argv[])
 {
 	struct arguments arguments;
-	int loglevel;	/**< Log level. */
 	char *ipk_prefix;
 	char *szarp_data_root;
-	Szbase* szbase;
 
 	setbuf(stdout, 0);
-	
-	/* Set initial logging. */
-	loglevel = loginit_cmdline(2, NULL, &argc, argv);
 
 	/* Load configuration data. */
 	libpar_read_cmdline(&argc, argv);
@@ -314,7 +309,6 @@ int main(int argc, char* argv[])
 	IPKContainer::Init(SC::L2S(szarp_data_root), SC::L2S(PREFIX), L"", new NullMutex());
 
 	Szbase::Init(SC::L2S(szarp_data_root), NULL);
-	szbase = Szbase::GetObject();
 
 	TSzarpConfig *ipk = IPKContainer::GetObject()->GetConfig(SC::L2S(ipk_prefix));
 	if (ipk == NULL) {

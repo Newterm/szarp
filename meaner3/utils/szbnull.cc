@@ -86,6 +86,7 @@
 /** arguments processing, see info argp */
 #include <argp.h>
 
+char argp_program_name[] = "szbnull";
 const char *argp_program_version = "szbnull ""$Revision: 6199 $";
 const char *argp_program_bug_address = "coders@praterm.com.pl";
 static char doc[] = "Fills all parameters in szbase with SZB_NODATA for provided data range.\v\
@@ -419,13 +420,9 @@ int SetNoData(time_t start, time_t end)
 int main(int argc, char* argv[])
 {
 	struct arguments arguments;
-	int loglevel;	/**< Log level. */
 
 	setbuf(stdout, 0);
 	
-	/* Set initial logging. */
-	loglevel = loginit_cmdline(2, NULL, &argc, argv);
-
 	/* Load configuration data. */
 	libpar_read_cmdline(&argc, argv);
 	
@@ -438,7 +435,7 @@ int main(int argc, char* argv[])
 			|| arguments.end == -1 
 			|| arguments.start > arguments.end) {
 		printf("\nIsuffcient/invalid time specification\n");
-		argp_help(&argp, stdout, ARGP_HELP_USAGE, "szbnull");
+		argp_help(&argp, stdout, ARGP_HELP_USAGE, argp_program_name );
 		return 1;
 	}
 
