@@ -72,7 +72,7 @@ using namespace std::tr1;
 
 class SzbaseWriter : public TSzarpConfig {
 public:
-	SzbaseWriter(const std::wstring &ipk_path, const std::wstring& title, const std::wstring &double_pattern,
+	SzbaseWriter(const std::wstring &ipk_path, const std::wstring &double_pattern,
 			const std::wstring& data_dir, const std::wstring &cache_dir, bool add_new_pars,
 			bool write_10sec, int _fill_how_many , int _fill_how_many_sec );
 	~SzbaseWriter();
@@ -151,7 +151,8 @@ protected:
 
 };
 
-SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _title, 
+SzbaseWriter::SzbaseWriter(
+		const std::wstring &ipk_path,
 		const std::wstring& double_pattern,
 		const std::wstring& data_dir, const std::wstring& cache_dir, 
 		bool add_new_pars,
@@ -200,7 +201,6 @@ SzbaseWriter::SzbaseWriter(const std::wstring &ipk_path, const std::wstring& _ti
 
 	/* create empty configuration */
 	read_freq = send_freq = 10;
-	title = _title;
 	AddDevice(createDevice(L"/bin/true", L"fake"));
 	TRadio * pr = GetFirstDevice()->AddRadio(createRadio(devices));
 	TUnit * pu = pr->AddUnit(createUnit(pr, 'x'));
@@ -773,7 +773,6 @@ struct arguments
 {
         bool add_new_params;
 	bool no_probes;
-	std::wstring title;
 };
 
 static error_t parse_opt(int key, char *arg, struct argp_state *state)
@@ -789,15 +788,6 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
                 case 'p':
                         arguments->no_probes = true;
                         break;
-		case ARGP_KEY_ARG:
-			if (state->arg_num >= 2)
-				return ARGP_ERR_UNKNOWN;
-			arguments->title = SC::L2S(arg);
-			break;
-                default:
-			if (state->arg_num >= 2)
-				return ARGP_ERR_UNKNOWN;
-			break;
         }
         return 0;
 }
@@ -861,11 +851,8 @@ int main(int argc, char *argv[])
 	arguments.add_new_params = false;
 	arguments.no_probes = false;
         argp_parse(&argp, argc, argv, 0, 0, &arguments);
-	if (arguments.title.empty()) {
-		arguments.title = SC::U2S((unsigned char *)"Węzły Samson");
-	}
 
-	SzbaseWriter *szbw = new SzbaseWriter(SC::L2S(ipk_path), arguments.title,
+	SzbaseWriter *szbw = new SzbaseWriter(SC::L2S(ipk_path),
 			SC::L2S(double_pattern) , SC::L2S(data_dir), SC::L2S(cache_dir),
 			arguments.add_new_params, not arguments.no_probes,
 			fill_how_many_num,fill_how_many_sec_num);
