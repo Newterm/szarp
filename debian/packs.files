@@ -103,3 +103,8 @@ Files: usr/share/nagios3/htdocs/szarp*.html
 
 Package: szarp-dbg-symbols
 Files: usr/lib/debug/*
+
+Package: szarp-iks-server
+Files: opt/szarp/bin/iks-server
+Files: opt/szarp/iks/iks-server.ini.sample
+
