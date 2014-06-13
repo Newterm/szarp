@@ -33,3 +33,7 @@ iks_server_SOURCES = \
 	daemon.cpp \
 	global_service.cpp
 
+install-data-local:
+	$(INSTALL) -d $(DESTDIR)@prefix@/iks
+	$(INSTALL) iks-server.ini.sample $(DESTDIR)@prefix@/iks
+

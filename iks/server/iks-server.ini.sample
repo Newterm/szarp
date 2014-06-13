@@ -1,0 +1,35 @@
+## Level of logging -- defaults to 2
+# log_level=2
+
+## Draw name of server -- defaults to hostname
+# name=gcwp
+
+## Prefix of SZARP -- defaults to /opt/szarp
+# prefix=/opt/szarp
+
+## Port on which server will listen -- defaults to 9002
+# port=9002
+
+#########################
+## Configure locations ##
+#########################
+
+# [ gcwp ]                         ## Location name
+# type = szbase                    ## Type of location
+# base = gcwp                      ## Szarp base name -- only obligatory param
+# draw_name = Gliwice WP           ## Name presented to human. Defaults to name.
+
+# prober_address = localhost       ## 10s prober server configuration
+# prober_port = 8090               ##  if not set defaults to localhost:8090
+
+## Simplest configuration
+# [ gliw ]
+# type = szbase
+# base = gliw
+
+## Proxy to other server
+# [ iks ]
+# type = proxy 
+# address = 192.168.0.121          ## address is obligatory
+# port = 9002                      ## port is optional and defaults to 9002
+

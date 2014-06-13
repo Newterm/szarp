@@ -42,7 +42,7 @@ int main( int argc , char** argv )
 
 	desc.add_options() 
 		("help,h", "Print this help messages")
-		("config_file", po::value<std::string>()->default_value("iks.ini"), "Custom configuration file.")
+		("config_file", po::value<std::string>()->default_value(PREFIX "/iks/iks-server.ini"), "Custom configuration file.")
 		("no_daemon", "If specified server will not daemonize.")
 		("log_level", po::value<unsigned>()->default_value(2), "Level how verbose should server be. Convention is: 0 - errors , 1 - warnings , 2 - info output , 3 and more - debug")
 		("name", po::value<std::string>()->default_value(ba::ip::host_name()), "Servers name -- defaults to hostname.")
