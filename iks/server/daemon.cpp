@@ -3,6 +3,8 @@
 #include <errno.h>
 #include <unistd.h>
 
+#include <liblog.h>
+
 namespace ba = boost::asio;
 
 bool daemonize( ba::io_service& service )
@@ -16,8 +18,7 @@ bool daemonize( ba::io_service& service )
 				service.notify_fork(ba::io_service::fork_parent);
 				exit(0);
 			} else {
-				/* TODO: Log this (12/06/2014 21:45, jkotur) */
-				std::cerr << "First fork failed: " << strerror(errno) << std::endl;
+				sz_log(0, "Daemonize: First fork failed: %s", strerror(errno));
 				return false;
 			}
 		}
@@ -32,8 +33,7 @@ bool daemonize( ba::io_service& service )
 				service.notify_fork(ba::io_service::fork_parent);
 				exit(0);
 			} else {
-				/* TODO: Log this (12/06/2014 21:45, jkotur) */
-				std::cerr << "Second fork failed: " << strerror(errno) << std::endl;
+				sz_log(0, "Daemonize: Second fork failed: %s", strerror(errno));
 				return false;
 			}
 		}
@@ -43,8 +43,7 @@ bool daemonize( ba::io_service& service )
 		close(2);
 
 		if (open("/dev/null", O_RDONLY) < 0) {
-				/* TODO: Log this (12/06/2014 21:45, jkotur) */
-			std::cerr << "Unable to open /dev/null: " << strerror(errno) << std::endl;
+			sz_log(0, "Daemonize: Unable to open /dev/null: %s", strerror(errno));
 			return false;
 		}
 
@@ -52,8 +51,7 @@ bool daemonize( ba::io_service& service )
 		service.notify_fork(boost::asio::io_service::fork_child);
 
 	} catch (std::exception& e) {
-		/* TODO: Log this (12/06/2014 21:45, jkotur) */
-		std::cerr << "Exception: " << e.what() << std::endl;
+		sz_log(0, "Daemonize: Exception: %s", e.what());
 		return false;
 	}
 

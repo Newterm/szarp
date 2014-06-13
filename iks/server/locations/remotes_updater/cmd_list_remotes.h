@@ -3,6 +3,8 @@
 
 #include <sstream>
 
+#include <liblog.h>
+
 #include "locations/command.h"
 #include "locations/locations_list.h"
 #include "locations/proxy/proxy.h"
@@ -35,12 +37,7 @@ public:
 
 		try {
 			bp::json_parser::read_json( ss , json );
-		} catch( const bp::ptree_error& e ) {
-			/* TODO: Log error (19/05/2014 21:48, jkotur) */
-			return;
-		}
 
-		try {
 			for( auto itr=json.begin() ; itr!=json.end() ; ++itr )
 				locs.register_location<ProxyLoc>
 					( str( boost::format("%s:%s") % name % itr->first ) ,
@@ -49,7 +46,7 @@ public:
 					  address, port );
 
 		} catch( const bp::ptree_error& e ) {
-			/* TODO: Log errors (12/06/2014 16:14, jkotur) */
+			sz_log(0 , "CmdListRemotesSnd: Received invalid message (%s): %s", line.c_str(), e.what());
 			return;
 		}
 	}

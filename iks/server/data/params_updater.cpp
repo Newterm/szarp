@@ -6,6 +6,8 @@
 
 namespace p = std::placeholders;
 
+#include <liblog.h>
+
 #include "global_service.h"
 
 ParamsUpdater::ParamsUpdater( Params& params )
@@ -96,8 +98,7 @@ void ParamsUpdater::DataUpdater::check_szarp_values(
 			++itr;
 		}
 	} catch( szbase_error& e ) {
-		/* TODO: Better error handling (22/05/2014 20:54, jkotur) */
-		std::cerr << "Szbase error: " << e.what() << std::endl;
+		sz_log(0, "Szbase error while updating data: %s", e.what());
 	}
 
 	if( parent->subscribed_params.empty() )

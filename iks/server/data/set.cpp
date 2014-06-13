@@ -3,6 +3,8 @@
 #include <functional>
 #include <limits>
 
+namespace p = std::placeholders;
+
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -11,10 +13,10 @@
 
 namespace bp = boost::property_tree;
 
+#include <liblog.h>
+
 #include "utils/ptree.h"
 #include "utils/colors.h"
-
-namespace p = std::placeholders;
 
 Set::Set()
 	: order(std::numeric_limits<double>::quiet_NaN())
@@ -132,8 +134,8 @@ void Set::from_json( const bp::ptree& ptree )
 
 			max_order = std::max( max_order , o );
 		} catch( boost::bad_lexical_cast& e ) {
-			std::cerr << "Invalid order in param "
-					  << ic->second.get<std::string>("@name") << std::endl;
+			sz_log(0, "Invalid order in param %s" ,
+				ic->second.get<std::string>("@name").c_str());
 
 			ic->second.erase("@order");
 		}

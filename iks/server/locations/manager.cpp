@@ -1,5 +1,7 @@
 #include "manager.h"
 
+#include <liblog.h>
+
 #include <functional>
 
 #include "locations/welcome/welcome.h"
@@ -21,7 +23,7 @@ void LocationsMgr::add_locations( const CfgSections& cfg )
 		try {
 			add_location( itr->first , itr->second );
 		} catch( config_error& e ) {
-			std::cerr << "Invalid configuration at " << itr->first << ": " << e.what() << std::endl;
+			sz_log(0,"Invalid configuration at %s: %s" , itr->first.c_str() , e.what() );
 		}
 }
 

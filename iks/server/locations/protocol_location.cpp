@@ -17,6 +17,8 @@ namespace p  = std::placeholders;
 
 using boost::format;
 
+#include <liblog.h>
+
 #include "global_service.h"
 
 ProtocolLocation::ProtocolLocation( const std::string& name , Protocol::ptr protocol , Connection* connection )
@@ -92,8 +94,7 @@ void ProtocolLocation::parse_line( const std::string& line )
 	std::string data( gap2.end() , line.end() );
 
 	if( cmd_name == "e" ) {
-		// TODO: log error or sth
-		std::cerr << "Got error from client" << std::endl;
+		sz_log(0, "Got error from client (no. %d): %s" , cmd_id , data.c_str());
 		erase_cmd( cmd_id );
 	} else if( cmd_name == "r" || cmd_name == "k"  ) {
 		if( !commands.count(cmd_id) ) {
@@ -138,8 +139,8 @@ void ProtocolLocation::new_cmd( Command* cmd , const std::string& tag , id_t id 
 			cmd->on_response( 
 					std::bind(&ProtocolLocation::send_response,this,p::_1,p::_2,p::_3) );
 		} else {
-			/* TODO: Log error (20/05/2014 12:55, jkotur) */
-			std::cerr << "Invalid id generated" << std::endl;
+			/** This should never happen */
+			sz_log(0, "Invalid id generated");
 			return;
 		}
 	}
@@ -190,15 +191,17 @@ id_t ProtocolLocation::generate_id()
 
 void ProtocolLocation::send_cmd( Command* cmd )
 {
-	/* TODO: Report errors (04/05/2014 20:03, jkotur) */
-
-	if( !protocol )
+	if( !protocol ) {
+		sz_log(0, "Tried to send command without protocol set.");
 		return;
+	}
 
 	auto tag = protocol->tag_from_cmd(cmd);
 
-	if( tag.empty() )
+	if( tag.empty() ) {
+		sz_log(0, "Tried to send command not implemented in this protocol.");
 		return;
+	}
 
 	new_cmd( cmd , tag , cmd->single_shot() ? 0 : generate_id() );
 }

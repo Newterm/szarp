@@ -6,6 +6,8 @@
 
 #include <boost/algorithm/string.hpp>
 
+#include <liblog.h>
+
 namespace ba = boost::asio;
 namespace bs = boost::system;
 namespace balgo = boost::algorithm;
@@ -27,7 +29,7 @@ bool TcpServer::handle_error( const bs::error_code& error )
 	if( !error ) 
 		return false;
 
-	std::cerr << "TcpServer error: " << error.message() << std::endl;
+	sz_log(0, "TcpServer error: %s", error.message().c_str());
 	return true;
 }
 
@@ -68,7 +70,8 @@ TcpConnection::TcpConnection( ba::io_service& service )
 
 void TcpConnection::start()
 {
-	std::cout << "   +++   New client " << socket_.remote_endpoint().address().to_string() << std::endl;
+	sz_log(3, "   +++   New client %s",
+		socket_.remote_endpoint().address().to_string().c_str());
 
 	do_read_line();
 }
@@ -78,8 +81,7 @@ bool TcpConnection::handle_error( const bs::error_code& error )
 	if( !error )
 		return false;
 
-	std::cout << "   ---   Client disconnected "
-			  << " (" << error.message() << ")" << std::endl;
+	sz_log(3, "   ---   Client disconnected (%s)", error.message().c_str());
 
 	emit_disconnected( this );
 	return true;
@@ -106,7 +108,7 @@ void TcpConnection::handle_read_line(const bs::error_code& error, size_t bytes )
 
 	balgo::trim( line );
 
-	std::cout << "   <<<   " << line << std::endl;
+	sz_log(9, "   <<<   %s", line.c_str());
 
 	emit_line_received( line );
 
@@ -126,7 +128,7 @@ void TcpConnection::do_write_line( const std::string& line )
 		sb,
 		bind(&TcpConnection::handle_write, this, placeholders::_1));
 
-	std::cout << "   >>>   " << line << std::endl;
+	sz_log(9, "   >>>   %s", line.c_str() );
 }
 
 void TcpConnection::handle_write(const bs::error_code& error)

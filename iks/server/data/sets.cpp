@@ -10,6 +10,8 @@ namespace bp = boost::property_tree;
 namespace bm = boost::multi_index;
 using boost::format;
 
+#include <liblog.h>
+
 #include "utils/ptree.h"
 
 std::shared_ptr<const Set> Sets::get_set( const std::string& name ) const
@@ -97,7 +99,7 @@ void Sets::from_params_xml( boost::property_tree::ptree& ptree  ) throw(xml_pars
 					sets_map[name].first = order;
 					max_order = std::max(order,max_order);
 				} catch( boost::bad_lexical_cast& e ) {
-					std::cerr << "Invalid prior in set " << name << std::endl;
+					sz_log(0, "Invalid prior in set %s", name.c_str() );
 				}
 			}
 			sets_map[name].second.push_back( std::make_pair( "" , child ) );

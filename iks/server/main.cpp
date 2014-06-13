@@ -11,6 +11,8 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
+#include <liblog.h>
+
 #include "net/tcp_server.h"
 
 #include "locations/manager.h"
@@ -34,9 +36,7 @@ typedef std::vector<std::string> LocsList;
 
 int main( int argc , char** argv )
 {
-#if GCC_VERSION < 40600
 	srand(time(NULL));
-#endif
 
 	po::options_description desc("Options"); 
 
@@ -44,6 +44,7 @@ int main( int argc , char** argv )
 		("help,h", "Print this help messages")
 		("config_file", po::value<std::string>()->default_value("iks.ini"), "Custom configuration file.")
 		("no_daemon", "If specified server will not daemonize.")
+		("log_level", po::value<unsigned>()->default_value(2), "Level how verbose should server be. Convention is: 0 - errors , 1 - warnings , 2 - info output , 3 and more - debug")
 		("name", po::value<std::string>()->default_value(ba::ip::host_name()), "Servers name -- defaults to hostname.")
 		("prefix,P", po::value<std::string>()->default_value(PREFIX), "Szarp prefix")
 		("port,p", po::value<unsigned>()->default_value(9002), "Server port on which we will listen");
@@ -52,8 +53,7 @@ int main( int argc , char** argv )
 	CfgPairs pairs;
 	CfgSections locs_cfg;
 
-	try 
-	{ 
+	try { 
 		po::store(po::parse_command_line(argc, argv, desc),  vm);
 
 		if( boost::filesystem::exists(vm["config_file"].as<std::string>()) ) {
@@ -73,35 +73,60 @@ int main( int argc , char** argv )
 		} 
 
 		po::notify(vm);
-	} 
-	catch(po::error& e) 
-	{ 
+
+	} catch(po::error& e) { 
 		std::cerr << "Options parse error: " << e.what() << std::endl << std::endl; 
 		std::cerr << desc << std::endl; 
 		return 1; 
+
 	} 
 
-	SzbaseWrapper::init( vm["prefix"].as<std::string>() );
+	const char* logname = vm.count("no_daemon") ? NULL : "iks-server" ;
 
-    boost::asio::io_service& io_service = GlobalService::get_service();
+	sz_loginit( vm["log_level"].as<unsigned>() , logname , SZ_LIBLOG_FACILITY_DAEMON );
+	sz_log(2,"Welcome, milord");
 
-	tcp::endpoint endpoint(tcp::v4(), vm["port"].as<unsigned>() );
-	TcpServer ts(io_service, endpoint);
+	try {
+		SzbaseWrapper::init( vm["prefix"].as<std::string>() );
 
-	LocationsMgr lm;
+		boost::asio::io_service& io_service = GlobalService::get_service();
 
-	lm.add_locations( locs_cfg );
+		tcp::endpoint endpoint(tcp::v4(), vm["port"].as<unsigned>() );
+		TcpServer ts(io_service, endpoint);
 
-	ts.on_connected   ( bind(&LocationsMgr::on_new_connection,&lm,p::_1) );
-	ts.on_disconnected( bind(&LocationsMgr::on_disconnected  ,&lm,p::_1) );
+		LocationsMgr lm;
 
-	ba::signal_set signals(io_service, SIGINT, SIGTERM);
-	signals.async_wait( bind(&ba::io_service::stop, &io_service) );
+		lm.add_locations( locs_cfg );
 
-	if( !vm.count("no_daemon") )
-		daemonize( io_service );
+		ts.on_connected   ( bind(&LocationsMgr::on_new_connection,&lm,p::_1) );
+		ts.on_disconnected( bind(&LocationsMgr::on_disconnected  ,&lm,p::_1) );
 
-	io_service.run();
+		ba::signal_set signals(io_service, SIGINT, SIGTERM);
+		signals.async_wait( bind(&ba::io_service::stop, &io_service) );
+
+		if( !vm.count("no_daemon") )
+			if( !daemonize( io_service ) )
+				throw init_error("Cannot become proper daemon");
+
+		sz_log(2,"Start serving on port %d", vm["port"].as<unsigned>() );
+
+		io_service.run();
+
+	} catch( std::exception& e ) {
+		sz_log(0,"Exception occurred: %s" , e.what() );
+	}
+
+	/**
+	 * Quit with polite message
+	 */
+	switch( rand() % 23 ) {
+	case  0 : sz_log(2 , "Au revoir"); break;
+	case  1 : sz_log(2 , "Arrivederci"); break;
+	case  2 : sz_log(2 , "Auf Wiedersehen"); break;
+	case  3 : sz_log(2 , "See you later"); break;
+	case  4 : sz_log(2 , "So long!"); break;
+	default : sz_log(2 , "Goodbye"); break;
+	}
 
 	return 0; 
 }

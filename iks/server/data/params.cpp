@@ -8,6 +8,8 @@
 using boost::format;
 namespace bp = boost::property_tree;
 
+#include <liblog.h>
+
 #include "utils/ptree.h"
 
 Params::Params()
@@ -50,7 +52,7 @@ void Params::param_value_changed( const std::string& name , double value , Probe
 void Params::param_value_changed( iterator itr , double value , ProbeType pt )
 {
 	if( itr.itr == params.end() ) {
-		std::cerr << "Value changed of undefined param" << std::endl;
+		sz_log(1, "Value changed of undefined param %s", itr->c_str() );
 		return;
 	}
 
@@ -72,7 +74,7 @@ void Params::request_param_value( const std::string& name ,
 	auto itr = params.find(name);
 
 	if( itr == params.end() ) {
-		std::cerr << "Value requested of undefined param" << std::endl;
+		sz_log(1, "Value requested of undefined param %s", name.c_str());
 		return;
 	}
 

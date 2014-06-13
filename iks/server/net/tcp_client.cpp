@@ -13,6 +13,8 @@ namespace bs = boost::system;
 namespace balgo = boost::algorithm;
 using boost::asio::ip::tcp;
 
+#include <liblog.h>
+
 TcpClient::TcpClient( ba::io_service& io_service, tcp::resolver::iterator endpoint_iterator )
 		: io_service_(io_service)
 		, socket_(io_service)
@@ -44,7 +46,7 @@ void TcpClient::do_write_line( const std::string& line )
 		sb,
 		bind(&details::AsioHandler::handle_write, handler, placeholders::_1));
 
-	std::cout << "<<<      " << line << std::endl;
+	sz_log(9, "<<<      %s", line.c_str() );
 }
 
 void TcpClient::do_close()
@@ -59,8 +61,7 @@ bool AsioHandler::handle_error( const bs::error_code& error )
 	if( !error ) 
 		return false;
 
-	std::cerr << "---      " << "TcpClient disconnected ("
-	          << error.message() << ")" << std::endl;
+	sz_log(3, "---      TcpClient disconnected (%s)", error.message().c_str() );
  
 	if( is_valid() ) {
 		client.emit_disconnected( &client );
@@ -76,7 +77,7 @@ void AsioHandler::handle_connect(const bs::error_code& error)
 		return;
 
 	const auto& e = client.socket_.remote_endpoint();
-	std::cout << "+++      Connected to " << e.address().to_string() << ":" << e.port() << std::endl;
+	sz_log(3, "+++      Connected to %s:%d", e.address().to_string().c_str(),  e.port());
 
 	client.emit_connected( &client );
 	do_read_line();
@@ -103,7 +104,7 @@ void AsioHandler::handle_read_line( const bs::error_code& error, size_t bytes )
 
 	balgo::trim( line );
 
-	std::cout << ">>>      " << line << std::endl;
+	sz_log(9, ">>>      %s", line.c_str());
 
 	client.emit_line_received( line );
 

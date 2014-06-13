@@ -42,7 +42,7 @@ public:
 					address , port );
 
 		} catch( const bp::ptree_error& e ) {
-			/** TODO: log error */
+			sz_log(0,"CmdAddRemotesRcv: Received invalid message (%s): %s", line.c_str(), e.what());
 			return;
 		}
 	}
