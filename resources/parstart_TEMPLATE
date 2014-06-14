@@ -7,7 +7,7 @@
 # Default-Stop:      0 1 6
 # Short-Description: Starts SZARP deamons.
 # Description:       Starts SZARP parcook server/terminal daemons (depending on SZARP system configuration).
-#### END INIT INFO
+### END INIT INFO
 # $Id: parstart_TEMPLATE 6713 2009-05-02 12:39:34Z reksio $
 . /lib/lsb/init-functions
 
@@ -236,13 +236,28 @@ case "$1" in
 
 	;;
   restart|reload)
+	###
+	# If ipk2szarp exists check configuration with it and prevent restart if
+	# configuration check failed.
+	###
 	if [ -x __INSTALL_DIR__/bin/ipk2szarp ]; then
 		echo "Verifying configuration: __INSTALL_DIR__/ipk2szarp"
 		__INSTALL_DIR__/bin/ipk2szarp || { echo "Invalid configuration -- won't restart" 1>&2; exit 1; }
 	fi
 
+	###
+	# If iks server is installed restart it with other szarp daemons.
+	###
+	if [ -x __INSTALL_DIR__/bin/iks-server ] ; then
+		service szarp-iks-server stop
+	fi
+
 	$0 stop
 	$0 start
+
+	if [ -x __INSTALL_DIR__/bin/iks-server ] ; then
+		service szarp-iks-server start
+	fi
 	;;
   status)
 	echo "SZARP programs run: "
