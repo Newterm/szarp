@@ -7,6 +7,12 @@
 
 namespace ba = boost::asio;
 
+/* FIXME: This file is only linux specific file in this project. Do we need
+ * windows implementation? Probably not but if so only this file have to be
+ * updated.
+ * (14/06/2014 18:35, jkotur)
+ */
+
 bool daemonize( ba::io_service& service )
 {
 	try {
@@ -57,3 +63,9 @@ bool daemonize( ba::io_service& service )
 
 	return true;
 }
+
+unsigned get_pid()
+{
+	return (unsigned)getpid();
+}
+

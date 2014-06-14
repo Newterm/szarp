@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <functional>
+#include <fstream>
 
 #if GCC_VERSION < 40600
 #include <cstdlib>
@@ -44,6 +45,7 @@ int main( int argc , char** argv )
 		("help,h", "Print this help messages")
 		("config_file", po::value<std::string>()->default_value(PREFIX "/iks/iks-server.ini"), "Custom configuration file.")
 		("no_daemon", "If specified server will not daemonize.")
+		("pid_file", po::value<std::string>(), "Specify destination of pid file that should be used. If not set no file is created.")
 		("log_level", po::value<unsigned>()->default_value(2), "Level how verbose should server be. Convention is: 0 - errors , 1 - warnings , 2 - info output , 3 and more - debug")
 		("name", po::value<std::string>()->default_value(ba::ip::host_name()), "Servers name -- defaults to hostname.")
 		("prefix,P", po::value<std::string>()->default_value(PREFIX), "Szarp prefix")
@@ -52,6 +54,9 @@ int main( int argc , char** argv )
 	po::variables_map vm; 
 	CfgPairs pairs;
 	CfgSections locs_cfg;
+
+	int ret_code = 0;
+	std::string pid_path;
 
 	try { 
 		po::store(po::parse_command_line(argc, argv, desc),  vm);
@@ -104,9 +109,34 @@ int main( int argc , char** argv )
 		ba::signal_set signals(io_service, SIGINT, SIGTERM);
 		signals.async_wait( bind(&ba::io_service::stop, &io_service) );
 
+		/**
+		 * Check if pid file can be written before daemonizing
+		 * and write current pid.
+		 */
+		if( vm.count("pid_file") ) {
+			pid_path = vm["pid_file"].as<std::string>();
+			if( boost::filesystem::exists( pid_path ) ) {
+				pid_path.clear(); /** prevent from removing not our pidfile */
+				throw init_error("pid file " + pid_path + " already exists");
+			}
+			std::ofstream pf( vm["pid_file"].as<std::string>() );
+			pf << get_pid();
+		}
+
+		/**
+		 * Daemonize
+		 */
 		if( !vm.count("no_daemon") )
 			if( !daemonize( io_service ) )
 				throw init_error("Cannot become proper daemon");
+
+		/**
+		 * Write new pid after daemonizing
+		 */
+		if( !pid_path.empty() && !vm.count("no_daemon") ) {
+			std::ofstream pf( pid_path , std::ofstream::trunc );
+			pf << get_pid();
+		}
 
 		sz_log(2,"Start serving on port %d", vm["port"].as<unsigned>() );
 
@@ -114,7 +144,12 @@ int main( int argc , char** argv )
 
 	} catch( std::exception& e ) {
 		sz_log(0,"Exception occurred: %s" , e.what() );
+		ret_code = 1; /**< return error code */
 	}
+
+	/** Remove pid file at exit */
+	if( !pid_path.empty() )
+		boost::filesystem::remove( pid_path );
 
 	/**
 	 * Quit with polite message
@@ -128,6 +163,6 @@ int main( int argc , char** argv )
 	default : sz_log(2 , "Goodbye"); break;
 	}
 
-	return 0; 
+	return ret_code; 
 }
 
