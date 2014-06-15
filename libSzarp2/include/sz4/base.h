@@ -70,6 +70,23 @@ public:
 		return buffer_for_param(param)->search_data_left(param, start, end, probe_type, condition);
 	}
 
+	template<class T> void get_first_time(TParam* param, T& t) {
+		buffer_for_param(param)->get_first_time(param, t);
+	}
+
+	template<class T> void get_heartbeat_first_time(TParam* param, T& t) {
+		buffer_for_param(param)->get_heartbeat_first_time(t);
+	}
+
+	template<class T> void get_last_time(TParam* param, T& t) {
+		buffer_for_param(param)->get_last_time(param, t);
+	}
+
+	template<class T> void get_heartbeat_last_time(TParam* param, T& t) {
+		buffer_for_param(param)->get_heartbeat_last_time(t);
+	}
+
+
 	buffer_templ<types>* buffer_for_param(TParam* param) {
 		buffer_templ<types>* buf;
 		if (param->GetConfigId() >= m_buffers.size())

@@ -174,6 +174,7 @@ libSzarp2_la_SOURCES = \
 			$(INCLUDE_DIR)/sz4/base.h \
 			$(INCLUDE_DIR)/sz4/defs.h \
 			$(INCLUDE_DIR)/sz4/block_cache..h \
+			$(INCLUDE_DIR)/sz4/lua_first_last_time..h \
 			$(SZ4_DIR)/load_file_locked.cpp \
 			$(SZ4_DIR)/path.cpp \
 			$(SZ4_DIR)/buffer.cpp \

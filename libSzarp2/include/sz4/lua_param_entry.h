@@ -28,6 +28,7 @@
 #include "sz4/definable_param_cache.h"
 #include "sz4/buffered_param_entry.h"
 #include "sz4/fixed_stack_top.h"
+#include "sz4/lua_first_last_time.h"
 
 namespace sz4 {
 
@@ -65,9 +66,18 @@ public:
 template<class value_type, class time_type, class types> class lua_param_entry_in_buffer : public buffered_param_entry_in_buffer<value_type, time_type, types, lua_caluclate> {
 public:
 	lua_param_entry_in_buffer(base_templ<types>* _base, TParam* param, const boost::filesystem::wpath& path) : buffered_param_entry_in_buffer<value_type, time_type, types, lua_caluclate>(_base, param, path) {}
+
+	void get_first_time(std::list<generic_param_entry*>& referred_params, time_type &t) {
+		static_cast<typename lua_param_entry_in_buffer::_type*>(this)->get_first_time(referred_params, t);
+		lua_adjust_first_time(this->m_param, t);
+	};
+
+	void get_last_time(const std::list<generic_param_entry*>& referred_params, time_type &t) {
+		static_cast<typename lua_param_entry_in_buffer::_type*>(this)->get_last_time(referred_params, t);
+		lua_adjust_last_time(this->m_param, t);
+	};
 };
 
 }
-
 
 #endif

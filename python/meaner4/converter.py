@@ -27,6 +27,7 @@ import struct
 import lxml.etree
 import calendar
 import datetime
+from heartbeat import heartbeat_param_name, create_hearbeat_param
 import cStringIO
 
 import param
@@ -103,6 +104,7 @@ save_param_map = {}
 for i, p in enumerate(ipk.params):
 	sp = saveparam.SaveParam(p, sz4_dir, FileFactory())
 	save_param_map[p.param_name] = sp
+save_param_map[heartbeat_param_name] = saveparam.SaveParam(create_hearbeat_param(), sz4_dir, FileFactory())
 
 pno = 0
 for pname in save_param_map.iterkeys():
@@ -122,7 +124,8 @@ for pname in save_param_map.iterkeys():
 		else:
 			lsp = sp
 
-		szbase_files = [ x for x in os.listdir(os.path.join(szbase_dir, lsp.param_path.param_path)) if x.endswith(".szb")]
+		param_path = lsp.param_path.param_path if pname != heartbeat_param_name else "Status/Meaner3/program_uruchomiony"
+		szbase_files = [ x for x in os.listdir(os.path.join(szbase_dir, param_path)) if x.endswith(".szb")]
 		szbase_files.sort()
 
 		for j, szbase_path in enumerate(szbase_files):

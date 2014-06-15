@@ -38,7 +38,10 @@ public:
 template<class types> class rpn_calculate {
 	base_templ<types>* m_base;
 	TParam* m_param;
+
 public:
+	typedef base_templ<types> base;
+
 	rpn_calculate(base_templ<types>* base, TParam* param) : m_base(base), m_param(param) {
 	}
 
@@ -111,15 +114,14 @@ public:
 				refferred_blocks);	
 
 	}
+
 };
 
-
 template<class value_type, class time_type, class types> class rpn_param_entry_in_buffer : public buffered_param_entry_in_buffer<value_type, time_type, types, rpn_calculate> {
+
 public:
 	rpn_param_entry_in_buffer(base_templ<types>* _base, TParam* param, const boost::filesystem::wpath& path) : buffered_param_entry_in_buffer<value_type, time_type, types, rpn_calculate>(_base, param, path) {}
 };
-
-
 
 }
 

@@ -7,6 +7,7 @@
 #include "params.h"
 #include "config.h"
 #include "szbase_wrapper.h"
+#include "params_updater.h"
 
 #include "utils/signals.h"
 #include "utils/exception.h"
@@ -20,6 +21,8 @@ public:
 	virtual ~Vars();
 
 	void from_szarp( const std::string& szarp_base ) throw(file_not_found_error,xml_parse_error);
+
+	void set_szarp_prober_server( const std::string& address , unsigned port );
 
 	void command_request( const std::string& cmd , const std::string& data ) const;
 
@@ -46,16 +49,23 @@ public:
 	{	return sets; }
 	Config& get_config()
 	{	return config; }
+	ParamsUpdater& get_updater()
+	{	return params_updater; }
+
+	bool is_initialized() const
+	{	return initialized; }
 
 protected:
+
 	Params params;
 	Sets   sets;
 	Config config;
 
+	ParamsUpdater params_updater;
 	SzbaseWrapper* szb_wrapper;
 
 private:
-	bool initalized;
+	bool initialized;
 
 	mutable sig_command emit_command_received;
 	mutable sig_command emit_command_response_received;

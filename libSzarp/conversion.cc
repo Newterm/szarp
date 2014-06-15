@@ -7,6 +7,9 @@
 
 #include <boost/thread.hpp>
 #include <boost/scoped_array.hpp>
+#ifndef MINGW32
+#include <boost/locale.hpp>
+#endif
 
 #ifdef MINGW32
 #include <windows.h>
@@ -19,7 +22,7 @@ namespace {
 #ifdef MINGW32
 	const char *_locale_string = "CP1250";
 #else
-	const char *_locale_string = "ISO_8859-2";
+	const char *_locale_string = "UTF-8";
 #endif
 
 #ifdef MINGW32
@@ -34,6 +37,12 @@ namespace {
 			boost::mutex m_mutex;
 		public:
 			IconvWrapper(const char* tocode, const char* fromcode){
+#ifndef MINGW32
+				boost::locale::generator gen;
+				std::locale loc=gen("");
+				if (!std::use_facet<boost::locale::info>(loc).utf8())
+					_locale_string = "ISO_8859-2";
+#endif
 				m_handle = iconv_open(tocode, fromcode);
 				if (m_handle  == (iconv_t) -1)
 					throw std::runtime_error(std::string("LibSzarp: Error opening iconv: ") + fromcode + " to " + tocode);
@@ -94,6 +103,7 @@ namespace {
 
 namespace SC {
 
+/* UTF-8 -> SZARP */
 #ifndef MINGW32
 	IconvWrapper utf2szarp_iw("WCHAR_T", UTF8);
 #endif
@@ -116,6 +126,7 @@ namespace SC {
 #endif
 	}
 
+/* SZARP -> UTF-8 */
 #ifndef MINGW32
 	IconvWrapper szarp2utf_iw(UTF8, "WCHAR_T");
 #endif
@@ -138,10 +149,11 @@ namespace SC {
 #endif
 	}
 
+/* LOCAL -> SZARP */
 #ifndef MINGW32
-	IconvWrapper ascii2szarp_iw("WCHAR_T", _locale_string);
+	IconvWrapper local2szarp_iw("WCHAR_T", _locale_string);
 #endif
-	std::wstring ascii2szarp(const std::basic_string<char>& c) {
+	std::wstring local2szarp(const std::basic_string<char>& c) {
 #ifdef MINGW32
 		if (c.size() == 0)
 			return std::wstring();
@@ -155,12 +167,36 @@ namespace SC {
 
 		return std::wstring(buff.get(), res);
 #else
-		return ascii2szarp_iw.convert<wchar_t, char>(c);
+		return local2szarp_iw.convert<wchar_t, char>(c);
 #endif
 	}
 
+/* SZARP -> LOCAL */
 #ifndef MINGW32
-	IconvWrapper szarp2ascii_iw(_locale_string, "WCHAR_T");
+	IconvWrapper szarp2local_iw(_locale_string, "WCHAR_T");
+#endif
+	std::string szarp2local(const std::basic_string<wchar_t>& c) {
+#ifdef MINGW32
+		if (c.size() == 0)
+			return std::string();
+
+		int size_ = c.size() * 2;
+		scoped_array<char> buff(new char[size_]);
+		int res = WideCharToMultiByte(CP_ACP, 0, c.c_str(), -1, buff.get(), size_, NULL, NULL);
+
+		if (res == 0) {
+			throw std::runtime_error("Incomplete multibyte sequence encountered in convertsion");
+		}
+
+		return std::string(buff.get(), res - 1);
+#else
+		return szarp2local_iw.convert<char, wchar_t>(c);
+#endif
+	}
+
+/* SZARP -> ASCII */
+#ifndef MINGW32
+	IconvWrapper szarp2ascii_iw("ASCII//TRANSLIT", "WCHAR_T");
 #endif
 	std::string szarp2ascii(const std::basic_string<wchar_t>& c) {
 #ifdef MINGW32
@@ -181,16 +217,59 @@ namespace SC {
 #endif
 	}
 
-	IconvWrapper utf2ascii_iw(_locale_string, UTF8);
+/* ASCII -> SZARP */
+#ifndef MINGW32
+	IconvWrapper ascii2szarp_iw("WCHAR_T", "ASCII");
+#endif
+	std::wstring ascii2szarp(const std::basic_string<char>& c) {
+#ifdef MINGW32
+		if (c.size() == 0)
+			return std::wstring();
+
+		scoped_array<wchar_t> buff(new wchar_t[c.size() + 1]);
+		int res = MultiByteToWideChar(CP_ACP, 0, c.c_str(), -1, buff.get(), (c.size() + 1) * sizeof(wchar_t));
+
+		if (res == 0) {
+			throw std::runtime_error("Incomplete multibyte sequence encountered in convertsion");
+		}
+
+		return std::wstring(buff.get(), res);
+#else
+		return ascii2szarp_iw.convert<wchar_t, char>(c);
+#endif
+	}
+
+/* UTF-8 -> ASCII */
+	IconvWrapper utf2ascii_iw("ASCII//TRANSLIT", UTF8);
 	std::string utf2ascii(const std::basic_string<unsigned char>& c) {
 		return utf2ascii_iw.convert<char, unsigned char>(c);
 	}
 
-	IconvWrapper ascii2utf_iw(UTF8, _locale_string);
+/* ASCII -> UTF-8 */
+	IconvWrapper ascii2utf_iw(UTF8, "ASCII");
 	std::basic_string<unsigned char> ascii2utf(const std::basic_string<char>& c) {
 		return ascii2utf_iw.convert<unsigned char, char>(c);
 	}
 
+/* UTF-8 -> LOCAL */
+	IconvWrapper utf2local_iw(_locale_string, UTF8);
+	std::string utf2local(const std::basic_string<unsigned char>& c) {
+		return utf2local_iw.convert<char, unsigned char>(c);
+	}
+
+/* LOCAL -> UTF-8 */
+	IconvWrapper local2utf_iw(UTF8, _locale_string);
+	std::basic_string<unsigned char> local2utf(const std::basic_string<char>& c) {
+		return local2utf_iw.convert<unsigned char, char>(c);
+	}
+
+
+/* Description
+ *   A means ASCII
+ *   L means LOCAL (ISO8859-2/UTF-8 for Linux, CP1250 for Windows)
+ *   S means SZARP (internal)
+ *   U means UTF-8
+ */
 	std::wstring U2S(const std::basic_string<unsigned char>& c) {
 		return utf2szarp(c);
 	}
@@ -207,12 +286,28 @@ namespace SC {
 		return szarp2ascii(c);
 	}
 
+	std::wstring L2S(const std::basic_string<char>& c) {
+		return local2szarp(c);
+	}
+
+	std::string S2L(const std::basic_string<wchar_t>& c) {
+		return szarp2local(c);
+	}
+
 	std::basic_string<unsigned char> A2U(const std::basic_string<char>& c) {
 		return ascii2utf(c);
 	}
 
 	std::string U2A(const std::basic_string<unsigned char>& c) {
 		return utf2ascii(c);
+	}
+
+	std::basic_string<unsigned char> L2U(const std::basic_string<char>& c) {
+		return local2utf(c);
+	}
+
+	std::string U2L(const std::basic_string<unsigned char>& c) {
+		return utf2local(c);
 	}
 
 	std::wstring lua_error2szarp(const char* lua_error)

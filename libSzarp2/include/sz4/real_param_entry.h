@@ -245,25 +245,22 @@ public:
 		}
 	}
 
-	T get_first_time() {
+	void get_first_time(const std::list<generic_param_entry*>&, T &t) {
 		refresh_if_needed();
 		if (m_blocks.size() == 0)
-			return invalid_time_value<T>::value;
-		else {
-			file_block_entry_type* entry = m_blocks.rbegin()->second;
-			entry->refresh_if_needed();
-			return entry->block().end_time();
-		}
+			t = invalid_time_value<T>::value;
+		else
+			t = m_blocks.begin()->first;
 	}
 
-	T get_last_time() {
+	void  get_last_time(const std::list<generic_param_entry*>&, T &t) {
 		refresh_if_needed();
 		if (m_blocks.size() == 0)
-			return invalid_time_value<T>::value;
+			t = invalid_time_value<T>::value;
 		else {
 			file_block_entry_type* entry = m_blocks.rbegin()->second;
 			entry->refresh_if_needed();
-			return entry->block().end_time();
+			t = entry->block().end_time();
 		}
 	}
 

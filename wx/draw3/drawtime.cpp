@@ -274,13 +274,23 @@ int DTime::GetDistance(const DTime &t) const {
 				- _t0.GetYear() * 12 - _t0.GetMonth();
 			break;
 		case PERIOD_T_MONTH: 
-			ret = (_t - _t0).GetDays();
-			if (_t0.IsDST() != _t.IsDST()) {
-				if (_t0 < _t && _t.IsDST())
-					ret += 1;
-				else if (_t < _t0 && _t0.IsDST())
+			ret = (_t - _t0).GetHours();
+			//acount for daylight saving time
+			switch (ret % 24) {
+				case 1:
 					ret -= 1;
+					break;
+				case 23:
+					ret += 1;
+					break;
+				case -1:
+					ret += 1;
+					break;
+				case -23:
+					ret -= 1;
+					break;
 			}
+			ret /= 24;
 			break;
 		case PERIOD_T_DAY:
 			ret = (_t - _t0).GetMinutes() / 10;

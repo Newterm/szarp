@@ -137,5 +137,6 @@ void TcpConnection::handle_write(const bs::error_code& error)
 
 void TcpConnection::do_close()
 {
+	socket_.close();
 }
 

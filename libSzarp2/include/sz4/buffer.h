@@ -202,7 +202,9 @@ public:
 	}
 
 	template<class RT> void get_first_time_templ(RT& t) {
-		t = RT(m_entry.get_first_time());
+		T tt;
+		m_entry.get_first_time(m_referred_params, tt);
+		t = tt;
 	}
 
 	void get_first_time(nanosecond_time_t& t) {
@@ -214,7 +216,9 @@ public:
 	}
 
 	template<class RT> void get_last_time_templ(RT& t) {
-		t = RT(m_entry.get_last_time());
+		T tt;
+		m_entry.get_first_time(m_referred_params, tt);
+		t = tt;
 	}
 
 	void get_last_time(nanosecond_time_t& t) {
@@ -293,20 +297,40 @@ public:
 
 	generic_param_entry* create_param_entry(TParam* param);
 
-	void get_first_time(nanosecond_time_t& t) {
+	void get_heartbeat_first_time(nanosecond_time_t& t) {
 		m_heart_beat_entry->get_first_time(t);
 	}
 
-	void get_first_time(second_time_t& t) {
+	void get_heartbeat_first_time(second_time_t& t) {
 		m_heart_beat_entry->get_first_time(t);
 	}
 
-	void get_last_time(nanosecond_time_t& t) {
+	void get_first_time(TParam* param, nanosecond_time_t& t) {
+		get_param_entry(param)->get_first_time(t);
+	}
+
+	void get_first_time(TParam* param, second_time_t& t) {
+		get_param_entry(param)->get_first_time(t);
+	}
+
+	void get_heartbeat_last_time(nanosecond_time_t& t) {
 		m_heart_beat_entry->get_last_time(t);
 	}
 
-	void get_last_time(second_time_t& t) {
+	void get_heartbeat_last_time(second_time_t& t) {
 		m_heart_beat_entry->get_last_time(t);
+	}
+
+	void get_heartbeat_last_time(TParam* param, nanosecond_time_t& t) {
+		get_param_entry(param)->get_last_time(t);
+	}
+
+	void get_last_time(TParam* param, second_time_t& t) {
+		get_param_entry(param)->get_last_time(t);
+	}
+
+	void get_last_time(TParam* param, nanosecond_time_t& t) {
+		get_param_entry(param)->get_last_time(t);
 	}
 
 	void remove_param(TParam* param);

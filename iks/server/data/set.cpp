@@ -1,17 +1,23 @@
 #include "set.h"
 
 #include <functional>
+#include <limits>
 
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
 namespace bp = boost::property_tree;
 
 #include "utils/ptree.h"
+#include "utils/colors.h"
+
+namespace p = std::placeholders;
 
 Set::Set()
+	: order(std::numeric_limits<double>::quiet_NaN())
 {
 }
 
@@ -22,8 +28,6 @@ Set::~Set()
 void Set::from_xml( const bp::ptree& ptree )
 {
 	set_desc = ptree;
-
-	bp::ptree params_desc;
 
 	fold_xmlattr( set_desc );
 
@@ -36,29 +40,47 @@ void Set::from_xml( const bp::ptree& ptree )
 	convert_colour( set_desc , "@background_text_color" );
 	convert_colour( set_desc , "@text_color" );
 
+	convert_float( set_desc , "@spacing_vertical"   );
+	convert_float( set_desc , "@spacing_horizontal" );
+
 	params.clear();
 	for( auto ic=set_desc.begin() ; ic!=set_desc.end() ; ++ic )
 		if( ic->first == "param" ) {
 			auto name = ic->second.get<std::string>("@name");
+			auto pt = ic->second;
 
-			auto colour = ic->second.get_optional<std::string>("@color");
-			if( colour ) {
-				ic->second.put("@background_color",*colour);
-				ic->second.erase("@color");
-			}
+			upgrade_option( pt , "@bg_color" , "@background_color" );
+			upgrade_option( pt , "@color"    , "@graph_color" );
 
-			convert_colour( ic->second , "@background_color" );
-			convert_colour( ic->second , "@graph_color" );
+			convert_colour( pt , "@background_color" );
+			convert_colour( pt , "@graph_color" );
 
-			params.insert( name );
+			pt.erase("@order");
 
-			params_desc.push_back( std::make_pair( "" , ic->second ) );
+			params.insert(
+				ParamId { name , ic->second.get<double>("@order") , pt } );
 		}
 
 	set_desc.erase( "param" );
-	set_desc.put_child( "params" , std::move(params_desc) );
 
 	update_hash();
+}
+
+void Set::upgrade_option( bp::ptree& ptree , const std::string& prev , const std::string& curr )
+{
+	auto opt = ptree.get_optional<std::string>( prev );
+	if( opt ) {
+		ptree.put( curr ,*opt);
+		ptree.erase( prev );
+	}
+}
+
+void Set::convert_float( bp::ptree& ptree , const std::string& name )
+{
+	auto value = ptree.get_optional<std::string>(name);
+	if( !value ) return;
+	std::replace( value->begin() , value->end() , ',' , '.' );
+	ptree.put( name , value );
 }
 
 void Set::convert_colour( bp::ptree& ptree , const std::string& name )
@@ -82,9 +104,9 @@ std::string Set::convert_colour( const std::string& in )
 		return "#000000"; /** invalid convertion, return black */
 	}
 
-	uint >>= 8; /** remove alpha byte */
+	uint &= 0xffffff; /** remove alpha byte */
 
-	return str( boost::format("#%02x") % uint );
+	return str( boost::format("#%06x") % uint );
 }
 
 void Set::from_json( const bp::ptree& ptree )
@@ -95,15 +117,137 @@ void Set::from_json( const bp::ptree& ptree )
 	params.clear();
 	name = set_desc.get<std::string>("@name");
 	auto& pdesc = set_desc.get_child("params");
+
+	/** Convert orders to doubles and find maximal order value */
+	double max_order = 0;
 	for( auto ic=pdesc.begin() ; ic!=pdesc.end() ; ++ic )
-		params.insert( ic->second.get<std::string>("@name") );
+	{
+		auto so = ic->second.get_optional<double>("@order");
+		if( !so )
+			continue;
+
+		try {
+			double o = boost::lexical_cast<double>(*so);
+			ic->second.put("@order",o);
+
+			max_order = std::max( max_order , o );
+		} catch( boost::bad_lexical_cast& e ) {
+			std::cerr << "Invalid order in param "
+					  << ic->second.get<std::string>("@name") << std::endl;
+
+			ic->second.erase("@order");
+		}
+	}
+
+	convert_color_names_to_hex();
+
+	/** Put params without order at the end */
+	int i = 0;
+	for( auto ic=pdesc.begin() ; ic!=pdesc.end() ; ++ic )
+	{
+		auto o = ic->second.get_optional<double>("@order");
+		if( !o ) ic->second.put("@order",max_order+ ++i);
+	}
+
+	for( auto ic=pdesc.begin() ; ic!=pdesc.end() ; ++ic )
+	{
+		bp::ptree pt = ic->second;
+
+		pt.erase("@order");
+
+		params.insert(
+				ParamId {
+					ic->second.get<std::string>("@name") ,
+					ic->second.get<double>("@order") ,
+					pt } );
+	}
+	set_desc.erase("params");
+
+	generate_colors_like_draw3();
 
 	update_hash();
 }
 
+void Set::convert_color_names_to_hex()
+{
+	auto& pdesc = set_desc.get_child("params");
+
+	/** Convert color names to hex codes */
+	for( auto ic=pdesc.begin() ; ic!=pdesc.end() ; ++ic )
+	{
+		auto oc = ic->second.get_optional<std::string>("@graph_color");
+		if( !oc ) continue;
+
+		auto itr = Colors::name_to_hex.find(*oc);
+
+		if( itr != Colors::name_to_hex.end() )
+			/** Put converted color */
+			ic->second.put( "@graph_color" , itr->second );
+		else
+			/** Else normalize to lower hex */
+			ic->second.put(
+					"@graph_color" ,
+					boost::algorithm::to_lower_copy(*oc) );
+	}
+}
+
+void Set::assign_color( ParamId& p , const std::string& color )
+{
+	p.desc.put("@graph_color",color);
+}
+
+void Set::generate_colors_like_draw3()
+{
+	/** Generate colors if not specified */
+	std::unordered_set<std::string> used_colors;
+	for( auto ic=params.begin() ; ic!=params.end() ; ++ic )
+	{
+		auto oc = ic->desc.get_optional<std::string>("@graph_color");
+		if( !oc ) continue;
+		used_colors.insert( *oc );
+	}
+
+	/**
+	 * This algorithm is used by draw3 to generate colors if not
+	 * specified.
+	 *
+	 * Colors are taken from predefined table of 12 colors in order
+	 * unless this color was already used in other parameter. If so this
+	 * color is omitted. This works great but only for 12 colors. Above
+	 * this * number we don't check if color was used and simply assign
+	 * colors from predefined list.
+	 */
+	int def = Colors::draw3_defaults.size();
+	int cur = 0;
+	for( auto ic=params.begin() ; ic!=params.end() ; ++ic )
+	{
+		auto oc = ic->desc.get_optional<std::string>("@graph_color");
+		if( oc ) continue;
+		std::string color;
+		do {
+			color = Colors::draw3_defaults[cur++];
+			cur %= Colors::draw3_defaults.size();
+		} while( def > 0 && used_colors.count(color) );
+		params.modify( ic , std::bind(&Set::assign_color,this,p::_1,std::ref(color)) );
+	}
+}
+
+boost::property_tree::ptree Set::get_json_ptree() const
+{
+	bp::ptree desc = set_desc;
+	bp::ptree params_desc;
+
+	for( auto in=params.begin() ; in!=params.end() ; ++in )
+		params_desc.push_back( std::make_pair( "" , in->desc ) );
+
+	desc.put_child( "params" , std::move(params_desc) );
+
+	return desc;
+}
+
 void Set::to_json( std::ostream& stream , bool pretty ) const
 {
-	ptree_to_json( stream , set_desc , pretty );
+	ptree_to_json( stream , get_json_ptree() , pretty );
 }
 
 std::string Set::to_json( bool pretty ) const
@@ -118,7 +262,7 @@ std::string Set::to_json( bool pretty ) const
 boost::property_tree::ptree Set::get_xml_ptree() const
 {
 	bp::ptree pt;
-	auto& pset = pt.put_child( "set" , set_desc );
+	auto& pset = pt.put_child( "set" , get_json_ptree() );
 
 	auto& pdesc = pset.get_child("params");
 	for( auto ic=pdesc.begin() ; ic!=pdesc.end() ; ++ic )
@@ -145,20 +289,28 @@ std::string Set::to_xml( bool pretty ) const
 
 void Set::update_hash()
 {
-	std::hash<ParamsMap::value_type> hash_fn;
+	std::hash<ParamsMap::value_type::first_type> hash_fn;
 
 	hash = 0;
 	/** Because xor is associative there is no need to care about order */
 	for( auto in=params.begin() ; in!=params.end() ; ++in )
-		hash ^= hash_fn(*in);
+		hash ^= hash_fn(in->first);
 
 	set_desc.put( "@hash" , hash );
 }
 
 bool operator==( const Set& a , const Set& b )
 {
+	auto ai = a.params.begin();
+	auto bi = b.params.begin();
+	for(  ; ai!=a.params.end() && bi!=b.params.end() ; ++ai , ++bi )
+		if( ai->desc != bi->desc )
+			return false;
+
 	return a.name     == b.name
-	    && a.set_desc == b.set_desc;
+	    && a.set_desc == b.set_desc
+	    && a.hash     == b.hash
+	    && a.order    == b.order;
 }
 
 bool operator!=( const Set& a , const Set& b )

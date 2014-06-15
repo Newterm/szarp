@@ -7,8 +7,8 @@
 
 class SetSubscribeRcv : public Command {
 public:
-	SetSubscribeRcv( Vars& vars )
-		: vars(vars)
+	SetSubscribeRcv( Vars& vars , SzbaseProt& prot )
+		: vars(vars) , prot(prot)
 	{
 		set_next( std::bind(&SetSubscribeRcv::parse_command,this,std::placeholders::_1) );
 	}
@@ -22,19 +22,26 @@ public:
 		namespace ba = boost::algorithm;
 
 		std::string set_name;
+		std::string probe_type;
 		std::string set_hash;
 
 		try {
 			auto r = find_quotation( line );
 			set_name.assign(r.begin(),r.end());
 
-			auto s = *r.end() == '\"' ? std::next(r.end()) : r.end();
+			auto s = r.end() != line.end() && *r.end() == '\"' ?
+				std::next(r.end()) : r.end();
 			auto i = boost::make_iterator_range( s , line.end() );
-			auto t = ba::find_token( i ,
+			auto p = ba::find_token( i ,
 					!ba::is_any_of(" \t") ,
 					ba::token_compress_on );
-			set_hash.assign( t.begin() , t.end() );
+			probe_type.assign( p.begin() , p.end() );
 
+			i = boost::make_iterator_range( p.end() , line.end() );
+			auto h = ba::find_token( i ,
+					!ba::is_any_of(" \t") ,
+					ba::token_compress_on );
+			set_hash.assign( h.begin() , h.end() );
 		} catch( parse_error& e ) {
 			fail( ErrorCodes::ill_formed );
 			return;
@@ -42,8 +49,7 @@ public:
 
 		if( set_name.empty() ) {
 			/** set current set to none */
-			/* FIXME: Set current set:) (05/05/2014 20:19, jkotur) */
-//            hnd.set_current_set();
+			prot.set_current_set();
 			apply();
 			return;
 		}
@@ -56,10 +62,17 @@ public:
 		}
 
 		size_t hash;
+		std::unique_ptr<ProbeType> pt;
+
 		try {
+			pt.reset( new ProbeType( probe_type ) );
+
 			hash = boost::lexical_cast<size_t>( set_hash );
 		} catch( const boost::bad_lexical_cast& ) {
 			fail( ErrorCodes::invalid_set_hash );
+			return;
+		} catch( parse_error& e ) {
+			fail( ErrorCodes::wrong_probe_type );
 			return;
 		}
 
@@ -69,13 +82,13 @@ public:
 		}
 
 		/** subscribe to set */
-		/* FIXME: Set current set:) (05/05/2014 20:19, jkotur) */
-//        hnd.set_current_set( s );
+		prot.set_current_set( s , *pt );
 		apply();
 	}
 
 protected:
 	Vars& vars;
+	SzbaseProt& prot;
 
 };
 

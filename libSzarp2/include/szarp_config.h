@@ -2244,6 +2244,8 @@ class IPKContainer {
 	void AddParamToHash(TParam* p);
 
 	void RemoveParamFromHash(TParam* p);
+
+	void AddExtraParamImpl(const std::wstring& prefix, TParam *n);
 public:
 	void RemoveExtraParam(const std::wstring& prefix, TParam *param);
 

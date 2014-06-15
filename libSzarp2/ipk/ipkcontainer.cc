@@ -162,8 +162,7 @@ bool IPKContainer::ReadyConfigurationForLoad(const std::wstring &prefix, bool lo
 	return true;
 }
 
-void IPKContainer::AddExtraParam(const std::wstring& prefix, TParam *n) {
-	boost::unique_lock<boost::shared_mutex> lock(m_lock);
+void IPKContainer::AddExtraParamImpl(const std::wstring& prefix, TParam *n) {
 	m_extra_params[prefix].push_back(n);
 
 	CM::iterator i = configs.find(prefix);
@@ -181,6 +180,11 @@ void IPKContainer::AddExtraParam(const std::wstring& prefix, TParam *n) {
 	n->SetConfigId(aux._configId);
 
 	AddParamToHash(n);
+}
+
+void IPKContainer::AddExtraParam(const std::wstring& prefix, TParam *n) {
+	boost::unique_lock<boost::shared_mutex> lock(m_lock);
+	AddExtraParamImpl(prefix, n);
 }
 
 void IPKContainer::RemoveExtraParam(const std::wstring& prefix, TParam *p) {
@@ -258,7 +262,8 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 	d.TranslateIPK(ipk, language);
 
 	ConfigAux ca;
-	if (configs.find(prefix) != configs.end()) {
+	bool first_time_added = configs.find(prefix) != configs.end();
+	if (!first_time_added) {
 		delete configs[prefix];
 		ca._configId = config_aux[prefix]._configId;
 	} else  {
@@ -284,6 +289,13 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 
 	ca._maxParamId = id;
 	config_aux[prefix] = ca;
+
+	if (first_time_added) {
+		TParam *p = new TParam(NULL);
+		p->Configure(L"Status:Meaner4:Heartbeat",
+			L"", L"", L"", NULL, 0, -1, 1);
+		AddExtraParamImpl(prefix, p);
+	}
 
 	return ipk;
 }

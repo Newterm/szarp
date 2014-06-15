@@ -90,3 +90,17 @@ std::string Param::to_xml( bool pretty ) const
 	return ss.str();
 }
 
+double Param::get_value( ProbeType pt ) const
+{
+	auto itr = values.find( pt );
+	if( itr != values.end() )
+		return itr->second;
+
+	return std::numeric_limits<double>::quiet_NaN();
+}
+
+void Param::set_value( double v , ProbeType pt )
+{
+	values[ pt ] = v;
+}
+

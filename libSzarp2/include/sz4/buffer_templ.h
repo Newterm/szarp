@@ -70,7 +70,7 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 				if (i->m_param != param) {
 					generic_param_entry* refferred_entry = base->get_param_entry(i->m_param);
 					refferred_entry->add_refferring_param(entry);
-					entry->add_refferred_param(entry);
+					entry->add_refferred_param(refferred_entry);
 				}
 			return entry;
 		}
@@ -93,7 +93,7 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 
 				generic_param_entry* refferred_entry = base->get_param_entry(rparam);
 				refferred_entry->add_refferring_param(entry);
-				entry->add_refferred_param(entry);
+				entry->add_refferred_param(refferred_entry);
 			}
 			return entry;
 		}
@@ -107,7 +107,7 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 			for (int i = 0; i < num_of_params; i++) {
 				generic_param_entry* refferred_entry = base->get_param_entry(f_cache[i]);
 				refferred_entry->add_refferring_param(entry);
-				entry->add_refferred_param(entry);
+				entry->add_refferred_param(refferred_entry);
 			}
 
 			return entry;

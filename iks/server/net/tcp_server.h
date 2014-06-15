@@ -49,6 +49,9 @@ class TcpConnection : public Connection {
 public:
 	TcpConnection( boost::asio::io_service& service );
 
+	virtual void close()
+	{	do_close(); }
+
 	void write_line( const std::string& line )
 	{	do_write_line( line ); }
 

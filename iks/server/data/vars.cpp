@@ -3,13 +3,14 @@
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 
+#include "utils/exception.h"
 
 namespace bf = boost::filesystem;
 
 using boost::format;
 
 Vars::Vars()
-	: szb_wrapper(NULL) , initalized(false) 
+	: params_updater(params) , szb_wrapper(NULL) , initialized(false) 
 {
 }
 
@@ -20,7 +21,7 @@ Vars::~Vars()
 
 void Vars::from_szarp( const std::string& szarp_base ) throw(file_not_found_error,xml_parse_error)
 {
-	if( initalized ) return;
+	if( initialized ) return;
 
 	bf::path szdir = bf::path(SzbaseWrapper::get_dir()) / szarp_base;
 	bf::path pszbc = szdir / "config" / "params.xml";
@@ -35,6 +36,13 @@ void Vars::from_szarp( const std::string& szarp_base ) throw(file_not_found_erro
 	sets  .from_params_file( pszbc.string() );
 
 	szb_wrapper = new SzbaseWrapper( szarp_base );
+	params_updater.set_data_feeder( szb_wrapper );
+}
+
+void Vars::set_szarp_prober_server( const std::string& address , unsigned port )
+{
+	if( szb_wrapper )
+		szb_wrapper->set_prober_address( address , port );
 }
 
 void Vars::command_request( const std::string& cmd , const std::string& data ) const

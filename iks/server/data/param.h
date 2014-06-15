@@ -10,8 +10,13 @@
 
 #include "utils/exception.h"
 
+#include "data/probe_type.h"
+
 class Param {
 public:
+	typedef std::shared_ptr<Param> ptr;
+	typedef std::shared_ptr<const Param> const_ptr;
+
 	Param( const std::string& parent );
 	virtual ~Param();
 
@@ -29,20 +34,21 @@ public:
 	const boost::property_tree::ptree& get_ptree() const
 	{	return param_desc; }
 
-	double get_value() const { return value; }
-	void set_value( double v ) { value = v; }
+	double get_value( ProbeType pt = ProbeType::Type::LIVE ) const;
+	void set_value( double v , ProbeType pt );
 
 private:
 	std::string parent_tag;
 	std::string name;
 
-	double value;
+	std::map<ProbeType,double> values;
 
 	boost::property_tree::ptree param_desc;
 };
 
 typedef boost::signals2::signal<void (std::shared_ptr<const Param>)> sig_param;
 typedef sig_param::slot_type sig_param_slot;
+
 
 struct ParamRequest {
 	std::shared_ptr<const Param> param;

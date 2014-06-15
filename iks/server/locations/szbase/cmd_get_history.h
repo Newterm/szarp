@@ -20,9 +20,10 @@ typedef boost::archive::iterators::base64_from_binary<
 
 class GetHistoryRcv : public Command {
 public:
-	GetHistoryRcv( Vars& vars )
+	GetHistoryRcv( Vars& vars , Protocol& prot )
 		: vars(vars)
 	{
+		(void)prot;
 		set_next( std::bind(&GetHistoryRcv::parse_command,this,std::placeholders::_1) );
 	}
 
@@ -59,25 +60,11 @@ protected:
 
 		auto probe_type = tags[0];
 
-		SzbaseWrapper::ProbeType pt;
+		std::unique_ptr<ProbeType> pt;
 
-		     if( probe_type == "10s" )
-			pt = PT_SEC10;
-		else if( probe_type == "10m" )
-			pt = PT_MIN10;
-		else if( probe_type == "1h" )
-			pt = PT_HOUR;
-		else if( probe_type == "8h" )
-			pt = PT_HOUR8;
-		else if( probe_type == "1d" )
-			pt = PT_DAY;
-		else if( probe_type == "1w" )
-			pt = PT_WEEK;
-		else if( probe_type == "1M" )
-			pt = PT_MONTH;
-		else if( probe_type == "1Y" )
-			pt = PT_YEAR;
-		else {
+		try {
+			pt.reset( new ProbeType( probe_type ) );
+		} catch( parse_error& e ) {
 			fail( ErrorCodes::wrong_probe_type );
 			return;
 		};
@@ -96,7 +83,7 @@ protected:
 		std::string out;
 
 		try {
-			get_data( probes , tbeg , tend , pt , name );
+			get_data( probes , tbeg , tend , *pt , name );
 		} catch ( const szbase_error& e ) {
 			fail( ErrorCodes::szbase_error , e.what() );
 			return;
@@ -118,21 +105,22 @@ protected:
 				   std::back_inserter(out) );
 
 		boost::property_tree::ptree ptree;
-		ptree.add("start", SzbaseWrapper::next(tbeg,pt,nb));
-		ptree.add("end"  , SzbaseWrapper::next(tbeg,pt,ne));
+		ptree.add("start", SzbaseWrapper::next(tbeg,*pt,nb));
+		ptree.add("end"  , SzbaseWrapper::next(tbeg,*pt,ne));
 		ptree.add("data", out);
 		apply( ptree_to_json( ptree , false ) );
 	}
 
 	timestamp_t get_data(
 			std::vector<f32_t>& out ,
-			timestamp_t beg , timestamp_t end , SzbaseWrapper::ProbeType pt ,
+			timestamp_t beg , timestamp_t end , ProbeType pt ,
 			const std::string& param )
 	{
 		timestamp_t t;
 
+		vars.get_szbase()->sync();
 		for( t=beg ; t<end ; t=SzbaseWrapper::next(t,pt) )
-			out.push_back( vars.get_szbase()->get_avg( param , t , pt ) );
+			out.push_back( vars.get_szbase()->get_avg_no_sync( param , t , pt ) );
 
 		return t;
 	}

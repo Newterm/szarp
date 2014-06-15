@@ -22,9 +22,12 @@
 namespace sz4 {
 
 template<class value_type, class time_type, class types, template<class types> class calculation_method> class buffered_param_entry_in_buffer : public SzbParamObserver {
+protected:
 	base_templ<types>* m_base;
 	TParam* m_param;
 	bool m_invalidate_non_fixed;
+
+	typedef buffered_param_entry_in_buffer<value_type, time_type, types, calculation_method> _type;
 
 	typedef definable_param_cache<value_type, time_type> cache_type;
 	typedef std::vector<cache_type> cache_vector;
@@ -44,11 +47,31 @@ public:
 		std::for_each(m_cache.begin(), m_cache.end(), std::mem_fun_ref(&cache_type::invalidate_non_fixed_values));
 	}
 
-	void get_weighted_sum_impl(const time_type& start, const time_type& end, SZARP_PROBE_TYPE probe_type, weighted_sum<value_type, time_type>& sum)  {
+	void adjust_time_range(time_type& from, time_type& to) {
+		time_type start;
+		m_base->get_first_time(this->m_param, start);
+		if (!invalid_time_value<time_type>::is_valid(start)) {
+			from = to;
+			return;
+		}
+	
+		time_type end;
+		m_base->get_last_time(this->m_param, end);
+		if (!invalid_time_value<time_type>::is_valid(end)) {
+			from = to;
+			return;
+		}
+
+		from = std::max(start, from);
+		to = std::min(end, to);
+	}
+
+	void get_weighted_sum_impl(time_type start, time_type end, SZARP_PROBE_TYPE probe_type, weighted_sum<value_type, time_type>& sum)  {
 		invalidate_non_fixed_if_needed();
 
-		time_type current(start);
 		calculation_method<types> ee(m_base, m_param);
+
+		time_type& current(start);
 
 		while (current < end) {
 			value_type value;
@@ -77,17 +100,22 @@ public:
 
 	}
 
-	time_type search_data_right_impl(const time_type& start, const time_type& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) {
+	time_type search_data_right_impl(time_type start, time_type end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) {
 		invalidate_non_fixed_if_needed();
 
 		calculation_method<types> ee(m_base, m_param);
-		time_type current(start);
-		while (true) {
+
+		adjust_time_range(start, end);
+		
+		time_type& current(start);
+
+		while (current < end) {
 			std::pair<bool, time_type> r = m_cache[probe_type].search_data_right(current, end, condition);
 			if (r.first)
 				return r.second;
 			
 			current = r.second;
+
 			std::tr1::tuple<double,
 				bool,
 				std::set<generic_block*> >
@@ -97,17 +125,21 @@ public:
 					current,
 					std::tr1::get<1>(vf),
 					std::tr1::get<2>(vf));
+
 		}
 
 		return invalid_time_value<time_type>::value;
 	}
 
-	time_type search_data_left_impl(const time_type& start, const time_type& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) {
+	time_type search_data_left_impl(time_type start, time_type end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) {
 		invalidate_non_fixed_if_needed();
 
 		calculation_method<types> ee(m_base, m_param);
+		
+		adjust_time_range(start, end);
 		time_type current(start);
-		while (true) {
+
+		while (current < end) {
 			std::pair<bool, time_type> r = m_cache[probe_type].search_data_left(current, end, condition);
 			if (r.first)
 				return r.second;
@@ -124,12 +156,54 @@ public:
 		return invalid_time_value<time_type>::value;
 	}
 
-	time_type get_first_time() {
-		return invalid_time_value<time_type>::value;
+	void get_first_time(std::list<generic_param_entry*>& referred_params, time_type &t) {
+		t = invalid_time_value<time_type>::value;
+
+		if (!referred_params.size())
+			return m_base->get_heartbeat_first_time(m_param, t);
+
+		for (std::list<generic_param_entry*>::const_iterator i = referred_params.begin();
+				i != referred_params.end();
+				i++) {
+			time_type t1;
+			(*i)->get_first_time(t1);
+
+			if (!invalid_time_value<time_type>::is_valid(t1)) {
+				t = invalid_time_value<time_type>::value;
+				return;
+			}
+
+			if (invalid_time_value<time_type>::is_valid(t))
+				t = std::max(t1, t);
+			else
+				t = t1;
+		}
+
 	}
 
-	time_type get_last_time() {
-		return invalid_time_value<time_type>::value;
+	void get_last_time(const std::list<generic_param_entry*>& referred_params, time_type &t) {
+		t = invalid_time_value<time_type>::value;
+
+		if (!referred_params.size())
+			return m_base->get_heartbeat_last_time(m_param, t);
+
+		for (std::list<generic_param_entry*>::const_iterator i = referred_params.begin();
+				i != referred_params.end();
+				i++) {
+			time_type t1;
+			(*i)->get_first_time(t1);
+
+			if (!invalid_time_value<time_type>::is_valid(t1)) {
+				t = invalid_time_value<time_type>::value;
+				return;
+			}
+
+			if (invalid_time_value<time_type>::is_valid(t))
+				t = std::min(t1, t);
+			else
+				t = t1;
+		}
+
 	}
 
 	void register_at_monitor(generic_param_entry* entry, SzbParamMonitor* monitor) {
@@ -152,7 +226,6 @@ public:
 	}
 
 	virtual ~buffered_param_entry_in_buffer() {};
-
 };
 
 }

@@ -1,5 +1,7 @@
 #include "params.h"
 
+#include <cmath>
+
 #include <boost/format.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
@@ -7,6 +9,10 @@ using boost::format;
 namespace bp = boost::property_tree;
 
 #include "utils/ptree.h"
+
+Params::Params()
+{
+}
 
 std::shared_ptr<const Param> Params::get_param( const std::string& name ) const
 {
@@ -47,18 +53,27 @@ void Params::from_params_xml( bp::ptree& doc ) throw(xml_parse_error)
 
 }
 
-void Params::param_value_changed( const std::string& name , double value )
+void Params::param_value_changed( const std::string& name , double value , ProbeType pt )
 {
-	auto itr = params.find(name);
+	param_value_changed( iterator(params.find(name)) , value , pt );
+}
 
-	if( itr == params.end() ) {
+void Params::param_value_changed( iterator itr , double value , ProbeType pt )
+{
+	if( itr.itr == params.end() ) {
 		std::cerr << "Value changed of undefined param" << std::endl;
 		return;
 	}
 
-	itr->second->set_value( value );
+	using std::isnan;
 
-	emit_value_changed( itr->second );
+	auto pvalue = itr.itr->second->get_value( pt );
+	if( value == pvalue || (isnan(value) && isnan(pvalue)) )
+		/** If values are equal even if both are NaNs do nothing */
+		return;
+
+	itr.itr->second->set_value( value , pt );
+	emit_value_changed( itr.itr->second , value , pt );
 }
 
 void Params::request_param_value( const std::string& name ,
