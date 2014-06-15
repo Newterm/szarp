@@ -72,18 +72,26 @@ void ParamsUpdater::DataUpdater::check_szarp_values(
 
 	time_t t = system_clock::to_time_t(system_clock::now());
 
+	/**
+	 * Find minimum probe type to reschedule probes update and remove
+	 * unused subscriptions
+	 */
 	ProbeType min_pt( ProbeType::Type::MAX );
+	for( auto itr=parent->subscribed_params.begin() ;
+		 itr != parent->subscribed_params.end() ; )
+		if( itr->use_count() <= 1 ) {
+			/** No Subscription object left */
+			parent->subscribed_params.erase( itr++ );
+		} else {
+			min_pt = std::min( (**itr).second , min_pt );
+			++itr;
+		}
 
 	try {
 		for( auto itr=parent->subscribed_params.begin() ;
-			 itr != parent->subscribed_params.end() ; )
+			 itr != parent->subscribed_params.end() ;
+			 ++itr )
 		{
-			if( itr->use_count() <= 1 ) {
-				/** No Subscription object left */
-				parent->subscribed_params.erase( itr++ );
-				continue;
-			}
-
 			auto& name = *(**itr).first;
 			auto& pt   =  (**itr).second;
 			time_t ptime = SzbaseWrapper::round( t , pt );
@@ -92,10 +100,6 @@ void ParamsUpdater::DataUpdater::check_szarp_values(
 					name ,
 					parent->data_feeder->get_avg( name , ptime , pt ) ,
 					pt );
-
-			min_pt = std::min( pt , min_pt );
-
-			++itr;
 		}
 	} catch( szbase_error& e ) {
 		sz_log(0, "Szbase error while updating data: %s", e.what());
