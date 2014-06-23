@@ -348,7 +348,7 @@ int main(int argc, char* argv[])
 	if (arguments.multiply)
 		create_multiply_formula(arguments, ipk_prefix);
 
-	if (szb_compile_lua_formula(lua, (const char*) SC::A2U(arguments.formula).c_str(), "", false) == false) {
+	if (szb_compile_lua_formula(lua, (const char*) SC::A2U(arguments.formula, true).c_str(), "", false) == false) {
 		std::wcerr << "Failed to compile formula, error: " << lua_tostring(lua, -1) << std::endl;
 		return 1;
 	}

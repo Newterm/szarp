@@ -36,10 +36,10 @@ class IconvWrapper {
 		}
 
 		template<typename T, typename F>
-		std::basic_string<T> convert (const std::basic_string<F> &str) {
-			/* strange things going here... */
-			boost::mutex::scoped_lock lock(m_mutex);
+		std::basic_string<T> convert (const std::basic_string<F> &str, bool omit_inv = false) {
+			boost::mutex::scoped_lock lock(m_mutex);	// iconv() is not thread-safe
 
+			/* allocate buffers */
 			char* input_start = (char*) str.c_str();
 			char* input = input_start;
 			size_t input_length = (str.length() + 1) * sizeof(F);
@@ -49,6 +49,7 @@ class IconvWrapper {
 			char* output_start = (char*) malloc(total_length);
 			char* output = output_start;
 
+			/* convert string */
 			while ( (size_t) -1 == iconv(m_handle, &input,  &input_length,
 						&output, &remaining_length))
 			{
@@ -62,8 +63,10 @@ class IconvWrapper {
 					total_length *= 2;
 
 				} else if (errno == EILSEQ) {
-					free(output_start);
-					throw std::runtime_error("Invalid multibyte sequence encountered in conversion");
+					if (!omit_inv) {
+						free(output_start);
+						throw std::runtime_error("Invalid multibyte sequence encountered in conversion");
+					}
 
 				} else if (errno == EINVAL) {
 					free(output_start);
@@ -175,6 +178,15 @@ std::wstring local2szarp(const std::basic_string<char>& c) {
 }
 #endif
 
+/* LOCAL -> SZARP (omit invalid characters) */
+#ifndef MINGW32
+IconvWrapper local2szarp_ign_iw("WCHAR_T//IGNORE", IconvWrapper::system_enc());
+
+std::wstring local2szarp_ign(const std::basic_string<char>& c) {
+	return local2szarp_ign_iw.convert<wchar_t, char>(c, true);
+}
+#endif
+
 /* SZARP -> LOCAL */
 #ifndef MINGW32
 IconvWrapper szarp2local_iw(IconvWrapper::system_enc(), "WCHAR_T");
@@ -259,16 +271,31 @@ std::basic_string<unsigned char> ascii2utf(const std::basic_string<char>& c) {
 	return ascii2utf_iw.convert<unsigned char, char>(c);
 }
 
+/* ASCII -> UTF-8 (omit invalid characters) */
+IconvWrapper ascii2utf_ign_iw("UTF-8//IGNORE", "ASCII");
+std::basic_string<unsigned char> ascii2utf_ign(const std::basic_string<char>& c) {
+	return ascii2utf_ign_iw.convert<unsigned char, char>(c, true);
+}
+
 /* UTF-8 -> LOCAL */
 IconvWrapper utf2local_iw(IconvWrapper::system_enc(), "UTF-8");
 std::string utf2local(const std::basic_string<unsigned char>& c) {
+	// TODO if LOCAL == UTF-8
 	return utf2local_iw.convert<char, unsigned char>(c);
 }
 
 /* LOCAL -> UTF-8 */
 IconvWrapper local2utf_iw("UTF-8", IconvWrapper::system_enc());
 std::basic_string<unsigned char> local2utf(const std::basic_string<char>& c) {
+	// TODO if LOCAL == UTF-8
 	return local2utf_iw.convert<unsigned char, char>(c);
+}
+
+/* LOCAL -> UTF-8 (omit invalid characters) */
+IconvWrapper local2utf_ign_iw("UTF-8//IGNORE", IconvWrapper::system_enc());
+std::basic_string<unsigned char> local2utf_ign(const std::basic_string<char>& c) {
+	// TODO if LOCAL == UTF-8
+	return local2utf_ign_iw.convert<unsigned char, char>(c, true);
 }
 
 
@@ -296,24 +323,48 @@ namespace SC {	/* Szarp Conversions */
 		return szarp2ascii(c);
 	}
 
-	std::wstring L2S(const std::basic_string<char>& c) {
+	std::wstring L2S(const std::basic_string<char>& c, bool fallback) {
+#ifndef MINGW32
+		try {
+			return local2szarp(c);
+		} catch (const std::runtime_error& ex) {
+			if (!fallback)
+				throw;
+		}
+		return local2szarp_ign(c);
+#else
 		return local2szarp(c);
+#endif
 	}
 
 	std::string S2L(const std::basic_string<wchar_t>& c) {
 		return szarp2local(c);
 	}
 
-	std::basic_string<unsigned char> A2U(const std::basic_string<char>& c) {
-		return ascii2utf(c);
+	std::basic_string<unsigned char> A2U(const std::basic_string<char>& c, bool fallback) {
+		try {
+			return ascii2utf(c);
+		} catch (const std::runtime_error& ex) {
+			if (!fallback)
+				throw;
+		}
+
+		return ascii2utf_ign(c);
 	}
 
 	std::string U2A(const std::basic_string<unsigned char>& c) {
 		return utf2ascii(c);
 	}
 
-	std::basic_string<unsigned char> L2U(const std::basic_string<char>& c) {
-		return local2utf(c);
+	std::basic_string<unsigned char> L2U(const std::basic_string<char>& c, bool fallback) {
+		try {
+			return local2utf(c);
+		} catch (const std::runtime_error& ex) {
+			if (!fallback)
+				throw;
+		}
+
+		return local2utf_ign(c);
 	}
 
 	std::string U2L(const std::basic_string<unsigned char>& c) {

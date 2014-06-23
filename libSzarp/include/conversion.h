@@ -30,15 +30,15 @@ std::wstring A2S(const std::basic_string<char>& c);
 
 std::string S2A(const std::basic_string<wchar_t>& c);
 
-std::basic_string<unsigned char> A2U(const std::basic_string<char>& c);
+std::basic_string<unsigned char> A2U(const std::basic_string<char>& c, bool fallback = false);
 
 std::string U2A(const std::basic_string<unsigned char>& c);
 
-std::wstring L2S(const std::basic_string<char>& c);
+std::wstring L2S(const std::basic_string<char>& c, bool fallback = false);
 
 std::string S2L(const std::basic_string<wchar_t>& c);
 
-std::basic_string<unsigned char> L2U(const std::basic_string<char>& c);
+std::basic_string<unsigned char> L2U(const std::basic_string<char>& c, bool fallback = false);
 
 std::string U2L(const std::basic_string<unsigned char>& c);
 

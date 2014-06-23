@@ -2155,8 +2155,7 @@ namespace EkrnDefConv {
 			result.push_back(e);
 		}
 
-		// FIXME: may be hardcoded ISO-8859-2
-		return std::make_pair(wxString(SC::L2S(title.substr(1))), result);
+		return std::make_pair(wxString(SC::L2S(title.substr(1), true)), result);
 
 	}
 

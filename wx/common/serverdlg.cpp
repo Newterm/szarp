@@ -149,8 +149,7 @@ TSzarpConfig * szServerDlg::GetIPK(wxString server, szHTTPCurlClient *http) {
 	if(ipk == NULL){
 		wxString msg;
 		if (http->GetError() != 0) {
-			// FIXME: may be hardcoded ISO-8859-2
-			msg = SC::L2S(http->GetErrorStr());
+			msg = SC::L2S(http->GetErrorStr(), true);
 		}
 		wxMessageBox(_("Unable to connect to server ") 
 				+ server + _(".\n") +
@@ -181,8 +180,7 @@ bool szServerDlg::GetReports(wxString server, szHTTPCurlClient *m_http, wxString
 
 	if (doc == NULL) {
 		if (m_http->GetError() != 0) {
-			// FIXME: may be hardcoded ISO-8859-2
-			msg = SC::L2S(m_http->GetErrorStr()).c_str();
+			msg = SC::L2S(m_http->GetErrorStr(), true).c_str();
 		}
 		error = true;
 	} else {

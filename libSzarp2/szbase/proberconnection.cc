@@ -213,8 +213,7 @@ void ProberConnection::HandleGetFirstLine(const boost::system::error_code &error
 				boost::asio::transfer_at_least(length - m_input_buffer.size()),
 				boost::bind(&ProberConnection::HandleReadValues, this, _1, _2));
 	} else {
-		// FIXME: may be hardcoded ISO-8859-2
-		m_error = std::wstring(L"Error performing operation on prober ") + SC::L2S(line.substr(sizeof("ERROR")));
+		m_error = std::wstring(L"Error performing operation on prober ") + SC::L2S(line.substr(sizeof("ERROR")), true);
 		StopTimer();
 	}
 }

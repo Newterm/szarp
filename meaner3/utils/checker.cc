@@ -1072,8 +1072,7 @@ int CluaRegister::GetDataFromParam(time_t StartDate, time_t StopDate, char *PNam
 	time_t ActualDate=0;
 	
 	TParam *p=NULL;
-	// FIXME: may be hardcoded ISO-8859-2
-	p = IpkConf.ipk->getParamByName(SC::L2S(PName));
+	p = IpkConf.ipk->getParamByName(SC::L2S(PName, true));
 
 
 	if (p==NULL){

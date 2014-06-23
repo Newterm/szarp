@@ -1991,8 +1991,7 @@ void ProgressFrame::UpdateServerBaseMap(std::map<char*, char*>& dir_map) {
 			i != dir_map.end();
 			i++) {
 		wxString base = SC::U2S((unsigned char*)i->first);
-		// FIXME: may be hardcoded ISO-8859-2
-		wxString server = SC::L2S(i->second);
+		wxString server = SC::L2S(i->second, true);
 
 		for (std::map<wxString, std::set<wxString> >::iterator j = sb.begin();
 				j != sb.end();

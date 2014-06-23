@@ -536,7 +536,7 @@ int process_regexp(xmlDocPtr doc, xmlChar *xpath_expr, xmlChar *regexp)
 				continue;
 			}
 			char *nc = regsub(content.c_str(), subst, &regs);
-			xmlNodeSetContent(node, SC::A2U(nc).c_str());
+			xmlNodeSetContent(node, SC::A2U(nc, true).c_str());
 			
 			xmlFree(u_content);
 			free(nc);
@@ -1227,7 +1227,7 @@ int add_template_variable(vars_map_t& vars, xmlNodePtr v,
 		}
 	}
 	
-	vars[i] = (char *) SC::A2U((char *) c).c_str();
+	vars[i] = (char *) SC::A2U((char *) c, true).c_str();
 	sz_log(8, "Setting variable '%d' to '%s'", i, c);
 	xmlFree(c);
 	

@@ -668,8 +668,7 @@ int ParamTree::set(ParsedURI *uri)
 		if (strcmp((char *)node->name, "param"))
 			return ret;
 
-		// FIXME: may be hardcoded ISO-8859-2
-		return dynamicTree.set_map[node](SC::L2S(uri->getOption("put")));
+		return dynamicTree.set_map[node](SC::L2S(uri->getOption("put"), true));
 
 	}
 
