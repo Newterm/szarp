@@ -213,7 +213,7 @@ msgid "Raporter - help"
 msgstr "Raporter - pomoc"
 
 #: raporteredit.cc:62
-msgid "Tile"
+msgid "Title"
 msgstr "Tytu³"
 
 #: raporteredit.cc:65

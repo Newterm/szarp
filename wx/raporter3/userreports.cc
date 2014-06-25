@@ -48,7 +48,12 @@ bool UserReports::CheckFile(wxString filename)
 	if (parlist.GetConfigName().Cmp(m_config) != 0) {
 		return false;
 	}
-	if (parlist.GetExtraRootProp(SZ_REPORTS_NS_URI, _T("title")).Cmp(filename) != 0) {
+	if (wxString(SC::S2A(
+				   parlist.GetExtraRootProp(SZ_REPORTS_NS_URI, _T("title")).wc_str()
+				   ).c_str(),
+			     wxConvUTF8
+				).Cmp(filename) != 0)
+	{
 		return false;
 	}
 	return true;
@@ -58,28 +63,31 @@ bool UserReports::CheckFile(wxString filename)
 wxString UserReports::SaveTemplate(wxString name, szParList parlist)
 {
 	  wxString err;
+	  wxString cname(SC::S2A(name.wc_str()).c_str(), wxConvUTF8);
+
 	  err = CreateDir();
 	  if (!err.IsEmpty()) {
 		  return err;
 	  }
 	  parlist.AddNs(_T("rap"), SZ_REPORTS_NS_URI);
 	  parlist.SetExtraRootProp(SZ_REPORTS_NS_URI, _T("title"), name);
-	  wxFileName path = wxFileName(m_dir.GetFullPath(), name + _T(".xpl"));
+	  wxFileName path = wxFileName(m_dir.GetFullPath(), cname + _T(".xpl"));
 	  if (!parlist.SaveFile(path.GetFullPath().c_str())) {
 		  return wxString(_("Error saving file: ")) + path.GetFullPath();
 	  }
-	  if (m_list.Index(name) == wxNOT_FOUND) {
-		  m_list.Add(name);
+	  if (m_list.Index(cname) == wxNOT_FOUND) {
+		  m_list.Add(cname);
 	  }
 	  return wxEmptyString;
 }
 
 void UserReports::RemoveTemplate(wxString name)
 {
-	  int i = m_list.Index(name);
+	  wxString cname(SC::S2A(name.wc_str()).c_str(), wxConvUTF8);
+	  int i = m_list.Index(cname);
 	  assert (i != wxNOT_FOUND);
 	  m_list.RemoveAt(i);
-	  wxFileName path = wxFileName(m_dir.GetFullPath(), name + _T(".xpl"));
+	  wxFileName path = wxFileName(m_dir.GetFullPath(), cname + _T(".xpl"));
 	  wxRemoveFile(path.GetFullPath());
 }
 
@@ -108,7 +116,8 @@ void UserReports::RefreshList(wxString config)
 
 wxString UserReports::GetTemplatePath(wxString name)
 {
-	return m_dir.GetFullPath() + wxFileName::GetPathSeparator() + name + _T(".xpl");
+	wxString cname(SC::S2A(name.wc_str()).c_str(), wxConvUTF8);
+	return m_dir.GetFullPath() + wxFileName::GetPathSeparator() + cname + _T(".xpl");
 }
 
 bool UserReports::FindTemplate(wxString name, wxString& config)
@@ -116,7 +125,13 @@ bool UserReports::FindTemplate(wxString name, wxString& config)
 	szParList parlist;
 	if (parlist.LoadFile(GetTemplatePath(name), false) <= 0)
 		return false;
-	if (parlist.GetExtraRootProp(SZ_REPORTS_NS_URI, _T("title")).Cmp(name) != 0) {
+
+	if (wxString(SC::S2A(
+				   parlist.GetExtraRootProp(SZ_REPORTS_NS_URI, _T("title")).wc_str()
+				   ).c_str(),
+			     wxConvUTF8
+				).Cmp(name) != 0)
+	{
 		return false;
 	}
 
