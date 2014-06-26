@@ -35,6 +35,10 @@ class IconvWrapper {
 			return m_sysenc._system_encoding.c_str();
 		}
 
+		static bool isutf8 (void) {
+			return m_sysenc._utf8;
+		}
+
 		template<typename T, typename F>
 		std::basic_string<T> convert (const std::basic_string<F> &str, bool omit_inv = false) {
 			boost::mutex::scoped_lock lock(m_mutex);	// iconv() is not thread-safe
@@ -90,6 +94,7 @@ class IconvWrapper {
 
 		struct SystemEncoding {
 			std::string _system_encoding;
+			bool _utf8;
 
 			SystemEncoding (void) {
 				/* get system locale and extract encoding */
@@ -97,6 +102,7 @@ class IconvWrapper {
 				std::locale loc = gen("");
 				_system_encoding =
 					std::use_facet<boost::locale::info>(loc).encoding();
+				_utf8 = std::use_facet<boost::locale::info>(loc).utf8();
 			}
 		};
 		static SystemEncoding m_sysenc;
@@ -220,7 +226,7 @@ std::string szarp2ascii(const std::basic_string<wchar_t>& c) {
 }
 #else
 std::string szarp2ascii(const std::basic_string<wchar_t>& c) {
-	// TODO: to be honest, it's szarp2local
+	// FIXME: to be honest, it's szarp2local
 	if (c.size() == 0)
 		return std::string();
 
@@ -280,22 +286,28 @@ std::basic_string<unsigned char> ascii2utf_ign(const std::basic_string<char>& c)
 /* UTF-8 -> LOCAL */
 IconvWrapper utf2local_iw(IconvWrapper::system_enc(), "UTF-8");
 std::string utf2local(const std::basic_string<unsigned char>& c) {
-	// TODO if LOCAL == UTF-8
-	return utf2local_iw.convert<char, unsigned char>(c);
+	if (IconvWrapper::isutf8())
+		return std::string(reinterpret_cast<const char *>(c.c_str()));
+	else
+		return utf2local_iw.convert<char, unsigned char>(c);
 }
 
 /* LOCAL -> UTF-8 */
 IconvWrapper local2utf_iw("UTF-8", IconvWrapper::system_enc());
 std::basic_string<unsigned char> local2utf(const std::basic_string<char>& c) {
-	// TODO if LOCAL == UTF-8
-	return local2utf_iw.convert<unsigned char, char>(c);
+	if (IconvWrapper::isutf8())
+		return std::basic_string<unsigned char>(reinterpret_cast<const unsigned char *>(c.c_str()));
+	else
+		return local2utf_iw.convert<unsigned char, char>(c);
 }
 
 /* LOCAL -> UTF-8 (omit invalid characters) */
 IconvWrapper local2utf_ign_iw("UTF-8//IGNORE", IconvWrapper::system_enc());
 std::basic_string<unsigned char> local2utf_ign(const std::basic_string<char>& c) {
-	// TODO if LOCAL == UTF-8
-	return local2utf_ign_iw.convert<unsigned char, char>(c, true);
+	if (IconvWrapper::isutf8())
+		return std::basic_string<unsigned char>(reinterpret_cast<const unsigned char *>(c.c_str()));
+	else
+		return local2utf_ign_iw.convert<unsigned char, char>(c, true);
 }
 
 
