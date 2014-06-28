@@ -1,5 +1,5 @@
-#ifndef __SZ4_TYPES_H__
-#define __SZ4_TYPES_H__
+#ifndef __SZ4_PARAM_ENTRY_FACTORY_H__
+#define __SZ4_PARAM_ENTRY_FACTORY_H__
 /* 
   SZARP: SCADA software 
   
@@ -20,15 +20,22 @@
 */
 
 #include "config.h"
-#include "szarp_config.h"
+
+#include "sz4/param_entry.h"
 
 namespace sz4 {
 
-struct param_entry_factory;
+struct param_entry_factory {
 
-struct base_types {
-	typedef IPKContainer ipk_container_type;
-	typedef param_entry_factory param_factory;
+	template<
+		template<typename DT, typename TT, class BT> class entry_type,
+		typename data_type,
+		typename time_type,
+		typename types
+	>
+	generic_param_entry* create(base_templ<types>* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
+		return new param_entry_in_buffer<entry_type, data_type, time_type, types>(base, param, buffer_directory);
+	}
 };
 
 }

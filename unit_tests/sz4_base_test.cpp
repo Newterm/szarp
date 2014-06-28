@@ -50,11 +50,6 @@ void Sz4BaseTestCase::setUp() {
 
 	boost::filesystem::wpath path(m_base_dir_name);
 
-	boost::filesystem::create_directories(path / L"b/config");
-	boost::filesystem::create_directories(path / L"b/sz4");
-	boost::filesystem::create_directories(path / L"b/sz4/a/a/a");
-	boost::filesystem::create_directories(path / L"b/sz4/b/b/b");
-
 	for (wchar_t l = L'a'; l < L'd'; l++)
 	{
 		std::wstringstream ls;
@@ -64,6 +59,7 @@ void Sz4BaseTestCase::setUp() {
 		boost::filesystem::create_directories(path / ls.str() / L"sz4");
 		boost::filesystem::create_directories(path / ls.str() / L"sz4/a/a/a");
 		boost::filesystem::create_directories(path / ls.str() / L"sz4/b/b/b");
+		boost::filesystem::create_directories(path / ls.str() / L"sz4/Status/Meaner4/Heartbeat");
 
 #if BOOST_FILESYSTEM_VERSION == 3
 		std::ofstream ofs((path / ls.str() / L"config/params.xml").native().c_str(), std::ios_base::binary);
@@ -79,8 +75,6 @@ void Sz4BaseTestCase::setUp() {
 "      	</param>"
 "    	<param name=\"b:b:b\" short_name=\"-\" unit=\"°C\" prec=\"1\" draw_name=\"\" base_ind=\"auto\">"
 "      	</param>"
-"    	<param name=\"Status:Meaner4:Heartbeat\" short_name=\"-\" unit=\"°C\" prec=\"1\" draw_name=\"\" base_ind=\"auto\">"
-"      	</param>"
 "    </unit>"
 "  </device>"
 "  <drawdefinable>"
@@ -95,12 +89,16 @@ void Sz4BaseTestCase::setUp() {
 "</params>";
 		ofs.close();
 
-		for (wchar_t s = L'a'; s <= L'b'; s++) {
+		for (wchar_t s = L'a'; s <= L'd'; s++) {
 			for (int i = 1000; i < 2000; i += 100) {
 				std::wstringstream ss;
-				ss << l;
+				ss << s;
 
-				boost::filesystem::wpath param_path = path / ls.str() / L"sz4" / ss.str() / ss.str() / ss.str();
+				boost::filesystem::wpath param_path;
+				if (s != L'd')
+					param_path = path / ls.str() / L"sz4" / ss.str() / ss.str() / ss.str();
+				else
+					param_path = path / ls.str() / L"sz4" / L"Status" / L"Meaner4" / L"Heartbeat";
 				std::wstringstream file_name;
 				file_name << std::setfill(L'0') << std::setw(10) << i << L".sz4";
 #if BOOST_FILESYSTEM_VERSION == 3
@@ -173,7 +171,7 @@ void Sz4BaseTestCase::cacheTest1() {
 
 	size_t size_in_bytes, blocks_count;
 	base.cache()->cache_size(size_in_bytes,blocks_count);
-	CPPUNIT_ASSERT_EQUAL(size_t(11), blocks_count);
+	CPPUNIT_ASSERT_EQUAL(size_t(21), blocks_count);
 
 }
 

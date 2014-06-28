@@ -50,17 +50,17 @@ public:
 	void adjust_time_range(time_type& from, time_type& to) {
 		time_type start;
 		m_base->get_first_time(this->m_param, start);
-		if (!invalid_time_value<time_type>::is_valid(start)) {
-			from = to;
+		if (!time_trait<time_type>::is_valid(start)) {
+			to = from;
 			return;
 		}
 	
 		time_type end;
 		m_base->get_last_time(this->m_param, end);
-		if (!invalid_time_value<time_type>::is_valid(end)) {
-			from = to;
+		if (!time_trait<time_type>::is_valid(end)) {
+			to = from;
 			return;
-		}
+		} 
 
 		from = std::max(start, from);
 		to = std::min(end, to);
@@ -71,9 +71,18 @@ public:
 
 		calculation_method<types> ee(m_base, m_param);
 
-		time_type& current(start);
+		time_type from = start, to = end;
 
-		while (current < end) {
+		adjust_time_range(from, to);
+
+		sum.add_no_data_weight(from - start);
+		sum.add_no_data_weight(end - to);
+
+		if (to < end)
+			sum.set_fixed(false);
+
+		time_type& current(from);
+		while (current < to) {
 			value_type value;
 			bool fixed;
 			std::set<generic_block*> refferred_blocks;
@@ -128,7 +137,7 @@ public:
 
 		}
 
-		return invalid_time_value<time_type>::value;
+		return time_trait<time_type>::invalid_value;
 	}
 
 	time_type search_data_left_impl(time_type start, time_type end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) {
@@ -153,11 +162,11 @@ public:
 					std::tr1::get<2>(vf));
 		}
 
-		return invalid_time_value<time_type>::value;
+		return time_trait<time_type>::invalid_value;
 	}
 
 	void get_first_time(std::list<generic_param_entry*>& referred_params, time_type &t) {
-		t = invalid_time_value<time_type>::value;
+		t = time_trait<time_type>::invalid_value;
 
 		if (!referred_params.size())
 			return m_base->get_heartbeat_first_time(m_param, t);
@@ -168,12 +177,12 @@ public:
 			time_type t1;
 			(*i)->get_first_time(t1);
 
-			if (!invalid_time_value<time_type>::is_valid(t1)) {
-				t = invalid_time_value<time_type>::value;
+			if (!time_trait<time_type>::is_valid(t1)) {
+				t = time_trait<time_type>::invalid_value;
 				return;
 			}
 
-			if (invalid_time_value<time_type>::is_valid(t))
+			if (time_trait<time_type>::is_valid(t))
 				t = std::max(t1, t);
 			else
 				t = t1;
@@ -182,7 +191,7 @@ public:
 	}
 
 	void get_last_time(const std::list<generic_param_entry*>& referred_params, time_type &t) {
-		t = invalid_time_value<time_type>::value;
+		t = time_trait<time_type>::invalid_value;
 
 		if (!referred_params.size())
 			return m_base->get_heartbeat_last_time(m_param, t);
@@ -191,14 +200,14 @@ public:
 				i != referred_params.end();
 				i++) {
 			time_type t1;
-			(*i)->get_first_time(t1);
+			(*i)->get_last_time(t1);
 
-			if (!invalid_time_value<time_type>::is_valid(t1)) {
-				t = invalid_time_value<time_type>::value;
+			if (!time_trait<time_type>::is_valid(t1)) {
+				t = time_trait<time_type>::invalid_value;
 				return;
 			}
 
-			if (invalid_time_value<time_type>::is_valid(t))
+			if (time_trait<time_type>::is_valid(t))
 				t = std::min(t1, t);
 			else
 				t = t1;

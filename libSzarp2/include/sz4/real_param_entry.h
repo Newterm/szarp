@@ -129,7 +129,7 @@ public:
 	T search_data_right_impl(const T& start, const T& end, SZARP_PROBE_TYPE, const search_condition& condition) {
 		refresh_if_needed();
 		if (m_blocks.size() == 0)
-			return invalid_time_value<T>::value;
+			return time_trait<T>::invalid_value;
 
 		typename map_type::iterator i = m_blocks.upper_bound(start);
 		//if not first - step one back
@@ -143,25 +143,25 @@ public:
 
 			entry->refresh_if_needed();
 			T t = entry->search_data_right(start, end, condition);
-			if (invalid_time_value<T>::is_valid(t))
+			if (time_trait<T>::is_valid(t))
 				return t;
 
 			std::advance(i, 1);
 		}
 
-		return invalid_time_value<T>::value;
+		return time_trait<T>::invalid_value;
 	}
 
 	T search_data_left_impl(const T& start, const T& end, SZARP_PROBE_TYPE, const search_condition& condition) {
 		refresh_if_needed();
 		if (m_blocks.size() == 0)
-			return invalid_time_value<T>::value;
+			return time_trait<T>::invalid_value;
 
 		typename map_type::iterator i = m_blocks.upper_bound(start);
 		if (i != m_blocks.begin())
 			std::advance(i, -1);
 		else if (i->first > start)
-			return invalid_time_value<T>::value;
+			return time_trait<T>::invalid_value;
 
 		while (true) {
 			file_block_entry_type* entry = i->second;
@@ -171,7 +171,7 @@ public:
 				break;
 
 			T t = entry->search_data_left(start, end, condition);
-			if (invalid_time_value<T>::is_valid(t))
+			if (time_trait<T>::is_valid(t))
 				return t;
 
 			if (i == m_blocks.begin())
@@ -179,7 +179,7 @@ public:
 			std::advance(i, -1);
 		}
 
-		return invalid_time_value<T>::value;
+		return time_trait<T>::invalid_value;
 	}
 
 	void refresh_if_needed() {
@@ -201,7 +201,7 @@ public:
 	
 	void refresh_file(const std::string& path) {
 		T time = path_to_date<T>(path);
-		if (time == invalid_time_value<T>::value)
+		if (!time_trait<T>::is_valid(time))
 			return;
 
 		typename map_type::iterator i = m_blocks.find(time);
@@ -235,7 +235,7 @@ public:
 #endif
 
 			T file_time = path_to_date<T>(file_path);
-			if (!invalid_time_value<T>::is_valid(file_time))
+			if (!time_trait<T>::is_valid(file_time))
 				continue;
 
 			if (m_blocks.find(file_time) != m_blocks.end())
@@ -248,7 +248,7 @@ public:
 	void get_first_time(const std::list<generic_param_entry*>&, T &t) {
 		refresh_if_needed();
 		if (m_blocks.size() == 0)
-			t = invalid_time_value<T>::value;
+			t = time_trait<T>::invalid_value;
 		else
 			t = m_blocks.begin()->first;
 	}
@@ -256,7 +256,7 @@ public:
 	void  get_last_time(const std::list<generic_param_entry*>&, T &t) {
 		refresh_if_needed();
 		if (m_blocks.size() == 0)
-			t = invalid_time_value<T>::value;
+			t = time_trait<T>::invalid_value;
 		else {
 			file_block_entry_type* entry = m_blocks.rbegin()->second;
 			entry->refresh_if_needed();

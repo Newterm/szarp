@@ -35,7 +35,7 @@ template<class T> std::wstring find_block_for_date(const std::wstring& dir, cons
 	namespace fs = boost::filesystem;
 
 	std::wstring file;
-	T found_time(invalid_time_value<T>::value);
+	T found_time(time_trait<T>::invalid_value);
 
 	for (fs::directory_iterator i(dir);
 			i != fs::directory_iterator();
@@ -45,13 +45,13 @@ template<class T> std::wstring find_block_for_date(const std::wstring& dir, cons
 #else
 		T file_time(path_to_date<T>(i->path().file_string()));
 #endif
-		if (!invalid_time_value<T>::is_valid(file_time))
+		if (!time_trait<T>::is_valid(file_time))
 			continue;
 
 		if (file_time > time)
 			continue;
 
-		if (!invalid_time_value<T>::is_valid(found_time) || (time - file_time < time - found_time)) {
+		if (!time_trait<T>::is_valid(found_time) || (time - file_time < time - found_time)) {
 			found_time = file_time;
 #if BOOST_FILESYSTEM_VERSION == 3
 			file = i->path().wstring();

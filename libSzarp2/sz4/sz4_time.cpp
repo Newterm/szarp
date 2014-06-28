@@ -22,9 +22,13 @@
 
 namespace sz4 {
 
-const nanosecond_time_t invalid_time_value<nanosecond_time_t>::value = make_nanosecond_time(-1, -1);
+const nanosecond_time_t time_trait<nanosecond_time_t>::invalid_value = make_nanosecond_time(-1, -1);
+const nanosecond_time_t time_trait<nanosecond_time_t>::first_valid_time = make_nanosecond_time(0, 0);
+const nanosecond_time_t time_trait<nanosecond_time_t>::last_valid_time = make_nanosecond_time(std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max() - 1);
 
-const second_time_t invalid_time_value<second_time_t>::value = -1;
+const second_time_t time_trait<second_time_t>::invalid_value = std::numeric_limits<second_time_t>::max();
+const second_time_t time_trait<second_time_t>::first_valid_time = 0;
+const second_time_t time_trait<second_time_t>::last_valid_time = std::numeric_limits<second_time_t>::max() - 1;
 
 nanosecond_time_t make_nanosecond_time(uint32_t second, uint32_t nanosecond) {
 	return nanosecond_time_t(second, nanosecond);
@@ -61,20 +65,20 @@ szb_round_time(nanosecond_time_t t, SZARP_PROBE_TYPE probe_type, int custom_leng
 }
 
 nanosecond_time_t::nanosecond_time_t(const second_time_t& time) {
-	if (invalid_time_value<second_time_t>::is_valid(time)) {
+	if (time_trait<second_time_t>::is_valid(time)) {
 		second = time;
 		nanosecond = 0;
 	} else {
-		*this = invalid_time_value<nanosecond_time_t>::value;
+		*this = time_trait<nanosecond_time_t>::invalid_value;
 	}	
 }
 
 nanosecond_time_t::operator second_time_t() const {
-	return sz4::invalid_time_value<nanosecond_time_t>::is_valid(*this)
+	return sz4::time_trait<nanosecond_time_t>::is_valid(*this)
 		?
 		second 
 		:
-		invalid_time_value<second_time_t>::value;
+		time_trait<second_time_t>::invalid_value;
 }
 
 std::ostream& operator<<(std::ostream& s, const nanosecond_time_t &t) {

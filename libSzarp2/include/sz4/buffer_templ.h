@@ -27,7 +27,8 @@
 namespace sz4 {
 
 template<template<typename DT, typename TT, class BT> class param_entry_type, class types, class data_type, class time_type> generic_param_entry* param_entry_build_t_3(base_templ<types>* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
-	return new param_entry_in_buffer<param_entry_type, data_type, time_type, types>(base, param, buffer_directory);
+	typedef typename types::param_factory factory;
+	return factory().template create<param_entry_type, data_type, time_type, types>(base, param, buffer_directory);
 }
 
 template<template <typename DT, typename TT, class BT> class param_entry_type, class types, class data_type> generic_param_entry* param_entry_build_t_2(base_templ<types>* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {

@@ -133,7 +133,7 @@ public:
 
 	time_type search_result_right(const time_type& start, typename value_time_vector::const_iterator i) {
 		if (i == m_data.end())
-			return invalid_time_value<time_type>::value;
+			return time_trait<time_type>::invalid_value;
 
 		if (i == m_data.begin())
 			return std::max(start, m_start_time);
@@ -147,7 +147,7 @@ public:
 		if (i != m_data.end())
 			return std::min(time_just_before<time_type>::get(i->time), start);
 		else 
-			return invalid_time_value<time_type>::value;
+			return time_trait<time_type>::invalid_value;
 	}
 
 

@@ -33,6 +33,8 @@
 
 #include "test_serach_condition.h"
 #include "test_observer.h"
+#include "simple_mocks.h"
+#include "sz4/filelock.h"
 
 class Sz4RPNParam : public CPPUNIT_NS::TestFixture
 {
@@ -49,23 +51,18 @@ public:
 
 namespace {
 
-class IPKContainerMock1 {
+class IPKContainerMock1 : public mocks::IPKContainerMockBase {
 	TSzarpConfig config;
 	TParam* param;
 public:
 	IPKContainerMock1() : param(new TParam(NULL, &config, L"1", TParam::DEFINABLE, TParam::P_DEFINABLE)) {
-		param->SetConfigId(0);
-		param->SetParamId(0);
 		param->SetDataType(TParam::DOUBLE);
 		param->SetName(L"A:B:C1");
-		param->SetParentSzarpConfig(&config);
+		AddParam(param);
 
-		config.SetName(L"BASE", L"BASE");
-		config.AddDrawDefinable(param);
+		m_config.AddDrawDefinable(param);
 	}
-	TSzarpConfig* GetConfig(const std::wstring&) { return &config; }
-	TParam* GetParam(const std::wstring&) { return param; }
-	TParam* GetParam(const std::basic_string<unsigned char>&) { return param; }
+	TParam* DoGetParam(const std::wstring&) { return param; }
 };
 
 }
@@ -80,6 +77,7 @@ namespace {
 
 struct test_types {
 	typedef IPKContainerMock1 ipk_container_type;
+	typedef mocks::mock_param_factory param_factory;
 };
 
 }
@@ -101,66 +99,32 @@ void Sz4RPNParam::test1() {
 
 namespace rpn_unit_test {
 
-class IPKContainerMock2 {
-	TSzarpConfig config;
+class IPKContainerMock2 : public mocks::IPKContainerMockBase {
 	TParam* param;
 	TParam* param2;
-	TParam* param3;
 public:
-	IPKContainerMock2() : param(new TParam(NULL, &config, std::wstring(), TParam::NONE, TParam::P_REAL)),
-				param2(new TParam(NULL, &config, L"(A:B:C) 1 +", TParam::DEFINABLE, TParam::P_DEFINABLE)),
-				param3(new TParam(NULL, &config, std::wstring(), TParam::NONE, TParam::P_REAL))
+	IPKContainerMock2() : param(new TParam(NULL, NULL, std::wstring(), TParam::NONE, TParam::P_REAL)),
+				param2(new TParam(NULL, NULL, L"(A:B:C) 1 +", TParam::DEFINABLE, TParam::P_DEFINABLE))
 	 {
-		param->SetConfigId(0);
-		param->SetParamId(0);
 		param->SetDataType(TParam::SHORT);
 		param->SetName(L"A:B:C");
-		param->SetParentSzarpConfig(&config);
-		config.AddDrawDefinable(param);
+		AddParam(param);
+		m_config.AddDrawDefinable(param);
 
-		param2->SetConfigId(0);
-		param2->SetParamId(1);
 		param2->SetDataType(TParam::DOUBLE);
 		param2->SetName(L"A:B:D");
-		param2->SetParentSzarpConfig(&config);
-		config.AddDrawDefinable(param2);
+		AddParam(param2);
+		m_config.AddDrawDefinable(param2);
 
-		param3->SetConfigId(0);
-		param3->SetParamId(3);
-		param3->SetDataType(TParam::DOUBLE);
-		param3->SetParentSzarpConfig(&config);
-		config.AddDrawDefinable(param3);
-
-
-		config.SetName(L"BASE", L"BASE");
 	}
 
-	TSzarpConfig* GetConfig(const std::wstring&) { return (TSzarpConfig*) 1; }
-
-	TParam* GetParam(const std::wstring& name) {
+	TParam* DoGetParam(const std::wstring& name) {
 		if (name == L"BASE:A:B:C")
 			return param;
 
 		if (name == L"BASE:A:B:D")
 			return param2;
 
-		if (name == L"BASE:Status:Meaner4:Heartbeat")
-			return param3;
-		
-		assert(false);
-		return NULL;
-	}
-
-	TParam* GetParam(const std::basic_string<unsigned char>& name) {
-		if (name == (const unsigned char*)"BASE:A:B:C")
-			return param;
-
-		if (name == (const unsigned char*)"BASE:A:B:D")
-			return param2;
-
-		if (name == (const unsigned char*)"BASE:Status:Meaner4:Heartbeat")
-			return param3;
-		
 		assert(false);
 		return NULL;
 	}
@@ -168,6 +132,7 @@ public:
 
 struct test_types {
 	typedef IPKContainerMock2 ipk_container_type;
+	typedef mocks::mock_param_factory param_factory;
 };
 
 }
@@ -205,17 +170,25 @@ void Sz4RPNParam::test2() {
 
 		std::wstringstream file_name;
 		file_name << std::setfill(L'0') << std::setw(10) << 100 << L".sz4";
+		std::string file_path_str;
 #if BOOST_FILESYSTEM_VERSION == 3
-		std::ofstream ofs((param_dir / file_name.str()).native().c_str());
+		file_path_str = (param_dir / file_name.str()).native();
 #else
-		std::ofstream ofs((param_dir / file_name.str()).external_file_string().c_str());
+		file_path_str = (param_dir / file_name.str()).external_file_string();
 #endif
+		int fd;
+		CPPUNIT_ASSERT_NO_THROW(fd = sz4::open_writelock(file_path_str.c_str(), O_WRONLY | O_CREAT));
 
+		char buf[6];
 		short v = 10;
-		ofs.write((const char*)&v, sizeof(v));
-
 		sz4::second_time_t t = 150;
-		ofs.write((const char*)&t, sizeof(t));
+
+		memcpy(buf, &v, 2);
+		memcpy(buf + 2, &t, 4);
+
+		write(fd, buf, sizeof(buf));
+
+		sz4::close_unlock(fd);
 	}
 
 	CPPUNIT_ASSERT(o.wait_for(1, 2));

@@ -1,5 +1,5 @@
-#ifndef __SZ4_TYPES_H__
-#define __SZ4_TYPES_H__
+#ifndef __SZ4_TIME_SEARCH_H__
+#define __SZ4_TIME_SEARCH_H__
 /* 
   SZARP: SCADA software 
   
@@ -19,16 +19,25 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
-#include "config.h"
-#include "szarp_config.h"
-
 namespace sz4 {
 
-struct param_entry_factory;
+template<class T, template<class T> OP, class I> search_time(I start, I end) {
+	OP<T> op;
 
-struct base_types {
-	typedef IPKContainer ipk_container_type;
-	typedef param_entry_factory param_factory;
+	T v = invalid_time_value<T>::value;
+	while (start != end) {
+		T t = *start;
+		if (invalid_time_value<T>::is_valid(t)) {
+			if (invalid_time_value<T>::is_valid(v))
+				v = op(t, v);
+			else
+				v = t;
+		}
+
+		++start;
+	}
+
+	return v;
 };
 
 }

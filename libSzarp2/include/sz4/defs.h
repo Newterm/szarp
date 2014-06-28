@@ -164,8 +164,12 @@ public:
 	}
 
 	time_diff_type weight() {
-		time_diff_type weight = std::accumulate(m_weights.begin(), m_weights.end(), 0);
-		return weight / gcd();
+		if (m_weights.size()) {
+			time_diff_type weight = std::accumulate(m_weights.begin(), m_weights.end(), 0);
+			return weight / gcd();
+		} else {
+			return 0;
+		}
 	}
 	
 	time_diff_type no_data_weight() {

@@ -127,7 +127,7 @@ void Sz4DefinableParamCache::test1() {
 					sz4::make_nanosecond_time(120, 0), 
 					test_search_condition(30));
 	CPPUNIT_ASSERT_EQUAL(r.first, true);
-	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::nanosecond_time_t>::is_valid(r.second), false);
+	CPPUNIT_ASSERT_EQUAL(sz4::time_trait<sz4::nanosecond_time_t>::is_valid(r.second), false);
 
 	r = cache.search_data_right(sz4::make_nanosecond_time(90, 0), 
 					sz4::make_nanosecond_time(100, 0), 
@@ -145,7 +145,7 @@ void Sz4DefinableParamCache::test1() {
 					sz4::make_nanosecond_time(90, 0), 
 					test_search_condition(0));
 	CPPUNIT_ASSERT_EQUAL(r.first, true);
-	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::nanosecond_time_t>::is_valid(r.second), false);
+	CPPUNIT_ASSERT_EQUAL(sz4::time_trait<sz4::nanosecond_time_t>::is_valid(r.second), false);
 
 	r = cache.search_data_left(sz4::make_nanosecond_time(110, 0), 
 					sz4::make_nanosecond_time(80, 0), 

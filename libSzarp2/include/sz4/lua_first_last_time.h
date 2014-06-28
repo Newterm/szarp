@@ -1,5 +1,5 @@
-#ifndef __SZ4_TYPES_H__
-#define __SZ4_TYPES_H__
+#ifndef __SZ4_LUA_FIRST_LAST_TIME_H__
+#define __SZ4_LUA_FIRST_LAST_TIME_H__
 /* 
   SZARP: SCADA software 
   
@@ -19,17 +19,21 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
-#include "config.h"
-#include "szarp_config.h"
+#include "sz4/buffer.h"
 
 namespace sz4 {
 
-struct param_entry_factory;
+template<class T> void lua_adjust_first_time(TParam* param, T& t) {
+	if (param->GetLuaStartDateTime() > 0)
+		t = second_time_t(param->GetLuaStartDateTime());
+	else if (time_trait<T>::is_valid(t))
+		t = szb_move_time(t, param->GetLuaStartOffset(), PT_SEC);
+}
 
-struct base_types {
-	typedef IPKContainer ipk_container_type;
-	typedef param_entry_factory param_factory;
-};
+template<class T> void lua_adjust_last_time(TParam* param, T& t) {
+	if (time_trait<T>::is_valid(t))
+		t = szb_move_time(t, param->GetLuaEndOffset(), PT_SEC);
+}
 
 }
 

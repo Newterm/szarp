@@ -262,7 +262,7 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 	d.TranslateIPK(ipk, language);
 
 	ConfigAux ca;
-	bool first_time_added = configs.find(prefix) != configs.end();
+	bool first_time_added = !configs.count(prefix);
 	if (!first_time_added) {
 		delete configs[prefix];
 		ca._configId = config_aux[prefix]._configId;

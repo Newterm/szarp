@@ -124,8 +124,9 @@ for pname in save_param_map.iterkeys():
 		else:
 			lsp = sp
 
-		param_path = lsp.param_path.param_path if pname != heartbeat_param_name else "Status/Meaner3/program_uruchomiony"
-		szbase_files = [ x for x in os.listdir(os.path.join(szbase_dir, param_path)) if x.endswith(".szb")]
+		lsp_param_path = lsp.param_path.param_path if pname != heartbeat_param_name else "Status/Meaner3/program_uruchomiony"
+
+		szbase_files = [ x for x in os.listdir(os.path.join(szbase_dir, lsp_param_path)) if x.endswith(".szb")]
 		szbase_files.sort()
 
 		for j, szbase_path in enumerate(szbase_files):
@@ -133,7 +134,7 @@ for pname in save_param_map.iterkeys():
 			sys.stdout.flush()
 			date = szbase_file_path_to_date(szbase_path)
 
-			f = open(os.path.join(szbase_dir, lsp.param_path.param_path, szbase_path)).read()
+			f = open(os.path.join(szbase_dir, lsp_param_path, szbase_path)).read()
 			if combined:
 				f2 = open(os.path.join(szbase_dir, msp.param_path.param_path, szbase_path)).read()
 			try: 

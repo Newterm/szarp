@@ -34,6 +34,7 @@
 
 #include "test_serach_condition.h"
 #include "test_observer.h"
+#include "simple_mocks.h"
 
 class Sz4LuaParamOptimized : public CPPUNIT_NS::TestFixture
 {
@@ -70,14 +71,10 @@ void Sz4LuaParamOptimized::tearDown() {
 
 namespace {
 
-class IPKContainerMock1 {
+class IPKContainerMock1 : public mocks::IPKContainerMockBase {
 	TParam param;
-	TSzarpConfig config;
 public:
 	IPKContainerMock1() : param(NULL, NULL, std::wstring(), TParam::LUA_VA, TParam::P_LUA) {
-		param.SetConfigId(0);
-		param.SetParamId(0);
-		param.SetDataType(TParam::DOUBLE);
 		param.SetName(L"A:B:C1");
 		param.SetLuaScript((const unsigned char*) 
 "if (t % 100) < 50 then "
@@ -86,13 +83,9 @@ public:
 "	v = 1		"
 "end			"
 );
-		param.SetParentSzarpConfig(&config);
-
-		config.SetName(L"BASE", L"BASE");
+		AddParam(&param);
 	}
-	TSzarpConfig* GetConfig(const std::wstring&) { return &config; }
-	TParam* GetParam(const std::wstring&) { return &param; }
-	TParam* GetParam(const std::basic_string<unsigned char>&) { return &param; }
+	TParam* DoGetParam(const std::wstring&) { return &param; }
 };
 
 }
@@ -104,6 +97,7 @@ namespace {
 
 struct test_types {
 	typedef IPKContainerMock1 ipk_container_type;
+	typedef mocks::mock_param_factory param_factory;
 };
 
 }
@@ -125,42 +119,28 @@ void Sz4LuaParamOptimized::test1() {
 
 namespace {
 
-class IPKContainerMock2 {
+class IPKContainerMock2 : public mocks::IPKContainerMockBase {
 	TParam param;
 	TParam param2;
-	TParam param3;
 	TParam param4;
-	TSzarpConfig config;
 public:
 	IPKContainerMock2() : param(NULL, NULL, std::wstring(), TParam::NONE, TParam::P_REAL),
 				param2(NULL, NULL, std::wstring(), TParam::LUA_VA, TParam::P_LUA),
-				param3(NULL, NULL, std::wstring(), TParam::NONE, TParam::P_REAL),
 				param4(NULL, NULL, std::wstring(), TParam::NONE, TParam::P_LUA)
 	 {
-		param.SetConfigId(0);
-		param.SetParamId(0);
 		param.SetDataType(TParam::SHORT);
 		param.SetName(L"A:B:C");
-		param.SetParentSzarpConfig(&config);
+		AddParam(&param);
 
-		param2.SetConfigId(0);
-		param2.SetParamId(1);
 		param2.SetDataType(TParam::DOUBLE);
+		param2.SetName(L"A:B:D");
 		param2.SetLuaScript((const unsigned char*) 
 "v = p(\"BASE:A:B:C\", t, pt)"
 );
-		param2.SetParentSzarpConfig(&config);
+		AddParam(&param2);
 
-		param3.SetConfigId(0);
-		param3.SetParamId(3);
-		param3.SetDataType(TParam::DOUBLE);
-		param3.SetParentSzarpConfig(&config);
-
-		param4.SetConfigId(0);
-		param4.SetParamId(0);
 		param4.SetDataType(TParam::DOUBLE);
 		param4.SetName(L"A:B:E");
-		param4.SetParentSzarpConfig(&config);
 		param4.SetLuaScript((const unsigned char*) 
 "if t > 0 then"
 "	v = 2 * p(\"BASE:A:B:E\", 0, pt) "
@@ -168,22 +148,17 @@ public:
 "	v = 1 "
 "end"
 );
+		AddParam(&param4);
 
-		config.SetName(L"BASE", L"BASE");
 	}
 
-	TSzarpConfig* GetConfig(const std::wstring&) { return (TSzarpConfig*) 1; }
-
-	TParam* GetParam(const std::wstring& name) {
+	TParam* DoGetParam(const std::wstring& name) {
 		if (name == L"BASE:A:B:C")
 			return &param;
 
 		if (name == L"BASE:A:B:D")
 			return &param2;
 
-		if (name == L"BASE:Status:Meaner4:Heartbeat")
-			return &param3;
-		
 		if (name == L"BASE:A:B:E")
 			return &param4;
 
@@ -191,26 +166,11 @@ public:
 		return NULL;
 	}
 
-	TParam* GetParam(const std::basic_string<unsigned char>& name) {
-		if (name == (const unsigned char*)"BASE:A:B:C")
-			return &param;
-
-		if (name == (const unsigned char*)"BASE:A:B:D")
-			return &param2;
-
-		if (name == (const unsigned char*)"BASE:Status:Meaner4:Heartbeat")
-			return &param3;
-		
-		if (name == (const unsigned char*)"BASE:A:B:E")
-			return &param4;
-
-		assert(false);
-		return NULL;
-	}
 };
 
 struct test_types2 {
 	typedef IPKContainerMock2 ipk_container_type;
+	typedef mocks::mock_param_factory param_factory;
 };
 
 }

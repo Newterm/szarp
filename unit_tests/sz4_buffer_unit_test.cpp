@@ -275,16 +275,16 @@ void Sz4BufferTestCase::searchTest() {
 	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(101), buffer.search_data_right(&param, sz4::second_time_t(100), sz4::second_time_t(2000), PT_SEC10, test_search_condition(1)));
 	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(224), buffer.search_data_right(&param, sz4::second_time_t(190), sz4::second_time_t(2000), PT_SEC10, test_search_condition(24)));
 	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(224), buffer.search_data_right(&param, sz4::second_time_t(190), sz4::second_time_t(2000), PT_SEC10, test_search_condition(24)));
-	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value, buffer.search_data_right(&param, sz4::second_time_t(10000), sz4::second_time_t(20000), PT_SEC10, test_search_condition(181)));
-	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value, buffer.search_data_right(&param, sz4::second_time_t(1885), sz4::second_time_t(1900), PT_SEC10, test_search_condition(0)));
+	CPPUNIT_ASSERT_EQUAL(sz4::time_trait<sz4::second_time_t>::invalid_value, buffer.search_data_right(&param, sz4::second_time_t(10000), sz4::second_time_t(20000), PT_SEC10, test_search_condition(181)));
+	CPPUNIT_ASSERT_EQUAL(sz4::time_trait<sz4::second_time_t>::invalid_value, buffer.search_data_right(&param, sz4::second_time_t(1885), sz4::second_time_t(1900), PT_SEC10, test_search_condition(0)));
 	for (int i = 0; i < 20; i++) {
 		CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(100 * i + 70 + i), buffer.search_data_right(&param, sz4::second_time_t(0), sz4::second_time_t(2000), PT_SEC10, test_search_condition(10000 + i)));
 	}
-	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value, buffer.search_data_right(&param, sz4::second_time_t(182), sz4::second_time_t(2000), PT_SEC10, test_search_condition(181)));
+	CPPUNIT_ASSERT_EQUAL(sz4::time_trait<sz4::second_time_t>::invalid_value, buffer.search_data_right(&param, sz4::second_time_t(182), sz4::second_time_t(2000), PT_SEC10, test_search_condition(181)));
 
 	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(2000), buffer.search_data_left(&param, sz4::second_time_t(2000), sz4::second_time_t(0), PT_SEC10, test_search_condition(0)));
 	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(150), buffer.search_data_left(&param, sz4::second_time_t(198), sz4::second_time_t(100), PT_SEC10, test_search_condition(0)));
-	CPPUNIT_ASSERT_EQUAL(sz4::invalid_time_value<sz4::second_time_t>::value, buffer.search_data_left(&param, sz4::second_time_t(1999), sz4::second_time_t(1998), PT_SEC10, test_search_condition(0)));
+	CPPUNIT_ASSERT_EQUAL(sz4::time_trait<sz4::second_time_t>::invalid_value, buffer.search_data_left(&param, sz4::second_time_t(1999), sz4::second_time_t(1998), PT_SEC10, test_search_condition(0)));
 	for (int i = 0; i < 20; i++) {
 		CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(100 * i + 70 + i), buffer.search_data_left(&param, sz4::second_time_t(2000), sz4::second_time_t(0), PT_SEC10, test_search_condition(10000 + i)));
 	}

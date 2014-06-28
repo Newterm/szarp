@@ -117,12 +117,12 @@ public:
 	lua_optimized_param_entry_in_buffer(base_templ<types>* _base, TParam* param, const boost::filesystem::wpath& path) : buffered_param_entry_in_buffer<value_type, time_type, types, execution_engine>(_base, param, path) {}
 
 	void get_first_time(std::list<generic_param_entry*>& referred_params, time_type &t) {
-		static_cast<typename lua_optimized_param_entry_in_buffer::_type*>(this)->get_first_time(referred_params, t);
+		this->m_base->get_heartbeat_first_time(this->m_param, t);
 		lua_adjust_first_time(this->m_param, t);
 	}
 
 	void get_last_time(const std::list<generic_param_entry*>& referred_params, time_type &t) {
-		static_cast<typename lua_optimized_param_entry_in_buffer::_type*>(this)->get_last_time(referred_params, t);
+		this->m_base->get_heartbeat_last_time(this->m_param, t);
 		lua_adjust_last_time(this->m_param, t);
 	}
 

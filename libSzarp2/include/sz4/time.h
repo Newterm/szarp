@@ -109,21 +109,33 @@ template<> struct probe_adapter<nanosecond_time_t, second_time_t> {
 	};
 };
 
-template<class T> class invalid_time_value { };
+template<class T> class time_trait { };
 
-template<> class invalid_time_value<nanosecond_time_t> {
+template<> class time_trait<nanosecond_time_t> {
 public:
-	static bool is_valid(const nanosecond_time_t& t) { return !(t == value); }
-	static const nanosecond_time_t value;
+	static bool is_valid(const nanosecond_time_t& t) { return !(t == invalid_value); }
+
+	static const nanosecond_time_t invalid_value;
+
+	static const nanosecond_time_t first_valid_time;
+	static const nanosecond_time_t last_valid_time;
 };
 
-template<> class invalid_time_value<second_time_t> {
+template<> class time_trait<second_time_t> {
 public:
-	static bool is_valid(const second_time_t& t) { return !(t == value); }
-	static const second_time_t value;
+	static bool is_valid(const second_time_t& t) { return !(t == invalid_value); }
+
+	static const second_time_t invalid_value;
+
+	static const second_time_t first_valid_time;
+	static const second_time_t last_valid_time;
 };
 
 template<class T> class time_just_before {
+public:
+	static T get(const T& t) {
+		return t - 1;
+	}
 };
 
 template<> class time_just_before<nanosecond_time_t> {
@@ -136,10 +148,20 @@ public:
 	}
 };
 
-template<> class time_just_before<second_time_t> {
+template<class T> class time_just_after {
 public:
-	static second_time_t get(const second_time_t& t) {
-		return t - 1;
+	static T get(const T& t) {
+		return t + 1;
+	}
+};
+
+template<> class time_just_after<nanosecond_time_t> {
+public:
+	static nanosecond_time_t get(const nanosecond_time_t& t) {
+		if (t.nanosecond + 1 == 1000000000)
+			return nanosecond_time_t(t.second + 1, 0);
+		else
+			return nanosecond_time_t(t.second, t.nanosecond + 1);
 	}
 };
 
