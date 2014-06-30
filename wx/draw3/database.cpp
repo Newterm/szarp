@@ -35,7 +35,7 @@
 namespace {
 
 void sz4_nanonsecond_to_pair(const sz4::nanosecond_time_t& time, unsigned &second, unsigned& nanosecond) {
-	if (sz4::invalid_time_value<sz4::nanosecond_time_t>::is_valid(time)) {
+	if (sz4::time_trait<sz4::nanosecond_time_t>::is_valid(time)) {
 		second = time.second;
 		nanosecond = time.nanosecond;
 	} else {
@@ -46,7 +46,7 @@ void sz4_nanonsecond_to_pair(const sz4::nanosecond_time_t& time, unsigned &secon
 
 sz4::nanosecond_time_t pair_to_sz4_nanosecond(unsigned second, unsigned nanosecond) {
 	if (second == (unsigned) -1 && nanosecond == (unsigned) -1)
-		return sz4::invalid_time_value<sz4::nanosecond_time_t>::value;
+		return sz4::time_trait<sz4::nanosecond_time_t>::invalid_value;
 	else
 		return sz4::nanosecond_time_t(second, nanosecond);
 }
@@ -387,7 +387,7 @@ void Sz4Base::SearchData(DatabaseQuery* query) {
 		);
 	} else {
 		sz4::nanosecond_time_t end = pair_to_sz4_nanosecond(sd.end_second, sd.end_nanosecond);
-		if (!sz4::invalid_time_value<sz4::nanosecond_time_t>::is_valid(end)) {
+		if (!sz4::time_trait<sz4::nanosecond_time_t>::is_valid(end)) {
 			end.second = 0;
 			end.nanosecond = 0;
 		}

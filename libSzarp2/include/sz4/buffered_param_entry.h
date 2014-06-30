@@ -145,10 +145,11 @@ public:
 
 		calculation_method<types> ee(m_base, m_param);
 		
-		adjust_time_range(start, end);
+		adjust_time_range(end, start);
+
 		time_type current(start);
 
-		while (current < end) {
+		while (current > end) {
 			std::pair<bool, time_type> r = m_cache[probe_type].search_data_left(current, end, condition);
 			if (r.first)
 				return r.second;

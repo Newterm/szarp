@@ -70,6 +70,7 @@ class SaveParam:
 		self.current_value = None
 		self.first_write = True
 		self.file_factory = file_factory
+		self.datum_size = self.param.time_prec + self.param.value_lenght
 
 	def update_last_time(self, time, nanotime):
 		self.file.seek(-self.param.time_prec, os.SEEK_END)
@@ -77,7 +78,7 @@ class SaveParam:
 			self.file.write(self.param.time_to_binary(time, nanotime))
 
 	def write_value(self, value, time, nanotime):
-		if self.file_size + self.param.time_prec + self.param.value_lenght >= config.DATA_FILE_SIZE:
+		if self.file_size + self.datum_size >= config.DATA_FILE_SIZE:
 			self.file.close()
 
 			path = self.param_path.create_file_path(time, nanotime)
@@ -88,7 +89,7 @@ class SaveParam:
 			self.file.write(self.param.value_to_binary(value))
 			self.file.write(self.param.time_to_binary(time, nanotime))
 
-			self.file_size += self.param.time_prec + self.param.value_lenght
+			self.file_size += self.datum_size
 
 		self.current_value = value
 
@@ -99,8 +100,8 @@ class SaveParam:
 			self.file_size = os.path.getsize(path)
 			self.file = self.file_factory.open(path, "r+b")
 
-			if self.file_size >= self.param.time_prec + self.param.value_lenght:
-				self.file.seek(-(self.param.time_prec + self.param.value_lenght), os.SEEK_END)
+			if self.file_size >= self.datum_size:
+				self.file.seek(-self.datum_size, os.SEEK_END)
 				value_blob = self.file.read(self.param.value_lenght)
 				self.file.seek(0, os.SEEK_END)
 
@@ -146,4 +147,3 @@ class SaveParam:
 			self.file.close()
 			self.file = None
 				
-

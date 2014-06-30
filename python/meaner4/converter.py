@@ -27,6 +27,7 @@ import struct
 import lxml.etree
 import calendar
 import datetime
+import config
 from heartbeat import heartbeat_param_name, create_hearbeat_param
 import cStringIO
 
@@ -85,6 +86,31 @@ class FileFactory:
 	def open(self, path, mode):
 		return self.File(path)
 
+class ConverterSaveParam(saveparam.SaveParam):
+	def __init__(self, param, szbase_dir, file_factory):
+		saveparam.SaveParam.__init__(self, param, szbase_dir, file_factory)
+
+		self.last_time = None
+		self.last_nanotime = None
+	
+	def update_last_time(self, time, nanotime):
+		self.last_time = time
+		self.last_nanotime = nanotime
+
+	def write_value(self, value, time, nanotime):
+		if self.last_time is not None:
+			saveparam.SaveParam.update_last_time(self, self.last_time, self.last_nanotime)
+			self.last_time = None
+
+		saveparam.SaveParam.write_value(self, value, time, nanotime)
+
+	def close(self):
+		if self.last_time is not None:
+			saveparam.SaveParam.update_last_time(self, self.last_time, self.last_nanotime)
+		
+		saveparam.SaveParam.close(self)
+
+
 if len(sys.argv) != 2 or sys.argv[1] == '-h':
 	print """Invocation:
 %s configuration_dir
@@ -102,7 +128,7 @@ sys.stdout.write("Converting...")
 
 save_param_map = {}
 for i, p in enumerate(ipk.params):
-	sp = saveparam.SaveParam(p, sz4_dir, FileFactory())
+	sp = ConverterSaveParam(p, sz4_dir, FileFactory())
 	save_param_map[p.param_name] = sp
 save_param_map[heartbeat_param_name] = saveparam.SaveParam(create_hearbeat_param(), sz4_dir, FileFactory())
 

@@ -26,6 +26,7 @@ import paramsvalues_pb2
 import param
 import saveparam
 from meanerbase import MeanerBase
+from heartbeat import create_hearbeat_param
 
 FIRST_HEART_BEAT = 0
 NON_FIRST_HEART_BEAT = 1
@@ -41,7 +42,7 @@ class Meaner(MeanerBase):
 		self.heartbeat_interval = heartbeat
 		self.last_heartbeat = None
 
-		p = param.Param("Meaner4:Status:Heartbeat", "short", 0, 4, True)
+		p = create_hearbeat_param()
 		self.heartbeat_param = saveparam.SaveParam(p, self.szbase_path)
 
 	def read_socket(self):
