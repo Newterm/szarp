@@ -4,8 +4,9 @@
 #include <string>
 #include <functional>
 
-#include <boost/lexical_cast.hpp>
+#include <boost/format.hpp>
 #include <boost/optional.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "error_codes.h"
 #include "utils/signals.h"
@@ -42,7 +43,7 @@ public:
 		hnd( data );
 	}
 
-	connection on_response( const sig_response::slot_type& slot )
+	slot_connection on_response( const sig_response::slot_type& slot )
 	{	return emit_response.connect( slot ); }
 
 protected:
@@ -52,11 +53,16 @@ protected:
 	void apply( const std::string& data = "")
 	{	emit_response( ResponseType::OK , data , this ); }
 
-	void fail( ErrorCodes code )
+	void fail( ErrorCodes code , const std::string& msg = "" )
 	{
+		std::string data;
+		if( msg.empty() )
+			data = boost::lexical_cast<std::string>((error_code_t)code); 
+		else 
+			data = str( boost::format("%d \"%s\"") % (error_code_t)code % msg );
 		emit_response(
 			ResponseType::ERROR ,
-			boost::lexical_cast<std::string>((error_code_t)code) ,
+			data ,
 			this );
 	}
 
@@ -80,6 +86,9 @@ private:
 
 typedef boost::signals2::signal<void (const Command&)> sig_cmd;
 typedef sig_cmd::slot_type sig_cmd_slot;
+
+typedef boost::signals2::signal<void (Command*)> sig_cmd_ptr;
+typedef sig_cmd_ptr::slot_type sig_cmd_ptr_slot;
 
 #endif /* end of include guard: __LOCATIONS_COMMAND_H__ */
 

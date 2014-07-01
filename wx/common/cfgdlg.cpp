@@ -196,7 +196,7 @@ void ConfigDialog::UpdateList() {
 	for (std::list<Item>::iterator i = items.begin();
 			i != items.end();
 			i++) {
-		ids.Add(i->id);
+		ids.Add(i->id + wxString(_(" (")) + i->prefix + wxString(_(")")));
 		m_cfg_prefixes.Add(i->prefix);
 	}
 

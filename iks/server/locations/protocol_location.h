@@ -13,13 +13,18 @@
 
 class ProtocolLocation : public Location {
 public:
-	ProtocolLocation( Connection* connection , Protocol* protocol = NULL );
+	ProtocolLocation( const std::string& name , Protocol::ptr protocol = Protocol::ptr() , Connection* connection = NULL );
 	virtual ~ProtocolLocation();
 
-	void set_protocol( Protocol* protocol );
+	void set_protocol( Protocol::ptr protocol );
+
+	virtual void request_location( Location::ptr loc );
 
 private:
-	void new_cmd( Command* cmd , const std::string& tag , id_t id );
+	void new_cmd(
+			Command* cmd ,
+			const std::string& tag , id_t id ,
+			const Command::to_send& in_data = Command::to_send() );
 	void erase_cmd( Command* cmd );
 	void erase_cmd( id_t id );
 
@@ -32,17 +37,20 @@ private:
 		const std::string& data ,
 		Command* cmd );
 
-	void send_fail( ErrorCodes code );
+	void send_fail( ErrorCodes code , const std::string& msg = "" );
 
 	virtual void parse_line( const std::string& line );
 
-	Protocol* protocol;
+	Protocol::ptr protocol;
 
 	std::unordered_map<id_t,Command*> commands;
 
 #if GCC_VERSION >= 40600
 	std::default_random_engine rnd;
 #endif
+
+	boost::signals2::scoped_connection conn_send_cmd;
+	boost::signals2::scoped_connection conn_location_request;
 };
 
 #endif /* end of include guard: __PROTOCOL_LOCATION_H__ */
