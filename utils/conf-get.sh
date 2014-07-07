@@ -92,7 +92,7 @@ if [ -e $DIRPATH/.svn ]; then
 fi
 
 echo "Checking if provided url ($REPO/$PREFIX) contains a svn repo.."
-env SVN_SSH="ssh -l $USERNAME -p $PORT" svn ls $REPO/$PREFIX
+env SVN_SSH="ssh -l $USERNAME -p $PORT" svn ls $REPO/$PREFIX 1>/dev/null
 if [ $? -ne 0 ]; then 
 	echo "$REPO/$PREFIX is not a valid svn repository, no files will be modified";
 	exit 1;
