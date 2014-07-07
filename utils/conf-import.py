@@ -285,10 +285,20 @@ class Manager:
 
 		tmp_path = self.tmp+'/'+prefix
 		repo_path = self.options.svnRepo+'/'+prefix
+		tokens = self.options.svnRepo.rstrip("/").split("/")
+		if tokens[len(tokens) - 1] == prefix:
+			raise Exception("Repo path '%s' last token '%s' mustn't be the same as prefix '%s'" % (self.options.svnRepo, prefix, prefix))
+		print "Importing directory '%s' as '%s', continue? [Y/n]" % (os.path.abspath(prefix), repo_path)
+		choice = raw_input().lower()
+		if not choice in ["", "y"]:
+			print "Cancelled by user"
+			exit(1)
 		try:
-			# tru to checkout
+			# try to checkout
 			self.client.checkout(repo_path,tmp_path)
-		except pysvn.ClientError:
+		except pysvn.ClientError, e:
+			print e
+			print "Directory doesn't exist, creating.."
 			# if failed make directory and import it to
 			# repository
 			os.mkdir(tmp_path)
