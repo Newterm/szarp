@@ -107,8 +107,9 @@ public:
 			return false;
 
 		typename map_type::iterator i = m_blocks.upper_bound(time);
-		if (i != m_blocks.begin())
-			std::advance(i, -1);
+		if (i == m_blocks.begin())
+			return false;
+		std::advance(i, -1);
 
 		typename block_type::value_time_vector::const_iterator j = i->second->search_entry_for_time(time);
 		if (j == i->second->data().end())

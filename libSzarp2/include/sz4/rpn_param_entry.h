@@ -47,9 +47,7 @@ public:
 
 	template<class T> std::tr1::tuple<double, bool, std::set<generic_block*> > calculate_value(T time, SZARP_PROBE_TYPE probe_type) {
 
-		//for backward compatiblity, 'new' method of caluclating RPN definable params
-		if (probe_type != PT_SEC10 || probe_type != PT_SEC || probe_type != PT_HALFSEC)
-			probe_type = PT_MIN10;
+		SZARP_PROBE_TYPE step = get_probe_type_step(probe_type);
 
 		int num_of_params = m_param->GetNumParsInFormula();
 		double varray[num_of_params];
@@ -69,10 +67,10 @@ public:
 		double stack[200];
 
 		while (time < end_time) {
-			T next_time = szb_move_time(time, 1, probe_type);
+			T next_time = szb_move_time(time, 1, step);
 			for (int i = 0; i < num_of_params; i++) {
 				weighted_sum<double, T> wsum;
-				m_base->get_weighted_sum(f_cache[i], time, next_time, probe_type, wsum);
+				m_base->get_weighted_sum(f_cache[i], time, next_time, step, wsum);
 				varray[i] = descale_value(wsum.avg(), f_cache[i]);
 				refferred_blocks.insert(
 					wsum.refferred_blocks().begin(),

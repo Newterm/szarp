@@ -25,16 +25,20 @@
 #include "sz4/fixed_stack_top.h"
 #include "sz4/util.h"
 #include "sz4/lua_first_last_time.h"
+#include "sz4/lua_average_calc_algo.h"
 
 namespace sz4 {
 
-template<class types> class execution_engine : public LuaExec::ExecutionEngine {
+template<class types> class execution_engine : public LuaExec::ExecutionEngine, public lua_average_calc_algo {
 	base_templ<types>* m_base;
 	LuaExec::Param* m_exec_param;
 	std::vector<double> m_vars;
 	bool m_initialized;
 
 	void initialize() {
+		if (m_initialized)
+			return;
+
 		m_vars.resize(m_exec_param->m_vars.size());
 
 		m_vars[3] = PT_MIN10;
@@ -52,16 +56,13 @@ template<class types> class execution_engine : public LuaExec::ExecutionEngine {
 		for (size_t i = 0; i < m_exec_param->m_par_refs.size(); i++)
 			m_exec_param->m_par_refs[i].PushExecutionEngine(this);
 
+		m_initialized = true;
 	}
 public:
 	execution_engine(base_templ<types>* _base, TParam* param) : m_base(_base), m_exec_param(param->GetLuaExecParam()), m_initialized(false) {
 	}
 
-	std::tr1::tuple<double, bool, std::set<generic_block*> > calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type) {
-		if (!m_initialized) {
-			initialize();
-			m_initialized = true;
-		}
+	void do_calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, double &result, std::set<generic_block*>& reffered_blocks, bool& fixed) {
 
 		fixed_stack_top stack_top(m_base->fixed_stack());
 
@@ -70,13 +71,9 @@ public:
 		m_vars[2] = probe_type;
 		m_exec_param->m_statement->Execute();
 
-		return std::tr1::tuple<
-				double,
-				bool,
-				std::set<generic_block*> >(
-				m_vars[0],
-				stack_top.value(),
-				stack_top.refferred_blocks());
+		fixed &= stack_top.value();
+		result = m_vars[0];
+		reffered_blocks.insert(stack_top.refferred_blocks().begin(), stack_top.refferred_blocks().end());
 	}
 
 	virtual double Value(size_t param_index, const double& time_, const double& probe_type) {

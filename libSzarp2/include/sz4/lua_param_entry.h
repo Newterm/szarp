@@ -29,10 +29,11 @@
 #include "sz4/buffered_param_entry.h"
 #include "sz4/fixed_stack_top.h"
 #include "sz4/lua_first_last_time.h"
+#include "sz4/lua_average_calc_algo.h"
 
 namespace sz4 {
 
-template<class types> class lua_caluclate {
+template<class types> class lua_caluclate : public lua_average_calc_algo {
 	base_templ<types>* m_base;
 	TParam* m_param;
 	bool m_param_ok;
@@ -41,19 +42,19 @@ public:
 		m_param_ok = m_base->get_lua_interpreter().prepare_param(param);
 	}
 
-	std::tr1::tuple<double, bool, std::set<generic_block*> > calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type) {
-		if (!m_param_ok)
-			return std::tr1::tuple<double,
-					bool,
-					std::set<generic_block*> >(
-					nan(""),
-					false,
-					std::set<generic_block*>());
+	void initialize() {}
+
+	void do_calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, double &result, std::set<generic_block*>& reffered_blocks, bool& fixed) {
+		if (!m_param_ok) {
+			result = std::nan("");
+			fixed = false;
+			return;
+		}
 
 		fixed_stack_top stack_top(m_base->fixed_stack());
-		double value = m_base->get_lua_interpreter().calculate_value(time, probe_type, 0);
-		return std::tr1::tuple<double, bool, std::set<generic_block*> >
-			(value, stack_top.value(), stack_top.refferred_blocks());
+		result = m_base->get_lua_interpreter().calculate_value(time, probe_type, 0);
+		fixed &= stack_top.value();
+		reffered_blocks.insert(stack_top.refferred_blocks().begin(), stack_top.refferred_blocks().end());
 	}
 
 	~lua_caluclate() {

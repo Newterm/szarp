@@ -21,6 +21,9 @@
 
 class TParam;
 
+#include "szarp_config.h"
+#include "sz4/defs.h"
+
 namespace sz4 {
 
 
@@ -80,6 +83,8 @@ template<class T> T descale_value(const T& v, TParam* p) {
 			assert(false);
 	}
 }
+
+SZARP_PROBE_TYPE get_probe_type_step(SZARP_PROBE_TYPE pt);
 
 }
 

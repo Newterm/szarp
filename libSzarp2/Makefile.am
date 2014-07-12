@@ -173,6 +173,7 @@ libSzarp2_la_SOURCES = \
 			$(INCLUDE_DIR)/sz4/rpn_param_entry.h \
 			$(INCLUDE_DIR)/sz4/base.h \
 			$(INCLUDE_DIR)/sz4/defs.h \
+			$(INCLUDE_DIR)/sz4/util.h \
 			$(INCLUDE_DIR)/sz4/block_cache..h \
 			$(INCLUDE_DIR)/sz4/lua_first_last_time..h \
 			$(SZ4_DIR)/load_file_locked.cpp \
@@ -183,6 +184,7 @@ libSzarp2_la_SOURCES = \
 			$(SZ4_DIR)/defs.cpp \
 			$(SZ4_DIR)/lua_interpreter.cpp \
 			$(SZ4_DIR)/sz4_time.cpp \
+			$(SZ4_DIR)/util.cpp \
 			$(SZ4_DIR)/block_cache.cpp \
 			$(SZ4_DIR)/filelock.cpp \
 			\
