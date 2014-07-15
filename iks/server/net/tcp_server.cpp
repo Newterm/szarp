@@ -121,7 +121,6 @@ void TcpConnection::handle_read_line(const bs::error_code& error, size_t bytes )
 
 void TcpConnection::do_write_line( const std::string& line )
 {
-	write_buffer.consume( write_buffer.size() );
 	std::ostream os(&write_buffer);
 
 	os << line ;

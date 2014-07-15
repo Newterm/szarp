@@ -35,15 +35,14 @@ TcpClient::~TcpClient()
 
 void TcpClient::do_write_line( const std::string& line )
 {
-	ba::streambuf sb;
-	std::ostream os(&sb);
+	std::ostream os(&write_buffer);
 
 	os << line ;
 	if( line[line.size()-1] != '\n' )
 		os << '\n';
 
 	ba::async_write(socket_,
-		sb,
+		write_buffer,
 		bind(&details::AsioHandler::handle_write, handler, placeholders::_1));
 
 	sz_log(9, "<<<      %s", line.c_str() );
@@ -86,7 +85,7 @@ void AsioHandler::handle_connect(const bs::error_code& error)
 void AsioHandler::do_read_line()
 {
 	ba::async_read_until(client.socket_,
-			client.buffer,
+			client.read_buffer,
 			'\n',
 			bind(&AsioHandler::handle_read_line, shared_from_this(), placeholders::_1, placeholders::_2 ));
 }
@@ -96,11 +95,11 @@ void AsioHandler::handle_read_line( const bs::error_code& error, size_t bytes )
 	if( handle_error(error) || !is_valid() )
 		return;
 
-	ba::streambuf::const_buffers_type bufs = client.buffer.data();
+	ba::streambuf::const_buffers_type bufs = client.read_buffer.data();
 	std::string line(
 		ba::buffers_begin(bufs),
 		ba::buffers_begin(bufs) + bytes - 1 );
-	client.buffer.consume( bytes );
+	client.read_buffer.consume( bytes );
 
 	balgo::trim( line );
 
