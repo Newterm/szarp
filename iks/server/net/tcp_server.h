@@ -37,13 +37,13 @@ private:
 	boost::asio::ip::tcp::acceptor acceptor_;
 	boost::asio::ip::tcp::socket socket_;
 
-	std::unordered_set<Connection*> clients;
+	std::unordered_set<std::shared_ptr<Connection>> clients;
 
 	sig_connection emit_connected;
 	sig_connection emit_disconnected;
 };
 
-class TcpConnection : public Connection {
+class TcpConnection : public Connection , public std::enable_shared_from_this<TcpConnection> {
 	friend class TcpServer;
 
 public:
@@ -71,7 +71,8 @@ private:
 	{	return socket_; }
 
 	boost::asio::ip::tcp::socket socket_;
-	boost::asio::streambuf buffer;
+	boost::asio::streambuf read_buffer;
+	boost::asio::streambuf write_buffer;
 };
 
 #endif /* __LINE_SERVER_H__ */
