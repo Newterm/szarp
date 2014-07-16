@@ -15,8 +15,8 @@
 #include <time.h>
 
 #include <liblog.h>
-#include "szbparamobserver.h"
-#include "szbparammonitor.h"
+#include "szarp_base_common/szbparamobserver.h"
+#include "szarp_base_common/szbparammonitor.h"
 #include "szbbase.h"
 #include "szbbuf.h"
 #include "szbhash.h"

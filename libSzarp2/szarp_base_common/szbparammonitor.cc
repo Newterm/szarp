@@ -32,8 +32,8 @@
 
 #include "liblog.h"
 
-#include "szbase/szbparamobserver.h"
-#include "szbase/szbparammonitor.h"
+#include "szarp_base_common/szbparamobserver.h"
+#include "szarp_base_common/szbparammonitor.h"
 
 typedef int SzbMonitorTokenType;
 

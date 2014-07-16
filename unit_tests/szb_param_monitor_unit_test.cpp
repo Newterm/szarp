@@ -13,9 +13,9 @@
 #include "conversion.h"
 #include "sz4/filelock.h"
 
-#include "szbase/szbparamobserver.h"
+#include "szarp_base_common/szbparamobserver.h"
 class TParam;
-#include "szbase/szbparammonitor.h"
+#include "szarp_base_common/szbparammonitor.h"
 
 #include "test_observer.h"
 

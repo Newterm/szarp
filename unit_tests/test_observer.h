@@ -2,7 +2,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
 
-#include "szbase/szbparamobserver.h"
+#include "szarp_base_common/szbparamobserver.h"
 
 class TParam;
 class TestObserver : public SzbParamObserver { 

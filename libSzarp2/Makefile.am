@@ -158,8 +158,8 @@ libSzarp2_la_SOURCES = \
 			$(SZBASE_DIR)/probeblock.cc \
 			$(SZBASE_DIR)/szbsearch.h $(SZBASE_DIR)/szbsearch.cc \
 			$(SZBASE_DIR)/szbblock.cc \
-			$(SZBASE_DIR)/szbparammonitor.cc $(INCLUDE_DIR)/szbase/szbparammonitor.h \
-			$(INCLUDE_DIR)/szbase/szbparamobserver.h \
+			$(SZARP_BASE_COMMON_DIR)/szbparammonitor.cc $(INCLUDE_DIR)/szarp_base_common/szbparammonitor.h \
+			$(INCLUDE_DIR)/szarp_base_common/szbparamobserver.h \
 			\
 			$(INCLUDE_DIR)/sz4/block.h \
 			$(INCLUDE_DIR)/sz4/load_file_locked.h \

@@ -26,8 +26,8 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 
-#include "szbase/szbparamobserver.h"
-#include "szbase/szbparammonitor.h"
+#include "szarp_base_common/szbparamobserver.h"
+#include "szarp_base_common/szbparammonitor.h"
 
 #include "szarp_base_common/defines.h"
 #include "sz4/defs.h"
