@@ -25,8 +25,6 @@ case "$1" in
 		fi
 	fi
 
-	/opt/szarp/bin/sysinfo &> /dev/null || true;
-
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

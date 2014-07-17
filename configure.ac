@@ -1172,7 +1172,6 @@ AC_OUTPUT( \
 	resources/documentation/Makefile \
 	resources/documentation/new/Makefile \
 	script/Makefile \
-	script/sysinfo \
 	sender/Makefile \
 	utils/szarpinfo \
 	utils/Makefile \

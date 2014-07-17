@@ -26,8 +26,6 @@ case "$1" in
 
 	/opt/szarp/bin/config_deb Parstart /opt/szarp/$PREFIX $PREFIX
 
-	/opt/szarp/bin/sysinfo &> /dev/null || true;
-
 	if [ ! -e /opt/szarp/$PREFIX/sss_key.pem ]; then
 
 		cat > /tmp/sss_ssl.conf <<END
@@ -41,10 +39,10 @@ prompt                  = no
 countryName                     = PL
 stateOrProvinceName             = Poland
 localityName                    = Warsaw
-organizationName                = Praterm S.A.
+organizationName                = Newterm
 organizationalUnitName          = SSS
 commonName                      = $(hostname -s)
-emailAddress                    = reksio@praterm.com.pl
+emailAddress                    = info@newterm.pl
 
 [ req_attributes ]
 END
