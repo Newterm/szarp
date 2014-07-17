@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <functional>
+#include <queue>
 
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
@@ -46,7 +47,8 @@ private:
 	boost::asio::ip::tcp::socket socket_;
 
 	boost::asio::streambuf read_buffer;
-	boost::asio::streambuf write_buffer;
+
+	std::queue<std::string> lines;
 
 	sig_connection emit_connected;
 

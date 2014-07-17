@@ -121,14 +121,10 @@ void TcpConnection::handle_read_line(const bs::error_code& error, size_t bytes )
 
 void TcpConnection::do_write_line( const std::string& line )
 {
-	std::ostream os(&write_buffer);
-
-	os << line ;
-	if( line[line.size()-1] != '\n' )
-		os << '\n';
+	lines.emplace( line.back() == '\n' ? line : line + '\n' );
 
 	ba::async_write(socket_,
-		write_buffer,
+		ba::buffer( lines.back() ),
 		bind(&TcpConnection::handle_write, shared_from_this(), placeholders::_1));
 
 	sz_log(9, "   >>>   %s", line.c_str() );
@@ -138,6 +134,9 @@ void TcpConnection::handle_write(const bs::error_code& error)
 {
 	if( handle_error(error) )
 		return;
+
+	/** This line was send */
+	lines.pop();
 }
 
 void TcpConnection::do_close()

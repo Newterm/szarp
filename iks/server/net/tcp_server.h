@@ -3,6 +3,7 @@
 
 #include <unordered_set>
 #include <functional>
+#include <queue>
 
 #include <boost/asio.hpp>
 
@@ -72,7 +73,8 @@ private:
 
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::streambuf read_buffer;
-	boost::asio::streambuf write_buffer;
+
+	std::queue<std::string> lines;
 };
 
 #endif /* __LINE_SERVER_H__ */

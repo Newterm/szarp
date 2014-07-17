@@ -35,14 +35,10 @@ TcpClient::~TcpClient()
 
 void TcpClient::do_write_line( const std::string& line )
 {
-	std::ostream os(&write_buffer);
-
-	os << line ;
-	if( line[line.size()-1] != '\n' )
-		os << '\n';
+	lines.emplace( line.back() == '\n' ? line : line + '\n' );
 
 	ba::async_write(socket_,
-		write_buffer,
+		ba::buffer( lines.back() ),
 		bind(&details::AsioHandler::handle_write, handler, placeholders::_1));
 
 	sz_log(9, "<<<      %s", line.c_str() );
@@ -112,8 +108,11 @@ void AsioHandler::handle_read_line( const bs::error_code& error, size_t bytes )
 
 void AsioHandler::handle_write(const bs::error_code& error)
 {
-	if( handle_error(error) )
+	if( handle_error(error) || !is_valid() )
 		return;
+
+	/** This line was send */
+	client.lines.pop();
 }
 
 } /** namespace details */
