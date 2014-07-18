@@ -6,7 +6,6 @@ Files: opt/szarp/resources/{xslt,dictionary.xml}
 Files: opt/szarp/logs
 Files: var/log/szarp
 Files: etc/rsyslog.d/szarp.conf
-Files: etc/szarp
 
 Package: szarp-daemons
 Files: opt/szarp/bin/{parcook,sender,analiza,meaner3,sss,checker,psetd,stampd,ssconf.py,remarks_server.py,prober}
