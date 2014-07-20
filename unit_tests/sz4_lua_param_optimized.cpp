@@ -19,6 +19,7 @@
 #include "sz4/defs.h"
 #include "sz4/time.h"
 #include "sz4/path.h"
+#include "sz4/base.h"
 #include "sz4/block_cache.h"
 #include "sz4/block.h"
 #include "sz4/buffer.h"
@@ -28,7 +29,6 @@
 #include "sz4/lua_param_entry.h"
 #include "sz4/rpn_param_entry.h"
 #include "sz4/buffer_templ.h"
-#include "sz4/base.h"
 #include "sz4/lua_interpreter_templ.h"
 #include "sz4/filelock.h"
 

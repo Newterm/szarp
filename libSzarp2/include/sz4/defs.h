@@ -29,6 +29,10 @@
 
 #include <tr1/functional>
 
+#include <boost/pool/pool_alloc.hpp>
+#include <boost/container/flat_set.hpp>
+#include <boost/interprocess/sync/null_mutex.hpp>
+
 #include "sz4/time.h"
 
 namespace sz4 {
@@ -91,19 +95,27 @@ template<> struct value_sum<double> {
 
 class generic_block;
 
+template<class T> class allocator_type : public
+	boost::pool_allocator<T, boost::default_user_allocator_new_delete, boost::interprocess::null_mutex> {};
+
+typedef boost::container::flat_set<generic_block*, std::less<generic_block*>, allocator_type<generic_block*> >
+	generic_block_ptr_set;
+
 template<class value_type, class time_type> class weighted_sum {
 public:
 	typedef typename value_sum<value_type>::type sum_type;
 	typedef typename time_difference<time_type>::type time_diff_type;
 
+	typedef std::vector<value_type, allocator_type<value_type> > value_vector;
+	typedef std::vector<time_diff_type, allocator_type<time_diff_type> > time_diff_vector;
 private:
-	std::vector<value_type> m_values;
-	std::vector<time_diff_type> m_weights;
+	value_vector m_values;
+	time_diff_vector m_weights;
 	time_diff_type m_gcd;
 
 	time_diff_type m_no_data_weight;
 	bool m_fixed;
-	std::vector<generic_block*> m_refferred_blocks;
+	generic_block_ptr_set m_refferred_blocks;
 
 	template <class T> T calc_gcd(T p, T q) const {
 		if (p < q)
@@ -123,8 +135,8 @@ private:
 public:
 	weighted_sum() : m_gcd(0), m_no_data_weight(0), m_fixed(true) {}
 
-	const std::vector<value_type>& values() const { return m_values; }
-	const std::vector<time_diff_type>& weights() const { return m_weights; }
+	const value_vector& values() const { return m_values; }
+	const time_diff_vector& weights() const { return m_weights; }
 
 	void add(const value_type& value, const time_diff_type& weight) {
 		m_values.push_back(value);
@@ -186,7 +198,7 @@ public:
 	bool fixed() const { return m_fixed; }
 	void set_fixed(bool fixed) { m_fixed &= fixed; }
 
-	std::vector<generic_block*>& refferred_blocks() {
+	generic_block_ptr_set& refferred_blocks() {
 		return m_refferred_blocks;
 	}
 
@@ -197,6 +209,7 @@ public:
 		m_refferred_blocks.swap(o.refferred_blocks());
 		m_gcd = o.gcd();
 
+		assert(o.weights().size() == o.values().size());
 		m_values.resize(o.values().size());
 		m_weights.resize(o.weights().size());
 		for (size_t i = 0; i < o.values().size(); i++) {
@@ -206,21 +219,11 @@ public:
 	}
 
 	template<class T> void add_refferred_blocks(T begin, T end) {
-		std::for_each(begin, end, 
-			std::tr1::bind(
-				&weighted_sum<value_type, time_type>
-					::add_refferred_block, 
-				this,
-				std::tr1::placeholders::_1));
+		m_refferred_blocks.insert(begin, end);
 	}
 
 	void add_refferred_block(generic_block* block) {
-		std::vector<generic_block*>::iterator i =
-			 std::find(m_refferred_blocks.begin(),
-			 	m_refferred_blocks.end(),
-			 	block);
-		if (i == m_refferred_blocks.end())
-			m_refferred_blocks.push_back(block);
+		m_refferred_blocks.insert(block);
 	}
 };
 

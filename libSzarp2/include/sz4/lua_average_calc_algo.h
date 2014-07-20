@@ -24,7 +24,7 @@ namespace sz4 {
 class lua_average_calc_algo {
 public:
 	virtual void initialize() = 0;
-	std::tr1::tuple<double, bool, std::set<generic_block*> > calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type) {
+	std::tr1::tuple<double, bool> calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, generic_block_ptr_set& referred_blocks) {
 		initialize();
 
 		second_time_t end = szb_move_time(time, 1, probe_type);
@@ -34,7 +34,6 @@ public:
 		double sum = 0;
 		int count = 0;
 
-		std::set<generic_block*> referred_blocks;
 
 		while (time < end) {
 			double value;
@@ -48,10 +47,10 @@ public:
 			time = szb_move_time(time, 1, step);
 		}
 
-		return std::tr1::make_tuple(count ? (sum / count) : std::nan(""), fixed, referred_blocks);
+		return std::tr1::make_tuple(count ? (sum / count) : std::nan(""), fixed);
 	}
 
-	virtual void do_calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, double &result, std::set<generic_block*>& reffered_blocks, bool& fixed) = 0;
+	virtual void do_calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, double &result, generic_block_ptr_set& reffered_blocks, bool& fixed) = 0;
 	
 };
 

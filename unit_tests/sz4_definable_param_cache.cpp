@@ -61,7 +61,7 @@ void Sz4DefinableParamCache::test1() {
 	test_search_condition cond(10);
 	int v;
 	bool fixed;
-	std::set<sz4::generic_block*> set;
+	sz4::generic_block_ptr_set set;
 
 	CPPUNIT_ASSERT(!cache.get_value(sz4::make_nanosecond_time(1, 0), v, fixed, set));
 
@@ -166,7 +166,7 @@ void Sz4DefinableParamCache::test2() {
 	test_search_condition cond(10);
 	int v;
 	bool fixed;
-	std::set<sz4::generic_block*> set;
+	sz4::generic_block_ptr_set set;
 
 	cache.store_value(10, sz4::make_nanosecond_time(100, 0), true, set);
 	CPPUNIT_ASSERT(cache.get_value(sz4::make_nanosecond_time(100, 0), v, fixed, set));

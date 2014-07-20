@@ -62,7 +62,7 @@ public:
 	execution_engine(base_templ<types>* _base, TParam* param) : m_base(_base), m_exec_param(param->GetLuaExecParam()), m_initialized(false) {
 	}
 
-	void do_calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, double &result, std::set<generic_block*>& reffered_blocks, bool& fixed) {
+	void do_calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, double &result, generic_block_ptr_set& reffered_blocks, bool& fixed) {
 
 		fixed_stack_top stack_top(m_base->fixed_stack());
 
@@ -87,8 +87,8 @@ public:
 				sum);
 
 		assert(m_base->fixed_stack().size());
-		m_base->fixed_stack().top().first &= sum.fixed();
-		m_base->fixed_stack().top().second.insert(
+		m_base->fixed_stack().back().first &= sum.fixed();
+		m_base->fixed_stack().back().second.insert(
 				sum.refferred_blocks().begin(),
 				sum.refferred_blocks().end());
 

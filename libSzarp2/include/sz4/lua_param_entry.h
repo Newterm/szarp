@@ -44,7 +44,7 @@ public:
 
 	void initialize() {}
 
-	void do_calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, double &result, std::set<generic_block*>& reffered_blocks, bool& fixed) {
+	void do_calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, double &result, generic_block_ptr_set& reffered_blocks, bool& fixed) {
 		if (!m_param_ok) {
 			result = std::nan("");
 			fixed = false;

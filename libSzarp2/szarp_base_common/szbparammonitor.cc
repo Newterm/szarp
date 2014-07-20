@@ -300,6 +300,8 @@ void SzbParamMonitor::remove_observer(SzbParamObserver* obs) {
 	m_observer_token_param.erase(obs);
 }
 
+void SzbParamMonitor::terminate() {}
+
 SzbParamMonitor::~SzbParamMonitor() {
 	m_monitor_impl.terminate();
 }

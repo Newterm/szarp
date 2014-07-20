@@ -85,12 +85,12 @@ public:
 		while (current < to) {
 			value_type value;
 			bool fixed;
-			std::set<generic_block*> refferred_blocks;
+			generic_block_ptr_set refferred_blocks;
 			if (!m_cache[probe_type].get_value(current,
 					value,
 					fixed,
 					refferred_blocks)) {
-				std::tr1::tie(value, fixed, refferred_blocks) = ee.calculate_value(current, probe_type);
+				std::tr1::tie(value, fixed) = ee.calculate_value(current, probe_type, refferred_blocks);
 				m_cache[probe_type].store_value(value, current, fixed, refferred_blocks);
 			}
 
@@ -125,15 +125,15 @@ public:
 			
 			current = r.second;
 
+			generic_block_ptr_set block_set;
 			std::tr1::tuple<double,
-				bool,
-				std::set<generic_block*> >
-				vf(ee.calculate_value(current, probe_type));
+				bool>
+				vf(ee.calculate_value(current, probe_type, block_set));
 			m_cache[probe_type].store_value(
 					std::tr1::get<0>(vf),
 					current,
 					std::tr1::get<1>(vf),
-					std::tr1::get<2>(vf));
+					block_set);	
 
 		}
 
@@ -155,12 +155,13 @@ public:
 				return r.second;
 			current = r.second;
 
-			std::tr1::tuple<double, bool, std::set<generic_block*> >
-				 vf(ee.calculate_value(current, probe_type));
+			generic_block_ptr_set block_set;
+			std::tr1::tuple<double, bool>
+				 vf(ee.calculate_value(current, probe_type, block_set));
 			m_cache[probe_type].store_value(std::tr1::get<0>(vf),
 					current,
 					std::tr1::get<1>(vf),
-					std::tr1::get<2>(vf));
+					block_set);
 		}
 
 		return time_trait<time_type>::invalid_value;

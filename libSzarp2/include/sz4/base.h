@@ -21,12 +21,12 @@
 #include "config.h"
 
 #include <vector>
-#include <stack>
 #include <set>
 
 #include <lua.hpp>
 
 #include <boost/filesystem/path.hpp>
+#include <boost/container/flat_set.hpp>
 
 #include "sz4/defs.h"
 #include "sz4/types.h"
@@ -40,6 +40,11 @@ namespace sz4 {
 
 template<class types> class buffer_templ;
 
+typedef std::vector<
+		std::pair<bool, generic_block_ptr_set >,
+		allocator_type<std::pair<bool, generic_block_ptr_set> >
+	> fixed_stack_type;
+
 template<class types> class base_templ {
 public:
 	typedef typename types::ipk_container_type ipk_container_type;
@@ -49,7 +54,7 @@ private:
 	SzbParamMonitor m_monitor;
 	ipk_container_type* m_ipk_container;
 
-	std::stack<std::pair<bool, std::set<generic_block*> > > m_fixed_stack;
+	fixed_stack_type m_fixed_stack;
 	lua_interpreter<types> m_interperter;
 
 	block_cache m_cache;
@@ -135,7 +140,7 @@ public:
 		}
 	}
 
-	std::stack<std::pair<bool, std::set<generic_block*> > >& fixed_stack() { return m_fixed_stack; }
+	fixed_stack_type& fixed_stack() { return m_fixed_stack; }
 
 	SzbParamMonitor& param_monitor() { return m_monitor; }
 
@@ -148,6 +153,7 @@ public:
 	~base_templ() {
 		for (typename std::vector<buffer_templ<types>*>::iterator i = m_buffers.begin(); i != m_buffers.end(); i++)
 			delete *i;
+		m_monitor.terminate();
 	}
 
 };

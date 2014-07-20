@@ -9,7 +9,7 @@ INCLUDES = @CPPUNIT_CFLAGS@ -I../libSzarp2/include -I../libSzarp/include @XML_CF
 
 LIBS = ../libSzarp2/libSzarp2.la ../libSzarp/libSzarp.la @CPPUNIT_LIBS@ @XML_LIBS@ @LUA_LIBS@ @BOOST_LDFLAGS@ @BOOST_LOCALE_LIB@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_THREAD_LIB@ @BOOST_DATE_TIME_LIB@ @CURL_LIBS@ @XSLT_LIBS@ @ZIP_LIBS@
 
-bin_PROGRAMS = unit_tests
+bin_PROGRAMS = unit_tests sz4_extr_simple
 
 unit_tests_SOURCES = \
 		unit_tests.cpp \
@@ -26,3 +26,5 @@ unit_tests_SOURCES = \
 		sz4_lua_param.cpp \
 		sz4_definable_param.cpp \
 		simple_mocks.h 
+
+sz4_extr_simple_SOURCES = sz4_extr_simple.cpp

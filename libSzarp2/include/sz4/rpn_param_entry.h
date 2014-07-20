@@ -45,7 +45,7 @@ public:
 	rpn_calculate(base_templ<types>* base, TParam* param) : m_base(base), m_param(param) {
 	}
 
-	template<class T> std::tr1::tuple<double, bool, std::set<generic_block*> > calculate_value(T time, SZARP_PROBE_TYPE probe_type) {
+	template<class T> std::tr1::tuple<double, bool> calculate_value(T time, SZARP_PROBE_TYPE probe_type, generic_block_ptr_set& refferred_blocks) {
 
 		SZARP_PROBE_TYPE step = get_probe_type_step(probe_type);
 
@@ -61,7 +61,6 @@ public:
 		double sum = 0;
 		size_t count = 0;
 		bool fixed = true;
-		std::set<generic_block*> refferred_blocks;
 
 		T end_time = szb_move_time(time, 1, probe_type);
 		double stack[200];
@@ -105,11 +104,9 @@ public:
 			v = nan("");
 
 		return std::tr1::tuple<double,
-				bool,
-				std::set<generic_block*> >(
+				bool>(
 				v,
-				fixed,
-				refferred_blocks);	
+				fixed);
 
 	}
 

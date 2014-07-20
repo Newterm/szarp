@@ -20,6 +20,8 @@
 */
 
 #include <map>
+#include <boost/container/flat_set.hpp>
+#include <boost/container/flat_map.hpp>
 
 namespace sz4 {
 
@@ -39,14 +41,16 @@ template<class value_type, class time_type> class definable_param_cache {
 public:
 	SZARP_PROBE_TYPE m_probe_type;
 
+	typedef generic_block_ptr_set refferred_blocks_set;
+
 	struct entry_type {
 		value_type value;
 		unsigned version;
-		std::set<generic_block*> refferred_blocks;
+		refferred_blocks_set refferred_blocks;
 		entry_type() {};
 		entry_type(const value_type& _value, 
 				const unsigned _version,
-				std::set<generic_block*> _refferred_blocks)
+				refferred_blocks_set _refferred_blocks)
 				:
 				value(_value),
 				version(_version),
@@ -88,7 +92,15 @@ public:
 			m_param_cache->remove_block(this);
 		}
 	};
+#if 1
+	typedef boost::container::flat_map<time_type,
+			block_type*,
+			std::less<time_type>,
+			allocator_type<std::pair<const time_type, block_type*>
+		> > map_type;
+#else
 	typedef std::map<time_type, block_type*> map_type;
+#endif
 
 protected:
 	map_type m_blocks;
@@ -102,7 +114,7 @@ public:
 		m_cache(cache)
 	{}
 
-	bool get_value(const time_type& time, value_type& value, bool& fixed, std::set<generic_block*>& refferred_blocks) {
+	bool get_value(const time_type& time, value_type& value, bool& fixed, refferred_blocks_set& refferred_blocks) {
 		if (!m_blocks.size())
 			return false;
 
@@ -124,13 +136,13 @@ public:
 		return true;
 	}
 
-	typename map_type::iterator create_new_block(const value_type& value, const time_type& time, unsigned version, const std::set<generic_block*>& blocks) {
+	typename map_type::iterator create_new_block(const value_type& value, const time_type& time, unsigned version, const generic_block_ptr_set& blocks) {
 		block_type* block = new block_type(time, m_cache, this);
 		block->append_entry(entry_type(value, version, blocks), szb_move_time(time, 1, m_probe_type));
 		return m_blocks.insert(std::make_pair(time, block)).first;
 	}
 
-	void insert_value_inside_block(block_type* block, const value_type& value, const time_type& time, unsigned version, const std::set<generic_block*>& refferred_blocks) {
+	void insert_value_inside_block(block_type* block, const value_type& value, const time_type& time, unsigned version, const refferred_blocks_set& refferred_blocks) {
 		typename block_type::value_time_vector::iterator i = block->search_entry_for_time(time);
 		time_type previous_end_time;
 
@@ -177,7 +189,7 @@ public:
 		}
 	}
 
-	void store_value(const value_type& value, const time_type& time, bool fixed, const std::set<generic_block*> refferred_blocks) {
+	void store_value(const value_type& value, const time_type& time, bool fixed, const generic_block_ptr_set& refferred_blocks) {
 		unsigned entry_version = fixed ? 0 : m_current_non_fixed;
 		
 		if (!m_blocks.size()) {
@@ -302,8 +314,9 @@ public:
 	}
 
 	~definable_param_cache() {
-		for (typename map_type::iterator i = m_blocks.begin(); i != m_blocks.end(); i++) {
-			delete i->second;
+		while (m_blocks.size()) {
+			block_type *block = m_blocks.rbegin()->second;
+			delete block;
 		}
 	}
 };

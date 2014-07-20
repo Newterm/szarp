@@ -63,9 +63,9 @@ template<class base_types> int lua_sz4(lua_State *lua) {
 
 	weighted_sum<double, nanosecond_time_t> sum;
 	base_ipk->first->get_weighted_sum(param, time, szb_move_time(time, 1, SZARP_PROBE_TYPE(probe_type), 0), probe_type, sum);
-	base_ipk->first->fixed_stack().top().first
+	base_ipk->first->fixed_stack().back().first
 			&= sum.fixed();
-	base_ipk->first->fixed_stack().top().second.insert(
+	base_ipk->first->fixed_stack().back().second.insert(
 				sum.refferred_blocks().begin(),
 				sum.refferred_blocks().end());
 

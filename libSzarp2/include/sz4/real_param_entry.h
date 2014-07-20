@@ -65,7 +65,8 @@ public:
 template<class V, class T, class types> class real_param_entry_in_buffer {
 public:
 	typedef file_block_entry<V, T, types> file_block_entry_type;
-	typedef std::map<T, file_block_entry_type*> map_type;
+	typedef boost::container::flat_map<T, file_block_entry_type*, std::less<T>, allocator_type<std::pair<const T, file_block_entry_type*> > > map_type;
+	//typedef std::map<T, file_block_entry_type*, std::less<T>, allocator_type<std::pair<const T, file_block_entry_type*> > > map_type;
 private:
 	base_templ<types>* m_base;
 	map_type m_blocks;
@@ -283,8 +284,10 @@ public:
 	}
 
 	~real_param_entry_in_buffer() {
-		while (m_blocks.size())
-			delete m_blocks.begin()->second;
+		while (m_blocks.size()) {
+			file_block_entry_type* entry = m_blocks.rbegin()->second;
+			delete entry;
+		}
 	}
 };
 
