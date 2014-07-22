@@ -51,7 +51,7 @@ INIT_D="/etc/init.d"
 @srcdir@/szarp_in.cfg: @srcdir@/SZARP_IN_CFG_TEMPLATE
 	@cat @srcdir@/SZARP_IN_CFG_TEMPLATE | \
 	sed s/__INSTALL_DIR__/`echo @prefix@ | sed s/'\/'/'\\\\\/'/g`/g | \
-	sed s+__HELPCOMMAND__+$(helpcommand)+g \
+	sed s/__HELPCOMMAND__/$(helpcommand)/g \
 	> @srcdir@/szarp_in.cfg
 	
 
@@ -59,16 +59,16 @@ szarp_cfg: DATABASE_PREFIX
 	@cat SZARP_CFG_TEMPLATE | \
          sed s/__INSTALL_DIR__/`echo @prefix@ | sed s/'\/'/'\\\\\/'/g`/g | \
 	 sed s/__PREFIX__/`cat DATABASE_PREFIX`/g | \
-	 sed s+__HELPCOMMAND__+$(helpcommand)+g \
+	 sed s/__HELPCOMMAND__/$(helpcommand)/g \
          > szarp.cfg
 	$(INSTALL) -m 644 szarp.cfg @prefix@/`cat @srcdir@/DATABASE_PREFIX`/szarp.cfg
 	mkdir -p /etc/szarp/
-	ln -sf @prefix@/`cat DATABASE_PREFIX`/szarp.cfg /etc/szarp/szarp.cfg
+	ln -sf @prefix@/`cat DATABASE_PREFIX`/szarp.cfg $(DESTDIR)/etc/szarp/szarp.cfg
 
 parstart_:
 	@cat @srcdir@/parstart_TEMPLATE | \
-         sed s+__INSTALL_DIR__+`echo @prefix@`+g | \
-	 sed s+__LOCK_DIR__+@lockdir@+g \
+         sed s/__INSTALL_DIR__/`echo @prefix@`/g | \
+	 sed s/__LOCK_DIR__/@lockdir@/g \
          > parstart
 	@chmod +x parstart
 	
@@ -78,19 +78,19 @@ parstart_:
 			$(INSTALL) -d $(DESTDIR)$(INIT_D); \
 		fi; \
 		$(INSTALL) -m 755 parstart $(DESTDIR)$(INIT_D) ; \
-	elif [ -f /etc/szarp/parstart.cfg ] ; then \
+	elif [ -f $(DESTDIR)/etc/szarp/parstart.cfg ] ; then \
 		$(INSTALL) -m 755 parstart $(DESTDIR)$(INIT_D) ; \
 	fi ) 
 
 parstart_cfg: parstart_ DATABASE_PREFIX
 	cat parstart_cfg_TEMPLATE | \
-         sed s+__INSTALL_DIR__+`@prefix@+ | \
-	 sed s+__PREFIX__+`cat DATABASE_PREFIX`+g \
+         sed s/__INSTALL_DIR__/`@prefix@/ | \
+	 sed s/__PREFIX__/`cat DATABASE_PREFIX`/g \
          > parstart.cfg
-	[ ! -f /etc/szarp/parstart.cfg ] && ( \
-		$(INSTALL) -m 644 parstart.cfg @prefix@/`cat DATABASE_PREFIX` ; \
+	[ ! -f $(DESTDIR)/etc/szarp/parstart.cfg ] && ( \
+		$(INSTALL) -m 644 parstart.cfg $(DESTDIR)@prefix@/`cat DATABASE_PREFIX` ; \
 		ln -sf @prefix@/`cat DATABASE_PREFIX`/parstart.cfg \
-                             /etc/szarp/parstart.cfg \
+                             $(DESTDIR)/etc/szarp/parstart.cfg \
 	) 
 	
 if !DEB_BUILD
@@ -130,9 +130,9 @@ rsyslog: rsyslog.conf
 if !DEB_BUILD
 
 apache2:
-	[ -d /etc/apache2/sites-available ] && \
+	mkdir -p $(DESTDIR)/etc/apache2/sites-available && \
 		$(LN_S) -f @prefix@/resources/xsltd/apache2-szarp \
-		/etc/apache2/sites-available/szarp
+		$(DESTDIR)/etc/apache2/sites-available/szarp
 	[ -x "`which a2ensite`" ] && a2ensite szarp || true;
 	[ -x "`which a2enmod`" ] && { \
 		a2enmod modxslt || true; \
@@ -141,9 +141,9 @@ apache2:
 	} || true
 
 uninstall-apache2:
-	[ -x "`which a2dissite`" ] && a2dissite szarp
-	[ -d /etc/apache2/sites-available ] && \
-		rm -f /etc/apache2/sites-available/szarp
+	[ -x "`which a2dissite`" ] && a2dissite szarp || true;
+	[ -d $(DESTDIR)/etc/apache2/sites-available ] && \
+		rm -f $(DESTDIR)/etc/apache2/sites-available/szarp
 
 else DEB_BUILD
 
@@ -174,5 +174,5 @@ endif
 install-data-hook: vim paramd_access parstart_ apache2 regulators_defs dictionary rsyslog
 
 uninstall-local: uninstall-apache2
-	rm -rf @prefix@/resources/* /etc/apache2/sites-available/szarp
+	rm -rf $(DESTDIR)@prefix@/resources/* $(DESTDIR)/etc/apache2/sites-available/szarp
         
