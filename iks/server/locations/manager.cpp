@@ -76,8 +76,10 @@ void LocationsMgr::add_proxy( const std::string& name , const CfgPairs& cfg )
 		port = 9002;
 	}
 
+	auto draw_name = cfg.count("draw_name") ?  cfg.at("draw_name") : "";
+
 	auto updater = std::make_shared
-		<RemotesUpdater>( name , cfg.at("address") , port , loc_factory );
+		<RemotesUpdater>( name , draw_name , cfg.at("address") , port , loc_factory );
 
 	updater->connect();
 

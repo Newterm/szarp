@@ -10,9 +10,10 @@
 class CmdAddRemotesRcv : public Command {
 public:
 	CmdAddRemotesRcv(
-		LocationsList& locs , const std::string& name ,
+		LocationsList& locs ,
+		const std::string& name , const std::string& draw_name ,
 		const std::string& address , unsigned port )
-		: locs(locs) , name(name) , address(address) , port(port)
+		: locs(locs) , name(name) , draw_name(draw_name) , address(address) , port(port)
 	{
 		set_next( std::bind(
 				&CmdAddRemotesRcv::parse_command ,
@@ -35,9 +36,12 @@ public:
 			bp::json_parser::read_json( ss , json );
 
 			locs.register_location<ProxyLoc>(
-					str( boost::format("%s:%s") % name %
+					str( boost::format("%s:%s") %
+						name %
 						json.get<std::string>("tag") ) ,
-					json.get<std::string>("name") ,
+					str( boost::format("%s - %s") %
+						draw_name %
+						json.get<std::string>("name") ) ,
 					json.get<std::string>("type") ,
 					address , port );
 
@@ -50,6 +54,7 @@ public:
 protected:
 	LocationsList& locs;
 	const std::string& name;
+	const std::string& draw_name;
 	const std::string& address;
 	unsigned port;
 
