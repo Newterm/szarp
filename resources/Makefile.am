@@ -51,7 +51,7 @@ INIT_D="/etc/init.d"
 @srcdir@/szarp_in.cfg: @srcdir@/SZARP_IN_CFG_TEMPLATE
 	@cat @srcdir@/SZARP_IN_CFG_TEMPLATE | \
 	sed s/__INSTALL_DIR__/`echo @prefix@ | sed s/'\/'/'\\\\\/'/g`/g | \
-	sed s/__HELPCOMMAND__/$(helpcommand)/g \
+	sed s+__HELPCOMMAND__+$(helpcommand)+g \
 	> @srcdir@/szarp_in.cfg
 	
 
@@ -59,7 +59,7 @@ szarp_cfg: DATABASE_PREFIX
 	@cat SZARP_CFG_TEMPLATE | \
          sed s/__INSTALL_DIR__/`echo @prefix@ | sed s/'\/'/'\\\\\/'/g`/g | \
 	 sed s/__PREFIX__/`cat DATABASE_PREFIX`/g | \
-	 sed s/__HELPCOMMAND__/$(helpcommand)/g \
+	 sed s+__HELPCOMMAND__+$(helpcommand)+g \
          > szarp.cfg
 	$(INSTALL) -m 644 szarp.cfg @prefix@/`cat @srcdir@/DATABASE_PREFIX`/szarp.cfg
 	mkdir -p /etc/szarp/
@@ -67,8 +67,8 @@ szarp_cfg: DATABASE_PREFIX
 
 parstart_:
 	@cat @srcdir@/parstart_TEMPLATE | \
-         sed s/__INSTALL_DIR__/`echo @prefix@`/g | \
-	 sed s/__LOCK_DIR__/@lockdir@/g \
+         sed s+__INSTALL_DIR__+`echo @prefix@`+g | \
+	 sed s+__LOCK_DIR__+@lockdir@+g \
          > parstart
 	@chmod +x parstart
 	
@@ -80,18 +80,18 @@ parstart_:
 		$(INSTALL) -m 755 parstart $(DESTDIR)$(INIT_D) ; \
 	elif [ -f $(DESTDIR)/etc/szarp/parstart.cfg ] ; then \
 		$(INSTALL) -m 755 parstart $(DESTDIR)$(INIT_D) ; \
-	fi ) 
+	fi )
 
 parstart_cfg: parstart_ DATABASE_PREFIX
 	cat parstart_cfg_TEMPLATE | \
-         sed s/__INSTALL_DIR__/`@prefix@/ | \
-	 sed s/__PREFIX__/`cat DATABASE_PREFIX`/g \
+         sed s+__INSTALL_DIR__+`@prefix@+ | \
+	 sed s+__PREFIX__+`cat DATABASE_PREFIX`+g \
          > parstart.cfg
 	[ ! -f $(DESTDIR)/etc/szarp/parstart.cfg ] && ( \
 		$(INSTALL) -m 644 parstart.cfg $(DESTDIR)@prefix@/`cat DATABASE_PREFIX` ; \
 		ln -sf @prefix@/`cat DATABASE_PREFIX`/parstart.cfg \
                              $(DESTDIR)/etc/szarp/parstart.cfg \
-	) 
+	)
 	
 if !DEB_BUILD
 vim:
