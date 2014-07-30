@@ -428,6 +428,7 @@ protected:
 	int configure_bcd_register(TParam* param, TSendParam* sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt);
 	int configure_long_float_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt);
 	int configure_double_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_decimal2_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt);
 	int configure_param(xmlNodePtr node, TSzarpConfig *sc, TParam* p, TSendParam *sp, bool send);
 	int configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx);
 
@@ -722,6 +723,16 @@ public:
 	unsigned short val();
 };
 
+class decimal2_parcook_modbus_val_op : public parcook_modbus_val_op {
+	modbus_register *m_reg_integer;
+	modbus_register *m_reg_fraction;
+	int m_prec;
+	bool m_lsw;
+public:
+	decimal2_parcook_modbus_val_op(modbus_register *reg_integer, modbus_register *reg_fraction, int prec, bool lsw, driver_logger *log);
+	virtual unsigned short val();
+};
+
 class short_sender_modbus_val_op : public sender_modbus_val_op {
 	modbus_register *m_reg;
 public:
@@ -735,6 +746,15 @@ class float_sender_modbus_val_op : public sender_modbus_val_op {
 	int m_prec;
 public:
 	float_sender_modbus_val_op(float no_data, modbus_register *reg_lsw, modbus_register *reg_msw, int prec, driver_logger *log);
+	virtual void set_val(short val, time_t time);
+};
+
+class decimal2_sender_modbus_val_op : public sender_modbus_val_op {
+	modbus_register *m_reg_integer;
+	modbus_register *m_reg_fraction;
+	int m_prec;
+public:
+	decimal2_sender_modbus_val_op(float no_data, modbus_register *reg_integer, modbus_register *reg_fraction, int prec, driver_logger *log);
 	virtual void set_val(short val, time_t time);
 };
 
@@ -865,12 +885,42 @@ unsigned short double_parcook_modbus_val_op::val() {
 		}
 	}
 
-	int32_t iv = nearbyint(*(double*)v * m_prec); 
+	int32_t iv = nearbyint(*(double*)v * m_prec);
 	uint32_t* pv = (uint32_t*) &iv;
 
 	m_log->log(10, "Int value: %d, unsigned int: %u", iv, *pv);
 
 	if (m_lsd)
+		return *pv & 0xffff;
+	else
+		return *pv >> 16;
+}
+
+decimal2_parcook_modbus_val_op::decimal2_parcook_modbus_val_op(modbus_register *reg_integer, modbus_register *reg_fraction, int prec, bool lsw, driver_logger *log) : parcook_modbus_val_op(log), m_reg_integer(reg_integer), m_reg_fraction(reg_fraction), m_prec(prec), m_lsw(lsw) {};
+
+unsigned short decimal2_parcook_modbus_val_op::val() {
+	double rinteger, rfraction;
+	bool valid;
+
+	rinteger = m_reg_integer->get_val(valid);
+	if (!valid) {
+		m_log->log(10, "Decimal2 value, msw invalid, no_data");
+		return SZARP_NO_DATA;
+	}
+	rfraction = m_reg_fraction->get_val(valid);
+	if (!valid) {
+		m_log->log(10, "Decimal2 value, lsw invalid, no_data");
+		return SZARP_NO_DATA;
+	}
+
+	double v = rinteger + (rfraction / 1000.0);
+
+	int32_t iv = nearbyint(v * m_prec);
+	uint32_t* pv = (uint32_t*) &iv;
+
+	m_log->log(10, "Int value: %d, unsigned int: %u", iv, *pv);
+
+	if (m_lsw)
 		return *pv & 0xffff;
 	else
 		return *pv >> 16;
@@ -901,6 +951,24 @@ void float_sender_modbus_val_op::set_val(short val, time_t time) {
 	m_reg_lsw->set_val(iv[1], time);
 }
 
+decimal2_sender_modbus_val_op::decimal2_sender_modbus_val_op(float no_data, modbus_register *reg_integer, modbus_register *reg_fraction, int prec, driver_logger *log) :
+	sender_modbus_val_op(no_data, log), m_reg_integer(reg_integer), m_reg_fraction(reg_fraction), m_prec(prec) {}
+
+void decimal2_sender_modbus_val_op::set_val(short val, time_t time) {
+	if (val == SZARP_NO_DATA) {
+		m_reg_integer->set_val(SZARP_NO_DATA, time);
+		m_reg_fraction->set_val(SZARP_NO_DATA, time);
+		return;
+	}
+
+	double fval, fint, ffrac;
+	fval = double(val) / m_prec;
+
+	ffrac = modf(fval, &fint);
+
+	m_reg_integer->set_val((short)fint, time);
+	m_reg_fraction->set_val((short)ffrac, time);
+}
 modbus_register::modbus_register(modbus_unit* unit, driver_logger* log) : m_modbus_unit(unit), m_val(SZARP_NO_DATA), m_mod_time(-1), m_log(log) {}
 
 unsigned short modbus_register::get_val(bool &valid) {
@@ -1343,6 +1411,37 @@ int modbus_unit::configure_long_float_register(TParam* param, TSendParam *sparam
 	return 0;
 }
 
+int modbus_unit::configure_decimal2_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt) {
+	std::string val_type;
+	if (get_xml_extra_prop(node, "val_type", val_type))
+		return 1;
+
+	bool is_lsw;
+	unsigned short msw, lsw;
+	if (get_lsw_msw_reg(node, addr, lsw, msw, is_lsw))
+		return 1;
+
+	if (m_registers.find(lsw) == m_registers.end())
+		m_registers[lsw] = new modbus_register(this, &m_log);
+	if (m_registers.find(msw) == m_registers.end())
+		m_registers[msw] = new modbus_register(this, &m_log);
+
+	if (!send) {
+		m_parcook_ops.push_back(new decimal2_parcook_modbus_val_op(m_registers[lsw], m_registers[msw], prec, is_lsw, &m_log));
+		m_log.log(8, "Parcook param %ls no(%zu), mapped to unit: %u, register %hu, value type: decimal2, params holds %s part, lsw: %hu, msw: %hu", param->GetName().c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
+	} else {
+		m_sender_ops.push_back(new decimal2_sender_modbus_val_op(m_nodata_value, m_registers[lsw], m_registers[msw], prec, &m_log));
+		m_log.log(8, "Sender param %ls no(%zu), mapped to unit: %u, register %hu, value type: decimal2, params holds %s part",
+			param ? param->GetName().c_str() : L"(not a param, just value)", m_sender_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw");
+	}
+
+	m_received.insert(std::make_pair(rt, lsw));
+	m_received.insert(std::make_pair(rt, msw));
+
+	return 0;
+}
+
+
 int modbus_unit::configure_param(xmlNodePtr node, TSzarpConfig* sc, TParam* p, TSendParam *sp, bool send) { 
 	char* c = (char*) xmlGetNsProp(node, BAD_CAST("address"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (c == NULL) {
@@ -1407,6 +1506,8 @@ int modbus_unit::configure_param(xmlNodePtr node, TSzarpConfig* sc, TParam* p, T
 		ret = configure_long_float_register(param, sp, prec, node, addr, send, rt);
 	} else if (val_type == "double") {
 		ret = configure_double_register(param, sp, prec, node, addr, send, rt);
+	} else if (val_type == "decimal2") {
+		ret = configure_decimal2_register(param, sp, prec, node, addr, send, rt);
 	} else {
 		m_log.log(0, "Unsupported value type:%s, for param at line: %ld", val_type.c_str(), xmlGetLineNo(node));
 		ret = 1;
