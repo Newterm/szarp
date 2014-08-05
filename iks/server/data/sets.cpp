@@ -41,6 +41,10 @@ void Sets::update_set( const Set& s , const std::string& old_name )
 	auto itr = sname.find(on);
 
 	if( s.empty() ) {
+		/** Unknown set */
+		if( itr == sname.end() )
+			return;
+
 		/** Set removed */
 		sname.erase( itr );
 		emit_set_updated( on , std::shared_ptr<Set>() );

@@ -14,7 +14,7 @@ public:
 	typedef std::shared_ptr<RemotesUpdater> ptr;
 
 	RemotesUpdater(
-			const std::string& name ,
+			const std::string& name , const std::string& draw_name ,
 			const std::string& address , unsigned port ,
 			LocationsList& locs );
 	virtual ~RemotesUpdater();
@@ -37,6 +37,7 @@ private:
 	LocationsList& locs;
 
 	std::string name;
+	std::string draw_name;
 
 	std::string address;
 	unsigned port;

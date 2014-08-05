@@ -35,18 +35,22 @@ bool TcpServer::handle_error( const bs::error_code& error )
 
 void TcpServer::do_accept()
 {
-	auto tc = new TcpConnection( acceptor_.get_io_service() );
+	auto tc = std::make_shared<TcpConnection>( acceptor_.get_io_service() );
 	tc->on_disconnect( bind(&TcpServer::do_disconnect,this,placeholders::_1) );
 	clients.insert( tc );
 
-    acceptor_.async_accept(tc->get_socket(),std::bind(&TcpServer::handle_accept,this,tc,placeholders::_1) );
+    acceptor_.async_accept(tc->get_socket(),std::bind(&TcpServer::handle_accept,this,tc.get(),placeholders::_1) );
 }
 
 void TcpServer::do_disconnect( Connection* con )
 {
-	clients.erase( con );
+	for( auto itr=clients.begin() ; itr!=clients.end() ; ++itr )
+		if( itr->get() == con ) {
+			clients.erase( itr );
+			break;
+		}
+
 	emit_disconnected( con );
-	delete con;
 }
 
 void TcpServer::handle_accept(
@@ -90,9 +94,9 @@ bool TcpConnection::handle_error( const bs::error_code& error )
 void TcpConnection::do_read_line()
 {
 	ba::async_read_until(socket_,
-			buffer,
+			read_buffer,
 			'\n',
-			bind(&TcpConnection::handle_read_line, this, placeholders::_1, placeholders::_2 ));
+			bind(&TcpConnection::handle_read_line, shared_from_this(), placeholders::_1, placeholders::_2 ));
 }
 
 void TcpConnection::handle_read_line(const bs::error_code& error, size_t bytes )
@@ -100,11 +104,11 @@ void TcpConnection::handle_read_line(const bs::error_code& error, size_t bytes )
 	if( handle_error(error) )
 		return;
 
-	ba::streambuf::const_buffers_type bufs = buffer.data();
+	ba::streambuf::const_buffers_type bufs = read_buffer.data();
 	std::string line(
 		ba::buffers_begin(bufs),
 		ba::buffers_begin(bufs) + bytes - 1 );
-	buffer.consume( bytes );
+	read_buffer.consume( bytes );
 
 	balgo::trim( line );
 
@@ -117,16 +121,11 @@ void TcpConnection::handle_read_line(const bs::error_code& error, size_t bytes )
 
 void TcpConnection::do_write_line( const std::string& line )
 {
-	ba::streambuf sb;
-	std::ostream os(&sb);
-
-	os << line ;
-	if( line[line.size()-1] != '\n' )
-		os << '\n';
+	lines.emplace( line.back() == '\n' ? line : line + '\n' );
 
 	ba::async_write(socket_,
-		sb,
-		bind(&TcpConnection::handle_write, this, placeholders::_1));
+		ba::buffer( lines.back() ),
+		bind(&TcpConnection::handle_write, shared_from_this(), placeholders::_1));
 
 	sz_log(9, "   >>>   %s", line.c_str() );
 }
@@ -135,6 +134,9 @@ void TcpConnection::handle_write(const bs::error_code& error)
 {
 	if( handle_error(error) )
 		return;
+
+	/** This line was send */
+	lines.pop();
 }
 
 void TcpConnection::do_close()

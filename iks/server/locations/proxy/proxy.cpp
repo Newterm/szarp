@@ -34,6 +34,12 @@ void ProxyLoc::connect( const std::string& address , unsigned port )
 
 	remote = std::make_shared<TcpClient>( service , endpoint );
 
+	std::string next = get_name();
+	next.erase( next.begin() , std::next(next.begin(),next.find(':')+1) );
+	
+	if( !next.empty() )
+		remote->write_line( "connect 0 " + next );
+
 	remote->on_connected ( std::bind(&ProxyLoc::fwd_connect,this) );
 	remote->on_disconnect( std::bind(&ProxyLoc::die        ,this) );
 }
@@ -41,12 +47,6 @@ void ProxyLoc::connect( const std::string& address , unsigned port )
 void ProxyLoc::fwd_connect()
 {
 	conn_line = remote->on_line_received( std::bind(&ProxyLoc::get_response,this,p::_1) );
-
-	std::string next = get_name();
-	next.erase( next.begin() , std::next(next.begin(),next.find(':')+1) );
-	
-	if( !next.empty() )
-		remote->write_line( "connect 0 " + next );
 }
 
 void ProxyLoc::get_response( const std::string& line )

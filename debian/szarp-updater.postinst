@@ -34,8 +34,6 @@ case "$1" in
 	fi;
 
 	preferences_setup $RET;
-
-	/opt/szarp/bin/sysinfo &> /dev/null || true;
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

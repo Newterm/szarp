@@ -1,3 +1,0 @@
-# Crontab entry for fetching sysinfo from terminals
-# $Id: szarp-server.cron 2816 2005-10-31 15:04:37Z pawel $
-11 * * * *	root	/opt/szarp/bin/get_sysinfo

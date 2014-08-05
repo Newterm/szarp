@@ -768,7 +768,7 @@ fi
 
 has_boost_base="no"
 ac_boost_path="${lib_prefix}"
-AX_BOOST_BASE("1.48.0", [has_boost_base="yes"], [has_boost_base="no"])
+AX_BOOST_BASE([1.48.0], [has_boost_base="yes"], [has_boost_base="no"])
 if test "x$has_boost_base" = "xyes" ; then
 	AX_BOOST_FILESYSTEM
 	AX_BOOST_DATE_TIME
@@ -1172,7 +1172,6 @@ AC_OUTPUT( \
 	resources/documentation/Makefile \
 	resources/documentation/new/Makefile \
 	script/Makefile \
-	script/sysinfo \
 	sender/Makefile \
 	utils/szarpinfo \
 	utils/Makefile \

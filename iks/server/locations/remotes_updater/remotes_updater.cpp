@@ -15,10 +15,11 @@ using boost::asio::ip::tcp;
 namespace p = std::placeholders;
 
 RemotesUpdater::RemotesUpdater(
-		const std::string& name ,
+		const std::string& name , const  std::string& draw_name ,
 		const std::string& address , unsigned port ,
 		LocationsList& locs )
-	: locs(locs) , name(name) , address(address) , port(port) ,
+	: locs(locs) , name(name) , draw_name(draw_name) ,
+	  address(address) , port(port) ,
 	  timeout(GlobalService::get_service())
 {
 }
@@ -45,7 +46,7 @@ void RemotesUpdater::connect()
 
 void RemotesUpdater::get_remotes()
 {
-	send_cmd( new CmdListRemotesSnd( locs , name , address , port ) );
+	send_cmd( new CmdListRemotesSnd( locs , name , draw_name , address , port ) );
 }
 
 void RemotesUpdater::rm_remotes()
@@ -71,7 +72,7 @@ void RemotesUpdater::reconnect( const boost::system::error_code& e )
 Command* RemotesUpdater::cmd_from_tag( const std::string& tag )
 {
 	if( tag == "remote_added"   )
-		return new CmdAddRemotesRcv   ( locs , name , address , port );
+		return new CmdAddRemotesRcv   ( locs , name , draw_name , address , port );
 	if( tag == "remote_removed" )
 		return new CmdRemoveRemotesRcv( locs , name );
 	return NULL;

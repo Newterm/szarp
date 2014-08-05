@@ -32,13 +32,10 @@ logdir:
 	$(INSTALL) -d $(DESTDIR)@prefix@/logs
 
 if !DEB_BUILD
-install-data-hook: version logdir sysinfo
+install-data-hook: version logdir
 else DEB_BUILD
 install-data-hook: version logdir
 endif
-
-sysinfo:
-	$(SHELL) script/sysinfo
 
 doxy:
 	cd @srcdir@ && doxygen

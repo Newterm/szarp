@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <functional>
+#include <queue>
 
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
@@ -33,6 +34,8 @@ public:
 	slot_connection on_connected( const sig_connection_slot& slot )
 	{	return emit_connected.connect( slot ); }
 
+	bool is_connected() const { return socket_.is_open(); }
+
 private:
 	void do_write_line( const std::string& line );
 
@@ -43,7 +46,9 @@ private:
 	boost::asio::io_service& io_service_;
 	boost::asio::ip::tcp::socket socket_;
 
-	boost::asio::streambuf buffer;
+	boost::asio::streambuf read_buffer;
+
+	std::queue<std::string> lines;
 
 	sig_connection emit_connected;
 

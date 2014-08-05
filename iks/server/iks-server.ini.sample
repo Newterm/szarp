@@ -32,4 +32,7 @@
 # type = proxy 
 # address = 192.168.0.121          ## address is obligatory
 # port = 9002                      ## port is optional and defaults to 9002
+# draw_name = Węzeł IKS            ## optional draw name for this proxy, if set
+                                   ## all location from this proxy would have
+				   ## 'Węzeł IKS' prefix
 
