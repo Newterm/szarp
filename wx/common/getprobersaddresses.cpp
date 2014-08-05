@@ -41,9 +41,9 @@ std::map<wxString, std::pair<wxString, wxString> > get_probers_addresses() {
 		char *_address = libpar_getpar(section.c_str(), "address", 0);
 		char *_port = libpar_getpar(section.c_str(), "port", 0);
 		if (_prefix != NULL && _address != NULL && _port  != NULL) {
-			std::wstring address = SC::A2S(_address);
-			std::wstring port = SC::A2S(_port);
-			ret[SC::A2S(_prefix)] = std::make_pair(address, port); 
+			std::wstring address = SC::L2S(_address);
+			std::wstring port = SC::L2S(_port);
+			ret[SC::L2S(_prefix)] = std::make_pair(address, port);
 		}
 		std::free(_prefix);
 		std::free(_address);

@@ -67,7 +67,7 @@
 #include "conversion.h"
 
 /** Path to main config file. */
-#define SZARP_CFG "/etc/"PACKAGE_NAME"/"PACKAGE_NAME".cfg"
+#define SZARP_CFG "/etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg"
 
 /** Name of section in main config file for reading data dir.. */
 #define SZARP_CFG_SECTION "meaner3"
@@ -146,7 +146,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 			break;
 		}
 		case ARGP_KEY_ARG:
-			arguments->params.push_back(SC::A2S(arg));
+			arguments->params.push_back(SC::L2S(arg));
 			break;
 		case ARGP_KEY_END:
 			if (arguments->params.size() == 0)
@@ -270,14 +270,10 @@ void save_combined_param(double pw, TParam *p, std::vector<std::pair<time_t, dou
 int main(int argc, char* argv[])
 {
 	struct arguments arguments;
-	int loglevel;	/**< Log level. */
 	char *ipk_prefix;
 	char *szarp_data_root;
 
 	setbuf(stdout, 0);
-	
-	/* Set initial logging. */
-	loglevel = loginit_cmdline(2, NULL, &argc, argv);
 
 	/* Load configuration data. */
 	libpar_read_cmdline(&argc, argv);
@@ -306,17 +302,17 @@ int main(int argc, char* argv[])
 
 	std::vector<TParam*> params;
 
-	IPKContainer::Init(SC::A2S(szarp_data_root), SC::A2S(PREFIX), L"", new NullMutex());
+	IPKContainer::Init(SC::L2S(szarp_data_root), SC::L2S(PREFIX), L"", new NullMutex());
 
-	Szbase::Init(SC::A2S(szarp_data_root), NULL);
+	Szbase::Init(SC::L2S(szarp_data_root), NULL);
 
-	TSzarpConfig *ipk = IPKContainer::GetObject()->GetConfig(SC::A2S(ipk_prefix));
+	TSzarpConfig *ipk = IPKContainer::GetObject()->GetConfig(SC::L2S(ipk_prefix));
 	if (ipk == NULL) {
 		sz_log(0, "Could not load IPK configuration for prefix '%s'", ipk_prefix);
 		return 1;
 	}
 
-	szb_buffer_t *szb = Szbase::GetObject()->GetBuffer(SC::A2S(ipk_prefix));
+	szb_buffer_t *szb = Szbase::GetObject()->GetBuffer(SC::L2S(ipk_prefix));
 	if (szb == NULL) {
 		sz_log(0, "Error initializing SzarpBase buffer");
 		return 1;

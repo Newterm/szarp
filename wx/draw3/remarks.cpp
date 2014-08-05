@@ -314,7 +314,7 @@ void RemarksHandler::GetConfigurationFromSzarpCfg() {
 
         if (server) {
         
-                wxLogWarning(_T("config has server: %s"), (SC::A2S(server)).c_str());
+                wxLogWarning(_T("config has server: %s"), (SC::L2S(server)).c_str());
 
                 char *config_prefix = libpar_getpar("", "config_prefix", 0);
                 if (!config_prefix) {
@@ -323,7 +323,7 @@ void RemarksHandler::GetConfigurationFromSzarpCfg() {
                         return;
                 }
     
-                wxLogWarning(_T("config has prefix: %s"), (SC::A2S(config_prefix)).c_str());
+                wxLogWarning(_T("config has prefix: %s"), (SC::L2S(config_prefix)).c_str());
 
                 char *szarp_root_dir = libpar_getpar("", "szarp_data_root", 0);
                 if (!szarp_root_dir) {
@@ -333,7 +333,7 @@ void RemarksHandler::GetConfigurationFromSzarpCfg() {
                         return;
                 }
 
-                wxLogWarning(_T("config has root_dir: %s"), (SC::A2S(szarp_root_dir)).c_str());
+                wxLogWarning(_T("config has root_dir: %s"), (SC::L2S(szarp_root_dir)).c_str());
 
                 wxString username = wxGetUserName();
                 if (username == wxEmptyString) {
@@ -348,7 +348,7 @@ void RemarksHandler::GetConfigurationFromSzarpCfg() {
                 wxString config_file_path;
                 wxFile config_file;
 
-                config_file_path << SC::A2S(szarp_root_dir) << SC::A2S(config_prefix) 
+                config_file_path << SC::L2S(szarp_root_dir) << SC::L2S(config_prefix)
                         << SC::A2S("/config/params.xml");
 
                 wxLogWarning(_T("config_file_path: %s"), config_file_path.c_str());
@@ -399,8 +399,8 @@ void RemarksHandler::GetConfigurationFromSzarpCfg() {
 
                 m_username = wxEmptyString;
 
-                m_server = SC::A2S(server);
-                m_username << username << SC::A2S("@") << SC::A2S(config_prefix);
+                m_server = SC::L2S(server);
+                m_username << username << SC::A2S("@") << SC::L2S(config_prefix);
                 m_password = SC::A2S(password);
             
                 ptr = NULL;

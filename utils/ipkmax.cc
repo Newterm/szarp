@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
 			usage();
 			return 0;
 		}
-		i = sc->loadXML(SC::A2S(argv[1]));
+		i = sc->loadXML(SC::L2S(argv[1]));
 	} else
 		i = sc->loadXML(L"params.xml");
 	if (i) {

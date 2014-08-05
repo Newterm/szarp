@@ -27,8 +27,24 @@ public:
 
 	void parse_command( const std::string& line )
 	{
-		locs.register_location<ProxyLoc>
-			( str( boost::format("%s:%s") % name % line ), address, port );
+		namespace bp = boost::property_tree;
+		bp::ptree json;
+
+		try {
+			std::stringstream ss(line);
+			bp::json_parser::read_json( ss , json );
+
+			locs.register_location<ProxyLoc>(
+					str( boost::format("%s:%s") % name %
+						json.get<std::string>("tag") ) ,
+					json.get<std::string>("name") ,
+					json.get<std::string>("type") ,
+					address , port );
+
+		} catch( const bp::ptree_error& e ) {
+			sz_log(0,"CmdAddRemotesRcv: Received invalid message (%s): %s", line.c_str(), e.what());
+			return;
+		}
 	}
 
 protected:

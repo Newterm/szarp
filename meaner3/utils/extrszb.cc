@@ -369,7 +369,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 				par_list *tmp = arguments->list->next;
 				arguments->params.push_back(
 					SzbExtractor::Param(
-						SC::A2S(arguments->list->name).c_str(),
+						SC::L2S(arguments->list->name).c_str(),
 						L"",
 						NULL,
 						SzbExtractor::TYPE_AVERAGE ));
@@ -505,12 +505,12 @@ int main(int argc, char* argv[])
 	LIBXML_TEST_VERSION
 	xmlSubstituteEntitiesDefault(1);
 
-	IPKContainer::Init(SC::A2S(szarp_data_root), SC::A2S(PREFIX), L"", new NullMutex());
-	Szbase::Init(SC::A2S(szarp_data_root), NULL);
+	IPKContainer::Init(SC::L2S(szarp_data_root), SC::L2S(PREFIX), L"", new NullMutex());
+	Szbase::Init(SC::L2S(szarp_data_root), NULL);
 
 
 	
-	TSzarpConfig *ipk = IPKContainer::GetObject()->GetConfig(SC::A2S(ipk_prefix));
+	TSzarpConfig *ipk = IPKContainer::GetObject()->GetConfig(SC::L2S(ipk_prefix));
 	if (ipk == NULL) {
 		sz_log(0, "Could not load IPK configuration for prefix '%s'", ipk_prefix);
 		return 1;
@@ -518,12 +518,12 @@ int main(int argc, char* argv[])
 
 	if (arguments.prober_address) {
 		sz_log(0, "Prober address: %s", arguments.prober_address);
-		Szbase::GetObject()->SetProberAddress(SC::A2S(ipk_prefix),
-			SC::A2S(arguments.prober_address),
-			arguments.prober_port ? SC::A2S(arguments.prober_port) : L"8090");
+		Szbase::GetObject()->SetProberAddress(SC::L2S(ipk_prefix),
+			SC::L2S(arguments.prober_address),
+			arguments.prober_port ? SC::L2S(arguments.prober_port) : L"8090");
 	}
 
-	szb_buffer_t *szb = Szbase::GetObject()->GetBuffer(SC::A2S(ipk_prefix));
+	szb_buffer_t *szb = Szbase::GetObject()->GetBuffer(SC::L2S(ipk_prefix));
 	if (szb == NULL) {
 		sz_log(0, "Error initializing SzarpBase buffer");
 		return 1;
@@ -550,7 +550,7 @@ int main(int argc, char* argv[])
 				SC::U2A(SC::S2U(arguments.params[err - 1].name)).c_str());
 		return 1;
 	}
-	extr->SetNoDataString(SC::A2S(arguments.no_data));
+	extr->SetNoDataString(SC::L2S(arguments.no_data));
 	extr->SetEmpty(arguments.empty);
 	
 	FILE *output = NULL;
@@ -581,13 +581,13 @@ int main(int argc, char* argv[])
 	SzbExtractor::ErrorCode ret;
 	
 	if (arguments.openoffice)
-		ret = extr->ExtractToOpenOffice(SC::A2S(arguments.output));
+		ret = extr->ExtractToOpenOffice(SC::L2S(arguments.output));
 	else if (arguments.xml)
 		ret = extr->ExtractToXML(output);
 	else if (arguments.sum)
-		ret = extr->ExtractSum(output, SC::A2S(arguments.delimiter));
+		ret = extr->ExtractSum(output, SC::L2S(arguments.delimiter));
 	else
-		ret = extr->ExtractToCSV(output, SC::A2S(arguments.delimiter));
+		ret = extr->ExtractToCSV(output, SC::L2S(arguments.delimiter));
 	if (arguments.progress)
 		fprintf(stderr, "\n");
 	

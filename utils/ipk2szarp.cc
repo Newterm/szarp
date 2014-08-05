@@ -87,14 +87,14 @@ int main(int argc, char* argv[])
 	}
 
 	if( input ) {
-		i = sc->loadXML(SC::A2S(input));
+		i = sc->loadXML(SC::L2S(input));
 	} else {
 		libpar_init_with_filename(SZARP_CFG, 1);
 		if( !(ipk_path  = libpar_getpar("", "IPK", 1 ))) {
 			cerr << "Cannot find IPK variable" << endl;
 			return 1;
 		}
-		i = sc->loadXML(SC::A2S(ipk_path));
+		i = sc->loadXML(SC::L2S(ipk_path));
 	}
 	
 	if (i) {

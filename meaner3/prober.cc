@@ -172,14 +172,10 @@ RETSIGTYPE g_TerminateHandler(int signum)
 
 int main(int argc, char* argv[])
 {
-	int loglevel;	/**< Log level. */
 	struct arguments arguments;
 	int i;
 	TProber* prober;
 	time_t last_cycle; /**< time of last cycle */
-
-	/* Set initial logging. */
-	loglevel = loginit_cmdline(2, NULL, &argc, argv);
 
 	libpar_read_cmdline(&argc, argv);
 	

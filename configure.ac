@@ -768,18 +768,14 @@ fi
 
 has_boost_base="no"
 ac_boost_path="${lib_prefix}"
-# On squeeze AX_BOOST_BASE do not execute ACTION-IF-FOUND :(
-AC_LANG_PUSH([C++])
-AC_CHECK_HEADERS([boost/foreach.hpp], [has_boost_base="yes"], [has_boost_base="no"])
-AC_LANG_POP([C++])
-
-AX_BOOST_BASE("1.42.0", [has_boost_base="yes"], [has_boost_base="no"])
+AX_BOOST_BASE("1.48.0", [has_boost_base="yes"], [has_boost_base="no"])
 if test "x$has_boost_base" = "xyes" ; then
 	AX_BOOST_FILESYSTEM
 	AX_BOOST_DATE_TIME
 	AX_BOOST_THREAD
 	AX_BOOST_SYSTEM
 	AX_BOOST_PROGRAM_OPTIONS
+	AX_BOOST_LOCALE
 
 	if test "$with_mingw32" != "yes" ; then
 		AX_BOOST_ASIO
@@ -795,7 +791,7 @@ has_boost_regex=${link_regex:-no}
 has_boost_thread=${link_thread:-no}
 has_boost_system=${link_system:-no}
 has_boost_program_options=${link_program_options:-no}
-
+has_boost_locale=${link_locale:-no}
 
 #Check for LIBEVENT
 no_libevent=""
@@ -1152,6 +1148,10 @@ AC_OUTPUT( \
 	extern/wxscintilla/Makefile \
 	iks/Makefile \
 	iks/server/Makefile \
+	iks/server/locations/Makefile \
+	iks/server/utils/Makefile \
+	iks/server/data/Makefile \
+	iks/server/net/Makefile \
 	isl/Makefile \
 	isl/server/Makefile \
 	isl/paramd/Makefile \
@@ -1463,6 +1463,7 @@ if test x$debug_config = xyes ; then
         echo "BOOST_PROGRAM_OPTIONS_LIB: $BOOST_PROGRAM_OPTIONS_LIB"
         echo "BOOST_DATE_TIME_LIB: $BOOST_DATE_TIME_LIB"
         echo "BOOST_PYTHON_LIB: $BOOST_PYTHON_LIB"
+        echo "BOOST_LOCALE: $BOOST_LOCALE"
         echo "ZIP_CFLAGS: $ZIP_CFLAGS"
         echo "ZIP_LIBS: $ZIP_LIBS"
 fi

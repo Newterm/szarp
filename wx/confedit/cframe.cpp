@@ -291,7 +291,7 @@ void ConfFrame::OnExit(wxCommandEvent& WXUNUSED(event))
 void ConfFrame::OnHelp(wxCommandEvent& WXUNUSED(event))
 {
 	HtmlViewerFrame* f = new HtmlViewerFrame(
-		wxString(SC::A2S(INSTALL_PREFIX"/resources/documentation/new/ipk/html/ipkedit.html")),
+		wxString(SC::L2S(INSTALL_PREFIX"/resources/documentation/new/ipk/html/ipkedit.html")),
 		this, _("IPK editor help"),
 		wxDefaultPosition, wxSize(600,600));
 	f->Show();

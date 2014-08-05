@@ -10,6 +10,8 @@ namespace bp = boost::property_tree;
 namespace bm = boost::multi_index;
 using boost::format;
 
+#include <liblog.h>
+
 #include "utils/ptree.h"
 
 std::shared_ptr<const Set> Sets::get_set( const std::string& name ) const
@@ -68,66 +70,49 @@ void Sets::from_params_file( const std::string& path ) throw(xml_parse_error)
 	from_params_xml( sets_doc );
 }
 
-typedef std::unordered_map<std::string,std::pair<double,bp::ptree>> SetsTempMap;
-
-void create_set(
-		bp::ptree::value_type& d ,
-		bp::ptree& parent ,
-		SetsTempMap& sets_map ,
-		double& max_order ,
-		double& unordered )
-{
-	if( d.first == "draw" ) {
-		auto name = d.second.get<std::string>("@title");
-		bp::ptree child;
-		child.put("@name",parent.get<std::string>("@name"));
-		child.put("@min",d.second.get<std::string>("@min"));
-		child.put("@max",d.second.get<std::string>("@max"));
-		auto color = d.second.get_optional<std::string>("@color");
-		if( color ) child.put("@graph_color",*color);
-		auto order = d.second.get_optional<std::string>("@order");
-		if( order ) child.put("@order",*order);
-		if( !sets_map.count(name) )
-			/** If set no know default order to NaN */
-			sets_map[name].first = --unordered;
-		auto seto   = d.second.get_optional<std::string>("@prior");
-		if( seto  ) {
-			try {
-				auto order = boost::lexical_cast<double>(*seto);
-				sets_map[name].first = order;
-				max_order = std::max(order,max_order);
-			} catch( boost::bad_lexical_cast& e ) {
-				std::cerr << "Invalid prior in set " << name << std::endl;
-			}
-		}
-		sets_map[name].second.push_back( std::make_pair( "" , child ) );
-	}
-}
-
 void Sets::from_params_xml( boost::property_tree::ptree& ptree  ) throw(xml_parse_error)
 {
-	SetsTempMap sets_map;
+	std::unordered_map<std::string,std::pair<double,bp::ptree>> sets_map;
 	double max_order = 0;
 	double unordered = 0;
 
 	fold_xmlattr( ptree );
 
-	ptree_foreach_parent( ptree ,
-		std::bind(
-			create_set ,
-			std::placeholders::_1 ,
-			std::placeholders::_2 ,
-			std::ref(sets_map)    ,
-			std::ref(max_order)   ,
-			std::ref(unordered) ) );
+	ptree_foreach_parent( ptree , [&] ( bp::ptree::value_type& d , bp::ptree& parent ) {
+		if( d.first == "draw" ) {
+			auto name = d.second.get<std::string>("@title");
+			bp::ptree child;
+			child.put("@name",parent.get<std::string>("@name"));
+			child.put("@min",d.second.get<std::string>("@min"));
+			child.put("@max",d.second.get<std::string>("@max"));
+			auto color = d.second.get_optional<std::string>("@color");
+			if( color ) child.put("@graph_color",*color);
+			auto order = d.second.get_optional<std::string>("@order");
+			if( order ) child.put("@order",*order);
+			if( !sets_map.count(name) )
+				/** If set no know default order to NaN */
+				sets_map[name].first = --unordered;
+			auto seto   = d.second.get_optional<std::string>("@prior");
+			if( seto  ) {
+				try {
+					auto order = boost::lexical_cast<double>(*seto);
+					sets_map[name].first = order;
+					max_order = std::max(order,max_order);
+				} catch( boost::bad_lexical_cast& e ) {
+					sz_log(0, "Invalid prior in set %s", name.c_str() );
+				}
+			}
+			sets_map[name].second.push_back( std::make_pair( "" , child ) );
+		}
+	} );
 
-	for( auto ic=sets_map.begin() ; ic!=sets_map.end() ; ++ic )
+	for( auto& c : sets_map )
 	{
 		bp::ptree ptree;
-		ptree.put("@name",ic->first);
-		ptree.put_child("params",ic->second.second);
+		ptree.put("@name",c.first);
+		ptree.put_child("params",c.second.second);
 
-		auto order = ic->second.first;
+		auto order = c.second.first;
 		order = order >=0 ? order : max_order - order ;
 
 		Set s;

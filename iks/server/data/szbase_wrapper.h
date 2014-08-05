@@ -1,8 +1,6 @@
 #ifndef __DATA_SZBASE_WRAPPER_H__
 #define __DATA_SZBASE_WRAPPER_H__
 
-#include <conversion.h>
-
 #include "szarp_config.h"
 #include "szbase/szbbase.h"
 #include "szbase/szbdate.h"
@@ -14,11 +12,7 @@
 class SzbaseWrapper {
 public:
 	static std::string get_dir()
-#if BOOST_FILESYSTEM_VERSION == 3
 	{	return szarp_dir.string(); }
-#else
-	{	return SC::S2A( szarp_dir.string() ); }
-#endif
 
 	static bool init( const std::string& szarp_dir );
 	static bool is_initialized() { return initialized; }
@@ -67,12 +61,7 @@ public:
 private:
 	std::wstring convert_string( const std::string& param ) const;
 
-#if BOOST_FILESYSTEM_VERSION == 3
 	static boost::filesystem::path szarp_dir;
-#else
-	static boost::filesystem::wpath szarp_dir;
-#endif
-
 	static bool initialized;
 
 	std::string base_name;

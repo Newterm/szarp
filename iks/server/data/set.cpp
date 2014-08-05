@@ -3,6 +3,8 @@
 #include <functional>
 #include <limits>
 
+namespace p = std::placeholders;
+
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -11,10 +13,10 @@
 
 namespace bp = boost::property_tree;
 
+#include <liblog.h>
+
 #include "utils/ptree.h"
 #include "utils/colors.h"
-
-namespace p = std::placeholders;
 
 Set::Set()
 	: order(std::numeric_limits<double>::quiet_NaN())
@@ -44,10 +46,10 @@ void Set::from_xml( const bp::ptree& ptree )
 	convert_float( set_desc , "@spacing_horizontal" );
 
 	params.clear();
-	for( auto ic=set_desc.begin() ; ic!=set_desc.end() ; ++ic )
-		if( ic->first == "param" ) {
-			auto name = ic->second.get<std::string>("@name");
-			auto pt = ic->second;
+	for( auto& c : set_desc )
+		if( c.first == "param" ) {
+			auto name = c.second.get<std::string>("@name");
+			auto pt = c.second;
 
 			upgrade_option( pt , "@bg_color" , "@background_color" );
 			upgrade_option( pt , "@color"    , "@graph_color" );
@@ -58,7 +60,7 @@ void Set::from_xml( const bp::ptree& ptree )
 			pt.erase("@order");
 
 			params.insert(
-				ParamId { name , ic->second.get<double>("@order") , pt } );
+				ParamId { name , c.second.get<double>("@order") , pt } );
 		}
 
 	set_desc.erase( "param" );
@@ -94,7 +96,7 @@ void Set::convert_colour( bp::ptree& ptree , const std::string& name )
 std::string Set::convert_colour( const std::string& in )
 {
 	/** no need to convert */
-	if( in[0] == '#' )
+	if( in.front() == '#' )
 		return in;
 
 	unsigned int uint;
@@ -132,8 +134,8 @@ void Set::from_json( const bp::ptree& ptree )
 
 			max_order = std::max( max_order , o );
 		} catch( boost::bad_lexical_cast& e ) {
-			std::cerr << "Invalid order in param "
-					  << ic->second.get<std::string>("@name") << std::endl;
+			sz_log(0, "Invalid order in param %s" ,
+				ic->second.get<std::string>("@name").c_str());
 
 			ic->second.erase("@order");
 		}
@@ -255,7 +257,7 @@ std::string Set::to_json( bool pretty ) const
 	std::stringstream ss;
 	to_json( ss , pretty );
 	auto str = ss.str();
-	str.erase(str.size()-1); // remove terminating \n sign
+	str.pop_back(); // remove terminating \n sign
 	return str;
 }
 
@@ -264,9 +266,8 @@ boost::property_tree::ptree Set::get_xml_ptree() const
 	bp::ptree pt;
 	auto& pset = pt.put_child( "set" , get_json_ptree() );
 
-	auto& pdesc = pset.get_child("params");
-	for( auto ic=pdesc.begin() ; ic!=pdesc.end() ; ++ic )
-		pset.add_child("param",ic->second);
+	for( auto& c : pset.get_child("params") )
+		pset.add_child("param",c.second);
 	pset.erase("params");
 	pset.erase("@hash");
 

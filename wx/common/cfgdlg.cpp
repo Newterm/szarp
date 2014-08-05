@@ -178,7 +178,8 @@ void ConfigDialog::UpdateList() {
 		if (m_show_user_defined_set && i->first == userDefinedPrefix)
 			continue;
 
-		if (!match.IsEmpty() && i->second.Lower().Find(match) == wxNOT_FOUND)
+		if (!match.IsEmpty() && i->second.Lower().Find(match) == wxNOT_FOUND
+				&& i->first.Lower().Find(match) == wxNOT_FOUND)
 			continue;
 
 		Item it;

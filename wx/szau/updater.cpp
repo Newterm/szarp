@@ -90,7 +90,7 @@ bool Updater::needToDownloadFile(wxString newChecksum, wxString version) {
 	unsigned char digest[EVP_MAX_MD_SIZE];
 	char *buff = new char[MD5_READ_BLOCK_SIZE];
 
-	std::ifstream installer_file_stream(SC::S2A(file.string()).c_str() , std::ifstream::in | std::ifstream::binary);
+	std::ifstream installer_file_stream(SC::S2A(file.wstring()).c_str() , std::ifstream::in | std::ifstream::binary);
 
 	EVP_MD_CTX mdctx;
 	const EVP_MD *md;
@@ -205,7 +205,7 @@ void Updater::Install() {
 	if (version.empty())
 		return;
 
-	wxString command = wxString((wxGetApp().getInstallerLocalPath() / VersionToInstallerName(version)).string());
+	wxString command = wxString((wxGetApp().getInstallerLocalPath() / VersionToInstallerName(version)).wstring());
 	wxExecute(command, wxEXEC_ASYNC);
 }
 
@@ -213,7 +213,7 @@ void Updater::Run() {
 
 	do {
 		boost::xtime xt;
-		boost::xtime_get(&xt, boost::TIME_UTC);
+		boost::xtime_get(&xt, boost::TIME_UTC_);
 		xt.sec = xt.sec + 300;
 		boost::thread::sleep(xt);
 
@@ -228,7 +228,7 @@ void Updater::Run() {
 			if (needToDownloadFile(m_downloader->getChecksum(), version)) {
 				setStatus(DOWNLOADING);
 
-				std::wstring installer_local_path = (wxGetApp().getInstallerLocalPath() / VersionToInstallerName(GetCurrentVersion())).string();
+				std::wstring installer_local_path = (wxGetApp().getInstallerLocalPath() / VersionToInstallerName(GetCurrentVersion())).wstring();
 				bool result = m_downloader->getInstallerFile(installer_local_path);
 				if (result || !needToDownloadFile(m_downloader->getChecksum(), version)) {
 					setStatus(READY_TO_INSTALL);

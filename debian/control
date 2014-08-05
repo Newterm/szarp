@@ -5,11 +5,10 @@ Priority: optional
 Maintainer: Dariusz Marcinkiewicz <reksio@praterm.com.pl>
 Section: misc
 Standards-Version: 3.6.1
-Build-Depends: debhelper (>= 5.0.38), autotools-dev, automake, autoconf, autoconf-archive, libwxgtk2.8-dev, wx-common, libxml2-dev, bison, flex, imagemagick, jadetex, gettext, xsltproc, libxslt1-dev, libnewt-dev, libssl-dev, libpam-dev, libcurl3-dev, perl, librsync-dev, libgtk2.0-dev, libsqlite3-dev, libldap2-dev (>= 2.3.5), python-setuptools (>= 0.6b3-1), libzip-dev, jade, python-pybabel, libicu-dev, libxt-dev, libc-ares-dev, libxmlrpc-epi-dev, libluajit-dev | liblua5.1-0-dev, libftgl-dev, libboost-dev(>=1.42), libboost-system-dev(>=1.42), libboost-thread-dev(>=1.42), libboost-program-options-dev(>=1.42), libboost-regex-dev(>=1.42), libboost-filesystem-dev(>=1.42), libboost-python-dev(>=1.42), libboost-signals-dev, libasio-dev, libgstreamer0.10-dev, libstdc++-dev, libxpm-dev, libevent-dev(>=2.0), libgstreamer-plugins-base0.10-dev, docbook-dsssl, rsync, python-support, konwert, pyqt4-dev-tools, libtool, python-dev 
+Build-Depends: debhelper (>= 5.0.38), autotools-dev, automake, autoconf, autoconf-archive, libwxgtk2.8-dev, wx-common, libxml2-dev, bison, flex, imagemagick, jadetex, gettext, xsltproc, libxslt1-dev, libnewt-dev, libssl-dev, libpam-dev, libcurl3-dev, perl, librsync-dev, libgtk2.0-dev, libsqlite3-dev, libldap2-dev (>= 2.3.5), python-setuptools (>= 0.6b3-1), libzip-dev, jade, python-pybabel, libicu-dev, libxt-dev, libc-ares-dev, libxmlrpc-epi-dev, libluajit-dev | liblua5.1-0-dev, libftgl-dev, libboost-dev(>=1.48), libboost-system-dev(>=1.48), libboost-thread-dev(>=1.48), libboost-program-options-dev(>=1.48), libboost-regex-dev(>=1.48), libboost-filesystem-dev(>=1.48), libboost-python-dev(>=1.48), libboost-locale-dev(>=1.48), libboost-signals-dev, libasio-dev, libgstreamer0.10-dev, libstdc++-dev, libxpm-dev, libevent-dev(>=2.0), libgstreamer-plugins-base0.10-dev, docbook-dsssl, rsync, python-support, konwert, pyqt4-dev-tools, libtool, python-dev
 
-## TODO qba: libcgal was removed because its not avaiable on squeeze platform
-## it should return to build dependences after we drop support to squeeze
-# libcgal-dev 
+## draw3 compiled with CGAL fails at assertion on ubuntu trusty amd64
+# libcgal-dev
 
 Package: szarp-base
 Section: misc
@@ -50,7 +49,7 @@ Description: SZARP scripts
 Package: szarp-server
 Section: misc
 Architecture: any
-Conflicts: szarp-viewer, szarp-viewer-cb, szarp-terminal, szarp-terminal-cb, szarp-server-cb
+Conflicts: szarp-viewer, szarp-terminal
 Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-daemons, szarp-utils, openssl, subversion, szarp-paramd
 Suggests: szarp-proprietary-daemons
 Description: Configure SZARP as a server
@@ -59,7 +58,7 @@ Description: Configure SZARP as a server
 Package: szarp-wx
 Section: x11
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-doc-html, zip, sudo, xdg-utils, sshpass, ttf-freefont, libgnomeprintui2.2-0
+Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-doc-html, zip, sudo, xdg-utils, sshpass, ttf-freefont
 Description: SZARP utilities based on wxWidgets library
  SZARP raporter3, kontroler3, scc, ekstraktor3, wxhelp, draw3,
  confedit, pipes applications.
@@ -67,7 +66,7 @@ Description: SZARP utilities based on wxWidgets library
 Package: szarp-terminal
 Section: x11
 Architecture: any
-Conflicts: szarp-terminal-cb, szarp-viewer-cb, szarp-viewer, szarp-server, szarp-server-cb
+Conflicts: szarp-viewer, szarp-server
 Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-wx, szarp-doc-html
 Description: Configure SZARP as a terminal
  This package depends on other SZARP's  packages that are 
@@ -76,7 +75,7 @@ Description: Configure SZARP as a terminal
 Package: szarp-viewer
 Section: x11
 Architecture: any
-Conflicts: szarp-viewer-cb, szarp-terminal-cb, szarp-terminal
+Conflicts: szarp-terminal
 Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-wx, szarp-doc-html
 Description: Configure SZARP for viewing databases
  This package installs other SZARP's packages so that it is capable of viewing
@@ -106,8 +105,7 @@ Description: SZARP raporter3/kontroler3 server
 Package: szarp-server-complete
 Section: misc
 Architecture: any
-Conflicts: szarp-server-complete-cb
-Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-daemons, szarp-base, szarp-wx, szarp-doc-html, szarp-server, szarp-isl, szarp-scripts, szarp-utils
+Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-daemons, szarp-base, szarp-wx, szarp-doc-html, szarp-server, szarp-xsltd, szarp-scripts, szarp-utils
 Description: This package contains complete SZARP distribution
  This package contains compontents that gets installed by performing make; make doc;make install from
  SZARP source tree. Configures itself as SZARP server.
@@ -194,4 +192,18 @@ XS-Python-Version: ${python:Versions}
 Description: Sets of scripts and libraries to easily manage params.xml file
  This package contains sets of plugins to manage params.xml file, and both
  graphical and command line application to use them.
+
+Package: szarp-iks
+Section: misc
+Architecture: any
+Depends: apache2 , websockify , szarp-iks-server 
+Description: Virtual package that depends on all packages needed to iks system
+
+Package: szarp-iks-server
+Section: misc
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: SZARP iks system server
+ This package contains szarp iks server that provide data from szarp, knlib
+ or remote location for iks system client applications.
 

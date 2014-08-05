@@ -345,11 +345,11 @@ void SetDaemon::AddParam(const std::wstring& name, double min, double max, doubl
 
 void SetDaemon::ReadVals()
 {
-	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"", new NullMutex());
-	Szbase::Init(SC::A2S(PREFIX), NULL);
+	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"", new NullMutex());
+	Szbase::Init(SC::L2S(PREFIX), NULL);
 	Szbase* szb = Szbase::GetObject();
 
-	szb_buffer_t* m_szb = szb_create_buffer(szb, SC::A2S(libpar_getpar("", "datadir", 1)), 
+	szb_buffer_t* m_szb = szb_create_buffer(szb, SC::L2S(libpar_getpar("", "datadir", 1)),
 			m_ipc.m_params_count, m_cfg.GetIPK());
 	assert(m_szb != NULL);
 		

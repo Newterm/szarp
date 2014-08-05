@@ -10,7 +10,9 @@ ProbeType::ProbeType( ProbeType::Type pt , unsigned len )
 ProbeType::ProbeType( const std::string& probe_string )
 	: len(0)
 {
-		 if( probe_string == "10s" )
+		 if( probe_string == "live" )
+		pt = Type::LIVE;
+	else if( probe_string == "10s" )
 		pt = Type::LIVE;
 	else if( probe_string == "10m" )
 		pt = Type::M10;

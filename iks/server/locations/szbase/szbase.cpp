@@ -2,6 +2,8 @@
 
 #include <typeinfo>
 
+#include <liblog.h>
+
 #include "cmd_set.h"
 #include "cmd_value.h"
 #include "cmd_list_sets.h"
@@ -89,8 +91,8 @@ void SzbaseProt::set_current_set( Set::const_ptr s , ProbeType pt )
 		if( p )
 			send_cmd( new ValueSnd(p,pt) );
 		else
-			/* TODO: Log this somewhere (21/03/2014 18:40, jkotur) */
-			std::cerr << "Unknown param in set:O" << std::endl;
+			sz_log(0, "Unknown param (%s) in set (%s)",
+					itr->c_str() , s->get_name().c_str() );
 	}
 }
 

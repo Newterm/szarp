@@ -28,9 +28,9 @@
 
 typedef wxString ssstring;
 /**converts char* to wxString*/
-#define csconv(string) (wxString(SC::A2S(string)))
+#define csconv(string) (wxString(SC::L2S(string)))
 /**converts wxString to const char**/
-#define scconv(string) (SC::S2A(string).c_str())
+#define scconv(string) (SC::S2L(string).c_str())
 
 #else //USE_WX
 

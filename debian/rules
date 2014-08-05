@@ -76,7 +76,9 @@ NO_CB_PACK_OPTS ?= \
 		-pszarp-wx \
 		-pszarp-viewer \
 		-pszarp-xsltd \
-		-pszarp-dbg-symbols
+		-pszarp-dbg-symbols \
+		-pszarp-iks \
+		-pszarp-iks-server
 
 DOC_PACKAGES ?= \
 		-pszarp-doc-pdf \

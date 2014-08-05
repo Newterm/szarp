@@ -86,6 +86,7 @@
 /** arguments processing, see info argp */
 #include <argp.h>
 
+char argp_program_name[] = "szbnull";
 const char *argp_program_version = "szbnull ""$Revision: 6199 $";
 const char *argp_program_bug_address = "coders@praterm.com.pl";
 static char doc[] = "Fills all parameters in szbase with SZB_NODATA for provided data range.\v\
@@ -386,7 +387,7 @@ int SetNoData(time_t start, time_t end)
 		sz_log(0, "szbnull: set 'datadir' param in " SZARP_CFG " file");
 		return 1;
 	}
-	data_dir = SC::A2S(_data_dir);
+	data_dir = SC::L2S(_data_dir);
 
 	c = libpar_getpar(SZARP_CFG_SECTION, "log_level", 0);
 	if (c == NULL)
@@ -398,7 +399,7 @@ int SetNoData(time_t start, time_t end)
 	l = loginit(l, NULL);
 
 	ipk = new TSzarpConfig();
-	if (ipk->loadXML(SC::A2S(ipk_path))) {
+	if (ipk->loadXML(SC::L2S(ipk_path))) {
 		sz_log(0, "szbnull: error loading IPK configuration '%s'",
 				ipk_path);
 		return 1;
@@ -419,13 +420,9 @@ int SetNoData(time_t start, time_t end)
 int main(int argc, char* argv[])
 {
 	struct arguments arguments;
-	int loglevel;	/**< Log level. */
 
 	setbuf(stdout, 0);
 	
-	/* Set initial logging. */
-	loglevel = loginit_cmdline(2, NULL, &argc, argv);
-
 	/* Load configuration data. */
 	libpar_read_cmdline(&argc, argv);
 	
@@ -438,7 +435,7 @@ int main(int argc, char* argv[])
 			|| arguments.end == -1 
 			|| arguments.start > arguments.end) {
 		printf("\nIsuffcient/invalid time specification\n");
-		argp_help(&argp, stdout, ARGP_HELP_USAGE, "szbnull");
+		argp_help(&argp, stdout, ARGP_HELP_USAGE, argp_program_name );
 		return 1;
 	}
 

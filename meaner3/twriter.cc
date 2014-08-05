@@ -66,7 +66,7 @@ int TWriter::LoadConfig(const char *section, const char* datadir_param)
 		sz_log(0, "TWriter::LoadConfig(): set 'IPK' param in szarp.cfg file");
 		return 1;
 	}
-	ipk_path = SC::A2S(_ipk_path);
+	ipk_path = SC::L2S(_ipk_path);
 	free(_ipk_path);
 	
 	char* _data_dir = libpar_getpar(section, datadir_param, 0);
@@ -74,7 +74,7 @@ int TWriter::LoadConfig(const char *section, const char* datadir_param)
 		sz_log(0, "TWriter::LoadConfig(): set '%s' param in szarp.cfg file", datadir_param);
 		return 1;
 	}
-	data_dir = SC::A2S(_data_dir);
+	data_dir = SC::L2S(_data_dir);
 	free(_data_dir);
 
 	c = libpar_getpar(section, "log_level", 0);

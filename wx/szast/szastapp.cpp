@@ -105,7 +105,7 @@ bool SzastApp::CheckGroup() {
 		return false;
 
 	for (char **gn = dialout_group->gr_mem; *gn; gn++)
-		if (SC::A2S(*gn) == user)
+		if (SC::L2S(*gn) == user)
 			return false;
 	int ret = wxMessageBox(wxString::Format(_("User %s is not a member of 'dialout' group. This probably means that you won't have access to a serial port.\n"
 				"Would you like to add to user %s to a a 'dialout' group? (You'll have to type administrator password)"), user.c_str(), user.c_str()),
@@ -118,7 +118,7 @@ bool SzastApp::CheckGroup() {
 	libpar_init();
 	libpar_init_with_filename(const_cast<char*>(SC::S2A((GetSzarpDir() + _T("resources/szarp.cfg"))).c_str()), 0);
 	char* _sucommand = libpar_getpar("szast", "su_command", 0);
-	wxString sucommand = SC::A2S(_sucommand);
+	wxString sucommand = SC::L2S(_sucommand);
 	free(_sucommand);
 	libpar_done();
 

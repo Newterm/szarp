@@ -29,12 +29,12 @@ public:
 		namespace bp = boost::property_tree;
 
 		bp::ptree out;
-		bp::ptree remotes;
 
 		for( auto itr=locs.begin() ; itr!=locs.end() ; ++itr )
-			remotes.push_back( std::make_pair( "" , bp::ptree(*itr) ) );
-
-		out.add_child( "remotes" , remotes );
+		{
+			out.put( *itr + ".name" , itr.get_name() );
+			out.put( *itr + ".type" , itr.get_type() );
+		}
 
 		apply( ptree_to_json( out , false ) );
 	}

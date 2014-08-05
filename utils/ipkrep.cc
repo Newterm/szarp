@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
 		if (!strcmp(argv[1], "-q") || !strcmp(argv[1], "-quiet") ) {
 			input = argv[2];
 		
-			i = sc->loadXML(SC::A2S(input));
+			i = sc->loadXML(SC::L2S(input));
 			if (i) {
 				cout << "Error while reading configuration.\n";
 				return 1;
@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
 			a = sc->checkRepetitions(1);
 
 		} else {
-			i = sc->loadXML(SC::A2S(input));
+			i = sc->loadXML(SC::L2S(input));
 			if (i) {
 				cout << "Error while reading configuration.\n";
 				return 1;

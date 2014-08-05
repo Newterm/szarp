@@ -7,6 +7,7 @@
 #include "utils/ptree.h"
 
 #include <boost/lexical_cast.hpp>
+#include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
 namespace bp = boost::property_tree;
@@ -33,17 +34,16 @@ void Param::from_params_xml( const bp::ptree& ptree ) throw(xml_parse_error)
 	double max = std::numeric_limits<double>::quiet_NaN();
 	using std::isnan;
 
-	if( param_desc.count("draw") ) {
-		auto& draw_desc = param_desc.get_child("draw");
-		for( auto ic=draw_desc.begin() ; ic!=draw_desc.end() ; ++ic )
+	if( param_desc.count("draw") )
+		for( auto& c : param_desc.get_child("draw") )
 			try {
-				if( ic->first == "@min" ) {
-					auto m = boost::lexical_cast<double>( ic->second.data() );
+				if( c.first == "@min" ) {
+					auto m = boost::lexical_cast<double>( c.second.data() );
 					if( isnan(min) || m < min ) min = m;
 				}
 
-				if( ic->first == "@max" ) {
-					auto m = boost::lexical_cast<double>( ic->second.data() );
+				if( c.first == "@max" ) {
+					auto m = boost::lexical_cast<double>( c.second.data() );
 					if( isnan(max) || m > max ) max = m;
 				}
 
@@ -51,7 +51,6 @@ void Param::from_params_xml( const bp::ptree& ptree ) throw(xml_parse_error)
 			} catch( const boost::bad_lexical_cast& ) {
 				throw xml_parse_error("Invalid min or max value at param_desc " + name);
 			}
-	}
 
 	param_desc.erase("draw");
 	param_desc.erase("raport");

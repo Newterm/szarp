@@ -106,7 +106,7 @@ std::wstring CacheableDatablock::GetCacheRootDirPath(szb_buffer_t *buffer) {
 	if (home == NULL)
 		return std::wstring();
 
-	fs::wpath cachepath = SC::A2S(home);
+	fs::wpath cachepath = SC::L2S(home);
 	if (!fs::exists(cachepath))
 		return std::wstring();
 

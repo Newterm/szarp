@@ -11,8 +11,8 @@ class key_iterator
 public:
     key_iterator( const key_iterator& itr ) : itr(itr.itr) {}
     key_iterator( const typename Map::const_iterator& itr ) : itr(itr) {}
-    typename Map::value_type::first_type* operator->()    { return &itr->first;    }
-    const typename Map::value_type::first_type& operator* () const    { return itr->first;     } 
+    const typename Map::value_type::first_type* operator->() const { return &itr->first;    }
+    const typename Map::value_type::first_type& operator* () const { return itr->first;     } 
     key_iterator&  operator++()    { ++itr; return *this;    }
     key_iterator   operator++(int) { return key_iterator(itr++); }
     bool operator==( const key_iterator& other ) { return itr == other.itr; }

@@ -6,6 +6,8 @@
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <liblog.h>
+
 #include "global_service.h"
 
 using boost::asio::ip::tcp;
@@ -49,8 +51,8 @@ void ProxyLoc::fwd_connect()
 
 void ProxyLoc::get_response( const std::string& line )
 {
-	if( line.empty() || !line[0] == 'k' )
-		std::cerr << "Error in forwarding connection" << std::endl;
+	if( line.empty() || !(line[0] == 'k') )
+		sz_log(0, "Error in forwarding connection, invalid line: '%s'", line.c_str());
 
 	conn_line = remote->on_line_received( std::bind(&ProxyLoc::write_line,this,p::_1) );
 }

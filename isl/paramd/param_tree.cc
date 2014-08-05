@@ -17,7 +17,7 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
- * Pawe≥ Pa≥ucha 2002
+ * Pawel Palucha 2002
  *
  * param_tree.cc - XML params tree
  *
@@ -668,7 +668,7 @@ int ParamTree::set(ParsedURI *uri)
 		if (strcmp((char *)node->name, "param"))
 			return ret;
 
-		return dynamicTree.set_map[node](SC::A2S(uri->getOption("put")));
+		return dynamicTree.set_map[node](SC::L2S(uri->getOption("put"), true));
 
 	}
 
@@ -712,7 +712,7 @@ void ParamTree::writeNode(xmlOutputBufferPtr buf, xmlNodePtr node,
 		} else {
 			xWS(buf, ".."); 
 		}
-		xWS(buf, (char *)SC::S2U(SC::A2S(("\"> .. (poziom wyøej) </a></td></tr>\n"))).c_str());
+		xWS(buf, "\"> .. (poziom wy≈ºej) </a></td></tr>\n");
 	}
 
 	for (n = node->children; n; n = n->next) {
@@ -787,14 +787,13 @@ void ParamTree::writeParam(xmlOutputBufferPtr buf, xmlNodePtr node,
 	} else {
 		xWS(buf, "..");
 	}
-	 xWS(buf, (char *)SC::S2U(SC::A2S("\"> .. (poziom wyøej) </a></li></p>")).c_str());
+	 xWS(buf, "\"> .. (poziom wy≈ºej) </a></li></p>");
 	
-	xWS(buf, (char *)SC::S2U(SC::A2S(
-			"<p><table><tr><td>Pe≥na nazwa</td>\n<td>")).c_str()); 
+	xWS(buf, "<p><table><tr><td>Pe≈Çna nazwa</td>\n<td>");
 	c = xGP(node, (xmlChar *)"full_name");
 	xWS(buf, c);
 	xmlFree(c);
-	xWS(buf, (char *)SC::S2U(SC::A2S("</td></tr><tr><td>Nazwa skrÛcona</td><td>")).c_str()); 
+	xWS(buf, "</td></tr><tr><td>Nazwa skr√≥cona</td><td>");
 	c = xGP(node, (xmlChar *)"short_name");
 	xWS(buf, c);
 	xmlFree(c);
@@ -802,7 +801,7 @@ void ParamTree::writeParam(xmlOutputBufferPtr buf, xmlNodePtr node,
 	c = xGP(node, (xmlChar *)"unit");
 	xWS(buf, c);
 	xmlFree(c);
-	xWS(buf, (char *)SC::S2U(SC::A2S("</td></tr><tr><td>Warto∂Ê</td><td>")).c_str());
+	xWS(buf, "</td></tr><tr><td>Warto≈õƒá</td><td>");
 	c = xGP(node, (xmlChar *)"value");
 	xWS(buf, c);
 	xmlFree(c);

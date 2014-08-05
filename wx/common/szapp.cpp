@@ -108,7 +108,7 @@ wxString szAppImpl::GetSzarpDir()
 
 	return dirpath + wxFileName::GetPathSeparator();
 #else
-	wxString ret = SC::A2S(PREFIX).c_str();
+	wxString ret = SC::L2S(PREFIX).c_str();
 	if (ret[ret.Length() - 1] != '/') {
 		ret += wxString(_T("/"));
 	}
