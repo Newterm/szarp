@@ -25,6 +25,7 @@
 #include "sz4/block_cache.h"
 #include "sz4/base.h"
 #include "sz4/buffer.h"
+#include "sz4/util.h"
 #include "sz4/real_param_entry.h"
 #include "sz4/lua_optimized_param_entry.h"
 #include "sz4/lua_param_entry.h"

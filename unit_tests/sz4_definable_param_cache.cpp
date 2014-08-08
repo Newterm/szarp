@@ -73,7 +73,7 @@ void Sz4DefinableParamCache::test1() {
 	CPPUNIT_ASSERT_EQUAL(sz4::make_nanosecond_time(100, 0), r.second);
 
 	sz4::nanosecond_time_t t = sz4::make_nanosecond_time(100, 0);
-	cache.store_value(10, t, false, set);
+	cache.store_value(10, t, false, std::move(set));
 	CPPUNIT_ASSERT(cache.get_value(t, v, fixed, set));
 	CPPUNIT_ASSERT_EQUAL(v, 10);
 
@@ -84,7 +84,7 @@ void Sz4DefinableParamCache::test1() {
 	CPPUNIT_ASSERT_EQUAL(sz4::make_nanosecond_time(100, 0), r.second);
 
 	sz4::nanosecond_time_t t1 = sz4::make_nanosecond_time(110, 0);
-	cache.store_value(20, t1, true, set);
+	cache.store_value(20, t1, true, std::move(set));
 
 	CPPUNIT_ASSERT(cache.get_value(t1, v, fixed, set));
 	CPPUNIT_ASSERT_EQUAL(v, 20);
@@ -109,7 +109,7 @@ void Sz4DefinableParamCache::test1() {
 	CPPUNIT_ASSERT_EQUAL(sz4::make_nanosecond_time(110, 0), r.second);
 
 	sz4::nanosecond_time_t t2 = sz4::make_nanosecond_time(130, 0);
-	cache.store_value(30, t2, true, set);
+	cache.store_value(30, t2, true, std::move(set));
 
 	r = cache.search_data_right(sz4::make_nanosecond_time(130, 0), 
 					sz4::make_nanosecond_time(200, 0), 
@@ -156,7 +156,7 @@ void Sz4DefinableParamCache::test1() {
 	CPPUNIT_ASSERT_EQUAL(size_t(2), cache.blocks().size());
 
 	sz4::nanosecond_time_t t3 = sz4::make_nanosecond_time(120, 0);
-	cache.store_value(30, t3, true, set);
+	cache.store_value(30, t3, true, std::move(set));
 
 	CPPUNIT_ASSERT_EQUAL(size_t(1), cache.blocks().size());
 }
@@ -168,23 +168,23 @@ void Sz4DefinableParamCache::test2() {
 	bool fixed;
 	sz4::generic_block_ptr_set set;
 
-	cache.store_value(10, sz4::make_nanosecond_time(100, 0), true, set);
+	cache.store_value(10, sz4::make_nanosecond_time(100, 0), true, sz4::generic_block_ptr_set());
 	CPPUNIT_ASSERT(cache.get_value(sz4::make_nanosecond_time(100, 0), v, fixed, set));
 	CPPUNIT_ASSERT_EQUAL(v, 10);
 
-	cache.store_value(20, sz4::make_nanosecond_time(110, 0), true, set);
-	cache.store_value(10, sz4::make_nanosecond_time(120, 0), true, set);
+	cache.store_value(20, sz4::make_nanosecond_time(110, 0), true, sz4::generic_block_ptr_set());
+	cache.store_value(10, sz4::make_nanosecond_time(120, 0), true, sz4::generic_block_ptr_set());
 
 	CPPUNIT_ASSERT_EQUAL(size_t(3), cache.blocks().begin()->second->data().size());
 
-	cache.store_value(10,  sz4::make_nanosecond_time(110, 0), true, set);
+	cache.store_value(10,  sz4::make_nanosecond_time(110, 0), true, sz4::generic_block_ptr_set());
 	CPPUNIT_ASSERT_EQUAL(size_t(1), cache.blocks().begin()->second->data().size());
 
-	cache.store_value(30, sz4::make_nanosecond_time(140, 0), true, set);
-	cache.store_value(40, sz4::make_nanosecond_time(150, 0), true, set);
+	cache.store_value(30, sz4::make_nanosecond_time(140, 0), true, sz4::generic_block_ptr_set());
+	cache.store_value(40, sz4::make_nanosecond_time(150, 0), true, sz4::generic_block_ptr_set());
 	CPPUNIT_ASSERT_EQUAL(size_t(2), cache.blocks().size());
 
-	cache.store_value(10, sz4::make_nanosecond_time(130, 0), true, set);
+	cache.store_value(10, sz4::make_nanosecond_time(130, 0), true, sz4::generic_block_ptr_set());
 	CPPUNIT_ASSERT_EQUAL(size_t(1), cache.blocks().size());
 	CPPUNIT_ASSERT_EQUAL(size_t(3), cache.blocks().begin()->second->data().size());
 

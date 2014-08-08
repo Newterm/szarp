@@ -96,7 +96,9 @@ template<> struct value_sum<double> {
 class generic_block;
 
 template<class T> class allocator_type : public
-	boost::pool_allocator<T, boost::default_user_allocator_new_delete, boost::interprocess::null_mutex> {};
+	//boost::pool_allocator<T, boost::default_user_allocator_new_delete, boost::interprocess::null_mutex>
+	std::allocator<T>
+{};
 
 typedef boost::container::flat_set<generic_block*, std::less<generic_block*>, allocator_type<generic_block*> >
 	generic_block_ptr_set;

@@ -71,42 +71,66 @@ public:
 
 		calculation_method<types> ee(m_base, m_param);
 
-		time_type from = start, to = end;
+		time_type range_end;
+		auto read_ahead(m_base->read_ahead());
+		if (read_ahead)
+			range_end = std::max<time_type>(szb_move_time(start, 1, read_ahead.get()), end);
+		else
+			range_end = end;
+		
+		SZARP_PROBE_TYPE step = get_probe_type_step(probe_type);
+		time_type from = start, to = range_end;
 
 		adjust_time_range(from, to);
 
+		if (!read_ahead)
+			m_base->read_ahead() = probe_type;
+		else if (!(start == from))
+			m_base->read_ahead() = boost::optional<SZARP_PROBE_TYPE>();
+
 		sum.add_no_data_weight(from - start);
-		sum.add_no_data_weight(end - to);
-
-		if (to < end)
+		if (to < end) {
+			sum.add_no_data_weight(end - to);
 			sum.set_fixed(false);
+		}
 
-		time_type& current(from);
+		bool first = true;
+		time_type& current(start);
 		while (current < to) {
 			value_type value;
 			bool fixed;
 			generic_block_ptr_set refferred_blocks;
-			if (!m_cache[probe_type].get_value(current,
-					value,
-					fixed,
-					refferred_blocks)) {
-				std::tr1::tie(value, fixed) = ee.calculate_value(current, probe_type, refferred_blocks);
-				m_cache[probe_type].store_value(value, current, fixed, refferred_blocks);
+			time_type next = szb_move_time(current, 1, step);
+
+			if (!m_cache[step].get_value(current,
+						value,
+						fixed,
+						refferred_blocks)) {
+				std::tr1::tie(value, fixed) = ee.calculate_value(current, step, refferred_blocks);
+				if (current < end) {
+					if (!value_is_no_data(value))
+						sum.add(value, next - current);
+					else
+						sum.add_no_data_weight(next - current);
+					sum.add_refferred_blocks(
+							refferred_blocks.begin(),
+							refferred_blocks.end()
+							);
+					sum.set_fixed(fixed);
+				}
+
+				m_cache[step].store_value(value, current, fixed, std::move(refferred_blocks));
 			}
 
-			time_type next = szb_move_time(current, 1, probe_type);
-			if (!value_is_no_data(value))
-				sum.add(value, next - current);
-			else
-				sum.add_no_data_weight(next - current);
-			sum.add_refferred_blocks(
-					refferred_blocks.begin(),
-					refferred_blocks.end()
-					);
-			sum.set_fixed(fixed);
+			if (first) {
+				first = false;
+				m_base->read_ahead() = boost::optional<SZARP_PROBE_TYPE>();
+			}
+
 			current = next;
 		}
 
+		m_base->read_ahead() = read_ahead;
 	}
 
 	time_type search_data_right_impl(time_type start, time_type end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) {
@@ -133,7 +157,7 @@ public:
 					std::tr1::get<0>(vf),
 					current,
 					std::tr1::get<1>(vf),
-					block_set);	
+					std::move(block_set));	
 
 		}
 
@@ -161,7 +185,7 @@ public:
 			m_cache[probe_type].store_value(std::tr1::get<0>(vf),
 					current,
 					std::tr1::get<1>(vf),
-					block_set);
+					std::move(block_set));
 		}
 
 		return time_trait<time_type>::invalid_value;

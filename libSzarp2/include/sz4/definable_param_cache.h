@@ -136,9 +136,9 @@ public:
 		return true;
 	}
 
-	typename map_type::iterator create_new_block(const value_type& value, const time_type& time, unsigned version, const generic_block_ptr_set& blocks) {
+	typename map_type::iterator create_new_block(const value_type& value, const time_type& time, unsigned version, generic_block_ptr_set&& blocks) {
 		block_type* block = new block_type(time, m_cache, this);
-		block->append_entry(entry_type(value, version, blocks), szb_move_time(time, 1, m_probe_type));
+		block->append_entry(entry_type(value, version, std::move(blocks)), szb_move_time(time, 1, m_probe_type));
 		return m_blocks.insert(std::make_pair(time, block)).first;
 	}
 
@@ -160,7 +160,7 @@ public:
 			i = block->insert_entry(i,
 					entry_type(value,
 						version,
-						refferred_blocks),
+						std::move(refferred_blocks)),
 					time) + 1;
 
 		time_type end_time = szb_move_time(time, 1, m_probe_type);
@@ -172,7 +172,7 @@ public:
 		} else
 			block->insert_entry(i, entry_type(value,
 						version,
-						refferred_blocks)
+						std::move(refferred_blocks))
 					, end_time);
 	}
 
@@ -189,25 +189,25 @@ public:
 		}
 	}
 
-	void store_value(const value_type& value, const time_type& time, bool fixed, const generic_block_ptr_set& refferred_blocks) {
+	void store_value(const value_type& value, const time_type& time, bool fixed, generic_block_ptr_set&& refferred_blocks) {
 		unsigned entry_version = fixed ? 0 : m_current_non_fixed;
 		
 		if (!m_blocks.size()) {
-			create_new_block(value, time, entry_version, refferred_blocks);
+			create_new_block(value, time, entry_version, std::move(refferred_blocks));
 			return;
 		}
 
 		typename map_type::iterator i = m_blocks.upper_bound(time);
 		if (i == m_blocks.begin())
-			i = create_new_block(value, time, entry_version, refferred_blocks);
+			i = create_new_block(value, time, entry_version, std::move(refferred_blocks));
 		else {
 			std::advance(i, -1);
 			if (i->second->end_time() < time)
-				i = create_new_block(value, time, entry_version, refferred_blocks);
+				i = create_new_block(value, time, entry_version, std::move(refferred_blocks));
 			else if (i->second->end_time() == time)
-				i->second->append_entry(entry_type(value, entry_version, refferred_blocks), szb_move_time(time, 1, m_probe_type));
+				i->second->append_entry(entry_type(value, entry_version, std::move(refferred_blocks)), szb_move_time(time, 1, m_probe_type));
 			else
-				insert_value_inside_block(i->second, value, time, entry_version, refferred_blocks);
+				insert_value_inside_block(i->second, value, time, entry_version, std::move(refferred_blocks));
 		}
 
 		maybe_merge_block_with_next_one(i);
@@ -236,23 +236,26 @@ public:
 			return std::make_pair(false, start);
 
 		typename map_type::iterator i = m_blocks.upper_bound(start);
-		if (i != m_blocks.begin())
-			std::advance(i, -1);
+		if (i == m_blocks.begin())
+			return std::make_pair(false, start);
+
+		std::advance(i, -1);
 
 		block_type& block = *i->second;
-		if (block.end_time() <= end)
-			return std::make_pair(false, end);
+		if (block.end_time() <= start)
+			return std::make_pair(false, start);
 
 		typename block_type::value_time_vector::const_iterator j = 
 				block.search_data_left_t(start, end, condition_true_or_expired_op(condition, m_current_non_fixed));
 		time_type time_found = block.search_result_left(start, j);
 		if (!time_trait<time_type>::is_valid(time_found)) {
-			if (block.start_time() > end)
-				return std::make_pair(false, szb_move_time(block.start_time(), -1, m_probe_type));
+			time_type prev_time = szb_move_time(block.start_time(), -1, m_probe_type);
+			if (prev_time > end)
+				return std::make_pair(false, prev_time);
 			else
 				return std::make_pair(true, time_found);
 		} else
-			return search_result(time_found, j);
+			return extract_search_result(time_found, j);
 	}
 
 	std::pair<bool, time_type> search_data_right(const time_type& start, const time_type& end, const search_condition& condition) {
@@ -276,10 +279,10 @@ public:
 			else
 				return std::make_pair(true, time_found);
 		else
-			return search_result(time_found, j);
+			return extract_search_result(time_found, j);
 	}
 
-	std::pair<bool, time_type> search_result(const time_type& time_found, typename block_type::value_time_vector::const_iterator block_iterator) {
+	std::pair<bool, time_type> extract_search_result(const time_type& time_found, typename block_type::value_time_vector::const_iterator block_iterator) {
 		time_type rounded_time = szb_round_time(time_found, m_probe_type);
 		if (block_iterator->value.version == 0
 				|| block_iterator->value.version == m_current_non_fixed)

@@ -27,6 +27,7 @@
 
 #include <boost/filesystem/path.hpp>
 #include <boost/container/flat_set.hpp>
+#include <boost/optional.hpp>
 
 #include "sz4/defs.h"
 #include "sz4/types.h"
@@ -58,6 +59,8 @@ private:
 	lua_interpreter<types> m_interperter;
 
 	block_cache m_cache;
+
+	boost::optional<SZARP_PROBE_TYPE> m_read_ahead;
 public:
 	base_templ(const std::wstring& szarp_data_dir, ipk_container_type* ipk_container) : m_szarp_data_dir(szarp_data_dir), m_ipk_container(ipk_container) {
 		m_interperter.initialize(this, m_ipk_container);
@@ -91,6 +94,7 @@ public:
 		buffer_for_param(param)->get_heartbeat_last_time(t);
 	}
 
+	boost::optional<SZARP_PROBE_TYPE>& read_ahead() { return m_read_ahead; }
 
 	buffer_templ<types>* buffer_for_param(TParam* param) {
 		buffer_templ<types>* buf;

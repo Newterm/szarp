@@ -369,7 +369,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 				par_list *tmp = arguments->list->next;
 				arguments->params.push_back(
 					SzbExtractor::Param(
-						SC::A2S(arguments->list->name).c_str(),
+						SC::U2S((unsigned char*)arguments->list->name).c_str(),
 						L"",
 						NULL,
 						SzbExtractor::TYPE_AVERAGE ));

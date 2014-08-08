@@ -27,7 +27,7 @@
 
 namespace sz4 {
 
-template<class pair_type> pair_type make_value_time_pair(const typename pair_type::value_type& v, const typename pair_type::time_type& t) {
+template<class pair_type> pair_type make_value_time_pair(const typename pair_type::value_type&& v, const typename pair_type::time_type& t) {
 	pair_type pair;
 	pair.value = v;
 	pair.time = t;
@@ -175,16 +175,16 @@ public:
 	}
 
 
-	void append_entry(const value_type& value, const time_type& time) {
+	void append_entry(value_type&& value, const time_type& time) {
 		cache_block_size_updater(m_cache, this);
 		if (!m_data.size())
-			m_data.push_back(make_value_time_pair<value_time_type>(value, time));
+			m_data.push_back(make_value_time_pair<value_time_type>(std::move(value), time));
 		else {
 			value_time_type& last_value_time = *m_data.rbegin();
 			if (last_value_time.value == value) {
 				last_value_time.time = time;
 			} else {
-				m_data.push_back(make_value_time_pair<value_time_type>(value, time));
+				m_data.push_back(make_value_time_pair<value_time_type>(std::move(value), time));
 			}
 		}
 	}
@@ -194,14 +194,14 @@ public:
 			return;
 
 		cache_block_size_updater(m_cache, this);
-		append_entry(begin->value, begin->time);
+		append_entry(std::move(begin->value), begin->time);
 		m_data.insert(m_data.end(), begin + 1, end);
 	}
 
 
-	typename value_time_vector::iterator insert_entry(typename value_time_vector::iterator i, const value_type& value, const time_type& time) {
+	typename value_time_vector::iterator insert_entry(typename value_time_vector::iterator i, value_type&& value, const time_type& time) {
 		cache_block_size_updater(m_cache, this);
-		return m_data.insert(i, make_value_time_pair<value_time_type>(value, time));
+		return m_data.insert(i, make_value_time_pair<value_time_type>(std::move(value), time));
 	}
 
 	void set_data(value_time_vector& data) {

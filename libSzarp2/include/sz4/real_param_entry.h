@@ -78,8 +78,9 @@ private:
 	boost::mutex m_mutex;
 
 	bool m_refresh_file_list;
+	bool m_has_paths_to_update;
 public:
-	real_param_entry_in_buffer(base_templ<types> *_base, TParam* param, const boost::filesystem::wpath& param_dir) : m_base(_base), m_param(param), m_param_dir(param_dir), m_refresh_file_list(true)
+	real_param_entry_in_buffer(base_templ<types> *_base, TParam* param, const boost::filesystem::wpath& param_dir) : m_base(_base), m_param(param), m_param_dir(param_dir), m_refresh_file_list(true), m_has_paths_to_update(false)
 		{}
 	void get_weighted_sum_impl(const T& start, const T& end, SZARP_PROBE_TYPE, weighted_sum<V, T>& sum)  {
 		refresh_if_needed();
@@ -184,12 +185,13 @@ public:
 	}
 
 	void refresh_if_needed() {
-		{
+		if (m_has_paths_to_update) {
 			boost::mutex::scoped_lock lock(m_mutex);
 			for (std::vector<std::string>::iterator i = m_paths_to_update.begin(); i != m_paths_to_update.end(); i++) {
 				refresh_file(*i);
 			}
 			m_paths_to_update.clear();
+			m_has_paths_to_update = false;
 		}
 		if (m_refresh_file_list) {
 			try {
@@ -281,6 +283,7 @@ public:
 	void param_data_changed(TParam*, const std::string& path) {
 		boost::mutex::scoped_lock lock(m_mutex);
 		m_paths_to_update.push_back(path);
+		m_has_paths_to_update = true;
 	}
 
 	~real_param_entry_in_buffer() {

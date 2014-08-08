@@ -47,8 +47,6 @@ public:
 
 	template<class T> std::tr1::tuple<double, bool> calculate_value(T time, SZARP_PROBE_TYPE probe_type, generic_block_ptr_set& refferred_blocks) {
 
-		SZARP_PROBE_TYPE step = get_probe_type_step(probe_type);
-
 		int num_of_params = m_param->GetNumParsInFormula();
 		double varray[num_of_params];
 		const double *varrarr[num_of_params];
@@ -58,56 +56,35 @@ public:
 		const std::wstring& formula = m_param->GetDrawFormula();
 		TParam **f_cache = m_param->GetFormulaCache();
 		double pw = pow(10, m_param->GetPrec());
-		double sum = 0;
-		size_t count = 0;
 		bool fixed = true;
 
 		T end_time = szb_move_time(time, 1, probe_type);
 		double stack[200];
 
-		while (time < end_time) {
-			T next_time = szb_move_time(time, 1, step);
-			for (int i = 0; i < num_of_params; i++) {
-				weighted_sum<double, T> wsum;
-				m_base->get_weighted_sum(f_cache[i], time, next_time, step, wsum);
-				varray[i] = descale_value(wsum.avg(), f_cache[i]);
-				refferred_blocks.insert(
-					wsum.refferred_blocks().begin(),
-					wsum.refferred_blocks().end());
-				fixed &= wsum.fixed();
-			}
-
-			default_is_summer_functor is_summer(second_time_t(time), m_param);
-			empty_fetch_functor empty_fetch;
-
-			double v = szb_definable_calculate(stack,
-					int(sizeof(stack) / sizeof(stack[0])),
-					varrarr,
-					f_cache,
-					formula,
-					num_of_params,
-					empty_fetch,
-					is_summer,
-					m_param) / pw;
-			if (!isnan(v)) {
-				sum += v;
-				count += 1;
-			}
-
-			time = next_time;
+		for (int i = 0; i < num_of_params; i++) {
+			weighted_sum<double, T> wsum;
+			m_base->get_weighted_sum(f_cache[i], time, end_time, probe_type, wsum);
+			varray[i] = descale_value(wsum.avg(), f_cache[i]);
+			refferred_blocks.insert(
+				wsum.refferred_blocks().begin(),
+				wsum.refferred_blocks().end());
+			fixed &= wsum.fixed();
 		}
 
-		double v;
-		if (count) 
-			v = sum / count;
-		else
-			v = nan("");
+		default_is_summer_functor is_summer(second_time_t(time), m_param);
+		empty_fetch_functor empty_fetch;
 
-		return std::tr1::tuple<double,
-				bool>(
-				v,
-				fixed);
+		double v = szb_definable_calculate(stack,
+				int(sizeof(stack) / sizeof(stack[0])),
+				varrarr,
+				f_cache,
+				formula,
+				num_of_params,
+				empty_fetch,
+				is_summer,
+				m_param) / pw;
 
+		return std::tr1::tuple<double, bool>(v, fixed);
 	}
 
 };

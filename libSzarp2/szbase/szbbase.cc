@@ -228,18 +228,19 @@ bool Szbase::FindParam(const std::basic_string<unsigned char>& param, std::pair<
 		return false;
 	
 	szb_buffer_t* buffer = GetBufferForParam(bp.second);
-	if (buffer != NULL)
+	if (buffer == NULL)
 		return false;
 
 	return true;
 }
 
 bool Szbase::FindParam(const std::wstring& param, std::pair<szb_buffer_t*, TParam*>& bp) {
+	bp.second = m_ipk_containter->GetParam(param);
 	if (bp.second == NULL)
 		return false;
 	
 	szb_buffer_t* buffer = GetBufferForParam(bp.second);
-	if (buffer != NULL)
+	if (buffer == NULL)
 		return false;
 
 	return true;

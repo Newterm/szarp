@@ -26,28 +26,9 @@ public:
 	virtual void initialize() = 0;
 	std::tr1::tuple<double, bool> calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, generic_block_ptr_set& referred_blocks) {
 		initialize();
-
-		second_time_t end = szb_move_time(time, 1, probe_type);
-		SZARP_PROBE_TYPE step = get_probe_type_step(probe_type);
-
-		bool fixed = true;
-		double sum = 0;
-		int count = 0;
-
-
-		while (time < end) {
-			double value;
-			do_calculate_value(time, step, value, referred_blocks, fixed);
-
-			if (!std::isnan(value)) {
-				sum += value;
-				count += 1;
-			}
-		
-			time = szb_move_time(time, 1, step);
-		}
-
-		return std::tr1::make_tuple(count ? (sum / count) : std::nan(""), fixed);
+		std::tr1::tuple<double, bool> ret;
+		do_calculate_value(time, probe_type, std::tr1::get<0>(ret), referred_blocks, std::tr1::get<1>(ret));
+		return ret;
 	}
 
 	virtual void do_calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, double &result, generic_block_ptr_set& reffered_blocks, bool& fixed) = 0;
