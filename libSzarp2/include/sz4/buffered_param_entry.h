@@ -98,28 +98,22 @@ public:
 		time_type& current(start);
 		while (current < to) {
 			value_type value;
-			bool fixed;
-			generic_block_ptr_set refferred_blocks;
+			bool fixed = true;
 			time_type next = szb_move_time(current, 1, step);
 
 			if (!m_cache[step].get_value(current,
 						value,
-						fixed,
-						refferred_blocks)) {
-				std::tr1::tie(value, fixed) = ee.calculate_value(current, step, refferred_blocks);
-				if (current < end) {
-					if (!value_is_no_data(value))
-						sum.add(value, next - current);
-					else
-						sum.add_no_data_weight(next - current);
-					sum.add_refferred_blocks(
-							refferred_blocks.begin(),
-							refferred_blocks.end()
-							);
-					sum.set_fixed(fixed);
-				}
+						fixed)) {
+				std::tr1::tie(value, fixed) = ee.calculate_value(current, step);
+				m_cache[step].store_value(value, current, fixed);
+			}
 
-				m_cache[step].store_value(value, current, fixed, std::move(refferred_blocks));
+			if (current < end) {
+				if (!value_is_no_data(value))
+					sum.add(value, next - current);
+				else
+					sum.add_no_data_weight(next - current);
+				sum.set_fixed(fixed);
 			}
 
 			if (first) {
@@ -149,15 +143,13 @@ public:
 			
 			current = r.second;
 
-			generic_block_ptr_set block_set;
 			std::tr1::tuple<double,
 				bool>
-				vf(ee.calculate_value(current, probe_type, block_set));
+				vf(ee.calculate_value(current, probe_type));
 			m_cache[probe_type].store_value(
 					std::tr1::get<0>(vf),
 					current,
-					std::tr1::get<1>(vf),
-					std::move(block_set));	
+					std::tr1::get<1>(vf));
 
 		}
 
@@ -179,13 +171,11 @@ public:
 				return r.second;
 			current = r.second;
 
-			generic_block_ptr_set block_set;
 			std::tr1::tuple<double, bool>
-				 vf(ee.calculate_value(current, probe_type, block_set));
+				 vf(ee.calculate_value(current, probe_type));
 			m_cache[probe_type].store_value(std::tr1::get<0>(vf),
 					current,
-					std::tr1::get<1>(vf),
-					std::move(block_set));
+					std::tr1::get<1>(vf));
 		}
 
 		return time_trait<time_type>::invalid_value;

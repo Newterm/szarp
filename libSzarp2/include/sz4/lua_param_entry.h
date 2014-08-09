@@ -44,7 +44,7 @@ public:
 
 	void initialize() {}
 
-	void do_calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, double &result, generic_block_ptr_set& reffered_blocks, bool& fixed) {
+	void do_calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, double &result, bool& fixed) {
 		if (!m_param_ok) {
 			result = std::nan("");
 			fixed = false;
@@ -53,8 +53,7 @@ public:
 
 		fixed_stack_top stack_top(m_base->fixed_stack());
 		result = m_base->get_lua_interpreter().calculate_value(time, probe_type, 0);
-		fixed &= stack_top.value();
-		reffered_blocks.insert(stack_top.refferred_blocks().begin(), stack_top.refferred_blocks().end());
+		fixed &= stack_top.top();
 	}
 
 	~lua_caluclate() {

@@ -28,15 +28,15 @@ class fixed_stack_top {
 public:
 	fixed_stack_top(fixed_stack_type& stack)
 			: m_stack(stack) {
-		m_stack.push_back(std::make_pair(true, generic_block_ptr_set()));
+		m_stack.push_back(true);
 	}
 
-	bool& value() {
-		return m_stack.back().first;
+	void _and(bool _and) {
+		m_stack.back() = m_stack.back() & _and;
 	}
 
-	generic_block_ptr_set& refferred_blocks() {
-		return m_stack.back().second;
+	bool top() const {
+		return m_stack.back();
 	}
 
 	~fixed_stack_top() {

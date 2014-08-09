@@ -62,7 +62,7 @@ public:
 	execution_engine(base_templ<types>* _base, TParam* param) : m_base(_base), m_exec_param(param->GetLuaExecParam()), m_initialized(false) {
 	}
 
-	void do_calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, double &result, generic_block_ptr_set& reffered_blocks, bool& fixed) {
+	void do_calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, double &result, bool& fixed) {
 
 		fixed_stack_top stack_top(m_base->fixed_stack());
 
@@ -71,9 +71,8 @@ public:
 		m_vars[2] = probe_type;
 		m_exec_param->m_statement->Execute();
 
-		fixed &= stack_top.value();
+		fixed &= stack_top.top();
 		result = m_vars[0];
-		reffered_blocks.insert(stack_top.refferred_blocks().begin(), stack_top.refferred_blocks().end());
 	}
 
 	virtual double Value(size_t param_index, const double& time_, const double& probe_type) {
@@ -87,11 +86,7 @@ public:
 				sum);
 
 		assert(m_base->fixed_stack().size());
-		m_base->fixed_stack().back().first &= sum.fixed();
-		m_base->fixed_stack().back().second.insert(
-				sum.refferred_blocks().begin(),
-				sum.refferred_blocks().end());
-
+		m_base->fixed_stack().back() = m_base->fixed_stack().back() & sum.fixed();
 		return scale_value(sum.avg(), ref.m_param);
 	}
 

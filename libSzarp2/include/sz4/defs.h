@@ -117,7 +117,6 @@ private:
 
 	time_diff_type m_no_data_weight;
 	bool m_fixed;
-	generic_block_ptr_set m_refferred_blocks;
 
 	template <class T> T calc_gcd(T p, T q) const {
 		if (p < q)
@@ -200,15 +199,10 @@ public:
 	bool fixed() const { return m_fixed; }
 	void set_fixed(bool fixed) { m_fixed &= fixed; }
 
-	generic_block_ptr_set& refferred_blocks() {
-		return m_refferred_blocks;
-	}
-
 	template<class other_value_type, class other_type>
 	void take_from(weighted_sum<other_value_type, other_type>& o) {
 		m_no_data_weight = o.no_data_weight();
 		m_fixed = o.fixed();
-		m_refferred_blocks.swap(o.refferred_blocks());
 		m_gcd = o.gcd();
 
 		assert(o.weights().size() == o.values().size());
@@ -220,13 +214,6 @@ public:
 		}
 	}
 
-	template<class T> void add_refferred_blocks(T begin, T end) {
-		m_refferred_blocks.insert(begin, end);
-	}
-
-	void add_refferred_block(generic_block* block) {
-		m_refferred_blocks.insert(block);
-	}
 };
 
 class search_condition {

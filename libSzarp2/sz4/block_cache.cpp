@@ -19,14 +19,12 @@
 
 #include "sz4/types.h"
 #include "sz4/defs.h"
-#include "sz4/block_cache.h"
 #include "sz4/block.h"
+#include "sz4/block_cache.h"
 
 namespace sz4 {
 
 block_cache::block_cache() : m_cache_size(0) {
-	m_blocks.push_back(NULL);
-	m_list_separator_position = m_blocks.begin();
 }
 
 void block_cache::cache_size(size_t& size_in_bytes, size_t& blocks_count) const {
@@ -34,33 +32,29 @@ void block_cache::cache_size(size_t& size_in_bytes, size_t& blocks_count) const 
 	blocks_count = m_blocks.size() - 1;
 }
 
-void block_cache::add_new_block(generic_block* block) {
-	block->location() = m_blocks.insert(m_blocks.end(), block);
+void block_cache::add_new_block(generic_block& block) {
+	m_blocks.push_back(block);
 }
 
-void block_cache::remove_block(generic_block* block) {
-	m_blocks.erase(block->location());
-	m_cache_size -= block->block_size();
+void block_cache::remove_block(generic_block& block) {
+	m_blocks.erase(generic_block_list::s_iterator_to(block));
+	m_cache_size -= block.block_size();
 }
 
-void block_cache::block_size_changed(generic_block* block, size_t previous_size) {
+void block_cache::block_size_changed(generic_block& block, size_t previous_size) {
 	m_cache_size -= previous_size;
-	m_cache_size += block->block_size();
+	m_cache_size += block.block_size();
 }
 
-void block_cache::block_updated(generic_block* block) {
-	m_blocks.erase(block->location());
-	m_blocks.insert(block->has_refferring_blocks()
-		? m_blocks.end() : m_list_separator_position, block);
+void block_cache::block_updated(generic_block& block) {
+	m_blocks.erase(generic_block_list::s_iterator_to(block));
+	m_blocks.push_back(block);
 }
 
 void block_cache::remove(size_t size) {
-	std::list<generic_block*>::iterator i = m_blocks.begin();
-	while (i != m_list_separator_position && size > 0) {
-		generic_block* block = *i;
-		i = m_blocks.begin();
-		size -= std::min(size, (*i)->block_size());
-		delete block;
+	while (size > 0 && m_blocks.size()) {
+		size -= std::min(size, m_blocks.front().block_size());
+		delete &m_blocks.front();
 	}
 }
 
@@ -69,13 +63,13 @@ cache_block_size_updater::cache_block_size_updater(block_cache* cache,
 				:
 				m_cache(cache),
 				m_block(block) {
-	m_previous_size = m_block->block_size();	
+	m_previous_size = m_block->block_size();
 }
 
 cache_block_size_updater::~cache_block_size_updater() {
 	size_t size = m_block->block_size();
 	if (size != m_previous_size)
-		m_cache->block_size_changed(m_block, m_previous_size);
+		m_cache->block_size_changed(*m_block, m_previous_size);
 }
 
 }

@@ -42,8 +42,7 @@ namespace sz4 {
 template<class types> class buffer_templ;
 
 typedef std::vector<
-		std::pair<bool, generic_block_ptr_set >,
-		allocator_type<std::pair<bool, generic_block_ptr_set> >
+		bool
 	> fixed_stack_type;
 
 template<class types> class base_templ {

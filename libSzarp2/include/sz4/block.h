@@ -21,9 +21,10 @@
 #include <iterator>
 #include <list>
 
+#include <boost/intrusive/list.hpp>
+
 #include "sz4/defs.h"
 #include "sz4/time.h"
-#include "sz4/block_cache.h"
 
 namespace sz4 {
 
@@ -48,26 +49,34 @@ class block_cache;
 class generic_block {
 protected:
 	block_cache* m_cache;
-	std::vector<generic_block*> m_refferring_blocks;
-	std::vector<generic_block*> m_refferred_blocks;
-
-	std::list<generic_block*>::iterator m_block_location;
 public:
 	generic_block(block_cache* cache);
-	bool ok_to_delete() const;
-	std::list<generic_block*>::iterator& location();
-	bool has_refferring_blocks() const;
-	void add_refferring_block(generic_block* block);
-	void remove_refferring_block(generic_block* block);
-
-	void add_refferred_block(generic_block* block);
-	void remove_refferred_block(generic_block* block);
 
 	virtual size_t block_size() const = 0;
 
+	void block_data_updated(size_t previous_size);
+
 	void remove_from_cache();
+
 	virtual ~generic_block();
+
+	boost::intrusive::list_member_hook<> m_list_entry;
 };
+
+class cache_block_size_updater {
+	block_cache* m_cache;
+	generic_block* m_block;
+	size_t m_previous_size;
+public:
+	cache_block_size_updater(block_cache* cache, generic_block* block);
+	~cache_block_size_updater();
+};
+
+typedef boost::intrusive::list<
+	generic_block, 
+	boost::intrusive::member_hook<generic_block, boost::intrusive::list_member_hook<>, &generic_block::m_list_entry>
+	> generic_block_list;
+
 
 template<class T> struct empty_merge {
 	void operator()(T& t, T& t2, T& t3) const {}
@@ -112,10 +121,6 @@ public:
 
 	size_t block_size() const {
 		return m_data.size() * (sizeof(value_type) + sizeof(time_type));
-	}
-
-	void block_data_updated(size_t previous_size) {
-		m_cache->block_size_changed(this, previous_size);
 	}
 
 	template<class search_op> typename value_time_vector::const_iterator search_data_right_t(const time_type& start, const time_type& end, const search_op &condition) {
@@ -174,7 +179,6 @@ public:
 		return m_data.end();
 	}
 
-
 	void append_entry(value_type&& value, const time_type& time) {
 		cache_block_size_updater(m_cache, this);
 		if (!m_data.size())
@@ -221,7 +225,9 @@ public:
 			m_data.erase(i, i + 2);
 		}
 	}
-	virtual ~value_time_block() {}
+	virtual ~value_time_block() {
+		remove_from_cache();
+	}
 
 protected:
 	value_time_vector m_data;
@@ -264,8 +270,6 @@ public:
 
 			std::advance(i, 1);
 		}
-
-		r.add_refferred_block(this);
 	}
 
 	virtual size_t block_size() const {

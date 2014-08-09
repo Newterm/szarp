@@ -45,7 +45,7 @@ public:
 	rpn_calculate(base_templ<types>* base, TParam* param) : m_base(base), m_param(param) {
 	}
 
-	template<class T> std::tr1::tuple<double, bool> calculate_value(T time, SZARP_PROBE_TYPE probe_type, generic_block_ptr_set& refferred_blocks) {
+	template<class T> std::tr1::tuple<double, bool> calculate_value(T time, SZARP_PROBE_TYPE probe_type) {
 
 		int num_of_params = m_param->GetNumParsInFormula();
 		double varray[num_of_params];
@@ -65,9 +65,6 @@ public:
 			weighted_sum<double, T> wsum;
 			m_base->get_weighted_sum(f_cache[i], time, end_time, probe_type, wsum);
 			varray[i] = descale_value(wsum.avg(), f_cache[i]);
-			refferred_blocks.insert(
-				wsum.refferred_blocks().begin(),
-				wsum.refferred_blocks().end());
 			fixed &= wsum.fixed();
 		}
 

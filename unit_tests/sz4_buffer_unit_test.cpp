@@ -16,6 +16,7 @@
 #include "szarp_base_common/lua_param_optimizer.h"
 #include "szarp_base_common/lua_param_optimizer_templ.h"
 #include "sz4/defs.h"
+#include "sz4/block.h"
 #include "sz4/block_cache.h"
 #include "sz4/lua_interpreter_templ.h"
 

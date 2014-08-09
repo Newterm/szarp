@@ -24,14 +24,14 @@ namespace sz4 {
 class lua_average_calc_algo {
 public:
 	virtual void initialize() = 0;
-	std::tr1::tuple<double, bool> calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, generic_block_ptr_set& referred_blocks) {
+	std::tr1::tuple<double, bool> calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type) {
 		initialize();
-		std::tr1::tuple<double, bool> ret;
-		do_calculate_value(time, probe_type, std::tr1::get<0>(ret), referred_blocks, std::tr1::get<1>(ret));
+		std::tr1::tuple<double, bool> ret(std::nan(""), true);
+		do_calculate_value(time, probe_type, std::tr1::get<0>(ret), std::tr1::get<1>(ret));
 		return ret;
 	}
 
-	virtual void do_calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, double &result, generic_block_ptr_set& reffered_blocks, bool& fixed) = 0;
+	virtual void do_calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, double &result, bool& fixed) = 0;
 	
 };
 
