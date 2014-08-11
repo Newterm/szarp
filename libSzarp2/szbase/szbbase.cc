@@ -227,8 +227,8 @@ bool Szbase::FindParam(const std::basic_string<unsigned char>& param, std::pair<
 	if (bp.second == NULL)
 		return false;
 	
-	szb_buffer_t* buffer = GetBufferForParam(bp.second);
-	if (buffer == NULL)
+	bp.first = GetBufferForParam(bp.second);
+	if (bp.first == NULL)
 		return false;
 
 	return true;
@@ -239,8 +239,8 @@ bool Szbase::FindParam(const std::wstring& param, std::pair<szb_buffer_t*, TPara
 	if (bp.second == NULL)
 		return false;
 	
-	szb_buffer_t* buffer = GetBufferForParam(bp.second);
-	if (buffer == NULL)
+	bp.first = GetBufferForParam(bp.second);
+	if (bp.first == NULL)
 		return false;
 
 	return true;

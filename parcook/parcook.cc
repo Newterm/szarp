@@ -1106,11 +1106,15 @@ void configure_pars_infos(TSzarpConfig *ipk)
 		tParamInfo* msw_pi = (tParamInfo*) malloc(sizeof(tParamInfo));
 		msw_pi->param = p_cache[0];
 		msw_pi->type = tParamInfo::MSW;
+		msw_pi->lsw = lsw;
+		msw_pi->msw = msw;
 		ParsInfo[msw] = msw_pi;
 
 		tParamInfo* lsw_pi = (tParamInfo*) malloc(sizeof(tParamInfo));
 		lsw_pi->param = p_cache[1];
 		lsw_pi->type = tParamInfo::LSW;
+		lsw_pi->lsw = lsw;
+		lsw_pi->msw = msw;
 		ParsInfo[lsw] = lsw_pi;
 
 		tParamInfo* combined = (tParamInfo*) malloc(sizeof(tParamInfo));
@@ -1409,7 +1413,8 @@ void publish_values(short* Probe, zmq::socket_t& socket) {
 			szarp::ParamValue* param_value = param_values.add_param_values();
 			param_value->set_param_no(i);
 			param_value->set_time(now);
-			param_value->set_int_value(Probe[i]);
+			int tmp = Probe[i];
+			param_value->set_int_value(tmp);
 		}
 
 		for (size_t i = 0; i < CombinedParams.size(); i++) {

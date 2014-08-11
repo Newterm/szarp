@@ -38,14 +38,14 @@ EXTRA_PROGRAMS = szbtest lua_parser_test xmlreader_test
 szbtest_SOURCES = $(SZBASE_DIR)/szbtest.cc
 
 
-protobuf/protobuf/paramsvalues.pb.h: protobuf/paramsvalues.proto 
-	$(PROTOC) --cpp_out=$(SRCDIR)protobuf $<
+$(SOURCE_DIR)/protobuf/protobuf/paramsvalues.pb.h: $(SOURCE_DIR)/protobuf/paramsvalues.proto 
+	$(PROTOC) --cpp_out=$(SOURCE_DIR)/protobuf -I$(SOURCE_DIR)/protobuf $(SOURCE_DIR)/protobuf/paramsvalues.proto
 
-protobuf/protobuf/paramsvalues.pb.cc: protobuf/paramsvalues.proto 
-	$(PROTOC) --cpp_out=$(SRCDIR)protobuf $<
+$(SOURCE_DIR)/protobuf/protobuf/paramsvalues.pb.cc: $(SOURCE_DIR)/protobuf/paramsvalues.proto 
+	$(PROTOC) --cpp_out=$(SOURCE_DIR)/protobuf -I$(SOURCE_DIR)/protobuf $(SOURCE_DIR)/protobuf/paramsvalues.proto
 
-include/protobuf/paramsvalues.pb.h: protobuf/protobuf/paramsvalues.pb.h
-	mkdir -p include/protobuf
+$(SOURCE_DIR)/include/protobuf/paramsvalues.pb.h: $(SOURCE_DIR)/protobuf/protobuf/paramsvalues.pb.h
+	mkdir -p $(SOURCE_DIR)/include/protobuf
 	cp $< $@
 
 
@@ -188,8 +188,8 @@ libSzarp2_la_SOURCES = \
 			$(SZ4_DIR)/block_cache.cpp \
 			$(SZ4_DIR)/filelock.cpp \
 			\
-			protobuf/protobuf/paramsvalues.pb.cc \
-			protobuf/protobuf/paramsvalues.pb.h
+			$(SOURCE_DIR)/protobuf/paramsvalues.pb.cc \
+			$(SOURCE_DIR)/include/paramsvalues.pb.h
 
 
 libSzarp2_la_LIBADD = libSzarpLuaParser.la

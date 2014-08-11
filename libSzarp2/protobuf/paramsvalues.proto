@@ -5,7 +5,7 @@ message ParamValue {
 	required uint32 time = 2;
 	optional uint32 nanotime = 3;
 
-	optional sint32 int_value = 11;
+	optional int32 int_value = 11;
 	optional float float_value = 12;
 	optional double double_value = 13;
 }
