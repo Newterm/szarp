@@ -17,10 +17,11 @@ public:
 	virtual to_send send_str()
 	{
 		return to_send( str(
-				boost::format("\"%s\" %d %s") %
+				boost::format("\"%s\" %d %s %d") %
 					p->get_name() %
 					p->get_value( pt ) %
-					(pt == ProbeType() ? "" : pt.to_string()) ));
+					(pt.get_type() == ProbeType::Type::LIVE ? "" : pt.to_string()) %
+					(pt.get_type() == ProbeType::Type::LIVE ? "" : pt.get_time()));
 	}
 
 	virtual bool single_shot()

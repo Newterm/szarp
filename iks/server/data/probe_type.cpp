@@ -10,7 +10,7 @@ ProbeType::ProbeType( ProbeType::Type pt , unsigned len )
 ProbeType::ProbeType( const std::string& probe_string )
 	: len(0)
 {
-		 if( probe_string == "live" )
+	if( probe_string == "live" )
 		pt = Type::LIVE;
 	else if( probe_string == "10s" )
 		pt = Type::LIVE;
@@ -52,6 +52,50 @@ std::string ProbeType::to_string() const
 	if( pt == Type::YEAR )
 		return "1Y";
 	return "";
+}
+
+std::time_t ProbeType::get_time() const
+{
+	std::time_t timestamp = std::time(NULL);
+	std::tm *local_time = std::localtime(&timestamp);
+	if( pt == Type::LIVE ) {
+		local_time->tm_sec = local_time->tm_sec - local_time->tm_sec % 10;
+	}
+	if( pt == Type::M10 ) {
+		local_time->tm_sec = 0;
+		local_time->tm_min = local_time->tm_min - local_time->tm_min % 10;
+	}
+	if( pt == Type::HOUR ) {
+		local_time->tm_sec = 0;
+		local_time->tm_min = 0;
+	}
+	if( pt == Type::H8 ) {
+		local_time->tm_sec = 0;
+		local_time->tm_min = 0;
+		local_time->tm_hour = local_time->tm_hour - local_time->tm_hour % 8;
+	}
+	if( pt == Type::DAY ) {
+		local_time->tm_sec = 0;
+		local_time->tm_min = 0;
+		local_time->tm_hour = 0;
+	}
+	if( pt == Type::WEEK ) {
+		//TODO
+	}
+	if( pt == Type::MONTH ) {
+		local_time->tm_sec = 0;
+		local_time->tm_min = 0;
+		local_time->tm_hour = 0;
+		local_time->tm_mday = 1;
+	}
+	if( pt == Type::YEAR ) {
+		local_time->tm_sec = 0;
+		local_time->tm_min = 0;
+		local_time->tm_hour = 0;
+		local_time->tm_mday = 1;
+		local_time->tm_mon = 0;
+	}
+	return mktime(local_time);
 }
 
 bool operator==( const ProbeType& a , const ProbeType& b )

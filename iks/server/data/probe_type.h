@@ -2,6 +2,7 @@
 #define __DATA_PROBE_TYPE_H__
 
 #include <functional>
+#include <ctime>
 
 #include <szbase/szbbase.h>
 
@@ -33,6 +34,8 @@ public:
 	unsigned get_len() const { return len; }
 
 	std::string to_string() const;
+
+	std::time_t get_time() const;
 
 protected:
 	Type pt;
