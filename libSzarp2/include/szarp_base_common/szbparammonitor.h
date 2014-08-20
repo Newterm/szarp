@@ -72,11 +72,14 @@ class SzbParamMonitor {
 	std::tr1::unordered_map<SzbMonitorTokenType, std::multimap<unsigned, std::pair<SzbParamObserver*, TParam*> > > m_token_observer_param;
 	std::tr1::unordered_map<SzbParamObserver*, std::vector<std::tr1::tuple<SzbMonitorTokenType, TParam*, std::string> > > m_observer_token_param;
 	std::tr1::unordered_map<std::string, SzbMonitorTokenType> m_path_token;
+	std::tr1::unordered_map<SzbMonitorTokenType, std::string> m_token_path;
 
 	boost::mutex m_mutex;
 	boost::condition m_cond;
 	
 	SzbParamMonitorImpl m_monitor_impl;
+
+	void modify_dir_token(SzbMonitorTokenType old_wd, SzbMonitorTokenType new_wd);
 public:
 	SzbParamMonitor();	
 	void dir_registered(SzbMonitorTokenType token, TParam *param, SzbParamObserver* observer, const std::string& path, unsigned order);

@@ -29,6 +29,7 @@
 
 #include <boost/bind.hpp>
 #include <boost/thread/thread.hpp>
+#include <boost/filesystem.hpp>
 
 #include "liblog.h"
 
@@ -69,11 +70,38 @@ void SzbParamMonitorImpl::process_notification() {
 		ssize_t p = 0;
 		while (r > 0) {
 			struct inotify_event* e = (struct inotify_event*) (buf + p);
-			if ((e->mask & (IN_MODIFY | IN_MOVED_TO | IN_CLOSE_WRITE)) && e->len) {
+			if ((e->mask & (IN_MODIFY | IN_MOVED_TO)) && e->len) {
 				size_t l = strlen(e->name);
 				if (l > 4 && e->name[l - 4] == '.' && e->name[l - 3] == 's' && e->name[l - 2] == 'z'
 						&& (e->name[l - 1] == '4' || e->name[l - 1] == 'b'))
 					tokens_and_paths.push_back(std::make_pair(SzbMonitorTokenType(e->wd), std::string(e->name)));
+			} else if ((e->mask & IN_CREATE) && e->len) {
+				auto it = m_monitor->m_token_path.find(e->wd);
+				if (it != m_monitor->m_token_path.end()) {
+					boost::filesystem::path dest_dir = boost::filesystem::absolute(it->second);
+					boost::filesystem::path current_watch = dest_dir;
+
+					while (!boost::filesystem::exists(current_watch)) {
+						current_watch = current_watch.parent_path();
+					}
+
+					int new_wd;
+					if (dest_dir == current_watch)
+						new_wd = inotify_add_watch(m_inotify_socket, it->second.c_str(), IN_MOVED_TO | IN_MODIFY);
+					else
+						new_wd = inotify_add_watch(m_inotify_socket, current_watch.native().c_str(), IN_CREATE);
+
+					if (inotify_rm_watch(m_inotify_socket, e->wd))
+						sz_log(3, "Failed to remove watch, errno: %d", errno);
+
+					if (new_wd < 0) {
+						sz_log(3, "Failed to add watch for path:%s, errno: %d", it->second.c_str(), errno);
+					} else {
+						m_monitor->modify_dir_token(e->wd, new_wd);
+					}
+				} else {
+					sz_log(3, "No entries for given token (path: %s), something is wrong!", it->second.c_str());
+				}
 			}
 			r -= sizeof(*e) + e->len;
 			p += sizeof(*e) + e->len;
@@ -107,7 +135,22 @@ void SzbParamMonitorImpl::process_cmds() {
 
 			switch (cmd.cmd) {
 				case ADD_CMD:
-					wd = inotify_add_watch(m_inotify_socket, cmd.path.c_str(), IN_MOVED_TO | IN_MODIFY);
+					if (boost::filesystem::exists(cmd.path)) {
+						wd = inotify_add_watch(m_inotify_socket, cmd.path.c_str(), IN_MOVED_TO | IN_MODIFY);
+					} else {
+						boost::filesystem::path dest_dir = boost::filesystem::absolute(cmd.path);;
+						boost::filesystem::path current_watch = dest_dir;
+
+						while (!boost::filesystem::exists(current_watch)) {
+							current_watch = current_watch.parent_path();
+						}
+
+						if (dest_dir == current_watch) {
+							wd = inotify_add_watch(m_inotify_socket, cmd.path.c_str(), IN_MOVED_TO | IN_MODIFY);
+						} else {
+							wd = inotify_add_watch(m_inotify_socket, current_watch.native().c_str(), IN_CREATE);
+						}
+					}
 					if (wd < 0) {
 						sz_log(3, "Failed to add watch for path:%s, errno: %d", cmd.path.c_str(), errno);
 						m_monitor->failed_to_register_dir(cmd.param, cmd.observer, cmd.path);
@@ -214,7 +257,6 @@ bool SzbParamMonitorImpl::terminate() {
 	return true;
 }
 
-
 SzbParamMonitor::SzbParamMonitor() : m_monitor_impl(this) {
 	m_monitor_impl.run();
 }
@@ -225,6 +267,7 @@ void SzbParamMonitor::dir_registered(SzbMonitorTokenType token, TParam *param, S
 	m_token_observer_param[token].insert(std::make_pair(order, std::make_pair(observer, param)));
 	m_observer_token_param[observer].push_back(std::tr1::make_tuple(token, param, path));
 	m_path_token[path] = token;
+	m_token_path[token] = path;
 
 	m_cond.notify_one();
 }
@@ -286,6 +329,7 @@ void SzbParamMonitor::remove_observer(SzbParamObserver* obs) {
 			m_monitor_impl.end_monitoring_dir(token);
 
 			m_path_token.erase(path);
+			m_token_path.erase(token);
 			m_token_observer_param.erase(token);
 		} else {
 			for (std::multimap<unsigned, std::pair<SzbParamObserver*, TParam*> >::iterator j = opv.begin();
@@ -298,6 +342,25 @@ void SzbParamMonitor::remove_observer(SzbParamObserver* obs) {
 		}
 	}
 	m_observer_token_param.erase(obs);
+}
+
+void SzbParamMonitor::modify_dir_token(SzbMonitorTokenType old_wd, SzbMonitorTokenType new_wd) {
+	boost::mutex::scoped_lock lock(m_mutex);
+
+	auto &opv = m_token_observer_param[old_wd];
+	for (auto j = opv.begin(); j != opv.end(); j++) {
+		m_token_observer_param[new_wd].insert(*j);
+		auto &tpv = m_observer_token_param[j->second.first];
+		for (auto i = tpv.begin(); i != tpv.end(); i++) {
+			if (old_wd == std::tr1::get<0>(*i))
+				std::tr1::get<0>(*i) = new_wd;
+		}
+	}
+	m_token_observer_param.erase(old_wd);
+	std::string path = m_token_path[old_wd];
+	m_token_path[new_wd] = path;
+	m_token_path.erase(old_wd);
+	m_path_token[path] = new_wd;
 }
 
 void SzbParamMonitor::terminate() {}
