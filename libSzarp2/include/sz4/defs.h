@@ -35,6 +35,12 @@
 
 #include "sz4/time.h"
 
+#ifndef GCC_VERSION
+#define GCC_VERSION (__GNUC__ * 10000 \
+					 + __GNUC_MINOR__ * 100 \
+					 + __GNUC_PATCHLEVEL__)
+#endif
+
 namespace sz4 {
 
 template<class V, class T> struct value_time_pair {
@@ -95,10 +101,16 @@ template<> struct value_sum<double> {
 
 class generic_block;
 
+
 template<class T> class allocator_type : public
 	//boost::pool_allocator<T, boost::default_user_allocator_new_delete, boost::interprocess::null_mutex>
 	std::allocator<T>
-{};
+{
+#if GCC_VERSION >= 40800
+	public:
+		using std::allocator<T>::allocator;
+#endif
+};
 
 typedef boost::container::flat_set<generic_block*, std::less<generic_block*>, allocator_type<generic_block*> >
 	generic_block_ptr_set;
