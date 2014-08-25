@@ -562,6 +562,16 @@
                     </item>
                 </menu>
             </menu>
+            <menu name="WindowM" label="&amp;Window">
+                <item>
+                    <label>Show average type</label>
+                    <name>ShowAverage</name>
+                </item>
+                <item>
+                    <label>Show interface</label>
+                    <name>ShowInterface</name>
+                </item>
+            </menu>
             <menu name="HelpM" label="&amp;Help">
                 <item>
                     <label>Help\tF1</label>

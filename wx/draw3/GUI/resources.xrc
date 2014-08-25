@@ -1628,6 +1628,19 @@
                 </object>
             </object>
         </object>
+        <object class="wxMenu" name="WindowM">
+            <label>_Window</label>
+            <object class="wxMenuItem" name="ShowAverage">
+                <checkable>1</checkable>
+                <checked>1</checked>
+                <label>Show average type</label>
+            </object>
+            <object class="wxMenuItem" name="ShowInterface">
+                <checkable>1</checkable>
+                <checked>1</checked>
+                <label>Show interface</label>
+            </object>
+        </object>
         <object class="wxMenu" name="HelpM">
             <label>_Help</label>
             <object class="wxMenuItem" name="Help">

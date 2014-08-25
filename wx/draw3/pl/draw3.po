@@ -2460,6 +2460,15 @@ msgstr "Wstaw wykres"
 msgid "Add parameter"
 msgstr "Dodaj parametr"
 
+msgid "&Window"
+msgstr "&Okno"
+
+msgid "Show average type"
+msgstr "Poka¿ wybór ¶rednich"
+
+msgid "Show interface"
+msgstr "Poka¿ interfejs"
+
 #~ msgid ""
 #~ "Are you sure you want to delete this param? All draws referring to this "
 #~ "param will be removed as well."

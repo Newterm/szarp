@@ -66,6 +66,15 @@ public:
 	 * Method add DrawPanel 
 	 */
 	bool AddDrawPanel(const wxString &m_base, const wxString& set, PeriodType pt, time_t time, int selected_draw = 0);
+
+	/**
+	 * Method call for Window -> Show average type.
+	 */
+	void OnShowAverage(wxCommandEvent &evt); 
+	/**
+	 * Method call for Window -> Show interface.
+	 */
+	void OnShowInterface(wxCommandEvent &evt); 
 	/**
 	 * Method call when we used exit from MenuBar.
 	 */
@@ -195,6 +204,9 @@ public:
 
 	/**load layout*/
 	bool LoadLayout();
+
+	/**load menu bar state from config*/
+	void LoadMenuBarConfig(wxMenuBar *menu_bar);
 
 	DrawPanel *GetCurrentPanel();
 
