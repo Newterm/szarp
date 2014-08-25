@@ -21,7 +21,7 @@ public:
 					p->get_name() %
 					p->get_value( pt ) %
 					(pt.get_type() == ProbeType::Type::LIVE ? "" : pt.to_string()) %
-					(pt.get_type() == ProbeType::Type::LIVE ? "" : pt.get_time()));
+					(pt.get_type() == ProbeType::Type::LIVE ? "" : std::to_string(pt.get_time()))));
 	}
 
 	virtual bool single_shot()
