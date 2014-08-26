@@ -38,9 +38,11 @@ ParamsUpdater::Subscription ParamsUpdater::subscribe_param(
 		return Subscription();
 
 	Subscription s(
-		*subscribed_params.insert(
-			std::make_shared<SubKey>( itr , pt )
-				).first );
+		subscribed_params.insert(
+			std::make_pair( 
+				std::make_shared<SubKey>( itr , pt ) ,
+				0
+				) ).first->first );
 
 	if( update )
 		data_updater->check_szarp_values();
@@ -79,11 +81,11 @@ void ParamsUpdater::DataUpdater::check_szarp_values(
 	ProbeType min_pt( ProbeType::Type::MAX );
 	for( auto itr=parent->subscribed_params.begin() ;
 		 itr != parent->subscribed_params.end() ; )
-		if( itr->use_count() <= 1 ) {
+		if( itr->first.use_count() <= 1 ) {
 			/** No Subscription object left */
 			parent->subscribed_params.erase( itr++ );
 		} else {
-			min_pt = std::min( (**itr).second , min_pt );
+			min_pt = std::min( (*itr->first).second , min_pt );
 			++itr;
 		}
 
@@ -92,9 +94,16 @@ void ParamsUpdater::DataUpdater::check_szarp_values(
 			 itr != parent->subscribed_params.end() ;
 			 ++itr )
 		{
-			auto& name = *(**itr).first;
-			auto& pt   =  (**itr).second;
+			auto& name = *(*itr->first).first;
+			auto& pt   =  (*itr->first).second;
+			auto& last_update = itr->second;
+
 			time_t ptime = SzbaseWrapper::round( t , pt );
+
+			if( last_update == ptime )
+				continue;
+
+			itr->second = ptime;
 
 			parent->params.param_value_changed(
 					name ,

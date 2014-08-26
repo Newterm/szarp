@@ -59,8 +59,13 @@ void Params::param_value_changed( iterator itr , double value , ProbeType pt )
 	using std::isnan;
 
 	auto pvalue = itr.itr->second->get_value( pt );
-	if( value == pvalue || (isnan(value) && isnan(pvalue)) )
-		/** If values are equal even if both are NaNs do nothing */
+	if( pt.get_type() == ProbeType::Type::LIVE
+	 && (value == pvalue || (isnan(value) && isnan(pvalue))) )
+		/**
+		 * With LIVE probes if values are equal even
+		 * if both are NaNs do nothing. For other probe
+		 * types always send update.
+		 */
 		return;
 
 	itr.itr->second->set_value( value , pt );

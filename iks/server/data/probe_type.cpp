@@ -13,7 +13,7 @@ ProbeType::ProbeType( const std::string& probe_string )
 	if( probe_string == "live" )
 		pt = Type::LIVE;
 	else if( probe_string == "10s" )
-		pt = Type::LIVE;
+		pt = Type::S10;
 	else if( probe_string == "10m" )
 		pt = Type::M10;
 	else if( probe_string == "1h" )
@@ -36,6 +36,8 @@ ProbeType::ProbeType( const std::string& probe_string )
 std::string ProbeType::to_string() const
 {
 	if( pt == Type::LIVE )
+		return "live";
+	if( pt == Type::S10 )
 		return "10s";
 	if( pt == Type::M10 )
 		return "10m";
@@ -58,7 +60,7 @@ std::time_t ProbeType::get_time() const
 {
 	std::time_t timestamp = std::time(NULL);
 	std::tm *local_time = std::localtime(&timestamp);
-	if( pt == Type::LIVE ) {
+	if( pt == Type::LIVE || pt == Type::S10 ) {
 		local_time->tm_sec = local_time->tm_sec - local_time->tm_sec % 10;
 	}
 	if( pt == Type::M10 ) {

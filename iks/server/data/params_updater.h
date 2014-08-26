@@ -2,6 +2,7 @@
 #define __DATA_PARAMS_UPDATER_H__
 
 #include <set>
+#include <unordered_map>
 
 #include "params.h"
 #include "szbase_wrapper.h"
@@ -17,6 +18,7 @@ class ParamsUpdater {
 	typedef std::pair<Params::iterator,ProbeType> SubKey;
 	typedef std::shared_ptr<SubKey> SharedKey;
 	typedef std::set<SharedKey> SharedSubscription;
+	typedef std::unordered_map<SharedKey,time_t> SubscribedParams;
 
 public:
 	class Subscription;
@@ -45,7 +47,7 @@ protected:
 	Params& params;
 	SzbaseWrapper* data_feeder;
 
-	SharedSubscription subscribed_params;
+	SubscribedParams subscribed_params;
 
 public:
 	class Subscription {
