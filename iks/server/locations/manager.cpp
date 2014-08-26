@@ -62,6 +62,8 @@ void LocationsMgr::add_szbase( const std::string& name , const CfgPairs& cfg )
 				name , draw_name , "szbase" , std::ref(vars) );
 	} catch( file_not_found_error& e ) {
 		throw invalid_value( e.what() );
+	} catch( xml_parse_error& e ) {
+		throw invalid_value( e.what() );
 	}
 }
 

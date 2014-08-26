@@ -6,6 +6,7 @@
 
 #include "utils/ptree.h"
 
+#include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -23,14 +24,18 @@ Param::~Param()
 
 void Param::from_params_xml( const bp::ptree& ptree ) throw(xml_parse_error)
 {
-	name = ptree.get<std::string>("@name");
-
 	/**
 	 * name, unit and short_name are obligatory
 	 */
-	param_desc.put( "@name" , name );
-	param_desc.put( "@unit" , ptree.get<std::string>( "@unit" ) );
-	param_desc.put( "@short_name" , ptree.get<std::string>( "@short_name" ) );
+	try {
+		name = ptree.get<std::string>("@name");
+
+		param_desc.put( "@name" , name );
+		param_desc.put( "@unit" , ptree.get<std::string>( "@unit" ) );
+		param_desc.put( "@short_name" , ptree.get<std::string>( "@short_name" ) );
+	} catch( bp::ptree_error& e ) {
+		throw xml_parse_error( str( boost::format("Cannot read param \"%s\": %s") % name % e.what() ) );
+	}
 
 	auto prec = ptree.get_optional<std::string>( "@prec" );
 	param_desc.put( "@prec" , prec ? *prec : "0" );
