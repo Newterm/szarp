@@ -23,19 +23,30 @@ Param::~Param()
 
 void Param::from_params_xml( const bp::ptree& ptree ) throw(xml_parse_error)
 {
-	param_desc = ptree;
+	name = ptree.get<std::string>("@name");
 
-	name = param_desc.get<std::string>("@name");
+	/**
+	 * name, unit and short_name are obligatory
+	 */
+	param_desc.put( "@name" , name );
+	param_desc.put( "@unit" , ptree.get<std::string>( "@unit" ) );
+	param_desc.put( "@short_name" , ptree.get<std::string>( "@short_name" ) );
 
-	param_desc.erase("@base_ind");
-	param_desc.erase("define");
+	auto prec = ptree.get_optional<std::string>( "@prec" );
+	param_desc.put( "@prec" , prec ? *prec : "0" );
 
+	auto dname = ptree.get_optional<std::string>( "@draw_name" );
+	param_desc.put( "@draw_name" , dname ? *dname : name );
+
+	/**
+	 * Find min and max value for this param based on his draw section
+	 */
 	double min = std::numeric_limits<double>::quiet_NaN();
 	double max = std::numeric_limits<double>::quiet_NaN();
 	using std::isnan;
 
-	if( param_desc.count("draw") )
-		for( auto& c : param_desc.get_child("draw") )
+	if( ptree.count("draw") )
+		for( auto& c : ptree.get_child("draw") )
 			try {
 				if( c.first == "@min" ) {
 					auto m = boost::lexical_cast<double>( c.second.data() );
@@ -52,12 +63,12 @@ void Param::from_params_xml( const bp::ptree& ptree ) throw(xml_parse_error)
 				throw xml_parse_error("Invalid min or max value at param_desc " + name);
 			}
 
-	param_desc.erase("draw");
-	param_desc.erase("raport");
-
 	param_desc.put("@min",min);
 	param_desc.put("@max",max);
 
+	/**
+	 * Add type which is its parent section
+	 */
 	param_desc.put("@type",parent_tag);
 }
 
