@@ -13,6 +13,7 @@ enum class ErrorCodes : error_code_t {
 	unknown_param    = 100,
 	invalid_pin      = 102,
 	cannot_set_value = 104,
+	not_summaric     = 106,
 	unknown_set      = 200,
 	invalid_set_hash = 202,
 	set_read_only    = 204,

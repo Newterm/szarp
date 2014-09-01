@@ -1,5 +1,5 @@
-#ifndef __SERVER_CMD_GET_HISTORY_H__
-#define __SERVER_CMD_GET_HISTORY_H__
+#ifndef __SERVER_CMD_GET_SUMMARY_H__
+#define __SERVER_CMD_GET_SUMMARY_H__
 
 #include <ctime>
 #include <iterator>
@@ -13,16 +13,16 @@
 #include "utils/ptree.h"
 #include "cmd_common.h"
 
-class GetHistoryRcv : public Command {
+class GetSummaryRcv : public Command {
 public:
-	GetHistoryRcv( Vars& vars , Protocol& prot )
+	GetSummaryRcv( Vars& vars , Protocol& prot )
 		: vars(vars)
 	{
 		(void)prot;
-		set_next( std::bind(&GetHistoryRcv::parse_command,this,std::placeholders::_1) );
+		set_next( std::bind(&GetSummaryRcv::parse_command,this,std::placeholders::_1) );
 	}
 
-	virtual ~GetHistoryRcv()
+	virtual ~GetSummaryRcv()
 	{
 	}
 
@@ -53,18 +53,22 @@ protected:
 			return;
 		}
 
+		if( !param->is_summaric() ) {
+			fail( ErrorCodes::not_summaric );
+			return;
+		}
+
 		auto probe_type = tags[0];
 
 		std::unique_ptr<ProbeType> pt;
 
-		try {
+		if (probe_type == "10s") {
 			pt.reset( new ProbeType( probe_type ) );
-		} catch( parse_error& e ) {
-			fail( ErrorCodes::wrong_probe_type );
-			return;
-		};
+		} else {
+			pt.reset( new ProbeType( "10m" ) );
+		}
 
-		timestamp_t tbeg , tend;
+		timestamp_t tbeg, tend;
 
 		try {
 			tbeg = boost::lexical_cast<timestamp_t>(tags[1]);
@@ -84,25 +88,26 @@ protected:
 		}
 
 		using std::isnan;
-		
-		auto beg = probes.begin();
-		auto end = probes.end();
 
-		while( beg!=end && isnan(*beg) ) ++beg;
-		while( beg!=end && isnan(*std::prev(end)) ) --end;
-
-		auto nb = std::distance(probes.begin(),beg);
-		auto ne = std::distance(probes.begin(),end);
-
-		std::string out;
-		std::copy( base64_enc((char*)(probes.data()+nb)) ,
-		           base64_enc((char*)(probes.data()+ne)) ,
-				   std::back_inserter(out) );
+		int nanCount = 0;
+		double accumulator = 0;
+		for( auto it = probes.begin(); it != probes.end(); ++it ) {
+			if( isnan(*it) ) {
+				nanCount++;
+			} else {
+				accumulator += *it;
+			}
+		}
+		// if better precision is needed use e.g. Kahan algorithm or anything that draw3 uses
+		const int divisor = probe_type == "10s" ? 360 : 6;
+		const double sum = accumulator / divisor;
+		const double notNanPercentage = 100 - (nanCount / probes.size() * 100);
+		const auto unit = param->get_summaric_unit();
 
 		boost::property_tree::ptree ptree;
-		ptree.add("start", SzbaseWrapper::next(tbeg,*pt,nb));
-		ptree.add("end"  , SzbaseWrapper::next(tbeg,*pt,ne));
-		ptree.add("data", out);
+		ptree.add("sum", sum);
+		ptree.add("nan", notNanPercentage);
+		ptree.add("unit", unit);
 		apply( ptree_to_json( ptree , false ) );
 	}
 
@@ -116,5 +121,5 @@ protected:
 	Vars& vars;
 };
 
-#endif /* end of include guard: __SERVER_CMD_GET_HISTORY_H__ */
+#endif /* end of include guard: __SERVER_CMD_GET_SUMMARY_H__ */
 
