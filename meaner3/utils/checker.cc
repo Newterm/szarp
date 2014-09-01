@@ -346,8 +346,8 @@ int ProgramConfig::parseXMLRules(xmlDocPtr doc, xmlNodePtr node2){
 
 			R->RuleName = strdup(str);
 			xmlChar *ziomal =xmlNodeListGetString(doc, nodeRule->children, 1);
-			R->LUACode = strdup(SC::U2A(ziomal).c_str());
-			free (ziomal);
+			R->LUACode = (char *) xmlStrdup(ziomal);
+			xmlFree(ziomal);
 			free(str);
 			Rules.push_back(R);
 			if (!m_todelete) m_todelete=1;
