@@ -101,7 +101,7 @@ protected:
 		// if better precision is needed use e.g. Kahan algorithm or anything that draw3 uses
 		const int divisor = probe_type == "10s" ? 360 : 6;
 		const double sum = accumulator / divisor;
-		const double notNanPercentage = 100 - (nanCount / probes.size() * 100);
+		const double notNanPercentage = 100 - ((double)nanCount / probes.size() * 100);
 		const auto unit = param->get_summaric_unit();
 
 		boost::property_tree::ptree ptree;
