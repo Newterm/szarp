@@ -40,6 +40,8 @@ public:
 	double get_value( ProbeType pt = ProbeType::Type::LIVE ) const;
 	void set_value( double v , ProbeType pt );
 
+	std::string get_draw_name() const;
+
 private:
 	static const std::set<std::string> summaric_units;
 	std::string parent_tag;

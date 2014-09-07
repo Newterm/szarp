@@ -146,4 +146,9 @@ void Param::set_value( double v , ProbeType pt )
 	values[ pt ] = v;
 }
 
+std::string Param::get_draw_name() const
+{
+	return param_desc.get<std::string>( "@draw_name", name );
+}
+
 const std::set<std::string> Param::summaric_units {"MW", "kW"};

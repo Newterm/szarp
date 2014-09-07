@@ -9,6 +9,7 @@
 #include "cmd_list_sets.h"
 #include "cmd_list_params.h"
 #include "cmd_get_params.h"
+#include "cmd_get_key_params.h"
 #include "cmd_set_update.h"
 #include "cmd_set_subscribe.h"
 #include "cmd_get_config.h"
@@ -45,6 +46,7 @@ Command* SzbaseProt::cmd_from_tag( const std::string& tag )
 	MAP_CMD_TAG( "list_sets"     , ListSetsRcv         );
 	MAP_CMD_TAG( "list_params"   , ListParamsRcv       );
 	MAP_CMD_TAG( "get_params"    , GetParamsRcv        );
+	MAP_CMD_TAG( "get_key_params", GetParamsForKeyRcv  );
 	MAP_CMD_TAG( "get_set"       , GetSetRcv           );
 	MAP_CMD_TAG( "set_update"    , SetUpdateRcv        );
 	MAP_CMD_TAG( "set_subscribe" , SetSubscribeRcv     );
