@@ -37,31 +37,27 @@ public:
 		}
 
 		using boost::property_tree::ptree;
-		using boost::algorithm::ifind_first;
 
 		ptree sets_tree;
 
 		auto & sets = vars.get_sets();
-		std::locale locale(setlocale(LC_ALL, NULL));	// get system locale (by default std::locale uses C)
 		for( auto si = sets.begin(); si != sets.end(); ++si ) {
 			std::string set_name = *si;
 			auto set = sets.get_set(set_name);
+
+			std::function<bool (std::string, std::string)> param_match =
+				[&] (std::string name, std::string draw_name) {
+					return contains(name, key) || contains(draw_name, key);
+				};
+			if( contains(set_name, key) ) {
+				param_match = [&] (std::string, std::string) { return true; };
+			}
+
 			ptree set_tree;
-			if( ifind_first(set_name, key, locale).empty() ) {
-				// add only matching params
-				for( auto pi = set->begin(); pi != set->end(); ++pi ) {
-					std::string param_name = *pi;
-					std::string draw_name = vars.get_params().get_param( param_name )->get_draw_name();
-					if( !ifind_first(param_name, key, locale).empty()
-							|| !ifind_first(draw_name, key, locale).empty() ) {
-						set_tree.push_back( std::make_pair( "" , ptree(draw_name) ) );
-					}
-				}
-			} else {
-				// add whole set
-				for( auto pi = set->begin(); pi != set->end(); ++pi ) {
-					std::string param_name = *pi;
-					std::string draw_name = vars.get_params().get_param( param_name )->get_draw_name();
+			for( auto pi = set->begin(); pi != set->end(); ++pi ) {
+				std::string param_name = *pi;
+				std::string draw_name = vars.get_params().get_param( param_name )->get_draw_name();
+				if( param_match(param_name, draw_name) ) {
 					set_tree.push_back( std::make_pair( "" , ptree(draw_name) ) );
 				}
 			}
@@ -77,6 +73,16 @@ public:
 	}
 
 protected:
+
+	bool contains(std::string str, std::string key) const {
+		using boost::algorithm::ifind_first;
+		if( key == "" ) {
+			return true;
+		} else {
+			std::locale locale(setlocale(LC_ALL, NULL));	// get system locale (by default std::locale uses C)
+			return !ifind_first(str, key, locale).empty();
+		}
+	}
 	Vars& vars;
 };
 
