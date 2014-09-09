@@ -22,6 +22,8 @@ public:
 	void add_locations( const CfgSections& cfg );
 	void add_location( const std::string& name , const CfgPairs& cfg );
 
+	void add_config( const CfgPairs& cfg );
+
 	void on_new_connection( Connection* conn );
 	void on_disconnected  ( Connection* conn );
 

@@ -30,7 +30,7 @@ void LocationsMgr::add_locations( const CfgSections& cfg )
 void LocationsMgr::add_location( const std::string& name , const CfgPairs& cfg )
 {
 	try {
-			 if( cfg.at("type") == "szbase" )
+		if( cfg.at("type") == "szbase" )
 			add_szbase( name , cfg );
 		else if( cfg.at("type") == "proxy" )
 			add_proxy( name , cfg );
@@ -39,6 +39,12 @@ void LocationsMgr::add_location( const std::string& name , const CfgPairs& cfg )
 	} catch( std::out_of_range& e ) {
 		throw missing_option("Missing option in section " + name );
 	}
+}
+
+void LocationsMgr::add_config( const CfgPairs& cfg )
+{
+	auto& vars = vars_cache.get_szarp( cfg.at("base") );
+	vars.get_config().from_pairs(cfg);
 }
 
 void LocationsMgr::add_szbase( const std::string& name , const CfgPairs& cfg )

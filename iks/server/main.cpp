@@ -53,6 +53,7 @@ int main( int argc , char** argv )
 
 	po::variables_map vm; 
 	CfgPairs pairs;
+	CfgPairs server_config;
 	CfgSections locs_cfg;
 
 	int ret_code = 0;
@@ -67,6 +68,10 @@ int main( int argc , char** argv )
 			for( const auto& o : parsed.options )
 				if( o.unregistered )
 					pairs[boost::erase_all_copy(o.string_key," ")] = o.value[0];
+
+			std::copy_if(pairs.begin(), pairs.end(),
+				std::inserter(server_config, server_config.end()),
+				[] (std::pair<std::string, std::string> p) { return p.first.find('.') == std::string::npos; });
 
 			locs_cfg.from_flat( pairs );
 			po::store(parsed,vm);
@@ -102,6 +107,7 @@ int main( int argc , char** argv )
 		LocationsMgr lm;
 
 		lm.add_locations( locs_cfg );
+		lm.add_config( server_config );
 
 		ts.on_connected   ( bind(&LocationsMgr::on_new_connection,&lm,p::_1) );
 		ts.on_disconnected( bind(&LocationsMgr::on_disconnected  ,&lm,p::_1) );
