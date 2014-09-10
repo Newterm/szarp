@@ -5,6 +5,7 @@
 #include "cmd_list_remotes.h"
 #include "cmd_update_remotes.h"
 #include "cmd_connect_remote.h"
+#include "cmd_get_server_config.h"
 
 #define MAP_CMD_TAG( _tag , cmd ) \
 	if( _tag == tag ) return new cmd(*this,locs);
@@ -14,8 +15,8 @@
 
 namespace p = std::placeholders;
 
-WelcomeProt::WelcomeProt( LocationsList& locs )
-	: locs(locs)
+WelcomeProt::WelcomeProt( LocationsList& locs, Config& config )
+	: ConfigContainer(config), locs(locs)
 {
 	conn_add = locs.on_location_added(
 		std::bind( &WelcomeProt::on_remote_added   , this , p::_1 ) );
@@ -31,6 +32,7 @@ Command* WelcomeProt::cmd_from_tag( const std::string& tag )
 {
 	MAP_CMD_TAG( "connect"            , CmdConnectRemoteRcv );
 	MAP_CMD_TAG( "list_remotes"       , CmdListRemotesRcv   );
+	MAP_CMD_TAG( "get_server_options" , GetServerConfigRcv  );
 	return NULL;
 }
 

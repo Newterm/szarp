@@ -3,10 +3,11 @@
 
 #include "locations/protocol.h"
 #include "locations/locations_list.h"
+#include "locations/config_container.h"
 
-class WelcomeProt : public Protocol {
+class WelcomeProt : public Protocol, public ConfigContainer {
 public:
-	WelcomeProt( LocationsList& locs );
+	WelcomeProt( LocationsList& locs, Config& config );
 	virtual ~WelcomeProt();
 
 	virtual Command* cmd_from_tag( const std::string& tag );

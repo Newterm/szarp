@@ -35,6 +35,7 @@ private:
 
 	LocationsList loc_factory;
 	VarsCache vars_cache;
+	Config server_config;	/**< config of the proxy server */
 
 	std::unordered_map<Connection*,Location::ptr> locations;
 	std::unordered_map<std::string,RemotesUpdater::ptr> updaters;
