@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: ISO-8859-2 -*-
+# -*- coding: utf-8 -*-
 # SZARP: SCADA software 
 #
 # This program is free software; you can redistribute it and/or modify

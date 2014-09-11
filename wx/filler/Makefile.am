@@ -1,7 +1,5 @@
 
-# Pawe³ Pa³ucha pawel@praterm.com.pl
-#
-# $Id: Makefile.am 3622 2006-12-27 11:37:11Z maciek $
+# Pawel Palucha pawel@praterm.com.pl
 
 # No subdirectories
 SUBDIRS =

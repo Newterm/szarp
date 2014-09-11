@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: ISO-8859-2 -*-
+# -*- coding: utf-8 -*-
 # SZARP: SCADA software 
 # 
 #
@@ -297,7 +297,7 @@ def gen(param, value, beginning, end, file):
 	niceParam=niceParam.replace('"','\\\"')
 	# writing to output file
 	while curTime<=end:
-		record='"'+niceParam.encode('iso8859-2')+'"' + curTime.strftime(" %Y %m %d %H %M ") + \
+		record='"'+niceParam.encode('utf-8')+'"' + curTime.strftime(" %Y %m %d %H %M ") + \
 		str(value) + '\n'
 		file.write(record)
 		
