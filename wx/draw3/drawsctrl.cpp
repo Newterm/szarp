@@ -815,11 +815,44 @@ bool DrawsController::GetFollowLatestData() {
 	return m_follow_latest_data_mode;
 }
 
+namespace {
+
+struct CompareQueryTimes {
+	unsigned m_second;
+	unsigned m_nanosecond;
+	CompareQueryTimes(const wxDateTime& time) {
+		ToNanosecondTime(time, m_second, m_nanosecond);
+	}
+
+	bool operator()(const DatabaseQuery::ValueData::V& v1, const DatabaseQuery::ValueData::V& v2) const {
+		unsigned second_diff1 = abs(int(v1.time_second) - int(m_second));
+		unsigned second_diff2 = abs(int(v2.time_second) - int(m_second));
+
+		if (second_diff1 < second_diff2)
+			return true;
+		if (second_diff1 > second_diff2)
+			return false;
+
+		unsigned nanosecond_diff1 = abs(int(v1.time_nanosecond) - int(m_nanosecond));
+		unsigned nanosecond_diff2 = abs(int(v2.time_nanosecond) - int(m_nanosecond));
+
+		if (nanosecond_diff1 < nanosecond_diff2)
+			return true;
+		return false;
+
+	}
+
+};
+
+}
+
 void DrawsController::FetchData() {
 	for (size_t i = 0; i < m_draws.size(); i++) {
 		DatabaseQuery *q = m_draws[i]->GetDataToFetch(false);
-		if (q)
+		if (q) {
+			std::sort(q->value_data.vv->begin(), q->value_data.vv->end(), CompareQueryTimes(m_state->GetStateTime().GetTime()));
 			QueryDatabase(q);
+		}
 	}
 }
 

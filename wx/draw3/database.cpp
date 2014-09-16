@@ -431,10 +431,6 @@ template<class time_type> void Sz4Base::GetValue(DatabaseQuery::ValueData::V& v,
 
 void Sz4Base::GetData(DatabaseQuery* query, wxEvtHandler* response_receiver) {
 	DatabaseQuery::ValueData &vd = query->value_data;
-
-	DatabaseQuery *rq = CreateDataQueryPrivate(query->draw_info, query->param, vd.period_type, query->draw_no);
-	rq->inquirer_id = query->inquirer_id;
-
 	TParam* p = query->param;
 
 	SZARP_PROBE_TYPE pt = PeriodToProbeType(vd.period_type);
@@ -449,14 +445,17 @@ void Sz4Base::GetData(DatabaseQuery* query, wxEvtHandler* response_receiver) {
 		}
 
 		i->ok = true;
+
+		DatabaseQuery *rq = CreateDataQueryPrivate(query->draw_info, query->param, vd.period_type, query->draw_no);
+
+		rq->inquirer_id = query->inquirer_id;
 		rq->value_data.vv->push_back(*i);
+		DatabaseResponse dr(rq);
+		wxPostEvent(response_receiver, dr);
 
 		i++;
-
 	}	
 
-	DatabaseResponse dr(rq);
-	wxPostEvent(response_receiver, dr);
 }
 
 void Sz4Base::ResetBuffer(DatabaseQuery* query) {
