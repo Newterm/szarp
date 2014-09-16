@@ -399,7 +399,7 @@ public:
 
 DatabaseQuery* CreateDataQuery(DrawInfo* di, PeriodType pt, int draw_no = -1);
 
-void AddTimeToDataQuery(DatabaseQuery *q, const wxDateTime& time);
+DatabaseQuery::ValueData::V& AddTimeToDataQuery(DatabaseQuery *q, const wxDateTime& time);
 
 SZARP_PROBE_TYPE PeriodToProbeType(PeriodType period);
 

@@ -206,7 +206,7 @@ DatabaseQuery* Draw::GetDataToFetch(bool fetch_present_no_data) {
 		
 		if (q == NULL)
 			q = CreateDataQuery(m_draw_info, period, m_draw_no);
-		AddTimeToDataQuery(q, pt.GetTime());
+		AddTimeToDataQuery(q, pt.GetTime()).count = v.max_probes;
 	}
 
 	return q;

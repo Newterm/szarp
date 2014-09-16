@@ -423,8 +423,8 @@ template<class time_type> void Sz4Base::GetValue(DatabaseQuery::ValueData::V& v,
 		scale = 10 * 1000000000.;
 	v.sum = sz4::scale_value(sum, p) * wsum.gcd() / scale;
 
-	if (weight)
-		v.count = weight / (weight + wsum.no_data_weight() / wsum.gcd()) * 100;
+	if (weight && v.count)
+		v.count = v.count * weight / (weight + wsum.no_data_weight());
 	else
 		v.count = 0;
 }
@@ -842,10 +842,11 @@ DatabaseQuery* CreateDataQuery(DrawInfo* di, PeriodType pt, int draw_no) {
 }
 
 
-void AddTimeToDataQuery(DatabaseQuery *q, const wxDateTime& time) {
+DatabaseQuery::ValueData::V& AddTimeToDataQuery(DatabaseQuery *q, const wxDateTime& time) {
 	DatabaseQuery::ValueData::V v;
 	ToNanosecondTime(time, v.time_second, v.time_nanosecond);
 	v.custom_length = 0;
 	q->value_data.vv->push_back(v);
+	return q->value_data.vv->back();
 }
 
