@@ -132,7 +132,9 @@ public:
 			if(draw_info == NULL)
 				return draw_set->GetName();
 			else
-				return draw_info->GetName() + _(" - Window ") + draw_set->GetName();
+				return draw_info->GetName() + wxT(" (")
+					 + draw_info->GetParamName() + wxT(") ")
+					 + _(" - Window ") + draw_set->GetName();
 		}
 	};
 
