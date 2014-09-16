@@ -685,8 +685,7 @@ class MainFrame(wx.Frame):
 # end of class MainFrame
 
 if __name__ == '__main__':
-	app = wx.PySimpleApp(0)
-	wx.InitAllImageHandlers()
+	app = wx.App(False)
 	mainFrame = MainFrame(None, -1, '')
 	app.SetTopWindow(mainFrame)
 	app.MainLoop()
