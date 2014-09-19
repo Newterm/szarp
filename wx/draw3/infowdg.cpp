@@ -228,7 +228,7 @@ void InfoWidget::SetColor(const wxColour& col) {
 	 * a color. */
 	int brightness = ((c.Red() * 299) + (c.Green() * 587) + (c.Blue() * 114)) / 1000;
 
-	if (brightness > 77) {
+	if (brightness >= 100) {
 		value_text->SetForegroundColour(*wxBLACK);
 		value_text2->SetForegroundColour(*wxBLACK);
 	} else {
