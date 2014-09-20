@@ -98,7 +98,7 @@ void ProtocolLocation::parse_line( const std::string& line )
 		erase_cmd( cmd_id );
 	} else if( cmd_name == "r" || cmd_name == "k"  ) {
 		if( !commands.count(cmd_id) ) {
-			send_fail( ErrorCodes::invalid_id );
+			send_fail( cmd_id , ErrorCodes::invalid_id );
 			return;
 		}
 
@@ -117,7 +117,7 @@ void ProtocolLocation::parse_line( const std::string& line )
 		auto cmd = protocol->cmd_from_tag( cmd_name );
 
 		if( !cmd ) {
-			send_fail( ErrorCodes::unknown_command );
+			send_fail( cmd_id , ErrorCodes::unknown_command );
 			return;
 		}
 
@@ -240,9 +240,14 @@ void ProtocolLocation::send_response(
 
 void ProtocolLocation::send_fail( ErrorCodes code , const std::string& msg )
 {
+	send_fail( 0 , code , msg );
+}
+
+void ProtocolLocation::send_fail( id_t id , ErrorCodes code , const std::string& msg )
+{
 	if( msg.empty() )
-		write_line( str( format("e 0 %u") % (unsigned)code ) );
+		write_line( str( format("e %u %u") % (unsigned)id % (unsigned)code ) );
 	else
-		write_line( str( format("e 0 %u \"%s\"") % (unsigned)code % msg ) );
+		write_line( str( format("e %u %u \"%s\"") % (unsigned)id % (unsigned)code % msg ) );
 }
 
