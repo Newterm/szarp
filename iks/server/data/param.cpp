@@ -75,6 +75,44 @@ void Param::from_params_xml( const bp::ptree& ptree ) throw(xml_parse_error)
 	 * Add type which is its parent section
 	 */
 	param_desc.put("@type",parent_tag);
+
+	/**
+	 * Initialize draw_name
+	 */
+	draw_name = param_desc.get<std::string>( "@draw_name", name );
+
+	/**
+	 * Get summaric values description
+	 */
+	summaric = get_summaric_from_xml();
+	summaric_unit = get_summaric_unit_from_xml();
+}
+
+bool Param::get_summaric_from_xml() const
+{
+	const auto unit = param_desc.get<std::string>( "@unit", "-" );
+	if( unit.rfind("/h") != std::string::npos )
+		return true;
+	if( summaric_units.find( unit ) != summaric_units.end() )
+		return true;
+	if( param_desc.count("draw") )
+		for( const auto& c : param_desc.get_child("draw") ) {
+			const auto special = c.second.get<std::string>( "@special", "" );
+			if ( special == "hoursum" )
+				return true;
+		}
+	return false;
+}
+
+std::string Param::get_summaric_unit_from_xml() const
+{
+	auto unit = param_desc.get<std::string>( "@unit", "-" );
+	const auto pos = unit.rfind("/h");
+	if( pos != std::string::npos )
+		return unit.erase(pos);
+	if( summaric_units.find( unit ) != summaric_units.end() )
+		return unit + "h";
+	return unit;
 }
 
 void Param::to_json( std::ostream& stream , bool pretty ) const
@@ -105,33 +143,6 @@ std::string Param::to_xml( bool pretty ) const
 	return ss.str();
 }
 
-bool Param::is_summaric() const
-{
-	const auto unit = param_desc.get<std::string>( "@unit", "-" );
-	if( unit.rfind("/h") != std::string::npos )
-		return true;
-	if( summaric_units.find( unit ) != summaric_units.end() )
-		return true;
-	if( param_desc.count("draw") )
-		for( const auto& c : param_desc.get_child("draw") ) {
-			const auto special = c.second.get<std::string>( "@special", "" );
-			if ( special == "hoursum" )
-				return true;
-		}
-	return false;
-}
-
-std::string Param::get_summaric_unit() const
-{
-	auto unit = param_desc.get<std::string>( "@unit", "-" );
-	const auto pos = unit.rfind("/h");
-	if( pos != std::string::npos )
-		return unit.erase(pos);
-	if( summaric_units.find( unit ) != summaric_units.end() )
-		return unit + "h";
-	return unit;
-}
-
 double Param::get_value( ProbeType pt ) const
 {
 	auto itr = values.find( pt );
@@ -144,11 +155,6 @@ double Param::get_value( ProbeType pt ) const
 void Param::set_value( double v , ProbeType pt )
 {
 	values[ pt ] = v;
-}
-
-std::string Param::get_draw_name() const
-{
-	return param_desc.get<std::string>( "@draw_name", name );
 }
 
 const std::set<std::string> Param::summaric_units {"MW", "kW"};
