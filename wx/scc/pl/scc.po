@@ -335,3 +335,7 @@ msgstr "Ukrywanie baz w synchronizatorze"
 #: scchideselectionframe.cpp:87
 msgid "Ok"
 msgstr "Ok"
+
+#: sccframe.cpp:153
+msgid "Do you want to close the application?"
+msgstr "Czy chcesz zamkn±æ program?"
