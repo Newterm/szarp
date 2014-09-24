@@ -1,0 +1,18 @@
+# PO file for SZARP Filler 2 program.
+# Copyright (C) 2014
+# This file is distributed under the same license as the szarp-filler package.
+# Tomasz Pieczerak <tph@newterm.pl>, 2014.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Filler 2.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-09-24 16:42+0200\n"
+"PO-Revision-Date: 2014-09-24 16:42+0200\n"
+"Last-Translator: Tomasz Pieczerak <tph@newterm.pl>\n"
+"Language-Team: Polish <coders@newterm.pl>\n"
+"Language: pl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
