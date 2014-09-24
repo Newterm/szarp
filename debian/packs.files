@@ -44,6 +44,7 @@ Files: opt/szarp/resources/scc.desktop
 Files: opt/szarp/resources/regulators
 Files: etc/xdg/autostart/scc.desktop
 Files: usr/share/autostart/scc.desktop
+Files: usr/share/applications/scc.desktop
 
 Package: szarp-paramd
 Files: etc/pam.d/paramd 
