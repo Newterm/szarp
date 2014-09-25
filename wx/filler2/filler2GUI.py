@@ -24,15 +24,22 @@ __status__      = "beta"
 __email__       = "coders AT newterm.pl"
 
 import sys, wx
+import gettext
+
+_ = lambda s : gettext.gettext(s).decode('utf-8')
 
 def main (argv=None):
     "main() function."
     if argv is None:
         argv = sys.argv
 
+	gettext.bindtextdomain('filler2', '/opt/szarp/resources/locales')
+	gettext.bind_textdomain_codeset('filler2','utf-8')
+	gettext.textdomain('filler2')
+
 	app = wx.App()
 
-	frame = wx.Frame(None, -1, "Filler 2")
+	frame = wx.Frame(None, wx.ID_ANY, _("Filler 2"))
 	frame.Show()
 
 	app.MainLoop()
