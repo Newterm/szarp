@@ -160,6 +160,7 @@ links:
 	ln -sf @prefix@/resources/koper.desktop $(DESTDIR)/etc/xdg/autostart/koper.desktop 
 	ln -sf @prefix@/resources/scc.desktop $(DESTDIR)/usr/share/autostart/scc.desktop 
 	ln -sf @prefix@/resources/scc.desktop $(DESTDIR)/etc/xdg/autostart/scc.desktop 
+	ln -sf @prefix@/resources/scc.desktop $(DESTDIR)/usr/share/applications/scc.desktop
 
 if !DEB_BUILD
 
