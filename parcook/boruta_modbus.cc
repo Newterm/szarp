@@ -730,18 +730,21 @@ class decimal2_parcook_modbus_val_op : public parcook_modbus_val_op {
 	int m_prec;
 	bool m_lsw;
 public:
-	decimal2_parcook_modbus_val_op(modbus_register *reg_integer, modbus_register *reg_fraction, int prec, bool lsw, driver_logger *log);
-	virtual unsigned short val();
+	decimal2_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log);
+	void set_regs(modbus_register* regs[2]);
+	unsigned short val();
 };
 
-class decimal2_parcook_modbus_val_op : public parcook_modbus_val_op {
-	modbus_register *m_reg_integer;
-	modbus_register *m_reg_fraction;
+class decimal3_parcook_modbus_val_op : public parcook_modbus_val_op {
+	modbus_register *m_reg1;
+	modbus_register *m_reg2;
+	modbus_register *m_reg3;
 	int m_prec;
 	bool m_lsw;
 public:
-	decimal2_parcook_modbus_val_op(modbus_register *reg_integer, modbus_register *reg_fraction, int prec, bool lsw, driver_logger *log);
-	virtual unsigned short val();
+	decimal3_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log);
+	void set_regs(modbus_register* regs[3]);
+	unsigned short val();
 };
 class short_sender_modbus_val_op : public sender_modbus_val_op {
 	modbus_register *m_reg;
@@ -906,7 +909,7 @@ unsigned short double_parcook_modbus_val_op::val() {
 		return *pv >> 16;
 }
 
-decimal2_parcook_modbus_val_op::decimal2_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log) : parcook_modbus_val_op(log), m_reg_integer(reg_integer), m_reg_fraction(reg_fraction), m_prec(prec), m_lsw(lsw) {};
+decimal2_parcook_modbus_val_op::decimal2_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log) : parcook_modbus_val_op(log), m_prec(prec), m_lsw(lsw) {};
 
 void decimal2_parcook_modbus_val_op::set_regs(modbus_register* regs[2]) {
 	m_reg_integer = regs[0];
@@ -941,7 +944,7 @@ unsigned short decimal2_parcook_modbus_val_op::val() {
 		return *pv >> 16;
 }
 
-decimal3_parcook_modbus_val_op::decimal3_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log) : parcook_modbus_val_op(log), m_reg_integer(reg_integer), m_reg_fraction(reg_fraction), m_prec(prec), m_lsw(lsw) {};
+decimal3_parcook_modbus_val_op::decimal3_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log) : parcook_modbus_val_op(log),  m_prec(prec), m_lsw(lsw) {};
 
 void decimal3_parcook_modbus_val_op::set_regs(modbus_register* regs[3]) {
 	m_reg1 = regs[0];
@@ -1495,7 +1498,7 @@ int modbus_unit::configure_decimal2_register(TParam* param, TSendParam *sparam, 
 
 	if (!send) {
 		decimal2_parcook_modbus_val_op* op = new decimal2_parcook_modbus_val_op(prec, is_lsw, &m_log);
-		op.set_regs(regs);
+		op->set_regs(regs);
 		m_parcook_ops.push_back(op);
 		m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: decimal2, params holds %s part, lsw: %hu, msw: %hu",
 			       	SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
@@ -1530,9 +1533,11 @@ int modbus_unit::configure_decimal3_register(TParam* param, TSendParam *sparam, 
 	}
 
 	modbus_register* regs[3];
+	unsigned short addrs[3];
 
 	for (unsigned short i = 0; i < 3; i++) {
 		unsigned short cur_addr = addr + i;
+		addrs[i] = cur_addr;
 		RMAP::iterator j = m_registers.find(cur_addr);
 		if (j == m_registers.end()) {
 			m_registers[cur_addr] = regs[i] = new modbus_register(this, &m_log);
@@ -1542,9 +1547,11 @@ int modbus_unit::configure_decimal3_register(TParam* param, TSendParam *sparam, 
 	}
 
 	decimal3_parcook_modbus_val_op* op = new decimal3_parcook_modbus_val_op(prec, is_lsw, &m_log);
-	op.set_regs(regs);
+	op->set_regs(regs);
 	m_parcook_ops.push_back(op);
-	m_log.log(8, "Parcook param %ls no(%zu), mapped to unit: %u, register %hu, value type: decimal3, params holds %s part, lsw: %hu, msw: %hu", param->GetName().c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
+	m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: decimal3, params holds %s part, reg1: %hu, reg2: %hu, reg3: %hu",
+		SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr,
+		is_lsw ? "lsw" : "msw", addrs[0], addrs[1], addrs[2]);
 
 	return 0;
 }
@@ -1615,6 +1622,8 @@ int modbus_unit::configure_param(xmlNodePtr node, TSzarpConfig* sc, TParam* p, T
 		ret = configure_double_register(param, sp, prec, node, addr, send, rt);
 	} else if (val_type == "decimal2") {
 		ret = configure_decimal2_register(param, sp, prec, node, addr, send, rt);
+	} else if (val_type == "decimal3") {
+		ret = configure_decimal3_register(param, sp, prec, node, addr, send, rt);
 	} else {
 		m_log.log(0, "Unsupported value type:%s, for param at line: %ld", val_type.c_str(), xmlGetLineNo(node));
 		ret = 1;
