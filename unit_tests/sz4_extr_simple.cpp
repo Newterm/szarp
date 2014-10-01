@@ -15,7 +15,7 @@
 #include "sz4/load_file_locked.h"
 
 int main(int argc, char *argv[]) {
-	if (argc != 3)
+	if (argc != 3 && argc != 4)
 		return 1;
 
 	SZARP_PROBE_TYPE pt = PT_MONTH;
@@ -31,7 +31,15 @@ int main(int argc, char *argv[]) {
 	sz4::second_time_t start_time;
 	ss >> start_time;
 
-	sz4::second_time_t end_time = szb_move_time(start_time, 1, pt);
+	int count = 1;
+	if (argc == 4) {
+		std::stringstream ss;
+		ss << argv[3];
+		ss >> count;
+		std::cout << count << std::endl;
+	}
+
+	sz4::second_time_t end_time = szb_move_time(start_time, count, pt);
 
 	sz4::base base(L"/opt/szarp", IPKContainer::GetObject());
 

@@ -46,7 +46,7 @@ struct ParamRef {
 	TParam* m_param;
 	size_t m_param_index;
 	ExecutionEngine* m_exec_engine;
-	std::list<ExecutionEngine*> m_exec_engines;
+	std::vector<ExecutionEngine*> m_exec_engines;
 public:
 	ParamRef();
 	void PushExecutionEngine(ExecutionEngine *exec_engine);
@@ -57,7 +57,7 @@ public:
 class Var {
 	size_t m_var_no;
 	ExecutionEngine* m_ee;
-	std::list<ExecutionEngine*> m_exec_engines;
+	std::vector<ExecutionEngine*> m_exec_engines;
 public:
 	Var(size_t var_no);
 	Val& operator()();

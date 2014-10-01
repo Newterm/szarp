@@ -44,7 +44,6 @@ public:
 			return;
 
 		m_invalidate_non_fixed = false;
-		std::for_each(m_cache.begin(), m_cache.end(), std::mem_fun_ref(&cache_type::invalidate_non_fixed_values));
 	}
 
 	void adjust_time_range(time_type& from, time_type& to) {
@@ -69,8 +68,6 @@ public:
 	void get_weighted_sum_impl(time_type start, time_type end, SZARP_PROBE_TYPE probe_type, weighted_sum<value_type, time_type>& sum)  {
 		invalidate_non_fixed_if_needed();
 
-		calculation_method<types> ee(m_base, m_param);
-
 		time_type range_end;
 		auto read_ahead(m_base->read_ahead());
 		if (read_ahead)
@@ -94,6 +91,7 @@ public:
 			sum.set_fixed(false);
 		}
 
+		boost::optional<calculation_method<types> > ee;
 		bool first = true;
 		time_type& current(start);
 		while (current < to) {
@@ -104,7 +102,9 @@ public:
 			if (!m_cache[step].get_value(current,
 						value,
 						fixed)) {
-				std::tr1::tie(value, fixed) = ee.calculate_value(current, step);
+				if (!ee)
+					ee = calculation_method<types>(m_base, m_param);
+				std::tr1::tie(value, fixed) = ee.get().calculate_value(current, step);
 				m_cache[step].store_value(value, current, fixed);
 			}
 
