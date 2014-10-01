@@ -54,7 +54,7 @@ class LoginController(BaseController):
 			session['user'] = form_username
 			session['passhash'] = passhash
 			session.save()
-			return redirect(url(controller='account'))
+			return redirect(url.current(controller='account', action='index'))
 		return redirect(url.current(action = 'invalid'))
 
 	def logout(self):
@@ -99,11 +99,12 @@ class LoginController(BaseController):
 		key = request.params['key']
 		(password, email) = app_globals.rpcservice.activate_password_link(user, key)
 		if password is False:
-			c.error = _("Link is incorrect or outdated!")
+			c.message = _("Link is incorrect or outdated!")
 		else:
 			msg = _("Your password for SZARP Synchronization Server has been reset.\nYour login is '%s', your new password is '%s'.\n\nSZARP Synchronization Server\n") % (user, password)
 			send_email(email, _("SZARP sync new password"), msg) 
 			c.message = _("Your password has been reset. New password has been sent to you by e-mail.")
 		c.action = "index"
+		c.controller = 'login'
 		return render("/info.mako")
 

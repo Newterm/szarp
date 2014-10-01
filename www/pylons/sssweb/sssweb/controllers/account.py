@@ -7,6 +7,7 @@ from pylons.controllers.util import abort, redirect
 from pylons.decorators import rest
 
 from sssweb.lib.base import *
+import sssweb.lib.helpers as h
 
 log = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ class AccountController(BaseController):
 
         @rest.restrict('POST')
 	def change_password(self):
+		c.controller = 'account'
 		c.action = 'index'
 		m = hashlib.md5()
 		m.update(request.params['password'])

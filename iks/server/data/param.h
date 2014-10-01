@@ -34,10 +34,16 @@ public:
 	const boost::property_tree::ptree& get_ptree() const
 	{	return param_desc; }
 
+	bool is_summaric() const;
+	std::string get_summaric_unit() const;
+
 	double get_value( ProbeType pt = ProbeType::Type::LIVE ) const;
 	void set_value( double v , ProbeType pt );
 
+	std::string get_draw_name() const;
+
 private:
+	static const std::set<std::string> summaric_units;
 	std::string parent_tag;
 	std::string name;
 
