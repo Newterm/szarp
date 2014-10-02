@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>639</width>
+    <height>480</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Filler 2</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>/opt/szarp/resources/wx/icons/szarp16.png</normaloff>/opt/szarp/resources/wx/icons/szarp16.png</iconset>
+  </property>
+  <property name="locale">
+   <locale language="English" country="UnitedStates"/>
+  </property>
+  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>639</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="locale">
+     <locale language="English" country="UnitedStates"/>
+    </property>
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="action_Save_data"/>
+    <addaction name="actionC_lear"/>
+    <addaction name="separator"/>
+    <addaction name="actionE_xit"/>
+   </widget>
+   <widget class="QMenu" name="menu_Help">
+    <property name="locale">
+     <locale language="English" country="UnitedStates"/>
+    </property>
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="actionUser_s_manual"/>
+    <addaction name="actionCon_text_help"/>
+    <addaction name="separator"/>
+    <addaction name="action_About"/>
+    <addaction name="actionAbout_Qt"/>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menu_Help"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_Save_data"/>
+   <addaction name="actionC_lear"/>
+  </widget>
+  <action name="action_Save_data">
+   <property name="icon">
+    <iconset theme="document-save"/>
+   </property>
+   <property name="text">
+    <string>&amp;Save data</string>
+   </property>
+   <property name="statusTip">
+    <string>Save data to params.xml</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::ApplicationSpecificRole</enum>
+   </property>
+  </action>
+  <action name="actionC_lear">
+   <property name="icon">
+    <iconset theme="edit-clear"/>
+   </property>
+   <property name="text">
+    <string>C&amp;lear</string>
+   </property>
+   <property name="statusTip">
+    <string>Clear pending actions</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionE_xit">
+   <property name="icon">
+    <iconset theme="application-exit"/>
+   </property>
+   <property name="text">
+    <string>E&amp;xit</string>
+   </property>
+   <property name="whatsThis">
+    <string>Exit Filler 2</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::QuitRole</enum>
+   </property>
+  </action>
+  <action name="actionUser_s_manual">
+   <property name="icon">
+    <iconset theme="help-contents"/>
+   </property>
+   <property name="text">
+    <string>User's &amp;manual</string>
+   </property>
+   <property name="statusTip">
+    <string>Show user's manual</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
+   </property>
+  </action>
+  <action name="actionCon_text_help">
+   <property name="icon">
+    <iconset theme="help-faq"/>
+   </property>
+   <property name="text">
+    <string>Con&amp;text help</string>
+   </property>
+   <property name="statusTip">
+    <string>Activate context help</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F1</string>
+   </property>
+  </action>
+  <action name="action_About">
+   <property name="icon">
+    <iconset theme="help-about"/>
+   </property>
+   <property name="text">
+    <string>&amp;About</string>
+   </property>
+   <property name="statusTip">
+    <string>Information about Filler 2</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::AboutRole</enum>
+   </property>
+  </action>
+  <action name="actionAbout_Qt">
+   <property name="icon">
+    <iconset>
+     <normaloff>/usr/share/pixmaps/qtconfig-qt4.png</normaloff>/usr/share/pixmaps/qtconfig-qt4.png</iconset>
+   </property>
+   <property name="text">
+    <string>About &amp;Qt</string>
+   </property>
+   <property name="statusTip">
+    <string>Information about Qt4</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
