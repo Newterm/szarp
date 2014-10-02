@@ -130,6 +130,10 @@ private:
 	time_diff_type m_no_data_weight;
 	bool m_fixed;
 
+	value_type m_one_value;
+	time_diff_type m_one_weight;
+	bool m_has_one_value;
+
 	template <class T> T calc_gcd(T p, T q) const {
 		if (p < q)
 			std::swap(p, q);
@@ -146,16 +150,23 @@ private:
 		return q;
 	}
 public:
-	weighted_sum() : m_gcd(0), m_no_data_weight(0), m_fixed(true) {}
+	weighted_sum() : m_gcd(0), m_no_data_weight(0), m_fixed(true), m_has_one_value(false) {}
 
 	const value_vector& values() const { return m_values; }
 	const time_diff_vector& weights() const { return m_weights; }
 
 	void add(const value_type& value, const time_diff_type& weight) {
-		m_values.push_back(value);
-		m_weights.push_back(weight);
+		if (!m_has_one_value) {
+			m_one_value = value;
+			m_one_weight = weight;
+			m_gcd = weight;
+			m_has_one_value = true;
+		} else {
+			m_values.push_back(value);
+			m_weights.push_back(weight);
+			m_gcd = calc_gcd(weight, m_gcd);
+		}
 
-		m_gcd = calc_gcd(weight, m_gcd);
 	}
 
 	time_diff_type gcd() const {
@@ -163,12 +174,14 @@ public:
 	}
 
 	sum_type sum(time_diff_type& weight) const {
-		weight = 0;
-		if (m_values.empty())
+		if (!m_has_one_value) {
+			weight = 0;
 			return 0;
+		}
 
-		sum_type sum = 0;
+		sum_type sum = m_one_value;
 		time_diff_type _gcd = gcd();
+		weight = m_one_weight / _gcd;
 		for (size_t i = 0; i < m_values.size(); i++) {
 			time_diff_type _weight = m_weights[i] / _gcd;
 
@@ -180,7 +193,7 @@ public:
 	}
 
 	value_type avg() const {
-		if (m_values.empty())
+		if (!m_has_one_value)
 			return no_data<value_type>();
 
 		time_diff_type weight;
@@ -190,7 +203,7 @@ public:
 
 	time_diff_type weight() {
 		if (m_weights.size()) {
-			time_diff_type weight = std::accumulate(m_weights.begin(), m_weights.end(), 0);
+			time_diff_type weight = std::accumulate(m_weights.begin(), m_weights.end(), m_one_weight);
 			return weight / gcd();
 		} else {
 			return 0;
@@ -217,6 +230,10 @@ public:
 		m_fixed = o.fixed();
 		m_gcd = o.gcd();
 
+		m_one_value = o.one_value();
+		m_one_weight = o.one_weight();
+		m_has_one_value = o.has_one_value();
+
 		assert(o.weights().size() == o.values().size());
 		m_values.resize(o.values().size());
 		m_weights.resize(o.weights().size());
@@ -225,6 +242,10 @@ public:
 			m_weights[i] = o.weights()[i];
 		}
 	}
+
+	const value_type& one_value() { return m_one_value; }
+	const time_diff_type& one_weight() { return m_one_weight; }
+	bool has_one_value() { return m_has_one_value; }
 
 };
 
