@@ -43,7 +43,7 @@ Dowiedz siê wiêcej:
 <para>o skrótach klawiaturowych - <xref linkend="draw3-ext-shortcuts"></para>
 </listitem>
 </itemizedlist>
-Mo¿esz przejSæ do spisu tre¶ci - <xref linkend="draw3"> lub wybraæ odno¶nik <quote>Nastêpny</quote>, aby zapoznaæ siê po kolei z podstawowymi funkcjami programu.
+Mo¿esz przej¶æ do spisu tre¶ci - <xref linkend="draw3"> lub wybraæ odno¶nik <quote>Nastêpny</quote>, aby zapoznaæ siê po kolei z podstawowymi funkcjami programu.
 </para>
 </section><!-- draw3-info-main -->
 </chapter><!-- draw3-info -->
@@ -400,7 +400,7 @@ kliknij ikonê <inlinemediaobject><imageobject><imagedata
 </chapter> <!-- draw3-base -->
 
 <chapter id="draw3-ext">
-<title>Funkcje program draw3</title>
+<title>Funkcje programu draw3</title>
 
 <section id="draw3-ext-toc">
 <title>Spis tre¶ci</title>
@@ -486,7 +486,7 @@ Tak¿e zmiana rodzaju ¶redniej spowoduje wyj¶cie z trybu rozdwojonego kursora.
 <title>Warto¶ci sumaryczne</title>
 <para>
 Program przegl±daj±cy umo¿liwia obejrzenie sumy warto¶ci parametrów dla wybranego zakresu czasu.
-Sumowanie jest aktywne tylko dla niektórych parametrów - tam, gdzie ma to sens fizyczny i jest 
+Sumowanie jest aktywne tylko dla niektórych parametrów - tam, gdzie ma to sens fizyczny - i jest 
 realizowane jako dyskretne ca³kowanie wykresu. Przyk³adowo, je¶li mamy wykres mocy kot³a
 (czyli energia/czas), to sumowanie poka¿e nam ilo¶æ wyprodukowanej energii.
 </para>
