@@ -1,3 +1,3 @@
 SOURCES = filler2.py
 
-TRANSLATIONS = filler2_pl.ts
+TRANSLATIONS = pl/filler2_pl.ts
