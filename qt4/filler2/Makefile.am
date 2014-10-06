@@ -30,7 +30,7 @@ EXTRA_DIST = $(filler2_LOCALES_SRC) $(filler2_LOCALES)
 
 # Rule to create qm files
 $(filler2_LOCALES): $(filler2_LOCALES_SRC)
-	lrelease -nounfinished $? -qm $@
+	lrelease-qt4 -nounfinished $? -qm $@
 
 # Rule to compile Qt4 ui files
 %.py: %.ui
