@@ -1412,7 +1412,7 @@
                 <label>Edit as new defined\tCtrl+Shift+Alt+E</label>
             </object>
             <object class="wxMenuItem" name="EditAsNewNetwork">
-                <label>Edit as new network defined\tCtrl+Shift+Alt+N</label>
+                <label>Edit as new network defined\tCtrl+Shift+Alt+W</label>
             </object>
             <object class="separator"/>
             <object class="wxMenuItem" name="ImportSet">
@@ -1571,7 +1571,7 @@
             </object>
             <object class="separator"/>
             <object class="wxMenuItem" name="FetchNewNetworkParametersAndSets">
-                <label>Fetch New Network Parameters And Sets\tCtrl+Alt+Shift+N</label>
+                <label>Fetch New Network Parameters And Sets\tCtrl+Shift+Alt+N</label>
             </object>
             <object class="separator"/>
             <object class="wxMenuItem" name="ExportDataToFile">
