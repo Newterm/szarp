@@ -47,7 +47,7 @@ SERVER=${SZRSYNC_SERVER:-praterm}
 
 ME=`basename $0`
 
-LOG='/opt/szarp/logs/szrsync.log'
+LOG='/var/log/szarp/szrsync.log'
 ARGS=$@
 
 if [ -w $LOG ]; then
