@@ -51,7 +51,7 @@ void SerialPort::Open()
 	bufferevent_enable(m_bufferevent, EV_READ | EV_WRITE | EV_PERSIST);
 }
 
-bool SerialPort::Ready()
+bool SerialPort::Ready() const
 {
 	return (m_bufferevent != NULL);
 }
@@ -219,7 +219,7 @@ void SerialAdapter::ErrorCallback(struct bufferevent *bufev, short event, void* 
 	reinterpret_cast<SerialAdapter*>(ds)->Error(bufev, event);
 }
 
-bool SerialAdapter::Ready()
+bool SerialAdapter::Ready() const
 {
 	return ((m_data_bufferevent != NULL) &&
 		(m_cmd_bufferevent != NULL) &&

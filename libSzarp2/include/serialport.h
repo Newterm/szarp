@@ -132,7 +132,6 @@ class TcpConnectionException : public MsgException { } ;
 
 /** 
  * Base class for TCP clients.
- * This is a simple client.
  */
 class TcpConnection {
 public:
@@ -218,7 +217,7 @@ public:
 	/** Write data to serial port */
 	virtual void WriteData(const void* data, size_t size) = 0;
 	/** Returns true if port is ready for communication */
-	virtual bool Ready() = 0;
+	virtual bool Ready() const = 0;
 
 	/** Adds listener for port */
 	void AddListener(SerialPortListener* listener)
@@ -261,7 +260,7 @@ public:
 	/** Open port (previously configured) */
 	virtual void Open();
 	/** true if ready for r/w */
-	virtual bool Ready();
+	virtual bool Ready() const;
 	/** Close port */
 	virtual void Close();
 	/** Set serial line configuration */
@@ -309,7 +308,7 @@ public:
 		Connect();
 	}
 	/** true if ready for r/w */
-	virtual bool Ready();
+	virtual bool Ready() const;
 
 	virtual void Close()
 	{
