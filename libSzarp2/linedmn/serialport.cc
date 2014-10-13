@@ -26,7 +26,7 @@ void SerialPort::Open()
 			m_device_path.c_str(), errno, strerror(errno));
 		throw ex;
 	}
-	m_bufferevent =  bufferevent_new(m_fd, ReadDataCallback, NULL, ErrorCallback, this);
+	m_bufferevent = bufferevent_new(m_fd, ReadDataCallback, NULL, ErrorCallback, this);
 	if (m_bufferevent == NULL) {
 		Close();
 		SerialPortException ex;
@@ -156,7 +156,7 @@ void SerialAdapter::Connect(bool blocking)
 		throw mex;
 	}
 
-	m_data_bufferevent =  bufferevent_new(data_socket_fd, ReadDataCallback, NULL, ErrorCallback, this);
+	m_data_bufferevent = bufferevent_new(data_socket_fd, ReadDataCallback, NULL, ErrorCallback, this);
 	if (m_data_bufferevent == NULL) {
 		CloseConnection();
 		SerialAdapterException ex;
@@ -164,7 +164,7 @@ void SerialAdapter::Connect(bool blocking)
 		throw ex;
 	}
 
-	m_cmd_bufferevent =  bufferevent_new(cmd_socket_fd, ReadCmdCallback, NULL, ErrorCallback, this);
+	m_cmd_bufferevent = bufferevent_new(cmd_socket_fd, ReadCmdCallback, NULL, ErrorCallback, this);
 	if (m_cmd_bufferevent == NULL) {
 		CloseConnection();
 		SerialAdapterException ex;
@@ -581,11 +581,11 @@ void TcpConnection::InitTcp(std::string address, int port)
 	std::ostringstream s;
 	s << m_address << ":" << m_port;
 	m_id = s.str();
-  	
+
 	/* server address */ 
 	m_server_addr.sin_family = AF_INET;
-  	inet_aton(address.c_str(), &m_server_addr.sin_addr);
-  	m_server_addr.sin_port = htons(port);
+	inet_aton(address.c_str(), &m_server_addr.sin_addr);
+	m_server_addr.sin_port = htons(port);
 }
 
 int TcpConnection::Connect(bool blocking)
@@ -607,7 +607,7 @@ int TcpConnection::Connect(bool blocking)
 		throw ex;
 	}
 
-  	/* connect to the server */
+	/* connect to the server */
 	int ret = connect(m_connect_fd, (struct sockaddr*)&m_server_addr, sizeof(m_server_addr));
 	if (ret == -1) {
 		if ((errno == EINPROGRESS) || (errno == EALREADY)) {

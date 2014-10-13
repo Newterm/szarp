@@ -506,7 +506,7 @@ serial_client_driver* create_lumel_serial_client();
 tcp_client_driver* create_wmtp_tcp_client();
 
 void dolog(int level, const char * fmt, ...)
-  __attribute__ ((format (printf, 2, 3)));
+	__attribute__ ((format (printf, 2, 3)));
 
 int get_serial_port_config(xmlNodePtr node, serial_port_configuration &spc);
 
@@ -536,13 +536,13 @@ template<class T> int get_xml_extra_prop(xmlNodePtr node, const char* pname, T& 
 }
 
 namespace ascii {
-    int char2value(unsigned char c, unsigned char &o) ;
+	int char2value(unsigned char c, unsigned char &o) ;
 
-    int from_ascii(unsigned char c1, unsigned char c2, unsigned char &c) ;
+	int from_ascii(unsigned char c1, unsigned char c2, unsigned char &c) ;
 
-    unsigned char value2char(unsigned char c) ;
+	unsigned char value2char(unsigned char c) ;
 
-    void to_ascii(unsigned char c, unsigned char& c1, unsigned char &c2) ;
+	void to_ascii(unsigned char c, unsigned char& c1, unsigned char &c2) ;
 }
 
 class driver_logger {
@@ -550,7 +550,7 @@ class driver_logger {
 public:
 	driver_logger(boruta_driver* driver);
 	void log(int level, const char * fmt, ...)
-		  __attribute__ ((format (printf, 3, 4)));
+		__attribute__ ((format (printf, 3, 4)));
 	void vlog(int level, const char * fmt, va_list fmt_args);
 };
 

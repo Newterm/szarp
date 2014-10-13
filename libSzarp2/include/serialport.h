@@ -108,23 +108,23 @@ public:
 #include <fcntl.h>
 
 inline int set_fd_nonblock(int fd, bool nonblock = true) {
-        int flags = fcntl(fd, F_GETFL, 0);
-        if (flags == -1) {
-                return -1;
-        }
+	int flags = fcntl(fd, F_GETFL, 0);
+	if (flags == -1) {
+		return -1;
+	}
 
 	if (nonblock) {
-        	flags |= O_NONBLOCK;
+		flags |= O_NONBLOCK;
 	} else {
 		flags &= ~O_NONBLOCK;
 	}
 
-        flags = fcntl(fd, F_SETFL, flags);
-        if (flags == -1) {
-                return -1;
-        }
+	flags = fcntl(fd, F_SETFL, flags);
+	if (flags == -1) {
+		return -1;
+	}
 
-        return 0;
+	return 0;
 }
 
 /** Exception specific to TcpConnection class. */

@@ -244,7 +244,7 @@ void kams_daemon::StartDo() {
 		dolog(0, "%s: %s", m_id.c_str(), e.what());
 		SetRestart();
 	}
-        evtimer_set(&m_ev_timer, TimerCallback, this);
+	evtimer_set(&m_ev_timer, TimerCallback, this);
 	Do();
 }
 
@@ -495,7 +495,7 @@ void kams_daemon::ScheduleNext(unsigned int wait_ms)
 
 void kams_daemon::TimerCallback(int fd, short event, void* thisptr)
 {
-        reinterpret_cast<kams_daemon*>(thisptr)->Do();
+	reinterpret_cast<kams_daemon*>(thisptr)->Do();
 }
 
 void kams_daemon::ReadConfig(int argc, char **argv) {

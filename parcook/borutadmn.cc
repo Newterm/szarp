@@ -690,7 +690,7 @@ void tcp_client_manager::close_connection(tcp_connection &c) {
 }
 
 void tcp_client_manager::open_connection(tcp_connection &c, struct sockaddr_in& addr) {
-	dolog(7, "tcp_client_manager::open_connection  %s", c.address.first.c_str());
+	dolog(7, "tcp_client_manager::open_connection %s", c.address.first.c_str());
 	c.fd = socket(PF_INET, SOCK_STREAM, 0);
 	assert(c.fd >= 0);
 	if (set_nonblock(c.fd)) {
@@ -935,7 +935,7 @@ void serial_client_manager::do_terminate_connection(size_t conn_no) {
 CONNECTION_STATE serial_client_manager::do_establish_connection(size_t conn_no) {
 	const std::string path = m_configurations.at(conn_no).at(0).path;
 	if (m_serial_connections.at(conn_no).fd < 0) { // not connected
-	    m_serial_connections.at(conn_no).open_connection(path, m_boruta->get_event_base());
+		m_serial_connections.at(conn_no).open_connection(path, m_boruta->get_event_base());
 	}
 	return do_get_connection_state(conn_no);
 }
