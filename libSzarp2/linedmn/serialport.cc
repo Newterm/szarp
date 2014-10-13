@@ -14,6 +14,21 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 
+
+void BaseSerialPort::ReadData(const std::vector<unsigned char>& data)
+{
+	for (auto* listener : m_listeners) {
+		listener->ReadData(data);
+	}
+}
+
+void BaseSerialPort::Error(short int event)
+{
+	for (auto* listener : m_listeners) {
+		listener->ReadError(event);
+	}
+}
+
 void SerialPort::Open()
 {
 	if (m_bufferevent != NULL) {

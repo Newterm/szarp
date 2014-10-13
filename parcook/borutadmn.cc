@@ -560,24 +560,16 @@ void serial_connection::connection_error_cb(struct bufferevent *ev, short event,
 
 void client_manager::finished_cycle() {
 	dolog(7, "client_manager::finished_cycle");
-	for (std::vector<std::vector<client_driver*> >::iterator i = m_connection_client_map.begin();
-			i != m_connection_client_map.end();
-			i++) 
-		for (std::vector<client_driver*>::iterator j = i->begin();
-				j != i->end();
-				j++)
-			(*j)->finished_cycle();
+	for (auto& clients : m_connection_client_map)
+		for (auto* client_driver : clients)
+			client_driver->finished_cycle();
 }
 
 void client_manager::starting_new_cycle() {
 	dolog(7, "client_manager::starting new cycle");
-	for (std::vector<std::vector<client_driver*> >::iterator i = m_connection_client_map.begin();
-			i != m_connection_client_map.end();
-			i++) 
-		for (std::vector<client_driver*>::iterator j = i->begin();
-				j != i->end();
-				j++)
-			(*j)->starting_new_cycle();
+	for (auto& clients : m_connection_client_map)
+		for (auto* client_driver : clients)
+			client_driver->starting_new_cycle();
 	for (size_t connection = 0; connection < m_connection_client_map.size(); connection++) {
 		size_t& client = m_current_client.at(connection);
 		CONNECTION_STATE state = do_establish_connection(connection);
@@ -1026,17 +1018,13 @@ void serial_server_manager::starting_new_cycle() {
 			else
 				set_serial_port_settings(m_connections[i].fd, m_configurations.at(i));
 		}
-	for (std::vector<serial_server_driver*>::iterator i = m_drivers.begin();
-			i != m_drivers.end();
-			i++)
-		(*i)->starting_new_cycle();
+	for (auto* server_driver : m_drivers)
+		server_driver->starting_new_cycle();
 }
 
 void serial_server_manager::finished_cycle() {
-	for (std::vector<serial_server_driver*>::iterator i = m_drivers.begin();
-			i != m_drivers.end();
-			i++)
-		(*i)->finished_cycle();
+	for (auto* server_driver : m_drivers)
+		server_driver->finished_cycle();
 }
 
 void serial_server_manager::restart_connection_of_driver(serial_server_driver* driver) {
@@ -1129,23 +1117,21 @@ int tcp_server_manager::initialize() {
 }
 
 void tcp_server_manager::starting_new_cycle() {
-	for (std::vector<listen_port>::iterator i = m_listen_ports.begin(); i != m_listen_ports.end(); i++) {
-		if (i->fd >= 0)
+	for (auto& port : m_listen_ports) {
+		if (port.fd >= 0)
 			continue;
-		i->fd = start_listening_on_port(i->port);
-		if (i->fd < 0)
+		port.fd = start_listening_on_port(port.port);
+		if (port.fd < 0)
 			continue;
-		event_set(&i->_event, i->fd, EV_READ | EV_PERSIST, connection_accepted_cb, &(*i));
-		event_add(&i->_event, NULL);
-		event_base_set(m_boruta->get_event_base(), &i->_event);
+		event_set(&port._event, port.fd, EV_READ | EV_PERSIST, connection_accepted_cb, &port);
+		event_add(&port._event, NULL);
+		event_base_set(m_boruta->get_event_base(), &port._event);
 	}
 }
 
 void tcp_server_manager::finished_cycle() {
-	for (std::vector<tcp_server_driver*>::iterator i = m_drivers.begin();
-			i != m_drivers.end();
-			i++)
-		(*i)->finished_cycle();
+	for (auto* server_driver : m_drivers)
+		server_driver->finished_cycle();
 }
 
 void tcp_server_manager::connection_read_cb(struct bufferevent *bufev, void* _manager) {

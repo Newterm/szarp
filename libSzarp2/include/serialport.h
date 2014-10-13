@@ -235,21 +235,10 @@ protected:
 	typedef std::vector<SerialPortListener*> Listeners;
 
 	/** Callback, notifies listeners */
-	void ReadData(const std::vector<unsigned char>& data)
-	{
-		for (Listeners::iterator it = m_listeners.begin();
-				it != m_listeners.end(); ++it) {
-			(*it)->ReadData(data);
-		}
-	}
+	void ReadData(const std::vector<unsigned char>& data);
+
 	/** Callback, notifies listeners */
-	void Error(short int event)
-	{
-		for (Listeners::iterator it = m_listeners.begin();
-				it != m_listeners.end(); ++it) {
-			(*it)->ReadError(event);
-		}
-	}
+	void Error(short int event);
 
 private:
 	/** Avoid copying */
