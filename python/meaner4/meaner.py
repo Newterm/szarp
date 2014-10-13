@@ -68,7 +68,7 @@ class Meaner(MeanerBase):
 		
 	def hearbeat(self, value):
 		value = 0 if self.last_heartbeat is None else 1
-		self.last_heartbeat = time.time()
+		self.last_heartbeat = int(time.time())
 		self.heartbeat_param.process_value(value, self.last_heartbeat)
 
 	def loop(self):

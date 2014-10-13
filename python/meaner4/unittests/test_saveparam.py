@@ -67,16 +67,16 @@ class SaveParamTest(unittest.TestCase):
 
 		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
 		sp.process_msg(self._msg(123456, 4))
-		self._check_size(path, 12)
-		self._check_file(path, "<iII", (4, 123456, 0))
+		self._check_size(path, 5)
+		self._check_file(path, "<iB", (4, 0))
 
 		sp.process_msg(self._msg(123457, 4))
-		self._check_size(path, 12)
-		self._check_file(path, "<iII", (4, 123457, 0))
+		self._check_size(path, 9)
+		self._check_file(path, "<iBBBBB", (4, 0xf0, 0x3b, 0x9a, 0xca, 0x00))
 
 		sp.process_msg(self._msg(123458, 5))
-		self._check_size(path, 4 + 8 + 4 + 8)
-		self._check_file(path, "<iIIiII", (4, 123457, 0, 5, 123458, 0))
+		self._check_size(path, 4 + 5 + 4 + 1)
+		self._check_file(path, "<iBBBBBiB", (4, 0xf0, 0x3b, 0x9a, 0xca, 0x00, 5, 0))
 
 		del sp
 
@@ -89,26 +89,29 @@ class SaveParamTest(unittest.TestCase):
 
 		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
 		sp.process_msg(self._msg(123456, 4))
-		self._check_size(path, 12)
-		self._check_file(path, "<iII", (4, 123456, 0))
+		self._check_size(path, 5)
+		self._check_file(path, "<iB", (4, 0))
 
 		sp.process_msg(self._msg(123457, 4))
-		self._check_size(path, 12)
-		self._check_file(path, "<iII", (4, 123457, 0))
+		self._check_size(path, 9)
+		self._check_file(path, "<iBBBBB", (4, 0xf0, 0x3b, 0x9a, 0xca, 0x00))
 
 		del sp
 		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
 
 		sp.process_msg(self._msg(123459, 5))
-		self._check_size(path, 4 + 8 + 4 + 8 + 4 + 8)
-		self._check_file(path, "<iIIiIIiII", (4, 123457, 0, -2**31, 123458, 999999999, 5, 123459, 0))
+		self._check_size(path, 23)
+		self._check_file(path, "<iBBBBBiBBBBBiB",
+					(4, 0xf0, 0x3b, 0x9a, 0xca, 0x00,
+					-2**31, 0xf0, 0x77, 0x35, 0x94, 0x00,
+					5, 0))
 
 		shutil.rmtree(temp_dir)
 
 	def test_basictest3(self):
 		temp_dir = tempfile.mkdtemp(suffix="meaner4_unit_test")
 
-		item_size = 4 + 8
+		item_size = 4 + 5
 		items_per_file = config.DATA_FILE_SIZE / item_size
 
 		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
@@ -119,4 +122,4 @@ class SaveParamTest(unittest.TestCase):
 		self._check_size(path, items_per_file * item_size)
 
 		path2 = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/%010d0000000000.sz4" % (items_per_file))
-		self._check_size(path2, 12)
+		self._check_size(path2, 5)

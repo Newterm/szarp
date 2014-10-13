@@ -77,3 +77,9 @@ class ParamPath:
 				return None
 		except OSError:
 			return None
+	
+	def time_from_path(self, path):
+		if self.param.time_prec == 4:
+			return int(path[-10 - 4: -4]), 0
+		else:
+			return int(path[-20 - 4: -14]), int(path[-10 - 4: -4])

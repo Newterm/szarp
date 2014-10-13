@@ -24,15 +24,14 @@ import fcntl
 import config
 import param
 import parampath
+import lastentry
 import math
 from contextlib import contextmanager
 
 @contextmanager
 def file_lock(file):
 	file.lock()
-
 	yield file
-
 	file.unlock()
 
 class FileFactory:
@@ -42,6 +41,9 @@ class FileFactory:
 
 		def seek(self, offset, whence):
 			self.file.seek(offset, whence)
+
+		def tell(self):
+			return self.file.tell()
 
 		def write(self, data):
 			self.file.write(data)
@@ -67,31 +69,41 @@ class SaveParam:
 		self.param = param
 		self.param_path = parampath.ParamPath(self.param, szbase_dir)
 		self.file = None
-		self.current_value = None
 		self.first_write = True
 		self.file_factory = file_factory
-		self.datum_size = self.param.time_prec + self.param.value_lenght
+		self.last = lastentry.LastEntry(param)
 
 	def update_last_time(self, time, nanotime):
-		self.file.seek(-self.param.time_prec, os.SEEK_END)
+		last_time_size = self.last.time_size
+
+		self.file.seek(-self.last.time_size, os.SEEK_END)
 		with file_lock(self.file):
-			self.file.write(self.param.time_to_binary(time, nanotime))
+			time_blob = self.last.update_time(time, nanotime)
+			self.file.write(time_blob)
+
+			self.file_size += self.last.time_size - last_time_size
+
+			
 
 	def write_value(self, value, time, nanotime):
-		if self.file_size + self.datum_size >= config.DATA_FILE_SIZE:
+		if self.file_size + self.param.value_lenght >= config.DATA_FILE_SIZE:
 			self.file.close()
 
 			path = self.param_path.create_file_path(time, nanotime)
 			self.file = self.file_factory.open(path, mode="w+b")
+			self.last.from_file(self.file, time, nanotime)
 			self.file_size = 0
 
 		with file_lock(self.file):
 			self.file.write(self.param.value_to_binary(value))
-			self.file.write(self.param.time_to_binary(time, nanotime))
+			self.file_size += self.param.value_lenght
 
-			self.file_size += self.datum_size
+			time_blob = self.last.update_time(time, nanotime)
+			self.file.write(time_blob)
+			self.file_size += len(time_blob)
 
-		self.current_value = value
+
+		self.last.value = value
 
 	def prepare_for_writing(self, time, nanotime):
 		path = self.param_path.find_latest_path()	
@@ -100,14 +112,9 @@ class SaveParam:
 			self.file_size = os.path.getsize(path)
 			self.file = self.file_factory.open(path, "r+b")
 
-			if self.file_size >= self.datum_size:
-				self.file.seek(-self.datum_size, os.SEEK_END)
-				value_blob = self.file.read(self.param.value_lenght)
-				self.file.seek(0, os.SEEK_END)
+			file_time, file_nanotime = self.param_path.time_from_path(path)
+			self.last.from_file(self.file, file_time, file_nanotime)
 
-				self.current_value = self.param.value_from_binary(value_blob)
-			else:
-				self.current_value = None
 		else:
 			self.file_size = 0
 
@@ -117,11 +124,13 @@ class SaveParam:
 
 			path = self.param_path.create_file_path(time, nanotime)
 			self.file = self.file_factory.open(path, "w+b")
-			self.current_value = None
+			self.file_size = os.path.getsize(path)
+
+			self.last.reset(time, nanotime)
+
 
 	def fill_no_data(self, time, nanotime):
-		prev_time, prev_nanotime = self.param.time_just_before(time, nanotime)
-		self.write_value(self.param.nan(), prev_time, prev_nanotime)
+		self.write_value(self.param.nan(), time, nanotime)
 
 	def process_value(self, value, time, nanotime = 0):
 		if not self.param.written_to_base:
@@ -132,11 +141,14 @@ class SaveParam:
 			self.prepare_for_writing(time, nanotime)
 			self.first_write = False
 
-		if value == self.current_value:
+		if value == self.last.value:
 			self.update_last_time(time, nanotime)
 		else:
-			if first_write and self.current_value is not None:
+			if not first_write: 
+				self.update_last_time(time, nanotime)
+			elif self.last.value is not None:
 				self.fill_no_data(time, nanotime)
+
 			self.write_value(value, time, nanotime)
 
 	def process_msg(self, msg):
