@@ -437,7 +437,6 @@ public:
 
 class SBUSUnit: public ConnectionListener  {
 	static const int MAX_WAIT_FOR_CONFIG_MS = 5000;
-	static const int MIN_WAIT_FOR_CONFIG_MS = 1000;
 
 	enum PARITY { MARK, SPACE };
 	BaseSerialPort *m_port;
@@ -462,8 +461,6 @@ class SBUSUnit: public ConnectionListener  {
 		WAIT_RESPONSE, PROCESSING_RESPONSE} CommState;
 	CommState m_state;
 	BaseSBUSDaemon *m_daemon;	/**< callback for telling daemon that unit finished querying */
-	int m_wait_for_config_ms;
-					/**< time given to serial port for config set */
 
 	Buffer CreateQueryPacket(unsigned short start, int count);
 	void SetParamsVals(unsigned short start, int count, Buffer& response);
@@ -477,11 +474,6 @@ class SBUSUnit: public ConnectionListener  {
 	void SendQuery();
 	void ProcessResponse();
 	void BadResponse();
-	void IncreaseWaitForConfigTime() {
-		if (m_wait_for_config_ms < MAX_WAIT_FOR_CONFIG_MS) {
-			m_wait_for_config_ms += 1000;
-		}
-	}
 	void SetPortParity(PARITY parity);
 	const char* GetId() const {
 		return m_daemon->GetId();
@@ -490,7 +482,7 @@ public:
 	SBUSUnit(BaseSBUSDaemon *daemon)
 		:m_port(NULL), m_buffer(NULL), m_start_address(0),
 		m_param_count(0), m_read_attempts(0), m_state(IDLE),
-		m_daemon(daemon), m_wait_for_config_ms(MIN_WAIT_FOR_CONFIG_MS)
+		m_daemon(daemon)
 	{}
 	bool Configure(PROTOCOL_TYPE protocol, TUnit *unit, xmlNodePtr xmlunit,
 		short *params, BaseSerialPort *port, int speed);
@@ -500,10 +492,12 @@ public:
 	/** Serial port listener callbacks */
 	virtual void ReadData(const std::vector<unsigned char>& data);
 	virtual void ReadError(short int event);
+	virtual void SetConfigurationFinished();
 };
 
 void SBUSUnit::ScheduleNext(unsigned int wait_ms)
 {
+	evtimer_del(&m_ev_timer);
 	struct timeval tv;
 	tv.tv_sec = wait_ms / 1000;
 	tv.tv_usec = (wait_ms % 1000) * 1000;
@@ -846,7 +840,7 @@ void SBUSUnit::PCDInitStart() {
 		} else {
 			m_port->SetConfiguration(&m_termios);
 		}
-		ScheduleNext(m_wait_for_config_ms);
+		ScheduleNext(MAX_WAIT_FOR_CONFIG_MS);
 	} catch (const SerialPortException &ex) {
 		dolog(0, "%s: Exception occured in PCDInitStart: %s", GetId(), ex.what());
 		BadResponse();
@@ -858,7 +852,6 @@ void SBUSUnit::PCDInitContinue() {
 		m_state = PCD_INITIALIZED;
 		if (!m_port->Ready()) {
 			dolog(0, "%s: Error: port isn't ready in PCDInitContinue", GetId());
-			IncreaseWaitForConfigTime();
 			BadResponse();
 		}
 		if (m_protocol == SBUS_PCD) {
@@ -880,7 +873,7 @@ void SBUSUnit::PCDInitFinish() {
 		m_state = SEND_QUERY;
 		if (m_protocol == SBUS_PCD) {
 			SetPortParity(SPACE);
-			ScheduleNext(m_wait_for_config_ms);
+			ScheduleNext(MAX_WAIT_FOR_CONFIG_MS);
 		} else {
 			ScheduleNext();
 		}
@@ -894,7 +887,6 @@ void SBUSUnit::SendQuery() {
 	try {
 		if (!m_port->Ready()) {
 			dolog(0, "%s: Error: port isn't ready in SendQuery", GetId());
-			IncreaseWaitForConfigTime();
 			BadResponse();
 		}
 		m_response.Clear();
@@ -989,6 +981,10 @@ void SBUSUnit::BadResponse() {
 void SBUSUnit::ReadError(short int event) {
 	dolog(8, "ReadError occured");
 	BadResponse();
+}
+
+void SBUSUnit::SetConfigurationFinished() {
+	ScheduleNext();
 }
 
 Buffer SBUSUnit::CreateQueryPacket(unsigned short start, int count) {
@@ -1101,6 +1097,7 @@ public:
 
 void SBUSDaemon::ScheduleNext(unsigned int wait_ms)
 {
+	evtimer_del(&m_ev_timer);
 	struct timeval tv;
 	tv.tv_sec = wait_ms / 1000;
 	tv.tv_usec = (wait_ms % 1000) * 1000;

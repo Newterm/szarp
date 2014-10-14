@@ -191,6 +191,11 @@ public:
 	 * After an error is received, the listener responsible for port
 	 * should try to close and open it once again */
 	virtual void ReadError(short int event) = 0;
+	/** Callback for informing listener that his call to
+	 * SetConfiguration() has been processed and connection is ready
+	 * for writing
+	 */
+	virtual void SetConfigurationFinished() = 0;
 };
 
 
@@ -215,6 +220,8 @@ public:
 	virtual void WriteData(const void* data, size_t size) = 0;
 	/** Returns true if connection is ready for communication */
 	virtual bool Ready() const = 0;
+	/** Set line configuration for an already open port */
+	virtual void SetConfiguration(const struct termios *serial_conf) = 0;
 
 	/** Adds listener for port */
 	void AddListener(ConnectionListener* listener)
@@ -230,6 +237,9 @@ public:
 protected:
 	/** Callback, notifies listeners */
 	void ReadData(const std::vector<unsigned char>& data);
+
+	/** Callback, notifies listeners */
+	void SetConfigurationFinished();
 
 	/** Callback, notifies listeners */
 	void Error(short int event);
@@ -250,8 +260,6 @@ class SerialPortException : public ConnectionException {};
 class BaseSerialPort : public BaseConnection
 {
 public:
-	/** Set serial line configuration for an already open port */
-	virtual void SetConfiguration(const struct termios *serial_conf) = 0;
 	/** Set DTR and RTS signals according to params */
 	virtual void LineControl(bool dtr, bool rts) = 0;
 };

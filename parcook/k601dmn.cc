@@ -42,7 +42,6 @@
       xmlns:m601="http://www.praterm.com.pl/SZARP/ipk-extra"
       daemon="/opt/szarp/bin/k601dmn" 
       path="/dev/ttyA11"
-      m601:delay_between_chars="10000"
       m601:delay_between_requests="10">
       <unit id="1">
               <param
@@ -172,7 +171,8 @@ class KamstrupInfo {
 		unsigned long mul;   /**< ADDITIONAL MULTIPLIER */
 		ParamMode type;
 	};
-	unsigned long delay_between_chars;
+	const unsigned int DELAY_BETWEEN_CHARS = 50;
+	const unsigned int READ_TIMEOUT = 10000;
 	unsigned short delay_between_requests;
 
 	ParamInfo *m_params;
@@ -222,24 +222,6 @@ int KamstrupInfo::parseDevice(xmlNodePtr node)
 	char *tmp;
 	dolog(10, "KamstrupInfo::parseDevice");
 
-	str = (char *)xmlGetNsProp(node,
-				   BAD_CAST("delay_between_chars"),
-				   BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-	if (str == NULL) {
-		dolog(0,
-		       "attribute k601:delay_between_chars not found in device element, line %ld",
-		       xmlGetLineNo(node));
-		return 1;
-	}
-
-	delay_between_chars = strtol(str, &tmp, 0);
-	if (tmp[0] != 0) {
-		dolog(0,
-		       "error parsing k601:delay_between_chars attribute ('%s'), line %ld",
-		       str, xmlGetLineNo(node));
-		return 1;
-	}
-	free(str);
 	str = (char *)xmlGetNsProp(node,
 				   BAD_CAST("delay_between_requests"),
 				   BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
@@ -543,7 +525,7 @@ public:
 
 protected:
 	/** Schedule next state machine step */
-	void ScheduleNext(unsigned int wait_ms);
+	void ScheduleNext(unsigned int wait_ms=0);
 
 	/** Callback for next step of timed state machine. */
 	static void TimerCallback(int fd, short event, void* thisptr);
@@ -554,6 +536,7 @@ protected:
 	/** ConnectionListener interface */
 	virtual void ReadError(short event);
 	virtual void ReadData(const std::vector<unsigned char>& data);
+	virtual void SetConfigurationFinished();
 
 	void ProcessResponse();
 	void SetCurrRegisterNoData();
@@ -616,10 +599,15 @@ void K601Daemon::ReadError(short event)
 	SetRestart();
 }
 
+void K601Daemon::SetConfigurationFinished() {
+	ScheduleNext();
+}
+
 void K601Daemon::ReadData(const std::vector<unsigned char>& data)
 {
 	m_read_buffer.insert(m_read_buffer.end(), data.begin(), data.end());
 	m_data_was_read = true;
+	ScheduleNext();
 }
 
 void K601Daemon::Init(int argc, char *argv[])
@@ -718,10 +706,9 @@ void K601Daemon::Init(int argc, char *argv[])
 line number: %d\n\
 device: %ls\n\
 params in: %d\n\
-Delay between chars [us]: %ld\n\
 Delay between requests [s]: %d\n\
 Unique registers (read params): %d\n\
-", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), kamsinfo->m_params_count, kamsinfo->delay_between_chars, kamsinfo->delay_between_requests, kamsinfo->unique_registers_count);
+", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), kamsinfo->m_params_count, kamsinfo->delay_between_requests, kamsinfo->unique_registers_count);
 		for (int i = 0; i < kamsinfo->m_params_count; i++)
 			printf("  IN:  reg %04d multiplier %ld type %s\n",
 			       kamsinfo->m_params[i].reg,
@@ -821,7 +808,7 @@ void K601Daemon::Do()
 			}
 			destroySend(MyKMPSendClass);
 			MyKMPReceiveClass = createReceive();
-			wait_ms = kamsinfo->delay_between_chars;
+			wait_ms = kamsinfo->READ_TIMEOUT;
 			break;
 		case READ:
 			dolog(10, "READ");
@@ -838,7 +825,7 @@ void K601Daemon::Do()
 					m_state = FINALIZE;
 				} else {
 					m_data_was_read = false;
-					wait_ms = kamsinfo->delay_between_chars;
+					wait_ms = kamsinfo->DELAY_BETWEEN_CHARS;
 				}
 			}
 			break;
@@ -995,6 +982,7 @@ void K601Daemon::ProcessResponse()
 
 void K601Daemon::ScheduleNext(unsigned int wait_ms)
 {
+	evtimer_del(&m_ev_timer);
 	struct timeval tv;
 	tv.tv_sec = wait_ms / 1000;
 	tv.tv_usec = (wait_ms % 1000) * 1000;

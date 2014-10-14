@@ -169,8 +169,7 @@ protected:
 	/** ConnectionListener interface */
 	virtual void ReadError(short event);
 	virtual void ReadData(const std::vector<unsigned char>& data);
-	virtual void ConfigurationWasSet()
-	{}
+	virtual void SetConfigurationFinished() {}
 
 	/** Increase wait for data time */
 	void IncreaseWaitForDataTime();

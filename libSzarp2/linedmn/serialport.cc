@@ -29,6 +29,13 @@ void BaseConnection::Error(short int event)
 	}
 }
 
+void BaseConnection::SetConfigurationFinished()
+{
+	for (auto* listener : m_listeners) {
+		listener->SetConfigurationFinished();
+	}
+}
+
 void SerialPort::Open()
 {
 	if (m_bufferevent != NULL) {
@@ -77,6 +84,7 @@ void SerialPort::SetConfiguration(const struct termios *serial_conf)
 			errno, strerror(errno));
 		throw ex;
 	}
+	SetConfigurationFinished();
 }
 
 void SerialPort::LineControl(bool dtr, bool rts)
@@ -311,6 +319,7 @@ void SerialAdapter::ProcessCmdResponse(std::vector<unsigned char> &cmd_buf)
 		} else if ((m_serial_state == SETCONF3) && (cmd_buf[index] == CMD_PORT_INIT)) {
 			m_serial_state = READY;
 			bufferevent_enable(m_data_bufferevent, EV_READ | EV_WRITE | EV_PERSIST);
+			SetConfigurationFinished();
 		}
 
 		if (cmd_buf[index] == CMD_POLLALIVE)
