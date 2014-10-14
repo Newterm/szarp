@@ -435,7 +435,7 @@ public:
 	}
 };
 
-class SBUSUnit: public SerialPortListener  {
+class SBUSUnit: public ConnectionListener  {
 	static const int MAX_WAIT_FOR_CONFIG_MS = 5000;
 	static const int MIN_WAIT_FOR_CONFIG_MS = 1000;
 

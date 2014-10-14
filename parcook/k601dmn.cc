@@ -505,7 +505,7 @@ DetermineRegisterMultiplier(unsigned short RegisterAddress)
  * or a SerialAdapter connection
  * (if 'extra:tcp-ip' and optionally 'extra:tcp-data-port' and 'extra:tcp-cmd-port' are declared)
  */
-class K601Daemon: public SerialPortListener {
+class K601Daemon: public ConnectionListener {
 public:
 	class K601Exception : public MsgException { } ;
 	typedef enum {RESTART, SEND, READ, PROCESS, FINALIZE} CommunicationState;
@@ -551,7 +551,7 @@ protected:
 	/** One step of state machine */
 	void Do();
 
-	/** SerialPortListener interface */
+	/** ConnectionListener interface */
 	virtual void ReadError(short event);
 	virtual void ReadData(const std::vector<unsigned char>& data);
 

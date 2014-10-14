@@ -181,8 +181,8 @@ inline void print_as_hex(const std::vector<unsigned char> &buf)
 	std::cout << std::hex << (int)buf[size - 1] << std::endl;
 }
 
-/** Listener receiving notifications from SerialPort */
-class SerialPortListener
+/** Listener receiving notifications from Connection */
+class ConnectionListener
 {
 public:
 	/** Callback for notifications from SerialPort */
@@ -193,34 +193,31 @@ public:
 	virtual void ReadError(short int event) = 0;
 };
 
-class SerialPortException : public MsgException {};
 
-/** Provides interface to an bufferevent-driven serial port.
+class ConnectionException : public MsgException {};
+
+/** Provides interface to a bufferevent-driven generalized connection.
  * User of this class is responsible for handling exceptions, errors
  * and restarting connection if neccessary.
- * All errors are reported to SerialPortListener via ReadError callback
+ * All errors are reported to ConnectionListener via ReadError callback
  */
-class BaseSerialPort
+class BaseConnection
 {
 public:
-	BaseSerialPort() {}
-	virtual ~BaseSerialPort() {}
+	BaseConnection() {}
+	virtual ~BaseConnection() {}
 
-	/** Open port (previously initialized) */
+	/** Open connection (previously initialized) */
 	virtual void Open() = 0;
-	/** Close port */
+	/** Close connection */
 	virtual void Close() = 0;
-	/** Set serial line configuration for an already open port */
-	virtual void SetConfiguration(const struct termios *serial_conf) = 0;
-	/** Set DTR and RTS signals according to params */
-	virtual void LineControl(bool dtr, bool rts) = 0;
-	/** Write data to serial port */
+	/** Write data to connection */
 	virtual void WriteData(const void* data, size_t size) = 0;
-	/** Returns true if port is ready for communication */
+	/** Returns true if connection is ready for communication */
 	virtual bool Ready() const = 0;
 
 	/** Adds listener for port */
-	void AddListener(SerialPortListener* listener)
+	void AddListener(ConnectionListener* listener)
 	{
 		m_listeners.push_back(listener);
 	}
@@ -231,8 +228,6 @@ public:
 	}
 
 protected:
-	typedef std::vector<SerialPortListener*> Listeners;
-
 	/** Callback, notifies listeners */
 	void ReadData(const std::vector<unsigned char>& data);
 
@@ -241,11 +236,26 @@ protected:
 
 private:
 	/** Avoid copying */
-	BaseSerialPort(const BaseSerialPort&);
-	BaseSerialPort& operator=(const BaseSerialPort&);
+	BaseConnection(const BaseConnection&);
+	BaseConnection& operator=(const BaseConnection&);
 
-	Listeners m_listeners;
+	std::vector<ConnectionListener*> m_listeners;
 };
+
+
+class SerialPortException : public ConnectionException {};
+
+/** Provides interface to a bufferevent-driven serial port.
+ */
+class BaseSerialPort : public BaseConnection
+{
+public:
+	/** Set serial line configuration for an already open port */
+	virtual void SetConfiguration(const struct termios *serial_conf) = 0;
+	/** Set DTR and RTS signals according to params */
+	virtual void LineControl(bool dtr, bool rts) = 0;
+};
+
 
 /** Serial port accessible via file descriptor */
 class SerialPort: public BaseSerialPort
@@ -287,6 +297,7 @@ protected:
 	int m_fd;
 	struct bufferevent* m_bufferevent;	/**< Libevent bufferevent for port access. */
 };
+
 
 /** Exception specific to SerialAdapter class. */
 class SerialAdapterException : public SerialPortException { } ;

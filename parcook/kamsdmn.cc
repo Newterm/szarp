@@ -102,7 +102,7 @@ xmlChar* get_device_node_extra_prop(xmlXPathContextPtr xp_ctx, const char* prop)
  * or a SerialAdapter connection
  * (if 'extra:tcp-ip' and optionally 'extra:tcp-data-port' and 'extra:tcp-cmd-port' are declared)
  */
-class kams_daemon: public SerialPortListener {
+class kams_daemon: public ConnectionListener {
 public:
 	typedef enum {MODE_B300, MODE_B1200_EVEN, MODE_B1200} SerialMode;
 	typedef enum {SET_COMM_WRITE, WRITE, REPEAT_WRITE, SET_COMM_READ, READ, RESTART} CommunicationState;
@@ -166,7 +166,7 @@ protected:
 	/** Write single char of query command to device */
 	void WriteChar();
 
-	/** SerialPortListener interface */
+	/** ConnectionListener interface */
 	virtual void ReadError(short event);
 	virtual void ReadData(const std::vector<unsigned char>& data);
 	virtual void ConfigurationWasSet()
