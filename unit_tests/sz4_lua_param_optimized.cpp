@@ -209,11 +209,14 @@ void Sz4LuaParamOptimized::test2() {
 #endif
 		int fd = sz4::open_writelock(file_path.c_str(), O_WRONLY | O_CREAT);
 
+		char buf[3];
 		short v = 10;
-		write(fd, (const char*)&v, sizeof(v));
+		unsigned char t = 0x32;
 
-		sz4::second_time_t t = 150;
-		write(fd, (const char*)&t, sizeof(t));
+		memcpy(buf, &v, 2);
+		memcpy(buf + 2, &t, 1);
+
+		write(fd, buf, sizeof(buf));
 
 		sz4::close_unlock(fd);
 	}

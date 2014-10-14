@@ -176,6 +176,7 @@ libSzarp2_la_SOURCES = \
 			$(INCLUDE_DIR)/sz4/util.h \
 			$(INCLUDE_DIR)/sz4/block_cache..h \
 			$(INCLUDE_DIR)/sz4/lua_first_last_time..h \
+			$(INCLUDE_DIR)/sz4/decode_file.h \
 			$(SZ4_DIR)/load_file_locked.cpp \
 			$(SZ4_DIR)/path.cpp \
 			$(SZ4_DIR)/buffer.cpp \
@@ -187,6 +188,7 @@ libSzarp2_la_SOURCES = \
 			$(SZ4_DIR)/util.cpp \
 			$(SZ4_DIR)/block_cache.cpp \
 			$(SZ4_DIR)/filelock.cpp \
+			$(SZ4_DIR)/decode_file.cpp \
 			\
 			$(SOURCE_DIR)/protobuf/paramsvalues.pb.cc \
 			$(SOURCE_DIR)/include/paramsvalues.pb.h

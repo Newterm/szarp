@@ -187,12 +187,12 @@ void Sz4LuaParam::test2() {
 		int fd;
 		CPPUNIT_ASSERT_NO_THROW(fd = sz4::open_writelock(file_path_str.c_str(), O_WRONLY | O_CREAT));
 
-		char buf[6];
+		char buf[3];
 		short v = 10;
-		sz4::second_time_t t = 150;
+		unsigned char t = 0x32;
 
 		memcpy(buf, &v, 2);
-		memcpy(buf + 2, &t, 4);
+		memcpy(buf + 2, &t, 1);
 
 		write(fd, buf, sizeof(buf));
 

@@ -24,6 +24,8 @@
 #define directory_iterator wdirectory_iterator
 #endif
 
+#include "decode_file.h"
+
 namespace sz4 {
 
 template<class V, class T, class types> class real_param_entry_in_buffer;
@@ -46,13 +48,14 @@ public:
 		if (!this->m_needs_refresh)
 			return;
 
-		std::vector<value_time_pair<V, T> > values;
 		size_t size = boost::filesystem::file_size(m_block_path);
-		values.resize(size / sizeof(value_time_pair<V, T>));
+		std::vector<unsigned char> buffer(size);
 
-		if (load_file_locked(m_block_path, (char*) &values[0], values.size() * sizeof(value_time_pair<V, T>)))
+		if (load_file_locked(m_block_path, &buffer[0], buffer.size())) {
+			auto values = decode_file<V, T>(&buffer[0], buffer.size(), this->m_block.start_time());
 			this->m_block.set_data(values);
-		this->m_needs_refresh = false;
+			this->m_needs_refresh = false;
+		}
 
 	}
 

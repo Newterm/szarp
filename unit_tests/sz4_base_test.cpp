@@ -107,8 +107,9 @@ void Sz4BaseTestCase::setUp() {
 #endif
 				short value = 10;
 				ofs.write((const char*) &value, sizeof(value));
-				unsigned time = i + 50;
-				ofs.write((const char*) &time, sizeof(time));
+
+				unsigned char delta = 50;
+				ofs.write((const char*) &delta, sizeof(delta));
 			}
 		}
 	}

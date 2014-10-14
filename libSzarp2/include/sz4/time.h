@@ -44,6 +44,16 @@ struct nanosecond_time_t {
 		d -= t.nanosecond;
 		return d;
 	}
+	nanosecond_time_t& operator+=(long long i) {
+		second += i / 1000000000;
+		nanosecond += i % 1000000000;
+
+		if (nanosecond > 1000000000) {
+			second += 1;
+			nanosecond -= 1000000000;
+		}
+		return *this;
+	}
 	bool operator< (const nanosecond_time_t& t) const { return second < t.second || (second == t.second && nanosecond < t.nanosecond); } 
 	bool operator<= (const nanosecond_time_t& t) const { return second < t.second || (second == t.second && nanosecond <= t.nanosecond); } 
 	bool operator> (const nanosecond_time_t& t) const { return second > t.second || (second == t.second && nanosecond > t.nanosecond); } 

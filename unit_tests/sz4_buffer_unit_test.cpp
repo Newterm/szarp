@@ -74,8 +74,8 @@ void Sz4BufferTestCase::test1() {
 		std::ofstream ofs(SC::S2A(ss.str()).c_str(), std::ios_base::binary);
 		unsigned data = 10;
 		ofs.write((const char*) &data, sizeof(data));
-		data = i + 50;
-		ofs.write((const char*) &data, sizeof(data));
+		unsigned char delta = 50;
+		ofs.write((const char*) &delta, sizeof(delta));
 	}
 
 
@@ -163,8 +163,8 @@ void Sz4BufferTestCase::test2() {
 		std::ofstream ofs(SC::S2A(ss.str()).c_str(), std::ios_base::binary);
 		unsigned data = 10;
 		ofs.write((const char*) &data, sizeof(data));
-		data = i + 50;
-		ofs.write((const char*) &data, sizeof(data));
+		unsigned char delta = 50;
+		ofs.write((const char*) &delta, sizeof(delta));
 	}
 
 
@@ -194,8 +194,8 @@ void Sz4BufferTestCase::test2() {
 		std::ofstream ofs(SC::S2A(ss.str()).c_str(), std::ios_base::binary | std::ios_base::app);
 		unsigned data = 20;
 		ofs.write((const char*) &data, sizeof(data));
-		data = 2000;
-		ofs.write((const char*) &data, sizeof(data));
+		unsigned char delta = 50;
+		ofs.write((const char*) &delta, sizeof(delta));
 	}
 	o.wait_for(1);
 
@@ -212,8 +212,10 @@ void Sz4BufferTestCase::test2() {
 		std::ofstream ofs(SC::S2A(ss.str()).c_str(), std::ios_base::binary | std::ios_base::app);
 		unsigned data = 30;
 		ofs.write((const char*) &data, sizeof(data));
-		data = 3000;
-		ofs.write((const char*) &data, sizeof(data));
+
+		//3000;
+		unsigned char delta[] = { 0x83u, 0xe8u };
+		ofs.write((const char*) delta, sizeof(delta));
 	}
 	o.wait_for(2);
 
@@ -247,14 +249,14 @@ void Sz4BufferTestCase::searchTest() {
 		for (j = 0; j < 100 - (2000 - i) / 100 - 10; j++) {
 			unsigned data = j % 25;
 			ofs.write((const char*) &data, sizeof(data));
-			data = i + j + 1;
-			ofs.write((const char*) &data, sizeof(data));
+			unsigned char delta = 1;
+			ofs.write((const char*) &delta, sizeof(delta));
 		}
 
 		unsigned data = i / 100 + 10000;
 		ofs.write((const char*) &data, sizeof(data));
-		data = i + j + 1;
-		ofs.write((const char*) &data, sizeof(data));
+		unsigned char delta = 1;
+		ofs.write((const char*) &delta, sizeof(delta));
 	}
 
 
