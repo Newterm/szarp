@@ -19,6 +19,9 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
+
+#include <boost/scoped_ptr.hpp>
+
 namespace sz4 {
 
 template<class value_type, class time_type, class types, template<class types> class calculation_method> class buffered_param_entry_in_buffer : public SzbParamObserver {
@@ -43,6 +46,7 @@ public:
 		if (!m_invalidate_non_fixed)
 			return;
 
+		std::for_each(m_cache.begin(), m_cache.end(), std::mem_fun_ref(&cache_type::invalidate_non_fixed_values));
 		m_invalidate_non_fixed = false;
 	}
 
@@ -91,7 +95,8 @@ public:
 			sum.set_fixed(false);
 		}
 
-		boost::optional<calculation_method<types> > ee;
+		
+		boost::scoped_ptr<calculation_method<types> > ee;
 		bool first = true;
 		time_type& current(start);
 		while (current < to) {
@@ -103,8 +108,8 @@ public:
 						value,
 						fixed)) {
 				if (!ee)
-					ee = calculation_method<types>(m_base, m_param);
-				std::tr1::tie(value, fixed) = ee.get().calculate_value(current, step);
+					ee.reset(new calculation_method<types>(m_base, m_param));
+				std::tr1::tie(value, fixed) = ee->calculate_value(current, step);
 				m_cache[step].store_value(value, current, fixed);
 			}
 

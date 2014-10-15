@@ -59,7 +59,7 @@ class IPKContainerMock1 : public mocks::IPKContainerMockBase {
 public:
 	IPKContainerMock1() : param(NULL, NULL, std::wstring(), TParam::LUA_VA, TParam::P_LUA) {
 		param.SetDataType(TParam::DOUBLE);
-		param.SetName(L"A:B:C1");
+		param.SetName(L"A:B:C");
 		param.SetLuaScript((const unsigned char*) 
 "if (t % 100) < 50 then 	"
 "	v = 0 * math.pow(1, 1)	"
