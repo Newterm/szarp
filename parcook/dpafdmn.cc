@@ -36,25 +36,26 @@
 
 #define _IPCTOOLS_H_
 
-#include<sys/types.h>
-#include<sys/stat.h>
-#include<sys/uio.h>
-#include<sys/time.h>
-#include<sys/ipc.h>
-#include<sys/shm.h>
-#include<sys/sem.h>
-#include<sys/msg.h>
-#include<fcntl.h>
-#include<time.h>
-#include<termio.h>
-#include<unistd.h>
-#include<signal.h>
-#include<string.h>
-#include<errno.h>
-#include<stdio.h>
-#include<stdlib.h>
-#include<libgen.h>
-#include<math.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/uio.h>
+#include <sys/time.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/sem.h>
+#include <sys/msg.h>
+#include <fcntl.h>
+#include <time.h>
+#include <termio.h>
+#include <unistd.h>
+#include <signal.h>
+#include <string.h>
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <libgen.h>
+#include <math.h>
+#include <stdint.h>
 #include "libpar.h"
 #include "msgerror.h"
 #include "ipcdefines.h"
@@ -108,7 +109,7 @@ short ll_ ;
 char go;
 
 /* Tablica kodow */
-unsigned long int tab_code[12][31] ;
+uint32_t tab_code[12][31] ;
 
 /* Numer miesiaca z urzadzenia */
 unsigned short month ;
@@ -825,7 +826,7 @@ int main(int argc,char *argv[])
     printf("Nie moge otworzyc pliku %s \n",code_path) ;
     exit(1) ;
   }
-  fread(&tab_code[0][0],sizeof(unsigned long int),12 * 31,plik);
+  fread(&tab_code[0][0],sizeof(uint32_t),12 * 31,plik);
   fclose(plik);
   AVG = NULL;
   Vals2 = NULL;
