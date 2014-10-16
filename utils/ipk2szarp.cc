@@ -57,14 +57,12 @@ void usage(void)
 
 int main(int argc, char* argv[])
 {
-	TSzarpConfig *sc;
 	int i;
 	char *input;
 	char *ipk_path;
 
 	loginit_cmdline(2, NULL, &argc, argv);
 	log_info(0);
-	sc = new TSzarpConfig();
 
 	xmlInitParser();
 	LIBXML_TEST_VERSION
@@ -86,16 +84,30 @@ int main(int argc, char* argv[])
 		argv++;
 	}
 
+	char* path;
 	if( input ) {
-		i = sc->loadXML(SC::L2S(input));
+		path = input;
 	} else {
 		libpar_init_with_filename(SZARP_CFG, 1);
 		if( !(ipk_path  = libpar_getpar("", "IPK", 1 ))) {
 			cerr << "Cannot find IPK variable" << endl;
 			return 1;
 		}
-		i = sc->loadXML(SC::L2S(ipk_path));
+		path = ipk_path;
 	}
+
+	TSzarpConfig *sc;
+
+	/* test using both parsers as not all checks are implemented in loadXMLReader
+	   but in parseXml(node) functions that are called by loadXMLDOM */
+	sc = new TSzarpConfig();
+	const int dom_result = sc->loadXMLDOM(SC::L2S(path));
+	delete sc;
+
+	sc = new TSzarpConfig();
+	const int reader_result = sc->loadXMLReader(SC::L2S(path));
+
+	i = reader_result || dom_result;
 	
 	if (i) {
 		cerr << "Error while reading configuration." << endl;
