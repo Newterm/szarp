@@ -1,4 +1,3 @@
-
 #ifndef __SERIALPORT_H__
 #define __SERIALPORT_H__
 
@@ -73,59 +72,11 @@
 // end of SerialAdapter-specific definitions
 
 
-#include <exception>
-#include <stdio.h>
-#include <stdarg.h>
-
-/** size of buffer for exception message */
-#define EXT_BUFFER_SIZE	256
-
-/** std::exception subclass, with aditional message set with SetMsg method */
-class MsgException: public std::exception {
-public:
-	/** Buffer for messages. */
-	char buffer[EXT_BUFFER_SIZE];
-	/** Method called to get exception info. */
-	virtual const char* what() const throw()
-	{
-		return buffer;
-	}
-	MsgException() { buffer[0] = 0; }
-	/** Set message printed after throw. */
-	void SetMsg(const char * format, ...) throw()
-	{
-		va_list fmt_args;
-		va_start(fmt_args, format);
-		vsnprintf(buffer, EXT_BUFFER_SIZE - 1, format, fmt_args);
-		va_end(fmt_args);
-		buffer[EXT_BUFFER_SIZE - 1] = 0;
-	}
-};
-
+#include "exception.h"
+#include "utils.h"
 #include <map>
 #include <netinet/in.h>
 #include <string>
-#include <fcntl.h>
-
-inline int set_fd_nonblock(int fd, bool nonblock = true) {
-	int flags = fcntl(fd, F_GETFL, 0);
-	if (flags == -1) {
-		return -1;
-	}
-
-	if (nonblock) {
-		flags |= O_NONBLOCK;
-	} else {
-		flags &= ~O_NONBLOCK;
-	}
-
-	flags = fcntl(fd, F_SETFL, flags);
-	if (flags == -1) {
-		return -1;
-	}
-
-	return 0;
-}
 
 /** Exception specific to TcpConnection class. */
 class TcpConnectionException : public MsgException { } ;
@@ -163,23 +114,12 @@ protected:
 	void CreateSocket();
 };
 
-#include <map>
 #include <event.h>
+#include <map>
 #include <netinet/in.h>
 #include <string>
 #include <fcntl.h>
 #include <termios.h>
-#include <iostream>
-#include <vector>
-
-inline void print_as_hex(const std::vector<unsigned char> &buf)
-{
-	int size = buf.size();
-	for (int i = 0; i < (size - 1); i++) {
-		std::cout << std::hex << (int)buf[i] << ':';
-	}
-	std::cout << std::hex << (int)buf[size - 1] << std::endl;
-}
 
 /** Listener receiving notifications from Connection */
 class ConnectionListener

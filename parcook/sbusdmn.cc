@@ -59,6 +59,7 @@
 #include "xmlutils.h"
 #include "conversion.h"
 #include "serialport.h"
+#include "utils.h"
 
 bool single;
 
@@ -498,9 +499,7 @@ public:
 void SBUSUnit::ScheduleNext(unsigned int wait_ms)
 {
 	evtimer_del(&m_ev_timer);
-	struct timeval tv;
-	tv.tv_sec = wait_ms / 1000;
-	tv.tv_usec = (wait_ms % 1000) * 1000;
+	const struct timeval tv = ms2timeval(wait_ms);
 	evtimer_add(&m_ev_timer, &tv);
 }
 
@@ -913,9 +912,8 @@ void SBUSUnit::ReadData(const std::vector<unsigned char>& data) {
 	}
 	dolog(8, "Data arrived");
 
-	for (std::vector<unsigned char>::const_iterator it = data.begin();
-			it != data.end(); ++it) {
-		m_response.PutChar(*it);
+	for (auto c : data) {
+		m_response.PutChar(c);
 	}
 
 	if ((m_response.Size() >= 2) && (m_protocol != SBUS_PCD)
@@ -1098,9 +1096,7 @@ public:
 void SBUSDaemon::ScheduleNext(unsigned int wait_ms)
 {
 	evtimer_del(&m_ev_timer);
-	struct timeval tv;
-	tv.tv_sec = wait_ms / 1000;
-	tv.tv_usec = (wait_ms % 1000) * 1000;
+	const struct timeval tv = ms2timeval(wait_ms);
 	evtimer_add(&m_ev_timer, &tv);
 }
 

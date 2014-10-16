@@ -42,6 +42,7 @@
 #include "conversion.h"
 #include "ipchandler.h"
 #include "serialport.h"
+#include "utils.h"
 
 #ifndef SZARP_NO_DATA
 #define SZARP_NO_DATA -32768
@@ -486,9 +487,7 @@ std::vector<std::string> kams_daemon::SplitMessage()
 
 void kams_daemon::ScheduleNext(unsigned int wait_ms)
 {
-	struct timeval tv;
-	tv.tv_sec = wait_ms / 1000;
-	tv.tv_usec = (wait_ms % 1000) * 1000;
+	const struct timeval tv = ms2timeval(wait_ms);
 	evtimer_add(&m_ev_timer, &tv);
 }
 

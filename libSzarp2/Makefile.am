@@ -70,6 +70,7 @@ else
 SERIALPORT = $(DMN_DIR)/serialport.cc
 endif
 
+
 libSzarp2_la_SOURCES = \
 			$(IPK_DIR)/tdevice.cc \
 			$(IPK_DIR)/tdraw.cc \
@@ -104,6 +105,7 @@ libSzarp2_la_SOURCES = \
 			$(SOURCE_DIR)/misc/base64.cc \
 			$(DMN_DIR)/mbus.cc \
 			$(DMN_DIR)/ppset.cc \
+			$(DMN_DIR)/utils.cc \
 			$(SERIALPORT) \
 			$(SOURCE_DIR)/misc/xscale.cc \
 			\

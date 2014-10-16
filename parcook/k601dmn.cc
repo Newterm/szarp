@@ -91,6 +91,7 @@
 
 #include "k601-prop-plugin.h"
 #include "serialport.h"
+#include "utils.h"
 #include "xmlutils.h"
 
 #define REGISTER_NOT_FOUND -1
@@ -983,9 +984,7 @@ void K601Daemon::ProcessResponse()
 void K601Daemon::ScheduleNext(unsigned int wait_ms)
 {
 	evtimer_del(&m_ev_timer);
-	struct timeval tv;
-	tv.tv_sec = wait_ms / 1000;
-	tv.tv_usec = (wait_ms % 1000) * 1000;
+	const struct timeval tv = ms2timeval(wait_ms);
 	evtimer_add(&m_ev_timer, &tv);
 }
 
