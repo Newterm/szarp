@@ -96,6 +96,8 @@
 
 #define REGISTER_NOT_FOUND -1
 
+#define RESTART_INTERVAL_MS 15000
+
 bool single;
 
 void dolog(int level, const char * fmt, ...)
@@ -506,6 +508,7 @@ public:
 		serial_conf.c_oflag = 0;
 		serial_conf.c_cflag = B1200 | CS8 | CLOCAL | CREAD | CSTOPB;
 		serial_conf.c_lflag = 0;
+		m_event_base = event_base_new();
 	}
 
 	~K601Daemon()
@@ -535,9 +538,10 @@ protected:
 	void Do();
 
 	/** ConnectionListener interface */
-	virtual void ReadError(short event);
-	virtual void ReadData(const std::vector<unsigned char>& data);
-	virtual void SetConfigurationFinished();
+	virtual void ReadError(const BaseConnection *conn, short event);
+	virtual void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data);
+	virtual void SetConfigurationFinished(const BaseConnection *conn);
+	virtual void OpenFinished(const BaseConnection *conn);
 
 	void ProcessResponse();
 	void SetCurrRegisterNoData();
@@ -573,6 +577,7 @@ protected:
 	std::vector<unsigned char> m_read_buffer;	/**< buffer for data received from Kamstrup meter */
 	bool m_data_was_read;	/**< was any data read since last check? */
 	struct termios serial_conf;
+	struct event_base *m_event_base;
 
 	/** from previous implementation */
 	void *plugin;
@@ -593,18 +598,20 @@ protected:
 	KMPReceiveDestroy_t *destroyReceive;
 };
 
-void K601Daemon::ReadError(short event)
+void K601Daemon::ReadError(const BaseConnection *conn, short event)
 {
 	dolog(0, "%s: %s", m_id.c_str(), "ReadError, closing connection..");
 	m_serial_port->Close();
 	SetRestart();
+	ScheduleNext(RESTART_INTERVAL_MS);
 }
 
-void K601Daemon::SetConfigurationFinished() {
+void K601Daemon::SetConfigurationFinished(const BaseConnection *conn) {
 	ScheduleNext();
 }
 
-void K601Daemon::ReadData(const std::vector<unsigned char>& data)
+void K601Daemon::ReadData(const BaseConnection *conn,
+		const std::vector<unsigned char>& data)
 {
 	m_read_buffer.insert(m_read_buffer.end(), data.begin(), data.end());
 	m_data_was_read = true;
@@ -761,29 +768,36 @@ Unique registers (read params): %d\n\
 }
 
 void K601Daemon::StartDo() {
+	evtimer_set(&m_ev_timer, TimerCallback, this);
+	event_base_set(m_event_base, &m_ev_timer);
 	try {
 		if (m_ip.compare("") != 0) {
-			SerialAdapter *client = new SerialAdapter();
+			SerialAdapter *client = new SerialAdapter(m_event_base);
 			m_serial_port = client;
 			client->InitTcp(m_ip, m_data_port, m_cmd_port);
 		} else {
-			SerialPort *port = new SerialPort();
+			SerialPort *port = new SerialPort(m_event_base);
 			m_serial_port = port;
 			port->Init(m_path);
 		}
 		m_serial_port->AddListener(this);
-
 		m_serial_port->Open();
-		m_serial_port->SetConfiguration(&serial_conf);
-
-		std::string info = m_id + ": connection established.";
-		dolog(2, "%s: %s", m_id.c_str(), info.c_str());
 	} catch (SerialPortException &e) {
 		dolog(0, "%s: %s", m_id.c_str(), e.what());
 		SetRestart();
+		ScheduleNext(RESTART_INTERVAL_MS);
 	}
-	evtimer_set(&m_ev_timer, TimerCallback, this);
-	Do();
+	event_base_dispatch(m_event_base);
+}
+
+void K601Daemon::OpenFinished(const BaseConnection *conn)
+{
+	std::string info = m_id + ": connection established.";
+	dolog(2, "%s: %s", m_id.c_str(), info.c_str());
+	m_serial_port->SetConfiguration(&serial_conf);
+	m_state = SEND;
+	m_curr_register = 0;
+	ScheduleNext();
 }
 
 void K601Daemon::Do()
@@ -805,6 +819,7 @@ void K601Daemon::Do()
 				m_state = READ;
 			} catch (SerialPortException &e) {
 				dolog(0, "%s: %s", m_id.c_str(), e.what());
+				destroySend(MyKMPSendClass);
 				SetRestart();
 			}
 			destroySend(MyKMPSendClass);
@@ -860,10 +875,6 @@ void K601Daemon::Do()
 			try {
 				m_serial_port->Close();
 				m_serial_port->Open();
-				m_serial_port->SetConfiguration(&serial_conf);
-				dolog(2, "%s: %s", m_id.c_str(), "Restart successful!");
-				m_state = SEND;
-				m_curr_register = 0;
 			} catch (SerialPortException &e) {
 				dolog(0, "%s: %s %s", m_id.c_str(), "Restart failed:", e.what());
 				for (int i = 0; i < ipc->m_params_count; i++) {
@@ -871,7 +882,7 @@ void K601Daemon::Do()
 				}
 				ipc->GoParcook();
 			}
-			wait_ms = 15 * 1000;
+			wait_ms = RESTART_INTERVAL_MS;
 			break;
 	}
 	dolog(10, "Schedule next in %dms", wait_ms);
@@ -995,23 +1006,17 @@ void K601Daemon::TimerCallback(int fd, short event, void* thisptr)
 
 int main(int argc, char *argv[])
 {
-	event_init();
-	dolog(10, "create..");
 	K601Daemon daemon;
-	dolog(10, "..finished creating");
 
 	try {
-		dolog(10, "Initializing..");
 		daemon.Init(argc, argv);
-		dolog(10, "..finished initializing.");
 	} catch (K601Daemon::K601Exception &e) {
 		dolog(0, "%s", e.what());
 		exit(1);
 	}
-	daemon.StartDo();
 
 	try {
-		event_dispatch();
+		daemon.StartDo();
 	} catch (MsgException &e) {
 		dolog(0, "FATAL!: daemon killed by exception: %s", e.what());
 		exit(1);

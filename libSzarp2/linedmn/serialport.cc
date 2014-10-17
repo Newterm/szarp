@@ -14,25 +14,31 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 
+void BaseConnection::OpenFinished()
+{
+	for (auto* listener : m_listeners) {
+		listener->OpenFinished(this);
+	}
+}
 
 void BaseConnection::ReadData(const std::vector<unsigned char>& data)
 {
 	for (auto* listener : m_listeners) {
-		listener->ReadData(data);
+		listener->ReadData(this, data);
 	}
 }
 
 void BaseConnection::Error(short int event)
 {
 	for (auto* listener : m_listeners) {
-		listener->ReadError(event);
+		listener->ReadError(this, event);
 	}
 }
 
 void BaseConnection::SetConfigurationFinished()
 {
 	for (auto* listener : m_listeners) {
-		listener->SetConfigurationFinished();
+		listener->SetConfigurationFinished(this);
 	}
 }
 
@@ -48,14 +54,16 @@ void SerialPort::Open()
 			m_device_path.c_str(), errno, strerror(errno));
 		throw ex;
 	}
-	m_bufferevent = bufferevent_new(m_fd, ReadDataCallback, NULL, ErrorCallback, this);
+	m_bufferevent = bufferevent_socket_new(m_event_base, m_fd, BEV_OPT_CLOSE_ON_FREE);
 	if (m_bufferevent == NULL) {
 		Close();
 		SerialPortException ex;
 		ex.SetMsg("Error creating bufferevent.");
 		throw ex;
 	}
+	bufferevent_setcb(m_bufferevent, ReadDataCallback, NULL, ErrorCallback, this);
 	bufferevent_enable(m_bufferevent, EV_READ | EV_WRITE | EV_PERSIST);
+	OpenFinished();
 }
 
 bool SerialPort::Ready() const
@@ -136,156 +144,122 @@ void SerialPort::ReadData(struct bufferevent *bufev)
 	while (bufferevent_read(m_bufferevent, &c, 1) == 1) {
 		data.push_back(c);
 	}
-	BaseSerialPort::ReadData(data);
+	BaseConnection::ReadData(data);
 }
 
 void SerialPort::Error(struct bufferevent *bufev, short event)
 {
 	// Notify listeners
-	BaseSerialPort::Error(event);
+	BaseConnection::Error(event);
 }
 
 
-SerialAdapter::SerialAdapter(bool enable_fifo, bool server_CN2500):
+SerialAdapter::SerialAdapter(struct event_base* base,
+		bool enable_fifo, bool server_CN2500)
+	:
+	BaseSerialPort(base),
 	m_enable_fifo(enable_fifo), m_server_CN2500(server_CN2500),
-	m_data_bufferevent(NULL), m_cmd_bufferevent(NULL),
-	m_serial_state(UNINITIALIZED)
-{ }
+	m_serial_state(UNINITIALIZED), m_open_pending(false)
+{
+	m_data_connection = new TcpConnection(base);
+	m_cmd_connection = new TcpConnection(base);
+	m_data_connection->AddListener(this);
+	m_cmd_connection->AddListener(this);
+}
 
 SerialAdapter::~SerialAdapter()
 {
-	CloseConnection();
+	Close();
+	delete m_data_connection;
+	delete m_cmd_connection;
 }
 
 void SerialAdapter::InitTcp(std::string address, int data_port, int cmd_port)
 {
-	m_data_connection.InitTcp(address, data_port);
-	m_cmd_connection.InitTcp(address, cmd_port);
+	m_data_connection->InitTcp(address, data_port);
+	m_cmd_connection->InitTcp(address, cmd_port);
 }
 
-void SerialAdapter::Connect(bool blocking)
+void SerialAdapter::Open()
 {
-	if (m_data_bufferevent != NULL) {
+	if (m_open_pending) {
 		return;
 	}
-	int data_socket_fd = 0;
-	int cmd_socket_fd = 0;
 	try {
-		data_socket_fd = m_data_connection.Connect(blocking);
-		cmd_socket_fd = m_cmd_connection.Connect(blocking);
-	} catch (TcpConnectionException& ex) {
-		SerialAdapterException mex;
-		mex.SetMsg(ex.what());
-		throw mex;
-	}
-
-	m_data_bufferevent = bufferevent_new(data_socket_fd, ReadDataCallback, NULL, ErrorCallback, this);
-	if (m_data_bufferevent == NULL) {
-		CloseConnection();
+		m_data_connection->Open();
+		m_cmd_connection->Open();
+		m_open_pending = true;
+	} catch (const TcpConnectionException& e) {
+		Close();
 		SerialAdapterException ex;
-		ex.SetMsg("Error creating bufferevent.");
+		ex.SetMsg(e.what());
 		throw ex;
 	}
+}
 
-	m_cmd_bufferevent = bufferevent_new(cmd_socket_fd, ReadCmdCallback, NULL, ErrorCallback, this);
-	if (m_cmd_bufferevent == NULL) {
-		CloseConnection();
-		SerialAdapterException ex;
-		ex.SetMsg("Error creating bufferevent.");
-		throw ex;
+void SerialAdapter::OpenFinished(const BaseConnection *conn)
+{
+	if (m_data_connection->Ready() && m_cmd_connection->Ready()) {
+		m_open_pending = false;
+		BaseConnection::OpenFinished();
 	}
-	bufferevent_enable(m_cmd_bufferevent, EV_READ | EV_WRITE | EV_PERSIST);
 }
 
-void SerialAdapter::CloseConnection()
+void SerialAdapter::Close()
 {
-	if (m_data_bufferevent != NULL) {
-		bufferevent_free(m_data_bufferevent);
-		m_data_bufferevent = NULL;
-	}
-	m_data_connection.CloseConnection();
-
-	if (m_cmd_bufferevent != NULL) {
-		bufferevent_free(m_cmd_bufferevent);
-		m_cmd_bufferevent = NULL;
-	}
-	m_cmd_connection.CloseConnection();
-}
-
-void SerialAdapter::ReadDataCallback(struct bufferevent *bufev, void* ds)
-{
-	reinterpret_cast<SerialAdapter*>(ds)->ReadData(bufev);
-}
-
-void SerialAdapter::ReadCmdCallback(struct bufferevent *bufev, void* ds)
-{
-	reinterpret_cast<SerialAdapter*>(ds)->ReadCmd(bufev);
-}
-
-void SerialAdapter::ErrorCallback(struct bufferevent *bufev, short event, void* ds)
-{
-	reinterpret_cast<SerialAdapter*>(ds)->Error(bufev, event);
+	m_data_connection->Close();
+	m_cmd_connection->Close();
+	m_open_pending = false;
 }
 
 bool SerialAdapter::Ready() const
 {
-	return ((m_data_bufferevent != NULL) &&
-		(m_cmd_bufferevent != NULL) &&
-		(m_serial_state == READY));
+	return (m_data_connection->Ready()
+		&& m_cmd_connection->Ready()
+		&& (m_serial_state == READY));
 }
 
 void SerialAdapter::WriteData(const void* data, size_t size)
 {
-	if ((m_data_bufferevent == NULL) || (m_serial_state != READY))
-	{
+	if (not Ready()) {
 		SerialAdapterException ex;
 		ex.SetMsg("Port is currently unavailable");
 		throw ex;
 	}
-	int ret = bufferevent_write(m_data_bufferevent, data, size);
-	if (ret < 0)
-	{
+	try {
+		m_data_connection->WriteData(data, size);
+	} catch (const TcpConnectionException& e) {
 		SerialAdapterException ex;
-		ex.SetMsg("Write data failed.");
+		ex.SetMsg(e.what());
 		throw ex;
 	}
 }
 
 void SerialAdapter::WriteCmd(std::vector<unsigned char> &cmd_buffer)
 {
-	int ret = bufferevent_write(m_cmd_bufferevent, &(cmd_buffer[0]), cmd_buffer.size());
-	if (ret < 0)
-	{
+	try {
+		m_cmd_connection->WriteData(&cmd_buffer[0], cmd_buffer.size());
+	} catch (const TcpConnectionException& e) {
 		// Notify listeners that serial port is malfunctioning
-		BaseSerialPort::Error(EVBUFFER_ERROR);
+		BaseConnection::Error(EVBUFFER_ERROR);
 	}
 	// we cannot flush socket bufferevents, so commands can be sent in a single packet
 }
 	
-void SerialAdapter::ReadData(struct bufferevent *bufev)
+void SerialAdapter::ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data)
 {
-	std::vector<unsigned char> data;
-	unsigned char c;
-	while (bufferevent_read(m_data_bufferevent, &c, 1) == 1) {
-		data.push_back(c);
+	if (conn == m_data_connection) {
+		if (Ready()) {
+			BaseConnection::ReadData(data);
+		}
+		// else data is probably garbage
+	} else {
+		ProcessCmdResponse(data);
 	}
-	if (m_serial_state == READY) {
-		BaseSerialPort::ReadData(data);
-	}
-	// else data is probably garbage
+	// TODO else?
 }
 
-void SerialAdapter::ReadCmd(struct bufferevent *bufev)
-{
-	unsigned char c;
-	std::vector<unsigned char> cmd_buf;
-	while (bufferevent_read(m_cmd_bufferevent, &c, 1) == 1) {
-		cmd_buf.push_back(c);
-	}
-	ProcessCmdResponse(cmd_buf);
-}
-
-void SerialAdapter::ProcessCmdResponse(std::vector<unsigned char> &cmd_buf)
+void SerialAdapter::ProcessCmdResponse(const std::vector<unsigned char> &cmd_buf)
 {
 	int bytes_left = cmd_buf.size();
 	int command_size = 0;
@@ -318,8 +292,7 @@ void SerialAdapter::ProcessCmdResponse(std::vector<unsigned char> &cmd_buf)
 			WriteCmd(m_last_serial_conf_cmd);
 		} else if ((m_serial_state == SETCONF3) && (cmd_buf[index] == CMD_PORT_INIT)) {
 			m_serial_state = READY;
-			bufferevent_enable(m_data_bufferevent, EV_READ | EV_WRITE | EV_PERSIST);
-			SetConfigurationFinished();
+			BaseConnection::SetConfigurationFinished();
 		}
 
 		if (cmd_buf[index] == CMD_POLLALIVE)
@@ -378,8 +351,11 @@ void SerialAdapter::ProcessCmdResponse(std::vector<unsigned char> &cmd_buf)
 	}
 }
 
-void SerialAdapter::Error(struct bufferevent *bufev, short event)
+void SerialAdapter::ReadError(const BaseConnection *conn, short int event)
 {
+	if (not conn->Ready()) {
+		Close();
+	}
 	// Notify listeners
 	BaseSerialPort::Error(event);
 }
@@ -542,7 +518,7 @@ void SerialAdapter::SetConfiguration(const struct termios *serial_conf)
 	m_serial_state = SETCONF1;
 	
 	m_last_serial_conf_cmd = cmd_buffer;
-	if (m_cmd_bufferevent == NULL)
+	if (not m_cmd_connection->Ready())
 	{
 		SerialAdapterException ex;
 		ex.SetMsg("Port is currently unavailable for config");
@@ -556,7 +532,7 @@ void SerialAdapter::SetConfiguration(const struct termios *serial_conf)
 
 void SerialAdapter::LineControl(bool dtr, bool rts)
 {
-	if ((m_data_bufferevent == NULL) || (m_serial_state != READY))
+	if (not Ready())
 	{
 		SerialAdapterException ex;
 		ex.SetMsg("Port is currently unavailable");
@@ -586,14 +562,15 @@ void SerialAdapter::LineControl(bool dtr, bool rts)
 #include <iostream>
 
 
-TcpConnection::TcpConnection():
-	m_connect_fd(-1), m_in_progress(false), m_buffer_event(NULL)
-{ }
+TcpConnection::TcpConnection(struct event_base* base)
+	:BaseConnection(base),
+	m_connect_fd(-1), m_bufferevent(NULL), m_connection_open(false)
+{}
 
 TcpConnection::~TcpConnection()
 {
 	if (m_connect_fd != -1) {
-		CloseConnection();
+		Close();
 	}
 }
 
@@ -612,52 +589,72 @@ void TcpConnection::InitTcp(std::string address, int port)
 	m_server_addr.sin_port = htons(port);
 }
 
-int TcpConnection::Connect(bool blocking)
+void TcpConnection::Open()
 {
-	/* if EINPROGRESS, we shouldn't delete socket */
-	if (m_in_progress == false) {
-		CloseConnection();
-		CreateSocket();
+	if (m_connect_fd != -1) {
+		return;
 	}
+	CreateSocket();
 
-	/* set blocking mode for Connect */
-	bool nonblocking = !blocking;
-	if (set_fd_nonblock(m_connect_fd, nonblocking)) {
-		close(m_connect_fd);
-		m_connect_fd = -1;
+	m_bufferevent = bufferevent_socket_new(m_event_base, m_connect_fd, BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS);
+	if (m_bufferevent == NULL) {
+		Close();
 		TcpConnectionException ex;
-		ex.SetMsg("%s set_fd_nonblock() failed, errno %d (%s)",
-				m_id.c_str(), errno, strerror(errno));
+		ex.SetMsg("Error creating bufferevent.");
 		throw ex;
 	}
+	bufferevent_setcb(m_bufferevent, ReadDataCallback, NULL, ErrorCallback, this);
 
 	/* connect to the server */
-	int ret = connect(m_connect_fd, (struct sockaddr*)&m_server_addr, sizeof(m_server_addr));
-	if (ret == -1) {
-		if ((errno == EINPROGRESS) || (errno == EALREADY)) {
-			m_in_progress = true;		// we should wait
-		} else {
-			m_in_progress = false;
-			close(m_connect_fd);
-			m_connect_fd = -1;
-		}
+	int ret = bufferevent_socket_connect(m_bufferevent, (struct sockaddr*)&m_server_addr, sizeof(m_server_addr));
+	if (ret) {
+		Close();
 		TcpConnectionException ex;
 		ex.SetMsg("%s connect() failed, errno %d (%s)",
 				m_id.c_str(), errno, strerror(errno));
 		throw ex;
 	}
+	bufferevent_enable(m_bufferevent, EV_READ | EV_WRITE | EV_PERSIST);
+}
 
-	/* set nonblocking mode for future communication */
-	if (set_fd_nonblock(m_connect_fd)) {
-		close(m_connect_fd);
-		m_connect_fd = -1;
-		TcpConnectionException ex;
-		ex.SetMsg("%s set_fd_nonblock() failed, errno %d (%s)",
-				m_id.c_str(), errno, strerror(errno));
-		throw ex;
+void TcpConnection::ReadDataCallback(struct bufferevent *bufev, void* ds)
+{
+	reinterpret_cast<TcpConnection*>(ds)->ReadData(bufev);
+}
+
+void TcpConnection::ReadData(struct bufferevent *bufev)
+{
+	std::vector<unsigned char> data;
+	unsigned char c;
+	while (bufferevent_read(m_bufferevent, &c, 1) == 1) {
+		data.push_back(c);
 	}
-	//std::cout << "TcpConnection connected to server " << m_address << ":" << m_port << std::endl;
-	return m_connect_fd;
+	BaseConnection::ReadData(data);
+}
+
+void TcpConnection::ErrorCallback(struct bufferevent *bufev, short event, void* ds)
+{
+	reinterpret_cast<TcpConnection*>(ds)->Error(bufev, event);
+}
+
+void TcpConnection::Error(struct bufferevent *bufev, short event)
+{
+	if (event & BEV_EVENT_CONNECTED) {
+		OpenFinished();
+	} else {
+		if (not m_connection_open) {
+			Close();
+		}
+		// Notify listeners
+		BaseConnection::Error(event);
+	}
+}
+
+void TcpConnection::OpenFinished()
+{
+	m_connection_open = true;
+	bufferevent_enable(m_bufferevent, EV_READ | EV_WRITE | EV_PERSIST);
+	BaseConnection::OpenFinished();
 }
 
 void TcpConnection::CreateSocket()
@@ -674,19 +671,51 @@ void TcpConnection::CreateSocket()
 	int ret = setsockopt(m_connect_fd, SOL_SOCKET, SO_REUSEADDR,
 			&op, sizeof(op));
 	if (ret == -1) {
-		close(m_connect_fd);
-		m_connect_fd = -1;
+		Close();
 		TcpConnectionException ex;
 		ex.SetMsg("%s cannot set socket options on connect socket, errno %d (%s)",
 				m_id.c_str(), errno, strerror(errno));
 		throw ex;
 	}
+
+	if (set_fd_nonblock(m_connect_fd)) {
+		Close();
+		TcpConnectionException ex;
+		ex.SetMsg("%s set_fd_nonblock() failed, errno %d (%s)",
+				m_id.c_str(), errno, strerror(errno));
+		throw ex;
+	}
 }
 
-void TcpConnection::CloseConnection()
+void TcpConnection::Close()
 {
-	//std::cout << "Closing TCP port: " << m_id << std::endl;
-	close(m_connect_fd);
-	m_connect_fd = -1;
-	m_in_progress = false;
+	if (m_bufferevent != NULL) {
+		bufferevent_free(m_bufferevent);
+		m_bufferevent = NULL;
+	}
+	if (m_connect_fd != -1) {
+		close(m_connect_fd);
+		m_connect_fd = -1;
+	}
+	m_connection_open = false;
+}
+
+bool TcpConnection::Ready() const
+{
+	return m_connection_open;
+}
+
+void TcpConnection::WriteData(const void* data, size_t size)
+{
+	if (m_bufferevent == NULL) {
+		TcpConnectionException ex;
+		ex.SetMsg("Connection is currently unavailable");
+		throw ex;
+	}
+	int ret = bufferevent_write(m_bufferevent, data, size);
+	if (ret < 0) {
+		TcpConnectionException ex;
+		ex.SetMsg("Write data failed.");
+		throw ex;
+	}
 }

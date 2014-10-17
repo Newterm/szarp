@@ -53,6 +53,8 @@
 
 #define RESPONSE_SIZE 82
 
+#define RESTART_INTERVAL_MS 15000
+
 bool single;
 
 void dolog(int level, const char * fmt, ...)
@@ -123,6 +125,7 @@ public:
 		m_query_command.push_back('/');
 		m_query_command.push_back('#');
 		m_query_command.push_back('1');
+		m_event_base = event_base_new();
 	}
 
 	~kams_daemon()
@@ -146,7 +149,7 @@ public:
 
 protected:
 	/** Schedule next state machine step */
-	void ScheduleNext(unsigned int wait_ms);
+	void ScheduleNext(unsigned int wait_ms=0);
 
 	/** Callback for next step of timed state machine. */
 	static void TimerCallback(int fd, short event, void* thisptr);
@@ -157,6 +160,7 @@ protected:
 	/** Sets NODATA and schedules reconnect */
 	void SetRestart()
 	{
+		dolog(10, "%s: SetRestart", m_id.c_str());
 		m_state = RESTART;
 		for (int i = 0; i < m_ipc->m_params_count; i++) {
 			m_ipc->m_read[i] = SZARP_NO_DATA;
@@ -168,9 +172,10 @@ protected:
 	void WriteChar();
 
 	/** ConnectionListener interface */
-	virtual void ReadError(short event);
-	virtual void ReadData(const std::vector<unsigned char>& data);
-	virtual void SetConfigurationFinished() {}
+	virtual void ReadError(const BaseConnection *conn, short event);
+	virtual void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data);
+	virtual void OpenFinished(const BaseConnection *conn);
+	virtual void SetConfigurationFinished(const BaseConnection *conn);
 
 	/** Increase wait for data time */
 	void IncreaseWaitForDataTime();
@@ -223,29 +228,46 @@ protected:
 	int m_cmd_port;			/**< SerialAdapter command port number */
 
 	BaseSerialPort *m_serial_port;
+	struct event_base *m_event_base;
 };
 
 void kams_daemon::StartDo() {
+	evtimer_set(&m_ev_timer, TimerCallback, this);
+	event_base_set(m_event_base, &m_ev_timer);
 	try {
 		if (m_ip.compare("") != 0) {
-			SerialAdapter *client = new SerialAdapter();
+			SerialAdapter *client = new SerialAdapter(m_event_base);
 			m_serial_port = client;
 			client->InitTcp(m_ip, m_data_port, m_cmd_port);
 		} else {
-			SerialPort *port = new SerialPort();
+			SerialPort *port = new SerialPort(m_event_base);
 			m_serial_port = port;
 			port->Init(m_path);
 		}
 		m_serial_port->AddListener(this);
 		m_serial_port->Open();
-		std::string info = m_id + ": connection established.";
-		dolog(2, "%s: %s", m_id.c_str(), info.c_str());
 	} catch (SerialPortException &e) {
-		dolog(0, "%s: %s", m_id.c_str(), e.what());
+		dolog(0, "%s: Open port resulted in: %s", m_id.c_str(), e.what());
 		SetRestart();
+		ScheduleNext(RESTART_INTERVAL_MS);
 	}
-	evtimer_set(&m_ev_timer, TimerCallback, this);
-	Do();
+	event_base_dispatch(m_event_base);
+}
+
+void kams_daemon::OpenFinished(const BaseConnection* conn)
+{
+	std::string info = m_id + ": connection established.";
+	dolog(2, "%s: %s", m_id.c_str(), info.c_str());
+	m_state = SET_COMM_WRITE;
+	ScheduleNext();
+}
+
+void kams_daemon::SetConfigurationFinished(const BaseConnection *conn)
+{
+	// do nothing
+	// 1) WRITE: according to previous implementation we should wait 2s nevertheless
+	//    (commit: d6b08af2f8d184088ac237c20a9125df25fadb53)
+	// 2) READ: ScheduleNext will be triggered by ReadData
 }
 
 void kams_daemon::Do()
@@ -253,6 +275,7 @@ void kams_daemon::Do()
 	unsigned int wait_ms = 0;
 	switch (m_state) {
 		case SET_COMM_WRITE:
+			dolog(10, "%s: SET_COMM_WRITE", m_id.c_str());
 			SelectSerialMode(MODE_B300);
 			m_read_buffer.clear();
 			m_chars_written = 0;
@@ -260,6 +283,7 @@ void kams_daemon::Do()
 			wait_ms = 2000;
 			break;
 		case WRITE:
+			dolog(10, "%s: WRITE", m_id.c_str());
 			try {
 				WriteChar();
 			} catch (SerialPortException &e) {
@@ -273,6 +297,7 @@ void kams_daemon::Do()
 			wait_ms = 50;
 			break;
 		case REPEAT_WRITE:
+			dolog(10, "%s: REPEAT_WRITE", m_id.c_str());
 			try {
 				WriteChar();
 			} catch (SerialPortException &e) {
@@ -287,6 +312,7 @@ void kams_daemon::Do()
 			}
 			break;
 		case SET_COMM_READ:
+			dolog(10, "%s: SET_COMM_READ", m_id.c_str());
 			SelectSerialMode(m_read_mode);
 			m_state = READ;
 			wait_ms = m_wait_for_data_ms;
@@ -294,6 +320,7 @@ void kams_daemon::Do()
 				m_wait_for_data_ms);
 			break;
 		case READ:
+			dolog(10, "%s: READ", m_id.c_str());
 			try {
 				ProcessResponse();
 				wait_ms = m_query_interval_ms;
@@ -323,11 +350,10 @@ void kams_daemon::Do()
 			}
 			break;
 		case RESTART:
+			dolog(10, "%s: RESTART", m_id.c_str());
 			try {
 				m_serial_port->Close();
 				m_serial_port->Open();
-				dolog(2, "%s: %s", m_id.c_str(), "Restart successful!");
-				m_state = SET_COMM_WRITE;
 			} catch (SerialPortException &e) {
 				dolog(0, "%s: %s %s", m_id.c_str(), "Restart failed:", e.what());
 				for (int i = 0; i < m_ipc->m_params_count; i++) {
@@ -335,7 +361,7 @@ void kams_daemon::Do()
 				}
 				m_ipc->GoParcook();
 			}
-			wait_ms = 15 * 1000;
+			wait_ms = RESTART_INTERVAL_MS;
 			break;
 	}
 	ScheduleNext(wait_ms);
@@ -372,16 +398,22 @@ void kams_daemon::WriteChar()
 	m_chars_written++;
 }
 
-void kams_daemon::ReadError(short event)
+void kams_daemon::ReadError(const BaseConnection *conn, short event)
 {
 	dolog(0, "%s: %s", m_id.c_str(), "ReadError, closing connection..");
 	m_serial_port->Close();
 	SetRestart();
+	ScheduleNext(RESTART_INTERVAL_MS);
 }
 
-void kams_daemon::ReadData(const std::vector<unsigned char>& data)
+void kams_daemon::ReadData(const BaseConnection *conn,
+		const std::vector<unsigned char>& data)
 {
 	m_read_buffer.insert(m_read_buffer.end(), data.begin(), data.end());
+	unsigned int expected_response_size = RESPONSE_SIZE - 1;	// LF isn't read by bufferevent
+	if (m_read_buffer.size() == expected_response_size) {
+		ScheduleNext();
+	}
 }
 
 void kams_daemon::IncreaseWaitForDataTime()
@@ -489,6 +521,7 @@ void kams_daemon::ScheduleNext(unsigned int wait_ms)
 {
 	const struct timeval tv = ms2timeval(wait_ms);
 	evtimer_add(&m_ev_timer, &tv);
+	dolog(10, "%s: ScheduleNext in %dms", m_id.c_str(), wait_ms);
 }
 
 void kams_daemon::TimerCallback(int fd, short event, void* thisptr)
@@ -527,8 +560,8 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 			throw ex;
 		}
 	}
-	if (m_daemon_conf->GetSingle())
-		m_query_interval_ms = 1000;
+	if (m_daemon_conf->GetSingle() || m_daemon_conf->GetDiagno())
+		m_query_interval_ms = 3000;
 	else
 		m_query_interval_ms = 280 * 1000;	/* for saving heatmeter battery */
 
@@ -608,7 +641,6 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 
 int main(int argc, char *argv[])
 {
-	event_init();
 	kams_daemon daemon;
 
 	try {
@@ -617,10 +649,9 @@ int main(int argc, char *argv[])
 		dolog(0, "%s", e.what());
 		exit(1);
 	}
-	daemon.StartDo();
 
 	try {
-		event_dispatch();
+		daemon.StartDo();
 	} catch (MsgException &e) {
 		dolog(0, "FATAL!: daemon killed by exception: %s", e.what());
 		exit(1);
@@ -628,4 +659,5 @@ int main(int argc, char *argv[])
 		dolog(0, "FATAL!: daemon killed by unknown exception");
 		exit(1);
 	}
+	dolog(0, "FATAL!: abnormal termination of event loop");
 }

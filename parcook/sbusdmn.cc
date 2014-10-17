@@ -457,6 +457,7 @@ class SBUSUnit: public ConnectionListener  {
 	Buffer m_response;		/**< buffer for response from device */
 	size_t m_expected_response_size;/**< expected size of response from device */
 	struct event m_ev_timer;	/**< event timer for calling QueryTimerCallback */
+	struct event_base *m_event_base;
 	
 	typedef enum {IDLE, INIT_QUERY, START_QUERY, PCD_INIT, PCD_INITIALIZED, SEND_QUERY,
 		WAIT_RESPONSE, PROCESSING_RESPONSE} CommState;
@@ -480,10 +481,10 @@ class SBUSUnit: public ConnectionListener  {
 		return m_daemon->GetId();
 	}
 public:
-	SBUSUnit(BaseSBUSDaemon *daemon)
+	SBUSUnit(BaseSBUSDaemon *daemon, struct event_base *base)
 		:m_port(NULL), m_buffer(NULL), m_start_address(0),
 		m_param_count(0), m_read_attempts(0), m_state(IDLE),
-		m_daemon(daemon)
+		m_daemon(daemon), m_event_base(base)
 	{}
 	bool Configure(PROTOCOL_TYPE protocol, TUnit *unit, xmlNodePtr xmlunit,
 		short *params, BaseSerialPort *port, int speed);
@@ -491,9 +492,10 @@ public:
 	void QueryAll();
 
 	/** Serial port listener callbacks */
-	virtual void ReadData(const std::vector<unsigned char>& data);
-	virtual void ReadError(short int event);
-	virtual void SetConfigurationFinished();
+	virtual void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data);
+	virtual void ReadError(const BaseConnection *conn, short int event);
+	virtual void SetConfigurationFinished(const BaseConnection *conn);
+	virtual void OpenFinished(const BaseConnection *conn);
 };
 
 void SBUSUnit::ScheduleNext(unsigned int wait_ms)
@@ -691,6 +693,7 @@ bool SBUSUnit::Configure(PROTOCOL_TYPE protocol, TUnit *unit,
 	}
 
 	evtimer_set(&m_ev_timer, TimerCallback, this);
+	event_base_set(m_event_base, &m_ev_timer);
 	return true;
 }
 
@@ -832,18 +835,25 @@ void SBUSUnit::InitSingleQuery() {
 
 void SBUSUnit::PCDInitStart() {
 	try {
+		m_port->Close();
 		m_port->Open();
 		m_state = PCD_INIT;
-		if (m_protocol == SBUS_PCD) {
-			SetPortParity(MARK);
-		} else {
-			m_port->SetConfiguration(&m_termios);
-		}
-		ScheduleNext(MAX_WAIT_FOR_CONFIG_MS);
+		dolog(10, "%s: port open", GetId());
 	} catch (const SerialPortException &ex) {
 		dolog(0, "%s: Exception occured in PCDInitStart: %s", GetId(), ex.what());
 		BadResponse();
 	}
+}
+
+void SBUSUnit::OpenFinished(const BaseConnection *conn)
+{
+	dolog(10, "%s: open finished", GetId());
+	if (m_protocol == SBUS_PCD) {
+		SetPortParity(MARK);
+	} else {
+		m_port->SetConfiguration(&m_termios);
+	}
+	ScheduleNext(MAX_WAIT_FOR_CONFIG_MS);
 }
 
 void SBUSUnit::PCDInitContinue() {
@@ -905,7 +915,9 @@ void SBUSUnit::SendQuery() {
 	}
 }
 
-void SBUSUnit::ReadData(const std::vector<unsigned char>& data) {
+void SBUSUnit::ReadData(const BaseConnection *conn,
+		const std::vector<unsigned char>& data)
+{
 	if (m_state != WAIT_RESPONSE) {
 		dolog(4, "Data arrived outside WAIT_RESPONSE");
 		return;
@@ -976,12 +988,12 @@ void SBUSUnit::BadResponse() {
 	ScheduleNext();
 }
 
-void SBUSUnit::ReadError(short int event) {
+void SBUSUnit::ReadError(const BaseConnection *conn, short int event) {
 	dolog(8, "ReadError occured");
 	BadResponse();
 }
 
-void SBUSUnit::SetConfigurationFinished() {
+void SBUSUnit::SetConfigurationFinished(const BaseConnection *conn) {
 	ScheduleNext();
 }
 
@@ -1079,6 +1091,7 @@ class SBUSDaemon: public BaseSBUSDaemon {
 	DaemonState m_state;
 	
 	struct event m_ev_timer;	/**< event timer for calling QueryTimerCallback */
+	struct event_base *m_event_base;
 
 	void Do();
 	void WarmUp();
@@ -1086,7 +1099,10 @@ class SBUSDaemon: public BaseSBUSDaemon {
 	void QueryUnit();
 	void ScheduleNext(unsigned int wait_ms=0);
 public:
-	SBUSDaemon() :m_state(IDLE) {}
+	SBUSDaemon() :m_state(IDLE)
+	{
+		m_event_base = event_base_new();
+	}
 	bool Configure(DaemonConfig* cfg);
 	void Start();
 	virtual void UnitFinished();
@@ -1206,11 +1222,11 @@ bool SBUSDaemon::Configure(DaemonConfig *cfg) {
 	}
 	int speed = cfg->GetSpeed();	// TODO if configured with IP, this returns -1
 	if (m_ip.compare("") != 0) {
-		SerialAdapter *client = new SerialAdapter();
+		SerialAdapter *client = new SerialAdapter(m_event_base);
 		m_port = client;
 		client->InitTcp(m_ip, m_data_port, m_cmd_port);
 	} else {
-		SerialPort *port = new SerialPort();
+		SerialPort *port = new SerialPort(m_event_base);
 		m_port = port;
 		port->Init(m_path);
 	}
@@ -1230,7 +1246,7 @@ bool SBUSDaemon::Configure(DaemonConfig *cfg) {
 	for (TUnit *unit = dev->GetFirstRadio()->GetFirstUnit(); unit; unit = unit->GetNext(), i++) {
 		assert(i < rset->nodesetval->nodeNr);
 
-		SBUSUnit* u  = new SBUSUnit(this);
+		SBUSUnit* u  = new SBUSUnit(this, m_event_base);
 		if (u->Configure(protocol, unit, rset->nodesetval->nodeTab[i], reads, m_port, speed) == false)
 			return false;
 
@@ -1240,13 +1256,14 @@ bool SBUSDaemon::Configure(DaemonConfig *cfg) {
 	}
 
 
-        evtimer_set(&m_ev_timer, TimerCallback, this);
+	evtimer_set(&m_ev_timer, TimerCallback, this);
+	event_base_set(m_event_base, &m_ev_timer);
 	return true;
 }
 
 void SBUSDaemon::Start() {
 	ScheduleNext();
-	event_dispatch();
+	event_base_dispatch(m_event_base);
 }
 
 void SBUSDaemon::Do() {
@@ -1310,7 +1327,6 @@ void SBUSDaemon::UnitFinished() {
 }
 
 int main(int argc, char *argv[]) {
-	event_init();
 	DaemonConfig* cfg = new DaemonConfig("sbusdmn");
 
 	if (cfg->Load(&argc, argv))

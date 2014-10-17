@@ -72,72 +72,36 @@
 // end of SerialAdapter-specific definitions
 
 
-#include "exception.h"
-#include "utils.h"
-#include <map>
-#include <netinet/in.h>
-#include <string>
-
-/** Exception specific to TcpConnection class. */
-class TcpConnectionException : public MsgException { } ;
-
-/** 
- * Base class for TCP clients.
- */
-class TcpConnection {
-public:
-	TcpConnection();
-	virtual ~TcpConnection();
-	/** Initializes client with given address:port.
-	 * @param address IP address to connect to, in dot format
-	 * @param port port number to connect to
-	 */
-	void InitTcp(std::string address, int port);
-	/** Connects to provided earlier address and port.
-	 * If connection successful, socket becomes nonblocking.
-	 * @param blocking - should it be a blocking call?
-	 */
-	int Connect(bool blocking);
-	/** Close connection, remove libevent buffer.
-	 */
-	virtual void CloseConnection();
-protected:
-	int m_connect_fd;	/**< Client connecting socket file descriptor. */
-	bool m_in_progress;	/**< Connecting in progress. */
-	std::string m_address;	/**< address to connect to */
-	int m_port;		/**< port to connect to*/
-	std::string m_id;	/**< client id */
-	struct sockaddr_in m_server_addr;	/**< Server full address. */
-	struct bufferevent* m_buffer_event;	/**< Libevent bufferevent for socket read/write. */
-
-	/** Creates a new (blocking) socket, using information stored previously. */
-	void CreateSocket();
-};
-
 #include <event.h>
 #include <map>
 #include <netinet/in.h>
 #include <string>
 #include <fcntl.h>
 #include <termios.h>
+#include <vector>
+
+class BaseConnection;
 
 /** Listener receiving notifications from Connection */
 class ConnectionListener
 {
 public:
+	/** Callback for informing listener that the connection is open */
+	virtual void OpenFinished(const BaseConnection *conn) = 0;
 	/** Callback for notifications from SerialPort */
-	virtual void ReadData(const std::vector<unsigned char>& data) = 0;
+	virtual void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) = 0;
 	/** Callback for error notifications from SerialPort.
 	 * After an error is received, the listener responsible for port
 	 * should try to close and open it once again */
-	virtual void ReadError(short int event) = 0;
+	virtual void ReadError(const BaseConnection *conn, short int event) = 0;
 	/** Callback for informing listener that his call to
 	 * SetConfiguration() has been processed and connection is ready
 	 * for writing
 	 */
-	virtual void SetConfigurationFinished() = 0;
+	virtual void SetConfigurationFinished(const BaseConnection *conn) = 0;
 };
 
+#include "exception.h"
 
 class ConnectionException : public MsgException {};
 
@@ -149,7 +113,9 @@ class ConnectionException : public MsgException {};
 class BaseConnection
 {
 public:
-	BaseConnection() {}
+	BaseConnection(struct event_base *base)
+		:m_event_base(base)
+	{}
 	virtual ~BaseConnection() {}
 
 	/** Open connection (previously initialized) */
@@ -175,14 +141,14 @@ public:
 	}
 
 protected:
-	/** Callback, notifies listeners */
+	/** Callbacks, notify listeners */
+	void OpenFinished();
 	void ReadData(const std::vector<unsigned char>& data);
-
-	/** Callback, notifies listeners */
 	void SetConfigurationFinished();
-
-	/** Callback, notifies listeners */
 	void Error(short int event);
+
+protected:
+	struct event_base* const m_event_base;
 
 private:
 	/** Avoid copying */
@@ -190,6 +156,58 @@ private:
 	BaseConnection& operator=(const BaseConnection&);
 
 	std::vector<ConnectionListener*> m_listeners;
+};
+
+#include "utils.h"
+#include <map>
+#include <netinet/in.h>
+#include <string>
+
+/** Exception specific to TcpConnection class. */
+class TcpConnectionException : public ConnectionException { } ;
+
+/** 
+ * Base class for TCP clients.
+ */
+class TcpConnection : public BaseConnection {
+public:
+	TcpConnection(struct event_base* base);
+	virtual ~TcpConnection();
+
+	/** Initializes client with given address:port.
+	 * @param address IP address to connect to, in dot format
+	 * @param port port number to connect to
+	 */
+	void InitTcp(std::string address, int port);
+
+	/* BaseConnection interface */
+	virtual void Open();
+	virtual void Close();
+	virtual void WriteData(const void* data, size_t size);
+	virtual bool Ready() const;
+	virtual void SetConfiguration(const struct termios *serial_conf)
+	{}
+
+	static void ReadDataCallback(struct bufferevent *bufev, void* ds);
+	static void ErrorCallback(struct bufferevent *bufev, short event, void* ds);
+protected:
+	/** Creates a new nonblocking socket, using address and port stored previously. */
+	void CreateSocket();
+	/** Actual reading function, called by ReadCallback(). */
+	void ReadData(struct bufferevent *bufev);
+	/** Actual error function, called by ErrorCallback(). */
+	void Error(struct bufferevent *bufev, short event);
+
+	void OpenFinished();
+protected:
+	int m_connect_fd;	/**< Client connecting socket file descriptor. */
+	bool m_connected;	/**< Client socket connected to server. */
+	std::string m_address;	/**< address to connect to */
+	int m_port;		/**< port to connect to*/
+	std::string m_id;	/**< client id */
+	struct sockaddr_in m_server_addr;	/**< Server full address. */
+	struct bufferevent* m_bufferevent;	/**< Libevent bufferevent for socket read/write. */
+	bool m_connection_open;	/**< true if connection is currently open */
 };
 
 
@@ -200,6 +218,9 @@ class SerialPortException : public ConnectionException {};
 class BaseSerialPort : public BaseConnection
 {
 public:
+	BaseSerialPort(struct event_base* base)
+		:BaseConnection(base)
+	{}
 	/** Set DTR and RTS signals according to params */
 	virtual void LineControl(bool dtr, bool rts) = 0;
 };
@@ -209,7 +230,8 @@ public:
 class SerialPort: public BaseSerialPort
 {
 public:
-	SerialPort() : m_fd(-1), m_bufferevent(NULL)
+	SerialPort(struct event_base* base)
+		:BaseSerialPort(base), m_fd(-1), m_bufferevent(NULL)
 	{}
 	~SerialPort()
 	{
@@ -253,29 +275,29 @@ class SerialAdapterException : public SerialPortException { } ;
 /** 
  * Base class for SerialAdapter clients.
  */
-class SerialAdapter: public BaseSerialPort {
+class SerialAdapter: public BaseSerialPort, public ConnectionListener {
 public:
 	static const int DEFAULT_DATA_PORT = 950;
 	static const int DEFAULT_CMD_PORT = 966;
 
-	SerialAdapter(bool enable_fifo=true, bool server_CN2500 = false);
+	SerialAdapter(struct event_base*,
+		bool enable_fifo=true, bool server_CN2500 = false);
 	virtual ~SerialAdapter();
 
-	/** serial port interface */
-	virtual void Open()
-	{
-		Connect();
-	}
-	/** true if ready for r/w */
+	/** BaseSerialPort interface */
+	virtual void Open();
 	virtual bool Ready() const;
-
-	virtual void Close()
-	{
-		CloseConnection();
-	}
+	virtual void Close();
 	virtual void SetConfiguration(const struct termios *serial_conf);
 	virtual void LineControl(bool dtr, bool rts);
 	virtual void WriteData(const void* data, size_t size);
+
+	/** ConnectionListener interface */
+	virtual void OpenFinished(const BaseConnection *conn);
+	virtual void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data);
+	virtual void ReadError(const BaseConnection *conn, short int event);
+	virtual void SetConfigurationFinished(const BaseConnection *conn)
+	{}
 
 	/** Initializes client with given address:port.
 	 * @param address IP address to connect to, in dot format
@@ -284,26 +306,9 @@ public:
 	void InitTcp(std::string address, int data_port=DEFAULT_DATA_PORT,
 		int cmd_port=DEFAULT_CMD_PORT);
 
-	static void ReadDataCallback(struct bufferevent *bufev, void* ds);
-	static void ReadCmdCallback(struct bufferevent *bufev, void* ds);
-	static void ErrorCallback(struct bufferevent *bufev, short event, void* ds);
-
 private:
-	/** Connects to provided earlier address and port.
-	 * If connection successful, socket becomes nonblocking.
-	 * @param blocking - should it be a blocking call?
-	 */
-	void Connect(bool blocking=true);
-	/** Close connection, remove libevent buffer. */
-	void CloseConnection();
-	/** Actual reading function, called by ReadCallback(). */
-	void ReadData(struct bufferevent *bufev);
-	/** Actual error function, called by ErrorCallback(). */
-	void Error(struct bufferevent *bufev, short event);
-
-	void ProcessCmdResponse(std::vector<unsigned char> &cmd_buf);
+	void ProcessCmdResponse(const std::vector<unsigned char> &cmd_buf);
 	void WriteCmd(std::vector<unsigned char> &cmd_buffer);
-	void ReadCmd(struct bufferevent *bufev);
 
 private:
 	typedef enum {UNINITIALIZED, SETCONF1, SETCONF2, SETCONF3, READY} SerialConfState;
@@ -311,13 +316,11 @@ private:
 	const bool m_enable_fifo;
 	const bool m_server_CN2500;
 
-	struct bufferevent* m_data_bufferevent;	/**< Libevent bufferevent for socket read/write. */
-	struct bufferevent* m_cmd_bufferevent;	/**< Libevent bufferevent for socket read/write. */
-
-	TcpConnection m_data_connection;	/**< connection used for data send/recv with serial port */
-	TcpConnection m_cmd_connection;		/**< connection used for communication with SerialAdapter driver */
+	TcpConnection* m_data_connection;	/**< connection used for data send/recv with serial port */
+	TcpConnection* m_cmd_connection;		/**< connection used for communication with SerialAdapter driver */
 
 	SerialConfState m_serial_state;		/**< state of set serial configuration communication */
+	bool m_open_pending;
 	std::vector<unsigned char> m_last_serial_conf_cmd;
 };
 
