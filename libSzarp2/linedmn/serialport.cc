@@ -1,5 +1,6 @@
 
 #include "serialport.h"
+#include "utils.h"
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -83,9 +84,20 @@ void SerialPort::Close()
 	}
 }
 
-void SerialPort::SetConfiguration(const struct termios *serial_conf)
+void SerialPort::SetConfiguration(const SerialPortConfiguration& config)
 {
-	if (tcsetattr(m_fd, TCSANOW, serial_conf) == -1) {
+	struct termios termios;
+	if (tcgetattr(m_fd, &termios) != 0) {
+		Close();
+		SerialPortException ex;
+		ex.SetMsg("Cannot get port settings, errno: %d (%s)",
+			errno, strerror(errno));
+		throw ex;
+	}
+
+	SerialPortConfigurationToTermios(config, &termios);
+
+	if (tcsetattr(m_fd, TCSANOW, &termios) != 0) {
 		Close();
 		SerialPortException ex;
 		ex.SetMsg("Cannot set port settings, errno: %d (%s)",
@@ -95,10 +107,52 @@ void SerialPort::SetConfiguration(const struct termios *serial_conf)
 	SetConfigurationFinished();
 }
 
+void SerialPort::SerialPortConfigurationToTermios(
+	const SerialPortConfiguration& config, struct termios* termios)
+{
+	termios->c_iflag = 0;
+	termios->c_oflag = 0;
+	termios->c_cflag = 0;
+	termios->c_lflag = 0;
+
+	termios->c_cflag |= speed_to_constant(config.speed);
+
+	if (config.stop_bits == 2) {
+		termios->c_cflag |= CSTOPB;
+	}
+
+	switch (config.parity) {
+		case SerialPortConfiguration::ODD:
+			termios->c_cflag |= PARODD;
+		case SerialPortConfiguration::EVEN:
+			termios->c_cflag |= PARENB;
+			break;
+		case SerialPortConfiguration::NONE:
+			break;
+	}
+
+	termios->c_cflag |= CREAD | CLOCAL ;
+
+	switch (config.char_size) {
+		case SerialPortConfiguration::CS_8:
+			termios->c_cflag |= CS8;
+			break;
+		case SerialPortConfiguration::CS_7:
+			termios->c_cflag |= CS7;
+			break;
+		case SerialPortConfiguration::CS_6:
+			termios->c_cflag |= CS6;
+			break;
+		case SerialPortConfiguration::CS_5:
+			termios->c_cflag |= CS5;
+			break;
+	}
+}
+
 void SerialPort::LineControl(bool dtr, bool rts)
 {
 	int control;
-		ioctl(m_fd, TIOCMGET, &control);
+	ioctl(m_fd, TIOCMGET, &control);
 	if (dtr)
 		control |= TIOCM_DTR;
 	else
@@ -360,9 +414,12 @@ void SerialAdapter::ReadError(const BaseConnection *conn, short int event)
 	BaseSerialPort::Error(event);
 }
 
-void SerialAdapter::SetConfiguration(const struct termios *serial_conf)
+void SerialAdapter::SetConfiguration(const SerialPortConfiguration& config)
 {
-	int32_t mode = serial_conf->c_cflag & CSIZE;
+	struct termios termios = {0};
+	SerialPort::SerialPortConfigurationToTermios(config, &termios);
+
+	int32_t mode = termios.c_cflag & CSIZE;
 	if (mode == CS5)
 		mode = SERIAL_BITS5;
 	else if (mode == CS6)
@@ -372,20 +429,20 @@ void SerialAdapter::SetConfiguration(const struct termios *serial_conf)
 	else if (mode == CS8)
 		mode = SERIAL_BITS8;
 
-	if (serial_conf->c_cflag & CSTOPB)
+	if (termios.c_cflag & CSTOPB)
 		mode |= SERIAL_STOP2;
 	else
 		mode |= SERIAL_STOP1;
 
-	if (serial_conf->c_cflag & PARENB)
+	if (termios.c_cflag & PARENB)
 	{
-		if (serial_conf->c_cflag & CMSPAR)
-			if (serial_conf->c_cflag & PARODD)
+		if (termios.c_cflag & CMSPAR)
+			if (termios.c_cflag & PARODD)
 				mode |= SERIAL_MARK;
 			else
 				mode |= SERIAL_SPACE;
 		else
-			if (serial_conf->c_cflag & PARODD)
+			if (termios.c_cflag & PARODD)
 				mode |= SERIAL_ODD;
 			else
 				mode |= SERIAL_EVEN;
@@ -394,7 +451,7 @@ void SerialAdapter::SetConfiguration(const struct termios *serial_conf)
 		mode |= SERIAL_NONE;
 
 	int baudrate_index;
-	switch ( serial_conf->c_cflag & (CBAUD|CBAUDEX))
+	switch (termios.c_cflag & (CBAUD|CBAUDEX))
 	{
 	case B921600:
 		baudrate_index = SERIAL_B921600;
@@ -476,7 +533,7 @@ void SerialAdapter::SetConfiguration(const struct termios *serial_conf)
 
 	// line control
 	int modem_control = 0;
-	if (serial_conf->c_cflag & CBAUD)
+	if (termios.c_cflag & CBAUD)
 		modem_control = UART_MCR_DTR | UART_MCR_RTS;
 	if (modem_control & UART_MCR_DTR)
 		cmd_buffer[4] = 1;
@@ -488,7 +545,7 @@ void SerialAdapter::SetConfiguration(const struct termios *serial_conf)
 		cmd_buffer[5] = 0;
 
 	// flow control
-	if (serial_conf->c_cflag & CRTSCTS)
+	if (termios.c_cflag & CRTSCTS)
 	{
 		cmd_buffer[6] = 1;
 		cmd_buffer[7] = 1;
@@ -498,7 +555,7 @@ void SerialAdapter::SetConfiguration(const struct termios *serial_conf)
 		cmd_buffer[6] = 0;
 		cmd_buffer[7] = 0;
 	}
-	if (serial_conf->c_iflag & IXON)
+	if (termios.c_iflag & IXON)
 	{
 		cmd_buffer[8] = 1;
 	}
@@ -506,7 +563,7 @@ void SerialAdapter::SetConfiguration(const struct termios *serial_conf)
 	{
 		cmd_buffer[8] = 0;
 	}
-	if (serial_conf->c_iflag & IXOFF)
+	if (termios.c_iflag & IXOFF)
 	{
 		cmd_buffer[9] = 1;
 	}

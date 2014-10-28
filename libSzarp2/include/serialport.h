@@ -71,13 +71,37 @@
 #define	SERIAL_NONE		0
 // end of SerialAdapter-specific definitions
 
+#include <string>
+
+/**self-descriptive struct holding all aspects of serial port conifguration in one place*/
+class SerialPortConfiguration {
+public:
+	SerialPortConfiguration()
+	:
+	path(""), parity(NONE), stop_bits(1), speed(0), char_size(CS_8)
+	{}
+
+	std::string path;
+	enum PARITY {
+		NONE,
+		ODD,
+		EVEN
+	} parity;
+	int stop_bits;
+	int speed;
+	enum CHAR_SIZE {
+		CS_5,
+		CS_6,
+		CS_7,
+		CS_8
+	} char_size;
+};
 
 #include <event.h>
 #include <map>
 #include <netinet/in.h>
 #include <string>
 #include <fcntl.h>
-#include <termios.h>
 #include <vector>
 
 class BaseConnection;
@@ -127,7 +151,7 @@ public:
 	/** Returns true if connection is ready for communication */
 	virtual bool Ready() const = 0;
 	/** Set line configuration for an already open port */
-	virtual void SetConfiguration(const struct termios *serial_conf) = 0;
+	virtual void SetConfiguration(const SerialPortConfiguration& serial_conf) = 0;
 
 	/** Adds listener for port */
 	void AddListener(ConnectionListener* listener)
@@ -158,7 +182,6 @@ private:
 	std::vector<ConnectionListener*> m_listeners;
 };
 
-#include "utils.h"
 #include <map>
 #include <netinet/in.h>
 #include <string>
@@ -185,7 +208,7 @@ public:
 	virtual void Close();
 	virtual void WriteData(const void* data, size_t size);
 	virtual bool Ready() const;
-	virtual void SetConfiguration(const struct termios *serial_conf)
+	virtual void SetConfiguration(const SerialPortConfiguration& serial_conf)
 	{}
 
 	static void ReadDataCallback(struct bufferevent *bufev, void* ds);
@@ -244,7 +267,7 @@ public:
 	/** Close port */
 	virtual void Close();
 	/** Set serial line configuration */
-	virtual void SetConfiguration(const struct termios *serial_conf);
+	virtual void SetConfiguration(const SerialPortConfiguration& serial_conf);
 	/** Set DTR and RTS signals according to params */
 	virtual void LineControl(bool dtr, bool rts);
 	/** Write data to serial port */
@@ -257,6 +280,10 @@ public:
 
 	static void ReadDataCallback(struct bufferevent *bufev, void* ds);
 	static void ErrorCallback(struct bufferevent *bufev, short event, void* ds);
+
+	/** Store SerialPortConfiguration to provided termios */
+	static void SerialPortConfigurationToTermios(
+		const SerialPortConfiguration& config, struct termios* termios);
 protected:
 	/** Actual reading function, called by ReadCallback(). */
 	void ReadData(struct bufferevent *bufev);
@@ -288,7 +315,7 @@ public:
 	virtual void Open();
 	virtual bool Ready() const;
 	virtual void Close();
-	virtual void SetConfiguration(const struct termios *serial_conf);
+	virtual void SetConfiguration(const SerialPortConfiguration& serial_conf);
 	virtual void LineControl(bool dtr, bool rts);
 	virtual void WriteData(const void* data, size_t size);
 

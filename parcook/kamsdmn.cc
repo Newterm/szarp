@@ -67,7 +67,8 @@ void dolog(int level, const char * fmt, ...) {
 	if (single) {
 		char *l;
 		va_start(fmt_args, fmt);
-		vasprintf(&l, fmt, fmt_args);
+		int res = vasprintf(&l, fmt, fmt_args);
+		(void)res;
 		va_end(fmt_args);
 
 		std::cout << l << std::endl;
@@ -83,7 +84,8 @@ void dolog(int level, const char * fmt, ...) {
 xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	xmlChar *c;
 	char *e;
-	asprintf(&e, "./@%s", prop);
+	int res = asprintf(&e, "./@%s", prop);
+	(void)res;
 	assert (e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
 	free(e);
@@ -93,7 +95,8 @@ xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 xmlChar* get_device_node_extra_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	xmlChar *c;
 	char *e;
-	asprintf(&e, "./@extra:%s", prop);
+	int res = asprintf(&e, "./@extra:%s", prop);
+	(void)res;
 	assert (e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
 	free(e);
@@ -369,26 +372,24 @@ void kams_daemon::Do()
 
 void kams_daemon::SelectSerialMode(SerialMode mode)
 {
-	struct termios serial_conf;
-	serial_conf.c_iflag = 0;
-	serial_conf.c_oflag = 0;
+	SerialPortConfiguration conf;
+	conf.char_size = SerialPortConfiguration::CS_7;
+	conf.stop_bits = 2;
 
 	switch (mode) {
 		case MODE_B300:
-			serial_conf.c_cflag = B300 | CS7 | CSTOPB | CLOCAL | CREAD;
+			conf.speed = 300;
 			break;
 		case MODE_B1200_EVEN:
-			serial_conf.c_cflag = B1200 | CS7 | CSTOPB | PARENB | CLOCAL | CREAD;
+			conf.speed = 1200;
+			conf.parity = SerialPortConfiguration::EVEN;
 			break;
 		case MODE_B1200:
-			serial_conf.c_cflag= B1200 | CS7 | CSTOPB | CLOCAL | CREAD;
+			conf.speed = 1200;
 			break;
 	}
-	serial_conf.c_lflag = 0;
-	serial_conf.c_cc[4] = 100;
-	serial_conf.c_cc[5] = 100;
 
-	m_serial_port->SetConfiguration(&serial_conf);
+	m_serial_port->SetConfiguration(conf);
 }
 
 void kams_daemon::WriteChar()
@@ -578,6 +579,7 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
 	assert (ret == 0);
+	(void)ret;
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra",
 			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 	assert (ret == 0);
