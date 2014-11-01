@@ -94,7 +94,11 @@ void DrawsController::DisplayState::MoveScreenRight() {
 
 void DrawsController::DisplayState::GoToLatestDate() {
 	const TimeIndex& index = m_c->m_draws[m_c->m_selected_draw]->GetTimeIndex();
-	wxDateTime t = wxDateTime(31, wxDateTime::Dec, 0xffff, 23, 59, 59)
+
+	// problem with 32bit time_t
+	int year = sizeof(time_t) == 8 ? 0xffff : 2037;
+
+	wxDateTime t = wxDateTime(31, wxDateTime::Dec, year, 23, 59, 59)
 		- index.GetTimeRes()
 		- index.GetDateRes();
 	m_c->EnterState(SEARCH_LEFT, DTime(m_c->GetPeriod(), t));
