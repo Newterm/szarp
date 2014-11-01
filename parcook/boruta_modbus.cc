@@ -429,6 +429,7 @@ protected:
 	int configure_long_float_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt);
 	int configure_double_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt);
 	int configure_decimal2_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_decimal3_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt);
 	int configure_param(xmlNodePtr node, TSzarpConfig *sc, TParam* p, TSendParam *sp, bool send);
 	int configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx);
 
@@ -729,10 +730,22 @@ class decimal2_parcook_modbus_val_op : public parcook_modbus_val_op {
 	int m_prec;
 	bool m_lsw;
 public:
-	decimal2_parcook_modbus_val_op(modbus_register *reg_integer, modbus_register *reg_fraction, int prec, bool lsw, driver_logger *log);
-	virtual unsigned short val();
+	decimal2_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log);
+	void set_regs(modbus_register* regs[2]);
+	unsigned short val();
 };
 
+class decimal3_parcook_modbus_val_op : public parcook_modbus_val_op {
+	modbus_register *m_reg1;
+	modbus_register *m_reg2;
+	modbus_register *m_reg3;
+	int m_prec;
+	bool m_lsw;
+public:
+	decimal3_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log);
+	void set_regs(modbus_register* regs[3]);
+	unsigned short val();
+};
 class short_sender_modbus_val_op : public sender_modbus_val_op {
 	modbus_register *m_reg;
 public:
@@ -896,7 +909,12 @@ unsigned short double_parcook_modbus_val_op::val() {
 		return *pv >> 16;
 }
 
-decimal2_parcook_modbus_val_op::decimal2_parcook_modbus_val_op(modbus_register *reg_integer, modbus_register *reg_fraction, int prec, bool lsw, driver_logger *log) : parcook_modbus_val_op(log), m_reg_integer(reg_integer), m_reg_fraction(reg_fraction), m_prec(prec), m_lsw(lsw) {};
+decimal2_parcook_modbus_val_op::decimal2_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log) : parcook_modbus_val_op(log), m_prec(prec), m_lsw(lsw) {};
+
+void decimal2_parcook_modbus_val_op::set_regs(modbus_register* regs[2]) {
+	m_reg_integer = regs[0];
+	m_reg_fraction = regs[1];
+}
 
 unsigned short decimal2_parcook_modbus_val_op::val() {
 	double rinteger, rfraction;
@@ -914,6 +932,49 @@ unsigned short decimal2_parcook_modbus_val_op::val() {
 	}
 
 	double v = rinteger + (rfraction / 1000.0);
+
+	int32_t iv = nearbyint(v * m_prec);
+	uint32_t* pv = (uint32_t*) &iv;
+
+	m_log->log(10, "Int value: %d, unsigned int: %u", iv, *pv);
+
+	if (m_lsw)
+		return *pv & 0xffff;
+	else
+		return *pv >> 16;
+}
+
+decimal3_parcook_modbus_val_op::decimal3_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log) : parcook_modbus_val_op(log),  m_prec(prec), m_lsw(lsw) {};
+
+void decimal3_parcook_modbus_val_op::set_regs(modbus_register* regs[3]) {
+	m_reg1 = regs[0];
+	m_reg2 = regs[1];
+	m_reg3 = regs[2];
+}
+
+unsigned short decimal3_parcook_modbus_val_op::val() {
+	double r1, r2, r3;
+	bool valid;
+
+	r1 = m_reg1->get_val(valid);
+	if (!valid) {
+		m_log->log(10, "Decimal3 value, r1 invalid, no_data");
+		return SZARP_NO_DATA;
+	}
+
+	r2 = m_reg2->get_val(valid);
+	if (!valid) {
+		m_log->log(10, "Decimal3 value, r2 invalid, no_data");
+		return SZARP_NO_DATA;
+	}
+
+	r3 = m_reg3->get_val(valid);
+	if (!valid) {
+		m_log->log(10, "Decimal3 value, r3 invalid, no_data");
+		return SZARP_NO_DATA;
+	}
+
+	double v = (10000 * r1) + r2 + (r3 / 1000.0);
 
 	int32_t iv = nearbyint(v * m_prec);
 	uint32_t* pv = (uint32_t*) &iv;
@@ -1189,19 +1250,19 @@ int modbus_unit::configure_int_register(TParam* param, TSendParam *sparam, int p
 	else
 		m_sent.insert(std::make_pair(rt, addr));
 
-	m_log.log(8, "Param %ls mapped to unit: %u, register %hu, value type: integer", param ? param->GetName().c_str() : L"send param", m_id, addr);
+	m_log.log(8, "Param %s mapped to unit: %u, register %hu, value type: integer", param ? SC::S2L(param->GetName()).c_str() : "send param", m_id, addr);
 	return 0;
 }
 
 int modbus_unit::configure_bcd_register(TParam* param, TSendParam* sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	m_registers[addr] = new modbus_register(this, &m_log);
 	if (send) {
-		m_log.log(0, "Unsupported bcd value type for send param %ls", param->GetName().c_str());
+		m_log.log(0, "Unsupported bcd value type for send param %s", SC::S2L(param->GetName()).c_str());
 		return 1;
 	}
 	m_parcook_ops.push_back(new bcd_parcook_modbus_val_op(m_registers[addr], &m_log));
 
-	m_log.log(8, "Param %s mapped to unit: %u, register %hu, value type: bcd", SC::S2A(param->GetName()).c_str(), m_id, addr);
+	m_log.log(8, "Param %s mapped to unit: %u, register %hu, value type: bcd", SC::S2L(param->GetName()).c_str(), m_id, addr);
 
 	if (!send)
 		m_received.insert(std::make_pair(rt, addr));
@@ -1268,6 +1329,7 @@ int modbus_unit::get_lsw_msw_reg(xmlNodePtr node, unsigned short addr, unsigned 
 
 	std::string val_op;
 	get_xml_extra_prop(node, "val_op", val_op, false);
+	m_log.log(10, "get_double_order: val_op: %s", val_op.c_str());
 	if (val_op.empty() || val_op == "LSW")  {
 		if (float_order == MSWLSW) {
 			msw = addr;
@@ -1387,17 +1449,17 @@ int modbus_unit::configure_long_float_register(TParam* param, TSendParam *sparam
 	if (val_type == "float")  {
 		if (!send) {
 			m_parcook_ops.push_back(new long_parcook_modbus_val_op<float>(m_registers[lsw], m_registers[msw], prec, is_lsw, &m_log));
-			m_log.log(8, "Parcook param %ls no(%zu), mapped to unit: %u, register %hu, value type: float, params holds %s part, lsw: %hu, msw: %hu", param->GetName().c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
+			m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: float, params holds %s part, lsw: %hu, msw: %hu", SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
 		} else {
 			m_sender_ops.push_back(new float_sender_modbus_val_op(m_nodata_value, m_registers[lsw], m_registers[msw], prec, &m_log));
-			m_log.log(8, "Sender param %ls no(%zu), mapped to unit: %u, register %hu, value type: float, params holds %s part",
-				param ? param->GetName().c_str() : L"(not a param, just value)", m_sender_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw");
+			m_log.log(8, "Sender param %s no(%zu), mapped to unit: %u, register %hu, value type: float, params holds %s part",
+				param ? SC::S2L(param->GetName()).c_str() : "(not a param, just value)", m_sender_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw");
 		}
 	} else {
 		if (!send) {
 			m_parcook_ops.push_back(new long_parcook_modbus_val_op<unsigned int>(m_registers[lsw], m_registers[msw], prec, is_lsw, &m_log));
-			m_log.log(8, "Parcook param %ls no(%zu), mapped to unit: %u, register %hu, value type: long, params holds %s part, lsw: %hu, msw: %hu",
-				param->GetName().c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
+			m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: long, params holds %s part, lsw: %hu, msw: %hu",
+				SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
 		} else {
 			m_log.log(0, "Unsupported long value type for send param line %ld, exiting!", xmlGetLineNo(node));
 			return 1;
@@ -1412,27 +1474,38 @@ int modbus_unit::configure_long_float_register(TParam* param, TSendParam *sparam
 }
 
 int modbus_unit::configure_decimal2_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt) {
-	std::string val_type;
-	if (get_xml_extra_prop(node, "val_type", val_type))
-		return 1;
-
 	bool is_lsw;
 	unsigned short msw, lsw;
+	modbus_register* regs[2];
 	if (get_lsw_msw_reg(node, addr, lsw, msw, is_lsw))
 		return 1;
 
-	if (m_registers.find(lsw) == m_registers.end())
-		m_registers[lsw] = new modbus_register(this, &m_log);
-	if (m_registers.find(msw) == m_registers.end())
-		m_registers[msw] = new modbus_register(this, &m_log);
+	RMAP::iterator j = m_registers.find(msw);
+	if (j == m_registers.end()) {
+		regs[0] = new modbus_register(this, &m_log);
+		m_registers[msw] = regs[0];
+	}
+	else
+		regs[0] = j->second;
+
+	j = m_registers.find(lsw);
+	if (j == m_registers.end()) {
+		regs[1] = new modbus_register(this, &m_log);
+		m_registers[lsw] = regs[1];
+	}
+	else
+		regs[1] = j->second;
 
 	if (!send) {
-		m_parcook_ops.push_back(new decimal2_parcook_modbus_val_op(m_registers[lsw], m_registers[msw], prec, is_lsw, &m_log));
-		m_log.log(8, "Parcook param %ls no(%zu), mapped to unit: %u, register %hu, value type: decimal2, params holds %s part, lsw: %hu, msw: %hu", param->GetName().c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
+		decimal2_parcook_modbus_val_op* op = new decimal2_parcook_modbus_val_op(prec, is_lsw, &m_log);
+		op->set_regs(regs);
+		m_parcook_ops.push_back(op);
+		m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: decimal2, params holds %s part, lsw: %hu, msw: %hu",
+			       	SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
 	} else {
-		m_sender_ops.push_back(new decimal2_sender_modbus_val_op(m_nodata_value, m_registers[lsw], m_registers[msw], prec, &m_log));
-		m_log.log(8, "Sender param %ls no(%zu), mapped to unit: %u, register %hu, value type: decimal2, params holds %s part",
-			param ? param->GetName().c_str() : L"(not a param, just value)", m_sender_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw");
+		m_sender_ops.push_back(new decimal2_sender_modbus_val_op(m_nodata_value, regs[0], regs[1], prec, &m_log));
+		m_log.log(8, "Sender param %s no(%zu), mapped to unit: %u, register %hu, value type: decimal2, params holds %s part",
+			param ? SC::S2L(param->GetName()).c_str() : "(not a param, just value)", m_sender_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw");
 	}
 
 	m_received.insert(std::make_pair(rt, lsw));
@@ -1441,6 +1514,47 @@ int modbus_unit::configure_decimal2_register(TParam* param, TSendParam *sparam, 
 	return 0;
 }
 
+int modbus_unit::configure_decimal3_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt) {
+	if (send) {
+		m_log.log(0, "Unsupported decimal3 value type for send param line %ld, exiting!", xmlGetLineNo(node));
+		return 1;
+	}
+
+	bool is_lsw;
+	std::string val_op;
+	get_xml_extra_prop(node, "val_op", val_op, false);
+	if (val_op.empty() || val_op == "LSW")  {
+		is_lsw = true;
+	} else if (val_op == "MSW") {
+		is_lsw = false;
+	} else {
+		m_log.log(0, "Unsupported val_op attribute value - %s, line %ld", val_op.c_str(), xmlGetLineNo(node));
+		return 1;
+	}
+
+	modbus_register* regs[3];
+	unsigned short addrs[3];
+
+	for (unsigned short i = 0; i < 3; i++) {
+		unsigned short cur_addr = addr + i;
+		addrs[i] = cur_addr;
+		RMAP::iterator j = m_registers.find(cur_addr);
+		if (j == m_registers.end()) {
+			m_registers[cur_addr] = regs[i] = new modbus_register(this, &m_log);
+			m_received.insert( std::make_pair(rt, cur_addr));
+		} else
+			regs[i] = j->second;
+	}
+
+	decimal3_parcook_modbus_val_op* op = new decimal3_parcook_modbus_val_op(prec, is_lsw, &m_log);
+	op->set_regs(regs);
+	m_parcook_ops.push_back(op);
+	m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: decimal3, params holds %s part, reg1: %hu, reg2: %hu, reg3: %hu",
+		SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr,
+		is_lsw ? "lsw" : "msw", addrs[0], addrs[1], addrs[2]);
+
+	return 0;
+}
 
 int modbus_unit::configure_param(xmlNodePtr node, TSzarpConfig* sc, TParam* p, TSendParam *sp, bool send) { 
 	char* c = (char*) xmlGetNsProp(node, BAD_CAST("address"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
@@ -1481,8 +1595,8 @@ int modbus_unit::configure_param(xmlNodePtr node, TSzarpConfig* sc, TParam* p, T
 		if (!sp->GetParamName().empty()) {
 			param = sc->getParamByName(sp->GetParamName());
 			if (param == NULL) {
-				m_log.log(0, "parameter with name '%ls' not found (send parameter at line %ld)",
-						sp->GetParamName().c_str(), xmlGetLineNo(node));
+				m_log.log(0, "parameter with name '%s' not found (send parameter at line %ld)",
+						SC::S2L(sp->GetParamName()).c_str(), xmlGetLineNo(node));
 				return 1;
 			}
 			if (get_xml_extra_prop(node, "prec", prec_e))
@@ -1508,6 +1622,8 @@ int modbus_unit::configure_param(xmlNodePtr node, TSzarpConfig* sc, TParam* p, T
 		ret = configure_double_register(param, sp, prec, node, addr, send, rt);
 	} else if (val_type == "decimal2") {
 		ret = configure_decimal2_register(param, sp, prec, node, addr, send, rt);
+	} else if (val_type == "decimal3") {
+		ret = configure_decimal3_register(param, sp, prec, node, addr, send, rt);
 	} else {
 		m_log.log(0, "Unsupported value type:%s, for param at line: %ld", val_type.c_str(), xmlGetLineNo(node));
 		ret = 1;

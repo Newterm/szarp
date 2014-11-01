@@ -156,10 +156,12 @@ endif
 links:
 	install -d $(DESTDIR)/usr/share/autostart;
 	install -d $(DESTDIR)/etc/xdg/autostart;
+	install -d $(DESTDIR)/usr/share/applications;
 	ln -sf @prefix@/resources/koper.desktop $(DESTDIR)/usr/share/autostart/koper.desktop 
 	ln -sf @prefix@/resources/koper.desktop $(DESTDIR)/etc/xdg/autostart/koper.desktop 
 	ln -sf @prefix@/resources/scc.desktop $(DESTDIR)/usr/share/autostart/scc.desktop 
 	ln -sf @prefix@/resources/scc.desktop $(DESTDIR)/etc/xdg/autostart/scc.desktop 
+	ln -sf @prefix@/resources/scc.desktop $(DESTDIR)/usr/share/applications/scc.desktop
 
 if !DEB_BUILD
 

@@ -1184,6 +1184,7 @@ AC_OUTPUT( \
 	wx/draw3/Makefile \
 	wx/ekstraktor3/Makefile \
 	wx/filler/Makefile \
+	wx/filler2/Makefile \
 	wx/isledit/Makefile \
 	wx/scc/Makefile \
 	wx/raporter3/Makefile \

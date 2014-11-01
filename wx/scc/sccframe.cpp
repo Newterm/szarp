@@ -150,7 +150,12 @@ void SCCTaskBarItem::OnMouseMiddleDown(wxTaskBarIconEvent& event)
 
 void SCCTaskBarItem::OnQuit(wxCommandEvent& WXUNUSED(event))
 {
-	wxExit();
+	if (wxMessageBox(_("Do you want to close the application?"),
+				_("Question"), wxICON_QUESTION | wxYES_NO)
+			!= wxYES)
+		return;
+	else
+		wxExit();
 }
 
 void SCCTaskBarItem::OnAbout(wxCommandEvent& WXUNUSED(event))

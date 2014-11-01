@@ -30,7 +30,7 @@ void LocationsMgr::add_locations( const CfgSections& cfg )
 void LocationsMgr::add_location( const std::string& name , const CfgPairs& cfg )
 {
 	try {
-			 if( cfg.at("type") == "szbase" )
+		if( cfg.at("type") == "szbase" )
 			add_szbase( name , cfg );
 		else if( cfg.at("type") == "proxy" )
 			add_proxy( name , cfg );
@@ -39,6 +39,11 @@ void LocationsMgr::add_location( const std::string& name , const CfgPairs& cfg )
 	} catch( std::out_of_range& e ) {
 		throw missing_option("Missing option in section " + name );
 	}
+}
+
+void LocationsMgr::add_config( const CfgPairs& cfg )
+{
+	server_config.from_pairs(cfg);
 }
 
 void LocationsMgr::add_szbase( const std::string& name , const CfgPairs& cfg )
@@ -90,7 +95,7 @@ void LocationsMgr::add_proxy( const std::string& name , const CfgPairs& cfg )
 
 void LocationsMgr::on_new_connection( Connection* con )
 {
-	new_location( std::make_shared<ProtocolLocation>( "welcome" , std::make_shared<WelcomeProt>(loc_factory) , con ) );
+	new_location( std::make_shared<ProtocolLocation>( "welcome" , std::make_shared<WelcomeProt>(loc_factory, server_config) , con ) );
 }
 
 void LocationsMgr::on_disconnected( Connection* con )

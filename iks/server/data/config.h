@@ -8,6 +8,7 @@
 
 #include "utils/signals.h"
 #include "utils/exception.h"
+#include "utils/config.h"
 
 class Config {
 	typedef std::unordered_map<std::string,std::string> CfgMap;
@@ -16,6 +17,7 @@ public:
 
 	void from_file( const std::string& path ) throw(xml_parse_error);
 	void from_xml( const boost::property_tree::ptree& cfg_ptree ) throw(xml_parse_error);
+	void from_pairs( const CfgPairs& pairs );
 
 	CfgMap::const_iterator begin() const { return cfg.cbegin(); }
 	CfgMap::const_iterator end  () const { return cfg.cend  (); }

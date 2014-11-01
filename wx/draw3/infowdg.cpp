@@ -222,12 +222,20 @@ void InfoWidget::SetOtherTime(const wxDateTime &time) {
 
 void InfoWidget::SetColor(const wxColour& col) {
 	wxColour c = col;
-	if (c == *wxBLUE) {
-		/* on some displays, black text is poorly
-		 * visible on blue background, so we make
-		 * background color a little lighter */
-		c = wxColour(60, 60, 255);
+
+	/* Note: This algorithm is taken from a formula for converting RGB values
+	 * to YIQ values. This brightness value gives a perceived brightness for
+	 * a color. */
+	int brightness = ((c.Red() * 299) + (c.Green() * 587) + (c.Blue() * 114)) / 1000;
+
+	if (brightness >= 100) {
+		value_text->SetForegroundColour(*wxBLACK);
+		value_text2->SetForegroundColour(*wxBLACK);
+	} else {
+		value_text->SetForegroundColour(*wxWHITE);
+		value_text2->SetForegroundColour(*wxWHITE);
 	}
+
 #ifdef MINGW32
 	value_text->SetBackgroundColour(c);
 	value_text2->SetBackgroundColour(c);
@@ -237,7 +245,6 @@ void InfoWidget::SetColor(const wxColour& col) {
 	value_panel->Refresh();
 	value_panel2->Refresh();
 #endif
-
 }
 
 void InfoWidget::SetPrec(int prec) {

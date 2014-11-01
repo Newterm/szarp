@@ -38,6 +38,7 @@ private:
 		Command* cmd );
 
 	void send_fail( ErrorCodes code , const std::string& msg = "" );
+	void send_fail( id_t  id , ErrorCodes code , const std::string& msg = "" );
 
 	virtual void parse_line( const std::string& line );
 
