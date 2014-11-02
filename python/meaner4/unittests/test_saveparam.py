@@ -76,7 +76,7 @@ class SaveParamTest(unittest.TestCase):
 
 		sp.process_msg(self._msg(123458, 5))
 		self._check_size(path, 4 + 5 + 4 + 1)
-		self._check_file(path, "<iBBBBBiB", (4, 0xf0, 0x3b, 0x9a, 0xca, 0x00, 5, 0))
+		self._check_file(path, "<iBBBBBiB", (4, 0xf0, 0x77, 0x35, 0x94, 0x00, 5, 0))
 
 		del sp
 

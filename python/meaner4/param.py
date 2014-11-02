@@ -20,6 +20,7 @@
 
 import struct
 import os
+import math
 
 class Param:
 	def __init__(self, name, data_type, prec, time_prec, written_to_base, combined=False, lsw=None, msw=None):
@@ -57,6 +58,14 @@ class Param:
 			return -2**31
 		else:
 			return float('nan')
+
+	def isnan(self, value):
+		if self.data_type == "short":
+			return value == -2**15
+		elif self.data_type == "int":
+			return value == -2**31
+		else:
+			return math.isnan(value)
 
 	def value_to_binary(self, value):
 		return struct.pack(self.value_format_string, value)

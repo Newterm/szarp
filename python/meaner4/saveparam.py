@@ -73,19 +73,22 @@ class SaveParam:
 		self.file_factory = file_factory
 		self.last = lastentry.LastEntry(param)
 
-	def update_last_time(self, time, nanotime):
-		last_time_size = self.last.time_size
-
+	def update_last_time_unlocked(self, time, nanotime):
 		self.file.seek(-self.last.time_size, os.SEEK_END)
+
+		last_time_size = self.last.time_size
+		time_blob = self.last.update_time(time, nanotime)
+
+		self.file.write(time_blob)
+
+		self.file_size += self.last.time_size - last_time_size
+
+
+	def update_last_time(self, time, nanotime):
 		with file_lock(self.file):
-			time_blob = self.last.update_time(time, nanotime)
-			self.file.write(time_blob)
-
-			self.file_size += self.last.time_size - last_time_size
-
+			self.update_last_time_unlocked(time, nanotime)
 			
-
-	def write_value(self, value, time, nanotime):
+	def ensure_room_for_new_value(self, time, nanotime):
 		if self.file_size + self.param.value_lenght >= config.DATA_FILE_SIZE:
 			self.file.close()
 
@@ -94,16 +97,15 @@ class SaveParam:
 			self.last.from_file(self.file, time, nanotime)
 			self.file_size = 0
 
+	def write_value(self, value, time, nanotime):
+		self.ensure_room_for_new_value(time, nanotime)
+
 		with file_lock(self.file):
 			self.file.write(self.param.value_to_binary(value))
 			self.file_size += self.param.value_lenght
 
-			time_blob = self.last.update_time(time, nanotime)
-			self.file.write(time_blob)
-			self.file_size += len(time_blob)
-
-
-		self.last.value = value
+			self.last.new_value(time, nanotime, value)
+			self.update_last_time_unlocked(time, nanotime)
 
 	def prepare_for_writing(self, time, nanotime):
 		path = self.param_path.find_latest_path()	
@@ -130,26 +132,35 @@ class SaveParam:
 
 
 	def fill_no_data(self, time, nanotime):
-		self.write_value(self.param.nan(), time, nanotime)
+		if self.param.isnan(self.last.value):
+			self.update_last_time(time, nanotime)
+		else:
+			self.ensure_room_for_new_value(time, nanotime)
+
+			with file_lock(self.file):
+				self.file.write(self.param.value_to_binary(self.param.nan()))
+				self.file_size += self.param.value_lenght
+
+				self.last.advance(time, nanotime, self.param.nan())
+				self.update_last_time_unlocked(time, nanotime)
 
 	def process_value(self, value, time, nanotime = 0):
 		if not self.param.written_to_base:
 			return
 
-		first_write = self.first_write
-		if first_write:
+		if self.first_write:
 			self.prepare_for_writing(time, nanotime)
-			self.first_write = False
 
-		if value == self.last.value:
-			self.update_last_time(time, nanotime)
-		else:
-			if not first_write: 
-				self.update_last_time(time, nanotime)
-			elif self.last.value is not None:
+			if self.last.value is not None:
 				self.fill_no_data(time, nanotime)
-
 			self.write_value(value, time, nanotime)
+
+			self.first_write = False
+		else:
+			self.update_last_time(time, nanotime)
+			if value != self.last.value:
+				self.write_value(value, time, nanotime)
+
 
 	def process_msg(self, msg):
 		self.process_value(self.param.value_from_msg(msg), msg.time, msg.nanotime)

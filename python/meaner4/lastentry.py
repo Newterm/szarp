@@ -33,25 +33,35 @@ class LastEntry:
 
 		return time
 
-	def reset(self, time, nanotime):
+	def reset(self, time, nanotime, value = None):
 		self.time_size = 0
 		self.time = self.time_to_int(time, nanotime)
-		self.value = None
+		self.value_start_time = self.time
+		self.value = value 
+
+	def advance(self, time, nanotime, value):
+		self.value_start_time = self.time
+		self.time = self.time_to_int(time, nanotime)
+		self.time_size = 0
+		self.value = value
 
 	def update_time(self, time, nanotime):
 		time = self.time_to_int(time, nanotime)
 
-		diff = time - self.time
+		diff = time - self.value_start_time
 		self.time = time
 
 		encoded = timedelta.encode(diff)
-		self.time_size  = len(encoded)
+		self.time_size = len(encoded)
 
 		return encoded
 
 	def read_time(self, file):
 		delta, self.time_size = timedelta.decode(file)
 		return delta
+
+	def new_value(self, time, nanotime, value):
+		self.reset(time, nanotime, value)
 
 	def from_file(self, file, time, nanotime):
 		self.reset(time, nanotime)
@@ -67,5 +77,6 @@ class LastEntry:
 			if file.tell() == file_size:
 				break
 
+			self.value_start_time = self.time
 			self.time += self.read_time(file)	
 
