@@ -213,7 +213,7 @@ SzbExtractor::ExtractToCSV(FILE *output, const std::wstring& delimiter)
     
     for (size_t i = 0; i < params_objects.size(); i++) {
 	// parameter name
-	rc = fprintf(output, "%s%s", SC::S2A(delimiter).c_str(), SC::S2A(params[i].name).c_str());
+	rc = fprintf(output, "%s%s", SC::S2A(delimiter).c_str(), SC::S2L(params[i].name).c_str());
     }
     CHECK_RC
 	
@@ -326,7 +326,7 @@ SzbExtractor::ExtractSum(FILE *output, const std::wstring& delimiter)
 		
 	for (size_t i = 0; i < params.size(); i++) {
 		// nazwa parametru
-		rc = fprintf(output, "%s%s", SC::S2A(params[i].name).c_str(), SC::S2A(delimiter).c_str());
+		rc = fprintf(output, "%s%s", SC::S2L(params[i].name).c_str(), SC::S2A(delimiter).c_str());
 	}
 	fprintf(output, "\n");
 	CHECK_RC
