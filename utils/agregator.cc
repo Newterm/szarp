@@ -527,7 +527,7 @@ int process_regexp(xmlDocPtr doc, xmlChar *xpath_expr, xmlChar *regexp)
 				continue;
 			//char *content = strdup((char *)node->children->content);
 			xmlChar *u_content = xmlNodeGetContent(node);
-			std::string content = SC::U2A(u_content);
+			std::string content(SC::U2L(u_content));
 			if (re_search(&preg, content.c_str(), 
 						content.size(),
 						0, content.size() - 1, 
@@ -536,7 +536,7 @@ int process_regexp(xmlDocPtr doc, xmlChar *xpath_expr, xmlChar *regexp)
 				continue;
 			}
 			char *nc = regsub(content.c_str(), subst, &regs);
-			xmlNodeSetContent(node, SC::A2U(nc, true).c_str());
+			xmlNodeSetContent(node, SC::L2U(nc, true).c_str());
 			
 			xmlFree(u_content);
 			free(nc);
