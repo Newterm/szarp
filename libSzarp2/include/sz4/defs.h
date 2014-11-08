@@ -179,9 +179,9 @@ public:
 			return 0;
 		}
 
-		sum_type sum = m_one_value;
 		time_diff_type _gcd = gcd();
 		weight = m_one_weight / _gcd;
+		sum_type sum = m_one_value * weight;
 		for (size_t i = 0; i < m_values.size(); i++) {
 			time_diff_type _weight = m_weights[i] / _gcd;
 

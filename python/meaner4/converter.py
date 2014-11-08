@@ -44,10 +44,9 @@ def szbase_file_path_to_date(path):
 	year += c2d(path[2]) * 10
 	year += c2d(path[3]) 
 
-	month = c2d(path[4])
+	month = c2d(path[4]) * 10
 	month += c2d(path[5])
-
-	return datetime.datetime(year, month, 1)
+	return calendar.timegm(datetime.datetime(year, month, 1).utctimetuple())
 
 class FileFactory:
 	class File:
@@ -78,6 +77,9 @@ class FileFactory:
 		def unlock(self):
 			pass
 
+		def tell(self):
+			return self.file.tell()
+
 		def close(self):
 			file = open(self.path, "w+b")
 			file.write(self.file.getvalue())
@@ -90,25 +92,25 @@ class ConverterSaveParam(saveparam.SaveParam):
 	def __init__(self, param, szbase_dir, file_factory):
 		saveparam.SaveParam.__init__(self, param, szbase_dir, file_factory)
 
-		self.last_time = None
-		self.last_nanotime = None
-	
-	def update_last_time(self, time, nanotime):
-		self.last_time = time
-		self.last_nanotime = nanotime
+#		self.last_time = None
+#		self.last_nanotime = None
+#	
+#	def update_last_time(self, time, nanotime):
+#		self.last_time = time
+#		self.last_nanotime = nanotime
+#
+#	def write_value(self, value, time, nanotime):
+#		if self.last_time is not None:
+#			saveparam.SaveParam.update_last_time(self, self.last_time, self.last_nanotime)
+#			self.last_time = None
+#
+#		saveparam.SaveParam.write_value(self, value, time, nanotime)
 
-	def write_value(self, value, time, nanotime):
-		if self.last_time is not None:
-			saveparam.SaveParam.update_last_time(self, self.last_time, self.last_nanotime)
-			self.last_time = None
-
-		saveparam.SaveParam.write_value(self, value, time, nanotime)
-
-	def close(self):
-		if self.last_time is not None:
-			saveparam.SaveParam.update_last_time(self, self.last_time, self.last_nanotime)
-		
-		saveparam.SaveParam.close(self)
+#	def close(self):
+#		if self.last_time is not None:
+#			saveparam.SaveParam.update_last_time(self, self.last_time, self.last_nanotime)
+#		
+#		saveparam.SaveParam.close(self)
 
 
 if len(sys.argv) != 2 or sys.argv[1] == '-h':
@@ -158,7 +160,7 @@ for pname in save_param_map.iterkeys():
 		for j, szbase_path in enumerate(szbase_files):
 			sys.stdout.write("\rFile: %s, %d/%d    " % (szbase_path, j, len(szbase_files)))
 			sys.stdout.flush()
-			date = szbase_file_path_to_date(szbase_path)
+			time = szbase_file_path_to_date(szbase_path)
 
 			f = open(os.path.join(szbase_dir, lsp_param_path, szbase_path)).read()
 			if combined:
@@ -171,10 +173,11 @@ for pname in save_param_map.iterkeys():
 						v = (v2 << 16) + v1
 					else:
 						v = struct.unpack_from("<h", f, i * 2)[0]
-					sp.process_value(v, calendar.timegm(date.utctimetuple()), None)
-					date += datetime.timedelta(minutes=10)
-			except struct.error:
-				pass
+					sp.process_value(v, time)
+					time += 10 * 60
+
+			except struct.error as e:
+				print e
 
 		sp.close()
 	except OSError, e:

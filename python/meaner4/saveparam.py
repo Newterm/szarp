@@ -116,7 +116,6 @@ class SaveParam:
 
 			file_time, file_nanotime = self.param_path.time_from_path(path)
 			self.last.from_file(self.file, file_time, file_nanotime)
-
 		else:
 			self.file_size = 0
 
@@ -126,7 +125,6 @@ class SaveParam:
 
 			path = self.param_path.create_file_path(time, nanotime)
 			self.file = self.file_factory.open(path, "w+b")
-			self.file_size = os.path.getsize(path)
 
 			self.last.reset(time, nanotime)
 
