@@ -243,9 +243,9 @@ public:
 		}
 	}
 
-	const value_type& one_value() { return m_one_value; }
-	const time_diff_type& one_weight() { return m_one_weight; }
-	bool has_one_value() { return m_has_one_value; }
+	const value_type& one_value() const { return m_one_value; }
+	const time_diff_type& one_weight() const { return m_one_weight; }
+	bool has_one_value() const { return m_has_one_value; }
 
 };
 

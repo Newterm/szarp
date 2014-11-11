@@ -72,13 +72,13 @@ template<class T> T descale_value(const T& v, TParam* p) {
 	switch (p->GetDataType()) {
 		case TParam::FLOAT:
 		case TParam::DOUBLE:
-			return v;
-		case TParam::SHORT:
-		case TParam::INT:
 			if (value_is_no_data(v))
 				return v;
 			else
 				return v * pow10(p->GetPrec());
+		case TParam::SHORT:
+		case TParam::INT:
+			return v;
 		default:
 			assert(false);
 	}

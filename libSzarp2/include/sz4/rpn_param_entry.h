@@ -64,7 +64,7 @@ public:
 		for (int i = 0; i < num_of_params; i++) {
 			weighted_sum<double, T> wsum;
 			m_base->get_weighted_sum(f_cache[i], time, end_time, probe_type, wsum);
-			varray[i] = descale_value(wsum.avg(), f_cache[i]);
+			varray[i] = scale_value(wsum.avg(), f_cache[i]);
 			fixed &= wsum.fixed();
 		}
 
