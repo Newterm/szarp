@@ -35,18 +35,18 @@ TMMapParam::TMMapParam( const std::wstring& dir , const std::wstring& name , int
 
 	// save end of old data
 	int err;
-	if( (err=lseek(fd,0,SEEK_END)) == (off_t)-1 )
+	if( (err = lseek(fd,0,SEEK_END)) == (off_t)-1 )
 		throw failure("Cannot seek trough file "+SC::S2A(path)+": "+strerror(errno));
 	begin = (unsigned int)err;
 	sz_log(10,"Last file index: %d",begin);
 	begin /= sizeof(short);
 
 	// seek to last short in the file
-	if( lseek(fd,sizeof(short)*max_file_size-1,SEEK_SET) == (off_t)-1 )
+	if( lseek(fd, sizeof(short) * max_file_size - 1, SEEK_SET) == (off_t)-1 )
 		throw failure("Cannot seek trough file "+SC::S2A(path)+": "+strerror(errno));
 
 	// write something to the file, to resize the file
-	if( ::write(fd,"\0",1) == -1 )
+	if( ::write(fd, "\0", 1) == -1 )
 		throw failure("Cannot write to file "+SC::S2A(path)+": %s"+strerror(errno));
 
 	// force os to resize the file
@@ -54,7 +54,7 @@ TMMapParam::TMMapParam( const std::wstring& dir , const std::wstring& name , int
 		throw failure("Cannot sync data in file "+SC::S2A(path)+": "+strerror(errno));
 
 	// map whole file to memory
-	filemap = (short*)mmap(NULL,sizeof(short)*file_size,PROT_WRITE,MAP_SHARED,fd,0);
+	filemap = (short*) mmap(NULL, sizeof(short) * file_size, PROT_WRITE, MAP_SHARED, fd, 0);
 	if( filemap == MAP_FAILED )
 		throw failure("Cannot map file "+SC::S2A(path)+" to memory: "+strerror(errno));
 
@@ -78,26 +78,26 @@ TMMapParam::~TMMapParam()
 
 int TMMapParam::close()
 {
-	munmap(filemap,sizeof(short)*file_size);
-	if( ftruncate(fd,sizeof(short)*std::max(begin,length)) == -1 )
+	munmap(filemap, sizeof(short) * file_size);
+	if( ftruncate(fd, sizeof(short) * std::max(begin, length)) == -1 )
 		throw failure("Cannot truncate file "+SC::S2A(path)+": "+strerror(errno));
 	::close( fd );
 
 	return 0;
 }
 
-int TMMapParam::write( time_t t , short*probes , unsigned int len ) 
+int TMMapParam::write( time_t t , short* probes , unsigned int len ) 
 {
 	unsigned int index = szb_probeind(t, probe_length);
 
-	sz_log(10,"Writing %d probes at index: %d",len,index);
+	sz_log(10, "Writing %d probes at index: %d", len, index);
 
-	assert( index >=0 );
-	assert( index+len <= file_size );
+	assert( index >= 0 );
+	assert( index + len <= file_size );
 
-	memcpy( filemap+index , probes , sizeof(short)*len );
+	memcpy( filemap + index, probes, sizeof(short) * len );
 
-	length = index+len;
+	length = index + len;
 
 	return 0;
 }
