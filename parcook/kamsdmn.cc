@@ -42,7 +42,8 @@
 #include "conversion.h"
 #include "ipchandler.h"
 #include "serialport.h"
-#include "utils.h"
+#include "serialadapter.h"
+#include "daemonutils.h"
 
 #ifndef SZARP_NO_DATA
 #define SZARP_NO_DATA -32768

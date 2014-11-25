@@ -58,7 +58,6 @@ bin_PROGRAMS = \
 	      logdmn \
 	      mbdmn \
 	      borutadmn \
-	      boruta2dmn \
 	      mbrtudmn \
 	      mbtcpdmn \
 	      mbusdmn \
@@ -204,9 +203,6 @@ mbdmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIM
 
 borutadmn_SOURCES = borutadmn.cc borutadmn.h boruta_zet.cc boruta_modbus.cc boruta_fp210.cc boruta_wmtp.cc boruta_lumel.cc
 borutadmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
-
-boruta2dmn_SOURCES = boruta2dmn.cc boruta2dmn.h
-boruta2dmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
 
 sampledmn_SOURCES = sampledmn.cc $(basedmn_SOURCES)
 

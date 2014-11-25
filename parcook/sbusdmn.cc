@@ -45,7 +45,6 @@
 
 #include <stdarg.h>
 
-#include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -59,7 +58,8 @@
 #include "xmlutils.h"
 #include "conversion.h"
 #include "serialport.h"
-#include "utils.h"
+#include "serialadapter.h"
+#include "daemonutils.h"
 
 bool single;
 
@@ -69,20 +69,22 @@ void dolog(int level, const char * fmt, ...)
 xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	xmlChar *c;
 	char *e;
-	asprintf(&e, "./@%s", prop);
+	int ret = asprintf(&e, "./@%s", prop);
 	assert (e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
 	free(e);
+	(void)ret;
 	return c;
 }
 
 xmlChar* get_device_node_extra_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	xmlChar *c;
 	char *e;
-	asprintf(&e, "./@extra:%s", prop);
+	int ret = asprintf(&e, "./@extra:%s", prop);
 	assert (e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
 	free(e);
+	(void)ret;
 	return c;
 }
 
@@ -441,7 +443,7 @@ class SBUSUnit: public ConnectionListener  {
 
 	enum PARITY { MARK, SPACE };
 	BaseSerialPort *m_port;
-	struct termios m_termios;	/**< serial port configuration */
+	SerialPortConfiguration m_serial_conf;	/**< serial port configuration */
 	short *m_buffer;
 	unsigned char m_id;
 	int m_read_timeout;
@@ -457,12 +459,12 @@ class SBUSUnit: public ConnectionListener  {
 	Buffer m_response;		/**< buffer for response from device */
 	size_t m_expected_response_size;/**< expected size of response from device */
 	struct event m_ev_timer;	/**< event timer for calling QueryTimerCallback */
-	struct event_base *m_event_base;
 	
 	typedef enum {IDLE, INIT_QUERY, START_QUERY, PCD_INIT, PCD_INITIALIZED, SEND_QUERY,
 		WAIT_RESPONSE, PROCESSING_RESPONSE} CommState;
 	CommState m_state;
 	BaseSBUSDaemon *m_daemon;	/**< callback for telling daemon that unit finished querying */
+	struct event_base *m_event_base;
 
 	Buffer CreateQueryPacket(unsigned short start, int count);
 	void SetParamsVals(unsigned short start, int count, Buffer& response);
@@ -512,16 +514,15 @@ void SBUSUnit::TimerCallback(int fd, short event, void* thisptr)
 
 void SBUSUnit::SetPortParity(PARITY parity)
 {
-	struct termios ti = m_termios;
 	switch (parity) {
 		case MARK:
-			ti.c_cflag |= PARENB | CMSPAR | PARODD;
+			m_serial_conf.parity = SerialPortConfiguration::MARK;
 			break;	
 		case SPACE:
-			ti.c_cflag |= PARENB | CMSPAR;
+			m_serial_conf.parity = SerialPortConfiguration::SPACE;
 			break;
 	}
-	m_port->SetConfiguration(&ti);
+	m_port->SetConfiguration(m_serial_conf);
 }
 
 bool SBUSUnit::Configure(PROTOCOL_TYPE protocol, TUnit *unit,
@@ -530,12 +531,9 @@ bool SBUSUnit::Configure(PROTOCOL_TYPE protocol, TUnit *unit,
 	m_buffer = params;
 	m_port = port;
 
-	m_termios.c_cflag = speed2const(speed);
+	m_serial_conf.speed = speed;
 	dolog(6, "setting port speed to %d", speed);
-	m_termios.c_oflag = 0;
-	m_termios.c_iflag = 0;
-	m_termios.c_lflag = 0;
-	m_termios.c_cflag |= CS8 | CREAD | CLOCAL;
+	m_serial_conf.char_size = SerialPortConfiguration::CS_8;
 
 	char *endptr;
 
@@ -575,6 +573,7 @@ bool SBUSUnit::Configure(PROTOCOL_TYPE protocol, TUnit *unit,
 	int ret;
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
 	assert(ret == 0);
+	(void)ret;
 
 	xmlXPathObjectPtr rset = xmlXPathEvalExpression(BAD_CAST "./ipk:param", xp_ctx);
 
@@ -851,7 +850,7 @@ void SBUSUnit::OpenFinished(const BaseConnection *conn)
 	if (m_protocol == SBUS_PCD) {
 		SetPortParity(MARK);
 	} else {
-		m_port->SetConfiguration(&m_termios);
+		m_port->SetConfiguration(m_serial_conf);
 	}
 	ScheduleNext(MAX_WAIT_FOR_CONFIG_MS);
 }
@@ -1035,7 +1034,7 @@ void SBUSUnit::SetParamsVals(unsigned short start, int count, Buffer& response) 
 		Param& p = m_params[i];
 
 		unsigned val = response.ReadInt();
-		int rval;
+		int rval = 0;
 
 		switch (p.type) {
 			case Param::FLOAT: {
@@ -1168,6 +1167,7 @@ bool SBUSDaemon::Configure(DaemonConfig *cfg) {
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra",
 			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 	assert (ret == 0);
+	(void)ret;
 
 	xp_ctx->node = cfg->GetXMLDevice();
 
@@ -1351,8 +1351,9 @@ void dolog(int level, const char * fmt, ...) {
 	if (single) {
 		char *l;
 		va_start(fmt_args, fmt);
-		vasprintf(&l, fmt, fmt_args);
+		int ret = vasprintf(&l, fmt, fmt_args);
 		va_end(fmt_args);
+		(void)ret;
 
 		std::cout << l << std::endl;
 		sz_log(level, "%s", l);

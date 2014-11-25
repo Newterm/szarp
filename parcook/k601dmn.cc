@@ -91,7 +91,8 @@
 
 #include "k601-prop-plugin.h"
 #include "serialport.h"
-#include "utils.h"
+#include "serialadapter.h"
+#include "daemonutils.h"
 #include "xmlutils.h"
 
 #define REGISTER_NOT_FOUND -1
@@ -110,7 +111,8 @@ void dolog(int level, const char * fmt, ...) {
 	if (single) {
 		char *l;
 		va_start(fmt_args, fmt);
-		vasprintf(&l, fmt, fmt_args);
+		int ret = vasprintf(&l, fmt, fmt_args);
+		(void)ret;
 		va_end(fmt_args);
 
 		std::cout << l << std::endl;
@@ -126,20 +128,22 @@ void dolog(int level, const char * fmt, ...) {
 xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	xmlChar *c;
 	char *e;
-	asprintf(&e, "./@%s", prop);
+	int ret = asprintf(&e, "./@%s", prop);
 	assert (e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
 	free(e);
+	(void)ret;
 	return c;
 }
 
 xmlChar* get_device_node_extra_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	xmlChar *c;
 	char *e;
-	asprintf(&e, "./@extra:%s", prop);
+	int ret = asprintf(&e, "./@extra:%s", prop);
 	assert (e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
 	free(e);
+	(void)ret;
 	return c;
 }
 
@@ -341,6 +345,7 @@ int KamstrupInfo::parseParams(xmlNodePtr unit, DaemonConfig * cfg)
 			    cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->
 			    GetFirstParam()->GetNthParam(params_found);
 			assert(p != NULL);
+			(void)p;
 			params_found++;
 		}
 
@@ -504,10 +509,9 @@ public:
 			m_serial_port(NULL),
 			plugin(NULL)
 	{
-		serial_conf.c_iflag = 0;
-		serial_conf.c_oflag = 0;
-		serial_conf.c_cflag = B1200 | CS8 | CLOCAL | CREAD | CSTOPB;
-		serial_conf.c_lflag = 0;
+		m_serial_conf.speed = 1200;
+		m_serial_conf.char_size = SerialPortConfiguration::CS_8;
+		m_serial_conf.stop_bits = 2;
 		m_event_base = event_base_new();
 	}
 
@@ -576,7 +580,7 @@ protected:
 	BaseSerialPort *m_serial_port;
 	std::vector<unsigned char> m_read_buffer;	/**< buffer for data received from Kamstrup meter */
 	bool m_data_was_read;	/**< was any data read since last check? */
-	struct termios serial_conf;
+	SerialPortConfiguration m_serial_conf;
 	struct event_base *m_event_base;
 
 	/** from previous implementation */
@@ -651,6 +655,7 @@ void K601Daemon::Init(int argc, char *argv[])
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra",
 			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 	assert (ret == 0);
+	(void)ret;
 
 	xp_ctx->node = cfg->GetXMLDevice();
 	xmlChar *c = get_device_node_extra_prop(xp_ctx, "tcp-ip");
@@ -744,7 +749,8 @@ Unique registers (read params): %d\n\
 	dolog(2, "starting main loop");
 
 	char *plugin_path;
-	asprintf(&plugin_path, "%s/szarp-prop-plugins.so", dirname(argv[0]));
+	ret = asprintf(&plugin_path, "%s/szarp-prop-plugins.so", dirname(argv[0]));
+	(void)ret;
 	plugin = dlopen(plugin_path, RTLD_LAZY);
 	if (plugin == NULL) {
 		dolog(0,
@@ -794,7 +800,7 @@ void K601Daemon::OpenFinished(const BaseConnection *conn)
 {
 	std::string info = m_id + ": connection established.";
 	dolog(2, "%s: %s", m_id.c_str(), info.c_str());
-	m_serial_port->SetConfiguration(&serial_conf);
+	m_serial_port->SetConfiguration(m_serial_conf);
 	m_state = SEND;
 	m_curr_register = 0;
 	ScheduleNext();
