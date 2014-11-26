@@ -57,7 +57,6 @@
 #include "szarp_config.h"
 #include "szbase/szbbase.h"
 #include "tokens.h"
-#include "tsaveparam.h"
 
 #include "conversion.h"
 
@@ -98,9 +97,9 @@ class DataWriter {
 	public:
 		enum PROBE_TYPE { MIN10 = 0, SEC10, LAST_PROBE_TYPE };
 
-		DataWriter(DataWriter::PROBE_TYPE ptype, const std::wstring& data_dir, int fill_how_many);
+		DataWriter(SzbaseWriter* parent, DataWriter::PROBE_TYPE ptype, const std::wstring& data_dir, int fill_how_many);
 
-		int add_data( TParam * par, bool is_dbl, struct tm& tm, double data);
+		int add_data(const std::wstring& name, bool is_dbl, struct tm& tm, double data);
 
 		/** Fill gaps in data. Range: [begin, end)
 		 * @return 0 on success, 1 on error */
@@ -113,14 +112,14 @@ class DataWriter {
 		int close_data();
 
 	protected:
+		SzbaseWriter* m_parent;
 		PROBE_TYPE m_probe_type;
 		int m_fill_how_many;
-		int m_probe_length;
+		time_t m_probe_length;
 
 		SzProbeCache* m_cache;
 
 		std::wstring m_cur_name;
-		TParam * m_cur_par;
 
 		bool m_is_double;
 
@@ -193,8 +192,8 @@ protected:
 
 };
 
-DataWriter::DataWriter(DataWriter::PROBE_TYPE ptype, const std::wstring& data_dir, int fill_how_many)
-	: m_probe_type(ptype), m_fill_how_many(fill_how_many)
+DataWriter::DataWriter(SzbaseWriter* parent, DataWriter::PROBE_TYPE ptype, const std::wstring& data_dir, int fill_how_many)
+	: m_parent(parent), m_probe_type(ptype), m_fill_how_many(fill_how_many)
 {
 	switch (m_probe_type) {
 		case MIN10:
@@ -212,14 +211,14 @@ DataWriter::DataWriter(DataWriter::PROBE_TYPE ptype, const std::wstring& data_di
 	m_cur_cnt = 0;
 	m_cur_sum = 0;
 
-	m_cache = new SzProbeCache(data_dir, m_probe_length);
+	m_cache = new SzProbeCache(parent, data_dir, m_probe_length);
 }
 
 
-int DataWriter::add_data( TParam * par, bool is_dbl, struct tm& tm, double data)
+int DataWriter::add_data( const std::wstring& name, bool is_dbl, struct tm& tm, double data)
 {
 	sz_log(10, "add_data begin: name=%ls, data=%f %d-%d-%d %d:%d:%d",
-			par->GetName().c_str(), data, tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+			name.c_str(), data, tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 
 	time_t t;
 
@@ -228,9 +227,9 @@ int DataWriter::add_data( TParam * par, bool is_dbl, struct tm& tm, double data)
 
 	gmtime_r(&t, &tm);
 
-	sz_log(10, "add_data: name=%ls, m_cur_name=%ls", par->GetName().c_str(), m_cur_name.c_str());
+	sz_log(10, "add_data: name=%ls, m_cur_name=%ls", name.c_str(), m_cur_name.c_str());
 
-	if (par->GetName() != m_cur_name) {
+	if (name != m_cur_name) {
 		if (save_data())
 			return 1;
 
@@ -243,11 +242,10 @@ int DataWriter::add_data( TParam * par, bool is_dbl, struct tm& tm, double data)
 		m_cur_t = t / m_probe_length * m_probe_length;
 		sz_log(10, "add_data: (name != n_cur_name) m_cur_t = %ld",  m_cur_t);
 
-		m_cur_name = par->GetName();
-		m_cur_par = par;
+		m_cur_name = name;
 	}
 
-	sz_log(10, "add_data: t=%ld, m_cur_t=%ld, t-m_cur=%ld, m_len=%d",
+	sz_log(10, "add_data: t=%ld, m_cur_t=%ld, t-m_cur=%ld, m_len=%ld",
 			t, m_cur_t, t - m_cur_t, m_probe_length);
 
 	if (t >= m_cur_t && t - m_cur_t < m_probe_length)
@@ -275,7 +273,7 @@ int DataWriter::add_data( TParam * par, bool is_dbl, struct tm& tm, double data)
 	m_cur_sum += data;
 	m_cur_cnt++;
 
-	sz_log(10,"add_data end: t=%ld, sum=%lf, cnt=%d, len=%d", m_cur_t, m_cur_sum, m_cur_cnt, m_probe_length);
+	sz_log(10,"add_data end: t=%ld, sum=%lf, cnt=%d, len=%ld", m_cur_t, m_cur_sum, m_cur_cnt, m_probe_length);
 
 	return 0;
 }
@@ -337,7 +335,7 @@ int DataWriter::save_data()
 	try {
 		m_cache->add(
 			SzProbeCache::Key(
-				m_cur_par,
+				m_cur_name,
 				m_is_double,
 				year,
 				month),
@@ -348,27 +346,6 @@ int DataWriter::save_data()
 		return 1;
 	}
 
-	/* check for draw's min and max; it's strange but it works ;-) */
-	if (m_cur_par->GetDraws()) {
-		double min = m_cur_par->GetDraws()->GetMin();
-		double max = m_cur_par->GetDraws()->GetMax();
-		if (d > max) {
-			if (d <= 0)
-				max = 0;
-			else
-				max = pow10(ceil(log10(d)));
-			m_cur_par->GetDraws()->SetMax(max);
-		}
-
-		if (min > d) {
-			if (d >= 0)
-				min = 0;
-			else
-				min = -pow10(ceil(log10(-d)));
-			m_cur_par->GetDraws()->SetMin(min);
-		}
-
-	}
 	m_cur_cnt = 0;
 	m_cur_sum = 0;
 
@@ -394,9 +371,9 @@ SzbaseWriter::SzbaseWriter(
 	: m_double_pattern(double_pattern), m_add_new_pars(add_new_pars)
 {
 
-	m_writers.push_back(new DataWriter(DataWriter::MIN10, data_dir, _fill_how_many));
+	m_writers.push_back(new DataWriter(this, DataWriter::MIN10, data_dir, _fill_how_many));
 	if (write_10sec)
-		m_writers.push_back(new DataWriter(DataWriter::SEC10, cache_dir, _fill_how_many_sec));
+		m_writers.push_back(new DataWriter(this, DataWriter::SEC10, cache_dir, _fill_how_many_sec));
 
 	m_new_par = false;
 
@@ -594,9 +571,25 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 		TParam* cur_par = getParamByName(name);
 		if (NULL == cur_par && !m_add_new_pars) {
 			sz_log(1, "Param %ls not found in configuration and "
-				"program run without -n flag, value ignored!",
-				name.c_str());
+					"program run without -n flag, value ignored!",
+					name.c_str());
 			return 1;
+		}
+		if (is_dbl) {
+			std::wstring name1 = name + L" msw";
+			std::wstring name2 = name + L" lsw";
+
+			TParam * par = getParamByName(name1);
+			if (NULL == par) {
+				sz_log(1, "Param %ls not found in configuration", name1.c_str());
+				return 1;
+			}
+
+			par = getParamByName(name2);
+			if (NULL == par) {
+				sz_log(1, "Param %ls not found in configuration", name1.c_str());
+				return 1;
+			}
 		}
 		m_cur_par = cur_par;
 		m_cur_name = name;
@@ -606,9 +599,31 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 
 	std::vector<DataWriter *>::iterator it = m_writers.begin();
 	for (; it != m_writers.end(); it++) {
-		int ret = (*it)->add_data(m_cur_par, is_dbl, tm, new_value);
+		int ret = (*it)->add_data(name, is_dbl, tm, new_value);
 		if (ret != 0)
 			return 1;
+	}
+
+	/* check for draw's min and max; it's strange but it works ;-) */
+	if (m_cur_par->GetDraws()) {
+		double min = m_cur_par->GetDraws()->GetMin();
+		double max = m_cur_par->GetDraws()->GetMax();
+		if (new_value > max) {
+			if (new_value <= 0)
+				max = 0;
+			else
+				max = pow10(ceil(log10(new_value)));
+			m_cur_par->GetDraws()->SetMax(max);
+		}
+
+		if (min > new_value) {
+			if (new_value >= 0)
+				min = 0;
+			else
+				min = -pow10(ceil(log10(-new_value)));
+			m_cur_par->GetDraws()->SetMin(min);
+		}
+
 	}
 
 	return 0;

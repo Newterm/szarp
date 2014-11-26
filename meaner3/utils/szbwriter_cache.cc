@@ -27,8 +27,9 @@
 #include "liblog.h"
 #include "szbase/szbbase.h"
 
-SzProbeCache::SzProbeCache( const std::wstring& d, int pl, int max_probes )
-	: m_values(max_probes), m_dir(d), m_probe_length(pl), last_key(NULL)
+SzProbeCache::SzProbeCache( TSzarpConfig* ipk, const std::wstring& d, time_t pl, int max_probes )
+	: m_ipk(ipk), m_values(max_probes), m_dir(d), m_probe_length(pl), last_key(NULL),
+		m_mmap_param(NULL), m_mmap_param_lsw(NULL), m_mmap_param_msw(NULL)
 {
 }
 
@@ -45,30 +46,48 @@ void SzProbeCache::add( const Key& k , const Value& v )
 {
 	if( !last_key || k != *last_key ) {
 		sz_log(10,"Creating new file in TSaveParam in name: %ls, probe: %d, year: %d, month: %d",
-				k.param->GetName().c_str(), k.is_double, k.year, k.month);
+				k.name.c_str(), k.is_double, k.year, k.month);
 		if( last_key )
 			sz_log(10,"         old file in TSaveParam in name: %ls, probe: %d, year: %d, month: %d",
-					 last_key->param->GetName().c_str(), last_key->is_double, last_key->year, last_key->month);
+					 last_key->name.c_str(), last_key->is_double, last_key->year, last_key->month);
 
 		flush(); // flush data to old file
 
-		if (last_key->is_double) {
-			delete m_mmap_param_msw;
-			delete m_mmap_param_lsw;
-			
-			std::wstring name1 = k.param->GetName() + L" msw";
-			m_mmap_param_msw = new TMMapParam( m_dir , name1 , k.year , k.month , m_probe_length );
+		if ( last_key ) {
+			if (last_key->is_double) {
+				delete m_mmap_param_msw;
+				delete m_mmap_param_lsw;
+			}
+			else {
+				delete m_mmap_param;
+			}
 
-			std::wstring name2 = k.param->GetName() + L" lsw";
-			m_mmap_param_lsw = new TMMapParam( m_dir , name2 , k.year , k.month , m_probe_length );
+		       	delete last_key;
+		}
+
+		if (k.is_double) {
+			std::wstring name1 = k.name + L" msw";
+			TParam * p_msw = m_ipk->getParamByName(name1);
+			TSaveParam * ps_msw = new TSaveParam(p_msw);
+			m_mmap_param_msw = new TMMapParam( m_dir , ps_msw->GetName() , k.year , k.month , m_probe_length );
+
+			std::wstring name2 = k.name + L" lsw";
+			TParam * p_lsw = m_ipk->getParamByName(name2);
+			TSaveParam * ps_lsw = new TSaveParam(p_lsw);
+			m_mmap_param_lsw = new TMMapParam( m_dir , ps_lsw->GetName() , k.year , k.month , m_probe_length );
+
+			delete ps_msw;
+			delete ps_lsw;
 		}
 		else {
-			delete m_mmap_param;
-			m_mmap_param = new TMMapParam( m_dir , k.param->GetName() , k.year , k.month , m_probe_length );
+			TParam * p = m_ipk->getParamByName(k.name);
+			TSaveParam * ps = new TSaveParam(p);
+			m_mmap_param = new TMMapParam( m_dir , ps->GetName() , k.year , k.month , m_probe_length );
+			delete ps;
 		}
 
-		if( last_key ) delete last_key;
 		last_key = new Key(k);
+
 	}
 
 	while( !m_values.add( v.time , v.probe , m_probe_length ) ) flush();
@@ -86,8 +105,10 @@ void SzProbeCache::flush( const Key& k )
 //        if( p.first->WriteBuffered(
 //                        k.dir , p.second->time , p.second->probes , p.second->length
 //                        , NULL , 1 , 0 , k.probe_length , true ) )
+	
+	TParam * p = m_ipk->getParamByName(last_key->name);
 
-	double prec = pow10(last_key->param->GetPrec());
+	double prec = pow10(p->GetPrec());
 
 	if (last_key->is_double) {
 		short* sp_lsw = new short[m_values.length];
@@ -170,7 +191,7 @@ SzProbeCache::Values::~Values()
 
 bool operator==( const SzProbeCache::Key& a , const SzProbeCache::Key& b )
 {
-	return	a.param == b.param &&
+	return	a.name == b.name &&
 		a.is_double == b.is_double &&
 		a.year == b.year &&
 		a.month == b.month;

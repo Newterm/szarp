@@ -27,8 +27,10 @@
 #include <string>
 #include <fstream>
 
+#include "szarp_config.h"
 #include "tsaveparam.h"
 #include "tmmapparam.h"
+
 
 /** 
  * @brief Class that cache params and write them with delay.
@@ -46,9 +48,9 @@ public:
 	 * and probe length, year and month.
 	 */
 	struct Key {
-		Key( TParam * p , bool is_dbl , int y , int m )
-			: param(p) , is_double(is_dbl) , year(y) , month(m) {}
-		TParam * param;
+		Key( const std::wstring& n , bool is_dbl , int y , int m )
+			: name(n) , is_double(is_dbl) , year(y) , month(m) {}
+		std::wstring name;
 		bool is_double;
 		int year;
 		int month;
@@ -82,7 +84,7 @@ public:
 	 * to be cached. After reaching that number, probes are flushed
 	 * into the file.
 	 */
-	SzProbeCache( const std::wstring& d, int pl, int probes_num = 2048 );
+	SzProbeCache( TSzarpConfig* ipk, const std::wstring& d, time_t pl, int probes_num = 2048 );
 
 	/** 
 	 * @brief Clean up object and write cached data to database
@@ -131,17 +133,18 @@ private:
 	void flush( const Key& k );
 
 
+	TSzarpConfig * m_ipk;
 	Values m_values;
-
-	TMMapParam * m_mmap_param;
-	TMMapParam * m_mmap_param_lsw;
-	TMMapParam * m_mmap_param_msw;
 
 
 	const std::wstring m_dir;
 	int m_probe_length;
 
 	Key* last_key;
+
+	TMMapParam * m_mmap_param;
+	TMMapParam * m_mmap_param_lsw;
+	TMMapParam * m_mmap_param_msw;
 };
 
 bool operator==( const SzProbeCache::Key& a , const SzProbeCache::Key& b );
