@@ -1122,6 +1122,9 @@ if test x$lua_optimise = xyes; then
 	AC_DEFINE(LUA_PARAM_OPTIMISE, 1, [Define if lua param optimiser should be built in])
 fi
 
+# iks conditional building
+AC_ARG_WITH([iks], AC_HELP_STRING([--without-iks], [Do not compile iks]))
+
 # Resources directory
 SUBDIRS="$SUBDIRS resources script"
 
@@ -1131,7 +1134,7 @@ if test x$no_python != xyes -a x$with_mingw32 != xyes; then
 fi
 
 # iks system directory
-if test x$with_mingw32 != xyes; then
+if test x$with_mingw32 != xyes -a x$with_iks != xno; then
 	SUBDIRS="$SUBDIRS iks"
 fi
 
