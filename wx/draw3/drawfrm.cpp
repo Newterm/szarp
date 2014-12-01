@@ -73,6 +73,8 @@ DrawFrame::DrawFrame(FrameManager * fm, DatabaseManager* dm, ConfigManager* cm, 
 	SetSizer(sizer);
 
 	menu_bar = (wxMenuBar*) wxXmlResource::Get()->LoadObject(this,_T("menubar"),_T("wxMenuBar"));
+	
+	LoadMenuBarConfig(menu_bar);
 
 	SetMenuBar(menu_bar);
 
@@ -171,6 +173,16 @@ void DrawFrame::OnNumberOfUnits(wxCommandEvent &event) {
 
 void DrawFrame::OnContextHelp(wxCommandEvent & event) {
 	wxContextHelp ch(this);
+}
+
+void DrawFrame::OnShowAverage(wxCommandEvent &event) 
+{
+	draw_panel->OnShowAverage(event);
+}
+
+void DrawFrame::OnShowInterface(wxCommandEvent &event) 
+{
+	draw_panel->OnShowInterface(event);
 }
 
 void DrawFrame::OnExit(wxCommandEvent & event)
@@ -799,6 +811,18 @@ DrawFrame::LoadLayout() {
 
 }
 
+
+void DrawFrame::LoadMenuBarConfig(wxMenuBar *menu_bar)
+{
+	wxConfigBase *cfg = wxConfig::Get();
+	bool is_avg_hidden;
+	bool is_ifs_hidden;
+	if (cfg->Read(_T("HIDE_AVERAGE"), &is_avg_hidden))
+		menu_bar->FindItem(XRCID("ShowAverage"))->Check(!is_avg_hidden);
+	if (cfg->Read(_T("HIDE_INTERFACE"), &is_ifs_hidden))
+		menu_bar->FindItem(XRCID("ShowInterface"))->Check(!is_ifs_hidden);
+}
+
 void DrawFrame::OnUserParams(wxCommandEvent &evt) {
 	if (params_dialog == NULL)
 		params_dialog = new ParamsListDialog(this, config_manager->GetDefinedDrawsSets(), database_manager, remarks_handler, false);
@@ -1193,6 +1217,8 @@ void DrawFrame::OnSearchDate(wxCommandEvent &event) {
  * especialy when we started use more than one bases
  */
 BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
+    LOG_EVT_MENU(XRCID("ShowAverage"), DrawFrame , OnShowAverage, "drawfrm:show_average" )
+    LOG_EVT_MENU(XRCID("ShowInterface"), DrawFrame , OnShowInterface, "drawfrm:show_interface" )
     LOG_EVT_MENU(XRCID("Quit"), DrawFrame , OnExit, "drawfrm:quit" )
     LOG_EVT_MENU(XRCID("About"), DrawFrame , OnAbout, "drawfrm:about" )
     LOG_EVT_MENU(XRCID("Help"), DrawFrame , OnHelp, "drawfrm:help" )

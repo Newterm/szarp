@@ -77,6 +77,12 @@ class DrawPanel : public wxPanel, public DrawObserver {
 	
 	/**Menu event handler, causes data refetch*/
 	void OnRefresh(wxCommandEvent &evt); 
+	
+	/** Show/Hide average type panel */
+	void OnShowAverage(wxCommandEvent &evt); 
+
+	/** Show/Hide interface */
+	void OnShowInterface(wxCommandEvent &evt);
 
 	/**Clear cache*/
 	void ClearCache();
@@ -194,6 +200,7 @@ class DrawPanel : public wxPanel, public DrawObserver {
 	virtual void FilterChanged(DrawsController *draws_ctrl);
 
 	virtual void PeriodChanged(Draw * draw, PeriodType pt);
+
 protected:
 
 	friend class DrawPanelKeyboardHandler;

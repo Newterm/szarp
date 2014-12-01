@@ -84,11 +84,22 @@ void TTLabel::OnPaint(wxPaintEvent &event) {
 	wxPaintDC dc(this);
 #ifdef __WXGTK__
 #endif
-	dc.SetBackground(GetBackgroundColour());
+	wxColour bg = GetBackgroundColour();
+
+	dc.SetBackground(bg);
 	dc.Clear();
 
 	dc.SetFont(GetFont());
-	dc.SetTextForeground(GetForegroundColour());
+
+	/*  Note: This algorithm is taken from a formula for converting RGB
+	 *  to YIQ values. Brightness value gives a perceived brightness for
+	 *  a color. (por. infowdg.cpp) */
+	int brightness = ((bg.Red() * 299) + (bg.Green() * 587) + (bg.Blue() * 114)) / 1000;
+
+	if (brightness >= 100)
+		dc.SetTextForeground(GetForegroundColour());
+	else
+		dc.SetTextForeground(*wxWHITE);
 
 	int w, h, tw, th;
 

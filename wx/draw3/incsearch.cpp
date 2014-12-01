@@ -200,9 +200,9 @@ IncSearch::IncSearch(ConfigManager * _cfg, RemarksHandler* remarks_handler, cons
 
 #ifdef __WXMSW__
 	FinishWindowCreation();
-	SetSize(500, 600);
+	SetSize(900, 600);
 #else
-	SetSize(400, 600);
+	SetSize(800, 600);
 #endif
 
 }

@@ -6,7 +6,7 @@
 if MINGW32_OPT
 INCLUDE_SUBDIRS = ekstraktor3 szau
 else
-INCLUDE_SUBDIRS = ekstraktor3 confedit koper filler filler2 setter
+INCLUDE_SUBDIRS = ekstraktor3 confedit koper filler setter
 endif
 
 if HAVE_CURL

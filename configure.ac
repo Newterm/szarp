@@ -1135,6 +1135,12 @@ if test x$with_mingw32 != xyes; then
 	SUBDIRS="$SUBDIRS iks"
 fi
 
+# pyipk directory
+if test x$no_python != xyes -a x$with_mingw32 != xyes; then
+	SUBDIRS="$SUBDIRS qt4"
+fi
+
+
 AC_SUBST(SUBDIRS)
 
 #############################################################################
@@ -1168,6 +1174,8 @@ AC_OUTPUT( \
 	parcook/Makefile \
 	parcook/analiza/Makefile \
 	pyipk/Makefile \
+	qt4/Makefile \
+	qt4/filler2/Makefile \
 	resources/Makefile \
 	resources/documentation/Makefile \
 	resources/documentation/new/Makefile \
@@ -1184,7 +1192,6 @@ AC_OUTPUT( \
 	wx/draw3/Makefile \
 	wx/ekstraktor3/Makefile \
 	wx/filler/Makefile \
-	wx/filler2/Makefile \
 	wx/isledit/Makefile \
 	wx/scc/Makefile \
 	wx/raporter3/Makefile \

@@ -1412,7 +1412,7 @@
                 <label>Edit as new defined\tCtrl+Shift+Alt+E</label>
             </object>
             <object class="wxMenuItem" name="EditAsNewNetwork">
-                <label>Edit as new network defined\tCtrl+Shift+Alt+N</label>
+                <label>Edit as new network defined\tCtrl+Shift+Alt+W</label>
             </object>
             <object class="separator"/>
             <object class="wxMenuItem" name="ImportSet">
@@ -1571,7 +1571,7 @@
             </object>
             <object class="separator"/>
             <object class="wxMenuItem" name="FetchNewNetworkParametersAndSets">
-                <label>Fetch New Network Parameters And Sets\tCtrl+Alt+Shift+N</label>
+                <label>Fetch New Network Parameters And Sets\tCtrl+Shift+Alt+N</label>
             </object>
             <object class="separator"/>
             <object class="wxMenuItem" name="ExportDataToFile">
@@ -1626,6 +1626,19 @@
                 <object class="wxMenuItem" name="ProberAddress">
                     <label>Addresses of probes' servers</label>
                 </object>
+            </object>
+        </object>
+        <object class="wxMenu" name="WindowM">
+            <label>_Window</label>
+            <object class="wxMenuItem" name="ShowAverage">
+                <checkable>1</checkable>
+                <checked>1</checked>
+                <label>Show average type</label>
+            </object>
+            <object class="wxMenuItem" name="ShowInterface">
+                <checkable>1</checkable>
+                <checked>1</checked>
+                <label>Show interface</label>
             </object>
         </object>
         <object class="wxMenu" name="HelpM">
