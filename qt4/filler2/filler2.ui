@@ -23,6 +23,13 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
+     <widget class="QLabel" name="titleLabel">
+      <property name="text">
+       <string>Loading configuration...</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <layout class="QGridLayout" name="gridLayout" columnstretch="6,3,3,2,1">
       <item row="1" column="2">
        <widget class="QPushButton" name="toDate">
@@ -98,6 +105,12 @@
       </item>
       <item row="0" column="0">
        <widget class="QComboBox" name="listOfSets">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
         <property name="toolTip">
          <string>List of sets</string>
         </property>
@@ -339,5 +352,42 @@
   </action>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>listOfSets</sender>
+   <signal>activated(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onSetChosen(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>332</x>
+     <y>82</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>474</x>
+     <y>75</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>paramList</sender>
+   <signal>activated(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onParamChosen(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>355</x>
+     <y>120</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>659</x>
+     <y>72</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>onSetChosen(QString)</slot>
+  <slot>onParamChosen(QString)</slot>
+ </slots>
 </ui>
