@@ -2,11 +2,21 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import datetime
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from filler2 import Ui_MainWindow
 from ipkparser import IPKParser
+from DatetimeDialog import Ui_DatetimeDialog
+
+try:
+    _encoding = QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QApplication.translate(context, text, disambig)
 
 class StartQT4(QMainWindow):
 	def __init__(self, parent=None):
@@ -31,6 +41,50 @@ class StartQT4(QMainWindow):
 		self.ui.toDate.setEnabled(True)
 		self.ui.valueEdit.setEnabled(True)
 
+	def onFromDate(self):
+		dlg = DatetimeDialog_impl()
+		if dlg.exec_():
+			dt = dlg.getValue()
+			self.ui.fromDate.setText(_translate("MainWindow", "From:", None)
+					+ " " + dt.strftime('%Y-%m-%d %H:%M'))
+
+	def onToDate(self):
+		dlg = DatetimeDialog_impl()
+		if dlg.exec_():
+			dt = dlg.getValue()
+			self.ui.toDate.setText(_translate("MainWindow", "To:", None)
+					+ " " + dt.strftime('%Y-%m-%d %H:%M'))
+
+class DatetimeDialog_impl(QDialog, Ui_DatetimeDialog):
+	def __init__(self,parent=None):
+		QDialog.__init__(self,parent)
+		self.setupUi(self)
+		self.calendarWidget.setLocale(QLocale.system())
+
+		# load current date and time
+		now = datetime.datetime.now()
+		now -= datetime.timedelta(minutes=now.minute % 10,
+									seconds=now.second,
+									microseconds=now.microsecond)
+
+		# set values in widgets
+		self.hourSpinBox.setValue(now.hour)
+		self.minuteSpinBox.setValue(now.minute)
+		self.currentDate.setText(now.strftime('%Y-%m-%d %H:%M'))
+
+		self.currentDatetime = now
+
+	def getValue(self):
+		return self.currentDatetime
+
+	def updateDate(self):
+		caldate = self.calendarWidget.selectedDate().toPyDate()
+		current = datetime.datetime.combine(caldate,
+					datetime.time(self.hourSpinBox.value(),
+								  self.minuteSpinBox.value()))
+		self.currentDate.setText(current.strftime('%Y-%m-%d %H:%M'))
+
+		self.currentDatetime = current
 
 if __name__ == "__main__":
 	app = QApplication(sys.argv)

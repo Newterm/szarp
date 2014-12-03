@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
+    <width>1022</width>
     <height>480</height>
    </rect>
   </property>
@@ -187,7 +187,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1024</width>
+     <width>1022</width>
      <height>21</height>
     </rect>
    </property>
@@ -360,8 +360,8 @@
    <slot>onSetChosen(QString)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>332</x>
-     <y>82</y>
+     <x>342</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel">
      <x>474</x>
@@ -376,8 +376,8 @@
    <slot>onParamChosen(QString)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>355</x>
-     <y>120</y>
+     <x>365</x>
+     <y>148</y>
     </hint>
     <hint type="destinationlabel">
      <x>659</x>
@@ -385,9 +385,43 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>fromDate</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onFromDate()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>524</x>
+     <y>136</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>539</x>
+     <y>92</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toDate</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onToDate()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>772</x>
+     <y>134</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>771</x>
+     <y>103</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onSetChosen(QString)</slot>
   <slot>onParamChosen(QString)</slot>
+  <slot>onFromDate()</slot>
+  <slot>onToDate()</slot>
  </slots>
 </ui>

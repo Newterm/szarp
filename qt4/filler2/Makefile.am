@@ -15,12 +15,13 @@ filler2_script = @srcdir@/filler2
 filler2dir = @prefix@/lib/python
 
 filler2_PYTHON = \
+		@srcdir@/DatetimeDialog.py \
 		@srcdir@/filler2-launcher.py \
 		@srcdir@/filler2.py
 
-filler2_UI = filler2.ui
+filler2_UI = filler2.ui DatetimeDialog.ui
 
-filler2_GENPYTHON = filler2.py
+filler2_GENPYTHON = filler2.py DatetimeDialog.py
 
 filler2_PROJECT = filler2.pro
 
