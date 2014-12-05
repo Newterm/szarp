@@ -80,6 +80,9 @@
         <property name="statusTip">
          <string>Enter parameter value</string>
         </property>
+        <property name="autoFillBackground">
+         <bool>true</bool>
+        </property>
         <property name="inputMethodHints">
          <set>Qt::ImhNone</set>
         </property>
@@ -97,6 +100,9 @@
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
         </property>
         <property name="placeholderText">
          <string notr="true">0.0</string>

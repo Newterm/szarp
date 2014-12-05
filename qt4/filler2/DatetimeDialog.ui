@@ -6,15 +6,17 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>479</width>
-    <height>221</height>
+    <width>480</width>
+    <height>224</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Choose date and time</string>
   </property>
   <property name="windowIcon">
-   <iconset theme="office-calendar"/>
+   <iconset theme="office-calendar">
+    <normaloff/>
+   </iconset>
   </property>
   <property name="locale">
    <locale language="English" country="UnitedStates"/>
@@ -27,6 +29,9 @@
      <width>360</width>
      <height>165</height>
     </rect>
+   </property>
+   <property name="gridVisible">
+    <bool>true</bool>
    </property>
   </widget>
   <widget class="QSpinBox" name="hourSpinBox">
@@ -99,7 +104,7 @@
     <string>Minute:</string>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>20</x>

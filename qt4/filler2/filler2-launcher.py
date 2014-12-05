@@ -30,6 +30,9 @@ class StartQT4(QMainWindow):
 		self.ui.listOfSets.addItems(self.parser.getSets())
 		self.ui.listOfSets.setEnabled(True)
 
+		self.fromDate = None
+		self.toDate = None
+
 	def onSetChosen(self, text):
 		self.ui.paramList.clear()
 		self.ui.paramList.addItems(self.parser.getParams())
@@ -40,39 +43,64 @@ class StartQT4(QMainWindow):
 		self.ui.fromDate.setEnabled(True)
 		self.ui.toDate.setEnabled(True)
 		self.ui.valueEdit.setEnabled(True)
+		self.ui.valueEdit.setReadOnly(False)
 
 	def onFromDate(self):
-		dlg = DatetimeDialog_impl()
+		if self.fromDate is None:
+			if self.toDate is None:
+				dlg = DatetimeDialog_impl()
+			else:
+				dlg = DatetimeDialog_impl(start_date=
+						(self.toDate - datetime.timedelta(minutes=10)))
+		else:
+			if self.toDate is None or self.fromDate < self.toDate:
+				dlg = DatetimeDialog_impl(start_date=self.fromDate)
+			else:
+				dlg = DatetimeDialog_impl(start_date=
+						(self.toDate - datetime.timedelta(minutes=10)))
+
 		if dlg.exec_():
-			dt = dlg.getValue()
+			self.fromDate = dlg.getValue()
 			self.ui.fromDate.setText(_translate("MainWindow", "From:", None)
-					+ " " + dt.strftime('%Y-%m-%d %H:%M'))
+					+ " " + self.fromDate.strftime('%Y-%m-%d %H:%M'))
 
 	def onToDate(self):
-		dlg = DatetimeDialog_impl()
+		if self.toDate is None:
+			if self.fromDate is None:
+				dlg = DatetimeDialog_impl()
+			else:
+				dlg = DatetimeDialog_impl(start_date=
+						(self.fromDate + datetime.timedelta(minutes=10)))
+		else:
+			if self.fromDate is None or self.toDate > self.fromDate:
+				dlg = DatetimeDialog_impl(start_date=self.toDate)
+			else:
+				dlg = DatetimeDialog_impl(start_date=
+						(self.fromDate + datetime.timedelta(minutes=10)))
+
 		if dlg.exec_():
-			dt = dlg.getValue()
+			self.toDate = dlg.getValue()
 			self.ui.toDate.setText(_translate("MainWindow", "To:", None)
-					+ " " + dt.strftime('%Y-%m-%d %H:%M'))
+					+ " " + self.toDate.strftime('%Y-%m-%d %H:%M'))
 
 class DatetimeDialog_impl(QDialog, Ui_DatetimeDialog):
-	def __init__(self,parent=None):
+	def __init__(self, parent=None, start_date=datetime.datetime.now()):
 		QDialog.__init__(self,parent)
 		self.setupUi(self)
 		self.calendarWidget.setLocale(QLocale.system())
 
 		# load current date and time
-		now = datetime.datetime.now()
-		now -= datetime.timedelta(minutes=now.minute % 10,
-									seconds=now.second,
-									microseconds=now.microsecond)
+		start_date -= datetime.timedelta(minutes=start_date.minute % 10,
+									seconds=start_date.second,
+									microseconds=start_date.microsecond)
 
 		# set values in widgets
-		self.hourSpinBox.setValue(now.hour)
-		self.minuteSpinBox.setValue(now.minute)
-		self.currentDate.setText(now.strftime('%Y-%m-%d %H:%M'))
+		self.calendarWidget.setSelectedDate(start_date)
+		self.hourSpinBox.setValue(start_date.hour)
+		self.minuteSpinBox.setValue(start_date.minute)
+		self.currentDate.setText(start_date.strftime('%Y-%m-%d %H:%M'))
 
-		self.currentDatetime = now
+		self.currentDatetime = start_date
 
 	def getValue(self):
 		return self.currentDatetime
