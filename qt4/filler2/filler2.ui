@@ -177,7 +177,7 @@
      </layout>
     </item>
     <item>
-     <widget class="QTableWidget" name="tableWidget">
+     <widget class="QTableWidget" name="changesTable">
       <property name="toolTip">
        <string>Table of changes</string>
       </property>
@@ -487,6 +487,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>addButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>addChange()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>985</x>
+     <y>135</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>958</x>
+     <y>88</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionClear</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>clearChanges()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>510</x>
+     <y>239</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onSetChosen(QString)</slot>
@@ -496,5 +528,7 @@
   <slot>onValueChanged()</slot>
   <slot>aboutQt()</slot>
   <slot>about()</slot>
+  <slot>addChange()</slot>
+  <slot>clearChanges()</slot>
  </slots>
 </ui>
