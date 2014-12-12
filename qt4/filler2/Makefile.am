@@ -15,7 +15,9 @@ filler2_script = @srcdir@/filler2
 filler2dir = @prefix@/lib/python
 
 filler2_PYTHON = \
+		@srcdir@/AboutDialog.py \
 		@srcdir@/DatetimeDialog.py \
+		@srcdir@/ipkparser.py \
 		@srcdir@/filler2-launcher.py \
 		@srcdir@/filler2.py
 

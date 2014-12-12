@@ -107,3 +107,8 @@ Package: szarp-iks-server
 Files: opt/szarp/bin/iks-server
 Files: opt/szarp/iks/iks-server.ini.sample
 
+Package: szarp-filler2
+Files: opt/szarp/lib/python/{filler2-launcher.py*,ipkparser.py*,AboutDialog.py*,DatetimeDialog.py*}
+Files: opt/szarp/resources/locales/qt4/filler2_pl.qm
+Files: opt/szarp/bin/filler2
+
