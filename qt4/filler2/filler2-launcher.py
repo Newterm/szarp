@@ -49,7 +49,7 @@ class StartQT4(QMainWindow):
 		QWidget.__init__(self, parent)
 		self.ui = Ui_MainWindow()
 		self.ui.setupUi(self)
-		self.parser = IPKParser()
+		self.parser = IPKParser("/etc/szarp/default/config/params.xml")
 
 		self.ui.titleLabel.setText(self.parser.getTitle())
 
@@ -83,10 +83,12 @@ class StartQT4(QMainWindow):
 		self.ui.paramList.addItem(
 				_translate("MainWindow",
 					"--- Choose a parameter ---", None))
-		self.ui.paramList.addItems(self.parser.getParams())
 		self.ui.paramList.model().setData(
 				self.ui.paramList.model().index(0,0),
 				QVariant(0), Qt.UserRole-1)
+
+		for name in self.parser.getParams(unicode(text)):
+			self.ui.paramList.addItem(name[1])
 
 		self.ui.paramList.setEnabled(True)
 
