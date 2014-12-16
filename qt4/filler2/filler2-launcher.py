@@ -38,10 +38,10 @@ from AboutDialog import Ui_AboutDialog
 
 try:
     _encoding = QApplication.UnicodeUTF8
-    def _translate(context, text, disambig):
+    def _translate(context, text, disambig=None):
         return QApplication.translate(context, text, disambig, _encoding)
 except AttributeError:
-    def _translate(context, text, disambig):
+    def _translate(context, text, disambig=None):
         return QApplication.translate(context, text, disambig)
 
 class StartQT4(QMainWindow):
@@ -49,13 +49,17 @@ class StartQT4(QMainWindow):
 		QWidget.__init__(self, parent)
 		self.ui = Ui_MainWindow()
 		self.ui.setupUi(self)
-		self.parser = IPKParser("/etc/szarp/default/config/params.xml")
+		try:
+			self.parser = IPKParser("/etc/szarp/default/config/params.xml")
+		except IOError:
+			self.criticalError(_translate("MainWindow",
+						"Cannot read SZARP configuration (params.xml)"))
+			sys.exit(1)
 
 		self.ui.titleLabel.setText(self.parser.getTitle())
 
 		self.ui.listOfSets.addItem(
-				_translate("MainWindow",
-					"--- Choose a set of parameters ---", None))
+				_translate("MainWindow", "--- Choose a set of parameters ---"))
 		self.ui.listOfSets.addItems(self.parser.getSets())
 		self.ui.listOfSets.model().setData(
 				self.ui.listOfSets.model().index(0,0),
@@ -78,11 +82,15 @@ class StartQT4(QMainWindow):
 		self.ui.changesTable.horizontalHeader().setVisible(False)
 		self.ui.changesTable.setRowCount(self.changesCount)
 
+	def criticalError(self, msg, title = "SZARP Filler 2 - " +
+					  _translate("MainWindow", "Critical Error")):
+		QMessageBox.critical(self, title, msg)
+		sys.exit(1)
+
 	def onSetChosen(self, text):
 		self.ui.paramList.clear()
 		self.ui.paramList.addItem(
-				_translate("MainWindow",
-					"--- Choose a parameter ---", None))
+				_translate("MainWindow", "--- Choose a parameter ---"))
 		self.ui.paramList.model().setData(
 				self.ui.paramList.model().index(0,0),
 				QVariant(0), Qt.UserRole-1)
@@ -114,8 +122,8 @@ class StartQT4(QMainWindow):
 
 		if dlg.exec_():
 			self.fromDate = dlg.getValue()
-			self.ui.fromDate.setText(_translate("MainWindow", "From:", None)
-					+ " " + self.fromDate.strftime('%Y-%m-%d %H:%M'))
+			self.ui.fromDate.setText(_translate("MainWindow", "From:") + " " +
+					self.fromDate.strftime('%Y-%m-%d %H:%M'))
 			self.validateInput()
 
 	def onToDate(self):
@@ -134,8 +142,8 @@ class StartQT4(QMainWindow):
 
 		if dlg.exec_():
 			self.toDate = dlg.getValue()
-			self.ui.toDate.setText(_translate("MainWindow", "To:", None)
-					+ " " + self.toDate.strftime('%Y-%m-%d %H:%M'))
+			self.ui.toDate.setText(_translate("MainWindow", "To:") + " " +
+					self.toDate.strftime('%Y-%m-%d %H:%M'))
 			self.validateInput()
 
 	def onValueChanged(self):
@@ -234,24 +242,24 @@ class AboutDialog_impl(QDialog, Ui_AboutDialog):
 	def __init__(self, parent=None):
 		QDialog.__init__(self,parent)
 		self.setupUi(self)
-		self.setWindowTitle(_translate("AboutDialog", "About ", None) + "Filler 2")
+		self.setWindowTitle(_translate("AboutDialog", "About ") + "Filler 2")
 		self.versionInfo.setText("Filler " + __version__ + " (%s)" % __status__)
 		self.info.setText(_translate("MainWindow",
-			"Filler 2 is a tool for manual szbase data editing.", None))
+			"Filler 2 is a tool for manual szbase data editing."))
 		self.copyright.setText(__copyright__)
 		self.website.setText('<a href="http://newterm.pl/">http://newterm.pl/</a>')
 
 	def showLicense(self):
 		l = QMessageBox()
-		l.setWindowTitle("Filler 2" +
-				_translate("AboutDialog", " - License", None))
+		l.setWindowTitle("SZARP Filler 2 - " +
+						 _translate("AboutDialog", "License"))
 		l.setText(__license__)
 		l.exec_()
 
 	def showCredits(self):
 		l = QMessageBox()
-		l.setWindowTitle("Filler 2" +
-				_translate("AboutDialog", "- Credits", None))
+		l.setWindowTitle("SZARP Filler 2 - " +
+						 _translate("AboutDialog", "Credits"))
 		l.setText(__author__)
 		l.exec_()
 
