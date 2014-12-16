@@ -27,6 +27,7 @@ class IPKParser:
 		def __init__(self):
 			xml.sax.ContentHandler.__init__(self)
 			self.sets = dict()
+			self.state = None
 
 		def startElementNS(self, name, qname, attrs):
 			(uri, name) = name
@@ -34,15 +35,28 @@ class IPKParser:
 			if uri == 'http://www.praterm.com.pl/SZARP/ipk':
 				if name == 'params':
 					self.title = copy.copy(attrs.getValueByQName('title'))
-				if name == 'param':
+				elif name == 'device':
+					self.state = 'DEV'
+				elif name == 'defined':
+					self.state = 'DEF'
+				elif name == 'param' and self.state == 'DEV': # XXX: only <device>
 					self.param_name = copy.copy(attrs.getValueByQName('name'))
 					try:
 						self.param_draw_name = copy.copy(attrs.getValueByQName('draw_name'))
 					except KeyError:
-						pass
-				elif name == 'draw':
+						self.param_draw_name = None
+				elif name == 'draw' and self.state == 'DEV': # XXX: only <device>
 					if attrs.getValueByQName('title') not in self.sets:
 						self.sets[attrs.getValueByQName('title')] = []
 
 					self.sets[attrs.getValueByQName('title')].append((self.param_name, self.param_draw_name))
+
+		def endElementNS(self, name, qname):
+			(uri, name) = name
+
+			if uri == 'http://www.praterm.com.pl/SZARP/ipk':
+				if name == 'device':
+					self.state = None
+				elif name == 'defined':
+					self.state = None
 

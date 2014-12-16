@@ -71,8 +71,7 @@ class StartQT4(QMainWindow):
 		self.fromDate = None
 		self.toDate = None
 
-		self.changesCount = 0
-
+		# initialize table of changes
 		self.ui.changesTable.setColumnCount(5)
 		self.ui.changesTable.setColumnWidth(0, 390)
 		self.ui.changesTable.setColumnWidth(1, 205)
@@ -80,7 +79,7 @@ class StartQT4(QMainWindow):
 		self.ui.changesTable.setColumnWidth(3, 130)
 		self.ui.changesTable.setColumnWidth(4, 50)
 		self.ui.changesTable.horizontalHeader().setVisible(False)
-		self.ui.changesTable.setRowCount(self.changesCount)
+		self.ui.changesTable.setRowCount(0)
 
 	def criticalError(self, msg, title = "SZARP Filler 2 - " +
 					  _translate("MainWindow", "Critical Error")):
@@ -168,10 +167,8 @@ class StartQT4(QMainWindow):
 		AboutDialog_impl().exec_()
 
 	def addChange(self):
-		self.changesCount += 1
-		self.ui.changesTable.setRowCount(self.changesCount)
-
-		self.addRow(self.changesCount - 1,
+		self.ui.changesTable.setRowCount(self.ui.changesTable.rowCount() + 1)
+		self.addRow(self.ui.changesTable.rowCount() - 1,
 					self.ui.paramList.currentText(),
 					self.fromDate, self.toDate,
 					self.ui.valueEdit.text())
@@ -194,18 +191,21 @@ class StartQT4(QMainWindow):
 		self.ui.changesTable.setItem(row, 2, item_to_date)
 		self.ui.changesTable.setItem(row, 3, item_value)
 
-		rm_button = QPushButton(QIcon.fromTheme("window-close"), "")
-		rm_button.setEnabled(False)
+		rm_button = QPushButton(QIcon.fromTheme("window-close"), "%s" % (row))
+		rm_button.row_id = row
 		QObject.connect(rm_button, SIGNAL("clicked()"), self.removeChange)
 		self.ui.changesTable.setCellWidget(row, 4, rm_button)
 
 	def removeChange(self):
-		# TODO
-		pass
+		# TODO: ask whether to remove
+		row = self.sender().row_id
+		self.ui.changesTable.removeRow(row)
+
+		for i in range(row, self.ui.changesTable.rowCount()):
+			self.ui.changesTable.cellWidget(i, 4).row_id -= 1
 
 	def clearChanges(self):
 		self.ui.changesTable.setRowCount(0)
-		self.changesCount = 0
 
 class DatetimeDialog_impl(QDialog, Ui_DatetimeDialog):
 	def __init__(self, parent=None, start_date=datetime.datetime.now()):
