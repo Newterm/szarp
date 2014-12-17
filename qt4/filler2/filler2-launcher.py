@@ -27,6 +27,7 @@ __email__     = "coders AT newterm.pl"
 
 
 import sys
+import time
 import datetime
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -72,19 +73,33 @@ class StartQT4(QMainWindow):
 		self.toDate = None
 
 		# initialize table of changes
-		self.ui.changesTable.setColumnCount(5)
+		self.ui.changesTable.setColumnCount(6)
 		self.ui.changesTable.setColumnWidth(0, 390)
 		self.ui.changesTable.setColumnWidth(1, 205)
 		self.ui.changesTable.setColumnWidth(2, 210)
 		self.ui.changesTable.setColumnWidth(3, 130)
 		self.ui.changesTable.setColumnWidth(4, 50)
+		self.ui.changesTable.setColumnHidden(5, True)
 		self.ui.changesTable.horizontalHeader().setVisible(False)
 		self.ui.changesTable.setRowCount(0)
 
-	def criticalError(self, msg, title = "SZARP Filler 2 - " +
-					  _translate("MainWindow", "Critical Error")):
+	def criticalError(self, msg, title = None):
+		if title is None:
+			title = "SZARP Filler 2 - " + \
+				_translate("MainWindow", "Critical Error")
 		QMessageBox.critical(self, title, msg)
 		sys.exit(1)
+
+	def warningBox(self, msg, title = None):
+		if title is None:
+			title = "SZARP Filler 2 - " + _translate("MainWindow", "Warning")
+		QMessageBox.warning(self, title, msg)
+
+	def questionBox(self, msg, title = None):
+		if title is None:
+			title = "SZARP Filler 2 - " + _translate("MainWindow", "Question")
+		return QMessageBox.question(self, title, msg,
+				QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
 
 	def onSetChosen(self, text):
 		self.ui.paramList.clear()
@@ -95,7 +110,7 @@ class StartQT4(QMainWindow):
 				QVariant(0), Qt.UserRole-1)
 
 		for name in self.parser.getParams(unicode(text)):
-			self.ui.paramList.addItem(name[1])
+			self.ui.paramList.addItem(name[1], name[0])
 
 		self.ui.paramList.setEnabled(True)
 
@@ -167,13 +182,18 @@ class StartQT4(QMainWindow):
 		AboutDialog_impl().exec_()
 
 	def addChange(self):
-		self.ui.changesTable.setRowCount(self.ui.changesTable.rowCount() + 1)
-		self.addRow(self.ui.changesTable.rowCount() - 1,
-					self.ui.paramList.currentText(),
-					self.fromDate, self.toDate,
-					self.ui.valueEdit.text())
+		if self.fromDate >= self.toDate:
+			self.warningBox(_translate("MainWindow",
+				"\"To\" date is earlier (or equals) \"From\" date.\nAdding change aborted."))
+		else:
+			self.ui.changesTable.setRowCount(self.ui.changesTable.rowCount()+1)
+			self.addRow(self.ui.changesTable.rowCount() - 1,
+						self.ui.paramList.itemData(self.ui.paramList.currentIndex()).toString(),
+						self.ui.paramList.currentText(),
+						self.fromDate, self.toDate,
+						self.ui.valueEdit.text())
 
-	def addRow(self, row, pname, from_date, to_date, value):
+	def addRow(self, row, fname, pname, from_date, to_date, value):
 		item_pname = QTableWidgetItem(unicode(pname))
 		item_pname.setFlags(Qt.ItemIsEnabled)
 		item_from_date = QTableWidgetItem(from_date.strftime('%Y-%m-%d %H:%M'))
@@ -185,13 +205,17 @@ class StartQT4(QMainWindow):
 		item_value = QTableWidgetItem(str(value))
 		item_value.setFlags(Qt.ItemIsEnabled)
 		item_value.setTextAlignment(Qt.AlignCenter)
+		item_fname = QTableWidgetItem(unicode(fname))
+		item_fname.setFlags(Qt.ItemIsEnabled)
 
 		self.ui.changesTable.setItem(row, 0, item_pname)
 		self.ui.changesTable.setItem(row, 1, item_from_date)
 		self.ui.changesTable.setItem(row, 2, item_to_date)
 		self.ui.changesTable.setItem(row, 3, item_value)
+		self.ui.changesTable.setItem(row, 5, item_fname)
 
-		rm_button = QPushButton(QIcon.fromTheme("window-close"), "%s" % (row))
+		rm_button = QPushButton(QIcon.fromTheme("window-close"), "")
+		rm_button.setToolTip(_translate("MainWindow", "Remove entry"))
 		rm_button.row_id = row
 		QObject.connect(rm_button, SIGNAL("clicked()"), self.removeChange)
 		self.ui.changesTable.setCellWidget(row, 4, rm_button)
@@ -206,6 +230,31 @@ class StartQT4(QMainWindow):
 
 	def clearChanges(self):
 		self.ui.changesTable.setRowCount(0)
+
+	def commitChanges(self):
+		txt = _translate("MainWindow",
+				"Following parameters will be modified:") + "\n\n"
+
+		for i in range(0, self.ui.changesTable.rowCount()):
+			txt.append("   * %s\n     (%s)\n\n" \
+					% (self.ui.changesTable.item(i,0).text(),
+					   self.ui.changesTable.item(i,5).text()))
+
+		txt.append(_translate("MainWindow", "Commit changes?"))
+
+		if QMessageBox.Yes == self.questionBox(txt):
+			changes_list = []
+			for i in range(0, self.ui.changesTable.rowCount()):
+				changes_list.append((unicode(self.ui.changesTable.item(i,5).text()),
+						datetime.datetime.strptime(str(self.ui.changesTable.item(i,1).text()), '%Y-%m-%d %H:%M'),
+						datetime.datetime.strptime(str(self.ui.changesTable.item(i,2).text()), '%Y-%m-%d %H:%M'),
+						float(self.ui.changesTable.item(i,3).text())
+						))
+
+			szbw = SzbWriter(changes_list)
+			szbw.start()
+
+			self.ui.changesTable.setRowCount(0)
 
 class DatetimeDialog_impl(QDialog, Ui_DatetimeDialog):
 	def __init__(self, parent=None, start_date=datetime.datetime.now()):
@@ -263,15 +312,36 @@ class AboutDialog_impl(QDialog, Ui_AboutDialog):
 		l.setText(__author__)
 		l.exec_()
 
+class SzbWriter(QThread):
+	jobDone = pyqtSignal()
+	paramDone = pyqtSignal(int)
+
+	def __init__(self, change_list):
+		QThread.__init__(self)
+		self.plist = change_list
+
+	def run(self):
+		i = 1
+		for p in self.plist:
+			print "Writing param: ", p
+			self.paramDone.emit(i)
+			time.sleep(1)
+			i += 1
+
+		self.jobDone.emit()
+
 if __name__ == "__main__":
 	app = QApplication(sys.argv)
 
 	qt_translator = QTranslator()
 	qt_translator.load("qt_" + QLocale.system().name(),
 			QLibraryInfo.location(QLibraryInfo.TranslationsPath))
-	qt_translator.load("filler2_" + QLocale.system().name(),
-			"/opt/szarp/resources/locales/qt4")
 	app.installTranslator(qt_translator)
+
+	filler2_translator = QTranslator()
+	filler2_translator.load("filler2_" + QLocale.system().name(),
+			"/opt/szarp/resources/locales/qt4")
+	app.installTranslator(filler2_translator)
 
 	QIcon.setThemeName("Tango")
 
