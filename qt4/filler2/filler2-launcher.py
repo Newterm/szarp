@@ -229,7 +229,10 @@ class StartQT4(QMainWindow):
 		self.ui.changesTable.setCellWidget(row, 4, rm_button)
 
 	def removeChange(self):
-		# TODO: ask whether to remove
+		if QMessageBox.Yes != \
+				self.questionBox(_translate("MainWindow", "Remove change?")):
+			return
+
 		row = self.sender().row_id
 		self.ui.changesTable.removeRow(row)
 
@@ -240,8 +243,9 @@ class StartQT4(QMainWindow):
 		self.ui.changesTable.setRowCount(0)
 
 	def commitChanges(self):
-		if self.ui.changesTable.rowCount == 0:
+		if self.ui.changesTable.rowCount() == 0:
 			self.warningBox(_translate("MainWindow", "No changes to commit."))
+			return
 
 		txt = _translate("MainWindow",
 				"Following parameters will be modified:") + "\n\n"
@@ -283,6 +287,9 @@ class StartQT4(QMainWindow):
 			self.ui.addButton.setEnabled(False)
 
 			self.setEnabled(False)
+
+	def contextHelp(self):
+		QWhatsThis.enterWhatsThisMode()
 
 class DatetimeDialog_impl(QDialog, Ui_DatetimeDialog):
 	def __init__(self, parent=None, start_date=datetime.datetime.now()):

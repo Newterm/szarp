@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Filler 2</string>
+   <string notr="true">SZARP Filler 2</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -24,6 +24,15 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="QLabel" name="titleLabel">
+      <property name="toolTip">
+       <string/>
+      </property>
+      <property name="statusTip">
+       <string>Loaded configuration name</string>
+      </property>
+      <property name="whatsThis">
+       <string>Loaded configuration name.</string>
+      </property>
       <property name="text">
        <string>Loading configuration...</string>
       </property>
@@ -42,6 +51,9 @@
         <property name="statusTip">
          <string>Choose ending date</string>
         </property>
+        <property name="whatsThis">
+         <string>Date and time &quot;to&quot; which value will be inserted. Press to set date.</string>
+        </property>
         <property name="text">
          <string>To:</string>
         </property>
@@ -57,6 +69,9 @@
         </property>
         <property name="statusTip">
          <string>Choose beginning date</string>
+        </property>
+        <property name="whatsThis">
+         <string>Date and time &quot;from&quot; which value will be inserted. Press to set date.</string>
         </property>
         <property name="text">
          <string>From:</string>
@@ -77,6 +92,9 @@
         <property name="statusTip">
          <string>Choose set from the list</string>
         </property>
+        <property name="whatsThis">
+         <string>List of parameter sets from loaded configuration.</string>
+        </property>
         <property name="maxVisibleItems">
          <number>20</number>
         </property>
@@ -96,6 +114,9 @@
         <property name="statusTip">
          <string>Choose parameter from the list</string>
         </property>
+        <property name="whatsThis">
+         <string>List of parameters, which belong to chosen set.</string>
+        </property>
        </widget>
       </item>
       <item row="1" column="4">
@@ -110,10 +131,13 @@
          </sizepolicy>
         </property>
         <property name="toolTip">
-         <string>Add change</string>
+         <string>Add a change</string>
         </property>
         <property name="statusTip">
-         <string>Add insertion to the table</string>
+         <string>Add a change to the table</string>
+        </property>
+        <property name="whatsThis">
+         <string>Press this button to add a change to the table. It is enabled only if all data is valid.</string>
         </property>
         <property name="text">
          <string notr="true"/>
@@ -144,6 +168,9 @@
         </property>
         <property name="statusTip">
          <string>Enter parameter value</string>
+        </property>
+        <property name="whatsThis">
+         <string>Textbox for entering parameter's value to be inserted in given time period.</string>
         </property>
         <property name="autoFillBackground">
          <bool>true</bool>
@@ -184,6 +211,9 @@
       <property name="statusTip">
        <string>Table of changes to be commited</string>
       </property>
+      <property name="whatsThis">
+       <string>Table of scheduled changes to be commited. Press &quot;X&quot; button to remove entry.</string>
+      </property>
      </widget>
     </item>
    </layout>
@@ -196,6 +226,9 @@
      <width>1022</width>
      <height>21</height>
     </rect>
+   </property>
+   <property name="whatsThis">
+    <string/>
    </property>
    <widget class="QMenu" name="menu_File">
     <property name="locale">
@@ -225,7 +258,11 @@
    <addaction name="menu_File"/>
    <addaction name="menu_Help"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="whatsThis">
+    <string>Shows application's element description pointed by cursor.</string>
+   </property>
+  </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
     <string>Toolbar</string>
@@ -251,6 +288,9 @@
    <property name="statusTip">
     <string>Save data to database</string>
    </property>
+   <property name="whatsThis">
+    <string>Press to apply all changes to SZARP data base.</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
    </property>
@@ -270,6 +310,9 @@
    <property name="statusTip">
     <string>Clear pending actions</string>
    </property>
+   <property name="whatsThis">
+    <string>Press to remove all scheduled changes from the table.</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+C</string>
    </property>
@@ -283,8 +326,11 @@
    <property name="text">
     <string>E&amp;xit</string>
    </property>
-   <property name="whatsThis">
+   <property name="statusTip">
     <string>Exit Filler 2</string>
+   </property>
+   <property name="whatsThis">
+    <string>Press to exit Filler 2.</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
@@ -297,6 +343,9 @@
    </property>
   </action>
   <action name="actionUsersManual">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="help-contents">
      <normaloff/>
@@ -307,6 +356,9 @@
    </property>
    <property name="statusTip">
     <string>Show user's manual</string>
+   </property>
+   <property name="whatsThis">
+    <string>Press to activate user's manual.</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
@@ -324,6 +376,9 @@
    <property name="statusTip">
     <string>Activate context help</string>
    </property>
+   <property name="whatsThis">
+    <string>Press to activate &quot;What is that?&quot; mode.</string>
+   </property>
    <property name="shortcut">
     <string>Shift+F1</string>
    </property>
@@ -340,6 +395,9 @@
    <property name="statusTip">
     <string>Information about Filler 2</string>
    </property>
+   <property name="whatsThis">
+    <string>Press to show information about Filler 2 application.</string>
+   </property>
    <property name="menuRole">
     <enum>QAction::AboutRole</enum>
    </property>
@@ -354,6 +412,9 @@
    </property>
    <property name="statusTip">
     <string>Information about Qt4</string>
+   </property>
+   <property name="whatsThis">
+    <string>Press to show information about Qt4 library, which is used by Filler 2.</string>
    </property>
   </action>
  </widget>
@@ -535,6 +596,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionContextHelp</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>contextHelp()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>510</x>
+     <y>239</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onSetChosen(QString)</slot>
@@ -547,5 +624,6 @@
   <slot>addChange()</slot>
   <slot>clearChanges()</slot>
   <slot>commitChanges()</slot>
+  <slot>contextHelp()</slot>
  </slots>
 </ui>
