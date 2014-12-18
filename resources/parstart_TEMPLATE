@@ -11,6 +11,12 @@
 # $Id: parstart_TEMPLATE 6713 2009-05-02 12:39:34Z reksio $
 . /lib/lsb/init-functions
 
+# load locales for use at system startup, e.g. for borutadmn
+if [ -r /etc/default/locale ]; then
+	. /etc/default/locale
+	export LANG
+fi
+
 # Check for szarp config file.
 if [ -f /etc/szarp/parstart.cfg ]; then
        	. /etc/szarp/parstart.cfg
@@ -41,8 +47,9 @@ setulimit() {
 
 case "$1" in
     start)
-        setulimit $NOFILE_LIMIT
-
+	setulimit $NOFILE_LIMIT
+	# enable core dump
+	ulimit -c unlimited
 	if [ x$PARCOOK = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/bin/parcook 
 	    szlog
