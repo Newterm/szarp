@@ -109,7 +109,7 @@ debian/config-status-no-cb: configure
 	fi;
 	./configure CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" --prefix=/$(PREFIX) \
 		--host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) \
-		--enable-deb-build $(CFG_ARGS)
+		--enable-deb-build $(CFG_ARGS) $(DEB_EXTRA_CONFIG_OPTS)
 	@touch $@
 
 debian/build-no-cb-stamp: debian/config-status-no-cb
