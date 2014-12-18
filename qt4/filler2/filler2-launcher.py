@@ -95,6 +95,11 @@ class StartQT4(QMainWindow):
 			title = "SZARP Filler 2 - " + _translate("MainWindow", "Warning")
 		QMessageBox.warning(self, title, msg)
 
+	def infoBox(self, msg, title = None):
+		if title is None:
+			title = "SZARP Filler 2 - " + _translate("MainWindow", "Information")
+		QMessageBox.information(self, title, msg)
+
 	def questionBox(self, msg, title = None):
 		if title is None:
 			title = "SZARP Filler 2 - " + _translate("MainWindow", "Question")
@@ -113,12 +118,14 @@ class StartQT4(QMainWindow):
 			self.ui.paramList.addItem(name[1], name[0])
 
 		self.ui.paramList.setEnabled(True)
+		self.ui.addButton.setEnabled(False)
 
 	def onParamChosen(self, text):
 		self.ui.fromDate.setEnabled(True)
 		self.ui.toDate.setEnabled(True)
 		self.ui.valueEdit.setEnabled(True)
 		self.ui.valueEdit.setReadOnly(False)
+		self.validateInput()
 
 	def onFromDate(self):
 		if self.fromDate is None:
@@ -169,8 +176,9 @@ class StartQT4(QMainWindow):
 		self.validateInput()
 
 	def validateInput(self):
-		if self.fromDate is not None and self.toDate is not None \
-			and len(self.ui.valueEdit.text()) > 0:
+		if self.ui.paramList.currentIndex() != 0 and \
+			self.fromDate is not None and self.toDate is not None and \
+			len(self.ui.valueEdit.text()) > 0:
 				self.ui.addButton.setEnabled(True)
 		else:
 				self.ui.addButton.setEnabled(False)
@@ -232,6 +240,9 @@ class StartQT4(QMainWindow):
 		self.ui.changesTable.setRowCount(0)
 
 	def commitChanges(self):
+		if self.ui.changesTable.rowCount == 0:
+			self.warningBox(_translate("MainWindow", "No changes to commit."))
+
 		txt = _translate("MainWindow",
 				"Following parameters will be modified:") + "\n\n"
 
@@ -245,16 +256,33 @@ class StartQT4(QMainWindow):
 		if QMessageBox.Yes == self.questionBox(txt):
 			changes_list = []
 			for i in range(0, self.ui.changesTable.rowCount()):
-				changes_list.append((unicode(self.ui.changesTable.item(i,5).text()),
+				changes_list.append((
+						unicode(self.ui.changesTable.item(i,0).text()),
+						unicode(self.ui.changesTable.item(i,5).text()),
 						datetime.datetime.strptime(str(self.ui.changesTable.item(i,1).text()), '%Y-%m-%d %H:%M'),
 						datetime.datetime.strptime(str(self.ui.changesTable.item(i,2).text()), '%Y-%m-%d %H:%M'),
 						float(self.ui.changesTable.item(i,3).text())
 						))
 
 			szbw = SzbWriter(changes_list)
-			szbw.start()
+			szbp = SzbProgressWin(szbw, parent = self)
 
 			self.ui.changesTable.setRowCount(0)
+			self.fromDate = None
+			self.toDate = None
+			self.ui.listOfSets.setCurrentIndex(0)
+			self.ui.paramList.clear()
+			self.ui.paramList.setEnabled(False)
+			self.ui.fromDate.setText(_translate("MainWindow", "From:"))
+			self.ui.fromDate.setEnabled(False)
+			self.ui.toDate.setText(_translate("MainWindow", "To:"))
+			self.ui.toDate.setEnabled(False)
+			self.ui.valueEdit.setText("")
+			self.ui.valueEdit.setEnabled(False)
+			self.ui.valueEdit.setReadOnly(False)
+			self.ui.addButton.setEnabled(False)
+
+			self.setEnabled(False)
 
 class DatetimeDialog_impl(QDialog, Ui_DatetimeDialog):
 	def __init__(self, parent=None, start_date=datetime.datetime.now()):
@@ -289,7 +317,7 @@ class DatetimeDialog_impl(QDialog, Ui_DatetimeDialog):
 
 class AboutDialog_impl(QDialog, Ui_AboutDialog):
 	def __init__(self, parent=None):
-		QDialog.__init__(self,parent)
+		QDialog.__init__(self, parent)
 		self.setupUi(self)
 		self.setWindowTitle(_translate("AboutDialog", "About ") + "Filler 2")
 		self.versionInfo.setText("Filler " + __version__ + " (%s)" % __status__)
@@ -314,21 +342,67 @@ class AboutDialog_impl(QDialog, Ui_AboutDialog):
 
 class SzbWriter(QThread):
 	jobDone = pyqtSignal()
-	paramDone = pyqtSignal(int)
+	paramDone = pyqtSignal(int, str)
 
-	def __init__(self, change_list):
+	def __init__(self, changes_list):
 		QThread.__init__(self)
-		self.plist = change_list
+		self.plist = changes_list
 
 	def run(self):
 		i = 1
 		for p in self.plist:
 			print "Writing param: ", p
-			self.paramDone.emit(i)
+			self.paramDone.emit(i, p[0])
 			time.sleep(1)
 			i += 1
 
 		self.jobDone.emit()
+
+class SzbProgressWin(QDialog):
+	def __init__(self, szb_writer, parent=None):
+		QDialog.__init__(self, parent)
+
+		self.szb_thread = szb_writer
+		self.len = len(szb_writer.plist)
+		self.parentWin = parent
+
+		self.nameLabel = QLabel("0 / %s" % (self.len))
+		self.paramLabel = QLabel(_translate("MainWindow", "Preparing..."))
+
+		self.progressbar = QProgressBar()
+		self.progressbar.setMinimum(0)
+		self.progressbar.setMaximum(self.len)
+
+		self.setMinimumSize(400, 100)
+
+		mainLayout = QVBoxLayout()
+		mainLayout.addWidget(self.paramLabel)
+
+		pbarLayout = QHBoxLayout()
+		pbarLayout.addWidget(self.progressbar)
+		pbarLayout.addWidget(self.nameLabel)
+		mainLayout.addLayout(pbarLayout)
+
+		self.setLayout(mainLayout)
+		self.setWindowTitle(_translate("MainWindow", "Writing to szbase..."))
+
+		self.szb_thread.paramDone.connect(self.update)
+		self.szb_thread.jobDone.connect(self.fin)
+
+		self.show()
+		self.szb_thread.start()
+
+	def update(self, val, pname):
+		self.progressbar.setValue(val)
+		progress = "%s / %s" % (val, self.len)
+		self.nameLabel.setText(progress)
+		self.paramLabel.setText(_translate("MainWindow", "Writing parameter") +
+				" " + pname + "...")
+
+	def fin(self):
+		self.hide()
+		self.parentWin.infoBox(_translate("MainWindow", "Writing to szbase done."))
+		self.parentWin.setEnabled(True)
 
 if __name__ == "__main__":
 	app = QApplication(sys.argv)

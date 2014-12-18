@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="pl_PL" sourcelanguage="">
+<!DOCTYPE TS>
+<TS version="2.0" language="pl_PL">
 <context>
     <name>AboutDialog</name>
     <message>
@@ -18,7 +19,7 @@
         <translation>Zamknij</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="294"/>
+        <location filename="filler2-launcher.py" line="322"/>
         <source>About </source>
         <translation>O programie </translation>
     </message>
@@ -164,7 +165,7 @@
         <translation>Wybierz datę końca okresu</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="159"/>
+        <location filename="filler2-launcher.py" line="278"/>
         <source>To:</source>
         <translation>Do:</translation>
     </message>
@@ -179,7 +180,7 @@
         <translation>Wybierz datę początku okresu</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="139"/>
+        <location filename="filler2-launcher.py" line="276"/>
         <source>From:</source>
         <translation>Od:</translation>
     </message>
@@ -259,12 +260,12 @@
         <translation>--- Wybierz zestaw parametrów ---</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="106"/>
+        <location filename="filler2-launcher.py" line="111"/>
         <source>--- Choose a parameter ---</source>
         <translation>--- Wybierz parametr ---</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="296"/>
+        <location filename="filler2-launcher.py" line="324"/>
         <source>Filler 2 is a tool for manual szbase data editing.</source>
         <translation>Filler 2 jest narzędziem do ręcznej edycji danych szbase&apos;a.</translation>
     </message>
@@ -284,31 +285,61 @@
         <translation>Ostrzeżenie</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="186"/>
+        <location filename="filler2-launcher.py" line="194"/>
         <source>&quot;To&quot; date is earlier (or equals) &quot;From&quot; date.
 Adding change aborted.</source>
         <translation>Data &quot;Do&quot; jest wcześniejsza (lub równa) niż data &quot;Od&quot;.
 Nie dodano zmiany.</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="218"/>
+        <location filename="filler2-launcher.py" line="226"/>
         <source>Remove entry</source>
         <translation>Usuń zmianę</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="100"/>
+        <location filename="filler2-launcher.py" line="105"/>
         <source>Question</source>
         <translation>Pytanie</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="235"/>
+        <location filename="filler2-launcher.py" line="246"/>
         <source>Following parameters will be modified:</source>
         <translation>Następujące parametry zostaną zmodyfikowane:</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="243"/>
+        <location filename="filler2-launcher.py" line="254"/>
         <source>Commit changes?</source>
         <translation>Wprowadzić zmiany do bazy danych?</translation>
+    </message>
+    <message>
+        <location filename="filler2-launcher.py" line="100"/>
+        <source>Information</source>
+        <translation>Informacja</translation>
+    </message>
+    <message>
+        <location filename="filler2-launcher.py" line="370"/>
+        <source>Preparing...</source>
+        <translation>Inicjowanie...</translation>
+    </message>
+    <message>
+        <location filename="filler2-launcher.py" line="387"/>
+        <source>Writing to szbase...</source>
+        <translation>Zapisywanie do bazy danych...</translation>
+    </message>
+    <message>
+        <location filename="filler2-launcher.py" line="399"/>
+        <source>Writing parameter</source>
+        <translation>Zapisywanie parametru</translation>
+    </message>
+    <message>
+        <location filename="filler2-launcher.py" line="404"/>
+        <source>Writing to szbase done.</source>
+        <translation>Zapis do bazy danych ukończony.</translation>
+    </message>
+    <message>
+        <location filename="filler2-launcher.py" line="244"/>
+        <source>No changes to commit.</source>
+        <translation>Brak zmian do wprowadzenia.</translation>
     </message>
 </context>
 </TS>
