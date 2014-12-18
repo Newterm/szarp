@@ -195,13 +195,13 @@ Description: Sets of scripts and libraries to easily manage params.xml file
 
 Package: szarp-iks
 Section: misc
-Architecture: i386 , amd64 , mingw32
+Architecture: i386 amd64 mingw32
 Depends: apache2 , websockify , szarp-iks-server 
 Description: Virtual package that depends on all packages needed to iks system
 
 Package: szarp-iks-server
 Section: misc
-Architecture: i386 , amd64 , mingw32
+Architecture: i386 amd64 mingw32
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: SZARP iks system server
  This package contains szarp iks server that provide data from szarp, knlib
