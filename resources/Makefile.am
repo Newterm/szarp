@@ -25,6 +25,7 @@ RESOURCES = \
        @srcdir@/szablon.vim \
        @srcdir@/szarp.vim \
        @srcdir@/wx \
+       @srcdir@/qt4 \
        @srcdir@/xsltd \
        @srcdir@/szarp_in.cfg \
        @srcdir@/parstart_TEMPLATE \
