@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>/opt/szarp/resources/wx/icons/szarp16.png</normaloff>/opt/szarp/resources/wx/icons/szarp16.png</iconset>
+    <normaloff>/opt/szarp/resources/qt4/icons/filler2.png</normaloff>/opt/szarp/resources/qt4/icons/filler2.png</iconset>
   </property>
   <property name="locale">
    <locale language="English" country="UnitedStates"/>
@@ -405,7 +405,7 @@
   <action name="actionAboutQt">
    <property name="icon">
     <iconset>
-     <normaloff>/usr/share/pixmaps/qtconfig-qt4.png</normaloff>/usr/share/pixmaps/qtconfig-qt4.png</iconset>
+     <normaloff>/opt/szarp/resources/qt4/icons/qt4.png</normaloff>/opt/szarp/resources/qt4/icons/qt4.png</iconset>
    </property>
    <property name="text">
     <string>About &amp;Qt</string>
