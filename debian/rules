@@ -103,7 +103,7 @@ configure:
 
 debian/config-status-no-cb: configure
 
-	@if [ "x$(DIST)" == "xraspbian" ]; then \
+	@if [ "x$(DIST)" = "xraspbian" ]; then \
 		EXTRA_CFG_ARGS += --without-iks; \
 	fi;
 
