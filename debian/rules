@@ -108,8 +108,8 @@ debian/config-status-no-cb: configure
 	@if [ "x$(DIST)" = "xraspbian" ]; then \
 		echo "Building without iks"; \
 		EXTRA_CFG_ARGS=--without-iks; \
-	else
-		EXTRA_CFG_ARGS=
+	else \
+		EXTRA_CFG_ARGS= \
 	fi;
 	# Add here commands to configure the package.
 	@if [ -e debian/config-status-cb ]; then \
