@@ -102,8 +102,11 @@ configure:
 	./autogen.sh
 
 debian/config-status-no-cb: configure
-	@echo "DIST:"
-	@echo $(DIST)
+
+	@if [ "x$(DIST)" == "xraspbian" ]; then \
+		EXTRA_CFG_ARGS += --without-iks; \
+	fi;
+
 	# Add here commands to configure the package.
 	@if [ -e debian/config-status-cb ]; then \
 		$(MAKE) clean; \
