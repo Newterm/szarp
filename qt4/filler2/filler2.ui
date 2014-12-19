@@ -628,6 +628,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>valueEdit</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>validateInput()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>895</x>
+     <y>137</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>510</x>
+     <y>239</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onSetChosen(QString)</slot>
@@ -641,5 +657,6 @@
   <slot>clearChanges()</slot>
   <slot>commitChanges()</slot>
   <slot>contextHelp()</slot>
+  <slot>validateInput()</slot>
  </slots>
 </ui>

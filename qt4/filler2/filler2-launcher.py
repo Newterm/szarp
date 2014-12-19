@@ -55,9 +55,10 @@ except AttributeError:
 
 
 class Filler2(QMainWindow):
-	"""It represents Filler 2 application main window in Qt4."""
+	"""SZARP Filler 2 application's main window (pyQt4)."""
 
 	def __init__(self, parent=None):
+		"""Filler2 class constructor."""
 		QWidget.__init__(self, parent)
 		self.ui = Ui_MainWindow()
 		self.ui.setupUi(self)
@@ -430,12 +431,20 @@ class Filler2(QMainWindow):
 # end of Filler2 class
 
 class DatetimeDialog_impl(QDialog, Ui_DatetimeDialog):
+	"""Dialog for choosing date and time (pyQt4)."""
+
 	def __init__(self, parent=None, start_date=datetime.datetime.now()):
+		"""DatetimeDialog_impl class constructor.
+
+		Arguments:
+			start_date - initial widget date and time (defaults to now).
+		"""
+		# initialization
 		QDialog.__init__(self,parent)
 		self.setupUi(self)
 		self.calendarWidget.setLocale(QLocale.system())
 
-		# load current date and time
+		# pad date/time to 10 minutes (floor)
 		start_date -= datetime.timedelta(minutes=start_date.minute % 10,
 									seconds=start_date.second,
 									microseconds=start_date.microsecond)
@@ -448,22 +457,36 @@ class DatetimeDialog_impl(QDialog, Ui_DatetimeDialog):
 
 		self.currentDatetime = start_date
 
+	# end of __init__()
+
 	def getValue(self):
+		"""Return chosen date/time."""
 		return self.currentDatetime
 
 	def updateDate(self):
+		"""Slot for signals clicked() from calendarWidget (QCalendarWidget) and
+		valueChanged(int) from minuteSpinBox (QSpinBox) and hourSpinBox
+		(QSpinBox). Updates currentDate (QLineEdit)."""
 		caldate = self.calendarWidget.selectedDate().toPyDate()
 		current = datetime.datetime.combine(caldate,
 					datetime.time(self.hourSpinBox.value(),
 								  self.minuteSpinBox.value()))
 		self.currentDate.setText(current.strftime('%Y-%m-%d %H:%M'))
-
 		self.currentDatetime = current
 
+	# end of updateDate()
+
+# end of DatetimeDialog_impl class
+
 class AboutDialog_impl(QDialog, Ui_AboutDialog):
+	"""Dialog for showing application info (pyQt4)."""
+
 	def __init__(self, parent=None):
+		"""AboutDialog_impl class constructor."""
 		QDialog.__init__(self, parent)
 		self.setupUi(self)
+
+		# set app info
 		self.setWindowTitle(_translate("AboutDialog", "About ") + "Filler 2")
 		self.versionInfo.setText("Filler " + __version__ + " (%s)" % __status__)
 		self.info.setText(_translate("MainWindow",
@@ -471,46 +494,82 @@ class AboutDialog_impl(QDialog, Ui_AboutDialog):
 		self.copyright.setText(__copyright__)
 		self.website.setText('<a href="http://newterm.pl/">http://newterm.pl/</a>')
 
+	# end of __init__()
+
 	def showLicense(self):
+		"""Show license in message box."""
 		l = QMessageBox()
 		l.setWindowTitle("SZARP Filler 2 - " +
 						 _translate("AboutDialog", "License"))
 		l.setText(__license__)
 		l.exec_()
 
+	# end of showLicense()
+
 	def showCredits(self):
+		"""Show credits in message box."""
 		l = QMessageBox()
 		l.setWindowTitle("SZARP Filler 2 - " +
 						 _translate("AboutDialog", "Credits"))
 		l.setText(__author__)
 		l.exec_()
 
+	# end of showCredits()
+
+# end of AboutDialog_impl class
+
 class SzbWriter(QThread):
-	jobDone = pyqtSignal()
-	paramDone = pyqtSignal(int, str)
+	"""Worker class for doing szbase modifications in a separate thread."""
+
+	jobDone = pyqtSignal()           # signal: all jobs finished
+	paramDone = pyqtSignal(int, str) # signal: one parameter done
 
 	def __init__(self, changes_list):
+		"""SzbWriter class constructor.
+
+		Arguments:
+			changes_list - list of parameter changes to be introduced to SZARP
+			               database as a list of tuples (param_draw_name,
+			               param_full_name, start_date, end_date, value).
+		"""
 		QThread.__init__(self)
 		self.plist = changes_list
 
+	# end of __init__()
+
 	def run(self):
+		"""Run SzbWriter jobs."""
 		i = 1
 		for p in self.plist:
-			print "Writing param: ", p
+			# TODO: do not sleep! do the job!
+			print "SzbWriter: writing parameter", \
+				"%s (%s), from %s to %s, value %s" % p
 			self.paramDone.emit(i, p[0])
 			time.sleep(1)
 			i += 1
 
 		self.jobDone.emit()
 
+	# end of run()
+
+# end of SzbWriter class
+
 class SzbProgressWin(QDialog):
+	"""Dialog showing SzbWriter's work progress (pyQt4)."""
+
 	def __init__(self, szb_writer, parent=None):
+		"""SzbProgressWin class constructor.
+
+		Arguments:
+			szb_writer - SzbWriter object.
+		"""
 		QDialog.__init__(self, parent)
 
 		self.szb_thread = szb_writer
 		self.len = len(szb_writer.plist)
 		self.parentWin = parent
 
+		# construct and set dialog's elements
 		self.nameLabel = QLabel("0 / %s" % (self.len))
 		self.paramLabel = QLabel(_translate("MainWindow", "Preparing..."))
 
@@ -534,37 +593,68 @@ class SzbProgressWin(QDialog):
 		self.szb_thread.paramDone.connect(self.update)
 		self.szb_thread.jobDone.connect(self.fin)
 
+		# show dialog and start processing jobs
 		self.show()
 		self.szb_thread.start()
 
+	# end of __init__()
+
 	def update(self, val, pname):
+		"""Slot for signal paramDone() from szb_thread (SzbWriter). Updates
+		progress bar state.
+
+		Arguments:
+			val - number of processed parameter.
+			pname - processed parameter's name.
+		"""
 		self.progressbar.setValue(val)
 		progress = "%s / %s" % (val, self.len)
 		self.nameLabel.setText(progress)
 		self.paramLabel.setText(_translate("MainWindow", "Writing parameter") +
 				" " + pname + "...")
 
+	# end of update()
+
 	def fin(self):
+		"""Slot for signal jobDone() from szb_thread (SzbWriter). Shows info
+		about a finished job.
+		"""
 		self.hide()
 		self.parentWin.infoBox(_translate("MainWindow", "Writing to szbase done."))
 		self.parentWin.setEnabled(True)
 
-if __name__ == "__main__":
-	app = QApplication(sys.argv)
+	# end of fin()
 
+# end of SzbProgressWin class
+
+
+def main(argv=None):
+	"main() function."
+	if argv is None:
+		argv = sys.argv
+
+	app = QApplication(argv)
+	QIcon.setThemeName("Tango")
+
+	# initialize standard system translator
 	qt_translator = QTranslator()
 	qt_translator.load("qt_" + QLocale.system().name(),
 			QLibraryInfo.location(QLibraryInfo.TranslationsPath))
 	app.installTranslator(qt_translator)
 
+	# initialize filler2-specific translator
 	filler2_translator = QTranslator()
 	filler2_translator.load("filler2_" + QLocale.system().name(),
 			"/opt/szarp/resources/locales/qt4")
 	app.installTranslator(filler2_translator)
 
-	QIcon.setThemeName("Tango")
-
+	# start Filler 2 application
 	filler2app = Filler2()
 	filler2app.show()
-	sys.exit(app.exec_())
 
+	return app.exec_()
+
+# end of main()
+
+if __name__ == "__main__":
+	sys.exit(main())
