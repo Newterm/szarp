@@ -40,6 +40,8 @@ export DH_VERBOSE=1
 
 export DH_OPTIONS
 
+echo $DIST
+
 DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 
@@ -109,7 +111,7 @@ debian/config-status-no-cb: configure
 	fi;
 	./configure CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" --prefix=/$(PREFIX) \
 		--host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) \
-		--enable-deb-build $(CFG_ARGS)
+		--enable-deb-build $(CFG_ARGS) $(EXTRA_CFG_ARGS)
 	@touch $@
 
 debian/build-no-cb-stamp: debian/config-status-no-cb
