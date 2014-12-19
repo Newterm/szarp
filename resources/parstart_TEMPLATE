@@ -50,6 +50,14 @@ case "$1" in
 	setulimit $NOFILE_LIMIT
 	# enable core dump
 	ulimit -c unlimited
+
+	if [ x$PROBES_SERVER = x1 ]; then
+	    DAEMON=__INSTALL_DIR__/lib/python/probes_server.tac
+    	    szlog
+	    twistd -y $DAEMON --logfile /opt/szarp/logs/prober.log --pidfile /var/run/probes_server.pid
+	    log_end_msg $?
+	fi
+
 	if [ x$PARCOOK = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/bin/parcook 
 	    szlog
@@ -123,13 +131,6 @@ case "$1" in
 	    DAEMON=__INSTALL_DIR__/bin/prober
 	    szlog
 	    start_daemon $DAEMON
-	    log_end_msg $?
-	fi
-
-	if [ x$PROBES_SERVER = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/lib/python/probes_server.tac
-    	    szlog
-	    twistd -y $DAEMON --logfile /opt/szarp/logs/prober.log --pidfile /var/run/probes_server.pid
 	    log_end_msg $?
 	fi
 
