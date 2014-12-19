@@ -40,8 +40,6 @@ export DH_VERBOSE=1
 
 export DH_OPTIONS
 
-$(shell echo $(DIST))
-
 DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 
@@ -104,6 +102,8 @@ configure:
 	./autogen.sh
 
 debian/config-status-no-cb: configure
+	@echo "DIST:"
+	@echo $(DIST))
 	# Add here commands to configure the package.
 	@if [ -e debian/config-status-cb ]; then \
 		$(MAKE) clean; \
