@@ -135,9 +135,9 @@ void driver_logger::vlog(int level, const char * fmt, va_list fmt_args) {
 
 /*implementation*/
 
-std::string sock_addr_to_string(struct sockaddr_in& addr) {
+std::string sock_addr_to_string(const std::pair<std::string, short>& addr) {
 	std::stringstream ss;
-	ss << inet_ntoa(addr.sin_addr) << ":" << ntohs(addr.sin_port);
+	ss << addr.first << ":" << addr.second;
 	return ss.str();
 }
 
@@ -157,10 +157,6 @@ int set_nonblock(int fd) {
 	}
 
 	return 0;
-}
-
-bool operator==(const sockaddr_in &s1, const sockaddr_in &s2) {
-	return s1.sin_addr.s_addr == s2.sin_addr.s_addr && s1.sin_port == s2.sin_port;
 }
 
 int get_serial_port_config(xmlNodePtr node, serial_port_configuration &spc) {
@@ -338,7 +334,7 @@ void client_driver::vdriver_log(int level, const char * fmt, va_list fmt_args)
 {
 	char *l;
 	if (vasprintf(&l, fmt, fmt_args) != -1) {
-		::dolog(level, "%s:%s:%d:%s", driver_name(), m_address_string.c_str(), m_id.second, l);
+		::dolog(level, "%s:%s:%zu:%s", driver_name(), m_address_string.c_str(), m_id.second, l);
 		free(l);
 	} else {
 		::dolog(2, "Error in formatting log message, driver: %s, address: %s, error: %s",
@@ -585,7 +581,7 @@ void client_manager::starting_new_cycle() {
 	for (size_t connection = 0; connection < m_connection_client_map.size(); connection++) {
 		size_t& client = m_current_client.at(connection);
 		CONNECTION_STATE state = do_establish_connection(connection);
-		dolog(7, "client_manager::starting_new_cycle connection: %d state: %d", connection, state);
+		dolog(7, "client_manager::starting_new_cycle connection: %zu state: %d", connection, state);
 		if (state == CONNECTED && client == m_connection_client_map.at(connection).size()) {
 			client = 0;
 			do_schedule(connection, client);
@@ -666,7 +662,7 @@ void client_manager::connection_established_cb(size_t connection) {
 	do_schedule(connection, current_client);
 }
 
-tcp_client_manager::tcp_connection::tcp_connection(tcp_client_manager *_manager, size_t _addr_no, std::string _address) : state(NOT_CONNECTED), fd(-1), bufev(NULL), conn_no(_addr_no), manager(_manager), address(_address) {}
+tcp_client_manager::tcp_connection::tcp_connection(tcp_client_manager *_manager, size_t _addr_no, const std::pair<std::string, short>& _address) : state(NOT_CONNECTED), fd(-1), bufev(NULL), conn_no(_addr_no), manager(_manager), address(_address) {}
 
 void tcp_client_manager::tcp_connection::schedule_timer(int secs, int usecs) {
 	struct timeval tv;
@@ -675,19 +671,11 @@ void tcp_client_manager::tcp_connection::schedule_timer(int secs, int usecs) {
 	evtimer_add(&timer, &tv); 
 }
 				
-int tcp_client_manager::configure_tcp_address(xmlNodePtr node, struct sockaddr_in &addr) {
-	std::string address;
-	if (get_xml_extra_prop(node, "tcp-address", address))
+int tcp_client_manager::get_address(xmlNodePtr node, std::pair<std::string, short> &addr) {
+	if (get_xml_extra_prop(node, "tcp-address", addr.first))
 		return 1;
-	if (!inet_aton(address.c_str(), &addr.sin_addr)) {
-		dolog(0, "Invalid tcp-address value(%s) in line %ld, exiting", address.c_str(), xmlGetLineNo(node));
+	if (get_xml_extra_prop(node, "tcp-port", addr.second))
 		return 1;
-	}
-	int port;
-	if (get_xml_extra_prop(node, "tcp-port", port))
-		return 1;
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(port);
 	return 0;
 }
 
@@ -698,17 +686,17 @@ void tcp_client_manager::close_connection(tcp_connection &c) {
 	}
 	c.fd = -1;
 	c.state = NOT_CONNECTED;
-	dolog(7, "tcp_client_manager::close_connection connection %s closed", c.address.c_str());
+	dolog(7, "tcp_client_manager::close_connection connection %s closed", c.address.first.c_str());
 }
 
-int tcp_client_manager::open_connection(tcp_connection &c, struct sockaddr_in& addr) {
-	dolog(7, "tcp_client_manager::open_connection  %s", c.address.c_str());
+void tcp_client_manager::open_connection(tcp_connection &c, struct sockaddr_in& addr) {
+	dolog(7, "tcp_client_manager::open_connection  %s", c.address.first.c_str());
 	c.fd = socket(PF_INET, SOCK_STREAM, 0);
 	assert(c.fd >= 0);
 	if (set_nonblock(c.fd)) {
 		dolog(1, "Failed to set non blocking mode on socket");
 		close_connection(c);
-		return 1;
+		return;
 	}
 	c.bufev = bufferevent_socket_new(
 			m_boruta->get_event_base(),
@@ -720,12 +708,22 @@ int tcp_client_manager::open_connection(tcp_connection &c, struct sockaddr_in& a
 	if (bufferevent_socket_connect(c.bufev, (struct sockaddr*) &addr, sizeof(addr))) {
 		dolog(0, "Failed to connect: %s", strerror(errno));
 		close_connection(c);
-		return 1;
+		return;
 	}
 	bufferevent_enable(c.bufev, EV_READ | EV_WRITE | EV_PERSIST);
 	c.state = CONNECTING;
 	c.schedule_timer(c.establishment_timeout, 0);
-	return 0;
+}
+
+void tcp_client_manager::resolve_address(tcp_connection& c) {
+	c.state = RESOLVING_ADDR;
+	struct evutil_addrinfo hints;	
+	hints.ai_family = AF_INET;
+	hints.ai_flags = EVUTIL_AI_CANONNAME;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+	c.dns_request = evdns_getaddrinfo(m_boruta->get_evdns_base(), c.address.first.c_str(), NULL,
+				&hints, tcp_client_manager::address_resolved_cb, &c);
 }
 
 CONNECTION_STATE tcp_client_manager::do_get_connection_state(size_t conn_no) {
@@ -739,9 +737,11 @@ struct bufferevent* tcp_client_manager::do_get_connection_buf(size_t conn_no) {
 void tcp_client_manager::do_terminate_connection(size_t conn_no) {
 	tcp_connection &c = m_tcp_connections.at(conn_no);
 	switch (c.state) {
+		case RESOLVING_ADDR:
+			break;
 		case CONNECTED:
 		case CONNECTING:
-			dolog(7, "tcp_client_manager::do_terminate_connection connection: %s, scheduling recconect", c.address.c_str());
+			dolog(7, "tcp_client_manager::do_terminate_connection connection: %s, scheduling recconect", c.address.first.c_str());
 			close_connection(c);
 			c.schedule_timer(c.retry_gap, 0);
 			c.state = IDLING;
@@ -750,7 +750,7 @@ void tcp_client_manager::do_terminate_connection(size_t conn_no) {
 		case IDLING:
 			dolog(7, "tcp_client_manager::do_terminate_connection connection: %s,"
 				"however connection is is not connected/idling state, doing nothing",
-				c.address.c_str());
+				c.address.first.c_str());
 			break;
 	}
 }
@@ -758,21 +758,21 @@ void tcp_client_manager::do_terminate_connection(size_t conn_no) {
 CONNECTION_STATE tcp_client_manager::do_establish_connection(size_t conn_no) {
 	tcp_connection &c = m_tcp_connections.at(conn_no);
 	if (c.state == NOT_CONNECTED) {
-		dolog(7, "tcp_client_manager::connecting to address: %s", c.address.c_str());
-		open_connection(c, m_addresses.at(conn_no));
+		dolog(7, "tcp_client_manager::connecting to address: %s", c.address.first.c_str());
+		resolve_address(c);
 	}
 	return c.state;
 }
 
 void tcp_client_manager::do_schedule(size_t conn_no, size_t client_no) {
 	tcp_connection& c = m_tcp_connections.at(conn_no);
-	dolog(7, "tcp_client_manager::scheduling client %zu for address %s", client_no, c.address.c_str());
+	dolog(7, "tcp_client_manager::scheduling client %zu for address %s", client_no, c.address.first.c_str());
 	m_connection_client_map.at(conn_no).at(client_no)->scheduled(c.bufev, c.fd);
 }
 
 int tcp_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols& _protocols) {
-	struct sockaddr_in addr;
-	if (configure_tcp_address(node, addr))
+	std::pair<std::string, short> addr;
+	if (get_address(node, addr))
 		return 1;
 	tcp_client_driver* driver = _protocols.create_tcp_client_driver(node);
 	if (driver == NULL)
@@ -792,7 +792,7 @@ int tcp_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, sho
 		m_addresses.push_back(addr);
 		m_connection_client_map.push_back(std::vector<client_driver*>());
 		
-		tcp_connection c(this, i, sock_addr_to_string(addr));
+		tcp_connection c(this, i, addr);
 
 		c.retry_gap = 4;
 		if (get_xml_extra_prop(node, "connection-retry-gap", c.retry_gap, true))
@@ -802,7 +802,7 @@ int tcp_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, sho
 		if (get_xml_extra_prop(node, "connection-establishment-timeout", c.establishment_timeout, true))
 			return 1;
 
-		dolog(8, "%s establishment_timeout %d, retry_gap: %d", c.address.c_str(), c.establishment_timeout, c.retry_gap);
+		dolog(8, "%s establishment_timeout %d, retry_gap: %d", c.address.first.c_str(), c.establishment_timeout, c.retry_gap);
 		m_tcp_connections.push_back(c);
 	}
 
@@ -841,12 +841,12 @@ void tcp_client_manager::connection_event_cb(struct bufferevent *ev, short event
 	if (event & BEV_EVENT_CONNECTED) {
 		c->state = CONNECTED;
 		event_del(&c->timer);
-		dolog(7, "tcp_client_manager: connection with address: %s established", c->address.c_str());
+		dolog(7, "tcp_client_manager: connection with address: %s established", c->address.first.c_str());
 		t->connection_established_cb(c->conn_no);
 	} 
 
 	if (event & BEV_EVENT_ERROR) {
-		dolog(5, "tcp_client_manager::connection_error_cb connection with address: %s error", c->address.c_str());
+		dolog(5, "tcp_client_manager::connection_error_cb connection with address: %s error", c->address.first.c_str());
 		switch (c->state) {
 			case CONNECTING:
 				event_del(&c->timer);
@@ -855,13 +855,16 @@ void tcp_client_manager::connection_event_cb(struct bufferevent *ev, short event
 				break;
 			case IDLING:
 				dolog(1, "tcp_client_manager::connection_error_cb failure of connection with address: %s,"
-					"while in idling state, this is WRONG!!!", c->address.c_str());
+					"while in idling state, this is WRONG!!!", c->address.first.c_str());
 				break;
 			case NOT_CONNECTED:
 				dolog(1, "tcp_client_manager::connection_error_cb failure of connection with address: %s,"
-					"while in not not connected state, this is WRONG!!!", c->address.c_str());
+					"while in not not connected state, this is WRONG!!!", c->address.first.c_str());
 				break;
-
+			case RESOLVING_ADDR:
+				dolog(1, "tcp_client_manager::connection_error_cb failure of connection with address: %s,"
+					"while in resolving address state, this is WRONG!!!", c->address.first.c_str());
+				break;
 		}
 		t->client_manager::connection_error_cb(c->conn_no);
 	}
@@ -874,20 +877,47 @@ void tcp_client_manager::connection_timer_cb(int fd, short event, void* _tcp_con
 	switch (c->state) {
 		case CONNECTED:
 		case NOT_CONNECTED:
+		case RESOLVING_ADDR:
 			dolog(1, "tcp_client_manager::connection_timer_cb (for conn address:%s) "
-				 "received timer tick wfor CONNECTED or NOT_CONNECTED, shouldn't happen", c->address.c_str());
+				 "received timer tick for CONNECTED or NOT_CONNECTED or RESOLVING_ADDR, shouldn't happen",
+				 c->address.first.c_str());
 			break;
 		case IDLING:
 			dolog(10, "tcp_client_manager::connection_timer_cb (for conn address:%s) "
-				 "trying to esablish connection", c->address.c_str());
-			t->open_connection(*c, t->m_addresses.at(c->conn_no));
+				 "trying to resolve", c->address.first.c_str());
+			t->resolve_address(*c);
 			break;
 		case CONNECTING:
 			dolog(10, "tcp_client_manager::connection_timer_cb (for conn address:%s) "
-				 "time to establish connecton expired, closing socket, will try later", c->address.c_str());
+				 "time to establish connecton expired, closing socket, will try later", c->address.first.c_str());
 			t->client_manager::connection_error_cb(c->conn_no);
 			break;
 	}
+}
+
+void tcp_client_manager::address_resolved_cb(int result, struct evutil_addrinfo *res, void *_tcp_connection) {
+	tcp_connection* c = (tcp_connection*) _tcp_connection;
+	tcp_client_manager* t = c->manager;
+	if (result != DNS_ERR_NONE) {
+		switch (result) {
+			case DNS_ERR_CANCEL:
+				break;
+			default:
+				c->state = NOT_CONNECTED;
+				dolog(1, "tcp_client_manager::failed to resolve address %s, error:%s",
+					c->address.first.c_str(), evdns_err_to_string(result));
+				break;
+
+		}
+		return;
+	}
+	struct sockaddr_in* sockaddr = (struct sockaddr_in*) res->ai_addr;
+	sockaddr->sin_port = htons(c->address.second);
+	dolog(3, "tcp_client_manager::address %s resolved to %s, connecting to: %s:%hu", 
+		c->address.first.c_str(), inet_ntoa(sockaddr->sin_addr), inet_ntoa(sockaddr->sin_addr),
+		c->address.second);
+	t->open_connection(*c, *sockaddr);
+	evutil_freeaddrinfo(res);
 }
 
 CONNECTION_STATE serial_client_manager::do_get_connection_state(size_t conn_no) {
@@ -1180,6 +1210,12 @@ int boruta_daemon::configure_ipc() {
 
 int boruta_daemon::configure_events() {
 	m_event_base = (struct event_base*) event_init();
+	if (!m_event_base)
+		return 1;
+	m_evdns_base = evdns_base_new(m_event_base, 0);
+	if (!m_evdns_base)
+		return 2;
+	evdns_base_resolv_conf_parse(m_evdns_base, DNS_OPTIONS_ALL, "/etc/resolv.conf");
 	evtimer_set(&m_timer, cycle_timer_callback, this);
 	event_base_set(m_event_base, &m_timer);
 	return 0;
@@ -1252,19 +1288,23 @@ struct event_base* boruta_daemon::get_event_base() {
 	return m_event_base;
 }
 
+struct evdns_base* boruta_daemon::get_evdns_base() {
+	return m_evdns_base;
+}
+
 int boruta_daemon::configure(int *argc, char *argv[]) {
-	if (configure_events())
-		return 1;
+	if (int ret = configure_events())
+		return ret;
 
 	m_cfg = new DaemonConfig("borutadmn");
 	if (m_cfg->Load(argc, argv, 0, NULL, 0, m_event_base))
-		return 1;
+		return 101;
 	g_debug = m_cfg->GetDiagno() || m_cfg->GetSingle();
 
 	if (configure_ipc())
-		return 1;
+		return 102;
 	if (configure_units())
-		return 1;
+		return 103;
 	return 0;
 }
 
@@ -1307,13 +1347,12 @@ int main(int argc, char *argv[]) {
 	LIBXML_TEST_VERSION
 	xmlLineNumbersDefault(1);
 	boruta_daemon daemon;
-	if (daemon.configure(&argc, argv))
-		return 1;
+	if (int ret = daemon.configure(&argc, argv))
+		return ret;
 	signal(SIGPIPE, SIG_IGN);
 	dolog(2, "Starting Boruta Daemon");
 	daemon.go();
-	dolog(0, "Error: daemon's event loop exited - that shouldn't happen!");
-	return 1;
+	return 200;
 }
 
 void dolog(int level, const char * fmt, ...) {
