@@ -51,6 +51,8 @@ else
 	CFG_ARGS=--with-prefix=/usr/$(DEB_HOST_GNU_TYPE)
 endif
 
+EXTRA_CFG_ARGS=""
+
 DEB_PYTHON_SYSTEM=pysupport
 DEB_PYTHON_VERSIONS=all
 
@@ -102,7 +104,6 @@ configure:
 	./autogen.sh
 
 debian/config-status-no-cb: configure
-	@EXTRA_CFG_ARGS="";
 	@if [ -n "$(DIST)" ]; then \
 		echo "Building for dist: $(DIST)"; \
 	fi;
