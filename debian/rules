@@ -39,7 +39,6 @@
 export DH_VERBOSE=1
 
 export DH_OPTIONS
-export EXTRA_CFG_ARGS
 
 DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
@@ -102,6 +101,7 @@ endif
 configure: 
 	./autogen.sh
 
+debian/config-status-no-cb: export EXTRA_CFG_ARGS
 debian/config-status-no-cb: configure
 	@if [ -n "$(DIST)" ]; then \
 		echo "Building for dist: $(DIST)"; \
