@@ -102,6 +102,7 @@ configure:
 	./autogen.sh
 
 debian/config-status-no-cb: configure
+	@EXTRA_CFG_ARGS=
 	@if [ -n "$(DIST)" ]; then \
 		echo "Building for dist: $(DIST)"; \
 	fi;
@@ -116,7 +117,7 @@ debian/config-status-no-cb: configure
 		rm debian/config-status-cb; \
 	fi;
 	@echo "EXTRA_CFG_ARGS: $$EXTRA_CFG_ARGS";
-	./configure CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" --prefix=/$(PREFIX) \
+	@./configure CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" --prefix=/$(PREFIX) \
 		--host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) \
 		--enable-deb-build $(CFG_ARGS) $$EXTRA_CFG_ARGS
 	@touch $@
