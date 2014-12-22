@@ -103,6 +103,9 @@ class Filler2(QMainWindow):
 		self.ui.changesTable.horizontalHeader().setVisible(False)
 		self.ui.changesTable.setRowCount(0)
 
+		# FIXME: delete in final version
+		self.infoBox(u"To jest testowa wersja aplikacji Filler 2. Baza danych nie będzie modyfikowana.")
+
 	# end of __init__()
 
 	def criticalError(self, msg, title = None):
@@ -361,7 +364,11 @@ class Filler2(QMainWindow):
 		"""Slot for action 'actionClear'. Removes all entries from
 		changesTable (QTableWidget).
 		"""
-		self.ui.changesTable.setRowCount(0)
+		txt = _translate("MainWindow",
+				"Are you sure you want to clear all changes?")
+
+		if QMessageBox.Yes == self.questionBox(txt):
+			self.ui.changesTable.setRowCount(0)
 
 	def commitChanges(self):
 		"""Slot for action 'actionSaveData'. Commits all scheduled changes

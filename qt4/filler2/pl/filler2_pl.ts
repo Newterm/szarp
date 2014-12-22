@@ -19,7 +19,7 @@
         <translation>Zamknij</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="491"/>
+        <location filename="filler2-launcher.py" line="498"/>
         <source>About </source>
         <translation>O programie </translation>
     </message>
@@ -160,7 +160,7 @@
         <translation>Wybierz datę końca okresu</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="416"/>
+        <location filename="filler2-launcher.py" line="423"/>
         <source>To:</source>
         <translation>Do:</translation>
     </message>
@@ -175,7 +175,7 @@
         <translation>Wybierz datę początku okresu</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="414"/>
+        <location filename="filler2-launcher.py" line="421"/>
         <source>From:</source>
         <translation>Od:</translation>
     </message>
@@ -245,12 +245,12 @@
         <translation>--- Wybierz zestaw parametrów ---</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="165"/>
+        <location filename="filler2-launcher.py" line="168"/>
         <source>--- Choose a parameter ---</source>
         <translation>--- Wybierz parametr ---</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="493"/>
+        <location filename="filler2-launcher.py" line="500"/>
         <source>Filler 2 is a tool for manual szbase data editing.</source>
         <translation>Filler 2 jest narzędziem do ręcznej edycji danych szbase&apos;a.</translation>
     </message>
@@ -260,69 +260,69 @@
         <translation>Nie można odczytać konfiguracji SZARP-a (plik params.xml)</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="117"/>
+        <location filename="filler2-launcher.py" line="120"/>
         <source>Critical Error</source>
         <translation>Błąd krytyczny</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="129"/>
+        <location filename="filler2-launcher.py" line="132"/>
         <source>Warning</source>
         <translation>Ostrzeżenie</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="285"/>
+        <location filename="filler2-launcher.py" line="288"/>
         <source>&quot;To&quot; date is earlier (or equals) &quot;From&quot; date.
 Adding change aborted.</source>
         <translation>Data &quot;Do&quot; jest wcześniejsza (lub równa) niż data &quot;Od&quot;.
 Nie dodano zmiany.</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="337"/>
+        <location filename="filler2-launcher.py" line="340"/>
         <source>Remove entry</source>
         <translation>Usuń zmianę</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="154"/>
+        <location filename="filler2-launcher.py" line="157"/>
         <source>Question</source>
         <translation>Pytanie</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="376"/>
+        <location filename="filler2-launcher.py" line="383"/>
         <source>Following parameters will be modified:</source>
         <translation>Następujące parametry zostaną zmodyfikowane:</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="383"/>
+        <location filename="filler2-launcher.py" line="390"/>
         <source>Commit changes?</source>
         <translation>Wprowadzić zmiany do bazy danych?</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="140"/>
+        <location filename="filler2-launcher.py" line="143"/>
         <source>Information</source>
         <translation>Informacja</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="575"/>
+        <location filename="filler2-launcher.py" line="582"/>
         <source>Preparing...</source>
         <translation>Inicjowanie...</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="592"/>
+        <location filename="filler2-launcher.py" line="599"/>
         <source>Writing to szbase...</source>
         <translation>Zapisywanie do bazy danych...</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="614"/>
+        <location filename="filler2-launcher.py" line="621"/>
         <source>Writing parameter</source>
         <translation>Zapisywanie parametru</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="624"/>
+        <location filename="filler2-launcher.py" line="631"/>
         <source>Writing to szbase done.</source>
         <translation>Zapis do bazy danych ukończony.</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="372"/>
+        <location filename="filler2-launcher.py" line="379"/>
         <source>No changes to commit.</source>
         <translation>Brak zmian do wprowadzenia.</translation>
     </message>
@@ -412,7 +412,7 @@ Nie dodano zmiany.</translation>
         <translation>Wciśnij, aby wyświetlić informację o bibliotece graficznej Qt4, używanej przez aplikację Filler 2.</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="349"/>
+        <location filename="filler2-launcher.py" line="352"/>
         <source>Remove change?</source>
         <translation>Usunąć zmianę z tabeli?</translation>
     </message>
@@ -445,6 +445,11 @@ Nie dodano zmiany.</translation>
         <location filename="filler2.py" line="258"/>
         <source>Ctrl+H</source>
         <translation>Ctrl+H</translation>
+    </message>
+    <message>
+        <location filename="filler2-launcher.py" line="368"/>
+        <source>Are you sure you want to clear all changes?</source>
+        <translation>Czy na pewno chcesz usunąć wszystkie zmiany z tabeli?</translation>
     </message>
 </context>
 </TS>
