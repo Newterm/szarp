@@ -450,9 +450,9 @@
   </connection>
   <connection>
    <sender>paramList</sender>
-   <signal>activated(QString)</signal>
+   <signal>activated(int)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onParamChosen(QString)</slot>
+   <slot>onParamChosen(int)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>365</x>

@@ -85,7 +85,7 @@
     <enum>QAbstractSpinBox::UpDownArrows</enum>
    </property>
    <property name="maximum">
-    <number>50</number>
+    <number>59</number>
    </property>
    <property name="singleStep">
     <number>10</number>

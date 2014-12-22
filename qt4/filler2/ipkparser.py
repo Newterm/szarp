@@ -45,11 +45,16 @@ class IPKParser:
 						self.param_draw_name = copy.copy(attrs.getValueByQName('draw_name'))
 					except KeyError:
 						self.param_draw_name = None
+					self.param_prec = copy.copy(attrs.getValueByQName('prec'))
+					self.param_lswmsw = 0
 				elif name == 'draw' and self.state == 'DEV': # XXX: only <device>
 					if attrs.getValueByQName('title') not in self.sets:
 						self.sets[attrs.getValueByQName('title')] = []
 
-					self.sets[attrs.getValueByQName('title')].append((self.param_name, self.param_draw_name))
+					if self.param_draw_name is not None:
+						self.sets[attrs.getValueByQName('title')].append(
+								(self.param_name, self.param_draw_name,
+								 self.param_prec, self.param_lswmsw))
 
 		def endElementNS(self, name, qname):
 			(uri, name) = name

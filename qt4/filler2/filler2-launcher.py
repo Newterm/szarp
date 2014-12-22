@@ -29,6 +29,7 @@ __email__     = "coders AT newterm.pl"
 # imports
 import sys
 import time
+import signal
 import datetime
 
 # pyQt4 imports
@@ -43,6 +44,12 @@ from AboutDialog import Ui_AboutDialog
 
 # constants
 SZCONFIG_PATH = "/etc/szarp/default/config/params.xml"
+
+SZLIMIT = 32767.0
+SZLIMIT_COM = 2147483647.0
+
+# signal handlers
+signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 # translation function for QTranslator
 try:
@@ -173,15 +180,19 @@ class Filler2(QMainWindow):
 
 		# insert a list of parameters from given set
 		for name in self.parser.getParams(unicode(text)):
-			self.ui.paramList.addItem(name[1], name[0])
+			self.ui.paramList.addItem(name[1],
+					(name[0], name[2], name[3]))
 
 		self.ui.paramList.setEnabled(True)
 		self.ui.paramList.setFocus()
+		self.ui.valueEdit.setEnabled(False)
+		self.ui.valueEdit.setReadOnly(True)
+		self.ui.valueEdit.setText("")
 		self.ui.addButton.setEnabled(False)
 
 	# end of onSetChosen()
 
-	def onParamChosen(self, text):
+	def onParamChosen(self, index):
 		"""Slot for signal activated(QString) from 'paramList' (QComboBox).
 
 		Arguments:
@@ -189,6 +200,17 @@ class Filler2(QMainWindow):
 		"""
 		self.ui.fromDate.setEnabled(True)
 		self.ui.toDate.setEnabled(True)
+		param_info = self.ui.paramList.itemData(index).toPyObject()
+
+		qdv = QDoubleValidator(self.ui.paramList)
+		qdv.setNotation(0)
+		prec = float(param_info[1])
+		if param_info[2] == 0:
+			qdv.setRange(SZLIMIT * -1, SZLIMIT, prec)
+		else:
+			qdv.setRange(SZLIMIT_COM * -1, SZLIMIT_COM, prec)
+
+		self.ui.valueEdit.setValidator(qdv)
 		self.ui.valueEdit.setEnabled(True)
 		self.ui.valueEdit.setReadOnly(False)
 		self.validateInput()
@@ -290,7 +312,7 @@ class Filler2(QMainWindow):
 
 		self.ui.changesTable.setRowCount(self.ui.changesTable.rowCount()+1)
 		self.addRow(self.ui.changesTable.rowCount() - 1,
-					self.ui.paramList.itemData(self.ui.paramList.currentIndex()).toString(),
+					self.ui.paramList.itemData(self.ui.paramList.currentIndex()).toPyObject()[0],
 					self.ui.paramList.currentText(),
 					self.fromDate, self.toDate,
 					self.ui.valueEdit.text())
@@ -468,7 +490,9 @@ class DatetimeDialog_impl(QDialog, Ui_DatetimeDialog):
 
 	def getValue(self):
 		"""Return chosen date/time."""
-		return self.currentDatetime
+		date = self.currentDatetime
+		date -= datetime.timedelta(minutes=date.minute % 10)
+		return date
 
 	def updateDate(self):
 		"""Slot for signals clicked() from calendarWidget (QCalendarWidget) and
