@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import re
 import copy
 import operator
 import xml.sax
 from collections import namedtuple
 
 INF = sys.maxint
+LSWMSW_REX = re.compile(r'^\s*\([^:]+:[^:]+:[^:]+ msw\)'
+						r'\s*\([^:]+:[^:]+:[^:]+ lsw\)\s*:\s*$')
 
 ParamInfo = namedtuple('ParamInfo', 'name draw_name prec lswmsw')
 
@@ -43,6 +46,11 @@ class IPKParser:
 			self.sets = dict()
 			self.state = None
 
+			self.param_name = None
+			self.param_draw_name = None
+			self.param_prec = None
+			self.param_lswmsw = None
+
 		def startElementNS(self, name, qname, attrs):
 			(uri, name) = name
 
@@ -53,31 +61,45 @@ class IPKParser:
 					self.state = 'DEV'
 				elif name == 'defined':
 					self.state = 'DEF'
-				elif name == 'param' and self.state == 'DEV': # XXX: only <device>
+				elif name == 'drawdefinable':
+					self.state = 'DRD'
+
+				elif name == 'param':
 					self.param_name = copy.copy(attrs.getValueByQName('name'))
 					try:
 						self.param_draw_name = copy.copy(attrs.getValueByQName('draw_name'))
 					except KeyError:
 						self.param_draw_name = None
-					self.param_prec = copy.copy(attrs.getValueByQName('prec'))
-					self.param_lswmsw = 0
-				elif name == 'draw' and self.state == 'DEV': # XXX: only <device>
 					try:
-						prior = int(attrs.getValueByQName('prior'))
-					except KeyError, ValueError:
-						prior = INF
+						self.param_prec = copy.copy(attrs.getValueByQName('prec'))
+					except KeyError:
+						self.param_prec = None
+					self.param_lswmsw = None
 
-					if attrs.getValueByQName('title') not in self.sets:
-						self.sets[attrs.getValueByQName('title')] = \
-								SetInfo(params=[], prior=prior)
+				elif name == 'define' and self.state == 'DRD':
+					if attrs.getValueByQName('type') == "DRAWDEFINABLE" and \
+					   LSWMSW_REX.match(attrs.getValueByQName('formula')):
+							self.param_lswmsw = True
 
-					if self.param_draw_name is not None:
-						if prior != INF:
-							self.sets[attrs.getValueByQName('title')].prior = prior
+				elif name == 'draw':
+					if self.state == 'DEV' or \
+					   (self.state == 'DRD' and self.param_lswmsw == True):
+						try:
+							prior = int(attrs.getValueByQName('prior'))
+						except KeyError, ValueError:
+							prior = INF
 
-						self.sets[attrs.getValueByQName('title')].params.append(
-								ParamInfo(self.param_name, self.param_draw_name,
-								 self.param_prec, self.param_lswmsw))
+						if attrs.getValueByQName('title') not in self.sets:
+							self.sets[attrs.getValueByQName('title')] = \
+									SetInfo(params=[], prior=prior)
+
+						if self.param_draw_name is not None:
+							if prior != INF:
+								self.sets[attrs.getValueByQName('title')].prior = prior
+
+							self.sets[attrs.getValueByQName('title')].params.append(
+									ParamInfo(self.param_name, self.param_draw_name,
+									 self.param_prec, self.param_lswmsw))
 
 		def endElementNS(self, name, qname):
 			(uri, name) = name
@@ -87,4 +109,14 @@ class IPKParser:
 					self.state = None
 				elif name == 'defined':
 					self.state = None
+				elif name == 'drawdefinable':
+					self.state = None
+
+				elif name == 'param':
+					self.param_name = None
+					self.param_draw_name = None
+					self.param_prec = None
+					self.param_lswmsw = None
+
+# end of IPKParser class
 

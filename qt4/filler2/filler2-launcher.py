@@ -181,9 +181,9 @@ class Filler2(QMainWindow):
 				QVariant(0), Qt.UserRole-1)
 
 		# insert a list of parameters from given set
-		for name in self.parser.getParams(unicode(text)):
-			self.ui.paramList.addItem(name[1],
-					(name[0], name[2], name[3]))
+		for p in self.parser.getParams(unicode(text)):
+			self.ui.paramList.addItem(p.draw_name,
+					(p.name, p.prec, p.lswmsw))
 
 		self.ui.paramList.setEnabled(True)
 		self.ui.paramList.setFocus()
