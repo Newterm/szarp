@@ -1,7 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import xml.sax
+import sys
 import copy
+import operator
+import xml.sax
+from collections import namedtuple
+
+INF = sys.maxint
+
+ParamInfo = namedtuple('ParamInfo', 'name draw_name prec lswmsw')
+
+class SetInfo:
+	__init__ = lambda self, **kw: setattr(self, '__dict__', kw)
 
 class IPKParser:
 	def __init__(self, filename):
@@ -18,10 +28,14 @@ class IPKParser:
 		return self.ipk_title
 
 	def getSets(self):
-		return self.ipk_conf.keys()
+		slist = []
+		for i in self.ipk_conf.items():
+			slist.append((i[0], i[1].prior))
+		sorted_slist = sorted(slist, key=operator.itemgetter(1))
+		return [i[0] for i in sorted_slist]
 
 	def getParams(self, iset):
-		return self.ipk_conf[iset]
+		return self.ipk_conf[iset].params
 
 	class IPKDrawSetsHandler(xml.sax.ContentHandler):
 		def __init__(self):
@@ -48,12 +62,21 @@ class IPKParser:
 					self.param_prec = copy.copy(attrs.getValueByQName('prec'))
 					self.param_lswmsw = 0
 				elif name == 'draw' and self.state == 'DEV': # XXX: only <device>
+					try:
+						prior = int(attrs.getValueByQName('prior'))
+					except KeyError, ValueError:
+						prior = INF
+
 					if attrs.getValueByQName('title') not in self.sets:
-						self.sets[attrs.getValueByQName('title')] = []
+						self.sets[attrs.getValueByQName('title')] = \
+								SetInfo(params=[], prior=prior)
 
 					if self.param_draw_name is not None:
-						self.sets[attrs.getValueByQName('title')].append(
-								(self.param_name, self.param_draw_name,
+						if prior != INF:
+							self.sets[attrs.getValueByQName('title')].prior = prior
+
+						self.sets[attrs.getValueByQName('title')].params.append(
+								ParamInfo(self.param_name, self.param_draw_name,
 								 self.param_prec, self.param_lswmsw))
 
 		def endElementNS(self, name, qname):

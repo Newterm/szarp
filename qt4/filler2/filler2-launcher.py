@@ -111,7 +111,9 @@ class Filler2(QMainWindow):
 		self.ui.changesTable.setRowCount(0)
 
 		# FIXME: delete in final version
-		self.infoBox(u"To jest testowa wersja aplikacji Filler 2. Baza danych nie będzie modyfikowana.")
+		self.infoBox(u"To jest testowa wersja aplikacji Filler 2. "
+				u"Baza danych nie będzie modyfikowana. "
+				u"Nie wszystkie parametry/zestawy są dostępne.")
 
 	# end of __init__()
 
