@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Filler 2 is a tool for manual editing of SZARP databases. It is written in Qt4
+library and meant to be easy to use.
+
+WARNING! Although all changes should be reversible, they are committed to live
+database and therefore should be considered as risky.
+"""
+
 __license__ = \
 """
  Filler 2 is a part of SZARP SCADA software
@@ -27,10 +35,13 @@ __email__     = "coders AT newterm.pl"
 
 
 # imports
+import os
 import sys
 import time
+import types
 import signal
 import datetime
+import argparse
 
 # pyQt4 imports
 from PyQt4.QtCore import *
@@ -43,10 +54,14 @@ from DatetimeDialog import Ui_DatetimeDialog
 from AboutDialog import Ui_AboutDialog
 
 # constants
-SZCONFIG_PATH = "/etc/szarp/default/config/params.xml"
+SZCONFIG_PATH = "/opt/szarp/%s/config/params.xml"
+DEFAULT_PATH = "/etc/szarp/default/config/params.xml"
 
 SZLIMIT = 32767.0
 SZLIMIT_COM = 2147483647.0
+
+# global variables
+__script_name__ = os.path.basename(sys.argv[0])
 
 # signal handlers
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -60,11 +75,71 @@ except AttributeError:
     def _translate(context, text, disambig=None):
         return QApplication.translate(context, text, disambig)
 
+### Parsing arguments ###
+
+# Method overrides for argparse #
+def format_usage(self):
+	formatter = self._get_formatter()
+	formatter.add_usage(self.usage, self._actions,
+		self._mutually_exclusive_groups)
+	formatter.add_text("Try `%s --help' for more options." % self.prog)
+
+	return formatter.format_help()
+
+### End of argparse overrides ###
+
+class CustomFormatter(argparse.RawTextHelpFormatter):
+	def _format_action_invocation(self, action):
+		if not action.option_strings:
+			metavar, = self._metavar_formatter(action, action.dest)(1)
+			return metavar
+		else:
+			parts = []
+			# if the Optional doesn't take a value, format is:
+			#	-s, --long
+			if action.nargs == 0:
+				parts.extend(action.option_strings)
+
+			# if the Optional takes a value, format is:
+			#	-s, --long ARGS
+			else:
+				default = action.dest.upper()
+				args_string = self._format_args(action, default)
+				for option_string in action.option_strings:
+					parts.append('%s' % option_string)
+				parts[-1] += '=%s'%args_string
+			return ', '.join(parts)
+
+		return help
+
+	def add_usage(self, usage, actions, groups, prefix="Usage: "):
+		if usage is not argparse.SUPPRESS:
+			args = usage, actions, groups, prefix
+			self._add_item(self._format_usage, args)
+
+# end of CustomFormatter
+
+def format_version():
+	"""Format version string."""
+	return \
+"""Filler %(version)s (status: %(status)s)
+
+%(copy)s
+
+Written and maintained by %(author)s.
+Please send bug reports and questions to <%(email)s>.""" \
+% {"version": __version__, "status": __status__, "copy": __copyright__,
+	"author": __author__, "email": __email__}
+
+# end of format_version()
+
+### End of parsing arguments ###
+
 
 class Filler2(QMainWindow):
 	"""SZARP Filler 2 application's main window (pyQt4)."""
 
-	def __init__(self, parent=None):
+	def __init__(self, szconfig_path, parent=None):
 		"""Filler2 class constructor."""
 		QWidget.__init__(self, parent)
 		self.ui = Ui_MainWindow()
@@ -72,10 +147,11 @@ class Filler2(QMainWindow):
 
 		# parse local SZARP configuration
 		try:
-			self.parser = IPKParser(SZCONFIG_PATH)
+			self.parser = IPKParser(szconfig_path)
 		except IOError:
 			self.criticalError(_translate("MainWindow",
-						"Cannot read SZARP configuration (params.xml)"))
+						"Cannot read SZARP configuration")
+						+ " (%s)." % szconfig_path)
 			sys.exit(1)
 
 		### initialize Qt4 widgets ##
@@ -575,8 +651,8 @@ class SzbWriter(QThread):
 		i = 1
 		for p in self.plist:
 			# TODO: do not sleep! do the job!
-			print "SzbWriter: writing parameter", \
-				"%s (%s), from %s to %s, value %s" % p
+			#print "SzbWriter: writing parameter", \
+			#	"%s (%s), from %s to %s, value %s" % p
 			self.paramDone.emit(i, p[0])
 			time.sleep(1)
 			i += 1
@@ -660,14 +736,51 @@ class SzbProgressWin(QDialog):
 
 # end of SzbProgressWin class
 
+def parse_arguments(argv):
+	"""Parse arguments for Filler 2."""
+	parser = argparse.ArgumentParser(
+			prog=__script_name__,
+			description=__doc__,
+			epilog="Mail bug reports and suggestions to <%s>." % __email__,
+			formatter_class=CustomFormatter
+			)
+	parser._optionals.title = "Startup"
+
+	# optional startup arguments
+	parser.add_argument('-V', '--version', action='version',
+						version=format_version())
+	parser.add_argument('-Dprefix', type=str, metavar='PREFIX',
+						help="SZARP database prefix")
+
+	# override argparse functions
+	parser.format_usage = types.MethodType(format_usage, parser)
+
+	args, uargs = parser.parse_known_args(args=argv)
+
+	return parser, args, uargs
+
+# end of parse_arguments()
 
 def main(argv=None):
 	"main() function."
 	if argv is None:
 		argv = sys.argv
 
-	app = QApplication(argv)
-	QIcon.setThemeName("Tango")
+	# deal with command line arguments
+	parser, args, uargs = parse_arguments(argv)
+
+	if args.Dprefix is None:
+		szconfig_path = DEFAULT_PATH
+	else:
+		szconfig_path = SZCONFIG_PATH % args.Dprefix
+
+	app = QApplication(uargs)
+
+	argv2 = app.arguments()
+	if len(argv2) != 1:
+		for i in argv2[1:]:
+			print >>sys.stderr, \
+				'%s: warning: unknown option \'%s\'' % (__script_name__, str(i))
 
 	# initialize standard system translator
 	qt_translator = QTranslator()
@@ -682,7 +795,8 @@ def main(argv=None):
 	app.installTranslator(filler2_translator)
 
 	# start Filler 2 application
-	filler2app = Filler2()
+	QIcon.setThemeName("Tango")
+	filler2app = Filler2(szconfig_path)
 	filler2app.show()
 
 	return app.exec_()
