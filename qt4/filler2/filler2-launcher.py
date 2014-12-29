@@ -258,8 +258,7 @@ class Filler2(QMainWindow):
 
 		# insert a list of parameters from given set
 		for p in self.parser.getParams(unicode(text)):
-			self.ui.paramList.addItem(p.draw_name,
-					(p.name, p.prec, p.lswmsw))
+			self.ui.paramList.addItem(p.draw_name, p)
 
 		self.ui.paramList.setEnabled(True)
 		self.ui.paramList.setFocus()
@@ -282,11 +281,11 @@ class Filler2(QMainWindow):
 
 		qdv = QDoubleValidator(self.ui.paramList)
 		qdv.setNotation(0)
-		prec = float(param_info[1])
-		if param_info[2] == 0:
-			qdv.setRange(SZLIMIT * -1, SZLIMIT, prec)
-		else:
+		prec = int(param_info.prec)
+		if param_info.lswmsw:
 			qdv.setRange(SZLIMIT_COM * -1, SZLIMIT_COM, prec)
+		else:
+			qdv.setRange(SZLIMIT * -1, SZLIMIT, prec)
 
 		self.ui.valueEdit.setValidator(qdv)
 		self.ui.valueEdit.setEnabled(True)
@@ -388,11 +387,22 @@ class Filler2(QMainWindow):
 				"\"To\" date is earlier (or equals) \"From\" date.\nAdding change aborted."))
 			return
 
+		param_info = self.ui.paramList.itemData(
+				self.ui.paramList.currentIndex()).toPyObject()
+		val = float(self.ui.valueEdit.text())
+
+		if (param_info.lswmsw and (val > SZLIMIT_COM or val < SZLIMIT_COM * -1)) \
+				or (val > SZLIMIT or val < SZLIMIT * -1):
+					self.warningBox(_translate("MainWindow",
+						"Parameter's value is out of range.\nAdding change aborted."))
+					return
+
 		self.ui.changesTable.setRowCount(self.ui.changesTable.rowCount()+1)
 		self.addRow(self.ui.changesTable.rowCount() - 1,
-					self.ui.paramList.itemData(self.ui.paramList.currentIndex()).toPyObject()[0],
+					param_info.name,
 					self.ui.paramList.currentText(),
-					self.fromDate, self.toDate,
+					self.fromDate,
+					self.toDate,
 					self.ui.valueEdit.text())
 
 	# end of addChange()
@@ -503,7 +513,7 @@ class Filler2(QMainWindow):
 						datetime.datetime.strptime(
 							str(self.ui.changesTable.item(i,2).text()),
 							'%Y-%m-%d %H:%M'),
-						float(self.ui.changesTable.item(i,3).text())
+						self.ui.changesTable.item(i,3).text()
 						))
 
 			# do the job (new thread)

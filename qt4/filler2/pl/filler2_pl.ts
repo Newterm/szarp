@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.0" language="pl_PL">
+<!DOCTYPE TS><TS version="2.0" language="pl_PL" sourcelanguage="">
 <context>
     <name>AboutDialog</name>
     <message>
@@ -19,7 +18,7 @@
         <translation>Zamknij</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="498"/>
+        <location filename="filler2-launcher.py" line="610"/>
         <source>About </source>
         <translation>O programie </translation>
     </message>
@@ -160,7 +159,7 @@
         <translation>Wybierz datę końca okresu</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="423"/>
+        <location filename="filler2-launcher.py" line="533"/>
         <source>To:</source>
         <translation>Do:</translation>
     </message>
@@ -175,7 +174,7 @@
         <translation>Wybierz datę początku okresu</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="421"/>
+        <location filename="filler2-launcher.py" line="531"/>
         <source>From:</source>
         <translation>Od:</translation>
     </message>
@@ -240,89 +239,84 @@
         <translation>Wczytywanie konfiguracji...</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="80"/>
+        <location filename="filler2-launcher.py" line="163"/>
         <source>--- Choose a set of parameters ---</source>
         <translation>--- Wybierz zestaw parametrów ---</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="168"/>
+        <location filename="filler2-launcher.py" line="253"/>
         <source>--- Choose a parameter ---</source>
         <translation>--- Wybierz parametr ---</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="500"/>
+        <location filename="filler2-launcher.py" line="612"/>
         <source>Filler 2 is a tool for manual szbase data editing.</source>
         <translation>Filler 2 jest narzędziem do ręcznej edycji danych szbase&apos;a.</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="70"/>
-        <source>Cannot read SZARP configuration (params.xml)</source>
-        <translation>Nie można odczytać konfiguracji SZARP-a (plik params.xml)</translation>
-    </message>
-    <message>
-        <location filename="filler2-launcher.py" line="120"/>
+        <location filename="filler2-launcher.py" line="205"/>
         <source>Critical Error</source>
         <translation>Błąd krytyczny</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="132"/>
+        <location filename="filler2-launcher.py" line="217"/>
         <source>Warning</source>
         <translation>Ostrzeżenie</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="288"/>
+        <location filename="filler2-launcher.py" line="387"/>
         <source>&quot;To&quot; date is earlier (or equals) &quot;From&quot; date.
 Adding change aborted.</source>
         <translation>Data &quot;Do&quot; jest wcześniejsza (lub równa) niż data &quot;Od&quot;.
 Nie dodano zmiany.</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="340"/>
+        <location filename="filler2-launcher.py" line="450"/>
         <source>Remove entry</source>
         <translation>Usuń zmianę</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="157"/>
+        <location filename="filler2-launcher.py" line="242"/>
         <source>Question</source>
         <translation>Pytanie</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="383"/>
+        <location filename="filler2-launcher.py" line="493"/>
         <source>Following parameters will be modified:</source>
         <translation>Następujące parametry zostaną zmodyfikowane:</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="390"/>
+        <location filename="filler2-launcher.py" line="500"/>
         <source>Commit changes?</source>
         <translation>Wprowadzić zmiany do bazy danych?</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="143"/>
+        <location filename="filler2-launcher.py" line="228"/>
         <source>Information</source>
         <translation>Informacja</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="582"/>
+        <location filename="filler2-launcher.py" line="694"/>
         <source>Preparing...</source>
         <translation>Inicjowanie...</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="599"/>
+        <location filename="filler2-launcher.py" line="711"/>
         <source>Writing to szbase...</source>
         <translation>Zapisywanie do bazy danych...</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="621"/>
+        <location filename="filler2-launcher.py" line="733"/>
         <source>Writing parameter</source>
         <translation>Zapisywanie parametru</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="631"/>
+        <location filename="filler2-launcher.py" line="743"/>
         <source>Writing to szbase done.</source>
         <translation>Zapis do bazy danych ukończony.</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="379"/>
+        <location filename="filler2-launcher.py" line="489"/>
         <source>No changes to commit.</source>
         <translation>Brak zmian do wprowadzenia.</translation>
     </message>
@@ -412,7 +406,7 @@ Nie dodano zmiany.</translation>
         <translation>Wciśnij, aby wyświetlić informację o bibliotece graficznej Qt4, używanej przez aplikację Filler 2.</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="352"/>
+        <location filename="filler2-launcher.py" line="462"/>
         <source>Remove change?</source>
         <translation>Usunąć zmianę z tabeli?</translation>
     </message>
@@ -447,9 +441,21 @@ Nie dodano zmiany.</translation>
         <translation>Ctrl+H</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="368"/>
+        <location filename="filler2-launcher.py" line="478"/>
         <source>Are you sure you want to clear all changes?</source>
         <translation>Czy na pewno chcesz usunąć wszystkie zmiany z tabeli?</translation>
+    </message>
+    <message>
+        <location filename="filler2-launcher.py" line="152"/>
+        <source>Cannot read SZARP configuration</source>
+        <translation>Nie można odczytać konfiguracji SZARP-a</translation>
+    </message>
+    <message>
+        <location filename="filler2-launcher.py" line="397"/>
+        <source>Parameter&apos;s value is out of range.
+Adding change aborted.</source>
+        <translation>Wartość parametru jest poza dozwolonym zakresem.
+Nie dodano zmiany.</translation>
     </message>
 </context>
 </TS>
