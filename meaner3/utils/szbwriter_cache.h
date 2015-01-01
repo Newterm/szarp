@@ -27,8 +27,10 @@
 #include <string>
 #include <fstream>
 
+#include "szarp_config.h"
 #include "tsaveparam.h"
 #include "tmmapparam.h"
+
 
 /** 
  * @brief Class that cache params and write them with delay.
@@ -46,12 +48,10 @@ public:
 	 * and probe length, year and month.
 	 */
 	struct Key {
-		Key( const std::wstring& d , const std::wstring& n ,
-				int p , int y , int m )
-			: dir(d) , name(n) , probe_length(p) , year(y) , month(m) {}
-		const std::wstring dir;
-		const std::wstring name;
-		int probe_length;
+		Key( const std::wstring& n , bool is_dbl , int y , int m )
+			: name(n) , is_double(is_dbl) , year(y) , month(m) {}
+		std::wstring name;
+		bool is_double;
 		int year;
 		int month;
 	};
@@ -60,9 +60,10 @@ public:
 	 * @brief values needed to write one probe
 	 */
 	struct Value {
-		Value( short p , time_t t ) 
+		Value( double p , time_t t ) 
 			: probe(p) , time(t) {}
-		short probe;
+
+		double probe;
 		time_t time;	
 	};
 
@@ -83,7 +84,7 @@ public:
 	 * to be cached. After reaching that number, probes are flushed
 	 * into the file.
 	 */
-	SzProbeCache( int probes_num = 2048 );
+	SzProbeCache( TSzarpConfig* ipk, const std::wstring& d, time_t pl, int probes_num = 2048 );
 
 	/** 
 	 * @brief Clean up object and write cached data to database
@@ -115,25 +116,35 @@ private:
 	struct Values {
 		Values( int n );
 		virtual ~Values();
-		bool add( time_t t , short v , int probe_length );
-		void clear();
-		bool clean();
+		bool add( time_t t , double v , int probe_length );
 
-		short*probes;
+		bool empty();
+		void clear();
+
+		double* probes;
 		time_t time;
 		unsigned int length;
 		unsigned int max_length;
 	};
 
-	typedef std::pair<TMMapParam*,Values*> Param;
-
 	/**
 	 * @see flush( Key k )
 	 */
-	void flush( Param& p , const Key& k );
+	void flush( const Key& k );
 
-	Key*last_key;
-	Param last_param;
+
+	TSzarpConfig * m_ipk;
+	Values m_values;
+
+
+	const std::wstring m_dir;
+	int m_probe_length;
+
+	Key* last_key;
+
+	TMMapParam * m_mmap_param;
+	TMMapParam * m_mmap_param_lsw;
+	TMMapParam * m_mmap_param_msw;
 };
 
 bool operator==( const SzProbeCache::Key& a , const SzProbeCache::Key& b );

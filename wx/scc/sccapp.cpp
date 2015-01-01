@@ -162,7 +162,24 @@ bool SCCApp::OnInit()
 	if (suffix == NULL)
 		suffix = ".png";
 
-	smenu = CreateMainMenu();
+	try {
+		smenu = CreateMainMenu();
+	} catch(...) {
+		wxMessageBox(_("Mixed encoding in 'szarp.cfg' or 'szarp_in.cfg'!\n\n"
+			"SCC can't properly decode configuration file, because one "
+			"or both of these situations occur:\n"
+			"   - 'szarp.cfg' or 'szarp_in.cfg' have mixed encoding,\n"
+			"   - 'szarp.cfg' have different encoding then 'szarp_in.cfg'."),
+			_("SCC - encoding fatal error!"),
+			wxICON_ERROR);
+		libpar_done();
+		delete app_instance;
+#ifndef MINGW32
+		delete app_instance2;
+#endif
+		return false;
+	}
+
 	// Create main frame.
 	taskbar_item = new SCCTaskBarItem(smenu, wxString(SC::L2S(prefix)), wxString(SC::L2S(suffix)));
 

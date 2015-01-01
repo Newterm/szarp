@@ -46,18 +46,18 @@ static char doc[] = "Allows for fast fast data modification of szbase parameter.
 "it runs the formula much in the same way as it is done with drawdefinable\n"
 "params. The values returned from formula are then stored in database.\n"
 "For example if program is run with following params:\n"
-"./szbmod -fformula -Dprefix=xxxx -s'2007-01-01 00:00' -e'2009-12-30 00:00' \"Sieæ:Sterownik:Temperatura zewnêtrzna\"\n"
+"./szbmod -fformula -Dprefix=xxxx -s'2007-01-01 00:00' -e'2009-12-30 00:00' \"SieÄ‡:Sterownik:Temperatura zewnÄ™trzna\"\n"
 "and contents of file formula is as follows:\n"
-"local v = 2 * p(\"xxx:Sieæ:Sterownik:Temperatura zewnêtrzna\", t, pt)\n"
+"local v = 2 * p(\"xxx:SieÄ‡:Sterownik:Temperatura zewnÄ™trzna\", t, pt)\n"
 "return v\n"
-"then for given period values of \"Sieæ:Sterownik:Temperatura zewnêtrzna\" will be doubled.\n"
+"then for given period values of \"SieÄ‡:Sterownik:Temperatura zewnÄ™trzna\" will be doubled.\n"
 "Any formula is accepted.\n"
 "As data scaling is a relatively common task, szmbod provides a shortcut, instead of creating\n"
 "a formula to scale param value one can pass a scaling factor as a -m switch, in that case szbmod will\n"
 "generate a proper formula on its own\n"
 "So the same effect as in a previous example (scaling param values by a factor of 2) can be achieved\n"
 "by invoking program in following way:\n"
-"./szbmod -m2 -Dprefix=xxxx -s'2007-01-01 00:00' -e'2009-12-30 00:00' \"Sieæ:Sterownik:Temperatura zewnêtrzna\"\n"
+"./szbmod -m2 -Dprefix=xxxx -s'2007-01-01 00:00' -e'2009-12-30 00:00' \"SieÄ‡:Sterownik:Temperatura zewnÄ™trzna\"\n"
 "Config file:\n\
 Configuration options are read from file /etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg,\n\
 from section 'meaner3' or from global section.\n\
@@ -263,7 +263,7 @@ void create_multiply_formula(struct arguments& arg, const char* prefix) {
 	std::stringstream formula;
 	formula << "return ";
 	for (size_t i = 0; i < arg.params.size(); i++) {
-		formula << arg.multiplier << " * " << "p(\"" << prefix << ":" << SC::S2A(arg.params[i]) << "\", t, pt)";
+		formula << arg.multiplier << " * " << "p(\"" << prefix << ":" << SC::S2U(arg.params[i]).c_str() << "\", t, pt)";
 		if (i + 1 < arg.params.size())
 			formula << ", ";
 	}
@@ -308,13 +308,14 @@ int main(int argc, char* argv[])
 
 	IPKContainer::Init(SC::L2S(szarp_data_root), SC::L2S(PREFIX), L"", new NullMutex());
 
-	Szbase::Init(SC::L2S(szarp_data_root), NULL);
+	Szbase::Init(SC::L2S(szarp_data_root), false); // dont write cache
 
 	TSzarpConfig *ipk = IPKContainer::GetObject()->GetConfig(SC::L2S(ipk_prefix));
 	if (ipk == NULL) {
 		sz_log(0, "Could not load IPK configuration for prefix '%s'", ipk_prefix);
 		return 1;
 	}
+	ipk->PrepareDrawDefinable();
 
 	szb_buffer_t *szb = Szbase::GetObject()->GetBuffer(SC::L2S(ipk_prefix));
 	if (szb == NULL) {
@@ -330,7 +331,7 @@ int main(int argc, char* argv[])
 			return 1;
 		}
 
-		if (!p->IsInBase() && !p->GetType() == TParam::P_COMBINED) {
+		if (!p->IsInBase() && p->GetType() != TParam::P_COMBINED) {
 			std::wcerr << "Parameter '" << arguments.params[i] << "' is not in base and in not combined param\n\n";;
 			return 1;
 		}
@@ -348,7 +349,7 @@ int main(int argc, char* argv[])
 	if (arguments.multiply)
 		create_multiply_formula(arguments, ipk_prefix);
 
-	if (szb_compile_lua_formula(lua, (const char*) SC::A2U(arguments.formula, true).c_str(), "", false) == false) {
+	if (szb_compile_lua_formula(lua, (const char*) arguments.formula.c_str(), "", false) == false) {
 		std::wcerr << "Failed to compile formula, error: " << lua_tostring(lua, -1) << std::endl;
 		return 1;
 	}
