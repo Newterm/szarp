@@ -101,25 +101,15 @@ endif
 configure: 
 	./autogen.sh
 
-debian/config-status-no-cb: export EXTRA_CFG_ARGS
 debian/config-status-no-cb: configure
-	@if [ -n "$(DIST)" ]; then \
-		echo "Building for dist: $(DIST)"; \
-	fi;
-	@if [ "x$(DIST)" = "xraspbian" ]; then \
-		echo "Building without iks"; \
-		EXTRA_CFG_ARGS="--without-iks"; \
-		echo "EXTRA_CFG_ARGS: $$EXTRA_CFG_ARGS"; \
-	fi;
 	# Add here commands to configure the package.
 	@if [ -e debian/config-status-cb ]; then \
 		$(MAKE) clean; \
 		rm debian/config-status-cb; \
 	fi;
-	@echo "EXTRA_CFG_ARGS: $$EXTRA_CFG_ARGS";
-	@./configure CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" --prefix=/$(PREFIX) \
+	./configure CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" --prefix=/$(PREFIX) \
 		--host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) \
-		--enable-deb-build $(CFG_ARGS) $$EXTRA_CFG_ARGS
+		--enable-deb-build $(CFG_ARGS) $(EXTRA_CFG_ARGS)
 	@touch $@
 
 debian/build-no-cb-stamp: debian/config-status-no-cb
