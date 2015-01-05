@@ -77,9 +77,12 @@ NO_CB_PACK_OPTS ?= \
 		-pszarp-viewer \
 		-pszarp-xsltd \
 		-pszarp-dbg-symbols \
-		-pszarp-iks \
-		-pszarp-iks-server \
 		-pszarp-filler2
+
+ifneq ($(NO_IKS), 1)
+	NO_CB_PACK_OPTS += -pszarp-iks 
+	NO_CB_PACK_OPTS += -pszarp-iks-server
+endif
 
 DOC_PACKAGES ?= \
 		-pszarp-doc-pdf \
