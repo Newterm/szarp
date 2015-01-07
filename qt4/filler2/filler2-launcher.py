@@ -52,6 +52,7 @@ from filler2 import Ui_MainWindow
 from ipkparser import IPKParser
 from DatetimeDialog import Ui_DatetimeDialog
 from AboutDialog import Ui_AboutDialog
+from HistoryDialog import Ui_HistoryDialog
 
 # constants
 SZCONFIG_PATH = "/opt/szarp/%s/config/params.xml"
@@ -545,6 +546,10 @@ class Filler2(QMainWindow):
 		"""Slot for action 'actionContextHelp'. Activates "What is that?" mode."""
 		QWhatsThis.enterWhatsThisMode()
 
+	def onViewHistory(self):
+		"""Slot for action 'actionViewHistory'. Shows history of committed changes."""
+		HistoryDialog_impl().exec_()
+
 # end of Filler2 class
 
 class DatetimeDialog_impl(QDialog, Ui_DatetimeDialog):
@@ -636,6 +641,31 @@ class AboutDialog_impl(QDialog, Ui_AboutDialog):
 	# end of showCredits()
 
 # end of AboutDialog_impl class
+
+class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
+	"""Dialog for undoing changes committed to szbase by Filler 2 (pyQt4)."""
+
+	def __init__(self, parent=None):
+		"""HistoryDialog_impl class constructor.  """
+		# initialization
+		QDialog.__init__(self,parent)
+		self.setupUi(self)
+
+		# table of changes
+		self.changesTable.setColumnCount(6)
+		self.changesTable.setColumnWidth(0, 350)   # parameter's draw_name
+		self.changesTable.setColumnWidth(1, 100)   # user
+		self.changesTable.setColumnWidth(2, 100)   # change date
+		self.changesTable.setColumnWidth(3, 200)   # period
+		self.changesTable.setColumnWidth(4, 50)    # show graph
+		self.changesTable.setColumnWidth(5, 50)    # undo button
+		self.changesTable.setColumnHidden(6, True) # parameter's full name
+
+		self.changesTable.setRowCount(10)
+
+	# end of __init__()
+
+# end of HistoryDialog_impl class
 
 class SzbWriter(QThread):
 	"""Worker class for doing szbase modifications in a separate thread."""

@@ -214,6 +214,27 @@
       <property name="whatsThis">
        <string>Table of scheduled changes to be commited. Press &quot;X&quot; button to remove entry.</string>
       </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="tabKeyNavigation">
+       <bool>false</bool>
+      </property>
+      <property name="showDropIndicator" stdset="0">
+       <bool>false</bool>
+      </property>
+      <property name="dragDropOverwriteMode">
+       <bool>false</bool>
+      </property>
+      <property name="alternatingRowColors">
+       <bool>true</bool>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::NoSelection</enum>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
+      </property>
      </widget>
     </item>
    </layout>
@@ -282,7 +303,9 @@
   </widget>
   <action name="actionSaveData">
    <property name="icon">
-    <iconset theme="document-save"/>
+    <iconset theme="document-save">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>&amp;Save data</string>
@@ -302,7 +325,9 @@
   </action>
   <action name="actionClear">
    <property name="icon">
-    <iconset theme="edit-clear"/>
+    <iconset theme="edit-clear">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>C&amp;lear</string>
@@ -319,7 +344,9 @@
   </action>
   <action name="actionExit">
    <property name="icon">
-    <iconset theme="application-exit"/>
+    <iconset theme="application-exit">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>E&amp;xit</string>
@@ -345,7 +372,9 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset theme="help-contents"/>
+    <iconset theme="help-contents">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>User's &amp;manual</string>
@@ -362,7 +391,9 @@
   </action>
   <action name="actionContextHelp">
    <property name="icon">
-    <iconset theme="help-faq"/>
+    <iconset theme="help-faq">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>Con&amp;text help</string>
@@ -379,7 +410,9 @@
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset theme="help-about"/>
+    <iconset theme="help-about">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>&amp;About</string>
@@ -410,11 +443,10 @@
    </property>
   </action>
   <action name="actionViewHistory">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
    <property name="icon">
-    <iconset theme="edit-find-replace"/>
+    <iconset theme="edit-find-replace">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>View &amp;history</string>
@@ -656,6 +688,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionViewHistory</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onViewHistory()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>510</x>
+     <y>239</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onSetChosen(QString)</slot>
@@ -670,5 +718,6 @@
   <slot>commitChanges()</slot>
   <slot>contextHelp()</slot>
   <slot>validateInput()</slot>
+  <slot>onViewHistory()</slot>
  </slots>
 </ui>
