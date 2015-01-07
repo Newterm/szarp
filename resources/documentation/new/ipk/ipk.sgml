@@ -2925,7 +2925,7 @@ warto¶æ tego atrybutu nie ma znaczenia.
 </para></listitem>
 
 <listitem><para>
-<emphasis>repeat</emphasis> - liczba, ilo¶æ powtórzeñ, je¶li sterownik nie
+<emphasis>repeat</emphasis> - liczba powtórzeñ, je¶li sterownik nie
 potwierdzi³ przyjêcia parametru, domy¶lnie 1. Praktycznie warto¶æ tego
 atrybutu nie ma ¿adnego znaczenia (zobacz <xref linkend="sender-config">).
 </para></listitem>

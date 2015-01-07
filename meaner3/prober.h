@@ -83,7 +83,7 @@
 
 /** atomic flag for signal handling, set while writing to base is performed */
 extern volatile sig_atomic_t g_signals_blocked;
-/** atomic flag for signal handling, set if termination signal was cought
+/** atomic flag for signal handling, set if termination signal was caught
  * during writing to base and we should terminate */
 extern volatile sig_atomic_t g_should_exit;
 

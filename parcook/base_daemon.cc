@@ -88,7 +88,7 @@ int BaseDaemon::InitIPC()
 
 RETSIGTYPE terminate_handler(int signum)
 {
-	sz_log(2, "signal %d cought, exiting", signum);
+	sz_log(2, "signal %d caught, exiting", signum);
 	signal(signum, SIG_DFL);
 	raise(signum);
 }

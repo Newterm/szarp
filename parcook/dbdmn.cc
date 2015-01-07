@@ -40,16 +40,14 @@
  <device 
 	xmlns:db="http://www.praterm.com.pl/SZARP/ipk-extra"
   	daemon="/opt/szarp/bin/dbdmn" 
-  	path="/opt/szarp/trgr"
-		path to szbase main directory
 	db:expire="600"
 		time (in seconds) of data expiration - if last available data
-		is older then given ammount of seconds, NO_DATA is send;
+		is older than given amount of seconds, NO_DATA is send;
 		set 0 to turn expiration off
 	<unit id="1" ...>
 		<param name="..." 
-			db:param="...:...:..."
-				name of parameter to read from database
+			db:param="database_name:...:...:..."
+				name of parameter to read from database, preceded by database name
  @description_end
 
 */
@@ -420,7 +418,7 @@ int DbDaemon::Read(IPCHandler *ipc)
 
 RETSIGTYPE terminate_handler(int signum)
 {
-	sz_log(2, "signal %d cought", signum);
+	sz_log(2, "signal %d caught", signum);
 	exit(1);
 }
 
