@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import sys
+import os
 import re
+import sys
+import csv
 import copy
+import fnmatch
 import operator
+import datetime
 import xml.sax
 from collections import namedtuple
 
@@ -12,6 +16,7 @@ LSWMSW_REX = re.compile(r'^\s*\([^:]+:[^:]+:[^:]+ msw\)'
 						r'\s*\([^:]+:[^:]+:[^:]+ lsw\)\s*:\s*$')
 
 ParamInfo = namedtuple('ParamInfo', 'name draw_name prec lswmsw')
+ChangeInfo = namedtuple('ChangeInfo', 'name draw_name set_name user date vals')
 
 class SetInfo:
 	__init__ = lambda self, **kw: setattr(self, '__dict__', kw)
@@ -24,6 +29,8 @@ class IPKParser:
 			xml_parser.setContentHandler(handler)
 			xml_parser.setFeature(xml.sax.handler.feature_namespaces, True)
 			xml_parser.parse(fd)
+			self.ipk_path = os.path.abspath(filename)
+			self.ipk_dir = os.path.dirname(os.path.dirname(filename))
 			self.ipk_conf = handler.sets
 			self.ipk_title = handler.title
 
@@ -39,6 +46,52 @@ class IPKParser:
 
 	def getParams(self, iset):
 		return self.ipk_conf[iset].params
+
+	def getDrawSetName(self, pname):
+		for key, val in self.ipk_conf.iteritems():
+			for p in val.params:
+				if p.name == pname:
+					return (p.draw_name, key)
+		raise ValueError
+
+	def readSZChanges(self):
+		szfs = []
+		for root, dirnames, filenames in os.walk(os.path.join(self.ipk_dir, 'szbase')):
+			for fn in fnmatch.filter(filenames, '*.szf'):
+				pname, vals = self.readSZF(os.path.join(root, fn))
+				filename, fext = os.path.splitext(fn)
+				if fext != '.szf':
+					raise ValueError
+				date = datetime.datetime.strptime(filename[0:14], "%Y%m%d_%H%M_")
+				user = filename.split('_')[2]
+				draw_name, set_name = self.getDrawSetName(pname)
+				szfs.append(ChangeInfo(pname, draw_name, set_name,
+									   user, date, vals))
+		return szfs
+
+	def readSZF(self, filename):
+		with open(filename) as fd:
+			reader = csv.reader(fd, delimiter=',')
+
+			fst_row = reader.next()
+			pname = fst_row[1].lstrip().decode('utf-8')
+			vals = []
+
+			for row in reader:
+				try:
+					vals.append(
+							(datetime.datetime.strptime(row[0], "%Y-%m-%d %H:%M"),
+							 float(row[1]))
+							)
+				except ValueError:
+					vals.append(
+							(datetime.datetime.strptime(row[0], "%Y-%m-%d %H:%M"),
+							 float('Nan'))
+							)
+
+		return (pname, vals)
+
+	# end of readSZF()
 
 	class IPKDrawSetsHandler(xml.sax.ContentHandler):
 		def __init__(self):

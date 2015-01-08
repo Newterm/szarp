@@ -54,6 +54,10 @@ from DatetimeDialog import Ui_DatetimeDialog
 from AboutDialog import Ui_AboutDialog
 from HistoryDialog import Ui_HistoryDialog
 
+# other imports
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+
 # constants
 SZCONFIG_PATH = "/opt/szarp/%s/config/params.xml"
 DEFAULT_PATH = "/etc/szarp/default/config/params.xml"
@@ -548,7 +552,8 @@ class Filler2(QMainWindow):
 
 	def onViewHistory(self):
 		"""Slot for action 'actionViewHistory'. Shows history of committed changes."""
-		HistoryDialog_impl().exec_()
+		# TODO zablokowanie okna głównego
+		HistoryDialog_impl(self.parser, parent=self).exec_()
 
 # end of Filler2 class
 
@@ -645,25 +650,119 @@ class AboutDialog_impl(QDialog, Ui_AboutDialog):
 class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 	"""Dialog for undoing changes committed to szbase by Filler 2 (pyQt4)."""
 
-	def __init__(self, parent=None):
+	def __init__(self, parser, parent=None):
 		"""HistoryDialog_impl class constructor.  """
 		# initialization
-		QDialog.__init__(self,parent)
+		QDialog.__init__(self, parent)
 		self.setupUi(self)
+		self.parent = parent
 
 		# table of changes
 		self.changesTable.setColumnCount(6)
 		self.changesTable.setColumnWidth(0, 350)   # parameter's draw_name
-		self.changesTable.setColumnWidth(1, 100)   # user
-		self.changesTable.setColumnWidth(2, 100)   # change date
-		self.changesTable.setColumnWidth(3, 200)   # period
-		self.changesTable.setColumnWidth(4, 50)    # show graph
-		self.changesTable.setColumnWidth(5, 50)    # undo button
-		self.changesTable.setColumnHidden(6, True) # parameter's full name
+		self.changesTable.setColumnWidth(1, 150)   # change date
+		self.changesTable.setColumnWidth(2, 100)   # user
+		self.changesTable.setColumnWidth(3, 50)    # show graph
+		self.changesTable.setColumnWidth(4, 50)    # undo button
+		self.changesTable.setColumnHidden(5, True) # parameter's full name
+		self.changesTable.setHorizontalHeaderLabels([
+			_translate("HistoryDialog", "Parameter name (set name)"),
+			_translate("HistoryDialog", "Change date"),
+			_translate("HistoryDialog", "User"),
+			"", ""])
 
-		self.changesTable.setRowCount(10)
+		szfs = parser.readSZChanges()
+		self.addRows(szfs)
 
 	# end of __init__()
+
+	def addRows(self, szfs_list):
+		"""Add rows to changesTable (QTableWidget).
+
+		Arguments:
+			szfs_list - a list of changes present in szbase directory (*.szf)
+			            as read by IPKParser.
+		"""
+		self.changesTable.setRowCount(len(szfs_list))
+
+		row = 0
+		for szf in szfs_list:
+			# visible columns
+			item_pname = QTableWidgetItem(
+					unicode("%s (%s)" % (szf.draw_name, szf.set_name)))
+			item_pname.setFlags(Qt.ItemIsEnabled)
+
+			item_user = QTableWidgetItem(unicode(szf.user))
+			item_user.setFlags(Qt.ItemIsEnabled)
+			item_user.setTextAlignment(Qt.AlignCenter)
+
+			item_date = QTableWidgetItem(szf.date.strftime('%Y-%m-%d %H:%M'))
+			item_date.setFlags(Qt.ItemIsEnabled)
+			item_date.setTextAlignment(Qt.AlignCenter)
+
+			# hidden columns
+			item_fname = QTableWidgetItem(unicode(szf.name))
+			item_fname.setFlags(Qt.ItemIsEnabled)
+			item_fname.setData(Qt.UserRole, QVariant(szf.vals))
+
+			self.changesTable.setItem(row, 0, item_pname)
+			self.changesTable.setItem(row, 1, item_date)
+			self.changesTable.setItem(row, 2, item_user)
+			self.changesTable.setItem(row, 5, item_fname)
+
+			# "show graph" button widget
+			show_button = QPushButton(
+					QIcon.fromTheme("utilities-system-monitor"), "")
+			show_button.setToolTip(_translate("HistoryDialog",
+				"Show parameter's value chart before this change"))
+			show_button.row_id = row
+			QObject.connect(show_button, SIGNAL("clicked()"), self.showGraph)
+			self.changesTable.setCellWidget(row, 3, show_button)
+
+			# "undo" button widget
+			undo_button = QPushButton(QIcon.fromTheme("undo"), "")
+			undo_button.setToolTip(_translate("HistoryDialog",
+				"Undo this change (recover state of before it was made)"))
+			undo_button.row_id = row
+			QObject.connect(undo_button, SIGNAL("clicked()"), self.undoChange)
+			self.changesTable.setCellWidget(row, 4, undo_button)
+
+			row +=1
+
+	# end of addRows()
+
+	def undoChange(self):
+		"""Slot for signal clicked() from undo_button (QPushButton). Reverts
+		change listed in changesTable (QTableWidget).
+		"""
+		if QMessageBox.Yes != \
+				self.parent.questionBox(_translate("HistoryDialog",
+					"Are you sure you want to undo this change?\n"
+					"Current data will be irreversibly lost.")):
+			return
+
+		row = self.sender().row_id
+
+	# end of undoChange()
+
+	def showGraph(self):
+		"""Slot for signal clicked() from show_button (QPushButton). Shows
+		graph of a parameter listed in changesTable (QTableWidget).
+		"""
+		row = self.sender().row_id
+		draw_name = self.changesTable.item(row, 0).text()
+		vals = self.changesTable.item(row, 5).data(Qt.UserRole).toPyObject()
+		d = [i[0] for i in vals]
+		v = [i[1] for i in vals]
+		fig = plt.figure()
+		ax = fig.add_subplot(111)
+		hfmt = mdates.DateFormatter('%Y-%m-%d %H:%M')
+		ax.xaxis.set_major_formatter(hfmt)
+		ax.plot(d, v, linewidth=2, color='red', label=unicode(draw_name))
+		fig.autofmt_xdate()
+		plt.ylabel(_translate("HistoryDialog", "Parameter's value"))
+		plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.12))
+		plt.show()
 
 # end of HistoryDialog_impl class
 
