@@ -9,6 +9,7 @@ import fnmatch
 import operator
 import datetime
 import calendar
+import subprocess
 import xml.sax
 from collections import namedtuple
 from dateutil.tz import tzlocal
@@ -114,7 +115,7 @@ class IPKParser:
 	# end of readSZF()
 
 	def extrszb10(self, pname, date_list):
-		param = "%s:%s" % (self.ipk_prefix, pname)
+		param = u"%s:%s" % (self.ipk_prefix, pname)
 
 		out = []
 		for d in date_list:
@@ -123,6 +124,20 @@ class IPKParser:
 			out.append(pysz.get_value(param, t, pysz.PROBE_TYPE.PT_MIN10))
 
 		return out
+
+	def szbwriter(self, pname, dv_list):
+		string = ""
+		for d, v in dv_list:
+			string += u"\"%s\" %s %s\n" % \
+					(pname, d.strftime("%Y %m %d %H %M"), str(v))
+		string = string[:-1]
+
+		process = subprocess.Popen(
+				["/opt/szarp/bin/szbwriter", "-Dprefix=%s" % self.ipk_prefix, "-p"],
+				stdin=subprocess.PIPE)
+		process.communicate(string.encode('utf-8'))
+		if process.wait() != 0:
+			raise IOError
 
 	class IPKDrawSetsHandler(xml.sax.ContentHandler):
 		def __init__(self):

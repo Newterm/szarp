@@ -658,7 +658,7 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 		# table of changes
 		self.changesTable.setColumnCount(6)
 		self.changesTable.setColumnWidth(0, 350)   # parameter's draw_name
-		self.changesTable.setColumnWidth(1, 150)   # change date
+		self.changesTable.setColumnWidth(1, 170)   # change date
 		self.changesTable.setColumnWidth(2, 100)   # user
 		self.changesTable.setColumnWidth(3, 50)    # show graph
 		self.changesTable.setColumnWidth(4, 50)    # undo button
@@ -720,7 +720,7 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 			# "undo" button widget
 			undo_button = QPushButton(QIcon.fromTheme("undo"), "")
 			undo_button.setToolTip(_translate("HistoryDialog",
-				"Undo this change (recover state of before it was made)"))
+				"Recover state of before change was made (new change will be introduced)"))
 			undo_button.row_id = row
 			QObject.connect(undo_button, SIGNAL("clicked()"), self.undoChange)
 			self.changesTable.setCellWidget(row, 4, undo_button)
@@ -736,10 +736,14 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 		if QMessageBox.Yes != \
 				self.parent.questionBox(_translate("HistoryDialog",
 					"Are you sure you want to undo this change?\n"
-					"Current data will be irreversibly lost.")):
+					"(new overwriting change will be introduced)")):
 			return
 
 		row = self.sender().row_id
+
+		name = self.changesTable.item(row, 5).text()
+		vals = self.changesTable.item(row, 5).data(Qt.UserRole).toPyObject()
+		self.parser.szbwriter(name, vals)
 
 	# end of undoChange()
 
