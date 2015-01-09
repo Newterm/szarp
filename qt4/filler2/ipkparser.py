@@ -8,12 +8,21 @@ import copy
 import fnmatch
 import operator
 import datetime
+import calendar
 import xml.sax
 from collections import namedtuple
+from dateutil.tz import tzlocal
+
+sys.path.insert(0, '/opt/szarp/lib')
+import libpyszbase as pysz
+
 
 INF = sys.maxint
 LSWMSW_REX = re.compile(r'^\s*\([^:]+:[^:]+:[^:]+ msw\)'
 						r'\s*\([^:]+:[^:]+:[^:]+ lsw\)\s*:\s*$')
+
+SZCONFIG_PATH = "/opt/szarp/%s/config/params.xml"
+DEFAULT_PATH = "/etc/szarp/default/config/params.xml"
 
 ParamInfo = namedtuple('ParamInfo', 'name draw_name prec lswmsw')
 ChangeInfo = namedtuple('ChangeInfo', 'name draw_name set_name user date vals')
@@ -22,17 +31,28 @@ class SetInfo:
 	__init__ = lambda self, **kw: setattr(self, '__dict__', kw)
 
 class IPKParser:
-	def __init__(self, filename):
-		with open(filename) as fd:
-			xml_parser = xml.sax.make_parser()
-			handler = IPKParser.IPKDrawSetsHandler()
-			xml_parser.setContentHandler(handler)
-			xml_parser.setFeature(xml.sax.handler.feature_namespaces, True)
-			xml_parser.parse(fd)
-			self.ipk_path = os.path.abspath(filename)
-			self.ipk_dir = os.path.dirname(os.path.dirname(filename))
-			self.ipk_conf = handler.sets
-			self.ipk_title = handler.title
+	def __init__(self, prefix):
+		if prefix is None:
+			filename = DEFAULT_PATH
+		else:
+			filename = SZCONFIG_PATH % prefix
+
+		try:
+			with open(filename) as fd:
+				xml_parser = xml.sax.make_parser()
+				handler = IPKParser.IPKDrawSetsHandler()
+				xml_parser.setContentHandler(handler)
+				xml_parser.setFeature(xml.sax.handler.feature_namespaces, True)
+				xml_parser.parse(fd)
+				pysz.init("/opt/szarp", u"pl_PL")
+				self.ipk_path = os.path.abspath(filename)
+				self.ipk_dir = os.path.dirname(os.path.dirname(filename))
+				self.ipk_prefix = prefix
+				self.ipk_conf = handler.sets
+				self.ipk_title = handler.title
+		except IOError as err:
+			err.bad_path = filename
+			raise
 
 	def getTitle(self):
 		return self.ipk_title
@@ -92,6 +112,17 @@ class IPKParser:
 		return (pname, vals)
 
 	# end of readSZF()
+
+	def extrszb10(self, pname, date_list):
+		param = "%s:%s" % (self.ipk_prefix, pname)
+
+		out = []
+		for d in date_list:
+			dt = d.replace(tzinfo=tzlocal())
+			t = calendar.timegm(dt.utctimetuple())
+			out.append(pysz.get_value(param, t, pysz.PROBE_TYPE.PT_MIN10))
+
+		return out
 
 	class IPKDrawSetsHandler(xml.sax.ContentHandler):
 		def __init__(self):

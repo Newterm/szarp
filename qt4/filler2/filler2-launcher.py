@@ -59,9 +59,6 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 # constants
-SZCONFIG_PATH = "/opt/szarp/%s/config/params.xml"
-DEFAULT_PATH = "/etc/szarp/default/config/params.xml"
-
 SZLIMIT = 32767.0
 SZLIMIT_COM = 2147483647.0
 
@@ -144,7 +141,7 @@ Please send bug reports and questions to <%(email)s>.""" \
 class Filler2(QMainWindow):
 	"""SZARP Filler 2 application's main window (pyQt4)."""
 
-	def __init__(self, szconfig_path, parent=None):
+	def __init__(self, szprefix, parent=None):
 		"""Filler2 class constructor."""
 		QWidget.__init__(self, parent)
 		self.ui = Ui_MainWindow()
@@ -152,11 +149,11 @@ class Filler2(QMainWindow):
 
 		# parse local SZARP configuration
 		try:
-			self.parser = IPKParser(szconfig_path)
-		except IOError:
+			self.parser = IPKParser(szprefix)
+		except IOError as err:
 			self.criticalError(_translate("MainWindow",
 						"Cannot read SZARP configuration")
-						+ " (%s)." % szconfig_path)
+						+ " (%s)." % err.bad_path)
 			sys.exit(1)
 
 		### initialize Qt4 widgets ##
@@ -656,6 +653,7 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 		QDialog.__init__(self, parent)
 		self.setupUi(self)
 		self.parent = parent
+		self.parser = parser
 
 		# table of changes
 		self.changesTable.setColumnCount(6)
@@ -750,18 +748,28 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 		graph of a parameter listed in changesTable (QTableWidget).
 		"""
 		row = self.sender().row_id
+
+		# fetch parameter's data
 		draw_name = self.changesTable.item(row, 0).text()
+		name = self.changesTable.item(row, 5).text()
 		vals = self.changesTable.item(row, 5).data(Qt.UserRole).toPyObject()
 		d = [i[0] for i in vals]
 		v = [i[1] for i in vals]
+		curr_v = self.parser.extrszb10(name, d)
+
+		# show graph of past and current values
 		fig = plt.figure()
 		ax = fig.add_subplot(111)
 		hfmt = mdates.DateFormatter('%Y-%m-%d %H:%M')
 		ax.xaxis.set_major_formatter(hfmt)
-		ax.plot(d, v, linewidth=2, color='red', label=unicode(draw_name))
-		fig.autofmt_xdate()
+		ax.plot(d, v, linewidth=2, color='blue', linestyle='--',
+				label=_translate("HistoryDialog", "before change"))
+		ax.plot(d, curr_v, linewidth=2, color='red',
+				label=_translate("HistoryDialog", "current value"))
+		fig.autofmt_xdate(rotation=-30, ha='left')
 		plt.ylabel(_translate("HistoryDialog", "Parameter's value"))
-		plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.12))
+		plt.legend()
+		plt.title(unicode(draw_name))
 		plt.show()
 
 # end of HistoryDialog_impl class
@@ -908,11 +916,6 @@ def main(argv=None):
 	# deal with command line arguments
 	parser, args, uargs = parse_arguments(argv)
 
-	if args.Dprefix is None:
-		szconfig_path = DEFAULT_PATH
-	else:
-		szconfig_path = SZCONFIG_PATH % args.Dprefix
-
 	app = QApplication(uargs)
 
 	argv2 = app.arguments()
@@ -935,7 +938,7 @@ def main(argv=None):
 
 	# start Filler 2 application
 	QIcon.setThemeName("Tango")
-	filler2app = Filler2(szconfig_path)
+	filler2app = Filler2(args.Dprefix)
 	filler2app.show()
 
 	return app.exec_()
