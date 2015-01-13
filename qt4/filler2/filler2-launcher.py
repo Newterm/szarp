@@ -42,6 +42,7 @@ import types
 import signal
 import datetime
 import argparse
+from collections import namedtuple
 
 # pyQt4 imports
 from PyQt4.QtCore import *
@@ -64,6 +65,8 @@ SZLIMIT_COM = 2147483647.0
 
 # global variables
 __script_name__ = os.path.basename(sys.argv[0])
+
+SzChangeInfo = namedtuple('SzChangeInfo', 'draw_name name start_date end_date value')
 
 # signal handlers
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -506,20 +509,20 @@ class Filler2(QMainWindow):
 			changes_list = []
 
 			for i in range(0, self.ui.changesTable.rowCount()):
-				changes_list.append((
-						unicode(self.ui.changesTable.item(i,0).text()),
-						unicode(self.ui.changesTable.item(i,5).text()),
-						datetime.datetime.strptime(
+				changes_list.append(SzChangeInfo(
+						draw_name = unicode(self.ui.changesTable.item(i,0).text()),
+						name = unicode(self.ui.changesTable.item(i,5).text()),
+						start_date = datetime.datetime.strptime(
 							str(self.ui.changesTable.item(i,1).text()),
 							'%Y-%m-%d %H:%M'),
-						datetime.datetime.strptime(
+						end_date = datetime.datetime.strptime(
 							str(self.ui.changesTable.item(i,2).text()),
 							'%Y-%m-%d %H:%M'),
-						self.ui.changesTable.item(i,3).text()
+						value = self.ui.changesTable.item(i,3).text()
 						))
 
 			# do the job (new thread)
-			szbw = SzbWriter(changes_list)
+			szbw = SzbWriter(changes_list, self.parser)
 			szbp = SzbProgressWin(szbw, parent = self)
 
 			# reset all GUI elements
@@ -784,7 +787,7 @@ class SzbWriter(QThread):
 	jobDone = pyqtSignal()           # signal: all jobs finished
 	paramDone = pyqtSignal(int, str) # signal: one parameter done
 
-	def __init__(self, changes_list):
+	def __init__(self, changes_list, parser):
 		"""SzbWriter class constructor.
 
 		Arguments:
@@ -793,18 +796,23 @@ class SzbWriter(QThread):
 			               param_full_name, start_date, end_date, value).
 		"""
 		QThread.__init__(self)
-		self.plist = changes_list
+		self.chlist = changes_list
+		self.parser = parser
 
 	# end of __init__()
 
 	def run(self):
 		"""Run SzbWriter jobs."""
 		i = 1
-		for p in self.plist:
-			# TODO: do not sleep! do the job!
-			#print "SzbWriter: writing parameter", \
-			#	"%s (%s), from %s to %s, value %s" % p
-			self.paramDone.emit(i, p[0])
+		for ch in self.chlist:
+			dts = [ch.start_date + datetime.timedelta(minutes=x) \
+				   for x in range(0, (ch.end_date-ch.start_date).seconds / 60 + 1, 10)]
+			vals = [(d, ch.value) for d in dts]
+
+			self.parser.backup_szf(ch.name, dts)
+			self.parser.szbwriter(ch.name, vals)
+			self.paramDone.emit(i, ch.draw_name)
+
 			time.sleep(1)
 			i += 1
 
@@ -826,7 +834,7 @@ class SzbProgressWin(QDialog):
 		QDialog.__init__(self, parent)
 
 		self.szb_thread = szb_writer
-		self.len = len(szb_writer.plist)
+		self.len = len(szb_writer.chlist)
 		self.parentWin = parent
 
 		# construct and set dialog's elements

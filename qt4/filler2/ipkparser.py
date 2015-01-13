@@ -10,6 +10,7 @@ import operator
 import datetime
 import calendar
 import subprocess
+import getpass
 import xml.sax
 from collections import namedtuple
 from dateutil.tz import tzlocal
@@ -83,7 +84,7 @@ class IPKParser:
 				filename, fext = os.path.splitext(fn)
 				if fext != '.szf':
 					raise ValueError
-				date = datetime.datetime.strptime(filename[0:14], "%Y%m%d_%H%M_")
+				date = datetime.datetime.strptime(filename[0:16], "%Y%m%d_%H%M%S_")
 				user = filename.split('_')[2]
 				draw_name, set_name = self.getDrawSetName(pname)
 				szfs.append(ChangeInfo(pname, draw_name, set_name,
@@ -138,6 +139,50 @@ class IPKParser:
 		process.communicate(string.encode('utf-8'))
 		if process.wait() != 0:
 			raise IOError
+
+	def pname2path(self, pname):
+		ppath = "/opt/szarp/%s/szbase/" % self.ipk_prefix
+		ppath += self.strip(pname)
+		ppath += '/'
+		return ppath
+
+	def strip(self, pname):
+		def conv(x):
+			if   (ord(x) >= ord('a') and ord(x) <= ord('z')) \
+			  or (ord(x) >= ord('A') and ord(x) <= ord('Z')) \
+			  or (ord(x) >= ord('0') and ord(x) <= ord('9')):
+				  return x
+
+			char_conv = {
+					u'ę' : u'e', u'ó' : u'o', u'ą' : u'a',
+					u'ś' : u's', u'ł' : u'l', u'ż' : u'z',
+					u'ź' : u'z', u'ć' : u'c', u'ń' : u'n',
+					u'Ę' : u'E', u'Ó' : u'O', u'Ą' : u'A',
+					u'Ś' : u'S', u'Ł' : u'L', u'Ż' : u'Z',
+					u'Ź' : u'Z', u'Ć' : u'C', u'Ń' : u'N',
+					u':' : u'/'
+					}
+
+			if x in char_conv:
+				return char_conv[x]
+
+			return u"_"
+
+		return "".join([ conv(x) for x in pname ])
+
+	def backup_szf(self, pname, dates):
+		output = ""
+		vals = self.extrszb10(pname, dates)
+		output += u"Data, %s\n" % pname
+		for d, v in zip(dates, vals):
+			output += u"%s, %s\n" % (d.strftime('%Y-%m-%d %H:%M'), v)
+
+		filepath = u"%s%s_%s.szf" % (self.pname2path(pname),
+					datetime.datetime.now().strftime('%Y%m%d_%H%M%S'),
+					getpass.getuser())
+
+		with open(filepath, 'w') as fd:
+			fd.write(output[:-1])
 
 	class IPKDrawSetsHandler(xml.sax.ContentHandler):
 		def __init__(self):

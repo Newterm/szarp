@@ -210,7 +210,7 @@ Description: SZARP iks system server
 Package: szarp-filler2
 Section: python
 Architecture: all
-Depends: python (>=2.6), ${python:Depends}, szarp-utils, szarp-daemons, python-qt4, python-matplotlib
+Depends: python (>=2.6), ${python:Depends}, szarp-utils, szarp-daemons, python-qt4, python-matplotlib, python-tk
 Description: SZARP Filler 2 is a tool for manual szbase data editing.
  This package contains SZARP Filler 2 application that enable user to manually
  edit szbase database. It is written in pyQt4.
