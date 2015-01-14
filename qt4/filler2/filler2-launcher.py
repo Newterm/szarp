@@ -66,7 +66,8 @@ SZLIMIT_COM = 2147483647.0
 # global variables
 __script_name__ = os.path.basename(sys.argv[0])
 
-SzChangeInfo = namedtuple('SzChangeInfo', 'draw_name name start_date end_date value')
+SzChangeInfo = namedtuple('SzChangeInfo',
+                          'draw_name name start_date end_date value')
 
 # signal handlers
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -672,7 +673,7 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 			_translate("HistoryDialog", "User"),
 			"", ""])
 
-		szfs = parser.readSZChanges()
+		szfs = parser.readSZFs()
 		self.addRows(szfs)
 
 	# end of __init__()
@@ -745,8 +746,17 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 		row = self.sender().row_id
 
 		name = self.changesTable.item(row, 5).text()
+		draw_name = self.changesTable.item(row, 0).text()
 		vals = self.changesTable.item(row, 5).data(Qt.UserRole).toPyObject()
-		self.parser.szbwriter(name, vals)
+		try:
+			self.parser.szbWriter(name, vals)
+		except IPKParser.SzbWriterError:
+			self.parent.warningBox(
+					_translate("MainWindow",
+						"Failed to undo change for parameter ")
+					+ draw_name + ". " +
+					_translate("MainWindow",
+						"Encountered an error while writing to the database."))
 
 	# end of undoChange()
 
@@ -784,8 +794,8 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 class SzbWriter(QThread):
 	"""Worker class for doing szbase modifications in a separate thread."""
 
-	jobDone = pyqtSignal()           # signal: all jobs finished
-	paramDone = pyqtSignal(int, str) # signal: one parameter done
+	jobDone = pyqtSignal()                # signal: all jobs finished
+	paramDone = pyqtSignal(int, str, int) # signal: one parameter done
 
 	def __init__(self, changes_list, parser):
 		"""SzbWriter class constructor.
@@ -803,18 +813,23 @@ class SzbWriter(QThread):
 
 	def run(self):
 		"""Run SzbWriter jobs."""
-		i = 1
+		nr = 1
 		for ch in self.chlist:
 			dts = [ch.start_date + datetime.timedelta(minutes=x) \
 				   for x in range(0, (ch.end_date-ch.start_date).seconds / 60 + 1, 10)]
 			vals = [(d, ch.value) for d in dts]
 
-			self.parser.backup_szf(ch.name, dts)
-			self.parser.szbwriter(ch.name, vals)
-			self.paramDone.emit(i, ch.draw_name)
+			try:
+				self.parser.backupSZF(ch.name, dts)
+				self.parser.szbWriter(ch.name, vals)
+				self.paramDone.emit(nr, ch.draw_name, 0)
+			except IPKParser.SzfBackupError:
+				self.paramDone.emit(nr, ch.draw_name, 1)
+			except IPKParser.SzbWriterError:
+				self.paramDone.emit(nr, ch.draw_name, 2)
 
 			time.sleep(1)
-			i += 1
+			nr += 1
 
 		self.jobDone.emit()
 
@@ -836,6 +851,7 @@ class SzbProgressWin(QDialog):
 		self.szb_thread = szb_writer
 		self.len = len(szb_writer.chlist)
 		self.parentWin = parent
+		self.failed_jobs = []
 
 		# construct and set dialog's elements
 		self.nameLabel = QLabel("0 / %s" % (self.len))
@@ -867,19 +883,28 @@ class SzbProgressWin(QDialog):
 
 	# end of __init__()
 
-	def update(self, val, pname):
+	def update(self, val, pname, status):
 		"""Slot for signal paramDone() from szb_thread (SzbWriter). Updates
 		progress bar state.
 
 		Arguments:
 			val - number of processed parameter.
 			pname - processed parameter's name.
+			status - job exit status.
 		"""
 		self.progressbar.setValue(val)
 		progress = "%s / %s" % (val, self.len)
+		done = ""
+
+		if status != 0:
+			done = _translate("MainWindow", "failed.")
+			self.failed_jobs.append((pname, status))
+		else:
+			done = _translate("MainWindow", "done.")
+
 		self.nameLabel.setText(progress)
 		self.paramLabel.setText(_translate("MainWindow", "Writing parameter") +
-				" " + pname + "...")
+				" " + pname + "... " + done)
 
 	# end of update()
 
@@ -888,7 +913,20 @@ class SzbProgressWin(QDialog):
 		about a finished job.
 		"""
 		self.hide()
-		self.parentWin.infoBox(_translate("MainWindow", "Writing to szbase done."))
+		if len(self.failed_jobs) == 0:
+			self.parentWin.infoBox(_translate("MainWindow", "Writing to szbase done."))
+		else:
+			err = [
+				"",
+				_translate("MainWindow", "failed to make backup, writing aborted"),
+				_translate("MainWindow", "failed to write to database, data may be inconsistent")
+				]
+			estr = ""
+			for p,e in self.failed_jobs:
+				estr += "* %s - %s\n\n" % (p, err[e])
+			self.parentWin.warningBox(_translate("MainWindow",
+				"Writing to szbase done. Following parameters failed to proceed:")
+				+ "\n\n" + estr)
 		self.parentWin.setEnabled(True)
 
 	# end of fin()
