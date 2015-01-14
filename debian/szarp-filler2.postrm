@@ -1,0 +1,6 @@
+#! /bin/sh
+
+delgroup --system --only-if-empty szbase
+
+exit 0
+

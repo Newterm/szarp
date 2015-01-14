@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e;
+
+. /usr/share/debconf/confmodule;
+
+case "$1" in
+    configure)
+    addgroup --system szbase
+    ;;
+esac
+
+exit 0
