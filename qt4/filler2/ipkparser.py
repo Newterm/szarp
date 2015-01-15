@@ -76,8 +76,8 @@ class IPKParser:
 			self.origin = origin
 	# end of class SzbWriterError
 
-	class SzfBackupError(Exception):
-		"Error raised by backupSZF() method."
+	class SzfRecordError(Exception):
+		"Error raised by recordSzf() method."
 		def __init__(self, origin):
 			if origin is not None:
 				super(Exception, self).__init__(origin.message)
@@ -85,7 +85,7 @@ class IPKParser:
 				super(Exception, self).__init__()
 
 			self.origin = origin
-	# end of class SzfBackupError
+	# end of class SzfRecordError
 
 	def __init__(self, prefix):
 		"""IPKParser constructor.
@@ -175,11 +175,14 @@ class IPKParser:
 
 	# end of getSetAndDrawName()
 
-	def readSZFs(self):
+	def readSzfRecords(self):
 		szfs = []
 		for root, dirnames, filenames in os.walk(os.path.join(self.ipk_dir, 'szbase')):
 			for fn in fnmatch.filter(filenames, '*.szf'):
-				pname, vals = self.readSZF(os.path.join(root, fn))
+				try:
+					pname, vals = self.readSzf(os.path.join(root, fn))
+				except:
+					continue
 				filename, fext = os.path.splitext(fn)
 				if fext != '.szf':
 					raise ValueError
@@ -190,9 +193,9 @@ class IPKParser:
 									   user, date, vals))
 		return szfs
 
-	# end of readSZFs()
+	# end of readSzfRecords()
 
-	def readSZF(self, filename):
+	def readSzf(self, filename):
 		with open(filename) as fd:
 			reader = csv.reader(fd, delimiter=',')
 
@@ -214,7 +217,7 @@ class IPKParser:
 
 		return (pname, vals)
 
-	# end of readSZF()
+	# end of readSzf()
 
 	def extrszb10(self, pname, date_list):
 		param = u"%s:%s" % (self.ipk_prefix, pname)
@@ -284,9 +287,9 @@ class IPKParser:
 		return "".join([ conv(x) for x in pname ])
 	# end of strip()
 
-	def backupSZF(self, pname, dates):
+	def recordSzf(self, pname, dates):
 		try:
-			output = ""
+			output = u""
 			vals = self.extrszb10(pname, dates)
 			output += u"Data, %s\n" % pname
 			for d, v in zip(dates, vals):
@@ -297,13 +300,13 @@ class IPKParser:
 						getpass.getuser())
 
 			with open(filepath, 'w') as fd:
-				fd.write(output[:-1])
+				fd.write(output[:-1].encode('utf-8'))
 		except IOError as err:
-			raise self.SzfBackupError(err)
+			raise self.SzfRecordError(err)
 		except:
-			raise self.SzfBackupError(None)
+			raise self.SzfRecordError(None)
 
-	# end of backupSZF()
+	# end of recordSzf()
 
 	class IPKDrawSetsHandler(xml.sax.ContentHandler):
 		"""Content handler for SAX with "feature namespaces". Fetches

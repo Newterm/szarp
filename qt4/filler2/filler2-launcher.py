@@ -38,15 +38,13 @@ __email__     = "coders AT newterm.pl"
 import os
 import sys
 import time
+import math
 import types
+import fcntl
 import signal
 import datetime
 import argparse
 from collections import namedtuple
-
-# pyQt4 imports
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
 
 # local imports
 from filler2 import Ui_MainWindow
@@ -55,6 +53,10 @@ from DatetimeDialog import Ui_DatetimeDialog
 from AboutDialog import Ui_AboutDialog
 from HistoryDialog import Ui_HistoryDialog
 
+# pyQt4 imports
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+
 # other imports
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
@@ -62,10 +64,12 @@ import matplotlib.dates as mdates
 # constants
 SZLIMIT = 32767.0
 SZLIMIT_COM = 2147483647.0
+LOCKFILE = '/tmp/.filler2_lock'
 
 # global variables
 __script_name__ = os.path.basename(sys.argv[0])
 
+# containers definitions
 SzChangeInfo = namedtuple('SzChangeInfo',
                           'draw_name name start_date end_date value')
 
@@ -151,6 +155,15 @@ class Filler2(QMainWindow):
 		self.ui = Ui_MainWindow()
 		self.ui.setupUi(self)
 
+		# check single instance
+		try:
+			self.lockf = open(LOCKFILE, 'a')
+			fcntl.lockf(self.lockf, fcntl.LOCK_EX | fcntl.LOCK_NB)
+		except IOError:
+			self.criticalError(_translate("MainWindow",
+				"Cannot acquire a single instance lock. There is "
+				" other Filler 2 program running on the system."))
+
 		# parse local SZARP configuration
 		try:
 			self.parser = IPKParser(szprefix)
@@ -191,11 +204,6 @@ class Filler2(QMainWindow):
 
 		self.ui.changesTable.horizontalHeader().setVisible(False)
 		self.ui.changesTable.setRowCount(0)
-
-		# FIXME: delete in final version
-		self.infoBox(u"To jest testowa wersja aplikacji Filler 2. "
-				u"Baza danych nie będzie modyfikowana. "
-				u"Nie wszystkie parametry/zestawy są dostępne.")
 
 	# end of __init__()
 
@@ -673,7 +681,7 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 			_translate("HistoryDialog", "User"),
 			"", ""])
 
-		szfs = parser.readSZFs()
+		szfs = parser.readSzfRecords()
 		self.addRows(szfs)
 
 	# end of __init__()
@@ -733,6 +741,13 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 
 	# end of addRows()
 
+	def refresh(self):
+		self.changesTable.setRowCount(0)
+		szfs = self.parser.readSzfRecords()
+		self.addRows(szfs)
+
+	# end of refresh()
+
 	def undoChange(self):
 		"""Slot for signal clicked() from undo_button (QPushButton). Reverts
 		change listed in changesTable (QTableWidget).
@@ -745,17 +760,31 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 
 		row = self.sender().row_id
 
-		name = self.changesTable.item(row, 5).text()
+		name = unicode(self.changesTable.item(row, 5).text())
 		draw_name = self.changesTable.item(row, 0).text()
 		vals = self.changesTable.item(row, 5).data(Qt.UserRole).toPyObject()
+		dts = [d for d,v in vals]
+
 		try:
+			self.parser.recordSzf(name, dts)
 			self.parser.szbWriter(name, vals)
-		except IPKParser.SzbWriterError:
+			self.parent.infoBox(_translate("HistoryDialog",
+				"Undoing change finished successfully."))
+			self.refresh()
+		except IPKParser.SzfRecordError:
 			self.parent.warningBox(
-					_translate("MainWindow",
+					_translate("HistoryDialog",
 						"Failed to undo change for parameter ")
 					+ draw_name + ". " +
-					_translate("MainWindow",
+					_translate("HistoryDialog",
+						"Encountered an error while making change record."))
+
+		except IPKParser.SzbWriterError:
+			self.parent.warningBox(
+					_translate("HistoryDialog",
+						"Failed to undo change for parameter ")
+					+ draw_name + ". " +
+					_translate("HistoryDialog",
 						"Encountered an error while writing to the database."))
 
 	# end of undoChange()
@@ -770,21 +799,52 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 		draw_name = self.changesTable.item(row, 0).text()
 		name = self.changesTable.item(row, 5).text()
 		vals = self.changesTable.item(row, 5).data(Qt.UserRole).toPyObject()
-		d = [i[0] for i in vals]
+		orgi_d = [i[0] for i in vals]
 		v = [i[1] for i in vals]
+		d = orgi_d
 		curr_v = self.parser.extrszb10(name, d)
+		curr_d = d
+
+		# validate data
+		only_nan = True
+		for i in v:
+			if not math.isnan(i):
+				only_nan = False
+		if only_nan:
+			v = []
+			d = []
+
+		only_nan = True
+		for i in curr_v:
+			if not math.isnan(i):
+				only_nan = False
+		if only_nan:
+			curr_v = []
+			curr_d = []
+
+		if len(v) == 0 and len(curr_v) == 0:
+			self.parent.infoBox(_translate("HistoryDialog", "No data to be "
+				"plotted - parameter is empty (both before and after the "
+				"change) in period from ") +
+				orgi_d[0].strftime('%Y-%m-%d %H:%M') +
+				_translate("HistoryDialog", " to ") +
+				orgi_d[-1].strftime('%Y-%m-%d %H:%M') +
+				".")
+			return
 
 		# show graph of past and current values
-		fig = plt.figure()
-		ax = fig.add_subplot(111)
-		hfmt = mdates.DateFormatter('%Y-%m-%d %H:%M')
-		ax.xaxis.set_major_formatter(hfmt)
-		ax.plot(d, v, linewidth=2, color='blue', linestyle='--',
+		plt.cla()
+		plt.clf()
+		plt.plot(d, v, linewidth=2, color='blue', linestyle='--',
 				label=_translate("HistoryDialog", "before change"))
-		ax.plot(d, curr_v, linewidth=2, color='red',
+		plt.plot(curr_d, curr_v, linewidth=2, color='red',
 				label=_translate("HistoryDialog", "current value"))
-		fig.autofmt_xdate(rotation=-30, ha='left')
+
+		plt.gcf().autofmt_xdate(rotation=-30, ha='left')
+		hfmt = mdates.DateFormatter('%Y-%m-%d %H:%M')
+		plt.gca().xaxis.set_major_formatter(hfmt)
 		plt.ylabel(_translate("HistoryDialog", "Parameter's value"))
+
 		plt.legend()
 		plt.title(unicode(draw_name))
 		plt.show()
@@ -820,10 +880,10 @@ class SzbWriter(QThread):
 			vals = [(d, ch.value) for d in dts]
 
 			try:
-				self.parser.backupSZF(ch.name, dts)
+				self.parser.recordSzf(ch.name, dts)
 				self.parser.szbWriter(ch.name, vals)
 				self.paramDone.emit(nr, ch.draw_name, 0)
-			except IPKParser.SzfBackupError:
+			except IPKParser.SzfRecordError:
 				self.paramDone.emit(nr, ch.draw_name, 1)
 			except IPKParser.SzbWriterError:
 				self.paramDone.emit(nr, ch.draw_name, 2)
@@ -918,7 +978,7 @@ class SzbProgressWin(QDialog):
 		else:
 			err = [
 				"",
-				_translate("MainWindow", "failed to make backup, writing aborted"),
+				_translate("MainWindow", "failed to make change record, writing aborted"),
 				_translate("MainWindow", "failed to write to database, data may be inconsistent")
 				]
 			estr = ""
