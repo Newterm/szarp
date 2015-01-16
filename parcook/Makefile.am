@@ -87,7 +87,13 @@ bin_PROGRAMS = \
               zmddmn \
 	      pythondmn
 
+if WANT_SNAP7DMN
+bin_PROGRAMS += snap7dmn
+endif
+
+
 EXTRA_PROGRAMS = psetd ddedmn unitedmn dlmsdmn
+
 
 basedmn_SOURCES = base_daemon.cc base_daemon.h
 
@@ -216,3 +222,6 @@ prodmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TI
 
 pythondmn_SOURCES = pythondmn.cc
 pythondmn_LDADD = $(LDADD) -l$(BOOST_PYTHON_LIB) @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_PYTHON_MODULE) $(PYTHON_LDFLAGS)
+
+snap7dmn_SOURCES = snap7dmn.cc $(basedmn_SOURCES)
+snap7dmn_LDADD = $(LDADD) -lsnap7
