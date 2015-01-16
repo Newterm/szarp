@@ -802,8 +802,8 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 		orgi_d = [i[0] for i in vals]
 		v = [i[1] for i in vals]
 		d = orgi_d
-		curr_v = self.parser.extrszb10(name, d)
 		curr_d = d
+		curr_v = self.parser.extrszb10(name, curr_d)
 
 		# validate data
 		only_nan = True
@@ -875,8 +875,9 @@ class SzbWriter(QThread):
 		"""Run SzbWriter jobs."""
 		nr = 1
 		for ch in self.chlist:
+			dsec = int((ch.end_date-ch.start_date).total_seconds())
 			dts = [ch.start_date + datetime.timedelta(minutes=x) \
-				   for x in range(0, (ch.end_date-ch.start_date).seconds / 60 + 1, 10)]
+				   for x in range(0, dsec / 60 + 1, 10)]
 			vals = [(d, ch.value) for d in dts]
 
 			try:
