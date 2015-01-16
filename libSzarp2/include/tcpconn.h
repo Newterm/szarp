@@ -37,7 +37,7 @@ protected:
 	/** Actual error function, called by ErrorCallback(). */
 	void Error(struct bufferevent *bufev, short event);
 
-	void OpenFinished();
+	virtual void OpenFinished();
 protected:
 	int m_connect_fd;	/**< Client connecting socket file descriptor. */
 	bool m_connected;	/**< Client socket connected to server. */

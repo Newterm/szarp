@@ -72,7 +72,9 @@ BASECONN = \
 			$(DMN_DIR)/bserialport.cc \
 			$(DMN_DIR)/serialport.cc \
 			$(DMN_DIR)/serialadapter.cc \
-			$(DMN_DIR)/tcpconn.cc
+			$(DMN_DIR)/tcpconn.cc \
+			$(DMN_DIR)/httpclient.cc \
+			$(DMN_DIR)/atcconn.cc
 endif
 
 

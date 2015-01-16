@@ -43,6 +43,7 @@
 #include "ipchandler.h"
 #include "serialport.h"
 #include "serialadapter.h"
+#include "atcconn.h"
 #include "daemonutils.h"
 
 #ifndef SZARP_NO_DATA
@@ -124,7 +125,8 @@ public:
 			m_wait_for_data_ms(6000),
 			m_path(""),
 			m_ip(""),
-			m_serial_port(NULL)
+			m_use_atc(false),
+			m_connection(NULL)
 	{
 		m_query_command.push_back('/');
 		m_query_command.push_back('#');
@@ -140,8 +142,8 @@ public:
 		if (m_ipc != NULL) {
 			delete m_ipc;
 		}
-		if (m_serial_port != NULL) {
-			delete m_serial_port;
+		if (m_connection != NULL) {
+			delete m_connection;
 		}
 	}
 
@@ -227,29 +229,38 @@ protected:
 
 	std::string m_path;		/**< Serial port file descriptor path */
 
-	std::string m_ip;		/**< SerialAdapter ip */
+	std::string m_ip;		/**< SerialAdapter/AtcConnection ip */
 	int m_data_port;		/**< SerialAdapter data port number */
 	int m_cmd_port;			/**< SerialAdapter command port number */
+	bool m_use_atc;
 
-	BaseSerialPort *m_serial_port;
+	BaseConnection *m_connection;
 	struct event_base *m_event_base;
 };
 
 void kams_daemon::StartDo() {
 	evtimer_set(&m_ev_timer, TimerCallback, this);
 	event_base_set(m_event_base, &m_ev_timer);
+	dolog(10, "%s: Creating connection...", m_id.c_str());
 	try {
 		if (m_ip.compare("") != 0) {
-			SerialAdapter *client = new SerialAdapter(m_event_base);
-			m_serial_port = client;
-			client->InitTcp(m_ip, m_data_port, m_cmd_port);
+			if (m_use_atc) {
+				AtcConnection *client = new AtcConnection(m_event_base);
+				client->InitTcp(m_ip);
+				m_connection = client;
+			} else {
+				SerialAdapter *client = new SerialAdapter(m_event_base);
+				client->InitTcp(m_ip, m_data_port, m_cmd_port);
+				m_connection = client;
+			}
 		} else {
 			SerialPort *port = new SerialPort(m_event_base);
-			m_serial_port = port;
+			m_connection = port;
 			port->Init(m_path);
 		}
-		m_serial_port->AddListener(this);
-		m_serial_port->Open();
+		m_connection->AddListener(this);
+		dolog(10, "%s: Opening connection...", m_id.c_str());
+		m_connection->Open();
 	} catch (SerialPortException &e) {
 		dolog(0, "%s: Open port resulted in: %s", m_id.c_str(), e.what());
 		SetRestart();
@@ -356,8 +367,8 @@ void kams_daemon::Do()
 		case RESTART:
 			dolog(10, "%s: RESTART", m_id.c_str());
 			try {
-				m_serial_port->Close();
-				m_serial_port->Open();
+				m_connection->Close();
+				m_connection->Open();
 			} catch (SerialPortException &e) {
 				dolog(0, "%s: %s %s", m_id.c_str(), "Restart failed:", e.what());
 				for (int i = 0; i < m_ipc->m_params_count; i++) {
@@ -390,20 +401,20 @@ void kams_daemon::SelectSerialMode(SerialMode mode)
 			break;
 	}
 
-	m_serial_port->SetConfiguration(conf);
+	m_connection->SetConfiguration(conf);
 }
 
 void kams_daemon::WriteChar()
 {
 	unsigned char c = m_query_command.at(m_chars_written);
-	m_serial_port->WriteData(&c, 1);
+	m_connection->WriteData(&c, 1);
 	m_chars_written++;
 }
 
 void kams_daemon::ReadError(const BaseConnection *conn, short event)
 {
 	dolog(0, "%s: %s", m_id.c_str(), "ReadError, closing connection..");
-	m_serial_port->Close();
+	m_connection->Close();
 	SetRestart();
 	ScheduleNext(RESTART_INTERVAL_MS);
 }
@@ -411,6 +422,9 @@ void kams_daemon::ReadError(const BaseConnection *conn, short event)
 void kams_daemon::ReadData(const BaseConnection *conn,
 		const std::vector<unsigned char>& data)
 {
+	if (m_daemon_conf->GetSingle()) {
+		std::cout << "+";
+	}
 	m_read_buffer.insert(m_read_buffer.end(), data.begin(), data.end());
 	unsigned int expected_response_size = RESPONSE_SIZE - 1;	// LF isn't read by bufferevent
 	if (m_read_buffer.size() == expected_response_size) {
@@ -589,16 +603,22 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 
 	xmlChar *c = get_device_node_extra_prop(xp_ctx, "tcp-ip");
 	if (c == NULL) {
-		xmlChar *path = get_device_node_prop(xp_ctx, "path");
-		if (path == NULL) {
-			KamsDmnException ex;
-			ex.SetMsg("ERROR!: neither IP nor device path has been specified");
-			throw ex;
+		xmlChar *atc_ip = get_device_node_extra_prop(xp_ctx, "atc-ip");
+		if (atc_ip == NULL) {
+			xmlChar *path = get_device_node_prop(xp_ctx, "path");
+			if (path == NULL) {
+				KamsDmnException ex;
+				ex.SetMsg("ERROR!: neither IP nor device path has been specified");
+				throw ex;
+			}
+			m_path.assign((const char*)path);
+			xmlFree(path);
+			m_id = m_path;
 		}
-		m_path.assign((const char*)path);
-		xmlFree(path);
-
-		m_id = m_path;
+		m_ip.assign((const char*)atc_ip);
+		xmlFree(atc_ip);
+		m_id = m_ip;
+		m_use_atc = true;
 	} else {
 		m_ip.assign((const char*)c);
 		xmlFree(c);
@@ -647,11 +667,14 @@ int main(int argc, char *argv[])
 	kams_daemon daemon;
 
 	try {
+		dolog(10, "Reading config");
 		daemon.ReadConfig(argc, argv);
 	} catch (kams_daemon::KamsDmnException &e) {
+		dolog(0, "Exception occured:");
 		dolog(0, "%s", e.what());
 		exit(1);
 	}
+	dolog(10, "Starting daemon");
 
 	try {
 		daemon.StartDo();

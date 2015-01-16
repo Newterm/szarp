@@ -1,6 +1,7 @@
 #ifndef __BASECONN_H_
 #define __BASECONN_H_
 
+#include "serialportconf.h"
 #include "exception.h"
 #include <event.h>
 #include <string>
@@ -8,32 +9,6 @@
 
 /** @file Virtual connection using observer pattern
  */
-
-/**self-descriptive struct holding all aspects of serial port conifguration in one place*/
-class SerialPortConfiguration {
-public:
-	SerialPortConfiguration()
-	:
-	path(""), parity(NONE), stop_bits(1), speed(0), char_size(CS_8)
-	{}
-
-	std::string path;
-	enum PARITY {
-		NONE,
-		ODD,
-		EVEN,
-		MARK,
-		SPACE
-	} parity;
-	int stop_bits;
-	int speed;
-	enum CHAR_SIZE {
-		CS_5,
-		CS_6,
-		CS_7,
-		CS_8
-	} char_size;
-};
 
 class BaseConnection;
 
@@ -95,10 +70,10 @@ public:
 
 protected:
 	/** Callbacks, notify listeners */
-	void OpenFinished();
+	virtual void OpenFinished();
 	void ReadData(const std::vector<unsigned char>& data);
 	void SetConfigurationFinished();
-	void Error(short int event);
+	virtual void Error(short int event);
 
 protected:
 	struct event_base* const m_event_base;
