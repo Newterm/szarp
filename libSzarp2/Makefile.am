@@ -68,6 +68,7 @@ if MINGW32_OPT
 BASECONN =
 else
 BASECONN = \
+			$(DMN_DIR)/daemonutils.cc \
 			$(DMN_DIR)/baseconn.cc \
 			$(DMN_DIR)/bserialport.cc \
 			$(DMN_DIR)/serialport.cc \
@@ -112,7 +113,6 @@ libSzarp2_la_SOURCES = \
 			$(SOURCE_DIR)/misc/base64.cc \
 			$(DMN_DIR)/mbus.cc \
 			$(DMN_DIR)/ppset.cc \
-			$(DMN_DIR)/daemonutils.cc \
 			$(BASECONN) \
 			$(SOURCE_DIR)/misc/xscale.cc \
 			\
