@@ -30,7 +30,7 @@ __license__ = \
 __author__    = "Tomasz Pieczerak <tph AT newterm.pl>"
 __copyright__ = "Copyright (C) 2014-2015 Newterm"
 __version__   = "2.0"
-__status__    = "devel"
+__status__    = "beta"
 __email__     = "coders AT newterm.pl"
 
 
@@ -44,6 +44,7 @@ import fcntl
 import signal
 import datetime
 import argparse
+import subprocess
 from collections import namedtuple
 
 # local imports
@@ -172,6 +173,25 @@ class Filler2(QMainWindow):
 						"Cannot read SZARP configuration")
 						+ " (%s)." % err.bad_path)
 			sys.exit(1)
+		except ValueError as err:
+			self.criticalError(_translate("MainWindow",
+						"Non-valid SZARP database prefix."))
+			sys.exit(1)
+
+		# verify SZARP prefix versus hostname
+		try:
+			process = subprocess.Popen(
+					["/bin/hostname", "-s"], stdout=subprocess.PIPE)
+			out, err = process.communicate()
+			if err == None:
+				hostname = out[:-1]
+
+			if hostname != self.parser.ipk_prefix:
+				self.warningBox(_translate("MainWindow",
+					"Warning! Database prefix differs from hostname, "
+					"you are probably modifying non-local database."))
+		except OSError:
+			pass
 
 		### initialize Qt4 widgets ##
 

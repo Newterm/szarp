@@ -1,3 +1,9 @@
 #!/bin/sh
 
-python /opt/szarp/lib/python/filler2-launcher.py "$@"
+CGRP=`id -gn`
+
+if [ "x$CGRP" = "xszbase" ]; then
+	/usr/bin/env python /opt/szarp/lib/python/filler2-launcher.py "$@"
+else
+	sudo -n -g szbase /usr/bin/env python /opt/szarp/lib/python/filler2-launcher.py "$@" || exit 1
+fi

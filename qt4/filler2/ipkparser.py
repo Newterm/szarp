@@ -48,8 +48,7 @@ import libpyszbase as pysz
 INF = sys.maxint
 
 SZCONFIG_PATH = "/opt/szarp/%s/config/params.xml"
-DEFAULT_PATH = "/etc/szarp/default/config/params.xml"
-
+PREFIX_REX = re.compile(r'^[a-z]+$')
 LSWMSW_REX = re.compile(r'^\s*\([^:]+:[^:]+:[^:]+ msw\)'
 						r'\s*\([^:]+:[^:]+:[^:]+ lsw\)\s*:\s*$')
 
@@ -93,10 +92,21 @@ class IPKParser:
 		Arguments:
 			prefix - configuration's prefix.
 		"""
-		if prefix is None:
-			filename = DEFAULT_PATH
-		else:
-			filename = SZCONFIG_PATH % prefix
+		if prefix is None or len(prefix) == 0:
+			try:
+				process = subprocess.Popen(
+						["/opt/szarp/bin/lpparse", "prefix"], stdout=subprocess.PIPE)
+				out, err = process.communicate()
+				if err == None:
+					prefix = out[1:-1]
+			except OSError:
+				pass
+
+		if prefix is None or not PREFIX_REX.match(prefix):
+			raise ValueError("Non-valid database prefix.")
+
+		# construct SZARP configuration path
+		filename = SZCONFIG_PATH % prefix
 
 		try:
 			with open(filename) as fd:
