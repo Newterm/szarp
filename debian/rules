@@ -77,9 +77,12 @@ NO_CB_PACK_OPTS ?= \
 		-pszarp-viewer \
 		-pszarp-xsltd \
 		-pszarp-dbg-symbols \
-		-pszarp-iks \
-		-pszarp-iks-server \
 		-pszarp-filler2
+
+ifneq ($(NO_IKS), 1)
+	NO_CB_PACK_OPTS += -pszarp-iks 
+	NO_CB_PACK_OPTS += -pszarp-iks-server
+endif
 
 DOC_PACKAGES ?= \
 		-pszarp-doc-pdf \
@@ -109,7 +112,7 @@ debian/config-status-no-cb: configure
 	fi;
 	./configure CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" --prefix=/$(PREFIX) \
 		--host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) \
-		--enable-deb-build $(CFG_ARGS)
+		--enable-deb-build $(CFG_ARGS) $(EXTRA_CFG_ARGS)
 	@touch $@
 
 debian/build-no-cb-stamp: debian/config-status-no-cb
