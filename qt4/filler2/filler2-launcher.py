@@ -66,6 +66,7 @@ import matplotlib.dates as mdates
 SZLIMIT = 32767.0
 SZLIMIT_COM = 2147483647.0
 LOCKFILE = '/tmp/.filler2_lock'
+LOCKFILE_FD = None
 
 # global variables
 __script_name__ = os.path.basename(sys.argv[0])
@@ -158,8 +159,8 @@ class Filler2(QMainWindow):
 
 		# check single instance
 		try:
-			self.lockf = open(LOCKFILE, 'a')
-			fcntl.lockf(self.lockf, fcntl.LOCK_EX | fcntl.LOCK_NB)
+			LOCKFILE_FD = open(LOCKFILE, 'a')
+			fcntl.lockf(LOCKFILE_FD, fcntl.LOCK_EX | fcntl.LOCK_NB)
 		except IOError:
 			self.criticalError(_translate("MainWindow",
 				"Cannot acquire a single instance lock. There is "
@@ -543,7 +544,7 @@ class Filler2(QMainWindow):
 						name = unicode(self.ui.changesTable.item(i,5).text()),
 						start_date = datetime.datetime.strptime(
 							str(self.ui.changesTable.item(i,1).text()),
-							'%Y-%m-%d %H:%M'),
+							'%Y-%m-%d %H:%M') - datetime.timedelta(minutes=10),
 						end_date = datetime.datetime.strptime(
 							str(self.ui.changesTable.item(i,2).text()),
 							'%Y-%m-%d %H:%M'),
@@ -856,14 +857,14 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 		plt.cla()
 		plt.clf()
 		plt.plot(d, v, linewidth=2, color='blue', linestyle='--',
-				label=_translate("HistoryDialog", "before change"))
+				label=unicode(_translate("HistoryDialog", "before change")))
 		plt.plot(curr_d, curr_v, linewidth=2, color='red',
-				label=_translate("HistoryDialog", "current value"))
+				label=unicode(_translate("HistoryDialog", "current value")))
 
 		plt.gcf().autofmt_xdate(rotation=-30, ha='left')
 		hfmt = mdates.DateFormatter('%Y-%m-%d %H:%M')
 		plt.gca().xaxis.set_major_formatter(hfmt)
-		plt.ylabel(_translate("HistoryDialog", "Parameter's value"))
+		plt.ylabel(unicode(_translate("HistoryDialog", "Parameter's value")))
 
 		plt.legend()
 		plt.title(unicode(draw_name))
