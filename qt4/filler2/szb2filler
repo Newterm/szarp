@@ -1,0 +1,103 @@
+#!/bin/sh
+
+# szb2filler is a part of SZARP SCADA software
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA  02110-1301, USA
+#
+# Author: Tomasz Pieczerak <tph AT newterm.pl>
+
+VERSION="1.0"
+
+# display usage info function
+usage(){
+	cat 1>&2 <<EOT
+Usage: `basename $0` [OPTION] [DIR/FILE]...
+
+Try '`basename $0` --help' for more options.
+EOT
+}
+
+# check number of arguments
+if [ $# -eq 0 ]; then
+	echo "`basename $0`: error: missing DIR/FILE or OPTION" 1>&2
+	echo 1>&2
+	usage
+	exit 1
+fi
+
+# display help on "-h" or "--help" option
+if [ "x$1" = "x--help" -o "x$1" = "x-h" ]; then
+	cat <<EOT
+szb2filler $VERSION, set permissions and ownership of szbase files for Filler 2
+
+Usage: `basename $0` [OPTION] [DIR/FILE]...
+
+This script sets appropriate file and directory permissions and ownership
+to enable Filler 2 modifications.
+
+Startup:
+    -h, --help     print this help.
+    -V, --version  display the version of szb2filler and exit.
+
+Mail bug reports and suggestions to <coders AT newterm.pl>.
+EOT
+	exit 0
+fi
+
+# print program version on "-V" or "--version" option
+if [ "x$1" = "x--version" -o "x$1" = "x-V" ]; then
+	cat <<EOT
+szb2filler $VERSION
+
+Copyright (C) 2015 Newterm
+License GPLv2: GNU General Public License, version 2
+<http://www.gnu.org/licenses/>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written and maintained by Tomasz Pieczerak <tph AT newterm.pl>.
+Please send bug reports and questions to <coders AT newterm.pl>.
+EOT
+	exit 0
+fi
+
+# check if running as root
+UID=`id -u`
+if [ $UID -ne 0 ]; then
+	echo "`basename $0`: error: must be run as root" 1>&2
+	echo 1>&2
+	usage
+	exit 1
+fi
+
+# set permissions and ownership to enable Filler 2 modifications
+while [ "x$1" != "x" ]
+do
+	if [ -d "$1" ]; then
+		chown -R root:szbase "$1"
+		find "$1" -type d -print0 | xargs -0 chmod 775
+		find "$1" -type f -name "*.szb" -print0 | xargs -0 chmod 664
+	elif [ -f "$1" ]; then
+		chown root:szbase "$1"
+		chmod 664 "$1"
+	else
+		echo "`basename $0`: warning: $1 is neither file nor directory, omitted" 1>&2
+	fi
+
+	shift
+done
+
+exit 0

@@ -11,6 +11,7 @@ filler2_LOCALES = @srcdir@/pl/filler2_pl.qm
 filler2_LOCALES_SRC = pl/filler2_pl.ts
 
 filler2_script = @srcdir@/filler2
+szb2filler_script = @srcdir@/szb2filler
 
 filler2dir = @prefix@/lib/python
 
@@ -48,6 +49,7 @@ install-data-local: $(filler2_LOCALES)
 	$(INSTALL) $(filler2_LOCALES) \
                 $(DESTDIR)@prefix@/resources/locales/qt4
 	$(INSTALL) $(filler2_script) $(DESTDIR)@prefix@/bin
+	$(INSTALL) $(szarp2filler) $(DESTDIR)@prefix@/bin
 
 update-ts:
 	pylupdate4 $(filler2_PROJECT)

@@ -112,7 +112,7 @@ Files: opt/szarp/lib/python/{filler2-launcher.py*,filler2.py*,ipkparser.py*,Abou
 Files: opt/szarp/resources/locales/qt4/filler2_pl.qm
 Files: opt/szarp/resources/wx/icons/filler2.png
 Files: opt/szarp/resources/qt4/icons/{filler2.png,qt4.png}
-Files: opt/szarp/bin/filler2
+Files: opt/szarp/bin/{filler2,szb2filler}
 Files: opt/szarp/resources/filler2.desktop
 Files: usr/share/applications/filler2.desktop
 
