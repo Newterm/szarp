@@ -42,6 +42,7 @@ import math
 import types
 import fcntl
 import signal
+import atexit
 import datetime
 import argparse
 import subprocess
@@ -66,7 +67,6 @@ import matplotlib.dates as mdates
 SZLIMIT = 32767.0
 SZLIMIT_COM = 2147483647.0
 LOCKFILE = '/tmp/.filler2_lock'
-LOCKFILE_FD = None
 
 # global variables
 __script_name__ = os.path.basename(sys.argv[0])
@@ -148,6 +148,32 @@ Please send bug reports and questions to <%(email)s>.""" \
 ### End of parsing arguments ###
 
 
+class SingleInstance:
+	"""Assure single-instance process in system."""
+	def __init__(self, lockfile):
+		self.initialized = False
+		self.lockfile = os.path.abspath(lockfile)
+
+		self.lockfd = open(self.lockfile, 'w')
+		fcntl.lockf(self.lockfd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+		self.initialized = True
+
+	# end of __init__()
+
+	def __del__(self):
+		if not self.initialized:
+			return
+
+		fcntl.lockf(self.lockfd, fcntl.LOCK_UN)
+		if os.path.isfile(self.lockfile):
+			os.unlink(self.lockfile)
+
+	# end of __del__()
+
+# end of SingleInstance class
+
+
 class Filler2(QMainWindow):
 	"""SZARP Filler 2 application's main window (pyQt4)."""
 
@@ -159,8 +185,7 @@ class Filler2(QMainWindow):
 
 		# check single instance
 		try:
-			LOCKFILE_FD = open(LOCKFILE, 'a')
-			fcntl.lockf(LOCKFILE_FD, fcntl.LOCK_EX | fcntl.LOCK_NB)
+			self.single_instance = SingleInstance(LOCKFILE)
 		except IOError:
 			self.criticalError(_translate("MainWindow",
 				"Cannot acquire a single instance lock. There is "
