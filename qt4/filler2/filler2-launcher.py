@@ -42,7 +42,6 @@ import math
 import types
 import fcntl
 import signal
-import atexit
 import datetime
 import argparse
 import subprocess
@@ -177,7 +176,7 @@ class SingleInstance:
 class Filler2(QMainWindow):
 	"""SZARP Filler 2 application's main window (pyQt4)."""
 
-	def __init__(self, szprefix, parent=None):
+	def __init__(self, szprefix, no_warn=False, parent=None):
 		"""Filler2 class constructor."""
 		QWidget.__init__(self, parent)
 		self.ui = Ui_MainWindow()
@@ -205,19 +204,20 @@ class Filler2(QMainWindow):
 			sys.exit(1)
 
 		# verify SZARP prefix versus hostname
-		try:
-			process = subprocess.Popen(
-					["/bin/hostname", "-s"], stdout=subprocess.PIPE)
-			out, err = process.communicate()
-			if err == None:
-				hostname = out[:-1]
+		if no_warn == False:
+			try:
+				process = subprocess.Popen(
+						["/bin/hostname", "-s"], stdout=subprocess.PIPE)
+				out, err = process.communicate()
+				if err == None:
+					hostname = out[:-1]
 
-			if hostname != self.parser.ipk_prefix:
-				self.warningBox(_translate("MainWindow",
-					"Warning! Database prefix differs from hostname, "
-					"you are probably modifying non-local database."))
-		except OSError:
-			pass
+				if hostname != self.parser.ipk_prefix:
+					self.warningBox(_translate("MainWindow",
+						"Warning! Database prefix differs from hostname, "
+						"you are probably modifying non-local database."))
+			except OSError:
+				pass
 
 		### initialize Qt4 widgets ##
 
@@ -1053,6 +1053,8 @@ def parse_arguments(argv):
 	# optional startup arguments
 	parser.add_argument('-V', '--version', action='version',
 						version=format_version())
+	parser.add_argument('-n', '--no-warn', action='store_true',
+						help="do not display safety warnings")
 	parser.add_argument('-Dprefix', type=str, metavar='PREFIX',
 						help="SZARP database prefix")
 
@@ -1095,7 +1097,7 @@ def main(argv=None):
 
 	# start Filler 2 application
 	QIcon.setThemeName("Tango")
-	filler2app = Filler2(args.Dprefix)
+	filler2app = Filler2(args.Dprefix, args.no_warn)
 	filler2app.show()
 
 	return app.exec_()
