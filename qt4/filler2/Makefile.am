@@ -49,7 +49,7 @@ install-data-local: $(filler2_LOCALES)
 	$(INSTALL) $(filler2_LOCALES) \
                 $(DESTDIR)@prefix@/resources/locales/qt4
 	$(INSTALL) $(filler2_script) $(DESTDIR)@prefix@/bin
-	$(INSTALL) $(szarp2filler) $(DESTDIR)@prefix@/bin
+	$(INSTALL) $(szb2filler_script) $(DESTDIR)@prefix@/bin
 
 update-ts:
 	pylupdate4 $(filler2_PROJECT)
