@@ -149,8 +149,8 @@ xmlChar* get_device_node_extra_prop(xmlXPathContextPtr xp_ctx, const char* prop)
 
 /* This ID-s will be shown in single (test mode) */
 unsigned short TO_SHOW_CODES[] =
-    { 60, 94, 63, 61, 62, 95, 96, 97, 110, 64, 65, 68, 69, 84, 85, 72, 73, 99,
-86, 87, 88, 122, 89, 91, 92, 74, 75, 80 };
+	{ 60, 94, 63, 61, 62, 95, 96, 97, 110, 64, 65, 68, 69, 84, 85, 72, 73, 99,
+		86, 87, 88, 122, 89, 91, 92, 74, 75, 80 };
 
 /** possible types of modbus communication modes */
 typedef enum {
@@ -170,16 +170,16 @@ typedef enum {
  * Modbus communication config.
  */
 class KamstrupInfo {
- public:
+public:
 	/** info about single parameter */
 	class ParamInfo {
- public:
+	public:
 		unsigned short reg;  /**< KMP REGISTER */
 		unsigned long mul;   /**< ADDITIONAL MULTIPLIER */
 		ParamMode type;
 	};
-	const unsigned int DELAY_BETWEEN_CHARS = 50;
-	const unsigned int READ_TIMEOUT = 10000;
+	static const unsigned int DELAY_BETWEEN_CHARS = 50;
+	static const unsigned int READ_TIMEOUT = 10000;
 	unsigned short delay_between_requests;
 
 	ParamInfo *m_params;
@@ -1007,7 +1007,7 @@ void K601Daemon::ScheduleNext(unsigned int wait_ms)
 
 void K601Daemon::TimerCallback(int fd, short event, void* thisptr)
 {
-        reinterpret_cast<K601Daemon*>(thisptr)->Do();
+	reinterpret_cast<K601Daemon*>(thisptr)->Do();
 }
 
 int main(int argc, char *argv[])
