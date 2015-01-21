@@ -728,7 +728,8 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 			"", ""])
 
 		szfs = parser.readSzfRecords()
-		self.addRows(szfs)
+		sorted_szfs = sorted(szfs, key=lambda x: x.date, reverse=True)
+		self.addRows(sorted_szfs)
 
 	# end of __init__()
 

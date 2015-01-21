@@ -117,9 +117,6 @@ class IPKParser:
 				xml_parser.setFeature(xml.sax.handler.feature_namespaces, True)
 				xml_parser.parse(fd)
 
-				# initialize libpyszbase
-				pysz.init("/opt/szarp", u"pl_PL")
-
 				# store all important information
 				self.ipk_path = os.path.abspath(filename)
 				self.ipk_dir = os.path.dirname(os.path.dirname(filename))
@@ -231,12 +228,14 @@ class IPKParser:
 
 	def extrszb10(self, pname, date_list):
 		param = u"%s:%s" % (self.ipk_prefix, pname)
-
 		out = []
+
+		pysz.init("/opt/szarp", u"pl_PL")
 		for d in date_list:
 			dt = d.replace(tzinfo=tzlocal())
 			t = calendar.timegm(dt.utctimetuple())
 			out.append(pysz.get_value(param, t, pysz.PROBE_TYPE.PT_MIN10))
+		pysz.shutdown()
 
 		return out
 
