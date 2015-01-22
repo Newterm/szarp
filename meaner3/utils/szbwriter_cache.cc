@@ -24,6 +24,7 @@
 
 #include <cstring>
 
+#include "conversion.h"
 #include "liblog.h"
 #include "szbase/szbbase.h"
 
@@ -45,11 +46,11 @@ SzProbeCache::~SzProbeCache()
 void SzProbeCache::add( const Key& k , const Value& v )
 {
 	if( !last_key || k != *last_key ) {
-		sz_log(10,"Creating new file in TSaveParam in name: %ls, probe: %d, year: %d, month: %d",
-				k.name.c_str(), k.is_double, k.year, k.month);
+		sz_log(10, "Creating new file in TSaveParam in name: %s, probe: %d, year: %d, month: %d",
+				SC::S2U(k.name).c_str(), k.is_double, k.year, k.month);
 		if( last_key )
-			sz_log(10,"         old file in TSaveParam in name: %ls, probe: %d, year: %d, month: %d",
-					 last_key->name.c_str(), last_key->is_double, last_key->year, last_key->month);
+			sz_log(10,"         old file in TSaveParam in name: %s, probe: %d, year: %d, month: %d",
+					 SC::S2U(last_key->name).c_str(), last_key->is_double, last_key->year, last_key->month);
 
 		flush(); // flush data to old file
 
@@ -157,7 +158,7 @@ bool SzProbeCache::Values::add( time_t t , double v , int probe_length )
 {
 	if( length == 0 ) time = t;
 
-	sz_log(10,"Adding probe do cache - current time: %li, time: %li, value: %f, probe length: %i",
+	sz_log(10,"SzProbeCache::Values::add: Adding probe do cache - current time: %li, time: %li, value: %f, probe length: %i",
 			szb_move_time( time , length , PT_CUSTOM , probe_length ), t, v, probe_length);
 
 	if( length >= max_length ) return false;
@@ -167,7 +168,7 @@ bool SzProbeCache::Values::add( time_t t , double v , int probe_length )
 	if( t > curr_time ) return false; // raport time gap
 	if( t < curr_time ) return false; // override data. Return true otherwise
 
-	sz_log(10,"Writing value %f to %u at %li", v, length, t);
+	sz_log(10,"SzProbeCache::Values::add: Writing value %f to %u at %li", v, length, t);
 	probes[length++] = v;
 
 	return true;
@@ -176,7 +177,7 @@ bool SzProbeCache::Values::add( time_t t , double v , int probe_length )
 
 void SzProbeCache::Values::clear()
 {
-	sz_log(10,"Clearing cache with length: %i",length);
+	sz_log(10, "SzProbeCache::Values::clear Clearing cache with length: %i", length);
 	length = 0;
 }
 

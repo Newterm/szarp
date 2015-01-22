@@ -38,7 +38,7 @@ TMMapParam::TMMapParam( const std::wstring& dir , const std::wstring& name , int
 	if( (err = lseek(fd,0,SEEK_END)) == (off_t)-1 )
 		throw failure("Cannot seek trough file "+SC::S2A(path)+": "+strerror(errno));
 	begin = (unsigned int)err;
-	sz_log(10,"Last file index: %d",begin);
+	sz_log(10, "TMMapParam::TMMapParam Last file index: %d",begin);
 	begin /= sizeof(short);
 
 	// seek to last short in the file
@@ -58,7 +58,7 @@ TMMapParam::TMMapParam( const std::wstring& dir , const std::wstring& name , int
 	if( filemap == MAP_FAILED )
 		throw failure("Cannot map file "+SC::S2A(path)+" to memory: "+strerror(errno));
 
-	sz_log(10,"Clearing data from %d to %d",begin,file_size);
+	sz_log(10, "TMMapParam::TMMapParam Clearing data from %d to %d",begin,file_size);
 	for( unsigned int i = begin ; i<file_size ; ++i )
 		filemap[i] = SZB_FILE_NODATA;
 	// FIXME: why memset doesn't work?
@@ -70,8 +70,8 @@ TMMapParam::~TMMapParam()
 	try {
 		close();
 	} catch( const failure& f ) {
-		sz_log(1,"Cannot truncate file %s\n",SC::S2A(path).c_str());
-		fprintf(stderr,"Cannot truncate file %s\n",SC::S2A(path).c_str());
+		sz_log(1, "TMMapParam::~TMMapParam Cannot truncate file %s\n", SC::S2A(path).c_str());
+		fprintf(stderr, "Cannot truncate file %s\n", SC::S2A(path).c_str());
 		::close( fd );
 	}
 }
@@ -90,7 +90,7 @@ int TMMapParam::write( time_t t , short* probes , unsigned int len )
 {
 	unsigned int index = szb_probeind(t, probe_length);
 
-	sz_log(10, "Writing %d probes at index: %d", len, index);
+	sz_log(10, "TMMapParam::write Writing %d probes at index: %d", len, index);
 
 	assert( index >= 0 );
 	assert( index + len <= file_size );

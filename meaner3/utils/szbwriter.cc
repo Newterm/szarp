@@ -217,8 +217,8 @@ DataWriter::DataWriter(SzbaseWriter* parent, DataWriter::PROBE_TYPE ptype, const
 
 int DataWriter::add_data( const std::wstring& name, bool is_dbl, struct tm& tm, double data)
 {
-	sz_log(10, "add_data begin: name=%ls, data=%f %d-%d-%d %d:%d:%d",
-			name.c_str(), data, tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+	sz_log(10, "DataWriter::add_data begin: name=%s, data=%f %d-%d-%d %d:%d:%d",
+		SC::S2U(name).c_str(), data, tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 
 	time_t t;
 
@@ -227,7 +227,8 @@ int DataWriter::add_data( const std::wstring& name, bool is_dbl, struct tm& tm, 
 
 	gmtime_r(&t, &tm);
 
-	sz_log(10, "add_data: name=%ls, m_cur_name=%ls", name.c_str(), m_cur_name.c_str());
+	sz_log(10, "DataWriter::add_data: name=%s, m_cur_name=%s",
+		SC::S2U(name).c_str(), SC::S2U(m_cur_name).c_str());
 
 	if (name != m_cur_name) {
 		if (save_data())
@@ -238,33 +239,33 @@ int DataWriter::add_data( const std::wstring& name, bool is_dbl, struct tm& tm, 
 		m_cur_sum = 0;
 		m_cur_cnt = 0;
 
-		sz_log(10, "add_data: (name != n_cur_name) t = %ld", t);
+		sz_log(10, "DataWriter::add_data: (name != n_cur_name) t = %ld", t);
 		m_cur_t = t / m_probe_length * m_probe_length;
-		sz_log(10, "add_data: (name != n_cur_name) m_cur_t = %ld",  m_cur_t);
+		sz_log(10, "DataWriter::add_data: (name != n_cur_name) m_cur_t = %ld",  m_cur_t);
 
 		m_cur_name = name;
 	}
 
-	sz_log(10, "add_data: t=%ld, m_cur_t=%ld, t-m_cur=%ld, m_len=%ld",
+	sz_log(10, "DataWriter::add_data: t=%ld, m_cur_t=%ld, t-m_cur=%ld, m_len=%ld",
 			t, m_cur_t, t - m_cur_t, m_probe_length);
 
 	if (t >= m_cur_t && t - m_cur_t < m_probe_length)
 		return 0;
 
 	// save data for gaps
-	int _time = m_cur_t;
+	time_t _time = m_cur_t;
 	double _sum = m_cur_sum;
-	int _count = m_cur_cnt;
+	time_t _count = m_cur_cnt;
 
 	if (save_data())
 		return 1;
 
-	sz_log(10, "add_data: t = %ld", t);
+	sz_log(10, "DataWriter::add_data: t = %ld", t);
 	m_cur_t = t / m_probe_length * m_probe_length;
-	sz_log(10, "add_data: m_cur_t = %ld", m_cur_t);
+	sz_log(10, "DataWriter::add_data: m_cur_t = %ld", m_cur_t);
 
-	int gap = m_cur_t - _time;
-	sz_log(10, "add_data: check time gap: %d", gap);
+	time_t gap = m_cur_t - _time;
+	sz_log(10, "DataWriter::add_data: check time gap: %ld", gap);
 
 	// if there is a gap bigger than normal probe length, fill gaps
 	if( gap > m_probe_length && fill_gaps(_time + m_probe_length , _time + gap, _sum, _count) )
@@ -273,7 +274,8 @@ int DataWriter::add_data( const std::wstring& name, bool is_dbl, struct tm& tm, 
 	m_cur_sum += data;
 	m_cur_cnt++;
 
-	sz_log(10,"add_data end: t=%ld, sum=%lf, cnt=%d, len=%ld", m_cur_t, m_cur_sum, m_cur_cnt, m_probe_length);
+	sz_log(10, "DataWriter::add_data end: t=%ld, sum=%lf, cnt=%d, len=%ld",
+		m_cur_t, m_cur_sum, m_cur_cnt, m_probe_length);
 
 	return 0;
 }
@@ -287,7 +289,7 @@ int DataWriter::fill_gaps(time_t begin, time_t end, double sum, int count)
 	if( (end - begin) / m_probe_length > m_fill_how_many )
 		return 0;
 
-	sz_log(10,"fill_gaps begin, begin=%ld, end=%ld", begin, end);
+	sz_log(10, "DataWriter::fill_gaps begin, begin=%ld, end=%ld", begin, end);
 
 	// save current data
 	time_t save_time = m_cur_t;
@@ -297,7 +299,7 @@ int DataWriter::fill_gaps(time_t begin, time_t end, double sum, int count)
 	// fill gaps
 	for(time_t t = begin; t < end; t += m_probe_length )
 	{
-		sz_log(10,"fill gap for t=%ld", t);
+		sz_log(10, "DataWriter::fill_gaps for t=%ld", t);
 
 		m_cur_t = t;
 		m_cur_cnt = count;
@@ -312,21 +314,21 @@ int DataWriter::fill_gaps(time_t begin, time_t end, double sum, int count)
 	m_cur_cnt = save_cnt;
 	m_cur_sum = save_sum;
 
-	sz_log(10,"fill_gaps end");
+	sz_log(10, "DataWriter::fill_gaps end");
 	return 0;
 }
 
 int DataWriter::save_data()
 {
 	//sz_log(10, "save_data begin: pt=%d, m_dir[pt]=%ls", (int) pt, m_dir.c_str());
-	sz_log(10, "save_data %s", !m_cur_cnt ? "end - NO DATA" : "data exists");
+	sz_log(10, "DataWriter::save_data %s", !m_cur_cnt ? "end - NO DATA" : "data exists");
 
 	if (!m_cur_cnt)
 		return 0;
 
 	double d = m_cur_sum / m_cur_cnt;
 
-	sz_log(10,"save_data: current sum = %lf, current count =%d, current time=%ld, value=%G",
+	sz_log(10,"DataWriter::save_data: current sum = %lf, current count =%d, current time=%ld, value=%G",
 			m_cur_sum, m_cur_cnt, m_cur_t, d);
 
 	int year, month;
@@ -349,15 +351,19 @@ int DataWriter::save_data()
 	m_cur_cnt = 0;
 	m_cur_sum = 0;
 
-	sz_log(10,"save_data end - cnt[pt] = 0, sum[pt]= 0");
+	sz_log(10, "DataWriter::save_data end - cnt[pt] = 0, sum[pt]= 0");
 
 	return 0;
 }
 
 int DataWriter::close_data()
 {
+	sz_log(10, "DataWriter::close_data");
 	if (save_data())
 		return 1;
+
+	m_cache->flush();
+
 	return 0;
 }
 
@@ -476,7 +482,7 @@ int SzbaseWriter::add_param(const std::wstring &name, const std::wstring& unit, 
 	std::wstring draww;
 	int i;
 	
-	sz_log(2, "Adding new parameter %ls\n", name.c_str());
+	sz_log(2, "Adding new parameter: %s", SC::S2U(name).c_str());
 	m_new_par = true;
 
 	if (is_double(name)) {
@@ -547,8 +553,8 @@ int SzbaseWriter::is_double(const std::wstring& name)
 int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, int year, int month, int day, 
 		int hour, int min, int sec, const std::wstring& data)
 {
-	sz_log(10, "add_data begin: name=%ls, data=%ls %d-%d-%d %d:%d:%d",
-			name.c_str(), data.c_str(), year, month, day, hour, min, sec);
+	sz_log(10, "SzbaseWriter::add_data begin: name=%s, data=%s %d-%d-%d %d:%d:%d",
+			SC::S2U(name).c_str(), SC::S2U(data).c_str(), year, month, day, hour, min, sec);
 
 	std::wstring filename;
 	struct tm tm;
@@ -565,14 +571,15 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	
 	is_dbl = is_double(name);
 
-	sz_log(10, "add_data: name=%ls, m_cur_name=%ls", name.c_str(), m_cur_name.c_str());
+	sz_log(10, "SzbaseWriter::add_data: name=%s, m_cur_name=%s",
+		       	SC::S2U(name).c_str(), SC::S2U(m_cur_name).c_str());
 	
 	if (name != m_cur_name) {
 		TParam* cur_par = getParamByName(name);
 		if (NULL == cur_par && !m_add_new_pars) {
-			sz_log(1, "Param %ls not found in configuration and "
+			sz_log(1, "Param %s not found in configuration and "
 					"program run without -n flag, value ignored!",
-					name.c_str());
+					SC::S2U(name).c_str());
 			return 1;
 		}
 		if (is_dbl) {
@@ -581,13 +588,13 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 
 			TParam * par = getParamByName(name1);
 			if (NULL == par) {
-				sz_log(1, "Param %ls not found in configuration", name1.c_str());
+				sz_log(1, "Param %s not found in configuration", SC::S2U(name1).c_str());
 				return 1;
 			}
 
 			par = getParamByName(name2);
 			if (NULL == par) {
-				sz_log(1, "Param %ls not found in configuration", name1.c_str());
+				sz_log(1, "Param %s not found in configuration", SC::S2U(name1).c_str());
 				return 1;
 			}
 		}
@@ -708,9 +715,11 @@ int SzbaseWriter::process_input()
 
 	while (fgets(buffer, BUF_SIZE, stdin)) {
 		buffer[BUF_SIZE-1] = 0;
-		if(process_line(buffer)==1)
-			res=1;
+		if (process_line(buffer) == 1)
+			res = 1;
 	}
+
+	sz_log(9, ">>>   SzbaseWriter::process_input end while loop");
 
 	std::vector<DataWriter *>::iterator it = m_writers.begin();
 	for (; it != m_writers.end(); it++) {
