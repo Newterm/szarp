@@ -54,7 +54,8 @@ LSWMSW_REX = re.compile(r'^\s*\([^:]+:[^:]+:[^:]+ msw\)'
 
 # helper types definitions
 ParamInfo = namedtuple('ParamInfo', 'name draw_name prec lswmsw')
-ChangeInfo = namedtuple('ChangeInfo', 'name draw_name set_name user date vals')
+ChangeInfo = namedtuple('ChangeInfo',
+						'name draw_name set_name user date vals lswmsw')
 
 class SetInfo:
 	__init__ = lambda self, **kw: setattr(self, '__dict__', kw)
@@ -193,11 +194,15 @@ class IPKParser:
 				filename, fext = os.path.splitext(fn)
 				if fext != '.szf':
 					raise ValueError
+				if root.rstrip('/')[-4:] == '_lsw':
+					lswmsw = True
+				else:
+					lswmsw = False
 				date = datetime.datetime.strptime(filename[0:16], "%Y%m%d_%H%M%S_")
 				user = filename.split('_')[2]
 				draw_name, set_name = self.getSetAndDrawName(pname)
 				szfs.append(ChangeInfo(pname, draw_name, set_name,
-									   user, date, vals))
+									   user, date, vals, lswmsw))
 		return szfs
 
 	# end of readSzfRecords()
@@ -255,8 +260,8 @@ class IPKParser:
 			# FIXME: intercept stderr and stdout
 			process = subprocess.Popen(
 					["/opt/szarp/bin/szbwriter", "-Dprefix=%s" % self.ipk_prefix, "-p"],
-					stdin=subprocess.PIPE)
-			process.communicate(string.encode('utf-8'))
+					stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			out, err = process.communicate(string.encode('utf-8'))
 			if process.wait() != 0:
 				raise IOError("szbWriter exited with non-zero status")
 		except IOError as err:
@@ -266,9 +271,11 @@ class IPKParser:
 
 	# end of szbWriter()
 
-	def pname2path(self, pname):
+	def pname2path(self, pname, lswmsw):
 		ppath = "/opt/szarp/%s/szbase/" % self.ipk_prefix
 		ppath += self.strip(pname)
+		if lswmsw:
+			ppath += "_lsw"
 		ppath += '/'
 		return ppath
 
@@ -299,7 +306,7 @@ class IPKParser:
 		return "".join([ conv(x) for x in pname ])
 	# end of strip()
 
-	def recordSzf(self, pname, dates):
+	def recordSzf(self, pname, dates, lswmsw):
 		try:
 			output = u""
 			vals = self.extrszb10(pname, dates)
@@ -307,7 +314,7 @@ class IPKParser:
 			for d, v in zip(dates, vals):
 				output += u"%s, %s\n" % (d.strftime('%Y-%m-%d %H:%M'), v)
 
-			filepath = u"%s%s_%s.szf" % (self.pname2path(pname),
+			filepath = u"%s%s_%s.szf" % (self.pname2path(pname, lswmsw),
 						datetime.datetime.now().strftime('%Y%m%d_%H%M%S'),
 						getpass.getuser())
 
@@ -360,7 +367,7 @@ class IPKParser:
 						self.param_prec = copy.copy(attrs.getValueByQName('prec'))
 					except KeyError:
 						self.param_prec = None
-					self.param_lswmsw = None
+					self.param_lswmsw = False
 
 				elif name == 'define' and self.state == 'DRD':
 					# lsw/msw parameter from <drawdefinable> section
@@ -372,7 +379,7 @@ class IPKParser:
 					# visible parameter from <device> or <drawdefinable> (only
 					# lsw/msw) section
 					if self.state == 'DEV' or \
-					   (self.state == 'DRD' and self.param_lswmsw == True):
+					   (self.state == 'DRD' and self.param_lswmsw):
 						# get 'prior' attribute from <draw>
 						try:
 							prior = int(attrs.getValueByQName('prior'))

@@ -72,7 +72,7 @@ __script_name__ = os.path.basename(sys.argv[0])
 
 # containers definitions
 SzChangeInfo = namedtuple('SzChangeInfo',
-                          'draw_name name start_date end_date value')
+                          'draw_name name start_date end_date value lswmsw')
 
 # signal handlers
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -463,11 +463,12 @@ class Filler2(QMainWindow):
 					self.ui.paramList.currentText(),
 					self.fromDate,
 					self.toDate,
-					self.ui.valueEdit.text())
+					self.ui.valueEdit.text(),
+					param_info.lswmsw)
 
 	# end of addChange()
 
-	def addRow(self, row, fname, pname, from_date, to_date, value):
+	def addRow(self, row, fname, pname, from_date, to_date, value, lswmsw):
 		"""Add row to changesTable (QTableWidget).
 
 		Arguments:
@@ -477,6 +478,7 @@ class Filler2(QMainWindow):
 			from_date - beginning of time period
 			to_date - end of time period
 			value - parameter's value
+			lswmsw - whether parametr is a combined lsw/msw
 		"""
 		# visible columns
 		item_pname = QTableWidgetItem(unicode(pname))
@@ -496,6 +498,7 @@ class Filler2(QMainWindow):
 
 		# hidden column
 		item_fname = QTableWidgetItem(unicode(fname))
+		item_fname.setData(Qt.UserRole, QVariant(lswmsw))
 		item_fname.setFlags(Qt.ItemIsEnabled)
 
 		self.ui.changesTable.setItem(row, 0, item_pname)
@@ -573,7 +576,8 @@ class Filler2(QMainWindow):
 						end_date = datetime.datetime.strptime(
 							str(self.ui.changesTable.item(i,2).text()),
 							'%Y-%m-%d %H:%M'),
-						value = self.ui.changesTable.item(i,3).text()
+						value = self.ui.changesTable.item(i,3).text(),
+						lswmsw = self.ui.changesTable.item(i,5).data(Qt.UserRole).toPyObject()
 						))
 
 			# do the job (new thread)
@@ -727,9 +731,7 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 			_translate("HistoryDialog", "User"),
 			"", ""])
 
-		szfs = parser.readSzfRecords()
-		sorted_szfs = sorted(szfs, key=lambda x: x.date, reverse=True)
-		self.addRows(sorted_szfs)
+		self.refresh()
 
 	# end of __init__()
 
@@ -760,7 +762,7 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 			# hidden columns
 			item_fname = QTableWidgetItem(unicode(szf.name))
 			item_fname.setFlags(Qt.ItemIsEnabled)
-			item_fname.setData(Qt.UserRole, QVariant(szf.vals))
+			item_fname.setData(Qt.UserRole, QVariant((szf.vals, szf.lswmsw)))
 
 			self.changesTable.setItem(row, 0, item_pname)
 			self.changesTable.setItem(row, 1, item_date)
@@ -791,7 +793,8 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 	def refresh(self):
 		self.changesTable.setRowCount(0)
 		szfs = self.parser.readSzfRecords()
-		self.addRows(szfs)
+		sorted_szfs = sorted(szfs, key=lambda x: x.date, reverse=True)
+		self.addRows(sorted_szfs)
 
 	# end of refresh()
 
@@ -809,15 +812,12 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 
 		name = unicode(self.changesTable.item(row, 5).text())
 		draw_name = self.changesTable.item(row, 0).text()
-		vals = self.changesTable.item(row, 5).data(Qt.UserRole).toPyObject()
+		vals, lswmsw = self.changesTable.item(row, 5).data(Qt.UserRole).toPyObject()
 		dts = [d for d,v in vals]
 
 		try:
-			self.parser.recordSzf(name, dts)
+			self.parser.recordSzf(name, dts, lswmsw)
 			self.parser.szbWriter(name, vals)
-			self.parent.infoBox(_translate("HistoryDialog",
-				"Undoing change finished successfully."))
-			self.refresh()
 		except IPKParser.SzfRecordError:
 			self.parent.warningBox(
 					_translate("HistoryDialog",
@@ -834,6 +834,10 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 					_translate("HistoryDialog",
 						"Encountered an error while writing to the database."))
 
+		self.parent.infoBox(_translate("HistoryDialog",
+			"Undoing change finished successfully."))
+		self.refresh()
+
 	# end of undoChange()
 
 	def showGraph(self):
@@ -845,7 +849,7 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 		# fetch parameter's data
 		draw_name = self.changesTable.item(row, 0).text()
 		name = self.changesTable.item(row, 5).text()
-		vals = self.changesTable.item(row, 5).data(Qt.UserRole).toPyObject()
+		vals, lswmsw = self.changesTable.item(row, 5).data(Qt.UserRole).toPyObject()
 		orgi_d = [i[0] for i in vals]
 		v = [i[1] for i in vals]
 		d = orgi_d
@@ -928,7 +932,7 @@ class SzbWriter(QThread):
 			vals = [(d, ch.value) for d in dts]
 
 			try:
-				self.parser.recordSzf(ch.name, dts)
+				self.parser.recordSzf(ch.name, dts, ch.lswmsw)
 				self.parser.szbWriter(ch.name, vals)
 				self.paramDone.emit(nr, ch.draw_name, 0)
 			except IPKParser.SzfRecordError:
