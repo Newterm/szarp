@@ -233,20 +233,38 @@ class Filler2(QMainWindow):
 				QVariant(0), Qt.UserRole-1)
 		self.ui.listOfSets.setEnabled(True)
 
-		# parameter's value textbox
-		self.ui.valueEdit.setValidator(QDoubleValidator())
+		# parameter's type combobox
+		self.ui.valueType.addItem(
+				QIcon("/opt/szarp/resources/qt4/icons/plot-blank.png"),
+				_translate("MainWindow", " Type of plot"))
+		self.ui.valueType.addItem(
+				QIcon("/opt/szarp/resources/qt4/icons/plot-nodata.png"),
+				_translate("MainWindow", " No data"))
+		self.ui.valueType.addItem(
+				QIcon("/opt/szarp/resources/qt4/icons/plot-const.png"),
+				_translate("MainWindow", " Constant value"))
+		self.ui.valueType.addItem(
+				QIcon("/opt/szarp/resources/qt4/icons/plot-inc.png"),
+				_translate("MainWindow", " Linear increasing"))
+		self.ui.valueType.addItem(
+				QIcon("/opt/szarp/resources/qt4/icons/plot-dec.png"),
+				_translate("MainWindow", " Linear decreasing"))
+		self.ui.valueType.model().setData(
+				self.ui.valueType.model().index(0,0),
+				QVariant(0), Qt.UserRole-1)
 
 		self.fromDate = None
 		self.toDate = None
 
 		# table of changes
+		base = 64
 		self.ui.changesTable.setColumnCount(6)
-		self.ui.changesTable.setColumnWidth(0, 390)   # parameter's draw_name
-		self.ui.changesTable.setColumnWidth(1, 205)   # "from" date
-		self.ui.changesTable.setColumnWidth(2, 210)   # "to" date
-		self.ui.changesTable.setColumnWidth(3, 130)   # parameter's value
-		self.ui.changesTable.setColumnWidth(4, 50)    # remove entry button
-		self.ui.changesTable.setColumnHidden(5, True) # parameter's full name
+		self.ui.changesTable.setColumnWidth(0, 6*base-24) # param's draw_name
+		self.ui.changesTable.setColumnWidth(1, 3*base)    # "from" date
+		self.ui.changesTable.setColumnWidth(2, 3*base)    # "to" date
+		self.ui.changesTable.setColumnWidth(3, 3*base)    # param's value type
+		self.ui.changesTable.setColumnWidth(4, base-20)   # remove entry button
+		self.ui.changesTable.setColumnHidden(5, True)     # param's full name
 
 		self.ui.changesTable.horizontalHeader().setVisible(False)
 		self.ui.changesTable.setRowCount(0)
@@ -322,9 +340,7 @@ class Filler2(QMainWindow):
 
 		self.ui.paramList.setEnabled(True)
 		self.ui.paramList.setFocus()
-		self.ui.valueEdit.setEnabled(False)
-		self.ui.valueEdit.setReadOnly(True)
-		self.ui.valueEdit.setText("")
+		self.ui.valueType.setEnabled(False)
 		self.ui.addButton.setEnabled(False)
 
 	# end of onSetChosen()
@@ -339,17 +355,16 @@ class Filler2(QMainWindow):
 		self.ui.toDate.setEnabled(True)
 		param_info = self.ui.paramList.itemData(index).toPyObject()
 
-		qdv = QDoubleValidator(self.ui.paramList)
-		qdv.setNotation(0)
-		prec = int(param_info.prec)
-		if param_info.lswmsw:
-			qdv.setRange(SZLIMIT_COM * -1, SZLIMIT_COM, prec)
-		else:
-			qdv.setRange(SZLIMIT * -1, SZLIMIT, prec)
+		#qdv = QDoubleValidator(self.ui.paramList)
+		#qdv.setNotation(0)
+		#prec = int(param_info.prec)
+		#if param_info.lswmsw:
+		#	qdv.setRange(SZLIMIT_COM * -1, SZLIMIT_COM, prec)
+		#else:
+		#	qdv.setRange(SZLIMIT * -1, SZLIMIT, prec)
 
-		self.ui.valueEdit.setValidator(qdv)
-		self.ui.valueEdit.setEnabled(True)
-		self.ui.valueEdit.setReadOnly(False)
+		#self.ui.valueEdit.setValidator(qdv)
+		self.ui.valueType.setEnabled(True)
 		self.validateInput()
 
 	# end of onParamChosen()
@@ -404,18 +419,12 @@ class Filler2(QMainWindow):
 
 	# end of onToDate()
 
-	def onValueChanged(self):
-		"""Slot for signals returnPressed() and lostFocus() from 'valueEdit'
-		(QLineEdit). Formats text to standardized float string.
-		"""
-		new_value = self.ui.valueEdit.text()
-		try:
-			self.ui.valueEdit.setText(str(float(new_value)))
-		except ValueError:
-			self.ui.valueEdit.setText("")
+	def onTypeChosen(self, index):
+		# TODO
+		#dlg = self.ui.valueType.itemData(index).toPyObject()
 		self.validateInput()
 
-	# end of onValueChanged()
+	# end of onTypeChosen()
 
 	def validateInput(self):
 		"""Check whether all needed data is filled and valid. If do, "Add"
@@ -424,7 +433,7 @@ class Filler2(QMainWindow):
 		if  self.ui.paramList.currentIndex() != 0 and \
 			self.fromDate is not None and \
 			self.toDate is not None and \
-			len(self.ui.valueEdit.text()) > 0:
+			self.ui.valueType.currentIndex() != 0:
 				self.ui.addButton.setEnabled(True)
 		else:
 				self.ui.addButton.setEnabled(False)
@@ -449,13 +458,13 @@ class Filler2(QMainWindow):
 
 		param_info = self.ui.paramList.itemData(
 				self.ui.paramList.currentIndex()).toPyObject()
-		val = float(self.ui.valueEdit.text())
+		#val = float(self.ui.valueEdit.text())
 
-		if (param_info.lswmsw and (val > SZLIMIT_COM or val < SZLIMIT_COM * -1)) \
-				or ((not param_info.lswmsw) and (val > SZLIMIT or val < SZLIMIT * -1)):
-					self.warningBox(_translate("MainWindow",
-						"Parameter's value is out of range.\nAdding change aborted."))
-					return
+		#if (param_info.lswmsw and (val > SZLIMIT_COM or val < SZLIMIT_COM * -1)) \
+		#		or (val > SZLIMIT or val < SZLIMIT * -1):
+		#			self.warningBox(_translate("MainWindow",
+		#				"Parameter's value is out of range.\nAdding change aborted."))
+		#			return
 
 		self.ui.changesTable.setRowCount(self.ui.changesTable.rowCount()+1)
 		self.addRow(self.ui.changesTable.rowCount() - 1,
@@ -463,7 +472,8 @@ class Filler2(QMainWindow):
 					self.ui.paramList.currentText(),
 					self.fromDate,
 					self.toDate,
-					self.ui.valueEdit.text(),
+					#self.ui.valueEdit.text(),
+					"0.0",
 					param_info.lswmsw)
 
 	# end of addChange()
@@ -595,9 +605,8 @@ class Filler2(QMainWindow):
 			self.ui.fromDate.setEnabled(False)
 			self.ui.toDate.setText(_translate("MainWindow", "To:"))
 			self.ui.toDate.setEnabled(False)
-			self.ui.valueEdit.setText("")
-			self.ui.valueEdit.setEnabled(False)
-			self.ui.valueEdit.setReadOnly(False)
+			self.ui.valueType.setCurrentIndex(0)
+			self.ui.valueType.setEnabled(False)
 			self.ui.addButton.setEnabled(False)
 
 			# disable window until job is finished
