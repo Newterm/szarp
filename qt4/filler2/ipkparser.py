@@ -253,11 +253,7 @@ class IPKParser:
 				string += u"\"%s\" %s %s\n" % \
 						(pname, d.strftime("%Y %m %d %H %M"), str(v))
 			string = string[:-1]
-			# XXX: dirty hack for making szbwriter working - to be removed
-			#      after bugfix in szbwriter
-			string += u"\n\"%s\" 2015 03 01 00 00 -32768" % pname
 
-			# FIXME: intercept stderr and stdout
 			process = subprocess.Popen(
 					["/opt/szarp/bin/szbwriter", "-Dprefix=%s" % self.ipk_prefix, "-p"],
 					stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
