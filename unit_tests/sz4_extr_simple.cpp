@@ -14,6 +14,24 @@
 #include "sz4/base.h"
 #include "sz4/load_file_locked.h"
 
+void dump_param_deps(sz4::generic_param_entry *e) {
+	std::vector<std::pair<int, sz4::generic_param_entry*> > p;
+	p.emplace_back(0, e);
+
+	while (p.size()) {
+		auto l = p.back();
+		p.pop_back();
+
+		for (auto &param : l.second->referred_params())
+			p.emplace_back(l.first + 1, param);
+
+		for (int i = 0; i < l.first; i++)
+			std::cout << " ";
+
+		std::cout << (char*)SC::S2U(l.second->get_param()->GetName()).c_str() << std::endl;
+	}
+}
+
 int main(int argc, char *argv[]) {
 	if (argc != 3 && argc != 4 && argc != 5)
 		return 1;
@@ -77,6 +95,16 @@ int main(int argc, char *argv[]) {
 
 	TParam* p = ipk->GetParam(pname);
 	sz4::weighted_sum<double, sz4::second_time_t> sum;
+#if 0
+	sz4::generic_param_entry *e = base.get_param_entry(p);
+	dump_param_deps(e);
+
+	{
+		std::string _e;
+		std::cin >> _e;
+	}
+#endif
+
 #if 1
 	base.get_weighted_sum(p, start_time, end_time, pt, sum);
 #endif
