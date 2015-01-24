@@ -71,6 +71,8 @@ public:
 	void param_data_changed(TParam*, const std::string& path);
 	virtual void handle_param_data_changed(TParam*, const std::string& path) {};
 
+	const std::list<generic_param_entry*>& referring_params() const;
+	const std::list<generic_param_entry*>& referred_params() const;
 
 	void add_refferring_param(generic_param_entry* param_entry);
 	void remove_refferring_param(generic_param_entry* param_entry);

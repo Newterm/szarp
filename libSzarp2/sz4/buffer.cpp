@@ -79,6 +79,14 @@ void generic_param_entry::deregister_observer(param_observer *observer) {
 		m_observers.erase(i);
 }
 
+const std::list<generic_param_entry*>& generic_param_entry::referring_params() const {
+	return m_referring_params;
+}
+
+const std::list<generic_param_entry*>& generic_param_entry::referred_params() const {
+	return m_referred_params;
+}
+
 generic_param_entry::~generic_param_entry() {
 	std::for_each(m_referring_params.begin(), m_referring_params.end(), std::bind2nd(std::mem_fun(&generic_param_entry::refferred_param_removed), this));
 	std::for_each(m_referred_params.begin(), m_referred_params.end(), std::bind2nd(std::mem_fun(&generic_param_entry::remove_refferring_param), this));

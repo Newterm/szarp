@@ -59,6 +59,9 @@ template<class types> class execution_engine : public LuaExec::ExecutionEngine, 
 		m_initialized = true;
 	}
 public:
+
+	typedef double(execution_engine::*compute_method)(LuaExec::ParamRef& ref, const double& time_, SZARP_PROBE_TYPE probe_type);
+
 	execution_engine(base_templ<types>* _base, TParam* param) : m_base(_base), m_exec_param(param->GetLuaExecParam()), m_initialized(false) {
 	}
 
@@ -75,19 +78,31 @@ public:
 		result = m_vars[0];
 	}
 
-	virtual double Value(size_t param_index, const double& time_, const double& probe_type) {
-		LuaExec::ParamRef& ref = m_exec_param->m_par_refs[param_index];
-		//this probably should depend on type of parameter we are calucating data for
-		weighted_sum<double, nanosecond_time_t> sum;
-		m_base->get_weighted_sum(ref.m_param,
-				nanosecond_time_t(time_),
-				nanosecond_time_t(szb_move_time(nanosecond_time_t(time_), 1, SZARP_PROBE_TYPE(probe_type), 0)),
-				SZARP_PROBE_TYPE(probe_type),
-				sum);
+	template<class DT, class TT> double compute(LuaExec::ParamRef& ref, const double& time_, SZARP_PROBE_TYPE probe_type) {
+		weighted_sum<DT, TT> sum;
 
-		assert(m_base->fixed_stack().size());
+		TT t = TT(time_);
+		TT end_time = szb_move_time(t, 1, probe_type, 0);
+		if (end_time == t)
+			end_time += 1;
+
+		m_base->get_weighted_sum(ref.m_param, t, end_time, probe_type, sum);
+
 		m_base->fixed_stack().back() = m_base->fixed_stack().back() & sum.fixed();
-		return scale_value(sum.avg(), ref.m_param);
+
+		if (sum.weight()) 
+			return scale_value(double(sum.avg()), ref.m_param);
+		else 
+			return std::nan("");
+	}
+
+	static const compute_method compute_methods[TParam::LAST_TIME_TYPE + 1][TParam::LAST_DATA_TYPE + 1];
+
+	virtual double Value(size_t param_index, const double& time_, const double& probe_type_) {
+		LuaExec::ParamRef& ref = m_exec_param->m_par_refs[param_index];
+		SZARP_PROBE_TYPE probe_type = SZARP_PROBE_TYPE(probe_type_);
+		compute_method method = compute_methods[ref.m_param->GetTimeType()][ref.m_param->GetDataType()];
+		return (this->*method)(ref, time_, probe_type);
 	}
 
 	virtual std::vector<double>& Vars() {
@@ -104,6 +119,19 @@ public:
 	}
 };
 
+template<class types>
+const typename execution_engine<types>::compute_method
+execution_engine<types>::compute_methods[TParam::LAST_TIME_TYPE + 1][TParam::LAST_DATA_TYPE + 1] = {
+	{ &execution_engine<types>::compute<short, second_time_t>,
+		&execution_engine<types>::compute<int, second_time_t>,
+		&execution_engine<types>::compute<float, second_time_t>,
+		&execution_engine<types>::compute<double, second_time_t> },
+	{ &execution_engine<types>::compute<short, nanosecond_time_t>,
+		&execution_engine<types>::compute<int, nanosecond_time_t>,
+		&execution_engine<types>::compute<float, nanosecond_time_t>,
+		&execution_engine<types>::compute<double, nanosecond_time_t> }
+};
+
 template<class value_type, class time_type, class types> class lua_optimized_param_entry_in_buffer : public buffered_param_entry_in_buffer<value_type, time_type, types, execution_engine> {
 public:
 	lua_optimized_param_entry_in_buffer(base_templ<types>* _base, TParam* param, const boost::filesystem::wpath& path) : buffered_param_entry_in_buffer<value_type, time_type, types, execution_engine>(_base, param, path) {}
@@ -117,7 +145,6 @@ public:
 		this->m_base->get_heartbeat_last_time(this->m_param, t);
 		lua_adjust_last_time(this->m_param, t);
 	}
-
 };
 
 }

@@ -779,9 +779,9 @@ public:
 #endif
 		} ParamType;
 
-	typedef enum { SHORT, INT, FLOAT, DOUBLE } DataType;
+	typedef enum { SHORT = 0, INT, FLOAT, DOUBLE, LAST_DATA_TYPE = DOUBLE} DataType;
 
-	typedef enum { SECOND, NANOSECOND } TimeType; 
+	typedef enum { SECOND = 0, NANOSECOND, LAST_TIME_TYPE  = NANOSECOND } TimeType; 
 
 	typedef enum { 	SZ4_NONE,
 			SZ4_REAL,
