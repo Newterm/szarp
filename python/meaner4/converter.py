@@ -88,32 +88,91 @@ class FileFactory:
 	def open(self, path, mode):
 		return self.File(path)
 
-class ConverterSaveParam(saveparam.SaveParam):
-	def __init__(self, param, szbase_dir, file_factory):
-		saveparam.SaveParam.__init__(self, param, szbase_dir, file_factory)
 
-#		self.last_time = None
-#		self.last_nanotime = None
-#	
-#	def update_last_time(self, time, nanotime):
-#		self.last_time = time
-#		self.last_nanotime = nanotime
-#
-#	def write_value(self, value, time, nanotime):
-#		if self.last_time is not None:
-#			saveparam.SaveParam.update_last_time(self, self.last_time, self.last_nanotime)
-#			self.last_time = None
-#
-#		saveparam.SaveParam.write_value(self, value, time, nanotime)
+class Converter:
+	def __init__(self):
+		config_dir = sys.argv[1]
+		sz4_dir = os.path.join(config_dir, "sz4")
+		self.szbase_dir = os.path.join(config_dir, "szbase")
 
-#	def close(self):
-#		if self.last_time is not None:
-#			saveparam.SaveParam.update_last_time(self, self.last_time, self.last_nanotime)
-#		
-#		saveparam.SaveParam.close(self)
+		self.ipk = ipk.IPK(config_dir + "/config/params.xml")
+
+		self.s_params = {}
+
+		for p in self.ipk.params:
+			sp = saveparam.SaveParam(p, sz4_dir, FileFactory())
+			self.s_params[p.param_name] = sp
+
+		self.s_params[heartbeat_param_name] = saveparam.SaveParam(create_hearbeat_param(), sz4_dir, FileFactory())
+
+	def convert_param(self, sp, pname):
+		combined = sp.param.combined
+		if combined:
+			lsp = self.s_params[sp.param.lsw_param.param_name]
+			msp = self.s_params[sp.param.msw_param.param_name]
+		else:
+			lsp = sp
+
+		lsp_param_path = lsp.param_path.param_path if pname != heartbeat_param_name else "Status/Meaner3/program_uruchomiony"
+
+		szbase_files = [ x for x in os.listdir(os.path.join(self.szbase_dir, lsp_param_path)) if x.endswith(".szb")]
+		szbase_files.sort()
+
+		for j, szbase_path in enumerate(szbase_files):
+			sys.stdout.write("\rFile: %s, %d/%d    " % (szbase_path, j + 1, len(szbase_files)))
+			sys.stdout.flush()
+			time = szbase_file_path_to_date(szbase_path)
+			value = None
+
+			f = open(os.path.join(self.szbase_dir, lsp_param_path, szbase_path)).read()
+			if combined:
+				f2 = open(os.path.join(self.szbase_dir, msp.param_path.param_path, szbase_path)).read()
+			try: 
+				l = len(f) / 2
+				if combined:
+					vlsw = struct.unpack_from(("<%dH" % (l,)), f)
+					vmsw = struct.unpack_from(("<%dH" % (l,)), f2)
+					values = [ (m << 16) + l for l, m in zip(vlsw, vmsw) ]
+				else:
+					values = struct.unpack_from(("<%dh" % (l,)), f)
+
+			except struct.error as e:
+				print e
+				continue
+
+			for v in values:
+				if value != v:
+					if value is not None:
+						sp.write_value(value, time, 0)
+					else:
+						sp.prepare_for_writing(time, 0)
+					value = v
+				time += 600
+
+			if value is not None:
+				sp.write_value(value, time, 0)
+
+		sp.close()
 
 
-if len(sys.argv) != 2 or sys.argv[1] == '-h':
+	def convert(self):
+		sys.stdout.write("Converting...")
+
+		pno = 0
+		for pname in self.s_params.iterkeys():
+			sp = self.s_params[pname]
+			if sp.param.msw_combined_referencing_param is not None or sp.param.lsw_combined_referencing_param is not None:
+				continue
+
+			print
+			print "Converting values for param: %s, param %d out of %d" % (sp.param_path.param_path, pno + 1, len(self.s_params))
+			try:
+				self.convert_param(sp, pname)
+			except OSError, e:
+				print e
+			pno += 1
+
+def help():
 	print """Invocation:
 %s configuration_dir
 Program converts database from szbase to sz4 format.
@@ -121,68 +180,12 @@ Acceppts one mandatory command line argument - directory
 to szbase configuration or '-h' which make it print this 
 help""" % (sys.argv[0],)
 
-config_dir = sys.argv[1]
-szbase_dir = os.path.join(config_dir, "szbase")
-sz4_dir = os.path.join(config_dir, "sz4")
 
-ipk = ipk.IPK(config_dir + "/config/params.xml")
-sys.stdout.write("Converting...")
-
-save_param_map = {}
-for i, p in enumerate(ipk.params):
-	sp = ConverterSaveParam(p, sz4_dir, FileFactory())
-	save_param_map[p.param_name] = sp
-save_param_map[heartbeat_param_name] = saveparam.SaveParam(create_hearbeat_param(), sz4_dir, FileFactory())
-
-pno = 0
-for pname in save_param_map.iterkeys():
-	try:
-		sp = save_param_map[pname]
-		if sp.param.msw_combined_referencing_param is not None or sp.param.lsw_combined_referencing_param is not None:
-			continue
-
-		sp = save_param_map[pname]
-		print
-		print "Converting values for param: %s, param %d out of %d" % (sp.param_path.param_path, pno + 1, len(save_param_map))
-
-		combined = sp.param.combined
-		if combined:
-			lsp = save_param_map[sp.param.lsw_param.param_name]
-			msp = save_param_map[sp.param.msw_param.param_name]
-		else:
-			lsp = sp
-
-		lsp_param_path = lsp.param_path.param_path if pname != heartbeat_param_name else "Status/Meaner3/program_uruchomiony"
-
-		szbase_files = [ x for x in os.listdir(os.path.join(szbase_dir, lsp_param_path)) if x.endswith(".szb")]
-		szbase_files.sort()
-
-		for j, szbase_path in enumerate(szbase_files):
-			sys.stdout.write("\rFile: %s, %d/%d    " % (szbase_path, j, len(szbase_files)))
-			sys.stdout.flush()
-			time = szbase_file_path_to_date(szbase_path)
-
-			f = open(os.path.join(szbase_dir, lsp_param_path, szbase_path)).read()
-			if combined:
-				f2 = open(os.path.join(szbase_dir, msp.param_path.param_path, szbase_path)).read()
-			try: 
-				for i in xrange(len(f) / 2):
-					if combined:
-						v1 = struct.unpack_from("<H", f, i * 2)[0]
-						v2 = struct.unpack_from("<H", f2, i * 2)[0]
-						v = (v2 << 16) + v1
-					else:
-						v = struct.unpack_from("<h", f, i * 2)[0]
-					sp.process_value(v, time)
-					time += 10 * 60
-
-			except struct.error as e:
-				print e
-
-		sp.close()
-	except OSError, e:
-		pass
-
-	pno += 1
+def main():
+	if len(sys.argv) != 2 or sys.argv[1] == '-h':
+		help()
+	else:
+		Converter().convert()
 
 
+main()

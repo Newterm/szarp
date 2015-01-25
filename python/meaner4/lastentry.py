@@ -25,6 +25,7 @@ import timedelta
 class LastEntry:
 	def __init__(self, param):
 		self.param = param
+		self.delta_cache = {}
 
 	def time_to_int(self, time, nanotime):
 		if self.param.time_prec == 8:
@@ -51,7 +52,12 @@ class LastEntry:
 		diff = time - self.value_start_time
 		self.time = time
 
-		encoded = timedelta.encode(diff)
+		if diff in self.delta_cache:
+			encoded = self.delta_cache[diff]
+		else:
+			encoded = timedelta.encode(diff)
+			self.delta_cache[diff] = encoded
+
 		self.time_size = len(encoded)
 
 		return encoded

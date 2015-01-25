@@ -94,7 +94,7 @@ class SaveParam:
 
 			path = self.param_path.create_file_path(time, nanotime)
 			self.file = self.file_factory.open(path, mode="w+b")
-			self.last.from_file(self.file, time, nanotime)
+			self.last.reset(time, nanotime)
 			self.file_size = 0
 
 	def write_value(self, value, time, nanotime):
