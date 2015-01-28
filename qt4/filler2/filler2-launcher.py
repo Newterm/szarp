@@ -53,6 +53,7 @@ from ipkparser import IPKParser
 from DatetimeDialog import Ui_DatetimeDialog
 from AboutDialog import Ui_AboutDialog
 from HistoryDialog import Ui_HistoryDialog
+from ValueDialogs import ValueDialogFactory
 
 # pyQt4 imports
 from PyQt4.QtCore import *
@@ -72,7 +73,7 @@ __script_name__ = os.path.basename(sys.argv[0])
 
 # containers definitions
 SzChangeInfo = namedtuple('SzChangeInfo',
-                          'draw_name name start_date end_date value lswmsw')
+                          'draw_name name dvalues lswmsw')
 
 # signal handlers
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -234,21 +235,11 @@ class Filler2(QMainWindow):
 		self.ui.listOfSets.setEnabled(True)
 
 		# parameter's type combobox
-		self.ui.valueType.addItem(
-				QIcon("/opt/szarp/resources/qt4/icons/plot-blank.png"),
-				_translate("MainWindow", " Type of plot"))
-		self.ui.valueType.addItem(
-				QIcon("/opt/szarp/resources/qt4/icons/plot-nodata.png"),
-				_translate("MainWindow", " No data"))
-		self.ui.valueType.addItem(
-				QIcon("/opt/szarp/resources/qt4/icons/plot-const.png"),
-				_translate("MainWindow", " Constant value"))
-		self.ui.valueType.addItem(
-				QIcon("/opt/szarp/resources/qt4/icons/plot-inc.png"),
-				_translate("MainWindow", " Linear increasing"))
-		self.ui.valueType.addItem(
-				QIcon("/opt/szarp/resources/qt4/icons/plot-dec.png"),
-				_translate("MainWindow", " Linear decreasing"))
+		self.dialog_factory = ValueDialogFactory()
+
+		for name, icon, desc in self.dialog_factory.get_dialogs():
+			self.ui.valueType.addItem(icon, desc, QVariant(name))
+
 		self.ui.valueType.model().setData(
 				self.ui.valueType.model().index(0,0),
 				QVariant(0), Qt.UserRole-1)
@@ -353,18 +344,8 @@ class Filler2(QMainWindow):
 		"""
 		self.ui.fromDate.setEnabled(True)
 		self.ui.toDate.setEnabled(True)
-		param_info = self.ui.paramList.itemData(index).toPyObject()
-
-		#qdv = QDoubleValidator(self.ui.paramList)
-		#qdv.setNotation(0)
-		#prec = int(param_info.prec)
-		#if param_info.lswmsw:
-		#	qdv.setRange(SZLIMIT_COM * -1, SZLIMIT_COM, prec)
-		#else:
-		#	qdv.setRange(SZLIMIT * -1, SZLIMIT, prec)
-
-		#self.ui.valueEdit.setValidator(qdv)
 		self.ui.valueType.setEnabled(True)
+		self.type_dialog = None
 		self.validateInput()
 
 	# end of onParamChosen()
@@ -420,8 +401,16 @@ class Filler2(QMainWindow):
 	# end of onToDate()
 
 	def onTypeChosen(self, index):
-		# TODO
-		#dlg = self.ui.valueType.itemData(index).toPyObject()
+		dlg_name = self.ui.valueType.itemData(index).toPyObject()
+		param_info = self.ui.paramList.itemData(index).toPyObject()
+		dlg = self.dialog_factory.construct(str(dlg_name),
+				int(param_info.prec), param_info.lswmsw,
+				parent = self)
+		if dlg.exec_():
+			self.type_dialog = dlg
+		else:
+			self.ui.valueType.setCurrentIndex(0)
+			self.type_dialog = None
 		self.validateInput()
 
 	# end of onTypeChosen()
@@ -458,13 +447,6 @@ class Filler2(QMainWindow):
 
 		param_info = self.ui.paramList.itemData(
 				self.ui.paramList.currentIndex()).toPyObject()
-		#val = float(self.ui.valueEdit.text())
-
-		#if (param_info.lswmsw and (val > SZLIMIT_COM or val < SZLIMIT_COM * -1)) \
-		#		or (val > SZLIMIT or val < SZLIMIT * -1):
-		#			self.warningBox(_translate("MainWindow",
-		#				"Parameter's value is out of range.\nAdding change aborted."))
-		#			return
 
 		self.ui.changesTable.setRowCount(self.ui.changesTable.rowCount()+1)
 		self.addRow(self.ui.changesTable.rowCount() - 1,
@@ -472,13 +454,12 @@ class Filler2(QMainWindow):
 					self.ui.paramList.currentText(),
 					self.fromDate,
 					self.toDate,
-					#self.ui.valueEdit.text(),
-					"0.0",
+					self.type_dialog,
 					param_info.lswmsw)
 
 	# end of addChange()
 
-	def addRow(self, row, fname, pname, from_date, to_date, value, lswmsw):
+	def addRow(self, row, fname, pname, from_date, to_date, typedlg, lswmsw):
 		"""Add row to changesTable (QTableWidget).
 
 		Arguments:
@@ -502,13 +483,13 @@ class Filler2(QMainWindow):
 		item_to_date.setFlags(Qt.ItemIsEnabled)
 		item_to_date.setTextAlignment(Qt.AlignCenter)
 
-		item_value = QTableWidgetItem(str(value))
+		item_value = QTableWidgetItem(typedlg.get_value_desc())
 		item_value.setFlags(Qt.ItemIsEnabled)
 		item_value.setTextAlignment(Qt.AlignCenter)
 
 		# hidden column
 		item_fname = QTableWidgetItem(unicode(fname))
-		item_fname.setData(Qt.UserRole, QVariant(lswmsw))
+		item_fname.setData(Qt.UserRole, QVariant((lswmsw, typedlg)))
 		item_fname.setFlags(Qt.ItemIsEnabled)
 
 		self.ui.changesTable.setItem(row, 0, item_pname)
@@ -577,17 +558,24 @@ class Filler2(QMainWindow):
 			changes_list = []
 
 			for i in range(0, self.ui.changesTable.rowCount()):
+
+				start_date = datetime.datetime.strptime(
+					str(self.ui.changesTable.item(i,1).text()),
+					'%Y-%m-%d %H:%M') - datetime.timedelta(minutes=10)
+
+				end_date = datetime.datetime.strptime(
+					str(self.ui.changesTable.item(i,2).text()),
+					'%Y-%m-%d %H:%M')
+
+				lswmsw, typedlg = \
+					self.ui.changesTable.item(i,5).data(Qt.UserRole).toPyObject()
+				dvals = typedlg.generate(start_date, end_date)
+
 				changes_list.append(SzChangeInfo(
 						draw_name = unicode(self.ui.changesTable.item(i,0).text()),
 						name = unicode(self.ui.changesTable.item(i,5).text()),
-						start_date = datetime.datetime.strptime(
-							str(self.ui.changesTable.item(i,1).text()),
-							'%Y-%m-%d %H:%M') - datetime.timedelta(minutes=10),
-						end_date = datetime.datetime.strptime(
-							str(self.ui.changesTable.item(i,2).text()),
-							'%Y-%m-%d %H:%M'),
-						value = self.ui.changesTable.item(i,3).text(),
-						lswmsw = self.ui.changesTable.item(i,5).data(Qt.UserRole).toPyObject()
+						dvalues = dvals,
+						lswmsw = lswmsw
 						))
 
 			# do the job (new thread)
@@ -935,14 +923,11 @@ class SzbWriter(QThread):
 		"""Run SzbWriter jobs."""
 		nr = 1
 		for ch in self.chlist:
-			dsec = int((ch.end_date-ch.start_date).total_seconds())
-			dts = [ch.start_date + datetime.timedelta(minutes=x) \
-				   for x in range(0, dsec / 60 + 1, 10)]
-			vals = [(d, ch.value) for d in dts]
+			dts = [dv[0] for dv in ch.dvalues]
 
 			try:
 				self.parser.recordSzf(ch.name, dts, ch.lswmsw)
-				self.parser.szbWriter(ch.name, vals)
+				self.parser.szbWriter(ch.name, ch.dvalues)
 				self.paramDone.emit(nr, ch.draw_name, 0)
 			except IPKParser.SzfRecordError:
 				self.paramDone.emit(nr, ch.draw_name, 1)

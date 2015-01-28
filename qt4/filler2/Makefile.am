@@ -19,6 +19,7 @@ filler2_PYTHON = \
 		@srcdir@/AboutDialog.py \
 		@srcdir@/DatetimeDialog.py \
 		@srcdir@/HistoryDialog.py \
+		@srcdir@/ValueDialogs.py \
 		@srcdir@/ipkparser.py \
 		@srcdir@/filler2-launcher.py \
 		@srcdir@/filler2.py
