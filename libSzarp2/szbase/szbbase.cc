@@ -198,7 +198,7 @@ void Szbase::RemoveConfig(const std::wstring &prefix, bool poison_cache) {
 	if (m_szb_buffers.size() <= ipk->GetConfigId())
 		return;
 
-	szb_buffer_t* buffer = m_szb_buffers[ipk->GetConfigId()];
+	szb_buffer_t*& buffer = m_szb_buffers[ipk->GetConfigId()];
 	if (buffer == NULL)
 		return;
 
@@ -208,6 +208,7 @@ void Szbase::RemoveConfig(const std::wstring &prefix, bool poison_cache) {
 		buffer->cachepoison = true;
 	szb_free_buffer(buffer);
 
+	buffer = NULL;
 }
 
 std::wstring Szbase::GetCacheDir(const std::wstring &prefix) {

@@ -312,8 +312,11 @@ void SzbaseBase::StopSearch() {
 	}
 }
 
-Sz4Base::Sz4Base(const std::wstring& data_dir, IPKContainer* ipk_conatiner) {
+Sz4Base::Sz4Base(const std::wstring& data_dir, IPKContainer* ipk_conatiner)
+	: data_dir(data_dir), ipk_container(ipk_conatiner) {
+
 	base = new sz4::base(data_dir, ipk_conatiner);
+
 }
 
 Sz4Base::~Sz4Base() {
@@ -321,7 +324,9 @@ Sz4Base::~Sz4Base() {
 }
 
 void Sz4Base::RemoveConfig(const std::wstring& prefix, bool poison_cache) {
+	delete base;
 
+	base = new sz4::base(data_dir, ipk_container);
 }
 
 bool Sz4Base::CompileLuaFormula(const std::wstring& formula, std::wstring& error) {
@@ -672,7 +677,7 @@ double DatabaseQueryQueue::FindQueryRanking(DatabaseQuery* q) {
 		return nan("");
 
 	if (q->type == DatabaseQuery::STARTING_CONFIG_RELOAD)
-		return -100.f;
+		return nan("");
 
 	if (q->type == DatabaseQuery::CHECK_CONFIGURATIONS_CHANGE)
 		return -200.f;

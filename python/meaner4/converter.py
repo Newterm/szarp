@@ -90,8 +90,10 @@ class FileFactory:
 
 
 class Converter:
-	def __init__(self):
-		config_dir = sys.argv[1]
+	def __init__(self, config_dir, offset, count):
+		self.offset = offset
+		self.count = count
+
 		sz4_dir = os.path.join(config_dir, "sz4")
 		self.szbase_dir = os.path.join(config_dir, "szbase")
 
@@ -118,11 +120,12 @@ class Converter:
 		szbase_files = [ x for x in os.listdir(os.path.join(self.szbase_dir, lsp_param_path)) if x.endswith(".szb")]
 		szbase_files.sort()
 
+		value = None
+
 		for j, szbase_path in enumerate(szbase_files):
 			sys.stdout.write("\rFile: %s, %d/%d    " % (szbase_path, j + 1, len(szbase_files)))
 			sys.stdout.flush()
 			time = szbase_file_path_to_date(szbase_path)
-			value = None
 
 			f = open(os.path.join(self.szbase_dir, lsp_param_path, szbase_path)).read()
 			if combined:
@@ -131,7 +134,7 @@ class Converter:
 				l = len(f) / 2
 				if combined:
 					vlsw = struct.unpack_from(("<%dH" % (l,)), f)
-					vmsw = struct.unpack_from(("<%dH" % (l,)), f2)
+					vmsw = struct.unpack_from(("<%dh" % (l,)), f2)
 					values = [ (m << 16) + l for l, m in zip(vlsw, vmsw) ]
 				else:
 					values = struct.unpack_from(("<%dh" % (l,)), f)
@@ -141,16 +144,20 @@ class Converter:
 				continue
 
 			for v in values:
+				if value is None:
+					sp.process_value(v, time, 0)
+					v = value
+
 				if value != v:
-					if value is not None:
-						sp.write_value(value, time, 0)
-					else:
-						sp.prepare_for_writing(time, 0)
+					sp.update_last_time_unlocked(time, 0)
+					sp.write_value(v, time, 0)
 					value = v
+
 				time += 600
 
-			if value is not None:
-				sp.write_value(value, time, 0)
+
+		if value is not None:
+			sp.update_last_time_unlocked(time, 0)
 
 		sp.close()
 
@@ -160,21 +167,23 @@ class Converter:
 
 		pno = 0
 		for pname in self.s_params.iterkeys():
-			sp = self.s_params[pname]
-			if sp.param.msw_combined_referencing_param is not None or sp.param.lsw_combined_referencing_param is not None:
-				continue
+			if pno % self.count == self.offset:
+				sp = self.s_params[pname]
+				if sp.param.msw_combined_referencing_param is not None or sp.param.lsw_combined_referencing_param is not None:
+					pno += 1
+					continue
 
-			print
-			print "Converting values for param: %s, param %d out of %d" % (sp.param_path.param_path, pno + 1, len(self.s_params))
-			try:
-				self.convert_param(sp, pname)
-			except OSError, e:
-				print e
+				print
+				print "Converting values for param: %s, param %d out of %d" % (sp.param_path.param_path, pno + 1, len(self.s_params))
+				try:
+					self.convert_param(sp, pname)
+				except OSError, e:
+					print e
 			pno += 1
 
 def help():
 	print """Invocation:
-%s configuration_dir
+%s configuration_dir [offset partition]
 Program converts database from szbase to sz4 format.
 Acceppts one mandatory command line argument - directory
 to szbase configuration or '-h' which make it print this 
@@ -182,10 +191,16 @@ help""" % (sys.argv[0],)
 
 
 def main():
-	if len(sys.argv) != 2 or sys.argv[1] == '-h':
+	if len(sys.argv) != 2 and len(sys.argv) != 4 or sys.argv[1] == '-h':
 		help()
 	else:
-		Converter().convert()
+		if len(sys.argv) == 4:
+			offset = int(sys.argv[2])
+			count = int(sys.argv[3])
+		else:
+			offset = 0
+			count = 1
+		Converter(sys.argv[1], offset, count).convert()
 
 
 main()

@@ -80,9 +80,11 @@ class LastEntry:
 			value = file.read(self.param.value_lenght)
 			self.value = self.param.value_from_binary(value)
 
+			self.value_start_time = self.time
+
 			if file.tell() == file_size:
+				self.time_size = 0
 				break
 
-			self.value_start_time = self.time
 			self.time += self.read_time(file)	
 

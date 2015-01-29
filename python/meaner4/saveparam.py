@@ -105,7 +105,6 @@ class SaveParam:
 			self.file_size += self.param.value_lenght
 
 			self.last.new_value(time, nanotime, value)
-			self.update_last_time_unlocked(time, nanotime)
 
 	def prepare_for_writing(self, time, nanotime):
 		path = self.param_path.find_latest_path()	

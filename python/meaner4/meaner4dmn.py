@@ -19,25 +19,8 @@
 
 """
 
-import sys
-sys.path.append("/opt/szarp/lib/python")
+import daemon
+import meaner4
 
-import meaner
-from libpar import LibparReader
-
-
-def go():
-	lpr = LibparReader()
-
-	path = lpr.get("global", "sz4dir")
-	ipk = lpr.get("global", "IPK")
-	uri = lpr.get("global", "parcook_socket_uri")
-	heartbeat = int(lpr.get("sz4", "heartbeat_frequency"))
-
-	meaner = meaner.Meaner(path, uri, heartbeat)
-	meaner.configure(ipk)
-
-	meaner.run()
-
-if __name__ == "__main__":
-	go()
+with daemon.DaemonContext(pidfile="/var/run/meaner4dmn.pid"):
+	meaner4.go()
