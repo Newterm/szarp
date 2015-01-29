@@ -21,7 +21,7 @@ case "$1" in
 	if [ "x$RET" = "xtrue" ]; then
 		db_get szarp-terminal/getserveraddr;
 		if [ "x$RET" != "x" ]; then
-			grep -Eq "([^0-9a-zA-Z-]|^)$PREFIX([^0-9a-zA-Z-]|$)" /etc/hosts || echo -e "$RET\t$PREFIX" >> /etc/hosts;
+			grep -Eq "([^0-9a-zA-Z-]|^)$PREFIX([^0-9a-zA-Z-]|$)" /etc/hosts || echo "$RET\t$PREFIX" >> /etc/hosts;
 		fi
 	fi
 
