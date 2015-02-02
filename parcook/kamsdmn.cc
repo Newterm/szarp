@@ -614,11 +614,12 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 			m_path.assign((const char*)path);
 			xmlFree(path);
 			m_id = m_path;
+		} else {
+			m_ip.assign((const char*)atc_ip);
+			xmlFree(atc_ip);
+			m_id = m_ip;
+			m_use_atc = true;
 		}
-		m_ip.assign((const char*)atc_ip);
-		xmlFree(atc_ip);
-		m_id = m_ip;
-		m_use_atc = true;
 	} else {
 		m_ip.assign((const char*)c);
 		xmlFree(c);
