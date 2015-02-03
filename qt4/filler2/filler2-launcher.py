@@ -452,7 +452,7 @@ class Filler2(QMainWindow):
 		val = float(self.ui.valueEdit.text())
 
 		if (param_info.lswmsw and (val > SZLIMIT_COM or val < SZLIMIT_COM * -1)) \
-				or (val > SZLIMIT or val < SZLIMIT * -1):
+				or ((not param_info.lswmsw) and (val > SZLIMIT or val < SZLIMIT * -1)):
 					self.warningBox(_translate("MainWindow",
 						"Parameter's value is out of range.\nAdding change aborted."))
 					return

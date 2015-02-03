@@ -46,7 +46,8 @@ szb2filler $VERSION, set permissions and ownership of szbase files for Filler 2
 Usage: `basename $0` [OPTION] [DIR/FILE]...
 
 This script sets appropriate file and directory permissions and ownership
-to enable Filler 2 modifications.
+to enable Filler 2 modifications. If you want to modify 10-sec probes,
+remember to set permissions of '/var/cache/szarp'.
 
 Startup:
     -h, --help     print this help.
@@ -88,8 +89,9 @@ while [ "x$1" != "x" ]
 do
 	if [ -d "$1" ]; then
 		chown -R root:szbase "$1"
-		find "$1" -type d -print0 | xargs -0 chmod 775
-		find "$1" -type f -name "*.szb" -print0 | xargs -0 chmod 664
+		find "$1" -type d -print0 | xargs -0 -r chmod 775
+		find "$1" -type f -name "*.szb" -print0 | xargs -0 -r chmod 664
+		find "$1" -type f -name "*.szc" -print0 | xargs -0 -r chmod 664
 	elif [ -f "$1" ]; then
 		chown root:szbase "$1"
 		chmod 664 "$1"

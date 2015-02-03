@@ -246,7 +246,7 @@ class IPKParser:
 
 	# end of extrszb10()
 
-	def szbWriter(self, pname, dv_list):
+	def szbWriter(self, pname, dv_list, write_10sec=False):
 		try:
 			string = ""
 			for d, v in dv_list:
@@ -254,9 +254,11 @@ class IPKParser:
 						(pname, d.strftime("%Y %m %d %H %M"), str(v))
 			string = string[:-1]
 
-			process = subprocess.Popen(
-					["/opt/szarp/bin/szbwriter", "-Dprefix=%s" % self.ipk_prefix, "-p"],
-					stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			cmd = ["/opt/szarp/bin/szbwriter", "-Dprefix=%s" % self.ipk_prefix]
+			if not write_10sec:
+				cmd.append("-p")
+			process = subprocess.Popen(cmd, stdin=subprocess.PIPE,
+						stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			out, err = process.communicate(string.encode('utf-8'))
 			if process.wait() != 0:
 				raise IOError("szbWriter exited with non-zero status")
