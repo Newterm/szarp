@@ -98,6 +98,7 @@ class DataWriter {
 		enum PROBE_TYPE { MIN10 = 0, SEC10, LAST_PROBE_TYPE };
 
 		DataWriter(SzbaseWriter* parent, DataWriter::PROBE_TYPE ptype, const std::wstring& data_dir, int fill_how_many);
+		~DataWriter();
 
 		int add_data(const std::wstring& name, bool is_dbl, struct tm& tm, double data);
 
@@ -212,6 +213,12 @@ DataWriter::DataWriter(SzbaseWriter* parent, DataWriter::PROBE_TYPE ptype, const
 	m_cur_sum = 0;
 
 	m_cache = new SzProbeCache(parent, data_dir, m_probe_length);
+}
+
+DataWriter::~DataWriter()
+{
+	if (m_cache)
+		delete m_cache;
 }
 
 
@@ -422,6 +429,10 @@ SzbaseWriter::SzbaseWriter(
 
 SzbaseWriter::~SzbaseWriter()
 {
+	while (!m_writers.empty()) {
+		delete (m_writers.back());
+		m_writers.pop_back();
+	}
 }
 
 
