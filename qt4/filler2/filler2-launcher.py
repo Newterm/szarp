@@ -486,6 +486,7 @@ class Filler2(QMainWindow):
 
 		item_value = QTableWidgetItem(typedlg.get_value_desc())
 		item_value.setFlags(Qt.ItemIsEnabled)
+		item_value.setIcon(QIcon(typedlg.qicon_path))
 		item_value.setTextAlignment(Qt.AlignCenter)
 
 		# hidden column

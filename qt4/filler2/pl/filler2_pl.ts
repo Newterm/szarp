@@ -19,7 +19,7 @@
         <translation>Zamknij</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="676"/>
+        <location filename="filler2-launcher.py" line="683"/>
         <source>About </source>
         <translation>O programie </translation>
     </message>
@@ -65,79 +65,79 @@
         <translation>Lista zmian obecnych w bazie danych</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="726"/>
+        <location filename="filler2-launcher.py" line="733"/>
         <source>Parameter name (set name)</source>
         <translation>Nazwa parameteru (nazwa zestawu)</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="726"/>
+        <location filename="filler2-launcher.py" line="733"/>
         <source>Change date</source>
         <translation>Data wykonania zmiany</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="726"/>
+        <location filename="filler2-launcher.py" line="733"/>
         <source>User</source>
         <translation>Użytkownik</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="895"/>
+        <location filename="filler2-launcher.py" line="902"/>
         <source>Parameter&apos;s value</source>
         <translation>Wartość parametru</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="773"/>
+        <location filename="filler2-launcher.py" line="780"/>
         <source>Show parameter&apos;s value chart before this change</source>
         <translation>Pokaż wykres wartości parametru przed wykonaniem zmiany</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="887"/>
+        <location filename="filler2-launcher.py" line="894"/>
         <source>before change</source>
         <translation>przed zmianą</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="889"/>
+        <location filename="filler2-launcher.py" line="896"/>
         <source>current value</source>
         <translation>akualna wartość</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="781"/>
+        <location filename="filler2-launcher.py" line="788"/>
         <source>Recover state of before change was made (new change will be introduced)</source>
         <translation>Przywróć stan sprzed wykonania zmiany (zostanie wprowadzona nowa zmiana nadpisująca)</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="804"/>
+        <location filename="filler2-launcher.py" line="811"/>
         <source>Are you sure you want to undo this change?
 (new overwriting change will be introduced)</source>
         <translation>Czy jesteś pewien, że chcesz wycofać tę zmianę?
 (zostanie wprowadzona nowa, nadpisująca zmiana)</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="875"/>
+        <location filename="filler2-launcher.py" line="882"/>
         <source> to </source>
         <translation> do </translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="875"/>
+        <location filename="filler2-launcher.py" line="882"/>
         <source>No data to be plotted - parameter is empty (both before and after the change) in period from </source>
         <translation>Brak danych do wyświetlenia na wykresie - nie ma danych dla tego parametru w okresie od  </translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="835"/>
+        <location filename="filler2-launcher.py" line="842"/>
         <source>Undoing change finished successfully.</source>
         <translation>Zmiana została prawidłowo wycofana.</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="828"/>
+        <location filename="filler2-launcher.py" line="835"/>
         <source>Failed to undo change for parameter </source>
         <translation>Nastąpił błąd podczas wycofywania zmiany dla paramteru </translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="820"/>
+        <location filename="filler2-launcher.py" line="827"/>
         <source>Encountered an error while making change record.</source>
         <translation>Wystąpił błąd podczas tworzenia rekordu zmiany.</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="828"/>
+        <location filename="filler2-launcher.py" line="835"/>
         <source>Encountered an error while writing to the database.</source>
         <translation>Wystąpił błąd podczas zapisu do bazy danych.</translation>
     </message>
@@ -265,7 +265,7 @@
         <translation>Wybierz datę końca okresu</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="595"/>
+        <location filename="filler2-launcher.py" line="602"/>
         <source>To:</source>
         <translation>Do:</translation>
     </message>
@@ -280,7 +280,7 @@
         <translation>Wybierz datę początku okresu</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="593"/>
+        <location filename="filler2-launcher.py" line="600"/>
         <source>From:</source>
         <translation>Od:</translation>
     </message>
@@ -355,7 +355,7 @@
         <translation>--- Wybierz parametr ---</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="678"/>
+        <location filename="filler2-launcher.py" line="685"/>
         <source>Filler 2 is a tool for manual szbase data editing.</source>
         <translation>Filler 2 jest narzędziem do ręcznej edycji danych szbase&apos;a.</translation>
     </message>
@@ -377,7 +377,7 @@ Adding change aborted.</source>
 Nie dodano zmiany.</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="504"/>
+        <location filename="filler2-launcher.py" line="506"/>
         <source>Remove entry</source>
         <translation>Usuń zmianę</translation>
     </message>
@@ -387,12 +387,12 @@ Nie dodano zmiany.</translation>
         <translation>Pytanie</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="547"/>
+        <location filename="filler2-launcher.py" line="549"/>
         <source>Following parameters will be modified:</source>
         <translation>Następujące parametry zostaną zmodyfikowane:</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="554"/>
+        <location filename="filler2-launcher.py" line="556"/>
         <source>Commit changes?</source>
         <translation>Wprowadzić zmiany do bazy danych?</translation>
     </message>
@@ -402,27 +402,27 @@ Nie dodano zmiany.</translation>
         <translation>Informacja</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="965"/>
+        <location filename="filler2-launcher.py" line="972"/>
         <source>Preparing...</source>
         <translation>Inicjowanie...</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="982"/>
+        <location filename="filler2-launcher.py" line="989"/>
         <source>Writing to szbase...</source>
         <translation>Zapisywanie do bazy danych...</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="1014"/>
+        <location filename="filler2-launcher.py" line="1021"/>
         <source>Writing parameter</source>
         <translation>Zapisywanie parametru</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="1025"/>
+        <location filename="filler2-launcher.py" line="1032"/>
         <source>Writing to szbase done.</source>
         <translation>Zapis do bazy danych ukończony.</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="543"/>
+        <location filename="filler2-launcher.py" line="545"/>
         <source>No changes to commit.</source>
         <translation>Brak zmian do wprowadzenia.</translation>
     </message>
@@ -512,7 +512,7 @@ Nie dodano zmiany.</translation>
         <translation>Wciśnij, aby wyświetlić informację o bibliotece graficznej Qt4, używanej przez aplikację Filler 2.</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="516"/>
+        <location filename="filler2-launcher.py" line="518"/>
         <source>Remove change?</source>
         <translation>Usunąć zmianę z tabeli?</translation>
     </message>
@@ -547,7 +547,7 @@ Nie dodano zmiany.</translation>
         <translation>Ctrl+H</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="532"/>
+        <location filename="filler2-launcher.py" line="534"/>
         <source>Are you sure you want to clear all changes?</source>
         <translation>Czy na pewno chcesz usunąć wszystkie zmiany z tabeli?</translation>
     </message>
@@ -564,22 +564,22 @@ Adding change aborted.</source>
 Nie dodano zmiany.</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="1008"/>
+        <location filename="filler2-launcher.py" line="1015"/>
         <source>failed.</source>
         <translation>błąd.</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="1011"/>
+        <location filename="filler2-launcher.py" line="1018"/>
         <source>done.</source>
         <translation>zrobione.</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="1030"/>
+        <location filename="filler2-launcher.py" line="1037"/>
         <source>failed to write to database, data may be inconsistent</source>
         <translation>błąd podaczas zapisu do bazy danych, dane mogą być niespójne</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="1036"/>
+        <location filename="filler2-launcher.py" line="1043"/>
         <source>Writing to szbase done. Following parameters failed to proceed:</source>
         <translation>Ukończono zapis do bazy danych. Podczas przetwarzania poniższych parametrów wystąpił błąd:</translation>
     </message>
@@ -589,7 +589,7 @@ Nie dodano zmiany.</translation>
         <translation>Nie udało się założyć blokady &quot;jednej instancji&quot;. Aplikacja Filler 2 jest już uruchomiona w systemie (np. przez innego użytkownika).</translation>
     </message>
     <message>
-        <location filename="filler2-launcher.py" line="1029"/>
+        <location filename="filler2-launcher.py" line="1036"/>
         <source>failed to make change record, writing aborted</source>
         <translation>nie udało się utworzyć rekordu zmiany, wprowadzanie zmiany przerwane</translation>
     </message>
@@ -622,39 +622,58 @@ Nie dodano zmiany.</translation>
 <context>
     <name>ValueDialogs</name>
     <message>
-        <location filename="ValueDialogs.py" line="51"/>
+        <location filename="ValueDialogs.py" line="70"/>
         <source>Constant value</source>
         <translation>Stała wartość</translation>
     </message>
     <message>
-        <location filename="ValueDialogs.py" line="62"/>
-        <source>This is a dialog for inputing parameter&apos;s constant value</source>
-        <translation>To jest okno wprowadzania stałej wartości parametru</translation>
-    </message>
-    <message>
-        <location filename="ValueDialogs.py" line="69"/>
+        <location filename="ValueDialogs.py" line="90"/>
         <source>Enter parametr&apos;s value:</source>
         <translation>Wpisz wartość parametru:</translation>
     </message>
     <message>
-        <location filename="ValueDialogs.py" line="76"/>
+        <location filename="ValueDialogs.py" line="98"/>
         <source>Parameter&apos;s value</source>
         <translation>Wartość parametru</translation>
     </message>
     <message>
-        <location filename="ValueDialogs.py" line="121"/>
+        <location filename="ValueDialogs.py" line="144"/>
         <source>Parameter&apos;s value is out of range.</source>
         <translation>Wartość parametru jest poza dozwolonym zakresem.</translation>
     </message>
     <message>
-        <location filename="ValueDialogs.py" line="61"/>
+        <location filename="ValueDialogs.py" line="80"/>
         <source>Enter a constant value</source>
         <translation>Wpisz wartość stałą</translation>
     </message>
     <message>
-        <location filename="ValueDialogs.py" line="47"/>
+        <location filename="ValueDialogs.py" line="66"/>
         <source>Choose a type of plot</source>
         <translation>Wybierz typ wykresu</translation>
+    </message>
+    <message>
+        <location filename="ValueDialogs.py" line="82"/>
+        <source>This is a dialog for inputing parameter&apos;s constant value.</source>
+        <translation>To jest okno wprowadzania stałej wartości parametru.</translation>
+    </message>
+    <message>
+        <location filename="ValueDialogs.py" line="168"/>
+        <source>Confirm NO_DATA insertion</source>
+        <translation>Potwierdź wprowadzanie wartości NO_DATA</translation>
+    </message>
+    <message>
+        <location filename="ValueDialogs.py" line="170"/>
+        <source>This is a confirmation dialog for inserting NO_DATA values (i.e. deleting probes).</source>
+        <translation>To jest okno potwierdzenia wprowadzania wartości NO_DATA, czyli usuwania próbek.</translation>
+    </message>
+    <message>
+        <location filename="ValueDialogs.py" line="180"/>
+        <source>This parameter probes in given time interval will be deleted.
+
+Are you sure you want to do this?</source>
+        <translation>Wartości próbek dla tego parametru w wybranym zakresie czasu zostaną usunięte.
+
+Czy jesteś pewien, że to właśnie chcesz zrobić?</translation>
     </message>
 </context>
 </TS>
