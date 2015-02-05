@@ -469,6 +469,7 @@ class Filler2(QMainWindow):
 			from_date - beginning of time period
 			to_date - end of time period
 			value - parameter's value
+			typedlg - object of input value dialog
 			lswmsw - whether parametr is a combined lsw/msw
 		"""
 		# visible columns
@@ -569,7 +570,12 @@ class Filler2(QMainWindow):
 
 				lswmsw, typedlg = \
 					self.ui.changesTable.item(i,5).data(Qt.UserRole).toPyObject()
-				dvals = typedlg.generate(start_date, end_date)
+
+				dsec = int((end_date-start_date).total_seconds())
+				dts = [start_date + datetime.timedelta(minutes=x) \
+						for x in range(0, dsec / 60 + 1, 10)]
+
+				dvals = typedlg.generate(dts)
 
 				changes_list.append(SzChangeInfo(
 						draw_name = unicode(self.ui.changesTable.item(i,0).text()),

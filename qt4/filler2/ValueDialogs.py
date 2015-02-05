@@ -124,12 +124,8 @@ class ValueDialogs:
 				self.val = val
 				QDialog.accept(self)
 
-		def generate(self, start, end):
-			dsec = int((end-start).total_seconds())
-			dts = [start + datetime.timedelta(minutes=x) \
-				   for x in range(0, dsec / 60 + 1, 10)]
-			dvals = [(d, self.val) for d in dts]
-
+		def generate(self, dates):
+			dvals = [(d, self.val) for d in dates]
 			return dvals
 
 		def get_value_desc(self):
