@@ -117,7 +117,7 @@ class ValueDialogs:
 			val = float(self.valueEdit.text())
 
 			if (self.lswmsw and (val > SZLIMIT_COM or val < SZLIMIT_COM * -1)) \
-					or (val > SZLIMIT or val < SZLIMIT * -1):
+					or ((not self.lswmsw) and (val > SZLIMIT or val < SZLIMIT * -1)):
 						self.parent.warningBox(_translate("ValueDialogs",
 							"Parameter's value is out of range."))
 			else:

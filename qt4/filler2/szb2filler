@@ -30,14 +30,6 @@ Try '`basename $0` --help' for more options.
 EOT
 }
 
-# check number of arguments
-if [ $# -eq 0 ]; then
-	echo "`basename $0`: error: missing DIR/FILE or OPTION" 1>&2
-	echo 1>&2
-	usage
-	exit 1
-fi
-
 # display help on "-h" or "--help" option
 if [ "x$1" = "x--help" -o "x$1" = "x-h" ]; then
 	cat <<EOT
@@ -50,8 +42,13 @@ to enable Filler 2 modifications. If you want to modify 10-sec probes,
 remember to set permissions of '/var/cache/szarp'.
 
 Startup:
-    -h, --help     print this help.
-    -V, --version  display the version of szb2filler and exit.
+    -h, --help             print this help.
+    -V, --version          display the version of szb2filler and exit.
+    -u, --unset-current    assure current month files does not have
+                                            permission to modify data.
+
+Options:
+    -e, --exclude-current  do not set permissions for current month files.
 
 Mail bug reports and suggestions to <coders AT newterm.pl>.
 EOT
@@ -84,22 +81,88 @@ if [ $UID -ne 0 ]; then
 	exit 1
 fi
 
-# set permissions and ownership to enable Filler 2 modifications
+# default options
+ACTION="set"
+EXCLUDE_CURRENT=false
+
+# parse options
 while [ "x$1" != "x" ]
 do
-	if [ -d "$1" ]; then
-		chown -R root:szbase "$1"
-		find "$1" -type d -print0 | xargs -0 -r chmod 775
-		find "$1" -type f -name "*.szb" -print0 | xargs -0 -r chmod 664
-		find "$1" -type f -name "*.szc" -print0 | xargs -0 -r chmod 664
-	elif [ -f "$1" ]; then
-		chown root:szbase "$1"
-		chmod 664 "$1"
-	else
-		echo "`basename $0`: warning: $1 is neither file nor directory, omitted" 1>&2
-	fi
-
-	shift
+	case $1 in
+		--)
+			shift; break;;	# end of options
+		-u|--unset-current)
+			ACTION="unset-current"
+			shift
+			;;
+		-e|--exclude-current)
+			EXCLUDE_CURRENT=true
+			shift
+			;;
+		-*)
+			echo "`basename $0`: unknown OPTION $1" 1>&2
+			usage
+			exit 1
+			;;
+		*)
+			break;;
+	esac
 done
 
-exit 0
+# check number of arguments
+if [ $# -eq 0 ]; then
+	echo "`basename $0`: error: missing DIR/FILE or OPTION" 1>&2
+	echo 1>&2
+	usage
+	exit 1
+fi
+
+# perform action
+CURRENT_MONTH="`date +%Y%m`"
+
+case $ACTION in
+	set)
+		# set permissions and ownership to enable Filler 2 modifications
+		while [ "x$1" != "x" ]
+		do
+			if [ -d "$1" ]; then
+				# directories
+				chown root:szbase "$1"
+				find "$1" -type d -print0 | xargs -0 -r chmod 775
+				find "$1" -type d -print0 | xargs -0 -r chown root:szbase
+
+				# files
+				if $EXCLUDE_CURRENT; then
+					find "$1" -type f -name "*.sz[bc]" \
+						 -a "!" -name "${CURRENT_MONTH}.sz[bc]" -print0 | xargs -0 -r chown root:szbase
+					find "$1" -type f -name "*.sz[bc]" \
+						 -a "!" -name "${CURRENT_MONTH}.sz[bc]" -print0 | xargs -0 -r chmod 664
+				else
+					find "$1" -type f -name "*.sz[bc]" -print0 | xargs -0 -r chown root:szbase
+					find "$1" -type f -name "*.sz[bc]" -print0 | xargs -0 -r chmod 664
+				fi
+			elif [ -f "$1" ]; then
+				if $EXCLUDE_CURRENT; then
+					FN="`basename $1`"
+					if [ "$FN" != "${CURRENT_MONTH}.szb" -a "$FN" != "${CURRENT_MONTH}.szc" ]; then
+						chown root:szbase "$1"
+						chmod 664 "$1"
+					fi
+				else
+					chown root:szbase "$1"
+					chmod 664 "$1"
+				fi
+			else
+				echo "`basename $0`: warning: $1 is neither file nor directory, omitted" 1>&2
+			fi
+
+			shift
+		done
+		exit 0
+		;;
+	unset-current)
+		# unset permissions for files from current month
+		# TODO
+		exit 0
+		;;
+esac
