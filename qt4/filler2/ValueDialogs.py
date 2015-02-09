@@ -332,9 +332,9 @@ class ValueDialogs:
 				QDialog.accept(self)
 
 		def generate(self, dates):
-			np = len(dates)-1	# FIXME: fix for szbwriter
+			np = len(dates)
 			delta = (self.val_b - self.val_a) / float(np-1)
-			vals = [ self.val_a, self.val_a ]
+			vals = [ self.val_a ]
 			dsum = 0
 			while np > 2:
 				dsum += delta

@@ -564,7 +564,7 @@ class Filler2(QMainWindow):
 
 				start_date = datetime.datetime.strptime(
 					str(self.ui.changesTable.item(i,1).text()),
-					'%Y-%m-%d %H:%M') - datetime.timedelta(minutes=10)
+					'%Y-%m-%d %H:%M')
 
 				end_date = datetime.datetime.strptime(
 					str(self.ui.changesTable.item(i,2).text()),

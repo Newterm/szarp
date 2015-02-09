@@ -46,6 +46,10 @@ import libpyszbase as pysz
 
 # constants
 INF = sys.maxint
+SZLIMIT = 32767.0
+SZLIMIT_COM = 2147483647.0
+NODATA = -32768.0
+NODATA_COM = -2147483648.0
 
 SZCONFIG_PATH = "/opt/szarp/%s/config/params.xml"
 PREFIX_REX = re.compile(r'^[a-z]+$')
@@ -248,7 +252,12 @@ class IPKParser:
 
 	def szbWriter(self, pname, dv_list, write_10sec=False):
 		try:
-			string = ""
+			#string = ""
+			# FIXME: warm-up fix for szbwriter
+			wud = dv_list[0][0] - datetime.timedelta(minutes=10)
+			string = u"\"%s\" %s %s\n" % \
+					(pname, wud.strftime("%Y %m %d %H %M"), str(NODATA))
+
 			for d, v in dv_list:
 				string += u"\"%s\" %s %s\n" % \
 						(pname, d.strftime("%Y %m %d %H %M"), str(v))
