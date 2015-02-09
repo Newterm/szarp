@@ -331,6 +331,7 @@ class Filler2(QMainWindow):
 
 		self.ui.paramList.setEnabled(True)
 		self.ui.paramList.setFocus()
+		self.ui.valueType.setCurrentIndex(0)
 		self.ui.valueType.setEnabled(False)
 		self.ui.addButton.setEnabled(False)
 
