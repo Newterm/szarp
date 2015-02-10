@@ -108,6 +108,9 @@
 			protocol. Very important is to set this to proper value, cause daemon not always calculates
 			this correctly. According to modbus rtu documentation good value is 3.5 times time between 
 			two bytes in frame. Based on our experience 35ms is usually good value.
+		extra:single-register-pdu="1"
+			if set to 1, every modbus register will be queried separately by modbus client unit,
+			may not work with float registers. Set to 0 or ommit to disable.
         >
 	<param
 		param elements denote values that can be send or read from device to SZARP
@@ -419,6 +422,7 @@ protected:
 	time_t m_current_time;
 	time_t m_expiration_time;
 	float m_nodata_value;
+	bool m_single_register_pdu;
 
 	int get_float_order(xmlNodePtr node, FLOAT_ORDER default_value, bool& default_used, FLOAT_ORDER& float_order);
 	int get_double_order(xmlNodePtr node, DOUBLE_ORDER default_value, bool &default_used, DOUBLE_ORDER& double_order);
@@ -1700,6 +1704,10 @@ int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
 }
 
 int modbus_unit::configure(TUnit *unit, xmlNodePtr node, short *read, short *send) {
+	m_single_register_pdu = false;
+	if (!get_xml_extra_prop(node, "single-register-pdu", m_single_register_pdu)) {
+		m_log.log(5, "setting single-register-pdu mode");
+	}
 	bool default_used;
 	if (get_float_order(node, MSWLSW, default_used, m_float_order))
 		return 1;
@@ -1805,7 +1813,7 @@ void tcp_parser::read_data(struct bufferevent *bufev) {
 			m_adu.length |= (c << 8);
 			m_adu.length = ntohs(m_adu.length);
 			m_payload_size = m_adu.length - 2;
-			m_log->log(8, "Data size: %lu", m_payload_size);
+			m_log->log(8, "Data size: %zu", m_payload_size);
 			break;
 		case U_ID:
 			m_state = FUNC;
@@ -1974,7 +1982,7 @@ void modbus_client::send_write_query() {
 		unsigned short v = m_registers[m_start_addr + i]->get_val();
 		m_pdu.data.push_back(v >> 8);
 		m_pdu.data.push_back(v & 0xff);
-		m_log.log(7, "Sending register: %lu, value: %hu:", m_start_addr + i, v);
+		m_log.log(7, "Sending register: %zu, value: %hu:", m_start_addr + i, v);
 	}
 
 	send_pdu(m_id, m_pdu);
@@ -2067,7 +2075,11 @@ void modbus_client::find_continuous_reg_block(RSET::iterator &i, RSET &regs) {
 	m_start_addr = current = i->second;
 	m_regs_count = 1;
 	m_register_type = i->first;
-	
+
+	if (m_single_register_pdu) {
+		++i;
+		return;
+	}
 	while (++i != regs.end() && m_regs_count < 125) {
 		if (m_register_type != i->first)
 			break;
@@ -2296,7 +2308,7 @@ bool serial_rtu_parser::check_crc() {
 
 	m_log->log(8,"Unit ID = %hx",m_sdu.unit_id);
 	m_log->log(8,"Func code = %hx",m_sdu.pdu.func_code);
-	for (size_t i = 0; i < m_data_read ; i++) m_log->log(9, "Data[%lu] = %hx", i, d[i]);
+	for (size_t i = 0; i < m_data_read ; i++) m_log->log(9, "Data[%zu] = %hx", i, d[i]);
 	m_log->log(8, "Checking crc, result: %s, unit_id: %d, calculated crc: %hx, frame crc: %hx",
 	       	(crc == frame_crc ? "OK" : "ERROR"), m_sdu.unit_id, crc, frame_crc);
 	return crc == frame_crc;
