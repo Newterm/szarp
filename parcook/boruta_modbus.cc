@@ -111,6 +111,8 @@
 		extra:single-register-pdu="1"
 			if set to 1, every modbus register will be queried separately by modbus client unit,
 			may not work with float registers. Set to 0 or ommit to disable.
+		extra:query-interval="0"
+			interval between queries, in ms, defaults to 0.
         >
 	<param
 		param elements denote values that can be send or read from device to SZARP
@@ -293,6 +295,7 @@
 #include "ipchandler.h"
 #include "tokens.h"
 #include "borutadmn.h"
+#include "daemonutils.h"
 
 
 const unsigned char MB_ERROR_CODE = 0x80;
@@ -517,6 +520,8 @@ protected:
 
 	time_t m_latest_request_sent;
 	time_t m_request_timeout;
+	struct event m_next_query_timer;
+	unsigned int m_query_interval_ms;
 
 	void starting_new_cycle();
 protected:
@@ -530,6 +535,9 @@ protected:
 	void send_query();
 	void find_continuous_reg_block(RSET::iterator &i, RSET &regs);
 	void timeout();
+
+	void schedule_send_query();
+	static void next_query_cb(int fd, short event, void* thisptr);
 
 	virtual void send_pdu(unsigned char unit, PDU &pdu) = 0;
 	virtual void cycle_finished() = 0;
@@ -1941,7 +1949,11 @@ void modbus_client::starting_new_cycle() {
 }
 
 
-modbus_client::modbus_client(boruta_driver* driver) : modbus_unit(driver), m_state(IDLE), m_latest_request_sent(0), m_request_timeout(0) {}
+modbus_client::modbus_client(boruta_driver* driver) : modbus_unit(driver), m_state(IDLE), m_latest_request_sent(0), m_request_timeout(0)
+{
+	evtimer_set(&m_next_query_timer, next_query_cb, this);
+	//event_base_set(m_event_base, &m_next_query_timer);	//TODO
+}
 
 void modbus_client::reset_cycle() {
 	m_received_iterator = m_received.begin();
@@ -1960,12 +1972,23 @@ void modbus_client::send_next_query(bool previous_ok) {
 		case READ_QUERY_SENT:
 		case WRITE_QUERY_SENT:
 			next_query(previous_ok);
-			send_query();
+			schedule_send_query();
 			break;
 		default:
 			assert(false);
 			break;
 	}
+}
+
+void modbus_client::schedule_send_query() {
+	unsigned int wait_ms = m_query_interval_ms;
+	const struct timeval tv = ms2timeval(wait_ms);
+	evtimer_add(&m_next_query_timer, &tv);
+	m_log.log(10, "schedule next query in %dms", wait_ms);
+}
+
+void modbus_client::next_query_cb(int fd, short event, void* thisptr) {
+	reinterpret_cast<modbus_client*>(thisptr)->send_query();
 }
 
 void modbus_client::send_write_query() {
@@ -2091,6 +2114,10 @@ void modbus_client::find_continuous_reg_block(RSET::iterator &i, RSET &regs) {
 }
 
 int modbus_client::configure(TUnit *unit, xmlNodePtr node, short *read, short *send) {
+	m_query_interval_ms = 0;
+	if (!get_xml_extra_prop(node, "query-interval", m_query_interval_ms)) {
+		m_log.log(5, "setting query interval ms to %u", m_query_interval_ms);
+	}
 	m_request_timeout = 10;
 	if (get_xml_extra_prop(node, "request-timeout", m_request_timeout, true))
 		return 1;
