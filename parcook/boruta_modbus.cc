@@ -425,7 +425,6 @@ protected:
 	time_t m_current_time;
 	time_t m_expiration_time;
 	float m_nodata_value;
-	bool m_single_register_pdu;
 
 	int get_float_order(xmlNodePtr node, FLOAT_ORDER default_value, bool& default_used, FLOAT_ORDER& float_order);
 	int get_double_order(xmlNodePtr node, DOUBLE_ORDER default_value, bool &default_used, DOUBLE_ORDER& double_order);
@@ -521,6 +520,7 @@ protected:
 	time_t m_latest_request_sent;
 	time_t m_request_timeout;
 	struct event m_next_query_timer;
+	bool m_single_register_pdu;
 	unsigned int m_query_interval_ms;
 
 	void starting_new_cycle();
@@ -1712,10 +1712,6 @@ int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
 }
 
 int modbus_unit::configure(TUnit *unit, xmlNodePtr node, short *read, short *send) {
-	m_single_register_pdu = false;
-	if (!get_xml_extra_prop(node, "single-register-pdu", m_single_register_pdu)) {
-		m_log.log(5, "setting single-register-pdu mode");
-	}
 	bool default_used;
 	if (get_float_order(node, MSWLSW, default_used, m_float_order))
 		return 1;
@@ -2058,6 +2054,7 @@ void modbus_client::next_query(bool previous_ok) {
 }
 
 void modbus_client::send_query() {
+	m_log.log(10, "send_query");
 	switch (m_state) {
 		default:
 			return;
@@ -2114,6 +2111,10 @@ void modbus_client::find_continuous_reg_block(RSET::iterator &i, RSET &regs) {
 }
 
 int modbus_client::configure(TUnit *unit, xmlNodePtr node, short *read, short *send) {
+	m_single_register_pdu = false;
+	if (!get_xml_extra_prop(node, "single-register-pdu", m_single_register_pdu)) {
+		m_log.log(5, "setting single-register-pdu mode");
+	}
 	m_query_interval_ms = 0;
 	if (!get_xml_extra_prop(node, "query-interval", m_query_interval_ms)) {
 		m_log.log(5, "setting query interval ms to %u", m_query_interval_ms);
