@@ -353,7 +353,140 @@ class ValueDialogs:
 
 		def __init__(self, prec, lswmsw, parent=None):
 			QDialog.__init__(self, parent)
+			self.parent = parent
+			self.prec = int(prec)
+			self.lswmsw = lswmsw
 
-		def generate(self):
-			pass
+			self.setWindowIcon(QIcon(self.qicon_path))
+			self.setModal(True)
+			self.setWindowTitle(_translate("ValueDialogs",
+								"Define linear decreasing plot"))
+			self.setToolTip(_translate("ValueDialogs",
+				"This is a dialog for defining linear decreasing values of parameter."))
+
+			self.mainLayout = QVBoxLayout()
+			self.setLayout(self.mainLayout)
+
+			self.label_a = QLabel()
+			self.label_a.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+			self.label_a.setText(_translate("ValueDialogs",
+				"Enter parameter's value in starting point:"))
+			self.mainLayout.addWidget(self.label_a)
+
+			self.valueEdit_a = QLineEdit()
+			self.valueEdit_a.setAutoFillBackground(True)
+			self.valueEdit_a.setMaxLength(12)
+			self.valueEdit_a.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+			self.valueEdit_a.setToolTip(_translate("ValueDialogs",
+				"Parameter\'s value in starting point (a)."))
+			self.valueEdit_a.setPlaceholderText("0.0")
+			qdv_a = QDoubleValidator()
+			qdv_a.setNotation(0)
+			if lswmsw:
+				qdv_a.setRange(SZLIMIT_COM * -1, SZLIMIT_COM, prec)
+			else:
+				qdv_a.setRange(SZLIMIT * -1, SZLIMIT, prec)
+			self.valueEdit_a.setValidator(qdv_a)
+
+			self.valueEdit_a.setText("")
+			self.mainLayout.addWidget(self.valueEdit_a)
+
+			self.label_b = QLabel()
+			self.label_b.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+			self.label_b.setText(_translate("ValueDialogs",
+				"Enter parameter's value in ending point:"))
+			self.mainLayout.addWidget(self.label_b)
+
+			self.valueEdit_b = QLineEdit()
+			self.valueEdit_b.setAutoFillBackground(True)
+			self.valueEdit_b.setMaxLength(12)
+			self.valueEdit_b.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+			self.valueEdit_b.setToolTip(_translate("ValueDialogs",
+				"Parameter\'s value in ending point (b)."))
+			self.valueEdit_b.setPlaceholderText("0.0")
+			qdv_b = QDoubleValidator()
+			qdv_b.setNotation(0)
+			if lswmsw:
+				qdv_b.setRange(SZLIMIT_COM * -1, SZLIMIT_COM, prec)
+			else:
+				qdv_b.setRange(SZLIMIT * -1, SZLIMIT, prec)
+			self.valueEdit_b.setValidator(qdv_b)
+
+			self.valueEdit_b.setText("")
+			self.mainLayout.addWidget(self.valueEdit_b)
+
+			self.buttonBox = QDialogButtonBox()
+			self.buttonBox.setOrientation(Qt.Horizontal)
+			self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+			self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+			self.mainLayout.addWidget(self.buttonBox)
+
+			QObject.connect(self.buttonBox, SIGNAL("accepted()"), self.accept)
+			QObject.connect(self.buttonBox, SIGNAL("rejected()"), self.reject)
+			QObject.connect(self.valueEdit_a, SIGNAL("lostFocus()"), self.onValueChanged_a)
+			QObject.connect(self.valueEdit_a, SIGNAL("returnPressed()"), self.onValueChanged_a)
+			QObject.connect(self.valueEdit_a, SIGNAL("textChanged(QString)"), self.validateInput)
+			QObject.connect(self.valueEdit_b, SIGNAL("lostFocus()"), self.onValueChanged_b)
+			QObject.connect(self.valueEdit_b, SIGNAL("returnPressed()"), self.onValueChanged_b)
+			QObject.connect(self.valueEdit_b, SIGNAL("textChanged(QString)"), self.validateInput)
+			QMetaObject.connectSlotsByName(self)
+
+		def onValueChanged_a(self):
+			new_value = self.valueEdit_a.text()
+			try:
+				self.valueEdit_a.setText(str(float(new_value)))
+			except ValueError:
+				self.valueEdit_a.setText("")
+			self.validateInput()
+
+		def onValueChanged_b(self):
+			new_value = self.valueEdit_b.text()
+			try:
+				self.valueEdit_b.setText(str(float(new_value)))
+			except ValueError:
+				self.valueEdit_b.setText("")
+			self.validateInput()
+
+		def validateInput(self):
+			if len(self.valueEdit_a.text()) > 0 and len(self.valueEdit_b.text()) > 0:
+				self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
+			else:
+				self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+
+		def accept(self):
+			val_a = float(self.valueEdit_a.text())
+			val_b = float(self.valueEdit_b.text())
+
+			if (self.lswmsw and (val_a > SZLIMIT_COM or val_a < SZLIMIT_COM * -1)) \
+				or ((not self.lswmsw) and (val_a > SZLIMIT or val_a < SZLIMIT * -1)):
+					self.parent.warningBox(_translate("ValueDialogs",
+						"Parameter's value in starting point is out of range."))
+			elif (self.lswmsw and (val_a > SZLIMIT_COM or val_a < SZLIMIT_COM * -1)) \
+				or ((not self.lswmsw) and (val_a > SZLIMIT or val_a < SZLIMIT * -1)):
+					self.parent.warningBox(_translate("ValueDialogs",
+						"Parameter's value in ending point is out of range."))
+			elif val_a < val_b:
+					self.parent.warningBox(_translate("ValueDialogs",
+						"Starting point is lesser than ending point. "
+						"If that's what you want, choose linear increasing plot."))
+			else:
+				self.val_a = val_a
+				self.val_b = val_b
+				QDialog.accept(self)
+
+		def generate(self, dates):
+			np = len(dates)
+			delta = (self.val_b - self.val_a) / float(np-1)
+			vals = [ self.val_a ]
+			dsum = 0
+			while np > 2:
+				dsum += delta
+				vals.append(round(self.val_a+dsum, self.prec))
+				np -= 1
+			vals.append(self.val_b)
+
+			return zip(dates, vals)
+
+		def get_value_desc(self):
+			return "a = %s, b = %s" % (self.val_a, self.val_b)
 
