@@ -238,7 +238,7 @@ class Filler2(QMainWindow):
 		self.dialog_factory = ValueDialogFactory()
 
 		for name, icon, desc in self.dialog_factory.get_dialogs():
-			self.ui.valueType.addItem(icon, desc, QVariant(name))
+			self.ui.valueType.addItem(icon, desc, QVariant((name, desc)))
 
 		self.ui.valueType.model().setData(
 				self.ui.valueType.model().index(0,0),
@@ -402,13 +402,20 @@ class Filler2(QMainWindow):
 	# end of onToDate()
 
 	def onTypeChosen(self, index):
-		dlg_name = self.ui.valueType.itemData(index).toPyObject()
-		param_info = self.ui.paramList.itemData(index).toPyObject()
+		dlg_name = self.ui.valueType.itemData(index).toPyObject()[0]
+		param_info = self.ui.paramList.itemData(self.ui.paramList.currentIndex()).toPyObject()
 		dlg = self.dialog_factory.construct(str(dlg_name),
 				int(param_info.prec), param_info.lswmsw,
 				parent = self)
+
+		# reset items' texts
+		for i in range(self.ui.valueType.count()):
+			desc = self.ui.valueType.itemData(i).toPyObject()[1]
+			self.ui.valueType.setItemText(i, desc)
+
 		if dlg.exec_():
 			self.type_dialog = dlg
+			self.ui.valueType.setItemText(index, dlg.get_value_desc())
 		else:
 			self.ui.valueType.setCurrentIndex(0)
 			self.type_dialog = None
@@ -457,6 +464,12 @@ class Filler2(QMainWindow):
 					self.toDate,
 					self.type_dialog,
 					param_info.lswmsw)
+
+		# reset items' texts
+		for i in range(self.ui.valueType.count()):
+			desc = self.ui.valueType.itemData(i).toPyObject()[1]
+			self.ui.valueType.setItemText(i, desc)
+		self.ui.valueType.setCurrentIndex(0)
 
 	# end of addChange()
 
