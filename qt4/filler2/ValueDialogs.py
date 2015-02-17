@@ -4,12 +4,7 @@
 import datetime
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-
-# constants
-SZLIMIT = 32767.0
-SZLIMIT_COM = 2147483647.0
-NODATA = -32768.0
-NODATA_COM = -2147483648.0
+from ipkparser import SZB_LIMIT, SZB_LIMIT_COM, NO_DATA, NO_DATA_COM
 
 # translation function for QTranslator
 try:
@@ -19,6 +14,7 @@ try:
 except AttributeError:
 	def _translate(context, text):
 		return QApplication.translate(context, text, None)
+
 
 class ValueDialogFactory:
 	def __init__(self):
@@ -100,9 +96,9 @@ class ValueDialogs:
 			qdv = QDoubleValidator()
 			qdv.setNotation(0)
 			if lswmsw:
-				qdv.setRange(SZLIMIT_COM * -1, SZLIMIT_COM, prec)
+				qdv.setRange(SZB_LIMIT_COM * -1, SZB_LIMIT_COM, prec)
 			else:
-				qdv.setRange(SZLIMIT * -1, SZLIMIT, prec)
+				qdv.setRange(SZB_LIMIT * -1, SZB_LIMIT, prec)
 			self.valueEdit.setValidator(qdv)
 
 			self.valueEdit.setText("")
@@ -138,8 +134,8 @@ class ValueDialogs:
 		def accept(self):
 			val = float(self.valueEdit.text())
 
-			if (self.lswmsw and (val > SZLIMIT_COM or val < SZLIMIT_COM * -1)) \
-				or ((not self.lswmsw) and (val > SZLIMIT or val < SZLIMIT * -1)):
+			if (self.lswmsw and (val > SZB_LIMIT_COM or val < SZB_LIMIT_COM * -1)) \
+				or ((not self.lswmsw) and (val > SZB_LIMIT or val < SZB_LIMIT * -1)):
 					self.parent.warningBox(_translate("ValueDialogs",
 						"Parameter's value is out of range."))
 			else:
@@ -192,9 +188,9 @@ class ValueDialogs:
 
 		def accept(self):
 			if self.lswmsw:
-				self.val = NODATA_COM
+				self.val = NO_DATA_COM
 			else:
-				self.val = NODATA
+				self.val = NO_DATA
 			QDialog.accept(self)
 
 		def generate(self, dates):
@@ -240,9 +236,9 @@ class ValueDialogs:
 			qdv_a = QDoubleValidator()
 			qdv_a.setNotation(0)
 			if lswmsw:
-				qdv_a.setRange(SZLIMIT_COM * -1, SZLIMIT_COM, prec)
+				qdv_a.setRange(SZB_LIMIT_COM * -1, SZB_LIMIT_COM, prec)
 			else:
-				qdv_a.setRange(SZLIMIT * -1, SZLIMIT, prec)
+				qdv_a.setRange(SZB_LIMIT * -1, SZB_LIMIT, prec)
 			self.valueEdit_a.setValidator(qdv_a)
 
 			self.valueEdit_a.setText("")
@@ -264,9 +260,9 @@ class ValueDialogs:
 			qdv_b = QDoubleValidator()
 			qdv_b.setNotation(0)
 			if lswmsw:
-				qdv_b.setRange(SZLIMIT_COM * -1, SZLIMIT_COM, prec)
+				qdv_b.setRange(SZB_LIMIT_COM * -1, SZB_LIMIT_COM, prec)
 			else:
-				qdv_b.setRange(SZLIMIT * -1, SZLIMIT, prec)
+				qdv_b.setRange(SZB_LIMIT * -1, SZB_LIMIT, prec)
 			self.valueEdit_b.setValidator(qdv_b)
 
 			self.valueEdit_b.setText("")
@@ -314,12 +310,12 @@ class ValueDialogs:
 			val_a = float(self.valueEdit_a.text())
 			val_b = float(self.valueEdit_b.text())
 
-			if (self.lswmsw and (val_a > SZLIMIT_COM or val_a < SZLIMIT_COM * -1)) \
-				or ((not self.lswmsw) and (val_a > SZLIMIT or val_a < SZLIMIT * -1)):
+			if (self.lswmsw and (val_a > SZB_LIMIT_COM or val_a < SZB_LIMIT_COM * -1)) \
+				or ((not self.lswmsw) and (val_a > SZB_LIMIT or val_a < SZB_LIMIT * -1)):
 					self.parent.warningBox(_translate("ValueDialogs",
 						"Parameter's value in starting point is out of range."))
-			elif (self.lswmsw and (val_a > SZLIMIT_COM or val_a < SZLIMIT_COM * -1)) \
-				or ((not self.lswmsw) and (val_a > SZLIMIT or val_a < SZLIMIT * -1)):
+			elif (self.lswmsw and (val_a > SZB_LIMIT_COM or val_a < SZB_LIMIT_COM * -1)) \
+				or ((not self.lswmsw) and (val_a > SZB_LIMIT or val_a < SZB_LIMIT * -1)):
 					self.parent.warningBox(_translate("ValueDialogs",
 						"Parameter's value in ending point is out of range."))
 			elif val_a > val_b:
@@ -383,9 +379,9 @@ class ValueDialogs:
 			qdv_a = QDoubleValidator()
 			qdv_a.setNotation(0)
 			if lswmsw:
-				qdv_a.setRange(SZLIMIT_COM * -1, SZLIMIT_COM, prec)
+				qdv_a.setRange(SZB_LIMIT_COM * -1, SZB_LIMIT_COM, prec)
 			else:
-				qdv_a.setRange(SZLIMIT * -1, SZLIMIT, prec)
+				qdv_a.setRange(SZB_LIMIT * -1, SZB_LIMIT, prec)
 			self.valueEdit_a.setValidator(qdv_a)
 
 			self.valueEdit_a.setText("")
@@ -407,9 +403,9 @@ class ValueDialogs:
 			qdv_b = QDoubleValidator()
 			qdv_b.setNotation(0)
 			if lswmsw:
-				qdv_b.setRange(SZLIMIT_COM * -1, SZLIMIT_COM, prec)
+				qdv_b.setRange(SZB_LIMIT_COM * -1, SZB_LIMIT_COM, prec)
 			else:
-				qdv_b.setRange(SZLIMIT * -1, SZLIMIT, prec)
+				qdv_b.setRange(SZB_LIMIT * -1, SZB_LIMIT, prec)
 			self.valueEdit_b.setValidator(qdv_b)
 
 			self.valueEdit_b.setText("")
@@ -457,12 +453,12 @@ class ValueDialogs:
 			val_a = float(self.valueEdit_a.text())
 			val_b = float(self.valueEdit_b.text())
 
-			if (self.lswmsw and (val_a > SZLIMIT_COM or val_a < SZLIMIT_COM * -1)) \
-				or ((not self.lswmsw) and (val_a > SZLIMIT or val_a < SZLIMIT * -1)):
+			if (self.lswmsw and (val_a > SZB_LIMIT_COM or val_a < SZB_LIMIT_COM * -1)) \
+				or ((not self.lswmsw) and (val_a > SZB_LIMIT or val_a < SZB_LIMIT * -1)):
 					self.parent.warningBox(_translate("ValueDialogs",
 						"Parameter's value in starting point is out of range."))
-			elif (self.lswmsw and (val_a > SZLIMIT_COM or val_a < SZLIMIT_COM * -1)) \
-				or ((not self.lswmsw) and (val_a > SZLIMIT or val_a < SZLIMIT * -1)):
+			elif (self.lswmsw and (val_a > SZB_LIMIT_COM or val_a < SZB_LIMIT_COM * -1)) \
+				or ((not self.lswmsw) and (val_a > SZB_LIMIT or val_a < SZB_LIMIT * -1)):
 					self.parent.warningBox(_translate("ValueDialogs",
 						"Parameter's value in ending point is out of range."))
 			elif val_a < val_b:

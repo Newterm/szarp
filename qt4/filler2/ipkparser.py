@@ -46,10 +46,10 @@ import libpyszbase as pysz
 
 # constants
 INF = sys.maxint
-SZLIMIT = 32767.0
-SZLIMIT_COM = 2147483647.0
-NODATA = -32768.0
-NODATA_COM = -2147483648.0
+SZB_LIMIT = 32767.0
+SZB_LIMIT_COM = 2147483647.0
+NO_DATA = -32768.0
+NO_DATA_COM = -2147483648.0
 
 SZCONFIG_PATH = "/opt/szarp/%s/config/params.xml"
 PREFIX_REX = re.compile(r'^[a-z]+$')
@@ -60,7 +60,6 @@ LSWMSW_REX = re.compile(r'^\s*\([^:]+:[^:]+:[^:]+ msw\)'
 ParamInfo = namedtuple('ParamInfo', 'name draw_name prec lswmsw')
 ChangeInfo = namedtuple('ChangeInfo',
 						'name draw_name set_name user date vals lswmsw')
-
 class SetInfo:
 	__init__ = lambda self, **kw: setattr(self, '__dict__', kw)
 
@@ -100,9 +99,10 @@ class IPKParser:
 		if prefix is None or len(prefix) == 0:
 			try:
 				process = subprocess.Popen(
-						["/opt/szarp/bin/lpparse", "prefix"], stdout=subprocess.PIPE)
+						["/opt/szarp/bin/lpparse", "prefix"],
+						stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 				out, err = process.communicate()
-				if err == None:
+				if len(err) == 0:
 					prefix = out[1:-1]
 			except OSError:
 				pass
@@ -178,7 +178,7 @@ class IPKParser:
 			(draw_name, set_title) - tuple containing two strings, of draw name
 				and set title.
 		"""
-		# FIXME: set may be ambiguous as parameter may belong to a few sets.
+		# FIXME: set may be ambiguous as parameter may belong to more than one set.
 		for key, val in self.ipk_conf.iteritems():
 			for p in val.params:
 				if p.name == pname:
@@ -188,6 +188,11 @@ class IPKParser:
 	# end of getSetAndDrawName()
 
 	def readSzfRecords(self):
+		"""Search for SZF changes records in the current prefix database.
+
+		Returns:
+			[ChangeInfo...] - a list of changes info tuples.
+		"""
 		szfs = []
 		for root, dirnames, filenames in os.walk(os.path.join(self.ipk_dir, 'szbase')):
 			for fn in fnmatch.filter(filenames, '*.szf'):
@@ -211,52 +216,77 @@ class IPKParser:
 
 	# end of readSzfRecords()
 
-	def readSzf(self, filename):
-		with open(filename) as fd:
+	def readSzf(self, filepath):
+		"""Read SZF change information from a file.
+
+		Arguments:
+			filepath - path to SZF file.
+
+		Returns:
+			(pname, [(date, value)...]) - a tuple containing full parameter
+				name and a list of probe's date and valu tuples.
+		"""
+		with open(filepath) as fd:
 			reader = csv.reader(fd, delimiter=',')
 
 			fst_row = reader.next()
 			pname = fst_row[1].lstrip().decode('utf-8')
-			vals = []
+			dvals = []
 
 			for row in reader:
 				try:
-					vals.append(
+					dvals.append(
 							(datetime.datetime.strptime(row[0], "%Y-%m-%d %H:%M"),
 							 float(row[1]))
 							)
 				except ValueError:
-					vals.append(
+					dvals.append(
 							(datetime.datetime.strptime(row[0], "%Y-%m-%d %H:%M"),
 							 float('Nan'))
 							)
 
-		return (pname, vals)
+		return (pname, dvals)
 
 	# end of readSzf()
 
 	def extrszb10(self, pname, date_list):
+		"""Extract 10-minute probes from SZARP database.
+
+		Arguments:
+			pname - full parameter name.
+			date_list - list of probes' dates to extract.
+
+		Returns:
+			vals - list of extracted probes' values.
+		"""
 		param = u"%s:%s" % (self.ipk_prefix, pname)
-		out = []
+		vals = []
 
 		pysz.init("/opt/szarp", u"pl_PL")
 		for d in date_list:
 			dt = d.replace(tzinfo=tzlocal())
 			t = calendar.timegm(dt.utctimetuple())
-			out.append(pysz.get_value(param, t, pysz.PROBE_TYPE.PT_MIN10))
+			vals.append(pysz.get_value(param, t, pysz.PROBE_TYPE.PT_MIN10))
 		pysz.shutdown()
 
-		return out
+		return vals
 
 	# end of extrszb10()
 
 	def szbWriter(self, pname, dv_list, write_10sec=False):
+		"""Write probes' values to SZARP database.
+
+		Arguments:
+			pname - full parameter name.
+			dv_list - list of probes' tuples (date, value) .
+			write_10sec - whether to write also 10-sec probes.
+		"""
 		try:
 			#string = ""
 			# FIXME: warm-up fix for szbwriter
 			wud = dv_list[0][0] - datetime.timedelta(minutes=10)
 			string = u"\"%s\" %s %s\n" % \
-					(pname, wud.strftime("%Y %m %d %H %M"), str(NODATA))
+					(pname, wud.strftime("%Y %m %d %H %M"), str(NO_DATA))
 
 			for d, v in dv_list:
 				string += u"\"%s\" %s %s\n" % \
@@ -279,6 +309,16 @@ class IPKParser:
 	# end of szbWriter()
 
 	def pname2path(self, pname, lswmsw):
+		"""Convert full parameter name to path in szbase/ directory. For
+		combined parameters path to LSW parameter is returned.
+
+		Arguments:
+			pname - full parameter name.
+			lswmsw - whether parameter is a combined one.
+
+		Returns:
+			ppath - parameter's directory path.
+		"""
 		ppath = "/opt/szarp/%s/szbase/" % self.ipk_prefix
 		ppath += self.strip(pname)
 		if lswmsw:
@@ -289,6 +329,15 @@ class IPKParser:
 	# end of pname2path()
 
 	def strip(self, pname):
+		"""Convert full parameter name to parameter's directory name.
+		It substitutes all characters but a-zA-Z0-9 with '_'.
+
+		Arguments:
+			pname - full parameter name.
+
+		Returns:
+			dirname - striped name.
+		"""
 		def conv(x):
 			if   (ord(x) >= ord('a') and ord(x) <= ord('z')) \
 			  or (ord(x) >= ord('A') and ord(x) <= ord('Z')) \
@@ -311,9 +360,17 @@ class IPKParser:
 			return u"_"
 
 		return "".join([ conv(x) for x in pname ])
+
 	# end of strip()
 
 	def recordSzf(self, pname, dates, lswmsw):
+		"""Make a SZF change record for given parameter and probe dates.
+
+		Arguments:
+			pname - full parameter name.
+			dates - list of probes dates to record.
+			lswmsw - whether parameter is a combined one.
+		"""
 		try:
 			output = u""
 			vals = self.extrszb10(pname, dates)
