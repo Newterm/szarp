@@ -33,7 +33,7 @@ class ValueDialogFactory:
 		for d in self.availableDialogs:
 			td = getattr(ValueDialogs, d)
 			icon = QIcon(td.qicon_path)
-			desc = td.desc
+			desc = _translate("ValueDialogs", td.desc)
 			lst.append((d, icon, desc))
 		return lst
 
@@ -151,7 +151,7 @@ class ValueDialogs:
 
 	class NoDataDialog(QDialog):
 		qicon_path = "/opt/szarp/resources/qt4/icons/plot-nodata.png"
-		desc = "No data"
+		desc = _translate("ValueDialogs", "No data")
 
 		def __init__(self, prec, lswmsw, parent=None):
 			QDialog.__init__(self, parent)
@@ -202,7 +202,7 @@ class ValueDialogs:
 
 	class LinearIncDialog(QDialog):
 		qicon_path = "/opt/szarp/resources/qt4/icons/plot-inc.png"
-		desc = "Linear increasing"
+		desc = _translate("ValueDialogs", "Linear increasing")
 
 		def __init__(self, prec, lswmsw, parent=None):
 			QDialog.__init__(self, parent)
@@ -345,7 +345,7 @@ class ValueDialogs:
 
 	class LinearDecDialog(QDialog):
 		qicon_path = "/opt/szarp/resources/qt4/icons/plot-dec.png"
-		desc = "Linear decreasing"
+		desc = _translate("ValueDialogs", "Linear decreasing")
 
 		def __init__(self, prec, lswmsw, parent=None):
 			QDialog.__init__(self, parent)
