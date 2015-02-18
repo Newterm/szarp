@@ -44,6 +44,7 @@ import fcntl
 import signal
 import datetime
 import argparse
+import xmlrpclib
 import subprocess
 from collections import namedtuple
 
@@ -71,7 +72,7 @@ __script_name__ = os.path.basename(sys.argv[0])
 
 # containers definitions
 SzChangeInfo = namedtuple('SzChangeInfo',
-                          'draw_name name dvalues lswmsw')
+                          'draw_name name dvalues lswmsw remark')
 
 # signal handlers
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -421,7 +422,7 @@ class Filler2(QMainWindow):
 		param_info = self.ui.paramList.itemData(self.ui.paramList.currentIndex()).toPyObject()
 
 		dlg = self.dialog_factory.construct(str(dlg_name),
-				int(param_info.prec), param_info.lswmsw,
+				param_info.prec, param_info.lswmsw,
 				parent = self)
 
 		# reset type items' texts
@@ -610,11 +611,14 @@ class Filler2(QMainWindow):
 				# generate probes' values
 				dvals = typedlg.generate(dts)
 
+				rmrk = typedlg.get_remark()
+
 				changes_list.append(SzChangeInfo(
 						draw_name = unicode(self.ui.changesTable.item(i,0).text()),
 						name = unicode(self.ui.changesTable.item(i,5).text()),
 						dvalues = dvals,
-						lswmsw = lswmsw
+						lswmsw = lswmsw,
+						remark = rmrk
 						))
 
 			# do the job (in a new thread)

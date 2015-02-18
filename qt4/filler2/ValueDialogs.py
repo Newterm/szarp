@@ -117,7 +117,7 @@ class ValueDialogs:
 				self.commentEdit.hide()
 			self.adjustSize()
 
-		def get_comment(self):
+		def get_remark(self):
 			"""Return remark string or None if not set."""
 			if self.remark:
 				rmrk_str = u"Zmiana wprowadzona programem Filler 2 w dniu %s przez użytkownika %s" \
@@ -141,7 +141,7 @@ class ValueDialogs:
 			ValueDialogs.ValueDialog.__init__(self, prec, lswmsw, parent)
 
 			self.parent = parent
-			self.prec = int(prec)
+			self.prec = prec
 			self.lswmsw = lswmsw
 
 			self.setWindowIcon(QIcon(self.qicon_path))
@@ -289,7 +289,7 @@ class ValueDialogs:
 			ValueDialogs.ValueDialog.__init__(self, prec, lswmsw, parent)
 
 			self.parent = parent
-			self.prec = int(prec)
+			self.prec = prec
 			self.lswmsw = lswmsw
 
 			self.setWindowIcon(QIcon(self.qicon_path))
@@ -436,7 +436,7 @@ class ValueDialogs:
 			ValueDialogs.ValueDialog.__init__(self, prec, lswmsw, parent)
 
 			self.parent = parent
-			self.prec = int(prec)
+			self.prec = prec
 			self.lswmsw = lswmsw
 
 			self.setWindowIcon(QIcon(self.qicon_path))

@@ -464,7 +464,7 @@ class IPKParser:
 							# create ParamInfo object and store it in appropriate SetInfo
 							self.sets[attrs.getValueByQName('title')].params.append(
 									ParamInfo(self.param_name, self.param_draw_name,
-									 self.param_prec, self.param_lswmsw))
+									 int(self.param_prec), self.param_lswmsw))
 
 		# end of startElementNS()
 
