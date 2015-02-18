@@ -2,8 +2,11 @@
 
 # imports
 import datetime
+import getpass
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+
 from ipkparser import SZB_LIMIT, SZB_LIMIT_COM, NO_DATA, NO_DATA_COM
 
 # translation function for QTranslator
@@ -39,33 +42,104 @@ class ValueDialogFactory:
 
 
 class ValueDialogs:
-	class ValueDialogInterface(QDialog):
-		"""Sample class with ValueDialog's interface."""
+	class ValueDialog(QDialog):
+		"""Base class for ValueDialogs."""
 		qicon_path = None   # path to plot type icon
 		desc = None         # plot type name
+		remark = False		# add a remark for a change?
+		comment = None		# optional user comment to remark
 
 		def __init__(self, prec, lswmsw, parent=None):
-			"""Define and initialize dialog."""
-			pass
+			"""Define and initialize dialog.
+
+			Arguments:
+				prec - parameter's precision.
+				lswmsw - whether parameter is a combined one.
+			"""
+			QDialog.__init__(self, parent)
 
 		def generate(self, dates):
-			"""Generate probes for given dates."""
-			return [(None, None)]
+			"""Generate probes for given dates.
+
+			Arguments:
+				dates - a list of probes' dates.
+
+			Returns:
+				dvals - a list of tuples (date, probe).
+			"""
+			return []
 
 		def get_value_desc(self):
-			"""Return value description string."""
+			"""Return value description string.
+
+			Returns:
+				desc_str - plot description string.
+			"""
 			return ""
+
+		def addRemarkWidget(self, layout):
+			"""Add widget for adding remark/comment to dialog. Should be
+			called in dialog's constructor.
+
+			Arguments:
+				layout - main dialog layout.
+			"""
+			self.remarkCheck = QCheckBox(_translate("ValueDialogs", "Leave a remark in Draw3"))
+			layout.addWidget(self.remarkCheck)
+
+			self.commentEdit = QLineEdit()
+			self.commentEdit.setAutoFillBackground(True)
+			self.commentEdit.setMaxLength(140)
+			self.commentEdit.setToolTip(_translate("ValueDialogs", "Enter an optional user comment."))
+			self.commentEdit.setPlaceholderText(_translate("ValueDialogs", "Optional user comment"))
+			self.commentEdit.hide()
+			layout.addWidget(self.commentEdit)
+
+			QObject.connect(self.remarkCheck, SIGNAL("stateChanged(int)"), self.toggleCommentEdit)
+
+		def saveRemark(self):
+			"""Save remark state and optional user's comment. Should be
+			called in accept().
+			"""
+			if self.remarkCheck.checkState() == Qt.Checked:
+				self.remark = True
+				self.comment = unicode(self.commentEdit.text())
+			else:
+				self.remark = False
+				self.comment = None
+
+		def toggleCommentEdit(self, state):
+			"""Slot for signal stateChanged(int) from remarkCheck  (QCheckBox).
+			Shows/hides commentEdit (QLineEdit) when checkbox is toggled."""
+			if state == Qt.Checked:
+				self.commentEdit.show()
+			else:
+				self.commentEdit.hide()
+			self.adjustSize()
+
+		def get_comment(self):
+			"""Return remark string or None if not set."""
+			if self.remark:
+				rmrk_str = u"Zmiana wprowadzona programem Filler 2 w dniu %s przez użytkownika %s" \
+						% (datetime.datetime.now().strftime('%Y/%m/%d %H:%M'), getpass.getuser())
+				if len(self.comment) != 0:
+					rmrk_str += u": " + self.comment
+				rmrk_str += u"."
+				return rmrk_str
+			else:
+				return None
 
 	class BlankDialog():
 		qicon_path = "/opt/szarp/resources/qt4/icons/plot-blank.png"
 		desc = _translate("ValueDialogs", "Choose a type of plot")
 
-	class ConstDialog(QDialog):
+	class ConstDialog(ValueDialog):
 		qicon_path = "/opt/szarp/resources/qt4/icons/plot-const.png"
 		desc = _translate("ValueDialogs", "Constant value")
 
 		def __init__(self, prec, lswmsw, parent=None):
-			QDialog.__init__(self, parent)
+			ValueDialogs.ValueDialog.__init__(self, prec, lswmsw, parent)
+
 			self.parent = parent
 			self.prec = int(prec)
 			self.lswmsw = lswmsw
@@ -104,6 +178,8 @@ class ValueDialogs:
 			self.valueEdit.setText("")
 			self.mainLayout.addWidget(self.valueEdit)
 
+			self.addRemarkWidget(self.mainLayout)
+
 			self.buttonBox = QDialogButtonBox()
 			self.buttonBox.setOrientation(Qt.Horizontal)
 			self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
@@ -140,6 +216,7 @@ class ValueDialogs:
 						"Parameter's value is out of range."))
 			else:
 				self.val = val
+				self.saveRemark()
 				QDialog.accept(self)
 
 		def generate(self, dates):
@@ -149,12 +226,13 @@ class ValueDialogs:
 		def get_value_desc(self):
 			return "x = %s" % self.val
 
-	class NoDataDialog(QDialog):
+	class NoDataDialog(ValueDialog):
 		qicon_path = "/opt/szarp/resources/qt4/icons/plot-nodata.png"
 		desc = _translate("ValueDialogs", "No data")
 
 		def __init__(self, prec, lswmsw, parent=None):
-			QDialog.__init__(self, parent)
+			ValueDialogs.ValueDialog.__init__(self, prec, lswmsw, parent)
+
 			self.parent = parent
 			self.lswmsw = lswmsw
 
@@ -177,6 +255,8 @@ class ValueDialogs:
 				"\n\nAre you sure you want to do this?"))
 			self.mainLayout.addWidget(self.label)
 
+			self.addRemarkWidget(self.mainLayout)
+
 			self.buttonBox = QDialogButtonBox()
 			self.buttonBox.setOrientation(Qt.Horizontal)
 			self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
@@ -191,6 +271,7 @@ class ValueDialogs:
 				self.val = NO_DATA_COM
 			else:
 				self.val = NO_DATA
+			self.saveRemark()
 			QDialog.accept(self)
 
 		def generate(self, dates):
@@ -200,12 +281,13 @@ class ValueDialogs:
 		def get_value_desc(self):
 			return "x = NO_DATA"
 
-	class LinearIncDialog(QDialog):
+	class LinearIncDialog(ValueDialog):
 		qicon_path = "/opt/szarp/resources/qt4/icons/plot-inc.png"
 		desc = _translate("ValueDialogs", "Linear increasing")
 
 		def __init__(self, prec, lswmsw, parent=None):
-			QDialog.__init__(self, parent)
+			ValueDialogs.ValueDialog.__init__(self, prec, lswmsw, parent)
+
 			self.parent = parent
 			self.prec = int(prec)
 			self.lswmsw = lswmsw
@@ -268,6 +350,8 @@ class ValueDialogs:
 			self.valueEdit_b.setText("")
 			self.mainLayout.addWidget(self.valueEdit_b)
 
+			self.addRemarkWidget(self.mainLayout)
+
 			self.buttonBox = QDialogButtonBox()
 			self.buttonBox.setOrientation(Qt.Horizontal)
 			self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
@@ -325,6 +409,7 @@ class ValueDialogs:
 			else:
 				self.val_a = val_a
 				self.val_b = val_b
+				self.saveRemark()
 				QDialog.accept(self)
 
 		def generate(self, dates):
@@ -343,12 +428,13 @@ class ValueDialogs:
 		def get_value_desc(self):
 			return "a = %s, b = %s" % (self.val_a, self.val_b)
 
-	class LinearDecDialog(QDialog):
+	class LinearDecDialog(ValueDialog):
 		qicon_path = "/opt/szarp/resources/qt4/icons/plot-dec.png"
 		desc = _translate("ValueDialogs", "Linear decreasing")
 
 		def __init__(self, prec, lswmsw, parent=None):
-			QDialog.__init__(self, parent)
+			ValueDialogs.ValueDialog.__init__(self, prec, lswmsw, parent)
+
 			self.parent = parent
 			self.prec = int(prec)
 			self.lswmsw = lswmsw
@@ -411,6 +497,8 @@ class ValueDialogs:
 			self.valueEdit_b.setText("")
 			self.mainLayout.addWidget(self.valueEdit_b)
 
+			self.addRemarkWidget(self.mainLayout)
+
 			self.buttonBox = QDialogButtonBox()
 			self.buttonBox.setOrientation(Qt.Horizontal)
 			self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
@@ -468,6 +556,7 @@ class ValueDialogs:
 			else:
 				self.val_a = val_a
 				self.val_b = val_b
+				self.saveRemark()
 				QDialog.accept(self)
 
 		def generate(self, dates):
