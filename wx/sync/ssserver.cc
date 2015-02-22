@@ -612,7 +612,7 @@ std::vector<TPath> Server::SendDirsList(SynchronizationInfo &info) {
 
 		for (size_t i = 0; i < result.size() ; ++i) {
 			std::string s = result[i].GetPath() + strlen(info.GetBaseDir()) + 1;
-			sender.PutString((char*)SC::A2U(s).c_str());
+			sender.PutString((char*)SC::L2U(s, true).c_str());
 		}
 
 		sender.FinishMessage();
@@ -656,7 +656,7 @@ void Server::SendFileList(const TPath& dir, const char* exclude, const char *inc
 			smsg.PutUInt16(path.GetType());
 
 			if (info.IsUnicode()) {
-				std::basic_string<unsigned char> u = SC::A2U(path.GetPath());
+				std::basic_string<unsigned char> u = SC::L2U(path.GetPath(), true);
 				if (i == 0) {
 					smsg.PutString((char*)u.c_str());
 				} else {

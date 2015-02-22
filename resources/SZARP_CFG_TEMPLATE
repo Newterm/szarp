@@ -1,10 +1,9 @@
+#
 # Plik konfiguracyjny Szarp
 #
 
-# $Id: SZARP_CFG_TEMPLATE 3692 2007-01-26 12:14:32Z reksio $
-
-# __INSTALL_DIR__ - to sciezka instalacyjna - domyslnie /opt/szarp
-# __PREFIX__ - to prefix bazy danych - np. mosc
+# __INSTALL_DIR__ - to Å›cieÅ¼ka instalacyjna (domyÅ›lnie /opt/szarp)
+# __PREFIX__ - to prefix bazy danych (np. mosc)
 
 # Ustalenie prefiksu
 $if $prefix$=""
@@ -13,25 +12,24 @@ $prefix$:=exec("hostname -s")
 $end
 
 
-# £ADOWANIE DOMY¦LNYCH WARTO¦CI OPCJI
+# ÅADOWANIE DOMYÅšLNYCH WARTOÅšCI OPCJI
 $include "__INSTALL_DIR__/resources/szarp_in.cfg"
-
 
 
 ## Konfiguracja BODAS "push"
 ##
-## Przyk³ad
+## PrzykÅ‚ad
 #
-## Sekcja g³ówna EXECUTE
+## Sekcja gÅ‚Ã³wna EXECUTE
 #:execute
 
 #
-## Dowolna ilo¶æ sekcji "execute" - bêd± wykonywane w tej kolejno¶ci w jakiej
-## zostan± wpisane.
+## Dowolna iloÅ›Ä‡ sekcji "execute" - bÄ™dÄ… wykonywane w tej kolejnoÅ›ci w jakiej
+## zostanÄ… wpisane.
 #execute_sections=local_backup praterm_push 
 #
-## Sekcje o odpowiednich nazwach - jak wy¿ej
-## Przyk³adowa sekcja dla lokalnego backup'u co 10 minut
+## Sekcje o odpowiednich nazwach - jak wyÅ¼ej
+## PrzykÅ‚adowa sekcja dla lokalnego backup'u co 10 minut
 #:local_backup
 #command_line=/opt/szarp/bin/szbpush \
 #	ip_terminala $prefix$
@@ -42,14 +40,14 @@ $include "__INSTALL_DIR__/resources/szarp_in.cfg"
 #command_line=/opt/szarp/bin/szbpush $prefix$@praterm $prefix$
 #
 #
-# Przykladowa sekcja dla lacznosci przez modem:
+# PrzykÅ‚adowa sekcja dla Å‚Ä…cznoÅ›ci przez modem:
 #:praterm_push
-## Ile razy powtarzaæ nieudan± próbê
+## Ile razy powtarzaÄ‡ nieudanÄ… prÃ³bÄ™
 #retry=1
-##Wykonuj w ka¿dy dzieñ tygodnia o godzinie 00:00
+##Wykonuj w kaÅ¼dy dzieÅ„ tygodnia o godzinie 00:00
 #time=* * * 0 5
-## Linia komend do wykonania, wazne zeby zwrocic odpowiedni kod bledu (
-## z nieudanego ³±czenia lub z rsynca).
+## Linia komend do wykonania, waÅ¼ne Å¼eby zwrÃ³ciÄ‡ odpowiedni kod bÅ‚Ä™du (
+## z nieudanego Å‚Ä…czenia lub z rsynca).
 #command_line=$szarp_bin$/szppp-on 0w202122 ppp ppp 5 && \
 #	/bin/ping -q -c 1 praterm &> /dev/null; \
 #	if [ $? -eq 0 ]; then \
@@ -70,42 +68,42 @@ $include "__INSTALL_DIR__/resources/szarp_in.cfg"
 
 :scc
 
-# Opis konfiguracji do wy¶wietlenia, np
+# Opis konfiguracji do wyÅ›wietlenia, np
 #
 # menu= CONFIG("$prefix$"), \
 	SEPARATOR, \
 	DOC, ICON("/opt/szarp/resources/wx/icons/praterm16.xpm")
 # 
-# Inny przyk³ad:
+# Inny przykÅ‚ad:
 # menu= EXEC("program1"), ICON("icons/program1.png"), \
 	SEPARATOR, \
 	MENU("SZARP", \
-		DRAW("Przegl±daj±cy Legionowo", "leg1"),ICON("/opt/szarp/resources/wx/icons/draw16.xpm"),\
-		DRAW("Przegl±daj±cy Katowice", "kato"),ICON("/opt/szarp/resources/wx/icons/draw16.xpm"),\
-		DRAW("Przegl±daj±cy Bytów", "byto"),ICON("/opt/szarp/resources/wx/icons/draw16.xpm") \
+		DRAW("PrzeglÄ…dajÄ…cy Legionowo", "leg1"),ICON("/opt/szarp/resources/wx/icons/draw16.xpm"),\
+		DRAW("PrzeglÄ…dajÄ…cy Katowice", "kato"),ICON("/opt/szarp/resources/wx/icons/draw16.xpm"),\
+		DRAW("PrzeglÄ…dajÄ…cy BytÃ³w", "byto"),ICON("/opt/szarp/resources/wx/icons/draw16.xpm") \
 	) 
-# Mo¿liwe funkcje to:
-# CONFIG("prefix") - wy¶wietla ca³± konfiguracjê o podanym prefiksie, o ile jest
+# MoÅ¼liwe funkcje to:
+# CONFIG("prefix") - wyÅ›wietla caÅ‚Ä… konfiguracjÄ™ o podanym prefiksie, o ile jest
 # zgodna z IPK
-# MENU("nazwa", ...) - tworzy podmenu o podanej nazwie i zawarto¶ci
+# MENU("nazwa", ...) - tworzy podmenu o podanej nazwie i zawartoÅ›ci
 # DOC - dokumentacja SZARP'a
-# EXEC("nazwa", "komenda") - wykonuje dowoln± komendê
-# DRAW("nazwa", "prefix") - przegl±daj±cy podanej bazy
-# DRAWS("wyra¿enie regularne") - tworzy listê elementów DRAW, dla baz których prefixy pasuj± 
-#	do podanego wyra¿enia regularnego
-# DONTGROUPBY(lista wyra¿eñ regularnych) - istotne jedynie gdy w konfiguracji wystêpuje
-#	DRAWS - zakazuje grupowania elementów DRAW generowanych przez DRAWS po tych s³owach
-#	w tytu³ach konfiguracji, które pasuj± do podanych wyra¿eñ regularnych
-# ICON("¶cie¿ka") - ustawia ikonê ostatniemu elementowi typu DOC, EXEC lub DRAW
-# Uwaga! Ikony powinny mieæ rozmiar 16x16 lub niedu¿o wiêkszy...
+# EXEC("nazwa", "komenda") - wykonuje dowolnÄ… komendÄ™
+# DRAW("nazwa", "prefix") - przeglÄ…dajÄ…cy podanej bazy
+# DRAWS("wyraÅ¼enie regularne") - tworzy listÄ™ elementÃ³w DRAW, dla baz ktÃ³rych prefiksy pasujÄ… 
+#	do podanego wyraÅ¼enia regularnego
+# DONTGROUPBY(lista wyraÅ¼eÅ„ regularnych) - istotne jedynie gdy w konfiguracji wystÄ™puje
+#	DRAWS - zakazuje grupowania elementÃ³w DRAW generowanych przez DRAWS po tych sÅ‚owach
+#	w tytuÅ‚ach konfiguracji, ktÃ³re pasujÄ… do podanych wyraÅ¼eÅ„ regularnych
+# ICON("Å›cieÅ¼ka") - ustawia ikonÄ™ ostatniemu elementowi typu DOC, EXEC lub DRAW
+# Uwaga! Ikony powinny mieÄ‡ rozmiar 16x16 lub nieduÅ¼o wiÄ™kszy...
 # SEPARATOR - pozioma kreska
-# Mo¿na podaæ wiele, odzielonych przecinkami.
+# MoÅ¼na podaÄ‡ wiele, oddzielonych przecinkami.
 
 #menu=
 
 :sss
 
-#opcjonalne haslo do klucza prywatnego
+#opcjonalne hasÅ‚o do klucza prywatnego
 #passphrase=
 
 # vim:ft=libpar:

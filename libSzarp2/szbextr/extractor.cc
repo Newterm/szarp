@@ -567,7 +567,7 @@ SzbExtractor::ExtractToOOXML(FILE* output)
 #endif
 		char datebuf[BUF_SIZE];
 		strftime(datebuf, BUF_SIZE, format, &tm);
-		std::basic_string<unsigned char> ud = SC::A2U(datebuf);
+		std::basic_string<unsigned char> ud = SC::L2U(datebuf, true);
 
 		int no_empty = 0; /* 1 if no-empty value was in row */
 		int time_printed = 0;
@@ -760,7 +760,7 @@ SzbExtractor::ExtractAndTransform(FILE *output, char *stylesheet_path,
 {
 	ErrorCode ret;
 	xsltStylesheetPtr stylesheet;
-	stylesheet = xsltParseStylesheetFile(SC::A2U(stylesheet_path).c_str());
+	stylesheet = xsltParseStylesheetFile(SC::L2U(stylesheet_path).c_str());
 	if (stylesheet == NULL)
 		return ERR_LOADXSL;
 	ret = ExtractAndTransform(output, stylesheet, params, encoding);
@@ -907,7 +907,7 @@ SzbExtractor::ExtractToXMLWriter(xmlTextWriterPtr writer, const std::string& enc
 			rc = xmlTextWriterStartElement(writer, BAD_CAST "row");
 			CHECK_RC;
 			
-			rc = xmlTextWriterWriteElement(writer, BAD_CAST "time",	SC::A2U(datebuf).c_str());
+			rc = xmlTextWriterWriteElement(writer, BAD_CAST "time",	SC::L2U(datebuf, true).c_str());
 			CHECK_RC;
 		    }
 
@@ -930,7 +930,7 @@ SzbExtractor::ExtractToXMLWriter(xmlTextWriterPtr writer, const std::string& enc
 		    rc = xmlTextWriterStartElement(writer, BAD_CAST "row");
 		    CHECK_RC;
 		    
-		    rc = xmlTextWriterWriteElement(writer, BAD_CAST "time", SC::A2U(datebuf).c_str());
+		    rc = xmlTextWriterWriteElement(writer, BAD_CAST "time", SC::L2U(datebuf, true).c_str());
 		    CHECK_RC;
 		}
 		

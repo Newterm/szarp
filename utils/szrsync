@@ -47,7 +47,7 @@ SERVER=${SZRSYNC_SERVER:-praterm}
 
 ME=`basename $0`
 
-LOG='/opt/szarp/logs/szrsync.log'
+LOG='/var/log/szarp/szrsync.log'
 ARGS=$@
 
 if [ -w $LOG ]; then
@@ -231,7 +231,7 @@ function get_include () {
 
 	LAST=`get_last $1`
 	[ -f "$LAST" ] || return 0
-	DATE=`date +%Y-%m-%d -r "$LAST"`
+	DATE=`date +%Y-%m-01 -r "$LAST"`
 	DATESTR=`date +%Y%m -d "$DATE"`
 	NOWSTR=`date +%Y%m`
 	OUT=""

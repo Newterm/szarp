@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # SZARP: SCADA software 
 #
 # This program is free software; you can redistribute it and/or modify
@@ -89,6 +89,15 @@ DIRPATH=/opt/szarp/$PREFIX
 if [ -e $DIRPATH/.svn ]; then
 	echo "This configuration is already managed by svn, exiting";
 	exit 1;
+fi
+
+echo "Checking if provided url ($REPO/$PREFIX) contains a svn repo.."
+env SVN_SSH="ssh -l $USERNAME -p $PORT" svn ls $REPO/$PREFIX 1>/dev/null
+if [ $? -ne 0 ]; then 
+	echo "$REPO/$PREFIX is not a valid svn repository, no files will be modified";
+	exit 1;
+else
+	echo "Ok";
 fi
 	
 TMPDIR=$(mktemp -d "/opt/szarp/$PREFIX.XXXXXX")

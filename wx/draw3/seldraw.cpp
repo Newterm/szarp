@@ -307,7 +307,6 @@ void SelectDrawWidget::InsertSomeDraws(size_t start, size_t count) {
 		DrawInfo* draw_info = draw->GetDrawInfo();
 		wxString label;
 		if (draw_info->IsValid()) {
-			m_cb_l[i]->Enable(TRUE);
 			m_cb_l[i]->SetValue(draw->GetEnable());
 			m_cb_l[i]->SetToolTip(cnm[draw_info->GetBasePrefix()] + _T(":") + draw_info->GetParamName());
 
@@ -316,6 +315,7 @@ void SelectDrawWidget::InsertSomeDraws(size_t start, size_t count) {
 				label += _T("*");
 			if (draw->GetBlocked())
 				label.Replace(wxString::Format(_T("%d."), draw->GetInitialDrawNo() + 1), wxString::Format(_("%d.[B]"), i + 1), false);
+			m_cb_l[i]->Enable(!draw->GetNoData());
 		} else {
 			label = _T("***");
 		}
@@ -577,7 +577,7 @@ DrawInfoList SelectDrawWidget::GetDrawInfoList() {
 	DrawSet *selected_set = m_dc->GetSet();
 
 	for (size_t i = 0; i < selected_set->GetDraws()->size(); ++i)
-		if (m_cb_l[i]->GetValue()) {
+		if (i < m_cb_l.size() && m_cb_l[i]->GetValue()) {
 			Draw* draw = m_dc->GetDraw(i);
 			draw_info.push_back(draw->GetDrawInfo());
 		}
@@ -605,17 +605,20 @@ void SelectDrawWidget::OpenParameterDoc(int i) {
 }
 
 void SelectDrawWidget::NoData(Draw *d) {
-	m_cb_l[d->GetDrawNo()]->Enable(!d->GetNoData());
+	if (d->GetDrawNo() < int(m_cb_l.size()))
+		m_cb_l[d->GetDrawNo()]->Enable(!d->GetNoData());
 }
 
 void SelectDrawWidget::EnableChanged(Draw *draw) {
-	SetChecked(draw->GetDrawNo(), draw->GetEnable());
+	if (draw->GetDrawNo() < int(m_cb_l.size()))
+		SetChecked(draw->GetDrawNo(), draw->GetEnable());
 }
 
 void SelectDrawWidget::PeriodChanged(Draw *draw, PeriodType period) {
 	if (draw->GetSelected())
 		for (size_t i = 0; i < draw->GetDrawsController()->GetDrawsCount(); i++)
-			m_cb_l[i]->Enable(true);
+			if (i < m_cb_l.size())
+				m_cb_l[i]->Enable(true);
 }
 
 void SelectDrawWidget::DrawsSorted(DrawsController *controller) {

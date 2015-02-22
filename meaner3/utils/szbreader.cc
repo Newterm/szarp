@@ -91,13 +91,13 @@ int main(int argc, char** argv)
 	}
 
 	TSzarpConfig ipk;
-	if (ipk.loadXML(SC::A2S(path))) {
+	if (ipk.loadXML(SC::L2S(path))) {
 		sz_log(0, "Error loading IPK from file '%s'", path);
 		return 1;
 	}
 	free(path);
 
-	TParam *p = ipk.getParamByName(SC::A2S(argv[1]));
+	TParam *p = ipk.getParamByName(SC::L2S(argv[1]));
 	if (p == NULL) {
 		sz_log(0, "Parameter '%s' not found in IPK", argv[1]);
 		return 1;
@@ -120,9 +120,10 @@ int main(int argc, char** argv)
 		}
 	}
 
-	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"");
-	Szbase::Init(SC::A2S(PREFIX), NULL);
-	szb_buffer_t* buf = szb_create_buffer(Szbase::GetObject(), SC::A2S(dir), 1, &ipk);
+	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
+	Szbase::Init(SC::L2S(PREFIX), NULL);
+	szb_buffer_t* buf = szb_create_buffer(Szbase::GetObject(), SC::L2S(dir), 1, &ipk);
+
 	if (buf == NULL) {
 		sz_log(0, "Error creating szbase buffer");
 		return 1;

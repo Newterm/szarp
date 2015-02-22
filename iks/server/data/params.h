@@ -62,8 +62,6 @@ protected:
 	void from_vars_xml( const boost::property_tree::ptree& vars_doc ) throw(xml_parse_error);
 	void from_params_xml( boost::property_tree::ptree& params_doc ) throw(xml_parse_error);
 
-	void create_param( boost::property_tree::ptree::value_type& p , const std::string& type );
-
 private:
 	ParamsMap params;
 

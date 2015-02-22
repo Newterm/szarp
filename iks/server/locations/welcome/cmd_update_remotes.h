@@ -11,18 +11,26 @@
 
 class CmdAddRemoteSnd : public Command {
 public:
-	CmdAddRemoteSnd( const std::string& tag ) : tag(tag) {} 
+	CmdAddRemoteSnd( LocationsList::iterator& itr ) : loc_itr(itr) {} 
 
 	virtual ~CmdAddRemoteSnd() {}
 
 	virtual to_send send_str()
-	{	return to_send( tag ); }
+	{
+		boost::property_tree::ptree out;
+
+		out.put( "tag"  , *loc_itr           );
+		out.put( "name" ,  loc_itr.get_name() );
+		out.put( "type" ,  loc_itr.get_type() );
+
+		return to_send( ptree_to_json( out ) );
+	}
 
 	virtual bool single_shot()
 	{	return true; }
 
 protected:
-	std::string tag;
+	LocationsList::iterator loc_itr;
 };
 
 class CmdRemoveRemoteSnd : public Command {

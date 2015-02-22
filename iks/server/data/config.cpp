@@ -20,3 +20,9 @@ void Config::from_xml( const bp::ptree& ptree ) throw(xml_parse_error)
 	emit_changed();
 }
 
+void Config::from_pairs( const CfgPairs& pairs )
+{
+	std::copy(pairs.begin(), pairs.end(), std::inserter(cfg, cfg.end()));
+	emit_changed();
+}
+

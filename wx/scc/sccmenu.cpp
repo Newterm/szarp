@@ -266,7 +266,7 @@ void SCCMenu::AddRaport3Item(wxString param, wxString title,
 		wxLogError(_T("Could not load paramd port number for raporter. Expected 'port' configuration key in section 'paramd_for_raporter'."));
 		return;
 	}
-	wxString port = wxString(SC::A2S(port_c));
+	wxString port = wxString(SC::L2S(port_c));
 
 	wxFileName filename(wxGetApp().GetSzarpDir(), wxEmptyString);
 	filename.AppendDir(_T("bin"));

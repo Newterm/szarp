@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: ISO-8859-2 -*-
+# -*- coding: utf-8 -*-
 # SZARP: SCADA software 
 #
 # This program is free software; you can redistribute it and/or modify
@@ -685,8 +685,7 @@ class MainFrame(wx.Frame):
 # end of class MainFrame
 
 if __name__ == '__main__':
-	app = wx.PySimpleApp(0)
-	wx.InitAllImageHandlers()
+	app = wx.App(False)
 	mainFrame = MainFrame(None, -1, '')
 	app.SetTopWindow(mainFrame)
 	app.MainLoop()

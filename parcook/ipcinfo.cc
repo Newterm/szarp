@@ -54,9 +54,9 @@ int main(int argc, char *argv[])
 	char *config_prefix = libpar_getpar("sender", "config_prefix", 1);
 	libpar_done();
 
-	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"pl");
+	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"pl");
 	IPKContainer *ic = IPKContainer::GetObject();
-	TSzarpConfig *ipk = ic->GetConfig(SC::A2S(config_prefix));
+	TSzarpConfig *ipk = ic->GetConfig(SC::L2S(config_prefix));
 	if (ipk == NULL) {
 		printf("Unable to load IPK for prefix %s", config_prefix);
 		return 1;

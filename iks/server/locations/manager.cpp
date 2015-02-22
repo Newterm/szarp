@@ -1,5 +1,7 @@
 #include "manager.h"
 
+#include <liblog.h>
+
 #include <functional>
 
 #include "locations/welcome/welcome.h"
@@ -21,14 +23,14 @@ void LocationsMgr::add_locations( const CfgSections& cfg )
 		try {
 			add_location( itr->first , itr->second );
 		} catch( config_error& e ) {
-			std::cerr << "Invalid configuration at " << itr->first << ": " << e.what() << std::endl;
+			sz_log(0,"Invalid configuration at %s: %s" , itr->first.c_str() , e.what() );
 		}
 }
 
 void LocationsMgr::add_location( const std::string& name , const CfgPairs& cfg )
 {
 	try {
-			 if( cfg.at("type") == "szbase" )
+		if( cfg.at("type") == "szbase" )
 			add_szbase( name , cfg );
 		else if( cfg.at("type") == "proxy" )
 			add_proxy( name , cfg );
@@ -39,10 +41,16 @@ void LocationsMgr::add_location( const std::string& name , const CfgPairs& cfg )
 	}
 }
 
+void LocationsMgr::add_config( const CfgPairs& cfg )
+{
+	server_config.from_pairs(cfg);
+}
+
 void LocationsMgr::add_szbase( const std::string& name , const CfgPairs& cfg )
 {
 	auto pa = cfg.count("prober_address") ? cfg.at("prober_address") : "127.0.0.1";
 	auto pp = cfg.count("prober_port")    ? cfg.at("prober_port")    : "8090";
+	auto draw_name = cfg.count("draw_name") ?  cfg.at("draw_name") : name;
 
 	unsigned p;
 	try {
@@ -55,8 +63,11 @@ void LocationsMgr::add_szbase( const std::string& name , const CfgPairs& cfg )
 		auto& vars = vars_cache.get_szarp( cfg.at("base") );
 		vars.set_szarp_prober_server( pa , p );
 
-		loc_factory.register_location<SzbaseLocation>( name , &vars );
+		loc_factory.register_location<SzbaseLocation>(
+				name , draw_name , "szbase" , std::ref(vars) );
 	} catch( file_not_found_error& e ) {
+		throw invalid_value( e.what() );
+	} catch( xml_parse_error& e ) {
 		throw invalid_value( e.what() );
 	}
 }
@@ -72,8 +83,10 @@ void LocationsMgr::add_proxy( const std::string& name , const CfgPairs& cfg )
 		port = 9002;
 	}
 
+	auto draw_name = cfg.count("draw_name") ?  cfg.at("draw_name") : "";
+
 	auto updater = std::make_shared
-		<RemotesUpdater>( name , cfg.at("address") , port , loc_factory );
+		<RemotesUpdater>( name , draw_name , cfg.at("address") , port , loc_factory );
 
 	updater->connect();
 
@@ -82,7 +95,7 @@ void LocationsMgr::add_proxy( const std::string& name , const CfgPairs& cfg )
 
 void LocationsMgr::on_new_connection( Connection* con )
 {
-	new_location( std::make_shared<ProtocolLocation>( "welcome" , std::make_shared<WelcomeProt>(loc_factory) , con ) );
+	new_location( std::make_shared<ProtocolLocation>( "welcome" , std::make_shared<WelcomeProt>(loc_factory, server_config) , con ) );
 }
 
 void LocationsMgr::on_disconnected( Connection* con )

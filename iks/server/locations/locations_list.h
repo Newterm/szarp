@@ -11,7 +11,13 @@
 #include "utils/iterator.h"
 
 class LocationsList {
-	typedef std::unordered_map<std::string,std::function<Location::ptr ()>> GenetratorsMap;
+	struct LocationEntry {
+		std::string draw_name;
+		std::string type;
+		std::function<Location::ptr ()> generator;
+	};
+
+	typedef std::unordered_map<std::string,LocationEntry> GenetratorsMap;
 
 public:
 	LocationsList() {}
@@ -24,16 +30,26 @@ public:
 			: key_iterator<GenetratorsMap>(itr.itr) {}
 		iterator( const GenetratorsMap::const_iterator& itr )
 			: key_iterator<GenetratorsMap>(itr) {}
+		const std::string& get_name() { return itr->second.draw_name; }
+		const std::string& get_type() { return itr->second.type; }
 	};
 
 	iterator begin() const { return iterator(locations_generator.begin()); }
 	iterator end  () const { return iterator(locations_generator.end  ()); }
 
-	template<class T,class... Args> void register_location( const std::string& tag , Args... args )
+	iterator find( const std::string& tag ) const
+	{	return iterator(locations_generator.find(tag)); }
+
+	template<class T,class... Args> void register_location(
+			const std::string& tag ,
+			const std::string& draw_name ,
+			const std::string& type ,
+			Args... args )
 	{
 		std::function<Location::ptr ()> f = 
 			std::bind( &LocationsList::create_location<T,Args...> , this , tag , args... );
-		locations_generator[ tag ] = f;
+		locations_generator[ tag ] =
+			LocationEntry { draw_name , type , f };
 
 		emit_location_added( tag );
 	}
@@ -62,7 +78,7 @@ public:
 	{
 		auto itr = locations_generator.find(tag);
 		return itr != locations_generator.end() ?
-			itr->second() :
+			itr->second.generator() :
 			Location::ptr();
 	}
 

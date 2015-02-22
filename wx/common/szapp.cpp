@@ -80,7 +80,7 @@ szAppImpl::szAppImpl() : has_data_dir(false)
 	gtk_rc_add_default_file(rcpath);
 #endif /* __WXGTK__ */
 
-	m_releasedate = _T("2007 - 2013");
+	m_releasedate = _T("2007 - 2014");
 	m_version = _T(SZARP_VERSION);
 }
 
@@ -108,7 +108,7 @@ wxString szAppImpl::GetSzarpDir()
 
 	return dirpath + wxFileName::GetPathSeparator();
 #else
-	wxString ret = SC::A2S(PREFIX).c_str();
+	wxString ret = SC::L2S(PREFIX).c_str();
 	if (ret[ret.Length() - 1] != '/') {
 		ret += wxString(_T("/"));
 	}

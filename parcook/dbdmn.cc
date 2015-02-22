@@ -194,9 +194,9 @@ int DbDaemon::ConfigureProbers()
 		char *_address = libpar_getpar(section.c_str(), "address", 0);
 		char *_port = libpar_getpar(section.c_str(), "port", 0);
 		if (_prefix != NULL && _address != NULL && _port  != NULL) {
-			std::wstring address = SC::A2S(_address);
-			std::wstring port = SC::A2S(_port);
-			std::wstring prefix = SC::A2S(_prefix);
+			std::wstring address = SC::L2S(_address);
+			std::wstring port = SC::L2S(_port);
+			std::wstring prefix = SC::L2S(_prefix);
 
 			szbase->SetProberAddress(prefix, address, port);
 		}
@@ -323,8 +323,8 @@ int DbDaemon::ParseConfig(DaemonConfig * cfg)
 		return 1;
 	}
 
-	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"");
-	Szbase::Init(SC::A2S(PREFIX), NULL);
+	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
+	Szbase::Init(SC::L2S(PREFIX), NULL);
 
 	Szbase* szbase = Szbase::GetObject();
 	szbase->NextQuery();

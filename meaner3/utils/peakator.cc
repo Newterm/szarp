@@ -167,9 +167,9 @@ protected:
 
 PeakEliminator::PeakEliminator(TSzarpConfig* ipk, const char* dir, double delta)
 {
-	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"");
-	Szbase::Init(SC::A2S(PREFIX), NULL);
-	buf = szb_create_buffer(Szbase::GetObject(), SC::A2S(dir), 1, ipk);
+	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
+	Szbase::Init(SC::L2S(PREFIX), NULL);
+	buf = szb_create_buffer(Szbase::GetObject(), SC::L2S(dir), 1, ipk);
 	if (buf == NULL) {
 		throw SzbException("Error creating szbase buffer");
 	}
@@ -391,7 +391,7 @@ vector<wstring> params;
 /** Append file name to vector of files to process */
 int add_param(char* param)
 {
-	params.push_back(SC::A2S(param));
+	params.push_back(SC::L2S(param));
 	return 0;
 }
 
@@ -470,7 +470,7 @@ int main(int argc, char** argv)
 	}
 
 	TSzarpConfig ipk;
-	if (ipk.loadXML(SC::A2S(path))) {
+	if (ipk.loadXML(SC::L2S(path))) {
 		wcerr << "Error loading IPK from file '" << path << "'\n";
 		return 1;
 	}

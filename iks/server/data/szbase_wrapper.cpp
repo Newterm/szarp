@@ -5,26 +5,17 @@
 #include <conversion.h>
 
 bool SzbaseWrapper::initialized = false;
-
-#if BOOST_FILESYSTEM_VERSION == 3
-typedef boost::filesystem::path path;
-#else
-typedef boost::filesystem::wpath path;
-#endif
-
-path SzbaseWrapper::szarp_dir;
+boost::filesystem::path SzbaseWrapper::szarp_dir;
 
 bool SzbaseWrapper::init( const std::string& _szarp_dir )
 {
-	std::wstring w_szarp_dir = SC::A2S(_szarp_dir);
-
 	if( initialized )
-		return path( w_szarp_dir ) == szarp_dir;
+		return boost::filesystem::path(_szarp_dir) == szarp_dir;
 
-	szarp_dir = w_szarp_dir;
+	szarp_dir = _szarp_dir;
 
-	IPKContainer::Init( w_szarp_dir, w_szarp_dir, L"pl_PL" );
-	Szbase::Init( w_szarp_dir , NULL );
+	IPKContainer::Init( szarp_dir.wstring(), szarp_dir.wstring(), L"pl_PL");
+	Szbase::Init( szarp_dir.wstring() , NULL );
 
 	initialized = true;
 
@@ -50,6 +41,40 @@ void SzbaseWrapper::set_prober_address( const std::string& address , unsigned po
 			convert_string(base_name) ,
 			convert_string(address) ,
 			boost::lexical_cast<std::wstring>(port) );
+}
+
+time_t SzbaseWrapper::get_latest(
+			const std::string& param ,
+			ProbeType type ) const
+	throw( szbase_init_error, szbase_get_value_error )
+{
+	if( !SzbaseWrapper::is_initialized() )
+		throw szbase_init_error("Szbase not initialized");
+
+	bool ok;
+	std::wstring error;
+
+	/**
+	 * It looks like szbase has different aruments for "search all" in
+	 * case of 10sec and other probles
+	 */
+	time_t start = type == ProbeType( ProbeType::Type::LIVE ) ?
+		-1 :
+		std::numeric_limits<time_t>::max();
+
+	auto t = Szbase::GetObject()->Search( 
+			convert_string( base_name + ":" + param ) ,
+			start , time_t(-1) , -1 ,
+			type.get_szarp_pt() , ok , error );
+
+	if( !ok )
+		throw szbase_get_value_error("Cannot get latest time of param " + param + ": " + SC::S2A(error) );
+
+	/**
+	 * Round by hand because Szbase::Search returns probes rounded to 
+	 * either 10min or 10sec, not to exact pt
+	 */
+	return round( t , type );
 }
 
 void SzbaseWrapper::sync() const

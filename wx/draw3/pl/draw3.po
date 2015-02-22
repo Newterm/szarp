@@ -2252,8 +2252,8 @@ msgid "Edit as new defined\tCtrl+Shift+Alt+E"
 msgstr "Edytuj jako nowy definiowalny\tCtrl+Shift+Alt+E"
 
 #: XRC_gettext_file.h:160
-msgid "Edit as new network defined\tCtrl+Shift+Alt+N"
-msgstr "Edytuj jako nowy sieciowy\tCtrl+Shift+Alt+E"
+msgid "Edit as new network defined\tCtrl+Shift+Alt+W"
+msgstr "Edytuj jako nowy sieciowy\tCtrl+Shift+Alt+W"
 
 #: XRC_gettext_file.h:161
 msgid "Import Set\tCtrl+Shift+I"
@@ -2430,9 +2430,9 @@ msgstr ""
 msgid "Reload Configuration\tCtrl+Shift+Alt+R"
 msgstr "Prze³aduj konfiguracjê\tCtrl+Shift+Alt+R"
 
-#: XRC_gettext_file.h:206
-msgid "Fetch New Network Parameters And Sets\tCtrl+Alt+Shift+N"
-msgstr "Pobierz parametry i zestawy sieciowe\tCtrl+Alt+Shift+N"
+#: XRC_gettext_file.h:169
+msgid "Fetch New Network Parameters And Sets\tCtrl+Shift+Alt+N"
+msgstr "Pobierz parametry i zestawy sieciowe\tCtrl+Shift+Alt+N"
 
 #: XRC_gettext_file.h:207
 msgid "Export data to file"

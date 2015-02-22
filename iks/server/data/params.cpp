@@ -8,6 +8,8 @@
 using boost::format;
 namespace bp = boost::property_tree;
 
+#include <liblog.h>
+
 #include "utils/ptree.h"
 
 Params::Params()
@@ -17,10 +19,7 @@ Params::Params()
 std::shared_ptr<const Param> Params::get_param( const std::string& name ) const
 {
 	auto itr = params.find(name);
-	if( itr == params.end() )
-		return std::shared_ptr<const Param>();
-	else
-		return itr->second;
+	return itr == params.end() ? std::shared_ptr<const Param>() : itr->second;
 }
 
 void Params::from_params_file( const std::string& path ) throw(xml_parse_error)
@@ -31,26 +30,18 @@ void Params::from_params_file( const std::string& path ) throw(xml_parse_error)
 	from_params_xml( params_doc );
 }
 
-void Params::create_param( bp::ptree::value_type& p , const std::string& type )
-{
-	if( p.first == "param" ) {
-		auto param = std::make_shared<Param>( type );
-		param->from_params_xml( p.second );
-		params[ param->get_name() ] = std::move(param);
-	}
-}
-
 void Params::from_params_xml( bp::ptree& doc ) throw(xml_parse_error)
 {
 	fold_xmlattr( doc );
 
-	auto& params_ptree = doc.get_child("params");
-	for( auto id=params_ptree.begin() ; id!=params_ptree.end() ; ++id )
-		ptree_foreach( id->second ,
-			std::bind(
-				&Params::create_param, this,
-				std::placeholders::_1, id->first ) );
-
+	for( auto& d : doc.get_child("params") )
+		ptree_foreach( d.second , [&] ( bp::ptree::value_type& p ) {
+			if( p.first == "param" ) {
+				auto param = std::make_shared<Param>( d.first );
+				param->from_params_xml( p.second );
+				params.emplace( param->get_name(), std::move(param) );
+			}
+		} );
 }
 
 void Params::param_value_changed( const std::string& name , double value , ProbeType pt )
@@ -61,15 +52,20 @@ void Params::param_value_changed( const std::string& name , double value , Probe
 void Params::param_value_changed( iterator itr , double value , ProbeType pt )
 {
 	if( itr.itr == params.end() ) {
-		std::cerr << "Value changed of undefined param" << std::endl;
+		sz_log(1, "Value changed of undefined param %s", itr->c_str() );
 		return;
 	}
 
 	using std::isnan;
 
 	auto pvalue = itr.itr->second->get_value( pt );
-	if( value == pvalue || (isnan(value) && isnan(pvalue)) )
-		/** If values are equal even if both are NaNs do nothing */
+	if( pt.get_type() == ProbeType::Type::LIVE
+	 && (value == pvalue || (isnan(value) && isnan(pvalue))) )
+		/**
+		 * With LIVE probes if values are equal even
+		 * if both are NaNs do nothing. For other probe
+		 * types always send update.
+		 */
 		return;
 
 	itr.itr->second->set_value( value , pt );
@@ -83,7 +79,7 @@ void Params::request_param_value( const std::string& name ,
 	auto itr = params.find(name);
 
 	if( itr == params.end() ) {
-		std::cerr << "Value requested of undefined param" << std::endl;
+		sz_log(1, "Value requested of undefined param %s", name.c_str());
 		return;
 	}
 

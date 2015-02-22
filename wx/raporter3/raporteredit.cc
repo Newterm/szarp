@@ -60,12 +60,12 @@ szRaporterEdit::szRaporterEdit(TSzarpConfig *_ipk,
 	
 	wxBoxSizer *top_sizer = new wxBoxSizer(wxVERTICAL);
 	wxStaticBoxSizer *desc_sizer = new wxStaticBoxSizer(
-			new wxStaticBox(this, wxID_ANY, _("Tile")), 
+			new wxStaticBox(this, wxID_ANY, _("Title")),
 			wxVERTICAL);
 	
 	desc_sizer->Add(m_title = new wxTextCtrl(this, ID_T_TITLE, _("User report"),
 				wxDefaultPosition, wxDefaultSize, 0,
-				wxTextValidator(wxFILTER_NONE, &g_data.m_report_name)),
+				wxTextValidator(wxFILTER_ALPHANUMERIC, &g_data.m_report_name)),
 			0, wxEXPAND | wxALL, 8);
 	
 	wxStaticBoxSizer *rcont_sizer = new wxStaticBoxSizer(

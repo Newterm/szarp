@@ -232,7 +232,7 @@
                     <name>EditAsNew</name>
                 </item>
                 <item>
-                    <label>Edit as new network defined\tCtrl+Shift+Alt+N</label>
+                    <label>Edit as new network defined\tCtrl+Shift+Alt+W</label>
                     <name>EditAsNewNetwork</name>
                 </item>
                 <item>
@@ -491,7 +491,7 @@
                     <name>---</name>
                 </item>
                 <item>
-                    <label>Fetch New Network Parameters And Sets\tCtrl+Alt+Shift+N</label>
+                    <label>Fetch New Network Parameters And Sets\tCtrl+Shift+Alt+N</label>
                     <name>FetchNewNetworkParametersAndSets</name>
                 </item>
                 <item>

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <functional>
+#include <fstream>
 
 #if GCC_VERSION < 40600
 #include <cstdlib>
@@ -11,11 +12,14 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
+#include <liblog.h>
+
 #include "net/tcp_server.h"
 
 #include "locations/manager.h"
 
 #include "global_service.h"
+#include "daemon.h"
 
 #include "data/szbase_wrapper.h"
 
@@ -33,31 +37,41 @@ typedef std::vector<std::string> LocsList;
 
 int main( int argc , char** argv )
 {
-#if GCC_VERSION < 40600
 	srand(time(NULL));
-#endif
 
 	po::options_description desc("Options"); 
 
 	desc.add_options() 
 		("help,h", "Print this help messages")
-		("name", po::value<std::string>()->default_value(ba::ip::host_name()), "Szarp prefix")
+		("config_file", po::value<std::string>()->default_value(PREFIX "/iks/iks-server.ini"), "Custom configuration file.")
+		("no_daemon", "If specified server will not daemonize.")
+		("pid_file", po::value<std::string>(), "Specify destination of pid file that should be used. If not set no file is created.")
+		("log_level", po::value<unsigned>()->default_value(2), "Level how verbose should server be. Convention is: 0 - errors , 1 - warnings , 2 - info output , 3 and more - debug")
+		("name", po::value<std::string>()->default_value(ba::ip::host_name()), "Servers name -- defaults to hostname.")
 		("prefix,P", po::value<std::string>()->default_value(PREFIX), "Szarp prefix")
 		("port,p", po::value<unsigned>()->default_value(9002), "Server port on which we will listen");
 
 	po::variables_map vm; 
 	CfgPairs pairs;
+	CfgPairs server_config;
 	CfgSections locs_cfg;
 
-	try 
-	{ 
+	int ret_code = 0;
+	std::string pid_path;
+
+	try { 
 		po::store(po::parse_command_line(argc, argv, desc),  vm);
 
-		if( boost::filesystem::exists("iks.ini") ) {
-			auto parsed = po::parse_config_file<char>("iks.ini", desc, true);
-			for( auto io=parsed.options.begin() ; io!=parsed.options.end() ; ++io )
-				if( io->unregistered )
-					pairs[boost::erase_all_copy(io->string_key," ")] = io->value[0];
+		if( boost::filesystem::exists(vm["config_file"].as<std::string>()) ) {
+			auto parsed = po::parse_config_file<char>(vm["config_file"].as<std::string>().c_str(), desc, true);
+
+			for( const auto& o : parsed.options )
+				if( o.unregistered )
+					pairs[boost::erase_all_copy(o.string_key," ")] = o.value[0];
+
+			std::copy_if(pairs.begin(), pairs.end(),
+				std::inserter(server_config, server_config.end()),
+				[] (std::pair<std::string, std::string> p) { return p.first.find('.') == std::string::npos; });
 
 			locs_cfg.from_flat( pairs );
 			po::store(parsed,vm);
@@ -69,30 +83,92 @@ int main( int argc , char** argv )
 		} 
 
 		po::notify(vm);
-	} 
-	catch(po::error& e) 
-	{ 
+
+	} catch(po::error& e) { 
 		std::cerr << "Options parse error: " << e.what() << std::endl << std::endl; 
 		std::cerr << desc << std::endl; 
 		return 1; 
+
 	} 
 
-	SzbaseWrapper::init( vm["prefix"].as<std::string>() );
+	const char* logname = vm.count("no_daemon") ? NULL : "iks-server" ;
 
-    boost::asio::io_service& io_service = GlobalService::get_service();
+	sz_loginit( vm["log_level"].as<unsigned>() , logname , SZ_LIBLOG_FACILITY_DAEMON );
+	sz_log(2,"Welcome, milord");
 
-	tcp::endpoint endpoint(tcp::v4(), vm["port"].as<unsigned>() );
-	TcpServer ts(io_service, endpoint);
+	try {
+		SzbaseWrapper::init( vm["prefix"].as<std::string>() );
 
-	LocationsMgr lm;
+		boost::asio::io_service& io_service = GlobalService::get_service();
 
-	lm.add_locations( locs_cfg );
+		tcp::endpoint endpoint(tcp::v4(), vm["port"].as<unsigned>() );
+		TcpServer ts(io_service, endpoint);
 
-	ts.on_connected   ( bind(&LocationsMgr::on_new_connection,&lm,p::_1) );
-	ts.on_disconnected( bind(&LocationsMgr::on_disconnected  ,&lm,p::_1) );
+		LocationsMgr lm;
 
-	io_service.run();
+		lm.add_locations( locs_cfg );
+		lm.add_config( server_config );
 
-	return 0; 
+		ts.on_connected   ( bind(&LocationsMgr::on_new_connection,&lm,p::_1) );
+		ts.on_disconnected( bind(&LocationsMgr::on_disconnected  ,&lm,p::_1) );
+
+		ba::signal_set signals(io_service, SIGINT, SIGTERM);
+		signals.async_wait( bind(&ba::io_service::stop, &io_service) );
+
+		/**
+		 * Check if pid file can be written before daemonizing
+		 * and write current pid.
+		 */
+		if( vm.count("pid_file") ) {
+			pid_path = vm["pid_file"].as<std::string>();
+			if( boost::filesystem::exists( pid_path ) ) {
+				pid_path.clear(); /** prevent from removing not our pidfile */
+				throw init_error("pid file " + pid_path + " already exists");
+			}
+			std::ofstream pf( vm["pid_file"].as<std::string>() );
+			pf << get_pid();
+		}
+
+		/**
+		 * Daemonize
+		 */
+		if( !vm.count("no_daemon") )
+			if( !daemonize( io_service ) )
+				throw init_error("Cannot become proper daemon");
+
+		/**
+		 * Write new pid after daemonizing
+		 */
+		if( !pid_path.empty() && !vm.count("no_daemon") ) {
+			std::ofstream pf( pid_path , std::ofstream::trunc );
+			pf << get_pid();
+		}
+
+		sz_log(2,"Start serving on port %d", vm["port"].as<unsigned>() );
+
+		io_service.run();
+
+	} catch( std::exception& e ) {
+		sz_log(0,"Exception occurred: %s" , e.what() );
+		ret_code = 1; /**< return error code */
+	}
+
+	/** Remove pid file at exit */
+	if( !pid_path.empty() )
+		boost::filesystem::remove( pid_path );
+
+	/**
+	 * Quit with polite message
+	 */
+	switch( rand() % 23 ) {
+	case  0 : sz_log(2 , "Au revoir"); break;
+	case  1 : sz_log(2 , "Arrivederci"); break;
+	case  2 : sz_log(2 , "Auf Wiedersehen"); break;
+	case  3 : sz_log(2 , "See you later"); break;
+	case  4 : sz_log(2 , "So long!"); break;
+	default : sz_log(2 , "Goodbye"); break;
+	}
+
+	return ret_code; 
 }
 

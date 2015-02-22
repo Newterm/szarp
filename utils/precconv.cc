@@ -84,11 +84,11 @@ int main(int argc, char* argv[])
 			usage();
 			return 1;
 		} else {
-			name = SC::A2S(argv[1]);
+			name = SC::L2S(argv[1]);
 			argc--;
 			argv++;
 			if (argc > 1) {
-				value = SC::A2S(argv[1]);
+				value = SC::L2S(argv[1]);
 				argc--;
 				argv++;
 				if (dbl && !to) {
@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
 						usage();
 						return 1;
 					}
-					value2 = SC::A2S(argv[1]);
+					value2 = SC::L2S(argv[1]);
 				}
 			} else {
 				usage();
@@ -119,7 +119,7 @@ out:
 	
 	sc = new TSzarpConfig();
 	
-	ipk = SC::A2S(libpar_getpar("", "IPK", 1));
+	ipk = SC::L2S(libpar_getpar("", "IPK", 1));
 	i = sc->loadXML(ipk);
 	
 	if (i) {

@@ -209,7 +209,7 @@ bool DrawApp::OnInit() {
 	char *base = NULL;
 	if (m_base == wxEmptyString) {
 		base = libpar_getpar("", "config_prefix", 1);
-		m_base = SC::A2S(base);
+		m_base = SC::L2S(base);
 		free(base);
 	}
 

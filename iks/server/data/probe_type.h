@@ -2,6 +2,7 @@
 #define __DATA_PROBE_TYPE_H__
 
 #include <functional>
+#include <ctime>
 
 #include <szbase/szbbase.h>
 
@@ -12,15 +13,16 @@ class ProbeType {
 
 public:
 	enum class Type : unsigned {
-		LIVE   = PT_SEC10  ,
-		M10    = PT_MIN10  ,
-		HOUR   = PT_HOUR   ,
-		H8     = PT_HOUR8  ,
-		DAY    = PT_DAY    ,
-		WEEK   = PT_WEEK   ,
-		MONTH  = PT_MONTH  ,
-		YEAR   = PT_YEAR   ,
-		CUSTOM = PT_CUSTOM ,
+		LIVE   = 0 ,
+		S10    = PT_SEC10  + 1 ,
+		M10    = PT_MIN10  + 1 ,
+		HOUR   = PT_HOUR   + 1 ,
+		H8     = PT_HOUR8  + 1 ,
+		DAY    = PT_DAY    + 1 ,
+		WEEK   = PT_WEEK   + 1 ,
+		MONTH  = PT_MONTH  + 1 ,
+		YEAR   = PT_YEAR   + 1 ,
+		CUSTOM = PT_CUSTOM + 1 ,
 		MAX
 	};
 
@@ -29,10 +31,16 @@ public:
 
 	Type get_type() const { return pt; }
 
-	SZARP_PROBE_TYPE get_szarp_pt() const { return (SZARP_PROBE_TYPE)pt; }
+	SZARP_PROBE_TYPE get_szarp_pt() const
+	{
+		return pt == Type::LIVE ? PT_SEC10 : (SZARP_PROBE_TYPE)((unsigned)pt - 1);
+	}
+
 	unsigned get_len() const { return len; }
 
 	std::string to_string() const;
+
+	std::time_t get_time() const;
 
 protected:
 	Type pt;

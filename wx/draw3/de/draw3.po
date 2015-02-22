@@ -2821,7 +2821,7 @@ msgid "Reload Configuration\tCtrl+Shift+Alt+R"
 msgstr "Reload-Konfiguration\tCtrl+Shift+Alt+R"
 
 #: XRC_gettext_file.h:206
-msgid "Fetch New Network Parameters And Sets\tCtrl+Alt+Shift+N"
+msgid "Fetch New Network Parameters And Sets\tCtrl+Shift+Alt+N"
 msgstr ""
 
 #: XRC_gettext_file.h:207

@@ -263,7 +263,8 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 		if (event.AltDown()) {
 			size_t idx = event.GetKeyCode() - '1';
 			size_t curr = panel->dw->GetSelectedDrawIndex();
-			if (curr == idx) { // cannot disable current draw
+			 // cannot disable not existing draw or current draw
+			 if (idx >= panel->dw->GetDrawsCount() || curr == idx) {
 				wxBell();
 				break;
 			}

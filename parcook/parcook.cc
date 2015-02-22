@@ -1658,11 +1658,11 @@ int main(int argc, char *argv[])
 	/* end szarp.cfg processing */
 	libpar_done();
 	
-	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"pl");
-	Szbase::Init(SC::A2S(PREFIX));
+	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"pl");
+	Szbase::Init(SC::L2S(PREFIX));
 
 	IPKContainer* ic = IPKContainer::GetObject();
-	TSzarpConfig* ipk = ic->GetConfig(SC::A2S(config_prefix));
+	TSzarpConfig* ipk = ic->GetConfig(SC::L2S(config_prefix));
 	if (ipk == NULL) {
 		sz_log(0, "Unable to load IPK for prefix %s", config_prefix);
 		return 1;

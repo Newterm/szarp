@@ -20,7 +20,7 @@
  * scc - Szarp Control Center
  * SZARP
  
- * Pawe³ Pa³ucha pawel@praterm.com.pl
+ * Pawel Palucha pawel@praterm.com.pl
  *
  * $Id$
  */
@@ -67,7 +67,7 @@ bool SCCApp::OnInit()
 		SCCClient* client = new SCCClient();
 		SCCConnection* connection = client->Connect(scc_ipc_messages::scc_service);
 		if (!connection) {
-			printf("Cannot conncect to SCC\n");
+			printf("Cannot connect to SCC\n");
 		} else {
 			wxChar* resp = connection->SendReloadMenuMsg();
 			if (resp)
@@ -164,7 +164,7 @@ bool SCCApp::OnInit()
 
 	smenu = CreateMainMenu();
 	// Create main frame.
-	taskbar_item = new SCCTaskBarItem(smenu, wxString(SC::A2S(prefix)), wxString(SC::A2S(suffix)));
+	taskbar_item = new SCCTaskBarItem(smenu, wxString(SC::L2S(prefix)), wxString(SC::L2S(suffix)));
 
 	server = new SCCServer(this, scc_ipc_messages::scc_service);
 	
@@ -193,7 +193,7 @@ SCCMenu* SCCApp::CreateMainMenu() {
 	if (buffer == NULL) {
         	wxString s;
 #ifndef MINGW32
-		s = wxString(SC::A2S(libpar_getpar("scc", "prefix", 1)));
+		s = wxString(SC::L2S(libpar_getpar("scc", "prefix", 1)));
 		s = s.AfterLast(_T('/'));
 		
 		s = _T("CONFIG(\"") + s;
@@ -204,23 +204,17 @@ SCCMenu* SCCApp::CreateMainMenu() {
 		smenu = SCCMenu::ParseMenu(s);
 	} else {
 #ifdef MINGW32
-		smenu = SCCMenu::ParseMenu(wxString(SC::A2S(buffer)));
+		smenu = SCCMenu::ParseMenu(wxString(SC::U2S((unsigned char *)buffer)));
 #else
-		try {
-			smenu = SCCMenu::ParseMenu(wxString(SC::U2S((unsigned char *)buffer)));
-		}
-		catch (const std::runtime_error& ex) {
-			wxLogWarning(_T("Decoding szarp.cfg from UTF-8 failed, trying ISO-8859-2"));
-			smenu = SCCMenu::ParseMenu(wxString(SC::A2S(buffer)));
-		}
-#endif  /* MINGW32 */
+		smenu = SCCMenu::ParseMenu(wxString(SC::L2S(buffer)));
+#endif
 		free(buffer);
 	}
 
 #ifndef MINGW32
 	buffer = libpar_getpar("scc", "update_command", 0);
 	if (buffer != NULL) {
-		wxString command(wxString(SC::A2S(buffer)));
+		wxString command(wxString(SC::L2S(buffer)));
 		free(buffer);
 
 		if (wxFile::Exists(command)) {
@@ -228,7 +222,7 @@ SCCMenu* SCCApp::CreateMainMenu() {
 			if (geteuid() != 0) {
         			buffer = libpar_getpar("scc", "su_command", 0);
 				assert(buffer != NULL);
-				sucommand << wxString(SC::A2S(buffer)) << _T(" -- ");
+				sucommand << wxString(SC::L2S(buffer)) << _T(" -- ");
 				free(buffer);
 			}
 

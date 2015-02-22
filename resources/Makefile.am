@@ -63,7 +63,7 @@ szarp_cfg: DATABASE_PREFIX
          > szarp.cfg
 	$(INSTALL) -m 644 szarp.cfg @prefix@/`cat @srcdir@/DATABASE_PREFIX`/szarp.cfg
 	mkdir -p /etc/szarp/
-	ln -sf @prefix@/`cat DATABASE_PREFIX`/szarp.cfg /etc/szarp/szarp.cfg
+	ln -sf @prefix@/`cat DATABASE_PREFIX`/szarp.cfg $(DESTDIR)/etc/szarp/szarp.cfg
 
 parstart_:
 	@cat @srcdir@/parstart_TEMPLATE | \
@@ -78,20 +78,20 @@ parstart_:
 			$(INSTALL) -d $(DESTDIR)$(INIT_D); \
 		fi; \
 		$(INSTALL) -m 755 parstart $(DESTDIR)$(INIT_D) ; \
-	elif [ -f /etc/szarp/parstart.cfg ] ; then \
+	elif [ -f $(DESTDIR)/etc/szarp/parstart.cfg ] ; then \
 		$(INSTALL) -m 755 parstart $(DESTDIR)$(INIT_D) ; \
-	fi ) 
+	fi )
 
 parstart_cfg: parstart_ DATABASE_PREFIX
 	cat parstart_cfg_TEMPLATE | \
          sed s+__INSTALL_DIR__+`@prefix@+ | \
 	 sed s+__PREFIX__+`cat DATABASE_PREFIX`+g \
          > parstart.cfg
-	[ ! -f /etc/szarp/parstart.cfg ] && ( \
-		$(INSTALL) -m 644 parstart.cfg @prefix@/`cat DATABASE_PREFIX` ; \
+	[ ! -f $(DESTDIR)/etc/szarp/parstart.cfg ] && ( \
+		$(INSTALL) -m 644 parstart.cfg $(DESTDIR)@prefix@/`cat DATABASE_PREFIX` ; \
 		ln -sf @prefix@/`cat DATABASE_PREFIX`/parstart.cfg \
-                             /etc/szarp/parstart.cfg \
-	) 
+                             $(DESTDIR)/etc/szarp/parstart.cfg \
+	)
 	
 if !DEB_BUILD
 vim:
@@ -130,9 +130,9 @@ rsyslog: rsyslog.conf
 if !DEB_BUILD
 
 apache2:
-	[ -d /etc/apache2/sites-available ] && \
+	mkdir -p $(DESTDIR)/etc/apache2/sites-available && \
 		$(LN_S) -f @prefix@/resources/xsltd/apache2-szarp \
-		/etc/apache2/sites-available/szarp || true
+		$(DESTDIR)/etc/apache2/sites-available/szarp || true
 	[ -x "`which a2ensite`" ] && a2ensite szarp || true;
 	[ -x "`which a2enmod`" ] && { \
 		a2enmod modxslt || true; \
@@ -141,9 +141,9 @@ apache2:
 	} || true
 
 uninstall-apache2:
-	[ -x "`which a2dissite`" ] && a2dissite szarp
-	[ -d /etc/apache2/sites-available ] && \
-		rm -f /etc/apache2/sites-available/szarp || true
+	[ -x "`which a2dissite`" ] && a2dissite szarp || true;
+	[ -d $(DESTDIR)/etc/apache2/sites-available ] && \
+		rm -f $(DESTDIR)/etc/apache2/sites-available/szarp || true
 
 else DEB_BUILD
 
@@ -156,10 +156,12 @@ endif
 links:
 	install -d $(DESTDIR)/usr/share/autostart;
 	install -d $(DESTDIR)/etc/xdg/autostart;
+	install -d $(DESTDIR)/usr/share/applications;
 	ln -sf @prefix@/resources/koper.desktop $(DESTDIR)/usr/share/autostart/koper.desktop 
 	ln -sf @prefix@/resources/koper.desktop $(DESTDIR)/etc/xdg/autostart/koper.desktop 
 	ln -sf @prefix@/resources/scc.desktop $(DESTDIR)/usr/share/autostart/scc.desktop 
 	ln -sf @prefix@/resources/scc.desktop $(DESTDIR)/etc/xdg/autostart/scc.desktop 
+	ln -sf @prefix@/resources/scc.desktop $(DESTDIR)/usr/share/applications/scc.desktop
 
 if !DEB_BUILD
 
@@ -174,5 +176,5 @@ endif
 install-data-hook: vim paramd_access parstart_ apache2 regulators_defs dictionary rsyslog
 
 uninstall-local: uninstall-apache2
-	rm -rf @prefix@/resources/* /etc/apache2/sites-available/szarp
+	rm -rf $(DESTDIR)@prefix@/resources/* $(DESTDIR)/etc/apache2/sites-available/szarp
         

@@ -76,7 +76,7 @@ bool SzProbeCache::Values::add( time_t t , short v , int probe_length )
 {
 	if( length == 0 ) time = t;
 
-	sz_log(10,"Adding probe do cache - current time: %i, time: %i, value: %i, probe length: %i",szb_move_time( time , length , PT_CUSTOM , probe_length ),t,v,probe_length);
+	sz_log(10,"Adding probe do cache - current time: %li, time: %li, value: %i, probe length: %i",szb_move_time( time , length , PT_CUSTOM , probe_length ),t,v,probe_length);
 
 	if( length >= max_length ) return false;
 
@@ -85,7 +85,7 @@ bool SzProbeCache::Values::add( time_t t , short v , int probe_length )
 	if( t > curr_time ) return false; // raport time gap
 	if( t < curr_time ) return false; // override data. Return true otherwise
 
-	sz_log(10,"Writing value %i to %u at %i",v,length,t);
+	sz_log(10,"Writing value %i to %u at %li",v,length,t);
 	probes[length++] = v;
 
 	return true;

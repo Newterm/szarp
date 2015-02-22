@@ -34,12 +34,28 @@ public:
 	const boost::property_tree::ptree& get_ptree() const
 	{	return param_desc; }
 
+	bool is_summaric() const
+	{	return summaric; }
+
+	std::string get_summaric_unit() const
+	{	return summaric_unit; }
+
+	std::string get_draw_name() const
+	{	return draw_name; }
+
 	double get_value( ProbeType pt = ProbeType::Type::LIVE ) const;
 	void set_value( double v , ProbeType pt );
 
 private:
+	bool get_summaric_from_xml() const;
+	std::string get_summaric_unit_from_xml() const;
+
+	static const std::set<std::string> summaric_units;
 	std::string parent_tag;
 	std::string name;
+	std::string draw_name;
+	bool summaric;
+	std::string summaric_unit;
 
 	std::map<ProbeType,double> values;
 

@@ -22,6 +22,8 @@ public:
 	void add_locations( const CfgSections& cfg );
 	void add_location( const std::string& name , const CfgPairs& cfg );
 
+	void add_config( const CfgPairs& cfg );
+
 	void on_new_connection( Connection* conn );
 	void on_disconnected  ( Connection* conn );
 
@@ -33,6 +35,7 @@ private:
 
 	LocationsList loc_factory;
 	VarsCache vars_cache;
+	Config server_config;	/**< config of the proxy server */
 
 	std::unordered_map<Connection*,Location::ptr> locations;
 	std::unordered_map<std::string,RemotesUpdater::ptr> updaters;

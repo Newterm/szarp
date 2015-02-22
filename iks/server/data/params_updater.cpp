@@ -6,6 +6,8 @@
 
 namespace p = std::placeholders;
 
+#include <liblog.h>
+
 #include "global_service.h"
 
 ParamsUpdater::ParamsUpdater( Params& params )
@@ -36,9 +38,11 @@ ParamsUpdater::Subscription ParamsUpdater::subscribe_param(
 		return Subscription();
 
 	Subscription s(
-		*subscribed_params.insert(
-			std::make_shared<SubKey>( itr , pt )
-				).first );
+		subscribed_params.insert(
+			std::make_pair( 
+				std::make_shared<SubKey>( itr , pt ) ,
+				0
+				) ).first->first );
 
 	if( update )
 		data_updater->check_szarp_values();
@@ -70,34 +74,44 @@ void ParamsUpdater::DataUpdater::check_szarp_values(
 
 	time_t t = system_clock::to_time_t(system_clock::now());
 
+	/**
+	 * Find minimum probe type to reschedule probes update and remove
+	 * unused subscriptions
+	 */
 	ProbeType min_pt( ProbeType::Type::MAX );
+	for( auto itr=parent->subscribed_params.begin() ;
+		 itr != parent->subscribed_params.end() ; )
+		if( itr->first.use_count() <= 1 ) {
+			/** No Subscription object left */
+			parent->subscribed_params.erase( itr++ );
+		} else {
+			min_pt = std::min( (*itr->first).second , min_pt );
+			++itr;
+		}
 
 	try {
 		for( auto itr=parent->subscribed_params.begin() ;
-			 itr != parent->subscribed_params.end() ; )
+			 itr != parent->subscribed_params.end() ;
+			 ++itr )
 		{
-			if( itr->use_count() <= 1 ) {
-				/** No Subscription object left */
-				itr = parent->subscribed_params.erase( itr );
-				continue;
-			}
+			auto& name = *(*itr->first).first;
+			auto& pt   =  (*itr->first).second;
+			auto& last_update = itr->second;
 
-			auto& name = *(**itr).first;
-			auto& pt   =  (**itr).second;
 			time_t ptime = SzbaseWrapper::round( t , pt );
+
+			if( last_update == ptime )
+				continue;
+
+			itr->second = ptime;
 
 			parent->params.param_value_changed(
 					name ,
 					parent->data_feeder->get_avg( name , ptime , pt ) ,
 					pt );
-
-			min_pt = std::min( pt , min_pt );
-
-			++itr;
 		}
 	} catch( szbase_error& e ) {
-		/* TODO: Better error handling (22/05/2014 20:54, jkotur) */
-		std::cerr << "Szbase error: " << e.what() << std::endl;
+		sz_log(0, "Szbase error while updating data: %s", e.what());
 	}
 
 	if( parent->subscribed_params.empty() )

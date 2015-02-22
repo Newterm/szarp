@@ -768,12 +768,7 @@ fi
 
 has_boost_base="no"
 ac_boost_path="${lib_prefix}"
-# On squeeze AX_BOOST_BASE do not execute ACTION-IF-FOUND :(
-AC_LANG_PUSH([C++])
-AC_CHECK_HEADERS([boost/foreach.hpp], [has_boost_base="yes"], [has_boost_base="no"])
-AC_LANG_POP([C++])
-
-AX_BOOST_BASE("1.42.0", [has_boost_base="yes"], [has_boost_base="no"])
+AX_BOOST_BASE([1.48.0], [has_boost_base="yes"], [has_boost_base="no"])
 if test "x$has_boost_base" = "xyes" ; then
 	AX_BOOST_FILESYSTEM
 	AX_BOOST_DATE_TIME
@@ -796,7 +791,7 @@ has_boost_regex=${link_regex:-no}
 has_boost_thread=${link_thread:-no}
 has_boost_system=${link_system:-no}
 has_boost_program_options=${link_program_options:-no}
-
+has_boost_locale=${link_locale:-no}
 
 #Check for LIBEVENT
 no_libevent=""
@@ -1144,6 +1139,12 @@ if test x$with_mingw32 != xyes; then
 	SUBDIRS="$SUBDIRS iks"
 fi
 
+# pyipk directory
+if test x$no_python != xyes -a x$with_mingw32 != xyes; then
+	SUBDIRS="$SUBDIRS qt4"
+fi
+
+
 AC_SUBST(SUBDIRS)
 
 #############################################################################
@@ -1157,6 +1158,10 @@ AC_OUTPUT( \
 	extern/wxscintilla/Makefile \
 	iks/Makefile \
 	iks/server/Makefile \
+	iks/server/locations/Makefile \
+	iks/server/utils/Makefile \
+	iks/server/data/Makefile \
+	iks/server/net/Makefile \
 	isl/Makefile \
 	isl/server/Makefile \
 	isl/paramd/Makefile \
@@ -1173,11 +1178,12 @@ AC_OUTPUT( \
 	parcook/Makefile \
 	parcook/analiza/Makefile \
 	pyipk/Makefile \
+	qt4/Makefile \
+	qt4/filler2/Makefile \
 	resources/Makefile \
 	resources/documentation/Makefile \
 	resources/documentation/new/Makefile \
 	script/Makefile \
-	script/sysinfo \
 	sender/Makefile \
 	utils/szarpinfo \
 	utils/Makefile \

@@ -10,9 +10,10 @@
 class CmdAddRemotesRcv : public Command {
 public:
 	CmdAddRemotesRcv(
-		LocationsList& locs , const std::string& name ,
+		LocationsList& locs ,
+		const std::string& name , const std::string& draw_name ,
 		const std::string& address , unsigned port )
-		: locs(locs) , name(name) , address(address) , port(port)
+		: locs(locs) , name(name) , draw_name(draw_name) , address(address) , port(port)
 	{
 		set_next( std::bind(
 				&CmdAddRemotesRcv::parse_command ,
@@ -27,13 +28,33 @@ public:
 
 	void parse_command( const std::string& line )
 	{
-		locs.register_location<ProxyLoc>
-			( str( boost::format("%s:%s") % name % line ), address, port );
+		namespace bp = boost::property_tree;
+		bp::ptree json;
+
+		try {
+			std::stringstream ss(line);
+			bp::json_parser::read_json( ss , json );
+
+			locs.register_location<ProxyLoc>(
+					str( boost::format("%s:%s") %
+						name %
+						json.get<std::string>("tag") ) ,
+					str( boost::format("%s - %s") %
+						draw_name %
+						json.get<std::string>("name") ) ,
+					json.get<std::string>("type") ,
+					address , port );
+
+		} catch( const bp::ptree_error& e ) {
+			sz_log(0,"CmdAddRemotesRcv: Received invalid message (%s): %s", line.c_str(), e.what());
+			return;
+		}
 	}
 
 protected:
 	LocationsList& locs;
 	const std::string& name;
+	const std::string& draw_name;
 	const std::string& address;
 	unsigned port;
 

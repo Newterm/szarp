@@ -1,6 +1,6 @@
 Package: szarp-base
 Files: opt/szarp/resources/{dtd,*vim,*TEMPLATE,szarp_in.cfg,version.info}
-Files: opt/szarp/bin/{szrsync,szbpush,ssh_tunel.sh,szppp-off,szppp-on,szredialer,szrsync,install_vim,sysinfo,config_deb}
+Files: opt/szarp/bin/{szrsync,szbpush,ssh_tunel.sh,szppp-off,szppp-on,szredialer,szrsync,install_vim,config_deb}
 Files: opt/szarp/bin/{isdn-*-sh,ipcclean,ipcinfo,lpparse,szarp_scripter}
 Files: opt/szarp/resources/{xslt,dictionary.xml}
 Files: opt/szarp/logs
@@ -27,8 +27,6 @@ Files: opt/szarp/bin/{switch_controller.pl,ipk2mobile.pl,get_weather.sh}
 Files: opt/szarp/bin/{convert_names,get_sam,process_csv,sshkey,insum.sh}
 
 Package: szarp-server
-Files: opt/szarp/bin/get_sysinfo
-Files: etc/cron.d/szarp-server
 
 Package: szarp-wx
 Files: opt/szarp/bin/{draw3,ekstraktor3,ipkedit,kontroler3,raporter3,wxhelp,scc,ssc,ssc_sudowrap.sh,szast,setter}
@@ -46,6 +44,7 @@ Files: opt/szarp/resources/scc.desktop
 Files: opt/szarp/resources/regulators
 Files: etc/xdg/autostart/scc.desktop
 Files: usr/share/autostart/scc.desktop
+Files: usr/share/applications/scc.desktop
 
 Package: szarp-paramd
 Files: etc/pam.d/paramd 
@@ -103,3 +102,8 @@ Files: usr/share/nagios3/htdocs/szarp*.html
 
 Package: szarp-dbg-symbols
 Files: usr/lib/debug/*
+
+Package: szarp-iks-server
+Files: opt/szarp/bin/iks-server
+Files: opt/szarp/iks/iks-server.ini.sample
+

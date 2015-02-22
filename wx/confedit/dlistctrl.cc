@@ -71,7 +71,7 @@ long DrawsListCtrl::InsertItem(xmlNodePtr node)
 	if (!str) {
 		str = xmlGetProp(node->parent, BAD_CAST "name");
 		if (rindex((const char *)str, ':')) {
-			s = SC::A2S(rindex((const char*)str, ':'));
+			s = SC::L2S(rindex((const char*)str, ':'), true);
 		} else {
 			s = SC::U2S(str);
 		}

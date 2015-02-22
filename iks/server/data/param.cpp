@@ -6,7 +6,9 @@
 
 #include "utils/ptree.h"
 
+#include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
 namespace bp = boost::property_tree;
@@ -22,28 +24,42 @@ Param::~Param()
 
 void Param::from_params_xml( const bp::ptree& ptree ) throw(xml_parse_error)
 {
-	param_desc = ptree;
+	/**
+	 * name, unit and short_name are obligatory
+	 */
+	try {
+		name = ptree.get<std::string>("@name");
 
-	name = param_desc.get<std::string>("@name");
+		param_desc.put( "@name" , name );
+		param_desc.put( "@unit" , ptree.get<std::string>( "@unit" ) );
+		param_desc.put( "@short_name" , ptree.get<std::string>( "@short_name" ) );
+	} catch( bp::ptree_error& e ) {
+		throw xml_parse_error( str( boost::format("Cannot read param \"%s\": %s") % name % e.what() ) );
+	}
 
-	param_desc.erase("@base_ind");
-	param_desc.erase("define");
+	auto prec = ptree.get_optional<std::string>( "@prec" );
+	param_desc.put( "@prec" , prec ? *prec : "0" );
 
+	auto dname = ptree.get_optional<std::string>( "@draw_name" );
+	param_desc.put( "@draw_name" , dname ? *dname : name );
+
+	/**
+	 * Find min and max value for this param based on his draw section
+	 */
 	double min = std::numeric_limits<double>::quiet_NaN();
 	double max = std::numeric_limits<double>::quiet_NaN();
 	using std::isnan;
 
-	if( param_desc.count("draw") ) {
-		auto& draw_desc = param_desc.get_child("draw");
-		for( auto ic=draw_desc.begin() ; ic!=draw_desc.end() ; ++ic )
+	if( ptree.count("draw") )
+		for( auto& c : ptree.get_child("draw") )
 			try {
-				if( ic->first == "@min" ) {
-					auto m = boost::lexical_cast<double>( ic->second.data() );
+				if( c.first == "@min" ) {
+					auto m = boost::lexical_cast<double>( c.second.data() );
 					if( isnan(min) || m < min ) min = m;
 				}
 
-				if( ic->first == "@max" ) {
-					auto m = boost::lexical_cast<double>( ic->second.data() );
+				if( c.first == "@max" ) {
+					auto m = boost::lexical_cast<double>( c.second.data() );
 					if( isnan(max) || m > max ) max = m;
 				}
 
@@ -51,15 +67,52 @@ void Param::from_params_xml( const bp::ptree& ptree ) throw(xml_parse_error)
 			} catch( const boost::bad_lexical_cast& ) {
 				throw xml_parse_error("Invalid min or max value at param_desc " + name);
 			}
-	}
-
-	param_desc.erase("draw");
-	param_desc.erase("raport");
 
 	param_desc.put("@min",min);
 	param_desc.put("@max",max);
 
+	/**
+	 * Add type which is its parent section
+	 */
 	param_desc.put("@type",parent_tag);
+
+	/**
+	 * Initialize draw_name
+	 */
+	draw_name = param_desc.get<std::string>( "@draw_name", name );
+
+	/**
+	 * Get summaric values description
+	 */
+	summaric = get_summaric_from_xml();
+	summaric_unit = get_summaric_unit_from_xml();
+}
+
+bool Param::get_summaric_from_xml() const
+{
+	const auto unit = param_desc.get<std::string>( "@unit", "-" );
+	if( unit.rfind("/h") != std::string::npos )
+		return true;
+	if( summaric_units.find( unit ) != summaric_units.end() )
+		return true;
+	if( param_desc.count("draw") )
+		for( const auto& c : param_desc.get_child("draw") ) {
+			const auto special = c.second.get<std::string>( "@special", "" );
+			if ( special == "hoursum" )
+				return true;
+		}
+	return false;
+}
+
+std::string Param::get_summaric_unit_from_xml() const
+{
+	auto unit = param_desc.get<std::string>( "@unit", "-" );
+	const auto pos = unit.rfind("/h");
+	if( pos != std::string::npos )
+		return unit.erase(pos);
+	if( summaric_units.find( unit ) != summaric_units.end() )
+		return unit + "h";
+	return unit;
 }
 
 void Param::to_json( std::ostream& stream , bool pretty ) const
@@ -104,3 +157,4 @@ void Param::set_value( double v , ProbeType pt )
 	values[ pt ] = v;
 }
 
+const std::set<std::string> Param::summaric_units {"MW", "kW"};

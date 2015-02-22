@@ -7,6 +7,7 @@
 
 #include "utils/signals.h"
 #include "locations/location.h"
+#include "utils/config.h"
 
 class Protocol;
 

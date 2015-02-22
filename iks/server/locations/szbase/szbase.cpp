@@ -2,15 +2,21 @@
 
 #include <typeinfo>
 
+#include <liblog.h>
+
 #include "cmd_set.h"
 #include "cmd_value.h"
 #include "cmd_list_sets.h"
 #include "cmd_list_params.h"
 #include "cmd_get_params.h"
+#include "cmd_get_key_params.h"
 #include "cmd_set_update.h"
 #include "cmd_set_subscribe.h"
 #include "cmd_get_config.h"
 #include "cmd_get_history.h"
+#include "cmd_get_latest.h"
+#include "cmd_get_latest_set.h"
+#include "cmd_get_summary.h"
 
 namespace p = std::placeholders;
 
@@ -35,16 +41,20 @@ SzbaseProt::~SzbaseProt()
 
 Command* SzbaseProt::cmd_from_tag( const std::string& tag )
 {
-	MAP_CMD_TAG( "s"             , SetRcv          );
-	MAP_CMD_TAG( "set"           , SetRcv          );
-	MAP_CMD_TAG( "list_sets"     , ListSetsRcv     );
-	MAP_CMD_TAG( "list_params"   , ListParamsRcv   );
-	MAP_CMD_TAG( "get_params"    , GetParamsRcv    );
-	MAP_CMD_TAG( "get_set"       , GetSetRcv       );
-	MAP_CMD_TAG( "set_update"    , SetUpdateRcv    );
-	MAP_CMD_TAG( "set_subscribe" , SetSubscribeRcv );
-	MAP_CMD_TAG( "get_options"   , GetConfigRcv    );
-	MAP_CMD_TAG( "get_history"   , GetHistoryRcv   );
+	MAP_CMD_TAG( "s"             , SetRcv              );
+	MAP_CMD_TAG( "set"           , SetRcv              );
+	MAP_CMD_TAG( "list_sets"     , ListSetsRcv         );
+	MAP_CMD_TAG( "list_params"   , ListParamsRcv       );
+	MAP_CMD_TAG( "get_params"    , GetParamsRcv        );
+	MAP_CMD_TAG( "get_key_params", GetParamsForKeyRcv  );
+	MAP_CMD_TAG( "get_set"       , GetSetRcv           );
+	MAP_CMD_TAG( "set_update"    , SetUpdateRcv        );
+	MAP_CMD_TAG( "set_subscribe" , SetSubscribeRcv     );
+	MAP_CMD_TAG( "get_options"   , GetConfigRcv        );
+	MAP_CMD_TAG( "get_history"   , GetHistoryRcv       );
+	MAP_CMD_TAG( "get_latest"    , GetLatestRcv        );
+	MAP_CMD_TAG( "get_latest_set", GetLatestFromSetRcv );
+	MAP_CMD_TAG( "get_summary"   , GetSummaryRcv       );
 	return NULL;
 }
 
@@ -87,8 +97,8 @@ void SzbaseProt::set_current_set( Set::const_ptr s , ProbeType pt )
 		if( p )
 			send_cmd( new ValueSnd(p,pt) );
 		else
-			/* TODO: Log this somewhere (21/03/2014 18:40, jkotur) */
-			std::cerr << "Unknown param in set:O" << std::endl;
+			sz_log(0, "Unknown param (%s) in set (%s)",
+					itr->c_str() , s->get_name().c_str() );
 	}
 }
 

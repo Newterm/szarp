@@ -346,8 +346,8 @@ int ProgramConfig::parseXMLRules(xmlDocPtr doc, xmlNodePtr node2){
 
 			R->RuleName = strdup(str);
 			xmlChar *ziomal =xmlNodeListGetString(doc, nodeRule->children, 1);
-			R->LUACode = strdup(SC::U2A(ziomal).c_str());
-			free (ziomal);
+			R->LUACode = (char *) xmlStrdup(ziomal);
+			xmlFree(ziomal);
 			free(str);
 			Rules.push_back(R);
 			if (!m_todelete) m_todelete=1;
@@ -950,7 +950,7 @@ int CipkConf::IpkInit(){
 	}else{
 		m_dir_initialised = 1;
 	}
-	ipk->loadXML(SC::A2S(path));
+	ipk->loadXML(SC::L2S(path));
 	return S_OK;
 };		
 CipkConf IpkConf;
@@ -1072,7 +1072,7 @@ int CluaRegister::GetDataFromParam(time_t StartDate, time_t StopDate, char *PNam
 	time_t ActualDate=0;
 	
 	TParam *p=NULL;
-	p = IpkConf.ipk->getParamByName(SC::A2S(PName));
+	p = IpkConf.ipk->getParamByName(SC::L2S(PName, true));
 
 
 	if (p==NULL){
@@ -1089,9 +1089,10 @@ int CluaRegister::GetDataFromParam(time_t StartDate, time_t StopDate, char *PNam
 	*PSize = 0;
 	ActualDate = StartDate;
 	
-	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"");
-	Szbase::Init(SC::A2S(PREFIX), NULL);
-	buf = szb_create_buffer(Szbase::GetObject(), SC::A2S(IpkConf.dir), 1, IpkConf.ipk);
+	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
+	Szbase::Init(SC::L2S(PREFIX), NULL);
+	buf = szb_create_buffer(Szbase::GetObject(), SC::L2S(IpkConf.dir), 1, IpkConf.ipk);
+
 	while(ActualDate < StopDate){
 		data = szb_get_data(buf, p, ActualDate);
 		PData[i] = (int)p->ToIPCValue(data); 
@@ -1126,15 +1127,15 @@ int CluaRegister::GetDataFromParams(time_t StartDate, time_t StopDate, char *PWi
 		sz_log(0, "'datadir' not found in szarp.cfg");
 		return S_NO_DATA;
 	}
-	ipk->loadXML(SC::A2S(path));
+	ipk->loadXML(SC::L2S(path));
 
 
 	for (TParam *ppp = ipk->GetFirstParam();ppp;ppp=ipk->GetNextParam(ppp)){
 		
 		if (CheckWildCardString((char *)(SC::S2A(ppp->GetName()).c_str()),(char *)PWildCard)==0){	
-			IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"");
-			Szbase::Init(SC::A2S(PREFIX), NULL);
-			buf = szb_create_buffer(Szbase::GetObject(), SC::A2S(dir), 1, ipk);
+			IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
+			Szbase::Init(SC::L2S(PREFIX), NULL);
+			buf = szb_create_buffer(Szbase::GetObject(), SC::L2S(dir), 1, ipk);
 			data = szb_get_avg(buf, ipk->getParamByName(ppp->GetName()), StartDate, StopDate);
 			PData[ParamsCtr] = (int)ipk->getParamByName(ppp->GetName())->ToIPCValue(data); 
 			szb_free_buffer(buf);
@@ -1592,7 +1593,6 @@ ProgramConfig pConfig;
 
 char *dir;
 char *path;
-char *Param;
 int i;
 
 if (!pConfig.ParseCommandLine(argc,argv)){
@@ -1602,7 +1602,6 @@ path = pConfig.PutPath();
 dir = pConfig.PutDir();
 StartDate = pConfig.GetStartDate();
 StopDate = pConfig.GetStopDate();
-Param=pConfig.GetParam();
 
 if (pConfig.IsVerbose()){
 	printf("Starting in Verbose mode:\n");

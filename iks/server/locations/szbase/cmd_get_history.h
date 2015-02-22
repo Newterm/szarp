@@ -11,12 +11,7 @@
 
 #include "locations/command.h"
 #include "utils/ptree.h"
-
-typedef float f32_t;
-typedef unsigned timestamp_t;
-typedef boost::archive::iterators::base64_from_binary<
-	boost::archive::iterators::transform_width<const char *, 6, 8> >
-		base64_enc;
+#include "cmd_common.h"
 
 class GetHistoryRcv : public Command {
 public:
@@ -80,10 +75,9 @@ protected:
 		}
 
 		std::vector<f32_t> probes;
-		std::string out;
 
 		try {
-			get_data( probes , tbeg , tend , *pt , name );
+			probes = get_data( tbeg , tend , *pt , name );
 		} catch ( const szbase_error& e ) {
 			fail( ErrorCodes::szbase_error , e.what() );
 			return;
@@ -100,6 +94,7 @@ protected:
 		auto nb = std::distance(probes.begin(),beg);
 		auto ne = std::distance(probes.begin(),end);
 
+		std::string out;
 		std::copy( base64_enc((char*)(probes.data()+nb)) ,
 		           base64_enc((char*)(probes.data()+ne)) ,
 				   std::back_inserter(out) );
@@ -111,18 +106,11 @@ protected:
 		apply( ptree_to_json( ptree , false ) );
 	}
 
-	timestamp_t get_data(
-			std::vector<f32_t>& out ,
+	std::vector<f32_t> get_data(
 			timestamp_t beg , timestamp_t end , ProbeType pt ,
 			const std::string& param )
 	{
-		timestamp_t t;
-
-		vars.get_szbase()->sync();
-		for( t=beg ; t<end ; t=SzbaseWrapper::next(t,pt) )
-			out.push_back( vars.get_szbase()->get_avg_no_sync( param , t , pt ) );
-
-		return t;
+		return get_probes(vars, beg, end, pt, param);
 	}
 
 	Vars& vars;

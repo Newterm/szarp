@@ -203,7 +203,6 @@ void log_ulimit()
 
 int main(int argc, char* argv[])
 {
-	int loglevel;	/**< Log level. */
 	struct arguments arguments;
 	int i;
 	TMeaner* meaner;
@@ -215,9 +214,6 @@ int main(int argc, char* argv[])
 #else
 	boost::filesystem::wpath_traits::imbue(std::locale("C")); 	
 #endif
-
-	/* Set initial logging. */
-	loglevel = loginit_cmdline(2, NULL, &argc, argv);
 
 	libpar_read_cmdline(&argc, argv);
 	

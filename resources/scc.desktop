@@ -5,5 +5,6 @@ Name=SCC
 Terminal=false
 Comment=Szarp Control Center
 Exec=/opt/szarp/bin/scc
-Icon=/opt/szarp/resources/wx/icons/praterm16g.png
+Icon=/opt/szarp/resources/wx/icons/szarp16.png
 X-GNOME-Autostart-Phase=Applications
+Categories=Application;
