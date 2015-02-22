@@ -42,7 +42,6 @@
       xmlns:m601="http://www.praterm.com.pl/SZARP/ipk-extra"
       daemon="/opt/szarp/bin/k601dmn" 
       path="/dev/ttyA11"
-      m601:delay_between_chars="10000"
       m601:delay_between_requests="10">
       <unit id="1">
               <param
@@ -92,9 +91,13 @@
 
 #include "k601-prop-plugin.h"
 #include "serialport.h"
+#include "serialadapter.h"
+#include "daemonutils.h"
 #include "xmlutils.h"
 
 #define REGISTER_NOT_FOUND -1
+
+#define RESTART_INTERVAL_MS 15000
 
 bool single;
 
@@ -108,7 +111,8 @@ void dolog(int level, const char * fmt, ...) {
 	if (single) {
 		char *l;
 		va_start(fmt_args, fmt);
-		vasprintf(&l, fmt, fmt_args);
+		int ret = vasprintf(&l, fmt, fmt_args);
+		(void)ret;
 		va_end(fmt_args);
 
 		std::cout << l << std::endl;
@@ -124,27 +128,29 @@ void dolog(int level, const char * fmt, ...) {
 xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	xmlChar *c;
 	char *e;
-	asprintf(&e, "./@%s", prop);
+	int ret = asprintf(&e, "./@%s", prop);
 	assert (e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
 	free(e);
+	(void)ret;
 	return c;
 }
 
 xmlChar* get_device_node_extra_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	xmlChar *c;
 	char *e;
-	asprintf(&e, "./@extra:%s", prop);
+	int ret = asprintf(&e, "./@extra:%s", prop);
 	assert (e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
 	free(e);
+	(void)ret;
 	return c;
 }
 
 /* This ID-s will be shown in single (test mode) */
 unsigned short TO_SHOW_CODES[] =
-    { 60, 94, 63, 61, 62, 95, 96, 97, 110, 64, 65, 68, 69, 84, 85, 72, 73, 99,
-86, 87, 88, 122, 89, 91, 92, 74, 75, 80 };
+	{ 60, 94, 63, 61, 62, 95, 96, 97, 110, 64, 65, 68, 69, 84, 85, 72, 73, 99,
+		86, 87, 88, 122, 89, 91, 92, 74, 75, 80 };
 
 /** possible types of modbus communication modes */
 typedef enum {
@@ -164,15 +170,16 @@ typedef enum {
  * Modbus communication config.
  */
 class KamstrupInfo {
- public:
+public:
 	/** info about single parameter */
 	class ParamInfo {
- public:
+	public:
 		unsigned short reg;  /**< KMP REGISTER */
 		unsigned long mul;   /**< ADDITIONAL MULTIPLIER */
 		ParamMode type;
 	};
-	unsigned long delay_between_chars;
+	static const unsigned int DELAY_BETWEEN_CHARS = 50;
+	static const unsigned int READ_TIMEOUT = 10000;
 	unsigned short delay_between_requests;
 
 	ParamInfo *m_params;
@@ -222,24 +229,6 @@ int KamstrupInfo::parseDevice(xmlNodePtr node)
 	char *tmp;
 	dolog(10, "KamstrupInfo::parseDevice");
 
-	str = (char *)xmlGetNsProp(node,
-				   BAD_CAST("delay_between_chars"),
-				   BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-	if (str == NULL) {
-		dolog(0,
-		       "attribute k601:delay_between_chars not found in device element, line %ld",
-		       xmlGetLineNo(node));
-		return 1;
-	}
-
-	delay_between_chars = strtol(str, &tmp, 0);
-	if (tmp[0] != 0) {
-		dolog(0,
-		       "error parsing k601:delay_between_chars attribute ('%s'), line %ld",
-		       str, xmlGetLineNo(node));
-		return 1;
-	}
-	free(str);
 	str = (char *)xmlGetNsProp(node,
 				   BAD_CAST("delay_between_requests"),
 				   BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
@@ -356,6 +345,7 @@ int KamstrupInfo::parseParams(xmlNodePtr unit, DaemonConfig * cfg)
 			    cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->
 			    GetFirstParam()->GetNthParam(params_found);
 			assert(p != NULL);
+			(void)p;
 			params_found++;
 		}
 
@@ -505,7 +495,7 @@ DetermineRegisterMultiplier(unsigned short RegisterAddress)
  * or a SerialAdapter connection
  * (if 'extra:tcp-ip' and optionally 'extra:tcp-data-port' and 'extra:tcp-cmd-port' are declared)
  */
-class K601Daemon: public SerialPortListener {
+class K601Daemon: public ConnectionListener {
 public:
 	class K601Exception : public MsgException { } ;
 	typedef enum {RESTART, SEND, READ, PROCESS, FINALIZE} CommunicationState;
@@ -519,10 +509,10 @@ public:
 			m_serial_port(NULL),
 			plugin(NULL)
 	{
-		serial_conf.c_iflag = 0;
-		serial_conf.c_oflag = 0;
-		serial_conf.c_cflag = B1200 | CS8 | CLOCAL | CREAD | CSTOPB;
-		serial_conf.c_lflag = 0;
+		m_serial_conf.speed = 1200;
+		m_serial_conf.char_size = SerialPortConfiguration::CS_8;
+		m_serial_conf.stop_bits = 2;
+		m_event_base = event_base_new();
 	}
 
 	~K601Daemon()
@@ -543,7 +533,7 @@ public:
 
 protected:
 	/** Schedule next state machine step */
-	void ScheduleNext(unsigned int wait_ms);
+	void ScheduleNext(unsigned int wait_ms=0);
 
 	/** Callback for next step of timed state machine. */
 	static void TimerCallback(int fd, short event, void* thisptr);
@@ -551,9 +541,11 @@ protected:
 	/** One step of state machine */
 	void Do();
 
-	/** SerialPortListener interface */
-	virtual void ReadError(short event);
-	virtual void ReadData(const std::vector<unsigned char>& data);
+	/** ConnectionListener interface */
+	virtual void ReadError(const BaseConnection *conn, short event);
+	virtual void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data);
+	virtual void SetConfigurationFinished(const BaseConnection *conn);
+	virtual void OpenFinished(const BaseConnection *conn);
 
 	void ProcessResponse();
 	void SetCurrRegisterNoData();
@@ -588,7 +580,8 @@ protected:
 	BaseSerialPort *m_serial_port;
 	std::vector<unsigned char> m_read_buffer;	/**< buffer for data received from Kamstrup meter */
 	bool m_data_was_read;	/**< was any data read since last check? */
-	struct termios serial_conf;
+	SerialPortConfiguration m_serial_conf;
+	struct event_base *m_event_base;
 
 	/** from previous implementation */
 	void *plugin;
@@ -609,17 +602,24 @@ protected:
 	KMPReceiveDestroy_t *destroyReceive;
 };
 
-void K601Daemon::ReadError(short event)
+void K601Daemon::ReadError(const BaseConnection *conn, short event)
 {
 	dolog(0, "%s: %s", m_id.c_str(), "ReadError, closing connection..");
 	m_serial_port->Close();
 	SetRestart();
+	ScheduleNext(RESTART_INTERVAL_MS);
 }
 
-void K601Daemon::ReadData(const std::vector<unsigned char>& data)
+void K601Daemon::SetConfigurationFinished(const BaseConnection *conn) {
+	ScheduleNext();
+}
+
+void K601Daemon::ReadData(const BaseConnection *conn,
+		const std::vector<unsigned char>& data)
 {
 	m_read_buffer.insert(m_read_buffer.end(), data.begin(), data.end());
 	m_data_was_read = true;
+	ScheduleNext();
 }
 
 void K601Daemon::Init(int argc, char *argv[])
@@ -655,6 +655,7 @@ void K601Daemon::Init(int argc, char *argv[])
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra",
 			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 	assert (ret == 0);
+	(void)ret;
 
 	xp_ctx->node = cfg->GetXMLDevice();
 	xmlChar *c = get_device_node_extra_prop(xp_ctx, "tcp-ip");
@@ -718,10 +719,9 @@ void K601Daemon::Init(int argc, char *argv[])
 line number: %d\n\
 device: %ls\n\
 params in: %d\n\
-Delay between chars [us]: %ld\n\
 Delay between requests [s]: %d\n\
 Unique registers (read params): %d\n\
-", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), kamsinfo->m_params_count, kamsinfo->delay_between_chars, kamsinfo->delay_between_requests, kamsinfo->unique_registers_count);
+", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), kamsinfo->m_params_count, kamsinfo->delay_between_requests, kamsinfo->unique_registers_count);
 		for (int i = 0; i < kamsinfo->m_params_count; i++)
 			printf("  IN:  reg %04d multiplier %ld type %s\n",
 			       kamsinfo->m_params[i].reg,
@@ -749,7 +749,8 @@ Unique registers (read params): %d\n\
 	dolog(2, "starting main loop");
 
 	char *plugin_path;
-	asprintf(&plugin_path, "%s/szarp-prop-plugins.so", dirname(argv[0]));
+	ret = asprintf(&plugin_path, "%s/szarp-prop-plugins.so", dirname(argv[0]));
+	(void)ret;
 	plugin = dlopen(plugin_path, RTLD_LAZY);
 	if (plugin == NULL) {
 		dolog(0,
@@ -773,29 +774,36 @@ Unique registers (read params): %d\n\
 }
 
 void K601Daemon::StartDo() {
+	evtimer_set(&m_ev_timer, TimerCallback, this);
+	event_base_set(m_event_base, &m_ev_timer);
 	try {
 		if (m_ip.compare("") != 0) {
-			SerialAdapter *client = new SerialAdapter();
+			SerialAdapter *client = new SerialAdapter(m_event_base);
 			m_serial_port = client;
 			client->InitTcp(m_ip, m_data_port, m_cmd_port);
 		} else {
-			SerialPort *port = new SerialPort();
+			SerialPort *port = new SerialPort(m_event_base);
 			m_serial_port = port;
 			port->Init(m_path);
 		}
 		m_serial_port->AddListener(this);
-
 		m_serial_port->Open();
-		m_serial_port->SetConfiguration(&serial_conf);
-
-		std::string info = m_id + ": connection established.";
-		dolog(2, "%s: %s", m_id.c_str(), info.c_str());
 	} catch (SerialPortException &e) {
 		dolog(0, "%s: %s", m_id.c_str(), e.what());
 		SetRestart();
+		ScheduleNext(RESTART_INTERVAL_MS);
 	}
-	evtimer_set(&m_ev_timer, TimerCallback, this);
-	Do();
+	event_base_dispatch(m_event_base);
+}
+
+void K601Daemon::OpenFinished(const BaseConnection *conn)
+{
+	std::string info = m_id + ": connection established.";
+	dolog(2, "%s: %s", m_id.c_str(), info.c_str());
+	m_serial_port->SetConfiguration(m_serial_conf);
+	m_state = SEND;
+	m_curr_register = 0;
+	ScheduleNext();
 }
 
 void K601Daemon::Do()
@@ -817,11 +825,12 @@ void K601Daemon::Do()
 				m_state = READ;
 			} catch (SerialPortException &e) {
 				dolog(0, "%s: %s", m_id.c_str(), e.what());
+				destroySend(MyKMPSendClass);
 				SetRestart();
 			}
 			destroySend(MyKMPSendClass);
 			MyKMPReceiveClass = createReceive();
-			wait_ms = kamsinfo->delay_between_chars;
+			wait_ms = kamsinfo->READ_TIMEOUT;
 			break;
 		case READ:
 			dolog(10, "READ");
@@ -838,7 +847,7 @@ void K601Daemon::Do()
 					m_state = FINALIZE;
 				} else {
 					m_data_was_read = false;
-					wait_ms = kamsinfo->delay_between_chars;
+					wait_ms = kamsinfo->DELAY_BETWEEN_CHARS;
 				}
 			}
 			break;
@@ -872,10 +881,6 @@ void K601Daemon::Do()
 			try {
 				m_serial_port->Close();
 				m_serial_port->Open();
-				m_serial_port->SetConfiguration(&serial_conf);
-				dolog(2, "%s: %s", m_id.c_str(), "Restart successful!");
-				m_state = SEND;
-				m_curr_register = 0;
 			} catch (SerialPortException &e) {
 				dolog(0, "%s: %s %s", m_id.c_str(), "Restart failed:", e.what());
 				for (int i = 0; i < ipc->m_params_count; i++) {
@@ -883,7 +888,7 @@ void K601Daemon::Do()
 				}
 				ipc->GoParcook();
 			}
-			wait_ms = 15 * 1000;
+			wait_ms = RESTART_INTERVAL_MS;
 			break;
 	}
 	dolog(10, "Schedule next in %dms", wait_ms);
@@ -995,36 +1000,29 @@ void K601Daemon::ProcessResponse()
 
 void K601Daemon::ScheduleNext(unsigned int wait_ms)
 {
-	struct timeval tv;
-	tv.tv_sec = wait_ms / 1000;
-	tv.tv_usec = (wait_ms % 1000) * 1000;
+	evtimer_del(&m_ev_timer);
+	const struct timeval tv = ms2timeval(wait_ms);
 	evtimer_add(&m_ev_timer, &tv);
 }
 
 void K601Daemon::TimerCallback(int fd, short event, void* thisptr)
 {
-        reinterpret_cast<K601Daemon*>(thisptr)->Do();
+	reinterpret_cast<K601Daemon*>(thisptr)->Do();
 }
 
 int main(int argc, char *argv[])
 {
-	event_init();
-	dolog(10, "create..");
 	K601Daemon daemon;
-	dolog(10, "..finished creating");
 
 	try {
-		dolog(10, "Initializing..");
 		daemon.Init(argc, argv);
-		dolog(10, "..finished initializing.");
 	} catch (K601Daemon::K601Exception &e) {
 		dolog(0, "%s", e.what());
 		exit(1);
 	}
-	daemon.StartDo();
 
 	try {
-		event_dispatch();
+		daemon.StartDo();
 	} catch (MsgException &e) {
 		dolog(0, "FATAL!: daemon killed by exception: %s", e.what());
 		exit(1);

@@ -22,6 +22,11 @@ void check_no_init() {
 		throw std::runtime_error("libpyszbase already initialized");
 }
 
+void check_init() {
+	if (!g_initialized)
+		throw std::runtime_error("libpyszbase not initialized");
+}
+
 void init(const std::wstring& szarp_path, const std::wstring& lang) {
 	check_no_init();
 
@@ -32,7 +37,7 @@ void init(const std::wstring& szarp_path, const std::wstring& lang) {
 }
 
 void shutdown() {
-	check_no_init();
+	check_init();
 
 	Szbase::Destroy();	
 	IPKContainer::Destroy();

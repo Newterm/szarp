@@ -162,7 +162,7 @@ TExecute* g_exec = NULL;
 
 RETSIGTYPE g_CriticalHandler(int signum)
 {
-	sz_log(0, "meaner3: signal %d cought, exiting, report to author",
+	sz_log(0, "meaner3: signal %d caught, exiting, report to author",
 			signum);
 	/* resume default action - abort */
 	signal(signum, SIG_DFL);
@@ -174,11 +174,11 @@ RETSIGTYPE g_TerminateHandler(int signum)
 {
 	if (g_signals_blocked) {
 		g_should_exit = 1;
-		sz_log(2, "meaner3: interrupt signal %d cought for futher processing", signum);
+		sz_log(2, "meaner3: interrupt signal %d caught for further processing", signum);
 	} else {
 		/* signal '0' is program-generated */
 		if (signum) 
-			sz_log(2, "meaner3: interrupt signal %d cought, cleaning up", 
+			sz_log(2, "meaner3: interrupt signal %d caught, cleaning up", 
 				signum);
 		delete g_meaner;
 		sz_log(2, "meaner3: cleanup finished, exiting");

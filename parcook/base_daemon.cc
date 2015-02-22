@@ -38,7 +38,7 @@
 #include "base_daemon.h"
 
 BaseDaemon::BaseDaemon( const char* name )
-	: m_last(0) , name(name) 
+	: m_cfg(NULL), m_last(0) , name(name) 
 {
 }
 
@@ -46,28 +46,29 @@ BaseDaemon::~BaseDaemon()
 {
 }
 
-int BaseDaemon::Init(int argc, const char *argv[], TSzarpConfig*sz_cfg , int dev_index )
+int BaseDaemon::Init(int argc, const char *argv[], TSzarpConfig* sz_cfg , int dev_index )
 {
-	return Init(name,argc,argv,sz_cfg,dev_index);
+	return Init(name, argc, argv, sz_cfg, dev_index);
 }
 
-int BaseDaemon::Init( const char*name , int argc, const char *argv[], TSzarpConfig*sz_cfg , int dev_index )
+int BaseDaemon::Init( const char*name , int argc, const char *argv[], TSzarpConfig* sz_cfg , int dev_index )
 {
 	return InitConfig(name,argc,argv,sz_cfg,dev_index)
 	    || InitIPC()
 	    || InitSignals();
 }
 
-int BaseDaemon::InitConfig( const char*name , int argc, const char *argv[] , TSzarpConfig* sz_cfg , int dev_index )
+int BaseDaemon::InitConfig( const char* name , int argc, const char *argv[] , TSzarpConfig* sz_cfg , int dev_index )
 {
-	assert( cfg = new DaemonConfig(name) );
+	m_cfg = new DaemonConfig(name);
+	assert( m_cfg );
 
-	if( cfg->Load(&argc, const_cast<char**>(argv), 1, sz_cfg, dev_index) ) {
+	if( m_cfg->Load(&argc, const_cast<char**>(argv), 1, sz_cfg, dev_index) ) {
 		sz_log(1,"Cannot load dmn cfg");
 		return 1;
 	}
 
-	if( ParseConfig(cfg) ) {
+	if( ParseConfig(m_cfg) ) {
 		return 1;
 	}
 
@@ -76,9 +77,10 @@ int BaseDaemon::InitConfig( const char*name , int argc, const char *argv[] , TSz
 
 int BaseDaemon::InitIPC()
 {
-	assert( ipc = new IPCHandler(cfg) );
+	ipc = new IPCHandler(m_cfg);
+	assert(ipc);
 
-	if( !cfg->GetSingle() && ipc->Init() ) {
+	if( !m_cfg->GetSingle() && ipc->Init() ) {
 		sz_log(1,"Cannot init ipc");
 		return 1;
 	}
@@ -88,7 +90,7 @@ int BaseDaemon::InitIPC()
 
 RETSIGTYPE terminate_handler(int signum)
 {
-	sz_log(2, "signal %d cought, exiting", signum);
+	sz_log(2, "signal %d caught, exiting", signum);
 	signal(signum, SIG_DFL);
 	raise(signum);
 }
@@ -136,6 +138,7 @@ void BaseDaemon::Transfer()
 
 void BaseDaemon::Set( unsigned int i , short val )
 {
+	sz_log(10, "Setting param no %d to value: %d", i, val);
 	ipc->m_read[i] = val;
 }
 

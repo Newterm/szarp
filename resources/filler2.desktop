@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Filler 2
+Terminal=false
+Comment=SZARP Filler 2
+Exec=sudo -n -g szbase /opt/szarp/bin/filler2
+Icon=/opt/szarp/resources/qt4/icons/filler2.png
+X-GNOME-Autostart-Phase=Applications
+Categories=Application;

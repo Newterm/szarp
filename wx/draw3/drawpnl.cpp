@@ -438,6 +438,17 @@ void DrawPanel::CreateChildren(const wxString& set, PeriodType pt, time_t time, 
 			dw,
 			pt);
 
+	
+	/* Hide/Show interface according to state of checkboxes */
+	if(menu_bar->FindItem(XRCID("ShowInterface"))->IsChecked()) {
+		tw->Show(menu_bar->FindItem(XRCID("ShowAverage"))->IsChecked());
+	} else {
+		tw->Show(false);
+		dtw->Show(false);
+		sw->Show(false);
+		iw->Show(false);
+		ssw->Show(false);
+	}
 
 	/* add keyboard event handlers */
 	DrawPanelKeyboardHandler *eh;
@@ -541,6 +552,59 @@ DrawPanel::~DrawPanel()
 
 void DrawPanel::OnRefresh(wxCommandEvent & evt) {
 	dw->RefreshData(false);
+}
+
+void DrawPanel::OnShowAverage(wxCommandEvent &evt) 
+{
+	if (tw) {
+		bool is_checked = menu_bar->FindItem(XRCID("ShowAverage"))->IsChecked();
+
+		wxConfigBase *cfg = wxConfig::Get();
+		cfg->Write(_T("HIDE_AVERAGE"), !is_checked);
+		cfg->Flush();
+
+		if (menu_bar->FindItem(XRCID("ShowInterface"))->IsChecked()) {
+			/* Create size event with size before resize */
+			wxSizeEvent se(GetSize());
+
+			tw->Show(is_checked);
+			Fit();
+			GetSizer()->SetSizeHints(this);
+
+			/* Inform window about resize */
+			wxPostEvent(GetParent(),se);
+		}
+	}
+}
+
+void DrawPanel::OnShowInterface(wxCommandEvent &evt) 
+{
+	if (tw && iw && ssw && dtw && sw) {
+		bool is_checked = menu_bar->FindItem(XRCID("ShowInterface"))->IsChecked();
+
+		wxConfigBase *cfg = wxConfig::Get();
+		cfg->Write(_T("HIDE_INTERFACE"), !is_checked);
+		cfg->Flush();
+
+		/* Create size event with size before resize */
+		wxSizeEvent se(GetSize());
+
+		if (is_checked)
+			tw->Show(menu_bar->FindItem(XRCID("ShowAverage"))->IsChecked());
+		else
+			tw->Show(is_checked);
+
+		iw->Show(is_checked);
+		ssw->Show(is_checked);
+		dtw->Show(is_checked);
+		sw->Show(is_checked);
+
+		Fit();
+		GetSizer()->SetSizeHints(this);
+
+		/* Inform window about resize */
+		wxPostEvent(GetParent(),se);
+	}
 }
 
 void DrawPanel::ClearCache() {

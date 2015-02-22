@@ -609,7 +609,7 @@ int CalecDaemon::ReadData(IPCHandler *ipc)
 
 RETSIGTYPE terminate_handler(int signum)
 {
-	sz_log(2, "signal %d cought, exiting", signum);
+	sz_log(2, "signal %d caught, exiting", signum);
 	exit(1);
 }
 

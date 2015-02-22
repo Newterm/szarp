@@ -653,7 +653,7 @@ void exit_handler()
 
 RETSIGTYPE terminate_handler(int signum)
 {
-	sz_log(2, "signal %d cought", signum);
+	sz_log(2, "signal %d caught", signum);
 	exit(1);
 }
 

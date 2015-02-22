@@ -64,7 +64,7 @@ public:
 	 * 
 	 * @return 0 on success, 1 otherwise
 	 */
-	virtual int Init(int argc, const char *argv[] , TSzarpConfig*sz_cfg = NULL , int dev_index = -1 );
+	virtual int Init(int argc, const char *argv[] , TSzarpConfig* sz_cfg = NULL , int dev_index = -1 );
 
 	/** 
 	 * @brief Wait for next cycle. 
@@ -118,7 +118,7 @@ protected:
 	 * 
 	 * @return 0 on success, 1 otherwise
 	 */
-	virtual int InitConfig( const char*name , int argc, const char *argv[], TSzarpConfig*sz_cfg , int dev_index = -1 );
+	virtual int InitConfig( const char*name , int argc, const char *argv[], TSzarpConfig* sz_cfg , int dev_index = -1 );
 	/** 
 	 * @brief Creates and initialize IPCHandler member
 	 * 
@@ -164,7 +164,7 @@ protected:
 	 */
 	short At( unsigned int i );
 
-	DaemonConfig *cfg;
+	DaemonConfig *m_cfg;
 	IPCHandler   *ipc;
 	time_t m_last;
 

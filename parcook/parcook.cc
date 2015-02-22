@@ -864,13 +864,13 @@ errno %d, exiting", shmdes, errno);
 
 RETSIGTYPE Terminate(int sig)
 {
-	sz_log(2, "parcook: signal %d cought, cleaning up and exiting", sig);
+	sz_log(2, "parcook: signal %d caught, cleaning up and exiting", sig);
 	exit(1);
 }
 
 RETSIGTYPE CriticalHandler(int sig)
 {
-	sz_log(0, "parcook: signal %d cought, exiting, report to authors", sig);
+	sz_log(0, "parcook: signal %d caught, exiting, report to authors", sig);
 	/* restore default action, which is to abort */
 	signal(sig, SIG_DFL);
 	raise(sig);

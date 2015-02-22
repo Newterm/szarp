@@ -2502,6 +2502,139 @@ msgstr "Pomoc kontekstowa\tShift+F1"
 msgid "About\tF2"
 msgstr "O programie\tF2"
 
+#: XRC_gettext_file.h:189
+msgid "Edit pack"
+msgstr "Edytuj paczkê"
+
+#: XRC_gettext_file.h:191
+msgid "Day:"
+msgstr "Dzieñ:"
+
+#: XRC_gettext_file.h:192
+msgid "Monday"
+msgstr "Poniedzia³ek"
+
+#: XRC_gettext_file.h:193
+msgid "Tuesday"
+msgstr "Wtorek"
+
+#: XRC_gettext_file.h:194
+msgid "Wednesday"
+msgstr "¦roda"
+
+#: XRC_gettext_file.h:195
+msgid "Thursday"
+msgstr "Czwartek"
+
+#: XRC_gettext_file.h:196
+msgid "Friday"
+msgstr "Pi±tek"
+
+#: XRC_gettext_file.h:197
+msgid "Saturday"
+msgstr "Sobota"
+
+#: XRC_gettext_file.h:198
+msgid "Sunday"
+msgstr "Niedziela"
+
+#: XRC_gettext_file.h:199
+msgid "Hour:"
+msgstr "Godz.:"
+
+#: XRC_gettext_file.h:200
+msgid "Minute:"
+msgstr "Minuta:"
+
+#: XRC_gettext_file.h:201 XRC_gettext_file.h:202
+msgid "Value:"
+msgstr "Warto¶æ:"
+
+#: XRC_gettext_file.h:203
+msgid "Minimum value:"
+msgstr "Warto¶æ minimalna:"
+
+#: XRC_gettext_file.h:204
+msgid "Maximum value:"
+msgstr "Warto¶æ maksymalna:"
+
+#: XRC_gettext_file.h:205
+msgid "User's params list"
+msgstr "Lista parametrów u¿ytkownika"
+
+#: XRC_gettext_file.h:206
+msgid "Parameters:"
+msgstr "Parametry:"
+
+#: XRC_gettext_file.h:207
+msgid "Search:"
+msgstr "Szukaj:"
+
+#: XRC_gettext_file.h:208
+msgid "New"
+msgstr "Nowy"
+
+#: XRC_gettext_file.h:209
+msgid "New network"
+msgstr "Nowy sieciowy"
+
+#: XRC_gettext_file.h:211
+msgid "Delete"
+msgstr "Usuñ"
+
+#: XRC_gettext_file.h:212
+msgid "Remarks Settings"
+msgstr "Ustawienia komentarzy"
+
+#: XRC_gettext_file.h:213
+msgid "Username:"
+msgstr "Nazwa u¿ytkownika:"
+
+#: XRC_gettext_file.h:214
+msgid "Password:"
+msgstr "Has³o:"
+
+#: XRC_gettext_file.h:215
+msgid "Set password"
+msgstr "Ustaw has³o"
+
+#: XRC_gettext_file.h:216
+msgid "Server:"
+msgstr "Serwer:"
+
+#: XRC_gettext_file.h:217
+msgid "Automatically fetch"
+msgstr "Pobieraj komentarze automatycznie"
+
+#: XRC_gettext_file.h:218
+msgid "Editing definable set "
+msgstr "Edycja zestawu definiowalnego"
+
+#: XRC_gettext_file.h:220
+msgid "Move up"
+msgstr "Przenie¶ w górê"
+
+#: XRC_gettext_file.h:221
+msgid "Move down"
+msgstr "Przenie¶ w dó³"
+
+#: XRC_gettext_file.h:222
+msgid "Add draw"
+msgstr "Wstaw wykres"
+
+#: XRC_gettext_file.h:223
+msgid "Add parameter"
+msgstr "Dodaj parametr"
+
+msgid "&Window"
+msgstr "&Okno"
+
+msgid "Show average type"
+msgstr "Poka¿ wybór ¶rednich"
+
+msgid "Show interface"
+msgstr "Poka¿ interfejs"
+
 #~ msgid ""
 #~ "Are you sure you want to delete this param? All draws referring to this "
 #~ "param will be removed as well."

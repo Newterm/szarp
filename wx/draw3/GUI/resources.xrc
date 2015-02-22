@@ -1577,6 +1577,46 @@
                         </object>
                     </object>
                 </object>
+                <object class="wxMenuItem" name="Axes">
+                    <label>Number of printed axes\tCtrl+X</label>
+                </object>
+                <object class="wxMenuItem" name="Language">
+                    <label>Language</label>
+                </object>
+                <object class="wxMenuItem" name="Graphs view">
+                    <label>Graphs view</label>
+                </object>
+                <object class="wxMenuItem" name="RemarksConfiguration">
+                    <label>Remarks</label>
+                </object>
+                <object class="wxMenuItem" name="ProberAddress">
+                    <label>Addresses of probes' servers</label>
+                </object>
+            </object>
+        </object>
+        <object class="wxMenu" name="WindowM">
+            <label>_Window</label>
+            <object class="wxMenuItem" name="ShowAverage">
+                <checkable>1</checkable>
+                <checked>1</checked>
+                <label>Show average type</label>
+            </object>
+            <object class="wxMenuItem" name="ShowInterface">
+                <checkable>1</checkable>
+                <checked>1</checked>
+                <label>Show interface</label>
+            </object>
+        </object>
+        <object class="wxMenu" name="HelpM">
+            <label>_Help</label>
+            <object class="wxMenuItem" name="Help">
+                <label>Help\tF1</label>
+            </object>
+            <object class="wxMenuItem" name="ContextHelp">
+                <label>Context help\tShift+F1</label>
+            </object>
+            <object class="wxMenuItem" name="About">
+                <label>About\tF2</label>
             </object>
         </object>
     </object>

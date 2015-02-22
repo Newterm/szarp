@@ -864,6 +864,30 @@ if test "x$with_wnck" = "xyes" ; then
 fi
 AM_CONDITIONAL(HAVE_WNCK, test x$no_wnck != xyes)
 
+#Check for LIBSNAP7
+no_snap7=""
+AC_ARG_WITH([snap7], AC_HELP_STRING([--without-snap7], [do not use libsnap7 library]),
+[
+	if test "$withval" = "no" ; then
+		no_libsnap7="yes"
+	else
+		no_libsnap7=""
+	fi
+],)
+
+if test "x$no_libsnap7" != "xyes"; then
+	AC_CHECK_LIB(snap7, Cli_Create, [ SNAP7_LIBS=-lsnap7], [no_libsnap7=yes])
+
+	if test "x$no_libsnap7" = "xyes"; then
+	        AC_MSG_WARN([
+                      libsnap7 library is not available, some programs will not be built
+                      ])
+	fi
+
+fi
+AC_SUBST(SNAP7_LIBS)
+AM_CONDITIONAL([WANT_SNAP7DMN], [test "x$no_libsnap7" != "xyes"])
+
 #Check for sqlite library
 no_sqlite="yes";
 PKG_CHECK_MODULES(SQLITE3, sqlite3, no_sqlite="no", [AC_MSG_RESULT([
@@ -1126,6 +1150,9 @@ if test x$lua_optimise = xyes; then
 	AC_DEFINE(LUA_PARAM_OPTIMISE, 1, [Define if lua param optimiser should be built in])
 fi
 
+# iks conditional building
+AC_ARG_WITH([iks], AC_HELP_STRING([--without-iks], [Do not compile iks]))
+
 # Resources directory
 SUBDIRS="$SUBDIRS resources script"
 
@@ -1135,7 +1162,7 @@ if test x$no_python != xyes -a x$with_mingw32 != xyes; then
 fi
 
 # iks system directory
-if test x$with_mingw32 != xyes; then
+if test x$with_mingw32 != xyes -a x$with_iks != xno; then
 	SUBDIRS="$SUBDIRS iks"
 fi
 
@@ -1399,6 +1426,13 @@ if test "x$lua_optimise" = "xyes" ; then
         echo "yes"
 else
 	echo "no"
+fi
+
+echo -n "Configured with libsnap7           "
+if test "x$no_libsnap7" != "xyes" ; then
+        echo "yes"
+else
+        echo "no"
 fi
 
 echo -n "Configured with zip                "

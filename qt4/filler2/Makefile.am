@@ -11,16 +11,22 @@ filler2_LOCALES = @srcdir@/pl/filler2_pl.qm
 filler2_LOCALES_SRC = pl/filler2_pl.ts
 
 filler2_script = @srcdir@/filler2
+szb2filler_script = @srcdir@/szb2filler
 
 filler2dir = @prefix@/lib/python
 
 filler2_PYTHON = \
+		@srcdir@/AboutDialog.py \
+		@srcdir@/DatetimeDialog.py \
+		@srcdir@/HistoryDialog.py \
+		@srcdir@/ValueDialogs.py \
+		@srcdir@/ipkparser.py \
 		@srcdir@/filler2-launcher.py \
 		@srcdir@/filler2.py
 
-filler2_UI = filler2.ui
+filler2_UI = filler2.ui DatetimeDialog.ui AboutDialog.ui HistoryDialog.ui
 
-filler2_GENPYTHON = filler2.py
+filler2_GENPYTHON = filler2.py DatetimeDialog.py AboutDialog.py HistoryDialog.py
 
 filler2_PROJECT = filler2.pro
 
@@ -44,6 +50,7 @@ install-data-local: $(filler2_LOCALES)
 	$(INSTALL) $(filler2_LOCALES) \
                 $(DESTDIR)@prefix@/resources/locales/qt4
 	$(INSTALL) $(filler2_script) $(DESTDIR)@prefix@/bin
+	$(INSTALL) $(szb2filler_script) $(DESTDIR)@prefix@/bin
 
 update-ts:
 	pylupdate4 $(filler2_PROJECT)

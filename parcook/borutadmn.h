@@ -50,6 +50,7 @@
 
 #include <netinet/in.h>
 #include <event.h>
+#include <evdns.h>
 #include "ipchandler.h"
 
 /**self-descriptive struct holding all aspects of serial port conifguration in one place*/
@@ -279,7 +280,7 @@ public:
 
 class boruta_daemon;
 
-enum CONNECTION_STATE { CONNECTED, NOT_CONNECTED, IDLING, CONNECTING };
+enum CONNECTION_STATE { CONNECTED, NOT_CONNECTED, IDLING, CONNECTING, RESOLVING_ADDR };
 
 /** a client manager class performing client drivers scheduling, it's
  * an abstract class requiring from its subclasses to implement 
@@ -330,7 +331,7 @@ public:
 class tcp_client_manager : public client_manager {
 	boruta_daemon *m_boruta;
 	struct tcp_connection {
-		tcp_connection(tcp_client_manager *manager, size_t conn_no, std::string address);
+		tcp_connection(tcp_client_manager *manager, size_t conn_no, const std::pair<std::string, short> & address);
 		void schedule_timer(int secs, int nsecs);
 		void close();
 		CONNECTION_STATE state;	
@@ -340,19 +341,24 @@ class tcp_client_manager : public client_manager {
 		unsigned retry_gap;
 		unsigned establishment_timeout;
 		tcp_client_manager *manager;
-		std::string address;
+		std::pair<std::string, short> address;
 		struct event timer;
+		struct evdns_getaddrinfo_request *dns_request;
 	};
 	/**adresses for connections*/
-	std::vector<sockaddr_in> m_addresses;
+	std::vector<std::pair<std::string, short> > m_addresses;
 	/**tcp connections array*/
 	std::vector<tcp_connection> m_tcp_connections;
 	/**retrieves tcp connection setting from xln node*/
-	int configure_tcp_address(xmlNodePtr node, struct sockaddr_in &addr);
+	int get_address(xmlNodePtr node, std::pair<std::string, short>& addr);
 	/**closes given connection*/
 	void close_connection(tcp_connection &c);
-	/**closes given connection, returns 0 in case of succes, 1 otherwise*/
-	int open_connection(tcp_connection &c, struct sockaddr_in& addr);
+	/**establishes connection, to a given address, returns 0 in case
+           of succes, 1 otherwise*/
+	void open_connection(tcp_connection &c, struct sockaddr_in& addr);
+	/**performs first stage of connection establishment - name resolution
+	   of the destination address*/
+	void resolve_address(tcp_connection &c);
 protected:
 	virtual CONNECTION_STATE do_get_connection_state(size_t conn_no);
 	virtual struct bufferevent* do_get_connection_buf(size_t conn_no);
@@ -366,6 +372,7 @@ public:
 	static void connection_read_cb(struct bufferevent *ev, void* _tcp_connection);
 	static void connection_event_cb(struct bufferevent *ev, short event, void* _tcp_connection);
 	static void connection_timer_cb(int fd, short event, void* _tcp_connection);
+	static void address_resolved_cb(int result, struct evutil_addrinfo *res, void *_tcp_connection);
 };
 
 /**implementation of class deadling with serial client drivers*/
@@ -468,6 +475,7 @@ class boruta_daemon {
 	IPCHandler* m_ipc;
 
 	struct event_base* m_event_base;
+	struct evdns_base* m_evdns_base;
 	struct event m_timer;
 
 	int configure_ipc();
@@ -476,6 +484,7 @@ class boruta_daemon {
 public:
 	boruta_daemon();
 	struct event_base* get_event_base();	
+	struct evdns_base* get_evdns_base();	
 	int configure(int *argc, char *argv[]);
 	void go();
 	static void cycle_timer_callback(int fd, short event, void* daemon);
@@ -497,7 +506,7 @@ serial_client_driver* create_lumel_serial_client();
 tcp_client_driver* create_wmtp_tcp_client();
 
 void dolog(int level, const char * fmt, ...)
-  __attribute__ ((format (printf, 2, 3)));
+	__attribute__ ((format (printf, 2, 3)));
 
 int get_serial_port_config(xmlNodePtr node, serial_port_configuration &spc);
 
@@ -527,13 +536,13 @@ template<class T> int get_xml_extra_prop(xmlNodePtr node, const char* pname, T& 
 }
 
 namespace ascii {
-    int char2value(unsigned char c, unsigned char &o) ;
+	int char2value(unsigned char c, unsigned char &o) ;
 
-    int from_ascii(unsigned char c1, unsigned char c2, unsigned char &c) ;
+	int from_ascii(unsigned char c1, unsigned char c2, unsigned char &c) ;
 
-    unsigned char value2char(unsigned char c) ;
+	unsigned char value2char(unsigned char c) ;
 
-    void to_ascii(unsigned char c, unsigned char& c1, unsigned char &c2) ;
+	void to_ascii(unsigned char c, unsigned char& c1, unsigned char &c2) ;
 }
 
 class driver_logger {
@@ -541,7 +550,7 @@ class driver_logger {
 public:
 	driver_logger(boruta_driver* driver);
 	void log(int level, const char * fmt, ...)
-		  __attribute__ ((format (printf, 3, 4)));
+		__attribute__ ((format (printf, 3, 4)));
 	void vlog(int level, const char * fmt, va_list fmt_args);
 };
 

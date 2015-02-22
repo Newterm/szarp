@@ -25,6 +25,7 @@ RESOURCES = \
        @srcdir@/szablon.vim \
        @srcdir@/szarp.vim \
        @srcdir@/wx \
+       @srcdir@/qt4 \
        @srcdir@/xsltd \
        @srcdir@/szarp_in.cfg \
        @srcdir@/parstart_TEMPLATE \
@@ -32,6 +33,7 @@ RESOURCES = \
        @srcdir@/SZARP_CFG_TEMPLATE \
        @srcdir@/ssc.desktop \
        @srcdir@/scc.desktop \
+       @srcdir@/filler2.desktop \
        @srcdir@/koper.desktop
 
 EXTRA_DIST = \
@@ -162,6 +164,8 @@ links:
 	ln -sf @prefix@/resources/scc.desktop $(DESTDIR)/usr/share/autostart/scc.desktop 
 	ln -sf @prefix@/resources/scc.desktop $(DESTDIR)/etc/xdg/autostart/scc.desktop 
 	ln -sf @prefix@/resources/scc.desktop $(DESTDIR)/usr/share/applications/scc.desktop
+	ln -sf @prefix@/resources/filler2.desktop $(DESTDIR)/usr/share/applications/filler2.desktop
+
 
 if !DEB_BUILD
 

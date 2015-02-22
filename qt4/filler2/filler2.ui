@@ -6,16 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
+    <width>1022</width>
     <height>480</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Filler 2</string>
+   <string notr="true">SZARP Filler 2</string>
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>/opt/szarp/resources/wx/icons/szarp16.png</normaloff>/opt/szarp/resources/wx/icons/szarp16.png</iconset>
+    <normaloff>/opt/szarp/resources/qt4/icons/filler2.png</normaloff>/opt/szarp/resources/qt4/icons/filler2.png</iconset>
   </property>
   <property name="locale">
    <locale language="English" country="UnitedStates"/>
@@ -23,7 +23,23 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <layout class="QGridLayout" name="gridLayout" columnstretch="6,3,3,2,1">
+     <widget class="QLabel" name="titleLabel">
+      <property name="toolTip">
+       <string/>
+      </property>
+      <property name="statusTip">
+       <string>Loaded configuration name</string>
+      </property>
+      <property name="whatsThis">
+       <string>Loaded configuration name.</string>
+      </property>
+      <property name="text">
+       <string>Loading configuration...</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QGridLayout" name="gridLayout" columnstretch="6,3,3,3,1">
       <item row="1" column="2">
        <widget class="QPushButton" name="toDate">
         <property name="enabled">
@@ -34,6 +50,9 @@
         </property>
         <property name="statusTip">
          <string>Choose ending date</string>
+        </property>
+        <property name="whatsThis">
+         <string>Date and time &quot;to&quot; which value will be inserted. Press to set date.</string>
         </property>
         <property name="text">
          <string>To:</string>
@@ -51,58 +70,30 @@
         <property name="statusTip">
          <string>Choose beginning date</string>
         </property>
+        <property name="whatsThis">
+         <string>Date and time &quot;from&quot; which value will be inserted. Press to set date.</string>
+        </property>
         <property name="text">
          <string>From:</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="3">
-       <widget class="QLineEdit" name="valueEdit">
+      <item row="0" column="0">
+       <widget class="QComboBox" name="listOfSets">
         <property name="enabled">
          <bool>false</bool>
         </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
         </property>
-        <property name="toolTip">
-         <string>Parametr's value</string>
-        </property>
-        <property name="statusTip">
-         <string>Enter parameter value</string>
-        </property>
-        <property name="inputMethodHints">
-         <set>Qt::ImhNone</set>
-        </property>
-        <property name="inputMask">
-         <string notr="true"/>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="maxLength">
-         <number>10</number>
-        </property>
-        <property name="cursorPosition">
-         <number>0</number>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-        <property name="placeholderText">
-         <string notr="true">0.0</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QComboBox" name="listOfSets">
         <property name="toolTip">
          <string>List of sets</string>
         </property>
         <property name="statusTip">
          <string>Choose set from the list</string>
+        </property>
+        <property name="whatsThis">
+         <string>List of parameter sets from loaded configuration.</string>
         </property>
         <property name="maxVisibleItems">
          <number>20</number>
@@ -123,6 +114,9 @@
         <property name="statusTip">
          <string>Choose parameter from the list</string>
         </property>
+        <property name="whatsThis">
+         <string>List of parameters, which belong to chosen set.</string>
+        </property>
        </widget>
       </item>
       <item row="1" column="4">
@@ -137,10 +131,13 @@
          </sizepolicy>
         </property>
         <property name="toolTip">
-         <string>Add change</string>
+         <string>Add a change</string>
         </property>
         <property name="statusTip">
-         <string>Add insertion to the table</string>
+         <string>Add a change to the table</string>
+        </property>
+        <property name="whatsThis">
+         <string>Press this button to add a change to the table. It is enabled only if all data is valid.</string>
         </property>
         <property name="text">
          <string notr="true"/>
@@ -155,15 +152,55 @@
         </property>
        </widget>
       </item>
+      <item row="1" column="3">
+       <widget class="QComboBox" name="valueType">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Type of plot</string>
+        </property>
+        <property name="statusTip">
+         <string>Choose a type of plot</string>
+        </property>
+        <property name="whatsThis">
+         <string>A list of plot types available for data insertion.</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item>
-     <widget class="QTableWidget" name="tableWidget">
+     <widget class="QTableWidget" name="changesTable">
       <property name="toolTip">
        <string>Table of changes</string>
       </property>
       <property name="statusTip">
        <string>Table of changes to be commited</string>
+      </property>
+      <property name="whatsThis">
+       <string>Table of scheduled changes to be commited. Press &quot;X&quot; button to remove entry.</string>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="tabKeyNavigation">
+       <bool>false</bool>
+      </property>
+      <property name="showDropIndicator" stdset="0">
+       <bool>false</bool>
+      </property>
+      <property name="dragDropOverwriteMode">
+       <bool>false</bool>
+      </property>
+      <property name="alternatingRowColors">
+       <bool>true</bool>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::NoSelection</enum>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
       </property>
      </widget>
     </item>
@@ -174,9 +211,12 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1024</width>
+     <width>1022</width>
      <height>21</height>
     </rect>
+   </property>
+   <property name="whatsThis">
+    <string/>
    </property>
    <widget class="QMenu" name="menu_File">
     <property name="locale">
@@ -187,6 +227,8 @@
     </property>
     <addaction name="actionSaveData"/>
     <addaction name="actionClear"/>
+    <addaction name="separator"/>
+    <addaction name="actionViewHistory"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -206,7 +248,11 @@
    <addaction name="menu_File"/>
    <addaction name="menu_Help"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="whatsThis">
+    <string>Shows application's element description pointed by cursor.</string>
+   </property>
+  </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
     <string>Toolbar</string>
@@ -219,6 +265,8 @@
    </attribute>
    <addaction name="actionSaveData"/>
    <addaction name="actionClear"/>
+   <addaction name="separator"/>
+   <addaction name="actionViewHistory"/>
   </widget>
   <action name="actionSaveData">
    <property name="icon">
@@ -231,6 +279,9 @@
    </property>
    <property name="statusTip">
     <string>Save data to database</string>
+   </property>
+   <property name="whatsThis">
+    <string>Press to apply all changes to SZARP data base.</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -251,6 +302,9 @@
    <property name="statusTip">
     <string>Clear pending actions</string>
    </property>
+   <property name="whatsThis">
+    <string>Press to remove all scheduled changes from the table.</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+C</string>
    </property>
@@ -264,8 +318,11 @@
    <property name="text">
     <string>E&amp;xit</string>
    </property>
-   <property name="whatsThis">
+   <property name="statusTip">
     <string>Exit Filler 2</string>
+   </property>
+   <property name="whatsThis">
+    <string>Press to exit Filler 2.</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
@@ -278,6 +335,9 @@
    </property>
   </action>
   <action name="actionUsersManual">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="help-contents">
      <normaloff/>
@@ -288,6 +348,9 @@
    </property>
    <property name="statusTip">
     <string>Show user's manual</string>
+   </property>
+   <property name="whatsThis">
+    <string>Press to activate user's manual.</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
@@ -305,6 +368,9 @@
    <property name="statusTip">
     <string>Activate context help</string>
    </property>
+   <property name="whatsThis">
+    <string>Press to activate &quot;What is that?&quot; mode.</string>
+   </property>
    <property name="shortcut">
     <string>Shift+F1</string>
    </property>
@@ -321,6 +387,9 @@
    <property name="statusTip">
     <string>Information about Filler 2</string>
    </property>
+   <property name="whatsThis">
+    <string>Press to show information about Filler 2 application.</string>
+   </property>
    <property name="menuRole">
     <enum>QAction::AboutRole</enum>
    </property>
@@ -328,7 +397,7 @@
   <action name="actionAboutQt">
    <property name="icon">
     <iconset>
-     <normaloff>/usr/share/pixmaps/qtconfig-qt4.png</normaloff>/usr/share/pixmaps/qtconfig-qt4.png</iconset>
+     <normaloff>/opt/szarp/resources/qt4/icons/qt4.png</normaloff>/opt/szarp/resources/qt4/icons/qt4.png</iconset>
    </property>
    <property name="text">
     <string>About &amp;Qt</string>
@@ -336,8 +405,254 @@
    <property name="statusTip">
     <string>Information about Qt4</string>
    </property>
+   <property name="whatsThis">
+    <string>Press to show information about Qt4 library, which is used by Filler 2.</string>
+   </property>
+  </action>
+  <action name="actionViewHistory">
+   <property name="icon">
+    <iconset theme="edit-find-replace">
+     <normaloff/>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>View &amp;history</string>
+   </property>
+   <property name="statusTip">
+    <string>View history of changes</string>
+   </property>
+   <property name="whatsThis">
+    <string>Press to enter history of changes viewer. There you can undo previously commited changes.</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+H</string>
+   </property>
   </action>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>listOfSets</sender>
+   <signal>activated(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onSetChosen(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>342</x>
+     <y>114</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>474</x>
+     <y>75</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>paramList</sender>
+   <signal>activated(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onParamChosen(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>365</x>
+     <y>148</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>659</x>
+     <y>72</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fromDate</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onFromDate()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>524</x>
+     <y>136</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>539</x>
+     <y>92</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toDate</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onToDate()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>767</x>
+     <y>150</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>771</x>
+     <y>103</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionExit</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>510</x>
+     <y>239</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionAboutQt</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>aboutQt()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>510</x>
+     <y>239</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionAbout</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>about()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>510</x>
+     <y>239</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>addButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>addChange()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>985</x>
+     <y>135</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>958</x>
+     <y>88</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionClear</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>clearChanges()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>510</x>
+     <y>239</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSaveData</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>commitChanges()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>510</x>
+     <y>239</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionContextHelp</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>contextHelp()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>510</x>
+     <y>239</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionViewHistory</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onViewHistory()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>510</x>
+     <y>239</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>valueType</sender>
+   <signal>activated(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onTypeChosen()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>869</x>
+     <y>142</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>959</x>
+     <y>67</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>onSetChosen(QString)</slot>
+  <slot>onParamChosen(QString)</slot>
+  <slot>onFromDate()</slot>
+  <slot>onToDate()</slot>
+  <slot>onTypeChosen()</slot>
+  <slot>aboutQt()</slot>
+  <slot>about()</slot>
+  <slot>addChange()</slot>
+  <slot>clearChanges()</slot>
+  <slot>commitChanges()</slot>
+  <slot>contextHelp()</slot>
+  <slot>validateInput()</slot>
+  <slot>onViewHistory()</slot>
+ </slots>
 </ui>
