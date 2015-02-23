@@ -42,9 +42,9 @@ import math
 import types
 import fcntl
 import signal
+import getpass
 import datetime
 import argparse
-import xmlrpclib
 import subprocess
 from collections import namedtuple
 
@@ -964,6 +964,7 @@ class SzbWriter(QThread):
 		QThread.__init__(self)
 		self.chlist = changes_list
 		self.parser = parser
+		self.parser.initRemarks('gcwp-filler2', '85064efb60a9601805dcea56ec5402f7')
 
 	# end of __init__()
 
@@ -972,10 +973,15 @@ class SzbWriter(QThread):
 		nr = 1
 		for ch in self.chlist:
 			dts = [dv[0] for dv in ch.dvalues]
+			title = u"Modyfikacja parameteru %s (Filler 2)" % ch.draw_name
+			remark = ch.remark % \
+					(datetime.datetime.now().strftime('%Y/%m/%d %H:%M'),
+					 getpass.getuser())
 
 			try:
 				self.parser.recordSzf(ch.name, dts, ch.lswmsw)
 				self.parser.szbWriter(ch.name, ch.dvalues)
+				self.parser.postRemark(ch.name, dts[0], title, remark)
 				self.paramDone.emit(nr, ch.draw_name, 0)
 			except IPKParser.SzfRecordError:
 				self.paramDone.emit(nr, ch.draw_name, 1)
@@ -985,6 +991,7 @@ class SzbWriter(QThread):
 			time.sleep(1)
 			nr += 1
 
+		self.parser.closeRemarks()
 		self.jobDone.emit()
 
 	# end of run()

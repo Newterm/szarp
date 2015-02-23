@@ -35,6 +35,7 @@ import fnmatch
 import operator
 import datetime
 import calendar
+import xmlrpclib
 import subprocess
 import xml.sax
 from collections import namedtuple
@@ -55,6 +56,7 @@ SZCONFIG_PATH = "/opt/szarp/%s/config/params.xml"
 PREFIX_REX = re.compile(r'^[a-z]+$')
 LSWMSW_REX = re.compile(r'^\s*\([^:]+:[^:]+:[^:]+ msw\)'
 						r'\s*\([^:]+:[^:]+:[^:]+ lsw\)\s*:\s*$')
+REMARKS_ADDRESS = "https://eos.newterm.pl:7998/"
 
 # helper types definitions
 ParamInfo = namedtuple('ParamInfo', 'name draw_name prec lswmsw')
@@ -128,6 +130,9 @@ class IPKParser:
 				self.ipk_prefix = prefix
 				self.ipk_conf = handler.sets
 				self.ipk_title = handler.title
+
+				self.remarks_srv = None
+				self.remarks_login = None
 		except IOError as err:
 			err.bad_path = filename
 			raise
@@ -179,10 +184,10 @@ class IPKParser:
 				and set title.
 		"""
 		# FIXME: set may be ambiguous as parameter may belong to more than one set.
-		for key, val in self.ipk_conf.iteritems():
-			for p in val.params:
+		for set_name, set_info in self.ipk_conf.iteritems():
+			for p in set_info.params:
 				if p.name == pname:
-					return (p.draw_name, key)
+					return (p.draw_name, set_name)
 		raise ValueError
 
 	# end of getSetAndDrawName()
@@ -390,6 +395,51 @@ class IPKParser:
 			raise self.SzfRecordError(None)
 
 	# end of recordSzf()
+
+	def initRemarks(self, user, passwd):
+		try:
+			self.remarks_srv = xmlrpclib.Server(REMARKS_ADDRESS)
+			self.remarks_login = self.remarks_srv.login(user, passwd)
+		except:
+			self.remarks_srv = None
+			self.remarks_login = None
+
+	# end of initRemarks()
+
+	def postRemark(self, pname, date, remark_title, remark_content):
+		if self.remarks_srv is None:
+			return
+		sets = []
+		for set_name, set_info in self.ipk_conf.iteritems():
+			for p in set_info.params:
+				if p.name == pname:
+					draw_name = p.draw_name
+					sets.append(set_name)
+
+		dt = date.replace(tzinfo=tzlocal())
+		time = calendar.timegm(dt.utctimetuple())
+
+		for set_name in sets:
+			remark = u'<remark prefix="%(prefix)s" ' \
+							 'time="%(time)s" ' \
+							 'set="%(set_name)s" ' \
+							 'title="%(title)s">' \
+							 '<content>%(content)s</content></remark>' % \
+							 { 'prefix'  : self.ipk_prefix,
+							   'time'    : time,
+							   'set_name': set_name,
+							   'title'   : remark_title,
+							   'content' : remark_content }
+			remark_bin = xmlrpclib.Binary(remark.encode('utf-8'))
+			self.remarks_srv.post_remark(self.remarks_login, remark_bin)
+
+	# end of postRemark()
+
+	def closeRemarks(self):
+		self.remarks_srv = None
+		self.remarks_login = None
+
+	# end of closeRemarks()
 
 	class IPKDrawSetsHandler(xml.sax.ContentHandler):
 		"""Content handler for SAX with "feature namespaces". Fetches

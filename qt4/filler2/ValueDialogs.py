@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
 # imports
-import datetime
-import getpass
-
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
@@ -103,7 +100,7 @@ class ValueDialogs:
 			"""
 			if self.remarkCheck.checkState() == Qt.Checked:
 				self.remark = True
-				self.comment = unicode(self.commentEdit.text())
+				self.comment = unicode(self.commentEdit.text().toUtf8(), 'utf-8')
 			else:
 				self.remark = False
 				self.comment = None
@@ -120,8 +117,7 @@ class ValueDialogs:
 		def get_remark(self):
 			"""Return remark string or None if not set."""
 			if self.remark:
-				rmrk_str = u"Zmiana wprowadzona programem Filler 2 w dniu %s przez użytkownika %s" \
-						% (datetime.datetime.now().strftime('%Y/%m/%d %H:%M'), getpass.getuser())
+				rmrk_str = u"Zmiana wprowadzona programem Filler 2 w dniu %s przez użytkownika %s"
 				if len(self.comment) != 0:
 					rmrk_str += u": " + self.comment
 				rmrk_str += u"."
