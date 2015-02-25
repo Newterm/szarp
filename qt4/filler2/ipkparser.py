@@ -1,26 +1,29 @@
 # -*- coding: utf-8 -*-
 """
- IPKParser is a part of SZARP SCADA software
+IPKParser is a module for reading and writing from/to SZARP databases.
+"""
 
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 2 of the License, or
- (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- MA  02110-1301, USA """
+# IPKParser is a part of SZARP SCADA software
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301, USA.
 
 __author__    = "Tomasz Pieczerak <tph AT newterm.pl>"
 __copyright__ = "Copyright (C) 2014-2015 Newterm"
 __version__   = "1.0"
-__status__    = "devel"
+__status__    = "beta"
 __email__     = "coders AT newterm.pl"
 
 
@@ -229,7 +232,7 @@ class IPKParser:
 
 		Returns:
 			(pname, [(date, value)...]) - a tuple containing full parameter
-				name and a list of probe's date and valu tuples.
+				name and a list of probe's date and value tuples.
 		"""
 		with open(filepath) as fd:
 			reader = csv.reader(fd, delimiter=',')
@@ -397,6 +400,12 @@ class IPKParser:
 	# end of recordSzf()
 
 	def initRemarks(self, user, passwd):
+		"""Establish a connection to remarks server.
+
+		Argument:
+		    user - remarks username.
+			pass - MD5 sum of a user's password.
+		"""
 		try:
 			self.remarks_srv = xmlrpclib.Server(REMARKS_ADDRESS)
 			self.remarks_login = self.remarks_srv.login(user, passwd)
@@ -407,18 +416,29 @@ class IPKParser:
 	# end of initRemarks()
 
 	def postRemark(self, pname, date, remark_title, remark_content):
+		"""Post a remark to previously connected server (see iniRemarks()).
+
+		Arguments:
+		    pname - full parameter name.
+			date - datetime for a remark.
+			remark_title - remark's title.
+			remark_content - remark's content.
+		"""
 		if self.remarks_srv is None:
-			return
+			return # FIXME: better to throw an exception
+
+		# find to which sets parameter belongs
 		sets = []
 		for set_name, set_info in self.ipk_conf.iteritems():
 			for p in set_info.params:
 				if p.name == pname:
-					draw_name = p.draw_name
 					sets.append(set_name)
 
+		# calculate epoch time
 		dt = date.replace(tzinfo=tzlocal())
 		time = calendar.timegm(dt.utctimetuple())
 
+		# add a remark for each set
 		for set_name in sets:
 			remark = u'<remark prefix="%(prefix)s" ' \
 							 'time="%(time)s" ' \
@@ -436,6 +456,7 @@ class IPKParser:
 	# end of postRemark()
 
 	def closeRemarks(self):
+		"""Close a connection to remarks server."""
 		self.remarks_srv = None
 		self.remarks_login = None
 
