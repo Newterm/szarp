@@ -10,16 +10,16 @@ SZARP - System Zbierania Archiwizacji i Prezentacji danych
 Table of contents
 -----------------
 
-1.  What is SZARP?
-2.  What does SZARP mean? How to pronounce it?
-3.  What are the features of SZARP?
-4.  What is the origin of SZARP?
-5.  On what platform is SZARP running?
-6.  How to install SZARP?
-7.  Where can I find documentation?
-8.  How can I get SZARP sources?
-9.  How to setup my first SZARP server?
-10. How to get help?
+1.  [What is SZARP?](#1-what-is-szarp)
+2.  [What does SZARP mean? How to pronounce it?](#2-what-does-szarp-mean-how-to-pronounce-it)
+3.  [What are the features of SZARP?](#3-what-are-the-features-of-szarp)
+4.  [What is the origin of SZARP?](#4-what-is-the-origin-of-szarp)
+5.  [On what platform is SZARP running?](#5-on-what-platform-is-szarp-running)
+6.  [How to install SZARP?](#6-how-to-install-szarp)
+7.  [Where can I find documentation?](#7-where-can-i-find-documentation)
+8.  [How can I get SZARP sources?](#8-how-can-i-get-szarp-sources)
+9.  [How to setup my first SZARP server?](#9-how-to-setup-my-first-szarp-server)
+10. [How to get help?](#10-how-to-get-help)
 
 
 1. What is SZARP?
@@ -58,7 +58,7 @@ including:
 
 These device drivers are called *line daemons* (for historical reasons).
 
-The second layer consist of **data colleting daemons** that read data from
+The second layer consist of **data collecting daemons** that read data from
 drivers, calculate average probes and formulas (for *defined parameters*)
 and finally save data to a SZARP database. Probes are generally available with
 10-seconds resolution, but database contains 10-minutes average values. There
@@ -124,7 +124,7 @@ See http://www.szarp.org/en/download.
 First install *szarp-server* and *szarp-wx* packages (for details see
 [INSTALL](INSTALL)):
 
-```sh
+```
 # apt-get install szarp-server szarp-wx
 ```
 
@@ -177,7 +177,7 @@ load. Go to the directory `/opt/szarp/test` and create subdirectory called
 </params>
 ```
 Then in directory `/opt/szarp/test/config` run command:
-```sh
+```
  $ /opt/szarp/bin/i2smo
 ```
 (this parses XML configuration, if every thing is ok, you should see "OK")
@@ -189,14 +189,14 @@ content:
 	cat /proc/loadavg | cut -d ' ' -f 1 | tr -d '.'
 ```
 Save it and then restart SZARP services:
-```sh
+```
 # /etc/init.d/parstart restart
 ```
 
 And that's all, you should be able to point your browser to
 http://localhost:8081/ and see your configured parameter. After full 10 minutes
 you can also run *Draw3* program:
-```sh
+```
  $ /opt/szarp/bin/draw3
 ```
 and analyze your system average load.
