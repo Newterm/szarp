@@ -973,15 +973,17 @@ class SzbWriter(QThread):
 		nr = 1
 		for ch in self.chlist:
 			dts = [dv[0] for dv in ch.dvalues]
-			title = u"Modyfikacja parameteru %s (Filler 2)" % ch.draw_name
-			remark = ch.remark % \
-					(datetime.datetime.now().strftime('%Y/%m/%d %H:%M'),
-					 getpass.getuser())
+			if ch.remark is not None:
+				title = u"Modyfikacja parameteru %s (Filler 2)" % ch.draw_name
+				remark = ch.remark % \
+						(datetime.datetime.now().strftime('%Y/%m/%d %H:%M'),
+						 getpass.getuser())
 
 			try:
 				self.parser.recordSzf(ch.name, dts, ch.lswmsw)
 				self.parser.szbWriter(ch.name, ch.dvalues)
-				self.parser.postRemark(ch.name, dts[0], title, remark)
+				if ch.remark is not None:
+					self.parser.postRemark(ch.name, dts[0], title, remark)
 				self.paramDone.emit(nr, ch.draw_name, 0)
 			except IPKParser.SzfRecordError:
 				self.paramDone.emit(nr, ch.draw_name, 1)
