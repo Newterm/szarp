@@ -22,6 +22,7 @@ Table of contents
 10. [How to get help?](#10-how-to-get-help)
 
 
+
 1. What is SZARP?
 -----------------
 
@@ -65,13 +66,14 @@ and finally save data to a SZARP database. Probes are generally available with
 is also a web server available for serving parameters' values through HTTP.
 
 In the third layer there are **client programs**, including:
- 
+
 * *Reporter* - a program for viewing current (10-seconds averages) values of
   parameters.
 * *Controller* - a program for signalizing parameter's values irregularities.
 * *Extractor* - a program for exporting data from databases to spreadsheet
   files.
 * *Draw* - a powerful tool for viewing and analyzing historical data.
+
 
 
 4. What is the origin of SZARP?
@@ -84,14 +86,14 @@ under GNU GPL. Nowadays **SZARP** is developed as Open Source project on
 [GitHub](http://github.com/).
 
 Project website is located at http://www.szarp.org/. Today, the main founder of
-SZARP development is *Newterm* company (see http://newterm.pl/).
+SZARP development is [Newterm](http://newterm.pl/) company.
 
 
 5. On what platform is SZARP running?
 -------------------------------------
 
 **SZARP** is developed and deployed for *Debian GNU/Linux*, but should compile
-and run on any modern Linux distribution on *x86*, *amd64* and *armel/armhf*
+and run on any modern Linux distribution on *i386*, *amd64* and *armel/armhf*
 architectures. Client applications can also be run on *Windows XP/Vista/7*
 machines with NTFS filesystem.
 
@@ -108,7 +110,7 @@ File [INSTALL](INSTALL) contains installation instructions.
 Unluckily most of the user documentation is available only in Polish.  Sources
 of documentation are in
 [resources/documentation/new/](resources/documentation/new/) project's
-directory and available online at http://www.szarp.org/. Most of the new code
+directory and [available online](http://www.szarp.org/). Most of the new code
 is pretty-well documented (in English) using *Doxygen*.
 
 
@@ -164,13 +166,13 @@ will make configuration with one line daemon that polls system for average
 load. Go to the directory `/opt/szarp/test` and create subdirectory called
 `config`. Place there file with name `params.xml` and the following content:
 ```xml
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <params xmlns="http://www.praterm.com.pl/SZARP/ipk" xmlns:exec="http://www.praterm.com.pl/SZARP/ipk-extra" version="1.0" read_freq="10" send_freq="10" title="Test configuration">
   <device daemon="/opt/szarp/bin/execdmn" path="/opt/szarp/test/get_la.sh" exec:frequency="10">
     <unit id="1" type="1" subtype="1" bufsize="1">
       <param name="Test:System:average system load" short_name="lavg" unit="-" prec="2" base_ind="auto">
-        <raport title="System report"/>
-        <draw title="System" min="0" max="100"/>
+        <raport title="System report" order="1"/>
+        <draw title="System" min="0" max="100" order="1"/>
       </param>
     </unit>
   </device>
@@ -185,8 +187,8 @@ Then in directory `/opt/szarp/test/config` run command:
 Prepare executable script `/opt/szarp/test/get_la.sh` with the following
 content:
 ```bash
-	#!/bin/bash
-	cat /proc/loadavg | cut -d ' ' -f 1 | tr -d '.'
+#!/bin/bash
+cat /proc/loadavg | cut -d ' ' -f 1 | tr -d '.'
 ```
 Save it and then restart SZARP services:
 ```
@@ -194,8 +196,8 @@ Save it and then restart SZARP services:
 ```
 
 And that's all, you should be able to point your browser to
-http://localhost:8081/ and see your configured parameter. After full 10 minutes
-you can also run *Draw3* program:
+[http://localhost:8081/](http://localhost:8081) and see your configured
+parameter. After full 10 minutes you can also run *Draw3* program:
 ```
  $ /opt/szarp/bin/draw3
 ```
