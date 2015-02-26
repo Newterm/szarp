@@ -3,7 +3,7 @@
 IPKParser is a module for reading and writing from/to SZARP databases.
 """
 
-# IPKParser is a part of SZARP SCADA software
+# IPKParser is a part of SZARP SCADA software.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

@@ -10,7 +10,7 @@ database and therefore should be considered as risky.
 
 __license__ = \
 """
- Filler 2 is a part of SZARP SCADA software
+ Filler 2 is a part of SZARP SCADA software.
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ __license__ = \
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- MA  02110-1301, USA """
+ MA 02110-1301, USA. """
 
 __author__    = "Tomasz Pieczerak <tph AT newterm.pl>"
 __copyright__ = "Copyright (C) 2014-2015 Newterm"
@@ -964,7 +964,13 @@ class SzbWriter(QThread):
 		QThread.__init__(self)
 		self.chlist = changes_list
 		self.parser = parser
-		self.parser.initRemarks('gcwp-filler2', '85064efb60a9601805dcea56ec5402f7')
+
+		anyremarks = False
+		for ch in self.chlist:
+			if ch.remark is not None:
+				anyremarks = True
+		if anyremarks:
+			self.parser.initRemarks('gcwp-filler2', '85064efb60a9601805dcea56ec5402f7')
 
 	# end of __init__()
 

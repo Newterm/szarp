@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# IPKParser is a part of SZARP SCADA software
+# This file is a part of SZARP SCADA software.
 #
-# This program is free software; you can redistribute it and/or modify
+# SZARP is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
@@ -38,18 +38,39 @@ except AttributeError:
 
 
 class ValueDialogFactory:
+	"""Factory class for spawning various input-value dialogs."""
 	def __init__(self):
+		"""Factory constructor."""
 		self.availableDialogs = [ "BlankDialog",
 				"NoDataDialog", "ConstDialog",
 				"LinearIncDialog", "LinearDecDialog"
 				]
 
 	def construct(self, dialogName, prec, lswmsw, parent=None):
+		"""Create dialog object from its name.
+
+		Arguments:
+		    dialogName - class name of dialog to create.
+			prec - parameter's precision.
+			lswmsw - whether parameter is a combined one.
+
+		Returns:
+			dialog - QDialog object, ready for use.
+		"""
+		# FIXME: check if dialog is in self.availableDialogs
 		targetDialog = getattr(ValueDialogs, dialogName)
 		dialog = targetDialog(prec, lswmsw, parent)
 		return dialog
 
 	def get_dialogs(self):
+		"""Return a list of available dialogs along with theirs
+		descriptions.
+
+		Returns:
+		    [(dialog_name, qicon, desc)...] - a list of available dialogs,
+		        returned tuples contain dialog's name (dialog_name), dialog's
+		        icon (qicon) as QIcon and description string (desc).
+		"""
 		lst = []
 		for d in self.availableDialogs:
 			td = getattr(ValueDialogs, d)
