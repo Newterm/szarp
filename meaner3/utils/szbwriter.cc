@@ -100,7 +100,7 @@ class DataWriter {
 		DataWriter(SzbaseWriter* parent, DataWriter::PROBE_TYPE ptype, const std::wstring& data_dir, int fill_how_many);
 		~DataWriter();
 
-		int add_data(const std::wstring& name, bool is_dbl, struct tm& tm, double data);
+		int add_data(const std::wstring& name, bool is_dbl, time_t t, double data);
 
 		/** Fill gaps in data. Range: [begin, end)
 		 * @return 0 on success, 1 on error */
@@ -128,8 +128,6 @@ class DataWriter {
 		int m_cur_cnt;
 		double m_cur_sum;
 
-		struct tm m_tm; /**< last time */
-		time_t m_t; /**< last time */
 };
 
 class SzbaseWriter : public TSzarpConfig {
@@ -190,7 +188,6 @@ protected:
 
 	struct tm m_tm; /**< last time */
 	time_t m_t; /**< last time */
-
 };
 
 DataWriter::DataWriter(SzbaseWriter* parent, DataWriter::PROBE_TYPE ptype, const std::wstring& data_dir, int fill_how_many)
@@ -222,20 +219,10 @@ DataWriter::~DataWriter()
 }
 
 
-int DataWriter::add_data( const std::wstring& name, bool is_dbl, struct tm& tm, double data)
+int DataWriter::add_data( const std::wstring& name, bool is_dbl, time_t t, double data)
 {
-	sz_log(10, "DataWriter::add_data begin: name=%s, data=%f %d-%d-%d %d:%d:%d",
-		SC::S2U(name).c_str(), data, tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-
-	time_t t;
-
-	m_t = t = update_time(tm, m_t, m_tm);
-	m_tm = tm;
-
-	gmtime_r(&t, &tm);
-
-	sz_log(10, "DataWriter::add_data: name=%s, m_cur_name=%s",
-		SC::S2U(name).c_str(), SC::S2U(m_cur_name).c_str());
+	sz_log(10, "DataWriter::add_data begin: m_cur_name=%s, name=%s, t=%ld, data=%f",
+		SC::S2U(m_cur_name).c_str(), SC::S2U(name).c_str(), t, data);
 
 	if (name != m_cur_name) {
 		if (save_data())
@@ -246,9 +233,8 @@ int DataWriter::add_data( const std::wstring& name, bool is_dbl, struct tm& tm, 
 		m_cur_sum = 0;
 		m_cur_cnt = 0;
 
-		sz_log(10, "DataWriter::add_data: (name != n_cur_name) t = %ld", t);
 		m_cur_t = t / m_probe_length * m_probe_length;
-		sz_log(10, "DataWriter::add_data: (name != n_cur_name) m_cur_t = %ld",  m_cur_t);
+		sz_log(10, "DataWriter::add_data: (name != n_cur_name) t = %ld, m_cur_t = %ld", t, m_cur_t);
 
 		m_cur_name = name;
 	}
@@ -564,12 +550,10 @@ int SzbaseWriter::is_double(const std::wstring& name)
 int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, int year, int month, int day, 
 		int hour, int min, int sec, const std::wstring& data)
 {
-	sz_log(10, "SzbaseWriter::add_data begin: name=%s, data=%s %d-%d-%d %d:%d:%d",
-			SC::S2U(name).c_str(), SC::S2U(data).c_str(), year, month, day, hour, min, sec);
+	sz_log(10, "SzbaseWriter::add_data begin: name=%s, [%d-%d-%d %d:%d:%d] data=%s",
+			SC::S2U(name).c_str(), year, month, day, hour, min, sec, SC::S2U(data).c_str());
 
-	std::wstring filename;
 	struct tm tm;
-	int is_dbl;
 
 	/* get UTC time */
 	tm.tm_year  = year  - 1900;
@@ -579,8 +563,11 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	tm.tm_min   = min;
 	tm.tm_sec   = sec;
 	tm.tm_isdst = -1;
-	
-	is_dbl = is_double(name);
+
+	m_t = update_time(tm, m_t, m_tm);
+	m_tm = tm;
+
+	int is_dbl = is_double(name);
 
 	sz_log(10, "SzbaseWriter::add_data: name=%s, m_cur_name=%s",
 		       	SC::S2U(name).c_str(), SC::S2U(m_cur_name).c_str());
@@ -617,7 +604,7 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 
 	std::vector<DataWriter *>::iterator it = m_writers.begin();
 	for (; it != m_writers.end(); it++) {
-		int ret = (*it)->add_data(name, is_dbl, tm, new_value);
+		int ret = (*it)->add_data(name, is_dbl, m_t, new_value);
 		if (ret != 0)
 			return 1;
 	}
