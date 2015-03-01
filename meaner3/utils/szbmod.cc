@@ -29,6 +29,7 @@
 #include "liblog.h"
 #include "libpar.h"
 #include "tsaveparam.h"
+#include "szarp_base_common/lua_utils.h"
 
 #include "conversion.h"
 
@@ -306,7 +307,7 @@ int main(int argc, char* argv[])
 
 	libpar_done();
 
-	IPKContainer::Init(SC::L2S(szarp_data_root), SC::L2S(PREFIX), L"", new NullMutex());
+	IPKContainer::Init(SC::L2S(szarp_data_root), SC::L2S(PREFIX), L"");
 
 	Szbase::Init(SC::L2S(szarp_data_root), false); // dont write cache
 
@@ -349,7 +350,7 @@ int main(int argc, char* argv[])
 	if (arguments.multiply)
 		create_multiply_formula(arguments, ipk_prefix);
 
-	if (szb_compile_lua_formula(lua, (const char*) arguments.formula.c_str(), "", false) == false) {
+	if (lua::compile_lua_formula(lua, (const char*) arguments.formula.c_str(), "", false) == false) {
 		std::wcerr << "Failed to compile formula, error: " << lua_tostring(lua, -1) << std::endl;
 		return 1;
 	}

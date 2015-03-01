@@ -145,8 +145,7 @@ bool TestApp::OnInit() {
 
 	IPKContainer::Init(GetSzarpDataDir().c_str(), 
 			GetSzarpDir().c_str(), 
-			_lang.c_str(),
-			new szMutex());
+			_lang.c_str());
 	m_cfg_mgr = new ConfigManager(GetSzarpDataDir().c_str(), IPKContainer::GetObject());
 
 	m_db_queue = new DatabaseQueryQueue();
@@ -154,13 +153,11 @@ bool TestApp::OnInit() {
 	m_db_queue->SetDatabaseManager(m_dbmgr);
 	//m_dbmgr->SetProbersAddresses(GetProbersAddresses());
 
-	Szbase::Init(GetSzarpDataDir().c_str(),
-			NULL,
-			true,
-			wxConfig::Get()->Read(_T("SZBUFER_IN_MEMORY_CACHE"), 0L));
-	Szbase* szbase = Szbase::GetObject();
-
-	m_executor = new QueryExecutor(m_db_queue, m_dbmgr, szbase);
+	m_executor = new QueryExecutor(m_db_queue, m_dbmgr, new SzbaseBase(
+						GetSzarpDataDir().c_str(),
+						NULL,
+						wxConfig::Get()->Read(_T("SZBUFER_IN_MEMORY_CACHE"), 0L)));
+		
 	m_executor->Create();
 	m_executor->SetPriority((WXTHREAD_MAX_PRIORITY + WXTHREAD_DEFAULT_PRIORITY) / 2);
 	m_executor->Run();

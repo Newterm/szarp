@@ -16,8 +16,8 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-#ifndef __LUAPEXTRACT_H__
-#define __LUAPEXTRACT_H__
+#ifndef __LUA_STRINGS_EXTRACT_H__
+#define __LUA_STRINGS_EXTRACT_H__
 
 #ifdef LUA_PARAM_OPTIMISE
 
@@ -25,4 +25,4 @@ bool extract_strings_from_formula(const std::wstring& formula, std::vector<std::
 
 #endif /* LUA_PARAM_OPTIMISE */
 
-#endif /* __LUAPEXTRACT_H__ */
+#endif /* __LUA_STRINGS_EXTRACT_H__ */

@@ -55,9 +55,9 @@ ostream& operator<< (ostream& os, const wstring& s);
 #include <boost/spirit/include/phoenix_stl.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "lua_syntax.h"
+#include "szarp_base_common/lua_syntax.h"
 #include "lua_parser_extra.h"
-#include "lua_syntax_fusion_adapt.h"
+#include "szarp_base_common/lua_syntax_fusion_adapt.h"
 #include "conversion.h"
 
 namespace std {
@@ -82,7 +82,9 @@ std::ostream& operator<< (std::ostream& out, const nil& c );
 
 std::ostream& operator<< (std::ostream& out, const threedots& c );
 
-std::ostream& operator<< (std::ostream& out, const chunk& c );
+std::ostream& operator<< (std::ostream& out, const boost::recursive_wrapper<chunk>& c );
+
+std::ostream& operator<< (std::ostream& out, const boost::recursive_wrapper<block>& c );
 
 std::ostream& operator<< (std::ostream& out, const block& c );
 
@@ -117,6 +119,8 @@ std::ostream& operator<<(std::ostream& os, const boost::recursive_wrapper<std::v
 std::ostream& operator<<(std::ostream& os, const std::vector<field>& v);
 
 std::ostream& operator<< (std::ostream& os, const tableconstructor& e);
+
+std::ostream& operator<< (std::ostream& os, const chunk& e);
 
 std::ostream& operator<< (std::ostream& os, const boost::tuple<identifier, args> & t);
 

@@ -42,37 +42,15 @@
 
 typedef boost::recursive_mutex::scoped_lock recursive_scoped_lock;
 
-#ifndef NO_LUA
-bool szb_compile_lua_formula(lua_State *lua, const char *formula, const char *formula_name = "param_fomula", bool ret_v_val = true);
-#endif
-
+class SzbParamObserver;
+class SzbParamMonitor;
 
 /** Highest level szbase API, provides access to szbase content
  This class should be initialized by calling one of Init static method.
  Also before this class can be used @see IPKContiner should be initialized.
 */
 class Szbase {
-	class UnsignedStringHash {
-		std::tr1::hash<std::string> m_hasher;
-		public:
-		size_t operator() (const std::basic_string<unsigned char>& v) const {
-			return m_hasher((const char*) v.c_str());
-		}
-	};
-
-	/** Maps global parameters names encoding in utf-8 to corresponding szb_buffer_t* and TParam* objects. 
-	 UTF-8 encoded param names are used by LUA formulas*/
-	typedef std::tr1::unordered_map<std::basic_string<unsigned char>, std::pair<szb_buffer_t*, TParam*>, UnsignedStringHash > TBPU8;
-	/*Maps global parameters encoded in wchar_t. Intention of having two separate maps 
-	is to avoid frequent conversions between two encodings*/
-	typedef std::tr1::unordered_map<std::wstring, std::pair<szb_buffer_t*, TParam*> > TBP;
-	/**Maps config prefixes to @see szb_buffer_t and @see TSzarpConfig.*/
-	typedef std::tr1::unordered_map<std::wstring, std::pair<szb_buffer_t*, TSzarpConfig*> > TBI;
-	TBP m_params;
-
-	TBPU8 m_u8params;
-
-	TBI m_ipkbasepair;
+	std::vector<szb_buffer_t*> m_szb_buffers;
 
 	/**Stores address of probes servers for particular prefixes.*/
 	std::tr1::unordered_map<std::wstring, std::pair<std::wstring, std::wstring> >
@@ -102,8 +80,12 @@ class Szbase {
 	/**maximum serach time*/
 	time_t m_maximum_search_time;
 
+	SzbParamMonitor* m_monitor;
+
 	/**Load configuration for this prefix into internal hashes*/
 	bool AddBase(const std::wstring& prefix);
+
+	IPKContainer* m_ipk_containter;
 
 	static Szbase* _instance;
 
@@ -117,6 +99,8 @@ class Szbase {
 public:
 	/**Notifies listener about changes in configuration*/
 	void NotifyAboutConfigurationChanges();
+
+	szb_buffer_t* GetBufferForParam(TParam* p, bool add_if_not_present = true);
 
 	time_t SearchFirst(const std::wstring& param, bool &ok);
 	time_t SearchFirst(const std::basic_string<unsigned char> & param, bool &ok);
@@ -149,13 +133,14 @@ public:
 	/**Compiles lua formula*/
 	bool CompileLuaFormula(const std::wstring& formula, std::wstring& error);
 #endif
+	void AddParamMonitor(SzbParamObserver *observer, const std::vector<TParam*>& params);
 	/**Static methods for initizaling global object*/
 	static void Init(const std::wstring& szarp_dir, bool write_cache = false);
 	static void Init(const std::wstring& szarp_dir, void (*callback)(std::wstring, std::wstring), bool write_cache, int memory_cache_size = 0);
 	/**Destroy all object contents*/
 	static void Destroy();
 	/**Get buffer for give prefix*/
-	szb_buffer_t* GetBuffer(const std::wstring& prefix);
+	szb_buffer_t* GetBuffer(const std::wstring& prefix, bool add_if_not_present = true);
 	static Szbase* GetObject();
 	std::wstring GetCacheDir(const std::wstring& prefix);
 	/**Find param with given global name*/

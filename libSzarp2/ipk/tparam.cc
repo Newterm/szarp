@@ -185,6 +185,26 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 			if (xw.IsAttr("prec")) {
 				_prec = boost::lexical_cast<int>(attr);
 				isPrecAttr = true;
+			} else
+			if (xw.IsAttr("data_type")) {
+				if (!xmlStrcmp(attr, BAD_CAST"float"))
+					_dataType = FLOAT;
+				else if (!xmlStrcmp(attr, BAD_CAST "double"))
+					_dataType = DOUBLE;
+				else if (!xmlStrcmp(attr, BAD_CAST "short"))
+					_dataType = SHORT;
+				else if (!xmlStrcmp(attr, BAD_CAST "int"))
+					_dataType = INT;
+				else
+					xw.XMLError("XML file error: param data_type has invalid value, expected one of: float, double, short, int");
+			} else
+			if (xw.IsAttr("time_type")) {
+				if (!xmlStrcmp(attr, BAD_CAST "second"))
+					_timeType = SECOND;
+				else if (!xmlStrcmp(attr, BAD_CAST "nanosecond"))
+					_timeType = NANOSECOND;
+				else
+					xw.XMLError("XML file error: param time_type has invalid value, expected one of: second, nanosecond");
 			} else {
 				xw.XMLWarningNotKnownAttr();
 			}

@@ -357,7 +357,7 @@ bool KoperValueFetcher::Init(const std::string& szarp_dir,
 
 	std::string szbase_dir;
 
-	IPKContainer::Init(SC::A2S(szarp_dir), SC::A2S(szarp_dir), L"", new NullMutex());
+	IPKContainer::Init(SC::A2S(szarp_dir), SC::A2S(szarp_dir), L"");
 	m_config = IPKContainer::GetObject()->GetConfig(SC::A2S(prefix));
 	if (m_config == NULL)  {
 		sz_log(0, "Failed to load configuration %s", prefix.c_str());

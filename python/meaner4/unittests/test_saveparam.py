@@ -38,7 +38,7 @@ import config
 class SaveParamTest(unittest.TestCase):
 	def setUp(self):
 		self.node = lxml.etree.fromstring("""
-      <param name="Kocioł 3:Sterownik:Aktualne wysterowanie falownika podmuchu" short_name="imp_p" draw_name="Wyst. fal. podm." unit="%" prec="1" base_ind="auto" time_prec="8" data_type="int">
+      <param name="Kocioł 3:Sterownik:Aktualne wysterowanie falownika podmuchu" short_name="imp_p" draw_name="Wyst. fal. podm." unit="%" prec="1" base_ind="auto" time_type="nanosecond" data_type="int">
         <raport title="Kocioł 3" order="14"/>
         <draw title="Kocioł 3 Komora spalania" color="red" min="0" max="100" prior="85" order="1"/>
         <draw title="Kocioł 3 Praca falowników" color="red" min="0" max="100" prior="86" order="1"/>
@@ -65,18 +65,18 @@ class SaveParamTest(unittest.TestCase):
 		temp_dir = tempfile.mkdtemp(suffix="meaner4_unit_test")
 		path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/00001234560000000000.sz4")
 
-		sp = saveparam.SaveParam(self.node, temp_dir)
+		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
 		sp.process_msg(self._msg(123456, 4))
-		self._check_size(path, 12)
-		self._check_file(path, "<iII", (4, 123456, 0))
+		self._check_size(path, 4)
+		self._check_file(path, "<i", (4, ))
 
 		sp.process_msg(self._msg(123457, 4))
-		self._check_size(path, 12)
-		self._check_file(path, "<iII", (4, 123457, 0))
+		self._check_size(path, 9)
+		self._check_file(path, "<iBBBBB", (4, 0xf0, 0x3b, 0x9a, 0xca, 0x00))
 
 		sp.process_msg(self._msg(123458, 5))
-		self._check_size(path, 4 + 8 + 4 + 8)
-		self._check_file(path, "<iIIiII", (4, 123457, 0, 5, 123458, 0))
+		self._check_size(path, 4 + 5 + 4)
+		self._check_file(path, "<iBBBBBi", (4, 0xf0, 0x77, 0x35, 0x94, 0x00, 5))
 
 		del sp
 
@@ -87,31 +87,34 @@ class SaveParamTest(unittest.TestCase):
 		temp_dir = tempfile.mkdtemp(suffix="meaner4_unit_test")
 		path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/00001234560000000000.sz4")
 
-		sp = saveparam.SaveParam(self.node, temp_dir)
+		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
 		sp.process_msg(self._msg(123456, 4))
-		self._check_size(path, 12)
-		self._check_file(path, "<iII", (4, 123456, 0))
+		self._check_size(path, 4)
+		self._check_file(path, "<i", (4, ))
 
 		sp.process_msg(self._msg(123457, 4))
-		self._check_size(path, 12)
-		self._check_file(path, "<iII", (4, 123457, 0))
+		self._check_size(path, 9)
+		self._check_file(path, "<iBBBBB", (4, 0xf0, 0x3b, 0x9a, 0xca, 0x00))
 
 		del sp
-		sp = saveparam.SaveParam(self.node, temp_dir)
+		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
 
-		sp.process_msg(self._msg(123458, 5))
-		self._check_size(path, 4 + 8 + 4 + 8)
-		self._check_file(path, "<iIIiII", (4, 123457, 0, 5, 123458, 0))
+		sp.process_msg(self._msg(123459, 5))
+		self._check_size(path, 22)
+		self._check_file(path, "<iBBBBBiBBBBBi",
+					(4, 0xf0, 0x3b, 0x9a, 0xca, 0x00,
+					-2**31, 0xf0, 0x77, 0x35, 0x94, 0x00,
+					5, ))
 
 		shutil.rmtree(temp_dir)
 
 	def test_basictest3(self):
 		temp_dir = tempfile.mkdtemp(suffix="meaner4_unit_test")
 
-		item_size = 4 + 8
+		item_size = 4 + 5
 		items_per_file = config.DATA_FILE_SIZE / item_size
 
-		sp = saveparam.SaveParam(self.node, temp_dir)
+		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
 		for i in range(items_per_file + 1):
 			sp.process_msg(self._msg(i, i))
 
@@ -119,4 +122,4 @@ class SaveParamTest(unittest.TestCase):
 		self._check_size(path, items_per_file * item_size)
 
 		path2 = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/%010d0000000000.sz4" % (items_per_file))
-		self._check_size(path2, 12)
+		self._check_size(path2, 4)

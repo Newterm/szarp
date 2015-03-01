@@ -20,6 +20,8 @@
 #ifndef __CLASSES_H__
 #define __CLASSES_H__
 
+class TParam;
+
 class TimeWidget;
 class DrawPanel;
 class PieWindow;

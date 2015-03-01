@@ -561,7 +561,7 @@ wxString DrawsWidget::GetUrl(bool with_infinity) {
 	if (with_infinity && m_draws_controller->AtTheNewestValue()) {
 		t = std::numeric_limits<time_t>::max();
 	} else {
-		t = m_draws_controller->GetCurrentTime();
+		t = m_draws_controller->GetCurrentTime().GetTicks();
 	}
 
 	wxString prefix = m_draws_controller->GetSet()->GetDrawsSets()->GetPrefix();

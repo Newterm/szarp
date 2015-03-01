@@ -43,8 +43,7 @@ EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry,
 	IPKContainer::Init(wxGetApp().GetSzarpDataDir().c_str(),
 			   wxGetApp().GetSzarpDir().c_str(),
 			   wxConfig::Get()->Read(_T("LANGUAGE"),
-						 _T("pl")).c_str(),
-			   new szMutex());
+						 _T("pl")).c_str());
 
 	Szbase::Init(wxGetApp().GetSzarpDataDir().c_str(), NULL);
 

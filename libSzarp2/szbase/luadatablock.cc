@@ -19,6 +19,7 @@
 #include <sstream>
 #include <string>
 #include <assert.h>
+#include "szarp_base_common/lua_utils.h"
 #include "luadatablock.h"
 #include "conversion.h"
 #include "szbbase.h"
@@ -86,7 +87,7 @@ LuaNativeDatablock::LuaNativeDatablock(szb_buffer_t * b, TParam * p, int y, int 
 	lua_State* lua = Lua::GetInterpreter();
 	int ref = param->GetLuaParamReference();
 	if (ref == LUA_NOREF)
-		ref = compile_lua_param(lua, param);
+		ref = lua::compile_lua_param(lua, param);
 
 	if (ref == LUA_REFNIL)
 		NOT_INITIALIZED;
@@ -192,7 +193,7 @@ LuaNativeDatablock::Refresh() {
 	lua_State* lua = Lua::GetInterpreter();
 	int ref = param->GetLuaParamReference();
 	if (ref == LUA_NOREF)
-		ref = compile_lua_param(lua, param);
+		ref = lua::compile_lua_param(lua, param);
 
 	lua_rawgeti(lua, LUA_REGISTRYINDEX, ref);
 

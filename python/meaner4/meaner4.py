@@ -20,22 +20,24 @@
 """
 
 import sys
-import meaner
-
 sys.path.append("/opt/szarp/lib/python")
 
+import meaner
 from libpar import LibparReader
 
-if __name__ == "__main__":
+
+def go():
 	lpr = LibparReader()
 
-	path = lpr.get("global", "szbase")
+	path = lpr.get("global", "sz4dir")
 	ipk = lpr.get("global", "IPK")
+	uri = lpr.get("global", "parcook_socket_uri")
+	heartbeat = int(lpr.get("sz4", "heartbeat_frequency"))
 
-	uri = lpr.get("global", "paramd_uri")
-
-	meaner = meaner.Meaner(uri)
+	meaner = meaner.Meaner(path, uri, heartbeat)
 	meaner.configure(ipk)
 
-	menaer.run()
+	meaner.run()
 
+if __name__ == "__main__":
+	go()

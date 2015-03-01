@@ -302,7 +302,7 @@ int main(int argc, char* argv[])
 
 	std::vector<TParam*> params;
 
-	IPKContainer::Init(SC::L2S(szarp_data_root), SC::L2S(PREFIX), L"", new NullMutex());
+	IPKContainer::Init(SC::L2S(szarp_data_root), SC::L2S(PREFIX), L"");
 
 	Szbase::Init(SC::L2S(szarp_data_root), NULL);
 

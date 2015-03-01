@@ -321,7 +321,7 @@ int DbDaemon::ParseConfig(DaemonConfig * cfg)
 		return 1;
 	}
 
-	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"", new NullMutex());
+	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
 	Szbase::Init(SC::L2S(PREFIX), NULL);
 
 	Szbase* szbase = Szbase::GetObject();
@@ -351,6 +351,8 @@ int DbDaemon::ParseConfig(DaemonConfig * cfg)
 
 	xmlXPathFreeContext(xp_ctx);
 
+	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"");
+	Szbase::Init(SC::A2S(PREFIX), NULL);
 	ConfigureProbers();
 
 	return 0;

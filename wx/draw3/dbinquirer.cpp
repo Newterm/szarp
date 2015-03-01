@@ -43,8 +43,8 @@ DrawInfo* DBInquirer::GetCurrentDrawInfo() {
 	return NULL;
 }
 
-time_t DBInquirer::GetCurrentTime() {
-	return -1;
+wxDateTime DBInquirer::GetCurrentTime() {
+	return wxInvalidDateTime;
 }
 
 void DBInquirer::DatabaseResponse(DatabaseQuery *query) {
@@ -56,11 +56,18 @@ void DBInquirer::QueryDatabase(DatabaseQuery *query) {
 	m_database_manager->QueryDatabase(query);
 }
 
+void DBInquirer::ChangeObservedParamsRegistration(const std::vector<TParam*> &to_deregister, const std::vector<TParam*> &to_register) {
+	m_database_manager->ChangeObservedParamsRegistration(to_deregister, to_register);
+}
+
 void DBInquirer::QueryDatabase(std::list<DatabaseQuery*> &qlist){
 	for(std::list<DatabaseQuery*>::iterator i = qlist.begin(); i != qlist.end(); i++){
 		(*i)->inquirer_id = m_inquirer_id;
 	}
 	m_database_manager->QueryDatabase(qlist);
+}
+
+void DBInquirer::ParamDataChanged(TParam* param) {
 }
 
 DBInquirer::~DBInquirer() {

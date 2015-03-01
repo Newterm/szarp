@@ -327,7 +327,7 @@ public:
 	/**return currently stored probes' values*/
 	const VT& GetValuesTable() const;
 
-	DatabaseQuery* GetDataToFetch();
+	DatabaseQuery* GetDataToFetch(bool fetch_present_no_data = false);
 
 	/**Sets draw info. Param must be in @see state STOP otherwise
 	 * assertion is rised. @see m_current_time is set to invalid*/

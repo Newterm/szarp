@@ -57,7 +57,7 @@
 #include "drawapp.h"
 #include "dcolors.h"
 #include "errfrm.h"
-#include "luapextract.h"
+#include "szarp_base_common/lua_strings_extract.h"
 
 
 wxString DrawParam::GetBasePrefix() {

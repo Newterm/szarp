@@ -19,36 +19,73 @@
 """
 
 import zmq
+import time
 import lxml
+import lxml.etree
 import paramsvalues_pb2
 import param
 import saveparam
+from meanerbase import MeanerBase
+from heartbeat import create_hearbeat_param
 
-class Meaner:
-	def __init__(self, path, uri):
-		self.save_params = []
+FIRST_HEART_BEAT = 0
+NON_FIRST_HEART_BEAT = 1
 
-		self.szbase_path = szbase_path
+class Meaner(MeanerBase):
+	def __init__(self, path, uri, heartbeat):
+		MeanerBase.__init__(self, path)
+
 		self.parcook_uri = uri
 
 		self.context = zmq.Context(1)
 		self.socket = self.context.socket(zmq.SUB)
+		self.heartbeat_interval = heartbeat
+		self.last_heartbeat = None
 
-	def configure(self, ipk_path):
-		ipk = lxml.etree.parse(ipk_path)
+		p = create_hearbeat_param()
+		self.heartbeat_param = saveparam.SaveParam(p, self.szbase_path)
+
+	def read_socket(self):
+		try:
+			while True:
+				msg = self.socket.recv(zmq.NOBLOCK)
+
+				params_values = paramsvalues_pb2.ParamsValues()
+				params_values.ParseFromString(msg)
+
+				for param_value in params_values.param_values:
+					log_param, index = self.ipk.adjust_param_index(param_value.param_no)
+					if log_param:
+						#TODO: we ignore logdmn params (for now)
+						continue
+					self.save_params[index].process_msg(param_value)
+		except zmq.ZMQError as e:
+			if e.errno != zmq.EAGAIN:
+				raise
+
+	def time_for_hearbeat(self):
+		return max(0, self.heartbeat_interval - (time.time() - self.last_heartbeat)) * 1000
 		
-		for p in ipk.xpath("//s:param", namespaces={'s':'http://www.praterm.com.pl/SZARP/ipk'}):
-			self.save_params.append(saveparam.SaveParam(param.Param(p), self.szbase_path))
+	def hearbeat(self, value):
+		value = 0 if self.last_heartbeat is None else 1
+		self.last_heartbeat = int(time.time())
+		self.heartbeat_param.process_value(value, self.last_heartbeat)
+
+	def loop(self):
+		while True:
+			ready = dict(self.poller.poll(self.time_for_hearbeat()))
+			if self.socket in ready:
+				self.read_socket()
+			else:
+				self.hearbeat(NON_FIRST_HEART_BEAT)
 
 	def run(self):
 		self.socket.connect(self.parcook_uri)
+		self.socket.setsockopt(zmq.SUBSCRIBE, "")
+		self.poller = zmq.Poller()
+		self.poller.register(self.socket, zmq.POLLIN)
 
-		while True:
-			msg = self.socket.recv()
+		self.hearbeat(FIRST_HEART_BEAT)
 
-			params_values = ParamsValues()
-			params_values.ParseFromString(msg)
-
-			for param_value in params_values.param_values:
-				self.save_params[param_value.param_no].process_value(param_value)
+		self.loop()
 			

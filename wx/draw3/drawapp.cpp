@@ -286,8 +286,7 @@ bool DrawApp::OnInit() {
 	splash->PushStatusText(_("Initializing IPKContainer..."));
 	IPKContainer::Init(GetSzarpDataDir().c_str(), 
 			GetSzarpDir().c_str(), 
-			_lang.c_str(),
-			new szMutex());
+			_lang.c_str());
 	m_cfg_mgr = new ConfigManager(GetSzarpDataDir(), IPKContainer::GetObject());
 
 	m_cfg_mgr->SetSplashScreen(splash);
@@ -305,13 +304,18 @@ bool DrawApp::OnInit() {
 	m_db_queue->SetDatabaseManager(m_dbmgr);
 	m_dbmgr->SetProbersAddresses(GetProbersAddresses());
 
-	Szbase::Init(GetSzarpDataDir().c_str(),
+	Draw3Base* draw_base;
+	if (m_sz4) {
+		draw_base = new Sz4Base(GetSzarpDataDir().c_str(),
+			IPKContainer::GetObject());
+	} else {
+		draw_base = new SzbaseBase(GetSzarpDataDir().c_str(),
 			&ConfigurationFileChangeHandler::handle,
-			true,
 			wxConfig::Get()->Read(_T("SZBUFER_IN_MEMORY_CACHE"), 0L));
-	Szbase* szbase = Szbase::GetObject();
 
-	m_executor = new QueryExecutor(m_db_queue, m_dbmgr, szbase);
+	}
+
+	m_executor = new QueryExecutor(m_db_queue, m_dbmgr, draw_base);
 	m_executor->Create();
 	m_executor->SetPriority((WXTHREAD_MAX_PRIORITY + WXTHREAD_DEFAULT_PRIORITY) / 2);
 	m_executor->Run();
@@ -437,6 +441,8 @@ void DrawApp::OnInitCmdLine(wxCmdLineParser &parser) {
 
 	parser.AddSwitch(_T("v"), _T("verbose"), _("verbose logging"));
 
+	parser.AddSwitch(_T("4"), _T("sz4"), _("use sz4 base format"));
+
 	parser.AddSwitch(_T("V"), _T("version"), 
 		_("print version number and exit"));
 	
@@ -478,6 +484,8 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
     		wxLog::SetVerbose();
 
 	m_full_screen = parser.Found(_T("f"));
+	
+	m_sz4 = parser.Found(_T("4"));
 
 	m_just_print_version = parser.Found(_("V"));
 
@@ -514,8 +522,8 @@ void DrawApp::StopThreads() {
 	}
 	if (m_remarks_handler)
 		m_remarks_handler->Stop();
-	delete m_db_queue;
 #if 0
+	delete m_db_queue;
 	delete m_remarks_handler;
 #endif
 }

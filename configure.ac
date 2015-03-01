@@ -1113,12 +1113,16 @@ if test x$no_ssl != xyes -a x$no_rsync != xyes ; then
 fi
 
 no_cppnit="yes"
-PKG_CHECK_MODULES(CPPUNIT, x11, no_cppunit="no", [AC_MSG_RESULT([
+PKG_CHECK_MODULES(CPPUNIT, cppunit, no_cppunit="no", [AC_MSG_RESULT([
 	cppunit library not found on your system,
 	configuring without cppunit, draw test app will not be built
 	])
 ])
 AM_CONDITIONAL(HAVE_CPPUNIT, test "x$no_cppunit" != xyes)
+
+if test x$no_cppunit != xyes; then
+	SUBDIRS="$SUBDIRS unit_tests"
+fi
 
 AC_LIB_CGAL( [], [no_cgal=yes] )
 if test "x$no_cgal" = "xyes" ; then
@@ -1211,6 +1215,7 @@ AC_OUTPUT( \
 	utils/szarpinfo \
 	utils/Makefile \
 	utils/nagios/Makefile \
+	unit_tests/Makefile \
 	www/Makefile \
 	www/pylons/Makefile \
 	www/pylons/sssweb/Makefile \

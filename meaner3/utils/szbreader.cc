@@ -120,9 +120,10 @@ int main(int argc, char** argv)
 		}
 	}
 
-	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"", new NullMutex());
+	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
 	Szbase::Init(SC::L2S(PREFIX), NULL);
 	szb_buffer_t* buf = szb_create_buffer(Szbase::GetObject(), SC::L2S(dir), 1, &ipk);
+
 	if (buf == NULL) {
 		sz_log(0, "Error creating szbase buffer");
 		return 1;

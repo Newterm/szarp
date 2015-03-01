@@ -92,7 +92,6 @@ draw3_SOURCES = \
 		gcdcgraphs.h gcdcgraphs.cpp \
 		graphsutils.h graphsutils.cpp \
 		drawtime.h drawtime.cpp \
-		luapextract.h luapextract.cpp \
 		vercheck.h vercheck.cpp \
 		xyzgraph.h xyzgraph.cpp \
 		triangulation.h triangulation.cpp \
@@ -121,7 +120,6 @@ draw3test_SOURCES = \
 		drawurl.cpp drawurl.h \
 		errfrm.h errfrm.cpp \
 		drawtime.h drawtime.cpp \
-		luapextract.h luapextract.cpp \
 		delqitem.h delqitem.cpp \
 		splashscreen.cpp splashscreen.h \
                 draw.cpp draw.h \

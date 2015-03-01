@@ -16,6 +16,8 @@ AM_CPPFLAGS = @XML_CFLAGS@ @LUA_CFLAGS@ \
            -I$(SOURCE_DIR)/../libSzarp/include		\
            -I$(SOURCE_DIR)/../libSzarp2/include		\
            -I$(SOURCE_DIR)/../include			\
+	   $(ZMQ_CFLAGS)				\
+	   $(PROTOBUF_CFLAGS)				\
 	   $(BOOST_CPPFLAGS)				\
 	   $(XMLRPC_EPI_CFLAGS)				\
 	  `python-config --cflags`			\
@@ -24,7 +26,7 @@ AM_CPPFLAGS = @XML_CFLAGS@ @LUA_CFLAGS@ \
 LIBSZARP2 = ../libSzarp2/libSzarp2.la
 LIBSZARP = ../libSzarp/libSzarp.la
 
-LDADD = $(LIBSZARP2) $(LIBSZARP) @EVENT_LIBS@ @PTHREAD_CFLAGS@ @XML_LIBS@ @LUA_LIBS@ $(BOOST_LDFLAGS) $(BOOST_SYSTEM_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_DATE_TIME_LIB) $(BOOST_REGEX_LIB) $(BOOST_LOCALE_LIB)
+LDADD = $(LIBSZARP2) $(LIBSZARP) @EVENT_LIBS@ @PTHREAD_CFLAGS@ @XML_LIBS@ @LUA_LIBS@ $(BOOST_LDFLAGS) $(BOOST_SYSTEM_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_DATE_TIME_LIB) $(BOOST_REGEX_LIB) $(BOOST_LOCALE_LIB) @ZMQ_LIBS@ @PROTOBUF_LIBS@
 
 # Aditional libraries for daemons using dlopen
 DL = -ldl

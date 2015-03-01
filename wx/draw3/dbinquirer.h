@@ -31,6 +31,7 @@
 #endif
 
 #include <list>
+#include <vector>
 
 /**Interface for objects communiating with the database*/
 class DBInquirer {
@@ -45,6 +46,8 @@ protected:
 	void QueryDatabase(DatabaseQuery *query);
 
 	void QueryDatabase(std::list<DatabaseQuery*> &qlist);
+
+	void ChangeObservedParamsRegistration(const std::vector<TParam*> &to_deregister, const std::vector<TParam*> &to_register);
 public: 
 	DBInquirer(DatabaseManager *manager);
 
@@ -55,12 +58,14 @@ public:
 	virtual DrawInfo* GetCurrentDrawInfo();
 
 	/**@return current time, used for queries prioritization*/
-	virtual time_t GetCurrentTime();
+	virtual wxDateTime GetCurrentTime();
 
 	/**method is called when response from db is received
 	 * @param query object holding response from database, the same instance that was sent to the database via 
 	 * @see QueryDatabase method but with proper fields filled*/
 	virtual void DatabaseResponse(DatabaseQuery *query);
+
+	virtual void ParamDataChanged(TParam* param);
 
 	/**Removes object from @see DatabaseManager*/
 	virtual ~DBInquirer();

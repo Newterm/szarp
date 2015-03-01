@@ -42,13 +42,42 @@
 #include "wxlogging.h"
 
 
-BEGIN_EVENT_TABLE(TimeWidget, wxRadioBox)
+BEGIN_EVENT_TABLE(TimeWidget, wxScrolledWindow)
         EVT_RADIOBOX(wxID_ANY, TimeWidget::OnRadioSelected)
 	EVT_SET_FOCUS(TimeWidget::OnFocus)
 END_EVENT_TABLE()
 
+class RadioButtonValidator : public wxValidator {
+	
+	public:
+	RadioButtonValidator(DrawsWidget *drawswdg) : m_draws_widget(drawswdg) {}
+
+	RadioButtonValidator(const RadioButtonValidator& validator) : m_draws_widget(validator.m_draws_widget) {}
+		
+	~RadioButtonValidator() {}
+		
+	/** Make a clone of this validator (or return NULL) - currently necessary
+	 * if you're passing a reference to a validator. */
+	virtual wxObject *Clone() const { return new RadioButtonValidator(*this); }
+	
+	bool Copy(const RadioButtonValidator& val) { wxValidator::Copy(val); m_draws_widget = val.m_draws_widget; return true;}
+	
+	/** Event handler - tries to get rid of focus. */
+	void OnFocus(wxFocusEvent &event) { m_draws_widget-> SetFocus(); }
+	
+	protected:
+	DECLARE_EVENT_TABLE()
+
+	DrawsWidget *m_draws_widget;/** pointer to draws widget, we have to communicate with this object */
+};
+
+BEGIN_EVENT_TABLE(RadioButtonValidator, wxValidator)
+	EVT_SET_FOCUS(RadioButtonValidator::OnFocus)
+END_EVENT_TABLE()
+
+
 TimeWidget::TimeWidget(wxWindow* parent, DrawsWidget *draws_widget, PeriodType pt)
-        : wxRadioBox(), m_draws_widget(draws_widget), m_previous(0)
+        : wxScrolledWindow(parent, wxID_ANY), m_draws_widget(draws_widget), m_previous(0)
 {
 	SetHelpText(_T("draw3-base-range"));
 
@@ -59,17 +88,22 @@ TimeWidget::TimeWidget(wxWindow* parent, DrawsWidget *draws_widget, PeriodType p
                 _("WEEK"),
                 _("DAY"),
                 _("30 MINUTES"),
+		_("3 MINUTES"),
+		_("MINUTE"),
                 _("SEASON")
         };
-        Create(parent, wxID_ANY, 
+
+	m_radio_box = new wxRadioBox();
+        m_radio_box->Create(this, wxID_ANY, 
 			_T(""), // label
 			wxDefaultPosition, wxDefaultSize,
-			7, // number of options
+			sizeof(time_wdg_choices) / sizeof(time_wdg_choices[0]),
 			time_wdg_choices, // options strings array
 			1, // number of columns
 			wxRA_SPECIFY_COLS | // vertical
 			wxSUNKEN_BORDER | 
-			wxWANTS_CHARS);
+			wxWANTS_CHARS,
+			RadioButtonValidator(m_draws_widget));
 	switch (pt) {
 		case PERIOD_T_DECADE:
 		        m_selected = 0;
@@ -85,15 +119,29 @@ TimeWidget::TimeWidget(wxWindow* parent, DrawsWidget *draws_widget, PeriodType p
 		case PERIOD_T_30MINUTE:
 			m_selected = 5;
 			break;
-		case PERIOD_T_SEASON: 
+		case PERIOD_T_3MINUTE:
 			m_selected = 6;
+			break;
+		case PERIOD_T_MINUTE:
+			m_selected = 8;
+			break;
+		case PERIOD_T_SEASON: 
+			m_selected = 9;
 			break;				     
 		default:
 		case PERIOD_T_YEAR:
 		        m_selected = 1;
 	}
-        SetSelection(m_selected);
+        m_radio_box->SetSelection(m_selected);
 	SetToolTip(_("Select period to display"));
+
+	SetScrollRate(10, 10);
+
+	wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
+	sizer->Add(m_radio_box, 0, wxEXPAND);
+	sizer->SetVirtualSizeHints(this);
+	sizer->Layout();
+	SetSizer(sizer);
 }
 
 int TimeWidget::SelectPrev()
@@ -106,7 +154,7 @@ int TimeWidget::SelectPrev()
 void TimeWidget::Select(int item, bool refresh)
 {
 	m_previous = m_selected;
-	SetSelection(item);
+	m_radio_box->SetSelection(item);
 
 	char buf[128];
 	snprintf(buf,128,"timewdg:%s",(const char*)period_names[item].mb_str(wxConvUTF8));
@@ -138,14 +186,17 @@ void TimeWidget::OnFocus(wxFocusEvent &event)
 void TimeWidget::PeriodChanged(Draw *draw, PeriodType pt) {
 	if (draw->GetSelected()) {
 		m_selected = pt;
-		SetSelection(pt);
+		m_radio_box->SetSelection(pt);
 	}
 }
 
 void TimeWidget::DrawInfoChanged(Draw *draw) {
 	if (draw->GetSelected()) {
 		m_selected = draw->GetPeriod();
-		SetSelection(draw->GetPeriod());
+		m_radio_box->SetSelection(draw->GetPeriod());
 	}
 }
 
+int TimeWidget::GetSelection() {
+	return m_radio_box->GetSelection();
+}

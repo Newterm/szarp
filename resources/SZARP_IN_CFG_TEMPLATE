@@ -61,6 +61,11 @@ linex_cfg=$config_root$
 $datadir$:="$szarp_root$/$prefix$/szbase"
 datadir=$datadir$
 
+parcook_socket_uri=tcp://localhost:4567
+
+$sz4dir$:="$szarp_root$/$prefix$/sz4"
+sz4dir=$sz4dir$
+
 # szbase stamp file
 szbase_stamp=$szarp_root$/$prefix$/szbase_stamp
 
@@ -71,6 +76,8 @@ $else
 log_level=2
 $end
 
+:sz4
+heartbeat_frequency=10
 
 :datapaf
 

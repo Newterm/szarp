@@ -20,17 +20,14 @@
 
 import struct
 import os
+import math
 
 class Param:
-	def __init__(self, node):
-		self.param_name = node.attrib["name"]
-
-		self.written_to_base = True if "base_ind" in node.attrib else False
-
-		if "data_type" in node.attrib:
-			self.data_type = node.attrib["data_type"]
-		else:
-			self.data_type = "short"
+	def __init__(self, name, data_type, prec, time_prec, written_to_base, combined=False, lsw=None, msw=None):
+		self.param_name = name
+		self.data_type = data_type
+		self.prec = prec
+		self.time_prec = time_prec
 
 		if self.data_type == "short":
 			self.value_format_string = "<h"
@@ -47,10 +44,28 @@ class Param:
 		else:
 			raise ValueError("Unsupported value type: %s" % (self.data_type,))
 
-		if "time_prec" in node.attrib:
-			self.time_prec = int(node.attrib["time_prec"])
+		self.written_to_base = written_to_base
+		self.combined = combined
+		self.lsw_param_name = lsw
+		self.msw_param_name = msw
+		self.lsw_combined_referencing_param = None
+		self.msw_combined_referencing_param = None
+
+	def nan(self):
+		if self.data_type == "short":
+			return -2**15
+		elif self.data_type == "int":
+			return -2**31
 		else:
-			self.time_prec = 4
+			return float('nan')
+
+	def isnan(self, value):
+		if self.data_type == "short":
+			return value == -2**15
+		elif self.data_type == "int":
+			return value == -2**31
+		else:
+			return math.isnan(value)
 
 	def value_to_binary(self, value):
 		return struct.pack(self.value_format_string, value)
@@ -78,4 +93,99 @@ class Param:
 		else:
 			return time
 
+	def time_just_before(self, time, nanotime):
+		if self.time_prec == 8:
+			if nanotime == 0:
+				return (time - 1, 10 ** 9 - 1)
+			else:
+				return (time, nanotime - 1)
+		else:
+			return (time - 1, nanotime)
 
+
+def from_node(node):
+	def is_combined_formula(formula):
+		s = "start"
+		for i, c in enumerate(formula):
+			if c == '(':
+				if s == "start":
+					s = "msw_param"
+				elif s == "after_msw_param":
+					s = "lsw_param"
+				else:
+					return (False, None, None)
+				ps = i + 1
+			elif c == ')':
+				if s == "msw_param":
+					mp = formula[ps:i]
+					s = "after_msw_param"
+				elif s == "lsw_param":
+					lp = formula[ps:i]
+					s = "after_lsw_param"
+				else:
+					return (False, None, None)
+			elif c == ':':
+				if s == "after_lsw_param":
+					s = "done"
+				elif s == "msw_param" or s == "lsw_param":
+					continue
+				else:
+					return (False, None, None)
+			else:
+				if s == "msw_param" or s == "lsw_param" or c.isspace():
+					continue
+				else:
+					return (False, None, None)
+			
+		if s == "done":
+			return (True, mp, lp)
+		else:
+			return (False, None, None)
+
+	def expand_param_name(string, base_param_name):
+		ss = string.split(':')
+		ps = base_param_name.split(':')
+
+		for i in range(len(ss)):
+			if ss[i] == '*':
+				ss[i] = ps[i]
+
+		return ':'.join(ss)
+
+	def prepare_combined(node, param_name):
+		try:
+			define_node = node.xpath("s:define[@type='DRAWDEFINABLE']", namespaces={'s':'http://www.praterm.com.pl/SZARP/ipk'})[0]
+		except IndexError:
+			return (False, None, None)
+
+		combined, msw, lsw = is_combined_formula(define_node.attrib['formula'])
+		if not combined:
+			return (False, None, None)
+		else:
+			return (True, expand_param_name(lsw, param_name), expand_param_name(msw,param_name))
+
+
+	param_name = node.attrib["name"]
+
+	combined, lsw, msw = prepare_combined(node, param_name)
+
+	written_to_base = True if "base_ind" in node.attrib or combined else False
+
+	if "data_type" in node.attrib:
+		data_type = node.attrib["data_type"]
+	elif combined == True:
+		data_type = "int"
+	else:
+		data_type = "short"
+
+	if "prec" not in node.attrib:
+		prec = 0
+	else:
+		prec = int(node.attrib["prec"])
+
+	if "time_type" in node.attrib:
+		time_prec = 8 if node.attrib["time_type"] == "nanosecond" else 4
+	else:
+		time_prec = 4
+
+	return Param(param_name, data_type, prec, time_prec, written_to_base, combined, lsw, msw)

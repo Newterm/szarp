@@ -36,7 +36,7 @@ class ParamTest(unittest.TestCase):
 		self.msg_attrs  = [ "int_value"	   , "int_value" , "float_value" , "double_value" ]
 		
 		self.node_def = lxml.etree.fromstring("""
-      <param name="Kocioł 3:Sterownik:Aktualne wysterowanie falownika podmuchu" short_name="imp_p" draw_name="Wyst. fal. podm." unit="%" prec="1" base_ind="auto">
+      <param xmlns="http://www.praterm.com.pl/SZARP/ipk" name="Kocioł 3:Sterownik:Aktualne wysterowanie falownika podmuchu" short_name="imp_p" draw_name="Wyst. fal. podm." unit="%" prec="1" base_ind="auto">
         <raport title="Kocioł 3" order="14"/>
         <draw title="Kocioł 3 Komora spalania" color="red" min="0" max="100" prior="85" order="1"/>
         <draw title="Kocioł 3 Praca falowników" color="red" min="0" max="100" prior="86" order="1"/>
@@ -46,7 +46,7 @@ class ParamTest(unittest.TestCase):
 		self.nodes = []
 		for t in self.types:
 			n = lxml.etree.fromstring("""
-      <param name="Kocioł 3:Sterownik:Aktualne wysterowanie falownika podmuchu" short_name="imp_p" draw_name="Wyst. fal. podm." unit="%%" prec="1" base_ind="auto" data_type="%s">
+      <param xmlns="http://www.praterm.com.pl/SZARP/ipk" name="Kocioł 3:Sterownik:Aktualne wysterowanie falownika podmuchu" short_name="imp_p" draw_name="Wyst. fal. podm." unit="%%" prec="1" base_ind="auto" data_type="%s">
         <raport title="Kocioł 3" order="14"/>
         <draw title="Kocioł 3 Komora spalania" color="red" min="0" max="100" prior="85" order="1"/>
         <draw title="Kocioł 3 Praca falowników" color="red" min="0" max="100" prior="86" order="1"/>
@@ -55,7 +55,7 @@ class ParamTest(unittest.TestCase):
 			self.nodes.append(n)
 
 	def test_parsing_def(self):
-		p = param.Param(self.node_def)
+		p = param.from_node(self.node_def)
 		
 		self.assertEqual(p.data_type, "short")
 		self.assertEqual(p.value_format_string, "<h")
@@ -73,7 +73,7 @@ class ParamTest(unittest.TestCase):
 
 	def test_parsing2(self):
 		for i, n in enumerate(self.nodes):
-			p = param.Param(n)
+			p = param.from_node(n)
 
 			self.assertEqual(p.data_type, self.types[i])
 			self.assertEqual(p.value_format_string, self.formats[i])
@@ -89,5 +89,15 @@ class ParamTest(unittest.TestCase):
 		
 			self.assertEqual(p.value_from_msg(msg), self.values[i])
 
+	def test_parsing_combined(self):
+		n = lxml.etree.fromstring("""
+    <param xmlns="http://www.praterm.com.pl/SZARP/ipk" name="Siec:Kamstrup:przeplyw z licznika" short_name="Kp" draw_name="Przeplyw z licznika" unit="m3/h" prec="2">
+      <define type="DRAWDEFINABLE" formula="(*:*:przeplyw z licznika msw) (*:*:przeplyw z licznika lsw) :"/>
+      <draw title="Kamstrup cieppomierz CO" min="0" max="300" special="hoursum" order="6"/>
+    </param>""")
+		p = param.from_node(n)
+
+		self.assertTrue(p.combined)
+		self.assertEqual("Siec:Kamstrup:przeplyw z licznika lsw", p.lsw_param_name)
 
 

@@ -33,9 +33,8 @@
 #include <boost/mpl/eval_if.hpp>
 #include <boost/mpl/identity.hpp>
 
-#include "szbase/lua_syntax.h"
-#include "szbase/lua_syntax_fusion_adapt.h"
-#include "luapextract.h"
+#include "szarp_base_common/lua_syntax.h"
+#include "szarp_base_common/lua_syntax_fusion_adapt.h"
 
 struct extract_ {
 	template<class T> std::vector<std::wstring> operator()(const T& x) const;

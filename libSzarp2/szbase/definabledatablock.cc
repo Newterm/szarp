@@ -48,7 +48,7 @@
 #include "szbdate.h"
 
 #include "definabledatablock.h"
-#include "definablecalculate.h"
+#include "szb_definable_calculate.h"
 
 #include "boost/filesystem/path.hpp"
 #include "boost/filesystem/operations.hpp"
@@ -67,6 +67,8 @@ debug_str(char * msg_str, ...)
     fprintf(stderr, msg_str, args);
 }
 #endif
+
+static const size_t DEFINABLE_STACK_SIZE  = 200;
 
 DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int m): CacheableDatablock(b, p, y, m)
 {
@@ -121,7 +123,7 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 
 	double pw = pow(10, param->GetPrec());
 
-	SZBASE_TYPE  stack[DEFINABLE_STACK_SIZE]; // stack for calculatinon of formula
+	double stack[DEFINABLE_STACK_SIZE]; // stack for calculatinon of formula
 
 #ifdef KDEBUG
 	sz_log(10, "V szb_definable_calculate_block: probes_to_compute: %d, max: %d, N? %s",
@@ -131,7 +133,10 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 	int i = 0;
 	time_t time = probe2time(0, year, month);
 	for (; i < probes_to_compute; i++, time += SZBASE_DATA_SPAN) {
-		this->data[i] = szb_definable_calculate(b, stack, dblocks, params, formula, i, num_of_params, time, param) / pw;
+		szbase_value_fetch_functor value_fetch(buffer, time, PT_MIN10);
+		default_is_summer_functor is_summer(time, param);
+
+		this->data[i] = szb_definable_calculate(stack, DEFINABLE_STACK_SIZE, dblocks, params, formula, num_of_params, value_fetch, is_summer, param) / pw;
 
 		if (!IS_SZB_NODATA(this->data[i])) {
 			if(this->first_data_probe_index < 0)
@@ -146,6 +151,10 @@ DefinableDatablock::DefinableDatablock(szb_buffer_t * b, TParam * p, int y, int 
 			szb_unlock_buffer(this->buffer);
 			NOT_INITIALIZED;
 		}
+
+		for (int j = 0; j < num_of_params; j++)
+			if (dblocks[j])
+				dblocks[j] += 1;
 	}
 
 	if (this->first_data_probe_index >= 0) {
@@ -256,7 +265,10 @@ DefinableDatablock::Refresh()
 
 	time_t time = probe2time(0, year, month);
 	for (int i = this->fixed_probes_count; i < new_probes_c; i++, time += SZBASE_DATA_SPAN) {
-		this->data[i] = szb_definable_calculate(buffer, stack, dblocks, params, formula, i, num_of_params, time, param) / pw;
+		szbase_value_fetch_functor value_fetch(buffer, time, PT_MIN10);
+		default_is_summer_functor is_summer(time, param);
+
+		this->data[i] = szb_definable_calculate(stack, DEFINABLE_STACK_SIZE, dblocks, params, formula, num_of_params, value_fetch, is_summer, param) / pw;
 
 		if (!IS_SZB_NODATA(this->data[i])) {
 			if(this->first_data_probe_index < 0 || i < this->first_data_probe_index)
@@ -270,6 +282,10 @@ DefinableDatablock::Refresh()
 				szb_definable_error, this->param->GetName().c_str(), this->year, this->month);
 			break;
 		}
+
+		for (int j = 0; j < num_of_params; j++)
+			if (dblocks[j])
+				dblocks[j] += 1;
 	}
 
 	if (this->first_data_probe_index >= 0) {

@@ -10,7 +10,9 @@ YACC=@YACC@
 
 SOURCE_DIR=@srcdir@
 IPK_DIR=$(SOURCE_DIR)/ipk
+SZARP_BASE_COMMON_DIR=$(SOURCE_DIR)/szarp_base_common
 SZBASE_DIR=$(SOURCE_DIR)/szbase
+SZ4_DIR=$(SOURCE_DIR)/sz4
 DMN_DIR=$(SOURCE_DIR)/linedmn
 PARSERS_DIR=$(SOURCE_DIR)/parsers
 INCLUDE_DIR=$(SOURCE_DIR)/include
@@ -27,16 +29,29 @@ AM_CPPFLAGS = @XML_CFLAGS@ @XSLT_CFLAGS@ @CURL_CFLAGS@ @LUA_CFLAGS@ \
 	-I$(INCLUDE_DIR)/szbase				\
 	-I$(SOURCE_DIR)/../libSzarp/include		\
 	-I$(SZBASE_DIR)					\
-	-DPREFIX=\"@prefix@\"
+	-DPREFIX=\"@prefix@\"				\
+	-I$(SOURCE_DIR)/protobuf
 
 noinst_LTLIBRARIES = libSzarp2.la libSzarpLuaParser.la
 
 EXTRA_PROGRAMS = szbtest lua_parser_test xmlreader_test
 szbtest_SOURCES = $(SZBASE_DIR)/szbtest.cc
 
+
+$(SOURCE_DIR)/protobuf/paramsvalues.pb.h: $(SOURCE_DIR)/protobuf/paramsvalues.proto
+	$(PROTOC) --cpp_out=$(SOURCE_DIR)/protobuf -I$(SOURCE_DIR)/protobuf $(SOURCE_DIR)/protobuf/paramsvalues.proto
+
+$(SOURCE_DIR)/protobuf/paramsvalues.pb.cc: $(SOURCE_DIR)/protobuf/paramsvalues.proto
+	$(PROTOC) --cpp_out=$(SOURCE_DIR)/protobuf -I$(SOURCE_DIR)/protobuf $(SOURCE_DIR)/protobuf/paramsvalues.proto
+
+$(SOURCE_DIR)/include/protobuf/paramsvalues.pb.h: $(SOURCE_DIR)/protobuf/paramsvalues.pb.h
+	mkdir -p $(SOURCE_DIR)/include/protobuf
+	cp $< $@
+
+
 lua_parser_test_INCLUDES = $(INCLUDES)
 lua_parser_test_LDADD = $(LDADD) ../libSzarp/libSzarp.la libSzarp2.la
-lua_parser_test_SOURCES = $(SZBASE_DIR)/lua_parser_test.cc
+lua_parser_test_SOURCES = $(SZARP_BASE_COMMON_DIR)/lua_parser_test.cc
 
 xmlreader_test_INCLUDES = $(INCLUDES)
 xmlreader_test_LDADD = $(LDADD) ../libSzarp/libSzarp.la libSzarp2.la $(BOOST_LDFLAGS) $(BOOST_SYSTEM_LIB) $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_REGEX_LIB) $(BOOST_DATE_TIME_LIB)  ../libSzarp/liblog.o
@@ -56,7 +71,8 @@ noinst_HEADERS = \
 		      $(INCLUDE_DIR)/tokens.h \
 		      $(INCLUDE_DIR)/convuri.h \
                       $(INCLUDE_DIR)/ppset.h \
-                      $(INCLUDE_DIR)/xmlutils.h
+                      $(INCLUDE_DIR)/xmlutils.h \
+                      $(INCLUDE_DIR)/protobuf/paramsvalues.pb.h
 
 if MINGW32_OPT
 INCLUDE_PARSERS =
@@ -128,7 +144,7 @@ libSzarp2_la_SOURCES = \
 			$(SZBASE_DIR)/szbfile.cc $(SZBASE_DIR)/szbfile.h \
 			$(SZBASE_DIR)/szbname.cc $(SZBASE_DIR)/szbname.h \
 			$(SZBASE_DIR)/definabledatablock.cc $(SZBASE_DIR)/definabledatablock.h \
-			$(SZBASE_DIR)/definablecalculate.cc $(SZBASE_DIR)/definablecalculate.h \
+			$(SZBASE_DIR)/szb_definable_calculate.cc $(SZBASE_DIR)/szb_definable_calculate.h \
 			$(SZBASE_DIR)/realdatablock.cc $(SZBASE_DIR)/realdatablock.h \
 			$(SZBASE_DIR)/combineddatablock.cc $(SZBASE_DIR)/combineddatablock.h \
 			$(SZBASE_DIR)/cacheabledatablock.cc $(SZBASE_DIR)/cacheabledatablock.h \
@@ -138,19 +154,61 @@ libSzarp2_la_SOURCES = \
 			$(SZBASE_DIR)/szbfilewatcher.cc $(INCLUDE_DIR)/szbase/szbfilewatcher.h \
 			$(SZBASE_DIR)/szbcancelhandle.cc $(INCLUDE_DIR)/szbase/szbcancelhandle.h \
 			$(SZBASE_DIR)/loptdatablock.cc $(SZBASE_DIR)/loptdatablock.h \
+			$(SZARP_BASE_COMMON_DIR)/lua_param_optimizer.cc $(INCLUDE_DIR)/szarp_base_common/lua_param_optimizer.h \
+			$(INCLUDE_DIR)/szarp_base_common/lua_param_optimizer_templ.h \
+			$(SZARP_BASE_COMMON_DIR)/lua_strings_extract.cc	$(INCLUDE_DIR)/szarp_base_common/lua_strings_extract.h \
+			$(SZARP_BASE_COMMON_DIR)/lua_utils.cc $(INCLUDE_DIR)/szarp_base_common/lua_utils.h \
+			$(SZARP_BASE_COMMON_DIR)/time.cc $(INCLUDE_DIR)/szarp_base_common/time.h \
+			$(SZARP_BASE_COMMON_DIR)/definable_calculate.cc $(INCLUDE_DIR)/szarp_base_common/definable_calculate.h \
+			$(INCLUDE_DIR)/szarp_base_common/lua_syntax_fusion_adapt.h \
 			$(SZBASE_DIR)/proberconnection.cc $(SZBASE_DIR)/proberconnection.h \
 			$(SZBASE_DIR)/luacalculate.cc $(SZBASE_DIR)/luacalculate.h \
 			$(SZBASE_DIR)/loptcalculate.cc $(SZBASE_DIR)/loptcalculate.h \
 			$(SZBASE_DIR)/probeblock.cc \
 			$(SZBASE_DIR)/szbsearch.h $(SZBASE_DIR)/szbsearch.cc \
-			$(SZBASE_DIR)/szbblock.cc
+			$(SZBASE_DIR)/szbblock.cc \
+			$(SZARP_BASE_COMMON_DIR)/szbparammonitor.cc $(INCLUDE_DIR)/szarp_base_common/szbparammonitor.h \
+			$(INCLUDE_DIR)/szarp_base_common/szbparamobserver.h \
+			\
+			$(INCLUDE_DIR)/sz4/block.h \
+			$(INCLUDE_DIR)/sz4/load_file_locked.h \
+			$(INCLUDE_DIR)/sz4/buffer.h \
+			$(INCLUDE_DIR)/sz4/buffer_templ.h \
+			$(INCLUDE_DIR)/sz4/real_param_entry.h \
+			$(INCLUDE_DIR)/sz4/lua_optimized_param_entry.h \
+			$(INCLUDE_DIR)/sz4/lua_optimized_param_entry_templ.h \
+			$(INCLUDE_DIR)/sz4/lua_interpreter.h \
+			$(INCLUDE_DIR)/sz4/lua_param_entry.h \
+			$(INCLUDE_DIR)/sz4/rpn_param_entry.h \
+			$(INCLUDE_DIR)/sz4/base.h \
+			$(INCLUDE_DIR)/sz4/defs.h \
+			$(INCLUDE_DIR)/sz4/util.h \
+			$(INCLUDE_DIR)/sz4/block_cache..h \
+			$(INCLUDE_DIR)/sz4/lua_first_last_time..h \
+			$(INCLUDE_DIR)/sz4/decode_file.h \
+			$(SZ4_DIR)/load_file_locked.cpp \
+			$(SZ4_DIR)/path.cpp \
+			$(SZ4_DIR)/buffer.cpp \
+			$(SZ4_DIR)/base.cpp \
+			$(SZ4_DIR)/block.cpp \
+			$(SZ4_DIR)/defs.cpp \
+			$(SZ4_DIR)/lua_interpreter.cpp \
+			$(SZ4_DIR)/sz4_time.cpp \
+			$(SZ4_DIR)/util.cpp \
+			$(SZ4_DIR)/block_cache.cpp \
+			$(SZ4_DIR)/filelock.cpp \
+			$(SZ4_DIR)/decode_file.cpp \
+			\
+			$(SOURCE_DIR)/protobuf/paramsvalues.pb.cc \
+			$(SOURCE_DIR)/include/paramsvalues.pb.h
+
 
 libSzarp2_la_LIBADD = libSzarpLuaParser.la
 
 libSzarpLuaParser_la_CXXFLAGS = $(AM_CXXFLAGS) -g0
 libSzarpLuaParser_la_SOURCES = \
-			$(SZBASE_DIR)/lua_parser_extra.cc $(SZBASE_DIR)/lua_parser_extra.h \
-			$(SZBASE_DIR)/lua_parser.cc $(INCLUDE_DIR)/szbase/lua_syntax.h
+			$(SZARP_BASE_COMMON_DIR)/lua_parser_extra.cc $(SZARP_BASE_COMMON_DIR)/lua_parser_extra.h \
+			$(SZARP_BASE_COMMON_DIR)/lua_parser.cc $(INCLUDE_DIR)/szarp_base_common/lua_syntax.h
 
 # Additional files for deleting on 'make maintainer-clean'
 MAINTAINERCLEANFILES = Makefile.in \

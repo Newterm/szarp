@@ -505,10 +505,8 @@ int main(int argc, char* argv[])
 	LIBXML_TEST_VERSION
 	xmlSubstituteEntitiesDefault(1);
 
-	IPKContainer::Init(SC::L2S(szarp_data_root), SC::L2S(PREFIX), L"", new NullMutex());
+	IPKContainer::Init(SC::L2S(szarp_data_root), SC::L2S(PREFIX), L"");
 	Szbase::Init(SC::L2S(szarp_data_root), NULL);
-
-
 	
 	TSzarpConfig *ipk = IPKContainer::GetObject()->GetConfig(SC::L2S(ipk_prefix));
 	if (ipk == NULL) {

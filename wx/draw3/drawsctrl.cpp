@@ -36,6 +36,7 @@
 #include "drawobs.h"
 #include "draw.h"
 #include "drawswdg.h"
+#include "dbmgr.h"
 #include "cfgmgr.h"
 
 static const size_t MAXIMUM_NUMBER_OF_INITIALLY_ENABLED_DRAWS = 12;
@@ -70,6 +71,22 @@ void DrawsController::State::Reset() {}
 
 void DrawsController::State::SetNumberOfUnits() {
 	m_c->FetchData();
+}
+
+void DrawsController::State::ParamDataChanged(TParam* param) {
+	for (std::vector<Draw*>::iterator i = m_c->m_draws.begin();
+			i != m_c->m_draws.end();
+			i++) {
+		if (!(*i)->GetEnable())
+			continue;
+
+		if (param != (*i)->GetDrawInfo()->GetParam()->GetIPKParam()) 
+			continue;
+		
+		DatabaseQuery *q = (*i)->GetDataToFetch(true);
+		if (q)
+			m_c->QueryDatabase(q);
+	}
 }
 
 void DrawsController::DisplayState::MoveCursorLeft(int n) {
@@ -284,9 +301,6 @@ const DTime& DrawsController::SearchState::GetStateTime() const {
 void DrawsController::SearchState::SendSearchQuery(const wxDateTime& start, const wxDateTime& end, int direction) {
 	assert(m_c->m_selected_draw >= 0);
 
-	time_t t1 = start.IsValid() ? start.GetTicks() : -1;
-	time_t t2 = end.IsValid() ? end.GetTicks() : -1;
-
 	wxLogInfo(_T("Sending search query, start time:%s, end_time: %s, direction: %d"),
 			start.IsValid() ? start.Format().c_str() : L"none",
 			end.IsValid() ? end.Format().c_str() : L"none",
@@ -300,8 +314,12 @@ void DrawsController::SearchState::SendSearchQuery(const wxDateTime& start, cons
 	else 
 		q->param = NULL;
 	q->draw_no = m_c->m_selected_draw;
-	q->search_data.start = t1;
-	q->search_data.end = t2;
+	ToNanosecondTime(start, 
+		q->search_data.start_second,
+		q->search_data.start_nanosecond);
+	ToNanosecondTime(end, 
+		q->search_data.end_second,
+		q->search_data.end_nanosecond);
 	q->search_data.period_type = m_c->m_draws[m_c->m_selected_draw]->GetPeriod();
 	q->search_data.direction = direction;
 	q->search_data.search_condition = &DrawsController::search_condition;
@@ -316,12 +334,14 @@ void DrawsController::SearchState::Reset() {
 
 void DrawsController::SearchState::HandleSearchResponse(DatabaseQuery* query) {
 	DatabaseQuery::SearchData& data = query->search_data;
-	wxDateTime time = data.response != -1 ? wxDateTime(data.response) : wxInvalidDateTime;
+	wxDateTime time = ToWxDateTime(data.response_second, data.response_nanosecond);
+	wxDateTime start = ToWxDateTime(data.start_second, data.start_nanosecond);
+	wxDateTime end = ToWxDateTime(data.end_second, data.end_nanosecond);
 
 	wxLogInfo(_T("Search response dir: %d, start: %s, end: %s,  response: %s"),
 			data.direction,
-			wxDateTime(data.start).Format().c_str(),
-			data.end != -1 ? wxDateTime(data.end).Format().c_str() : L"none",
+			start.Format().c_str(),
+			end.IsValid() ? end.Format().c_str() : L"none",
 			time.Format().c_str());
 
 	switch (data.direction) {
@@ -578,6 +598,8 @@ DrawsController::DrawsController(ConfigManager *config_manager, DatabaseManager 
 	m_units_count[PERIOD_T_WEEK] = TimeIndex::default_units_count[PERIOD_T_WEEK];
 	m_units_count[PERIOD_T_DAY] = TimeIndex::default_units_count[PERIOD_T_DAY];
 	m_units_count[PERIOD_T_30MINUTE] = TimeIndex::default_units_count[PERIOD_T_30MINUTE];
+	m_units_count[PERIOD_T_3MINUTE] = TimeIndex::default_units_count[PERIOD_T_3MINUTE];
+	m_units_count[PERIOD_T_MINUTE] = TimeIndex::default_units_count[PERIOD_T_MINUTE];
 	m_units_count[PERIOD_T_SEASON] = TimeIndex::default_units_count[PERIOD_T_SEASON];
 
 	m_period_type = PERIOD_T_OTHER;
@@ -605,7 +627,26 @@ DrawsController::DrawsController(ConfigManager *config_manager, DatabaseManager 
 	m_state = m_states[STOP];
 }
 
+namespace {
+std::vector<TParam*> GetSetParams(DrawSet* set) {
+	std::vector<TParam*> v;
+	if (set == NULL)
+		return v;
+
+	DrawInfoArray *draws = set->GetDraws();
+	for (DrawInfoArray::iterator i = draws->begin(); i != draws->end(); i++) {
+		TParam* param = (*i)->GetParam()->GetIPKParam();
+		if (param)
+			v.push_back(param);
+	}
+		
+	return v;
+}
+}
+
 DrawsController::~DrawsController() {
+	ChangeObservedParamsRegistration(GetSetParams(m_draw_set), std::vector<TParam*>());
+
 	for (size_t i = 0; i < m_draws.size(); i++)
 		delete m_draws[i];
 
@@ -701,8 +742,11 @@ std::pair<time_t, time_t> DrawsController::GetStatsInterval() {
 }
 
 void DrawsController::HandleSearchResponse(DatabaseQuery *query) {
-	if (query->search_data.period_type == GetPeriod() && GetCurrentDrawInfo() == query->draw_info)
+	if (query->search_data.period_type == GetPeriod() && GetCurrentDrawInfo() == query->draw_info) {
 		m_state->HandleSearchResponse(query);
+		wxLogInfo(_T("Got search response"));
+	} else
+		wxLogInfo(_T("Ignoring response - wrong draw info/period type"));
 	delete query;
 }
 
@@ -775,11 +819,44 @@ bool DrawsController::GetFollowLatestData() {
 	return m_follow_latest_data_mode;
 }
 
+namespace {
+
+struct CompareQueryTimes {
+	unsigned m_second;
+	unsigned m_nanosecond;
+	CompareQueryTimes(const wxDateTime& time) {
+		ToNanosecondTime(time, m_second, m_nanosecond);
+	}
+
+	bool operator()(const DatabaseQuery::ValueData::V& v1, const DatabaseQuery::ValueData::V& v2) const {
+		unsigned second_diff1 = abs(int(v1.time_second) - int(m_second));
+		unsigned second_diff2 = abs(int(v2.time_second) - int(m_second));
+
+		if (second_diff1 < second_diff2)
+			return true;
+		if (second_diff1 > second_diff2)
+			return false;
+
+		unsigned nanosecond_diff1 = abs(int(v1.time_nanosecond) - int(m_nanosecond));
+		unsigned nanosecond_diff2 = abs(int(v2.time_nanosecond) - int(m_nanosecond));
+
+		if (nanosecond_diff1 < nanosecond_diff2)
+			return true;
+		return false;
+
+	}
+
+};
+
+}
+
 void DrawsController::FetchData() {
 	for (size_t i = 0; i < m_draws.size(); i++) {
-		DatabaseQuery *q = m_draws[i]->GetDataToFetch();
-		if (q)
+		DatabaseQuery *q = m_draws[i]->GetDataToFetch(false);
+		if (q) {
+			std::sort(q->value_data.vv->begin(), q->value_data.vv->end(), CompareQueryTimes(m_state->GetStateTime().GetTime()));
 			QueryDatabase(q);
+		}
 	}
 }
 
@@ -874,6 +951,7 @@ void DrawsController::ConfigurationWasReloaded(wxString prefix) {
 	for (int i = 0; i < m_active_draws_count; i++)
 		m_observers.NotifyDrawInfoReloaded(m_draws[i]);
 
+	ChangeObservedParamsRegistration(std::vector<TParam*>(), GetSetParams(GetSet()));
 }
 
 void DrawsController::SetRemoved(wxString prefix, wxString name) {
@@ -897,6 +975,8 @@ void DrawsController::Set(DrawSet *set) {
 	if (set == NULL)
 		return;
 
+	std::vector<TParam*> previous_params(GetSetParams(GetSet()));
+
 	DoSet(set);
 
 	DisableDisabledDraws();
@@ -918,7 +998,10 @@ void DrawsController::Set(DrawSet *set) {
 	for (size_t i = 0; i < m_draws.size(); i++)
 		m_observers.NotifyDrawInfoChanged(m_draws[i]);
 
+	ChangeObservedParamsRegistration(previous_params, GetSetParams(GetSet()));
+
 	m_state->Reset();
+
 }
 
 void DrawsController::DoSwitchNextDraw(int dir) {
@@ -1000,6 +1083,8 @@ void DrawsController::Set(DrawSet *set, PeriodType pt, const wxDateTime& time, i
 
 	m_double_cursor = false;
 
+	std::vector<TParam*> previous_params(GetSetParams(GetSet()));
+
 	DoSet(set);
 
 	DTime period_time = DTime(pt, time).AdjustToPeriod();
@@ -1019,6 +1104,8 @@ void DrawsController::Set(DrawSet *set, PeriodType pt, const wxDateTime& time, i
 
 	for (size_t i = 0; i < m_draws.size(); i++)
 		m_observers.NotifyDrawInfoChanged(m_draws[i]);
+
+	ChangeObservedParamsRegistration(previous_params, GetSetParams(GetSet()));
 
 	EnterState(SEARCH_BOTH, period_time);
 }
@@ -1060,6 +1147,8 @@ void DrawsController::Set(int draw_no) {
 void DrawsController::Set(DrawSet *set, int draw_to_select) {
 	m_double_cursor = false;
 
+	std::vector<TParam*> previous_params(GetSetParams(GetSet()));
+
 	DoSet(set);
 
 	m_selected_draw = draw_to_select;
@@ -1069,8 +1158,9 @@ void DrawsController::Set(DrawSet *set, int draw_to_select) {
 	for (size_t i = 0; i < m_draws.size(); i++)
 		m_observers.NotifyDrawInfoChanged(m_draws[i]);
 
-	EnterState(WAIT_DATA_NEAREST, m_state->GetStateTime());
+	ChangeObservedParamsRegistration(previous_params, GetSetParams(GetSet()));
 
+	EnterState(WAIT_DATA_NEAREST, m_state->GetStateTime());
 }
 
 DTime DrawsController::DoSetSelectedDraw(int draw_no) {
@@ -1115,11 +1205,15 @@ DrawsController::TimeReference::TimeReference(const wxDateTime &datetime) {
 	m_hour = now.GetHour();
 	m_minute = now.GetMinute();
 	m_second = now.GetSecond();
+	m_milisecond = now.GetMillisecond();
 }
 
 void DrawsController::TimeReference::Update(const DTime& time) {
 	const wxDateTime& wxt = time.GetTime();
 	switch (time.GetPeriod()) {
+		case PERIOD_T_MINUTE:
+			m_milisecond = wxt.GetMillisecond();
+		case PERIOD_T_3MINUTE:
 		case PERIOD_T_30MINUTE:
 			m_second = wxt.GetSecond();
 		case PERIOD_T_DAY:
@@ -1147,6 +1241,9 @@ DTime DrawsController::TimeReference::Adjust(PeriodType pt, const DTime& time) {
 	switch (pt) {
 		default:
 			break;
+		case PERIOD_T_MINUTE:
+			t.SetMillisecond(m_milisecond);
+		case PERIOD_T_3MINUTE:
 		case PERIOD_T_30MINUTE:
 			t.SetSecond(m_second);
 		case PERIOD_T_DAY:
@@ -1190,8 +1287,8 @@ DrawInfo* DrawsController::GetCurrentDrawInfo() {
 		return NULL;
 }
 
-time_t DrawsController::GetCurrentTime() {
-	return m_current_time.IsValid() ? m_current_time.GetTime().GetTicks() : -1;
+wxDateTime DrawsController::GetCurrentTime() {
+	return m_current_time;
 }
 
 bool DrawsController::GetDoubleCursor() {
@@ -1515,6 +1612,10 @@ void DrawsController::SortDraws(SORTING_CRITERIA criteria) {
 	}
 
 	m_observers.NotifyDrawsSorted(this);
+}
+
+void DrawsController::ParamDataChanged(TParam* param) {
+	m_state->ParamDataChanged(param);
 }
 
 void DrawsObservers::AttachObserver(DrawObserver *observer) {

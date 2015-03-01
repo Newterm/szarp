@@ -88,8 +88,6 @@ public:
 
 	void OnButtonBaseConfig(wxCommandEvent& event);
 
-	time_t GetCurrentTime();
-
 	DrawInfo* GetCurrentDrawInfo();
 
 	DefinedParam* GetModifiedParam();

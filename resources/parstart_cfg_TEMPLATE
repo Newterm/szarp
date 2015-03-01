@@ -32,5 +32,6 @@ if [ `hostname -s` = $HOST ] ; then
 	REMARKS_SERVER=0
 	PROBER=1
 	PROBES_SERVER=1
+	MEANER4=1
 fi
 

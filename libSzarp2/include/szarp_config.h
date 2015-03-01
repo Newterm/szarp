@@ -37,6 +37,8 @@
 #include <vector>
 #include <map>
 #include <tr1/unordered_map>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/shared_mutex.hpp>
 
 #include <string>
 #include <set>
@@ -332,6 +334,9 @@ public:
 
 	void CreateLogParams();
 
+	unsigned GetConfigId() const { return config_id; }
+
+	void SetConfigId(unsigned _config_id) { config_id = _config_id; }
 
 	TDevice* createDevice(const std::wstring& _daemon = std::wstring(), const std::wstring& _path = std::wstring());
 
@@ -353,6 +358,8 @@ protected:
 	 */
 	int AddDefined(const std::wstring &formula);
 
+	unsigned config_id;
+			/**< Configuration unique numbe id */
 	int read_freq;	/**< Param reading frequency (in seconds) */
 	int send_freq;
 			/**< Param send frequency (in seconds) */
@@ -779,9 +786,18 @@ public:
 		, P_LUA
 #endif
 		} ParamType;
-	
-	static bool IsHourSumUnit(const std::wstring& unit);
 
+	typedef enum { SHORT = 0, INT, FLOAT, DOUBLE, LAST_DATA_TYPE = DOUBLE} DataType;
+
+	typedef enum { SECOND = 0, NANOSECOND, LAST_TIME_TYPE  = NANOSECOND } TimeType; 
+
+	typedef enum { 	SZ4_NONE,
+			SZ4_REAL,
+			SZ4_COMBINED,
+			SZ4_DEFINABLE,
+			SZ4_LUA,
+			SZ4_LUA_OPTIMIZED } Sz4ParamType;
+	
 	TParam(TUnit *parent,
 		TSzarpConfig *parentSC = NULL,
 		const std::wstring& formula = std::wstring(),
@@ -823,7 +839,10 @@ public:
 #endif
 #endif
 	    _sum_unit(),
-	    _sum_divisor(6.)
+	    _sum_divisor(6.),
+	    _dataType(SHORT),
+	    _timeType(SECOND),
+	    _sz4ParamType(SZ4_NONE)
 	{ }
 
 	/** Deletes whole list. */
@@ -1150,6 +1169,27 @@ public:
 
 	void SetParentSzarpConfig(TSzarpConfig *parentSzarpConfig) { _parentSzarpConfig = parentSzarpConfig; }
 
+	DataType GetDataType() const { return _dataType; }
+
+	void SetDataType(DataType dataType) { _dataType = dataType; }
+
+	TimeType GetTimeType() const { return _timeType; }
+
+	void SetTimeType(TimeType timeType) { _timeType = timeType; }
+
+	Sz4ParamType GetSz4Type() const { return _sz4ParamType; }
+
+	void SetSz4Type(Sz4ParamType sz4ParamType) { _sz4ParamType = sz4ParamType; }
+
+	unsigned GetParamId() const { return _paramId; }
+
+	void SetParamId(unsigned paramId) { _paramId = paramId; }
+
+	unsigned GetConfigId() const { return _configId; }
+
+	void SetConfigId(unsigned configId) { _configId = configId; }
+
+	static bool IsHourSumUnit(const std::wstring& unit);
 protected:
 	TUnit * _parentUnit;  /**< Pointer to parent TUnit object (NULL for defined). */
 
@@ -1177,6 +1217,10 @@ protected:
 	int _inbase;	/**< 0 for parameters that are not saved to base, otherwise
 			  1; inbase > 0 and baseInd < 0 it means 'auto' base index
 			  (only available for SzarpBase base format) */
+
+	unsigned _paramId;
+
+	unsigned _configId;
 
 	std::wstring _formula;    /**< NULL if it's an oridinary parameter, formula
 			      for defined parameters. */
@@ -1230,12 +1274,20 @@ protected:
 #endif
 
 #endif
-	/*unit that shall be used to display summaried values of this params*/
+	/** unit that shall be used to display summaried values of this params*/
 	std::wstring _sum_unit;
 
-	/*summarived values of this param shall be divided by this factor*/
+	/** summaried values of this param shall be divided by this factor*/
 	double _sum_divisor;
 
+	/** this parameter data type*/
+	DataType _dataType;
+
+	/** this parameter time type, i.e. resolution*/
+	TimeType _timeType;
+
+	/** parameter type as classified by Sz4 code*/
+	Sz4ParamType _sz4ParamType;
 };
 
 /**
@@ -2123,41 +2175,41 @@ private:
 
 };
 
-/**Mutex interface*/
-class TSMutex {
-public:
-	/**Locks the mutex*/
-	virtual void Lock() = 0;
-	/**Relases the mutex*/
-	virtual void Release() = 0;
-	virtual ~TSMutex() = 0;
-};
-
-/**Mutex locker. Locks provided mutex at object construction. Releases at desctrution*/
-class TSMutexLocker {
-	TSMutex* mutex;
-public:
-	TSMutexLocker(TSMutex *);
-	~TSMutexLocker();
-};
-
-class NullMutex : public TSMutex {
-public:
-        virtual void Lock() {}
-        virtual void Release() {}
-        virtual ~NullMutex() {}
-};
-
 /**Synchronized IPKs container*/
 class IPKContainer {
+	class UnsignedStringHash {
+		std::tr1::hash<std::string> m_hasher;
+		public:
+		size_t operator() (const std::basic_string<unsigned char>& v) const {
+			return m_hasher((const char*) v.c_str());
+		}
+	};
 
-	/**Mutex guarding access to the container*/
-	TSMutex* mutex;
+	/** Maps global parameters names encoding in utf-8 to corresponding szb_buffer_t* and TParam* objects. 
+	 UTF-8 encoded param names are used by LUA formulas*/
+	typedef std::tr1::unordered_map<std::basic_string<unsigned char>, TParam*, UnsignedStringHash > utf_hash_type;
+	/*Maps global parameters encoded in wchar_t. Intention of having two separate maps 
+	is to avoid frequent conversions between two encodings*/
+	typedef std::tr1::unordered_map<std::wstring, TParam* > hash_type;
+
+	hash_type m_params;
+
+	utf_hash_type m_utf_params;
+
+	boost::shared_mutex m_lock;
 
 	/**Szarp data directory*/
 	boost::filesystem::wpath szarp_data_dir;
 
 	typedef std::tr1::unordered_map<std::wstring, TSzarpConfig*> CM;
+
+	struct ConfigAux {
+		unsigned _maxParamId;
+		std::set<unsigned> _freeIds;
+		unsigned _configId;
+	};
+
+	typedef std::tr1::unordered_map<std::wstring, ConfigAux> CAUXM;
 
 	/**Szarp system directory*/
 	boost::filesystem::wpath szarp_system_dir;
@@ -2171,14 +2223,18 @@ class IPKContainer {
 	/**Preload configurations*/
 	CM configs_ready_for_load;
 
+	CAUXM config_aux;
+
+	unsigned max_config_id;
+
 	static IPKContainer* _object;
 
 	std::map<std::wstring, std::vector<TParam*> > m_extra_params;
 
 	IPKContainer(const std::wstring& szarp_data_dir,
 			const std::wstring& szarp_system_dir,
-			const std::wstring& lang,
-			TSMutex* mutex);
+			const std::wstring& lang);
+			
 
 	~IPKContainer();
 
@@ -2188,26 +2244,38 @@ class IPKContainer {
 	 * @param logparams defines if logging params should be generated
 	 */
 	TSzarpConfig* AddConfig(const std::wstring& prefix, const std::wstring& file = std::wstring() , bool logparams = true );
+
+	TParam* GetParamFromHash(const std::basic_string<unsigned char>& global_param_name);
+
+	TParam* GetParamFromHash(const std::wstring& global_param_name);
+
+	void AddParamToHash(TParam* p);
+
+	void RemoveParamFromHash(TParam* p);
+
+	void AddExtraParamImpl(const std::wstring& prefix, TParam *n);
 public:
 	void RemoveExtraParam(const std::wstring& prefix, TParam *param);
 
 	bool ReadyConfigurationForLoad(const std::wstring &prefix, bool logparams = true );
 
-	TParam* GetParam(const std::wstring& global_param_name);
+	template<class T> TParam* GetParam(const std::basic_string<T>& global_param_name, bool add_config_if_not_present = true);
 
 	void AddExtraParam(const std::wstring& prefix, TParam *param);
 
 	/**Retrieves config from the container
 	 * @return configuration object or NULL if given config is not available*/
 	TSzarpConfig *GetConfig(const std::wstring& prefix);
+	
+	TSzarpConfig* GetConfig(const std::basic_string<unsigned char>& prefix);
 	/**Loads config into the container
 	 * @return loaded config object, NULL if error occured during configuration load*/
 	TSzarpConfig *LoadConfig(const std::wstring& prefix, const std::wstring& file = std::wstring(), bool logparams = true );
 	/**@return the container object*/
 	static IPKContainer* GetObject();
 	/**Inits the container
-	 * @param szarp_dir path to main szarp directory, mutex for data synchronization*/
-	static void Init(const std::wstring& szarp_data_dir, const std::wstring& szarp_system_dir, const std::wstring& language, TSMutex* mutex);
+	 * @param szarp_dir path to main szarp directory*/
+	static void Init(const std::wstring& szarp_data_dir, const std::wstring& szarp_system_dir, const std::wstring& language);
 	/**Destroys the container*/
 	static void Destroy();
 };

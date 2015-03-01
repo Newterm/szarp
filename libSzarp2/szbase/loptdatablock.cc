@@ -7,7 +7,7 @@
 
 #include "conversion.h"
 #include "liblog.h"
-#include "lua_syntax.h"
+#include "szarp_base_common/lua_syntax.h"
 #include "szbbase.h"
 #include "loptdatablock.h"
 #include "loptcalculate.h"
@@ -19,7 +19,8 @@ LuaOptDatablock::LuaOptDatablock(szb_buffer_t * b, TParam * p, int y, int m) : L
 
 void LuaOptDatablock::FinishInitialization() {
 
-	exec_param = param->GetLuaExecParam();
+	exec_param = dynamic_cast<LuaExec::SzbaseParam*>(param->GetLuaExecParam());
+	assert(exec_param);
 
 	if (year < buffer->first_av_year)
 		NOT_INITIALIZED;
@@ -40,12 +41,12 @@ void LuaOptDatablock::FinishInitialization() {
 	if (LoadFromCache()) {
 		Refresh();
 	} else {
-		LuaExec::ExecutionEngine ee(buffer, param->GetLuaExecParam());
+		LuaExec::SzbaseExecutionEngine ee(buffer, param->GetLuaExecParam());
 		CalculateValues(&ee, probes_to_compute);
 	}
 }
 
-void LuaOptDatablock::CalculateValues(LuaExec::ExecutionEngine *ee, int end_probe) {
+void LuaOptDatablock::CalculateValues(LuaExec::SzbaseExecutionEngine *ee, int end_probe) {
 	time_t t = probe2time(fixed_probes_count, year, month);
 
 	for (int i = fixed_probes_count; i < end_probe; i++, t += SZBASE_DATA_SPAN) {
@@ -88,7 +89,7 @@ void LuaOptDatablock::Refresh() {
 		end_date = GetEndTime();
 
 	int end_probe = szb_probeind(end_date) + 1;
-	LuaExec::ExecutionEngine ee(buffer, param->GetLuaExecParam());
+	LuaExec::SzbaseExecutionEngine ee(buffer, param->GetLuaExecParam());
 	CalculateValues(&ee, end_probe);
 	last_update_time = szb_round_time(buffer->GetMeanerDate(), PT_MIN10, 0);
 }

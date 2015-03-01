@@ -428,7 +428,7 @@ void DataMangler::ProgressFetch() {
 
 	while (m_pending < 200 && m_current_time <= m_end_time) {
 		for (size_t i = 0; i < m_di.size(); i++)
-			AddTimeToDataQuery(queries[i], m_current_time.GetTime().GetTicks());
+			AddTimeToDataQuery(queries[i], m_current_time.GetTime());
 		m_pending += m_di.size();
 		m_current_time = m_current_time + idx.GetTimeRes() + idx.GetDateRes();
 	}
@@ -442,7 +442,7 @@ void DataMangler::DatabaseResponse(DatabaseQuery *q) {
 	for (std::vector<DatabaseQuery::ValueData::V>::iterator i = q->value_data.vv->begin();
 			i != q->value_data.vv->end();
 			i++) {
-		DTime time = DTime(m_period, i->time);
+		DTime time = DTime(m_period, ToWxDateTime(i->time_second, i->time_nanosecond));
 
 		int index = m_start_time.GetDistance(time);
 
@@ -672,11 +672,6 @@ void XYDialog::OnHelpButton(wxCommandEvent &event) {
 DrawInfo* DataMangler::GetCurrentDrawInfo() {
 	return m_di[0];
 }
-
-time_t DataMangler::GetCurrentTime() {
-	return -1;
-}
-
 
 BEGIN_EVENT_TABLE(XYDialog, wxDialog) 
 	LOG_EVT_BUTTON(XY_START_TIME, XYDialog , OnDateChange, "xydiag:start_date" )

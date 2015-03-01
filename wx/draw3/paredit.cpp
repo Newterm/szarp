@@ -454,10 +454,6 @@ DrawInfo* ParamEdit::GetCurrentDrawInfo() {
 	return NULL;
 }
 
-time_t ParamEdit::GetCurrentTime() {
-	return -1;
-}
-
 time_t ParamEdit::GetStartTime() {
 	if(m_checkbox_start->GetValue()){
 		struct tm start_date;
@@ -550,7 +546,10 @@ void ParamEdit::FormulaCompiledForExpression(DatabaseQuery *q) {
 	q->draw_info = ddi;
 	q->param = param->GetIPKParam();
 	q->draw_no = -1;
-	q->search_data.end = -1;
+	ToNanosecondTime(wxInvalidDateTime,		
+		q->search_data.end_second,
+		q->search_data.end_nanosecond
+		);
 	q->search_data.period_type = m_draws_ctrl->GetPeriod();
 	q->search_data.search_condition = new non_zero_search_condition;
 
@@ -560,11 +559,15 @@ void ParamEdit::FormulaCompiledForExpression(DatabaseQuery *q) {
 	TimeIndex time_index(m_draws_ctrl->GetPeriod());
 	switch (m_search_direction) {
 		case SEARCHING_LEFT:
-			q->search_data.start = (dt - time_index.GetTimeRes() - time_index.GetDateRes()).GetTime().GetTicks();
+			ToNanosecondTime((dt - time_index.GetTimeRes() - time_index.GetDateRes()).GetTime(),
+				q->search_data.start_second,
+				q->search_data.start_nanosecond);
 			q->search_data.direction = -1;
 			break;
 		case SEARCHING_RIGHT:
-			q->search_data.start = (dt + time_index.GetTimeRes() + time_index.GetDateRes()).GetTime().GetTicks();
+			ToNanosecondTime((dt - time_index.GetTimeRes() - time_index.GetDateRes()).GetTime(),
+				q->search_data.start_second,
+				q->search_data.start_nanosecond);
 			q->search_data.direction = 1;
 			break;
 		case NOT_SEARCHING:
@@ -575,9 +578,10 @@ void ParamEdit::FormulaCompiledForExpression(DatabaseQuery *q) {
 }
 
 void ParamEdit::SearchResultReceived(DatabaseQuery *q) {
-	if (q->search_data.response != -1) {
-		m_current_search_date = q->search_data.response;
-		m_draws_ctrl->Set(m_current_search_date);	
+	wxDateTime response = ToWxDateTime(q->search_data.response_second, q->search_data.response_nanosecond);
+	if (response.IsValid()) {
+		m_current_search_date = response;
+		m_draws_ctrl->Set(m_current_search_date);
 		m_found_date_label->SetLabel(wxString::Format(_("Found time: %s"), FormatTime(m_current_search_date, m_draws_ctrl->GetPeriod()).c_str()));
 	} else {
 		m_info_string = wxString::Format(_("%s"), _("No date found"));

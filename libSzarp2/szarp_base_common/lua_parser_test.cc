@@ -4,7 +4,7 @@
 #include <fstream>
 
 #include "conversion.h"
-#include "lua_syntax.h"
+#include "szarp_base_common/lua_syntax.h"
 
 int main(int argc, char *argv[]) {
 	std::cout << "\t\tLua parser \n\n";

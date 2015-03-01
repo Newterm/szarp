@@ -58,6 +58,13 @@ case "$1" in
 	    log_end_msg $?
 	fi
 
+	if [ x$MEANER4 = x1 ]; then
+	    DAEMON=__INSTALL_DIR__/lib/python/meaner4dmn.py
+	    szlog
+	    start_daemon $DAEMON
+	    log_end_msg $?
+	fi
+
 	if [ x$PARCOOK = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/bin/parcook 
 	    szlog
@@ -229,6 +236,13 @@ case "$1" in
 	    DAEMON=__INSTALL_DIR__/bin/remarks_server.py
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --pidfile /var/run/remarks_server.pid
+	    log_end_msg $?
+	fi
+
+	if [ x$MEANER4 = x1 ]; then
+	    DAEMON=__INSTALL_DIR__/lib/python/meaner4dmn.py
+	    stlog
+	    /sbin/start-stop-daemon --stop --quiet --oknodo --pidfile /var/run/meaner4dmn.pid
 	    log_end_msg $?
 	fi
 

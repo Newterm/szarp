@@ -8,9 +8,9 @@ SUBDIRS =
 
 AM_CPPFLAGS = @XML_CFLAGS@ @XSLT_CFLAGS@ @CURL_CFLAGS@ @LUA_CFLAGS@ \
 	   @BOOST_CPPFLAGS@ @ZIP_CFLAGS@ $(PYTHON_CPPFLAGS) \
-	-I../../libSzarp2/include			\
-	-I../../libSzarp2/szbase			\
-	-I../../libSzarp/include			\
+	-I@srcdir@/../../libSzarp2/include			\
+	-I@srcdir@/../../libSzarp2/szbase			\
+	-I@srcdir@/../../libSzarp/include			\
 	-DPREFIX=\"@prefix@\"
 
 lib_LTLIBRARIES = libpyszbase.la

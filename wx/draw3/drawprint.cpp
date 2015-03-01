@@ -730,6 +730,12 @@ void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin, int 
 		case PERIOD_T_30MINUTE:
 			period += _("HOUR ");
 			break;
+		case PERIOD_T_3MINUTE:
+			period += _("5MINUTE ");
+			break;
+		case PERIOD_T_MINUTE:
+			period += _("MINUTE ");
+			break;
 		case PERIOD_T_SEASON:
 			period += _("SEASON ");
 			break;

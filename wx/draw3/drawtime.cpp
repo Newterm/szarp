@@ -22,9 +22,9 @@
 #include "ids.h"
 #include "drawtime.h"
 
-const size_t TimeIndex::default_units_count[PERIOD_T_LAST] = { 10, 12, 31, 7, 24, 30, 40 };
+const size_t TimeIndex::default_units_count[PERIOD_T_LAST] = { 10, 12, 31, 7, 24, 30, 30, 30, 40 };
 /*for year, month, week, day, season*/
-const int TimeIndex::PeriodMult[PERIOD_T_LAST] = {1, 1, 1, 3, 6, 6, 1};
+const int TimeIndex::PeriodMult[PERIOD_T_LAST] = {1, 1, 1, 3, 6, 6, 10, 10, 1};
 
 DTime::DTime(const PeriodType& period, const wxDateTime& time) : m_period(period), m_time(time)
 {
@@ -55,6 +55,10 @@ DTime& DTime::AdjustToPeriodStart() {
 			m_time.SetMinute(0);
 			m_time.SetSecond(0);
 			break;
+		case PERIOD_T_MINUTE:
+			m_time.SetMillisecond(0);
+			break;
+		case PERIOD_T_3MINUTE:
 		case PERIOD_T_30MINUTE:
 			m_time.SetSecond(0);
 			break;
@@ -112,6 +116,7 @@ DTime& DTime::AdjustToPeriod() {
 			wxDateTime tmp = m_time;
 			m_time.SetMinute(m_time.GetMinute() / 10 * 10);
 			m_time.SetSecond(0);
+			m_time.SetMillisecond(0);
 
 			//yet another workaround for bug in wxDateTime
 			if (tmp.IsDST() && !m_time.IsDST())
@@ -122,19 +127,14 @@ DTime& DTime::AdjustToPeriod() {
 			break;
 
 		}
-		case PERIOD_T_30MINUTE : {
-			wxDateTime tmp = m_time;
+		case PERIOD_T_30MINUTE :
 			m_time.SetSecond(m_time.GetSecond() / 10 * 10);
-
-			//yet another workaround for bug in wxDateTime
-			if (tmp.IsDST() && !m_time.IsDST())
-				m_time -= wxTimeSpan::Hours(1);
-			else if (!tmp.IsDST() && m_time.IsDST())
-				m_time += wxTimeSpan::Hours(1);
-
+		case PERIOD_T_3MINUTE:
+			m_time.SetMillisecond(0);
 			break;
-
-		}
+		case PERIOD_T_MINUTE:
+			m_time.SetMillisecond(m_time.GetMillisecond() / 500 * 500);
+			break;
 		case PERIOD_T_SEASON :
 			m_time.SetToWeekDayInSameWeek(wxDateTime::Mon);
 			m_time.SetHour(0);
@@ -173,6 +173,8 @@ DTime DTime::operator+(const wxTimeSpan& span) const {
 			return DTime(m_period, m_time);
 			break;
 		//in this case will just follow UTC
+		case PERIOD_T_MINUTE:
+		case PERIOD_T_3MINUTE:
 		case PERIOD_T_30MINUTE: 
 		case PERIOD_T_DAY: 
 			return DTime(m_period, m_time + span);
@@ -296,6 +298,12 @@ int DTime::GetDistance(const DTime &t) const {
 		case PERIOD_T_30MINUTE:
 			ret = ((_t - _t0).GetSeconds() / 10).ToLong();
 			break;
+		case PERIOD_T_3MINUTE:
+			ret = ((_t - _t0).GetSeconds()).ToLong();
+			break;
+		case PERIOD_T_MINUTE:
+			ret = ((_t - _t0).GetMilliseconds() / 500).ToLong();
+			break;
 		case PERIOD_T_WEEK:
 			ret = (_t - _t0).GetHours() / 8;
 			if (_t0.IsDST() != _t.IsDST()) {
@@ -418,6 +426,18 @@ void TimeIndex::UpdatePeriods() {
 			m_timeperiod = wxTimeSpan(0, 1, 0, 0) * (m_number_of_values / TimeIndex::PeriodMult[p]);
 			m_dateperiod = wxDateSpan(0);
 			break;
+		case PERIOD_T_3MINUTE :
+			m_timeres = wxTimeSpan(0, 0, 1, 0);
+			m_dateres = wxDateSpan(0);
+			m_timeperiod = wxTimeSpan(0, 0, 10, 0) * (m_number_of_values / TimeIndex::PeriodMult[p]);
+			m_dateperiod = wxDateSpan(0);
+			break;
+		case PERIOD_T_MINUTE :
+			m_timeres = wxTimeSpan(0, 0, 0, 500);
+			m_dateres = wxDateSpan(0);
+			m_timeperiod = wxTimeSpan(0, 0, 5, 0) * (m_number_of_values / TimeIndex::PeriodMult[p]);
+			m_dateperiod = wxDateSpan(0);
+			break;
 		case PERIOD_T_SEASON :
 			m_timeres = wxTimeSpan(24 * 7, 0, 0, 0);
 			m_dateres = wxDateSpan(0);
@@ -456,6 +476,13 @@ DTime TimeIndex::AdjustToPeriodSpan(const DTime &time) const {
 				break;
 			case PERIOD_T_30MINUTE :
 				dt.SetMinute(dt.GetMinute() / 30 * 30);
+				dt.SetSecond(0);
+				break;
+			case PERIOD_T_3MINUTE :
+				dt.SetMinute(dt.GetMinute() / 3 * 3);
+				dt.SetSecond(0);
+				break;
+			case PERIOD_T_MINUTE :
 				dt.SetSecond(0);
 				break;
 			case PERIOD_T_OTHER:

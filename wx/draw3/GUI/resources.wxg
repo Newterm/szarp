@@ -291,6 +291,16 @@
                         <radio>1</radio>
                     </item>
                     <item>
+                        <label>3 Minutes\tAlt+3</label>
+                        <name>3MINUTE_RADIO</name>
+                        <radio>1</radio>
+                    </item>
+                    <item>
+                        <label>Minute\tAlt+3</label>
+                        <name>MINUTE_RADIO</name>
+                        <radio>1</radio>
+                    </item>
+                    <item>
                         <label>Season\tAlt+S</label>
                         <name>SEASON_RADIO</name>
                         <radio>1</radio>
@@ -566,10 +576,12 @@
                 <item>
                     <label>Show average type</label>
                     <name>ShowAverage</name>
+                    <checkable>1</checkable>
                 </item>
                 <item>
                     <label>Show interface</label>
                     <name>ShowInterface</name>
+                    <checkable>1</checkable>
                 </item>
             </menu>
             <menu name="HelpM" label="&amp;Help">

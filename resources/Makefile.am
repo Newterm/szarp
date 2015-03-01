@@ -134,7 +134,7 @@ if !DEB_BUILD
 apache2:
 	mkdir -p $(DESTDIR)/etc/apache2/sites-available && \
 		$(LN_S) -f @prefix@/resources/xsltd/apache2-szarp \
-		$(DESTDIR)/etc/apache2/sites-available/szarp
+		$(DESTDIR)/etc/apache2/sites-available/szarp || true
 	[ -x "`which a2ensite`" ] && a2ensite szarp || true;
 	[ -x "`which a2enmod`" ] && { \
 		a2enmod modxslt || true; \
@@ -145,7 +145,7 @@ apache2:
 uninstall-apache2:
 	[ -x "`which a2dissite`" ] && a2dissite szarp || true;
 	[ -d $(DESTDIR)/etc/apache2/sites-available ] && \
-		rm -f $(DESTDIR)/etc/apache2/sites-available/szarp
+		rm -f $(DESTDIR)/etc/apache2/sites-available/szarp || true
 
 else DEB_BUILD
 

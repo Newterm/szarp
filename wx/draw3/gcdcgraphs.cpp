@@ -207,7 +207,7 @@ void GCDCGraphs::DrawXAxis(wxGraphicsContext &dc) {
 }
 
 namespace {
-const int PeriodMarkShift[PERIOD_T_LAST] = {0, 0, 0, 1, 3, 3, 0};
+const int PeriodMarkShift[PERIOD_T_LAST] = {0, 0, 0, 1, 3, 3, 5, 5, 0};
 }
 
 
@@ -445,6 +445,12 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 	std::vector<std::pair<double,double> > p2circles;
 	std::vector<std::pair<double,double> >* pcircles = &p1circles;
 
+	bool draw_circle =
+		d->GetPeriod() != PERIOD_T_DAY
+		&& d->GetPeriod() != PERIOD_T_30MINUTE
+		&& d->GetPeriod() != PERIOD_T_3MINUTE
+		&& d->GetPeriod() != PERIOD_T_MINUTE;
+
 	for (int i = 0; i < pc; i++) {
 		if (!d->GetValuesTable().at(i).IsData()) {
 			prev_data = false;
@@ -463,8 +469,7 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 			path = &path2;
 			pcircles = &p2circles;
 
-			if ((d->GetPeriod() != PERIOD_T_DAY && d->GetPeriod() != PERIOD_T_30MINUTE)
-					|| (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())) 
+			if (draw_circle || (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())) 
 				pcircles->push_back(std::make_pair(x, y));
 
 			path->MoveToPoint(x, y);
@@ -482,8 +487,7 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 			else
 				p = &p1circles;
 
-			if ((d->GetPeriod() != PERIOD_T_DAY && d->GetPeriod() != PERIOD_T_30MINUTE)
-					|| (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())) 
+			if (draw_circle || (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())) 
 				p->push_back(std::make_pair(x, y));
 
 			path = &path1;
@@ -501,8 +505,7 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 			else
 				path->MoveToPoint(x, y);
 
-			if ((d->GetPeriod() != PERIOD_T_DAY && d->GetPeriod() != PERIOD_T_30MINUTE)
-					|| (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())) 
+			if (draw_circle || (!prev_data && ((i + 1) < pc) && !d->GetValuesTable().at(i + 1).IsData())) 
 				pcircles->push_back(std::make_pair(x, y));
 		}
 		
@@ -512,7 +515,7 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 	for (std::vector<std::pair<double, double> >::iterator i = p1circles.begin();
 			i != p1circles.end();
 			i++)
-		if (d->GetPeriod() != PERIOD_T_DAY && d->GetPeriod() != PERIOD_T_30MINUTE)
+		if (draw_circle)
 			path1.AddEllipse(i->first - ellipse_size / 2, i->second - ellipse_size / 2, ellipse_size, ellipse_size);
 		else
 			path1.AddCircle(i->first, i->second, 1);
@@ -524,7 +527,7 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 		for (std::vector<std::pair<double, double> >::iterator i = p2circles.begin();
 				i != p2circles.end();
 				i++)
-			if (d->GetPeriod() != PERIOD_T_DAY && d->GetPeriod() != PERIOD_T_30MINUTE)
+			if (draw_circle)
 				path2.AddEllipse(i->first - ellipse_size / 2, i->second - ellipse_size / 2, ellipse_size, ellipse_size);
 			else
 				path2.AddCircle(i->first, i->second, 1);

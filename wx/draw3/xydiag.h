@@ -146,8 +146,6 @@ class DataMangler : public DBInquirer {
 	void Go();
 	/**Non-significant in this case. Always return NULL*/
 	virtual DrawInfo* GetCurrentDrawInfo();
-	/**Non-significant in this case. Always return -1*/
-	virtual time_t GetCurrentTime();
 };
 
 

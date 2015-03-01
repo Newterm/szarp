@@ -23,166 +23,191 @@
 #include "dbmgr.h"
 #include "conversion.h"
 #include "szbextr/extr.h"
+#include "sz4/util.h"
+#include "szarp_base_common/lua_utils.h"
 
-#include <math.h>
+#include <cmath>
 
 #include <algorithm>
 #include <iostream>
+#include <limits>
+
+namespace {
+
+void sz4_nanonsecond_to_pair(const sz4::nanosecond_time_t& time, unsigned &second, unsigned& nanosecond) {
+	if (sz4::time_trait<sz4::nanosecond_time_t>::is_valid(time)) {
+		second = time.second;
+		nanosecond = time.nanosecond;
+	} else {
+		second = -1;
+		nanosecond = -1;
+	}
+}
+
+sz4::nanosecond_time_t pair_to_sz4_nanosecond(unsigned second, unsigned nanosecond) {
+	if (second == (unsigned) -1 && nanosecond == (unsigned) -1)
+		return sz4::time_trait<sz4::nanosecond_time_t>::invalid_value;
+	else
+		return sz4::nanosecond_time_t(second, nanosecond);
+}
+
+}
 
 DatabaseQuery* CreateDataQueryPrivate(DrawInfo* di, TParam *param, PeriodType pt, int draw_no);
 
-QueryExecutor::QueryExecutor(DatabaseQueryQueue *_queue, wxEvtHandler *_response_receiver, Szbase *_szbase) :
-	wxThread(wxTHREAD_JOINABLE), queue(_queue), response_receiver(_response_receiver), szbase(_szbase), cancelHandle(NULL)
-{ }
-
-SZARP_PROBE_TYPE PeriodToProbeType(PeriodType period) {
-	SZARP_PROBE_TYPE pt;
-	switch (period) {
-		case PERIOD_T_DECADE:
-			pt = PT_YEAR;
-			break;
-		case PERIOD_T_YEAR:
-			pt = PT_MONTH;
-			break;
-		case PERIOD_T_MONTH:
-			pt = PT_DAY;
-			break;
-		case PERIOD_T_WEEK:
-			pt = PT_HOUR8;
-			break;
-		case PERIOD_T_SEASON:
-			pt = PT_WEEK;
-			break;
-		case PERIOD_T_DAY:
-			pt = PT_MIN10;
-			break;
-		case PERIOD_T_30MINUTE:
-			pt = PT_SEC10;
-			break;
-		default:
-			pt = PT_CUSTOM;
-			assert (0);
+std::tr1::tuple<TSzarpConfig*, szb_buffer_t*> SzbaseBase::GetConfigAndBuffer(TParam *param) {
+	if (param) {
+		return std::tr1::tuple<TSzarpConfig*, szb_buffer_t*>(
+			param->GetSzarpConfig(),
+			szbase->GetBuffer(param->GetSzarpConfig()->GetPrefix())
+		);
+	} else {
+		return std::tr1::tuple<TSzarpConfig*, szb_buffer_t*>(NULL, NULL);
 	}
-
-	return pt;
 }
 
-void* QueryExecutor::Entry() {
-	DatabaseQuery *q = NULL;
-
-#if 0
-	try {
-#endif
-
-	while ((q = queue->GetQuery())) {
-
-		bool post_response = false;
-
-		if (q->type == DatabaseQuery::STARTING_CONFIG_RELOAD) {
-			szbase->RemoveConfig(q->reload_prefix.prefix, true);
-			post_response = true;
-		} else if (q->type == DatabaseQuery::COMPILE_FORMULA) {
-			std::wstring error;
-			bool ret;
+void SzbaseBase::maybeSetCancelHandle(TParam* p) {
 #ifndef NO_LUA
-			ret = szbase->CompileLuaFormula(q->compile_formula.formula, error);
-			q->compile_formula.ok = ret;
-			if (ret == false)
-				q->compile_formula.error = wcsdup(error.c_str());
-				
-#else
-			q->compile_formula.ok = false;
-			q->compile_formula.error = strdup(error.c_str());
-#endif
-			post_response = true;
-
-#ifndef NO_LUA
-		} else if (q->type == DatabaseQuery::ADD_PARAM) {
-			TParam *p = q->defined_param.p;
-			wchar_t *prefix = q->defined_param.prefix;
-
-			szbase->AddExtraParam(prefix, p);
-
-			post_response = false;
-
-			free(prefix);
-		} else if (q->type == DatabaseQuery::REMOVE_PARAM) {
-			TParam *p = q->defined_param.p;
-			wchar_t *prefix = q->defined_param.prefix;
-			szbase->RemoveExtraParam(prefix, p);
-			post_response = true;
-#endif
-		} else if (q->type == DatabaseQuery::CHECK_CONFIGURATIONS_CHANGE) {
-			szbase->NotifyAboutConfigurationChanges();
-			post_response = false;
-		} else if (q->type == DatabaseQuery::SET_PROBER_ADDRESS) {
-			szbase->SetProberAddress(q->prefix,
-					q->prober_address.address,
-					q->prober_address.port);
-			free(q->prober_address.address);
-			free(q->prober_address.port);
-			post_response = false;
-		} else if (q->type == DatabaseQuery::EXTRACT_PARAM_VALUES) {
-			ExecuteExtractParametersQuery(q->extraction_parameters);
-			post_response = false;
-		} else {
-			TParam *p = NULL; 
-			TSzarpConfig *cfg = NULL;
-			szb_buffer_t *szb = NULL;
-			
-			if (q->param) {
-				p = q->param;
-				cfg = p->GetSzarpConfig();
-				szb = szbase->GetBuffer(cfg->GetPrefix());
-			}
-
-			switch (q->type) {
-				case DatabaseQuery::SEARCH_DATA: 
-					szbase->NextQuery();
-					ExecuteSearchQuery(szb, p, q->search_data);
-					post_response = true;
-					break;
-				case DatabaseQuery::GET_DATA: 
-					szbase->NextQuery();
-					ExecuteDataQuery(szb, p, q);
-					post_response = false;
-					break;
-				case DatabaseQuery::RESET_BUFFER:
-					if (szb)
-						szb_reset_buffer(szb);
-					break;
-				case DatabaseQuery::CLEAR_CACHE:
-					if (cfg)
-						szbase->ClearCacheDir(cfg->GetPrefix().c_str());
-					break;
-				default:
-					break;
-			}
-
-		}
-	
-		if (post_response) {
-			DatabaseResponse r(q);
-			wxPostEvent(response_receiver, r);
-		} else
-			delete q;
-	
-	}
-	
-#if 0
-	} catch (std::exception &e) {
-		std::cout << e.what() << std::endl;
+	if (p->GetType() == TParam::P_LUA && p->GetFormulaType() == TParam::LUA_AV) {
+		boost::mutex::scoped_lock datalock(m_mutex);
+		cancelHandle = new SzbCancelHandle();
+		cancelHandle->SetTimeout(60);
 	}
 #endif
-	
+}
 
+void SzbaseBase::releaseCancelHandle(TParam* p) {
+
+#ifndef NO_LUA
+	if (p->GetType() == TParam::P_LUA && p->GetFormulaType() == TParam::LUA_AV) {
+		boost::mutex::scoped_lock datalock(m_mutex);
+		delete cancelHandle;
+		cancelHandle = NULL;
+	}
+#endif
+
+}
+
+SzbaseBase::SzbaseBase(const std::wstring& data_path, void (*conf_changed_cb)(std::wstring, std::wstring), int cache_size) {
+	Szbase::Init(data_path, conf_changed_cb, true, cache_size);
+	szbase = Szbase::GetObject();
+}
+
+SzbaseBase::~SzbaseBase() {
 	Szbase::Destroy();
-
-	return NULL;
 }
 
-void QueryExecutor::ExecuteDataQuery(szb_buffer_t* szb, TParam* p, DatabaseQuery* q) {
-	DatabaseQuery::ValueData &vd = q->value_data;
+void SzbaseBase::RemoveConfig(const std::wstring& prefix, bool poison_cache) {
+	szbase->RemoveConfig(prefix, poison_cache);
+}
+
+bool SzbaseBase::CompileLuaFormula(const std::wstring& formula, std::wstring& error) {
+	return szbase->CompileLuaFormula(formula, error);
+}
+
+void SzbaseBase::AddExtraParam(const std::wstring& prefix, TParam *param) {
+	szbase->AddExtraParam(prefix, param);
+}
+
+void SzbaseBase::RemoveExtraParam(const std::wstring& prefix, TParam *param) {
+	szbase->RemoveExtraParam(prefix, param);
+}
+
+void SzbaseBase::NotifyAboutConfigurationChanges() {
+	szbase->NotifyAboutConfigurationChanges();
+}
+
+void SzbaseBase::SetProberAddress(const std::wstring& prefix,
+			const std::wstring& address,
+			const std::wstring& port)
+{
+	szbase->SetProberAddress(prefix, address, port);
+}
+
+void SzbaseBase::ExtractParameters(DatabaseQuery::ExtractionParameters &pars) {
+	IPKContainer* ipk = IPKContainer::GetObject();
+	assert(ipk);
+
+	SzbExtractor extr(szbase);
+	extr.SetPeriod(PeriodToProbeType(pars.pt),
+			pars.start_time,
+			szb_move_time(pars.end_time, 1, PeriodToProbeType(pars.pt), 0),
+			0);
+
+	extr.SetNoDataString(L"NO_DATA");
+	extr.SetEmpty(0);
+
+	FILE* output = fopen((const char*) SC::S2U(*pars.file_name).c_str(), "w");
+	if (output == NULL)
+		return;
+
+	std::vector<SzbExtractor::Param> params;
+	for (size_t i = 0; i < pars.params->size(); i++) {
+		std::wstring param = pars.params->at(i);
+		std::wstring prefix = pars.prefixes->at(i);
+		szb_buffer_t* buffer = szbase->GetBuffer(prefix);
+		params.push_back(SzbExtractor::Param(param, prefix, buffer, SzbExtractor::TYPE_AVERAGE));
+	}
+
+	extr.SetParams(params);
+	extr.ExtractToCSV(output, L";");
+	fclose(output);
+}
+
+void SzbaseBase::SearchData(DatabaseQuery* query) {
+	TParam *p = query->param;
+	TSzarpConfig *cfg = NULL;
+	szb_buffer_t *szb = NULL;
+
+	DatabaseQuery::SearchData& sd = query->search_data;
+
+	std::tr1::tie(cfg, szb) = GetConfigAndBuffer(p);
+			
+	if (szb == NULL) {
+		sd.ok = true;
+		sd.response_second = -1;
+		sd.response_nanosecond = -1;
+		return;
+	}
+
+	maybeSetCancelHandle(p);
+
+	szbase->NextQuery();
+
+	sd.response_second = 
+		szb_search(szb, 
+			p, 
+			sd.start_second, 
+			sd.end_second, 
+			sd.direction, 
+			PeriodToProbeType(sd.period_type), cancelHandle, *sd.search_condition);
+	if (sd.response_second == (unsigned) -1)
+		sd.response_nanosecond = -1;
+	else
+		sd.response_nanosecond = 0;
+
+	if (szb->last_err != SZBE_OK) {
+		sd.ok = false;
+		sd.error = szb->last_err;
+		sd.error_str = wcsdup(szb->last_err_string.c_str());
+
+		szb->last_err = SZBE_OK;
+		szb->last_err_string = std::wstring();
+	} else
+		sd.ok = true;
+
+
+	releaseCancelHandle(p);
+}
+
+void SzbaseBase::GetData(DatabaseQuery* query, wxEvtHandler *response_receiver) {
+	TParam *p = query->param;
+	TSzarpConfig *cfg = NULL;
+	szb_buffer_t *szb = NULL;
+
+	std::tr1::tie(cfg, szb) = GetConfigAndBuffer(p);
+
+	DatabaseQuery::ValueData &vd = query->value_data;
 
 	if (vd.vv->size() == 0)
 		return;
@@ -198,7 +223,7 @@ void QueryExecutor::ExecuteDataQuery(szb_buffer_t* szb, TParam* p, DatabaseQuery
 	while (i != vd.vv->end()) {
 
 		int new_year, new_month;
-		szb_time2my(i->time, &new_year, &new_month);
+		szb_time2my(i->time_second, &new_year, &new_month);
 
 		if (new_year != year || new_month != month) {
 			if (rq) {
@@ -213,16 +238,16 @@ void QueryExecutor::ExecuteDataQuery(szb_buffer_t* szb, TParam* p, DatabaseQuery
 		}
 
 		if (rq == NULL) {
-			rq = CreateDataQueryPrivate(q->draw_info, q->param, vd.period_type, q->draw_no);
-			rq->inquirer_id = q->inquirer_id;
+			rq = CreateDataQueryPrivate(query->draw_info, query->param, vd.period_type, query->draw_no);
+			rq->inquirer_id = query->inquirer_id;
 		}
 
-		time_t end = szb_move_time(i->time, 1, pt, i->custom_length);
+		time_t end = szb_move_time(i->time_second, 1, pt, i->custom_length);
 		if (p && szb) {
 			bool fixed;
 			i->response = szb_get_avg(szb, 
 					p, 
-					i->time,
+					i->time_second,
 					end,
 					&i->sum,
 					&i->count,
@@ -258,84 +283,349 @@ void QueryExecutor::ExecuteDataQuery(szb_buffer_t* szb, TParam* p, DatabaseQuery
 
 }
 
-void QueryExecutor::StopSearch() {
+void SzbaseBase::ResetBuffer(DatabaseQuery* query) {
+	TParam *p = query->param;
+	TSzarpConfig *cfg = NULL;
+	szb_buffer_t *szb = NULL;
+
+	std::tr1::tie(cfg, szb) = GetConfigAndBuffer(p);
+
+	if (szb)
+		szb_reset_buffer(szb);
+}
+
+void SzbaseBase::ClearCache(DatabaseQuery* query) {
+	TParam *p = query->param;
+	TSzarpConfig *cfg = NULL;
+	szb_buffer_t *szb = NULL;
+
+	std::tr1::tie(cfg, szb) = GetConfigAndBuffer(p);
+
+	if (cfg)
+		szbase->ClearCacheDir(cfg->GetPrefix().c_str());
+}
+
+void SzbaseBase::StopSearch() {
 	boost::mutex::scoped_lock datalock(m_mutex);
 	if(cancelHandle != NULL) {
 		cancelHandle->SetStopFlag();
 	}
 }
 
-void QueryExecutor::ExecuteSearchQuery(szb_buffer_t* szb, TParam *p, DatabaseQuery::SearchData& sd) {
-	if (szb == NULL) {
-		sd.ok = true;
-		sd.response = -1;
-		return;
-	}
+Sz4Base::Sz4Base(const std::wstring& data_dir, IPKContainer* ipk_conatiner)
+	: data_dir(data_dir), ipk_container(ipk_conatiner) {
 
-#ifndef NO_LUA
-	if (p->GetType() == TParam::P_LUA && p->GetFormulaType() == TParam::LUA_AV) {
-		boost::mutex::scoped_lock datalock(m_mutex);
-		cancelHandle = new SzbCancelHandle();
-		cancelHandle->SetTimeout(60);
-	}
-#endif
-
-	sd.response = 
-		szb_search(szb, 
-			p, 
-			sd.start, 
-			sd.end, 
-			sd.direction, 
-			PeriodToProbeType(sd.period_type), cancelHandle, *sd.search_condition);
-
-	if (szb->last_err != SZBE_OK) {
-		sd.ok = false;
-		sd.error = szb->last_err;
-		sd.error_str = wcsdup(szb->last_err_string.c_str());
-
-		szb->last_err = SZBE_OK;
-		szb->last_err_string = std::wstring();
-	} else
-		sd.ok = true;
-
-#ifndef NO_LUA
-	if (p->GetType() == TParam::P_LUA && p->GetFormulaType() == TParam::LUA_AV) {
-		boost::mutex::scoped_lock datalock(m_mutex);
-		delete cancelHandle;
-		cancelHandle = NULL;
-	}
-#endif
+	base = new sz4::base(data_dir, ipk_conatiner);
 
 }
 
-void QueryExecutor::ExecuteExtractParametersQuery(DatabaseQuery::ExtractionParameters &pars) {
-	IPKContainer* ipk = IPKContainer::GetObject();
-	assert(ipk);
+Sz4Base::~Sz4Base() {
+	delete base;
+}
 
-	SzbExtractor extr(szbase);
-	extr.SetPeriod(PeriodToProbeType(pars.pt),
-			pars.start_time,
-			szb_move_time(pars.end_time, 1, PeriodToProbeType(pars.pt), 0),
-			0);
+void Sz4Base::RemoveConfig(const std::wstring& prefix, bool poison_cache) {
+	delete base;
 
-	extr.SetNoDataString(L"NO_DATA");
-	extr.SetEmpty(0);
+	base = new sz4::base(data_dir, ipk_container);
+}
 
-	FILE* output = fopen((const char*) SC::S2U(*pars.file_name).c_str(), "w");
-	if (output == NULL)
-		return;
+bool Sz4Base::CompileLuaFormula(const std::wstring& formula, std::wstring& error) {
+	lua_State* lua = base->get_lua_interpreter().lua();
+	bool r = lua::compile_lua_formula(lua, (const char*)SC::S2U(formula).c_str());
+	if (r == false)
+		error = SC::lua_error2szarp(lua_tostring(lua, -1));
+	lua_pop(lua, 1);
+	return r;
+}
 
-	std::vector<SzbExtractor::Param> params;
-	for (size_t i = 0; i < pars.params->size(); i++) {
-		std::wstring param = pars.params->at(i);
-		std::wstring prefix = pars.prefixes->at(i);
-		szb_buffer_t* buffer = szbase->GetBuffer(prefix);
-		params.push_back(SzbExtractor::Param(param, prefix, buffer, SzbExtractor::TYPE_AVERAGE));
+void Sz4Base::AddExtraParam(const std::wstring& prefix, TParam *param) {
+}
+
+void Sz4Base::RemoveExtraParam(const std::wstring& prefix, TParam *param) {
+	base->remove_param(param);
+}
+
+void Sz4Base::NotifyAboutConfigurationChanges() {
+
+}
+
+void Sz4Base::SetProberAddress(const std::wstring& prefix,
+			const std::wstring& address,
+			const std::wstring& port)  {
+}
+
+void Sz4Base::ExtractParameters(DatabaseQuery::ExtractionParameters &pars) {
+}
+
+class no_data_search_condition : public sz4::search_condition {
+public:
+	bool operator()(const short& v) const {
+		return v != std::numeric_limits<short>::min();
 	}
 
-	extr.SetParams(params);
-	extr.ExtractToCSV(output, L";");
-	fclose(output);
+	bool operator()(const int& v) const {
+		return v != std::numeric_limits<int>::min();
+
+	}
+
+	bool operator()(const float& v) const {
+		return !isnanf(v);
+	}
+
+	bool operator()(const double& v) const {
+		return !isnan(v);
+	}
+};
+
+
+void Sz4Base::SearchData(DatabaseQuery* query) {
+	TParam* p = query->param;
+	DatabaseQuery::SearchData& sd = query->search_data;
+	sz4::nanosecond_time_t response;
+	if (sd.direction > 0) {
+		response = base->search_data_right(
+			p,
+			pair_to_sz4_nanosecond(sd.start_second, sd.start_nanosecond),
+			pair_to_sz4_nanosecond(sd.end_second, sd.end_nanosecond),
+			PeriodToProbeType(sd.period_type),
+			no_data_search_condition()
+		);
+	} else {
+		sz4::nanosecond_time_t end = pair_to_sz4_nanosecond(sd.end_second, sd.end_nanosecond);
+		if (!sz4::time_trait<sz4::nanosecond_time_t>::is_valid(end)) {
+			end.second = 0;
+			end.nanosecond = 0;
+		}
+		response = base->search_data_left(
+			p,
+			pair_to_sz4_nanosecond(sd.start_second, sd.start_nanosecond),
+			end,
+			PeriodToProbeType(sd.period_type),
+			no_data_search_condition());
+	}
+	sz4_nanonsecond_to_pair(response, sd.response_second, sd.response_nanosecond);
+	sd.ok = true;
+}
+
+template<class time_type> void Sz4Base::GetValue(DatabaseQuery::ValueData::V& v,
+		const time_type& time, TParam* p, SZARP_PROBE_TYPE pt) {
+	typedef sz4::weighted_sum<double, time_type> wsum_type;
+
+	time_type end_time = szb_move_time(time, 1, pt, v.custom_length);
+	wsum_type wsum;
+	base->get_weighted_sum(p, time, end_time, pt, wsum);
+
+	v.response = sz4::scale_value(wsum.avg(), p);
+
+	typename wsum_type::sum_type sum;
+	typename wsum_type::time_diff_type weight;
+	sum = wsum.sum(weight);
+
+	double scale;
+	if (pt == PT_HALFSEC)
+		scale = 10 * 60.;
+	else
+		scale = 10 * 1000000000.;
+	v.sum = sz4::scale_value(sum, p) * wsum.gcd() / scale;
+
+	if (weight && v.count)
+		v.count = v.count * weight / (weight + wsum.no_data_weight());
+	else
+		v.count = 0;
+}
+
+void Sz4Base::GetData(DatabaseQuery* query, wxEvtHandler* response_receiver) {
+	DatabaseQuery::ValueData &vd = query->value_data;
+	TParam* p = query->param;
+
+	SZARP_PROBE_TYPE pt = PeriodToProbeType(vd.period_type);
+
+	std::vector<DatabaseQuery::ValueData::V>::iterator i = vd.vv->begin();
+	while (i != vd.vv->end()) {
+		if (pt == PT_HALFSEC) {
+			sz4::nanosecond_time_t time = pair_to_sz4_nanosecond(i->time_second, i->time_nanosecond);
+			GetValue<sz4::nanosecond_time_t>(*i, time, p, pt);
+		} else {
+			GetValue<sz4::second_time_t>(*i, i->time_second, p, pt);
+		}
+
+		i->ok = true;
+
+		DatabaseQuery *rq = CreateDataQueryPrivate(query->draw_info, query->param, vd.period_type, query->draw_no);
+
+		rq->inquirer_id = query->inquirer_id;
+		rq->value_data.vv->push_back(*i);
+		DatabaseResponse dr(rq);
+		wxPostEvent(response_receiver, dr);
+
+		i++;
+	}	
+
+}
+
+void Sz4Base::ResetBuffer(DatabaseQuery* query) {
+
+}
+
+void Sz4Base::ClearCache(DatabaseQuery* query) {
+
+}
+
+void Sz4Base::StopSearch() {
+
+}
+
+void Sz4Base::RegisterObserver(sz4::param_observer* observer, const std::vector<TParam*>& params) {
+	base->register_observer(observer, params);
+}
+
+void Sz4Base::DeregisterObserver(sz4::param_observer* observer, const std::vector<TParam*>& params) {
+	base->deregister_observer(observer, params);
+}
+
+QueryExecutor::QueryExecutor(DatabaseQueryQueue *_queue, wxEvtHandler *_response_receiver, Draw3Base *_base) :
+	wxThread(wxTHREAD_JOINABLE), queue(_queue), response_receiver(_response_receiver), base(_base)
+{ 
+}
+
+SZARP_PROBE_TYPE PeriodToProbeType(PeriodType period) {
+	SZARP_PROBE_TYPE pt;
+	switch (period) {
+		case PERIOD_T_DECADE:
+			pt = PT_YEAR;
+			break;
+		case PERIOD_T_YEAR:
+			pt = PT_MONTH;
+			break;
+		case PERIOD_T_MONTH:
+			pt = PT_DAY;
+			break;
+		case PERIOD_T_WEEK:
+			pt = PT_HOUR8;
+			break;
+		case PERIOD_T_SEASON:
+			pt = PT_WEEK;
+			break;
+		case PERIOD_T_DAY:
+			pt = PT_MIN10;
+			break;
+		case PERIOD_T_30MINUTE:
+			pt = PT_SEC10;
+			break;
+		case PERIOD_T_3MINUTE:
+			pt = PT_SEC;
+			break;
+		case PERIOD_T_MINUTE:
+			pt = PT_HALFSEC;
+			break;
+		default:
+			pt = PT_CUSTOM;
+			assert (0);
+	}
+
+	return pt;
+}
+
+void ToNanosecondTime(const wxDateTime& time, unsigned& second, unsigned& nanosecond) {
+	if (time.IsValid()) {
+		second = time.GetTicks();
+		nanosecond = time.GetMillisecond() * 1000000;
+	} else {	
+		second = -1;
+		nanosecond = -1;
+	}
+}
+
+wxDateTime ToWxDateTime(unsigned second, unsigned nanosecond) {
+	if (second == (unsigned) -1 && nanosecond == (unsigned) -1)
+		return wxInvalidDateTime;
+	else {
+		wxDateTime t((time_t)second);
+		t.SetMillisecond(nanosecond / 1000000);
+		return t;
+	}
+}
+
+void* QueryExecutor::Entry() {
+	DatabaseQuery *q = NULL;
+
+	while ((q = queue->GetQuery())) {
+
+		bool post_response = false;
+
+		if (q->type == DatabaseQuery::STARTING_CONFIG_RELOAD) {
+			base->RemoveConfig(q->reload_prefix.prefix, true);
+			post_response = true;
+		} else if (q->type == DatabaseQuery::COMPILE_FORMULA) {
+			std::wstring error;
+			bool ret;
+#ifndef NO_LUA
+			ret = base->CompileLuaFormula(q->compile_formula.formula, error);
+			q->compile_formula.ok = ret;
+			if (ret == false)
+				q->compile_formula.error = wcsdup(error.c_str());
+				
+#else
+			q->compile_formula.ok = false;
+			q->compile_formula.error = strdup(error.c_str());
+#endif
+			post_response = true;
+
+#ifndef NO_LUA
+		} else if (q->type == DatabaseQuery::ADD_PARAM) {
+			base->AddExtraParam(q->defined_param.prefix, q->defined_param.p);
+			free(q->defined_param.prefix);
+		} else if (q->type == DatabaseQuery::REMOVE_PARAM) {
+			base->RemoveExtraParam(q->defined_param.prefix, q->defined_param.p);
+			post_response = true;
+#endif
+		} else if (q->type == DatabaseQuery::CHECK_CONFIGURATIONS_CHANGE) {
+			base->NotifyAboutConfigurationChanges();
+		} else if (q->type == DatabaseQuery::SET_PROBER_ADDRESS) {
+			base->SetProberAddress(q->prefix,
+					q->prober_address.address,
+					q->prober_address.port);
+			free(q->prober_address.address);
+			free(q->prober_address.port);
+		} else if (q->type == DatabaseQuery::EXTRACT_PARAM_VALUES) {
+			ExecuteExtractParametersQuery(q->extraction_parameters);
+		} else if (q->type == DatabaseQuery::SEARCH_DATA) {
+			base->SearchData(q);
+			post_response = true;
+		} else if (q->type == DatabaseQuery::GET_DATA) {
+			base->GetData(q, response_receiver);
+			post_response = false;
+		} else if (q->type == DatabaseQuery::RESET_BUFFER) {
+			base->ResetBuffer(q);
+		} else if (q->type == DatabaseQuery::CLEAR_CACHE) {
+			base->ClearCache(q);
+		} else if (q->type == DatabaseQuery::REGISTER_OBSERVER) {
+			base->DeregisterObserver(q->observer_registration_parameters.observer, *q->observer_registration_parameters.params_to_deregister);
+			base->RegisterObserver(q->observer_registration_parameters.observer, *q->observer_registration_parameters.params_to_register);
+		} else {
+			assert(false);
+		}
+	
+		if (post_response) {
+			DatabaseResponse r(q);
+			wxPostEvent(response_receiver, r);
+		} else
+			delete q;
+	
+	}
+
+	delete base;
+	
+	return NULL;
+}
+
+
+void QueryExecutor::StopSearch() {
+	base->StopSearch();
+}
+
+void QueryExecutor::ExecuteExtractParametersQuery(DatabaseQuery::ExtractionParameters &pars) {
+	base->ExtractParameters(pars);
 }
 
 DatabaseQuery::~DatabaseQuery() {
@@ -345,6 +635,9 @@ DatabaseQuery::~DatabaseQuery() {
 		delete extraction_parameters.params;
 		delete extraction_parameters.prefixes;
 		delete extraction_parameters.file_name;
+	} else if (type == REGISTER_OBSERVER) {
+		delete observer_registration_parameters.params_to_register;
+		delete observer_registration_parameters.params_to_deregister;
 	}
 }
 
@@ -365,6 +658,9 @@ double DatabaseQueryQueue::FindQueryRanking(DatabaseQuery* q) {
 	if (q->type == DatabaseQuery::CLEAR_CACHE)
 		return 150.f;
 
+	if (q->type == DatabaseQuery::REGISTER_OBSERVER)
+		return 150.f;
+
 	if (q->type == DatabaseQuery::SET_PROBER_ADDRESS)
 		return 150.f;
 
@@ -381,7 +677,7 @@ double DatabaseQueryQueue::FindQueryRanking(DatabaseQuery* q) {
 		return nan("");
 
 	if (q->type == DatabaseQuery::STARTING_CONFIG_RELOAD)
-		return -100.f;
+		return nan("");
 
 	if (q->type == DatabaseQuery::CHECK_CONFIGURATIONS_CHANGE)
 		return -200.f;
@@ -402,8 +698,8 @@ double DatabaseQueryQueue::FindQueryRanking(DatabaseQuery* q) {
 
 		double d;
 
-		time_t& t1 = vv[0].time;
-		time_t& t2 = vv[vv.size() - 1].time;
+		time_t t1 = vv[0].time_second;
+		time_t t2 = vv[vv.size() - 1].time_second;
 		if (t1 <= t && t <= t2)
 			d = 0;
 		else 
@@ -444,8 +740,8 @@ void DatabaseQueryQueue::ShufflePriorities() {
 
 }
 void DatabaseQueryQueue::CleanOld(DatabaseQuery *query) {
-	time_t start = query->search_data.start;
-	time_t end = query->search_data.end;
+	time_t start = query->search_data.start_second;
+	time_t end = query->search_data.end_second;
 
 	assert(start<end);
 	
@@ -457,7 +753,7 @@ void DatabaseQueryQueue::CleanOld(DatabaseQuery *query) {
 		
 		for(i=queue.begin();i!=queue.end();i++)
 		{
-			if((i->query->search_data.start < start)||(i->query->search_data.end>end))
+			if((i->query->search_data.start_second < start)||(i->query->search_data.end_second>end))
 			{	
 				wxSemaError err = semaphore.TryWait();
 				assert(err == wxSEMA_NO_ERROR);
@@ -551,10 +847,11 @@ DatabaseQuery* CreateDataQuery(DrawInfo* di, PeriodType pt, int draw_no) {
 }
 
 
-void AddTimeToDataQuery(DatabaseQuery *q, time_t time) {
+DatabaseQuery::ValueData::V& AddTimeToDataQuery(DatabaseQuery *q, const wxDateTime& time) {
 	DatabaseQuery::ValueData::V v;
-	v.time = time;
+	ToNanosecondTime(time, v.time_second, v.time_nanosecond);
 	v.custom_length = 0;
 	q->value_data.vv->push_back(v);
+	return q->value_data.vv->back();
 }
 

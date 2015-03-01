@@ -11,9 +11,9 @@
 #include <boost/spirit/include/phoenix_stl.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "lua_syntax.h"
+#include "szarp_base_common/lua_syntax.h"
 #include "lua_parser_extra.h"
-#include "lua_syntax_fusion_adapt.h"
+#include "szarp_base_common/lua_syntax_fusion_adapt.h"
 #include "conversion.h"
 
 namespace lua_grammar {
@@ -229,6 +229,15 @@ std::ostream& operator<< (std::ostream& out, const chunk& c ) {
 std::ostream& operator<< (std::ostream& out, const block& c ) {
 	return out << c.chunk_.get();
 }
+
+std::ostream& operator<< (std::ostream& out, const boost::recursive_wrapper<chunk>& c ) {
+	return out << c.get();
+}
+
+std::ostream& operator<< (std::ostream& out, const boost::recursive_wrapper<block>& c ) {
+	return out << c.get();
+}
+
 
 std::ostream& operator<< (std::ostream& out, const parlist1& c ) {
 	out << c.namelist_;

@@ -60,10 +60,12 @@ SyncedPrefixSet::Remove(wxString prefix){
 
 DEFINE_EVENT_TYPE(DATABASE_RESP)
 DEFINE_EVENT_TYPE(CONFIGURATION_CHANGE)
+DEFINE_EVENT_TYPE(PARAM_DATA_CHANGED)
 
 BEGIN_EVENT_TABLE(DatabaseManager, wxEvtHandler) 
 	EVT_DATABASE_RESP(wxID_ANY, DatabaseManager::OnDatabaseResponse)
 	EVT_CONFIGUARION_CHANGE(wxID_ANY, DatabaseManager::OnConfigurationChange)
+	EVT_PARAM_DATA_CHANGED(wxID_ANY, DatabaseManager::OnParamDataChanged)
 END_EVENT_TABLE()
 
 DatabaseResponse::DatabaseResponse(DatabaseQuery *_data) : wxCommandEvent(DATABASE_RESP, wxID_ANY), data(_data)
@@ -91,6 +93,18 @@ wxEvent* ConfigurationChangedEvent::Clone() const {
 }
 
 ConfigurationChangedEvent::~ConfigurationChangedEvent() {}
+
+ParamDataChangedEvent::ParamDataChangedEvent(TParam *param) : wxCommandEvent(PARAM_DATA_CHANGED, wxID_ANY), m_param(param) {}
+
+TParam* ParamDataChangedEvent::GetParam() {
+	return m_param;
+}
+
+wxEvent* ParamDataChangedEvent::Clone() const {
+	return new ParamDataChangedEvent(m_param);
+}
+
+ParamDataChangedEvent::~ParamDataChangedEvent() {}
 
 DatabaseManager::DatabaseManager(DatabaseQueryQueue *_query_queue, ConfigManager *_config_manager) :
 	query_queue(_query_queue), config_manager(_config_manager), current_inquirer(-1), free_inquirer_id(1)
@@ -210,8 +224,10 @@ time_t DatabaseManager::GetCurrentDateForInquirer(InquirerId id) {
 
 	if (i == inquirers.end())
 		result = -1;
-	else
-		result = i->second->GetCurrentTime();
+	else {
+		wxDateTime t = i->second->GetCurrentTime();
+		t.IsValid() ? result = t.GetTicks() : -1;
+	}
 
 	return result;
 }
@@ -338,6 +354,12 @@ void DatabaseManager::OnConfigurationChange(ConfigurationChangedEvent &e) {
 	config_manager->ReloadConfiguration(e.GetPrefix());
 }
 
+void DatabaseManager::OnParamDataChanged(ParamDataChangedEvent &e) {
+	for (IHI i = inquirers.begin(); i != inquirers.end(); i++) {
+		i->second->ParamDataChanged(e.GetParam());
+	}
+}
+
 void DatabaseManager::SetProbersAddresses(const std::map<wxString, std::pair<wxString, wxString> > &addresses) {
 	for (std::map<wxString, std::pair<wxString, wxString> >::const_iterator i = addresses.begin();
 			i != addresses.end();
@@ -350,3 +372,21 @@ void DatabaseManager::SetProbersAddresses(const std::map<wxString, std::pair<wxS
 		query_queue->Add(query);
 	}
 }
+
+void DatabaseManager::ChangeObservedParamsRegistration(const std::vector<TParam*>& to_deregister, const std::vector<TParam*>& to_register) {
+	DatabaseQuery* query = new DatabaseQuery;
+
+	query->type = DatabaseQuery::REGISTER_OBSERVER;
+	query->observer_registration_parameters.observer = this;
+	query->observer_registration_parameters.params_to_deregister = new std::vector<TParam*>(to_deregister);
+	query->observer_registration_parameters.params_to_register = new std::vector<TParam*>(to_register);
+	query->draw_info = NULL;
+
+	query_queue->Add(query);
+}
+
+void DatabaseManager::param_data_changed(TParam* param) {
+	ParamDataChangedEvent event(param);
+	wxPostEvent(this, event);
+}
+

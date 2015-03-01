@@ -30,7 +30,7 @@ void check_init() {
 void init(const std::wstring& szarp_path, const std::wstring& lang) {
 	check_no_init();
 
-	IPKContainer::Init(szarp_path, szarp_path, lang, new NullMutex());
+	IPKContainer::Init(szarp_path, szarp_path, lang);
 	Szbase::Init(szarp_path, false);
 
 	g_initialized = true;
