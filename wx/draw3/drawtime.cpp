@@ -22,7 +22,7 @@
 #include "ids.h"
 #include "drawtime.h"
 
-const size_t TimeIndex::default_units_count[PERIOD_T_LAST] = { 10, 12, 31, 7, 24, 30, 30, 40 };
+const size_t TimeIndex::default_units_count[PERIOD_T_LAST] = { 10, 12, 31, 7, 24, 30, 30, 30, 40 };
 /*for year, month, week, day, season*/
 const int TimeIndex::PeriodMult[PERIOD_T_LAST] = {1, 1, 1, 3, 6, 6, 10, 10, 1};
 
