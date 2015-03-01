@@ -193,6 +193,9 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 		}
 	}
 
+	if (_parentSzarpConfig)
+		_parentSzarpConfig->AddParamToNamesCache(this);
+
 	if (isEmptyTag)
 		return 0;
 
@@ -404,7 +407,11 @@ TParam::parseXML(xmlNodePtr node)
 
     NEEDATR(node, "name");
     _name = SC::U2S(c);
-	xmlFree(c);
+    xmlFree(c);
+
+    if (_parentSzarpConfig)
+	_parentSzarpConfig->AddParamToNamesCache(this);
+
     
     c = xmlGetNoNsProp(node, X "short_name");
     if (c) {

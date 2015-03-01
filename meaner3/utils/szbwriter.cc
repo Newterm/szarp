@@ -147,15 +147,7 @@ protected:
 	 * @return copy of unit name or NULL if no unit is available
 	 */
 	char *check_unit(char *name);
-	/** Adds parameter to config (if doesn't exists already). 
-	 * @param name name of parameter
-	 * @param unit name of unit, may be NULL
-	 * @param prec precision of parameter
-	 * @return parameter precision, can be different from prec if parameter
-	 * already exists with different precision (old one is used - otherwise we
-	 * should modify values in base)
-	 */
-	int add_param(const std::wstring& name, const std::wstring& unit, int prec);
+
 	/** Adds data to base.
 	 * @return 0 on success, 1 on error */
 	int add_data(const std::wstring& name, const std::wstring& unit, int year, int month, int day, 
@@ -376,6 +368,9 @@ SzbaseWriter::SzbaseWriter(
 
 	m_new_par = false;
 
+	/* set up map for fast param searching */
+	UseNamesCache();
+
 	if (loadXML(ipk_path) == 0) {
 		for (TParam* p = GetFirstParam(); p; p = GetNextParam(p)) {
 			for (TDraw* d = p->GetDraws(); d; d = d->GetNext()) {
@@ -471,69 +466,6 @@ char *SzbaseWriter::check_unit(char *name)
 	if (strlen(ret) > 5)
 		ret[5] = 0;
 	return ret;
-}
-
-int SzbaseWriter::add_param(const std::wstring &name, const std::wstring& unit, int prec)
-{
-	TParam *p;
-	std::wstring draww;
-	int i;
-	
-	sz_log(2, "Adding new parameter: %s", SC::S2U(name).c_str());
-	m_new_par = true;
-
-	if (is_double(name)) {
-		std::wstring n1, n2, formula;
-		TParam *p1, *p2;
-		n1 = name + L" msw";
-		n2 = name + L" lsw";
-		p1 = new TParam(NULL, this, L"null ", TParam::RPN);
-		p2 = new TParam(NULL, this, L"null ", TParam::RPN);
-		p1->Configure(n1, short_name(n1), L"",
-			L"-", NULL, 0, -1, 1);
-		p2->Configure(n2, short_name(n2), L"",
-			!unit.empty() ? unit : L"-", NULL, 0, -1, 1);
-		formula = std::wstring(L"(") + n1 + L") (" + n2 + L") : ";
-		p = new TParam(NULL, this, formula, TParam::DEFINABLE);
-		p->Configure(name, short_name(name), L"",
-			!unit.empty() ? unit : L"-", NULL, 2, -1, 1);
-		AddDefined(p1);
-		AddDefined(p2);
-		AddDrawDefinable(p);
-		prec = 0;
-	} else {
-		p = new TParam(NULL, this, L"null ", TParam::RPN);
-		p->Configure(name, short_name(name), L"",
-				!unit.empty() ? unit : L"-", 
-				NULL, prec, -1, 1);
-		AddDefined(p);
-	}
-
-	/* name of draws window */
-	std::wstring::size_type pos = name.rfind(L":");
-	if (pos == std::wstring::npos)
-		draww = name.substr(pos + 1);
-	else
-		draww = name;
-
-	/* check numer of draws */
-	int count;
-	if (m_draws_count.find(draww) == m_draws_count.end())
-		count = m_draws_count[draww] = 1;
-	else
-		count = m_draws_count[draww] = m_draws_count[draww] + 1;
-	if (count > 12) {
-		std::wstringstream wss;
-		i = (count+1) / 12;
-		wss << draww << L" " << i + 1;
-		draww = wss.str();
-	}
-	
-	p->AddDraw(new TDraw(L"", draww, -1, -1, 0, 1, 0, 0, 0));
-
-	m_cur_par = p;
-		
-	return prec;
 }
 
 int SzbaseWriter::is_double(const std::wstring& name)
