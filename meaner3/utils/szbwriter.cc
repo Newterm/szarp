@@ -100,7 +100,7 @@ class DataWriter {
 		DataWriter(SzbaseWriter* parent, DataWriter::PROBE_TYPE ptype, const std::wstring& data_dir, int fill_how_many);
 		~DataWriter();
 
-		int add_data(const std::wstring& name, bool is_dbl, struct tm& tm, double data);
+		int add_data(const std::wstring& name, bool is_dbl, time_t t, double data);
 
 		/** Fill gaps in data. Range: [begin, end)
 		 * @return 0 on success, 1 on error */
@@ -128,8 +128,6 @@ class DataWriter {
 		int m_cur_cnt;
 		double m_cur_sum;
 
-		struct tm m_tm; /**< last time */
-		time_t m_t; /**< last time */
 };
 
 class SzbaseWriter : public TSzarpConfig {
@@ -149,15 +147,7 @@ protected:
 	 * @return copy of unit name or NULL if no unit is available
 	 */
 	char *check_unit(char *name);
-	/** Adds parameter to config (if doesn't exists already). 
-	 * @param name name of parameter
-	 * @param unit name of unit, may be NULL
-	 * @param prec precision of parameter
-	 * @return parameter precision, can be different from prec if parameter
-	 * already exists with different precision (old one is used - otherwise we
-	 * should modify values in base)
-	 */
-	int add_param(const std::wstring& name, const std::wstring& unit, int prec);
+
 	/** Adds data to base.
 	 * @return 0 on success, 1 on error */
 	int add_data(const std::wstring& name, const std::wstring& unit, int year, int month, int day, 
@@ -190,7 +180,6 @@ protected:
 
 	struct tm m_tm; /**< last time */
 	time_t m_t; /**< last time */
-
 };
 
 DataWriter::DataWriter(SzbaseWriter* parent, DataWriter::PROBE_TYPE ptype, const std::wstring& data_dir, int fill_how_many)
@@ -222,20 +211,10 @@ DataWriter::~DataWriter()
 }
 
 
-int DataWriter::add_data( const std::wstring& name, bool is_dbl, struct tm& tm, double data)
+int DataWriter::add_data( const std::wstring& name, bool is_dbl, time_t t, double data)
 {
-	sz_log(10, "DataWriter::add_data begin: name=%s, data=%f %d-%d-%d %d:%d:%d",
-		SC::S2U(name).c_str(), data, tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-
-	time_t t;
-
-	m_t = t = update_time(tm, m_t, m_tm);
-	m_tm = tm;
-
-	gmtime_r(&t, &tm);
-
-	sz_log(10, "DataWriter::add_data: name=%s, m_cur_name=%s",
-		SC::S2U(name).c_str(), SC::S2U(m_cur_name).c_str());
+	sz_log(10, "DataWriter::add_data begin: m_cur_name=%s, name=%s, t=%ld, data=%f",
+		SC::S2U(m_cur_name).c_str(), SC::S2U(name).c_str(), t, data);
 
 	if (name != m_cur_name) {
 		if (save_data())
@@ -246,9 +225,8 @@ int DataWriter::add_data( const std::wstring& name, bool is_dbl, struct tm& tm, 
 		m_cur_sum = 0;
 		m_cur_cnt = 0;
 
-		sz_log(10, "DataWriter::add_data: (name != n_cur_name) t = %ld", t);
 		m_cur_t = t / m_probe_length * m_probe_length;
-		sz_log(10, "DataWriter::add_data: (name != n_cur_name) m_cur_t = %ld",  m_cur_t);
+		sz_log(10, "DataWriter::add_data: (name != n_cur_name) t = %ld, m_cur_t = %ld", t, m_cur_t);
 
 		m_cur_name = name;
 	}
@@ -390,6 +368,9 @@ SzbaseWriter::SzbaseWriter(
 
 	m_new_par = false;
 
+	/* set up map for fast param searching */
+	UseNamesCache();
+
 	if (loadXML(ipk_path) == 0) {
 		for (TParam* p = GetFirstParam(); p; p = GetNextParam(p)) {
 			for (TDraw* d = p->GetDraws(); d; d = d->GetNext()) {
@@ -487,69 +468,6 @@ char *SzbaseWriter::check_unit(char *name)
 	return ret;
 }
 
-int SzbaseWriter::add_param(const std::wstring &name, const std::wstring& unit, int prec)
-{
-	TParam *p;
-	std::wstring draww;
-	int i;
-	
-	sz_log(2, "Adding new parameter: %s", SC::S2U(name).c_str());
-	m_new_par = true;
-
-	if (is_double(name)) {
-		std::wstring n1, n2, formula;
-		TParam *p1, *p2;
-		n1 = name + L" msw";
-		n2 = name + L" lsw";
-		p1 = new TParam(NULL, this, L"null ", TParam::RPN);
-		p2 = new TParam(NULL, this, L"null ", TParam::RPN);
-		p1->Configure(n1, short_name(n1), L"",
-			L"-", NULL, 0, -1, 1);
-		p2->Configure(n2, short_name(n2), L"",
-			!unit.empty() ? unit : L"-", NULL, 0, -1, 1);
-		formula = std::wstring(L"(") + n1 + L") (" + n2 + L") : ";
-		p = new TParam(NULL, this, formula, TParam::DEFINABLE);
-		p->Configure(name, short_name(name), L"",
-			!unit.empty() ? unit : L"-", NULL, 2, -1, 1);
-		AddDefined(p1);
-		AddDefined(p2);
-		AddDrawDefinable(p);
-		prec = 0;
-	} else {
-		p = new TParam(NULL, this, L"null ", TParam::RPN);
-		p->Configure(name, short_name(name), L"",
-				!unit.empty() ? unit : L"-", 
-				NULL, prec, -1, 1);
-		AddDefined(p);
-	}
-
-	/* name of draws window */
-	std::wstring::size_type pos = name.rfind(L":");
-	if (pos == std::wstring::npos)
-		draww = name.substr(pos + 1);
-	else
-		draww = name;
-
-	/* check numer of draws */
-	int count;
-	if (m_draws_count.find(draww) == m_draws_count.end())
-		count = m_draws_count[draww] = 1;
-	else
-		count = m_draws_count[draww] = m_draws_count[draww] + 1;
-	if (count > 12) {
-		std::wstringstream wss;
-		i = (count+1) / 12;
-		wss << draww << L" " << i + 1;
-		draww = wss.str();
-	}
-	
-	p->AddDraw(new TDraw(L"", draww, -1, -1, 0, 1, 0, 0, 0));
-
-	m_cur_par = p;
-		
-	return prec;
-}
-
 int SzbaseWriter::is_double(const std::wstring& name)
 {
 	if (m_double_pattern.empty())
@@ -564,12 +482,10 @@ int SzbaseWriter::is_double(const std::wstring& name)
 int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, int year, int month, int day, 
 		int hour, int min, int sec, const std::wstring& data)
 {
-	sz_log(10, "SzbaseWriter::add_data begin: name=%s, data=%s %d-%d-%d %d:%d:%d",
-			SC::S2U(name).c_str(), SC::S2U(data).c_str(), year, month, day, hour, min, sec);
+	sz_log(10, "SzbaseWriter::add_data begin: name=%s, [%d-%d-%d %d:%d:%d] data=%s",
+			SC::S2U(name).c_str(), year, month, day, hour, min, sec, SC::S2U(data).c_str());
 
-	std::wstring filename;
 	struct tm tm;
-	int is_dbl;
 
 	/* get UTC time */
 	tm.tm_year  = year  - 1900;
@@ -579,8 +495,11 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	tm.tm_min   = min;
 	tm.tm_sec   = sec;
 	tm.tm_isdst = -1;
-	
-	is_dbl = is_double(name);
+
+	m_t = update_time(tm, m_t, m_tm);
+	m_tm = tm;
+
+	int is_dbl = is_double(name);
 
 	sz_log(10, "SzbaseWriter::add_data: name=%s, m_cur_name=%s",
 		       	SC::S2U(name).c_str(), SC::S2U(m_cur_name).c_str());
@@ -617,7 +536,7 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 
 	std::vector<DataWriter *>::iterator it = m_writers.begin();
 	for (; it != m_writers.end(); it++) {
-		int ret = (*it)->add_data(name, is_dbl, tm, new_value);
+		int ret = (*it)->add_data(name, is_dbl, m_t, new_value);
 		if (ret != 0)
 			return 1;
 	}

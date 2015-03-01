@@ -1,26 +1,29 @@
 # -*- coding: utf-8 -*-
 """
- IPKParser is a part of SZARP SCADA software
+IPKParser is a module for reading and writing from/to SZARP databases.
+"""
 
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 2 of the License, or
- (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- MA  02110-1301, USA """
+# IPKParser is a part of SZARP SCADA software.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301, USA.
 
 __author__    = "Tomasz Pieczerak <tph AT newterm.pl>"
 __copyright__ = "Copyright (C) 2014-2015 Newterm"
 __version__   = "1.0"
-__status__    = "devel"
+__status__    = "beta"
 __email__     = "coders AT newterm.pl"
 
 
@@ -35,6 +38,7 @@ import fnmatch
 import operator
 import datetime
 import calendar
+import xmlrpclib
 import subprocess
 import xml.sax
 from collections import namedtuple
@@ -55,6 +59,7 @@ SZCONFIG_PATH = "/opt/szarp/%s/config/params.xml"
 PREFIX_REX = re.compile(r'^[a-z]+$')
 LSWMSW_REX = re.compile(r'^\s*\([^:]+:[^:]+:[^:]+ msw\)'
 						r'\s*\([^:]+:[^:]+:[^:]+ lsw\)\s*:\s*$')
+REMARKS_ADDRESS = "https://eos.newterm.pl:7998/"
 
 # helper types definitions
 ParamInfo = namedtuple('ParamInfo', 'name draw_name prec lswmsw')
@@ -128,6 +133,9 @@ class IPKParser:
 				self.ipk_prefix = prefix
 				self.ipk_conf = handler.sets
 				self.ipk_title = handler.title
+
+				self.remarks_srv = None
+				self.remarks_login = None
 		except IOError as err:
 			err.bad_path = filename
 			raise
@@ -179,10 +187,10 @@ class IPKParser:
 				and set title.
 		"""
 		# FIXME: set may be ambiguous as parameter may belong to more than one set.
-		for key, val in self.ipk_conf.iteritems():
-			for p in val.params:
+		for set_name, set_info in self.ipk_conf.iteritems():
+			for p in set_info.params:
 				if p.name == pname:
-					return (p.draw_name, key)
+					return (p.draw_name, set_name)
 		raise ValueError
 
 	# end of getSetAndDrawName()
@@ -224,7 +232,7 @@ class IPKParser:
 
 		Returns:
 			(pname, [(date, value)...]) - a tuple containing full parameter
-				name and a list of probe's date and valu tuples.
+				name and a list of probe's date and value tuples.
 		"""
 		with open(filepath) as fd:
 			reader = csv.reader(fd, delimiter=',')
@@ -391,6 +399,69 @@ class IPKParser:
 
 	# end of recordSzf()
 
+	def initRemarks(self, user, passwd):
+		"""Establish a connection to remarks server.
+
+		Argument:
+		    user - remarks username.
+			pass - MD5 sum of a user's password.
+		"""
+		try:
+			self.remarks_srv = xmlrpclib.Server(REMARKS_ADDRESS)
+			self.remarks_login = self.remarks_srv.login(user, passwd)
+		except:
+			self.remarks_srv = None
+			self.remarks_login = None
+
+	# end of initRemarks()
+
+	def postRemark(self, pname, date, remark_title, remark_content):
+		"""Post a remark to previously connected server (see iniRemarks()).
+
+		Arguments:
+		    pname - full parameter name.
+			date - datetime for a remark.
+			remark_title - remark's title.
+			remark_content - remark's content.
+		"""
+		if self.remarks_srv is None:
+			return # FIXME: better to throw an exception
+
+		# find to which sets parameter belongs
+		sets = []
+		for set_name, set_info in self.ipk_conf.iteritems():
+			for p in set_info.params:
+				if p.name == pname:
+					sets.append(set_name)
+
+		# calculate epoch time
+		dt = date.replace(tzinfo=tzlocal())
+		time = calendar.timegm(dt.utctimetuple())
+
+		# add a remark for each set
+		for set_name in sets:
+			remark = u'<remark prefix="%(prefix)s" ' \
+							 'time="%(time)s" ' \
+							 'set="%(set_name)s" ' \
+							 'title="%(title)s">' \
+							 '<content>%(content)s</content></remark>' % \
+							 { 'prefix'  : self.ipk_prefix,
+							   'time'    : time,
+							   'set_name': set_name,
+							   'title'   : remark_title,
+							   'content' : remark_content }
+			remark_bin = xmlrpclib.Binary(remark.encode('utf-8'))
+			self.remarks_srv.post_remark(self.remarks_login, remark_bin)
+
+	# end of postRemark()
+
+	def closeRemarks(self):
+		"""Close a connection to remarks server."""
+		self.remarks_srv = None
+		self.remarks_login = None
+
+	# end of closeRemarks()
+
 	class IPKDrawSetsHandler(xml.sax.ContentHandler):
 		"""Content handler for SAX with "feature namespaces". Fetches
 		information about sets and parameters in the configuration.
@@ -464,7 +535,7 @@ class IPKParser:
 							# create ParamInfo object and store it in appropriate SetInfo
 							self.sets[attrs.getValueByQName('title')].params.append(
 									ParamInfo(self.param_name, self.param_draw_name,
-									 self.param_prec, self.param_lswmsw))
+									 int(self.param_prec), self.param_lswmsw))
 
 		# end of startElementNS()
 

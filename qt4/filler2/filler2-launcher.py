@@ -10,7 +10,7 @@ database and therefore should be considered as risky.
 
 __license__ = \
 """
- Filler 2 is a part of SZARP SCADA software
+ Filler 2 is a part of SZARP SCADA software.
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ __license__ = \
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- MA  02110-1301, USA """
+ MA 02110-1301, USA. """
 
 __author__    = "Tomasz Pieczerak <tph AT newterm.pl>"
 __copyright__ = "Copyright (C) 2014-2015 Newterm"
@@ -42,6 +42,7 @@ import math
 import types
 import fcntl
 import signal
+import getpass
 import datetime
 import argparse
 import subprocess
@@ -71,7 +72,7 @@ __script_name__ = os.path.basename(sys.argv[0])
 
 # containers definitions
 SzChangeInfo = namedtuple('SzChangeInfo',
-                          'draw_name name dvalues lswmsw')
+                          'draw_name name dvalues lswmsw remark')
 
 # signal handlers
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -421,7 +422,7 @@ class Filler2(QMainWindow):
 		param_info = self.ui.paramList.itemData(self.ui.paramList.currentIndex()).toPyObject()
 
 		dlg = self.dialog_factory.construct(str(dlg_name),
-				int(param_info.prec), param_info.lswmsw,
+				param_info.prec, param_info.lswmsw,
 				parent = self)
 
 		# reset type items' texts
@@ -610,11 +611,14 @@ class Filler2(QMainWindow):
 				# generate probes' values
 				dvals = typedlg.generate(dts)
 
+				rmrk = typedlg.get_remark()
+
 				changes_list.append(SzChangeInfo(
 						draw_name = unicode(self.ui.changesTable.item(i,0).text()),
 						name = unicode(self.ui.changesTable.item(i,5).text()),
 						dvalues = dvals,
-						lswmsw = lswmsw
+						lswmsw = lswmsw,
+						remark = rmrk
 						))
 
 			# do the job (in a new thread)
@@ -961,6 +965,13 @@ class SzbWriter(QThread):
 		self.chlist = changes_list
 		self.parser = parser
 
+		anyremarks = False
+		for ch in self.chlist:
+			if ch.remark is not None:
+				anyremarks = True
+		if anyremarks:
+			self.parser.initRemarks('gcwp-filler2', '85064efb60a9601805dcea56ec5402f7')
+
 	# end of __init__()
 
 	def run(self):
@@ -968,10 +979,17 @@ class SzbWriter(QThread):
 		nr = 1
 		for ch in self.chlist:
 			dts = [dv[0] for dv in ch.dvalues]
+			if ch.remark is not None:
+				title = u"Modyfikacja parameteru %s (Filler 2)" % ch.draw_name
+				remark = ch.remark % \
+						(datetime.datetime.now().strftime('%Y/%m/%d %H:%M'),
+						 getpass.getuser())
 
 			try:
 				self.parser.recordSzf(ch.name, dts, ch.lswmsw)
 				self.parser.szbWriter(ch.name, ch.dvalues)
+				if ch.remark is not None:
+					self.parser.postRemark(ch.name, dts[0], title, remark)
 				self.paramDone.emit(nr, ch.draw_name, 0)
 			except IPKParser.SzfRecordError:
 				self.paramDone.emit(nr, ch.draw_name, 1)
@@ -981,6 +999,7 @@ class SzbWriter(QThread):
 			time.sleep(1)
 			nr += 1
 
+		self.parser.closeRemarks()
 		self.jobDone.emit()
 
 	# end of run()

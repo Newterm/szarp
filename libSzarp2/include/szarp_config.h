@@ -344,6 +344,10 @@ public:
 
 	TUnit* createUnit(TRadio* parent, wchar_t _id = 0, int _type = 0, int _subtype = 0);
 
+	void UseNamesCache();
+
+	void AddParamToNamesCache(TParam* _param);
+
 protected:
 	/**
 	 * Adds new defined parameter. Adds parameter with given formula at
@@ -390,6 +394,10 @@ protected:
 	size_t radio_counter; /**< numer of created TRadio objects */
 
 	size_t unit_counter; /**< numer of created TUnit objects */
+
+	bool use_names_cache; /**< flag, if set std::map will be used for fast searching params by name */
+
+	std::map<std::wstring, TParam *> params_map; /**< map for params search by name */
 };
 
 

@@ -1,8 +1,6 @@
-$Id: INSTALL.Windows 6199 2008-11-20 08:28:37Z reksio $
-
 INSTALL.Windows
 
-Pawe≥ Pa≥ucha <pawel@praterm.com.pl>
+Pawe≈Ç Pa≈Çucha <pawel@praterm.com.pl>
 
 This file describes how to prepare SZARP installation package for Windows.
 
@@ -556,14 +554,14 @@ Output should end with something like:
 SZARP 3.1 configured.
 Build host type:              i686-pc-linux-gnu
 Configured for host type:     i586-pc-mingw32msvc
-Configured with ICU:               yes           
-Configured with X windows:         no            
-Configured with wxWidgets:         yes           
-Configured with newt:              no            
-Configured with OpenSSL:           yes           
-Configured with xmlrpc-epi:        yes           
-Configured with PAM:               no            
-Configured with curl:              yes           
+Configured with ICU:               yes
+Configured with X windows:         no
+Configured with wxWidgets:         yes
+Configured with newt:              no
+Configured with OpenSSL:           yes
+Configured with xmlrpc-epi:        yes
+Configured with PAM:               no
+Configured with curl:              yes
 Configured with rsync:             yes
 Configured with lua:               yes
 Configured with FTGL:              yes

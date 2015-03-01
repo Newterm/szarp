@@ -1,23 +1,25 @@
-SZARP -  System Zbierania Archiwizacji i Prezentacji danych.
-http://www.szarp.org
+SZARP - System Zbierania Archiwizacji i Prezentacji danych
 
-(C) 1991 - 2010 Witold Kowalewski Praterm Automatyzacja Ciep�ownictwa
-(C) 1995 - 2009 Praterm S.A.
-(C) 1991 - 2010 various authors (see AUTHORS file)
+http://www.szarp.org/
+
+Copyright © 1991-2010 Witold Kowalewski Praterm Automatyzacja Ciepłownictwa
+Copyright © 1995-2009 Praterm S.A.
+Copyright © 1991-2015 various authors (see AUTHORS file)
+
 
 Table of contents:
 
-0. Table of contents.
-1. What is SZARP?
-2. What does it mean SZARP, how to pronounce it?
-3. What are the features of SZARP?
-4. What is the origin of SZARP?
-5. What platform is SZARP running on?
-6. How to install SZARP?
-7. Where are the docs?
-8. How can I get SZARP sources?
-9. How to setup my first SZARP server?
-10. How to get help?
+  0.  Table of contents.
+  1.  What is SZARP?
+  2.  What does SZARP mean? How to pronounce it?
+  3.  What are the features of SZARP?
+  4.  What is the origin of SZARP?
+  5.  What platform is SZARP running on?
+  6.  How to install SZARP?
+  7.  Where are the docs?
+  8.  How can I get SZARP sources?
+  9.  How to setup my first SZARP server?
+ 10.  How to get help?
 
 
 1. What is SZARP?
@@ -28,55 +30,60 @@ systems. This is completely free software, published under GPL 2.0
 (or later version).
 
 
-2. What does it mean SZARP, how to pronounce it?
+2. What does SZARP mean? How to pronounce it?
 
-SZARP is acronym from full Polish name: 'System Zbierania ARchwizacji i Prezentacji 
-danych' which is 'System for Data Acquisition, Archiving and Presentation'. 'sz' in
-Polish is pronounced as 'sh', so 'SZARP' should be pronounced as 'sharp'.
+SZARP is an acronym from full Polish name: "System Zbierania ARchwizacji
+i Prezentacji danych" which means "System for Data Acquisition, Archiving and
+Presentation". Digraph "sz" in Polish is pronounced similar to English "sh",
+so "SZARP" should be pronounced as "sharp".
 
 
 3. What are the features of SZARP?
 
-SZARP architecure contains 3 main layers. 
+SZARP architecture contains 3 main layers.
 
-The first layer is device drivers. There are several drivers available, for different 
-devices, including:
-* Modbus RTU/TCP, master and slave
-* MBus
-* Praterm ZET/Sterkom PLC
-* Pollustat and Infocal heating meters
-* Pozyton electricity meters
-* text files and text output from programs
-Device drivers are, for historical reasons, called 'line daemons'.
+The first layer is device drivers. There are several drivers available, for
+different devices, including:
+ * Modbus RTU/TCP, master and slave
+ * MBus
+ * Praterm ZET/Sterkom PLC
+ * Pollustat and Infocal heating meters
+ * Pozyton electricity meters
+ * text files and text output from programs
 
-The second layer are deamons for collecting data from drivers, calculating average
-values and formulas (defined parameters), and saving data to database. Datas are
-generally available with 10-seconds resolution, but database contains 10-minutes
-average values. There is also web server available for serving parameter values
-by HTTP.
+These device drivers are, for historical reasons, called "line daemons".
+
+The second layer are daemons for collecting data from drivers, calculating
+average values and formulas (defined parameters) and saving data to
+a database. Probes are generally available with 10-seconds resolution, but
+database contains 10-minutes average values. There is also a web server
+available for serving parameter values through HTTP.
 
 The third layer are client programs, including:
-* Reporter - program for viewing current (10-seconds averages) values of parameters.
-* Controller - program for signalling parameter values irregularities.
-* Extractor - program for exporting data from database to spreadsheet files.
-* Draw - powerfull tool for viewing and analyzing historical values of parameters.
+ * Reporter - program for viewing current (10-seconds averages) values of
+   parameters.
+ * Controller - program for signalling parameter values irregularities.
+ * Extractor - program for exporting data from database to spreadsheet files.
+ * Draw - powerful tool for viewing and analyzing historical values of
+   parameters.
 
 
 4. What is the origin of SZARP?
 
-SZARP was developed since 1991 (!) by Praterm company and was used in all heating
-systems (over 20) owned by Praterm and in similar number of other systems all over 
-Poland. In 2007 Praterm decided to publish almost all of the code under GPL License. 
-Currently SZARP is developed as Open Source project on SourceForge.net. Project 
-website is http://www.szarp.org. Main founder of development is currently Newterm 
-company - http://newterm.pl.
+SZARP had been developed since 1991 (sic!) by Praterm company and was used in
+all heating systems (over 20) owned by Praterm and that much other systems all
+over Poland. In 2007 Praterm decided to publish almost all of the code under
+GPL License. Currently SZARP is developed as Open Source project on GitHub.
+Project website is http://www.szarp.org/. Main founder of development is
+currently Newterm company (http://newterm.pl/).
 
 
 5. What platform is SZARP running on?
 
-SZARP is developed and deployed on Debian GNU/Linux, but should also compile and 
-work on any modern Linux distribution, on x86, ia64, amd64 and ARM (server only). 
-Clients applications can also run on Windows XP/Vista/7 machines with NTFS file system.
+SZARP is developed and deployed for Debian GNU/Linux, but should also compile
+and work on any modern Linux distribution on x86, ia64, amd64 and armel/armhf
+architectures. Client applications can also run on Windows XP/Vista/7
+machines with NTFS filesystem.
 
 
 6. How to install SZARP?
@@ -86,9 +93,10 @@ File INSTALL contains installation instructions.
 
 7. Where are the docs?
 
-Most of the user documentation is available only in Polish. Sources of documentation
-are in resources/documentation/new directory, it's also available on-line at 
-http://www.szarp.org. Most of the new code is pretty-well documented, using Doxygen.
+Most of the user documentation is available only in Polish. Sources of
+documentation are in resources/documentation/new/ directory, it's also
+available on-line at http://www.szarp.org/. Most of the new code is
+pretty-well documented (in English), using Doxygen.
 
 
 8. How can I get SZARP sources?
@@ -100,38 +108,39 @@ See http://www.szarp.org/en/download.
 
 First install szarp-server (for details, see INSTALL):
 
- apt-get install szarp-server szarp-paramd szarp-wx
+ # apt-get install szarp-server szarp-paramd szarp-wx
 
-While configuring package, you must set 4-letters name of configuration (called 
-'configuration prefix'), for example use 'test'. Answer 'yes' to question about
-creating szbase directory.
+While configuring package, you must set 4-letters name of configuration
+(called 'configuration prefix'), for example use 'test'. Answer 'yes' to
+question about creating szbase directory.
 
 Now look at the /etc/szarp directory. There are two files: 
 
-* parstart.cfg - this files sets what SZARP services are to be run - the default
-is to treat machine as SZARP server only if the machine name is equal to configuration
-prefix. This is propably not your case, so modify the file that it contains:
+ * parstart.cfg - this files defines what SZARP services are to be run - the
+   default is to treat machine as SZARP server only if the machine name is
+   equal to configuration prefix. This is probably not your case, so modify
+   the file that it contains:
 
-PARCOOK=1
-MEANER3=1
-SENDER=1
-PARAMD=1
-PSETD=0
-XSLTD=0
-SSS=0
+	PARCOOK=1
+	MEANER3=1
+	SENDER=1
+	PARAMD=1
+	PSETD=0
+	XSLTD=0
+	SSS=0
 
-Now look at the /etc/szarp/szarp.cfg file and modify the begining of the file so
-it looks like ($prefix$ variable shoud be set to 'test'):
+ * szarp.cfg - modify the beginning of the file so it looks like ($prefix$
+   variable should be set to 'test'):
 
-$if $prefix$=""
-$prefix$:="test"
-# $prefix$:=exec("hostname -s")
-$end
+	$if $prefix$=""
+	$prefix$:="test"
+	# $prefix$:=exec("hostname -s")
+	$end
 
-Now we have to prepare SZARP parameters configuration. We will make configuration
-with one line daemon, that polls system for average load. Go to the directory
-/opt/szarp/test and create subdirectory called 'config'. Place there file with name
-'params.xml' and following content:
+Now we have to prepare SZARP parameters configuration. We will make
+configuration with one line daemon that polls system for average load. Go to
+the directory /opt/szarp/test and create subdirectory called 'config'. Place
+there file with name 'params.xml' and following content:
 
 <?xml version="1.0"?>
 <params xmlns="http://www.praterm.com.pl/SZARP/ipk" xmlns:exec="http://www.praterm.com.pl/SZARP/ipk-extra" version="1.0" read_freq="10" send_freq="10" title="Test configuration">
@@ -147,23 +156,24 @@ with one line daemon, that polls system for average load. Go to the directory
 
 In directory /opt/szarp/test/config run this command:
 
- /opt/szarp/bin/i2smo
+ $ /opt/szarp/bin/i2smo
 
-This produces szarp configuration files in old (non-XML) format, that are still 
-in use by some scripts. Prepare executable script /opt/szarp/test/get_la.sh with the
-following content:
+This parses XML configuration. If every thing is right, you should see "OK".
 
-#!/bin/bash
-cat /proc/loadavg | cut -d ' ' -f 1 | tr -d '.'
+Prepare executable script /opt/szarp/test/get_la.sh with the following
+content:
+
+	#!/bin/bash
+	cat /proc/loadavg | cut -d ' ' -f 1 | tr -d '.'
 
 Now restart SZARP services:
 
- /etc/init.d/parstart restart
+ # /etc/init.d/parstart restart
 
-Now you should be able to point your browser to http://localhost:8081 and see
-configured parameter. After full 10 minutes you can also run draw3 program:
+Now you should be able to point your browser to http://localhost:8081/ and see
+configured parameter. After full 10 minutes you can also run Draw3 program:
 
-/opt/szarp/bin/draw3
+ $ /opt/szarp/bin/draw3
 
 and analyze your system average load.
 
@@ -171,5 +181,4 @@ and analyze your system average load.
 10. How to get help?
 
 You can try to write us at coders@newterm.pl.
-
 
