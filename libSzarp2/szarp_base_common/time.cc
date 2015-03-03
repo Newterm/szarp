@@ -1,4 +1,6 @@
 #include "config.h" 
+
+#include <string.h>
 #include "szarp_base_common/time.h" 
 
 time_t
