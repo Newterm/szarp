@@ -162,7 +162,7 @@ $prefix$:="test"
 # $prefix$:=exec("hostname -s")
 $end
 ```
-(`$prefix$` variable should be set to 'test')
+(`$prefix$` variable should be set to "test")
 
 If all above is done, you have to prepare SZARP parameters configuration. We
 will make configuration with one line daemon that polls system for average
@@ -183,7 +183,7 @@ load. Go to the directory `/opt/szarp/test` and create subdirectory called
 ```
 Then, in directory `/opt/szarp/test/config` run command:
 ```
- $ /opt/szarp/bin/i2smo
+$ /opt/szarp/bin/i2smo
 ```
 (this parses XML configuration, if every thing is ok, you should see "OK")
 
@@ -202,7 +202,7 @@ And that's all, you should be able to point your browser to
 [http://localhost:8081/](http://localhost:8081) and see your configured
 parameter. After full 10 minutes you can also run *Draw3* program:
 ```
- $ /opt/szarp/bin/draw3
+$ /opt/szarp/bin/draw3
 ```
 and analyze your system average load.
 
