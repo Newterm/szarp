@@ -19,17 +19,18 @@ Table of contents
 7.  [Where can I find documentation?](#7-where-can-i-find-documentation)
 8.  [How can I get SZARP sources?](#8-how-can-i-get-szarp-sources)
 9.  [How to setup my first SZARP server?](#9-how-to-setup-my-first-szarp-server)
-10. [How to get help?](#10-how-to-get-help)
+10. [How can I get help?](#10-how-can-i-get-help)
 
+* * *
 
 
 1. What is SZARP?
 -----------------
 
 **SZARP** is a full-featured SCADA system designed for monitoring slowly
-changing industrial processes, such as operations of *urban heating systems*.
-It is completely free software, published under terms of the *GNU General
-Public License 2.0* (or any later version).
+changing industrial processes, for example operations of *urban heating
+systems*.  It is completely free software, published under terms of the *GNU
+General Public License 2.0* (or any later version).
 
 
 2. What does SZARP mean? How to pronounce it?
@@ -44,7 +45,7 @@ so "SZARP" should be pronounced as a word "sharp".
 3. What are the features of SZARP?
 ----------------------------------
 
-**SZARP** architecture organized into three layers.
+**SZARP** architecture is organized into three layers.
 
 The first layer are **device drivers**. There are several drivers available,
 including:
@@ -60,8 +61,8 @@ including:
 These device drivers are called *line daemons* (for historical reasons).
 
 The second layer consist of **data collecting daemons** that read data from
-drivers, calculate average probes and formulas (for *defined parameters*)
-and finally save data to a SZARP database. Probes are generally available with
+drivers, calculate average probes and formulas (called *defined parameters*)
+and finally save data to SZARP database. Probes are generally available with
 10-seconds resolution, but database contains 10-minutes average values. There
 is also a web server available for serving parameters' values through HTTP.
 
@@ -69,11 +70,13 @@ In the third layer there are **client programs**, including:
 
 * *Reporter* - a program for viewing current (10-seconds averages) values of
   parameters.
-* *Controller* - a program for signalizing parameter's values irregularities.
+* *Controller* - a program for signalizing parameters' values irregularities.
 * *Extractor* - a program for exporting data from databases to spreadsheet
   files.
 * *Draw* - a powerful tool for viewing and analyzing historical data.
 
+More information about SZARP architecture is available in
+[documentation](#7-where-can-i-find-documentation).
 
 
 4. What is the origin of SZARP?
@@ -82,11 +85,11 @@ In the third layer there are **client programs**, including:
 **SZARP** was developed since 1991 (sic!) by *Praterm* company and was used in
 all heating systems (over 20) owned by *Praterm* and that much other systems
 all over Poland. In 2007 *Praterm* decided to publish almost all of the code
-under GNU GPL. Nowadays **SZARP** is developed as Open Source project on
+under GNU GPL. Nowadays **SZARP** is developed as an Open Source project on
 [GitHub](http://github.com/).
 
 Project website is located at http://www.szarp.org/. Today, the main founder of
-SZARP development is [Newterm](http://newterm.pl/) company.
+SZARP's development is [Newterm](http://newterm.pl/) company.
 
 
 5. On what platform is SZARP running?
@@ -94,7 +97,7 @@ SZARP development is [Newterm](http://newterm.pl/) company.
 
 **SZARP** is developed and deployed for *Debian GNU/Linux*, but should compile
 and run on any modern Linux distribution on *i386*, *amd64* and *armel/armhf*
-architectures. Client applications can also be run on *Windows XP/Vista/7*
+architectures. Client applications should also run on *Windows XP/Vista/7*
 machines with NTFS filesystem.
 
 
@@ -109,8 +112,8 @@ File [INSTALL](INSTALL) contains installation instructions.
 
 Unluckily most of the user documentation is available only in Polish.  Sources
 of documentation are in
-[resources/documentation/new/](resources/documentation/new/) project's
-directory and [available online](http://www.szarp.org/). Most of the new code
+[resources/documentation/new/](resources/documentation/new/)
+directory and [available online](http://szarp.org/en/docs). Most of the new code
 is pretty-well documented (in English) using *Doxygen*.
 
 
@@ -137,10 +140,10 @@ question about creating `szbase` directory.
 Now look at the `/etc/szarp` directory. There are two files: 
 
  * `parstart.cfg` - this files defines what SZARP services should be run on
-   system start. In default behaviour computer is considered as SZARP server
-   only when the hostname equals to a configuration prefix - if that so,
-   appropriate services will be run. This is probably not your case, so modify
-   the file that it contains:
+   system start. By default computer is considered as SZARP server only when
+   the hostname equals to a configuration prefix - if that so, appropriate
+   services will be run. This is probably not your case, so modify the file
+   that it contains:
 ```
 PARCOOK=1
 MEANER3=1
@@ -164,7 +167,7 @@ $end
 If all above is done, you have to prepare SZARP parameters configuration. We
 will make configuration with one line daemon that polls system for average
 load. Go to the directory `/opt/szarp/test` and create subdirectory called
-`config`. Place there file with name `params.xml` and the following content:
+`config`. Place there a file named `params.xml` with the following content:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <params xmlns="http://www.praterm.com.pl/SZARP/ipk" xmlns:exec="http://www.praterm.com.pl/SZARP/ipk-extra" version="1.0" read_freq="10" send_freq="10" title="Test configuration">
@@ -178,19 +181,19 @@ load. Go to the directory `/opt/szarp/test` and create subdirectory called
   </device>
 </params>
 ```
-Then in directory `/opt/szarp/test/config` run command:
+Then, in directory `/opt/szarp/test/config` run command:
 ```
  $ /opt/szarp/bin/i2smo
 ```
 (this parses XML configuration, if every thing is ok, you should see "OK")
 
-Prepare executable script `/opt/szarp/test/get_la.sh` with the following
+Prepare an executable script `/opt/szarp/test/get_la.sh` with the following
 content:
 ```bash
 #!/bin/bash
 cat /proc/loadavg | cut -d ' ' -f 1 | tr -d '.'
 ```
-Save it and then restart SZARP services:
+Save it and restart SZARP services:
 ```
 # /etc/init.d/parstart restart
 ```
@@ -204,7 +207,7 @@ parameter. After full 10 minutes you can also run *Draw3* program:
 and analyze your system average load.
 
 
-10. How to get help?
+10. How can I get help?
 --------------------
 
 You can try to write us at <coders@newterm.pl>.
