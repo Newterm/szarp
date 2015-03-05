@@ -26,7 +26,7 @@ public:
 	virtual void initialize() = 0;
 	std::tr1::tuple<double, bool> calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type) {
 		initialize();
-		std::tr1::tuple<double, bool> ret(std::nan(""), true);
+		std::tr1::tuple<double, bool> ret(nan(""), true);
 		do_calculate_value(time, probe_type, std::tr1::get<0>(ret), std::tr1::get<1>(ret));
 		return ret;
 	}

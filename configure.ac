@@ -1120,7 +1120,7 @@ PKG_CHECK_MODULES(CPPUNIT, cppunit, no_cppunit="no", [AC_MSG_RESULT([
 ])
 AM_CONDITIONAL(HAVE_CPPUNIT, test "x$no_cppunit" != xyes)
 
-if test x$no_cppunit != xyes; then
+if test x$no_cppunit != xyes -a x$with_mingw32 != xyes; then
 	SUBDIRS="$SUBDIRS unit_tests"
 fi
 

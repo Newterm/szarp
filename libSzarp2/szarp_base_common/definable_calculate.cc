@@ -234,6 +234,7 @@ double
 szb_definable_calculate(double * stack, int stack_size, const double** cache, TParam** params,
 	const std::wstring& formula, int param_cnt, value_fetch_functor& value_fetch, is_summer_functor& is_summer, TParam* param)
 {
+	using std::isnan;
 
 	short sp = 0;
 	const wchar_t *chptr = formula.c_str();

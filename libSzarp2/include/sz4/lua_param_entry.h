@@ -46,7 +46,7 @@ public:
 
 	void do_calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, double &result, bool& fixed) {
 		if (!m_param_ok) {
-			result = std::nan("");
+			result = nan("");
 			fixed = false;
 			return;
 		}

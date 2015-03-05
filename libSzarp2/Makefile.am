@@ -94,6 +94,15 @@ BASECONN = \
 			$(DMN_DIR)/atcconn.cc
 endif
 
+if MINGW32_OPT
+PROTOBUF =
+else
+PROTOBUF = \
+			$(SOURCE_DIR)/protobuf/paramsvalues.pb.cc \
+			$(SOURCE_DIR)/include/paramsvalues.pb.h
+endif
+
+
 
 libSzarp2_la_SOURCES = \
 			$(IPK_DIR)/tdevice.cc \
@@ -199,8 +208,7 @@ libSzarp2_la_SOURCES = \
 			$(SZ4_DIR)/filelock.cpp \
 			$(SZ4_DIR)/decode_file.cpp \
 			\
-			$(SOURCE_DIR)/protobuf/paramsvalues.pb.cc \
-			$(SOURCE_DIR)/include/paramsvalues.pb.h
+			$(PROTOBUF)
 
 
 libSzarp2_la_LIBADD = libSzarpLuaParser.la

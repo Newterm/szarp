@@ -52,7 +52,7 @@ public:
 		std::vector<unsigned char> buffer(size);
 
 		if (load_file_locked(m_block_path, &buffer[0], buffer.size())) {
-			auto values = decode_file<V, T>(&buffer[0], buffer.size(), this->m_block.start_time());
+			std::vector<value_time_pair<V, T> > values = decode_file<V, T>(&buffer[0], buffer.size(), this->m_block.start_time());
 			this->m_block.set_data(values);
 			this->m_needs_refresh = false;
 		}
@@ -273,7 +273,7 @@ public:
 
 	void register_at_monitor(generic_param_entry* entry, SzbParamMonitor* monitor) {
 #if BOOST_FILESYSTEM_VERSION == 3
-		monitor->add_observer(entry, m_param, m_param_dir.native(), 0);
+		monitor->add_observer(entry, m_param, m_param_dir.string(), 0);
 #else
 		monitor->add_observer(entry, m_param, m_param_dir.external_file_string(), 0);
 #endif

@@ -369,11 +369,15 @@ public:
 	}
 
 	bool operator()(const float& v) const {
+#ifndef MINGW32
 		return !isnanf(v);
+#else
+		return !std::isnan(v);
+#endif
 	}
 
 	bool operator()(const double& v) const {
-		return !isnan(v);
+		return !std::isnan(v);
 	}
 };
 

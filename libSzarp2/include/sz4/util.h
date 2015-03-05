@@ -62,7 +62,7 @@ template<class T> T scale_value(const T& v, TParam* p) {
 			if (value_is_no_data(v))
 				return v;
 			else
-				return v / pow10(p->GetPrec());
+				return v / pow(10, p->GetPrec());
 		default:
 			assert(false);
 	}
@@ -75,7 +75,7 @@ template<class T> T descale_value(const T& v, TParam* p) {
 			if (value_is_no_data(v))
 				return v;
 			else
-				return v * pow10(p->GetPrec());
+				return v * pow(10, p->GetPrec());
 		case TParam::SHORT:
 		case TParam::INT:
 			return v;

@@ -73,7 +73,7 @@ public:
 		invalidate_non_fixed_if_needed();
 
 		time_type range_end;
-		auto read_ahead(m_base->read_ahead());
+		boost::optional<SZARP_PROBE_TYPE> read_ahead(m_base->read_ahead());
 		if (read_ahead)
 			range_end = std::max<time_type>(szb_move_time(start, 1, read_ahead.get()), end);
 		else

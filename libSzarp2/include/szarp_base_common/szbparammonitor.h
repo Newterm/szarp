@@ -19,6 +19,8 @@
 #ifndef SZB_PARAM_MONITOR_H__
 #define SZB_PARAM_MONITOR_H__
 
+#include "config.h"
+
 #include <tr1/tuple>
 #include <tr1/unordered_map>
 
@@ -28,6 +30,8 @@
 typedef int SzbMonitorTokenType;
 
 class SzbParamMonitor;
+
+#ifndef MINGW32
 class SzbParamMonitorImpl {
 	boost::thread m_thread;
 	boost::mutex m_mutex;
@@ -65,6 +69,17 @@ public:
 	void run();
 	bool terminate();
 };
+#else
+class SzbParamMonitorImpl {
+public:
+	SzbParamMonitorImpl(SzbParamMonitor *monitork);
+	bool start_monitoring_dir(const std::string& path, TParam* param, SzbParamObserver* observer, unsigned order);
+	bool end_monitoring_dir(SzbMonitorTokenType token);
+	void run();
+	bool terminate();
+};
+
+#endif
 
 class SzbParamMonitor {
 	friend class SzbParamMonitorImpl;

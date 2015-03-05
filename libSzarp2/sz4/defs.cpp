@@ -30,7 +30,11 @@ bool value_is_no_data(const double& v) {
 }
 
 bool value_is_no_data(const float& v) {
+#ifndef MINGW32
 	return isnanf(v);
+#else
+	return std::isnan(v);
+#endif
 }
 
 template<> float no_data<float>() {

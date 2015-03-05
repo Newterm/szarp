@@ -93,7 +93,7 @@ public:
 		if (sum.weight()) 
 			return scale_value(double(sum.avg()), ref.m_param);
 		else 
-			return std::nan("");
+			return nan("");
 	}
 
 	static const compute_method compute_methods[TParam::LAST_TIME_TYPE + 1][TParam::LAST_DATA_TYPE + 1];

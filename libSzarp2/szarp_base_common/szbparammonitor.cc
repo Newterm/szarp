@@ -17,12 +17,16 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
+#include "config.h"
+
 #include <cstring>
 
 #include <sys/types.h>
+#ifndef MINGW32
 #include <sys/socket.h>
 #include <sys/inotify.h>
 #include <sys/poll.h>
+#endif
 
 #include <vector>
 #include <stdexcept>
@@ -38,6 +42,7 @@
 
 typedef int SzbMonitorTokenType;
 
+#ifndef MINGW32
 SzbParamMonitorImpl::SzbParamMonitorImpl(SzbParamMonitor* monitor) : m_monitor(monitor) {
 	m_terminate = false;
 	m_cmd_socket[0] = m_cmd_socket[1] = -1;
@@ -257,6 +262,29 @@ bool SzbParamMonitorImpl::terminate() {
 	return true;
 }
 
+#else
+
+SzbParamMonitorImpl::SzbParamMonitorImpl(SzbParamMonitor *monitor) {}
+
+bool SzbParamMonitorImpl::start_monitoring_dir(const std::string& path, TParam* param, SzbParamObserver* observer, unsigned order) {
+	return true;
+}
+
+bool SzbParamMonitorImpl::end_monitoring_dir(SzbMonitorTokenType token) {
+	return true;
+}
+
+
+
+void SzbParamMonitorImpl::run()
+{}
+
+bool SzbParamMonitorImpl::terminate() {
+	return true;
+}
+
+#endif
+
 SzbParamMonitor::SzbParamMonitor() : m_monitor_impl(this) {
 	m_monitor_impl.run();
 }
@@ -347,11 +375,13 @@ void SzbParamMonitor::remove_observer(SzbParamObserver* obs) {
 void SzbParamMonitor::modify_dir_token(SzbMonitorTokenType old_wd, SzbMonitorTokenType new_wd) {
 	boost::mutex::scoped_lock lock(m_mutex);
 
-	auto &opv = m_token_observer_param[old_wd];
-	for (auto j = opv.begin(); j != opv.end(); j++) {
+	std::multimap<unsigned, std::pair<SzbParamObserver*, TParam*> >& opv = m_token_observer_param[old_wd];
+	for (std::multimap<unsigned, std::pair<SzbParamObserver*, TParam*> >::iterator j = opv.begin(); j != opv.end(); j++) {
 		m_token_observer_param[new_wd].insert(*j);
-		auto &tpv = m_observer_token_param[j->second.first];
-		for (auto i = tpv.begin(); i != tpv.end(); i++) {
+		std::vector<std::tr1::tuple<SzbMonitorTokenType, TParam*, std::string> >& tpv = m_observer_token_param[j->second.first];
+		for (std::vector<std::tr1::tuple<SzbMonitorTokenType, TParam*, std::string> >::iterator i = tpv.begin();
+				i != tpv.end();
+				i++) {
 			if (old_wd == std::tr1::get<0>(*i))
 				std::tr1::get<0>(*i) = new_wd;
 		}
