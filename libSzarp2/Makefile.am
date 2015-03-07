@@ -61,6 +61,12 @@ xmlreader_test_SOURCES = $(IPK_DIR)/xmlreader_test.cc
 test: szbtest
 	./szbtest
  
+if MINGW32_OPT
+INCLUDE_PROTOBUF =
+else
+INCLUDE_PROTOBUF = $(INCLUDE_DIR)/protobuf/paramsvalues.pb.h
+endif
+
 noinst_HEADERS = \
                       $(INCLUDE_DIR)/dmncfg.h \
                       $(INCLUDE_DIR)/httpcl.h \
@@ -72,7 +78,7 @@ noinst_HEADERS = \
 		      $(INCLUDE_DIR)/convuri.h \
                       $(INCLUDE_DIR)/ppset.h \
                       $(INCLUDE_DIR)/xmlutils.h \
-                      $(INCLUDE_DIR)/protobuf/paramsvalues.pb.h
+                      $(INCLUDE_PROTOBUF)
 
 if MINGW32_OPT
 INCLUDE_PARSERS =

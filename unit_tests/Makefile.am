@@ -27,7 +27,7 @@ unit_tests_SOURCES = \
 		sz4_lua_param_optimized.cpp \
 		sz4_lua_param.cpp \
 		sz4_definable_param.cpp \
-		sz4_wsum.cpp \	
+		sz4_wsum.cpp \
 		simple_mocks.h 
 
 sz4_extr_simple_SOURCES = sz4_extr_simple.cpp
