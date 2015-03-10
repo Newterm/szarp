@@ -28,12 +28,6 @@ import lastentry
 import math
 from contextlib import contextmanager
 
-@contextmanager
-def file_lock(file):
-	file.lock()
-	yield file
-	file.unlock()
-
 class FileFactory:
 	class File:
 		def __init__(self, path, mode):
@@ -65,13 +59,14 @@ class FileFactory:
 		return self.File(path, mode)
 
 class SaveParam:
-	def __init__(self, param, szbase_dir, file_factory=FileFactory()):
+	def __init__(self, param, szbase_dir, file_factory=FileFactory(), lock=True):
 		self.param = param
 		self.param_path = parampath.ParamPath(self.param, szbase_dir)
 		self.file = None
 		self.first_write = True
 		self.file_factory = file_factory
 		self.last = lastentry.LastEntry(param)
+		self.lock = lock
 
 	def update_last_time_unlocked(self, time, nanotime):
 		self.file.seek(-self.last.time_size, os.SEEK_END)
@@ -85,8 +80,13 @@ class SaveParam:
 
 
 	def update_last_time(self, time, nanotime):
-		with file_lock(self.file):
-			self.update_last_time_unlocked(time, nanotime)
+		if self.lock:
+			self.file.lock()
+
+		self.update_last_time_unlocked(time, nanotime)
+
+		if self.lock:
+			self.file.unlock()
 			
 	def ensure_room_for_new_value(self, time, nanotime):
 		if self.file_size + self.param.value_lenght >= config.DATA_FILE_SIZE:
@@ -100,11 +100,16 @@ class SaveParam:
 	def write_value(self, value, time, nanotime):
 		self.ensure_room_for_new_value(time, nanotime)
 
-		with file_lock(self.file):
-			self.file.write(self.param.value_to_binary(value))
-			self.file_size += self.param.value_lenght
+		if self.lock:
+			self.file.lock()
 
-			self.last.new_value(time, nanotime, value)
+		self.file.write(self.param.value_to_binary(value))
+		self.file_size += self.param.value_lenght
+
+		self.last.new_value(time, nanotime, value)
+
+		if self.lock:
+			self.file.unlock()
 
 	def prepare_for_writing(self, time, nanotime):
 		path = self.param_path.find_latest_path()	
@@ -134,12 +139,17 @@ class SaveParam:
 		else:
 			self.ensure_room_for_new_value(time, nanotime)
 
-			with file_lock(self.file):
-				self.file.write(self.param.value_to_binary(self.param.nan()))
-				self.file_size += self.param.value_lenght
+			if self.lock:
+				self.file.lock()
 
-				self.last.advance(time, nanotime, self.param.nan())
-				self.update_last_time_unlocked(time, nanotime)
+			self.file.write(self.param.value_to_binary(self.param.nan()))
+			self.file_size += self.param.value_lenght
+
+			self.last.advance(time, nanotime, self.param.nan())
+			self.update_last_time_unlocked(time, nanotime)
+
+			if self.lock:
+				self.file.unlock()
 
 	def process_value(self, value, time, nanotime = 0):
 		if not self.param.written_to_base:

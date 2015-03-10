@@ -102,9 +102,9 @@ class Converter:
 		self.s_params = {}
 
 		for p in self.ipk.params:
-			sp = saveparam.SaveParam(p, sz4_dir, FileFactory())
+			sp = saveparam.SaveParam(p, sz4_dir, FileFactory(), False)
 			self.s_params[p.param_name] = sp
-
+	
 		self.s_params[heartbeat_param_name] = saveparam.SaveParam(create_hearbeat_param(), sz4_dir, FileFactory())
 
 	def convert_param(self, sp, pname):
