@@ -106,55 +106,6 @@ sub process_package {
 
 }
 
-sub debian_key_install {
-
-	sub do_install {
-		if (system("apt-get install debian-repository-key") != 0) { 
-			print "W: Failed to install debian-repository-key package";
-		} else {
-			system("apt-get update");
-		}
-	}
-
-	my $_system = $_[0];
-
-	my $cache = AptPkg::Cache->new;
-	my $p = $cache->{"debian-repository-key"};
-
-	unless ($p) {
-		print "W: debian-repository-key package is not in cache\n";
-		return;
-	}
-
-	my $version= $p->{"CurrentVer"};
-
-	unless (defined $version) {
-		do_install;
-		return;
-	}
-
-	my $versioning_system = $_system->versioning;
-
-	my $version_list = $p->{"VersionList"};
-
-	if ($version_list) {
-		my $vers = $version->{"VerStr"};
-		for my $av (@$version_list) {
-			my $avs = $av->{"VerStr"};
-			my $result = $versioning_system->compare($avs,$vers);
-			if ($result > 0) {
-				do_install;
-				return;
-			}
-		}
-	} else {
-		print "W: No info about versions of debian-repository-key";
-	}
-
-	return;
-
-}
-
 system("apt-get -qq update") == 0 or die "apt-get update failed";
 		
 # supress cache building messages
@@ -163,8 +114,6 @@ $_config->{"quiet"} = 2;
 # set up the cache
 $_config->init;
 $_system = $_config->system;
-
-debian_key_install($_system);
 
 my $cache = AptPkg::Cache->new;
 
@@ -182,7 +131,7 @@ my $list = join(' ', @sequence);
 subst_dpkgcfg() or die "UPDATE ABORTED - unable to modify /etc/dpkg/dpkg.cfg";
 
 my $shall_die = 0;
-system("apt-get -y install $list") == 0 or $shall_die = 1;
+system("apt-get -qq -y install $list") == 0 or $shall_die = 1;
 restore_dpkgcfg();
 
 if ($shall_die) {
