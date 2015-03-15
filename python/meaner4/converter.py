@@ -46,7 +46,8 @@ def szbase_file_path_to_date(path):
 
 	month = c2d(path[4]) * 10
 	month += c2d(path[5])
-	return calendar.timegm(datetime.datetime(year, month, 1).utctimetuple())
+
+	return year, month
 
 class FileFactory:
 	class File:
@@ -117,15 +118,23 @@ class Converter:
 
 		lsp_param_path = lsp.param_path.param_path if pname != heartbeat_param_name else "Status/Meaner3/program_uruchomiony"
 
-		szbase_files = [ x for x in os.listdir(os.path.join(self.szbase_dir, lsp_param_path)) if x.endswith(".szb")]
+		try:
+			szbase_files = [ x for x in os.listdir(os.path.join(self.szbase_dir, lsp_param_path)) if x.endswith(".szb")]
+		except OSError:
+			print "No values stored in db for that param"
+			return	
 		szbase_files.sort()
 
 		value = None
 
 		for j, szbase_path in enumerate(szbase_files):
 			sys.stdout.write("\rFile: %s, %d/%d    " % (szbase_path, j + 1, len(szbase_files)))
-			sys.stdout.flush()
-			time = szbase_file_path_to_date(szbase_path)
+
+			year, month = szbase_file_path_to_date(szbase_path)
+			nyear, nmonth = (year, month + 1) if month != 12 else (year + 1, 1)
+
+			time = calendar.timegm(datetime.datetime(year, month, 1).utctimetuple())
+			ntime = calendar.timegm(datetime.datetime(nyear, nmonth, 1).utctimetuple())
 
 			f = open(os.path.join(self.szbase_dir, lsp_param_path, szbase_path)).read()
 			if combined:
@@ -133,6 +142,7 @@ class Converter:
 			try: 
 				l = len(f) / 2
 				if combined:
+					l = min(l, len(f2) / 2)
 					vlsw = struct.unpack_from(("<%dH" % (l,)), f)
 					vmsw = struct.unpack_from(("<%dh" % (l,)), f2)
 					values = [ (m << 16) + l for l, m in zip(vlsw, vmsw) ]
@@ -154,7 +164,10 @@ class Converter:
 					value = v
 
 				time += 600
-
+				#meaner bug fix
+				if not time < ntime:
+					break
+				
 
 		if value is not None:
 			sp.update_last_time_unlocked(time, 0)
