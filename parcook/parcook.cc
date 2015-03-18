@@ -411,19 +411,19 @@ bool compile_script(TParam *p) {
 
 	int ret = luaL_loadbuffer(lua, content, strlen(content), (const char*)SC::S2U(p->GetName()).c_str());
 	if (ret != 0) {
-		sz_log(1, "Error compiling param %ls: %s\n", p->GetName().c_str(), lua_tostring(lua, -1));
+		sz_log(1, "Error compiling param %s: %s\n", SC::S2U(p->GetName()).c_str(), lua_tostring(lua, -1));
 		return false;
 	}
 
 	ret = lua_pcall(lua, 0, 1, 0);
 	if (ret != 0) {
-		sz_log(1, "Error compiling param %ls: %s\n", p->GetName().c_str(), lua_tostring(lua, -1));
+		sz_log(1, "Error compiling param %s: %s\n", SC::S2U(p->GetName()).c_str(), lua_tostring(lua, -1));
 		return false;
 	}
 
 	ret = lua_pcall(lua, 0, 1, 0);
 	if (ret != 0) {
-		sz_log(1, "Error compiling param %ls: %s\n", p->GetName().c_str(), lua_tostring(lua, -1));
+		sz_log(1, "Error compiling param %s: %s\n", SC::S2U(p->GetName()).c_str(), lua_tostring(lua, -1));
 		return false;
 	}
 

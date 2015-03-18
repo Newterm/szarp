@@ -133,7 +133,7 @@ class DataWriter {
 class SzbaseWriter : public TSzarpConfig {
 public:
 	SzbaseWriter(const std::wstring &ipk_path, const std::wstring &double_pattern,
-			const std::wstring& data_dir, const std::wstring &cache_dir, bool add_new_pars,
+			const std::wstring& data_dir, const std::wstring &cache_dir,
 			bool write_10sec, int _fill_how_many , int _fill_how_many_sec );
 	~SzbaseWriter();
 	/* Process input. 
@@ -174,7 +174,7 @@ protected:
 					becasue of low/high words) */
 
 	unordered_map<std::wstring, int> m_draws_count;
-	bool m_add_new_pars; 	/**< flag denoting if we add new pars*/
+
 	bool m_new_par; 	/**< if new parameter was added */
 	size_t m_last_type;	/**< last type of probe to write + 1 */
 
@@ -200,6 +200,7 @@ DataWriter::DataWriter(SzbaseWriter* parent, DataWriter::PROBE_TYPE ptype, const
 	m_cur_t = 0;
 	m_cur_cnt = 0;
 	m_cur_sum = 0;
+	m_cur_name.clear();
 
 	m_cache = new SzProbeCache(parent, data_dir, m_probe_length);
 }
@@ -217,13 +218,13 @@ int DataWriter::add_data( const std::wstring& name, bool is_dbl, time_t t, doubl
 		SC::S2U(m_cur_name).c_str(), SC::S2U(name).c_str(), t, data);
 
 	if (name != m_cur_name) {
-		if (save_data())
+		if (close_data())
 			return 1;
 
 		m_is_double = is_dbl;
 
-		m_cur_sum = 0;
-		m_cur_cnt = 0;
+		m_cur_sum = data;
+		m_cur_cnt = 1;
 
 		m_cur_t = t / m_probe_length * m_probe_length;
 		sz_log(10, "DataWriter::add_data: (name != n_cur_name) t = %ld, m_cur_t = %ld", t, m_cur_t);
@@ -306,7 +307,7 @@ int DataWriter::fill_gaps(time_t begin, time_t end, double sum, int count)
 int DataWriter::save_data()
 {
 	//sz_log(10, "save_data begin: pt=%d, m_dir[pt]=%ls", (int) pt, m_dir.c_str());
-	sz_log(10, "DataWriter::save_data %s", !m_cur_cnt ? "end - NO DATA" : "data exists");
+	sz_log(10, "DataWriter::save_data m_cur_sum: %f, m_cur_cnt: %ld", m_cur_sum, (unsigned long)m_cur_cnt);
 
 	if (!m_cur_cnt)
 		return 0;
@@ -330,6 +331,7 @@ int DataWriter::save_data()
 
 	}
 	catch( SzProbeCache::failure& f ) {
+		sz_log(2, "DataWriter::save_data: SzProbeCache::failure");
 		return 1;
 	}
 
@@ -343,6 +345,11 @@ int DataWriter::save_data()
 
 int DataWriter::close_data()
 {
+	if (m_cur_name.empty()) {
+		sz_log(10, "DataWriter::close_data first run, no data to save");
+		return 0;
+	}
+
 	sz_log(10, "DataWriter::close_data");
 	if (save_data())
 		return 1;
@@ -356,10 +363,9 @@ SzbaseWriter::SzbaseWriter(
 		const std::wstring &ipk_path,
 		const std::wstring& double_pattern,
 		const std::wstring& data_dir, const std::wstring& cache_dir, 
-		bool add_new_pars,
 		bool write_10sec,
 		int _fill_how_many , int _fill_how_many_sec ) 
-	: m_double_pattern(double_pattern), m_add_new_pars(add_new_pars)
+	: m_double_pattern(double_pattern)
 {
 
 	m_writers.push_back(new DataWriter(this, DataWriter::MIN10, data_dir, _fill_how_many));
@@ -506,9 +512,8 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	
 	if (name != m_cur_name) {
 		TParam* cur_par = getParamByName(name);
-		if (NULL == cur_par && !m_add_new_pars) {
-			sz_log(1, "Param %s not found in configuration and "
-					"program run without -n flag, value ignored!",
+		if (NULL == cur_par) {
+			sz_log(1, "Param %s not found in configuration and value ignored!",
 					SC::S2U(name).c_str());
 			return 1;
 		}
@@ -539,28 +544,6 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 		int ret = (*it)->add_data(name, is_dbl, m_t, new_value);
 		if (ret != 0)
 			return 1;
-	}
-
-	/* check for draw's min and max; it's strange but it works ;-) */
-	if (m_cur_par->GetDraws()) {
-		double min = m_cur_par->GetDraws()->GetMin();
-		double max = m_cur_par->GetDraws()->GetMax();
-		if (new_value > max) {
-			if (new_value <= 0)
-				max = 0;
-			else
-				max = pow10(ceil(log10(new_value)));
-			m_cur_par->GetDraws()->SetMax(max);
-		}
-
-		if (min > new_value) {
-			if (new_value >= 0)
-				min = 0;
-			else
-				min = -pow10(ceil(log10(-new_value)));
-			m_cur_par->GetDraws()->SetMin(min);
-		}
-
 	}
 
 	return 0;
@@ -617,7 +600,7 @@ int SzbaseWriter::process_line(char *line)
 		sec = atoi(toks[6]);
 		data = toks[7];
 	} else {
-		sec = 10;
+		sec = 0;
 		data = toks[6];
 	}
 
@@ -657,11 +640,6 @@ int SzbaseWriter::process_input()
 	}
 
 	return res;
-}
-
-bool SzbaseWriter::have_new_params()
-{
-	return m_new_par;
 }
 
 /* arguments handling */
@@ -802,7 +780,6 @@ int main(int argc, char *argv[])
 			SC::L2S(double_pattern),
 		       	SC::L2S(data_dir),
 		       	SC::L2S(cache_dir),
-			arguments.add_new_params,
 		       	not arguments.no_probes,
 			fill_how_many_num,
 			fill_how_many_sec_num);
@@ -816,9 +793,6 @@ int main(int argc, char *argv[])
 	if (szbw->process_input())
 		return 1;
 
-	if(szbw->have_new_params())
-		szbw->saveXML(SC::L2S(ipk_path));
-	
 	delete szbw;
 
 	// update database stamp file
