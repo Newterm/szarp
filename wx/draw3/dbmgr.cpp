@@ -218,7 +218,7 @@ DrawInfo * DatabaseManager::GetCurrentDrawInfoForInquirer(InquirerId id) {
 }
 
 time_t DatabaseManager::GetCurrentDateForInquirer(InquirerId id) {
-	time_t result;
+	time_t result = -1;
 
 	IHI i = inquirers.find(id);
 

@@ -229,6 +229,18 @@ public:
 
 };
 
+class SzbRoundTimeExpression : public Expression {
+	PExpression m_time;
+	PExpression m_period_type;
+public:
+	SzbRoundTimeExpression(PExpression time, PExpression period_type) :
+		m_time(time), m_period_type(period_type) {}
+
+	virtual Val Value() {
+		return szb_round_time(m_time->Value(),  SZARP_PROBE_TYPE(m_period_type->Value()));
+	}
+};
+
 
 class IfStatement : public Statement {
 	PExpression m_cond;
@@ -455,6 +467,14 @@ public:
 
 	virtual PExpression Convert(const std::vector<expression>& expressions) = 0;
 };
+
+template<class container_type> class SzbRoundTimeConverter : public FunctionConverter<container_type> {
+public:
+	SzbRoundTimeConverter(ParamConverterTempl<container_type> *param_converter) : FunctionConverter<container_type>(param_converter) {}	
+
+	virtual PExpression Convert(const std::vector<expression>& expressions);
+};
+
 
 template<class container_type> class SzbMoveTimeConverter : public FunctionConverter<container_type> {
 public:

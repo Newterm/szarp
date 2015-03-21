@@ -473,6 +473,18 @@ template<class container_type> PExpression SzbMoveTimeConverter<container_type>:
 		FunctionConverter<container_type>::m_param_converter->ConvertExpression(expressions[2]));
 }
 
+template<class container_type> PExpression SzbRoundTimeConverter<container_type>::Convert(const std::vector<expression>& expressions) {
+#ifdef LUA_OPTIMIZER_DEBUG
+       lua_opt_debug_stream << "Converting szb_round_time expression" << std::endl;
+#endif
+       if (expressions.size() < 2)
+	       throw ParamConversionException(L"szb_round_time requires two arguments");
+
+       return boost::make_shared<SzbRoundTimeExpression>
+	       (FunctionConverter<container_type>::m_param_converter->ConvertExpression(expressions[0]),
+		FunctionConverter<container_type>::m_param_converter->ConvertExpression(expressions[1]));
+}
+
 template<class container_type> PExpression IsNanConverter<container_type>::Convert(const std::vector<expression>& expressions) {
 #ifdef LUA_OPTIMIZER_DEBUG
        lua_opt_debug_stream << "Converting isnan expression"  << std::endl;
@@ -521,6 +533,7 @@ template<class container_type> PExpression ParamValueConverter<container_type>::
 
 template<class container_type> ParamConverterTempl<container_type>::ParamConverterTempl(container_type *ipk_container) : m_ipk_container(ipk_container) {
 	m_function_converters[L"szb_move_time"] = boost::make_shared<SzbMoveTimeConverter<container_type> >(this);
+	m_function_converters[L"szb_round_time"] = boost::make_shared<SzbRoundTimeConverter<container_type> >(this);
 	m_function_converters[L"isnan"] = boost::make_shared<IsNanConverter<container_type > >(this);
 	m_function_converters[L"nan"] = boost::make_shared<NanConverter<container_type> >(this);
 	m_function_converters[L"p"] = boost::make_shared<ParamValueConverter<container_type> >(this);
@@ -683,13 +696,13 @@ template<class IPKContainerType> bool optimize_lua_param(TParam* param, IPKConta
 			pc.ConvertParam(param_code, exec_param);
 			exec_param->m_optimized = true;
 		} catch (LuaExec::ParamConversionException &ex) {
-			sz_log(3, "Parameter %ls cannot be optimized, reason: %ls", param->GetName().c_str(), ex.what().c_str());
+			sz_log(2, "Parameter %ls cannot be optimized, reason: %ls", param->GetName().c_str(), ex.what().c_str());
 #ifdef LUA_OPTIMIZER_DEBUG
 			lua_opt_debug_stream << "Parameter " << SC::S2A(param->GetName()) << " cannot be optimized, reason: " << SC::S2A(ex.what()) << std::endl;
 #endif
 		}
 	} else
-		sz_log(3, "Parameter %ls cannot be optimized, failed to parse its defiition", param->GetName().c_str());
+		sz_log(2, "Parameter %ls cannot be optimized, failed to parse its defiition", param->GetName().c_str());
 	
 
 	return exec_param->m_optimized;

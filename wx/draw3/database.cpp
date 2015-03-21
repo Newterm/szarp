@@ -24,6 +24,7 @@
 #include "conversion.h"
 #include "szbextr/extr.h"
 #include "sz4/util.h"
+#include "sz4/exceptions.h"
 #include "szarp_base_common/lua_utils.h"
 
 #include <cmath>
@@ -446,25 +447,31 @@ void Sz4Base::GetData(DatabaseQuery* query, wxEvtHandler* response_receiver) {
 
 	std::vector<DatabaseQuery::ValueData::V>::iterator i = vd.vv->begin();
 	while (i != vd.vv->end()) {
-		if (pt == PT_HALFSEC) {
-			sz4::nanosecond_time_t time = pair_to_sz4_nanosecond(i->time_second, i->time_nanosecond);
-			GetValue<sz4::nanosecond_time_t>(*i, time, p, pt);
-		} else {
-			GetValue<sz4::second_time_t>(*i, i->time_second, p, pt);
-		}
-
-		i->ok = true;
-
 		DatabaseQuery *rq = CreateDataQueryPrivate(query->draw_info, query->param, vd.period_type, query->draw_no);
-
 		rq->inquirer_id = query->inquirer_id;
+		try {
+			if (pt == PT_HALFSEC) {
+				sz4::nanosecond_time_t time = pair_to_sz4_nanosecond(i->time_second, i->time_nanosecond);
+				GetValue<sz4::nanosecond_time_t>(*i, time, p, pt);
+			} else {
+				GetValue<sz4::second_time_t>(*i, i->time_second, p, pt);
+			}
+
+			i->ok = true;
+
+		} catch (sz4::exception &e) {
+			i->error = 1;
+			i->error_str = wcsdup(SC::U2S((const unsigned char*)(e.what())).c_str());
+			i->count = 0;
+			i->ok = false;
+
+		}
 		rq->value_data.vv->push_back(*i);
+
 		DatabaseResponse dr(rq);
 		wxPostEvent(response_receiver, dr);
-
 		i++;
 	}	
-
 }
 
 void Sz4Base::ResetBuffer(DatabaseQuery* query) {

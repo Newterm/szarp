@@ -59,10 +59,14 @@ template<class base_types> int lua_sz4(lua_State *lua) {
 	base_ipk_pair<base_types>* base_ipk = get_base_ipk_pair<base_types>(lua);
 	TParam* param = base_ipk->second->GetParam(std::basic_string<unsigned char>(param_name));
 	if (param == NULL)
-                 luaL_error(lua, "Param %s not found", param_name);
+                 return luaL_error(lua, "Param %s not found", param_name);
 
 	weighted_sum<double, nanosecond_time_t> sum;
-	base_ipk->first->get_weighted_sum(param, time, szb_move_time(time, 1, SZARP_PROBE_TYPE(probe_type), 0), probe_type, sum);
+	try {
+		base_ipk->first->get_weighted_sum(param, time, szb_move_time(time, 1, SZARP_PROBE_TYPE(probe_type), 0), probe_type, sum);
+	} catch (exception &e) {
+                 return luaL_error(lua, "%s", e.what());
+	}
 	base_ipk->first->fixed_stack().back()
 		= base_ipk->first->fixed_stack().back() & sum.fixed();
 
