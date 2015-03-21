@@ -80,16 +80,18 @@ class SaveParam:
 
 
 	def update_last_time(self, time, nanotime):
-		if self.lock:
-			self.file.lock()
+		try:
+			if self.lock:
+				self.file.lock()
 
-		self.update_last_time_unlocked(time, nanotime)
+			self.update_last_time_unlocked(time, nanotime)
 
-		if self.lock:
-			self.file.unlock()
+		finally:
+			if self.lock:
+				self.file.unlock()
 			
 	def ensure_room_for_new_value(self, time, nanotime):
-		if self.file_size + self.param.value_lenght >= config.DATA_FILE_SIZE:
+		if self.file_size + self.param.max_file_item_size > config.DATA_FILE_SIZE:
 			self.file.close()
 
 			path = self.param_path.create_file_path(time, nanotime)
@@ -100,16 +102,18 @@ class SaveParam:
 	def write_value(self, value, time, nanotime):
 		self.ensure_room_for_new_value(time, nanotime)
 
-		if self.lock:
-			self.file.lock()
+		try:
+			if self.lock:
+				self.file.lock()
 
-		self.file.write(self.param.value_to_binary(value))
-		self.file_size += self.param.value_lenght
+			self.file.write(self.param.value_to_binary(value))
+			self.file_size += self.param.value_lenght
 
-		self.last.new_value(time, nanotime, value)
+			self.last.new_value(time, nanotime, value)
 
-		if self.lock:
-			self.file.unlock()
+		finally:
+			if self.lock:
+				self.file.unlock()
 
 	def prepare_for_writing(self, time, nanotime):
 		path = self.param_path.find_latest_path()	
@@ -139,17 +143,19 @@ class SaveParam:
 		else:
 			self.ensure_room_for_new_value(time, nanotime)
 
-			if self.lock:
-				self.file.lock()
+			try:
+				if self.lock:
+					self.file.lock()
 
-			self.file.write(self.param.value_to_binary(self.param.nan()))
-			self.file_size += self.param.value_lenght
+				self.file.write(self.param.value_to_binary(self.param.nan()))
+				self.file_size += self.param.value_lenght
 
-			self.last.advance(time, nanotime, self.param.nan())
-			self.update_last_time_unlocked(time, nanotime)
+				self.last.advance(time, nanotime, self.param.nan())
+				self.update_last_time_unlocked(time, nanotime)
 
-			if self.lock:
-				self.file.unlock()
+			finally:
+				if self.lock:
+					self.file.unlock()
 
 	def process_value(self, value, time, nanotime = 0):
 		if not self.param.written_to_base:

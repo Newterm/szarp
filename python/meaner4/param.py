@@ -50,6 +50,7 @@ class Param:
 		self.msw_param_name = msw
 		self.lsw_combined_referencing_param = None
 		self.msw_combined_referencing_param = None
+		self.max_file_item_size = self.value_lenght + self.time_prec + 1
 
 	def nan(self):
 		if self.data_type == "short":
