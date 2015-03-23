@@ -187,12 +187,30 @@ void DrawFrame::OnContextHelp(wxCommandEvent & event) {
 
 void DrawFrame::OnShowAverage(wxCommandEvent &event) 
 {
-	draw_panel->OnShowAverage(event);
+	if (m_notebook == NULL) {
+		draw_panel->OnShowAverage(event);
+	} else {
+		for (unsigned int i = 0; i < m_notebook->GetPageCount(); i++) {
+			DrawPanel *panel = dynamic_cast<DrawPanel *>(m_notebook->GetPage(i));
+			if (panel != NULL) {
+				panel->OnShowAverage(event);
+			}
+		}
+	}
 }
 
 void DrawFrame::OnShowInterface(wxCommandEvent &event) 
 {
-	draw_panel->OnShowInterface(event);
+	if (m_notebook == NULL) {
+		draw_panel->OnShowInterface(event);
+	} else {
+		for (unsigned int i = 0; i < m_notebook->GetPageCount(); i++) {
+			DrawPanel *panel = dynamic_cast<DrawPanel *>(m_notebook->GetPage(i));
+			if (panel != NULL) {
+				panel->OnShowInterface(event);
+			}
+		}
+	}
 }
 
 void DrawFrame::OnExit(wxCommandEvent & event)

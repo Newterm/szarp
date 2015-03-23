@@ -573,6 +573,8 @@ void DrawPanel::OnShowAverage(wxCommandEvent &evt)
 
 			/* Inform window about resize */
 			wxPostEvent(GetParent(),se);
+			/* This is needen in case of wxAuiNotebook (draw panel tabs) */
+			wxPostEvent(GetParent()->GetParent(),se);
 		}
 	}
 }
@@ -604,6 +606,8 @@ void DrawPanel::OnShowInterface(wxCommandEvent &evt)
 
 		/* Inform window about resize */
 		wxPostEvent(GetParent(),se);
+		/* This is needen in case of wxAuiNotebook (draw panel tabs) */
+		wxPostEvent(GetParent()->GetParent(),se);
 	}
 }
 
