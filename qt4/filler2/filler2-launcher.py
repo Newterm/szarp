@@ -47,6 +47,8 @@ import datetime
 import argparse
 import subprocess
 from collections import namedtuple
+import logging
+from logging.handlers import SysLogHandler
 
 # local imports
 from filler2 import Ui_MainWindow
@@ -186,9 +188,10 @@ class Filler2(QMainWindow):
 		try:
 			self.single_instance = SingleInstance(LOCKFILE)
 		except IOError:
+			logger.error('another instance of Filler 2 is running, exiting...')
 			self.criticalError(_translate("MainWindow",
 				"Cannot acquire a single instance lock. There is "
-				" other Filler 2 program running on the system."))
+				" another Filler 2 program running on the system."))
 
 		# parse local SZARP configuration
 		try:
@@ -202,6 +205,8 @@ class Filler2(QMainWindow):
 			self.criticalError(_translate("MainWindow",
 						"Non-valid SZARP database prefix."))
 			sys.exit(1)
+
+		logger.info("editing database of prefix '%s'", self.parser.ipk_prefix)
 
 		# verify SZARP prefix versus hostname
 		if no_warn == False:
@@ -985,6 +990,10 @@ class SzbWriter(QThread):
 						(datetime.datetime.now().strftime('%Y/%m/%d %H:%M'),
 						 getpass.getuser())
 
+			logger.info("modifying parameter %s in period from %s to %s...",
+					ch.name,
+					dts[0].strftime('%Y/%m/%d %H:%M'),
+					dts[-1].strftime('%Y/%m/%d %H:%M'))
 			try:
 				self.parser.recordSzf(ch.name, dts, ch.lswmsw)
 				self.parser.szbWriter(ch.name, ch.dvalues)
@@ -1134,6 +1143,18 @@ def main(argv=None):
 	"main() function."
 	if argv is None:
 		argv = sys.argv
+
+	# set logger
+	global logger
+	logger = logging.getLogger('filler2')
+	logger.setLevel(logging.DEBUG)
+	handler = logging.handlers.SysLogHandler(address='/dev/log', facility=SysLogHandler.LOG_DAEMON)
+	handler.setLevel(logging.INFO)
+	formatter = logging.Formatter('%(name)s: [%(levelname)s] %(message)s')
+	handler.setFormatter(formatter)
+	logger.addHandler(handler)
+
+	logger.info("application started by user '%s'", getpass.getuser())
 
 	# deal with command line arguments
 	parser, args, uargs = parse_arguments(argv)
