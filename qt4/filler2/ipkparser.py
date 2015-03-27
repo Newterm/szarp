@@ -77,7 +77,7 @@ class IPKParser:
 		"Error raised by szbWriter() method."
 		def __init__(self, origin):
 			if origin is not None:
-				super(Exception, self).__init__(origin.message)
+				super(Exception, self).__init__(str(origin))
 			else:
 				super(Exception, self).__init__()
 
@@ -88,7 +88,7 @@ class IPKParser:
 		"Error raised by recordSzf() method."
 		def __init__(self, origin):
 			if origin is not None:
-				super(Exception, self).__init__(origin.message)
+				super(Exception, self).__init__(str(origin))
 			else:
 				super(Exception, self).__init__()
 
@@ -308,11 +308,9 @@ class IPKParser:
 						stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			out, err = process.communicate(string.encode('utf-8'))
 			if process.wait() != 0:
-				raise IOError("szbWriter exited with non-zero status")
-		except IOError as err:
+				raise IOError("/opt/szarp/bin/szbwriter exited with non-zero status: %s" % err)
+		except Exception as err:
 			raise self.SzbWriterError(err)
-		except:
-			raise self.SzbWriterError(None)
 
 	# end of szbWriter()
 
@@ -392,10 +390,8 @@ class IPKParser:
 
 			with open(filepath, 'w') as fd:
 				fd.write(output[:-1].encode('utf-8'))
-		except IOError as err:
+		except Exception as err:
 			raise self.SzfRecordError(err)
-		except:
-			raise self.SzfRecordError(None)
 
 	# end of recordSzf()
 

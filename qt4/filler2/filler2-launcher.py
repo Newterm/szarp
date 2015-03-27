@@ -866,19 +866,27 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 		vals, lswmsw = self.changesTable.item(row, 5).data(Qt.UserRole).toPyObject()
 		dts = [d for d,v in vals]
 
+		logmsg = "Filler2.undoChange(): undoing change for parameter %s in period from %s to %s... " % \
+					(name, dts[0].strftime('%Y/%m/%d %H:%M'), dts[-1].strftime('%Y/%m/%d %H:%M'))
+
 		try:
 			self.parser.recordSzf(name, dts, lswmsw)
 			self.parser.szbWriter(name, vals)
 			self.parent.infoBox(_translate("HistoryDialog",
 				"Undoing change finished successfully."))
-		except IPKParser.SzfRecordError:
+			logger.info(logmsg + "done.")
+		except IPKParser.SzfRecordError as err:
+			logger.error(logmsg + "failed to make a change record")
+			logger.error(str(err))
 			self.parent.warningBox(
 					_translate("HistoryDialog",
 						"Failed to undo change for parameter ")
 					+ draw_name + ". " +
 					_translate("HistoryDialog",
 						"Encountered an error while making change record."))
-		except IPKParser.SzbWriterError:
+		except IPKParser.SzbWriterError as err:
+			logger.error(logmsg + "failed to write to szbase")
+			logger.error(str(err))
 			self.parent.warningBox(
 					_translate("HistoryDialog",
 						"Failed to undo change for parameter ")
@@ -990,20 +998,24 @@ class SzbWriter(QThread):
 						(datetime.datetime.now().strftime('%Y/%m/%d %H:%M'),
 						 getpass.getuser())
 
-			logger.info("modifying parameter %s in period from %s to %s...",
-					ch.name,
-					dts[0].strftime('%Y/%m/%d %H:%M'),
-					dts[-1].strftime('%Y/%m/%d %H:%M'))
+			logmsg = "SzbWriter.run(): modifying parameter %s in period from %s to %s... " % \
+						(ch.name, dts[0].strftime('%Y/%m/%d %H:%M'),
+						dts[-1].strftime('%Y/%m/%d %H:%M'))
 			try:
 				self.parser.recordSzf(ch.name, dts, ch.lswmsw)
 				self.parser.szbWriter(ch.name, ch.dvalues)
 				if ch.remark is not None:
 					self.parser.postRemark(ch.name, dts[0], title, remark)
 				self.paramDone.emit(nr, ch.draw_name, 0)
-			except IPKParser.SzfRecordError:
+				logger.info(logmsg + "done.")
+			except IPKParser.SzfRecordError as err:
 				self.paramDone.emit(nr, ch.draw_name, 1)
-			except IPKParser.SzbWriterError:
+				logger.error(logmsg + "failed to make a change record")
+				logger.error(str(err))
+			except IPKParser.SzbWriterError as err:
 				self.paramDone.emit(nr, ch.draw_name, 2)
+				logger.error(logmsg + "failed to write to szbase")
+				logger.error(str(err))
 
 			time.sleep(1)
 			nr += 1
