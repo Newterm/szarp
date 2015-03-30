@@ -30,7 +30,7 @@ __license__ = \
 __author__    = "Tomasz Pieczerak <tph AT newterm.pl>"
 __copyright__ = "Copyright (C) 2014-2015 Newterm"
 __version__   = "2.0"
-__status__    = "beta"
+__status__    = "production"
 __email__     = "coders AT newterm.pl"
 
 
@@ -191,17 +191,20 @@ class Filler2(QMainWindow):
 			logger.error('another instance of Filler 2 is running, exiting...')
 			self.criticalError(_translate("MainWindow",
 				"Cannot acquire a single instance lock. There is "
-				" another Filler 2 program running on the system."))
+				"another Filler 2 program running on the system."))
 
 		# parse local SZARP configuration
 		try:
 			self.parser = IPKParser(szprefix)
 		except IOError as err:
+			logger.error("cannot read SZARP configuration")
+			logger.error(str(err))
 			self.criticalError(_translate("MainWindow",
 						"Cannot read SZARP configuration")
 						+ " (%s)." % err.bad_path)
 			sys.exit(1)
 		except ValueError as err:
+			logger.error(str(err))
 			self.criticalError(_translate("MainWindow",
 						"Non-valid SZARP database prefix."))
 			sys.exit(1)
@@ -475,6 +478,14 @@ class Filler2(QMainWindow):
 				"\"To\" date is earlier (or equals) \"From\" date.\nAdding change aborted."))
 			return
 
+		if self.toDate >= datetime.datetime.now():
+			if QMessageBox.Yes != \
+					self.questionBox(_translate("MainWindow",
+						"You are trying to modify future data - "
+						"it will block SZARP from writing actual data in this period.\n\n"
+						"Are you sure that's what you really want to do?")):
+				return
+
 		param_info = self.ui.paramList.itemData(
 				self.ui.paramList.currentIndex()).toPyObject()
 
@@ -594,6 +605,7 @@ class Filler2(QMainWindow):
 
 		if QMessageBox.Yes == self.questionBox(txt):
 			# construct list of changes to be committed
+			logger.info("committing scheduled changes...")
 			changes_list = []
 
 			for i in range(0, self.ui.changesTable.rowCount()):
@@ -983,7 +995,10 @@ class SzbWriter(QThread):
 			if ch.remark is not None:
 				anyremarks = True
 		if anyremarks:
-			self.parser.initRemarks('gcwp-filler2', '85064efb60a9601805dcea56ec5402f7')
+			try:
+				self.parser.initRemarks('gcwp-filler2', '85064efb60a9601805dcea56ec5402f7')
+			except IPKParser.RemarksError as err:
+				logger.error(str(err))
 
 	# end of __init__()
 
@@ -1005,7 +1020,10 @@ class SzbWriter(QThread):
 				self.parser.recordSzf(ch.name, dts, ch.lswmsw)
 				self.parser.szbWriter(ch.name, ch.dvalues)
 				if ch.remark is not None:
-					self.parser.postRemark(ch.name, dts[0], title, remark)
+					try:
+						self.parser.postRemark(ch.name, dts[0], title, remark)
+					except IPKParser.RemarksError as err:
+						logger.error(str(err))
 				self.paramDone.emit(nr, ch.draw_name, 0)
 				logger.info(logmsg + "done.")
 			except IPKParser.SzfRecordError as err:
@@ -1166,12 +1184,11 @@ def main(argv=None):
 	handler.setFormatter(formatter)
 	logger.addHandler(handler)
 
-	logger.info("application started by user '%s'", getpass.getuser())
-
 	# deal with command line arguments
 	parser, args, uargs = parse_arguments(argv)
 
 	app = QApplication(uargs)
+	logger.info("application started by user '%s'", getpass.getuser())
 
 	argv2 = app.arguments()
 	if len(argv2) != 1:

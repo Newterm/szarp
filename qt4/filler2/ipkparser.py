@@ -95,6 +95,9 @@ class IPKParser:
 			self.origin = origin
 	# end of class SzfRecordError
 
+	class RemarksError(Exception):
+		pass
+
 	def __init__(self, prefix):
 		"""IPKParser constructor.
 
@@ -405,9 +408,10 @@ class IPKParser:
 		try:
 			self.remarks_srv = xmlrpclib.Server(REMARKS_ADDRESS)
 			self.remarks_login = self.remarks_srv.login(user, passwd)
-		except:
+		except Exception as err:
 			self.remarks_srv = None
 			self.remarks_login = None
+			raise self.RemarksError("cannot connect to remarks server %s: %s" % (REMARKS_ADDRESS, str(err)))
 
 	# end of initRemarks()
 
@@ -421,7 +425,7 @@ class IPKParser:
 			remark_content - remark's content.
 		"""
 		if self.remarks_srv is None:
-			return # FIXME: better to throw an exception
+			raise self.RemarksError("not connected to remarks server, aborting adding a remark")
 
 		# find to which sets parameter belongs
 		sets = []
