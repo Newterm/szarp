@@ -34,10 +34,10 @@ def go():
 	uri = lpr.get("global", "parcook_socket_uri")
 	heartbeat = int(lpr.get("sz4", "heartbeat_frequency"))
 
-	meaner = meaner.Meaner(path, uri, heartbeat)
-	meaner.configure(ipk)
+	m = meaner.Meaner(path, uri, heartbeat)
+	m.configure(ipk)
 
-	meaner.run()
+	m.run()
 
 if __name__ == "__main__":
 	go()

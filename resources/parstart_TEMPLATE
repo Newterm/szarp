@@ -59,9 +59,9 @@ case "$1" in
 	fi
 
 	if [ x$MEANER4 = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/lib/python/meaner4dmn.py
+	    DAEMON='meaner4'
 	    szlog
-	    start_daemon $DAEMON
+	    python /opt/szarp/lib/python/meaner4/meaner4dmn.py start
 	    log_end_msg $?
 	fi
 
@@ -240,9 +240,9 @@ case "$1" in
 	fi
 
 	if [ x$MEANER4 = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/lib/python/meaner4dmn.py
+	    DAEMON='meaner4'
 	    stlog
-	    /sbin/start-stop-daemon --stop --quiet --oknodo --pidfile /var/run/meaner4dmn.pid
+	    python /opt/szarp/lib/python/meaner4/meaner4dmn.py stop
 	    log_end_msg $?
 	fi
 

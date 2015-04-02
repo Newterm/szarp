@@ -19,8 +19,20 @@
 
 """
 
-import daemon
+from daemon import runner
 import meaner4
 
-with daemon.DaemonContext(pidfile="/var/run/meaner4dmn.pid"):
-	meaner4.go()
+class Meaner4App:
+	def __init__(self):
+		self.stdin_path = "/dev/null"
+		self.stdout_path = "/var/log/szarp/meaner4.stdin.log"
+		self.stderr_path = "/var/log/szarp/meaner4.stderr.log"
+		self.pidfile_path = "/var/run/meaner4.pid"
+		self.pidfile_timeout = 5
+
+	def run(self):
+		meaner4.go()
+
+if __name__ == "__main__":
+	runner = runner.DaemonRunner(Meaner4App())	
+	runner.do_action()
