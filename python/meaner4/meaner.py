@@ -50,8 +50,7 @@ class Meaner(MeanerBase):
 			while True:
 				msg = self.socket.recv(zmq.NOBLOCK)
 
-				params_values = paramsvalues_pb2.ParamsValues()
-				params_values.ParseFromString(msg)
+				params_values = paramsvalues_pb2.ParamsValues.FromString(msg)
 
 				for param_value in params_values.param_values:
 					log_param, index = self.ipk.adjust_param_index(param_value.param_no)
