@@ -263,7 +263,11 @@ DefinableDatablock::Refresh()
 	if (this->last_data_probe_index >= int(fixed_probes_count))
 		last_data_probe_index = -1;
 
-	time_t time = probe2time(0, year, month);
+	for (int i = 0; i < num_of_params; i++)
+		if (dblocks[i])
+			dblocks[i] += this->fixed_probes_count;
+
+	time_t time = probe2time(this->fixed_probes_count, year, month);
 	for (int i = this->fixed_probes_count; i < new_probes_c; i++, time += SZBASE_DATA_SPAN) {
 		szbase_value_fetch_functor value_fetch(buffer, time, PT_MIN10);
 		default_is_summer_functor is_summer(time, param);

@@ -221,6 +221,8 @@ void SzbaseBase::GetData(DatabaseQuery* query, wxEvtHandler *response_receiver) 
 
 	DatabaseQuery *rq = NULL;
 
+	szbase->NextQuery();
+
 	while (i != vd.vv->end()) {
 
 		int new_year, new_month;

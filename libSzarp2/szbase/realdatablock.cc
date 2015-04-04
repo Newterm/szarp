@@ -234,7 +234,7 @@ void RealDatablock::Refresh() {
 		return;
 
 	/* load data */
-#ifdef MING32
+#ifdef MINGW32
 	int fd = open(SC::S2A(GetBlockFullPath()).c_str(), O_RDONLY | O_BINARY);
 #else
 	int fd = open(SC::S2A(GetBlockFullPath()).c_str(), O_RDONLY);
