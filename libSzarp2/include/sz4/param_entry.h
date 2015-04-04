@@ -1,5 +1,3 @@
-#ifndef __SZ4_PARAM_ENTRY_H__
-#define __SZ4_PARAM_ENTRY_H__
 /* 
   SZARP: SCADA software 
   
@@ -18,18 +16,14 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
+#ifndef __SZ4_PARAM_ENTRY_H__
+#define __SZ4_PARAM_ENTRY_H__
 
 #include "config.h"
-
-#include <boost/preprocessor/seq/for_each_product.hpp>
-#include <boost/preprocessor/seq/elem.hpp>
 
 namespace sz4 {
 
 template<class types> class base_templ;
-
-#define SZ4_BASE_DATA_TYPE_SEQ (short)(int)(float)(double)
-#define SZ4_BASE_TIME_TYPE_SEQ (second_time_t)(nanosecond_time_t)
 
 class generic_param_entry : public SzbParamObserver {
 protected:
@@ -43,21 +37,28 @@ public:
 	generic_param_entry(TParam* param) : m_param(param) {}
 	TParam* get_param() const { return m_param; }
 
-	/* Macro below generates methods
-	 virtual void get_weighted_sum(time_type start_time, time_type end_type, weighted_sum<time_type, value_type>() = 0;
-	 for each possible combination of value and time types
-	*/
-#	define SZ4_GENERATE_ABSTRACT_GET_WSUM(r, seq) 	\
-	virtual void get_weighted_sum(const BOOST_PP_SEQ_ELEM(1, seq)& start, const BOOST_PP_SEQ_ELEM(1, seq)& end, SZARP_PROBE_TYPE probe_type, weighted_sum<BOOST_PP_SEQ_ELEM(0, seq), BOOST_PP_SEQ_ELEM(1, seq)>& wsum) = 0;
+	virtual void get_weighted_sum(const second_time_t& start, const second_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<short, second_time_t>& wsum) = 0;
 
-	BOOST_PP_SEQ_FOR_EACH_PRODUCT_R(1, SZ4_GENERATE_ABSTRACT_GET_WSUM, (SZ4_BASE_DATA_TYPE_SEQ)(SZ4_BASE_TIME_TYPE_SEQ))
+	virtual void get_weighted_sum(const second_time_t& start, const second_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<int, second_time_t>& wsum) = 0;
 
-#	undef SZ4_GENERATE_ABSTRACT_GET_WSUM
-	
+	virtual void get_weighted_sum(const second_time_t& start, const second_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<float, second_time_t>& wsum) = 0;
+
+	virtual void get_weighted_sum(const second_time_t& start, const second_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<double, second_time_t>& wsum) = 0;
+
+	virtual void get_weighted_sum(const nanosecond_time_t& start, const nanosecond_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<short, nanosecond_time_t>& wsum) = 0;
+
+	virtual void get_weighted_sum(const nanosecond_time_t& start, const nanosecond_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<int, nanosecond_time_t>& wsum) = 0;
+
+	virtual void get_weighted_sum(const nanosecond_time_t& start, const nanosecond_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<float, nanosecond_time_t>& wsum) = 0;
+
+	virtual void get_weighted_sum(const nanosecond_time_t& start, const nanosecond_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<double, nanosecond_time_t>& wsum) = 0;
 
 	virtual second_time_t search_data_right(const second_time_t& start, const second_time_t& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) = 0;
+
 	virtual second_time_t search_data_left(const second_time_t& start, const second_time_t& end,  SZARP_PROBE_TYPE probe_type,const search_condition& condition) = 0;
+
 	virtual nanosecond_time_t search_data_right(const nanosecond_time_t& start, const nanosecond_time_t& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) = 0;
+
 	virtual nanosecond_time_t search_data_left(const nanosecond_time_t& start, const nanosecond_time_t& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) = 0;
 
 	virtual void get_first_time(nanosecond_time_t& t) = 0;
@@ -150,14 +151,45 @@ public:
 		generic_param_entry(param), m_entry(_base, param, base_dir / param->GetSzbaseName())
 	{ }
 
-#	define SZ4_GENERATE_GET_WSUM(r, seq) 	\
-	void get_weighted_sum(const BOOST_PP_SEQ_ELEM(1, seq)& start, const BOOST_PP_SEQ_ELEM(1, seq)& end, SZARP_PROBE_TYPE probe_type, weighted_sum<BOOST_PP_SEQ_ELEM(0, seq), BOOST_PP_SEQ_ELEM(1, seq)>& wsum) {	  \
-		probe_adapter<BOOST_PP_SEQ_ELEM(1, seq), T>()(probe_type); \
-		get_weighted_sum_templ(start, round_up<BOOST_PP_SEQ_ELEM(1, seq), T>()(end), probe_type, wsum);	\
+	void get_weighted_sum(const second_time_t& start, const second_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<short, second_time_t>& wsum) {
+		probe_adapter<second_time_t, T>()(probe_type);
+		get_weighted_sum_templ(start, round_up<second_time_t, T>()(end), probe_type, wsum);
 	}
 
-	BOOST_PP_SEQ_FOR_EACH_PRODUCT_R(1, SZ4_GENERATE_GET_WSUM, (SZ4_BASE_DATA_TYPE_SEQ)(SZ4_BASE_TIME_TYPE_SEQ))
-#	undef SZ4_GENERATE_GET_WSUM
+	void get_weighted_sum(const second_time_t& start, const second_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<int, second_time_t>& wsum) {
+		probe_adapter<second_time_t, T>()(probe_type);
+		get_weighted_sum_templ(start, round_up<second_time_t, T>()(end), probe_type, wsum);
+	}
+
+	void get_weighted_sum(const second_time_t& start, const second_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<float, second_time_t>& wsum) {
+		probe_adapter<second_time_t, T>()(probe_type);
+		get_weighted_sum_templ(start, round_up<second_time_t, T>()(end), probe_type, wsum);
+	}
+
+	void get_weighted_sum(const second_time_t& start, const second_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<double, second_time_t>& wsum) {
+		probe_adapter<second_time_t, T>()(probe_type);
+		get_weighted_sum_templ(start, round_up<second_time_t, T>()(end), probe_type, wsum);
+	}
+
+	void get_weighted_sum(const nanosecond_time_t& start, const nanosecond_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<short, nanosecond_time_t>& wsum) {
+		probe_adapter<nanosecond_time_t, T>()(probe_type);
+		get_weighted_sum_templ(start, round_up<nanosecond_time_t, T>()(end), probe_type, wsum);
+	}
+
+	void get_weighted_sum(const nanosecond_time_t& start, const nanosecond_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<int, nanosecond_time_t>& wsum) {
+		probe_adapter<nanosecond_time_t, T>()(probe_type);
+		get_weighted_sum_templ(start, round_up<nanosecond_time_t, T>()(end), probe_type, wsum);
+	}
+
+	void get_weighted_sum(const nanosecond_time_t& start, const nanosecond_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<float, nanosecond_time_t>& wsum) {
+		probe_adapter<nanosecond_time_t, T>()(probe_type);
+		get_weighted_sum_templ(start, round_up<nanosecond_time_t, T>()(end), probe_type, wsum);
+	}
+
+	void get_weighted_sum(const nanosecond_time_t& start, const nanosecond_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<double, nanosecond_time_t>& wsum) {
+		probe_adapter<nanosecond_time_t, T>()(probe_type);
+		get_weighted_sum_templ(start, round_up<nanosecond_time_t, T>()(end), probe_type, wsum);
+	}
 
 	second_time_t search_data_right(const second_time_t& start, const second_time_t& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) {
 		return search_data_right_templ(start, end, probe_type, condition);
