@@ -6,5 +6,5 @@ Terminal=false
 Comment=Szarp Sync Client
 TryExec=/opt/szarp/bin/ssc_sudowrap.sh
 Exec=/opt/szarp/bin/ssc_sudowrap.sh
-Icon=/opt/szarp/resources/wx/icons/praterm16.png
+Icon=/opt/szarp/resources/wx/icons/ssc.ico
 X-GNOME-Autostart-Phase=Applications

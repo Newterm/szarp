@@ -26,7 +26,7 @@ $include "__INSTALL_DIR__/resources/szarp_in.cfg"
 #
 ## Dowolna ilość sekcji "execute" - będą wykonywane w tej kolejności w jakiej
 ## zostaną wpisane.
-#execute_sections=local_backup praterm_push 
+#execute_sections=local_backup bazy_push
 #
 ## Sekcje o odpowiednich nazwach - jak wyżej
 ## Przykładowa sekcja dla lokalnego backup'u co 10 minut
@@ -34,34 +34,15 @@ $include "__INSTALL_DIR__/resources/szarp_in.cfg"
 #command_line=/opt/szarp/bin/szbpush \
 #	ip_terminala $prefix$
 #time=* * * * *
-#
-#:praterm_push
-#time=* * * * *
-#command_line=/opt/szarp/bin/szbpush $prefix$@praterm $prefix$
-#
-#
-# Przykładowa sekcja dla łączności przez modem:
-#:praterm_push
 ## Ile razy powtarzać nieudaną próbę
 #retry=1
-##Wykonuj w każdy dzień tygodnia o godzinie 00:00
-#time=* * * 0 5
-## Linia komend do wykonania, ważne żeby zwrócić odpowiedni kod błędu (
-## z nieudanego łączenia lub z rsynca).
-#command_line=$szarp_bin$/szppp-on 0w202122 ppp ppp 5 && \
-#	/bin/ping -q -c 1 praterm &> /dev/null; \
-#	if [ $? -eq 0 ]; then \
-#		/opt/szarp/bin/szbpush $prefix$@praterm $prefix$ \
-#		CODE=$?; \
-#		/etc/init.d/ntp-server stop; \
-#		ntpdate -t 3 -s praterm ;  \
-#		/etc/init.d/ntp-server start; \
-#		$szarp_bin$/szppp-off; \
-#		exit $CODE; \
-#	fi; \
-#	/opt/szarp/bin/szppp-off
 #
-
+#
+#:bazy_push
+#time=* * * * *
+#command_line=/opt/szarp/bin/szbpush $prefix$@bazy.newterm.pl $prefix$
+#
+#
 
 #############################################################
 # SZARP Control Center
@@ -72,7 +53,7 @@ $include "__INSTALL_DIR__/resources/szarp_in.cfg"
 #
 # menu= CONFIG("$prefix$"), \
 	SEPARATOR, \
-	DOC, ICON("/opt/szarp/resources/wx/icons/praterm16.xpm")
+	DOC, ICON("/opt/szarp/resources/wx/icons/szarp16.xpm")
 # 
 # Inny przykład:
 # menu= EXEC("program1"), ICON("icons/program1.png"), \
