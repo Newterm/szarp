@@ -29,7 +29,8 @@ do_usage() {
 	echo
 	echo -e "  -p\tpush to origin"
 	echo 
-	echo "  distribution 'all' will create tags for all distributions"
+	echo "  use distribution 'stable' for building master or 'unstable' for building devel"
+	echo "  $0 will create tag and build SZARP only for the current git branch."
 	exit 0
 }
 
@@ -51,15 +52,15 @@ fi
 
 dists=$1
 
-if [ $dists = "all" ]
-then
-	dists="lenny squeeze unstable natty oneiric"
-fi
-
 version=$2
 
 for d in $dists 
 do
+	if [ "$d" != "stable" ] && [ "$d" != "unstable" ]
+	then
+		echo "distribution must be 'stable' (for master) or 'unstable' (for devel)"
+		fail
+	fi
 	do_build $d $version
 	if [ $push -eq 1 ]
 	then
