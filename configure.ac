@@ -1394,7 +1394,7 @@ else
         echo "no"
 fi
 
-echo -n "Configure with cppunit             "
+echo -n "Configured with cppunit            "
 if test "x$no_cppunit" != "xyes" ; then
         echo "yes"
 else

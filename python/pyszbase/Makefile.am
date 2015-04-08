@@ -20,7 +20,8 @@ libpyszbase_la_LDFLAGS = -version-info 0:0:0 -l$(BOOST_PYTHON_LIB) \
 			$(PYTHON_LDFLAGS) $(PTHREAD_CFLAGS) \
 			$(XML_LIBS) $(LUA_LIBS) $(BOOST_LDFLAGS) \
 			$(BOOST_SYSTEM_LIB) $(BOOST_FILESYSTEM_LIB) \
-       			$(BOOST_THREAD_LIB) $(BOOST_DATE_TIME_LIB) \
+			$(BOOST_THREAD_LIB) $(BOOST_DATE_TIME_LIB) \
+			$(PROTOBUF_LIBS) $(ZMQ_LIBS)\
 			@BOOST_LOCALE_LIB@ @CURL_LIBS@ @XSLT_LIBS@ @ZIP_LIBS@ @EVENT_LIBS@
 libpyszbase_la_LIBADD = ../../libSzarp/libSzarp.la ../../libSzarp2/libSzarp2.la
 
