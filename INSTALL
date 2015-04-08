@@ -1,41 +1,43 @@
-Pawe≥ Pa≥ucha <pawel@praterm.com.pl>
+SZARP installation guide
+========================
 
-This files briefly describes installation of SZARP software. The simplest way
-of instalation for end-users it to user Debian packages.
+Author: Pawe≈Ç Pa≈Çucha <pawel@praterm.com.pl>
 
-SZARP is known to compile and run on Debian (both 32 and 64-bits), Ubuntu 
-(tested some times ago and with minor problems) and Moxa ARM platform (only
-server side). Some clients applications are cross-compiled for Windows.
-All the development and testing is done on Debian, so you can run into some 
-problems with other distributions. 
+This file briefly describes how to install SZARP software. The simplest way of
+installation for end-users it to use Debian packages.
 
-See also INSTALL.ARM and INSTALL.Windows for information about ARM and Windows
-platforms.
+SZARP is compile and run on Debian GNU/Linux (i386, amd64, armel/armhf)
+and Ubuntu. Some client applications are also cross-compiled for Windows.
+All the development and testing is done only on Debian GNU/Linux, so you can
+run into some problems with other distributions.
 
-1. Instalation from source.
+See INSTALL.Windows for information about Windows platform.
+
+1. Installation from source.
 
 NOTE:
 This method of installation is not recommended - you will need to manually setup
 some configuration files, crontab entries and so on. This method is not used
 by us or any SZARP user we know. If you want to play with source code, we
-recommend to install Debian packages so all the staff in in correct place. Then
-you can replace binaries with your own compiled versions, or run them directly
-from your working directory.
+recommend to install Debian packages so all the staff will be in correct place.
+Then you can replace binaries with your own compiled versions or run them
+directly from your working directory.
 
 SZARP uses autotools, but is deployed without configure scripts, so you need
 automake, autoconf, libtool and pkg-config. The commands to build SZARP are:
 
 # ./autogen.sh
 
-This is the invocation of automake and autoconf, it should run without any error 
-messages. In case of errors, check if you have new versions of automake, autoconf,
-libtool and pkg-config installed.
+This invokes automake and autoconf, it should run without any error messages.
+In case of errors, check whether you have newest versions of automake,
+autoconf, libtool and pkg-config installed.
 
 # ./configure
 
-This is the invocation of configure scipts. There are many options available, see
+This is the invocation of configure scripts. There are many options available,
+see:
 
-# ./conifgure --help
+# ./configure --help
 
 Configuration for Windows is described in INSTALL.Windows. There are 
 '--with-XXX' and '--without-XXX' options available to turn on/off optional 
@@ -45,12 +47,12 @@ you can use '--without-x'.
 By default all optional libraries are turned on. If some library is not found,
 SZARP is configured without this library. At the end of configure run, there's
 a report generated with information what libraries where found. To get full
-funcionality, you must have all libraries. You can skip some libraries, but
+functionality, you must have all libraries. You can skip some libraries, but
 some parts of code will fail to compile (yes, we don't test every possible 
-combination of missing libraries). The safe bet is to have all libraries.
+combination of missing libraries). The safest bet is to have all libraries.
 
-If you plan to debug programs, you should change compilator options. By default
-'-g' is used, but -O2 (optimization) fulls debugger. To get debugger-friendly
+If you plan to debug programs, you should change compiler options. By default
+'-g' is used, but -O2 (optimization) fools debugger. To get debugger-friendly
 code run configure with options:
 
 # ./configure CFLAGS=-g CXXFLAGS=-g
@@ -60,22 +62,23 @@ Now:
 # make
 
 This should compile everything. If there are errors, you have found a bug. But
-if you're not using Debian lenny/unstable, there's a little chance that we will 
-help you with this. Patches are welcome if they do not brake Debian compilation ;-)
-If you configure SZARP with lua params optimiser enabled, you need a lot of memory
-during compilation - about 1 GB without '-g' options, 2 GB is better if you use '-g'.
+if you're not using some old releases of Debian (ie. lenny, squeeze), there's
+a little chance that we will help you with this. Patches are welcome if they do
+not brake Debian compilation ;-). If you configure SZARP with LUA parameters
+optimiser enabled, you need a lot of memory during compilation - about 1 GB
+without '-g' options, 2 GB is better if you use '-g'.
 
 # make doc
 
-This creates html documentation. You need lot's of Docbook stuff installed for
-this to work - ./configure should warn you about missing programs.
+This creates html documentation. You need lots of Docbook stuff installed for
+this to work, ./configure should warn you about missing programs.
 
 Now you can become root and type:
 
 # make install
 
-Default instalation directory is /opt/szarp. You can install SZARP under other 
-directory by using
+Default install directory is /opt/szarp. You can install SZARP under other
+directory by using:
 
 # make DESTDIR=/tmp install
 
@@ -94,21 +97,15 @@ To get rid also of files generated by autotools, use:
 
 # make maintainer-clean
 
-or
 
-# make cleanconfig
+2. Installation of Debian packages.
 
-(old form from SZARP 2.1 version).
-
-
-2. Installation from Debian packages.
-
-This is the simplest and best supported method of instalation.
+This is the simplest and best supported method of installation.
 Add following line to /etc/apt/sources.list:
 
-deb http://www.szarp.org/debian unstable main
+deb http://www.szarp.org/debian wheezy main
 
-Then run: 
+Then run:
 
 # apt-get update
 

@@ -39,7 +39,7 @@
      </widget>
     </item>
     <item>
-     <layout class="QGridLayout" name="gridLayout" columnstretch="6,3,3,2,1">
+     <layout class="QGridLayout" name="gridLayout" columnstretch="6,3,3,3,1">
       <item row="1" column="2">
        <widget class="QPushButton" name="toDate">
         <property name="enabled">
@@ -153,51 +153,18 @@
        </widget>
       </item>
       <item row="1" column="3">
-       <widget class="QLineEdit" name="valueEdit">
+       <widget class="QComboBox" name="valueType">
         <property name="enabled">
          <bool>false</bool>
         </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="toolTip">
-         <string>Parametr's value</string>
+         <string>Type of plot</string>
         </property>
         <property name="statusTip">
-         <string>Enter parameter value</string>
+         <string>Choose a type of plot</string>
         </property>
         <property name="whatsThis">
-         <string>Textbox for entering parameter's value to be inserted in given time period.</string>
-        </property>
-        <property name="autoFillBackground">
-         <bool>true</bool>
-        </property>
-        <property name="inputMethodHints">
-         <set>Qt::ImhNone</set>
-        </property>
-        <property name="inputMask">
-         <string/>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="maxLength">
-         <number>12</number>
-        </property>
-        <property name="cursorPosition">
-         <number>0</number>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-        <property name="placeholderText">
-         <string notr="true">0.0</string>
+         <string>A list of plot types available for data insertion.</string>
         </property>
        </widget>
       </item>
@@ -519,28 +486,12 @@
    <slot>onToDate()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>772</x>
-     <y>134</y>
+     <x>767</x>
+     <y>150</y>
     </hint>
     <hint type="destinationlabel">
      <x>771</x>
      <y>103</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>valueEdit</sender>
-   <signal>lostFocus()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>onValueChanged()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>879</x>
-     <y>136</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>894</x>
-     <y>100</y>
     </hint>
    </hints>
   </connection>
@@ -657,38 +608,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>valueEdit</sender>
-   <signal>returnPressed()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>onValueChanged()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>895</x>
-     <y>137</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>510</x>
-     <y>239</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>valueEdit</sender>
-   <signal>textChanged(QString)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>validateInput()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>895</x>
-     <y>137</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>510</x>
-     <y>239</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionViewHistory</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
@@ -704,13 +623,29 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>valueType</sender>
+   <signal>activated(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onTypeChosen()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>869</x>
+     <y>142</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>959</x>
+     <y>67</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onSetChosen(QString)</slot>
   <slot>onParamChosen(QString)</slot>
   <slot>onFromDate()</slot>
   <slot>onToDate()</slot>
-  <slot>onValueChanged()</slot>
+  <slot>onTypeChosen()</slot>
   <slot>aboutQt()</slot>
   <slot>about()</slot>
   <slot>addChange()</slot>

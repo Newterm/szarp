@@ -1,26 +1,29 @@
 # -*- coding: utf-8 -*-
 """
- IPKParser is a part of SZARP SCADA software
+IPKParser is a module for reading and writing from/to SZARP databases.
+"""
 
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 2 of the License, or
- (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- MA  02110-1301, USA """
+# IPKParser is a part of SZARP SCADA software.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301, USA.
 
 __author__    = "Tomasz Pieczerak <tph AT newterm.pl>"
 __copyright__ = "Copyright (C) 2014-2015 Newterm"
 __version__   = "1.0"
-__status__    = "devel"
+__status__    = "beta"
 __email__     = "coders AT newterm.pl"
 
 
@@ -35,6 +38,7 @@ import fnmatch
 import operator
 import datetime
 import calendar
+import xmlrpclib
 import subprocess
 import xml.sax
 from collections import namedtuple
@@ -46,17 +50,21 @@ import libpyszbase as pysz
 
 # constants
 INF = sys.maxint
+SZB_LIMIT = 32767.0
+SZB_LIMIT_COM = 2147483647.0
+NO_DATA = -32768.0
+NO_DATA_COM = -2147483648.0
 
 SZCONFIG_PATH = "/opt/szarp/%s/config/params.xml"
 PREFIX_REX = re.compile(r'^[a-z]+$')
 LSWMSW_REX = re.compile(r'^\s*\([^:]+:[^:]+:[^:]+ msw\)'
 						r'\s*\([^:]+:[^:]+:[^:]+ lsw\)\s*:\s*$')
+REMARKS_ADDRESS = "https://eos.newterm.pl:7998/"
 
 # helper types definitions
 ParamInfo = namedtuple('ParamInfo', 'name draw_name prec lswmsw')
 ChangeInfo = namedtuple('ChangeInfo',
 						'name draw_name set_name user date vals lswmsw')
-
 class SetInfo:
 	__init__ = lambda self, **kw: setattr(self, '__dict__', kw)
 
@@ -96,9 +104,10 @@ class IPKParser:
 		if prefix is None or len(prefix) == 0:
 			try:
 				process = subprocess.Popen(
-						["/opt/szarp/bin/lpparse", "prefix"], stdout=subprocess.PIPE)
+						["/opt/szarp/bin/lpparse", "prefix"],
+						stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 				out, err = process.communicate()
-				if err == None:
+				if len(err) == 0:
 					prefix = out[1:-1]
 			except OSError:
 				pass
@@ -124,6 +133,9 @@ class IPKParser:
 				self.ipk_prefix = prefix
 				self.ipk_conf = handler.sets
 				self.ipk_title = handler.title
+
+				self.remarks_srv = None
+				self.remarks_login = None
 		except IOError as err:
 			err.bad_path = filename
 			raise
@@ -174,16 +186,21 @@ class IPKParser:
 			(draw_name, set_title) - tuple containing two strings, of draw name
 				and set title.
 		"""
-		# FIXME: set may be ambiguous as parameter may belong to a few sets.
-		for key, val in self.ipk_conf.iteritems():
-			for p in val.params:
+		# FIXME: set may be ambiguous as parameter may belong to more than one set.
+		for set_name, set_info in self.ipk_conf.iteritems():
+			for p in set_info.params:
 				if p.name == pname:
-					return (p.draw_name, key)
+					return (p.draw_name, set_name)
 		raise ValueError
 
 	# end of getSetAndDrawName()
 
 	def readSzfRecords(self):
+		"""Search for SZF changes records in the current prefix database.
+
+		Returns:
+			[ChangeInfo...] - a list of changes info tuples.
+		"""
 		szfs = []
 		for root, dirnames, filenames in os.walk(os.path.join(self.ipk_dir, 'szbase')):
 			for fn in fnmatch.filter(filenames, '*.szf'):
@@ -207,56 +224,88 @@ class IPKParser:
 
 	# end of readSzfRecords()
 
-	def readSzf(self, filename):
-		with open(filename) as fd:
+	def readSzf(self, filepath):
+		"""Read SZF change information from a file.
+
+		Arguments:
+			filepath - path to SZF file.
+
+		Returns:
+			(pname, [(date, value)...]) - a tuple containing full parameter
+				name and a list of probe's date and value tuples.
+		"""
+		with open(filepath) as fd:
 			reader = csv.reader(fd, delimiter=',')
 
 			fst_row = reader.next()
 			pname = fst_row[1].lstrip().decode('utf-8')
-			vals = []
+			dvals = []
 
 			for row in reader:
 				try:
-					vals.append(
+					dvals.append(
 							(datetime.datetime.strptime(row[0], "%Y-%m-%d %H:%M"),
 							 float(row[1]))
 							)
 				except ValueError:
-					vals.append(
+					dvals.append(
 							(datetime.datetime.strptime(row[0], "%Y-%m-%d %H:%M"),
 							 float('Nan'))
 							)
 
-		return (pname, vals)
+		return (pname, dvals)
 
 	# end of readSzf()
 
 	def extrszb10(self, pname, date_list):
+		"""Extract 10-minute probes from SZARP database.
+
+		Arguments:
+			pname - full parameter name.
+			date_list - list of probes' dates to extract.
+
+		Returns:
+			vals - list of extracted probes' values.
+		"""
 		param = u"%s:%s" % (self.ipk_prefix, pname)
-		out = []
+		vals = []
 
 		pysz.init("/opt/szarp", u"pl_PL")
 		for d in date_list:
 			dt = d.replace(tzinfo=tzlocal())
 			t = calendar.timegm(dt.utctimetuple())
-			out.append(pysz.get_value(param, t, pysz.PROBE_TYPE.PT_MIN10))
+			vals.append(pysz.get_value(param, t, pysz.PROBE_TYPE.PT_MIN10))
 		pysz.shutdown()
 
-		return out
+		return vals
 
 	# end of extrszb10()
 
-	def szbWriter(self, pname, dv_list):
+	def szbWriter(self, pname, dv_list, write_10sec=False):
+		"""Write probes' values to SZARP database.
+
+		Arguments:
+			pname - full parameter name.
+			dv_list - list of probes' tuples (date, value) .
+			write_10sec - whether to write also 10-sec probes.
+		"""
 		try:
-			string = ""
+			#string = ""
+			# FIXME: warm-up fix for szbwriter
+			wud = dv_list[0][0] - datetime.timedelta(minutes=10)
+			string = u"\"%s\" %s %s\n" % \
+					(pname, wud.strftime("%Y %m %d %H %M"), str(NO_DATA))
+
 			for d, v in dv_list:
 				string += u"\"%s\" %s %s\n" % \
 						(pname, d.strftime("%Y %m %d %H %M"), str(v))
 			string = string[:-1]
 
-			process = subprocess.Popen(
-					["/opt/szarp/bin/szbwriter", "-Dprefix=%s" % self.ipk_prefix, "-p"],
-					stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			cmd = ["/opt/szarp/bin/szbwriter", "-Dprefix=%s" % self.ipk_prefix]
+			if not write_10sec:
+				cmd.append("-p")
+			process = subprocess.Popen(cmd, stdin=subprocess.PIPE,
+						stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			out, err = process.communicate(string.encode('utf-8'))
 			if process.wait() != 0:
 				raise IOError("szbWriter exited with non-zero status")
@@ -268,6 +317,16 @@ class IPKParser:
 	# end of szbWriter()
 
 	def pname2path(self, pname, lswmsw):
+		"""Convert full parameter name to path in szbase/ directory. For
+		combined parameters path to LSW parameter is returned.
+
+		Arguments:
+			pname - full parameter name.
+			lswmsw - whether parameter is a combined one.
+
+		Returns:
+			ppath - parameter's directory path.
+		"""
 		ppath = "/opt/szarp/%s/szbase/" % self.ipk_prefix
 		ppath += self.strip(pname)
 		if lswmsw:
@@ -278,6 +337,15 @@ class IPKParser:
 	# end of pname2path()
 
 	def strip(self, pname):
+		"""Convert full parameter name to parameter's directory name.
+		It substitutes all characters but a-zA-Z0-9 with '_'.
+
+		Arguments:
+			pname - full parameter name.
+
+		Returns:
+			dirname - striped name.
+		"""
 		def conv(x):
 			if   (ord(x) >= ord('a') and ord(x) <= ord('z')) \
 			  or (ord(x) >= ord('A') and ord(x) <= ord('Z')) \
@@ -300,9 +368,17 @@ class IPKParser:
 			return u"_"
 
 		return "".join([ conv(x) for x in pname ])
+
 	# end of strip()
 
 	def recordSzf(self, pname, dates, lswmsw):
+		"""Make a SZF change record for given parameter and probe dates.
+
+		Arguments:
+			pname - full parameter name.
+			dates - list of probes dates to record.
+			lswmsw - whether parameter is a combined one.
+		"""
 		try:
 			output = u""
 			vals = self.extrszb10(pname, dates)
@@ -322,6 +398,69 @@ class IPKParser:
 			raise self.SzfRecordError(None)
 
 	# end of recordSzf()
+
+	def initRemarks(self, user, passwd):
+		"""Establish a connection to remarks server.
+
+		Argument:
+		    user - remarks username.
+			pass - MD5 sum of a user's password.
+		"""
+		try:
+			self.remarks_srv = xmlrpclib.Server(REMARKS_ADDRESS)
+			self.remarks_login = self.remarks_srv.login(user, passwd)
+		except:
+			self.remarks_srv = None
+			self.remarks_login = None
+
+	# end of initRemarks()
+
+	def postRemark(self, pname, date, remark_title, remark_content):
+		"""Post a remark to previously connected server (see iniRemarks()).
+
+		Arguments:
+		    pname - full parameter name.
+			date - datetime for a remark.
+			remark_title - remark's title.
+			remark_content - remark's content.
+		"""
+		if self.remarks_srv is None:
+			return # FIXME: better to throw an exception
+
+		# find to which sets parameter belongs
+		sets = []
+		for set_name, set_info in self.ipk_conf.iteritems():
+			for p in set_info.params:
+				if p.name == pname:
+					sets.append(set_name)
+
+		# calculate epoch time
+		dt = date.replace(tzinfo=tzlocal())
+		time = calendar.timegm(dt.utctimetuple())
+
+		# add a remark for each set
+		for set_name in sets:
+			remark = u'<remark prefix="%(prefix)s" ' \
+							 'time="%(time)s" ' \
+							 'set="%(set_name)s" ' \
+							 'title="%(title)s">' \
+							 '<content>%(content)s</content></remark>' % \
+							 { 'prefix'  : self.ipk_prefix,
+							   'time'    : time,
+							   'set_name': set_name,
+							   'title'   : remark_title,
+							   'content' : remark_content }
+			remark_bin = xmlrpclib.Binary(remark.encode('utf-8'))
+			self.remarks_srv.post_remark(self.remarks_login, remark_bin)
+
+	# end of postRemark()
+
+	def closeRemarks(self):
+		"""Close a connection to remarks server."""
+		self.remarks_srv = None
+		self.remarks_login = None
+
+	# end of closeRemarks()
 
 	class IPKDrawSetsHandler(xml.sax.ContentHandler):
 		"""Content handler for SAX with "feature namespaces". Fetches
@@ -396,7 +535,7 @@ class IPKParser:
 							# create ParamInfo object and store it in appropriate SetInfo
 							self.sets[attrs.getValueByQName('title')].params.append(
 									ParamInfo(self.param_name, self.param_draw_name,
-									 self.param_prec, self.param_lswmsw))
+									 int(self.param_prec), self.param_lswmsw))
 
 		# end of startElementNS()
 

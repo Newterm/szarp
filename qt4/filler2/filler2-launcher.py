@@ -10,7 +10,7 @@ database and therefore should be considered as risky.
 
 __license__ = \
 """
- Filler 2 is a part of SZARP SCADA software
+ Filler 2 is a part of SZARP SCADA software.
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ __license__ = \
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- MA  02110-1301, USA """
+ MA 02110-1301, USA. """
 
 __author__    = "Tomasz Pieczerak <tph AT newterm.pl>"
 __copyright__ = "Copyright (C) 2014-2015 Newterm"
@@ -42,6 +42,7 @@ import math
 import types
 import fcntl
 import signal
+import getpass
 import datetime
 import argparse
 import subprocess
@@ -53,6 +54,7 @@ from ipkparser import IPKParser
 from DatetimeDialog import Ui_DatetimeDialog
 from AboutDialog import Ui_AboutDialog
 from HistoryDialog import Ui_HistoryDialog
+from ValueDialogs import ValueDialogFactory
 
 # pyQt4 imports
 from PyQt4.QtCore import *
@@ -63,8 +65,6 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 # constants
-SZLIMIT = 32767.0
-SZLIMIT_COM = 2147483647.0
 LOCKFILE = '/tmp/.filler2_lock'
 
 # global variables
@@ -72,7 +72,7 @@ __script_name__ = os.path.basename(sys.argv[0])
 
 # containers definitions
 SzChangeInfo = namedtuple('SzChangeInfo',
-                          'draw_name name start_date end_date value lswmsw')
+                          'draw_name name dvalues lswmsw remark')
 
 # signal handlers
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -177,7 +177,7 @@ class Filler2(QMainWindow):
 	"""SZARP Filler 2 application's main window (pyQt4)."""
 
 	def __init__(self, szprefix, no_warn=False, parent=None):
-		"""Filler2 class constructor."""
+		"""Filler 2 class constructor."""
 		QWidget.__init__(self, parent)
 		self.ui = Ui_MainWindow()
 		self.ui.setupUi(self)
@@ -233,20 +233,29 @@ class Filler2(QMainWindow):
 				QVariant(0), Qt.UserRole-1)
 		self.ui.listOfSets.setEnabled(True)
 
-		# parameter's value textbox
-		self.ui.valueEdit.setValidator(QDoubleValidator())
+		# parameter's type combobox
+		self.dialog_factory = ValueDialogFactory()
 
+		for name, icon, desc in self.dialog_factory.get_dialogs():
+			self.ui.valueType.addItem(icon, desc, QVariant((name, desc)))
+
+		self.ui.valueType.model().setData(
+				self.ui.valueType.model().index(0,0),
+				QVariant(0), Qt.UserRole-1)
+
+		# date interval variables
 		self.fromDate = None
 		self.toDate = None
 
 		# table of changes
+		base = 64
 		self.ui.changesTable.setColumnCount(6)
-		self.ui.changesTable.setColumnWidth(0, 390)   # parameter's draw_name
-		self.ui.changesTable.setColumnWidth(1, 205)   # "from" date
-		self.ui.changesTable.setColumnWidth(2, 210)   # "to" date
-		self.ui.changesTable.setColumnWidth(3, 130)   # parameter's value
-		self.ui.changesTable.setColumnWidth(4, 50)    # remove entry button
-		self.ui.changesTable.setColumnHidden(5, True) # parameter's full name
+		self.ui.changesTable.setColumnWidth(0, 6*base-24) # param's draw_name
+		self.ui.changesTable.setColumnWidth(1, 3*base)    # "from" date
+		self.ui.changesTable.setColumnWidth(2, 3*base)    # "to" date
+		self.ui.changesTable.setColumnWidth(3, 3*base)    # param's value type
+		self.ui.changesTable.setColumnWidth(4, base-20)   # remove entry button
+		self.ui.changesTable.setColumnHidden(5, True)     # param's full name
 
 		self.ui.changesTable.horizontalHeader().setVisible(False)
 		self.ui.changesTable.setRowCount(0)
@@ -266,6 +275,8 @@ class Filler2(QMainWindow):
 		QMessageBox.critical(self, title, msg)
 		sys.exit(1)
 
+	# end of criticalError()
+
 	def warningBox(self, msg, title = None):
 		"""Display warning dialog.
 
@@ -277,6 +288,8 @@ class Filler2(QMainWindow):
 			title = "SZARP Filler 2 - " + _translate("MainWindow", "Warning")
 		QMessageBox.warning(self, title, msg)
 
+	# end of warningBox()
+
 	def infoBox(self, msg, title = None):
 		"""Display information dialog.
 
@@ -287,6 +300,8 @@ class Filler2(QMainWindow):
 		if title is None:
 			title = "SZARP Filler 2 - " + _translate("MainWindow", "Information")
 		QMessageBox.information(self, title, msg)
+
+	# end of infoBox()
 
 	def questionBox(self, msg, title = None):
 		"""Display question dialog.
@@ -302,6 +317,8 @@ class Filler2(QMainWindow):
 			title = "SZARP Filler 2 - " + _translate("MainWindow", "Question")
 		return QMessageBox.question(self, title, msg,
 				QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+
+	# end of questionBox()
 
 	def onSetChosen(self, text):
 		"""Slot for signal activated(QString) from 'listOfSets' (QComboBox).
@@ -320,11 +337,11 @@ class Filler2(QMainWindow):
 		for p in self.parser.getParams(unicode(text)):
 			self.ui.paramList.addItem(p.draw_name, p)
 
+		# activate/reset other ui elements
 		self.ui.paramList.setEnabled(True)
 		self.ui.paramList.setFocus()
-		self.ui.valueEdit.setEnabled(False)
-		self.ui.valueEdit.setReadOnly(True)
-		self.ui.valueEdit.setText("")
+		self.ui.valueType.setCurrentIndex(0)
+		self.ui.valueType.setEnabled(False)
 		self.ui.addButton.setEnabled(False)
 
 	# end of onSetChosen()
@@ -335,21 +352,11 @@ class Filler2(QMainWindow):
 		Arguments:
 			text - name of chosen parameter (not used).
 		"""
+		# activate other ui elements
 		self.ui.fromDate.setEnabled(True)
 		self.ui.toDate.setEnabled(True)
-		param_info = self.ui.paramList.itemData(index).toPyObject()
-
-		qdv = QDoubleValidator(self.ui.paramList)
-		qdv.setNotation(0)
-		prec = int(param_info.prec)
-		if param_info.lswmsw:
-			qdv.setRange(SZLIMIT_COM * -1, SZLIMIT_COM, prec)
-		else:
-			qdv.setRange(SZLIMIT * -1, SZLIMIT, prec)
-
-		self.ui.valueEdit.setValidator(qdv)
-		self.ui.valueEdit.setEnabled(True)
-		self.ui.valueEdit.setReadOnly(False)
+		self.ui.valueType.setEnabled(True)
+		self.type_dialog = None
 		self.validateInput()
 
 	# end of onParamChosen()
@@ -371,6 +378,7 @@ class Filler2(QMainWindow):
 				dlg = DatetimeDialog_impl(start_date=
 						(self.toDate - datetime.timedelta(minutes=10)))
 
+		# execute DatetimeDialog
 		if dlg.exec_():
 			self.fromDate = dlg.getValue()
 			self.ui.fromDate.setText(_translate("MainWindow", "From:") + " " +
@@ -396,6 +404,7 @@ class Filler2(QMainWindow):
 				dlg = DatetimeDialog_impl(start_date=
 						(self.fromDate + datetime.timedelta(minutes=10)))
 
+		# execute DatetimeDialog
 		if dlg.exec_():
 			self.toDate = dlg.getValue()
 			self.ui.toDate.setText(_translate("MainWindow", "To:") + " " +
@@ -404,18 +413,32 @@ class Filler2(QMainWindow):
 
 	# end of onToDate()
 
-	def onValueChanged(self):
-		"""Slot for signals returnPressed() and lostFocus() from 'valueEdit'
-		(QLineEdit). Formats text to standardized float string.
+	def onTypeChosen(self, index):
+		"""Slot for signal activated() from 'valueType' (QComboBox). Constructs
+		appropriate dialog from factory and collects chosen plot parameters.
 		"""
-		new_value = self.ui.valueEdit.text()
-		try:
-			self.ui.valueEdit.setText(str(float(new_value)))
-		except ValueError:
-			self.ui.valueEdit.setText("")
+		# fetch dialog and parameter data
+		dlg_name = self.ui.valueType.itemData(index).toPyObject()[0]
+		param_info = self.ui.paramList.itemData(self.ui.paramList.currentIndex()).toPyObject()
+
+		dlg = self.dialog_factory.construct(str(dlg_name),
+				param_info.prec, param_info.lswmsw,
+				parent = self)
+
+		# reset type items' texts
+		for i in range(self.ui.valueType.count()):
+			desc = self.ui.valueType.itemData(i).toPyObject()[1]
+			self.ui.valueType.setItemText(i, desc)
+
+		if dlg.exec_():
+			self.type_dialog = dlg
+			self.ui.valueType.setItemText(index, dlg.get_value_desc())
+		else:
+			self.ui.valueType.setCurrentIndex(0)
+			self.type_dialog = None
 		self.validateInput()
 
-	# end of onValueChanged()
+	# end of onTypeChosen()
 
 	def validateInput(self):
 		"""Check whether all needed data is filled and valid. If do, "Add"
@@ -424,7 +447,7 @@ class Filler2(QMainWindow):
 		if  self.ui.paramList.currentIndex() != 0 and \
 			self.fromDate is not None and \
 			self.toDate is not None and \
-			len(self.ui.valueEdit.text()) > 0:
+			self.ui.valueType.currentIndex() != 0:
 				self.ui.addButton.setEnabled(True)
 		else:
 				self.ui.addButton.setEnabled(False)
@@ -449,13 +472,6 @@ class Filler2(QMainWindow):
 
 		param_info = self.ui.paramList.itemData(
 				self.ui.paramList.currentIndex()).toPyObject()
-		val = float(self.ui.valueEdit.text())
-
-		if (param_info.lswmsw and (val > SZLIMIT_COM or val < SZLIMIT_COM * -1)) \
-				or (val > SZLIMIT or val < SZLIMIT * -1):
-					self.warningBox(_translate("MainWindow",
-						"Parameter's value is out of range.\nAdding change aborted."))
-					return
 
 		self.ui.changesTable.setRowCount(self.ui.changesTable.rowCount()+1)
 		self.addRow(self.ui.changesTable.rowCount() - 1,
@@ -463,12 +479,18 @@ class Filler2(QMainWindow):
 					self.ui.paramList.currentText(),
 					self.fromDate,
 					self.toDate,
-					self.ui.valueEdit.text(),
+					self.type_dialog,
 					param_info.lswmsw)
+
+		# reset type items' texts
+		for i in range(self.ui.valueType.count()):
+			desc = self.ui.valueType.itemData(i).toPyObject()[1]
+			self.ui.valueType.setItemText(i, desc)
+		self.ui.valueType.setCurrentIndex(0)
 
 	# end of addChange()
 
-	def addRow(self, row, fname, pname, from_date, to_date, value, lswmsw):
+	def addRow(self, row, fname, pname, from_date, to_date, typedlg, lswmsw):
 		"""Add row to changesTable (QTableWidget).
 
 		Arguments:
@@ -478,6 +500,7 @@ class Filler2(QMainWindow):
 			from_date - beginning of time period
 			to_date - end of time period
 			value - parameter's value
+			typedlg - object of input value dialog
 			lswmsw - whether parametr is a combined lsw/msw
 		"""
 		# visible columns
@@ -492,13 +515,14 @@ class Filler2(QMainWindow):
 		item_to_date.setFlags(Qt.ItemIsEnabled)
 		item_to_date.setTextAlignment(Qt.AlignCenter)
 
-		item_value = QTableWidgetItem(str(value))
+		item_value = QTableWidgetItem(typedlg.get_value_desc())
 		item_value.setFlags(Qt.ItemIsEnabled)
+		item_value.setIcon(QIcon(typedlg.qicon_path))
 		item_value.setTextAlignment(Qt.AlignCenter)
 
 		# hidden column
 		item_fname = QTableWidgetItem(unicode(fname))
-		item_fname.setData(Qt.UserRole, QVariant(lswmsw))
+		item_fname.setData(Qt.UserRole, QVariant((lswmsw, typedlg)))
 		item_fname.setFlags(Qt.ItemIsEnabled)
 
 		self.ui.changesTable.setItem(row, 0, item_pname)
@@ -543,6 +567,8 @@ class Filler2(QMainWindow):
 		if QMessageBox.Yes == self.questionBox(txt):
 			self.ui.changesTable.setRowCount(0)
 
+	# end of clearChanges()
+
 	def commitChanges(self):
 		"""Slot for action 'actionSaveData'. Commits all scheduled changes
 		to local szbase.
@@ -562,25 +588,40 @@ class Filler2(QMainWindow):
 		txt.append(_translate("MainWindow", "Commit changes?"))
 
 		if QMessageBox.Yes == self.questionBox(txt):
-			# construct list of changes as tuples containing
-			# (param_name, full_param_name, from_date, to_date, value)
+			# construct list of changes to be committed
 			changes_list = []
 
 			for i in range(0, self.ui.changesTable.rowCount()):
+
+				start_date = datetime.datetime.strptime(
+					str(self.ui.changesTable.item(i,1).text()),
+					'%Y-%m-%d %H:%M')
+
+				end_date = datetime.datetime.strptime(
+					str(self.ui.changesTable.item(i,2).text()),
+					'%Y-%m-%d %H:%M')
+
+				lswmsw, typedlg = \
+					self.ui.changesTable.item(i,5).data(Qt.UserRole).toPyObject()
+
+				# generate list of 10-minute probes in given interval
+				dsec = int((end_date-start_date).total_seconds())
+				dts = [start_date + datetime.timedelta(minutes=x) \
+						for x in range(0, dsec / 60 + 1, 10)]
+				# generate probes' values
+				dvals = typedlg.generate(dts)
+
+				rmrk = typedlg.get_remark()
+
 				changes_list.append(SzChangeInfo(
 						draw_name = unicode(self.ui.changesTable.item(i,0).text()),
 						name = unicode(self.ui.changesTable.item(i,5).text()),
-						start_date = datetime.datetime.strptime(
-							str(self.ui.changesTable.item(i,1).text()),
-							'%Y-%m-%d %H:%M') - datetime.timedelta(minutes=10),
-						end_date = datetime.datetime.strptime(
-							str(self.ui.changesTable.item(i,2).text()),
-							'%Y-%m-%d %H:%M'),
-						value = self.ui.changesTable.item(i,3).text(),
-						lswmsw = self.ui.changesTable.item(i,5).data(Qt.UserRole).toPyObject()
+						dvalues = dvals,
+						lswmsw = lswmsw,
+						remark = rmrk
 						))
 
-			# do the job (new thread)
+			# do the job (in a new thread)
 			szbw = SzbWriter(changes_list, self.parser)
 			szbp = SzbProgressWin(szbw, parent = self)
 
@@ -595,12 +636,11 @@ class Filler2(QMainWindow):
 			self.ui.fromDate.setEnabled(False)
 			self.ui.toDate.setText(_translate("MainWindow", "To:"))
 			self.ui.toDate.setEnabled(False)
-			self.ui.valueEdit.setText("")
-			self.ui.valueEdit.setEnabled(False)
-			self.ui.valueEdit.setReadOnly(False)
+			self.ui.valueType.setCurrentIndex(0)
+			self.ui.valueType.setEnabled(False)
 			self.ui.addButton.setEnabled(False)
 
-			# disable window until job is finished
+			# disable main window until job is finished
 			self.setEnabled(False)
 
 	# end of commitChanges()
@@ -611,10 +651,10 @@ class Filler2(QMainWindow):
 
 	def onViewHistory(self):
 		"""Slot for action 'actionViewHistory'. Shows history of committed changes."""
-		# TODO zablokowanie okna głównego
 		HistoryDialog_impl(self.parser, parent=self).exec_()
 
 # end of Filler2 class
+
 
 class DatetimeDialog_impl(QDialog, Ui_DatetimeDialog):
 	"""Dialog for choosing date and time (pyQt4)."""
@@ -666,6 +706,7 @@ class DatetimeDialog_impl(QDialog, Ui_DatetimeDialog):
 
 # end of DatetimeDialog_impl class
 
+
 class AboutDialog_impl(QDialog, Ui_AboutDialog):
 	"""Dialog for showing application info (pyQt4)."""
 
@@ -676,7 +717,9 @@ class AboutDialog_impl(QDialog, Ui_AboutDialog):
 
 		# set app info
 		self.setWindowTitle(_translate("AboutDialog", "About ") + "Filler 2")
-		self.versionInfo.setText("Filler " + __version__ + " (%s)" % __status__)
+		version_str = "Filler " + __version__
+		if __status__ != "production": version_str += " (%s)" % __status__
+		self.versionInfo.setText(version_str)
 		self.info.setText(_translate("MainWindow",
 			"Filler 2 is a tool for manual szbase data editing."))
 		self.copyright.setText(__copyright__)
@@ -705,6 +748,7 @@ class AboutDialog_impl(QDialog, Ui_AboutDialog):
 	# end of showCredits()
 
 # end of AboutDialog_impl class
+
 
 class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 	"""Dialog for undoing changes committed to szbase by Filler 2 (pyQt4)."""
@@ -791,6 +835,7 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 	# end of addRows()
 
 	def refresh(self):
+		"""Refresh list of changes present in database."""
 		self.changesTable.setRowCount(0)
 		szfs = self.parser.readSzfRecords()
 		sorted_szfs = sorted(szfs, key=lambda x: x.date, reverse=True)
@@ -810,6 +855,7 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 
 		row = self.sender().row_id
 
+		# fetch changes info
 		name = unicode(self.changesTable.item(row, 5).text())
 		draw_name = self.changesTable.item(row, 0).text()
 		vals, lswmsw = self.changesTable.item(row, 5).data(Qt.UserRole).toPyObject()
@@ -818,6 +864,8 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 		try:
 			self.parser.recordSzf(name, dts, lswmsw)
 			self.parser.szbWriter(name, vals)
+			self.parent.infoBox(_translate("HistoryDialog",
+				"Undoing change finished successfully."))
 		except IPKParser.SzfRecordError:
 			self.parent.warningBox(
 					_translate("HistoryDialog",
@@ -825,7 +873,6 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 					+ draw_name + ". " +
 					_translate("HistoryDialog",
 						"Encountered an error while making change record."))
-
 		except IPKParser.SzbWriterError:
 			self.parent.warningBox(
 					_translate("HistoryDialog",
@@ -833,9 +880,6 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 					+ draw_name + ". " +
 					_translate("HistoryDialog",
 						"Encountered an error while writing to the database."))
-
-		self.parent.infoBox(_translate("HistoryDialog",
-			"Undoing change finished successfully."))
 		self.refresh()
 
 	# end of undoChange()
@@ -902,6 +946,7 @@ class HistoryDialog_impl(QDialog, Ui_HistoryDialog):
 
 # end of HistoryDialog_impl class
 
+
 class SzbWriter(QThread):
 	"""Worker class for doing szbase modifications in a separate thread."""
 
@@ -920,20 +965,31 @@ class SzbWriter(QThread):
 		self.chlist = changes_list
 		self.parser = parser
 
+		anyremarks = False
+		for ch in self.chlist:
+			if ch.remark is not None:
+				anyremarks = True
+		if anyremarks:
+			self.parser.initRemarks('gcwp-filler2', '85064efb60a9601805dcea56ec5402f7')
+
 	# end of __init__()
 
 	def run(self):
 		"""Run SzbWriter jobs."""
 		nr = 1
 		for ch in self.chlist:
-			dsec = int((ch.end_date-ch.start_date).total_seconds())
-			dts = [ch.start_date + datetime.timedelta(minutes=x) \
-				   for x in range(0, dsec / 60 + 1, 10)]
-			vals = [(d, ch.value) for d in dts]
+			dts = [dv[0] for dv in ch.dvalues]
+			if ch.remark is not None:
+				title = u"Modyfikacja parameteru %s (Filler 2)" % ch.draw_name
+				remark = ch.remark % \
+						(datetime.datetime.now().strftime('%Y/%m/%d %H:%M'),
+						 getpass.getuser())
 
 			try:
 				self.parser.recordSzf(ch.name, dts, ch.lswmsw)
-				self.parser.szbWriter(ch.name, vals)
+				self.parser.szbWriter(ch.name, ch.dvalues)
+				if ch.remark is not None:
+					self.parser.postRemark(ch.name, dts[0], title, remark)
 				self.paramDone.emit(nr, ch.draw_name, 0)
 			except IPKParser.SzfRecordError:
 				self.paramDone.emit(nr, ch.draw_name, 1)
@@ -943,11 +999,13 @@ class SzbWriter(QThread):
 			time.sleep(1)
 			nr += 1
 
+		self.parser.closeRemarks()
 		self.jobDone.emit()
 
 	# end of run()
 
 # end of SzbWriter class
+
 
 class SzbProgressWin(QDialog):
 	"""Dialog showing SzbWriter's work progress (pyQt4)."""

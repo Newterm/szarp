@@ -55,6 +55,7 @@ void SzProbeCache::add( const Key& k , const Value& v )
 		flush(); // flush data to old file
 
 		if ( last_key ) {
+			sz_log(8, "SzProbeCache::add removing last_key");
 			if (last_key->is_double) {
 				delete m_mmap_param_msw;
 				delete m_mmap_param_lsw;
@@ -96,6 +97,7 @@ void SzProbeCache::add( const Key& k , const Value& v )
 
 void SzProbeCache::flush()
 {
+	sz_log(8, "SzProbeCache::flush");
 	flush( *last_key );
 }
 
