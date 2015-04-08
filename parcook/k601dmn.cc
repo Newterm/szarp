@@ -178,9 +178,13 @@ public:
 		unsigned long mul;   /**< ADDITIONAL MULTIPLIER */
 		ParamMode type;
 	};
-	static const unsigned int DELAY_BETWEEN_CHARS = 50;
-	static const unsigned int READ_TIMEOUT = 10000;
-	unsigned short delay_between_requests;
+	
+	// for ip connections must account for ping delay, chosen arbitrarily.
+	// in the first implementation, was set to 10ms, but it proved too short.
+	static const unsigned int DELAY_BETWEEN_CHARS = 1000;
+
+	static const unsigned int READ_TIMEOUT = 10000; // timeout before first read is made
+	unsigned int delay_between_requests_ms;	// time to sleep between full request cycles
 
 	ParamInfo *m_params;
 	int m_params_count;
@@ -239,7 +243,7 @@ int KamstrupInfo::parseDevice(xmlNodePtr node)
 		return 1;
 	}
 
-	delay_between_requests = strtol(str, &tmp, 0);
+	delay_between_requests_ms = strtol(str, &tmp, 0) * 1000;
 	if (tmp[0] != 0) {
 		dolog(0,
 		       "error parsing k601:delay_between_requests attribute ('%s'), line %ld",
@@ -611,6 +615,10 @@ void K601Daemon::ReadError(const BaseConnection *conn, short event)
 }
 
 void K601Daemon::SetConfigurationFinished(const BaseConnection *conn) {
+	std::string info = m_id + ": SetConfigurationFinished.";
+	dolog(2, "%s: %s", m_id.c_str(), info.c_str());
+	m_state = SEND;
+	m_curr_register = 0;
 	ScheduleNext();
 }
 
@@ -721,7 +729,7 @@ device: %ls\n\
 params in: %d\n\
 Delay between requests [s]: %d\n\
 Unique registers (read params): %d\n\
-", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), kamsinfo->m_params_count, kamsinfo->delay_between_requests, kamsinfo->unique_registers_count);
+", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), kamsinfo->m_params_count, kamsinfo->delay_between_requests_ms / 1000, kamsinfo->unique_registers_count);
 		for (int i = 0; i < kamsinfo->m_params_count; i++)
 			printf("  IN:  reg %04d multiplier %ld type %s\n",
 			       kamsinfo->m_params[i].reg,
@@ -798,12 +806,9 @@ void K601Daemon::StartDo() {
 
 void K601Daemon::OpenFinished(const BaseConnection *conn)
 {
-	std::string info = m_id + ": connection established.";
+	std::string info = m_id + ": connection established, setting configuration..";
 	dolog(2, "%s: %s", m_id.c_str(), info.c_str());
 	m_serial_port->SetConfiguration(m_serial_conf);
-	m_state = SEND;
-	m_curr_register = 0;
-	ScheduleNext();
 }
 
 void K601Daemon::Do()
@@ -827,6 +832,8 @@ void K601Daemon::Do()
 				dolog(0, "%s: %s", m_id.c_str(), e.what());
 				destroySend(MyKMPSendClass);
 				SetRestart();
+				wait_ms = RESTART_INTERVAL_MS;
+				break;
 			}
 			destroySend(MyKMPSendClass);
 			MyKMPReceiveClass = createReceive();
@@ -838,11 +845,13 @@ void K601Daemon::Do()
 				if (m_read_buffer.size() > 0) {
 					m_state = PROCESS;
 				} else {
+					dolog(10, "setting current register to nodata - buffer is empty");
 					SetCurrRegisterNoData();
 					m_state = FINALIZE;
 				}
 			} else {
 				if (m_read_buffer.size() > MyKMPReceiveClass->GetBufferSize()) {
+					dolog(10, "setting current register to nodata - too many chars in buffer");
 					SetCurrRegisterNoData();
 					m_state = FINALIZE;
 				} else {
@@ -857,6 +866,7 @@ void K601Daemon::Do()
 					MyKMPReceiveClass->GetREAD_OK()) {
 				ProcessResponse();
 			} else {
+				dolog(10, "setting current register to nodata - parser reported error");
 				SetCurrRegisterNoData();
 			}
 			m_state = FINALIZE;
@@ -869,9 +879,11 @@ void K601Daemon::Do()
 				printf("\n");
 			m_curr_register++;
 			if (m_curr_register > kamsinfo->unique_registers_count) {
+				dolog(10, "STARTING NEW CYCLE");
 				m_curr_register = 0;
 				if (!cfg->GetSingle()) {
-					wait_ms = kamsinfo->delay_between_requests;
+					dolog(10, "WAITING....");
+					wait_ms = kamsinfo->delay_between_requests_ms;
 				}
 			}
 			m_state = SEND;
