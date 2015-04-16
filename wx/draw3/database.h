@@ -72,8 +72,8 @@ struct DatabaseQuery {
 		PeriodType period_type;
 		struct V {
 			/**Start time of data*/
-			unsigned time_second;
-			unsigned time_nanosecond;
+			time_t time_second;
+			time_t time_nanosecond;
 			/**Custom porobe length*/
 			int custom_length;
 			/**Response from a database*/
@@ -100,13 +100,13 @@ struct DatabaseQuery {
 	/**Parameters of a search query*/
 	struct SearchData {
 		/**Range of search*/
-		unsigned start_second, start_nanosecond;
-		unsigned end_second, end_nanosecond;
+		time_t start_second, start_nanosecond;
+		time_t end_second, end_nanosecond;
 		/**Direction of search*/
 		int direction;
 		/**Response*/
-		unsigned response_second;
-		unsigned response_nanosecond;
+		time_t response_second;
+		time_t response_nanosecond;
 		/**Type of probe we searching for (needed for LUA params)*/
 		PeriodType period_type;
 		/** False if error ocurred during data search*/
@@ -405,8 +405,8 @@ DatabaseQuery::ValueData::V& AddTimeToDataQuery(DatabaseQuery *q, const wxDateTi
 
 SZARP_PROBE_TYPE PeriodToProbeType(PeriodType period);
 
-void ToNanosecondTime(const wxDateTime& time, unsigned& second, unsigned &nanosecond);
+void ToNanosecondTime(const wxDateTime& time, time_t& second, time_t &nanosecond);
 
-wxDateTime ToWxDateTime(unsigned second, unsigned nanosecond);
+wxDateTime ToWxDateTime(time_t second, time_t nanosecond);
 
 #endif

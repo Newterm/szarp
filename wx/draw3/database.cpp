@@ -35,7 +35,7 @@
 
 namespace {
 
-void sz4_nanonsecond_to_pair(const sz4::nanosecond_time_t& time, unsigned &second, unsigned& nanosecond) {
+void sz4_nanonsecond_to_pair(const sz4::nanosecond_time_t& time, time_t &second, time_t& nanosecond) {
 	if (sz4::time_trait<sz4::nanosecond_time_t>::is_valid(time)) {
 		second = time.second;
 		nanosecond = time.nanosecond;
@@ -45,8 +45,8 @@ void sz4_nanonsecond_to_pair(const sz4::nanosecond_time_t& time, unsigned &secon
 	}
 }
 
-sz4::nanosecond_time_t pair_to_sz4_nanosecond(unsigned second, unsigned nanosecond) {
-	if (second == (unsigned) -1 && nanosecond == (unsigned) -1)
+sz4::nanosecond_time_t pair_to_sz4_nanosecond(time_t second, time_t nanosecond) {
+	if (second == (time_t) -1 && nanosecond == (time_t) -1)
 		return sz4::time_trait<sz4::nanosecond_time_t>::invalid_value;
 	else
 		return sz4::nanosecond_time_t(second, nanosecond);
@@ -182,7 +182,7 @@ void SzbaseBase::SearchData(DatabaseQuery* query) {
 			sd.end_second, 
 			sd.direction, 
 			PeriodToProbeType(sd.period_type), cancelHandle, *sd.search_condition);
-	if (sd.response_second == (unsigned) -1)
+	if (sd.response_second == (time_t) -1)
 		sd.response_nanosecond = -1;
 	else
 		sd.response_nanosecond = 0;
@@ -539,7 +539,7 @@ SZARP_PROBE_TYPE PeriodToProbeType(PeriodType period) {
 	return pt;
 }
 
-void ToNanosecondTime(const wxDateTime& time, unsigned& second, unsigned& nanosecond) {
+void ToNanosecondTime(const wxDateTime& time, time_t& second, time_t& nanosecond) {
 	if (time.IsValid()) {
 		second = time.GetTicks();
 		nanosecond = time.GetMillisecond() * 1000000;
@@ -549,8 +549,8 @@ void ToNanosecondTime(const wxDateTime& time, unsigned& second, unsigned& nanose
 	}
 }
 
-wxDateTime ToWxDateTime(unsigned second, unsigned nanosecond) {
-	if (second == (unsigned) -1 && nanosecond == (unsigned) -1)
+wxDateTime ToWxDateTime(time_t second, time_t nanosecond) {
+	if (second == (time_t) -1 && nanosecond == (time_t) -1)
 		return wxInvalidDateTime;
 	else {
 		wxDateTime t((time_t)second);

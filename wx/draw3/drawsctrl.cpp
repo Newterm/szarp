@@ -822,23 +822,23 @@ bool DrawsController::GetFollowLatestData() {
 namespace {
 
 struct CompareQueryTimes {
-	unsigned m_second;
-	unsigned m_nanosecond;
+	time_t m_second;
+	time_t m_nanosecond;
 	CompareQueryTimes(const wxDateTime& time) {
 		ToNanosecondTime(time, m_second, m_nanosecond);
 	}
 
 	bool operator()(const DatabaseQuery::ValueData::V& v1, const DatabaseQuery::ValueData::V& v2) const {
-		unsigned second_diff1 = abs(int(v1.time_second) - int(m_second));
-		unsigned second_diff2 = abs(int(v2.time_second) - int(m_second));
+		double second_diff1 = abs(difftime(v1.time_second, m_second));
+		double second_diff2 = abs(difftime(v2.time_second, m_second));
 
 		if (second_diff1 < second_diff2)
 			return true;
 		if (second_diff1 > second_diff2)
 			return false;
 
-		unsigned nanosecond_diff1 = abs(int(v1.time_nanosecond) - int(m_nanosecond));
-		unsigned nanosecond_diff2 = abs(int(v2.time_nanosecond) - int(m_nanosecond));
+		double nanosecond_diff1 = abs(difftime(v1.time_nanosecond, m_nanosecond));
+		double nanosecond_diff2 = abs(difftime(v2.time_nanosecond, m_nanosecond));
 
 		if (nanosecond_diff1 < nanosecond_diff2)
 			return true;
