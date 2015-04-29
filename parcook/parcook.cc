@@ -930,6 +930,8 @@ int InitSignals()
 	ret = sigaction(SIGCHLD, &sa , NULL );
 	assert(ret == 0);
 
+	(void)ret;
+
 	return 0;
 }
 
@@ -1610,7 +1612,7 @@ int main(int argc, char *argv[])
 	struct arguments arguments;
 	char* linedmnpat;	/**< path for ftok */
 	char* config_prefix;
-	char* parcook_socket;
+	std::string parcook_socket;
 
 	InitSignals();
 
@@ -1735,7 +1737,18 @@ int main(int argc, char *argv[])
 
 	zmq::context_t zmq_context(1);
 	zmq::socket_t socket(zmq_context, ZMQ_PUB);
-	socket.bind(parcook_socket);
+
+	const std::string localhost_str = "localhost";
+	parcook_socket.replace(parcook_socket.find(localhost_str),
+		localhost_str.length(), "127.0.0.1");
+	sz_log(7, "ZMQ bind on '%s'", parcook_socket.c_str());
+	try {
+		socket.bind(parcook_socket.c_str());
+	} catch (const zmq::error_t& exception) {
+		sz_log(1, "ZMQ socket bind failed: %d:'%s' on uri: '%s'", exception.num(),
+			exception.what(), parcook_socket.c_str());
+		throw;
+	}
 	
 	/* start processing */
 	while (1) 

@@ -61,7 +61,7 @@ linex_cfg=$config_root$
 $datadir$:="$szarp_root$/$prefix$/szbase"
 datadir=$datadir$
 
-parcook_socket_uri=tcp://localhost:4567
+parcook_socket_uri=tcp://127.0.0.1:4567
 
 $sz4dir$:="$szarp_root$/$prefix$/sz4"
 sz4dir=$sz4dir$
