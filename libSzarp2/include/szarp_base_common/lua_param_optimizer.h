@@ -86,9 +86,8 @@ struct Param {
 	virtual ~Param() {}
 };
 
-class StatementList : public Statement {
+struct StatementList : public Statement {
 	std::vector<PStatement> m_statements;
-public:
 	void AddStatement(PStatement statement);
 	virtual void Execute();
 };

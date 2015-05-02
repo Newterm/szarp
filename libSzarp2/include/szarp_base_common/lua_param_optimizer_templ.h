@@ -55,7 +55,7 @@ template<class container_type> PStatement StatementConverter<container_type>::op
 			throw ParamConversionException(L"Only assignment to variables allowed in optimized expressions");
 		}
 	}
-	return ret;
+	return ret->m_statements.size() == 1 ? ret->m_statements[0] : ret;
 }
 
 template<class container_type> PStatement StatementConverter<container_type>::operator() (const block &b) {
@@ -162,7 +162,7 @@ template<class container_type> PStatement StatementConverter<container_type>::op
 			throw ParamConversionException(L"Only assignment to variables allowed in optimized expressions");
 		}
 	}
-	return ret;
+	return ret->m_statements.size() == 1 ? ret->m_statements[0] : ret;
 }
 
 template<class container_type> PStatement StatementConverter<container_type>::operator() (const local_function_declaration &f) {
@@ -625,7 +625,7 @@ template<class container_type> PStatement ParamConverterTempl<container_type>::C
 			i != chunk_.stats.end();
 			i++)
 		ret->AddStatement(ConvertStatement(*i));
-	return ret;
+	return ret->m_statements.size() == 1 ? ret->m_statements[0] : ret;
 }
 
 template<class container_type> PExpression ParamConverterTempl<container_type>::ConvertTerm(const term& term_) {
