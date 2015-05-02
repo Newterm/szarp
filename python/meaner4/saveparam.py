@@ -31,7 +31,7 @@ from contextlib import contextmanager
 class FileFactory:
 	class File:
 		def __init__(self, path, mode):
-			self.file = open(path, mode)
+			self.file = open(path, mode, 0)
 
 		def seek(self, offset, whence):
 			self.file.seek(offset, whence)
