@@ -43,6 +43,7 @@ libSzarp_la_SOURCES = \
 		      liblog_impl_syslog.cc \
 		      liblog_impl_asyslog.cc \
 		      mingw32_missing.cc
+libSzarp_la_LDFLAGS= -static
                       
 noinst_HEADERS = \
                  $(INCLUDE_DIR)/libpar.h \

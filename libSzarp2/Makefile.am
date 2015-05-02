@@ -218,11 +218,13 @@ libSzarp2_la_SOURCES = \
 
 
 libSzarp2_la_LIBADD = libSzarpLuaParser.la
+libSzarp2_la_LDFLAGS = -static
 
 libSzarpLuaParser_la_CXXFLAGS = $(AM_CXXFLAGS) -g0
 libSzarpLuaParser_la_SOURCES = \
 			$(SZARP_BASE_COMMON_DIR)/lua_parser_extra.cc $(SZARP_BASE_COMMON_DIR)/lua_parser_extra.h \
 			$(SZARP_BASE_COMMON_DIR)/lua_parser.cc $(INCLUDE_DIR)/szarp_base_common/lua_syntax.h
+libSzarpLuaParser_la_LDFLAGS = -static
 
 # Additional files for deleting on 'make maintainer-clean'
 MAINTAINERCLEANFILES = Makefile.in \
