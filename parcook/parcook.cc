@@ -1738,9 +1738,14 @@ int main(int argc, char *argv[])
 	zmq::context_t zmq_context(1);
 	zmq::socket_t socket(zmq_context, ZMQ_PUB);
 
+	// zmq bind will fail if "localhost" was used as ip
 	const std::string localhost_str = "localhost";
-	parcook_socket.replace(parcook_socket.find(localhost_str),
-		localhost_str.length(), "127.0.0.1");
+	const size_t localhost_pos = parcook_socket.find(localhost_str);
+	if (localhost_pos != std::string::npos) {
+		parcook_socket.replace(localhost_pos,
+			localhost_str.length(), "127.0.0.1");
+	}
+
 	sz_log(7, "ZMQ bind on '%s'", parcook_socket.c_str());
 	try {
 		socket.bind(parcook_socket.c_str());
