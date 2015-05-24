@@ -33,6 +33,33 @@
 #include <iostream>
 #include <limits>
 
+void Draw3Base::ExtractParameters(DatabaseQuery::ExtractionParameters &pars)
+{
+	boost::shared_ptr<SzbExtractor> extr(CreateExtractor());
+	extr->SetPeriod(PeriodToProbeType(pars.pt),
+			pars.start_time,
+			szb_move_time(pars.end_time, 1, PeriodToProbeType(pars.pt), 0),
+			0);
+
+	extr->SetNoDataString(L"NO_DATA");
+	extr->SetEmpty(0);
+
+	FILE* output = fopen((const char*) SC::S2U(*pars.file_name).c_str(), "w");
+	if (output == NULL)
+		return;
+
+	std::vector<SzbExtractor::Param> params;
+	for (size_t i = 0; i < pars.params->size(); i++) {
+		std::wstring param = pars.params->at(i);
+		std::wstring prefix = pars.prefixes->at(i);
+		params.push_back(SzbExtractor::Param(param, prefix, SzbExtractor::TYPE_AVERAGE));
+	}
+
+	extr->SetParams(params);
+	extr->ExtractToCSV(output, L";");
+	fclose(output);
+}
+
 namespace {
 
 void sz4_nanonsecond_to_pair(const sz4::nanosecond_time_t& time, time_t &second, time_t& nanosecond) {
@@ -125,34 +152,11 @@ void SzbaseBase::SetProberAddress(const std::wstring& prefix,
 	szbase->SetProberAddress(prefix, address, port);
 }
 
-void SzbaseBase::ExtractParameters(DatabaseQuery::ExtractionParameters &pars) {
+SzbExtractor* SzbaseBase::CreateExtractor() {
 	IPKContainer* ipk = IPKContainer::GetObject();
 	assert(ipk);
 
-	SzbExtractor extr(szbase);
-	extr.SetPeriod(PeriodToProbeType(pars.pt),
-			pars.start_time,
-			szb_move_time(pars.end_time, 1, PeriodToProbeType(pars.pt), 0),
-			0);
-
-	extr.SetNoDataString(L"NO_DATA");
-	extr.SetEmpty(0);
-
-	FILE* output = fopen((const char*) SC::S2U(*pars.file_name).c_str(), "w");
-	if (output == NULL)
-		return;
-
-	std::vector<SzbExtractor::Param> params;
-	for (size_t i = 0; i < pars.params->size(); i++) {
-		std::wstring param = pars.params->at(i);
-		std::wstring prefix = pars.prefixes->at(i);
-		szb_buffer_t* buffer = szbase->GetBuffer(prefix);
-		params.push_back(SzbExtractor::Param(param, prefix, buffer, SzbExtractor::TYPE_AVERAGE));
-	}
-
-	extr.SetParams(params);
-	extr.ExtractToCSV(output, L";");
-	fclose(output);
+	return new SzbExtractor(ipk, szbase);
 }
 
 void SzbaseBase::SearchData(DatabaseQuery* query) {
@@ -357,7 +361,11 @@ void Sz4Base::SetProberAddress(const std::wstring& prefix,
 			const std::wstring& port)  {
 }
 
-void Sz4Base::ExtractParameters(DatabaseQuery::ExtractionParameters &pars) {
+SzbExtractor* Sz4Base::CreateExtractor() {
+	IPKContainer* ipk = IPKContainer::GetObject();
+	assert(ipk);
+
+	return new SzbExtractor(ipk, base);
 }
 
 class no_data_search_condition : public sz4::search_condition {

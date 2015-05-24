@@ -66,6 +66,8 @@ class EkstrApp: public szApp<>
 	wxString base;
 
 	wxString geometry;
+
+	bool sz4;
   protected:
 	virtual bool OnInit();
   public:

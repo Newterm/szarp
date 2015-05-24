@@ -140,6 +140,7 @@ bool EkstrApp::OnInit()
 	if (m_probers_addresses.find(ipk_prefix) != m_probers_addresses.end())
 		prober_address = m_probers_addresses[ipk_prefix];
 	EkstraktorWidget *ew = new EkstraktorWidget(ipk_prefix, geometry.IsEmpty() ? NULL : &geometry, prober_address);
+	ew->SetSz4(sz4);
 
 	if (ew->IsConfigLoaded() == false) {
 		delete ew;
@@ -165,6 +166,7 @@ bool EkstrApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 	if (!parser.Found(_T("base"), &base)) {
 		base = wxString();
 	}
+	sz4 = parser.Found(_T("sz4"));
 	return true;
 }
 
@@ -176,6 +178,7 @@ void EkstrApp::OnInitCmdLine(wxCmdLineParser &parser) {
 			 wxCMD_LINE_VAL_STRING);
 	parser.AddOption(_T("base"), wxEmptyString, _("base name"),
 			 wxCMD_LINE_VAL_STRING);
+	parser.AddSwitch(_T("4"), _T("sz4") , _("use sz4 database engine"));
 }
 
 IMPLEMENT_APP(EkstrApp)

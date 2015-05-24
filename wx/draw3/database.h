@@ -185,6 +185,8 @@ struct DatabaseQuery {
 
 };
 
+class SzbExtractor;
+
 class Draw3Base {
 public:
 	virtual void RemoveConfig(const std::wstring& prefix,
@@ -202,7 +204,9 @@ public:
 			const std::wstring& address,
 			const std::wstring& port) = 0 ;
 
-	virtual void ExtractParameters(DatabaseQuery::ExtractionParameters &pars) = 0;
+	void ExtractParameters(DatabaseQuery::ExtractionParameters &pars);
+
+	virtual SzbExtractor* CreateExtractor() = 0;
 
 	virtual void SearchData(DatabaseQuery* query) = 0;
 
@@ -252,7 +256,7 @@ public:
 			const std::wstring& address,
 			const std::wstring& port)  ;
 
-	void ExtractParameters(DatabaseQuery::ExtractionParameters &pars) ;
+	SzbExtractor* CreateExtractor();
 
 	void SearchData(DatabaseQuery* query);
 
@@ -296,7 +300,7 @@ public:
 			const std::wstring& address,
 			const std::wstring& port)  ;
 
-	void ExtractParameters(DatabaseQuery::ExtractionParameters &pars) ;
+	SzbExtractor* CreateExtractor();
 
 	void SearchData(DatabaseQuery* query);
 

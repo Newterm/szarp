@@ -34,7 +34,10 @@
 
 #include "../../resources/wx/icons/extr64.xpm"
 
-bool is_correct_time(time_t time);
+void* progress_update(int progress, void* prog) {
+	((wxProgressDialog*) prog)->Update(progress);
+	return NULL;
+}
 
 EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry, std::pair<wxString, wxString> prober_address)
 {
@@ -44,8 +47,6 @@ EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry,
 			   wxGetApp().GetSzarpDir().c_str(),
 			   wxConfig::Get()->Read(_T("LANGUAGE"),
 						 _T("pl")).c_str());
-
-	Szbase::Init(wxGetApp().GetSzarpDataDir().c_str(), NULL);
 
 	wxProgressDialog *prog =
 	    new wxProgressDialog(_("SZARP Extractor v. 3.0."),
@@ -93,10 +94,6 @@ EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry,
 
 	number_of_params = 0;
 	int i = 0;
-	int max =
-	    ipk->GetParamsCount() + ipk->GetDefinedCount() +
-	    ipk->GetDrawDefinableCount();
-
 	TParam *prm = ipk->GetFirstParam();
 	if (NULL == prm) {
 		delete prog;
@@ -108,65 +105,38 @@ EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry,
 		return;
 	}
 
-	Szbase* szbase = Szbase::GetObject();
-	szbase_buffer = szbase->GetBuffer(ipk_prefix);
-	assert(szbase_buffer != NULL);
-	if (prober_address != std::pair<wxString, wxString>()) {
-		szbase->SetProberAddress(
-			ipk_prefix.c_str(),
-			prober_address.first.c_str(),
-			prober_address.second.c_str());
-		prober_configured = true;	
+	IPKContainer* ipkc = IPKContainer::GetObject();
+	if (!sz4) {
+		Szbase::Init(wxGetApp().GetSzarpDataDir().c_str(), NULL);
+
+		Szbase* szbase = Szbase::GetObject();
+		extr = new SzbExtractor(ipkc, szbase);
+
+		szbase_buffer = szbase->GetBuffer(ipk_prefix);
+		assert(szbase_buffer != NULL);
+
+		if (prober_address != std::pair<wxString, wxString>()) {
+			szbase->SetProberAddress(
+				ipk_prefix.c_str(),
+				prober_address.first.c_str(),
+				prober_address.second.c_str());
+			prober_configured = true;	
+		} else {
+			prober_configured = false;	
+		}
 	} else {
-		prober_configured = false;	
+		Szbase::Init(wxGetApp().GetSzarpDataDir().c_str(), NULL);
+		extr = new SzbExtractor(ipkc, new sz4::base(wxGetApp().GetSzarpDataDir().c_str(),
+							ipkc));
+		prober_configured = false;
 	}
 
-	time_t tmp_date;
 	first_date = -1;
 	last_date = -1;
 
-	for (; prm != NULL; prm = ipk->GetNextParam(prm)) {
-		prog->Update(i++ * 100 / max);
-		if (!prm->IsReadable())
-			continue;
-		tmp_date = szb_search_first(szbase_buffer, prm);
-		if (!is_correct_time(tmp_date)) {
-			continue;
-		}
-		if (first_date < 0) {
-			first_date = szb_search(szbase_buffer, prm, tmp_date,	/* from */
-						     -1,	/* to - all data */
-						     1	/* search right */
-			    );
-		} else {
-			if (tmp_date < first_date) {
-				tmp_date =
-				    szb_search(szbase_buffer, prm,
-						    tmp_date, first_date, 1);
-				if (tmp_date > 0 && tmp_date < first_date) {
-					first_date = tmp_date;
-				}
-			}
-		}
-		tmp_date = szb_search_last(szbase_buffer, prm);
-		assert(is_correct_time(tmp_date));
-		if (last_date < 0) {
-			last_date =
-			    szb_search(szbase_buffer, prm, tmp_date,
-					    first_date, -1);
-		} else {
-			if (tmp_date > last_date) {
-				tmp_date =
-				    szb_search(szbase_buffer, prm,
-						    tmp_date, last_date, -1);
-				if (tmp_date > 0 && tmp_date > last_date) {
-					last_date = tmp_date;
-				}
-			}
-		}
-		number_of_params++;
-	}			/* for each param */
+	extr->SetProgressWatcher(progress_update, (void*)prog);
 
+	extr->ExtractStartEndTime(ipk, first_date, last_date, number_of_params);
 	if (0 == number_of_params) {
 		delete prog;
 		wxMessageBox(wxString::
@@ -201,9 +171,7 @@ EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry,
 	mainWindow->SetStatusText(paramsnum +
 				  wxString(_(" parameters loaded")));
 	is_ok = 1;
+
+	sz4 = false;
 }
 
-bool is_correct_time(time_t time)
-{
-	return (time <= (time_t) - 1 ? false : true);
-}

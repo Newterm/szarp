@@ -103,6 +103,8 @@ static struct argp_option options[] = {
 		"Set output format to CSV (Comma Separated Values), this is default format", 6},
 	{"xml", 'x', NULL, 0,
 		"Set output format to XML", 6},
+	{"sz4", '4', NULL, 0,
+		"Use sz4 database format", 6},
 	{"openoffice", 'O', NULL, 0,
 		"Set output format to OpenOffice spreadsheet, -o is also requiered", 6},
 	{"delimiter", 'd', "TEXT", 0,
@@ -113,6 +115,8 @@ static struct argp_option options[] = {
 		"Print progress information on stderr", -3},
 	{"sum", 'X', NULL, 0,
 		"Print only sums of values from given time range, implies --csv", 7},
+	{"sz4", '4', NULL, 0,
+		"Use sz4 engine", 7},
 	{"probes-server", 'A', "ADDRESS", 0,
 		"Address of probes server to fetch data from", 7},
 	{"probes-server-port", 'L', "PORT", 0, "Port probes server listens on", 7},
@@ -138,6 +142,7 @@ struct arguments {
 	int openoffice;
 	int csv;
 	int xml;
+	int sz4;
 	char * output;
 	char * delimiter;
 	int progress;
@@ -318,6 +323,9 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 			};
 			arguments->xml = 1;
 			break;
+		case '4':
+			arguments->sz4 = 1;
+			break;
 		case 'O':
 			if (arguments->xml || arguments->csv || arguments->sum) {
 				sz_log(0, "Option -O cannot be used with -c, -d, -X or -x");
@@ -371,7 +379,6 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 					SzbExtractor::Param(
 						SC::L2S(arguments->list->name).c_str(),
 						L"",
-						NULL,
 						SzbExtractor::TYPE_AVERAGE ));
 				free(arguments->list);
 				arguments->list = tmp;
@@ -461,12 +468,14 @@ int main(int argc, char* argv[])
 	arguments.openoffice = 0;
 	arguments.csv= 0;
 	arguments.xml = 0;
+	arguments.sz4 = 0;
 	arguments.delimiter = strdup(", ");
 	arguments.progress = 0;
 	arguments.no_data = strdup("NO_DATA");
 	arguments.dec_sep = 0;
 	arguments.empty = 0;
 	arguments.sum = 0;
+	arguments.sz4 = 0;
 	arguments.prober_address = NULL;
 	arguments.prober_port = NULL;
 
@@ -506,7 +515,6 @@ int main(int argc, char* argv[])
 	xmlSubstituteEntitiesDefault(1);
 
 	IPKContainer::Init(SC::L2S(szarp_data_root), SC::L2S(PREFIX), L"");
-	Szbase::Init(SC::L2S(szarp_data_root), NULL);
 	
 	TSzarpConfig *ipk = IPKContainer::GetObject()->GetConfig(SC::L2S(ipk_prefix));
 	if (ipk == NULL) {
@@ -514,24 +522,25 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	if (arguments.prober_address) {
-		sz_log(0, "Prober address: %s", arguments.prober_address);
-		Szbase::GetObject()->SetProberAddress(SC::L2S(ipk_prefix),
-			SC::L2S(arguments.prober_address),
-			arguments.prober_port ? SC::L2S(arguments.prober_port) : L"8090");
+	SzbExtractor *extr;
+
+	if (arguments.sz4) {
+		extr = new SzbExtractor(IPKContainer::GetObject(),
+					new sz4::base(SC::L2S(szarp_data_root),
+							IPKContainer::GetObject()));
+	} else {
+		Szbase::Init(SC::L2S(szarp_data_root), NULL);
+		if (arguments.prober_address) {
+			sz_log(0, "Prober address: %s", arguments.prober_address);
+			Szbase::GetObject()->SetProberAddress(SC::L2S(ipk_prefix),
+				SC::L2S(arguments.prober_address),
+				arguments.prober_port ? SC::L2S(arguments.prober_port) : L"8090");
+		}
+
+		extr = new SzbExtractor(IPKContainer::GetObject(), Szbase::GetObject());
 	}
-
-	szb_buffer_t *szb = Szbase::GetObject()->GetBuffer(SC::L2S(ipk_prefix));
-	if (szb == NULL) {
-		sz_log(0, "Error initializing SzarpBase buffer");
-		return 1;
-	}
-
-
-	SzbExtractor * extr = new SzbExtractor(Szbase::GetObject());
 
 	for (int i = 0; i < arguments.params_count; i++) {
-		arguments.params[i].szb = szb;
 		arguments.params[i].prefix = ipk->GetPrefix();
 	}
 	
