@@ -1,9 +1,13 @@
 # SZARP SCADA
-# Pawe³ Pa³ucha pawel@praterm.com.pl
-#
-# $Id: Makefile.am 6846 2009-06-23 15:40:30Z pawel $
+# Pawel Palucha pawel@praterm.com.pl
 
-SUBDIRS = nagios
+if MINGW32_OPT
+INCLUDE_SUBDIRS = nagios
+else
+INCLUDE_SUBDIRS = nagios pserver-lite
+endif
+
+SUBDIRS = $(INCLUDE_SUBDIRS)
 
 # Source directory
 SOURCE_DIR=@srcdir@

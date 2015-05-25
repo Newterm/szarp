@@ -1166,7 +1166,7 @@ if test x$with_mingw32 != xyes -a x$with_iks != xno; then
 	SUBDIRS="$SUBDIRS iks"
 fi
 
-# pyipk directory
+# qt4 directory
 if test x$no_python != xyes -a x$with_mingw32 != xyes; then
 	SUBDIRS="$SUBDIRS qt4"
 fi
@@ -1215,6 +1215,7 @@ AC_OUTPUT( \
 	utils/szarpinfo \
 	utils/Makefile \
 	utils/nagios/Makefile \
+	utils/pserver-lite/Makefile \
 	unit_tests/Makefile \
 	www/Makefile \
 	www/pylons/Makefile \
