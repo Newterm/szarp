@@ -18,6 +18,7 @@ LIBSZARP=../../libSzarp/libSzarp.la
 LIBSZARP2=../../libSzarp2/libSzarp2.la
 
 LDADD = \
+	$(LIBSZARP) \
 	@BOOST_PROGRAM_OPTIONS_LIB@
 
 bin_PROGRAMS = pserver-lite

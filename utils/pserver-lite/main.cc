@@ -21,12 +21,16 @@
 #include <iostream>
 #include <boost/program_options.hpp>
 
+#include "szarp.h"
+#include "daemon.h"
+#include "liblog.h"
+
 /* used namespaces */
 namespace po = boost::program_options;
 
 /* program name and version string constant */
 const std::string PROGRAM_NAME("pserver-lite");
-const std::string VERSION("1.0alpha");
+const std::string VERSION_STR("1.0alpha");
 
 /**
  * This is the main() function.
@@ -37,7 +41,7 @@ int main (int argc, char **argv)
         /*** parse given arguments using boost::program_options (po) ***/
 
         /* defaults */
-        int debug_level = 2;
+        int loglevel = 2;
         bool daemonize = true;
 
         /* command-line options */
@@ -45,7 +49,7 @@ int main (int argc, char **argv)
         opts.add_options()
             ("help,h", "print this help.")
             ("version,V", "display the version of pserverLITE and exit.")
-            ("debug,d", po::value<int>(&debug_level), "set debug level.")
+            ("debug,d", po::value<int>(&loglevel), "set debug level.")
             ("no-daemon,n", "do not daemonize.")
             ;
 
@@ -61,11 +65,16 @@ int main (int argc, char **argv)
         /* -h, --help: print help message and exit */
         if (vm.count("help")) {
             std::cout
-                << "pserverLITE " << VERSION
+                << "pserverLITE " << VERSION_STR
                 << ", SZARP Probes Server LITE.\n"
                 << "Usage: " << PROGRAM_NAME << " [OPTION]...\n\n"
                 << opts << "\n"
-                // TODO: config file info
+                << "Configuration (read from file "
+                << "/etc/" << PACKAGE_NAME << "/" << PACKAGE_NAME <<".cfg):\n"
+                << "  * Section 'probes_server':\n"
+                << "      port\tport on which server should listen. [mandatory]\n"
+                << "      address\taddress of interface on which server should listen\n"
+                << "             \t(empty means 'any'). [mandatory]\n\n"
                 << "Mail bug reports and suggestions to <coders@newterm.pl>."
                 << std::endl;
             return EXIT_SUCCESS;
@@ -73,7 +82,7 @@ int main (int argc, char **argv)
         /* -V, --version: print program version and copyright info and exit */
         if (vm.count("version")) {
             std::cout
-                << PROGRAM_NAME << " " << VERSION
+                << PROGRAM_NAME << " " << VERSION_STR
                 << ", SZARP Probes Server LITE.\n\n"
                 << "Copyright (C) 2015 Newterm\n"
                 << "License GPLv2+: GNU GPL version 2 or later\n"
@@ -87,19 +96,45 @@ int main (int argc, char **argv)
         }
 
         /* validate other options values */
-        if (debug_level < 0 || debug_level > 10) {
+        if (loglevel < 0 || loglevel > 10) {
             throw po::error("debug level must be between 0 and 10");
         }
         if (vm.count("no-daemon")) {
             daemonize = false;
         }
 
-        // TODO: read configuration from szarp.cfg
+        /*** start pserverLITE service ***/
+
+        /* set logging */
+        sz_loginit(loglevel, NULL, SZ_LIBLOG_FACILITY_DAEMON);
+
+        char* logfile = strdup("pserver-lite");
+        if (sz_loginit(loglevel, logfile) < 0) {
+            sz_log(0, "cannot open log file '%s', exiting", logfile);
+            return EXIT_FAILURE;
+        }
+        sz_log(0, "starting pserverLITE...");
+
+        /* read configuration (section "probes_server") */
+        libpar_init_with_filename("/etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg", 1);
+
+        char* pserver_port = libpar_getpar("probes_server", "port", 1);
+        char* pserver_address = libpar_getpar("probes_server", "address", 1);
+
+        libpar_done();
+
+        /* daemonize pserver-lite process */
+        if (daemonize) {
+            if (go_daemon() != 0) {
+                sz_log(0, "failed to daemonize process, exiting...");
+                return EXIT_FAILURE;
+            }
+        }
 
         // TODO: start probes server service
-        std::cout << "Starting " << PROGRAM_NAME << "...\n"
-                  << "debug_level = " << debug_level << "\n"
-                  << "daemonize = " << daemonize
+        std::cout << "pserverLITE started.\n"
+                  << "pserver_port = " << atoi(pserver_port) << "\n"
+                  << "pserver_address = " << pserver_address // empty by default
                   << std::endl;
     }
     catch (po::error& e) {
@@ -110,12 +145,12 @@ int main (int argc, char **argv)
         return EXIT_FAILURE;
     }
     catch (std::exception& e) {
-        // TODO: write to log
+        sz_log(0, "ERROR: %s, exiting...", e.what());
         std::cerr << PROGRAM_NAME << ": ERROR: " << e.what() << std::endl;
         return EXIT_FAILURE;
     }
     catch (...) {
-        // TODO write to log
+        sz_log(0, "ERROR: exception of unknown type! Exiting...");
         std::cerr << PROGRAM_NAME
                   << ": ERROR: exception of unknown type!" << std::endl;
         return EXIT_FAILURE;
