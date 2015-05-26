@@ -60,7 +60,7 @@ public:
 			base->get_weighted_sum(p, sz4::second_time_t(start), sz4::second_time_t(end), pt, sum);
 			return sum.avg();
 		} catch (sz4::exception&) {
-			return std::nan("");
+			return nan("");
 		}
 	}
 
@@ -102,7 +102,7 @@ public:
 		if (szb)
 			return szb_get_avg(szb , p, start , end , NULL , NULL , pt );
 		else
-			return std::nan("");
+			return nan("");
 	}
 
 	double GetData(TParam* p, time_t time, SZARP_PROBE_TYPE pt) {
@@ -110,7 +110,7 @@ public:
 		if (szb)
 			return szb_get_data(szb, p, time);
 		else
-			return std::nan("");
+			return nan("");
 	}
 
 	time_t SearchFirst(TParam *p) {
