@@ -106,7 +106,7 @@ int main (int argc, char **argv)
         /*** start pserverLITE service ***/
 
         /* set logging */
-        sz_loginit(loglevel, NULL, SZ_LIBLOG_FACILITY_DAEMON);
+        sz_loginit(10, NULL, SZ_LIBLOG_FACILITY_DAEMON);
 
         char* logfile = strdup("pserver-lite");
         if (sz_loginit(loglevel, logfile) < 0) {
