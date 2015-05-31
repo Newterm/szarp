@@ -40,6 +40,7 @@
 #include "conversion.h"
 #include "liblog.h"
 #include "sz4/base.h"
+#include "sz4/util.h"
 
 #define XSLT_DIR PREFIX"/resources/xslt"
 #define CSV_XSLT "extr_csv.xsl"
@@ -58,7 +59,7 @@ public:
 		sz4::weighted_sum<double, sz4::second_time_t> sum;
 		try {
 			base->get_weighted_sum(p, sz4::second_time_t(start), sz4::second_time_t(end), pt, sum);
-			return sum.avg();
+			return sz4::scale_value(sum.avg(), p);
 		} catch (sz4::exception&) {
 			return nan("");
 		}
@@ -142,8 +143,6 @@ SzbExtractor::SzbExtractor(IPKContainer* ipk, Szbase *szbase)
 
 SzbExtractor::SzbExtractor(IPKContainer* ipk, sz4::base *sz4)
 {
-	assert (szbase != NULL);
-
 	this->base = new Sz4BaseAdapter(sz4);
 	this->ipk = ipk;
 

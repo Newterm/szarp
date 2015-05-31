@@ -261,15 +261,14 @@ public:
 
 	void  get_last_time(const std::list<generic_param_entry*>&, T &t) {
 		refresh_if_needed();
-		if (m_blocks.size() == 0)
-			t = time_trait<T>::invalid_value;
-		else {
-			file_block_entry_type* entry = m_blocks.rbegin()->second;
+		t = time_trait<T>::invalid_value;
+		for (typename map_type::reverse_iterator i = m_blocks.rbegin();
+				!time_trait<T>::is_valid(t) && i != m_blocks.rend(); i++) {
+			file_block_entry_type* entry = i->second;
 			entry->refresh_if_needed();
 			t = entry->block().end_time();
 		}
 	}
-
 
 	void register_at_monitor(generic_param_entry* entry, SzbParamMonitor* monitor) {
 #if BOOST_FILESYSTEM_VERSION == 3

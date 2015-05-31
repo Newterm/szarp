@@ -139,8 +139,7 @@ bool EkstrApp::OnInit()
 	std::pair<wxString, wxString> prober_address;
 	if (m_probers_addresses.find(ipk_prefix) != m_probers_addresses.end())
 		prober_address = m_probers_addresses[ipk_prefix];
-	EkstraktorWidget *ew = new EkstraktorWidget(ipk_prefix, geometry.IsEmpty() ? NULL : &geometry, prober_address);
-	ew->SetSz4(sz4);
+	EkstraktorWidget *ew = new EkstraktorWidget(ipk_prefix, geometry.IsEmpty() ? NULL : &geometry, prober_address, sz4);
 
 	if (ew->IsConfigLoaded() == false) {
 		delete ew;

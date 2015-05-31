@@ -63,7 +63,7 @@ class EkstraktorWidget
 	bool sz4;
 	SzbExtractor* extr;
 	public:
-		EkstraktorWidget(std::wstring ipk_prefix, wxString *geometry, std::pair<wxString, wxString> prober_address);
+		EkstraktorWidget(std::wstring ipk_prefix, wxString *geometry, std::pair<wxString, wxString> prober_address, bool sz4);
 		
 		int GetNumberOfParams() { return number_of_params; }
 		void SetNumberOfParams(int params) { number_of_params = params; }

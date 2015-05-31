@@ -101,7 +101,12 @@ public:
 	{}
 
 	const time_type& start_time() const { return m_start_time; }
-	const time_type end_time() const { return m_data[m_data.size() - 1].time; }
+	const time_type end_time() const {
+		if (m_data.size())
+			return m_data[m_data.size() - 1].time;
+		else
+			return time_trait<time_type>::invalid_value;
+	}
 
 	typename value_time_vector::iterator search_entry_for_time(const time_type& time) {
 		return sz4::search_entry_for_time(m_data.begin(), m_data.end(), time);
