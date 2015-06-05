@@ -1,5 +1,15 @@
 #include "szcache.h"
 #include <iostream>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <limits>
+
+#include <memory>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 const int SzCache::cSzCacheProbe = 10;
 const int SzCache::cSzCacheSize = 2;
@@ -12,16 +22,85 @@ const std::string SzCache::cSzCacheExt = ".szc";
 const std::string SzCache::cSzCacheDir = "/var/cache/szarp";
 const int SzCache::cSzCacheMonthCnt = 2;
 
+template <class T> class mmap_allocator
+{
+	public: 
+		typedef T			value_type;
+		typedef value_type*		pointer;
+		typedef const value_type*	const_pointer;
+		typedef value_type&		reference;
+		typedef const value_type&	const_reference;
+		typedef std::size_t		size_type;
+		typedef std::ptrdiff_t		difference_type;
+
+		mmap_allocator() {}
+		mmap_allocator(const mmap_allocator&) {}
+		~mmap_allocator() {}
+
+		pointer address (reference x) const 
+		{ return &x; }
+		const_pointer address (const_reference x) const
+		{ return &x; } 
+
+		pointer allocate (size_type n, void * hint = 0)
+		{	
+			void *p = mmap(hint, n*sizeof(T), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
+			if (p == MAP_FAILED) throw std::bad_alloc();
+			return static_cast<pointer>(p);
+		}
+
+		void deallocate(pointer p, size_type n) 
+		{  munmap(p, n*sizeof(T)); }
+
+		size_type max_size() const
+		{ return static_cast<size_type>(-1) / sizeof(value_type); }
+
+		void construct (pointer p, const value_type& x) 
+		{ new(p) T(x); }
+
+		void destroy (pointer p)
+		{ p->~value_type(); }
+
+		template <class U> 
+		mmap_allocator (const mmap_allocator<U>&) {}
+		template <class U>
+		struct rebind { typedef mmap_allocator<U> other; };
+
+	private:
+		void operator= (const mmap_allocator&);
+};
+
+template <class T>
+inline bool operator== (const mmap_allocator<T>&,
+			const mmap_allocator<T>&)
+{ return true; }
+
+template <class T>
+inline bool operator!= (const mmap_allocator<T>&,
+			const mmap_allocator<T>&)
+{ return false; }
+
+/*
+template<> class mmap_allocator<void>
+{	
+	typedef void		value_type;
+	typedef void*		pointer;
+	typedef const void*	const_pointer;
+
+	template <class U> 
+	struct rebind { typedef mmap_allocator<U> other; };
+}
+*/
 
 /** SzSzache inner szc file representation */
 class SzCache::SzCacheFile {
 
 	public:
 		/** Constructor only stores path */
-		SzCacheFile(SzPath path) : path_(path) {};
+		SzCacheFile(SzPath path) : path_(path) {}
 		
 		/** Open szbfile and store in records of values */
-		void open() 
+		void cacheOpen() 
 		{
 			std::ifstream fs(path_, std::ios::binary);
 			if (fs.rdstate() & std::ifstream::failbit) 
@@ -31,13 +110,42 @@ class SzCache::SzCacheFile {
 			 * A chosen (uint16_t) type can be reinterpreted to an
 			 * array of char of sizeof type. It is filled with bytes
                          * and can be later used. (hary)
-			 */ 
+			 */
+			records.clear(); 
 			std::uint16_t record;
 			while (fs.read(reinterpret_cast<char*>(&record), sizeof record)) {
 				records.push_back(record);	
 			}
 		};
 		
+		/** Map to memory szbfile and store in records of values */
+		void cacheMap(off_t offset, size_t length) 
+		{
+			records.clear();
+
+			off_t pg_off = (offset * sizeof(int16_t)) & ~(sysconf(_SC_PAGE_SIZE) - 1);
+			size_t pg_len = (length + offset) * sizeof(int16_t) - pg_off;
+        		int fd = open(path_.c_str(), O_RDONLY | O_NOATIME);
+       			if (fd == -1) 
+				throw std::runtime_error("SzCacheFile: failed to open: " + path_);
+
+        		void* mdata = mmap(NULL, pg_len, PROT_READ, MAP_SHARED, fd, pg_off);
+
+			short* data = (short*)(((char *)mdata) + (offset * sizeof(int16_t) - pg_off));
+        		if (MAP_FAILED == data) {
+                		close(fd);
+				throw std::runtime_error("SzCacheFile: failed to mmap: " + path_);
+        		}
+			
+			records.assign(data, data + pg_len);
+		};
+
+		/** Map to memory szbfile and store in records of values */
+		void cacheMap() 
+		{
+			cacheMap(0, getFileSize(path_) / sizeof(int16_t));
+		};
+
 		/** Get value from record by index */
 		int &operator[](int i) 
 		{
@@ -82,6 +190,7 @@ class SzCache::SzCacheFile {
 		}
 
 	private:
+		//std::vector<int, mmap_allocator<int> > records;
 		std::vector<int> records;
 		std::string path_;
 };
@@ -251,7 +360,6 @@ SzCache::SzRange SzCache::searchFirstLast(SzPath path)
 SzCache::SzTime SzCache::searchAt(SzTime start, SzPath path)
 {
 	SzPathIndex szpi = getPathIndex(start, path);
-	std::cout << szpi.first;
 	if (!fileExists(szpi.first)) 
 		return SzTime(-1);
 
@@ -261,15 +369,54 @@ SzCache::SzTime SzCache::searchAt(SzTime start, SzPath path)
 
 	SzCacheFile szf(szpi.first);
 	try { 
-		szf.open();
-		if (szf[szpi.second] == cSzCacheNoData)
+		//szf.cacheOpen();
+		szf.cacheMap();
+		std::cout << "opened, ind " << szpi.second << "\n";
+		if (szf[szpi.second] == cSzCacheNoData) {
+			std::cout << "NODATA";
 			return SzTime(-1);
+		}	
 
 	} catch (std::exception& e) {
+		std::cout << "EXCEPT ";
 		return SzTime(-1);
 	}
 	
+	std::cout << "fine - return start: " << start << "\n";
 	return start;
 }
 
 
+SzCache::SzIndex SzCache::lastIndex(SzPath path)
+{
+	return ( getFileSize(path) / cSzCacheSize - 1 );
+}
+
+
+SzCache::SzIndexResult SzCache::searchFile(SzPath spath, SzIndex sind, SzPath epath, SzIndex eind, SzDirection dir)
+{
+	/* @TODO: return search within file */
+	/* 
+	if (!fileExists(spath)) 
+		return SzIndexResult(false, SzIndex(-1));
+
+	if (epath.compare(spath) != 0) {
+		if (dir == SzDirection::RIGHT || dir == SzDirection::INPLACE)
+			eind = lastIndex(spath);
+		else {
+			sind = std::min(eind, lastIndex(spath));
+			eind = 0;
+		}
+	} else {
+		if (dir == SzDirection::RIGHT) 
+			eind = std::min(eind, lastIndex(spath));
+		else
+			sind = std::min(sind, lastIndex(spath));
+	}
+
+	if ((sind == SzIndex(-1)) && (dir == SzDirection::LEFT))
+		sind = lastIndex(spath);
+	
+	return SzIndexResult();
+	*/
+}

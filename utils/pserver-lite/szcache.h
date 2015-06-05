@@ -56,14 +56,16 @@ class SzCache {
 
 		SzPathIndex	getPathIndex(SzTime szt, SzPath dir);
 		SzTime		getTime(SzIndex idx, SzPath path);
+		SzIndex		lastIndex(SzPath path);
+
 		std::set<std::string>			globify(const SzPath& path);	
 
 	private:	
 		class SzCacheFile;
 		
 		static std::pair<std::string,std::string>	splitPath(const SzPath& path);
+		static std::size_t				getFileSize(const SzPath& path);
 
-		std::size_t				getFileSize(const SzPath& path);
 		bool					validatePathMember(std::string member);
 		bool					directoryExists(const SzPath& path);
 		bool					fileExists(const SzPath& path);
