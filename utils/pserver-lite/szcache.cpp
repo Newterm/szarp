@@ -1,15 +1,22 @@
 #include "szcache.h"
+
 #include <iostream>
+#include <iomanip>
+#include <utility> 
+#include <sstream>
+#include <cmath>
+#include <algorithm>
+#include <memory>
+
+/** C-style */
 #include <sys/mman.h>
 #include <sys/types.h>
-#include <limits>
-
-#include <memory>
-#include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+/** Constants */
 
 const int SzCache::cSzCacheProbe = 10;
 const int SzCache::cSzCacheSize = 2;
@@ -21,6 +28,8 @@ const std::string SzCache::cSzCacheExt = ".szc";
 /** @TODO: From LPR */
 const std::string SzCache::cSzCacheDir = "/var/cache/szarp";
 const int SzCache::cSzCacheMonthCnt = 2;
+
+/** mmap() allocator for std::vector */
 
 template <class T> class mmap_allocator
 {
@@ -93,12 +102,37 @@ template<> class mmap_allocator<void>
 */
 
 /** SzSzache inner szc file representation */
+
 class SzCache::SzCacheFile {
 
 	public:
 		/** Constructor only stores path */
 		SzCacheFile(SzPath path) : path_(path) {}
 		
+		SzIndexResult cacheSearchRight(SzIndex sind, SzIndex eind) 
+		{	
+			int cnt = 0;
+			std::vector<int>::const_iterator cit = records.cbegin();
+			for (; cit != records.cend(); ++cit) {
+				if (*cit != cSzCacheNoData) 
+					return SzIndexResult(true, cnt);
+				cnt++;
+			}
+			return SzIndexResult(false,-1);
+		}
+
+		SzIndexResult cacheSearchLeft(SzIndex sind, SzIndex eind) 
+		{	
+			int cnt = records.size() - 1;
+			std::vector<int>::const_reverse_iterator crit = records.crbegin();
+			for (; crit != records.crend(); ++crit) {
+				if (*crit != cSzCacheNoData) 
+					return SzIndexResult(true, cnt);
+				cnt--;
+			}
+			return SzIndexResult(false,-1);
+		}
+
 		/** Open szbfile and store in records of values */
 		void cacheOpen() 
 		{
@@ -137,7 +171,9 @@ class SzCache::SzCacheFile {
 				throw std::runtime_error("SzCacheFile: failed to mmap: " + path_);
         		}
 			
-			records.assign(data, data + pg_len);
+			records.assign(data, data + length);
+			close(fd);
+			munmap(mdata,length);
 		};
 
 		/** Map to memory szbfile and store in records of values */
@@ -154,46 +190,46 @@ class SzCache::SzCacheFile {
           		return records[i];
           	};
 		
-		/** Move month in path forward else backward */
-		std::string moveMonth(bool forward) 
-		{
-			int year, mon;
-			std::ostringstream os;
-
-			std::pair<std::string,std::string> p = splitPath(path_);
-			/* @TODO: some error checking on this stream */
-			std::istringstream(p.second.substr(0,4)) >> year;
-			std::istringstream(p.second.substr(4,6)) >> mon;
-	
-			forward ? mon += 1 : mon -= 1;
-			if (mon > 12) { mon = 1; year += 1; }
-			if (mon <= 0) { mon = 12; year -= 1; }
-
-			os << p.first << "/" << std::setfill('0') << std::setw(4) << year 
-				<< std::setw(2) << mon << cSzCacheExt;
-			
-			return os.str();
-		}
-
-		/** Iterate over next path also return it */
-		std::string next() 
-		{
-			path_ = moveMonth(true);
-			return path_;
-		}
-
-		/** Iterate over prev path also return it */
-		std::string prev() 
-		{
-			path_ = moveMonth(false);
-			return path_;
-		}
-
+		
 	private:
+		/** Not using mmap() allocator (hary 7.06.2015) */
 		//std::vector<int, mmap_allocator<int> > records;
 		std::vector<int> records;
 		std::string path_;
 };
+
+/** Move month in path forward else backward */
+SzCache::SzPath SzCache::moveMonth(SzPath path, bool forward) 
+{
+	int year, mon;
+	std::ostringstream os;
+
+	std::pair<std::string,std::string> p = splitPath(path);
+	/* @TODO: some error checking on this stream */
+	std::istringstream(p.second.substr(0,4)) >> year;
+	std::istringstream(p.second.substr(4,6)) >> mon;
+
+	forward ? mon += 1 : mon -= 1;
+	if (mon > 12) { mon = 1; year += 1; }
+	if (mon <= 0) { mon = 12; year -= 1; }
+
+	os << p.first << "/" << std::setfill('0') << std::setw(4) << year 
+		<< std::setw(2) << mon << cSzCacheExt;
+	
+	return os.str();
+}
+
+/** Iterate over next path also return it */
+SzCache::SzPath SzCache::nextMonth(SzPath path) 
+{
+	return moveMonth(path, true);
+}
+
+/** Iterate over prev path also return it */
+SzCache::SzPath SzCache::prevMonth(SzPath path) 
+{
+	return moveMonth(path, false);
+}
 
 SzCache::SzRange SzCache::availableRange() 
 {
@@ -333,7 +369,6 @@ bool SzCache::fileExists(const SzPath& path)
 	return false;
 }
 
-
 std::set<std::string> SzCache::globify(const SzPath& path)
 {
 	glob_t res;
@@ -371,18 +406,14 @@ SzCache::SzTime SzCache::searchAt(SzTime start, SzPath path)
 	try { 
 		//szf.cacheOpen();
 		szf.cacheMap();
-		std::cout << "opened, ind " << szpi.second << "\n";
 		if (szf[szpi.second] == cSzCacheNoData) {
-			std::cout << "NODATA";
 			return SzTime(-1);
 		}	
 
 	} catch (std::exception& e) {
-		std::cout << "EXCEPT ";
 		return SzTime(-1);
 	}
 	
-	std::cout << "fine - return start: " << start << "\n";
 	return start;
 }
 
@@ -392,11 +423,35 @@ SzCache::SzIndex SzCache::lastIndex(SzPath path)
 	return ( getFileSize(path) / cSzCacheSize - 1 );
 }
 
+SzCache::SzTime SzCache::searchFor(SzTime start, SzTime end, SzDirection dir, SzPath path)
+{
+	SzPathIndex spi = getPathIndex(start, path);
+	SzPathIndex epi = getPathIndex(end, path);
+
+	int dirmod = (dir == SzDirection::RIGHT) ? 1 : -1;
+
+	while ((start * dirmod) <= (end * dirmod)) {
+		SzIndexResult szir = searchFile(spi.first, spi.second, epi.first, epi.second, dir);
+		start = szir.second;
+		if (szir.first) return start;
+
+		if (dirmod > 0) {
+			spi.first = nextMonth(spi.first);
+			start = getTime(0, spi.first);
+			spi.second = 0;
+
+		} else {
+			start = getTime(0, spi.first) - cSzCacheProbe;
+			spi.first = prevMonth(spi.first);
+			spi.second = -1;
+		}
+	}
+
+	return -1;
+}
 
 SzCache::SzIndexResult SzCache::searchFile(SzPath spath, SzIndex sind, SzPath epath, SzIndex eind, SzDirection dir)
 {
-	/* @TODO: return search within file */
-	/* 
 	if (!fileExists(spath)) 
 		return SzIndexResult(false, SzIndex(-1));
 
@@ -417,6 +472,98 @@ SzCache::SzIndexResult SzCache::searchFile(SzPath spath, SzIndex sind, SzPath ep
 	if ((sind == SzIndex(-1)) && (dir == SzDirection::LEFT))
 		sind = lastIndex(spath);
 	
-	return SzIndexResult();
-	*/
+	SzCacheFile scf(spath);
+	scf.cacheMap();	
+	if (dir == SzDirection::RIGHT)
+		return scf.cacheSearchRight(sind, eind);
+	else
+		return scf.cacheSearchLeft(sind, eind);
+
+}
+
+
+SzCache::SzSearchResult SzCache::search(SzTime start, SzTime end, SzDirection dir, SzPath path) 
+{
+	SzPath goodPath = checkPath(path);
+	if (!directoryExists(goodPath)) 
+		return SzSearchResult(-1,-1,-1);
+
+	SzRange szr = searchFirstLast(goodPath);
+	if (dir == SzDirection::INPLACE) {
+		if (start == -1) start = szr.first;
+		return SzSearchResult(searchAt(start, goodPath), szr.first, szr.second);
+	}
+
+	if (dir == SzDirection::RIGHT) {
+		if ((start == -1) || (start < szr.first)) 
+			start = szr.first;
+		if ((end == -1) || (end > szr.second))
+			end = szr.second;
+	} else {
+		if ((start == -1) || (start > szr.second))
+			start = szr.second;
+		if ((end == -1) || (end < szr.first)) 
+			end = szr.first;
+	}
+	
+	return SzSearchResult(searchFor(start, end, dir, goodPath), szr.first, szr.second);	
+}
+
+
+SzCache::SzSizeAndLast SzCache::getSizeAndLast(SzTime start, SzTime end, SzPath path) 
+{
+	SzPath goodPath = checkPath(path);
+	if (!directoryExists(goodPath)) 
+		return SzSizeAndLast(0,-1);
+
+	SzRange szr = searchFirstLast(goodPath);
+	if (szr.first == -1)
+		return SzSizeAndLast(0,-1);
+
+	return SzSizeAndLast((((end - start) / cSzCacheProbe) + 1) * cSzCacheSize, szr.second);	
+}
+
+
+void SzCache::writeFile(std::ostream& os, SzIndex sind, SzIndex eind, SzPath path)
+{
+	SzIndex lind = lastIndex(path);
+	lind = std::min(lind, eind);
+	std::size_t wcount = lind - sind + 1;
+	
+	if (wcount < 0) wcount = 0;
+	
+	if (wcount > 0) {
+		SzCacheFile szf(path);
+		szf.cacheMap();
+		while (wcount > 0) {
+			os << szf[sind++];
+			--wcount;
+		}
+	}	
+}
+
+void SzCache::fillEmpty(std::ostream& os, std::size_t count) 
+{
+	for(int i = 0; i < count; ++i) os << cSzCacheNoData;
+}
+
+SzCache::SzTime SzCache::writeData(std::ostream& os, SzTime start, SzTime end, SzPath path)
+{
+	SzPath goodPath = checkPath(path);
+	if (!directoryExists(goodPath))
+		return (end + 1);
+	
+	SzPathIndex spi = getPathIndex(start, goodPath);
+	SzPathIndex epi = getPathIndex(end, goodPath);
+	if (spi.first.compare(epi.first) == 0) {
+		writeFile(os, spi.second, epi.second, spi.first);
+		return (getTime(epi.second, spi.first) + cSzCacheProbe);
+	} else {
+		SzPath npath = nextMonth(spi.first);
+		SzTime ntime = getTime(0, npath);
+
+		epi = getPathIndex(ntime - cSzCacheProbe, goodPath);
+		writeFile(os, spi.second, epi.second, spi.first);
+		return ntime;
+	}
 }

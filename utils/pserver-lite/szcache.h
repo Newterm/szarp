@@ -1,14 +1,9 @@
 #ifndef SZCACHE
 #define SZCACHE
 
-#include <utility> 
-#include <ctime>
 #include <string>
-#include <iomanip>
-#include <sstream>
-#include <cmath>
+#include <ctime>
 #include <set>
-#include <algorithm>
 
 /* Linux style headers */
 #include <glob.h>
@@ -45,6 +40,8 @@ class SzCache {
 		typedef std::pair<bool, SzIndex>		SzIndexResult;
 		typedef std::pair<SzPath,SzIndex>		SzPathIndex;
 		
+		typedef std::pair<std::size_t,SzTime>		SzSizeAndLast;
+		
 		SzRange		availableRange();
 		SzSearchResult	search(SzTime start, SzTime end, SzDirection dir, SzPath path);
 			
@@ -53,18 +50,27 @@ class SzCache {
 		SzTime		searchAt(SzTime start, SzPath path);
 		SzTime		searchFor(SzTime start, SzTime end, SzDirection dir, SzPath path);
 		SzIndexResult	searchFile(SzPath spath, SzIndex sind, SzPath epath, SzIndex eind, SzDirection dir);
-
 		SzPathIndex	getPathIndex(SzTime szt, SzPath dir);
 		SzTime		getTime(SzIndex idx, SzPath path);
 		SzIndex		lastIndex(SzPath path);
 
+		SzSizeAndLast   getSizeAndLast(SzTime start, SzTime end, SzPath path);
+		void		writeFile(std::ostream& os, SzIndex sind, SzIndex eind, SzPath path);
+		void		fillEmpty(std::ostream& os, std::size_t count);
+		SzTime		writeData(std::ostream& os, SzTime start, SzTime end, SzPath path);
 		std::set<std::string>			globify(const SzPath& path);	
+		
+		SzPath		moveMonth(SzPath path, bool forward);
+		SzPath		nextMonth(SzPath path);
+		SzPath		prevMonth(SzPath path);
+
+		
 
 	private:	
 		class SzCacheFile;
-		
-		static std::pair<std::string,std::string>	splitPath(const SzPath& path);
-		static std::size_t				getFileSize(const SzPath& path);
+
+		std::pair<std::string,std::string>	splitPath(const SzPath& path);
+		static std::size_t			getFileSize(const SzPath& path);
 
 		bool					validatePathMember(std::string member);
 		bool					directoryExists(const SzPath& path);
