@@ -12,6 +12,7 @@
 
 #include <stdexcept>
 #include <fstream>
+#include <algorithm>
 
 class SzCache {	
 
@@ -71,7 +72,8 @@ class SzCache {
 
 		std::pair<std::string,std::string>	splitPath(const SzPath& path);
 		static std::size_t			getFileSize(const SzPath& path);
-
+	
+		void					toLog(std::string msg, int pri);
 		bool					validatePathMember(std::string member);
 		bool					directoryExists(const SzPath& path);
 		bool					fileExists(const SzPath& path);

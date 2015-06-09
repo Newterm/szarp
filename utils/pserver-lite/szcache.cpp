@@ -5,7 +5,6 @@
 #include <utility> 
 #include <sstream>
 #include <cmath>
-#include <algorithm>
 #include <memory>
 
 /** C-style */
@@ -251,7 +250,6 @@ SzCache::SzRange SzCache::availableRange()
 SzCache::SzPathIndex SzCache::getPathIndex(SzTime szt, SzPath dir)
 {
 	auto gmt = std::gmtime(&szt);
-	std::cout << szt << std::endl;
 	std::ostringstream os;
 	os << dir << "/" << std::setfill('0') << std::setw(4) << gmt->tm_year+1900 
 		<< std::setw(2) << gmt->tm_mon+1 << cSzCacheExt;
@@ -277,12 +275,12 @@ SzCache::SzTime	SzCache::getTime(SzIndex idx, SzPath path)
 	gmt.tm_year -= 1900; // Falling back to years since 1900 repr.
 	gmt.tm_mon -= 1; // Falling back to mon 0-11 repr.
 	gmt.tm_mday = 1;
-	gmt.tm_hour = 0;
+	gmt.tm_hour = 1;
 	gmt.tm_min = 0;
 	gmt.tm_sec = 0;
-	//gmt.tm_isdst = -1;
+	gmt.tm_isdst = -1;
 
-	return SzTime(std::mktime(&gmt));
+	return SzTime(std::mktime(&gmt) + (idx * cSzCacheProbe));
 }
 
 bool SzCache::validatePathMember(std::string member) 
@@ -398,9 +396,11 @@ SzCache::SzTime SzCache::searchAt(SzTime start, SzPath path)
 	if (!fileExists(szpi.first)) 
 		return SzTime(-1);
 
+	/*
 	szpi.second *= cSzCacheSize;
 	if (getFileSize(szpi.first) < szpi.second)
 		return SzTime(-1);
+	*/
 
 	SzCacheFile szf(szpi.first);
 	try { 
@@ -484,6 +484,7 @@ SzCache::SzIndexResult SzCache::searchFile(SzPath spath, SzIndex sind, SzPath ep
 
 SzCache::SzSearchResult SzCache::search(SzTime start, SzTime end, SzDirection dir, SzPath path) 
 {
+
 	SzPath goodPath = checkPath(path);
 	if (!directoryExists(goodPath)) 
 		return SzSearchResult(-1,-1,-1);
@@ -567,3 +568,9 @@ SzCache::SzTime SzCache::writeData(std::ostream& os, SzTime start, SzTime end, S
 		return ntime;
 	}
 }
+
+void SzCache::toLog(std::string msg, int pri)
+{
+	std::cout << msg << "\n";
+}
+
