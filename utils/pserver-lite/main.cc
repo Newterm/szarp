@@ -37,126 +37,132 @@ const std::string VERSION_STR("1.0alpha");
  */
 int main (int argc, char **argv)
 {
-    try {
-        /*** parse given arguments using boost::program_options (po) ***/
+	try {
+		/*** parse given arguments using boost::program_options (po) ***/
 
-        /* defaults */
-        int loglevel = 2;
-        bool daemonize = true;
+		/* defaults */
+		int loglevel = 2;
+		bool daemonize = true;
 
-        /* command-line options */
-        po::options_description opts("Startup");
-        opts.add_options()
-            ("help,h", "print this help.")
-            ("version,V", "display the version of pserverLITE and exit.")
-            ("debug,d", po::value<int>(&loglevel), "set debug level.")
-            ("no-daemon,n", "do not daemonize.")
-            ;
+		/* command-line options */
+		po::options_description opts("Startup");
+		opts.add_options()
+			("help,h", "print this help.")
+			("version,V", "display the version of pserverLITE and exit.")
+			("debug,d", po::value<int>(&loglevel), "set debug level.")
+			("no-daemon,n", "do not daemonize.")
+			;
 
-        /* positional arguments */
-        const po::positional_options_description pos; // empty!!!
+		/* positional arguments */
+		const po::positional_options_description pos; // empty!!!
 
-        /** parse **/
-        po::variables_map vm;
-        po::store(po::command_line_parser(argc, argv).
-                  options(opts).positional(pos).run(), vm);
-        po::notify(vm);
+		/** parse **/
+		po::variables_map vm;
+		po::store(po::command_line_parser(argc, argv).
+				  options(opts).positional(pos).run(), vm);
+		po::notify(vm);
 
-        /* -h, --help: print help message and exit */
-        if (vm.count("help")) {
-            std::cout
-                << "pserverLITE " << VERSION_STR
-                << ", SZARP Probes Server LITE.\n"
-                << "Usage: " << PROGRAM_NAME << " [OPTION]...\n\n"
-                << opts << "\n"
-                << "Configuration (read from file "
-                << "/etc/" << PACKAGE_NAME << "/" << PACKAGE_NAME <<".cfg):\n"
-                << "  * Section 'probes_server':\n"
-                << "      port\tport on which server should listen. [mandatory]\n"
-                << "      address\taddress of interface on which server should listen\n"
-                << "             \t(empty means 'any'). [mandatory]\n\n"
-                << "Mail bug reports and suggestions to <coders@newterm.pl>."
-                << std::endl;
-            return EXIT_SUCCESS;
-        }
-        /* -V, --version: print program version and copyright info and exit */
-        if (vm.count("version")) {
-            std::cout
-                << PROGRAM_NAME << " " << VERSION_STR
-                << ", SZARP Probes Server LITE.\n\n"
-                << "Copyright (C) 2015 Newterm\n"
-                << "License GPLv2+: GNU GPL version 2 or later\n"
-                << "<http://www.gnu.org/licenses/gpl.html>.\n"
-                << "This is free software: you are free to change and redistribute it.\n"
-                << "There is NO WARRANTY, to the extent permitted by law.\n\n"
-                << "Written by Aleksy Barcz, Marcin Harasimczuk and Tomasz Pieczerak."
-                << std::endl;
+		/* -h, --help: print help message and exit */
+		if (vm.count("help")) {
+			std::cout
+				<< "pserverLITE " << VERSION_STR
+				<< ", SZARP Probes Server LITE.\n"
+				<< "Usage: " << PROGRAM_NAME << " [OPTION]...\n\n"
+				<< opts << "\n"
+				<< "Configuration (read from file "
+				<< "/etc/" << PACKAGE_NAME << "/" << PACKAGE_NAME <<".cfg):\n"
+				<< "  * Section 'probes_server':\n"
+				<< "      port\tport on which server should listen. [mandatory]\n"
+				<< "      address\taddress of interface on which server should listen\n"
+				<< "             \t(empty means 'any'). [mandatory]\n\n"
+				<< "Mail bug reports and suggestions to <coders@newterm.pl>."
+				<< std::endl;
 
-            return EXIT_SUCCESS;
-        }
+			return EXIT_SUCCESS;
+		}
+		/* -V, --version: print program version and copyright info and exit */
+		if (vm.count("version")) {
+			std::cout
+				<< PROGRAM_NAME << " " << VERSION_STR
+				<< ", SZARP Probes Server LITE.\n\n"
+				<< "Copyright (C) 2015 Newterm\n"
+				<< "License GPLv2+: GNU GPL version 2 or later\n"
+				<< "<http://www.gnu.org/licenses/gpl.html>.\n"
+				<< "This is free software: you are free to change and redistribute it.\n"
+				<< "There is NO WARRANTY, to the extent permitted by law.\n\n"
+				<< "Written by Aleksy Barcz, Marcin Harasimczuk and Tomasz Pieczerak."
+				<< std::endl;
 
-        /* validate other options values */
-        if (loglevel < 0 || loglevel > 10) {
-            throw po::error("debug level must be between 0 and 10");
-        }
-        if (vm.count("no-daemon")) {
-            daemonize = false;
-        }
+			return EXIT_SUCCESS;
+		}
 
-        /*** start pserverLITE service ***/
+		/* validate other options values */
+		if (loglevel < 0 || loglevel > 10) {
+			throw po::error("debug level must be between 0 and 10");
+		}
+		if (vm.count("no-daemon")) {
+			daemonize = false;
+		}
 
-        /* set logging */
-        sz_loginit(10, NULL, SZ_LIBLOG_FACILITY_DAEMON);
+		/*** start pserverLITE service ***/
 
-        char* logfile = strdup("pserver-lite");
-        if (sz_loginit(loglevel, logfile) < 0) {
-            sz_log(0, "cannot open log file '%s', exiting", logfile);
-            return EXIT_FAILURE;
-        }
-        sz_log(0, "starting pserverLITE...");
+		/* set logging */
+		sz_loginit(10, NULL, SZ_LIBLOG_FACILITY_DAEMON);
 
-        /* read configuration (section "probes_server") */
-        libpar_init_with_filename("/etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg", 1);
+		char* logfile = strdup("pserver-lite");
+		if (sz_loginit(loglevel, logfile) < 0) {
+			sz_log(0, "cannot open log file '%s', exiting", logfile);
+			return EXIT_FAILURE;
+		}
+		sz_log(0, "starting pserverLITE...");
 
-        char* pserver_port = libpar_getpar("probes_server", "port", 1);
-        char* pserver_address = libpar_getpar("probes_server", "address", 1);
+		/* read configuration (section "probes_server") */
+		libpar_init_with_filename("/etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg", 1);
 
-        libpar_done();
+		char* pserver_port = libpar_getpar("probes_server", "port", 1);
+		char* pserver_address = libpar_getpar("probes_server", "address", 1);
 
-        /* daemonize pserver-lite process */
-        if (daemonize) {
-            if (go_daemon() != 0) {
-                sz_log(0, "failed to daemonize process, exiting...");
-                return EXIT_FAILURE;
-            }
-        }
+		libpar_done();
 
-        // TODO: start probes server service
-        std::cout << "pserverLITE started.\n"
-                  << "pserver_port = " << atoi(pserver_port) << "\n"
-                  << "pserver_address = " << pserver_address // empty by default
-                  << std::endl;
-    }
-    catch (po::error& e) {
-        std::cerr << PROGRAM_NAME << ": ERROR: " << e.what() << "\n"
-                  << "Usage: " << PROGRAM_NAME << " [OPTION]...\n\n"
-                  << "Try `pserver-lite --help' for more options."
-                  << std::endl;
-        return EXIT_FAILURE;
-    }
-    catch (std::exception& e) {
-        sz_log(0, "ERROR: %s, exiting...", e.what());
-        std::cerr << PROGRAM_NAME << ": ERROR: " << e.what() << std::endl;
-        return EXIT_FAILURE;
-    }
-    catch (...) {
-        sz_log(0, "ERROR: exception of unknown type! Exiting...");
-        std::cerr << PROGRAM_NAME
-                  << ": ERROR: exception of unknown type!" << std::endl;
-        return EXIT_FAILURE;
-    }
+		/* daemonize pserver-lite process */
+		if (daemonize) {
+			if (go_daemon() != 0) {
+				sz_log(0, "failed to daemonize process, exiting...");
+				return EXIT_FAILURE;
+			}
+		}
 
-    return EXIT_SUCCESS;
+		// TODO: start probes server service
+		std::cout
+			<< "pserverLITE started.\n"
+			<< "pserver_port = " << atoi(pserver_port) << "\n"
+			<< "pserver_address = " << pserver_address // empty by default
+			<< std::endl;
+	}
+	catch (po::error& e) {
+		std::cerr
+			<< PROGRAM_NAME << ": ERROR: " << e.what() << "\n"
+			<< "Usage: " << PROGRAM_NAME << " [OPTION]...\n\n"
+			<< "Try `pserver-lite --help' for more options."
+			<< std::endl;
+
+		return EXIT_FAILURE;
+	}
+	catch (std::exception& e) {
+		sz_log(0, "ERROR: %s, exiting...", e.what());
+		std::cerr << PROGRAM_NAME << ": ERROR: " << e.what() << std::endl;
+
+		return EXIT_FAILURE;
+	}
+	catch (...) {
+		sz_log(0, "ERROR: exception of unknown type! Exiting...");
+		std::cerr
+			<< PROGRAM_NAME
+			<< ": ERROR: exception of unknown type!" << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
 
 }   /* end of main() */
 
