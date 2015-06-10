@@ -1,3 +1,23 @@
+/**
+ * Probes Server LITE is a part of SZARP SCADA software.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA. """
+ *
+ */
+
 #ifndef SZCACHE
 #define SZCACHE
 
@@ -24,7 +44,7 @@ class SzCache {
 		/** Number of bytes in szcache value */
 		static const int cSzCacheSize;
 		/** Value for NO_DATA */
-		static const int cSzCacheNoData;
+		static const int16_t cSzCacheNoData;
 		/** SzCacheFile extension */
 		static const std::string cSzCacheExt;
 
@@ -76,11 +96,12 @@ class SzCache {
 		 */
 		typedef std::pair<std::size_t,SzTime>		SzSizeAndLast;
 		
+		/** Interface */
 
 		SzRange		availableRange();
 		SzSearchResult	search(SzTime start, SzTime end, SzDirection dir, SzPath path);
 		SzSizeAndLast   getSizeAndLast(SzTime start, SzTime end, SzPath path);
-		SzTime		writeData(std::vector<int>& vals, SzTime start, SzTime end, SzPath path);
+		SzTime		writeData(std::vector<int16_t>& vals, SzTime start, SzTime end, SzPath path);
 			
 	private:	
 		class SzCacheFile;
@@ -106,8 +127,8 @@ class SzCache {
 		SzPath		nextMonth(SzPath path);
 		SzPath		prevMonth(SzPath path);
 
-		void		writeFile(std::vector<int>& vals, SzIndex sind, SzIndex eind, SzPath path);
-		void		fillEmpty(std::vector<int>& vals, std::size_t count);
+		void		writeFile(std::vector<int16_t>& vals, SzIndex sind, SzIndex eind, SzPath path);
+		void		fillEmpty(std::vector<int16_t>& vals, std::size_t count);
 };
 
 #endif /*SZCACHE*/

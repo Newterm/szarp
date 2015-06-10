@@ -1,3 +1,23 @@
+/**
+ * Probes Server LITE is a part of SZARP SCADA software.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA. """
+ *
+ */
+
 #include "szcache.h"
 
 #include <iostream>
@@ -19,7 +39,7 @@
 
 const int SzCache::cSzCacheProbe = 10;
 const int SzCache::cSzCacheSize = 2;
-const int SzCache::cSzCacheNoData = -32768;
+const int16_t SzCache::cSzCacheNoData = -32768;
 const std::string SzCache::cSzCacheExt = ".szc";
 /** @TODO: From LPR */
 const std::string SzCache::cSzCacheDir = "/var/cache/szarp";
@@ -108,7 +128,7 @@ class SzCache::SzCacheFile {
 		SzIndexResult cacheSearchRight(SzIndex sind, SzIndex eind) 
 		{
 			for (; sind < eind; sind++) {
-				int val = records[sind];
+				int16_t val = records[sind];
 				if (val != cSzCacheNoData)
 					return SzIndexResult(true,sind);
 			}
@@ -118,7 +138,7 @@ class SzCache::SzCacheFile {
 		SzIndexResult cacheSearchLeft(SzIndex sind, SzIndex eind) 
 		{	
 			for (; sind > eind; sind--) {
-				int val = records[sind];
+				int16_t val = records[sind];
 				if (val != cSzCacheNoData)
 					return SzIndexResult(true,sind);
 			}
@@ -138,7 +158,7 @@ class SzCache::SzCacheFile {
                          * and can be later used. (hary)
 			 */
 			records.clear(); 
-			std::uint16_t record;
+			int16_t record;
 			while (fs.read(reinterpret_cast<char*>(&record), sizeof record)) {
 				records.push_back(record);	
 			}
@@ -168,14 +188,18 @@ class SzCache::SzCacheFile {
 			munmap(mdata,length);
 		};
 
-		/** Map to memory szbfile and store in records of values */
+		/** 
+		 * Map to memory szbfile and store in records of values 
+		 * (hary 10.06.2015: This is used everywere now - map whole file,
+		 * change this if too much RAM is used.
+		 */
 		void cacheMap() 
 		{
 			cacheMap(0, getFileSize(path_) / sizeof(int16_t));
 		};
 
 		/** Get value from record by index */
-		int &operator[](int i) 
+		int16_t &operator[](int i) 
 		{
           		if (i > records.size()) 
 				throw std::out_of_range("SzCacheFile: out_of_range");	
@@ -186,7 +210,7 @@ class SzCache::SzCacheFile {
 	private:
 		/** Not using mmap() allocator (hary 7.06.2015) */
 		//std::vector<int, mmap_allocator<int> > records;
-		std::vector<int> records;
+		std::vector<int16_t> records;
 		std::string path_;
 };
 
@@ -404,7 +428,6 @@ SzCache::SzTime SzCache::searchAt(SzTime start, SzPath path)
 	return start;
 }
 
-
 SzCache::SzIndex SzCache::lastIndex(SzPath path)
 {
 	return ( getFileSize(path) / cSzCacheSize - 1 );
@@ -472,10 +495,8 @@ SzCache::SzIndexResult SzCache::searchFile(SzPath spath, SzIndex sind, SzPath ep
 
 }
 
-
 SzCache::SzSearchResult SzCache::search(SzTime start, SzTime end, SzDirection dir, SzPath path) 
 {
-
 	std::cout <<"search("<<start<<","<<end<<","<<static_cast<int>(dir)<<","<<path<<")\n";
 
 	SzPath goodPath = checkPath(path);
@@ -503,7 +524,6 @@ SzCache::SzSearchResult SzCache::search(SzTime start, SzTime end, SzDirection di
 	return SzSearchResult(searchFor(start, end, dir, goodPath), szr.first, szr.second);	
 }
 
-
 SzCache::SzSizeAndLast SzCache::getSizeAndLast(SzTime start, SzTime end, SzPath path) 
 {
 	SzPath goodPath = checkPath(path);
@@ -517,7 +537,7 @@ SzCache::SzSizeAndLast SzCache::getSizeAndLast(SzTime start, SzTime end, SzPath 
 	return SzSizeAndLast((((end - start) / cSzCacheProbe) + 1) * cSzCacheSize, szr.second);	
 }
 
-void SzCache::writeFile(std::vector<int>& vals, SzIndex sind, SzIndex eind, SzPath path)
+void SzCache::writeFile(std::vector<int16_t>& vals, SzIndex sind, SzIndex eind, SzPath path)
 {
 	SzIndex lind = lastIndex(path);
 	lind = std::min(lind, eind);
@@ -535,12 +555,12 @@ void SzCache::writeFile(std::vector<int>& vals, SzIndex sind, SzIndex eind, SzPa
 	}	
 }
 
-void SzCache::fillEmpty(std::vector<int>& vals, std::size_t count) 
+void SzCache::fillEmpty(std::vector<int16_t>& vals, std::size_t count) 
 {
 	for(int i = 0; i < count; ++i) vals.push_back(cSzCacheNoData);
 }
 
-SzCache::SzTime SzCache::writeData(std::vector<int>& vals, SzTime start, SzTime end, SzPath path)
+SzCache::SzTime SzCache::writeData(std::vector<int16_t>& vals, SzTime start, SzTime end, SzPath path)
 {
 	SzPath goodPath = checkPath(path);
 	if (!directoryExists(goodPath))
