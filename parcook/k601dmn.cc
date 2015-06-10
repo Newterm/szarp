@@ -222,8 +222,6 @@ public:
 
 	unsigned long DetermineRegisterMultiplier(unsigned short
 						  RegisterAddress);
-
-	void SetNoData(IPCHandler * ipc);
 };
 
 int KamstrupInfo::parseDevice(xmlNodePtr node)
@@ -387,13 +385,6 @@ int KamstrupInfo::parseParams(xmlNodePtr unit, DaemonConfig * cfg)
 	return 0;
 }
 
-void KamstrupInfo::SetNoData(IPCHandler * ipc)
-{
-	int i;
-	for (i = 0; i < ipc->m_params_count; i++)
-		ipc->m_read[i] = SZARP_NO_DATA;
-}
-
 int KamstrupInfo::parseXML(xmlNodePtr node, DaemonConfig * cfg)
 {
 	assert(node != NULL);
@@ -510,6 +501,7 @@ public:
 			m_path(""),
 			m_ip(""),
 			m_curr_register(0),
+			m_params_read_in_cycle(0),
 			m_serial_port(NULL),
 			plugin(NULL)
 	{
@@ -553,14 +545,13 @@ protected:
 
 	void ProcessResponse();
 	void SetCurrRegisterNoData();
+	void SetNoData();
 
 	/** Sets NODATA and schedules reconnect */
 	void SetRestart()
 	{
 		m_state = RESTART;
-		for (int i = 0; i < ipc->m_params_count; i++) {
-			ipc->m_read[i] = SZARP_NO_DATA;
-		}
+		SetNoData();
 		ipc->GoParcook();
 	}
 
@@ -581,6 +572,7 @@ protected:
 	int m_cmd_port;			/**< SerialAdapter command port number */
 
 	int m_curr_register;	/**< number of currently processed register */
+	int m_params_read_in_cycle;	/**< count of params which were successfully read in a cycle (not NODATA) */
 	BaseSerialPort *m_serial_port;
 	std::vector<unsigned char> m_read_buffer;	/**< buffer for data received from Kamstrup meter */
 	bool m_data_was_read;	/**< was any data read since last check? */
@@ -865,6 +857,7 @@ void K601Daemon::Do()
 			if (MyKMPReceiveClass->ReceiveResponse(m_read_buffer) ==
 					MyKMPReceiveClass->GetREAD_OK()) {
 				ProcessResponse();
+				m_params_read_in_cycle++;
 			} else {
 				dolog(10, "setting current register to nodata - parser reported error");
 				SetCurrRegisterNoData();
@@ -879,8 +872,15 @@ void K601Daemon::Do()
 				printf("\n");
 			m_curr_register++;
 			if (m_curr_register > kamsinfo->unique_registers_count) {
+				if (m_params_read_in_cycle == 0) {
+					SetRestart();
+					wait_ms = RESTART_INTERVAL_MS;
+					break;
+				}
 				dolog(10, "STARTING NEW CYCLE");
 				m_curr_register = 0;
+				m_params_read_in_cycle = 0;
+				// we don't want to set NODATA at this point, as the daemon may not finish a full cycle in 10s
 				if (!cfg->GetSingle()) {
 					dolog(10, "WAITING....");
 					wait_ms = kamsinfo->delay_between_requests_ms;
@@ -895,9 +895,7 @@ void K601Daemon::Do()
 				m_serial_port->Open();
 			} catch (SerialPortException &e) {
 				dolog(0, "%s: %s %s", m_id.c_str(), "Restart failed:", e.what());
-				for (int i = 0; i < ipc->m_params_count; i++) {
-					ipc->m_read[i] = SZARP_NO_DATA;
-				}
+				SetNoData();
 				ipc->GoParcook();
 			}
 			wait_ms = RESTART_INTERVAL_MS;
@@ -905,6 +903,13 @@ void K601Daemon::Do()
 	}
 	dolog(10, "Schedule next in %dms", wait_ms);
 	ScheduleNext(wait_ms);
+}
+
+void K601Daemon::SetNoData()
+{
+	for (int i = 0; i < ipc->m_params_count; i++) {
+		ipc->m_read[i] = SZARP_NO_DATA;
+	}
 }
 
 void K601Daemon::SetCurrRegisterNoData()
