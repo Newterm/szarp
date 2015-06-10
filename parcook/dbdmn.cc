@@ -351,8 +351,6 @@ int DbDaemon::ParseConfig(DaemonConfig * cfg)
 
 	xmlXPathFreeContext(xp_ctx);
 
-	IPKContainer::Init(SC::A2S(PREFIX), SC::A2S(PREFIX), L"");
-	Szbase::Init(SC::A2S(PREFIX), NULL);
 	ConfigureProbers();
 
 	return 0;
