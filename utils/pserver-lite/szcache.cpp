@@ -20,9 +20,6 @@
 const int SzCache::cSzCacheProbe = 10;
 const int SzCache::cSzCacheSize = 2;
 const int SzCache::cSzCacheNoData = -32768;
-
-const char SzCache::cSzCacheType = 'h';
-
 const std::string SzCache::cSzCacheExt = ".szc";
 /** @TODO: From LPR */
 const std::string SzCache::cSzCacheDir = "/var/cache/szarp";
@@ -109,25 +106,21 @@ class SzCache::SzCacheFile {
 		SzCacheFile(SzPath path) : path_(path) {}
 		
 		SzIndexResult cacheSearchRight(SzIndex sind, SzIndex eind) 
-		{	
-			int cnt = 0;
-			std::vector<int>::const_iterator cit = records.cbegin();
-			for (; cit != records.cend(); ++cit) {
-				if (*cit != cSzCacheNoData) 
-					return SzIndexResult(true, cnt);
-				cnt++;
+		{
+			for (; sind < eind; sind++) {
+				int val = records[sind];
+				if (val != cSzCacheNoData)
+					return SzIndexResult(true,sind);
 			}
 			return SzIndexResult(false,-1);
 		}
 
 		SzIndexResult cacheSearchLeft(SzIndex sind, SzIndex eind) 
 		{	
-			int cnt = records.size() - 1;
-			std::vector<int>::const_reverse_iterator crit = records.crbegin();
-			for (; crit != records.crend(); ++crit) {
-				if (*crit != cSzCacheNoData) 
-					return SzIndexResult(true, cnt);
-				cnt--;
+			for (; sind > eind; sind--) {
+				int val = records[sind];
+				if (val != cSzCacheNoData)
+					return SzIndexResult(true,sind);
 			}
 			return SzIndexResult(false,-1);
 		}
@@ -387,6 +380,7 @@ SzCache::SzRange SzCache::searchFirstLast(SzPath path)
 	std::set<std::string>::const_iterator beg = s.begin();
 	std::set<std::string>::iterator end = beg;
 	std::advance(end, s.size() - 1);
+	//std::cout <<"searchFirstLast("<<getTime(0,*beg)<<","<<getTime(-1,*beg)<<")\n";
 	return SzRange (getTime(0,*beg),getTime(-1,*end));
 }
 
@@ -395,12 +389,6 @@ SzCache::SzTime SzCache::searchAt(SzTime start, SzPath path)
 	SzPathIndex szpi = getPathIndex(start, path);
 	if (!fileExists(szpi.first)) 
 		return SzTime(-1);
-
-	/*
-	szpi.second *= cSzCacheSize;
-	if (getFileSize(szpi.first) < szpi.second)
-		return SzTime(-1);
-	*/
 
 	SzCacheFile szf(szpi.first);
 	try { 
@@ -413,7 +401,6 @@ SzCache::SzTime SzCache::searchAt(SzTime start, SzPath path)
 	} catch (std::exception& e) {
 		return SzTime(-1);
 	}
-	
 	return start;
 }
 
@@ -425,12 +412,14 @@ SzCache::SzIndex SzCache::lastIndex(SzPath path)
 
 SzCache::SzTime SzCache::searchFor(SzTime start, SzTime end, SzDirection dir, SzPath path)
 {
+	std::cout<<"searchFor("<<start<<","<<end<<","<<static_cast<int>(dir)<<","<<path<<")\n";
 	SzPathIndex spi = getPathIndex(start, path);
 	SzPathIndex epi = getPathIndex(end, path);
 
 	int dirmod = (dir == SzDirection::RIGHT) ? 1 : -1;
 
 	while ((start * dirmod) <= (end * dirmod)) {
+		std::cout<<"loop("<<start*dirmod<<","<<end*dirmod<<")\n";
 		SzIndexResult szir = searchFile(spi.first, spi.second, epi.first, epi.second, dir);
 		start = szir.second;
 		if (szir.first) return start;
@@ -452,6 +441,8 @@ SzCache::SzTime SzCache::searchFor(SzTime start, SzTime end, SzDirection dir, Sz
 
 SzCache::SzIndexResult SzCache::searchFile(SzPath spath, SzIndex sind, SzPath epath, SzIndex eind, SzDirection dir)
 {
+	std::cout<<"searchFile("<<spath<<","<<sind<<","<<epath<<","<<eind<<","<<static_cast<int>(dir)<<")\n";
+
 	if (!fileExists(spath)) 
 		return SzIndexResult(false, SzIndex(-1));
 
@@ -484,6 +475,8 @@ SzCache::SzIndexResult SzCache::searchFile(SzPath spath, SzIndex sind, SzPath ep
 
 SzCache::SzSearchResult SzCache::search(SzTime start, SzTime end, SzDirection dir, SzPath path) 
 {
+
+	std::cout <<"search("<<start<<","<<end<<","<<static_cast<int>(dir)<<","<<path<<")\n";
 
 	SzPath goodPath = checkPath(path);
 	if (!directoryExists(goodPath)) 
@@ -524,8 +517,7 @@ SzCache::SzSizeAndLast SzCache::getSizeAndLast(SzTime start, SzTime end, SzPath 
 	return SzSizeAndLast((((end - start) / cSzCacheProbe) + 1) * cSzCacheSize, szr.second);	
 }
 
-
-void SzCache::writeFile(std::ostream& os, SzIndex sind, SzIndex eind, SzPath path)
+void SzCache::writeFile(std::vector<int>& vals, SzIndex sind, SzIndex eind, SzPath path)
 {
 	SzIndex lind = lastIndex(path);
 	lind = std::min(lind, eind);
@@ -537,18 +529,18 @@ void SzCache::writeFile(std::ostream& os, SzIndex sind, SzIndex eind, SzPath pat
 		SzCacheFile szf(path);
 		szf.cacheMap();
 		while (wcount > 0) {
-			os << szf[sind++];
+			vals.push_back(szf[sind++]);
 			--wcount;
 		}
 	}	
 }
 
-void SzCache::fillEmpty(std::ostream& os, std::size_t count) 
+void SzCache::fillEmpty(std::vector<int>& vals, std::size_t count) 
 {
-	for(int i = 0; i < count; ++i) os << cSzCacheNoData;
+	for(int i = 0; i < count; ++i) vals.push_back(cSzCacheNoData);
 }
 
-SzCache::SzTime SzCache::writeData(std::ostream& os, SzTime start, SzTime end, SzPath path)
+SzCache::SzTime SzCache::writeData(std::vector<int>& vals, SzTime start, SzTime end, SzPath path)
 {
 	SzPath goodPath = checkPath(path);
 	if (!directoryExists(goodPath))
@@ -557,20 +549,14 @@ SzCache::SzTime SzCache::writeData(std::ostream& os, SzTime start, SzTime end, S
 	SzPathIndex spi = getPathIndex(start, goodPath);
 	SzPathIndex epi = getPathIndex(end, goodPath);
 	if (spi.first.compare(epi.first) == 0) {
-		writeFile(os, spi.second, epi.second, spi.first);
+		writeFile(vals, spi.second, epi.second, spi.first);
 		return (getTime(epi.second, spi.first) + cSzCacheProbe);
 	} else {
 		SzPath npath = nextMonth(spi.first);
 		SzTime ntime = getTime(0, npath);
 
 		epi = getPathIndex(ntime - cSzCacheProbe, goodPath);
-		writeFile(os, spi.second, epi.second, spi.first);
+		writeFile(vals, spi.second, epi.second, spi.first);
 		return ntime;
 	}
 }
-
-void SzCache::toLog(std::string msg, int pri)
-{
-	std::cout << msg << "\n";
-}
-
