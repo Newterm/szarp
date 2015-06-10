@@ -41,9 +41,6 @@ const int SzCache::cSzCacheProbe = 10;
 const int SzCache::cSzCacheSize = 2;
 const int16_t SzCache::cSzCacheNoData = -32768;
 const std::string SzCache::cSzCacheExt = ".szc";
-/** @TODO: From LPR */
-const std::string SzCache::cSzCacheDir = "/var/cache/szarp";
-const int SzCache::cSzCacheMonthCnt = 2;
 
 /** mmap() allocator for std::vector */
 
@@ -247,11 +244,11 @@ SzCache::SzPath SzCache::prevMonth(SzPath path)
 	return moveMonth(path, false);
 }
 
-SzCache::SzRange SzCache::availableRange() 
+SzCache::SzRange SzCache::availableRange() const
 {
 	SzCache::SzTime last = std::time(nullptr);
 	auto gmt = std::gmtime(&last);
-	gmt->tm_mon -= cSzCacheMonthCnt;
+	gmt->tm_mon -= _numMonths;
 	if (gmt->tm_mon < 1) {
 		gmt->tm_mon += 12;
 		gmt->tm_year -= 1;
@@ -264,7 +261,7 @@ SzCache::SzRange SzCache::availableRange()
 	return SzRange(std::mktime(gmt), last);
 }
 
-SzCache::SzPathIndex SzCache::getPathIndex(SzTime szt, SzPath dir)
+SzCache::SzPathIndex SzCache::getPathIndex(const SzTime szt, const SzPath dir) const
 {
 	auto gmt = std::gmtime(&szt);
 	std::ostringstream os;
@@ -277,7 +274,7 @@ SzCache::SzPathIndex SzCache::getPathIndex(SzTime szt, SzPath dir)
 	return SzPathIndex(SzPath(os.str()),SzIndex(idx));
 }
 
-SzCache::SzTime	SzCache::getTime(SzIndex idx, SzPath path)
+SzCache::SzTime	SzCache::getTime(SzIndex idx, SzPath path) const
 {
 	int year, month;
 	std::tm gmt;
@@ -300,7 +297,7 @@ SzCache::SzTime	SzCache::getTime(SzIndex idx, SzPath path)
 	return SzTime(std::mktime(&gmt) + (idx * cSzCacheProbe));
 }
 
-bool SzCache::validatePathMember(std::string member) 
+bool SzCache::validatePathMember(const std::string member) const
 {
 	if (	(member.compare(".") != 0) && 
 		(member.compare("..") != 0) && 
@@ -313,7 +310,7 @@ bool SzCache::validatePathMember(std::string member)
 	}
 }
 
-SzCache::SzPath SzCache::checkPath(SzPath path) 
+SzCache::SzPath SzCache::checkPath(const SzPath path) const
 {
 	bool goodPath = true;
 	std::size_t memberCount = 0;
@@ -334,12 +331,12 @@ SzCache::SzPath SzCache::checkPath(SzPath path)
 
 	/* Directory path depth of 3 is hardcoded in SZARP */
 	if (goodPath && (memberCount == 3)) 
-		return SzPath(cSzCacheDir + std::string("/") + path);
+		return SzPath(_cacheRootDir + std::string("/") + path);
 	else
 		return SzPath("");
 }
 
-std::size_t SzCache::getFileSize(const SzPath& path) 
+std::size_t SzCache::getFileSize(const SzPath& path)
 {
 	struct stat res;
 	if(stat(path.c_str(), &res) != 0) {
@@ -348,7 +345,7 @@ std::size_t SzCache::getFileSize(const SzPath& path)
 	return res.st_size;
 }
 
-std::pair<std::string,std::string> SzCache::splitPath(const SzPath& path) 
+std::pair<std::string,std::string> SzCache::splitPath(const SzPath& path) const
 {
 	std::size_t pos = path.rfind("/");
 	if (pos != std::string::npos)
@@ -357,7 +354,7 @@ std::pair<std::string,std::string> SzCache::splitPath(const SzPath& path)
 	return std::pair<std::string,std::string>(std::string(""),std::string(""));
 }
 
-bool SzCache::directoryExists(const SzPath& path)
+bool SzCache::directoryExists(const SzPath& path) const
 {
 	struct stat res;
 	if(stat(path.c_str(), &res) != 0) {
@@ -370,7 +367,7 @@ bool SzCache::directoryExists(const SzPath& path)
 	return false;
 }
 
-bool SzCache::fileExists(const SzPath& path)
+bool SzCache::fileExists(const SzPath& path) const
 {
 	struct stat res;
 	if(stat(path.c_str(), &res) != 0) {
@@ -384,7 +381,7 @@ bool SzCache::fileExists(const SzPath& path)
 	return false;
 }
 
-std::set<std::string> SzCache::globify(const SzPath& path)
+std::set<std::string> SzCache::globify(const SzPath& path) const
 {
 	glob_t res;
 	glob(path.c_str(), GLOB_TILDE, NULL, &res);
@@ -396,7 +393,7 @@ std::set<std::string> SzCache::globify(const SzPath& path)
 	return s;
 }
 
-SzCache::SzRange SzCache::searchFirstLast(SzPath path)
+SzCache::SzRange SzCache::searchFirstLast(const SzPath path) const
 {
 	std::set<std::string> s = globify(path + std::string("/[0-9][0-9][0-9][0-9][0-9][0-9]") + cSzCacheExt);
 	if (s.size() == 0) return SzRange(SzTime(-1),SzTime(-1));
@@ -408,7 +405,7 @@ SzCache::SzRange SzCache::searchFirstLast(SzPath path)
 	return SzRange (getTime(0,*beg),getTime(-1,*end));
 }
 
-SzCache::SzTime SzCache::searchAt(SzTime start, SzPath path)
+SzCache::SzTime SzCache::searchAt(const SzTime start, const SzPath path) const 
 {
 	SzPathIndex szpi = getPathIndex(start, path);
 	if (!fileExists(szpi.first)) 
@@ -428,7 +425,7 @@ SzCache::SzTime SzCache::searchAt(SzTime start, SzPath path)
 	return start;
 }
 
-SzCache::SzIndex SzCache::lastIndex(SzPath path)
+SzCache::SzIndex SzCache::lastIndex(const SzPath path) const
 {
 	return ( getFileSize(path) / cSzCacheSize - 1 );
 }
@@ -451,14 +448,12 @@ SzCache::SzTime SzCache::searchFor(SzTime start, SzTime end, SzDirection dir, Sz
 			spi.first = nextMonth(spi.first);
 			start = getTime(0, spi.first);
 			spi.second = 0;
-
 		} else {
 			start = getTime(0, spi.first) - cSzCacheProbe;
 			spi.first = prevMonth(spi.first);
 			spi.second = -1;
 		}
 	}
-
 	return -1;
 }
 

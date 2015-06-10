@@ -48,13 +48,6 @@ class SzCache {
 		/** SzCacheFile extension */
 		static const std::string cSzCacheExt;
 
-		/** @TODO: From LPR */
-
-		/** SzCache root directory */
-		static const std::string cSzCacheDir;
-		/** Number of months cached */
-		static const int cSzCacheMonthCnt;
-			
 		/** Types */
 
 		/** Search direction in cache files */
@@ -98,30 +91,37 @@ class SzCache {
 		
 		/** Interface */
 
-		SzRange		availableRange();
+		SzCache(SzPath cacheRootDir=SzPath("/var/cache/szarp"), int numMonths=2):
+			_cacheRootDir(cacheRootDir), _numMonths(numMonths) {};
+
+		SzRange		availableRange() const;
 		SzSearchResult	search(SzTime start, SzTime end, SzDirection dir, SzPath path);
 		SzSizeAndLast   getSizeAndLast(SzTime start, SzTime end, SzPath path);
 		SzTime		writeData(std::vector<int16_t>& vals, SzTime start, SzTime end, SzPath path);
 			
 	private:	
 		class SzCacheFile;
+		
+		SzPath _cacheRootDir;
+		int _numMonths;
 
-		std::set<std::string>			globify(const SzPath& path);
-		std::pair<std::string,std::string>	splitPath(const SzPath& path);
-		static std::size_t			getFileSize(const SzPath& path);
+		std::set<std::string>			globify(const SzPath& path) const;
+		std::pair<std::string,std::string>	splitPath(const SzPath& path) const;
 	
-		bool					validatePathMember(std::string member);
-		bool					directoryExists(const SzPath& path);
-		bool					fileExists(const SzPath& path);
+		bool					validatePathMember(const std::string member) const;
+		bool					directoryExists(const SzPath& path) const;
+		bool					fileExists(const SzPath& path) const;
 
-		SzRange		searchFirstLast(SzPath path);
-		SzPath		checkPath(SzPath path);
-		SzTime		searchAt(SzTime start, SzPath path);
-		SzTime		searchFor(SzTime start, SzTime end, SzDirection dir, SzPath path);
+		static std::size_t			getFileSize(const SzPath& path);
+
+		SzRange		searchFirstLast(const SzPath path) const;
+		SzPath		checkPath(const SzPath path) const;
+		SzTime		searchAt(const SzTime start, const SzPath path) const;
+		SzTime		searchFor(SzTime start, SzTime end, SzDirection dir, SzPath path); 
 		SzIndexResult	searchFile(SzPath spath, SzIndex sind, SzPath epath, SzIndex eind, SzDirection dir);
-		SzPathIndex	getPathIndex(SzTime szt, SzPath dir);
-		SzTime		getTime(SzIndex idx, SzPath path);
-		SzIndex		lastIndex(SzPath path);
+		SzPathIndex	getPathIndex(const SzTime szt, const SzPath dir) const;
+		SzTime		getTime(const SzIndex idx, const SzPath path) const;
+		SzIndex		lastIndex(const SzPath path) const;
 
 		SzPath		moveMonth(SzPath path, bool forward);
 		SzPath		nextMonth(SzPath path);
