@@ -36,7 +36,8 @@
 
 class SzCache {	
 
-	public:
+	public:	
+	
 		/** Constansts */
 
 		/** Number of seconds in probe */
@@ -50,10 +51,6 @@ class SzCache {
 
 		/** Types */
 
-		/** Search direction in cache files */
-		enum class SearchDirection			{ RIGHT=1, LEFT=-1, INPLACE=0 };
-		typedef SearchDirection				SzDirection;
-		
 		/** Time representation in epoch */
 		typedef std::time_t				SzTime;
 		/** Path to file/directory */
@@ -63,6 +60,9 @@ class SzCache {
 
 		/** Range of time in cache */
 		typedef std::pair<SzTime,SzTime>		SzRange;
+
+		/** Range of index in cache file */
+		typedef std::pair<SzIndex,SzIndex>		SzIndexRange;
 
 		/** Cache search result <0,1,2>:
 		 *  0 - Timestamp of probe that was found,
@@ -88,47 +88,57 @@ class SzCache {
 		 *  1 - Last index in queried file.
 		 */
 		typedef std::pair<std::size_t,SzTime>		SzSizeAndLast;
-		
+			
 		/** Interface */
 
 		SzCache(SzPath cacheRootDir=SzPath("/var/cache/szarp"), int numMonths=2):
 			_cacheRootDir(cacheRootDir), _numMonths(numMonths) {};
 
 		SzRange		availableRange() const;
-		SzSearchResult	search(SzTime start, SzTime end, SzDirection dir, SzPath path);
+	
+		/** Search for single data probe */
+		SzSearchResult	searchInPlace(SzTime start, SzPath path);
+		/** Search for data since start to end (start > end) */
+		SzSearchResult	searchLeft(SzTime start, SzTime end, SzPath path);
+		/** Search for data since start to end (start < end) */
+		SzSearchResult	searchRight(SzTime start, SzTime end, SzPath path);
+
 		SzSizeAndLast   getSizeAndLast(SzTime start, SzTime end, SzPath path);
 		SzTime		writeData(std::vector<int16_t>& vals, SzTime start, SzTime end, SzPath path);
 			
-	private:	
+	private:
+
+		/** Search utils */
+		SzRange		searchFirstLast(SzPath path) const;
+		SzTime		searchAt(SzTime start, SzPath path) const;
+		SzTime		searchFor(SzTime start, SzTime end, SzPath path) const;
+			
+		/** Filesystem utils */
+		SzPath					checkPath(SzPath path) const;
+		std::set<SzPath>			globify(const SzPath& path) const;
+		std::pair<SzPath,SzPath>		splitPath(const SzPath& path) const;
+		bool					validatePathMember(std::string member) const;
+		bool					directoryExists(const SzPath& path) const;
+		bool					fileExists(const SzPath& path) const;
+		static std::size_t			getFileSize(const SzPath& path);
+
+		/** Epoch time <-> CACHE file path  and index translations */
+		SzPathIndex	getPathIndex(SzTime szt, SzPath dir) const;
+		SzTime		getTime(SzIndex idx, SzPath path) const;
+		SzIndex		lastIndex(SzPath path) const;
+		SzPath		moveMonth(SzPath path, bool forward) const;
+		SzPath		nextMonth(SzPath path) const;
+		SzPath		prevMonth(SzPath path) const;
+
+		/** Data read utils */
+		void		writeFile(std::vector<int16_t>& vals, SzIndex sind, SzIndex eind, SzPath path);
+		void		fillEmpty(std::vector<int16_t>& vals, std::size_t count);
+
+		/** CACHE file representation */
 		class SzCacheFile;
 		
 		SzPath _cacheRootDir;
 		int _numMonths;
-
-		std::set<std::string>			globify(const SzPath& path) const;
-		std::pair<std::string,std::string>	splitPath(const SzPath& path) const;
-	
-		bool					validatePathMember(const std::string member) const;
-		bool					directoryExists(const SzPath& path) const;
-		bool					fileExists(const SzPath& path) const;
-
-		static std::size_t			getFileSize(const SzPath& path);
-
-		SzRange		searchFirstLast(const SzPath path) const;
-		SzPath		checkPath(const SzPath path) const;
-		SzTime		searchAt(const SzTime start, const SzPath path) const;
-		SzTime		searchFor(SzTime start, SzTime end, SzDirection dir, SzPath path); 
-		SzIndexResult	searchFile(SzPath spath, SzIndex sind, SzPath epath, SzIndex eind, SzDirection dir);
-		SzPathIndex	getPathIndex(const SzTime szt, const SzPath dir) const;
-		SzTime		getTime(const SzIndex idx, const SzPath path) const;
-		SzIndex		lastIndex(const SzPath path) const;
-
-		SzPath		moveMonth(SzPath path, bool forward);
-		SzPath		nextMonth(SzPath path);
-		SzPath		prevMonth(SzPath path);
-
-		void		writeFile(std::vector<int16_t>& vals, SzIndex sind, SzIndex eind, SzPath path);
-		void		fillEmpty(std::vector<int16_t>& vals, std::size_t count);
 };
 
 #endif /*SZCACHE*/
