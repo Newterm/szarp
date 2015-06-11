@@ -396,6 +396,14 @@ public:
 void Sz4Base::SearchData(DatabaseQuery* query) {
 	TParam* p = query->param;
 	DatabaseQuery::SearchData& sd = query->search_data;
+
+	if (p == NULL) {
+		sd.ok = true;
+		sd.response_second = -1;
+		sd.response_nanosecond = -1;
+		return;
+	}
+
 	sz4::nanosecond_time_t response;
 	if (sd.direction > 0) {
 		response = base->search_data_right(
@@ -424,6 +432,12 @@ void Sz4Base::SearchData(DatabaseQuery* query) {
 
 template<class time_type> void Sz4Base::GetValue(DatabaseQuery::ValueData::V& v,
 		const time_type& time, TParam* p, SZARP_PROBE_TYPE pt) {
+	if (!p) {
+		v.count = 0;
+		v.response = nan("");
+		return;
+	}
+
 	typedef sz4::weighted_sum<double, time_type> wsum_type;
 
 	time_type end_time = szb_move_time(time, 1, pt, v.custom_length);

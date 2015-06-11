@@ -635,9 +635,12 @@ std::vector<TParam*> GetSetParams(DrawSet* set) {
 
 	DrawInfoArray *draws = set->GetDraws();
 	for (DrawInfoArray::iterator i = draws->begin(); i != draws->end(); i++) {
-		TParam* param = (*i)->GetParam()->GetIPKParam();
-		if (param)
-			v.push_back(param);
+		DrawInfo *di = *i;
+		if (!di->IsValid())
+			continue;
+		TParam* param = di->GetParam()->GetIPKParam();
+		assert(param);
+		v.push_back(param);
 	}
 		
 	return v;
