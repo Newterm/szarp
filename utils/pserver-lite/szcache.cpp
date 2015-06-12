@@ -116,17 +116,13 @@ template<> class mmap_allocator<void>
 */
 
 /** SzSzache inner szc file representation */
-
 class SzCache::SzCacheFile {
 
 	public:
-		/** Constructor only stores path */
-		SzCacheFile(SzPath path) : path_(path) {}
-
 		SzIndexResult cacheSearchRight(SzIndex sind, SzIndex eind) 
 		{
 			for (; sind <= eind; sind++) {
-				int16_t val = records[sind];
+				int16_t val = _records[sind];
 				if (val != cSzCacheNoData)
 					return SzIndexResult(true,sind);
 			}
@@ -136,7 +132,7 @@ class SzCache::SzCacheFile {
 		SzIndexResult cacheSearchLeft(SzIndex sind, SzIndex eind) 
 		{	
 			for (; sind >= eind; sind--) {
-				int16_t val = records[sind];
+				int16_t val = _records[sind];
 				if (val != cSzCacheNoData)
 					return SzIndexResult(true,sind);
 			}
@@ -149,73 +145,78 @@ class SzCache::SzCacheFile {
 			else return cacheSearchLeft(sind,eind);
 		}
 
-		/** Open szbfile and store in records of values */
-		void cacheOpen() 
+		/** Open szbfile and store in _records of values */
+		/** deprecated - use cacheMap() (hary 12.06.2015 */
+		void cacheOpen(const SzPath& path) 
 		{
-			std::ifstream fs(path_, std::ios::binary);
+			std::ifstream fs(path, std::ios::binary);
 			if (fs.rdstate() & std::ifstream::failbit) 
-				throw std::runtime_error("SzCacheFile: failed to open: " + path_);
+				throw std::runtime_error("SzCacheFile: failed to open: " + path);
 			/* 
 			 * File stream read method expects "char_type" pointer.
 			 * A chosen (uint16_t) type can be reinterpreted to an
 			 * array of char of sizeof type. It is filled with bytes
                          * and can be later used. (hary)
 			 */
-			records.clear(); 
+			_records.clear(); 
 			int16_t record;
 			while (fs.read(reinterpret_cast<char*>(&record), sizeof record)) {
-				records.push_back(record);	
+				_records.push_back(record);	
 			}
 		};
 		
-		/** Map to memory szbfile and store in records of values */
-		void cacheMap(off_t offset, size_t length) 
+		/** Map to memory szbfile and store in _records of values */
+		void cacheMap(const SzPath& path, off_t offset, size_t length) 
 		{
-			records.clear();
+			_records.clear();
 
 			off_t pg_off = (offset * sizeof(int16_t)) & ~(sysconf(_SC_PAGE_SIZE) - 1);
 			size_t pg_len = (length + offset) * sizeof(int16_t) - pg_off;
-        		int fd = open(path_.c_str(), O_RDONLY | O_NOATIME);
+        		int fd = open(path.c_str(), O_RDONLY | O_NOATIME);
        			if (fd == -1) 
-				throw std::runtime_error("SzCacheFile: failed to open: " + path_);
+				throw std::runtime_error("SzCacheFile: failed to open: " + path);
 
         		void* mdata = mmap(NULL, pg_len, PROT_READ, MAP_SHARED, fd, pg_off);
 
 			short* data = (short*)(((char *)mdata) + (offset * sizeof(int16_t) - pg_off));
         		if (MAP_FAILED == data) {
                 		close(fd);
-				throw std::runtime_error("SzCacheFile: failed to mmap: " + path_);
+				throw std::runtime_error("SzCacheFile: failed to mmap: " + path);
         		}
 			
-			records.assign(data, data + length);
+			_records.assign(data, data + length);
 			close(fd);
 			munmap(mdata,length);
 		};
 
 		/** 
-		 * Map to memory szbfile and store in records of values 
+		 * Map to memory szbfile and store in _records of values 
 		 * (hary 10.06.2015: This is used everywere now - map whole file,
 		 * change this if too much RAM is used.
 		 */
-		void cacheMap() 
+		void cacheMap(const SzPath& path) 
 		{
-			cacheMap(0, getFileSize(path_) / sizeof(int16_t));
+			cacheMap(path, 0, getFileSize(path) / sizeof(int16_t));
 		};
 
 		/** Get value from record by index */
 		int16_t &operator[](int i) 
 		{
-          		if (i > records.size()) 
+          		if (i > _records.size()) 
 				throw std::out_of_range("SzCacheFile: out_of_range");	
-          		return records[i];
+          		return _records[i];
           	};
 		
-		
+		void setRecords(const std::vector<int16_t>& records) 
+		{
+			_records.clear();
+			_records.assign(records.begin(),records.end());
+		}
+
 	private:
 		/** Not using mmap() allocator (hary 7.06.2015) */
-		//std::vector<int, mmap_allocator<int> > records;
-		std::vector<int16_t> records;
-		std::string path_;
+		//std::vector<int, mmap_allocator<int> > _records;
+		std::vector<int16_t> _records;
 };
 
 /** Move month in path forward else backward */
@@ -418,10 +419,10 @@ SzCache::SzTime SzCache::searchAt(SzTime start, SzPath path) const
 	if (!fileExists(szpi.first)) 
 		return SzTime(-1);
 
-	SzCacheFile szf(szpi.first);
+	SzCacheFile szf;
 	try { 
 		//szf.cacheOpen();
-		szf.cacheMap();
+		szf.cacheMap(szpi.first);
 		if (szf[szpi.second] == cSzCacheNoData) {
 			return SzTime(-1);
 		}	
@@ -439,7 +440,6 @@ SzCache::SzIndex SzCache::lastIndex(SzPath path) const
 
 SzCache::SzTime SzCache::searchFor(SzTime start, SzTime end, SzPath path) const
 {
-
 	SzPathIndex startPathIndex = getPathIndex(start, path);
 	SzPathIndex endPathIndex = getPathIndex(end, path);
 		
@@ -454,8 +454,8 @@ SzCache::SzTime SzCache::searchFor(SzTime start, SzTime end, SzPath path) const
 			(spath.compare(prevMonth(epath))!=0))
 	{
 		if (fileExists(spath)) {
-			SzCacheFile scf(spath);
-			scf.cacheMap();
+			SzCacheFile scf;
+			scf.cacheMap(spath);
 			
 			SzIndexResult szir; 
 			
@@ -544,8 +544,8 @@ void SzCache::writeFile(std::vector<int16_t>& vals, SzIndex sind, SzIndex eind, 
 	if (wcount < 0) wcount = 0;
 	
 	if (wcount > 0) {
-		SzCacheFile szf(path);
-		szf.cacheMap();
+		SzCacheFile szf;
+		szf.cacheMap(path);
 		while (wcount > 0) {
 			vals.push_back(szf[sind++]);
 			--wcount;
