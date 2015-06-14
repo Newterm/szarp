@@ -64,10 +64,10 @@ public:
 	{
 		switch (vtype) {
 			case SHORT:
-				return address + 2;
+				return address + 1;
 			case INTEGER:
 			case FLOAT:
-				return address + 4;
+				return address + 3;
 		};
 		return -1;
 	}
@@ -279,7 +279,8 @@ int Snap7Daemon::ConfigureParam(int ind, xmlNodePtr node, TSzarpConfig* ipk, TPa
 			mval.lsw_param = p;
 		}
 		else {
-			sz_log(0, "Overlaping mapping for db: %d, addr: %d", db, address);
+			sz_log(0, "Overlaping mapping for db: %d, addr: %d wth: addr: %d type: %d",
+				db, address, it->first.address, it->first.vtype);
 			return 1;
 		}
 	}
