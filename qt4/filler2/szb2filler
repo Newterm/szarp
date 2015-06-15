@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # szb2filler is a part of SZARP SCADA software
 #
@@ -74,8 +74,8 @@ EOT
 fi
 
 # check if running as root
-UID=`id -u`
-if [ $UID -ne 0 ]; then
+CUID=`id -u`
+if [ $CUID -ne 0 ]; then
 	echo "`basename $0`: error: must be run as root" 1>&2
 	echo 1>&2
 	usage
