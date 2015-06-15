@@ -121,8 +121,17 @@ class SzCache::SzCacheFile {
 	public:
 		SzIndexResult cacheSearchRight(SzIndex sind, SzIndex eind) 
 		{
+			logMsg(3, std::string("cacheSearchRight(") 
+				+ std::to_string(sind) + std::string(",")
+				+ std::to_string(eind) + std::string(")"));
+
 			for (; sind <= eind; sind++) {
 				int16_t val = _records[sind];
+
+				logMsg(3, std::string("[") 
+					+ std::to_string(sind) + std::string("]:")
+					+ std::to_string(val) + std::string(","));
+
 				if (val != cSzCacheNoData)
 					return SzIndexResult(true,sind);
 			}
@@ -131,8 +140,17 @@ class SzCache::SzCacheFile {
 
 		SzIndexResult cacheSearchLeft(SzIndex sind, SzIndex eind) 
 		{	
+			logMsg(3, std::string("cacheSearchLeft(") 
+				+ std::to_string(sind) + std::string(",")
+				+ std::to_string(eind) + std::string(")"));
+	
 			for (; sind >= eind; sind--) {
 				int16_t val = _records[sind];
+
+				logMsg(3, std::string("[") 
+					+ std::to_string(sind) + std::string("]:")
+					+ std::to_string(val) + std::string(","));
+
 				if (val != cSzCacheNoData)
 					return SzIndexResult(true,sind);
 			}
@@ -196,6 +214,9 @@ class SzCache::SzCacheFile {
 		 */
 		void cacheMap(const SzPath& path) 
 		{
+			logMsg(3, std::string("cacheMap(") + path
+				+ std::string(")"));
+
 			cacheMap(path, 0, getFileSize(path) / sizeof(int16_t));
 		};
 
@@ -204,6 +225,8 @@ class SzCache::SzCacheFile {
 		{
           		if (i > _records.size()) 
 				throw std::out_of_range("SzCacheFile: out_of_range");	
+			logMsg(3, std::string("records[") + std::to_string(i) 
+				+ std::string("]:") + std::to_string(_records[i]));
           		return _records[i];
           	};
 		
@@ -243,12 +266,14 @@ SzCache::SzPath SzCache::moveMonth(SzPath path, bool forward) const
 /** Iterate over next path also return it */
 SzCache::SzPath SzCache::nextMonth(SzPath path) const
 {
+	logMsg(3, std::string("nextMonth(") + path + std::string(")"));
 	return moveMonth(path, true);
 }
 
 /** Iterate over prev path also return it */
 SzCache::SzPath SzCache::prevMonth(SzPath path) const
 {
+	logMsg(3, std::string("prevMonth(") + path + std::string(")"));
 	return moveMonth(path, false);
 }
 
@@ -271,6 +296,9 @@ SzCache::SzRange SzCache::availableRange() const
 
 SzCache::SzPathIndex SzCache::getPathIndex( SzTime szt, SzPath dir) const
 {
+	logMsg(3, std::string("getPathIndex(") + std::to_string(szt)
+		+ std::string(",") + dir + std::string(")"));
+
 	auto gmt = std::gmtime(&szt);
 	std::ostringstream os;
 	os << dir << "/" << std::setfill('0') << std::setw(4) << gmt->tm_year+1900 
@@ -284,6 +312,9 @@ SzCache::SzPathIndex SzCache::getPathIndex( SzTime szt, SzPath dir) const
 
 SzCache::SzTime	SzCache::getTime(SzIndex idx, SzPath path) const
 {
+	logMsg(3, std::string("getTime(") + std::to_string(idx)
+		+ std::string(",") + path + std::string(")"));
+
 	int year, month;
 	std::tm gmt;
 
@@ -403,6 +434,8 @@ std::set<std::string> SzCache::globify(const SzPath& path) const
 
 SzCache::SzRange SzCache::searchFirstLast(SzPath path) const
 {
+	logMsg(3, std::string("searchFirstLast(") + path + std::string(")"));
+
 	std::set<std::string> s = globify(path + std::string("/[0-9][0-9][0-9][0-9][0-9][0-9]") + cSzCacheExt);
 	if (s.size() == 0) return SzRange(SzTime(-1),SzTime(-1));
 	
@@ -415,6 +448,9 @@ SzCache::SzRange SzCache::searchFirstLast(SzPath path) const
 
 SzCache::SzTime SzCache::searchAt(SzTime start, SzPath path) const 
 {
+	logMsg(3, std::string("searchAt(") + std::to_string(start)
+		+ std::string(",") + path + std::string(")"));
+
 	SzPathIndex szpi = getPathIndex(start, path);
 	if (!fileExists(szpi.first)) 
 		return SzTime(-1);
@@ -440,13 +476,21 @@ SzCache::SzIndex SzCache::lastIndex(SzPath path) const
 
 SzCache::SzTime SzCache::searchFor(SzTime start, SzTime end, SzPath path) const
 {
+	logMsg(3, std::string("searchFor(") + std::to_string(start) 
+		+ std::string(",") + std::to_string(end) 
+		+ std::string(",") + path + std::string(")"));
+
 	SzPathIndex startPathIndex = getPathIndex(start, path);
 	SzPathIndex endPathIndex = getPathIndex(end, path);
-		
+	
 	SzPath spath = startPathIndex.first;
 	SzPath epath = endPathIndex.first;
 	SzIndex sind = startPathIndex.second;
 	SzIndex eind = endPathIndex.second;
+
+	logMsg(3, spath + std::string(" idx:") + std::to_string(sind)
+		+ std::string("-->>") 
+		+ epath + std::string(" idx:") + std::to_string(eind));
 
 	bool right = (start <= end);
 
@@ -460,13 +504,13 @@ SzCache::SzTime SzCache::searchFor(SzTime start, SzTime end, SzPath path) const
 			SzIndexResult szir; 
 			
 			if (spath.compare(epath)!=0)
+				right ? szir = scf.cacheSearch(sind,lastIndex(spath)) :
+					szir = scf.cacheSearch(std::min(sind,lastIndex(spath)),0);
+			else
 				right ?	szir = scf.cacheSearch(sind,std::min(eind,lastIndex(spath))) :
 					szir = scf.cacheSearch(std::min(sind,lastIndex(spath)),eind);
-			else
-				right ? szir = scf.cacheSearch(sind,lastIndex(spath)) :
-					szir = scf.cacheSearch(std::min(eind,lastIndex(spath)),0);
-							
-			if (szir.first) return szir.second;
+
+			if (szir.first) return getTime(szir.second, spath);
 		}
 		sind =	right ? 0 : lastIndex(spath);
 		spath = right ? nextMonth(spath) : prevMonth(spath);
@@ -476,6 +520,9 @@ SzCache::SzTime SzCache::searchFor(SzTime start, SzTime end, SzPath path) const
 
 SzCache::SzSearchResult SzCache::searchInPlace(SzTime start, SzPath path) 
 {
+	logMsg(3, std::string("searchInPlace(") + std::to_string(start) 
+		+ std::string(",") + path + std::string(")"));
+
 	SzPath goodPath = checkPath(path);
 	if (!directoryExists(goodPath)) 
 		return SzSearchResult(-1,-1,-1);
@@ -488,6 +535,10 @@ SzCache::SzSearchResult SzCache::searchInPlace(SzTime start, SzPath path)
 
 SzCache::SzSearchResult SzCache::searchLeft(SzTime start, SzTime end, SzPath path) 
 {
+	logMsg(3, std::string("searchLeft(") + std::to_string(start) 
+		+ std::string(",") + std::to_string(end) + std::string(",")
+		+ path + std::string(")"));
+
 	SzPath goodPath = checkPath(path);
 	if (!directoryExists(goodPath)) 
 		return SzSearchResult(-1,-1,-1);
@@ -506,6 +557,10 @@ SzCache::SzSearchResult SzCache::searchLeft(SzTime start, SzTime end, SzPath pat
 
 SzCache::SzSearchResult SzCache::searchRight(SzTime start, SzTime end, SzPath path) 
 {
+	logMsg(3, std::string("searchRight(") + std::to_string(start) 
+		+ std::string(",") + std::to_string(end) + std::string(",")
+		+ path + std::string(")"));
+
 	SzPath goodPath = checkPath(path);
 	if (!directoryExists(goodPath)) 
 		return SzSearchResult(-1,-1,-1);
@@ -578,3 +633,9 @@ SzCache::SzTime SzCache::writeData(std::vector<int16_t>& vals, SzTime start, SzT
 		return ntime;
 	}
 }
+
+void SzCache::logMsg(int level, std::string msg)
+{
+	std::cout << msg << std::endl;
+}
+
