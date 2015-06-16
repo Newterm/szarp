@@ -196,6 +196,57 @@ int main() {
 			<< "= ( " << std::get<0>(ssr) << " , " << std::get<1>(ssr) << " , " << std::get<2>(ssr) << " )\n\n";
 		if(std::get<0>(ssr) != -1) throw std::logic_error("Assertion failed!");
 
+		ssr = szc.searchLeft(t3+100,t3+10,szp1); 
+		std::cout << "SzCache::searchLeft("<<t3+100<<","<<t3+10<<","<<szp1<<"):\n"
+			<< "= ( " << std::get<0>(ssr) << " , " << std::get<1>(ssr) << " , " << std::get<2>(ssr) << " )\n\n";
+		if(std::get<0>(ssr) != -1) throw std::logic_error("Assertion failed!");
+		
+		std::vector<int16_t> vals;
+		
+		SzCache::SzTime wtime = szc.writeData(vals, t2-50, t2+50, szp1);
+		while( wtime < t2+50 ) 
+			wtime = szc.writeData(vals, wtime, t2+50, szp1);
+		std::cout << "writeData(" << t2-50 << "," << t2+50 << "):\n";
+		for (unsigned int i = 0; i < vals.size(); i++) {
+			std::cout << vals[i] << std::endl;
+			if ((i < 5) && (vals[i] != SzCache::cSzCacheNoData))
+				throw std::logic_error("Assertion failed!");
+			if ((i > 5) && (vals[i] != 75))
+				throw std::logic_error("Assertion failed!");
+		}
+		std::cout << std::endl;
+		vals.clear();
+
+		wtime = szc.writeData(vals, t4-50, t4+50, szp1);
+		while( wtime < t4+50 ) 
+			wtime = szc.writeData(vals, wtime, t4+50, szp1);
+		std::cout << "writeData(" << t4-50 << "," << t4+50 << "):\n";
+		for (unsigned int i = 0; i < vals.size(); i++) {
+			std::cout << vals[i] << std::endl;	
+			if ((i < 5) && (vals[i] != SzCache::cSzCacheNoData))
+				throw std::logic_error("Assertion failed!");
+			if ((i > 5) && (vals[i] != 85))
+				throw std::logic_error("Assertion failed!");
+		}
+		std::cout << std::endl;
+		vals.clear();
+
+		wtime = szc.writeData(vals, t7-50, t7+50, szp1);
+		while( wtime < t7+50 ) 
+			wtime = szc.writeData(vals, wtime, t7+50, szp1);
+		std::cout << "writeData(" << t7-50 << "," << t7+50 << "):\n";
+		for (unsigned int i = 0; i < vals.size(); i++) {
+			std::cout << vals[i] << std::endl;
+			if ((i < 5) && (vals[i] != 85))
+				throw std::logic_error("Assertion failed!");
+			if ((i > 5) && (vals[i] != SzCache::cSzCacheNoData))
+				throw std::logic_error("Assertion failed!");
+		}
+		std::cout << std::endl;
+		vals.clear();
+
+		
+
 	} catch (std::logic_error& le) {
 		removeSzCacheFile("TestA/TestB/TestC/201501.szc");
 		removeSzCacheFile("TestA/TestB/TestC/201502.szc");

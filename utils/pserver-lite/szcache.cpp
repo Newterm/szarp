@@ -585,13 +585,12 @@ SzCache::SzSizeAndLast SzCache::getSizeAndLast(SzTime start, SzTime end, SzPath 
 	if (szr.first == -1)
 		return SzSizeAndLast(0,-1);
 
-	return SzSizeAndLast((((end - start) / cSzCacheProbe) + 1) * cSzCacheSize, szr.second);	
+	return SzSizeAndLast(((std::abs(end - start) / cSzCacheProbe) + 1) * cSzCacheSize, szr.second);	
 }
 
 void SzCache::writeFile(std::vector<int16_t>& vals, SzIndex sind, SzIndex eind, SzPath path)
 {
-	SzIndex lind = lastIndex(path);
-	lind = std::min(lind, eind);
+	SzIndex lind = std::min(lastIndex(path), eind);
 	std::size_t wcount = lind - sind + 1;
 	
 	if (wcount < 0) wcount = 0;
@@ -603,6 +602,7 @@ void SzCache::writeFile(std::vector<int16_t>& vals, SzIndex sind, SzIndex eind, 
 			vals.push_back(szf[sind++]);
 			--wcount;
 		}
+		fillEmpty(vals, eind - sind - wcount + 1);
 	}	
 }
 
