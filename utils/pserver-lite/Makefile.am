@@ -21,8 +21,10 @@ LDADD = \
 	$(LIBSZARP) \
 	@BOOST_PROGRAM_OPTIONS_LIB@
 
-bin_PROGRAMS = pserver-lite
+bin_PROGRAMS = pserver-lite szcache_test
 
 pserver_lite_SOURCES = \
 	main.cc
 
+szcache_test_SOURCES = \
+	szcache.cpp szcache_test.cpp

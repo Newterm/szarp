@@ -194,7 +194,7 @@ int main() {
 		ssr = szc.searchLeft(t3+100,t3+10,szp1); 
 		std::cout << "SzCache::searchLeft("<<t3+100<<","<<t3+10<<","<<szp1<<"):\n"
 			<< "= ( " << std::get<0>(ssr) << " , " << std::get<1>(ssr) << " , " << std::get<2>(ssr) << " )\n\n";
-		if(std::get<0>(ssr) != 1) throw std::logic_error("Assertion failed!");
+		if(std::get<0>(ssr) != -1) throw std::logic_error("Assertion failed!");
 
 	} catch (std::logic_error& le) {
 		removeSzCacheFile("TestA/TestB/TestC/201501.szc");

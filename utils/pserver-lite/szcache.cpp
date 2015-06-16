@@ -221,7 +221,7 @@ class SzCache::SzCacheFile {
 		};
 
 		/** Get value from record by index */
-		int16_t &operator[](int i) 
+		int16_t &operator[](unsigned int i) 
 		{
           		if (i > _records.size()) 
 				throw std::out_of_range("SzCacheFile: out_of_range");	
@@ -315,9 +315,7 @@ SzCache::SzTime	SzCache::getTime(SzIndex idx, SzPath path) const
 	logMsg(3, std::string("getTime(") + std::to_string(idx)
 		+ std::string(",") + path + std::string(")"));
 
-	int year, month;
 	std::tm gmt;
-
 	if (idx == -1) 
 		idx = getFileSize(path) / cSzCacheSize - 1;
 
@@ -425,7 +423,7 @@ std::set<std::string> SzCache::globify(const SzPath& path) const
 	glob_t res;
 	glob(path.c_str(), GLOB_TILDE, NULL, &res);
 	std::set<std::string> s;
-	for (int i=0; i < res.gl_pathc; ++i)
+	for (unsigned int i=0; i < res.gl_pathc; ++i)
 		s.insert(std::string(res.gl_pathv[i]));
 		
 	globfree(&res);
@@ -610,7 +608,7 @@ void SzCache::writeFile(std::vector<int16_t>& vals, SzIndex sind, SzIndex eind, 
 
 void SzCache::fillEmpty(std::vector<int16_t>& vals, std::size_t count) 
 {
-	for(int i = 0; i < count; ++i) vals.push_back(cSzCacheNoData);
+	for(unsigned int i = 0; i < count; ++i) vals.push_back(cSzCacheNoData);
 }
 
 SzCache::SzTime SzCache::writeData(std::vector<int16_t>& vals, SzTime start, SzTime end, SzPath path)
