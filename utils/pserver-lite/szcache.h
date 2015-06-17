@@ -33,6 +33,7 @@
 #include <stdexcept>
 #include <fstream>
 #include <algorithm>
+#include <tuple>
 
 class SzCache {	
 
