@@ -4,7 +4,7 @@
 #include "bserialport.h"
 
 /** Serial port accessible via file descriptor */
-class SerialPort: public BaseSerialPort
+class SerialPort final: public BaseSerialPort
 {
 public:
 	SerialPort(struct event_base* base)
@@ -15,17 +15,17 @@ public:
 		Close();
 	}
 	/** Open port (previously configured) */
-	virtual void Open();
+	void Open() override;
 	/** true if ready for r/w */
-	virtual bool Ready() const;
+	bool Ready() const override;
 	/** Close port */
-	virtual void Close();
+	void Close() override;
 	/** Set serial line configuration */
-	virtual void SetConfiguration(const SerialPortConfiguration& serial_conf);
+	void SetConfiguration(const SerialPortConfiguration& serial_conf) override;
 	/** Set DTR and RTS signals according to params */
-	virtual void LineControl(bool dtr, bool rts);
+	void LineControl(bool dtr, bool rts) override;
 	/** Write data to serial port */
-	virtual void WriteData(const void* data, size_t size);
+	void WriteData(const void* data, size_t size) override;
 
 	void Init(const std::string& device_path)
 	{

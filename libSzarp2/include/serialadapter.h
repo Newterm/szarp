@@ -75,28 +75,28 @@ class SerialAdapterException : public SerialPortException { } ;
 /** 
  * Base class for SerialAdapter clients.
  */
-class SerialAdapter: public BaseSerialPort, public ConnectionListener {
+class SerialAdapter final: public BaseSerialPort, public ConnectionListener {
 public:
 	static const int DEFAULT_DATA_PORT = 950;
 	static const int DEFAULT_CMD_PORT = 966;
 
 	SerialAdapter(struct event_base*,
 		bool enable_fifo=true, bool server_CN2500 = false);
-	virtual ~SerialAdapter();
+	~SerialAdapter() override;
 
 	/** BaseSerialPort interface */
-	virtual void Open();
-	virtual bool Ready() const;
-	virtual void Close();
-	virtual void SetConfiguration(const SerialPortConfiguration& serial_conf);
-	virtual void LineControl(bool dtr, bool rts);
-	virtual void WriteData(const void* data, size_t size);
+	void Open() override;
+	bool Ready() const override;
+	void Close() override;
+	void SetConfiguration(const SerialPortConfiguration& serial_conf) override;
+	void LineControl(bool dtr, bool rts) override;
+	void WriteData(const void* data, size_t size) override;
 
 	/** ConnectionListener interface */
-	virtual void OpenFinished(const BaseConnection *conn);
-	virtual void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data);
-	virtual void ReadError(const BaseConnection *conn, short int event);
-	virtual void SetConfigurationFinished(const BaseConnection *conn)
+	void OpenFinished(const BaseConnection *conn) override;
+	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override;
+	void ReadError(const BaseConnection *conn, short int event) override;
+	void SetConfigurationFinished(const BaseConnection *conn) override
 	{}
 
 	/** Initializes client with given address:port.

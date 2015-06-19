@@ -8,26 +8,26 @@
  * Serial client communicating through ATC1000 TCP to RS converter.
  * Sets serial port baudrate using http protocol and auth cookie.
  */
-class AtcConnection : public TcpConnection, public AtcHttpClientListener {
+class AtcConnection final: public TcpConnection, public AtcHttpClientListener {
 public:
 	AtcConnection(struct event_base* base);
-	virtual ~AtcConnection();
+	~AtcConnection() override;
 
 	void InitTcp(std::string address)
 	{
 		TcpConnection::InitTcp(address, 23);
 	}
 	/* BaseConnection interface */
-	virtual void Open();
-	virtual void Close();
-	virtual void SetConfiguration(const SerialPortConfiguration& serial_conf);
+	void Open() override;
+	void Close() override;
+	void SetConfiguration(const SerialPortConfiguration& serial_conf) override;
 
 	/* AtcHttpClientListener interface */
-	virtual void GetAuthCookieFinished(const AtcHttpClient* client);
-	virtual void SetConfigurationFinished(const AtcHttpClient* client);
-	virtual void ResetDeviceFinished(const AtcHttpClient* client);
+	void GetAuthCookieFinished(const AtcHttpClient* client) override;
+	void SetConfigurationFinished(const AtcHttpClient* client) override;
+	void ResetDeviceFinished(const AtcHttpClient* client) override;
 protected:
-	virtual void OpenFinished();
+	void OpenFinished() override;
 
 protected:
 	struct event_base* m_event_base;

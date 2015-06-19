@@ -12,7 +12,7 @@ class TcpConnectionException : public ConnectionException { } ;
 class TcpConnection : public BaseConnection {
 public:
 	TcpConnection(struct event_base* base);
-	virtual ~TcpConnection();
+	~TcpConnection() override;
 
 	/** Initializes client with given address:port.
 	 * @param address IP address to connect to, in dot format
@@ -21,11 +21,11 @@ public:
 	void InitTcp(std::string address, int port);
 
 	/* BaseConnection interface */
-	virtual void Open();
-	virtual void Close();
-	virtual void WriteData(const void* data, size_t size);
-	virtual bool Ready() const;
-	virtual void SetConfiguration(const SerialPortConfiguration& serial_conf);
+	void Open() override;
+	void Close() override;
+	void WriteData(const void* data, size_t size) override;
+	bool Ready() const override;
+	void SetConfiguration(const SerialPortConfiguration& serial_conf) override;
 
 	static void ReadDataCallback(struct bufferevent *bufev, void* ds);
 	static void ErrorCallback(struct bufferevent *bufev, short event, void* ds);
@@ -37,7 +37,7 @@ protected:
 	/** Actual error function, called by ErrorCallback(). */
 	void Error(struct bufferevent *bufev, short event);
 
-	virtual void OpenFinished();
+	void OpenFinished() override;
 protected:
 	int m_connect_fd;	/**< Client connecting socket file descriptor. */
 	bool m_connected;	/**< Client socket connected to server. */
