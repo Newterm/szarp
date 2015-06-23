@@ -13,33 +13,26 @@ void PServerService::process_request (std::string& msg_rcvd)
 	/* check terminate string CRLF */
 	auto len = msg_rcvd.length();
 	if (len < 2 || msg_rcvd[len-2] != '\r' || msg_rcvd[len-1] != '\n') {
-		std::cout << "no proper end sign CRLF" << std::endl;
-		return;
+		throw ParseError("no proper EOL sign, line not ended with CRLF");
 	}
 	msg_rcvd.resize(len-2);
 
 	/* tokenize received line */
 	std::vector<std::string> toks;
-	boost::split(toks, msg_rcvd, boost::is_any_of("\t "));
+	boost::split(toks, msg_rcvd, boost::is_any_of("\t "),
+			boost::algorithm::token_compress_on);
 
 	if (0 == toks.size()) {
-		std::cout << "too few tokens" << std::endl;
-		return;
+		throw ParseError("too few tokens in line"); // probably won't happen
 	}
 
-	/* fetch aommand tag and arguments */
+	/* fetch command tag and arguments */
 	std::string cmd_tag = toks.front();
-	std::vector<std::string> args;
-
 	if (cmd_tag.length() == 0) {
-		std::cout << "command empty" << std::endl;
-		return;
+		throw ParseError("command tag is empty, line begins with whitespaces");
 	}
 
-	for (auto beg = ++toks.begin(); beg != toks.end(); ++beg) {
-		if (0 != (*beg).length())
-			args.push_back(*beg);
-	}
+	std::vector<std::string> args(++toks.begin(), toks.end());
 
 	/* execute command */
 	auto cmd_hdlr = CommandFactory::make_cmd(cmd_tag);
@@ -48,8 +41,8 @@ void PServerService::process_request (std::string& msg_rcvd)
 		cmd_hdlr->parse_args(args);
 	}
 	else {
-		std::cout << "bad command" << std::endl;
+		throw ParseError("no such command");
 	}
 
-	/* TODO: send anwser to client */
+	/* TODO: send answer to client */
 }

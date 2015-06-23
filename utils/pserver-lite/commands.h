@@ -29,7 +29,8 @@ public:
 	GetCommand (void) { };
 	~GetCommand (void) { };
 
-	void parse_args (const std::vector<std::string>& args);
+	void parse_args (const std::vector<std::string>& args) override;
+	void exec (void) override { };
 
 private:
 	static const std::string tag;
@@ -63,7 +64,8 @@ public:
 	SearchCommand (void) { };
 	~SearchCommand (void) { };
 
-	void parse_args (const std::vector<std::string>& args);
+	void parse_args (const std::vector<std::string>& args) override;
+	void exec (void) override { };
 
 private:
 	static const std::string tag;
@@ -89,7 +91,8 @@ public:
 	RangeCommand (void) { };
 	~RangeCommand (void) { };
 
-	void parse_args (const std::vector<std::string>& args);
+	void parse_args (const std::vector<std::string>& args) override;
+	void exec (void) override { };
 
 private:
 	static const std::string tag;
