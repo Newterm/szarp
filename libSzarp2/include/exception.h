@@ -8,19 +8,19 @@
 /** size of buffer for exception message */
 #define EXT_BUFFER_SIZE	256
 
-/** std::exception subclass, with aditional message set with SetMsg method */
+/** std::exception subclass, with additional message set with SetMsg method */
 class MsgException: public std::exception {
 public:
 	/** Buffer for messages. */
 	char buffer[EXT_BUFFER_SIZE];
 	/** Method called to get exception info. */
-	virtual const char* what() const throw()
+	const char* what() const noexcept override
 	{
 		return buffer;
 	}
 	MsgException() { buffer[0] = 0; }
 	/** Set message printed after throw. */
-	void SetMsg(const char * format, ...) throw()
+	void SetMsg(const char * format, ...) noexcept
 	{
 		va_list fmt_args;
 		va_start(fmt_args, format);
