@@ -97,7 +97,9 @@ BASECONN = \
 			$(DMN_DIR)/serialadapter.cc \
 			$(DMN_DIR)/tcpconn.cc \
 			$(DMN_DIR)/httpclient.cc \
-			$(DMN_DIR)/atcconn.cc
+			$(DMN_DIR)/atcconn.cc \
+			$(DMN_DIR)/evbase.cc \
+			$(DMN_DIR)/tcpserver.cc
 endif
 
 if MINGW32_OPT
