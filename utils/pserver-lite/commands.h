@@ -24,16 +24,13 @@
 class GetCommand : public CommandHandler
 {
 public:
-	static const std::string get_tag (void) { return tag; };
+	static const std::string get_tag (void) { return "GET"; };
 
 	GetCommand (void) { };
 	~GetCommand (void) { };
 
 	void parse_args (const std::vector<std::string>& args) override;
 	void exec (void) override { };
-
-private:
-	static const std::string tag;
 };
 
 /**
@@ -59,16 +56,13 @@ private:
 class SearchCommand : public CommandHandler
 {
 public:
-	static const std::string get_tag (void) { return tag; };
+	static const std::string get_tag (void) { return "SEARCH"; };
 
 	SearchCommand (void) { };
 	~SearchCommand (void) { };
 
 	void parse_args (const std::vector<std::string>& args) override;
 	void exec (void) override { };
-
-private:
-	static const std::string tag;
 };
 
 /**
@@ -86,16 +80,13 @@ private:
 class RangeCommand : public CommandHandler
 {
 public:
-	static const std::string get_tag (void) { return tag; };
+	static const std::string get_tag (void) { return "RANGE"; };
 
 	RangeCommand (void) { };
 	~RangeCommand (void) { };
 
 	void parse_args (const std::vector<std::string>& args) override;
 	void exec (void) override { };
-
-private:
-	static const std::string tag;
 };
 
 #endif /* __PSERVER_COMMANDS_H */

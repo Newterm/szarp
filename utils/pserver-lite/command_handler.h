@@ -7,6 +7,8 @@
 
 class CommandHandler {
 public:
+	static std::vector<std::string> tokenize (std::string& msg_received);
+
 	virtual void parse_args (const std::vector<std::string>& args) = 0;
 	virtual void exec (void) = 0;
 
@@ -14,7 +16,7 @@ public:
 	class Exception : public std::runtime_error {
 		using std::runtime_error::runtime_error;
 	};
-	class ParseArgsError : public Exception {
+	class ParseError : public Exception {
 		using Exception::Exception;
 	};
 	class SzbCacheError : public Exception {
