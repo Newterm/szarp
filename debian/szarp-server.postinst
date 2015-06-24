@@ -16,6 +16,7 @@ case "$1" in
 
 	/opt/szarp/bin/config_deb Konfiguracja /opt/szarp/$PREFIX $PREFIX
 	ln -sf /opt/szarp/$PREFIX/szarp.cfg /etc/szarp/szarp.cfg
+	ln -sfn /opt/szarp/$PREFIX /etc/szarp/default
 
 	if [ ! -d /opt/szarp/$PREFIX/szbase ] ; then
 		db_get szarp-server/db_catalog;
