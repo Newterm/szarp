@@ -293,15 +293,13 @@ class IPKParser:
 			write_10sec - whether to write also 10-sec probes.
 		"""
 		try:
-			#string = ""
-			# FIXME: warm-up fix for szbwriter
-			wud = dv_list[0][0] - datetime.timedelta(minutes=10)
-			string = u"\"%s\" %s %s\n" % \
-					(pname, wud.strftime("%Y %m %d %H %M"), str(NO_DATA))
+			string = ""
 
 			for d, v in dv_list:
 				string += u"\"%s\" %s %s\n" % \
 						(pname, d.strftime("%Y %m %d %H %M"), str(v))
+
+			# last probe goes to the next 10-minute probe
 			string = string[:-1]
 
 			cmd = ["/opt/szarp/bin/szbwriter", "-Dprefix=%s" % self.ipk_prefix]
