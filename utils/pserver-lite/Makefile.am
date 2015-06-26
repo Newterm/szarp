@@ -1,7 +1,7 @@
 # Makefile.am for pserverLITE program.
 
 # No subdirectories
-SUBDIRS =
+SUBDIRS = unit_tests
 
 # Additional files for deleting on 'make maintainer-clean'
 MAINTAINERCLEANFILES = Makefile.in
@@ -24,7 +24,7 @@ LDADD = \
 bin_PROGRAMS = pserver-lite szcache_test
 
 pserver_lite_SOURCES = \
-	main.cc
+	main.cc pserver_service.cpp commands.cc
 
 szcache_test_SOURCES = \
 	szcache.cpp szcache_test.cpp

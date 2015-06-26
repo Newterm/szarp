@@ -1216,6 +1216,7 @@ AC_OUTPUT( \
 	utils/Makefile \
 	utils/nagios/Makefile \
 	utils/pserver-lite/Makefile \
+	utils/pserver-lite/unit_tests/Makefile \
 	unit_tests/Makefile \
 	www/Makefile \
 	www/pylons/Makefile \
