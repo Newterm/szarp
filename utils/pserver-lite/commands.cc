@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 #include "commands.h"
 
 /*** Static methods (Command Handler) ***/
@@ -20,7 +21,8 @@ std::vector<std::string> CommandHandler::tokenize (std::string& msg_received)
 			boost::algorithm::token_compress_on);
 
 	if (0 == tokens.size()) {
-		throw ParseError("too few tokens in line"); // probably won't happen
+		throw ParseError("too few tokens in line");
+		// probably won't happen as "" gives one empty token
 	}
 
 	return tokens;
@@ -30,15 +32,37 @@ std::vector<std::string> CommandHandler::tokenize (std::string& msg_received)
 /*** Command implementations (CommandHandler derivatives) ***/
 
 /** "GET" Command **/
+GetCommand::GetCommand (void)
+	: m_start_time(0), m_end_time(0), m_param_path() { }
+
 void GetCommand::parse_args (const std::vector<std::string>& args)
 {
-	std::cout << "Command: " << get_tag() << "\n";
-	std::cout << "Args:    ";
+	if (args.size() != 3)
+		throw ArgumentError("(GET) bad number of arguments");
 
-	for (auto &a : args) {
-		std::cout << a << ", ";
+	/* load arguments 1 and 2 (start_time, end_time) */
+	try {
+		m_start_time = boost::lexical_cast<time_t>(args[0]);
+		m_end_time = boost::lexical_cast<time_t>(args[1]);
 	}
-	std::cout << std::endl;
+	catch (const boost::bad_lexical_cast &) {
+		throw ArgumentError("(GET) cannot cast argument 1 or 2 to time_t");
+	}
+
+	if (m_start_time > m_end_time)
+		throw ArgumentError("(GET) bad argument 1 and 2, start > end");
+
+	/* load argument 3 (param_path) */
+	if (args[3].length() == 0)
+		throw ArgumentError("(GET) bad argument 3, parameter path is zero length");
+
+	m_param_path = args[3];
+}
+
+void GetCommand::exec (void)
+{
+	if (m_start_time == 0 || m_end_time == 0 || m_param_path.length() == 0)
+		throw ArgumentError("cannot exec(), argument not loaded");
 }
 
 /** "SEARCH" Command **/

@@ -26,11 +26,16 @@ class GetCommand : public CommandHandler
 public:
 	static const std::string get_tag (void) { return "GET"; };
 
-	GetCommand (void) { };
+	GetCommand (void);
 	~GetCommand (void) { };
 
 	void parse_args (const std::vector<std::string>& args) override;
-	void exec (void) override { };
+	void exec (void) override;
+
+private:
+	time_t m_start_time;
+	time_t m_end_time;
+	std::string m_param_path;
 };
 
 /**

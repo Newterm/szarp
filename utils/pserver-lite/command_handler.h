@@ -19,6 +19,9 @@ public:
 	class ParseError : public Exception {
 		using Exception::Exception;
 	};
+	class ArgumentError : public Exception {
+		using Exception::Exception;
+	};
 	class SzbCacheError : public Exception {
 		using Exception::Exception;
 	};
