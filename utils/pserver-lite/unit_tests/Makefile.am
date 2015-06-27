@@ -15,9 +15,9 @@ AM_CPPFLAGS = \
 LDADD = \
 	@CPPUNIT_LIBS@
 
-bin_PROGRAMS = unit_tests
+bin_PROGRAMS = pserver-lite-unit-tests
 
-unit_tests_SOURCES = \
+pserver_lite_unit_tests_SOURCES = \
 		unit_tests.cpp \
 		pserver_service_unit_test.cpp \
 		../commands.cc \

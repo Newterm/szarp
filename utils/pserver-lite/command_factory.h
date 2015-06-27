@@ -17,7 +17,7 @@ public:
 		else if (RangeCommand::get_tag() == tag)
 			return std::shared_ptr<CommandHandler>(new RangeCommand());
 		else
-			throw CommandHandler::ParseError("no such command");
+			throw CommandHandler::ArgumentError("no such command");
 	}
 };
 
