@@ -12,7 +12,11 @@ void PServerService::process_request (std::string& msg_received)
 	auto tokens = CommandHandler::tokenize(msg_received);
 
 	/* fetch command tag and remove it from the vector of tokens */
+#if GCC_VERSION >= 40900
 	auto iter = tokens.cbegin();
+#else
+	auto iter = tokens.begin();
+#endif
 	std::string cmd_tag = *iter;
 	tokens.erase(iter);
 
