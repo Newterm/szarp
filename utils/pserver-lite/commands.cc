@@ -35,7 +35,7 @@ std::vector<std::string> CommandHandler::tokenize (std::string& msg_received)
 GetCommand::GetCommand (void)
 	: m_start_time(0), m_end_time(0), m_param_path() { }
 
-void GetCommand::parse_args (const std::vector<std::string>& args)
+void GetCommand::load_args (const std::vector<std::string>& args)
 {
 	if (args.size() != 3)
 		throw ArgumentError("(GET) bad number of arguments");
@@ -66,7 +66,7 @@ void GetCommand::exec (void)
 }
 
 /** "SEARCH" Command **/
-void SearchCommand::parse_args (const std::vector<std::string>& args)
+void SearchCommand::load_args (const std::vector<std::string>& args)
 {
 	std::cout << "Command: " << get_tag() << "\n";
 	std::cout << "Args:    ";
@@ -78,7 +78,7 @@ void SearchCommand::parse_args (const std::vector<std::string>& args)
 }
 
 /** "RANGE" Command **/
-void RangeCommand::parse_args (const std::vector<std::string>& args)
+void RangeCommand::load_args (const std::vector<std::string>& args)
 {
 	std::cout << "Command: " << get_tag() << "\n";
 	std::cout << "Args:    NONE (" << args.size() << ")" << std::endl;

@@ -23,6 +23,6 @@ void PServerService::process_request (std::string& msg_received)
 	/* execute command */
 	auto cmd_handler = CommandFactory::make_cmd(cmd_tag);
 
-	cmd_handler->parse_args(tokens);
+	cmd_handler->load_args(tokens);
 	cmd_handler->exec();
 }
