@@ -33,6 +33,7 @@ public:
 	void exec (void) override;
 
 private:
+	bool m_ready;
 	time_t m_start_time;
 	time_t m_end_time;
 	std::string m_param_path;
@@ -63,11 +64,18 @@ class SearchCommand : public CommandHandler
 public:
 	static const std::string get_tag (void) { return "SEARCH"; };
 
-	SearchCommand (void) { };
+	SearchCommand (void);
 	~SearchCommand (void) { };
 
 	void load_args (const std::vector<std::string>& args) override;
-	void exec (void) override { };
+	void exec (void) override;
+
+private:
+	bool m_ready;
+	time_t m_start_time;
+	time_t m_end_time;
+	int m_direction;
+	std::string m_param_path;
 };
 
 /**
@@ -91,7 +99,7 @@ public:
 	~RangeCommand (void) { };
 
 	void load_args (const std::vector<std::string>& args) override;
-	void exec (void) override { };
+	void exec (void) override;
 };
 
 #endif /* __PSERVER_COMMANDS_H */
