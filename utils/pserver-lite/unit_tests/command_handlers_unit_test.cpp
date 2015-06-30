@@ -3,13 +3,13 @@
 
 #include <vector>
 #include <string>
-#include "pserver_service.h"
+#include "command_factory.h"
 #include "command_handler.h"
 
-class PServerServiceTest : public CppUnit::TestFixture
+class CommandHandlersTest : public CppUnit::TestFixture
 {
 
-CPPUNIT_TEST_SUITE(PServerServiceTest);
+CPPUNIT_TEST_SUITE(CommandHandlersTest);
 CPPUNIT_TEST(testParseArgs);
 CPPUNIT_TEST(testOk);
 CPPUNIT_TEST(testGetCmd);
@@ -22,7 +22,6 @@ private:
 	std::vector<std::string> ok_test;
 	std::vector<std::string> getcmd_test;
 	std::vector<std::string> searchcmd_test;
-	PServerService pss;
 
 public:
 	void setUp (void) {
@@ -75,32 +74,45 @@ public:
 
 	void tearDown (void) { }
 
+	void process_request (std::string& msg_received)
+	{
+		auto tokens = CommandHandler::tokenize(msg_received);
+
+		auto iter = tokens.begin();
+		std::string cmd_tag = *iter;
+		tokens.erase(iter);
+
+		auto cmd_handler = CommandFactory::make_cmd(cmd_tag);
+		cmd_handler->load_args(tokens);
+		cmd_handler->exec();
+	}
+
 	void testParseArgs (void) {
 		for (auto &msg : parse_test) {
-			CPPUNIT_ASSERT_THROW(pss.process_request(msg), CommandHandler::ParseError);
+			CPPUNIT_ASSERT_THROW(process_request(msg), CommandHandler::ParseError);
 		}
 		for (auto &msg : arg_test) {
-			CPPUNIT_ASSERT_THROW(pss.process_request(msg), CommandHandler::ArgumentError);
+			CPPUNIT_ASSERT_THROW(process_request(msg), CommandHandler::ArgumentError);
 		}
 	}
 
 	void testOk (void) {
 		for (auto &msg : ok_test) {
-			CPPUNIT_ASSERT_NO_THROW(pss.process_request(msg));
+			CPPUNIT_ASSERT_NO_THROW(process_request(msg));
 		}
 	}
 
 	void testGetCmd (void) {
 		for (auto &msg : getcmd_test) {
-			CPPUNIT_ASSERT_THROW(pss.process_request(msg), CommandHandler::ArgumentError);
+			CPPUNIT_ASSERT_THROW(process_request(msg), CommandHandler::ArgumentError);
 		}
 	}
 
 	void testSearchCmd (void) {
 		for (auto &msg : searchcmd_test) {
-			CPPUNIT_ASSERT_THROW(pss.process_request(msg), CommandHandler::ArgumentError);
+			CPPUNIT_ASSERT_THROW(process_request(msg), CommandHandler::ArgumentError);
 		}
 	}
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(PServerServiceTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(CommandHandlersTest);
