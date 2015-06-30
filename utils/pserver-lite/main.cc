@@ -18,12 +18,14 @@
  *
  */
 
+#include <cstring>
 #include <iostream>
 #include <boost/program_options.hpp>
 
 #include "szarp.h"
 #include "daemon.h"
 #include "liblog.h"
+#include "pserver_service.h"
 
 /* used namespaces */
 namespace po = boost::program_options;
@@ -38,7 +40,7 @@ const std::string VERSION_STR("1.0alpha");
 int main (int argc, char **argv)
 {
 	try {
-		/*** parse given arguments using boost::program_options (po) ***/
+		/*** parse given program options ***/
 
 		/* defaults */
 		int loglevel = 2;
@@ -114,15 +116,33 @@ int main (int argc, char **argv)
 			sz_log(0, "cannot open log file '%s', exiting", logfile);
 			return EXIT_FAILURE;
 		}
+		free(logfile);
 		sz_log(0, "starting pserverLITE...");
 
 		/* read configuration (section "probes_server") */
 		libpar_init_with_filename("/etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg", 1);
 
-		char* pserver_port = libpar_getpar("probes_server", "port", 1);
-		char* pserver_address = libpar_getpar("probes_server", "address", 1);
+		char* pserver_address_cstr = libpar_getpar("probes_server", "address", 1);
+		char* pserver_port_cstr = libpar_getpar("probes_server", "port", 1);
 
 		libpar_done();
+
+		/* convert configuration variables to something better... */
+		std::string pserver_address;
+		unsigned short pserver_port;
+
+		if (strlen(pserver_address_cstr) == 0)
+			pserver_address = std::string("*");
+		else
+			pserver_address = std::string(pserver_address_cstr);
+
+		pserver_port = atoi(pserver_port_cstr);
+
+		/* remove uneeded variables */
+		free(pserver_address_cstr);
+		free(pserver_port_cstr);
+		pserver_address_cstr = nullptr;
+		pserver_port_cstr = nullptr;
 
 		/* daemonize pserver-lite process */
 		if (daemonize) {
@@ -132,12 +152,9 @@ int main (int argc, char **argv)
 			}
 		}
 
-		// TODO: start probes server service
-		std::cout
-			<< "pserverLITE started.\n"
-			<< "pserver_port = " << atoi(pserver_port) << "\n"
-			<< "pserver_address = " << pserver_address // empty by default
-			<< std::endl;
+		/** start pserver-lite service **/
+		sz_log(2, "starting pserverLITE service on address %s, port %d",
+				pserver_address.c_str(), pserver_port);
 	}
 	catch (po::error& e) {
 		std::cerr
