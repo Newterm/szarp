@@ -74,6 +74,7 @@ void PServerService::process_request (TcpServerConnection *conn,
 		std::string err("ERROR 400 ");
 		err += ex.what();
 
+		conn->CloseOnWriteFinished();
 		conn->WriteData(err.data(), err.size());
 	}
 }
