@@ -30,6 +30,7 @@
 
 
 class EkstraktorMainWindow;
+class SzbExtractor;
 
 /* The main application widget */
 
@@ -59,8 +60,10 @@ class EkstraktorWidget
 	int is_ok;	/**< 1 when object is properly initialized, 
 			  0 otherwise */
 	bool prober_configured;
+	bool sz4;
+	SzbExtractor* extr;
 	public:
-		EkstraktorWidget(std::wstring ipk_prefix, wxString *geometry, std::pair<wxString, wxString> prober_address);
+		EkstraktorWidget(std::wstring ipk_prefix, wxString *geometry, std::pair<wxString, wxString> prober_address, bool sz4);
 		
 		int GetNumberOfParams() { return number_of_params; }
 		void SetNumberOfParams(int params) { number_of_params = params; }
@@ -90,6 +93,12 @@ class EkstraktorWidget
 		TSzarpConfig *GetIpk() { return ipk; }
 		
 		bool IsProberConfigured() { return prober_configured; }
+		
+		bool IsSz4() { return sz4; }
+
+		void SetSz4(bool sz4) { this->sz4 = sz4; }
+
+		SzbExtractor* GetExtractor() { return this->extr; }
 };
 
 #endif // __EKSTRAKTOR_WIDGET_H__

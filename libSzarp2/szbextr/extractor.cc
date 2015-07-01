@@ -23,6 +23,7 @@
   $Id$
 */
 
+#include "sz4/exceptions.h"
 #include "szbextr/extr.h"
 
 #ifdef HAVE_CONFIG_H
@@ -38,16 +39,117 @@
 #include <zip.h>
 #include "conversion.h"
 #include "liblog.h"
+#include "sz4/base.h"
+#include "sz4/util.h"
 
 #define XSLT_DIR PREFIX"/resources/xslt"
 #define CSV_XSLT "extr_csv.xsl"
 #define OO_XSLT "extr_oo.xsl"
 
-SzbExtractor::SzbExtractor(Szbase *szbase)
+SzbExtractor::BaseAdapter::~BaseAdapter() {}
+
+class Sz4BaseAdapter : public SzbExtractor::BaseAdapter {
+	sz4::base* base;
+public:
+	Sz4BaseAdapter(sz4::base *base) : base(base) {}
+
+	void NextQuery() {}
+
+	double GetAverage(TParam* p, time_t start, time_t end, SZARP_PROBE_TYPE pt) {
+		sz4::weighted_sum<double, sz4::second_time_t> sum;
+		try {
+			base->get_weighted_sum(p, sz4::second_time_t(start), sz4::second_time_t(end), pt, sum);
+			return sz4::scale_value(sum.avg(), p);
+		} catch (sz4::exception&) {
+			return nan("");
+		}
+	}
+
+	double GetData(TParam* p, time_t time, SZARP_PROBE_TYPE pt) {
+		return GetAverage(p, time, szb_move_time(time, 1, pt, 0), pt);
+	}
+
+	time_t SearchFirst(TParam *p) {
+		sz4::second_time_t t;
+		base->get_first_time(p, t);
+		if (sz4::time_trait<sz4::second_time_t>::is_valid(t))
+			return t;
+		else
+			return -1;
+	}
+
+	time_t SearchLast(TParam *p) {
+		sz4::second_time_t t;
+		base->get_last_time(p, t);
+		if (sz4::time_trait<sz4::second_time_t>::is_valid(t))
+			return t;
+		else
+			return -1;
+	}
+};
+
+class SzbaseAdapter : public SzbExtractor::BaseAdapter {
+	Szbase *base;
+public:
+	SzbaseAdapter(Szbase* base) : base(base) {}
+
+	void NextQuery() {
+		base->NextQuery();
+	}
+
+
+	double GetAverage(TParam* p, time_t start, time_t end, SZARP_PROBE_TYPE pt) {
+		szb_buffer_t* szb = base->GetBuffer(p->GetSzarpConfig()->GetPrefix());
+		if (szb)
+			return szb_get_avg(szb , p, start , end , NULL , NULL , pt );
+		else
+			return nan("");
+	}
+
+	double GetData(TParam* p, time_t time, SZARP_PROBE_TYPE pt) {
+		szb_buffer_t* szb = base->GetBuffer(p->GetSzarpConfig()->GetPrefix());
+		if (szb)
+			return szb_get_data(szb, p, time);
+		else
+			return nan("");
+	}
+
+	time_t SearchFirst(TParam *p) {
+		szb_buffer_t* szb = base->GetBuffer(p->GetSzarpConfig()->GetPrefix());
+		if (!szb)
+			return -1;
+		else
+			return szb_search_first(szb, p);
+	}
+
+	time_t SearchLast(TParam *p) {
+		szb_buffer_t* szb = base->GetBuffer(p->GetSzarpConfig()->GetPrefix());
+		if (!szb)
+			return -1;
+		else
+			return szb_search_last(szb, p);
+	}
+};
+
+SzbExtractor::SzbExtractor(IPKContainer* ipk, Szbase *szbase)
 {
 	assert (szbase != NULL);
 
-	this->szbase = szbase;
+	this->base = new SzbaseAdapter(szbase);
+	this->ipk = ipk;
+	
+	Init();
+}
+
+SzbExtractor::SzbExtractor(IPKContainer* ipk, sz4::base *sz4)
+{
+	this->base = new Sz4BaseAdapter(sz4);
+	this->ipk = ipk;
+
+	Init();
+}
+
+void SzbExtractor::Init() {
 	start = -1;
 	end = -1;
 	period_type = PT_MIN10;
@@ -64,6 +166,7 @@ SzbExtractor::SzbExtractor(Szbase *szbase)
 
 SzbExtractor::~SzbExtractor()
 {
+	delete base;
 }
 
 SZBASE_TYPE SzbExtractor::get_probe( const Param& p , TParam*tp , time_t t , SZARP_PROBE_TYPE pt , int ct )
@@ -76,14 +179,13 @@ SZBASE_TYPE SzbExtractor::get_probe( const Param& p , TParam*tp , time_t t , SZA
 	switch( p.type  )
 	{
 	case TYPE_AVERAGE :
-		res = szb_get_avg( p.szb , tp , s , e , NULL , NULL , pt );
+		res = base->GetAverage(tp, s, e, pt);
 		break;
 // Dosent work as expected
 //        case TYPE_START :
-//                res = szb_get_data( p.szb , tp , s );
 //                break;
 	case TYPE_END :
-		res = szb_get_data( p.szb , tp , e );
+		res = base->GetData(tp, e, pt);
 		break;
 	}
 
@@ -96,10 +198,7 @@ int SzbExtractor::SetParams(const std::vector<Param>& params)
 	params_objects.clear();
 
 	for (size_t i = 0; i < params.size(); i++) {
-		std::pair<szb_buffer_t*, TParam*> bp;
-		if (!szbase->FindParam(params[i].prefix + L":" + params[i].name, bp))
-			return i + 1;
-		TParam *p = bp.second;
+		TParam *p = ipk->GetParam(params[i].prefix + L":" + params[i].name);
 		if ((p == NULL) || (!p->IsReadable()))
 			return i + 1;
 		params_objects.push_back(p);
@@ -205,7 +304,7 @@ SzbExtractor::ExtractToCSV(FILE *output, const std::wstring& delimiter)
 	return ERR_CANCEL; \
     }
 
-    Szbase::GetObject()->NextQuery();
+    base->NextQuery();
     
     CHECK_CANCEL
 	
@@ -322,7 +421,7 @@ SzbExtractor::ExtractSum(FILE *output, const std::wstring& delimiter)
     }
 	CHECK_CANCEL
 		
-	Szbase::GetObject()->NextQuery();
+	base->NextQuery();
 		
 	for (size_t i = 0; i < params.size(); i++) {
 		// nazwa parametru
@@ -525,7 +624,7 @@ SzbExtractor::ExtractToOOXML(FILE* output)
 	
 	CHECK_CANCEL
 
-	Szbase::GetObject()->NextQuery();
+	base->NextQuery();
 		
 	/* document header */
 	rc = PrintHeaderToOOXML(output, params.size());
@@ -705,6 +804,42 @@ SzbExtractor::ExtractToOpenOffice(const std::wstring& path)
 }
 
 SzbExtractor::ErrorCode 
+SzbExtractor::ExtractStartEndTime(TSzarpConfig *ipk,
+				time_t& start_time, time_t& end_time,
+				int& num_of_params)
+{
+	time_t tmp_time;
+	int max =
+	    ipk->GetParamsCount() + ipk->GetDefinedCount() +
+	    ipk->GetDrawDefinableCount();
+
+	num_of_params = 0;
+
+	int i = 0;
+	for (TParam *prm = ipk->GetFirstParam(); prm != NULL; prm = ipk->GetNextParam(prm)) {
+		if (progress_watcher)
+			progress_watcher(i++ * 100 / max, watcher_data);
+		if (!prm->IsReadable())
+			continue;
+
+		tmp_time = base->SearchFirst(prm);
+		if (tmp_time == (time_t) -1)
+			continue;
+		if (start_time == (time_t) -1 || start_time > tmp_time)
+			start_time = tmp_time;
+
+		tmp_time = base->SearchLast(prm);
+		assert(tmp_time != (time_t) -1);
+		if (end_time == (time_t) -1 || tmp_time > end_time)
+			end_time = tmp_time;
+
+		num_of_params++;
+	}
+
+	return ERR_OK;
+}
+
+SzbExtractor::ErrorCode 
 SzbExtractor::ExtractAndTransform(FILE *output,
 		xsltStylesheetPtr stylesheet, char *params[],
 		const std::string& encoding )
@@ -830,7 +965,7 @@ SzbExtractor::ExtractToXMLWriter(xmlTextWriterPtr writer, const std::string& enc
     
     CHECK_CANCEL
 	    
-    Szbase::GetObject()->NextQuery();
+    base->NextQuery();
     
     /* start document */
     rc = xmlTextWriterStartDocument(writer, NULL, encoding.c_str(), NULL);

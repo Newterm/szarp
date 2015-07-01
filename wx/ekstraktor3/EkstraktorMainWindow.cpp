@@ -489,7 +489,6 @@ void EkstraktorMainWindow::onWriteResults(wxCommandEvent &event)
 		arguments.params.push_back(SzbExtractor::Param(
 			std::wstring(parametersList->GetString(i).wchar_str()),
 			std::wstring(),
-			NULL,
 			selectedValueType ));
 
 	// SET THE REST OF ARGUMENTS ACCORDINGLY
@@ -556,11 +555,11 @@ void EkstraktorMainWindow::onWriteResults(wxCommandEvent &event)
 	cancel_lval = 0;
 	int extr_ret =  extract(
 			arguments,
+			mainWidget->GetExtractor(),
 			print_progress,
 			this,
 			&cancel_lval,
-			mainWidget->GetIpk(),
-			mainWidget->GetSzbaseBuffer()
+			mainWidget->GetIpk()
 			);
 	arguments.output.clear();
 	delete progressDialog;

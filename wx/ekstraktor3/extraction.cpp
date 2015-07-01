@@ -62,19 +62,17 @@ struct extr_arguments arguments;
 }
 
 int extract(struct extr_arguments arguments, 
+		SzbExtractor* extr,
 		void* (*progress_printer)(int, void*), 
 		void* progress_data,
 		int* cancel_lval,
-		TSzarpConfig *ipk, szb_buffer_t *szb)
+		TSzarpConfig *ipk)
 {
-	FILE *output = NULL;
-	SzbExtractor* extr = new SzbExtractor(Szbase::GetObject());
 	assert (extr != NULL);
+	FILE *output = NULL;
 
-        for (unsigned int i = 0; i < arguments.params.size(); i++) {
-		arguments.params[i].szb = szb;
+        for (unsigned int i = 0; i < arguments.params.size(); i++)
 		arguments.params[i].prefix = ipk->GetPrefix();
-	}
 
         if (arguments.year < 0)
                 extr->SetPeriod(arguments.probe, arguments.start_time,

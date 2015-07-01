@@ -69,11 +69,11 @@ struct extr_arguments getExtrDefaultArguments();
  */
 int extract(
 	struct extr_arguments my_args, 
+	SzbExtractor* extr,
 	void* (*progress_printer)(int, void*),
 	void* progress_data,
 	int *cancel_lval,
-	TSzarpConfig *ipk,
-	szb_buffer_t *szbase_buffer
+	TSzarpConfig *ipk
 );
 
 #endif

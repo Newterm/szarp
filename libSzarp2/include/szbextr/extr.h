@@ -36,6 +36,7 @@
 
 #include "szarp_config.h"
 #include "szbase/szbbase.h"
+#include "sz4/base.h"
 
 #define _SZBEXTRACTOR_PRIV_BUFFER_SIZE 100
 
@@ -47,6 +48,15 @@
  */
 class SzbExtractor {
 	public:
+		struct BaseAdapter {
+			virtual double GetAverage(TParam* p, time_t start,
+							time_t end, SZARP_PROBE_TYPE) = 0;
+			virtual double GetData(TParam* p, time_t time, SZARP_PROBE_TYPE) = 0;
+			virtual void NextQuery() = 0;
+			virtual time_t SearchFirst(TParam *p) = 0;
+			virtual time_t SearchLast(TParam *p) = 0;
+			virtual ~BaseAdapter();
+		};
 		/** available params types */
 		typedef enum {
 			TYPE_AVERAGE ,
@@ -66,18 +76,20 @@ class SzbExtractor {
 		} ErrorCode;
 		/** Param description needed by SzbExtractor */
 		struct Param {
-			Param( const std::wstring& n , const std::wstring& p, szb_buffer_t*b , ParamType t ) :
-				name(n) , prefix(p), szb(b) , type(t) {}
+			Param( const std::wstring& n , const std::wstring& p, ParamType t ) :
+				name(n) , prefix(p), type(t) {}
 			std::wstring name;
 			std::wstring prefix;
-			szb_buffer_t* szb;
 			ParamType type;
 		};
 		/**
 		 * Constructor. LibXML and LibXSLT should be initialized.
-		 * @param ipk pointer to initialized TSzarpConfig object
 		 */
-		SzbExtractor(Szbase *szbase);
+		SzbExtractor(IPKContainer* ipk, Szbase *szbase);
+		/**
+		 * Constructor. LibXML and LibXSLT should be initialized.
+		 */
+		SzbExtractor(IPKContainer* ipk, sz4::base *sz4);
 		/**
 		 * Free memory.
 		 */
@@ -216,6 +228,10 @@ class SzbExtractor {
 		 * @return ERR_OK on success or error code
 		 */
 		ErrorCode ExtractToOpenOffice(const std::wstring& path);
+
+		ErrorCode ExtractStartEndTime(TSzarpConfig *ipk,
+				time_t& start_time, time_t& end_time,
+				int& num_of_params);
 	protected:
 		/** Creates OpenOffice content.xml file, which has to be
 		 * compressed. Used by ExtractToOpenOffice.
@@ -338,7 +354,6 @@ class SzbExtractor {
 		void ReplaceSeparator(wchar_t *buf);
 
 		Szbase *szbase;	/**< szbase object */
-		szb_buffer_t *szb;	/**< SzarpBase buffer */
 		std::vector<Param> params;		/** array of param names to extract */
 		std::vector<TParam*> params_objects;
 					/**< array of pointers to param objects
@@ -363,6 +378,11 @@ class SzbExtractor {
 					  no cancel control is used */
 		wchar_t priv_buffer[_SZBEXTRACTOR_PRIV_BUFFER_SIZE];
 					/**< private buffer */
+		IPKContainer *ipk;
+		
+		BaseAdapter* base;
+	private:
+		void Init();
 };
 
 #endif
