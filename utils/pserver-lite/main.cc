@@ -153,8 +153,13 @@ int main (int argc, char **argv)
 		}
 
 		/** start pserver-lite service **/
+		std::shared_ptr<PServerService> pserver =
+			std::make_shared<PServerService>(pserver_address, pserver_port);
+
 		sz_log(2, "starting pserverLITE service on address %s, port %d",
 				pserver_address.c_str(), pserver_port);
+
+		pserver->run();
 	}
 	catch (po::error& e) {
 		std::cerr

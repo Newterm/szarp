@@ -19,7 +19,7 @@ LIBSZARP2=../../libSzarp2/libSzarp2.la
 
 LDADD = \
 	$(LIBSZARP) $(LIBSZARP2) \
-	@BOOST_PROGRAM_OPTIONS_LIB@
+	@BOOST_PROGRAM_OPTIONS_LIB@ @EVENT_LIBS@
 
 bin_PROGRAMS = pserver-lite szcache_test
 
