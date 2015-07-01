@@ -117,17 +117,26 @@ public:
 	/** If connection is lost, will throw TcpServerException */
 	void WriteData(const void* data, size_t size);
 
+	/** After subsequent write, the underlying connection will be closed.
+	 * If no write is performed, nothing will happen.
+	 * All data written in subsequent WriteData call is guaranteed
+	 * to be flushed.
+	 */
+	void CloseOnWriteFinished();
+
 	/** libevent callbacks */
 	static void ReadDataCallback(struct bufferevent *bufev, void* ds);
+	static void WriteDataCallback(struct bufferevent *bufev, void* ds);
 	static void ErrorCallback(struct bufferevent *bufev, short event, void* ds);
 protected:
-	/** Actual reading function, called by ReadCallback(). */
+	/* Methods called by static callbacks */
 	void ReadData(struct bufferevent *bufev);
-	/** Actual error function, called by ErrorCallback(). */
+	void WriteFinished(struct bufferevent *bufev);
 	void Error(struct bufferevent *bufev, short event);
 
 protected:
 	PBufferevent m_bufferevent;
+	bool m_close_on_write_finished;
 };
 
 #endif // __TCPSERVER_H__

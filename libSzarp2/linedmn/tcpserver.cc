@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 #include <string>
 #include <cstring>
+#include <event2/buffer.h>
 
 TcpServer::TcpServer(PEventBase base):
 	m_address(""),
@@ -79,9 +80,10 @@ void TcpServer::AcceptError()
 }
 
 TcpServerConnection::TcpServerConnection(PBufferevent bufev):
-	m_bufferevent(bufev)
+	m_bufferevent(bufev),
+	m_close_on_write_finished(false)
 {
-	bufferevent_setcb(bufev.get(), ReadDataCallback, NULL, ErrorCallback, this);
+	bufferevent_setcb(bufev.get(), ReadDataCallback, WriteDataCallback, ErrorCallback, this);
 }
 
 void TcpServerConnection::Enable()
@@ -102,6 +104,31 @@ void TcpServerConnection::WriteData(const void* data, size_t size)
 		TcpServerException ex;
 		ex.SetMsg("Write data failed.");
 		throw ex;
+	}
+}
+
+void TcpServerConnection::CloseOnWriteFinished()
+{
+	m_close_on_write_finished = true;
+}
+
+void TcpServerConnection::WriteDataCallback(struct bufferevent *bufev, void* ds)
+{
+	reinterpret_cast<TcpServerConnection*>(ds)->WriteFinished(bufev);
+}
+
+void TcpServerConnection::WriteFinished(struct bufferevent *bufev)
+{
+	if (m_close_on_write_finished and
+		evbuffer_get_length(bufferevent_get_output(bufev)) == 0)
+	{
+		int error_code = -1;
+		std::string error_str = "EOF";
+		m_bufferevent.reset();
+
+		for (auto* listener : m_listeners) {
+			listener->ReadError(this, error_code, error_str);
+		}
 	}
 }
 
