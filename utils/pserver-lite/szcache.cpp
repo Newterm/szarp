@@ -127,10 +127,12 @@ class SzCache::SzCacheFile {
 
 			for (; sind <= eind; sind++) {
 				int16_t val = _records[sind];
-
+				
+				/*
 				logMsg(3, std::string("[") 
 					+ std::to_string(sind) + std::string("]:")
 					+ std::to_string(val) + std::string(","));
+				*/
 
 				if (val != cSzCacheNoData)
 					return SzIndexResult(true,sind);
@@ -146,10 +148,12 @@ class SzCache::SzCacheFile {
 	
 			for (; sind >= eind; sind--) {
 				int16_t val = _records[sind];
-
+				
+				/*
 				logMsg(3, std::string("[") 
 					+ std::to_string(sind) + std::string("]:")
 					+ std::to_string(val) + std::string(","));
+				*/
 
 				if (val != cSzCacheNoData)
 					return SzIndexResult(true,sind);
@@ -224,9 +228,12 @@ class SzCache::SzCacheFile {
 		int16_t &operator[](unsigned int i) 
 		{
           		if (i > _records.size()) 
-				throw std::out_of_range("SzCacheFile: out_of_range");	
+				throw std::out_of_range("SzCacheFile: out_of_range");
+			/*
 			logMsg(3, std::string("records[") + std::to_string(i) 
 				+ std::string("]:") + std::to_string(_records[i]));
+			*/
+
           		return _records[i];
           	};
 		
