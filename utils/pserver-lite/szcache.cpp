@@ -321,6 +321,9 @@ SzCache::SzTime	SzCache::getTime(SzIndex idx, SzPath path) const
 {
 	logMsg(3, std::string("getTime(") + std::to_string(idx)
 		+ std::string(",") + path + std::string(")"));
+	
+	std::tm * timeinfo;
+ 	timeinfo = std::localtime(&std::time());
 
 	std::tm gmt;
 	if (idx == -1) 
@@ -333,7 +336,7 @@ SzCache::SzTime	SzCache::getTime(SzIndex idx, SzPath path) const
 	gmt.tm_year -= 1900; // Falling back to years since 1900 repr.
 	gmt.tm_mon -= 1; // Falling back to mon 0-11 repr.
 	gmt.tm_mday = 1;
-	gmt.tm_hour = 1;
+	timeinfo->ts_isdst ? gmt.tm_hour = 2 : gmt.tm_hour = 1;
 	gmt.tm_min = 0;
 	gmt.tm_sec = 0;
 	gmt.tm_isdst = -1;
