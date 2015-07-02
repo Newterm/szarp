@@ -24,7 +24,7 @@ LDADD = \
 bin_PROGRAMS = pserver-lite szcache_test
 
 pserver_lite_SOURCES = \
-	main.cc pserver_service.cpp commands.cc
+	main.cc pserver_service.cpp commands.cc szcache.cpp
 
 szcache_test_SOURCES = \
 	szcache.cpp szcache_test.cpp

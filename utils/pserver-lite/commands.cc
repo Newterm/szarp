@@ -1,8 +1,10 @@
 
 #include <iostream>
+#include <string>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include "commands.h"
+#include "szcache.h"
 
 /*** Static methods (Command Handler) ***/
 
@@ -64,12 +66,35 @@ void GetCommand::load_args (const std::vector<std::string>& args)
 	m_ready = true;
 }
 
-void GetCommand::exec (void)
+std::vector<unsigned char> GetCommand::exec (void)
 {
 	if (! m_ready)
 		throw ArgumentError("cannot exec(), arguments not loaded");
 
-	/* TODO: read data from cache and return answer */
+	/* get values of probes */
+	SzCache szc;
+	std::vector<int16_t> vals;
+
+	auto last_time = szc.getSizeAndLast(m_start_time, m_end_time, m_param_path).second;
+	auto wtime = szc.writeData(vals, m_start_time, last_time, m_param_path);
+	while (wtime < last_time) {
+		wtime = szc.writeData(vals, wtime, last_time, m_param_path);
+	}
+
+	/* construct reply message */
+	std::string reply;
+	reply += std::to_string(last_time);
+	reply += std::string(" ");
+	reply += std::to_string(vals.size());
+	reply += std::string("\r\n");
+
+	/* convert to vector (portability) */
+	std::vector<unsigned char> reply_vec(reply.begin(), reply.end());
+
+	for (auto d : vals)
+		reply_vec.push_back(reinterpret_cast<unsigned char&>(d));
+
+	return reply_vec;
 }
 
 /** "SEARCH" Command **/
@@ -117,12 +142,42 @@ void SearchCommand::load_args (const std::vector<std::string>& args)
 	m_ready = true;
 }
 
-void SearchCommand::exec (void)
+std::vector<unsigned char> SearchCommand::exec (void)
 {
 	if (! m_ready)
 		throw ArgumentError("cannot exec(), arguments not loaded");
 
-	/* TODO: read data from cache and return answer */
+	/* search probes */
+	SzCache szc;
+	SzCache::SzSearchResult res;
+
+	switch (m_direction) {
+		case -1:
+			res = szc.searchLeft(m_end_time, m_start_time, m_param_path);
+			break;
+		case  0:
+			res = szc.searchInPlace(m_start_time, m_param_path);
+			break;
+		case  1:
+			res = szc.searchRight(m_start_time, m_end_time, m_param_path);
+			break;
+		default:
+			throw ArgumentError("(SEARCH) exec(): bad direction value");
+	}
+
+	/* construct reply message */
+	std::string reply;
+	reply += std::to_string(std::get<0>(res));
+	reply += std::string(" ");
+	reply += std::to_string(std::get<1>(res));
+	reply += std::string(" ");
+	reply += std::to_string(std::get<2>(res));
+	reply += std::string("\r\n");
+
+	/* convert to vector (portability) */
+	std::vector<unsigned char> reply_vec(reply.begin(), reply.end());
+
+	return reply_vec;
 }
 
 /** "RANGE" Command **/
@@ -132,7 +187,21 @@ void RangeCommand::load_args (const std::vector<std::string>& args)
 		throw ArgumentError("(RANGE) bad number of arguments");
 }
 
-void RangeCommand::exec (void)
+std::vector<unsigned char> RangeCommand::exec (void)
 {
-	/* TODO: read data from cache and return answer */
+	/* get available range */
+	SzCache szc;
+	auto range = szc.availableRange();
+
+	/* construct reply message */
+	std::string reply;
+	reply += std::to_string(range.first);
+	reply += std::string(" ");
+	reply += std::to_string(range.second);
+	reply += std::string("\r\n");
+
+	/* convert to vector (portability) */
+	std::vector<unsigned char> reply_vec(reply.begin(), reply.end());
+
+	return reply_vec;
 }

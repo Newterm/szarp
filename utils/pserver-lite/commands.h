@@ -30,7 +30,7 @@ public:
 	~GetCommand (void) { };
 
 	void load_args (const std::vector<std::string>& args) override;
-	void exec (void) override;
+	std::vector<unsigned char> exec (void) override;
 
 private:
 	bool m_ready;
@@ -68,7 +68,7 @@ public:
 	~SearchCommand (void) { };
 
 	void load_args (const std::vector<std::string>& args) override;
-	void exec (void) override;
+	std::vector<unsigned char> exec (void) override;
 
 private:
 	bool m_ready;
@@ -99,7 +99,7 @@ public:
 	~RangeCommand (void) { };
 
 	void load_args (const std::vector<std::string>& args) override;
-	void exec (void) override;
+	std::vector<unsigned char> exec (void) override;
 };
 
 #endif /* __PSERVER_COMMANDS_H */

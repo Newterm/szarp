@@ -17,7 +17,7 @@ public:
 	static std::vector<std::string> tokenize (std::string& msg_received);
 
 	virtual void load_args (const std::vector<std::string>& args) = 0;
-	virtual void exec (void) = 0;
+	virtual std::vector<unsigned char> exec (void) = 0;
 
 	/* Exception class definitions */
 #if GCC_VERSION >= 40800

@@ -22,5 +22,6 @@ bin_PROGRAMS = command-handlers-unit-tests
 command_handlers_unit_tests_SOURCES = \
 		unit_tests.cpp \
 		command_handlers_unit_test.cpp \
-		../commands.cc
+		../commands.cc \
+		../szcache.cpp
 
