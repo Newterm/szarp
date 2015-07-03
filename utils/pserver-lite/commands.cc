@@ -73,13 +73,15 @@ std::vector<unsigned char> GetCommand::exec (void)
 
 	/* get size of data and last available probe */
 	SzCache szc;
-	auto size_and_last = szc.getSizeAndLast(m_start_time, m_end_time, m_param_path);
+	auto ret = szc.getSizeAndLast(m_start_time, m_end_time, m_param_path);
+	auto size = ret.first;
+	auto last_time = ret.second;
 
 	/* construct reply header */
 	std::string reply;
-	reply += std::to_string(size_and_last.second);
+	reply += std::to_string(last_time);
 	reply += std::string(" ");
-	reply += std::to_string(size_and_last.first);
+	reply += std::to_string(size);
 	reply += std::string("\n");
 
 	/* convert to vector (portability) */
