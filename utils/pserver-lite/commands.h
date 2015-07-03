@@ -13,7 +13,7 @@
  *   'param_path' (string) - a path to parameter (relative to cache dir).
  *
  * Response:
- *  last_time size\r\n
+ *  last_time size\n
  *  data
  *
  *   'last_time' (time_t) - time of the last available probe for parameter.
@@ -53,7 +53,7 @@ private:
  *   'param_path' (string) - a path to parameter (relative to cache dir).
  *
  * Response:
- *   found_time first_time last_time\r\n
+ *   found_time first_time last_time\n
  *
  *  'found_time' (time_t) - a time of data found or -1 on failure.
  *  'first_time' and 'last_time' - range of available data or -1 in no data is
@@ -85,7 +85,7 @@ private:
  *  RANGE\r\n
  *
  * Response:
- *  first_time last_time\r\n
+ *  first_time last_time\n
  *
  *  'first_time' and 'last_time' (time_t) - approximate time range of available
  *     probes (for all parameters).

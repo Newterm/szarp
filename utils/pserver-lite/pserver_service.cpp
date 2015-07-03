@@ -74,12 +74,14 @@ void PServerService::process_request (TcpServerConnection *conn,
 	catch (CommandHandler::Exception& ex) {
 		std::string err("ERROR 400 ");
 		err += ex.what();
+		err += std::string("\n");
 
 		conn->WriteData(err.data(), err.size());
 	}
 	catch (std::runtime_error& ex) {
 		std::string err("ERROR 400 ");
 		err += ex.what();
+		err += std::string("\n");
 
 		conn->WriteData(err.data(), err.size());
 	}

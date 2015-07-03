@@ -71,28 +71,37 @@ std::vector<unsigned char> GetCommand::exec (void)
 	if (! m_ready)
 		throw ArgumentError("cannot exec(), arguments not loaded");
 
-	/* get values of probes */
+	/* get size of data and last available probe */
 	SzCache szc;
-	std::vector<int16_t> vals;
+	auto size_and_last = szc.getSizeAndLast(m_start_time, m_end_time, m_param_path);
 
-	auto last_time = szc.getSizeAndLast(m_start_time, m_end_time, m_param_path).second;
-	auto wtime = szc.writeData(vals, m_start_time, last_time, m_param_path);
-	while (wtime < last_time) {
-		wtime = szc.writeData(vals, wtime, last_time, m_param_path);
-	}
-
-	/* construct reply message */
+	/* construct reply header */
 	std::string reply;
-	reply += std::to_string(last_time);
+	reply += std::to_string(size_and_last.second);
 	reply += std::string(" ");
-	reply += std::to_string(vals.size());
-	reply += std::string("\r\n");
+	reply += std::to_string(size_and_last.first);
+	reply += std::string("\n");
 
 	/* convert to vector (portability) */
 	std::vector<unsigned char> reply_vec(reply.begin(), reply.end());
 
-	for (auto d : vals)
-		reply_vec.push_back(reinterpret_cast<unsigned char&>(d));
+	if (size > 0) {
+		/* get values of probes */
+		std::vector<int16_t> vals;
+
+		while (m_start_time < m_end_time) {
+			m_start_time =
+				szc.writeData(vals, m_start_time, m_end_time, m_param_path);
+		}
+
+		/* split into lsw/msw and insert to vector */
+		for (auto s : vals) {
+			unsigned char lsw = s & 0xFF;
+			unsigned char msw = (s >> 8) & 0xFF;
+			reply_vec.push_back(lsw);
+			reply_vec.push_back(msw);
+		}
+	}
 
 	return reply_vec;
 }
@@ -169,7 +178,7 @@ std::vector<unsigned char> SearchCommand::exec (void)
 	reply += std::to_string(std::get<1>(res));
 	reply += std::string(" ");
 	reply += std::to_string(std::get<2>(res));
-	reply += std::string("\r\n");
+	reply += std::string("\n");
 
 	/* convert to vector (portability) */
 	std::vector<unsigned char> reply_vec(reply.begin(), reply.end());
@@ -195,7 +204,7 @@ std::vector<unsigned char> RangeCommand::exec (void)
 	reply += std::to_string(range.first);
 	reply += std::string(" ");
 	reply += std::to_string(range.second);
-	reply += std::string("\r\n");
+	reply += std::string("\n");
 
 	/* convert to vector (portability) */
 	std::vector<unsigned char> reply_vec(reply.begin(), reply.end());
