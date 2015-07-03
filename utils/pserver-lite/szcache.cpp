@@ -560,7 +560,7 @@ SzCache::SzSearchResult SzCache::searchLeft(SzTime start, SzTime end, SzPath pat
 	if ((end == -1) || (end < szr.first)) 
 		end = szr.first;
 	
-	assert(start > end);
+	assert(start >= end);
 
 	return SzSearchResult(searchFor(start, end, goodPath), szr.first, szr.second);	
 }
@@ -582,7 +582,7 @@ SzCache::SzSearchResult SzCache::searchRight(SzTime start, SzTime end, SzPath pa
 	if ((end == -1) || (end > szr.second))
 		end = szr.second;
 	
-	assert(start < end);
+	assert(start <= end);
 
 	return SzSearchResult(searchFor(start, end, goodPath), szr.first, szr.second);	
 }
