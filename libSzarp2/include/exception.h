@@ -4,6 +4,7 @@
 #include <exception>
 #include <stdio.h>
 #include <stdarg.h>
+#include "compat.h"
 
 /** size of buffer for exception message */
 #define EXT_BUFFER_SIZE	256

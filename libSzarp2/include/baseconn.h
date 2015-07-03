@@ -3,6 +3,7 @@
 
 #include "serialportconf.h"
 #include "exception.h"
+#include "compat.h"
 #include <event.h>
 #include <string>
 #include <vector>
