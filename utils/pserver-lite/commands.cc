@@ -118,9 +118,6 @@ void SearchCommand::load_args (const std::vector<std::string>& args)
 		throw ArgumentError("(SEARCH) cannot cast argument 1 or 2 to time_t");
 	}
 
-	if (m_start_time > m_end_time)
-		throw ArgumentError("(SEARCH) bad argument 1 and 2, start > end");
-
 	/* load argument 3 (direction) */
 	try {
 		m_direction = boost::lexical_cast<int>(args[2]);
@@ -153,7 +150,7 @@ std::vector<unsigned char> SearchCommand::exec (void)
 
 	switch (m_direction) {
 		case -1:
-			res = szc.searchLeft(m_end_time, m_start_time, m_param_path);
+			res = szc.searchLeft(m_start_time, m_end_time, m_param_path);
 			break;
 		case  0:
 			res = szc.searchInPlace(m_start_time, m_param_path);

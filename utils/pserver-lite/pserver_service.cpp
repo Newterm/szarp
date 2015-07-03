@@ -69,16 +69,18 @@ void PServerService::process_request (TcpServerConnection *conn,
 		auto reply_msg = cmd_handler->exec();
 
 		/* send reply message */
-		conn->CloseOnWriteFinished();
 		conn->WriteData(reply_msg.data(), reply_msg.size());
 	}
 	catch (CommandHandler::Exception& ex) {
-		std::cout << ex.what() << std::endl;
-
 		std::string err("ERROR 400 ");
 		err += ex.what();
 
-		conn->CloseOnWriteFinished();
+		conn->WriteData(err.data(), err.size());
+	}
+	catch (std::runtime_error& ex) {
+		std::string err("ERROR 400 ");
+		err += ex.what();
+
 		conn->WriteData(err.data(), err.size());
 	}
 }
