@@ -287,17 +287,18 @@ SzCache::SzPath SzCache::prevMonth(SzPath path) const
 SzCache::SzRange SzCache::availableRange() const
 {
 	SzCache::SzTime last = std::time(nullptr);
-	auto gmt = std::gmtime(&last);
+	std::tm *gmt = std::localtime(&last);
 	gmt->tm_mon -= _numMonths;
 	if (gmt->tm_mon < 1) {
 		gmt->tm_mon += 12;
 		gmt->tm_year -= 1;
 	}
 	gmt->tm_mday = 1;
-	gmt->tm_hour = 0;
+	gmt->tm_isdst ? gmt->tm_hour = 2 : gmt->tm_hour = 1;
 	gmt->tm_min = 0;
 	gmt->tm_sec = 0;
-
+	gmt->tm_isdst = -1;
+	
 	return SzRange(std::mktime(gmt), last);
 }
 
