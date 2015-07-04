@@ -121,10 +121,11 @@ class SzCache::SzCacheFile {
 	public:
 		SzIndexResult cacheSearchRight(SzIndex sind, SzIndex eind) 
 		{
+			/*
 			logMsg(3, std::string("cacheSearchRight(") 
 				+ std::to_string(sind) + std::string(",")
 				+ std::to_string(eind) + std::string(")"));
-
+			*/
 			for (; sind <= eind; sind++) {
 				int16_t val = _records[sind];
 				
@@ -141,11 +142,12 @@ class SzCache::SzCacheFile {
 		}
 
 		SzIndexResult cacheSearchLeft(SzIndex sind, SzIndex eind) 
-		{	
+		{
+			/*
 			logMsg(3, std::string("cacheSearchLeft(") 
 				+ std::to_string(sind) + std::string(",")
 				+ std::to_string(eind) + std::string(")"));
-	
+			*/
 			for (; sind >= eind; sind--) {
 				int16_t val = _records[sind];
 				
@@ -172,7 +174,7 @@ class SzCache::SzCacheFile {
 		void cacheOpen(const SzPath& path) 
 		{
 			std::ifstream fs(path, std::ios::binary);
-			if (fs.rdstate() & std::ifstream::failbit) 
+			if (fs.rdstate() & std::ifstream::failbit)
 				throw std::runtime_error("SzCacheFile: failed to open: " + path);
 			/* 
 			 * File stream read method expects "char_type" pointer.
@@ -195,9 +197,8 @@ class SzCache::SzCacheFile {
 			off_t pg_off = (offset * sizeof(int16_t)) & ~(sysconf(_SC_PAGE_SIZE) - 1);
 			size_t pg_len = (length + offset) * sizeof(int16_t) - pg_off;
         		int fd = open(path.c_str(), O_RDONLY | O_NOATIME);
-       			if (fd == -1) 
+       			if (fd == -1)
 				throw std::runtime_error("SzCacheFile: failed to open: " + path);
-
         		void* mdata = mmap(NULL, pg_len, PROT_READ, MAP_SHARED, fd, pg_off);
 
 			short* data = (short*)(((char *)mdata) + (offset * sizeof(int16_t) - pg_off));
@@ -218,16 +219,17 @@ class SzCache::SzCacheFile {
 		 */
 		void cacheMap(const SzPath& path) 
 		{
+			/*
 			logMsg(3, std::string("cacheMap(") + path
 				+ std::string(")"));
-
+			*/
 			cacheMap(path, 0, getFileSize(path) / sizeof(int16_t));
 		};
 
 		/** Get value from record by index */
 		int16_t &operator[](unsigned int i) 
 		{
-          		if (i > _records.size()) 
+          		if (i > _records.size())
 				throw std::out_of_range("SzCacheFile: out_of_range");
 			/*
 			logMsg(3, std::string("records[") + std::to_string(i) 
@@ -273,14 +275,14 @@ SzCache::SzPath SzCache::moveMonth(SzPath path, bool forward) const
 /** Iterate over next path also return it */
 SzCache::SzPath SzCache::nextMonth(SzPath path) const
 {
-	logMsg(3, std::string("nextMonth(") + path + std::string(")"));
+	//logMsg(3, std::string("nextMonth(") + path + std::string(")"));
 	return moveMonth(path, true);
 }
 
 /** Iterate over prev path also return it */
 SzCache::SzPath SzCache::prevMonth(SzPath path) const
 {
-	logMsg(3, std::string("prevMonth(") + path + std::string(")"));
+	//logMsg(3, std::string("prevMonth(") + path + std::string(")"));
 	return moveMonth(path, false);
 }
 
@@ -304,8 +306,10 @@ SzCache::SzRange SzCache::availableRange() const
 
 SzCache::SzPathIndex SzCache::getPathIndex( SzTime szt, SzPath dir) const
 {
+	/*
 	logMsg(3, std::string("getPathIndex(") + std::to_string(szt)
 		+ std::string(",") + dir + std::string(")"));
+	*/
 
 	auto gmt = std::gmtime(&szt);
 	std::ostringstream os;
@@ -320,9 +324,10 @@ SzCache::SzPathIndex SzCache::getPathIndex( SzTime szt, SzPath dir) const
 
 SzCache::SzTime	SzCache::getTime(SzIndex idx, SzPath path) const
 {
+	/*
 	logMsg(3, std::string("getTime(") + std::to_string(idx)
 		+ std::string(",") + path + std::string(")"));
-	
+	*/
 	std::tm * timeinfo;
 	time_t t = std::time(NULL);
 	timeinfo = std::localtime(&t);
@@ -444,8 +449,9 @@ std::set<std::string> SzCache::globify(const SzPath& path) const
 
 SzCache::SzRange SzCache::searchFirstLast(SzPath path) const
 {
+	/*
 	logMsg(3, std::string("searchFirstLast(") + path + std::string(")"));
-
+	*/
 	std::set<std::string> s = globify(path + std::string("/[0-9][0-9][0-9][0-9][0-9][0-9]") + cSzCacheExt);
 	if (s.size() == 0) return SzRange(SzTime(-1),SzTime(-1));
 	
@@ -458,9 +464,10 @@ SzCache::SzRange SzCache::searchFirstLast(SzPath path) const
 
 SzCache::SzTime SzCache::searchAt(SzTime start, SzPath path) const 
 {
+	/*
 	logMsg(3, std::string("searchAt(") + std::to_string(start)
 		+ std::string(",") + path + std::string(")"));
-
+	*/
 	SzPathIndex szpi = getPathIndex(start, path);
 	if (!fileExists(szpi.first)) 
 		return SzTime(-1);
@@ -486,10 +493,11 @@ SzCache::SzIndex SzCache::lastIndex(SzPath path) const
 
 SzCache::SzTime SzCache::searchFor(SzTime start, SzTime end, SzPath path) const
 {
+	/*
 	logMsg(3, std::string("searchFor(") + std::to_string(start) 
 		+ std::string(",") + std::to_string(end) 
 		+ std::string(",") + path + std::string(")"));
-
+	*/
 	SzPathIndex startPathIndex = getPathIndex(start, path);
 	SzPathIndex endPathIndex = getPathIndex(end, path);
 	
@@ -497,11 +505,11 @@ SzCache::SzTime SzCache::searchFor(SzTime start, SzTime end, SzPath path) const
 	SzPath epath = endPathIndex.first;
 	SzIndex sind = startPathIndex.second;
 	SzIndex eind = endPathIndex.second;
-
+	/*
 	logMsg(3, spath + std::string(" idx:") + std::to_string(sind)
 		+ std::string("-->>") 
 		+ epath + std::string(" idx:") + std::to_string(eind));
-
+	*/
 	bool right = (start <= end);
 
 	while ( right ? (spath.compare(nextMonth(epath))!=0) : 
@@ -530,9 +538,10 @@ SzCache::SzTime SzCache::searchFor(SzTime start, SzTime end, SzPath path) const
 
 SzCache::SzSearchResult SzCache::searchInPlace(SzTime start, SzPath path) 
 {
+	/*
 	logMsg(3, std::string("searchInPlace(") + std::to_string(start) 
 		+ std::string(",") + path + std::string(")"));
-
+	*/
 	SzPath goodPath = checkPath(path);
 	if (!directoryExists(goodPath)) 
 		return SzSearchResult(-1,-1,-1);
@@ -545,10 +554,11 @@ SzCache::SzSearchResult SzCache::searchInPlace(SzTime start, SzPath path)
 
 SzCache::SzSearchResult SzCache::searchLeft(SzTime start, SzTime end, SzPath path) 
 {
+	/*
 	logMsg(3, std::string("searchLeft(") + std::to_string(start) 
 		+ std::string(",") + std::to_string(end) + std::string(",")
 		+ path + std::string(")"));
-
+	*/
 	SzPath goodPath = checkPath(path);
 	if (!directoryExists(goodPath)) 
 		return SzSearchResult(-1,-1,-1);
@@ -567,10 +577,11 @@ SzCache::SzSearchResult SzCache::searchLeft(SzTime start, SzTime end, SzPath pat
 
 SzCache::SzSearchResult SzCache::searchRight(SzTime start, SzTime end, SzPath path) 
 {
+	/*
 	logMsg(3, std::string("searchRight(") + std::to_string(start) 
 		+ std::string(",") + std::to_string(end) + std::string(",")
 		+ path + std::string(")"));
-
+	*/
 	SzPath goodPath = checkPath(path);
 	if (!directoryExists(goodPath)) 
 		return SzSearchResult(-1,-1,-1);
@@ -602,16 +613,27 @@ SzCache::SzSizeAndLast SzCache::getSizeAndLast(SzTime start, SzTime end, SzPath 
 
 void SzCache::writeFile(std::vector<int16_t>& vals, SzIndex sind, SzIndex eind, SzPath path)
 {
+	/*
+	logMsg(3, std::string("writeFile(") 
+		+ std::to_string(sind) + std::string(",")
+		+ std::to_string(eind) + std::string(",")
+		+ path + std::string(")"));
+	*/
 	SzIndex lind = std::min(lastIndex(path), eind);
-	std::size_t wcount = lind - sind + 1;
+	int wcount = lind - sind + 1;
 	
+	/*
+	logMsg(3, std::string("lind:") + std::to_string(lind)
+		+ std::string(" wcount:") + std::to_string(wcount));
+	*/
 	if (wcount < 0) wcount = 0;
 	
 	if (wcount > 0) {
 		SzCacheFile szf;
 		szf.cacheMap(path);
 		while (wcount > 0) {
-			vals.push_back(szf[sind++]);
+			vals.push_back(szf[sind]);
+			sind++;
 			--wcount;
 		}
 		fillEmpty(vals, eind - sind - wcount + 1);
@@ -620,11 +642,19 @@ void SzCache::writeFile(std::vector<int16_t>& vals, SzIndex sind, SzIndex eind, 
 
 void SzCache::fillEmpty(std::vector<int16_t>& vals, std::size_t count) 
 {
+	
+	//logMsg(3, std::string("fillEmpty(") + std::to_string(count) + std::string(")"));
 	for(unsigned int i = 0; i < count; ++i) vals.push_back(cSzCacheNoData);
 }
 
 SzCache::SzTime SzCache::writeData(std::vector<int16_t>& vals, SzTime start, SzTime end, SzPath path)
 {
+	/*
+	logMsg(3, std::string("writeData(") 
+		+ std::to_string(start) + std::string(",")
+		+ std::to_string(end) + std::string(",")
+		+ path + std::string(")"));
+	*/
 	SzPath goodPath = checkPath(path);
 	if (!directoryExists(goodPath))
 		return (end + 1);
