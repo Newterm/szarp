@@ -42,6 +42,7 @@ public:
 		ok_test.push_back(std::string("GET 1435437865 1435437978 param_path\r\n"));
 		ok_test.push_back(std::string("SEARCH 1435437865 1435437978 0 param_path\r\n"));
 		ok_test.push_back(std::string("SEARCH \t 1435437865  1435437978\t -1 param_path\r\n"));
+		ok_test.push_back(std::string("SEARCH 1435243687 1435243589 0 param_path\r\n"));
 		ok_test.push_back(std::string("RANGE\r\n"));
 
 		/* testGetCmd() */
@@ -63,8 +64,6 @@ public:
 		searchcmd_test.push_back(std::string("SEARCH \r\n"));
 		// cannot cast to time_t
 		searchcmd_test.push_back(std::string("SEARCH start 1435243589 0 param_path\r\n"));
-		// start_time > end_time
-		searchcmd_test.push_back(std::string("SEARCH 1435243687 1435243589 0 param_path\r\n"));
 		// direction not in {-1, 0, 1}
 		searchcmd_test.push_back(std::string("SEARCH 1435437865 1435437978 -2 param_path\r\n"));
 		searchcmd_test.push_back(std::string("SEARCH 1435437865 1435437978 5 param_path\r\n"));

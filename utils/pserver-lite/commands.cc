@@ -111,7 +111,7 @@ std::vector<unsigned char> GetCommand::exec (void)
 /** "SEARCH" Command **/
 SearchCommand::SearchCommand (void)
 	: m_ready(false), m_start_time(0), m_end_time(0), m_direction(0),
-	  m_param_path() { }
+		m_param_path() { }
 
 void SearchCommand::load_args (const std::vector<std::string>& args)
 {
@@ -158,6 +158,14 @@ std::vector<unsigned char> SearchCommand::exec (void)
 	/* search probes */
 	SzCache szc;
 	SzCache::SzSearchResult res;
+
+	/* timestamps are more important than direction (fix its value if needed) */
+	if (m_direction != 0) {
+		if (m_start_time > m_end_time)
+			m_direction = -1;
+		else
+			m_direction = 1;
+	}
 
 	switch (m_direction) {
 		case -1:
