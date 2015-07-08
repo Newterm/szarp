@@ -57,6 +57,13 @@ case "$1" in
 	    twistd -y $DAEMON --logfile /opt/szarp/logs/prober.log --pidfile /var/run/probes_server.pid
 	    log_end_msg $?
 	fi
+	
+	if [ x$PSERVER_LITE = x1 ]; then
+	    DAEMON=__INSTALL_DIR__/bin/pserver-lite
+    	    szlog
+	    start_daemon $DAEMON
+	    log_end_msg $?
+	fi
 
 	if [ x$MEANER4 = x1 ]; then
 	    DAEMON='meaner4'
@@ -168,6 +175,13 @@ case "$1" in
 	    DAEMON=__INSTALL_DIR__/lib/python/probes_server.tac
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --pidfile /var/run/probes_server.pid
+	    log_end_msg $?
+	fi
+
+	if [ x$PSERVER_LITE = x1 ]; then
+	    DAEMON=__INSTALL_DIR__/bin/pserver-lite
+	    stlog
+	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
 	    log_end_msg $?
 	fi
 

@@ -15,6 +15,7 @@ Files: opt/szarp/lib/python/{szbcache.py,libpar.py,probes_server.py,probes_serve
 Files: opt/szarp/lib/libpyszb*
 Files: opt/szarp/bin/wlkdmn
 Files: etc/szarp/ssconf.cfg
+Files: opt/szarp/bin/pserver-lite
 
 Package: szarp-utils
 Files: opt/szarp/bin/{szbedit,szbindex,szbwriter,szbreader,extrszb,modem_pooler.sh,isdn_pooler.sh,probes_client.py}

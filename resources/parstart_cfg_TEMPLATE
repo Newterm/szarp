@@ -33,5 +33,6 @@ if [ `hostname -s` = $HOST ] ; then
 	PROBER=1
 	PROBES_SERVER=1
 	MEANER4=1
+	PSERVER_LITE=0
 fi
 
