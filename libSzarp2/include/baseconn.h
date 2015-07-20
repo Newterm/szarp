@@ -3,7 +3,6 @@
 
 #include "serialportconf.h"
 #include "exception.h"
-#include "compat.h"
 #include <event.h>
 #include <string>
 #include <vector>
@@ -32,7 +31,9 @@ public:
 	virtual void SetConfigurationFinished(const BaseConnection *conn) = 0;
 };
 
-class ConnectionException : public MsgException {};
+class ConnectionException : public SzException {
+	SZ_INHERIT_CONSTR(ConnectionException, SzException)
+};
 
 /** Provides interface to a bufferevent-driven generalized connection.
  * User of this class is responsible for handling exceptions, errors

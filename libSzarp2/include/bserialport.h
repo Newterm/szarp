@@ -4,7 +4,9 @@
 #include "baseconn.h"
 #include <termios.h>
 
-class SerialPortException : public ConnectionException {};
+class SerialPortException : public ConnectionException {
+	SZ_INHERIT_CONSTR(SerialPortException, ConnectionException)
+};
 
 /** Provides interface to a bufferevent-driven serial port.
  */

@@ -70,9 +70,11 @@
 // end of SerialAdapter-specific definitions
 
 /** Exception specific to SerialAdapter class. */
-class SerialAdapterException : public SerialPortException { } ;
+class SerialAdapterException : public SerialPortException {
+	SZ_INHERIT_CONSTR(SerialAdapterException, SerialPortException)
+};
 
-/** 
+/**
  * Base class for SerialAdapter clients.
  */
 class SerialAdapter final: public BaseSerialPort, public ConnectionListener {

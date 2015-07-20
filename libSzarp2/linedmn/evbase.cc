@@ -27,9 +27,7 @@ PEvent EventBase::CreateEvent(evutil_socket_t fd, short what,
 {
 	struct event *ev = event_new(m_event_base.get(), fd, what, cb, arg);
 	if (!ev) {
-		EventBaseException ex;
-		ex.SetMsg("CreateEvent() failed");
-		throw ex;
+		throw EventBaseException("CreateEvent() failed");
 	}
 	PEvent event = std::shared_ptr<struct event>(ev, event_free);
 	return event;
@@ -39,9 +37,7 @@ PEvent EventBase::CreateTimer(event_callback_fn cb, void *arg) const
 {
 	struct event *ev = evtimer_new(m_event_base.get(), cb, arg);
 	if (!ev) {
-		EventBaseException ex;
-		ex.SetMsg("CreateEvent() failed");
-		throw ex;
+		throw EventBaseException("CreateEvent() failed");
 	}
 	PEvent timer = std::shared_ptr<struct event>(ev, event_free);
 	return timer;
@@ -52,9 +48,7 @@ PBufferevent EventBase::CreateBufferevent(evutil_socket_t fd, int options) const
 	struct bufferevent *ev = 
 		bufferevent_socket_new(m_event_base.get(), fd, options);
 	if (!ev) {
-		EventBaseException ex;
-		ex.SetMsg("CreateBufferevent() failed");
-		throw ex;
+		throw EventBaseException("CreateBufferevent() failed");
 	}
 	// bufferevents are created with write on and read off
 
@@ -69,10 +63,7 @@ void EventBase::BuffereventConnect(PBufferevent bev,
 		(struct sockaddr*)sin, sizeof(*sin));
 	if (res != 0) {
 		const int error = EVUTIL_SOCKET_ERROR();	// on Unix same as errno
-		EventBaseException ex;
-		ex.SetMsg("bufferevent_socket_connect() failed. Error %d: '%s'",
-			error, evutil_socket_error_to_string(error));
-		throw ex;
+		throw EventBaseException(error, "bufferevent_socket_connect() failed");
 	}
 }
 
@@ -87,10 +78,9 @@ PEvconnListener EventBase::CreateListenerBind(evconnlistener_cb cb,
 	if (!listener) {
 		const int port = ntohs(sin->sin_port);
 		const int error = EVUTIL_SOCKET_ERROR();
-		EventBaseException ex;
-		ex.SetMsg("evconnlistener_new_bind() failed on port %d. Error %d: '%s'",
-			port, error, evutil_socket_error_to_string(error));
-		throw ex;
+		throw EventBaseException(error,
+				"evconnlistener_new_bind() failed on port "
+				+ std::to_string(port));
 	}
 	return std::shared_ptr<struct evconnlistener>(listener, evconnlistener_free);
 }
@@ -99,9 +89,7 @@ void EventBase::Dispatch()
 {
 	int res = event_base_dispatch(m_event_base.get());
 	if (res != 0) {
-		EventBaseException ex;
-		ex.SetMsg("event_base_dispatch() failed");
-		throw ex;
+		throw EventBaseException("event_base_dispatch() failed");
 	}
 }
 
@@ -109,9 +97,7 @@ void EventBase::EvtimerDel(PEvent ev) const
 {
 	int res = evtimer_del(ev.get());
 	if (res != 0) {
-		EventBaseException ex;
-		ex.SetMsg("evtimer_del() failed");
-		throw ex;
+		throw EventBaseException("evtimer_del() failed");
 	}
 }
 
@@ -120,9 +106,7 @@ void EventBase::EvtimerAddMs(PEvent ev, ms_time_t ms) const
 	struct timeval tv = ms2timeval(ms);
 	int res = evtimer_add(ev.get(), &tv);
 	if (res != 0) {
-		EventBaseException ex;
-		ex.SetMsg("evtimer_add_ms() failed");
-		throw ex;
+		throw EventBaseException("evtimer_add_ms() failed");
 	}
 }
 
@@ -139,16 +123,13 @@ void EventBase::SetEventPriority(PEvent ev, const EventPriority priority) const
 	int pending = event_pending(ev.get(),
 		EV_READ | EV_WRITE | EV_SIGNAL | EV_TIMEOUT, NULL);
 	if (pending) {
-		EventBaseException ex;
-		ex.SetMsg("SetEventPriority: cannot set priority on a pending event");
-		throw ex;
+		throw EventBaseException("SetEventPriority: cannot set priority "
+				"on a pending event");
 	}
 	const int priority_int = PriorityToInt(priority);
 	int res = event_priority_set(ev.get(), priority_int);
 	if (res != 0) {
-		EventBaseException ex;
-		ex.SetMsg("SetEventPriority: setting priority failed");
-		throw ex;
+		throw EventBaseException("SetEventPriority: setting priority failed");
 	}
 }
 
@@ -156,9 +137,8 @@ int EventBase::PriorityToInt(const EventPriority priority) const
 {
 	// event_base_get_npriorities is not available for libevent2.0 (wheezy)
 	if (m_priorities_num < 0) {
-		EventBaseException ex;
-		ex.SetMsg("PriorityToInt: setting priorities not supported");
-		throw ex;
+		throw EventBaseException("PriorityToInt: setting priorities "
+				"not supported");
 	}
 	if (priority == EventPriority::HIGH) {
 		return 0;

@@ -25,10 +25,8 @@ void TcpServer::InitTcp(const std::string address, const int port)
 	} else {
 		const int res = inet_aton(address.c_str(), &addr.sin_addr);
 		if (res == 0) {
-			TcpServerException ex;
-			ex.SetMsg("Parsing of server IP address '%s' failed.",
-				address.c_str());
-			throw ex;
+			throw TcpServerException("Parsing of server IP address '"
+					+ address + "' failed.");
 		}
 	}
 
@@ -95,15 +93,11 @@ void TcpServerConnection::Enable()
 void TcpServerConnection::WriteData(const void* data, size_t size)
 {
 	if (!m_bufferevent) {
-		TcpServerException ex;
-		ex.SetMsg("Connection is currently unavailable");
-		throw ex;
+		throw TcpServerException("Connection is currently unavailable");
 	}
 	const int ret = bufferevent_write(m_bufferevent.get(), data, size);
 	if (ret < 0) {
-		TcpServerException ex;
-		ex.SetMsg("Write data failed.");
-		throw ex;
+		throw TcpServerException("Write data failed.");
 	}
 }
 

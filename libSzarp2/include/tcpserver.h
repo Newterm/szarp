@@ -62,10 +62,12 @@ protected:
 
 
 /** Exception specific to TcpServer and TcpServerConnection */
-class TcpServerException: public MsgException {};
+class TcpServerException : public SzException {
+	SZ_INHERIT_CONSTR(TcpServerException, SzException)
+};
 
 
-/** 
+/**
  * TCP Server using observer pattern.
  */
 class TcpServer final: public TcpServerObservable

@@ -28,7 +28,7 @@ void TcpConnection::InitTcp(std::string address, int port)
 	s << m_address << ":" << m_port;
 	m_id = s.str();
 
-	/* server address */ 
+	/* server address */
 	m_server_addr.sin_family = AF_INET;
 	inet_aton(address.c_str(), &m_server_addr.sin_addr);
 	m_server_addr.sin_port = htons(port);
@@ -44,9 +44,7 @@ void TcpConnection::Open()
 	m_bufferevent = bufferevent_socket_new(m_event_base, m_connect_fd, BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS);
 	if (m_bufferevent == NULL) {
 		Close();
-		TcpConnectionException ex;
-		ex.SetMsg("Error creating bufferevent.");
-		throw ex;
+		throw TcpConnectionException("Error creating bufferevent.");
 	}
 	bufferevent_setcb(m_bufferevent, ReadDataCallback, NULL, ErrorCallback, this);
 
@@ -54,10 +52,7 @@ void TcpConnection::Open()
 	int ret = bufferevent_socket_connect(m_bufferevent, (struct sockaddr*)&m_server_addr, sizeof(m_server_addr));
 	if (ret) {
 		Close();
-		TcpConnectionException ex;
-		ex.SetMsg("%s connect() failed, errno %d (%s)",
-				m_id.c_str(), errno, strerror(errno));
-		throw ex;
+		throw TcpConnectionException(errno, m_id + " connect() failed");
 	}
 	bufferevent_enable(m_bufferevent, EV_READ | EV_WRITE | EV_PERSIST);
 }
@@ -106,10 +101,8 @@ void TcpConnection::CreateSocket()
 {
 	m_connect_fd = socket(PF_INET, SOCK_STREAM, 0);
 	if (m_connect_fd == -1) {
-		TcpConnectionException ex;
-		ex.SetMsg("%s cannot create connect socket, errno %d (%s)",
-				m_id.c_str(), errno, strerror(errno));
-		throw ex;
+		throw TcpConnectionException(errno,
+				m_id + " cannot create connect socket");
 	}
 
 	int op = 1;
@@ -117,18 +110,13 @@ void TcpConnection::CreateSocket()
 			&op, sizeof(op));
 	if (ret == -1) {
 		Close();
-		TcpConnectionException ex;
-		ex.SetMsg("%s cannot set socket options on connect socket, errno %d (%s)",
-				m_id.c_str(), errno, strerror(errno));
-		throw ex;
+		throw TcpConnectionException(errno,
+				m_id + " cannot set socket options on connect socket");
 	}
 
 	if (set_fd_nonblock(m_connect_fd)) {
 		Close();
-		TcpConnectionException ex;
-		ex.SetMsg("%s set_fd_nonblock() failed, errno %d (%s)",
-				m_id.c_str(), errno, strerror(errno));
-		throw ex;
+		throw TcpConnectionException(errno, m_id + " set_fd_nonblock() failed");
 	}
 }
 
@@ -153,15 +141,11 @@ bool TcpConnection::Ready() const
 void TcpConnection::WriteData(const void* data, size_t size)
 {
 	if (m_bufferevent == NULL) {
-		TcpConnectionException ex;
-		ex.SetMsg("Connection is currently unavailable");
-		throw ex;
+		throw TcpConnectionException("Connection is currently unavailable");
 	}
 	int ret = bufferevent_write(m_bufferevent, data, size);
 	if (ret < 0) {
-		TcpConnectionException ex;
-		ex.SetMsg("Write data failed.");
-		throw ex;
+		throw TcpConnectionException("Write data failed.");
 	}
 }
 

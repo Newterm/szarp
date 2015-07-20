@@ -38,9 +38,7 @@ void SerialAdapter::Open()
 		m_open_pending = true;
 	} catch (const TcpConnectionException& e) {
 		Close();
-		SerialAdapterException ex;
-		ex.SetMsg(e.what());
-		throw ex;
+		throw SerialAdapterException(e.what());
 	}
 }
 
@@ -69,16 +67,12 @@ bool SerialAdapter::Ready() const
 void SerialAdapter::WriteData(const void* data, size_t size)
 {
 	if (not Ready()) {
-		SerialAdapterException ex;
-		ex.SetMsg("Port is currently unavailable");
-		throw ex;
+		throw SerialAdapterException("Port is currently unavailable");
 	}
 	try {
 		m_data_connection->WriteData(data, size);
 	} catch (const TcpConnectionException& e) {
-		SerialAdapterException ex;
-		ex.SetMsg(e.what());
-		throw ex;
+		throw SerialAdapterException(e.what());
 	}
 }
 
@@ -92,7 +86,7 @@ void SerialAdapter::WriteCmd(std::vector<unsigned char> &cmd_buffer)
 	}
 	// we cannot flush socket bufferevents, so commands can be sent in a single packet
 }
-	
+
 void SerialAdapter::ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data)
 {
 	if (conn == m_data_connection) {
@@ -309,11 +303,8 @@ void SerialAdapter::SetConfiguration(const SerialPortConfiguration& config)
 	default:
 		baudrate_index = 0xff;
 	}
-	if (baudrate_index == 0xff)
-	{
-		SerialAdapterException ex;
-		ex.SetMsg("Baudrate not supported");
-		throw ex;
+	if (baudrate_index == 0xff) {
+		throw SerialAdapterException("Baudrate not supported");
 	}
 
 	std::vector<unsigned char> cmd_buffer;
@@ -366,13 +357,10 @@ void SerialAdapter::SetConfiguration(const SerialPortConfiguration& config)
 	}
 	// cmd is ready to send
 	m_serial_state = SETCONF1;
-	
+
 	m_last_serial_conf_cmd = cmd_buffer;
-	if (not m_cmd_connection->Ready())
-	{
-		SerialAdapterException ex;
-		ex.SetMsg("Port is currently unavailable for config");
-		throw ex;
+	if (not m_cmd_connection->Ready()) {
+		throw SerialAdapterException("Port is currently unavailable for config");
 	}
 	WriteCmd(cmd_buffer);
 	// data shouldn't be read from data port until new serial settings negotiations are over
@@ -382,11 +370,8 @@ void SerialAdapter::SetConfiguration(const SerialPortConfiguration& config)
 
 void SerialAdapter::LineControl(bool dtr, bool rts)
 {
-	if (not Ready())
-	{
-		SerialAdapterException ex;
-		ex.SetMsg("Port is currently unavailable");
-		throw ex;
+	if (not Ready()) {
+		throw SerialAdapterException("Port is currently unavailable");
 	}
 	std::vector<unsigned char> cmd_buffer;
 	cmd_buffer.resize(4, 0);

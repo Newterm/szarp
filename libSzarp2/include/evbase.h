@@ -9,7 +9,9 @@
 #include <memory>
 
 /** Exception specific to EventBase class. */
-class EventBaseException : public MsgException {};
+class EventBaseException : public SzException {
+	SZ_INHERIT_CONSTR(EventBaseException, SzException)
+};
 
 typedef std::shared_ptr<struct bufferevent> PBufferevent;
 typedef std::shared_ptr<struct event> PEvent;

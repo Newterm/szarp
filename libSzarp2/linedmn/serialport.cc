@@ -12,17 +12,12 @@ void SerialPort::Open()
 	}
 	m_fd = open(m_device_path.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK, 0);
 	if (m_fd == -1) {
-		SerialPortException ex;
-		ex.SetMsg("Couldn't open device '%s', errno: %d (%s)",
-			m_device_path.c_str(), errno, strerror(errno));
-		throw ex;
+		throw SerialPortException(errno, "Couldn't open device " + m_device_path);
 	}
 	m_bufferevent = bufferevent_socket_new(m_event_base, m_fd, BEV_OPT_CLOSE_ON_FREE);
 	if (m_bufferevent == NULL) {
 		Close();
-		SerialPortException ex;
-		ex.SetMsg("Error creating bufferevent.");
-		throw ex;
+		throw SerialPortException("Error creating bufferevent.");
 	}
 	bufferevent_setcb(m_bufferevent, ReadDataCallback, NULL, ErrorCallback, this);
 	bufferevent_enable(m_bufferevent, EV_READ | EV_WRITE | EV_PERSIST);
@@ -51,20 +46,14 @@ void SerialPort::SetConfiguration(const SerialPortConfiguration& config)
 	struct termios termios;
 	if (tcgetattr(m_fd, &termios) != 0) {
 		Close();
-		SerialPortException ex;
-		ex.SetMsg("Cannot get port settings, errno: %d (%s)",
-			errno, strerror(errno));
-		throw ex;
+		throw SerialPortException(errno, "Cannot get port settings");
 	}
 
 	SerialPortConfigurationToTermios(config, &termios);
 
 	if (tcsetattr(m_fd, TCSANOW, &termios) != 0) {
 		Close();
-		SerialPortException ex;
-		ex.SetMsg("Cannot set port settings, errno: %d (%s)",
-			errno, strerror(errno));
-		throw ex;
+		throw SerialPortException(errno, "Cannot set port settings");
 	}
 	SetConfigurationFinished();
 }
@@ -86,18 +75,12 @@ void SerialPort::LineControl(bool dtr, bool rts)
 
 void SerialPort::WriteData(const void* data, size_t size)
 {
-	if (m_bufferevent == NULL)
-	{
-		SerialPortException ex;
-		ex.SetMsg("Port is currently unavailable");
-		throw ex;
+	if (m_bufferevent == NULL) {
+		throw SerialPortException("Port is currently unavailable");
 	}
 	int ret = bufferevent_write(m_bufferevent, data, size);
-	if (ret < 0)
-	{
-		SerialPortException ex;
-		ex.SetMsg("Write data failed.");
-		throw ex;
+	if (ret < 0) {
+		throw SerialPortException("Write data failed.");
 	}
 }
 

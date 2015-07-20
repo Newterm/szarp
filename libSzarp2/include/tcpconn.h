@@ -4,9 +4,11 @@
 #include "baseconn.h"
 
 /** Exception specific to TcpConnection class. */
-class TcpConnectionException : public ConnectionException { } ;
+class TcpConnectionException : public ConnectionException {
+	SZ_INHERIT_CONSTR(TcpConnectionException, ConnectionException)
+};
 
-/** 
+/**
  * Base class for TCP clients.
  */
 class TcpConnection : public BaseConnection {
