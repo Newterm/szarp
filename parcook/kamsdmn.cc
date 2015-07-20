@@ -1,5 +1,5 @@
 /*
-  SZARP: SCADA software 
+  SZARP: SCADA software
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/* 
+/*
  * $Id$
  */
 /*
@@ -28,7 +28,7 @@
 */
 
 /* "Publiczne udostêpnianie protoko³u do liczników Multical III i Multical 66C nie jest zabronione. Ograniczenia s± zwi±zane tylko z protoko³em KMP (do liczników Multical 601 i nowszych)." (Kamstrup, 04.12.2012) */
- 
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -81,7 +81,7 @@ void dolog(int level, const char * fmt, ...) {
 		vsz_log(level, fmt, fmt_args);
 		va_end(fmt_args);
 	}
-} 
+}
 
 xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	xmlChar *c;
@@ -115,8 +115,12 @@ public:
 	typedef enum {MODE_B300, MODE_B1200_EVEN, MODE_B1200} SerialMode;
 	typedef enum {SET_COMM_WRITE, WRITE, REPEAT_WRITE, SET_COMM_READ, READ, RESTART} CommunicationState;
 
-	class KamsDmnException : public MsgException { } ;
-	class NoDataException : public KamsDmnException { } ;
+	class KamsDmnException : public SzException {
+		SZ_INHERIT_CONSTR(KamsDmnException, SzException)
+	};
+	class NoDataException : public KamsDmnException {
+		SZ_INHERIT_CONSTR(NoDataException, KamsDmnException)
+	};
 
 	kams_daemon() : m_daemon_conf(NULL), m_ipc(NULL),
 			m_state(SET_COMM_WRITE),
@@ -454,14 +458,13 @@ void kams_daemon::ProcessResponse()
 			std::cout << "Frame received: \"" << m_read_buffer << '"' << std::endl;
 		}
 	} else if (m_read_buffer.size() == 0) {
-		NoDataException ex;
-		ex.SetMsg("ERROR!: No data was read from socket.");
-		throw ex;
+		throw NoDataException("ERROR!: No data was read from socket.");
 	} else {
 		SwitchSerialReadMode();					// try with another parity next time
-		KamsDmnException ex;
-		ex.SetMsg("ERROR!: Frame size %d is incorrect (%d)", m_read_buffer.size(), expected_response_size);
-		throw ex;
+		throw KamsDmnException("ERROR!: Frame size "
+				+ std::to_string(m_read_buffer.size())
+				+ " is incorrect ("+ std::to_string(expected_response_size)
+				+ ")");
 	}
 
 	std::vector<std::string> tokens = SplitMessage();
@@ -471,9 +474,8 @@ void kams_daemon::ProcessResponse()
 		bool conversion_failed = (istr >> kamdata).fail();
 		if (conversion_failed) {
 			SwitchSerialReadMode();
-			KamsDmnException ex;
-			ex.SetMsg("ERROR!: Couldn't parse token nr %d", i);
-			throw ex;
+			throw KamsDmnException("ERROR!: Couldn't parse token nr "
+					+ std::to_string(i));
 		}
 		switch (i) {
 		case 0:	/* energy in 0.1 GJ - 4 bytes */
@@ -515,9 +517,8 @@ void kams_daemon::ProcessResponse()
 		}
 	}
 	if (tokens.size() != NUMBER_OF_TOKENS) {
-		KamsDmnException ex;
-		ex.SetMsg("ERROR!: Received %d values instead of %d", tokens.size(), NUMBER_OF_TOKENS);
-		throw ex;
+		throw KamsDmnException("ERROR!: Received " + std::to_string(tokens.size()) +
+				" values instead of " + std::to_string(NUMBER_OF_TOKENS));
 	}
 }
 
@@ -549,31 +550,25 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 	xmlInitParser();
 	LIBXML_TEST_VERSION
 	xmlLineNumbersDefault(1);
-	
+
 	m_daemon_conf = new DaemonConfig("kamsdmn");
 	assert(m_daemon_conf != NULL);
 	if (m_daemon_conf->Load(&argc, argv)) {
-		KamsDmnException ex;
-		ex.SetMsg("Cannot load configuration");
-		throw ex;
+		throw KamsDmnException("Cannot load configuration");
 	}
 	if (m_daemon_conf->GetDevice()->GetFirstRadio()->
-			GetFirstUnit()->GetParamsCount() 
+			GetFirstUnit()->GetParamsCount()
 			!= NUMBER_OF_VALS) {
-		KamsDmnException ex;
-		ex.SetMsg("Incorrect number of parameters: %d, must be %d",
-				m_daemon_conf->GetDevice()->GetFirstRadio()->
-				GetFirstUnit()->GetParamsCount(),
-				NUMBER_OF_VALS);
-		throw ex;
+		throw KamsDmnException("Incorrect number of parameters: " +
+				std::to_string(m_daemon_conf->GetDevice()->GetFirstRadio()->
+				GetFirstUnit()->GetParamsCount()) +
+				+ ", must be " + std::to_string(NUMBER_OF_VALS));
 	}
 
 	m_ipc = new IPCHandler(m_daemon_conf);
 	if (!m_daemon_conf->GetSingle()) {
 		if (m_ipc->Init()) {
-			KamsDmnException ex;
-			ex.SetMsg("Cannot initialize IPCHandler");
-			throw ex;
+			throw KamsDmnException("Cannot initialize IPCHandler");
 		}
 	}
 	if (m_daemon_conf->GetSingle() || m_daemon_conf->GetDiagno())
@@ -607,9 +602,8 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 		if (atc_ip == NULL) {
 			xmlChar *path = get_device_node_prop(xp_ctx, "path");
 			if (path == NULL) {
-				KamsDmnException ex;
-				ex.SetMsg("ERROR!: neither IP nor device path has been specified");
-				throw ex;
+				throw KamsDmnException("ERROR!: neither IP nor device path "
+						"has been specified");
 			}
 			m_path.assign((const char*)path);
 			xmlFree(path);
@@ -632,9 +626,8 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 			std::istringstream istr((char*) tcp_data_port);
 			bool conversion_failed = (istr >> m_data_port).fail();
 			if (conversion_failed) {
-				KamsDmnException ex;
-				ex.SetMsg("ERROR!: Invalid data port value: %s", tcp_data_port);
-				throw ex;
+				throw KamsDmnException("ERROR!: Invalid data port value: "
+						+ std::string((char*) tcp_data_port));
 			}
 		}
 		xmlFree(tcp_data_port);
@@ -647,9 +640,8 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 			std::istringstream istr((char*) tcp_cmd_port);
 			bool conversion_failed = (istr >> m_cmd_port).fail();
 			if (conversion_failed) {
-				KamsDmnException ex;
-				ex.SetMsg("ERROR!: Invalid cmd port value: %s", tcp_cmd_port);
-				throw ex;
+				throw KamsDmnException("ERROR!: Invalid cmd port value: "
+						+ std::string((char*) tcp_cmd_port));
 			}
 		}
 		xmlFree(tcp_cmd_port);
@@ -679,7 +671,7 @@ int main(int argc, char *argv[])
 
 	try {
 		daemon.StartDo();
-	} catch (MsgException &e) {
+	} catch (SzException &e) {
 		dolog(0, "FATAL!: daemon killed by exception: %s", e.what());
 		exit(1);
 	} catch (...) {

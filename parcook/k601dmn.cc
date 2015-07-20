@@ -492,7 +492,9 @@ DetermineRegisterMultiplier(unsigned short RegisterAddress)
  */
 class K601Daemon: public ConnectionListener {
 public:
-	class K601Exception : public MsgException { } ;
+	class K601Exception : public SzException {
+		SZ_INHERIT_CONSTR(K601Exception, SzException)
+	};
 	typedef enum {RESTART, SEND, READ, PROCESS, FINALIZE} CommunicationState;
 
 	K601Daemon() :
@@ -627,17 +629,13 @@ void K601Daemon::Init(int argc, char *argv[])
 	cfg = new DaemonConfig("k601dmn");
 
 	if (cfg->Load(&argc, argv)) {
-		K601Exception ex;
-		ex.SetMsg("ERROR!: Load config failed");
-		throw ex;
+		throw K601Exception("ERROR!: Load config failed");
 	}
 	kamsinfo =
 	    new KamstrupInfo(cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->
 			     GetParamsCount());
 	if (kamsinfo->parseXML(cfg->GetXMLDevice(), cfg)) {
-		K601Exception ex;
-		ex.SetMsg("ERROR!: Parse XML failed");
-		throw ex;
+		throw K601Exception("ERROR!: Parse XML failed");
 	}
 
 	xmlDocPtr doc;
@@ -662,9 +660,8 @@ void K601Daemon::Init(int argc, char *argv[])
 	if (c == NULL) {
 		xmlChar *path = get_device_node_prop(xp_ctx, "path");
 		if (path == NULL) {
-			K601Exception ex;
-			ex.SetMsg("ERROR!: neither IP nor device path has been specified");
-			throw ex;
+			throw K601Exception("ERROR!: neither IP nor device "
+					"path has been specified");
 		}
 		m_path.assign((const char*)path);
 		xmlFree(path);
@@ -682,9 +679,8 @@ void K601Daemon::Init(int argc, char *argv[])
 			std::istringstream istr((char*) tcp_data_port);
 			bool conversion_failed = (istr >> m_data_port).fail();
 			if (conversion_failed) {
-				K601Exception ex;
-				ex.SetMsg("ERROR!: Invalid data port value: %s", tcp_data_port);
-				throw ex;
+				throw K601Exception("ERROR!: Invalid data port value: "
+						+ std::string((char*) tcp_data_port));
 			}
 		}
 		xmlFree(tcp_data_port);
@@ -697,9 +693,8 @@ void K601Daemon::Init(int argc, char *argv[])
 			std::istringstream istr((char*) tcp_cmd_port);
 			bool conversion_failed = (istr >> m_cmd_port).fail();
 			if (conversion_failed) {
-				K601Exception ex;
-				ex.SetMsg("ERROR!: Invalid cmd port value: %s", tcp_cmd_port);
-				throw ex;
+				throw K601Exception("ERROR!: Invalid cmd port value: "
+						+ std::string((char*) tcp_cmd_port));
 			}
 		}
 		xmlFree(tcp_cmd_port);
@@ -740,9 +735,7 @@ Unique registers (read params): %d\n\
 	ipc = new IPCHandler(cfg);
 	if (!cfg->GetSingle()) {
 		if (ipc->Init()) {
-			K601Exception ex;
-			ex.SetMsg("ERROR!: IPC init failed");
-			throw ex;
+			throw K601Exception("ERROR!: IPC init failed");
 		}
 	}
 
@@ -1040,7 +1033,7 @@ int main(int argc, char *argv[])
 
 	try {
 		daemon.StartDo();
-	} catch (MsgException &e) {
+	} catch (SzException &e) {
 		dolog(0, "FATAL!: daemon killed by exception: %s", e.what());
 		exit(1);
 	} catch (...) {
