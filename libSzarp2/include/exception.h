@@ -1,34 +1,66 @@
-#ifndef __EXCEPTION_H__
-#define __EXCEPTION_H__
+#ifndef __EXCEPTION_H
+#define __EXCEPTION_H
 
-#include <exception>
-#include <stdio.h>
-#include <stdarg.h>
-#include "compat.h"
+#include <cstring>
+#include <stdexcept>
 
-/** size of buffer for exception message */
-#define EXT_BUFFER_SIZE	256
+/**
+ * SZ_INHERIT_CONSTR(cls, base) - inherit constructors from SzException (or its
+ *                                derivatives).
+ *
+ * This macro is somewhat old-fashioned C-style solution for shortening
+ * a definitions of new exceptions that derive from SzException. But that's the
+ * only way to do it before C++11 standard! Hopefully in the future this can be
+ * removed and all calls could be replaced with C++11 "using" declaration.
+ */
+#if GCC_VERSION >= 40800
+#define SZ_INHERIT_CONSTR(cls, base) \
+public: \
+	explicit cls (const std::string& what_arg) \
+		: base(what_arg) { } \
+	explicit cls (const char* what_arg) \
+		: base(what_arg) { } \
+	explicit cls (int errnum, const std::string& what_arg) \
+		: base(errno_what(errnum, what_arg)) { }
+#else
+#define SZ_INHERIT_CONSTR(cls, base) using base::base;	// only C++11
+#endif
 
-/** std::exception subclass, with additional message set with SetMsg method */
-class MsgException: public std::exception {
+/**
+ * class SzException - base class for all SZARP-specific exceptions.
+ *
+ * Use SZ_INHERIT_CONSTR() macro to inherit SzException's constructors.
+ *
+ * Example:
+ *
+ *  class ExampleError : public SzException {
+ *  	SZ_INHERIT_CONSTR(ExampleError, SzException)
+ *  };
+ *
+ *  class NewExampleError : public ExampleError {
+ *  	SZ_INHERIT_CONSTR(NewExampleError, ExampleError)
+ *  };
+ *
+ */
+class SzException : public std::runtime_error
+{
+#if GCC_VERSION >= 40800
+	using std::runtime_error::runtime_error;
+#else
 public:
-	/** Buffer for messages. */
-	char buffer[EXT_BUFFER_SIZE];
-	/** Method called to get exception info. */
-	const char* what() const noexcept override
-	{
-		return buffer;
-	}
-	MsgException() { buffer[0] = 0; }
-	/** Set message printed after throw. */
-	void SetMsg(const char * format, ...) noexcept
-	{
-		va_list fmt_args;
-		va_start(fmt_args, format);
-		vsnprintf(buffer, EXT_BUFFER_SIZE - 1, format, fmt_args);
-		va_end(fmt_args);
-		buffer[EXT_BUFFER_SIZE - 1] = 0;
+	explicit SzException (const std::string& what_arg)
+		: std::runtime_error(what_arg) { }
+	explicit SzException (const char* what_arg)
+		: std::runtime_error(what_arg) { }
+#endif
+	explicit SzException (int errnum, const std::string& what_arg)
+		: std::runtime_error(errno_what(errnum, what_arg)) { }
+
+protected:
+	static std::string errno_what (int errnum, const std::string& what_arg) {
+		return what_arg + ", errno " + std::to_string(errnum)
+			+ " (" + strerror(errnum) + ")";
 	}
 };
 
-#endif // __EXCEPTION_H__
+#endif /* __EXCEPTION_H */
