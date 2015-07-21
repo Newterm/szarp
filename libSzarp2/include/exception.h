@@ -3,6 +3,7 @@
 
 #include <cstring>
 #include <stdexcept>
+#include "compiler.h"
 
 /**
  * SZ_INHERIT_CONSTR(cls, base) - inherit constructors from SzException (or its
