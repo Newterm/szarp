@@ -15,6 +15,8 @@
  * removed and all calls could be replaced with C++11 "using" declaration.
  */
 #if GCC_VERSION >= 40800
+#define SZ_INHERIT_CONSTR(cls, base) using base::base;	// only C++11
+#else
 #define SZ_INHERIT_CONSTR(cls, base) \
 public: \
 	explicit cls (const std::string& what_arg) \
@@ -23,8 +25,6 @@ public: \
 		: base(what_arg) { } \
 	explicit cls (int errnum, const std::string& what_arg) \
 		: base(errno_what(errnum, what_arg)) { }
-#else
-#define SZ_INHERIT_CONSTR(cls, base) using base::base;	// only C++11
 #endif
 
 /**
@@ -54,6 +54,7 @@ public:
 	explicit SzException (const char* what_arg)
 		: std::runtime_error(what_arg) { }
 #endif
+public:
 	explicit SzException (int errnum, const std::string& what_arg)
 		: std::runtime_error(errno_what(errnum, what_arg)) { }
 
