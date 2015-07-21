@@ -4,13 +4,8 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include "compiler.h"
 
-// TODO: move this macro to some more appropriate place
-#ifndef GCC_VERSION
-#define GCC_VERSION (__GNUC__ * 10000 \
-                     + __GNUC_MINOR__ * 100 \
-                     + __GNUC_PATCHLEVEL__)
-#endif
 
 class CommandHandler {
 public:
