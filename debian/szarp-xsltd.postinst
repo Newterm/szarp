@@ -17,7 +17,16 @@ apache_force_reload() {
 
 case "$1" in
     configure)
+	
+	APACHE_VER=$(apache2 -v | awk -F"." 'NR<2{print $2}')
+	RESOURCE=apache2-szarp
+	SITE=szarp
 
+	[ "$APACHE_VER" = "4" ] && {
+		RESOURCE=apache24-szarp
+		SITE=szarp.conf
+	}
+		
 	[ -d /etc/apache2/sites-available ] || exit 0
 
 	[ -x /usr/sbin/a2enmod ] && {
@@ -29,16 +38,16 @@ case "$1" in
 
 
 	# Upgrade fails becouse old prerm deletes config
-	[ ! -e /etc/apache2/sites-available/szarp ] && {
-		cp /opt/szarp/resources/xsltd/apache2-szarp /etc/apache2/sites-available/szarp
+	[ ! -e /etc/apache2/sites-available/$SITE ] && {
+		cp /opt/szarp/resources/xsltd/$RESOURCE /etc/apache2/sites-available/$SITE
 	}
 
 	# Replace config only when is not changed by user
-	ucf /opt/szarp/resources/xsltd/apache2-szarp /etc/apache2/sites-available/szarp 
-	ucfr szarp-xsltd /etc/apache2/sites-available/szarp
+	ucf /opt/szarp/resources/xsltd/$RESOURCE /etc/apache2/sites-available/$SITE 
+	ucfr szarp-xsltd /etc/apache2/sites-available/$SITE
 
-	[ -e /etc/apache2/sites-available/szarp ] && {
-		[ -x /usr/sbin/a2ensite ] &&  /usr/sbin/a2ensite szarp
+	[ -e /etc/apache2/sites-available/$SITE ] && {
+		[ -x /usr/sbin/a2ensite ] &&  /usr/sbin/a2ensite $SITE
 	
 		apache_force_reload
 	}

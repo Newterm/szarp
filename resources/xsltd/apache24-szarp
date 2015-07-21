@@ -1,0 +1,78 @@
+# Virtual host configuration for SZARP configuration and reports server.
+# 
+# (C) 2005, 2007 Praterm S.A.
+# Pawe³ Pa³ucha <pawel@praterm.com.pl>
+#
+# $Id: apache2-szarp 5870 2008-06-30 14:50:31Z pawel $
+#
+
+# Port to listen on
+Listen 8084
+NameVirtualHost *:8084
+
+<VirtualHost *:8084>
+	ServerAdmin coders@praterm.com.pl
+	
+	DocumentRoot /etc/szarp
+	Options FollowSymLinks
+
+	ExpiresActive On
+	ExpiresDefault "access plus 9 seconds"
+
+	RewriteEngine On
+		
+	# Include user supplied configuration files
+	IncludeOptional /etc/szarp/default/config/*.apache
+
+	# ISL documents
+	RewriteRule ^/isl/([A-Za-z0-9]*)\.isl$ /default/config/isl/$1.isl [L]
+	# Fire and other special effects
+	RewriteRule ^/isl/([A-Za-z0-9]*)\.png$ /default/config/isl/$1.png [L]
+
+	# Everything else is forbidden
+	RewriteRule .* / [F]
+	
+	# 'Deny all' rule if something slips through above rewrite rule
+	<Directory />
+		Order deny,allow
+		Deny from all
+		Require all granted
+	</Directory>
+
+	<Directory /etc/szarp/default/config/isl>
+		Order allow,deny
+		Allow from all
+		AddHandler mod_python isl
+		PythonPath "sys.path+['/opt/szarp/bin']"
+		PythonOption szarp.paramd.uri "http://localhost:8081/"
+		PythonHandler xslt_handler
+		PythonDebug On
+		Require all granted
+	</Directory>
+	
+	# CGI directory
+	ScriptAlias /cgi-bin /opt/szarp/bin
+	<Directory /opt/szarp/bin>
+		Order allow,deny
+		Allow from all
+		AllowOverride None
+		Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+		Require all granted
+	</Directory>
+	
+	ErrorLog /opt/szarp/logs/apache-error.log
+	CustomLog /opt/szarp/logs/apache-access.log combined
+
+	LogLevel error
+	<IfDefine debug>
+		RewriteLogLevel 7
+		RewriteLog /opt/szarp/logs/apache-rewrite.log
+		LogLevel debug
+		ScriptLog /opt/szarp/logs/apache-cgi.log
+	</IfDefine>
+	
+	ServerSignature Off
+
+</VirtualHost>
+
+# vim: set ft=apache:
