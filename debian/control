@@ -196,7 +196,7 @@ Description: Sets of scripts and libraries to easily manage params.xml file
 Package: szarp-iks
 Section: misc
 Architecture: any
-Depends: apache2 , websockify , szarp-iks-server, supervisor 
+Depends: apache2 , websockify , szarp-iks-server 
 Description: Virtual package that depends on all packages needed to iks system
 
 Package: szarp-iks-server

@@ -285,14 +285,14 @@ case "$1" in
 	# If iks server is installed restart it with other szarp daemons.
 	###
 	if [ -x __INSTALL_DIR__/bin/iks-server ] ; then
-		supervisorctl stop iks-server
+		/usr/sbin/service szarp-iks-server stop
 	fi
 
 	$0 stop
 	$0 start
 
 	if [ -x __INSTALL_DIR__/bin/iks-server ] ; then
-		supervisorctl start iks-server
+		/usr/sbin/service szarp-iks-server start
 	fi
 	;;
   status)
