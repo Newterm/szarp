@@ -216,9 +216,12 @@ void DrawsListCtrl::AssignColors()
 					break;
 				}
 			}
-			assert (f < 12);
+			//assert (f < 12);
+			f = f%12; // 12 default colors, then repeat
+			
 			used[f] = true;
 			setcolor = f + 12;
+		 
 		}
 		wxListItem l;
 		l.SetId(itemIndex);
