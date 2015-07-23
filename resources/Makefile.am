@@ -28,6 +28,7 @@ RESOURCES = \
        @srcdir@/qt4 \
        @srcdir@/xsltd \
        @srcdir@/szarp_in.cfg \
+       @srcdir@/iks-server.conf \
        @srcdir@/parstart_TEMPLATE \
        @srcdir@/parstart_cfg_TEMPLATE \
        @srcdir@/SZARP_CFG_TEMPLATE \
