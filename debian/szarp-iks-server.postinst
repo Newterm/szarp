@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -e;
+
+. /usr/share/debconf/confmodule;
+
+case "$1" in
+    configure)
+   
+    echo "[program:iks-server]
+autostart=false
+autorestart=true
+command=/opt/szarp/bin/iks-server
+startsecs=0" > /etc/supervisor/conf.d/iks-server.conf
+ 
+    supervisorctl reread
+    supervisorctl update
+ 
+    ;;
+esac
+
+exit 0

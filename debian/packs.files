@@ -107,7 +107,6 @@ Files: usr/lib/debug/*
 Package: szarp-iks-server
 Files: opt/szarp/bin/iks-server
 Files: opt/szarp/iks/iks-server.ini.sample
-Files: etc/supervisor/conf.d/iks-server.conf
 
 Package: szarp-filler2
 Files: opt/szarp/lib/python/{filler2-launcher.py*,filler2.py*,ipkparser.py*,AboutDialog.py*,DatetimeDialog.py*,HistoryDialog.py*,ValueDialogs.py*}
