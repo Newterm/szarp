@@ -221,9 +221,9 @@ function PrepareScript() {
 	cat "$CURDIR"/require.ini \
 		| $ICONV -f latin2 -t cp1250 \
 		> "`GetTmp`/require.ini"
-	cat "$CURDIR"/../../gpl-2.0-pl.txt \
+	cat "$CURDIR"/../../gpl-2.0-pl-win.txt \
 		| $SED -e "s/__NAME__/$_NAME/g" \
-		| $ICONV -f latin2 -t ISO-8859-2 \
+		#| $ICONV -f utf-8 -t cp1250 \ # teoretycznie Unicode / utf-8 jest wspierane przez nsis
 		> "`GetTmp`/license.pl"
 	cat "$CURDIR"/../../gpl-2.0.txt \
 		| $SED -e "s/__NAME__/$_NAME/g" \
