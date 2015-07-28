@@ -302,6 +302,9 @@ void GCDCGraphs::DrawYAxisVals(wxGraphicsContext& dc) {
 		return;
 	DrawInfo *di = draw->GetDrawInfo();
 
+	if !di->IsValid():
+		return;
+
 	double min = di->GetMin();
 	double max = di->GetMax();
 	if( max <= min  ) {
