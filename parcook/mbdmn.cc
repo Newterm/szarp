@@ -95,14 +95,19 @@
                       modbus:address="0x04"
                       modbus:val_type="float"
 			modbus:val_op="msblsb"
-			modbus:val_op="LSW">
+			modbus:val_op="LSW"
 				(optional) operator for converting data from float to 2 bytes integer;
 				default is 'NONE' (simple conversion to short int), other values
 				are 'LSW' and 'MSW' - converting to 4 bytes long and getting less/more
 				significant word; in this case there should be 2 parameters with the
 				same register address and different val_op attributes - LSW and MSW.
-				s³owa
-                      ...
+				(useful when param value is stored as 2B, but we multiply it by large prec)
+			modbus:combined="LSW">
+				(optional) operator for sending a combined param using its lsw and msw parts,
+				values are 'LSW' and 'MSW', there should be 2 parameters (lsw and msw) with the
+				same register address and different combined attributes - LSW and MSW.
+				Additionally, if a matching defined combined param is found, its precision is used.
+				...
               </param>
               ...
               <send 
@@ -591,12 +596,35 @@ public:
 	virtual void set_val(short val, time_t time);
 };
 
+/** Receives a short value (as almost all other sender_modbus_val_ops)
+ *	and outputs it as a modbus float */
 class float_sender_modbus_val_op : public sender_modbus_val_op {
+protected:
 	modbus_register *m_reg_lsw;
 	modbus_register *m_reg_msw;
 	int m_prec;
 public:
 	float_sender_modbus_val_op(float no_data, modbus_register *reg_lsw, modbus_register *reg_msw, int prec);
+	virtual void set_val(short val, time_t time);
+};
+
+/** Common storage class for two instances float_to_float_sender_modbus_val_op */
+class float_to_float_storage {
+	unsigned short m_last_v[2];
+public:
+	void set_val(bool lsw, short val);
+	unsigned short get_val(bool lsw) const;
+	unsigned short* get_raw();
+};
+
+/** Receives a float (4B) value from two szbase params */
+class float_to_float_sender_modbus_val_op : public float_sender_modbus_val_op {
+	bool m_lsw;
+	float_to_float_storage *m_last_v;
+public:
+	float_to_float_sender_modbus_val_op(float no_data,
+		modbus_register *reg_lsw, modbus_register *reg_msw, int prec,
+		bool lsw, float_to_float_storage *last_v);
 	virtual void set_val(short val, time_t time);
 };
 
@@ -607,7 +635,8 @@ void dolog(int level, const char * fmt, ...)
 xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	xmlChar *c;
 	char *e;
-	asprintf(&e, "./@modbus:%s", prop);
+	const int ret = asprintf(&e, "./@modbus:%s", prop);
+	(void)ret;
 	assert (e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
 	free(e);
@@ -734,7 +763,7 @@ float_sender_modbus_val_op::float_sender_modbus_val_op(float no_data, modbus_reg
 	sender_modbus_val_op(no_data), m_reg_lsw(reg_lsw), m_reg_msw(reg_msw), m_prec(prec) {}
 
 void float_sender_modbus_val_op::set_val(short val, time_t time) {
-	unsigned short iv[2]; 
+	unsigned short iv[2];
 	float fval;
 	if (val == SZARP_NO_DATA)
 		fval = m_nodata_value;
@@ -746,13 +775,63 @@ void float_sender_modbus_val_op::set_val(short val, time_t time) {
 	m_reg_lsw->set_val(iv[1], time);
 }
 
+void float_to_float_storage::set_val(bool lsw, short val) {
+	if (lsw)
+		m_last_v[0] = val;
+	else
+		m_last_v[1] = val;
+}
+
+unsigned short float_to_float_storage::get_val(bool lsw) const {
+	if (lsw)
+		return m_last_v[0];
+	else
+		return m_last_v[1];
+}
+
+unsigned short* float_to_float_storage::get_raw() {
+	return m_last_v;
+}
+
+float_to_float_sender_modbus_val_op::float_to_float_sender_modbus_val_op(
+		float no_data, modbus_register *reg_lsw, modbus_register *reg_msw,
+		int prec, bool lsw, float_to_float_storage *last_v) :
+	float_sender_modbus_val_op(no_data, reg_lsw, reg_msw, prec), m_lsw(lsw),
+	m_last_v(last_v) {}
+
+void float_to_float_sender_modbus_val_op::set_val(short val, time_t time) {
+	uint32_t val32 = 0;
+	float fval = 0;
+	if (val == SZARP_NO_DATA) {
+		// TODO : if only one of the registers is NODATA, behaviour is undefined
+		fval = m_nodata_value;
+	} else {
+		m_last_v->set_val(m_lsw, val);
+		// apply precision
+		memcpy(&val32, m_last_v->get_raw(), sizeof(uint32_t));
+		fval = (float)val32 / m_prec;
+	}
+
+	// copy to final output array
+	unsigned short iv[2];
+	memcpy(iv, &fval, sizeof(float));
+
+	m_reg_msw->set_val(iv[0], time);
+	m_reg_lsw->set_val(iv[1], time);
+}
+
 modbus_register::modbus_register(modbus_daemon* daemon) : m_modbus_daemon(daemon), m_val(SZARP_NO_DATA), m_mod_time(-1) {}
 
 unsigned short modbus_register::get_val(bool &valid) {
-	if (m_mod_time < 0)
+	if (m_mod_time < 0) {
+		sz_log(10, "m_mod_time < 0");
 		valid = false;
+	}
 	else
+	{
 		valid = m_modbus_daemon->register_val_expired(m_mod_time);
+		sz_log(10, "valid (from register_val_expired) %d", valid);
+	}
 	return m_val;
 }
 
@@ -763,6 +842,7 @@ unsigned short modbus_register::get_val() {
 void modbus_register::set_val(unsigned short val, time_t time) {
 	m_val = val;
 	m_mod_time = time;
+	dolog(9, "set_val to %d, time: %s", val, asctime(localtime(&time)));
 }
 
 modbus_daemon::modbus_daemon() {
@@ -1005,14 +1085,19 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 				break;
 		}
 
-	for (p = u->GetFirstParam(), sp = u->GetFirstSendParam(), i = 0, j = 0; i < u->GetParamsCount() + u->GetSendParamsCount(); i++, j++) {
+	std::map<unsigned short, float_to_float_storage*> addr_to_storage;
+	for (p = u->GetFirstParam(), sp = u->GetFirstSendParam(), i = 0, j = 0;
+			i < u->GetParamsCount() + u->GetSendParamsCount();
+			i++, j++) {
+
 		char *expr;
 
 		if (i == u->GetParamsCount())
 			j = 0;
 		bool send = j != i;
 
-	        asprintf(&expr, ".//ipk:%s[position()=%d]", i < u->GetParamsCount() ? "param" : "send", j + 1);
+		const int ret = asprintf(&expr, ".//ipk:%s[position()=%d]", i < u->GetParamsCount() ? "param" : "send", j + 1);
+		(void)ret;
 		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx);
 		assert(node);
 		free(expr);
@@ -1144,12 +1229,60 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 			if (m_registers[id].find(msw) == m_registers[id].end())
 				m_registers[id][msw] = new modbus_register(this);
 
-			int prec = exp10(param->GetPrec());
+			int xml_prec = param->GetPrec();
+
+			xmlChar* combined_str = xmlGetNsProp(node, BAD_CAST("combined"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+			bool is_combined = false;
+			bool combined_lsw = false;
+			if (combined_str != NULL) {
+				is_combined = true;
+				if (!xmlStrcmp(combined_str, BAD_CAST "MSW")) {
+					//combined_lsw = false;
+				} else if (!xmlStrcmp(combined_str, BAD_CAST "LSW")) {
+					combined_lsw = true;
+				} else {
+					dolog(0, "Unsupported combined attribute value - %s, line %ld", (char*) combined_str, xmlGetLineNo(node));
+					return 1;
+				}
+
+				// check if combined param is present in SZARP and load prec from it
+				std::wstring combined_name = sp->GetParamName();
+				std::wstring::size_type pos = std::string::npos;
+				const std::vector<std::wstring> word_endings {L" lsw", L" msw", L" LSW", L" MSW"};
+				const int word_ending_length = word_endings.at(0).size();
+				for (auto it = word_endings.begin(); it != word_endings.end(); ++it) {
+					pos = combined_name.find(*it);
+					if (pos != std::wstring::npos)
+						break;
+				}
+				if (pos != std::wstring::npos) {
+					combined_name.erase(pos, word_ending_length);
+					TParam *combined_param = m_cfg->GetIPK()->getParamByName(combined_name);
+					if (combined_param == NULL) {
+						dolog(7, "combined parameter with name '%s' not found (send parameter %d), will use prec from %s",
+								SC::S2A(combined_name).c_str(), j + 1, SC::S2A(sp->GetParamName()).c_str());
+					} else {
+						xml_prec = combined_param->GetPrec();
+						dolog(7, "Loaded prec from combined param %s : %d", SC::S2A(combined_name).c_str(), xml_prec);
+					}
+				}
+			}
+			xmlFree(combined_str);
+
+			int prec = exp10(xml_prec);
 			if (!strcmp(c, "float"))  {
 				if (!send) {
 					vop = new long_parcook_modbus_val_op<float>(m_registers[id][lsw], m_registers[id][msw], prec, is_lsw);
 					dolog(7, "Parcook param %s no(%zu), mapped to unit: %lc, register %hu, value type: float, params holds %s part, lsw: %hu, msw: %hu",
-						SC::S2A(param->GetName()).c_str(), m_parcook_ops.size(), u->GetId(), addr, is_lsw ? "lsw" : "msw", lsw, msw);
+					SC::S2A(param->GetName()).c_str(), m_parcook_ops.size(), u->GetId(), addr, is_lsw ? "lsw" : "msw", lsw, msw);
+				} else if (is_combined) {
+					if (addr_to_storage.find(addr) == addr_to_storage.end()) {
+						addr_to_storage[addr] = new float_to_float_storage();
+					}
+					vos = new float_to_float_sender_modbus_val_op(m_nodata_value, m_registers[id][lsw], m_registers[id][msw],
+						prec, combined_lsw, addr_to_storage.at(addr));
+					dolog(7, "Sender param %s no(%zu), mapped to unit: %lc, register %hu, value type: float (combined), params holds %s part(output) and %s part (input), lsw: %hu, msw: %hu",
+					SC::S2A(param->GetName()).c_str(), m_sender_ops.size(), u->GetId(), addr, is_lsw ? "lsw" : "msw", combined_lsw ? "lsw" : "msw", lsw, msw);
 				} else {
 					vos = new float_sender_modbus_val_op(m_nodata_value, m_registers[id][lsw], m_registers[id][msw], prec);
 					dolog(7, "Sender param %s no(%zu), mapped to unit: %lc, register %hu, value type: float, params holds %s part",
@@ -1242,9 +1375,9 @@ int modbus_daemon::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx) {
 			u; 
 			++j, u = u->GetNext()) {
 
-	        char *expr;
-	        asprintf(&expr, ".//ipk:unit[position()=%d]",
-			j + 1);
+		char *expr;
+		const int ret = asprintf(&expr, ".//ipk:unit[position()=%d]", j + 1);
+		(void)ret;
 		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx);
 		free(expr);
 
@@ -1278,11 +1411,10 @@ void modbus_daemon::from_sender() {
 
 	m_ipc->GoSender();
 		
-	for (std::vector<sender_modbus_val_op*>::iterator i = m_sender_ops.begin();
-			i != m_sender_ops.end();
+	for (auto i = m_sender_ops.begin(); i != m_sender_ops.end();
 			i++, v++, j++) {
 		(*i)->set_val(*v, m_current_time);
-		dolog(9, "Setting %zu param from sender to %hd", j, *v);
+		dolog(9, "Setting %zu param from sender to %hd, time: %s", j, *v, asctime(localtime(&m_current_time)));
 	}
 }
 
@@ -2494,9 +2626,11 @@ int configure_daemon(modbus_daemon **dmn, DaemonConfig *cfg) {
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
 	assert (ret == 0);
+	(void)ret;
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "modbus",
 			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 	assert (ret == 0);
+	(void)ret;
 
 	xp_ctx->node = cfg->GetXMLDevice();
 
@@ -2542,7 +2676,8 @@ void dolog(int level, const char * fmt, ...) {
 	if (g_debug) {
 		char *l;
 		va_start(fmt_args, fmt);
-		vasprintf(&l, fmt, fmt_args);
+		const int ret = vasprintf(&l, fmt, fmt_args);
+		(void)ret;
 		va_end(fmt_args);
 
 		std::cout << l << std::endl;
