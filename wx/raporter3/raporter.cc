@@ -467,12 +467,13 @@ void szRaporter::OnTemplateNew(wxCommandEvent &ev)
 {
 	if(this->ipk == NULL) {
 		this->ipk = szServerDlg::GetIPK(m_server, m_http);
-		m_raplist.RegisterIPK(ipk);
 	}
 
 	if(this->ipk == NULL)
 		return;
 
+	m_raplist.RegisterIPK(ipk);
+	
 	szRaporterEdit ed(this->ipk, this, wxID_ANY, _("Raporter->Editor"));
 	
 	ed.g_data.m_raplist.Clear();
