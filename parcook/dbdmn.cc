@@ -312,6 +312,7 @@ int DbDaemon::ParseConfig(DaemonConfig * cfg)
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "db",
 			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 	assert (ret == 0);
+	(void)ret;
 
 	xp_ctx->node = cfg->GetXMLDevice();
 
@@ -331,7 +332,8 @@ int DbDaemon::ParseConfig(DaemonConfig * cfg)
 	TParam *p = cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->GetFirstParam();
 	for (int i = 1; NULL != p && i <= m_params_count; i++) {
 		char *expr;
-		asprintf(&expr, ".//ipk:unit[position()=1]/ipk:param[position()=%d]", i);
+		const int ret = asprintf(&expr, ".//ipk:unit[position()=1]/ipk:param[position()=%d]", i);
+		(void)ret;
 		assert (expr != NULL);
 
 		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx);
@@ -383,12 +385,19 @@ int DbDaemon::Read(IPCHandler *ipc)
 	Szbase* szbase = Szbase::GetObject();
 	szbase->NextQuery();
 
-	sz_log(10, "DbDaemon::Read: Querying: m_last: %ld, m_expire: %d", m_last, m_expire);
+	sz_log(10, "DbDaemon::Read: Querying: m_last: %ld (%s), m_expire: %d", m_last, asctime(localtime(&m_last)), m_expire);
 	for (size_t i = 0; i < m_dbparams.size(); i++) {
 		struct ParamDesc * pd = m_dbparams[i];
 
-		sz_log(10, "Searching for data for parameter (%s)",
-			SC::S2U(pd->param->GetName()).c_str());
+		time_t first_time = m_last - m_expire;
+		std::string first_time_str = asctime(localtime(&first_time));
+		std::string last_time_str = asctime(localtime(&m_last));
+		sz_log(10, "Searching for data for parameter (%s) on interval %ld (%s), %ld (%s)",
+			SC::S2U(pd->param->GetName()).c_str(),
+			first_time,
+			first_time_str.c_str(),
+			m_last,
+			last_time_str.c_str());
 
 		bool ok;
 		std::wstring error;
@@ -399,7 +408,7 @@ int DbDaemon::Read(IPCHandler *ipc)
 			continue;
 		}
 
-		sz_log(10, "DbDaemon::Read: time found: %ld", t);
+		sz_log(10, "DbDaemon::Read: time found: %ld, %s", t, asctime(localtime(&t)));
 
 		bool is_fixed;
 		SZBASE_TYPE data = szbase->GetValue(pd->dbparam, t, pd->probe_type, 0, &is_fixed, ok, error);
@@ -410,7 +419,7 @@ int DbDaemon::Read(IPCHandler *ipc)
 		}
 
 		ipc->m_read[i] = pd->param->ToIPCValue(data);
-		sz_log(10, "Data set to %d", ipc->m_read[i]);
+		sz_log(10, "Data set to %f , %d", data, ipc->m_read[i]);
 	}
 	
 	return 0;
@@ -439,6 +448,7 @@ void init_signals()
 	assert (ret == 0);
 	ret = sigaction(SIGHUP, &sa, NULL);
 	assert (ret == 0);
+	(void)ret;
 }
 
 int main(int argc, char *argv[])

@@ -112,7 +112,7 @@ public:
 
 
 void szb_probeblock_real_t::FetchProbes() {
-	sz_log(10, "Fetcheing real probes");
+	sz_log(10, "Fetching real probes");
 	int count = buffer->prober_connection->Get(start_time + SZBASE_PROBE_SPAN * fixed_probes_count,
 			end_time,
 			param->GetSzbaseName());
@@ -162,13 +162,17 @@ void szb_probeblock_combined_t::FetchProbes() {
 	size_t count = std::min(lsw_count, msw_count);
 	double prec10 = pow10(param->GetPrec());
 	for (size_t i = 0; i < count; i++) {
-		if (buf_msw[i] == SZB_FILE_NODATA)
+		if (buf_msw[i] == SZB_FILE_NODATA) {
 			data[fixed_probes_count + i] = SZB_NODATA;
-		else
-			data[fixed_probes_count + i] = (SZBASE_TYPE) ( (double)(
+			sz_log(10, "Set NODATA as msw was NODATA (probe %d of %d)", i, count);
+		} else {
+			SZBASE_TYPE combined_probe = (SZBASE_TYPE) ( (double)(
 				    int(szbfile_endian(buf_msw[i]) << 16)
 				    	| (unsigned short)(szbfile_endian(buf_lsw[i]))
 				    ) / prec10);
+			data[fixed_probes_count + i] = combined_probe;
+			sz_log(10, "Set %f (probe %d of %d)", combined_probe, i, count);
+		}
 	}
 	if (server_time < start_time)
 		return;
@@ -220,7 +224,7 @@ void szb_probeblock_definable_t::FetchProbes() {
 }
 
 void szb_probeblock_lua_t::FetchProbes() {
-	sz_log(10, "Fetcheing lua probes");
+	sz_log(10, "Fetching lua probes");
 	time_t range_start, range_end;
 	if (!buffer->prober_connection->GetRange(range_start, range_end))
 		return;
@@ -272,7 +276,7 @@ void szb_probeblock_lua_t::FetchProbes() {
 }
 
 void szb_probeblock_lua_opt_t::FetchProbes() {
-	sz_log(10, "Fetcheing lua probes");
+	sz_log(10, "Fetching lua probes");
 	time_t range_start, range_end;
 	if (!buffer->prober_connection->GetRange(range_start, range_end))
 		return;
