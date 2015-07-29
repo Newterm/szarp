@@ -175,3 +175,11 @@ EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry,
 	sz4 = false;
 }
 
+EkstraktorWidget::~EkstraktorWidget()
+{	
+	/* 
+	 * hary: 29.07.2015: Free memory at least for SzbExtractor 
+	 * @TODO: Fix more memory leaks in this class...
+	 */
+	delete extr;
+}

@@ -115,7 +115,6 @@ int extract(struct extr_arguments arguments,
                 ret = extr->ExtractToCSV(output, arguments.delimiter);
 	if (output != NULL)
 		fclose(output);
-	delete extr;
 
 	return (int) ret;
 }
