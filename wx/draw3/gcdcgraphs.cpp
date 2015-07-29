@@ -302,8 +302,9 @@ void GCDCGraphs::DrawYAxisVals(wxGraphicsContext& dc) {
 		return;
 	DrawInfo *di = draw->GetDrawInfo();
 
-	if !di->IsValid():
+	if !di->IsValid() {
 		return;
+	}
 
 	double min = di->GetMin();
 	double max = di->GetMax();
@@ -419,6 +420,9 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 
 	if (d->GetEnable() == false)
 		return;
+
+	DrawInfo *di = d->GetDrawInfo();
+
 
 	DrawInfo *di = d->GetDrawInfo();
 
@@ -1023,9 +1027,6 @@ void GCDCGraphs::OnMouseRightDown(wxMouseEvent& event) {
 		return;
 	m_right_down = true;
 	m_draws_wdg->DoubleCursorSet(true);
-	OnMouseMove(event);
-}
-
 void GCDCGraphs::OnMouseRightUp(wxMouseEvent& event) {
 	if (!m_right_down)
 		return;
