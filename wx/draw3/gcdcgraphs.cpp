@@ -302,7 +302,7 @@ void GCDCGraphs::DrawYAxisVals(wxGraphicsContext& dc) {
 		return;
 	DrawInfo *di = draw->GetDrawInfo();
 
-	if (!di->IsValid()) {
+	if !di->IsValid() {
 		return;
 	}
 
@@ -419,10 +419,6 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 	static const int ellipse_size = 5;
 
 	if (d->GetEnable() == false)
-		return;
-
-	DrawInfo *di = d->GetDrawInfo();
-
 		return;
 
 	DrawInfo *di = d->GetDrawInfo();
@@ -1027,6 +1023,10 @@ void GCDCGraphs::OnMouseMove(wxMouseEvent &event) {
 }
 
 void GCDCGraphs::OnMouseRightDown(wxMouseEvent& event) {
+	if (m_right_down)
+		return;
+	m_right_down = true;
+	m_draws_wdg->DoubleCursorSet(true);
 void GCDCGraphs::OnMouseRightUp(wxMouseEvent& event) {
 	if (!m_right_down)
 		return;
