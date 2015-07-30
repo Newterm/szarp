@@ -97,6 +97,24 @@ xmlChar *uxmlXPathGetProp(const xmlChar *xpath_expr,
 	return ret;
 }
 
+std::string xmlToString(xmlDocPtr doc)
+{
+	xmlChar *s;
+	int size;
+	xmlDocDumpMemory(doc, &s, &size);
+	if (s == NULL)
+		throw std::bad_alloc();
+	std::string out;
+	try {
+		out = (char *)s;
+	} catch (...) {
+		xmlFree(s);
+		throw;
+	}
+	xmlFree(s);
+	return out;
+}
+
 #endif /* LIBXML_XPATH_ENABLED */
 
 #endif /* not NO_XML */

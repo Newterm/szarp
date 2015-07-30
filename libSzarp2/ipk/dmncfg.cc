@@ -39,6 +39,7 @@
 #include "conversion.h"
 #include "liblog.h"
 #include "libpar.h"
+#include "xmlutils.h"
 
 #include "liblog_impl_asyslog.h"
 
@@ -468,6 +469,34 @@ TDevice* DaemonConfig::GetDevice()
 {
 	assert (m_load_called != 0);
 	return m_device_obj;
+}
+
+xmlDocPtr DaemonConfig::GetDeviceXMLDoc()
+{
+	xmlDocPtr doc = GetXMLDoc();
+
+	// select only device element, with its parent elements
+	xmlDocPtr device_doc = xmlCopyDoc(doc, SHALLOW_COPY);
+	xmlNodePtr root_node = xmlDocGetRootElement(doc);
+	xmlNodePtr new_root = xmlCopyNode(root_node, COPY_ATTRS);
+	xmlNodePtr new_device_element = xmlCopyNode(GetXMLDevice(), DEEP_COPY);
+	xmlAddChild(new_root, new_device_element);
+	xmlDocSetRootElement(device_doc, new_root);
+
+	return device_doc;
+}
+
+std::string DaemonConfig::GetDeviceXMLString()
+{
+	xmlDocPtr device_doc = GetDeviceXMLDoc();
+	std::string xml_str = xmlToString(device_doc);
+	xmlFreeDoc(device_doc);
+	return xml_str;
+}
+
+std::string DaemonConfig::GetPrintableDeviceXMLString()
+{
+	return SC::printable_string(GetDeviceXMLString());
 }
 
 xmlDocPtr DaemonConfig::GetXMLDoc()

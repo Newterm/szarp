@@ -138,6 +138,17 @@ public:
 	 */
 	TDevice* GetDevice();
 
+	/** Return XML document containing only this device data
+	 * all root and document attributes are copied as well.
+	 */
+	xmlDocPtr GetDeviceXMLDoc();
+
+	/** Return XML string containing only this device data */
+	std::string GetDeviceXMLString();
+
+	/** Get XML string printable e.g. by SZARP logger */
+	std::string GetPrintableDeviceXMLString();
+
 	/** Return pointer to whole XML document. */
 	xmlDocPtr GetXMLDoc();
 	/** Return pointer to XML node with daemon configuration. Search for
@@ -261,7 +272,10 @@ private:
 	int m_askdelay;		/**< minium delay between querying units*/
 	int m_dumphex;		/**< 1 if user requested to print data in hex terminal format*/
 
-
+	// for xmlCopyNode (all work) and xmlCopyDoc (only 0/nonzero distinction)
+	static const int SHALLOW_COPY = 0;
+	static const int DEEP_COPY = 1;
+	static const int COPY_ATTRS = 2;
 };
 
 #endif /* MINGW32 */

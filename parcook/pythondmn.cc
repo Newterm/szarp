@@ -21,7 +21,9 @@ namespace szarp {
 
 class ipc {
 public:
-	ipc() : m_cfg(NULL), m_ipc(NULL), m_read(NULL), m_read_count(0) {};
+	ipc() : m_cfg(nullptr), m_ipc(nullptr), m_read(nullptr),
+		m_read_count(0), m_send_count(0)
+	{}
 
 	int configure(DaemonConfig * cfg);
 
@@ -35,13 +37,21 @@ public:
 	void go_parcook() ;
 	void go_sender() ;
 
+	std::string get_conf_str()
+	{
+		return m_conf_str;
+	}
+
+protected:
 	DaemonConfig * m_cfg;
 	IPCHandler* m_ipc;
 	short * m_read;
 	short * m_send;
 	size_t m_read_count;
 	size_t m_send_count;
+	std::string m_conf_str;
 };
+
 
 int ipc::configure(DaemonConfig * cfg) {
 	m_cfg = cfg;
@@ -49,16 +59,21 @@ int ipc::configure(DaemonConfig * cfg) {
 
 	if (!m_cfg->GetSingle()) {
 		if (m_ipc->Init())
-		return 1;
+			return 1;
 		sz_log(10, "IPC initialized successfully");
 	} else {
 		sz_log(10, "Single mode, ipc not intialized!!!");
 	}
 
+	m_conf_str = cfg->GetPrintableDeviceXMLString();
+
 	TDevice * dev = m_cfg->GetDevice();
-	TUnit* unit = dev->GetFirstRadio()->GetFirstUnit();
-	m_read_count = unit->GetParamsCount();
-	m_send_count = unit->GetSendParamsCount();
+	for (TUnit* unit = dev->GetFirstRadio()->GetFirstUnit();
+			unit; unit = unit->GetNext()) {
+
+		m_read_count += unit->GetParamsCount();
+		m_send_count += unit->GetSendParamsCount();
+	}
 
 	m_read = m_ipc->m_read;
 	m_send = m_ipc->m_send;
@@ -96,7 +111,6 @@ void ipc::set_read(size_t index, py::object & val) {
 		m_read[index] = SZARP_NO_DATA;
 		PyErr_Clear();
 	}
-
 }
 
 void ipc::set_no_data(size_t index) {
@@ -282,7 +296,8 @@ int main( int argc, char ** argv )
 			.def("set_no_data", &szarp::ipc::set_no_data)
 			.def("get_send", &szarp::ipc::get_send)
 			.def("go_sender", &szarp::ipc::go_sender)
-			.def("go_parcook", &szarp::ipc::go_parcook);
+			.def("go_parcook", &szarp::ipc::go_parcook)
+			.def("get_conf_str", &szarp::ipc::get_conf_str);
 		main_namespace["ipc"] = py::ptr(&ipc);
 
 

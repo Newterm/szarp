@@ -23,6 +23,7 @@
 
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
+#include <string>
 
 /** Returns pointer to XML node described by XPath expresion.
  * @param xpath_expr expresion describing node (exactly one!)
@@ -39,6 +40,11 @@ xmlNodePtr uxmlXPathGetNode(const xmlChar *xpath_expr,
  */
 xmlChar *uxmlXPathGetProp(const xmlChar *xpath_expr, 
 		xmlXPathContextPtr xpath_ctx);
+
+/** Dump XML document to string
+ * (may contain non-printable chars as TAB, FORM FEED)
+ */
+std::string xmlToString(xmlDocPtr doc);
 
 #endif /* LIBXML_XPATH_ENABLED */
 

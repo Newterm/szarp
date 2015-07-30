@@ -45,6 +45,10 @@ std::string U2L(const std::basic_string<unsigned char>& c);
 /** lua library returns error string which may contain a slit in half
  * unicode 2-byte, which makes iconv() call in U2S fail */
 std::wstring lua_error2szarp(const char* lua_error);
-}
+
+/** removes chars that don't get printed e.g. in SZARP logger */
+std::string printable_string(std::string s);
+
+}	// namespace SC
 
 #endif

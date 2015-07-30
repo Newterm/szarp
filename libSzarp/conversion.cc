@@ -412,5 +412,16 @@ namespace SC {	/* Szarp Conversions */
 
 		return SC::A2S("[<unparseable string>]");
 	}
+
+	std::string printable_string(std::string s)
+	{
+		s.erase(
+				std::remove_if(s.begin(), s.end(),
+					[]( char ch ) {
+						return std::isspace<char>(ch, std::locale::classic()) && !(ch == ' ');
+					}),
+			s.end());
+		return s;
+	}
 }
 
