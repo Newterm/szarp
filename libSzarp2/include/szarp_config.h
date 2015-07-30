@@ -654,7 +654,7 @@ public:
 	 * @return created XML node, NULL on error
 	 */
 	xmlNodePtr generateXMLNode(void);
-	/** @return id of unit (one ASCII wchar_tacter) */
+	/** @return id of unit (one ASCII character) */
 	wchar_t GetId()
 	{
 		return id;
@@ -750,7 +750,7 @@ protected:
 
 	TRadio *parentRadio;
 			/**< Pointer to parent TRadio object. */
-	wchar_t id;/**< Ascii wchar_tacter - line identifier */
+	wchar_t id;/**< Ascii character - line identifier */
 	int type;	/**< Raport type */
 	int subtype;	/**< Raport subtype */
 	int bufsize;	/**< Size of buffer for averages counting */
