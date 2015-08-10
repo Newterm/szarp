@@ -35,7 +35,7 @@ class Meaner(MeanerBase):
 	def __init__(self, path, uri, heartbeat):
 		MeanerBase.__init__(self, path)
 
-		self.parcook_uri = uri
+		self.hub_uri = uri
 
 		self.context = zmq.Context(1)
 		self.socket = self.context.socket(zmq.SUB)
@@ -79,7 +79,7 @@ class Meaner(MeanerBase):
 				self.hearbeat(NON_FIRST_HEART_BEAT)
 
 	def run(self):
-		self.socket.connect(self.parcook_uri)
+		self.socket.connect(self.hub_uri)
 		self.socket.setsockopt(zmq.SUBSCRIBE, "")
 		self.poller = zmq.Poller()
 		self.poller.register(self.socket, zmq.POLLIN)

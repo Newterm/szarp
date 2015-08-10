@@ -69,11 +69,12 @@ class SaveParam:
 		self.lock = lock
 
 	def update_last_time_unlocked(self, time, nanotime):
-		self.file.seek(-self.last.time_size, os.SEEK_END)
 
 		last_time_size = self.last.time_size
+
 		time_blob = self.last.update_time(time, nanotime)
 
+		self.file.seek(last_time_size, os.SEEK_END)
 		self.file.write(time_blob)
 
 		self.file_size += self.last.time_size - last_time_size
@@ -150,7 +151,7 @@ class SaveParam:
 				self.file.write(self.param.value_to_binary(self.param.nan()))
 				self.file_size += self.param.value_lenght
 
-				self.last.advance(time, nanotime, self.param.nan())
+				self.last.reset(time, nanotime, self.param.nan())
 				self.update_last_time_unlocked(time, nanotime)
 
 			finally:
@@ -161,18 +162,22 @@ class SaveParam:
 		if not self.param.written_to_base:
 			return
 
-		if self.first_write:
-			self.prepare_for_writing(time, nanotime)
+		try:
+			if self.first_write:
+				self.prepare_for_writing(time, nanotime)
 
-			if self.last.value is not None:
-				self.fill_no_data(time, nanotime)
-			self.write_value(value, time, nanotime)
-
-			self.first_write = False
-		else:
-			self.update_last_time(time, nanotime)
-			if value != self.last.value:
+				if self.last.value is not None:
+					self.fill_no_data(time, nanotime)
 				self.write_value(value, time, nanotime)
+
+				self.first_write = False
+			else:
+				self.update_last_time(time, nanotime)
+				if value != self.last.value:
+					self.write_value(value, time, nanotime)
+
+		except lastentry.TimeError:
+			print "Ignoring value for param %s, as this value is no later than lastest value" % (self.parampath.param_path,)
 
 
 	def process_msg(self, msg):

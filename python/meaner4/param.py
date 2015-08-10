@@ -32,15 +32,27 @@ class Param:
 		if self.data_type == "short":
 			self.value_format_string = "<h"
 			self.value_lenght = 2
+			self.value_from_msg = lambda x : x.int_value
+			self.isnan = lambda x : x == -2 ** 15
+			self.nan = lambda : -2 ** 15
 		elif self.data_type == "int": 
 			self.value_format_string = "<i"
 			self.value_lenght = 4
+			self.value_from_msg = lambda x : x.int_value
+			self.isnan = lambda x : x == -2 ** 31
+			self.nan = lambda : -2 ** 31
 		elif self.data_type == "float": 
 			self.value_format_string = "<f"
 			self.value_lenght = 4
+			self.value_from_msg = lambda x : x.float_value
+			self.isnan = lambda x : math.isnan(x)
+			self.nan = lambda : float('nan')
 		elif self.data_type == "double": 
 			self.value_format_string = "<d"
 			self.value_lenght = 8
+			self.value_from_msg = lambda x : x.double_value
+			self.isnan = lambda x : math.isnan(x)
+			self.nan = lambda : float('nan')
 		else:
 			raise ValueError("Unsupported value type: %s" % (self.data_type,))
 
@@ -52,22 +64,6 @@ class Param:
 		self.msw_combined_referencing_param = None
 		self.max_file_item_size = self.value_lenght + self.time_prec + 1
 
-	def nan(self):
-		if self.data_type == "short":
-			return -2**15
-		elif self.data_type == "int":
-			return -2**31
-		else:
-			return float('nan')
-
-	def isnan(self, value):
-		if self.data_type == "short":
-			return value == -2**15
-		elif self.data_type == "int":
-			return value == -2**31
-		else:
-			return math.isnan(value)
-
 	def value_to_binary(self, value):
 		return struct.pack(self.value_format_string, value)
 
@@ -77,14 +73,6 @@ class Param:
 		else:
 			return struct.pack("<I", time)
 
-	def value_from_msg(self, msg):
-		if self.data_type == "short" or self.data_type == "int":
-			return msg.int_value
-		elif self.data_type == "float": 
-			return msg.float_value
-		elif self.data_type == "double": 
-			return msg.double_value
-			
 	def value_from_binary(self, blob):
 		return struct.unpack(self.value_format_string, blob)[0]
 

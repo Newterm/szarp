@@ -31,7 +31,7 @@ def go():
 
 	path = lpr.get("global", "sz4dir")
 	ipk = lpr.get("global", "IPK")
-	uri = lpr.get("global", "parcook_socket_uri")
+	uri = lpr.get("parhub", "pub_conn_addr")
 	heartbeat = int(lpr.get("sz4", "heartbeat_frequency"))
 
 	m = meaner.Meaner(path, uri, heartbeat)

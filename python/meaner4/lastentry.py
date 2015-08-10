@@ -22,6 +22,9 @@ import os
 import struct
 import timedelta
 
+class TimeError(Exception):
+	pass
+
 class LastEntry:
 	def __init__(self, param):
 		self.param = param
@@ -40,16 +43,13 @@ class LastEntry:
 		self.value_start_time = self.time
 		self.value = value 
 
-	def advance(self, time, nanotime, value):
-		self.value_start_time = self.time
-		self.time = self.time_to_int(time, nanotime)
-		self.time_size = 0
-		self.value = value
-
 	def update_time(self, time, nanotime):
 		time = self.time_to_int(time, nanotime)
 
 		diff = time - self.value_start_time
+		if diff <= 0:
+			raise TimeError()
+
 		self.time = time
 
 		if diff in self.delta_cache:

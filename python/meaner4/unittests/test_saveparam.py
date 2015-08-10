@@ -123,3 +123,5 @@ class SaveParamTest(unittest.TestCase):
 
 		path2 = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/%010d0000000000.sz4" % (items_per_file))
 		self._check_size(path2, 4)
+
+		shutil.rmtree(temp_dir)
