@@ -91,6 +91,11 @@ inside:
 		special_value = atoi((char*)c);
 		xmlFree(c);
 	}
+	c = xmlGetNoNsProp(node, X"parcook_device");
+	if (c && !strcmp((char*)c, "no")) {
+		parcookDevice = false;
+		xmlFree(c);
+	}
 	for (i = 0, ch = node->children; ch; ch = ch->next)
 		if (!strcmp((char *)ch->name, "radio"))
 			i++;
@@ -155,6 +160,9 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 		if (xw.IsAttr("special")) {
 			special = 1;
 			special_value = boost::lexical_cast<int>(attr);
+		} else
+		if (xw.IsAttr("parcook_device")) {
+			parcookDevice = !strcmp((char*)attr, "no");
 		} else
 		if (xw.IsAttr("options")) {
 			options = SC::U2S(attr);

@@ -198,6 +198,7 @@ struct tParamInfo {
 	enum { SINGLE, COMBINED, LSW, MSW } type;
 	int param_no;
 	int lsw, msw;
+	bool send_to_meaner;
 };
 
 tParamInfo **ParsInfo;
@@ -1094,6 +1095,18 @@ void AllocProbesMemory(void)
 	}
 }
 
+bool param_is_sent_to_meaner(TParam* p) {
+	TUnit* u = p->GetParentUnit();
+	if (!u)
+		return true;
+
+	TDevice* d = u->GetDevice();
+	if (!d)
+		return true;
+
+	return d->isParcookDevice();
+}
+
 void configure_pars_infos(TSzarpConfig *ipk) 
 {
 	int combined_param_no = VTlen;
@@ -1110,6 +1123,7 @@ void configure_pars_infos(TSzarpConfig *ipk)
 		msw_pi->type = tParamInfo::MSW;
 		msw_pi->lsw = lsw;
 		msw_pi->msw = msw;
+		msw_pi->send_to_meaner = param_is_sent_to_meaner(p_cache[0]);
 		ParsInfo[msw] = msw_pi;
 
 		tParamInfo* lsw_pi = (tParamInfo*) malloc(sizeof(tParamInfo));
@@ -1117,6 +1131,7 @@ void configure_pars_infos(TSzarpConfig *ipk)
 		lsw_pi->type = tParamInfo::LSW;
 		lsw_pi->lsw = lsw;
 		lsw_pi->msw = msw;
+		lsw_pi->send_to_meaner = param_is_sent_to_meaner(p_cache[1]);
 		ParsInfo[lsw] = lsw_pi;
 
 		tParamInfo* combined = (tParamInfo*) malloc(sizeof(tParamInfo));
@@ -1125,6 +1140,7 @@ void configure_pars_infos(TSzarpConfig *ipk)
 		combined->lsw = lsw;
 		combined->msw = msw;
 		combined->param_no = combined_param_no;
+		combined->send_to_meaner = lsw_pi->send_to_meaner && msw_pi->send_to_meaner;
 		
 		CombinedParams.push_back(combined);
 	}
@@ -1135,6 +1151,7 @@ void configure_pars_infos(TSzarpConfig *ipk)
 		tParamInfo* pi = (tParamInfo*) malloc(sizeof(tParamInfo));
 		pi->param = ipk->getParamByIPC(i);
 		pi->type = tParamInfo::SINGLE;
+		pi->send_to_meaner = param_is_sent_to_meaner(pi->param);
 		ParsInfo[i] = pi;
 	}
 }
@@ -1412,6 +1429,8 @@ void publish_values(short* Probe, zmq::socket_t& socket) {
 
 		time_t now = time(NULL);
 		for (int i = 0; i < VTlen; i++) {
+			if (!ParsInfo[i]->send_to_meaner)
+				continue;
 			szarp::ParamValue* param_value = param_values.add_param_values();
 			param_value->set_param_no(i);
 			param_value->set_time(now);
@@ -1612,7 +1631,7 @@ int main(int argc, char *argv[])
 	struct arguments arguments;
 	char* linedmnpat;	/**< path for ftok */
 	char* config_prefix;
-	std::string parcook_socket;
+	std::string parhub_address;
 
 	InitSignals();
 
@@ -1656,7 +1675,7 @@ int main(int argc, char *argv[])
 	parcookpat = libpar_getpar("", "parcook_path", 1);
 	linedmnpat = libpar_getpar("", "linex_cfg", 1);
 	config_prefix = libpar_getpar("parscriptd", "config_prefix", 1);
-	parcook_socket = libpar_getpar("", "parcook_socket_uri", 1);
+	parhub_address = libpar_getpar("parhub", "sub_conn_addr", 1);
 	/* end szarp.cfg processing */
 	libpar_done();
 	
@@ -1738,20 +1757,12 @@ int main(int argc, char *argv[])
 	zmq::context_t zmq_context(1);
 	zmq::socket_t socket(zmq_context, ZMQ_PUB);
 
-	// zmq bind will fail if "localhost" was used as ip
-	const std::string localhost_str = "localhost";
-	const size_t localhost_pos = parcook_socket.find(localhost_str);
-	if (localhost_pos != std::string::npos) {
-		parcook_socket.replace(localhost_pos,
-			localhost_str.length(), "127.0.0.1");
-	}
-
-	sz_log(7, "ZMQ bind on '%s'", parcook_socket.c_str());
+	sz_log(7, "ZMQ connect to '%s'", parhub_address.c_str());
 	try {
-		socket.bind(parcook_socket.c_str());
+		socket.connect(parhub_address.c_str());
 	} catch (const zmq::error_t& exception) {
-		sz_log(1, "ZMQ socket bind failed: %d:'%s' on uri: '%s'", exception.num(),
-			exception.what(), parcook_socket.c_str());
+		sz_log(1, "ZMQ socket connect failed: %d:'%s' on uri: '%s'", exception.num(),
+			exception.what(), parhub_address.c_str());
 		throw;
 	}
 	

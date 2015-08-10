@@ -406,13 +406,13 @@ class TDevice {
 public:
 	TDevice(size_t _number, TSzarpConfig *parent, const std::wstring& _daemon = std::wstring(), const std::wstring& _path = std::wstring(),
 			int _speed = -1, int _stop = -1, int _protocol = -1,
-			const std::wstring& _options = std::wstring()) :
+			const std::wstring& _options = std::wstring(), bool _parcookDevice = true) :
 		number(_number),
 		parentSzarpConfig(parent),
 		daemon(_daemon), path(_path), speed(_speed),
 		stop(_stop),
 		protocol(_protocol), special(0), special_value(0), options(_options),
-		radios(NULL), next(NULL)
+		radios(NULL), next(NULL), parcookDevice(_parcookDevice)
 	{ }
 	/** Destroy whole list. */
 	~TDevice();
@@ -519,6 +519,9 @@ public:
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlTextReaderPtr reader);
+	/** Returns true if the device sends data to parcook via
+         * shared memory */
+	bool isParcookDevice() const { return parcookDevice; }
 protected:
 	/**
 	 * Returns num'th param from device line.
@@ -552,6 +555,7 @@ protected:
 			  holds comm. units description. */
 	TDevice *next;
 			/**< Next list element */
+	bool parcookDevice; /**< Do parcook need to send params from this device to meaner4. */
 };
 
 /**

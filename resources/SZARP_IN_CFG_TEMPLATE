@@ -255,6 +255,12 @@ conefile=$resources_root$/wx/koper/redcube.png
 # font file
 fontfile=/usr/share/fonts/truetype/msttcorefonts/Arial_Bold.ttf
 
+:parhub
+sub_addr=tcp://*:56661
+pub_addr=tcp://*:56662
+sub_conn_addr=tcp://127.0.0.1:56661
+pub_conn_addr=tcp://127.0.0.1:56662
+
 
 # DO NOT REMOVE THIS LINE AND DO NOT PLACE ANY OTHER SECTIONS AFTER IT
 :global
