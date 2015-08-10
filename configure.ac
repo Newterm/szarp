@@ -184,6 +184,8 @@ AC_TYPE_SIGNAL
 AC_CHECK_LIB(gen, main)
 AC_CHECK_LIB(m, sin)
 
+AC_SEARCH_LIBS(fmodq, quadmath)
+
 # Check endianness
 big_endian=
 AC_C_BIGENDIAN([big_endian=true],[],[])
