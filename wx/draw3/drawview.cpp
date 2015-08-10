@@ -58,8 +58,6 @@ const wxColour BackgroundView::back2_col = wxColour(0, 0, 0);
 
 const wxColour GraphDrawer::alt_color = wxColour(255, 255, 255);
 
-const int View::PeriodMarkShift[PERIOD_T_LAST] = {0, 0, 0, 1, 3, 3, 0};
-
 void View::ClearDC(wxMemoryDC *dc,wxBitmap *bitmap, int w, int h) {
 	dc->SelectObject(*bitmap);
 	dc->SetBackground(*wxBLACK_BRUSH);

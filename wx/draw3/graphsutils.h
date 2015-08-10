@@ -34,6 +34,10 @@ struct SeasonLimit {
 	int month;
 };
 
+/** This table describes shifts for time marks on time axis. */
+static const int PeriodMarkShift[PERIOD_T_LAST] = {0, 0, 0, 1, 3, 3, 0, 0, 0, 0, 0};
+
+
 
 std::vector<SeasonLimit> get_season_limits_indexes(DrawsSets *ipk, Draw* draw);
 

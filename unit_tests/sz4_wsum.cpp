@@ -19,7 +19,6 @@ void Sz4WeightedSumTest::test() {
 	typedef type::time_diff_type diff_t;
 	typedef type::sum_type sum_t;
 
-	CPPUNIT_ASSERT(!w.has_one_value());
 	CPPUNIT_ASSERT(w.fixed());
 
 	sum_t s;
@@ -30,8 +29,8 @@ void Sz4WeightedSumTest::test() {
 
 	w.add(5, 2);
 	s = w.sum(d);
-	CPPUNIT_ASSERT_EQUAL(diff_t(1), d);
-	CPPUNIT_ASSERT_EQUAL(sum_t(5), s);
+	CPPUNIT_ASSERT_EQUAL(diff_t(2), d);
+	CPPUNIT_ASSERT_EQUAL(sum_t(10), s);
 
 	w.add(5, 1);
 	s = w.sum(d);

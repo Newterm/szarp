@@ -301,6 +301,11 @@
                         <radio>1</radio>
                     </item>
                     <item>
+                        <label>3 Seconds</label>
+                        <name>3SEC_RADIO</name>
+                        <radio>1</radio>
+                    </item>
+                    <item>
                         <label>Season\tAlt+S</label>
                         <name>SEASON_RADIO</name>
                         <radio>1</radio>
