@@ -179,11 +179,11 @@ enum ActionKeyboardType {
 
 /** Enumeration type for period shown on time axis. */
 typedef enum { PERIOD_T_DECADE = 0, PERIOD_T_YEAR, PERIOD_T_MONTH, PERIOD_T_WEEK,
-	PERIOD_T_DAY, PERIOD_T_30MINUTE, PERIOD_T_3MINUTE, PERIOD_T_MINUTE, PERIOD_T_3SEC, PERIOD_T_SEASON, PERIOD_T_OTHER, PERIOD_T_LAST } PeriodType;
+	PERIOD_T_DAY, PERIOD_T_30MINUTE, PERIOD_T_3MINUTE, PERIOD_T_MINUTE, PERIOD_T_SEASON, PERIOD_T_OTHER, PERIOD_T_LAST } PeriodType;
 
 /**period names*/
 const wxString period_names[PERIOD_T_LAST] = 
-	{_("DECADE"),  _("YEAR"), _("MONTH"), _("WEEK"), _("DAY"), _("30 MINUTES"), _("3 MINUTES"), _("MINUTE"), _("3 SECONDS"), _("SEASON") };
+	{_("DECADE"),  _("YEAR"), _("MONTH"), _("WEEK"), _("DAY"), _("30 MINUTES"), _("3 MINUTES"), _("MINUTE"), _("SEASON") };
 
 /**Type of database inquires identificators*/
 typedef int InquirerId;

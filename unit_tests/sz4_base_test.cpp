@@ -141,9 +141,9 @@ void Sz4BaseTestCase::smokeTest1() {
 	sz4::weighted_sum<short, sz4::second_time_t> sum;
 	sz4::weighted_sum<short, sz4::second_time_t>::time_diff_type weight;
 	base.get_weighted_sum(p11, sz4::second_time_t(1000), sz4::second_time_t(2000), PT_SEC10, sum);
-	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<short>::type(5000), sum.sum(weight));
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(500), weight);
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(500), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<short>::type(100), sum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(10), weight);
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(10), sum.no_data_weight());
 
 }
 
@@ -165,7 +165,7 @@ void Sz4BaseTestCase::cacheTest1() {
 
 	sz4::weighted_sum<double, sz4::second_time_t> sum_l;
 	base.get_weighted_sum(pl, sz4::second_time_t(1000), sz4::second_time_t(2000), PT_SEC10, sum_l);
-	CPPUNIT_ASSERT_DOUBLES_EQUAL(double(1000), double(sum_l.sum(weight)), 0.5);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(sz4::value_sum<double>::type(100), sum_l.sum(weight), 0.5);
 
 	size_t size_in_bytes, blocks_count;
 	base.cache()->cache_size(size_in_bytes,blocks_count);

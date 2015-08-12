@@ -871,9 +871,6 @@ void DrawPanel::PeriodChanged(Draw *d, PeriodType pt) {
 		case PERIOD_T_MINUTE:
 			id = XRCID("MINUTE_RADIO");
 			break;
-		case PERIOD_T_3SEC:
-			id = XRCID("3SEC_RADIO");
-			break;
 		case PERIOD_T_SEASON:
 			id = XRCID("SEASON_RADIO");
 			break;
@@ -1105,9 +1102,6 @@ void DrawPanel::SetActive(bool _active) {
 				break;
 			case PERIOD_T_MINUTE:
 				pmi = menu_bar->FindItem(XRCID("MINUTE_RADIO"));
-				break;
-			case PERIOD_T_3SEC:
-				pmi = menu_bar->FindItem(XRCID("3SEC_RADIO"));
 				break;
 			case PERIOD_T_SEASON:
 				pmi = menu_bar->FindItem(XRCID("SEASON_RADIO"));

@@ -46,3 +46,4 @@ template<> double no_data<double>() {
 }
 
 }
+

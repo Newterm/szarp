@@ -1127,6 +1127,11 @@ void GLGraphs::InitGL() {
 	
 }
 
+namespace {
+const int PeriodMarkShift[PERIOD_T_LAST] = {0, 0, 0, 1, 3, 3, 0};
+}
+
+
 void GLGraphs::DrawXAxis() {
 	float white[] = { 1, 1, 1, 1};
 	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white); glMaterialfv(GL_FRONT, GL_SPECULAR, white);

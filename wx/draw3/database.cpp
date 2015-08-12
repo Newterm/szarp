@@ -451,14 +451,14 @@ template<class time_type> void Sz4Base::GetValue(DatabaseQuery::ValueData::V& v,
 	sum = wsum.sum(weight);
 
 	double scale;
-	if (pt == PT_HALFSEC || pt == PT_MSEC10)
+	if (pt == PT_HALFSEC)
 		scale = 10 * 60.;
 	else
-		scale = 10 * 1000000000. * 60;
-	v.sum = sz4::scale_value(double(sum), p) / scale;
+		scale = 10 * 1000000000.;
+	v.sum = sz4::scale_value(sum, p) * wsum.gcd() / scale;
 
 	if (weight && v.count)
-		v.count = v.count * double(weight) / (double(weight) + double(wsum.no_data_weight()));
+		v.count = v.count * weight / (weight + wsum.no_data_weight());
 	else
 		v.count = 0;
 }
@@ -474,7 +474,7 @@ void Sz4Base::GetData(DatabaseQuery* query, wxEvtHandler* response_receiver) {
 		DatabaseQuery *rq = CreateDataQueryPrivate(query->draw_info, query->param, vd.period_type, query->draw_no);
 		rq->inquirer_id = query->inquirer_id;
 		try {
-			if (pt == PT_HALFSEC || pt == PT_MSEC10) {
+			if (pt == PT_HALFSEC) {
 				sz4::nanosecond_time_t time = pair_to_sz4_nanosecond(i->time_second, i->time_nanosecond);
 				GetValue<sz4::nanosecond_time_t>(*i, time, p, pt);
 			} else {
@@ -552,9 +552,6 @@ SZARP_PROBE_TYPE PeriodToProbeType(PeriodType period) {
 			break;
 		case PERIOD_T_MINUTE:
 			pt = PT_HALFSEC;
-			break;
-		case PERIOD_T_3SEC:
-			pt = PT_MSEC10;
 			break;
 		default:
 			pt = PT_CUSTOM;
