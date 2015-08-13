@@ -754,7 +754,7 @@ void EkstraktorMainWindow::ResumeProgressBar()
 }
 
 void EkstraktorMainWindow::onPeriodChange(wxCommandEvent &event) {
-	selectedPeriod = event.GetId() - ID_Sec10Period;
+	selectedPeriod = event.GetId() - ID_Sec10Period + 2;
 }
 
 void EkstraktorMainWindow::onSeparatorChange(wxCommandEvent &event) {
