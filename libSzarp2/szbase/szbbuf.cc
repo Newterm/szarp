@@ -638,7 +638,7 @@ szb_create_buffer(Szbase *szbase, const std::wstring &directory, int num, TSzarp
 #endif
 
 #if BOOST_FILESYSTEM_VERSION == 3
-	ret->prefix = next(rootpath.end(),-2)->wstring();
+	ret->prefix = std::next(rootpath.end(),-2)->wstring();
 #else
 	fs::wpath tmppath(ret->rootdir);
 	tmppath.remove_leaf().remove_leaf();
