@@ -494,7 +494,7 @@ void EkstraktorMainWindow::onWriteResults(wxCommandEvent &event)
 	// SET THE REST OF ARGUMENTS ACCORDINGLY
         arguments.start_time = mainWidget->GetStartDate();
         arguments.end_time = mainWidget->GetStopDate();
-        arguments.probe = (SZARP_PROBE_TYPE)selectedPeriod;
+        arguments.probe = (SZARP_PROBE_TYPE)(selectedPeriod + PT_SEC10); // PT_SEC10 is the first SZARP_PROBE_TYPE that is contained in the widget, so when casting his index must be added.
 	arguments.output = directory + L"/" + filename;
 	if (selectedSeparator == PERIOD) {
 		arguments.dec_delim = '.';
@@ -754,7 +754,7 @@ void EkstraktorMainWindow::ResumeProgressBar()
 }
 
 void EkstraktorMainWindow::onPeriodChange(wxCommandEvent &event) {
-	selectedPeriod = event.GetId() - ID_Sec10Period + 2;
+	selectedPeriod = event.GetId() - ID_Sec10Period;
 }
 
 void EkstraktorMainWindow::onSeparatorChange(wxCommandEvent &event) {
