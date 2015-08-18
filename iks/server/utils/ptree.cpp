@@ -120,8 +120,8 @@ void ptree_to_xml( std::ostream& stream ,
                    bool pretty )
 {
 	auto settings = pretty ?
-		bp::xml_writer_make_settings(' ') :
-		bp::xml_writer_make_settings(' ', 4);
+		bp::xml_writer_make_settings<std::string>(' ') :
+		bp::xml_writer_make_settings<std::string>(' ', 4);
 
 	bp::xml_parser::write_xml( stream , ptree , settings );
 }

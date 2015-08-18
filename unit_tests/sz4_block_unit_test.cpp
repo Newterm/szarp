@@ -157,7 +157,7 @@ void Sz4BlockTestCase::pathParseTest() {
 }
 
 void Sz4BlockTestCase::blockLoadTest() {
-	char file_content[] = {
+	unsigned char file_content[] = {
 		 0x01, 0x00, 0x01, 0x00, 0x00, 0x00,
 		 0x02, 0x00, 0x02, 0x00, 0x00, 0x00,
 		 0x03, 0x00, 0x03, 0x00, 0x00, 0x00,
@@ -172,7 +172,7 @@ void Sz4BlockTestCase::blockLoadTest() {
 
 	{
 		std::ofstream ofs(SC::S2A(file_name.str()).c_str(), std::ios_base::binary);
-		ofs.write(file_content, sizeof(file_content));
+		ofs.write(reinterpret_cast<const char*>(file_content), sizeof(file_content));
 	}
 
 	std::vector<sz4::value_time_pair<short, unsigned> > v;

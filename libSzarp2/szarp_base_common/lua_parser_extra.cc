@@ -10,6 +10,7 @@
 #include <boost/spirit/include/phoenix_fusion.hpp>
 #include <boost/spirit/include/phoenix_stl.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
+#include <boost/optional/optional_io.hpp>
 
 #include "szarp_base_common/lua_syntax.h"
 #include "lua_parser_extra.h"

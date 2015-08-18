@@ -243,8 +243,7 @@ SZARP_PROBE_TYPE DbDaemon::GetProbeType(TParam * param, xmlNodePtr param_node)
 
 	std::string pt;
 	std::stringstream ss((char*)prop);
-	bool ok = ss >> pt;
-	if (!ok && !ss.eof()) {
+	if ((ss >> pt) && !ss.eof()) {
 		sz_log(1, "Invalid value %s for attribute extra:probe-type in line, %ld, using default PT_MIN10",
 		       	(char*)prop,  xmlGetLineNo(param_node));
 		xmlFree(prop);	

@@ -83,7 +83,7 @@ public:
 	typedef boost::container::flat_map<time_type,
 			block_type*,
 			std::less<time_type>,
-			allocator_type<std::pair<const time_type, block_type*>
+			allocator_type<std::pair<time_type, block_type*>
 		> > map_type;
 #else
 	typedef std::map<time_type, block_type*> map_type;
