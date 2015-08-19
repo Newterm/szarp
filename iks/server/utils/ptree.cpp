@@ -119,9 +119,15 @@ void ptree_to_xml( std::ostream& stream ,
                    const bp::ptree& ptree ,
                    bool pretty )
 {
+#if BOOST_VERSION >= 105600
 	auto settings = pretty ?
 		bp::xml_writer_make_settings<std::string>(' ') :
 		bp::xml_writer_make_settings<std::string>(' ', 4);
+#else
+	auto settings = pretty ?
+		bp::xml_writer_make_settings(' ') :
+		bp::xml_writer_make_settings(' ', 4);
+#endif
 
 	bp::xml_parser::write_xml( stream , ptree , settings );
 }
