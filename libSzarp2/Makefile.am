@@ -216,7 +216,8 @@ libSzarp2_la_SOURCES = \
 			$(SZ4_DIR)/filelock.cpp \
 			$(SZ4_DIR)/decode_file.cpp \
 			\
-			$(PROTOBUF)
+			$(PROTOBUF) \
+			$(SOURCE_DIR)/utils/daemonize.cc
 
 
 libSzarp2_la_LIBADD = libSzarpLuaParser.la
