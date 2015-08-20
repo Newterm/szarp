@@ -23,7 +23,7 @@
 #include <boost/program_options.hpp>
 
 #include "szarp.h"
-#include "daemon.h"
+#include "daemonize.h"
 #include "liblog.h"
 #include "pserver_service.h"
 
@@ -44,7 +44,7 @@ int main (int argc, char **argv)
 
 		/* defaults */
 		int loglevel = 2;
-		bool daemonize = true;
+		bool no_daemon = false;
 
 		/* command-line options */
 		po::options_description opts("Startup");
@@ -61,7 +61,7 @@ int main (int argc, char **argv)
 		/** parse **/
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
-				  options(opts).positional(pos).run(), vm);
+				options(opts).positional(pos).run(), vm);
 		po::notify(vm);
 
 		/* -h, --help: print help message and exit */
@@ -103,7 +103,7 @@ int main (int argc, char **argv)
 			throw po::error("debug level must be between 0 and 10");
 		}
 		if (vm.count("no-daemon")) {
-			daemonize = false;
+			no_daemon = true;
 		}
 
 		/*** start pserverLITE service ***/
@@ -145,8 +145,8 @@ int main (int argc, char **argv)
 		pserver_port_cstr = nullptr;
 
 		/* daemonize pserver-lite process */
-		if (daemonize) {
-			if (go_daemon() != 0) {
+		if (!no_daemon) {
+			if (daemonize(DMN_SIGPIPE_IGN) != 0) {
 				sz_log(0, "failed to daemonize process, exiting...");
 				return EXIT_FAILURE;
 			}
