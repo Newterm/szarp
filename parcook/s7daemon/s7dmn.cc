@@ -24,7 +24,7 @@
 
 int S7Daemon::ParseConfig(DaemonConfig * cfg)
 {	
-	sz_log(10, "S7Dmn::ParseConfig");
+	sz_log(5, "S7Dmn::ParseConfig");
 
 	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(m_cfg->GetXMLDoc());
 	xmlNodePtr node = m_cfg->GetXMLDevice();
@@ -73,11 +73,12 @@ int S7Daemon::ParseConfig(DaemonConfig * cfg)
 
 int S7Daemon::Read()
 {
-	sz_log(10, "S7Dmn::Read");
+	sz_log(5, "S7Dmn::Read");
 
 	if( _client.Connect() ) {
 		_client.QueryAll();
-		_client.DumpAll();
+		if(isDumpHex()) _client.DumpAll();
+
 		return 0;
 	}
 	return 1;
@@ -85,7 +86,7 @@ int S7Daemon::Read()
 
 void S7Daemon::Transfer()
 {
-	sz_log(10, "S7Dmn::Transfer");
+	sz_log(5, "S7Dmn::Transfer");
 
 	_pmap.clearData();
 
@@ -103,6 +104,11 @@ void S7Daemon::Transfer()
 int main(int argc, const char *argv[])
 {
 	S7Daemon dmn;
+
+	for (int i = 1; i < argc; i++) {
+		if (std::string(argv[i]) == "--dumphex")
+			dmn.setDumpHex(true);
+	}
 
 	if( dmn.Init( argc , argv ) ) {
 		sz_log(0,"Cannot start %s daemon", dmn.Name());

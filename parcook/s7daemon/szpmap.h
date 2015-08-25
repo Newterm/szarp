@@ -116,6 +116,8 @@ public:
 	template <typename DataWriter>
 	void writeFloat( unsigned long int pid, std::vector<uint8_t> data, DataWriter write)
 	{
+		sz_log(10, "SzParamMap::writeFloat");
+
 		float float_value;
 		
 		uint8_t* pblock8 = reinterpret_cast<uint8_t*>(&float_value);
@@ -128,6 +130,9 @@ public:
 		int16_t lsw = (int16_t) float_block;
 		int16_t msw = (int16_t) (float_block >> 16);
 
+		sz_log(5, "Param value (msw float) id:%lu, val:%d", pid, msw);
+		sz_log(5, "Param value (lsw float) id:%lu, val:%d", _lower_words[getAddr(pid) - 2].first, lsw);
+
 		write(pid, msw); 
 		write(_lower_words[getAddr(pid) - 2].first, lsw);
 	}
@@ -135,6 +140,8 @@ public:
 	template <typename DataWriter>
 	void writeInteger( unsigned long int pid, std::vector<uint8_t> data, DataWriter write )
 	{
+		sz_log(10, "SzParamMap::writeInteger");
+
 		int int_value;
 		
 		uint8_t* pblock8 = reinterpret_cast<uint8_t*>(&int_value);
@@ -147,6 +154,9 @@ public:
 		int16_t lsw = (int16_t) int_block;
 		int16_t msw = (int16_t) (int_block >> 16);
 
+		sz_log(5, "Param value (msw integer) id:%lu, val:%d", pid, msw);
+		sz_log(5, "Param value (lsw integer) id:%lu, val:%d", _lower_words[getAddr(pid) - 2].first, lsw);
+
 		write(pid, msw); 
 		write(_lower_words[getAddr(pid) - 2].first, lsw);
 	}
@@ -154,6 +164,8 @@ public:
 	template <typename DataWriter>
 	void writeMultiParam( unsigned long int pid, std::vector<uint8_t> data, DataWriter write )
 	{ 
+		sz_log(10, "SzParamMap::writeMultiParam");
+
 		if (!hasLSW(getAddr(pid) - 2)) {
 			sz_log(0, "Param addr:%d has msw and missing lsw", getAddr(pid));
 			return;
@@ -168,6 +180,8 @@ public:
 	template <typename DataWriter>
 	void writeSingleParam( unsigned long int pid, std::vector<uint8_t> data, DataWriter write )
 	{ 
+		sz_log(10, "SzParamMap::writeSingleParam");
+
 		int16_t value = 0;
 		uint8_t* pblock8 = reinterpret_cast<uint8_t*>(&value);		
 		if (data.size() > 1) { 
@@ -176,12 +190,16 @@ public:
 		} else {
 			*pblock8 = data[0]; 
 		}
+
+		sz_log(5, "Param value (single) id:%lu, val:%d", pid, value);
 		write(pid, value); 
 	}
 
 	template <typename DataWriter>
 	void WriteData(unsigned long int pid, std::vector<uint8_t> data, DataWriter write )
 	{
+		sz_log(10, "SzParamMap::WriteData");
+
 		if (isLSW(pid)) { setLSW(pid, data); return; }
 		if (isMSW(pid)) { writeMultiParam(pid,data,write); return; }
 		

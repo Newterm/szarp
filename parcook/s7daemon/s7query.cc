@@ -7,6 +7,8 @@
 
 unsigned int S7Query::typeSize()
 {
+	sz_log(10, "S7Query::typeSize");
+
 	switch (_w_len) {
 		case 0x01: return 1;
 		case 0x02: return 1;
@@ -20,6 +22,7 @@ unsigned int S7Query::typeSize()
 
 void S7Query::appendId( int id )
 {
+	sz_log(10, "S7Query::appendId");
 	_ids.push_back(id);
 }
 
@@ -51,24 +54,35 @@ bool S7Query::ask( S7Object& client )
 				_area,_db_num,_start,_amount,_w_len);
 		return false;
 	}
-	sz_log(8, "Query area:%d,db:%d,start:%d,amount:%d,w_len:%d SUCCESS",
+	sz_log(3, "Query area:%d,db:%d,start:%d,amount:%d,w_len:%d SUCCESS",
 				_area,_db_num,_start,_amount,_w_len);
 	return true;
 }
 		
 void S7Query::dump() 
 {
-	if (!hasData()) return;
-
+	sz_log(10, "S7Query::dump");
 	std::ostringstream os;
-	for (unsigned int i = 0; i < (_amount * typeSize()); i++) {
-		os <<"0x"<<std::hex<<std::setw(2)<<std::setfill('0')
-			<< static_cast<unsigned>(_data[i]) << " ";
+
+	os << "idx:( ";
+	for (auto id = _ids.begin(); id != _ids.end(); id++) {
+		os << *id << " ";
 	}
-	sz_log(10, "%s", os.str().c_str());
+	os << ") hex:[ ";
+	if (!hasData()) { 
+		os << "NO_DATA ]";
+	} else {
+		for (unsigned int i = 0; i < (_amount * typeSize()); i++) {
+			os <<"0x"<<std::hex<<std::setw(2)<<std::setfill('0')
+				<< static_cast<unsigned>(_data[i]) << " ";
+		}
+		os << "]";
+	}
+	sz_log(1, "%s", os.str().c_str());
 }
 
 int S7Query::nextAddress()
 {
+	sz_log(10, "S7Query::nextAddress");
 	return (_start + (_amount * typeSize())); 
 }

@@ -42,18 +42,26 @@
 class S7Daemon : public BaseDaemon
 {
 public:
-	S7Daemon() : BaseDaemon("s7dmn") {};
+	S7Daemon() : BaseDaemon("s7dmn"), _dumpHex(false) {};
+
 	virtual ~S7Daemon() {};
 
 	virtual int Read();
 	virtual void Transfer();
 
+	void setDumpHex( bool value ) 
+	{ _dumpHex = value; }
+
+	bool isDumpHex()
+	{ return _dumpHex; }
+
 protected:
 	virtual int ParseConfig(DaemonConfig * cfg);
 	
+	bool _dumpHex;
+
 	S7Client _client;
 	SzParamMap _pmap;
-
 };
 
 #endif /*S7DAEMON_H*/

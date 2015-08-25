@@ -12,7 +12,7 @@ const std::string S7Client::_default_address = std::string("127.0.0.1");
 
 bool S7Client::ConfigureFromXml( xmlNodePtr& node )
 {
-	sz_log(10, "S7Client::ConfigureFromXml");
+	sz_log(7, "S7Client::ConfigureFromXml");
 
 	xmlChar* prop = xmlGetNsProp(node, BAD_CAST("address"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (prop == NULL) {
@@ -42,13 +42,13 @@ bool S7Client::ConfigureFromXml( xmlNodePtr& node )
 		xmlFree(prop);	
 	}
 
-	sz_log(9, "Configured with address: %s, rack: %d, slot: %d", _address.c_str(), _rack, _slot);
+	sz_log(5, "Configured with address: %s, rack: %d, slot: %d", _address.c_str(), _rack, _slot);
 	return true;
 }
 
 bool S7Client::ConfigureParamFromXml( unsigned long int idx, xmlNodePtr& node )
 {
-	sz_log(10, "S7Client::ConfigureParamFromXml");
+	sz_log(7, "S7Client::ConfigureParamFromXml");
 
 	/* db */
 	int db = -1;
@@ -108,7 +108,7 @@ bool S7Client::ConfigureParamFromXml( unsigned long int idx, xmlNodePtr& node )
 		}
 	}
 
-	sz_log(9, "ParseParam param db:%d, db_type:%s address:%d, val_type:%s, number:%d",
+	sz_log(7, "ParseParam param db:%d, db_type:%s address:%d, val_type:%s, number:%d",
 			db,
 			db_type.c_str(),
 			address,

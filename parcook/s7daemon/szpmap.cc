@@ -2,6 +2,8 @@
 
 bool SzParamMap::ConfigureParamFromXml( unsigned long int idx, TParam* p, xmlNodePtr& node ) 
 {	
+	sz_log(10, "SzParamMap::ConfigureParamFromXml");
+
 	/* val_type */
 	xmlChar* prop = xmlGetNsProp(node, BAD_CAST("val_type"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (NULL == prop) {
