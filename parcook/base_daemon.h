@@ -19,6 +19,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
  */
+#ifndef BASE_DAEMON_H
+#define BASE_DAEMON_H
 /** 
  * @file basedmn.h
  * @brief Base class for line daemons.
@@ -171,3 +173,4 @@ protected:
 	const char* name;
 };
 
+#endif /*BASE_DAEMON_H*/

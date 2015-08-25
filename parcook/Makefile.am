@@ -5,6 +5,10 @@
 
 SUBDIRS = analiza
 
+if WANT_SNAP7DMN
+SUBDIRS += s7daemon
+endif
+
 # Source directory
 SOURCE_DIR=@srcdir@
 

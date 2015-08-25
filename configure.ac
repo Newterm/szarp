@@ -1206,6 +1206,7 @@ AC_OUTPUT( \
 	meaner3/Makefile \
 	parcook/Makefile \
 	parcook/analiza/Makefile \
+	parcook/s7daemon/Makefile \
 	pyipk/Makefile \
 	qt4/Makefile \
 	qt4/filler2/Makefile \
