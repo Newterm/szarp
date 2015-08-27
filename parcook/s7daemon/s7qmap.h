@@ -56,27 +56,31 @@ public:
 			s7DBType(""),
 			s7Addr(-1),
 			s7ValType(""),
-			s7BitNumber(-1)
+			s7BitNumber(-1),
+			s7Write(false)
 		{}
 
 		S7Param(int num, 
 			std::string type, 
 			int addr, 
 			std::string vtype, 
-			int bnum)  :
+			int bnum,
+			bool w)  :
 
 			s7DBNum(num),
 			s7DBType(type),
 			s7Addr(addr),
 			s7ValType(vtype),
-			s7BitNumber(bnum)
+			s7BitNumber(bnum),
+			s7Write(w)
 		{}
-
+		
 		int s7DBNum; /**Database number*/
 		std::string s7DBType; /**Database type*/
 		int s7Addr; /**Address in database*/
 		std::string s7ValType; /**Value type*/
 		int s7BitNumber; /**Bit number*/
+		bool s7Write; /**Is write query*/
 	};
 
 	S7Query QueryFromParam( S7Param param );
@@ -86,14 +90,23 @@ public:
 	void Merge();
 
 	bool AskAll(S7Object& client);
+	bool TellAll(S7Object& client);
 	bool DumpAll();
 	
-	template <typename DataProcessor>
-	void ProcessData(DataProcessor proc)
+	template <typename ResponseProcessor>
+	void ProcessResponse(ResponseProcessor proc)
 	{ 
 		for (auto vk_q = _queries.begin(); vk_q != _queries.end(); vk_q++)
 			for (auto q = vk_q->second.begin(); q != vk_q->second.end(); q++)
-				q->ProcessData(proc);
+				if(!q->isWriteQuery()) q->ProcessResponse(proc);
+	}
+
+	template <typename DataAccessor>
+	void AccessData(DataAccessor access)
+	{
+		for (auto vk_q = _queries.begin(); vk_q != _queries.end(); vk_q++)
+			for (auto q = vk_q->second.begin(); q != vk_q->second.end(); q++)
+				if(q->isWriteQuery()) q->AccessData(access);
 	}
 
 private:

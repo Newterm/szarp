@@ -47,6 +47,7 @@
 #include "s7qmap.h"
 
 #include "liblog.h"
+#include "../base_daemon.h"
 
 class S7Client 
 {
@@ -62,7 +63,9 @@ public:
 	{ Cli_Destroy(&_s7client); }
 
 	bool ConfigureFromXml( xmlNodePtr& node );
-	bool ConfigureParamFromXml( unsigned long int idx, xmlNodePtr& node );
+	bool ConfigureParamFromXml( unsigned long int idx, TParam* p, xmlNodePtr& node );
+	bool ConfigureParamFromXml( unsigned long int idx, TSendParam* p, xmlNodePtr& node );
+	S7QueryMap::S7Param ConfigureParamFromXml( unsigned long int idx, xmlNodePtr& node );
 
 	bool Connect();
 	bool Reconnect();
@@ -70,11 +73,17 @@ public:
 
 	bool BuildQueries();
 
-	template <typename DataProcessor>
-	void ProcessData(DataProcessor proc)
-	{ _s7qmap.ProcessData(proc); }
+	template <typename ResponseProcessor>
+	void ProcessResponse(ResponseProcessor proc)
+	{ _s7qmap.ProcessResponse(proc); }
+
+	template <typename DataAccessor>
+	void AccessData(DataAccessor access)
+	{ _s7qmap.AccessData(access); }
 
 	bool QueryAll();
+	bool AskAll();
+	bool TellAll();
 	bool DumpAll();
 
 private:
@@ -84,7 +93,6 @@ private:
 
 	S7Object _s7client;
 	S7QueryMap _s7qmap;
-	std::map<unsigned long int, S7QueryMap::S7Param> _pmap;
 };
 
 #endif /*S7CLIENT_H*/

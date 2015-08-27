@@ -43,6 +43,7 @@ S7Query S7QueryMap::QueryFromParam( S7Param param )
 	}
 
 	query.setStart(param.s7Addr);
+	query.setWriteQuery(param.s7Write);
 
 	return query;
 }
@@ -58,9 +59,10 @@ bool S7QueryMap::AddQuery( unsigned long int idx, S7Param param )
 	}
 
 	query.appendId(idx);
+	query.build();
 
 	sz_log(8, "Query ID %lu used", idx);
-
+	
 	_queries[query.getKey()].push_back(query);
 
 	return true;
@@ -83,7 +85,7 @@ void S7QueryMap::Merge()
 void S7QueryMap::MergeBucket( S7Query::QueryKey key, QueryVec& qvec )
 {
 	sz_log(10, "S7QueryMap::MergeBucket");
-	if (std::get<1>(key) == 0x01) return; // Do not merge single bits
+	if (std::get<2>(key) == 0x01) return; // Do not merge single bits
 
 	unsigned int qidx = 0;
 	while (qidx < qvec.size() - 1) {
@@ -102,8 +104,17 @@ bool S7QueryMap::AskAll( S7Object& client )
 
 	for (auto vk_q = _queries.begin(); vk_q != _queries.end(); vk_q++)
 		for (auto q = vk_q->second.begin(); q != vk_q->second.end(); q++)
-			q->ask(client);
+			if(!q->isWriteQuery()) q->ask(client);
+	return true;
+}
 
+bool S7QueryMap::TellAll( S7Object& client )
+{
+	sz_log(10, "S7QueryMap::TellAll");
+
+	for (auto vk_q = _queries.begin(); vk_q != _queries.end(); vk_q++)
+		for (auto q = vk_q->second.begin(); q != vk_q->second.end(); q++)
+			if(q->isWriteQuery()) q->tell(client);
 	return true;
 }
 

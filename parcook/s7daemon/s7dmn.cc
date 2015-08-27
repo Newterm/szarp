@@ -21,11 +21,12 @@
 #include "../base_daemon.h"
 
 #include "s7dmn.h"
+#include "datatypes.h"
 
 int S7Daemon::ParseConfig(DaemonConfig * cfg)
 {	
 	sz_log(5, "S7Dmn::ParseConfig");
-
+	
 	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(m_cfg->GetXMLDoc());
 	xmlNodePtr node = m_cfg->GetXMLDevice();
 	xp_ctx->node = node;
@@ -57,7 +58,7 @@ int S7Daemon::ParseConfig(DaemonConfig * cfg)
 		assert(pnode);
 		free(expr);
 
-		if (!_client.ConfigureParamFromXml(i-1, pnode))
+		if (!_client.ConfigureParamFromXml(i-1, p, pnode))
 			return 1;
 
 		if (!_pmap.ConfigureParamFromXml(i-1, p, pnode))
@@ -65,7 +66,29 @@ int S7Daemon::ParseConfig(DaemonConfig * cfg)
 
 		p = p->GetNext();
 	}
+	
+	TSendParam *s = u->GetFirstSendParam();
+	for (int i = 1; i <= u->GetSendParamsCount(); i++) {
+		char *expr;
+		ret = asprintf(&expr, ".//ipk:send[position()=%d]", i);
+		if (-1 == ret) {
+			sz_log(0, "Cannot allocate XPath expression for param number %d", i);
+			return 1;
+		}
+		xmlNodePtr pnode = uxmlXPathGetNode(BAD_CAST(expr), xp_ctx);
+		assert(pnode);
+		free(expr);
 
+		if (!_client.ConfigureParamFromXml(u->GetParamsCount()+i-1, s, pnode))
+			return 1;
+
+		if (!_pmap.ConfigureParamFromXml(u->GetParamsCount()+i-1, s, pnode))
+			return 1;
+
+		s = s->GetNext();
+	}
+
+	/** Sort and merge all available read/write queries */
 	_client.BuildQueries();
 
 	return 0;
@@ -75,10 +98,9 @@ int S7Daemon::Read()
 {
 	sz_log(5, "S7Dmn::Read");
 
+	/* Fill read queries with data from PLC */
 	if( _client.Connect() ) {
-		_client.QueryAll();
-		if(isDumpHex()) _client.DumpAll();
-
+		_client.AskAll();
 		return 0;
 	}
 	return 1;
@@ -88,14 +110,28 @@ void S7Daemon::Transfer()
 {
 	sz_log(5, "S7Dmn::Transfer");
 
-	_pmap.clearData();
-
-	_client.ProcessData([&](int idx, std::vector<uint8_t> data) {
-		_pmap.WriteData(idx, data, [&](int pid, uint16_t value) {
+	/** Write SZARP DB with values from read queries */ 
+	_pmap.clearWriteBuffer();
+	_client.ProcessResponse([&](unsigned long int idx, DataBuffer data) {
+		_pmap.WriteData(idx, data, [&](unsigned long int pid, uint16_t value) {
 			Set(pid, value);
 		});
 	});	
-		
+	
+	/** Read SZARP DB and write values to write queries */
+	_pmap.clearReadBuffer();
+	_client.AccessData([&](unsigned long int idx, DataDescriptor desc) {
+		_pmap.ReadData(idx, desc, [&](TSendParam* s) {
+			TParam *sp = m_cfg->GetIPK()->getParamByName(s->GetParamName());
+			return At(sp->GetIpcInd());
+		});
+	});
+
+	/** Send write queries to PLC */
+	if( _client.Connect() ) _client.TellAll();
+
+	if(isDumpHex()) _client.DumpAll();
+
 	/** Go Parcook */
 	BaseDaemon::Transfer();
 }

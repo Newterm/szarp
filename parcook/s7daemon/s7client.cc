@@ -4,7 +4,6 @@
 
 #include "conversion.h"
 
-#include "../base_daemon.h"
 
 const int S7Client::_default_rack = 0;
 const int S7Client::_default_slot = 2;
@@ -46,7 +45,7 @@ bool S7Client::ConfigureFromXml( xmlNodePtr& node )
 	return true;
 }
 
-bool S7Client::ConfigureParamFromXml( unsigned long int idx, xmlNodePtr& node )
+S7QueryMap::S7Param S7Client::ConfigureParamFromXml( unsigned long int idx, xmlNodePtr& node )
 {
 	sz_log(7, "S7Client::ConfigureParamFromXml");
 
@@ -66,7 +65,7 @@ bool S7Client::ConfigureParamFromXml( unsigned long int idx, xmlNodePtr& node )
 	if (NULL == prop) {
 		sz_log(0, "No attribute db_type given for param in line %ld",
 			       	xmlGetLineNo(node));
-		return false;
+		return S7QueryMap::S7Param();
 	}
 	std::string db_type = std::string((char*)prop);
 	xmlFree(prop);	
@@ -76,7 +75,7 @@ bool S7Client::ConfigureParamFromXml( unsigned long int idx, xmlNodePtr& node )
 	if (NULL == prop) {
 		sz_log(0, "No attribute address given for param in line %ld",
 			       	xmlGetLineNo(node));
-		return false;
+		return  S7QueryMap::S7Param();
 	}
 	int address = boost::lexical_cast<int>((char*)prop);
 	xmlFree(prop);	
@@ -86,7 +85,7 @@ bool S7Client::ConfigureParamFromXml( unsigned long int idx, xmlNodePtr& node )
 	if (NULL == prop) {
 		sz_log(0, "No attribute val_type given for param in line %ld",
 			       	xmlGetLineNo(node));
-		return false;
+		return S7QueryMap::S7Param();
 	}
 	std::string val_type = std::string((char*)prop);
 	xmlFree(prop);
@@ -98,13 +97,13 @@ bool S7Client::ConfigureParamFromXml( unsigned long int idx, xmlNodePtr& node )
 		if (NULL == prop) {
 			sz_log(0, "No attribute number given for param in line %ld",
 					xmlGetLineNo(node));
-			return false;
+			return S7QueryMap::S7Param();
 		}
 		number = boost::lexical_cast<int>((char*)prop);
 		xmlFree(prop);
 		if (number < 0 || number > 7) {
 			sz_log(0, "Bit number must be from [0,7]");
-			return false;
+			return S7QueryMap::S7Param();
 		}
 	}
 
@@ -115,8 +114,25 @@ bool S7Client::ConfigureParamFromXml( unsigned long int idx, xmlNodePtr& node )
 			val_type.c_str(),
 			number);
 	
-	S7QueryMap::S7Param param(db,db_type,address,val_type,number);
-	_pmap[idx] = param;
+	return S7QueryMap::S7Param(db,db_type,address,val_type,number,false);
+}
+
+bool S7Client::ConfigureParamFromXml( unsigned long int idx, TSendParam* s,  xmlNodePtr& node )
+{
+	sz_log(7, "S7Client::ConfigureParamFromXml(TSendParam)");
+	
+	S7QueryMap::S7Param param = ConfigureParamFromXml(idx,node);
+	param.s7Write = true;
+	
+	return _s7qmap.AddQuery(idx, param);
+}
+
+bool S7Client::ConfigureParamFromXml( unsigned long int idx, TParam* p,  xmlNodePtr& node )
+{
+	sz_log(7, "S7Client::ConfigureParamFromXml(TParam)");
+	
+	S7QueryMap::S7Param param = ConfigureParamFromXml(idx,node);
+	param.s7Write = false;
 
 	return _s7qmap.AddQuery(idx, param);
 }
@@ -171,7 +187,22 @@ bool S7Client::QueryAll()
 {
 	sz_log(10, "S7Client::QueryAll");
 
-	return _s7qmap.AskAll(_s7client);
+	return (_s7qmap.AskAll(_s7client) ||
+		_s7qmap.TellAll(_s7client));
+}
+
+bool S7Client::AskAll()
+{
+	sz_log(10, "S7Client::AskAll");
+
+	return (_s7qmap.AskAll(_s7client));
+}
+
+bool S7Client::TellAll()
+{
+	sz_log(10, "S7Client::TellAll");
+
+	return (_s7qmap.TellAll(_s7client));
 }
 
 bool S7Client::DumpAll()

@@ -49,11 +49,13 @@
 #include "conversion.h"
 
 #include "../base_daemon.h"
+#include "datatypes.h"
 
 class SzParamMap 
 {
 public:
-	typedef std::pair<unsigned long int, std::vector<uint8_t>> ParamIndexData;
+	typedef std::pair<unsigned long int, DataBuffer> ParamIndexData;
+	typedef std::pair<unsigned long int, DataDescriptor> SendIndexData;
 
 	class SzParam 
 	{
@@ -69,17 +71,29 @@ public:
 			_val_op(vop),
 			_prec(prec)
 		{}
+	
+		bool isValid()
+		{	
+			if ((_addr == -1) || (_val_type.compare(std::string("")) == 0))
+				return false;
+			return true;
 
+		}
 		bool isLSW()
 		{ return (_val_op.compare(std::string("lsw"))==0); }
 		bool isMSW()
 		{ return (_val_op.compare(std::string("msw"))==0); }
+		bool isFloat()
+		{ return (_val_type.compare(std::string("real"))==0); }
 		int getAddr()
 		{ return _addr; }
 		std::string getType()
 		{ return _val_type; }
 		int getPrec()
 		{ return _prec; }
+		
+		void setPrec(int prec)
+		{ _prec = prec; }
 
 	private:
 		int _addr;
@@ -89,9 +103,13 @@ public:
 	};
 
 	bool ConfigureParamFromXml( unsigned long int idx, TParam* p, xmlNodePtr& node );
+	bool ConfigureParamFromXml( unsigned long int idx, TSendParam* s, xmlNodePtr& node );
+	SzParam ConfigureParamFromXml( unsigned long int idx, xmlNodePtr& node );
 	
-	void clearData() 
-	{ _lower_words.clear(); }
+	void clearWriteBuffer() 
+	{ _param_lsws.clear(); }
+	void clearReadBuffer() 
+	{ _send_lsws.clear(); }
 
 	bool isLSW(unsigned long int pid)
 	{ return _params[pid].isLSW(); }
@@ -107,14 +125,18 @@ public:
 	int getPrec(unsigned long int pid)
 	{ return _params[pid].getPrec(); }
 	
-	void setLSW( unsigned long int pid, std::vector<uint8_t> data )
-	{ _lower_words[getAddr(pid)] = ParamIndexData(pid, data); }
+	void setParamLSW( unsigned long int pid, DataBuffer data )
+	{ _param_lsws[getAddr(pid)] = ParamIndexData(pid, data); }
+	void setSendLSW( unsigned long int pid, DataDescriptor dd )
+	{ _send_lsws[getAddr(pid)] = SendIndexData(pid, dd); }
 	
-	bool hasLSW( int addr ) 
-	{ return ( _lower_words.find(addr) != _lower_words.end() ); }
+	bool hasParamLSW( int addr ) 
+	{ return ( _param_lsws.find(addr) != _param_lsws.end() ); }
+	bool hasSendLSW( int addr ) 
+	{ return ( _send_lsws.find(addr) != _send_lsws.end() ); }
 
 	template <typename DataWriter>
-	void writeFloat( unsigned long int pid, std::vector<uint8_t> data, DataWriter write)
+	void writeFloat( unsigned long int pid, DataBuffer data, DataWriter write)
 	{
 		sz_log(10, "SzParamMap::writeFloat");
 
@@ -123,22 +145,22 @@ public:
 		uint8_t* pblock8 = reinterpret_cast<uint8_t*>(&float_value);
 		*pblock8 = data[1]; pblock8++;
 		*pblock8 = data[0]; pblock8++;
-		*pblock8 = _lower_words[getAddr(pid) - 2].second[1]; pblock8++;
-		*pblock8 = _lower_words[getAddr(pid) - 2].second[0];
+		*pblock8 = _param_lsws[getAddr(pid) - 2].second[1]; pblock8++;
+		*pblock8 = _param_lsws[getAddr(pid) - 2].second[0];
 
 		uint32_t float_block = (uint32_t)(float_value * pow10(getPrec(pid)));
 		int16_t lsw = (int16_t) float_block;
 		int16_t msw = (int16_t) (float_block >> 16);
 
 		sz_log(5, "Param value (msw float) id:%lu, val:%d", pid, msw);
-		sz_log(5, "Param value (lsw float) id:%lu, val:%d", _lower_words[getAddr(pid) - 2].first, lsw);
+		sz_log(5, "Param value (lsw float) id:%lu, val:%d", _param_lsws[getAddr(pid) - 2].first, lsw);
 
 		write(pid, msw); 
-		write(_lower_words[getAddr(pid) - 2].first, lsw);
+		write(_param_lsws[getAddr(pid) - 2].first, lsw);
 	}
 
 	template <typename DataWriter>
-	void writeInteger( unsigned long int pid, std::vector<uint8_t> data, DataWriter write )
+	void writeInteger( unsigned long int pid, DataBuffer data, DataWriter write )
 	{
 		sz_log(10, "SzParamMap::writeInteger");
 
@@ -147,26 +169,26 @@ public:
 		uint8_t* pblock8 = reinterpret_cast<uint8_t*>(&int_value);
 		*pblock8 = data[1]; pblock8++;
 		*pblock8 = data[0]; pblock8++;
-		*pblock8 = _lower_words[getAddr(pid) - 2].second[1]; pblock8++;
-		*pblock8 = _lower_words[getAddr(pid) - 2].second[0];
+		*pblock8 = _param_lsws[getAddr(pid) - 2].second[1]; pblock8++;
+		*pblock8 = _param_lsws[getAddr(pid) - 2].second[0];
 
 		uint32_t int_block = (uint32_t)(int_value);
 		int16_t lsw = (int16_t) int_block;
 		int16_t msw = (int16_t) (int_block >> 16);
 
 		sz_log(5, "Param value (msw integer) id:%lu, val:%d", pid, msw);
-		sz_log(5, "Param value (lsw integer) id:%lu, val:%d", _lower_words[getAddr(pid) - 2].first, lsw);
+		sz_log(5, "Param value (lsw integer) id:%lu, val:%d", _param_lsws[getAddr(pid) - 2].first, lsw);
 
 		write(pid, msw); 
-		write(_lower_words[getAddr(pid) - 2].first, lsw);
+		write(_param_lsws[getAddr(pid) - 2].first, lsw);
 	}
 
 	template <typename DataWriter>
-	void writeMultiParam( unsigned long int pid, std::vector<uint8_t> data, DataWriter write )
+	void writeMultiParam( unsigned long int pid, DataBuffer data, DataWriter write )
 	{ 
 		sz_log(10, "SzParamMap::writeMultiParam");
 
-		if (!hasLSW(getAddr(pid) - 2)) {
+		if (!hasParamLSW(getAddr(pid) - 2)) {
 			sz_log(0, "Param addr:%d has msw and missing lsw", getAddr(pid));
 			return;
 		}
@@ -178,7 +200,7 @@ public:
 	}
 	
 	template <typename DataWriter>
-	void writeSingleParam( unsigned long int pid, std::vector<uint8_t> data, DataWriter write )
+	void writeSingleParam( unsigned long int pid, DataBuffer data, DataWriter write )
 	{ 
 		sz_log(10, "SzParamMap::writeSingleParam");
 
@@ -196,22 +218,116 @@ public:
 	}
 
 	template <typename DataWriter>
-	void WriteData(unsigned long int pid, std::vector<uint8_t> data, DataWriter write )
+	void WriteData(unsigned long int pid, DataBuffer data, DataWriter write )
 	{
-		sz_log(10, "SzParamMap::WriteData");
+		sz_log(10, "SzParamMap::WriteData id:%lu",pid);
 
-		if (isLSW(pid)) { setLSW(pid, data); return; }
+		if (isLSW(pid)) { setParamLSW(pid, data); return; }
 		if (isMSW(pid)) { writeMultiParam(pid,data,write); return; }
 		
 		writeSingleParam(pid,data,write);
+	}
+
+	template <typename DataReader>
+	void readFloat( unsigned long int pid, DataDescriptor desc, DataReader read)
+	{
+		sz_log(10, "SzParamMap::readInteger");
+
+		SendIndexData sid = _send_lsws[getAddr(pid) - 2];
+		unsigned long int lsw_pid = sid.first;
+
+		int16_t lsw = read(_send_params[lsw_pid]);
+		int16_t msw = read(_send_params[pid]);
+
+		int int_value;
+		uint16_t* pblock16 = reinterpret_cast<uint16_t*>(&int_value);
+		*pblock16 = lsw; pblock16++;
+		*pblock16 = msw;
+		
+		float float_value = (float)(int_value / pow10(getPrec(pid)));
+		
+		uint8_t* pblock8 = reinterpret_cast<uint8_t*>(&float_value);
+
+		*(desc.first + 1) = *pblock8; pblock8++;
+		*(desc.first + 0) = *pblock8; pblock8++;
+		*(sid.second.first + 1) = *pblock8; pblock8++;
+		*(sid.second.first + 0) = *pblock8; 
+	}	
+
+	template <typename DataReader>
+	void readInteger( unsigned long int pid, DataDescriptor desc, DataReader read)
+	{
+		sz_log(10, "SzParamMap::readInteger");
+
+		SendIndexData sid = _send_lsws[getAddr(pid)];
+		unsigned long int lsw_pid = sid.first;
+
+		int16_t lsw = read(_send_params[lsw_pid]);
+		int16_t msw = read(_send_params[pid]);
+	
+		int int_value;
+		uint16_t* pblock16 = reinterpret_cast<uint16_t*>(&int_value);
+		*pblock16 = lsw; pblock16++;
+		*pblock16 = msw;
+
+		uint8_t* pblock8 = reinterpret_cast<uint8_t*>(&int_value);
+
+		*(desc.first + 1) = *pblock8; pblock8++;
+		*(desc.first + 0) = *pblock8; pblock8++;
+		*(sid.second.first + 1) = *pblock8; pblock8++;
+		*(sid.second.first + 0) = *pblock8; 
+	}	
+
+	template <typename DataReader>
+	void readMultiParam( unsigned long int pid, DataDescriptor desc, DataReader read)
+	{
+		sz_log(10, "SzParamMap::readMultiParam");
+
+		if (!hasSendLSW(getAddr(pid) - 2)) {
+			sz_log(0, "Send addr:%d has msw and missing lsw", getAddr(pid));
+			return;
+		}
+		
+		if (isFloat(pid)) { readFloat(pid,desc,read); return; }
+
+		readInteger(pid,desc,read);
 		return;
 	}
+
+	template <typename DataReader>
+	void readSingleParam( unsigned long int pid, DataDescriptor desc, DataReader read)
+	{
+		sz_log(10, "SzParamMap::readSingleParam");
+
+		int16_t value = read(_send_params[pid]);
+		uint8_t* pblock8 = reinterpret_cast<uint8_t*>(&value);		
+		if (desc.first != desc.second) { 
+			*(desc.first + 1) = *pblock8; pblock8++; 
+			*(desc.first) = *pblock8;
+		} else {
+			*(desc.first) = *pblock8;
+		}
+	}
+
+	template <typename DataReader>
+	void ReadData( unsigned long int pid, DataDescriptor desc, DataReader read ) 
+	{ 
+		sz_log(10, "SzParamMap::ReadData id:%lu",pid);
+		
+		if (isLSW(pid)) { setSendLSW(pid,desc); return; }
+		if (isMSW(pid)) { readMultiParam(pid,desc,read); return; }
+		
+		readSingleParam(pid,desc,read);
+	}
+
 
 private:
 	/** Map param index in params.xml to SzParam */
 	std::map<unsigned long int, SzParam> _params;
+	std::map<unsigned long int, TSendParam*> _send_params;
 	/** Map param address in params.xml to param index & data pair */ 
-	std::map<int, ParamIndexData> _lower_words;
+	std::map<int, ParamIndexData> _param_lsws;
+	std::map<int, SendIndexData> _send_lsws;
 };
 
 #endif /*SZPMAP_H*/

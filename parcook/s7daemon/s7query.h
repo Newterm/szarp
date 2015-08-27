@@ -41,32 +41,35 @@
 #include <tuple>
 #include <cstdint>
 
+#include "liblog.h"
+#include "datatypes.h"
+
 class S7Query 
 {
 public:
-	typedef std::vector<uint8_t> S7DataBuffer;
-	typedef std::tuple<int,int,int> QueryKey;
-
+	typedef std::tuple<bool,int,int,int> QueryKey;
 	S7Query():
 		_area(-1),
 		_db_num(-1),
 		_start(-1),
 		_amount(-1),
-		_w_len(-1)
+		_w_len(-1),
+		_write(false)
 	{}
 
 	void merge( S7Query& query );
 	void appendId( int id );
 	bool isValid();
 	bool ask( S7Object& client );
+	bool tell( S7Object& client );
 	void dump();
 	int nextAddress();
 	unsigned int typeSize();
 	
-	template <typename DataProcessor>
-	void ProcessData(DataProcessor proc) 
+	template <typename ResponseProcessor>
+	void ProcessResponse(ResponseProcessor proc) 
 	{
-		S7DataBuffer buff;
+		DataBuffer buff;
 		std::vector<int> ids = _ids;
 		for (unsigned int offset = 0; (offset + typeSize()) <= _data.size(); offset += typeSize()) {
 			for (unsigned int idx = 0; idx < typeSize(); idx++) 
@@ -76,7 +79,21 @@ public:
 			buff.clear();
 		}
 	}
- 	
+	
+ 	template <typename DataAccessor>
+	void AccessData(DataAccessor access) 
+	{	
+		std::vector<int> ids = _ids;
+		for (unsigned int offset = 0; (offset + typeSize()) <= _data.size(); offset += typeSize()) {
+			DataIterator data_begin = _data.begin() + offset;
+			DataIterator data_end =  data_begin + typeSize() - 1;
+
+			access(ids.front(), DataDescriptor(data_begin, data_end));
+
+			ids.erase(ids.begin());
+		}
+	}
+
 	void setArea( int area )
 	{ _area = area; }
 	void setDbNum( int db_num )
@@ -87,6 +104,11 @@ public:
 	{ _amount = amount; }
 	void setWordLen( int w_len )
 	{ _w_len = w_len; }
+	void setWriteQuery( bool write )
+	{ _write = write; }
+
+	bool isWriteQuery()
+	{ return _write; }
 
 	int getStart()
 	{ return _start; }
@@ -95,10 +117,13 @@ public:
 	{ return !_data.empty(); }
 
 	QueryKey getKey() 
-	{ return QueryKey(_area,_w_len,_db_num); }
+	{ return QueryKey(_write,_area,_w_len,_db_num); }
 	
 	friend bool operator<(const S7Query& l, const S7Query& r) 
 	{ return l._start < r._start; }
+	
+	void build()
+	{ _data.resize(_amount * typeSize()); }
 
 private:
 	int _area;
@@ -106,9 +131,11 @@ private:
 	int _start;
 	int _amount;
 	int _w_len;
+
+	bool _write;
 	
 	std::vector<int> _ids;
-	S7DataBuffer _data;
+	DataBuffer _data;
 };
 
 

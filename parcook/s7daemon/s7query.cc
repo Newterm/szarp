@@ -8,7 +8,6 @@
 unsigned int S7Query::typeSize()
 {
 	sz_log(10, "S7Query::typeSize");
-
 	switch (_w_len) {
 		case 0x01: return 1;
 		case 0x02: return 1;
@@ -32,6 +31,7 @@ void S7Query::merge( S7Query& query )
 	auto qit = _ids.end();
 	_ids.insert(qit, query._ids.begin(), query._ids.end());
 	_amount += query._amount;
+	_data.resize(_amount * typeSize());
 }
 	
 bool S7Query::isValid() 
@@ -50,19 +50,36 @@ bool S7Query::ask( S7Object& client )
 				
 	int ret = Cli_ReadArea(client,_area,_db_num,_start,_amount,_w_len,_data.data());
 	if( ret != 0 ) {
-		sz_log(1, "Query area:%d,db:%d,start:%d,amount:%d,w_len:%d FAILED",
+		sz_log(1, "Query read area:%d,db:%d,start:%d,amount:%d,w_len:%d FAILED",
 				_area,_db_num,_start,_amount,_w_len);
 		return false;
 	}
-	sz_log(3, "Query area:%d,db:%d,start:%d,amount:%d,w_len:%d SUCCESS",
+	sz_log(3, "Query read area:%d,db:%d,start:%d,amount:%d,w_len:%d SUCCESS",
 				_area,_db_num,_start,_amount,_w_len);
 	return true;
 }
-		
+
+bool S7Query::tell( S7Object& client ) 
+{
+	sz_log(10, "S7Query::tell");
+
+	int ret = Cli_WriteArea(client,_area,_db_num,_start,_amount,_w_len,_data.data());
+	if( ret != 0 ) {
+		sz_log(1, "Query write area:%d,db:%d,start:%d,amount:%d,w_len:%d FAILED",
+				_area,_db_num,_start,_amount,_w_len);
+		return false;
+	}
+	sz_log(3, "Query write area:%d,db:%d,start:%d,amount:%d,w_len:%d SUCCESS",
+				_area,_db_num,_start,_amount,_w_len);
+	return true;
+}
+	
 void S7Query::dump() 
 {
 	sz_log(10, "S7Query::dump");
 	std::ostringstream os;
+
+	if (isWriteQuery()) os << "send ";
 
 	os << "idx:( ";
 	for (auto id = _ids.begin(); id != _ids.end(); id++) {
