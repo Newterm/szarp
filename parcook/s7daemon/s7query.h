@@ -75,10 +75,12 @@ public:
 		for (unsigned int offset = 0; (offset + typeSize()) <= _data.size(); offset += typeSize()) {
 			for (unsigned int idx = 0; idx < typeSize(); idx++) 
 				buff.push_back(_data[offset + idx]);
-			proc(ids.front(), buff, isNoData());
+			proc(ids.front(), buff, _no_data);
 			ids.erase(ids.begin());
 			buff.clear();
 		}
+		/** Data is processed and invalidated until next ask */
+		_no_data = true;
 	}
 	
  	template <typename DataAccessor>
