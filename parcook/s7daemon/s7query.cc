@@ -52,11 +52,13 @@ bool S7Query::ask( S7Object& client )
 	if( ret != 0 ) {
 		sz_log(1, "Query read area:%d,db:%d,start:%d,amount:%d,w_len:%d FAILED",
 				_area,_db_num,_start,_amount,_w_len);
-		return false;
+
+		_no_data = true; return false;
 	}
 	sz_log(3, "Query read area:%d,db:%d,start:%d,amount:%d,w_len:%d SUCCESS",
 				_area,_db_num,_start,_amount,_w_len);
-	return true;
+	
+	_no_data = false; return true;
 }
 
 bool S7Query::tell( S7Object& client ) 

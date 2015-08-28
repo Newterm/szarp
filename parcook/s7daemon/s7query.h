@@ -54,7 +54,8 @@ public:
 		_start(-1),
 		_amount(-1),
 		_w_len(-1),
-		_write(false)
+		_write(false),
+		_no_data(true)
 	{}
 
 	void merge( S7Query& query );
@@ -74,7 +75,7 @@ public:
 		for (unsigned int offset = 0; (offset + typeSize()) <= _data.size(); offset += typeSize()) {
 			for (unsigned int idx = 0; idx < typeSize(); idx++) 
 				buff.push_back(_data[offset + idx]);
-			proc(ids.front(), buff);
+			proc(ids.front(), buff, isNoData());
 			ids.erase(ids.begin());
 			buff.clear();
 		}
@@ -109,6 +110,8 @@ public:
 
 	bool isWriteQuery()
 	{ return _write; }
+	bool isNoData()
+	{ return _no_data; }
 
 	int getStart()
 	{ return _start; }
@@ -133,6 +136,7 @@ private:
 	int _w_len;
 
 	bool _write;
+	bool _no_data;
 	
 	std::vector<int> _ids;
 	DataBuffer _data;

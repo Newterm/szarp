@@ -112,8 +112,10 @@ void S7Daemon::Transfer()
 
 	/** Write SZARP DB with values from read queries */ 
 	_pmap.clearWriteBuffer();
-	_client.ProcessResponse([&](unsigned long int idx, DataBuffer data) {
-		_pmap.WriteData(idx, data, [&](unsigned long int pid, uint16_t value) {
+	_client.ProcessResponse([&](unsigned long int idx, DataBuffer data, bool no_data) {
+		if(no_data) { Set(idx, SZARP_NO_DATA); return; }
+
+		_pmap.WriteData(idx, data, [&](unsigned long int pid, int16_t value) {
 			Set(pid, value);
 		});
 	});	
