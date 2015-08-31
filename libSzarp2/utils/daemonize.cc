@@ -22,6 +22,8 @@
  * MA 02110-1301, USA.
  *
  */
+#ifndef MINGW32
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
@@ -134,3 +136,5 @@ int daemonize (unsigned int flags)
 
 	return 0;	/* done */
 }
+
+#endif  /* MINGW32 */
