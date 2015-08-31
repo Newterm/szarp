@@ -45,7 +45,8 @@ int main( int argc , char** argv )
 		("help,h", "Print this help messages")
 		("config_file", po::value<std::string>()->default_value(PREFIX "/iks/iks-server.ini"), "Custom configuration file.")
 		("no_daemon", "If specified server will not daemonize.")
-		("pid_file", po::value<std::string>(), "Specify destination of pid file that should be used. If not set no file is created.")
+		("force_syslog", "Log to syslog even if no_daemon is specified")
+      ("pid_file", po::value<std::string>(), "Specify destination of pid file that should be used. If not set no file is created.")
 		("log_level", po::value<unsigned>()->default_value(2), "Level how verbose should server be. Convention is: 0 - errors , 1 - warnings , 2 - info output , 3 and more - debug")
 		("name", po::value<std::string>()->default_value(ba::ip::host_name()), "Servers name -- defaults to hostname.")
 		("prefix,P", po::value<std::string>()->default_value(PREFIX), "Szarp prefix")
@@ -91,7 +92,10 @@ int main( int argc , char** argv )
 
 	} 
 
-	const char* logname = vm.count("no_daemon") ? NULL : "iks-server" ;
+	const char* logname = NULL;
+   if (vm.count("force_syslog") || !vm.count("no_daemon")) 
+      logname = "iks-server";
+   
 
 	sz_loginit( vm["log_level"].as<unsigned>() , logname , SZ_LIBLOG_FACILITY_DAEMON );
 	sz_log(2,"Welcome, milord");
