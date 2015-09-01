@@ -59,9 +59,9 @@ public:
 	buffer_templ(base_templ<types>* _base, SzbParamMonitor* param_monitor, ipk_container_type* ipk_container, const std::wstring& prefix, const std::wstring& buffer_directory)
 			: m_base(_base), m_param_monitor(param_monitor), m_ipk_container(ipk_container), m_buffer_directory(buffer_directory) {
 	
-		TParam* heart_beat_param = m_ipk_container->GetParam(prefix + L":Status:Meaner4:Heartbeat");
+		TParam* heart_beat_param = m_ipk_container->GetParam(prefix + L":Status:Meaner3:program_uruchomiony");
 		if (heart_beat_param)
-			m_heart_beat_entry = get_param_entry(m_ipk_container->GetParam(prefix + L":Status:Meaner4:Heartbeat"));
+			m_heart_beat_entry = get_param_entry(heart_beat_param);
 		else
 			m_heart_beat_entry = NULL;
 	}

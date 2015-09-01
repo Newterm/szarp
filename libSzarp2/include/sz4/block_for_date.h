@@ -36,14 +36,15 @@ template<class T> std::wstring find_block_for_date(const std::wstring& dir, cons
 
 	std::wstring file;
 	T found_time(time_trait<T>::invalid_value);
+	bool sz4;
 
 	for (fs::directory_iterator i(dir);
 			i != fs::directory_iterator();
 			i++) {
 #if BOOST_FILESYSTEM_VERSION == 3
-		T file_time(path_to_date<T>(i->path().string()));
+		T file_time(path_to_date<T>(i->path().string(), sz4));
 #else
-		T file_time(path_to_date<T>(i->path().file_string()));
+		T file_time(path_to_date<T>(i->path().file_string(), sz4));
 #endif
 		if (!time_trait<T>::is_valid(file_time))
 			continue;

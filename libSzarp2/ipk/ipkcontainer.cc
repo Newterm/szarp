@@ -292,7 +292,7 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 
 	if (first_time_added) {
 		TParam *p = new TParam(NULL);
-		p->Configure(L"Status:Meaner4:Heartbeat",
+		p->Configure(L"Status:Meaner3:program_uruchomiony",
 			L"", L"", L"", NULL, 0, -1, 1);
 		AddExtraParamImpl(prefix, p);
 	}
