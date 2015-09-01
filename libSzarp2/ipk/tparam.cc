@@ -53,7 +53,26 @@
 
 #ifdef MINGW32
 #include "mingw32_missing.h"
-#endif
+#include <time.h>
+
+#ifndef MINGW32__TIMEGMFUN__
+#define MINGW32__TIMEGMFUN__
+
+time_t timegm(struct tm * a_tm) {
+	time_t ltime = mktime(a_tm);
+	struct tm tm_val;
+	gmtime_s(&tm_val, &ltime);
+	int offset = (tm_val.tm_hour - a_tm->tm_hour);
+	if (offset > 12) {
+		offset = 24 - offset;
+	}
+	time_t utc = mktime(a_tm) - offset * 3600;
+	return utc;
+}
+
+#endif //mingw32__timegmfun__
+
+#endif //mingw32
 
 #define FREE(x)	if (x != NULL) free(x)
 

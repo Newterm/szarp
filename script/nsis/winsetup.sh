@@ -165,29 +165,33 @@ function CopyDlls()
 
 	MINGW="/usr/share/doc/mingw32-runtime/mingwm10.dll.gz"
 	DDLS="\
-	/usr/local/i586-mingw32msvc/lib/wxbase28u_*.dll \
-	/usr/local/i586-mingw32msvc/lib/wxmsw28u_*.dll \
-	/usr/local/i586-mingw32msvc/lib/*eay32*.dll \
-	/usr/local/i586-mingw32msvc/lib/*ssl*.dll \
-	/usr/local/i586-mingw32msvc/*/libz*.dll \
-	/usr/local/i586-mingw32msvc/bin/*iconv*.dll \
-	/usr/local/i586-mingw32msvc/bin/libxml2*.dll \
-	/usr/local/i586-mingw32msvc/bin/libfreetype*.dll \
-	/usr/local/i586-mingw32msvc/bin/libftgl*.dll \
-	/usr/local/i586-mingw32msvc/lib/librsync*.dll \
-	/usr/local/i586-mingw32msvc/bin/libcares*.dll \
-	/usr/local/i586-mingw32msvc/bin/libexpat*.dll \
-	/usr/local/i586-mingw32msvc/bin/libsqlite*.dll \
-	/usr/local/i586-mingw32msvc/*/lua*.dll \
-	/usr/local/boost/lib/libboost_system*.dll \
-	/usr/local/boost/lib/libboost_filesystem*.dll \
-	/usr/local/boost/lib/libboost_date_time*.dll \
-	/usr/local/boost/lib/libboost_program_options*.dll \
-	/usr/local/boost/lib/libboost_thread*.dll \
-	/usr/local/boost/lib/libboost_locale*.dll \
-	/usr/local/boost/lib/libboost_chrono*.dll \
-	/usr/lib/gcc/i686-w64-mingw32/4.6/libstdc++-6.dll \
-	/usr/lib/gcc/i686-w64-mingw32/4.6/libgcc_s_sjlj-1.dll \
+	/usr/local/win32/lib/wxbase28u_*.dll \
+	/usr/local/win32/lib/wxmsw28u_*.dll \
+	/usr/local/win32/lib/*eay32*.dll \
+	/usr/local/win32/bin/*ssl*.dll \
+	/usr/local/win32/lib/*msvcr*.dll \
+	/usr/local/win32/*/libz*.dll \
+	/usr/local/win32/lib/*curl*.dll \
+	/usr/local/win32/bin/*iconv*.dll \
+	/usr/local/win32/bin/libxml2*.dll \
+	/usr/local/win32/bin/libfreetype*.dll \
+	/usr/local/win32/bin/libftgl*.dll \
+	/usr/local/win32/lib/librsync*.dll \
+	/usr/local/win32/bin/libcares*.dll \
+	/usr/local/win32/bin/libexpat*.dll \
+	/usr/local/win32/bin/libsqlite*.dll \
+        /usr/local/win32/bin/libxslt-1.dll \
+	/usr/local/win32/*/lua*.dll \
+	/usr/local/win32/boost-1.55/lib/libboost_system*.dll \
+	/usr/local/win32/boost-1.55/lib/libboost_filesystem*.dll \
+	/usr/local/win32/boost-1.55/lib/libboost_date_time*.dll \
+	/usr/local/win32/boost-1.55/lib/libboost_program_options*.dll \
+	/usr/local/win32/boost-1.55/lib/libboost_thread*.dll \
+	/usr/local/win32/boost-1.55/lib/libboost_locale*.dll \
+	/usr/local/win32/boost-1.55/lib/libboost_chrono*.dll \
+	/usr/lib/gcc/i686-w64-mingw32/4.8/libstdc++-6.dll \
+	/usr/lib/gcc/i686-w64-mingw32/4.8/libgcc_s_sjlj-1.dll \
+	/usr/local/win32/bin/*winpthread-1.dll \
 	$MINGW"
 	
 	cat >> "`GetTmp`/FileList.nsh" <<EOF
@@ -223,7 +227,7 @@ function PrepareScript() {
 		> "`GetTmp`/require.ini"
 	cat "$CURDIR"/../../gpl-2.0-pl-win.txt \
 		| $SED -e "s/__NAME__/$_NAME/g" \
-		#| $ICONV -f utf-8 -t cp1250 \ # teoretycznie Unicode / utf-8 jest wspierane przez nsis
+		| $ICONV -f utf-8 -t cp1250 \ 
 		> "`GetTmp`/license.pl"
 	cat "$CURDIR"/../../gpl-2.0.txt \
 		| $SED -e "s/__NAME__/$_NAME/g" \
