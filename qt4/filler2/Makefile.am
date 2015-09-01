@@ -16,11 +16,13 @@ szb2filler_script = @srcdir@/szb2filler
 filler2dir = @prefix@/lib/python/filler2
 
 filler2_PYTHON = \
+		@srcdir@/ui/__init__.py \
 		@srcdir@/ui/AboutDialog.py \
 		@srcdir@/ui/DatetimeDialog.py \
 		@srcdir@/ui/HistoryDialog.py \
 		@srcdir@/ui/ValueDialogs.py \
 		@srcdir@/ui/Filler2.py \
+		@srcdir@/ipk/__init__.py \
 		@srcdir@/ipk/ipkparser.py \
 		@srcdir@/filler2-launcher.py
 
