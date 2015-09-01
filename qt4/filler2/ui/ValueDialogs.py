@@ -25,7 +25,7 @@ __copyright__ = "Copyright (C) 2014-2015 Newterm"
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from ipkparser import SZB_LIMIT, SZB_LIMIT_COM, NO_DATA, NO_DATA_COM
+from ipk.ipkparser import SZB_LIMIT, SZB_LIMIT_COM, NO_DATA, NO_DATA_COM
 
 # translation function for QTranslator
 try:

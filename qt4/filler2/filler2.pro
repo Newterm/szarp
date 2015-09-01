@@ -1,3 +1,3 @@
-SOURCES = filler2.py filler2-launcher.py DatetimeDialog.py AboutDialog.py HistoryDialog.py ValueDialogs.py
+SOURCES = filler2-launcher.py ui/Filler2.py ui/DatetimeDialog.py ui/AboutDialog.py ui/HistoryDialog.py ui/ValueDialogs.py
 
-TRANSLATIONS = pl/filler2_pl.ts
+TRANSLATIONS = locales/filler2_pl.ts

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Filler 2 is a tool for manual editing of SZARP databases. It is written in Qt4
@@ -51,12 +50,12 @@ import logging
 from logging.handlers import SysLogHandler
 
 # local imports
-from filler2 import Ui_MainWindow
-from ipkparser import IPKParser
-from DatetimeDialog import Ui_DatetimeDialog
-from AboutDialog import Ui_AboutDialog
-from HistoryDialog import Ui_HistoryDialog
-from ValueDialogs import ValueDialogFactory
+from ui.Filler2 import Ui_MainWindow
+from ui.AboutDialog import Ui_AboutDialog
+from ui.DatetimeDialog import Ui_DatetimeDialog
+from ui.HistoryDialog import Ui_HistoryDialog
+from ui.ValueDialogs import ValueDialogFactory
+from ipk.ipkparser import IPKParser
 
 # pyQt4 imports
 from PyQt4.QtCore import *
