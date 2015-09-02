@@ -38,6 +38,17 @@ nanosecond_time_t
 szb_move_time(const nanosecond_time_t& t, int count, SZARP_PROBE_TYPE probe_type, 
 		int custom_length) {
 	switch (probe_type) {
+		case PT_MSEC10: {
+			unsigned sec = t.second;
+			sec += count / 10;
+
+			unsigned nsec =	t.nanosecond + 100000000 * (count % 10);
+			unsigned carry = nsec / 1000000000;
+
+			sec += carry;
+			nsec -= carry * 1000000000;
+			return make_nanosecond_time(sec, nsec);
+		}
 		case PT_HALFSEC: {
 			unsigned sec = t.second;
 			sec += count / 2;
