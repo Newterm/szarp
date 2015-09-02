@@ -110,8 +110,8 @@ Files: opt/szarp/iks/iks-server.ini.sample
 
 Package: szarp-filler2
 Files: opt/szarp/lib/python/filler2/filler2-launcher.py*
-Files: opt/szarp/lib/python/filler2/ipk/*
-Files: opt/szarp/lib/python/filler2/ui/*
+Files: opt/szarp/lib/python/filler2/ipk/{__init__.py*,ipkparser.py*}
+Files: opt/szarp/lib/python/filler2/ui/{__init__.py*,AboutDialog.py*,DatetimeDialog.py*,HistoryDialog.py*,ValueDialogs.py*}
 Files: opt/szarp/resources/locales/qt4/filler2_pl.qm
 Files: opt/szarp/resources/wx/icons/filler2.png
 Files: opt/szarp/resources/qt4/icons/{filler2.png,filler2-big.png,qt4.png,plot-*.png}
