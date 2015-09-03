@@ -26,14 +26,14 @@
 #include <lua.hpp>
 
 #include <boost/filesystem/path.hpp>
-#include <boost/container/flat_set.hpp>
 #include <boost/optional.hpp>
 
-#include "sz4/defs.h"
 #include "sz4/types.h"
+#include "sz4/block.h"
+#include "sz4/block_cache.h"
 #include "sz4/buffer.h"
 #include "sz4/lua_interpreter.h"
-#include "sz4/block_cache.h"
+#include "sz4/defs.h"
 #include "sz4/param_observer.h"
 #include "szarp_base_common/lua_strings_extract.h"
 

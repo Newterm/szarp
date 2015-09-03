@@ -57,7 +57,13 @@ public:
 template<class V, class T, class types> class sz4_file_block_entry : public file_block_entry<V, T, types> {
 public:
 	typedef file_block_entry<V, T, types> parent;
-	using parent::file_block_entry;
+	sz4_file_block_entry(const T& start_time,
+			const std::wstring& block_path,
+			block_cache* cache,
+			real_param_entry_in_buffer<V, T, types>* param_entry)
+		:
+			parent(start_time, block_path, cache, param_entry)
+		{}
 
 	void refresh_if_needed() {
 		if (!this->m_needs_refresh)

@@ -124,7 +124,7 @@ template <class F, class T> struct sum_conv_helper {
 };
 
 template<> struct sum_conv_helper<int_sum_type, short> {
-	static short _do(const int_sum_type& v) { return v.template convert_to<int>(); }
+	static short _do(const int_sum_type& v) { return v.convert_to<int>(); }
 };
 
 template<> struct sum_conv_helper<float_sum_type, int_sum_type> {
