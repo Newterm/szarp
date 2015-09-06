@@ -1383,9 +1383,8 @@ TParam::PrepareDefinable() throw(TCheckException)
 
 		sz_log(9, " NFORM: %ls", _formula.c_str());
 	    }
-	    else {
-		_f_cache.push_back(tp);
-	    }
+
+            _f_cache.push_back(tp);
 	}
 	else {
 	    _f_cache.push_back(tp);

@@ -1,42 +1,4 @@
-#include "config.h"
-
-#include <sys/types.h>
-#include <unistd.h>
-#include <vector>
-#include <limits>
-#include <iostream>
-#include <fstream>
-#include <iomanip>
-#include <cppunit/extensions/HelperMacros.h>
-#include <boost/filesystem.hpp>
-
-#include "conversion.h"
-#include "szarp_config.h"
-#include "liblog.h"
-#include "szarp_base_common/defines.h"
-#include "szarp_base_common/lua_param_optimizer.h"
-#include "szarp_base_common/lua_param_optimizer_templ.h"
-#include "sz4/block.h"
-#include "sz4/block_cache.h"
-#include "sz4/defs.h"
-#include "sz4/time.h"
-#include "sz4/base.h"
-#include "sz4/path.h"
-#include "sz4/buffer.h"
-#include "sz4/util.h"
-#include "sz4/definable_param_cache.h"
-#include "sz4/real_param_entry.h"
-#include "sz4/lua_optimized_param_entry.h"
-#include "sz4/lua_param_entry.h"
-#include "sz4/rpn_param_entry.h"
-#include "sz4/combined_param_entry.h"
-#include "sz4/buffer_templ.h"
-#include "sz4/lua_interpreter_templ.h"
-
-#include "test_serach_condition.h"
-#include "test_observer.h"
-#include "simple_mocks.h"
-#include "sz4/filelock.h"
+#include "unit_test_common.h"
 
 class Sz4RPNParam : public CPPUNIT_NS::TestFixture
 {
@@ -146,7 +108,7 @@ void Sz4RPNParam::test2() {
 	std::wstringstream base_dir_name;
 	base_dir_name << L"/tmp/sz4_rpn_param" << getpid() << L"." << time(NULL) << L".tmp";
 	boost::filesystem::wpath base_path(base_dir_name.str());
-	boost::filesystem::wpath param_dir(base_path / L"BASE/sz4/A/B/C");
+	boost::filesystem::wpath param_dir(base_path / L"BASE/szbase/A/B/C");
 	boost::filesystem::create_directories(param_dir);
 
 #if BOOST_FILESYSTEM_VERSION == 3

@@ -84,15 +84,15 @@ template<class C> struct path_to_date_converter<nanosecond_time_t, C>  {
 		nanosecond_time_t v(0, 0);
 
 		size_t path_size = path.size();
-		if (path_size < 14)
-			return time_trait<second_time_t>::invalid_value;
+		if (path_size < 24)
+			return time_trait<nanosecond_time_t>::invalid_value;
 
 		typedef char_trait<C> T;
 		if (path[path_size - 4] != T::dot
 				|| path[path_size - 3] != T::s
 				|| path[path_size - 2] != T::z
 				|| path[path_size - 1] != T::_4)
-			return time_trait<second_time_t>::invalid_value;
+			return time_trait<nanosecond_time_t>::invalid_value;
 	
 		for (size_t i = 0; i < 10; i++) {
 			v.nanosecond *= 10;

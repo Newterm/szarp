@@ -55,10 +55,10 @@ void Sz4BaseTestCase::setUp() {
 		ls << l;
 
 		boost::filesystem::create_directories(path / ls.str() / L"config");
-		boost::filesystem::create_directories(path / ls.str() / L"sz4");
-		boost::filesystem::create_directories(path / ls.str() / L"sz4/a/a/a");
-		boost::filesystem::create_directories(path / ls.str() / L"sz4/b/b/b");
-		boost::filesystem::create_directories(path / ls.str() / L"sz4/Status/Meaner4/Heartbeat");
+		boost::filesystem::create_directories(path / ls.str() / L"szbase");
+		boost::filesystem::create_directories(path / ls.str() / L"szbase/a/a/a");
+		boost::filesystem::create_directories(path / ls.str() / L"szbase/b/b/b");
+		boost::filesystem::create_directories(path / ls.str() / L"szbase/Status/Meaner3/program_uruchomiony");
 
 #if BOOST_FILESYSTEM_VERSION == 3
 		std::ofstream ofs((path / ls.str() / L"config/params.xml").native().c_str(), std::ios_base::binary);
@@ -95,9 +95,9 @@ void Sz4BaseTestCase::setUp() {
 
 				boost::filesystem::wpath param_path;
 				if (s != L'd')
-					param_path = path / ls.str() / L"sz4" / ss.str() / ss.str() / ss.str();
+					param_path = path / ls.str() / L"szbase" / ss.str() / ss.str() / ss.str();
 				else
-					param_path = path / ls.str() / L"sz4" / L"Status" / L"Meaner4" / L"Heartbeat";
+					param_path = path / ls.str() / L"szbase" / L"Status" / L"Meaner3" / L"program_uruchomiony";
 				std::wstringstream file_name;
 				file_name << std::setfill(L'0') << std::setw(10) << i << L".sz4";
 #if BOOST_FILESYSTEM_VERSION == 3

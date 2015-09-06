@@ -42,7 +42,6 @@ public:
 		m_base->get_weighted_sum(f_cache[0], time, T(szb_move_time(time, 1, probe_type)), probe_type, wmsw);
 		m_base->get_weighted_sum(f_cache[1], time, T(szb_move_time(time, 1, probe_type)), probe_type, wlsw);
 
-		double pw = pow(10, m_param->GetPrec());
 		double v;
 
 		short lsw = wlsw.avg();
@@ -56,7 +55,6 @@ public:
 			uv |= ulsw;
 
 			v = (int)uv;
-			v /= pw;
 		} else
 			v = no_data<double>();
 
