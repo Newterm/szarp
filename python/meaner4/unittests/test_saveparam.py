@@ -99,11 +99,11 @@ class SaveParamTest(unittest.TestCase):
 		del sp
 		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
 
-		sp.process_msg(self._msg(123459, 5))
+		sp.process_msg(self._msg(123458, 5))
 		self._check_size(path, 22)
 		self._check_file(path, "<iBBBBBiBBBBBi",
 					(4, 0xf0, 0x3b, 0x9a, 0xca, 0x00,
-					-2**31, 0xf0, 0x77, 0x35, 0x94, 0x00,
+					-2**31, 0xf0, 0x3b, 0x9a, 0xca, 0x00,
 					5, ))
 
 		shutil.rmtree(temp_dir)
@@ -115,13 +115,13 @@ class SaveParamTest(unittest.TestCase):
 		items_per_file = config.DATA_FILE_SIZE / item_size
 
 		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
-		for i in range(items_per_file + 1):
+		for i in range(items_per_file):
 			sp.process_msg(self._msg(i, i))
 
 		path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/00000000000000000000.sz4")
-		self._check_size(path, items_per_file * item_size)
+		self._check_size(path, (items_per_file - 1) * item_size)
 
-		path2 = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/%010d0000000000.sz4" % (items_per_file))
+		path2 = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/%010d0000000000.sz4" % (items_per_file - 1))
 		self._check_size(path2, 4)
 
 		shutil.rmtree(temp_dir)

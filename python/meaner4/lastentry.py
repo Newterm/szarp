@@ -23,7 +23,10 @@ import struct
 import timedelta
 
 class TimeError(Exception):
-	pass
+	def __init__(self, current_time, msg_time):
+		self.current_time = current_time
+		self.msg_time = msg_time
+		
 
 class LastEntry:
 	def __init__(self, param):
@@ -43,14 +46,10 @@ class LastEntry:
 		self.value_start_time = self.time
 		self.value = value 
 
-	def update_time(self, time, nanotime):
-		time = self.time_to_int(time, nanotime)
-
-		diff = time - self.value_start_time
-		if diff <= 0:
-			raise TimeError()
-
-		self.time = time
+	def _get_time_delta(self, time_from, time_to):
+		diff = time_to - time_from
+		if diff < 0:
+			raise TimeError(time_from, time_to)
 
 		if diff in self.delta_cache:
 			encoded = self.delta_cache[diff]
@@ -58,13 +57,23 @@ class LastEntry:
 			encoded = timedelta.encode(diff)
 			self.delta_cache[diff] = encoded
 
-		self.time_size = len(encoded)
-
 		return encoded
+
+	def get_time_delta_since_latest_time(self, time, nanotime):
+		return self._get_time_delta(self.time, self.time_to_int(time, nanotime))
+
+	def update_time(self, time, nanotime):
+		time_int = self.time_to_int(time, nanotime)
+		delta = self._get_time_delta(self.value_start_time, time_int)
+
+		self.time = time_int
+		self.time_size = len(delta)
+
+		return delta
 
 	def read_time(self, file):
 		delta, self.time_size = timedelta.decode(file)
-		return delta
+		self.time += delta
 
 	def new_value(self, time, nanotime, value):
 		self.reset(time, nanotime, value)
@@ -86,5 +95,5 @@ class LastEntry:
 				self.time_size = 0
 				break
 
-			self.time += self.read_time(file)	
+			self.read_time(file)	
 

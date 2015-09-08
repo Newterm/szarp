@@ -69,16 +69,14 @@ class SaveParam:
 		self.lock = lock
 
 	def update_last_time_unlocked(self, time, nanotime):
-
 		last_time_size = self.last.time_size
 
 		time_blob = self.last.update_time(time, nanotime)
 
-		self.file.seek(last_time_size, os.SEEK_END)
+		self.file.seek(-last_time_size, os.SEEK_END)
 		self.file.write(time_blob)
 
 		self.file_size += self.last.time_size - last_time_size
-
 
 	def update_last_time(self, time, nanotime):
 		try:
@@ -86,7 +84,6 @@ class SaveParam:
 				self.file.lock()
 
 			self.update_last_time_unlocked(time, nanotime)
-
 		finally:
 			if self.lock:
 				self.file.unlock()
@@ -111,7 +108,6 @@ class SaveParam:
 			self.file_size += self.param.value_lenght
 
 			self.last.new_value(time, nanotime, value)
-
 		finally:
 			if self.lock:
 				self.file.unlock()
@@ -139,24 +135,31 @@ class SaveParam:
 
 
 	def fill_no_data(self, time, nanotime):
-		if self.param.isnan(self.last.value):
-			self.update_last_time(time, nanotime)
-		else:
-			self.ensure_room_for_new_value(time, nanotime)
+		if self.lock:
+			self.file.lock()
 
-			try:
-				if self.lock:
-					self.file.lock()
+		try:
+			if not self.param.isnan(self.last.value):
+				self.ensure_room_for_new_value(time, nanotime)
+
+				if self.file_size > 0 and self.last.time_size == 0:
+					#overwrite value at the end that didn't have the duration	
+					#specified
+					self.file.seek(-self.param.value_lengh, os.SEEK_END)
 
 				self.file.write(self.param.value_to_binary(self.param.nan()))
 				self.file_size += self.param.value_lenght
 
-				self.last.reset(time, nanotime, self.param.nan())
-				self.update_last_time_unlocked(time, nanotime)
+				time_blob = self.last.get_time_delta_since_latest_time(time, nanotime)
+				self.file.write(time_blob)
+				self.file_size += len(time_blob)
 
-			finally:
-				if self.lock:
-					self.file.unlock()
+				self.last.reset(time, nanotime, self.param.nan())
+			else:
+				self.update_last_time_unlocked(time, nanotime)
+		finally:
+			if self.lock:
+				self.file.unlock()
 
 	def process_value(self, value, time, nanotime = 0):
 		if not self.param.written_to_base:
@@ -168,16 +171,19 @@ class SaveParam:
 
 				if self.last.value is not None:
 					self.fill_no_data(time, nanotime)
-				self.write_value(value, time, nanotime)
+
+				if not self.param.isnan(value):
+					self.write_value(value, time, nanotime)
 
 				self.first_write = False
 			else:
 				self.update_last_time(time, nanotime)
+
 				if value != self.last.value:
 					self.write_value(value, time, nanotime)
 
-		except lastentry.TimeError:
-			print "Ignoring value for param %s, as this value is no later than lastest value" % (self.parampath.param_path,)
+		except lastentry.TimeError, e:
+			print "Ignoring value for param %s, as this value (time:%s) is no later than lastest value(time:%s)" % (self.param_path.param_path, e.current_time, e.msg_time)
 
 
 	def process_msg(self, msg):
