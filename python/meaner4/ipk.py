@@ -43,24 +43,11 @@ class IPK:
 		for p in self.params:
 			param_map[p.param_name] = p	
 
-		for p in self.params:
-			if not p.combined:
-				continue
-
-			lsw_param = param_map[p.lsw_param_name]
-			msw_param = param_map[p.msw_param_name]
-
-			p.lsw_param = lsw_param
-			p.msw_param = msw_param
-
-			lsw_param.lsw_combined_referencing_param = p
-			msw_param.msw_combined_referencing_param = p
-
 	def adjust_param_index(self, index):
 		if index < self.device_params_count:
 			return (False, index)
 		elif index < self.device_params_count + LOG_PARAM_COUNT:
 			return (True, None)
 		else:
-			return (False, index - LOG_PARAM_COUNT)
+			return (True, index - LOG_PARAM_COUNT)
 

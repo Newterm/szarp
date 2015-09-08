@@ -145,7 +145,7 @@ class SaveParam:
 				if self.file_size > 0 and self.last.time_size == 0:
 					#overwrite value at the end that didn't have the duration	
 					#specified
-					self.file.seek(-self.param.value_lengh, os.SEEK_END)
+					self.file.seek(-self.param.value_lenght, os.SEEK_END)
 
 				self.file.write(self.param.value_to_binary(self.param.nan()))
 				self.file_size += self.param.value_lenght
@@ -171,7 +171,6 @@ class SaveParam:
 
 				if self.last.value is not None:
 					self.fill_no_data(time, nanotime)
-
 				if not self.param.isnan(value):
 					self.write_value(value, time, nanotime)
 

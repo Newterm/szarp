@@ -23,7 +23,7 @@ import os
 import math
 
 class Param:
-	def __init__(self, name, data_type, prec, time_prec, written_to_base, combined=False, lsw=None, msw=None):
+	def __init__(self, name, data_type, prec, time_prec, written_to_base):
 		self.param_name = name
 		self.data_type = data_type
 		self.prec = prec
@@ -57,11 +57,6 @@ class Param:
 			raise ValueError("Unsupported value type: %s" % (self.data_type,))
 
 		self.written_to_base = written_to_base
-		self.combined = combined
-		self.lsw_param_name = lsw
-		self.msw_param_name = msw
-		self.lsw_combined_referencing_param = None
-		self.msw_combined_referencing_param = None
 		self.max_file_item_size = self.value_lenght + self.time_prec + 1
 
 	def value_to_binary(self, value):
@@ -93,77 +88,12 @@ class Param:
 
 
 def from_node(node):
-	def is_combined_formula(formula):
-		s = "start"
-		for i, c in enumerate(formula):
-			if c == '(':
-				if s == "start":
-					s = "msw_param"
-				elif s == "after_msw_param":
-					s = "lsw_param"
-				else:
-					return (False, None, None)
-				ps = i + 1
-			elif c == ')':
-				if s == "msw_param":
-					mp = formula[ps:i]
-					s = "after_msw_param"
-				elif s == "lsw_param":
-					lp = formula[ps:i]
-					s = "after_lsw_param"
-				else:
-					return (False, None, None)
-			elif c == ':':
-				if s == "after_lsw_param":
-					s = "done"
-				elif s == "msw_param" or s == "lsw_param":
-					continue
-				else:
-					return (False, None, None)
-			else:
-				if s == "msw_param" or s == "lsw_param" or c.isspace():
-					continue
-				else:
-					return (False, None, None)
-			
-		if s == "done":
-			return (True, mp, lp)
-		else:
-			return (False, None, None)
-
-	def expand_param_name(string, base_param_name):
-		ss = string.split(':')
-		ps = base_param_name.split(':')
-
-		for i in range(len(ss)):
-			if ss[i] == '*':
-				ss[i] = ps[i]
-
-		return ':'.join(ss)
-
-	def prepare_combined(node, param_name):
-		try:
-			define_node = node.xpath("s:define[@type='DRAWDEFINABLE']", namespaces={'s':'http://www.praterm.com.pl/SZARP/ipk'})[0]
-		except IndexError:
-			return (False, None, None)
-
-		combined, msw, lsw = is_combined_formula(define_node.attrib['formula'])
-		if not combined:
-			return (False, None, None)
-		else:
-			return (True, expand_param_name(lsw, param_name), expand_param_name(msw,param_name))
-
-
 	param_name = node.attrib["name"]
 
-	combined, lsw, msw = prepare_combined(node, param_name)
-
-	written_to_base = True if "base_ind" in node.attrib or combined else False
+	written_to_base = True if "base_ind" in node.attrib else False
 
 	if "data_type" in node.attrib:
 		data_type = node.attrib["data_type"]
-	elif combined == True:
-		data_type = "int"
 	else:
 		data_type = "short"
 
@@ -177,4 +107,4 @@ def from_node(node):
 	else:
 		time_prec = 4
 
-	return Param(param_name, data_type, prec, time_prec, written_to_base, combined, lsw, msw)
+	return Param(param_name, data_type, prec, time_prec, written_to_base)
