@@ -19,6 +19,7 @@ HOST=__PREFIX__
 # Server configuration (we detect server by comparing hostname with 
 # configuration prefix); on terminal we don't run any daemons.
 if [ `hostname -s` = $HOST ] ; then
+	PARHUB=1
 	PARCOOK=1
 	MEANER3=1
 	SENDER=1

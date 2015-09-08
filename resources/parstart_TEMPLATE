@@ -51,6 +51,13 @@ case "$1" in
 	# enable core dump
 	ulimit -c unlimited
 
+	if [ x$PARHUB = x1 ]; then
+	    DAEMON='parhub'
+	    szlog
+	    python /opt/szarp/lib/python/parhub.py start
+	    log_end_msg $?
+	fi
+
 	if [ x$PROBES_SERVER = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/lib/python/probes_server.tac
     	    szlog
@@ -257,6 +264,13 @@ case "$1" in
 	    DAEMON='meaner4'
 	    stlog
 	    python /opt/szarp/lib/python/meaner4/meaner4dmn.py stop
+	    log_end_msg $?
+	fi
+
+	if [ x$PARHUB = x1 ]; then
+	    DAEMON='parhub'
+	    szlog
+	    python /opt/szarp/lib/python/parhub.py stop
 	    log_end_msg $?
 	fi
 

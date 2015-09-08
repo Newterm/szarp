@@ -1203,6 +1203,7 @@ AC_OUTPUT( \
 	python/protobuf/Makefile \
 	python/meaner4/Makefile \
 	python/meaner4/unittests/Makefile \
+	python/parhub/Makefile \
 	meaner3/Makefile \
 	parcook/Makefile \
 	parcook/analiza/Makefile \
