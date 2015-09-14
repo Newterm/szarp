@@ -446,7 +446,7 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 	bool draw_circle =
 		d->GetPeriod() != PERIOD_T_DAY
 		&& d->GetPeriod() != PERIOD_T_30MINUTE
-		&& d->GetPeriod() != PERIOD_T_3MINUTE
+		&& d->GetPeriod() != PERIOD_T_5MINUTE
 		&& d->GetPeriod() != PERIOD_T_MINUTE
 		&& d->GetPeriod() != PERIOD_T_30SEC;
 

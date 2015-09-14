@@ -291,8 +291,8 @@
                         <radio>1</radio>
                     </item>
                     <item>
-                        <label>3 Minutes\tAlt+4</label>
-                        <name>3MINUTE_RADIO</name>
+                        <label>5 Minutes\tAlt+4</label>
+                        <name>5MINUTE_RADIO</name>
                         <radio>1</radio>
                     </item>
                     <item>

@@ -865,8 +865,8 @@ void DrawPanel::PeriodChanged(Draw *d, PeriodType pt) {
 		case PERIOD_T_30MINUTE:
 			id = XRCID("30MINUTE_RADIO");
 			break;
-		case PERIOD_T_3MINUTE:
-			id = XRCID("3MINUTE_RADIO");
+		case PERIOD_T_5MINUTE:
+			id = XRCID("5MINUTE_RADIO");
 			break;
 		case PERIOD_T_MINUTE:
 			id = XRCID("MINUTE_RADIO");
@@ -1100,8 +1100,8 @@ void DrawPanel::SetActive(bool _active) {
 			case PERIOD_T_30MINUTE:
 				pmi = menu_bar->FindItem(XRCID("30MINUTE_RADIO"));
 				break;
-			case PERIOD_T_3MINUTE:
-				pmi = menu_bar->FindItem(XRCID("3MINUTE_RADIO"));
+			case PERIOD_T_5MINUTE:
+				pmi = menu_bar->FindItem(XRCID("5MINUTE_RADIO"));
 				break;
 			case PERIOD_T_MINUTE:
 				pmi = menu_bar->FindItem(XRCID("MINUTE_RADIO"));

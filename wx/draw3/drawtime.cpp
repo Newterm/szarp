@@ -59,7 +59,7 @@ DTime& DTime::AdjustToPeriodStart() {
 		case PERIOD_T_MINUTE:
 			m_time.SetMillisecond(0);
 			break;
-		case PERIOD_T_3MINUTE:
+		case PERIOD_T_5MINUTE:
 		case PERIOD_T_30MINUTE:
 			m_time.SetSecond(0);
 			break;
@@ -133,7 +133,7 @@ DTime& DTime::AdjustToPeriod() {
 		}
 		case PERIOD_T_30MINUTE :
 			m_time.SetSecond(m_time.GetSecond() / 10 * 10);
-		case PERIOD_T_3MINUTE:
+		case PERIOD_T_5MINUTE:
 			m_time.SetMillisecond(0);
 			break;
 		case PERIOD_T_MINUTE:
@@ -182,7 +182,7 @@ DTime DTime::operator+(const wxTimeSpan& span) const {
 		//in this case will just follow UTC
 		case PERIOD_T_30SEC:
 		case PERIOD_T_MINUTE:
-		case PERIOD_T_3MINUTE:
+		case PERIOD_T_5MINUTE:
 		case PERIOD_T_30MINUTE: 
 		case PERIOD_T_DAY: 
 			return DTime(m_period, m_time + span);
@@ -306,7 +306,7 @@ int DTime::GetDistance(const DTime &t) const {
 		case PERIOD_T_30MINUTE:
 			ret = ((_t - _t0).GetSeconds() / 10).ToLong();
 			break;
-		case PERIOD_T_3MINUTE:
+		case PERIOD_T_5MINUTE:
 			ret = ((_t - _t0).GetSeconds()).ToLong();
 			break;
 		case PERIOD_T_MINUTE:
@@ -437,7 +437,7 @@ void TimeIndex::UpdatePeriods() {
 			m_timeperiod = wxTimeSpan(0, 1, 0, 0) * (m_number_of_values / TimeIndex::PeriodMult[p]);
 			m_dateperiod = wxDateSpan(0);
 			break;
-		case PERIOD_T_3MINUTE :
+		case PERIOD_T_5MINUTE :
 			m_timeres = wxTimeSpan(0, 0, 1, 0);
 			m_dateres = wxDateSpan(0);
 			m_timeperiod = wxTimeSpan(0, 0, 10, 0) * (m_number_of_values / TimeIndex::PeriodMult[p]);
@@ -495,7 +495,7 @@ DTime TimeIndex::AdjustToPeriodSpan(const DTime &time) const {
 				dt.SetMinute(dt.GetMinute() / 30 * 30);
 				dt.SetSecond(0);
 				break;
-			case PERIOD_T_3MINUTE :
+			case PERIOD_T_5MINUTE :
 				dt.SetMinute(dt.GetMinute() / 3 * 3);
 				dt.SetSecond(0);
 				break;

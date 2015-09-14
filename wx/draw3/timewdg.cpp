@@ -88,7 +88,7 @@ TimeWidget::TimeWidget(wxWindow* parent, DrawsWidget *draws_widget, PeriodType p
                 _("WEEK"),
                 _("DAY"),
                 _("30 MINUTES"),
-		_("3 MINUTES"),
+		_("5 MINUTES"),
 		_("MINUTE"),
 		_("30 SECONDS"),
                 _("SEASON")
@@ -120,7 +120,7 @@ TimeWidget::TimeWidget(wxWindow* parent, DrawsWidget *draws_widget, PeriodType p
 		case PERIOD_T_30MINUTE:
 			m_selected = 5;
 			break;
-		case PERIOD_T_3MINUTE:
+		case PERIOD_T_5MINUTE:
 			m_selected = 6;
 			break;
 		case PERIOD_T_MINUTE:

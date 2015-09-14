@@ -66,7 +66,7 @@ std::vector<SeasonLimit> get_season_limits_indexes(DrawsSets *ds, Draw* draw) {
 			switch (draw->GetPeriod()) {
 				case PERIOD_T_30SEC:
 				case PERIOD_T_MINUTE:
-				case PERIOD_T_3MINUTE:
+				case PERIOD_T_5MINUTE:
 				case PERIOD_T_30MINUTE:
 				case PERIOD_T_DAY:
 				case PERIOD_T_MONTH:
@@ -154,7 +154,7 @@ wxString get_date_string(PeriodType period, const wxDateTime& prev_date, const w
 			else
 				ret = wxString::Format(_T("%02d"), date.GetMinute());
 			break;
-		case PERIOD_T_3MINUTE :
+		case PERIOD_T_5MINUTE :
 			ret = wxString::Format(_T("%02d"), date.GetSecond() / 10 * 10);
 			break;
 		case PERIOD_T_MINUTE :

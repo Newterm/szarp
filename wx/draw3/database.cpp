@@ -547,7 +547,7 @@ SZARP_PROBE_TYPE PeriodToProbeType(PeriodType period) {
 		case PERIOD_T_30MINUTE:
 			pt = PT_SEC10;
 			break;
-		case PERIOD_T_3MINUTE:
+		case PERIOD_T_5MINUTE:
 			pt = PT_SEC;
 			break;
 		case PERIOD_T_MINUTE:

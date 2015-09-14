@@ -1,791 +1,826 @@
 # PO file for SZARP Draw 3 program.
 # This file is distributed under the same license as the draw3 package.
-# Pawe≥ Pa≥ucha  <pawel@praterm.com.pl>, 2003.
+# Pawe≈Ç Pa≈Çucha  <pawel@praterm.com.pl>, 2003.
 #
 # $Id$
-# Wersja niemiecka by Pawe≥ Kolega
+# Wersja niemiecka by Pawe≈Ç Kolega
 msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-01 08:59+0100\n"
+"POT-Creation-Date: 2015-09-14 11:27+0200\n"
 "PO-Revision-Date: 2008-07-16 11:40+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO-8859-2\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 # "Wczytywanie konfiguracji: "
-#: cfgmgr.cpp:544
+#: ../../../wx/draw3/cfgmgr.cpp:544
 msgid "Loading configuration: "
 msgstr "Lade Konfiguration: "
 
-# Zestawy definiowane przez uøytkownika
-#: cfgmgr.cpp:816
+# Zestawy definiowane przez u≈ºytkownika
+#: ../../../wx/draw3/cfgmgr.cpp:816
 #, fuzzy
 msgid "Users' sets"
-msgstr "Benutzerdefinierte S‰tze"
+msgstr "Benutzerdefinierte S√§tze"
 
-#: cfgmgr.cpp:828 cfgmgr.cpp:863 cfgmgr.cpp:887 cfgmgr.cpp:911
+#: ../../../wx/draw3/cfgmgr.cpp:828 ../../../wx/draw3/cfgmgr.cpp:863
+#: ../../../wx/draw3/cfgmgr.cpp:887 ../../../wx/draw3/cfgmgr.cpp:911
 msgid "Local sets"
 msgstr ""
 
-# "Nie uda≥o siÍ stworzyÊ katalogu %s. Zestawy definiowane nie mog± zostaÊ "
+# "Nie uda≈Ço siƒô stworzyƒá katalogu %s. Zestawy definiowane nie mogƒÖ zostaƒá "
 # "zapisane."
-#: cfgmgr.cpp:1207
+#: ../../../wx/draw3/cfgmgr.cpp:1207
 #, c-format
 msgid "Failed to create directory %s. Defined draws cannot be saved"
 msgstr ""
-"Failed to create directory %s. Definierte Schaubilder kˆnnen nicht "
+"Failed to create directory %s. Definierte Schaubilder k√∂nnen nicht "
 "gespeichert weden."
 
-# "B≥±d"
-#: cfgmgr.cpp:1208 drawfrm.cpp:681 drawpsc.cpp:426 drawpsc.cpp:439
-#: drawpsc.cpp:448 drawpsc.cpp:457 paramslist.cpp:269 paramslist.cpp:305
-#: paramslist.cpp:322 paredit.cpp:218 remarks.cpp:1349 remarks.cpp:1450
-#: remarks.cpp:1496 remarks.cpp:1544 seldraw.cpp:569
+# "B≈ÇƒÖd"
+#: ../../../wx/draw3/cfgmgr.cpp:1208 ../../../wx/draw3/drawfrm.cpp:716
+#: ../../../wx/draw3/drawpsc.cpp:426 ../../../wx/draw3/drawpsc.cpp:439
+#: ../../../wx/draw3/drawpsc.cpp:448 ../../../wx/draw3/drawpsc.cpp:457
+#: ../../../wx/draw3/paramslist.cpp:269 ../../../wx/draw3/paramslist.cpp:305
+#: ../../../wx/draw3/paramslist.cpp:322 ../../../wx/draw3/paredit.cpp:218
+#: ../../../wx/draw3/remarks.cpp:1349 ../../../wx/draw3/remarks.cpp:1450
+#: ../../../wx/draw3/remarks.cpp:1496 ../../../wx/draw3/remarks.cpp:1544
+#: ../../../wx/draw3/seldraw.cpp:569
 msgid "Error"
 msgstr "Fehler"
 
-# "Parametr:Uøytkownika:"
-#: cfgmgr.cpp:1384 paredit.cpp:643 XRC_gettext_file.h:107
+# "Parametr:U≈ºytkownika:"
+#: ../../../wx/draw3/cfgmgr.cpp:1384 ../../../wx/draw3/paredit.cpp:643
+#: ../../../wx/draw3/GUI/resources.xrc:1503
 msgid "User:Param:"
 msgstr "Benutzer:Parameter:"
 
-# "Wybierz minutÍ"
-#: cfgmgr.cpp:1402 cfgmgr.cpp:1465
+# "Wybierz minutƒô"
+#: ../../../wx/draw3/cfgmgr.cpp:1402 ../../../wx/draw3/cfgmgr.cpp:1465
 #, fuzzy
 msgid "Choose a file"
-msgstr "W‰hlen Sie eine Start Minute"
+msgstr "W√§hlen Sie eine Start Minute"
 
-#: cfgmgr.cpp:1403 cfgmgr.cpp:1466
+#: ../../../wx/draw3/cfgmgr.cpp:1403 ../../../wx/draw3/cfgmgr.cpp:1466
 msgid "SZARP draw set (*.xds)|*.xds|All files (*.*)|*.*"
 msgstr ""
 
-#: cfgmgr.cpp:1433
+#: ../../../wx/draw3/cfgmgr.cpp:1433
 #, c-format
 msgid "Export of set to file: %s failed"
 msgstr ""
 
-# msgstr "B≥±d"
-#: cfgmgr.cpp:1433 defcfg.cpp:2013 defcfg.cpp:2020 paramslist.cpp:243
-#: paramslist.cpp:263 paramslist.cpp:298
+# msgstr "B≈ÇƒÖd"
+#: ../../../wx/draw3/cfgmgr.cpp:1433 ../../../wx/draw3/defcfg.cpp:2014
+#: ../../../wx/draw3/defcfg.cpp:2021 ../../../wx/draw3/paramslist.cpp:243
+#: ../../../wx/draw3/paramslist.cpp:263 ../../../wx/draw3/paramslist.cpp:298
 msgid "Error!"
 msgstr "Fehler!"
 
-#: cfgmgr.cpp:1447
+#: ../../../wx/draw3/cfgmgr.cpp:1447
 #, fuzzy, c-format
 msgid "%s (%s)"
 msgstr "%.*f %s (%s)"
 
-#: cfgmgr.cpp:1447 cfgmgr.cpp:1449 cfgmgr.cpp:1518
+#: ../../../wx/draw3/cfgmgr.cpp:1447 ../../../wx/draw3/cfgmgr.cpp:1449
+#: ../../../wx/draw3/cfgmgr.cpp:1518
 msgid "imported"
 msgstr ""
 
-#: cfgmgr.cpp:1449
+#: ../../../wx/draw3/cfgmgr.cpp:1449
 #, c-format
 msgid "%s (%s <%d>)"
 msgstr ""
 
-#: cfgmgr.cpp:1453
+#: ../../../wx/draw3/cfgmgr.cpp:1453
 #, c-format
 msgid "Set with name %s already exists. Give a name for a set:"
 msgstr ""
 
-#: cfgmgr.cpp:1454
+#: ../../../wx/draw3/cfgmgr.cpp:1454
 msgid "Set already exists"
 msgstr ""
 
-#: cfgmgr.cpp:1478
+#: ../../../wx/draw3/cfgmgr.cpp:1478
 #, c-format
 msgid "Importing set: %s"
 msgstr ""
 
-#: cfgmgr.cpp:1486
+#: ../../../wx/draw3/cfgmgr.cpp:1486
 #, fuzzy, c-format
 msgid "Need to load configuration for prefix: %s"
-msgstr "B≥±d podczas ≥adowania konfiguracji dla bazy: "
+msgstr "B≈ÇƒÖd podczas ≈Çadowania konfiguracji dla bazy: "
 
 # "Wczytywanie konfiguracji: "
-#: cfgmgr.cpp:1488
+#: ../../../wx/draw3/cfgmgr.cpp:1488
 #, fuzzy, c-format
 msgid "Failed to load configuration: %s"
 msgstr "Lade Konfiguration: "
 
-#: cfgmgr.cpp:1503
+#: ../../../wx/draw3/cfgmgr.cpp:1503
 #, c-format
 msgid "Operation completed successfully, set %s imported"
 msgstr ""
 
-# "Operacja siÍ nie powiod≥a."
-#: cfgmgr.cpp:1503
+# "Operacja siƒô nie powiod≈Ça."
+#: ../../../wx/draw3/cfgmgr.cpp:1503
 #, fuzzy
 msgid "Operation successful."
 msgstr "Vorgang ist fehlgeschlagen."
 
-# "Import plikÛw nie powiÛd≥ siÍ."
-#: cfgmgr.cpp:1506
+# "Import plik√≥w nie powi√≥d≈Ç siƒô."
+#: ../../../wx/draw3/cfgmgr.cpp:1506
 #, fuzzy, c-format
 msgid "Failed to import set from file: %s"
 msgstr "Fehler beim Import die Fenster von Datei."
 
-# "Operacja siÍ nie powiod≥a."
-#: cfgmgr.cpp:1506 defcfg.cpp:1577
+# "Operacja siƒô nie powiod≈Ça."
+#: ../../../wx/draw3/cfgmgr.cpp:1506 ../../../wx/draw3/defcfg.cpp:1578
 msgid "Operation failed."
 msgstr "Vorgang ist fehlgeschlagen."
 
-#: dbmgr.cpp:153 dbmgr.cpp:174 dbmgr.cpp:177
+#: ../../../wx/draw3/dbmgr.cpp:153 ../../../wx/draw3/dbmgr.cpp:174
+#: ../../../wx/draw3/dbmgr.cpp:177
 #, c-format
 msgid "Error in connection with probe server: %s"
 msgstr ""
 
-# "B≥±d parametru definiowalnego (%s) : %s"
-#: dbmgr.cpp:157 dbmgr.cpp:181
+# "B≈ÇƒÖd parametru definiowalnego (%s) : %s"
+#: ../../../wx/draw3/dbmgr.cpp:157 ../../../wx/draw3/dbmgr.cpp:181
 #, fuzzy, c-format
 msgid "Database error(%s): %s"
 msgstr "Fehler in dem definierte Parameter (%s) : %s"
 
-#: dbmgr.cpp:168
+#: ../../../wx/draw3/dbmgr.cpp:168
 #, c-format
 msgid "Search timed out while seraching for graph: %s"
 msgstr ""
 
-# "B≥±d po≥±czenia z serwerem"
-#: dbmgr.cpp:175
+# "B≈ÇƒÖd po≈ÇƒÖczenia z serwerem"
+#: ../../../wx/draw3/dbmgr.cpp:175
 #, fuzzy
 msgid "Connection with probes server not configured"
-msgstr "Es kˆnnte keine Verbindung zum Server"
+msgstr "Es k√∂nnte keine Verbindung zum Server"
 
-# msgstr "Zestawy zdefiniowane przez uøytkownika"
-#: defcfg.cpp:66
+# msgstr "Zestawy zdefiniowane przez u≈ºytkownika"
+#: ../../../wx/draw3/defcfg.cpp:66
 msgid "User defined"
 msgstr "Benutzerdefinierte"
 
-# "Nie uda≥o siÍ zapisaÊ pliku z zestawami uøytkownika."
-#: defcfg.cpp:1576
+# "Nie uda≈Ço siƒô zapisaƒá pliku z zestawami u≈ºytkownika."
+#: ../../../wx/draw3/defcfg.cpp:1577
 msgid "Failed to save file with users sets."
-msgstr "Die Datei mit den S‰tzen der Benutzer wurde nicht gespeichert."
+msgstr "Die Datei mit den S√§tzen der Benutzer wurde nicht gespeichert."
 
-#: defcfg.cpp:1663
+#: ../../../wx/draw3/defcfg.cpp:1664
 #, c-format
 msgid "Draw %s removed from set %s, it relates to non-existent configuration"
 msgstr ""
 
-#: defcfg.cpp:1687
+#: ../../../wx/draw3/defcfg.cpp:1688
 #, c-format
 msgid "Defined set %s was removed because all draws in this set were removed"
 msgstr ""
 
 # "Wybierz plik do zaimportowania"
-#: defcfg.cpp:1991
+#: ../../../wx/draw3/defcfg.cpp:1992
 msgid "Choose file to import"
-msgstr "W‰hlen Sie Draw2-Datei zu importieren"
+msgstr "W√§hlen Sie Draw2-Datei zu importieren"
 
-# "Nie uda≥o siÍ automatycznie wykryÊ prefiksu konfiguracji. Wprowadº prefiks "
-# "rÍcznie."
-#: defcfg.cpp:2002
+# "Nie uda≈Ço siƒô automatycznie wykryƒá prefiksu konfiguracji. Wprowad≈∫ prefiks "
+# "rƒôcznie."
+#: ../../../wx/draw3/defcfg.cpp:2003
 msgid ""
 "Unable to perform automatic detection of configuration's prefix for this "
 "file. Please enter prefix of this configuration"
 msgstr ""
-"Nicht erf¸llen automatische Erkennung der Konfiguration des Pr‰fix f¸r diese "
-"Datei.Bitte geben Sie Pr‰fix dieser Konfiguration"
+"Nicht erf√ºllen automatische Erkennung der Konfiguration des Pr√§fix f√ºr diese "
+"Datei.Bitte geben Sie Pr√§fix dieser Konfiguration"
 
-# msgstr "Nie uda≥o siÍ wykryÊ prefiksu konfiguracji."
-#: defcfg.cpp:2003
+# msgstr "Nie uda≈Ço siƒô wykryƒá prefiksu konfiguracji."
+#: ../../../wx/draw3/defcfg.cpp:2004
 msgid "Unable to detect prefix"
-msgstr "Nicht in der Lage zu erkennen Pr‰fix"
+msgstr "Nicht in der Lage zu erkennen Pr√§fix"
 
-# "Nie uda≥o siÍ za≥adowaÊ konfiguracji %s. Nie mogÍ zaimportowaÊ wykresÛw."
-#: defcfg.cpp:2013
+# "Nie uda≈Ço siƒô za≈Çadowaƒá konfiguracji %s. Nie mogƒô zaimportowaƒá wykres√≥w."
+#: ../../../wx/draw3/defcfg.cpp:2014
 #, fuzzy, c-format
 msgid "Failed to load configuration of prefix %s. Unable to import draws."
 msgstr ""
-"Fehler beim Laden der Konfiguration Pr‰fix %s. Kˆnnnte nicht fortgesetzt "
+"Fehler beim Laden der Konfiguration Pr√§fix %s. K√∂nnnte nicht fortgesetzt "
 "werden."
 
-# "Import plikÛw nie powiÛd≥ siÍ."
-#: defcfg.cpp:2020
+# "Import plik√≥w nie powi√≥d≈Ç siƒô."
+#: ../../../wx/draw3/defcfg.cpp:2021
 #, fuzzy
 msgid "Failed to import draws from file."
 msgstr "Fehler beim Import die Fenster von Datei."
 
-# "Operacja importu plikÛw zakoÒczy≥a siÍ poprawnie."
-#: defcfg.cpp:2040
+# "Operacja importu plik√≥w zako≈Ñczy≈Ça siƒô poprawnie."
+#: ../../../wx/draw3/defcfg.cpp:2041
 #, fuzzy
 msgid "Draws imported successfully."
 msgstr "Die Fenster wurden erfolgreich importiert."
 
 # "Ok!"
-#: defcfg.cpp:2040
+#: ../../../wx/draw3/defcfg.cpp:2041
 msgid "Ok!"
 msgstr "Ok!"
 
-#: disptime.cpp:74 drawview.cpp:207 gcdcgraphs.cpp:726 glgraphs.cpp:1364
+#: ../../../wx/draw3/disptime.cpp:74 ../../../wx/draw3/drawview.cpp:205
+#: ../../../wx/draw3/gcdcgraphs.cpp:717 ../../../wx/draw3/glgraphs.cpp:1359
 msgid "january"
 msgstr ""
 
-#: disptime.cpp:75 drawview.cpp:210 gcdcgraphs.cpp:729 glgraphs.cpp:1367
+#: ../../../wx/draw3/disptime.cpp:75 ../../../wx/draw3/drawview.cpp:208
+#: ../../../wx/draw3/gcdcgraphs.cpp:720 ../../../wx/draw3/glgraphs.cpp:1362
 msgid "february"
 msgstr ""
 
-#: disptime.cpp:76 drawview.cpp:213 gcdcgraphs.cpp:732 glgraphs.cpp:1370
+#: ../../../wx/draw3/disptime.cpp:76 ../../../wx/draw3/drawview.cpp:211
+#: ../../../wx/draw3/gcdcgraphs.cpp:723 ../../../wx/draw3/glgraphs.cpp:1365
 msgid "march"
 msgstr ""
 
-#: disptime.cpp:77 drawview.cpp:216 gcdcgraphs.cpp:735 glgraphs.cpp:1373
+#: ../../../wx/draw3/disptime.cpp:77 ../../../wx/draw3/drawview.cpp:214
+#: ../../../wx/draw3/gcdcgraphs.cpp:726 ../../../wx/draw3/glgraphs.cpp:1368
 msgid "april"
 msgstr ""
 
-#: disptime.cpp:78 drawview.cpp:219 gcdcgraphs.cpp:738 glgraphs.cpp:1376
+#: ../../../wx/draw3/disptime.cpp:78 ../../../wx/draw3/drawview.cpp:217
+#: ../../../wx/draw3/gcdcgraphs.cpp:729 ../../../wx/draw3/glgraphs.cpp:1371
 msgid "may"
 msgstr ""
 
-#: disptime.cpp:79 drawview.cpp:222 gcdcgraphs.cpp:741 glgraphs.cpp:1379
+#: ../../../wx/draw3/disptime.cpp:79 ../../../wx/draw3/drawview.cpp:220
+#: ../../../wx/draw3/gcdcgraphs.cpp:732 ../../../wx/draw3/glgraphs.cpp:1374
 msgid "june"
 msgstr ""
 
-#: disptime.cpp:80 drawview.cpp:225 gcdcgraphs.cpp:744 glgraphs.cpp:1382
+#: ../../../wx/draw3/disptime.cpp:80 ../../../wx/draw3/drawview.cpp:223
+#: ../../../wx/draw3/gcdcgraphs.cpp:735 ../../../wx/draw3/glgraphs.cpp:1377
 msgid "july"
 msgstr ""
 
-#: disptime.cpp:81 drawview.cpp:228 gcdcgraphs.cpp:747 glgraphs.cpp:1385
+#: ../../../wx/draw3/disptime.cpp:81 ../../../wx/draw3/drawview.cpp:226
+#: ../../../wx/draw3/gcdcgraphs.cpp:738 ../../../wx/draw3/glgraphs.cpp:1380
 msgid "august"
 msgstr ""
 
-#: disptime.cpp:82 drawview.cpp:231 gcdcgraphs.cpp:750 glgraphs.cpp:1388
+#: ../../../wx/draw3/disptime.cpp:82 ../../../wx/draw3/drawview.cpp:229
+#: ../../../wx/draw3/gcdcgraphs.cpp:741 ../../../wx/draw3/glgraphs.cpp:1383
 msgid "septermber"
 msgstr ""
 
-#: disptime.cpp:83 drawview.cpp:234 gcdcgraphs.cpp:753 glgraphs.cpp:1391
+#: ../../../wx/draw3/disptime.cpp:83 ../../../wx/draw3/drawview.cpp:232
+#: ../../../wx/draw3/gcdcgraphs.cpp:744 ../../../wx/draw3/glgraphs.cpp:1386
 msgid "october"
 msgstr ""
 
-#: disptime.cpp:84 drawview.cpp:237 gcdcgraphs.cpp:756 glgraphs.cpp:1394
+#: ../../../wx/draw3/disptime.cpp:84 ../../../wx/draw3/drawview.cpp:235
+#: ../../../wx/draw3/gcdcgraphs.cpp:747 ../../../wx/draw3/glgraphs.cpp:1389
 msgid "november"
 msgstr ""
 
-#: disptime.cpp:85 drawview.cpp:240 gcdcgraphs.cpp:759 glgraphs.cpp:1397
+#: ../../../wx/draw3/disptime.cpp:85 ../../../wx/draw3/drawview.cpp:238
+#: ../../../wx/draw3/gcdcgraphs.cpp:750 ../../../wx/draw3/glgraphs.cpp:1392
 msgid "december"
 msgstr ""
 
-#: disptime.cpp:88
+#: ../../../wx/draw3/disptime.cpp:88
 msgid " %Y%n hour %H:%M"
 msgstr ""
 
 # "%A, %d %B %Y%n godz. %H:%M"
-#: disptime.cpp:93
+#: ../../../wx/draw3/disptime.cpp:93
 msgid "%A, %d %B %Y%n time %H:%M"
 msgstr "%A, %d %B %Y%n stunde. %H:%M"
 
-# "£adowanie ustawieÒ lokalizacyjnych..."
-#: drawapp.cpp:275
+# "≈Åadowanie ustawie≈Ñ lokalizacyjnych..."
+#: ../../../wx/draw3/drawapp.cpp:275
 msgid "Setting locale..."
 msgstr "Setting locale..."
 
-# "£adowanie parametrÛw z szarp.cfg..."
-#: drawapp.cpp:280
+# "≈Åadowanie parametr√≥w z szarp.cfg..."
+#: ../../../wx/draw3/drawapp.cpp:280
 msgid "Reading params from szarp.cfg..."
 msgstr "Reading parameter aus szarp.cfg Datei..."
 
 # "Inicjalizacja kontenera IPK..."
-#: drawapp.cpp:286
+#: ../../../wx/draw3/drawapp.cpp:286
 msgid "Initializing IPKContainer..."
 msgstr "Die Initialisierung des IPK-Container..."
 
 # "Inicjalizacja szbase..."
-#: drawapp.cpp:295
+#: ../../../wx/draw3/drawapp.cpp:294
 msgid "Initializing szbase..."
 msgstr "Initialisierung szbase..."
 
-# "Inicjalizacja zasobÛw XML..."
-#: drawapp.cpp:297
+# "Inicjalizacja zasob√≥w XML..."
+#: ../../../wx/draw3/drawapp.cpp:296
 msgid "Initializing XML Resources..."
 msgstr "Die Initialisierung des XML-Ressourcen..."
 
 # "Uruchamianie mechanizmu odpytywania bazy..."
-#: drawapp.cpp:301
+#: ../../../wx/draw3/drawapp.cpp:300
 msgid "Starting database query mechanism..."
 msgstr "Beginnend Datenbankabfrage Mechanismus..."
 
 # "Wczytywanie konfiguracji..."
-#: drawapp.cpp:328
+#: ../../../wx/draw3/drawapp.cpp:332
 msgid "Loading configuration..."
 msgstr "Lade Konfiguration..."
 
-# "B≥±d podczas ≥adowania domy∂lnej konfiguracji. Sprawdº swÛj plik szarp.cfg"
-#: drawapp.cpp:354
+# "B≈ÇƒÖd podczas ≈Çadowania domy≈õlnej konfiguracji. Sprawd≈∫ sw√≥j plik szarp.cfg"
+#: ../../../wx/draw3/drawapp.cpp:358
 #, fuzzy
 msgid ""
 "Error occurred while loading default configuration. Check your szarp.cfg "
 "file."
 msgstr ""
-"Fehler beim Laden von Standard-Konfiguration. ‹berpr¸fen Sie Ihre szarp.cfg "
+"Fehler beim Laden von Standard-Konfiguration. √úberpr√ºfen Sie Ihre szarp.cfg "
 "Datei."
 
 # "Brak bazy startowej"
-#: drawapp.cpp:360
+#: ../../../wx/draw3/drawapp.cpp:364
 msgid "Missing starting base specification."
 msgstr "Keiner der Datenbank"
 
 # "Inicjalizacja szbase..."
-#: drawapp.cpp:380
+#: ../../../wx/draw3/drawapp.cpp:384
 #, fuzzy
 msgid "Initizalizing remarks..."
 msgstr "Initialisierung szbase..."
 
-# "Tworzenie menadøera ramek..."
-#: drawapp.cpp:385
+# "Tworzenie menad≈ºera ramek..."
+#: ../../../wx/draw3/drawapp.cpp:389
 msgid "Creating Frame Manager..."
 msgstr "Erstellen von Frame-Manager"
 
 # "Szarp Draw wersja 3.00 (w przygotowaniu)"
-#: drawapp.cpp:420
+#: ../../../wx/draw3/drawapp.cpp:424
 #, fuzzy
 msgid "Szarp Draw version 3.00."
 msgstr "Szarp Draw version 3.00 (in-progress)."
 
 # "specyfikacja geometrii jak dla X windows"
-#: drawapp.cpp:423
+#: ../../../wx/draw3/drawapp.cpp:427
 msgid "X windows geometry specification"
 msgstr "X Windows Geometrie-Spezifikation"
 
 # "nazwa bazy"
-#: drawapp.cpp:428 testapp.cpp:192
+#: ../../../wx/draw3/drawapp.cpp:432 ../../../wx/draw3/testapp.cpp:189
 msgid "base name"
 msgstr "Datenbankname"
 
-#: drawapp.cpp:433 testapp.cpp:197
+#: ../../../wx/draw3/drawapp.cpp:437 ../../../wx/draw3/testapp.cpp:194
 msgid "open url in existing window"
 msgstr ""
 
-#: drawapp.cpp:436
+#: ../../../wx/draw3/drawapp.cpp:440
 msgid "open window in full screen mode"
 msgstr ""
 
 # "verbose logging"
-#: drawapp.cpp:438 testapp.cpp:200
+#: ../../../wx/draw3/drawapp.cpp:442 ../../../wx/draw3/testapp.cpp:197
 msgid "verbose logging"
 msgstr "verbose logging"
 
-#: drawapp.cpp:433
+#: ../../../wx/draw3/drawapp.cpp:444
 msgid "use sz4 base format"
 msgstr ""
 
-#: drawapp.cpp:441 testapp.cpp:203
+#: ../../../wx/draw3/drawapp.cpp:447 ../../../wx/draw3/testapp.cpp:200
 msgid "print version number and exit"
 msgstr ""
 
-#: drawapp.cpp:445 testapp.cpp:207
+#: ../../../wx/draw3/drawapp.cpp:451 ../../../wx/draw3/testapp.cpp:204
 msgid "libparnt value initialization"
 msgstr "inicjalizacja zmiennej dla biblioteki libparnt"
 
 #
-#: drawapp.cpp:448 testapp.cpp:210
+#: ../../../wx/draw3/drawapp.cpp:454 ../../../wx/draw3/testapp.cpp:207
 msgid "debug level"
 msgstr "Debug-Level"
 
-#: drawapp.cpp:482
+#: ../../../wx/draw3/drawapp.cpp:490
 msgid "V"
 msgstr ""
 
 # Liczba osi
-#: drawfrm.cpp:103
+#: ../../../wx/draw3/drawfrm.cpp:105
 #, fuzzy
 msgid "Number of displayed values"
 msgstr "Anzahl der Achsen:"
 
-# "Wybierz rodzaj ∂redniej"
-#: drawfrm.cpp:109
+# "Wybierz rodzaj ≈õredniej"
+#: ../../../wx/draw3/drawfrm.cpp:111
 #, fuzzy
 msgid "Select number of displayed years"
-msgstr "W‰hlen Sie den Typ des Mittels"
+msgstr "W√§hlen Sie den Typ des Mittels"
 
-# "Wybierz rodzaj ∂redniej"
-#: drawfrm.cpp:114
+# "Wybierz rodzaj ≈õredniej"
+#: ../../../wx/draw3/drawfrm.cpp:116
 #, fuzzy
 msgid "Select number of displayed months"
-msgstr "W‰hlen Sie den Typ des Mittels"
+msgstr "W√§hlen Sie den Typ des Mittels"
 
-# "Wybierz rodzaj ∂redniej"
-#: drawfrm.cpp:119 drawfrm.cpp:126
+# "Wybierz rodzaj ≈õredniej"
+#: ../../../wx/draw3/drawfrm.cpp:121 ../../../wx/draw3/drawfrm.cpp:128
 #, fuzzy
 msgid "Select number of displayed days"
-msgstr "W‰hlen Sie den Typ des Mittels"
+msgstr "W√§hlen Sie den Typ des Mittels"
 
-# "Wybierz rodzaj ∂redniej"
-#: drawfrm.cpp:131
+# "Wybierz rodzaj ≈õredniej"
+#: ../../../wx/draw3/drawfrm.cpp:133
 #, fuzzy
 msgid "Select number of displayed hours"
-msgstr "W‰hlen Sie den Typ des Mittels"
+msgstr "W√§hlen Sie den Typ des Mittels"
 
-# "Wybierz rodzaj ∂redniej"
-#: drawfrm.cpp:136
+# "Wybierz rodzaj ≈õredniej"
+#: ../../../wx/draw3/drawfrm.cpp:138
 #, fuzzy
 msgid "Select number of displayed minutes"
-msgstr "W‰hlen Sie den Typ des Mittels"
+msgstr "W√§hlen Sie den Typ des Mittels"
 
-# "Wybierz rodzaj ∂redniej"
-#: drawfrm.cpp:141
+# "Wybierz rodzaj ≈õredniej"
+#: ../../../wx/draw3/drawfrm.cpp:143
 #, fuzzy
 msgid "Select number of displayed 10-seconds periods"
-msgstr "W‰hlen Sie den Typ des Mittels"
+msgstr "W√§hlen Sie den Typ des Mittels"
 
-# "Wybierz rodzaj ∂redniej"
-#: drawfrm.cpp:146
+# "Wybierz rodzaj ≈õredniej"
+#: ../../../wx/draw3/drawfrm.cpp:148
 #, fuzzy
 msgid "Select number of displayed 3-seconds periods"
-msgstr "W‰hlen Sie den Typ des Mittels"
+msgstr "W√§hlen Sie den Typ des Mittels"
 
-# "Wybierz rodzaj ∂redniej"
-#: drawfrm.cpp:151
+# "Wybierz rodzaj ≈õredniej"
+#: ../../../wx/draw3/drawfrm.cpp:153
+#, fuzzy
+msgid "Select number of displayed seconds"
+msgstr "W√§hlen Sie den Typ des Mittels"
+
+# "Wybierz rodzaj ≈õredniej"
+#: ../../../wx/draw3/drawfrm.cpp:158
 #, fuzzy
 msgid "Select number of displayed weeks"
-msgstr "W‰hlen Sie den Typ des Mittels"
+msgstr "W√§hlen Sie den Typ des Mittels"
 
-# "Operacja importu plikÛw zakoÒczy≥a siÍ poprawnie."
-#: drawfrm.cpp:210
+# "Operacja importu plik√≥w zako≈Ñczy≈Ça siƒô poprawnie."
+#: ../../../wx/draw3/drawfrm.cpp:245
 #, fuzzy
 msgid "Defined sets saved succesfully."
 msgstr "Die Fenster wurden erfolgreich importiert."
 
 #
-#: drawfrm.cpp:210
+#: ../../../wx/draw3/drawfrm.cpp:245
 #, fuzzy
 msgid "Information."
 msgstr "Information"
 
-# "Moøesz edytowaÊ tylko okna zdefiniowane przez uøytkownika."
-#: drawfrm.cpp:221
+# "Mo≈ºesz edytowaƒá tylko okna zdefiniowane przez u≈ºytkownika."
+#: ../../../wx/draw3/drawfrm.cpp:256
 #, fuzzy
 msgid "You may edit only user defined sets."
-msgstr "Sie kˆnnen nur benutzerdefinierte Fenster edit."
+msgstr "Sie k√∂nnen nur benutzerdefinierte Fenster edit."
 
-# "Nie zdefiniowane przez uøytkownika"
-#: drawfrm.cpp:222 drawfrm.cpp:255
+# "Nie zdefiniowane przez u≈ºytkownika"
+#: ../../../wx/draw3/drawfrm.cpp:257 ../../../wx/draw3/drawfrm.cpp:290
 msgid "Not user defined"
 msgstr "Nicht vom Benutzer definiert"
 
-# "Moøesz usun±Ê tylko okna zdefiniowane przez uøytkownika"
-#: drawfrm.cpp:254
+# "Mo≈ºesz usunƒÖƒá tylko okna zdefiniowane przez u≈ºytkownika"
+#: ../../../wx/draw3/drawfrm.cpp:289
 #, fuzzy
 msgid "You may only remove user defined sets."
-msgstr "Sie kˆnnen nur entfernen die Fenster des Benutzers"
+msgstr "Sie k√∂nnen nur entfernen die Fenster des Benutzers"
 
-#: drawfrm.cpp:257 incsearch.cpp:752
+#: ../../../wx/draw3/drawfrm.cpp:292 ../../../wx/draw3/incsearch.cpp:752
 #, fuzzy
 msgid "Do you really want to remove this set?"
 msgstr "Wollen Sie wirklich entfernen Sie dieses Schaubild?"
 
-# "UsuniÍcie paczki"
-#: drawfrm.cpp:258 incsearch.cpp:753
+# "Usuniƒôcie paczki"
+#: ../../../wx/draw3/drawfrm.cpp:293 ../../../wx/draw3/incsearch.cpp:753
 #, fuzzy
 msgid "Set removal"
-msgstr "Lˆschen von Paketen"
+msgstr "L√∂schen von Paketen"
 
-# "Program przegl±daj±cy (programm f¸r Durchsuchen)"
-#: drawfrm.cpp:299
+# "Program przeglƒÖdajƒÖcy (programm f√ºr Durchsuchen)"
+#: ../../../wx/draw3/drawfrm.cpp:334
 msgid "SZARP Draw"
 msgstr "SZARP Draw"
 
 # Brak okien w konfiguracji
-#: drawfrm.cpp:313
+#: ../../../wx/draw3/drawfrm.cpp:348
 #, fuzzy
 msgid "No sets in configuration"
 msgstr "Das Fehlen von Fenstern in der Konfiguration:"
 
-#: drawfrm.cpp:313
+#: ../../../wx/draw3/drawfrm.cpp:348
 msgid "No sets"
 msgstr ""
 
-# Maksymalna ilo∂Ê drukowalnych osi
-#: drawfrm.cpp:504
+# Maksymalna ilo≈õƒá drukowalnych osi
+#: ../../../wx/draw3/drawfrm.cpp:539
 msgid "Maximum number of printed vertical axes"
-msgstr "Maximale Zahl der Achsen f¸r den Druck"
+msgstr "Maximale Zahl der Achsen f√ºr den Druck"
 
 # Liczba osi
-#: drawfrm.cpp:505
+#: ../../../wx/draw3/drawfrm.cpp:540
 msgid "Number of axes:"
 msgstr "Anzahl der Achsen:"
 
 # Drukowanie
-#: drawfrm.cpp:506
+#: ../../../wx/draw3/drawfrm.cpp:541
 msgid "Printing"
 msgstr "Drucken"
 
-#: drawfrm.cpp:680
+#: ../../../wx/draw3/drawfrm.cpp:715
 #, c-format
 msgid ""
 "Configuration '%s' cannot be reloaded, probably new version of this "
 "configuration contatins errors."
 msgstr ""
 
-#: drawfrm.cpp:831
+#: ../../../wx/draw3/drawfrm.cpp:880
 msgid "English"
 msgstr "Englisch"
 
-#: drawfrm.cpp:832
+#: ../../../wx/draw3/drawfrm.cpp:881
 msgid "French"
-msgstr "Franzˆsisch"
+msgstr "Franz√∂sisch"
 
-#: drawfrm.cpp:833
+#: ../../../wx/draw3/drawfrm.cpp:882
 msgid "German"
 msgstr "Deutsch"
 
-#: drawfrm.cpp:834
+#: ../../../wx/draw3/drawfrm.cpp:883
 msgid "Hungarian"
 msgstr ""
 
-#: drawfrm.cpp:835
+#: ../../../wx/draw3/drawfrm.cpp:884
 msgid "Italian"
 msgstr ""
 
-#: drawfrm.cpp:836
+#: ../../../wx/draw3/drawfrm.cpp:885
 msgid "Polish"
 msgstr "Polnish"
 
-#: drawfrm.cpp:837
+#: ../../../wx/draw3/drawfrm.cpp:886
 msgid "Serbian"
 msgstr ""
 
-#: drawfrm.cpp:842 drawfrm.cpp:848
+#: ../../../wx/draw3/drawfrm.cpp:891 ../../../wx/draw3/drawfrm.cpp:897
 msgid "automatic"
 msgstr ""
 
-#: drawfrm.cpp:847
+#: ../../../wx/draw3/drawfrm.cpp:896
 msgid "Current language is "
 msgstr "Aktuelle Sprache ist "
 
-#: drawfrm.cpp:850
+#: ../../../wx/draw3/drawfrm.cpp:899
 msgid "Choose language"
-msgstr "W‰hlen Sie die Sprache"
+msgstr "W√§hlen Sie die Sprache"
 
-#: drawfrm.cpp:876
+#: ../../../wx/draw3/drawfrm.cpp:925
 msgid "Current language has been changed. You have to restart draw3"
-msgstr "Aktuelle Sprache is ge‰ndert worden. Sie m¸ssen draw3 neustarten."
+msgstr "Aktuelle Sprache is ge√§ndert worden. Sie m√ºssen draw3 neustarten."
 
-#: drawfrm.cpp:877
+#: ../../../wx/draw3/drawfrm.cpp:926
 msgid "Language changed"
-msgstr "Die Sprache wurde ge‰ndert"
+msgstr "Die Sprache wurde ge√§ndert"
 
-#: drawfrm.cpp:885
+#: ../../../wx/draw3/drawfrm.cpp:934
 msgid "Classic"
 msgstr ""
 
-#: drawfrm.cpp:886
+#: ../../../wx/draw3/drawfrm.cpp:935
 msgid "'3D'"
 msgstr ""
 
-#: drawfrm.cpp:887
+#: ../../../wx/draw3/drawfrm.cpp:936
 msgid "Antialiased"
 msgstr ""
 
 # "Not translated"
-#: drawfrm.cpp:898
+#: ../../../wx/draw3/drawfrm.cpp:947
 #, fuzzy
 msgid "currently selected"
 msgstr "no current article has been selected"
 
 # "Wybierz parametry wykresu"
-#: drawfrm.cpp:900
+#: ../../../wx/draw3/drawfrm.cpp:949
 #, fuzzy
 msgid "Choose graphs window style"
-msgstr "W‰hlen Sie Parameter des Schaubilds"
+msgstr "W√§hlen Sie Parameter des Schaubilds"
 
-#: drawfrm.cpp:906 drawfrm.cpp:910 drawfrm.cpp:914
+#: ../../../wx/draw3/drawfrm.cpp:955 ../../../wx/draw3/drawfrm.cpp:959
+#: ../../../wx/draw3/drawfrm.cpp:963
 msgid "You need to restart application for this change to take effect."
 msgstr ""
 
-#: drawfrm.cpp:906 drawfrm.cpp:910 drawfrm.cpp:914
+#: ../../../wx/draw3/drawfrm.cpp:955 ../../../wx/draw3/drawfrm.cpp:959
+#: ../../../wx/draw3/drawfrm.cpp:963
 #, fuzzy
 msgid "Graphs view changed."
 msgstr "Schaubild"
 
-#: drawfrm.cpp:925 drawfrm.cpp:949
+#: ../../../wx/draw3/drawfrm.cpp:974 ../../../wx/draw3/drawfrm.cpp:998
 msgid ""
 "Remarks sending not configured, You should set username, password, and "
 "remarks server adddress"
 msgstr ""
 
-#: drawfrm.cpp:925 drawfrm.cpp:949
+#: ../../../wx/draw3/drawfrm.cpp:974 ../../../wx/draw3/drawfrm.cpp:998
 msgid "Remarks not configured."
 msgstr ""
 
-# "Has≥o:"
-#: drawfrm.cpp:1001
+# "Has≈Ço:"
+#: ../../../wx/draw3/drawfrm.cpp:1050
 #, fuzzy
 msgid "Enter password:"
 msgstr "Passwort:"
 
-# Has≥o
-#: drawfrm.cpp:1002
+# Has≈Ço
+#: ../../../wx/draw3/drawfrm.cpp:1051
 #, fuzzy
 msgid "New password"
 msgstr "Passwort"
 
 # "Wybierz plik do zaimportowania"
-#: drawfrm.cpp:1102
+#: ../../../wx/draw3/drawfrm.cpp:1165
 #, fuzzy
 msgid "Choose file to extract data to"
-msgstr "W‰hlen Sie Draw2-Datei zu importieren"
+msgstr "W√§hlen Sie Draw2-Datei zu importieren"
 
-#: drawfrm.cpp:1105
+#: ../../../wx/draw3/drawfrm.cpp:1168
 msgid "Comma Separated Values (*.csv)"
 msgstr ""
 
-# "B≥±d komunikacji z regulatorem"
-#: drawfrm.cpp:1162 incsearch.cpp:798 incsearch.cpp:811 paramslist.cpp:351
+# "B≈ÇƒÖd komunikacji z regulatorem"
+#: ../../../wx/draw3/drawfrm.cpp:1225 ../../../wx/draw3/incsearch.cpp:798
+#: ../../../wx/draw3/incsearch.cpp:811 ../../../wx/draw3/paramslist.cpp:351
 #, fuzzy
 msgid "Error in communicatoin with server: "
 msgstr "Regulator Kommunikationsfehler"
 
-#: drawfrm.cpp:1162 incsearch.cpp:798 incsearch.cpp:811 paramslist.cpp:351
+#: ../../../wx/draw3/drawfrm.cpp:1225 ../../../wx/draw3/incsearch.cpp:798
+#: ../../../wx/draw3/incsearch.cpp:811 ../../../wx/draw3/paramslist.cpp:351
 #, fuzzy
 msgid "Failed to update paramaters"
 msgstr "Fehler beim Verbindung mit dem Server."
 
-#: drawfrm.cpp:1168
+#: ../../../wx/draw3/drawfrm.cpp:1231
 msgid "Network params and sets were updated"
 msgstr ""
 
-#: drawfrm.cpp:1168
+#: ../../../wx/draw3/drawfrm.cpp:1231
 msgid "Params and sets updated."
 msgstr ""
 
-#: drawfrm.cpp:1171
+#: ../../../wx/draw3/drawfrm.cpp:1234
 msgid "There are no new network params or sets"
 msgstr ""
 
-#: drawfrm.cpp:1171
+#: ../../../wx/draw3/drawfrm.cpp:1234
 #, fuzzy
 msgid "No new params and sets."
 msgstr "Fehler beim Verbindung mit dem Server."
 
-#: drawpick.cpp:166
+#: ../../../wx/draw3/drawpick.cpp:166
 msgid "You must provide a draw name."
-msgstr "Sie m¸ssen den Namen des Schaubilds f¸llen."
+msgstr "Sie m√ºssen den Namen des Schaubilds f√ºllen."
 
-#: drawpick.cpp:166 drawpick.cpp:172 drawpick.cpp:178 drawpick.cpp:186
-#: drawpick.cpp:194 drawpick.cpp:200 drawpick.cpp:208 drawpick.cpp:217
-#: drawpick.cpp:229
+#: ../../../wx/draw3/drawpick.cpp:166 ../../../wx/draw3/drawpick.cpp:172
+#: ../../../wx/draw3/drawpick.cpp:178 ../../../wx/draw3/drawpick.cpp:186
+#: ../../../wx/draw3/drawpick.cpp:194 ../../../wx/draw3/drawpick.cpp:200
+#: ../../../wx/draw3/drawpick.cpp:208 ../../../wx/draw3/drawpick.cpp:217
+#: ../../../wx/draw3/drawpick.cpp:229
 msgid "Wrong value"
 msgstr "Falscher Wert"
 
-#: drawpick.cpp:172
+#: ../../../wx/draw3/drawpick.cpp:172
 msgid "You must provide a short draw name."
-msgstr "Sie m¸ssen eine kurze Schaubild Namen geben."
+msgstr "Sie m√ºssen eine kurze Schaubild Namen geben."
 
-#: drawpick.cpp:178
+#: ../../../wx/draw3/drawpick.cpp:178
 #, fuzzy
 msgid "You must set a draw's colour."
-msgstr "Sie m¸ssen eine Farbe w‰hlen."
+msgstr "Sie m√ºssen eine Farbe w√§hlen."
 
-#: drawpick.cpp:186
+#: ../../../wx/draw3/drawpick.cpp:186
 #, fuzzy
 msgid "Min must be a number."
 msgstr "Minimaler Wert muss ein Wert"
 
-#: drawpick.cpp:194
+#: ../../../wx/draw3/drawpick.cpp:194
 #, fuzzy
 msgid "Max must be a number."
 msgstr "Maximaler Wert muss ein Wert"
 
-#: drawpick.cpp:200
+#: ../../../wx/draw3/drawpick.cpp:200
 msgid "Max must greater then min."
 msgstr "Maximale Wert muss mehr als minimalen Wert"
 
-#: drawpick.cpp:208
+#: ../../../wx/draw3/drawpick.cpp:208
 msgid "Invalid value of scale percentage, must be a positive integer."
 msgstr ""
 
-#: drawpick.cpp:217
+#: ../../../wx/draw3/drawpick.cpp:217
 msgid ""
 "Invalid value of max percentage, must be a number falling within min and max "
 "values."
 msgstr ""
 
-#: drawpick.cpp:229
+#: ../../../wx/draw3/drawpick.cpp:229
 msgid ""
 "Invalid value of min percentage, must be a number greter than or equal to "
 "min value and less than max scale value."
 msgstr ""
 
-#: drawpick.cpp:369 incsearch.cpp:713 XRC_gettext_file.h:36
+#: ../../../wx/draw3/drawpick.cpp:369 ../../../wx/draw3/incsearch.cpp:713
+#: ../../../wx/draw3/GUI/resources.xrc:297
 msgid "Edit"
 msgstr "Bearbeite"
 
-#: drawpick.cpp:381 paramslist.cpp:126
+#: ../../../wx/draw3/drawpick.cpp:381 ../../../wx/draw3/paramslist.cpp:126
 msgid "Parameters"
 msgstr "Parametr"
 
-#: drawpick.cpp:383 XRC_gettext_file.h:95
+#: ../../../wx/draw3/drawpick.cpp:383 ../../../wx/draw3/GUI/resources.xrc:774
 msgid "Short name"
 msgstr "Kurzer Name"
 
-#: drawpick.cpp:384 XRC_gettext_file.h:94
+#: ../../../wx/draw3/drawpick.cpp:384 ../../../wx/draw3/GUI/resources.xrc:751
 msgid "Full name"
 msgstr "Langer Name"
 
-# "Warto∂Ê minimalna"
-#: drawpick.cpp:386
+# "Warto≈õƒá minimalna"
+#: ../../../wx/draw3/drawpick.cpp:386
 msgid "Min value"
 msgstr "Minimaler Wert"
 
-# "Warto∂Ê maksymalna"
-#: drawpick.cpp:387
+# "Warto≈õƒá maksymalna"
+#: ../../../wx/draw3/drawpick.cpp:387
 msgid "Max value"
 msgstr "Maximalen Wert"
 
-#: drawpick.cpp:471 incsearch.cpp:712
+#: ../../../wx/draw3/drawpick.cpp:471 ../../../wx/draw3/incsearch.cpp:712
 msgid "Remove"
 msgstr "Fern ent"
 
 # Edytuj wykres
-#: drawpick.cpp:472 XRC_gettext_file.h:92
+#: ../../../wx/draw3/drawpick.cpp:472 ../../../wx/draw3/GUI/resources.xrc:724
 msgid "Edit graph"
 msgstr "Edit Schaubild"
 
-# "Edytuj parametr zwi±zany z wykresem"
-#: drawpick.cpp:473
+# "Edytuj parametr zwiƒÖzany z wykresem"
+#: ../../../wx/draw3/drawpick.cpp:473
 msgid "Edit param"
 msgstr "Edit Parameter des Schaubilds"
 
-# "W gÛrÍ"
-#: drawpick.cpp:474
+# "W g√≥rƒô"
+#: ../../../wx/draw3/drawpick.cpp:474
 msgid "Up"
 msgstr "Nach oben"
 
-# "W dÛ≥"
-#: drawpick.cpp:475
+# "W d√≥≈Ç"
+#: ../../../wx/draw3/drawpick.cpp:475
 msgid "Down"
 msgstr "Nach unten"
 
 # "Najpierw wybierz wykres."
-#: drawpick.cpp:566 drawpick.cpp:613
+#: ../../../wx/draw3/drawpick.cpp:566 ../../../wx/draw3/drawpick.cpp:613
 msgid "Select draw first."
-msgstr "Zuerst w‰hlen Sie das Schaubild."
+msgstr "Zuerst w√§hlen Sie das Schaubild."
 
 # Brak wybranego wykresu
-#: drawpick.cpp:566 drawpick.cpp:613
+#: ../../../wx/draw3/drawpick.cpp:566 ../../../wx/draw3/drawpick.cpp:613
 msgid "No draw selected"
 msgstr "Kein Ziel des Schaubilds"
 
-#: drawpick.cpp:603
+#: ../../../wx/draw3/drawpick.cpp:603
 msgid "Do you really want to remove this draw?"
 msgstr "Wollen Sie wirklich entfernen Sie dieses Schaubild?"
 
-#: drawpick.cpp:603
+#: ../../../wx/draw3/drawpick.cpp:603
 msgid "Removal"
 msgstr "Entfernen"
 
-# "Edycja zestawu parametrÛw"
-#: drawpick.cpp:712 drawpick.cpp:900 drawpick.cpp:979
+# "Edycja zestawu parametr√≥w"
+#: ../../../wx/draw3/drawpick.cpp:712 ../../../wx/draw3/drawpick.cpp:900
+#: ../../../wx/draw3/drawpick.cpp:979
 msgid "Editing parameter set "
 msgstr "Bearbeite von einer Reihe von Parametern"
 
-#: drawpick.cpp:780
+#: ../../../wx/draw3/drawpick.cpp:780
 #, c-format
 msgid ""
 "The set with given name '%s' already exists.\n"
@@ -794,371 +829,398 @@ msgid ""
 "title."
 msgstr ""
 
-#: drawpick.cpp:785
+#: ../../../wx/draw3/drawpick.cpp:785
 msgid "Set name already exists."
 msgstr ""
 
-# "Zestaw musi zawieraÊ conajmniej jeden wykres."
-#: drawpick.cpp:802
+# "Zestaw musi zawieraƒá conajmniej jeden wykres."
+#: ../../../wx/draw3/drawpick.cpp:802
 msgid "You must add at least one draw."
-msgstr "Sie m¸ssen mindestens ein Schaubild hinzuf¸gen"
+msgstr "Sie m√ºssen mindestens ein Schaubild hinzuf√ºgen"
 
-# "Brak wykresÛw"
-#: drawpick.cpp:803
+# "Brak wykres√≥w"
+#: ../../../wx/draw3/drawpick.cpp:803
 msgid "No draws"
 msgstr "Keiner Schaubilder"
 
-#: drawpick.cpp:814
+#: ../../../wx/draw3/drawpick.cpp:814
 msgid "You must set the title."
-msgstr "Sie m¸sssen den Titel festlegen"
+msgstr "Sie m√ºsssen den Titel festlegen"
 
-#: drawpick.cpp:814
+#: ../../../wx/draw3/drawpick.cpp:814
 msgid "No title"
 msgstr "Ohne Titel"
 
-#: drawpick.cpp:863 paredit.cpp:811
+#: ../../../wx/draw3/drawpick.cpp:863 ../../../wx/draw3/paredit.cpp:811
 #, fuzzy
 msgid "Error while editing network set: "
 msgstr "Fehler beim Kompilieren des Parameters %s"
 
-# "Edycja zestawu parametrÛw"
-#: drawpick.cpp:863 paredit.cpp:811
+# "Edycja zestawu parametr√≥w"
+#: ../../../wx/draw3/drawpick.cpp:863 ../../../wx/draw3/paredit.cpp:811
 #, fuzzy
 msgid "Editing network set error"
 msgstr "Bearbeite von einer Reihe von Parametern"
 
-#: drawpick.cpp:871
+#: ../../../wx/draw3/drawpick.cpp:871
 msgid "You don't have sufficient privileges too insert/modify this set."
 msgstr ""
 
-#: drawpick.cpp:871 paredit.cpp:816 remarks.cpp:1528
+#: ../../../wx/draw3/drawpick.cpp:871 ../../../wx/draw3/paredit.cpp:820
+#: ../../../wx/draw3/remarks.cpp:1528
 msgid "Insufficient privileges"
 msgstr ""
 
-#: drawpick.cpp:876
+#: ../../../wx/draw3/drawpick.cpp:876
 #, fuzzy
 msgid "Failed to fetch new sets: "
 msgstr "Fehler beim Verbindung mit dem Server."
 
-#: drawpick.cpp:876
+#: ../../../wx/draw3/drawpick.cpp:876
 #, fuzzy
 msgid "Failed to fetch network sets"
 msgstr "Fehler beim Verbindung mit dem Server."
 
 # Szukaj
-#: drawpick.cpp:890 drawpick.cpp:972 drawpick.cpp:1002 drawpnl.cpp:575
-#: drawpnl.cpp:610 drawtb.cpp:78 paredit.cpp:675
+#: ../../../wx/draw3/drawpick.cpp:890 ../../../wx/draw3/drawpick.cpp:972
+#: ../../../wx/draw3/drawpick.cpp:1002 ../../../wx/draw3/drawpnl.cpp:644
+#: ../../../wx/draw3/drawpnl.cpp:679 ../../../wx/draw3/drawtb.cpp:78
+#: ../../../wx/draw3/paredit.cpp:679
 msgid "Find"
 msgstr "Suche"
 
-#: drawprint.cpp:713
+#: ../../../wx/draw3/drawprint.cpp:713
 msgid "For period: "
-msgstr "F¸r den Zeitraum: "
+msgstr "F√ºr den Zeitraum: "
 
-#: drawprint.cpp:716
+#: ../../../wx/draw3/drawprint.cpp:716
 msgid "DECADE "
 msgstr ""
 
-#: drawprint.cpp:719
+#: ../../../wx/draw3/drawprint.cpp:719
 msgid "YEAR "
 msgstr "JAHR "
 
-#: drawprint.cpp:722
+#: ../../../wx/draw3/drawprint.cpp:722
 msgid "MONTH "
 msgstr "MONAT "
 
-#: drawprint.cpp:725
+#: ../../../wx/draw3/drawprint.cpp:725
 msgid "WEEK "
 msgstr "WOCHE "
 
-#: drawprint.cpp:728
+#: ../../../wx/draw3/drawprint.cpp:728
 msgid "DAY "
 msgstr "TAG "
 
-#: drawprint.cpp:731
+#: ../../../wx/draw3/drawprint.cpp:731
 msgid "HOUR "
 msgstr ""
 
-#: drawprint.cpp:734
+#: ../../../wx/draw3/drawprint.cpp:734
 msgid "5MINUTE "
 msgstr ""
 
-#: drawprint.cpp:737
+#: ../../../wx/draw3/drawprint.cpp:737
 msgid "MINUTE "
 msgstr ""
 
-#: drawprint.cpp:740
+#: ../../../wx/draw3/drawprint.cpp:740
+msgid "30SEC "
+msgstr ""
+
+#: ../../../wx/draw3/drawprint.cpp:743
 msgid "SEASON "
 msgstr "SAISON "
 
-#: drawprint.cpp:754
+#: ../../../wx/draw3/drawprint.cpp:757
 msgid "From: "
 msgstr "Von:"
 
-#: drawprint.cpp:756
+#: ../../../wx/draw3/drawprint.cpp:759
 msgid " to: "
 msgstr " bis: "
 
-#: drawprint.cpp:797 drawprint.cpp:1055 drawprint.cpp:1072 infowdg.cpp:287
+#: ../../../wx/draw3/drawprint.cpp:806 ../../../wx/draw3/drawprint.cpp:1064
+#: ../../../wx/draw3/drawprint.cpp:1081 ../../../wx/draw3/infowdg.cpp:294
 #, fuzzy
 msgid "min.="
 msgstr "min.=%.*f"
 
-#: drawprint.cpp:798 drawprint.cpp:1056 drawprint.cpp:1073 infowdg.cpp:288
+#: ../../../wx/draw3/drawprint.cpp:807 ../../../wx/draw3/drawprint.cpp:1065
+#: ../../../wx/draw3/drawprint.cpp:1082 ../../../wx/draw3/infowdg.cpp:295
 #, fuzzy
 msgid "avg.="
 msgstr "mittel=%.*f"
 
-#: drawprint.cpp:799 drawprint.cpp:1057 drawprint.cpp:1074 infowdg.cpp:290
+#: ../../../wx/draw3/drawprint.cpp:808 ../../../wx/draw3/drawprint.cpp:1066
+#: ../../../wx/draw3/drawprint.cpp:1083 ../../../wx/draw3/infowdg.cpp:297
 #, fuzzy
 msgid "max.="
 msgstr "max.=%.*f"
 
-#: drawprint.cpp:1064 drawprint.cpp:1081
+#: ../../../wx/draw3/drawprint.cpp:1067 ../../../wx/draw3/drawprint.cpp:1084
 #, fuzzy
 msgid "s.d.="
 msgstr "Standardabweichung=%.*f"
 
 # "Od"
-#: drawprint.cpp:1088 drawprint.cpp:1347 summwin.cpp:274
+#: ../../../wx/draw3/drawprint.cpp:1091 ../../../wx/draw3/drawprint.cpp:1350
+#: ../../../wx/draw3/summwin.cpp:285
 msgid "From:"
 msgstr "Von:"
 
 # "Do"
-#: drawprint.cpp:1097 drawprint.cpp:1356 summwin.cpp:275
+#: ../../../wx/draw3/drawprint.cpp:1100 ../../../wx/draw3/drawprint.cpp:1359
+#: ../../../wx/draw3/summwin.cpp:286
 msgid "To:"
 msgstr "Bis:"
 
 # "Korelacja X/Y:"
-#: drawprint.cpp:1110
+#: ../../../wx/draw3/drawprint.cpp:1113
 msgid "X/Y Correlation:"
 msgstr "Korrelation X/Y:"
 
 # "Korelacja ranogwa X/Y:"
-#: drawprint.cpp:1122
+#: ../../../wx/draw3/drawprint.cpp:1125
 msgid "X/Y Rank correlation:"
 msgstr "Rang Korrelation X/Y:"
 
-# "Podgl±d wydruku"
-#: drawprint.cpp:1177 drawprint.cpp:1223 drawprint.cpp:1414
+# "PodglƒÖd wydruku"
+#: ../../../wx/draw3/drawprint.cpp:1180 ../../../wx/draw3/drawprint.cpp:1226
+#: ../../../wx/draw3/drawprint.cpp:1417
 msgid "Print Preview"
 msgstr "Druckvorschau"
 
-#: drawpsc.cpp:217
+#: ../../../wx/draw3/drawpsc.cpp:217
 msgid "Choose device:"
-msgstr "W‰hlen Sie Ger‰t"
+msgstr "W√§hlen Sie Ger√§t"
 
-# "B≥±d komunikacji z regulatorem"
-#: drawpsc.cpp:426
+# "B≈ÇƒÖd komunikacji z regulatorem"
+#: ../../../wx/draw3/drawpsc.cpp:426
 #, fuzzy
 msgid "Server communiation error."
 msgstr "Regulator Kommunikationsfehler"
 
-# "B≥±d komunikacji z regulatorem"
-#: drawpsc.cpp:428
+# "B≈ÇƒÖd komunikacji z regulatorem"
+#: ../../../wx/draw3/drawpsc.cpp:428
 #, fuzzy
 msgid "Server communication error."
 msgstr "Regulator Kommunikationsfehler"
 
-#: drawpsc.cpp:438 drawpsc.cpp:440
+#: ../../../wx/draw3/drawpsc.cpp:438 ../../../wx/draw3/drawpsc.cpp:440
 msgid "Server communiation error. Invalid response format."
 msgstr ""
 
-#: drawpsc.cpp:447 drawpsc.cpp:449
+#: ../../../wx/draw3/drawpsc.cpp:447 ../../../wx/draw3/drawpsc.cpp:449
 #, fuzzy
 msgid "Error while performing operation:"
 msgstr "Fehler beim Kompilieren des Parameters %s"
 
-#: drawpsc.cpp:457 drawpsc.cpp:458
+#: ../../../wx/draw3/drawpsc.cpp:457 ../../../wx/draw3/drawpsc.cpp:458
 msgid ""
 "Configuration mismatch, you are not able to set parameters. Problem may be "
 "solved by synchronization of data."
 msgstr ""
 
-#: drawswdg.cpp:333 statdiag.cpp:350 xydiag.cpp:297
+#: ../../../wx/draw3/drawswdg.cpp:338 ../../../wx/draw3/statdiag.cpp:345
+#: ../../../wx/draw3/xydiag.cpp:297
 msgid "Select date"
-msgstr "W‰hlen Sie das Datum"
+msgstr "W√§hlen Sie das Datum"
 
-#: drawtb.cpp:77
+#: ../../../wx/draw3/drawtb.cpp:77
 msgid "About"
-msgstr "‹ber"
+msgstr "√úber"
 
-# Warto∂ci sumaryczne
-#: drawtb.cpp:79
+# Warto≈õci sumaryczne
+#: ../../../wx/draw3/drawtb.cpp:79
 msgid "Summary Window"
 msgstr "Fenster der Zusammenfassung"
 
 # Rozdwojony kursor
-#: drawtb.cpp:80
+#: ../../../wx/draw3/drawtb.cpp:80
 msgid "Split cursor"
 msgstr "Doppel Cursor"
 
 #
-#: drawtb.cpp:81 drawtb.cpp:151 XRC_gettext_file.h:52 XRC_gettext_file.h:173
+#: ../../../wx/draw3/drawtb.cpp:81 ../../../wx/draw3/drawtb.cpp:151
+#: ../../../wx/draw3/GUI/resources.xrc:1037
+#: ../../../wx/draw3/GUI/resources.xrc:1399
 msgid "Filter"
 msgstr "Filter"
 
-#: drawtb.cpp:82
+#: ../../../wx/draw3/drawtb.cpp:82
 msgid "Refresh"
 msgstr "Aktualisieren"
 
-#: drawtb.cpp:83
+#: ../../../wx/draw3/drawtb.cpp:83
 msgid "Tree Set"
 msgstr ""
 
-#: drawtb.cpp:86
+#: ../../../wx/draw3/drawtb.cpp:86
 msgid "Show screen keyboard"
 msgstr ""
 
-#: drawtb.cpp:88
+#: ../../../wx/draw3/drawtb.cpp:88
 msgid "Go to latest date"
 msgstr ""
 
 # "Uwagi"
-#: drawtb.cpp:89 remarks.cpp:489 XRC_gettext_file.h:59 XRC_gettext_file.h:99
-#: XRC_gettext_file.h:100 XRC_gettext_file.h:163 XRC_gettext_file.h:183
+#: ../../../wx/draw3/drawtb.cpp:89 ../../../wx/draw3/remarks.cpp:489
+#: ../../../wx/draw3/GUI/resources.xrc:400
+#: ../../../wx/draw3/GUI/resources.xrc:614
+#: ../../../wx/draw3/GUI/resources.xrc:619
+#: ../../../wx/draw3/GUI/resources.xrc:1364
+#: ../../../wx/draw3/GUI/resources.xrc:1435
 msgid "Remarks"
 msgstr "Kommentare"
 
 # G
-#: drawtb.cpp:90
+#: ../../../wx/draw3/drawtb.cpp:90
 msgid "Quit"
 msgstr "Beenden"
 
-#: drawtb.cpp:118
+#: ../../../wx/draw3/drawtb.cpp:118
 msgid "New version available"
 msgstr ""
 
-#: drawview.cpp:199 gcdcgraphs.cpp:718 glgraphs.cpp:1356
+#: ../../../wx/draw3/drawview.cpp:197 ../../../wx/draw3/gcdcgraphs.cpp:709
+#: ../../../wx/draw3/glgraphs.cpp:1351
 msgid "summer season"
 msgstr "Sommersaison"
 
-#: drawview.cpp:201 gcdcgraphs.cpp:720 glgraphs.cpp:1358
+#: ../../../wx/draw3/drawview.cpp:199 ../../../wx/draw3/gcdcgraphs.cpp:711
+#: ../../../wx/draw3/glgraphs.cpp:1353
 msgid "winter season"
 msgstr "Wintersaison"
 
-#: errfrm.cpp:53
+#: ../../../wx/draw3/errfrm.cpp:53
 msgid "draw3-ext-errorwindow"
 msgstr ""
 
-#: frmmgr.cpp:150
+#: ../../../wx/draw3/frmmgr.cpp:150
 msgid "Do you want to close the application?"
-msgstr "Wollen Sie draw3 schlieﬂen ?"
+msgstr "Wollen Sie draw3 schlie√üen ?"
 
-#: frmmgr.cpp:153 xygraph.cpp:112
+#: ../../../wx/draw3/frmmgr.cpp:153 ../../../wx/draw3/xygraph.cpp:112
 msgid "Do you want to close this window?"
-msgstr "Wollen Sie dieses Fenster schlieﬂen?"
+msgstr "Wollen Sie dieses Fenster schlie√üen?"
 
-#: frmmgr.cpp:155 frmmgr.cpp:235
+#: ../../../wx/draw3/frmmgr.cpp:155 ../../../wx/draw3/frmmgr.cpp:235
 msgid "Question"
 msgstr "Frage"
 
-#: frmmgr.cpp:235
+#: ../../../wx/draw3/frmmgr.cpp:235
 msgid "The are no user defined sets. Do you want to create one?"
 msgstr ""
-"Nicht benutzerdefinierte S‰tze. W¸rden erstellen Sie eine neue Schaubild"
+"Nicht benutzerdefinierte S√§tze. W√ºrden erstellen Sie eine neue Schaubild"
 
-#: gcdcgraphs.cpp:389 wxgraphs.cpp:225
+#: ../../../wx/draw3/gcdcgraphs.cpp:379 ../../../wx/draw3/wxgraphs.cpp:227
 msgid "No data"
 msgstr "Keiner Daten"
 
-#: graphsutils.cpp:119
+#: ../../../wx/draw3/graphsutils.cpp:120
 msgid "Su"
 msgstr "So"
 
-#: graphsutils.cpp:120
+#: ../../../wx/draw3/graphsutils.cpp:121
 msgid "Mo"
 msgstr "Mo"
 
-#: graphsutils.cpp:121
+#: ../../../wx/draw3/graphsutils.cpp:122
 msgid "Tu"
 msgstr "Di"
 
-#: graphsutils.cpp:122
+#: ../../../wx/draw3/graphsutils.cpp:123
 msgid "We"
 msgstr "Mi"
 
-#: graphsutils.cpp:123
+#: ../../../wx/draw3/graphsutils.cpp:124
 msgid "Th"
 msgstr "Do"
 
-#: graphsutils.cpp:124
+#: ../../../wx/draw3/graphsutils.cpp:125
 msgid "Fr"
 msgstr "Fr"
 
-#: graphsutils.cpp:125
+#: ../../../wx/draw3/graphsutils.cpp:126
 msgid "Sa"
 msgstr "Sa"
 
-#: incsearch.cpp:144
+#: ../../../wx/draw3/incsearch.cpp:144
 msgid "Reset"
 msgstr "Reset"
 
-#: incsearch.cpp:145
+#: ../../../wx/draw3/incsearch.cpp:145
 msgid "Ok"
 msgstr "Ok"
 
-#: incsearch.cpp:147 statdiag.cpp:159 xygraph.cpp:81 xyzgraph.cpp:1393
+#: ../../../wx/draw3/incsearch.cpp:147 ../../../wx/draw3/statdiag.cpp:159
+#: ../../../wx/draw3/xygraph.cpp:81 ../../../wx/draw3/xyzgraph.cpp:1393
 msgid "Close"
-msgstr "Schlieﬂ"
+msgstr "Schlie√ü"
 
-#: incsearch.cpp:149 statdiag.cpp:162 xydiag.cpp:181 xygraph.cpp:86
-#: xygraph.cpp:87 xyzgraph.cpp:1400 xyzgraph.cpp:1401
+#: ../../../wx/draw3/incsearch.cpp:149 ../../../wx/draw3/statdiag.cpp:162
+#: ../../../wx/draw3/xydiag.cpp:181 ../../../wx/draw3/xygraph.cpp:86
+#: ../../../wx/draw3/xygraph.cpp:87 ../../../wx/draw3/xyzgraph.cpp:1400
+#: ../../../wx/draw3/xyzgraph.cpp:1401
 #, fuzzy
 msgid "Help"
 msgstr "Hilfe"
 
-#: incsearch.cpp:763
+#: ../../../wx/draw3/incsearch.cpp:763
 #, fuzzy
 msgid "Do you really want to remove this graph?"
 msgstr "Wollen Sie wirklich entfernen Sie dieses Schaubild?"
 
-# "UsuniÍcie paczki"
-#: incsearch.cpp:764
+# "Usuniƒôcie paczki"
+#: ../../../wx/draw3/incsearch.cpp:764
 #, fuzzy
 msgid "Graph removal"
-msgstr "Lˆschen von Paketen"
+msgstr "L√∂schen von Paketen"
 
-#: incsearch.cpp:806
+#: ../../../wx/draw3/incsearch.cpp:806
 #, fuzzy
 msgid "You are not allowed to remove this set"
 msgstr "Wollen Sie wirklich entfernen Sie dieses Schaubild?"
 
 # "Not translated"
-#: incsearch.cpp:806 paramslist.cpp:360 paramslist.cpp:368
+#: ../../../wx/draw3/incsearch.cpp:806 ../../../wx/draw3/paramslist.cpp:360
+#: ../../../wx/draw3/paramslist.cpp:368
 #, fuzzy
 msgid "Failed to remove paramater"
 msgstr "Failed to create dir: "
 
-#: infowdg.cpp:289
-msgid "\\u03c3 ="
+#: ../../../wx/draw3/infowdg.cpp:296
+msgid "œÉ ="
 msgstr ""
 
-#: infowdg.cpp:302
+#: ../../../wx/draw3/infowdg.cpp:309
 #, c-format
 msgid " dif: %s"
 msgstr ""
 
-#: paramslist.cpp:243 paramslist.cpp:298
+#: ../../../wx/draw3/paramslist.cpp:243 ../../../wx/draw3/paramslist.cpp:298
 msgid "Choose parameter first"
-msgstr "W‰hlen Sie einen Parameter"
+msgstr "W√§hlen Sie einen Parameter"
 
-# "Czy na pewno chcesz usun±Ê tÍ paczkÍ?"
-#: paramslist.cpp:247
+# "Czy na pewno chcesz usunƒÖƒá tƒô paczkƒô?"
+#: ../../../wx/draw3/paramslist.cpp:247
 #, fuzzy
 msgid "Are you sure you want to delete this param?"
 msgstr "Willst du dieses Paket entfernen?"
 
 #
-#: paramslist.cpp:247
+#: ../../../wx/draw3/paramslist.cpp:247
 msgid "Warning!"
 msgstr "Achtung!"
 
-#: paramslist.cpp:263
+#: ../../../wx/draw3/paramslist.cpp:263
 msgid "Select parameter first!"
-msgstr "W‰hlen Sie Parameter ersten!"
+msgstr "W√§hlen Sie Parameter ersten!"
 
-#: paramslist.cpp:268 paramslist.cpp:304 paramslist.cpp:321
+#: ../../../wx/draw3/paramslist.cpp:268 ../../../wx/draw3/paramslist.cpp:304
+#: ../../../wx/draw3/paramslist.cpp:321
 #, c-format
 msgid ""
 "Configuration that this param refers to - '%s' is not present, parameter is "
@@ -1166,1739 +1228,1775 @@ msgid ""
 msgstr ""
 
 # "Not translated"
-#: paramslist.cpp:360
+#: ../../../wx/draw3/paramslist.cpp:360
 #, fuzzy
 msgid "Failed to remove parameter, error: "
 msgstr "Failed to create dir: "
 
-#: paramslist.cpp:368
+#: ../../../wx/draw3/paramslist.cpp:368
 #, fuzzy
 msgid "You are not allowed to remove this paramter"
 msgstr "Wollen Sie wirklich entfernen Sie dieses Schaubild?"
 
-#: paredit.cpp:130
+#: ../../../wx/draw3/paredit.cpp:130
 msgid "Expression:"
 msgstr ""
 
-#: paredit.cpp:140
+#: ../../../wx/draw3/paredit.cpp:140
 #, fuzzy
 msgid "Searching date"
-msgstr "W‰hlen Sie das Datum"
+msgstr "W√§hlen Sie das Datum"
 
 #
-#: paredit.cpp:222
+#: ../../../wx/draw3/paredit.cpp:222
 #, fuzzy
 msgid "Information"
 msgstr "Information"
 
-#: paredit.cpp:294
+#: ../../../wx/draw3/paredit.cpp:294
 msgid "You must provide a formula."
 msgstr "Geben Sie die Formel"
 
-#: paredit.cpp:294
+#: ../../../wx/draw3/paredit.cpp:294
 msgid "Formula missing."
 msgstr "Das Fehlen einer Formel"
 
-# "Musisz podaÊ nazwÍ parametru"
-#: paredit.cpp:300
+# "Musisz podaƒá nazwƒô parametru"
+#: ../../../wx/draw3/paredit.cpp:300
 msgid "You must provide a param name."
-msgstr "Sie m¸ssen den Namen des Parameters geben"
+msgstr "Sie m√ºssen den Namen des Parameters geben"
 
 # "Brak nazwy parametru"
-#: paredit.cpp:300
+#: ../../../wx/draw3/paredit.cpp:300
 msgid "Parameter name missing."
 msgstr "Fehlende Parameter-Namen"
 
-# "Musisz podaÊ konfiguracjÍ odniesienia."
-#: paredit.cpp:306
+# "Musisz podaƒá konfiguracjƒô odniesienia."
+#: ../../../wx/draw3/paredit.cpp:306
 msgid "You must set a reference configuration."
 msgstr "Sie mussen die Konfiguration eines Verweises festlegen"
 
-#: paredit.cpp:306
+#: ../../../wx/draw3/paredit.cpp:306
 msgid "Reference configuration missing."
 msgstr "Referenz-Konfiguration fehlt."
 
-#: paredit.cpp:491
+#: ../../../wx/draw3/paredit.cpp:491
 #, c-format
 msgid "Error while compiling param %s"
 msgstr "Fehler beim Kompilieren des Parameters %s"
 
 # "Not translated"
-#: paredit.cpp:512
+#: ../../../wx/draw3/paredit.cpp:512
 #, fuzzy, c-format
 msgid "Invalid expression %s"
 msgstr "unrecognized response from server"
 
 # "Koniec:"
-#: paredit.cpp:585
+#: ../../../wx/draw3/paredit.cpp:585
 #, fuzzy, c-format
 msgid "Found time: %s"
 msgstr "Das Ende der Zeit:"
 
-#: paredit.cpp:587
+#: ../../../wx/draw3/paredit.cpp:587
 #, c-format
 msgid "%s"
 msgstr ""
 
 # "Brak danych"
-#: paredit.cpp:587
+#: ../../../wx/draw3/paredit.cpp:587
 #, fuzzy
 msgid "No date found"
 msgstr "Fehlende daten"
 
-# "Parametr:Uøytkownika:"
-#: paredit.cpp:641
+# "Parametr:U≈ºytkownika:"
+#: ../../../wx/draw3/paredit.cpp:641
 #, fuzzy, c-format
 msgid "User:%s:"
 msgstr "Benutzer:Parameter:"
 
-#: paredit.cpp:820
+#: ../../../wx/draw3/paredit.cpp:820
 msgid "You don't have sufficient privileges too insert/update this param."
 msgstr ""
 
-# Rozk≥ad procentowy
-#: piewin.cpp:77
+# Rozk≈Çad procentowy
+#: ../../../wx/draw3/piewin.cpp:77
 msgid "Percentage distribution"
 msgstr "Prozentuale Verteilung"
 
-#: piewin.cpp:87
+#: ../../../wx/draw3/piewin.cpp:87
 msgid "Average percentage distribution"
 msgstr "Durchschnittliche prozentuale Verteilung"
 
-#: piewin.cpp:247
+#: ../../../wx/draw3/piewin.cpp:247
 #, c-format
 msgid "Sum: %.*f %s"
 msgstr "Summe: %.*f %s"
 
-#: piewin.cpp:257
+#: ../../../wx/draw3/piewin.cpp:257
 msgid ""
 "There are no draws in this sets for which percentage distribution is "
 "calculated."
 msgstr ""
 
-#: piewin.cpp:259
+#: ../../../wx/draw3/piewin.cpp:259
 msgid "All values equal zero."
 msgstr ""
 
-#: probadddiag.cpp:42
+#: ../../../wx/draw3/probadddiag.cpp:42
 #, fuzzy
 msgid "Server"
 msgstr "Zapisz"
 
-#: probadddiag.cpp:43
+#: ../../../wx/draw3/probadddiag.cpp:43
 msgid "Prefix"
 msgstr ""
 
-#: probadddiag.cpp:44
+#: ../../../wx/draw3/probadddiag.cpp:44
 msgid "Address"
 msgstr "Adres"
 
-#: probadddiag.cpp:80
+#: ../../../wx/draw3/probadddiag.cpp:80
 msgid "Set address for prober server:"
 msgstr ""
 
-#: probadddiag.cpp:81
+#: ../../../wx/draw3/probadddiag.cpp:81
 msgid "Prober server address"
 msgstr ""
 
-# "Warto∂Ê minimalna"
-#: progfrm.cpp:35
+# "Warto≈õƒá minimalna"
+#: ../../../wx/draw3/progfrm.cpp:35
 #, fuzzy
 msgid "Fetching values"
 msgstr "Minimaler Wert"
 
-# "Stosunek warto∂ci"
-#: relwin.cpp:57 relwin.cpp:67
+# "Stosunek warto≈õci"
+#: ../../../wx/draw3/relwin.cpp:57 ../../../wx/draw3/relwin.cpp:67
 msgid "Values ratio"
-msgstr "Werte-Verh‰ltnis"
+msgstr "Werte-Verh√§ltnis"
 
-# "To okno nie zawiera wykresÛw, dla ktÛrych liczony by≥by stosunek warto∂ci."
-#: relwin.cpp:91
+# "To okno nie zawiera wykres√≥w, dla kt√≥rych liczony by≈Çby stosunek warto≈õci."
+#: ../../../wx/draw3/relwin.cpp:91
 msgid "There are no values ratio defined for these graphs"
-msgstr "Das Fenster hat keine Schaubilder mit dem Werte-Verh‰ltnis"
+msgstr "Das Fenster hat keine Schaubilder mit dem Werte-Verh√§ltnis"
 
-#: remarks.cpp:487
+#: ../../../wx/draw3/remarks.cpp:487
 msgid "New remarks received"
 msgstr ""
 
 # "Uwagi"
-#: remarks.cpp:487
+#: ../../../wx/draw3/remarks.cpp:487
 #, fuzzy
 msgid "New remarks"
 msgstr "Kommentare"
 
 # "Uwagi"
-#: remarks.cpp:489
+#: ../../../wx/draw3/remarks.cpp:489
 #, fuzzy
 msgid "No new remarks"
 msgstr "Kommentare"
 
 # "Not translated"
-#: remarks.cpp:1142
+#: ../../../wx/draw3/remarks.cpp:1142
 #, fuzzy, c-format
 msgid "Failed to resolve address: %ls"
 msgstr "Failed to create dir: "
 
-# "B≥±d po≥±czenia z serwerem"
-#: remarks.cpp:1185
+# "B≈ÇƒÖd po≈ÇƒÖczenia z serwerem"
+#: ../../../wx/draw3/remarks.cpp:1185
 #, fuzzy
 msgid ""
 "Connection with remarks and network sets and params server not configured"
-msgstr "Es kˆnnte keine Verbindung zum Server"
+msgstr "Es k√∂nnte keine Verbindung zum Server"
 
-# "B≥±d komunikacji z regulatorem"
-#: remarks.cpp:1243
+# "B≈ÇƒÖd komunikacji z regulatorem"
+#: ../../../wx/draw3/remarks.cpp:1243
 #, fuzzy
 msgid "Server connection failure"
 msgstr "Regulator Kommunikationsfehler"
 
-# "B≥±d komunikacji z regulatorem"
-#: remarks.cpp:1246
+# "B≈ÇƒÖd komunikacji z regulatorem"
+#: ../../../wx/draw3/remarks.cpp:1246
 #, fuzzy
 msgid "Server communication error"
 msgstr "Regulator Kommunikationsfehler"
 
-#: remarks.cpp:1249
+#: ../../../wx/draw3/remarks.cpp:1249
 msgid "User is not allowed to send remarks for this base"
 msgstr ""
 
 # "Not translated"
-#: remarks.cpp:1252
+#: ../../../wx/draw3/remarks.cpp:1252
 #, fuzzy
 msgid "Invalid response from server"
 msgstr "unrecognized response from server"
 
-# "Wpisz nazwÍ uøytkownika i has≥o:"
-#: remarks.cpp:1255
+# "Wpisz nazwƒô u≈ºytkownika i has≈Ço:"
+#: ../../../wx/draw3/remarks.cpp:1255
 #, fuzzy
 msgid "Incorrect username and password"
 msgstr "Geben Sie Ihren Benutzernamen und Ihr Passwort ein:"
 
-#: remarks.cpp:1349 remarks.cpp:1352
+#: ../../../wx/draw3/remarks.cpp:1349 ../../../wx/draw3/remarks.cpp:1352
 #, fuzzy, c-format
 msgid "Failed to fetch remarks: %s"
 msgstr "Fehler beim Verbindung mit dem Server."
 
-# "Operacja siÍ nie powiod≥a."
-#: remarks.cpp:1450 remarks.cpp:1496
+# "Operacja siƒô nie powiod≈Ça."
+#: ../../../wx/draw3/remarks.cpp:1450 ../../../wx/draw3/remarks.cpp:1496
 #, fuzzy, c-format
 msgid "Network operation failed: %s"
 msgstr "Vorgang ist fehlgeschlagen."
 
-#: remarks.cpp:1528
+#: ../../../wx/draw3/remarks.cpp:1528
 msgid "You don't have sufficient privileges to update this set."
 msgstr ""
 
-#: remarks.cpp:1544
+#: ../../../wx/draw3/remarks.cpp:1544
 #, fuzzy, c-format
 msgid "Failed to fetch params and sets: %s"
 msgstr "Fehler beim Verbindung mit dem Server."
 
-#: remarks.cpp:2439
+#: ../../../wx/draw3/remarks.cpp:2439
 #, fuzzy
 msgid "Remark sent successfully."
-msgstr "Operacja siÍ powiod≥a."
+msgstr "Operacja siƒô powiod≈Ça."
 
 # "Uwagi"
-#: remarks.cpp:2439
+#: ../../../wx/draw3/remarks.cpp:2439
 #, fuzzy
 msgid "Remark sent."
 msgstr "Kommentare"
 
-#: remarks.cpp:2443
+#: ../../../wx/draw3/remarks.cpp:2443
 #, c-format
 msgid "There was an error sending remark:'%s'."
 msgstr ""
 
-# "B≥±d"
-#: remarks.cpp:2443
+# "B≈ÇƒÖd"
+#: ../../../wx/draw3/remarks.cpp:2443
 #, fuzzy
 msgid "Error."
 msgstr "Fehler"
 
-#: remarksdialog.cpp:52
+#: ../../../wx/draw3/remarksdialog.cpp:52
 #, fuzzy
 msgid "Date"
-msgstr "Lˆsche"
+msgstr "L√∂sche"
 
-# "Tytu≥"
-#: remarksdialog.cpp:53 XRC_gettext_file.h:39
+# "Tytu≈Ç"
+#: ../../../wx/draw3/remarksdialog.cpp:53
+#: ../../../wx/draw3/GUI/resources.xrc:127
 msgid "Title"
 msgstr "Titel"
 
 # "Ustawienia parametru"
-#: seldraw.cpp:145
+#: ../../../wx/draw3/seldraw.cpp:145
 msgid "Set parameter"
 msgstr "Einstellungen des Parameters"
 
 # "Wykres zablokowany"
-#: seldraw.cpp:150 seldraw.cpp:160
+#: ../../../wx/draw3/seldraw.cpp:150 ../../../wx/draw3/seldraw.cpp:160
 msgid "Draw blocked\tCtrl-B"
 msgstr "Schaubild gesperrt\tCtrl-B"
 
 # "Dokumentacja parametru"
-#: seldraw.cpp:163
+#: ../../../wx/draw3/seldraw.cpp:163
 msgid "Parameter documentation\tCtrl-H"
 msgstr "Dokumentation des Parameters\tCtrl-H"
 
-#: seldraw.cpp:164 XRC_gettext_file.h:191
+#: ../../../wx/draw3/seldraw.cpp:164 ../../../wx/draw3/GUI/resources.xrc:1334
 msgid "Copy parameter name\tCtrl+Shift+C"
 msgstr "Kopier der Name des Parameters\tCtrl+Shift+C"
 
-# "¶rednie liczone jako:"
-#: seldraw.cpp:168
+# "≈örednie liczone jako:"
+#: ../../../wx/draw3/seldraw.cpp:168
 #, fuzzy
 msgid "Average value for selected period"
-msgstr "Die Mittel gez‰hlt als:"
+msgstr "Die Mittel gez√§hlt als:"
 
-# "Warto∂Ê maksymalna"
-#: seldraw.cpp:169
+# "Warto≈õƒá maksymalna"
+#: ../../../wx/draw3/seldraw.cpp:169
 #, fuzzy
 msgid "Last value"
 msgstr "Maximalen Wert"
 
-#: seldraw.cpp:170
+#: ../../../wx/draw3/seldraw.cpp:170
 msgid "Difference between last and first value"
 msgstr ""
 
-# "Warto∂Ê ∂rednia"
-#: seldraw.cpp:171
+# "Warto≈õƒá ≈õrednia"
+#: ../../../wx/draw3/seldraw.cpp:171
 #, fuzzy
 msgid "Type of average values shown"
 msgstr "Das Mittel"
 
-#: seldraw.cpp:186
+#: ../../../wx/draw3/seldraw.cpp:186
 msgid "Edit parameter associated with graph\tCtrl-E"
 msgstr ""
 
-#: seldraw.cpp:318 seldraw.cpp:448
+#: ../../../wx/draw3/seldraw.cpp:317 ../../../wx/draw3/seldraw.cpp:448
 #, c-format
 msgid "%d.[B]"
 msgstr "%d.[B]"
 
-# "Uruchomienie przegl±darki nie powiod≥o siÍ"
-#: seldraw.cpp:569
+# "Uruchomienie przeglƒÖdarki nie powiod≈Ço siƒô"
+#: ../../../wx/draw3/seldraw.cpp:569
 msgid "I was not able to start default browser"
-msgstr "Ich kˆnnte nicht Standard-Browser laufen."
+msgstr "Ich k√∂nnte nicht Standard-Browser laufen."
 
-# "Wybierz zestaw wykresÛw"
-#: selset.cpp:64
+# "Wybierz zestaw wykres√≥w"
+#: ../../../wx/draw3/selset.cpp:64
 msgid "Select set of draws to display"
-msgstr "W‰hlen Sie Satz fur Anzeige"
+msgstr "W√§hlen Sie Satz fur Anzeige"
 
-#: splashscreen.cpp:35
+#: ../../../wx/draw3/splashscreen.cpp:35
 msgid "Starting draw3..."
 msgstr "Ich starte draw3..."
 
-# "Warto∂ci ∂rednie"
-#: statdiag.cpp:49
+# "Warto≈õci ≈õrednie"
+#: ../../../wx/draw3/statdiag.cpp:49
 msgid "Statistics window"
 msgstr "Statistik-Fenster"
 
-#: statdiag.cpp:67 timewdg.cpp:56 xydiag.cpp:70 ids.h:186
+#: ../../../wx/draw3/statdiag.cpp:67 ../../../wx/draw3/timewdg.cpp:85
+#: ../../../wx/draw3/xydiag.cpp:70 ../../../wx/draw3/ids.h:186
 msgid "DECADE"
 msgstr ""
 
-#: statdiag.cpp:67 timewdg.cpp:57 xydiag.cpp:70 ids.h:186
+#: ../../../wx/draw3/statdiag.cpp:67 ../../../wx/draw3/timewdg.cpp:86
+#: ../../../wx/draw3/xydiag.cpp:70 ../../../wx/draw3/ids.h:186
 msgid "YEAR"
 msgstr "JAHR"
 
-#: statdiag.cpp:67 timewdg.cpp:58 xydiag.cpp:70 ids.h:186
+#: ../../../wx/draw3/statdiag.cpp:67 ../../../wx/draw3/timewdg.cpp:87
+#: ../../../wx/draw3/xydiag.cpp:70 ../../../wx/draw3/ids.h:186
 msgid "MONTH"
 msgstr "MONAT"
 
-#: statdiag.cpp:67 timewdg.cpp:59 xydiag.cpp:70 ids.h:186
+#: ../../../wx/draw3/statdiag.cpp:67 ../../../wx/draw3/timewdg.cpp:88
+#: ../../../wx/draw3/xydiag.cpp:70 ../../../wx/draw3/ids.h:186
 msgid "WEEK"
 msgstr "WOCHE"
 
-#: statdiag.cpp:67 timewdg.cpp:60 xydiag.cpp:70 ids.h:186
+#: ../../../wx/draw3/statdiag.cpp:67 ../../../wx/draw3/timewdg.cpp:89
+#: ../../../wx/draw3/xydiag.cpp:70 ../../../wx/draw3/ids.h:186
 msgid "DAY"
 msgstr "TAG"
 
-#: statdiag.cpp:67 timewdg.cpp:61 xydiag.cpp:70 ids.h:186
+#: ../../../wx/draw3/statdiag.cpp:67 ../../../wx/draw3/timewdg.cpp:90
+#: ../../../wx/draw3/xydiag.cpp:70 ../../../wx/draw3/ids.h:186
 msgid "30 MINUTES"
 msgstr ""
 
 # "Wybierz wykres"
-#: statdiag.cpp:76 xydiag.cpp:89 xydiag.cpp:98
+#: ../../../wx/draw3/statdiag.cpp:76 ../../../wx/draw3/xydiag.cpp:89
+#: ../../../wx/draw3/xydiag.cpp:98
 msgid "Choose draw"
-msgstr "W‰hlen Sie ein Schaubild"
+msgstr "W√§hlen Sie ein Schaubild"
 
 # "Wybierz parametry wykresu"
-#: statdiag.cpp:79
+#: ../../../wx/draw3/statdiag.cpp:79
 msgid "Choose graph parameters"
-msgstr "W‰hlen Sie Parameter des Schaubilds"
+msgstr "W√§hlen Sie Parameter des Schaubilds"
 
 # "Wykres"
-#: statdiag.cpp:83 XRC_gettext_file.h:93
+#: ../../../wx/draw3/statdiag.cpp:83 ../../../wx/draw3/GUI/resources.xrc:733
 msgid "Draw"
 msgstr "Schaubild"
 
 # "Wybierz wykres"
-#: statdiag.cpp:84
+#: ../../../wx/draw3/statdiag.cpp:84
 msgid "Change draw"
-msgstr "ƒndere das Schaubild"
+msgstr "√Ñndere das Schaubild"
 
 # "Czas"
-#: statdiag.cpp:89
+#: ../../../wx/draw3/statdiag.cpp:89
 msgid "Time range"
 msgstr "Zeit"
 
-# "Pocz±tek:"
-#: statdiag.cpp:93 xydiag.cpp:142
+# "PoczƒÖtek:"
+#: ../../../wx/draw3/statdiag.cpp:93 ../../../wx/draw3/xydiag.cpp:142
 msgid "Start time:"
 msgstr "Der Anfang der Zeit:"
 
 # "Koniec:"
-#: statdiag.cpp:99 xydiag.cpp:148
+#: ../../../wx/draw3/statdiag.cpp:99 ../../../wx/draw3/xydiag.cpp:148
 msgid "End time:"
 msgstr "Das Ende der Zeit:"
 
 # "Okres"
-#: statdiag.cpp:111
+#: ../../../wx/draw3/statdiag.cpp:111
 msgid "Period"
 msgstr "Zeitraum"
 
-# "Warto∂ci"
-#: statdiag.cpp:118
+# "Warto≈õci"
+#: ../../../wx/draw3/statdiag.cpp:118
 msgid "Values"
 msgstr "Werte"
 
-# "Warto∂Ê minimalna"
-#: statdiag.cpp:124
+# "Warto≈õƒá minimalna"
+#: ../../../wx/draw3/statdiag.cpp:124
 msgid "Minimum value"
 msgstr "Minimaler Wert"
 
-# "Warto∂Ê ∂rednia"
-#: statdiag.cpp:129
+# "Warto≈õƒá ≈õrednia"
+#: ../../../wx/draw3/statdiag.cpp:129
 msgid "Average value"
 msgstr "Das Mittel"
 
-#: statdiag.cpp:134
+#: ../../../wx/draw3/statdiag.cpp:134
 msgid "Standard deviation"
 msgstr ""
 
 # "Maksimum"
-#: statdiag.cpp:139
+#: ../../../wx/draw3/statdiag.cpp:139
 msgid "Maximum value"
 msgstr "Maximaler Wert"
 
-# "Warto∂Ê sumaryczna"
-#: statdiag.cpp:144
+# "Warto≈õƒá sumaryczna"
+#: ../../../wx/draw3/statdiag.cpp:144
 msgid "Hour sum"
 msgstr "Der Wert der aggregierten"
 
 # "OK"
-#: statdiag.cpp:156 xydiag.cpp:177 XRC_gettext_file.h:49
+#: ../../../wx/draw3/statdiag.cpp:156 ../../../wx/draw3/xydiag.cpp:177
+#: ../../../wx/draw3/GUI/resources.xrc:386
 msgid "OK"
 msgstr "OK"
 
-#: statdiag.cpp:269 statdiag.cpp:270 statdiag.cpp:271 statdiag.cpp:272
-#: statdiag.cpp:274
+#: ../../../wx/draw3/statdiag.cpp:269 ../../../wx/draw3/statdiag.cpp:270
+#: ../../../wx/draw3/statdiag.cpp:271 ../../../wx/draw3/statdiag.cpp:272
+#: ../../../wx/draw3/statdiag.cpp:274
 msgid "no data"
 msgstr "Keiner Daten"
 
 # "Najpierw wybierz wykres"
-#: statdiag.cpp:286
+#: ../../../wx/draw3/statdiag.cpp:286
 #, fuzzy
 msgid "You need to choose draw first."
-msgstr "Zuerst w‰hlen Sie das Schaubild"
+msgstr "Zuerst w√§hlen Sie das Schaubild"
 
-# "Brakuj±cy wykres"
-#: statdiag.cpp:291 xydiag.cpp:211 xydiag.cpp:213
+# "BrakujƒÖcy wykres"
+#: ../../../wx/draw3/statdiag.cpp:286 ../../../wx/draw3/xydiag.cpp:211
+#: ../../../wx/draw3/xydiag.cpp:213
 msgid "Draw missing"
 msgstr "Fehlende Schaubild"
 
 # "Najpierw wybierz wykres"
-#: statdiag.cpp:424
+#: ../../../wx/draw3/statdiag.cpp:424
 msgid "You need to choose draw first"
-msgstr "Zuerst w‰hlen Sie das Schaubild"
+msgstr "Zuerst w√§hlen Sie das Schaubild"
 
-# "Data pocz±tkowa musi byÊ rÛwna lub wcze∂niejsza niø data koÒcowa"
-#: statdiag.cpp:434 xydiag.cpp:218
+# "Data poczƒÖtkowa musi byƒá r√≥wna lub wcze≈õniejsza ni≈º data ko≈Ñcowa"
+#: ../../../wx/draw3/statdiag.cpp:429 ../../../wx/draw3/xydiag.cpp:218
 msgid "Start date must be less than or equal to end date"
-msgstr "Start Datum muss gleich oder fr¸her als End Datum"
+msgstr "Start Datum muss gleich oder fr√ºher als End Datum"
 
 # "Niepoprawna data"
-#: statdiag.cpp:434 xydiag.cpp:218
+#: ../../../wx/draw3/statdiag.cpp:429 ../../../wx/draw3/xydiag.cpp:218
 msgid "Invalid date"
-msgstr "Ung¸ltiges Datum"
+msgstr "Ung√ºltiges Datum"
 
-# "Warto∂ci sumaryczne"
-#: summwin.cpp:113 summwin.cpp:125
+# "Warto≈õci sumaryczne"
+#: ../../../wx/draw3/summwin.cpp:124 ../../../wx/draw3/summwin.cpp:136
 msgid "Summary values"
 msgstr "Zusammenfassung der Werte"
 
-#: summwin.cpp:134
+#: ../../../wx/draw3/summwin.cpp:145
 msgid ""
 "This set does not contain draws for which summary values are calculated."
 msgstr ""
 
-# "Procent prÛbek zawieraj±cych dane: %.0f%%"
-#: summwin.cpp:280
+# "Procent pr√≥bek zawierajƒÖcych dane: %.0f%%"
+#: ../../../wx/draw3/summwin.cpp:291
 #, c-format
 msgid "Data contains %.2f%% probes from current period"
 msgstr "Der Anteil der Proben mit Daten: %.2f%%"
 
 # "Szarp Draw wersja 3.00 (w przygotowaniu)"
-#: testapp.cpp:187
+#: ../../../wx/draw3/testapp.cpp:184
 #, fuzzy
 msgid "Test app version 1.00."
 msgstr "Szarp Draw version 3.00 (in-progress)."
 
 # "tydz."
-#: timeformat.cpp:42 timeformat.cpp:58 timeformat.cpp:62 timeformat.cpp:92
+#: ../../../wx/draw3/timeformat.cpp:42 ../../../wx/draw3/timeformat.cpp:58
+#: ../../../wx/draw3/timeformat.cpp:62 ../../../wx/draw3/timeformat.cpp:95
 msgid "week"
 msgstr "Woche"
 
 # "godz."
-#: timeformat.cpp:59 timeformat.cpp:63 timeformat.cpp:83
+#: ../../../wx/draw3/timeformat.cpp:59 ../../../wx/draw3/timeformat.cpp:63
+#: ../../../wx/draw3/timeformat.cpp:86
 msgid "hour"
 msgstr "Stunde"
 
-#: timeformat.cpp:59
+#: ../../../wx/draw3/timeformat.cpp:59
 msgid " %H:%M"
 msgstr "%H:%M"
 
-#: timeformat.cpp:63
+#: ../../../wx/draw3/timeformat.cpp:63
 msgid " %R"
 msgstr "%R"
 
-#: timewdg.cpp:91 ids.h:184
-msgid "3 MINUTES"
+#: ../../../wx/draw3/timewdg.cpp:91 ../../../wx/draw3/ids.h:186
+msgid "5 MINUTES"
 msgstr ""
 
-#: timewdg.cpp:92 ids.h:184
+#: ../../../wx/draw3/timewdg.cpp:92 ../../../wx/draw3/ids.h:186
 msgid "MINUTE"
 msgstr ""
 
+#: ../../../wx/draw3/timewdg.cpp:93 ../../../wx/draw3/ids.h:186
+msgid "30 SECONDS"
+msgstr ""
+
 # SEZON#
-#: timewdg.cpp:62 ids.h:186
+#: ../../../wx/draw3/timewdg.cpp:94 ../../../wx/draw3/ids.h:186
 msgid "SEASON"
 msgstr "SAISON"
 
-# "Wybierz rodzaj ∂redniej"
-#: timewdg.cpp:136
+# "Wybierz rodzaj ≈õredniej"
+#: ../../../wx/draw3/timewdg.cpp:140
 #, fuzzy
 msgid "Select period to display"
-msgstr "W‰hlen Sie den Typ des Mittels"
+msgstr "W√§hlen Sie den Typ des Mittels"
 
-#: vercheck.cpp:72
+#: ../../../wx/draw3/vercheck.cpp:72
 msgid "This should never happen. Probably there is a bug in version checking."
 msgstr ""
 
-#: vercheck.cpp:129
+#: ../../../wx/draw3/vercheck.cpp:129
 msgid ""
 "There is new a version of draw3 installed on this computer, you should "
 "restart it."
 msgstr ""
 
-#: vercheck.cpp:130
+#: ../../../wx/draw3/vercheck.cpp:130
 #, fuzzy
 msgid "New version."
-msgstr "Program przegl±daj±cy, wersja: "
+msgstr "Program przeglƒÖdajƒÖcy, wersja: "
 
 # "Wybierz parametry wykresu"
-#: xydiag.cpp:49
+#: ../../../wx/draw3/xydiag.cpp:49
 msgid "X/Y graph parameters"
-msgstr "W‰hlen Sie Parameter des Schaubilds X/Y"
+msgstr "W√§hlen Sie Parameter des Schaubilds X/Y"
 
 # "Wybierz parametry wykresu"
-#: xydiag.cpp:92
+#: ../../../wx/draw3/xydiag.cpp:92
 msgid "Choose graph parameters:"
-msgstr "W‰hlen Sie Parameter des Schaubilds X/Y"
+msgstr "W√§hlen Sie Parameter des Schaubilds X/Y"
 
-# "O∂ X:"
-#: xydiag.cpp:101
+# "O≈õ X:"
+#: ../../../wx/draw3/xydiag.cpp:101
 msgid "Axis X:"
 msgstr "X-Achse:"
 
-# "O∂ Y:"
-#: xydiag.cpp:108
+# "O≈õ Y:"
+#: ../../../wx/draw3/xydiag.cpp:108
 msgid "Axis Y:"
 msgstr "Y-Achse:"
 
-# "O∂ X:"
-#: xydiag.cpp:116
+# "O≈õ X:"
+#: ../../../wx/draw3/xydiag.cpp:116
 #, fuzzy
 msgid "Axis Z:"
 msgstr "X-Achse:"
 
-# "Rodzaj ∂rednich: "
-#: xydiag.cpp:129
+# "Rodzaj ≈õrednich: "
+#: ../../../wx/draw3/xydiag.cpp:129
 msgid "Choose period:"
 msgstr "Typ des Mittels: "
 
-# "Pocz±tek:"
-#: xydiag.cpp:154
+# "PoczƒÖtek:"
+#: ../../../wx/draw3/xydiag.cpp:154
 #, fuzzy
 msgid "Save time"
 msgstr "Der Anfang der Zeit:"
 
 # "Koniec:"
-#: xydiag.cpp:156
+#: ../../../wx/draw3/xydiag.cpp:156
 #, fuzzy
 msgid "Load time"
 msgstr "Das Ende der Zeit:"
 
-# "U∂redniaj warto∂ci"
-#: xydiag.cpp:169
+# "U≈õredniaj warto≈õci"
+#: ../../../wx/draw3/xydiag.cpp:169
 msgid "Average values"
 msgstr "Mittel Werte"
 
 # "Anuluj"
-#: xydiag.cpp:179 XRC_gettext_file.h:50
+#: ../../../wx/draw3/xydiag.cpp:179 ../../../wx/draw3/GUI/resources.xrc:393
 msgid "Cancel"
 msgstr "Abbrechen"
 
 # Edytuj wykres
-#: xydiag.cpp:198 xyzgraph.cpp:1364
+#: ../../../wx/draw3/xydiag.cpp:198 ../../../wx/draw3/xyzgraph.cpp:1364
 #, fuzzy
 msgid "XYZ Graph"
 msgstr "Edit Schaubild"
 
-# "Musisz podaÊ oba wykresy"
-#: xydiag.cpp:211
+# "Musisz podaƒá oba wykresy"
+#: ../../../wx/draw3/xydiag.cpp:211
 msgid "You have to specify both draws"
 msgstr "Sie mussen zwei Schaubilder geben"
 
-#: xydiag.cpp:213
+#: ../../../wx/draw3/xydiag.cpp:213
 msgid "You have to specify all draws"
 msgstr "Sie mussen alle Schaubilder geben"
 
-# "Brak wspÛlnych danych dla wybranych wykresÛw w zadanym okresie czasu"
-#: xydiag.cpp:241
+# "Brak wsp√≥lnych danych dla wybranych wykres√≥w w zadanym okresie czasu"
+#: ../../../wx/draw3/xydiag.cpp:241
 msgid "There is no common data in selected draws from given time span"
-msgstr "Es ist nicht gemeinsam daten fur w‰hlen Schaubilder in Zeitraum"
+msgstr "Es ist nicht gemeinsam daten fur w√§hlen Schaubilder in Zeitraum"
 
 # "Brak danych"
-#: xydiag.cpp:241
+#: ../../../wx/draw3/xydiag.cpp:241
 msgid "No common data"
 msgstr "Fehlende daten"
 
 # Edytuj wykres
-#: xygraph.cpp:55
+#: ../../../wx/draw3/xygraph.cpp:55
 #, fuzzy
 msgid "X/Y graph"
 msgstr "Edit Schaubild"
 
 # "Wybierz parametry wykresu"
-#: xygraph.cpp:72 xyzgraph.cpp:1377
+#: ../../../wx/draw3/xygraph.cpp:72 ../../../wx/draw3/xyzgraph.cpp:1377
 #, fuzzy
 msgid "Change graph parameters"
-msgstr "W‰hlen Sie Parameter des Schaubilds"
+msgstr "W√§hlen Sie Parameter des Schaubilds"
 
 # "Drukuj\tCtrl-P"
-#: xygraph.cpp:74 xyzgraph.cpp:1382
+#: ../../../wx/draw3/xygraph.cpp:74 ../../../wx/draw3/xyzgraph.cpp:1382
 msgid "Print\tCtrl-P"
 msgstr "Drucken\tCtrl-P"
 
-# "¶rednie procentowe"
-#: xygraph.cpp:75 xyzgraph.cpp:1388 XRC_gettext_file.h:151
+# "≈örednie procentowe"
+#: ../../../wx/draw3/xygraph.cpp:75 ../../../wx/draw3/xyzgraph.cpp:1388
+#: ../../../wx/draw3/GUI/resources.xrc:1186
 #, fuzzy
 msgid "Page Settings\tCtrl+Shift+S"
 msgstr "Der durchschnittliche Prozentsatz\tCtrl+Alt+S"
 
-# "Podgl±d wydruku"
-#: xygraph.cpp:76 xyzgraph.cpp:1385
+# "PodglƒÖd wydruku"
+#: ../../../wx/draw3/xygraph.cpp:76 ../../../wx/draw3/xyzgraph.cpp:1385
 msgid "Print preview"
 msgstr "Druckvorschau"
 
-#: xygraph.cpp:78
+#: ../../../wx/draw3/xygraph.cpp:78
 msgid "Zoom out\tCtrl--"
 msgstr ""
 
-#: xygraph.cpp:83 xyzgraph.cpp:1397
+#: ../../../wx/draw3/xygraph.cpp:83 ../../../wx/draw3/xyzgraph.cpp:1397
 msgid "Graph"
 msgstr "Schaubild"
 
 # "Zamknij okno"
-#: xygraph.cpp:112
+#: ../../../wx/draw3/xygraph.cpp:112
 msgid "Window close"
-msgstr "Schlieﬂ das Fenster ein"
+msgstr "Schlie√ü das Fenster ein"
 
 # "Punkty:"
-#: xygraph.cpp:1059
+#: ../../../wx/draw3/xygraph.cpp:1059
 msgid "Points:"
 msgstr "Punkte:"
 
 # "Idz do wykresu"
-#: xygraph.cpp:1068
+#: ../../../wx/draw3/xygraph.cpp:1068
 msgid "Go to graph"
 msgstr "Geh zu Schaubild"
 
 # "X"
-#: xygraph.cpp:1083
+#: ../../../wx/draw3/xygraph.cpp:1083
 msgid "X value"
 msgstr "X Werte"
 
 # "Y"
-#: xygraph.cpp:1084
+#: ../../../wx/draw3/xygraph.cpp:1084
 msgid "Y value"
 msgstr "Y Werte"
 
 # "X"
-#: xygraph.cpp:1085
+#: ../../../wx/draw3/xygraph.cpp:1085
 msgid "X min"
 msgstr "X Min"
 
 # "Y min"
-#: xygraph.cpp:1086
+#: ../../../wx/draw3/xygraph.cpp:1086
 msgid "Y min"
 msgstr "Y Min"
 
-# "X ∂r."
-#: xygraph.cpp:1087
+# "X ≈õr."
+#: ../../../wx/draw3/xygraph.cpp:1087
 msgid "X avg"
 msgstr "X Durchschn."
 
-# "Y ∂r."
-#: xygraph.cpp:1088
+# "Y ≈õr."
+#: ../../../wx/draw3/xygraph.cpp:1088
 msgid "Y avg"
 msgstr "Y Durchschn."
 
 # "X max"
-#: xygraph.cpp:1089
+#: ../../../wx/draw3/xygraph.cpp:1089
 msgid "X max"
 msgstr "X Max"
 
 # "Y max"
-#: xygraph.cpp:1090
+#: ../../../wx/draw3/xygraph.cpp:1090
 msgid "Y max"
 msgstr "Y Max"
 
 # "Odchyl. stand. X"
-#: xygraph.cpp:1091
+#: ../../../wx/draw3/xygraph.cpp:1091
 msgid "X sd"
 msgstr "Standardabweichung X"
 
 # "Odchyl. stand. Y"
-#: xygraph.cpp:1092
+#: ../../../wx/draw3/xygraph.cpp:1092
 msgid "Y sd"
 msgstr "Standardabweichung Y"
 
 # "Korelacja X/Y"
-#: xygraph.cpp:1093
+#: ../../../wx/draw3/xygraph.cpp:1093
 msgid "X/Y Correlation"
 msgstr "Korrelation X/Y"
 
 # "Korel. rang. X/Y"
-#: xygraph.cpp:1094
+#: ../../../wx/draw3/xygraph.cpp:1094
 msgid "X/Y Rank correl."
 msgstr "Rang korrel. X/Y"
 
-#: xygraph.cpp:1095
+#: ../../../wx/draw3/xygraph.cpp:1095
 msgid "From"
 msgstr "Von"
 
-#: xygraph.cpp:1096
+#: ../../../wx/draw3/xygraph.cpp:1096
 msgid "To"
 msgstr "Bis"
 
-# "Wykres zaleøno∂ci "
-#: xygraph.cpp:1726
+# "Wykres zale≈ºno≈õci "
+#: ../../../wx/draw3/xygraph.cpp:1726
 msgid "Graph of "
-msgstr "Schaubild Abh‰ngigkeit "
+msgstr "Schaubild Abh√§ngigkeit "
 
-#: xygraph.cpp:1739
+#: ../../../wx/draw3/xygraph.cpp:1739
 msgid " in terms of "
 msgstr " Von "
 
-#: xyzgraph.cpp:568
+#: ../../../wx/draw3/xyzgraph.cpp:568
 #, c-format
 msgid "%c: %.*f %s %s (min:%.*f, avg:%.*f, max:%.*f)"
 msgstr ""
 
 # "Brak danych"
-#: xyzgraph.cpp:926
+#: ../../../wx/draw3/xyzgraph.cpp:926
 #, fuzzy
 msgid "No common data found"
 msgstr "Fehlende daten"
 
-# "Brak wspÛlnych danych dla wybranych wykresÛw w zadanym okresie czasu"
-#: xyzgraph.cpp:926
+# "Brak wsp√≥lnych danych dla wybranych wykres√≥w w zadanym okresie czasu"
+#: ../../../wx/draw3/xyzgraph.cpp:926
 #, fuzzy
 msgid "There is no common data for these params for given time period"
-msgstr "Es ist nicht gemeinsam daten fur w‰hlen Schaubilder in Zeitraum"
+msgstr "Es ist nicht gemeinsam daten fur w√§hlen Schaubilder in Zeitraum"
 
-#: ids.h:186
-msgid "HOUR"
-msgstr ""
-
-#: incsearch.h:135
+#: ../../../wx/draw3/incsearch.h:138
 msgid " - Window "
 msgstr " - Fenster "
 
-#: XRC_gettext_file.h:1
+#: ../../../wx/draw3/GUI/resources.xrc:7
 msgid "CM"
 msgstr "CM"
 
 # Dodaj parametr
-#: XRC_gettext_file.h:2
+#: ../../../wx/draw3/GUI/resources.xrc:9
 msgid "Add Parameter"
-msgstr "H‰ng Parameter an"
+msgstr "H√§ng Parameter an"
 
 # Dodaj parametr
-#: XRC_gettext_file.h:3
+#: ../../../wx/draw3/GUI/resources.xrc:12
 #, fuzzy
 msgid "Add Network Parameter"
-msgstr "H‰ng Parameter an"
+msgstr "H√§ng Parameter an"
 
 # "Edytuj parametr"
-#: XRC_gettext_file.h:4
+#: ../../../wx/draw3/GUI/resources.xrc:15
 msgid "Edit Parameter"
 msgstr "Bearbeite Parameter"
 
-#: XRC_gettext_file.h:5
+#: ../../../wx/draw3/GUI/resources.xrc:18
 msgid "Remove Parameter"
-msgstr "Lˆsche Prameter"
+msgstr "L√∂sche Prameter"
 
-#: XRC_gettext_file.h:6
-msgid "Edit pack"
-msgstr "Bearbeite Paket"
-
-#: XRC_gettext_file.h:7 XRC_gettext_file.h:74
-msgid "Time:"
-msgstr "Zeit:"
-
-#: XRC_gettext_file.h:8
-msgid "Day:"
-msgstr "Tag:"
-
-# "Poniedzia≥ek"
-#: XRC_gettext_file.h:9
-msgid "Monday"
-msgstr "Montag"
-
-# "Wtorek"
-#: XRC_gettext_file.h:10
-msgid "Tuesday"
-msgstr "Dienstag"
-
-# "¶roda"
-#: XRC_gettext_file.h:11
-msgid "Wednesday"
-msgstr "Mitwoch"
-
-# "Czwartek"
-#: XRC_gettext_file.h:12
-msgid "Thursday"
-msgstr "Donnerstag"
-
-# "Pi±tek"
-#: XRC_gettext_file.h:13
-msgid "Friday"
-msgstr "Freitag"
-
-# "Sobota"
-#: XRC_gettext_file.h:14
-msgid "Saturday"
-msgstr "Samstag"
-
-# "Niedziela"
-#: XRC_gettext_file.h:15
-msgid "Sunday"
-msgstr "Sontag"
-
-#
-#: XRC_gettext_file.h:16
-msgid "Hour:"
-msgstr "Stunde:"
-
-#
-#: XRC_gettext_file.h:17
-msgid "Minute:"
-msgstr "Minute:"
-
-#: XRC_gettext_file.h:18 XRC_gettext_file.h:19
-msgid "Value:"
-msgstr "Wert:"
-
-#: XRC_gettext_file.h:20
-msgid "Minimum value:"
-msgstr "Minimaler Wert:"
-
-#: XRC_gettext_file.h:21
-msgid "Maximum value:"
-msgstr "Maximaler Wert:"
-
-#: XRC_gettext_file.h:24
-msgid "Create Remark"
-msgstr "Erstell Bemerkung"
-
-# "Not translated"
-#: XRC_gettext_file.h:25
-msgid "Fetch Remarks"
-msgstr "Fetch Remarks"
-
-# "Not translated"
-#: XRC_gettext_file.h:26
-msgid "Refetch group list"
-msgstr "Refetch group list"
-
-# "O&pcje"
-#: XRC_gettext_file.h:27
-msgid "Options"
-msgstr "O&ptionen"
-
-# "Zamknij okno"
-#: XRC_gettext_file.h:28
-msgid "Close window"
-msgstr "Schlieﬂ das Fenster ein"
-
-# "Autor:"
-#: XRC_gettext_file.h:29 XRC_gettext_file.h:73
-msgid "Author:"
-msgstr "Autor:"
-
-# "Temat:"
-#: XRC_gettext_file.h:30
-msgid "Subject:"
-msgstr "Thema:"
-
-# "Lista parametrÛw uøytkownika"
-#: XRC_gettext_file.h:31
-msgid "User's params list"
-msgstr "Benutzer Parameter Liste"
-
-# ?
-#: XRC_gettext_file.h:32
-msgid "Parameters:"
-msgstr "Parameter:"
-
-# "Szukaj:"
-#: XRC_gettext_file.h:33
-msgid "Search:"
-msgstr "Suche:"
-
-#
-#: XRC_gettext_file.h:34
-msgid "New"
-msgstr "Neu"
-
-#: XRC_gettext_file.h:35
+# "Wybierz minutƒô"
+#: ../../../wx/draw3/GUI/resources.xrc:24
 #, fuzzy
-msgid "New network"
-msgstr "Erstell Bemerkung"
+msgid "Choose set"
+msgstr "W√§hlen Sie eine Start Minute"
 
-#: XRC_gettext_file.h:37
-msgid "Delete"
-msgstr "Lˆsche"
+#: ../../../wx/draw3/GUI/resources.xrc:32
+#, fuzzy
+msgid "Choose set:"
+msgstr "W√§hlen Sie Ger√§t"
 
-# "Edycja zestawu definiowalnego"
-#: XRC_gettext_file.h:38
-msgid "Editing definable set "
-msgstr "Bearbeite definierte Satz"
-
-# "Przenie∂ w gÛrÍ"
-#: XRC_gettext_file.h:40
-msgid "Move up"
-msgstr "Nach oben"
-
-#: XRC_gettext_file.h:41
-msgid "Move down"
-msgstr "Nach unten"
-
-# "Wstaw wykres"
-#: XRC_gettext_file.h:42
-msgid "Add draw"
-msgstr "Legen Sie Schaubild"
-
-# "Dodaj parametr"
-#: XRC_gettext_file.h:43
-msgid "Add parameter"
-msgstr "H‰ng Parameter an"
-
-#: XRC_gettext_file.h:44
-msgid "FC"
-msgstr "FC"
-
-#: XRC_gettext_file.h:46
-msgid "0"
-msgstr "0"
-
-#: XRC_gettext_file.h:47
-msgid "1"
-msgstr "1"
-
-#: XRC_gettext_file.h:48
-msgid "2"
-msgstr "2"
-
-#: XRC_gettext_file.h:49
-msgid "3"
-msgstr "3"
-
-#: XRC_gettext_file.h:50
-msgid "4"
-msgstr "4"
-
-#: XRC_gettext_file.h:51
-msgid "5"
-msgstr "5"
-
-#: XRC_gettext_file.h:52
+#: ../../../wx/draw3/GUI/resources.xrc:77
 #, fuzzy
 msgid "New remark"
 msgstr "Erstell Bemerkung"
 
-#: XRC_gettext_file.h:53
+#: ../../../wx/draw3/GUI/resources.xrc:84
 msgid "Remark reffering to current window"
 msgstr ""
 
-#: XRC_gettext_file.h:54
+#: ../../../wx/draw3/GUI/resources.xrc:85
 msgid "Remark reffering to whole installation"
 msgstr ""
 
-#: XRC_gettext_file.h:55
+#: ../../../wx/draw3/GUI/resources.xrc:90
 #, fuzzy
 msgid "Choose remark type:"
-msgstr "W‰hle Typ von Paket"
+msgstr "W√§hle Typ von Paket"
 
-#: XRC_gettext_file.h:56
+# "Edycja zestawu definiowalnego"
+#: ../../../wx/draw3/GUI/resources.xrc:115
+msgid "Editing definable set "
+msgstr "Bearbeite definierte Satz"
+
+# "Przenie≈õ w g√≥rƒô"
+#: ../../../wx/draw3/GUI/resources.xrc:150
+msgid "Move up"
+msgstr "Nach oben"
+
+#: ../../../wx/draw3/GUI/resources.xrc:159
+msgid "Move down"
+msgstr "Nach unten"
+
+# "Wstaw wykres"
+#: ../../../wx/draw3/GUI/resources.xrc:167
+msgid "Add draw"
+msgstr "Legen Sie Schaubild"
+
+# "Dodaj parametr"
+#: ../../../wx/draw3/GUI/resources.xrc:174
+msgid "Add parameter"
+msgstr "H√§ng Parameter an"
+
+# "Lista parametr√≥w u≈ºytkownika"
+#: ../../../wx/draw3/GUI/resources.xrc:217
+msgid "User's params list"
+msgstr "Benutzer Parameter Liste"
+
+# ?
+#: ../../../wx/draw3/GUI/resources.xrc:224
+msgid "Parameters:"
+msgstr "Parameter:"
+
+# "Szukaj:"
+#: ../../../wx/draw3/GUI/resources.xrc:241
+msgid "Search:"
+msgstr "Suche:"
+
+#
+#: ../../../wx/draw3/GUI/resources.xrc:283
+msgid "New"
+msgstr "Neu"
+
+#: ../../../wx/draw3/GUI/resources.xrc:290
+#, fuzzy
+msgid "New network"
+msgstr "Erstell Bemerkung"
+
+#: ../../../wx/draw3/GUI/resources.xrc:304
+msgid "Delete"
+msgstr "L√∂sche"
+
+#: ../../../wx/draw3/GUI/resources.xrc:349
 msgid "Login"
 msgstr "Login"
 
-# Nazwa uøytkownika
-#: XRC_gettext_file.h:57
+# Nazwa u≈ºytkownika
+#: ../../../wx/draw3/GUI/resources.xrc:359
 msgid "Username"
 msgstr "Benutzername"
 
-# Has≥o
-#: XRC_gettext_file.h:58
+# Has≈Ço
+#: ../../../wx/draw3/GUI/resources.xrc:366
 msgid "Password"
 msgstr "Passwort"
 
-#: XRC_gettext_file.h:61
-#, fuzzy
-msgid "Remarks Settings"
-msgstr "Reset Einstellungen"
-
-# "Nazwa uøytkownika:"
-#: XRC_gettext_file.h:62
-msgid "Username:"
-msgstr "Benutzername:"
-
-# "Has≥o:"
-#: XRC_gettext_file.h:63
-msgid "Password:"
-msgstr "Passwort:"
-
-# Has≥o
-#: XRC_gettext_file.h:64
-#, fuzzy
-msgid "Set password"
-msgstr "Passwort"
-
-#: XRC_gettext_file.h:65
-msgid "Server:"
-msgstr ""
-
-# "Pokazuj okno automatycznie"
-#: XRC_gettext_file.h:66
-#, fuzzy
-msgid "Automatically fetch"
-msgstr "Zeig das Fenster automatisch"
-
-# "Wybierz minutÍ"
-#: XRC_gettext_file.h:67
-#, fuzzy
-msgid "Choose set"
-msgstr "W‰hlen Sie eine Start Minute"
-
-#: XRC_gettext_file.h:68
-#, fuzzy
-msgid "Choose set:"
-msgstr "W‰hlen Sie Ger‰t"
-
 # "Uwagi"
-#: XRC_gettext_file.h:69
-#, fuzzy
-msgid "Remark"
-msgstr "Kommentare"
-
-#: XRC_gettext_file.h:70
-msgid "Base:"
-msgstr ""
-
-#: XRC_gettext_file.h:71
-msgid "label&2"
-msgstr ""
-
-# "Zestawy"
-#: XRC_gettext_file.h:72
-#, fuzzy
-msgid "Set:"
-msgstr "S‰tze"
-
-#: XRC_gettext_file.h:75
-msgid "label&5"
-msgstr ""
-
-# "Uwagi"
-#: XRC_gettext_file.h:76
-#, fuzzy
-msgid "Remark referring to:"
-msgstr "Kommentare"
-
-#: XRC_gettext_file.h:77
-msgid "Currently selected window"
-msgstr ""
-
-#: XRC_gettext_file.h:78
-msgid "Whole base"
-msgstr ""
-
-# "Tytu≥"
-#: XRC_gettext_file.h:79
-#, fuzzy
-msgid "Title:"
-msgstr "Titel"
-
-# "Kontekst"
-#: XRC_gettext_file.h:80
-#, fuzzy
-msgid "Content:"
-msgstr "Kontext"
-
-#: XRC_gettext_file.h:81
-msgid "Go to..."
-msgstr ""
-
-# "Uwagi"
-#: XRC_gettext_file.h:83
+#: ../../../wx/draw3/GUI/resources.xrc:407
 #, fuzzy
 msgid "Remarks:"
 msgstr "Kommentare"
 
-#: XRC_gettext_file.h:84
-msgid "Probe servers addresses"
-msgstr ""
+#: ../../../wx/draw3/GUI/resources.xrc:448
+msgid "Edit pack"
+msgstr "Bearbeite Paket"
 
-#: XRC_gettext_file.h:85
-msgid "Probe servers addresses:"
-msgstr ""
+#: ../../../wx/draw3/GUI/resources.xrc:456
+#: ../../../wx/draw3/GUI/resources.xrc:1957
+msgid "Time:"
+msgstr "Zeit:"
 
-# "Komunikaty"
-#: XRC_gettext_file.h:86
-msgid "Notifications"
-msgstr "Nachrichten"
+#: ../../../wx/draw3/GUI/resources.xrc:470
+msgid "Day:"
+msgstr "Tag:"
 
-# "B≥Ídy:"
-#: XRC_gettext_file.h:87
-msgid "Notifications:"
-msgstr "Fehler:"
+# "Poniedzia≈Çek"
+#: ../../../wx/draw3/GUI/resources.xrc:480
+msgid "Monday"
+msgstr "Montag"
 
-# "Automatyczne pokazuj okno po pojawieniu siÍ nowego komunikatu "
-#: XRC_gettext_file.h:88
-msgid "Automatically rises window upon reception of new notification"
-msgstr "Zeig das Fenster automatish wenn Das Nachricht erscheinst"
+# "Wtorek"
+#: ../../../wx/draw3/GUI/resources.xrc:481
+msgid "Tuesday"
+msgstr "Dienstag"
 
-# "Pokazuj okno automatycznie"
-#: XRC_gettext_file.h:89
-msgid "Automatically rise window"
-msgstr "Zeig das Fenster automatisch"
+# "≈öroda"
+#: ../../../wx/draw3/GUI/resources.xrc:482
+msgid "Wednesday"
+msgstr "Mitwoch"
 
-# "Wyczy∂Ê"
-#: XRC_gettext_file.h:90
-msgid "Clear"
-msgstr "Putze"
+# "Czwartek"
+#: ../../../wx/draw3/GUI/resources.xrc:483
+msgid "Thursday"
+msgstr "Donnerstag"
 
-# "Schowaj"
-#: XRC_gettext_file.h:91
-msgid "Hide"
-msgstr "Versteck"
+# "PiƒÖtek"
+#: ../../../wx/draw3/GUI/resources.xrc:484
+msgid "Friday"
+msgstr "Freitag"
 
-#: XRC_gettext_file.h:96
+# "Sobota"
+#: ../../../wx/draw3/GUI/resources.xrc:485
+msgid "Saturday"
+msgstr "Samstag"
+
+# "Niedziela"
+#: ../../../wx/draw3/GUI/resources.xrc:486
+msgid "Sunday"
+msgstr "Sontag"
+
+#
+#: ../../../wx/draw3/GUI/resources.xrc:494
+msgid "Hour:"
+msgstr "Stunde:"
+
+#
+#: ../../../wx/draw3/GUI/resources.xrc:511
+msgid "Minute:"
+msgstr "Minute:"
+
+#: ../../../wx/draw3/GUI/resources.xrc:533
+#: ../../../wx/draw3/GUI/resources.xrc:543
+msgid "Value:"
+msgstr "Wert:"
+
+#: ../../../wx/draw3/GUI/resources.xrc:562
+msgid "Minimum value:"
+msgstr "Minimaler Wert:"
+
+#: ../../../wx/draw3/GUI/resources.xrc:580
+msgid "Maximum value:"
+msgstr "Maximaler Wert:"
+
+#: ../../../wx/draw3/GUI/resources.xrc:621
+msgid "Create Remark"
+msgstr "Erstell Bemerkung"
+
+# "Not translated"
+#: ../../../wx/draw3/GUI/resources.xrc:625
+msgid "Fetch Remarks"
+msgstr "Fetch Remarks"
+
+# "Not translated"
+#: ../../../wx/draw3/GUI/resources.xrc:629
+msgid "Refetch group list"
+msgstr "Refetch group list"
+
+# "O&pcje"
+#: ../../../wx/draw3/GUI/resources.xrc:633
+msgid "Options"
+msgstr "O&ptionen"
+
+# "Zamknij okno"
+#: ../../../wx/draw3/GUI/resources.xrc:637
+msgid "Close window"
+msgstr "Schlie√ü das Fenster ein"
+
+# "Autor:"
+#: ../../../wx/draw3/GUI/resources.xrc:681
+#: ../../../wx/draw3/GUI/resources.xrc:1936
+msgid "Author:"
+msgstr "Autor:"
+
+# "Temat:"
+#: ../../../wx/draw3/GUI/resources.xrc:694
+msgid "Subject:"
+msgstr "Thema:"
+
+#: ../../../wx/draw3/GUI/resources.xrc:796
 #, fuzzy
 msgid "Min"
 msgstr "Minus"
 
-#: XRC_gettext_file.h:97
+#: ../../../wx/draw3/GUI/resources.xrc:818
 msgid "Max"
 msgstr ""
 
-#: XRC_gettext_file.h:98
+#: ../../../wx/draw3/GUI/resources.xrc:834
 msgid "Scaling"
 msgstr ""
 
-#: XRC_gettext_file.h:99
+#: ../../../wx/draw3/GUI/resources.xrc:845
 msgid "Scale percentage:"
 msgstr ""
 
-# "Warto∂Ê minimalna"
-#: XRC_gettext_file.h:100
+# "Warto≈õƒá minimalna"
+#: ../../../wx/draw3/GUI/resources.xrc:867
 #, fuzzy
 msgid "Scale min value:"
 msgstr "Minimaler Wert"
 
-# "Warto∂ci sumaryczne"
-#: XRC_gettext_file.h:101
+# "Warto≈õci sumaryczne"
+#: ../../../wx/draw3/GUI/resources.xrc:889
 #, fuzzy
 msgid "Scale max value:"
 msgstr "Zusammenfassung der Werte:"
 
 # "Jednostka:"
-#: XRC_gettext_file.h:102
+#: ../../../wx/draw3/GUI/resources.xrc:912
 #, fuzzy
 msgid "Unit"
 msgstr "Einheit:"
 
 # "Wybierz kolor"
-#: XRC_gettext_file.h:103
+#: ../../../wx/draw3/GUI/resources.xrc:931
 msgid "Change color"
-msgstr "W‰hlen Sie die Farbe"
+msgstr "W√§hlen Sie die Farbe"
 
-# "Warto∂Ê sumowana godzinowo."
-#: XRC_gettext_file.h:104
+# "Warto≈õƒá sumowana godzinowo."
+#: ../../../wx/draw3/GUI/resources.xrc:942
 msgid "Summary value."
 msgstr "Der Wert summiert pro Stunde."
 
-# "Edytuj parametr"
-#: XRC_gettext_file.h:105
-msgid "Edit parameter"
-msgstr "Bearbeiten Parameter"
+# "Komunikaty"
+#: ../../../wx/draw3/GUI/resources.xrc:967
+msgid "Notifications"
+msgstr "Nachrichten"
 
-# "Nazwa parametru:"
-#: XRC_gettext_file.h:106
-msgid "Parameter name:"
-msgstr "Der Name des Parameters:"
+# "B≈Çƒôdy:"
+#: ../../../wx/draw3/GUI/resources.xrc:980
+msgid "Notifications:"
+msgstr "Fehler:"
 
-# "¶rednie liczone jako:"
-#: XRC_gettext_file.h:108
-msgid "Average value calculation method"
-msgstr "Die Mittel gez‰hlt als:"
+# "Automatyczne pokazuj okno po pojawieniu siƒô nowego komunikatu "
+#: ../../../wx/draw3/GUI/resources.xrc:996
+msgid "Automatically rises window upon reception of new notification"
+msgstr "Zeig das Fenster automatish wenn Das Nachricht erscheinst"
 
-# "∂rednia z zastosowania formu≥y dla kaødej prÛbki"
-#: XRC_gettext_file.h:109
-msgid "mean of values of formula application to each probe"
-msgstr "Mittelwert der Werte der Antragsformulare zu jeder Probe"
+# "Pokazuj okno automatycznie"
+#: ../../../wx/draw3/GUI/resources.xrc:997
+msgid "Automatically rise window"
+msgstr "Zeig das Fenster automatisch"
 
-# "wynik zastosowania formu≥y dla ∂rednich"
-#: XRC_gettext_file.h:110
-msgid "result of formula's application to average values of components"
-msgstr "das Ergebnis einer Formel f¸r den Mittelstand"
+# "Wyczy≈õƒá"
+#: ../../../wx/draw3/GUI/resources.xrc:1009
+msgid "Clear"
+msgstr "Putze"
 
-# "Formu≥a parametru:"
-#: XRC_gettext_file.h:111
-msgid "Parameter formula:"
-msgstr "Formel-Parameter:"
+# "Schowaj"
+#: ../../../wx/draw3/GUI/resources.xrc:1017
+msgid "Hide"
+msgstr "Versteck"
 
-#: XRC_gettext_file.h:112
-msgid "label&11"
-msgstr ""
+#: ../../../wx/draw3/GUI/resources.xrc:1035
+msgid "FC"
+msgstr "FC"
 
-# Cofnij
-#: XRC_gettext_file.h:113
-msgid "Undo"
-msgstr "R¸ckg‰ngig"
+#: ../../../wx/draw3/GUI/resources.xrc:1041
+msgid "0"
+msgstr "0"
 
-#: XRC_gettext_file.h:114
-msgid "<"
-msgstr "<"
+#: ../../../wx/draw3/GUI/resources.xrc:1045
+msgid "1"
+msgstr "1"
 
-# PonÛw
-#: XRC_gettext_file.h:115
-msgid "Redo"
-msgstr "Wiederherstell"
+#: ../../../wx/draw3/GUI/resources.xrc:1049
+msgid "2"
+msgstr "2"
 
-#: XRC_gettext_file.h:116
-msgid ">"
-msgstr ">"
+#: ../../../wx/draw3/GUI/resources.xrc:1053
+msgid "3"
+msgstr "3"
 
-#: XRC_gettext_file.h:117
-msgid "Plus"
-msgstr "Plus"
+#: ../../../wx/draw3/GUI/resources.xrc:1057
+msgid "4"
+msgstr "4"
 
-#: XRC_gettext_file.h:118
-msgid "+"
-msgstr "+"
+#: ../../../wx/draw3/GUI/resources.xrc:1061
+msgid "5"
+msgstr "5"
 
-#: XRC_gettext_file.h:119
-msgid "Minus"
-msgstr "Minus"
-
-#: XRC_gettext_file.h:120
-msgid "-"
-msgstr "-"
-
-#: XRC_gettext_file.h:121
-msgid "Times"
-msgstr "Times"
-
-#: XRC_gettext_file.h:122
-msgid "*"
-msgstr "*"
-
-# "Podziel"
-#: XRC_gettext_file.h:123
-msgid "Divide"
-msgstr "Divide"
-
-#: XRC_gettext_file.h:124
-msgid "/"
-msgstr ""
-
-# "Wstaw nowy parametr"
-#: XRC_gettext_file.h:125
-msgid "Insert param from graph"
-msgstr "Legen Sie einen neuen Parameter"
-
-# "<W>"
-#: XRC_gettext_file.h:126
-msgid "ID"
-msgstr "<W>"
-
-# "Wstaw parametr zdefiniowany uøytkownika"
-#: XRC_gettext_file.h:127
-msgid "Insert user defined param"
-msgstr "Legen Sie eine benutzerdefinierte Parameter"
-
-# "<P>"
-#: XRC_gettext_file.h:128
-msgid "IP"
-msgstr "<P>"
-
-# "Ilo∂Ê miejsc po przecinku:"
-#: XRC_gettext_file.h:129
-msgid "Displayed parameter precision:"
-msgstr "Anzahl der Stellen hinter dem Komma:"
-
-# "Jednostka:"
-#: XRC_gettext_file.h:130
-msgid "Unit:"
-msgstr "Einheit:"
-
-#: XRC_gettext_file.h:131
-msgid "Insert degree"
-msgstr "Legen Sie Grad-Symbol"
-
-#: XRC_gettext_file.h:132
-msgid "D"
-msgstr "D"
-
-# "Pocz±tek:"
-#: XRC_gettext_file.h:133
-msgid "Start date:"
-msgstr "Start Datum:"
-
-# "Wybierz datÍ pocz±tkow±"
-#: XRC_gettext_file.h:134
-msgid "Choose start date"
-msgstr "W‰hlen Sie ein Start Datum"
-
-# "Wybierz godzinÍ"
-#: XRC_gettext_file.h:135
-msgid "Choose start hour"
-msgstr "W‰hlen Sie eine Start Stunde"
-
-# "Wybierz minutÍ"
-#: XRC_gettext_file.h:136
-msgid "Choose start minute"
-msgstr "W‰hlen Sie eine Start Minute"
-
-# "Wstaw datÍ rozpoczÍcia"
-#: XRC_gettext_file.h:137
-msgid "Enable inserting start date"
-msgstr "Legen Sie ein Start Datum"
-
-# "w≥±cz"
-#: XRC_gettext_file.h:138
-msgid "enabled"
-msgstr "aktiviert"
-
-# "Niepoprawna data"
-#: XRC_gettext_file.h:139
+#: ../../../wx/draw3/GUI/resources.xrc:1069
 #, fuzzy
-msgid "Found date:"
-msgstr "Ung¸ltiges Datum"
+msgid "Remarks Settings"
+msgstr "Reset Einstellungen"
 
-# "Konfiguracja odniesienia: "
-#: XRC_gettext_file.h:140
-msgid "Base configuration:"
-msgstr "Die Konfiguration des Verweises: "
+# "Nazwa u≈ºytkownika:"
+#: ../../../wx/draw3/GUI/resources.xrc:1081
+msgid "Username:"
+msgstr "Benutzername:"
 
-# "Wybierz konfiguracjÍ odniesienia"
-#: XRC_gettext_file.h:141
-msgid "Choose reference configuration"
-msgstr "W‰hlen Sie die Konfiguration eines Verweises"
+# "Has≈Ço:"
+#: ../../../wx/draw3/GUI/resources.xrc:1100
+msgid "Password:"
+msgstr "Passwort:"
 
-#: XRC_gettext_file.h:142
-msgid "LABEL"
-msgstr "LABEL"
+# Has≈Ço
+#: ../../../wx/draw3/GUI/resources.xrc:1107
+#, fuzzy
+msgid "Set password"
+msgstr "Passwort"
+
+#: ../../../wx/draw3/GUI/resources.xrc:1121
+msgid "Server:"
+msgstr ""
+
+# "Pokazuj okno automatycznie"
+#: ../../../wx/draw3/GUI/resources.xrc:1135
+#, fuzzy
+msgid "Automatically fetch"
+msgstr "Zeig das Fenster automatisch"
 
 # &Plik
-#: XRC_gettext_file.h:143
+#: ../../../wx/draw3/GUI/resources.xrc:1161
 msgid "&File"
 msgstr "&Datei"
 
-#: XRC_gettext_file.h:144
+#: ../../../wx/draw3/GUI/resources.xrc:1163
 msgid "Open new window\tCtrl+N"
 msgstr "Neues Fenster\tCtrl+N"
 
-#: XRC_gettext_file.h:145
+#: ../../../wx/draw3/GUI/resources.xrc:1166
 msgid "Open new tab\tCtrl+T"
 msgstr "Neuer tab\tCtrl+T"
 
-#: XRC_gettext_file.h:146
+#: ../../../wx/draw3/GUI/resources.xrc:1169
 msgid "CloseTab\tCtrl+W"
 msgstr "Tab Schliessen\tCtrl+W"
 
 # "Wykres X/Y"
-#: XRC_gettext_file.h:147
+#: ../../../wx/draw3/GUI/resources.xrc:1173
 #, fuzzy
 msgid "XY Graph\tCtrl+Shift+X"
 msgstr "Schaubild X/Y\tCtrl+X"
 
 # "Wykres X/Y"
-#: XRC_gettext_file.h:148
+#: ../../../wx/draw3/GUI/resources.xrc:1176
 #, fuzzy
 msgid "XYZ Graph\tCtrl+Shift+Z"
 msgstr "Schaubild X/Y\tCtrl+X"
 
-#: XRC_gettext_file.h:149
+#: ../../../wx/draw3/GUI/resources.xrc:1179
 msgid "Statistics window\tCtrl+Shift+S"
 msgstr "Statistik-Fenster\tCtrl+Alt+S"
 
 # "Drukuj\tCtrl+P"
-#: XRC_gettext_file.h:150
+#: ../../../wx/draw3/GUI/resources.xrc:1183
 msgid "Print\tCtrl+P"
 msgstr "Druck\tCtrl+P"
 
-#: XRC_gettext_file.h:152
+#: ../../../wx/draw3/GUI/resources.xrc:1189
 msgid "Print preview\tCtrl+Shift+P"
 msgstr "Druckvoschau\tCtrl+Shift+P"
 
 # "Zamknij\tCtrl+Q"
-#: XRC_gettext_file.h:153
+#: ../../../wx/draw3/GUI/resources.xrc:1193
 msgid "Quit\tCtrl+Q"
 msgstr "Beende\tCtrl+Q"
 
 # "Zestawy"
-#: XRC_gettext_file.h:154
+#: ../../../wx/draw3/GUI/resources.xrc:1197
 msgid "Sets"
-msgstr "S‰tze"
+msgstr "S√§tze"
 
 # "Nowy zestaw\tCtrl+A"
-#: XRC_gettext_file.h:155
+#: ../../../wx/draw3/GUI/resources.xrc:1199
 msgid "New set\tCtrl+A"
 msgstr "Neuer Satz\tCtrl+A"
 
 # "Nowy zestaw\tCtrl+A"
-#: XRC_gettext_file.h:156
+#: ../../../wx/draw3/GUI/resources.xrc:1202
 #, fuzzy
 msgid "New nework set\tCtrl+Alt+A"
 msgstr "Neuer Satz\tCtrl+A"
 
-#: XRC_gettext_file.h:157
+#: ../../../wx/draw3/GUI/resources.xrc:1205
 msgid "Delete set\tCtrl+D"
-msgstr "Lˆsche Satz\tCtrl+D"
+msgstr "L√∂sche Satz\tCtrl+D"
 
 # "Edytuj zestaw\tCtrl+E"
-#: XRC_gettext_file.h:158
+#: ../../../wx/draw3/GUI/resources.xrc:1208
 msgid "Edit Set\tCtrl+E"
 msgstr "Bearbeite Satz\tCtrl+E"
 
-# "¶rednie procentowe"
-#: XRC_gettext_file.h:159
+# "≈örednie procentowe"
+#: ../../../wx/draw3/GUI/resources.xrc:1211
 #, fuzzy
 msgid "Edit as new defined\tCtrl+Shift+Alt+E"
 msgstr "Der durchschnittliche Prozentsatz\tCtrl+Alt+S"
 
-# "¶rednie procentowe"
-#: XRC_gettext_file.h:160
+# "≈örednie procentowe"
+#: ../../../wx/draw3/GUI/resources.xrc:1214
 #, fuzzy
-msgid "Edit as new network defined\tCtrl+Shift+Alt+N"
+msgid "Edit as new network defined\tCtrl+Shift+Alt+W"
 msgstr "Der durchschnittliche Prozentsatz\tCtrl+Alt+S"
 
-# "¶rednie procentowe"
-#: XRC_gettext_file.h:161
+# "≈örednie procentowe"
+#: ../../../wx/draw3/GUI/resources.xrc:1218
 #, fuzzy
 msgid "Import Set\tCtrl+Shift+I"
 msgstr "Der durchschnittliche Prozentsatz\tCtrl+Alt+S"
 
 # "Edytuj zestaw\tCtrl+E"
-#: XRC_gettext_file.h:162
+#: ../../../wx/draw3/GUI/resources.xrc:1221
 #, fuzzy
 msgid "Export Set\tCtrl+Shift+E"
 msgstr "Bearbeite Satz\tCtrl+E"
 
 # "Zapisz\tCtrl+S"
-#: XRC_gettext_file.h:163
+#: ../../../wx/draw3/GUI/resources.xrc:1225
 msgid "Save\tCtrl+S"
 msgstr "Speicher\tCtrl+S"
 
-#: XRC_gettext_file.h:164
+#: ../../../wx/draw3/GUI/resources.xrc:1229
 msgid "View"
 msgstr "Anzeigen"
 
-# "Rodzaj ∂rednich"
-#: XRC_gettext_file.h:165
+# "Rodzaj ≈õrednich"
+#: ../../../wx/draw3/GUI/resources.xrc:1231
 msgid "Average type"
 msgstr "Typ der Mittel"
 
-#: XRC_gettext_file.h:166
+#: ../../../wx/draw3/GUI/resources.xrc:1233
 #, fuzzy
 msgid "Decade\tAlt+A"
 msgstr "Tag\tAlt+T"
 
-#: XRC_gettext_file.h:167
+#: ../../../wx/draw3/GUI/resources.xrc:1237
 msgid "Year\tAlt+Y"
 msgstr "Jahr\tAlt+J"
 
-#: XRC_gettext_file.h:168
+#: ../../../wx/draw3/GUI/resources.xrc:1241
 msgid "Month\tAlt+M"
 msgstr "Monat\tAlt+M"
 
-#: XRC_gettext_file.h:169
+#: ../../../wx/draw3/GUI/resources.xrc:1245
 msgid "Week\tAlt+W"
 msgstr "Woche\tAlt+W"
 
-#: XRC_gettext_file.h:170
+#: ../../../wx/draw3/GUI/resources.xrc:1249
 msgid "Day\tAlt+D"
 msgstr "Tag\tAlt+T"
 
-#: XRC_gettext_file.h:171
+#: ../../../wx/draw3/GUI/resources.xrc:1253
 msgid "30 Minutes\tAlt+3"
 msgstr ""
 
-#: XRC_gettext_file.h:172
+#: ../../../wx/draw3/GUI/resources.xrc:1257
 #, fuzzy
-msgid "3 Minutes\tAlt+3"
+msgid "5 Minutes\tAlt+3"
 msgstr "Monat\tAlt+M"
 
-#: XRC_gettext_file.h:173
+#: ../../../wx/draw3/GUI/resources.xrc:1261
 #, fuzzy
 msgid "Minute\tAlt+3"
 msgstr "Monat\tAlt+M"
 
-#: XRC_gettext_file.h:174
+#: ../../../wx/draw3/GUI/resources.xrc:1265
+msgid "30 seconds\tAlt+4"
+msgstr ""
+
+#: ../../../wx/draw3/GUI/resources.xrc:1269
 msgid "Season\tAlt+S"
 msgstr "Saison\tAlt+S"
 
-#: XRC_gettext_file.h:175
+#: ../../../wx/draw3/GUI/resources.xrc:1275
 msgid "Summary window\tCtrl+G"
 msgstr "Fenster der Zusammenfassung\tCtrl+G"
 
-# "¶rednie procentowe"
-#: XRC_gettext_file.h:176
+# "≈örednie procentowe"
+#: ../../../wx/draw3/GUI/resources.xrc:1279
 msgid "Pie window\tCtrl+Shift+T"
 msgstr "Der durchschnittliche Prozentsatz\tCtrl+Alt+S"
 
-# "Stosunek warto∂ci"
-#: XRC_gettext_file.h:177
+# "Stosunek warto≈õci"
+#: ../../../wx/draw3/GUI/resources.xrc:1283
 msgid "Ratio window\tCtrl+Shift+R"
-msgstr "Das Verh‰ltnis von Wert\tCtrl+Shift+S"
+msgstr "Das Verh√§ltnis von Wert\tCtrl+Shift+S"
 
-#: XRC_gettext_file.h:178
+#: ../../../wx/draw3/GUI/resources.xrc:1288
 msgid "Full screen\tF11"
 msgstr "Vollbild\tF11"
 
 # Rozdwojony kursor
-#: XRC_gettext_file.h:179
+#: ../../../wx/draw3/GUI/resources.xrc:1293
 msgid "Split cursor\tBACK"
 msgstr "Doppel Cursor\tBACK"
 
-#: XRC_gettext_file.h:180
+#: ../../../wx/draw3/GUI/resources.xrc:1298
 msgid "Latest data following mode"
 msgstr ""
 
 # "Idz do wykresu"
-#: XRC_gettext_file.h:181
+#: ../../../wx/draw3/GUI/resources.xrc:1303
 #, fuzzy
 msgid "Sort graphs"
 msgstr "Geh zu Schaubild"
 
-# "Warto∂Ê ∂rednia"
-#: XRC_gettext_file.h:182
+# "Warto≈õƒá ≈õrednia"
+#: ../../../wx/draw3/GUI/resources.xrc:1305
 #, fuzzy
 msgid "By average value"
 msgstr "Das Mittel"
 
 # "Maksimum"
-#: XRC_gettext_file.h:183
+#: ../../../wx/draw3/GUI/resources.xrc:1308
 #, fuzzy
 msgid "By maximum value"
 msgstr "Maximaler Wert"
 
-# "Warto∂Ê minimalna"
-#: XRC_gettext_file.h:184
+# "Warto≈õƒá minimalna"
+#: ../../../wx/draw3/GUI/resources.xrc:1311
 #, fuzzy
 msgid "By minimum value"
 msgstr "Minimaler Wert"
 
-#: XRC_gettext_file.h:185
+#: ../../../wx/draw3/GUI/resources.xrc:1314
 msgid "By hour sum value"
 msgstr ""
 
-#: XRC_gettext_file.h:186
+#: ../../../wx/draw3/GUI/resources.xrc:1317
 msgid "Restore inital order"
 msgstr ""
 
-# "NarzÍdzia"
-#: XRC_gettext_file.h:187
+# "Narzƒôdzia"
+#: ../../../wx/draw3/GUI/resources.xrc:1322
 msgid "Tools"
 msgstr "Werkzeuge"
 
-# Parametry uøykownika
-#: XRC_gettext_file.h:188
+# Parametry u≈ºykownika
+#: ../../../wx/draw3/GUI/resources.xrc:1324
 msgid "User Params\tCtrl+U"
 msgstr "Die Parameter des Benutzers\tCtrl+U"
 
-# "Kopiuj lokalizacjÍ\tCtrl+C"
-#: XRC_gettext_file.h:189
+# "Kopiuj lokalizacjƒô\tCtrl+C"
+#: ../../../wx/draw3/GUI/resources.xrc:1328
 msgid "Copy location\tCtrl+C"
 msgstr "Kopier die Lokalisierung\tCtrl+C"
 
-#: XRC_gettext_file.h:190
+#: ../../../wx/draw3/GUI/resources.xrc:1331
 msgid "Paste location\tCtrl+V"
-msgstr "Einf¸ge die Lokalisierung\tCtrl+V"
+msgstr "Einf√ºge die Lokalisierung\tCtrl+V"
 
-#: XRC_gettext_file.h:192
+#: ../../../wx/draw3/GUI/resources.xrc:1338
 msgid "Jump to date\tCtrl+J"
 msgstr "Die deutliche Zunahme bei Datum\tCtrl+J"
 
-# UsuÒ zawarto∂Ê cache
-#: XRC_gettext_file.h:193
+# Usu≈Ñ zawarto≈õƒá cache
+#: ../../../wx/draw3/GUI/resources.xrc:1341
 #, fuzzy
 msgid "Search Date\tCtr+Shift+J"
 msgstr "Entfernen Sie den Cache\tCtrl+Shift+R"
 
-#: XRC_gettext_file.h:194
+#: ../../../wx/draw3/GUI/resources.xrc:1344
 #, fuzzy
 msgid "Jump to latest date\tCtrl+End"
 msgstr "Die deutliche Zunahme bei Datum\tCtrl+J"
 
-#: XRC_gettext_file.h:195
+#: ../../../wx/draw3/GUI/resources.xrc:1347
 msgid "Find\tCtrl+F"
 msgstr "Suche\tCtrl+F"
 
-#: XRC_gettext_file.h:196
+#: ../../../wx/draw3/GUI/resources.xrc:1350
 msgid "Number of points on the graph"
 msgstr ""
 
-# od∂wieø
-#: XRC_gettext_file.h:197
+# od≈õwie≈º
+#: ../../../wx/draw3/GUI/resources.xrc:1354
 msgid "Refresh\tCtrl+R"
 msgstr "Aktualisier\tCtrl+R"
 
-# UsuÒ zawarto∂Ê cache
-#: XRC_gettext_file.h:198
+# Usu≈Ñ zawarto≈õƒá cache
+#: ../../../wx/draw3/GUI/resources.xrc:1357
 msgid "Clear cache\tCtrl+Shift+R"
 msgstr "Entfernen Sie den Cache\tCtrl+Shift+R"
 
-#: XRC_gettext_file.h:199
+#: ../../../wx/draw3/GUI/resources.xrc:1360
 msgid "Set Params\tCtrl+O"
 msgstr "Die Parameter\tCtrl+O"
 
-# "Prze≥aduj konfiguracjÍ"
-#: XRC_gettext_file.h:201
+# "Prze≈Çaduj konfiguracjƒô"
+#: ../../../wx/draw3/GUI/resources.xrc:1366
 #, fuzzy
 msgid "Add remark\tCtrl+Shift+Alt+A"
 msgstr "Reload-Konfiguration\tCtrl+Shift+Alt+R"
 
 # "Not translated"
-#: XRC_gettext_file.h:202
+#: ../../../wx/draw3/GUI/resources.xrc:1369
 #, fuzzy
 msgid "Fetch remarks\tCtrl+Shift+Alt+F"
 msgstr "Fetch Remarks"
 
-# "Pokaø okno komunikatÛw"
-#: XRC_gettext_file.h:203
+# "Poka≈º okno komunikat√≥w"
+#: ../../../wx/draw3/GUI/resources.xrc:1372
 #, fuzzy
 msgid "Show Remarks\tCtrl+Shift+Alt+S"
 msgstr "Nachrichten-Fenster anzeigen\tCtrl+Shift+E"
 
-# "Importuj okna definiowalne z wcze∂niejszej wersji programu"
-#: XRC_gettext_file.h:204
+# "Importuj okna definiowalne z wcze≈õniejszej wersji programu"
+#: ../../../wx/draw3/GUI/resources.xrc:1377
 msgid "Import Draw2 definable windows\tCtrl+Shift+I"
 msgstr ""
-"Importieren Fenster definierbare von einer fr¸heren Version von\tCtrl+Shift+I"
+"Importieren Fenster definierbare von einer fr√ºheren Version von\tCtrl+Shift+I"
 
-# "Prze≥aduj konfiguracjÍ"
-#: XRC_gettext_file.h:205
+# "Prze≈Çaduj konfiguracjƒô"
+#: ../../../wx/draw3/GUI/resources.xrc:1381
 msgid "Reload Configuration\tCtrl+Shift+Alt+R"
 msgstr "Reload-Konfiguration\tCtrl+Shift+Alt+R"
 
-#: XRC_gettext_file.h:206
+#: ../../../wx/draw3/GUI/resources.xrc:1385
 msgid "Fetch New Network Parameters And Sets\tCtrl+Shift+Alt+N"
 msgstr ""
 
-#: XRC_gettext_file.h:207
+#: ../../../wx/draw3/GUI/resources.xrc:1389
 msgid "Export data to file"
 msgstr ""
 
-# "Pokaø okno komunikatÛw"
-#: XRC_gettext_file.h:208
+# "Poka≈º okno komunikat√≥w"
+#: ../../../wx/draw3/GUI/resources.xrc:1393
 msgid "Show error window\tCtrl+Shift+E"
 msgstr "Nachrichten-Fenster anzeigen\tCtrl+Shift+E"
 
 # "Ustawienia"
-#: XRC_gettext_file.h:209
+#: ../../../wx/draw3/GUI/resources.xrc:1397
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: XRC_gettext_file.h:211
+#: ../../../wx/draw3/GUI/resources.xrc:1401
 msgid "0\tA"
 msgstr ""
 
-#: XRC_gettext_file.h:212
+#: ../../../wx/draw3/GUI/resources.xrc:1405
 msgid "1\tB"
 msgstr ""
 
-#: XRC_gettext_file.h:213
+#: ../../../wx/draw3/GUI/resources.xrc:1409
 msgid "2\tC"
 msgstr ""
 
-#: XRC_gettext_file.h:214
+#: ../../../wx/draw3/GUI/resources.xrc:1413
 msgid "3\tD"
 msgstr ""
 
-#: XRC_gettext_file.h:215
+#: ../../../wx/draw3/GUI/resources.xrc:1417
 msgid "4\tE"
 msgstr ""
 
-#: XRC_gettext_file.h:216
+#: ../../../wx/draw3/GUI/resources.xrc:1421
 msgid "5\tF"
 msgstr ""
 
-# "Ilo∂Ê drukowanych osi\tCtrl+X"
-#: XRC_gettext_file.h:217
+# "Ilo≈õƒá drukowanych osi\tCtrl+X"
+#: ../../../wx/draw3/GUI/resources.xrc:1426
 msgid "Number of printed axes\tCtrl+X"
-msgstr "Die Hˆhe der gedruckten Achse\tCtrl+X"
+msgstr "Die H√∂he der gedruckten Achse\tCtrl+X"
 
-#: XRC_gettext_file.h:218
+#: ../../../wx/draw3/GUI/resources.xrc:1429
 msgid "Language"
 msgstr "Sprache"
 
-#: XRC_gettext_file.h:219
+#: ../../../wx/draw3/GUI/resources.xrc:1432
 #, fuzzy
 msgid "Graphs view"
 msgstr "Schaubild"
 
 # "Not translated"
-#: XRC_gettext_file.h:221
+#: ../../../wx/draw3/GUI/resources.xrc:1438
 #, fuzzy
 msgid "Addresses of probes' servers"
 msgstr "unrecognized response from server"
 
-#: XRC_gettext_file.h:222
+#: ../../../wx/draw3/GUI/resources.xrc:1443
+#, fuzzy
+msgid "&Window"
+msgstr " - Fenster "
+
+# "Rodzaj ≈õrednich"
+#: ../../../wx/draw3/GUI/resources.xrc:1445
+#, fuzzy
+msgid "Show average type"
+msgstr "Typ der Mittel"
+
+#: ../../../wx/draw3/GUI/resources.xrc:1449
+msgid "Show interface"
+msgstr ""
+
+#: ../../../wx/draw3/GUI/resources.xrc:1454
 #, fuzzy
 msgid "&Help"
 msgstr "Hilfe"
 
 # "Pomo&c"
-#: XRC_gettext_file.h:223
+#: ../../../wx/draw3/GUI/resources.xrc:1456
 msgid "Help\tF1"
 msgstr "Hilf&e\tF1"
 
-#: XRC_gettext_file.h:224
+#: ../../../wx/draw3/GUI/resources.xrc:1459
 msgid "Context help\tShift+F1"
 msgstr ""
 
-#: XRC_gettext_file.h:225
+#: ../../../wx/draw3/GUI/resources.xrc:1462
 msgid "About\tF2"
-msgstr "‹ber\tF2"
+msgstr "√úber\tF2"
+
+# "Edytuj parametr"
+#: ../../../wx/draw3/GUI/resources.xrc:1468
+msgid "Edit parameter"
+msgstr "Bearbeiten Parameter"
+
+# "Nazwa parametru:"
+#: ../../../wx/draw3/GUI/resources.xrc:1490
+msgid "Parameter name:"
+msgstr "Der Name des Parameters:"
+
+# "≈örednie liczone jako:"
+#: ../../../wx/draw3/GUI/resources.xrc:1524
+msgid "Average value calculation method"
+msgstr "Die Mittel gez√§hlt als:"
+
+# "≈õrednia z zastosowania formu≈Çy dla ka≈ºdej pr√≥bki"
+#: ../../../wx/draw3/GUI/resources.xrc:1533
+msgid "mean of values of formula application to each probe"
+msgstr "Mittelwert der Werte der Antragsformulare zu jeder Probe"
+
+# "wynik zastosowania formu≈Çy dla ≈õrednich"
+#: ../../../wx/draw3/GUI/resources.xrc:1534
+msgid "result of formula's application to average values of components"
+msgstr "das Ergebnis einer Formel f√ºr den Mittelstand"
+
+# "Formu≈Ça parametru:"
+#: ../../../wx/draw3/GUI/resources.xrc:1552
+msgid "Parameter formula:"
+msgstr "Formel-Parameter:"
+
+#: ../../../wx/draw3/GUI/resources.xrc:1560
+msgid "label&11"
+msgstr ""
+
+# Cofnij
+#: ../../../wx/draw3/GUI/resources.xrc:1572
+msgid "Undo"
+msgstr "R√ºckg√§ngig"
+
+#: ../../../wx/draw3/GUI/resources.xrc:1573
+msgid "<"
+msgstr "<"
+
+# Pon√≥w
+#: ../../../wx/draw3/GUI/resources.xrc:1580
+msgid "Redo"
+msgstr "Wiederherstell"
+
+#: ../../../wx/draw3/GUI/resources.xrc:1581
+msgid ">"
+msgstr ">"
+
+#: ../../../wx/draw3/GUI/resources.xrc:1595
+msgid "Plus"
+msgstr "Plus"
+
+#: ../../../wx/draw3/GUI/resources.xrc:1596
+msgid "+"
+msgstr "+"
+
+#: ../../../wx/draw3/GUI/resources.xrc:1603
+msgid "Minus"
+msgstr "Minus"
+
+#: ../../../wx/draw3/GUI/resources.xrc:1604
+msgid "-"
+msgstr "-"
+
+#: ../../../wx/draw3/GUI/resources.xrc:1611
+msgid "Times"
+msgstr "Times"
+
+#: ../../../wx/draw3/GUI/resources.xrc:1612
+msgid "*"
+msgstr "*"
+
+# "Podziel"
+#: ../../../wx/draw3/GUI/resources.xrc:1619
+msgid "Divide"
+msgstr "Divide"
+
+#: ../../../wx/draw3/GUI/resources.xrc:1620
+msgid "/"
+msgstr ""
+
+# "Wstaw nowy parametr"
+#: ../../../wx/draw3/GUI/resources.xrc:1635
+msgid "Insert param from graph"
+msgstr "Legen Sie einen neuen Parameter"
+
+# "<W>"
+#: ../../../wx/draw3/GUI/resources.xrc:1636
+msgid "ID"
+msgstr "<W>"
+
+# "Wstaw parametr zdefiniowany u≈ºytkownika"
+#: ../../../wx/draw3/GUI/resources.xrc:1644
+msgid "Insert user defined param"
+msgstr "Legen Sie eine benutzerdefinierte Parameter"
+
+# "<P>"
+#: ../../../wx/draw3/GUI/resources.xrc:1645
+msgid "IP"
+msgstr "<P>"
+
+# "Ilo≈õƒá miejsc po przecinku:"
+#: ../../../wx/draw3/GUI/resources.xrc:1665
+msgid "Displayed parameter precision:"
+msgstr "Anzahl der Stellen hinter dem Komma:"
+
+# "Jednostka:"
+#: ../../../wx/draw3/GUI/resources.xrc:1694
+msgid "Unit:"
+msgstr "Einheit:"
+
+#: ../../../wx/draw3/GUI/resources.xrc:1708
+msgid "Insert degree"
+msgstr "Legen Sie Grad-Symbol"
+
+#: ../../../wx/draw3/GUI/resources.xrc:1709
+msgid "D"
+msgstr "D"
+
+# "PoczƒÖtek:"
+#: ../../../wx/draw3/GUI/resources.xrc:1734
+msgid "Start date:"
+msgstr "Start Datum:"
+
+# "Wybierz datƒô poczƒÖtkowƒÖ"
+#: ../../../wx/draw3/GUI/resources.xrc:1740
+msgid "Choose start date"
+msgstr "W√§hlen Sie ein Start Datum"
+
+# "Wybierz godzinƒô"
+#: ../../../wx/draw3/GUI/resources.xrc:1748
+msgid "Choose start hour"
+msgstr "W√§hlen Sie eine Start Stunde"
+
+# "Wybierz minutƒô"
+#: ../../../wx/draw3/GUI/resources.xrc:1757
+msgid "Choose start minute"
+msgstr "W√§hlen Sie eine Start Minute"
+
+# "Wstaw datƒô rozpoczƒôcia"
+#: ../../../wx/draw3/GUI/resources.xrc:1763
+msgid "Enable inserting start date"
+msgstr "Legen Sie ein Start Datum"
+
+# "w≈ÇƒÖcz"
+#: ../../../wx/draw3/GUI/resources.xrc:1764
+msgid "enabled"
+msgstr "aktiviert"
+
+# "Niepoprawna data"
+#: ../../../wx/draw3/GUI/resources.xrc:1786
+#, fuzzy
+msgid "Found date:"
+msgstr "Ung√ºltiges Datum"
+
+# "Konfiguracja odniesienia: "
+#: ../../../wx/draw3/GUI/resources.xrc:1800
+msgid "Base configuration:"
+msgstr "Die Konfiguration des Verweises: "
+
+# "Wybierz konfiguracjƒô odniesienia"
+#: ../../../wx/draw3/GUI/resources.xrc:1808
+msgid "Choose reference configuration"
+msgstr "W√§hlen Sie die Konfiguration eines Verweises"
+
+#: ../../../wx/draw3/GUI/resources.xrc:1809
+msgid "LABEL"
+msgstr "LABEL"
+
+# "Uwagi"
+#: ../../../wx/draw3/GUI/resources.xrc:1881
+#, fuzzy
+msgid "Remark"
+msgstr "Kommentare"
+
+#: ../../../wx/draw3/GUI/resources.xrc:1893
+msgid "Base:"
+msgstr ""
+
+#: ../../../wx/draw3/GUI/resources.xrc:1901
+msgid "label&2"
+msgstr ""
+
+# "Zestawy"
+#: ../../../wx/draw3/GUI/resources.xrc:1915
+#, fuzzy
+msgid "Set:"
+msgstr "S√§tze"
+
+#: ../../../wx/draw3/GUI/resources.xrc:1965
+msgid "label&5"
+msgstr ""
+
+# "Uwagi"
+#: ../../../wx/draw3/GUI/resources.xrc:1978
+#, fuzzy
+msgid "Remark referring to:"
+msgstr "Kommentare"
+
+#: ../../../wx/draw3/GUI/resources.xrc:1991
+msgid "Currently selected window"
+msgstr ""
+
+#: ../../../wx/draw3/GUI/resources.xrc:1998
+msgid "Whole base"
+msgstr ""
+
+# "Tytu≈Ç"
+#: ../../../wx/draw3/GUI/resources.xrc:2019
+#, fuzzy
+msgid "Title:"
+msgstr "Titel"
+
+# "Kontekst"
+#: ../../../wx/draw3/GUI/resources.xrc:2035
+#, fuzzy
+msgid "Content:"
+msgstr "Kontext"
+
+#: ../../../wx/draw3/GUI/resources.xrc:2087
+msgid "Go to..."
+msgstr ""
+
+#: ../../../wx/draw3/GUI/resources.xrc:2109
+msgid "Probe servers addresses"
+msgstr ""
+
+#: ../../../wx/draw3/GUI/resources.xrc:2117
+msgid "Probe servers addresses:"
+msgstr ""
 
 # M
 #, fuzzy
@@ -2909,7 +3007,7 @@ msgstr "‹ber\tF2"
 #~ "Wollen Sie diesen Parameter entfernen. Alle Schaubilde werden der "
 #~ "Parameter entfernen."
 
-# "Tytu≥"
+# "Tytu≈Ç"
 #, fuzzy
 #~ msgid "item"
 #~ msgstr "Titel"
@@ -2920,7 +3018,7 @@ msgstr "‹ber\tF2"
 
 #, fuzzy
 #~ msgid "default language"
-#~ msgstr "W‰hlen Sie die Sprache"
+#~ msgstr "W√§hlen Sie die Sprache"
 
 #, fuzzy
 #~ msgid "Do you really want to swich current language to: "
@@ -2928,17 +3026,17 @@ msgstr "‹ber\tF2"
 
 #, fuzzy
 #~ msgid "Language changed."
-#~ msgstr "Die Sprache wurde ge‰ndert"
+#~ msgstr "Die Sprache wurde ge√§ndert"
 
 #~ msgid "Too many draws."
 #~ msgstr "Zu viele Schaubilder"
 
 #~ msgid "Choose file to play:"
-#~ msgstr "W‰hlen Sie Datei zu spielen"
+#~ msgstr "W√§hlen Sie Datei zu spielen"
 
-# "Nie uda≥o siÍ odtworzyÊ pliku, upewnij siÍ, øe wybra≥e∂ odpowiedni plik (w "
-# "formacie ogg) i øe masz zainstalowane wymagane modu≥y gstreamera. Je∂li "
-# "uøywasz Debiana, powiniene∂ zainstalowaÊ pakiet gstreamer-plugins-bad."
+# "Nie uda≈Ço siƒô odtworzyƒá pliku, upewnij siƒô, ≈ºe wybra≈Çe≈õ odpowiedni plik (w "
+# "formacie ogg) i ≈ºe masz zainstalowane wymagane modu≈Çy gstreamera. Je≈õli "
+# "u≈ºywasz Debiana, powiniene≈õ zainstalowaƒá pakiet gstreamer-plugins-bad."
 #~ msgid ""
 #~ "Failed to start music playback, make sure that you have chosen proper "
 #~ "file (ogg format) and that you have installed required gstreamer modules. "
@@ -2946,12 +3044,12 @@ msgstr "‹ber\tF2"
 #~ "system."
 #~ msgstr ""
 #~ "Konnte nicht gestartet werden Musikwiedergabe, stellen Sie sicher,dass "
-#~ "Sie gew‰hlt haben richtige Datei (ogg-Format) und dassSie installiert "
-#~ "haben gstreamer-Module benˆtigt. Wenn Sie die Benutzungvon Debian, "
+#~ "Sie gew√§hlt haben richtige Datei (ogg-Format) und dassSie installiert "
+#~ "haben gstreamer-Module ben√∂tigt. Wenn Sie die Benutzungvon Debian, "
 #~ "sollten Sie gstreamer-plugins-bad-Paket auf Ihrem System."
 
 #~ msgid "Feature not supported"
-#~ msgstr "Funktion nicht unterst¸tzt"
+#~ msgstr "Funktion nicht unterst√ºtzt"
 
 # "Wstaw wykres"
 #, fuzzy
@@ -2984,12 +3082,12 @@ msgstr "‹ber\tF2"
 #~ msgid "%.*f"
 #~ msgstr "%.*f %s"
 
-# "wy∂wietl sposÛb uøycia"
+# "wy≈õwietl spos√≥b u≈ºycia"
 #~ msgid "print usage info"
-#~ msgstr "Show Infos ¸ber verwendung"
+#~ msgstr "Show Infos √ºber verwendung"
 
 #~ msgid "You must set different title."
-#~ msgstr "Sie m¸ssen anderen Titel w‰hlen"
+#~ msgstr "Sie m√ºssen anderen Titel w√§hlen"
 
 #~ msgid "Duplicated title"
 #~ msgstr "Doppelte Titel"
@@ -2998,13 +3096,13 @@ msgstr "‹ber\tF2"
 #~ msgid "Authentication data:"
 #~ msgstr "Authentifizierungs-Daten:"
 
-# "Wybierz konfiguracjÍ do za≥adowania:"
+# "Wybierz konfiguracjƒô do za≈Çadowania:"
 #~ msgid "Choose configuration to load:"
-#~ msgstr "W‰hlen Sie Konfiguration zu laden:"
+#~ msgstr "W√§hlen Sie Konfiguration zu laden:"
 
-# "Wybierz konfiguracjÍ do za≥adowania:"
+# "Wybierz konfiguracjƒô do za≈Çadowania:"
 #~ msgid "Select configuration to load:"
-#~ msgstr "W‰hlen Sie Konfiguration zu laden:"
+#~ msgstr "W√§hlen Sie Konfiguration zu laden:"
 
 #~ msgid "Empty DrawSet"
 #~ msgstr "Leer Satz des Schaubilds"
@@ -3023,7 +3121,7 @@ msgstr "‹ber\tF2"
 #~ msgid "2007"
 #~ msgstr "2007"
 
-# "Nie zdefiniowane przez uøytkownika"
+# "Nie zdefiniowane przez u≈ºytkownika"
 #~ msgid "Non user defined"
 #~ msgstr "Nicht vom Benutzer definiert"
 
@@ -3041,7 +3139,7 @@ msgstr "‹ber\tF2"
 #, fuzzy
 #~ msgid "User defined sets has been modified. Do you wish do save it?"
 #~ msgstr ""
-#~ "Benutzerdefinierte Schaubilder ver‰ndert wurde. W¸nschen Sie speichern "
+#~ "Benutzerdefinierte Schaubilder ver√§ndert wurde. W√ºnschen Sie speichern "
 #~ "Sie es tun?"
 
 #~ msgid "Question?"
@@ -3049,7 +3147,7 @@ msgstr "‹ber\tF2"
 
 #~ msgid "Graphs in this window does not represent summary values"
 #~ msgstr ""
-#~ "F¸r die Charts in diesem Fenster nicht gez‰hlt prozentuale Verteilung."
+#~ "F√ºr die Charts in diesem Fenster nicht gez√§hlt prozentuale Verteilung."
 
 #~ msgid "Calculating values"
 #~ msgstr "Berechnung der Werte"
@@ -3058,61 +3156,61 @@ msgstr "‹ber\tF2"
 #~ msgstr "Fehler beim Entgeltregelung RelaxNG Datei %s"
 
 #~ msgid "Skipping validation - No schema"
-#~ msgstr "Ich Springe Validierung ¸ber - Nein-Schema"
+#~ msgstr "Ich Springe Validierung √ºber - Nein-Schema"
 
 # Otrzymano niepoprawny XML
 #~ msgid "Received invalid XML"
-#~ msgstr "Erhaltet ung¸ltige XML"
+#~ msgstr "Erhaltet ung√ºltige XML"
 
 #~ msgid "There are no packs defined for this regulator."
-#~ msgstr "Es gibt keine definierten Packs f¸r diesen Regulator."
+#~ msgstr "Es gibt keine definierten Packs f√ºr diesen Regulator."
 
-# "Nie mogÍ zmodyfikowaÊ ustawieÒ tego urz±dzenia, poniewaø lokalna "
-# "konfiguracja jest nieaktualna. Problem moøe rozwi±zaÊ aktualizacja danych "
+# "Nie mogƒô zmodyfikowaƒá ustawie≈Ñ tego urzƒÖdzenia, poniewa≈º lokalna "
+# "konfiguracja jest nieaktualna. Problem mo≈ºe rozwiƒÖzaƒá aktualizacja danych "
 # "oraz ponowne uruchomienie programu."
 #~ msgid ""
 #~ "You cannot modify settings for this device, because your configuration is "
 #~ "out of date."
 #~ msgstr ""
-#~ "Du kannst nicht ‰ndern Einstellungen f¸r dieses Ger‰t, da "
+#~ "Du kannst nicht √§ndern Einstellungen f√ºr dieses Ger√§t, da "
 #~ "IhreKonfiguration ist veraltet."
 
 # "Wybierz rodzaj paczek\n"
-# "(Dotychczasowe paczki zostan± skasowane)"
+# "(Dotychczasowe paczki zostanƒÖ skasowane)"
 #~ msgid ""
 #~ "Choose type of packs\n"
 #~ "(All packs values will be reset)"
 #~ msgstr ""
-#~ "W‰hle Typ von Paket\n"
-#~ "(Alle Pakete Werte werden zur¸ckgesetzt)"
+#~ "W√§hle Typ von Paket\n"
+#~ "(Alle Pakete Werte werden zur√ºckgesetzt)"
 
-# "Czy na pewno chcesz zresetowaÊ warto∂ci wszystkich paczek i sta≥ych?"
+# "Czy na pewno chcesz zresetowaƒá warto≈õci wszystkich paczek i sta≈Çych?"
 #~ msgid "Do you really want to reset all packs and constants values?"
 #~ msgstr "Wollen Sie wirklich alle Packs und Konstanten Werte?"
 
-# "Nie moøesz modyfikowaÊ ustawieÒ tego urz±dzenia, poniewaø nie zosta≥y "
-# "pobrane aktualne warto∂ci jego nastaw."
+# "Nie mo≈ºesz modyfikowaƒá ustawie≈Ñ tego urzƒÖdzenia, poniewa≈º nie zosta≈Çy "
+# "pobrane aktualne warto≈õci jego nastaw."
 #~ msgid ""
 #~ "You cannot modify settings for this device, because current regulator "
 #~ "settings has not been fetched."
 #~ msgstr ""
-#~ "Du kanst einstellungen f¸r dieses ger‰t nicht ‰ndern,weil die Werte "
+#~ "Du kanst einstellungen f√ºr dieses ger√§t nicht √§ndern,weil die Werte "
 #~ "eigenommen worden sind."
 
-# "Problem moøe rozwi±zaÊ akutalizacja danych oraz ponowne uruchomienie "
-# "programu przegl±daj±cego."
+# "Problem mo≈ºe rozwiƒÖzaƒá akutalizacja danych oraz ponowne uruchomienie "
+# "programu przeglƒÖdajƒÖcego."
 #~ msgid ""
 #~ "Configuration mismatch - your configuration is not up to date. You are "
 #~ "not able to set params."
 #~ msgstr ""
 #~ "Schlechte Konfiguration. Lokale Konfiguration ist nicht aktuell. Das "
-#~ "Problem kann gelˆst werden"
+#~ "Problem kann gel√∂st werden"
 
 # "Numer"
 #~ msgid "Number"
 #~ msgstr "Numer"
 
-# "Warto∂Ê"
+# "Warto≈õƒá"
 #~ msgid "Value"
 #~ msgstr "Wert"
 
@@ -3120,24 +3218,24 @@ msgstr "‹ber\tF2"
 #~ msgid "Description"
 #~ msgstr "Beschreibung"
 
-# "OczekujÍ na odpowiedº serwera"
+# "Oczekujƒô na odpowied≈∫ serwera"
 #~ msgid "Awaiting server response"
 #~ msgstr "Ich freue mich auf eine Antwort vom Server"
 
-# "Nie uda≥o siÍ skomunikowaÊ z demonem - czy SZARP jest uruchomiony?"
+# "Nie uda≈Ço siƒô skomunikowaƒá z demonem - czy SZARP jest uruchomiony?"
 #~ msgid "Failed to communicate with daemon - is SZARP running?"
-#~ msgstr "Es kˆnnte keine Kommunikation mit Daemon - ist SZARP laufen?"
+#~ msgstr "Es k√∂nnte keine Kommunikation mit Daemon - ist SZARP laufen?"
 
-# "Nie uda≥o siÍ zatrzymaÊ demona. To potencjalnie moøe oznaczaÊ powaøny b≥±d. "
-# "ProszÍ pilnie skontaktowaÊ siÍ z dzia≥em IT firmy PRATERM"
+# "Nie uda≈Ço siƒô zatrzymaƒá demona. To potencjalnie mo≈ºe oznaczaƒá powa≈ºny b≈ÇƒÖd. "
+# "Proszƒô pilnie skontaktowaƒá siƒô z dzia≈Çem IT firmy PRATERM"
 #~ msgid ""
 #~ "Failed to stop daemon - this is potentially serious error. Please contact "
 #~ "PRATERM IT department asap!"
 #~ msgstr ""
-#~ "Es kˆnnte nich Daemon stoppen. Das ist vermutlich schwerwiegender Fehler. "
+#~ "Es k√∂nnte nich Daemon stoppen. Das ist vermutlich schwerwiegender Fehler. "
 #~ "Bitte um Kontakt mit PRATERM IT"
 
-# Nie mogÍ otworzyÊ parametrÛw portu b≥±d w konfiguracji lub problem sprzÍtowy
+# Nie mogƒô otworzyƒá parametr√≥w portu b≈ÇƒÖd w konfiguracji lub problem sprzƒôtowy
 #~ msgid "Failed to open port - hardware or SZARP configuration error"
 #~ msgstr ""
 #~ "Es kann nicht serielle Schnittstelle initiieren - Fehler in Konfiguration "
@@ -3150,22 +3248,22 @@ msgstr "‹ber\tF2"
 #~ msgid "Bad username or password"
 #~ msgstr "Falscher Nutzername oder Passwort"
 
-# "Nie posiadasz uprawnieÒ pozwalaj±cych na zmianÍ ustawieÒ parametrÛw"
+# "Nie posiadasz uprawnie≈Ñ pozwalajƒÖcych na zmianƒô ustawie≈Ñ parametr√≥w"
 #~ msgid "You are not permitted to change parameters for this object"
 #~ msgstr "Du hast nicht Berechtigung fur Parameter Andern"
 
-# "Nie uda≥o siÍ przeczytaÊ ustawieÒ regulatora - b≥±d komunikacji z regulatorem"
+# "Nie uda≈Ço siƒô przeczytaƒá ustawie≈Ñ regulatora - b≈ÇƒÖd komunikacji z regulatorem"
 #~ msgid "Cannot read settings from regulator"
 #~ msgstr ""
-#~ "Ich kˆnnte nicht Einstellungen von Regulator lessen - Kommunikationfehler"
+#~ "Ich k√∂nnte nicht Einstellungen von Regulator lessen - Kommunikationfehler"
 
-# "Po≥±czenie z serwerem by≥o niemoøliwe"
+# "Po≈ÇƒÖczenie z serwerem by≈Ço niemo≈ºliwe"
 #~ msgid "Couldn't connect to server"
-#~ msgstr "Die Verbindung zum Server kˆnnte nicht"
+#~ msgstr "Die Verbindung zum Server k√∂nnte nicht"
 
-# "Po≥±czenie z serwerem by≥o niemoøliwe"
+# "Po≈ÇƒÖczenie z serwerem by≈Ço niemo≈ºliwe"
 #~ msgid "Cannot connect to server"
-#~ msgstr "Die Verbindung zum Server kˆnnte nicht"
+#~ msgstr "Die Verbindung zum Server k√∂nnte nicht"
 
 # "Rodzaj paczek: dobowe"
 #~ msgid "Pack type: DAY"
@@ -3179,9 +3277,9 @@ msgstr "‹ber\tF2"
 #~ msgid "No parameter"
 #~ msgstr "Fehlende Parameter"
 
-# "Nie uda≥o siÍ zlokalizowaÊ parametru"
+# "Nie uda≈Ço siƒô zlokalizowaƒá parametru"
 #~ msgid "Could not locate parameter."
-#~ msgstr "Ich kˆnnte den Parameter lokalisieren"
+#~ msgstr "Ich k√∂nnte den Parameter lokalisieren"
 
 # "Paczka"
 #~ msgid "pack"
@@ -3190,7 +3288,7 @@ msgstr "‹ber\tF2"
 #~ msgid "const"
 #~ msgstr "Const"
 
-# "Co chcesz ustawiÊ?"
+# "Co chcesz ustawiƒá?"
 #~ msgid "What do you wish to set?"
 #~ msgstr "Was wollen Sie einstellen?"
 
@@ -3199,29 +3297,29 @@ msgstr "‹ber\tF2"
 #~ msgstr "Einstellungen des Parameters"
 
 #~ msgid "Illegal value"
-#~ msgstr "Unzul‰ssiger Wert"
+#~ msgstr "Unzul√§ssiger Wert"
 
-# "Warto∂Ê musi byÊ liczb±"
+# "Warto≈õƒá musi byƒá liczbƒÖ"
 #~ msgid "Value must be a number"
 #~ msgstr "Wert muss einer Zahl"
 
 # "Poza zakresem"
 #~ msgid "Out of range"
-#~ msgstr "Auﬂerhalb der Reichweite von"
+#~ msgstr "Au√üerhalb der Reichweite von"
 
-# "Warto∂Ê musi byÊ nie wiÍksza niø: "
+# "Warto≈õƒá musi byƒá nie wiƒôksza ni≈º: "
 #~ msgid "Value must be no greater than: "
 #~ msgstr "Der Wert muss nicht mehr als:"
 
-# "Warto∂Ê musi byÊ nie mniejsza niø: "
+# "Warto≈õƒá musi byƒá nie mniejsza ni≈º: "
 #~ msgid "Value must be no less than: "
 #~ msgstr "Der Wert muss nicht weniger als: "
 
-# "Pocz±tek"
+# "PoczƒÖtek"
 #~ msgid "Beginning"
 #~ msgstr "Anfang"
 
-# "Przynajmniej jedna paczka musi byÊ okre∂lona"
+# "Przynajmniej jedna paczka musi byƒá okre≈õlona"
 #~ msgid "At least one pack must be defined"
 #~ msgstr "Mindestens ein Paket muss definiert"
 
@@ -3350,7 +3448,7 @@ msgstr "‹ber\tF2"
 #~ msgid "posting not allowed"
 #~ msgstr "posting not allowed"
 
-# "Operacja siÍ nie powiod≥a"
+# "Operacja siƒô nie powiod≈Ça"
 #, fuzzy
 #~ msgid "posting failed"
 #~ msgstr "Vorgang ist fehlgeschlagen."
@@ -3377,25 +3475,25 @@ msgstr "‹ber\tF2"
 #~ msgid "%.*f %s"
 #~ msgstr "%.*f %s"
 
-# "To okno nie zawiera wykresÛw, dla ktÛrych liczone s± warto∂ci sumaryczne."
+# "To okno nie zawiera wykres√≥w, dla kt√≥rych liczone sƒÖ warto≈õci sumaryczne."
 #~ msgid "There are no summary values for these draws"
-#~ msgstr "Das Fenster enth‰lt keine Schaubilder mit den Werten aggregiert."
+#~ msgstr "Das Fenster enth√§lt keine Schaubilder mit den Werten aggregiert."
 
-# "ZmieÒ parametry wykresu"
+# "Zmie≈Ñ parametry wykresu"
 #~ msgid "Change graph"
-#~ msgstr "ƒndern Sie Parameter des Schaubilds"
+#~ msgstr "√Ñndern Sie Parameter des Schaubilds"
 
 # "Wykres X/Y"
 #~ msgid "X/Y Graph\tCtrl+Shit+X"
 #~ msgstr "Schaubild X/Y\tCtrl+X"
 
-# "Warto∂ci sumaryczne"
+# "Warto≈õci sumaryczne"
 #~ msgid "Summary window"
 #~ msgstr "Fenster der Zusammenfassung"
 
 # "Dodaj"
 #~ msgid "Add"
-#~ msgstr "H‰ng an"
+#~ msgstr "H√§ng an"
 
 # "Edytor paczek"
 #~ msgid "PackEdit"
@@ -3404,7 +3502,7 @@ msgstr "‹ber\tF2"
 #~ msgid "Parameter Setter"
 #~ msgstr "Einstellungen des Parameters"
 
-# "Po≥±czenie"
+# "Po≈ÇƒÖczenie"
 #~ msgid "Connection"
 #~ msgstr "Verbindung"
 
@@ -3429,7 +3527,7 @@ msgstr "‹ber\tF2"
 #~ msgstr "Parametr"
 
 #~ msgid "Parameter Editor"
-#~ msgstr "Edytor parametrÛw "
+#~ msgstr "Edytor parametr√≥w "
 
 #~ msgid "[Unit]"
 #~ msgstr "[Jednostka]"
@@ -3441,7 +3539,7 @@ msgstr "‹ber\tF2"
 #~ msgstr "Komunikaty"
 
 #~ msgid "\" has been removed from configuration \""
-#~ msgstr "\" zosta≥ usuniÍty z konfiguracji \""
+#~ msgstr "\" zosta≈Ç usuniƒôty z konfiguracji \""
 
 #~ msgid "Patameter"
 #~ msgstr "Parametr"
@@ -3451,19 +3549,19 @@ msgstr "‹ber\tF2"
 #~ "currently defined sets.\n"
 #~ "Do you want to continue?"
 #~ msgstr ""
-#~ "Zestaw okien definiowalnych zosta≥ zmodyfikowany, za≥adowanie ich z pliku "
-#~ "spowoduje, øe te modyfikacje zostan± utracone.\n"
-#~ "Czy chcesz kontynowaÊ?"
+#~ "Zestaw okien definiowalnych zosta≈Ç zmodyfikowany, za≈Çadowanie ich z pliku "
+#~ "spowoduje, ≈ºe te modyfikacje zostanƒÖ utracone.\n"
+#~ "Czy chcesz kontynowaƒá?"
 
 #~ msgid "Not wellformed XML document."
 #~ msgstr "Niepoprawny dokument XML."
 
 #~ msgid "XML Error"
-#~ msgstr "B≥±d XMLa"
+#~ msgstr "B≈ÇƒÖd XMLa"
 
 #~ msgid "User defined sets has not been modified."
 #~ msgstr ""
-#~ "Zestaw okien zdefiniowanych przez uøytkownika nie zosta≥ zmodyfikowany."
+#~ "Zestaw okien zdefiniowanych przez u≈ºytkownika nie zosta≈Ç zmodyfikowany."
 
 #~ msgid "Up to date."
 #~ msgstr "Aktualne."
@@ -3478,17 +3576,17 @@ msgstr "‹ber\tF2"
 #~ "File with user defined sets has been modified by other instance of the "
 #~ "program, do you want to overwrite it?"
 #~ msgstr ""
-#~ "Plik zawieraj±cy definicje zestawu okien uøytkownika zosta≥ zmodyfikowany "
-#~ "przez inn± kopiÍ programu. Czy chcesz go nadpisaÊ?"
+#~ "Plik zawierajƒÖcy definicje zestawu okien u≈ºytkownika zosta≈Ç zmodyfikowany "
+#~ "przez innƒÖ kopiƒô programu. Czy chcesz go nadpisaƒá?"
 
 #~ msgid "File modified."
 #~ msgstr "Plik zmieniony."
 
 #~ msgid "Data was successfully written to file."
-#~ msgstr "Dane zosta≥y poprawnie zapisane do pliku."
+#~ msgstr "Dane zosta≈Çy poprawnie zapisane do pliku."
 
 #~ msgid "Do you really want to remove this window?"
-#~ msgstr "Czy na pewno chcesz usun±Ê ten zestaw definiowalny?"
+#~ msgstr "Czy na pewno chcesz usunƒÖƒá ten zestaw definiowalny?"
 
 #~ msgid "Results"
 #~ msgstr "Wyniki"
@@ -3500,7 +3598,7 @@ msgstr "‹ber\tF2"
 #~ msgstr "Wczytaj\tCtrl+L"
 
 #~ msgid "You have to speficify a graph"
-#~ msgstr "Musisz podaÊ wykresy"
+#~ msgstr "Musisz podaƒá wykresy"
 
 #~ msgid "Graph missing"
 #~ msgstr "Brak wykresu"
@@ -3512,15 +3610,15 @@ msgstr "‹ber\tF2"
 #~ "You cannot modyify settings for this device because current regulator "
 #~ "settings has not been fetched."
 #~ msgstr ""
-#~ "Nie moøesz modyfikowaÊ ustawieÒ tego urz±dzenia poniewaø nie zosta≥y "
-#~ "pobrane aktualne warto∂ci jego nastaw."
+#~ "Nie mo≈ºesz modyfikowaƒá ustawie≈Ñ tego urzƒÖdzenia poniewa≈º nie zosta≈Çy "
+#~ "pobrane aktualne warto≈õci jego nastaw."
 
 #~ msgid ""
 #~ "You cannot modify settings for this device because current regulator "
 #~ "settings has not been fetched"
 #~ msgstr ""
-#~ "Nie moøesz modyfikowaÊ ustawieÒ tego urz±dzenia poniewaø nie zosta≥y "
-#~ "pobrane aktualne warto∂ci jego nastaw."
+#~ "Nie mo≈ºesz modyfikowaƒá ustawie≈Ñ tego urzƒÖdzenia poniewa≈º nie zosta≈Çy "
+#~ "pobrane aktualne warto≈õci jego nastaw."
 
 #~ msgid "Pick parameters"
 #~ msgstr "Wybierz parametry"
@@ -3532,38 +3630,38 @@ msgstr "‹ber\tF2"
 #~ msgstr "Kolor"
 
 #~ msgid "XML error"
-#~ msgstr "B≥±d XMLa"
+#~ msgstr "B≈ÇƒÖd XMLa"
 
 #~ msgid "Value must be less then: "
-#~ msgstr "Warto∂Ê musi byÊ mniejsza niø: %f"
+#~ msgstr "Warto≈õƒá musi byƒá mniejsza ni≈º: %f"
 
 #~ msgid "Value must be greater then: "
-#~ msgstr "Warto∂Ê musi byÊ wiÍksza niø: %f"
+#~ msgstr "Warto≈õƒá musi byƒá wiƒôksza ni≈º: %f"
 
 #~ msgid "Date Editor"
 #~ msgstr "Edytor dat"
 
 #~ msgid "No corresponding restrictions found to constant: "
-#~ msgstr "Nie znaleziono wymaganych ograniczeÒ do sta≥ej: "
+#~ msgstr "Nie znaleziono wymaganych ogranicze≈Ñ do sta≈Çej: "
 
 #~ msgid "No corresponding restrictions found to param: "
-#~ msgstr "Nie znaleziono wymaganych ograniczeÒ do parametru: "
+#~ msgstr "Nie znaleziono wymaganych ogranicze≈Ñ do parametru: "
 
 #~ msgid "Show/hide menubar"
-#~ msgstr "Pokaø/Ukryj pasek menu"
+#~ msgstr "Poka≈º/Ukryj pasek menu"
 
 #~ msgid "Invalid data"
-#~ msgstr "Nieprawid≥owe dane"
+#~ msgstr "Nieprawid≈Çowe dane"
 
 #~ msgid "Username can not be null"
-#~ msgstr "Nazwa uøytkownika musi byÊ podana"
+#~ msgstr "Nazwa u≈ºytkownika musi byƒá podana"
 
 #~ msgid "Password can not be null"
-#~ msgstr "Has≥o musi byÊ podane"
+#~ msgstr "Has≈Ço musi byƒá podane"
 
 #~ msgid "Do you really want to change period and reset all packs values?"
 #~ msgstr ""
-#~ "Czy na pewno chcesz zmieniÊ okres paczek i zresetowaÊ wszystkie warto∂ci?"
+#~ "Czy na pewno chcesz zmieniƒá okres paczek i zresetowaƒá wszystkie warto≈õci?"
 
 #~ msgid "Change"
 #~ msgstr "Zmiana"
@@ -3578,13 +3676,13 @@ msgstr "‹ber\tF2"
 #~ msgstr "Ukryj prawy panel"
 
 #~ msgid "Message"
-#~ msgstr "Wiadomo∂Ê"
+#~ msgstr "Wiadomo≈õƒá"
 
 #~ msgid "Reset packs"
 #~ msgstr "Resetuj ustawienia"
 
 #~ msgid "Send"
-#~ msgstr "Wy∂lij"
+#~ msgstr "Wy≈õlij"
 
 #~ msgid "O&ptions"
 #~ msgstr "O&pcje"
@@ -3599,19 +3697,19 @@ msgstr "‹ber\tF2"
 #~ msgstr "Port"
 
 #~ msgid "Address can not be null"
-#~ msgstr "Adres musi byÊ podany"
+#~ msgstr "Adres musi byƒá podany"
 
 #~ msgid "Port can not be null"
-#~ msgstr "Port musi byÊ podany"
+#~ msgstr "Port musi byƒá podany"
 
 #~ msgid "Last draw"
 #~ msgstr "Ostatni wykres."
 
 #~ msgid "No such device"
-#~ msgstr "Brak urz±dzenia"
+#~ msgstr "Brak urzƒÖdzenia"
 
 #~ msgid "Could not find device: %s"
-#~ msgstr "Nie odnaleziono urz±dzenia: %s"
+#~ msgstr "Nie odnaleziono urzƒÖdzenia: %s"
 
 #~ msgid "No address"
 #~ msgstr "Brak adresu"
@@ -3632,19 +3730,19 @@ msgstr "‹ber\tF2"
 #~ msgstr " - "
 
 #~ msgid "Value field can not be null"
-#~ msgstr "PrÍdko∂Ê urz±dzenia musi byÊ podana"
+#~ msgstr "Prƒôdko≈õƒá urzƒÖdzenia musi byƒá podana"
 
 #~ msgid "Device path"
-#~ msgstr "¶cieøka do urz±dzenia"
+#~ msgstr "≈öcie≈ºka do urzƒÖdzenia"
 
 #~ msgid "Device speed"
-#~ msgstr "PrÍdko∂Ê urz±dzenia"
+#~ msgstr "Prƒôdko≈õƒá urzƒÖdzenia"
 
 #~ msgid "Device path can not be null"
-#~ msgstr "¶cieøka do urz±dzenia musi byÊ podana"
+#~ msgstr "≈öcie≈ºka do urzƒÖdzenia musi byƒá podana"
 
 #~ msgid "Device speed can not be null"
-#~ msgstr "PrÍdko∂Ê urz±dzenia musi byÊ podana"
+#~ msgstr "Prƒôdko≈õƒá urzƒÖdzenia musi byƒá podana"
 
 #~ msgid "Param"
 #~ msgstr "Parametr"
@@ -3653,16 +3751,16 @@ msgstr "‹ber\tF2"
 #~ msgstr "Brak danych w polu 'Numer' w wierszu"
 
 #~ msgid "No data in filed 'Value' in row"
-#~ msgstr "Brak danych w polu 'Warto∂Ê' w wierszu"
+#~ msgstr "Brak danych w polu 'Warto≈õƒá' w wierszu"
 
 #~ msgid "Must be an integer"
-#~ msgstr "Musi byÊ liczb±"
+#~ msgstr "Musi byƒá liczbƒÖ"
 
 #~ msgid "Open new window\tCtrl-L"
-#~ msgstr "OtwÛrz nowe okno\tCtrl-L"
+#~ msgstr "Otw√≥rz nowe okno\tCtrl-L"
 
 #~ msgid "Remove window\tCtrl-R"
-#~ msgstr "UsuÒ okno\tCtrl-R"
+#~ msgstr "Usu≈Ñ okno\tCtrl-R"
 
 #~ msgid " %W, %A, "
 #~ msgstr "%m, %a"
@@ -3671,7 +3769,7 @@ msgstr "‹ber\tF2"
 #~ msgstr "%m, %a"
 
 #~ msgid "No title."
-#~ msgstr "Brak tytu≥u."
+#~ msgstr "Brak tytu≈Çu."
 
 #~ msgid "Load"
 #~ msgstr "Wczytaj"
@@ -3680,7 +3778,7 @@ msgstr "‹ber\tF2"
 #~ msgstr "Plik konfiguracyjny nie znaleziony."
 
 #~ msgid "Exit"
-#~ msgstr "Wyj∂cie"
+#~ msgstr "Wyj≈õcie"
 
 #~ msgid "%e, week %V, %A"
 #~ msgstr "%e, tydz. %V, %A"
