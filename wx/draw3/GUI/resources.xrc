@@ -1261,8 +1261,8 @@
                     <label>Minute\tAlt+3</label>
                     <radio>1</radio>
                 </object>
-                <object class="wxMenuItem" name="3SEC_RADIO">
-                    <label>3 seconds</label>
+                <object class="wxMenuItem" name="30SEC_RADIO">
+                    <label>30 seconds\tAlt+4</label>
                     <radio>1</radio>
                 </object>
                 <object class="wxMenuItem" name="SEASON_RADIO">

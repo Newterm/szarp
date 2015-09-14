@@ -600,7 +600,7 @@ DrawsController::DrawsController(ConfigManager *config_manager, DatabaseManager 
 	m_units_count[PERIOD_T_30MINUTE] = TimeIndex::default_units_count[PERIOD_T_30MINUTE];
 	m_units_count[PERIOD_T_3MINUTE] = TimeIndex::default_units_count[PERIOD_T_3MINUTE];
 	m_units_count[PERIOD_T_MINUTE] = TimeIndex::default_units_count[PERIOD_T_MINUTE];
-	m_units_count[PERIOD_T_3SEC] = TimeIndex::default_units_count[PERIOD_T_3SEC];
+	m_units_count[PERIOD_T_30SEC] = TimeIndex::default_units_count[PERIOD_T_30SEC];
 	m_units_count[PERIOD_T_SEASON] = TimeIndex::default_units_count[PERIOD_T_SEASON];
 
 	m_period_type = PERIOD_T_OTHER;
@@ -1215,7 +1215,7 @@ DrawsController::TimeReference::TimeReference(const wxDateTime &datetime) {
 void DrawsController::TimeReference::Update(const DTime& time) {
 	const wxDateTime& wxt = time.GetTime();
 	switch (time.GetPeriod()) {
-		case PERIOD_T_3SEC:
+		case PERIOD_T_30SEC:
 		case PERIOD_T_MINUTE:
 			m_milisecond = wxt.GetMillisecond();
 		case PERIOD_T_3MINUTE:
@@ -1246,7 +1246,7 @@ DTime DrawsController::TimeReference::Adjust(PeriodType pt, const DTime& time) {
 	switch (pt) {
 		default:
 			break;
-		case PERIOD_T_3SEC:
+		case PERIOD_T_30SEC:
 		case PERIOD_T_MINUTE:
 			t.SetMillisecond(m_milisecond);
 		case PERIOD_T_3MINUTE:

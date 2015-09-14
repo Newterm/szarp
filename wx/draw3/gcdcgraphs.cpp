@@ -448,7 +448,7 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 		&& d->GetPeriod() != PERIOD_T_30MINUTE
 		&& d->GetPeriod() != PERIOD_T_3MINUTE
 		&& d->GetPeriod() != PERIOD_T_MINUTE
-		&& d->GetPeriod() != PERIOD_T_3SEC;
+		&& d->GetPeriod() != PERIOD_T_30SEC;
 
 	for (int i = 0; i < pc; i++) {
 		if (!d->GetValuesTable().at(i).IsData()) {

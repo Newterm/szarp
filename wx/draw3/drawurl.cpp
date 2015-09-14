@@ -163,8 +163,8 @@ bool decode_url(wxString surl, wxString& prefix, wxString &window, PeriodType& p
 		period = PERIOD_T_3MINUTE;
 	else if (pstr == _T("MIN"))
 		period = PERIOD_T_MINUTE;
-	else if (pstr == _T("3SEC"))
-		period = PERIOD_T_3SEC;
+	else if (pstr == _T("30SEC"))
+		period = PERIOD_T_30SEC;
 	else
 		return false;
 

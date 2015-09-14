@@ -55,7 +55,7 @@ DTime& DTime::AdjustToPeriodStart() {
 			m_time.SetMinute(0);
 			m_time.SetSecond(0);
 			break;
-		case PERIOD_T_3SEC:
+		case PERIOD_T_30SEC:
 		case PERIOD_T_MINUTE:
 			m_time.SetMillisecond(0);
 			break;
@@ -139,7 +139,7 @@ DTime& DTime::AdjustToPeriod() {
 		case PERIOD_T_MINUTE:
 			m_time.SetMillisecond(m_time.GetMillisecond() / 500 * 500);
 			break;
-		case PERIOD_T_3SEC:
+		case PERIOD_T_30SEC:
 			m_time.SetMillisecond(m_time.GetMillisecond() / 100 * 100);
 			break;
 		case PERIOD_T_SEASON :
@@ -180,7 +180,7 @@ DTime DTime::operator+(const wxTimeSpan& span) const {
 			return DTime(m_period, m_time);
 			break;
 		//in this case will just follow UTC
-		case PERIOD_T_3SEC:
+		case PERIOD_T_30SEC:
 		case PERIOD_T_MINUTE:
 		case PERIOD_T_3MINUTE:
 		case PERIOD_T_30MINUTE: 
@@ -312,7 +312,7 @@ int DTime::GetDistance(const DTime &t) const {
 		case PERIOD_T_MINUTE:
 			ret = ((_t - _t0).GetMilliseconds() / 500).ToLong();
 			break;
-		case PERIOD_T_3SEC:
+		case PERIOD_T_30SEC:
 			ret = ((_t - _t0).GetMilliseconds() / 100).ToLong();
 			break;
 		case PERIOD_T_WEEK:
@@ -449,7 +449,7 @@ void TimeIndex::UpdatePeriods() {
 			m_timeperiod = wxTimeSpan(0, 0, 5, 0) * (m_number_of_values / TimeIndex::PeriodMult[p]);
 			m_dateperiod = wxDateSpan(0);
 			break;
-		case PERIOD_T_3SEC:
+		case PERIOD_T_30SEC:
 			m_timeres = wxTimeSpan(0, 0, 0, 100);
 			m_dateres = wxDateSpan(0);
 			m_timeperiod = wxTimeSpan(0, 0, 1, 0) * (m_number_of_values / TimeIndex::PeriodMult[p]);
@@ -500,7 +500,7 @@ DTime TimeIndex::AdjustToPeriodSpan(const DTime &time) const {
 				dt.SetSecond(0);
 				break;
 			case PERIOD_T_MINUTE :
-			case PERIOD_T_3SEC :
+			case PERIOD_T_30SEC :
 				dt.SetSecond(dt.GetSecond() / 30 * 30);
 				break;
 			case PERIOD_T_OTHER:
