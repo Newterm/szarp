@@ -31,10 +31,6 @@ class ParHub:
 		self.stdout_path = "/var/log/szarp/parhub.stdin.log"
 		self.stderr_path = "/var/log/szarp/parbub.stderr.log"
 		self.pidfile_path = "/var/run/parhub.pid"
-
-		self.stdout_path = "/dev/null"
-		self.stderr_path = "/dev/null"
-		self.pidfile_path = "/home/reksio/parhub.pid"
 		self.pidfile_timeout = 5
 
 	def run(self):
