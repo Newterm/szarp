@@ -167,12 +167,14 @@ class SaveParam:
 
 		try:
 			if self.first_write:
+				if self.param.isnan(value):
+					return
+
 				self.prepare_for_writing(time, nanotime)
 
 				if self.last.value is not None:
 					self.fill_no_data(time, nanotime)
-				if not self.param.isnan(value):
-					self.write_value(value, time, nanotime)
+				self.write_value(value, time, nanotime)
 
 				self.first_write = False
 			else:
