@@ -190,6 +190,22 @@ class SaveParam:
 	def process_msg(self, msg):
 		self.process_value(self.param.value_from_msg(msg), msg.time, msg.nanotime)
 
+	def process_msg_batch(self, batch):
+		msg = batch[0]
+		val = self.param.value_from_msg(msg)
+
+		for nmsg in batch[1:]:
+			nval = self.param.value_from_msg(nmsg)
+
+			if nval != val:
+				self.process_value(val, msg.time, msg.nanotime)
+				val = nval
+
+			msg = nmsg
+
+		self.process_value(val, msg.time, msg.nanotime)
+
+
 	def close(self):
 		if self.file:
 			self.file.close()

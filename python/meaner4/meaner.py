@@ -46,6 +46,8 @@ class Meaner(MeanerBase):
 		self.heartbeat_param = saveparam.SaveParam(p, self.szbase_path)
 
 	def read_socket(self):
+		msgs = {}
+
 		try:
 			while True:
 				msg = self.socket.recv(zmq.NOBLOCK)
@@ -57,10 +59,18 @@ class Meaner(MeanerBase):
 					if log_param:
 						#TODO: we ignore logdmn params (for now)
 						continue
-					self.save_params[index].process_msg(param_value)
+
+					if index in msgs:
+						msgs[index].append(param_value)
+					else:
+						msgs[index] = [param_value]
+
 		except zmq.ZMQError as e:
 			if e.errno != zmq.EAGAIN:
 				raise
+
+		for index, batch in msgs.iteritems():
+			self.save_params[index].process_msg_batch(batch)
 
 	def time_for_hearbeat(self):
 		return max(0, self.heartbeat_interval - (time.time() - self.last_heartbeat)) * 1000
