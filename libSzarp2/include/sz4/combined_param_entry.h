@@ -36,30 +36,38 @@ public:
 	}
 
 	template<class T> std::tr1::tuple<double, bool> calculate_value(T time, SZARP_PROBE_TYPE probe_type) {
-		weighted_sum<short, T> wmsw, wlsw;
+		weighted_sum<short, T> ws_msw, ws_lsw;
+
+		typedef typename weighted_sum<unsigned short, T>::sum_type sum_type;
+		sum_type sum_msw, sum_lsw;
+
+		typename weighted_sum<unsigned short, T>::time_diff_type weight_msw, weight_lsw;
 
 		TParam **f_cache = m_param->GetFormulaCache();
-		m_base->get_weighted_sum(f_cache[0], time, T(szb_move_time(time, 1, probe_type)), probe_type, wmsw);
-		m_base->get_weighted_sum(f_cache[1], time, T(szb_move_time(time, 1, probe_type)), probe_type, wlsw);
+		m_base->get_weighted_sum(f_cache[0], time,
+					T(szb_move_time(time, 1, probe_type)),
+					probe_type, (weighted_sum<short, T>&) ws_msw);
+		m_base->get_weighted_sum(f_cache[1], time,
+					T(szb_move_time(time, 1, probe_type)),
+					probe_type, (weighted_sum<short, T>&) ws_lsw);
 
 		double v;
 
-		short lsw = wlsw.avg();
-		short msw = wmsw.avg();
+		sum_msw = ws_msw.sum(weight_msw);
+		sum_lsw = ws_lsw.sum(weight_lsw);
 
-		if (!value_is_no_data(msw)) {
-			unsigned ulsw = (unsigned short) lsw;
-			unsigned uv = (unsigned short) msw;
+		if (weight_msw) {
+			if (weight_msw > weight_lsw)
+				sum_lsw += sum_type(65535) * (weight_msw - weight_lsw);
 
-			uv <<= 16;
-			uv |= ulsw;
+			sum_type sum = sum_msw * 65536 + sum_lsw;
 
-			v = (int)uv;
+			v = static_cast<double>(sum_type(sum / weight_msw));
 		} else
 			v = no_data<double>();
 
 
-		return std::tr1::tuple<double, bool>(v, wmsw.fixed() && wlsw.fixed());
+		return std::tr1::tuple<double, bool>(v, ws_msw.fixed() && ws_lsw.fixed());
 	}
 
 };

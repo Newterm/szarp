@@ -41,6 +41,14 @@ template<> float no_data<float>() {
 	return nanf("");
 }
 
+template<> unsigned short no_data<unsigned short>() {
+	return std::numeric_limits<unsigned short>::max();
+}
+
+template<> unsigned int no_data<unsigned int>() {
+	return std::numeric_limits<unsigned int>::max();
+}
+
 template<> double no_data<double>() {
 	return nan("");
 }

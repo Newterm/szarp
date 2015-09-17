@@ -52,14 +52,6 @@ template<class V, class T> struct value_time_pair {
 	time_type  time;
 } __attribute__ ((packed));
 
-template<class T> bool value_is_no_data(const T& v) {
-	return v == std::numeric_limits<T>::min();
-}
-
-bool value_is_no_data(const double& v);
-
-bool value_is_no_data(const float& v);
-
 template<class T> T no_data(){ 
 	return std::numeric_limits<T>::min();
 }
@@ -67,6 +59,19 @@ template<class T> T no_data(){
 template<> float no_data<float>();
 
 template<> double no_data<double>();
+
+template<> unsigned int no_data<unsigned int>();
+
+template<> unsigned short no_data<unsigned short>();
+
+template<class T> bool value_is_no_data(const T& v) {
+	return v == no_data<T>();
+}
+
+bool value_is_no_data(const double& v);
+
+bool value_is_no_data(const float& v);
+
 
 template<class T> struct time_difference { };
 
@@ -84,6 +89,10 @@ typedef boost::multiprecision::cpp_int int_sum_type;
 typedef boost::multiprecision::float128 float_sum_type;
 
 template<> struct value_sum<short> {
+	typedef int_sum_type type;
+};
+
+template<> struct value_sum<unsigned short> {
 	typedef int_sum_type type;
 };
 
