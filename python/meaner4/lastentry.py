@@ -51,13 +51,7 @@ class LastEntry:
 		if diff < 0:
 			raise TimeError(time_from, time_to)
 
-		if diff in self.delta_cache:
-			encoded = self.delta_cache[diff]
-		else:
-			encoded = timedelta.encode(diff)
-			self.delta_cache[diff] = encoded
-
-		return encoded
+		return timedelta.encode(diff)
 
 	def get_time_delta_since_latest_time(self, time, nanotime):
 		return self._get_time_delta(self.time, self.time_to_int(time, nanotime))

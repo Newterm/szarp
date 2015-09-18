@@ -45,6 +45,10 @@ class Meaner(MeanerBase):
 		p = create_hearbeat_param()
 		self.heartbeat_param = saveparam.SaveParam(p, self.szbase_path)
 
+	def process_msgs(self, msgs):
+		for index, batch in msgs.iteritems():
+			self.save_params[index].process_msg_batch(batch)
+
 	def read_socket(self):
 		msgs = {}
 
@@ -69,10 +73,9 @@ class Meaner(MeanerBase):
 			if e.errno != zmq.EAGAIN:
 				raise
 
-		for index, batch in msgs.iteritems():
-			self.save_params[index].process_msg_batch(batch)
+		self.process_msgs(msgs)
 
-	def time_for_hearbeat(self):
+	def next_heartbeat(self):
 		return max(0, self.heartbeat_interval - (time.time() - self.last_heartbeat)) * 1000
 		
 	def hearbeat(self, value):
@@ -82,11 +85,14 @@ class Meaner(MeanerBase):
 
 	def loop(self):
 		while True:
-			ready = dict(self.poller.poll(self.time_for_hearbeat()))
+			next_heartbeat = self.next_heartbeat()
+			if next_heartbeat == 0:
+				self.hearbeat(NON_FIRST_HEART_BEAT)
+				next_heartbeat = self.next_heartbeat()
+
+			ready = dict(self.poller.poll(next_heartbeat))
 			if self.socket in ready:
 				self.read_socket()
-			else:
-				self.hearbeat(NON_FIRST_HEART_BEAT)
 
 	def run(self):
 		self.socket.connect(self.hub_uri)
