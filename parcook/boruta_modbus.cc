@@ -1835,6 +1835,7 @@ void tcp_parser::read_data(struct bufferevent *bufev) {
 			if (m_payload_size == 0) {
 				m_tcp_handler->frame_parsed(m_adu, bufev);
 				m_state = TR;
+				return;
 			}
 			break;
 		}
