@@ -512,8 +512,8 @@ protected:
 	REGISTER_TYPE m_register_type;
 
 	enum {
-		READ_QUERY_SENT,
-		WRITE_QUERY_SENT,
+		READING_FROM_PEER,
+		WRITING_TO_PEER,
 		IDLE,
 	} m_state;
 
@@ -1932,10 +1932,10 @@ void modbus_client::starting_new_cycle() {
 	switch (m_state)  {
 		case IDLE:
 			return;
-		case READ_QUERY_SENT:
+		case READING_FROM_PEER:
 			m_log.log(2, "New cycle started, we are in read cycle");
 			break;
-		case WRITE_QUERY_SENT:
+		case WRITING_TO_PEER:
 			m_log.log(2, "New cycle started, we are in write cycle");
 			break;
 	}
@@ -1966,8 +1966,8 @@ void modbus_client::send_next_query(bool previous_ok) {
 
 	switch (m_state) {
 		case IDLE:
-		case READ_QUERY_SENT:
-		case WRITE_QUERY_SENT:
+		case READING_FROM_PEER:
+		case WRITING_TO_PEER:
 			next_query(previous_ok);
 			schedule_send_query();
 			break;
@@ -1980,8 +1980,15 @@ void modbus_client::send_next_query(bool previous_ok) {
 void modbus_client::schedule_send_query() {
 	unsigned int wait_ms = m_query_interval_ms;
 	const struct timeval tv = ms2timeval(wait_ms);
-	evtimer_add(&m_next_query_timer, &tv);
-	m_log.log(10, "schedule next query in %dms", wait_ms);
+	switch (m_state) {
+		case READING_FROM_PEER:
+		case WRITING_TO_PEER:
+			evtimer_add(&m_next_query_timer, &tv);
+			m_log.log(10, "schedule next query in %dms", wait_ms);
+			break;
+		default:
+			break;
+	}
 }
 
 void modbus_client::next_query_cb(int fd, short event, void* thisptr) {
@@ -2030,14 +2037,14 @@ void modbus_client::send_read_query() {
 void modbus_client::next_query(bool previous_ok) {
 	switch (m_state) {
 		case IDLE:
-			m_state = READ_QUERY_SENT;
-		case READ_QUERY_SENT:
+			m_state = READING_FROM_PEER;
+		case READING_FROM_PEER:
 			if (m_received_iterator != m_received.end()) {
 				find_continuous_reg_block(m_received_iterator, m_received);
 				break;
 			} 
-			m_state = WRITE_QUERY_SENT;
-		case WRITE_QUERY_SENT:
+			m_state = WRITING_TO_PEER;
+		case WRITING_TO_PEER:
 			if (m_sent_iterator != m_sent.end()) {
 				find_continuous_reg_block(m_sent_iterator, m_sent);
 				break;
@@ -2059,10 +2066,10 @@ void modbus_client::send_query() {
 	switch (m_state) {
 		default:
 			return;
-		case READ_QUERY_SENT:
+		case READING_FROM_PEER:
 			send_read_query();
 			break;
-		case WRITE_QUERY_SENT:
+		case WRITING_TO_PEER:
 			send_write_query();
 			break;
 	}
@@ -2071,13 +2078,13 @@ void modbus_client::send_query() {
 
 void modbus_client::timeout() {
 	switch (m_state) {
-		case READ_QUERY_SENT:
+		case READING_FROM_PEER:
 			m_log.log(1, "Timeout while reading data, unit_id: %d, address: %hu, registers count: %hu, progressing with queries",
 					(int)m_id, m_start_addr, m_regs_count);
 
 			send_next_query(false);
 			break;
-		case WRITE_QUERY_SENT:
+		case WRITING_TO_PEER:
 			m_log.log(1, "Timeout while writing data, unit_id: %d, address: %hu, registers count: %hu, progressing with queries",
 					(int)m_id, m_start_addr, m_regs_count);
 			send_next_query(false);
@@ -2133,7 +2140,7 @@ void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 	}
 	
 	switch (m_state) {
-		case READ_QUERY_SENT:
+		case READING_FROM_PEER:
 			try {
 				consume_read_regs_response(m_start_addr, m_regs_count, pdu);
 
@@ -2142,7 +2149,7 @@ void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 				send_next_query(false);
 			}
 			break;
-		case WRITE_QUERY_SENT:
+		case WRITING_TO_PEER:
 			try {
 				consume_write_regs_response(m_start_addr, m_regs_count, pdu);
 
@@ -2194,6 +2201,7 @@ void modbus_tcp_client::starting_new_cycle() {
 }
 
 void modbus_tcp_client::connection_error(struct bufferevent *bufev) {
+	m_bufev = NULL;
 	m_state = IDLE;
 	m_parser->reset();
 }
@@ -2243,6 +2251,7 @@ void modbus_serial_client::starting_new_cycle() {
 }
 
 void modbus_serial_client::connection_error(struct bufferevent *bufev) {
+	m_bufev = NULL;
 	m_state = IDLE;
 	m_parser->reset();
 }
