@@ -19,7 +19,7 @@ class IPKContainerMock : public mocks::IPKContainerMockBase {
 	TParam *param3;
 public:
 	IPKContainerMock() : param(new TParam(NULL, NULL, L"1", TParam::DEFINABLE, TParam::P_DEFINABLE))
-				, param2(new TParam(NULL, NULL, L"2", TParam::DEFINABLE, TParam::P_DEFINABLE))
+				, param2(new TParam(NULL, NULL, L"40000", TParam::DEFINABLE, TParam::P_DEFINABLE))
 				, param3(new TParam(NULL, NULL, L"(*:*:msw) (*:*:lsw) :", TParam::DEFINABLE, TParam::P_DEFINABLE)) {
 
 		param->SetName(L"A:B:msw");
@@ -62,7 +62,7 @@ void Sz4CombinedParam::test1() {
 	sz4::weighted_sum<int, sz4::second_time_t> sum;
 	sz4::weighted_sum<int, sz4::second_time_t>::time_diff_type weight;
 	base.get_weighted_sum(mock.GetParam(L""), 0u, 1u, PT_SEC, sum);
-	CPPUNIT_ASSERT_EQUAL(65538, int(sum.sum(weight)));
+	CPPUNIT_ASSERT_EQUAL(65536 + 40000, int(sum.sum(weight)));
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(1), weight);
 
 	boost::filesystem::remove_all(tmp_path);

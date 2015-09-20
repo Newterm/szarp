@@ -153,12 +153,14 @@ template<> struct sum_conv_helper<float_sum_type, int_sum_type> {
 template <class FV, class FT, class TV, class TT> struct wsum_converter {
 };
 
-template<class value_type, class time_type> class weighted_sum {
+template<class V, class T> class weighted_sum {
 public:
+	typedef V value_type;
+	typedef T time_type;
 	typedef typename value_sum<value_type>::type sum_type;
 	typedef typename time_difference<time_type>::type time_diff_type;
 
-private:
+protected:
 	sum_type m_wsum;
 	time_diff_type m_weight; 
 
@@ -168,7 +170,7 @@ private:
 public:
 	weighted_sum() : m_wsum(0), m_weight(0), m_no_data_weight(0), m_fixed(true) {}
 
-	void add(const value_type& value, const time_diff_type& weight) {
+	virtual void add(const value_type& value, const time_diff_type& weight) {
 		m_wsum += sum_type(value) * static_cast<sum_type>(weight);
 		m_weight += weight;
 	}

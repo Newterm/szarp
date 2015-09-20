@@ -25,6 +25,16 @@
 
 namespace sz4 {
 
+template<class T> class unsigned_short_weighted_sum : public weighted_sum<short, T> {
+public:
+	typedef weighted_sum<short, T> parent_type;
+	void add(const typename parent_type::value_type& value, const typename parent_type::time_diff_type& weight) {
+		this->m_wsum += (unsigned short)(value) * static_cast<typename parent_type::sum_type>(weight);
+		this->m_weight += weight;
+	}
+
+};
+
 template<class types> class combined_calculate {
 	base_templ<types>* m_base;
 	TParam* m_param;
@@ -36,9 +46,10 @@ public:
 	}
 
 	template<class T> std::tr1::tuple<double, bool> calculate_value(T time, SZARP_PROBE_TYPE probe_type) {
-		weighted_sum<short, T> ws_msw, ws_lsw;
+		unsigned_short_weighted_sum<T> ws_lsw;
+		weighted_sum<short, T> ws_msw;
 
-		typedef typename weighted_sum<unsigned short, T>::sum_type sum_type;
+		typedef typename weighted_sum<short, T>::sum_type sum_type;
 		sum_type sum_msw, sum_lsw;
 
 		typename weighted_sum<unsigned short, T>::time_diff_type weight_msw, weight_lsw;
@@ -46,7 +57,7 @@ public:
 		TParam **f_cache = m_param->GetFormulaCache();
 		m_base->get_weighted_sum(f_cache[0], time,
 					T(szb_move_time(time, 1, probe_type)),
-					probe_type, (weighted_sum<short, T>&) ws_msw);
+					probe_type, ws_msw);
 		m_base->get_weighted_sum(f_cache[1], time,
 					T(szb_move_time(time, 1, probe_type)),
 					probe_type, (weighted_sum<short, T>&) ws_lsw);
@@ -62,7 +73,9 @@ public:
 
 			sum_type sum = sum_msw * 65536 + sum_lsw;
 
-			v = static_cast<double>(sum_type(sum / weight_msw));
+			int _iv = static_cast<int>(sum_type(sum / weight_msw));
+
+			v = _iv;
 		} else
 			v = no_data<double>();
 
