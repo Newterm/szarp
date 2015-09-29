@@ -10,7 +10,7 @@ case "$1" in
     echo "[program:iks-server]
 autostart=false
 autorestart=true
-command=/opt/szarp/bin/iks-server --no_daemon
+command=/opt/szarp/bin/iks-server --no_daemon --force_syslog
 startsecs=0" > /etc/supervisor/conf.d/iks-server.conf
  
     supervisorctl reread
