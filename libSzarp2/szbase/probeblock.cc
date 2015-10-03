@@ -209,6 +209,10 @@ void szb_probeblock_definable_t::FetchProbes() {
 	double pw = pow(10, param->GetPrec());
 	SZBASE_TYPE  stack[DEFINABLE_STACK_SIZE]; // stack for calculatinon of formula
 	const std::wstring& formula = this->param->GetDrawFormula();
+	for (int i = 0; i < num_of_params; i++)
+		if (dblocks[i])
+			dblocks[i] += this->fixed_probes_count;
+
 	for (int i = fixed_probes_count; i < count; i++) {
 		time_t time = GetStartTime() + i * SZBASE_PROBE_SPAN;
 		szbase_value_fetch_functor value_fetch(buffer, time, PT_SEC10);	
