@@ -224,6 +224,8 @@ szb_probeblock_t *
 szb_get_probeblock(szb_buffer_t * buffer, TParam * param, time_t time){
 	assert(NULL != buffer);
 
+	time = szb_round_to_probe_block_start(time);
+
 	szb_probeblock_t *ret = buffer->FindProbeBlock(param, time);
 	if (ret == NULL) {
 		ret = szb_create_probe_block(buffer, param, time);
