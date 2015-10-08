@@ -520,6 +520,7 @@ protected:
 	time_t m_latest_request_sent;
 	time_t m_request_timeout;
 	struct event m_next_query_timer;
+	struct event m_query_deadine_timer;
 	bool m_single_register_pdu;
 	unsigned int m_query_interval_ms;
 
@@ -538,6 +539,9 @@ protected:
 
 	void schedule_send_query();
 	static void next_query_cb(int fd, short event, void* thisptr);
+	static void query_deadline_cb(int fd, short event, void* thisptr);
+
+	void connection_error();
 
 	virtual void send_pdu(unsigned char unit, PDU &pdu) = 0;
 	virtual void cycle_finished() = 0;
@@ -585,7 +589,6 @@ protected:
 	struct event m_read_timer;
 	SDU m_sdu;
 	bool m_read_timer_started;
-	int m_timeout;
 
 	int m_delay_between_chars;
 	std::deque<unsigned char> m_output_buffer;
@@ -594,7 +597,7 @@ protected:
 
 	driver_logger* m_log;
 
-	void start_read_timer();
+	void start_read_timer(long useconds);
 	void stop_read_timer();
 
 	void start_write_timer();
@@ -618,6 +621,12 @@ class serial_rtu_parser : public serial_parser {
 	enum { ADDR, FUNC_CODE, DATA } m_state;
 	size_t m_data_read;
 
+	int m_timeout_1_5_c;
+	int m_timeout_3_5_c;
+	bool m_is_3_5_c_timeout;
+
+	struct bufferevent *m_bufev;
+
 	bool check_crc();
 
 	static void calculate_crc_table();
@@ -640,6 +649,8 @@ public:
 class serial_ascii_parser : public serial_parser {
 	unsigned char m_previous_char;
 	enum { COLON, ADDR_1, ADDR_2, FUNC_CODE_1, FUNC_CODE_2, DATA_1, DATA_2, LF } m_state;
+
+	int m_timeout;
 
 	void reset();
 
@@ -1939,17 +1950,11 @@ void modbus_client::starting_new_cycle() {
 			m_log.log(2, "New cycle started, we are in write cycle");
 			break;
 	}
-
-	if (m_latest_request_sent + m_request_timeout  < time(NULL)) {
-		send_next_query(false);
-	}
 }
 
 
-modbus_client::modbus_client(boruta_driver* driver) : modbus_unit(driver), m_state(IDLE), m_latest_request_sent(0), m_request_timeout(0)
+modbus_client::modbus_client(boruta_driver* driver) : modbus_unit(driver), m_state(IDLE), m_request_timeout(0)
 {
-	evtimer_set(&m_next_query_timer, next_query_cb, this);
-	//event_base_set(m_event_base, &m_next_query_timer);	//TODO
 }
 
 void modbus_client::reset_cycle() {
@@ -1993,6 +1998,17 @@ void modbus_client::schedule_send_query() {
 
 void modbus_client::next_query_cb(int fd, short event, void* thisptr) {
 	reinterpret_cast<modbus_client*>(thisptr)->send_query();
+}
+
+void modbus_client::query_deadline_cb(int fd, short event, void* thisptr) {
+	modbus_client* _this = reinterpret_cast<modbus_client*>(thisptr);
+
+	_this->m_log.log(8, "Query timed out, progressing with queries");
+	_this->send_next_query(false);
+}
+
+void modbus_client::connection_error() {
+	event_del(&m_query_deadine_timer);
 }
 
 void modbus_client::send_write_query() {
@@ -2073,10 +2089,14 @@ void modbus_client::send_query() {
 			send_write_query();
 			break;
 	}
-	m_latest_request_sent = time(NULL);
+
+	const struct timeval tv = ms2timeval(m_request_timeout * 1000);
+	event_add(&m_query_deadine_timer, &tv);
 }
 
 void modbus_client::timeout() {
+	event_del(&m_query_deadine_timer);
+
 	switch (m_state) {
 		case READING_FROM_PEER:
 			m_log.log(1, "Timeout while reading data, unit_id: %d, address: %hu, registers count: %hu, progressing with queries",
@@ -2130,6 +2150,10 @@ int modbus_client::configure(TUnit *unit, xmlNodePtr node, short *read, short *s
 	m_request_timeout = 10;
 	if (get_xml_extra_prop(node, "request-timeout", m_request_timeout, true))
 		return 1;
+
+	evtimer_set(&m_next_query_timer, next_query_cb, this);
+	evtimer_set(&m_query_deadine_timer, query_deadline_cb, this);
+
 	return modbus_unit::configure(unit, node, read, send);
 }
 
@@ -2138,7 +2162,7 @@ void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 		m_log.log(1, "Received PDU from unit %d while we wait for response from unit %d, ignoring it!", (int)u, (int)m_id);
 		return;
 	}
-	
+
 	switch (m_state) {
 		case READING_FROM_PEER:
 			try {
@@ -2184,6 +2208,8 @@ void modbus_tcp_client::terminate_connection() {
 modbus_tcp_client::modbus_tcp_client() : modbus_client(this) {}
 
 void modbus_tcp_client::frame_parsed(TCPADU &adu, struct bufferevent* bufev) {
+	event_del(&m_query_deadine_timer);
+	
 	if (m_trans_id != adu.trans_id) {
 		m_log.log(1, "Received unexpected tranasction id in response: %u, expected: %u, progressing with queries", unsigned(adu.trans_id), unsigned(m_trans_id));
 		send_next_query(false);
@@ -2201,6 +2227,8 @@ void modbus_tcp_client::starting_new_cycle() {
 }
 
 void modbus_tcp_client::connection_error(struct bufferevent *bufev) {
+	modbus_client::connection_error();
+
 	m_bufev = NULL;
 	m_state = IDLE;
 	m_parser->reset();
@@ -2218,6 +2246,10 @@ void modbus_tcp_client::data_ready(struct bufferevent* bufev, int fd) {
 int modbus_tcp_client::configure(TUnit* unit, xmlNodePtr node, short* read, short *send) {
 	if (modbus_client::configure(unit, node, read, send))
 		return 1;
+
+	event_base_set(m_event_base, &m_next_query_timer);
+	event_base_set(m_event_base, &m_query_deadine_timer);
+
 	m_trans_id = 0;
 	m_parser = new tcp_parser(this, &m_log);
 	modbus_client::reset_cycle();
@@ -2251,6 +2283,8 @@ void modbus_serial_client::starting_new_cycle() {
 }
 
 void modbus_serial_client::connection_error(struct bufferevent *bufev) {
+	modbus_client::connection_error();
+
 	m_bufev = NULL;
 	m_state = IDLE;
 	m_parser->reset();
@@ -2268,6 +2302,10 @@ void modbus_serial_client::data_ready(struct bufferevent* bufev, int fd) {
 int modbus_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration &spc) {
 	if (modbus_client::configure(unit, node, read, send))
 		return 1;
+
+	event_base_set(m_event_base, &m_next_query_timer);
+	event_base_set(m_event_base, &m_query_deadine_timer);
+
 	std::string protocol;
 	get_xml_extra_prop(node, "serial_protocol_variant", protocol, true);
 	if (protocol.empty() || protocol == "rtu")
@@ -2286,6 +2324,8 @@ int modbus_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, s
 }
 
 void modbus_serial_client::frame_parsed(SDU &sdu, struct bufferevent* bufev) {
+	event_del(&m_query_deadine_timer);
+	
 	pdu_received(sdu.unit_id, sdu.pdu);
 }
 
@@ -2400,12 +2440,12 @@ void serial_parser::stop_read_timer() {
 	}
 }
 
-void serial_parser::start_read_timer() {
+void serial_parser::start_read_timer(long useconds) {
 	stop_read_timer();
 
 	struct timeval tv;
-	tv.tv_sec = 0;
-	tv.tv_usec = m_timeout;
+	tv.tv_sec = useconds / 1000000;
+	tv.tv_usec = useconds % 1000000;
 	evtimer_add(&m_read_timer, &tv); 
 	m_read_timer_started = true;
 }
@@ -2430,24 +2470,35 @@ int serial_rtu_parser::configure(xmlNodePtr node, serial_port_configuration &spc
 	else
 		m_log->log(10, "Serial port configuration, delay between chars set to %d miliseconds", m_delay_between_chars);
 
-	m_timeout = 0;
-	get_xml_extra_prop(node, "read-timeout", m_timeout, true);
-	if (m_timeout == 0) {
-		m_log->log(10, "Serial port configuration, read timeout not given (or 0), will use one based on speed");
-	} else {
-		m_timeout *= 1000;
-		m_log->log(10, "Serial port configuration, read timeout set to %d miliseconds", m_timeout);
-	}
+	int bits_per_char = spc.stop_bits
+				+ spc.parity == serial_port_configuration::NONE ? 0 : 1
+				+ int(spc.char_size);
+
+	int chars_per_sec = spc.speed / bits_per_char;
 	/*according to protocol specification, intra-character
-	 * delay cannot exceed 1.5 * (time of transmittion of one character),
-	 * we will make it double to be on safe side */
-	if (m_timeout == 0) {
-		if (spc.speed)
-			m_timeout = 5 * 1000000 / (spc.speed / 10);
+	 * delay cannot exceed 1.5 * (time of transmittion of one character) */
+	if (chars_per_sec)
+		m_timeout_1_5_c = 1000000 / chars_per_sec * (15 / 10);
+	else
+		m_timeout_1_5_c = 100000;
+
+	m_log->log(8, "Setting 1.5Tc timer to %d us",  m_timeout_1_5_c);
+
+	m_timeout_3_5_c = 0;
+	get_xml_extra_prop(node, "read-timeout", m_timeout_3_5_c, true);
+	if (m_timeout_3_5_c == 0) {
+		m_log->log(10, "Serial port configuration, read timeout not given (or 0), will use one based on speed");
+		if (chars_per_sec)
+			m_timeout_3_5_c = 1000000 / chars_per_sec * (35 / 10);
 		else
-			m_timeout = 100000;
+			m_timeout_3_5_c = 100000;
+	} else {
+		m_log->log(10, "Serial port configuration, read timeout set to %d miliseconds", m_timeout_3_5_c);
+		m_timeout_3_5_c *= 1000;
 	}
-	m_log->log(8, "serial_parser m_timeout: %d", m_timeout);
+
+	m_log->log(8, "Setting 3.5Tc timer to %d us",  m_timeout_3_5_c);
+
 	if (m_delay_between_chars)
 		evtimer_set(&m_write_timer, write_timer_callback, this);
 	return 0;
@@ -2456,6 +2507,8 @@ int serial_rtu_parser::configure(xmlNodePtr node, serial_port_configuration &spc
 
 void serial_rtu_parser::reset() {
 	m_state = ADDR;	
+	m_bufev = NULL;
+	m_is_3_5_c_timeout = false;
 	stop_write_timer();
 	stop_read_timer();
 	m_output_buffer.resize(0);
@@ -2464,7 +2517,12 @@ void serial_rtu_parser::reset() {
 void serial_rtu_parser::read_data(struct bufferevent *bufev) {
 	size_t r;
 
+	m_log->log(8, "serial_rtu_parser::read_data: got data, resetting timers");
 	stop_read_timer();
+	m_is_3_5_c_timeout = false;
+
+	m_bufev = bufev;
+
 	switch (m_state) {
 		case ADDR:
 			if (bufferevent_read(bufev, &m_sdu.unit_id, sizeof(m_sdu.unit_id)) == 0) 
@@ -2473,7 +2531,7 @@ void serial_rtu_parser::read_data(struct bufferevent *bufev) {
 			m_state = FUNC_CODE;
 		case FUNC_CODE:
 			if (bufferevent_read(bufev, &m_sdu.pdu.func_code, sizeof(m_sdu.pdu.func_code)) == 0) {
-				start_read_timer();
+				start_read_timer(m_timeout_1_5_c);
 				break;
 			}
 			m_log->log(8, "\tfunc code: %d", (int) m_sdu.pdu.func_code);
@@ -2483,19 +2541,35 @@ void serial_rtu_parser::read_data(struct bufferevent *bufev) {
 		case DATA:
 			r = bufferevent_read(bufev, &m_sdu.pdu.data[m_data_read], m_sdu.pdu.data.size() - m_data_read);
 			m_data_read += r;
-			if (check_crc()) {
-				m_state = ADDR;
-				m_sdu.pdu.data.resize(m_data_read - 2);
-				m_serial_handler->frame_parsed(m_sdu, bufev);
-			} else {
-				start_read_timer();
-			}
+			start_read_timer(m_timeout_1_5_c);
+			break;
 	}
 }
 
 void serial_rtu_parser::read_timer_event() {
-	m_serial_handler->error(serial_connection_handler::TIMEOUT);
-	reset();
+	if (m_bufev == NULL)
+		return;
+
+	m_log->log(8, "serial_rtu_parser - read timer expired, didn't get any data for %fTc , checking crc",
+		m_is_3_5_c_timeout ? 3.5 : 1.5);
+
+	if (check_crc()) {
+		m_is_3_5_c_timeout = false;
+
+		m_state = ADDR;
+		m_sdu.pdu.data.resize(m_data_read - 2);
+		m_serial_handler->frame_parsed(m_sdu, m_bufev);
+	} else {
+		if (m_is_3_5_c_timeout) {
+			m_log->log(8, "crc check failed, erroring out");
+			m_serial_handler->error(serial_connection_handler::TIMEOUT);
+			reset();
+		} else  {
+			m_log->log(8, "crc check failed, scheduling 3.5Tc timer");
+			m_is_3_5_c_timeout = true;
+			start_read_timer(m_timeout_3_5_c - m_timeout_1_5_c);
+		}
+	}
 }
 
 void serial_rtu_parser::send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev) {
@@ -2623,7 +2697,7 @@ void serial_ascii_parser::read_data(struct bufferevent* bufev) {
 			m_state = COLON;
 			return;
 	}
-	start_read_timer();
+	start_read_timer(m_timeout);
 }
 
 void serial_ascii_parser::read_timer_event() {
