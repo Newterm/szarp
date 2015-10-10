@@ -154,6 +154,8 @@ void Szbase::RemoveExtraParam(const std::wstring& prefix, TParam *param) {
 #endif
 
 	ClearParamFromCache(prefix, param);
+
+	buffer->RemoveExecParam(param);
 }
 
 bool Szbase::AddBase(const std::wstring& szbase_dir, const std::wstring &prefix) {
