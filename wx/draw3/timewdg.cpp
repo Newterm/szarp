@@ -44,7 +44,9 @@
 
 BEGIN_EVENT_TABLE(TimeWidget, wxScrolledWindow)
         EVT_RADIOBOX(wxID_ANY, TimeWidget::OnRadioSelected)
+#ifndef __WXMSW__
 	EVT_SET_FOCUS(TimeWidget::OnFocus)
+#endif
 END_EVENT_TABLE()
 
 class RadioButtonValidator : public wxValidator {
@@ -72,7 +74,9 @@ class RadioButtonValidator : public wxValidator {
 };
 
 BEGIN_EVENT_TABLE(RadioButtonValidator, wxValidator)
-	EVT_SET_FOCUS(RadioButtonValidator::OnFocus)
+#ifndef __WXMSW__
+	EVT_SET_FOCUS(TimeWidget::OnFocus)
+#endif
 END_EVENT_TABLE()
 
 
