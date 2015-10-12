@@ -281,7 +281,7 @@ int ConnectionHandler::do_handle(Connection *conn)
 	res->response(req, conh);
 	gettimeofday(&t2, NULL);
 	addrt = (unsigned char *)(&(conn->addr));
-	sz_log(2, "%d.%d.%d.%d %s '%s' HTTP/1.%d %d %ld ms",
+	sz_log(10, "%d.%d.%d.%d %s '%s' HTTP/1.%d %d %ld ms",
 		addrt[0], addrt[1], addrt[2], addrt[3], req->method,
 		req->unparsed_uri, (req->protocol_version == 11 ? 1 : 0),
 		res->code, ((t2.tv_sec - t1.tv_sec) * 1000) + 
