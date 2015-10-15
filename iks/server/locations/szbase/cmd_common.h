@@ -12,10 +12,9 @@ std::vector<f32_t> get_probes(
 		timestamp_t beg , timestamp_t end , ProbeType pt ,
 		const std::string& param )
 {
-	vars.get_szbase()->sync();
 	std::vector<f32_t> probes;
 	for( timestamp_t t=beg ; t<end ; t=SzbaseWrapper::next(t,pt) )
-		probes.push_back( vars.get_szbase()->get_avg_no_sync( param , t , pt ) );
+		probes.push_back( vars.get_szbase()->get_avg( param , t , pt ) );
 	return probes;
 }
 
