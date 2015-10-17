@@ -45,15 +45,14 @@ ParamsUpdater::Subscription ParamsUpdater::subscribe_param(
 			return sub;
 		}
 
-		subscribed_params.insert(
-								std::make_pair( key,
-												SubParWeakPtr( ptr )
-												) );
+		subscribed_params.insert(std::make_pair( key,
+												 SubParWeakPtr( ptr ) ) );
 	}
 
 	if( update )
 		ptr->update_param();
 
+	sub.insert(ptr);
 	return sub;
 }
 
