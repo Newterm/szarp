@@ -75,7 +75,7 @@ class RadioButtonValidator : public wxValidator {
 
 BEGIN_EVENT_TABLE(RadioButtonValidator, wxValidator)
 #ifndef __WXMSW__
-	EVT_SET_FOCUS(TimeWidget::OnFocus)
+	EVT_SET_FOCUS(RadioButtonValidator::OnFocus)
 #endif
 END_EVENT_TABLE()
 
