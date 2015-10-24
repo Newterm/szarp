@@ -80,10 +80,7 @@ bool ParamsUpdater::SubPar::start_sub() {
 
 	try {
 			token = parent->data_feeder->register_observer( pname , [ptr] () {
-					GlobalService::get_service().post(
-						std::bind(
-							SubPar::callback,
-							ptr ) );
+				GlobalService::get_service().post( std::bind( callback, ptr ) );
 			} );
 	} catch( szbase_error& e ) {
 		sz_log( 0, "Szbase error while registering observer : %s", e.what() );
