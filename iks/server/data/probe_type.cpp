@@ -12,6 +12,12 @@ ProbeType::ProbeType( const std::string& probe_string )
 {
 	if( probe_string == "live" )
 		pt = Type::LIVE;
+	else if( probe_string == "100ms" )
+		pt = Type::MS100;
+	else if( probe_string == "500ms" )
+		pt = Type::MS500;
+	else if( probe_string == "s" )
+		pt = Type::S;
 	else if( probe_string == "10s" )
 		pt = Type::S10;
 	else if( probe_string == "10m" )

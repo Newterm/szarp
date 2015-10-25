@@ -96,5 +96,49 @@ std::ostream& operator<<(std::ostream& s, const nanosecond_time_t &t) {
 	return s << "(" << t.second << "," << t.nanosecond << ")";
 }
 
+namespace detail {
+
+	// A utility class to reset the format flags for an istream at end
+	// of scope, even in case of exceptions
+	// Taken verbatim from boost.
+	struct resetter {
+		resetter(std::istream& is) : is_(is), f_(is.flags()) {}
+		~resetter() { is_.flags(f_); }
+		std::istream& is_;
+		std::istream::fmtflags f_;      // old GNU c++ lib has no ios_base
+	};
+
+}
+
+std::istream& operator>>(std::istream& s, nanosecond_time_t &t) {
+	char c;
+
+	detail::resetter sentry(s);
+
+	c = s.get();
+	if (c != '(')
+		s.clear(std::istream::badbit);
+
+	s >> std::noskipws;
+
+	decltype(t.second) second;
+	s >> second;
+	t.second = second;
+
+	c = s.get();
+	if (c != ',')
+		s.clear(std::istream::badbit);
+
+	decltype(t.nanosecond) nanosecond;
+	s >> nanosecond;
+	t.nanosecond = nanosecond;
+
+	c = s.get();
+	if (c != ')')
+		s.clear(std::istream::badbit);
+
+	return s;
+}
+
 
 }

@@ -12,9 +12,18 @@
 class SzbaseObserverImpl;
 typedef std::shared_ptr<SzbaseObserverImpl> SzbaseObserverToken;
 
+enum class SearchDir {
+	LEFT,
+	RIGHT
+};
+
+enum class TimeType {
+	SECOND,
+	NANOSECOND
+};
+
 class SzbaseWrapper {
 public:
-
 	static std::string get_dir()
 	{	return szarp_dir.string(); }
 
@@ -39,6 +48,15 @@ public:
 	 */
 	double get_avg( const std::string& param , time_t time , ProbeType type ) const
 		throw( szbase_init_error, szbase_get_value_error );
+
+	std::string search_data( const std::string& param ,
+						     const std::string& from ,
+							 const std::string& to ,
+							 TimeType time_type ,
+							 SearchDir dir ,
+							 ProbeType pt
+							 ) const
+		throw( szbase_init_error, szbase_error );
 
 	SzbaseObserverToken register_observer( const std::string& param , std::function<void( void )> )
 		throw( szbase_init_error, szbase_error );
