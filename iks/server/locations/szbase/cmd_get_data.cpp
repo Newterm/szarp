@@ -4,16 +4,16 @@
 #include "utils/tokens.h"
 #include "szbase.h"
 
-#include "cmd_search_data.h"
+#include "cmd_get_data.h"
 
-SearchDataRcv::SearchDataRcv( Vars& vars , Protocol& prot )
+GetDataRcv::GetDataRcv( Vars& vars , Protocol& prot )
 	: vars(vars)
 {
 	(void)prot;
-	set_next( std::bind(&SearchDataRcv::parse_command,this,std::placeholders::_1) );
+	set_next( std::bind(&GetDataRcv::parse_command,this,std::placeholders::_1) );
 }
 
-void SearchDataRcv::parse_command( const std::string& data )
+void GetDataRcv::parse_command( const std::string& data )
 {
 	namespace balgo = boost::algorithm;
 
@@ -32,17 +32,7 @@ void SearchDataRcv::parse_command( const std::string& data )
 		return;
 	}
 
-	ProbeType pt(tags[0]);
-
-	SearchDir dir;
-	if( tags[1] == "left" ) {
-		dir = SearchDir::LEFT;
-	} else if( tags[1] == "right" ) {
-		dir = SearchDir::RIGHT;
-	} else {
-		fail( ErrorCodes::ill_formed );
-		return;
-	}
+	ProbeType pt( tags[0] );
 
 	TimeType ttype;
 	if( tags[2] == "second_t" ) {
@@ -53,8 +43,23 @@ void SearchDataRcv::parse_command( const std::string& data )
 		fail( ErrorCodes::ill_formed );
 		return;
 	}
+
+	ValueType vtype;
+	if( tags[1] == "short" ) {
+		vtype = ValueType::SHORT;
+	} else if( tags[1] == "int" ) {
+		vtype = ValueType::INT;
+	} else if( tags[1] == "float" ) {
+		vtype = ValueType::FLOAT;
+	} else if( tags[1] == "double" ) {
+		vtype = ValueType::DOUBLE;
+	} else {
+		fail( ErrorCodes::ill_formed );
+		return;
+	}
 		
-	apply( vars.get_szbase()->search_data ( name, tags[3] , tags[4], ttype , dir , pt ) );
+	apply( vars.get_szbase()->get_data ( name, tags[3] , tags[4], vtype , ttype , pt ) );
 
 }
+
 

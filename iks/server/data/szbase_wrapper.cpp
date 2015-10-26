@@ -187,6 +187,105 @@ std::string SzbaseWrapper::search_data( const std::string& param ,
 	return std::string();
 }
 
+namespace {
+
+template<class value_time, class time_type>
+std::ostream& get_data( sz4::base*       base ,
+					  TParam*          param ,
+					  time_type        from ,
+					  time_type        to ,
+					  SZARP_PROBE_TYPE pt ,
+					  std::ostream&    os )
+{
+
+	while ( from < to )
+	{
+		time_type next = szb_move_time( from , 1 , pt , 0 );
+
+		sz4::weighted_sum< value_time, time_type > sum;
+		base->get_weighted_sum( param , from , next , pt , sum );
+		os << sum._sum() << " " << sum.weight() << " " << sum.no_data_weight() << " " << sum.fixed() << std::endl;
+
+		from = next;
+	}
+
+	return os;
+}
+
+template<class time_type>
+std::ostream& get_data( sz4::base*         base ,
+					  TParam*            param ,
+					  const std::string& from ,
+					  const std::string& to ,
+					  ValueType          vt ,
+					  SZARP_PROBE_TYPE   pt ,
+					  std::ostream&      os )
+{
+
+	time_type _from, _to;
+	try{
+		_from = boost::lexical_cast<time_type>( from );
+		_to   = boost::lexical_cast<time_type>( to );
+	} catch( const boost::bad_lexical_cast& ) {
+		throw szbase_error( "Invalid time specification from: " + from + " to: " + to );
+	}
+
+	switch (vt) {
+		case ValueType::DOUBLE:
+			get_data<double       , time_type>( base , param , _from , _to , pt , os );
+			break;
+		case ValueType::FLOAT:
+			get_data<float        , time_type>( base , param , _from , _to , pt , os );
+			break;
+		case ValueType::INT:
+			get_data<int          , time_type>( base , param , _from , _to , pt , os );
+			break;
+		case ValueType::SHORT:
+			get_data<short        , time_type>( base , param , _from , _to , pt , os );
+			break;
+	}
+
+	return os;
+}
+
+}
+
+std::string SzbaseWrapper::get_data( const std::string& param ,
+									 const std::string& from ,
+									 const std::string& to ,
+									 ValueType value_type ,
+									 TimeType time_type ,
+									 ProbeType pt ) const
+		throw( szbase_init_error, szbase_error )
+{
+	std::ostringstream ss;
+
+	TParam* tparam = IPKContainer::GetObject()->GetParam( convert_string( param ) );
+	if( !tparam )
+		throw szbase_error( "Param " + param + ", does not exist." );
+
+	try{
+		switch (time_type) {
+			case TimeType::NANOSECOND:
+				::get_data<sz4::nanosecond_time_t>( base , tparam ,
+								    from , to ,
+								    value_type , pt.get_szarp_pt() ,
+								    ss );
+				break;
+			case TimeType::SECOND:
+				::get_data<sz4::second_time_t>    ( base , tparam ,
+								    from , to ,
+								    value_type , pt.get_szarp_pt() ,
+								    ss );
+				break;
+		}
+	} catch ( sz4::exception& e ) {
+		throw szbase_error( "Cannot get data for param " + param + ": " + e.what() );
+	}
+
+	return ss.str();
+}
+
 SzbaseObserverToken SzbaseWrapper::register_observer( const std::string& param , std::function<void( void )> callback )
 	throw( szbase_init_error, szbase_error )
 {

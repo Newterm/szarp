@@ -18,6 +18,7 @@
 #include "cmd_get_latest_set.h"
 #include "cmd_get_summary.h"
 #include "cmd_search_data.h"
+#include "cmd_get_data.h"
 
 namespace p = std::placeholders;
 
@@ -56,7 +57,8 @@ Command* SzbaseProt::cmd_from_tag( const std::string& tag )
 	MAP_CMD_TAG( "get_latest"    , GetLatestRcv        );
 	MAP_CMD_TAG( "get_latest_set", GetLatestFromSetRcv );
 	MAP_CMD_TAG( "get_summary"   , GetSummaryRcv       );
-	MAP_CMD_TAG( "search_data"   , SearchData          );
+	MAP_CMD_TAG( "search_data"   , SearchDataRcv       );
+	MAP_CMD_TAG( "get_data"      , GetDataRcv	   );
 	return NULL;
 }
 

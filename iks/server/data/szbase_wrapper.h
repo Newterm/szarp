@@ -22,6 +22,13 @@ enum class TimeType {
 	NANOSECOND
 };
 
+enum class ValueType {
+	SHORT,
+	INT,
+	FLOAT,
+	DOUBLE
+};
+
 class SzbaseWrapper {
 public:
 	static std::string get_dir()
@@ -56,6 +63,15 @@ public:
 							 SearchDir dir ,
 							 ProbeType pt
 							 ) const
+		throw( szbase_init_error, szbase_error );
+
+	std::string get_data( const std::string& param ,
+						  const std::string& from ,
+						  const std::string& to ,
+						  ValueType value_type ,
+						  TimeType time_type ,
+						  ProbeType pt
+						  ) const
 		throw( szbase_init_error, szbase_error );
 
 	SzbaseObserverToken register_observer( const std::string& param , std::function<void( void )> )

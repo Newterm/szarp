@@ -28,6 +28,7 @@ libiks_server_locations_a_SOURCES = \
 	welcome/welcome.cpp \
 	szbase/szbase.cpp \
 	szbase/cmd_search_data.cpp \
+	szbase/cmd_get_data.cpp \
 	proxy/proxy.cpp \
 	location.cpp \
 	protocol_location.cpp \
