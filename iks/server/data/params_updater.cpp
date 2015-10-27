@@ -27,14 +27,14 @@ void ParamsUpdater::set_data_feeder( SzbaseWrapper* data_feeder_ )
 
 ParamsUpdater::Subscription ParamsUpdater::subscribe_param(
 		const std::string& name ,
-		ProbeType pt ,
+		boost::optional<ProbeType> pt ,
 		bool update )
 {
 	Subscription sub;
 	if ( !params.has_param( name ) )
 		return sub;
 
-	auto key =  SubKey( name, pt );
+	auto key = SubKey( name );
 
 	SubParPtr ptr;
 	if ( !( ptr = subscribed_params[ key ].lock() ) ) {
@@ -70,7 +70,7 @@ void ParamsUpdater::Subscription::insert( const ParamsUpdater::SubParPtr& sub )
 	subset.insert( sub );
 }
 
-ParamsUpdater::SubPar::SubPar( const std::string& pname , ProbeType pt , ParamsUpdater* parent )
+ParamsUpdater::SubPar::SubPar( const std::string& pname , boost::optional<ProbeType> pt , ParamsUpdater* parent )
 											   : pname( pname ) , pt( pt ) , parent( parent )
 {
 }
@@ -91,20 +91,24 @@ bool ParamsUpdater::SubPar::start_sub() {
 }
 
 ParamsUpdater::SubPar::~SubPar() {
-	parent->subscribed_params.erase( ParamsUpdater::SubKey(pname , pt) );
+	parent->subscribed_params.erase( ParamsUpdater::SubKey( pname ) );
 }
 
 void ParamsUpdater::SubPar::update_param() {
 	using std::chrono::system_clock;
 	using namespace boost::posix_time;
 
-	time_t t = system_clock::to_time_t( system_clock::now() );
-	time_t ptime = SzbaseWrapper::round( t , pt );
+	if( pt ) {
+		time_t t = system_clock::to_time_t( system_clock::now() );
+		time_t ptime = SzbaseWrapper::round( t , *pt );
 
-	parent->params.param_value_changed(
-			pname ,
-			parent->data_feeder->get_avg( pname , ptime , pt ) ,
-			pt );
+		parent->params.param_value_changed(
+				pname ,
+				parent->data_feeder->get_avg( pname , ptime , *pt ) ,
+				*pt );
+	} else {
+		parent->params.param_changed( pname );
+	}
 }
 
 void ParamsUpdater::SubPar::callback(SubParWeakPtr ptr) {

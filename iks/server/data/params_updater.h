@@ -20,7 +20,7 @@ class ParamsUpdater {
 	typedef std::shared_ptr< SubPar > SubParPtr;
 	typedef std::weak_ptr  < SubPar > SubParWeakPtr;
 
-	typedef std::pair< std::string, ProbeType > SubKey;
+	typedef std::string SubKey;
 	typedef std::map< SubKey , SubParWeakPtr > SubParsMap;
 	
 	friend class SubPar;
@@ -33,9 +33,9 @@ public:
 	/** TODO: change SzbaseWrapper to generic DataFeeder class */
 	void set_data_feeder( SzbaseWrapper* data_feeder = NULL );
 
-	Subscription subscribe_param( const std::string& name , ProbeType pt , bool update = true );
+	Subscription subscribe_param( const std::string& name , boost::optional<ProbeType> pt , bool update = true );
 	template<class Container>
-	Subscription subscribe_params( const Container& names , ProbeType pt , bool update = true )
+	Subscription subscribe_params( const Container& names , boost::optional<ProbeType> pt , bool update = true )
 	{
 		Subscription s;
 		for( auto itr=names.begin() ; itr!=names.end() ; ++itr )
@@ -69,13 +69,13 @@ private:
 
 	class SubPar : public std::enable_shared_from_this< SubPar > {
 		std::string pname;
-		ProbeType pt;
+		boost::optional<ProbeType> pt;
 
 		ParamsUpdater* parent;
 
 		SzbaseObserverToken token;
 	public:
-		SubPar( const std::string& pname , ProbeType pt , ParamsUpdater* parent);
+		SubPar( const std::string& pname , boost::optional<ProbeType> pt , ParamsUpdater* parent);
 		~SubPar();
 
 		bool start_sub();

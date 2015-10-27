@@ -6,6 +6,7 @@
 
 #include "cmd_set.h"
 #include "cmd_value.h"
+#include "cmd_notify.h"
 #include "cmd_list_sets.h"
 #include "cmd_list_params.h"
 #include "cmd_get_params.h"
@@ -19,6 +20,8 @@
 #include "cmd_get_summary.h"
 #include "cmd_search_data.h"
 #include "cmd_get_data.h"
+#include "cmd_param_subscribe.h"
+#include "cmd_param_unsubscribe.h"
 
 namespace p = std::placeholders;
 
@@ -43,31 +46,40 @@ SzbaseProt::~SzbaseProt()
 
 Command* SzbaseProt::cmd_from_tag( const std::string& tag )
 {
-	MAP_CMD_TAG( "s"             , SetRcv              );
-	MAP_CMD_TAG( "set"           , SetRcv              );
-	MAP_CMD_TAG( "list_sets"     , ListSetsRcv         );
-	MAP_CMD_TAG( "list_params"   , ListParamsRcv       );
-	MAP_CMD_TAG( "get_params"    , GetParamsRcv        );
-	MAP_CMD_TAG( "get_key_params", GetParamsForKeyRcv  );
-	MAP_CMD_TAG( "get_set"       , GetSetRcv           );
-	MAP_CMD_TAG( "set_update"    , SetUpdateRcv        );
-	MAP_CMD_TAG( "set_subscribe" , SetSubscribeRcv     );
-	MAP_CMD_TAG( "get_options"   , GetConfigRcv        );
-	MAP_CMD_TAG( "get_history"   , GetHistoryRcv       );
-	MAP_CMD_TAG( "get_latest"    , GetLatestRcv        );
-	MAP_CMD_TAG( "get_latest_set", GetLatestFromSetRcv );
-	MAP_CMD_TAG( "get_summary"   , GetSummaryRcv       );
-	MAP_CMD_TAG( "search_data"   , SearchDataRcv       );
-	MAP_CMD_TAG( "get_data"      , GetDataRcv	   );
+	MAP_CMD_TAG( "s"                 , SetRcv              );
+	MAP_CMD_TAG( "set"               , SetRcv              );
+	MAP_CMD_TAG( "list_sets"         , ListSetsRcv         );
+	MAP_CMD_TAG( "list_params"       , ListParamsRcv       );
+	MAP_CMD_TAG( "get_params"        , GetParamsRcv        );
+	MAP_CMD_TAG( "get_key_params"    , GetParamsForKeyRcv  );
+	MAP_CMD_TAG( "get_set"           , GetSetRcv           );
+	MAP_CMD_TAG( "set_update"        , SetUpdateRcv        );
+	MAP_CMD_TAG( "set_subscribe"     , SetSubscribeRcv     );
+	MAP_CMD_TAG( "get_options"       , GetConfigRcv        );
+	MAP_CMD_TAG( "get_history"       , GetHistoryRcv       );
+	MAP_CMD_TAG( "get_latest"        , GetLatestRcv        );
+	MAP_CMD_TAG( "get_latest_set"    , GetLatestFromSetRcv );
+	MAP_CMD_TAG( "get_summary"       , GetSummaryRcv       );
+	MAP_CMD_TAG( "search_data"       , SearchDataRcv       );
+	MAP_CMD_TAG( "get_data"          , GetDataRcv          );
+	MAP_CMD_TAG( "param_subsrcibe"   , ParamSubscribeRcv   );
+	MAP_CMD_TAG( "param_unsubsrcibe" , ParamUnsubscribeRcv );
 	return NULL;
 }
 
 std::string SzbaseProt::tag_from_cmd( const Command* cmd )
 {
 	MAP_TAG_CMD( ValueSnd        , "v"             );
+	MAP_TAG_CMD( NotifySnd       , "n"             );
 	MAP_TAG_CMD( SetUpdateSnd    , "set_update"    );
 	MAP_TAG_CMD( ConfigUpdateSnd , "new_options"   );
 	return "";
+}
+
+void SzbaseProt::on_param_changed( Param::const_ptr p )
+{
+    if( sub_params.count( p->get_name() ) )
+		send_cmd( new NotifySnd(p) );
 }
 
 void SzbaseProt::on_param_value_changed( Param::const_ptr p , double value , ProbeType pt )
@@ -86,14 +98,14 @@ void SzbaseProt::set_current_set( Set::const_ptr s , ProbeType pt )
 	current_pt = pt;
 
 	if( !current_set ) {
-		sub_params.cancel();
+		sub_set.cancel();
 		return;
 	}
 
 	/** Prevent from sending values double if they values changed on subscribe */
 	boost::signals2::shared_connection_block block(conn_param);
 
-	sub_params = vars.get_updater().subscribe_params( *s , pt );
+	sub_set = vars.get_updater().subscribe_params( *s , pt );
 
 	for( auto itr=current_set->begin() ; itr!=current_set->end() ; ++itr )
 	{
@@ -106,3 +118,17 @@ void SzbaseProt::set_current_set( Set::const_ptr s , ProbeType pt )
 	}
 }
 
+void SzbaseProt::subscribe_param( Param::const_ptr p )
+{
+	sub_params.insert(
+		std::make_pair( p->get_name() ,
+						vars.get_updater().subscribe_param( p->get_name() ,
+															boost::optional<ProbeType>() ,
+															false ) ) );
+}
+
+void SzbaseProt::unsubscribe_param( Param::const_ptr p )
+{
+	auto it = sub_params.find( p->get_name() );
+	sub_params.erase( it );
+}

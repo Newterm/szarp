@@ -171,7 +171,7 @@ std::string SzbaseWrapper::search_data( const std::string& param ,
 	throw( szbase_init_error, szbase_error )
 {
 
-	TParam* tparam = IPKContainer::GetObject()->GetParam( convert_string( param ) );
+	TParam* tparam = IPKContainer::GetObject()->GetParam( convert_string( base_name + ":" + param ) );
 	if( !tparam )
 		throw szbase_error( "Param " + param + ", does not exist." );
 
@@ -260,7 +260,7 @@ std::string SzbaseWrapper::get_data( const std::string& param ,
 {
 	std::ostringstream ss;
 
-	TParam* tparam = IPKContainer::GetObject()->GetParam( convert_string( param ) );
+	TParam* tparam = IPKContainer::GetObject()->GetParam( convert_string( base_name + ":" + param ) );
 	if( !tparam )
 		throw szbase_error( "Param " + param + ", does not exist." );
 

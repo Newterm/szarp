@@ -72,6 +72,22 @@ void Params::param_value_changed( iterator itr , double value , ProbeType pt )
 	emit_value_changed( itr.itr->second , value , pt );
 }
 
+void Params::param_changed( const std::string& name )
+{
+	param_changed( iterator(params.find(name)) );
+}
+
+void Params::param_changed( iterator itr )
+{
+	if( itr.itr == params.end() ) {
+		sz_log(1, "Value changed of undefined param %s", itr->c_str() );
+		return;
+	}
+
+	emit_changed( itr.itr->second );
+}
+
+
 void Params::request_param_value( const std::string& name ,
                                   double value ,
 								  const std::string& pin ) const
