@@ -66,6 +66,29 @@ void int_handler(int signum)
  */
 int main(int argc, char **argv)
 {
+
+	char *logfile;
+	int log_level;
+
+	/* set initial logging, process liblog and libpar command line
+	 * params */
+	log_level = loginit_cmdline(2, NULL, &argc, argv);
+
+	logfile = libpar_getpar("paramd", "log_level", 0);
+	if (logfile) {
+		log_level = atoi(logfile);
+		free(logfile);
+	}
+	logfile = libpar_getpar("paramd", "log", 0);
+	if (logfile == NULL)
+		logfile = strdup("paramd");
+	if (sz_loginit(log_level, logfile) < 0) {
+		sz_log(0, "paramd: cannot open log file '%s', exiting",
+		    logfile);
+		return 1;
+	}
+	sz_log(0, "paramd: started");
+
 	IPKLoader *ploader;
 	ParamTree *pt;
 
