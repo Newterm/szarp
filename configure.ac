@@ -1191,6 +1191,7 @@ AC_OUTPUT( \
 	iks/server/utils/Makefile \
 	iks/server/data/Makefile \
 	iks/server/net/Makefile \
+	iks/client/Makefile \
 	isl/Makefile \
 	isl/server/Makefile \
 	isl/paramd/Makefile \
